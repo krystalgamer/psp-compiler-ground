@@ -93,19 +93,52 @@ def members(path):
         yield n, subprocess.run(["ar", "p", str(p), n], capture_output=True).stdout
 
 
+def lookup(mod, fn, n):
+    """The module function for fn: splat names duplicated statics FN_ADDR."""
+    if fn in mod:
+        return fn
+    cands = [k for k in mod if re.fullmatch(re.escape(fn) + r"_[0-9A-F]+", k)]
+    same = [k for k in cands if len(mod[k]) == n]
+    return (same or cands or [None])[0]
+
+
+def disasm(words):
+    """objdump lines of masked words."""
+    import tempfile
+    with tempfile.NamedTemporaryFile(suffix=".bin") as f:
+        f.write(b"".join(struct.pack("<I", w) for w in words))
+        f.flush()
+        out = subprocess.run([str(ROOT / "tmp/toolchains/bin/mips-objdump"), "-D", "-b", "binary", "-m", "mips:allegrex",
+                              "-EL", "-M", "no-aliases", f.name], capture_output=True, text=True).stdout
+    return [ln.split("\t", 2)[-1].replace("\t", " ") for ln in out.splitlines() if re.match(r"\s+[0-9a-f]+:\t", ln)]
+
+
+def side_by_side(ours, orig):
+    a, b = disasm(ours), disasm(orig)
+    for i in range(max(len(a), len(b))):
+        x = a[i] if i < len(a) else ""
+        y = b[i] if i < len(b) else ""
+        print(f"{'  ' if x == y else '>>'} {i*4:4x}  {x:38.38} {y}")
+
+
 def compare(mod, objs, verbose=False):
     res = {}
     for path in objs:
         for name, data in members(path):
             for fn, words in obj_funcs(data).items():
-                if fn not in mod:
+                key = lookup(mod, fn, len(words))
+                if key is None:
                     continue
-                orig = mod[fn]
+                orig = mod[key]
                 if len(orig) != len(words):
                     res[fn] = f"size {len(words)*4:#x}/{len(orig)*4:#x}"
                 else:
                     nd = sum(1 for a, b in zip(words, orig) if a != b)
                     res[fn] = "same" if nd == 0 else f"diff {nd}"
+                if verbose and res[fn] != "same":
+                    print(f"--- {fn}: ours | original")
+                    side_by_side(words, orig)
+                    verbose = False
     return res
 
 

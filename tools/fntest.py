@@ -22,9 +22,9 @@ T = ROOT / "tmp" / "toolchains" / "bin"
 DRIVER = {"1.5.1": ("-mno-ulsw", ""), "1.3.1-orig": ("-mno-ulsw", "")}
 
 
-def compile_c(src, cc1, flags, out):
+def compile_c(src, cc1, flags, out, incs=()):
     i = out.with_suffix(".i")
-    subprocess.run(["cpp", "-P", "-undef", "-nostdinc", f"-I{ROOT/'include'}", f"-I{ROOT/'include/sdk'}", f"-I{ROOT/'include/libc'}", f"-I{ROOT/'decomp_src'}",
+    subprocess.run(["cpp", "-P", "-undef", "-nostdinc", f"-I{ROOT/'include'}", f"-I{ROOT/'include/sdk'}", f"-I{ROOT/'include/libc'}", f"-I{ROOT/'decomp_src'}", *[f"-I{d}" for d in incs],
                     "-D__GNUC__=3", "-D_LANGUAGE_C", "-D__psp__", "-D__mips__", "-DM2CTX", str(src), "-o", str(i)],
                    check=True)
     cflags, asflags = DRIVER.get(cc1, ("", ""))
@@ -52,11 +52,11 @@ def main():
     with tempfile.TemporaryDirectory() as td:
         for c in cc1s:
             for f in flags:
-                o = compile_c(Path(a.file), c, f, Path(td) / f"{c}.o")
+                o = compile_c(Path(a.file), c, f, Path(td) / f"{c}.o", [ROOT / "decomp_src" / a.target / a.module])
                 if o is None:
                     print(f"{c:11} {f:12} compile error")
                     continue
-                res = objcmp.compare(mod, [o])
+                res = objcmp.compare(mod, [o], verbose=a.v and c == cc1s[0])
                 same = [k for k, v in res.items() if v == "same"]
                 bad = {k: v for k, v in res.items() if v != "same"}
                 print(f"{c:11} {f:12} {len(same)}/{len(res)}  " + " ".join(f"{k}:{v.replace(' ', '')}" for k, v in sorted(bad.items())))

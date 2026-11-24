@@ -12,8 +12,6 @@ typedef unsigned int u32;
 typedef signed long long s64;
 typedef unsigned long long u64;
 
-typedef unsigned int SceSize;
-typedef int SceUID;
 
 #ifndef NULL
 #define NULL ((void *)0)
