@@ -136,6 +136,10 @@ def prune_undefined_syms(asm_dir: Path, undef_path: Path):
     defined = set()
     for f in asm_dir.rglob("*.s"):
         defined.update(re.findall(r"^\s*(?:glabel|dlabel|alabel|jlabel)\s+(\w+)", f.read_text(), re.M))
+    # symbols the linker script assigns (e.g. _gp past the end of the data)
+    ld = Path(options.opts.ld_script_path)
+    if ld.exists():
+        defined.update(re.findall(r"^\s*(\w+)\s*=", ld.read_text(), re.M))
     lines = undef_path.read_text().splitlines()
     kept = [l for l in lines if l.split("=")[0].strip() not in defined]
     undef_path.write_text("\n".join(kept) + ("\n" if kept else ""))
