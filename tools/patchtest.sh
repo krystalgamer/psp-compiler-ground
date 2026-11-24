@@ -13,5 +13,6 @@ tools/build_gcc.sh $NAME "$D" --libgcc > tmp/var/$NAME.build.log 2>&1 || { echo 
 for t in ${TESTS:-puzzle_bobble:BOOT}; do
   nl=$(.venv/bin/python tools/nltest.py ${t%%:*} ${t#*:} $NAME --flags "${FLAGS:--O2 -g}" | head -1 | awk '{print $2}')
   lg=$(.venv/bin/python tools/objcmp.py ${t%%:*} ${t#*:} tmp/gccbuild/$NAME/gcc-bin/gcc/libgcc.a | tail -1 | awk '{print $2}')
-  echo "$NAME $t newlib=$nl libgcc=$lg"
+  eh=$(.venv/bin/python tools/objcmp.py ${t%%:*} ${t#*:} tmp/gccbuild/$NAME/gcc-bin/gcc/libgcc/unwind-dw2*.o 2>/dev/null | tail -1 | awk '{print $2}')
+  echo "$NAME $t newlib=$nl libgcc=$lg unwind=$eh"
 done
