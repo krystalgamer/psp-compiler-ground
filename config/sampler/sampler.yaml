@@ -1,0 +1,165 @@
+name: sampler (sampler)
+sha1: 42b7ba45640536f42a5b00a608f50f8ed99bf9ea
+options:
+  basename: sampler
+  target_path: tmp/baserom/sampler/sampler.prx
+  elf_path: tmp/build/sampler/sampler.elf
+  base_path: ../..
+  platform: psp
+  compiler: GCC
+
+  asm_path: tmp/asm/sampler/sampler
+  src_path: decomp_src/sampler/sampler
+  build_path: tmp/build/sampler
+  ld_script_path: tmp/build/sampler/sampler.ld
+  cache_path: tmp/build/sampler/.splat_cache.sampler
+  symbol_addrs_path:
+    - config/sampler/symbol_addrs.sampler.txt
+    - tmp/build/sampler/prx_syms.sampler.txt
+  reloc_addrs_path: [tmp/build/sampler/reloc_addrs.sampler.txt]
+  asset_path: tmp/assets/sampler/sampler
+  extensions_path: tools/splat_ext
+  undefined_funcs_auto_path: tmp/build/sampler/undefined_funcs_auto.sampler.txt
+  undefined_syms_auto_path: tmp/build/sampler/undefined_syms_auto.sampler.txt
+
+  find_file_boundaries: false
+  section_order: [".text", ".data", ".rodata", ".bss"]
+  migrate_rodata_to_functions: true
+  use_legacy_include_asm: false
+  asm_function_macro: glabel
+  asm_jtbl_label_macro: jlabel
+  asm_data_macro: dlabel
+  asm_end_label: endlabel
+  string_encoding: ASCII
+  data_string_encoding: ASCII
+  rodata_string_guesser_level: 2
+  data_string_guesser_level: 2
+  gp_value: 0x2B5AC0
+  add_set_gp_64: false
+  named_regs_for_c_funcs: false
+  ld_bss_is_noload: true
+  emit_subalign: false
+  ld_align_segment_vram_end: false
+  ld_align_section_vram_end: false
+  disasm_unknown: true
+  global_vram_start: 0x0
+  global_vram_end: 0x3F2F08
+
+segments:
+  - [0x0, bin, elf_header]
+  - name: sampler
+    type: code
+    start: 0x80
+    vram: 0x0
+    subsegments:
+      - { start: 0x80, type: asm, name: init, linker_section: .init }
+      - { start: 0xA4, type: prxpad, order: .text }
+      - [0xC0, asm, asm/text_40]
+      - [0x1A8, c, crt0]
+      - [0x470, c, main]
+      - [0x4A8, c, system]
+      - [0x80C, c, utils]
+      - [0xF88, c, movie]
+      - [0x2804, c, display]
+      - [0x3810, c, fileread]
+      - [0x3A54, c, sound]
+      - [0x4108, c, strfile]
+      - [0x44AC, c, avsync]
+      - [0x471C, c, bgm]
+      - [0x48E0, c, vag]
+      - [0x4AE4, c, at3plus]
+      - [0x5090, asm, asm/text_5010]
+      - [0xA668, c, libpsmf]
+      - [0xB0F8, c, psmfBase]
+      - [0xB8A8, c, libmpeg_util]
+      - [0xBBE0, asm, asm/text_BB60]
+      - [0xC1B8, c, newlib/libc/stdlib/atexit]
+      - [0xC260, c, newlib/libc/stdlib/exit]
+      - [0xC350, c, newlib/libc/stdlib/malign]
+      - [0xC37C, c, newlib/libc/stdlib/mallocr/_memalign_r]
+      - [0xC518, c, newlib/libc/stdlib/malloc]
+      - [0xC564, c, newlib/libc/stdlib/mallocr/malloc_extend_top]
+      - [0xCD04, c, newlib/libc/string/memcmp]
+      - [0xCD88, c, newlib/libc/machine/mips/memcpy]
+      - [0xCE94, c, newlib/libc/machine/mips/memset]
+      - [0xCF4C, c, newlib/libc/sys/psp/mlock]
+      - [0xCFC4, c, newlib/libc/stdio/printf]
+      - [0xD04C, c, newlib/libc/stdio/puts]
+      - [0xD0F4, c, newlib/libc/reent/sbrkr]
+      - [0xD150, c, newlib/libc/machine/mips/strcmp]
+      - [0xD1C4, c, newlib/libc/machine/mips/strlen]
+      - [0xD1DC, c, newlib/libc/stdio/vfprintf]
+      - [0xEFC8, c, newlib/libc/stdlib/wcrtomb]
+      - [0xF068, c, newlib/libc/stdlib/wcsrtombs]
+      - [0xF1FC, c, newlib/libc/stdlib/wctomb_r]
+      - [0xF65C, c, newlib/libc/stdio/wsetup]
+      - [0xF770, c, newlib/libc/stdlib/dtoa]
+      - [0x10D40, c, newlib/libc/stdio/fflush]
+      - [0x10E34, c, newlib/libc/stdio/findfp]
+      - [0x110AC, c, newlib/libc/stdlib/mallocr/_free_r]
+      - [0x11474, c, newlib/libc/stdio/fvwrite]
+      - [0x11854, c, newlib/libc/stdio/fwalk]
+      - [0x1195C, c, newlib/libc/locale/locale]
+      - [0x11A54, c, newlib/libc/stdio/makebuf]
+      - [0x11BAC, c, newlib/libc/string/memchr]
+      - [0x11C94, asm, asm/text_11C14]
+      - [0x11CC0, c, newlib/libc/sys/psp/memmove]
+      - [0x11FA8, asm, asm/text_11F28]
+      - [0x11FC0, c, newlib/libc/stdlib/mprec]
+      - [0x12ED0, c, newlib/libc/stdlib/mallocr/_realloc_r]
+      - [0x13440, c, newlib/libc/reent/reent]
+      - [0x1365C, c, newlib/libm/math/s_isinf]
+      - [0x13698, c, newlib/libm/math/s_isnan]
+      - [0x136C4, c, newlib/libc/stdio/stdio]
+      - [0x13844, c, newlib/libc/reent/writer]
+      - [0x138AC, c, newlib/libc/stdlib/mallocr/_calloc_r]
+      - [0x1396C, c, newlib/libc/reent/closer]
+      - [0x139C8, c, newlib/libc/reent/fstatr]
+      - [0x13A2C, c, newlib/libc/reent/lseekr]
+      - [0x13A94, c, newlib/libc/reent/readr]
+      - [0x13AFC, c, libgcc/libgcc2/__udivdi3]
+      - [0x14070, c, libgcc/libgcc2/__umoddi3]
+      - [0x1461C, c, libgcc/dp-bit/_fpadd_parts]
+      - [0x14A40, c, libgcc/dp-bit/__muldf3]
+      - [0x14DB8, c, libgcc/dp-bit/__divdf3]
+      - [0x14FDC, c, libgcc/dp-bit/__eqdf2]
+      - [0x15064, c, libgcc/dp-bit/__nedf2]
+      - [0x150EC, c, libgcc/dp-bit/__gtdf2]
+      - [0x15174, c, libgcc/dp-bit/__gedf2]
+      - [0x151FC, c, libgcc/dp-bit/__ltdf2]
+      - [0x15284, c, libgcc/dp-bit/__floatsidf]
+      - [0x15360, c, libgcc/dp-bit/__fixdfsi]
+      - [0x15434, c, libgcc/dp-bit/__negdf2]
+      - [0x15478, c, libgcc/dp-bit/__pack_d]
+      - [0x15718, c, libgcc/dp-bit/__unpack_d]
+      - [0x15834, c, libgcc/dp-bit/__fpcmp_parts_d]
+      - [0x15998, asm, asm/text_15918]
+      - { start: 0x159F0, type: asm, name: fini, linker_section: .fini }
+      - { start: 0x15A0C, type: asm, name: sceStub, linker_section: .sceStub.text }
+      - { start: 0x15D7C, type: prxpad, order: .text }
+      - { start: 0x15D80, type: rodata, name: lib_ent_top, linker_section: .lib.ent.top }
+      - { start: 0x15D84, type: rodata, name: lib_ent, linker_section: .lib.ent }
+      - { start: 0x15D94, type: rodata, name: lib_ent_btm, linker_section: .lib.ent.btm }
+      - { start: 0x15D98, type: rodata, name: lib_stub_top, linker_section: .lib.stub.top }
+      - { start: 0x15D9C, type: rodata, name: lib_stub, linker_section: .lib.stub }
+      - { start: 0x15EC8, type: rodata, name: lib_stub_btm, linker_section: .lib.stub.btm }
+      - { start: 0x15ECC, type: rodata, name: module_info, linker_section: .rodata.sceModuleInfo }
+      - { start: 0x15F00, type: rodata, name: resident, linker_section: .rodata.sceResident }
+      - { start: 0x1602C, type: rodata, name: nid, linker_section: .rodata.sceNid }
+      - { start: 0x161E4, type: rodata, name: ctors, linker_section: .ctors }
+      - { start: 0x161EC, type: rodata, name: dtors, linker_section: .dtors }
+      - { start: 0x161F4, type: rodata, name: jcr, linker_section: .jcr }
+      - { start: 0x161F8, type: rodata, name: eh_frame, linker_section: .eh_frame }
+      - { start: 0x1625C, type: prxpad, order: .rodata }
+      - [0x16260, rodata, rodata]
+  - [0x17B28, bin, seg1_align]
+  - name: sampler_seg1
+    type: code
+    start: 0x17B40
+    vram: 0x17AB0
+    bss_size: 0x12D97C
+    subsegments:
+      - [0x17B40, data, data]
+      - { start: 0x2C560C, type: bss, vram: 0x2C5580 }
+  - [0x2C560C, bin, elf_trailer]
+  - [0x3B8AC8]

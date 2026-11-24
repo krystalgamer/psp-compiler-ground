@@ -1,0 +1,176 @@
+name: sound_stringsound (UTST99332)
+sha1: 65aae67bcf8d1c53e545fdbe3e33128f367dd412
+options:
+  basename: sound_stringsound
+  target_path: tmp/baserom/UTST99332/sound_stringsound.prx
+  elf_path: tmp/build/UTST99332/sound_stringsound.elf
+  base_path: ../..
+  platform: psp
+  compiler: GCC
+
+  asm_path: tmp/asm/UTST99332/sound_stringsound
+  src_path: decomp_src/UTST99332/sound_stringsound
+  build_path: tmp/build/UTST99332
+  ld_script_path: tmp/build/UTST99332/sound_stringsound.ld
+  cache_path: tmp/build/UTST99332/.splat_cache.sound_stringsound
+  symbol_addrs_path:
+    - config/UTST99332/symbol_addrs.sound_stringsound.txt
+    - tmp/build/UTST99332/prx_syms.sound_stringsound.txt
+  reloc_addrs_path: [tmp/build/UTST99332/reloc_addrs.sound_stringsound.txt]
+  asset_path: tmp/assets/UTST99332/sound_stringsound
+  extensions_path: tools/splat_ext
+  undefined_funcs_auto_path: tmp/build/UTST99332/undefined_funcs_auto.sound_stringsound.txt
+  undefined_syms_auto_path: tmp/build/UTST99332/undefined_syms_auto.sound_stringsound.txt
+
+  find_file_boundaries: false
+  section_order: [".text", ".data", ".rodata", ".bss"]
+  migrate_rodata_to_functions: true
+  use_legacy_include_asm: false
+  asm_function_macro: glabel
+  asm_jtbl_label_macro: jlabel
+  asm_data_macro: dlabel
+  asm_end_label: endlabel
+  string_encoding: ASCII
+  data_string_encoding: ASCII
+  rodata_string_guesser_level: 2
+  data_string_guesser_level: 2
+  gp_value: 0x8970
+  add_set_gp_64: false
+  named_regs_for_c_funcs: false
+  ld_bss_is_noload: true
+  emit_subalign: false
+  ld_align_segment_vram_end: false
+  ld_align_section_vram_end: false
+  disasm_unknown: true
+  global_vram_start: 0x0
+  global_vram_end: 0x45154C
+
+segments:
+  - [0x0, bin, elf_header]
+  - name: sound_stringsound
+    type: code
+    start: 0x80
+    vram: 0x0
+    subsegments:
+      - { start: 0x80, type: asm, name: init, linker_section: .init }
+      - { start: 0xA4, type: prxpad, order: .text }
+      - [0xC0, asm, asm/text_40]
+      - [0x1A8, c, crt0]
+      - [0x468, c, main]
+      - [0xCB4, c, draw]
+      - [0x13D8, c, string]
+      - [0x1604, c, at3plus]
+      - [0x20BC, c, at3loadmodule]
+      - [0x22EC, c, menu]
+      - [0x2424, asm, asm/text_23A4]
+      - [0x7B1C, c, newlib/libm/math/sf_cos]
+      - [0x7BEC, c, newlib/libm/math/sf_sin]
+      - [0x7CC4, c, newlib/libm/math/wf_sqrt]
+      - [0x7DF4, c, newlib/libm/math/ef_rem_pio2]
+      - [0x8150, c, newlib/libm/math/ef_sqrt]
+      - [0x827C, c, newlib/libm/math/kf_cos]
+      - [0x83A4, c, newlib/libm/math/kf_rem_pio2]
+      - [0x8B64, c, newlib/libm/math/kf_sin]
+      - [0x8C40, c, newlib/libm/common/s_matherr]
+      - [0x8C48, c, newlib/libm/math/sf_fabs]
+      - [0x8C64, c, newlib/libm/math/sf_floor]
+      - [0x8D44, c, newlib/libm/math/sf_isnan]
+      - [0x8D60, c, newlib/libm/common/sf_scalbn]
+      - [0x8E94, c, newlib/libm/common/sf_copysign]
+      - [0x8EC0, asm, asm/text_8E40]
+      - [0xABE0, c, libgcc/fp-bit/__extendsfdf2]
+      - [0xAC2C, c, libgcc/dp-bit/__make_dp]
+      - [0xAC60, c, libgcc/dp-bit/__truncdfsf2]
+      - [0xACD8, c, libgcc/fp-bit/__unpack_f]
+      - [0xADA4, c, libgcc/fp-bit/__make_fp]
+      - [0xADD4, c, libgcc/dp-bit/__pack_d]
+      - [0xB074, c, libgcc/dp-bit/__unpack_d]
+      - [0xB190, c, libgcc/fp-bit/__pack_f]
+      - [0xB2F4, asm, asm/text_B274]
+      - [0xB8E4, c, newlib/libc/stdlib/atexit]
+      - [0xB98C, c, newlib/libc/errno/errno]
+      - [0xB998, c, newlib/libc/stdlib/exit]
+      - [0xBA88, c, newlib/libc/stdlib/malloc]
+      - [0xBAD4, c, newlib/libc/stdlib/mallocr/malloc_extend_top]
+      - [0xC274, c, newlib/libc/machine/mips/memcpy]
+      - [0xC380, c, newlib/libc/machine/mips/memset]
+      - [0xC438, c, newlib/libc/sys/psp/mlock]
+      - [0xC4B0, c, newlib/libc/stdio/printf]
+      - [0xC538, c, newlib/libc/stdio/puts]
+      - [0xC5E0, c, newlib/libc/reent/sbrkr]
+      - [0xC63C, c, newlib/libc/stdio/sprintf]
+      - [0xC71C, c, newlib/libc/machine/mips/strlen]
+      - [0xC734, c, newlib/libc/stdio/vfprintf]
+      - [0xE520, c, newlib/libc/stdlib/wcrtomb]
+      - [0xE5C0, c, newlib/libc/stdlib/wcsrtombs]
+      - [0xE754, c, newlib/libc/stdlib/wctomb_r]
+      - [0xEBB4, c, newlib/libc/stdio/wsetup]
+      - [0xECC8, c, newlib/libc/stdlib/dtoa]
+      - [0x10298, c, newlib/libc/stdio/fflush]
+      - [0x1038C, c, newlib/libc/stdio/findfp]
+      - [0x10604, c, newlib/libc/stdlib/mallocr/_free_r]
+      - [0x109CC, c, newlib/libc/stdio/fvwrite]
+      - [0x10DAC, c, newlib/libc/stdio/fwalk]
+      - [0x10EB4, c, newlib/libc/locale/locale]
+      - [0x10FAC, c, newlib/libc/stdio/makebuf]
+      - [0x11104, c, newlib/libc/string/memchr]
+      - [0x111EC, asm, asm/text_1116C]
+      - [0x11200, c, newlib/libc/sys/psp/memmove]
+      - [0x114E8, asm, asm/text_11468]
+      - [0x11500, c, newlib/libc/stdlib/mprec]
+      - [0x12410, c, newlib/libc/stdlib/mallocr/_realloc_r]
+      - [0x12980, c, newlib/libc/reent/reent]
+      - [0x12B9C, c, newlib/libm/math/s_isinf]
+      - [0x12BD8, c, newlib/libm/math/s_isnan]
+      - [0x12C04, c, newlib/libc/stdio/stdio]
+      - [0x12D84, c, newlib/libc/machine/mips/strcmp]
+      - [0x12DF8, c, newlib/libc/reent/writer]
+      - [0x12E60, c, newlib/libc/stdlib/mallocr/_calloc_r]
+      - [0x12F20, c, newlib/libc/reent/closer]
+      - [0x12F7C, c, newlib/libc/reent/fstatr]
+      - [0x12FE0, c, newlib/libc/reent/lseekr]
+      - [0x13048, c, newlib/libc/reent/readr]
+      - [0x130B0, c, libgcc/libgcc2/__udivdi3]
+      - [0x13624, c, libgcc/libgcc2/__umoddi3]
+      - [0x13BD0, c, libgcc/dp-bit/_fpadd_parts]
+      - [0x13FF4, c, libgcc/dp-bit/__muldf3]
+      - [0x1436C, c, libgcc/dp-bit/__divdf3]
+      - [0x14590, c, libgcc/dp-bit/__eqdf2]
+      - [0x14618, c, libgcc/dp-bit/__nedf2]
+      - [0x146A0, c, libgcc/dp-bit/__gtdf2]
+      - [0x14728, c, libgcc/dp-bit/__gedf2]
+      - [0x147B0, c, libgcc/dp-bit/__ltdf2]
+      - [0x14838, c, libgcc/dp-bit/__floatsidf]
+      - [0x14914, c, libgcc/dp-bit/__fixdfsi]
+      - [0x149E8, c, libgcc/dp-bit/__negdf2]
+      - [0x14A2C, c, libgcc/dp-bit/__fpcmp_parts_d]
+      - [0x14B90, asm, asm/text_14B10]
+      - { start: 0x14BE8, type: asm, name: fini, linker_section: .fini }
+      - { start: 0x14C04, type: asm, name: sceStub, linker_section: .sceStub.text }
+      - { start: 0x14E6C, type: prxpad, order: .text }
+      - { start: 0x14E70, type: rodata, name: lib_ent_top, linker_section: .lib.ent.top }
+      - { start: 0x14E74, type: rodata, name: lib_ent, linker_section: .lib.ent }
+      - { start: 0x14E84, type: rodata, name: lib_ent_btm, linker_section: .lib.ent.btm }
+      - { start: 0x14E88, type: rodata, name: lib_stub_top, linker_section: .lib.stub.top }
+      - { start: 0x14E8C, type: rodata, name: lib_stub, linker_section: .lib.stub }
+      - { start: 0x14F90, type: rodata, name: lib_stub_btm, linker_section: .lib.stub.btm }
+      - { start: 0x14F94, type: rodata, name: module_info, linker_section: .rodata.sceModuleInfo }
+      - { start: 0x14FC8, type: rodata, name: resident, linker_section: .rodata.sceResident }
+      - { start: 0x150D8, type: rodata, name: nid, linker_section: .rodata.sceNid }
+      - { start: 0x1520C, type: rodata, name: ctors, linker_section: .ctors }
+      - { start: 0x15214, type: rodata, name: dtors, linker_section: .dtors }
+      - { start: 0x1521C, type: rodata, name: jcr, linker_section: .jcr }
+      - { start: 0x15220, type: rodata, name: eh_frame, linker_section: .eh_frame }
+      - { start: 0x15284, type: prxpad, order: .rodata }
+      - [0x15290, rodata, rodata]
+  - [0x20E90, bin, seg1_align]
+  - name: sound_stringsound_seg1
+    type: code
+    start: 0x20EC0
+    vram: 0x20E10
+    bss_size: 0x42FDB0
+    subsegments:
+      - [0x20EC0, data, data]
+      - { start: 0x2183C, type: bss, vram: 0x217C0 }
+  - [0x2183C, bin, elf_trailer]
+  - [0xE5D50]
