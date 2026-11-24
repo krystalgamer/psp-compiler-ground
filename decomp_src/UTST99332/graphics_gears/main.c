@@ -15,3 +15,5 @@ INCLUDE_ASM("tmp/asm/UTST99332/graphics_gears/nonmatchings/main", pad_read);
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_gears/nonmatchings/main", frame_update);
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_gears/nonmatchings/main", main);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/graphics_gears/nonmatchings/main", D_00012020);

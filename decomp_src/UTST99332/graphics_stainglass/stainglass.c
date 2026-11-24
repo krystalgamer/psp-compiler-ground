@@ -9,6 +9,10 @@ INCLUDE_ASM("tmp/asm/UTST99332/graphics_stainglass/nonmatchings/stainglass", Mat
 void MatrixMatrixMultiply(void) {
 }
 
+INCLUDE_RODATA("tmp/asm/UTST99332/graphics_stainglass/nonmatchings/stainglass", _nx);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/graphics_stainglass/nonmatchings/stainglass", _ny);
+
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_stainglass/nonmatchings/stainglass", GenFrameBufferMipmap);
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_stainglass/nonmatchings/stainglass", UseFrameBufferMipmap);

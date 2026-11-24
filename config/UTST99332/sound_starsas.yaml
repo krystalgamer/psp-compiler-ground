@@ -136,7 +136,18 @@ segments:
       - { start: 0x11AC0, type: rodata, name: dtors, linker_section: .dtors }
       - { start: 0x11AC8, type: rodata, name: jcr, linker_section: .jcr }
       - { start: 0x11ACC, type: rodata, name: eh_frame, linker_section: .eh_frame }
-      - [0x11B30, rodata, rodata]
+      - [0x11B30, .rodata, crt0]
+      - [0x11B40, .rodata, main]
+      - [0x11C54, .rodata, sasload]
+      - [0x11D2C, .rodata, menu]
+      - [0x11D84, rodata, asm/rodata_11D04]
+      - [0x1261C, .rodata, newlib/libc/stdio/puts]
+      - [0x12620, .rodata, newlib/libc/stdio/vfprintf]
+      - [0x12800, .rodata, newlib/libc/stdlib/wctomb_r]
+      - [0x12820, .rodata, newlib/libc/stdlib/dtoa]
+      - [0x128A4, .rodata, newlib/libc/locale/locale]
+      - [0x128E8, .rodata, newlib/libc/stdlib/mprec]
+      - [0x12A20, .rodata, libgcc/dp-bit/__floatsidf]
   - name: sound_starsas_seg1
     type: code
     start: 0x12B40

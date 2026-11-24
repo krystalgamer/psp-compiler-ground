@@ -148,7 +148,26 @@ segments:
       - { start: 0x10CAC, type: rodata, name: jcr, linker_section: .jcr }
       - { start: 0x10CB0, type: rodata, name: eh_frame, linker_section: .eh_frame }
       - { start: 0x10D14, type: prxpad, order: .rodata }
-      - [0x10D18, rodata, rodata]
+      - [0x10D18, .rodata, crt0]
+      - [0x10D28, .rodata, main]
+      - [0x114C0, .rodata, playInfo]
+      - [0x116AC, .rodata, display]
+      - [0x116FC, .rodata, fileread]
+      - [0x11744, .rodata, decode]
+      - [0x11B00, .rodata, sound]
+      - [0x11B54, .rodata, avsync]
+      - [0x11B58, .rodata, control]
+      - [0x11B68, .rodata, parsePsmf]
+      - [0x11C74, .rodata, strfile]
+      - [0x11CF8, .rodata, menu]
+      - [0x11D50, rodata, asm/rodata_11CD0]
+      - [0x11D78, .rodata, newlib/libc/stdio/puts]
+      - [0x11D7C, .rodata, newlib/libc/stdio/vfprintf]
+      - [0x11F5C, .rodata, newlib/libc/stdlib/wctomb_r]
+      - [0x11F80, .rodata, newlib/libc/stdlib/dtoa]
+      - [0x12004, .rodata, newlib/libc/locale/locale]
+      - [0x12048, .rodata, newlib/libc/stdlib/mprec]
+      - [0x12180, .rodata, libgcc/dp-bit/__floatsidf]
   - name: mpeg_stream_change_seg1
     type: code
     start: 0x122A0

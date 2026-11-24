@@ -6,6 +6,10 @@ INCLUDE_ASM("tmp/asm/UTST99332/graphics_texcomp/nonmatchings/newlib/libc/stdio/v
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_texcomp/nonmatchings/newlib/libc/stdio/vfprintf", vfprintf);
 
+INCLUDE_RODATA("tmp/asm/UTST99332/graphics_texcomp/nonmatchings/newlib/libc/stdio/vfprintf", D_0000F5B0);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/graphics_texcomp/nonmatchings/newlib/libc/stdio/vfprintf", D_0000F5C0);
+
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_texcomp/nonmatchings/newlib/libc/stdio/vfprintf", _vfprintf_r);
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_texcomp/nonmatchings/newlib/libc/stdio/vfprintf", cvt);

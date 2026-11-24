@@ -33,3 +33,23 @@ INCLUDE_ASM("tmp/asm/UTST99332/sound_starsas/nonmatchings/newlib/libc/stdlib/mpr
 INCLUDE_ASM("tmp/asm/UTST99332/sound_starsas/nonmatchings/newlib/libc/stdlib/mprec", _ratio);
 
 INCLUDE_ASM("tmp/asm/UTST99332/sound_starsas/nonmatchings/newlib/libc/stdlib/mprec", _mprec_log10);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/sound_starsas/nonmatchings/newlib/libc/stdlib/mprec", D_00012868);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/sound_starsas/nonmatchings/newlib/libc/stdlib/mprec", __mprec_tens);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/sound_starsas/nonmatchings/newlib/libc/stdlib/mprec", __mprec_bigtens);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/sound_starsas/nonmatchings/newlib/libc/stdlib/mprec", D_00012960);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/sound_starsas/nonmatchings/newlib/libc/stdlib/mprec", D_00012964);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/sound_starsas/nonmatchings/newlib/libc/stdlib/mprec", __mprec_tinytens);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/sound_starsas/nonmatchings/newlib/libc/stdlib/mprec", D_00012990);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/sound_starsas/nonmatchings/newlib/libc/stdlib/mprec", D_00012994);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/sound_starsas/nonmatchings/newlib/libc/stdlib/mprec", D_00012998);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/sound_starsas/nonmatchings/newlib/libc/stdlib/mprec", D_0001299C);

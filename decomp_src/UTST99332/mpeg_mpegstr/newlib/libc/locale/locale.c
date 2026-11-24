@@ -1,5 +1,11 @@
 #include "common.h"
 
+INCLUDE_RODATA("tmp/asm/UTST99332/mpeg_mpegstr/nonmatchings/newlib/libc/locale/locale", D_00010174);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/mpeg_mpegstr/nonmatchings/newlib/libc/locale/locale", lconv);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/mpeg_mpegstr/nonmatchings/newlib/libc/locale/locale", D_000101A8);
+
 INCLUDE_ASM("tmp/asm/UTST99332/mpeg_mpegstr/nonmatchings/newlib/libc/locale/locale", _setlocale_r);
 
 INCLUDE_ASM("tmp/asm/UTST99332/mpeg_mpegstr/nonmatchings/newlib/libc/locale/locale", __locale_charset);

@@ -1,5 +1,9 @@
 #include "common.h"
 
+INCLUDE_RODATA("tmp/asm/UTST99332/graphics_model/nonmatchings/gmo_model", D_0001D714);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/graphics_model/nonmatchings/gmo_model", D_0001D724);
+
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_model/nonmatchings/gmo_model", sceGmoModelCreate);
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_model/nonmatchings/gmo_model", sceGmoModelDelete);

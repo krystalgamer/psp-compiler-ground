@@ -33,3 +33,23 @@ INCLUDE_ASM("tmp/asm/UTST99332/graphics_moonball/nonmatchings/newlib/libc/stdlib
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_moonball/nonmatchings/newlib/libc/stdlib/mprec", _ratio);
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_moonball/nonmatchings/newlib/libc/stdlib/mprec", _mprec_log10);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/graphics_moonball/nonmatchings/newlib/libc/stdlib/mprec", D_00015208);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/graphics_moonball/nonmatchings/newlib/libc/stdlib/mprec", __mprec_tens);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/graphics_moonball/nonmatchings/newlib/libc/stdlib/mprec", __mprec_bigtens);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/graphics_moonball/nonmatchings/newlib/libc/stdlib/mprec", D_00015300);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/graphics_moonball/nonmatchings/newlib/libc/stdlib/mprec", D_00015304);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/graphics_moonball/nonmatchings/newlib/libc/stdlib/mprec", __mprec_tinytens);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/graphics_moonball/nonmatchings/newlib/libc/stdlib/mprec", D_00015330);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/graphics_moonball/nonmatchings/newlib/libc/stdlib/mprec", D_00015334);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/graphics_moonball/nonmatchings/newlib/libc/stdlib/mprec", D_00015338);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/graphics_moonball/nonmatchings/newlib/libc/stdlib/mprec", D_0001533C);

@@ -18,6 +18,24 @@ INCLUDE_ASM("tmp/asm/UTST99332/mpeg_mpegstr_pcm/nonmatchings/main", checkPlayerE
 
 INCLUDE_ASM("tmp/asm/UTST99332/mpeg_mpegstr_pcm/nonmatchings/main", setPlayerEndCondition);
 
+INCLUDE_RODATA("tmp/asm/UTST99332/mpeg_mpegstr_pcm/nonmatchings/main", D_0000F9A8);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/mpeg_mpegstr_pcm/nonmatchings/main", D_0000F9C8);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/mpeg_mpegstr_pcm/nonmatchings/main", D_0000F9F8);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/mpeg_mpegstr_pcm/nonmatchings/main", D_0000FA18);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/mpeg_mpegstr_pcm/nonmatchings/main", D_0000FA44);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/mpeg_mpegstr_pcm/nonmatchings/main", D_0000FA68);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/mpeg_mpegstr_pcm/nonmatchings/main", D_0000FA8C);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/mpeg_mpegstr_pcm/nonmatchings/main", D_0000FAB8);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/mpeg_mpegstr_pcm/nonmatchings/main", D_0000FAD8);
+
 INCLUDE_ASM("tmp/asm/UTST99332/mpeg_mpegstr_pcm/nonmatchings/main", playMovie);
 
 INCLUDE_ASM("tmp/asm/UTST99332/mpeg_mpegstr_pcm/nonmatchings/main", readHeader);

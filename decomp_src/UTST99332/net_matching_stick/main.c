@@ -2,11 +2,19 @@
 
 INCLUDE_ASM("tmp/asm/UTST99332/net_matching_stick/nonmatchings/main", gu_init_3E8);
 
+INCLUDE_RODATA("tmp/asm/UTST99332/net_matching_stick/nonmatchings/main", D_00018708);
+
 INCLUDE_ASM("tmp/asm/UTST99332/net_matching_stick/nonmatchings/main", draw_top);
 
 INCLUDE_ASM("tmp/asm/UTST99332/net_matching_stick/nonmatchings/main", draw_scan_result);
 
+INCLUDE_RODATA("tmp/asm/UTST99332/net_matching_stick/nonmatchings/main", D_00018768);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/net_matching_stick/nonmatchings/main", D_00018784);
+
 INCLUDE_ASM("tmp/asm/UTST99332/net_matching_stick/nonmatchings/main", draw_room_list);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/net_matching_stick/nonmatchings/main", D_00018834);
 
 INCLUDE_ASM("tmp/asm/UTST99332/net_matching_stick/nonmatchings/main", draw_parent_wait);
 
@@ -19,6 +27,8 @@ INCLUDE_ASM("tmp/asm/UTST99332/net_matching_stick/nonmatchings/main", draw_scann
 INCLUDE_ASM("tmp/asm/UTST99332/net_matching_stick/nonmatchings/main", draw_requesting);
 
 INCLUDE_ASM("tmp/asm/UTST99332/net_matching_stick/nonmatchings/main", draw_canceled);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/net_matching_stick/nonmatchings/main", D_00018914);
 
 INCLUDE_ASM("tmp/asm/UTST99332/net_matching_stick/nonmatchings/main", draw_denied);
 

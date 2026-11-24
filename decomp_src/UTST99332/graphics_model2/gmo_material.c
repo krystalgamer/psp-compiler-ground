@@ -48,6 +48,28 @@ INCLUDE_ASM("tmp/asm/UTST99332/graphics_model2/nonmatchings/gmo_material", sceGm
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_model2/nonmatchings/gmo_material", sceGmoLayerGetTexCrop);
 
+INCLUDE_RODATA("tmp/asm/UTST99332/graphics_model2/nonmatchings/gmo_material", D_0001EAD8);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/graphics_model2/nonmatchings/gmo_material", D_0001EADC);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/graphics_model2/nonmatchings/gmo_material", D_0001EAE0);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/graphics_model2/nonmatchings/gmo_material", D_0001EAE4);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/graphics_model2/nonmatchings/gmo_material", D_0001EAE8);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/graphics_model2/nonmatchings/gmo_material", D_0001EAEC);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/graphics_model2/nonmatchings/gmo_material", D_0001EAF0);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/graphics_model2/nonmatchings/gmo_material", D_0001EB0C);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/graphics_model2/nonmatchings/gmo_material", D_0001EB30);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/graphics_model2/nonmatchings/gmo_material", D_0001EB40);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/graphics_model2/nonmatchings/gmo_material", D_0001EB9C);
+
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_model2/nonmatchings/gmo_material", reconfigure_layer);
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_model2/nonmatchings/gmo_material", vec4_col32);

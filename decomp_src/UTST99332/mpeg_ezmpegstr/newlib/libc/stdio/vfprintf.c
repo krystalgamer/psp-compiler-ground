@@ -6,6 +6,10 @@ INCLUDE_ASM("tmp/asm/UTST99332/mpeg_ezmpegstr/nonmatchings/newlib/libc/stdio/vfp
 
 INCLUDE_ASM("tmp/asm/UTST99332/mpeg_ezmpegstr/nonmatchings/newlib/libc/stdio/vfprintf", vfprintf);
 
+INCLUDE_RODATA("tmp/asm/UTST99332/mpeg_ezmpegstr/nonmatchings/newlib/libc/stdio/vfprintf", D_0000F5FC);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/mpeg_ezmpegstr/nonmatchings/newlib/libc/stdio/vfprintf", D_0000F60C);
+
 INCLUDE_ASM("tmp/asm/UTST99332/mpeg_ezmpegstr/nonmatchings/newlib/libc/stdio/vfprintf", _vfprintf_r);
 
 INCLUDE_ASM("tmp/asm/UTST99332/mpeg_ezmpegstr/nonmatchings/newlib/libc/stdio/vfprintf", cvt);

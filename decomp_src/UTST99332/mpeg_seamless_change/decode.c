@@ -36,6 +36,8 @@ INCLUDE_ASM("tmp/asm/UTST99332/mpeg_seamless_change/nonmatchings/decode", decode
 
 INCLUDE_ASM("tmp/asm/UTST99332/mpeg_seamless_change/nonmatchings/decode", decode_reservedVideoDecode);
 
+INCLUDE_RODATA("tmp/asm/UTST99332/mpeg_seamless_change/nonmatchings/decode", D_00011C18);
+
 INCLUDE_ASM("tmp/asm/UTST99332/mpeg_seamless_change/nonmatchings/decode", decode_videoDecodeEnd);
 
 INCLUDE_ASM("tmp/asm/UTST99332/mpeg_seamless_change/nonmatchings/decode", decode_flushDecoder);

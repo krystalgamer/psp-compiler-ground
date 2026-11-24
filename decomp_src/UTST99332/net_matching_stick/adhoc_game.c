@@ -16,6 +16,26 @@ INCLUDE_ASM("tmp/asm/UTST99332/net_matching_stick/nonmatchings/adhoc_game", game
 
 INCLUDE_ASM("tmp/asm/UTST99332/net_matching_stick/nonmatchings/adhoc_game", game_pad_read);
 
+INCLUDE_RODATA("tmp/asm/UTST99332/net_matching_stick/nonmatchings/adhoc_game", D_00019478);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/net_matching_stick/nonmatchings/adhoc_game", D_0001947C);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/net_matching_stick/nonmatchings/adhoc_game", D_00019480);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/net_matching_stick/nonmatchings/adhoc_game", D_000194A4);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/net_matching_stick/nonmatchings/adhoc_game", D_000194D4);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/net_matching_stick/nonmatchings/adhoc_game", D_00019500);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/net_matching_stick/nonmatchings/adhoc_game", D_00019510);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/net_matching_stick/nonmatchings/adhoc_game", D_00019520);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/net_matching_stick/nonmatchings/adhoc_game", D_00019530);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/net_matching_stick/nonmatchings/adhoc_game", D_0001955C);
+
 INCLUDE_ASM("tmp/asm/UTST99332/net_matching_stick/nonmatchings/adhoc_game", game_net_init);
 
 INCLUDE_ASM("tmp/asm/UTST99332/net_matching_stick/nonmatchings/adhoc_game", game_net_term);

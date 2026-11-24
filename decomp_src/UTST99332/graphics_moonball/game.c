@@ -29,3 +29,5 @@ INCLUDE_ASM("tmp/asm/UTST99332/graphics_moonball/nonmatchings/game", DrawGame);
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_moonball/nonmatchings/game", CheckShoot);
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_moonball/nonmatchings/game", KeyGame);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/graphics_moonball/nonmatchings/game", D_000140D4);

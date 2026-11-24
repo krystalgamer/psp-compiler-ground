@@ -151,7 +151,27 @@ segments:
       - { start: 0x161F4, type: rodata, name: jcr, linker_section: .jcr }
       - { start: 0x161F8, type: rodata, name: eh_frame, linker_section: .eh_frame }
       - { start: 0x1625C, type: prxpad, order: .rodata }
-      - [0x16260, rodata, rodata]
+      - [0x16260, .rodata, crt0]
+      - [0x16270, .rodata, system]
+      - [0x162DC, .rodata, movie]
+      - [0x16850, .rodata, display]
+      - [0x1689C, .rodata, fileread]
+      - [0x168D4, .rodata, sound]
+      - [0x168F8, .rodata, strfile]
+      - [0x169B4, .rodata, bgm]
+      - [0x16AD8, .rodata, vag]
+      - [0x16B04, .rodata, at3plus]
+      - [0x16CC4, rodata, asm/rodata_16C44]
+      - [0x1754C, .rodata, libpsmf]
+      - [0x1756C, .rodata, libmpeg_util]
+      - [0x175F8, rodata, asm/rodata_17578]
+      - [0x17604, .rodata, newlib/libc/stdio/puts]
+      - [0x17608, .rodata, newlib/libc/stdio/vfprintf]
+      - [0x177E8, .rodata, newlib/libc/stdlib/wctomb_r]
+      - [0x17808, .rodata, newlib/libc/stdlib/dtoa]
+      - [0x1788C, .rodata, newlib/libc/locale/locale]
+      - [0x178D0, .rodata, newlib/libc/stdlib/mprec]
+      - [0x17A08, .rodata, libgcc/dp-bit/__floatsidf]
   - [0x17B28, bin, seg1_align]
   - name: sampler_seg1
     type: code

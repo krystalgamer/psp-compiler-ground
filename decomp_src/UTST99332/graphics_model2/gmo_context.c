@@ -29,3 +29,5 @@ INCLUDE_ASM("tmp/asm/UTST99332/graphics_model2/nonmatchings/gmo_context", sceGmo
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_model2/nonmatchings/gmo_context", activate_enable_bits);
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_model2/nonmatchings/gmo_context", activate_tex_crop);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/graphics_model2/nonmatchings/gmo_context", __psp_libinfo___1EC14);

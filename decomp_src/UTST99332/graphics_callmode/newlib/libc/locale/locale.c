@@ -1,5 +1,11 @@
 #include "common.h"
 
+INCLUDE_RODATA("tmp/asm/UTST99332/graphics_callmode/nonmatchings/newlib/libc/locale/locale", D_0000F3F4);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/graphics_callmode/nonmatchings/newlib/libc/locale/locale", lconv);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/graphics_callmode/nonmatchings/newlib/libc/locale/locale", D_0000F428);
+
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_callmode/nonmatchings/newlib/libc/locale/locale", _setlocale_r);
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_callmode/nonmatchings/newlib/libc/locale/locale", __locale_charset);

@@ -136,7 +136,18 @@ segments:
       - { start: 0x17234, type: rodata, name: jcr, linker_section: .jcr }
       - { start: 0x17238, type: rodata, name: eh_frame, linker_section: .eh_frame }
       - { start: 0x1729C, type: prxpad, order: .rodata }
-      - [0x172A0, rodata, rodata]
+      - [0x172A0, .rodata, crt0]
+      - [0x172B0, .rodata, main]
+      - [0x17564, .rodata, sasload]
+      - [0x1763C, .rodata, menu]
+      - [0x17694, rodata, asm/rodata_17614]
+      - [0x17F9C, .rodata, newlib/libc/stdio/puts]
+      - [0x17FA0, .rodata, newlib/libc/stdio/vfprintf]
+      - [0x18180, .rodata, newlib/libc/stdlib/wctomb_r]
+      - [0x181A0, .rodata, newlib/libc/stdlib/dtoa]
+      - [0x18224, .rodata, newlib/libc/locale/locale]
+      - [0x18268, .rodata, newlib/libc/stdlib/mprec]
+      - [0x183A0, .rodata, libgcc/dp-bit/__floatsidf]
   - name: sound_playsmf_seg1
     type: code
     start: 0x184C0

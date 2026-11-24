@@ -1,5 +1,9 @@
 #include "common.h"
 
+INCLUDE_RODATA("tmp/asm/UTST99332/graphics_model/nonmatchings/gmo_bone", D_0001D778);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/graphics_model/nonmatchings/gmo_bone", D_0001D784);
+
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_model/nonmatchings/gmo_bone", sceGmoBoneCreate);
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_model/nonmatchings/gmo_bone", sceGmoBoneDelete);
@@ -49,6 +53,8 @@ INCLUDE_ASM("tmp/asm/UTST99332/graphics_model/nonmatchings/gmo_bone", vec3_div);
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_model/nonmatchings/gmo_bone", vec4_scale);
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_model/nonmatchings/gmo_bone", float_lerp_45C4);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/graphics_model/nonmatchings/gmo_bone", D_0001DA20);
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_model/nonmatchings/gmo_bone", mat4_from_quat);
 

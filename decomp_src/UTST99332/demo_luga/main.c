@@ -19,3 +19,5 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/main", pre);
 INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/main", post);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/main", drawinit);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/demo_luga/nonmatchings/main", D_00020D00);

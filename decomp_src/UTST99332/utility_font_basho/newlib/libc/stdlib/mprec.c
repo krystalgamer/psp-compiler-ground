@@ -33,3 +33,23 @@ INCLUDE_ASM("tmp/asm/UTST99332/utility_font_basho/nonmatchings/newlib/libc/stdli
 INCLUDE_ASM("tmp/asm/UTST99332/utility_font_basho/nonmatchings/newlib/libc/stdlib/mprec", _ratio);
 
 INCLUDE_ASM("tmp/asm/UTST99332/utility_font_basho/nonmatchings/newlib/libc/stdlib/mprec", _mprec_log10);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/utility_font_basho/nonmatchings/newlib/libc/stdlib/mprec", D_00014578);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/utility_font_basho/nonmatchings/newlib/libc/stdlib/mprec", __mprec_tens);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/utility_font_basho/nonmatchings/newlib/libc/stdlib/mprec", __mprec_bigtens);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/utility_font_basho/nonmatchings/newlib/libc/stdlib/mprec", D_00014670);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/utility_font_basho/nonmatchings/newlib/libc/stdlib/mprec", D_00014674);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/utility_font_basho/nonmatchings/newlib/libc/stdlib/mprec", __mprec_tinytens);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/utility_font_basho/nonmatchings/newlib/libc/stdlib/mprec", D_000146A0);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/utility_font_basho/nonmatchings/newlib/libc/stdlib/mprec", D_000146A4);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/utility_font_basho/nonmatchings/newlib/libc/stdlib/mprec", D_000146A8);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/utility_font_basho/nonmatchings/newlib/libc/stdlib/mprec", D_000146AC);

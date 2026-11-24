@@ -134,7 +134,17 @@ segments:
       - { start: 0x10F00, type: rodata, name: dtors, linker_section: .dtors }
       - { start: 0x10F08, type: rodata, name: jcr, linker_section: .jcr }
       - { start: 0x10F0C, type: rodata, name: eh_frame, linker_section: .eh_frame }
-      - [0x10F70, rodata, rodata]
+      - [0x10F70, .rodata, crt0]
+      - [0x11100, .rodata, main]
+      - [0x11194, .rodata, menu]
+      - [0x111EC, rodata, asm/rodata_1116C]
+      - [0x11A84, .rodata, newlib/libc/stdio/puts]
+      - [0x11A88, .rodata, newlib/libc/stdio/vfprintf]
+      - [0x11C68, .rodata, newlib/libc/stdlib/wctomb_r]
+      - [0x11C88, .rodata, newlib/libc/stdlib/dtoa]
+      - [0x11D0C, .rodata, newlib/libc/locale/locale]
+      - [0x11D50, .rodata, newlib/libc/stdlib/mprec]
+      - [0x11E88, .rodata, libgcc/dp-bit/__floatsidf]
   - [0x11FA8, bin, seg1_align]
   - name: sound_starsound_seg1
     type: code

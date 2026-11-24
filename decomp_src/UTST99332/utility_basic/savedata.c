@@ -28,3 +28,15 @@ INCLUDE_ASM("tmp/asm/UTST99332/utility_basic/nonmatchings/savedata", set_snd0);
 INCLUDE_ASM("tmp/asm/UTST99332/utility_basic/nonmatchings/savedata", set_newdata_item);
 
 INCLUDE_ASM("tmp/asm/UTST99332/utility_basic/nonmatchings/savedata", set_param_sizes);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/utility_basic/nonmatchings/savedata", D_00016714);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/utility_basic/nonmatchings/savedata", D_00016720);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/utility_basic/nonmatchings/savedata", D_00016728);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/utility_basic/nonmatchings/savedata", D_0001672C);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/utility_basic/nonmatchings/savedata", D_00016738);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/utility_basic/nonmatchings/savedata", D_00016754);

@@ -158,7 +158,28 @@ segments:
       - { start: 0x13650, type: rodata, name: dtors, linker_section: .dtors }
       - { start: 0x13658, type: rodata, name: jcr, linker_section: .jcr }
       - { start: 0x1365C, type: rodata, name: eh_frame, linker_section: .eh_frame }
-      - [0x136C0, rodata, rodata]
+      - [0x136C0, .rodata, crt0]
+      - [0x136D0, .rodata, main]
+      - [0x13740, .rodata, menu]
+      - [0x13798, rodata, asm/rodata_13718]
+      - [0x14040, .rodata, newlib/libm/math/wf_pow]
+      - [0x14070, .rodata, newlib/libm/math/wf_sqrt]
+      - [0x14080, .rodata, newlib/libm/math/ef_pow]
+      - [0x14180, .rodata, newlib/libm/math/ef_rem_pio2]
+      - [0x1456C, .rodata, newlib/libm/math/ef_sqrt]
+      - [0x1458C, .rodata, newlib/libm/math/kf_cos]
+      - [0x145B0, .rodata, newlib/libm/math/kf_rem_pio2]
+      - [0x1462C, .rodata, newlib/libm/math/kf_sin]
+      - [0x14658, .rodata, newlib/libm/common/s_rint]
+      - [0x1466C, .rodata, newlib/libm/math/sf_floor]
+      - [0x14680, .rodata, newlib/libm/common/sf_scalbn]
+      - [0x146A8, rodata, asm/rodata_14628]
+      - [0x146B8, .rodata, newlib/libc/stdio/vfprintf]
+      - [0x14898, .rodata, newlib/libc/stdlib/wctomb_r]
+      - [0x148B8, .rodata, newlib/libc/stdlib/dtoa]
+      - [0x1493C, .rodata, newlib/libc/locale/locale]
+      - [0x14980, .rodata, newlib/libc/stdlib/mprec]
+      - [0x14AB8, .rodata, libgcc/dp-bit/__floatsidf]
   - name: demo_mars_seg1
     type: code
     start: 0x14BC0

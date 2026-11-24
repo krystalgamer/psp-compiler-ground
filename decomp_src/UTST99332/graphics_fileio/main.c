@@ -4,6 +4,8 @@ INCLUDE_ASM("tmp/asm/UTST99332/graphics_fileio/nonmatchings/main", file_read);
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_fileio/nonmatchings/main", file_seek);
 
+INCLUDE_RODATA("tmp/asm/UTST99332/graphics_fileio/nonmatchings/main", D_0000EA90);
+
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_fileio/nonmatchings/main", file_write);
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_fileio/nonmatchings/main", draw_frame);

@@ -8,6 +8,8 @@ INCLUDE_ASM("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/utility", util
 
 INCLUDE_ASM("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/utility", utility_check_connect_completed);
 
+INCLUDE_RODATA("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/utility", D_0001A270);
+
 INCLUDE_ASM("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/utility", utility_msgdialog);
 
 INCLUDE_ASM("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/utility", utility_update_msgdialog);

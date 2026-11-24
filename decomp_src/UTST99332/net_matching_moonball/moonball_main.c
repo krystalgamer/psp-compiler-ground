@@ -1,5 +1,13 @@
 #include "common.h"
 
+INCLUDE_RODATA("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/moonball_main", D_0001A020);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/moonball_main", D_0001A060);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/moonball_main", D_0001A074);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/moonball_main", D_0001A084);
+
 INCLUDE_ASM("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/moonball_main", InitFunc);
 
 INCLUDE_ASM("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/moonball_main", SpriteScale);

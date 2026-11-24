@@ -33,3 +33,23 @@ INCLUDE_ASM("tmp/asm/UTST99332/mpeg_ezmpegstr/nonmatchings/newlib/libc/stdlib/mp
 INCLUDE_ASM("tmp/asm/UTST99332/mpeg_ezmpegstr/nonmatchings/newlib/libc/stdlib/mprec", _ratio);
 
 INCLUDE_ASM("tmp/asm/UTST99332/mpeg_ezmpegstr/nonmatchings/newlib/libc/stdlib/mprec", _mprec_log10);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/mpeg_ezmpegstr/nonmatchings/newlib/libc/stdlib/mprec", D_0000F8C8);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/mpeg_ezmpegstr/nonmatchings/newlib/libc/stdlib/mprec", __mprec_tens);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/mpeg_ezmpegstr/nonmatchings/newlib/libc/stdlib/mprec", __mprec_bigtens);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/mpeg_ezmpegstr/nonmatchings/newlib/libc/stdlib/mprec", D_0000F9C0);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/mpeg_ezmpegstr/nonmatchings/newlib/libc/stdlib/mprec", D_0000F9C4);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/mpeg_ezmpegstr/nonmatchings/newlib/libc/stdlib/mprec", __mprec_tinytens);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/mpeg_ezmpegstr/nonmatchings/newlib/libc/stdlib/mprec", D_0000F9F0);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/mpeg_ezmpegstr/nonmatchings/newlib/libc/stdlib/mprec", D_0000F9F4);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/mpeg_ezmpegstr/nonmatchings/newlib/libc/stdlib/mprec", D_0000F9F8);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/mpeg_ezmpegstr/nonmatchings/newlib/libc/stdlib/mprec", D_0000F9FC);

@@ -17,3 +17,7 @@ INCLUDE_ASM("tmp/asm/UTST99332/graphics_model2/nonmatchings/gmo_callback", sceGm
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_model2/nonmatchings/gmo_callback", sceGmoModelImportPicture);
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_model2/nonmatchings/gmo_callback", sceGmoModelExportPicture);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/graphics_model2/nonmatchings/gmo_callback", D_0001E75C);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/graphics_model2/nonmatchings/gmo_callback", __psp_libinfo___1E760);

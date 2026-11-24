@@ -33,3 +33,25 @@ INCLUDE_ASM("tmp/asm/UTST99332/graphics_depthblur/nonmatchings/newlib/libc/stdli
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_depthblur/nonmatchings/newlib/libc/stdlib/mprec", _ratio);
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_depthblur/nonmatchings/newlib/libc/stdlib/mprec", _mprec_log10);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/graphics_depthblur/nonmatchings/newlib/libc/stdlib/mprec", D_00018B00);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/graphics_depthblur/nonmatchings/newlib/libc/stdlib/mprec", __mprec_tens);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/graphics_depthblur/nonmatchings/newlib/libc/stdlib/mprec", __mprec_bigtens);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/graphics_depthblur/nonmatchings/newlib/libc/stdlib/mprec", D_00018BF8);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/graphics_depthblur/nonmatchings/newlib/libc/stdlib/mprec", D_00018BFC);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/graphics_depthblur/nonmatchings/newlib/libc/stdlib/mprec", __mprec_tinytens);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/graphics_depthblur/nonmatchings/newlib/libc/stdlib/mprec", D_00018C28);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/graphics_depthblur/nonmatchings/newlib/libc/stdlib/mprec", D_00018C2C);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/graphics_depthblur/nonmatchings/newlib/libc/stdlib/mprec", D_00018C30);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/graphics_depthblur/nonmatchings/newlib/libc/stdlib/mprec", D_00018C34);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/graphics_depthblur/nonmatchings/newlib/libc/stdlib/mprec", __clz_tab);

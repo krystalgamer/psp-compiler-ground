@@ -18,11 +18,17 @@ INCLUDE_ASM("tmp/asm/UTST99332/utility_font_basho/nonmatchings/basho", increment
 
 INCLUDE_ASM("tmp/asm/UTST99332/utility_font_basho/nonmatchings/basho", increment_basho_rot);
 
+INCLUDE_RODATA("tmp/asm/UTST99332/utility_font_basho/nonmatchings/basho", D_00013258);
+
 INCLUDE_ASM("tmp/asm/UTST99332/utility_font_basho/nonmatchings/basho", myInitFontLibrary);
 
 INCLUDE_ASM("tmp/asm/UTST99332/utility_font_basho/nonmatchings/basho", myGetNumFontList);
 
 INCLUDE_ASM("tmp/asm/UTST99332/utility_font_basho/nonmatchings/basho", myGetFontStyleInfoList);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/utility_font_basho/nonmatchings/basho", D_000132F4);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/utility_font_basho/nonmatchings/basho", D_00013338);
 
 INCLUDE_ASM("tmp/asm/UTST99332/utility_font_basho/nonmatchings/basho", myMakeTextTexture);
 

@@ -162,7 +162,31 @@ segments:
       - { start: 0x1521C, type: rodata, name: jcr, linker_section: .jcr }
       - { start: 0x15220, type: rodata, name: eh_frame, linker_section: .eh_frame }
       - { start: 0x15284, type: prxpad, order: .rodata }
-      - [0x15290, rodata, rodata]
+      - [0x15290, .rodata, crt0]
+      - [0x152A0, .rodata, main]
+      - [0x15440, .rodata, draw]
+      - [0x1F690, .rodata, string]
+      - [0x1F6BC, .rodata, at3plus]
+      - [0x1FA9C, .rodata, at3loadmodule]
+      - [0x1FB44, .rodata, menu]
+      - [0x1FB9C, rodata, asm/rodata_1FB1C]
+      - [0x20440, .rodata, newlib/libm/math/wf_sqrt]
+      - [0x20450, .rodata, newlib/libm/math/ef_rem_pio2]
+      - [0x2083C, .rodata, newlib/libm/math/ef_sqrt]
+      - [0x2085C, .rodata, newlib/libm/math/kf_cos]
+      - [0x20880, .rodata, newlib/libm/math/kf_rem_pio2]
+      - [0x208FC, .rodata, newlib/libm/math/kf_sin]
+      - [0x20920, .rodata, newlib/libm/math/sf_floor]
+      - [0x20934, .rodata, newlib/libm/common/sf_scalbn]
+      - [0x20944, rodata, asm/rodata_208C4]
+      - [0x2095C, rodata, asm/rodata_208DC]
+      - [0x2096C, .rodata, newlib/libc/stdio/puts]
+      - [0x20970, .rodata, newlib/libc/stdio/vfprintf]
+      - [0x20B50, .rodata, newlib/libc/stdlib/wctomb_r]
+      - [0x20B70, .rodata, newlib/libc/stdlib/dtoa]
+      - [0x20BF4, .rodata, newlib/libc/locale/locale]
+      - [0x20C38, .rodata, newlib/libc/stdlib/mprec]
+      - [0x20D70, .rodata, libgcc/dp-bit/__floatsidf]
   - [0x20E90, bin, seg1_align]
   - name: sound_stringsound_seg1
     type: code

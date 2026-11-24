@@ -146,6 +146,79 @@ def symbol_lines(elf, text_end):
     return out
 
 
+def sext16(x):
+    return x - 0x10000 if x & 0x8000 else x
+
+
+def rodata_owners(elf, data, segs, units, rodata):
+    """Split .rodata among the units by the code that references it.
+
+    Returns [(addr, unit index or None)] boundaries, or None when the
+    references don't give each unit one contiguous range in link order.
+    """
+    starts = [u[0] for u in units]
+    import bisect
+
+    def unit_at(a):
+        i = bisect.bisect_right(starts, a) - 1
+        return i if i >= 0 else None
+
+    word = lambda off: struct.unpack_from("<I", data, off)[0]
+    refs = collections.defaultdict(set)   # rodata addr -> units
+    for d in prxinfo.reloc_tables(elf):
+        ents = [struct.unpack_from("<II", d, i) for i in range(0, len(d), 8)]
+        hi = {}
+        for i, (ofs, info) in enumerate(ents):
+            typ, ob, ab = info & 0xFF, (info >> 8) & 0xFF, (info >> 16) & 0xFF
+            if ob >= len(segs) or ab >= len(segs):
+                continue
+            loc = segs[ob]["p_vaddr"] + ofs
+            insn = word(segs[ob]["p_offset"] + ofs)
+            if typ == 5:
+                hi[ab] = insn & 0xFFFF
+                continue
+            if typ == 6:
+                target = (hi.get(ab, 0) << 16) + sext16(insn & 0xFFFF) + segs[ab]["p_vaddr"]
+                src = unit_at(loc) if loc < units[-1][0] + 0x10000000 and loc < rodata.addr else None
+            elif typ == 2 and rodata.addr <= loc < rodata.addr + rodata.size:
+                # e.g. jump tables: owned by the unit of the code they point to
+                target, src = loc, unit_at(insn + segs[ab]["p_vaddr"]) if insn + segs[ab]["p_vaddr"] < rodata.addr else None
+            else:
+                continue
+            if src is not None and rodata.addr <= target < rodata.addr + rodata.size:
+                refs[target].add(src)
+    first = {}
+    last = {}
+    for a in sorted(refs):
+        if len(refs[a]) != 1:
+            continue
+        u = next(iter(refs[a]))
+        first.setdefault(u, a)
+        last[u] = a
+    order = sorted(first, key=lambda u: first[u])
+    import os
+    if os.environ.get("RODATA_DEBUG"):
+        for u in order:
+            print(f"  {units[u][2]:40} {first[u]:#x}-{last[u]:#x}", file=sys.stderr)
+    if order != sorted(order):
+        return None
+    # ranges may overlap: the linker merges equal constants and strings
+    # across objects; each unit starts at its first own reference
+    out = []
+    pos = rodata.addr
+    for u in order:
+        a = first[u] & ~3
+        if a > pos and not out:
+            out.append((pos, None))
+        out.append((max(a, pos), u))
+        pos = max(a, pos)
+    if not out:
+        return None
+    if out[0][0] != rodata.addr:
+        out.insert(0, (rodata.addr, None))
+    return out
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("target")
@@ -230,7 +303,15 @@ def main():
             out.append(f"      - {{ start: 0x{off:X}, type: {typ}, name: {nm}, linker_section: {s.name} }}\n")
             prev_kind = ".text" if typ == "asm" else ".rodata"
         elif s.name == ".rodata":
-            out.append(f"      - [0x{off:X}, rodata, rodata]\n")
+            owners = rodata_owners(elf, data, segs, units, s)
+            if owners is None:
+                out.append(f"      - [0x{off:X}, rodata, rodata]\n")
+            else:
+                for addr, ui in owners:
+                    if ui is not None and units[ui][1] == "c":
+                        out.append(f"      - [0x{addr - s.addr + off:X}, .rodata, {units[ui][2]}]\n")
+                    else:
+                        out.append(f"      - [0x{addr - s.addr + off:X}, rodata, asm/rodata_{addr:X}]\n")
             prev_kind = ".rodata"
         else:
             nm = s.name.strip(".").replace(".", "_")

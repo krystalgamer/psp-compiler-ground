@@ -157,7 +157,28 @@ segments:
       - { start: 0x13FE4, type: rodata, name: jcr, linker_section: .jcr }
       - { start: 0x13FE8, type: rodata, name: eh_frame, linker_section: .eh_frame }
       - { start: 0x1404C, type: prxpad, order: .rodata }
-      - [0x14050, rodata, rodata]
+      - [0x14050, .rodata, crt0]
+      - [0x14060, .rodata, main]
+      - [0x140CC, .rodata, game]
+      - [0x14174, .rodata, particle]
+      - [0x141A4, .rodata, pickup]
+      - [0x141AC, .rodata, menu]
+      - [0x14204, rodata, asm/rodata_14184]
+      - [0x14AA8, .rodata, newlib/libm/math/wf_sqrt]
+      - [0x14AB8, .rodata, newlib/libm/math/ef_rem_pio2]
+      - [0x14EA4, .rodata, newlib/libm/math/ef_sqrt]
+      - [0x14EC4, .rodata, newlib/libm/math/kf_cos]
+      - [0x14EE8, .rodata, newlib/libm/math/kf_rem_pio2]
+      - [0x14F64, .rodata, newlib/libm/math/kf_sin]
+      - [0x14F88, .rodata, newlib/libm/math/sf_floor]
+      - [0x14F9C, .rodata, newlib/libm/common/sf_scalbn]
+      - [0x14FAC, rodata, asm/rodata_14F2C]
+      - [0x14FBC, .rodata, newlib/libc/stdio/vfprintf]
+      - [0x1519C, .rodata, newlib/libc/stdlib/wctomb_r]
+      - [0x151C0, .rodata, newlib/libc/stdlib/dtoa]
+      - [0x15244, .rodata, newlib/libc/locale/locale]
+      - [0x15288, .rodata, newlib/libc/stdlib/mprec]
+      - [0x153C0, .rodata, libgcc/dp-bit/__floatsidf]
   - [0x154E0, bin, seg1_align]
   - name: graphics_moonball_seg1
     type: code

@@ -1,5 +1,7 @@
 #include "common.h"
 
+INCLUDE_RODATA("tmp/asm/UTST99332/graphics_balloon/nonmatchings/main", char_mode);
+
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_balloon/nonmatchings/main", draw_mode);
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_balloon/nonmatchings/main", draw_frame);

@@ -6,6 +6,10 @@ INCLUDE_ASM("tmp/asm/UTST99332/sound_starsas/nonmatchings/newlib/libc/stdio/vfpr
 
 INCLUDE_ASM("tmp/asm/UTST99332/sound_starsas/nonmatchings/newlib/libc/stdio/vfprintf", vfprintf);
 
+INCLUDE_RODATA("tmp/asm/UTST99332/sound_starsas/nonmatchings/newlib/libc/stdio/vfprintf", D_000125A0);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/sound_starsas/nonmatchings/newlib/libc/stdio/vfprintf", D_000125B0);
+
 INCLUDE_ASM("tmp/asm/UTST99332/sound_starsas/nonmatchings/newlib/libc/stdio/vfprintf", _vfprintf_r);
 
 INCLUDE_ASM("tmp/asm/UTST99332/sound_starsas/nonmatchings/newlib/libc/stdio/vfprintf", cvt);

@@ -9,3 +9,5 @@ INCLUDE_ASM("tmp/asm/UTST99332/graphics_picture2/nonmatchings/menu", menuInit);
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_picture2/nonmatchings/menu", menuTerm);
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_picture2/nonmatchings/menu", menuGetDevice);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/graphics_picture2/nonmatchings/menu", __psp_libinfo___15DB4);

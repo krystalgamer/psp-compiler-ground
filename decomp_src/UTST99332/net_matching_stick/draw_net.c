@@ -8,6 +8,12 @@ INCLUDE_ASM("tmp/asm/UTST99332/net_matching_stick/nonmatchings/draw_net", draw_n
 
 INCLUDE_ASM("tmp/asm/UTST99332/net_matching_stick/nonmatchings/draw_net", get_nickname);
 
+INCLUDE_RODATA("tmp/asm/UTST99332/net_matching_stick/nonmatchings/draw_net", D_00018A1C);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/net_matching_stick/nonmatchings/draw_net", D_00018A28);
+
 INCLUDE_ASM("tmp/asm/UTST99332/net_matching_stick/nonmatchings/draw_net", draw_net_member_list);
 
 INCLUDE_ASM("tmp/asm/UTST99332/net_matching_stick/nonmatchings/draw_net", draw_net_neighbors);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/net_matching_stick/nonmatchings/draw_net", D_00018A70);

@@ -4,6 +4,8 @@ INCLUDE_ASM("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/matching_handl
 
 INCLUDE_ASM("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/matching_handler", clear_minfo);
 
+INCLUDE_RODATA("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/matching_handler", D_00019D74);
+
 INCLUDE_ASM("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/matching_handler", child_handler);
 
 INCLUDE_ASM("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/matching_handler", parent_handler);

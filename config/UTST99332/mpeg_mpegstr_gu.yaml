@@ -149,7 +149,25 @@ segments:
       - { start: 0x13E7C, type: rodata, name: jcr, linker_section: .jcr }
       - { start: 0x13E80, type: rodata, name: eh_frame, linker_section: .eh_frame }
       - { start: 0x13EE4, type: prxpad, order: .rodata }
-      - [0x13EE8, rodata, rodata]
+      - [0x13EE8, .rodata, crt0]
+      - [0x13EF8, .rodata, main]
+      - [0x14694, .rodata, display]
+      - [0x1481C, .rodata, fileread]
+      - [0x14864, .rodata, decode]
+      - [0x148E8, .rodata, sound]
+      - [0x1493C, .rodata, avsync]
+      - [0x14940, .rodata, control]
+      - [0x14950, .rodata, strfile]
+      - [0x149D4, .rodata, menu]
+      - [0x14A2C, rodata, asm/rodata_149AC]
+      - [0x152B4, rodata, asm/rodata_15234]
+      - [0x152C4, .rodata, newlib/libc/stdio/puts]
+      - [0x152C8, .rodata, newlib/libc/stdio/vfprintf]
+      - [0x154A8, .rodata, newlib/libc/stdlib/wctomb_r]
+      - [0x154C8, .rodata, newlib/libc/stdlib/dtoa]
+      - [0x1554C, .rodata, newlib/libc/locale/locale]
+      - [0x15590, .rodata, newlib/libc/stdlib/mprec]
+      - [0x156C8, .rodata, libgcc/dp-bit/__floatsidf]
   - [0x157E8, bin, seg1_align]
   - name: mpeg_mpegstr_gu_seg1
     type: code

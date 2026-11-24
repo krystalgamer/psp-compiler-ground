@@ -1,5 +1,11 @@
 #include "common.h"
 
+INCLUDE_RODATA("tmp/asm/UTST99332/graphics_material/nonmatchings/newlib/libc/locale/locale", D_000130FC);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/graphics_material/nonmatchings/newlib/libc/locale/locale", lconv);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/graphics_material/nonmatchings/newlib/libc/locale/locale", D_00013130);
+
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_material/nonmatchings/newlib/libc/locale/locale", _setlocale_r);
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_material/nonmatchings/newlib/libc/locale/locale", __locale_charset);

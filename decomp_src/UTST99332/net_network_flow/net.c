@@ -19,3 +19,5 @@ INCLUDE_ASM("tmp/asm/UTST99332/net_network_flow/nonmatchings/net", disconnect_ib
 INCLUDE_ASM("tmp/asm/UTST99332/net_network_flow/nonmatchings/net", check_disconnect_completed);
 
 INCLUDE_ASM("tmp/asm/UTST99332/net_network_flow/nonmatchings/net", disconnect_check);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/net_network_flow/nonmatchings/net", D_000152E4);

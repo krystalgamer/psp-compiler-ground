@@ -1,5 +1,9 @@
 #include "common.h"
 
+INCLUDE_RODATA("tmp/asm/UTST99332/mpeg_seamless_change/nonmatchings/strfile", D_00011DA0);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/mpeg_seamless_change/nonmatchings/strfile", D_00011DA8);
+
 INCLUDE_ASM("tmp/asm/UTST99332/mpeg_seamless_change/nonmatchings/strfile", strFileAssign);
 
 INCLUDE_ASM("tmp/asm/UTST99332/mpeg_seamless_change/nonmatchings/strfile", strFileOpen);

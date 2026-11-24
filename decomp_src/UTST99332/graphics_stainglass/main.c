@@ -16,6 +16,8 @@ INCLUDE_ASM("tmp/asm/UTST99332/graphics_stainglass/nonmatchings/main", pad_read)
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_stainglass/nonmatchings/main", MainThread);
 
+INCLUDE_RODATA("tmp/asm/UTST99332/graphics_stainglass/nonmatchings/main", D_000133D0);
+
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_stainglass/nonmatchings/main", StartMainThread);
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_stainglass/nonmatchings/main", main);

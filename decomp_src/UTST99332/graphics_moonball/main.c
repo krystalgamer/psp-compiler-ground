@@ -1,5 +1,7 @@
 #include "common.h"
 
+INCLUDE_RODATA("tmp/asm/UTST99332/graphics_moonball/nonmatchings/main", D_00013FE0);
+
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_moonball/nonmatchings/main", InitFunc);
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_moonball/nonmatchings/main", SpriteScale);

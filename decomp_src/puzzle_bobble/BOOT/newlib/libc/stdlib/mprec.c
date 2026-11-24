@@ -33,3 +33,25 @@ INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/newlib/libc/stdlib/mprec", 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/newlib/libc/stdlib/mprec", _ratio);
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/newlib/libc/stdlib/mprec", _mprec_log10);
+
+INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/newlib/libc/stdlib/mprec", D_00031570);
+
+INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/newlib/libc/stdlib/mprec", __mprec_tens);
+
+INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/newlib/libc/stdlib/mprec", __mprec_bigtens);
+
+INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/newlib/libc/stdlib/mprec", D_00031668);
+
+INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/newlib/libc/stdlib/mprec", D_0003166C);
+
+INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/newlib/libc/stdlib/mprec", __mprec_tinytens);
+
+INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/newlib/libc/stdlib/mprec", D_00031698);
+
+INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/newlib/libc/stdlib/mprec", D_0003169C);
+
+INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/newlib/libc/stdlib/mprec", D_000316A0);
+
+INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/newlib/libc/stdlib/mprec", D_000316A4);
+
+INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/newlib/libc/stdlib/mprec", __clz_tab);

@@ -29,3 +29,5 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/gmo_model/gmo_context", sc
 INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/gmo_model/gmo_context", sceGmoContextDefaultTexCrop);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/gmo_model/gmo_context", sceGmoContextDefaultTexTrim);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/demo_luga/nonmatchings/gmo_model/gmo_context", __psp_libinfo___21BD4);

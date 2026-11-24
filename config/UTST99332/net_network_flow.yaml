@@ -165,7 +165,31 @@ segments:
       - { start: 0x14D04, type: rodata, name: jcr, linker_section: .jcr }
       - { start: 0x14D08, type: rodata, name: eh_frame, linker_section: .eh_frame }
       - { start: 0x14D6C, type: prxpad, order: .rodata }
-      - [0x14D70, rodata, rodata]
+      - [0x14D70, .rodata, crt0]
+      - [0x14D80, .rodata, main]
+      - [0x150F4, .rodata, net]
+      - [0x15368, .rodata, load_modules]
+      - [0x15558, .rodata, handler]
+      - [0x15578, .rodata, menu]
+      - [0x155D0, rodata, asm/rodata_15550]
+      - [0x15E78, .rodata, newlib/libm/math/wf_sqrt]
+      - [0x15E88, .rodata, newlib/libm/math/ef_rem_pio2]
+      - [0x16274, .rodata, newlib/libm/math/ef_sqrt]
+      - [0x16294, .rodata, newlib/libm/math/kf_cos]
+      - [0x162B8, .rodata, newlib/libm/math/kf_rem_pio2]
+      - [0x16334, .rodata, newlib/libm/math/kf_sin]
+      - [0x16358, .rodata, newlib/libm/math/sf_floor]
+      - [0x1636C, .rodata, newlib/libm/common/sf_scalbn]
+      - [0x1637C, .rodata, adhoc_dialog]
+      - [0x163DC, .rodata, adhoc_dialog_int]
+      - [0x165C0, rodata, asm/rodata_16540]
+      - [0x165D0, .rodata, newlib/libc/stdio/puts]
+      - [0x165D4, .rodata, newlib/libc/stdio/vfprintf]
+      - [0x167B4, .rodata, newlib/libc/stdlib/wctomb_r]
+      - [0x167D8, .rodata, newlib/libc/stdlib/dtoa]
+      - [0x1685C, .rodata, newlib/libc/locale/locale]
+      - [0x168A0, .rodata, newlib/libc/stdlib/mprec]
+      - [0x169D8, .rodata, libgcc/dp-bit/__floatsidf]
   - [0x16AF8, bin, seg1_align]
   - name: net_network_flow_seg1
     type: code

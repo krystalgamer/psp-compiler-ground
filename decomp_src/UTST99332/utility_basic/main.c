@@ -12,6 +12,8 @@ INCLUDE_ASM("tmp/asm/UTST99332/utility_basic/nonmatchings/main", utility_update)
 
 INCLUDE_ASM("tmp/asm/UTST99332/utility_basic/nonmatchings/main", CreateMenu_Root);
 
+INCLUDE_RODATA("tmp/asm/UTST99332/utility_basic/nonmatchings/main", D_000149B8);
+
 INCLUDE_ASM("tmp/asm/UTST99332/utility_basic/nonmatchings/main", CreateMenu_SaveData);
 
 INCLUDE_ASM("tmp/asm/UTST99332/utility_basic/nonmatchings/main", OnPush_OSK);

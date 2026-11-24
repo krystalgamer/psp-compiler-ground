@@ -165,7 +165,32 @@ segments:
       - { start: 0x14944, type: rodata, name: jcr, linker_section: .jcr }
       - { start: 0x14948, type: rodata, name: eh_frame, linker_section: .eh_frame }
       - { start: 0x149AC, type: prxpad, order: .rodata }
-      - [0x149B0, rodata, rodata]
+      - [0x149B0, .rodata, crt0]
+      - [0x149C0, .rodata, main]
+      - [0x14BC0, .rodata, menu/Menu_Init]
+      - [0x14C00, .rodata, draw]
+      - [0x16770, .rodata, savedata]
+      - [0x167DC, .rodata, netconf]
+      - [0x1692C, .rodata, msgdialog]
+      - [0x16C80, .rodata, module_load]
+      - [0x16CD0, .rodata, setting]
+      - [0x16E28, .rodata, menu/ExitFunction]
+      - [0x16E80, rodata, asm/rodata_16E00]
+      - [0x17728, .rodata, newlib/libm/math/wf_sqrt]
+      - [0x17738, .rodata, newlib/libm/math/ef_rem_pio2]
+      - [0x17B24, .rodata, newlib/libm/math/ef_sqrt]
+      - [0x17B44, .rodata, newlib/libm/math/kf_cos]
+      - [0x17B68, .rodata, newlib/libm/math/kf_rem_pio2]
+      - [0x17BE4, .rodata, newlib/libm/math/kf_sin]
+      - [0x17C08, .rodata, newlib/libm/math/sf_floor]
+      - [0x17C1C, .rodata, newlib/libm/common/sf_scalbn]
+      - [0x17C2C, rodata, asm/rodata_17BAC]
+      - [0x17C3C, .rodata, newlib/libc/stdio/vfprintf]
+      - [0x17E1C, .rodata, newlib/libc/stdlib/wctomb_r]
+      - [0x17E40, .rodata, newlib/libc/stdlib/dtoa]
+      - [0x17EC4, .rodata, newlib/libc/locale/locale]
+      - [0x17F08, .rodata, newlib/libc/stdlib/mprec]
+      - [0x18040, .rodata, libgcc/dp-bit/__floatsidf]
   - [0x18160, bin, seg1_align]
   - name: utility_basic_seg1
     type: code

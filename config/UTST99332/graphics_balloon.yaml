@@ -160,7 +160,29 @@ segments:
       - { start: 0x12F24, type: rodata, name: jcr, linker_section: .jcr }
       - { start: 0x12F28, type: rodata, name: eh_frame, linker_section: .eh_frame }
       - { start: 0x12F8C, type: prxpad, order: .rodata }
-      - [0x12F90, rodata, rodata]
+      - [0x12F90, .rodata, crt0]
+      - [0x12FA0, .rodata, main]
+      - [0x130C8, .rodata, balloon]
+      - [0x13118, .rodata, cloud]
+      - [0x13188, .rodata, sphere]
+      - [0x132D8, .rodata, pole]
+      - [0x13428, .rodata, menu]
+      - [0x13480, rodata, asm/rodata_13400]
+      - [0x13D28, .rodata, newlib/libm/math/wf_sqrt]
+      - [0x13D38, .rodata, newlib/libm/math/ef_rem_pio2]
+      - [0x14124, .rodata, newlib/libm/math/ef_sqrt]
+      - [0x14144, .rodata, newlib/libm/math/kf_cos]
+      - [0x14168, .rodata, newlib/libm/math/kf_rem_pio2]
+      - [0x141E4, .rodata, newlib/libm/math/kf_sin]
+      - [0x14208, .rodata, newlib/libm/math/sf_floor]
+      - [0x1421C, .rodata, newlib/libm/common/sf_scalbn]
+      - [0x1422C, rodata, asm/rodata_141AC]
+      - [0x1423C, .rodata, newlib/libc/stdio/vfprintf]
+      - [0x1441C, .rodata, newlib/libc/stdlib/wctomb_r]
+      - [0x14440, .rodata, newlib/libc/stdlib/dtoa]
+      - [0x144C4, .rodata, newlib/libc/locale/locale]
+      - [0x14508, .rodata, newlib/libc/stdlib/mprec]
+      - [0x14640, .rodata, libgcc/dp-bit/__floatsidf]
   - [0x14760, bin, seg1_align]
   - name: graphics_balloon_seg1
     type: code

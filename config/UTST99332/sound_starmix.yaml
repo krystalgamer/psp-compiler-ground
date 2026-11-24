@@ -137,7 +137,19 @@ segments:
       - { start: 0x1242C, type: rodata, name: jcr, linker_section: .jcr }
       - { start: 0x12430, type: rodata, name: eh_frame, linker_section: .eh_frame }
       - { start: 0x12494, type: prxpad, order: .rodata }
-      - [0x12498, rodata, rodata]
+      - [0x12498, .rodata, crt0]
+      - [0x124A8, .rodata, main]
+      - [0x1263C, .rodata, at3plus]
+      - [0x128DC, .rodata, starmixloadmodule]
+      - [0x12ABC, .rodata, menu]
+      - [0x12B14, rodata, asm/rodata_12A94]
+      - [0x133AC, .rodata, newlib/libc/stdio/puts]
+      - [0x133B0, .rodata, newlib/libc/stdio/vfprintf]
+      - [0x13590, .rodata, newlib/libc/stdlib/wctomb_r]
+      - [0x135B0, .rodata, newlib/libc/stdlib/dtoa]
+      - [0x13634, .rodata, newlib/libc/locale/locale]
+      - [0x13678, .rodata, newlib/libc/stdlib/mprec]
+      - [0x137B0, .rodata, libgcc/dp-bit/__floatsidf]
   - [0x138D0, bin, seg1_align]
   - name: sound_starmix_seg1
     type: code

@@ -11,3 +11,7 @@ INCLUDE_ASM("tmp/asm/sampler/sampler/nonmatchings/libmpeg_util", sceMpegSwap2);
 INCLUDE_ASM("tmp/asm/sampler/sampler/nonmatchings/libmpeg_util", sceMpegSwap3);
 
 INCLUDE_ASM("tmp/asm/sampler/sampler/nonmatchings/libmpeg_util", sceMpegSwap4);
+
+INCLUDE_RODATA("tmp/asm/sampler/sampler/nonmatchings/libmpeg_util", _strmap);
+
+INCLUDE_RODATA("tmp/asm/sampler/sampler/nonmatchings/libmpeg_util", STRTYPE_MAX);

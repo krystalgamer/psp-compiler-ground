@@ -1,5 +1,7 @@
 #include "common.h"
 
+INCLUDE_RODATA("tmp/asm/UTST99332/graphics_texmat/nonmatchings/main", mapmode);
+
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_texmat/nonmatchings/main", draw_frame);
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_texmat/nonmatchings/main", init_all);

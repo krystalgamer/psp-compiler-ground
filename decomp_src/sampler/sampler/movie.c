@@ -8,6 +8,18 @@ INCLUDE_ASM("tmp/asm/sampler/sampler/nonmatchings/movie", ringbufferCallBack);
 
 INCLUDE_ASM("tmp/asm/sampler/sampler/nonmatchings/movie", startCheck);
 
+INCLUDE_RODATA("tmp/asm/sampler/sampler/nonmatchings/movie", D_00016284);
+
+INCLUDE_RODATA("tmp/asm/sampler/sampler/nonmatchings/movie", D_000162A0);
+
+INCLUDE_RODATA("tmp/asm/sampler/sampler/nonmatchings/movie", D_000162C0);
+
+INCLUDE_RODATA("tmp/asm/sampler/sampler/nonmatchings/movie", D_000162EC);
+
+INCLUDE_RODATA("tmp/asm/sampler/sampler/nonmatchings/movie", D_00016314);
+
+INCLUDE_RODATA("tmp/asm/sampler/sampler/nonmatchings/movie", D_00016334);
+
 INCLUDE_ASM("tmp/asm/sampler/sampler/nonmatchings/movie", playMovie);
 
 INCLUDE_ASM("tmp/asm/sampler/sampler/nonmatchings/movie", readHeader);

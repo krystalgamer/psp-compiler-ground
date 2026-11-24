@@ -35,3 +35,5 @@ INCLUDE_ASM("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/game", get_gam
 INCLUDE_ASM("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/game", update_game_data);
 
 INCLUDE_ASM("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/game", check_peer_existence);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/game", D_0001A184);

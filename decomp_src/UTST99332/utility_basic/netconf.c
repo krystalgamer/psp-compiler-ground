@@ -8,6 +8,10 @@ INCLUDE_ASM("tmp/asm/UTST99332/utility_basic/nonmatchings/netconf", utility_upda
 
 INCLUDE_ASM("tmp/asm/UTST99332/utility_basic/nonmatchings/netconf", OnPush_Netconf_Apnet);
 
+INCLUDE_RODATA("tmp/asm/UTST99332/utility_basic/nonmatchings/netconf", D_000167B4);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/utility_basic/nonmatchings/netconf", D_000167C0);
+
 INCLUDE_ASM("tmp/asm/UTST99332/utility_basic/nonmatchings/netconf", OnCancel_Netconf_Apnet);
 
 INCLUDE_ASM("tmp/asm/UTST99332/utility_basic/nonmatchings/netconf", OnPush_Nectonf_ApnetConnect);
@@ -19,3 +23,5 @@ INCLUDE_ASM("tmp/asm/UTST99332/utility_basic/nonmatchings/netconf", OnPush_Netco
 INCLUDE_ASM("tmp/asm/UTST99332/utility_basic/nonmatchings/netconf", OnCancel_Netconf_Adhoc);
 
 INCLUDE_ASM("tmp/asm/UTST99332/utility_basic/nonmatchings/netconf", OnPush_Nectonf_AdhocConnect);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/utility_basic/nonmatchings/netconf", D_00016890);

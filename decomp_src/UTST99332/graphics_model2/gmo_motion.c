@@ -49,3 +49,5 @@ INCLUDE_ASM("tmp/asm/UTST99332/graphics_model2/nonmatchings/gmo_motion", eval_fc
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_model2/nonmatchings/gmo_motion", find_root);
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_model2/nonmatchings/gmo_motion", quat_slerp_9380);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/graphics_model2/nonmatchings/gmo_motion", D_0001EBFC);

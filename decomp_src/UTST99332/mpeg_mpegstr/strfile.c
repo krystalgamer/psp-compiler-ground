@@ -1,5 +1,9 @@
 #include "common.h"
 
+INCLUDE_RODATA("tmp/asm/UTST99332/mpeg_mpegstr/nonmatchings/strfile", D_0000FDE8);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/mpeg_mpegstr/nonmatchings/strfile", D_0000FDF0);
+
 INCLUDE_ASM("tmp/asm/UTST99332/mpeg_mpegstr/nonmatchings/strfile", strFileAssign);
 
 INCLUDE_ASM("tmp/asm/UTST99332/mpeg_mpegstr/nonmatchings/strfile", strFileOpen);

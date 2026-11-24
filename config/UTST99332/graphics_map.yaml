@@ -133,7 +133,15 @@ segments:
       - { start: 0xEED4, type: rodata, name: jcr, linker_section: .jcr }
       - { start: 0xEED8, type: rodata, name: eh_frame, linker_section: .eh_frame }
       - { start: 0xEF3C, type: prxpad, order: .rodata }
-      - [0xEF40, rodata, rodata]
+      - [0xEF40, .rodata, crt0]
+      - [0xEF50, .rodata, menu]
+      - [0xEFA8, rodata, asm/rodata_EF28]
+      - [0xF828, .rodata, newlib/libc/stdio/vfprintf]
+      - [0xFA08, .rodata, newlib/libc/stdlib/wctomb_r]
+      - [0xFA28, .rodata, newlib/libc/stdlib/dtoa]
+      - [0xFAAC, .rodata, newlib/libc/locale/locale]
+      - [0xFAF0, .rodata, newlib/libc/stdlib/mprec]
+      - [0xFC28, .rodata, libgcc/dp-bit/__floatsidf]
   - [0xFD48, bin, seg1_align]
   - name: graphics_map_seg1
     type: code

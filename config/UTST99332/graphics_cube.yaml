@@ -155,7 +155,25 @@ segments:
       - { start: 0x11D48, type: rodata, name: dtors, linker_section: .dtors }
       - { start: 0x11D50, type: rodata, name: jcr, linker_section: .jcr }
       - { start: 0x11D54, type: rodata, name: eh_frame, linker_section: .eh_frame }
-      - [0x11DB8, rodata, rodata]
+      - [0x11DB8, .rodata, crt0]
+      - [0x11DC8, .rodata, main]
+      - [0x11E10, .rodata, menu]
+      - [0x11E68, rodata, asm/rodata_11DE8]
+      - [0x12710, .rodata, newlib/libm/math/wf_sqrt]
+      - [0x12720, .rodata, newlib/libm/math/ef_rem_pio2]
+      - [0x12B0C, .rodata, newlib/libm/math/ef_sqrt]
+      - [0x12B2C, .rodata, newlib/libm/math/kf_cos]
+      - [0x12B50, .rodata, newlib/libm/math/kf_rem_pio2]
+      - [0x12BCC, .rodata, newlib/libm/math/kf_sin]
+      - [0x12BF0, .rodata, newlib/libm/math/sf_floor]
+      - [0x12C04, .rodata, newlib/libm/common/sf_scalbn]
+      - [0x12C14, rodata, asm/rodata_12B94]
+      - [0x12C24, .rodata, newlib/libc/stdio/vfprintf]
+      - [0x12E04, .rodata, newlib/libc/stdlib/wctomb_r]
+      - [0x12E28, .rodata, newlib/libc/stdlib/dtoa]
+      - [0x12EAC, .rodata, newlib/libc/locale/locale]
+      - [0x12EF0, .rodata, newlib/libc/stdlib/mprec]
+      - [0x13028, .rodata, libgcc/dp-bit/__floatsidf]
   - [0x13148, bin, seg1_align]
   - name: graphics_cube_seg1
     type: code

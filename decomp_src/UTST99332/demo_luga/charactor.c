@@ -13,3 +13,7 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/charactor", texture_char);
 INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/charactor", draw_char);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/charactor", term_char);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/demo_luga/nonmatchings/charactor", D_00020D60);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/demo_luga/nonmatchings/charactor", D_00020D80);

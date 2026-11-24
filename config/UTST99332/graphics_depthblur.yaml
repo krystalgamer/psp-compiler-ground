@@ -164,7 +164,32 @@ segments:
       - { start: 0x1519C, type: rodata, name: jcr, linker_section: .jcr }
       - { start: 0x151A0, type: rodata, name: eh_frame, linker_section: .eh_frame }
       - { start: 0x15204, type: prxpad, order: .rodata }
-      - [0x15210, rodata, rodata]
+      - [0x15210, .rodata, crt0]
+      - [0x15274, .rodata, main]
+      - [0x15550, .rodata, dragon]
+      - [0x178D0, .rodata, depthblur]
+      - [0x17920, .rodata, menu]
+      - [0x17978, rodata, asm/rodata_178F8]
+      - [0x18220, .rodata, newlib/libm/math/wf_pow]
+      - [0x18250, .rodata, newlib/libm/math/wf_sqrt]
+      - [0x18260, .rodata, newlib/libm/math/ef_pow]
+      - [0x18360, .rodata, newlib/libm/math/ef_rem_pio2]
+      - [0x1874C, .rodata, newlib/libm/math/ef_sqrt]
+      - [0x1876C, .rodata, newlib/libm/math/kf_cos]
+      - [0x18790, .rodata, newlib/libm/math/kf_rem_pio2]
+      - [0x1880C, .rodata, newlib/libm/math/kf_sin]
+      - [0x18838, .rodata, newlib/libm/common/s_rint]
+      - [0x1884C, .rodata, newlib/libm/math/sf_floor]
+      - [0x18860, .rodata, newlib/libm/common/sf_scalbn]
+      - [0x18870, .rodata, libgcc/libgcc2/__floatdidf]
+      - [0x18880, .rodata, libgcc/dp-bit/__floatsidf]
+      - [0x188A0, rodata, asm/rodata_18820]
+      - [0x188B0, .rodata, newlib/libc/stdio/puts]
+      - [0x188B4, .rodata, newlib/libc/stdio/vfprintf]
+      - [0x18A94, .rodata, newlib/libc/stdlib/wctomb_r]
+      - [0x18AB8, .rodata, newlib/libc/stdlib/dtoa]
+      - [0x18B3C, .rodata, newlib/libc/locale/locale]
+      - [0x18B80, .rodata, newlib/libc/stdlib/mprec]
   - [0x18DB8, bin, seg1_align]
   - name: graphics_depthblur_seg1
     type: code

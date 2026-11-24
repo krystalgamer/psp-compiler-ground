@@ -145,7 +145,24 @@ segments:
       - { start: 0xF56C, type: rodata, name: jcr, linker_section: .jcr }
       - { start: 0xF570, type: rodata, name: eh_frame, linker_section: .eh_frame }
       - { start: 0xF5D4, type: prxpad, order: .rodata }
-      - [0xF5D8, rodata, rodata]
+      - [0xF5D8, .rodata, crt0]
+      - [0xF5E8, .rodata, main]
+      - [0xFCE4, .rodata, display]
+      - [0xFD34, .rodata, fileread]
+      - [0xFD7C, .rodata, sound]
+      - [0xFDD0, .rodata, decode]
+      - [0xFE54, .rodata, avsync]
+      - [0xFE58, .rodata, control]
+      - [0xFE68, .rodata, strfile]
+      - [0xFEEC, .rodata, menu]
+      - [0xFF44, rodata, asm/rodata_FEC4]
+      - [0xFF6C, .rodata, newlib/libc/stdio/puts]
+      - [0xFF70, .rodata, newlib/libc/stdio/vfprintf]
+      - [0x10150, .rodata, newlib/libc/stdlib/wctomb_r]
+      - [0x10170, .rodata, newlib/libc/stdlib/dtoa]
+      - [0x101F4, .rodata, newlib/libc/locale/locale]
+      - [0x10238, .rodata, newlib/libc/stdlib/mprec]
+      - [0x10370, .rodata, libgcc/dp-bit/__floatsidf]
   - name: mpeg_mpegstr_seg1
     type: code
     start: 0x10490

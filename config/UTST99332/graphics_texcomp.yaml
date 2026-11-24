@@ -131,7 +131,16 @@ segments:
       - { start: 0xEBE0, type: rodata, name: dtors, linker_section: .dtors }
       - { start: 0xEBE8, type: rodata, name: jcr, linker_section: .jcr }
       - { start: 0xEBEC, type: rodata, name: eh_frame, linker_section: .eh_frame }
-      - [0xEC50, rodata, rodata]
+      - [0xEC50, .rodata, crt0]
+      - [0xEC60, .rodata, main]
+      - [0xED58, .rodata, menu]
+      - [0xEDB0, rodata, asm/rodata_ED30]
+      - [0xF630, .rodata, newlib/libc/stdio/vfprintf]
+      - [0xF810, .rodata, newlib/libc/stdlib/wctomb_r]
+      - [0xF830, .rodata, newlib/libc/stdlib/dtoa]
+      - [0xF8B4, .rodata, newlib/libc/locale/locale]
+      - [0xF8F8, .rodata, newlib/libc/stdlib/mprec]
+      - [0xFA30, .rodata, libgcc/dp-bit/__floatsidf]
   - [0xFB50, bin, seg1_align]
   - name: graphics_texcomp_seg1
     type: code

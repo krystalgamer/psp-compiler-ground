@@ -20,6 +20,8 @@ INCLUDE_ASM("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/net", net_scan
 
 INCLUDE_ASM("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/net", net_connect);
 
+INCLUDE_RODATA("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/net", D_00019974);
+
 INCLUDE_ASM("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/net", net_disconnect);
 
 INCLUDE_ASM("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/net", check_adhocctl_scan_completed);
