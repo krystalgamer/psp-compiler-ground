@@ -27,11 +27,26 @@ def units(target, module):
             yield p[0], p[1], NL / p[2].split("newlib-1.12.0/")[1]
 
 
+# newlib builds mallocr.c once per entry point
+MALLOCR = {"malloc_extend_top": "MALLOC", "_malloc_r": "MALLOC", "_free_r": "FREE",
+           "_realloc_r": "REALLOC", "_calloc_r": "CALLOC", "_memalign_r": "MEMALIGN",
+           "_valloc_r": "VALLOC", "_pvalloc_r": "PVALLOC", "_malloc_trim_r": "MALLOC_TRIM",
+           "_malloc_usable_size_r": "MALLOC_USABLE_SIZE", "_cfree_r": "CFREE",
+           "_mallinfo_r": "MALLINFO", "_malloc_stats_r": "MALLOC_STATS", "_mallopt_r": "MALLOPT"}
+
+
 def build(cc1, unit, src, flags):
+    if "/mallocr/" in unit:
+        flags += " -DINTERNAL_NEWLIB -DDEFINE_" + MALLOCR.get(unit.rsplit("/", 1)[1], "MALLOC")
+        src = src.parent / "mallocr.c" if src.name != "mallocr.c" else src
     out = ROOT / "tmp" / "nl" / cc1 / (unit + ".o")
     out.parent.mkdir(parents=True, exist_ok=True)
+    cpp = [f for f in flags.split() if f.startswith("-D")]
+    cc = [f for f in flags.split() if not f.startswith("-D")]
+    import os
+    env = dict(os.environ, CPPFLAGS=" ".join(cpp))
     r = subprocess.run([str(ROOT / "tools" / "nlcc.sh"), str(ROOT / "tmp/toolchains/bin" / f"cc1-{cc1}"),
-                        str(out), str(src)] + flags.split(), capture_output=True, text=True)
+                        str(out), str(src)] + cc, capture_output=True, text=True, env=env)
     return out if r.returncode == 0 and out.exists() else None
 
 
@@ -40,7 +55,7 @@ def main():
     ap.add_argument("target")
     ap.add_argument("module")
     ap.add_argument("cc1", nargs="+")
-    ap.add_argument("--flags", default="-O2 -g")
+    ap.add_argument("--flags", default="-O2 -g -fno-builtin")
     ap.add_argument("-v", action="store_true")
     a = ap.parse_args()
     mod = objcmp.module_funcs(a.target, a.module)
