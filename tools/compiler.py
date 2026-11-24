@@ -29,11 +29,18 @@ def compiler(target, module, unit):
 
 def driver_flags(target, module, unit):
     """cc1 options the unit's psp-gcc driver adds."""
-    return " ".join(entry(target, module, unit)[1:])
+    return " ".join(f for f in entry(target, module, unit)[1:] if not f.startswith("as:"))
+
+
+def as_flags(target, module, unit):
+    """psp-as options standing in for that version's assembler."""
+    return " ".join(f[3:] for f in entry(target, module, unit)[1:] if f.startswith("as:"))
 
 
 if __name__ == "__main__":
     if sys.argv[1] == "--flags":
         print(driver_flags(*sys.argv[2:5]))
+    elif sys.argv[1] == "--as-flags":
+        print(as_flags(*sys.argv[2:5]))
     else:
         print(compiler(*sys.argv[1:4]))

@@ -45,3 +45,21 @@ modules (`tools/nltest.py`, `tools/objcmp.py`).
 - newlib: puzzle_bobble 108/115, sampler 77/83, UTST99332 menu 94/99 and
   graphics_cube 88/93; the rest are Sony's newlib changes (plus
   `__ieee754_rem_pio2` in puzzle_bobble, still open).
+- **No `-mno-ulsw` by default** (1.7.1 patch 0002): the unaligned copies
+  of the 1.6.1 units use `lwl`/`swl` block moves, which `-mno-ulsw`
+  forbids.
+- **gthr-psp.h mutexes by suspending interrupts** (1.7.1 patch 0018):
+  with it, UTST99332 demo_duck's libgcc (1.6.1.internal, the only libgcc
+  here with the unwinder) goes from 71/78 to 75/78 functions:
+  `__register_frame_info*`, `__deregister_frame_info*` and
+  `_Unwind_Find_FDE` match.  Patch 0021 (`sceKernelCpuResumeIntr`
+  returning void) changes no code.
+- The last three (`execute_cfa_program`, `execute_stack_op`,
+  `extract_cie_info`) are not a compiler change.  cc1 emits the `ulw`
+  macro for the reads through `union unaligned`.  The 1.3.1 psp-as
+  expands it to four `lbu`, while the original has `lwl`/`lwr`, as
+  1.7.1's assembler does.  With `psp-as -mulsw` all of unwind-dw2 matches
+  (29/29), so libgcc matches completely.  `config/compilers.txt` passes
+  `as:-mulsw` for 1.6.1.internal.  Whether the 1.6.1 release's
+  binutils already did this is open; none of its code seen so far uses
+  `ulw`.
