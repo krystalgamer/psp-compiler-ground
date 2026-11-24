@@ -1,0 +1,8 @@
+# psp-gcc version (DW_AT_producer / .comment) -> cc1 in tmp/toolchains/bin
+# Versions we have no reconstruction of use the nearest one we do.
+1.4.0           1.5.1
+1.5.0.internal  1.5.1
+1.5.1           1.5.1
+1.5.1.internal  1.5.1
+1.6.1           1.6.1
+1.6.1.internal  1.6.1
