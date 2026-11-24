@@ -151,15 +151,17 @@ def sext16(x):
 
 
 def dwarf_objects(elf, text_addr, rodata):
-    """{rodata addr: (size, CU low_pc)} for the variables DWARF places there.
+    """{addr: (size, CU low_pc)} for the variables DWARF places in a section
+    (rodata: the section, with .name and .addr).
 
     DW_OP_addr values are section-relative like the symbols, so a variable
-    is matched to the .rodata symbol with its name and value."""
-    if not elf.has_dwarf_info():
+    is matched to the section's symbol with its name and value."""
+    if not elf.has_dwarf_info() or rodata is None:
         return {}
     syms = {}
+    ro = None
     for i, sec in enumerate(elf.iter_sections()):
-        if sec.name == ".rodata":
+        if sec.name == rodata.name:
             ro = i
     for sym in elf.get_section_by_name(".symtab").iter_symbols():
         if sym["st_shndx"] == ro and sym["st_info"]["type"] == "STT_OBJECT":
@@ -211,6 +213,16 @@ def rodata_owners(elf, data, segs, units, rodata):
         if i >= 0 and a < obj_spans[i][1]:
             return obj_spans[i]
         return None
+    dsec = next((s for s in prxinfo.sections(elf, data) if s.name == ".data"), None)
+    dobjs = dwarf_objects(elf, next(s.addr for s in prxinfo.sections(elf, data) if s.name == ".text"), dsec)
+    dspans = sorted((a, a + sz, unit_of_lo.get(lo)) for a, (sz, lo) in dobjs.items())
+    dstarts = [o[0] for o in dspans]
+
+    def data_owner(a):
+        i = bisect.bisect_right(dstarts, a) - 1
+        if i >= 0 and a < dspans[i][1]:
+            return dspans[i][2]
+        return None
     refs = collections.defaultdict(set)   # rodata addr -> units
     for a, b, u in obj_spans:
         if u is not None:
@@ -230,6 +242,13 @@ def rodata_owners(elf, data, segs, units, rodata):
             if typ == 6:
                 target = (hi.get(ab, 0) << 16) + sext16(insn & 0xFFFF) + segs[ab]["p_vaddr"]
                 src = unit_at(loc) if loc < units[-1][0] + 0x10000000 and loc < rodata.addr else None
+            elif typ == 2 and dsec is not None and dsec.addr <= loc < dsec.addr + dsec.size:
+                # strings an initialized pointer in .data points to
+                ptr = insn + segs[ab]["p_vaddr"]
+                src = data_owner(loc)
+                if src is not None and rodata.addr <= ptr < rodata.addr + rodata.size and obj_owner(ptr) is None:
+                    refs[ptr].add(src)
+                continue
             elif typ == 2 and rodata.addr <= loc < rodata.addr + rodata.size:
                 # e.g. jump tables: owned by the unit of the code they point to
                 ptr = insn + segs[ab]["p_vaddr"]
