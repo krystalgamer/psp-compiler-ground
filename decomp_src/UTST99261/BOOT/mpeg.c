@@ -1,15 +1,10 @@
 #include "common.h"
 #include <stdio.h>
 #include <string.h>
+#include "pspBrowser.h"
+#include "main.h"
 
-extern int iPspBrowserApMode;
 extern char mpegFilename[320];
-
-int pspBrowserAddAnchor(const char *ext, int (*cb)(char *, char *));
-void soundExit(void);
-int soundInit(void);
-int gInit(void);
-int mpeg_main(char *filename);
 
 int mpegCallback(char *filename, char *data);
 

@@ -42,4 +42,10 @@ int inputExec(char *moji, int m_size, int mod);
 int pspNetworkInit(void);
 void pspNetworkExit(void);
 
+int mainPadRead(void);
+int soundInit(void);
+int mp3_init(char *name);
+int mp3_exec(int i_max);
+int mp3_exit();
+
 #endif

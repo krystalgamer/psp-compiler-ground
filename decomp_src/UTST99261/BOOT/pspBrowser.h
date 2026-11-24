@@ -130,4 +130,6 @@ typedef struct { /* size 0x8 */
 int pspBrowserSetState(int state, void *param);
 int pspBrowserGetState(int state, void *param);
 
+int pspBrowserAddAnchor(char *ext, PSPBROWSER_ANCHOR_CALLBACK callback);
+
 #endif

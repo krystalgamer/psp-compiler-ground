@@ -1,5 +1,7 @@
 #include "common.h"
 
+INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/cnfsavemgr", D_00140B6C);
+
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/cnfsavemgr", D_00140B90);
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/cnfsavemgr", D_00140B94);
