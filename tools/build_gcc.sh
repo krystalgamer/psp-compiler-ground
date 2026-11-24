@@ -3,7 +3,10 @@
 # program, in the Red Hat Linux 9 i386 sandbox with its gcc 3.2.2,
 # configured from a sibling directory of the source tree.
 #
-# Usage: tools/build_gcc.sh VERSION      (e.g. 1.5.1)
+# Usage: tools/build_gcc.sh VERSION [SRC] [--libgcc]
+#   VERSION  e.g. 1.5.1; SRC defaults to gcc<VERSION>_src (VERSION can then
+#            be any name, e.g. for experiments)
+#   --libgcc also build libgcc (tmp/gccbuild/VERSION/gcc-bin/gcc/libgcc.a)
 # Result: tmp/toolchains/bin/cc1-VERSION (runs the i386 cc1 on the host)
 #
 # Incremental: rerunning after a source change only rebuilds what changed.
@@ -11,7 +14,9 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 ROOT=$PWD
 V=$1
-SRC=$ROOT/gcc${V}_src
+LIBGCC=
+[ "${@: -1}" = --libgcc ] && { LIBGCC=1; set -- "${@:1:$(($#-1))}"; }
+SRC=$(cd "${2:-$ROOT/gcc${V}_src}" && pwd)
 T=$ROOT/tmp/toolchains
 B=$ROOT/tmp/gccbuild/$V
 [ -d "$SRC" ] || { echo "no $SRC" >&2; exit 1; }
@@ -33,6 +38,10 @@ fi
 "$T/bin/rh9" sh -c "cd $B/gcc-bin && make all-build-libiberty all-libiberty > make.log 2>&1 \
   && make -C gcc cc1 CFLAGS='-g -O2' >> make.log 2>&1" \
   || { echo "build failed, see $B/gcc-bin/make.log" >&2; tail -20 "$B/gcc-bin/make.log" >&2; exit 1; }
+if [ -n "$LIBGCC" ]; then
+  RH9_PSP=$V "$T/bin/rh9" sh -c "cd $B/gcc-bin && make all-gcc > make-all.log 2>&1" \
+    || { echo "libgcc build failed, see $B/gcc-bin/make-all.log" >&2; exit 1; }
+fi
 "$T/bin/rh9" strip -g -o "$T/bin/cc1-$V.bin" "$B/gcc-bin/gcc/cc1"
 printf '#!/bin/sh\nexec "%s/bin/run32" "%s/bin/cc1-%s.bin" "$@"\n' "$T" "$T" "$V" > "$T/bin/cc1-$V"
 chmod +x "$T/bin/cc1-$V"
