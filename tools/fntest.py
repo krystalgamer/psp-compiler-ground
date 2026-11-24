@@ -1,0 +1,63 @@
+#!/usr/bin/env python3
+"""fntest.py TARGET MODULE FILE.c [--cc1 A,B] [--flags "-O2" ...] [-v]
+
+Compile a C file with each cc1 and flag set and compare every function it
+defines with the module's function of the same name (tools/objcmp.py).
+Default cc1s: the unit's own version, 1.3.1-orig and 1.7.1-orig; default
+flags: -O2.  With -v, prints the side-by-side disassembly of the first
+non-identical function for the first cc1.
+"""
+import argparse
+import subprocess
+import sys
+import tempfile
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT / "tools"))
+import objcmp  # noqa: E402
+
+T = ROOT / "tmp" / "toolchains" / "bin"
+
+
+def compile_c(src, cc1, flags, out):
+    i = out.with_suffix(".i")
+    subprocess.run(["cpp", "-P", "-undef", "-nostdinc", f"-I{ROOT/'include'}", f"-I{ROOT/'decomp_src'}",
+                    "-D__GNUC__=3", "-D_LANGUAGE_C", "-D__psp__", "-D__mips__", "-DM2CTX", str(src), "-o", str(i)],
+                   check=True)
+    r = subprocess.run([str(T / f"cc1-{cc1}"), "-quiet", "-G0", *flags.split(), str(i), "-o", str(out.with_suffix(".s"))],
+                       capture_output=True, text=True)
+    if r.returncode:
+        sys.stderr.write(r.stderr)
+        return None
+    subprocess.run([str(T / "psp-as"), "-G0", "-o", str(out), str(out.with_suffix(".s"))], check=True)
+    return out
+
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("target")
+    ap.add_argument("module")
+    ap.add_argument("file")
+    ap.add_argument("--cc1")
+    ap.add_argument("--flags", action="append")
+    ap.add_argument("-v", action="store_true")
+    a = ap.parse_args()
+    mod = objcmp.module_funcs(a.target, a.module)
+    cc1s = a.cc1.split(",") if a.cc1 else ["1.5.1", "1.6.1", "1.3.1-orig", "1.7.1-orig"]
+    flags = a.flags or ["-O2"]
+    with tempfile.TemporaryDirectory() as td:
+        for c in cc1s:
+            for f in flags:
+                o = compile_c(Path(a.file), c, f, Path(td) / f"{c}.o")
+                if o is None:
+                    print(f"{c:11} {f:12} compile error")
+                    continue
+                res = objcmp.compare(mod, [o])
+                same = [k for k, v in res.items() if v == "same"]
+                bad = {k: v for k, v in res.items() if v != "same"}
+                print(f"{c:11} {f:12} {len(same)}/{len(res)}  " + " ".join(f"{k}:{v.replace(' ', '')}" for k, v in sorted(bad.items())))
+
+
+if __name__ == "__main__":
+    main()

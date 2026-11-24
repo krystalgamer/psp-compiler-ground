@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""Run m2c on a nonmatching function with project headers as context.
+"""m2c.py TARGET MODULE UNIT FUNC [m2c args...]: m2c draft of a function.
 
-Usage: tools/m2c.py <function> [--version 360] [--module mcctrl] [m2c args...]
-INCLUDE_ASM files use numeric registers (for old psp-as); m2c wants ABI names.
+The unit's DWARF declarations (tools/dwarf2c.py) are the context, so m2c
+knows the real types, globals and prototypes.  INCLUDE_ASM files use
+numeric registers (for old psp-as); m2c wants ABI names.
 """
-import argparse
 import re
 import subprocess
 import sys
@@ -12,38 +12,28 @@ import tempfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
+# PSP EABI: $8-$11 are argument registers, which m2c's mipsee names a4-a7
 ABI = ["zero", "at", "v0", "v1", "a0", "a1", "a2", "a3",
-       "t0", "t1", "t2", "t3", "t4", "t5", "t6", "t7",
+       "a4", "a5", "a6", "a7", "t4", "t5", "t6", "t7",
        "s0", "s1", "s2", "s3", "s4", "s5", "s6", "s7",
        "t8", "t9", "k0", "k1", "gp", "sp", "fp", "ra"]
 
 
-def main():
-    ap = argparse.ArgumentParser()
-    ap.add_argument("function")
-    ap.add_argument("--version", default="360")
-    ap.add_argument("--module", default="mcctrl")
-    args, rest = ap.parse_known_args()
-
-    asm = ROOT / "tmp/asm" / args.version / args.module / "nonmatchings" / args.module / f"{args.function}.s"
+def draft(target, module, unit, func, extra=()):
+    asm = ROOT / "tmp/asm" / target / module / "nonmatchings" / unit / f"{func}.s"
     text = re.sub(r"\$(\d+)\b", lambda m: "$" + ABI[int(m[1])] if int(m[1]) < 32 else m[0], asm.read_text())
-
-    src = ROOT / "src" / args.module
-    ctx = subprocess.run(
-        ["cpp", "-P", "-undef", "-nostdinc", "-DM2CTX", f"-I{ROOT / 'include'}", f"-I{src}", "-"],
-        input="".join(p.read_text() for p in sorted(src.glob("*.c"))),
-        capture_output=True, text=True, check=True,
-    ).stdout
-
+    ctx = subprocess.run([sys.executable, str(ROOT / "tools/dwarf2c.py"), target, module, unit],
+                         capture_output=True, text=True, check=True).stdout
     with tempfile.TemporaryDirectory() as td:
         (Path(td) / "f.s").write_text(text)
         (Path(td) / "ctx.c").write_text(ctx)
-        r = subprocess.run(
-            [sys.executable, str(ROOT / "tools/m2c_allegrex.py"), "-t", "mips-gcc-c", "--context", str(Path(td) / "ctx.c"),
-             *rest, str(Path(td) / "f.s")],
-        )
-    sys.exit(r.returncode)
+        r = subprocess.run([sys.executable, str(ROOT / "tools/m2c_allegrex.py"), "-t", "mipsee-gcc-c",
+                            "--context", str(Path(td) / "ctx.c"), *extra, str(Path(td) / "f.s")],
+                           capture_output=True, text=True)
+    return r.stdout if r.returncode == 0 else None, r.stderr
 
 
 if __name__ == "__main__":
-    main()
+    out, err = draft(*sys.argv[1:5], sys.argv[5:])
+    sys.stdout.write(out or "")
+    sys.stderr.write(err)
