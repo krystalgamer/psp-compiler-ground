@@ -19,7 +19,7 @@ PSP_AS  := $(TOOLS)/psp-as
 CPP     := cpp
 
 ASFLAGS := -EL -march=allegrex -G0 --no-pad-sections -Iinclude
-CPPFLAGS := -P -undef -nostdinc -Iinclude -Idecomp_src -D__GNUC__=3 -D_LANGUAGE_C -D__psp__ -D__mips__ $(EXTRA_CPPFLAGS)
+CPPFLAGS := -P -undef -nostdinc -Iinclude -Iinclude/libc -Idecomp_src -D__GNUC__=3 -D_LANGUAGE_C -D__psp__ -D__mips__ $(EXTRA_CPPFLAGS)
 CFLAGS  := -G0 -quiet
 
 S_FILES   = $(shell find tmp/asm/$(TARGET)/$(MODULE) -name '*.s' -not -path '*/nonmatchings/*' 2>/dev/null)
