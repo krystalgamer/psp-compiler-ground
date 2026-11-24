@@ -18,19 +18,22 @@ sys.path.insert(0, str(ROOT / "tools"))
 import objcmp  # noqa: E402
 
 T = ROOT / "tmp" / "toolchains" / "bin"
+# what each cc1's psp-gcc driver adds (cc1 options, psp-as options)
+DRIVER = {"1.5.1": ("-mno-ulsw", ""), "1.3.1-orig": ("-mno-ulsw", "")}
 
 
 def compile_c(src, cc1, flags, out):
     i = out.with_suffix(".i")
-    subprocess.run(["cpp", "-P", "-undef", "-nostdinc", f"-I{ROOT/'include'}", f"-I{ROOT/'decomp_src'}",
+    subprocess.run(["cpp", "-P", "-undef", "-nostdinc", f"-I{ROOT/'include'}", f"-I{ROOT/'include/sdk'}", f"-I{ROOT/'include/libc'}", f"-I{ROOT/'decomp_src'}",
                     "-D__GNUC__=3", "-D_LANGUAGE_C", "-D__psp__", "-D__mips__", "-DM2CTX", str(src), "-o", str(i)],
                    check=True)
-    r = subprocess.run([str(T / f"cc1-{cc1}"), "-quiet", "-G0", *flags.split(), str(i), "-o", str(out.with_suffix(".s"))],
+    cflags, asflags = DRIVER.get(cc1, ("", ""))
+    r = subprocess.run([str(T / f"cc1-{cc1}"), "-quiet", "-G0", *cflags.split(), *flags.split(), str(i), "-o", str(out.with_suffix(".s"))],
                        capture_output=True, text=True)
     if r.returncode:
         sys.stderr.write(r.stderr)
         return None
-    subprocess.run([str(T / "psp-as"), "-G0", "-o", str(out), str(out.with_suffix(".s"))], check=True)
+    subprocess.run([str(T / "psp-as"), "-G0", *asflags.split(), "-o", str(out), str(out.with_suffix(".s"))], check=True)
     return out
 
 
