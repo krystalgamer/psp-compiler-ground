@@ -39,6 +39,8 @@ fi
   && make -C gcc cc1 CFLAGS='-g -O2' >> make.log 2>&1" \
   || { echo "build failed, see $B/gcc-bin/make.log" >&2; tail -20 "$B/gcc-bin/make.log" >&2; exit 1; }
 if [ -n "$LIBGCC" ]; then
+  # libgcc's objects don't depend on headers such as gthr-psp.h
+  rm -rf "$B/gcc-bin/gcc/libgcc" "$B/gcc-bin/gcc/libgcc.a" "$B/gcc-bin/gcc/stmp-multilib"
   RH9_PSP=$V "$T/bin/rh9" sh -c "cd $B/gcc-bin && make all-gcc > make-all.log 2>&1" \
     || { echo "libgcc build failed, see $B/gcc-bin/make-all.log" >&2; exit 1; }
 fi
