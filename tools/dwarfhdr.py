@@ -21,11 +21,21 @@ TYPES = ("DW_TAG_typedef", "DW_TAG_structure_type", "DW_TAG_union_type", "DW_TAG
 
 
 def main():
-    t, m, hdr = sys.argv[1:4]
+    import argparse
+    ap = argparse.ArgumentParser()
+    ap.add_argument("target")
+    ap.add_argument("module")
+    ap.add_argument("header")
+    ap.add_argument("--cu", action="append", help="only these compile units (source names, substring match)")
+    a = ap.parse_args()
+    t, m, hdr = a.target, a.module, a.header
     elf = ELFFile(io.BytesIO(modules.read(t, m)))
     dw = elf.get_dwarf_info()
     found = {}   # (decl_line, text) -> text
+    seen = set()
     for cu in dw.iter_CUs():
+        if a.cu and not any(s in attr(cu.get_top_DIE(), "DW_AT_name") for s in a.cu):
+            continue
         lp = dw.line_program_for_CU(cu)
         idx = {i + 1 for i, f in enumerate(lp["file_entry"]) if f.name.decode() == hdr}
         if not idx:
@@ -56,7 +66,9 @@ def main():
                 text = f"extern {c.decl(c.ref(d), attr(d, 'DW_AT_name'))};"
             else:
                 continue
-            found.setdefault((line, text), f"/* line {line} */\n{text}")
+            if text not in seen:
+                seen.add(text)
+                found.setdefault((line, text), f"/* line {line} */\n{text}")
     for line in sorted(found):
         print(found[line])
 
