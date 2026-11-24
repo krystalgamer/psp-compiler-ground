@@ -63,3 +63,10 @@ modules (`tools/nltest.py`, `tools/objcmp.py`).
   `as:-mulsw` for 1.6.1.internal.  Whether the 1.6.1 release's
   binutils already did this is open; none of its code seen so far uses
   `ulw`.
+- **TImode types with the 32-bit `HOST_WIDE_INT`** (1.7.1 patch 0011):
+  psptypes.h types `u_long128` and friends as `mode(TI)`.  In every
+  1.6.1 and 1.6.1.internal compile unit the DWARF base type is
+  `__uint128_t`/`__int128_t`, as with 1.7.1's cc1.  In 1.4.0, 1.5.0.internal,
+  1.5.1 and 1.5.1.internal units, as with 1.3.1's cc1, it is an unnamed
+  16-byte type (`__unknown__`).  Without the patch, 1.6.1's cc1 rejects
+  `mode(TI)` altogether.
