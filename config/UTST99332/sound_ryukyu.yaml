@@ -148,6 +148,7 @@ segments:
       - [0x12A4C, .rodata, newlib/libc/locale/locale]
       - [0x12A90, .rodata, newlib/libc/stdlib/mprec]
       - [0x12BC8, .rodata, libgcc/dp-bit/__floatsidf]
+      - [0x12BD0, .rodata, libgcc/dp-bit/__pack_d]
   - [0x12CE8, bin, seg1_align]
   - name: sound_ryukyu_seg1
     type: code

@@ -141,6 +141,7 @@ segments:
       - [0xF8B4, .rodata, newlib/libc/locale/locale]
       - [0xF8F8, .rodata, newlib/libc/stdlib/mprec]
       - [0xFA30, .rodata, libgcc/dp-bit/__floatsidf]
+      - [0xFA38, .rodata, libgcc/dp-bit/__pack_d]
   - [0xFB50, bin, seg1_align]
   - name: graphics_texcomp_seg1
     type: code

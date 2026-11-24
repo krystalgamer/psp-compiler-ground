@@ -148,6 +148,7 @@ segments:
       - [0x18224, .rodata, newlib/libc/locale/locale]
       - [0x18268, .rodata, newlib/libc/stdlib/mprec]
       - [0x183A0, .rodata, libgcc/dp-bit/__floatsidf]
+      - [0x183A8, .rodata, libgcc/dp-bit/__pack_d]
   - name: sound_playsmf_seg1
     type: code
     start: 0x184C0

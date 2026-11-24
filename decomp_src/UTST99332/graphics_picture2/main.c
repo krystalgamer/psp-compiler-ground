@@ -6,6 +6,8 @@ INCLUDE_ASM("tmp/asm/UTST99332/graphics_picture2/nonmatchings/main", free16);
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_picture2/nonmatchings/main", main);
 
+INCLUDE_RODATA("tmp/asm/UTST99332/graphics_picture2/nonmatchings/main", g_default_picture_names);
+
 INCLUDE_RODATA("tmp/asm/UTST99332/graphics_picture2/nonmatchings/main", D_00015B80);
 
 INCLUDE_RODATA("tmp/asm/UTST99332/graphics_picture2/nonmatchings/main", D_00015B8C);

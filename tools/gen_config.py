@@ -150,6 +150,43 @@ def sext16(x):
     return x - 0x10000 if x & 0x8000 else x
 
 
+def dwarf_objects(elf, text_addr, rodata):
+    """{rodata addr: (size, CU low_pc)} for the variables DWARF places there.
+
+    DW_OP_addr values are section-relative like the symbols, so a variable
+    is matched to the .rodata symbol with its name and value."""
+    if not elf.has_dwarf_info():
+        return {}
+    syms = {}
+    for i, sec in enumerate(elf.iter_sections()):
+        if sec.name == ".rodata":
+            ro = i
+    for sym in elf.get_section_by_name(".symtab").iter_symbols():
+        if sym["st_shndx"] == ro and sym["st_info"]["type"] == "STT_OBJECT":
+            syms[(sym.name, sym["st_value"])] = sym["st_size"]
+    out = {}
+    for cu in elf.get_dwarf_info().iter_CUs():
+        top = cu.get_top_DIE()
+        if "DW_AT_low_pc" not in top.attributes:
+            continue
+        lo = top.attributes["DW_AT_low_pc"].value + text_addr
+        stack = [top]
+        while stack:
+            for d in stack.pop().iter_children():
+                if d.tag == "DW_TAG_subprogram" or d.tag == "DW_TAG_lexical_block":
+                    stack.append(d)
+                if d.tag != "DW_TAG_variable" or "DW_AT_location" not in d.attributes:
+                    continue
+                loc = d.attributes["DW_AT_location"].value
+                if not isinstance(loc, list) or len(loc) != 5 or loc[0] != 3:
+                    continue
+                v = int.from_bytes(bytes(loc[1:]), "little")
+                n = d.attributes["DW_AT_name"].value.decode() if "DW_AT_name" in d.attributes else None
+                if (n, v) in syms:
+                    out[v + rodata.addr] = (max(syms[(n, v)], 1), lo)
+    return out
+
+
 def rodata_owners(elf, data, segs, units, rodata):
     """Split .rodata among the units by the code that references it.
 
@@ -164,7 +201,20 @@ def rodata_owners(elf, data, segs, units, rodata):
         return i if i >= 0 else None
 
     word = lambda off: struct.unpack_from("<I", data, off)[0]
+    unit_of_lo = {u[0]: i for i, u in enumerate(units)}
+    objs = dwarf_objects(elf, next(s.addr for s in prxinfo.sections(elf, data) if s.name == ".text"), rodata)
+    obj_spans = sorted((a, a + sz, unit_of_lo.get(lo)) for a, (sz, lo) in objs.items())
+    obj_starts = [o[0] for o in obj_spans]
+
+    def obj_owner(a):
+        i = bisect.bisect_right(obj_starts, a) - 1
+        if i >= 0 and a < obj_spans[i][1]:
+            return obj_spans[i]
+        return None
     refs = collections.defaultdict(set)   # rodata addr -> units
+    for a, b, u in obj_spans:
+        if u is not None:
+            refs[a].add(u)
     for d in prxinfo.reloc_tables(elf):
         ents = [struct.unpack_from("<II", d, i) for i in range(0, len(d), 8)]
         hi = {}
@@ -186,6 +236,9 @@ def rodata_owners(elf, data, segs, units, rodata):
             else:
                 continue
             if src is not None and rodata.addr <= target < rodata.addr + rodata.size:
+                o = obj_owner(target)
+                if o is not None:
+                    continue    # a named object: owned by the unit DWARF puts it in
                 refs[target].add(src)
     first = {}
     last = {}
@@ -199,7 +252,7 @@ def rodata_owners(elf, data, segs, units, rodata):
     import os
     if os.environ.get("RODATA_DEBUG"):
         for u in order:
-            print(f"  {units[u][2]:40} {first[u]:#x}-{last[u]:#x}", file=sys.stderr)
+            print(f"  {u:4} {units[u][2]:40} {first[u]:#x}-{last[u]:#x} {sorted(a for a in refs if refs[a]=={u})[:6]}", file=sys.stderr)
     if order != sorted(order):
         return None
     # ranges may overlap: the linker merges equal constants and strings

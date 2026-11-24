@@ -150,6 +150,7 @@ segments:
       - [0x13634, .rodata, newlib/libc/locale/locale]
       - [0x13678, .rodata, newlib/libc/stdlib/mprec]
       - [0x137B0, .rodata, libgcc/dp-bit/__floatsidf]
+      - [0x137B8, .rodata, libgcc/dp-bit/__pack_d]
   - [0x138D0, bin, seg1_align]
   - name: sound_starmix_seg1
     type: code

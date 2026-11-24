@@ -168,6 +168,7 @@ segments:
       - [0x121AC, .rodata, newlib/libc/locale/locale]
       - [0x121F0, .rodata, newlib/libc/stdlib/mprec]
       - [0x12328, .rodata, libgcc/dp-bit/__floatsidf]
+      - [0x12330, .rodata, libgcc/dp-bit/__pack_d]
   - [0x12448, bin, seg1_align]
   - name: mpeg_seamless_change_seg1
     type: code

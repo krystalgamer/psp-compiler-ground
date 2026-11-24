@@ -11,3 +11,5 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/necpspmgr", NecNetconfInitStart
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/necpspmgr", NecNetconfShutdownStart);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/necpspmgr", NecNetconfUpdate);
+
+INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/necpspmgr", D_00140B6C);

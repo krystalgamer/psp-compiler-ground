@@ -1,5 +1,7 @@
 #include "common.h"
 
+INCLUDE_RODATA("tmp/asm/UTST99332/demo_luga/nonmatchings/gim_picture/gim_picture", __psp_libinfo___21BD4);
+
 INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/gim_picture/gim_picture", sceGimPictureCreate);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/gim_picture/gim_picture", sceGimPictureDelete);

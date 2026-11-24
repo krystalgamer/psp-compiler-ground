@@ -4,6 +4,8 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/font", cb_Alloc);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/font", cb_Free);
 
+INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/font", D_0010D780);
+
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/font", fontInit);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/font", fontExit);
@@ -19,3 +21,5 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/font", fontPrint);
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/font", fontPassword);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/font", fontDraw);
+
+INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/font", D_0010D880);

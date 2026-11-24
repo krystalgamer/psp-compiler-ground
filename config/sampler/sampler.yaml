@@ -172,6 +172,7 @@ segments:
       - [0x1788C, .rodata, newlib/libc/locale/locale]
       - [0x178D0, .rodata, newlib/libc/stdlib/mprec]
       - [0x17A08, .rodata, libgcc/dp-bit/__floatsidf]
+      - [0x17A10, .rodata, libgcc/dp-bit/__pack_d]
   - [0x17B28, bin, seg1_align]
   - name: sampler_seg1
     type: code

@@ -148,6 +148,7 @@ segments:
       - [0x128A4, .rodata, newlib/libc/locale/locale]
       - [0x128E8, .rodata, newlib/libc/stdlib/mprec]
       - [0x12A20, .rodata, libgcc/dp-bit/__floatsidf]
+      - [0x12A28, .rodata, libgcc/dp-bit/__pack_d]
   - name: sound_starsas_seg1
     type: code
     start: 0x12B40

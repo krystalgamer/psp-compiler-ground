@@ -142,6 +142,7 @@ segments:
       - [0xF704, .rodata, newlib/libc/locale/locale]
       - [0xF748, .rodata, newlib/libc/stdlib/mprec]
       - [0xF880, .rodata, libgcc/dp-bit/__floatsidf]
+      - [0xF888, .rodata, libgcc/dp-bit/__pack_d]
   - [0xF9A0, bin, seg1_align]
   - name: graphics_fileio_seg1
     type: code

@@ -1,11 +1,5 @@
 #include "common.h"
 
+INCLUDE_RODATA("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/newlib/libm/math/sf_floor", huge_1B1CC);
+
 INCLUDE_ASM("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/newlib/libm/math/sf_floor", floorf);
-
-INCLUDE_RODATA("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/newlib/libm/math/sf_floor", two25);
-
-INCLUDE_RODATA("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/newlib/libm/math/sf_floor", twom25);
-
-INCLUDE_RODATA("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/newlib/libm/math/sf_floor", huge_1B1DC);
-
-INCLUDE_RODATA("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/newlib/libm/math/sf_floor", tiny_1B1E0);

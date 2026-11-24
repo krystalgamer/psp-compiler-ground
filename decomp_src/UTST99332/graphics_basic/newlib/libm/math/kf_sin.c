@@ -1,7 +1,17 @@
 #include "common.h"
 
+INCLUDE_RODATA("tmp/asm/UTST99332/graphics_basic/nonmatchings/newlib/libm/math/kf_sin", half_126E8);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/graphics_basic/nonmatchings/newlib/libm/math/kf_sin", S1);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/graphics_basic/nonmatchings/newlib/libm/math/kf_sin", S2);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/graphics_basic/nonmatchings/newlib/libm/math/kf_sin", S3);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/graphics_basic/nonmatchings/newlib/libm/math/kf_sin", S4);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/graphics_basic/nonmatchings/newlib/libm/math/kf_sin", S5);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/graphics_basic/nonmatchings/newlib/libm/math/kf_sin", S6);
+
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_basic/nonmatchings/newlib/libm/math/kf_sin", __kernel_sinf);
-
-INCLUDE_RODATA("tmp/asm/UTST99332/graphics_basic/nonmatchings/newlib/libm/math/kf_sin", __fdlib_version);
-
-INCLUDE_RODATA("tmp/asm/UTST99332/graphics_basic/nonmatchings/newlib/libm/math/kf_sin", huge_12724);

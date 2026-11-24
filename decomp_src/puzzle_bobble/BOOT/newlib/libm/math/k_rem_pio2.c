@@ -37,17 +37,3 @@ INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/newlib/libm/math/k_rem_p
 INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/newlib/libm/math/k_rem_pio2", D_000310A8);
 
 INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/newlib/libm/math/k_rem_pio2", D_000310AC);
-
-INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/newlib/libm/math/k_rem_pio2", half_310B0);
-
-INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/newlib/libm/math/k_rem_pio2", S1_310B8);
-
-INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/newlib/libm/math/k_rem_pio2", S2_310C0);
-
-INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/newlib/libm/math/k_rem_pio2", S3_310C8);
-
-INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/newlib/libm/math/k_rem_pio2", S4_310D0);
-
-INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/newlib/libm/math/k_rem_pio2", S5_310D8);
-
-INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/newlib/libm/math/k_rem_pio2", S6_310E0);

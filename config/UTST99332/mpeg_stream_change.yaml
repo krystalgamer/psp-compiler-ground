@@ -168,6 +168,7 @@ segments:
       - [0x12004, .rodata, newlib/libc/locale/locale]
       - [0x12048, .rodata, newlib/libc/stdlib/mprec]
       - [0x12180, .rodata, libgcc/dp-bit/__floatsidf]
+      - [0x12188, .rodata, libgcc/dp-bit/__pack_d]
   - name: mpeg_stream_change_seg1
     type: code
     start: 0x122A0

@@ -162,6 +162,7 @@ segments:
       - [0x10184, .rodata, newlib/libc/locale/locale]
       - [0x101C8, .rodata, newlib/libc/stdlib/mprec]
       - [0x10300, .rodata, libgcc/dp-bit/__floatsidf]
+      - [0x10308, .rodata, libgcc/dp-bit/__pack_d]
   - name: mpeg_mpegstr_pcm_seg1
     type: code
     start: 0x10420

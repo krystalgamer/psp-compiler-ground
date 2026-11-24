@@ -33,3 +33,23 @@ INCLUDE_ASM("tmp/asm/UTST99332/sound_at3mix/nonmatchings/newlib/libc/stdlib/mpre
 INCLUDE_ASM("tmp/asm/UTST99332/sound_at3mix/nonmatchings/newlib/libc/stdlib/mprec", _ratio);
 
 INCLUDE_ASM("tmp/asm/UTST99332/sound_at3mix/nonmatchings/newlib/libc/stdlib/mprec", _mprec_log10);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/sound_at3mix/nonmatchings/newlib/libc/stdlib/mprec", D_00021188);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/sound_at3mix/nonmatchings/newlib/libc/stdlib/mprec", __mprec_tens);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/sound_at3mix/nonmatchings/newlib/libc/stdlib/mprec", __mprec_bigtens);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/sound_at3mix/nonmatchings/newlib/libc/stdlib/mprec", D_00021280);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/sound_at3mix/nonmatchings/newlib/libc/stdlib/mprec", D_00021284);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/sound_at3mix/nonmatchings/newlib/libc/stdlib/mprec", __mprec_tinytens);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/sound_at3mix/nonmatchings/newlib/libc/stdlib/mprec", D_000212B0);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/sound_at3mix/nonmatchings/newlib/libc/stdlib/mprec", D_000212B4);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/sound_at3mix/nonmatchings/newlib/libc/stdlib/mprec", D_000212B8);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/sound_at3mix/nonmatchings/newlib/libc/stdlib/mprec", D_000212BC);

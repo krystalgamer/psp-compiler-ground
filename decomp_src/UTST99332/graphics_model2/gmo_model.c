@@ -1,5 +1,7 @@
 #include "common.h"
 
+INCLUDE_RODATA("tmp/asm/UTST99332/graphics_model2/nonmatchings/gmo_model", __psp_libinfo___1E760);
+
 INCLUDE_RODATA("tmp/asm/UTST99332/graphics_model2/nonmatchings/gmo_model", D_0001E778);
 
 INCLUDE_RODATA("tmp/asm/UTST99332/graphics_model2/nonmatchings/gmo_model", D_0001E788);

@@ -25,7 +25,3 @@ INCLUDE_RODATA("tmp/asm/UTST99332/graphics_texmat/nonmatchings/newlib/libm/math/
 INCLUDE_RODATA("tmp/asm/UTST99332/graphics_texmat/nonmatchings/newlib/libm/math/ef_rem_pio2", pio2_3t);
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_texmat/nonmatchings/newlib/libm/math/ef_rem_pio2", __ieee754_rem_pio2f);
-
-INCLUDE_RODATA("tmp/asm/UTST99332/graphics_texmat/nonmatchings/newlib/libm/math/ef_rem_pio2", one_12B14);
-
-INCLUDE_RODATA("tmp/asm/UTST99332/graphics_texmat/nonmatchings/newlib/libm/math/ef_rem_pio2", tiny_12B18);

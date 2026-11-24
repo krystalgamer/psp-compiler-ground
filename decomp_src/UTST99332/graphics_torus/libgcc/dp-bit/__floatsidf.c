@@ -5,7 +5,3 @@ INCLUDE_ASM("tmp/asm/UTST99332/graphics_torus/nonmatchings/libgcc/dp-bit/__float
 INCLUDE_RODATA("tmp/asm/UTST99332/graphics_torus/nonmatchings/libgcc/dp-bit/__floatsidf", D_00012EB8);
 
 INCLUDE_RODATA("tmp/asm/UTST99332/graphics_torus/nonmatchings/libgcc/dp-bit/__floatsidf", D_00012EBC);
-
-INCLUDE_RODATA("tmp/asm/UTST99332/graphics_torus/nonmatchings/libgcc/dp-bit/__floatsidf", __thenan_df);
-
-INCLUDE_RODATA("tmp/asm/UTST99332/graphics_torus/nonmatchings/libgcc/dp-bit/__floatsidf", __clz_tab);

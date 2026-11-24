@@ -142,6 +142,7 @@ segments:
       - [0xF7A4, .rodata, newlib/libc/locale/locale]
       - [0xF7E8, .rodata, newlib/libc/stdlib/mprec]
       - [0xF920, .rodata, libgcc/dp-bit/__floatsidf]
+      - [0xF928, .rodata, libgcc/dp-bit/__pack_d]
   - name: graphics_stars_seg1
     type: code
     start: 0xFA40

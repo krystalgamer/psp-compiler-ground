@@ -53,5 +53,3 @@ INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/newlib/libc/stdlib/mprec
 INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/newlib/libc/stdlib/mprec", D_000316A0);
 
 INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/newlib/libc/stdlib/mprec", D_000316A4);
-
-INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/newlib/libc/stdlib/mprec", __clz_tab);

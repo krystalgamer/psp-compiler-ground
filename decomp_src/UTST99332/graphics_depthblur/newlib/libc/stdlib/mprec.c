@@ -53,5 +53,3 @@ INCLUDE_RODATA("tmp/asm/UTST99332/graphics_depthblur/nonmatchings/newlib/libc/st
 INCLUDE_RODATA("tmp/asm/UTST99332/graphics_depthblur/nonmatchings/newlib/libc/stdlib/mprec", D_00018C30);
 
 INCLUDE_RODATA("tmp/asm/UTST99332/graphics_depthblur/nonmatchings/newlib/libc/stdlib/mprec", D_00018C34);
-
-INCLUDE_RODATA("tmp/asm/UTST99332/graphics_depthblur/nonmatchings/newlib/libc/stdlib/mprec", __clz_tab);

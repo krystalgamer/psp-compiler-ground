@@ -142,6 +142,7 @@ segments:
       - [0xF474, .rodata, newlib/libc/locale/locale]
       - [0xF4B8, .rodata, newlib/libc/stdlib/mprec]
       - [0xF5F0, .rodata, libgcc/dp-bit/__floatsidf]
+      - [0xF5F8, .rodata, libgcc/dp-bit/__pack_d]
   - [0xF710, bin, seg1_align]
   - name: graphics_callmode_seg1
     type: code

@@ -168,6 +168,7 @@ segments:
       - [0x1554C, .rodata, newlib/libc/locale/locale]
       - [0x15590, .rodata, newlib/libc/stdlib/mprec]
       - [0x156C8, .rodata, libgcc/dp-bit/__floatsidf]
+      - [0x156D0, .rodata, libgcc/dp-bit/__unpack_d]
   - [0x157E8, bin, seg1_align]
   - name: mpeg_mpegstr_gu_seg1
     type: code

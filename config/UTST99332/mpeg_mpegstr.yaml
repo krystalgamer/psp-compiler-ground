@@ -163,6 +163,7 @@ segments:
       - [0x101F4, .rodata, newlib/libc/locale/locale]
       - [0x10238, .rodata, newlib/libc/stdlib/mprec]
       - [0x10370, .rodata, libgcc/dp-bit/__floatsidf]
+      - [0x10378, .rodata, libgcc/dp-bit/__pack_d]
   - name: mpeg_mpegstr_seg1
     type: code
     start: 0x10490

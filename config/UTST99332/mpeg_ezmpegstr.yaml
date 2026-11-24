@@ -157,6 +157,7 @@ segments:
       - [0xF904, .rodata, newlib/libc/locale/locale]
       - [0xF948, .rodata, newlib/libc/stdlib/mprec]
       - [0xFA80, .rodata, libgcc/dp-bit/__floatsidf]
+      - [0xFA88, .rodata, libgcc/dp-bit/__pack_d]
   - name: mpeg_ezmpegstr_seg1
     type: code
     start: 0xFBA0

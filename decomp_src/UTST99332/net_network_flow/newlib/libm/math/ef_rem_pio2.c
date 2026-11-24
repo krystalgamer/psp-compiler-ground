@@ -25,7 +25,3 @@ INCLUDE_RODATA("tmp/asm/UTST99332/net_network_flow/nonmatchings/newlib/libm/math
 INCLUDE_RODATA("tmp/asm/UTST99332/net_network_flow/nonmatchings/newlib/libm/math/ef_rem_pio2", pio2_3t);
 
 INCLUDE_ASM("tmp/asm/UTST99332/net_network_flow/nonmatchings/newlib/libm/math/ef_rem_pio2", __ieee754_rem_pio2f);
-
-INCLUDE_RODATA("tmp/asm/UTST99332/net_network_flow/nonmatchings/newlib/libm/math/ef_rem_pio2", one_161EC);
-
-INCLUDE_RODATA("tmp/asm/UTST99332/net_network_flow/nonmatchings/newlib/libm/math/ef_rem_pio2", tiny_161F0);

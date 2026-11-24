@@ -1,17 +1,7 @@
 #include "common.h"
 
+INCLUDE_RODATA("tmp/asm/UTST99332/utility_basic/nonmatchings/newlib/libm/math/ef_sqrt", one_17A9C);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/utility_basic/nonmatchings/newlib/libm/math/ef_sqrt", tiny_17AA0);
+
 INCLUDE_ASM("tmp/asm/UTST99332/utility_basic/nonmatchings/newlib/libm/math/ef_sqrt", __ieee754_sqrtf);
-
-INCLUDE_RODATA("tmp/asm/UTST99332/utility_basic/nonmatchings/newlib/libm/math/ef_sqrt", one_17AA8);
-
-INCLUDE_RODATA("tmp/asm/UTST99332/utility_basic/nonmatchings/newlib/libm/math/ef_sqrt", C1);
-
-INCLUDE_RODATA("tmp/asm/UTST99332/utility_basic/nonmatchings/newlib/libm/math/ef_sqrt", C2);
-
-INCLUDE_RODATA("tmp/asm/UTST99332/utility_basic/nonmatchings/newlib/libm/math/ef_sqrt", C3);
-
-INCLUDE_RODATA("tmp/asm/UTST99332/utility_basic/nonmatchings/newlib/libm/math/ef_sqrt", C4);
-
-INCLUDE_RODATA("tmp/asm/UTST99332/utility_basic/nonmatchings/newlib/libm/math/ef_sqrt", C5);
-
-INCLUDE_RODATA("tmp/asm/UTST99332/utility_basic/nonmatchings/newlib/libm/math/ef_sqrt", C6);

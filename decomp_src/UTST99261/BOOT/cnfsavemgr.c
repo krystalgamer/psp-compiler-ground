@@ -1,5 +1,19 @@
 #include "common.h"
 
+INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/cnfsavemgr", D_00140B90);
+
+INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/cnfsavemgr", D_00140B94);
+
+INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/cnfsavemgr", D_00140BB4);
+
+INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/cnfsavemgr", D_00140BE0);
+
+INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/cnfsavemgr", D_00140C08);
+
+INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/cnfsavemgr", D_00140C24);
+
+INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/cnfsavemgr", D_00140C2C);
+
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/cnfsavemgr", localSetNetParam_E64DC);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/cnfsavemgr", DumpChar_E6534);

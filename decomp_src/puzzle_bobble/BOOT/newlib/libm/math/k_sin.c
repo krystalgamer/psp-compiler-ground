@@ -2,6 +2,20 @@
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/newlib/libm/math/k_sin", __kernel_sin);
 
+INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/newlib/libm/math/k_sin", half_310B0);
+
+INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/newlib/libm/math/k_sin", S1_310B8);
+
+INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/newlib/libm/math/k_sin", S2_310C0);
+
+INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/newlib/libm/math/k_sin", S3_310C8);
+
+INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/newlib/libm/math/k_sin", S4_310D0);
+
+INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/newlib/libm/math/k_sin", S5_310D8);
+
+INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/newlib/libm/math/k_sin", S6_310E0);
+
 INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/newlib/libm/math/k_sin", D_000310E8);
 
 INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/newlib/libm/math/k_sin", D_000310EC);
@@ -29,17 +43,3 @@ INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/newlib/libm/math/k_sin",
 INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/newlib/libm/math/k_sin", D_00031118);
 
 INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/newlib/libm/math/k_sin", D_0003111C);
-
-INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/newlib/libm/math/k_sin", one_31120);
-
-INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/newlib/libm/math/k_sin", C1_31124);
-
-INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/newlib/libm/math/k_sin", C2_31128);
-
-INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/newlib/libm/math/k_sin", C3_3112C);
-
-INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/newlib/libm/math/k_sin", C4_31130);
-
-INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/newlib/libm/math/k_sin", C5_31134);
-
-INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/newlib/libm/math/k_sin", C6_31138);

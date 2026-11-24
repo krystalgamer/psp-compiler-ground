@@ -25,7 +25,3 @@ INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/newlib/libm/math/ef_rem_
 INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/newlib/libm/math/ef_rem_pio2", pio2_3t_30F5C);
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/newlib/libm/math/ef_rem_pio2", __ieee754_rem_pio2f);
-
-INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/newlib/libm/math/ef_rem_pio2", one_30F84);
-
-INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/newlib/libm/math/ef_rem_pio2", tiny_30F88);

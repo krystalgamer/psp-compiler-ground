@@ -142,6 +142,7 @@ segments:
       - [0xFAAC, .rodata, newlib/libc/locale/locale]
       - [0xFAF0, .rodata, newlib/libc/stdlib/mprec]
       - [0xFC28, .rodata, libgcc/dp-bit/__floatsidf]
+      - [0xFC30, .rodata, libgcc/dp-bit/__pack_d]
   - [0xFD48, bin, seg1_align]
   - name: graphics_map_seg1
     type: code

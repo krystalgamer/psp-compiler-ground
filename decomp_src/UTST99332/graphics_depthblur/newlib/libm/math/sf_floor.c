@@ -1,11 +1,5 @@
 #include "common.h"
 
+INCLUDE_RODATA("tmp/asm/UTST99332/graphics_depthblur/nonmatchings/newlib/libm/math/sf_floor", huge_187C8);
+
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_depthblur/nonmatchings/newlib/libm/math/sf_floor", floorf);
-
-INCLUDE_RODATA("tmp/asm/UTST99332/graphics_depthblur/nonmatchings/newlib/libm/math/sf_floor", two25);
-
-INCLUDE_RODATA("tmp/asm/UTST99332/graphics_depthblur/nonmatchings/newlib/libm/math/sf_floor", twom25);
-
-INCLUDE_RODATA("tmp/asm/UTST99332/graphics_depthblur/nonmatchings/newlib/libm/math/sf_floor", huge_187D8);
-
-INCLUDE_RODATA("tmp/asm/UTST99332/graphics_depthblur/nonmatchings/newlib/libm/math/sf_floor", tiny_187DC);

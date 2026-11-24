@@ -27,5 +27,3 @@ INCLUDE_RODATA("tmp/asm/UTST99332/graphics_picture2/nonmatchings/crt0", D_00015B
 INCLUDE_RODATA("tmp/asm/UTST99332/graphics_picture2/nonmatchings/crt0", D_00015B30);
 
 INCLUDE_RODATA("tmp/asm/UTST99332/graphics_picture2/nonmatchings/crt0", D_00015B40);
-
-INCLUDE_RODATA("tmp/asm/UTST99332/graphics_picture2/nonmatchings/crt0", g_default_picture_names);

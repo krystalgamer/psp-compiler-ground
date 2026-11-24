@@ -2,6 +2,20 @@
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/newlib/libm/math/k_cos", __kernel_cos);
 
+INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/newlib/libm/math/k_cos", one_30F90);
+
+INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/newlib/libm/math/k_cos", C1_30F98);
+
+INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/newlib/libm/math/k_cos", C2_30FA0);
+
+INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/newlib/libm/math/k_cos", C3_30FA8);
+
+INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/newlib/libm/math/k_cos", C4_30FB0);
+
+INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/newlib/libm/math/k_cos", C5_30FB8);
+
+INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/newlib/libm/math/k_cos", C6_30FC0);
+
 INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/newlib/libm/math/k_cos", D_00030FC8);
 
 INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/newlib/libm/math/k_cos", D_00030FCC);
