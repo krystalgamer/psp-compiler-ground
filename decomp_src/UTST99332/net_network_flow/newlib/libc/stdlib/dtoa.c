@@ -49,5 +49,3 @@ INCLUDE_RODATA("tmp/asm/UTST99332/net_network_flow/nonmatchings/newlib/libc/stdl
 INCLUDE_RODATA("tmp/asm/UTST99332/net_network_flow/nonmatchings/newlib/libc/stdlib/dtoa", D_000167BC);
 
 INCLUDE_RODATA("tmp/asm/UTST99332/net_network_flow/nonmatchings/newlib/libc/stdlib/dtoa", D_000167C0);
-
-INCLUDE_RODATA("tmp/asm/UTST99332/net_network_flow/nonmatchings/newlib/libc/stdlib/dtoa", D_000167D8);

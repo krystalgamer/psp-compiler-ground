@@ -254,7 +254,7 @@ segments:
       - { start: 0x10CE14, type: prxpad, order: .rodata }
       - [0x10CE18, .rodata, crt0]
       - [0x10CE28, .rodata, main]
-      - [0x10D068, .rodata, load_modules]
+      - [0x10CF3C, .rodata, load_modules]
       - [0x10D180, .rodata, network]
       - [0x10D3B8, .rodata, browser]
       - [0x10D4C0, .rodata, dialog]
@@ -339,7 +339,7 @@ segments:
       - [0x145DA0, .rodata, newlib/libc/stdio/vfscanf]
       - [0x1461E8, .rodata, newlib/libc/stdlib/wctomb_r]
       - [0x146208, .rodata, newlib/libc/stdlib/dtoa]
-      - [0x14628C, .rodata, newlib/libc/locale/locale]
+      - [0x146288, .rodata, newlib/libc/locale/locale]
       - [0x1462D0, .rodata, newlib/libc/stdlib/mbrtowc]
       - [0x1462D8, .rodata, newlib/libc/stdlib/mprec]
   - [0x146410, bin, seg1_align]

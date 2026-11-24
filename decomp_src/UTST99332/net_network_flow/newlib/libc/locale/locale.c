@@ -1,5 +1,7 @@
 #include "common.h"
 
+INCLUDE_RODATA("tmp/asm/UTST99332/net_network_flow/nonmatchings/newlib/libc/locale/locale", D_000167D8);
+
 INCLUDE_RODATA("tmp/asm/UTST99332/net_network_flow/nonmatchings/newlib/libc/locale/locale", D_000167DC);
 
 INCLUDE_RODATA("tmp/asm/UTST99332/net_network_flow/nonmatchings/newlib/libc/locale/locale", lconv);

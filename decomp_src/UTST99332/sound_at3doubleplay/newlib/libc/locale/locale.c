@@ -1,5 +1,7 @@
 #include "common.h"
 
+INCLUDE_RODATA("tmp/asm/UTST99332/sound_at3doubleplay/nonmatchings/newlib/libc/locale/locale", D_00020460);
+
 INCLUDE_RODATA("tmp/asm/UTST99332/sound_at3doubleplay/nonmatchings/newlib/libc/locale/locale", D_00020464);
 
 INCLUDE_RODATA("tmp/asm/UTST99332/sound_at3doubleplay/nonmatchings/newlib/libc/locale/locale", lconv);

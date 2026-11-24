@@ -179,7 +179,7 @@ segments:
       - { start: 0x1E518, type: rodata, name: eh_frame, linker_section: .eh_frame }
       - { start: 0x1E57C, type: prxpad, order: .rodata }
       - [0x1E580, .rodata, crt0]
-      - [0x1E5F0, .rodata, main]
+      - [0x1E590, .rodata, main]
       - [0x1E784, .rodata, menu]
       - [0x1E7DC, .rodata, gmo_callback]
       - [0x1E7E0, .rodata, gmo_model]
@@ -208,7 +208,7 @@ segments:
       - [0x1FB88, .rodata, newlib/libc/stdio/vfprintf]
       - [0x1FD68, .rodata, newlib/libc/stdlib/wctomb_r]
       - [0x1FD88, .rodata, newlib/libc/stdlib/dtoa]
-      - [0x1FE0C, .rodata, newlib/libc/locale/locale]
+      - [0x1FE08, .rodata, newlib/libc/locale/locale]
       - [0x1FE50, .rodata, newlib/libc/stdlib/mprec]
       - [0x1FF88, .rodata, libgcc/dp-bit/__floatsidf]
       - [0x1FF90, .rodata, libgcc/dp-bit/__fpcmp_parts_d]

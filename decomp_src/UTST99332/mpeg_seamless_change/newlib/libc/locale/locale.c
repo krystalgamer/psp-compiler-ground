@@ -1,5 +1,7 @@
 #include "common.h"
 
+INCLUDE_RODATA("tmp/asm/UTST99332/mpeg_seamless_change/nonmatchings/newlib/libc/locale/locale", D_00012128);
+
 INCLUDE_RODATA("tmp/asm/UTST99332/mpeg_seamless_change/nonmatchings/newlib/libc/locale/locale", D_0001212C);
 
 INCLUDE_RODATA("tmp/asm/UTST99332/mpeg_seamless_change/nonmatchings/newlib/libc/locale/locale", lconv);

@@ -165,7 +165,7 @@ segments:
       - { start: 0x151A0, type: rodata, name: eh_frame, linker_section: .eh_frame }
       - { start: 0x15204, type: prxpad, order: .rodata }
       - [0x15210, .rodata, crt0]
-      - [0x15274, .rodata, main]
+      - [0x15220, .rodata, main]
       - [0x15550, .rodata, dragon]
       - [0x178D0, .rodata, depthblur]
       - [0x17920, .rodata, menu]
@@ -191,7 +191,7 @@ segments:
       - [0x188B4, .rodata, newlib/libc/stdio/vfprintf]
       - [0x18A94, .rodata, newlib/libc/stdlib/wctomb_r]
       - [0x18AB8, .rodata, newlib/libc/stdlib/dtoa]
-      - [0x18B3C, .rodata, newlib/libc/locale/locale]
+      - [0x18B38, .rodata, newlib/libc/locale/locale]
       - [0x18B80, .rodata, newlib/libc/stdlib/mprec]
       - [0x18CB8, rodata, asm/rodata_18C38]
   - [0x18DB8, bin, seg1_align]

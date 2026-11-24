@@ -2,6 +2,10 @@
 
 INCLUDE_ASM("tmp/asm/UTST99332/sound_at3streaming/nonmatchings/at3loadmodule", load_module);
 
+INCLUDE_RODATA("tmp/asm/UTST99332/sound_at3streaming/nonmatchings/at3loadmodule", D_0001F0F4);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/sound_at3streaming/nonmatchings/at3loadmodule", D_0001F124);
+
 INCLUDE_RODATA("tmp/asm/UTST99332/sound_at3streaming/nonmatchings/at3loadmodule", moduleInfo);
 
 INCLUDE_ASM("tmp/asm/UTST99332/sound_at3streaming/nonmatchings/at3loadmodule", unload_module);

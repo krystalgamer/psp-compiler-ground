@@ -206,7 +206,7 @@ segments:
       - [0x1EB28, .rodata, newlib/libc/stdio/vfprintf]
       - [0x1ED08, .rodata, newlib/libc/stdlib/wctomb_r]
       - [0x1ED28, .rodata, newlib/libc/stdlib/dtoa]
-      - [0x1EDAC, .rodata, newlib/libc/locale/locale]
+      - [0x1EDA8, .rodata, newlib/libc/locale/locale]
       - [0x1EDF0, .rodata, newlib/libc/stdlib/mprec]
       - [0x1EF28, .rodata, libgcc/dp-bit/__floatsidf]
       - [0x1EF30, .rodata, libgcc/dp-bit/__fpcmp_parts_d]

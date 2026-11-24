@@ -1,5 +1,13 @@
 #include "common.h"
 
+INCLUDE_RODATA("tmp/asm/UTST99332/net_matching_stick/nonmatchings/stick_main", D_00019364);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/net_matching_stick/nonmatchings/stick_main", D_0001936C);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/net_matching_stick/nonmatchings/stick_main", D_00019374);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/net_matching_stick/nonmatchings/stick_main", D_0001937C);
+
 INCLUDE_RODATA("tmp/asm/UTST99332/net_matching_stick/nonmatchings/stick_main", room_color_str);
 
 INCLUDE_RODATA("tmp/asm/UTST99332/net_matching_stick/nonmatchings/stick_main", D_00019398);

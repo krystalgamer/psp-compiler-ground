@@ -1,5 +1,7 @@
 #include "common.h"
 
+INCLUDE_RODATA("tmp/asm/UTST99332/graphics_morph/nonmatchings/newlib/libc/locale/locale", D_000182D8);
+
 INCLUDE_RODATA("tmp/asm/UTST99332/graphics_morph/nonmatchings/newlib/libc/locale/locale", D_000182DC);
 
 INCLUDE_RODATA("tmp/asm/UTST99332/graphics_morph/nonmatchings/newlib/libc/locale/locale", lconv);

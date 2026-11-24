@@ -49,5 +49,3 @@ INCLUDE_RODATA("tmp/asm/UTST99332/sound_stringsound/nonmatchings/newlib/libc/std
 INCLUDE_RODATA("tmp/asm/UTST99332/sound_stringsound/nonmatchings/newlib/libc/stdlib/dtoa", D_00020B54);
 
 INCLUDE_RODATA("tmp/asm/UTST99332/sound_stringsound/nonmatchings/newlib/libc/stdlib/dtoa", D_00020B58);
-
-INCLUDE_RODATA("tmp/asm/UTST99332/sound_stringsound/nonmatchings/newlib/libc/stdlib/dtoa", D_00020B70);

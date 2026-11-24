@@ -49,5 +49,3 @@ INCLUDE_RODATA("tmp/asm/sampler/sampler/nonmatchings/newlib/libc/stdlib/dtoa", D
 INCLUDE_RODATA("tmp/asm/sampler/sampler/nonmatchings/newlib/libc/stdlib/dtoa", D_000177EC);
 
 INCLUDE_RODATA("tmp/asm/sampler/sampler/nonmatchings/newlib/libc/stdlib/dtoa", D_000177F0);
-
-INCLUDE_RODATA("tmp/asm/sampler/sampler/nonmatchings/newlib/libc/stdlib/dtoa", D_00017808);

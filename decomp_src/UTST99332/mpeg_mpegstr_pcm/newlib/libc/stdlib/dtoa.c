@@ -49,5 +49,3 @@ INCLUDE_RODATA("tmp/asm/UTST99332/mpeg_mpegstr_pcm/nonmatchings/newlib/libc/stdl
 INCLUDE_RODATA("tmp/asm/UTST99332/mpeg_mpegstr_pcm/nonmatchings/newlib/libc/stdlib/dtoa", D_000100E4);
 
 INCLUDE_RODATA("tmp/asm/UTST99332/mpeg_mpegstr_pcm/nonmatchings/newlib/libc/stdlib/dtoa", D_000100E8);
-
-INCLUDE_RODATA("tmp/asm/UTST99332/mpeg_mpegstr_pcm/nonmatchings/newlib/libc/stdlib/dtoa", D_00010100);

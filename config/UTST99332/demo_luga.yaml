@@ -232,7 +232,7 @@ segments:
       - [0x22BA0, .rodata, newlib/libc/stdio/vfprintf]
       - [0x22D80, .rodata, newlib/libc/stdlib/wctomb_r]
       - [0x22DA0, .rodata, newlib/libc/stdlib/dtoa]
-      - [0x22E24, .rodata, newlib/libc/locale/locale]
+      - [0x22E20, .rodata, newlib/libc/locale/locale]
       - [0x22E68, .rodata, newlib/libc/stdlib/mprec]
       - [0x22FA0, .rodata, libgcc/dp-bit/__floatsidf]
       - [0x22FA8, .rodata, libgcc/dp-bit/__fpcmp_parts_d]

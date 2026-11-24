@@ -6,6 +6,18 @@ INCLUDE_ASM("tmp/asm/UTST99332/graphics_model2/nonmatchings/main", free16);
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_model2/nonmatchings/main", main);
 
+INCLUDE_RODATA("tmp/asm/UTST99332/graphics_model2/nonmatchings/main", D_0001E510);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/graphics_model2/nonmatchings/main", D_0001E520);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/graphics_model2/nonmatchings/main", D_0001E530);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/graphics_model2/nonmatchings/main", D_0001E540);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/graphics_model2/nonmatchings/main", D_0001E550);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/graphics_model2/nonmatchings/main", D_0001E560);
+
 INCLUDE_RODATA("tmp/asm/UTST99332/graphics_model2/nonmatchings/main", g_default_model_names);
 
 INCLUDE_RODATA("tmp/asm/UTST99332/graphics_model2/nonmatchings/main", D_0001E588);

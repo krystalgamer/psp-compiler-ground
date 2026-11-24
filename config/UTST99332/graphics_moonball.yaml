@@ -178,7 +178,7 @@ segments:
       - [0x14FBC, .rodata, newlib/libc/stdio/vfprintf]
       - [0x1519C, .rodata, newlib/libc/stdlib/wctomb_r]
       - [0x151C0, .rodata, newlib/libc/stdlib/dtoa]
-      - [0x15244, .rodata, newlib/libc/locale/locale]
+      - [0x15240, .rodata, newlib/libc/locale/locale]
       - [0x15288, .rodata, newlib/libc/stdlib/mprec]
       - [0x153C0, .rodata, libgcc/dp-bit/__floatsidf]
       - [0x153C8, .rodata, libgcc/dp-bit/__fpcmp_parts_d]

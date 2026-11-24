@@ -232,7 +232,17 @@ def rodata_owners(elf, data, segs, units, rodata):
                 src = unit_at(loc) if loc < units[-1][0] + 0x10000000 and loc < rodata.addr else None
             elif typ == 2 and rodata.addr <= loc < rodata.addr + rodata.size:
                 # e.g. jump tables: owned by the unit of the code they point to
-                target, src = loc, unit_at(insn + segs[ab]["p_vaddr"]) if insn + segs[ab]["p_vaddr"] < rodata.addr else None
+                ptr = insn + segs[ab]["p_vaddr"]
+                if ptr < rodata.addr:
+                    target, src = loc, unit_at(ptr)
+                elif ptr < rodata.addr + rodata.size and obj_owner(loc) is not None:
+                    # e.g. a const table of strings: they go with the table
+                    target, src = ptr, obj_owner(loc)[2]
+                    if src is not None and obj_owner(ptr) is None:
+                        refs[target].add(src)
+                    continue
+                else:
+                    continue
             else:
                 continue
             if src is not None and rodata.addr <= target < rodata.addr + rodata.size:

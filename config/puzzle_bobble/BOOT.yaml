@@ -199,7 +199,7 @@ segments:
       - [0x31328, .rodata, newlib/libc/stdio/vfprintf]
       - [0x31508, .rodata, newlib/libc/stdlib/wctomb_r]
       - [0x31528, .rodata, newlib/libc/stdlib/dtoa]
-      - [0x315AC, .rodata, newlib/libc/locale/locale]
+      - [0x315A8, .rodata, newlib/libc/locale/locale]
       - [0x315F0, .rodata, newlib/libc/stdlib/mprec]
       - [0x31728, rodata, asm/rodata_316A8]
   - [0x31828, bin, seg1_align]

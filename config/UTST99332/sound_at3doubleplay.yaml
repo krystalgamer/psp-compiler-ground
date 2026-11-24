@@ -186,7 +186,7 @@ segments:
       - [0x20260, .rodata, newlib/libc/stdio/vfprintf]
       - [0x20440, .rodata, newlib/libc/stdlib/wctomb_r]
       - [0x20460, .rodata, newlib/libc/stdlib/dtoa]
-      - [0x204E4, .rodata, newlib/libc/locale/locale]
+      - [0x204E0, .rodata, newlib/libc/locale/locale]
       - [0x20528, .rodata, newlib/libc/stdlib/mprec]
       - [0x20660, .rodata, libgcc/dp-bit/__floatsidf]
       - [0x20668, .rodata, libgcc/dp-bit/__fpcmp_parts_d]

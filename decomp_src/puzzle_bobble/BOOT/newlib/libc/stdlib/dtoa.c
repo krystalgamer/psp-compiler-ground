@@ -49,5 +49,3 @@ INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/newlib/libc/stdlib/dtoa"
 INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/newlib/libc/stdlib/dtoa", D_0003150C);
 
 INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/newlib/libc/stdlib/dtoa", D_00031510);
-
-INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/newlib/libc/stdlib/dtoa", D_00031528);

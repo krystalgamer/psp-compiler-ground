@@ -1,5 +1,7 @@
 #include "common.h"
 
+INCLUDE_RODATA("tmp/asm/sampler/sampler/nonmatchings/newlib/libc/locale/locale", D_00017808);
+
 INCLUDE_RODATA("tmp/asm/sampler/sampler/nonmatchings/newlib/libc/locale/locale", D_0001780C);
 
 INCLUDE_RODATA("tmp/asm/sampler/sampler/nonmatchings/newlib/libc/locale/locale", lconv);

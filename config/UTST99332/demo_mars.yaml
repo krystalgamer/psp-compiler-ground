@@ -180,7 +180,7 @@ segments:
       - [0x146B8, .rodata, newlib/libc/stdio/vfprintf]
       - [0x14898, .rodata, newlib/libc/stdlib/wctomb_r]
       - [0x148B8, .rodata, newlib/libc/stdlib/dtoa]
-      - [0x1493C, .rodata, newlib/libc/locale/locale]
+      - [0x14938, .rodata, newlib/libc/locale/locale]
       - [0x14980, .rodata, newlib/libc/stdlib/mprec]
       - [0x14AB8, .rodata, libgcc/dp-bit/__floatsidf]
       - [0x14AC0, rodata, asm/rodata_14A40]

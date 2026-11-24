@@ -49,5 +49,3 @@ INCLUDE_RODATA("tmp/asm/UTST99332/utility_font_basho/nonmatchings/newlib/libc/st
 INCLUDE_RODATA("tmp/asm/UTST99332/utility_font_basho/nonmatchings/newlib/libc/stdlib/dtoa", D_00014514);
 
 INCLUDE_RODATA("tmp/asm/UTST99332/utility_font_basho/nonmatchings/newlib/libc/stdlib/dtoa", D_00014518);
-
-INCLUDE_RODATA("tmp/asm/UTST99332/utility_font_basho/nonmatchings/newlib/libc/stdlib/dtoa", D_00014530);

@@ -49,5 +49,3 @@ INCLUDE_RODATA("tmp/asm/UTST99332/graphics_editspline/nonmatchings/newlib/libc/s
 INCLUDE_RODATA("tmp/asm/UTST99332/graphics_editspline/nonmatchings/newlib/libc/stdlib/dtoa", D_000138CC);
 
 INCLUDE_RODATA("tmp/asm/UTST99332/graphics_editspline/nonmatchings/newlib/libc/stdlib/dtoa", D_000138D0);
-
-INCLUDE_RODATA("tmp/asm/UTST99332/graphics_editspline/nonmatchings/newlib/libc/stdlib/dtoa", D_000138E8);
