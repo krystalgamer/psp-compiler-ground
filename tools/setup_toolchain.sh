@@ -57,8 +57,11 @@ fi
 cat > "$T/bin/rh9" <<EOF
 #!/bin/sh
 # Run a command inside the Red Hat 9 i386 sandbox.
+# RH9_PSP=VERSION mounts the psp binutils and newlib headers of the 1.3.1
+# release at /usr/local/psp/gcc-VERSION/psp, as the gcc build expects.
 exec bwrap --dev-bind / / --ro-bind /usr/lib /tmp/.rh9hostlib --ro-bind "$R/lib" /usr/lib \\
   --ro-bind "$R/root/usr/include" /usr/include --tmpfs /usr/local \\
+  \${RH9_PSP:+--ro-bind "$T/psp-gcc-1.3.1/psp" /usr/local/psp/gcc-\$RH9_PSP/psp} \\
   --setenv PATH "$T/bin/psp:$R/root/usr/bin:/usr/bin:/bin" --setenv LC_ALL C \\
   --setenv BISON_SIMPLE "$R/root/usr/share/bison/bison.simple" setarch i686 "\$@"
 EOF
