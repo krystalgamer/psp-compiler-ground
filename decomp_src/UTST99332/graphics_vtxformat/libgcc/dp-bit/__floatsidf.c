@@ -1,0 +1,3 @@
+#include "common.h"
+
+INCLUDE_ASM("tmp/asm/UTST99332/graphics_vtxformat/nonmatchings/libgcc/dp-bit/__floatsidf", __floatsidf);

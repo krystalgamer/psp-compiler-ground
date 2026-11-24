@@ -1,0 +1,3 @@
+#include "common.h"
+
+INCLUDE_ASM("tmp/asm/UTST99332/graphics_break/nonmatchings/newlib/libm/math/s_isnan", isnan);
