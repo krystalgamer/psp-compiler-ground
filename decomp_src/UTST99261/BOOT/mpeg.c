@@ -1,14 +1,53 @@
 #include "common.h"
+#include <stdio.h>
+#include <string.h>
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mpeg", mpegInit);
+extern int iPspBrowserApMode;
+extern char mpegFilename[320];
 
-void mpegExit(void) {
+int pspBrowserAddAnchor(const char *ext, int (*cb)(char *, char *));
+void soundExit(void);
+int soundInit(void);
+int gInit(void);
+int mpeg_main(char *filename);
+
+int mpegCallback(char *filename, char *data);
+
+int mpegInit(void)
+{
+	return 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mpeg", mepgAdd);
+void mpegExit(void)
+{
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mpeg", mpegExec);
+int mepgAdd(void)
+{
+	pspBrowserAddAnchor("move", mpegCallback);
+	return 0;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mpeg", mpegEnd);
+int mpegExec(void)
+{
+	puts("mpeg Exec");
+	soundExit();
+	mpeg_main(mpegFilename);
+	puts("mpeg Exec End");
+	soundInit();
+	gInit();
+	return 5;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mpeg", mpegCallback);
+int mpegEnd()
+{
+	return 0;
+}
+
+int mpegCallback(char *filename, char *data)
+{
+	strcpy(mpegFilename, filename);
+	printf("mpeg file = { %s ][ %s\n", mpegFilename, data);
+	iPspBrowserApMode = 0x12;
+	return 0;
+}
