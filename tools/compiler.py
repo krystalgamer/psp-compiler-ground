@@ -15,12 +15,25 @@ def table(path):
     return out
 
 
-def compiler(target, module, unit):
+def entry(target, module, unit):
     units = table(ROOT / "config" / target / f"units.{module}.txt")
     comp = table(ROOT / "config" / "compilers.txt")
     ver = units[unit][0] if unit in units else "1.6.1"
-    return comp[ver][0]
+    return comp[ver]
+
+
+def compiler(target, module, unit):
+    """cc1 name (tmp/toolchains/bin/cc1-NAME) for a unit."""
+    return entry(target, module, unit)[0]
+
+
+def driver_flags(target, module, unit):
+    """cc1 options the unit's psp-gcc driver adds."""
+    return " ".join(entry(target, module, unit)[1:])
 
 
 if __name__ == "__main__":
-    print(compiler(*sys.argv[1:4]))
+    if sys.argv[1] == "--flags":
+        print(driver_flags(*sys.argv[2:5]))
+    else:
+        print(compiler(*sys.argv[1:4]))

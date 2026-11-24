@@ -30,7 +30,7 @@ O_FILES   = $(foreach f,$(S_FILES) $(C_FILES) $(BIN_FILES),$(BUILD)/$(f).o)
 # The compiler of a unit: the version in units.MODULE.txt, mapped by
 # config/compilers.txt to a cc1 in tmp/toolchains/bin.
 unit_of = $(patsubst decomp_src/$(TARGET)/$(MODULE)/%.c,%,$(1))
-cc1_of  = $(TOOLS)/cc1-$(shell $(PYTHON) tools/compiler.py $(TARGET) $(MODULE) $(call unit_of,$(1)))
+cc1_of  = $(TOOLS)/cc1-$(shell $(PYTHON) tools/compiler.py $(TARGET) $(MODULE) $(call unit_of,$(1))) $(shell $(PYTHON) tools/compiler.py --flags $(TARGET) $(MODULE) $(call unit_of,$(1)))
 
 .PHONY: all extract split clean distclean toolchain
 .DEFAULT_GOAL := all

@@ -1,8 +1,9 @@
-# psp-gcc version (DW_AT_producer / .comment) -> cc1 in tmp/toolchains/bin
+# psp-gcc version (DW_AT_producer / .comment) -> cc1 in tmp/toolchains/bin,
+# then the options the psp-gcc driver of that version passes to cc1.
 # Versions we have no reconstruction of use the nearest one we do.
-1.4.0           1.5.1
-1.5.0.internal  1.5.1
-1.5.1           1.5.1
-1.5.1.internal  1.5.1
+1.4.0           1.5.1   -mno-ulsw
+1.5.0.internal  1.5.1   -mno-ulsw
+1.5.1           1.5.1   -mno-ulsw
+1.5.1.internal  1.5.1   -mno-ulsw
 1.6.1           1.6.1
 1.6.1.internal  1.6.1

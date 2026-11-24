@@ -46,7 +46,7 @@ def clean(draft):
     return t
 
 
-def try_func(target, module, unit, func, ctx, mod, cc1):
+def try_func(target, module, unit, func, ctx, mod, cc1, dflags=""):
     draft, _ = m2cdraft.draft(target, module, unit, func)
     if not draft:
         return None, None
@@ -58,7 +58,7 @@ def try_func(target, module, unit, func, ctx, mod, cc1):
         f = Path(td) / "t.c"
         f.write_text(src)
         for flags in ("-O2", "-Os"):
-            o = fntest.compile_c(f, cc1, flags, Path(td) / "t.o")
+            o = fntest.compile_c(f, cc1, f"{flags} {dflags}", Path(td) / "t.o")
             if o is None:
                 return "error", body
             r = objcmp.compare(mod, [o]).get(func)
@@ -85,7 +85,7 @@ def main():
         funcs = re.findall(r'INCLUDE_ASM\("[^"]+", (\w+)\);', cpath.read_text()) if cpath.exists() else []
         for fn in funcs:
             total += 1
-            res, body = try_func(a.target, a.module, u, fn, ctx, mod, cc1)
+            res, body = try_func(a.target, a.module, u, fn, ctx, mod, cc1, compiler.driver_flags(a.target, a.module, u))
             print(f"{str(res):14} {u}:{fn}", flush=True)
             if res in ("-O2", "-Os"):
                 ok += 1
