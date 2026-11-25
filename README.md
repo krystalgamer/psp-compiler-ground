@@ -5,7 +5,8 @@ built. The decompiled sources in `decomp_src/` are the tests: each compiler
 version is right when it turns them back into the original machine code.
 
 - `inputs/` – the original modules (`151_and_161.zip`, plus `bigbangbang.prx`
-  and `tony_libs.zip`, 13 stripped 1.5.1.internal firmware modules); **not committed**
+  `tony_libs.zip`, 13 stripped 1.5.1.internal firmware modules, and
+  `psp_devkit.zip`/`psp_sdk_660.7z`, SDKs with library sources); **not committed**
 - `config/` – splat configs, one per module
 - `decomp_src/` – decompiled C, per module
 - `gcc1.5.1_src/`, `gcc1.6.1_src/` – GCC 3.3.3 trees for psp-gcc 1.5.1 and

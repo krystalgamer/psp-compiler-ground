@@ -243,6 +243,25 @@ modules (`tools/nltest.py`, `tools/objcmp.py`).
   mix C with asm (`mixed:`, so C and asm floats stay in one section in
   emission order) until they are all C.
 
+## psp-gcc 1.4.0.internal
+
+- The PSP devkit 0.6.0 ships library sources with the libraries built from
+  them (`.comment` 1.4.0.internal) and their Makefiles' flags.
+  `tools/libtest.py` compiles each source with a cc1 and compares every
+  function with the shipped object. With 1.3.1's original cc1 all of them
+  are reproduced: libgmo_model 203/203, libgim_picture 70/70 (`-O2
+  -std=gnu9x`), libvfpu 251/251, libfpu 41/41, libsha1 3/3, libmt19937 1/1
+  (`-O4 -G0`). So 1.4.0.internal is 1.3.1's compiler, like 1.5.0.internal.
+- The 1.5.1 tree fails 23 gmo_model, 13 gim_picture and 1 vfpu function
+  (`sceVfpuColorToRGB565`), all where 1.4.0 uses `movz`/`movn`, which
+  confirms from real sources that the condmove change is new in 1.5.1.
+- 1.6.1's and 1.7.1's cc1 differ in `sceGmoBoneLoad` and libsha1, which
+  confirms from real sources that 1.6.1's patches are not in 1.4.0.
+- `config/compilers.txt` now maps 1.4.0 to `cc1-1.3.1-orig` (it was the
+  1.5.1 tree, unconfirmed).
+- The sources need newlib's `math.h` and a C99 `stdbool.h`
+  (`tmp/sdk/inc`) besides `include/libc` and the devkit's `include/`.
+
 ## psp-gcc 1.5.0.internal
 
 - Only sampler's libmpeg/libpsmf objects (libpsmf, psmfBase,
