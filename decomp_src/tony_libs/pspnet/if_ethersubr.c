@@ -23,9 +23,46 @@ char *func_000069D4(const u_char *ap)
 	return D_0000B098;
 }
 
-INCLUDE_ASM("tmp/asm/tony_libs/pspnet/nonmatchings/if_ethersubr", func_00006A40);
+void func_00006A40(struct ifnet *ifp, const u_char *lla)
+{
+	struct sockaddr_dl *sdl;
 
-INCLUDE_ASM("tmp/asm/tony_libs/pspnet/nonmatchings/if_ethersubr", func_00006B10);
+	ifp->if_type = 6;
+	ifp->if_addrlen = 6;
+	ifp->if_hdrlen = 14;
+	ifp->if_mtu = 1500;
+	ifp->if_output = func_000071C8;
+	ifp->if_input = func_00006E34;
+	if (ifp->if_baudrate == 0)
+		ifp->if_baudrate = 10000000;
+	if ((sdl = ifp->if_sadl) != NULL && sdl->sdl_family == 18) {
+		sdl->sdl_type = 6;
+		sdl->sdl_alen = ifp->if_addrlen;
+		bcopy(lla, sdl->sdl_data + sdl->sdl_nlen, ifp->if_addrlen);
+	}
+	ifp->ec_multiaddrs = NULL;
+	ifp->if_unkE4 = D_0000A0B0;
+}
+
+void func_00006B10(struct ifnet *ifp)
+{
+	struct ether_multi *enm;
+	struct sockaddr_dl *sdl = ifp->if_sadl;
+	int s;
+
+	s = _sce_pspnet_spllock();
+	while ((enm = ifp->ec_multiaddrs) != NULL) {
+		if (enm->enm_next != NULL)
+			enm->enm_next->enm_prev = enm->enm_prev;
+		*enm->enm_prev = enm->enm_next;
+		sceNetFreeInternal(enm);
+		ifp->ec_multicnt--;
+	}
+	_sce_pspnet_splunlock(s);
+	__builtin_memset(sdl->sdl_data + sdl->sdl_nlen, 0, 6);
+	sdl->sdl_alen = 0;
+	sdl->sdl_type = 0;
+}
 
 u_int func_00006BBC(const u_char *buf, u_int len)
 {
@@ -66,7 +103,23 @@ u_int func_00006C28(const u_char *buf, u_int len)
 	return crc;
 }
 
-INCLUDE_ASM("tmp/asm/tony_libs/pspnet/nonmatchings/if_ethersubr", func_00006C90);
+int func_00006C90(struct sockaddr *sa, u_char *addrlo, u_char *addrhi)
+{
+	int handled;
+	int ret;
+
+	if (D_0000B090 > 0) {
+		handled = 0;
+		ret = ((int (*)(struct sockaddr *, u_char *, u_char *, int *))D_0000B088)(sa, addrlo, addrhi, &handled);
+		if (handled > 0)
+			return ret;
+	}
+	if (sa->sa_family != 0)
+		return 0x6A;
+	bcopy(sa->sa_data, addrlo, 6);
+	bcopy(addrlo, addrhi, 6);
+	return 0;
+}
 
 struct ifnet *_sce_pspnet_ifplookup_lladdr(const u_char *lla)
 {

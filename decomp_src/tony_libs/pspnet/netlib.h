@@ -378,7 +378,10 @@ struct ifnet {
 	u_char if_addrlen;
 	u_char if_hdrlen;
 	int if_link_state;
-	char unk40[0x88 - 0x40];
+	unsigned long long if_mtu;
+	unsigned long long if_metric;
+	unsigned long long if_baudrate;
+	char unk58[0x88 - 0x58];
 	unsigned long long if_obytes;
 	char unk90[0xB0 - 0x90];
 	int (*if_output)(struct ifnet *, struct mbuf *, void *, void *);
@@ -402,6 +405,18 @@ struct ifnet {
 	int if_iopending;
 	int if_iostatus;
 	TAILQ_HEAD(, ifevent) if_evq;
+	char unk118[0x128 - 0x118];
+	struct ether_multi *ec_multiaddrs;
+	int ec_multicnt;
+};
+
+struct ether_multi {
+	u_char enm_addrlo[6];
+	u_char enm_addrhi[6];
+	void *enm_ec;
+	int enm_refcount;
+	struct ether_multi *enm_next;
+	struct ether_multi **enm_prev;
 };
 TAILQ_HEAD(ifnet_head, ifnet);
 
@@ -458,7 +473,7 @@ void func_00004160(struct ifnet *ifp);
 void func_00006B10(struct ifnet *ifp);
 void _sce_pspnet_if_detach(struct ifnet *ifp);
 void _sce_pspnet_if_attach(struct ifnet *ifp);
-void func_00006A40(struct ifnet *ifp, u_char *lla);
+void func_00006A40(struct ifnet *ifp, const u_char *lla);
 void func_00004594(struct bpf_if **driverp, struct ifnet *ifp, u_int dlt, u_int hdrlen);
 void func_00007680(struct ifnet *ifp);
 int func_000071FC(struct ifnet *ifp, u_long cmd, void *data);
@@ -711,5 +726,12 @@ extern void *D_0000B080;
 extern void *D_0000B084;
 extern void *D_0000B088;
 extern void *D_0000B08C;
+
+extern u_char D_0000A0B0[6];
+extern void *D_0000B0AC;
+extern int D_0000B0B0;
+void func_00006E34(struct ifnet *ifp, struct mbuf *m);
+int func_000071C8(struct ifnet *ifp, struct mbuf *m, void *dst, void *rt);
+int sceNetIfhandleIfStart(struct ifnet *ifp, struct mbuf *m);
 
 #endif
