@@ -330,6 +330,7 @@ void sceNetFreeInternal(void *p);
 #define AF_UNSPEC 0
 #define AF_LOCAL 1
 #define AF_INET 2
+#define AF_IMPLINK 3
 #define AF_NS 6
 #define AF_ISO 7
 #define AF_IPX 23
@@ -2165,5 +2166,96 @@ struct in_multistep {
 #define ip_output func_00016F60
 int ip_output(struct mbuf *m0, ...);
 void rip_input(struct mbuf *m, ...);
+
+/* ip_var.h */
+struct ipstat_t {
+	u_quad_t ips_total;
+	u_quad_t ips_badsum;
+	u_quad_t ips_tooshort;
+	u_quad_t ips_toosmall;
+	u_quad_t ips_badhlen;
+	u_quad_t ips_badlen;
+	u_quad_t ips_fragments;
+	u_quad_t ips_fragdropped;
+	u_quad_t ips_fragtimeout;
+	u_quad_t ips_forward;
+	u_quad_t ips_fastforward;
+	u_quad_t ips_cantforward;
+	u_quad_t ips_redirectsent;
+	u_quad_t ips_noproto;
+	u_quad_t ips_delivered;
+	u_quad_t ips_localout;
+	u_quad_t ips_odropped;
+	u_quad_t ips_reassembled;
+	u_quad_t ips_fragmented;
+	u_quad_t ips_ofragments;
+	u_quad_t ips_cantfrag;
+	u_quad_t ips_badoptions;
+	u_quad_t ips_noroute;
+	u_quad_t ips_badvers;
+	u_quad_t ips_rawout;
+	u_quad_t ips_badfrags;
+	u_quad_t ips_rcvmemdrop;
+	u_quad_t ips_toolong;
+	u_quad_t ips_nogif;
+};
+#define ipstat D_0002FFB0
+extern struct ipstat_t ipstat;
+#define ip_id_g D_0002FF70
+extern u_int16_t ip_id_g;
+#define inetsw D_0002E5FC
+extern struct protosw inetsw[];
+#define ip_protox D_0002F548
+extern u_char ip_protox[];
+#define IP_FORWARDING 0x1
+#define IP_RAWOUTPUT 0x2
+#define IP_RETURNMTU 0x4
+#define IP_ROUTETOIF SO_DONTROUTE
+#define IP_ALLOWBROADCAST SO_BROADCAST
+#define IP_MAXPACKET 65535
+#define MAXTTL 255
+#define IPDEFTTL 64
+#define IPPROTO_IP 0
+#define IPPROTO_ICMP 1
+#define IPPROTO_TCP 6
+#define IPPROTO_UDP 17
+#define IPPROTO_RAW 255
+#define IP_OPTIONS 1
+#define IP_HDRINCL 2
+#define IP_TOS 3
+#define IP_TTL 4
+#define IP_RECVOPTS 5
+#define IP_RECVRETOPTS 6
+#define IP_RECVDSTADDR 7
+#define IP_RETOPTS 8
+#define IP_MULTICAST_IF 9
+#define IP_MULTICAST_TTL 10
+#define IP_MULTICAST_LOOP 11
+#define IP_ADD_MEMBERSHIP 12
+#define IP_DROP_MEMBERSHIP 13
+#define IP_PORTRANGE 19
+#define IP_RECVIF 20
+#define IP_ERRORMTU 21
+#define INP_RECVIF 0x80
+#define M_SOOPTS 10
+typedef u_int32_t n_long;
+#define ip_savecontrol func_00016628
+#define ip_ctloutput func_00017F60
+void ip_savecontrol(struct inpcb *inp, struct mbuf **mp, struct ip *ip, struct mbuf *m);
+int ip_ctloutput(int op, struct socket *so, int level, int optname, struct mbuf **mp);
+#define INP_CONTROLOPTS (INP_RECVOPTS | INP_RECVRETOPTS | INP_RECVDSTADDR | INP_RECVIF)
+#define icmp_error func_00018E1C
+void icmp_error(struct mbuf *n, int type, int code, n_long dest, struct ifnet *destifp);
+#define ICMP_UNREACH 3
+#define ICMP_UNREACH_PROTOCOL 2
+#define rip_output func_0001B99C
+#define rip_ctloutput func_0001BBE8
+#define rip_usrreq func_0001BD0C
+#define rip_init func_0001C144
+#define rip_bind func_0001C180
+#define rip_connect func_0001C248
+#define rip_disconnect func_0001C2E0
+#define rawcbtable D_00030260
+extern struct inpcbtable rawcbtable;
 
 #endif
