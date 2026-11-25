@@ -1,3 +1,5 @@
-#include "common.h"
-
-INCLUDE_ASM("tmp/asm/UTST99332/sound_starsound/nonmatchings/libgcc/dp-bit/__negdf2", __negdf2);
+/* upstream: libgcc dp-bit.c (_negate_df.o), tree: 1.6.1 */
+/* cflags: -O2 */
+#define FINE_GRAINED_LIBRARIES
+#define L_negate_df
+#include "dp-bit.c"
