@@ -34,6 +34,7 @@ struct SceKernelModuleInfo { /* size 0x40 */
 };
 typedef struct SceKernelModuleInfo SceKernelModuleInfo;
 SceUID sceKernelLoadModule(const char *path, int flags, const SceKernelLMOption *option);
+SceUID sceKernelLoadModuleByID(SceUID fd, int flags, const SceKernelLMOption *option);
 int sceKernelStartModule(SceUID modid, SceSize args, void *argp, int *status, const SceKernelSMOption *option);
 int sceKernelStopModule(SceUID modid, SceSize args, void *argp, int *status, const SceKernelSMOption *option);
 int sceKernelUnloadModule(SceUID modid);
