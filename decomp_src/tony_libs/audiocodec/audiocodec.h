@@ -9,12 +9,16 @@ register unsigned int k1 asm("$27");
 
 static inline int k1StaBufOk(const void *p, unsigned int size)
 {
-	return !K1_USER() || (int)((unsigned int)p | ((unsigned int)p + size)) >= 0;
+	if (!K1_USER())
+		return 1;
+	return (((unsigned int)p | ((unsigned int)p + size)) >> 31) ^ 1;
 }
 
 static inline int k1DynBufOk(unsigned int p, unsigned int size)
 {
-	return !K1_USER() || (int)(p | size | (p + size)) >= 0;
+	if (!K1_USER())
+		return 1;
+	return ((p | size | (p + size)) >> 31) ^ 1;
 }
 
 typedef struct {
@@ -67,16 +71,17 @@ static inline int convErr(int r)
 
 	switch (r) {
 	case -2:
-		e = 0x80000000;
+		e = 0x80000002;
 		break;
 	case -1:
-		return 0x807F0001;
+		e = 0x807F0001;
+		break;
 	case -3:
 	default:
-		e = 0x807F0000;
+		e = 0x807F0002;
 		break;
 	}
-	return e | 2;
+	return e;
 }
 
 #endif
