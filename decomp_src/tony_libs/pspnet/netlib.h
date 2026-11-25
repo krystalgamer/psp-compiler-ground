@@ -287,20 +287,35 @@ struct ifevent {
 	TAILQ_ENTRY(ifevent) link;
 };
 
+struct ifqueue {
+	struct mbuf *ifq_head;
+	struct mbuf *ifq_tail;
+	int ifq_len;
+	int ifq_maxlen;
+	int ifq_drops;
+};
+
+struct ifaddr;
+
 struct ifnet {
 	void *if_softc;
-	char unk04[0x14 - 0x04];
+	TAILQ_ENTRY(ifnet) if_list;
+	TAILQ_HEAD(, ifaddr) if_addrlist;
 	char if_xname[16];
 	int if_pcount;
 	void *if_bpf;
 	u_short if_index;
 	short if_timer;
 	short if_flags;
-	char unk32[0xB4 - 0x32];
+	char unk32[0xB0 - 0x32];
+	int (*if_output)(struct ifnet *, struct mbuf *, void *, void *);
 	void (*if_input)(struct ifnet *, struct mbuf *);
 	void (*if_start)(struct ifnet *);
 	int (*if_ioctl)(struct ifnet *, u_long, void *);
-	char unkC0[0xE0 - 0xC0];
+	int (*if_init)(struct ifnet *);
+	void (*if_stop)(struct ifnet *, int);
+	void (*if_watchdog)(struct ifnet *);
+	struct ifqueue if_snd;
 	void *if_sadl;
 	char unkE4[0xEC - 0xE4];
 	u_char if_lladdr[6];
@@ -311,6 +326,19 @@ struct ifnet {
 	char unk100[0x110 - 0x100];
 	TAILQ_HEAD(, ifevent) if_evq;
 };
+TAILQ_HEAD(ifnet_head, ifnet);
+
+extern int D_0000B068;
+extern void (*D_0000B030)(int, void *, void *);
+extern void (*D_0000B04C)(struct ifnet *);
+extern void (*D_0000B050)(struct ifnet *);
+extern void (*D_0000B054)(struct ifnet *);
+extern int D_0000B070;
+extern int D_0000B074;
+extern int D_0000B078;
+extern struct ifnet_head D_0000BB24;
+void func_00005404(struct ifqueue *ifq);
+void sceNetMFreem(struct mbuf *m);
 
 extern int D_0000A090;
 extern int D_0000ABD0;
