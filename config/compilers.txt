@@ -16,7 +16,6 @@
 1.5.1.internal  1.5.1   -mno-ulsw
 1.6.1           1.6.1   as:-mulsw
 1.6.1.internal  1.6.1   lib:-fno-merge-constants mixed:-fno-merge-constants objorder as:-mulsw
-# Not reconstructed yet; nearest compiler we have (provisional):
-1.8.3           1.7.1-orig as:-mulsw
-1.8.3.internal  1.7.1-orig as:-mulsw
-1.8.4.internal  1.7.1-orig as:-mulsw
+1.8.3           1.8.3   as:-mulsw
+1.8.3.internal  1.8.3   as:-mulsw
+1.8.4.internal  1.8.4   as:-mulsw
