@@ -214,7 +214,39 @@ static void copy_idx8(void *dst, const void *src, int width, int height)
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_model/nonmatchings/load_bmp", copy_5551);
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_model/nonmatchings/load_bmp", copy_5650);
+static void copy_5650(void *dst, const void *src, int width, int height)
+{
+	int pitch;
+	int pitch2;
+	const short int *sp;
+	short int *dp;
+
+	pitch = (width + 7) & ~7;
+	pitch2 = (width + 1) & ~1;
+	sp = src;
+	dp = (short int *)dst + pitch * (height - 1);
+	{
+		int i;
+
+		for (i = 0; i < height; i++) {
+			const short int *sp2 = sp;
+			short int *dp2 = dp;
+			{
+				int j;
+
+				for (j = 0; j < width; j++) {
+					int s = *sp2++;
+					int r = (s & 0xf800) >> 11;
+					int b = s & 0x001f;
+
+					*dp2++ = r | (s & 0x07e0) | (b << 11);
+				}
+			}
+			sp += pitch2;
+			dp -= pitch;
+		}
+	}
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_model/nonmatchings/load_bmp", copy_8880);
 
