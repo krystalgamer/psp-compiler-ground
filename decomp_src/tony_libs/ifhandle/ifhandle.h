@@ -186,11 +186,35 @@ struct mbuf *func_00002434(struct mbuf *m0, int len0, int wait);
 extern const char D_00003A44[];
 extern const char D_00003A50[];
 
-#define MBUF_PANIC() \
+#define MBUF_PANIC_FN(fn) \
 	do { \
-		Kprintf(D_00003A44, D_00003A50, __FUNCTION__); \
+		Kprintf(D_00003A44, D_00003A50, fn); \
 		for (;;) \
 			; \
+	} while (0)
+#define MBUF_PANIC() MBUF_PANIC_FN(__FUNCTION__)
+
+#define M_COPYALL 1000000000
+#define MCLBYTES 2048
+
+#define M_TRAILINGSPACE(m) \
+	((m)->m_flags & M_EXT ? (m)->m_ext.ext_buf + (m)->m_ext.ext_size - \
+	    ((m)->m_data + (m)->m_len) : \
+	    &(m)->m_dat[MLEN] - ((m)->m_data + (m)->m_len))
+
+#define MCLGET(m, how) \
+	do { \
+		(m)->m_ext.ext_buf = sceNetMallocInternal(MCLBYTES); \
+		if ((m)->m_ext.ext_buf == 0) \
+			(m)->m_ext.ext_buf = sceNetMallocInternal(MCLBYTES); \
+		if ((m)->m_ext.ext_buf != 0) { \
+			(m)->m_data = (m)->m_ext.ext_buf; \
+			(m)->m_flags |= M_EXT | M_CLUSTER; \
+			(m)->m_ext.ext_size = MCLBYTES; \
+			(m)->m_ext.ext_free = 0; \
+			(m)->m_ext.ext_arg = 0; \
+			(m)->m_ext.ext_nextref = (m)->m_ext.ext_prevref = (m); \
+		} \
 	} while (0)
 
 static inline unsigned int min(unsigned int a, unsigned int b)
@@ -204,5 +228,106 @@ extern int D_000043D0;
 extern int D_000043D4;
 extern int D_000043D8;
 extern int D_000043DC;
+
+struct ifqueue {
+	struct mbuf *ifq_head;
+	struct mbuf *ifq_tail;
+	int ifq_len;
+	int ifq_maxlen;
+	int ifq_drops;
+};
+
+#define IF_DEQUEUE(ifq, m) \
+	do { \
+		(m) = (ifq)->ifq_head; \
+		if (m) { \
+			if (((ifq)->ifq_head = (m)->m_nextpkt) == 0) \
+				(ifq)->ifq_tail = 0; \
+			(m)->m_nextpkt = 0; \
+			(ifq)->ifq_len--; \
+		} \
+	} while (0)
+
+#define IF_ENQUEUE(ifq, m) \
+	do { \
+		(m)->m_nextpkt = 0; \
+		if ((ifq)->ifq_tail == 0) \
+			(ifq)->ifq_head = m; \
+		else \
+			(ifq)->ifq_tail->m_nextpkt = m; \
+		(ifq)->ifq_tail = m; \
+		(ifq)->ifq_len++; \
+	} while (0)
+
+#define IF_PREPEND(ifq, m) \
+	do { \
+		(m)->m_nextpkt = (ifq)->ifq_head; \
+		if ((ifq)->ifq_tail == 0) \
+			(ifq)->ifq_tail = (m); \
+		(ifq)->ifq_head = (m); \
+		(ifq)->ifq_len++; \
+	} while (0)
+
+struct evnode {
+	struct evnode *next;
+	struct evnode **prev;
+	int a;
+	int b;
+};
+
+struct ifinternal {
+	char unk0[0x14];
+	char name[0x10];
+	char unk24[0xEC - 0x24];
+	unsigned char mac[6];
+	char unkF2[0x100 - 0xF2];
+	int ioctlSema;
+	int ioctlOkSema;
+	int unk108;
+	int unk10C;
+	struct evnode *evFirst;
+	struct evnode **evLast;
+	int evf;
+	int evBits;
+	char unk120[0x140 - 0x120];
+};
+
+typedef struct SceNetIfHandle {
+	struct ifinternal *ifp;
+	int unk4;
+	int unk8;
+	int unkC;
+	void (*start)(struct SceNetIfHandle *);
+	int unk14;
+	struct ifqueue snd;
+} SceNetIfHandle;
+
+int sceKernelCreateSema(const char *name, unsigned int attr, int init, int max, void *opt);
+int sceKernelDeleteSema(int id);
+int sceKernelSignalSema(int id, int n);
+int sceKernelWaitSema(int id, int n, unsigned int *timeout);
+int sceKernelPollSema(int id, int n);
+int sceKernelSetEventFlag(int id, unsigned int bits);
+unsigned int sceKernelGetSystemTimeLow(void);
+int sceKernelCpuSuspendIntr(void);
+int sceKernelCpuResumeIntr(int s);
+char *strncpy(char *, const char *, unsigned int);
+void func_000012BC(unsigned int seed);
+int func_00001478(void);
+
+extern SceNetIfHandle *D_00003B54[8];
+extern struct ifqueue D_00003B74;
+extern int D_00003B30;
+extern struct ifinternal *D_00003B34;
+extern int D_00003B38;
+extern struct ifinternal *D_00003B3C;
+extern int D_00003B40;
+extern int D_00003B44;
+extern int (*D_00003B4C)(struct mbuf *);
+extern int D_00003B88;
+extern int D_00003B8C;
+extern int D_00003B90;
+extern int D_00003B94;
+extern int D_00003B98;
 
 #endif
