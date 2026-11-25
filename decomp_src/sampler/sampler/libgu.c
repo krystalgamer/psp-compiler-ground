@@ -591,7 +591,10 @@ void sceGuTexFunc(int tfx, int tcc)
 	send_commandi(201, context->fragment_2x | ((tcc << 8) | tfx));
 }
 
-INCLUDE_ASM("tmp/asm/sampler/sampler/nonmatchings/libgu", sceGuTexEnvColor);
+void sceGuTexEnvColor(unsigned int color)
+{
+	send_commandi(202, color & 0xffffff);
+}
 
 void sceGuTexWrap(int u, int v)
 {
@@ -658,7 +661,12 @@ void sceGuClutLoad(int num_blocks, const void *cbp)
 
 INCLUDE_ASM("tmp/asm/sampler/sampler/nonmatchings/libgu", sceGuFog);
 
-INCLUDE_ASM("tmp/asm/sampler/sampler/nonmatchings/libgu", sceGuColorFunc);
+void sceGuColorFunc(int func, unsigned int color, unsigned int mask)
+{
+	send_commandi(216, func & 0x03);
+	send_commandi(217, color & 0xffffff);
+	send_commandi(218, mask & 0xffffff);
+}
 
 void sceGuAlphaFunc(int a0, int a1, int a2)
 {
@@ -675,7 +683,11 @@ void sceGuDepthMask(int mask)
 	send_commandi(231, mask);
 }
 
-INCLUDE_ASM("tmp/asm/sampler/sampler/nonmatchings/libgu", sceGuPixelMask);
+void sceGuPixelMask(unsigned int mask)
+{
+	send_commandi(232, mask & 0xffffff);
+	send_commandi(233, mask >> 24);
+}
 
 INCLUDE_ASM("tmp/asm/sampler/sampler/nonmatchings/libgu", sceGuScissor);
 
@@ -703,7 +715,10 @@ void sceGuBlendFunc(int op, int src, int dest, unsigned int srcfix, unsigned int
 
 INCLUDE_ASM("tmp/asm/sampler/sampler/nonmatchings/libgu", sceGuBoneMatrix);
 
-INCLUDE_ASM("tmp/asm/sampler/sampler/nonmatchings/libgu", sceGuMorphWeight);
+void sceGuMorphWeight(int index, float weight)
+{
+	send_commandf(44 + index, weight);
+}
 
 INCLUDE_ASM("tmp/asm/sampler/sampler/nonmatchings/libgu", sceGuDebugPrint);
 
