@@ -1,5 +1,7 @@
 #include "common.h"
 
+INCLUDE_ASM("tmp/asm/tony_libs/pspnet/nonmatchings/if_ethersubr", func_000069D4);
+
 INCLUDE_ASM("tmp/asm/tony_libs/pspnet/nonmatchings/if_ethersubr", func_00006A40);
 
 INCLUDE_ASM("tmp/asm/tony_libs/pspnet/nonmatchings/if_ethersubr", func_00006B10);

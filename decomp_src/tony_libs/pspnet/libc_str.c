@@ -2,6 +2,8 @@
 
 INCLUDE_ASM("tmp/asm/tony_libs/pspnet/nonmatchings/libc_str", func_00007D60);
 
+INCLUDE_ASM("tmp/asm/tony_libs/pspnet/nonmatchings/libc_str", func_00007DE0);
+
 INCLUDE_ASM("tmp/asm/tony_libs/pspnet/nonmatchings/libc_str", func_00007E10);
 
 INCLUDE_ASM("tmp/asm/tony_libs/pspnet/nonmatchings/libc_str", func_00007E58);
