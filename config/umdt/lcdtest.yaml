@@ -68,7 +68,7 @@ segments:
       - { start: 0x2C18, type: rodata, name: resident, linker_section: .rodata.sceResident }
       - { start: 0x2CF0, type: rodata, name: nid, linker_section: .rodata.sceNid }
       - [0x2CFC, .rodata, lcdtest]
-      - [0x2DC0, .rodata, lcd_drawptn]
+      - [0x2DB8, .rodata, lcd_drawptn]
       - [0x2EAC, .rodata, sprintf]
   - name: lcdtest_seg1
     type: code
