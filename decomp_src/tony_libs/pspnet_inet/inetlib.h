@@ -555,7 +555,7 @@ struct m_hdr {
 	caddr_t mh_data;
 	int mh_len;
 	short mh_type;
-	u_short mh_flags;
+	short mh_flags;
 };
 
 struct pkthdr {
@@ -1958,6 +1958,11 @@ extern struct in_ifaddrhashhead *in_ifaddrhashtbl;
 			break; \
 	} \
 }
+#define INADDR_TO_IFP(addr, ifp) { \
+	struct in_ifaddr *ia; \
+	INADDR_TO_IA(addr, ia); \
+	(ifp) = (ia == NULL) ? NULL : ia->ia_ifp; \
+}
 #define NEXT_IA_WITH_SAME_ADDR(ia) { \
 	struct in_addr addr; \
 	addr = ia->ia_addr.sin_addr; \
@@ -2212,6 +2217,7 @@ extern u_char ip_protox[];
 #define IP_FORWARDING 0x1
 #define IP_RAWOUTPUT 0x2
 #define IP_RETURNMTU 0x4
+#define IP_MTUDISC 0x0400
 #define IP_ROUTETOIF SO_DONTROUTE
 #define IP_ALLOWBROADCAST SO_BROADCAST
 #define IP_MAXPACKET 65535
@@ -2517,5 +2523,36 @@ struct timeval {
 	u_long tv_sec;
 	u_long tv_usec;
 };
+
+/* ip_output.c */
+#define MAX_IPOPTLEN 40
+#ifndef offsetof
+#define offsetof(t, m) ((size_t)&((t *)0)->m)
+#endif
+struct ipoption {
+	struct in_addr ipopt_dst;
+	int8_t ipopt_list[MAX_IPOPTLEN];
+};
+struct ip_mreq {
+	struct in_addr imr_multiaddr;
+	struct in_addr imr_interface;
+};
+#define IP_DEFAULT_MULTICAST_TTL 1
+#define IP_DEFAULT_MULTICAST_LOOP 1
+#define IP_PORTRANGE_DEFAULT 0
+#define IP_PORTRANGE_HIGH 1
+#define IP_PORTRANGE_LOW 2
+#define ip_insertoptions func_00017C80
+#define ip_optcopy func_00017E78
+#define ip_pcbopts func_000182C8
+#define ip_setmoptions func_00018480
+#define ip_getmoptions func_00018B00
+#define ip_mloopback func_00018C70
+#define ip_optlen func_00018D8C
+int ip_optcopy(struct ip *ip, struct ip *jp);
+int ip_setmoptions(int optname, struct ip_moptions **imop, struct mbuf *m);
+int ip_getmoptions(int optname, struct ip_moptions *imo, struct mbuf **mp);
+u_int ip_optlen(struct inpcb *inp);
+void ip_freemoptions(struct ip_moptions *imo);
 
 #endif
