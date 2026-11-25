@@ -87,7 +87,25 @@ int DvdUmdRetryPollSema(void) {
     return sceKernelPollSema(gDvdUmdIoSemaphoreId, 1);
 }
 
-INCLUDE_ASM("tmp/asm/psp184/mpegon/nonmatchings/io", DvdUmdRetryReadFile);
+int printf(const char *fmt, ...);
+extern char D_000125E0[];
+SceInt32 DvdUmdRetryReadFile(const char *filepath, SceSize filesize, void *filebuf)
+{
+	int ret;
+	SceUID fd;
+
+	if (filepath == NULL || filesize == 0 || filebuf == NULL)
+		return 0x80010016;
+	ret = DvdUmdRetryOpen(filepath, 1, 0644);
+	if (ret < 0)
+		return ret;
+	fd = ret;
+	ret = DvdUmdRetryRead(fd, filebuf, filesize);
+	if (ret < 0)
+		printf(D_000125E0, ret, 166);
+	sceIoClose(fd);
+	return ret;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/mpegon/nonmatchings/io", DvdUmdRetryReadFileCB);
 
