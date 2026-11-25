@@ -1,2 +1,15 @@
 # unit                                     compiler        source
 mpeg                                         1.5.1.internal  mpeg.c
+mpeg_psmf                                    1.5.1.internal  mpeg_psmf.c
+mpeg_stream                                  1.5.1.internal  mpeg_stream.c
+mpeg_demux                                   1.5.1.internal  mpeg_demux.c
+mpeg_ringbuf                                 1.5.1.internal  mpeg_ringbuf.c
+mpeg_au                                      1.5.1.internal  mpeg_au.c
+mpeg_sema                                    1.5.1.internal  mpeg_sema.c
+mpeg_video                                   1.5.1.internal  mpeg_video.c
+mpeg_audio                                   1.5.1.internal  mpeg_audio.c
+mpeg_module                                  1.5.1.internal  mpeg_module.c
+libc_mem                                     1.5.1.internal  libc_mem.c
+libc_str                                     1.5.1.internal  libc_str.c
+libc_ctype                                   1.5.1.internal  libc_ctype.c
+libmpeg_util                                 1.5.1.internal  libmpeg_util.c
