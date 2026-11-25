@@ -46,7 +46,15 @@ def definitions(path):
                 if depth == 0:
                     break
             i += 1
-        out[name] = text[m.start():i + 1] + "\n"
+        # declarations right above the definition (prototypes, #include,
+        # #define of a static's label) travel with it
+        pre = text[:m.start()].split("\n")[:-1]
+        k = len(pre)
+        while k > 0 and (re.match(r"^(#(include|define|undef)\b|extern |[A-Za-z_][^(){}]*\(.*\);$)", pre[k - 1])
+                         or (pre[k - 1] == "" and k > 1 and pre[k - 2] != "" and not pre[k - 2].startswith(("}", "INCLUDE")))):
+            k -= 1
+        head = "\n".join(l for l in pre[k:] if l and not l.startswith("INCLUDE"))
+        out[name] = (head + "\n" if head else "") + text[m.start():i + 1] + "\n"
     return out
 
 
