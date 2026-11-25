@@ -1,7 +1,4 @@
-#include "common.h"
-
-INCLUDE_ASM("tmp/asm/UTST99332/menu/nonmatchings/newlib/libm/math/wf_sqrt", sqrtf);
-
-INCLUDE_RODATA("tmp/asm/UTST99332/menu/nonmatchings/newlib/libm/math/wf_sqrt", D_00195298);
-
-INCLUDE_RODATA("tmp/asm/UTST99332/menu/nonmatchings/newlib/libm/math/wf_sqrt", D_0019529C);
+/* upstream: newlib-1.12.0/newlib/libm/math/wf_sqrt.c (unmodified) */
+/* cflags: -O2 -fno-builtin */
+/* data-align: 8 */
+#include "libm/math/wf_sqrt.c"
