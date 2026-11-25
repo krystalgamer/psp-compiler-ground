@@ -157,6 +157,7 @@ def main():
     ap.add_argument("target")
     ap.add_argument("modules", nargs="*")
     ap.add_argument("--write", action="store_true")
+    ap.add_argument("--only", action="append", help="only these units")
     ap.add_argument("--from", dest="sources", nargs="*", default=["UTST99261", "UTST99332", "sampler", "puzzle_bobble"])
     a = ap.parse_args()
     lib = library(a.sources)
@@ -166,7 +167,7 @@ def main():
         mod = None
         for path in sorted((ROOT / "decomp_src" / a.target / module).rglob("*.c")):
             unit = str(path.relative_to(ROOT / "decomp_src" / a.target / module))[:-2]
-            if unit.startswith(("newlib/", "libgcc/", "gcc-3.3.3/")) or unit == "crt0":
+            if unit.startswith(("newlib/", "libgcc/", "gcc-3.3.3/")) or unit == "crt0" or (a.only and unit not in a.only):
                 continue
             for func in re.findall(r'^INCLUDE_ASM\("[^"]+", (\w+)\);$', path.read_text(), re.M):
                 cands = [(b, f) for b, f in (lib.get(func) or lib.get(base(func), [])) if f != path]
