@@ -580,4 +580,53 @@ float *sceGimPictureGetImageCrop(SceGimPicture *picture) {
     return var_v0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_model2/nonmatchings/gim_picture", reconfigure_picture);
+static void reconfigure_picture(SceGimPicture *picture)
+{
+	SceGimImageHeader *image;
+	SceGimPaletteHeader *palette;
+
+	picture->m_flags = 0;
+	image = picture->m_image;
+	if (image != NULL) {
+		int w;
+		int h;
+		int w2;
+		int h2;
+		int align;
+
+		if (image->level_count >= 2)
+			picture->m_flags |= 1;
+		if (image->frame_count >= 2)
+			picture->m_flags |= 2;
+		w = image->width;
+		h = image->height;
+		w2 = 1 << (32 - __builtin_allegrex_clz(w - 1));
+		h2 = 1 << (32 - __builtin_allegrex_clz(h - 1));
+		if (w != w2 || h != h2) {
+			picture->m_flags |= 0x60;
+			picture->m_image_crop[0] = 0.0f;
+			picture->m_image_crop[1] = 0.0f;
+			picture->m_image_crop[2] = (float)w / (float)w2;
+			picture->m_image_crop[3] = (float)h / (float)h2;
+		}
+		align = image->pitch_align * 8 / image->bpp - 1;
+		picture->m_buf_width = (w + align) & ~align;
+	}
+	palette = picture->m_palette;
+	if (palette != NULL) {
+		int count;
+
+		if (palette->level_count >= 2)
+			picture->m_flags |= 4;
+		if (palette->frame_count >= 2)
+			picture->m_flags |= 8;
+		count = palette->width / 16 * palette->level_count;
+		if (palette->format == 3)
+			count *= 2;
+		if (count > 32)
+			count = 32;
+		picture->m_clut_load = count;
+	}
+	if (picture->m_flags & 0xa)
+		picture->m_flags |= 0x10;
+}
