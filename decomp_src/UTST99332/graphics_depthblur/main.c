@@ -108,6 +108,16 @@ extern float wall[80];
 extern u_int32 cont;
 
 void ResetAllPositioning();
+
+/* SDK functions (tools/sdk_protos.h) */
+void sceGuDisable(int state);
+void sceGumPushMatrix(void);
+void sceGumPopMatrix(void);
+void sceGumRotateX(float angle);
+void sceGumRotateY(float angle);
+void sceGumRotateZ(float angle);
+void sceGumTranslate(const ScePspFVector3 *v);
+
 static void PositioningMultMatrix(Positioning *_Positioning);
 static void draw_dragon_with_camera_transform();
 void InitWall(void);
@@ -173,9 +183,25 @@ INCLUDE_RODATA("tmp/asm/UTST99332/graphics_depthblur/nonmatchings/main", D_00015
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_depthblur/nonmatchings/main", ResetAllPositioning);
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_depthblur/nonmatchings/main", PositioningMultMatrix);
+/* Warning: Gap in callee-saved word stack region.
+ * Saved: [0x0, 0x4, 0x10, 0x14], gap at: 0x8. */
+void PositioningMultMatrix(Positioning *_Positioning) {
+    sceGumTranslate(&_Positioning->_pos);
+    sceGumRotateX((_Positioning->_rot.x * 3.1415927f) / 180.0f);
+    sceGumRotateY((_Positioning->_rot.y * 3.1415927f) / 180.0f);
+    sceGumRotateZ((_Positioning->_rot.z * 3.1415927f) / 180.0f);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_depthblur/nonmatchings/main", draw_dragon_with_camera_transform);
+void draw_dragon_with_camera_transform(void) {
+    sceGumPushMatrix();
+    PositioningMultMatrix(&_camera_inverse_transform);
+    PositioningMultMatrix(&_dragon_transform);
+    sceGuDisable(4);
+    sceGuDisable(0);
+    sceGuDisable(5);
+    DrawDragon(texflag);
+    sceGumPopMatrix();
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_depthblur/nonmatchings/main", InitWall);
 
