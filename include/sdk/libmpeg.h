@@ -55,7 +55,18 @@ typedef struct {
 	SceInt32 iPixelFormat;
 } SceMpegAvcMode;
 typedef SceUChar8 *SceMpegHandle;
+SceInt32 sceMpegInit(void);
+SceInt32 sceMpegFinish(void);
+SceInt32 sceMpegRingbufferQueryMemSize(SceInt32 iPackNum);
+SceInt32 sceMpegRingbufferConstruct(SceMpegRingbuffer *pRingbuffer, SceInt32 iPackNum, SceVoid *pBuf, SceInt32 iSize, SceMpegRBCallback Callback, SceVoid *pCallbackData);
+SceInt32 sceMpegRingbufferDestruct(SceMpegRingbuffer *pRingbuffer);
+SceInt32 sceMpegQueryMemSize(SceInt32 iReserved);
+SceInt32 sceMpegCreate(SceMpeg *pMpeg, SceVoid *pData, SceInt32 iSize, SceMpegRingbuffer *pRingbuffer, SceInt32 iFrameWidth, SceInt32 iReserved1, SceInt32 iReserved2);
+SceInt32 sceMpegDelete(SceMpeg *pMpeg);
+SceInt32 sceMpegAvcDecodeMode(SceMpeg *pMpeg, SceMpegAvcMode *pMode);
 SceInt32 sceMpegFlushAllStream(SceMpeg *pMpeg);
+SceInt32 sceMpegQueryStreamOffset(SceMpeg *pMpeg, SceVoid *pBuffer, SceInt32 *iOffset);
+SceInt32 sceMpegQueryStreamSize(SceVoid *pBuffer, SceInt32 *iSize);
 SceInt32 sceMpegRingbufferAvailableSize(SceMpegRingbuffer *pRingbuffer);
 SceInt32 sceMpegRingbufferPut(SceMpegRingbuffer *pRingbuffer, SceInt32 iNumPackets, SceInt32 iAvailable);
 #endif

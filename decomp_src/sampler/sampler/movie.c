@@ -78,6 +78,7 @@ extern SceInt32 readFlag;
 
 #define opadd D_002C55DC
 
+static int init_pinfo(void);
 static SceInt32 playMovie(SceMpeg *pMpeg, SceMpegRingbuffer *pRB, t_mpegStreamData *pStreamData, t_ringBuffer *pRingCtrl, t_avSyncControl *pAvSync);
 
 static SceInt32 pad_read(t_displayBuffer *pDisp)
@@ -151,7 +152,62 @@ static SceInt32 pad_read(t_displayBuffer *pDisp)
 }
 
 
-INCLUDE_ASM("tmp/asm/sampler/sampler/nonmatchings/movie", thumb_load);
+static int thumb_load(void)
+{
+	SceInt32 iReadSize;
+	SceInt32 ret;
+	SceChar8 stream_buf[2048];
+	int strOffset;
+
+retry1:
+	if (strFileOpen(&strFile, "disc0:/PSP_GAME/USRDIR/MOVIE/menu.pmf", 1) < 0) {
+		printf("fatal error : strFileOpen()\n");
+		goto retry1;
+	}
+retry2:
+	if (strFileLseek(&strFile, 0, 0) < 0)
+		goto retry2;
+retry3:
+	if ((iReadSize = strFileRead(&strFile, stream_buf, 2048)) < 2048) {
+		printf("fatal error : strFileRead() %x\n", iReadSize);
+		goto retry3;
+	}
+	ret = sceMpegQueryStreamOffset(&mpeg, stream_buf, &strOffset);
+	if (ret != 0) {
+		printf("fatal error : sceMpegQueryStreamOffset()\n");
+		return -1;
+	}
+	ret = sceMpegQueryStreamSize(stream_buf, &thumbFilesize);
+	if (ret != 0) {
+		printf("fatal error : sceMpegQueryStreamSize()\n");
+		return -1;
+	}
+retry4:
+	if (strFileLseek(&strFile, 0, 0) < 0) {
+		printf("fatal error : strFileLseek()\n");
+		goto retry4;
+	}
+	pHeaderT = malloc(strOffset);
+	if (pHeaderT == NULL)
+		return -1;
+retry5:
+	if ((iReadSize = strFileRead(&strFile, pHeaderT, strOffset)) < strOffset) {
+		printf("fatal error : strFileRead() %x\n", iReadSize);
+		goto retry5;
+	}
+	thumbBuf = memalign(64, thumbFilesize);
+	if (thumbBuf == NULL) {
+		printf("Can't malloc thumbnail buffer\n");
+		return -1;
+	}
+retry6:
+	if ((iReadSize = strFileRead(&strFile, thumbBuf, thumbFilesize)) < thumbFilesize) {
+		printf("fatal error : strFileRead() %x\n", iReadSize);
+		goto retry6;
+	}
+	strFileClose(&strFile);
+	return 0;
+}
 
 
 static SceInt32 ringbufferCallBack(SceVoid *pBuf, SceInt32 iNum, SceVoid *CallbackData)
@@ -200,21 +256,53 @@ static SceInt32 startCheck(t_avSyncControl *pAvSync, t_ringBuffer *pRingCtrl)
 	return ret;
 }
 
-INCLUDE_RODATA("tmp/asm/sampler/sampler/nonmatchings/movie", D_00016284);
-
-INCLUDE_RODATA("tmp/asm/sampler/sampler/nonmatchings/movie", D_000162A0);
-
-INCLUDE_RODATA("tmp/asm/sampler/sampler/nonmatchings/movie", D_000162C0);
-
-INCLUDE_RODATA("tmp/asm/sampler/sampler/nonmatchings/movie", D_000162EC);
-
-INCLUDE_RODATA("tmp/asm/sampler/sampler/nonmatchings/movie", D_00016314);
-
-INCLUDE_RODATA("tmp/asm/sampler/sampler/nonmatchings/movie", D_00016334);
-
 INCLUDE_ASM("tmp/asm/sampler/sampler/nonmatchings/movie", playMovie);
 
-INCLUDE_ASM("tmp/asm/sampler/sampler/nonmatchings/movie", readHeader);
+static SceInt32 readHeader(SceMpeg *pMpeg, StrFile *pStrFile, SceInt32 *pFilesize, SceInt32 *strOffset)
+{
+	SceInt32 iReadSize;
+	SceInt32 ret;
+	SceChar8 stream_buf[2048];
+
+	if (strFileLseek(pStrFile, 0, 0) < 0) {
+		ret = -1;
+		goto end;
+	}
+	iReadSize = strFileRead(pStrFile, stream_buf, 2048);
+	if (iReadSize < 2048) {
+		printf("fatal error : strFileRead() %x\n", iReadSize);
+		ret = -1;
+		goto end;
+	}
+	if (sceMpegQueryStreamOffset(pMpeg, stream_buf, strOffset) != 0) {
+		printf("fatal error : sceMpegQueryStreamOffset()\n");
+		ret = -1;
+		goto end;
+	}
+	if (sceMpegQueryStreamSize(stream_buf, pFilesize) != 0) {
+		printf("fatal error : sceMpegQueryStreamSize()\n");
+		ret = -1;
+		goto end;
+	}
+	if (strFileLseek(pStrFile, 0, 0) < 0) {
+		printf("fatal error : strFileLseek()\n");
+		ret = -1;
+		goto end;
+	}
+	ret = -1;
+	pHeader = malloc(*strOffset);
+	if (pHeader != NULL) {
+		iReadSize = strFileRead(pStrFile, pHeader, *strOffset);
+		ret = 0;
+		if (iReadSize < *strOffset) {
+			printf("fatal error : strFileRead() %x\n", iReadSize);
+			free(pHeader);
+			ret = -1;
+		}
+	}
+end:
+	return ret;
+}
 
 
 static int skip_data(ScePsmf *psm, SceUInt32 pts)
@@ -239,7 +327,72 @@ static int skip_data(ScePsmf *psm, SceUInt32 pts)
 
 INCLUDE_ASM("tmp/asm/sampler/sampler/nonmatchings/movie", init_pinfo);
 
-INCLUDE_ASM("tmp/asm/sampler/sampler/nonmatchings/movie", MovieInit);
+int MovieInit(void)
+{
+	SceInt32 bufferSize;
+	SceInt32 workSize;
+	SceInt32 ret;
+
+	decodeMode.iDecodeMode = -1;
+	audioFlag = 1;
+	decodeMode.iPixelFormat = 3;
+	ret = sceMpegInit();
+	if (ret != 0) {
+		printf("fatal error : sceMpegInit() %x\n", ret);
+		return -1;
+	}
+	bufferSize = sceMpegRingbufferQueryMemSize(960);
+	if (bufferSize < 0) {
+		printf("fatal error : sceMpegRingbufferQueryMemSize %x\n", bufferSize);
+		return -1;
+	}
+	workSize = sceMpegQueryMemSize(0);
+	if (workSize < 0) {
+		printf("fatal error : sceMpegQueryMemSize %x\n", workSize);
+		return -1;
+	}
+	pPSPStream = malloc(bufferSize);
+	if (pPSPStream == NULL) {
+		printf("fatal error : malloc pPSPStream\n");
+		return -1;
+	}
+	pWorkBuf = malloc(workSize);
+	if (pWorkBuf == NULL) {
+		printf("fatal error : malloc pWorkBuf\n;");
+		return -1;
+	}
+	ret = sceMpegRingbufferConstruct(&ringbuf, 960, pPSPStream, bufferSize, ringbufferCallBack, &strFile);
+	if (ret != 0) {
+		printf("fatal error : sceMpegRingbufferConstruct() %x\n", ret);
+		return -1;
+	}
+	ret = sceMpegCreate(&mpeg, pWorkBuf, workSize, &ringbuf, 512, 0, 0);
+	if (ret != 0) {
+		printf("fatal error : sceMpegCreate() %x\n", ret);
+		return -1;
+	}
+	sceMpegAvcDecodeMode(&mpeg, &decodeMode);
+	sceKernelChangeThreadPriority(sceKernelGetThreadId(), 0x40);
+	dispThread = sceKernelCreateThread("displayThread", dispbuf_func, 0x3F, 0x800, 0, NULL);
+	readThread = sceKernelCreateThread("readThread", read_func, 0x41, 0x800, 0, NULL);
+	if (audioFlag)
+		soundThread = sceKernelCreateThread("soundThread", soundbuf_func, 0x3D, 0x800, 0, NULL);
+	playInfo.playMode = 0;
+	thumb_load();
+retry1:
+	if (strFileOpen(&strFile, "disc0:/PSP_GAME/USRDIR/MOVIE/movie.pmf", 1) < 0) {
+		printf("fatal error : strFileOpen()\n");
+		goto retry1;
+	}
+retry2:
+	if (readHeader(&mpeg, &strFile, &fileSize, &streamOffset) != 0) {
+		printf("fatal error : readHeader\n");
+		goto retry2;
+	}
+	init_pinfo();
+	BgmStart();
+	return 0;
+}
 
 
 int MovieMain(void)

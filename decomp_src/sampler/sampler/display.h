@@ -30,6 +30,7 @@ SceInt32 dispbuf_getCurrentCount(t_displayBuffer *pDisp);
 SceInt32 dispbuf_setMode(t_displayBuffer *pDisp, SceInt32 mode);
 SceInt32 dispbuf_getMode(t_displayBuffer *pDisp);
 SceInt32 display_func(SceSize size, void *argp);
+SceInt32 dispbuf_func(SceSize size, void *argp);
 SceInt32 dispbuf_decode_sleep(t_displayBuffer *pDisp);
 SceInt32 dispbuf_setStartFlag(t_displayBuffer *pDisp);
 SceInt32 dispbuf_show(t_displayBuffer *pDisp);
