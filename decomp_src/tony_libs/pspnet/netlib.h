@@ -519,6 +519,9 @@ int func_00008054(void (*put)(char **, int), char **arg, const char *fmt, va_lis
 
 int _sce_pspnet_ifioctl(void *so, u_long cmd, void *data, int wait);
 int func_0000610C(void *so, u_long cmd, void *data);
+int func_00005614(u_long cmd, void *data);
+int func_00006654(struct ifreq *ifr, struct ifnet *ec);
+int func_00006844(struct ifreq *ifr, struct ifnet *ec);
 int sceNetIfhandleWaitSema(SceUID sema, int n, SceUInt *timeout);
 struct ifnet *_sce_pspnet_ifunit(const char *name);
 

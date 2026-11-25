@@ -105,7 +105,46 @@ void func_00005404(struct ifqueue *ifq)
 
 INCLUDE_ASM("tmp/asm/tony_libs/pspnet/nonmatchings/if", _sce_pspnet_ifioctl);
 
-INCLUDE_ASM("tmp/asm/tony_libs/pspnet/nonmatchings/if", func_00005614);
+int func_00005614(u_long cmd, void *data)
+{
+	struct ifconf *ifc = (struct ifconf *)data;
+	struct ifnet *ifp;
+	struct ifaddr *ifa;
+	struct ifreq ifr, *ifrp;
+	int space = ifc->ifc_len;
+
+	ifrp = ifc->ifc_req;
+	for (ifp = D_0000BB24.tqh_first; ifp != NULL; ifp = ifp->if_list.tqe_next) {
+		bcopy(ifp->if_xname, ifr.ifr_name, 16);
+		if ((ifa = ifp->if_addrlist.tqh_first) == NULL) {
+			__builtin_memset(&ifr.ifr_ifru.ifru_addr, 0, sizeof(ifr.ifr_ifru.ifru_addr));
+			if (space >= (int)sizeof(ifr))
+				bcopy(&ifr, ifrp, sizeof(ifr));
+			space -= sizeof(ifr), ifrp++;
+		} else
+			for (; ifa != NULL; ifa = ifa->ifa_list.tqe_next) {
+				struct sockaddr *sa = ifa->ifa_addr;
+
+				if (sa->sa_len <= sizeof(*sa)) {
+					ifr.ifr_ifru.ifru_addr = *sa;
+					if (space >= (int)sizeof(ifr)) {
+						bcopy(&ifr, ifrp, sizeof(ifr));
+						ifrp++;
+					}
+				} else {
+					space -= sa->sa_len - sizeof(*sa);
+					if (space >= (int)sizeof(ifr)) {
+						bcopy(&ifr, ifrp, sizeof(ifr.ifr_name));
+						bcopy(sa, &ifrp->ifr_ifru.ifru_addr, sa->sa_len);
+						ifrp = (struct ifreq *)(sa->sa_len + (char *)&ifrp->ifr_ifru.ifru_addr);
+					}
+				}
+				space -= sizeof(ifr);
+			}
+	}
+	ifc->ifc_len -= space;
+	return 0;
+}
 
 INCLUDE_ASM("tmp/asm/tony_libs/pspnet/nonmatchings/if", func_000057D8);
 
