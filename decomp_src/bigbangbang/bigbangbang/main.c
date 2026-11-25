@@ -148,6 +148,9 @@ INCLUDE_RODATA("tmp/asm/bigbangbang/bigbangbang/nonmatchings/main", D_0000B640);
 
 INCLUDE_RODATA("tmp/asm/bigbangbang/bigbangbang/nonmatchings/main", D_0000B680);
 
+void sceGuSpecular(float power);
+void sceGumPerspective(float fovy, float aspect, float near, float far);
+
 INCLUDE_ASM("tmp/asm/bigbangbang/bigbangbang/nonmatchings/main", InitFunc);
 
 void SpriteScale(int x, int y) {
@@ -171,9 +174,34 @@ INCLUDE_ASM("tmp/asm/bigbangbang/bigbangbang/nonmatchings/main", FadeDraw);
 
 INCLUDE_ASM("tmp/asm/bigbangbang/bigbangbang/nonmatchings/main", DrawFunc);
 
-INCLUDE_ASM("tmp/asm/bigbangbang/bigbangbang/nonmatchings/main", KeyFunc);
+static void KeyFunc(void)
+{
+	u_int32 prev;
+	u_int32 padd;
+	SceCtrlData buf;
 
-INCLUDE_ASM("tmp/asm/bigbangbang/bigbangbang/nonmatchings/main", ProgramSwitch);
+	prev = cont;
+	sceCtrlReadBufferPositive(&buf, 1);
+	cont = buf.Buttons;
+	padd = cont & (cont ^ prev);
+	if (func[program.mode].key)
+		func[program.mode].key(padd, cont);
+}
+
+static void ProgramSwitch(void)
+{
+	switch (program.flag) {
+	case 0:
+		if (func[program.mode].init)
+			func[program.mode].init();
+		program.flag = 1;
+		break;
+	case 1:
+		if (func[program.mode].run)
+			func[program.mode].run();
+		break;
+	}
+}
 
 int ExitFunction(int count, int arg_impose, int arg_self) {
     sceKernelExitGame();
