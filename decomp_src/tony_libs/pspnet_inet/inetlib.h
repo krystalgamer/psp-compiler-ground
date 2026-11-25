@@ -1539,6 +1539,8 @@ struct inpcbtable {
 #define in_pcblookup_bind func_00013BC0
 #define in_pcbstate func_00013D3C
 #define in_selectsrc func_00013E54
+#define ip_srcroute func_00016D78
+struct mbuf *ip_srcroute(void);
 #define in_pcbinit func_0001407C
 #define in_pcballoc func_00014110
 #define in_pcbdisconnect func_000141C4
@@ -2246,8 +2248,6 @@ int ip_ctloutput(int op, struct socket *so, int level, int optname, struct mbuf 
 #define INP_CONTROLOPTS (INP_RECVOPTS | INP_RECVRETOPTS | INP_RECVDSTADDR | INP_RECVIF)
 #define icmp_error func_00018E1C
 void icmp_error(struct mbuf *n, int type, int code, n_long dest, struct ifnet *destifp);
-#define ICMP_UNREACH 3
-#define ICMP_UNREACH_PROTOCOL 2
 #define rip_output func_0001B99C
 #define rip_ctloutput func_0001BBE8
 #define rip_usrreq func_0001BD0C
@@ -2293,7 +2293,6 @@ struct udpstat_t {
 #define UDPCTL_SENDSPACE 2
 #define UDPCTL_RECVSPACE 3
 #define UDPCTL_STATS 4
-#define ICMP_UNREACH_PORT 3
 #define ENOTDIR 20
 #define sysctl_int func_000087F0
 #define sysctl_rdstruct func_00008BB4
@@ -2322,5 +2321,201 @@ void ip_stripoptions(struct mbuf *m, struct mbuf *mopt);
 #define ip_defttl D_0002E7B0
 extern int ip_defttl;
 extern int inetctlerrmap[];
+
+/* ip_icmp.h / icmp_var.h */
+typedef u_int16_t n_short;
+typedef u_int32_t n_time;
+struct icmp_ra_addr {
+	u_int32_t ira_addr;
+	u_int32_t ira_preference;
+} __attribute__((__packed__));
+
+struct icmp {
+	u_int8_t  icmp_type;
+	u_int8_t  icmp_code;
+	u_int16_t icmp_cksum;
+	union {
+		u_int8_t  ih_pptr;
+		struct in_addr ih_gwaddr;
+		struct ih_idseq {
+			  n_short icd_id;
+			  n_short icd_seq;
+		} ih_idseq __attribute__((__packed__));
+		int32_t   ih_void;
+
+
+		struct ih_pmtu {
+			  n_short ipm_void;
+			  n_short ipm_nextmtu;
+		} ih_pmtu __attribute__((__packed__));
+		struct ih_rtradv {
+			u_int8_t irt_num_addrs;
+			u_int8_t irt_wpa;
+			u_int16_t irt_lifetime;
+		} ih_rtradv __attribute__((__packed__));
+	} icmp_hun ;
+#define	icmp_pptr	  icmp_hun.ih_pptr
+#define	icmp_gwaddr	  icmp_hun.ih_gwaddr
+#define	icmp_id		  icmp_hun.ih_idseq.icd_id
+#define	icmp_seq	  icmp_hun.ih_idseq.icd_seq
+#define	icmp_void	  icmp_hun.ih_void
+#define	icmp_pmvoid	  icmp_hun.ih_pmtu.ipm_void
+#define	icmp_nextmtu	  icmp_hun.ih_pmtu.ipm_nextmtu
+#define icmp_num_addrs    icmp_hun.ih_rtradv.irt_num_addrs
+#define icmp_wpa	  icmp_hun.ih_rtradv.irt_wpa
+#define icmp_lifetime	  icmp_hun.ih_rtradv.irt_lifetime
+	union {
+		struct id_ts {
+			  n_time its_otime;
+			  n_time its_rtime;
+			  n_time its_ttime;
+		} id_ts __attribute__((__packed__));
+		struct id_ip  {
+			  struct ip idi_ip;
+
+		} id_ip __attribute__((__packed__));
+		struct icmp_ra_addr id_radv;
+		u_int32_t id_mask;
+		int8_t	  id_data[1];
+	} icmp_dun ;
+#define	icmp_otime	  icmp_dun.id_ts.its_otime
+#define	icmp_rtime	  icmp_dun.id_ts.its_rtime
+#define	icmp_ttime	  icmp_dun.id_ts.its_ttime
+#define	icmp_ip		  icmp_dun.id_ip.idi_ip
+#define icmp_radv	  icmp_dun.id_mask
+#define	icmp_mask	  icmp_dun.id_mask
+#define	icmp_data	  icmp_dun.id_data
+};
+
+#define	ICMP_MINLEN	8
+#define	ICMP_TSLEN	(8 + 3 * sizeof (n_time))
+#define	ICMP_MASKLEN	12
+#define	ICMP_ADVLENMIN	(8 + sizeof (struct ip) + 8)
+#define	ICMP_ADVLEN(p)	(8 + ((p)->icmp_ip.ip_hl << 2) + 8)
+
+
+#define	ICMP_ECHOREPLY		0
+#define	ICMP_UNREACH		3
+#define		ICMP_UNREACH_NET	0
+#define		ICMP_UNREACH_HOST	1
+#define		ICMP_UNREACH_PROTOCOL	2
+#define		ICMP_UNREACH_PORT	3
+#define		ICMP_UNREACH_NEEDFRAG	4
+#define		ICMP_UNREACH_SRCFAIL	5
+#define		ICMP_UNREACH_NET_UNKNOWN 6
+#define		ICMP_UNREACH_HOST_UNKNOWN 7
+#define		ICMP_UNREACH_ISOLATED	8
+#define		ICMP_UNREACH_NET_PROHIB	9
+#define		ICMP_UNREACH_HOST_PROHIB 10
+#define		ICMP_UNREACH_TOSNET	11
+#define		ICMP_UNREACH_TOSHOST	12
+#define		ICMP_UNREACH_ADMIN_PROHIBIT 13
+#define	ICMP_SOURCEQUENCH	4
+#define	ICMP_REDIRECT		5
+#define		ICMP_REDIRECT_NET	0
+#define		ICMP_REDIRECT_HOST	1
+#define		ICMP_REDIRECT_TOSNET	2
+#define		ICMP_REDIRECT_TOSHOST	3
+#define	ICMP_ECHO		8
+#define	ICMP_ROUTERADVERT	9
+#define	ICMP_ROUTERSOLICIT	10
+#define	ICMP_TIMXCEED		11
+#define		ICMP_TIMXCEED_INTRANS	0
+#define		ICMP_TIMXCEED_REASS	1
+#define	ICMP_PARAMPROB		12
+#define		ICMP_PARAMPROB_OPTABSENT 1
+#define	ICMP_TSTAMP		13
+#define	ICMP_TSTAMPREPLY	14
+#define	ICMP_IREQ		15
+#define	ICMP_IREQREPLY		16
+#define	ICMP_MASKREQ		17
+#define	ICMP_MASKREPLY		18
+
+#define	ICMP_MAXTYPE		18
+
+struct icmpstat_t {
+	u_quad_t icps_error;
+	u_quad_t icps_oldshort;
+	u_quad_t icps_oldicmp;
+	u_quad_t icps_outhist[ICMP_MAXTYPE + 1];
+	u_quad_t icps_badcode;
+	u_quad_t icps_tooshort;
+	u_quad_t icps_checksum;
+	u_quad_t icps_badlen;
+	u_quad_t icps_reflect;
+	u_quad_t icps_inhist[ICMP_MAXTYPE + 1];
+};
+#define ICMPCTL_MASKREPL 1
+#define ICMPCTL_RETURNDATABYTES 3
+#define ICMPCTL_ERRPPSLIMIT 4
+#define ICMPCTL_STATS 5
+#define ICMP_INFOTYPE(type) \
+	((type) == ICMP_ECHOREPLY || (type) == ICMP_ECHO || \
+	(type) == ICMP_ROUTERADVERT || (type) == ICMP_ROUTERSOLICIT || \
+	(type) == ICMP_TSTAMP || (type) == ICMP_TSTAMPREPLY || \
+	(type) == ICMP_IREQ || (type) == ICMP_IREQREPLY || \
+	(type) == ICMP_MASKREQ || (type) == ICMP_MASKREPLY)
+#define icmp_input func_000192B8
+#define icmp_reflect func_000198F4
+#define icmp_send func_00019F0C
+#define iptime func_00019FBC
+#define icmp_sysctl func_0001A030
+#define icmp_mtudisc func_0001A128
+#define ip_next_mtu func_0001A398
+#define icmp_ratelimit func_0001A410
+#define icmp_mtudisc_callback_register func_0001A418
+#define icmp_init func_0001A49C
+#define icmp_mtudisc_timeout func_0001A548
+void icmp_reflect(struct mbuf *m);
+void icmp_send(struct mbuf *m, struct mbuf *opts);
+n_time iptime(void);
+int ip_next_mtu(int mtu, int dir);
+struct timeval;
+void _sce_pspnet_microtime(struct timeval *tv);
+#define microtime _sce_pspnet_microtime
+
+#define PRC_IFUP 2
+#define PRC_ROUTEDEAD 1
+#define PRC_QUENCH2 3
+#define PRC_QUENCH 4
+#define PRC_HOSTUNREACH 7
+#define PRC_UNREACH_NET 8
+#define PRC_UNREACH_HOST 9
+#define PRC_UNREACH_PROTOCOL 10
+#define PRC_UNREACH_PORT 11
+#define PRC_UNREACH_SRCFAIL 13
+#define PRC_TIMXCEED_INTRANS 18
+#define PRC_TIMXCEED_REASS 19
+#define PRC_PARAMPROB 20
+#define IPOPT_EOL 0
+#define IPOPT_NOP 1
+#define IPOPT_RR 7
+#define IPOPT_TS 68
+#define IPOPT_SECURITY 130
+#define IPOPT_LSRR 131
+#define IPOPT_SATID 136
+#define IPOPT_SSRR 137
+#define IPOPT_RA 148
+#define IPOPT_OPTVAL 0
+#define IPOPT_OLEN 1
+#define IPOPT_OFFSET 2
+#define IPOPT_MINOFF 4
+#define IPOPT_COPIED(o) ((o) & 0x80)
+#define IPOPT_TS_TSONLY 0
+#define IPOPT_TS_TSANDADDR 1
+#define IPOPT_TS_PRESPEC 3
+#define M_AUTHIPHDR 0x0010
+#define M_DECRYPTED 0x0020
+#define M_LOOP 0x0040
+#define M_AUTHIPDGM 0x0080
+#define IP_RF 0x8000
+#define IP_DF 0x4000
+#define IP_MF 0x2000
+#define IP_OFFMASK 0x1fff
+#define IPVERSION 4
+struct timeval {
+	u_long tv_sec;
+	u_long tv_usec;
+};
 
 #endif
