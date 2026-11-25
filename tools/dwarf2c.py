@@ -81,7 +81,8 @@ class C:
                 if s.tag == "DW_TAG_subrange_type":
                     ub = attr(s, "DW_AT_upper_bound")
                     dims += f"[{ub + 1}]" if isinstance(ub, int) else "[]"
-            return self.decl(self.ref(t), f"{name}{dims}")
+            # an incomplete array (extern T x[];) has no subrange
+            return self.decl(self.ref(t), f"{name}{dims or '[]'}")
         if tag == "DW_TAG_subroutine_type":
             params = [self.decl(self.ref(p), "") for p in t.iter_children() if p.tag == "DW_TAG_formal_parameter"]
             if attr(t, "DW_AT_prototyped") and not params:
