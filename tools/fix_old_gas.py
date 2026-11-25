@@ -7,6 +7,8 @@
 - Old psp-as marks Allegrex as machine 0xA2 with the EABI32 ABI; modern
   binutils uses 0x84 (0xA2 is gs464 there) with O32. Rewrite e_flags to what
   modern GAS emits for -march=allegrex so ld doesn't refuse to merge them.
+- .rodata.cst* lose SHF_MERGE, so each object's constants stay in its own
+  rodata as with the original linker.
 """
 import argparse
 import struct
@@ -38,6 +40,11 @@ def fix(path, text_align=None, data_align=None):
             struct.pack_into("<I", data, sh + 0x20, text_align)
         if data_align and name in (".data", ".bss", ".rodata"):
             struct.pack_into("<I", data, sh + 0x20, data_align)
+        if name.startswith(".rodata.cst"):
+            # keep each object's constants with it: modern ld would merge
+            # SHF_MERGE constants of all objects into the first one
+            sh_flags, = struct.unpack_from("<I", data, sh + 8)
+            struct.pack_into("<I", data, sh + 8, sh_flags & ~0x10)
         if sh_type != 2:  # SHT_SYMTAB
             continue
         off, size, _, info, _, entsize = struct.unpack_from("<IIIIII", data, sh + 0x10)

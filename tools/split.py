@@ -123,7 +123,7 @@ def fix_ld_script(ld_path: Path, config_path: Path):
     text = re.sub(r"^\s*__romPos = ALIGN\(__romPos, \d+\);\n", "", text, flags=re.M)
     # cc1 puts double/float constants in .rodata.cst8/.rodata.cst4; Sony's
     # *(.rodata .rodata.*) kept them right after the object's .rodata
-    text = re.sub(r"(\.c\.o)\(\.rodata\);", r"\1(.rodata .rodata.*);", text)
+    text = re.sub(r"(\S+\.c\.o)\(\.rodata\);", r"\1(.rodata);\n        \1(.rodata.*);", text)
     ld_path.write_text(text)
 
 
