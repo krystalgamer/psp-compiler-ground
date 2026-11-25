@@ -113,7 +113,116 @@ tcp_canceltimers(struct tcpcb *tp)
 /*
  * TCP timer processing.
  */
-INCLUDE_ASM("tmp/asm/tony_libs/pspnet_inet/nonmatchings/tcp_timer", func_00025940);
+struct tcpcb *
+tcp_timers(struct tcpcb *tp, int timer)
+{
+	short	rto;
+
+	switch (timer) {
+
+	case TCPT_2MSL:
+		if (tp->t_state != TCPS_TIME_WAIT &&
+		    ((tcp_maxidle == 0) || (tp->t_idle <= tcp_maxidle)))
+			TCP_TIMER_ARM(tp, TCPT_2MSL, tcp_keepintvl);
+		else
+			tp = tcp_close(tp);
+		break;
+
+	case TCPT_REXMT:
+		if (++tp->t_rxtshift > TCP_MAXRXTSHIFT) {
+			tp->t_rxtshift = TCP_MAXRXTSHIFT;
+			tcpstat.tcps_timeoutdrop++;
+			tp = tcp_drop(tp, tp->t_softerror ?
+			    tp->t_softerror : ETIMEDOUT);
+			break;
+		}
+		tcpstat.tcps_rexmttimeo++;
+		rto = TCP_REXMTVAL(tp);
+		if (rto < tp->t_rttmin)
+			rto = tp->t_rttmin;
+		TCPT_RANGESET(tp->t_rxtcur, rto * tcp_backoff[tp->t_rxtshift],
+		    tp->t_rttmin, TCPTV_REXMTMAX);
+		TCP_TIMER_ARM(tp, TCPT_REXMT, tp->t_rxtcur);
+		if (ip_mtudisc && tp->t_rxtshift > TCP_MAXRXTSHIFT / 6) {
+			tcpstat.tcps_pmtublackhole++;
+			if (tp->t_inpcb)
+				tp->t_mtudisc = 0;
+		}
+		if (tp->t_rxtshift > TCP_MAXRXTSHIFT / 4) {
+			if (tp->t_inpcb)
+				in_losing(tp->t_inpcb);
+			tp->t_rttvar += (tp->t_srtt >> TCP_RTT_SHIFT);
+			tp->t_srtt = 0;
+		}
+		tp->snd_nxt = tp->snd_una;
+		tp->t_rtt = 0;
+		if (tp->t_state == TCPS_SYN_SENT)
+			tp->t_flags |= TF_SYN_REXMT;
+		{
+		u_int win = min(tp->snd_wnd, tp->snd_cwnd) / 2 / tp->t_segsz;
+		if (win < 2)
+			win = 2;
+		tp->snd_cwnd = tp->t_segsz;
+		tp->snd_ssthresh = win * tp->t_segsz;
+		tp->t_dupacks = 0;
+		}
+		(void) tcp_output(tp);
+		break;
+
+	case TCPT_PERSIST:
+		rto = TCP_REXMTVAL(tp);
+		if (rto < tp->t_rttmin)
+			rto = tp->t_rttmin;
+		if (tp->t_rxtshift == TCP_MAXRXTSHIFT &&
+		    (tp->t_idle >= tcp_maxpersistidle ||
+		    tp->t_idle >= rto * tcp_totbackoff)) {
+			tcpstat.tcps_persistdrops++;
+			tp = tcp_drop(tp, ETIMEDOUT);
+			break;
+		}
+		tcpstat.tcps_persisttimeo++;
+		tcp_setpersist(tp);
+		tp->t_force = 1;
+		(void) tcp_output(tp);
+		tp->t_force = 0;
+		break;
+
+	case TCPT_KEEP:
+	    {
+		struct socket *so = NULL;
+
+		tcpstat.tcps_keeptimeo++;
+		if (TCPS_HAVEESTABLISHED(tp->t_state) == 0)
+			goto dropit;
+		if (tp->t_inpcb)
+			so = tp->t_inpcb->inp_socket;
+		if (so->so_options & SO_KEEPALIVE &&
+		    tp->t_state <= TCPS_CLOSE_WAIT) {
+		    	if ((tcp_maxidle > 0) &&
+			    (tp->t_idle >= tcp_keepidle + tcp_maxidle))
+				goto dropit;
+			tcpstat.tcps_keepprobe++;
+			if (tcp_compat_42) {
+				(void)tcp_respond(tp, tp->t_template,
+				    (struct mbuf *)NULL, NULL, tp->rcv_nxt - 1,
+				    tp->snd_una - 1, 0);
+			} else {
+				(void)tcp_respond(tp, tp->t_template,
+				    (struct mbuf *)NULL, NULL, tp->rcv_nxt,
+				    tp->snd_una - 1, 0);
+			}
+			TCP_TIMER_ARM(tp, TCPT_KEEP, tcp_keepintvl);
+		} else
+			TCP_TIMER_ARM(tp, TCPT_KEEP, tcp_keepidle);
+		break;
+	    }
+	dropit:
+		tcpstat.tcps_keepdrops++;
+		tp = tcp_drop(tp, ETIMEDOUT);
+		break;
+	}
+	return (tp);
+}
 
 void
 tcp_timer_init(void)

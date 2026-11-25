@@ -2311,6 +2311,8 @@ struct udpstat_t {
 #define sysctl_rdstruct func_00008BB4
 int sysctl_int(void *oldp, size_t *oldlenp, void *newp, size_t newlen, int *valp);
 int sysctl_rdstruct(void *oldp, size_t *oldlenp, void *newp, const void *sp, int len);
+#define sysctl_rdint func_000088AC
+int sysctl_rdint(void *oldp, size_t *oldlenp, void *newp, int val);
 #define ip_stripoptions func_00016EAC
 void ip_stripoptions(struct mbuf *m, struct mbuf *mopt);
 #define udp_input func_0001C30C
@@ -2677,7 +2679,7 @@ extern int subnetsarelocal, hostzeroisbroadcast;
 #define PR_SLOWHZ 2
 #endif
 #define pfslowtimo_now ((u_int)D_0002F29C)
-#define PRT_SLOW_ARM(t, nticks) ((t) = (nticks) + pfslowtimo_now)
+#define PRT_SLOW_ARM(t, nticks) ((t) = pfslowtimo_now + (nticks))
 #define PRT_SLOW_DISARM(t) ((t) = 0)
 #define PRT_SLOW_ISARMED(t) ((t) != 0)
 #define PRT_SLOW_ISEXPIRED(t) (PRT_SLOW_ISARMED(t) && (t) <= pfslowtimo_now)
