@@ -24,7 +24,21 @@ typedef struct SceGmoChunk SceGmoChunk;
 _Bool sceGmoModelCheckFileHeader(const void *buf, int size);
 
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_model/nonmatchings/gmo_format", sceGmoModelCheckFileHeader);
+_Bool sceGmoModelCheckFileHeader(const void *buf, int size)
+{
+	const SceGmoHeader *header;
+
+	header = (const SceGmoHeader *)buf;
+	if (header == NULL)
+		return 0;
+	if (size > 0 && size < 32)
+		return 0;
+	if (header->signature != 0x2E474D4F)
+		return 0;
+	if (header->version != 0x312E3030)
+		return 0;
+	return header->style == 0x505350;
+}
 
 int sceGmoModelGetChunkCount(void *buf, int size) {
     int var_v1;
