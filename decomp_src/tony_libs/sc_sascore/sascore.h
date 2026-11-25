@@ -46,14 +46,18 @@ typedef struct {
 	u8 unk8;
 	u8 unk9;
 	u8 von;
-	u8 unkB;
+	s8 busy;
 	s16 evolL;
 	s16 evolR;
 	int endFlag;
 	SasVoice voice[32];
 	SasVoice voice2[32];
 	int unkE14;
-	char padE18[0xE20 - 0xE18];
+	u8 vonCopy;
+	u8 padE19;
+	s16 evolLCopy;
+	s16 evolRCopy;
+	char padE1E[0xE20 - 0xE1E];
 } SasCore;
 
 extern int D_00001DD0;
@@ -61,10 +65,14 @@ extern void *D_00001DE0;
 void *sceMeCalloc(unsigned int n, unsigned int size);
 void sceMeFree(void *p);
 void sceKernelDcacheWritebackInvalidateAll(void);
+void sceKernelDcacheWritebackInvalidateRange(const void *p, unsigned int size);
+void sceKernelDcacheInvalidateRange(const void *p, unsigned int size);
+int sceMeCore_driver_3D5F109C(int cmd, ...);
 int sceKernelCreateSema(const char *name, unsigned int attr, int init, int max, void *opt);
 int sceKernelDeleteSema(int id);
 extern const s8 D_00001DA0[8];
 extern const s8 D_00001DA8[8];
+extern const s16 D_00001DB0[8];
 
 int sceKernelWaitSema(int sema, int n, void *timeout);
 int sceKernelSignalSema(int sema, int n);
@@ -99,6 +107,21 @@ static inline int pspRetK1(int ret, unsigned int k1)
 #define MAX(a, b) ((a) < (b) ? (b) : (a))
 
 #define K1_USER() pspK1IsUserMode()
+
+static inline int ptrOk(unsigned int addr)
+{
+	return (addr >> 31) ^ 1;
+}
+
+static inline int staBufOk(unsigned int addr, unsigned int size)
+{
+	return ((addr | (addr + size)) >> 31) ^ 1;
+}
+
+static inline int dynBufOk(unsigned int addr, unsigned int size)
+{
+	return ((addr | size | (addr + size)) >> 31) ^ 1;
+}
 #define CHECK_CORE(core) (K1_USER() && (int)((unsigned int)(core) | ((unsigned int)(core) + sizeof(SasCore))) < 0)
 
 #endif
