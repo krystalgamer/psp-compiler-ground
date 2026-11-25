@@ -4,6 +4,8 @@ main                                         1.5.1.internal  main.c
 game                                         1.5.1.internal  game.c
 particle                                     1.5.1.internal  particle.c
 pickup                                       1.5.1.internal  pickup.c
+libgum                                       1.5.1.internal  libgum.c
+libgu                                        1.5.1.internal  libgu.c
 newlib/libm/math/sf_cos                      1.5.1.internal  ../../../../../newlib-1.12.0/newlib/libm/math/sf_cos.c
 newlib/libm/math/sf_sin                      1.5.1.internal  ../../../../../newlib-1.12.0/newlib/libm/math/sf_sin.c
 newlib/libm/math/wf_sqrt                     1.5.1.internal  ../../../../../newlib-1.12.0/newlib/libm/math/wf_sqrt.c
@@ -18,6 +20,7 @@ newlib/libm/math/sf_floor                    1.5.1.internal  ../../../../../newl
 newlib/libm/math/sf_isnan                    1.5.1.internal  ../../../../../newlib-1.12.0/newlib/libm/math/sf_isnan.c
 newlib/libm/common/sf_scalbn                 1.5.1.internal  ../../../../../newlib-1.12.0/newlib/libm/common/sf_scalbn.c
 newlib/libm/common/sf_copysign               1.5.1.internal  ../../../../../newlib-1.12.0/newlib/libm/common/sf_copysign.c
+kernel_bridge                                1.5.1.internal  kernel_bridge.c
 newlib/libc/stdlib/atexit                    1.5.1.internal  ../../../../../newlib-1.12.0/newlib/libc/stdlib/atexit.c
 newlib/libc/errno/errno                      1.5.1.internal  ../../../../../newlib-1.12.0/newlib/libc/errno/errno.c
 newlib/libc/stdlib/exit                      1.5.1.internal  ../../../../../newlib-1.12.0/newlib/libc/stdlib/exit.c
