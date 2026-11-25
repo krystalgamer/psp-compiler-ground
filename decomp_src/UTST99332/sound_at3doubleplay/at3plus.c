@@ -1,9 +1,52 @@
 #include "common.h"
 
+/* declarations recovered from DWARF */
+typedef char SceChar8;
+typedef unsigned char SceUChar8;
+typedef int SceInt32;
+struct _anon1;
+struct _anon1 { /* size 0xc */
+    SceInt32 atracId;
+    SceInt32 fd;
+    SceInt32 outputChannel;
+};
+typedef struct _anon1 ScePlayArg;
+typedef int SceSSize;
+typedef unsigned int SceSize;
+typedef void *ScePVoid;
+typedef unsigned int SceUInt32;
+
+
+
+SceInt32 init_atrac3plus(SceChar8 *filename, SceUChar8 *pucReadBuf, SceInt32 iInputBufferSize, SceInt32 ioutputChannel, ScePlayArg *pPlayArg);
+SceInt32 play_atrac3plus(SceSize args, ScePVoid argp);
+static void at3plus_addData(SceInt32 atracId, SceInt32 fd);
+
+/* SDK functions (tools/sdk_protos.h) */
+int sceIoClose(int fd);
+int printf(const char *fmt, ...);
+
+
 INCLUDE_ASM("tmp/asm/UTST99332/sound_at3doubleplay/nonmatchings/at3plus", init_atrac3plus);
 
 INCLUDE_ASM("tmp/asm/UTST99332/sound_at3doubleplay/nonmatchings/at3plus", play_atrac3plus);
 
-INCLUDE_ASM("tmp/asm/UTST99332/sound_at3doubleplay/nonmatchings/at3plus", release_at3playArgID);
+void release_at3playArgID(ScePlayArg *pPlayArg) {
+    int temp_v0;
+    int temp_v0_2;
+    int temp_v0_3;
+
+    temp_v0 = pPlayArg->atracId;
+    if ((temp_v0 < 0) || (temp_v0_2 = sceAtracReleaseAtracID(temp_v0), (temp_v0_2 >= 0))) {
+
+    } else {
+        printf("status = 0x%x (in sceAtracReleaseAtracID)\n", temp_v0_2);
+    }
+    if ((pPlayArg->fd < 0) || (temp_v0_3 = sceIoClose(pPlayArg->fd), (temp_v0_3 >= 0))) {
+
+    } else {
+        printf("status = 0x%x (in sceIoClose)\n", temp_v0_3);
+    }
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/sound_at3doubleplay/nonmatchings/at3plus", at3plus_addData);

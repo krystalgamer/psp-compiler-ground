@@ -1,6 +1,56 @@
 #include "common.h"
 
-INCLUDE_ASM("tmp/asm/UTST99332/sound_at3doubleplay/nonmatchings/at3loadmodule", load_module);
+/* declarations recovered from DWARF */
+struct SceKernelLMOption;
+typedef unsigned int SceSize;
+typedef int SceUID;
+struct SceKernelLMOption { /* size 0x14 */
+    SceSize size;
+    SceUID mpidtext;
+    SceUID mpiddata;
+    unsigned int flags;
+    char position;
+    char access;
+    char creserved[2];
+};
+typedef struct SceKernelLMOption SceKernelLMOption;
+struct SceKernelSMOption;
+struct SceKernelSMOption { /* size 0x14 */
+    SceSize size;
+    SceUID mpidstack;
+    SceSize stacksize;
+    int priority;
+    unsigned int attribute;
+};
+typedef struct SceKernelSMOption SceKernelSMOption;
+typedef int SceInt32;
+struct _anon1;
+typedef unsigned char SceUChar8;
+struct _anon1 { /* size 0xc */
+    SceUID moduleID;
+    SceInt32 kModeFlag;
+    SceUChar8 *modulename;
+};
+typedef struct _anon1 ModuleArg;
+
+extern ModuleArg module[2];
+
+static int unload_module(SceUID mid);
+int unloadModuleAt3plus(void);
+int loadModuleAt3plus(void);
+
+
+int load_module(signed char *modulename, SceKernelLMOption *lm_opt, SceKernelSMOption *sm_opt) {
+    int temp_v0;
+
+    do {
+        temp_v0 = sceKernelLoadModule(modulename, 0, lm_opt);
+    } while (temp_v0 < 0);
+    do {
+
+    } while (sceKernelStartModule(temp_v0, 0, 0, 0, sm_opt) < 0);
+    return temp_v0;
+}
 
 INCLUDE_RODATA("tmp/asm/UTST99332/sound_at3doubleplay/nonmatchings/at3loadmodule", D_0001F2AC);
 
