@@ -1,55 +1,53 @@
 #include "common.h"
 
+INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/gmo_motion", sceGmoMotionCreate);
+
+INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/gmo_motion", sceGmoMotionDelete);
+
+INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/gmo_motion", sceGmoMotionDuplicate);
+
+INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/gmo_motion", sceGmoMotionLoad);
+
+INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/gmo_motion", sceGmoMotionUnload);
+
+INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/gmo_motion", sceGmoMotionUpdate);
+
+INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/gmo_motion", sceGmoMotionSetParent);
+
+INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/gmo_motion", sceGmoMotionGetParent);
+
+INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/gmo_motion", sceGmoMotionSetFrameLoop);
+
+INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/gmo_motion", sceGmoMotionGetFrameLoop);
+
+INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/gmo_motion", sceGmoMotionSetFrameRate);
+
+INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/gmo_motion", sceGmoMotionGetFrameRate);
+
+INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/gmo_motion", sceGmoMotionSetFrameRepeat);
+
+INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/gmo_motion", sceGmoMotionGetFrameRepeat);
+
+INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/gmo_motion", sceGmoMotionSetFrame);
+
+INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/gmo_motion", sceGmoMotionGetFrame);
+
+INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/gmo_motion", sceGmoMotionSetWeight);
+
+INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/gmo_motion", sceGmoMotionGetWeight);
+
+INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/gmo_motion", sceGmoMotionGetAnimationCount);
+
+INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/gmo_motion", sceGmoMotionGetFcurveCount);
+
+INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/gmo_motion", sceGmoMotionGetAnimation);
+
+INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/gmo_motion", sceGmoMotionGetFcurve);
+
 INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/gmo_motion", eval_fcurve);
 
 INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/gmo_motion", find_root);
 
 INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/gmo_motion", quat_slerp_B2D4);
 
-INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/gmo_motion", sceGmoModelCheckFileHeader);
-
-INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/gmo_motion", sceGmoModelGetChunkCount);
-
-INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/gmo_motion", sceGmoModelGetChunk);
-
-INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/gmo_motion", sceGmoModelCountChunk);
-
-INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/gmo_motion", sceGmoModelFindChunk);
-
-INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/gmo_motion", sceGmoModelAllocPtr);
-
-INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/gmo_motion", sceGmoModelAllocPtr2);
-
-INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/gmo_motion", sceGmoModelCopyPtr);
-
-INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/gmo_motion", sceGmoModelCopyPtr2);
-
-INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/gmo_motion", sceGmoContextBegin);
-
 INCLUDE_RODATA("tmp/asm/umdt/graphics_model/nonmatchings/gmo_motion", D_00016B8C);
-
-INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/gmo_motion", sceGmoContextEnd);
-
-INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/gmo_motion", sceGmoContextSetBone);
-
-INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/gmo_motion", sceGmoContextSetMaterial);
-
-INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/gmo_motion", sceGmoContextSetTexture);
-
-INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/gmo_motion", sceGmoContextDefaultEnableBits);
-
-INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/gmo_motion", sceGmoContextSetEnableBits);
-
-INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/gmo_motion", sceGmoContextDefaultTexOffs);
-
-INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/gmo_motion", sceGmoContextDefaultTexCrop);
-
-INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/gmo_motion", sceGmoContextDefaultTexTrim);
-
-INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/gmo_motion", sceGmoContextSetTexOffs);
-
-INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/gmo_motion", sceGmoContextSetTexCrop);
-
-INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/gmo_motion", sceGmoContextSetTexTrim);
-
-INCLUDE_RODATA("tmp/asm/umdt/graphics_model/nonmatchings/gmo_motion", __psp_libinfo___16BA4);

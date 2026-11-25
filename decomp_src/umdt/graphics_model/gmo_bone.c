@@ -1,5 +1,33 @@
 #include "common.h"
 
+INCLUDE_RODATA("tmp/asm/umdt/graphics_model/nonmatchings/gmo_bone", D_00016760);
+
+INCLUDE_RODATA("tmp/asm/umdt/graphics_model/nonmatchings/gmo_bone", D_0001676C);
+
+INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/gmo_bone", sceGmoBoneCreate);
+
+INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/gmo_bone", sceGmoBoneDelete);
+
+INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/gmo_bone", sceGmoBoneDuplicate);
+
+INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/gmo_bone", sceGmoBoneLoad);
+
+INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/gmo_bone", sceGmoBoneUnload);
+
+INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/gmo_bone", sceGmoBoneUpdate);
+
+INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/gmo_bone", sceGmoBoneDraw);
+
+INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/gmo_bone", sceGmoBoneActivate);
+
+INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/gmo_bone", sceGmoBoneAnimate);
+
+INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/gmo_bone", sceGmoBoneSetParent);
+
+INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/gmo_bone", sceGmoBoneGetParent);
+
+INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/gmo_bone", sceGmoBoneGetWorldMatrix);
+
 INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/gmo_bone", complement_animation_68F8);
 
 INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/gmo_bone", calc_local_matrix);
@@ -33,39 +61,3 @@ INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/gmo_bone", quat_from_rotzy
 INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/gmo_bone", quat_from_rotyxz);
 
 INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/gmo_bone", quat_slerp_777C);
-
-INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/gmo_bone", sceGmoPartCreate);
-
-INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/gmo_bone", sceGmoPartDelete);
-
-INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/gmo_bone", sceGmoPartDuplicate);
-
-INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/gmo_bone", sceGmoPartLoad);
-
-INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/gmo_bone", sceGmoPartUnload);
-
-INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/gmo_bone", sceGmoPartDraw);
-
-INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/gmo_bone", sceGmoPartSetParent);
-
-INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/gmo_bone", sceGmoPartGetParent);
-
-INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/gmo_bone", sceGmoPartGetMeshCount);
-
-INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/gmo_bone", sceGmoPartGetArraysCount);
-
-INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/gmo_bone", sceGmoPartGetMesh);
-
-INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/gmo_bone", sceGmoPartGetArrays);
-
-INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/gmo_bone", sceGmoMeshCreate);
-
-INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/gmo_bone", sceGmoMeshDelete);
-
-INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/gmo_bone", sceGmoMeshDuplicate);
-
-INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/gmo_bone", sceGmoMeshLoad);
-
-INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/gmo_bone", sceGmoMeshUnload);
-
-INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/gmo_bone", sceGmoMeshDraw);
