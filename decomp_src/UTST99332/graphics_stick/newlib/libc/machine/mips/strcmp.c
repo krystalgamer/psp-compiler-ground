@@ -1,3 +1,3 @@
-#include "common.h"
-
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_stick/nonmatchings/newlib/libc/machine/mips/strcmp", strcmp);
+/* upstream: newlib-1.12.0/newlib/libc/machine/mips/strcmp.c (unmodified) */
+/* cflags: -O2 -fno-builtin */
+#include "libc/machine/mips/strcmp.c"
