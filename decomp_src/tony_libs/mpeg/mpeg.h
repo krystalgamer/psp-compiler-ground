@@ -239,7 +239,7 @@ typedef struct SceMpegRingbuffer {
 	void *pCallbackData;
 	void *pPack;
 	int iSemaRB;
-	void *mp;
+	struct SceMpeg *mp;
 } SceMpegRingbuffer;
 
 typedef struct SceMpegAu {
@@ -359,5 +359,32 @@ typedef struct {
 } StreamID;
 
 extern const StreamID D_00007A90[];
+
+int func_000014F4(SceMpeg *mp, SceMpegRingbuffer *rb, int num, int *out);
+int func_00003A88(SceMpegRingbuffer *rb, int num, int avail);
+int func_00003E28(SceMpegRingbuffer *rb);
+int func_00003E90(SceMpegRingbuffer *rb, int num);
+void func_00003F4C(SceMpegRingbuffer *rb, int *pos, int addr);
+
+typedef struct SceMpegAuInfo {
+	int unk[11];
+} SceMpegAuInfo;
+
+typedef struct AuNode2 {
+	struct AuNode2 *next;
+	struct AuNode2 *prev;
+	SceMpegAuInfo info;
+} AuNode2;
+
+typedef struct AuList2 {
+	AuNode2 *tail;
+	AuNode2 *head;
+	int unk8;
+	int num;
+} AuList2;
+
+int func_00001180(void *addr);
+int func_000013AC(AuList2 *l, int start, int count, SceMpegAuInfo *dst, int *out);
+int func_00001474(AuList2 *l, int count, int *out);
 
 #endif
