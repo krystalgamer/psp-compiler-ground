@@ -1,6 +1,8 @@
 #ifndef NETLIB_H
 #define NETLIB_H
 
+#include <stdarg.h>
+
 #ifndef NULL
 #define NULL ((void *)0)
 #endif
@@ -374,5 +376,8 @@ int func_00003438(void);
 void func_0000348C(void);
 void func_000057D8(void);
 void func_0000426C(int n);
+
+void func_0000877C(char **pp, int c);
+int func_00008054(void (*put)(char **, int), char **arg, const char *fmt, va_list ap);
 
 #endif
