@@ -1,3 +1,3 @@
-#include "common.h"
-
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_map/nonmatchings/newlib/libc/stdio/makebuf", __smakebuf);
+/* upstream: newlib-1.12.0/newlib/libc/stdio/makebuf.c (unmodified) */
+/* cflags: -O2 -fno-builtin */
+#include "libc/stdio/makebuf.c"
