@@ -52,7 +52,14 @@ segments:
     start: 0x80
     vram: 0x0
     subsegments:
-      - [0x80, c, pspnet_adhoc_auth]
+      - [0x80, c, auth]
+      - [0x3DC, c, api]
+      - [0x1190, c, recv]
+      - [0x1294, c, crypt]
+      - [0x1570, c, thread]
+      - [0x22A4, c, proto]
+      - [0x3950, c, lock]
+      - [0x3A80, c, module]
       - { start: 0x3A90, type: asm, name: sceStub, linker_section: .sceStub.text }
       - { start: 0x3BE0, type: rodata, name: lib_ent_top, linker_section: .lib.ent.top }
       - { start: 0x3BE4, type: rodata, name: lib_ent, linker_section: .lib.ent }
@@ -63,7 +70,11 @@ segments:
       - { start: 0x3C84, type: rodata, name: module_info, linker_section: .rodata.sceModuleInfo }
       - { start: 0x3CB8, type: rodata, name: resident, linker_section: .rodata.sceResident }
       - { start: 0x3E0C, type: rodata, name: nid, linker_section: .rodata.sceNid }
-      - [0x3EB4, .rodata, pspnet_adhoc_auth]
+      - [0x3EB4, .rodata, api]
+      - [0x3EC4, .rodata, crypt]
+      - [0x3ED4, .rodata, thread]
+      - [0x3F14, .rodata, proto]
+      - [0x3F38, .rodata, lock]
   - [0x3F4C, bin, seg1_align]
   - name: pspnet_adhoc_auth_seg1
     type: code

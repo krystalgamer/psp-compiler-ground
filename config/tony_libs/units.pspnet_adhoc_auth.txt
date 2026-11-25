@@ -1,2 +1,9 @@
 # unit                                     compiler        source
-pspnet_adhoc_auth                            1.5.1.internal  pspnet_adhoc_auth.c
+auth                                         1.5.1.internal  auth.c
+api                                          1.5.1.internal  api.c
+recv                                         1.5.1.internal  recv.c
+crypt                                        1.5.1.internal  crypt.c
+thread                                       1.5.1.internal  thread.c
+proto                                        1.5.1.internal  proto.c
+lock                                         1.5.1.internal  lock.c
+module                                       1.5.1.internal  module.c

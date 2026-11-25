@@ -1,2 +1,11 @@
-# Stripped module: one unit for all of .text until object boundaries are known.
-0x00000 pspnet_adhoc_auth 1.5.1.internal  pspnet_adhoc_auth.c
+# Stripped module: .comment lists 8 C objects. Guessed boundaries: two separate
+# "SceNetAdhocAuth" strings (0x35C / 0x1214), jump tables (0x14F0 / 0x2224),
+# the lock helpers using "SceNetAdhocAuthLock", module_start/stop.
+0x00000 auth             1.5.1.internal  auth.c
+0x0035C api              1.5.1.internal  api.c
+0x01110 recv             1.5.1.internal  recv.c
+0x01214 crypt            1.5.1.internal  crypt.c
+0x014F0 thread           1.5.1.internal  thread.c
+0x02224 proto            1.5.1.internal  proto.c
+0x038D0 lock             1.5.1.internal  lock.c
+0x03A00 module           1.5.1.internal  module.c
