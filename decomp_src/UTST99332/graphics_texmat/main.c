@@ -54,6 +54,41 @@ struct ScePspFMatrix4 { /* size 0x40 */
 typedef struct ScePspFMatrix4 ScePspFMatrix4;
 
 /* SDK functions */
+void sceGuInit(void);
+int sceGuDisplay(int state);
+void sceGuDrawBuffer(int psm, void *fbp, int frame_width);
+void sceGuDispBuffer(int width, int height, void *dbp, int frame_width);
+void sceGuDepthBuffer(void *zbp, int frame_width);
+void sceGuOffset(unsigned int x, unsigned int y);
+void sceGuViewport(int cx, int cy, int width, int height);
+void sceGuDepthRange(int near, int far);
+void sceGuScissor(int x, int y, int w, int h);
+void sceGuEnable(int state);
+void sceGuDisable(int state);
+void sceGuClearColor(unsigned int color);
+void sceGuClearDepth(unsigned int depth);
+void sceGuClearStencil(unsigned int stencil);
+void sceGuColor(unsigned int color);
+void sceGuAmbient(unsigned int color);
+void sceGuSpecular(float power);
+void sceGuLight(int light, int type, int components, const ScePspFVector3 *position);
+void sceGuLightColor(int light, int component, unsigned int color);
+void sceGuShadeModel(int mode);
+void sceGuFrontFace(int order);
+void sceGuDepthFunc(int function);
+void sceGuTexMode(int tpsm, int maxmips, int a2, int swizzle);
+void sceGuTexImage(int mipmap, int width, int height, int tbw, const void *tbp);
+void sceGuTexFilter(int min, int mag);
+void sceGuTexFunc(int tfx, int tcc);
+void sceGuTexWrap(int u, int v);
+void sceGuTexOffset(float u, float v);
+void sceGuTexScale(float u, float v);
+void sceGuClutMode(unsigned int cpsm, unsigned int shift, unsigned int mask, unsigned int a3);
+void sceGuClutLoad(int num_blocks, const void *cbp);
+void sceGumPerspective(float fovy, float aspect, float near, float far);
+void sceGumSetMatrixStack(void *stack, int proj, int view, int model, int texture);
+
+/* SDK functions */
 void sceGuStart(int type, void *list, int size);
 int sceGuFinish(void);
 int sceGuSync(int mode, int what);
@@ -144,7 +179,75 @@ static void draw_frame(int frame)
 	sceGuSync(0, 0);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_texmat/nonmatchings/main", init_all);
+static void init_all(void)
+{
+	ScePspFVector3 vec;
+
+	sceGuInit();
+	sceGuStart(0, disp_list, sizeof(disp_list));
+	sceGuDrawBuffer(1, (void *)0, 512);
+	sceGuDispBuffer(480, 272, (void *)0x44000, 512);
+	sceGuDepthBuffer((void *)0x88000, 512);
+	sceGuOffset(2048 - 480 / 2, 2048 - 272 / 2);
+	sceGuViewport(2048, 2048, 480, 272);
+	sceGuDepthRange(50000, 10000);
+	sceGuDisable(4);
+	sceGuScissor(0, 0, 480, 272);
+	sceGuEnable(2);
+	sceGuDepthFunc(6);
+	sceGuEnable(1);
+	sceGuFrontFace(0);
+	sceGuEnable(5);
+	sceGuTexImage(0, 32, 32, 32, check32x32);
+	sceGuTexMode(4, 0, 0, 0);
+	sceGuTexFilter(7, 1);
+	sceGuTexFunc(0, 0);
+	sceGuTexWrap(0, 0);
+	sceGuTexScale(1.0f, 1.0f);
+	sceGuTexOffset(0.0f, 0.0f);
+	sceGuClutMode(1, 0, 0xff, 0);
+	sceGuClutLoad(1, checkcolor);
+	sceGuEnable(9);
+	sceGuShadeModel(1);
+	sceGuEnable(6);
+	sceGuColor(0xff808080);
+	sceGuAmbient(0xff404040);
+	vec.x = 1.0f;
+	vec.y = 0.0f;
+	vec.z = 0.0f;
+	sceGuLightColor(0, 2, 0);
+	sceGuLight(0, 0, 2, &vec);
+	sceGuEnable(11);
+	vec.x = 0.0f;
+	vec.y = 1.0f;
+	vec.z = 0.0f;
+	sceGuLightColor(1, 2, 0);
+	sceGuLight(1, 0, 2, &vec);
+	sceGuEnable(12);
+	vec.x = -1.3f;
+	vec.y = 4.0f;
+	vec.z = 3.8f;
+	sceGuLightColor(2, 2, 0xffffffff);
+	sceGuLightColor(2, 4, 0xffffffff);
+	sceGuLight(2, 0, 6, &vec);
+	sceGuEnable(13);
+	sceGuEnable(10);
+	sceGuSpecular(10.0f);
+	sceGumSetMatrixStack(matrix_stack, 8, 8, 8, 8);
+	sceGumMatrixMode(0);
+	sceGumLoadIdentity();
+	sceGumPerspective(0.7853982f, 1.7647059f, 1.0f, 100.0f);
+	sceGumMatrixMode(3);
+	sceGumPerspective(0.7853982f, 1.7647059f, 1.0f, 100.0f);
+	sceGumMatrixMode(2);
+	sceGumLoadIdentity();
+	sceGuClearColor(0xff808080);
+	sceGuClearDepth(0);
+	sceGuClearStencil(0);
+	sceGuFinish();
+	sceGuSync(0, 0);
+	sceGuDisplay(1);
+}
 
 static void init_pos(void)
 {
