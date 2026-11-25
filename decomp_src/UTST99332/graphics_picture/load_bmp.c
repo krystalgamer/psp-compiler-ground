@@ -103,15 +103,120 @@ int sceKernelDcacheWritebackAll(void);
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_picture/nonmatchings/load_bmp", sceGimPictureLoadBmp);
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_picture/nonmatchings/load_bmp", read_header_2988);
+#define read_header read_header_2988
+#define read_short read_short_2A64
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_picture/nonmatchings/load_bmp", read_short_2A64);
+static const void *read_header(const void *src, BmpHeader *header)
+{
+	src = read_short(src, &header->type);
+	src = read_int(src, &header->size);
+	src = read_short(src, &header->res1);
+	src = read_short(src, &header->res2);
+	src = read_int(src, &header->bits);
+	src = read_int(src, &header->size2);
+	src = read_int(src, &header->width);
+	src = read_int(src, &header->height);
+	src = read_short(src, &header->plane_count);
+	src = read_short(src, &header->bit_count);
+	src = read_int(src, &header->compress);
+	src = read_int(src, &header->image_size);
+	src = read_int(src, &header->xppm);
+	src = read_int(src, &header->yppm);
+	src = read_int(src, &header->used_cols);
+	src = read_int(src, &header->important);
+	return src;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_picture/nonmatchings/load_bmp", read_int);
+static const void *read_short(const void *src, short int *val)
+{
+	if ((int)src & 1) {
+		const unsigned char *cp = src;
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_picture/nonmatchings/load_bmp", copy_idx4);
+		*val = cp[0] | (cp[1] << 8);
+	} else {
+		*val = *(const short *)src;
+	}
+	return (const char *)src + 2;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_picture/nonmatchings/load_bmp", copy_idx8);
+static const void *read_int(const void *src, int *val)
+{
+	if ((int)src & 3) {
+		const unsigned char *cp = src;
+
+		*val = (cp[3] << 24) | (cp[2] << 16) | (cp[1] << 8) | cp[0];
+	} else {
+		*val = *(const int *)src;
+	}
+	return (const char *)src + 4;
+}
+
+static void copy_idx4(void *dst, const void *src, int width, int height)
+{
+	int pitch;
+	int pitch2;
+	const char *sp;
+	char *dp;
+
+	width = (width + 1) / 2;
+	pitch = (width + 15) & ~15;
+	pitch2 = (width + 3) & ~3;
+	sp = src;
+	dp = (char *)dst + pitch * (height - 1);
+	{
+		int i;
+
+		for (i = 0; i < height; i++) {
+			const char *sp2 = sp;
+			char *dp2 = dp;
+			{
+				int j;
+
+				for (j = 0; j < width; j++) {
+					int s = *(const unsigned char *)sp2++;
+
+					*dp2++ = (s << 4) | (s >> 4);
+				}
+			}
+			sp += pitch2;
+			dp -= pitch;
+		}
+	}
+}
+
+static void copy_idx8(void *dst, const void *src, int width, int height)
+{
+	int pitch;
+	int pitch2;
+	const char *sp;
+	char *dp;
+
+	pitch = (width + 15) & ~15;
+	pitch2 = (width + 3) & ~3;
+	sp = src;
+	dp = (char *)dst + pitch * (height - 1);
+	{
+		int i;
+
+		for (i = 0; i < height; i++) {
+			const char *sp2 = sp;
+			char *dp2 = dp;
+			{
+				int j;
+
+				for (j = 0; j < width; j++)
+					*dp2++ = *sp2++;
+			}
+			sp += pitch2;
+			dp -= pitch;
+		}
+	}
+}
+
+
+
+
+
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_picture/nonmatchings/load_bmp", copy_5551);
 
