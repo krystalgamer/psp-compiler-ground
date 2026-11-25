@@ -18,9 +18,15 @@ INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/utils", compact_array);
 
 INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/utils", quick_sort);
 
-INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/utils", malloc16);
+void *memalign(unsigned int align, unsigned int size);
+void *malloc16(unsigned int size) {
+    return memalign(0x10, size);
+}
 
-INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/utils", free16);
+void free(void *p);
+void free16(void *addr) {
+    free(addr);
+}
 
 INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/utils", shuffle);
 

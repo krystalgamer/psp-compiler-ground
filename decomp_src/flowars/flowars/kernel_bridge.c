@@ -14,32 +14,68 @@ INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/kernel_bridge", _close);
 
 INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/kernel_bridge", _fstat);
 
-INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/kernel_bridge", isatty);
+int isatty(int fd)
+{
+	return 1;
+}
 
-INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/kernel_bridge", _rename);
+int _rename(signed char *oldpath, signed char *newpath) {
+    return sceIoRename();
+}
 
-INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/kernel_bridge", _stat);
+int _stat(signed char *file_name, struct stat *buf) {
+    return -1;
+}
 
-INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/kernel_bridge", _fcntl);
+int _fcntl(int fd, int cmd) {
+    return -1;
+}
 
-INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/kernel_bridge", _link);
+int _link(signed char *oldpath, signed char *newpath) {
+    return -1;
+}
 
-INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/kernel_bridge", _unlink);
+int _unlink(signed char *pathname) {
+    return -1;
+}
 
 INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/kernel_bridge", _exit);
 
-INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/kernel_bridge", _kill);
+int _kill(int pid, int sig)
+{
+	return -1;
+}
 
-INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/kernel_bridge", _getpid);
+int _getpid(void)
+{
+	return -1;
+}
 
-INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/kernel_bridge", _fork);
+int _fork(void)
+{
+	return -1;
+}
 
-INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/kernel_bridge", _wait);
+int _wait(int *status)
+{
+	return -1;
+}
 
-INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/kernel_bridge", _execve);
+int _execve(signed char *filename, signed char **argv, signed char **envp) {
+    return -1;
+}
 
-INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/kernel_bridge", clock);
+int clock(void)
+{
+	return sceKernelLibcClock();
+}
 
-INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/kernel_bridge", time);
+int time(int *t)
+{
+	return sceKernelLibcTime(t);
+}
 
-INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/kernel_bridge", _gettimeofday);
+int _gettimeofday(void *tp, void *tzp)
+{
+	return sceKernelLibcGettimeofday(tp, tzp);
+}
