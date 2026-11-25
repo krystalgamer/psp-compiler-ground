@@ -138,7 +138,17 @@ int dispbuf_getCurrentCount(t_displayBuffer *pDisp) {
     return pDisp->count;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/mpeg_mpegstr_gu/nonmatchings/display", dispbuf_checkDecodeEnd);
+static SceInt32 dispbuf_checkDecodeEnd(t_displayBuffer *pDisp)
+{
+	SceUInt32 pattern;
+
+	control_getCondition(pDisp->pCtrl, &pattern);
+	if (pattern & 0x8) {
+		dispbuf_setMode(pDisp, 0xff);
+		return 1;
+	}
+	return 0;
+}
 
 int dispbuf_setPts(t_displayBuffer *pDisp, unsigned int pts) {
     pDisp->pts[pDisp->write] = pts;
@@ -167,7 +177,19 @@ int dispbuf_setPlayMode(t_displayBuffer *pDisp) {
     return sceKernelClearEventFlag(pDisp->delayFlag, 0);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/mpeg_mpegstr_gu/nonmatchings/display", dispbuf_checkDelayMode);
+SceInt32 dispbuf_checkDelayMode(t_displayBuffer *pDisp)
+{
+	SceKernelEventFlagInfo info;
+	SceInt32 ret;
+
+	info.size = sizeof(info);
+	sceKernelReferEventFlagStatus(pDisp->delayFlag, &info);
+	if (info.currentPattern == 1)
+		ret = 1;
+	else
+		ret = 0;
+	return ret;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/mpeg_mpegstr_gu/nonmatchings/display", dispbuf_func);
 
