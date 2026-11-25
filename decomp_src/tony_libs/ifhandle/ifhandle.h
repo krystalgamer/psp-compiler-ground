@@ -222,6 +222,18 @@ static inline unsigned int min(unsigned int a, unsigned int b)
 	return a < b ? a : b;
 }
 
+extern const char D_00003AB4[];
+extern const char D_00003AC0[];
+
+#define MCLISREFERENCED(m) ((m)->m_ext.ext_nextref != (m))
+#define M_LEADINGSPACE(m) \
+	((m)->m_flags & M_EXT ? 0 : \
+	    (m)->m_flags & M_PKTHDR ? (m)->m_data - (m)->m_pktdat : \
+	    (m)->m_data - (m)->m_dat)
+
+void sceNetMAdj(struct mbuf *mp, int req_len);
+struct mbuf *sceNetMCopym(struct mbuf *m, int off, int len, int wait);
+
 extern int D_000043C8;
 extern int D_000043CC;
 extern int D_000043D0;

@@ -24,6 +24,16 @@ struct pkthdr {
 	int unk2C;
 };
 
+struct m_ext {
+	char *ext_buf;
+	void (*ext_free)(char *, unsigned int, void *);
+	void *ext_arg;
+	unsigned int ext_size;
+	int ext_type;
+	struct mbuf *ext_nextref;
+	struct mbuf *ext_prevref;
+};
+
 struct mbuf {
 	struct mbuf *m_next;
 	struct mbuf *m_nextpkt;
@@ -32,7 +42,63 @@ struct mbuf {
 	short m_type;
 	unsigned short m_flags;
 	struct pkthdr m_pkthdr;
+	union {
+		struct m_ext ext;
+		char databuf[0xD0];
+	} M_dat;
 };
+
+#define m_ext M_dat.ext
+#define m_pktdat M_dat.databuf
+#define MHLEN (sizeof(struct mbuf) - 0x30)
+#define MCLBYTES 2048
+#define M_EXT 0x0001
+#define M_PKTHDR 0x0002
+#define M_CLUSTER 0x0008
+#define M_DONTWAIT 1
+#define MT_DATA 1
+
+#define MGETHDR(m, how, type) \
+	do { \
+		(m) = sceNetMallocInternal(0x100); \
+		if (m) { \
+			(m)->m_type = (type); \
+			(m)->m_next = 0; \
+			(m)->m_nextpkt = 0; \
+			(m)->m_data = (m)->m_pktdat; \
+			(m)->m_flags = M_PKTHDR; \
+			(m)->m_pkthdr.aux = 0; \
+		} \
+	} while (0)
+
+#define MCLGET(m, how) \
+	do { \
+		(m)->m_ext.ext_buf = sceNetMallocInternal(MCLBYTES); \
+		if ((m)->m_ext.ext_buf == 0) \
+			(m)->m_ext.ext_buf = sceNetMallocInternal(MCLBYTES); \
+		if ((m)->m_ext.ext_buf != 0) { \
+			(m)->m_data = (m)->m_ext.ext_buf; \
+			(m)->m_flags |= M_EXT | M_CLUSTER; \
+			(m)->m_ext.ext_size = MCLBYTES; \
+			(m)->m_ext.ext_free = 0; \
+			(m)->m_ext.ext_arg = 0; \
+			(m)->m_ext.ext_nextref = (m)->m_ext.ext_prevref = (m); \
+		} \
+	} while (0)
+
+#define ntohs(x) ((unsigned short)__builtin_allegrex_wsbh(x))
+#define htons(x) ((unsigned short)__builtin_allegrex_wsbh(x))
+#define ntohl(x) ((unsigned int)__builtin_allegrex_wsbw(x))
+#define htonl(x) ((unsigned int)__builtin_allegrex_wsbw(x))
+
+extern const unsigned short D_00003E80[];
+
+struct authpkt {
+	unsigned char eh[0x14];
+	unsigned char hdr[0x20];
+	unsigned char seq[4];
+};
+struct mbuf *sceNetMFree(struct mbuf *m);
 
 #define M_BCAST 0x0100
 #define M_MCAST 0x0200
@@ -122,8 +188,8 @@ typedef struct Peer {
 	int alarm[3];
 	int unk4E0;
 	int flags;
-	int unk4E8;
-	int unk4EC;
+	unsigned int unk4E8;
+	unsigned int seq;
 } Peer;
 
 typedef struct AuthCtx {
