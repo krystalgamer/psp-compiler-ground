@@ -119,7 +119,15 @@ int soundbuf_getCurrentCount(t_soundBuffer *pSound) {
     return pSound->count;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/mpeg_mpegstr_pcm/nonmatchings/sound", soundbuf_checkDecodeEnd);
+static SceInt32 soundbuf_checkDecodeEnd(t_soundBuffer *pSound)
+{
+	SceUInt32 pattern;
+
+	control_getCondition(pSound->pCtrl, &pattern);
+	if (pattern & 0x8)
+		return 1;
+	return 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/mpeg_mpegstr_pcm/nonmatchings/sound", soundbuf_func);
 
