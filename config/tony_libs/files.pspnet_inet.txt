@@ -44,3 +44,4 @@
 0x2C82C libc_mem         1.5.1.internal  libc_mem.c
 0x2CA04 libc_str         1.5.1.internal  libc_str.c
 0x2CCAC libc_printf      1.5.1.internal  libc_printf.c
+rodata 0x2DB04 if_ether   # "arp" (only referenced from .data)

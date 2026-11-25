@@ -1,5 +1,7 @@
 #include "common.h"
 
+const char D_0002DB04[] = "arp";
+
 INCLUDE_ASM("tmp/asm/tony_libs/pspnet_inet/nonmatchings/if_ether", func_0000F6C8);
 
 INCLUDE_ASM("tmp/asm/tony_libs/pspnet_inet/nonmatchings/if_ether", func_0000FA28);

@@ -111,6 +111,7 @@ segments:
       - [0x2DB08, .rodata, rtsock]
       - [0x2DB34, .rodata, raw_usrreq]
       - [0x2DB7C, .rodata, if_loop]
+      - [0x2DB84, .rodata, if_ether]
       - [0x2DB88, .rodata, in]
       - [0x2DBA0, .rodata, ip_input]
       - [0x2DBF0, .rodata, ip_output]
