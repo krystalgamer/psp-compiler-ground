@@ -121,6 +121,9 @@ def fix_ld_script(ld_path: Path, config_path: Path):
     text = re.sub(r"^(\s*\.\w+_bss) \(NOLOAD\)", r"\1 0x0 (NOLOAD)", text, flags=re.M)
     # PRX parts are packed at their real file offsets (gaps are prxpad).
     text = re.sub(r"^\s*__romPos = ALIGN\(__romPos, \d+\);\n", "", text, flags=re.M)
+    # cc1 puts double/float constants in .rodata.cst8/.rodata.cst4; Sony's
+    # *(.rodata .rodata.*) kept them right after the object's .rodata
+    text = re.sub(r"(\.c\.o)\(\.rodata\);", r"\1(.rodata .rodata.*);", text)
     ld_path.write_text(text)
 
 
