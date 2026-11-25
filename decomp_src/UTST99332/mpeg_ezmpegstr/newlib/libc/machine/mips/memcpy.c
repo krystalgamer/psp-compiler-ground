@@ -1,3 +1,3 @@
-#include "common.h"
-
-INCLUDE_ASM("tmp/asm/UTST99332/mpeg_ezmpegstr/nonmatchings/newlib/libc/machine/mips/memcpy", memcpy);
+/* upstream: newlib-1.12.0/newlib/libc/machine/mips/memcpy.c (unmodified) */
+/* cflags: -O2 -fno-builtin */
+#include "libc/machine/mips/memcpy.c"
