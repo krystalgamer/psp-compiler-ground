@@ -21,6 +21,7 @@ in                                           1.5.1.internal  in.c
 in4_cksum                                    1.5.1.internal  in4_cksum.c
 in_cksum                                     1.5.1.internal  in_cksum.c
 in_pcb                                       1.5.1.internal  in_pcb.c
+in_proto                                     1.5.1.internal  in_proto.c
 ip_input                                     1.5.1.internal  ip_input.c
 ip_output                                    1.5.1.internal  ip_output.c
 ip_icmp                                      1.5.1.internal  ip_icmp.c

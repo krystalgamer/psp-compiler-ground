@@ -228,6 +228,58 @@ extern char D_0002EB69[];
 extern char D_0002F288[18] __attribute__((aligned(4)));
 
 /* pspnet imports */
+#define LIST_HEAD(name, type) struct name { struct type *lh_first; }
+#define LIST_ENTRY(type) struct { struct type *le_next; struct type **le_prev; }
+#define LIST_FIRST(head) ((head)->lh_first)
+#define LIST_NEXT(elm, field) ((elm)->field.le_next)
+#define LIST_INIT(head) do { (head)->lh_first = NULL; } while (0)
+#define LIST_INSERT_HEAD(head, elm, field) do { \
+	if (((elm)->field.le_next = (head)->lh_first) != NULL) \
+		(head)->lh_first->field.le_prev = &(elm)->field.le_next; \
+	(head)->lh_first = (elm); \
+	(elm)->field.le_prev = &(head)->lh_first; \
+} while (0)
+#define LIST_REMOVE(elm, field) do { \
+	if ((elm)->field.le_next != NULL) \
+		(elm)->field.le_next->field.le_prev = (elm)->field.le_prev; \
+	*(elm)->field.le_prev = (elm)->field.le_next; \
+} while (0)
+#define CIRCLEQ_HEAD(name, type) struct name { struct type *cqh_first; struct type *cqh_last; }
+#define CIRCLEQ_ENTRY(type) struct { struct type *cqe_next; struct type *cqe_prev; }
+#define CIRCLEQ_INIT(head) do { \
+	(head)->cqh_first = (void *)(head); \
+	(head)->cqh_last = (void *)(head); \
+} while (0)
+#define CIRCLEQ_INSERT_HEAD(head, elm, field) do { \
+	(elm)->field.cqe_next = (head)->cqh_first; \
+	(elm)->field.cqe_prev = (void *)(head); \
+	if ((head)->cqh_last == (void *)(head)) \
+		(head)->cqh_last = (elm); \
+	else \
+		(head)->cqh_first->field.cqe_prev = (elm); \
+	(head)->cqh_first = (elm); \
+} while (0)
+#define CIRCLEQ_INSERT_TAIL(head, elm, field) do { \
+	(elm)->field.cqe_next = (void *)(head); \
+	(elm)->field.cqe_prev = (head)->cqh_last; \
+	if ((head)->cqh_first == (void *)(head)) \
+		(head)->cqh_first = (elm); \
+	else \
+		(head)->cqh_last->field.cqe_next = (elm); \
+	(head)->cqh_last = (elm); \
+} while (0)
+#define CIRCLEQ_REMOVE(head, elm, field) do { \
+	if ((elm)->field.cqe_next == (void *)(head)) \
+		(head)->cqh_last = (elm)->field.cqe_prev; \
+	else \
+		(elm)->field.cqe_next->field.cqe_prev = (elm)->field.cqe_prev; \
+	if ((elm)->field.cqe_prev == (void *)(head)) \
+		(head)->cqh_first = (elm)->field.cqe_next; \
+	else \
+		(elm)->field.cqe_prev->field.cqe_next = (elm)->field.cqe_next; \
+} while (0)
+#define CIRCLEQ_FIRST(head) ((head)->cqh_first)
+#define CIRCLEQ_NEXT(elm, field) ((elm)->field.cqe_next)
 #define TAILQ_HEAD(name, type) struct name { struct type *tqh_first; struct type **tqh_last; }
 #define TAILQ_ENTRY(type) struct { struct type *tqe_next; struct type **tqe_prev; }
 #define TAILQ_FIRST(head) ((head)->tqh_first)
@@ -1085,7 +1137,7 @@ struct ip {
 	u_int8_t ip_p;
 	u_int16_t ip_sum;
 	struct in_addr ip_src, ip_dst;
-} __attribute__((__packed__));
+};
 
 struct ipovly {
 	u_int8_t ih_x1[9];
@@ -1099,5 +1151,394 @@ struct ipovly {
 #define in_cksum func_00013130
 int in4_cksum(struct mbuf *m, u_int8_t nxt, int off, int len);
 int in_cksum(struct mbuf *m, int len);
+
+/* in.h */
+#define __IPADDR(x) ((u_int32_t)htonl((u_int32_t)(x)))
+#define INADDR_ANY __IPADDR(0x00000000)
+#define INADDR_LOOPBACK __IPADDR(0x7f000001)
+#define INADDR_BROADCAST __IPADDR(0xffffffff)
+#define INADDR_NONE __IPADDR(0xffffffff)
+#define INADDR_UNSPEC_GROUP __IPADDR(0xe0000000)
+#define INADDR_ALLHOSTS_GROUP __IPADDR(0xe0000001)
+#define IN_CLASSA(i) (((u_int32_t)(i) & __IPADDR(0x80000000)) == __IPADDR(0x00000000))
+#define IN_CLASSB(i) (((u_int32_t)(i) & __IPADDR(0xc0000000)) == __IPADDR(0x80000000))
+#define IN_CLASSC(i) (((u_int32_t)(i) & __IPADDR(0xe0000000)) == __IPADDR(0xc0000000))
+#define IN_CLASSD(i) (((u_int32_t)(i) & __IPADDR(0xf0000000)) == __IPADDR(0xe0000000))
+#define IN_MULTICAST(i) IN_CLASSD(i)
+#define IN_EXPERIMENTAL(i) (((u_int32_t)(i) & __IPADDR(0xf0000000)) == __IPADDR(0xf0000000))
+#define IN_BADCLASS(i) (((u_int32_t)(i) & __IPADDR(0xf0000000)) == __IPADDR(0xf0000000))
+#define IN_CLASSA_NET __IPADDR(0xff000000)
+#define IN_CLASSB_NET __IPADDR(0xffff0000)
+#define IN_CLASSC_NET __IPADDR(0xffffff00)
+#define IN_LOOPBACKNET 127
+#define in_nullhost(x) ((x).s_addr == INADDR_ANY)
+#define in_hosteq(s, t) ((s).s_addr == (t).s_addr)
+
+struct sockaddr_in {
+	u_int8_t sin_len;
+	u_int8_t sin_family;
+	u_int16_t sin_port;
+	struct in_addr sin_addr;
+	int8_t sin_zero[8];
+};
+#define satosin(sa) ((struct sockaddr_in *)(sa))
+#define sintosa(sin) ((struct sockaddr *)(sin))
+
+/* route.h */
+struct route {
+	struct rtentry *ro_rt;
+	struct sockaddr ro_dst;
+};
+
+struct rt_metrics {
+	u_long rmx_locks;
+	u_long rmx_mtu;
+	u_long rmx_hopcount;
+	u_long rmx_expire;
+	u_long rmx_recvpipe;
+	u_long rmx_sendpipe;
+	u_long rmx_ssthresh;
+	u_long rmx_rtt;
+	u_long rmx_rttvar;
+	u_long rmx_pksent;
+};
+
+struct rtentry {
+	struct radix_node rt_nodes[2];
+	struct sockaddr *rt_gateway;
+	int rt_flags;
+	int rt_refcnt;
+	u_long rt_use;
+	struct ifnet *rt_ifp;
+	struct ifaddr *rt_ifa;
+	struct sockaddr *rt_genmask;
+	caddr_t rt_llinfo;
+	struct rt_metrics rt_rmx;
+	struct rtentry *rt_gwroute;
+	struct rtentry *rt_parent;
+};
+#define rt_key(r) ((struct sockaddr *)((r)->rt_nodes->rn_key))
+#define rt_mask(r) ((struct sockaddr *)((r)->rt_nodes->rn_mask))
+
+#define RTF_UP 0x1
+#define RTF_GATEWAY 0x2
+#define RTF_HOST 0x4
+#define RTF_REJECT 0x8
+#define RTF_DYNAMIC 0x10
+#define RTF_MODIFIED 0x20
+#define RTF_DONE 0x40
+#define RTF_MASK 0x80
+#define RTF_CLONING 0x100
+#define RTF_XRESOLVE 0x200
+#define RTF_LLINFO 0x400
+#define RTF_STATIC 0x800
+#define RTF_BLACKHOLE 0x1000
+#define RTF_PROTO2 0x4000
+#define RTF_PROTO1 0x8000
+
+#define RTM_ADD 0x1
+#define RTM_DELETE 0x2
+#define RTM_CHANGE 0x3
+#define RTM_GET 0x4
+#define RTM_LOSING 0x5
+#define RTM_REDIRECT 0x6
+#define RTM_MISS 0x7
+#define RTM_LOCK 0x8
+#define RTM_OLDADD 0x9
+#define RTM_OLDDEL 0xa
+#define RTM_RESOLVE 0xb
+#define RTM_NEWADDR 0xc
+#define RTM_DELADDR 0xd
+#define RTM_IFINFO 0xe
+
+#define RTAX_DST 0
+#define RTAX_GATEWAY 1
+#define RTAX_NETMASK 2
+#define RTAX_GENMASK 3
+#define RTAX_IFP 4
+#define RTAX_IFA 5
+#define RTAX_AUTHOR 6
+#define RTAX_BRD 7
+#define RTAX_MAX 8
+
+struct rt_addrinfo {
+	int rti_addrs;
+	struct sockaddr *rti_info[RTAX_MAX];
+};
+
+#define RTFREE(rt) do { \
+	if ((rt)->rt_refcnt <= 1) \
+		rtfree(rt); \
+	else \
+		(rt)->rt_refcnt--; \
+} while (0)
+
+#define rtalloc1 func_0000B8E0
+#define rtredirect func_0000BA60
+#define ifa_ifwithroute func_0000BCF0
+#define rtrequest func_0000BDD8
+#define rt_setgate func_0000C5F0
+#define rt_maskedcopy func_0000C818
+#define rtinit func_0000C8BC
+#define route_init func_0000CF68
+#define rtalloc func_0000D038
+#define rtfree func_0000D090
+#define rt_missmsg func_0000E268
+#define rt_ifmsg func_0000E344
+#define rt_newaddrmsg func_0000E448
+struct rtentry *rtalloc1(struct sockaddr *dst, int report);
+void rtalloc(struct route *ro);
+void rtfree(struct rtentry *rt);
+int rtrequest(int req, struct sockaddr *dst, struct sockaddr *gateway, struct sockaddr *netmask, int flags, struct rtentry **ret_nrt);
+void rt_missmsg(int type, struct rt_addrinfo *rtinfo, int flags, int error);
+
+/* if.h (Sony layout, from pspnet) */
+struct ifaddr {
+	struct sockaddr *ifa_addr;
+	struct sockaddr *ifa_dstaddr;
+	struct sockaddr *ifa_netmask;
+	struct ifnet *ifa_ifp;
+	TAILQ_ENTRY(ifaddr) ifa_list;
+	char ifa_unk18[0x28 - 0x18];
+	void (*ifa_rtrequest)(int, struct rtentry *, struct sockaddr *);
+	u_short ifa_flags;
+	short ifa_unk2E;
+	int ifa_refcnt;
+	int ifa_metric;
+};
+#define ifa_broadaddr ifa_dstaddr
+
+struct ifnet {
+	void *if_softc;
+	TAILQ_ENTRY(ifnet) if_list;
+	TAILQ_HEAD(ifaddrhead, ifaddr) if_addrlist;
+	char if_xname[16];
+	int if_pcount;
+	void *if_bpf;
+	u_short if_index;
+	short if_timer;
+	short if_flags;
+	char if_unk32[0x38 - 0x32];
+	u_char if_type;
+	u_char if_addrlen;
+	u_char if_hdrlen;
+	char if_unk3B;
+	int if_link_state;
+	unsigned long long if_mtu;
+	unsigned long long if_metric;
+	unsigned long long if_baudrate;
+	unsigned long long if_ipackets;
+	unsigned long long if_ierrors;
+	unsigned long long if_opackets;
+	unsigned long long if_oerrors;
+	unsigned long long if_collisions;
+	unsigned long long if_ibytes;
+	unsigned long long if_obytes;
+	unsigned long long if_imcasts;
+	unsigned long long if_omcasts;
+	unsigned long long if_iqdrops;
+	unsigned long long if_noproto;
+	int (*if_output)(struct ifnet *, struct mbuf *, struct sockaddr *, struct rtentry *);
+	void (*if_input)(struct ifnet *, struct mbuf *);
+	void (*if_start)(struct ifnet *);
+	int (*if_ioctl)(struct ifnet *, u_long, caddr_t);
+	int (*if_init)(struct ifnet *);
+	void (*if_watchdog)(struct ifnet *);
+	void (*if_drain)(struct ifnet *);
+	struct ifqueue_ {
+		struct mbuf *ifq_head;
+		struct mbuf *ifq_tail;
+		int ifq_len;
+		int ifq_maxlen;
+		int ifq_drops;
+	} if_snd;
+	struct sockaddr_dl *if_sadl;
+};
+#define ifqueue ifqueue_
+
+#define IFF_UP 0x1
+#define IFF_BROADCAST 0x2
+#define IFF_DEBUG 0x4
+#define IFF_LOOPBACK 0x8
+#define IFF_POINTOPOINT 0x10
+#define IFF_NOTRAILERS 0x20
+#define IFF_RUNNING 0x40
+#define IFF_NOARP 0x80
+#define IFF_PROMISC 0x100
+#define IFF_ALLMULTI 0x200
+#define IFF_OACTIVE 0x400
+#define IFF_SIMPLEX 0x800
+#define IFF_LINK0 0x1000
+#define IFF_LINK1 0x2000
+#define IFF_LINK2 0x4000
+#define IFF_MULTICAST 0x8000
+
+/* in_var.h */
+struct in_ifaddr {
+	struct ifaddr ia_ifa;
+	u_int32_t ia_net;
+	u_int32_t ia_netmask;
+	u_int32_t ia_subnet;
+	u_int32_t ia_subnetmask;
+	struct in_addr ia_netbroadcast;
+	LIST_ENTRY(in_ifaddr) ia_hash;
+	TAILQ_ENTRY(in_ifaddr) ia_list;
+	struct sockaddr_in ia_addr;
+	struct sockaddr_in ia_dstaddr;
+	struct sockaddr_in ia_sockmask;
+	LIST_HEAD(, in_multi) ia_multiaddrs;
+	struct in_multi *ia_allhosts;
+};
+#define ia_ifp ia_ifa.ifa_ifp
+#define ia_flags ia_ifa.ifa_flags
+#define ia_broadaddr ia_dstaddr
+#define ifatoia(ifa) ((struct in_ifaddr *)(ifa))
+TAILQ_HEAD(in_ifaddrhead_t, in_ifaddr);
+#define in_ifaddrhead D_0002FF78
+extern struct in_ifaddrhead_t in_ifaddrhead;
+
+#define IFP_TO_IA(ifp, ia) { \
+	struct ifaddr *ifa; \
+	for (ifa = (ifp)->if_addrlist.tqh_first; \
+	    ifa != NULL && ifa->ifa_addr->sa_family != AF_INET; \
+	    ifa = ifa->ifa_list.tqe_next) \
+		continue; \
+	(ia) = ifatoia(ifa); \
+}
+
+struct in_multi {
+	struct in_addr inm_addr;
+	struct ifnet *inm_ifp;
+	struct in_ifaddr *inm_ia;
+	u_int inm_refcount;
+	u_int inm_timer;
+	LIST_ENTRY(in_multi) inm_list;
+	u_int inm_state;
+};
+
+#define IP_MAX_MEMBERSHIPS 20
+struct ip_moptions {
+	struct ifnet *imo_multicast_ifp;
+	u_int8_t imo_multicast_ttl;
+	u_int8_t imo_multicast_loop;
+	u_int16_t imo_num_memberships;
+	struct in_multi *imo_membership[IP_MAX_MEMBERSHIPS];
+};
+
+#define ifa_ifwithaddr func_00008FC4
+#define ifa_ifwithladdr func_0000919C
+#define in_delmulti func_0001273C
+#define ip_freemoptions func_00018DB0
+struct ifaddr *ifa_ifwithaddr(struct sockaddr *addr);
+struct ifaddr *ifa_ifwithladdr(struct sockaddr *addr);
+void in_delmulti(struct in_multi *inm);
+void ip_freemoptions(struct ip_moptions *imo);
+
+/* in_pcb.h */
+struct inpcb {
+	LIST_ENTRY(inpcb) inp_hash;
+	CIRCLEQ_ENTRY(inpcb) inp_queue;
+	int inp_unk10;
+	int inp_state;
+	u_int16_t inp_fport;
+	u_int16_t inp_lport;
+	struct socket *inp_socket;
+	struct route inp_route;
+	int inp_flags;
+	struct ip inp_ip;
+	struct mbuf *inp_options;
+	struct ip_moptions *inp_moptions;
+	int inp_errormtu;
+	struct inpcbtable *inp_table;
+};
+#define inp_faddr inp_ip.ip_dst
+#define inp_laddr inp_ip.ip_src
+
+LIST_HEAD(inpcbhead, inpcb);
+CIRCLEQ_HEAD(inpcbqueue, inpcb);
+
+struct inpcbtable {
+	struct inpcbqueue inpt_queue;
+	struct inpcbhead *inpt_bindhashtbl;
+	struct inpcbhead *inpt_connecthashtbl;
+	u_long inpt_bindhash;
+	u_long inpt_connecthash;
+	u_int16_t inpt_lastport;
+	u_int16_t inpt_lastlow;
+};
+
+#define INP_ATTACHED 0
+#define INP_BOUND 1
+#define INP_CONNECTED 2
+
+#define INP_RECVOPTS 0x01
+#define INP_RECVRETOPTS 0x02
+#define INP_RECVDSTADDR 0x04
+#define INP_HDRINCL 0x08
+#define INP_HIGHPORT 0x10
+#define INP_LOWPORT 0x20
+#define INP_ANONPORT 0x40
+
+#define INPLOOKUP_WILDCARD 1
+#define sotoinpcb(so) ((struct inpcb *)(so)->so_pcb)
+
+#define INPCBHASH_BIND(table, laddr, lport) \
+	&(table)->inpt_bindhashtbl[ \
+	    ((ntohl((laddr).s_addr) + ntohs(lport))) & (table)->inpt_bindhash]
+#define INPCBHASH_CONNECT(table, faddr, fport, laddr, lport) \
+	&(table)->inpt_connecthashtbl[ \
+	    ((ntohl((faddr).s_addr) + ntohs(fport)) + \
+	     (ntohl((laddr).s_addr) + ntohs(lport))) & (table)->inpt_connecthash]
+
+#define in_pcbbind func_000133CC
+#define in_pcbconnect func_00013640
+#define in_pcbpurgeif func_00013860
+#define in_rtchange func_00013968
+#define in_pcblookup_port func_000139A4
+#define in_pcblookup_connect func_00013A88
+#define in_pcblookup_bind func_00013BC0
+#define in_pcbstate func_00013D3C
+#define in_selectsrc func_00013E54
+#define in_pcbinit func_0001407C
+#define in_pcballoc func_00014110
+#define in_pcbdisconnect func_000141C4
+#define in_pcbdetach func_000142DC
+#define in_setsockaddr func_000143A8
+#define in_setpeeraddr func_000143FC
+#define in_pcbnotify func_00014450
+#define in_pcbnotifyall func_00014614
+#define in_losing func_00014710
+#define in_pcbrtentry func_000147C0
+#define anonportmin D_0002E5EC
+#define anonportmax D_0002E5F0
+#define lowportmin D_0002E5F4
+#define lowportmax D_0002E5F8
+#define zeroin_addr D_0002F544
+extern int anonportmin, anonportmax, lowportmin, lowportmax;
+extern struct in_addr zeroin_addr;
+
+void in_pcbinit(struct inpcbtable *table, int bindhashsize, int connecthashsize);
+int in_pcballoc(struct socket *so, void *v);
+int in_pcbbind(void *v, struct mbuf *nam);
+int in_pcbconnect(void *v, struct mbuf *nam);
+void in_pcbdisconnect(void *v);
+void in_pcbdetach(void *v);
+void in_setsockaddr(struct inpcb *inp, struct mbuf *nam);
+void in_setpeeraddr(struct inpcb *inp, struct mbuf *nam);
+int in_pcbnotify(struct inpcbtable *table, struct in_addr faddr, u_int fport_arg, struct in_addr laddr, u_int lport_arg, int errno, void (*notify)(struct inpcb *, int));
+void in_pcbnotifyall(struct inpcbtable *table, struct in_addr faddr, int errno, void (*notify)(struct inpcb *, int));
+void in_pcbpurgeif(struct inpcbtable *table, struct ifnet *ifp);
+void in_losing(struct inpcb *inp);
+void in_rtchange(struct inpcb *inp, int errno);
+struct inpcb *in_pcblookup_port(struct inpcbtable *table, struct in_addr laddr, u_int lport_arg, int flags);
+struct inpcb *in_pcblookup_connect(struct inpcbtable *table, struct in_addr faddr, u_int fport_arg, struct in_addr laddr, u_int lport_arg);
+struct inpcb *in_pcblookup_bind(struct inpcbtable *table, struct in_addr laddr, u_int lport_arg);
+void in_pcbstate(struct inpcb *inp, int state);
+struct rtentry *in_pcbrtentry(struct inpcb *inp);
+struct sockaddr_in *in_selectsrc(struct sockaddr_in *sin, struct route *ro, int soopts, struct ip_moptions *mopts, int *errorp);
+
+void *_sce_pspnet_hashinit(int elements, u_long *hashmask);
+#define hashinit _sce_pspnet_hashinit
+u_int32_t sceNetRand(void);
 
 #endif

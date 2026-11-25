@@ -74,6 +74,7 @@ segments:
       - [0x12E04, c, in4_cksum]
       - [0x131B0, c, in_cksum]
       - [0x1344C, c, in_pcb]
+      - [0x148A4, c, in_proto]
       - [0x14910, c, ip_input]
       - [0x16FE0, c, ip_output]
       - [0x18E9C, c, ip_icmp]

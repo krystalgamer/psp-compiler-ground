@@ -22,6 +22,7 @@
 0x12D84 in4_cksum        1.5.1.internal  in4_cksum.c
 0x13130 in_cksum         1.5.1.internal  in_cksum.c
 0x133CC in_pcb           1.5.1.internal  in_pcb.c
+0x14824 in_proto         1.5.1.internal  in_proto.c
 0x14890 ip_input         1.5.1.internal  ip_input.c
 0x16F60 ip_output        1.5.1.internal  ip_output.c
 0x18E1C ip_icmp          1.5.1.internal  ip_icmp.c
