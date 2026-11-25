@@ -28,13 +28,24 @@ def app_units(target, module):
             yield p[0]
 
 
-def clean(draft):
+NODWARF_HDR = '#include "common.h"\n#include "m2c_macros.h"\n'
+
+
+def guess_types(t):
+    """m2c --valid-syntax output for code without DWARF: data of unknown
+    type is addressed bytewise (m2c's offsets are in bytes)."""
+    return re.sub(r"^extern M2C_UNK(?:8|16|32|64)? (\w+);", r"extern u8 \1;", t, flags=re.M)
+
+
+def clean(draft, keep_protos=False):
     out = []
     for line in draft.splitlines():
-        if line.startswith("?") or re.match(r"^\w[\w\s\*]*\(.*\);\s*/\* extern \*/", line):
+        if not keep_protos and (line.startswith("?") or re.match(r"^\w[\w\s\*]*\(.*\);\s*/\* extern \*/", line)):
             continue
         out.append(line)
     t = "\n".join(out)
+    if keep_protos:
+        t = guess_types(t)
     t = re.sub(r"\bs64\b", "long long", t)
     t = re.sub(r"\bu64\b", "unsigned long long", t)
     t = re.sub(r"\bs32\b", "int", t)
@@ -49,11 +60,12 @@ def clean(draft):
 
 
 def try_func(target, module, unit, func, ctx, mod, cc1, dflags="", optsets=("-O2", "-Os")):
-    draft, _ = m2cdraft.draft(target, module, unit, func)
+    nodwarf = not ctx.strip()
+    draft, _ = m2cdraft.draft(target, module, unit, func, ("--valid-syntax",) if nodwarf else ())
     if not draft:
         return None, None
-    body = clean(draft)
-    src = ctx.replace(f"\n{func}(", f"\n/*proto*/ {func}(") + "\n" + body + "\n"
+    body = clean(draft, keep_protos=nodwarf)
+    src = (NODWARF_HDR if nodwarf else ctx.replace(f"\n{func}(", f"\n/*proto*/ {func}(")) + "\n" + body + "\n"
     # drop the DWARF prototype of the function itself (m2c's may differ)
     src = "\n".join(l for l in src.splitlines() if not re.search(rf"\b{re.escape(func)}\s*\(.*\);$", l))
     with tempfile.TemporaryDirectory() as td:

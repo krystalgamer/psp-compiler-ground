@@ -7,6 +7,7 @@ line is replaced by the draft; the unit gets the DWARF declarations
 (dwarf2c --extern) as its context.  The unit is then compiled again and the
 module rebuilt; anything that no longer matches is reverted.
 """
+import os
 import re
 import subprocess
 import sys
@@ -22,7 +23,7 @@ STUB = re.compile(r'^(#include "common.h"|INCLUDE_ASM\(.*\);|INCLUDE_RODATA\(.*\
 
 
 def build_ok(target, module):
-    r = subprocess.run(["make", "-j3", f"TARGET={target}", f"MODULE={module}"], cwd=ROOT,
+    r = subprocess.run(["make", "-j" + os.environ.get("AW_JOBS", "3"), f"TARGET={target}", f"MODULE={module}"], cwd=ROOT,
                        capture_output=True, text=True)
     return r.stdout.strip().endswith(": OK")
 
@@ -38,6 +39,50 @@ def unit_test(target, module, path):
 def unit_of(target, module, path):
     rel = path.relative_to(ROOT / "decomp_src" / target / module).with_suffix("")
     return str(rel)
+
+
+DECL = re.compile(r"^(extern .*;|.*\);\s*/\* extern \*/)$")
+
+
+def decl_name(line):
+    m = re.search(r"(\w+)\s*(\(|;|\[)", line.split("/*")[0])
+    return m.group(1) if m else line
+
+
+def write_nodwarf(target, module, u, path, text, bodies):
+    """Code without DWARF: each draft brings m2c's guesses for what it uses;
+    the drafts go in one by one, each kept only if the unit still matches."""
+    decls, done = {}, {}
+
+    def render():
+        out = autodecomp.NODWARF_HDR.splitlines() + [""] + list(decls.values()) + [""]
+        for line in text.splitlines()[1:]:
+            m = re.match(r'INCLUDE_ASM\("[^"]+", (\w+)\);', line)
+            out.append(done[m.group(1)] if m and m.group(1) in done else line)
+        return "\n".join(out).rstrip("\n") + "\n"
+
+    for fn, body in bodies.items():
+        lines = body.strip("\n").splitlines()
+        new = {decl_name(l): l for l in lines if DECL.match(l)}
+        code = "\n".join(l for l in lines if not DECL.match(l)).strip("\n")
+        saved = dict(decls)
+        for k, v in new.items():
+            if k not in decls and k not in bodies:
+                decls[k] = v
+        done[fn] = code
+        path.write_text(render())
+        if not unit_test(target, module, path):
+            del done[fn]
+            decls.clear()
+            decls.update(saved)
+    if done:
+        path.write_text(render())
+        if unit_test(target, module, path) and build_ok(target, module):
+            print(f"{u}: wrote {len(done)}/{len(bodies)}", flush=True)
+            return len(done)
+    path.write_text(text)
+    print(f"{u}: reverted", flush=True)
+    return 0
 
 
 def main():
@@ -63,6 +108,9 @@ def main():
             if res in ("-O2",):
                 bodies[fn] = body
         if not bodies:
+            continue
+        if not ctx.strip():
+            total += write_nodwarf(target, module, u, path, text, bodies)
             continue
         protos = set(bodies)
         ctxl = [l for l in ctx.splitlines()
