@@ -54,6 +54,21 @@ modules (`tools/nltest.py`, `tools/objcmp.py`).
   moves in 1.5.1) and `addDownload`/`CnfSaveInitStart` (byte copies,
   `-mno-ulsw`).
 
+- `tony_libs` (stripped 1.5.1.internal firmware modules) agree with the
+  1.5.1 tree. libatrac3plus is built `-O2 -frename-registers
+  -fno-strict-aliasing` (the same style as libwave): every tiny helper is
+  called, never inlined, so not `-O3` (which in gcc 3.3 would also defer
+  every function to the end of the file); one function needs the in-order
+  loads of `-fno-strict-aliasing`. Kernel modules (audiocodec) save and
+  shift `$k1` with inline asm and read it as a global register variable;
+  the restore is inline asm too, which is why it never lands in a delay
+  slot. Sony's code calls `__builtin_allegrex_ext` directly.
+- gcc 3.3 marks a function defined earlier in the same file const/pure
+  (`mark_constant_function`) when it only reads memory, so calls to it don't
+  force reloads. Where the original reloads after calling such a helper,
+  the two were in different objects; this places object boundaries in
+  stripped modules.
+
 ## psp-gcc 1.6.1
 
 - **32-bit `HOST_WIDE_INT`** (psp-gcc 1.7.1, `psp: use a 32-bit
