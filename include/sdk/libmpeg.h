@@ -17,6 +17,45 @@ typedef struct SceMpegRingbuffer {
 	SceInt32 iSemaRB;
 	SceVoid *mp;
 } SceMpegRingbuffer;
+typedef struct SceMpeg {
+	SceVoid *sys;
+} SceMpeg;
+typedef SceUInt32 SceMpegStreamId;
+typedef struct SceMpegStream {
+	SceMpegStreamId qStreamId;
+	SceMpegStreamId qStreamIdMask;
+	SceVoid *m_pRAPICtrlStream;
+	SceUChar8 *m_pRAPI;
+	SceInt32 m_iAuNum;
+	SceInt32 m_iPesPacketForwardSize;
+	SceInt32 m_iPesPacketForwardFlag;
+	SceShort16 m_iPesPacketAULocator;
+	SceShort16 reserved;
+	SceInt32 m_iPesPacketNum;
+	SceInt32 m_iAuSize;
+	SceInt32 m_iBoundarySize;
+	SceInt32 m_iAuSizeOfProceed;
+	SceUInt32 m_iGetAuMode;
+	SceInt32 m_iPayloadHeaderRemainderFlag;
+	SceInt32 m_iPayloadHeaderRemainderSize;
+	SceChar8 m_cPayloadHeaderBuf[4];
+} SceMpegStream;
+typedef struct SceMpegTimeStamp {
+	SceUInt32 MSB_ts;
+	SceUInt32 ts;
+} SceMpegTimeStamp;
+typedef struct SceMpegAu {
+	SceMpegTimeStamp pts;
+	SceMpegTimeStamp dts;
+	SceUChar8 *pEsBuf;
+	SceInt32 iEsSize;
+} SceMpegAu;
+typedef struct {
+	SceInt32 iDecodeMode;
+	SceInt32 iPixelFormat;
+} SceMpegAvcMode;
+typedef SceUChar8 *SceMpegHandle;
+SceInt32 sceMpegFlushAllStream(SceMpeg *pMpeg);
 SceInt32 sceMpegRingbufferAvailableSize(SceMpegRingbuffer *pRingbuffer);
 SceInt32 sceMpegRingbufferPut(SceMpegRingbuffer *pRingbuffer, SceInt32 iNumPackets, SceInt32 iAvailable);
 #endif

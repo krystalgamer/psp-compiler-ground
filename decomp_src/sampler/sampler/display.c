@@ -9,14 +9,8 @@
 #include "display.h"
 #include "sound.h"
 #include "avsync.h"
+#include "menu.h"
 
-typedef struct {
-	int current;
-	int page;
-	int pos;
-	int selected;
-	int saved;
-} MENU_LIST;
 
 typedef struct {
 	int write;
