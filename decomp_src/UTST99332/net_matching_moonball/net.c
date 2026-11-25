@@ -119,18 +119,72 @@ static int check_error_dialog_closed(void);
 int net_update(void);
 
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/net", get_random_num);
+int printf(const char *, ...);
+int rand(void);
+void *memset(void *, int, unsigned int);
+static u_int get_random_num(u_int min, u_int max)
+{
+	u_int num;
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/net", get_bssid);
+	if (max == min)
+		return min;
+	num = rand();
+	return num / (0x7fffffff / (max - min + 1) + 1) + min;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/net", randomize_group_name);
+int get_bssid(char *bssid)
+{
+	struct SceNetAdhocctlParameter param;
+	int ret;
+
+	ret = sceNetAdhocctlGetParameter(&param);
+	if (ret < 0) {
+		printf("sceNetAdhocctlGetParameter() failed. ret = 0x%x\n", ret);
+		return ret;
+	}
+	sceNetEtherNtostr(param.bssid.data, bssid);
+	return ret;
+}
+
+int randomize_group_name(struct SceNetAdhocctlGroupName *group_name)
+{
+	u_int i;
+	u_int len;
+	char *ptr;
+
+	len = get_random_num(1, 8);
+	memset(group_name, 0, sizeof(*group_name));
+	ptr = (char *)group_name->data;
+	for (i = 0; i < len; i++)
+		ptr[i] = get_random_num('A', 'Z');
+	return 0;
+}
 
 void clear_evf(void) {
     evf = 0;
     error_code = 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/net", adhocctl_handler);
+static void adhocctl_handler(int event, int error, void *arg)
+{
+	printf("event: [%s] error_code = 0x%x\n", event_str[event], error);
+	if (event == 0) {
+		error_code = error;
+		evf |= 0x01;
+	} else if (event == 1) {
+		error_code = 0;
+		evf |= 0x02;
+	} else if (event == 2) {
+		error_code = 0;
+		evf |= 0x04;
+	} else if (event == 3) {
+		error_code = 0;
+		evf |= 0x08;
+	} else if (event == 4) {
+		error_code = 0;
+		evf |= 0x10;
+	}
+}
 
 int polling_error(void) {
     int var_a0;
