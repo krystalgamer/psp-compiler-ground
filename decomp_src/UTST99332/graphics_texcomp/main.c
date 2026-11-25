@@ -25,6 +25,12 @@ struct _scemoduleinfo { /* size 0x34 */
 };
 
 /* SDK functions */
+void sceGuClear(int flags);
+void sceGuDebugPrint(int x, int y, unsigned int color, const char *str);
+void sceGuDrawArray(int prim, int vtype, int count, const void *indices, const void *vertices);
+int sprintf(char *buf, const char *fmt, ...);
+
+/* SDK functions */
 void sceGuTerm(void);
 void *sceGuSwapBuffers(void);
 void sceGuDisable(int state);
@@ -144,7 +150,34 @@ static void set_texture(void)
 	}
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_texcomp/nonmatchings/main", draw_frame);
+static void draw_frame(void)
+{
+	char str[32];
+
+	sceGuStart(0, disp_list, sizeof(disp_list));
+	sceGuClear(7);
+	if (change) {
+		set_texture();
+		change = 0;
+	}
+	if (draw)
+		draw_sprite();
+	sceGuColor(0x90000000);
+	sceGuDrawArray(6, 0x800100, 2, NULL, board);
+	sceGuDebugPrint(8, 8, 0xffffff, "UP      : 8888");
+	sceGuDebugPrint(8, 16, 0xffffff, "DOWN    : IDX8");
+	sceGuDebugPrint(8, 24, 0xffffff, "TRIANGLE: DXT1");
+	sceGuDebugPrint(8, 32, 0xffffff, "CIRCLE  : DXT3");
+	sceGuDebugPrint(8, 40, 0xffffff, "CROSS   : DXT5");
+	sceGuDebugPrint(8, 56, 0xffffff, "START   : DISP OFF");
+	sceGuDebugPrint(8, 64, 0xffffff, "SELECT  : EXIT");
+	if (draw)
+		sceGuDebugPrint(376, 256, 0xffffff, char_mode[draw]);
+	sprintf(str, "HCNT:%d\n", (vcnt - 1) * 286 + hcnt);
+	sceGuDebugPrint(40, 256, 0xffffffff, str);
+	sceGuFinish();
+	sceGuSync(0, 0);
+}
 
 void init_all(void) {
     sceGuInit();
