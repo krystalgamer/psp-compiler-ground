@@ -136,6 +136,19 @@ extern struct callout_list D_0000AC10;
 int _sce_pspnet_spllock(void);
 void _sce_pspnet_splunlock(int s);
 void _sce_pspnet_callout_stop(struct callout *c);
+void _sce_pspnet_callout_reset_usec(struct callout *c, unsigned int usec, void (*func)(void *), void *arg);
+struct thread_info *_sce_pspnet_get_threadinfo(SceUID thid);
+int sceNet_lib_6DC71518(void);
+void func_000030A8(void *arg);
+
+extern int D_0000A0A0;
+extern void (*D_0000AC18)(struct thread_info *);
+extern void (*D_0000AC1C)(void *, void *);
+extern void (*D_0000AC20)(void *);
+extern int D_0000AC24;
+extern int D_0000AC28;
+extern struct slpque { struct thread_info *tqh_first; struct thread_info **tqh_last; } D_0000AC2C[128];
+#define SLPQUE(wchan) (&D_0000AC2C[((unsigned int)(wchan) >> 8) & 127])
 
 /* per-thread info (thread.c) */
 struct thread_info {
@@ -143,9 +156,11 @@ struct thread_info {
 	SceUID thid;
 	short refcnt;
 	int error;
-	int unk14[4];
+	int unk14;
+	TAILQ_ENTRY(thread_info) slpq;
+	void *wchan;
 	struct callout co;
-	int unk48;
+	int slpflags;
 	SceUID sema;
 	short semacnt;
 	char unk52[0x64 - 0x52];
