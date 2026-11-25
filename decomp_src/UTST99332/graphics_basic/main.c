@@ -197,8 +197,8 @@ static void init_all(void)
 	sceGuFinish();
 	sceGuSync(0, 0);
 	sceDisplayWaitVblankStart();
-	moving = 0;
 	angle = 0.0f;
+	moving = 0;
 	sceGuDisplay(1);
 }
 
