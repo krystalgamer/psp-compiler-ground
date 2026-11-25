@@ -116,6 +116,18 @@ modules (`tools/nltest.py`, `tools/objcmp.py`).
   loop-invariant; an `if` is turned into `max` by if-conversion after the
   loop optimizer), and constants hoisted to an outer loop (a goto-loop has
   no loop notes, so 3.3's loop.c treats it as part of the outer loop).
+- Objects without DWARF (`tools/nodwarf.py`): the SDK's libgum, libgu and
+  kernel_bridge (newlib's syscall glue) are linked into almost every
+  UTST99332 sample and were built by 1.6.1.internal too (the module's only
+  `.comment` version).  They decompile with plain `-O2` and the 1.6.1
+  tree; what looked like compiler differences were source details:
+  libgum calls `sinf`/`cosf`/`sqrtf` without a prototype, so they are
+  GCC's builtins (pure, `sqrtf` inline with its NaN fallback) and calls
+  can be scheduled across the stores of the matrix being built; libgu
+  reads float arguments through a union (float-typed loads, which do not
+  alias the display-list stores, so all loads are hoisted);
+  kernel_bridge's `_sys_open` is a K&R definition that `_open` calls with
+  two arguments.
 - Per-library flags under 1.6.1.internal: UTST99332 demo_luga's copy of the
   gmo model library (an older revision than graphics_model's: different
   function order, a `geModelDoTextureFunc` hook in `sceGmoTextureActivate`)
