@@ -69,7 +69,8 @@ typedef struct {
 	int inUse;
 	char pad4[0x44 - 0x4];
 	unsigned int codec[26];
-	char padAC[0xF0 - 0xAC];
+	unsigned int edram;
+	char padB0[0xF0 - 0xB0];
 	AtracInfo info;
 } AtracCtx;
 
@@ -103,6 +104,12 @@ extern AtracCtx D_00003930[4];
 int sceKernelCpuSuspendIntr(void);
 void sceKernelCpuResumeIntr(int intr);
 int sceAudiocodecInit(unsigned int *codec, int type);
+int sceAudiocodecCheckNeedMem(unsigned int *codec, int type);
+int sceAudiocodecGetEDRAM(unsigned int *codec, int type);
+int sceAudiocodecReleaseEDRAM(unsigned int *codec);
+int func_00001640(AtracCtx *ctx, int codec);
+unsigned int func_0000114C(unsigned int base, unsigned int pos, unsigned int end, unsigned int size);
+void func_00002288(unsigned char *dst, unsigned char *src, int n);
 
 typedef struct {
 	unsigned int value;

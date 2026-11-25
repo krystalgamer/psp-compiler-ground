@@ -229,13 +229,43 @@ int func_00000E90(unsigned int size, unsigned int key, unsigned int *out)
 
 INCLUDE_ASM("tmp/asm/tony_libs/libatrac3plus/nonmatchings/libatrac3plus", func_00000EF8);
 
-INCLUDE_ASM("tmp/asm/tony_libs/libatrac3plus/nonmatchings/libatrac3plus", func_000010DC);
+unsigned int func_000010DC(AtracInfo *info)
+{
+	if (info->state - 1 < 2)
+		return info->unk40 + info->unk28;
+	if (info->unk38 == 1)
+		return func_0000114C(info->unk40, info->unk48, info->unk44, info->sampleSize);
+	return func_0000114C(info->unk4C, info->unk54, info->unk50, info->sampleSize);
+}
 
-INCLUDE_ASM("tmp/asm/tony_libs/libatrac3plus/nonmatchings/libatrac3plus", func_0000114C);
+unsigned int func_0000114C(unsigned int base, unsigned int pos, unsigned int end, unsigned int size)
+{
+	unsigned int ret = base + pos;
+
+	if (end < pos + size) {
+		int n = 0;
+
+		if (pos < end)
+			n = end - pos;
+		func_00002288((unsigned char *)base, (unsigned char *)ret, n);
+		ret = base;
+	}
+	return ret;
+}
 
 INCLUDE_ASM("tmp/asm/tony_libs/libatrac3plus/nonmatchings/libatrac3plus", module_start);
 
-INCLUDE_ASM("tmp/asm/tony_libs/libatrac3plus/nonmatchings/libatrac3plus", module_stop);
+int module_stop(void)
+{
+	AtracCtx *c = D_00003930;
+	int i;
+
+	for (i = 0; i < 4; i++, c++) {
+		if (c->edram != 0x200000)
+			sceAudiocodecReleaseEDRAM(c->codec);
+	}
+	return 0;
+}
 
 INCLUDE_ASM("tmp/asm/tony_libs/libatrac3plus/nonmatchings/libatrac3plus", sceAtracSetData);
 
@@ -316,4 +346,25 @@ int sceAtracGetInternalErrorInfo(unsigned int id, int *out)
 	return 0;
 }
 
-INCLUDE_ASM("tmp/asm/tony_libs/libatrac3plus/nonmatchings/libatrac3plus", func_00001640);
+int func_00001640(AtracCtx *ctx, int codec)
+{
+	int type = 0x1001;
+	int ret;
+
+	ctx->edram = 0x200000;
+	ctx->inUse = 1;
+	if (codec == 0x1000) {
+		((unsigned char *)ctx->codec)[0x28] = 0x28;
+		((unsigned char *)ctx->codec)[0x29] = 0x5C;
+		type = 0x1000;
+	}
+	ret = sceAudiocodecCheckNeedMem(ctx->codec, type);
+	if (ret >= 0) {
+		ret = sceAudiocodecGetEDRAM(ctx->codec, type);
+		if (ret >= 0) {
+			ctx->info.codec = codec;
+			ctx->inUse = 0;
+		}
+	}
+	return ret;
+}
