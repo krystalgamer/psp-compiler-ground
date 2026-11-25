@@ -233,6 +233,12 @@ extern char D_0002F288[18] __attribute__((aligned(4)));
 #define LIST_FIRST(head) ((head)->lh_first)
 #define LIST_NEXT(elm, field) ((elm)->field.le_next)
 #define LIST_INIT(head) do { (head)->lh_first = NULL; } while (0)
+#define LIST_INSERT_AFTER(listelm, elm, field) do { \
+	if (((elm)->field.le_next = (listelm)->field.le_next) != NULL) \
+		(listelm)->field.le_next->field.le_prev = &(elm)->field.le_next; \
+	(listelm)->field.le_next = (elm); \
+	(elm)->field.le_prev = &(listelm)->field.le_next; \
+} while (0)
 #define LIST_INSERT_HEAD(head, elm, field) do { \
 	if (((elm)->field.le_next = (head)->lh_first) != NULL) \
 		(head)->lh_first->field.le_prev = &(elm)->field.le_next; \
@@ -330,6 +336,7 @@ void sceNetFreeInternal(void *p);
 #define AF_UNSPEC 0
 #define AF_LOCAL 1
 #define AF_INET 2
+#define PF_INET AF_INET
 #define AF_IMPLINK 3
 #define AF_NS 6
 #define AF_ISO 7
@@ -2514,6 +2521,7 @@ void _sce_pspnet_microtime(struct timeval *tv);
 #define M_DECRYPTED 0x0020
 #define M_LOOP 0x0040
 #define M_AUTHIPDGM 0x0080
+#define M_CANFASTFWD 0x0400
 #define IP_RF 0x8000
 #define IP_DF 0x4000
 #define IP_MF 0x2000
@@ -2554,5 +2562,113 @@ int ip_setmoptions(int optname, struct ip_moptions **imop, struct mbuf *m);
 int ip_getmoptions(int optname, struct ip_moptions *imo, struct mbuf **mp);
 u_int ip_optlen(struct inpcb *inp);
 void ip_freemoptions(struct ip_moptions *imo);
+
+/* ip_input.c */
+struct ipqent {
+	LIST_ENTRY(ipqent) ipqe_q;
+	union {
+		struct ip *_ip;
+		struct tcpiphdr *_tcp;
+	} _ipqe_u1;
+	struct mbuf *ipqe_m;
+	u_int8_t ipqe_mff;
+	LIST_ENTRY(ipqent) ipqe_timeq;
+	u_int32_t ipqe_seq;
+	u_int32_t ipqe_len;
+	u_int32_t ipqe_flags;
+};
+#define ipqe_ip _ipqe_u1._ip
+#define ipqe_tcp _ipqe_u1._tcp
+LIST_HEAD(ipqehead, ipqent);
+struct ipq {
+	LIST_ENTRY(ipq) ipq_q;
+	u_int8_t ipq_ttl;
+	u_int8_t ipq_p;
+	u_int16_t ipq_id;
+	struct ipqehead ipq_fragq;
+	struct in_addr ipq_src, ipq_dst;
+};
+struct ip_timestamp {
+	u_int8_t ipt_code;
+	u_int8_t ipt_len;
+	u_int8_t ipt_ptr;
+	u_int8_t ipt_flg:4,
+		ipt_oflw:4;
+	union ipt_timestamp {
+		n_time ipt_time[1];
+		struct ipt_ta {
+			struct in_addr ipt_addr;
+			n_time ipt_time;
+		} ipt_ta[1] __attribute__((__packed__));
+	} ipt_timestamp __attribute__((__packed__));
+};
+LIST_HEAD(ipqhead, ipq);
+#define IPFRAGTTL 60
+#define IFQ_MAXLEN 50
+#define IPPROTO_MAX 256
+#define IPPORT_ANONMIN 49152
+#define IPPORT_ANONMAX 65535
+#define IPPORT_RESERVEDMIN 600
+#define IPPORT_RESERVEDMAX 1023
+#define in_init func_00012D54
+void in_init(void);
+#define in_proto_init func_00014824
+void in_proto_init(void);
+#define pffindproto func_00002058
+struct protosw *pffindproto(int family, int protocol, int type);
+#define inetdomain D_0002E768
+extern struct domain inetdomain;
+#define ip_init func_00014890
+#define ip_input func_00014B18
+#define ip_reass func_0001546C
+#define ip_freef func_00015A38
+#define ip_dooptions func_00015ADC
+#define ip_rtaddr func_00016030
+#define save_rte func_00016120
+#define ip_forward func_000161A0
+#define ip_sysctl func_00016738
+#define ipintr func_00016B04
+#define ip_slowtimo func_00016B8C
+#define ip_drain func_00016CD0
+void ip_input(struct mbuf *m);
+struct mbuf *ip_reass(struct ipqent *ipqe, struct ipq *fp);
+void ip_freef(struct ipq *fp);
+int ip_dooptions(struct mbuf *m);
+struct in_ifaddr *ip_rtaddr(struct in_addr dst);
+void ip_forward(struct mbuf *m, int srcrt);
+#define rt_timer_queue_create func_0000D188
+struct rttimer_queue *rt_timer_queue_create(u_int timeout);
+#define IPTTLDEC 1
+#define TRUE 1
+#define FALSE 0
+#define IPPORT_RESERVED 1024
+#define IPCTL_FORWARDING 1
+#define IPCTL_SENDREDIRECTS 2
+#define IPCTL_DEFTTL 3
+#define IPCTL_DEFMTU 4
+#define IPCTL_FORWSRCRT 5
+#define IPCTL_DIRECTEDBCAST 6
+#define IPCTL_ALLOWSRCRT 7
+#define IPCTL_SUBNETSARELOCAL 8
+#define IPCTL_MTUDISC 9
+#define IPCTL_ANONPORTMIN 10
+#define IPCTL_ANONPORTMAX 11
+#define IPCTL_MTUDISCTIMEOUT 12
+#define IPCTL_MAXFLOWS 13
+#define IPCTL_HOSTZEROBROADCAST 14
+#define IPCTL_GIF_TTL 15
+#define IPCTL_LOWPORTMIN 16
+#define IPCTL_LOWPORTMAX 17
+#define IPCTL_MAXFRAGPACKETS 18
+#define IPCTL_STATS 19
+#define SCM_TIMESTAMP 0x02
+#define rt_timer_queue_destroy func_0000CB28
+#define rt_timer_queue_change func_0000D25C
+void rt_timer_queue_destroy(struct rttimer_queue *q, int destroy);
+void rt_timer_queue_change(struct rttimer_queue *q, long timeout);
+
+#define subnetsarelocal D_0002E5DC
+#define hostzeroisbroadcast D_0002E5E0
+extern int subnetsarelocal, hostzeroisbroadcast;
 
 #endif

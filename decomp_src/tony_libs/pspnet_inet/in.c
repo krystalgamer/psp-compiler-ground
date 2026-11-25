@@ -2,11 +2,8 @@
 #include "common.h"
 #include "inetlib.h"
 
-#define subnetsarelocal D_0002E5DC
-#define hostzeroisbroadcast D_0002E5E0
 #define in_mk D_0002E5E4
 #define in_maxmtu D_0002F53C
-extern int subnetsarelocal, hostzeroisbroadcast;
 extern TAILQ_HEAD(in_mk_head, in_ifaddr) in_mk;
 extern unsigned long in_maxmtu;
 #define in_fmtaddr_buf D_0002EBB0
