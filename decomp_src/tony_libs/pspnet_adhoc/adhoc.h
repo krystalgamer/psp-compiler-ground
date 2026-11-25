@@ -154,6 +154,22 @@ struct mbuf {
 	} \
 } while (0)
 #define M_DONTWAIT 1
+#define MCLGET(m, how) do { \
+	(m)->m_ext.ext_buf = sceNetMallocInternal(MCLBYTES); \
+	if ((m)->m_ext.ext_buf == 0) \
+		(m)->m_ext.ext_buf = sceNetMallocInternal(MCLBYTES); \
+	if ((m)->m_ext.ext_buf != 0) { \
+		(m)->m_data = (m)->m_ext.ext_buf; \
+		(m)->m_flags |= M_EXT | M_CLUSTER; \
+		(m)->m_ext.ext_size = MCLBYTES; \
+		(m)->m_ext.ext_free = 0; \
+		(m)->m_ext.ext_arg = 0; \
+		(m)->m_ext.ext_nextref = (m)->m_ext.ext_prevref = (m); \
+	} \
+} while (0)
+#define MCLBYTES 2048
+#define M_EXT 0x0001
+#define M_CLUSTER 0x0008
 #define mtod(m, t) ((t)((m)->m_data))
 
 struct ifqueue {
@@ -437,6 +453,8 @@ struct SceNetAdhocPdpStat {
 extern struct pdpcb_list D_00007424;
 extern u_short D_0000742C;
 extern u_short D_0000744C;
+extern const u_short D_0000733C;
+extern const u_short D_00007340;
 extern const struct SceNetEtherAddr D_00007344;
 extern const struct SceNetEtherAddr D_0000734C;
 
