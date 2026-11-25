@@ -6,6 +6,8 @@ string                                       1.6.1.internal  string.c
 at3plus                                      1.6.1.internal  at3plus.c
 at3loadmodule                                1.6.1.internal  at3loadmodule.c
 menu                                         1.6.1.internal  menu.c
+libgum                                       1.6.1.internal  libgum.c
+libgu                                        1.6.1.internal  libgu.c
 newlib/libm/math/sf_cos                      1.6.1.internal  ../../../../../newlib-1.12.0/newlib/libm/math/sf_cos.c
 newlib/libm/math/sf_sin                      1.6.1.internal  ../../../../../newlib-1.12.0/newlib/libm/math/sf_sin.c
 newlib/libm/math/wf_sqrt                     1.6.1.internal  ../../../../../newlib-1.12.0/newlib/libm/math/wf_sqrt.c
@@ -20,6 +22,7 @@ newlib/libm/math/sf_floor                    1.6.1.internal  ../../../../../newl
 newlib/libm/math/sf_isnan                    1.6.1.internal  ../../../../../newlib-1.12.0/newlib/libm/math/sf_isnan.c
 newlib/libm/common/sf_scalbn                 1.6.1.internal  ../../../../../newlib-1.12.0/newlib/libm/common/sf_scalbn.c
 newlib/libm/common/sf_copysign               1.6.1.internal  ../../../../../newlib-1.12.0/newlib/libm/common/sf_copysign.c
+libwave                                      1.6.1.internal  libwave.c
 libgcc/fp-bit/__extendsfdf2                  1.6.1.internal  fp-bit.c
 libgcc/dp-bit/__make_dp                      1.6.1.internal  dp-bit.c
 libgcc/dp-bit/__truncdfsf2                   1.6.1.internal  dp-bit.c
@@ -28,6 +31,7 @@ libgcc/fp-bit/__make_fp                      1.6.1.internal  fp-bit.c
 libgcc/dp-bit/__pack_d                       1.6.1.internal  dp-bit.c
 libgcc/dp-bit/__unpack_d                     1.6.1.internal  dp-bit.c
 libgcc/fp-bit/__pack_f                       1.6.1.internal  fp-bit.c
+kernel_bridge                                1.6.1.internal  kernel_bridge.c
 newlib/libc/stdlib/atexit                    1.6.1.internal  ../../../../../newlib-1.12.0/newlib/libc/stdlib/atexit.c
 newlib/libc/errno/errno                      1.6.1.internal  ../../../../../newlib-1.12.0/newlib/libc/errno/errno.c
 newlib/libc/stdlib/exit                      1.6.1.internal  ../../../../../newlib-1.12.0/newlib/libc/stdlib/exit.c
