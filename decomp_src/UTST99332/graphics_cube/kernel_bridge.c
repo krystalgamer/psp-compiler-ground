@@ -1,39 +1,241 @@
 #include "common.h"
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_cube/nonmatchings/kernel_bridge", _read);
+typedef int SceUID;
+typedef unsigned int SceSize;
+typedef long long SceOff;
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_cube/nonmatchings/kernel_bridge", _write);
+int sceKernelStdin(void);
+int sceKernelStdout(void);
+int sceKernelStderr(void);
+int sceIoRead(SceUID fd, void *data, SceSize size);
+int sceIoWrite(SceUID fd, const void *data, SceSize size);
+SceUID sceIoOpen(const char *file, int flags, int mode);
+int sceIoClose(SceUID fd);
+SceOff sceIoLseek(SceUID fd, SceOff offset, int whence);
+int sceKernelExitThread(int status);
+int sceKernelSelfStopUnloadModule(int exitcode, SceSize argsize, void *argp);
+SceUID sceKernelAllocPartitionMemory(SceUID partitionid, const char *name, int type, SceSize size, void *addr);
+int sceKernelFreePartitionMemory(SceUID blockid);
+void *sceKernelGetBlockHeadAddr(SceUID blockid);
+int sceKernelLibcClock(void);
+int sceKernelLibcTime(int *t);
+int sceKernelLibcGettimeofday(void *tp, void *tzp);
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_cube/nonmatchings/kernel_bridge", _sys_open);
+extern int sce_newlib_nocreate_thread_in_start __attribute__((weak));
+extern int sce_newlib_heap_kb_size __attribute__((weak));
 
+struct stat_ {
+	short st_dev;
+	unsigned short st_ino;
+	unsigned int st_mode;
+};
+
+extern SceUID mbid;
+extern unsigned int minheap;
+extern unsigned int maxheap;
+extern unsigned int currentheap;
+
+void free_heap(void);
+
+static __inline__ int conv_fd(int fd)
+{
+	switch (fd) {
+	case 0:
+		return sceKernelStdin();
+	case 1:
+		return sceKernelStdout();
+	case 2:
+		return sceKernelStderr();
+	}
+	return fd;
+}
+
+int _read(int fd, void *buf, unsigned int nbytes)
+{
+	fd = conv_fd(fd);
+	if (fd < 0)
+		return -9;
+	return sceIoRead(fd, buf, nbytes);
+}
+
+int _write(int fd, const void *buf, unsigned int nbytes)
+{
+	fd = conv_fd(fd);
+	if (fd < 0)
+		return -9;
+	return sceIoWrite(fd, buf, nbytes);
+}
+
+int _sys_open(name, flags, mode)
+	const char *name;
+	int flags;
+	int mode;
+{
+	return sceIoOpen(name, flags, mode);
+}
+
+#ifdef NON_MATCHING
+/* the flag bits stay branches; the original if-converts them (movn, plain or) */
+int _open(const char *name, int flags, ...)
+{
+	int pspflags;
+
+	pspflags = 0;
+	switch (flags & 3) {
+	case 0:
+		pspflags = 1;
+		break;
+	case 1:
+		pspflags = 2;
+		break;
+	case 2:
+		pspflags = 3;
+		break;
+	}
+	if (flags & 0x0008)
+		pspflags |= 0x0100;
+	if (flags & 0x0200)
+		pspflags |= 0x0200;
+	if (flags & 0x0400)
+		pspflags |= 0x0400;
+	if (flags & 0x0800)
+		pspflags |= 0x0800;
+	if (flags & 0x4000)
+		pspflags |= 0x0004;
+	return _sys_open(name, pspflags);
+}
+#else
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_cube/nonmatchings/kernel_bridge", _open);
+#endif
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_cube/nonmatchings/kernel_bridge", _close);
+int _close(int fd)
+{
+	fd = conv_fd(fd);
+	if (fd < 0)
+		return -9;
+	return sceIoClose(fd);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_cube/nonmatchings/kernel_bridge", _sys_lseek);
+int _sys_lseek(int fd, int offset, int whence)
+{
+	return sceIoLseek(conv_fd(fd), offset, whence);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_cube/nonmatchings/kernel_bridge", _lseek);
+int _lseek(int fd, int offset, int whence)
+{
+	int pspwhence;
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_cube/nonmatchings/kernel_bridge", _fstat);
+	fd = conv_fd(fd);
+	if (fd < 0)
+		return -9;
+	switch (whence) {
+	case 0:
+		pspwhence = 0;
+		break;
+	case 1:
+		pspwhence = 1;
+		break;
+	case 2:
+		pspwhence = 2;
+		break;
+	default:
+		pspwhence = whence;
+		break;
+	}
+	return _sys_lseek(fd, offset, pspwhence);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_cube/nonmatchings/kernel_bridge", isatty);
+int _fstat(int fd, struct stat_ *st)
+{
+	st->st_mode = 0x2000;
+	return 0;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_cube/nonmatchings/kernel_bridge", _exit);
+int isatty(int fd)
+{
+	return 1;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_cube/nonmatchings/kernel_bridge", _kill);
+void _exit(int status)
+{
+	if (&sce_newlib_nocreate_thread_in_start != 0) {
+		if (status == 1)
+			free_heap();
+		sceKernelExitThread(status);
+	} else {
+		free_heap();
+		sceKernelSelfStopUnloadModule(1, 0, 0);
+	}
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_cube/nonmatchings/kernel_bridge", _getpid);
+int _kill(int pid, int sig)
+{
+	return -1;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_cube/nonmatchings/kernel_bridge", free_heap);
+int _getpid(void)
+{
+	return -1;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_cube/nonmatchings/kernel_bridge", _sbrk);
+void free_heap(void)
+{
+	if (mbid != 0)
+		sceKernelFreePartitionMemory(mbid);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_cube/nonmatchings/kernel_bridge", _fork);
+void *_sbrk(int incr)
+{
+	unsigned int newheap;
+	unsigned int oldheap;
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_cube/nonmatchings/kernel_bridge", _wait);
+	if (minheap == 0) {
+		int size = 0x10000;
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_cube/nonmatchings/kernel_bridge", clock);
+		if (&sce_newlib_heap_kb_size != 0)
+			size = sce_newlib_heap_kb_size << 10;
+		if (size != 0) {
+			mbid = sceKernelAllocPartitionMemory(2, "UserSbrk", 0, size, 0);
+			if (mbid > 0) {
+				unsigned int head = (unsigned int)sceKernelGetBlockHeadAddr(mbid);
+				maxheap = head + size;
+				currentheap = head;
+				minheap = head;
+			}
+		}
+	}
+	if (minheap != 0) {
+		newheap = currentheap + incr;
+		if (newheap >= minheap && newheap <= maxheap) {
+			oldheap = currentheap;
+			currentheap = newheap;
+			return (void *)oldheap;
+		}
+	}
+	return (void *)-1;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_cube/nonmatchings/kernel_bridge", time);
+int _fork(void)
+{
+	return -1;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_cube/nonmatchings/kernel_bridge", _gettimeofday);
+int _wait(int *status)
+{
+	return -1;
+}
+
+int clock(void)
+{
+	return sceKernelLibcClock();
+}
+
+int time(int *t)
+{
+	return sceKernelLibcTime(t);
+}
+
+int _gettimeofday(void *tp, void *tzp)
+{
+	return sceKernelLibcGettimeofday(tp, tzp);
+}
