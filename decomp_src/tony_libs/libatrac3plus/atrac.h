@@ -106,6 +106,8 @@ void func_00002938(AtracInfo *info);
 int func_00002CC8(AtracInfo *info);
 int func_00002D18(AtracInfo *info);
 int func_00002DD0(AtracInfo *info);
+void func_000031CC(AtracInfo *info, unsigned int pos, AtracBufInfo *out);
+void func_00003538(AtracInfo *info, unsigned int pos, unsigned int x, unsigned int y);
 int func_000016E4(unsigned char *buf, unsigned int size, WaveFmt *fmt, unsigned int *a, unsigned int *c, unsigned int *d, int *e, int *f, int *g);
 int func_00002408(AtracInfo *info, WaveFmt *fmt, unsigned char *buf, unsigned int a, unsigned int bufSize, unsigned int b, unsigned int c, unsigned int d, int e, int f, int g);
 int func_00002504(AtracInfo *info, int type);
