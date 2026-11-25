@@ -139,11 +139,21 @@ struct SceNetAdhocctlParameter {
 
 typedef void (*sceNetAdhocctlHandler)(int event, int error_code, void *arg);
 
+
 struct bss_desc {
 	struct SceNetEtherAddr bssid;	/* 0x00 */
 	unsigned char channel;		/* 0x06 */
 	unsigned char ssid_len;		/* 0x07 */
-	char ssid[32];			/* 0x08 */
+	union {
+		char ssid[32];
+		struct {
+			char prefix[4];		/* "PSP_" */
+			char id[10];		/* type + product id */
+			char sep[3];		/* "_L_" */
+			struct SceNetAdhocctlGroupName group_name;
+			char rest[7];
+		} s;
+	} u;				/* 0x08 */
 	int unk28;			/* 0x28 */
 	int unk2C;			/* 0x2C */
 	unsigned char unk30[0xE];	/* 0x30 */
@@ -178,6 +188,13 @@ struct auth_param {
 	int unk8;
 	int unkC;
 	int unk10;
+};
+
+struct wlan_conf {
+	unsigned char unk0[0x11];
+	unsigned char unk11;
+	unsigned char unk12[2];
+	int unk14;
 };
 
 /* game mode parameters (0x50 bytes, byte aligned) */
@@ -234,11 +251,14 @@ extern const char D_000066F0[];	/* "PSP" */
 extern const char D_000066F4[];	/* "SceNetAdhocctl" */
 extern const char D_00006704[];	/* "wlan" */
 extern const char D_0000670C[];	/* "wlan" */
+extern const char D_000067B8[];	/* "wlan" */
+extern const unsigned char D_00006714[3];
+extern int D_00007090;
 
 /* main */
 int func_000017A8(SceSize stacksize, int prio, const struct SceNetAdhocctlAdhocId *adhoc_id);
 int func_00001978(void);
-int func_00001A38(int *buflen, void *buf);
+int func_00001A38(int *buflen, struct SceNetAdhocctlScanInfo *buf);
 int func_00001C68(const struct SceNetAdhocctlGroupName *group_name);
 int func_00001CDC(const struct SceNetAdhocctlGroupName *group_name);
 int func_00001D50(const struct SceNetAdhocctlScanInfo *scan_info);
@@ -278,9 +298,19 @@ int func_00002E0C(struct adhocctl_ctx *p, int *event, int *data);
 /* gamemode */
 int func_00002F7C(struct adhocctl_ctx *p, struct gm_request *gm);
 int func_0000378C(struct adhocctl_ctx *p, struct gm_request *gm);
-int func_00004730(struct adhocctl_ctx *p, struct gm_request *gm);
+void func_00004730(struct adhocctl_ctx *p, struct gm_request *gm);
+int func_000046B0(int value);
+
+/* ptp */
+int func_000047FC(struct gm_request *gm, SceUInt64 start, int id, void *data, int len);
+int func_00004BB4(struct gm_request *gm, SceUInt64 start, int id, unsigned char *buf, int len);
+unsigned char *func_00004CC4(int type, unsigned char *buf, int len, int *outlen);
 
 /* imports */
+int sceNetConfig80211GetConf(const char *ifname, struct wlan_conf *conf);
+int sceNetConfig80211SetConf(const char *ifname, struct wlan_conf *conf);
+int sceWlanDrv_lib_5BAA1FE5(int);
+int sceNetAdhocPtpRecv(int id, void *buf, int *len, unsigned int timeout, int flag);
 int sceWlanGetSwitchState(void);
 int sceWlanDevAttach(void);
 int sceWlanDevDetach(void);
@@ -346,6 +376,22 @@ static inline int find_bss(struct adhocctl_ctx *p, const struct SceNetEtherAddr 
 			return i;
 	}
 	return 0x80410B0A;
+}
+
+static inline int get_timeout(struct gm_request *gm, SceUInt64 start, unsigned int *tmo)
+{
+	SceUInt64 now;
+
+	if (gm->timeout == 0) {
+		*tmo = 0;
+		return 0;
+	}
+	now = sceKernelGetSystemTimeWide();
+	if (now - start < (unsigned int)gm->timeout) {
+		*tmo = gm->timeout - (now - start);
+		return 0;
+	}
+	return 0x80410B05;
 }
 
 #endif
