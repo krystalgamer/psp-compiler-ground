@@ -9,6 +9,10 @@ SceUInt func_00002D48(void *common);
 int func_00002C74(SceSize args, void *argp);
 /* --- end declarations --- */
 
+INCLUDE_ASM("tmp/asm/tony_libs/pspnet/nonmatchings/if_ethersubr", func_00006654);
+
+INCLUDE_ASM("tmp/asm/tony_libs/pspnet/nonmatchings/if_ethersubr", func_00006844);
+
 char *func_000069D4(const u_char *ap)
 {
 	int i;

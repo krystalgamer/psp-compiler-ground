@@ -64,7 +64,7 @@ segments:
       - [0x3854, c, bpf]
       - [0x486C, c, bpf_filter]
       - [0x5000, c, if]
-      - [0x6A54, c, if_ethersubr]
+      - [0x66D4, c, if_ethersubr]
       - [0x727C, c, ifhandle_ether]
       - [0x77B8, c, malloc]
       - [0x7818, c, random]

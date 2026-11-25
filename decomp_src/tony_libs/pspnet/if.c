@@ -349,6 +349,3 @@ int _sce_pspnet_stop_of_inet_module_in_if_core(void)
 INCLUDE_ASM("tmp/asm/tony_libs/pspnet/nonmatchings/if", func_0000610C);
 
 
-INCLUDE_ASM("tmp/asm/tony_libs/pspnet/nonmatchings/if", func_00006654);
-
-INCLUDE_ASM("tmp/asm/tony_libs/pspnet/nonmatchings/if", func_00006844);

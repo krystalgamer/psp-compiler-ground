@@ -517,17 +517,25 @@ void func_0000426C(int n);
 void func_0000877C(char **pp, int c);
 int func_00008054(void (*put)(char **, int), char **arg, const char *fmt, va_list ap);
 
-int _sce_pspnet_ifioctl(void *so, u_long cmd, void *data, void *p);
+int _sce_pspnet_ifioctl(void *so, u_long cmd, void *data, int wait);
+int func_0000610C(void *so, u_long cmd, void *data);
+int sceNetIfhandleWaitSema(SceUID sema, int n, SceUInt *timeout);
 struct ifnet *_sce_pspnet_ifunit(const char *name);
 
 struct ifreq {
 	char ifr_name[16];
 	union {
+		struct sockaddr ifru_addr;
 		short ifru_flags;
 		int ifru_int;
 		void *ifru_data;
 		char ifru_pad[16];
 	} ifr_ifru;
+};
+
+struct ifconf {
+	int ifc_len;
+	struct ifreq *ifc_req;
 };
 
 struct ifreq_1 {
@@ -771,5 +779,32 @@ struct bpf_version {
 
 int func_00003E80(struct bpf_d *d, struct bpf_program *fp);
 int func_00003FA4(struct bpf_d *d, struct ifreq *ifr);
+
+static inline int ether_multiaddr_i(struct sockaddr *sa, u_char *addrlo, u_char *addrhi)
+{
+	int handled;
+	int ret;
+
+	if (D_0000B090 > 0) {
+		handled = 0;
+		ret = ((int (*)(struct sockaddr *, u_char *, u_char *, int *))D_0000B088)(sa, addrlo, addrhi, &handled);
+		if (handled > 0)
+			return ret;
+	}
+	if (sa->sa_family != 0)
+		return 0x6A;
+	bcopy(sa->sa_data, addrlo, 6);
+	bcopy(addrlo, addrhi, 6);
+	return 0;
+}
+
+#define ETHER_LOOKUP_MULTI(addrlo, addrhi, ec, enm) \
+{ \
+	for ((enm) = (ec)->ec_multiaddrs; \
+	    (enm) != NULL && \
+	    (bcmp((enm)->enm_addrlo, (addrlo), 6) != 0 || \
+	     bcmp((enm)->enm_addrhi, (addrhi), 6) != 0); \
+		(enm) = (enm)->enm_next); \
+}
 
 #endif
