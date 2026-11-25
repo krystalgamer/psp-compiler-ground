@@ -17,6 +17,7 @@ FIXED = {
 # modules given as single files in inputs/: target -> {module: file name}
 LOOSE = {
     "bigbangbang": {"bigbangbang": "bigbangbang.prx"},
+    "flowars": {"flowars": "flowars.prx"},
 }
 
 # zips of decrypted modules in inputs/: target -> zip name; module = member stem
