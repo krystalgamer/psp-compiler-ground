@@ -53,6 +53,9 @@ struct _anon1 { /* size 0x18 */
 };
 typedef struct _anon1 POS;
 
+/* SDK functions */
+int sceCtrlReadBufferPositive(SceCtrlData *data, int count);
+
 extern ScePspFVector3 light_vec;
 extern int _gp;
 extern const int __begin_of_section_lib_ent[1];
@@ -179,9 +182,63 @@ void init_all(void) {
     sceGuDisplay(1);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_string/nonmatchings/main", init_pos);
+static void init_pos(void)
+{
+	pos.rot.x = 10.0f;
+	pos.rot.y = 0.0f;
+	pos.rot.z = 0.0f;
+	pos.trans.x = 0.0f;
+	pos.trans.y = -1.0f;
+	pos.trans.z = -12.0f;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_string/nonmatchings/main", pad_read);
+#define opadd D_0001E2C0	/* pad_read's static */
+extern u_int32 opadd;
+
+static int pad_read(void)
+{
+	u_int32 padd;
+	SceCtrlData buf;
+
+	sceCtrlReadBufferPositive(&buf, 1);
+	padd = buf.Buttons;
+	if (padd & 0x0010) {
+		pos.rot.x -= 10.0f;
+		if (pos.rot.x <= 0.0f)
+			pos.rot.x = 0.0f;
+	}
+	if (padd & 0x0040) {
+		pos.rot.x += 10.0f;
+		if (pos.rot.x >= 60.0f)
+			pos.rot.x = 60.0f;
+	}
+	if (padd & 0x0080) {
+		pos.rot.y -= 10.0f;
+		if (pos.rot.y <= -60.0f)
+			pos.rot.y = -60.0f;
+	}
+	if (padd & 0x0020) {
+		pos.rot.y += 10.0f;
+		if (pos.rot.y >= 60.0f)
+			pos.rot.y = 60.0f;
+	}
+	if (padd & 0x0100) {
+		pos.trans.z -= 1.0f;
+		if (pos.trans.z <= -25.0f)
+			pos.trans.z = -25.0f;
+	}
+	if (padd & 0x0200) {
+		pos.trans.z += 1.0f;
+		if (pos.trans.z >= -6.0f)
+			pos.trans.z = -6.0f;
+	}
+	if (padd & 0x0008)
+		init_pos();
+	if (padd & 0x0001)
+		return 0;
+	opadd = padd;
+	return 1;
+}
 
 int main(void) {
     menuInit();
@@ -199,3 +256,6 @@ loop_1:
     menuTerm(1, 0x1E);
     return 0;
 }
+
+/* the next object's .rodata is 16-byte aligned (its padding used to sit in pad_read's asm) */
+__asm__(".section .rodata\n\t.align 4\n.section .text");
