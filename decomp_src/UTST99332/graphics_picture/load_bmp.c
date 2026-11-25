@@ -360,7 +360,85 @@ static void copy_8888(void *dst, const void *src, int width, int height, int alp
 
 
 
+#ifdef NON_MATCHING
+/* loop layout of the two pixel loops differs */
+static void copy_rle4(void *dst, const void *src, int width, int height)
+{
+	int pitch2;
+	const char *sp;
+	char *dp;
+	int x_pos;
+	int y_pos;
+	char *dp2;
+
+	pitch2 = ((width + 1) / 2 + 15) & ~15;
+	sp = src;
+	dp = (char *)dst + pitch2 * (height - 1);
+	x_pos = 0;
+	y_pos = 0;
+	dp2 = dp;
+	while (y_pos < height) {
+		int count;
+		_Bool run;
+
+		count = *(const unsigned char *)sp++;
+		run = 1;
+		if (count == 0) {
+			count = *(const unsigned char *)sp++;
+			if (count < 3) {
+				if (count == 1)
+					break;
+				if (count == 0) {
+					dp -= pitch2;
+					dp2 = dp;
+					y_pos++;
+					x_pos = 0;
+				} else {
+					sp += 2;
+				}
+				continue;
+			}
+			run = 0;
+		}
+		if (count > width - x_pos)
+			count = width - x_pos;
+		if (run) {
+			int i;
+
+			for (i = 0; i < count; i++) {
+				int col = ((i & 1) ? *(const unsigned char *)sp : *(const unsigned char *)sp >> 4) & 0xf;
+
+				if (x_pos & 1)
+					*dp2++ |= col << 4;
+				else
+					*dp2 = col;
+				x_pos++;
+			}
+			sp++;
+		} else {
+			int i;
+
+			for (i = 0; i < count; i++) {
+				int col;
+
+				if ((i & 1) == 0)
+					col = *sp >> 4;
+				else
+					col = *sp++;
+				col &= 0xf;
+				if (x_pos & 1)
+					*dp2++ |= col << 4;
+				else
+					*dp2 = col;
+				x_pos++;
+			}
+			sp += (count & 1) + (((count + 1) / 2) & 1);
+		}
+	}
+}
+#else
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_picture/nonmatchings/load_bmp", copy_rle4);
+#endif
 
 static void copy_rle8(void *dst, const void *src, int width, int height)
 {
