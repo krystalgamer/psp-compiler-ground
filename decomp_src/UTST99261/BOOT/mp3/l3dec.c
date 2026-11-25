@@ -22,6 +22,22 @@ extern int m_buf_ptr0;
 extern int m_buf_ptr1;
 extern int m_nsamp[2][2];	/* must start = 0, for m_nsamp[igr_prev] */
 extern float m_yout[576];
+extern int m_frame_size;
+extern int m_pcm_size;
+extern int m_ms_mode;
+extern int m_is_mode;
+extern int m_gr;
+extern int m_main_pos_bit;
+extern byte m_buf[8192];
+
+#define NBUF (8 * 1024)
+#define BUF_TRIGGER (NBUF - 1500)
+
+void bitget_init(unsigned char *buf);
+int L3get_side_info1();
+int L3get_side_info2(int gr);
+void L3decode_main(MPEG_HEADER *h, byte *pcm, int gr);
+void *memmove(void *, const void *, unsigned int);
 
 int hybrid(float xin[], float xprev[], float y[18][32], int btype, int nlong, int ntot, int nprev);
 int hybrid_sum(float xin[], float xin_left[], float y[18][32], int btype, int nlong, int ntot);
@@ -33,7 +49,47 @@ void L3decode_reset()
 	m_buf_ptr0 = m_buf_ptr1 = 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mp3/l3dec", L3decode_frame);
+void L3decode_frame(MPEG_HEADER *h, byte *mpeg, byte *pcm)
+{
+	int crc_size, side_size;
+	int copy_size;
+
+	if (h->mode == 1) {
+		m_ms_mode = h->mode_ext >> 1;
+		m_is_mode = h->mode_ext & 1;
+	} else {
+		m_ms_mode = 0;
+		m_is_mode = 0;
+	}
+
+	crc_size = (h->error_prot) ? 2 : 0;
+	bitget_init(mpeg + 4 + crc_size);
+	if (h->version == 1)
+		side_size = L3get_side_info1();
+	else
+		side_size = L3get_side_info2(m_gr);
+
+	m_buf_ptr0 = m_buf_ptr1 - m_side_info.main_data_begin;	/* decode start point */
+	if (m_buf_ptr1 > BUF_TRIGGER) {	/* shift buffer */
+		memmove(m_buf, m_buf + m_buf_ptr0, m_side_info.main_data_begin);
+		m_buf_ptr0 = 0;
+		m_buf_ptr1 = m_side_info.main_data_begin;
+	}
+	copy_size = m_frame_size - (4 + crc_size + side_size);
+	memmove(m_buf + m_buf_ptr1, mpeg + (4 + crc_size + side_size), copy_size);
+	m_buf_ptr1 += copy_size;
+
+	if (m_buf_ptr0 >= 0) {
+		m_main_pos_bit = m_buf_ptr0 << 3;
+		if (h->version == 1) {
+			L3decode_main(h, pcm, 0);
+			L3decode_main(h, pcm + (m_pcm_size / 2), 1);
+		} else {
+			L3decode_main(h, pcm, m_gr);
+			m_gr = m_gr ^ 1;
+		}
+	}
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mp3/l3dec", L3decode_main);
 
