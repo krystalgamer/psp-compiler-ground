@@ -145,8 +145,11 @@ def try_body(target, module, unit, func, body, mod):
     with tempfile.TemporaryDirectory() as td:
         c = Path(td) / "t.c"
         c.write_text(new)
-        o = compile_c(c, compiler.compiler(target, module, unit), flags, Path(td) / "t.o",
-                      [path.parent, ROOT / "decomp_src" / target / module])
+        try:
+            o = compile_c(c, compiler.compiler(target, module, unit), flags, Path(td) / "t.o",
+                          [path.parent, ROOT / "decomp_src" / target / module])
+        except subprocess.CalledProcessError:
+            return None
         if o is None:
             return None
         if objcmp.compare(mod, [o]).get(func) == "same":
