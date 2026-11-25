@@ -102,7 +102,7 @@ def module_labels(target, module):
 
 def asm_refs(target, module, unit, func):
     f = ROOT / "tmp" / "asm" / target / module / "nonmatchings" / unit / f"{func}.s"
-    return re.findall(r"%(?:hi|lo)\(([A-Za-z_]\w*)\)", f.read_text()) if f.exists() else None
+    return re.findall(r"%(?:hi|lo)\(([A-Za-z_]\w*)\)|\bjal\s+([A-Za-z_]\w*)", f.read_text()) if f.exists() else None
 
 
 def map_labels(body, src, target, module, unit, func):
@@ -111,6 +111,8 @@ def map_labels(body, src, target, module, unit, func):
     rel = src.relative_to(ROOT / "decomp_src").parts
     a = asm_refs(rel[0], rel[1], str(Path(*rel[2:]))[:-2], func)
     b = asm_refs(target, module, unit, func)
+    a = a and [x or y for x, y in a]
+    b = b and [x or y for x, y in b]
     words = set(re.findall(r"\b[A-Za-z_]\w*\b", body))
     # symbols the source module's asm calls differently from the target's
     labs = {x for x in words & set(a or []) if x not in set(b or [])}
