@@ -5,6 +5,7 @@
 #include <kerneltypes.h>
 SceUID sceKernelGetThreadId(void);
 int sceKernelDelayThread(SceUInt delay);
+int sceKernelDelayThreadCB(SceUInt delay);
 int sceKernelChangeThreadPriority(SceUID thid, int priority);
 typedef int (*SceKernelCallbackFunction)(int count, int arg1, int arg2);
 SceUID sceKernelCreateCallback(const char *name, SceKernelCallbackFunction func, void *common);

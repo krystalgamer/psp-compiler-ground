@@ -17,6 +17,7 @@ struct SceCtrlLatch {
 };
 typedef struct SceCtrlLatch SceCtrlLatch;
 int sceCtrlSetSamplingCycle(int cycle);
+int sceCtrlSetSamplingMode(int mode);
 int sceCtrlReadBufferPositive(SceCtrlData *data, int count);
 int sceCtrlPeekBufferPositive(SceCtrlData *data, int count);
 #endif
