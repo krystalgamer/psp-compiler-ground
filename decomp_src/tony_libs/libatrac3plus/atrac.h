@@ -113,6 +113,11 @@ typedef struct {
 extern ParamEnt D_00003890[3];
 
 int func_00000D3C(AtracCtx *ctx, WaveFmt *fmt);
+int sceAtracGetAtracID(int codec);
+unsigned int func_00002AC0(AtracInfo *info);
+unsigned int func_00002BA0(AtracInfo *info);
+unsigned int func_00002C5C(AtracInfo *info);
+int sceAtracReleaseAtracID(unsigned int id);
 int func_00000E0C(AtracCtx *ctx);
 int func_00000E90(unsigned int size, unsigned int key, unsigned int *out);
 int func_00000EF8(AtracCtx *ctx, unsigned char *buf, int *a, int *b);

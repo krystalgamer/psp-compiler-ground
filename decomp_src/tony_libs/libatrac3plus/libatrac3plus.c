@@ -63,7 +63,29 @@ INCLUDE_ASM("tmp/asm/tony_libs/libatrac3plus/nonmatchings/libatrac3plus", sceAtr
 
 INCLUDE_ASM("tmp/asm/tony_libs/libatrac3plus/nonmatchings/libatrac3plus", sceAtracGetStreamDataInfo);
 
-INCLUDE_ASM("tmp/asm/tony_libs/libatrac3plus/nonmatchings/libatrac3plus", sceAtracAddStreamData);
+int sceAtracAddStreamData(unsigned int id, unsigned int n)
+{
+	AtracInfo *info;
+	unsigned int avail;
+
+	if (id >= 4 || !D_00003930[id].inUse)
+		return 0x80630005;
+	if (!D_00003930[id].info.state)
+		return 0x80630010;
+	info = &D_00003930[id].info;
+	if (info->state == 1)
+		return 0x80630009;
+	if (info->state == 2)
+		avail = info->unk30 - (info->unk2C + info->unk3C);
+	else
+		avail = func_00002C5C(info);
+	if (avail < n)
+		return 0x80630018;
+	info->unk3C += n;
+	if (info->state == 2 && info->unk2C + info->unk3C >= info->unk30)
+		info->state = 1;
+	return 0;
+}
 
 INCLUDE_ASM("tmp/asm/tony_libs/libatrac3plus/nonmatchings/libatrac3plus", sceAtracGetSecondBufferInfo);
 
@@ -119,7 +141,26 @@ int sceAtracSetLoopNum(unsigned int id, int loopNum)
 	return 0;
 }
 
-INCLUDE_ASM("tmp/asm/tony_libs/libatrac3plus/nonmatchings/libatrac3plus", sceAtracGetBufferInfoForReseting);
+int sceAtracGetBufferInfoForReseting(unsigned int id, unsigned int pos, AtracBufInfo *out)
+{
+	AtracInfo *info;
+
+	if (id >= 4 || !D_00003930[id].inUse)
+		return 0x80630005;
+	info = &D_00003930[id].info;
+	if (!info->state)
+		return 0x80630010;
+	if (info->state == 5 && info->unk50 == 0)
+		return 0x80630012;
+	{
+		unsigned int p = pos + info->unk10;
+
+		if (info->unk14 < p)
+			return 0x80630015;
+		func_000031CC(info, p, out);
+	}
+	return 0;
+}
 
 INCLUDE_ASM("tmp/asm/tony_libs/libatrac3plus/nonmatchings/libatrac3plus", sceAtracResetPlayPosition);
 
