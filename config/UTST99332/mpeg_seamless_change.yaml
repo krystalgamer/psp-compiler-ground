@@ -68,6 +68,7 @@ segments:
       - [0x4780, c, strfile]
       - [0x49F4, c, menu]
       - [0x4B2C, c, libwave]
+      - [0x684C, c, scePsmf_stub]
       - [0x68E4, c, kernel_bridge]
       - [0x6ED4, c, newlib/libc/stdlib/atexit]
       - [0x6F7C, c, newlib/libc/stdlib/exit]
