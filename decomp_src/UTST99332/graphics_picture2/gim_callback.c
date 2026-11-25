@@ -18,9 +18,19 @@ INCLUDE_ASM("tmp/asm/UTST99332/graphics_picture2/nonmatchings/gim_callback", sce
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_picture2/nonmatchings/gim_callback", sceGimPictureSetMemoryManager2);
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_picture2/nonmatchings/gim_callback", sceGimPictureAllocMemory);
+void *sceGimPictureAllocMemory(size_t size)
+{
+	if (size == 0)
+		return NULL;
+	return g_alloc_memory(size);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_picture2/nonmatchings/gim_callback", sceGimPictureAllocMemory2);
+void *sceGimPictureAllocMemory2(size_t size)
+{
+	if (size == 0)
+		return NULL;
+	return g_alloc_memory2(size);
+}
 
 void sceGimPictureFreeMemory(void *addr) {
     if (addr != NULL) {
