@@ -23,6 +23,22 @@ KNOWN = {"void", "int", "char", "short", "long", "unsigned", "signed", "float", 
          "static", "u8", "s8", "u16", "s16", "u32", "s32", "f32", "f64", "M2C_UNK"}
 
 
+SDK = ROOT / "tools" / "sdk_protos.h"
+
+
+def sdk_protos(ctx):
+    """tools/sdk_protos.h minus what ctx declares itself: {name: line}."""
+    out = {}
+    for line in SDK.read_text().splitlines():
+        m = re.search(r"(\w+)\(", line)
+        if m and not line.startswith(("/*", " ")) and not re.search(rf"\b{m.group(1)}\s*\(", ctx):
+            for t in set(re.findall(r"\bSce\w+", line)):
+                if t != m.group(1) and not re.search(rf"(typedef [^;]*\b|}}\s*){t};", ctx):
+                    line = re.sub(rf"\b{t}\b", "void", line)
+            out[m.group(1)] = line
+    return out
+
+
 def c_prototypes(target, module):
     """Without DWARF: the prototypes of the module's functions already in C
     (so m2c sees their arguments)."""
@@ -52,6 +68,7 @@ def draft(target, module, unit, func, extra=()):
                          capture_output=True, text=True, check=True).stdout
     if not ctx.strip():
         ctx = c_prototypes(target, module)
+    ctx += "\n" + "\n".join(sdk_protos(ctx).values()) + "\n"
     with tempfile.TemporaryDirectory() as td:
         (Path(td) / "f.s").write_text(text)
         (Path(td) / "ctx.c").write_text(ctx)

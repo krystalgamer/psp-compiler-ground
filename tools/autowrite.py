@@ -16,6 +16,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "tools"))
 import autodecomp  # noqa: E402
+import m2c  # noqa: E402
 import compiler  # noqa: E402
 import objcmp  # noqa: E402
 
@@ -146,8 +147,13 @@ def main():
         ctxl = [l for l in ctx.splitlines()
                 if not any(re.search(rf"\b{re.escape(f)}\s*\(.*\);$", l) for f in protos)]
 
+        sdk = m2c.sdk_protos(ctx)
+        allbody = "\n".join(bodies.values())
+        sdkl = [v for k, v in sdk.items() if re.search(rf"\b{k}\(", allbody)]
+
         def render():
-            out = ['#include "common.h"', "", "/* declarations recovered from DWARF */"] + ctxl + [""]
+            out = (['#include "common.h"', "", "/* declarations recovered from DWARF */"] + ctxl +
+                   (["", "/* SDK functions (tools/sdk_protos.h) */"] + sdkl if sdkl else []) + [""])
             for line in text.splitlines()[1:]:
                 m = re.match(r'INCLUDE_ASM\("[^"]+", (\w+)\);', line)
                 out.append(bodies[m.group(1)].strip("\n") if m and m.group(1) in bodies else line)
