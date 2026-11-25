@@ -1,7 +1,4 @@
-#include "common.h"
-
-INCLUDE_ASM("tmp/asm/UTST99332/net_network_flow/nonmatchings/newlib/libm/math/wf_sqrt", sqrtf);
-
-INCLUDE_RODATA("tmp/asm/UTST99332/net_network_flow/nonmatchings/newlib/libm/math/wf_sqrt", D_00015E00);
-
-INCLUDE_RODATA("tmp/asm/UTST99332/net_network_flow/nonmatchings/newlib/libm/math/wf_sqrt", D_00015E04);
+/* upstream: newlib-1.12.0/newlib/libm/math/wf_sqrt.c (unmodified) */
+/* cflags: -O2 -fno-builtin */
+/* data-align: 8 */
+#include "libm/math/wf_sqrt.c"
