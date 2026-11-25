@@ -3,5 +3,10 @@
 # functions and names) and the module's .comment version.
 0x01524 libgu           1.6.1.internal  libgu.c
 0x054FC libwave         1.6.1.internal  libwave.c
+0x0721C libsndp         1.6.1.internal  libsndp.c
+0x08A50 n2p             1.6.1.internal  n2p.c
+0x08C8C sdphd_i         1.6.1.internal  sdphd_i.c
+0x09010 smf             1.6.1.internal  smf.c
+0x0ABE8 voice           1.6.1.internal  voice.c
 0x0C7C0 libsas          1.6.1.internal  libsas.c
 0x0CE24 kernel_bridge   1.6.1.internal  kernel_bridge.c

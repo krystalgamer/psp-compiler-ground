@@ -5,6 +5,11 @@ sasload                                      1.6.1.internal  sasload.c
 menu                                         1.6.1.internal  menu.c
 libgu                                        1.6.1.internal  libgu.c
 libwave                                      1.6.1.internal  libwave.c
+libsndp                                      1.6.1.internal  libsndp.c
+n2p                                          1.6.1.internal  n2p.c
+sdphd_i                                      1.6.1.internal  sdphd_i.c
+smf                                          1.6.1.internal  smf.c
+voice                                        1.6.1.internal  voice.c
 libsas                                       1.6.1.internal  libsas.c
 kernel_bridge                                1.6.1.internal  kernel_bridge.c
 newlib/libc/stdlib/atexit                    1.6.1.internal  ../../../../../newlib-1.12.0/newlib/libc/stdlib/atexit.c
