@@ -1,6 +1,176 @@
 #include "common.h"
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/main", gu_init);
+/* declarations recovered from DWARF */
+enum matching_room_state {
+    MATCHING_ROOM_TOP = 0,
+    MATCHING_ROOM_SCAN = 1,
+    MATCHING_ROOM_SCANNING = 2,
+    MATCHING_ROOM_SCAN_RESULT = 3,
+    MATCHING_ROOM_CONNECT_ROOM = 4,
+    MATCHING_ROOM_CONNECTING_ROOM = 5,
+    MATCHING_ROOM_DISCONNECT_ROOM = 6,
+    MATCHING_ROOM_DISCONNECTING_ROOM = 7,
+    MATCHING_ROOM_CONNECTING_GAME = 8,
+    MATCHING_ROOM_DISCONNECTING = 9,
+    MATCHING_ROOM_ERROR_DIALOG = 10,
+    MATCHING_ROOM_ROOM_LIST = 11,
+    MATCHING_ROOM_NEIGHBORS = 12,
+    MATCHING_ROOM_REQUESTING = 13,
+    MATCHING_ROOM_CANCELED = 14,
+    MATCHING_ROOM_DENIED = 15,
+    MATCHING_ROOM_START_GAME = 16,
+    MATCHING_ROOM_DISCONNECT = 17,
+    MATCHING_ROOM_CHILD_ENTER_ROOM = 18,
+    MATCHING_ROOM_CHILD_WAIT = 19,
+    MATCHING_ROOM_CREATE_ROOM = 20,
+    MATCHING_ROOM_PARENT_WAIT = 21,
+    MATCHING_ROOM_PARENT_START_INFORM = 22,
+    MATCHING_ROOM_PARENT_INFORM_CONNECT = 23,
+    MATCHING_ROOM_PARENT_INFORM_SEND = 24,
+    MATCHING_ROOM_PARENT_INFORM_FLUSH = 25,
+    MATCHING_ROOM_GAME = 26,
+};
+struct matching_room_info;
+struct p2p_hello_opt;
+struct SceNetAdhocctlNickname;
+typedef unsigned char SceUChar8;
+struct SceNetAdhocctlNickname { /* size 0x80 */
+    SceUChar8 data[128];
+};
+struct p2p_hello_opt_game_param;
+struct p2p_hello_opt_game_param { /* size 0x0 */
+
+};
+enum game_type {
+    GAME_TYPE_CHILD = 0,
+    GAME_TYPE_PARENT = 1,
+};
+struct p2p_hello_opt { /* size 0x8c */
+    struct SceNetAdhocctlNickname nickname;
+    struct p2p_hello_opt_game_param game_param;
+    enum game_type game_type;
+    int cur_player_num;
+    int req_player_num;
+};
+struct SceNetEtherAddr;
+struct SceNetEtherAddr { /* size 0x6 */
+    SceUChar8 data[6];
+};
+typedef long long unsigned int SceULong64;
+struct matching_room_info { /* size 0x120 */
+    enum matching_room_state state;
+    struct p2p_hello_opt hello_opt;
+    struct p2p_hello_opt *agreed_hello_opt;
+    int requesting_minfo_id;
+    int v_cursor_pos;
+    int ignore_pad_input;
+    struct SceNetEtherAddr local_addr;
+    int ctx_id;
+    struct SceNetEtherAddr members[16];
+    struct SceNetEtherAddr parent_addr;
+    int informing_minfo_id;
+    SceULong64 ptp_start_time;
+};
+struct SceNetAdhocctlGroupName;
+struct SceNetAdhocctlGroupName { /* size 0x8 */
+    SceUChar8 data[8];
+};
+struct minfo;
+struct minfo { /* size 0x98 */
+    int status;
+    struct SceNetEtherAddr addr;
+    struct p2p_hello_opt hello_opt;
+};
+struct _scemoduleinfo;
+struct _scemoduleinfo { /* size 0x34 */
+    short unsigned int modattribute;
+    unsigned char modversion[2];
+    char modname[27];
+    char terminal;
+    void *gp_value;
+    const void *ent_top;
+    const void *ent_end;
+    const void *stub_top;
+    const void *stub_end;
+};
+
+extern struct matching_room_info _mrinfo;
+extern struct SceNetAdhocctlGroupName game_group_name;
+extern struct minfo minfo[16];
+extern int _gp;
+extern const int __begin_of_section_lib_ent[1];
+extern const int __end_of_section_lib_ent[1];
+extern const int __begin_of_section_lib_stub[1];
+extern const int __end_of_section_lib_stub[1];
+extern const struct _scemoduleinfo __psp_moduleinfo;
+extern unsigned int __PSPEXP__module_info[2];
+extern unsigned int __PSPREN__module_info___psp_moduleinfo[2];
+extern char disp_list[327680];
+extern short int board[2][3];
+
+static void draw_top(void);
+static void draw_scan_result(void);
+static void draw_room_list(void);
+static void draw_parent_wait(void);
+static void draw_child_wait(void);
+static void draw_neighbors(void);
+static void draw_scanning(void);
+static void draw_requesting(void);
+static void draw_canceled(void);
+static void draw_denied(void);
+static void app_draw_frame(void);
+static void draw_frame(void);
+int main(int argc, char **argv);
+
+/* SDK functions (tools/sdk_protos.h) */
+void sceGuInit(void);
+void sceGuStart(int type, void *list, int size);
+int sceGuFinish(void);
+int sceGuSync(int mode, int what);
+int sceGuDisplay(int state);
+void sceGuDrawBuffer(int psm, void *fbp, int frame_width);
+void sceGuDispBuffer(int width, int height, void *dbp, int frame_width);
+void sceGuDepthBuffer(void *zbp, int frame_width);
+void sceGuOffset(unsigned int x, unsigned int y);
+void sceGuViewport(int cx, int cy, int width, int height);
+void sceGuDepthRange(int near, int far);
+void sceGuScissor(int x, int y, int w, int h);
+void sceGuEnable(int state);
+void sceGuClearColor(unsigned int color);
+void sceGuClearDepth(unsigned int depth);
+void sceGuClearStencil(unsigned int stencil);
+void sceGuBlendFunc(int op, int src, int dest, unsigned int srcfix, unsigned int destfix);
+void sceGuTexFilter(int min, int mag);
+void sceGuTexFunc(int tfx, int tcc);
+void sceGuTexWrap(int u, int v);
+int sceDisplayWaitVblankStart(void);
+int printf(const char *fmt, ...);
+
+
+void gu_init(void) {
+    sceGuInit();
+    sceGuStart(0, disp_list, 0x50000);
+    sceGuDrawBuffer(3, NULL, 0x200);
+    sceGuDispBuffer(0x1E0, 0x110, (void *)0x88000, 0x200);
+    sceGuDepthBuffer((void *)0x110000, 0x200);
+    sceGuOffset(0x710U, 0x778U);
+    sceGuViewport(0x800, 0x800, 0x1E0, 0x110);
+    sceGuDepthRange(0xC350, 0x2710);
+    sceGuScissor(0, 0, 0x1E0, 0x110);
+    sceGuEnable(2);
+    sceGuBlendFunc(0, 2, 3, 0U, 0U);
+    sceGuEnable(4);
+    sceGuTexFunc(0, 1);
+    sceGuTexFilter(7, 0);
+    sceGuTexWrap(0, 0);
+    sceGuClearColor(0U);
+    sceGuClearDepth(0U);
+    sceGuClearStencil(0U);
+    sceGuFinish();
+    sceGuSync(0, 0);
+    sceDisplayWaitVblankStart();
+    sceGuDisplay(1);
+}
 
 INCLUDE_RODATA("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/main", D_000194B0);
 
@@ -36,8 +206,18 @@ INCLUDE_ASM("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/main", app_dra
 
 INCLUDE_ASM("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/main", draw_frame);
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/main", change_state);
+void change_state(enum matching_room_state state) {
+    if (state != MATCHING_ROOM_ROOM_LIST) {
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/main", usage);
+    } else {
+        net_delete_ptp();
+    }
+    _mrinfo.state = state;
+    _mrinfo.v_cursor_pos = 0;
+}
+
+void usage(void) {
+    printf("usage: %s.prx\n", "matching_moonball");
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/main", main);
