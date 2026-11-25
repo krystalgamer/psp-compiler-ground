@@ -3,7 +3,7 @@
 
 register unsigned int k1 asm("$27");
 
-#define K1_SAVE(old) asm volatile("move %0, $27\n\tsrl $27, $27, 16" : "=r"(old))
+#define K1_SAVE(old) asm volatile(".set noreorder\n\tmove %0, $27\n\tsrl $27, $27, 16\n\t.set reorder" : "=r"(old))
 #define K1_RESTORE(old) asm volatile("move $27, %0" : : "r"(old))
 #define K1_USER() ({ unsigned int _u; asm volatile("andi %0, $27, 0x18" : "=r"(_u)); _u; })
 

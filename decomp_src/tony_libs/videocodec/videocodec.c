@@ -5,9 +5,54 @@
 #include "videocodec.h"
 /* --- end declarations --- */
 
-INCLUDE_ASM("tmp/asm/tony_libs/videocodec/nonmatchings/videocodec", sceVideocodecGetEDRAM);
+int sceVideocodecGetEDRAM(VideocodecCtx *ctx)
+{
+	int ret;
+	unsigned int size;
+	unsigned int p;
+	unsigned int oldk1;
 
-INCLUDE_ASM("tmp/asm/tony_libs/videocodec/nonmatchings/videocodec", sceVideocodecReleaseEDRAM);
+	K1_SAVE(oldk1);
+	ret = 0x806201FE;
+	if (!k1StaBufOk(ctx, 0x54)) {
+		ret = 0x80000023;
+		goto end;
+	}
+	size = (ctx->unk18 + 0x3F) | 0x3F;
+	if (ctx->mem == 0) {
+		p = (unsigned int)sceMeCalloc(size, 1);
+		ctx->mem = p;
+		if (p != 0) {
+			ctx->unk14 = ((p + 0x3F) >> 6) << 6;
+			ret = 0;
+		}
+	}
+end:
+	K1_RESTORE(oldk1);
+	return ret;
+}
+
+int sceVideocodecReleaseEDRAM(VideocodecCtx *ctx)
+{
+	int ret;
+	unsigned int oldk1;
+
+	K1_SAVE(oldk1);
+	ret = 0x806201FE;
+	if (!k1StaBufOk(ctx, 0x54)) {
+		ret = 0x80000023;
+		goto end;
+	}
+	if (ctx->mem != 0) {
+		sceMeFree((void *)ctx->mem);
+		ctx->mem = 0;
+		ctx->unk14 = 0;
+		ret = 0;
+	}
+end:
+	K1_RESTORE(oldk1);
+	return ret;
+}
 
 INCLUDE_ASM("tmp/asm/tony_libs/videocodec/nonmatchings/videocodec", sceVideocodecOpen);
 

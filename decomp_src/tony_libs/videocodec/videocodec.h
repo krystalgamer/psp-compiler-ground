@@ -3,7 +3,7 @@
 
 register unsigned int k1 asm("$27");
 
-#define K1_SAVE(old) asm volatile("move %0, $27\n\tsrl $27, $27, 16" : "=r"(old))
+#define K1_SAVE(old) asm volatile(".set noreorder\n\tmove %0, $27\n\tsrl $27, $27, 16\n\t.set reorder" : "=r"(old))
 #define K1_RESTORE(old) asm volatile("move $27, %0" : : "r"(old))
 #define K1_USER() ({ unsigned int _u; asm volatile("andi %0, $27, 0x18" : "=r"(_u)); _u; })
 
@@ -68,7 +68,7 @@ int func_00000E1C(VideocodecCtx *ctx, unsigned int type);
 
 static inline int convErr(int r)
 {
-	int ret;
+	int ret = 0x80628002;
 
 	switch (r) {
 	case 0:
@@ -84,7 +84,6 @@ static inline int convErr(int r)
 		ret = 0x80628001;
 		break;
 	case -4:
-	default:
 		ret = 0x80628002;
 		break;
 	}
