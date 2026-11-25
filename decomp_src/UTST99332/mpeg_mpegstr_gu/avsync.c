@@ -84,12 +84,45 @@ int avsync_reset(t_avSyncControl *pAvSync) {
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/mpeg_mpegstr_gu/nonmatchings/avsync", avsync_delete);
+void free(void *p);
+SceInt32 avsync_delete(t_avSyncControl *pAvSync)
+{
+	if (pAvSync->video.pts) {
+		free(pAvSync->video.pts);
+		pAvSync->video.pts = NULL;
+	}
+	return 0;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/mpeg_mpegstr_gu/nonmatchings/avsync", avsync_init_video);
+static SceInt32 avsync_init_video(t_avSyncControl *pAvSync)
+{
+	pAvSync->video.write = 0;
+	pAvSync->video.read = 0;
+	pAvSync->video.count = 0;
+	return 0;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/mpeg_mpegstr_gu/nonmatchings/avsync", avsync_video_setPts);
+SceInt32 avsync_video_setPts(t_avSyncControl *pAvSync, SceUInt32 pts)
+{
+	SceInt32 ret = 0;
 
-INCLUDE_ASM("tmp/asm/UTST99332/mpeg_mpegstr_gu/nonmatchings/avsync", avsync_video_getPts);
+	if (pts == (SceUInt32)-1)
+		pts = pAvSync->video.videoLatestPts + videoIntervalSize;
+	pAvSync->video.videoLatestPts = pts;
+	pAvSync->video.pts[pAvSync->video.write] = pts;
+	pAvSync->video.count++;
+	pAvSync->video.write = (pAvSync->video.write + 1) % pAvSync->video.size;
+	return ret;
+}
+
+SceInt32 avsync_video_getPts(t_avSyncControl *pAvSync, SceUInt32 *pPts)
+{
+	SceInt32 ret = 0;
+
+	*pPts = pAvSync->video.pts[pAvSync->video.read];
+	pAvSync->video.count--;
+	pAvSync->video.read = (pAvSync->video.read + 1) % pAvSync->video.size;
+	return ret;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/mpeg_mpegstr_gu/nonmatchings/avsync", avsync_Compare);
