@@ -216,5 +216,50 @@ struct in_addr {
 #define HTONS(x) (x) = htons(x)
 
 extern char D_0002EB69[];
+extern char D_0002F288[18] __attribute__((aligned(4)));
+
+/* pspnet imports */
+struct thread_info {
+	struct thread_info *ti_next;
+	struct thread_info **ti_prev;
+	SceUID thid;
+	short refcnt;
+	int error;
+};
+
+struct thread_info *_sce_pspnet_thread_enter(void);
+int _sce_pspnet_thread_leave(struct thread_info *ti, int error);
+int _sce_pspnet_get_thread_errno(void);
+void _sce_pspnet_set_thread_errno(int error);
+int _sce_pspnet_spllock(void);
+void _sce_pspnet_splunlock(int s);
+void *sceNetMallocInternal(u_int size);
+void sceNetFreeInternal(void *p);
+
+#define AF_UNSPEC 0
+#define AF_LOCAL 1
+#define AF_INET 2
+#define AF_LINK 18
+#define AF_ROUTE 17
+
+typedef u_int socklen_t;
+
+#define _U 01
+#define _L 02
+#define _N 04
+#define _S 010
+#define _P 020
+#define _C 040
+#define _X 0100
+#define _B 0200
+#define _ctype_ (D_0002EAB0 + 1)
+#define isdigit(c) (_ctype_[(int)(c)] & _N)
+#define isxdigit(c) (_ctype_[(int)(c)] & (_X | _N))
+#define isspace(c) (_ctype_[(int)(c)] & _S)
+#define islower(c) (_ctype_[(int)(c)] & _L)
+#define isupper(c) (_ctype_[(int)(c)] & _U)
+
+const char *sceNetInetInetNtop(int af, const void *src, char *dst, socklen_t size);
+int func_0002C4CC(const char *cp, void *addr, int strict);
 
 #endif
