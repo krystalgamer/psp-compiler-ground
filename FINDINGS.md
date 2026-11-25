@@ -106,7 +106,11 @@ modules (`tools/nltest.py`, `tools/objcmp.py`).
   the release toolchain differs is not shown.
 - The same gmo/gim C compiled by cc1 1.5.1 matches umdt's graphics_model and,
   by cc1 1.6.1, UTST99332's (1.6.1.internal) graphics_model; the two builds
-  differ only at the conditional-move sites, i.e. by compiler alone.
+  differ only at the conditional-move sites, i.e. by compiler alone. Two
+  exceptions are source changes, not compiler ones: UTST99332's newer SDK
+  has `sceGmoPartLoad`/`sceGmoMotionLoad(…, const SceGmoChunk *load_chunk)`
+  with a separate `chunk` local (from DWARF). No cc1 reproduces it from the
+  older source and 1.6.1 does from the newer.
 
 ## psp-gcc 1.6.1
 
@@ -299,6 +303,20 @@ modules (`tools/nltest.py`, `tools/objcmp.py`).
   `-fno-merge-constants` for those (`lib:`), and for app units that still
   mix C with asm (`mixed:`, so C and asm floats stay in one section in
   emission order) until they are all C.
+
+## psp-gcc 1.7.1 (release build)
+
+htmlviewer is the first module built by release 1.7.1 (plus SDK libraries
+built by 1.8.4.internal). Its app code (devkit 0.6.0 `sample/utility/basic`
+style, plain `-O2`) is 149/157 functions in byte-matching C. Every matched
+function also matches with 1.6.1, 1.8.3 and 1.8.4. No case of right-looking
+C that no cc1 reproduces. 1.5.1 fails only at conditional-move sites
+(`Menu_MenuUp`, `Menu_ScrollLines`, `sub_thread`, `setHoldDisplay`). It also
+fails `startMsgDialog`. 1.3.1-orig fails `setHoldDisplay` and
+`startMsgDialog`: 512-byte copies through a runtime alignment check, most
+likely the `-mno-ulsw` driver default (not tested). So the module is
+consistent with 1.7.1-orig but doesn't distinguish it from 1.6.1/1.8.x. Its
+1.8.4.internal code contains no VFPU instructions.
 
 ## psp-gcc 1.4.0.internal
 
