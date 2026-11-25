@@ -17,6 +17,13 @@ modules (`tools/nltest.py`, `tools/objcmp.py`).
 - What is left after this is Sony's own newlib changes (`memcpy`,
   `_vfprintf_r`, malloc, `_setlocale_r`, ...): those differ for every
   compiler, 1.7.1 included, and need decompiling.
+- In `decomp_src` the newlib and libgcc units that reproduce are the
+  upstream sources themselves (`tools/libsrc.py`).  `-g` changes no code.
+  Sony's newlib was configured with long long printf: `_vfprintf_r` with
+  `WANT_PRINTF_LONG_LONG` comes within 8 bytes, and the rest is register
+  allocation.  `powf` (only in 1.6.1.internal modules) leaves one branch
+  delay slot empty where every cc1 we have fills it with the preceding
+  store.  This is still open.
 
 ## psp-gcc 1.5.1
 
