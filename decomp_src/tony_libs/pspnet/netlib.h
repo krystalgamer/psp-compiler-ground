@@ -10,6 +10,7 @@
 typedef unsigned int size_t;
 struct bpf_if;
 struct bpf_d;
+struct bpf_insn;
 typedef int SceUID;
 typedef unsigned int SceUInt;
 typedef unsigned int SceSize;
@@ -318,6 +319,7 @@ struct mbuf {
 #define m_type m_hdr.mh_type
 #define m_flags m_hdr.mh_flags
 #define m_nextpkt m_hdr.mh_nextpkt
+#define mtod(m, t) ((t)((m)->m_data))
 
 struct ifevent {
 	TAILQ_ENTRY(ifevent) link;
@@ -690,7 +692,7 @@ struct bpf_hdr {
 	u_short bh_hdrlen;
 };
 
-int func_00004CC8(void *f, int len);
+int func_00004CC8(struct bpf_insn *f, int len);
 void _sce_pspnet_microtime(struct timeval *tv);
 void _sce_pspnet_selwakeup(struct selinfo *sip);
 
@@ -733,5 +735,29 @@ extern int D_0000B0B0;
 void func_00006E34(struct ifnet *ifp, struct mbuf *m);
 int func_000071C8(struct ifnet *ifp, struct mbuf *m, void *dst, void *rt);
 int sceNetIfhandleIfStart(struct ifnet *ifp, struct mbuf *m);
+
+struct bpf_insn {
+	u_short code;
+	u_char jt;
+	u_char jf;
+	int k;
+};
+
+#define EXTRACT_SHORT(p) ((u_short)((u_short)*((u_char *)p + 0) << 8 | (u_short)*((u_char *)p + 1) << 0))
+#define EXTRACT_LONG(p) \
+	((u_int)*((u_char *)p + 0) << 24 | (u_int)*((u_char *)p + 1) << 16 | \
+	 (u_int)*((u_char *)p + 2) << 8 | (u_int)*((u_char *)p + 3) << 0)
+
+#define MINDEX(len, m, k) \
+{ \
+	len = m->m_len; \
+	while (k >= len) { \
+		k -= len; \
+		m = m->m_next; \
+		if (m == 0) \
+			return 0; \
+		len = m->m_len; \
+	} \
+}
 
 #endif
