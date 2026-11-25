@@ -52,7 +52,7 @@ segments:
     start: 0x80
     vram: 0x0
     subsegments:
-      - [0x80, asm, asm/text_0]
+      - [0x80, c, graphicstest]
       - [0x5FC, c, sprintf]
       - [0xDCC, c, ctype]
       - [0xE44, c, memory]
@@ -65,7 +65,7 @@ segments:
       - { start: 0x18BC, type: rodata, name: module_info, linker_section: .rodata.sceModuleInfo }
       - { start: 0x18F0, type: rodata, name: resident, linker_section: .rodata.sceResident }
       - { start: 0x1A08, type: rodata, name: nid, linker_section: .rodata.sceNid }
-      - [0x1A10, rodata, asm/rodata_1990]
+      - [0x1A10, .rodata, graphicstest]
       - [0x1A78, .rodata, sprintf]
   - [0x1C8C, bin, seg1_align]
   - name: graphicstest_seg1
