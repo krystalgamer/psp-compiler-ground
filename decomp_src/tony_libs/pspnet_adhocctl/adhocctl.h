@@ -169,6 +169,7 @@ extern struct handler D_00007060;
 extern const struct gm_param D_00006718[];
 extern const char D_000066F4[];	/* "SceNetAdhocctl" */
 extern const char D_00006704[];	/* "wlan" */
+extern const char D_0000670C[];	/* "wlan" */
 
 /* main */
 int func_000017A8(SceSize stacksize, int prio, const struct SceNetAdhocctlAdhocId *adhoc_id);
@@ -193,7 +194,27 @@ int func_00002520(void);
 int func_00002590(int event, int error);
 int func_00002614(SceSize args, void *argp);
 
+/* connect */
+int func_000008C0(struct adhocctl_ctx *p);
+int func_00000B40(struct adhocctl_ctx *p);
+int func_00000D58(struct adhocctl_ctx *p);
+int func_00000E50(struct adhocctl_ctx *p);
+int func_00001154(struct adhocctl_ctx *p);
+int func_000014B4(struct adhocctl_ctx *p);
+
+/* event */
+int func_00002C84(struct adhocctl_ctx *p);
+int func_00002D64(struct adhocctl_ctx *p);
+int func_00002D84(struct adhocctl_ctx *p);
+int func_00002E0C(struct adhocctl_ctx *p, int *event, int *data);
+
+/* gamemode */
+int func_00002F7C(struct adhocctl_ctx *p, struct gm_request *gm);
+int func_0000378C(struct adhocctl_ctx *p, struct gm_request *gm);
+int func_00004730(struct adhocctl_ctx *p, struct gm_request *gm);
+
 /* imports */
+int sceNetConfigGetIfEvent(const char *ifname, int *event, int *data);
 int sceNetAdhocAuthInit(void);
 int sceNetAdhocAuthTerm(void);
 int sceNetAdhocAuth_lib_BD144DA6(int *buflen, void *buf);
@@ -218,5 +239,20 @@ SceUInt64 sceKernelGetSystemTimeWide(void);
 int sceNetConfig80211GetBssDesc(const char *ifname, struct bss_desc *desc);
 int sceUtilityGetSystemParamString(int id, char *str, int len);
 int sceUtilityGetSystemParamInt(int id, int *value);
+
+static inline void notify(int event, int error)
+{
+	struct adhocctl_ctx *p = &D_000068A4;
+	int i;
+
+	sceKernelWaitSema(p->sema, 1, NULL);
+	for (i = 0; i < 2; i++) {
+		if (D_00007048[i].func != NULL)
+			D_00007048[i].func(event, error, D_00007048[i].arg);
+	}
+	if (D_00007060.func != NULL)
+		D_00007060.func(event, error, D_00007060.arg);
+	sceKernelSignalSema(p->sema, 1);
+}
 
 #endif
