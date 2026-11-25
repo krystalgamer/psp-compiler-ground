@@ -31,7 +31,25 @@ int func_00002504(AtracInfo *info, int type)
 
 INCLUDE_ASM("tmp/asm/tony_libs/libatrac3plus/nonmatchings/setdata", func_00002550);
 
-INCLUDE_ASM("tmp/asm/tony_libs/libatrac3plus/nonmatchings/setdata", func_000025A4);
+void func_000025A4(AtracInfo *info, unsigned int endSample, unsigned int dataSize, int skip0, int loopStart, int loopEnd)
+{
+	int skip = func_0000222C(info);
+	int n = func_0000220C(info);
+	if (endSample != 0)
+		info->unk14 = endSample + skip0 + skip - 1;
+	else
+		info->unk14 = (dataSize / info->sampleSize) * n - 1;
+	info->loopNum = 0;
+	info->unkC = skip0 + skip;
+	info->unk20 = (skip0 + skip) / n;
+	if (loopStart < 0) {
+		info->unk18 = 0;
+		info->unk1C = 0;
+	} else {
+		info->unk18 = loopStart + skip;
+		info->unk1C = loopEnd + skip;
+	}
+}
 
 void func_00002690(AtracInfo *info, unsigned int a1, unsigned int a2, unsigned int a3, unsigned int a4, unsigned int a5)
 {
@@ -45,7 +63,19 @@ void func_00002690(AtracInfo *info, unsigned int a1, unsigned int a2, unsigned i
 	info->unk48 = a5;
 }
 
-INCLUDE_ASM("tmp/asm/tony_libs/libatrac3plus/nonmatchings/setdata", func_000026C0);
+int func_000026C0(AtracInfo *info)
+{
+	int n;
+
+	if (info->unk18 >= info->unk14)
+		return 0x80630008;
+	if (info->unk14 < info->unk1C)
+		return 0x80630008;
+	n = func_0000220C(info);
+	if ((info->unk30 - info->unk2C) / info->sampleSize < (info->unk14 + n) / n)
+		return 0x80630008;
+	return 0;
+}
 
 int func_00002764(AtracInfo *info, unsigned int a, unsigned int b)
 {
