@@ -46,6 +46,12 @@ typedef struct {
 	unsigned int unk4;
 	unsigned int unk8;
 	unsigned short nBlockAlign;
+	unsigned short unkE;
+	unsigned int unk10;
+	unsigned int unk14;
+	char pad18[0x2A - 0x18];
+	unsigned char unk2A[2];
+	char pad2C[0x40 - 0x2C];
 } WaveFmt;
 
 typedef struct {
@@ -60,8 +66,10 @@ typedef struct {
 } AtracBufInfo;
 
 typedef struct {
+	int inUse;
+	char pad4[0x44 - 0x4];
 	unsigned int codec[26];
-	char pad68[0xF0 - 0x68];
+	char padAC[0xF0 - 0xAC];
 	AtracInfo info;
 } AtracCtx;
 
@@ -94,6 +102,20 @@ extern AtracCtx D_00003930[4];
 
 int sceKernelCpuSuspendIntr(void);
 void sceKernelCpuResumeIntr(int intr);
+int sceAudiocodecInit(unsigned int *codec, int type);
+
+typedef struct {
+	unsigned int value;
+	unsigned int sampleSize;
+	unsigned int key;
+} ParamEnt;
+
+extern ParamEnt D_00003890[3];
+
+int func_00000D3C(AtracCtx *ctx, WaveFmt *fmt);
+int func_00000E0C(AtracCtx *ctx);
+int func_00000E90(unsigned int size, unsigned int key, unsigned int *out);
+int func_00000EF8(AtracCtx *ctx, unsigned char *buf, int *a, int *b);
 
 int func_000020B8(AtracInfo *info);
 int func_000029E4(AtracInfo *info);

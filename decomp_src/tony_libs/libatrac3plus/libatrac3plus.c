@@ -13,18 +13,18 @@ int sceAtracGetAtracID(int codec)
 
 	if (codec == 0x1000) {
 		for (i = 0; i < 2; i++) {
-			if (D_00003930[i].codec[0] == 0) {
+			if (D_00003930[i].inUse == 0) {
 				ret = i;
-				D_00003930[i].codec[0] = 1;
+				D_00003930[i].inUse = 1;
 				D_00003930[i].info.state = 0;
 				break;
 			}
 		}
 	} else if (codec == 0x1001) {
 		for (i = 2; i < 4; i++) {
-			if (D_00003930[i].codec[0] == 0) {
+			if (D_00003930[i].inUse == 0) {
 				ret = i;
-				D_00003930[i].codec[0] = 1;
+				D_00003930[i].inUse = 1;
 				D_00003930[i].info.state = 0;
 				break;
 			}
@@ -45,8 +45,8 @@ int sceAtracReleaseAtracID(unsigned int id)
 		return 0x80630005;
 	ret = 0x80630005;
 	intr = sceKernelCpuSuspendIntr();
-	if (D_00003930[id].codec[0] != 0) {
-		D_00003930[id].codec[0] = 0;
+	if (D_00003930[id].inUse != 0) {
+		D_00003930[id].inUse = 0;
 		ret = 0;
 	}
 	sceKernelCpuResumeIntr(intr);
@@ -74,7 +74,7 @@ int sceAtracGetSoundSample(unsigned int id, int *endSample, int *loopStart, int 
 	AtracInfo *info;
 	int start;
 
-	if (id >= 4 || !D_00003930[id].codec[0])
+	if (id >= 4 || !D_00003930[id].inUse)
 		return 0x80630005;
 	if (!D_00003930[id].info.state)
 		return 0x80630010;
@@ -95,7 +95,7 @@ int sceAtracGetNextDecodePosition(unsigned int id, unsigned int *pos)
 {
 	AtracInfo *info;
 
-	if (id >= 4 || !D_00003930[id].codec[0])
+	if (id >= 4 || !D_00003930[id].inUse)
 		return 0x80630005;
 	info = &D_00003930[id].info;
 	if (!info->state)
@@ -109,7 +109,7 @@ int sceAtracGetNextDecodePosition(unsigned int id, unsigned int *pos)
 
 int sceAtracSetLoopNum(unsigned int id, int loopNum)
 {
-	if (id >= 4 || !D_00003930[id].codec[0])
+	if (id >= 4 || !D_00003930[id].inUse)
 		return 0x80630005;
 	if (!D_00003930[id].info.state)
 		return 0x80630010;
@@ -123,11 +123,68 @@ INCLUDE_ASM("tmp/asm/tony_libs/libatrac3plus/nonmatchings/libatrac3plus", sceAtr
 
 INCLUDE_ASM("tmp/asm/tony_libs/libatrac3plus/nonmatchings/libatrac3plus", sceAtracResetPlayPosition);
 
-INCLUDE_ASM("tmp/asm/tony_libs/libatrac3plus/nonmatchings/libatrac3plus", func_00000D3C);
+int func_00000D3C(AtracCtx *ctx, WaveFmt *fmt)
+{
+	AtracInfo *info = &ctx->info;
+	unsigned int *codec = ctx->codec;
+	int ret;
 
-INCLUDE_ASM("tmp/asm/tony_libs/libatrac3plus/nonmatchings/libatrac3plus", func_00000E0C);
+	if (info->codec == 0x1001) {
+		ret = func_00000E90(info->sampleSize, fmt->unk14, &codec[10]);
+		if (ret < 0)
+			return ret;
+	} else {
+		unsigned char *d = (unsigned char *)&codec[10];
+		unsigned char *src = fmt->unk2A;
+		int i;
 
-INCLUDE_ASM("tmp/asm/tony_libs/libatrac3plus/nonmatchings/libatrac3plus", func_00000E90);
+		codec[5] = 1;
+		for (i = 0; i < 2; i++)
+			*d++ = *src++;
+		codec[12] = 0;
+	}
+	ret = sceAudiocodecInit(codec, info->codec);
+	if (ret != 0)
+		goto out;
+	ret = func_00000E0C(ctx);
+out:
+	if (ret == 0x807F0002)
+		ret = 0x80630002;
+	return ret;
+}
+
+int func_00000E0C(AtracCtx *ctx)
+{
+	unsigned char raw[0x2040];
+	int a;
+	int b;
+	unsigned char *buf = (unsigned char *)(((unsigned int)raw + 63) & ~63);
+	unsigned int n = ctx->info.unk20;
+	unsigned int i;
+	int ret;
+
+	ret = 0;
+	for (i = 0; i < n; i++) {
+		ret = func_00000EF8(ctx, buf, &a, &b);
+		if (ret != 0)
+			break;
+	}
+	return ret;
+}
+
+int func_00000E90(unsigned int size, unsigned int key, unsigned int *out)
+{
+	unsigned int i;
+
+	for (i = 0; i < 3; i++) {
+		if (D_00003890[i].sampleSize == size && D_00003890[i].key == key)
+			break;
+	}
+	if (i >= 3)
+		return 0x80630008;
+	*out = D_00003890[i].value;
+	return 0;
+}
 
 INCLUDE_ASM("tmp/asm/tony_libs/libatrac3plus/nonmatchings/libatrac3plus", func_00000EF8);
 
@@ -143,7 +200,7 @@ INCLUDE_ASM("tmp/asm/tony_libs/libatrac3plus/nonmatchings/libatrac3plus", sceAtr
 
 int sceAtracGetRemainFrame(unsigned int id, int *out)
 {
-	if (id >= 4 || !D_00003930[id].codec[0])
+	if (id >= 4 || !D_00003930[id].inUse)
 		return 0x80630005;
 	if (!D_00003930[id].info.state)
 		return 0x80630010;
@@ -156,7 +213,7 @@ int sceAtracGetChannel(unsigned int id, int *ch)
 	int ret = 0x80630005;
 
 	if (id < 4) {
-		if (D_00003930[id].codec[0]) {
+		if (D_00003930[id].inUse) {
 			ret = 0x80630010;
 			if (D_00003930[id].info.state) {
 				ret = 0;
@@ -169,7 +226,7 @@ int sceAtracGetChannel(unsigned int id, int *ch)
 
 int sceAtracGetMaxSample(unsigned int id, int *out)
 {
-	if (id >= 4 || !D_00003930[id].codec[0])
+	if (id >= 4 || !D_00003930[id].inUse)
 		return 0x80630005;
 	if (!D_00003930[id].info.state)
 		return 0x80630010;
@@ -179,7 +236,7 @@ int sceAtracGetMaxSample(unsigned int id, int *out)
 
 int sceAtracGetNextSample(unsigned int id, int *out)
 {
-	if (id >= 4 || !D_00003930[id].codec[0])
+	if (id >= 4 || !D_00003930[id].inUse)
 		return 0x80630005;
 	if (!D_00003930[id].info.state)
 		return 0x80630010;
@@ -189,7 +246,7 @@ int sceAtracGetNextSample(unsigned int id, int *out)
 
 int sceAtracGetBitrate(unsigned int id, int *out)
 {
-	if (id >= 4 || !D_00003930[id].codec[0])
+	if (id >= 4 || !D_00003930[id].inUse)
 		return 0x80630005;
 	if (!D_00003930[id].info.state)
 		return 0x80630010;
@@ -199,7 +256,7 @@ int sceAtracGetBitrate(unsigned int id, int *out)
 
 int sceAtracGetLoopStatus(unsigned int id, int *loopNum, int *status)
 {
-	if (id >= 4 || !D_00003930[id].codec[0])
+	if (id >= 4 || !D_00003930[id].inUse)
 		return 0x80630005;
 	if (!D_00003930[id].info.state)
 		return 0x80630010;
@@ -210,11 +267,11 @@ int sceAtracGetLoopStatus(unsigned int id, int *loopNum, int *status)
 
 int sceAtracGetInternalErrorInfo(unsigned int id, int *out)
 {
-	if (id >= 4 || !D_00003930[id].codec[0])
+	if (id >= 4 || !D_00003930[id].inUse)
 		return 0x80630005;
 	if (!D_00003930[id].info.state)
 		return 0x80630010;
-	*out = *(D_00003930[id].codec + 19);
+	*out = *(D_00003930[id].codec + 2);
 	return 0;
 }
 
