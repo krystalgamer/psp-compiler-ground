@@ -65,7 +65,18 @@ SceInt32 dispbuf_display(SceVoid *pAv);
 static SceInt32 dispbuf_show(t_displayBuffer *pDisp);
 
 
-INCLUDE_ASM("tmp/asm/UTST99332/mpeg_ezmpegstr/nonmatchings/display", swap_buffer);
+int sceDisplaySetFrameBuf(void *topaddr, int bufferwidth, int pixelformat, int sync);
+static SceInt32 swap_buffer(SceChar8 *buffer)
+{
+	SceChar8 *storeBuf;
+
+	sceDmacMemcpy(displayBuf[0], buffer, 0x88000);
+	sceDisplaySetFrameBuf(displayBuf[0], 512, 3, 1);
+	storeBuf = displayBuf[0];
+	displayBuf[0] = displayBuf[1];
+	displayBuf[1] = storeBuf;
+	return 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/mpeg_ezmpegstr/nonmatchings/display", dispbuf_create);
 
