@@ -85,6 +85,26 @@ void sceGuMaterial(int mode, unsigned int color);
 
 extern unsigned int *p_bbox[32];
 
+typedef struct ScePspFVector3 { float x, y, z; } ScePspFVector3;
+
+typedef struct {
+	unsigned char enable;
+	unsigned char type;
+	unsigned char xpos, ypos, zpos;
+	unsigned char xdir, ydir, zdir;
+	unsigned char ambient, diffuse, specular;
+	unsigned char constant, linear, quadratic;
+	unsigned char exponent, cutoff;
+} GuLightSettings;
+
+extern const GuLightSettings lcmd[4];
+extern int disp_sw;
+extern void *vram_top;
+extern int aw_frame;
+
+int sceDisplaySetMode(int mode, int width, int height);
+int sceDisplaySetFrameBuf(void *topaddr, int bufferwidth, int pixelformat, int sync);
+
 void callback_sig(int id, void *arg)
 {
 	GuCallbackData *cb = (GuCallbackData *)arg;
@@ -432,13 +452,43 @@ void sceGuDrawBufferList(int psm, void *fbp, int frame_width)
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_basic/nonmatchings/libgu", sceGuDepthBuffer);
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_basic/nonmatchings/libgu", sceGuDispBuffer);
+void sceGuDispBuffer(int width, int height, void *dbp, int frame_width)
+{
+	FBuf.width = width;
+	FBuf.height = height;
+	FBuf.disp_buffer = dbp;
+	if (!FBuf.frame_width)
+		FBuf.frame_width = frame_width;
+	if (FBuf.frame_width != frame_width)
+		FBuf.frame_width = frame_width;
+	sceDisplaySetMode(0, FBuf.width, FBuf.height);
+	if (disp_sw == 1)
+		sceDisplaySetFrameBuf((char *)vram_top + (unsigned int)FBuf.disp_buffer, frame_width, FBuf.pixel_size, 1);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_basic/nonmatchings/libgu", sceGuDisplay);
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_basic/nonmatchings/libgu", sceGuSwapBuffers);
+void *sceGuSwapBuffers(void)
+{
+	void *temp;
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_basic/nonmatchings/libgu", sceGuViewport);
+	flush_font();
+	temp = FBuf.frame_buffer;
+	FBuf.frame_buffer = FBuf.disp_buffer;
+	FBuf.disp_buffer = temp;
+	if (disp_sw == 1)
+		sceDisplaySetFrameBuf((char *)vram_top + (unsigned int)temp, FBuf.frame_width, FBuf.pixel_size, 0);
+	aw_frame = aw_frame == 0;
+	return FBuf.frame_buffer;
+}
+
+void sceGuViewport(int cx, int cy, int width, int height)
+{
+	send_commandf(66, (float)(width / 2));
+	send_commandf(67, (float)((-height) / 2));
+	send_commandf(69, (float)cx);
+	send_commandf(70, (float)cy);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_basic/nonmatchings/libgu", sceGuDepthRange);
 
@@ -450,7 +500,11 @@ void sceGuDepthOffset(unsigned int offset)
 	sceGuDepthRange(context->near_plane, context->far_plane);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_basic/nonmatchings/libgu", sceGuOffset);
+void sceGuOffset(unsigned int x, unsigned int y)
+{
+	send_commandi(76, x << 4);
+	send_commandi(77, y << 4);
+}
 
 void sceGuPatchDivide(int ulevel, int vlevel)
 {
@@ -459,7 +513,11 @@ void sceGuPatchDivide(int ulevel, int vlevel)
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_basic/nonmatchings/libgu", sceGuPatchPrim);
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_basic/nonmatchings/libgu", sceGuAmbient);
+void sceGuAmbient(unsigned int color)
+{
+	send_commandi(92, color & 0xffffff);
+	send_commandi(93, color >> 24);
+}
 
 void sceGuColor(unsigned int color)
 {
@@ -471,26 +529,68 @@ void sceGuColorMaterial(int components)
 	send_commandi(83, components);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_basic/nonmatchings/libgu", sceGuMaterial);
+void sceGuMaterial(int mode, unsigned int color)
+{
+	if (mode & 0x01) {
+		send_commandi(85, color & 0xffffff);
+		send_commandi(88, color >> 24);
+	}
+	if (mode & 0x02)
+		send_commandi(86, color & 0xffffff);
+	if (mode & 0x04)
+		send_commandi(87, color & 0xffffff);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_basic/nonmatchings/libgu", sceGuAmbientColor);
+void sceGuAmbientColor(unsigned int color)
+{
+	send_commandi(85, color & 0xffffff);
+	send_commandi(88, color >> 24);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_basic/nonmatchings/libgu", sceGuModelColor);
+void sceGuModelColor(unsigned int emissive, unsigned int ambient, unsigned int diffuse, unsigned int specular)
+{
+	send_commandi(84, emissive & 0xffffff);
+	send_commandi(86, diffuse & 0xffffff);
+	send_commandi(85, ambient & 0xffffff);
+	send_commandi(87, specular & 0xffffff);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_basic/nonmatchings/libgu", sceGuSpecular);
+void sceGuSpecular(float power)
+{
+	send_commandf(91, power);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_basic/nonmatchings/libgu", sceGuFrontFace);
+void sceGuFrontFace(int order)
+{
+	if (order)
+		send_commandi(155, 0);
+	else
+		send_commandi(155, 1);
+}
 
 void sceGuPatchFrontFace(int arg0)
 {
 	send_commandi(56, arg0);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_basic/nonmatchings/libgu", sceGuShadeModel);
+void sceGuShadeModel(int mode)
+{
+	switch (mode) {
+	case 1:
+		send_commandi(80, 1);
+		break;
+	default:
+		send_commandi(80, 0);
+		break;
+	}
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_basic/nonmatchings/libgu", sceGuLight);
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_basic/nonmatchings/libgu", sceGuLightMode);
+void sceGuLightMode(int mode)
+{
+	send_commandi(94, mode & 1);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_basic/nonmatchings/libgu", sceGuLightAtt);
 
