@@ -5,9 +5,43 @@
 #include "atrac.h"
 /* --- end declarations --- */
 
-INCLUDE_ASM("tmp/asm/tony_libs/libatrac3plus/nonmatchings/setdata", func_000022F8);
+int func_000022F8(AtracInfo *info, unsigned char *buf, unsigned int bufSize, unsigned int b, WaveFmt *fmt)
+{
+	int g;
+	unsigned int a;
+	unsigned int c;
+	unsigned int d;
+	int e;
+	int f;
+	int type;
+	int ret;
 
-INCLUDE_ASM("tmp/asm/tony_libs/libatrac3plus/nonmatchings/setdata", func_00002408);
+	a = 0;
+	e = 0;
+	f = -1;
+	g = -1;
+	type = func_000016E4(buf, bufSize, fmt, &a, &c, &d, &e, &f, &g);
+	if (type == -1 || type == 1)
+		return 0x80630006;
+	ret = func_00002504(info, type);
+	if (ret != 0)
+		return ret;
+	return func_00002408(info, fmt, buf, a, bufSize, b, c, d, e, f, g);
+}
+
+int func_00002408(AtracInfo *info, WaveFmt *fmt, unsigned char *buf, unsigned int a, unsigned int bufSize, unsigned int b, unsigned int c, unsigned int d, int e, int f, int g)
+{
+	int ret;
+
+	func_00002550(info, e, fmt);
+	if (info->sampleSize == 0)
+		return 0x80630008;
+	func_000025A4(info, c, d, e, f, g);
+	func_00002690(info, (unsigned int)buf, bufSize, b, d, a);
+	if ((ret = func_000026C0(info)) != 0)
+		return ret;
+	return func_00002764(info, bufSize, b);
+}
 
 int func_00002504(AtracInfo *info, int type)
 {
