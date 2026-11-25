@@ -1,3 +1,3 @@
-#include "common.h"
-
-INCLUDE_ASM("tmp/asm/psp184/mpegon/nonmatchings/newlib/libc/string/memcmp", memcmp);
+/* upstream: newlib-1.12.0/newlib/libc/string/memcmp.c (unmodified) */
+/* cflags: -O2 -fno-builtin */
+#include "libc/string/memcmp.c"

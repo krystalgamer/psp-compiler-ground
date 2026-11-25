@@ -1,55 +1,8 @@
-#include "common.h"
+/* upstream: newlib-1.12.0/newlib/libc/stdlib/mprec.c (unmodified) */
+/* cflags: -O2 -fno-builtin */
+/* data-align: 8 */
+#include "libc/stdlib/mprec.c"
 
-INCLUDE_ASM("tmp/asm/psp184/mpegon/nonmatchings/newlib/libc/stdlib/mprec", _Balloc);
-
-INCLUDE_ASM("tmp/asm/psp184/mpegon/nonmatchings/newlib/libc/stdlib/mprec", _Bfree);
-
-INCLUDE_ASM("tmp/asm/psp184/mpegon/nonmatchings/newlib/libc/stdlib/mprec", _multadd);
-
-INCLUDE_ASM("tmp/asm/psp184/mpegon/nonmatchings/newlib/libc/stdlib/mprec", _s2b);
-
-INCLUDE_ASM("tmp/asm/psp184/mpegon/nonmatchings/newlib/libc/stdlib/mprec", _hi0bits);
-
-INCLUDE_ASM("tmp/asm/psp184/mpegon/nonmatchings/newlib/libc/stdlib/mprec", _lo0bits);
-
-INCLUDE_ASM("tmp/asm/psp184/mpegon/nonmatchings/newlib/libc/stdlib/mprec", _i2b);
-
-INCLUDE_ASM("tmp/asm/psp184/mpegon/nonmatchings/newlib/libc/stdlib/mprec", _multiply);
-
-INCLUDE_ASM("tmp/asm/psp184/mpegon/nonmatchings/newlib/libc/stdlib/mprec", _pow5mult);
-
-INCLUDE_ASM("tmp/asm/psp184/mpegon/nonmatchings/newlib/libc/stdlib/mprec", _lshift);
-
-INCLUDE_ASM("tmp/asm/psp184/mpegon/nonmatchings/newlib/libc/stdlib/mprec", __mcmp);
-
-INCLUDE_ASM("tmp/asm/psp184/mpegon/nonmatchings/newlib/libc/stdlib/mprec", __mdiff);
-
-INCLUDE_ASM("tmp/asm/psp184/mpegon/nonmatchings/newlib/libc/stdlib/mprec", _ulp);
-
-INCLUDE_ASM("tmp/asm/psp184/mpegon/nonmatchings/newlib/libc/stdlib/mprec", _b2d);
-
-INCLUDE_ASM("tmp/asm/psp184/mpegon/nonmatchings/newlib/libc/stdlib/mprec", _d2b);
-
-INCLUDE_ASM("tmp/asm/psp184/mpegon/nonmatchings/newlib/libc/stdlib/mprec", _ratio);
-
-INCLUDE_ASM("tmp/asm/psp184/mpegon/nonmatchings/newlib/libc/stdlib/mprec", _mprec_log10);
-
-INCLUDE_RODATA("tmp/asm/psp184/mpegon/nonmatchings/newlib/libc/stdlib/mprec", D_00012CB8);
-
-INCLUDE_RODATA("tmp/asm/psp184/mpegon/nonmatchings/newlib/libc/stdlib/mprec", __mprec_tens);
-
-INCLUDE_RODATA("tmp/asm/psp184/mpegon/nonmatchings/newlib/libc/stdlib/mprec", __mprec_bigtens);
-
-INCLUDE_RODATA("tmp/asm/psp184/mpegon/nonmatchings/newlib/libc/stdlib/mprec", D_00012DB0);
-
-INCLUDE_RODATA("tmp/asm/psp184/mpegon/nonmatchings/newlib/libc/stdlib/mprec", D_00012DB4);
-
-INCLUDE_RODATA("tmp/asm/psp184/mpegon/nonmatchings/newlib/libc/stdlib/mprec", __mprec_tinytens);
-
-INCLUDE_RODATA("tmp/asm/psp184/mpegon/nonmatchings/newlib/libc/stdlib/mprec", D_00012DE0);
-
-INCLUDE_RODATA("tmp/asm/psp184/mpegon/nonmatchings/newlib/libc/stdlib/mprec", D_00012DE4);
-
-INCLUDE_RODATA("tmp/asm/psp184/mpegon/nonmatchings/newlib/libc/stdlib/mprec", D_00012DE8);
-
-INCLUDE_RODATA("tmp/asm/psp184/mpegon/nonmatchings/newlib/libc/stdlib/mprec", D_00012DEC);
+/* labels the rest of the module's asm uses */
+__asm__(".globl D_00012DB0\nD_00012DB0 = 0x00012DB0");
+__asm__(".globl D_00012DB4\nD_00012DB4 = 0x00012DB4");
