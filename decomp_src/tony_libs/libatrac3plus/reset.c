@@ -88,6 +88,29 @@ int func_00003334(AtracInfo *info, unsigned int pos, unsigned int x, unsigned in
 	return 0;
 }
 
-INCLUDE_ASM("tmp/asm/tony_libs/libatrac3plus/nonmatchings/reset", func_0000340C);
+void func_0000340C(AtracInfo *info, unsigned int pos, AtracBufInfo *out)
+{
+	unsigned int start = func_00001FAC(info, pos);
+	unsigned int end = func_0000201C(info, info->unk1C);
+
+	if (end > start) {
+		unsigned int len = end - start + 1;
+
+		out->unkC = start;
+		out->buf = info->unk40;
+		out->unk4 = func_0000224C(info->unk44, len);
+		out->unk8 = func_0000224C(out->unk4, (func_00002064(info, pos) + 1) * info->sampleSize);
+		if (info->unk38 == 1)
+			func_00003160(info, out);
+		else
+			func_00003178(info, out);
+	} else {
+		func_00003148(info, out);
+		out->unk1C = start;
+		out->unk10 = info->unk4C;
+		out->unk14 = func_0000224C(info->unk50, info->unk30 - start);
+		out->unk18 = (func_00002064(info, pos) + 1) * info->sampleSize;
+	}
+}
 
 INCLUDE_ASM("tmp/asm/tony_libs/libatrac3plus/nonmatchings/reset", func_00003538);
