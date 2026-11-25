@@ -217,8 +217,8 @@ struct in_addr {
 
 #define ntohl(x) __builtin_allegrex_wsbw(x)
 #define htonl(x) __builtin_allegrex_wsbw(x)
-#define ntohs(x) ((u_short)__builtin_allegrex_wsbh(x))
-#define htons(x) ((u_short)__builtin_allegrex_wsbh(x))
+#define ntohs(x) ((u_short)__builtin_allegrex_wsbh((u_short)(x)))
+#define htons(x) ((u_short)__builtin_allegrex_wsbh((u_short)(x)))
 #define NTOHL(x) (x) = ntohl(x)
 #define HTONL(x) (x) = htonl(x)
 #define NTOHS(x) (x) = ntohs(x)
@@ -1072,5 +1072,32 @@ void _sce_pspnet_stop_of_inet_module_in_sched(void);
 int sceKernelSignalSema(SceUID semaid, int signal);
 void func_00001D94(struct thread_info *ti);
 void func_00001DD8(struct socket *so);
+
+/* ip.h */
+struct ip {
+	u_int8_t ip_hl:4,
+		ip_v:4;
+	u_int8_t ip_tos;
+	u_int16_t ip_len;
+	u_int16_t ip_id;
+	u_int16_t ip_off;
+	u_int8_t ip_ttl;
+	u_int8_t ip_p;
+	u_int16_t ip_sum;
+	struct in_addr ip_src, ip_dst;
+} __attribute__((__packed__));
+
+struct ipovly {
+	u_int8_t ih_x1[9];
+	u_int8_t ih_pr;
+	u_int16_t ih_len;
+	struct in_addr ih_src;
+	struct in_addr ih_dst;
+};
+
+#define in4_cksum func_00012D84
+#define in_cksum func_00013130
+int in4_cksum(struct mbuf *m, u_int8_t nxt, int off, int len);
+int in_cksum(struct mbuf *m, int len);
 
 #endif

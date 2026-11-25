@@ -18,8 +18,8 @@ raw_usrreq                                   1.5.1.internal  raw_usrreq.c
 if_loop                                      1.5.1.internal  if_loop.c
 if_ether                                     1.5.1.internal  if_ether.c
 in                                           1.5.1.internal  in.c
-in_cksum                                     1.5.1.internal  in_cksum.c
 in4_cksum                                    1.5.1.internal  in4_cksum.c
+in_cksum                                     1.5.1.internal  in_cksum.c
 in_pcb                                       1.5.1.internal  in_pcb.c
 ip_input                                     1.5.1.internal  ip_input.c
 ip_output                                    1.5.1.internal  ip_output.c
