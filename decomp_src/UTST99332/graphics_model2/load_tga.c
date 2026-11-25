@@ -130,4 +130,65 @@ static const void *read_short(const void *src, short unsigned int *val)
 	return (const unsigned char *)src + 2;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_model2/nonmatchings/load_tga", copy_pixels_C880);
+static void copy_pixels(char *dp, const char *sp, int count, int src_step, _Bool run)
+{
+	int step;
+
+	step = run ? 0 : src_step;
+	switch (src_step) {
+	case 1:
+		{
+			int i;
+
+			for (i = 0; i < count; i++) {
+				*dp++ = *sp;
+				sp += step;
+			}
+		}
+		break;
+	case 3:
+		{
+			int i;
+
+			for (i = 0; i < count; i++) {
+				dp[0] = sp[2];
+				dp[1] = sp[1];
+				dp[2] = sp[0];
+				dp[3] = 0xff;
+				sp += step;
+				dp += 4;
+			}
+		}
+		break;
+	case 2:
+		{
+			const unsigned char *sp2 = (const unsigned char *)sp;
+			short unsigned int *dp2 = (short unsigned int *)dp;
+			int i;
+
+			for (i = 0; i < count; i++) {
+				int src = (sp2[1] << 8) | sp2[0];
+				int r = (src & 0x7c00) >> 10;
+				int b = src & 0x001f;
+
+				*dp2++ = (src & ~0x7c1f) | r | (b << 10) | 0x8000;
+				sp2 += step;
+			}
+		}
+		break;
+	case 4:
+		{
+			int i;
+
+			for (i = 0; i < count; i++) {
+				dp[0] = sp[2];
+				dp[1] = sp[1];
+				dp[2] = sp[0];
+				dp[3] = sp[3];
+				sp += step;
+				dp += 4;
+			}
+		}
+		break;
+	}
+}
