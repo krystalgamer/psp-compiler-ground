@@ -49,6 +49,19 @@ static __inline__ void send_commandf(int cmd, float argument)
 	*(pList->current++) = (cmd << 24) | (*((unsigned int *)&argument) >> 8);
 }
 
+static __inline__ unsigned int float_bits(float f)
+{
+	union { float f; unsigned int i; } t;
+
+	t.f = f;
+	return t.i;
+}
+
+static __inline__ void send_commandf_u(int cmd, float argument)
+{
+	*(pList->current++) = (cmd << 24) | (float_bits(argument) >> 8);
+}
+
 typedef struct ScePspFVector4 { float x, y, z, w; } ScePspFVector4;
 typedef struct ScePspFMatrix4 { ScePspFVector4 x, y, z, w; } ScePspFMatrix4;
 
@@ -770,7 +783,23 @@ void sceGuBlendFunc(int op, int src, int dest, unsigned int srcfix, unsigned int
 	send_commandi(225, destfix & 0xffffff);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_basic/nonmatchings/libgu", sceGuBoneMatrix);
+void sceGuBoneMatrix(unsigned int index, const ScePspFMatrix4 *matrix)
+{
+	send_commandi(255, 0);
+	send_commandi(42, index * 12);
+	send_commandi(43, float_bits(matrix->x.x) >> 8);
+	send_commandi(43, float_bits(matrix->x.y) >> 8);
+	send_commandi(43, float_bits(matrix->x.z) >> 8);
+	send_commandi(43, float_bits(matrix->y.x) >> 8);
+	send_commandi(43, float_bits(matrix->y.y) >> 8);
+	send_commandi(43, float_bits(matrix->y.z) >> 8);
+	send_commandi(43, float_bits(matrix->z.x) >> 8);
+	send_commandi(43, float_bits(matrix->z.y) >> 8);
+	send_commandi(43, float_bits(matrix->z.z) >> 8);
+	send_commandi(43, float_bits(matrix->w.x) >> 8);
+	send_commandi(43, float_bits(matrix->w.y) >> 8);
+	send_commandi(43, float_bits(matrix->w.z) >> 8);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_basic/nonmatchings/libgu", sceGuMorphWeight);
 
@@ -781,4 +810,19 @@ void sceGuDebugFlush(void)
 	flush_font();
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_basic/nonmatchings/libgu", sceGuSetCallback);
+void *sceGuSetCallback(int signal, void (*callback)(int))
+{
+	void (*old)(int) = 0;
+
+	switch (signal) {
+	case 1:
+		old = intrParam.signal_func;
+		intrParam.signal_func = callback;
+		break;
+	case 4:
+		old = intrParam.finish_func;
+		intrParam.finish_func = callback;
+		break;
+	}
+	return old;
+}
