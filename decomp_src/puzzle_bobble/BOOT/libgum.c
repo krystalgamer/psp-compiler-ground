@@ -1,7 +1,8 @@
 /* cflags: -O2 -fno-merge-constants */
 #include "common.h"
 
-/* sinf, cosf and sqrtf are not declared: the builtins (pure, sqrtf inline) */
+float sinf(float);
+float cosf(float);
 
 typedef struct ScePspFVector3 { float x, y, z; } ScePspFVector3;
 typedef struct ScePspFVector4 { float x, y, z, w; } ScePspFVector4;
@@ -129,13 +130,73 @@ void sceGumLoadIdentity(void)
 	update[cur_matrix] = 1;
 }
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgum", sceGumRotateX);
+void sceGumRotateX(float angle)
+{
+	ScePspFMatrix4 m;
+	float s = sinf(angle);
+	float c = cosf(angle);
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgum", sceGumRotateY);
+	m.x.x = 1.0f; m.x.y = 0.0f; m.x.z = 0.0f; m.x.w = 0.0f;
+	m.y.x = 0.0f; m.y.y = c; m.y.z = s; m.y.w = 0.0f;
+	m.z.x = 0.0f; m.z.y = -s; m.z.z = c; m.z.w = 0.0f;
+	m.w.x = 0.0f; m.w.y = 0.0f; m.w.z = 0.0f; m.w.w = 1.0f;
+	__mulMatrix(cur_stack, cur_stack, &m);
+	update[cur_matrix] = 1;
+}
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgum", sceGumRotateZ);
+void sceGumRotateY(float angle)
+{
+	ScePspFMatrix4 m;
+	float s = sinf(angle);
+	float c = cosf(angle);
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgum", sceGumRotateXYZ);
+	m.x.x = c; m.x.y = 0.0f; m.x.z = -s; m.x.w = 0.0f;
+	m.y.x = 0.0f; m.y.y = 1.0f; m.y.z = 0.0f; m.y.w = 0.0f;
+	m.z.x = s; m.z.y = 0.0f; m.z.z = c; m.z.w = 0.0f;
+	m.w.x = 0.0f; m.w.y = 0.0f; m.w.z = 0.0f; m.w.w = 1.0f;
+	__mulMatrix(cur_stack, cur_stack, &m);
+	update[cur_matrix] = 1;
+}
+
+void sceGumRotateZ(float angle)
+{
+	ScePspFMatrix4 m;
+	float s = sinf(angle);
+	float c = cosf(angle);
+
+	m.x.x = c; m.x.y = s; m.x.z = 0.0f; m.x.w = 0.0f;
+	m.y.x = -s; m.y.y = c; m.y.z = 0.0f; m.y.w = 0.0f;
+	m.z.x = 0.0f; m.z.y = 0.0f; m.z.z = 1.0f; m.z.w = 0.0f;
+	m.w.x = 0.0f; m.w.y = 0.0f; m.w.z = 0.0f; m.w.w = 1.0f;
+	__mulMatrix(cur_stack, cur_stack, &m);
+	update[cur_matrix] = 1;
+}
+
+void sceGumRotateXYZ(const ScePspFVector3 *v)
+{
+	ScePspFMatrix4 m;
+	ScePspFVector3 s, c;
+
+	s.x = sinf(v->x); c.x = cosf(v->x);
+	s.y = sinf(v->y); c.y = cosf(v->y);
+	s.z = sinf(v->z); c.z = cosf(v->z);
+
+	m.x.x = c.z * c.y;
+	m.x.y = c.z * s.y * s.x + s.z * c.x;
+	m.x.z = -c.z * s.y * c.x + s.z * s.x;
+	m.x.w = 0.0f;
+	m.y.x = -s.z * c.y;
+	m.y.y = -s.z * s.y * s.x + c.z * c.x;
+	m.y.z = s.z * s.y * c.x + c.z * s.x;
+	m.y.w = 0.0f;
+	m.z.x = s.y;
+	m.z.y = -c.y * s.x;
+	m.z.z = c.y * c.x;
+	m.z.w = 0.0f;
+	m.w.x = 0.0f; m.w.y = 0.0f; m.w.z = 0.0f; m.w.w = 1.0f;
+	__mulMatrix(cur_stack, cur_stack, &m);
+	update[cur_matrix] = 1;
+}
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgum", sceGumRotateZYX);
 
