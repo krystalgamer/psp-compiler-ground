@@ -122,6 +122,27 @@ static inline int dynBufOk(unsigned int addr, unsigned int size)
 {
 	return ((addr | size | (addr + size)) >> 31) ^ 1;
 }
+
+static inline int ptrBad(unsigned int addr)
+{
+	if (K1_USER() && !ptrOk(addr))
+		return 1;
+	return 0;
+}
+
+static inline int staBufBad(unsigned int addr, unsigned int size)
+{
+	if (K1_USER() && !staBufOk(addr, size))
+		return 1;
+	return 0;
+}
+
+static inline int dynBufBad(unsigned int addr, unsigned int size)
+{
+	if (K1_USER() && !dynBufOk(addr, size))
+		return 1;
+	return 0;
+}
 #define CHECK_CORE(core) (K1_USER() && (int)((unsigned int)(core) | ((unsigned int)(core) + sizeof(SasCore))) < 0)
 
 #endif
