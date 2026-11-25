@@ -34,7 +34,23 @@ struct adhoc_socket *func_00000DFC(int type, int id)
 
 INCLUDE_ASM("tmp/asm/tony_libs/pspnet_adhoc/nonmatchings/socket", func_00000E44);
 
-INCLUDE_ASM("tmp/asm/tony_libs/pspnet_adhoc/nonmatchings/socket", func_00000ED0);
+int func_00000ED0(u_char type, struct adhoc_socket **sop)
+{
+	struct adhoc_socket *so;
+	int ret;
+
+	so = sceNetMallocInternal(sizeof(*so));
+	ret = 0x80410001;
+	if (so != NULL) {
+		memset(so, 0, sizeof(*so));
+		so->type = type;
+		so->id = -1;
+		TAILQ_INSERT_TAIL(&D_00007418, so, link);
+		ret = 0;
+		*sop = so;
+	}
+	return ret;
+}
 
 void func_00000F74(struct adhoc_socket *so)
 {
