@@ -20,4 +20,7 @@ INCLUDE_RODATA("tmp/asm/UTST99332/graphics_stainglass/nonmatchings/main", D_0001
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_stainglass/nonmatchings/main", StartMainThread);
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_stainglass/nonmatchings/main", main);
+int main(void) {
+    StartMainThread();
+    return 0;
+}
