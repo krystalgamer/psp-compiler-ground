@@ -197,7 +197,49 @@ int polling_error(void) {
     return var_a0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/net", net_init);
+void change_state(int state);
+int utility_net_connect(int flag);
+void net_delete_ptp(void);
+void matching_term(void);
+void game_term(void);
+#define net_param D_000DB754	/* 0x8c bytes; the field at 0x88 is set to 2 */
+extern struct { char pad[0x88]; int type; } net_param;
+#define net_connect_failed D_00019974	/* shared with check_adhocctl_disconnect_completed */
+extern char net_connect_failed[];
+int net_init(void)
+{
+	int ret;
+
+	ret = sceNetInit(0x20000, 0x20, 0x1000, 0x20, 0x1000);
+	if (ret < 0) {
+		printf("sceNetInit() failed. ret = 0x%x\n", ret);
+		goto error;
+	}
+	ret = sceNetAdhocInit();
+	if (ret < 0) {
+		printf("sceNetAdhocInit() failed. ret = 0x%x\n", ret);
+		goto error;
+	}
+	ret = sceNetAdhocctlInit(0x2000, 0x30, &adhoc_id);
+	if (ret < 0) {
+		printf("sceNetAdhocctlInit() failed. ret = 0x%x\n", ret);
+		goto error;
+	}
+	clear_evf();
+	ret = sceNetAdhocctlAddHandler(adhocctl_handler, NULL);
+	if (ret < 0) {
+		printf("sceNetAdhocctlAddHandler() failed. ret = 0x%x\n", ret);
+		goto error;
+	}
+	handlerId = ret;
+	memset(&net_param, 0, 0x8c);
+	net_param.type = 2;
+	return 0;
+
+error:
+	net_term();
+	return -1;
+}
 
 void net_term(void) {
     if (handlerId >= 0) {
@@ -209,9 +251,34 @@ void net_term(void) {
     sceNetTerm();
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/net", net_scan);
+static int net_scan(void)
+{
+	int ret;
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/net", net_connect);
+	evf = 0;
+	ret = sceNetAdhocctlScan();
+	if (ret < 0) {
+		printf("sceNetAdhocctlScan() failed. ret = 0x%x\n", ret);
+		change_state(MATCHING_ROOM_TOP);
+	} else if (_mrinfo.state == MATCHING_ROOM_SCAN) {
+		change_state(MATCHING_ROOM_SCANNING);
+	}
+	return ret;
+}
+
+static int net_connect(void)
+{
+	int ret;
+
+	ret = utility_net_connect(0);
+	if (ret < 0) {
+		printf(net_connect_failed, ret);
+		change_state(MATCHING_ROOM_TOP);
+	} else {
+		change_state(MATCHING_ROOM_CONNECTING_ROOM);
+	}
+	return ret;
+}
 
 INCLUDE_RODATA("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/net", D_00019974);
 
