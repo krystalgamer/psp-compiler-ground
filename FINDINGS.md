@@ -128,6 +128,13 @@ modules (`tools/nltest.py`, `tools/objcmp.py`).
   alias the display-list stores, so all loads are hoisted);
   kernel_bridge's `_sys_open` is a K&R definition that `_open` calls with
   two arguments.
+- The same SDK libraries built by 1.5.1.internal (sampler) are an older
+  source revision (`send_commandi`/`send_commandf` are real functions, not
+  inlines), but the 1.6.1.internal C carries over: 58 of libgu's functions
+  match.  `sceGuTexLevelMode` (the bias clamp) matches only with 1.5.1's
+  cc1; 1.3.1's, 1.6.1's and 1.7.1's emit conditional moves.  This is a
+  second, independent confirmation of the 1.5.1 condmove change and that
+  1.5.1.internal uses the 1.5.1 compiler; the module build checks it.
 - Per-library flags under 1.6.1.internal: UTST99332 demo_luga's copy of the
   gmo model library (an older revision than graphics_model's: different
   function order, a `geModelDoTextureFunc` hook in `sceGmoTextureActivate`)
