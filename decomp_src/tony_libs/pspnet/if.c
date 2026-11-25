@@ -16,20 +16,24 @@ INCLUDE_ASM("tmp/asm/tony_libs/pspnet/nonmatchings/if", func_000057D8);
 
 INCLUDE_ASM("tmp/asm/tony_libs/pspnet/nonmatchings/if", _sce_pspnet_if_nulloutput);
 
-void func_0000593C(void) {
+void func_0000593C(void)
+{
 }
 
-void func_00005944(void) {
+void func_00005944(void)
+{
 }
 
 INCLUDE_ASM("tmp/asm/tony_libs/pspnet/nonmatchings/if", func_0000594C);
 
 INCLUDE_ASM("tmp/asm/tony_libs/pspnet/nonmatchings/if", func_00005954);
 
-void func_0000595C(void) {
+void func_0000595C(void)
+{
 }
 
-void func_00005964(void) {
+void func_00005964(void)
+{
 }
 
 INCLUDE_ASM("tmp/asm/tony_libs/pspnet/nonmatchings/if", func_0000596C);
