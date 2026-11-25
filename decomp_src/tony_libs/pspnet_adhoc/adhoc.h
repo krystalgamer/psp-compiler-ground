@@ -31,6 +31,8 @@ int bcmp(const void *a, const void *b, int n);
 void bcopy(const void *src, void *dst, int n);
 void bzero(void *p, int n);
 
+extern int D_00007448;
+
 #define TAILQ_HEAD(name, type) struct name { struct type *tqh_first; struct type **tqh_last; }
 #define TAILQ_ENTRY(type) struct { struct type *tqe_next; struct type **tqe_prev; }
 #define TAILQ_FIRST(head) ((head)->tqh_first)
@@ -256,6 +258,132 @@ TAILQ_HEAD(adhoc_socket_list, adhoc_socket);
 	(so)->pollq = (ti); \
 } while (0)
 
+#define POLL_UNLINK(so, ti) do { \
+	struct adhoc_socket *_q; \
+	struct thread_info *_t; \
+	if ((struct adhoc_socket *)(ti)->polllist == (so)) { \
+		(ti)->polllist = (so)->pollnext; \
+	} else { \
+		for (_q = (ti)->polllist; _q->pollnext != (so); _q = _q->pollnext) \
+			; \
+		_q->pollnext = _q->pollnext->pollnext; \
+	} \
+	if ((so)->pollq == (ti)) { \
+		(so)->pollq = (ti)->pollnext; \
+	} else { \
+		for (_t = (so)->pollq; _t->pollnext != (ti); _t = _t->pollnext) \
+			; \
+		_t->pollnext = _t->pollnext->pollnext; \
+	} \
+} while (0)
+
+struct sockbuf {
+	struct mbuf *sb_head;
+	struct mbuf *sb_tail;
+	u_int sb_cc;
+	u_int sb_hiwat;
+	u_int sb_lowat;
+	int sb_flags;
+};
+
+/* ptp.c */
+struct ptpcb {
+	TAILQ_ENTRY(ptpcb) link;
+	TAILQ_ENTRY(ptpcb) clink;
+	TAILQ_HEAD(, ptpcb) children;
+	struct ifnet *ifp;
+	struct SceNetEtherAddr laddr;
+	struct SceNetEtherAddr faddr;
+	u_short lport;
+	u_short fport;
+	struct sockbuf snd;
+	struct sockbuf rcv;
+	struct adhoc_socket *so;
+	int state;
+	int unk64;
+	int mss;
+	u_int iss;
+	int unk70;
+	int unk74;
+	int unk78;
+	int unk7C;
+	int unk80;
+	int unk84;
+	struct callout co;
+	u_int rexmt_int;
+	int rexmt_cnt;
+	int rexmt_left;
+	int nchildren;
+	int backlog;
+	struct ptpcb *parent;
+};
+TAILQ_HEAD(ptpcb_list, ptpcb);
+
+struct SceNetAdhocPtpStat {
+	struct SceNetAdhocPtpStat *next;
+	int id;
+	struct SceNetEtherAddr laddr;
+	struct SceNetEtherAddr paddr;
+	u_short lport;
+	u_short pport;
+	unsigned int snd_sb_cc;
+	unsigned int rcv_sb_cc;
+	int state;
+};
+
+extern struct ptpcb_list D_00007430;
+
+struct ptpstat {
+	int unk0;
+	int unk4;
+	int unk8;
+	int unkC;
+	int unk10;
+	int unk14;
+	int unk18;
+	int unk1C;
+	int unk20;
+	int unk24;
+	int unk28;
+	int unk2C;
+};
+extern struct ptpstat D_00007450;
+extern u_short D_00007438;
+extern u_int D_0000743C;
+
+void _sce_pspnet_wakeup(void *wchan);
+
+static inline u_short ptp_newport(struct SceNetEtherAddr *addr)
+{
+	struct ptpcb *p;
+	u_short port;
+
+	port = (D_00007438 == 0x7FFF) ? 0x4000 : D_00007438 + 1;
+	while (port != D_00007438) {
+		for (p = D_00007430.tqh_first; p != NULL; p = p->link.tqe_next) {
+			if (memcmp(&p->laddr, addr, 6) == 0 && p->lport == port)
+				break;
+		}
+		if (p == NULL) {
+			D_00007438 = port;
+			return port;
+		}
+		port = (port == 0x7FFF) ? 0x4000 : port + 1;
+	}
+	return 0;
+}
+
+#define SBWAKEUP(sb) do { \
+	if ((sb).sb_flags & 1) { \
+		(sb).sb_flags &= ~1; \
+		_sce_pspnet_wakeup(&(sb)); \
+	} \
+	if ((sb).sb_flags & 2) { \
+		(sb).sb_flags &= ~2; \
+		_sce_pspnet_wakeup(&D_00007448); \
+	} \
+} while (0)
+
 /* pdp.c */
 struct pdpcb;
 
@@ -419,8 +547,34 @@ void func_00002A18(void);
 void func_000023C4(struct mbuf *m);
 void func_00002B90(struct ifnet *ifp);
 
+/* ptp_api.c */
+int func_000038C4(struct SceNetEtherAddr *saddr, u_short sport, u_int sndbuf, u_int rcvbuf, u_int rexmt_int, int rexmt_cnt, struct adhoc_socket **sop);
+void func_000039FC(struct adhoc_socket *so);
+int func_00003A34(struct adhoc_socket *so, unsigned int timeout, int flag);
+int func_00003C00(struct adhoc_socket *so, struct SceNetEtherAddr *addr, u_short *port, unsigned int timeout, int flag);
+int func_00003EF4(struct adhoc_socket *so, void *data, int *len, unsigned int timeout, int flag);
+int func_000042B0(struct adhoc_socket *so, void *buf, int *len, unsigned int timeout, int flag);
+int func_000045E4(struct adhoc_socket *so, unsigned int timeout, int flag);
+
 /* ptp.c */
 void func_0000483C(void);
+int func_00004918(struct ptpcb *pcb, struct SceNetEtherAddr *addr, u_short port);
+void func_00004B64(struct ptpcb *pcb);
+struct ptpcb *func_00004C0C(struct ptpcb *lpcb, struct SceNetEtherAddr *faddr, u_short fport, u_int seq);
+void func_00004E60(struct ptpcb *pcb);
+void func_00004F50(struct ptpcb *pcb);
+struct ptpcb *func_000053CC(struct SceNetEtherAddr *laddr, u_short lport, struct SceNetEtherAddr *faddr, u_short fport);
+int func_0000548C(struct adhoc_socket *so);
+void func_00005528(struct ptpcb *pcb);
+int func_00005544(struct ptpcb *pcb, u_int sndbuf, u_int rcvbuf);
+void func_00005560(struct ptpcb *pcb, u_int rexmt_int, int rexmt_cnt);
+int func_0000556C(struct ptpcb *pcb, struct SceNetEtherAddr *faddr, u_short fport);
+int func_000056B0(struct ptpcb *pcb, int backlog);
+void func_000056D4(struct ptpcb *pcb);
+void func_00005FF8(struct ptpcb *pcb);
+void func_00006340(struct ptpcb *pcb, int type);
+void func_0000648C(struct ptpcb *pcb);
+void func_00006624(void *arg);
 void func_00004B18(struct adhoc_socket *so);
 int func_000050F8(struct adhoc_socket *so, int events);
 int func_00005374(void);
