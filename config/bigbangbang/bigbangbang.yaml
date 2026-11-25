@@ -1,0 +1,135 @@
+name: bigbangbang (bigbangbang)
+sha1: ee92fc38149738ec85c1ac7445c7af5f14da52e9
+options:
+  basename: bigbangbang
+  target_path: tmp/baserom/bigbangbang/bigbangbang.prx
+  elf_path: tmp/build/bigbangbang/bigbangbang.elf
+  base_path: ../..
+  platform: psp
+  compiler: GCC
+
+  asm_path: tmp/asm/bigbangbang/bigbangbang
+  src_path: decomp_src/bigbangbang/bigbangbang
+  build_path: tmp/build/bigbangbang
+  ld_script_path: tmp/build/bigbangbang/bigbangbang.ld
+  cache_path: tmp/build/bigbangbang/.splat_cache.bigbangbang
+  symbol_addrs_path:
+    - config/bigbangbang/symbol_addrs.bigbangbang.txt
+    - tmp/build/bigbangbang/prx_syms.bigbangbang.txt
+  reloc_addrs_path: [tmp/build/bigbangbang/reloc_addrs.bigbangbang.txt]
+  asset_path: tmp/assets/bigbangbang/bigbangbang
+  extensions_path: tools/splat_ext
+  undefined_funcs_auto_path: tmp/build/bigbangbang/undefined_funcs_auto.bigbangbang.txt
+  undefined_syms_auto_path: tmp/build/bigbangbang/undefined_syms_auto.bigbangbang.txt
+
+  find_file_boundaries: false
+  section_order: [".text", ".data", ".rodata", ".bss"]
+  migrate_rodata_to_functions: true
+  use_legacy_include_asm: false
+  asm_function_macro: glabel
+  asm_jtbl_label_macro: jlabel
+  asm_data_macro: dlabel
+  asm_end_label: endlabel
+  string_encoding: ASCII
+  data_string_encoding: ASCII
+  rodata_string_guesser_level: 2
+  data_string_guesser_level: 2
+  gp_value: 0x19350
+  add_set_gp_64: false
+  named_regs_for_c_funcs: false
+  ld_bss_is_noload: true
+  emit_subalign: false
+  ld_align_segment_vram_end: false
+  ld_align_section_vram_end: false
+  disasm_unknown: true
+  global_vram_start: 0x0
+  global_vram_end: 0x7876C
+
+segments:
+  - [0x0, bin, elf_header]
+  - name: bigbangbang
+    type: code
+    start: 0x80
+    vram: 0x0
+    subsegments:
+      - { start: 0x80, type: asm, name: init, linker_section: .init }
+      - [0xA4, asm, asm/text_24]
+      - [0x18C, c, crt0]
+      - [0x454, c, main]
+      - [0xD10, c, game]
+      - [0x25D4, c, particle]
+      - [0x2C9C, c, pickup]
+      - [0x30F8, asm, asm/text_3078]
+      - [0x8020, c, newlib/libm/math/sf_cos]
+      - [0x80F0, c, newlib/libm/math/sf_sin]
+      - [0x81C8, c, newlib/libm/math/wf_sqrt]
+      - [0x82F8, c, newlib/libm/math/ef_rem_pio2]
+      - [0x8654, c, newlib/libm/math/ef_sqrt]
+      - [0x8784, c, newlib/libm/math/kf_cos]
+      - [0x88AC, c, newlib/libm/math/kf_rem_pio2]
+      - [0x906C, c, newlib/libm/math/kf_sin]
+      - [0x9148, c, newlib/libm/common/s_matherr]
+      - [0x9150, c, newlib/libm/math/sf_fabs]
+      - [0x916C, c, newlib/libm/math/sf_floor]
+      - [0x924C, c, newlib/libm/math/sf_isnan]
+      - [0x9268, c, newlib/libm/common/sf_scalbn]
+      - [0x939C, c, newlib/libm/common/sf_copysign]
+      - [0x93C8, asm, asm/text_9348]
+      - [0xA0B4, c, newlib/libc/stdlib/atexit]
+      - [0xA15C, c, newlib/libc/errno/errno]
+      - [0xA168, c, newlib/libc/stdlib/exit]
+      - [0xA258, c, newlib/libc/stdlib/malloc]
+      - [0xA2A4, c, newlib/libc/stdlib/mallocr/malloc_extend_top]
+      - [0xAA4C, c, newlib/libc/machine/mips/memset]
+      - [0xAB04, c, newlib/libc/sys/psp/mlock]
+      - [0xAB7C, c, newlib/libc/reent/sbrkr]
+      - [0xABD8, c, newlib/libc/machine/mips/strlen]
+      - [0xABF0, c, newlib/libc/stdlib/mallocr/_free_r]
+      - [0xAFC4, c, newlib/libc/reent/reent]
+      - [0xB1E0, asm, asm/text_B160]
+      - { start: 0xB238, type: asm, name: fini, linker_section: .fini }
+      - { start: 0xB254, type: asm, name: sceStub, linker_section: .sceStub.text }
+      - { start: 0xB3BC, type: prxpad, order: .text }
+      - { start: 0xB3C0, type: rodata, name: lib_ent_top, linker_section: .lib.ent.top }
+      - { start: 0xB3C4, type: rodata, name: lib_ent, linker_section: .lib.ent }
+      - { start: 0xB3D4, type: rodata, name: lib_ent_btm, linker_section: .lib.ent.btm }
+      - { start: 0xB3D8, type: rodata, name: lib_stub_top, linker_section: .lib.stub.top }
+      - { start: 0xB3DC, type: rodata, name: lib_stub, linker_section: .lib.stub }
+      - { start: 0xB4B8, type: rodata, name: lib_stub_btm, linker_section: .lib.stub.btm }
+      - { start: 0xB4BC, type: rodata, name: module_info, linker_section: .rodata.sceModuleInfo }
+      - { start: 0xB4F0, type: rodata, name: resident, linker_section: .rodata.sceResident }
+      - { start: 0xB5DC, type: rodata, name: nid, linker_section: .rodata.sceNid }
+      - { start: 0xB690, type: rodata, name: ctors, linker_section: .ctors }
+      - { start: 0xB698, type: rodata, name: dtors, linker_section: .dtors }
+      - { start: 0xB6A0, type: rodata, name: jcr, linker_section: .jcr }
+      - { start: 0xB6A4, type: rodata, name: eh_frame, linker_section: .eh_frame }
+      - { start: 0xB6A8, type: prxpad, order: .rodata }
+      - [0xB6B0, .rodata, crt0]
+      - [0xB6C0, .rodata, main]
+      - [0xB73C, .rodata, game]
+      - [0xB7E4, .rodata, particle]
+      - [0xB814, .rodata, pickup]
+      - [0xB81C, rodata, asm/rodata_B79C]
+      - [0xC0BC, .rodata, newlib/libm/math/sf_cos]
+      - [0xC0C0, .rodata, newlib/libm/math/wf_sqrt]
+      - [0xC0D0, .rodata, newlib/libm/math/ef_rem_pio2]
+      - [0xC4B4, .rodata, newlib/libm/math/ef_sqrt]
+      - [0xC4C0, .rodata, newlib/libm/math/kf_cos]
+      - [0xC500, .rodata, newlib/libm/math/kf_rem_pio2]
+      - [0xC560, .rodata, newlib/libm/math/kf_sin]
+      - [0xC598, .rodata, newlib/libm/common/s_matherr]
+      - [0xC59C, .rodata, newlib/libm/math/sf_floor]
+      - [0xC5A4, .rodata, newlib/libm/common/sf_scalbn]
+      - [0xC5C4, rodata, asm/rodata_C544]
+      - [0xC5CC, .rodata, newlib/libc/stdlib/malloc]
+  - [0xC5D0, bin, seg1_align]
+  - name: bigbangbang_seg1
+    type: code
+    start: 0xC600
+    vram: 0xC550
+    bss_size: 0x5AEAC
+    subsegments:
+      - [0xC600, data, data]
+      - { start: 0x1D960, type: bss, vram: 0x1D8C0 }
+  - [0x1D960, bin, elf_trailer]
+  - [0x77618]

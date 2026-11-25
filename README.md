@@ -4,7 +4,7 @@ Reconstructing the psp-gcc 1.5.1 and 1.6.1 compilers from PSP modules they
 built. The decompiled sources in `decomp_src/` are the tests: each compiler
 version is right when it turns them back into the original machine code.
 
-- `inputs/` – the original modules (`151_and_161.zip`); **not committed**
+- `inputs/` – the original modules (`151_and_161.zip`, plus `bigbangbang.prx`); **not committed**
 - `config/` – splat configs, one per module
 - `decomp_src/` – decompiled C, per module
 - `gcc1.5.1_src/`, `gcc1.6.1_src/` – GCC 3.3.3 trees for psp-gcc 1.5.1 and

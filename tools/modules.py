@@ -1,4 +1,4 @@
-"""The modules in inputs/151_and_161.zip, by target and module name."""
+"""The modules in inputs/151_and_161.zip (and loose ones in inputs/), by target and module name."""
 import hashlib
 import zipfile
 from pathlib import Path
@@ -14,17 +14,27 @@ FIXED = {
     "UTST99261": {"BOOT": "UTST99261/BOOT.BIN"},
 }
 
+# modules given as single files in inputs/: target -> {module: file name}
+LOOSE = {
+    "bigbangbang": {"bigbangbang": "bigbangbang.prx"},
+}
+
 
 def targets():
     out = {k: dict(v) for k, v in FIXED.items()}
     with zipfile.ZipFile(ZIP) as z:
         prx = sorted(n for n in z.namelist() if n.startswith(TOP + "UTST99332/PRX/") and n.endswith(".prx"))
     out["UTST99332"] = {Path(n).stem: n[len(TOP):] for n in prx}
+    for t, mods in LOOSE.items():
+        if all((ROOT / "inputs" / f).exists() for f in mods.values()):
+            out[t] = {m: "file:" + f for m, f in mods.items()}
     return out
 
 
 def read(target, module):
     member = targets()[target][module]
+    if member.startswith("file:"):
+        return (ROOT / "inputs" / member[5:]).read_bytes()
     with zipfile.ZipFile(ZIP) as z:
         return z.read(TOP + member)
 
