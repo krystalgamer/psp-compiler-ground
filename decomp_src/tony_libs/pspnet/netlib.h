@@ -253,4 +253,94 @@ int func_00003940(int fd, struct uio *uio);
 int func_00003B20(int fd, unsigned int cmd, void *data);
 extern int D_0000B8DC;
 
+struct mbuf;
+
+struct m_hdr {
+	struct mbuf *mh_next;
+	struct mbuf *mh_nextpkt;
+	char *mh_data;
+	int mh_len;
+	short mh_type;
+	short mh_flags;
+};
+
+struct pkthdr {
+	struct ifnet *rcvif;
+	int len;
+};
+
+struct mbuf {
+	struct m_hdr m_hdr;
+	struct pkthdr m_pkthdr;
+};
+
+#define m_next m_hdr.mh_next
+#define m_len m_hdr.mh_len
+#define m_data m_hdr.mh_data
+#define m_type m_hdr.mh_type
+#define m_flags m_hdr.mh_flags
+#define m_nextpkt m_hdr.mh_nextpkt
+
+struct ifevent {
+	TAILQ_ENTRY(ifevent) link;
+};
+
+struct ifnet {
+	void *if_softc;
+	char unk04[0x14 - 0x04];
+	char if_xname[16];
+	int if_pcount;
+	void *if_bpf;
+	u_short if_index;
+	short if_timer;
+	short if_flags;
+	char unk32[0xB4 - 0x32];
+	void (*if_input)(struct ifnet *, struct mbuf *);
+	void (*if_start)(struct ifnet *);
+	int (*if_ioctl)(struct ifnet *, u_long, void *);
+	char unkC0[0xEC - 0xC0];
+	u_char if_lladdr[6];
+	char unkF2[0xF4 - 0xF2];
+	int (*if_up)(struct ifnet *);
+	int (*if_down)(struct ifnet *);
+	int (*if_ioctl2)(struct ifnet *, int, void *);
+	char unk100[0x110 - 0x100];
+	TAILQ_HEAD(, ifevent) if_evq;
+};
+
+extern int D_0000A090;
+extern int D_0000ABD0;
+extern int D_0000ABD4;
+extern int D_0000ABD8;
+extern int D_0000ABDC;
+extern void (*D_0000ABE0)(void);
+extern void (*D_0000ABE4)(void);
+extern void (*D_0000ABE8)(void);
+extern void (*D_0000ABEC)(void);
+extern void (*D_0000ABF0)(void);
+extern void (*D_0000ABF4)(struct ifnet *);
+extern u_int D_0000ABF8;
+extern SceUID D_0000ABFC;
+
+int sceNetIfhandle_lib_B8188F96(struct ifnet **ifp, SceUID *sema);
+int sceNetIfhandle_lib_4FB43BCE(struct ifnet **ifp, SceUID *sema);
+struct mbuf *sceNetIfhandleIfDequeue(void);
+int sceNetIfhandleSignalSema(SceUID sema, int n);
+int sceNetIfhandleIfUp(struct ifnet *ifp);
+int sceNetIfhandleIfDown(struct ifnet *ifp);
+int sceNetIfhandleIfIoctl(struct ifnet *ifp, int cmd, void *data);
+int sceNetIfhandleInit(SceUID evf);
+int sceNetIfhandleTerm(void);
+void func_000044C0(void *bpf, struct mbuf *m);
+void func_00004160(struct ifnet *ifp);
+void func_00006B10(struct ifnet *ifp);
+void _sce_pspnet_if_detach(struct ifnet *ifp);
+void _sce_pspnet_if_attach(struct ifnet *ifp);
+void func_00006A40(struct ifnet *ifp, u_char *lla);
+void func_00004594(void **bpf, struct ifnet *ifp, int dlt, int hdrlen);
+void func_00007680(struct ifnet *ifp);
+int func_000071FC(struct ifnet *ifp, u_long cmd, void *data);
+int func_000016BC(SceSize args, void *argp);
+
+
 #endif
