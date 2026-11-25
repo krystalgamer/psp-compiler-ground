@@ -1,13 +1,56 @@
+/* cflags: -O0 */
 #include "common.h"
 
-INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/my_heap", myHeapInit);
+extern char *g_addr;
+extern unsigned int g_size;
 
-INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/my_heap", myHeapTerm);
+void myHeapInit(void *addr, unsigned int size)
+{
+	g_addr = addr;
+	g_size = size;
+}
 
-INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/my_heap", myHeapAlloc);
+void myHeapTerm(void)
+{
+	g_addr = 0;
+	g_size = 0;
+}
 
-INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/my_heap", myHeapFree);
+void *myHeapAlloc(unsigned int size)
+{
+	char *p;
 
-INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/my_heap", myHeapAlloc16);
+	if (size == 0)
+		return NULL;
+	if (g_size < size)
+		return NULL;
+	p = g_addr;
+	g_addr = p + size;
+	g_size = g_size - size;
+	return p;
+}
 
-INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/my_heap", myHeapFree16);
+void myHeapFree(void *p)
+{
+}
+
+void *myHeapAlloc16(unsigned int size)
+{
+	char *p;
+	unsigned int pad;
+
+	if (size == 0)
+		return NULL;
+	p = g_addr;
+	pad = (16 - ((unsigned int)p & 15)) & 15;
+	size = size + pad;
+	if (g_size < size)
+		return NULL;
+	g_addr = p + size;
+	g_size = g_size - size;
+	return p + pad;
+}
+
+void myHeapFree16(void *p)
+{
+}
