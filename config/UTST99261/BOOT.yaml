@@ -264,7 +264,7 @@ segments:
       - [0x10D93C, .rodata, download]
       - [0x10DA98, .rodata, password]
       - [0x10DAB0, .rodata, menu]
-      - [0x10DB00, .rodata, sound]
+      - [0x10DAE0, .rodata, sound]
       - [0x10DB80, .rodata, mpeg]
       - [0x10DBBC, .rodata, mpeg/main]
       - [0x10E0BC, .rodata, mpeg/display]

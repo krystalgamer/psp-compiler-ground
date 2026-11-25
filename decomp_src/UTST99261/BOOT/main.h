@@ -48,4 +48,6 @@ int mp3_init(char *name);
 int mp3_exec(int i_max);
 int mp3_exit();
 
+void imageCls(void);
+
 #endif
