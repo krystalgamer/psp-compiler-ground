@@ -75,9 +75,46 @@ SceInt32 soundbuf_output(t_soundBuffer *pSound);
 
 INCLUDE_ASM("tmp/asm/UTST99332/mpeg_seamless_change/nonmatchings/sound", soundbuf_create);
 
-INCLUDE_ASM("tmp/asm/UTST99332/mpeg_seamless_change/nonmatchings/sound", soundbuf_reset);
+SceInt32 soundbuf_reset(t_soundBuffer *pSound)
+{
+	soundframeCount = 0;
+	soundframeDelay = 0;
+	pSound->write = 0;
+	pSound->read = 0;
+	pSound->count = 0;
+	return 0;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/mpeg_seamless_change/nonmatchings/sound", soundbuf_delete);
+int sceKernelDeleteSema(int semid);
+void free(void *p);
+SceInt32 soundbuf_delete(t_soundBuffer *pSound)
+{
+	SceInt32 i;
+
+	sceWaveExit();
+	sceKernelDeleteSema(pSound->lockSema);
+	if (pSound->buf) {
+		for (i = 0; i < pSound->size; i++) {
+			if (pSound->buf[i]) {
+				free(pSound->buf[i]);
+				pSound->buf[i] = NULL;
+			}
+		}
+		free(pSound->buf);
+		pSound->buf = NULL;
+	}
+	if (pSound->pts) {
+		free(pSound->pts);
+		pSound->pts = NULL;
+	}
+	for (i = 0; i < 2; i++) {
+		if (outputBuf[i]) {
+			free(outputBuf[i]);
+			outputBuf[i] = NULL;
+		}
+	}
+	return 0;
+}
 
 int soundbuf_getDrawbuf(t_soundBuffer *pSound, signed char **buffer) {
     int temp_v0;
@@ -113,7 +150,16 @@ int soundbuf_getPts(t_soundBuffer *pSound, unsigned int *pPts) {
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/mpeg_seamless_change/nonmatchings/sound", soundbuf_setBuf);
+int sceKernelSignalSema(int semid, int signal);
+int sceKernelWaitSema(int semid, int signal, unsigned int *timeout);
+SceInt32 soundbuf_setBuf(t_soundBuffer *pSound)
+{
+	sceKernelWaitSema(pSound->lockSema, 1, NULL);
+	pSound->count++;
+	sceKernelSignalSema(pSound->lockSema, 1);
+	pSound->write = (pSound->write + 1) % pSound->size;
+	return 0;
+}
 
 int soundbuf_getCapacity(t_soundBuffer *pSound) {
     return pSound->size - pSound->count;
@@ -123,9 +169,48 @@ int soundbuf_getCurrentCount(t_soundBuffer *pSound) {
     return pSound->count;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/mpeg_seamless_change/nonmatchings/sound", soundbuf_checkDecodeEnd);
+static SceInt32 soundbuf_checkDecodeEnd(t_soundBuffer *pSound)
+{
+	SceUInt32 pattern;
 
-INCLUDE_ASM("tmp/asm/UTST99332/mpeg_seamless_change/nonmatchings/sound", soundbuf_func);
+	control_getCondition(pSound->pCtrl, &pattern);
+	if (pattern & 0x8)
+		return 1;
+	return 0;
+}
+
+int sceKernelDelayThread(unsigned int delay);
+int printf(const char *fmt, ...);
+SceInt32 soundbuf_func(SceSize size, SceVoid *argp)
+{
+	SceInt32 ret;
+	t_avSyncControl **ppAvSync;
+	t_avSyncControl *pAvSync;
+	t_soundBuffer *pSound;
+
+	ppAvSync = argp;
+	pAvSync = *ppAvSync;
+	pSound = pAvSync->pSound;
+	control_waitConditionSoundStart(pSound->pCtrl);
+	while (soundbuf_checkDecodeEnd(pSound) != 1 || soundbuf_getCurrentCount(pSound) != 0) {
+		if (soundbuf_getCurrentCount(pSound) > 0) {
+			soundbuf_output(pSound);
+			sceKernelWaitSema(pSound->lockSema, 1, NULL);
+			pSound->count--;
+			sceKernelSignalSema(pSound->lockSema, 1);
+			soundframeCount++;
+		} else {
+			soundframeDelay++;
+			sceKernelDelayThread(1000);
+		}
+	}
+	sceWaveAudioWriteBlocking(0, 0x8000, 0x8000, NULL);
+	printf("sound count = %d\n", soundframeCount);
+	printf("sound delay = %d\n", soundframeDelay);
+	control_setCondition(pSound->pCtrl, 0x20);
+	sceKernelExitThread(0);
+	return 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/mpeg_seamless_change/nonmatchings/sound", soundbuf_swapbuf);
 
