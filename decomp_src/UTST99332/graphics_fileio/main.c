@@ -39,6 +39,10 @@ extern char buffer[1048576];
 extern int draw;
 extern short int board[2][3];
 
+
+/* SDK functions (tools/sdk_protos.h) */
+int sceCtrlReadBufferPositive(SceCtrlData *data, int count);
+
 static int file_read(void);
 static int file_seek(void);
 static int file_write(void);
@@ -101,7 +105,31 @@ void init_all(void) {
     sceGuDisplay(1);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_fileio/nonmatchings/main", pad_read);
+extern int D_00010140;
+
+int pad_read(void) {
+    SceCtrlData buf;
+    int temp_s0;
+    int temp_s0_2;
+
+    temp_s0_2 = D_00010140;
+    sceCtrlReadBufferPositive(&buf, 1);
+    temp_s0 = buf.Buttons & (buf.Buttons ^ temp_s0_2);
+    D_00010140 = buf.Buttons;
+    if (temp_s0 & 0x2000) {
+        draw = file_read();
+    }
+    if (temp_s0 & 0x4000) {
+        draw = file_seek();
+    }
+    if (temp_s0 & 8) {
+        draw = 0;
+    }
+    if (temp_s0 & 1) {
+        return 0;
+    }
+    return 1;
+}
 
 int main(void) {
     menuInit();
