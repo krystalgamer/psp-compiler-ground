@@ -1,3 +1,3 @@
-#include "common.h"
-
-INCLUDE_ASM("tmp/asm/UTST99332/mpeg_seamless_change/nonmatchings/newlib/libc/stdlib/exit", exit);
+/* upstream: newlib-1.12.0/newlib/libc/stdlib/exit.c (unmodified) */
+/* cflags: -O2 -fno-builtin */
+#include "libc/stdlib/exit.c"
