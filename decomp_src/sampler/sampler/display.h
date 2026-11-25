@@ -18,7 +18,7 @@ typedef struct t_displayBuffer {
 	SceInt32 *posy;
 } t_displayBuffer;
 
-SceInt32 dispbuf_create(t_displayBuffer *pDisp, SceInt32 disp_size, SceInt32 disp_num);
+SceInt32 dispbuf_create(t_displayBuffer *pDisp, SceInt32 disp_size, SceInt32 disp_num, SceInt32 pixelFormat);
 SceInt32 dispbuf_init(t_displayBuffer *pDisp);
 SceInt32 dispbuf_end(t_displayBuffer *pDisp);
 SceInt32 dispbuf_getDrawbuf(t_displayBuffer *pDisp, SceChar8 **buffer);
