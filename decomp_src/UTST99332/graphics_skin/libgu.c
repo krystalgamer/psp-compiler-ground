@@ -1,10 +1,38 @@
 #include "common.h"
+#include "m2c_macros.h"
+M2C_UNK sceGeUnsetCallback(int);                    /* extern */
+M2C_UNK sceKernelDeleteEventFlag(int);              /* extern */
+extern int D_00029ED8;
+extern int intrCode;
+extern int call_mode;
+M2C_UNK sceGeContinue();                            /* extern */
+extern void *pList;
+extern unsigned int __gu_status;
+extern int __aw_list_mode;
+extern unsigned char _ctx;
+M2C_UNK flush_font();                               /* extern */
+
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_skin/nonmatchings/libgu", callback_sig);
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_skin/nonmatchings/libgu", callback_fin);
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_skin/nonmatchings/libgu", get_exp);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int get_exp(int arg0) {
+    int var_v1;
+
+    var_v1 = 9;
+loop_1:
+    if (!((arg0 >> var_v1) & 1)) {
+        var_v1 -= 1;
+        if (var_v1 > 0) {
+            goto loop_1;
+        }
+    }
+    return var_v1;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_skin/nonmatchings/libgu", flush_font);
 
@@ -18,7 +46,15 @@ INCLUDE_ASM("tmp/asm/UTST99332/graphics_skin/nonmatchings/libgu", sceGuGetMemory
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_skin/nonmatchings/libgu", sceGuInit);
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_skin/nonmatchings/libgu", sceGuTerm);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+void sceGuTerm(void);
+
+void sceGuTerm(void) {
+    sceKernelDeleteEventFlag(D_00029ED8);
+    sceGeUnsetCallback(intrCode);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_skin/nonmatchings/libgu", sceGuStart);
 
@@ -28,19 +64,39 @@ INCLUDE_ASM("tmp/asm/UTST99332/graphics_skin/nonmatchings/libgu", sceGuFinish);
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_skin/nonmatchings/libgu", sceGuFinishId);
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_skin/nonmatchings/libgu", sceGuCallMode);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+void sceGuCallMode(int mode);
+
+void sceGuCallMode(int mode) {
+    call_mode = mode;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_skin/nonmatchings/libgu", sceGuSignal);
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_skin/nonmatchings/libgu", sceGuBreak);
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_skin/nonmatchings/libgu", sceGuContinue);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void sceGuContinue(void) {
+    sceGeContinue();
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_skin/nonmatchings/libgu", sceGuCallList);
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_skin/nonmatchings/libgu", sceGuSendList);
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_skin/nonmatchings/libgu", sceGuCheckList);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int sceGuCheckList(void);
+
+int sceGuCheckList(void) {
+    return M2C_FIELD(pList, int *, 4) - M2C_FIELD(pList, int *, 0);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_skin/nonmatchings/libgu", sceGuSync);
 
@@ -50,11 +106,43 @@ INCLUDE_ASM("tmp/asm/UTST99332/graphics_skin/nonmatchings/libgu", sceGuEnable);
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_skin/nonmatchings/libgu", sceGuDisable);
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_skin/nonmatchings/libgu", sceGuGetStatus);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int sceGuGetStatus(int state);
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_skin/nonmatchings/libgu", sceGuGetAllStatus);
+int sceGuGetStatus(int state) {
+    int var_v1;
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_skin/nonmatchings/libgu", sceGuSetStatus);
+    var_v1 = 0;
+    if (state < 0x16) {
+        var_v1 = ((unsigned int) __gu_status >> state) & 1;
+    }
+    return var_v1;
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+unsigned int sceGuGetAllStatus(void);
+
+unsigned int sceGuGetAllStatus(void) {
+    return __gu_status;
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+void sceGuEnable(int state);
+void sceGuDisable(int state);
+void sceGuSetStatus(int state, int status);
+void sceGuSetStatus(int state, int status) {
+    if (status == 0) {
+        sceGuDisable(state);
+    } else {
+        sceGuEnable(state);
+    }
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_skin/nonmatchings/libgu", sceGuSetAllStatus);
 
@@ -102,7 +190,19 @@ INCLUDE_ASM("tmp/asm/UTST99332/graphics_skin/nonmatchings/libgu", sceGuViewport)
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_skin/nonmatchings/libgu", sceGuDepthRange);
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_skin/nonmatchings/libgu", sceGuDepthOffset);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+void sceGuDepthRange(int near, int far);
+void sceGuDepthOffset(unsigned int offset);
+
+void sceGuDepthOffset(unsigned int offset) {
+    void *temp_v1;
+
+    temp_v1 = (__aw_list_mode * 0x5C) + &_ctx;
+    M2C_FIELD(temp_v1, unsigned int *, 0x28) = offset;
+    sceGuDepthRange(M2C_FIELD(temp_v1, int *, 0x20), M2C_FIELD(temp_v1, int *, 0x24));
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_skin/nonmatchings/libgu", sceGuOffset);
 
@@ -112,7 +212,14 @@ INCLUDE_ASM("tmp/asm/UTST99332/graphics_skin/nonmatchings/libgu", sceGuPatchPrim
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_skin/nonmatchings/libgu", sceGuAmbient);
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_skin/nonmatchings/libgu", sceGuColor);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+void sceGuColor(unsigned int color);
+void sceGuMaterial(int mode, unsigned int color);
+void sceGuColor(unsigned int color) {
+    sceGuMaterial(7, color);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_skin/nonmatchings/libgu", sceGuColorMaterial);
 
@@ -200,6 +307,13 @@ INCLUDE_ASM("tmp/asm/UTST99332/graphics_skin/nonmatchings/libgu", sceGuMorphWeig
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_skin/nonmatchings/libgu", sceGuDebugPrint);
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_skin/nonmatchings/libgu", sceGuDebugFlush);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+void sceGuDebugFlush(void);
+
+void sceGuDebugFlush(void) {
+    flush_font();
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_skin/nonmatchings/libgu", sceGuSetCallback);

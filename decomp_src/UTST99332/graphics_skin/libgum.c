@@ -1,4 +1,7 @@
 #include "common.h"
+#include "m2c_macros.h"
+M2C_UNK __checkUpdate();                            /* extern */
+
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_skin/nonmatchings/libgum", __mulMatrix);
 
@@ -10,7 +13,14 @@ INCLUDE_ASM("tmp/asm/UTST99332/graphics_skin/nonmatchings/libgum", sceGumSetMatr
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_skin/nonmatchings/libgum", sceGumSetCurMatrix);
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_skin/nonmatchings/libgum", sceGumUpdateMatrix);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+void sceGumUpdateMatrix(void);
+
+void sceGumUpdateMatrix(void) {
+    __checkUpdate();
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_skin/nonmatchings/libgum", sceGumLoadContext);
 
