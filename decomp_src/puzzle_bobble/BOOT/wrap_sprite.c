@@ -1,6 +1,7 @@
 #include "common.h"
 #include "m2c_macros.h"
 
+
 M2C_UNK sceGimPictureDelete(int);                   /* extern */
 M2C_UNK sceGimPictureUnload(int);                   /* extern */
 extern unsigned char Gims;
@@ -96,9 +97,13 @@ INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/wrap_sprite", DrawSpritePt4
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/wrap_sprite", GetSpriteColor);
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/wrap_sprite", SetSpriteColor);
+void SetSpriteColor(int arg0) {
+    SpriteSetColor(arg0);
+}
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/wrap_sprite", SetSpriteColorRGBA);
+void SetSpriteColorRGBA(int arg0, int arg1, int arg2, int arg3) {
+    SpriteSetColorRGBA(arg0, arg1, arg2, arg3);
+}
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/wrap_sprite", draw_DrawSpritePt4);
 
