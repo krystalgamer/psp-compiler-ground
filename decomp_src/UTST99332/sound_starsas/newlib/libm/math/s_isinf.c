@@ -1,3 +1,3 @@
-#include "common.h"
-
-INCLUDE_ASM("tmp/asm/UTST99332/sound_starsas/nonmatchings/newlib/libm/math/s_isinf", isinf);
+/* upstream: newlib-1.12.0/newlib/libm/math/s_isinf.c (unmodified) */
+/* cflags: -O2 -fno-builtin */
+#include "libm/math/s_isinf.c"
