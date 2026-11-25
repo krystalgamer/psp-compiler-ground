@@ -72,16 +72,149 @@ extern int prims[6];
 extern char prim_names[6][16];
 extern u_int32 cont;
 
+/* SDK functions */
+void sceGuInit(void);
+void sceGuTerm(void);
+void sceGuStart(int type, void *list, int size);
+int sceGuFinish(void);
+int sceGuSync(int mode, int what);
+void *sceGuSwapBuffers(void);
+int sceGuDisplay(int state);
+void sceGuDrawBuffer(int psm, void *fbp, int frame_width);
+void sceGuDispBuffer(int width, int height, void *dbp, int frame_width);
+void sceGuDepthBuffer(void *zbp, int frame_width);
+void sceGuOffset(unsigned int x, unsigned int y);
+void sceGuViewport(int cx, int cy, int width, int height);
+void sceGuDepthRange(int near, int far);
+void sceGuScissor(int x, int y, int w, int h);
+void sceGuEnable(int state);
+void sceGuDisable(int state);
+void sceGuClear(int flags);
+void sceGuClearColor(unsigned int color);
+void sceGuClearDepth(unsigned int depth);
+void sceGuClearStencil(unsigned int stencil);
+void sceGuColor(unsigned int color);
+void sceGuAmbient(unsigned int color);
+void sceGuLight(int light, int type, int components, const ScePspFVector3 *position);
+void sceGuLightColor(int light, int component, unsigned int color);
+void sceGuShadeModel(int mode);
+void sceGuFrontFace(int order);
+void sceGuDepthFunc(int function);
+void sceGuAlphaFunc(int a0, int a1, int a2);
+void sceGuBlendFunc(int op, int src, int dest, unsigned int srcfix, unsigned int destfix);
+void sceGuDebugPrint(int x, int y, unsigned int color, const char *str);
+void sceGumMatrixMode(int mode);
+void sceGumLoadIdentity(void);
+void sceGumPushMatrix(void);
+void sceGumPopMatrix(void);
+void sceGumPerspective(float fovy, float aspect, float near, float far);
+void sceGumRotateY(float angle);
+void sceGumTranslate(const ScePspFVector3 *v);
+void sceGumSetMatrixStack(void *stack, int proj, int view, int model, int texture);
+void sceGumDrawArray(int prim, int vtype, int count, const void *indices, const void *vertices);
+int sceDisplayWaitVblankStart(void);
+int sceCtrlReadBufferPositive(SceCtrlData *data, int count);
+void menuInit(void);
+void menuTerm(int cat, int num);
+
 static void draw_frame(void);
 static void init_all(void);
 static int pad_read(void);
 
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_basic/nonmatchings/main", draw_frame);
+static void draw_frame(void)
+{
+	ScePspFVector3 vec;
+	int i;
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_basic/nonmatchings/main", init_all);
+	sceGuStart(0, disp_list, sizeof(disp_list));
+	sceGuClear(7);
+	sceGuColor(0xffffffff);
+	sceGumDrawArray(1, 0x800100, 6, NULL, line);
+	sceGumPushMatrix();
+	sceGumLoadIdentity();
+	vec.x = 0.0f;
+	vec.y = 0.0f;
+	vec.z = -10.0f;
+	sceGumTranslate(&vec);
+	for (i = 0; i < 6; i++) {
+		sceGuDebugPrint((i % 3) * 160 + 8, (i / 3) * 136 + 8, 0xffffff, prim_names[i]);
+		sceGumPushMatrix();
+		vec.x = -4.9f + (i % 3) * 4.9f;
+		vec.y = 2.0f - (i / 3) * 4.3f;
+		vec.z = 0.0f;
+		sceGumTranslate(&vec);
+		sceGumRotateY((angle * 3.1415927f) / 180.0f);
+		sceGumDrawArray(prims[i], 0x1fc, 6, NULL, model);
+		sceGumPopMatrix();
+	}
+	sceGumPopMatrix();
+	sceGuFinish();
+	sceGuSync(0, 0);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_basic/nonmatchings/main", pad_read);
+static void init_all(void)
+{
+	ScePspFVector3 vec;
+
+	sceGuInit();
+	sceGuStart(0, disp_list, sizeof(disp_list));
+	sceGuDrawBuffer(1, (void *)0, 512);
+	sceGuDispBuffer(480, 272, (void *)0x44000, 512);
+	sceGuDepthBuffer((void *)0x88000, 512);
+	sceGuOffset(2048 - 480 / 2, 2048 - 272 / 2);
+	sceGuViewport(2048, 2048, 480, 272);
+	sceGuDepthRange(50000, 10000);
+	sceGuBlendFunc(0, 2, 3, 0, 0);
+	sceGuEnable(4);
+	sceGuScissor(0, 0, 480, 272);
+	sceGuEnable(2);
+	sceGuAlphaFunc(6, 0, 255);
+	sceGuEnable(0);
+	sceGuDepthFunc(7);
+	sceGuEnable(1);
+	sceGuFrontFace(0);
+	sceGuDisable(9);
+	sceGuShadeModel(1);
+	sceGuEnable(8);
+	vec.x = 0.614497f;
+	vec.y = 0.691714f;
+	vec.z = 0.379372f;
+	sceGuLightColor(0, 2, 0xffffffff);
+	sceGuLight(0, 0, 2, &vec);
+	sceGuEnable(11);
+	sceGuEnable(10);
+	sceGuDisable(7);
+	sceGuAmbient(0xffdddddd);
+	sceGumSetMatrixStack(matrix_stack, 8, 8, 32, 0);
+	sceGumMatrixMode(0);
+	sceGumLoadIdentity();
+	sceGumPerspective(0.7853982f, 1.7647059f, 1.0f, 100.0f);
+	sceGumMatrixMode(2);
+	sceGuClearColor(0);
+	sceGuClearDepth(0);
+	sceGuClearStencil(0);
+	sceGuFinish();
+	sceGuSync(0, 0);
+	sceDisplayWaitVblankStart();
+	moving = 0;
+	angle = 0.0f;
+	sceGuDisplay(1);
+}
+
+static int pad_read(void)
+{
+	u_int32 prev, padd;
+	SceCtrlData buf;
+
+	prev = cont;
+	sceCtrlReadBufferPositive(&buf, 1);
+	padd = buf.Buttons & (buf.Buttons ^ prev);
+	cont = buf.Buttons;
+	if (padd & 0x2000)
+		moving ^= 1;
+	return (padd & 9) == 0;
+}
 
 void frame_update(void) {
     float temp_f0;
