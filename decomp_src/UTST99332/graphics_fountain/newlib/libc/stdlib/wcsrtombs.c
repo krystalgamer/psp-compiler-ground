@@ -1,5 +1,3 @@
-#include "common.h"
-
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_fountain/nonmatchings/newlib/libc/stdlib/wcsrtombs", _wcsrtombs_r);
-
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_fountain/nonmatchings/newlib/libc/stdlib/wcsrtombs", wcsrtombs);
+/* upstream: newlib-1.12.0/newlib/libc/stdlib/wcsrtombs.c (unmodified) */
+/* cflags: -O2 -fno-builtin */
+#include "libc/stdlib/wcsrtombs.c"
