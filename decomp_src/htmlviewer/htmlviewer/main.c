@@ -174,6 +174,76 @@ static int utility_update_htmlviewer2(void);
 static int sub_thread(SceSize argSize, void *argBlock);
 int main(int argc, char **argv);
 
+#define OnPush_LaunchHtmlViewer OnPush_LaunchHtmlViewer_B64
+extern SceUID fpl_F5528;
+#define fpl fpl_F5528
+extern SceUtilityHtmlViewerParam htmlviewer_param_F4958;
+#define htmlviewer_param htmlviewer_param_F4958
+#define SCE_KERNEL_USER_HIGHEST_PRIORITY 0x11
+
+int sceIoOpen(const char *, int, int);
+int sceIoRead(int, void *, unsigned int);
+int sceIoClose(int);
+void *sceGeEdramGetAddr(void);
+int sceDisplaySetFrameBuf(void *, int, int, int);
+int sceKernelDcacheWritebackRange(const void *, unsigned int);
+int sceDisplayWaitVblankStart(void);
+int sceDisplaySetHoldMode(int);
+void *memset(void *, int, unsigned int);
+void *memcpy(void *, const void *, unsigned int);
+static void OnPush_OSK(int selection);
+static int ExitFunction(int count, int arg_impose, void *arg_self);
+static int PowerCallback(int count, int arg, void *common);
+char *strcpy(char *, const char *);
+unsigned int strlen(const char *);
+int GetMessageLang(void);
+int GetAssign(void);
+void Menu_ClearItems(void);
+void Menu_AppendItem(const char *name, void (*callback)(int));
+void Menu_WriteLine(const char *line, int color);
+void Menu_PrintF(int color, const char *fmt, ...);
+void Menu_LockInput(void);
+void Menu_Hide(void);
+void Menu_Init(void);
+void Menu_Shutdown(void);
+void OnPush_SaveData(int);
+void OnPush_Netconf_Apnet(int);
+void OnPush_Netconf_Adhoc(int);
+void OnPush_MsgDialog(int);
+void OnPush_HtmlViewer(int);
+void OnPush_ChangeSetting(int);
+int sceUtilityOskInitStart(SceUtilityOskParam *);
+int sceUtilityMsgDialogGetStatus(void);
+int sceUtilityMsgDialogUpdate(int);
+int sceUtilityMsgDialogShutdownStart(void);
+int sceUtilityMsgDialogInitStart(SceUtilityMsgDialogParam *);
+int sceKernelCheckCallback(void);
+void draw_frame(void);
+void vsync_frame(void);
+void init_all(void);
+void term_all(void);
+int init_net(void);
+int init_apnet(void);
+int init_http(void);
+SceUID sceKernelCreateFpl(const char *, int, unsigned int, unsigned int, unsigned int, void *);
+int sceKernelAllocateFpl(SceUID, void **, unsigned int *);
+int sceUtilityHtmlViewerInitStart(SceUtilityHtmlViewerParam *);
+int sceUtilityHtmlViewerGetStatus(void);
+int sceUtilityHtmlViewerUpdate(int);
+int sceUtilityHtmlViewerShutdownStart(void);
+int LoadRequiredModules(void);
+int sceKernelExitDeleteThread(int);
+SceUID sceKernelCreateCallback(const char *, int (*)(int, int, void *), void *);
+int scePowerRegisterCallback(int, SceUID);
+int sceKernelRegisterExitCallback(SceUID);
+int sceKernelDeleteCallback(SceUID);
+void at3end(void);
+SceUID sceKernelCreateThread(const char *, int (*)(SceSize, void *), int, int, unsigned int, void *);
+int sceKernelStartThread(SceUID, SceSize, void *);
+int sceKernelWaitThreadEnd(SceUID, unsigned int *);
+int sceKernelDeleteThread(SceUID);
+int sceKernelLoadExec(const char *, SceKernelLoadExecParam *);
+
 /* SDK functions (tools/sdk_protos.h) */
 void sceKernelExitGame(void);
 int printf(const char *fmt, ...);
@@ -186,15 +256,89 @@ INCLUDE_RODATA("tmp/asm/htmlviewer/htmlviewer/nonmatchings/main", D_0001B3D4);
 
 INCLUDE_RODATA("tmp/asm/htmlviewer/htmlviewer/nonmatchings/main", D_0001B3FC);
 
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/main", fileRead);
+static int fileRead(const char *fileName, void *readBuff, int size)
+{
+    SceUID fd;
+    int ret;
 
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/main", setHoldDisplay);
+    fd = sceIoOpen(fileName, 1, 0);
+    if (fd < 0) {
+        printf("*** ERROR: sceIoOpen(0x%08X)\n", fd);
+        return -1;
+    }
+    ret = sceIoRead(fd, readBuff, size);
+    if (ret < 0) {
+        printf("*** ERROR: sceIoRead(0x%08X)\n", ret);
+        return -1;
+    }
+    sceIoClose(fd);
+    return 0;
+}
 
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/main", setOskUtilityPraram);
+static SceInt32 setHoldDisplay(const void *p_disp)
+{
+    void *vram_top;
 
-INCLUDE_RODATA("tmp/asm/htmlviewer/htmlviewer/nonmatchings/main", D_0001B480);
+    vram_top = sceGeEdramGetAddr();
+    sceDisplaySetFrameBuf(vram_top, 512, 3, 1);
+    memcpy(vram_top, p_disp, 512 * 272 * 4);
+    sceKernelDcacheWritebackRange(vram_top, 512 * 272 * 4);
+    sceDisplayWaitVblankStart();
+    sceDisplaySetHoldMode(1);
+    return 0;
+}
 
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/main", CreateMenu_Root);
+static void setOskUtilityPraram(unsigned int numInputFields, SceWChar16 **messageString, SceWChar16 **initString, SceWChar16 **resultTextBuffer, unsigned int bufferSize, SceUtilityOskInputFieldInfo *inputField, SceUtilityOskParam *pParam)
+{
+    int i;
+
+    memset(pParam, 0x00, sizeof(SceUtilityOskParam));
+    pParam->base.size = sizeof(SceUtilityOskParam);
+    pParam->base.message_lang = GetMessageLang();
+    pParam->base.ctrl_assign = GetAssign();
+    pParam->base.main_thread_priority = 17;
+    pParam->base.sub_thread_priority = 19;
+    pParam->base.font_thread_priority = 18;
+    pParam->base.sound_thread_priority = 16;
+    pParam->base.reserved1 = 0;
+    pParam->base.reserved2 = 0;
+
+    pParam->num_input_fields = numInputFields;
+    pParam->input_field_info = inputField;
+
+    memset(inputField, 0x00, sizeof(*inputField));
+
+    for (i = 0; i < (int)numInputFields; i++) {
+        inputField[i].input_method_type = 1;
+        inputField[i].input_method_attributes = 0;
+        inputField[i].writing_language_type = 0;
+        inputField[i].hide_mode = SCE_UTILITY_OSK_BOOL_VALUE_FALSE;
+        inputField[i].input_character_type = aInputCharTypeList[i];
+        inputField[i].num_lines = 4;
+        inputField[i].kinsoku = SCE_UTILITY_OSK_BOOL_VALUE_TRUE;
+
+        inputField[i].message = messageString[i];
+        inputField[i].init_text = initString[i];
+        inputField[i].result_text_buffer_size = bufferSize;
+        inputField[i].result_text_buffer = resultTextBuffer[i];
+        inputField[i].result = SCE_UTILITY_OSK_INPUT_FIELD_RESULT_UNEDITED;
+        inputField[i].limit_length = 0;
+    }
+
+    return;
+}
+
+void CreateMenu_Root(void)
+{
+    Menu_ClearItems();
+    Menu_AppendItem("osk", OnPush_OSK);
+    Menu_AppendItem("savedata >", OnPush_SaveData);
+    Menu_AppendItem("netconf apnet >", OnPush_Netconf_Apnet);
+    Menu_AppendItem("netconf adhoc >", OnPush_Netconf_Adhoc);
+    Menu_AppendItem("msgdialog >", OnPush_MsgDialog);
+    Menu_AppendItem("htmlviewer >", OnPush_HtmlViewer);
+    Menu_AppendItem("change setting >", OnPush_ChangeSetting);
+}
 
 void OnPush_OSK(int selection) {
     int temp_v0;
@@ -233,26 +377,173 @@ int PowerCallback(int count, int arg, void *common) {
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/main", DialogUpdate);
+static void DialogUpdate()
+{
+    int ret;
+    int status;
+
+    status = sceUtilityMsgDialogGetStatus();
+    switch (status) {
+    case 0:
+        break;
+    case 1:
+        break;
+    case 2:
+        sceUtilityMsgDialogUpdate(2);
+        break;
+    case 3:
+        ret = sceUtilityMsgDialogShutdownStart();
+        break;
+    case 4:
+        break;
+    }
+}
 
 INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/main", MessageDialog);
 
 INCLUDE_RODATA("tmp/asm/htmlviewer/htmlviewer/nonmatchings/main", D_0001B544);
 
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/main", OnPush_LaunchHtmlViewer_B64);
+static void OnPush_LaunchHtmlViewer_B64(int selection)
+{
+    SceSize size;
+    int ret;
 
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/main", utility_update_htmlviewer2);
+    Menu_LockInput();
+    init_net();
+    init_apnet();
+    init_http();
+    fpl = sceKernelCreateFpl("HtmlViewer_Heap", 2, 0, htmlviewer_param.heap_size, 1, 0);
+    if (fpl <= 0) {
+        Menu_PrintF(0x00ffffff, "sceKernelCreateFpl failed - 0x%08X\n", fpl);
+        return;
+    }
+    sample_type = 5;
+    htmlviewer_param.base.message_lang = GetMessageLang();
+    htmlviewer_param.base.ctrl_assign = GetAssign();
+    ret = sceKernelAllocateFpl(fpl, &htmlviewer_param.heap_addr, 0);
+    if (ret != 0) {
+        Menu_PrintF(0x00ffffff, "sceKernelAllocateFpl failed - 0x%08X\n", ret);
+        return;
+    }
+    ret = sceUtilityHtmlViewerInitStart(&htmlviewer_param);
+    if (ret != 0) {
+        Menu_PrintF(0x00ffffff, "sceUtilityHtmlViewerInitStart - 0x%08X\n", ret);
+        return;
+    }
+}
 
-INCLUDE_RODATA("tmp/asm/htmlviewer/htmlviewer/nonmatchings/main", D_0001B7F4);
+static int utility_update_htmlviewer2(void)
+{
+    int ret = 0;
+    int status;
 
-INCLUDE_RODATA("tmp/asm/htmlviewer/htmlviewer/nonmatchings/main", D_0001B800);
+    status = sceUtilityHtmlViewerGetStatus();
+    switch (status) {
+    case 1:
+        break;
+    case 2:
+        Menu_Hide();
+        ret = sceUtilityHtmlViewerUpdate(1);
+        if (ret != 0) {
+            printf("sceUtilityHtmlViewerUpdate failed - 0x%08X\n", ret);
+        }
+        break;
+    case 3:
+        ret = sceUtilityHtmlViewerShutdownStart();
+        if (ret != 0) {
+            printf("sceUtilityHtmlViewerShutdownStart failed - 0x%08X\n", ret);
+        }
+        break;
+    case 0:
+        Menu_PrintF(0x00ffffff, "HtmlViewer Result - 0x%08X\n", htmlviewer_param.base.result);
+        break;
+    case 4:
+        break;
+    }
+    return ret;
+}
 
-INCLUDE_RODATA("tmp/asm/htmlviewer/htmlviewer/nonmatchings/main", D_0001B810);
+static int sub_thread(SceSize argSize, void *argBlock)
+{
+    int ret;
+    SceUID cbidPower;
+    int stat;
+    SceUID uid;
 
-INCLUDE_RODATA("tmp/asm/htmlviewer/htmlviewer/nonmatchings/main", D_0001B844);
+    ret = LoadRequiredModules();
+    if (ret < 0) {
+        sceKernelExitDeleteThread(1);
+    }
+    cbidPower = sceKernelCreateCallback("OnPower", PowerCallback, NULL);
+    scePowerRegisterCallback(-1, cbidPower);
+    init_all();
+    Menu_Init();
+    CreateMenu_Root();
+    uid = sceKernelCreateCallback("exit", ExitFunction, NULL);
+    sceKernelRegisterExitCallback(uid);
+    OnPush_LaunchHtmlViewer(0);
+    do {
+        if (g_MessageStart == 1) {
+            g_MessageStart = 0;
+        }
+        draw_frame();
+        utility_update_htmlviewer2();
+        sceKernelCheckCallback();
+        vsync_frame();
+        stat = sceUtilityHtmlViewerGetStatus();
+    } while (stat != 0);
+    sceKernelDeleteCallback(cbidPower);
+    printf("result:%d\n", htmlviewer_param.base.result);
+    at3end();
+    term_all();
+    Menu_Shutdown();
+    sceKernelExitDeleteThread(0);
+    return 0;
+}
 
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/main", sub_thread);
+int main(int argc, char **argv)
+{
+    int ret;
+    int i;
+    char back_prx_path[128] = "";
 
-INCLUDE_RODATA("tmp/asm/htmlviewer/htmlviewer/nonmatchings/main", D_0001B874);
+    puts("argument !!!");
+    for (i = 0; i < argc; i++) {
+        puts(argv[i]);
+    }
+    strcpy(back_prx_path, argv[0]);
 
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/main", main);
+    thread_id = sceKernelCreateThread("Utility Test", sub_thread, SCE_KERNEL_USER_HIGHEST_PRIORITY, 64 * 1024, 0, NULL);
+    if (thread_id <= 0) {
+        printf("can't create thread 0x%x\n", thread_id);
+        return 1;
+    }
+    printf("thread created 0x%x\n", thread_id);
+    ret = sceKernelStartThread(thread_id, 0, 0);
+    if (ret) {
+        printf("can't start thread 0x%x\n", ret);
+        sceKernelDeleteThread(thread_id);
+        return 1;
+    }
+    puts("sub_thread started");
+    sceKernelWaitThreadEnd(thread_id, 0);
+    {
+        SceKernelLoadExecParam param;
+        char v[128] = "RETURN\0\0";
+        SceSize size;
+
+        size = strlen(v) + 1;
+        printf("loadExec (%s)\n", back_prx_path);
+        ret = fileRead("disc0:/PSP_GAME/USRDIR/basic/nowloading.dat", loadExecDispBuff, 512 * 272 * 4);
+        if (ret < 0) {
+            printf("*** ERROR: fileRead(0x%08x)\n", ret);
+        }
+        setHoldDisplay(loadExecDispBuff);
+        param.size = sizeof(param);
+        param.args = size;
+        param.argp = v;
+        param.key = NULL;
+        sceKernelLoadExec(back_prx_path, &param);
+    }
+    return 0;
+}
