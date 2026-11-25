@@ -83,6 +83,10 @@ extern const char mat_names[3][12];
 extern const char mod_names[3][8];
 extern u_int32 cont;
 
+
+/* SDK functions (tools/sdk_protos.h) */
+int sceCtrlReadBufferPositive(SceCtrlData *data, int count);
+
 static void draw_description(void);
 static void draw_primitive(void);
 static void draw_frame(void);
@@ -104,7 +108,25 @@ INCLUDE_ASM("tmp/asm/UTST99332/graphics_material/nonmatchings/main", draw_frame)
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_material/nonmatchings/main", init_all);
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_material/nonmatchings/main", pad_read);
+int pad_read(void) {
+    SceCtrlData buf;
+    int temp_a0;
+    unsigned int temp_s0;
+
+    temp_s0 = cont;
+    sceCtrlReadBufferPositive(&buf, 1);
+    temp_a0 = buf.Buttons & (buf.Buttons ^ temp_s0);
+    cont = buf.Buttons;
+    if (temp_a0 & 0x2000) {
+        primflag ^= 1;
+    }
+    if (cont & 0x1000) {
+        description = 1;
+    } else {
+        description = 0;
+    }
+    return (temp_a0 & 9) == 0;
+}
 
 int main(void) {
     menuInit();
