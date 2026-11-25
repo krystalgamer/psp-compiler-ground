@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""nodwarf.py TARGET MODULE [--write] [--compiler V]
+"""nodwarf.py TARGET MODULE [--write] [--compiler V] [--only a.c,b.c]
 
 Find the objects without DWARF in a module's .text and print (or, with
 --write, store as config/TARGET/files.MODULE.txt) their start addresses for
@@ -128,8 +128,12 @@ def main():
     ap.add_argument("module")
     ap.add_argument("--write", action="store_true")
     ap.add_argument("--compiler")
+    ap.add_argument("--only", help="comma-separated source files to keep (others stay asm)")
     a = ap.parse_args()
     ents, problems, e = analyse(a.target, a.module)
+    if a.only:
+        keep = set(a.only.split(","))
+        ents = [x for x in ents if x[1] in keep]
     ver = a.compiler or comment_version(e)
     for p in problems:
         print("#!", p, file=sys.stderr)
