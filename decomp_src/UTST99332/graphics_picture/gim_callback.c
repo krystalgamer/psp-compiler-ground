@@ -14,13 +14,44 @@ void *sceGimPictureAllocMemory(size_t size);
 void *sceGimPictureAllocMemory2(size_t size);
 
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_picture/nonmatchings/gim_callback", sceGimPictureSetMemoryManager);
+void *malloc(size_t size);
+void free(void *ptr);
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_picture/nonmatchings/gim_callback", sceGimPictureSetMemoryManager2);
+void sceGimPictureSetMemoryManager(void *(*alloc_func)(size_t), void (*free_func)(void *))
+{
+	if (alloc_func == NULL)
+		alloc_func = malloc;
+	if (free_func == NULL)
+		free_func = free;
+	g_alloc_memory = alloc_func;
+	g_free_memory = free_func;
+	g_alloc_memory2 = alloc_func;
+	g_free_memory2 = free_func;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_picture/nonmatchings/gim_callback", sceGimPictureAllocMemory);
+void sceGimPictureSetMemoryManager2(void *(*alloc_func)(size_t), void (*free_func)(void *))
+{
+	if (alloc_func == NULL)
+		alloc_func = malloc;
+	if (free_func == NULL)
+		free_func = free;
+	g_alloc_memory2 = alloc_func;
+	g_free_memory2 = free_func;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_picture/nonmatchings/gim_callback", sceGimPictureAllocMemory2);
+void *sceGimPictureAllocMemory(size_t size)
+{
+	if (size == 0)
+		return NULL;
+	return g_alloc_memory(size);
+}
+
+void *sceGimPictureAllocMemory2(size_t size)
+{
+	if (size == 0)
+		return NULL;
+	return g_alloc_memory2(size);
+}
 
 void sceGimPictureFreeMemory(void *addr) {
     if (addr != NULL) {
