@@ -1,8 +1,21 @@
 # unit                                     compiler        source
+main                                         1.5.1.internal  main.c
 memory                                       1.5.1.internal  memory.c
 string                                       1.5.1.internal  string.c
 sprintf                                      1.5.1.internal  sprintf.c
 ctype                                        1.5.1.internal  ctype.c
+gmo_model                                    1.5.1.internal  gmo_model.c
+gmo_bone                                     1.5.1.internal  gmo_bone.c
+gmo_part                                     1.5.1.internal  gmo_part.c
+gmo_material                                 1.5.1.internal  gmo_material.c
+gmo_motion                                   1.5.1.internal  gmo_motion.c
+gmo_context                                  1.5.1.internal  gmo_context.c
+gim_picture                                  1.5.1.internal  gim_picture.c
+load_bmp                                     1.5.1.internal  load_bmp.c
+load_tga                                     1.5.1.internal  load_tga.c
+load_tm2                                     1.5.1.internal  load_tm2.c
+libgum                                       1.5.1.internal  libgum.c
+libgu                                        1.5.1.internal  libgu.c
 newlib/libm/math/sf_cos                      1.5.1.internal  ../../../../../newlib-1.12.0/newlib/libm/math/sf_cos.c
 newlib/libm/math/sf_floor                    1.5.1.internal  ../../../../../newlib-1.12.0/newlib/libm/math/sf_floor.c
 newlib/libm/math/sf_sin                      1.5.1.internal  ../../../../../newlib-1.12.0/newlib/libm/math/sf_sin.c
