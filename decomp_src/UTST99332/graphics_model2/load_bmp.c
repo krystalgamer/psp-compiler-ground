@@ -212,7 +212,39 @@ static void copy_idx8(void *dst, const void *src, int width, int height)
 	}
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_model2/nonmatchings/load_bmp", copy_5551);
+static void copy_5551(void *dst, const void *src, int width, int height)
+{
+	int pitch;
+	int pitch2;
+	const short int *sp;
+	short int *dp;
+
+	pitch = (width + 7) & ~7;
+	pitch2 = (width + 1) & ~1;
+	sp = src;
+	dp = (short int *)dst + pitch * (height - 1);
+	{
+		int i;
+
+		for (i = 0; i < height; i++) {
+			const short int *sp2 = sp;
+			short int *dp2 = dp;
+			{
+				int j;
+
+				for (j = 0; j < width; j++) {
+					int s = *sp2++;
+					int r = (s & 0x7c00) >> 10;
+					int b = s & 0x001f;
+
+					*dp2++ = (s & 0x03e0) | r | (b << 10) | 0x8000;
+				}
+			}
+			sp += pitch2;
+			dp -= pitch;
+		}
+	}
+}
 
 static void copy_5650(void *dst, const void *src, int width, int height)
 {
@@ -248,9 +280,75 @@ static void copy_5650(void *dst, const void *src, int width, int height)
 	}
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_model2/nonmatchings/load_bmp", copy_8880);
+static void copy_8880(void *dst, const void *src, int width, int height)
+{
+	int pitch;
+	int pitch2;
+	const char *sp;
+	char *dp;
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_model2/nonmatchings/load_bmp", copy_8888);
+	pitch = (width * 4 + 15) & ~15;
+	pitch2 = (width * 3 + 3) & ~3;
+	sp = src;
+	dp = (char *)dst + pitch * (height - 1);
+	{
+		int i;
+
+		for (i = 0; i < height; i++) {
+			const char *sp2 = sp;
+			char *dp2 = dp;
+			{
+				int j;
+
+				for (j = 0; j < width; j++) {
+					dp2[0] = sp2[2];
+					dp2[1] = sp2[1];
+					dp2[2] = sp2[0];
+					dp2[3] = 0xff;
+					sp2 += 3;
+					dp2 += 4;
+				}
+			}
+			sp += pitch2;
+			dp -= pitch;
+		}
+	}
+}
+
+static void copy_8888(void *dst, const void *src, int width, int height, int alpha)
+{
+	int pitch;
+	int pitch2;
+	const char *sp;
+	char *dp;
+
+	pitch = (width * 4 + 15) & ~15;
+	pitch2 = width * 4;
+	sp = src;
+	dp = (char *)dst + pitch * (height - 1);
+	{
+		int i;
+
+		for (i = 0; i < height; i++) {
+			const char *sp2 = sp;
+			char *dp2 = dp;
+			{
+				int j;
+
+				for (j = 0; j < width; j++) {
+					dp2[0] = sp2[2];
+					dp2[1] = sp2[1];
+					dp2[2] = sp2[0];
+					dp2[3] = sp2[3] | alpha;
+					sp2 += 4;
+					dp2 += 4;
+				}
+			}
+			sp += pitch2;
+			dp -= pitch;
+		}
+	}
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_model2/nonmatchings/load_bmp", copy_rle4);
 
