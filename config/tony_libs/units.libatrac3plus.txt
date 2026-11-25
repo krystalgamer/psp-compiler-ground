@@ -1,1 +1,2 @@
 # unit                                     compiler        source
+libatrac3plus                                1.5.1.internal  libatrac3plus.c
