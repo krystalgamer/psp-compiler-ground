@@ -113,7 +113,11 @@ def main():
         p.write_text(f"/* cflags: {cflags} */\n" + pre + "\n\n" + "\n".join(b for _, _, b in fs))
         r = subprocess.run([sys.executable, str(ROOT / "tools/fntest.py"), t, m, str(p), "--cc1", a.cc1,
                             "--inc", str(Path(a.cfile).resolve().parent)],
-                           capture_output=True, text=True).stdout.strip().splitlines()
+                           capture_output=True, text=True)
+        errs = [l for l in r.stderr.splitlines() if "error" in l]
+        if errs:
+            print("\n".join(errs[:10]), file=sys.stderr)
+        r = r.stdout.strip().splitlines()
         line = r[-1] if r else "error"
         bad = set(re.findall(r"(\w+):", line)) if "error" not in line else {n for _, n, _ in fs}
         good[u] = [(n, b) for _, n, b in fs if n not in bad]
