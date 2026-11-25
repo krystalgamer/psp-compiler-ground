@@ -70,7 +70,7 @@ def suffixes(target, module, unit, body):
     """rename NAME_ADDR (the source module's statics) after the target's"""
     d = ROOT / "tmp" / "asm" / target / module / "nonmatchings" / unit
     stems = {f.stem for f in d.glob("*.s")}
-    names = {base(n): n for n in stems if base(n) != n}
+    names = {base(n): n for n in stems if base(n) != n and not n.startswith("D_")}
     return re.sub(r"\b([A-Za-z_]\w*?)_[0-9A-F]{4,8}\b",
                   lambda m: m[0] if m[0] in stems else names.get(m[1], m[0]), body)
 
