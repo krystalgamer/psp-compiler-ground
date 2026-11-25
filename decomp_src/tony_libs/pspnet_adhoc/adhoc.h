@@ -15,8 +15,6 @@ typedef unsigned long long SceUInt64;
 #define memchr func_00006D6C
 #define memmove func_00006DA4
 #define memcmp func_00006E18
-#define memcpy func_00006E58
-#define memset func_00006E8C
 #define bcmp func_00006EB8
 #define bcopy func_00006EF8
 #define bzero func_00006F1C
@@ -24,8 +22,11 @@ typedef unsigned long long SceUInt64;
 void *memchr(const void *s, int c, int n);
 void *memmove(void *dst, const void *src, int n);
 int memcmp(const void *a, const void *b, int n);
-void *memcpy(void *dst, const void *src, int n);
-void *memset(void *dst, int c, int n);
+/* memcpy/memset keep their real names: gcc expands them as builtins */
+void *func_00006E58(void *dst, const void *src, int n) __asm__("memcpy");
+void *func_00006E8C(void *dst, int c, int n) __asm__("memset");
+void *memcpy(void *dst, const void *src, unsigned int n);
+void *memset(void *dst, int c, unsigned int n);
 int bcmp(const void *a, const void *b, int n);
 void bcopy(const void *src, void *dst, int n);
 void bzero(void *p, int n);
@@ -94,7 +95,8 @@ struct pkthdr {
 	struct ifnet *rcvif;
 	int len;
 	struct mbuf *aux;
-	int unk20;
+	short unk20;
+	short unk22;
 	int unk24;
 	int unk28;
 	int unk2C;
@@ -208,6 +210,8 @@ struct ifnet {
 	void (*if_drain)(struct ifnet *);
 	struct ifqueue if_snd;
 	struct sockaddr_dl *if_sadl;
+	char unkE4[0x120 - 0xE4];
+	int if_adhocflags;
 };
 #define IFF_OACTIVE 0x400
 
@@ -242,6 +246,78 @@ struct adhoc_socket {
 };
 TAILQ_HEAD(adhoc_socket_list, adhoc_socket);
 
+#define ntohs(x) ((u_short)__builtin_allegrex_wsbh(x))
+#define htons(x) ((u_short)__builtin_allegrex_wsbh(x))
+
+#define POLL_LINK(so, ti) do { \
+	(so)->pollnext = (ti)->polllist; \
+	(ti)->polllist = (so); \
+	(ti)->pollnext = (so)->pollq; \
+	(so)->pollq = (ti); \
+} while (0)
+
+/* pdp.c */
+struct pdpcb;
+
+struct pdp_frag {
+	TAILQ_ENTRY(pdp_frag) link;
+	u_short len;
+	u_short pad;
+	struct mbuf *m;
+	struct callout co;
+	struct pdpcb *pcb;
+};
+
+struct pdpcb {
+	TAILQ_ENTRY(pdpcb) link;
+	struct ifnet *ifp;
+	struct SceNetEtherAddr laddr;
+	u_short lport;
+	struct mbuf *rcv_head;
+	struct mbuf *rcv_tail;
+	u_int rcv_cc;
+	u_int rcv_hiwat;
+	int unk24;
+	int flags;
+	struct adhoc_socket *so;
+	TAILQ_HEAD(, pdp_frag) fragq;
+};
+TAILQ_HEAD(pdpcb_list, pdpcb);
+
+struct SceNetAdhocPdpStat {
+	struct SceNetAdhocPdpStat *next;
+	int id;
+	struct SceNetEtherAddr laddr;
+	u_short lport;
+	unsigned int rcv_sb_cc;
+};
+
+extern struct pdpcb_list D_00007424;
+extern u_short D_0000742C;
+extern u_short D_0000744C;
+extern const struct SceNetEtherAddr D_00007344;
+extern const struct SceNetEtherAddr D_0000734C;
+
+static inline u_short pdp_newport(struct SceNetEtherAddr *addr)
+{
+	struct pdpcb *p;
+	u_short port;
+
+	port = (D_0000742C == 0x7FFF) ? 0x4000 : D_0000742C + 1;
+	while (port != D_0000742C) {
+		for (p = D_00007424.tqh_first; p != NULL; p = p->link.tqe_next) {
+			if (memcmp(&p->laddr, addr, 6) == 0 && p->lport == port)
+				break;
+		}
+		if (p == NULL) {
+			D_0000742C = port;
+			return port;
+		}
+		port = (port == 0x7FFF) ? 0x4000 : port + 1;
+	}
+	return 0;
+}
+
 /* imports */
 int sceKernelSignalSema(SceUID semaid, int signal);
 SceUInt64 sceKernelGetSystemTimeWide(void);
@@ -275,7 +351,7 @@ int _sce_pspnet_start_of_adhoc_module_in_sched(void (*func)(struct adhoc_socket 
 void _sce_pspnet_stop_of_adhoc_module_in_sched(void);
 int _sce_pspnet_start_of_adhoc_module_in_if_ethersubr_core(int (*func)(struct ifnet *, struct mbuf *, struct ifqueue **));
 void _sce_pspnet_stop_of_adhoc_module_in_if_ethersubr_core(void);
-int _sce_pspnet_start_of_adhoc_module_in_netintr(void (*intr)(void), void (*drain)(void *));
+int _sce_pspnet_start_of_adhoc_module_in_netintr(void (*intr)(void), void (*drain)(struct ifnet *));
 void _sce_pspnet_stop_of_adhoc_module_in_netintr(void);
 
 /* globals */
@@ -289,7 +365,7 @@ extern int D_00007448;
 void func_00000224(void);
 void func_00000320(struct ifnet *ifp, struct mbuf *m);
 int func_00000430(struct ifnet *ifp, struct mbuf *m, struct ifqueue **inq);
-void func_00000444(void *arg);
+void func_00000444(struct ifnet *ifp);
 
 /* socket.c */
 int func_00000D3C(void);
@@ -303,13 +379,23 @@ void func_00000FF0(struct adhoc_socket *so, int events);
 
 int func_0000092C(struct pollent *pe, int n);
 
+/* pdp_api.c */
+int func_00001530(struct adhoc_socket *so, struct SceNetEtherAddr *daddr, u_short dport, void *data, int len, unsigned int timeout, int flag);
+int func_00001B90(struct adhoc_socket *so, struct SceNetEtherAddr *saddr, u_short *sport, void *buf, int *len, unsigned int timeout, int flag, int *x);
+int func_00001F20(int id, struct SceNetEtherAddr *saddr, u_short *sport, void *buf, int *len, unsigned int timeout, int flag, int *x);
+
 /* pdp.c */
+int func_00002108(struct pdpcb *pcb, struct SceNetEtherAddr *addr, u_short port);
+void func_00002304(struct pdpcb *pcb);
+int func_00002A9C(struct adhoc_socket *so);
+int func_00002B84(struct pdpcb *pcb, u_int size);
+void func_00002C7C(void *arg);
 void func_00002B38(struct adhoc_socket *so);
 int func_00002C00(struct adhoc_socket *so, int events);
 int func_000029AC(void);
 void func_00002A18(void);
 void func_000023C4(struct mbuf *m);
-void func_00002B90(void *pcb);
+void func_00002B90(struct ifnet *ifp);
 
 /* ptp.c */
 void func_0000483C(void);

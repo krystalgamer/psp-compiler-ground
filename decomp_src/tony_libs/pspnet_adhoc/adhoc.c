@@ -112,9 +112,9 @@ int func_00000430(struct ifnet *ifp, struct mbuf *m, struct ifqueue **inq)
 	return 0;
 }
 
-void func_00000444(void *arg)
+void func_00000444(struct ifnet *ifp)
 {
-	func_00002B90(arg);
+	func_00002B90(ifp);
 }
 
 INCLUDE_ASM("tmp/asm/tony_libs/pspnet_adhoc/nonmatchings/adhoc", sceNetAdhocPollSocket);
