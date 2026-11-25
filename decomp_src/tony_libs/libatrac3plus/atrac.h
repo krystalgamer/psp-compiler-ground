@@ -167,6 +167,7 @@ unsigned int func_00001DFC(const unsigned char *buf, unsigned int *pos, unsigned
 unsigned short func_00001E8C(const unsigned char *buf, unsigned int *pos, unsigned int size);
 extern Guid D_00003834;
 extern Guid D_00003844;
+int func_000022F8(AtracInfo *info, unsigned char *buf, unsigned int bufSize, unsigned int b, WaveFmt *fmt);
 int func_00002408(AtracInfo *info, WaveFmt *fmt, unsigned char *buf, unsigned int a, unsigned int bufSize, unsigned int b, unsigned int c, unsigned int d, int e, int f, int g);
 int func_00002504(AtracInfo *info, int type);
 void func_00002550(AtracInfo *info, unsigned int x, WaveFmt *fmt);

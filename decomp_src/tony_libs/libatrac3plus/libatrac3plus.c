@@ -53,7 +53,22 @@ int sceAtracReleaseAtracID(unsigned int id)
 	return ret;
 }
 
-INCLUDE_ASM("tmp/asm/tony_libs/libatrac3plus/nonmatchings/libatrac3plus", sceAtracSetHalfwayBuffer);
+int sceAtracSetHalfwayBuffer(unsigned int id, unsigned char *buf, unsigned int readSize, unsigned int bufSize)
+{
+	WaveFmt fmt;
+	int ret = 0x80630005;
+
+	if (id < 4 && D_00003930[id].inUse) {
+		ret = 0x80630013;
+		if (bufSize < readSize)
+			goto end;
+		ret = func_000022F8(&D_00003930[id].info, buf, readSize, bufSize, &fmt);
+		if (ret >= 0)
+			ret = func_00000D3C(&D_00003930[id], &fmt);
+	}
+end:
+	return ret;
+}
 
 INCLUDE_ASM("tmp/asm/tony_libs/libatrac3plus/nonmatchings/libatrac3plus", sceAtracSetDataAndGetID);
 
@@ -87,7 +102,38 @@ int sceAtracDecodeData(unsigned int id, short *out, int *samples, int *finish, i
 	return ret;
 }
 
-INCLUDE_ASM("tmp/asm/tony_libs/libatrac3plus/nonmatchings/libatrac3plus", sceAtracGetStreamDataInfo);
+int sceAtracGetStreamDataInfo(unsigned int id, unsigned int *writePtr, unsigned int *writable, unsigned int *readOffset)
+{
+	int ret = 0x80630005;
+
+	if (id < 4 && D_00003930[id].inUse) {
+		AtracInfo *info;
+
+		ret = 0x80630010;
+		if (D_00003930[id].info.state) {
+			info = &D_00003930[id].info;
+			if (info->state == 1) {
+				*writable = 0;
+				*writePtr = info->unk40;
+				*readOffset = 0;
+				ret = 0;
+			} else if (info->state == 2) {
+				unsigned int x = info->unk2C + info->unk3C;
+				unsigned char *p = info->unk40 + x;
+				*writable = info->unk30 - x;
+				*writePtr = p;
+				*readOffset = x;
+				ret = 0;
+			} else {
+				*readOffset = func_00002BA0(info);
+				*writePtr = func_00002AC0(info);
+				*writable = func_00002C5C(info);
+				ret = 0;
+			}
+		}
+	}
+	return ret;
+}
 
 int sceAtracAddStreamData(unsigned int id, unsigned int n)
 {
