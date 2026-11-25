@@ -1,10 +1,118 @@
 #include "common.h"
 
+/* declarations recovered from DWARF */
+struct _anon1;
+struct _anon1 { /* size 0x10 */
+    short unsigned int type;
+    short unsigned int unused;
+    unsigned int next_offs;
+    unsigned int child_offs;
+    unsigned int data_offs;
+};
+typedef struct _anon1 SceGimChunk;
+struct SceGimPicture;
+struct _anon2;
+struct _anon2 { /* size 0x30 */
+    short unsigned int header_size;
+    short unsigned int reference;
+    short unsigned int format;
+    short unsigned int order;
+    short unsigned int width;
+    short unsigned int height;
+    short unsigned int bpp;
+    short unsigned int pitch_align;
+    short unsigned int height_align;
+    short unsigned int dim_count;
+    short unsigned int reserved;
+    short unsigned int reserved2;
+    unsigned int offsets;
+    unsigned int images;
+    unsigned int total;
+    unsigned int plane_mask;
+    short unsigned int level_type;
+    short unsigned int level_count;
+    short unsigned int frame_type;
+    short unsigned int frame_count;
+};
+typedef struct _anon2 SceGimImageHeader;
+struct _anon3;
+struct _anon3 { /* size 0x20 */
+    short unsigned int header_size;
+    short unsigned int reference;
+    short unsigned int frame_start;
+    short unsigned int frame_end;
+    short unsigned int frame_rate;
+    short unsigned int reserved;
+    short unsigned int n_constants;
+    short unsigned int n_functions;
+    unsigned int constants;
+    unsigned int functions;
+    unsigned int keyframes;
+    unsigned int total;
+};
+typedef struct _anon3 SceGimSequenceHeader;
+struct SceGimPicture { /* size 0x54 */
+    int m_reference;
+    int m_flags;
+    SceGimImageHeader *m_image;
+    SceGimImageHeader *m_palette;
+    SceGimSequenceHeader *m_sequence;
+    int m_buf_width;
+    int m_clut_load;
+    float m_frame_loop[2];
+    float m_frame_rate;
+    float m_frame;
+    int m_enable_bits;
+    int m_image_frame;
+    int m_image_frame2;
+    int m_palette_frame;
+    int m_palette_frame2;
+    float m_dissolve;
+    float m_image_crop[4];
+};
+typedef struct SceGimPicture SceGimPicture;
+typedef SceGimImageHeader SceGimPaletteHeader;
+typedef unsigned int size_t;
+
+extern const unsigned char __psp_libinfo__[24];
+
+SceGimPicture *sceGimPictureCreate(SceGimChunk *chunk);
+SceGimPicture *sceGimPictureDuplicate(SceGimPicture *picture, int flags);
+_Bool sceGimPictureLoadFile(SceGimPicture *picture, const void *buf, int size, int idx);
+_Bool sceGimPictureLoad(SceGimPicture *picture, const SceGimChunk *chunk);
+static SceGimChunk *SCEGIM_CHUNK_NEXT(SceGimChunk *chunk);
+static SceGimChunk *SCEGIM_CHUNK_CHILD(SceGimChunk *chunk);
+static void *SCEGIM_CHUNK_DATA(SceGimChunk *chunk);
+static int SCEGIM_CHUNK_DATA_SIZE(SceGimChunk *chunk);
+void sceGimPictureUnload(SceGimPicture *picture);
+void sceGimPictureAnimate(SceGimPicture *picture, float step);
+void sceGimPictureActivate(SceGimPicture *picture);
+static int pow2(int n);
+void *sceGimPictureGetImagePixels(SceGimPicture *picture, int level, int frame);
+void *sceGimPictureGetPalettePixels(SceGimPicture *picture, int level, int frame);
+void sceGimPictureSetImagePixels(SceGimPicture *picture, int level, int frame, void *pixels);
+void sceGimPictureSetPalettePixels(SceGimPicture *picture, int level, int frame, void *pixels);
+_Bool sceGimPictureReallocImage(SceGimPicture *picture, int format, int w, int h, int level, int frame, void *pixels);
+_Bool sceGimPictureReallocPalette(SceGimPicture *picture, int format, int w, int level, int frame, void *pixels);
+void sceGimPictureSetFrameLoop(SceGimPicture *picture, float start, float end);
+void sceGimPictureSetImageCrop(SceGimPicture *picture, const float *crop);
+static void reconfigure_picture(SceGimPicture *picture);
+
+
 INCLUDE_RODATA("tmp/asm/UTST99332/graphics_model/nonmatchings/gim_picture", __psp_libinfo___1DBB4);
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_model/nonmatchings/gim_picture", sceGimPictureCreate);
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_model/nonmatchings/gim_picture", sceGimPictureDelete);
+void sceGimPictureDelete(SceGimPicture *picture) {
+    int temp_v0;
+
+    if ((picture == NULL) || (temp_v0 = picture->m_reference - 1, picture->m_reference = temp_v0, (temp_v0 != 0))) {
+
+    } else {
+        sceGimPictureUnload(picture);
+        sceGimPictureFreeMemory(picture);
+    }
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_model/nonmatchings/gim_picture", sceGimPictureDuplicate);
 
@@ -18,13 +126,41 @@ INCLUDE_ASM("tmp/asm/UTST99332/graphics_model/nonmatchings/gim_picture", sceGimP
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_model/nonmatchings/gim_picture", sceGimPictureActivate);
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_model/nonmatchings/gim_picture", sceGimPictureSetEnableBits);
+void sceGimPictureSetEnableBits(SceGimPicture *picture, int bits, int value) {
+    if (picture != NULL) {
+        picture->m_enable_bits = (picture->m_enable_bits & ~bits) | (bits & value);
+    }
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_model/nonmatchings/gim_picture", sceGimPictureGetEnableBits);
+int sceGimPictureGetEnableBits(SceGimPicture *picture) {
+    int var_v0;
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_model/nonmatchings/gim_picture", sceGimPictureGetImage);
+    var_v0 = 0;
+    if (picture != NULL) {
+        var_v0 = picture->m_enable_bits;
+    }
+    return var_v0;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_model/nonmatchings/gim_picture", sceGimPictureGetPalette);
+SceGimImageHeader *sceGimPictureGetImage(SceGimPicture *picture) {
+    SceGimImageHeader *var_v0;
+
+    var_v0 = NULL;
+    if (picture != NULL) {
+        var_v0 = picture->m_image;
+    }
+    return var_v0;
+}
+
+SceGimImageHeader *sceGimPictureGetPalette(SceGimPicture *picture) {
+    SceGimImageHeader *var_v0;
+
+    var_v0 = NULL;
+    if (picture != NULL) {
+        var_v0 = picture->m_palette;
+    }
+    return var_v0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_model/nonmatchings/gim_picture", sceGimPictureGetImagePixels);
 
@@ -38,42 +174,144 @@ INCLUDE_ASM("tmp/asm/UTST99332/graphics_model/nonmatchings/gim_picture", sceGimP
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_model/nonmatchings/gim_picture", sceGimPictureReallocPalette);
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_model/nonmatchings/gim_picture", sceGimPictureHasAnimation);
+int sceGimPictureHasAnimation(SceGimPicture *picture) {
+    int var_v0;
+
+    var_v0 = 0;
+    if (picture != NULL) {
+        var_v0 = ((unsigned int) picture->m_flags >> 4) & 1;
+    }
+    return var_v0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_model/nonmatchings/gim_picture", sceGimPictureSetFrameLoop);
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_model/nonmatchings/gim_picture", sceGimPictureGetFrameLoop);
+float *sceGimPictureGetFrameLoop(SceGimPicture *picture) {
+    return (picture == NULL) ? NULL : picture->m_frame_loop;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_model/nonmatchings/gim_picture", sceGimPictureSetFrameRate);
+void sceGimPictureSetFrameRate(SceGimPicture *picture, float fps) {
+    if (picture != NULL) {
+        picture->m_frame_rate = fps;
+    }
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_model/nonmatchings/gim_picture", sceGimPictureGetFrameRate);
+float sceGimPictureGetFrameRate(SceGimPicture *picture) {
+    float var_f0;
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_model/nonmatchings/gim_picture", sceGimPictureSetFrame);
+    var_f0 = 0.0f;
+    if (picture != NULL) {
+        var_f0 = picture->m_frame_rate;
+    }
+    return var_f0;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_model/nonmatchings/gim_picture", sceGimPictureGetFrame);
+void sceGimPictureSetFrame(SceGimPicture *picture, float frame) {
+    if (picture != NULL) {
+        picture->m_frame = frame;
+    }
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_model/nonmatchings/gim_picture", sceGimPictureSetImageFrame);
+float sceGimPictureGetFrame(SceGimPicture *picture) {
+    float var_f0;
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_model/nonmatchings/gim_picture", sceGimPictureGetImageFrame);
+    var_f0 = 0.0f;
+    if (picture != NULL) {
+        var_f0 = picture->m_frame;
+    }
+    return var_f0;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_model/nonmatchings/gim_picture", sceGimPictureSetImageFrame2);
+void sceGimPictureSetImageFrame(SceGimPicture *picture, int frame) {
+    if (picture != NULL) {
+        picture->m_image_frame = frame;
+    }
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_model/nonmatchings/gim_picture", sceGimPictureGetImageFrame2);
+int sceGimPictureGetImageFrame(SceGimPicture *picture) {
+    int var_v0;
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_model/nonmatchings/gim_picture", sceGimPictureSetPaletteFrame);
+    var_v0 = 0;
+    if (picture != NULL) {
+        var_v0 = picture->m_image_frame;
+    }
+    return var_v0;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_model/nonmatchings/gim_picture", sceGimPictureGetPaletteFrame);
+void sceGimPictureSetImageFrame2(SceGimPicture *picture, int frame) {
+    if (picture != NULL) {
+        picture->m_image_frame2 = frame;
+    }
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_model/nonmatchings/gim_picture", sceGimPictureSetPaletteFrame2);
+int sceGimPictureGetImageFrame2(SceGimPicture *picture) {
+    int var_v0;
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_model/nonmatchings/gim_picture", sceGimPictureGetPaletteFrame2);
+    var_v0 = 0;
+    if (picture != NULL) {
+        var_v0 = picture->m_image_frame2;
+    }
+    return var_v0;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_model/nonmatchings/gim_picture", sceGimPictureSetDissolve);
+void sceGimPictureSetPaletteFrame(SceGimPicture *picture, int frame) {
+    if (picture != NULL) {
+        picture->m_palette_frame = frame;
+    }
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_model/nonmatchings/gim_picture", sceGimPictureGetDissolve);
+int sceGimPictureGetPaletteFrame(SceGimPicture *picture) {
+    int var_v0;
+
+    var_v0 = 0;
+    if (picture != NULL) {
+        var_v0 = picture->m_palette_frame;
+    }
+    return var_v0;
+}
+
+void sceGimPictureSetPaletteFrame2(SceGimPicture *picture, int frame) {
+    if (picture != NULL) {
+        picture->m_palette_frame = frame;
+    }
+}
+
+int sceGimPictureGetPaletteFrame2(SceGimPicture *picture) {
+    int var_v0;
+
+    var_v0 = 0;
+    if (picture != NULL) {
+        var_v0 = picture->m_palette_frame;
+    }
+    return var_v0;
+}
+
+void sceGimPictureSetDissolve(SceGimPicture *picture, float dissolve) {
+    if (picture != NULL) {
+        picture->m_dissolve = dissolve;
+    }
+}
+
+float sceGimPictureGetDissolve(SceGimPicture *picture) {
+    float var_f0;
+
+    var_f0 = 0.0f;
+    if (picture != NULL) {
+        var_f0 = picture->m_dissolve;
+    }
+    return var_f0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_model/nonmatchings/gim_picture", sceGimPictureSetImageCrop);
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_model/nonmatchings/gim_picture", sceGimPictureGetImageCrop);
+float *sceGimPictureGetImageCrop(SceGimPicture *picture) {
+    float *var_v0;
+
+    var_v0 = NULL;
+    if (picture != NULL) {
+        var_v0 = !(picture->m_flags & 0x20) ? NULL : picture->m_image_crop;
+    }
+    return var_v0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_model/nonmatchings/gim_picture", reconfigure_picture);
