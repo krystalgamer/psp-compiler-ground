@@ -10,7 +10,11 @@ INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/libgum", sceGumSetMatrixSt
 
 INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/libgum", sceGumSetCurMatrix);
 
-INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/libgum", sceGumUpdateMatrix);
+void sceGumUpdateMatrix(void);
+void sceGumUpdateMatrix(void)
+{
+	__checkUpdate();
+}
 
 INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/libgum", sceGumLoadContext);
 
@@ -50,10 +54,34 @@ INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/libgum", sceGumLoadMatrix)
 
 INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/libgum", sceGumStoreMatrix);
 
-INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/libgum", sceGumDrawArray);
+void sceGuDrawArray(int prim, int vtype, int count, const void *indices, const void *vertices);
+void sceGumDrawArray(int prim, int vtype, int count, const void *indices, const void *vertices);
+void sceGumDrawArray(int prim, int vtype, int count, const void *indices, const void *vertices)
+{
+	__checkUpdate();
+	sceGuDrawArray(prim, vtype, count, indices, vertices);
+}
 
-INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/libgum", sceGumDrawArrayN);
+void sceGuDrawArrayN(int prim, int vtype, int count, int a3, const void *indices, const void *vertices);
+void sceGumDrawArrayN(int prim, int vtype, int count, int a3, const void *indices, const void *vertices);
+void sceGumDrawArrayN(int prim, int vtype, int count, int n, const void *indices, const void *vertices)
+{
+	__checkUpdate();
+	sceGuDrawArrayN(prim, vtype, count, n, indices, vertices);
+}
 
-INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/libgum", sceGumDrawBezier);
+void sceGuDrawBezier(int vtype, int ucount, int vcount, const void *indices, const void *vertices);
+void sceGumDrawBezier(int vtype, int ucount, int vcount, const void *indices, const void *vertices);
+void sceGumDrawBezier(int vtype, int ucount, int vcount, const void *indices, const void *vertices)
+{
+	__checkUpdate();
+	sceGuDrawBezier(vtype, ucount, vcount, indices, vertices);
+}
 
-INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/libgum", sceGumDrawSpline);
+void sceGuDrawSpline(int vtype, int ucount, int vcount, int uedge, int vedge, const void *indices, const void *vertices);
+void sceGumDrawSpline(int vtype, int ucount, int vcount, int uedge, int vedge, const void *indices, const void *vertices);
+void sceGumDrawSpline(int vtype, int ucount, int vcount, int uedge, int vedge, const void *indices, const void *vertices)
+{
+	__checkUpdate();
+	sceGuDrawSpline(vtype, ucount, vcount, uedge, vedge, indices, vertices);
+}
