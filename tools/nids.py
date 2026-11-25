@@ -97,6 +97,39 @@ def tables(data):
     return exports, imports
 
 
+def name_module(target, m, db, used, write, verbose=False):
+    exports, imports = tables(modules.read(target, m))
+    lines, missing = [], 0
+    for kind, ents in (("export", exports), ("import", imports)):
+        for lib, n, addr, var in ents:
+            name = SYSLIB.get(n) if not lib else db.get(n)
+            if name is None:
+                missing += 1
+                name = f"{lib or 'syslib'}_{n:08X}"
+            elif lib:
+                used[n] = name
+            lines.append(f"{name} = 0x{addr:08X};" + ("" if var else " // type:func"))
+            if verbose:
+                print(f"{m:20} {kind} {lib or 'syslib':28} {n:08X} {addr:08X} {name}")
+    if verbose:
+        print(f"# {m}: {len(exports)} exports, {len(imports)} imports, {missing} unresolved", file=sys.stderr)
+    if write:
+        p = ROOT / "config" / target / f"symbol_addrs.{m}.txt"
+        old = [l for l in p.read_text().splitlines() if l.strip()] if p.exists() else []
+        names = {l.split("=")[0].strip() for l in lines}
+        addrs = {l.split("=")[1].split(";")[0].strip() for l in lines}
+        keep = [l for l in old if l.split("=")[0].strip() not in names
+                and l.split("=")[1].split(";")[0].strip() not in addrs]
+        # a function exported twice keeps its first name
+        seen, out = set(), []
+        for l in keep + lines:
+            a = l.split("=")[1].split(";")[0].strip()
+            if a not in seen:
+                seen.add(a)
+                out.append(l)
+        p.write_text("\n".join(out) + "\n")
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("target")
@@ -112,34 +145,7 @@ def main():
             db.setdefault(nid(name), name)
     used = {}
     for m in mods:
-        exports, imports = tables(modules.read(args.target, m))
-        lines, missing = [], 0
-        for kind, ents in (("export", exports), ("import", imports)):
-            for lib, n, addr, var in ents:
-                name = SYSLIB.get(n) if not lib else db.get(n)
-                if name is None:
-                    missing += 1
-                    name = f"{lib or 'syslib'}_{n:08X}"
-                elif lib:
-                    used[n] = name
-                lines.append(f"{name} = 0x{addr:08X};" + ("" if var else " // type:func"))
-                print(f"{m:20} {kind} {lib or 'syslib':28} {n:08X} {addr:08X} {name}")
-        print(f"# {m}: {len(exports)} exports, {len(imports)} imports, {missing} unresolved", file=sys.stderr)
-        if args.write:
-            p = ROOT / "config" / args.target / f"symbol_addrs.{m}.txt"
-            old = [l for l in p.read_text().splitlines() if l.strip()] if p.exists() else []
-            names = {l.split("=")[0].strip() for l in lines}
-            addrs = {l.split("=")[1].split(";")[0].strip() for l in lines}
-            keep = [l for l in old if l.split("=")[0].strip() not in names
-                    and l.split("=")[1].split(";")[0].strip() not in addrs]
-            # a function exported twice keeps its first name
-            seen, out = set(), []
-            for l in keep + lines:
-                a = l.split("=")[1].split(";")[0].strip()
-                if a not in seen:
-                    seen.add(a)
-                    out.append(l)
-            p.write_text("\n".join(out) + "\n")
+        name_module(args.target, m, db, used, args.write, verbose=True)
     if used:
         db0 = load_db()
         db0.update(used)

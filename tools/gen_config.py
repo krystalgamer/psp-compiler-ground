@@ -493,6 +493,9 @@ def main():
     cfg.write_text("".join(out))
     (ROOT / "config" / t / f"{name}.sha1").write_text(f"{sha1}  tmp/baserom/{t}/{name}.prx\n")
     (ROOT / "config" / t / f"symbol_addrs.{name}.txt").write_text("\n".join(symbol_lines(elf, text_end)) + "\n")
+    if elf.get_section_by_name(".symtab") is None:
+        import nids
+        nids.name_module(t, name, nids.load_db(), {}, True)
     with open(ROOT / "config" / t / f"units.{name}.txt", "w") as f:
         f.write("# unit                                     compiler        source\n")
         for addr, typ, nm, ver, src in units:
