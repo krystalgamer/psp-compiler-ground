@@ -19,6 +19,11 @@ LOOSE = {
     "bigbangbang": {"bigbangbang": "bigbangbang.prx"},
 }
 
+# zips of decrypted modules in inputs/: target -> zip name; module = member stem
+ZIPS = {
+    "tony_libs": "tony_libs.zip",
+}
+
 
 def targets():
     out = {k: dict(v) for k, v in FIXED.items()}
@@ -28,6 +33,10 @@ def targets():
     for t, mods in LOOSE.items():
         if all((ROOT / "inputs" / f).exists() for f in mods.values()):
             out[t] = {m: "file:" + f for m, f in mods.items()}
+    for t, zname in ZIPS.items():
+        if (ROOT / "inputs" / zname).exists():
+            with zipfile.ZipFile(ROOT / "inputs" / zname) as z:
+                out[t] = {n.split(".")[0]: f"zip:{zname}:{n}" for n in sorted(z.namelist()) if not n.endswith("/")}
     return out
 
 
@@ -35,6 +44,10 @@ def read(target, module):
     member = targets()[target][module]
     if member.startswith("file:"):
         return (ROOT / "inputs" / member[5:]).read_bytes()
+    if member.startswith("zip:"):
+        _, zname, name = member.split(":", 2)
+        with zipfile.ZipFile(ROOT / "inputs" / zname) as z:
+            return z.read(name)
     with zipfile.ZipFile(ZIP) as z:
         return z.read(TOP + member)
 

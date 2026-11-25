@@ -137,10 +137,16 @@ def unit_name(src, used):
     return s
 
 
+def symbols(elf):
+    """The ELF's symbols, none for stripped modules."""
+    st = elf.get_section_by_name(".symtab")
+    return st.iter_symbols() if st is not None else []
+
+
 def symbol_lines(elf, text_end):
     """symbol_addrs lines from the ELF symbol table, names made unique."""
     syms = collections.defaultdict(list)
-    for sym in elf.get_section_by_name(".symtab").iter_symbols():
+    for sym in symbols(elf):
         t = sym["st_info"]["type"]
         if t not in ("STT_FUNC", "STT_OBJECT", "STT_NOTYPE") or not sym.name:
             continue
@@ -196,7 +202,7 @@ def dwarf_objects(elf, text_addr, rodata):
     for i, sec in enumerate(elf.iter_sections()):
         if sec.name == rodata.name:
             ro = i
-    for sym in elf.get_section_by_name(".symtab").iter_symbols():
+    for sym in symbols(elf):
         if sym["st_shndx"] == ro and sym["st_info"]["type"] == "STT_OBJECT":
             syms[(sym.name, sym["st_value"])] = sym["st_size"]
     out = {}
@@ -374,7 +380,7 @@ def main():
     cus += file_units(t, name, cus, text.addr + text.size)
     cus.sort()
     func_at = {}
-    for sym in elf.get_section_by_name(".symtab").iter_symbols():
+    for sym in symbols(elf):
         if sym["st_info"]["type"] == "STT_FUNC" and sym.name and isinstance(sym["st_shndx"], int):
             func_at.setdefault(sym["st_value"] + elf.get_section(sym["st_shndx"])["sh_addr"], sym.name)
     srcs = collections.Counter(c[2] for c in cus)
@@ -463,10 +469,12 @@ def main():
     base = seg1["p_vaddr"]
     s1 = [s for s in secs if in_seg1(s) and s.size]
     fpos = seg1["p_offset"]
-    out.append(f"  - name: {name}_seg1\n    type: code\n    start: 0x{seg1['p_offset']:X}\n    vram: 0x{base:X}\n")
-    if any(s.nobits for s in s1):
-        out.append(f"    bss_size: 0x{seg1['p_memsz'] - seg1['p_filesz']:X}\n")
-    out.append("    subsegments:\n")
+    # kernel modules without data have nothing in segment 1
+    if s1:
+        out.append(f"  - name: {name}_seg1\n    type: code\n    start: 0x{seg1['p_offset']:X}\n    vram: 0x{base:X}\n")
+        if any(s.nobits for s in s1):
+            out.append(f"    bss_size: 0x{seg1['p_memsz'] - seg1['p_filesz']:X}\n")
+        out.append("    subsegments:\n")
     bss_done = False
     for s in s1:
         if s.nobits:
