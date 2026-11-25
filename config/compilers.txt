@@ -18,4 +18,4 @@
 1.6.1.internal  1.6.1   lib:-fno-merge-constants mixed:-fno-merge-constants objorder as:-mulsw
 1.8.3           1.8.3   as:-mulsw
 1.8.3.internal  1.8.3   as:-mulsw
-1.8.4.internal  1.8.4   as:-mulsw
+1.8.4.internal  1.8.4   mixed:-fno-merge-constants as:-mulsw

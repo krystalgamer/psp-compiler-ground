@@ -1,4 +1,5 @@
 #include "common.h"
+/* cflags: -O2 -frename-registers */
 
 /* declarations recovered from DWARF */
 typedef struct ScePspFMatrix4 ScePspFMatrix4;
@@ -82,7 +83,21 @@ INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/libgum", sceGumSetMatrixStack
 
 INCLUDE_RODATA("tmp/asm/psp184/UCJS90007/nonmatchings/libgum", __psp_libinfo___2FC2C);
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/libgum", sceGumLoadIdentity);
+extern __typeof__(update) update_8BE54;
+#define update update_8BE54
+void sceGumLoadIdentity(void)
+{
+	int i;
+
+	for (i = 0; i < 16; i++)
+		((float *)cur_stack)[i] = 0.0f;
+	cur_stack->x.x = 1.0f;
+	cur_stack->y.y = 1.0f;
+	cur_stack->z.z = 1.0f;
+	cur_stack->w.w = 1.0f;
+	update[cur_matrix] = 1;
+}
+#undef update
 
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/libgum", sceGumRotateXYZ);
 
