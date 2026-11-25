@@ -97,6 +97,12 @@ class C:
         self.emitted.add(t.offset)
         if t.tag == "DW_TAG_typedef":
             inner = self.ref(t)
+            if (inner is not None and inner.tag in ("DW_TAG_structure_type", "DW_TAG_union_type")
+                    and attr(inner, "DW_AT_name") and inner.offset not in self.emitted):
+                # typedef first so a self-referencing body can use it
+                self.out.append(f"typedef {self.tag_name(inner)} {attr(t, 'DW_AT_name')};")
+                self.need(inner)
+                return
             # tag types referenced only through a typedef: define them first
             line = f"typedef {self.decl(inner, attr(t, 'DW_AT_name'))};"
             self.out.append(line)
