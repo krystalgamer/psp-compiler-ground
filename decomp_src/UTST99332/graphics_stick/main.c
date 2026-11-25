@@ -68,6 +68,9 @@ struct _anon3 { /* size 0x18 */
 };
 typedef struct _anon3 POS;
 
+/* SDK functions */
+int sceCtrlReadBufferPositive(SceCtrlData *data, int count);
+
 extern int _gp;
 extern const int __begin_of_section_lib_ent[1];
 extern const int __end_of_section_lib_ent[1];
@@ -137,11 +140,104 @@ void draw_frame(void) {
     sceGuSync(0, 0);
 }
 
+#ifdef NON_MATCHING
+/* Close: the original stores world's zeros from a float register. */
+static void init_param(void)
+{
+	obj[0].x = 21;
+	obj[0].y = 18;
+	obj[0].c = 0xff0000ff;
+	obj[0].comp = 0;
+	obj[0].high = 2.0f;
+	obj[1].x = 9;
+	obj[1].y = 18;
+	obj[1].c = 0xffff0000;
+	obj[1].comp = 0;
+	obj[1].high = 2.0f;
+	world.pos.x = 0.0f;
+	world.pos.y = 0.0f;
+	world.pos.z = -10.0f;
+	world.rot.x = 300.0f;
+	world.rot.y = 0.0f;
+	world.rot.z = 0.0f;
+}
+#else
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_stick/nonmatchings/main", init_param);
+#endif
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_stick/nonmatchings/main", init_all);
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_stick/nonmatchings/main", pad_read);
+#define cont D_00013800	/* pad_read's static */
+extern u_int32 cont;
+
+static int pad_read(void)
+{
+	u_int32 prev, padd;
+	SceCtrlData buf;
+	float axis[2];
+	OBJECT *p;
+
+	prev = cont;
+	sceCtrlReadBufferPositive(&buf, 1);
+	axis[0] = (buf.Lx - 128) * 0.01f;
+	axis[1] = (buf.Ly - 128) * -0.01f;
+	padd = buf.Buttons & (buf.Buttons ^ prev);
+	cont = buf.Buttons;
+	p = obj;
+	if (cont & 0x1000) {
+		p->y -= 3;
+		if (p->y < 3)
+			p->y = 3;
+	}
+	if (cont & 0x4000) {
+		p->y += 3;
+		if (p->y >= 28)
+			p->y -= 3;
+	}
+	if (cont & 0x8000) {
+		p->x -= 3;
+		if (p->x < 3)
+			p->x = 3;
+	}
+	if (cont & 0x2000) {
+		p->x += 3;
+		if (p->x >= 28)
+			p->x -= 3;
+	}
+	p->comp = 0;
+	if (cont & 0x0200)
+		p->comp = 1;
+	p = &obj[1];
+	if (cont & 0x0010) {
+		p->y -= 3;
+		if (p->y < 3)
+			p->y = 3;
+	}
+	if (cont & 0x0040) {
+		p->y += 3;
+		if (p->y >= 28)
+			p->y -= 3;
+	}
+	if (cont & 0x0080) {
+		p->x -= 3;
+		if (p->x < 3)
+			p->x = 3;
+	}
+	if (cont & 0x0020) {
+		p->x += 3;
+		if (p->x >= 28)
+			p->x -= 3;
+	}
+	p->comp = 0;
+	if (cont & 0x0100)
+		p->comp = 1;
+	set_object(axis);
+	if (padd & 0x0008)
+		init_param();
+	if (padd & 0x0001)
+		return 0;
+	return 1;
+}
 
 int main(void) {
     menuInit();
