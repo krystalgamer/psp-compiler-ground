@@ -9,9 +9,79 @@ SceUInt func_00002D48(void *common);
 int func_00002C74(SceSize args, void *argp);
 /* --- end declarations --- */
 
-INCLUDE_ASM("tmp/asm/tony_libs/pspnet/nonmatchings/if_ethersubr", func_00006654);
+int func_00006654(struct ifreq *ifr, struct ifnet *ec)
+{
 
-INCLUDE_ASM("tmp/asm/tony_libs/pspnet/nonmatchings/if_ethersubr", func_00006844);
+	struct ether_multi *enm;
+	u_char addrlo[6];
+	u_char addrhi[6];
+	int s, error;
+
+	s = _sce_pspnet_spllock();
+	error = ether_multiaddr_i(&ifr->ifr_ifru.ifru_addr, addrlo, addrhi);
+	if (error != 0) {
+		_sce_pspnet_splunlock(s);
+		return error;
+	}
+	if (!(addrlo[0] & 1) || !(addrhi[0] & 1)) {
+		_sce_pspnet_splunlock(s);
+		return 22;
+	}
+	ETHER_LOOKUP_MULTI(addrlo, addrhi, ec, enm);
+	if (enm != NULL) {
+		enm->enm_refcount++;
+		_sce_pspnet_splunlock(s);
+		return 0;
+	}
+	enm = sceNetMallocInternal(sizeof(*enm));
+	if (enm == NULL) {
+		_sce_pspnet_splunlock(s);
+		return 0x69;
+	}
+	bcopy(addrlo, enm->enm_addrlo, 6);
+	bcopy(addrhi, enm->enm_addrhi, 6);
+	enm->enm_ec = ec;
+	enm->enm_refcount = 1;
+	if ((enm->enm_next = ec->ec_multiaddrs) != NULL)
+		ec->ec_multiaddrs->enm_prev = &enm->enm_next;
+	ec->ec_multiaddrs = enm;
+	enm->enm_prev = &ec->ec_multiaddrs;
+	ec->ec_multicnt++;
+	_sce_pspnet_splunlock(s);
+	return 0x7E;
+}
+
+int func_00006844(struct ifreq *ifr, struct ifnet *ec)
+{
+
+	struct ether_multi *enm;
+	u_char addrlo[6];
+	u_char addrhi[6];
+	int s, error;
+
+	s = _sce_pspnet_spllock();
+	error = ether_multiaddr_i(&ifr->ifr_ifru.ifru_addr, addrlo, addrhi);
+	if (error != 0) {
+		_sce_pspnet_splunlock(s);
+		return error;
+	}
+	ETHER_LOOKUP_MULTI(addrlo, addrhi, ec, enm);
+	if (enm == NULL) {
+		_sce_pspnet_splunlock(s);
+		return 6;
+	}
+	if (--enm->enm_refcount != 0) {
+		_sce_pspnet_splunlock(s);
+		return 0;
+	}
+	if (enm->enm_next != NULL)
+		enm->enm_next->enm_prev = enm->enm_prev;
+	*enm->enm_prev = enm->enm_next;
+	sceNetFreeInternal(enm);
+	ec->ec_multicnt--;
+	_sce_pspnet_splunlock(s);
+	return 0x7E;
+}
 
 char *func_000069D4(const u_char *ap)
 {
