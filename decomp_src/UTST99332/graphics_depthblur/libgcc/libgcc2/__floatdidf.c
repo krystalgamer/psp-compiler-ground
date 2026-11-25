@@ -1,11 +1,5 @@
-#include "common.h"
-
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_depthblur/nonmatchings/libgcc/libgcc2/__floatdidf", __floatdidf);
-
-INCLUDE_RODATA("tmp/asm/UTST99332/graphics_depthblur/nonmatchings/libgcc/libgcc2/__floatdidf", D_000187F0);
-
-INCLUDE_RODATA("tmp/asm/UTST99332/graphics_depthblur/nonmatchings/libgcc/libgcc2/__floatdidf", D_000187F4);
-
-INCLUDE_RODATA("tmp/asm/UTST99332/graphics_depthblur/nonmatchings/libgcc/libgcc2/__floatdidf", D_000187F8);
-
-INCLUDE_RODATA("tmp/asm/UTST99332/graphics_depthblur/nonmatchings/libgcc/libgcc2/__floatdidf", D_000187FC);
+/* upstream: libgcc libgcc2.c (_floatdidf.o), tree: 1.6.1 */
+/* cflags: -O2 */
+/* data-align: 8 */
+#define L_floatdidf
+#include "libgcc2.c"
