@@ -84,7 +84,12 @@ modules (`tools/nltest.py`, `tools/objcmp.py`).
   1.5.1.internal). sc_sascore is also the only module with many
   `ext`/`ins` and no leftover shift-and-mask pairs, which `-mext` (off by
   default; it turns such C into `ext`/`ins`) would explain, so one candidate
-  is `ISA_HAS_INT_CONDMOVE` = `TARGET_ALLEGREX31 && TARGET_EXT`. It is
+  is `ISA_HAS_INT_CONDMOVE` = `TARGET_ALLEGREX31 && TARGET_EXT`. Another is
+  `TARGET_ALLEGREX31 && !TARGET_NO_ULSW`: the 1.5.1 driver passes
+  `-mno-ulsw` and 1.6.1's does not, which would also explain why 1.6.1
+  (with no separate revert) has condmoves again. No 1.5.1 C unit with
+  `lwl`/`lwr` (i.e. `-mulsw`) exists to refute it, and sc_sascore has no
+  unaligned copies to show which way it was built. Both candidates are
   untested until sc_sascore functions match.
 - gcc 3.3 marks a function defined earlier in the same file const/pure
   (`mark_constant_function`) when it only reads memory, so calls to it don't
