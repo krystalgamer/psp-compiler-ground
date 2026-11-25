@@ -333,6 +333,7 @@ void sceNetFreeInternal(void *p);
 #define AF_NS 6
 #define AF_ISO 7
 #define AF_IPX 23
+#define AF_INET6 24
 #define AF_LINK 18
 #define AF_ROUTE 17
 
@@ -1174,6 +1175,7 @@ int in_cksum(struct mbuf *m, int len);
 #define IN_CLASSB_NET __IPADDR(0xffff0000)
 #define IN_CLASSC_NET __IPADDR(0xffffff00)
 #define IN_LOOPBACKNET 127
+#define IN_CLASSA_NSHIFT 24
 #define in_nullhost(x) ((x).s_addr == INADDR_ANY)
 #define in_hosteq(s, t) ((s).s_addr == (t).s_addr)
 
@@ -1422,6 +1424,7 @@ struct in_ifaddr {
 	struct sockaddr_in ia_sockmask;
 	LIST_HEAD(, in_multi) ia_multiaddrs;
 	struct in_multi *ia_allhosts;
+	int ia_unk94;
 };
 #define ia_ifp ia_ifa.ifa_ifp
 #define ia_flags ia_ifa.ifa_flags
@@ -1448,6 +1451,7 @@ struct in_multi {
 	u_int inm_timer;
 	LIST_ENTRY(in_multi) inm_list;
 	u_int inm_state;
+	struct router_info *inm_rti;
 };
 
 #define IP_MAX_MEMBERSHIPS 20
@@ -1994,5 +1998,91 @@ int arpioctl(u_long cmd, caddr_t data);
 void arp_ifinit(struct ifnet *ifp, struct ifaddr *ifa);
 void revarprequest(struct ifnet *ifp);
 int revarpwhoarewe(struct ifnet *ifp, struct in_addr *serv_in, struct in_addr *clnt_in);
+
+/* in.c */
+#define SIOCSIFDSTADDR 0x8020690E
+#define SIOCSIFBRDADDR 0x80206913
+#define SIOCSIFNETMASK 0x80206916
+#define SIOCDIFADDR 0x80206919
+#define SIOCAIFADDR 0x8040691A
+#define SIOCGIFALIAS 0xC040691B
+#define SIOCALIFADDR 0x8118691C
+#define SIOCGLIFADDR 0xC118691D
+#define SIOCDLIFADDR 0x8118691E
+#define SIOCGIFADDR 0xC0206921
+#define SIOCGIFDSTADDR 0xC0206922
+#define SIOCGIFBRDADDR 0xC0206923
+#define SIOCGIFNETMASK 0xC0206925
+#define IFA_ROUTE RTF_UP
+struct sockaddr_storage {
+	u_char ss_len;
+	u_char ss_family;
+	char __ss_pad1[6];
+	long long __ss_align;
+	char __ss_pad2[112];
+};
+struct if_laddrreq {
+	char iflr_name[16];
+	unsigned int flags;
+#define IFLR_PREFIX 0x8000
+	unsigned int prefixlen;
+	struct sockaddr_storage addr;
+	struct sockaddr_storage dstaddr;
+};
+struct in_aliasreq {
+	char ifra_name[16];
+	struct sockaddr_in ifra_addr;
+	struct sockaddr_in ifra_dstaddr;
+#define ifra_broadaddr ifra_dstaddr
+	struct sockaddr_in ifra_mask;
+};
+#define IN_LOOKUP_MULTI(addr, ifp, inm) { \
+	struct in_ifaddr *ia; \
+	IFP_TO_IA((ifp), ia); \
+	if (ia == NULL) \
+		(inm) = NULL; \
+	else \
+		for ((inm) = ia->ia_multiaddrs.lh_first; \
+		    (inm) != NULL && !in_hosteq((inm)->inm_addr, (addr)); \
+		     (inm) = inm->inm_list.le_next) \
+			 continue; \
+}
+#define in_control func_00010C04
+#define in_purgeaddr func_000116A4
+#define in_ifscrub func_00011D5C
+#define in_ifinit func_00011DC8
+#define in_savemkludge func_0001229C
+#define in_restoremkludge func_000123C0
+#define in_addmulti func_000124E4
+#define in_delmulti func_0001273C
+#define in_localaddr func_00012818
+#define in_canforward func_000128EC
+#define in_socktrim func_0001298C
+#define in_fmtaddr func_000129D0
+#define in_setmaxmtu func_00012A90
+#define in_purgeif func_00012B10
+#define in_broadcast func_00012BE8
+#define in_purgemkludge func_00012CD8
+#define in_lifaddr_ioctl func_0001184C
+int in_control(struct socket *so, u_long cmd, caddr_t data, struct ifnet *ifp);
+void in_purgeaddr(struct ifaddr *ifa, struct ifnet *ifp);
+void in_ifscrub(struct ifnet *ifp, struct in_ifaddr *ia);
+int in_ifinit(struct ifnet *ifp, struct in_ifaddr *ia, struct sockaddr_in *sin, int scrub);
+void in_savemkludge(struct in_ifaddr *oia);
+void in_restoremkludge(struct in_ifaddr *ia, struct ifnet *ifp);
+struct in_multi *in_addmulti(struct in_addr *ap, struct ifnet *ifp);
+void in_delmulti(struct in_multi *inm);
+int in_localaddr(struct in_addr in);
+int in_canforward(struct in_addr in);
+void in_socktrim(struct sockaddr_in *ap);
+const char *in_fmtaddr(struct in_addr addr);
+void in_setmaxmtu(void);
+void in_purgeif(struct ifnet *ifp);
+int in_broadcast(struct in_addr in, struct ifnet *ifp);
+void in_purgemkludge(struct ifnet *ifp);
+#define igmp_joingroup func_0001B3D0
+#define igmp_leavegroup func_0001B50C
+void igmp_joingroup(struct in_multi *inm);
+void igmp_leavegroup(struct in_multi *inm);
 
 #endif

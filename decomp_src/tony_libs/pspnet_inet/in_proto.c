@@ -2,6 +2,8 @@
 #include "common.h"
 #include "inetlib.h"
 
+const char D_0002DB14[] = "internet";
+
 extern int D_0002E794, D_0002E798, D_0002E79C, D_0002E7A0, D_0002E7A4, D_0002E7A8;
 extern char D_0002F648[];
 

@@ -45,3 +45,4 @@
 0x2CA04 libc_str         1.5.1.internal  libc_str.c
 0x2CCAC libc_printf      1.5.1.internal  libc_printf.c
 rodata 0x2DB04 if_ether   # "arp" (only referenced from .data)
+rodata 0x2DB14 in_proto   # "internet" (inetdomain name, only referenced from .data)
