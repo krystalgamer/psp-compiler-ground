@@ -101,7 +101,117 @@ static void copy_rle8(void *dst, const void *src, int width, int height);
 /* SDK functions */
 int sceKernelDcacheWritebackAll(void);
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_model2/nonmatchings/load_bmp", sceGimPictureLoadBmp);
+int sceKernelDcacheWritebackAll(void);
+int sceKernelDcacheWritebackAll(void);
+#define read_header read_header_BCF0
+#define read_short read_short_BDCC
+_Bool sceGimPictureReallocPalette(SceGimPicture *picture, int format, int w, int level, int frame, void *pixels);
+_Bool sceGimPictureReallocImage(SceGimPicture *picture, int format, int w, int h, int level, int frame, void *pixels);
+void *sceGimPictureGetImagePixels(SceGimPicture *picture, int level, int frame);
+void *sceGimPictureGetPalettePixels(SceGimPicture *picture, int level, int frame);
+void sceGimPictureUnload(SceGimPicture *picture);
+_Bool sceGimPictureLoadBmp(SceGimPicture *picture, const void *buf, int size)
+{
+	BmpHeader header;
+	int clut_size;
+	const void *src;
+	int width;
+	int height;
+
+	if (picture == NULL)
+		return 0;
+	sceGimPictureUnload(picture);
+	read_header(buf, &header);
+	clut_size = (header.bits - 54) / 4;
+	if (clut_size > 0 && header.bit_count < 16) {
+		int width;
+		void *dst;
+		const void *src;
+
+		width = (clut_size <= 16) ? 16 : 256;
+		sceGimPictureReallocPalette(picture, 3, width, 1, 1, NULL);
+		dst = sceGimPictureGetPalettePixels(picture, 0, 0);
+		if (dst == NULL)
+			return 0;
+		src = (const char *)buf + 54;
+		copy_8888(dst, src, clut_size, 1, 0xff);
+	}
+	src = (const char *)buf + header.bits;
+	width = header.width;
+	height = header.height;
+	switch (header.bit_count) {
+	case 4:
+		{
+			void *dst;
+
+			sceGimPictureReallocImage(picture, 4, width, height, 1, 1, NULL);
+			dst = sceGimPictureGetImagePixels(picture, 0, 0);
+			if (dst == NULL)
+				return 0;
+			if (header.compress == 0)
+				copy_idx4(dst, src, width, height);
+			else
+				copy_rle4(dst, src, width, height);
+		}
+		break;
+	case 8:
+		{
+			void *dst;
+
+			sceGimPictureReallocImage(picture, 5, width, height, 1, 1, NULL);
+			dst = sceGimPictureGetImagePixels(picture, 0, 0);
+			if (dst == NULL)
+				return 0;
+			if (header.compress == 0)
+				copy_idx8(dst, src, width, height);
+			else
+				copy_rle8(dst, src, width, height);
+		}
+		break;
+	case 16:
+		{
+			void *dst;
+
+			sceGimPictureReallocImage(picture, 1, width, height, 1, 1, NULL);
+			dst = sceGimPictureGetImagePixels(picture, 0, 0);
+			if (dst == NULL)
+				return 0;
+			if (header.compress == 0) {
+				copy_5551(dst, src, width, height);
+			} else {
+				picture->m_image->format = 0;
+				copy_5650(dst, src, width, height);
+			}
+		}
+		break;
+	case 24:
+		{
+			void *dst;
+
+			sceGimPictureReallocImage(picture, 3, width, height, 1, 1, NULL);
+			dst = sceGimPictureGetImagePixels(picture, 0, 0);
+			if (dst == NULL)
+				return 0;
+			copy_8880(dst, src, width, height);
+		}
+		break;
+	case 32:
+		{
+			void *dst;
+
+			sceGimPictureReallocImage(picture, 3, width, height, 1, 1, NULL);
+			dst = sceGimPictureGetImagePixels(picture, 0, 0);
+			if (dst == NULL)
+				return 0;
+			copy_8888(dst, src, width, height, 0);
+		}
+		break;
+	default:
+		return 0;
+	}
+	sceKernelDcacheWritebackAll();
+	return 1;
+}
 
 #define read_header read_header_BCF0
 #define read_short read_short_BDCC
