@@ -85,24 +85,33 @@ def module_labels(target, module):
 
 def asm_refs(target, module, unit, func):
     f = ROOT / "tmp" / "asm" / target / module / "nonmatchings" / unit / f"{func}.s"
-    return re.findall(r"%(?:hi|lo)\((D_[0-9A-F]{8})\)", f.read_text()) if f.exists() else None
+    return re.findall(r"%(?:hi|lo)\(([A-Za-z_]\w*)\)", f.read_text()) if f.exists() else None
 
 
 def map_labels(body, src, target, module, unit, func):
     """D_ labels are per module: rename those of the module the body comes
     from after the target's asm of the same function (same reference order)"""
-    labs = set(re.findall(r"\bD_[0-9A-F]{8}\b", body)) - module_labels(target, module)
-    if not labs:
-        return body
     rel = src.relative_to(ROOT / "decomp_src").parts
     a = asm_refs(rel[0], rel[1], str(Path(*rel[2:]))[:-2], func)
     b = asm_refs(target, module, unit, func)
+    words = set(re.findall(r"\b[A-Za-z_]\w*\b", body))
+    # symbols the source module's asm calls differently from the target's
+    labs = {x for x in words & set(a or []) if x not in set(b or [])}
+    labs |= set(re.findall(r"\bD_[0-9A-F]{8}\b", body)) - module_labels(target, module)
+    if not labs:
+        return body
     if not a or not b or len(a) != len(b):
         return None
     pairs = dict(zip(a, b))
     if any(pairs.get(x, y) != y for x, y in zip(a, b)) or not labs <= set(pairs):
         return None
-    return re.sub(r"\bD_[0-9A-F]{8}\b", lambda m: pairs.get(m[0], m[0]), body)
+    # a body that names the symbol (not a #define'd label) keeps its name via a #define
+    out = re.sub(r"\bD_[0-9A-F]{8}\b", lambda m: pairs.get(m[0], m[0]), body)
+    named = sorted(x for x in labs if not x.startswith("D_"))
+    if named:
+        out = ("".join(f"extern __typeof__({x}) {pairs[x]};\n#define {x} {pairs[x]}\n" for x in named)
+               + out + "".join(f"#undef {x}\n" for x in named))
+    return out
 
 
 def try_body(target, module, unit, func, body, mod):
