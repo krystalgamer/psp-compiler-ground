@@ -9,7 +9,238 @@ SceUInt func_00002D48(void *common);
 int func_00002C74(SceSize args, void *argp);
 /* --- end declarations --- */
 
-INCLUDE_ASM("tmp/asm/tony_libs/pspnet/nonmatchings/bpf_filter", func_000047EC);
+u_int func_000047EC(struct bpf_insn *pc, u_char *p, u_int wirelen, u_int buflen)
+{
+	u_int A, X;
+	int k;
+	int mem[16];
+
+	if (pc == 0)
+		return (u_int)-1;
+	A = 0;
+	X = 0;
+	--pc;
+	while (1) {
+		++pc;
+		switch (pc->code) {
+		default:
+			return 0;
+		case 0x06:
+			return (u_int)pc->k;
+		case 0x16:
+			return (u_int)A;
+		case 0x20:
+			k = pc->k;
+			if (k + sizeof(int) > buflen) {
+				int merr;
+
+				if (buflen != 0)
+					return 0;
+				A = func_00004DD8((struct mbuf *)p, k, &merr);
+				if (merr != 0)
+					return 0;
+				continue;
+			}
+			A = EXTRACT_LONG(&p[k]);
+			continue;
+		case 0x28:
+			k = pc->k;
+			if (k + sizeof(short) > buflen) {
+				int merr;
+
+				if (buflen != 0)
+					return 0;
+				A = func_00004EEC((struct mbuf *)p, k, &merr);
+				continue;
+			}
+			A = EXTRACT_SHORT(&p[k]);
+			continue;
+		case 0x30:
+			k = pc->k;
+			if (k >= buflen) {
+				struct mbuf *m;
+				int len;
+
+				if (buflen != 0)
+					return 0;
+				m = (struct mbuf *)p;
+				MINDEX(len, m, k);
+				A = mtod(m, u_char *)[k];
+				continue;
+			}
+			A = p[k];
+			continue;
+		case 0x80:
+			A = wirelen;
+			continue;
+		case 0x81:
+			X = wirelen;
+			continue;
+		case 0x40:
+			k = X + pc->k;
+			if (k + sizeof(int) > buflen) {
+				int merr;
+
+				if (buflen != 0)
+					return 0;
+				A = func_00004DD8((struct mbuf *)p, k, &merr);
+				if (merr != 0)
+					return 0;
+				continue;
+			}
+			A = EXTRACT_LONG(&p[k]);
+			continue;
+		case 0x48:
+			k = X + pc->k;
+			if (k + sizeof(short) > buflen) {
+				int merr;
+
+				if (buflen != 0)
+					return 0;
+				A = func_00004EEC((struct mbuf *)p, k, &merr);
+				if (merr != 0)
+					return 0;
+				continue;
+			}
+			A = EXTRACT_SHORT(&p[k]);
+			continue;
+		case 0x50:
+			k = X + pc->k;
+			if (k >= buflen) {
+				struct mbuf *m;
+				int len;
+
+				if (buflen != 0)
+					return 0;
+				m = (struct mbuf *)p;
+				MINDEX(len, m, k);
+				A = mtod(m, u_char *)[k];
+				continue;
+			}
+			A = p[k];
+			continue;
+		case 0xB1:
+			k = pc->k;
+			if (k >= buflen) {
+				struct mbuf *m;
+				int len;
+
+				if (buflen != 0)
+					return 0;
+				m = (struct mbuf *)p;
+				MINDEX(len, m, k);
+				X = (mtod(m, char *)[k] & 0xf) << 2;
+				continue;
+			}
+			X = (p[pc->k] & 0xf) << 2;
+			continue;
+		case 0x00:
+			A = pc->k;
+			continue;
+		case 0x01:
+			X = pc->k;
+			continue;
+		case 0x60:
+			A = mem[pc->k];
+			continue;
+		case 0x61:
+			X = mem[pc->k];
+			continue;
+		case 0x02:
+			mem[pc->k] = A;
+			continue;
+		case 0x03:
+			mem[pc->k] = X;
+			continue;
+		case 0x05:
+			pc += pc->k;
+			continue;
+		case 0x25:
+			pc += (A > pc->k) ? pc->jt : pc->jf;
+			continue;
+		case 0x35:
+			pc += (A >= pc->k) ? pc->jt : pc->jf;
+			continue;
+		case 0x15:
+			pc += (A == pc->k) ? pc->jt : pc->jf;
+			continue;
+		case 0x45:
+			pc += (A & pc->k) ? pc->jt : pc->jf;
+			continue;
+		case 0x2D:
+			pc += (A > X) ? pc->jt : pc->jf;
+			continue;
+		case 0x3D:
+			pc += (A >= X) ? pc->jt : pc->jf;
+			continue;
+		case 0x1D:
+			pc += (A == X) ? pc->jt : pc->jf;
+			continue;
+		case 0x4D:
+			pc += (A & X) ? pc->jt : pc->jf;
+			continue;
+		case 0x0C:
+			A += X;
+			continue;
+		case 0x1C:
+			A -= X;
+			continue;
+		case 0x2C:
+			A *= X;
+			continue;
+		case 0x3C:
+			if (X == 0)
+				return 0;
+			A /= X;
+			continue;
+		case 0x5C:
+			A &= X;
+			continue;
+		case 0x4C:
+			A |= X;
+			continue;
+		case 0x6C:
+			A <<= X;
+			continue;
+		case 0x7C:
+			A >>= X;
+			continue;
+		case 0x04:
+			A += pc->k;
+			continue;
+		case 0x14:
+			A -= pc->k;
+			continue;
+		case 0x24:
+			A *= pc->k;
+			continue;
+		case 0x34:
+			A /= pc->k;
+			continue;
+		case 0x54:
+			A &= pc->k;
+			continue;
+		case 0x44:
+			A |= pc->k;
+			continue;
+		case 0x64:
+			A <<= pc->k;
+			continue;
+		case 0x74:
+			A >>= pc->k;
+			continue;
+		case 0x84:
+			A = -A;
+			continue;
+		case 0x07:
+			X = A;
+			continue;
+		case 0x87:
+			A = X;
+			continue;
+		}
+	}
+}
 
 int func_00004CC8(struct bpf_insn *f, int len)
 {

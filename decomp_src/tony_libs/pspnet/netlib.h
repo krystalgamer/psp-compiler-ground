@@ -661,7 +661,9 @@ static inline u_int umin(u_int a, u_int b)
 	return a < b ? a : b;
 }
 
-u_int func_000047EC(void *pc, u_char *p, u_int wirelen, u_int buflen);
+u_int func_000047EC(struct bpf_insn *pc, u_char *p, u_int wirelen, u_int buflen);
+int func_00004DD8(struct mbuf *m, int k, int *err);
+int func_00004EEC(struct mbuf *m, int k, int *err);
 void func_000046A0(struct bpf_d *d, u_char *pkt, u_int pktlen, u_int snaplen, void *(*cpfn)(void *, const void *, u_int));
 void *func_00004618(void *dst_arg, const void *src_arg, u_int len);
 
