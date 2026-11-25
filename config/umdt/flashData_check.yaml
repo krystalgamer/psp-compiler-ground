@@ -53,6 +53,7 @@ segments:
     vram: 0x0
     subsegments:
       - [0x80, c, flashData_check]
+      - [0x3E4, c, flashData_check2]
       - { start: 0x668, type: asm, name: sceStub, linker_section: .sceStub.text }
       - { start: 0x6C0, type: rodata, name: lib_ent_top, linker_section: .lib.ent.top }
       - { start: 0x6C4, type: rodata, name: lib_ent, linker_section: .lib.ent }
@@ -61,6 +62,7 @@ segments:
       - { start: 0x754, type: rodata, name: resident, linker_section: .rodata.sceResident }
       - { start: 0x7DC, type: rodata, name: nid, linker_section: .rodata.sceNid }
       - [0x808, .rodata, flashData_check]
+      - [0x824, .rodata, flashData_check2]
   - name: flashData_check_seg1
     type: code
     start: 0x870
