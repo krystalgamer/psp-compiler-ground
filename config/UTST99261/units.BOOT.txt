@@ -58,6 +58,7 @@ cnfsavemgr                                   1.5.1           cnfsavemgr.c
 xpdebugprint                                 1.5.1           xpdebugprint.c
 necpsp/devpatch                              1.5.1           necpsp/devpatch.c
 aosspsp/aosspsp                              1.5.1           aosspsp/aosspsp.c
+libgu                                        1.5.1.internal  libgu.c
 newlib/libm/math/s_atan                      1.5.1           ../../../../../newlib-1.12.0/newlib/libm/math/s_atan.c
 newlib/libm/math/s_ceil                      1.5.1           ../../../../../newlib-1.12.0/newlib/libm/math/s_ceil.c
 newlib/libm/math/s_cos                       1.5.1           ../../../../../newlib-1.12.0/newlib/libm/math/s_cos.c
@@ -94,6 +95,8 @@ newlib/libm/common/s_matherr                 1.5.1           ../../../../../newl
 newlib/libm/common/s_rint                    1.5.1           ../../../../../newlib-1.12.0/newlib/libm/common/s_rint.c
 newlib/libm/common/s_scalbn                  1.5.1           ../../../../../newlib-1.12.0/newlib/libm/common/s_scalbn.c
 newlib/libm/common/s_copysign                1.5.1           ../../../../../newlib-1.12.0/newlib/libm/common/s_copysign.c
+libwave                                      1.5.1.internal  libwave.c
+kernel_bridge                                1.5.1.internal  kernel_bridge.c
 newlib/libc/stdlib/atexit                    1.5.1           ../../../../../newlib-1.12.0/newlib/libc/stdlib/atexit.c
 newlib/libc/stdlib/atof                      1.5.1           ../../../../../newlib-1.12.0/newlib/libc/stdlib/atof.c
 newlib/libc/stdlib/atoi                      1.5.1           ../../../../../newlib-1.12.0/newlib/libc/stdlib/atoi.c
