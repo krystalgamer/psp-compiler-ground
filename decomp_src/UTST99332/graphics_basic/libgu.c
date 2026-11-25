@@ -4,18 +4,21 @@ typedef struct {
 	unsigned int *start;
 	unsigned int *current;
 	int parent_context;
-	int unk0C;
+	int scissor_enable;
 	int scissor_start[2];
 	int scissor_end[2];
 	int near_plane;
 	int far_plane;
 	int depth_offset;
-	int unk2C[4];
+	int fragment_2x;
+	int texture_function;
+	int texture_proj_map_mode;
+	int texture_map_mode;
 	int sprite_mode[4];
 	unsigned int clear_color;
 	unsigned int clear_stencil;
 	unsigned int clear_depth;
-	int unk58;
+	int texture_mode;
 } GuContext;
 
 typedef struct {
@@ -104,6 +107,12 @@ extern int aw_frame;
 
 int sceDisplaySetMode(int mode, int width, int height);
 int sceDisplaySetFrameBuf(void *topaddr, int bufferwidth, int pixelformat, int sync);
+
+extern const unsigned int tbpcmd_tbl[8];
+extern const unsigned int tbwcmd_tbl[8];
+extern const unsigned int tsizecmd_tbl[8];
+void sceGuTexFlush(void);
+int get_exp(int val);
 
 void callback_sig(int id, void *arg)
 {
@@ -598,14 +607,26 @@ INCLUDE_ASM("tmp/asm/UTST99332/graphics_basic/nonmatchings/libgu", sceGuLightSpo
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_basic/nonmatchings/libgu", sceGuLightColor);
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_basic/nonmatchings/libgu", sceGuTexMode);
+void sceGuTexMode(int tpsm, int maxmips, int a2, int swizzle)
+{
+	_ctx[__aw_list_mode].texture_mode = tpsm;
+	send_commandi(194, (maxmips << 16) | (a2 << 8) | swizzle);
+	send_commandi(195, tpsm);
+	sceGuTexFlush();
+}
 
 void sceGuTexFilter(int min, int mag)
 {
 	send_commandi(198, ((mag << 8) | min));
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_basic/nonmatchings/libgu", sceGuTexFunc);
+void sceGuTexFunc(int tfx, int tcc)
+{
+	GuContext *context = &_ctx[__aw_list_mode];
+
+	context->texture_function = (tcc << 8) | tfx;
+	send_commandi(201, context->fragment_2x | ((tcc << 8) | tfx));
+}
 
 void sceGuTexEnvColor(int color)
 {
@@ -617,11 +638,33 @@ void sceGuTexWrap(int u, int v)
 	send_commandi(199, ((v << 8) | u));
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_basic/nonmatchings/libgu", sceGuTexLevelMode);
+void sceGuTexLevelMode(unsigned int mode, float bias)
+{
+	int offset = (int)(bias * 16.0f);
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_basic/nonmatchings/libgu", sceGuTexMapMode);
+	if (offset >= 128)
+		offset = 127;
+	else if (offset < -128)
+		offset = -128;
+	send_commandi(200, (((unsigned int)offset) << 16) | mode);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_basic/nonmatchings/libgu", sceGuTexProjMapMode);
+void sceGuTexMapMode(int mode, unsigned int a1, unsigned int a2)
+{
+	GuContext *context = &_ctx[__aw_list_mode];
+
+	context->texture_map_mode = mode & 0x03;
+	send_commandi(192, context->texture_proj_map_mode | (mode & 0x03));
+	send_commandi(193, ((a2 & 0x03) << 8) | (a1 & 0x03));
+}
+
+void sceGuTexProjMapMode(int mode)
+{
+	GuContext *context = &_ctx[__aw_list_mode];
+
+	context->texture_proj_map_mode = ((mode & 0x03) << 8);
+	send_commandi(192, ((mode & 0x03) << 8) | context->texture_map_mode);
+}
 
 void sceGuTexSync(void)
 {
@@ -639,18 +682,31 @@ void sceGuTexFlush(void)
 	send_commandi(203, 0x000000);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_basic/nonmatchings/libgu", sceGuTexSlope);
+void sceGuTexSlope(float slope)
+{
+	send_commandf(208, slope);
+}
 
 void sceGuClutMode(int cpsm, int shift, int mask, int a3)
 {
 	send_commandi(197, ((a3 << 0x10) | (mask << 8) | (shift * 4) | cpsm));
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_basic/nonmatchings/libgu", sceGuClutLoad);
+void sceGuClutLoad(int num_blocks, const void *cbp)
+{
+	send_commandi(176, ((unsigned int)cbp) & 0xffffff);
+	send_commandi(177, (((unsigned int)cbp) >> 8) & 0xf0000);
+	send_commandi(196, num_blocks);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_basic/nonmatchings/libgu", sceGuFog);
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_basic/nonmatchings/libgu", sceGuColorFunc);
+void sceGuColorFunc(int func, unsigned int color, unsigned int mask)
+{
+	send_commandi(216, func & 0x03);
+	send_commandi(217, color);
+	send_commandi(218, mask);
+}
 
 void sceGuAlphaFunc(int a0, int a1, int a2)
 {
@@ -667,23 +723,52 @@ void sceGuDepthMask(int mask)
 	send_commandi(231, mask);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_basic/nonmatchings/libgu", sceGuPixelMask);
+void sceGuPixelMask(unsigned int mask)
+{
+	send_commandi(232, mask);
+	*(pList->current++) = (233 << 24) | (mask >> 24);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_basic/nonmatchings/libgu", sceGuScissor);
+void sceGuScissor(int x, int y, int w, int h)
+{
+	GuContext *context = &_ctx[__aw_list_mode];
+
+	int ex = x + w - 1;
+	int ey = y + h - 1;
+
+	context->scissor_start[0] = x;
+	context->scissor_start[1] = y;
+	context->scissor_end[0] = ex;
+	context->scissor_end[1] = ey;
+	if (context->scissor_enable) {
+		send_commandi(212, (y << 10) | x);
+		send_commandi(213, (ey << 10) | ex);
+		send_commandi(21, 0);
+		send_commandi(22, (ey << 10) | ex);
+	}
+}
 
 void sceGuStencilFunc(int func, int ref, int mask)
 {
 	send_commandi(220, (((mask & 0xFF) << 0x10) | ((ref & 0xFF) << 8) | func));
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_basic/nonmatchings/libgu", sceGuLogicalOp);
+void sceGuLogicalOp(int op)
+{
+	send_commandi(230, op & 0x0f);
+}
 
 void sceGuStencilOp(int fail, int zfail, int zpass)
 {
 	send_commandi(221, ((zpass << 0x10) | (zfail << 8) | fail));
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_basic/nonmatchings/libgu", sceGuBlendFunc);
+void sceGuBlendFunc(int op, int src, int dest, unsigned int srcfix, unsigned int destfix)
+{
+	send_commandi(223, (op << 8) | (dest << 4) | src);
+	send_commandi(224, srcfix & 0xffffff);
+	send_commandi(225, destfix & 0xffffff);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_basic/nonmatchings/libgu", sceGuBoneMatrix);
 
