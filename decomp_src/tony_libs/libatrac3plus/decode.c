@@ -50,7 +50,31 @@ void func_00002938(AtracInfo *info)
 
 INCLUDE_ASM("tmp/asm/tony_libs/libatrac3plus/nonmatchings/decode", func_000029E4);
 
-INCLUDE_ASM("tmp/asm/tony_libs/libatrac3plus/nonmatchings/decode", func_00002AC0);
+unsigned int func_00002AC0(AtracInfo *info)
+{
+	unsigned int base = info->unk40;
+	unsigned int off = 0;
+
+	switch (info->state) {
+	case 3:
+		if (info->unk28 + info->unk3C < info->unk30)
+			off = func_00002F10(info->unk48, info->unk44, info->unk3C, info->sampleSize);
+		break;
+	case 4:
+		off = func_00002F10(info->unk48, info->unk44, info->unk3C, info->sampleSize);
+		break;
+	case 5:
+		if (info->unkC > info->unk1C) {
+			base = info->unk4C;
+			if (info->unk28 + info->unk3C < info->unk30)
+				off = func_00002F10(info->unk54, info->unk50, info->unk3C, info->sampleSize);
+		} else {
+			off = func_00002F10(info->unk48, info->unk44, info->unk3C, info->sampleSize);
+		}
+		break;
+	}
+	return base + off;
+}
 
 INCLUDE_ASM("tmp/asm/tony_libs/libatrac3plus/nonmatchings/decode", func_00002BA0);
 

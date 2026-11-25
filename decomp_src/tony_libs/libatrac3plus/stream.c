@@ -40,7 +40,26 @@ unsigned int func_00002F74(unsigned int a, unsigned int b, unsigned int start, u
 	return start + (x - end - 1) % (end - start + 1);
 }
 
-INCLUDE_ASM("tmp/asm/tony_libs/libatrac3plus/nonmatchings/stream", func_00002FC0);
+unsigned int func_00002FC0(AtracInfo *info)
+{
+	unsigned int ret = 0;
+
+	switch (info->state) {
+	case 3:
+		ret = func_0000303C(info);
+		break;
+	case 4:
+		ret = func_00003064(info);
+		break;
+	case 5:
+		if (info->unkC > info->unk1C)
+			ret = func_0000303C(info);
+		else
+			ret = func_00003064(info);
+		break;
+	}
+	return ret;
+}
 
 unsigned int func_0000303C(AtracInfo *info)
 {

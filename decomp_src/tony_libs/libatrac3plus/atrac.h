@@ -15,7 +15,7 @@ typedef struct {
 	unsigned int unk28;
 	unsigned int unk2C;
 	unsigned int unk30;
-	int state;
+	unsigned int state;
 	int unk38;
 	unsigned int unk3C;
 	unsigned int unk40;
@@ -74,6 +74,13 @@ static inline int frameSamples(AtracInfo *info)
 	return n;
 }
 
+static inline unsigned int umin(unsigned int a, unsigned int b)
+{
+	if (b >= a)
+		b = a;
+	return b;
+}
+
 static inline int frameSkip(AtracInfo *info)
 {
 	int n = 0x170;
@@ -99,6 +106,13 @@ void func_00002938(AtracInfo *info);
 int func_00002CC8(AtracInfo *info);
 int func_00002D18(AtracInfo *info);
 int func_00002DD0(AtracInfo *info);
+unsigned int func_00002F10(unsigned int a, unsigned int b, unsigned int c, unsigned int d);
+unsigned int func_00002F50(unsigned int a, unsigned int b, unsigned int c, unsigned int d);
+unsigned int func_00002F74(unsigned int a, unsigned int b, unsigned int start, unsigned int end, unsigned int lim);
+unsigned int func_00002FC0(AtracInfo *info);
+unsigned int func_0000303C(AtracInfo *info);
+unsigned int func_00003064(AtracInfo *info);
+unsigned int func_000030FC(unsigned int a, unsigned int b, unsigned int c, unsigned int d);
 unsigned int func_00001FAC(AtracInfo *info, unsigned int pos);
 int func_00002064(AtracInfo *info, unsigned int pos);
 unsigned int func_00002820(unsigned int a, unsigned int b, unsigned int c);
