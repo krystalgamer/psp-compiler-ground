@@ -6,8 +6,16 @@ register unsigned int k1 asm("$27");
 #define K1_SAVE(old) asm volatile("move %0, $27\n\tsrl $27, $27, 16" : "=r"(old))
 #define K1_RESTORE(old) asm volatile("move $27, %0" : : "r"(old))
 #define K1_USER() ({ unsigned int _u; asm volatile("andi %0, $27, 0x18" : "=r"(_u)); _u; })
-#define K1_BADPTR(p, size) ((int)((unsigned int)(p) | ((unsigned int)(p) + (size))) < 0)
-#define K1_BADBUF(p, size) ((int)((unsigned int)(p) | (unsigned int)(size) | ((unsigned int)(p) + (unsigned int)(size))) < 0)
+
+static inline int k1StaBufOk(const void *p, unsigned int size)
+{
+	return !K1_USER() || (int)((unsigned int)p | ((unsigned int)p + size)) >= 0;
+}
+
+static inline int k1DynBufOk(unsigned int p, unsigned int size)
+{
+	return !K1_USER() || (int)(p | size | (p + size)) >= 0;
+}
 
 typedef struct {
 	unsigned int unk0;
@@ -59,17 +67,16 @@ static inline int convErr(int r)
 
 	switch (r) {
 	case -2:
-		e = 0x80000002;
+		e = 0x80000000;
 		break;
 	case -1:
-		e = 0x807F0001;
-		break;
+		return 0x807F0001;
 	case -3:
 	default:
-		e = 0x807F0002;
+		e = 0x807F0000;
 		break;
 	}
-	return e;
+	return e | 2;
 }
 
 #endif
