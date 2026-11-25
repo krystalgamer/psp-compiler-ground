@@ -171,9 +171,55 @@ int func_00001D94(Guid *a, Guid *b)
 	return ret;
 }
 
-INCLUDE_ASM("tmp/asm/tony_libs/libatrac3plus/nonmatchings/header", func_00001DFC);
+unsigned int func_00001DFC(const unsigned char *buf, unsigned int *pos, unsigned int size)
+{
+	unsigned int p = *pos;
+	unsigned int v = 0;
+	int i;
 
-INCLUDE_ASM("tmp/asm/tony_libs/libatrac3plus/nonmatchings/header", func_00001E8C);
+	if (p + 4 <= size) {
+		v = buf[p];
+		v |= buf[p + 1] << 8;
+		v |= buf[p + 2] << 16;
+		v |= buf[p + 3] << 24;
+		*pos = p + 4;
+	} else {
+		for (i = 0; i < 4; i++) {
+			unsigned char c;
+			if (p + i + 1 <= size)
+				c = buf[p + i];
+			else
+				c = 0;
+			v |= c << (i * 8);
+		}
+		*pos = size;
+	}
+	return v;
+}
+
+unsigned short func_00001E8C(const unsigned char *buf, unsigned int *pos, unsigned int size)
+{
+	unsigned int p = *pos;
+	unsigned int v = 0;
+	int i;
+
+	if (p + 2 <= size) {
+		v = buf[p];
+		v |= buf[p + 1] << 8;
+		*pos = p + 2;
+	} else {
+		for (i = 0; i < 2; i++) {
+			unsigned char c;
+			if (p + i + 1 <= size)
+				c = buf[p + i];
+			else
+				c = 0;
+			v |= c << (i * 8);
+		}
+		*pos = size;
+	}
+	return v;
+}
 
 int func_00001F04(const unsigned char *a, const unsigned char *b, unsigned int size)
 {
