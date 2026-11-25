@@ -5,8 +5,9 @@
 #include "mpeg.h"
 
 extern char *D_00007D80;
+extern const char D_00007994[];
 
-unsigned int func_00007500(int type);
+extern const StreamTypeInfo D_000078F4[];
 /* --- end declarations --- */
 
 int func_000060E0(void)
@@ -40,7 +41,33 @@ int func_00006158(int *needed, int type)
 	return ret;
 }
 
-INCLUDE_ASM("tmp/asm/tony_libs/mpeg/nonmatchings/mpeg_audio", func_00006208);
+int func_00006208(AudioCtx *ctx, int edram, unsigned int size, AudioParam2 *p2, AudioParam4 *p4)
+{
+	int ret;
+
+	func_00005AE0(D_00007D88);
+	ctx->edram = edram;
+	ctx->unk30 = 1;
+	ctx->p28 = *p2;
+	ctx->p2C = *p4;
+	ctx->unk14 = 1;
+	ret = sceAudiocodecCheckNeedMem(ctx, 0x1000);
+	if (ret != 0)
+		goto err;
+	if (size < (unsigned int)ctx->neededMem) {
+		ret = 0x807F0001;
+		func_00005B7C(D_00007D88);
+		return ret;
+	}
+	ret = sceAudiocodecInit(ctx, 0x1000);
+	if (ret == 0) {
+		func_00005B7C(D_00007D88);
+		return 0;
+	}
+err:
+	func_00005B7C(D_00007D88);
+	return ret;
+}
 
 void func_00006314(void)
 {

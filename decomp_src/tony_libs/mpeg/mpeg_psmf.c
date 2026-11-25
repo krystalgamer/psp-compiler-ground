@@ -5,6 +5,7 @@
 #include "mpeg.h"
 
 extern char *D_00007D80;
+extern const char D_00007994[];
 
 extern const StreamTypeInfo D_000078F4[];
 /* --- end declarations --- */
@@ -13,7 +14,12 @@ INCLUDE_RODATA("tmp/asm/tony_libs/mpeg/nonmatchings/mpeg_psmf", D_00007994);
 
 INCLUDE_ASM("tmp/asm/tony_libs/mpeg/nonmatchings/mpeg_psmf", sceMpegQueryStreamOffset);
 
-INCLUDE_ASM("tmp/asm/tony_libs/mpeg/nonmatchings/mpeg_psmf", func_00001100);
+int func_00001100(SceMpeg *mp)
+{
+	if (strcmp(mp->sys->magic, D_00007994) != 0)
+		return SCE_MPEG_ERROR_INVALID_VALUE;
+	return 0;
+}
 
 int sceMpegQueryStreamSize(void *addr, unsigned int *size)
 {
