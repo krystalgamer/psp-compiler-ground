@@ -9,4 +9,5 @@ float sinf(float);
 float cosf(float);
 float sqrtf(float);
 double pow(double, double);
+double fabs(double);
 #endif
