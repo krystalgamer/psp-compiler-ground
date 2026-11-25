@@ -124,7 +124,112 @@ bad:
 	return error;
 }
 
-INCLUDE_ASM("tmp/asm/tony_libs/pspnet/nonmatchings/bpf", func_00003B20);
+int func_00003B20(int unit, u_long cmd, void *addr)
+{
+	struct bpf_d *d = &D_0000B8E4[unit];
+	int s, error = 0;
+
+	switch (cmd) {
+	default:
+		error = 22;
+		break;
+	case 0x4004667F: {
+		int n;
+
+		s = _sce_pspnet_spllock();
+		n = d->bd_slen;
+		if (d->bd_hbuf)
+			n += d->bd_hlen;
+		_sce_pspnet_splunlock(s);
+		*(int *)addr = n;
+		break;
+	}
+	case 0x40044266:
+		*(u_int *)addr = d->bd_bufsize;
+		break;
+	case 0xC0044266:
+		if (d->bd_bif != NULL)
+			error = 22;
+		else {
+			u_int size = *(u_int *)addr;
+
+			if (size > 0x8000)
+				*(u_int *)addr = size = 0x8000;
+			else if (size < 32)
+				*(u_int *)addr = size = 32;
+			d->bd_bufsize = size;
+		}
+		break;
+	case 0x80084267:
+		error = func_00003E80(d, (struct bpf_program *)addr);
+		break;
+	case 0x20004268:
+		s = _sce_pspnet_spllock();
+		bpf_reset_d(d);
+		_sce_pspnet_splunlock(s);
+		break;
+	case 0x4004426A:
+		if (d->bd_bif == NULL)
+			error = 22;
+		else
+			*(u_int *)addr = d->bd_bif->bif_dlt;
+		break;
+	case 0x4020426B:
+		if (d->bd_bif == NULL)
+			error = 22;
+		else
+			func_000040D8(d->bd_bif->bif_ifp, (struct ifreq *)addr);
+		break;
+	case 0x8020426C:
+		error = func_00003FA4(d, (struct ifreq *)addr);
+		break;
+	case 0x8008426D: {
+		struct timeval *tv = (struct timeval *)addr;
+
+		d->bd_rtout = tv->tv_sec * 100 + tv->tv_usec / 10000U;
+		if ((d->bd_rtout == 0) && (tv->tv_usec != 0))
+			d->bd_rtout = 1;
+		break;
+	}
+	case 0x4008426E: {
+		struct timeval *tv = (struct timeval *)addr;
+
+		tv->tv_sec = d->bd_rtout / 100;
+		tv->tv_usec = (d->bd_rtout % 100) * 10000;
+		break;
+	}
+	case 0x4008426F: {
+		struct bpf_stat *bs = (struct bpf_stat *)addr;
+
+		bs->bs_recv = d->bd_rcount;
+		bs->bs_drop = d->bd_dcount;
+		break;
+	}
+	case 0x80044270:
+		d->bd_immediate = *(u_int *)addr;
+		break;
+	case 0x40044271: {
+		struct bpf_version *bv = (struct bpf_version *)addr;
+
+		bv->bv_major = 1;
+		bv->bv_minor = 1;
+		break;
+	}
+	case 0x40044274:
+		*(u_int *)addr = d->bd_hdrcmplt;
+		break;
+	case 0x80044275:
+		d->bd_hdrcmplt = *(u_int *)addr ? 1 : 0;
+		break;
+	case 0x8004667E:
+		if (*(int *)addr)
+			d->bd_rtout = -1;
+		else
+			d->bd_rtout = 0;
+		break;
+	}
+	return error;
+}
 
 int func_00003E80(struct bpf_d *d, struct bpf_program *fp)
 {
@@ -196,9 +301,9 @@ int func_00003FA4(struct bpf_d *d, struct ifreq *ifr)
 	return 6;
 }
 
-void func_000040D8(struct bpf_d *d, struct bpf_stat4 *out)
+void func_000040D8(struct ifnet *ifp, struct ifreq *ifr)
 {
-	*out = *(struct bpf_stat4 *)&d->bd_hlen;
+	memcpy(ifr->ifr_name, ifp->if_xname, 16);
 }
 
 int func_000040FC(struct bpf_d *d)

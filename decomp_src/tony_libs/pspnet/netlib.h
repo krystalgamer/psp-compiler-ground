@@ -256,7 +256,7 @@ int func_000042AC(u_int unit);
 int func_00004318(int fd);
 int func_000037D4(int fd, struct uio *uio);
 int func_00003940(int fd, struct uio *uio);
-int func_00003B20(int fd, unsigned int cmd, void *data);
+int func_00003B20(int unit, u_long cmd, void *addr);
 extern int D_0000B8DC;
 
 struct mbuf;
@@ -635,7 +635,7 @@ struct bpf_d {
 	int bd_hlen;
 	int bd_bufsize;
 	struct bpf_if *bd_bif;
-	u_long bd_rtout;
+	u_int bd_rtout;
 	void *bd_filter;
 	u_long bd_rcount;
 	u_long bd_dcount;
@@ -652,9 +652,6 @@ extern struct bpf_if *D_0000B8E0;
 extern struct bpf_d D_0000B8E4[8];
 void _sce_pspnet_selrecord(struct thread_info *selector, struct selinfo *sip);
 
-struct bpf_stat4 {
-	int a, b, c, d;
-};
 
 static inline u_int umin(u_int a, u_int b)
 {
@@ -761,5 +758,18 @@ struct bpf_insn {
 		len = m->m_len; \
 	} \
 }
+
+struct bpf_stat {
+	u_int bs_recv;
+	u_int bs_drop;
+};
+
+struct bpf_version {
+	u_short bv_major;
+	u_short bv_minor;
+};
+
+int func_00003E80(struct bpf_d *d, struct bpf_program *fp);
+int func_00003FA4(struct bpf_d *d, struct ifreq *ifr);
 
 #endif
