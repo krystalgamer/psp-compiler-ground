@@ -426,4 +426,13 @@ struct ifevreq {
 	int b;
 };
 
+struct ifinfo_req {
+	char name[16];
+	u_char a;
+	u_char b;
+	u_short c;
+	u_short d;
+	u_char e;
+};
+
 #endif

@@ -45,7 +45,51 @@ int sceNetConfig80211SetPowerSave(const char *name, int a)
 	return _sce_pspnet_ifioctl(NULL, 0x801469DF, &req, (void *)1);
 }
 
-INCLUDE_ASM("tmp/asm/tony_libs/pspnet/nonmatchings/config", sceNetConfig80211GetIfInfo);
+int sceNetConfig80211GetIfInfo(const char *name, int type, void *out)
+{
+	int ret;
+
+	if (type < 6) {
+		struct ifinfo_req req;
+		struct ifinfo_req *p = &req;
+
+		__builtin_memset(p, 0, sizeof(*p));
+		strncpy(req.name, name, 16);
+		ret = _sce_pspnet_ifioctl(NULL, 0x401869D9, &req, (void *)1);
+		if (ret < 0)
+			goto out;
+		switch (type) {
+		case 1:
+			*(u_char *)out = req.a;
+			break;
+		case 2:
+			*(u_char *)out = req.b;
+			break;
+		case 3:
+			*(u_short *)out = req.c;
+			break;
+		case 4:
+			*(u_short *)out = req.d;
+			break;
+		case 5:
+			*(u_char *)out = req.e;
+			break;
+		default:
+			ret = 0x80410103;
+			goto out;
+		}
+	} else {
+		struct ifreq_1 req = { { 0 } };
+
+		strncpy(req.name, name, 16);
+		ret = _sce_pspnet_ifioctl(NULL, 0x401469DA, &req, (void *)1);
+		if (ret < 0)
+			goto out;
+		*(int *)out = req.v0;
+	}
+out:
+	return ret;
+}
 
 int sceNetConfig80211GetBssDesc(const char *name, int a)
 {
