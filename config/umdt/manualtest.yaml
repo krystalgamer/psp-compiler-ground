@@ -52,8 +52,14 @@ segments:
     start: 0x80
     vram: 0x0
     subsegments:
-      - [0x80, asm, asm/text_0]
-      - [0xB8, c, manualtest]
+      - [0x80, c, manualtest]
+      - [0x9D4, c, lcddraw_stub]
+      - [0xAA4, c, utilitycmdtest_stub]
+      - [0xC34, c, lcdtest_stub]
+      - [0xC4C, c, padtest_stub]
+      - [0xC5C, c, audiotest_stub]
+      - [0xC74, c, graphics_model_stub]
+      - [0xC84, c, movietest_stub]
       - [0xCDC, c, memory]
       - [0xEB4, c, string]
       - [0x16A0, c, sprintf]
@@ -66,8 +72,7 @@ segments:
       - { start: 0x2064, type: rodata, name: module_info, linker_section: .rodata.sceModuleInfo }
       - { start: 0x2098, type: rodata, name: resident, linker_section: .rodata.sceResident }
       - { start: 0x2310, type: rodata, name: nid, linker_section: .rodata.sceNid }
-      - [0x2340, rodata, asm/rodata_22C0]
-      - [0x2350, .rodata, manualtest]
+      - [0x2340, .rodata, manualtest]
       - [0x2454, .rodata, sprintf]
   - [0x2668, bin, seg1_align]
   - name: manualtest_seg1

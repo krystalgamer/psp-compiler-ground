@@ -53,8 +53,11 @@ segments:
     vram: 0x0
     subsegments:
       - [0x80, c, main]
-      - [0x2098, c, display]
+      - [0x19C0, c, display]
+      - [0x2444, c, fileread]
       - [0x282C, c, sound]
+      - [0x319C, c, lcddraw_stub]
+      - [0x326C, c, utilitycmdtest_stub]
       - [0x33FC, c, string]
       - [0x3BE8, c, sprintf]
       - [0x43B8, c, ctype]
@@ -69,7 +72,8 @@ segments:
       - { start: 0x6688, type: rodata, name: resident, linker_section: .rodata.sceResident }
       - { start: 0x686C, type: rodata, name: nid, linker_section: .rodata.sceNid }
       - [0x696C, .rodata, main]
-      - [0x7004, .rodata, display]
+      - [0x6F08, .rodata, display]
+      - [0x702C, .rodata, fileread]
       - [0x7064, .rodata, sound]
       - [0x7170, .rodata, sprintf]
       - [0x7384, .rodata, libwave]

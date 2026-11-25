@@ -1,5 +1,9 @@
 # unit                                     compiler        source
 graphicstest                                 1.5.1.internal  graphicstest.c
+lcddraw_stub                                 1.5.1.internal  lcddraw_stub.s
+graphics_pot_stub                            1.5.1.internal  graphics_pot_stub.s
+graphics_tamatama_stub                       1.5.1.internal  graphics_tamatama_stub.s
+graphics_model_stub                          1.5.1.internal  graphics_model_stub.s
 sprintf                                      1.5.1.internal  sprintf.c
 ctype                                        1.5.1.internal  ctype.c
 memory                                       1.5.1.internal  memory.c

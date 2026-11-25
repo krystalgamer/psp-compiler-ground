@@ -1,0 +1,8 @@
+# Objects without DWARF: start address (vram), unit, compiler, source.
+# From the STT_FILE symbols (tools/nodwarf.py), corrected by hand: a file
+# without local symbols starts at its first function (link order of the
+# STT_FILE symbols).  The *_stub.s files are import stub tables (jr ra; nop).
+# The application objects are -O0 builds.
+0x00000 lcdtest             1.5.1.internal  lcdtest.c
+0x00680 lcd_drawptn         1.5.1.internal  lcd_drawptn.c
+0x017F4 lcddraw_stub        1.5.1.internal  lcddraw_stub.s

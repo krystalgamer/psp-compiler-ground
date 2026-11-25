@@ -52,7 +52,10 @@ segments:
     start: 0x80
     vram: 0x0
     subsegments:
-      - [0x80, asm, asm/text_0]
+      - [0x80, c, hpremotetest]
+      - [0x504, c, hpdraw]
+      - [0x9B0, c, lcddraw_stub]
+      - [0xA80, c, powertest_stub]
       - [0xAB8, c, memory]
       - [0xC90, c, string]
       - [0x147C, c, sprintf]
@@ -65,7 +68,8 @@ segments:
       - { start: 0x1DC0, type: rodata, name: module_info, linker_section: .rodata.sceModuleInfo }
       - { start: 0x1DF4, type: rodata, name: resident, linker_section: .rodata.sceResident }
       - { start: 0x1F18, type: rodata, name: nid, linker_section: .rodata.sceNid }
-      - [0x1F38, rodata, asm/rodata_1EB8]
+      - [0x1F38, .rodata, hpremotetest]
+      - [0x1FC0, .rodata, hpdraw]
       - [0x20B4, .rodata, sprintf]
   - [0x22C8, bin, seg1_align]
   - name: hpremotetest_seg1

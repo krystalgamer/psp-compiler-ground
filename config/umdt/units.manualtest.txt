@@ -1,5 +1,12 @@
 # unit                                     compiler        source
 manualtest                                   1.5.1.internal  manualtest.c
+lcddraw_stub                                 1.5.1.internal  lcddraw_stub.s
+utilitycmdtest_stub                          1.5.1.internal  utilitycmdtest_stub.s
+lcdtest_stub                                 1.5.1.internal  lcdtest_stub.s
+padtest_stub                                 1.5.1.internal  padtest_stub.s
+audiotest_stub                               1.5.1.internal  audiotest_stub.s
+graphics_model_stub                          1.5.1.internal  graphics_model_stub.s
+movietest_stub                               1.5.1.internal  movietest_stub.s
 memory                                       1.5.1.internal  memory.c
 string                                       1.5.1.internal  string.c
 sprintf                                      1.5.1.internal  sprintf.c

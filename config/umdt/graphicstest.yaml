@@ -53,6 +53,10 @@ segments:
     vram: 0x0
     subsegments:
       - [0x80, c, graphicstest]
+      - [0x4FC, c, lcddraw_stub]
+      - [0x5CC, c, graphics_pot_stub]
+      - [0x5DC, c, graphics_tamatama_stub]
+      - [0x5EC, c, graphics_model_stub]
       - [0x5FC, c, sprintf]
       - [0xDCC, c, ctype]
       - [0xE44, c, memory]

@@ -1,7 +1,10 @@
 # unit                                     compiler        source
 main                                         1.5.1.internal  main.c
 display                                      1.5.1.internal  display.c
+fileread                                     1.5.1.internal  fileread.c
 sound                                        1.5.1.internal  sound.c
+lcddraw_stub                                 1.5.1.internal  lcddraw_stub.s
+utilitycmdtest_stub                          1.5.1.internal  utilitycmdtest_stub.s
 string                                       1.5.1.internal  string.c
 sprintf                                      1.5.1.internal  sprintf.c
 ctype                                        1.5.1.internal  ctype.c
