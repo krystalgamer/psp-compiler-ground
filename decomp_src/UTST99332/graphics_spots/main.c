@@ -70,6 +70,16 @@ struct _anon2 { /* size 0x18 */
 typedef struct _anon2 POS;
 
 /* SDK functions */
+void sceGuClear(int flags);
+void sceGumStoreMatrix(ScePspFMatrix4 *m);
+void sceGumPushMatrix(void);
+void sceGumPopMatrix(void);
+void sceGumRotateY(float angle);
+void sceGumRotateXYZ(const ScePspFVector3 *v);
+void sceGumTranslate(const ScePspFVector3 *v);
+void sceGumDrawArray(int prim, int vtype, int count, const void *indices, const void *vertices);
+
+/* SDK functions */
 void sceGuSpecular(float power);
 void sceGuLight(int light, int type, int components, const ScePspFVector3 *position);
 void sceGuLightColor(int light, int component, unsigned int color);
@@ -93,6 +103,8 @@ extern char disp_list[65536];
 extern ScePspFMatrix4 matrix_stack[16];
 
 static void light_update(void);
+void mult_matvec(ScePspFMatrix4 *m, ScePspFVector4 *vi, ScePspFVector3 *vo);
+void DrawRing(void);
 float sinf(float);
 float cosf(float);
 static void draw_frame(void);
@@ -160,7 +172,63 @@ static void light_update(void)
 	}
 }
 
+#ifdef NON_MATCHING
+/* Close: argument setup for mult_matvec and sceGuLightSpot is scheduled differently. */
+static void draw_frame(void)
+{
+	ScePspFVector3 vec;
+	ScePspFVector4 vec2;
+	ScePspFMatrix4 m;
+	int i;
+
+	if (auto_flag) {
+		pos.rot.y += 0.5f;
+		if (pos.rot.y > 360.0f)
+			pos.rot.y -= 360.0f;
+	}
+	sceGuStart(0, disp_list, sizeof(disp_list));
+	sceGuClear(7);
+	sceGuEnable(10);
+	light_update();
+	sceGumPushMatrix();
+	sceGumTranslate(&pos.trans);
+	vec.x = pos.rot.x * 3.1415927f / 180.0f;
+	vec.y = pos.rot.y * 3.1415927f / 180.0f;
+	vec.z = pos.rot.z * 3.1415927f / 180.0f;
+	sceGumRotateXYZ(&vec);
+	DrawRing();
+	sceGuDisable(10);
+	for (i = 0; i < 3; i++) {
+		sceGumPushMatrix();
+		sceGumRotateY(i * 120.0f * 3.1415927f / 180.0f);
+		sceGumTranslate(&spots[i].trans);
+		sceGumRotateXYZ(&spots[i].rot);
+		sceGumStoreMatrix(&m);
+		vec2.x = spots[i].pos.x;
+		vec2.y = spots[i].pos.y;
+		vec2.z = spots[i].pos.z;
+		vec2.w = 1.0f;
+		mult_matvec(&m, &vec2, &vec);
+		sceGuLight(i, 2, 6, &vec);
+		vec2.x = -spots[i].dir.x;
+		vec2.y = -spots[i].dir.y;
+		vec2.z = -spots[i].dir.z;
+		vec2.w = 0.0f;
+		mult_matvec(&m, &vec2, &vec);
+		sceGuLightSpot(i, &vec, spots[i].exp, cosf(spots[i].cut * 3.1415927f / 180.0f));
+		if (line_flag) {
+			sceGuColor(spots[i].diff);
+			sceGumDrawArray(1, 0x180, 2, NULL, &spots[i].pos);
+		}
+		sceGumPopMatrix();
+	}
+	sceGumPopMatrix();
+	sceGuFinish();
+	sceGuSync(0, 0);
+}
+#else
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_spots/nonmatchings/main", draw_frame);
+#endif
 
 static void init_light(void)
 {
