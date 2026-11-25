@@ -28,6 +28,12 @@ RULES = {
     "libgu.c": r"^(sceGu(?!m)|__sceGu(?!m)|gu[A-Z])",
     "libwave.c": r"^(sceWave|__sceWave)",
     "libsas.c": r"^(sceSas|__sceSas)",
+    "n2p.c": r"^(sceSsNote2Pitch|sceSsPitch2Note)$",
+    "libsndp.c": r"^(?!sceSsNote2Pitch$|sceSsPitch2Note$)(sceSs|_sceSs)",
+    "sdphd_i.c": r"^sdphd_",
+    "scePsmf_stub.s": r"^scePsmf",
+    "smf.c": r"^smf_",
+    "voice.c": r"^voice_",
     "kernel_bridge.c": r"^(_(read|write|open|close|lseek|fstat|isatty|exit|kill|getpid|sbrk|stat|unlink|link|"
                        r"times|gettimeofday|rename|mkdir|sys_\w+)|isatty|sbrk)$",
 }
@@ -51,6 +57,7 @@ def analyse(target, module):
         next(p for p in (ROOT / "tmp" / "baserom" / target).glob(f"{module}.*"))
     e = ELFFile(open(elf_path, "rb"))
     text = e.get_section_by_name(".text")
+    text_idx = next(i for i, sec in enumerate(e.iter_sections()) if sec.name == ".text")
     # symbol and DWARF values are relative to .text (PRX)
     t0, t1 = 0, text["sh_size"]
     cus = [(lo, hi, n) for lo, hi, n, _ in gen_config.compile_units(e)]
@@ -66,7 +73,9 @@ def analyse(target, module):
             if not s.name.startswith("<") and os.path.basename(s.name) not in cu_names:
                 files.append(s.name)
             continue
-        if ty == "STT_FUNC" and t0 <= s["st_value"] < t1:
+        in_text = s["st_shndx"] == text_idx
+        if in_text and (ty == "STT_FUNC" or (ty in ("STT_NOTYPE", "STT_OBJECT") and bind == "STB_GLOBAL" and s.name)) \
+                and t0 <= s["st_value"] < t1:
             funcs[s["st_value"]] = s.name
             if bind == "STB_LOCAL" and cur in files:
                 local[cur].append(s["st_value"])
