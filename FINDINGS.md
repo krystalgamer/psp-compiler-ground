@@ -85,3 +85,23 @@ modules (`tools/nltest.py`, `tools/objcmp.py`).
   1.5.1 and 1.5.1.internal units, as with 1.3.1's cc1, it is an unnamed
   16-byte type (`__unknown__`).  Without the patch, 1.6.1's cc1 rejects
   `mode(TI)` altogether.
+- UTST99261's 1.6.1 game code (mpeg/*, mp3/*): everything decompiled so far
+  matches with the 1.6.1 tree and with 1.7.1's cc1 alike.  `tools/discrim.py`
+  compiles every decompiled unit and the m2c draft of every remaining
+  function with both cc1s and compares the assembly: UTST99261 and sampler
+  give no difference at all.  So 1.7.1's remaining changes (DI
+  earlyclobbers, madd/msub, insv, loadgpsym, rotate counts, asm delay
+  slots, gp_safe, block-move offsets) are not exercised by this code: there
+  are no madd/msub/ins/ext instructions in any of the game modules, and
+  inline asm never ends up in a delay slot with either cc1 (only psp-as
+  swaps it there, as in 1.5.1's `usrKernelIcacheInvalidate`).  They stay
+  out of the 1.6.1 tree for lack of evidence.
+- Things that looked like compiler differences but are source-level:
+  `strFileOpen`'s missing `movz` (`ret = -1; if (fd >= 0) ret = 1;` keeps the
+  branch, an if/else converts), the constant 0 of Allegrex `max` kept in an
+  s-register (a `MAX()` macro folds to MAX_EXPR at tree level, so the 0 is
+  loop-invariant; an `if` is turned into `max` by if-conversion after the
+  loop optimizer), and constants hoisted to an outer loop (a goto-loop has
+  no loop notes, so 3.3's loop.c treats it as part of the outer loop).
+- `__builtin_allegrex_wsbh` already exists in 1.6.1 (`sceNetHtons` in
+  UTST99261 mp3/netmgr uses it).
