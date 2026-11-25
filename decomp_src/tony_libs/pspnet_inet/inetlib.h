@@ -1150,7 +1150,7 @@ struct ipovly {
 	u_int16_t ih_len;
 	struct in_addr ih_src;
 	struct in_addr ih_dst;
-};
+} __attribute__((__packed__));
 
 #define in4_cksum func_00012D84
 #define in_cksum func_00013130
@@ -2257,5 +2257,70 @@ void icmp_error(struct mbuf *n, int type, int code, n_long dest, struct ifnet *d
 #define rip_disconnect func_0001C2E0
 #define rawcbtable D_00030260
 extern struct inpcbtable rawcbtable;
+
+/* udp.h / udp_var.h */
+struct udphdr {
+	u_int16_t uh_sport;
+	u_int16_t uh_dport;
+	u_int16_t uh_ulen;
+	u_int16_t uh_sum;
+} __attribute__((__packed__));
+struct udpiphdr {
+	struct ipovly ui_i;
+	struct udphdr ui_u;
+} __attribute__((__packed__));
+#define ui_x1 ui_i.ih_x1
+#define ui_pr ui_i.ih_pr
+#define ui_len ui_i.ih_len
+#define ui_src ui_i.ih_src
+#define ui_dst ui_i.ih_dst
+#define ui_sport ui_u.uh_sport
+#define ui_dport ui_u.uh_dport
+#define ui_ulen ui_u.uh_ulen
+#define ui_sum ui_u.uh_sum
+struct udpstat_t {
+	u_quad_t udps_ipackets;
+	u_quad_t udps_hdrops;
+	u_quad_t udps_badsum;
+	u_quad_t udps_badlen;
+	u_quad_t udps_noport;
+	u_quad_t udps_noportbcast;
+	u_quad_t udps_fullsock;
+	u_quad_t udps_pcbhashmiss;
+	u_quad_t udps_opackets;
+};
+#define UDPCTL_CHECKSUM 1
+#define UDPCTL_SENDSPACE 2
+#define UDPCTL_RECVSPACE 3
+#define UDPCTL_STATS 4
+#define ICMP_UNREACH_PORT 3
+#define ENOTDIR 20
+#define sysctl_int func_000087F0
+#define sysctl_rdstruct func_00008BB4
+int sysctl_int(void *oldp, size_t *oldlenp, void *newp, size_t newlen, int *valp);
+int sysctl_rdstruct(void *oldp, size_t *oldlenp, void *newp, const void *sp, int len);
+#define ip_stripoptions func_00016EAC
+void ip_stripoptions(struct mbuf *m, struct mbuf *mopt);
+#define udp_input func_0001C30C
+#define udp4_realinput func_0001C60C
+#define udp_output func_0001C880
+#define udp_usrreq func_0001CAFC
+#define udp_init func_0001CE38
+#define udp_ctlinput func_0001CE9C
+#define udp_sysctl func_0001CFDC
+#define udp4_sendup func_0001D0B0
+#define udp_notify func_0001D1E4
+#define PRC_NCMDS 21
+#define PRC_REDIRECT_NET 14
+#define PRC_REDIRECT_HOST 15
+#define PRC_REDIRECT_TOSNET 16
+#define PRC_REDIRECT_TOSHOST 17
+#define PRC_HOSTDEAD 6
+#define PRC_MSGSIZE 5
+#define PRC_IS_REDIRECT(cmd) ((cmd) >= PRC_REDIRECT_NET && (cmd) <= PRC_REDIRECT_TOSHOST)
+#define inetctlerrmap D_0002E7DC
+#define ip_defttl D_0002E7B0
+extern int ip_defttl;
+extern int inetctlerrmap[];
 
 #endif
