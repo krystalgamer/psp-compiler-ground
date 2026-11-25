@@ -87,6 +87,22 @@ def compile_units(elf):
     return sorted(out)
 
 
+def file_units(t, name, cus, text_end):
+    """Units of code without DWARF, from config/TARGET/files.MODULE.txt
+    (vram start, unit, compiler, source; see the file for how they were
+    found).  Each runs to the next listed start or compile unit."""
+    path = ROOT / "config" / t / f"files.{name}.txt"
+    if not path.exists():
+        return []
+    ents = []
+    for line in path.read_text().splitlines():
+        line = line.split("#")[0].split()
+        if line:
+            ents.append((int(line[0], 16), line[3], line[2]))
+    bounds = sorted([e[0] for e in ents] + [c[0] for c in cus] + [text_end])
+    return [(lo, next(b for b in bounds if b > lo), src, ver) for lo, src, ver in ents]
+
+
 def unit_name(src, used):
     """decomp_src-relative stem for a CU's source file name."""
     s = src.replace("\\", "/")
@@ -341,6 +357,8 @@ def main():
     # relocatable (PRX) ELFs whose .text does not start at 0
     cus = [(lo + text.addr, hi + text.addr, src, ver) for lo, hi, src, ver in compile_units(elf)]
     cus = [c for c in cus if text.addr <= c[0] < text.addr + text.size]
+    cus += file_units(t, name, cus, text.addr + text.size)
+    cus.sort()
     func_at = {}
     for sym in elf.get_section_by_name(".symtab").iter_symbols():
         if sym["st_info"]["type"] == "STT_FUNC" and sym.name and isinstance(sym["st_shndx"], int):
