@@ -20,8 +20,7 @@ ap.add_argument("module")
 ap.add_argument("unit")
 ap.add_argument("--cc1")
 ap.add_argument("--func")
-ap.add_argument("--locfix", action="store_true",
-                help="compile with -g; no delay-slot swap across a .loc (tmp/x18/locfix.py)")
+ap.add_argument("--locfix", action="store_true", help="as if compilers.txt said locfix")
 ap.add_argument("--as", dest="asf", default="", help="extra psp-as options")
 a = ap.parse_args()
 if a.asf or a.locfix:
@@ -29,10 +28,10 @@ if a.asf or a.locfix:
 
     def run(cmd, *k, **kw):
         if str(cmd[0]).endswith("psp-as"):
-            if a.locfix:
-                _run([sys.executable, str(libsrc.ROOT / "tmp/x18/locfix.py"), cmd[-1], cmd[-1]])
+            if a.locfix and not compiler.locfix(a.target, a.module, a.unit):
+                _run([sys.executable, str(libsrc.ROOT / "tools/locfix.py"), cmd[-1]])
             cmd = [cmd[0], *a.asf.split(), *cmd[1:]]
-        elif "/cc1-" in str(cmd[0]) and a.locfix:
+        elif "/cc1-" in str(cmd[0]) and a.locfix and "-g" not in cmd:
             cmd = [cmd[0], "-g", *cmd[1:]]
         return _run(cmd, *k, **kw)
     libsrc.subprocess.run = run

@@ -8,14 +8,18 @@
 # order next to the asm's, as one .rodata.cst4 section per object would not.
 # (lib:OPT) options only for newlib/libgcc/libstdc++ units.  (objorder) the
 # app units' .rodata and .rodata.cst* sections link in object order.
+# (locfix) built with -g and assembled by a psp-as that does not move an
+# instruction into a branch delay slot across a source line change
+# (tools/locfix.py); newlib:locfix for the newlib units only: only 1.6.1's
+# psp-newlib has such line tables (a DW_LNE_set_address for every row).
 # Versions we have no reconstruction of use the nearest one we do.
 1.4.0           1.3.1-orig -mno-ulsw
 1.4.0.internal  1.3.1-orig -mno-ulsw
 1.5.0.internal  1.3.1-orig -mno-ulsw
 1.5.1           1.5.1   -mno-ulsw
 1.5.1.internal  1.5.1   -mno-ulsw
-1.6.1           1.6.1   as:-mulsw
-1.6.1.internal  1.6.1   lib:-fno-merge-constants mixed:-fno-merge-constants objorder as:-mulsw
+1.6.1           1.6.1   newlib:locfix as:-mulsw
+1.6.1.internal  1.6.1   newlib:locfix lib:-fno-merge-constants mixed:-fno-merge-constants objorder as:-mulsw
 1.8.3           1.8.3   as:-mulsw
 1.8.3.internal  1.8.3   as:-mulsw
 1.8.4.internal  1.8.4   mixed:-fno-merge-constants as:-mulsw

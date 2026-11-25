@@ -63,6 +63,8 @@ def build(target, module, unit, text, td):
     o = Path(td) / "u.o"
     asf = subprocess.run([sys.executable, str(ROOT / "tools/compiler.py"), "--as-flags", target, module, unit],
                          capture_output=True, text=True).stdout.split()
+    if compiler.locfix(target, module, unit):
+        subprocess.run([sys.executable, str(ROOT / "tools/locfix.py"), str(s)], check=True)
     r = subprocess.run([str(T / "psp-as"), *asf, "-EL", "-G0", "-o", str(o), str(s)], capture_output=True)
     return o if r.returncode == 0 else None
 

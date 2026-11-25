@@ -35,11 +35,16 @@ def driver_flags(target, module, unit):
         if f.startswith("lib:"):
             if unit.startswith(LIBS):
                 fl.append(f[4:])
+        elif f == "newlib:locfix":
+            if unit.startswith("newlib/"):
+                fl.append("-g")
         elif f.startswith("mixed:"):
             # only while the unit still has asm functions or rodata
             src = ROOT / "decomp_src" / target / module / f"{unit}.c"
             if src.exists() and "INCLUDE_" in src.read_text():
                 fl.append(f[6:])
+        elif f == "locfix":
+            fl.append("-g")
         elif not f.startswith(("as:", "objorder")):
             fl.append(f)
     return " ".join(fl)
@@ -52,6 +57,14 @@ def object_order(target, module, unit):
     return "objorder" in entry(target, module, unit)[1:] and not unit.startswith(LIBS)
 
 
+def locfix(target, module, unit):
+    """True if the unit was built with -g and assembled by a psp-as that
+    does not move an instruction into a branch delay slot across a source
+    line change (tools/locfix.py)."""
+    return any(f == "locfix" or (f == "newlib:locfix" and unit.startswith("newlib/"))
+               for f in entry(target, module, unit)[1:])
+
+
 def as_flags(target, module, unit):
     """psp-as options standing in for that version's assembler."""
     return " ".join(f[3:] for f in entry(target, module, unit)[1:] if f.startswith("as:"))
@@ -62,5 +75,7 @@ if __name__ == "__main__":
         print(driver_flags(*sys.argv[2:5]))
     elif sys.argv[1] == "--as-flags":
         print(as_flags(*sys.argv[2:5]))
+    elif sys.argv[1] == "--locfix":
+        print("1" if locfix(*sys.argv[2:5]) else "")
     else:
         print(compiler(*sys.argv[1:4]))
