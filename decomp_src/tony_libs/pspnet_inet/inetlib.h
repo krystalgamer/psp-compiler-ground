@@ -228,12 +228,42 @@ extern char D_0002EB69[];
 extern char D_0002F288[18] __attribute__((aligned(4)));
 
 /* pspnet imports */
+#define TAILQ_HEAD(name, type) struct name { struct type *tqh_first; struct type **tqh_last; }
+#define TAILQ_ENTRY(type) struct { struct type *tqe_next; struct type **tqe_prev; }
+#define TAILQ_FIRST(head) ((head)->tqh_first)
+#define TAILQ_NEXT(elm, field) ((elm)->field.tqe_next)
+#define TAILQ_INIT(head) do { (head)->tqh_first = NULL; (head)->tqh_last = &(head)->tqh_first; } while (0)
+#define TAILQ_INSERT_TAIL(head, elm, field) do { \
+	(elm)->field.tqe_next = NULL; \
+	(elm)->field.tqe_prev = (head)->tqh_last; \
+	*(head)->tqh_last = (elm); \
+	(head)->tqh_last = &(elm)->field.tqe_next; \
+} while (0)
+#define TAILQ_REMOVE(head, elm, field) do { \
+	if (((elm)->field.tqe_next) != NULL) \
+		(elm)->field.tqe_next->field.tqe_prev = (elm)->field.tqe_prev; \
+	else \
+		(head)->tqh_last = (elm)->field.tqe_prev; \
+	*(elm)->field.tqe_prev = (elm)->field.tqe_next; \
+} while (0)
+
+struct uio;
 struct thread_info {
 	struct thread_info *ti_next;
 	struct thread_info **ti_prev;
 	SceUID thid;
 	short refcnt;
 	int error;
+	int unk14;
+	void *slpq[2];
+	void *wchan;
+	void *co[9];
+	int slpflags;
+	SceUID sema;
+	short semacnt;
+	short unk52;
+	struct socket *socks;
+	char unk58[0x64 - 0x58];
 };
 
 struct thread_info *_sce_pspnet_thread_enter(void);
@@ -422,8 +452,6 @@ void sceNetIfhandle_lib_62B20015(int max_linkhdr, int max_protohdr, int max_hdr,
 
 /* uipc_domain.c */
 #define ADDDOMAIN(x) { (x).dom_next = domains; domains = &(x); }
-#define MLEN (256 - 0x14)
-#define MHLEN (MLEN - 0x1C)
 #define SOCK_STREAM 1
 #define SOCK_DGRAM 2
 #define SOCK_RAW 3
@@ -433,5 +461,465 @@ extern struct callout D_0002F2A0, D_0002F2C4;
 struct domain *func_00001FAC(int family);
 void func_0000227C(void *arg);
 void func_00002320(void *arg);
+
+/* mbuf.h (Sony) */
+#define MSIZE 256
+#define MLEN (MSIZE - sizeof(struct m_hdr))
+#define MHLEN (MLEN - sizeof(struct pkthdr))
+#define MINCLSIZE (MHLEN + 1)
+#define MCLBYTES 2048
+#define M_COPYALL 1000000000
+
+#define M_EXT 0x0001
+#define M_PKTHDR 0x0002
+#define M_EOR 0x0004
+#define M_CLUSTER 0x0008
+#define M_BCAST 0x0100
+#define M_MCAST 0x0200
+#define M_COPYFLAGS (M_PKTHDR | M_EOR | M_BCAST | M_MCAST)
+
+#define MT_FREE 0
+#define MT_DATA 1
+#define MT_HEADER 2
+#define MT_SONAME 3
+#define MT_SOOPTS 4
+#define MT_FTABLE 5
+#define MT_CONTROL 6
+#define MT_OOBDATA 7
+
+#define M_DONTWAIT 1
+#define M_WAIT 0
+
+struct ifnet;
+
+struct m_hdr {
+	struct mbuf *mh_next;
+	struct mbuf *mh_nextpkt;
+	caddr_t mh_data;
+	int mh_len;
+	short mh_type;
+	u_short mh_flags;
+};
+
+struct pkthdr {
+	struct ifnet *rcvif;
+	int len;
+	struct mbuf *aux;
+	int csum_flags;
+	int csum_data;
+	int unk28;
+	int unk2C;
+};
+
+struct m_ext {
+	caddr_t ext_buf;
+	void (*ext_free)(caddr_t, u_int, void *);
+	void *ext_arg;
+	u_int ext_size;
+	int ext_type;
+	struct mbuf *ext_nextref;
+	struct mbuf *ext_prevref;
+};
+
+struct mbuf {
+	struct m_hdr m_hdr;
+	union {
+		struct {
+			struct pkthdr MH_pkthdr;
+			union {
+				struct m_ext MH_ext;
+				char MH_databuf[MHLEN];
+			} MH_dat;
+		} MH;
+		char M_databuf[MLEN];
+	} M_dat;
+};
+
+#define m_next m_hdr.mh_next
+#define m_len m_hdr.mh_len
+#define m_data m_hdr.mh_data
+#define m_type m_hdr.mh_type
+#define m_flags m_hdr.mh_flags
+#define m_nextpkt m_hdr.mh_nextpkt
+#define m_act m_nextpkt
+#define m_pkthdr M_dat.MH.MH_pkthdr
+#define m_ext M_dat.MH.MH_dat.MH_ext
+#define m_pktdat M_dat.MH.MH_dat.MH_databuf
+#define m_dat M_dat.M_databuf
+
+#define mtod(m, t) ((t)((m)->m_data))
+#define dtom(x) ((struct mbuf *)((u_long)(x) & ~(MSIZE - 1)))
+
+#define MGET(m, how, type) do { \
+	(m) = sceNetMallocInternal(MSIZE); \
+	if (m) { \
+		(m)->m_type = (type); \
+		(m)->m_data = (m)->m_dat; \
+		(m)->m_next = (struct mbuf *)NULL; \
+		(m)->m_nextpkt = (struct mbuf *)NULL; \
+		(m)->m_flags = 0; \
+	} \
+} while (0)
+
+#define MGETHDR(m, how, type) do { \
+	(m) = sceNetMallocInternal(MSIZE); \
+	if (m) { \
+		(m)->m_type = (type); \
+		(m)->m_next = (struct mbuf *)NULL; \
+		(m)->m_nextpkt = (struct mbuf *)NULL; \
+		(m)->m_data = (m)->m_pktdat; \
+		(m)->m_flags = M_PKTHDR; \
+		(m)->m_pkthdr.aux = (struct mbuf *)NULL; \
+	} \
+} while (0)
+
+#define MCLINITREFERENCE(m) do { \
+	(m)->m_ext.ext_nextref = (m)->m_ext.ext_prevref = (m); \
+} while (0)
+
+#define MCLGET(m, how) do { \
+	(m)->m_ext.ext_buf = sceNetMallocInternal(MCLBYTES); \
+	if ((m)->m_ext.ext_buf == NULL) \
+		(m)->m_ext.ext_buf = sceNetMallocInternal(MCLBYTES); \
+	if ((m)->m_ext.ext_buf != NULL) { \
+		(m)->m_data = (m)->m_ext.ext_buf; \
+		(m)->m_flags |= M_EXT | M_CLUSTER; \
+		(m)->m_ext.ext_size = MCLBYTES; \
+		(m)->m_ext.ext_free = NULL; \
+		(m)->m_ext.ext_arg = NULL; \
+		MCLINITREFERENCE(m); \
+	} \
+} while (0)
+
+#define MEXTMALLOC(m, size, how) do { \
+	(m)->m_ext.ext_buf = sceNetMallocInternal(size); \
+	if ((m)->m_ext.ext_buf != NULL) { \
+		(m)->m_data = (m)->m_ext.ext_buf; \
+		(m)->m_flags = ((m)->m_flags | M_EXT) & ~M_CLUSTER; \
+		(m)->m_ext.ext_size = (size); \
+		(m)->m_ext.ext_free = NULL; \
+		(m)->m_ext.ext_arg = NULL; \
+		(m)->m_ext.ext_type = (m)->m_type; \
+		MCLINITREFERENCE(m); \
+	} \
+} while (0)
+
+#define MCLISREFERENCED(m) ((m)->m_ext.ext_nextref != (m))
+#define _MCLDEREFERENCE(m) do { \
+	(m)->m_ext.ext_nextref->m_ext.ext_prevref = (m)->m_ext.ext_prevref; \
+	(m)->m_ext.ext_prevref->m_ext.ext_nextref = (m)->m_ext.ext_nextref; \
+} while (0)
+
+#define MFREE(m, n) do { \
+	if (((m)->m_flags & M_PKTHDR) && (m)->m_pkthdr.aux) { \
+		m_freem((m)->m_pkthdr.aux); \
+		(m)->m_pkthdr.aux = NULL; \
+	} \
+	if ((m)->m_flags & M_EXT) { \
+		if (MCLISREFERENCED(m)) \
+			_MCLDEREFERENCE(m); \
+		else if ((m)->m_flags & M_CLUSTER) \
+			sceNetFreeInternal((m)->m_ext.ext_buf); \
+		else if ((m)->m_ext.ext_free) \
+			(*((m)->m_ext.ext_free))((m)->m_ext.ext_buf, (m)->m_ext.ext_size, (m)->m_ext.ext_arg); \
+		else \
+			sceNetFreeInternal((m)->m_ext.ext_buf); \
+		(m)->m_flags &= ~(M_EXT | M_CLUSTER); \
+		(m)->m_ext.ext_size = 0; \
+	} \
+	(n) = (m)->m_next; \
+	sceNetFreeInternal(m); \
+} while (0)
+
+#define M_COPY_PKTHDR(to, from) do { \
+	(to)->m_pkthdr = (from)->m_pkthdr; \
+	(from)->m_pkthdr.aux = NULL; \
+	(to)->m_flags = (from)->m_flags & M_COPYFLAGS; \
+	(to)->m_data = (to)->m_pktdat; \
+} while (0)
+
+#define M_ALIGN(m, len) do { \
+	(m)->m_data += (MLEN - (len)) & ~(sizeof(long) - 1); \
+} while (0)
+
+#define MH_ALIGN(m, len) do { \
+	(m)->m_data += (MHLEN - (len)) & ~(sizeof(long) - 1); \
+} while (0)
+
+#define M_LEADINGSPACE(m) \
+	((m)->m_flags & M_EXT ? 0 : \
+	    (m)->m_flags & M_PKTHDR ? (m)->m_data - (m)->m_pktdat : \
+	    (m)->m_data - (m)->m_dat)
+
+#define M_TRAILINGSPACE(m) \
+	((m)->m_flags & M_EXT ? (m)->m_ext.ext_buf + (m)->m_ext.ext_size - \
+	    ((m)->m_data + (m)->m_len) : \
+	    &(m)->m_dat[MLEN] - ((m)->m_data + (m)->m_len))
+
+#define M_PREPEND(m, plen, how) do { \
+	if (M_LEADINGSPACE(m) >= (plen)) { \
+		(m)->m_data -= (plen); \
+		(m)->m_len += (plen); \
+	} else \
+		(m) = m_prepend((m), (plen), (how)); \
+	if ((m) && (m)->m_flags & M_PKTHDR) \
+		(m)->m_pkthdr.len += (plen); \
+} while (0)
+
+#define m_adj sceNetMAdj
+#define m_cat sceNetMCat
+#define m_copyback sceNetMCopyback
+#define m_copydata sceNetMCopydata
+#define m_copym sceNetMCopym
+#define m_copy(m, o, l) m_copym((m), (o), (l), M_DONTWAIT)
+#define m_free sceNetMFree
+#define m_freem sceNetMFreem
+#define m_get sceNetMGet
+#define m_getclr sceNetMGetclr
+#define m_gethdr sceNetMGethdr
+#define m_prepend sceNetMPrepend
+#define m_pulldown sceNetMPulldown
+#define m_pullup sceNetMPullup
+
+void sceNetMAdj(struct mbuf *mp, int req_len);
+void sceNetMCat(struct mbuf *m, struct mbuf *n);
+void sceNetMCopyback(struct mbuf *m0, int off, int len, caddr_t cp);
+void sceNetMCopydata(struct mbuf *m, int off, int len, caddr_t cp);
+struct mbuf *sceNetMCopym(struct mbuf *m, int off0, int len, int wait);
+struct mbuf *sceNetMFree(struct mbuf *m);
+void sceNetMFreem(struct mbuf *m);
+struct mbuf *sceNetMGet(int nowait, int type);
+struct mbuf *sceNetMGetclr(int nowait, int type);
+struct mbuf *sceNetMGethdr(int nowait, int type);
+struct mbuf *sceNetMPrepend(struct mbuf *m, int len, int how);
+struct mbuf *sceNetMPulldown(struct mbuf *m, int off, int len, int *offp);
+struct mbuf *sceNetMPullup(struct mbuf *n, int len);
+
+/* socket.h */
+struct sockaddr {
+	u_char sa_len;
+	u_char sa_family;
+	char sa_data[14];
+};
+
+struct cmsghdr {
+	socklen_t cmsg_len;
+	int cmsg_level;
+	int cmsg_type;
+};
+
+#define __cmsg_alignbytes func_00005D70
+#define __CMSG_ALIGN(n) (((n) + __cmsg_alignbytes()) & ~__cmsg_alignbytes())
+#define CMSG_DATA(cmsg) ((u_char *)(void *)(cmsg) + __CMSG_ALIGN(sizeof(struct cmsghdr)))
+#define CMSG_SPACE(l) (__CMSG_ALIGN(sizeof(struct cmsghdr)) + __CMSG_ALIGN(l))
+#define CMSG_LEN(l) (__CMSG_ALIGN(sizeof(struct cmsghdr)) + (l))
+
+#define SO_DEBUG 0x0001
+#define SO_ACCEPTCONN 0x0002
+#define SO_REUSEADDR 0x0004
+#define SO_KEEPALIVE 0x0008
+#define SO_DONTROUTE 0x0010
+#define SO_BROADCAST 0x0020
+#define SO_USELOOPBACK 0x0040
+#define SO_LINGER 0x0080
+#define SO_OOBINLINE 0x0100
+#define SO_REUSEPORT 0x0200
+#define SO_TIMESTAMP 0x0400
+
+/* socketvar.h (Sony layout) */
+struct selinfo {
+	SceUID si_pid;
+	short si_flags;
+};
+
+struct sockbuf {
+	u_long sb_cc;
+	u_long sb_hiwat;
+	u_long sb_mbcnt;
+	u_long sb_mbmax;
+	long sb_lowat;
+	struct mbuf *sb_mb;
+	struct selinfo sb_sel;
+	short sb_flags;
+	short sb_unk22;
+	int sb_timeo;
+};
+
+#define SB_MAX (256 * 1024)
+#define SB_LOCK 0x01
+#define SB_WANT 0x02
+#define SB_WAIT 0x04
+#define SB_SEL 0x08
+#define SB_ASYNC 0x10
+#define SB_UPCALL 0x20
+#define SB_NOINTR 0x40
+
+TAILQ_HEAD(soqhead, socket);
+struct socket {
+	short so_type;
+	short so_options;
+	int so_linger;
+	short so_state;
+	short so_unkA;
+	void *so_pcb;
+	struct protosw *so_proto;
+	struct socket *so_head;
+	struct soqhead *so_onq;
+	struct soqhead so_q0;
+	struct soqhead so_q;
+	TAILQ_ENTRY(socket) so_qe;
+	short so_q0len;
+	short so_qlen;
+	short so_qlimit;
+	short so_timeo;
+	u_short so_error;
+	u_long so_oobmark;
+	struct sockbuf so_rcv;
+	struct sockbuf so_snd;
+	int so_unk94;
+	void (*so_upcall)(struct socket *so, caddr_t arg, int waitf);
+	caddr_t so_upcallarg;
+	int (*so_send)(struct socket *, struct mbuf *, struct uio *, struct mbuf *, struct mbuf *, int);
+	int (*so_receive)(struct socket *, struct mbuf **, struct uio *, struct mbuf **, struct mbuf **, int *);
+	int so_fd;
+	TAILQ_ENTRY(socket) so_list;
+	struct thread_info *so_thread;
+	struct socket *so_tnext;
+};
+TAILQ_HEAD(socklist_head, socket);
+
+#define SS_NOFDREF 0x001
+#define SS_ISCONNECTED 0x002
+#define SS_ISCONNECTING 0x004
+#define SS_ISDISCONNECTING 0x008
+#define SS_CANTSENDMORE 0x010
+#define SS_CANTRCVMORE 0x020
+#define SS_RCVATMARK 0x040
+#define SS_PRIV 0x080
+#define SS_NBIO 0x100
+#define SS_ISCONFIRMING 0x200
+#define SS_ISDISCONNECTED 0x800
+
+#define sbspace(sb) \
+	(lmin((long)((sb)->sb_hiwat - (sb)->sb_cc), (long)((sb)->sb_mbmax - (sb)->sb_mbcnt)))
+
+#define sballoc(sb, m) do { \
+	(sb)->sb_cc += (m)->m_len; \
+	(sb)->sb_mbcnt += MSIZE; \
+	if ((m)->m_flags & M_EXT) \
+		(sb)->sb_mbcnt += (m)->m_ext.ext_size; \
+} while (0)
+
+#define sbfree(sb, m) do { \
+	(sb)->sb_cc -= (m)->m_len; \
+	(sb)->sb_mbcnt -= MSIZE; \
+	if ((m)->m_flags & M_EXT) \
+		(sb)->sb_mbcnt -= (m)->m_ext.ext_size; \
+} while (0)
+
+#define sb_notify(sb) (((sb)->sb_flags & (SB_WAIT | SB_SEL | SB_ASYNC | SB_UPCALL)) != 0)
+#define sorwakeup(so) do { if (sb_notify(&(so)->so_rcv)) sowakeup((so), &(so)->so_rcv); } while (0)
+#define sowwakeup(so) do { if (sb_notify(&(so)->so_snd)) sowakeup((so), &(so)->so_snd); } while (0)
+
+#define PRU_ATTACH 0
+#define PRU_DETACH 1
+#define PRU_BIND 2
+#define PRU_LISTEN 3
+#define PRU_CONNECT 4
+#define PRU_ACCEPT 5
+#define PRU_DISCONNECT 6
+#define PRU_SHUTDOWN 7
+#define PRU_RCVD 8
+#define PRU_SEND 9
+#define PRU_ABORT 10
+#define PRU_CONTROL 11
+#define PRU_SENSE 12
+#define PRU_RCVOOB 13
+#define PRU_SENDOOB 14
+#define PRU_SOCKADDR 15
+#define PRU_PEERADDR 16
+#define PRU_CONNECT2 17
+#define PRU_FASTTIMO 18
+#define PRU_SLOWTIMO 19
+#define PRU_PROTORCV 20
+#define PRU_PROTOSEND 21
+
+#define PR_ATOMIC 0x01
+#define PR_ADDR 0x02
+#define PR_CONNREQUIRED 0x04
+#define PR_WANTRCVD 0x08
+#define PR_RIGHTS 0x10
+
+void _sce_pspnet_wakeup(void *chan);
+int _sce_pspnet_tsleep(void *chan, int timo);
+#define tsleep _sce_pspnet_tsleep
+void _sce_pspnet_selwakeup(struct selinfo *sip);
+void _sce_pspnet_selrecord(struct thread_info *selector, struct selinfo *sip);
+#define wakeup _sce_pspnet_wakeup
+#define selwakeup _sce_pspnet_selwakeup
+#define selrecord _sce_pspnet_selrecord
+
+/* uipc_socket2.c */
+#define soisconnected func_0000473C
+#define sonewconn func_00004820
+#define soqinsque func_000049DC
+#define soqremque func_00004A38
+#define sowakeup func_00004AB8
+#define soreserve func_00004B44
+#define sbreserve func_00004BEC
+#define sbrelease func_00004C3C
+#define sbinsertoob func_00004C68
+#define sbappendaddr func_00004D3C
+#define sbappendcontrol func_00004F38
+#define sbcompress func_00005024
+#define sbflush func_000051F8
+#define sbdrop func_00005240
+#define sbdroprecord func_000054EC
+#define sbcreatecontrol func_00005624
+#define sofdalloc func_00005810
+#define getsock func_000058EC
+#define soisconnecting func_00005964
+#define soisdisconnecting func_00005978
+#define soisdisconnected func_000059F8
+#define socantsendmore func_00005A78
+#define socantrcvmore func_00005AB8
+#define sbwait func_00005AF8
+#define sb_lock func_00005B20
+#define sbappend func_00005B98
+#define sbappendrecord func_00005CB8
+
+void soisconnected(struct socket *so);
+struct socket *sonewconn(struct socket *head, int connstatus);
+void soqinsque(struct socket *head, struct socket *so, int q);
+int soqremque(struct socket *so, int q);
+void sowakeup(struct socket *so, struct sockbuf *sb);
+int soreserve(struct socket *so, u_long sndcc, u_long rcvcc);
+int sbreserve(struct sockbuf *sb, u_long cc);
+void sbrelease(struct sockbuf *sb);
+void sbinsertoob(struct sockbuf *sb, struct mbuf *m0);
+int sbappendaddr(struct sockbuf *sb, struct sockaddr *asa, struct mbuf *m0, struct mbuf *control);
+int sbappendcontrol(struct sockbuf *sb, struct mbuf *m0, struct mbuf *control);
+void sbcompress(struct sockbuf *sb, struct mbuf *m, struct mbuf *n);
+void sbflush(struct sockbuf *sb);
+void sbdrop(struct sockbuf *sb, int len);
+void sbdroprecord(struct sockbuf *sb);
+struct mbuf *sbcreatecontrol(caddr_t p, int size, int type, int level);
+int sofdalloc(void) __attribute__((noinline));
+struct socket *getsock(int fd);
+void soisconnecting(struct socket *so);
+void soisdisconnecting(struct socket *so);
+void soisdisconnected(struct socket *so);
+void socantsendmore(struct socket *so);
+void socantrcvmore(struct socket *so);
+int sbwait(struct sockbuf *sb);
+int sb_lock(struct sockbuf *sb);
+void sbappend(struct sockbuf *sb, struct mbuf *m);
+void sbappendrecord(struct sockbuf *sb, struct mbuf *m0);
+int __cmsg_alignbytes(void);
+
+#define socklist D_0002F2EC
+#define lastfd D_0002EB54
+extern struct socklist_head socklist;
+extern int lastfd;
 
 #endif

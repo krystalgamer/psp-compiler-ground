@@ -5,6 +5,7 @@
 0x01E30 uipc_domain      1.5.1.internal  uipc_domain.c
 0x023C4 uipc_socket      1.5.1.internal  uipc_socket.c
 0x0473C uipc_socket2     1.5.1.internal  uipc_socket2.c
+0x05D70 cmsg_alignbytes  1.5.1.internal  cmsg_alignbytes.c
 0x05D78 uipc_syscalls    1.5.1.internal  uipc_syscalls.c
 0x086F4 kern_sysctl      1.5.1.internal  kern_sysctl.c
 0x08C18 inet_ntoa        1.5.1.internal  inet_ntoa.c

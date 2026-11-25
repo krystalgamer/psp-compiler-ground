@@ -57,6 +57,7 @@ segments:
       - [0x1EB0, c, uipc_domain]
       - [0x2444, c, uipc_socket]
       - [0x47BC, c, uipc_socket2]
+      - [0x5DF0, c, cmsg_alignbytes]
       - [0x5DF8, c, uipc_syscalls]
       - [0x8774, c, kern_sysctl]
       - [0x8C98, c, inet_ntoa]

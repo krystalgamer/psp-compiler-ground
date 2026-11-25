@@ -4,6 +4,7 @@ inet_sched                                   1.5.1.internal  inet_sched.c
 uipc_domain                                  1.5.1.internal  uipc_domain.c
 uipc_socket                                  1.5.1.internal  uipc_socket.c
 uipc_socket2                                 1.5.1.internal  uipc_socket2.c
+cmsg_alignbytes                              1.5.1.internal  cmsg_alignbytes.c
 uipc_syscalls                                1.5.1.internal  uipc_syscalls.c
 kern_sysctl                                  1.5.1.internal  kern_sysctl.c
 inet_ntoa                                    1.5.1.internal  inet_ntoa.c
