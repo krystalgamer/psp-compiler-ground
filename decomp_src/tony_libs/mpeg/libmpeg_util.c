@@ -6,14 +6,41 @@
 
 extern char *D_00007D80;
 
-unsigned int func_00007500(int type);
+extern const StreamTypeInfo D_000078F4[];
 /* --- end declarations --- */
 
-INCLUDE_ASM("tmp/asm/tony_libs/mpeg/nonmatchings/libmpeg_util", func_00007258);
+unsigned int func_00007258(int type, int ch)
+{
+	int sh = 0;
+
+	if (type > 16)
+		return SCE_MPEG_ERROR_INVALID_VALUE;
+	switch (D_00007A90[type].mask) {
+	case 0xFF000000:
+		sh = 24;
+		break;
+	case 0xFFFF0000:
+		sh = 16;
+		break;
+	case 0xFFFFFF00:
+		sh = 8;
+		break;
+	case 0xFFFFFFFF:
+		break;
+	default:
+		return 0;
+	}
+	return D_00007A90[type].id | (ch << sh);
+}
 
 INCLUDE_ASM("tmp/asm/tony_libs/mpeg/nonmatchings/libmpeg_util", func_000072EC);
 
-INCLUDE_ASM("tmp/asm/tony_libs/mpeg/nonmatchings/libmpeg_util", func_00007500);
+unsigned int func_00007500(int type)
+{
+	if (type > 16)
+		return SCE_MPEG_ERROR_INVALID_VALUE;
+	return D_00007A90[type].mask;
+}
 
 int func_0000752C(void *p)
 {

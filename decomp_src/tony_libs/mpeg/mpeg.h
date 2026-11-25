@@ -149,7 +149,7 @@ typedef struct {
 	int unk18;
 	int unk1C;
 	int unk20;
-	int unk24;
+	void *unk24;
 	int unk28;
 	void *unk2C;
 	void *unk30;
@@ -292,6 +292,25 @@ typedef struct AuList {
 	AuNode nodes[100];
 } AuList;
 
+typedef struct CscBufs {
+	int p[8];
+} CscBufs;
+
+typedef struct Buf694 {
+	CscBufs bufs;
+	int unk20;
+} Buf694;
+
+typedef struct CscAvcParam {
+	unsigned int width;
+	unsigned int height;
+	int unk8;
+	int unkC;
+	void *buf[8];
+} CscAvcParam;
+
+int sceMpegBaseCscAvc(void *dst, int unk, int width, CscAvcParam *param);
+
 typedef struct MpegSys {
 	char magic[8];
 	char version[4];
@@ -313,7 +332,7 @@ typedef struct MpegSys {
 	int val[2];
 	VideoCtx *video;
 	VideoInfo *info;
-	void *buf694;
+	struct Buf694 *buf694;
 	void *buf698;
 	int unk69C;
 	int edram;
@@ -325,7 +344,7 @@ typedef struct MpegSys {
 	int unk6B8;
 	int unk6BC;
 	int unk6C0;
-	void *unk6C4;
+	AudioCtx *unk6C4;
 	int unk6C8;
 } MpegSys;
 
@@ -386,5 +405,11 @@ typedef struct AuList2 {
 int func_00001180(void *addr);
 int func_000013AC(AuList2 *l, int start, int count, SceMpegAuInfo *dst, int *out);
 int func_00001474(AuList2 *l, int count, int *out);
+
+int func_000052A8(SceMpeg *mp, int h);
+
+int sceMpegBaseCscInit(int width);
+int func_00004CF0(AuNode *node, int addr, int unk4, AuNode *next, int size);
+int func_00004D24(AuNode *node, AuNode *next);
 
 #endif

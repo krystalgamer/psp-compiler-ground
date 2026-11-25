@@ -185,13 +185,136 @@ int sceMpegAvcDecodeDetail(SceMpeg *mp, int *detail)
 	return 0;
 }
 
-INCLUDE_ASM("tmp/asm/tony_libs/mpeg/nonmatchings/mpeg", sceMpegAvcDecode);
+int sceMpegAvcDecode(SceMpeg *mp, SceMpegAu *au, int width, void **pRGBA, int *num)
+{
+	MpegSys *sys;
+	VideoCtx *video;
+	Buf694 *buf;
+	VideoInfo *info;
+	int es;
+	int pad;
+	int ret;
+	int i;
+	CscAvcParam param;
 
-INCLUDE_ASM("tmp/asm/tony_libs/mpeg/nonmatchings/mpeg", sceMpegAvcDecodeStop);
+	ret = func_00001100(mp);
+	if (ret != 0)
+		return ret;
+	sys = mp->sys;
+	video = sys->video;
+	buf = sys->buf694;
+	info = sys->info;
+	es = func_000052A8(mp, (int)au->pEsBuf);
+	if (sys->unk6A4 == 0) {
+		pad = 16 - au->iEsSize % 16;
+		if (pad == 16)
+			pad = 0;
+		func_00005ED8((unsigned char *)es, au->iEsSize + pad);
+		au->iEsSize += pad;
+	}
+	video->unk24 = (void *)(es & 0x0FFFFFFF);
+	video->unk28 = au->iEsSize;
+	ret = func_00005F2C(video);
+	au->iEsSize = 0;
+	if (ret != 0)
+		return ret;
+	*num = info->unk20;
+	if (sys->mode != 3) {
+		for (i = 0; i < *num; i++) {
+			if (pRGBA[i] == NULL)
+				return SCE_MPEG_ERROR_INVALID_VALUE;
+			param.width = (unsigned int)info->unkC >> 4;
+			param.height = (unsigned int)info->unk8 >> 4;
+			param.unk8 = 0;
+			param.unkC = 0;
+			param.buf[0] = (void *)buf->bufs.p[0];
+			param.buf[2] = (void *)buf->bufs.p[2];
+			param.buf[4] = (void *)buf->bufs.p[4];
+			param.buf[6] = (void *)buf->bufs.p[6];
+			param.buf[1] = (void *)buf->bufs.p[1];
+			param.buf[3] = (void *)buf->bufs.p[3];
+			param.buf[5] = (void *)buf->bufs.p[5];
+			param.buf[7] = (void *)buf->bufs.p[7];
+			ret = sceMpegBaseCscAvc(pRGBA[i], 0, width, &param);
+			if (ret != 0)
+				break;
+		}
+	}
+	return ret;
+}
 
-INCLUDE_ASM("tmp/asm/tony_libs/mpeg/nonmatchings/mpeg", func_00000F40);
+int sceMpegAvcDecodeStop(SceMpeg *mp, int width, void **pRGBA, int *num)
+{
+	MpegSys *sys;
+	Buf694 *buf;
+	VideoInfo *info;
+	int ret;
+	int i;
+	CscAvcParam param;
 
-INCLUDE_ASM("tmp/asm/tony_libs/mpeg/nonmatchings/mpeg", sceMpegAtracDecode);
+	ret = func_00001100(mp);
+	if (ret != 0)
+		return ret;
+	sys = mp->sys;
+	buf = sys->buf694;
+	info = sys->info;
+	ret = func_00005F80(sys->video);
+	if (ret != 0)
+		return ret;
+	*num = info->unk20;
+	if (sys->mode != 3) {
+		for (i = 0; i < *num; i++) {
+			if (pRGBA[i] == NULL)
+				return SCE_MPEG_ERROR_INVALID_VALUE;
+			param.width = (unsigned int)info->unkC >> 4;
+			param.height = (unsigned int)info->unk8 >> 4;
+			param.unk8 = 0;
+			param.unkC = 0;
+			param.buf[0] = (void *)buf->bufs.p[0];
+			param.buf[2] = (void *)buf->bufs.p[2];
+			param.buf[4] = (void *)buf->bufs.p[4];
+			param.buf[6] = (void *)buf->bufs.p[6];
+			param.buf[1] = (void *)buf->bufs.p[1];
+			param.buf[3] = (void *)buf->bufs.p[3];
+			param.buf[5] = (void *)buf->bufs.p[5];
+			param.buf[7] = (void *)buf->bufs.p[7];
+			ret = sceMpegBaseCscAvc(pRGBA[i], 0, width, &param);
+			if (ret != 0)
+				break;
+		}
+	}
+	return ret;
+}
+
+int func_00000F40(SceMpeg *mp, VideoCtx **out)
+{
+	int ret;
+
+	ret = func_00001100(mp);
+	if (ret != 0)
+		return ret;
+	*out = mp->sys->video;
+	return 0;
+}
+
+int sceMpegAtracDecode(SceMpeg *mp, SceMpegAu *au, void *pcm, int init)
+{
+	AudioCtx *actx;
+	int ret;
+
+	ret = func_00001100(mp);
+	if (ret != 0)
+		return ret;
+	actx = mp->sys->unk6C4;
+	if (init == 1) {
+		ret = func_00006208(actx, mp->sys->unk6BC, mp->sys->unk6C0, (AudioParam2 *)((char *)au->pEsBuf + 2), (AudioParam4 *)((char *)au->pEsBuf + 4));
+		if (ret != 0)
+			return ret;
+	}
+	actx->unk18 = (int)au->pEsBuf;
+	actx->unk20 = (int)pcm;
+	return func_000063B8(actx);
+}
 
 INCLUDE_RODATA("tmp/asm/tony_libs/mpeg/nonmatchings/mpeg", D_0000797C);
 

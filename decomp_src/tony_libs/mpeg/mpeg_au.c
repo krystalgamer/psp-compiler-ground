@@ -44,7 +44,25 @@ INCLUDE_ASM("tmp/asm/tony_libs/mpeg/nonmatchings/mpeg_au", func_00004D30);
 
 INCLUDE_ASM("tmp/asm/tony_libs/mpeg/nonmatchings/mpeg_au", func_00005148);
 
-INCLUDE_ASM("tmp/asm/tony_libs/mpeg/nonmatchings/mpeg_au", sceMpegMallocAvcEsBuf);
+unsigned char *sceMpegMallocAvcEsBuf(SceMpeg *mp)
+{
+	MpegSys *sys = mp->sys;
+	int h = 0;
+	int i;
+
+	if (func_00001100(mp) != 0)
+		return NULL;
+	func_00005AE0(sys->sema);
+	for (i = 0; i < sys->unk67C; i++) {
+		if (sys->flag[i] == 0) {
+			sys->flag[i] = 1;
+			h = i + 1;
+			break;
+		}
+	}
+	func_00005B7C(sys->sema);
+	return (unsigned char *)h;
+}
 
 int sceMpegFreeAvcEsBuf(SceMpeg *mp, int h)
 {
