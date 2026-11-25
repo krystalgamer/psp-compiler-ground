@@ -67,7 +67,22 @@ SceInt32 avsync_video_getPts(t_avSyncControl *pAvSync, SceUInt32 *pPts);
 SceInt32 avsync_Compare(t_avSyncControl *pAvSync);
 
 
-INCLUDE_ASM("tmp/asm/UTST99332/mpeg_mpegstr_pcm/nonmatchings/avsync", avsync_create);
+void *malloc(unsigned int size);
+void *malloc(unsigned int size);
+#include <stdlib.h>
+float sceDisplayGetFramePerSec(void);
+SceInt32 avsync_create(t_avSyncControl *pAvSync, t_displayBuffer *pDisp, t_soundBuffer *pSound, SceInt32 videoNum)
+{
+	pAvSync->pDisp = pDisp;
+	pAvSync->pSound = pSound;
+	pAvSync->video.pts = NULL;
+	pAvSync->video.pts = malloc(videoNum * sizeof(SceUInt32));
+	if (pAvSync->video.pts == NULL)
+		return -1;
+	pAvSync->video.size = videoNum;
+	videoIntervalSize = (SceInt32)(2.0f * (90000.0f / sceDisplayGetFramePerSec()));
+	return 0;
+}
 
 int avsync_reset(t_avSyncControl *pAvSync) {
     pAvSync->video.videoLatestPts = 0;
