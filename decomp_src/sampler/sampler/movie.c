@@ -418,7 +418,29 @@ int MovieMain(void)
 	return 0;
 }
 
-INCLUDE_ASM("tmp/asm/sampler/sampler/nonmatchings/movie", MovieTerm);
+int MovieTerm(void)
+{
+	BgmEnd();
+	if (audioFlag)
+		sceKernelWaitThreadEnd(soundThread, NULL);
+	sceKernelWaitThreadEnd(dispThread, NULL);
+	sceKernelWaitThreadEnd(readThread, NULL);
+	if (audioFlag)
+		sceKernelTerminateDeleteThread(soundThread);
+	sceKernelTerminateDeleteThread(dispThread);
+	sceKernelTerminateDeleteThread(readThread);
+	sceMpegDelete(&mpeg);
+	sceMpegRingbufferDestruct(&ringbuf);
+	sceMpegFinish();
+	if (pWorkBuf)
+		free(pWorkBuf);
+	if (pPSPStream)
+		free(pPSPStream);
+	if (thumbBuf)
+		free(thumbBuf);
+	strFileClose(&strFile);
+	return 0;
+}
 
 int MovieStat(void)
 {
@@ -427,4 +449,22 @@ int MovieStat(void)
 
 INCLUDE_ASM("tmp/asm/sampler/sampler/nonmatchings/movie", MovieStart);
 
-INCLUDE_ASM("tmp/asm/sampler/sampler/nonmatchings/movie", MovieEnd);
+int MovieEnd(void)
+{
+	if (audioFlag)
+		sceKernelWaitThreadEnd(soundThread, NULL);
+	sceKernelWaitThreadEnd(dispThread, NULL);
+	sceKernelWaitThreadEnd(readThread, NULL);
+	avsync_end(&avSync);
+	read_end(&readCtrl);
+	if (audioFlag)
+		soundbuf_end(&soundCtrl);
+	dispbuf_end(&displayCtrl);
+	if (audioFlag && pAudioBuf)
+		free(pAudioBuf);
+	sceMpegFreeAvcEsBuf(&mpeg, avcEsBuf);
+	sceMpegUnRegistStream(&mpeg, pStream[0]);
+	if (audioFlag)
+		sceMpegUnRegistStream(&mpeg, pStream[1]);
+	return 0;
+}
