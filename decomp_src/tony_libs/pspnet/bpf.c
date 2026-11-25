@@ -15,7 +15,44 @@ INCLUDE_ASM("tmp/asm/tony_libs/pspnet/nonmatchings/bpf", func_00003940);
 
 INCLUDE_ASM("tmp/asm/tony_libs/pspnet/nonmatchings/bpf", func_00003B20);
 
-INCLUDE_ASM("tmp/asm/tony_libs/pspnet/nonmatchings/bpf", func_00003E80);
+int func_00003E80(struct bpf_d *d, struct bpf_program *fp)
+{
+	void *fcode, *old;
+	u_int flen, size;
+	int s;
+
+	old = d->bd_filter;
+	if (fp->bf_insns == NULL) {
+		if (fp->bf_len != 0)
+			return 22;
+		s = _sce_pspnet_spllock();
+		d->bd_filter = NULL;
+		bpf_reset_d(d);
+		_sce_pspnet_splunlock(s);
+		if (old != NULL)
+			sceNetFreeInternal(old);
+		return 0;
+	}
+	flen = fp->bf_len;
+	if (flen > 512)
+		return 22;
+	size = flen * 8;
+	fcode = sceNetMallocInternal(size);
+	if (fcode == NULL)
+		return 12;
+	bcopy(fp->bf_insns, fcode, size);
+	if (func_00004CC8(fcode, (int)flen)) {
+		s = _sce_pspnet_spllock();
+		d->bd_filter = fcode;
+		bpf_reset_d(d);
+		_sce_pspnet_splunlock(s);
+		if (old != NULL)
+			sceNetFreeInternal(old);
+		return 0;
+	}
+	sceNetFreeInternal(fcode);
+	return 22;
+}
 
 INCLUDE_ASM("tmp/asm/tony_libs/pspnet/nonmatchings/bpf", func_00003FA4);
 

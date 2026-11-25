@@ -628,4 +628,32 @@ static inline void bpf_detachd(struct bpf_d *d)
 	d->bd_bif = NULL;
 }
 
+struct bpf_program {
+	u_int bf_len;
+	void *bf_insns;
+};
+
+struct bpf_hdr {
+	struct timeval bh_tstamp;
+	u_int bh_caplen;
+	u_int bh_datalen;
+	u_short bh_hdrlen;
+};
+
+int func_00004CC8(void *f, int len);
+void _sce_pspnet_microtime(struct timeval *tv);
+void _sce_pspnet_selwakeup(struct selinfo *sip);
+
+static inline void bpf_reset_d(struct bpf_d *d)
+{
+	if (d->bd_hbuf) {
+		d->bd_fbuf = d->bd_hbuf;
+		d->bd_hbuf = NULL;
+	}
+	d->bd_slen = 0;
+	d->bd_hlen = 0;
+	d->bd_rcount = 0;
+	d->bd_dcount = 0;
+}
+
 #endif
