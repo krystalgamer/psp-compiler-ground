@@ -98,7 +98,10 @@ modules (`tools/nltest.py`, `tools/objcmp.py`).
   display, utils) compiles identically with both cc1s too, and
   inline asm never ends up in a delay slot with either cc1 (only psp-as
   swaps it there, as in 1.5.1's `usrKernelIcacheInvalidate`).  They stay
-  out of the 1.6.1 tree for lack of evidence.
+  out of the 1.6.1 tree for lack of evidence.  On UTST99332
+  (1.6.1.internal, still mostly asm) the discriminator went through 45 of
+  the 63 modules without a single difference; most m2c drafts there do
+  not compile yet (889 skipped), so this is weak evidence.
 - Things that looked like compiler differences but are source-level:
   `strFileOpen`'s missing `movz` (`ret = -1; if (fd >= 0) ret = 1;` keeps the
   branch, an if/else converts), the constant 0 of Allegrex `max` kept in an
