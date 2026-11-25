@@ -167,7 +167,31 @@ INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", DoBubCrush);
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", PuzzleInit);
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", PuzzleMain);
+int PuzzleMain(void)
+{
+	int ret = 0;
+	int r;
+	int i;
+	PZL_SND *snd;
+
+	SysTimeIncrement();
+	SpriteInit();
+	Stat[1].snd.se = -1;
+	Stat[0].snd.se = -1;
+	r = PuzzleBody();
+	if (r != 0) {
+		ret = r;
+		bgm_stop();
+	}
+	for (i = 0, snd = &Stat[0].snd; i < 3; i++, snd = (void *)((u8 *)snd + sizeof(PZL_STAT))) {
+		if (snd->se > 0) {
+			se_play(snd->se);
+			snd->se = -1;
+		}
+	}
+	SpriteKick();
+	return ret;
+}
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", VSModeInit);
 
@@ -177,13 +201,62 @@ INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", SurvivlaModeIn
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", SurvivalInit);
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", VSMain);
+int VSMain(void)
+{
+	int ret = 0;
+	int r;
+	int i;
+	PZL_SND *snd;
+
+	SysTimeIncrement();
+	SpriteInit();
+	Stat[1].snd.se = -1;
+	Stat[0].snd.se = -1;
+	VSModeBody(2);
+	r = VSModeBody(1);
+	if (r != 0) {
+		ret = r;
+		bgm_stop();
+	}
+	for (i = 0, snd = &Stat[0].snd; i < 3; i++, snd = (void *)((u8 *)snd + sizeof(PZL_STAT))) {
+		if (snd->se > 0) {
+			se_play(snd->se);
+			snd->se = -1;
+		}
+	}
+	SpriteKick();
+	return ret;
+}
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", EndressModeInit);
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", EndressInit);
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", EndressMain);
+int EndressMain(void)
+{
+	int ret = 0;
+	int r;
+	int i;
+	PZL_SND *snd;
+
+	SysTimeIncrement();
+	SpriteInit();
+	Stat[1].snd.se = -1;
+	Stat[0].snd.se = -1;
+	r = EndressBody(0);
+	if (r != 0) {
+		ret = r;
+		bgm_stop();
+	}
+	for (i = 0, snd = &Stat[0].snd; i < 3; i++, snd = (void *)((u8 *)snd + sizeof(PZL_STAT))) {
+		if (snd->se > 0) {
+			se_play(snd->se);
+			snd->se = -1;
+		}
+	}
+	SpriteKick();
+	return ret;
+}
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", DrawBubble);
 

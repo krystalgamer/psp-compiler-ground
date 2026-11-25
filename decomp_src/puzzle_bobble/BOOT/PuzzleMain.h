@@ -3,6 +3,11 @@
 
 #define MAP_SIZE 0x240
 
+typedef struct {
+	u8 pad0[0xA];
+	s16 se;			/* +0xA: sound effect to play this frame */
+} PZL_SND;
+
 /* a player's game state (Stat[3]); only the fields seen so far are named */
 typedef struct {
 	u8 pad000[2];
@@ -18,8 +23,8 @@ typedef struct {
 	u8 pad44F[0x45D - 0x44F];
 	s8 monitor;		/* 0x45D */
 	s8 monitor_anim;	/* 0x45E */
-	u8 pad45F[0x46A - 0x45F];
-	s16 se;			/* 0x46A: sound effect to play this frame */
+	u8 pad45F[0x460 - 0x45F];
+	PZL_SND snd;		/* 0x460 */
 	u8 pad46C[0x47B - 0x46C];
 	s8 chara;		/* 0x47B */
 	s8 chara2;		/* 0x47C */
@@ -39,5 +44,12 @@ extern int bubcol[1024];
 int GetMapWidth(int no);
 int GetBallLine(PZL_STAT *st);
 void SetBubCrush(int x, int y, int col);
+int SysTimeIncrement(void);
+int PuzzleBody(void);
+int VSModeBody(int player);
+int EndressBody(int player);
+void SpriteInit(void);
+void SpriteKick(void);
+void bgm_stop(void);
 
 #endif
