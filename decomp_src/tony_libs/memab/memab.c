@@ -190,7 +190,31 @@ INCLUDE_ASM("tmp/asm/tony_libs/memab/nonmatchings/memab", sceMemab_driver_8DAC23
 
 INCLUDE_ASM("tmp/asm/tony_libs/memab/nonmatchings/memab", sceMemab_driver_DAE8A629);
 
-INCLUDE_ASM("tmp/asm/tony_libs/memab/nonmatchings/memab", sceMemab_driver_CF49BCBB);
+int sceMemab_driver_CF49BCBB(u8 *obj, const u8 *in)
+{
+	int ret = -0x109;
+	u8 buf[0x60];
+	u64 ctr = 0;
+	u64 min = 0;
+
+	if (sceKernelWaitSema(D_000028E0, 1, 0) != 0)
+		goto end;
+	ret = -0x200;
+	if (D_00002880 == 0)
+		goto end;
+	MEMCPY(buf, in, 0x60);
+	ret = func_000005AC((KirkHeader *)D_00002B80, 2, buf, 0x60);
+	if (ret != 0)
+		goto end;
+	MEMCPY(buf, D_00002874 + 0x10, 0x60);
+	func_00000000(obj, obj, 0x14, buf, 0x20, buf + 0x20, 8, 0, 0);
+	ret = func_00000878(D_00002874, (u32 *)(obj + 0x14), 0x20, &ctr, &min, obj, buf + 0x28, 1, 0);
+end:
+	MEMSET(buf, 0, 0x60);
+	if (sceKernelSignalSema(D_000028E0, 1) != 0)
+		ret = -0x109;
+	return ret;
+}
 
 int sceMemab_driver_E6D3ACE2(u8 *obj, u32 *data, u32 size, u8 *hdr, int encrypt)
 {
