@@ -174,7 +174,38 @@ INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/mpeg_sound", soundbuf_create)
 
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/mpeg_sound", soundbuf_reset);
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/mpeg_sound", soundbuf_delete);
+int sceKernelDeleteSema(int semid);
+void free(void *p);
+int sceKernelDeleteSema(int semid);
+void free(void *p);
+SceInt32 soundbuf_delete(t_soundBuffer *pSound)
+{
+	SceInt32 i;
+
+	sceWaveExit();
+	sceKernelDeleteSema(pSound->lockSema);
+	if (pSound->buf) {
+		for (i = 0; i < pSound->size; i++) {
+			if (pSound->buf[i]) {
+				free(pSound->buf[i]);
+				pSound->buf[i] = NULL;
+			}
+		}
+		free(pSound->buf);
+		pSound->buf = NULL;
+	}
+	if (pSound->pts) {
+		free(pSound->pts);
+		pSound->pts = NULL;
+	}
+	for (i = 0; i < 2; i++) {
+		if (outputBuf[i]) {
+			free(outputBuf[i]);
+			outputBuf[i] = NULL;
+		}
+	}
+	return 0;
+}
 
 int soundbuf_getDrawbuf(t_soundBuffer *pSound, signed char **buffer) {
     int temp_v0;
@@ -210,7 +241,18 @@ int soundbuf_getPts(t_soundBuffer *pSound, unsigned int *pPts) {
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/mpeg_sound", soundbuf_setBuf);
+int sceKernelSignalSema(int semid, int signal);
+int sceKernelWaitSema(int semid, int signal, unsigned int *timeout);
+int sceKernelSignalSema(int semid, int signal);
+int sceKernelWaitSema(int semid, int signal, unsigned int *timeout);
+SceInt32 soundbuf_setBuf(t_soundBuffer *pSound)
+{
+	sceKernelWaitSema(pSound->lockSema, 1, NULL);
+	pSound->count++;
+	sceKernelSignalSema(pSound->lockSema, 1);
+	pSound->write = (pSound->write + 1) % pSound->size;
+	return 0;
+}
 
 int soundbuf_getCapacity(t_soundBuffer *pSound) {
     return pSound->size - pSound->count;
@@ -220,7 +262,15 @@ int soundbuf_getCurrentCount(t_soundBuffer *pSound) {
     return pSound->count;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/mpeg_sound", soundbuf_checkDecodeEnd);
+static SceInt32 soundbuf_checkDecodeEnd(t_soundBuffer *pSound)
+{
+	SceUInt32 pattern;
+
+	control_getCondition(pSound->pCtrl, &pattern);
+	if (pattern & 0x8)
+		return 1;
+	return 0;
+}
 
 int sound_sendErrCondition(t_soundBuffer *pSound) {
     control_setCondition(pSound->pCtrl, 0x900);

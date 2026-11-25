@@ -30,7 +30,12 @@ static void vblankHandler(SceInt32 idx, SceVoid *cookie);
 SceInt32 control_getCondition(t_conditionCtrl *pCtrl, SceUInt32 *pPattern);
 
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/mpeg_control", vblankHandler);
+static void vblankHandler(int idx, void *cookie)
+{
+	t_conditionCtrl *pCtrl = (t_conditionCtrl *)cookie;
+
+	sceKernelSetEventFlag(pCtrl->waitFlag, 3);
+}
 
 int control_create(t_conditionCtrl *pCtrl) {
     int temp_v0;
@@ -77,7 +82,15 @@ int control_setCondition(t_conditionCtrl *pCtrl, unsigned int pattern) {
     return sceKernelSetEventFlag(pCtrl->controlFlag);
 }
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/mpeg_control", control_getCondition);
+SceInt32 control_getCondition(t_conditionCtrl *pCtrl, SceUInt32 *pPattern)
+{
+	SceKernelEventFlagInfo info;
+
+	info.size = sizeof(info);
+	sceKernelReferEventFlagStatus(pCtrl->controlFlag, &info);
+	*pPattern = info.currentPattern;
+	return 0;
+}
 
 int control_waitConditionDispStart(t_conditionCtrl *pCtrl) {
     sceKernelWaitEventFlag(pCtrl->controlFlag, 1, 0, 0, 0);

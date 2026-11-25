@@ -112,7 +112,11 @@ int strFileWrite(StrFile *file, void *buff, unsigned int size) {
     return sceIoWrite(file->fd, buff, size);
 }
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/mpeg_strfile", strFileLseek);
+SceOff sceIoLseek(SceUID fd, SceOff offset, int whence);
+SceOff strFileLseek(StrFile *file, SceOff offset, SceInt32 whence)
+{
+	return sceIoLseek(file->fd, offset, whence);
+}
 
 extern signed char D_0002F09C;
 

@@ -142,7 +142,12 @@ int read_func(SceSize size, void *argp);
 
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/mpeg_fileread", read_create);
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/mpeg_fileread", read_reset);
+SceInt32 read_reset(t_ringBuffer *pRing, SceInt32 fileSize)
+{
+	pRing->statusFlag = 1;
+	pRing->dataLen = fileSize;
+	return 0;
+}
 
 int read_delete(t_ringBuffer *pRing) {
     return 0;
@@ -157,9 +162,28 @@ int read_setStatus(t_ringBuffer *pRing, int status) {
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/mpeg_fileread", read_isEnd);
+SceInt32 read_isEnd(t_ringBuffer *pRing)
+{
+	SceUInt32 pattern;
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/mpeg_fileread", read_isFull);
+	control_getCondition(pRing->pCtrl, &pattern);
+	return (pattern & 0x4) ? 1 : 0;
+}
+
+SceInt32 read_isFull(t_ringBuffer *pRing)
+{
+	SceUInt32 pattern;
+	SceInt32 ret;
+
+	control_getCondition(pRing->pCtrl, &pattern);
+	if (read_isEnd(pRing) == 1)
+		ret = 1;
+	else if (read_getCapacity(pRing) == 0)
+		ret = 1;
+	else
+		ret = 0;
+	return ret;
+}
 
 int read_getCapacity(t_ringBuffer *pRing) {
     return sceMpegRingbufferAvailableSize(pRing->pRingbuf);

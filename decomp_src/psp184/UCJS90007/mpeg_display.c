@@ -187,7 +187,32 @@ INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/mpeg_display", swap_buffer);
 
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/mpeg_display", dispbuf_reset);
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/mpeg_display", dispbuf_delete);
+int sceKernelDeleteSema(int semid);
+void free(void *p);
+int sceKernelDeleteSema(int semid);
+void free(void *p);
+SceInt32 dispbuf_delete(t_displayBuffer *pDisp)
+{
+	SceInt32 i;
+
+	if (pDisp->buf) {
+		for (i = 0; i < pDisp->size; i++) {
+			if (pDisp->buf[i]) {
+				free(pDisp->buf[i]);
+				pDisp->buf[i] = NULL;
+			}
+		}
+		free(pDisp->buf);
+		pDisp->buf = NULL;
+	}
+	if (pDisp->pts) {
+		free(pDisp->pts);
+		pDisp->pts = NULL;
+	}
+	sceKernelDeleteSema(pDisp->lockSema);
+	sceKernelDeleteEventFlag(pDisp->delayFlag);
+	return 0;
+}
 
 int dispbuf_getDrawbuf(t_displayBuffer *pDisp, signed char **buffer) {
     int temp_v0;
@@ -211,7 +236,18 @@ int dispbuf_getPts(t_displayBuffer *pDisp, unsigned int *pPts) {
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/mpeg_display", dispbuf_dataSet);
+int sceKernelSignalSema(int semid, int signal);
+int sceKernelWaitSema(int semid, int signal, unsigned int *timeout);
+int sceKernelSignalSema(int semid, int signal);
+int sceKernelWaitSema(int semid, int signal, unsigned int *timeout);
+SceInt32 dispbuf_dataSet(t_displayBuffer *pDisp)
+{
+	sceKernelWaitSema(pDisp->lockSema, 1, NULL);
+	pDisp->count++;
+	pDisp->write = (pDisp->write + 1) % pDisp->size;
+	sceKernelSignalSema(pDisp->lockSema, 1);
+	return 0;
+}
 
 int dispbuf_getCapacity(t_displayBuffer *pDisp) {
     return pDisp->size - pDisp->count;
@@ -221,7 +257,17 @@ int dispbuf_getCurrentCount(t_displayBuffer *pDisp) {
     return pDisp->count;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/mpeg_display", dispbuf_checkDecodeEnd);
+static SceInt32 dispbuf_checkDecodeEnd(t_displayBuffer *pDisp)
+{
+	SceUInt32 pattern;
+
+	control_getCondition(pDisp->pCtrl, &pattern);
+	if (pattern & 0x8) {
+		dispbuf_setMode(pDisp, 0xff);
+		return 1;
+	}
+	return 0;
+}
 
 int dispbuf_setMode(t_displayBuffer *pDisp, int mode) {
     pDisp->displayMode = mode;
@@ -240,7 +286,19 @@ int dispbuf_setPlayMode(t_displayBuffer *pDisp) {
     return sceKernelClearEventFlag(pDisp->delayFlag, 0);
 }
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/mpeg_display", dispbuf_checkDelayMode);
+SceInt32 dispbuf_checkDelayMode(t_displayBuffer *pDisp)
+{
+	SceKernelEventFlagInfo info;
+	SceInt32 ret;
+
+	info.size = sizeof(info);
+	sceKernelReferEventFlagStatus(pDisp->delayFlag, &info);
+	if (info.currentPattern == 1)
+		ret = 1;
+	else
+		ret = 0;
+	return ret;
+}
 
 int display_sendErrCondition(t_displayBuffer *pDisp) {
     control_setCondition(pDisp->pCtrl, 0xA00);
