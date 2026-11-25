@@ -1,17 +1,3 @@
-#include "common.h"
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/newlib/libc/signal/signal", _init_signal_r);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/newlib/libc/signal/signal", _signal_r);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/newlib/libc/signal/signal", _raise_r);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/newlib/libc/signal/signal", __sigtramp_r);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/newlib/libc/signal/signal", raise);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/newlib/libc/signal/signal", signal);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/newlib/libc/signal/signal", _init_signal);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/newlib/libc/signal/signal", __sigtramp);
+/* upstream: newlib-1.12.0/newlib/libc/signal/signal.c (unmodified) */
+/* cflags: -O2 -fno-builtin */
+#include "libc/signal/signal.c"

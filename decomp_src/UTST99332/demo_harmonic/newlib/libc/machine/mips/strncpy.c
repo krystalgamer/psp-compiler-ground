@@ -1,3 +1,3 @@
-#include "common.h"
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/newlib/libc/machine/mips/strncpy", strncpy);
+/* upstream: newlib-1.12.0/newlib/libc/machine/mips/strncpy.c (unmodified) */
+/* cflags: -O2 -fno-builtin */
+#include "libc/machine/mips/strncpy.c"

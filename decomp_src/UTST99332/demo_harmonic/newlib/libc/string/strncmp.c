@@ -1,3 +1,3 @@
-#include "common.h"
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/newlib/libc/string/strncmp", strncmp);
+/* upstream: newlib-1.12.0/newlib/libc/string/strncmp.c (unmodified) */
+/* cflags: -O2 -fno-builtin */
+#include "libc/string/strncmp.c"
