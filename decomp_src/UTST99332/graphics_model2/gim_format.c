@@ -24,7 +24,21 @@ typedef struct _anon2 SceGimChunk;
 _Bool sceGimPictureCheckFileHeader(const void *buf, int size);
 
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_model2/nonmatchings/gim_format", sceGimPictureCheckFileHeader);
+_Bool sceGimPictureCheckFileHeader(const void *buf, int size)
+{
+	const SceGimHeader *header;
+
+	header = (const SceGimHeader *)buf;
+	if (header == NULL)
+		return 0;
+	if (size > 0 && size < 32)
+		return 0;
+	if (header->signature != 0x2E47494D)
+		return 0;
+	if (header->version != 0x312E3030)
+		return 0;
+	return header->style == 0x505350;
+}
 
 int sceGimPictureGetChunkCount(void *buf, int size) {
     int var_v1;
