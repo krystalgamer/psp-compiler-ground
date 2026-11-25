@@ -24,6 +24,20 @@ struct _scemoduleinfo { /* size 0x34 */
     const void *stub_end;
 };
 
+/* SDK functions */
+void sceGuTerm(void);
+void *sceGuSwapBuffers(void);
+void sceGuDisable(int state);
+void sceGuColor(unsigned int color);
+void sceGuTexMode(int tpsm, int maxmips, int a2, int swizzle);
+void sceGuTexImage(int mipmap, int width, int height, int tbw, const void *tbp);
+void sceGuClutMode(unsigned int cpsm, unsigned int shift, unsigned int mask, unsigned int a3);
+void sceGuClutLoad(int num_blocks, const void *cbp);
+void sceGuSpriteMode(int a0, int a1, int a2, int a3);
+void sceGuDrawSprite(int x, int y, int z, int u, int v, int flip, int rotation);
+int sceDisplayGetVcount(void);
+int sceCtrlReadBufferPositive(SceCtrlData *data, int count);
+
 extern unsigned int pix_pf8888[65536];
 extern unsigned int clut_pfidx8[128];
 extern unsigned int pix_pfidx8[16384];
@@ -49,6 +63,9 @@ extern short int board[2][3];
 extern const char char_mode[6][16];
 
 static void draw_sprite(void);
+int sceDisplayGetCurrentHcount(void);
+void menuInit(void);
+void menuTerm(int cat, int num);
 static void set_texture(void);
 static void draw_frame(void);
 static int pad_read(void);
@@ -76,11 +93,56 @@ void sceGuTexWrap(int u, int v);
 int sceDisplayWaitVblankStart(void);
 
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_texcomp/nonmatchings/main", draw_sprite);
+static void draw_sprite(void)
+{
+	int x, y, i;
+
+	sceGuColor(0xffffffff);
+	sceGuSpriteMode(64, 256, 64, 256);
+	for (i = 0; i < 4; i++) {
+		x = i * 64;
+		y = 0;
+		sceGuDrawSprite(x + 112, y + 8, 0, x, y, 0, 0);
+	}
+}
 
 INCLUDE_RODATA("tmp/asm/UTST99332/graphics_texcomp/nonmatchings/main", char_mode);
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_texcomp/nonmatchings/main", set_texture);
+static void set_texture(void)
+{
+	switch (draw) {
+	case 1:
+		sceGuEnable(9);
+		sceGuTexMode(3, 0, 0, 0);
+		sceGuTexImage(0, 256, 256, 256, pix_pf8888);
+		break;
+	case 2:
+		sceGuEnable(9);
+		sceGuTexMode(5, 0, 0, 0);
+		sceGuTexImage(0, 256, 256, 256, pix_pfidx8);
+		sceGuClutMode(1, 0, 0xff, 0);
+		sceGuClutLoad(16, clut_pfidx8);
+		break;
+	case 3:
+		sceGuEnable(9);
+		sceGuTexMode(8, 0, 0, 0);
+		sceGuTexImage(0, 256, 256, 256, pix_dxt1);
+		break;
+	case 4:
+		sceGuEnable(9);
+		sceGuTexMode(9, 0, 0, 0);
+		sceGuTexImage(0, 256, 256, 256, pix_dxt3);
+		break;
+	case 5:
+		sceGuEnable(9);
+		sceGuTexMode(10, 0, 0, 0);
+		sceGuTexImage(0, 256, 256, 256, pix_dxt5);
+		break;
+	default:
+		sceGuDisable(9);
+		break;
+	}
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_texcomp/nonmatchings/main", draw_frame);
 
@@ -109,6 +171,55 @@ void init_all(void) {
     sceGuDisplay(1);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_texcomp/nonmatchings/main", pad_read);
+#define cont D_00088500	/* pad_read's static */
+extern u_int32 cont;
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_texcomp/nonmatchings/main", main);
+static int pad_read(void)
+{
+	u_int32 prev, padd;
+	SceCtrlData buf;
+	int old;
+
+	prev = cont;
+	old = draw;
+	sceCtrlReadBufferPositive(&buf, 1);
+	padd = buf.Buttons & (buf.Buttons ^ prev);
+	cont = buf.Buttons;
+	if (padd & 0x0010)
+		draw = 1;
+	if (padd & 0x0040)
+		draw = 2;
+	if (padd & 0x1000)
+		draw = 3;
+	if (padd & 0x2000)
+		draw = 4;
+	if (padd & 0x4000)
+		draw = 5;
+	if (old != draw)
+		change = 1;
+	if (padd & 0x0008)
+		draw = 0;
+	if (padd & 0x0001)
+		return 0;
+	return 1;
+}
+
+int main(void)
+{
+	menuInit();
+	init_all();
+	for (;;) {
+		if (!pad_read())
+			break;
+		draw_frame();
+		hcnt = sceDisplayGetCurrentHcount();
+		prev_vcnt = cur_vcnt;
+		cur_vcnt = sceDisplayGetVcount();
+		sceDisplayWaitVblankStart();
+		vcnt = cur_vcnt - prev_vcnt;
+		sceGuSwapBuffers();
+	}
+	sceGuTerm();
+	menuTerm(1, 33);
+	return 0;
+}
