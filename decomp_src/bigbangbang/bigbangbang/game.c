@@ -1,4 +1,150 @@
+/* cflags: -O2 -fno-merge-constants */
 #include "common.h"
+
+/* declarations recovered from DWARF */
+typedef struct ScePspFVector3 ScePspFVector3;
+struct ScePspFVector3;
+struct ScePspFVector3 { /* size 0xc */
+    float x;
+    float y;
+    float z;
+};
+struct _anon1;
+typedef unsigned int u_int32;
+struct _anon1 { /* size 0xc */
+    u_int32 c;
+    short int p[3];
+};
+typedef struct _anon1 Gu2dV16C;
+struct _anon2;
+typedef short unsigned int u_short16;
+struct _anon2 { /* size 0xa */
+    u_short16 u;
+    u_short16 v;
+    short int p[3];
+};
+typedef struct _anon2 Gu2dV16T;
+struct _anon3;
+struct _anon3 { /* size 0x18 */
+    int result;
+    int score;
+    int count;
+    int state;
+    int key;
+    int disp;
+};
+typedef struct _anon3 GAMEDAT;
+struct _anon4;
+struct _anon4 { /* size 0x1c */
+    ScePspFVector3 pos;
+    float d;
+    int t;
+    int c;
+    int state;
+};
+typedef struct _anon4 BALL;
+struct _anon5;
+struct _anon5 { /* size 0x1c */
+    float pos;
+    float e;
+    float tex[2];
+    int t;
+    int dt;
+    int point;
+};
+typedef struct _anon5 GROUND;
+struct _anon6;
+struct _anon6 { /* size 0x1c */
+    int pos[2];
+    int state;
+    int bpos[2];
+    int beam;
+    float beamlevel;
+};
+typedef struct _anon6 SCOPE;
+
+extern int exitflag;
+extern u_int32 vcount;
+extern float sphere;
+extern float rsphere;
+extern u_int32 clut_scope;
+extern u_int32 chr_scope;
+extern u_int32 clut_water;
+extern u_int32 chr_water;
+extern u_int32 clut_moon;
+extern u_int32 chr_moon;
+extern u_int32 clut_ball;
+extern u_int32 chr_ball;
+extern u_int32 clut_mission;
+extern u_int32 chr_mission;
+extern u_int32 clut_ready;
+extern u_int32 chr_ready;
+extern GAMEDAT game;
+extern BALL ball;
+extern GROUND ground;
+extern SCOPE scope;
+extern float moon;
+extern ScePspFVector3 fld;
+extern u_int32 paddpush;
+extern int paddval;
+extern int paddvec;
+extern u_int32 clut[7];
+extern float gndpos[96];
+extern float gnd[48];
+extern float gnd_poly[32];
+extern float beamlevel;
+
+static void InitBall(void);
+void InitGame(void);
+void RunGame(void);
+static void DrawBall(void);
+static void DrawBG(void);
+static void DrawGround(void);
+static void DrawScore(void);
+static void DrawMoon(void);
+static void DrawScope(void);
+static void DrawBeam(void);
+static void DrawReady(int mode, int a, int s);
+static void DrawMission(int a);
+void DrawGame(void);
+static void CheckShoot(void);
+void KeyGame(u_int32 padd, u_int32 cont);
+
+/* SDK functions */
+void sceGuEnable(int state);
+void sceGuDisable(int state);
+void sceGuColor(unsigned int color);
+void sceGuTexMode(int tpsm, int maxmips, int a2, int swizzle);
+void sceGuTexImage(int mipmap, int width, int height, int tbw, const void *tbp);
+void sceGuTexFilter(int min, int mag);
+void sceGuTexFunc(int tfx, int tcc);
+void sceGuTexWrap(int u, int v);
+void sceGuTexOffset(float u, float v);
+void sceGuTexScale(float u, float v);
+void sceGuClutMode(unsigned int cpsm, unsigned int shift, unsigned int mask, unsigned int a3);
+void sceGuClutLoad(int num_blocks, const void *cbp);
+void sceGumLoadIdentity(void);
+void sceGumPushMatrix(void);
+void sceGumPopMatrix(void);
+void sceGumScale(const ScePspFVector3 *v);
+void sceGumTranslate(const ScePspFVector3 *v);
+void sceGumDrawArray(int prim, int vtype, int count, const void *indices, const void *vertices);
+void sceGumDrawBezier(int vtype, int ucount, int vcount, const void *indices, const void *vertices);
+int sceKernelDcacheWritebackAll(void);
+float sinf(float x);
+float cosf(float x);
+
+void SpriteScale(int x, int y);
+void DrawSprite(int x, int y, int w, int h, int u, int v, Gu2dV16T *model);
+void FadeSetup(int mode, int c);
+int FadeState(void);
+void FadeDraw(void);
+int CheckParticle(void);
+void InitParticle(void);
+void SetParticle(float x, float y, float z, float speed, int number, int c);
+void DrawParticle(void);
+int random(void);
+int Pickup(int scrw, int scrh, int x, int y, ScePspFVector3 *v0, ScePspFVector3 *v1, ScePspFVector3 *v2);
 
 INCLUDE_ASM("tmp/asm/bigbangbang/bigbangbang/nonmatchings/game", InitBall);
 
@@ -6,21 +152,129 @@ INCLUDE_ASM("tmp/asm/bigbangbang/bigbangbang/nonmatchings/game", InitGame);
 
 INCLUDE_ASM("tmp/asm/bigbangbang/bigbangbang/nonmatchings/game", RunGame);
 
-INCLUDE_ASM("tmp/asm/bigbangbang/bigbangbang/nonmatchings/game", DrawBall);
+static void DrawBall(void)
+{
+	ScePspFVector3 vec;
 
-INCLUDE_ASM("tmp/asm/bigbangbang/bigbangbang/nonmatchings/game", DrawBG);
+	sceGumPushMatrix();
+	vec.x = ball.pos.x;
+	vec.y = ball.pos.y;
+	vec.z = ball.pos.z;
+	sceGumTranslate(&vec);
+	vec.x = 1.8f;
+	vec.y = 1.8f;
+	vec.z = 1.8f;
+	sceGumScale(&vec);
+	sceGuColor(ball.c);
+	sceGumDrawBezier(0x180, 4, 7, NULL, &sphere);
+	sceGumPopMatrix();
+}
+
+extern Gu2dV16C D_0006E580[4];
+static void DrawBG(void)
+{
+	/* static D_0006E580: the original's label */
+
+	D_0006E580[0].p[0] = 0;
+	D_0006E580[0].p[1] = 208;
+	D_0006E580[0].p[2] = 0;
+	D_0006E580[0].c = 0xffffb090;
+	D_0006E580[1].p[0] = 0;
+	D_0006E580[1].p[1] = 0;
+	D_0006E580[1].p[2] = 0;
+	D_0006E580[1].c = 0xff501000;
+	D_0006E580[2].p[0] = 480;
+	D_0006E580[2].p[1] = 208;
+	D_0006E580[2].p[2] = 0;
+	D_0006E580[2].c = 0xffffb090;
+	D_0006E580[3].p[0] = 480;
+	D_0006E580[3].p[1] = 0;
+	D_0006E580[3].p[2] = 0;
+	D_0006E580[3].c = 0xff501000;
+	sceGumDrawArray(4, 0x80011c, 4, NULL, D_0006E580);
+}
 
 INCLUDE_ASM("tmp/asm/bigbangbang/bigbangbang/nonmatchings/game", DrawGround);
 
-INCLUDE_ASM("tmp/asm/bigbangbang/bigbangbang/nonmatchings/game", DrawScore);
+extern Gu2dV16T D_0006E670[30][4];
+static void DrawScore(void)
+{
+	/* static D_0006E670: the original's label */
+	int i;
+
+	if (!game.disp)
+		return;
+	sceGuEnable(9);
+	sceGuTexWrap(0, 0);
+	sceGuTexFilter(0, 0);
+	sceGuTexFunc(0, 1);
+	sceGuTexMode(4, 0, 0, 0);
+	sceGuClutMode(1, 0, 0xff, 0);
+	sceGuClutLoad(1, &clut_ball);
+	sceGuTexImage(0, 32, 32, 32, &chr_ball);
+	SpriteScale(1, 1);
+	sceGuColor(0xffffffff);
+	for (i = 0; i < 30; i++)
+		DrawSprite((i % 15) * 12 + 150, (i / 15) * 12 + 8, 16, 16, (i < game.score) ? 16 : 0, 0, D_0006E670[i]);
+	sceKernelDcacheWritebackAll();
+	sceGuDisable(9);
+}
 
 INCLUDE_ASM("tmp/asm/bigbangbang/bigbangbang/nonmatchings/game", DrawMoon);
 
-INCLUDE_ASM("tmp/asm/bigbangbang/bigbangbang/nonmatchings/game", DrawScope);
+extern Gu2dV16T D_0006EB20[4];
+static void DrawScope(void)
+{
+	/* static D_0006EB20: the original's label */
+
+	if (!scope.state)
+		return;
+	sceGuEnable(9);
+	sceGuTexWrap(0, 0);
+	sceGuTexFilter(0, 0);
+	sceGuTexFunc(0, 1);
+	sceGuTexMode(4, 0, 0, 0);
+	sceGuClutMode(1, 0, 0xff, 0);
+	sceGuClutLoad(1, &clut_scope);
+	sceGuTexImage(0, 32, 32, 32, &chr_scope);
+	SpriteScale(1, 1);
+	sceGuColor(0xffffffff);
+	DrawSprite(scope.pos[0], scope.pos[1], 32, 32, 0, 0, D_0006EB20);
+	sceGuDisable(9);
+}
+
+#define SETV(m, x, y, z, col) ((m).p[0] = (x), (m).p[1] = (y), (m).p[2] = (z), (m).c = (col))
 
 INCLUDE_ASM("tmp/asm/bigbangbang/bigbangbang/nonmatchings/game", DrawBeam);
 
-INCLUDE_ASM("tmp/asm/bigbangbang/bigbangbang/nonmatchings/game", DrawReady);
+extern Gu2dV16T D_0006EBA8[4];
+static void DrawReady(int mode, int a, int s)
+{
+	/* static D_0006EBA8: the original's label */
+	u_int32 c;
+	int x;
+	int y;
+
+	sceGuEnable(9);
+	sceGuTexWrap(0, 0);
+	sceGuTexFilter(0, 0);
+	sceGuTexFunc(0, 1);
+	sceGuTexMode(5, 0, 0, 0);
+	sceGuClutMode(1, 0, 0xff, 0);
+	sceGuClutLoad(16, &clut_ready);
+	sceGuTexImage(0, 256, 128, 256, &chr_ready);
+	SpriteScale(s, s);
+	c = (a << 24) | 0xffffff;
+	sceGuColor(c);
+	x = 240 - s * 128;
+	y = 120 - s * 16;
+	DrawSprite(x, y, 256, 32, 0, mode * 32, D_0006EBA8);
+	sceGuDisable(9);
+}
+
+
+
+
 
 INCLUDE_ASM("tmp/asm/bigbangbang/bigbangbang/nonmatchings/game", DrawMission);
 
