@@ -46,6 +46,9 @@ def clean(draft, keep_protos=False):
     t = "\n".join(out)
     if keep_protos:
         t = guess_types(t)
+    # locals m2c could not type
+    t = re.sub(r"^(\s+)\? \*(\w+);", r"\1void *\2;", t, flags=re.M)
+    t = re.sub(r"^(\s+)\?(32)? (\w+);", r"\1int \3;", t, flags=re.M)
     t = re.sub(r"\bs64\b", "long long", t)
     t = re.sub(r"\bu64\b", "unsigned long long", t)
     t = re.sub(r"\bs32\b", "int", t)
@@ -57,6 +60,34 @@ def clean(draft, keep_protos=False):
     t = re.sub(r"\bs8\b", "signed char", t)
     t = re.sub(r"\bu8\b", "unsigned char", t)
     return t
+
+
+def ctrl_buf(body):
+    """m2c leaves a SceCtrlData at sp+0 as sp/sp4/sp8/sp9: give it a name."""
+    if not re.search(r"sceCtrl(Read|Peek)Buffer(Positive|Negative)\(sp, ", body) or "SceCtrlData" in body.split("{")[0]:
+        return body
+    b = re.sub(r"sceCtrl(\w+)Buffer(\w+)\(sp, ", r"sceCtrl\1Buffer\2(&buf, ", body)
+    b = re.sub(r"\bsp4\b", "buf.Buttons", b)
+    b = re.sub(r"\bsp8\b", "buf.Lx", b)
+    b = re.sub(r"\bsp9\b", "buf.Ly", b)
+    b = re.sub(r"\bsp0\b", "buf.TimeStamp", b)
+    return re.sub(r"(^|\n)(\w[^\n]*\) \{\n)", r"\1\2    SceCtrlData buf;\n", b, count=1)
+
+
+def variants(body):
+    """The draft and a few rewrites of m2c idioms the original sources spell
+    differently."""
+    out = [body]
+    b = ctrl_buf(body)
+    if b != body:
+        out.append(b)
+    for x in list(out):
+        # `return (x & n) == 0;` is usually `if (x & n) return 0; return 1;`
+        y = re.sub(r"\n(\s*)return \(([^;]+) & (\w+)\) == 0;\n",
+                   r"\n\1if (\2 & \3) {\n\1    return 0;\n\1}\n\1return 1;\n", x)
+        if y != x:
+            out.append(y)
+    return out
 
 
 def try_func(target, module, unit, func, ctx, mod, cc1, dflags="", optsets=("-O2", "-Os")):
@@ -71,20 +102,25 @@ def try_func(target, module, unit, func, ctx, mod, cc1, dflags="", optsets=("-O2
                      if not (re.search(r"/\* extern \*/$", l) and any(re.search(rf"\b{n}\(", l) for n in sdk)))
     sdkdecl = "\n".join(["#ifndef NULL", "#define NULL ((void *)0)", "#endif"] +
                         [v for k, v in sdk.items() if re.search(rf"\b{k}\(", body)])
-    src = (NODWARF_HDR if nodwarf else ctx.replace(f"\n{func}(", f"\n/*proto*/ {func}(")) + "\n" + sdkdecl + "\n" + body + "\n"
-    # drop the DWARF prototype of the function itself (m2c's may differ)
-    src = "\n".join(l for l in src.splitlines() if not re.search(rf"\b{re.escape(func)}\s*\(.*\);$", l))
-    with tempfile.TemporaryDirectory() as td:
-        f = Path(td) / "t.c"
-        f.write_text(src)
-        for flags in optsets:
-            o = fntest.compile_c(f, cc1, f"{flags} {dflags}", Path(td) / "t.o")
-            if o is None:
-                return "error", body
-            r = objcmp.compare(mod, [o]).get(func)
-            if r == "same":
-                return flags, (sdkdecl + "\n" + body if nodwarf else body)
-        return r, body
+    first = None
+    for vb in variants(body):
+        src = (NODWARF_HDR if nodwarf else ctx.replace(f"\n{func}(", f"\n/*proto*/ {func}(")) + "\n" + sdkdecl + "\n" + vb + "\n"
+        # drop the DWARF prototype of the function itself (m2c's may differ)
+        src = "\n".join(l for l in src.splitlines() if not re.search(rf"\b{re.escape(func)}\s*\(.*\);$", l))
+        with tempfile.TemporaryDirectory() as td:
+            f = Path(td) / "t.c"
+            f.write_text(src)
+            for flags in optsets:
+                o = fntest.compile_c(f, cc1, f"{flags} {dflags}", Path(td) / "t.o")
+                if o is None:
+                    r = "error"
+                    break
+                r = objcmp.compare(mod, [o]).get(func)
+                if r == "same":
+                    return flags, (sdkdecl + "\n" + vb if nodwarf else vb)
+        if first is None or first[0] == "error":
+            first = (r, vb)
+    return first
 
 
 def main():
