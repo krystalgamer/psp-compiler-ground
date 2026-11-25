@@ -295,10 +295,10 @@ struct ifinternal {
 typedef struct SceNetIfHandle {
 	struct ifinternal *ifp;
 	int unk4;
-	int unk8;
-	int unkC;
+	void (*up)(struct SceNetIfHandle *);
+	void (*down)(struct SceNetIfHandle *);
 	void (*start)(struct SceNetIfHandle *);
-	int unk14;
+	void (*ioctl)(struct SceNetIfHandle *, int, void *);
 	struct ifqueue snd;
 } SceNetIfHandle;
 
