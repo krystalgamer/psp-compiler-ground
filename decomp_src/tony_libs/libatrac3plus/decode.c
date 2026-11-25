@@ -78,7 +78,20 @@ unsigned int func_00002AC0(AtracInfo *info)
 
 INCLUDE_ASM("tmp/asm/tony_libs/libatrac3plus/nonmatchings/decode", func_00002BA0);
 
-INCLUDE_ASM("tmp/asm/tony_libs/libatrac3plus/nonmatchings/decode", func_00002C5C);
+unsigned int func_00002C5C(AtracInfo *info)
+{
+	unsigned int r;
+	unsigned int n;
+
+	if (info->unk38 == 2)
+		r = func_000030FC(info->unk54, info->unk50, info->unk3C, info->sampleSize);
+	else
+		r = func_000030FC(info->unk48, info->unk44, info->unk3C, info->sampleSize);
+	n = func_00002FC0(info);
+	if (n < r)
+		return n;
+	return r;
+}
 
 int func_00002CC8(AtracInfo *info)
 {
