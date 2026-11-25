@@ -54,6 +54,10 @@ extern __gthread_key_t globals_key;
 extern int use_thread_key;
 extern const _Unwind_Exception_Class __gxx_exception_class;
 
+
+/* SDK functions (tools/sdk_protos.h) */
+void free(void *p);
+
 static void get_globals_dtor(void *ptr);
 static void get_globals_init();
 static void get_globals_init_once();
@@ -62,7 +66,11 @@ struct __cxa_eh_globals *__cxa_get_globals_fast();
 struct __cxa_eh_globals *__cxa_get_globals();
 
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/gcc-3.3.3/libstdc__-v3/libsupc__/eh_globals", _Z16get_globals_dtorPv);
+void _Z16get_globals_dtorPv(void *arg0) {
+    if (arg0 != NULL) {
+        free(arg0);
+    }
+}
 
 void _Z16get_globals_initv(void) {
     use_thread_key = 0;
@@ -70,6 +78,15 @@ void _Z16get_globals_initv(void) {
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/gcc-3.3.3/libstdc__-v3/libsupc__/eh_globals", _Z21get_globals_init_oncev);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/gcc-3.3.3/libstdc__-v3/libsupc__/eh_globals", __cxa_get_globals_fast);
+struct __cxa_eh_globals *__cxa_get_globals_fast(void) {
+    struct __cxa_eh_globals *var_v0;
+
+    var_v0 = NULL;
+    if (use_thread_key == 0) {
+        var_v0 = &globals_static;
+    }
+    return var_v0;
+}
+/* Warning: struct type_info is not defined (only forward-declared) */
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/gcc-3.3.3/libstdc__-v3/libsupc__/eh_globals", __cxa_get_globals);
