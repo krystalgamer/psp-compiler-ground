@@ -71,7 +71,20 @@ unsigned int func_0000303C(AtracInfo *info)
 	return ret;
 }
 
-INCLUDE_ASM("tmp/asm/tony_libs/libatrac3plus/nonmatchings/stream", func_00003064);
+unsigned int func_00003064(AtracInfo *info)
+{
+	unsigned int end = func_0000201C(info, info->unk1C);
+	unsigned int pos = info->unk28 + info->unk3C;
+	unsigned int ret;
+
+	if (pos < end + 1) {
+		ret = end - pos + 1;
+	} else {
+		unsigned int len = end - func_00001FAC(info, info->unk18) + 1;
+		ret = len - (info->unk28 + info->unk3C - end - 1) % len;
+	}
+	return ret;
+}
 
 unsigned int func_000030FC(unsigned int a, unsigned int b, unsigned int c, unsigned int d)
 {

@@ -80,8 +80,36 @@ INCLUDE_ASM("tmp/asm/tony_libs/libatrac3plus/nonmatchings/decode", func_00002BA0
 
 INCLUDE_ASM("tmp/asm/tony_libs/libatrac3plus/nonmatchings/decode", func_00002C5C);
 
-INCLUDE_ASM("tmp/asm/tony_libs/libatrac3plus/nonmatchings/decode", func_00002CC8);
+int func_00002CC8(AtracInfo *info)
+{
+	int ret = -2;
 
-INCLUDE_ASM("tmp/asm/tony_libs/libatrac3plus/nonmatchings/decode", func_00002D18);
+	if (info->unk3C < info->unk30 - info->unk28) {
+		ret = info->unk3C / info->sampleSize;
+		if ((unsigned int)ret >= info->unk20)
+			ret -= info->unk20;
+		else
+			ret = 0;
+	}
+	return ret;
+}
+
+int func_00002D18(AtracInfo *info)
+{
+	int ret = func_00002DD0(info);
+
+	if (info->loopNum >= 0) {
+		unsigned int end = func_0000201C(info, info->unk1C);
+		unsigned int pos = info->unk28 + info->unk3C;
+
+		if (pos >= end + 1) {
+			unsigned int n = pos - end - 1;
+			unsigned int s = func_00001FAC(info, info->unk18);
+			if ((int)(n / (end - s + 1)) >= info->loopNum)
+				ret = -3;
+		}
+	}
+	return ret;
+}
 
 INCLUDE_ASM("tmp/asm/tony_libs/libatrac3plus/nonmatchings/decode", func_00002DD0);
