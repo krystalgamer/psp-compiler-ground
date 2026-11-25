@@ -466,7 +466,7 @@ void func_00002320(void *arg);
 #define MSIZE 256
 #define MLEN (MSIZE - sizeof(struct m_hdr))
 #define MHLEN (MLEN - sizeof(struct pkthdr))
-#define MINCLSIZE (MHLEN + 1)
+#define MINCLSIZE (MHLEN + MLEN + 1)
 #define MCLBYTES 2048
 #define M_COPYALL 1000000000
 
@@ -702,6 +702,8 @@ struct sockaddr {
 	char sa_data[14];
 };
 
+#define SCM_RIGHTS 0x01
+
 struct cmsghdr {
 	socklen_t cmsg_len;
 	int cmsg_level;
@@ -796,8 +798,9 @@ TAILQ_HEAD(socklist_head, socket);
 #define SS_CANTRCVMORE 0x020
 #define SS_RCVATMARK 0x040
 #define SS_PRIV 0x080
-#define SS_NBIO 0x100
+#define SS_NBIO 0x080
 #define SS_ISCONFIRMING 0x200
+#define SS_MORETOCOME 0x400
 #define SS_ISDISCONNECTED 0x800
 
 #define sbspace(sb) \
@@ -921,5 +924,146 @@ int __cmsg_alignbytes(void);
 #define lastfd D_0002EB54
 extern struct socklist_head socklist;
 extern int lastfd;
+
+/* uipc_socket.c */
+struct iovec {
+	void *iov_base;
+	size_t iov_len;
+};
+
+struct uio {
+	struct iovec *uio_iov;
+	int uio_iovcnt;
+	long uio_offset;
+	size_t uio_resid;
+	int uio_segflg;
+	int uio_rw;
+	void *uio_procp;
+	int uio_unk1C;
+};
+
+struct linger {
+	int l_onoff;
+	int l_linger;
+};
+
+#define SOL_SOCKET 0xffff
+#define SO_SNDBUF 0x1001
+#define SO_RCVBUF 0x1002
+#define SO_SNDLOWAT 0x1003
+#define SO_RCVLOWAT 0x1004
+#define SO_SNDTIMEO 0x1005
+#define SO_RCVTIMEO 0x1006
+#define SO_ERROR 0x1007
+#define SO_TYPE 0x1008
+#define SO_NBIO 0x1009
+
+#define MSG_OOB 0x1
+#define MSG_PEEK 0x2
+#define MSG_DONTROUTE 0x4
+#define MSG_EOR 0x8
+#define MSG_TRUNC 0x10
+#define MSG_CTRUNC 0x20
+#define MSG_WAITALL 0x40
+#define MSG_DONTWAIT 0x80
+
+#define PRCO_GETOPT 0
+#define PRCO_SETOPT 1
+
+#define SHUT_RD 0
+#define SHUT_WR 1
+#define SHUT_RDWR 2
+
+#define POLLIN 0x0001
+#define POLLPRI 0x0002
+#define POLLOUT 0x0004
+#define POLLRDNORM 0x0040
+#define POLLWRNORM POLLOUT
+#define POLLRDBAND 0x0080
+
+#define SBLOCKWAIT(f) (((f) & MSG_DONTWAIT) ? M_DONTWAIT : M_WAIT)
+#define sblock(sb, wf) ((sb)->sb_flags & SB_LOCK ? \
+	(((wf) == M_WAIT) ? sb_lock(sb) : EWOULDBLOCK) : \
+	((sb)->sb_flags |= SB_LOCK), 0)
+#define sbunlock(sb) do { \
+	(sb)->sb_flags &= ~SB_LOCK; \
+	if ((sb)->sb_flags & SB_WANT) { \
+		(sb)->sb_flags &= ~SB_WANT; \
+		wakeup((caddr_t)&(sb)->sb_flags); \
+	} \
+} while (0)
+#define sosendallatonce(so) ((so)->so_proto->pr_flags & PR_ATOMIC)
+#define soreadable(so) \
+	((so)->so_rcv.sb_cc >= (so)->so_rcv.sb_lowat || \
+	    ((so)->so_state & SS_CANTRCVMORE) || \
+	    (so)->so_qlen || (so)->so_error)
+#define sowriteable(so) \
+	((sbspace(&(so)->so_snd) >= (so)->so_snd.sb_lowat && \
+	    (((so)->so_state&SS_ISCONNECTED) || \
+	      ((so)->so_proto->pr_flags&PR_CONNREQUIRED)==0)) || \
+	((so)->so_state & SS_CANTSENDMORE) || \
+	(so)->so_error)
+
+#define pffinddomain func_00001FAC
+#define pffindtype func_00001FDC
+#define pffindproto func_00002058
+#define net_sysctl func_0000211C
+#define pfctlinput func_000021E0
+struct protosw *pffindtype(int family, int type);
+struct protosw *pffindproto(int family, int protocol, int type);
+void pfctlinput(int cmd, struct sockaddr *sa);
+
+#define socreate func_000023C4
+#define sofree func_00002560
+#define soclose func_000025F4
+#define soabort func_0000278C
+#define sodisconnect func_000027BC
+#define sosend func_00002844
+#define soreceive func_00002E98
+#define sorflush func_00003ABC
+#define sosetopt func_00003C18
+#define sogetopt func_00003F44
+#define sopoll func_00004160
+#define soinit func_000042F4
+#define sobind func_0000431C
+#define solisten func_00004388
+#define soaccept func_00004444
+#define soconnect func_000044D0
+#define soconnect2 func_00004594
+#define soshutdown func_00004600
+#define sohasoutofband func_000046A8
+#define soioctl func_000046C4
+#define somaxconn D_0002E480
+extern int somaxconn;
+
+int socreate(int dom, struct socket **aso, int type, int proto);
+void sofree(struct socket *so) __attribute__((noinline)); /* XXX socreate (asm) calls it first */
+int soclose(struct socket *so);
+int soabort(struct socket *so);
+int sodisconnect(struct socket *so);
+int sosend(struct socket *so, struct mbuf *addr, struct uio *uio, struct mbuf *top, struct mbuf *control, int flags);
+int soreceive(struct socket *so, struct mbuf **paddr, struct uio *uio, struct mbuf **mp0, struct mbuf **controlp, int *flagsp);
+void sorflush(struct socket *so);
+int sosetopt(struct socket *so, int level, int optname, struct mbuf *m0);
+int sogetopt(struct socket *so, int level, int optname, struct mbuf **mp);
+int sopoll(struct socket *so, int events, struct thread_info *p);
+void soinit(void);
+int sobind(struct socket *so, struct mbuf *nam);
+int solisten(struct socket *so, int backlog);
+int soaccept(struct socket *so, struct mbuf *nam);
+int soconnect(struct socket *so, struct mbuf *nam);
+int soconnect2(struct socket *so1, struct socket *so2);
+int soshutdown(struct socket *so, int how);
+void sohasoutofband(struct socket *so);
+int soioctl(struct socket *so, u_long cmd, caddr_t data);
+
+int _sce_pspnet_uiomove(caddr_t cp, int n, struct uio *uio);
+#define uiomove _sce_pspnet_uiomove
+SceUID sceKernelGetThreadId(void);
+int _sce_pspnet_ifioctl(struct socket *so, u_long cmd, caddr_t data, int wait);
+#define ifioctl _sce_pspnet_ifioctl
+#define rtioctl func_0000D128
+int rtioctl(u_long req, caddr_t data);
+#define IOCGROUP(x) (((x) >> 8) & 0xff)
 
 #endif
