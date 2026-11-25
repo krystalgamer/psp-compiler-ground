@@ -95,6 +95,18 @@ modules (`tools/nltest.py`, `tools/objcmp.py`).
   force reloads. Where the original reloads after calling such a helper,
   the two were in different objects; this places object boundaries in
   stripped modules.
+- The 1.5.1.internal toolchain's assembler creates `.rodata`/`.rodata.cst4`
+  in the order an object first uses them, like 1.6.1.internal's
+  (`objorder` in config/compilers.txt). umdt's graphics_model, built with
+  1.5.1.internal, shows it: gmo_material and gmo_motion (devkit 0.6.0 source)
+  match function by function but the module is byte-identical only when
+  linked `obj(.rodata .rodata.*)`. Applying it to every 1.5.1.internal unit
+  leaves all other modules byte-identical. Release 1.5.1 modules
+  (UTST99261, puzzle_bobble, flashData_check) rebuild without it; whether
+  the release toolchain differs is not shown.
+- The same gmo/gim C compiled by cc1 1.5.1 matches umdt's graphics_model and,
+  by cc1 1.6.1, UTST99332's (1.6.1.internal) graphics_model; the two builds
+  differ only at the conditional-move sites, i.e. by compiler alone.
 
 ## psp-gcc 1.6.1
 
