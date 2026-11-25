@@ -112,6 +112,15 @@ modules (`tools/nltest.py`, `tools/objcmp.py`).
   with a separate `chunk` local (from DWARF). No cc1 reproduces it from the
   older source and 1.6.1 does from the newer.
 
+
+- flowars (release 1.6.1, DWARF, `-O2`): 111/324 app functions and 68/82
+  newlib/libgcc units in C. None matches only with 1.6.1; all also match with
+  1.3.1-orig, 1.7.1-orig and 1.8.4, while 1.5.1 fails only at condmove sites
+  (`_open`, `strFileReadCB`, `DvdUmdRetryReadCB`, `debugMsg`, `printMsg`).
+  Open candidates: `load_file` and `vag_file_read`. No cc1 keeps the
+  `strFileLseek` argument setup below the branch after `strFileOpen` as the
+  original does. `-fno-sched-spec` comes within one register swap; but
+  `DvdUmdRetryOpen` gets that motion and matches, so most likely a source detail.
 ## psp-gcc 1.6.1
 
 - **32-bit `HOST_WIDE_INT`** (psp-gcc 1.7.1, `psp: use a 32-bit
