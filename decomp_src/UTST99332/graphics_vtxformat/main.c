@@ -70,6 +70,12 @@ struct ScePspFMatrix4 { /* size 0x40 */
 };
 typedef struct ScePspFMatrix4 ScePspFMatrix4;
 
+/* SDK functions */
+void sceGuTerm(void);
+void *sceGuSwapBuffers(void);
+int sceDisplayWaitVblankStart(void);
+int sceCtrlReadBufferPositive(SceCtrlData *data, int count);
+
 extern short unsigned int texture[65536];
 extern int _gp;
 extern const int __begin_of_section_lib_ent[1];
@@ -92,6 +98,8 @@ extern MODEL model[49];
 extern int cont;
 
 static void init_bezier(void);
+void menuInit(void);
+void menuTerm(int cat, int num);
 static void draw_bezier(void);
 static void init_all(void);
 static int pad_read(void);
@@ -142,6 +150,86 @@ void draw_frame(void) {
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_vtxformat/nonmatchings/main", init_all);
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_vtxformat/nonmatchings/main", pad_read);
+static int pad_read(void)
+{
+	int prev, padd;
+	SceCtrlData buf;
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_vtxformat/nonmatchings/main", main);
+	prev = cont;
+	sceCtrlReadBufferPositive(&buf, 1);
+	cont = buf.Buttons;
+	padd = cont & (cont ^ prev);
+	if (cont & 0x0010) {
+		rot.x -= 1.0f;
+		if (rot.x < 0.0f)
+			rot.x += 360.0f;
+	}
+	if (cont & 0x0040) {
+		rot.x += 1.0f;
+		if (rot.x >= 360.0f)
+			rot.x -= 360.0f;
+	}
+	if (cont & 0x0080) {
+		rot.y -= 1.0f;
+		if (rot.y < 0.0f)
+			rot.y += 360.0f;
+	}
+	if (cont & 0x0020) {
+		rot.y += 1.0f;
+		if (rot.y >= 360.0f)
+			rot.y -= 360.0f;
+	}
+	if (cont & 0x2000) {
+		uvpos[0] -= 0.01f;
+		if (uvpos[0] <= -0.25f)
+			uvpos[0] = -0.25f;
+	}
+	if (cont & 0x8000) {
+		uvpos[0] += 0.01f;
+		if (uvpos[0] >= 0.25f)
+			uvpos[0] = 0.25f;
+	}
+	if (cont & 0x4000) {
+		uvpos[1] -= 0.01f;
+		if (uvpos[1] <= -0.25f)
+			uvpos[1] = -0.25f;
+	}
+	if (cont & 0x1000) {
+		uvpos[1] += 0.01f;
+		if (uvpos[1] >= 0.25f)
+			uvpos[1] = 0.25f;
+	}
+	if (padd & 0x0008) {
+		pos.x = 0.0f;
+		pos.y = 0.0f;
+		pos.z = -18.0f;
+		rot.x = 20.0f;
+		rot.y = -10.0f;
+		rot.z = 0.0f;
+		uvpos[0] = 0.0f;
+		uvpos[1] = 0.0f;
+		colflag = 0;
+	}
+	if (padd & 0x0100)
+		colflag ^= 1;
+	if (padd & 0x0001)
+		return 0;
+	return 1;
+}
+
+int main(void)
+{
+	menuInit();
+	init_all();
+	for (;;) {
+		if (!pad_read())
+			break;
+		draw_frame();
+		sceDisplayWaitVblankStart();
+		sceGuSwapBuffers();
+		frame++;
+	}
+	sceGuTerm();
+	menuTerm(1, 36);
+	return 0;
+}
