@@ -112,7 +112,67 @@ static void fmemcpy(float *dst, float *src, int n)
 		*dst++ = *src++;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_tamatama/nonmatchings/main", translate_patch);
+static void translate_patch(void)
+{
+	int i, j;
+	ScePspFVector3 *vec_org, *vec_new, *wgt;
+
+	vec_org = (ScePspFVector3 *)ground;
+	vec_new = ground_t;
+	wgt = ground_v;
+	for (i = 0; i < 25; i += 3) {
+		for (j = 0; j < 25; j += 3) {
+			vec_new[0].x = vec_org[0].x + wgt->x;
+			vec_new[0].y = vec_org[0].y + wgt->y;
+			vec_new[0].z = vec_org[0].z + wgt->z;
+			if (j > 0) {
+				vec_new[-1].x = vec_org[-1].x + wgt->x;
+				vec_new[-1].y = vec_org[-1].y + wgt->y;
+				vec_new[-1].z = vec_org[-1].z + wgt->z;
+			}
+			if (j < 24) {
+				vec_new[1].x = vec_org[1].x + wgt->x;
+				vec_new[1].y = vec_org[1].y + wgt->y;
+				vec_new[1].z = vec_org[1].z + wgt->z;
+			}
+			if (i > 0) {
+				vec_new[-25].x = vec_org[-25].x + wgt->x;
+				vec_new[-25].y = vec_org[-25].y + wgt->y;
+				vec_new[-25].z = vec_org[-25].z + wgt->z;
+			}
+			if (i < 24) {
+				vec_new[25].x = vec_org[25].x + wgt->x;
+				vec_new[25].y = vec_org[25].y + wgt->y;
+				vec_new[25].z = vec_org[25].z + wgt->z;
+			}
+			if (j < 24 && i < 24) {
+				vec_new[26].x = vec_org[26].x + wgt->x;
+				vec_new[26].y = vec_org[26].y + wgt->y;
+				vec_new[26].z = vec_org[26].z + wgt->z;
+			}
+			if (j > 0 && i < 24) {
+				vec_new[24].x = vec_org[24].x + wgt->x;
+				vec_new[24].y = vec_org[24].y + wgt->y;
+				vec_new[24].z = vec_org[24].z + wgt->z;
+			}
+			if (j < 24 && i > 0) {
+				vec_new[-24].x = vec_org[-24].x + wgt->x;
+				vec_new[-24].y = vec_org[-24].y + wgt->y;
+				vec_new[-24].z = vec_org[-24].z + wgt->z;
+			}
+			if (j > 0 && i > 0) {
+				vec_new[-26].x = vec_org[-26].x + wgt->x;
+				vec_new[-26].y = vec_org[-26].y + wgt->y;
+				vec_new[-26].z = vec_org[-26].z + wgt->z;
+			}
+			wgt++;
+			vec_org += 3;
+			vec_new += 3;
+		}
+		vec_org += 48;
+		vec_new += 48;
+	}
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_tamatama/nonmatchings/main", draw_frame);
 
