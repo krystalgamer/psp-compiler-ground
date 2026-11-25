@@ -89,17 +89,106 @@ int __sceSasSetVoice(SasCore *core, unsigned int voice, int addr, int size, unsi
 	return pspRetK1(ret, oldk1);
 }
 
-INCLUDE_ASM("tmp/asm/tony_libs/sc_sascore/nonmatchings/sc_sascore", __sceSasSetNoise);
+int __sceSasSetNoise(SasCore *core, unsigned int voice, unsigned int freq)
+{
+	unsigned int oldk1 = pspShiftK1();
+	int ret;
+
+	if (CHECK_CORE(core)) {
+		pspSetK1(oldk1);
+		return 0x80000023;
+	}
+	if (voice >= 32) {
+		ret = 0x80420010;
+	} else if (freq >= 0x40) {
+		ret = 0x80420011;
+	} else {
+		SasVoice *v = &core->voice[voice];
+		int r = sceKernelWaitSema(D_00001DD0, 1, 0);
+
+		if (r < 0) {
+			ret = r;
+		} else {
+			unsigned int c;
+
+			v->type = 2;
+			v->addr = -1;
+			v->end = 0x4000 >> (freq >> 2);
+			if (v->end != 0) {
+				c = ((unsigned int)-0x1156 >> ((freq & 3) << 2)) & 0xFF;
+				v->addr = c * 0x01010101;
+			} else {
+				v->end = 1;
+			}
+			sceKernelSignalSema(D_00001DD0, 1);
+			ret = 0;
+		}
+	}
+	return pspRetK1(ret, oldk1);
+}
 
 INCLUDE_ASM("tmp/asm/tony_libs/sc_sascore/nonmatchings/sc_sascore", __sceSasSetTrianglarWave);
 
-INCLUDE_ASM("tmp/asm/tony_libs/sc_sascore/nonmatchings/sc_sascore", __sceSasSetSteepWave);
+int __sceSasSetSteepWave(SasCore *core, unsigned int voice, unsigned int rate)
+{
+	unsigned int oldk1 = pspShiftK1();
+	int ret;
+
+	if (CHECK_CORE(core)) {
+		pspSetK1(oldk1);
+		return 0x80000023;
+	}
+	if (voice >= 32) {
+		ret = 0x80420010;
+	} else if (rate >= 101) {
+		ret = 0x80420017;
+	} else {
+		int r = sceKernelWaitSema(D_00001DD0, 1, 0);
+
+		if (r < 0) {
+			ret = r;
+		} else {
+			SasVoice *v = &core->voice[voice];
+
+			v->type = 4;
+			v->addr = (rate * 44100) / 100;
+			sceKernelSignalSema(D_00001DD0, 1);
+			ret = 0;
+		}
+	}
+	return pspRetK1(ret, oldk1);
+}
 
 INCLUDE_ASM("tmp/asm/tony_libs/sc_sascore/nonmatchings/sc_sascore", __sceSasSetADSR);
 
 INCLUDE_ASM("tmp/asm/tony_libs/sc_sascore/nonmatchings/sc_sascore", __sceSasSetADSRmode);
 
-INCLUDE_ASM("tmp/asm/tony_libs/sc_sascore/nonmatchings/sc_sascore", __sceSasSetSL);
+int __sceSasSetSL(SasCore *core, unsigned int voice, unsigned int sl)
+{
+	unsigned int oldk1 = pspShiftK1();
+	int ret;
+
+	if (CHECK_CORE(core)) {
+		pspSetK1(oldk1);
+		return 0x80000023;
+	}
+	if (voice >= 32) {
+		ret = 0x80420010;
+	} else if (sl > 0x40000000) {
+		ret = 0x80420019;
+	} else {
+		int r = sceKernelWaitSema(D_00001DD0, 1, 0);
+
+		if (r < 0) {
+			ret = r;
+		} else {
+			core->voice[voice].env.sl = sl;
+			sceKernelSignalSema(D_00001DD0, 1);
+			ret = 0;
+		}
+	}
+	return pspRetK1(ret, oldk1);
+}
 
 int __sceSasGetEnvelopeHeight(SasCore *core, unsigned int voice)
 {
@@ -135,6 +224,22 @@ INCLUDE_RODATA("tmp/asm/tony_libs/sc_sascore/nonmatchings/sc_sascore", D_00001DA
 
 INCLUDE_RODATA("tmp/asm/tony_libs/sc_sascore/nonmatchings/sc_sascore", D_00001DB0);
 
-INCLUDE_ASM("tmp/asm/tony_libs/sc_sascore/nonmatchings/sc_sascore", module_start);
+int module_start(void)
+{
+	D_00001DE0 = sceMeCalloc(0xB634, 1);
+	if (D_00001DE0 == 0)
+		return 1;
+	D_00001DD0 = sceKernelCreateSema("SceSas", 0, 1, 1, 0);
+	if (D_00001DD0 < 0)
+		return 1;
+	return 0;
+}
 
-INCLUDE_ASM("tmp/asm/tony_libs/sc_sascore/nonmatchings/sc_sascore", module_stop);
+int module_stop(void)
+{
+	if (D_00001DE0 != 0)
+		sceMeFree(D_00001DE0);
+	if (D_00001DD0 >= 0)
+		sceKernelDeleteSema(D_00001DD0);
+	return 0;
+}

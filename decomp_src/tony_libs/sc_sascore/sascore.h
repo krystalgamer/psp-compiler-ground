@@ -4,7 +4,8 @@
 #include "common.h"
 
 typedef struct {
-	char pad0[0xA];
+	unsigned int sl;
+	char pad4[0xA - 4];
 	s8 state;
 	char padB;
 } SasEnv;
@@ -31,6 +32,11 @@ typedef struct {
 } SasCore;
 
 extern int D_00001DD0;
+extern void *D_00001DE0;
+void *sceMeCalloc(unsigned int n, unsigned int size);
+void sceMeFree(void *p);
+int sceKernelCreateSema(const char *name, unsigned int attr, int init, int max, void *opt);
+int sceKernelDeleteSema(int id);
 extern const s8 D_00001DA0[8];
 extern const s8 D_00001DA8[8];
 
