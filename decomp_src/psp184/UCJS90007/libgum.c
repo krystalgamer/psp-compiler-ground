@@ -127,9 +127,41 @@ INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/libgum", sceGumRotateY);
 
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/libgum", sceGumRotateZ);
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/libgum", sceGumTranslate);
+#define update update_8BE54
+void sceGumTranslate(const ScePspFVector3 *vec)
+{
+	ScePspFMatrix4 *m = cur_stack;
+	ScePspFVector4 t;
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/libgum", sceGumScale);
+	t.x = m->x.x * vec->x + m->y.x * vec->y + m->z.x * vec->z;
+	t.y = m->x.y * vec->x + m->y.y * vec->y + m->z.y * vec->z;
+	t.z = m->x.z * vec->x + m->y.z * vec->y + m->z.z * vec->z;
+	t.w = m->x.w * vec->x + m->y.w * vec->y + m->z.w * vec->z;
+	m->w.x += t.x;
+	m->w.y += t.y;
+	m->w.z += t.z;
+	m->w.w += t.w;
+	update[cur_matrix] = 1;
+}
+#undef update
+
+#define update update_8BE54
+void sceGumScale(const ScePspFVector3 *v)
+{
+	ScePspFMatrix4 *m = cur_stack;
+
+	m->x.x *= v->x;
+	m->x.y *= v->x;
+	m->x.z *= v->x;
+	m->y.x *= v->y;
+	m->y.y *= v->y;
+	m->y.z *= v->y;
+	m->z.x *= v->z;
+	m->z.y *= v->z;
+	m->z.z *= v->z;
+	update[cur_matrix] = 1;
+}
+#undef update
 
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/libgum", sceGumMultMatrix);
 
