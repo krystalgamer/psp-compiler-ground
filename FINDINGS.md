@@ -23,7 +23,14 @@ modules (`tools/nltest.py`, `tools/objcmp.py`).
   `WANT_PRINTF_LONG_LONG` comes within 8 bytes, and the rest is register
   allocation.  `powf` (only in 1.6.1.internal modules) leaves one branch
   delay slot empty where every cc1 we have fills it with the preceding
-  store.  This is still open.
+  store: that is 1.6.1's newlib assembler, see "No delay-slot swap across
+  source lines" under psp-gcc 1.6.1.
+- A module's libgcc compile units were built inside the gcc tree, so their
+  DWARF describes the compiler's own headers: `tconfig.h` and
+  `config/mips/mips.h` (`enum cmp_type`, `enum reg_class`, `struct
+  mips_args`, `enum mips_builtins`, ...) with every enumerator and
+  declaration line.  `tools/gcchdr.py MODULE.prx --tree V` diffs them
+  against a tree.
 
 ## psp-gcc 1.5.1
 
@@ -101,7 +108,55 @@ modules (`tools/nltest.py`, `tools/objcmp.py`).
   anything in libgcc or newlib; the game code has to decide.
 - newlib: puzzle_bobble 108/115, sampler 77/83, UTST99332 menu 94/99 and
   graphics_cube 88/93; the rest are Sony's newlib changes (plus
-  `__ieee754_rem_pio2` in puzzle_bobble, still open).
+  `__ieee754_rem_pio2` in puzzle_bobble: the assembler, see below).
+- **1.7.1's header layout** (1.7.1 patches 0008+0012, 0013, 0019, 0020):
+  the libgcc of the 1.6.1 release (spaceinvaders in psp184, puzzle_bobble)
+  declares `rtx` at `tconfig.h:25` (one more tm_define than this tree had:
+  `MAX_WCHAR_TYPE_SIZE=32`, the 32-bit `cppchar_t`), `enum reg_class` at
+  `mips.h:2089`, `struct mips_args` at 2792 and `enum mips_builtins`
+  (`MIPS_BUILTIN_CLZ` … `MIPS_BUILTIN_SQRT_S`) at 4813, exactly
+  1.7.1's mips.h: 18 more lines before `reg_class` (7 from
+  `-mcallee-saved-gp`/`gp_safe`, which needs the `loadgpsym` pattern, and
+  1.7.1's 11 unknown lines) and the builtins enum moved from mips.c.  With
+  the four commits `tools/gcchdr.py --tree 1.6.1` finds no difference for
+  either module, and the clean rebuild of every 1.6.1 target is
+  unchanged: no code depends on them.  No code shows whether the other
+  1.7.1 changes are in 1.6.1 either; 1.6.1's headers are 1.7.1's.
+- **1.6.1.internal's mips.h has 22 more lines**: sampler's and UTST99332's
+  libgcc (1.6.1.internal) put `reg_class` at 2098 (+9) and `mips_builtins`
+  at 4835 (+13 more after `CUMULATIVE_ARGS`), with the same enumerators.
+  1.8.4.internal has the same two insertions over 1.8.3 (below), so this
+  is an internal-only addition carried from release to release.  Its
+  content is unknown and no code depends on it (1.6.1.internal code all
+  matches with the 1.6.1 tree).
+- **No delay-slot swap across source lines in 1.6.1's newlib.**  In every
+  1.6.1 and 1.6.1.internal module the newlib compile units' line tables
+  have a `DW_LNE_set_address` for every row; libgcc's, 1.5.1's and 1.8.x's
+  newlib and all application code advance the address instead
+  (`tools/linestyle.py`: in spaceinvaders 69 units of the first kind, all
+  newlib, and 24 libgcc units of the second).  psp-newlib 1.6.1 was assembled by a psp-as that
+  starts afresh at each `.loc`, and so never moves an instruction into a
+  branch delay slot across a source line change.  This explains every
+  open newlib function with an empty slot: compiled with `-g` and with a
+  label put on each such branch (`tools/locfix.py`, which stops the 1.3.1
+  psp-as the same way), `powf`, `asinf`, `expf`, `acosf`, `sqrt` and
+  `__ieee754_rem_pio2` (UTST99332), `acosf` and `fmodf` (spaceinvaders)
+  match, and no other 1.6.1 newlib unit changes.  puzzle_bobble's
+  `__ieee754_rem_pio2`, spaceinvaders' two and `acosf` in five UTST99332
+  modules are now upstream source; the other UTST99332 ones stay asm
+  because their constants are not split out of the module's rodata.  The same treatment
+  breaks 9 of UTST99261's 1.5.1 newlib units and two of 1.6.1's libgcc
+  functions (`__muldf3`, `__unpack_d`), whose assembler still swaps.
+  `config/compilers.txt` says `newlib:locfix` for 1.6.1(.internal); the
+  clean rebuild of every 1.6.1 target, with all converted newlib units
+  now compiled this way, is unchanged.
+- **spaceinvaders** (psp184; 1.6.1 game, newlib and libgcc, 1.6.1.internal
+  SDK libraries) agrees with the 1.6.1 tree: its libgcc and newlib give
+  75 of 89 units from source (the rest are Sony's newlib changes, the
+  same as in the other 1.6.1 modules: `_vfprintf_r`, malloc alignment,
+  `atexit`/`findfp`/`locale` data, rodata ranges).  Its game code (about
+  400 KB) has no DWARF, and its `STT_FILE` symbols are not in link
+  order, so `tools/nodwarf.py` cannot split it yet.
 - **No `-mno-ulsw` by default** (1.7.1 patch 0002): the unaligned copies
   of the 1.6.1 units use `lwl`/`swl` block moves, which `-mno-ulsw`
   forbids.
@@ -272,3 +327,79 @@ modules (`tools/nltest.py`, `tools/objcmp.py`).
   `scePsmfGetCurrentStreamType`, `scePsmfCheckEP_map_Base`,
   `scePsmfCheckStreamType_Base`, `_sceMpegId2type`); the 1.3.1 side is the
   one that matches.
+
+## psp-gcc 1.8.3
+
+psp184's mpegon and mpegstr (Sony's mpeg player sample) are built by the
+1.8.3 release (`DW_AT_producer` "GNU C 3.3.3+allegrex-2.2.2-psp-1.8.3 -g",
+newlib and libgcc from Sony's `psp-gcc_1.8.3`/`psp-newlib_1.8.3` build
+trees), one SDK object (`userinterrupt.c`) by 1.8.3.internal.
+
+- **Code generation is 1.7.1's.**  `gcc1.8.3_src` is the reconstructed
+  1.7.1 tree with the 1.8.3 version string; what 1.8.3 adds (below) leaves
+  no trace in any code we have.  Matching with it: 83 of the 135
+  application functions of each module (59 m2c drafts as they are, 20 from
+  the UTST99332/UTST99261 player sources, the rest by hand), and 38 of the
+  64 newlib/libgcc units from source.  The other newlib units are Sony's
+  newer newlib, not the compiler: `_REENT` became a call (`__sread`,
+  `printf`, `puts`, `strtol`, the `*_r` wrappers grow by that call),
+  `MALLOC_ALIGNMENT` is 16 (`_memalign_r`, `_realloc_r`,
+  `malloc_extend_top` differ only in the alignment constants), the
+  psp `sys/` files are new.  Near-misses in the player turned out to be
+  source changes too (`read_checkConditionEnd` status 3, `dispbuf_show`
+  waits through `control_waitDisp`, `DvdUmdRetryReadFile` assigns the
+  `DvdUmdRetryOpen` result to `ret` first), and the 1.8.3.internal
+  `sceDisplaySetVblankCallback` is built `-O2 -frename-registers` like
+  Sony's other libraries.
+- **VFPU support in the compiler.**  The DWARF of 1.8.3's libgcc
+  (`tools/gcchdr.py mpegon.prx --tree 1.8.3`) shows a mips.h that 1.7.1
+  does not have: `enum cmp_type` gains `CMP_V4SF`, `CMP_V16SF` and
+  `CMP_V4SF_BUILTIN` (`CMP_MAX` = 7), `enum reg_class` gains `VFPU_REGS`,
+  `VFPU_SRAND` and `VFPU_CC` before `ALL_REGS` (28 classes), and `enum
+  mips_builtins` grows from 22 to 437 entries:
+  `MIPS_BUILTIN_VFPU_<op>_<S|P|T|Q>` with `_PARTIAL` variants for some
+  hundred VFPU operations (`VADD`, `VMUL`, `VDOT`, `VCRS`, `VSCL`,
+  `VROT`, `VF2IN`, `VI2F`, `VSIN`, `VCMP`, `VMMUL_Q`, `VTFM4_Q`,
+  `VMIDT_Q`, ...) and four `MIPS_BUILTIN_VFPU_SUBREG_*` conversions
+  between `SF`, `V4SF` and `V16SF`.  Lines: +4 before `cmp_type`, +55
+  between `mips_cpu_info` and `reg_class`, +14 before `mips_args`, +39
+  before `mips_builtins`.  So 1.8 added vector modes (`V4SF`: a VFPU
+  column/row, `V16SF`: a matrix), a VFPU register file and builtins for
+  it.  No module here uses it: there is not one VFPU instruction outside
+  inline asm in psp184 (the SDK's libgu/libgum still use inline asm or
+  plain FPU code), and ordinary float code is unaffected (see 1.8.4).
+  Without code that uses the builtins, their implementation (mips.md
+  patterns, mips.c expanders, register numbering) cannot be
+  reconstructed, so the trees leave it out; the declarations are there
+  for whoever finds such code.  `tconfig.h` and the rest of mips.h are
+  1.7.1's.
+- The 1.8.x newlib line tables are ordinary again (address advances, see
+  1.6.1), so no `newlib:locfix`.
+- `__psp_gcc__` (0x010803) and the specs file name (`pspspecs_1_8_3`)
+  follow the 1.3.1/1.7.1 scheme; no object shows them.
+
+## psp-gcc 1.8.4.internal
+
+UCJS90007 (built against SDK 2.5.0, "release_250") is all
+1.8.4.internal: game code, SDK libraries, newlib and libgcc
+(`psp-gcc_1.8.4.internal`/`psp-newlib_1.8.4.internal` trees).
+
+- **Code generation is 1.7.1's.**  `gcc1.8.4_src` is `gcc1.8.3_src` with
+  the version string "3.3.3+allegrex-2.2.2-psp-1.8.4.internal".  Matching
+  with it: 128 of 459 application functions (106 m2c drafts, 18 from the
+  1.8.3 player, libgum's `sceGumLoadIdentity`, `sceGumScale` and
+  `sceGumTranslate`, float code with Sony's `-O2 -frename-registers`,
+  `sceDisplaySetVblankCallback`), and 57 of 93 newlib/libgcc units from
+  source, among them the single-float libm (`sinf`, `cosf`, the `kf_*`
+  kernels, `__ieee754_rem_pio2f`, `floorf`) and libgcc's soft double.
+  Everything else is source-level: the SDK 2.5.0 libgu inlines
+  `send_commandi` and libgum composes rotations inline, the newlib is
+  1.8.3's.
+- **Its mips.h has 22 more lines than 1.8.3's**: `reg_class` at 2160
+  (+9) and `mips_builtins` at 4953 (+13 after `CUMULATIVE_ARGS`), the
+  same two insertions 1.6.1.internal has over 1.6.1, with no new
+  enumerator.  An internal-only addition, content unknown, no effect on
+  code.
+- Like 1.6.1.internal, units that still mix C and asm need
+  `-fno-merge-constants` to keep their float constants in emission order
+  with the asm's (`mixed:` in `config/compilers.txt`; libgum).

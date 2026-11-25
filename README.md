@@ -1,18 +1,23 @@
 # psp-compiler-ground
 
-Reconstructing the psp-gcc 1.5.1 and 1.6.1 compilers from PSP modules they
-built. The decompiled sources in `decomp_src/` are the tests: each compiler
-version is right when it turns them back into the original machine code.
+Reconstructing the psp-gcc 1.5.1, 1.6.1, 1.8.3 and 1.8.4.internal compilers
+from PSP modules they built. The decompiled sources in `decomp_src/` are the
+tests: each compiler version is right when it turns them back into the
+original machine code.
 
-- `inputs/` – the original modules (`151_and_161.zip`, plus `bigbangbang.prx`
-  `flowars.prx`, `tony_libs.zip`, 13 stripped 1.5.1.internal firmware modules, and
-  `psp_devkit.zip`/`psp_sdk_660.7z`, SDKs with library sources); **not committed**
+- `inputs/` – the original modules (`151_and_161.zip`, `psp_161_to_184.zip`,
+  plus `bigbangbang.prx`, `flowars.prx`, `tony_libs.zip`, 13 stripped
+  1.5.1.internal firmware modules, and `psp_devkit.zip`/`psp_sdk_660.7z`,
+  SDKs with library sources); **not committed**
 - `config/` – splat configs, one per module
 - `decomp_src/` – decompiled C, per module
 - `gcc1.5.1_src/`, `gcc1.6.1_src/` – GCC 3.3.3 trees for psp-gcc 1.5.1 and
   1.6.1; both start from the reconstructed psp-gcc 1.3.1
   (<https://github.com/krystalgamer/psp-gcc-1.3.1>, branch `sony`), since the
   releases are cumulative
+- `gcc1.8.3_src/`, `gcc1.8.4_src/` – psp-gcc 1.8.3 and 1.8.4.internal; they
+  start from the reconstructed psp-gcc 1.7.1 (`~/psp-gcc-1.7.1`, branch
+  `sony`)
 - `tools/` – helper scripts
 - `tmp/` – everything generated (toolchains, splat output, builds); **not
   committed**
