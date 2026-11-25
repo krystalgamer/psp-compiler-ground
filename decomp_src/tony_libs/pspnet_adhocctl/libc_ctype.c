@@ -1,9 +1,34 @@
+/* cflags: -O2 -frename-registers -fno-merge-constants */
 #include "common.h"
 
-INCLUDE_ASM("tmp/asm/tony_libs/pspnet_adhocctl/nonmatchings/libc_ctype", func_00004D64);
+/* --- declarations --- */
+#include "adhocctl.h"
+/* --- end declarations --- */
 
-INCLUDE_ASM("tmp/asm/tony_libs/pspnet_adhocctl/nonmatchings/libc_ctype", func_00004D90);
+char func_00004D64(char c)
+{
+	int f = D_00006810[c + 1];
 
-INCLUDE_ASM("tmp/asm/tony_libs/pspnet_adhocctl/nonmatchings/libc_ctype", func_00004DBC);
+	if (f & 2)
+		c -= 0x20;
+	return c;
+}
 
-INCLUDE_ASM("tmp/asm/tony_libs/pspnet_adhocctl/nonmatchings/libc_ctype", func_00004DD0);
+char func_00004D90(char c)
+{
+	int f = D_00006810[c + 1];
+
+	if (f & 1)
+		c += 0x20;
+	return c;
+}
+
+char func_00004DBC(int c)
+{
+	return D_00006810[c + 1];
+}
+
+const char *func_00004DD0(void)
+{
+	return D_00006810 + 1;
+}

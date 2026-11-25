@@ -1,5 +1,16 @@
+/* cflags: -O2 -frename-registers -fno-merge-constants */
 #include "common.h"
 
-INCLUDE_ASM("tmp/asm/tony_libs/pspnet_adhocctl/nonmatchings/module", module_start);
+/* --- declarations --- */
+#include "adhocctl.h"
+/* --- end declarations --- */
 
-INCLUDE_ASM("tmp/asm/tony_libs/pspnet_adhocctl/nonmatchings/module", module_stop);
+int module_start(void)
+{
+	return 0;
+}
+
+int module_stop(void)
+{
+	return 0;
+}
