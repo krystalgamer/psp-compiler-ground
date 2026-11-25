@@ -65,20 +65,20 @@ typedef struct _anon6 SCOPE;
 
 extern int exitflag;
 extern u_int32 vcount;
-extern float sphere;
-extern float rsphere;
-extern u_int32 clut_scope;
-extern u_int32 chr_scope;
-extern u_int32 clut_water;
-extern u_int32 chr_water;
-extern u_int32 clut_moon;
-extern u_int32 chr_moon;
-extern u_int32 clut_ball;
-extern u_int32 chr_ball;
-extern u_int32 clut_mission;
-extern u_int32 chr_mission;
-extern u_int32 clut_ready;
-extern u_int32 chr_ready;
+extern float sphere[];
+extern float rsphere[];
+extern u_int32 clut_scope[];
+extern u_int32 chr_scope[];
+extern u_int32 clut_water[];
+extern u_int32 chr_water[];
+extern u_int32 clut_moon[];
+extern u_int32 chr_moon[];
+extern u_int32 clut_ball[];
+extern u_int32 chr_ball[];
+extern u_int32 clut_mission[];
+extern u_int32 chr_mission[];
+extern u_int32 clut_ready[];
+extern u_int32 chr_ready[];
 extern GAMEDAT game;
 extern BALL ball;
 extern GROUND ground;
@@ -174,7 +174,7 @@ static void DrawBall(void)
 extern Gu2dV16C D_0006E580[4];
 static void DrawBG(void)
 {
-	/* static D_0006E580: the original's label */
+	/* static: the original's label */
 
 	D_0006E580[0].p[0] = 0;
 	D_0006E580[0].p[1] = 208;
@@ -200,7 +200,7 @@ INCLUDE_ASM("tmp/asm/bigbangbang/bigbangbang/nonmatchings/game", DrawGround);
 extern Gu2dV16T D_0006E670[30][4];
 static void DrawScore(void)
 {
-	/* static D_0006E670: the original's label */
+	/* static: the original's label */
 	int i;
 
 	if (!game.disp)
@@ -226,7 +226,7 @@ INCLUDE_ASM("tmp/asm/bigbangbang/bigbangbang/nonmatchings/game", DrawMoon);
 extern Gu2dV16T D_0006EB20[4];
 static void DrawScope(void)
 {
-	/* static D_0006EB20: the original's label */
+	/* static: the original's label */
 
 	if (!scope.state)
 		return;
@@ -251,7 +251,7 @@ INCLUDE_ASM("tmp/asm/bigbangbang/bigbangbang/nonmatchings/game", DrawBeam);
 extern Gu2dV16T D_0006EBA8[4];
 static void DrawReady(int mode, int a, int s)
 {
-	/* static D_0006EBA8: the original's label */
+	/* static: the original's label */
 	u_int32 c;
 	int x;
 	int y;
@@ -300,7 +300,33 @@ static void DrawMission(int a)
 
 INCLUDE_ASM("tmp/asm/bigbangbang/bigbangbang/nonmatchings/game", DrawGame);
 
-INCLUDE_ASM("tmp/asm/bigbangbang/bigbangbang/nonmatchings/game", CheckShoot);
+static void CheckShoot(void)
+{
+	ScePspFVector3 v0;
+	ScePspFVector3 v1;
+	ScePspFVector3 v2;
+	int i;
+
+	if (ball.state != 2)
+		return;
+	for (i = 0; i < 2; i++) {
+		v0.x = rsphere[i * 9 + 0] * 1.8f + (ball.pos.x + fld.x);
+		v0.y = rsphere[i * 9 + 1] * 1.8f + (ball.pos.y + fld.y);
+		v0.z = rsphere[i * 9 + 2] * 1.8f + (ball.pos.z + fld.z);
+		v1.x = rsphere[i * 9 + 3] * 1.8f + (ball.pos.x + fld.x);
+		v1.y = rsphere[i * 9 + 4] * 1.8f + (ball.pos.y + fld.y);
+		v1.z = rsphere[i * 9 + 5] * 1.8f + (ball.pos.z + fld.z);
+		v2.x = rsphere[i * 9 + 6] * 1.8f + (ball.pos.x + fld.x);
+		v2.y = rsphere[i * 9 + 7] * 1.8f + (ball.pos.y + fld.y);
+		v2.z = rsphere[i * 9 + 8] * 1.8f + (ball.pos.z + fld.z);
+		if (Pickup(480, 272, scope.pos[0] + 16, scope.pos[1] + 16, &v0, &v1, &v2)) {
+			SetParticle(ball.pos.x, ball.pos.y, ball.pos.z, 50.0f, 56, ball.c);
+			ball.state = 3;
+			game.score++;
+			break;
+		}
+	}
+}
 
 void KeyGame(u_int32 padd, u_int32 cont)
 {
