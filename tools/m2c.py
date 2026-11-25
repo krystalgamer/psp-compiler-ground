@@ -22,6 +22,10 @@ ABI = ["zero", "at", "v0", "v1", "a0", "a1", "a2", "a3",
 def draft(target, module, unit, func, extra=()):
     asm = ROOT / "tmp/asm" / target / module / "nonmatchings" / unit / f"{func}.s"
     text = re.sub(r"\$(\d+)\b", lambda m: "$" + ABI[int(m[1])] if int(m[1]) < 32 else m[0], asm.read_text())
+    # m2c finds jump tables by name
+    for tbl in re.findall(r"dlabel (\w+)\n\s*(?:/\*.*?\*/)?\s*\.word\s+\.L", text):
+        if not tbl.startswith("jtbl"):
+            text = re.sub(r"\b%s\b" % tbl, "jtbl_" + tbl, text)
     ctx = subprocess.run([sys.executable, str(ROOT / "tools/dwarf2c.py"), target, module, unit],
                          capture_output=True, text=True, check=True).stdout
     with tempfile.TemporaryDirectory() as td:
