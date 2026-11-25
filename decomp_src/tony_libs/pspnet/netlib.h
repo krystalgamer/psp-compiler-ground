@@ -140,6 +140,10 @@ void _sce_pspnet_callout_reset_usec(struct callout *c, unsigned int usec, void (
 struct thread_info *_sce_pspnet_get_threadinfo(SceUID thid);
 int sceNet_lib_6DC71518(void);
 void func_000030A8(void *arg);
+void _sce_pspnet_tiwakeup(SceUID thid, void *wchan);
+
+extern int D_0000A0A4;
+extern int D_0000B02C;
 
 extern int D_0000A0A0;
 extern void (*D_0000AC18)(struct thread_info *);
@@ -210,5 +214,29 @@ static inline int thread_leave(struct thread_info *ti, int error)
 	sceKernelSignalSema(D_0000A094, 1);
 	return error ? -1 : 0;
 }
+
+struct timeval {
+	long tv_sec;
+	long tv_usec;
+};
+
+struct iovec {
+	char *iov_base;
+	unsigned int iov_len;
+};
+
+struct uio {
+	struct iovec *uio_iov;
+	int uio_iovcnt;
+	long uio_offset;
+	int uio_resid;
+	int uio_rw;
+};
+
+struct selinfo {
+	SceUID si_pid;
+};
+
+extern int D_0000B8DC;
 
 #endif
