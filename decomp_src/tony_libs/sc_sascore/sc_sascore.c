@@ -127,7 +127,40 @@ int __sceSasSetNoise(SasCore *core, unsigned int voice, unsigned int freq)
 	return pspRetK1(ret, oldk1);
 }
 
-INCLUDE_ASM("tmp/asm/tony_libs/sc_sascore/nonmatchings/sc_sascore", __sceSasSetTrianglarWave);
+int __sceSasSetTrianglarWave(SasCore *core, unsigned int voice, unsigned int rate)
+{
+	unsigned int oldk1 = pspShiftK1();
+	int ret;
+
+	if (CHECK_CORE(core)) {
+		pspSetK1(oldk1);
+		return 0x80000023;
+	}
+	ret = 0x80420010;
+	if (voice < 32) {
+		unsigned int rt = rate;
+
+		ret = 0x80420017;
+		if (rt < 101) {
+			SasVoice *v = &core->voice[voice];
+
+			rt = (rt * 44100) / 100;
+			if (rt == 0)
+				rt = 1;
+			int r = sceKernelWaitSema(D_00001DD0, 1, 0);
+
+			if (r < 0) {
+				ret = r;
+			} else {
+				v->type = 3;
+				v->addr = rt;
+				sceKernelSignalSema(D_00001DD0, 1);
+				ret = 0;
+			}
+		}
+	}
+	return pspRetK1(ret, oldk1);
+}
 
 int __sceSasSetSteepWave(SasCore *core, unsigned int voice, unsigned int rate)
 {
