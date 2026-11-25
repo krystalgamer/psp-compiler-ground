@@ -21,6 +21,23 @@ union SceNetApctlInfo {
 	SceChar8 http_proxy_server[128];
 	SceUShort16 http_proxy_port;
 };
+union SceNetApctlBSSDescEntry {
+	SceUChar8 bssid[6];
+	SceUChar8 ssid[33];
+	SceSize ssidlen;
+	SceUChar8 channel;
+	SceUChar8 rssi;
+	SceUInt32 auth_proto;
+	SceUChar8 dummy[36];
+};
+struct SceNetApctlBSSDescID {
+	struct SceNetApctlBSSDescID *next;
+	int bssdesc_id;
+};
+int sceNetApctlConnect(int connid);
+int sceNetApctlScanUser(void);
+int sceNetApctlGetBSSDescIDListUser(int *buflen, struct SceNetApctlBSSDescID *buf);
+int sceNetApctlGetBSSDescEntryUser(int bssdesc_id, int code, union SceNetApctlBSSDescEntry *entry);
 typedef void (*sceNetApctlHandler)(int prev_state, int new_state, int event, int error_code, void *arg);
 int sceNetApctlInit(int stack_size, int init_priority);
 int sceNetApctlTerm(void);

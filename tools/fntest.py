@@ -47,6 +47,7 @@ def main():
     ap.add_argument("--flags", action="append")
     ap.add_argument("-v", action="store_true")
     ap.add_argument("--func", help="with -v: show this function")
+    ap.add_argument("--inc", action="append", default=[], help="extra include directory")
     a = ap.parse_args()
     mod = objcmp.module_funcs(a.target, a.module)
     cc1s = a.cc1.split(",") if a.cc1 else ["1.5.1", "1.6.1", "1.3.1-orig", "1.7.1-orig"]
@@ -54,7 +55,7 @@ def main():
     with tempfile.TemporaryDirectory() as td:
         for c in cc1s:
             for f in flags:
-                o = compile_c(Path(a.file), c, f, Path(td) / f"{c}.o", [ROOT / "decomp_src" / a.target / a.module])
+                o = compile_c(Path(a.file), c, f, Path(td) / f"{c}.o", [ROOT / "decomp_src" / a.target / a.module, Path(a.file).resolve().parent, *a.inc])
                 if o is None:
                     print(f"{c:11} {f:12} compile error")
                     continue

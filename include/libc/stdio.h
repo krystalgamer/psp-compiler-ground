@@ -15,6 +15,7 @@ int fprintf(FILE *, const char *, ...);
 int printf(const char *, ...);
 int sprintf(char *, const char *, ...);
 int puts(const char *);
+int putchar(int);
 #include <stdarg.h>
 int vsprintf(char *, const char *, __gnuc_va_list);
 #endif

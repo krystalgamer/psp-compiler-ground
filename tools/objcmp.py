@@ -93,13 +93,18 @@ def members(path):
         yield n, subprocess.run(["ar", "p", str(p), n], capture_output=True).stdout
 
 
-def lookup(mod, fn, n):
-    """The module function for fn: splat names duplicated statics FN_ADDR."""
-    if fn in mod:
-        return fn
-    cands = [k for k in mod if re.fullmatch(re.escape(fn) + r"_[0-9A-F]+", k)]
-    same = [k for k in cands if len(mod[k]) == n]
-    return (same or cands or [None])[0]
+def lookup(mod, fn, n, words=None):
+    """The module function for fn: splat names duplicated statics FN_ADDR,
+    so among the candidates take the closest one."""
+    cands = ([fn] if fn in mod else []) + [k for k in mod if re.fullmatch(re.escape(fn) + r"_[0-9A-F]+", k)]
+    if not cands:
+        return None
+
+    def score(k):
+        if len(mod[k]) != n:
+            return 10 ** 9
+        return sum(1 for a, b in zip(words, mod[k]) if a != b) if words is not None else 0
+    return min(cands, key=score)
 
 
 def disasm(words):
@@ -126,7 +131,7 @@ def compare(mod, objs, verbose=False):
     for path in objs:
         for name, data in members(path):
             for fn, words in obj_funcs(data).items():
-                key = lookup(mod, fn, len(words))
+                key = lookup(mod, fn, len(words), words)
                 if key is None:
                     continue
                 orig = mod[key]
