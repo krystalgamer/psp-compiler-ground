@@ -1,5 +1,9 @@
 # unit                                     compiler        source
+main                                         1.5.1.internal  main.c
+display                                      1.5.1.internal  display.c
+sound                                        1.5.1.internal  sound.c
 string                                       1.5.1.internal  string.c
 sprintf                                      1.5.1.internal  sprintf.c
 ctype                                        1.5.1.internal  ctype.c
 memory                                       1.5.1.internal  memory.c
+libwave                                      1.5.1.internal  libwave.c
