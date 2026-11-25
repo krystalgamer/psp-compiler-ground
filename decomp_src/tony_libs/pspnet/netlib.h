@@ -141,6 +141,9 @@ struct thread_info *_sce_pspnet_get_threadinfo(SceUID thid);
 int sceNet_lib_6DC71518(void);
 void func_000030A8(void *arg);
 void _sce_pspnet_tiwakeup(SceUID thid, void *wchan);
+int _sce_pspnet_tsleep_usec(void *wchan, unsigned int usec);
+int _sce_pspnet_tsleep(void *wchan, unsigned int ticks);
+void _sce_pspnet_wakeup(void *wchan);
 
 extern int D_0000A0A4;
 extern int D_0000B02C;
@@ -231,12 +234,23 @@ struct uio {
 	long uio_offset;
 	int uio_resid;
 	int uio_rw;
+	int uio_unk14;
+	int uio_unk18;
+	int uio_unk1C;
 };
 
 struct selinfo {
 	SceUID si_pid;
 };
 
+extern int D_0000B8DC;
+
+int func_00004410(void *fds, int nfds, struct thread_info *ti);
+int func_000042AC(int unit);
+int func_00004318(int fd);
+int func_000037D4(int fd, struct uio *uio);
+int func_00003940(int fd, struct uio *uio);
+int func_00003B20(int fd, unsigned int cmd, void *data);
 extern int D_0000B8DC;
 
 #endif
