@@ -139,8 +139,9 @@ modules (`tools/nltest.py`, `tools/objcmp.py`).
   `allegrex-2.2.1`, like every 1.4.0–1.5.1 build, against `2.2.2` for
   1.6.1): its SDK libgu is the same older revision as sampler's and again
   matches 62 functions with 1.5.1's cc1 and 61 with every other compiler
-  (`sceGuTexLevelMode`).  Its own game code compiles the same with all
-  compilers so far.  Several near-matches there were missing prototypes
+  (`sceGuTexLevelMode`).  Its own game code confirms it too: `KeyGame`'s
+  cursor clamps match only with 1.5.1's cc1 (the others turn them into
+  conditional moves).  Several near-matches there were missing prototypes
   in our C (implicit declarations change argument evaluation and register
   choice), not compiler differences.
 - Per-library flags under 1.6.1.internal: UTST99332 demo_luga's copy of the
