@@ -221,4 +221,143 @@ void func_00006314(void);
 int func_0000634C(int *needed, int type);
 int func_000063A8(void);
 int func_000063B8(AudioCtx *ctx);
+/* libmpeg */
+#define SCE_MPEG_ERROR_INVALID_VALUE	0x806101FE
+#define SCE_MPEG_ERROR_UNMATCHED_VERSION	0x80610002
+#define SCE_MPEG_ERROR_OUT_OF_MEMORY	0x80610022
+#define SCE_MPEG_ERROR_ALREADY_USED	0x80618005
+#define SCE_MPEG_ERROR_INTERNAL	0x80618006
+
+typedef struct SceMpegRingbuffer {
+	int iPackNum;
+	int iRead;
+	int iWrite;
+	int iDataPackNum;
+	int iPackSize;
+	void *pBuf;
+	int (*callback)(void *pBuf, int iPackNum, void *data);
+	void *pCallbackData;
+	void *pPack;
+	int iSemaRB;
+	void *mp;
+} SceMpegRingbuffer;
+
+typedef struct SceMpegAu {
+	unsigned int ptsMSB;
+	unsigned int pts;
+	unsigned int dtsMSB;
+	unsigned int dts;
+	void *pEsBuf;
+	int iEsSize;
+} SceMpegAu;
+
+typedef struct MpegStream {
+	unsigned int id;
+	unsigned int mask;
+	struct StreamEntry *pair;
+	int unkC;
+	int unk10;
+	int unk14;
+	int unk18;
+	int unk1C;
+	int unk20;
+	int unk24;
+	int unk28;
+	int unk2C;
+	int unk30;
+	int unk34;
+	int unk38;
+} MpegStream;
+
+typedef struct StreamEntry {
+	int unk0;
+	int unk4;
+	MpegStream *stream;
+	int unkC;
+} StreamEntry;
+
+typedef struct StreamEntry64 {
+	int unk[16];
+} StreamEntry64;
+
+typedef struct AuNode {
+	int addr;
+	int unk4;
+	struct AuNode *next;
+	int size;
+} AuNode;
+
+typedef struct AuList {
+	int num;
+	AuNode nodes[100];
+} AuList;
+
+typedef struct MpegSys {
+	char magic[8];
+	char version[4];
+	int unkC;
+	SceMpegRingbuffer *rb;
+	void *pack;
+	StreamEntry *streams;
+	StreamEntry64 *streams64;
+	void *unk20;
+	int curList;
+	AuList lists[1];
+	int sema;
+	int unk670;
+	int unk674;
+	int mode;
+	int unk67C;
+	unsigned char flag[2];
+	short pad682;
+	int val[2];
+	VideoCtx *video;
+	VideoInfo *info;
+	void *buf694;
+	void *buf698;
+	int unk69C;
+	int edram;
+	int unk6A4;
+	int ddr;
+	int unk6AC;
+	int unk6B0;
+	int unk6B4;
+	int unk6B8;
+	int unk6BC;
+	int unk6C0;
+	void *unk6C4;
+	int unk6C8;
+} MpegSys;
+
+typedef struct SceMpeg {
+	MpegSys *sys;
+} SceMpeg;
+
+typedef struct {
+	int unk0;
+	int unk4;
+} StreamTypeInfo;
+
+extern int D_00007D8C;
+extern const int D_00007984[];
+
+int func_00001100(SceMpeg *mp);
+void *func_00001208(unsigned int id, MpegSys *sys, int kind);
+int func_000072EC(int *type, int *ch, unsigned int id);
+unsigned int func_00007258(int type, int ch);
+unsigned int func_00007500(int type);
+int func_0000752C(void *p);
+unsigned int func_00007544(void *p);
+unsigned int func_00007564(void *p);
+int func_00000920(SceMpeg *mp, int type, int ch, int esBuf, MpegStream *stream);
+int sceMpegFlushStream(SceMpeg *mp, MpegStream *stream);
+int sceMpegbase_0530BE4E(int mode);
+
+typedef struct {
+	unsigned int id;
+	unsigned int mask;
+} StreamID;
+
+extern const StreamID D_00007A90[];
+
 #endif
