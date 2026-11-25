@@ -702,4 +702,14 @@ int _sce_pspnet_uiomove(char *cp, int n, struct uio *uio);
 	(d)->bd_fbuf = 0; \
 } while (0)
 
+extern char D_0000A0B8[];
+extern char D_0000B098[];
+extern int D_0000B090;
+extern int D_0000B094;
+extern int (*D_0000B07C)(struct ifnet *, struct mbuf *, void *, void *);
+extern void *D_0000B080;
+extern void *D_0000B084;
+extern void *D_0000B088;
+extern void *D_0000B08C;
+
 #endif
