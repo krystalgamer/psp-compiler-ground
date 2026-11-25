@@ -28,4 +28,6 @@ SceSSize sceIoRead(SceUID fd, void *buf, SceSize nbyte);
 SceSSize sceIoWrite(SceUID fd, const void *buf, SceSize nbyte);
 int sceIoRemove(const char *name);
 SceOff sceIoLseek(SceUID fd, SceOff offset, int whence);
+int sceIoAssign(const char *dev1, const char *dev2, const char *dev3, int mode, void *unk1, long unk2);
+int sceIoUnassign(const char *dev);
 #endif
