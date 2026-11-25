@@ -1,3 +1,4 @@
+/* data-align: 16 */
 #include "common.h"
 
 /* declarations recovered from DWARF */
@@ -25,7 +26,8 @@ struct ScePspIMatrix4 { /* size 0x40 */
     ScePspIVector4 z;
     ScePspIVector4 w;
 };
-typedef struct ScePspIMatrix4 ScePspIMatrix4;
+/* Sony's psptypes.h aligns it to 16 bytes, which DWARF does not record */
+typedef struct ScePspIMatrix4 ScePspIMatrix4 __attribute__((aligned(16)));
 struct ScePspFVector3;
 struct ScePspFVector3 { /* size 0xc */
     float x;
@@ -169,10 +171,6 @@ static void draw_frame(void)
 	sceGuSync(0, 0);
 }
 
-#ifdef NON_MATCHING
-/* Matches with fntest, but this unit's cc1 (1.6.1.internal) put dith's
-   initializer at the end of the unit's .rodata, after every function's
-   float constants; 1.6.1's cc1 puts it before init_all's (see FINDINGS). */
 static void init_all(void)
 {
 	ScePspIMatrix4 dith = {
@@ -233,9 +231,6 @@ static void init_all(void)
 	rot.y = 30.0f;
 	sceGuDisplay(1);
 }
-#else
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_torus/nonmatchings/main", init_all);
-#endif
 
 static int pad_read(void)
 {
@@ -304,8 +299,3 @@ int main(void)
 	return 0;
 }
 
-#ifndef NON_MATCHING
-/* dith's initializer: ScePspIMatrix4 is 16-byte aligned */
-__asm__(".section .rodata\n\t.align 4\n.section .text");
-INCLUDE_RODATA("tmp/asm/UTST99332/graphics_torus/nonmatchings/main", D_00011C20);
-#endif
