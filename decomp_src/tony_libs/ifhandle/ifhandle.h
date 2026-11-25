@@ -34,6 +34,9 @@ extern int D_00003B2C;
 #define M_EOR 0x0004
 #define M_CLUSTER 0x0008
 
+#define M_DONTWAIT 0
+#define M_WAIT 1
+
 struct mbuf;
 
 struct pkthdr {
@@ -120,6 +123,38 @@ struct mbuf {
 		(m)->m_data += (MHLEN - (len)) & ~(sizeof(long) - 1); \
 	} while (0)
 
+#define MGETHDR(m, how, type) \
+	do { \
+		(m) = sceNetMallocInternal(MSIZE); \
+		if (m) { \
+			(m)->m_type = (type); \
+			(m)->m_next = 0; \
+			(m)->m_nextpkt = 0; \
+			(m)->m_data = (m)->m_pktdat; \
+			(m)->m_flags = M_PKTHDR; \
+			(m)->m_pkthdr.aux = 0; \
+		} \
+	} while (0)
+
+#define M_ALIGN(m, len) \
+	do { \
+		(m)->m_data += (MLEN - (len)) & ~(sizeof(long) - 1); \
+	} while (0)
+
+#define MCLADDREFERENCE(o, n) \
+	do { \
+		(n)->m_flags |= ((o)->m_flags & (M_EXT | M_CLUSTER)); \
+		(n)->m_ext.ext_nextref = (o)->m_ext.ext_nextref; \
+		(n)->m_ext.ext_prevref = (o); \
+		(o)->m_ext.ext_nextref = (n); \
+		(n)->m_ext.ext_nextref->m_ext.ext_prevref = (n); \
+	} while (0)
+
+static inline unsigned int max(unsigned int a, unsigned int b)
+{
+	return a > b ? a : b;
+}
+
 static inline int k1ok(const void *p)
 {
 	if (!K1_USER())
@@ -134,6 +169,7 @@ void *memcpy(void *, const void *, unsigned int);
 struct mbuf *sceNetMFree(struct mbuf *m);
 void sceNetMFreem(struct mbuf *m);
 struct mbuf *func_00002C58(struct mbuf *m, int off, int len, int wait, int deep);
+struct mbuf *func_00002434(struct mbuf *m0, int len0, int wait);
 
 extern const char D_00003A44[];
 extern const char D_00003A50[];
@@ -155,5 +191,6 @@ extern int D_000043CC;
 extern int D_000043D0;
 extern int D_000043D4;
 extern int D_000043D8;
+extern int D_000043DC;
 
 #endif

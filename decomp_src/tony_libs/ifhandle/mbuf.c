@@ -154,9 +154,120 @@ INCLUDE_ASM("tmp/asm/tony_libs/ifhandle/nonmatchings/mbuf", sceNetMCopydata);
 
 INCLUDE_ASM("tmp/asm/tony_libs/ifhandle/nonmatchings/mbuf", sceNetMAdj);
 
-INCLUDE_ASM("tmp/asm/tony_libs/ifhandle/nonmatchings/mbuf", sceNetMPullup);
+struct mbuf *sceNetMPullup(struct mbuf *n, int len)
+{
+	struct mbuf *m;
+	int count;
+	int space;
+	unsigned int oldk1;
 
-INCLUDE_ASM("tmp/asm/tony_libs/ifhandle/nonmatchings/mbuf", func_00002434);
+	K1_SAVE(oldk1);
+	if (n == 0 || (K1_USER() && (int)n < 0))
+		goto fail;
+	if ((n->m_flags & M_EXT) == 0 &&
+	    n->m_data + len < &n->m_dat[MLEN] && n->m_next) {
+		if (n->m_len >= len) {
+			K1_RESTORE(oldk1);
+			return n;
+		}
+		m = n;
+		n = n->m_next;
+		len -= m->m_len;
+	} else {
+		if (len > MHLEN)
+			goto bad;
+		MGET(m, M_DONTWAIT, n->m_type);
+		if (m == 0)
+			goto bad;
+		m->m_len = 0;
+		if (n->m_flags & M_PKTHDR) {
+			M_COPY_PKTHDR(m, n);
+			n->m_flags &= ~M_PKTHDR;
+		}
+	}
+	space = &m->m_dat[MLEN] - (m->m_data + m->m_len);
+	do {
+		count = min(min(max(len, D_000043CC), space), n->m_len);
+		memcpy(mtod(m, char *) + m->m_len, mtod(n, char *), count);
+		len -= count;
+		m->m_len += count;
+		n->m_len -= count;
+		space -= count;
+		if (n->m_len)
+			n->m_data += count;
+		else
+			n = sceNetMFree(n);
+	} while (len > 0 && n);
+	if (len > 0) {
+		sceNetMFree(m);
+		goto bad;
+	}
+	m->m_next = n;
+	K1_RESTORE(oldk1);
+	return m;
+bad:
+	sceNetMFreem(n);
+	D_000043DC++;
+fail:
+	K1_RESTORE(oldk1);
+	return 0;
+}
+
+struct mbuf *func_00002434(struct mbuf *m0, int len0, int wait)
+{
+	struct mbuf *m, *n;
+	unsigned int len = len0, remain, len_save;
+
+	for (m = m0; m && len > m->m_len; m = m->m_next)
+		len -= m->m_len;
+	if (m == 0)
+		return 0;
+	remain = m->m_len - len;
+	if (m0->m_flags & M_PKTHDR) {
+		MGETHDR(n, wait, m0->m_type);
+		if (n == 0)
+			return 0;
+		n->m_pkthdr.rcvif = m0->m_pkthdr.rcvif;
+		n->m_pkthdr.len = m0->m_pkthdr.len - len0;
+		len_save = m0->m_pkthdr.len;
+		m0->m_pkthdr.len = len0;
+		if (m->m_flags & M_EXT)
+			goto extpacket;
+		if (remain > MHLEN) {
+			MH_ALIGN(n, 0);
+			n->m_next = func_00002434(m, len, wait);
+			if (n->m_next == 0) {
+				sceNetMFree(n);
+				m0->m_pkthdr.len = len_save;
+				return 0;
+			} else
+				return n;
+		} else
+			MH_ALIGN(n, remain);
+	} else if (remain == 0) {
+		n = m->m_next;
+		m->m_next = 0;
+		return n;
+	} else {
+		MGET(n, wait, m->m_type);
+		if (n == 0)
+			return 0;
+		M_ALIGN(n, remain);
+	}
+extpacket:
+	if (m->m_flags & M_EXT) {
+		n->m_ext = m->m_ext;
+		MCLADDREFERENCE(m, n);
+		n->m_data = m->m_data + len;
+	} else {
+		memcpy(mtod(n, char *), mtod(m, char *) + len, remain);
+	}
+	n->m_len = remain;
+	m->m_len = len;
+	n->m_next = m->m_next;
+	m->m_next = 0;
+	return n;
+}
 
 INCLUDE_ASM("tmp/asm/tony_libs/ifhandle/nonmatchings/mbuf", sceNetMCopyback);
 
