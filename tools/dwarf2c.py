@@ -87,7 +87,8 @@ class C:
             params = [self.decl(self.ref(p), "") for p in t.iter_children() if p.tag == "DW_TAG_formal_parameter"]
             if attr(t, "DW_AT_prototyped") and not params:
                 params = ["void"]
-            if any(p.tag == "DW_TAG_unspecified_parameters" for p in t.iter_children()):
+            # K&R (unprototyped) types also carry unspecified_parameters: ()
+            if params and any(p.tag == "DW_TAG_unspecified_parameters" for p in t.iter_children()):
                 params.append("...")
             return self.decl(self.ref(t), f"{name}({', '.join(params)})")
         return f"/* {tag} */ int {name}"
@@ -106,6 +107,9 @@ class C:
                 return
             # tag types referenced only through a typedef: define them first
             line = f"typedef {self.decl(inner, attr(t, 'DW_AT_name'))};"
+            if attr(t, "DW_AT_name") == "__gnuc_va_list":
+                # gcc 3.3 describes __builtin_va_list as void *
+                line = "typedef __builtin_va_list __gnuc_va_list;"
             self.out.append(line)
             return
         if t.tag == "DW_TAG_enumeration_type":
@@ -189,7 +193,7 @@ def main():
                       if p.tag == "DW_TAG_formal_parameter"]
             if attr(d, "DW_AT_prototyped") and not params:
                 params = ["void"]
-            if any(p.tag == "DW_TAG_unspecified_parameters" for p in d.iter_children()):
+            if params and any(p.tag == "DW_TAG_unspecified_parameters" for p in d.iter_children()):
                 params.append("...")
             static = "" if attr(d, "DW_AT_external") else "static "
             proto = f"{static}{c.decl(c.ref(d), attr(d, 'DW_AT_name') + '(' + ', '.join(params) + ')')};"
