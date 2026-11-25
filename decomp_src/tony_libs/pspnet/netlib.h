@@ -118,8 +118,24 @@ int sceNetIfhandle_lib_4C2886CB(void *stat);
 } while (0)
 
 struct callout {
-	int c_data[10];
+	TAILQ_ENTRY(callout) c_fired;
+	TAILQ_ENTRY(callout) c_pending;
+	void (*c_func)(void *);
+	void *c_arg;
+	unsigned int c_time;
+	int c_flags;
+	SceUID c_alarm;
 };
+TAILQ_HEAD(callout_list, callout);
+
+extern int D_0000A098;
+extern int D_0000A09C;
+extern struct callout_list D_0000AC08;
+extern struct callout_list D_0000AC10;
+
+int _sce_pspnet_spllock(void);
+void _sce_pspnet_splunlock(int s);
+void _sce_pspnet_callout_stop(struct callout *c);
 
 /* per-thread info (thread.c) */
 struct thread_info {
@@ -129,6 +145,7 @@ struct thread_info {
 	int error;
 	int unk14[4];
 	struct callout co;
+	int unk48;
 	SceUID sema;
 	short semacnt;
 	char unk52[0x64 - 0x52];
