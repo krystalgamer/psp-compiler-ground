@@ -8,6 +8,8 @@
 #endif
 
 typedef unsigned int size_t;
+struct bpf_if;
+struct bpf_d;
 typedef int SceUID;
 typedef unsigned int SceUInt;
 typedef unsigned int SceSize;
@@ -26,7 +28,7 @@ typedef struct {
 #define memchr func_00007B88
 #define memmove func_00007BC0
 #define memcmp func_00007C34
-#define memcpy func_00007C74
+
 #define memset func_00007CA8
 #define bcmp func_00007CD4
 #define bcopy func_00007D14
@@ -51,7 +53,8 @@ extern const char D_0000A0CC[];
 void *memchr(const void *s, int c, int n);
 void *memmove(void *dst, const void *src, int n);
 int memcmp(const void *a, const void *b, int n);
-void *memcpy(void *dst, const void *src, int n);
+void *func_00007C74(void *dst, const void *src, int n) __asm__("memcpy");
+#define memcpy __builtin_memcpy
 void *memset(void *dst, int c, int n);
 int bcmp(const void *a, const void *b, int n);
 void bcopy(const void *src, void *dst, int n);
@@ -247,8 +250,8 @@ struct selinfo {
 
 extern int D_0000B8DC;
 
-int func_00004410(void *fds, int nfds, struct thread_info *ti);
-int func_000042AC(int unit);
+int func_00004410(int unit, int events, struct thread_info *ti);
+int func_000042AC(u_int unit);
 int func_00004318(int fd);
 int func_000037D4(int fd, struct uio *uio);
 int func_00003940(int fd, struct uio *uio);
@@ -369,7 +372,7 @@ TAILQ_HEAD(ifnet_head, ifnet);
 
 extern int D_0000B068;
 extern void (*D_0000B030)(int, void *, void *);
-extern void *D_0000B034;
+extern void (*D_0000B034)(void);
 extern void (*D_0000B038)(struct ifnet *);
 extern void (*D_0000B03C)(struct ifaddr *);
 extern void (*D_0000B040)(struct ifnet *, int);
@@ -421,7 +424,7 @@ void func_00006B10(struct ifnet *ifp);
 void _sce_pspnet_if_detach(struct ifnet *ifp);
 void _sce_pspnet_if_attach(struct ifnet *ifp);
 void func_00006A40(struct ifnet *ifp, u_char *lla);
-void func_00004594(void **bpf, struct ifnet *ifp, int dlt, int hdrlen);
+void func_00004594(struct bpf_if **driverp, struct ifnet *ifp, u_int dlt, u_int hdrlen);
 void func_00007680(struct ifnet *ifp);
 int func_000071FC(struct ifnet *ifp, u_long cmd, void *data);
 int func_000016BC(SceSize args, void *argp);
@@ -538,5 +541,63 @@ static inline struct ifnet *if_find(const char *name)
 void _sce_pspnet_link_rtrequest(int cmd, void *rt, void *info);
 
 extern int D_0000A0AC;
+
+extern int D_0000B06C;
+extern void (*D_0000B064)(void);
+extern struct ifnet *D_0000BB04[8];
+extern struct ifaddr *D_0000BAE4[8];
+void _sce_pspnet_callout_init(struct callout *c);
+void _sce_pspnet_if_down(struct ifnet *ifp);
+
+static inline void if_slowtimo_body(void)
+{
+	struct ifnet *ifp;
+	int s;
+
+	s = _sce_pspnet_spllock();
+	for (ifp = D_0000BB24.tqh_first; ifp != NULL; ifp = ifp->if_list.tqe_next) {
+		if (ifp->if_timer == 0 || --ifp->if_timer)
+			continue;
+		if (ifp->if_watchdog)
+			(*ifp->if_watchdog)(ifp);
+	}
+	_sce_pspnet_splunlock(s);
+	_sce_pspnet_callout_reset(&D_0000BB2C, 100, func_00005A78, NULL);
+}
+
+struct bpf_if {
+	struct bpf_if *bif_next;
+	struct bpf_d *bif_dlist;
+	struct bpf_if **bif_driverp;
+	u_int bif_dlt;
+	u_int bif_hdrlen;
+	struct ifnet *bif_ifp;
+};
+
+struct bpf_d {
+	struct bpf_d *bd_next;
+	char *bd_sbuf;
+	char *bd_hbuf;
+	char *bd_fbuf;
+	int bd_slen;
+	int bd_hlen;
+	int bd_bufsize;
+	struct bpf_if *bd_bif;
+	u_long bd_rtout;
+	void *bd_filter;
+	u_long bd_rcount;
+	u_long bd_dcount;
+	u_char bd_promisc;
+	u_char bd_state;
+	u_char bd_immediate;
+	int bd_hdrcmplt;
+	struct selinfo bd_sel;
+	int bd_unk3C;
+};
+
+extern int D_0000A0A8;
+extern struct bpf_if *D_0000B8E0;
+extern struct bpf_d D_0000B8E4[8];
+void _sce_pspnet_selrecord(struct thread_info *selector, struct selinfo *sip);
 
 #endif
