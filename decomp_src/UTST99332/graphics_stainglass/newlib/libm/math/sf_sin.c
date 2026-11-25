@@ -1,3 +1,3 @@
-#include "common.h"
-
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_stainglass/nonmatchings/newlib/libm/math/sf_sin", sinf);
+/* upstream: newlib-1.12.0/newlib/libm/math/sf_sin.c (unmodified) */
+/* cflags: -O2 -fno-builtin */
+#include "libm/math/sf_sin.c"
