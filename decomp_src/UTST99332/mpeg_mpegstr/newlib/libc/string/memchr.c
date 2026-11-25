@@ -1,3 +1,3 @@
-#include "common.h"
-
-INCLUDE_ASM("tmp/asm/UTST99332/mpeg_mpegstr/nonmatchings/newlib/libc/string/memchr", memchr);
+/* upstream: newlib-1.12.0/newlib/libc/string/memchr.c (unmodified) */
+/* cflags: -O2 -fno-builtin */
+#include "libc/string/memchr.c"
