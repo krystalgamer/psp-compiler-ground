@@ -1,7 +1,6 @@
-#include "common.h"
-
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_structure/nonmatchings/libgcc/dp-bit/__floatsidf", __floatsidf);
-
-INCLUDE_RODATA("tmp/asm/UTST99332/graphics_structure/nonmatchings/libgcc/dp-bit/__floatsidf", D_00016008);
-
-INCLUDE_RODATA("tmp/asm/UTST99332/graphics_structure/nonmatchings/libgcc/dp-bit/__floatsidf", D_0001600C);
+/* upstream: libgcc dp-bit.c (_si_to_df.o), tree: 1.6.1 */
+/* cflags: -O2 */
+/* data-align: 8 */
+#define FINE_GRAINED_LIBRARIES
+#define L_si_to_df
+#include "dp-bit.c"
