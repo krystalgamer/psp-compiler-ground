@@ -3,7 +3,11 @@
 
 /* the game's save data (40 bytes); only the clamped counters are known */
 typedef struct {
-	int unk00[5];
+	int unk00;
+	int unk04;
+	int unk08;
+	int unk0C;
+	int unk10;
 	int unk14;
 	int unk18;
 	int unk1C;

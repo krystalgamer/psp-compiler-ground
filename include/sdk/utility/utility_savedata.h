@@ -69,11 +69,19 @@ typedef struct {
 	SceUtilitySDExtFile pic1;
 	SceUtilitySDExtFile snd0;
 	SceUtilitySavedataListSaveNewData *pNewData;
+#ifndef SCE_UTILITY_SAVEDATA_OLD
+	/* not in the older SDK puzzle_bobble was built with (0x5c8 bytes) */
 	unsigned int initFocus;
 	int abortedStatus;
 	SceUtilitySavedataMsFreeSize *pMs;
 	SceUtilitySavedataMsDataSize *pMsData;
 	SceUtilitySavedataUtilityDataSize *pUtilityData;
+#endif
 } SceUtilitySavedataParam;
+
+int sceUtilitySavedataInitStart(SceUtilitySavedataParam *param);
+int sceUtilitySavedataShutdownStart(void);
+int sceUtilitySavedataUpdate(int animation_speed);
+int sceUtilitySavedataGetStatus(void);
 
 #endif

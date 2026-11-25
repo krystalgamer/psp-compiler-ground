@@ -1,6 +1,7 @@
 #include "common.h"
 #include <stdio.h>
 #include <string.h>
+#define SCE_UTILITY_SAVEDATA_OLD
 #include <utility/utility_savedata.h>
 #include "savedata.h"
 
