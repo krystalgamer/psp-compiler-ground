@@ -1,3 +1,3 @@
-#include "common.h"
-
-INCLUDE_ASM("tmp/asm/UTST99332/utility_font_basho/nonmatchings/newlib/libc/reent/fstatr", _fstat_r);
+/* upstream: newlib-1.12.0/newlib/libc/reent/fstatr.c (unmodified) */
+/* cflags: -O2 -fno-builtin */
+#include "libc/reent/fstatr.c"

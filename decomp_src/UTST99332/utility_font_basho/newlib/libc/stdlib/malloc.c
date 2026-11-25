@@ -1,5 +1,3 @@
-#include "common.h"
-
-INCLUDE_ASM("tmp/asm/UTST99332/utility_font_basho/nonmatchings/newlib/libc/stdlib/malloc", malloc);
-
-INCLUDE_ASM("tmp/asm/UTST99332/utility_font_basho/nonmatchings/newlib/libc/stdlib/malloc", free);
+/* upstream: newlib-1.12.0/newlib/libc/stdlib/malloc.c (unmodified) */
+/* cflags: -O2 -fno-builtin */
+#include "libc/stdlib/malloc.c"
