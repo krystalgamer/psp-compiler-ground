@@ -113,7 +113,7 @@ typedef struct {
 	unsigned char exponent, cutoff;
 } GuLightSettings;
 
-extern const GuLightSettings lcmd[4];
+static const GuLightSettings lcmd[4];
 extern int disp_sw;
 extern void *vram_top;
 extern int aw_frame;
@@ -126,6 +126,19 @@ extern const unsigned int tbwcmd_tbl[8];
 extern const unsigned int tsizecmd_tbl[8];
 void sceGuTexFlush(void);
 int get_exp(int val);
+
+extern int gu_init;
+extern const GuDrawBuffer D_000155F4;
+
+extern const unsigned int initList[221];
+typedef struct { int m[16]; } GuDitherInit;
+extern const GuDitherInit D_00015620;
+int sceGeSetCallback(void *cb);
+void *sceGeEdramGetAddr(void);
+int sceKernelCreateEventFlag(const char *name, int attr, int bits, void *opt);
+void sceGuSetDither(const int *matrix);
+void sceGuPatchDivide(int a0, int a1);
+void sceGuColorMaterial(int a0);
 
 void callback_sig(int id, void *arg)
 {
@@ -162,7 +175,45 @@ int get_exp(int val)
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_picture/nonmatchings/libgu", flush_font);
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_picture/nonmatchings/libgu", reset_static_value);
+static void reset_static_value(void)
+{
+	GuDrawBuffer init = D_000155F4;
+	int i;
+
+	gu_init = 0;
+	__gu_status = 0;
+	FBuf = init;
+	aw_frame = 0;
+	n_bbox = 0;
+	disp_sw = 0;
+	call_mode = 0;
+	for (i = 0; i < 3; i++) {
+		GuContext *context = &_ctx[i];
+
+		context->scissor_enable = 0;
+		context->scissor_start[0] = 0;
+		context->scissor_start[1] = 0;
+		context->scissor_end[0] = 0;
+		context->scissor_end[1] = 0;
+		context->near_plane = 0;
+		context->far_plane = 1;
+		context->depth_offset = 0;
+		context->sprite_mode[0] = 0;
+		context->sprite_mode[1] = 0;
+		context->sprite_mode[2] = 0;
+		context->sprite_mode[3] = 0;
+		context->clear_color = 0;
+		context->clear_stencil = 0;
+		context->clear_depth = 0xffff;
+		context->texture_mode = 0;
+		context->fragment_2x = 0;
+		context->texture_function = 0;
+		context->texture_proj_map_mode = 0;
+		context->texture_map_mode = 0;
+	}
+	intrParam.signal_func = 0;
+	intrParam.finish_func = 0;
+}
 
 void sceGuSendCommandf(int cmd, float argument)
 {
@@ -199,7 +250,12 @@ INCLUDE_RODATA("tmp/asm/UTST99332/graphics_picture/nonmatchings/libgu", tbwcmd_t
 
 INCLUDE_RODATA("tmp/asm/UTST99332/graphics_picture/nonmatchings/libgu", tsizecmd_tbl);
 
-INCLUDE_RODATA("tmp/asm/UTST99332/graphics_picture/nonmatchings/libgu", lcmd);
+static const GuLightSettings lcmd[4] = {
+	{ 0x18, 0x5F, 0x63, 0x64, 0x65, 0x6F, 0x70, 0x71, 0x8F, 0x90, 0x91, 0x7B, 0x7C, 0x7D, 0x87, 0x8B },
+	{ 0x19, 0x60, 0x66, 0x67, 0x68, 0x72, 0x73, 0x74, 0x92, 0x93, 0x94, 0x7E, 0x7F, 0x80, 0x88, 0x8C },
+	{ 0x1A, 0x61, 0x69, 0x6A, 0x6B, 0x75, 0x76, 0x77, 0x95, 0x96, 0x97, 0x81, 0x82, 0x83, 0x89, 0x8D },
+	{ 0x1B, 0x62, 0x6C, 0x6D, 0x6E, 0x78, 0x79, 0x7A, 0x98, 0x99, 0x9A, 0x84, 0x85, 0x86, 0x8A, 0x8E },
+};
 
 INCLUDE_RODATA("tmp/asm/UTST99332/graphics_picture/nonmatchings/libgu", color_material);
 
@@ -225,7 +281,19 @@ INCLUDE_RODATA("tmp/asm/UTST99332/graphics_picture/nonmatchings/libgu", D_000157
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_picture/nonmatchings/libgu", sceGuStart);
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_picture/nonmatchings/libgu", sceGuSetDither);
+void sceGuSetDither(const int *matrix)
+{
+	unsigned int dither[4];
+
+	dither[0] = (matrix[0] & 0x0f) | ((matrix[1] & 0x0f) << 4) | ((matrix[2] & 0x0f) << 8) | ((matrix[3] & 0x0f) << 12);
+	dither[1] = (matrix[4] & 0x0f) | ((matrix[5] & 0x0f) << 4) | ((matrix[6] & 0x0f) << 8) | ((matrix[7] & 0x0f) << 12);
+	dither[2] = (matrix[8] & 0x0f) | ((matrix[9] & 0x0f) << 4) | ((matrix[10] & 0x0f) << 8) | ((matrix[11] & 0x0f) << 12);
+	dither[3] = (matrix[12] & 0x0f) | ((matrix[13] & 0x0f) << 4) | ((matrix[14] & 0x0f) << 8) | ((matrix[15] & 0x0f) << 12);
+	send_commandi(226, dither[0]);
+	send_commandi(227, dither[1]);
+	send_commandi(228, dither[2]);
+	send_commandi(229, dither[3]);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_picture/nonmatchings/libgu", sceGuFinish);
 
@@ -614,7 +682,12 @@ void sceGuLightMode(int mode)
 	send_commandi(94, mode & 1);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_picture/nonmatchings/libgu", sceGuLightAtt);
+void sceGuLightAtt(int light, float atten0, float atten1, float atten2)
+{
+	send_commandf(lcmd[light].constant, atten0);
+	send_commandf(lcmd[light].linear, atten1);
+	send_commandf(lcmd[light].quadratic, atten2);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_picture/nonmatchings/libgu", sceGuLightSpot);
 
