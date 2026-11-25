@@ -1,5 +1,3 @@
-#include "common.h"
-
-INCLUDE_ASM("tmp/asm/UTST99332/mpeg_mpegstr_gu/nonmatchings/newlib/libc/stdio/puts", _puts_r);
-
-INCLUDE_ASM("tmp/asm/UTST99332/mpeg_mpegstr_gu/nonmatchings/newlib/libc/stdio/puts", puts);
+/* upstream: newlib-1.12.0/newlib/libc/stdio/puts.c (unmodified) */
+/* cflags: -O2 -fno-builtin */
+#include "libc/stdio/puts.c"
