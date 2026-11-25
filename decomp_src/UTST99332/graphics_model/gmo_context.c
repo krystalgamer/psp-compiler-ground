@@ -1,534 +1,291 @@
-#include "common.h"
+/* SDK gmo_model library: devkit 0.6.0's src/gmo_model/gmo_context.c, preprocessed (macros expanded) */
+#include "gmo_private.h"
 
-/* declarations recovered from DWARF */
-typedef struct SceGmoContext SceGmoContext;
-struct SceGmoContext;
-typedef struct SceGmoModel SceGmoModel;
-struct SceGmoModel;
-typedef struct SceGmoBase SceGmoBase;
-struct SceGmoBase;
-struct SceGmoSubject;
-struct SceGmoObserver;
-struct SceGmoObserver { /* size 0xc */
-    struct SceGmoObserver *m_next;
-    struct SceGmoSubject *m_subject;
-    void *m_reserved;
-};
-struct SceGmoSubject { /* size 0x4 */
-    struct SceGmoObserver *m_observers;
-};
-struct SceGmoBase { /* size 0x10 */
-    struct SceGmoSubject m_subject;
-    struct SceGmoObserver m_parent;
-};
-typedef struct SceGmoBone SceGmoBone;
-struct SceGmoBone;
-typedef struct ScePspFVector3 ScePspFVector3;
-struct ScePspFVector3;
-struct ScePspFVector3 { /* size 0xc */
-    float x;
-    float y;
-    float z;
-};
-typedef struct ScePspFQuaternion ScePspFQuaternion;
-struct ScePspFQuaternion;
-struct ScePspFQuaternion { /* size 0x10 */
-    float x;
-    float y;
-    float z;
-    float w;
-};
-typedef struct ScePspFMatrix4 ScePspFMatrix4;
-struct ScePspFMatrix4;
-typedef struct ScePspFVector4 ScePspFVector4;
-struct ScePspFVector4;
-struct ScePspFVector4 { /* size 0x10 */
-    float x;
-    float y;
-    float z;
-    float w;
-};
-struct ScePspFMatrix4 { /* size 0x40 */
-    ScePspFVector4 x;
-    ScePspFVector4 y;
-    ScePspFVector4 z;
-    ScePspFVector4 w;
-};
-struct SceGmoBone { /* size 0x170 */
-    SceGmoBase m_base;
-    SceGmoBone *m_initial;
-    int m_reference;
-    int m_flags;
-    int m_parent_bone;
-    int m_visibility;
-    ScePspFVector3 m_pivot;
-    ScePspFVector3 m_translate;
-    ScePspFQuaternion m_rotate;
-    ScePspFVector3 m_scale;
-    ScePspFMatrix4 m_local_matrix;
-    ScePspFMatrix4 m_stack_matrix;
-    ScePspFVector3 m_stack_scale;
-    ScePspFMatrix4 m_world_matrix;
-    int *m_draw_parts;
-    float *m_morph_weights;
-    int *m_blend_bones;
-    ScePspFMatrix4 *m_blend_offsets;
-    int m_n_draw_parts;
-    int m_n_morph_weights;
-    int m_n_blend_bones;
-    int m_n_blend_offsets;
-    int m_anim_flags;
-    float m_anim_weights[5];
-};
-typedef struct SceGmoPart SceGmoPart;
-struct SceGmoPart;
-typedef struct SceGmoChunk SceGmoChunk;
-struct SceGmoChunk;
-struct SceGmoChunk { /* size 0x10 */
-    short unsigned int type;
-    short unsigned int args_offs;
-    unsigned int next_offs;
-    unsigned int child_offs;
-    unsigned int data_offs;
-};
-typedef struct SceGmoMesh SceGmoMesh;
-struct SceGmoMesh;
-struct SceGmoMesh { /* size 0x18 */
-    SceGmoChunk *m_chunk;
-    int m_reference;
-    int m_flags;
-    int m_material;
-    int *m_blend_subset;
-    int m_n_blend_subset;
-};
-struct SceGmoPart { /* size 0x2c */
-    SceGmoBase m_base;
-    SceGmoChunk *m_chunk;
-    int m_reference;
-    int m_flags;
-    SceGmoMesh **m_meshes;
-    SceGmoChunk **m_arrays;
-    int m_n_meshes;
-    int m_n_arrays;
-};
-typedef struct SceGmoMaterial SceGmoMaterial;
-struct SceGmoMaterial;
-typedef struct SceGmoLayer SceGmoLayer;
-struct SceGmoLayer;
-typedef struct ScePspFRect ScePspFRect;
-struct ScePspFRect;
-struct ScePspFRect { /* size 0x10 */
-    float x;
-    float y;
-    float w;
-    float h;
-};
-struct SceGmoLayer { /* size 0x50 */
-    SceGmoLayer *m_initial;
-    int m_reference;
-    int m_flags;
-    int m_map_type;
-    float m_map_factor;
-    int m_blend_func[5];
-    int m_texture;
-    ScePspFRect m_tex_crop;
-    int m_enable_mask;
-    int m_enable_bits;
-    int m_diffuse;
-    int m_specular;
-    int m_ambient;
-};
-struct SceGmoMaterial { /* size 0x84 */
-    SceGmoBase m_base;
-    SceGmoMaterial *m_initial;
-    int m_reference;
-    int m_flags;
-    SceGmoLayer *m_layers[8];
-    int m_n_layers;
-    int m_enable_mask;
-    int m_enable_bits;
-    int m_colors[6];
-    float m_shininess;
-    float m_refraction;
-    float m_bump;
-    int m_anim_flags;
-    float m_anim_weights[5];
-};
-typedef struct SceGmoTexture SceGmoTexture;
-struct SceGmoTexture;
-typedef struct SceGimPicture SceGimPicture;
-struct SceGimPicture;
-struct SceGmoTexture { /* size 0x1c */
-    SceGmoBase m_base;
-    SceGimPicture *m_picture;
-    int m_reference;
-    int m_flags;
-};
-typedef struct SceGmoMotion SceGmoMotion;
-struct SceGmoMotion;
-struct SceGmoMotion { /* size 0x40 */
-    SceGmoBase m_base;
-    SceGmoChunk *m_chunk;
-    int m_reference;
-    int m_flags;
-    SceGmoChunk **m_anims;
-    SceGmoChunk **m_fcurves;
-    int m_n_anims;
-    int m_n_fcurves;
-    float m_frame_loop[2];
-    float m_frame_rate;
-    float m_frame;
-    float m_weight;
-};
-struct SceGmoModel { /* size 0x100 */
-    SceGmoBase m_base;
-    int m_reference;
-    int m_flags;
-    SceGmoBone **m_bones;
-    SceGmoPart **m_parts;
-    SceGmoMaterial **m_materials;
-    SceGmoTexture **m_textures;
-    SceGmoMotion **m_motions;
-    int m_n_bones;
-    int m_n_parts;
-    int m_n_materials;
-    int m_n_textures;
-    int m_n_motions;
-    int m_current_motion;
-    float m_change_motion;
-    ScePspFMatrix4 m_world_matrix;
-    int m_enable_bits;
-    int m_enable_mask;
-    ScePspFVector3 m_bounding_box[2];
-    ScePspFMatrix4 m_vertex_offset;
-    ScePspFRect m_texcoord_offset;
-};
-typedef ScePspFRect rect;
-struct SceGmoContext { /* size 0x88 */
-    int m_flags;
-    SceGmoModel *m_model;
-    SceGmoBone *m_bone;
-    SceGmoMaterial *m_material;
-    SceGmoTexture *m_texture;
-    int m_layer_index;
-    int m_layer_state;
-    int m_default_mask;
-    int m_default_bits;
-    int m_current_bits;
-    rect m_default_offs;
-    rect m_current_offs;
-    rect m_default_crop;
-    rect m_current_crop;
-    rect m_default_trim;
-    rect m_current_trim;
-};
+static void activate_enable_bits( int mask, int bits ) ;
+static void activate_tex_crop() ;
 
 extern rect g_nocrop;
-extern SceGmoContext g_context;
 
-void sceGmoContextBegin(void);
-void sceGmoContextEnd(void);
-void sceGmoContextSetBone(SceGmoBone *bone, SceGmoModel *model, const int *indices, int n_indices);
-int sceGmoContextSetMaterial(SceGmoMaterial *material, SceGmoModel *model, int idx);
-void sceGmoContextSetTexture(SceGmoTexture *texture, SceGmoModel *model);
-void sceGmoContextDefaultEnableBits(int mask, int bits);
-void sceGmoContextSetEnableBits(int mask, int bits);
-void sceGmoContextDefaultTexOffs(const rect *offs);
-void sceGmoContextDefaultTexCrop(const rect *crop);
-void sceGmoContextDefaultTexTrim(const rect *trim);
-void sceGmoContextSetTexOffs(const rect *offs);
-void sceGmoContextSetTexCrop(const rect *crop);
-void sceGmoContextSetTexTrim(const rect *trim);
-static void activate_enable_bits(int mask, int bits);
-static void activate_tex_crop(void);
+typedef struct SceGmoContext {
+ int m_flags ;
 
-/* SDK functions */
-void sceGuEnable(int state);
-void sceGuDisable(int state);
-void sceGuMaterial(int mode, unsigned int color);
-void sceGuSpecular(float power);
-void sceGuLightMode(int mode);
-void sceGuDepthMask(int mask);
-void sceGuBlendFunc(int op, int src, int dest, unsigned int srcfix, unsigned int destfix);
-void sceGuPixelMask(unsigned int mask);
-void sceGuTexOffset(float u, float v);
-void sceGuTexScale(float u, float v);
-void sceGuTexMapMode(int mode, unsigned int a1, unsigned int a2);
+ SceGmoModel *m_model ;
+ SceGmoBone *m_bone ;
+ SceGmoMaterial *m_material ;
+ SceGmoTexture *m_texture ;
+ int m_layer_index ;
+ int m_layer_state ;
+
+ int m_default_mask ;
+ int m_default_bits ;
+ int m_current_bits ;
+
+ rect m_default_offs ;
+ rect m_current_offs ;
+ rect m_default_crop ;
+ rect m_current_crop ;
+ rect m_default_trim ;
+ rect m_current_trim ;
+} SceGmoContext ;
 
 extern SceGmoContext g_context;
-void sceGmoBoneActivate(SceGmoBone *bone, SceGmoModel *model, const int *indices, int n_indices);
-int sceGmoMaterialActivate(SceGmoMaterial *material, SceGmoModel *model, int idx);
-void sceGmoTextureActivate(SceGmoTexture *texture, SceGmoModel *model);
 
-void sceGmoContextBegin(void)
+enum {
+ TEX_OFFS_ACTIVE = 0x00000001,
+ TEX_CROP_ACTIVE = 0x00000002,
+ TEX_TRIM_ACTIVE = 0x00000004,
+} ;
+
+void sceGmoContextBegin()
 {
-	SceGmoContext *c = &g_context;
+ SceGmoContext *c = &g_context ;
+ c->m_flags = TEX_OFFS_ACTIVE | TEX_CROP_ACTIVE | TEX_TRIM_ACTIVE ;
 
-	c->m_flags = 7;
-	c->m_model = (SceGmoModel *)-1;
-	c->m_bone = (SceGmoBone *)-1;
-	c->m_material = (SceGmoMaterial *)-1;
-	c->m_texture = (SceGmoTexture *)-1;
-	c->m_layer_index = 0;
-	c->m_layer_state = 0;
-	c->m_default_mask = 0;
-	c->m_default_bits = 0x1ffff;
-	c->m_current_bits = 0x80000000;
-	c->m_default_offs = g_nocrop;
-	c->m_current_offs = g_nocrop;
-	c->m_default_crop = g_nocrop;
-	c->m_current_crop = g_nocrop;
-	c->m_default_trim = g_nocrop;
-	c->m_current_trim = g_nocrop;
+ c->m_model = (SceGmoModel *)-1 ;
+ c->m_bone = (SceGmoBone *)-1 ;
+ c->m_material = (SceGmoMaterial *)-1 ;
+ c->m_texture = (SceGmoTexture *)-1 ;
+ c->m_layer_index = 0 ;
+ c->m_layer_state = 0 ;
+
+ c->m_default_mask = 0 ;
+ c->m_default_bits = SCEGMO_ENABLE_DEFAULT ;
+ c->m_current_bits = SCEGMO_ENABLE_FLUSH ;
+
+ c->m_default_offs = g_nocrop ;
+ c->m_current_offs = g_nocrop ;
+ c->m_default_crop = g_nocrop ;
+ c->m_current_crop = g_nocrop ;
+ c->m_default_trim = g_nocrop ;
+ c->m_current_trim = g_nocrop ;
 }
 
-void sceGmoContextEnd(void)
+void sceGmoContextEnd()
 {
-	SceGmoContext *c = &g_context;
-	int enable;
-	int current;
+ SceGmoContext *c = &g_context ;
 
-	enable = 0x1ffff;
-	current = c->m_current_bits;
-	activate_enable_bits(enable ^ current, enable);
-	sceGuTexOffset(0.0f, 0.0f);
-	sceGuTexScale(1.0f, 1.0f);
-	sceGuMaterial(2, 0xffffffff);
-	sceGuMaterial(1, 0xffffffff);
-	sceGuMaterial(4, 0);
-	sceGuSpecular(0.0f);
-	sceGuBlendFunc(0, 2, 3, 0, 0);
+ int enable = SCEGMO_ENABLE_DEFAULT ;
+ int current = c->m_current_bits ;
+ activate_enable_bits( enable ^ current, enable ) ;
+
+ sceGuTexOffset( 0, 0 ) ;
+ sceGuTexScale( 1, 1 ) ;
+
+ sceGuMaterial( 2, 0xffffffff ) ;
+ sceGuMaterial( 1, 0xffffffff ) ;
+ sceGuMaterial( 4, 0x00000000 ) ;
+ sceGuSpecular( 0.0f ) ;
+ sceGuBlendFunc( 0, 2, 3, 0, 0 ) ;
 }
 
-void sceGmoContextSetBone(SceGmoBone *bone, SceGmoModel *model, const int *indices, int n_indices)
+void sceGmoContextSetBone( SceGmoBone *bone, SceGmoModel *model, const int *indices, int n_indices )
 {
-	SceGmoContext *c = &g_context;
-
-	if (n_indices == 0) {
-		if (c->m_bone == bone && c->m_model == model)
-			return;
-		c->m_model = model;
-		c->m_bone = bone;
-	} else {
-		c->m_bone = NULL;
-	}
-	sceGmoBoneActivate(bone, model, indices, n_indices);
+ SceGmoContext *c = &g_context ;
+ if ( n_indices == 0 ) {
+  if ( c->m_bone == bone && c->m_model == model ) return ;
+  c->m_model = model ;
+  c->m_bone = bone ;
+ } else {
+  c->m_bone = 0 ;
+ }
+ sceGmoBoneActivate( bone, model, indices, n_indices ) ;
 }
 
-int sceGmoContextSetMaterial(SceGmoMaterial *material, SceGmoModel *model, int idx)
+int sceGmoContextSetMaterial( SceGmoMaterial *material, SceGmoModel *model, int index )
 {
-	SceGmoContext *c = &g_context;
-
-	if (c->m_material != material || c->m_layer_index != idx || c->m_model != model) {
-		c->m_model = model;
-		c->m_material = material;
-		c->m_layer_index = idx;
-		c->m_layer_state = sceGmoMaterialActivate(material, model, idx);
-	}
-	return c->m_layer_state;
+ SceGmoContext *c = &g_context ;
+ if ( c->m_material != material || c->m_layer_index != index || c->m_model != model ) {
+  c->m_model = model ;
+  c->m_material = material ;
+  c->m_layer_index = index ;
+  c->m_layer_state = sceGmoMaterialActivate( material, model, index ) ;
+ }
+ return c->m_layer_state ;
 }
 
-void sceGmoContextSetTexture(SceGmoTexture *texture, SceGmoModel *model)
+void sceGmoContextSetTexture( SceGmoTexture *texture, SceGmoModel *model )
 {
-	SceGmoContext *c = &g_context;
-
-	if (c->m_texture == texture && c->m_model == model)
-		return;
-	{
-		int enable;
-		int change;
-
-		enable = (texture == NULL) ? 0 : 4;
-		c->m_model = model;
-		c->m_texture = texture;
-		if (c->m_default_mask & 4)
-			c->m_default_bits = (c->m_default_bits & ~4) | enable;
-		change = c->m_current_bits ^ enable;
-		if (change & 0x80000004)
-			sceGmoContextSetEnableBits(4, enable);
-		sceGmoTextureActivate(texture, model);
-	}
+ SceGmoContext *c = &g_context ;
+ if ( c->m_texture != texture || c->m_model != model ) {
+  c->m_model = model ;
+  c->m_texture = texture ;
+  int enable = ( texture == 0 ) ? 0 : SCEGMO_ENABLE_TEXTURE ;
+  if ( c->m_default_mask & SCEGMO_ENABLE_TEXTURE ) {
+   c->m_default_bits &= ~SCEGMO_ENABLE_TEXTURE ;
+   c->m_default_bits |= enable ;
+  }
+  int change = c->m_current_bits ^ enable ;
+  if ( change & ( SCEGMO_ENABLE_TEXTURE | SCEGMO_ENABLE_FLUSH ) ) {
+   sceGmoContextSetEnableBits( SCEGMO_ENABLE_TEXTURE, enable ) ;
+  }
+  sceGmoTextureActivate( texture, model ) ;
+ }
 }
 
-#ifdef NON_MATCHING
-/* v0/v1 swap between the &g_context address and the 0x10000 constant */
-void sceGmoContextDefaultEnableBits(int mask, int bits)
+void sceGmoContextDefaultEnableBits( int mask, int bits )
 {
-	SceGmoContext *c = &g_context;
-
-	c->m_default_mask = ~((mask & 0xffff) | 0x80000000);
-	c->m_default_bits = (bits & 0xffff) | 0x10000;
-}
-#else
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_model/nonmatchings/gmo_context", sceGmoContextDefaultEnableBits);
-#endif
-
-void sceGmoContextSetEnableBits(int mask, int bits)
-{
-	SceGmoContext *c = &g_context;
-	int enable;
-	int current;
-	int change;
-
-	mask &= c->m_default_mask;
-	enable = c->m_default_bits;
-	enable = (~mask & enable) | (mask & bits);
-	current = c->m_current_bits;
-	change = enable ^ current;
-	if (change != 0) {
-		if (current < 0)
-			change = -1;
-		activate_enable_bits(change, enable);
-		c->m_current_bits = enable;
-	}
+ SceGmoContext *c = &g_context ;
+ mask &= ~SCEGMO_ENABLE_PRIVATE ;
+ bits &= ~SCEGMO_ENABLE_PRIVATE ;
+ mask |= SCEGMO_ENABLE_FLUSH ;
+ bits |= ( SCEGMO_ENABLE_PRIVATE & SCEGMO_ENABLE_DEFAULT ) ;
+ c->m_default_mask = ~mask ;
+ c->m_default_bits = bits ;
 }
 
-void sceGmoContextDefaultTexOffs(const rect *offs)
+void sceGmoContextSetEnableBits( int mask, int bits )
 {
-	if (offs == NULL)
-		offs = &g_nocrop;
-	g_context.m_default_offs = *offs;
+ SceGmoContext *c = &g_context ;
+ mask &= c->m_default_mask ;
+ int enable = c->m_default_bits ;
+ int current = c->m_current_bits ;
+ enable = ( ~mask & enable ) | ( mask & bits ) ;
+ int change = enable ^ current ;
+ if ( change != 0 ) {
+  if ( current & SCEGMO_ENABLE_FLUSH ) change = -1 ;
+  activate_enable_bits( change, enable ) ;
+  c->m_current_bits = enable ;
+ }
 }
 
-void sceGmoContextDefaultTexCrop(const rect *crop)
+void sceGmoContextDefaultTexOffs( const rect *offs )
 {
-	if (crop == NULL)
-		crop = &g_nocrop;
-	g_context.m_default_crop = *crop;
+ if ( offs == 0 ) offs = &g_nocrop ;
+ g_context.m_default_offs = *offs ;
 }
 
-void sceGmoContextDefaultTexTrim(const rect *trim)
+void sceGmoContextDefaultTexCrop( const rect *crop )
 {
-	if (trim == NULL)
-		trim = &g_nocrop;
-	g_context.m_default_trim = *trim;
+ if ( crop == 0 ) crop = &g_nocrop ;
+ g_context.m_default_crop = *crop ;
 }
 
-void sceGmoContextSetTexOffs(const rect *offs)
+void sceGmoContextDefaultTexTrim( const rect *trim )
 {
-	SceGmoContext *c = &g_context;
-
-	if (offs == NULL) {
-		if (!(c->m_flags & 1))
-			return;
-		c->m_flags &= ~1;
-	} else {
-		c->m_current_offs = *offs;
-		c->m_flags |= 1;
-	}
-	activate_tex_crop();
+ if ( trim == 0 ) trim = &g_nocrop ;
+ g_context.m_default_trim = *trim ;
 }
 
-void sceGmoContextSetTexCrop(const rect *crop)
+void sceGmoContextSetTexOffs( const rect *offs )
 {
-	SceGmoContext *c = &g_context;
-
-	if (crop == NULL) {
-		if (!(c->m_flags & 2))
-			return;
-		c->m_flags &= ~2;
-	} else {
-		c->m_current_crop = *crop;
-		c->m_flags |= 2;
-	}
-	activate_tex_crop();
+ SceGmoContext *c = &g_context ;
+ if ( offs == 0 ) {
+  if ( !( c->m_flags & TEX_OFFS_ACTIVE ) ) return ;
+  c->m_flags &= ~TEX_OFFS_ACTIVE ;
+ } else {
+  c->m_flags |= TEX_OFFS_ACTIVE ;
+  c->m_current_offs = *offs ;
+ }
+ activate_tex_crop() ;
 }
 
-void sceGmoContextSetTexTrim(const rect *trim)
+void sceGmoContextSetTexCrop( const rect *crop )
 {
-	SceGmoContext *c = &g_context;
-
-	if (trim == NULL) {
-		if (!(c->m_flags & 4))
-			return;
-		c->m_flags &= ~4;
-	} else {
-		c->m_current_trim = *trim;
-		c->m_flags |= 4;
-	}
-	activate_tex_crop();
+ SceGmoContext *c = &g_context ;
+ if ( crop == 0 ) {
+  if ( !( c->m_flags & TEX_CROP_ACTIVE ) ) return ;
+  c->m_flags &= ~TEX_CROP_ACTIVE ;
+ } else {
+  c->m_flags |= TEX_CROP_ACTIVE ;
+  c->m_current_crop = *crop ;
+ }
+ activate_tex_crop() ;
 }
 
-static void activate_enable_bits(int mask, int bits)
+void sceGmoContextSetTexTrim( const rect *trim )
 {
-	if (mask & 0x01) {
-		if (bits & 0x01)
-			sceGuEnable(10);
-		else
-			sceGuDisable(10);
-	}
-	if (mask & 0x02) {
-		if (bits & 0x02)
-			sceGuEnable(7);
-		else
-			sceGuDisable(7);
-	}
-	if (mask & 0x04) {
-		if (bits & 0x04)
-			sceGuEnable(9);
-		else
-			sceGuDisable(9);
-	}
-	if (mask & 0x08) {
-		if (bits & 0x08)
-			sceGuEnable(5);
-		else
-			sceGuDisable(5);
-	}
-	if (mask & 0x10) {
-		if (bits & 0x10)
-			sceGuEnable(1);
-		else
-			sceGuDisable(1);
-	}
-	if (mask & 0x20) {
-		int depth_mask = (bits & 0x20) ? 0 : 1;
-		sceGuDepthMask(depth_mask);
-	}
-	if (mask & 0x40) {
-		if (bits & 0x40)
-			sceGuEnable(0);
-		else
-			sceGuDisable(0);
-	}
-	if (mask & 0x80) {
-		unsigned int alpha_mask = (bits & 0x80) ? 0 : 0xff000000;
-		sceGuPixelMask(alpha_mask);
-	}
-	if (mask & 0x10000) {
-		if (bits & 0x10000)
-			sceGuLightMode(1);
-		else
-			sceGuLightMode(0);
-	}
-	if (mask & 0x20000) {
-		if (bits & 0x20000)
-			sceGuTexMapMode(2, 2, 3);
-		else
-			sceGuTexMapMode(0, 0, 0);
-	}
+ SceGmoContext *c = &g_context ;
+ if ( trim == 0 ) {
+  if ( !( c->m_flags & TEX_TRIM_ACTIVE ) ) return ;
+  c->m_flags &= ~TEX_TRIM_ACTIVE ;
+ } else {
+  c->m_flags |= TEX_TRIM_ACTIVE ;
+  c->m_current_trim = *trim ;
+ }
+ activate_tex_crop() ;
 }
 
-static void activate_tex_crop(void)
+void activate_enable_bits( int mask, int bits )
 {
-	SceGmoContext *c = &g_context;
-	int state;
-	rect *offs;
-	rect *crop;
-	rect *trim;
-	float wc;
-	float hc;
-	float wt;
-	float ht;
+ if ( mask & SCEGMO_ENABLE_LIGHTING ) {
+  if ( bits & SCEGMO_ENABLE_LIGHTING ) {
+   sceGuEnable( 10 ) ;
+  } else {
+   sceGuDisable( 10 ) ;
+  }
+ }
+ if ( mask & SCEGMO_ENABLE_FOG ) {
+  if ( bits & SCEGMO_ENABLE_FOG ) {
+   sceGuEnable( 7 ) ;
+  } else {
+   sceGuDisable( 7 ) ;
+  }
+ }
+ if ( mask & SCEGMO_ENABLE_TEXTURE ) {
+  if ( bits & SCEGMO_ENABLE_TEXTURE ) {
+   sceGuEnable( 9 ) ;
+  } else {
+   sceGuDisable( 9 ) ;
+  }
+ }
+ if ( mask & SCEGMO_ENABLE_CULL_FACE ) {
+  if ( bits & SCEGMO_ENABLE_CULL_FACE ) {
+   sceGuEnable( 5 ) ;
+  } else {
+   sceGuDisable( 5 ) ;
+  }
+ }
+ if ( mask & SCEGMO_ENABLE_DEPTH_TEST ) {
+  if ( bits & SCEGMO_ENABLE_DEPTH_TEST ) {
+   sceGuEnable( 1 ) ;
+  } else {
+   sceGuDisable( 1 ) ;
+  }
+ }
+ if ( mask & SCEGMO_ENABLE_DEPTH_MASK ) {
+  int mask = ( bits & SCEGMO_ENABLE_DEPTH_MASK ) ? 0 : 1 ;
+  sceGuDepthMask( mask ) ;
+ }
+ if ( mask & SCEGMO_ENABLE_ALPHA_TEST ) {
+  if ( bits & SCEGMO_ENABLE_ALPHA_TEST ) {
+   sceGuEnable( 0 ) ;
+  } else {
+   sceGuDisable( 0 ) ;
+  }
+ }
+ if ( mask & SCEGMO_ENABLE_ALPHA_MASK ) {
+  int mask = ( bits & SCEGMO_ENABLE_ALPHA_MASK ) ? 0 : 0xff000000 ;
+  sceGuPixelMask( mask ) ;
+ }
+ if ( mask & SCEGMO_ENABLE_SEPARATE_SPECULAR ) {
+  if ( bits & SCEGMO_ENABLE_SEPARATE_SPECULAR ) {
+   sceGuLightMode( 1 ) ;
+  } else {
+   sceGuLightMode( 0 ) ;
+  }
+ }
+ if ( mask & SCEGMO_ENABLE_SHADE_MAP ) {
+  if ( bits & SCEGMO_ENABLE_SHADE_MAP ) {
+   sceGuTexMapMode( 2, 2, 3 ) ;
+  } else {
+   sceGuTexMapMode( 0, 0, 0 ) ;
+  }
+ }
+}
 
-	state = c->m_flags;
-	offs = (state & 1) ? &c->m_current_offs : &c->m_default_offs;
-	crop = (state & 2) ? &c->m_current_crop : &c->m_default_crop;
-	trim = (state & 4) ? &c->m_current_trim : &c->m_default_trim;
-	wc = crop->w;
-	hc = crop->h;
-	wt = trim->w;
-	ht = trim->h;
-	sceGuTexScale(offs->w * wc * wt, offs->h * hc * ht);
-	sceGuTexOffset((offs->x * wc + crop->x) * wt + trim->x, (offs->y * hc + crop->y) * ht + trim->y);
+void activate_tex_crop()
+{
+ SceGmoContext *c = &g_context ;
+ int state = c->m_flags ;
+ rect *offs = ( state & TEX_OFFS_ACTIVE ) ? &( c->m_current_offs ) : &( c->m_default_offs ) ;
+ rect *crop = ( state & TEX_CROP_ACTIVE ) ? &( c->m_current_crop ) : &( c->m_default_crop ) ;
+ rect *trim = ( state & TEX_TRIM_ACTIVE ) ? &( c->m_current_trim ) : &( c->m_default_trim ) ;
+
+ float wc = crop->w ;
+ float hc = crop->h ;
+ float wt = trim->w ;
+ float ht = trim->h ;
+ sceGuTexScale( offs->w * wc * wt, offs->h * hc * ht ) ;
+ sceGuTexOffset( ( offs->x * wc + crop->x ) * wt + trim->x,
+   ( offs->y * hc + crop->y ) * ht + trim->y ) ;
 }

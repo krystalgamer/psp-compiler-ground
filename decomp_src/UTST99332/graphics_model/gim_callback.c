@@ -1,58 +1,49 @@
-#include "common.h"
-
-/* declarations recovered from DWARF */
-typedef unsigned int size_t;
-
-extern void *(*g_alloc_memory)(size_t);
-extern void (*g_free_memory)(void *);
-extern void *(*g_alloc_memory2)(size_t);
-extern void (*g_free_memory2)(void *);
-
-void sceGimPictureSetMemoryManager(void *(*alloc_func)(size_t), void (*free_func)(void *));
-void sceGimPictureSetMemoryManager2(void *(*alloc_func)(size_t), void (*free_func)(void *));
-void *sceGimPictureAllocMemory(size_t size);
-void *sceGimPictureAllocMemory2(size_t size);
-void sceGimPictureFreeMemory(void *addr);
-void sceGimPictureFreeMemory2(void *addr);
-
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_model/nonmatchings/gim_callback", sceGimPictureSetMemoryManager);
-
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_model/nonmatchings/gim_callback", sceGimPictureSetMemoryManager2);
-
-extern __typeof__(g_alloc_memory) g_alloc_memory_341E4;
+/* SDK gim_picture library: devkit 0.6.0's src/gim_picture/gim_callback.c, preprocessed (macros expanded) */
+#include "gim_private.h"
 #define g_alloc_memory g_alloc_memory_341E4
-void *sceGimPictureAllocMemory(size_t size)
-{
-	if (size == 0)
-		return NULL;
-	return g_alloc_memory(size);
-}
-#undef g_alloc_memory
-
-extern __typeof__(g_alloc_memory2) g_alloc_memory2_341EC;
 #define g_alloc_memory2 g_alloc_memory2_341EC
-void *sceGimPictureAllocMemory2(size_t size)
-{
-	if (size == 0)
-		return NULL;
-	return g_alloc_memory2(size);
-}
-#undef g_alloc_memory2
-
-extern __typeof__(g_free_memory) g_free_memory_341E8;
 #define g_free_memory g_free_memory_341E8
-void sceGimPictureFreeMemory(void *addr) {
-    if (addr != NULL) {
-        g_free_memory(addr);
-    }
-}
-#undef g_free_memory
-
-extern __typeof__(g_free_memory2) g_free_memory2_341F0;
 #define g_free_memory2 g_free_memory2_341F0
-void sceGimPictureFreeMemory2(void *addr) {
-    if (addr != NULL) {
-        g_free_memory2(addr);
-    }
+
+extern void *(*g_alloc_memory)( size_t size );
+extern void (*g_free_memory)( void *addr );
+extern void *(*g_alloc_memory2)( size_t size );
+extern void (*g_free_memory2)( void *addr );
+
+void sceGimPictureSetMemoryManager( void *(*alloc_func)( size_t size ), void (*free_func)( void *addr ) )
+{
+ if ( alloc_func == 0 ) alloc_func = malloc ;
+ if ( free_func == 0 ) free_func = free ;
+ g_alloc_memory = alloc_func ;
+ g_free_memory = free_func ;
+ g_alloc_memory2 = alloc_func ;
+ g_free_memory2 = free_func ;
 }
-#undef g_free_memory2
+
+void sceGimPictureSetMemoryManager2( void *(*alloc_func)( size_t size ), void (*free_func)( void *addr ) )
+{
+ if ( alloc_func == 0 ) alloc_func = malloc ;
+ if ( free_func == 0 ) free_func = free ;
+ g_alloc_memory2 = alloc_func ;
+ g_free_memory2 = free_func ;
+}
+
+void *sceGimPictureAllocMemory( size_t size )
+{
+ return ( size == 0 ) ? 0 : g_alloc_memory( size ) ;
+}
+
+void *sceGimPictureAllocMemory2( size_t size )
+{
+ return ( size == 0 ) ? 0 : g_alloc_memory2( size ) ;
+}
+
+void sceGimPictureFreeMemory( void *addr )
+{
+ if ( addr != 0 ) g_free_memory( addr ) ;
+}
+
+void sceGimPictureFreeMemory2( void *addr )
+{
+ if ( addr != 0 ) g_free_memory2( addr ) ;
+}
