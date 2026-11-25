@@ -1,3 +1,5 @@
-#include "common.h"
-
-INCLUDE_ASM("tmp/asm/UTST99332/sound_starmix/nonmatchings/libgcc/dp-bit/__eqdf2", __eqdf2);
+/* upstream: libgcc dp-bit.c (_eq_df.o), tree: 1.6.1 */
+/* cflags: -O2 */
+#define FINE_GRAINED_LIBRARIES
+#define L_eq_df
+#include "dp-bit.c"

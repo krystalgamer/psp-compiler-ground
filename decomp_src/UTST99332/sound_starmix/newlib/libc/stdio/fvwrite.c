@@ -1,3 +1,3 @@
-#include "common.h"
-
-INCLUDE_ASM("tmp/asm/UTST99332/sound_starmix/nonmatchings/newlib/libc/stdio/fvwrite", __sfvwrite);
+/* upstream: newlib-1.12.0/newlib/libc/stdio/fvwrite.c (unmodified) */
+/* cflags: -O2 -fno-builtin */
+#include "libc/stdio/fvwrite.c"
