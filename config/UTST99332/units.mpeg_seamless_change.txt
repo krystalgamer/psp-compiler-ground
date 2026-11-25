@@ -11,6 +11,8 @@ control                                      1.6.1.internal  control.c
 parsePsmf                                    1.6.1.internal  parsePsmf.c
 strfile                                      1.6.1.internal  strfile.c
 menu                                         1.6.1.internal  menu.c
+libwave                                      1.6.1.internal  libwave.c
+kernel_bridge                                1.6.1.internal  kernel_bridge.c
 newlib/libc/stdlib/atexit                    1.6.1.internal  ../../../../../newlib-1.12.0/newlib/libc/stdlib/atexit.c
 newlib/libc/stdlib/exit                      1.6.1.internal  ../../../../../newlib-1.12.0/newlib/libc/stdlib/exit.c
 newlib/libc/stdlib/malign                    1.6.1.internal  ../../../../../newlib-1.12.0/newlib/libc/stdlib/malign.c
