@@ -52,7 +52,15 @@ segments:
     start: 0x80
     vram: 0x0
     subsegments:
-      - [0x80, c, pspnet_adhoc]
+      - [0x80, c, adhoc]
+      - [0xDBC, c, socket]
+      - [0x1128, c, pdp_api]
+      - [0x2188, c, pdp]
+      - [0x2D5C, c, ptp_api]
+      - [0x48BC, c, ptp]
+      - [0x677C, c, gamemode]
+      - [0x6DDC, c, module]
+      - [0x6DEC, c, libc_mem]
       - { start: 0x6FC4, type: asm, name: sceStub, linker_section: .sceStub.text }
       - { start: 0x70D4, type: prxpad, order: .text }
       - { start: 0x70E0, type: rodata, name: lib_ent_top, linker_section: .lib.ent.top }
@@ -64,7 +72,8 @@ segments:
       - { start: 0x7184, type: rodata, name: module_info, linker_section: .rodata.sceModuleInfo }
       - { start: 0x71B8, type: rodata, name: resident, linker_section: .rodata.sceResident }
       - { start: 0x7334, type: rodata, name: nid, linker_section: .rodata.sceNid }
-      - [0x73BC, .rodata, pspnet_adhoc]
+      - [0x73BC, rodata, asm/rodata_733C]
+      - [0x73D4, .rodata, ptp]
   - [0x7464, bin, seg1_align]
   - name: pspnet_adhoc_seg1
     type: code

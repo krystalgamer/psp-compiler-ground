@@ -1,2 +1,12 @@
-# Stripped module: one unit for all of .text until object boundaries are known.
-0x00000 pspnet_adhoc     1.5.1.internal  pspnet_adhoc.c
+# Stripped module: .comment lists 12 C objects. No strings; boundaries guessed from
+# .bss usage order (statics 0x7400.. per object), API/protocol groups and libc helpers.
+# (a 12th object probably holds only the const ether addresses at .rodata start)
+0x00000 adhoc            1.5.1.internal  adhoc.c
+0x00D3C socket           1.5.1.internal  socket.c
+0x010A8 pdp_api          1.5.1.internal  pdp_api.c
+0x02108 pdp              1.5.1.internal  pdp.c
+0x02CDC ptp_api          1.5.1.internal  ptp_api.c
+0x0483C ptp              1.5.1.internal  ptp.c
+0x066FC gamemode         1.5.1.internal  gamemode.c
+0x06D5C module           1.5.1.internal  module.c
+0x06D6C libc_mem         1.5.1.internal  libc_mem.c

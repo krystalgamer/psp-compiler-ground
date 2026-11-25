@@ -1,2 +1,10 @@
 # unit                                     compiler        source
-pspnet_adhoc                                 1.5.1.internal  pspnet_adhoc.c
+adhoc                                        1.5.1.internal  adhoc.c
+socket                                       1.5.1.internal  socket.c
+pdp_api                                      1.5.1.internal  pdp_api.c
+pdp                                          1.5.1.internal  pdp.c
+ptp_api                                      1.5.1.internal  ptp_api.c
+ptp                                          1.5.1.internal  ptp.c
+gamemode                                     1.5.1.internal  gamemode.c
+module                                       1.5.1.internal  module.c
+libc_mem                                     1.5.1.internal  libc_mem.c
