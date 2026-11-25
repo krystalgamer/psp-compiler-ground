@@ -169,7 +169,13 @@ SceGimImageHeader *sceGimPictureGetPalette(SceGimPicture *picture) {
     return var_v0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/gim_picture/gim_picture", sceGimPictureSetFrameLoop);
+void sceGimPictureSetFrameLoop(SceGimPicture *picture, float start, float end)
+{
+	if (picture == NULL)
+		return;
+	picture->m_frame_loop[0] = start;
+	picture->m_frame_loop[1] = end;
+}
 
 float *sceGimPictureGetFrameLoop(SceGimPicture *picture) {
     return (picture == NULL) ? NULL : picture->m_frame_loop;
