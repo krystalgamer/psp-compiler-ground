@@ -8,6 +8,7 @@ typedef struct {
 	u32 hi;
 } Q64;
 
+
 typedef struct {
 	int mode;
 	int unk4;
@@ -21,6 +22,12 @@ extern int D_00002880;
 extern u64 D_00002888;
 extern u8 D_000028C0[0x20];
 extern int D_000028E0;
+extern u8 D_00002900[0x40];
+extern u8 D_00002940[0xC0];
+extern u8 D_00002A00[];
+extern u8 D_00002B80[];
+extern u8 *D_00002870;
+extern u8 *D_00002874;
 
 int sceUtilsBufferCopyWithRange(void *out, int outsize, void *in, int insize, int cmd);
 int sceIdStorageLookup(int key, int offset, void *buf, int len);

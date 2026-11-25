@@ -157,7 +157,32 @@ end:
 	return ret;
 }
 
-INCLUDE_ASM("tmp/asm/tony_libs/memab/nonmatchings/memab", sceMemab_driver_A4720EED);
+int sceMemab_driver_A4720EED(u8 *arg0, u8 *out)
+{
+	int ret = -0x109;
+
+	if (sceKernelWaitSema(D_000028E0, 1, 0) != 0)
+		goto end;
+	ret = -0x200;
+	if (D_00002880 == 0)
+		goto end;
+	ret = func_0000026C(D_00002940);
+	if (ret != 0)
+		goto end;
+	ret = -0x100;
+	if (sceUtilsBufferCopyWithRange(D_00002900, 0x3C, 0, 0, 0xC) != 0)
+		goto end;
+	func_00000000(arg0, D_00002900, 0x3C, D_00002940, 0x10, 0, 0, 0, 0);
+	ret = func_000002F8((KirkHeader *)D_00002B80, 2, D_00002900 + 0x14, 0x28, D_00002940, 0x60, 0, 0, 0, 0, 0, 0, 0, 0);
+	if (ret != 0)
+		goto end;
+	MEMCPY(out, D_00002874 + 0x14, 0xA0);
+	ret = 0;
+end:
+	if (sceKernelSignalSema(D_000028E0, 1) != 0)
+		ret = -0x109;
+	return ret;
+}
 
 INCLUDE_ASM("tmp/asm/tony_libs/memab/nonmatchings/memab", sceMemab_driver_DC598EF3);
 
