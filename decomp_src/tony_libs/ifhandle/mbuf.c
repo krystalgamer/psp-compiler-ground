@@ -115,7 +115,34 @@ struct mbuf *sceNetMFree(struct mbuf *m)
 
 INCLUDE_ASM("tmp/asm/tony_libs/ifhandle/nonmatchings/mbuf", sceNetMFreem);
 
-INCLUDE_ASM("tmp/asm/tony_libs/ifhandle/nonmatchings/mbuf", sceNetMPrepend);
+struct mbuf *sceNetMPrepend(struct mbuf *m, int len, int how)
+{
+	struct mbuf *mn;
+	unsigned int oldk1;
+
+	K1_SAVE(oldk1);
+	if (m == 0 || (K1_USER() && (int)m < 0))
+		goto fail;
+	MGET(mn, how, m->m_type);
+	if (mn == 0) {
+		sceNetMFreem(m);
+		goto fail;
+	}
+	if (m->m_flags & M_PKTHDR) {
+		M_COPY_PKTHDR(mn, m);
+		m->m_flags &= ~M_PKTHDR;
+	}
+	mn->m_next = m;
+	m = mn;
+	if (len < MHLEN)
+		MH_ALIGN(m, len);
+	m->m_len = len;
+	K1_RESTORE(oldk1);
+	return m;
+fail:
+	K1_RESTORE(oldk1);
+	return 0;
+}
 
 INCLUDE_ASM("tmp/asm/tony_libs/ifhandle/nonmatchings/mbuf", sceNetMCopypacket);
 
@@ -214,7 +241,26 @@ struct mbuf *sceNetMDup(struct mbuf *m, int off, int len, int wait)
 
 INCLUDE_ASM("tmp/asm/tony_libs/ifhandle/nonmatchings/mbuf", sceNetMCat);
 
-INCLUDE_ASM("tmp/asm/tony_libs/ifhandle/nonmatchings/mbuf", sceNetIfhandle_lib_5FB31C72);
+int sceNetIfhandle_lib_5FB31C72(int *a, int *b, int *c, int *d)
+{
+	unsigned int oldk1;
+
+	K1_SAVE(oldk1);
+	if ((a && !k1ok(a)) || (b && !k1ok(b)) || (c && !k1ok(c)) || (d && !k1ok(d))) {
+		K1_RESTORE(oldk1);
+		return 0x80410003;
+	}
+	if (a)
+		*a = D_000043C8;
+	if (b)
+		*b = D_000043CC;
+	if (c)
+		*c = D_000043D0;
+	if (d)
+		*d = D_000043D4;
+	K1_RESTORE(oldk1);
+	return 0;
+}
 
 int sceNetIfhandle_lib_62B20015(int a, int b, int c, int d)
 {

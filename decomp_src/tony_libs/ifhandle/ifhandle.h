@@ -26,8 +26,8 @@ extern int D_00003B2C;
 
 
 #define MSIZE 256
-#define MLEN (MSIZE - 0x14)
-#define MHLEN (MLEN - 0x1C)
+#define MLEN (MSIZE - sizeof(struct m_hdr))
+#define MHLEN (MLEN - sizeof(struct pkthdr))
 
 #define M_EXT 0x0001
 #define M_PKTHDR 0x0002
@@ -56,13 +56,17 @@ struct m_ext {
 	struct mbuf *ext_prevref;
 };
 
+struct m_hdr {
+	struct mbuf *mh_next;
+	struct mbuf *mh_nextpkt;
+	char *mh_data;
+	int mh_len;
+	short mh_type;
+	unsigned short mh_flags;
+};
+
 struct mbuf {
-	struct mbuf *m_next;
-	struct mbuf *m_nextpkt;
-	char *m_data;
-	int m_len;
-	short m_type;
-	unsigned short m_flags;
+	struct m_hdr m_hdr;
 	union {
 		struct {
 			struct pkthdr MH_pkthdr;
@@ -75,10 +79,53 @@ struct mbuf {
 	} M_dat;
 };
 
+#define m_next m_hdr.mh_next
+#define m_len m_hdr.mh_len
+#define m_data m_hdr.mh_data
+#define m_type m_hdr.mh_type
+#define m_flags m_hdr.mh_flags
+#define m_nextpkt m_hdr.mh_nextpkt
+
 #define m_pkthdr M_dat.MH.MH_pkthdr
 #define m_ext M_dat.MH.MH_dat.MH_ext
 #define m_pktdat M_dat.MH.MH_dat.MH_databuf
 #define m_dat M_dat.M_databuf
+
+#define mtod(m, t) ((t)((m)->m_data))
+
+#define MGET(m, how, type) \
+	do { \
+		(m) = sceNetMallocInternal(MSIZE); \
+		if (m) { \
+			(m)->m_type = (type); \
+			(m)->m_data = (m)->m_dat; \
+			(m)->m_next = 0; \
+			(m)->m_nextpkt = 0; \
+			(m)->m_flags = 0; \
+		} \
+	} while (0)
+
+#define M_COPYFLAGS (~(M_EXT | M_CLUSTER))
+
+#define M_COPY_PKTHDR(to, from) \
+	do { \
+		(to)->m_pkthdr = (from)->m_pkthdr; \
+		(from)->m_pkthdr.aux = 0; \
+		(to)->m_flags = (from)->m_flags & M_COPYFLAGS; \
+		(to)->m_data = (to)->m_pktdat; \
+	} while (0)
+
+#define MH_ALIGN(m, len) \
+	do { \
+		(m)->m_data += (MHLEN - (len)) & ~(sizeof(long) - 1); \
+	} while (0)
+
+static inline int k1ok(const void *p)
+{
+	if (!K1_USER())
+		return 1;
+	return ((unsigned int)p >> 31) ^ 1;
+}
 
 void *sceNetMallocInternal(unsigned int size);
 void sceNetFreeInternal(void *p);
