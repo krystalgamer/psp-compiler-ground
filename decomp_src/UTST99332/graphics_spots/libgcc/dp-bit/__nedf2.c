@@ -1,3 +1,5 @@
-#include "common.h"
-
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_spots/nonmatchings/libgcc/dp-bit/__nedf2", __nedf2);
+/* upstream: libgcc dp-bit.c (_ne_df.o), tree: 1.6.1 */
+/* cflags: -O2 */
+#define FINE_GRAINED_LIBRARIES
+#define L_ne_df
+#include "dp-bit.c"
