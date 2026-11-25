@@ -6,7 +6,15 @@
 #include "netmgr_types.h"
 #include <libhttp.h>
 
-int sceHttpEnd(void);
+int sceNetInit(int poolsize, int calloutprio, int calloutstack, int netintrprio, int netintrstack);
+int sceNetInetInit(void);
+int sceNetResolverInit(void);
+int sceNetApctlInit(int stackSize, int initPriority);
+int sceNetApctlAddHandler(void (*handler)(int, int, int, int, void *), void *arg);
+int sceNetApDialogDummyInit(void);
+int sceNetApDialogDummyConnect(struct SceNetApDialogDummyParam *param);
+int sceNetApDialogDummyGetState(struct SceNetApDialogDummyStateInfo *info);
+int sceNetApctlGetInfo(int code, union SceNetApctlInfo *info);
 int sceKernelGetThreadId(void);
 int sceNetFreeThreadinfo(int thid);
 int sceNetApctlDisconnect(void);
@@ -24,6 +32,7 @@ extern int handler_id_1EDF08;
 #define handler_id handler_id_1EDF08
 
 static void apctl_handler(int prev_state, int new_state, int event, int error_code, void *arg);
+static int NetMgrIcyOpenDirect(ICY_PARAM *p);
 #define apctl_handler apctl_handler_A268
 #define NetMgrHttpRewind NetMgrHttpRewind_A56C
 #define SkipBlank SkipBlank_A7D8
@@ -34,7 +43,78 @@ static void apctl_handler(int prev_state, int new_state, int event, int error_co
 		printf("Apctl error happened, error = 0x%x\n", error_code);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mp3/netmgr", NetMgrInit);
+int NetMgrInit(char *ssid)
+{
+	int ret;
+	struct SceNetApDialogDummyStateInfo ap_dialog_dummy_state;
+	struct SceNetApDialogDummyParam ap_dialog_dummy_param;
+	union SceNetApctlInfo apctl_info;
+
+	memset(&ap_dialog_dummy_param, 0, sizeof(ap_dialog_dummy_param));
+	strcpy(ap_dialog_dummy_param.ssid, ssid);
+
+	puts("sceNetInit");
+	ret = sceNetInit(0x20000, 0x22, 0x1000, 0x22, 0x1000);
+	if (ret < 0) {
+		puts("sceNetInit() failed.");
+		return -1;
+	}
+	ret = sceNetInetInit();
+	if (ret < 0) {
+		puts("sceNetInetInit() failed.");
+		return -1;
+	}
+	ret = sceNetResolverInit();
+	if (ret < 0) {
+		puts("sceNetResolverInit() failed.");
+		return -1;
+	}
+	ret = sceNetApctlInit(0x1000, 0x30);
+	if (ret < 0) {
+		printf("sceNetApctlInit() failed. %08x\n", ret);
+		return -1;
+	}
+	ret = sceNetApctlAddHandler(apctl_handler, NULL);
+	if (ret < 0) {
+		puts("sceNetApctlAddHandler() failed.");
+		return -1;
+	}
+	handler_id = ret;
+	ret = sceNetApDialogDummyInit();
+	if (ret < 0) {
+		puts("sceNetApDialogDummyInit() failed.");
+		return -1;
+	}
+	ret = sceNetApDialogDummyConnect(&ap_dialog_dummy_param);
+	if (ret < 0) {
+		if (ret == 0x80410D0C)
+			puts("Wireless LAN switch has been turned off.");
+		puts("sceNetApDialogDummyConnect() failed.");
+		return -1;
+	}
+	for (;;) {
+		ret = sceNetApDialogDummyGetState(&ap_dialog_dummy_state);
+		if (ret == 0 && (ap_dialog_dummy_state.state == 2 || ap_dialog_dummy_state.state == 3))
+			break;
+		sceKernelDelayThread(1000000);
+	}
+	if (ap_dialog_dummy_state.state == 3) {
+		puts("failed to Join or Get IP addr.");
+		return -1;
+	}
+	ret = sceNetApctlGetInfo(8, &apctl_info);
+	if (ret < 0) {
+		puts("sceNetApctlGetInfo() failed. ");
+		return -1;
+	}
+	printf("obtained IP addr: %s\n", apctl_info.ip_address);
+	ret = sceHttpInit(0xA000);
+	if (ret < 0) {
+		printf("sceHttpInit() returns %x\n", ret);
+		return -1;
+	}
+	return 0;
+}
 
 void NetMgrTerm(void)
 {
@@ -252,7 +332,26 @@ static int StrScanStr(char *org, char *tag, char *buf, int buflen)
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mp3/netmgr", NetMgrIcyOpenDirect);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mp3/netmgr", NetMgrIcyOpen);
+int NetMgrIcyOpen(const char *uri, int flag, SceMode mode)
+{
+	ICY_PARAM *p;
+	int ret;
+
+	p = malloc(sizeof(ICY_PARAM));
+	if (p == NULL) {
+		puts("NetMgrIcyOpen: error memory full ");
+		return -1;
+	}
+	memset(p, 0, sizeof(ICY_PARAM));
+	p->uri = strdup(uri);
+	ret = NetMgrIcyOpenDirect(p);
+	if (ret < 0) {
+		free(p->uri);
+		free(p);
+		return -1;
+	}
+	return (int)p;
+}
 
 static int NetMgrIcyCloseDirect(ICY_PARAM *p)
 {
@@ -280,4 +379,7 @@ int NetMgrIcyClose(int fd)
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mp3/netmgr", NetMgrIcyRead);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mp3/netmgr", NetMgrIcySeek);
+SceOff NetMgrIcySeek(int fd, SceOff offset, SceInt32 whence)
+{
+	return 0;
+}
