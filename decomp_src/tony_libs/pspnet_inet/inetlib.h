@@ -1141,7 +1141,7 @@ struct ip {
 	u_int8_t ip_p;
 	u_int16_t ip_sum;
 	struct in_addr ip_src, ip_dst;
-};
+} __attribute__((__packed__));
 
 struct ipovly {
 	u_int8_t ih_x1[9];
@@ -1175,6 +1175,7 @@ int in_cksum(struct mbuf *m, int len);
 #define IN_CLASSB_NET __IPADDR(0xffff0000)
 #define IN_CLASSC_NET __IPADDR(0xffffff00)
 #define IN_LOOPBACKNET 127
+#define IN_LOCAL_GROUP(i) (((u_int32_t)(i) & __IPADDR(0xffffff00)) == __IPADDR(0xe0000000))
 #define IN_CLASSA_NSHIFT 24
 #define in_nullhost(x) ((x).s_addr == INADDR_ANY)
 #define in_hosteq(s, t) ((s).s_addr == (t).s_addr)
@@ -2084,5 +2085,85 @@ void in_purgemkludge(struct ifnet *ifp);
 #define igmp_leavegroup func_0001B50C
 void igmp_joingroup(struct in_multi *inm);
 void igmp_leavegroup(struct in_multi *inm);
+
+/* igmp.h / igmp_var.h */
+struct igmp {
+	u_int8_t igmp_type;
+	u_int8_t igmp_code;
+	u_int16_t igmp_cksum;
+	struct in_addr igmp_group;
+} __attribute__((__packed__));
+#define IGMP_MINLEN 8
+#define IGMP_HOST_MEMBERSHIP_QUERY 0x11
+#define IGMP_v1_HOST_MEMBERSHIP_REPORT 0x12
+#define IGMP_DVMRP 0x13
+#define IGMP_PIM 0x14
+#define IGMP_v2_HOST_MEMBERSHIP_REPORT 0x16
+#define IGMP_HOST_LEAVE_MESSAGE 0x17
+#define IGMP_MTRACE_REPLY 0x1e
+#define IGMP_MTRACE_QUERY 0x1f
+#define IGMP_MAX_HOST_REPORT_DELAY 10
+#define IGMP_TIMER_SCALE 10
+#define IGMP_DELAYING_MEMBER 1
+#define IGMP_IDLE_MEMBER 2
+#define IGMP_LAZY_MEMBER 3
+#define IGMP_SLEEPING_MEMBER 4
+#define IGMP_AWAKENING_MEMBER 5
+#define IGMP_v1_ROUTER 1
+#define IGMP_v2_ROUTER 2
+#define IGMP_AGE_THRESHOLD 540
+struct igmpstat_t {
+	u_quad_t igps_rcv_total;
+	u_quad_t igps_rcv_tooshort;
+	u_quad_t igps_rcv_badsum;
+	u_quad_t igps_rcv_queries;
+	u_quad_t igps_rcv_badqueries;
+	u_quad_t igps_rcv_reports;
+	u_quad_t igps_rcv_badreports;
+	u_quad_t igps_rcv_ourreports;
+	u_quad_t igps_snd_reports;
+};
+#define IGMP_RANDOM_DELAY(X) (sceNetRand() % (X) + 1)
+struct router_info {
+	struct ifnet *rti_ifp;
+	int rti_type;
+	int rti_age;
+	struct router_info *rti_next;
+};
+struct in_multistep {
+	struct in_ifaddr *i_ia;
+	struct in_multi *i_inm;
+};
+#define IN_NEXT_MULTI(step, inm) { \
+	if (((inm) = (step).i_inm) != NULL) \
+		(step).i_inm = (inm)->inm_list.le_next; \
+	else \
+		while ((step).i_ia != NULL) { \
+			(inm) = (step).i_ia->ia_multiaddrs.lh_first; \
+			(step).i_ia = (step).i_ia->ia_list.tqe_next; \
+			if ((inm) != NULL) { \
+				(step).i_inm = (inm)->inm_list.le_next; \
+				break; \
+			} \
+		} \
+}
+#define PR_SLOWHZ 2
+#define PR_FASTHZ 5
+#define IN_FIRST_MULTI(step, inm) { \
+	(step).i_ia = in_ifaddrhead.tqh_first; \
+	(step).i_inm = NULL; \
+	IN_NEXT_MULTI((step), (inm)); \
+}
+#define IPPROTO_IGMP 2
+#define IP_MULTICASTOPTS 0
+#define igmp_input func_0001A5A4
+#define igmp_fasttimo func_0001B084
+#define igmp_sendpkt func_0001B1D0
+#define igmp_init func_0001B398
+#define igmp_slowtimo func_0001B57C
+#define rip_input func_0001B5E8
+#define ip_output func_00016F60
+int ip_output(struct mbuf *m0, ...);
+void rip_input(struct mbuf *m, ...);
 
 #endif
