@@ -58,56 +58,214 @@ void OnPush_Netconf_Adhoc(int selection);
 static void OnCancel_Netconf_Adhoc(int selection);
 
 
-void apctl_handler(int prev_state, int new_state, int event, int error_code, void *arg) {
+#define SCE_UTILITY_COMMON_STATUS_NONE 0
+#define SCE_UTILITY_COMMON_STATUS_INITIALIZE 1
+#define SCE_UTILITY_COMMON_STATUS_RUNNING 2
+#define SCE_UTILITY_COMMON_STATUS_FINISHED 3
+#define SCE_UTILITY_COMMON_STATUS_SHUTDOWN 4
+
+void *memset(void *, int, unsigned int);
+int printf(const char *, ...);
+int GetMessageLang(void);
+int GetAssign(void);
+int sceUtilityNetconfInitStart(SceUtilityNetconfParam *);
+int sceUtilityNetconfGetStatus(void);
+int sceUtilityNetconfUpdate(int);
+int sceUtilityNetconfShutdownStart(void);
+int sceNetAdhocctlGetState(int *);
+int sceNetAdhocctlDisconnect(void);
+int sceNetApctlDelHandler(int);
+int sceNetApctlAddHandler(void (*)(int, int, int, int, void *), void *);
+int sceNetApctlDisconnect(void);
+int init_net(void);
+int term_net(void);
+int init_apnet(void);
+int term_apnet(void);
+int init_adhoc(void);
+int term_adhoc(void);
+void Menu_UnlockInput(void);
+void Menu_LockInput(void);
+void Menu_Show(void);
+void Menu_Hide(void);
+void Menu_ClearItems(void);
+void Menu_AppendItem(const char *name, void (*callback)(int));
+void Menu_SetCancelCallback(void (*callback)(int));
+void Menu_WriteLine(const char *line, int color);
+void CreateMenu_Root(void);
+static void OnPush_Nectonf_ApnetConnect(int selection);
+static void OnPush_Nectonf_ApnetStatus(int selection);
+static void OnPush_Nectonf_ApnetReConnect(int selection);
+static void OnPush_Nectonf_AdhocConnect(int selection);
+
+void apctl_handler(int prev_state, int new_state, int event, int error_code, void *arg)
+{
     if ((new_state == 0) & (event == 5)) {
         disconnected = 1;
     }
 }
 
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/netconf", utility_init_netconf);
+int utility_init_netconf(SceUtilityNetconfType type)
+{
+    int ret;
 
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/netconf", utility_update_netconf);
+    memset(&netconfParam, 0, sizeof(netconfParam));
+    netconfParam.base.size = sizeof(netconfParam);
+    netconfParam.base.message_lang = GetMessageLang();
+    netconfParam.base.ctrl_assign = GetAssign();
+    netconfParam.base.main_thread_priority = 17;
+    netconfParam.base.sub_thread_priority = 19;
+    netconfParam.base.font_thread_priority = 18;
+    netconfParam.base.sound_thread_priority = 16;
+    netconfParam.type = type;
+    memset(netconfAdhocParam.group_name, 0, sizeof(netconfAdhocParam.group_name));
+    netconfAdhocParam.timeout = 0;
+    netconfParam.adhoc_param = &netconfAdhocParam;
+    netconfParam.browser_available = 0;
+    ret = sceUtilityNetconfInitStart(&netconfParam);
+    return ret;
+}
 
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/netconf", OnPush_Netconf_Apnet);
+int utility_update_netconf(void)
+{
+    int ret = 0;
+    int status;
+    int adhocctl_state;
 
-INCLUDE_RODATA("tmp/asm/htmlviewer/htmlviewer/nonmatchings/netconf", D_0001D954);
+    status = sceUtilityNetconfGetStatus();
+    switch (sample_status) {
+    case 0:
+        switch (status) {
+        case SCE_UTILITY_COMMON_STATUS_INITIALIZE:
+            break;
+        case SCE_UTILITY_COMMON_STATUS_RUNNING:
+            Menu_Hide();
+            ret = sceUtilityNetconfUpdate(1);
+            break;
+        case SCE_UTILITY_COMMON_STATUS_NONE:
+            Menu_UnlockInput();
+            Menu_Show();
+            sample_type = 0;
+            break;
+        case SCE_UTILITY_COMMON_STATUS_FINISHED:
+            ret = sceUtilityNetconfShutdownStart();
+            break;
+        case SCE_UTILITY_COMMON_STATUS_SHUTDOWN:
+            break;
+        }
+        break;
+    case 1:
+        if (disconnected > 0) {
+            if (handler_id >= 0) {
+                sceNetApctlDelHandler(handler_id);
+            }
+            handler_id = -1;
+            term_apnet();
+            term_net();
+            Menu_UnlockInput();
+            CreateMenu_Root();
+            sample_type = 0;
+        }
+        break;
+    case 2:
+        sceNetAdhocctlGetState(&adhocctl_state);
+        if (adhocctl_state == 0) {
+            term_adhoc();
+            term_net();
+            Menu_UnlockInput();
+            CreateMenu_Root();
+            sample_type = 0;
+        }
+        break;
+    }
+    return ret;
+}
 
-INCLUDE_RODATA("tmp/asm/htmlviewer/htmlviewer/nonmatchings/netconf", D_0001D960);
+void OnPush_Netconf_Apnet(int selection)
+{
+    int ret;
 
-INCLUDE_RODATA("tmp/asm/htmlviewer/htmlviewer/nonmatchings/netconf", D_0001D96C);
+    Menu_WriteLine("OnPush_Netconf_Apnet", 0x00ffffff);
+    init_net();
+    init_apnet();
+    ret = sceNetApctlAddHandler(apctl_handler, 0);
+    if (ret < 0) {
+        printf("sceNetApctlAddHandler() failed. ret = 0x%x\n", ret);
+        return;
+    }
+    handler_id = ret;
+    Menu_ClearItems();
+    Menu_AppendItem("0 : Connect", OnPush_Nectonf_ApnetConnect);
+    Menu_AppendItem("1 : Status", OnPush_Nectonf_ApnetStatus);
+    Menu_AppendItem("2 : ReConnect", OnPush_Nectonf_ApnetReConnect);
+    Menu_SetCancelCallback(OnCancel_Netconf_Apnet);
+}
 
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/netconf", OnCancel_Netconf_Apnet);
+static void OnCancel_Netconf_Apnet(int selection)
+{
+    Menu_WriteLine("OnCancel_Netconf_Apnet", 0x00ffffff);
+    Menu_LockInput();
+    sample_type = 3;
+    sample_status = 1;
+    Menu_WriteLine("Disconnect apnet", 0x00ffffff);
+    disconnected = 0;
+    sceNetApctlDisconnect();
+}
 
-void OnPush_Nectonf_ApnetConnect(int selection) {
-    Menu_WriteLine("OnPush_Nectonf_ApnetConnect", 0xFFFFFF);
+static void OnPush_Nectonf_ApnetConnect(int selection)
+{
+    Menu_WriteLine("OnPush_Nectonf_ApnetConnect", 0x00ffffff);
     Menu_LockInput();
     sample_type = 3;
     sample_status = 0;
     utility_init_netconf(SCE_UTILITY_NETCONF_TYPE_CONNECT_APNET);
 }
 
-void OnPush_Nectonf_ApnetStatus(int selection) {
-    Menu_WriteLine("OnPush_Nectonf_ApnetStatus", 0xFFFFFF);
+static void OnPush_Nectonf_ApnetStatus(int selection)
+{
+    Menu_WriteLine("OnPush_Nectonf_ApnetStatus", 0x00ffffff);
     Menu_LockInput();
     sample_type = 3;
     sample_status = 0;
     utility_init_netconf(SCE_UTILITY_NETCONF_TYPE_STATUS_APNET);
 }
 
-void OnPush_Nectonf_ApnetReConnect(int selection) {
-    Menu_WriteLine("OnPush_Nectonf_ApnetReConnect", 0xFFFFFF);
+static void OnPush_Nectonf_ApnetReConnect(int selection)
+{
+    Menu_WriteLine("OnPush_Nectonf_ApnetReConnect", 0x00ffffff);
     Menu_LockInput();
     sample_type = 3;
     sample_status = 0;
     utility_init_netconf(SCE_UTILITY_NETCONF_TYPE_RECONNECT_APNET);
 }
 
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/netconf", OnPush_Netconf_Adhoc);
+void OnPush_Netconf_Adhoc(int selection)
+{
+    Menu_WriteLine("OnPush_Netconf_Adhoc", 0x00ffffff);
+    init_net();
+    init_adhoc();
+    Menu_ClearItems();
+    Menu_AppendItem("0 : Connect", OnPush_Nectonf_AdhocConnect);
+    Menu_SetCancelCallback(OnCancel_Netconf_Adhoc);
+}
 
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/netconf", OnCancel_Netconf_Adhoc);
+static void OnCancel_Netconf_Adhoc(int selection)
+{
+    int state;
 
-void OnPush_Nectonf_AdhocConnect(int selection) {
-    Menu_WriteLine("OnPush_Nectonf_AdhocConnect", 0xFFFFFF);
+    Menu_WriteLine("OnCancel_Netconf_Adhoc", 0x00ffffff);
+    Menu_LockInput();
+    sample_type = 3;
+    sample_status = 2;
+    sceNetAdhocctlGetState(&state);
+    if (state != 0) {
+        Menu_WriteLine("Disconnect adhoc", 0x00ffffff);
+        sceNetAdhocctlDisconnect();
+    }
+}
+
+static void OnPush_Nectonf_AdhocConnect(int selection)
+{
+    Menu_WriteLine("OnPush_Nectonf_AdhocConnect", 0x00ffffff);
     Menu_LockInput();
     sample_type = 3;
     sample_status = 0;
