@@ -295,7 +295,21 @@ struct ifqueue {
 	int ifq_drops;
 };
 
-struct ifaddr;
+struct sockaddr {
+	u_char sa_len;
+	u_char sa_family;
+	char sa_data[14];
+};
+
+struct ifnet;
+
+struct ifaddr {
+	struct sockaddr *ifa_addr;
+	struct sockaddr *ifa_dstaddr;
+	struct sockaddr *ifa_netmask;
+	struct ifnet *ifa_ifp;
+	TAILQ_ENTRY(ifaddr) ifa_list;
+};
 
 struct ifnet {
 	void *if_softc;
@@ -313,8 +327,8 @@ struct ifnet {
 	void (*if_start)(struct ifnet *);
 	int (*if_ioctl)(struct ifnet *, u_long, void *);
 	int (*if_init)(struct ifnet *);
-	void (*if_stop)(struct ifnet *, int);
 	void (*if_watchdog)(struct ifnet *);
+	void (*if_drain)(struct ifnet *);
 	struct ifqueue if_snd;
 	void *if_sadl;
 	char unkE4[0xEC - 0xE4];
@@ -323,13 +337,29 @@ struct ifnet {
 	int (*if_up)(struct ifnet *);
 	int (*if_down)(struct ifnet *);
 	int (*if_ioctl2)(struct ifnet *, int, void *);
-	char unk100[0x110 - 0x100];
+	SceUID if_iosema;
+	SceUID if_iosema2;
+	int if_iopending;
+	int if_iostatus;
 	TAILQ_HEAD(, ifevent) if_evq;
 };
 TAILQ_HEAD(ifnet_head, ifnet);
 
 extern int D_0000B068;
 extern void (*D_0000B030)(int, void *, void *);
+extern void *D_0000B034;
+extern void (*D_0000B038)(struct ifnet *);
+extern void (*D_0000B03C)(struct ifaddr *);
+extern void (*D_0000B040)(struct ifnet *, int);
+extern void (*D_0000B044)(struct ifnet *);
+extern void (*D_0000B048)(struct ifnet *);
+extern void *D_0000B058;
+extern void *D_0000B05C;
+extern void *D_0000B060;
+extern struct callout D_0000BB2C;
+int sceNetIfhandlePollSema(SceUID sema, int n);
+void _sce_pspnet_callout_reset(struct callout *c, unsigned int ticks, void (*func)(void *), void *arg);
+void func_00005A78(void *arg);
 extern void (*D_0000B04C)(struct ifnet *);
 extern void (*D_0000B050)(struct ifnet *);
 extern void (*D_0000B054)(struct ifnet *);
@@ -462,5 +492,25 @@ struct ifinfo_req {
 	u_short d;
 	u_char e;
 };
+
+int _sce_pspnet_if_nulloutput(struct ifnet *ifp, struct mbuf *m, void *dst, void *rt);
+
+static inline struct ifnet *if_find(const char *name)
+{
+	struct ifnet *ifp;
+	int s;
+
+	s = _sce_pspnet_spllock();
+	for (ifp = D_0000BB24.tqh_first; ifp != NULL; ifp = ifp->if_list.tqe_next) {
+		if (ifp->if_output == _sce_pspnet_if_nulloutput)
+			continue;
+		if (strcmp(ifp->if_xname, name) == 0) {
+			_sce_pspnet_splunlock(s);
+			return ifp;
+		}
+	}
+	_sce_pspnet_splunlock(s);
+	return NULL;
+}
 
 #endif

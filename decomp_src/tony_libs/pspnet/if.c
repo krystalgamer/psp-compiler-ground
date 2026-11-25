@@ -66,7 +66,7 @@ int func_00005954(struct ifnet *ifp)
 	return 6;
 }
 
-void func_0000595C(struct ifnet *ifp, int disable)
+void func_0000595C(struct ifnet *ifp)
 {
 }
 
@@ -84,8 +84,8 @@ void func_0000596C(struct ifnet *ifp)
 	ifp->if_start = func_00005944;
 	ifp->if_ioctl = func_0000594C;
 	ifp->if_init = func_00005954;
-	ifp->if_stop = func_0000595C;
-	ifp->if_watchdog = func_00005964;
+	ifp->if_watchdog = func_0000595C;
+	ifp->if_drain = func_00005964;
 	ifp->if_snd.ifq_maxlen = 0;
 	_sce_pspnet_splunlock(s);
 }
@@ -108,13 +108,63 @@ void _sce_pspnet_if_up(struct ifnet *ifp)
 		D_0000B054(ifp);
 }
 
-INCLUDE_ASM("tmp/asm/tony_libs/pspnet/nonmatchings/if", func_00005A78);
+void func_00005A78(void *arg)
+{
+	struct ifnet *ifp;
+	int s;
 
-INCLUDE_ASM("tmp/asm/tony_libs/pspnet/nonmatchings/if", _sce_pspnet_ifunit);
+	s = _sce_pspnet_spllock();
+	for (ifp = D_0000BB24.tqh_first; ifp != NULL; ifp = ifp->if_list.tqe_next) {
+		if (ifp->if_timer == 0 || --ifp->if_timer)
+			continue;
+		if (ifp->if_watchdog)
+			(*ifp->if_watchdog)(ifp);
+	}
+	_sce_pspnet_splunlock(s);
+	_sce_pspnet_callout_reset(&D_0000BB2C, 100, func_00005A78, NULL);
+}
 
-INCLUDE_ASM("tmp/asm/tony_libs/pspnet/nonmatchings/if", _sce_pspnet_if_exist);
+struct ifnet *_sce_pspnet_ifunit(const char *name)
+{
+	return if_find(name);
+}
 
-INCLUDE_ASM("tmp/asm/tony_libs/pspnet/nonmatchings/if", _sce_pspnet_ifioctl_sync);
+int _sce_pspnet_if_exist(const char *name)
+{
+	struct ifnet *ifp;
+	int s;
+
+	s = _sce_pspnet_spllock();
+	for (ifp = D_0000BB24.tqh_first; ifp != NULL; ifp = ifp->if_list.tqe_next) {
+		if (ifp->if_output == _sce_pspnet_if_nulloutput)
+			continue;
+		if (strcmp(ifp->if_xname, name) == 0) {
+			_sce_pspnet_splunlock(s);
+			return 1;
+		}
+	}
+	_sce_pspnet_splunlock(s);
+	return 0;
+}
+
+int _sce_pspnet_ifioctl_sync(const char *name, int *out)
+{
+	struct ifnet *ifp;
+
+	if (out == NULL)
+		return 0x80410103;
+	ifp = if_find(name);
+	if (ifp == NULL)
+		return 0x80410180;
+	while (ifp->if_iopending > 0) {
+		if (sceNetIfhandlePollSema(ifp->if_iosema, 1) < 0)
+			return 0x80410181;
+		ifp->if_iopending--;
+	}
+	*out = ifp->if_iostatus;
+	sceNetIfhandleSignalSema(ifp->if_iosema2, 1);
+	return 0;
+}
 
 int _sce_pspnet_get_ifindex(const char *name)
 {
@@ -160,9 +210,75 @@ int _sce_pspnet_get_if_core_variables(int *a, int *b, int *c, struct ifnet_head 
 	return 0;
 }
 
-INCLUDE_ASM("tmp/asm/tony_libs/pspnet/nonmatchings/if", _sce_pspnet_start_of_inet_module_in_if_core);
+int _sce_pspnet_start_of_inet_module_in_if_core(void (*a)(int, void *, void *), void *b,
+	void (*c)(struct ifnet *), void (*d)(struct ifaddr *), void (*e)(struct ifnet *, int),
+	void (*f)(struct ifnet *), void (*g)(struct ifnet *), void (*h)(struct ifnet *),
+	void (*i)(struct ifnet *), void (*j)(struct ifnet *), void *k, void *l, void *m)
+{
+	struct ifnet *ifp;
 
-INCLUDE_ASM("tmp/asm/tony_libs/pspnet/nonmatchings/if", _sce_pspnet_stop_of_inet_module_in_if_core);
+	D_0000B030 = a;
+	D_0000B034 = b;
+	D_0000B038 = c;
+	D_0000B03C = d;
+	D_0000B040 = e;
+	D_0000B044 = f;
+	D_0000B048 = g;
+	D_0000B04C = h;
+	D_0000B050 = i;
+	D_0000B054 = j;
+	D_0000B058 = k;
+	D_0000B05C = l;
+	D_0000B060 = m;
+	for (ifp = D_0000BB24.tqh_first; ifp != NULL; ifp = ifp->if_list.tqe_next) {
+		c(ifp);
+		if (ifp->if_flags & 1)
+			j(ifp);
+	}
+	D_0000B068 = 1;
+	return 0;
+}
+
+int _sce_pspnet_stop_of_inet_module_in_if_core(void)
+{
+	struct ifnet *ifp;
+	struct ifaddr *ifa;
+	int s, af;
+
+	D_0000B068 = 0;
+	for (ifp = D_0000BB24.tqh_first; ifp != NULL; ifp = ifp->if_list.tqe_next) {
+		s = _sce_pspnet_spllock();
+		_sce_pspnet_if_down(ifp);
+		ifa = ifp->if_addrlist.tqh_first;
+		while (ifa != NULL) {
+			af = ifa->ifa_addr->sa_family;
+			if (af == 18) {
+				D_0000B03C(ifa);
+				ifa = ifa->ifa_list.tqe_next;
+			} else {
+				D_0000B040(ifp, af);
+				ifa = ifp->if_addrlist.tqh_first;
+			}
+		}
+		D_0000B044(ifp);
+		D_0000B048(ifp);
+		_sce_pspnet_splunlock(s);
+	}
+	D_0000B030 = NULL;
+	D_0000B034 = NULL;
+	D_0000B038 = NULL;
+	D_0000B03C = NULL;
+	D_0000B040 = NULL;
+	D_0000B044 = NULL;
+	D_0000B048 = NULL;
+	D_0000B04C = NULL;
+	D_0000B050 = NULL;
+	D_0000B054 = NULL;
+	D_0000B058 = NULL;
+	D_0000B05C = NULL;
+	D_0000B060 = NULL;
+	return 0;
+}
 
 INCLUDE_ASM("tmp/asm/tony_libs/pspnet/nonmatchings/if", func_0000610C);
 
