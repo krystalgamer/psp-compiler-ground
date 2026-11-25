@@ -1,3 +1,3 @@
-#include "common.h"
-
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/newlib/libc/errno/errno", __errno);
+/* upstream: newlib-1.12.0/newlib/libc/errno/errno.c (unmodified) */
+/* cflags: -O2 -fno-builtin */
+#include "libc/errno/errno.c"

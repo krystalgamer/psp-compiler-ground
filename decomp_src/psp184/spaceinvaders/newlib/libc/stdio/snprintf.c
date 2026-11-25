@@ -1,5 +1,3 @@
-#include "common.h"
-
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/newlib/libc/stdio/snprintf", _snprintf_r);
-
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/newlib/libc/stdio/snprintf", snprintf);
+/* upstream: newlib-1.12.0/newlib/libc/stdio/snprintf.c (unmodified) */
+/* cflags: -O2 -fno-builtin */
+#include "libc/stdio/snprintf.c"

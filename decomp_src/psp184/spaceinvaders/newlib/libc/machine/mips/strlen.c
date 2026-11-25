@@ -1,3 +1,3 @@
-#include "common.h"
-
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/newlib/libc/machine/mips/strlen", strlen);
+/* upstream: newlib-1.12.0/newlib/libc/machine/mips/strlen.c (unmodified) */
+/* cflags: -O2 -fno-builtin */
+#include "libc/machine/mips/strlen.c"

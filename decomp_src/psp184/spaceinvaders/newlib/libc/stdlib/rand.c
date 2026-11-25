@@ -1,5 +1,3 @@
-#include "common.h"
-
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/newlib/libc/stdlib/rand", srand);
-
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/newlib/libc/stdlib/rand", rand);
+/* upstream: newlib-1.12.0/newlib/libc/stdlib/rand.c (unmodified) */
+/* cflags: -O2 -fno-builtin */
+#include "libc/stdlib/rand.c"

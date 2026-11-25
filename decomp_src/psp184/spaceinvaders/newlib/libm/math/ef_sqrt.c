@@ -1,7 +1,3 @@
-#include "common.h"
-
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/newlib/libm/math/ef_sqrt", one_80030);
-
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/newlib/libm/math/ef_sqrt", tiny_80034);
-
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/newlib/libm/math/ef_sqrt", __ieee754_sqrtf);
+/* upstream: newlib-1.12.0/newlib/libm/math/ef_sqrt.c (unmodified) */
+/* cflags: -O2 -fno-builtin */
+#include "libm/math/ef_sqrt.c"
