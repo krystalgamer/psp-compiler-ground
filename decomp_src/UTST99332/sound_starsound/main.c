@@ -113,7 +113,19 @@ void init_all(void) {
     sceGuDisplay(1);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/sound_starsound/nonmatchings/main", init_pos);
+int rand(void);
+static void init_pos(void)
+{
+	int i;
+
+	for (i = 0; i < 256; i++) {
+		pos[i].x = rand() % 928;
+		pos[i].y = rand() % 512;
+		pos[i].dx = rand() % 4 + 2;
+		pos[i].dy = rand() % 4 + 2;
+		pos[i].col = ((rand() % 192 + 64) << 16) | ((rand() % 192 + 64) << 8) | (rand() % 192 + 64);
+	}
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/sound_starsound/nonmatchings/main", pad_read);
 
