@@ -279,7 +279,7 @@ struct ifinternal {
 	char unk0[0x14];
 	char name[0x10];
 	char unk24[0xEC - 0x24];
-	unsigned char mac[6];
+	char mac[6];
 	char unkF2[0x100 - 0xF2];
 	int ioctlSema;
 	int ioctlOkSema;
@@ -329,5 +329,9 @@ extern int D_00003B8C;
 extern int D_00003B90;
 extern int D_00003B94;
 extern int D_00003B98;
+extern int D_00003B48;
+extern int D_00003B50;
+extern int D_00003B9C;
+int strcmp(const char *, const char *);
 
 #endif
