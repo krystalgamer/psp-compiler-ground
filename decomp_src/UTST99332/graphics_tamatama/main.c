@@ -118,7 +118,23 @@ INCLUDE_ASM("tmp/asm/UTST99332/graphics_tamatama/nonmatchings/main", draw_frame)
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_tamatama/nonmatchings/main", init_all);
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_tamatama/nonmatchings/main", frame_update);
+static void frame_update(void)
+{
+	int num;
+	int i;
+
+	for (i = 0; i < cnt; i++) {
+		num = order[i];
+		if (spos[num].vec.y <= 0.001f)
+			spos[num].t = 0;
+		spos[num].t++;
+		spos[num].vec.y = spos[num].d * spos[num].t - 0.002f * spos[num].t * spos[num].t;
+		if (spos[num].vec.y <= 0.08f)
+			ground_v[num].y -= spos[num].d * 0.5f;
+		else if (spos[num].vec.y > 0.088f)
+			ground_v[num].y *= 0.5f;
+	}
+}
 
 static void init_pos(void)
 {
