@@ -493,8 +493,9 @@ def main():
     cfg.write_text("".join(out))
     (ROOT / "config" / t / f"{name}.sha1").write_text(f"{sha1}  tmp/baserom/{t}/{name}.prx\n")
     sym_path = ROOT / "config" / t / f"symbol_addrs.{name}.txt"
-    # stripped modules: keep the function addresses found so far (func_XXXXXXXX)
-    keep = [l for l in sym_path.read_text().splitlines() if l.startswith("func_")] \
+    # stripped modules: keep the names found so far (functions, renames);
+    # nids.py below re-adds the exports and imports over them
+    keep = [l for l in sym_path.read_text().splitlines() if l.strip()] \
         if sym_path.exists() and elf.get_section_by_name(".symtab") is None else []
     sym_path.write_text("\n".join(symbol_lines(elf, text_end) + keep) + "\n")
     if elf.get_section_by_name(".symtab") is None:
