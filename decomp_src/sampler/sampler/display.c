@@ -6,6 +6,8 @@
 #include <thread.h>
 #include <displaysvc.h>
 #include "display.h"
+#include "sound.h"
+#include "avsync.h"
 
 typedef struct {
 	int current;
@@ -32,6 +34,7 @@ extern int frame_count;
 extern int frame_loss;
 extern int prevcur;
 extern int blinkframe;
+extern int not_ready;
 
 void *sceGeEdramGetAddr(void);
 void *sceGuSwapBuffers(void);
@@ -222,4 +225,53 @@ SceInt32 dispbuf_pos(t_displayBuffer *pDisp, int x, int y)
 	return 0;
 }
 
-INCLUDE_ASM("tmp/asm/sampler/sampler/nonmatchings/display", dispbuf_func);
+SceInt32 dispbuf_func(SceSize size, void *argp)
+{
+	SceInt32 currentMode;
+	t_avSyncControl *pAvSync;
+	t_displayBuffer *pDisp;
+
+	pAvSync = (t_avSyncControl *)argp;
+	pDisp = pAvSync->pDisp;
+	not_ready = 1;
+	while (sceKernelPollSema(pDisp->start_sema, 1) != 0) {
+		dispbuf_show(pDisp);
+		sceDisplayWaitVblankStart();
+	}
+	not_ready = 0;
+
+	while (!dispbuf_isEnd(pDisp)) {
+		currentMode = dispbuf_getMode(pDisp);
+		if (currentMode != 4) {
+			currentMode = avsync_Compare(pAvSync);
+			dispbuf_setMode(pDisp, currentMode);
+		}
+		if (dispbuf_getCurrentCount(pDisp) > 0) {
+			if (currentMode == 1 || currentMode == 2) {
+				dispbuf_show(pDisp);
+				sceKernelWaitSema(pDisp->lock_sema, 1, NULL);
+				(*pDisp->count)--;
+				sceKernelSignalSema(pDisp->lock_sema, 1);
+			}
+			sceKernelSignalSema(pDisp->display_wait_sema, 1);
+			frame_count++;
+		} else {
+			frame_loss++;
+		}
+		sceDisplayWaitVblankStart();
+	}
+
+	while (dispbuf_getCurrentCount(pDisp) > 0) {
+		dispbuf_show(pDisp);
+		sceKernelWaitSema(pDisp->lock_sema, 1, NULL);
+		(*pDisp->count)--;
+		sceKernelSignalSema(pDisp->lock_sema, 1);
+		sceDisplayWaitVblankStart();
+		frame_count++;
+	}
+
+	sceDisplayWaitVblankStart();
+	sceGuSwapBuffers();
+	sceKernelExitThread(0);
+	return 0;
+}
