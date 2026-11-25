@@ -1,9 +1,31 @@
+/* cflags: -O2 -frename-registers */
 #include "common.h"
 
-INCLUDE_ASM("tmp/asm/umdt/movietest/nonmatchings/ctype", toupper);
+extern char _ctype_[129];
 
-INCLUDE_ASM("tmp/asm/umdt/movietest/nonmatchings/ctype", tolower);
+/* the class tests are statement expressions (an empty lexical block in DWARF) */
+#define CTYPE(c) ({ (int)_ctype_[1 + (c)]; })
 
-INCLUDE_ASM("tmp/asm/umdt/movietest/nonmatchings/ctype", look_ctype_table);
+char toupper(char c)
+{
+	if (CTYPE(c) & 2)
+		c -= 0x20;
+	return c;
+}
 
-INCLUDE_ASM("tmp/asm/umdt/movietest/nonmatchings/ctype", get_ctype_table);
+char tolower(char c)
+{
+	if (CTYPE(c) & 1)
+		c += 0x20;
+	return c;
+}
+
+int look_ctype_table(unsigned int c)
+{
+	return _ctype_[1 + c];
+}
+
+char *get_ctype_table(void)
+{
+	return _ctype_ + 1;
+}
