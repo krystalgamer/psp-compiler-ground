@@ -142,6 +142,18 @@ struct mbuf {
 #define m_type m_hdr.mh_type
 #define m_flags m_hdr.mh_flags
 #define m_nextpkt m_hdr.mh_nextpkt
+#define MGETHDR(m, how, type) do { \
+	(m) = sceNetMallocInternal(MSIZE); \
+	if (m) { \
+		(m)->m_type = (type); \
+		(m)->m_next = 0; \
+		(m)->m_nextpkt = 0; \
+		(m)->m_data = (m)->m_pktdat; \
+		(m)->m_flags = 2; \
+		(m)->m_pkthdr.aux = 0; \
+	} \
+} while (0)
+#define M_DONTWAIT 1
 #define mtod(m, t) ((t)((m)->m_data))
 
 struct ifqueue {
@@ -250,6 +262,8 @@ TAILQ_HEAD(adhoc_socket_list, adhoc_socket);
 
 #define ntohs(x) ((u_short)__builtin_allegrex_wsbh(x))
 #define htons(x) ((u_short)__builtin_allegrex_wsbh(x))
+#define ntohl(x) ((u_int)__builtin_allegrex_wsbw(x))
+#define htonl(x) ((u_int)__builtin_allegrex_wsbw(x))
 
 #define POLL_LINK(so, ti) do { \
 	(so)->pollnext = (ti)->polllist; \
@@ -304,11 +318,11 @@ struct ptpcb {
 	int mss;
 	u_int iss;
 	int unk70;
-	int unk74;
-	int unk78;
-	int unk7C;
-	int unk80;
-	int unk84;
+	u_int snd_una;
+	u_int snd_nxt;
+	u_int rcv_nxt;
+	int snd_wnd;
+	int snd_inflight;
 	struct callout co;
 	u_int rexmt_int;
 	int rexmt_cnt;
@@ -571,9 +585,9 @@ void func_00005560(struct ptpcb *pcb, u_int rexmt_int, int rexmt_cnt);
 int func_0000556C(struct ptpcb *pcb, struct SceNetEtherAddr *faddr, u_short fport);
 int func_000056B0(struct ptpcb *pcb, int backlog);
 void func_000056D4(struct ptpcb *pcb);
-void func_00005FF8(struct ptpcb *pcb);
-void func_00006340(struct ptpcb *pcb, int type);
-void func_0000648C(struct ptpcb *pcb);
+void func_00005FF8(struct ifnet *ifp, struct SceNetEtherAddr *laddr, u_short lport, struct SceNetEtherAddr *faddr, u_short fport, u_char type, u_int seq, struct mbuf *m);
+void func_00006340(struct ptpcb *pcb, u_char type);
+void func_0000648C(struct ptpcb *pcb, int flag);
 void func_00006624(void *arg);
 void func_00004B18(struct adhoc_socket *so);
 int func_000050F8(struct adhoc_socket *so, int events);

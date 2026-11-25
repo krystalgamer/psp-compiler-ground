@@ -227,8 +227,111 @@ INCLUDE_ASM("tmp/asm/tony_libs/pspnet_adhoc/nonmatchings/ptp", func_0000578C);
 
 INCLUDE_ASM("tmp/asm/tony_libs/pspnet_adhoc/nonmatchings/ptp", func_00005FF8);
 
-INCLUDE_ASM("tmp/asm/tony_libs/pspnet_adhoc/nonmatchings/ptp", func_00006340);
+void func_00006340(struct ptpcb *pcb, u_char type)
+{
+	struct mbuf *m;
+	u_int seq;
+	u_int win;
 
-INCLUDE_ASM("tmp/asm/tony_libs/pspnet_adhoc/nonmatchings/ptp", func_0000648C);
+	switch (type) {
+	case 1:
+	case 2:
+	case 3:
+	case 7:
+		seq = pcb->iss;
+		break;
+	case 5:
+		seq = pcb->rcv_nxt - 1;
+		break;
+	case 6:
+		seq = pcb->rcv_nxt;
+		break;
+	default:
+		seq = 0;
+		break;
+	}
+	switch (type) {
+	case 1:
+	case 2:
+	case 5:
+		MGETHDR(m, M_DONTWAIT, 1);
+		if (m == NULL)
+			return;
+		win = htonl(pcb->rcv.sb_hiwat - pcb->rcv.sb_cc);
+		__builtin_memcpy(mtod(m, char *), &win, 4);
+		m->m_len = 4;
+		m->m_pkthdr.len = 4;
+		m->m_pkthdr.rcvif = NULL;
+		break;
+	default:
+		m = NULL;
+		break;
+	}
+	func_00005FF8(pcb->ifp, &pcb->laddr, pcb->lport, &pcb->faddr, pcb->fport, type, seq, m);
+	if (m != NULL)
+		sceNetMFreem(m);
+}
 
-INCLUDE_ASM("tmp/asm/tony_libs/pspnet_adhoc/nonmatchings/ptp", func_00006624);
+void func_0000648C(struct ptpcb *pcb, int flag)
+{
+	struct mbuf *m;
+	u_int seq;
+	int n;
+
+	n = 0;
+	m = pcb->snd.sb_head;
+	for (seq = pcb->snd_una; m != NULL && seq != pcb->snd_nxt; seq++)
+		m = m->m_nextpkt;
+	while (m != NULL) {
+		if (pcb->snd_wnd - pcb->snd_inflight < m->m_pkthdr.len) {
+			if (n != 0)
+				break;
+			if (flag != 0) {
+				func_00005FF8(pcb->ifp, &pcb->laddr, pcb->lport, &pcb->faddr, pcb->fport, 4, pcb->snd_una - 1, NULL);
+				D_00007450.unk28++;
+			} else if (!(pcb->co.c_flags & 1)) {
+				D_00007450.unk2C++;
+				pcb->rexmt_left = pcb->rexmt_cnt;
+				_sce_pspnet_callout_reset_usec(&pcb->co, pcb->rexmt_int, func_00006624, pcb);
+			}
+			break;
+		}
+		func_00005FF8(pcb->ifp, &pcb->laddr, pcb->lport, &pcb->faddr, pcb->fport, 4, pcb->snd_nxt, m);
+		n++;
+		pcb->snd_nxt++;
+		pcb->snd_inflight += m->m_pkthdr.len;
+		m = m->m_next;
+	}
+	if (flag == 0 && n > 0) {
+		pcb->rexmt_left = pcb->rexmt_cnt;
+		_sce_pspnet_callout_reset_usec(&pcb->co, pcb->rexmt_int, func_00006624, pcb);
+	}
+}
+
+void func_00006624(void *arg)
+{
+	struct ptpcb *pcb = arg;
+
+	if ((u_int)pcb->state < 2)
+		return;
+	if (pcb->rexmt_left-- <= 0) {
+		_sce_pspnet_callout_stop(&pcb->co);
+		func_00004F50(pcb);
+		return;
+	}
+	switch (pcb->state) {
+	case 2:
+		func_00006340(pcb, 1);
+		break;
+	case 3:
+		func_00006340(pcb, 2);
+		break;
+	case 4:
+		pcb->snd_inflight = 0;
+		pcb->snd_nxt = pcb->snd_una;
+		func_0000648C(pcb, 1);
+		D_00007450.unk24++;
+		break;
+	}
+	_sce_pspnet_callout_reset_usec(&pcb->co, pcb->rexmt_int, func_00006624, pcb);
+}
