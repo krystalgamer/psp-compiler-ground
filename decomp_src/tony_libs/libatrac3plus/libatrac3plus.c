@@ -5,9 +5,53 @@
 #include "atrac.h"
 /* --- end declarations --- */
 
-INCLUDE_ASM("tmp/asm/tony_libs/libatrac3plus/nonmatchings/libatrac3plus", sceAtracGetAtracID);
+int sceAtracGetAtracID(int codec)
+{
+	int intr = sceKernelCpuSuspendIntr();
+	int ret = 0x80630003;
+	int i;
 
-INCLUDE_ASM("tmp/asm/tony_libs/libatrac3plus/nonmatchings/libatrac3plus", sceAtracReleaseAtracID);
+	if (codec == 0x1000) {
+		for (i = 0; i < 2; i++) {
+			if (D_00003930[i].codec[0] == 0) {
+				ret = i;
+				D_00003930[i].codec[0] = 1;
+				D_00003930[i].info.state = 0;
+				break;
+			}
+		}
+	} else if (codec == 0x1001) {
+		for (i = 2; i < 4; i++) {
+			if (D_00003930[i].codec[0] == 0) {
+				ret = i;
+				D_00003930[i].codec[0] = 1;
+				D_00003930[i].info.state = 0;
+				break;
+			}
+		}
+	} else {
+		ret = 0x80630004;
+	}
+	sceKernelCpuResumeIntr(intr);
+	return ret;
+}
+
+int sceAtracReleaseAtracID(unsigned int id)
+{
+	int ret;
+	int intr;
+
+	if (id >= 4)
+		return 0x80630005;
+	ret = 0x80630005;
+	intr = sceKernelCpuSuspendIntr();
+	if (D_00003930[id].codec[0] != 0) {
+		D_00003930[id].codec[0] = 0;
+		ret = 0;
+	}
+	sceKernelCpuResumeIntr(intr);
+	return ret;
+}
 
 INCLUDE_ASM("tmp/asm/tony_libs/libatrac3plus/nonmatchings/libatrac3plus", sceAtracSetHalfwayBuffer);
 

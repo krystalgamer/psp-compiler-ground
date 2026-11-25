@@ -92,6 +92,9 @@ static inline int frameSkip(AtracInfo *info)
 
 extern AtracCtx D_00003930[4];
 
+int sceKernelCpuSuspendIntr(void);
+void sceKernelCpuResumeIntr(int intr);
+
 int func_000020B8(AtracInfo *info);
 int func_000029E4(AtracInfo *info);
 int func_0000220C(AtracInfo *info);
