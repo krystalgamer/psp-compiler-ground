@@ -324,14 +324,35 @@ extern struct ifinternal *D_00003B3C;
 extern int D_00003B40;
 extern int D_00003B44;
 extern int (*D_00003B4C)(struct mbuf *);
-extern int D_00003B88;
-extern int D_00003B8C;
-extern int D_00003B90;
-extern int D_00003B94;
+extern unsigned int D_00003B88;
+extern unsigned int D_00003B8C;
+extern unsigned int D_00003B90;
+extern unsigned int D_00003B94;
 extern int D_00003B98;
 extern int D_00003B48;
 extern int D_00003B50;
 extern int D_00003B9C;
+extern unsigned int D_00003BA0[521];
+extern int D_000043C4;
 int strcmp(const char *, const char *);
+
+static inline void rnd521_refresh(void)
+{
+	int i;
+
+	for (i = 0; i < 32; i++)
+		D_00003BA0[i] ^= D_00003BA0[i + 489];
+	for (i = 32; i < 521; i++)
+		D_00003BA0[i] ^= D_00003BA0[i - 32];
+}
+
+static inline unsigned int irnd(void)
+{
+	if (++D_000043C4 >= 521) {
+		rnd521_refresh();
+		D_000043C4 = 0;
+	}
+	return D_00003BA0[D_000043C4];
+}
 
 #endif
