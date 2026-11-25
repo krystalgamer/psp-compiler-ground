@@ -18,6 +18,7 @@ FIXED = {
 LOOSE = {
     "bigbangbang": {"bigbangbang": "bigbangbang.prx"},
     "flowars": {"flowars": "flowars.prx"},
+    "htmlviewer": {"htmlviewer": "171_184_htmlviewer.prx"},
 }
 
 # zips of decrypted modules in inputs/: target -> zip name; module = member stem

@@ -20,6 +20,7 @@
 1.5.1.internal  1.5.1   -mno-ulsw
 1.6.1           1.6.1   newlib:locfix as:-mulsw
 1.6.1.internal  1.6.1   newlib:locfix lib:-fno-merge-constants mixed:-fno-merge-constants objorder as:-mulsw
+1.7.1           1.7.1-orig as:-mulsw
 1.8.3           1.8.3   as:-mulsw
 1.8.3.internal  1.8.3   as:-mulsw
 1.8.4.internal  1.8.4   mixed:-fno-merge-constants as:-mulsw

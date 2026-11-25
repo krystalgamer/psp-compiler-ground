@@ -6,7 +6,7 @@ tests: each compiler version is right when it turns them back into the
 original machine code.
 
 - `inputs/` – the original modules (`151_and_161.zip`, `psp_161_to_184.zip`,
-  plus `bigbangbang.prx`, `flowars.prx`, `tony_libs.zip`, 13 stripped
+  plus `bigbangbang.prx`, `flowars.prx`, `171_184_htmlviewer.prx`, `umdt.zip`, `tony_libs.zip`, 13 stripped
   1.5.1.internal firmware modules, and `psp_devkit.zip`/`psp_sdk_660.7z`,
   SDKs with library sources); **not committed**
 - `config/` – splat configs, one per module

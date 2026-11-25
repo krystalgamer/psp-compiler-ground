@@ -1,0 +1,3 @@
+#include "common.h"
+
+INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/newlib/libm/common/sf_copysign", copysignf);
