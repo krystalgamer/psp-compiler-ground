@@ -1,8 +1,28 @@
 #include "common.h"
+#include "m2c_macros.h"
+
+M2C_UNK sceGimPictureDelete(int);                   /* extern */
+M2C_UNK sceGimPictureUnload(int);                   /* extern */
+extern unsigned char Gims;
+extern signed char isSkip;
+extern int global_color;
+extern float global_fader;
+
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/wrap_sprite", init_gims);
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/wrap_sprite", release_gims);
+void release_gims(int arg0) {
+    int *temp_s0;
+    int temp_v1;
+
+    temp_s0 = (arg0 * 4) + &Gims;
+    temp_v1 = *temp_s0;
+    if (temp_v1 != 0) {
+        sceGimPictureUnload(temp_v1);
+        sceGimPictureDelete(*temp_s0);
+        *temp_s0 = 0;
+    }
+}
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/wrap_sprite", load_gims);
 
@@ -14,7 +34,9 @@ INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/wrap_sprite", SpriteAllFree
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/wrap_sprite", get_gims);
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/wrap_sprite", SpriteSetSkipFrame);
+void SpriteSetSkipFrame(signed char arg0) {
+    isSkip = arg0;
+}
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/wrap_sprite", GetSpriteBuf);
 
@@ -28,15 +50,25 @@ INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/wrap_sprite", SpriteInitExt
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/wrap_sprite", SpriteKickExt);
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/wrap_sprite", SpriteSetColor);
+void SpriteSetColor(int arg0) {
+    global_color = arg0;
+}
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/wrap_sprite", SpriteSetColorRGBA);
+void SpriteSetColorRGBA(int arg0, int arg1, int arg2, int arg3) {
+    global_color = (arg0 & 0xFF) | ((arg1 & 0xFF) << 8) | ((arg2 & 0xFF) << 0x10) | (arg3 << 0x18);
+}
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/wrap_sprite", SpriteGetColor);
+int SpriteGetColor(void) {
+    return global_color;
+}
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/wrap_sprite", SpriteGetFader);
+float SpriteGetFader(void) {
+    return global_fader;
+}
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/wrap_sprite", SpriteSetFader);
+void SpriteSetFader(float fparg0) {
+    global_fader = fparg0;
+}
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/wrap_sprite", getFader);
 
@@ -74,4 +106,6 @@ INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/wrap_sprite", draw_DrawSpri
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/wrap_sprite", draw_DrawSpriteEx);
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/wrap_sprite", NullFunc);
+int NullFunc(void) {
+    return 1;
+}

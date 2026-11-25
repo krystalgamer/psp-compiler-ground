@@ -19,7 +19,7 @@ import autodecomp  # noqa: E402
 import compiler  # noqa: E402
 import objcmp  # noqa: E402
 
-STUB = re.compile(r'^(#include "common.h"|INCLUDE_ASM\(.*\);|INCLUDE_RODATA\(.*\);|)$')
+STUB = re.compile(r'^(#include "common.h"|INCLUDE_ASM\(.*\);|INCLUDE_RODATA\(.*\);|[A-Za-z_][^;]*\) \{|\}|)$')
 
 
 def build_ok(target, module):

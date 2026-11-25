@@ -1,8 +1,19 @@
 #include "common.h"
+#include "m2c_macros.h"
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/my_heap", myHeapInit);
+extern int g_addr;
+extern int g_size;
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/my_heap", myHeapTerm);
+
+void myHeapInit(int arg0, int arg1) {
+    g_addr = arg0;
+    g_size = arg1;
+}
+
+void myHeapTerm(void) {
+    g_addr = 0;
+    g_size = 0;
+}
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/my_heap", myHeapAlloc);
 

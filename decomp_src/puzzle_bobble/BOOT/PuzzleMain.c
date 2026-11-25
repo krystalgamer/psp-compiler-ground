@@ -1,10 +1,24 @@
 #include "common.h"
+#include "m2c_macros.h"
+
+extern int ssTimes;
+M2C_UNK DrawSpriteEz(int, float, float, float, float, float, float, float); /* extern */
+M2C_UNK PzlDataGetWidth();                          /* extern */
+int GetKeyHit();                                    /* extern */
+int PollShutter(M2C_UNK);                           /* extern */
+extern int PauseFlag;
+extern unsigned char PauseOk;
+
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", SysTimeIncrement);
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", GetSysTime);
+int GetSysTime(void) {
+    return ssTimes;
+}
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", ClearSysTime);
+void ClearSysTime(void) {
+    ssTimes = 0;
+}
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", SetCharacters);
 
@@ -122,7 +136,12 @@ INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", EndressMain);
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", DrawBubble);
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", DrawCharcter);
+void DrawCharcter(int arg0, int arg1, int arg2, int arg3, int arg4) {
+    void *temp_v0;
+
+    temp_v0 = (arg4 * 0x14) + arg3;
+    DrawSpriteEz(M2C_FIELD(temp_v0, int *, 0x10), (float) arg0, (float) arg1, (float) arg2, (float) M2C_FIELD(temp_v0, int *, 8), (float) M2C_FIELD(temp_v0, int *, 0xC), (float) M2C_FIELD(temp_v0, int *, 0), (float) M2C_FIELD(temp_v0, int *, 4));
+}
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", DrawCharcterFlip);
 
@@ -138,9 +157,23 @@ INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", Sin);
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", Cos);
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", ZeroMemory);
+void ZeroMemory(int arg0, int arg1) {
+    int var_a2;
+    signed char *temp_v1;
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", GetMapWidth);
+    var_a2 = 0;
+    if (arg1 > 0) {
+        do {
+            temp_v1 = arg0 + var_a2;
+            var_a2 += 1;
+            *temp_v1 = 0;
+        } while (var_a2 < arg1);
+    }
+}
+
+void GetMapWidth(void) {
+    PzlDataGetWidth();
+}
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", GetMapLeft);
 
@@ -225,7 +258,34 @@ INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", SetBubStat);
 void DriveWarning(void) {
 }
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", PauseControl);
+void PauseControl(void *arg0) {
+    if (M2C_FIELD(arg0, unsigned char *, 3) != 2) {
+        if ((unsigned char) M2C_FIELD(arg0, unsigned char *, 6) < 0x15U) {
+            PauseOk = 1;
+        } else {
+            PauseOk = 0;
+        }
+        if ((unsigned char) M2C_FIELD(arg0, unsigned char *, 6) >= 2U) {
+
+        } else {
+            if (PollShutter(5) != 0) {
+                PauseOk = 0;
+            }
+            if ((unsigned int) M2C_FIELD(arg0, unsigned int *, 0x430) < 0x3CU) {
+                PauseOk = 0;
+            }
+        }
+        if (PauseFlag == 0) {
+            if (PauseOk == 0) {
+
+            } else if (GetKeyHit() & 8) {
+                PauseFlag = 1;
+            }
+        } else if (GetKeyHit() & 8) {
+            PauseFlag = 0;
+        }
+    }
+}
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", PuzzleBody);
 
