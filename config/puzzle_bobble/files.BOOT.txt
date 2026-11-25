@@ -1,0 +1,31 @@
+# Objects without DWARF: start address (vram), unit, compiler, source.
+# Boundaries come from the STT_FILE symbols: each file's local symbols, and
+# the functions that reference them, pin it down; the few functions between
+# two files are assigned by name.  Compilers from the .comment entries in
+# link order (6x 1.5.1 after crt0, 1.4.0 for the map data, 3x 1.5.1, 1.6.1,
+# 1.5.1, 1.6.1, 2x 1.5.1, then 1.5.1.internal for the SDK sources).
+# gim_format.c/gim_private.c: no local symbols; the chunk helpers are put
+# in gim_format.
+0x003F0 main            1.5.1           main.c
+0x00E48 my_heap         1.5.1           my_heap.c
+0x00F08 wrap_sprite     1.5.1           wrap_sprite.c
+0x02A94 game_main       1.5.1           game_main.c
+0x02C5C PuzzleMain      1.5.1           PuzzleMain.c
+0x0FCD8 Title           1.5.1           Title.c
+0x10420 sound           1.5.1           sound.c
+0x109BC at3plus         1.5.1           at3plus.c
+0x11584 pzldata         1.5.1           pzldata.c
+0x117A0 file_sub        1.6.1           file_sub.c
+0x12998 plsel           1.5.1           plsel.c
+0x14CE8 savedata        1.6.1           savedata.c
+0x156AC module_load     1.5.1           module_load.c
+0x15B4C staff           1.5.1           staff.c
+0x15F98 gim_callback    1.5.1.internal  gim_callback.c
+0x160C8 gim_picture     1.5.1.internal  gim_picture.c
+0x17604 load_bmp        1.5.1.internal  load_bmp.c
+0x18060 load_tga        1.5.1.internal  load_tga.c
+0x18630 load_tm2        1.5.1.internal  load_tm2.c
+0x18B30 gim_format      1.5.1.internal  gim_format.c
+0x18CA0 libgum          1.5.1.internal  libgum.c
+0x1A370 libgu           1.5.1.internal  libgu.c
+0x1DBC8 libwave         1.5.1.internal  libwave.c
