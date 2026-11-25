@@ -408,13 +408,13 @@ void sceGmoContextSetTexOffs(const rect *offs)
 {
 	SceGmoContext *c = &g_context;
 
-	if (offs != NULL) {
-		c->m_current_offs = *offs;
-		c->m_flags |= 1;
-	} else {
+	if (offs == NULL) {
 		if (!(c->m_flags & 1))
 			return;
 		c->m_flags &= ~1;
+	} else {
+		c->m_current_offs = *offs;
+		c->m_flags |= 1;
 	}
 	activate_tex_crop();
 }
@@ -423,13 +423,13 @@ void sceGmoContextSetTexCrop(const rect *crop)
 {
 	SceGmoContext *c = &g_context;
 
-	if (crop != NULL) {
-		c->m_current_crop = *crop;
-		c->m_flags |= 2;
-	} else {
+	if (crop == NULL) {
 		if (!(c->m_flags & 2))
 			return;
 		c->m_flags &= ~2;
+	} else {
+		c->m_current_crop = *crop;
+		c->m_flags |= 2;
 	}
 	activate_tex_crop();
 }
@@ -438,13 +438,13 @@ void sceGmoContextSetTexTrim(const rect *trim)
 {
 	SceGmoContext *c = &g_context;
 
-	if (trim != NULL) {
-		c->m_current_trim = *trim;
-		c->m_flags |= 4;
-	} else {
+	if (trim == NULL) {
 		if (!(c->m_flags & 4))
 			return;
 		c->m_flags &= ~4;
+	} else {
+		c->m_current_trim = *trim;
+		c->m_flags |= 4;
 	}
 	activate_tex_crop();
 }
