@@ -29,8 +29,8 @@ SceInt32 _sceMpegId2type(SceMpegStrType *type, SceInt32 *ch, SceUInt32 str_id);
 SceUInt32 sceMpegSwap4(SceVoid *p);
 
 SceInt32 scePsmfSpecifyStream(ScePsmf *psmf, SceInt32 psmfStream_id);
-SceInt32 scePsmfGetPresentationStartTime_Base(ScePsmf *psmf, SceUInt32 *start_time);
-SceInt32 scePsmfGetPresentationEndTime_Base(ScePsmf *psmf, SceUInt32 *end_time);
+SceInt32 scePsmfGetPresentationStartTime_Base(ScePsmf *psmf, SceInt32 *start_time);
+SceInt32 scePsmfGetPresentationEndTime_Base(ScePsmf *psmf, SceInt32 *end_time);
 SceInt32 scePsmfGetMUXRateBound_Base(ScePsmf *psmf);
 SceInt32 scePsmfGetStdDelayBound_Base(ScePsmf *psmf);
 SceInt32 scePsmfGetNumberOfStreams_Base(ScePsmf *psmf);
