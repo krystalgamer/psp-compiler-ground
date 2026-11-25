@@ -54,6 +54,20 @@ struct ScePspFMatrix4 { /* size 0x40 */
 typedef struct ScePspFMatrix4 ScePspFMatrix4;
 
 /* SDK functions */
+void sceGuStart(int type, void *list, int size);
+int sceGuFinish(void);
+int sceGuSync(int mode, int what);
+void sceGuClear(int flags);
+void sceGuTexMapMode(int mode, unsigned int a1, unsigned int a2);
+void sceGuDebugPrint(int x, int y, unsigned int color, const char *str);
+void sceGumMatrixMode(int mode);
+void sceGumLoadIdentity(void);
+void sceGumPushMatrix(void);
+void sceGumPopMatrix(void);
+void sceGumRotateZYX(const ScePspFVector3 *v);
+void sceGumTranslate(const ScePspFVector3 *v);
+
+/* SDK functions */
 int sceCtrlReadBufferPositive(SceCtrlData *data, int count);
 
 extern unsigned int checkcolor[1];
@@ -76,6 +90,7 @@ extern ScePspFMatrix4 matrix_stack[32];
 extern float array[147];
 
 static void draw_frame(int frame);
+void DrawTorus(float *array, float in, float out);
 static void init_all(void);
 static void init_pos(void);
 static int pad_read(void);
@@ -88,7 +103,46 @@ int sceDisplayWaitVblankStart(void);
 
 INCLUDE_RODATA("tmp/asm/UTST99332/graphics_texmat/nonmatchings/main", mapmode);
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_texmat/nonmatchings/main", draw_frame);
+const char mapstr[3][16] = { "[UV    MAP]", "[PROJ  MAP]", "[SHADE MAP]" };
+
+static void draw_frame(int frame)
+{
+	ScePspFVector3 vec;
+	float angle;
+
+	sceGuStart(0, disp_list, sizeof(disp_list));
+	sceGuClear(7);
+	if (autoflag) {
+		angle = (float)((frame * 2) % 360) * 3.1415927f / 180.0f;
+		vec.z = vec.y = vec.x = angle;
+	} else {
+		vec.x = pos.rot.x * 3.1415927f / 180.0f;
+		vec.y = pos.rot.y * 3.1415927f / 180.0f;
+		vec.z = pos.rot.z * 3.1415927f / 180.0f;
+	}
+	sceGuTexMapMode(mapmode[mode], 0, 1);
+	if (mode == 1) {
+		sceGumMatrixMode(3);
+		sceGumPushMatrix();
+		sceGumTranslate(&pos.trans);
+		sceGumRotateZYX(&vec);
+		sceGumMatrixMode(2);
+	}
+	sceGumPushMatrix();
+	sceGumLoadIdentity();
+	sceGumTranslate(&pos.trans);
+	sceGumRotateZYX(&vec);
+	DrawTorus(array, 1.0f, 2.0f);
+	if (mode == 1) {
+		sceGumMatrixMode(3);
+		sceGumPopMatrix();
+		sceGumMatrixMode(2);
+	}
+	sceGumPopMatrix();
+	sceGuDebugPrint(0, 0, 0xffffffff, mapstr[mode]);
+	sceGuFinish();
+	sceGuSync(0, 0);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_texmat/nonmatchings/main", init_all);
 
