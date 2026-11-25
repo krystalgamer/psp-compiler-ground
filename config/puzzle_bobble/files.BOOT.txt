@@ -29,6 +29,7 @@
 0x18CA0 libgum          1.5.1.internal  libgum.c
 0x1A370 libgu           1.5.1.internal  libgu.c
 0x1DBC8 libwave         1.5.1.internal  libwave.c
+0x242D4 kernel_bridge   1.5.1.internal  kernel_bridge.c
 
 # rodata ADDR UNIT: the bgm names after Title's float constants are sound.c's
 rodata 0x2EA74 sound
