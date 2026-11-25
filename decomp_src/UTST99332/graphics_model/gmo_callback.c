@@ -22,9 +22,37 @@ SceGimPicture *sceGmoModelImportPicture(const char *filename);
 void sceGmoModelExportPicture(const char *filename, SceGimPicture *picture);
 
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_model/nonmatchings/gmo_callback", sceGmoModelSetMemoryManager);
+extern __typeof__(g_alloc_memory) g_alloc_memory_340C4;
+extern __typeof__(g_free_memory) g_free_memory_340C8;
+extern __typeof__(g_alloc_memory2) g_alloc_memory2_340CC;
+extern __typeof__(g_free_memory2) g_free_memory2_340D0;
+#define g_alloc_memory g_alloc_memory_340C4
+#define g_free_memory g_free_memory_340C8
+#define g_alloc_memory2 g_alloc_memory2_340CC
+#define g_free_memory2 g_free_memory2_340D0
+void *malloc(size_t size);
+void free(void *ptr);
+void sceGmoModelSetMemoryManager(void *(*alloc_func)(size_t), void (*free_func)(void *))
+{
+	if (alloc_func == NULL)
+		alloc_func = malloc;
+	if (free_func == NULL)
+		free_func = free;
+	g_alloc_memory = alloc_func;
+	g_free_memory = free_func;
+	g_alloc_memory2 = alloc_func;
+	g_free_memory2 = free_func;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_model/nonmatchings/gmo_callback", sceGmoModelSetMemoryManager2);
+void sceGmoModelSetMemoryManager2(void *(*alloc_func)(size_t), void (*free_func)(void *))
+{
+	if (alloc_func == NULL)
+		alloc_func = malloc;
+	if (free_func == NULL)
+		free_func = free;
+	g_alloc_memory2 = alloc_func;
+	g_free_memory2 = free_func;
+}
 
 void sceGmoModelSetPictureManager(SceGimPicture *(*get_func)(signed char *), void (*set_func)(signed char *, SceGimPicture *)) {
     g_get_picture = get_func;
@@ -32,16 +60,47 @@ void sceGmoModelSetPictureManager(SceGimPicture *(*get_func)(signed char *), voi
 }
 /* Warning: struct SceGimPicture is not defined (only forward-declared) */
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_model/nonmatchings/gmo_callback", sceGmoModelAllocMemory);
+void *sceGmoModelAllocMemory(size_t size)
+{
+	if (size == 0)
+		return NULL;
+	return g_alloc_memory(size);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_model/nonmatchings/gmo_callback", sceGmoModelAllocMemory2);
+void *sceGmoModelAllocMemory2(size_t size)
+{
+	if (size == 0)
+		return NULL;
+	return g_alloc_memory2(size);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_model/nonmatchings/gmo_callback", sceGmoModelFreeMemory);
+void sceGmoModelFreeMemory(void *addr)
+{
+	if (addr != NULL)
+		g_free_memory(addr);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_model/nonmatchings/gmo_callback", sceGmoModelFreeMemory2);
+void sceGmoModelFreeMemory2(void *addr)
+{
+	if (addr != NULL)
+		g_free_memory2(addr);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_model/nonmatchings/gmo_callback", sceGmoModelImportPicture);
+SceGimPicture *sceGmoModelImportPicture(const char *filename)
+{
+	if (g_get_picture == NULL)
+		return NULL;
+	if (filename == NULL)
+		filename = "";
+	return g_get_picture(filename);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_model/nonmatchings/gmo_callback", sceGmoModelExportPicture);
+void sceGmoModelExportPicture(const char *filename, SceGimPicture *picture)
+{
+	if (g_set_picture == NULL)
+		return;
+	if (filename == NULL)
+		filename = "";
+	g_set_picture(filename, picture);
+}
 
-INCLUDE_RODATA("tmp/asm/UTST99332/graphics_model/nonmatchings/gmo_callback", D_0001D6F8);
