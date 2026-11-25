@@ -1,6 +1,16 @@
 #include "common.h"
+#include "m2c_macros.h"
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/plsel", load_title_gim);
+M2C_UNK LoadFileList(M2C_UNK, M2C_UNK *);           /* extern */
+extern unsigned char mode_gim;
+extern int Round;
+extern int D_0101C3B8;
+extern int RsFlag;
+
+
+void load_title_gim(void) {
+    LoadFileList(0, &mode_gim);
+}
 
 INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/plsel", mode_gim);
 
@@ -48,15 +58,25 @@ INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/plsel", ModeSelInt);
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/plsel", ModeSelect);
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/plsel", GetRound);
+int GetRound(void) {
+    return Round;
+}
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/plsel", RselInt);
+int RselInt(void) {
+    if (Round < D_0101C3B8) {
+        Round = D_0101C3B8;
+    }
+    RsFlag = 0;
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/plsel", RoundSelect);
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/plsel", write_op_num);
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/plsel", OptionInit);
+int OptionInit(void) {
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/plsel", OptionMode);
 

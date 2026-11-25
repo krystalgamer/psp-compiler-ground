@@ -1,4 +1,18 @@
 #include "common.h"
+#include "m2c_macros.h"
+
+M2C_UNK send_commandf();                            /* extern */
+M2C_UNK send_commandi();                            /* extern */
+M2C_UNK sceGeUnsetCallback(int);                    /* extern */
+M2C_UNK sceKernelDeleteEventFlag(int);              /* extern */
+extern int D_00559210;
+extern int intrCode;
+extern int call_mode;
+M2C_UNK sceGeContinue();                            /* extern */
+extern void *pList;
+extern unsigned int __gu_status;
+M2C_UNK flush_font();                               /* extern */
+
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", callback_sig);
 
@@ -12,15 +26,31 @@ INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", send_commandf);
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", draw_region);
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", get_exp);
+int get_exp(int arg0) {
+    int var_v1;
+
+    var_v1 = 9;
+loop_1:
+    if (!((arg0 >> var_v1) & 1)) {
+        var_v1 -= 1;
+        if (var_v1 > 0) {
+            goto loop_1;
+        }
+    }
+    return var_v1;
+}
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", flush_font);
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", reset_static_value);
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", sceGuSendCommandf);
+void sceGuSendCommandf(void) {
+    send_commandf();
+}
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", sceGuSendCommandi);
+void sceGuSendCommandi(void) {
+    send_commandi();
+}
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", sceGuGetMemory);
 
@@ -42,7 +72,10 @@ INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", D_000307FC);
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", sceGuInit);
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", sceGuTerm);
+void sceGuTerm(void) {
+    sceKernelDeleteEventFlag(D_00559210);
+    sceGeUnsetCallback(intrCode);
+}
 
 INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", D_00030828);
 
@@ -62,19 +95,25 @@ INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", sceGuFinish);
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", sceGuFinishId);
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", sceGuCallMode);
+void sceGuCallMode(int arg0) {
+    call_mode = arg0;
+}
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", sceGuSignal);
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", sceGuBreak);
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", sceGuContinue);
+void sceGuContinue(void) {
+    sceGeContinue();
+}
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", sceGuCallList);
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", sceGuSendList);
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", sceGuCheckList);
+int sceGuCheckList(void) {
+    return M2C_FIELD(pList, int *, 4) - M2C_FIELD(pList, int *, 0);
+}
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", sceGuSync);
 
@@ -84,9 +123,19 @@ INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", sceGuEnable);
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", sceGuDisable);
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", sceGuGetStatus);
+int sceGuGetStatus(int arg0) {
+    int var_v1;
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", sceGuGetAllStatus);
+    var_v1 = 0;
+    if (arg0 < 0x16) {
+        var_v1 = ((unsigned int) __gu_status >> arg0) & 1;
+    }
+    return var_v1;
+}
+
+int sceGuGetAllStatus(void) {
+    return __gu_status;
+}
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", sceGuSetStatus);
 
@@ -140,33 +189,73 @@ INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", sceGuDepthOffset);
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", sceGuOffset);
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", sceGuPatchDivide);
+void sceGuPatchDivide(int arg0, int arg1) {
+    send_commandi(0x36, (arg1 << 8) | arg0);
+}
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", sceGuPatchPrim);
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", sceGuAmbient);
+void sceGuAmbient(unsigned int arg0) {
+    send_commandi(0x5C, arg0 & 0xFFFFFF);
+    send_commandi(0x5D, arg0 >> 0x18);
+}
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", sceGuColor);
+void sceGuColor(int arg0) {
+    sceGuMaterial(7, arg0);
+}
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", sceGuColorMaterial);
+void sceGuColorMaterial(int arg0) {
+    send_commandi(0x53, arg0);
+}
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", sceGuMaterial);
+void sceGuMaterial(int arg0, unsigned int arg1) {
+    if (!(arg0 & 1)) {
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", sceGuAmbientColor);
+    } else {
+        send_commandi(0x55, arg1 & 0xFFFFFF);
+        send_commandi(0x58, arg1 >> 0x18);
+    }
+    if (!(arg0 & 2)) {
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", sceGuModelColor);
+    } else {
+        send_commandi(0x56, arg1 & 0xFFFFFF);
+    }
+    if (!(arg0 & 4)) {
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", sceGuSpecular);
+    } else {
+        send_commandi(0x57, arg1 & 0xFFFFFF);
+    }
+}
+
+void sceGuAmbientColor(unsigned int arg0) {
+    send_commandi(0x55, arg0 & 0xFFFFFF);
+    send_commandi(0x58, arg0 >> 0x18);
+}
+
+void sceGuModelColor(int arg0, int arg1, int arg2, int arg3) {
+    send_commandi(0x54, arg0 & 0xFFFFFF);
+    send_commandi(0x56, arg2 & 0xFFFFFF);
+    send_commandi(0x55, arg1 & 0xFFFFFF);
+    send_commandi(0x57, arg3 & 0xFFFFFF);
+}
+
+void sceGuSpecular(void) {
+    send_commandf(0x5B);
+}
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", sceGuFrontFace);
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", sceGuPatchFrontFace);
+void sceGuPatchFrontFace(int arg0) {
+    send_commandi(0x38, arg0);
+}
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", sceGuShadeModel);
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", sceGuLight);
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", sceGuLightMode);
+void sceGuLightMode(int arg0) {
+    send_commandi(0x5E, arg0 & 1);
+}
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", sceGuLightAtt);
 
@@ -176,13 +265,19 @@ INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", sceGuLightColor);
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", sceGuTexMode);
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", sceGuTexFilter);
+void sceGuTexFilter(int arg0, int arg1) {
+    send_commandi(0xC6, (arg1 << 8) | arg0);
+}
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", sceGuTexFunc);
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", sceGuTexEnvColor);
+void sceGuTexEnvColor(int arg0) {
+    send_commandi(0xCA, arg0 & 0xFFFFFF);
+}
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", sceGuTexWrap);
+void sceGuTexWrap(int arg0, int arg1) {
+    send_commandi(0xC7, (arg1 << 8) | arg0);
+}
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", sceGuTexLevelMode);
 
@@ -190,7 +285,9 @@ INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", sceGuTexMapMode);
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", sceGuTexProjMapMode);
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", sceGuTexSync);
+void sceGuTexSync(void) {
+    send_commandi(0xCC, 0);
+}
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", sceGuTexImage);
 
@@ -200,40 +297,85 @@ INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", sceGuTexOffset);
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", sceGuTexFlush);
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", sceGuTexSlope);
+void sceGuTexSlope(void) {
+    send_commandf(0xD0);
+}
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", sceGuClutMode);
+void sceGuClutMode(int arg0, int arg1, int arg2, int arg3) {
+    int temp_a2;
+    int temp_a3;
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", sceGuClutLoad);
+    temp_a2 = arg2 << 8;
+    temp_a3 = (arg3 << 0x10) | temp_a2 | (arg1 * 4) | arg0;
+    send_commandi(0xC5, temp_a3, temp_a2, temp_a3);
+}
+
+void sceGuClutLoad(int arg0, unsigned int arg1) {
+    send_commandi(0xB0, arg1 & 0xFFFFFF);
+    send_commandi(0xB1, (arg1 >> 8) & 0xF0000);
+    send_commandi(0xC4, arg0);
+}
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", sceGuFog);
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", sceGuColorFunc);
+void sceGuColorFunc(int arg0, int arg1, int arg2) {
+    send_commandi(0xD8, arg0 & 3);
+    send_commandi(0xD9, arg1 & 0xFFFFFF);
+    send_commandi(0xDA, arg2 & 0xFFFFFF);
+}
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", sceGuAlphaFunc);
+void sceGuAlphaFunc(int arg0, int arg1, int arg2) {
+    int temp_a2;
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", sceGuDepthFunc);
+    temp_a2 = ((arg2 & 0xFF) << 0x10) | ((arg1 & 0xFF) << 8) | arg0;
+    send_commandi(0xDB, temp_a2, temp_a2);
+}
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", sceGuDepthMask);
+void sceGuDepthFunc(int arg0) {
+    send_commandi(0xDE, arg0);
+}
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", sceGuPixelMask);
+void sceGuDepthMask(int arg0) {
+    send_commandi(0xE7, arg0);
+}
+
+void sceGuPixelMask(unsigned int arg0) {
+    send_commandi(0xE8, arg0 & 0xFFFFFF);
+    send_commandi(0xE9, arg0 >> 0x18);
+}
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", sceGuScissor);
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", sceGuStencilFunc);
+void sceGuStencilFunc(int arg0, int arg1, int arg2) {
+    int temp_a2;
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", sceGuLogicalOp);
+    temp_a2 = ((arg2 & 0xFF) << 0x10) | ((arg1 & 0xFF) << 8) | arg0;
+    send_commandi(0xDC, temp_a2, temp_a2);
+}
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", sceGuStencilOp);
+void sceGuLogicalOp(int arg0) {
+    send_commandi(0xE6, arg0 & 0xF);
+}
+
+void sceGuStencilOp(int arg0, int arg1, int arg2) {
+    int temp_a2;
+
+    temp_a2 = (arg2 << 0x10) | (arg1 << 8) | arg0;
+    send_commandi(0xDD, temp_a2, temp_a2);
+}
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", sceGuBlendFunc);
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", sceGuBoneMatrix);
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", sceGuMorphWeight);
+void sceGuMorphWeight(int arg0) {
+    send_commandf(arg0 + 0x2C);
+}
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", sceGuDebugPrint);
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", sceGuDebugFlush);
+void sceGuDebugFlush(void) {
+    flush_font();
+}
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", sceGuSetCallback);

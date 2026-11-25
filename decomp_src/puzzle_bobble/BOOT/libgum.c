@@ -1,4 +1,12 @@
 #include "common.h"
+#include "m2c_macros.h"
+
+M2C_UNK __checkUpdate();                            /* extern */
+M2C_UNK sceGuDrawArray(int, int, int, int, int);    /* extern */
+M2C_UNK sceGuDrawArrayN(int, int, int, int, int, int); /* extern */
+M2C_UNK sceGuDrawBezier(int, int, int, int, int);   /* extern */
+M2C_UNK sceGuDrawSpline(int, int, int, int, int, int, int); /* extern */
+
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgum", __mulMatrix);
 
@@ -10,7 +18,9 @@ INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgum", sceGumSetMatrixSta
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgum", sceGumSetCurMatrix);
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgum", sceGumUpdateMatrix);
+void sceGumUpdateMatrix(void) {
+    __checkUpdate();
+}
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgum", sceGumLoadContext);
 
@@ -50,10 +60,22 @@ INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgum", sceGumLoadMatrix);
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgum", sceGumStoreMatrix);
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgum", sceGumDrawArray);
+void sceGumDrawArray(int arg0, int arg1, int arg2, int arg3, int arg4) {
+    __checkUpdate();
+    sceGuDrawArray(arg0, arg1, arg2, arg3, arg4);
+}
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgum", sceGumDrawArrayN);
+void sceGumDrawArrayN(int arg0, int arg1, int arg2, int arg3, int arg4, int arg5) {
+    __checkUpdate();
+    sceGuDrawArrayN(arg0, arg1, arg2, arg3, arg4, arg5);
+}
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgum", sceGumDrawBezier);
+void sceGumDrawBezier(int arg0, int arg1, int arg2, int arg3, int arg4) {
+    __checkUpdate();
+    sceGuDrawBezier(arg0, arg1, arg2, arg3, arg4);
+}
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgum", sceGumDrawSpline);
+void sceGumDrawSpline(int arg0, int arg1, int arg2, int arg3, int arg4, int arg5, int arg6) {
+    __checkUpdate();
+    sceGuDrawSpline(arg0, arg1, arg2, arg3, arg4, arg5, arg6);
+}
