@@ -164,6 +164,10 @@ def main():
     start = int(m[1], 16) - next(p for p in elf.iter_segments() if p["p_type"] == "PT_LOAD")["p_offset"]
     cu = next((c for c in find_cu(elf, src) if attr(c.get_top_DIE(), "DW_AT_low_pc", -1) + text_addr == start), None)
     if cu is None:
+        files = ROOT / "config" / a.target / f"files.{a.module}.txt"
+        if files.exists() and any(l.split()[3:4] == [src] for l in files.read_text().splitlines()
+                                  if l.strip() and not l.startswith("#")):
+            return    # code without DWARF (config/TARGET/files.MODULE.txt): no declarations
         raise SystemExit("compile unit not found")
     c = C(cu)
     top = cu.get_top_DIE()
