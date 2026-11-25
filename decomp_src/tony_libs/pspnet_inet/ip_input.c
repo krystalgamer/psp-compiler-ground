@@ -15,7 +15,6 @@ struct ip_srcrt_s {
 #define ip_forwsrcrt D_0002E7B4
 #define ip_allowsrcrt D_0002E7B8
 #define ip_directedbcast D_0002EBC4
-#define ip_mtudisc D_0002E7BC
 #define ip_mtudisc_timeout D_0002E7C0
 #define ipqmaxlen D_0002E7C4
 #define ip_maxfragpackets D_0002E7C8
@@ -33,7 +32,7 @@ struct ip_srcrt_s {
 extern int ip_nhops;
 extern struct ip_srcrt_s ip_srcrt;
 extern int ipforwarding, ipsendredirects, ip_forwsrcrt, ip_allowsrcrt, ip_directedbcast;
-extern int ip_mtudisc, ipqmaxlen, ip_maxfragpackets, ip_nfragpackets;
+extern int ipqmaxlen, ip_maxfragpackets, ip_nfragpackets;
 extern u_int ip_mtudisc_timeout;
 extern struct rttimer_queue *ip_mtudisc_timeout_q;
 extern struct ipqhead ipq_list;
