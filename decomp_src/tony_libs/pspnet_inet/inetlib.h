@@ -528,7 +528,7 @@ void func_00002320(void *arg);
 #define M_CLUSTER 0x0008
 #define M_BCAST 0x0100
 #define M_MCAST 0x0200
-#define M_COPYFLAGS (M_PKTHDR | M_EOR | M_BCAST | M_MCAST)
+#define M_COPYFLAGS (~(M_EXT | M_CLUSTER))
 
 #define MT_FREE 0
 #define MT_DATA 1
@@ -1659,5 +1659,69 @@ void raw_init(void);
 void *raw_ctlinput(int cmd, struct sockaddr *arg, void *d);
 void raw_setsockaddr(struct rawcb *rp, struct mbuf *nam);
 void raw_setpeeraddr(struct rawcb *rp, struct mbuf *nam);
+
+/* if.h queue macros / netisr */
+#define IF_QFULL(ifq) ((ifq)->ifq_len >= (ifq)->ifq_maxlen)
+#define IF_DROP(ifq) ((ifq)->ifq_drops++)
+#define IF_ENQUEUE(ifq, m) do { \
+	(m)->m_nextpkt = 0; \
+	if ((ifq)->ifq_tail == 0) \
+		(ifq)->ifq_head = m; \
+	else \
+		(ifq)->ifq_tail->m_nextpkt = m; \
+	(ifq)->ifq_tail = m; \
+	(ifq)->ifq_len++; \
+} while (0)
+#define IF_DEQUEUE(ifq, m) do { \
+	(m) = (ifq)->ifq_head; \
+	if (m) { \
+		if (((ifq)->ifq_head = (m)->m_nextpkt) == 0) \
+			(ifq)->ifq_tail = 0; \
+		(m)->m_nextpkt = 0; \
+		(ifq)->ifq_len--; \
+	} \
+} while (0)
+#define NETISR_IP 2
+void _sce_pspnet_schednetintr_with_evf(int isr);
+#define schednetisr(isr) _sce_pspnet_schednetintr_with_evf(isr)
+#define ipintrq D_0002FF80
+extern struct ifqueue ipintrq;
+void _sce_pspnet_if_attach(struct ifnet *ifp);
+#define if_attach _sce_pspnet_if_attach
+struct ifreq {
+	char ifr_name[16];
+	union {
+		struct sockaddr ifru_addr;
+		struct sockaddr ifru_dstaddr;
+		struct sockaddr ifru_broadaddr;
+		short ifru_flags;
+		int ifru_metric;
+		int ifru_mtu;
+		caddr_t ifru_data;
+	} ifr_ifru;
+};
+#define ifr_addr ifr_ifru.ifru_addr
+#define ifr_dstaddr ifr_ifru.ifru_dstaddr
+#define ifr_broadaddr ifr_ifru.ifru_broadaddr
+#define ifr_flags ifr_ifru.ifru_flags
+#define ifr_metric ifr_ifru.ifru_metric
+#define ifr_mtu ifr_ifru.ifru_mtu
+#define ifr_data ifr_ifru.ifru_data
+#define SIOCSIFADDR 0x8020690C
+#define SIOCADDMULTI 0x80206931
+#define SIOCDELMULTI 0x80206932
+#define IFT_LOOP 0x18
+
+/* if_loop.c */
+#define loif D_0002F3D8
+extern struct ifnet loif;
+#define looutput func_0000F264
+#define loioctl func_0000F5B4
+#define loopattach func_0000F628
+#define lortrequest func_0000F6B4
+int looutput(struct ifnet *ifp, struct mbuf *m, struct sockaddr *dst, struct rtentry *rt);
+int loioctl(struct ifnet *ifp, u_long cmd, caddr_t data);
+void loopattach(int n);
+void lortrequest(int cmd, struct rtentry *rt, struct sockaddr *sa);
 
 #endif
