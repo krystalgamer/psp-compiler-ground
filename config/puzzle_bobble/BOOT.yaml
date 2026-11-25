@@ -200,7 +200,7 @@ segments:
       - [0x2DCB8, .rodata, game_main]
       - [0x2DD48, .rodata, PuzzleMain]
       - [0x2EAA0, .rodata, Title]
-      - [0x2EB48, .rodata, sound]
+      - [0x2EAF4, .rodata, sound]
       - [0x2EBF4, .rodata, at3plus]
       - [0x2EFF4, .rodata, pzldata]
       - [0x2F028, .rodata, file_sub]

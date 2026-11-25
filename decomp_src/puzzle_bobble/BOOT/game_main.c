@@ -1,18 +1,39 @@
 #include "common.h"
+#include "m2c_macros.h"
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/game_main", game_init);
+M2C_UNK init_gims();                                /* extern */
+M2C_UNK puts(M2C_UNK *);                            /* extern */
+extern int FuncInit;
+extern int GameStat;
+extern int state;
+extern int press;
+
+
+void game_init(void) {
+    GameStat = 0;
+    FuncInit = 0;
+    init_gims();
+    puts("gim_init ok");
+    puts("SIG_READ DONE ok");
+}
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/game_main", game_main);
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/game_main", KeySync);
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/game_main", GetKeyStat);
+int GetKeyStat(void) {
+    return state;
+}
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/game_main", GetKeyHit);
+int GetKeyHit(void) {
+    return press;
+}
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/game_main", LoadFileList);
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/game_main", ret_GameStat);
+int ret_GameStat(void) {
+    return GameStat;
+}
 
 INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/game_main", BNum0);
 

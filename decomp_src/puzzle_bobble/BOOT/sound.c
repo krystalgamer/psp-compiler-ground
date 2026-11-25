@@ -7,6 +7,20 @@ extern int NextBgm;
 extern int PlayFlag;
 
 
+INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/sound", D_0002EA74);
+
+INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/sound", D_0002EA80);
+
+INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/sound", D_0002EA8C);
+
+INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/sound", D_0002EA98);
+
+INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/sound", D_0002EAA4);
+
+INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/sound", D_0002EAB0);
+
+INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/sound", D_0002EABC);
+
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/sound", sound_init);
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/sound", vag_read);
