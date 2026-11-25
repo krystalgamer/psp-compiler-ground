@@ -272,12 +272,45 @@ struct m_hdr {
 struct pkthdr {
 	struct ifnet *rcvif;
 	int len;
+	struct mbuf *aux;
+	int unk20;
+	int unk24;
+	int unk28;
+	int unk2C;
 };
+
+struct m_ext {
+	char *ext_buf;
+	void (*ext_free)(char *, unsigned int, void *);
+	void *ext_arg;
+	unsigned int ext_size;
+	int ext_type;
+	struct mbuf *ext_nextref;
+	struct mbuf *ext_prevref;
+};
+
+#define MSIZE 256
+#define MLEN (MSIZE - sizeof(struct m_hdr))
+#define MHLEN (MLEN - sizeof(struct pkthdr))
 
 struct mbuf {
 	struct m_hdr m_hdr;
-	struct pkthdr m_pkthdr;
+	union {
+		struct {
+			struct pkthdr MH_pkthdr;
+			union {
+				struct m_ext MH_ext;
+				char MH_databuf[MHLEN];
+			} MH_dat;
+		} MH;
+		char M_databuf[MLEN];
+	} M_dat;
 };
+
+#define m_pkthdr M_dat.MH.MH_pkthdr
+#define m_ext M_dat.MH.MH_dat.MH_ext
+#define m_pktdat M_dat.MH.MH_dat.MH_databuf
+#define m_dat M_dat.M_databuf
 
 #define m_next m_hdr.mh_next
 #define m_len m_hdr.mh_len
@@ -345,7 +378,9 @@ struct ifnet {
 	u_char if_addrlen;
 	u_char if_hdrlen;
 	int if_link_state;
-	char unk40[0xB0 - 0x40];
+	char unk40[0x88 - 0x40];
+	unsigned long long if_obytes;
+	char unk90[0xB0 - 0x90];
 	int (*if_output)(struct ifnet *, struct mbuf *, void *, void *);
 	void (*if_input)(struct ifnet *, struct mbuf *);
 	void (*if_start)(struct ifnet *);

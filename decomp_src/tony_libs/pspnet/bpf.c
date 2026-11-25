@@ -55,7 +55,74 @@ done:
 	return error;
 }
 
-INCLUDE_ASM("tmp/asm/tony_libs/pspnet/nonmatchings/bpf", func_00003940);
+int func_00003940(int unit, struct uio *uio)
+{
+	struct bpf_d *d = &D_0000B8E4[unit];
+	struct ifnet *ifp;
+	struct mbuf *m;
+	int error, s;
+	int len;
+
+	if (d->bd_bif == NULL)
+		return 6;
+	ifp = d->bd_bif->bif_ifp;
+	len = uio->uio_resid;
+	if (len == 0)
+		return 0;
+	m = sceNetMallocInternal(MSIZE);
+	if (m == NULL)
+		return 105;
+	m->m_type = 1;
+	m->m_next = NULL;
+	m->m_nextpkt = NULL;
+	m->m_data = m->m_pktdat;
+	m->m_flags = 2;
+	m->m_pkthdr.aux = NULL;
+	m->m_pkthdr.rcvif = NULL;
+	m->m_pkthdr.len = len;
+	if (len > MHLEN) {
+		m->m_ext.ext_buf = sceNetMallocInternal(2048);
+		if (m->m_ext.ext_buf == NULL)
+			m->m_ext.ext_buf = sceNetMallocInternal(2048);
+		if (m->m_ext.ext_buf != NULL) {
+			m->m_data = m->m_ext.ext_buf;
+			m->m_flags |= 9;
+			m->m_ext.ext_size = 2048;
+			m->m_ext.ext_free = NULL;
+			m->m_ext.ext_arg = NULL;
+			m->m_ext.ext_nextref = m->m_ext.ext_prevref = m;
+		}
+		if ((m->m_flags & 1) == 0) {
+			error = 105;
+			goto bad;
+		}
+	}
+	error = _sce_pspnet_uiomove(m->m_data, len, uio);
+	if (error)
+		goto bad;
+	m->m_len = len;
+	s = _sce_pspnet_spllock();
+	if (ifp->if_snd.ifq_len >= ifp->if_snd.ifq_maxlen) {
+		error = 105;
+		_sce_pspnet_splunlock(s);
+		goto bad;
+	}
+	ifp->if_obytes += m->m_pkthdr.len;
+	m->m_nextpkt = NULL;
+	if (ifp->if_snd.ifq_tail == NULL)
+		ifp->if_snd.ifq_head = m;
+	else
+		ifp->if_snd.ifq_tail->m_nextpkt = m;
+	ifp->if_snd.ifq_tail = m;
+	ifp->if_snd.ifq_len++;
+	if ((ifp->if_flags & 0x400) == 0)
+		(*ifp->if_start)(ifp);
+	_sce_pspnet_splunlock(s);
+	return 0;
+bad:
+	sceNetMFreem(m);
+	return error;
+}
 
 INCLUDE_ASM("tmp/asm/tony_libs/pspnet/nonmatchings/bpf", func_00003B20);
 
