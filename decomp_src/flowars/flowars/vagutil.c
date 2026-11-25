@@ -1,5 +1,72 @@
 #include "common.h"
 
+typedef int SceUID;
+typedef int SceInt32;
+struct _anon1;
+typedef char SceChar8;
+struct _anon1 { /* size 0x10 */
+    SceUID fd;
+    SceChar8 assignName[10];
+};
+typedef struct _anon1 StrFile;
+typedef struct _SOUND_UTIL SoundUtil;
+struct _SOUND_UTIL;
+struct _SOUND_UTIL { /* size 0x18 */
+    void (*init)();
+    void (*load)();
+    int (*get_sound_loaded)();
+    void (*play)(int, int);
+    void (*playAll)();
+    void (*destroy)();
+};
+struct _anon2;
+struct _anon2 { /* size 0x33063c */
+    char vagWork[3343200];
+    int vagIndex[91][2];
+    int volume;
+};
+typedef struct _anon2 ModWave;
+
+extern int g_stage_status;
+extern SoundUtil soundUtil;
+
+extern ModWave mod_wave __asm__("PRX_ZERO");
+extern char vagFile[91][11];
+extern int totSize;
+extern int g_sound_loaded;
+
+
+void *memset(void *s, int c, unsigned int n);
+int sprintf(char *buf, const char *fmt, ...);
+int rand(void);
+void print_nothing(const char *fmt, ...);
+int sceKernelGetGPI(void);
+void sceKernelDcacheWritebackAll(void);
+int sceKernelExitDeleteThread(int status);
+SceInt32 strFileAssign(const SceChar8 *filename);
+SceInt32 strFileUnassign(void);
+SceInt32 strFileOpen(StrFile *file, const SceChar8 *filename, SceInt32 flags);
+SceInt32 strFileClose(StrFile *file);
+SceInt32 strFileRead(StrFile *file, void *buff, SceInt32 size);
+long long strFileLseek(StrFile *file, long long offset, SceInt32 whence);
+int sceWaveInit(void);
+int sceWaveExit(void);
+int sceWaveStart(int prio);
+int sceWaveEnd(void);
+int sceWaveSetVoice(int voice, void *vagAddr, int size, int loopflag);
+int sceWavePlay(int voice, int lvol, int rvol);
+void modWavePlay(int nSound, int nVol);
+
+#define load load_5330
+#define init init_54A8
+
+/* referenced from the data (function tables) */
+__asm__(".globl init_54A8");
+__asm__(".globl get_sound_loaded");
+__asm__(".globl play");
+__asm__(".globl playAll");
+__asm__(".globl destroy");
+
 INCLUDE_RODATA("tmp/asm/flowars/flowars/nonmatchings/vagutil", D_0002F3C8);
 
 INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/vagutil", vag_file_read);
@@ -10,12 +77,34 @@ INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/vagutil", vag_read_cluster);
 
 INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/vagutil", load_5330);
 
-INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/vagutil", init_54A8);
+static void init()
+{
+	sceWaveInit();
+	sceWaveStart(16);
+}
 
-INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/vagutil", play);
+static void play(int nSound, int nVol)
+{
+	if (nSound < 0)
+		return;
+	if (nSound >= 33 && nSound < 61)
+		nSound += (rand() % 2) * 29;
+	modWavePlay(nSound, nVol);
+}
 
-INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/vagutil", playAll);
+static void playAll()
+{
+	sceWaveSetVoice(0, mod_wave.vagWork, totSize, 0);
+	sceWavePlay(0, 127, 127);
+}
 
-INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/vagutil", destroy);
+static void destroy()
+{
+	sceWaveEnd();
+	sceWaveExit();
+}
 
-INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/vagutil", get_sound_loaded);
+static int get_sound_loaded()
+{
+	return g_sound_loaded;
+}
