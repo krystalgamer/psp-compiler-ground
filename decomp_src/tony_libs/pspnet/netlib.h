@@ -95,4 +95,88 @@ int sceKernelCancelAlarm(SceUID alarmid);
 /* ifhandle imports */
 int sceNetIfhandle_lib_4C2886CB(void *stat);
 
+#define TAILQ_HEAD(name, type) struct name { struct type *tqh_first; struct type **tqh_last; }
+#define TAILQ_ENTRY(type) struct { struct type *tqe_next; struct type **tqe_prev; }
+#define TAILQ_FIRST(head) ((head)->tqh_first)
+#define TAILQ_NEXT(elm, field) ((elm)->field.tqe_next)
+#define TAILQ_INIT(head) do { \
+	(head)->tqh_first = NULL; \
+	(head)->tqh_last = &(head)->tqh_first; \
+} while (0)
+#define TAILQ_INSERT_TAIL(head, elm, field) do { \
+	(elm)->field.tqe_next = NULL; \
+	(elm)->field.tqe_prev = (head)->tqh_last; \
+	*(head)->tqh_last = (elm); \
+	(head)->tqh_last = &(elm)->field.tqe_next; \
+} while (0)
+#define TAILQ_REMOVE(head, elm, field) do { \
+	if (((elm)->field.tqe_next) != NULL) \
+		(elm)->field.tqe_next->field.tqe_prev = (elm)->field.tqe_prev; \
+	else \
+		(head)->tqh_last = (elm)->field.tqe_prev; \
+	*(elm)->field.tqe_prev = (elm)->field.tqe_next; \
+} while (0)
+
+struct callout {
+	int c_data[10];
+};
+
+/* per-thread info (thread.c) */
+struct thread_info {
+	TAILQ_ENTRY(thread_info) link;
+	SceUID thid;
+	short refcnt;
+	int error;
+	int unk14[4];
+	struct callout co;
+	SceUID sema;
+	short semacnt;
+	char unk52[0x64 - 0x52];
+};
+TAILQ_HEAD(thread_list, thread_info);
+
+extern int D_0000A094;
+extern struct thread_list D_0000AC00;
+
+void *sceNetMallocInternal(unsigned int size);
+void sceNetFreeInternal(void *p);
+
+struct thread_info *_sce_pspnet_thread_enter(void);
+int _sce_pspnet_thread_leave(struct thread_info *ti, int error);
+void _sce_pspnet_callout_cleanup(struct callout *c);
+int _sce_pspnet_tabort(struct thread_info *ti);
+
+static inline struct thread_info *threadinfo_lock(SceUID thid)
+{
+	struct thread_info *ti;
+
+	sceKernelWaitSema(D_0000A094, 1, 0);
+	for (ti = D_0000AC00.tqh_first; ti != NULL; ti = ti->link.tqe_next) {
+		if (ti->thid == thid)
+			break;
+	}
+	if (ti != NULL)
+		ti->refcnt++;
+	sceKernelSignalSema(D_0000A094, 1);
+	return ti;
+}
+
+static inline void threadinfo_unlock(struct thread_info *ti)
+{
+	sceKernelWaitSema(D_0000A094, 1, 0);
+	ti->refcnt--;
+	sceKernelSignalSema(D_0000A094, 1);
+}
+
+static inline int thread_leave(struct thread_info *ti, int error)
+{
+	sceKernelWaitSema(D_0000A094, 1, 0);
+	ti->error = error;
+	ti->refcnt--;
+	if (--ti->semacnt == 0)
+		sceKernelDeleteSema(ti->sema);
+	sceKernelSignalSema(D_0000A094, 1);
+	return error ? -1 : 0;
+}
+
 #endif
