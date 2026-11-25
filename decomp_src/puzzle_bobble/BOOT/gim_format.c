@@ -15,7 +15,15 @@ int sceGimPictureCheckFileHeader(void *arg0, int arg1) {
     return var_a2;
 }
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/gim_format", sceGimPictureGetChunkCount);
+int sceGimPictureGetChunkCount(void *buf, int size) {
+    int var_v1;
+
+    var_v1 = 0;
+    if (buf != NULL) {
+        var_v1 = sceGimPictureCountChunk(buf + 0x10, 3);
+    }
+    return var_v1;
+}
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/gim_format", sceGimPictureGetChunk);
 
