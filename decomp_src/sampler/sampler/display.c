@@ -7,6 +7,36 @@
 #include <displaysvc.h>
 #include "display.h"
 
+typedef struct {
+	int current;
+	int page;
+	int pos;
+	int selected;
+	int saved;
+} MENU_LIST;
+
+typedef struct {
+	int write;
+	int read;
+	int count;
+	int size;
+	int scale;
+	int posx;
+	int posy;
+	int mode;
+} DISP_ENV;
+
+extern MENU_LIST menu_list;
+extern DISP_ENV dispenv;
+extern int frame_count;
+extern int frame_loss;
+extern int prevcur;
+extern int blinkframe;
+
+void *sceGeEdramGetAddr(void);
+void *sceGuSwapBuffers(void);
+static int init_all(t_displayBuffer *pDisp);
+static void draw_frame(t_displayBuffer *pDisp, SceChar8 *buffer);
 static SceInt32 dispbuf_isEnd(t_displayBuffer *pDisp);
 SceInt32 dispbuf_scale(t_displayBuffer *pDisp, int scale);
 SceInt32 dispbuf_pos(t_displayBuffer *pDisp, int x, int y);
@@ -19,9 +49,67 @@ INCLUDE_ASM("tmp/asm/sampler/sampler/nonmatchings/display", draw_menu);
 
 INCLUDE_ASM("tmp/asm/sampler/sampler/nonmatchings/display", draw_frame);
 
-INCLUDE_ASM("tmp/asm/sampler/sampler/nonmatchings/display", dispbuf_create);
+#ifdef NON_MATCHING
+/* only two stores swapped by the scheduler */
+SceInt32 dispbuf_create(t_displayBuffer *pDisp, SceInt32 disp_size, SceInt32 disp_num, SceInt32 pixelFormat)
+{
+	SceChar8 *ge_addr;
 
-INCLUDE_ASM("tmp/asm/sampler/sampler/nonmatchings/display", dispbuf_init);
+	pDisp->buf = NULL;
+	pDisp->start_sema = sceKernelCreateSema("start_sema", 0, 0, 1, NULL);
+	pDisp->lock_sema = sceKernelCreateSema("lock_sema", 0, 1, 1, NULL);
+	pDisp->display_wait_sema = sceKernelCreateSema("display_wait_sema", 0, 0, 1, NULL);
+	pDisp->buf = malloc(disp_num * sizeof(SceChar8 *));
+	if (pDisp->buf == NULL)
+		return -1;
+	pDisp->pts = malloc(disp_num * sizeof(SceUInt32));
+	if (pDisp->pts == NULL) {
+		if (pDisp->buf)
+			free(pDisp->buf);
+		return -1;
+	}
+	ge_addr = (SceChar8 *)sceGeEdramGetAddr() + 0x110000;
+	pDisp->buf[0] = ge_addr;
+	pDisp->buf[1] = ge_addr + 0x88000;
+	pDisp->pixelFormat = pixelFormat;
+	dispenv.size = disp_num;
+	pDisp->write = &dispenv.write;
+	pDisp->read = &dispenv.read;
+	pDisp->count = &dispenv.count;
+	pDisp->size = &dispenv.size;
+	pDisp->scale = &dispenv.scale;
+	pDisp->posx = &dispenv.posx;
+	pDisp->posy = &dispenv.posy;
+	pDisp->displayMode = &dispenv.mode;
+	return 0;
+}
+#else
+INCLUDE_ASM("tmp/asm/sampler/sampler/nonmatchings/display", dispbuf_create);
+#endif
+
+SceInt32 dispbuf_init(t_displayBuffer *pDisp)
+{
+	if (init_all(pDisp) != 0) {
+		puts("fatal error : init_all()");
+		return -1;
+	}
+	frame_count = 0;
+	frame_loss = 0;
+	if (menu_list.current != prevcur) {
+		prevcur = menu_list.current;
+		blinkframe = 0;
+	}
+	*pDisp->write = 0;
+	*pDisp->read = 0;
+	*pDisp->count = 0;
+	*pDisp->scale = 0;
+	*pDisp->posx = 0;
+	*pDisp->posy = 0;
+	*pDisp->displayMode = 1;
+	sceKernelPollSema(pDisp->start_sema, 1);
+	sceKernelPollSema(pDisp->display_wait_sema, 1);
+	return 0;
+}
 
 SceInt32 dispbuf_end(t_displayBuffer *pDisp)
 {
@@ -108,7 +196,18 @@ SceInt32 dispbuf_setStartFlag(t_displayBuffer *pDisp)
 	return sceKernelSignalSema(pDisp->start_sema, 1);
 }
 
-INCLUDE_ASM("tmp/asm/sampler/sampler/nonmatchings/display", dispbuf_show);
+SceInt32 dispbuf_show(t_displayBuffer *pDisp)
+{
+	SceChar8 *buffer;
+
+	if (*pDisp->displayMode == 1) {
+		buffer = *pDisp->buf;
+		draw_frame(pDisp, buffer);
+		sceDisplayWaitVblankStart();
+		sceGuSwapBuffers();
+	}
+	return 0;
+}
 
 SceInt32 dispbuf_scale(t_displayBuffer *pDisp, int scale)
 {
