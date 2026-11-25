@@ -1,4 +1,5 @@
 # unit                                     compiler        source
+manualtest                                   1.5.1.internal  manualtest.c
 memory                                       1.5.1.internal  memory.c
 string                                       1.5.1.internal  string.c
 sprintf                                      1.5.1.internal  sprintf.c
