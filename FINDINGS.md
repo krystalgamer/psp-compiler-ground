@@ -93,6 +93,9 @@ modules (`tools/nltest.py`, `tools/objcmp.py`).
   earlyclobbers, madd/msub, insv, loadgpsym, rotate counts, asm delay
   slots, gp_safe, block-move offsets) are not exercised by this code: there
   are no madd/msub/ins/ext instructions in any of the game modules, and
+  the single-float DSP code decompiled since (UTST99261's Xing mp3
+  decoder: fdct, imdct, window, sbt, l3hybrid, l3msis; sampler's movie,
+  display, utils) compiles identically with both cc1s too, and
   inline asm never ends up in a delay slot with either cc1 (only psp-as
   swaps it there, as in 1.5.1's `usrKernelIcacheInvalidate`).  They stay
   out of the 1.6.1 tree for lack of evidence.
@@ -135,3 +138,8 @@ modules (`tools/nltest.py`, `tools/objcmp.py`).
   inlining: with `-O3` the small static helpers such as
   `_streamId2sceMpegStreamId` would be inlined and gone).  The units say
   `cflags: -O2 -frename-registers`.
+- `tools/discrim.py --cc1 1.3.1-orig,1.5.1` on these units differs exactly
+  where a conditional move is made (`_type_check`, `_version_check`,
+  `scePsmfGetCurrentStreamType`, `scePsmfCheckEP_map_Base`,
+  `scePsmfCheckStreamType_Base`, `_sceMpegId2type`); the 1.3.1 side is the
+  one that matches.
