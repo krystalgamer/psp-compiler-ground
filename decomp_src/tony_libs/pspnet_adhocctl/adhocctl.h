@@ -197,6 +197,26 @@ struct wlan_conf {
 	int unk14;
 };
 
+struct gm_bss {
+	struct gm_bss *next;		/* 0x00 */
+	struct SceNetEtherAddr bssid;	/* 0x04 */
+	unsigned char channel;		/* 0x0A */
+	unsigned char unkB[0x21];	/* 0x0B */
+	int unk2C;			/* 0x2C */
+	unsigned char unk30[0x1E];	/* 0x30 */
+	unsigned char unk4E;		/* 0x4E */
+	unsigned char unk4F;		/* 0x4F */
+	unsigned char unk50;		/* 0x50 */
+	unsigned char unk51;		/* 0x51 */
+	unsigned char unk52;		/* 0x52 */
+};
+
+struct gm_channel {
+	int used;
+	int count;
+	unsigned int bits;
+};
+
 /* game mode parameters (0x50 bytes, byte aligned) */
 struct gm_param {
 	unsigned char data[0x44];
@@ -254,6 +274,8 @@ extern const char D_0000670C[];	/* "wlan" */
 extern const char D_000067B8[];	/* "wlan" */
 extern const unsigned char D_00006714[3];
 extern int D_00007090;
+extern struct gm_channel D_0000706C[3];
+extern unsigned char D_00007494[0xA80];
 
 /* main */
 int func_000017A8(SceSize stacksize, int prio, const struct SceNetAdhocctlAdhocId *adhoc_id);
@@ -300,6 +322,7 @@ int func_00002F7C(struct adhocctl_ctx *p, struct gm_request *gm);
 int func_0000378C(struct adhocctl_ctx *p, struct gm_request *gm);
 void func_00004730(struct adhocctl_ctx *p, struct gm_request *gm);
 int func_000046B0(int value);
+int func_000042A0(struct gm_request *gm, unsigned char *channel, unsigned char *slot);
 
 /* ptp */
 int func_000047FC(struct gm_request *gm, SceUInt64 start, int id, void *data, int len);
@@ -307,6 +330,10 @@ int func_00004BB4(struct gm_request *gm, SceUInt64 start, int id, unsigned char 
 unsigned char *func_00004CC4(int type, unsigned char *buf, int len, int *outlen);
 
 /* imports */
+int sceNetAdhocPtpAccept(int id, struct SceNetEtherAddr *mac, unsigned short *port, unsigned int timeout, int flag);
+int sceNetAdhocPtpSend(int id, const void *data, int *len, unsigned int timeout, int flag);
+int sceNetAdhocPtpFlush(int id, unsigned int timeout, int flag);
+int sceNetAdhocPtpClose(int id, int flag);
 int sceNetConfig80211GetConf(const char *ifname, struct wlan_conf *conf);
 int sceNetConfig80211SetConf(const char *ifname, struct wlan_conf *conf);
 int sceWlanDrv_lib_5BAA1FE5(int);
