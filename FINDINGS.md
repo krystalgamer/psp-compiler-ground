@@ -109,6 +109,22 @@ modules (`tools/nltest.py`, `tools/objcmp.py`).
   loop-invariant; an `if` is turned into `max` by if-conversion after the
   loop optimizer), and constants hoisted to an outer loop (a goto-loop has
   no loop notes, so 3.3's loop.c treats it as part of the outer loop).
+- puzzle_bobble's game code has no DWARF, but its symbol table keeps the
+  `STT_FILE` symbols, so it is split into its 23 source files
+  (`config/puzzle_bobble/files.BOOT.txt`).  The `.comment` entries in link
+  order give each file's compiler: the game is 1.5.1, except `file_sub.c`
+  and `savedata.c`, which are 1.6.1 (and the map data, 1.4.0).  Both
+  1.6.1 files match with the 1.6.1 tree (24 of 28 functions so far) and
+  with 1.7.1's cc1.  1.5.1 and 1.3.1 fail exactly at `load_buf` and
+  `set_param_save`, which copy the 40-byte save data with an inline block
+  move.  It checks the alignment at run time and copies with `lwl`/`lwr`
+  when it is unaligned, which is more evidence for the `-mno-ulsw` default
+  being gone in 1.6.1.
+- Source-level traps found on the way: a `memcpy` whose length is a
+  variable that holds a constant (`len = strlen("ULKS46002")`) stays a
+  call, while a literal length of 32 bytes or less is expanded inline.
+  GCC 3.3's `while (c) body` and `for (;;) { if (!c) break; body }`
+  schedule differently.
 - `__builtin_allegrex_wsbh` already exists in 1.6.1 (`sceNetHtons` in
   UTST99261 mp3/netmgr uses it).
 - **1.6.1.internal: no `.rodata.cst*` sections.**  In the release
