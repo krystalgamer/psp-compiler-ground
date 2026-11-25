@@ -694,7 +694,14 @@ void sceGuDepthOffset(unsigned int offset)
 	sceGuDepthRange(context->near_plane, context->far_plane);
 }
 
-INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/libgu", sceGuOffset);
+void sceGuOffset(unsigned int x, unsigned int y)
+{
+	unsigned int ox = x << 4;
+	unsigned int oy = y << 4;
+
+	send_commandi(76, ox);
+	send_commandi(77, oy);
+}
 
 void sceGuPatchDivide(int ulevel, int vlevel)
 {
@@ -890,7 +897,10 @@ void sceGuTexOffset(float u, float v)
 	send_commandf(75, v);
 }
 
-INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/libgu", sceGuTexFlush);
+void sceGuTexFlush(void)
+{
+	send_commandf(203, 0.0f);
+}
 
 void sceGuTexSlope(float slope)
 {
