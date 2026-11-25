@@ -51,6 +51,15 @@ static inline int frameSamples(AtracInfo *info)
 	return n;
 }
 
+static inline int frameSkip(AtracInfo *info)
+{
+	int n = 0x170;
+
+	if (info->codec == 0x1001)
+		n = 0x45;
+	return n;
+}
+
 extern AtracCtx D_00003930[4];
 
 int func_000020B8(AtracInfo *info);
@@ -58,6 +67,7 @@ int func_000029E4(AtracInfo *info);
 int func_0000220C(AtracInfo *info);
 int func_00002180(AtracInfo *info);
 int func_00001F7C(AtracInfo *info);
+unsigned int func_000022B0(AtracInfo *info);
 /* --- end declarations --- */
 
 INCLUDE_ASM("tmp/asm/tony_libs/libatrac3plus/nonmatchings/libatrac3plus", sceAtracGetAtracID);
@@ -250,7 +260,16 @@ int func_00001F7C(AtracInfo *info)
 	return ret;
 }
 
-INCLUDE_ASM("tmp/asm/tony_libs/libatrac3plus/nonmatchings/libatrac3plus", func_00001FAC);
+unsigned int func_00001FAC(AtracInfo *info, unsigned int pos)
+{
+	int n = frameSamples(info);
+	int skip = frameSkip(info);
+	unsigned int off = (pos / n - 1) * info->sampleSize;
+
+	if (pos % n < skip && off != 0)
+		off -= info->sampleSize;
+	return off + info->unk2C;
+}
 
 int func_0000201C(AtracInfo *info, unsigned int pos)
 {
@@ -259,7 +278,16 @@ int func_0000201C(AtracInfo *info, unsigned int pos)
 	return off + info->unk2C;
 }
 
-INCLUDE_ASM("tmp/asm/tony_libs/libatrac3plus/nonmatchings/libatrac3plus", func_00002064);
+int func_00002064(AtracInfo *info, unsigned int pos)
+{
+	int n = frameSamples(info);
+	int ret = 1;
+	int skip = frameSkip(info);
+
+	if (pos % n < skip)
+		ret = 2;
+	return ret;
+}
 
 INCLUDE_ASM("tmp/asm/tony_libs/libatrac3plus/nonmatchings/libatrac3plus", func_000020B8);
 
@@ -400,7 +428,17 @@ unsigned int func_00002F50(unsigned int a, unsigned int b, unsigned int c, unsig
 	return r;
 }
 
-INCLUDE_ASM("tmp/asm/tony_libs/libatrac3plus/nonmatchings/libatrac3plus", func_00002F74);
+unsigned int func_00002F74(unsigned int a, unsigned int b, unsigned int start, unsigned int end, unsigned int lim)
+{
+	unsigned int x;
+
+	if (b >= lim)
+		return 0;
+	x = a + b;
+	if (x < end + 1)
+		return x;
+	return start + (x - end - 1) % (end - start + 1);
+}
 
 INCLUDE_ASM("tmp/asm/tony_libs/libatrac3plus/nonmatchings/libatrac3plus", func_00002FC0);
 
@@ -416,7 +454,19 @@ unsigned int func_0000303C(AtracInfo *info)
 
 INCLUDE_ASM("tmp/asm/tony_libs/libatrac3plus/nonmatchings/libatrac3plus", func_00003064);
 
-INCLUDE_ASM("tmp/asm/tony_libs/libatrac3plus/nonmatchings/libatrac3plus", func_000030FC);
+unsigned int func_000030FC(unsigned int a, unsigned int b, unsigned int c, unsigned int d)
+{
+	unsigned int ret = 0;
+
+	if (a + c < b) {
+		ret = b - (a + c);
+	} else {
+		unsigned int m = (b - a) % d;
+		if (b >= m + c)
+			ret = b - m - c;
+	}
+	return ret;
+}
 
 void func_00003148(AtracInfo *info, AtracBufInfo *out)
 {
