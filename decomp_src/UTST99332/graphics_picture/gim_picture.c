@@ -511,7 +511,77 @@ void sceGimPictureSetPalettePixels(SceGimPicture *picture, int level, int frame,
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_picture/nonmatchings/gim_picture", sceGimPictureReallocImage);
 
+#define Bpps D_0002A38C	/* sceGimPictureReallocPalette's static char Bpps[8] */
+extern char Bpps[8];
+
+#ifdef NON_MATCHING
+/* the original spills count and bpp to the stack instead of using s8 */
+_Bool sceGimPictureReallocPalette(SceGimPicture *picture, int format, int w, int level, int frame, void *pixels)
+{
+	int size1;
+	int bpp;
+	int level_size;
+	int size2;
+	SceGimPaletteHeader *pal;
+	char *offset;
+	int *offsets;
+	int count;
+
+	if (picture == NULL)
+		return 0;
+	if (w < 1 || w > 256)
+		return 0;
+	if (level < 1 || level > 8)
+		return 0;
+	if (frame < 1)
+		return 0;
+	count = level * frame;
+	bpp = Bpps[format & 7];
+	size1 = (48 + count * 4 + 15) / 16 * 16;
+	level_size = ((bpp * w + 7) / 8 + 15) & ~15;
+	size2 = (pixels != NULL) ? 0 : level_size * frame;
+	sceGimPictureFreeMemory2(picture->m_palette);
+	pal = sceGimPictureAllocMemory2(size1 + size2);
+	picture->m_palette = pal;
+	if (pal == NULL)
+		return 0;
+	pal->header_size = sizeof(SceGimPaletteHeader);
+	pal->reference = 1;
+	pal->format = format;
+	pal->order = 0;
+	pal->width = w;
+	pal->height = 1;
+	pal->bpp = bpp;
+	pal->pitch_align = 16;
+	pal->height_align = 1;
+	pal->dim_count = 2;
+	pal->reserved = 0;
+	pal->reserved2 = 0;
+	pal->offsets = sizeof(SceGimPaletteHeader);
+	pal->images = size1;
+	pal->total = size1 + size2;
+	pal->plane_mask = 0;
+	pal->level_type = 2;
+	pal->level_count = level;
+	pal->frame_type = 3;
+	pal->frame_count = frame;
+	offset = (pixels != NULL) ? (char *)pixels : (char *)pal + size1;
+	offsets = (int *)((char *)pal + sizeof(SceGimPaletteHeader));
+	{
+		int i;
+
+		for (i = 0; i < count; i++) {
+			offsets[i] = (int)offset;
+			offset += level_size;
+		}
+	}
+	reconfigure_picture(picture);
+	return 1;
+}
+#else
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_picture/nonmatchings/gim_picture", sceGimPictureReallocPalette);
+#endif
+#undef Bpps
 
 int sceGimPictureHasAnimation(SceGimPicture *picture) {
     int var_v0;
