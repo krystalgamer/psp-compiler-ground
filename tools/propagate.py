@@ -166,7 +166,7 @@ def main():
         mod = None
         for path in sorted((ROOT / "decomp_src" / a.target / module).rglob("*.c")):
             unit = str(path.relative_to(ROOT / "decomp_src" / a.target / module))[:-2]
-            if unit.startswith(("newlib/", "libgcc/", "gcc-3.3.3/")):
+            if unit.startswith(("newlib/", "libgcc/", "gcc-3.3.3/")) or unit == "crt0":
                 continue
             for func in re.findall(r'^INCLUDE_ASM\("[^"]+", (\w+)\);$', path.read_text(), re.M):
                 cands = [(b, f) for b, f in (lib.get(func) or lib.get(base(func), [])) if f != path]
