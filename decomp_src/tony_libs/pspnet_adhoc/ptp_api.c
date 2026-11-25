@@ -311,7 +311,69 @@ INCLUDE_ASM("tmp/asm/tony_libs/pspnet_adhoc/nonmatchings/ptp_api", func_00003EF4
 
 INCLUDE_ASM("tmp/asm/tony_libs/pspnet_adhoc/nonmatchings/ptp_api", func_000042B0);
 
-INCLUDE_ASM("tmp/asm/tony_libs/pspnet_adhoc/nonmatchings/ptp_api", func_000045E4);
+int func_000045E4(struct adhoc_socket *so, unsigned int timeout, int flag)
+{
+	struct ptpcb *pcb;
+	SceUInt64 start, now;
+	unsigned int usec;
+	int error;
+	int ret;
+
+	pcb = so->pcb;
+	start = 0;
+	while (pcb->snd.sb_cc != 0) {
+		ret = 0x8041070C;
+		if (so->flags & 0x8000)
+			goto out;
+		ret = 0x80410708;
+		if (so->flags & 0x200)
+			goto out;
+		ret = 0x80410709;
+		if (flag & 1)
+			goto out;
+		usec = 0;
+		if (timeout != 0) {
+			if (start == 0)
+				start = sceKernelGetSystemTimeWide();
+			now = sceKernelGetSystemTimeWide();
+			if (now - start >= timeout) {
+				ret = 0x80410715;
+				goto out;
+			}
+			usec = timeout - (now - start);
+		}
+		pcb->snd.sb_flags |= 1;
+		error = _sce_pspnet_tsleep_usec(&pcb->snd, usec);
+		if (so->flags & 0x200)
+			error = 5;
+		if (so->flags & 1)
+			error = 0x20;
+		if (error != 0) {
+			switch (error) {
+			case 11:
+				error = 0x80410715;
+				break;
+			case 4:
+				error = 0x80410719;
+				break;
+			case 5:
+				error = 0x80410708;
+				break;
+			case 0x20:
+				error = 0x80410707;
+				break;
+			default:
+				error = 0x80410002;
+				break;
+			}
+			ret = error;
+			goto out;
+		}
+	}
+	ret = 0;
+out:
+	return ret;
+}
 
 void sceNetAdhoc_lib_62B875A8(void)
 {
