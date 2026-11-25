@@ -421,13 +421,93 @@ SceGimImageHeader *sceGimPictureGetPalette(SceGimPicture *picture) {
     return var_v0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_picture/nonmatchings/gim_picture", sceGimPictureGetImagePixels);
+void *sceGimPictureGetImagePixels(SceGimPicture *picture, int level, int frame)
+{
+	SceGimImageHeader *image;
+	int n_levels;
+	int n_frames;
+	void **offsets;
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_picture/nonmatchings/gim_picture", sceGimPictureGetPalettePixels);
+	if (picture == NULL)
+		return NULL;
+	image = picture->m_image;
+	if (image == NULL)
+		return NULL;
+	n_levels = image->level_count;
+	n_frames = image->frame_count;
+	if (level < 0 || level >= n_levels)
+		return NULL;
+	frame %= n_frames; if (frame & 0x8000) frame = (frame + n_frames) & 0x7fff;
+	offsets = (void **)((char *)image + image->offsets);
+	return offsets[n_levels * frame + level];
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_picture/nonmatchings/gim_picture", sceGimPictureSetImagePixels);
+void *sceGimPictureGetPalettePixels(SceGimPicture *picture, int level, int frame)
+{
+	SceGimPaletteHeader *palette;
+	int n_levels;
+	int n_frames;
+	void **offsets;
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_picture/nonmatchings/gim_picture", sceGimPictureSetPalettePixels);
+	if (picture == NULL)
+		return NULL;
+	palette = picture->m_palette;
+	if (palette == NULL)
+		return NULL;
+	n_levels = palette->level_count;
+	n_frames = palette->frame_count;
+	if (level < 0 || level >= n_levels)
+		return NULL;
+	frame %= n_frames; if (frame & 0x8000) frame = (frame + n_frames) & 0x7fff;
+	offsets = (void **)((char *)palette + palette->offsets);
+	return offsets[n_levels * frame + level];
+}
+
+void sceGimPictureSetImagePixels(SceGimPicture *picture, int level, int frame, void *pixels)
+{
+	SceGimImageHeader *image;
+	int n_levels;
+	int n_frames;
+	void **offsets;
+
+	if (picture == NULL)
+		return;
+	if (pixels == NULL)
+		return;
+	image = picture->m_image;
+	if (image == NULL)
+		return;
+	n_levels = image->level_count;
+	n_frames = image->frame_count;
+	if (level < 0 || level >= n_levels)
+		return;
+	frame %= n_frames; if (frame & 0x8000) frame = (frame + n_frames) & 0x7fff;
+	offsets = (void **)((char *)image + image->offsets);
+	offsets[n_levels * frame + level] = pixels;
+}
+
+void sceGimPictureSetPalettePixels(SceGimPicture *picture, int level, int frame, void *pixels)
+{
+	SceGimPaletteHeader *palette;
+	int n_levels;
+	int n_frames;
+	void **offsets;
+
+	if (picture == NULL)
+		return;
+	if (pixels == NULL)
+		return;
+	palette = picture->m_palette;
+	if (palette == NULL)
+		return;
+	n_levels = palette->level_count;
+	n_frames = palette->frame_count;
+	if (level < 0 || level >= n_levels)
+		return;
+	frame %= n_frames; if (frame & 0x8000) frame = (frame + n_frames) & 0x7fff;
+	offsets = (void **)((char *)palette + palette->offsets);
+	offsets[n_levels * frame + level] = pixels;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_picture/nonmatchings/gim_picture", sceGimPictureReallocImage);
 
