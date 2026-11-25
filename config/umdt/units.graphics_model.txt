@@ -1,0 +1,21 @@
+# unit                                     compiler        source
+memory                                       1.5.1.internal  memory.c
+string                                       1.5.1.internal  string.c
+sprintf                                      1.5.1.internal  sprintf.c
+ctype                                        1.5.1.internal  ctype.c
+newlib/libm/math/sf_cos                      1.5.1.internal  ../../../../../newlib-1.12.0/newlib/libm/math/sf_cos.c
+newlib/libm/math/sf_floor                    1.5.1.internal  ../../../../../newlib-1.12.0/newlib/libm/math/sf_floor.c
+newlib/libm/math/sf_sin                      1.5.1.internal  ../../../../../newlib-1.12.0/newlib/libm/math/sf_sin.c
+newlib/libm/math/wf_acos                     1.5.1.internal  ../../../../../newlib-1.12.0/newlib/libm/math/wf_acos.c
+newlib/libm/math/wf_sqrt                     1.5.1.internal  ../../../../../newlib-1.12.0/newlib/libm/math/wf_sqrt.c
+newlib/libm/math/ef_acos                     1.5.1.internal  ../../../../../newlib-1.12.0/newlib/libm/math/ef_acos.c
+newlib/libm/math/ef_rem_pio2                 1.5.1.internal  ../../../../../newlib-1.12.0/newlib/libm/math/ef_rem_pio2.c
+newlib/libm/math/ef_sqrt                     1.5.1.internal  ../../../../../newlib-1.12.0/newlib/libm/math/ef_sqrt.c
+newlib/libm/math/kf_cos                      1.5.1.internal  ../../../../../newlib-1.12.0/newlib/libm/math/kf_cos.c
+newlib/libm/math/kf_rem_pio2                 1.5.1.internal  ../../../../../newlib-1.12.0/newlib/libm/math/kf_rem_pio2.c
+newlib/libm/math/kf_sin                      1.5.1.internal  ../../../../../newlib-1.12.0/newlib/libm/math/kf_sin.c
+newlib/libm/common/s_matherr                 1.5.1.internal  ../../../../../newlib-1.12.0/newlib/libm/common/s_matherr.c
+newlib/libm/math/sf_fabs                     1.5.1.internal  ../../../../../newlib-1.12.0/newlib/libm/math/sf_fabs.c
+newlib/libm/math/sf_isnan                    1.5.1.internal  ../../../../../newlib-1.12.0/newlib/libm/math/sf_isnan.c
+newlib/libm/common/sf_scalbn                 1.5.1.internal  ../../../../../newlib-1.12.0/newlib/libm/common/sf_scalbn.c
+newlib/libm/common/sf_copysign               1.5.1.internal  ../../../../../newlib-1.12.0/newlib/libm/common/sf_copysign.c

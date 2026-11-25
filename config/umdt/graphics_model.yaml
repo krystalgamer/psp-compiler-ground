@@ -1,0 +1,112 @@
+name: graphics_model (umdt)
+sha1: 1c0b40439810faadcef80571e645319747adbac9
+options:
+  basename: graphics_model
+  target_path: tmp/baserom/umdt/graphics_model.prx
+  elf_path: tmp/build/umdt/graphics_model.elf
+  base_path: ../..
+  platform: psp
+  compiler: GCC
+
+  asm_path: tmp/asm/umdt/graphics_model
+  src_path: decomp_src/umdt/graphics_model
+  build_path: tmp/build/umdt
+  ld_script_path: tmp/build/umdt/graphics_model.ld
+  cache_path: tmp/build/umdt/.splat_cache.graphics_model
+  symbol_addrs_path:
+    - config/umdt/symbol_addrs.graphics_model.txt
+    - tmp/build/umdt/prx_syms.graphics_model.txt
+  reloc_addrs_path: [tmp/build/umdt/reloc_addrs.graphics_model.txt]
+  asset_path: tmp/assets/umdt/graphics_model
+  extensions_path: tools/splat_ext
+  undefined_funcs_auto_path: tmp/build/umdt/undefined_funcs_auto.graphics_model.txt
+  undefined_syms_auto_path: tmp/build/umdt/undefined_syms_auto.graphics_model.txt
+
+  find_file_boundaries: false
+  section_order: [".text", ".data", ".rodata", ".bss"]
+  migrate_rodata_to_functions: true
+  use_legacy_include_asm: false
+  asm_function_macro: glabel
+  asm_jtbl_label_macro: jlabel
+  asm_data_macro: dlabel
+  asm_end_label: endlabel
+  string_encoding: ASCII
+  data_string_encoding: ASCII
+  rodata_string_guesser_level: 2
+  data_string_guesser_level: 2
+  gp_value: 0x8260
+  add_set_gp_64: false
+  named_regs_for_c_funcs: false
+  ld_bss_is_noload: true
+  emit_subalign: false
+  ld_align_segment_vram_end: false
+  ld_align_section_vram_end: false
+  disasm_unknown: true
+  global_vram_start: 0x0
+  global_vram_end: 0x321BEC
+
+segments:
+  - [0x0, bin, elf_header]
+  - name: graphics_model
+    type: code
+    start: 0x80
+    vram: 0x0
+    subsegments:
+      - [0x80, asm, asm/text_0]
+      - [0x2F14, c, memory]
+      - [0x30EC, c, string]
+      - [0x38D8, c, sprintf]
+      - [0x40A8, c, ctype]
+      - [0x4120, asm, asm/text_40A0]
+      - [0x13ED8, c, newlib/libm/math/sf_cos]
+      - [0x13FA8, c, newlib/libm/math/sf_floor]
+      - [0x14088, c, newlib/libm/math/sf_sin]
+      - [0x14160, c, newlib/libm/math/wf_acos]
+      - [0x1427C, c, newlib/libm/math/wf_sqrt]
+      - [0x143AC, c, newlib/libm/math/ef_acos]
+      - [0x146F0, c, newlib/libm/math/ef_rem_pio2]
+      - [0x14A4C, c, newlib/libm/math/ef_sqrt]
+      - [0x14B7C, c, newlib/libm/math/kf_cos]
+      - [0x14CA4, c, newlib/libm/math/kf_rem_pio2]
+      - [0x15464, c, newlib/libm/math/kf_sin]
+      - [0x15540, c, newlib/libm/common/s_matherr]
+      - [0x15548, c, newlib/libm/math/sf_fabs]
+      - [0x15564, c, newlib/libm/math/sf_isnan]
+      - [0x15580, c, newlib/libm/common/sf_scalbn]
+      - [0x156B4, c, newlib/libm/common/sf_copysign]
+      - [0x156E0, asm, asm/text_15660]
+      - { start: 0x15DF4, type: asm, name: sceStub, linker_section: .sceStub.text }
+      - { start: 0x15F2C, type: prxpad, order: .text }
+      - { start: 0x15F30, type: rodata, name: lib_ent_top, linker_section: .lib.ent.top }
+      - { start: 0x15F34, type: rodata, name: lib_ent, linker_section: .lib.ent }
+      - { start: 0x15F54, type: rodata, name: lib_stub, linker_section: .lib.stub }
+      - { start: 0x15FF4, type: rodata, name: module_info, linker_section: .rodata.sceModuleInfo }
+      - { start: 0x16028, type: rodata, name: resident, linker_section: .rodata.sceResident }
+      - { start: 0x16218, type: rodata, name: nid, linker_section: .rodata.sceNid }
+      - { start: 0x162B4, type: prxpad, order: .rodata }
+      - [0x162C0, rodata, asm/rodata_16240]
+      - [0x1654C, .rodata, sprintf]
+      - [0x16760, rodata, asm/rodata_166E0]
+      - [0x1757C, .rodata, newlib/libm/math/sf_cos]
+      - [0x17580, .rodata, newlib/libm/math/sf_floor]
+      - [0x17588, .rodata, newlib/libm/math/wf_acos]
+      - [0x17594, .rodata, newlib/libm/math/wf_sqrt]
+      - [0x175A8, .rodata, newlib/libm/math/ef_acos]
+      - [0x17624, .rodata, newlib/libm/math/ef_rem_pio2]
+      - [0x17A08, .rodata, newlib/libm/math/ef_sqrt]
+      - [0x17A14, .rodata, newlib/libm/math/kf_cos]
+      - [0x17A54, .rodata, newlib/libm/math/kf_rem_pio2]
+      - [0x17AB4, .rodata, newlib/libm/math/kf_sin]
+      - [0x17AEC, .rodata, newlib/libm/common/s_matherr]
+      - [0x17AF0, .rodata, newlib/libm/common/sf_scalbn]
+  - [0x17B10, bin, seg1_align]
+  - name: graphics_model_seg1
+    type: code
+    start: 0x17B40
+    vram: 0x17A90
+    bss_size: 0x309EE0
+    subsegments:
+      - [0x17B40, data, data]
+      - { start: 0x17DAC, type: bss, vram: 0x17D00 }
+  - [0x17DAC, bin, elf_trailer]
+  - [0x57198]

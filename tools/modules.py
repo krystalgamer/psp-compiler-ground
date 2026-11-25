@@ -24,6 +24,7 @@ LOOSE = {
 ZIPS = {
     "tony_libs": "tony_libs.zip",
     "psp184": "psp_161_to_184.zip",
+    "umdt": "umdt.zip",
 }
 
 

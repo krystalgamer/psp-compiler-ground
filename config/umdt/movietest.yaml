@@ -1,0 +1,82 @@
+name: movietest (umdt)
+sha1: b61637ddd1c13b666db1beb9228068be8b002a30
+options:
+  basename: movietest
+  target_path: tmp/baserom/umdt/movietest.prx
+  elf_path: tmp/build/umdt/movietest.elf
+  base_path: ../..
+  platform: psp
+  compiler: GCC
+
+  asm_path: tmp/asm/umdt/movietest
+  src_path: decomp_src/umdt/movietest
+  build_path: tmp/build/umdt
+  ld_script_path: tmp/build/umdt/movietest.ld
+  cache_path: tmp/build/umdt/.splat_cache.movietest
+  symbol_addrs_path:
+    - config/umdt/symbol_addrs.movietest.txt
+    - tmp/build/umdt/prx_syms.movietest.txt
+  reloc_addrs_path: [tmp/build/umdt/reloc_addrs.movietest.txt]
+  asset_path: tmp/assets/umdt/movietest
+  extensions_path: tools/splat_ext
+  undefined_funcs_auto_path: tmp/build/umdt/undefined_funcs_auto.movietest.txt
+  undefined_syms_auto_path: tmp/build/umdt/undefined_syms_auto.movietest.txt
+
+  find_file_boundaries: false
+  section_order: [".text", ".data", ".rodata", ".bss"]
+  migrate_rodata_to_functions: true
+  use_legacy_include_asm: false
+  asm_function_macro: glabel
+  asm_jtbl_label_macro: jlabel
+  asm_data_macro: dlabel
+  asm_end_label: endlabel
+  string_encoding: ASCII
+  data_string_encoding: ASCII
+  rodata_string_guesser_level: 2
+  data_string_guesser_level: 2
+  gp_value: 0x8090
+  add_set_gp_64: false
+  named_regs_for_c_funcs: false
+  ld_bss_is_noload: true
+  emit_subalign: false
+  ld_align_segment_vram_end: false
+  ld_align_section_vram_end: false
+  disasm_unknown: true
+  global_vram_start: 0x0
+  global_vram_end: 0x87A0
+
+segments:
+  - [0x0, bin, elf_header]
+  - name: movietest
+    type: code
+    start: 0x80
+    vram: 0x0
+    subsegments:
+      - [0x80, asm, asm/text_0]
+      - [0x33FC, c, string]
+      - [0x3BE8, c, sprintf]
+      - [0x43B8, c, ctype]
+      - [0x4430, c, memory]
+      - [0x4608, asm, asm/text_4588]
+      - { start: 0x6388, type: asm, name: sceStub, linker_section: .sceStub.text }
+      - { start: 0x6588, type: prxpad, order: .text }
+      - { start: 0x6590, type: rodata, name: lib_ent_top, linker_section: .lib.ent.top }
+      - { start: 0x6594, type: rodata, name: lib_ent, linker_section: .lib.ent }
+      - { start: 0x65B4, type: rodata, name: lib_stub, linker_section: .lib.stub }
+      - { start: 0x6654, type: rodata, name: module_info, linker_section: .rodata.sceModuleInfo }
+      - { start: 0x6688, type: rodata, name: resident, linker_section: .rodata.sceResident }
+      - { start: 0x686C, type: rodata, name: nid, linker_section: .rodata.sceNid }
+      - [0x696C, rodata, asm/rodata_68EC]
+      - [0x7170, .rodata, sprintf]
+      - [0x7384, rodata, asm/rodata_7304]
+  - [0x739C, bin, seg1_align]
+  - name: movietest_seg1
+    type: code
+    start: 0x73A0
+    vram: 0x7320
+    bss_size: 0x13D0
+    subsegments:
+      - [0x73A0, data, data]
+      - { start: 0x7440, type: bss, vram: 0x73C0 }
+  - [0x7440, bin, elf_trailer]
+  - [0x16CD0]

@@ -1,0 +1,79 @@
+name: lcdtest (umdt)
+sha1: f98fe0ca4b7ad06e3117637cdded4eb6655a8841
+options:
+  basename: lcdtest
+  target_path: tmp/baserom/umdt/lcdtest.prx
+  elf_path: tmp/build/umdt/lcdtest.elf
+  base_path: ../..
+  platform: psp
+  compiler: GCC
+
+  asm_path: tmp/asm/umdt/lcdtest
+  src_path: decomp_src/umdt/lcdtest
+  build_path: tmp/build/umdt
+  ld_script_path: tmp/build/umdt/lcdtest.ld
+  cache_path: tmp/build/umdt/.splat_cache.lcdtest
+  symbol_addrs_path:
+    - config/umdt/symbol_addrs.lcdtest.txt
+    - tmp/build/umdt/prx_syms.lcdtest.txt
+  reloc_addrs_path: [tmp/build/umdt/reloc_addrs.lcdtest.txt]
+  asset_path: tmp/assets/umdt/lcdtest
+  extensions_path: tools/splat_ext
+  undefined_funcs_auto_path: tmp/build/umdt/undefined_funcs_auto.lcdtest.txt
+  undefined_syms_auto_path: tmp/build/umdt/undefined_syms_auto.lcdtest.txt
+
+  find_file_boundaries: false
+  section_order: [".text", ".data", ".rodata", ".bss"]
+  migrate_rodata_to_functions: true
+  use_legacy_include_asm: false
+  asm_function_macro: glabel
+  asm_jtbl_label_macro: jlabel
+  asm_data_macro: dlabel
+  asm_end_label: endlabel
+  string_encoding: ASCII
+  data_string_encoding: ASCII
+  rodata_string_guesser_level: 2
+  data_string_guesser_level: 2
+  gp_value: 0x8080
+  add_set_gp_64: false
+  named_regs_for_c_funcs: false
+  ld_bss_is_noload: true
+  emit_subalign: false
+  ld_align_segment_vram_end: false
+  ld_align_section_vram_end: false
+  disasm_unknown: true
+  global_vram_start: 0x0
+  global_vram_end: 0x30E4
+
+segments:
+  - [0x0, bin, elf_header]
+  - name: lcdtest
+    type: code
+    start: 0x80
+    vram: 0x0
+    subsegments:
+      - [0x80, asm, asm/text_0]
+      - [0x1944, c, memory]
+      - [0x1B1C, c, string]
+      - [0x2308, c, sprintf]
+      - [0x2AD8, c, ctype]
+      - { start: 0x2B50, type: asm, name: sceStub, linker_section: .sceStub.text }
+      - { start: 0x2B68, type: prxpad, order: .text }
+      - { start: 0x2B70, type: rodata, name: lib_ent_top, linker_section: .lib.ent.top }
+      - { start: 0x2B74, type: rodata, name: lib_ent, linker_section: .lib.ent }
+      - { start: 0x2B94, type: rodata, name: lib_stub, linker_section: .lib.stub }
+      - { start: 0x2BE4, type: rodata, name: module_info, linker_section: .rodata.sceModuleInfo }
+      - { start: 0x2C18, type: rodata, name: resident, linker_section: .rodata.sceResident }
+      - { start: 0x2CF0, type: rodata, name: nid, linker_section: .rodata.sceNid }
+      - [0x2CFC, rodata, asm/rodata_2C7C]
+      - [0x2EAC, .rodata, sprintf]
+  - name: lcdtest_seg1
+    type: code
+    start: 0x30C0
+    vram: 0x3040
+    bss_size: 0x10
+    subsegments:
+      - [0x30C0, data, data]
+      - { start: 0x3144, type: bss, vram: 0x30D0 }
+  - [0x3144, bin, elf_trailer]
+  - [0xEBA4]

@@ -1,0 +1,80 @@
+name: manualtest (umdt)
+sha1: 8b5b9b90c20635260904c0e44ff89694da2dff5c
+options:
+  basename: manualtest
+  target_path: tmp/baserom/umdt/manualtest.prx
+  elf_path: tmp/build/umdt/manualtest.elf
+  base_path: ../..
+  platform: psp
+  compiler: GCC
+
+  asm_path: tmp/asm/umdt/manualtest
+  src_path: decomp_src/umdt/manualtest
+  build_path: tmp/build/umdt
+  ld_script_path: tmp/build/umdt/manualtest.ld
+  cache_path: tmp/build/umdt/.splat_cache.manualtest
+  symbol_addrs_path:
+    - config/umdt/symbol_addrs.manualtest.txt
+    - tmp/build/umdt/prx_syms.manualtest.txt
+  reloc_addrs_path: [tmp/build/umdt/reloc_addrs.manualtest.txt]
+  asset_path: tmp/assets/umdt/manualtest
+  extensions_path: tools/splat_ext
+  undefined_funcs_auto_path: tmp/build/umdt/undefined_funcs_auto.manualtest.txt
+  undefined_syms_auto_path: tmp/build/umdt/undefined_syms_auto.manualtest.txt
+
+  find_file_boundaries: false
+  section_order: [".text", ".data", ".rodata", ".bss"]
+  migrate_rodata_to_functions: true
+  use_legacy_include_asm: false
+  asm_function_macro: glabel
+  asm_jtbl_label_macro: jlabel
+  asm_data_macro: dlabel
+  asm_end_label: endlabel
+  string_encoding: ASCII
+  data_string_encoding: ASCII
+  rodata_string_guesser_level: 2
+  data_string_guesser_level: 2
+  gp_value: 0x8080
+  add_set_gp_64: false
+  named_regs_for_c_funcs: false
+  ld_bss_is_noload: true
+  emit_subalign: false
+  ld_align_segment_vram_end: false
+  ld_align_section_vram_end: false
+  disasm_unknown: true
+  global_vram_start: 0x0
+  global_vram_end: 0x2694
+
+segments:
+  - [0x0, bin, elf_header]
+  - name: manualtest
+    type: code
+    start: 0x80
+    vram: 0x0
+    subsegments:
+      - [0x80, asm, asm/text_0]
+      - [0xCDC, c, memory]
+      - [0xEB4, c, string]
+      - [0x16A0, c, sprintf]
+      - [0x1E70, c, ctype]
+      - { start: 0x1EE8, type: asm, name: sceStub, linker_section: .sceStub.text }
+      - { start: 0x1F48, type: prxpad, order: .text }
+      - { start: 0x1F50, type: rodata, name: lib_ent_top, linker_section: .lib.ent.top }
+      - { start: 0x1F54, type: rodata, name: lib_ent, linker_section: .lib.ent }
+      - { start: 0x1F74, type: rodata, name: lib_stub, linker_section: .lib.stub }
+      - { start: 0x2064, type: rodata, name: module_info, linker_section: .rodata.sceModuleInfo }
+      - { start: 0x2098, type: rodata, name: resident, linker_section: .rodata.sceResident }
+      - { start: 0x2310, type: rodata, name: nid, linker_section: .rodata.sceNid }
+      - [0x2340, rodata, asm/rodata_22C0]
+      - [0x2454, .rodata, sprintf]
+  - [0x2668, bin, seg1_align]
+  - name: manualtest_seg1
+    type: code
+    start: 0x2670
+    vram: 0x25F0
+    bss_size: 0x10
+    subsegments:
+      - [0x2670, data, data]
+      - { start: 0x26F4, type: bss, vram: 0x2680 }
+  - [0x26F4, bin, elf_trailer]
+  - [0xEC5C]

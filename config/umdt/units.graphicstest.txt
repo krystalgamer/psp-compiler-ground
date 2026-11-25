@@ -1,0 +1,5 @@
+# unit                                     compiler        source
+sprintf                                      1.5.1.internal  sprintf.c
+ctype                                        1.5.1.internal  ctype.c
+memory                                       1.5.1.internal  memory.c
+string                                       1.5.1.internal  string.c

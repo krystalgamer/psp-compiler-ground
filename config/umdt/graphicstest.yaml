@@ -1,0 +1,80 @@
+name: graphicstest (umdt)
+sha1: 77778e90ee38a4bc95698078f6fcc1f4c7171088
+options:
+  basename: graphicstest
+  target_path: tmp/baserom/umdt/graphicstest.prx
+  elf_path: tmp/build/umdt/graphicstest.elf
+  base_path: ../..
+  platform: psp
+  compiler: GCC
+
+  asm_path: tmp/asm/umdt/graphicstest
+  src_path: decomp_src/umdt/graphicstest
+  build_path: tmp/build/umdt
+  ld_script_path: tmp/build/umdt/graphicstest.ld
+  cache_path: tmp/build/umdt/.splat_cache.graphicstest
+  symbol_addrs_path:
+    - config/umdt/symbol_addrs.graphicstest.txt
+    - tmp/build/umdt/prx_syms.graphicstest.txt
+  reloc_addrs_path: [tmp/build/umdt/reloc_addrs.graphicstest.txt]
+  asset_path: tmp/assets/umdt/graphicstest
+  extensions_path: tools/splat_ext
+  undefined_funcs_auto_path: tmp/build/umdt/undefined_funcs_auto.graphicstest.txt
+  undefined_syms_auto_path: tmp/build/umdt/undefined_syms_auto.graphicstest.txt
+
+  find_file_boundaries: false
+  section_order: [".text", ".data", ".rodata", ".bss"]
+  migrate_rodata_to_functions: true
+  use_legacy_include_asm: false
+  asm_function_macro: glabel
+  asm_jtbl_label_macro: jlabel
+  asm_data_macro: dlabel
+  asm_end_label: endlabel
+  string_encoding: ASCII
+  data_string_encoding: ASCII
+  rodata_string_guesser_level: 2
+  data_string_guesser_level: 2
+  gp_value: 0x80D0
+  add_set_gp_64: false
+  named_regs_for_c_funcs: false
+  ld_bss_is_noload: true
+  emit_subalign: false
+  ld_align_segment_vram_end: false
+  ld_align_section_vram_end: false
+  disasm_unknown: true
+  global_vram_start: 0x0
+  global_vram_end: 0x1D04
+
+segments:
+  - [0x0, bin, elf_header]
+  - name: graphicstest
+    type: code
+    start: 0x80
+    vram: 0x0
+    subsegments:
+      - [0x80, asm, asm/text_0]
+      - [0x5FC, c, sprintf]
+      - [0xDCC, c, ctype]
+      - [0xE44, c, memory]
+      - [0x101C, c, string]
+      - { start: 0x1808, type: asm, name: sceStub, linker_section: .sceStub.text }
+      - { start: 0x1818, type: prxpad, order: .text }
+      - { start: 0x1820, type: rodata, name: lib_ent_top, linker_section: .lib.ent.top }
+      - { start: 0x1824, type: rodata, name: lib_ent, linker_section: .lib.ent }
+      - { start: 0x1844, type: rodata, name: lib_stub, linker_section: .lib.stub }
+      - { start: 0x18BC, type: rodata, name: module_info, linker_section: .rodata.sceModuleInfo }
+      - { start: 0x18F0, type: rodata, name: resident, linker_section: .rodata.sceResident }
+      - { start: 0x1A08, type: rodata, name: nid, linker_section: .rodata.sceNid }
+      - [0x1A10, rodata, asm/rodata_1990]
+      - [0x1A78, .rodata, sprintf]
+  - [0x1C8C, bin, seg1_align]
+  - name: graphicstest_seg1
+    type: code
+    start: 0x1C90
+    vram: 0x1C10
+    bss_size: 0xC
+    subsegments:
+      - [0x1C90, data, data]
+      - { start: 0x1D68, type: bss, vram: 0x1CF0 }
+  - [0x1D68, bin, elf_trailer]
+  - [0xD1DC]

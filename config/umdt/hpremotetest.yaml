@@ -1,0 +1,80 @@
+name: hpremotetest (umdt)
+sha1: 7d3797ca5833d3ddc1ab349e89f472645c7baf24
+options:
+  basename: hpremotetest
+  target_path: tmp/baserom/umdt/hpremotetest.prx
+  elf_path: tmp/build/umdt/hpremotetest.elf
+  base_path: ../..
+  platform: psp
+  compiler: GCC
+
+  asm_path: tmp/asm/umdt/hpremotetest
+  src_path: decomp_src/umdt/hpremotetest
+  build_path: tmp/build/umdt
+  ld_script_path: tmp/build/umdt/hpremotetest.ld
+  cache_path: tmp/build/umdt/.splat_cache.hpremotetest
+  symbol_addrs_path:
+    - config/umdt/symbol_addrs.hpremotetest.txt
+    - tmp/build/umdt/prx_syms.hpremotetest.txt
+  reloc_addrs_path: [tmp/build/umdt/reloc_addrs.hpremotetest.txt]
+  asset_path: tmp/assets/umdt/hpremotetest
+  extensions_path: tools/splat_ext
+  undefined_funcs_auto_path: tmp/build/umdt/undefined_funcs_auto.hpremotetest.txt
+  undefined_syms_auto_path: tmp/build/umdt/undefined_syms_auto.hpremotetest.txt
+
+  find_file_boundaries: false
+  section_order: [".text", ".data", ".rodata", ".bss"]
+  migrate_rodata_to_functions: true
+  use_legacy_include_asm: false
+  asm_function_macro: glabel
+  asm_jtbl_label_macro: jlabel
+  asm_data_macro: dlabel
+  asm_end_label: endlabel
+  string_encoding: ASCII
+  data_string_encoding: ASCII
+  rodata_string_guesser_level: 2
+  data_string_guesser_level: 2
+  gp_value: 0x8080
+  add_set_gp_64: false
+  named_regs_for_c_funcs: false
+  ld_bss_is_noload: true
+  emit_subalign: false
+  ld_align_segment_vram_end: false
+  ld_align_section_vram_end: false
+  disasm_unknown: true
+  global_vram_start: 0x0
+  global_vram_end: 0x22F4
+
+segments:
+  - [0x0, bin, elf_header]
+  - name: hpremotetest
+    type: code
+    start: 0x80
+    vram: 0x0
+    subsegments:
+      - [0x80, asm, asm/text_0]
+      - [0xAB8, c, memory]
+      - [0xC90, c, string]
+      - [0x147C, c, sprintf]
+      - [0x1C4C, c, ctype]
+      - { start: 0x1CC4, type: asm, name: sceStub, linker_section: .sceStub.text }
+      - { start: 0x1D04, type: prxpad, order: .text }
+      - { start: 0x1D10, type: rodata, name: lib_ent_top, linker_section: .lib.ent.top }
+      - { start: 0x1D14, type: rodata, name: lib_ent, linker_section: .lib.ent }
+      - { start: 0x1D34, type: rodata, name: lib_stub, linker_section: .lib.stub }
+      - { start: 0x1DC0, type: rodata, name: module_info, linker_section: .rodata.sceModuleInfo }
+      - { start: 0x1DF4, type: rodata, name: resident, linker_section: .rodata.sceResident }
+      - { start: 0x1F18, type: rodata, name: nid, linker_section: .rodata.sceNid }
+      - [0x1F38, rodata, asm/rodata_1EB8]
+      - [0x20B4, .rodata, sprintf]
+  - [0x22C8, bin, seg1_align]
+  - name: hpremotetest_seg1
+    type: code
+    start: 0x22D0
+    vram: 0x2250
+    bss_size: 0x10
+    subsegments:
+      - [0x22D0, data, data]
+      - { start: 0x2354, type: bss, vram: 0x22E0 }
+  - [0x2354, bin, elf_trailer]
+  - [0xDC98]

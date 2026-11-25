@@ -1,0 +1,17 @@
+module_bootstart = 0x00000000; // type:func
+module_info = 0x000006A0;
+flashData_check_5E793970 = 0x00000044; // type:func
+flashData_check_CAFC6E68 = 0x0000017C; // type:func
+flashData_check_768B7C11 = 0x00000364; // type:func
+flashData_check_2FAE1B89 = 0x00000470; // type:func
+sceIdStorage_driver_FEFA40C2 = 0x00000628; // type:func
+sceIdStorage_driver_37833CB8 = 0x00000630; // type:func
+sceIdStorageLookup = 0x00000638; // type:func
+memset = 0x000005E8; // type:func
+sceKernelWaitThreadEnd = 0x000005F0; // type:func
+sceKernelCreateSema = 0x000005F8; // type:func
+sceKernelSignalSema = 0x00000600; // type:func
+sceKernelWaitSema = 0x00000608; // type:func
+sceKernelCreateThread = 0x00000610; // type:func
+sceKernelStartThread = 0x00000618; // type:func
+ThreadManForKernel_809CE29B = 0x00000620; // type:func
