@@ -89,7 +89,37 @@ INCLUDE_ASM("tmp/asm/UTST99332/graphics_map/nonmatchings/main", draw_frame);
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_map/nonmatchings/main", init_all);
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_map/nonmatchings/main", pad_read);
+static int pad_read(void)
+{
+	SceCtrlData buf;
+	u_int32 oldcont, trg;
+	BGDATA *bg;
+
+	oldcont = cont;
+	sceCtrlReadBufferPositive(&buf, 1);
+	bg = &bgdata[select];
+	cont = buf.Buttons;
+	trg = cont & (cont ^ oldcont);
+	if (cont & 0x0010)
+		bg->scrolly--;
+	if (cont & 0x0040)
+		bg->scrolly++;
+	if (cont & 0x0080)
+		bg->scrollx--;
+	if (cont & 0x0020)
+		bg->scrollx++;
+	if (trg & 0x2000) {
+		if (++select >= 4)
+			select = 0;
+	}
+	if (trg & 0x4000) {
+		if (--select < 0)
+			select = 3;
+	}
+	if (trg & 0x0009)
+		return 0;
+	return 1;
+}
 
 int main(void) {
     menuInit();
