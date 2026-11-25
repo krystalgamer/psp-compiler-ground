@@ -1,3 +1,3 @@
-#include "common.h"
-
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_moonball/nonmatchings/newlib/libc/stdlib/exit", exit);
+/* upstream: newlib-1.12.0/newlib/libc/stdlib/exit.c (unmodified) */
+/* cflags: -O2 -fno-builtin */
+#include "libc/stdlib/exit.c"
