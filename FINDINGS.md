@@ -63,6 +63,29 @@ modules (`tools/nltest.py`, `tools/objcmp.py`).
   shift `$k1` with inline asm and read it as a global register variable;
   the restore is inline asm too, which is why it never lands in a delay
   slot. Sony's code calls `__builtin_allegrex_ext` directly.
+- libatrac3plus is a fourth independent confirmation of the condmove change:
+  all 44 functions decompiled so far match with the 1.5.1 tree, but only 29
+  with the 1.3.1 or 1.6.1 cc1 (e.g. `func_0000224C`, a 5-instruction
+  `min`, and `func_00002064` are `beql`/`bnel` where they use `movz`/`movn`).
+  The remaining near-misses compile the same with every cc1, so they are
+  source-level.
+- **Open: sc_sascore has integer conditional moves.** It is 1.5.1.internal
+  C (the `$k1` idiom, delay slots filled by the compiler), yet five of its
+  functions use `movz`/`movn` as ordinary if-conversion would (`if (r == 0)
+  r = 1;` as `movz` in a `jal` delay slot; `sltu`/`movn` clamp chains). The
+  1.5.1 tree cannot emit them (`ISA_HAS_INT_CONDMOVE 0`), while the other
+  twelve firmware modules have none and several compile textbook cases with
+  branches instead (audiocodec `func_00000958`: `if (n - 1 >= 0x6C1) n =
+  0x6C1;`; 12 such cases in memab, 9 in pspnet_adhoc, 8 in pspnet_inet). So
+  in 1.5.1 the condmove patterns were probably switched off by an option or
+  a condition, not deleted. Excluded so far: a changed default CPU
+  (allegrex2/3 would give 8-byte stack alignment; every frame is 16-byte
+  aligned) and the 1.3.1/1.5.0.internal cc1 (`.comment` says
+  1.5.1.internal). sc_sascore is also the only module with many
+  `ext`/`ins` and no leftover shift-and-mask pairs, which `-mext` (off by
+  default; it turns such C into `ext`/`ins`) would explain, so one candidate
+  is `ISA_HAS_INT_CONDMOVE` = `TARGET_ALLEGREX31 && TARGET_EXT`. It is
+  untested until sc_sascore functions match.
 - gcc 3.3 marks a function defined earlier in the same file const/pure
   (`mark_constant_function`) when it only reads memory, so calls to it don't
   force reloads. Where the original reloads after calling such a helper,
