@@ -41,17 +41,22 @@ typedef struct {
 } Guid;
 
 typedef struct {
-	unsigned short unk0;
+	unsigned short tag;
 	unsigned short nChannels;
-	unsigned int unk4;
-	unsigned int unk8;
+	unsigned int rate;
+	unsigned int bytesPerSec;
 	unsigned short nBlockAlign;
-	unsigned short unkE;
-	unsigned int unk10;
+	unsigned short bits;
+	unsigned short cbSize;
+	unsigned short validBits;
 	unsigned int unk14;
-	char pad18[0x2A - 0x18];
+	unsigned int guid1;
+	unsigned short guid2[2];
+	unsigned char guid4[8];
+	unsigned short unk28;
 	unsigned char unk2A[2];
-	char pad2C[0x40 - 0x2C];
+	unsigned char unk2C[8];
+	char pad34[0x40 - 0x34];
 } WaveFmt;
 
 typedef struct {
@@ -132,7 +137,12 @@ unsigned int func_00002C5C(AtracInfo *info);
 int sceAtracReleaseAtracID(unsigned int id);
 int func_00000E0C(AtracCtx *ctx);
 int func_00000E90(unsigned int size, unsigned int key, unsigned int *out);
-int func_00000EF8(AtracCtx *ctx, unsigned char *buf, int *a, int *b);
+int func_00000EF8(AtracCtx *ctx, short *out, int *samples, int *finish);
+int sceAudiocodecDecode(unsigned int *codec, int type);
+unsigned int func_000010DC(AtracInfo *info);
+unsigned int func_0000214C(AtracInfo *info);
+void func_00002260(int *dst, int *src, int n);
+int func_00002838(AtracInfo *info);
 
 int func_000020B8(AtracInfo *info);
 int func_000029E4(AtracInfo *info);
@@ -152,6 +162,25 @@ void func_000031CC(AtracInfo *info, unsigned int pos, AtracBufInfo *out);
 void func_00003538(AtracInfo *info, unsigned int pos, unsigned int x, unsigned int y);
 int func_00003334(AtracInfo *info, unsigned int pos, unsigned int x, unsigned int y);
 int func_000016E4(unsigned char *buf, unsigned int size, WaveFmt *fmt, unsigned int *a, unsigned int *c, unsigned int *d, int *e, int *f, int *g);
+int func_00001D94(Guid *a, Guid *b);
+unsigned int func_00001DFC(const unsigned char *buf, unsigned int *pos, unsigned int size);
+unsigned short func_00001E8C(const unsigned char *buf, unsigned int *pos, unsigned int size);
+extern Guid D_00003834;
+extern Guid D_00003844;
+
+static inline void readBytes(const unsigned char *buf, unsigned int *pos, unsigned int size, unsigned char *dst, int n)
+{
+	unsigned int p = *pos;
+	int i;
+
+	for (i = 0; i < n; i++) {
+		if (p < size)
+			dst[i] = buf[p++];
+		else
+			dst[i] = 0;
+	}
+	*pos = p;
+}
 int func_00002408(AtracInfo *info, WaveFmt *fmt, unsigned char *buf, unsigned int a, unsigned int bufSize, unsigned int b, unsigned int c, unsigned int d, int e, int f, int g);
 int func_00002504(AtracInfo *info, int type);
 void func_00002550(AtracInfo *info, unsigned int x, WaveFmt *fmt);

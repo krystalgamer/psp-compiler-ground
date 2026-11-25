@@ -59,7 +59,33 @@ INCLUDE_ASM("tmp/asm/tony_libs/libatrac3plus/nonmatchings/libatrac3plus", sceAtr
 
 INCLUDE_ASM("tmp/asm/tony_libs/libatrac3plus/nonmatchings/libatrac3plus", sceAtracSetHalfwayBufferAndGetID);
 
-INCLUDE_ASM("tmp/asm/tony_libs/libatrac3plus/nonmatchings/libatrac3plus", sceAtracDecodeData);
+int sceAtracDecodeData(unsigned int id, short *out, int *samples, int *finish, int *remain)
+{
+	int ret = 0;
+	AtracInfo *info;
+	int n;
+	int i;
+
+	if (id >= 4 || !D_00003930[id].inUse)
+		return 0x80630005;
+	if (!D_00003930[id].info.state)
+		return 0x80630010;
+	if ((unsigned int)out & 3)
+		return 0x80630014;
+	info = &D_00003930[id].info;
+	if (info->state == 5 && info->unk50 == 0)
+		return 0x80630012;
+	n = info->unk20;
+	for (i = 0; i <= n; i++) {
+		ret = func_00000EF8(&D_00003930[id], out, samples, finish);
+		if (ret != 0) {
+			*samples = 0;
+			break;
+		}
+	}
+	*remain = func_000029E4(info);
+	return ret;
+}
 
 INCLUDE_ASM("tmp/asm/tony_libs/libatrac3plus/nonmatchings/libatrac3plus", sceAtracGetStreamDataInfo);
 
@@ -227,7 +253,44 @@ int func_00000E90(unsigned int size, unsigned int key, unsigned int *out)
 	return 0;
 }
 
-INCLUDE_ASM("tmp/asm/tony_libs/libatrac3plus/nonmatchings/libatrac3plus", func_00000EF8);
+int func_00000EF8(AtracCtx *ctx, short *out, int *samples, int *finish)
+{
+	unsigned char raw[0x2040];
+	unsigned char *buf = (unsigned char *)(((unsigned int)raw + 63) & ~63);
+	AtracInfo *info = &ctx->info;
+	unsigned int *codec = ctx->codec;
+	unsigned int n = func_0000220C(info);
+	unsigned int ns = func_00002180(info);
+
+	if (info->unk30 - info->unk28 < info->sampleSize || info->unkC > info->unk14) {
+		*samples = 0;
+		*finish = 1;
+		return 0x80630024;
+	}
+	if (info->state - 1 >= 2 && info->unk3C < info->sampleSize) {
+		*samples = 0;
+		return 0x80630023;
+	}
+	if (info->state == 2 && info->unk2C + info->unk3C < info->unk28 + info->sampleSize)
+		return 0x80630023;
+	codec[6] = func_000010DC(info);
+	if (ns < n)
+		codec[8] = (unsigned int)buf;
+	else
+		codec[8] = (unsigned int)out;
+	if (sceAudiocodecDecode(codec, info->codec) != 0) {
+		*samples = 0;
+		return 0x80630002;
+	}
+	*samples = ns;
+	if (ns < n && info->unk20 == 0)
+		func_00002260((int *)out, (int *)buf + func_0000214C(info), ns);
+	if (info->unkC + ns >= info->unk14 + 1 && info->loopNum == 0)
+		*finish = 1;
+	else
+		*finish = 0;
+	return func_00002838(info);
+}
 
 unsigned int func_000010DC(AtracInfo *info)
 {
