@@ -1,3 +1,5 @@
-#include "common.h"
-
-INCLUDE_ASM("tmp/asm/sampler/sampler/nonmatchings/libgcc/dp-bit/__fpcmp_parts_d", __fpcmp_parts_d);
+/* upstream: libgcc dp-bit.c (_fpcmp_parts_df.o), tree: 1.6.1 */
+/* cflags: -O2 */
+#define FINE_GRAINED_LIBRARIES
+#define L_fpcmp_parts_df
+#include "dp-bit.c"
