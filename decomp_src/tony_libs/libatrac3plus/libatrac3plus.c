@@ -1,4 +1,39 @@
+/* cflags: -O2 -frename-registers -fno-merge-constants */
 #include "common.h"
+
+/* --- declarations --- */
+typedef struct {
+	int unk0;
+	int channel;
+	int unk8;
+	int unkC;
+	int unk10;
+	int unk14;
+	int unk18;
+	int unk1C;
+	int unk20;
+	int loopNum;
+	int unk28;
+	int unk2C;
+	int unk30;
+	int state;
+	char pad38[0x58 - 0x38];
+} AtracInfo;
+
+typedef struct {
+	unsigned int codec[26];
+	char pad68[0xF0 - 0x68];
+	AtracInfo info;
+} AtracCtx;
+
+extern AtracCtx D_00003930[4];
+
+int func_000020B8(AtracInfo *info);
+int func_000029E4(AtracInfo *info);
+int func_0000220C(AtracInfo *info);
+int func_00002180(AtracInfo *info);
+int func_00001F7C(AtracInfo *info);
+/* --- end declarations --- */
 
 INCLUDE_ASM("tmp/asm/tony_libs/libatrac3plus/nonmatchings/libatrac3plus", sceAtracGetAtracID);
 
@@ -20,11 +55,55 @@ INCLUDE_ASM("tmp/asm/tony_libs/libatrac3plus/nonmatchings/libatrac3plus", sceAtr
 
 INCLUDE_ASM("tmp/asm/tony_libs/libatrac3plus/nonmatchings/libatrac3plus", sceAtracSetSecondBuffer);
 
-INCLUDE_ASM("tmp/asm/tony_libs/libatrac3plus/nonmatchings/libatrac3plus", sceAtracGetSoundSample);
+int sceAtracGetSoundSample(unsigned int id, int *endSample, int *loopStart, int *loopEnd)
+{
+	AtracInfo *info;
+	int start;
 
-INCLUDE_ASM("tmp/asm/tony_libs/libatrac3plus/nonmatchings/libatrac3plus", sceAtracGetNextDecodePosition);
+	if (id >= 4 || !D_00003930[id].codec[0])
+		return 0x80630005;
+	if (!D_00003930[id].info.state)
+		return 0x80630010;
+	info = &D_00003930[id].info;
+	start = info->unk10;
+	*endSample = info->unk14 - start;
+	if (info->unk1C == 0) {
+		*loopStart = -1;
+		*loopEnd = -1;
+	} else {
+		*loopStart = info->unk18 - start;
+		*loopEnd = info->unk1C - start;
+	}
+	return 0;
+}
 
-INCLUDE_ASM("tmp/asm/tony_libs/libatrac3plus/nonmatchings/libatrac3plus", sceAtracSetLoopNum);
+int sceAtracGetNextDecodePosition(unsigned int id, unsigned int *pos)
+{
+	AtracInfo *info;
+
+	if (id >= 4 || !D_00003930[id].codec[0])
+		return 0x80630005;
+	info = &D_00003930[id].info;
+	if (!info->state)
+		return 0x80630010;
+	if ((unsigned int)(info->unk30 - info->unk28) < (unsigned int)info->unk8
+	    || (unsigned int)info->unk14 < (unsigned int)info->unkC)
+		return 0x80630024;
+	*pos = info->unkC - info->unk10;
+	return 0;
+}
+
+int sceAtracSetLoopNum(unsigned int id, int loopNum)
+{
+	if (id >= 4 || !D_00003930[id].codec[0])
+		return 0x80630005;
+	if (!D_00003930[id].info.state)
+		return 0x80630010;
+	if (!func_00001F7C(&D_00003930[id].info))
+		return 0x80630021;
+	D_00003930[id].info.loopNum = loopNum;
+	return 0;
+}
 
 INCLUDE_ASM("tmp/asm/tony_libs/libatrac3plus/nonmatchings/libatrac3plus", sceAtracGetBufferInfoForReseting);
 
@@ -48,19 +127,82 @@ INCLUDE_ASM("tmp/asm/tony_libs/libatrac3plus/nonmatchings/libatrac3plus", module
 
 INCLUDE_ASM("tmp/asm/tony_libs/libatrac3plus/nonmatchings/libatrac3plus", sceAtracSetData);
 
-INCLUDE_ASM("tmp/asm/tony_libs/libatrac3plus/nonmatchings/libatrac3plus", sceAtracGetRemainFrame);
+int sceAtracGetRemainFrame(unsigned int id, int *out)
+{
+	if (id >= 4 || !D_00003930[id].codec[0])
+		return 0x80630005;
+	if (!D_00003930[id].info.state)
+		return 0x80630010;
+	*out = func_000029E4(&D_00003930[id].info);
+	return 0;
+}
 
-INCLUDE_ASM("tmp/asm/tony_libs/libatrac3plus/nonmatchings/libatrac3plus", sceAtracGetChannel);
+int sceAtracGetChannel(unsigned int id, int *ch)
+{
+	int ret = 0x80630005;
 
-INCLUDE_ASM("tmp/asm/tony_libs/libatrac3plus/nonmatchings/libatrac3plus", sceAtracGetMaxSample);
+	if (id < 4) {
+		if (D_00003930[id].codec[0]) {
+			ret = 0x80630010;
+			if (D_00003930[id].info.state) {
+				ret = 0;
+				*ch = D_00003930[id].info.channel;
+			}
+		}
+	}
+	return ret;
+}
 
-INCLUDE_ASM("tmp/asm/tony_libs/libatrac3plus/nonmatchings/libatrac3plus", sceAtracGetNextSample);
+int sceAtracGetMaxSample(unsigned int id, int *out)
+{
+	if (id >= 4 || !D_00003930[id].codec[0])
+		return 0x80630005;
+	if (!D_00003930[id].info.state)
+		return 0x80630010;
+	*out = func_0000220C(&D_00003930[id].info);
+	return 0;
+}
 
-INCLUDE_ASM("tmp/asm/tony_libs/libatrac3plus/nonmatchings/libatrac3plus", sceAtracGetBitrate);
+int sceAtracGetNextSample(unsigned int id, int *out)
+{
+	if (id >= 4 || !D_00003930[id].codec[0])
+		return 0x80630005;
+	if (!D_00003930[id].info.state)
+		return 0x80630010;
+	*out = func_00002180(&D_00003930[id].info);
+	return 0;
+}
 
-INCLUDE_ASM("tmp/asm/tony_libs/libatrac3plus/nonmatchings/libatrac3plus", sceAtracGetLoopStatus);
+int sceAtracGetBitrate(unsigned int id, int *out)
+{
+	if (id >= 4 || !D_00003930[id].codec[0])
+		return 0x80630005;
+	if (!D_00003930[id].info.state)
+		return 0x80630010;
+	*out = func_000020B8(&D_00003930[id].info);
+	return 0;
+}
 
-INCLUDE_ASM("tmp/asm/tony_libs/libatrac3plus/nonmatchings/libatrac3plus", sceAtracGetInternalErrorInfo);
+int sceAtracGetLoopStatus(unsigned int id, int *loopNum, int *status)
+{
+	if (id >= 4 || !D_00003930[id].codec[0])
+		return 0x80630005;
+	if (!D_00003930[id].info.state)
+		return 0x80630010;
+	*loopNum = D_00003930[id].info.loopNum;
+	*status = func_00001F7C(&D_00003930[id].info);
+	return 0;
+}
+
+int sceAtracGetInternalErrorInfo(unsigned int id, int *out)
+{
+	if (id >= 4 || !D_00003930[id].codec[0])
+		return 0x80630005;
+	if (!D_00003930[id].info.state)
+		return 0x80630010;
+	*out = *(D_00003930[id].codec + 19);
+	return 0;
+}
 
 INCLUDE_ASM("tmp/asm/tony_libs/libatrac3plus/nonmatchings/libatrac3plus", func_00001640);
 
