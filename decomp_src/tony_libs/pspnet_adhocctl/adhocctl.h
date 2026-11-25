@@ -99,15 +99,15 @@ struct SceNetAdhocctlScanInfo {
 	struct SceNetAdhocctlScanInfo *next;
 	int channel;
 	struct SceNetAdhocctlGroupName group_name;
-	struct SceNetAdhocctlBSSId bssid;
-	int mode;
+	struct SceNetEtherAddr bssid;
+	unsigned char padding[2];
 };
 
 struct SceNetAdhocctlParameter {
 	int channel;
 	struct SceNetAdhocctlGroupName group_name;
 	struct SceNetAdhocctlNickname nickname;
-	struct SceNetAdhocctlBSSId bssid;
+	struct SceNetEtherAddr bssid;
 };
 
 typedef void (*sceNetAdhocctlHandler)(int event, int error_code, void *arg);
@@ -144,6 +144,17 @@ struct gm_request {
 	int flags;			/* 0xB8 */
 };
 
+struct bss_desc {
+	struct SceNetEtherAddr bssid;
+	unsigned short unk6;
+	int unk8[0x12];
+};
+
+struct gm_info {
+	int num;
+	struct SceNetEtherAddr macs[16];
+};
+
 struct handler {
 	int id;
 	sceNetAdhocctlHandler func;
@@ -176,7 +187,7 @@ int func_000022B0(int id);
 int func_00002334(int *state);
 int func_00002348(struct SceNetAdhocctlAdhocId *adhoc_id);
 int func_00002378(struct SceNetAdhocctlParameter *param);
-int func_00002408(void *info);
+int func_00002408(struct gm_info *info);
 int func_0000247C(sceNetAdhocctlHandler handler, void *arg);
 int func_00002520(void);
 int func_00002590(int event, int error);
@@ -204,7 +215,7 @@ int sceKernelClearEventFlag(SceUID evid, unsigned int bits);
 int sceKernelPollEventFlag(int evid, unsigned int bits, unsigned int wait, unsigned int *outBits);
 int sceKernelWaitEventFlag(int evid, unsigned int bits, unsigned int wait, unsigned int *outBits, SceUInt *timeout);
 SceUInt64 sceKernelGetSystemTimeWide(void);
-int sceNetConfig80211GetBssDesc(const char *ifname, void *desc);
+int sceNetConfig80211GetBssDesc(const char *ifname, struct bss_desc *desc);
 int sceUtilityGetSystemParamString(int id, char *str, int len);
 int sceUtilityGetSystemParamInt(int id, int *value);
 
