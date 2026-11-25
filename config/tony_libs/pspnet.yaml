@@ -52,7 +52,29 @@ segments:
     start: 0x80
     vram: 0x0
     subsegments:
-      - [0x80, c, pspnet]
+      - [0x80, c, config]
+      - [0x15DC, c, pspnet]
+      - [0x173C, c, netintr]
+      - [0x1D60, c, thread]
+      - [0x2520, c, bpf_api]
+      - [0x2950, c, callout]
+      - [0x2E38, c, sched]
+      - [0x34B8, c, spl]
+      - [0x35EC, c, kern_subr]
+      - [0x3854, c, bpf]
+      - [0x486C, c, bpf_filter]
+      - [0x5000, c, if]
+      - [0x6AC0, c, if_ethersubr]
+      - [0x727C, c, ifhandle_ether]
+      - [0x77B8, c, malloc]
+      - [0x7818, c, random]
+      - [0x7A5C, c, misc]
+      - [0x7C08, c, libc_mem]
+      - [0x7DE0, c, libc_str]
+      - [0x8088, c, libc_printf]
+      - [0x8824, c, libc_ctype]
+      - [0x889C, c, udivdi3]
+      - [0x8DEC, c, umoddi3]
       - { start: 0x9374, type: asm, name: sceStub, linker_section: .sceStub.text }
       - { start: 0x94C4, type: prxpad, order: .text }
       - { start: 0x94D0, type: rodata, name: lib_ent_top, linker_section: .lib.ent.top }
@@ -65,7 +87,16 @@ segments:
       - { start: 0x9580, type: rodata, name: resident, linker_section: .rodata.sceResident }
       - { start: 0x9930, type: rodata, name: nid, linker_section: .rodata.sceNid }
       - { start: 0x99D8, type: rodata, name: eh_frame, linker_section: .eh_frame }
-      - [0x9A38, .rodata, pspnet]
+      - [0x9A38, .rodata, config]
+      - [0x9A58, .rodata, netintr]
+      - [0x9A68, .rodata, thread]
+      - [0x9A90, .rodata, callout]
+      - [0x9AB4, .rodata, sched]
+      - [0x9AC4, .rodata, spl]
+      - [0x9AD0, .rodata, bpf_filter]
+      - [0x9D98, .rodata, if_ethersubr]
+      - [0x9DD8, .rodata, misc]
+      - [0x9DF8, .rodata, libc_printf]
   - [0xA10C, bin, seg1_align]
   - name: pspnet_seg1
     type: code

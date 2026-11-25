@@ -1,2 +1,24 @@
 # unit                                     compiler        source
+config                                       1.5.1.internal  config.c
 pspnet                                       1.5.1.internal  pspnet.c
+netintr                                      1.5.1.internal  netintr.c
+thread                                       1.5.1.internal  thread.c
+bpf_api                                      1.5.1.internal  bpf_api.c
+callout                                      1.5.1.internal  callout.c
+sched                                        1.5.1.internal  sched.c
+spl                                          1.5.1.internal  spl.c
+kern_subr                                    1.5.1.internal  kern_subr.c
+bpf                                          1.5.1.internal  bpf.c
+bpf_filter                                   1.5.1.internal  bpf_filter.c
+if                                           1.5.1.internal  if.c
+if_ethersubr                                 1.5.1.internal  if_ethersubr.c
+ifhandle_ether                               1.5.1.internal  ifhandle_ether.c
+malloc                                       1.5.1.internal  malloc.c
+random                                       1.5.1.internal  random.c
+misc                                         1.5.1.internal  misc.c
+libc_mem                                     1.5.1.internal  libc_mem.c
+libc_str                                     1.5.1.internal  libc_str.c
+libc_printf                                  1.5.1.internal  libc_printf.c
+libc_ctype                                   1.5.1.internal  libc_ctype.c
+udivdi3                                      1.5.1.internal  udivdi3.c
+umoddi3                                      1.5.1.internal  umoddi3.c

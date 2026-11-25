@@ -1,2 +1,25 @@
-# Stripped module: one unit for all of .text until object boundaries are known.
-0x00000 pspnet           1.5.1.internal  pspnet.c
+# Stripped module: .comment lists 30 C objects. Units split by address (guessed object
+# boundaries from call structure, data layout and rodata strings).
+0x00000 config           1.5.1.internal  config.c
+0x0155C pspnet           1.5.1.internal  pspnet.c
+0x016BC netintr          1.5.1.internal  netintr.c
+0x01CE0 thread           1.5.1.internal  thread.c
+0x024A0 bpf_api          1.5.1.internal  bpf_api.c
+0x028D0 callout          1.5.1.internal  callout.c
+0x02DB8 sched            1.5.1.internal  sched.c
+0x03438 spl              1.5.1.internal  spl.c
+0x0356C kern_subr        1.5.1.internal  kern_subr.c
+0x037D4 bpf              1.5.1.internal  bpf.c
+0x047EC bpf_filter       1.5.1.internal  bpf_filter.c
+0x04F80 if               1.5.1.internal  if.c
+0x06A40 if_ethersubr     1.5.1.internal  if_ethersubr.c
+0x071FC ifhandle_ether   1.5.1.internal  ifhandle_ether.c
+0x07738 malloc           1.5.1.internal  malloc.c
+0x07798 random           1.5.1.internal  random.c
+0x079DC misc             1.5.1.internal  misc.c
+0x07B88 libc_mem         1.5.1.internal  libc_mem.c
+0x07D60 libc_str         1.5.1.internal  libc_str.c
+0x08008 libc_printf      1.5.1.internal  libc_printf.c
+0x087A4 libc_ctype       1.5.1.internal  libc_ctype.c
+0x0881C udivdi3          1.5.1.internal  udivdi3.c
+0x08D6C umoddi3          1.5.1.internal  umoddi3.c
