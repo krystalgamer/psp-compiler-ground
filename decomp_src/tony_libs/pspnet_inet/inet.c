@@ -28,6 +28,8 @@ int sceNetInetGetErrno(void);
 int sceNetInet_lib_AEE60F84(int s, u_long com, caddr_t data);
 int sceNetInet_lib_4F68DB0E(const char *name, const struct in_addr *addr, const struct in_addr *broadaddr, const struct in_addr *mask);
 int sceNetInet_lib_6A046357(const char *name);
+int func_00001598(int cmd, struct sockaddr *dst, struct sockaddr *gw, struct sockaddr *mask, int flags);
+int sceNetInet_lib_3D905F34(int *size, void *buf);
 #define D_0002EB40_ D_0002EB40
 extern int D_0002EB40, D_0002EB44;
 extern struct in_addr D_0002EB48, D_0002EB4C;
@@ -37,6 +39,27 @@ struct ifaliasreq {
 	struct sockaddr ifra_broadaddr;
 	struct sockaddr ifra_mask;
 };
+struct tcpcbstat {
+	struct tcpcbstat *next;
+	u_int txqueue;
+	u_int rxqueue;
+	struct in_addr laddr;
+	struct in_addr faddr;
+	u_short lport;
+	u_short fport;
+	short state;
+};
+struct udpcbstat {
+	struct udpcbstat *next;
+	u_int txqueue;
+	u_int rxqueue;
+	struct in_addr laddr;
+	struct in_addr faddr;
+	u_short lport;
+	u_short fport;
+};
+#define udbtable D_000302C8
+extern struct inpcbtable udbtable;
 #define SCE_ERR_SOCKET 0x80410280
 #define SCE_ERR_ADDRNOTAVAIL 0x80410183
 
