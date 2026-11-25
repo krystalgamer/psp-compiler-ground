@@ -62,6 +62,26 @@ struct ScePspFMatrix4 { /* size 0x40 */
 typedef struct ScePspFMatrix4 ScePspFMatrix4;
 
 /* SDK functions */
+void sceGuStart(int type, void *list, int size);
+int sceGuFinish(void);
+int sceGuSync(int mode, int what);
+void sceGuEnable(int state);
+void sceGuDisable(int state);
+void sceGuClear(int flags);
+void sceGuColor(unsigned int color);
+void sceGuLightColor(int light, int component, unsigned int color);
+void sceGuFog(float near, float far, unsigned int color);
+void *sceGuGetMemory(int size);
+void sceGumLoadIdentity(void);
+void sceGumPushMatrix(void);
+void sceGumPopMatrix(void);
+void sceGumRotateX(float angle);
+void sceGumRotateY(float angle);
+void sceGumScale(const ScePspFVector3 *v);
+void sceGumTranslate(const ScePspFVector3 *v);
+void sceGumDrawBezier(int vtype, int ucount, int vcount, const void *indices, const void *vertices);
+
+/* SDK functions */
 int sceCtrlReadBufferPositive(SceCtrlData *data, int count);
 
 extern float ground[1875];
@@ -174,7 +194,50 @@ static void translate_patch(void)
 	}
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_tamatama/nonmatchings/main", draw_frame);
+static void draw_frame(void)
+{
+	ScePspFVector3 vec;
+	float *vp;
+	int num;
+	int i;
+
+	sceGuStart(0, disp_list, sizeof(disp_list));
+	sceGuClear(7);
+	sceGuLightColor(0, 4, 0);
+	sceGuEnable(9);
+	sceGuColor(0xffffffff);
+	sceGuFog(fog, fog + 3.0f, 0x800000);
+	sceGumPushMatrix();
+	sceGumLoadIdentity();
+	sceGumTranslate(&pos.trans);
+	sceGumRotateX(pos.rot.x * 3.1415927f / 180.0f);
+	sceGumRotateY(pos.rot.y * 3.1415927f / 180.0f);
+	vec.x = 2.5f;
+	vec.y = 2.5f;
+	vec.z = 2.5f;
+	sceGumScale(&vec);
+	translate_patch();
+	vp = sceGuGetMemory(sizeof(ground_t));
+	fmemcpy(vp, (float *)ground_t, sizeof(ground_t));
+	sceGumDrawBezier(0x180, 25, 25, NULL, vp);
+	sceGuLightColor(0, 4, 0xffffffff);
+	sceGuDisable(9);
+	sceGuColor(0xff80a0a0);
+	for (i = 0; i < cnt; i++) {
+		num = order[i];
+		sceGumPushMatrix();
+		sceGumTranslate(&spos[num].vec);
+		vec.x = 0.08f;
+		vec.y = 0.08f;
+		vec.z = 0.08f;
+		sceGumScale(&vec);
+		sceGumDrawBezier(0x180, 4, 7, NULL, sphere);
+		sceGumPopMatrix();
+	}
+	sceGumPopMatrix();
+	sceGuFinish();
+	sceGuSync(0, 0);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_tamatama/nonmatchings/main", init_all);
 
