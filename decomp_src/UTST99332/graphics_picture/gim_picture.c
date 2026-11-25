@@ -235,7 +235,98 @@ _Bool sceGimPictureLoadFile(SceGimPicture *picture, const void *buf, int size, i
 	return sceGimPictureLoadTga(picture, buf, size);
 }
 
+static __inline__ SceGimChunk *SCEGIM_CHUNK_NEXT(SceGimChunk *chunk)
+{
+	return (SceGimChunk *)((char *)chunk + chunk->next_offs);
+}
+
+static __inline__ SceGimChunk *SCEGIM_CHUNK_CHILD(SceGimChunk *chunk)
+{
+	return (SceGimChunk *)((char *)chunk + chunk->child_offs);
+}
+
+static __inline__ void *SCEGIM_CHUNK_DATA(SceGimChunk *chunk)
+{
+	return (char *)chunk + chunk->data_offs;
+}
+
+static __inline__ int SCEGIM_CHUNK_DATA_SIZE(SceGimChunk *chunk)
+{
+	return chunk->next_offs - chunk->data_offs;
+}
+
+void *sceGimPictureAllocMemory2(size_t size);
+
+#ifdef NON_MATCHING
+/* the chunk type switch is a decision tree rooted at 5 in the original */
+_Bool sceGimPictureLoad(SceGimPicture *picture, const SceGimChunk *chunk)
+{
+	SceGimChunk *end;
+
+	if (picture == NULL)
+		return 0;
+	if (chunk == NULL)
+		return 0;
+	sceGimPictureUnload(picture);
+	end = SCEGIM_CHUNK_NEXT((SceGimChunk *)chunk);
+	for (chunk = SCEGIM_CHUNK_CHILD((SceGimChunk *)chunk); chunk < end; chunk = SCEGIM_CHUNK_NEXT((SceGimChunk *)chunk)) {
+		void *data = SCEGIM_CHUNK_DATA((SceGimChunk *)chunk);
+		size_t size = SCEGIM_CHUNK_DATA_SIZE((SceGimChunk *)chunk);
+
+		switch (chunk->type) {
+		case 4:
+			if (picture->m_image == NULL) {
+				SceGimImageHeader *img;
+				int *offsets;
+
+				img = sceGimPictureAllocMemory2(size);
+				if (img == NULL)
+					return 0;
+				picture->m_image = img;
+				memcpy(img, data, size);
+				img->reference = 1;
+				offsets = (int *)((char *)img + img->offsets);
+				{
+					int i;
+
+					for (i = 0; i < img->level_count * img->frame_count; i++)
+						offsets[i] += (int)img;
+				}
+				if (img->width > 512 || img->height > 512)
+					return 0;
+			}
+			break;
+		case 5:
+			if (picture->m_palette == NULL) {
+				SceGimPaletteHeader *pal;
+				int *offsets;
+
+				pal = sceGimPictureAllocMemory2(size);
+				if (pal == NULL)
+					return 0;
+				picture->m_palette = pal;
+				memcpy(pal, data, size);
+				pal->reference = 1;
+				offsets = (int *)((char *)pal + pal->offsets);
+				{
+					int i;
+
+					for (i = 0; i < pal->level_count * pal->frame_count; i++)
+						offsets[i] += (int)pal;
+				}
+				if (pal->width > 256)
+					return 0;
+			}
+			break;
+		}
+	}
+	reconfigure_picture(picture);
+	sceKernelDcacheWritebackAll();
+	return 1;
+}
+#else
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_picture/nonmatchings/gim_picture", sceGimPictureLoad);
+#endif
 
 void sceGimPictureUnload(SceGimPicture *picture)
 {
