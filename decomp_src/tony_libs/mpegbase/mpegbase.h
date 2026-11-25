@@ -32,21 +32,21 @@ extern PesCtx D_00001780;
 typedef struct {
 	unsigned int src;
 	unsigned int dst;
-	unsigned int next;
+	void *next;
 	unsigned int size;
 } PesPacket;
 
 typedef struct {
-	int width;
-	int height;
+	unsigned int width;
+	unsigned int height;
 	int unk8;
 	int unkC;
 	unsigned int buf[8];
 } CscAvcParam;
 
 typedef struct {
-	int width;
-	int height;
+	unsigned int width;
+	unsigned int height;
 	int unk8;
 	int unkC;
 	unsigned int buf[6];
@@ -66,7 +66,7 @@ int sceDmacplus_driver_74323807(void *a, void *b, void *c);
 int sceDmacplus_driver_3A98EE05(int a, int b);
 int sceDmacplus_driver_3438DA0B();
 int sceDmacplus_driver_58DE4914();
-int sceDmacplus_driver_BE693828(void *dst, void *src, int n);
+int sceDmacplus_driver_BE693828(void *dst, void *src, unsigned int n);
 int sceDmacplus_driver_AB49D2CB(int a, void *b);
 int sceSysregGetTachyonVersion(void);
 int sceMeCore_driver_3D5F109C(int cmd, ...);
@@ -86,11 +86,12 @@ int func_000012B4(void);
 int func_000012DC(void);
 int func_00001304(void);
 int func_00001328(void);
+int func_0000134C(unsigned int dst, unsigned int src, unsigned int size);
 
 static inline unsigned int pspShiftK1(void)
 {
 	unsigned int k1;
-	asm volatile("move %0, $27\n\tsrl $27, $27, 16" : "=r"(k1));
+	asm volatile(".set noreorder\n\tmove %0, $27\n\tsrl $27, $27, 16\n\t.set reorder" : "=r"(k1));
 	return k1;
 }
 

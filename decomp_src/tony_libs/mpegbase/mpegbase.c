@@ -248,9 +248,122 @@ int func_00000C54(void)
 	return sceKernelPollSema(D_00001780.sema, 1);
 }
 
-INCLUDE_ASM("tmp/asm/tony_libs/mpegbase/nonmatchings/mpegbase", sceMpegBaseYCrCbCopy);
+int sceMpegBaseYCrCbCopy(CscAvcParam *dst, CscAvcParam *src, int flags)
+{
+	unsigned int oldk1;
+	int ret;
+	unsigned int sz1, sz2, ysize, csize, ysize2, csize2;
 
-INCLUDE_ASM("tmp/asm/tony_libs/mpegbase/nonmatchings/mpegbase", sceMpegBaseYCrCbCopyVme);
+	K1_SAVE(oldk1);
+	ret = func_000008A0();
+	if (ret < 0) {
+		K1_RESTORE(oldk1);
+		return ret;
+	}
+	ret = func_00000C08();
+	if (ret < 0)
+		goto out1;
+	ret = sceKernelWaitSema(D_00001E00, 1, 0);
+	if (ret < 0)
+		goto out2;
+	sz2 = ((src->height >> 5) + ((src->height >> 4) & 1)) * src->width * 16;
+	sz1 = (src->height >> 5) * src->width * 16;
+	ysize2 = sz2 / 2;
+	csize2 = sz2 / 4;
+	ysize = sz1 / 2;
+	csize = sz1 / 4;
+	if (staBufBad((unsigned int)src, sizeof(CscAvcParam))
+	    || staBufBad((unsigned int)dst, sizeof(CscAvcParam)))
+		ret = 0x80000023;
+	else if ((flags & 1)
+		 && (dynBufBad(dst->buf[0], ysize2)
+		    || dynBufBad(dst->buf[4], csize2)
+		    || dynBufBad(dst->buf[1], ysize)
+		    || dynBufBad(dst->buf[5], csize)))
+		ret = 0x80000023;
+	else if ((flags & 2)
+		 && (dynBufBad(dst->buf[2], ysize2)
+		    || dynBufBad(dst->buf[6], csize2)
+		    || dynBufBad(dst->buf[3], ysize)
+		    || dynBufBad(dst->buf[7], csize)))
+		ret = 0x80000023;
+	else {
+		if (flags & 1) {
+			func_0000134C(dst->buf[0], src->buf[0], ysize2);
+			func_0000134C(dst->buf[1], src->buf[1], ysize);
+			func_0000134C(dst->buf[4], src->buf[4], csize2);
+			func_0000134C(dst->buf[5], src->buf[5], csize);
+		}
+		if (flags & 2) {
+			func_0000134C(dst->buf[2], src->buf[2], ysize2);
+			func_0000134C(dst->buf[3], src->buf[3], ysize);
+			func_0000134C(dst->buf[6], src->buf[6], csize2);
+			func_0000134C(dst->buf[7], src->buf[7], csize);
+		}
+	}
+	sceKernelSignalSema(D_00001E00, 1);
+out2:
+	func_00000C30();
+out1:
+	func_000008C8();
+	K1_RESTORE(oldk1);
+	return ret;
+}
+
+int sceMpegBaseYCrCbCopyVme(CscVmeParam *dst, CscVmeParam *src, int flags)
+{
+	unsigned int oldk1;
+	int ret;
+	unsigned int sz, sz1, sz3;
+
+	K1_SAVE(oldk1);
+	ret = func_000008A0();
+	if (ret < 0) {
+		K1_RESTORE(oldk1);
+		return ret;
+	}
+	ret = func_00000C08();
+	if (ret < 0)
+		goto out1;
+	ret = sceKernelWaitSema(D_00001E00, 1, 0);
+	if (ret < 0)
+		goto out2;
+	sz = (((src->height >> 4) << 4) + 32) * src->width;
+	sz1 = sz / 2;
+	sz3 = sz / 8;
+	if (staBufBad((unsigned int)src, sizeof(CscVmeParam))
+	    || staBufBad((unsigned int)dst, sizeof(CscVmeParam)))
+		ret = 0x80000023;
+	else if ((flags & 1)
+		 && (dynBufBad(src->buf[0], sz1)
+		    || dynBufBad(src->buf[2], sz3)
+		    || dynBufBad(src->buf[3], sz3)))
+		ret = 0x80000023;
+	else if ((flags & 2)
+		 && (dynBufBad(src->buf[1], sz1)
+		    || dynBufBad(src->buf[4], sz3)
+		    || dynBufBad(src->buf[5], sz3)))
+		ret = 0x80000023;
+	else {
+		if (flags & 1) {
+			func_0000134C(dst->buf[0], src->buf[0], sz1);
+			func_0000134C(dst->buf[2], src->buf[2], sz3);
+			func_0000134C(dst->buf[3], src->buf[3], sz3);
+		}
+		if (flags & 2) {
+			func_0000134C(dst->buf[1], src->buf[1], sz1);
+			func_0000134C(dst->buf[4], src->buf[4], sz3);
+			func_0000134C(dst->buf[5], src->buf[5], sz3);
+		}
+	}
+	sceKernelSignalSema(D_00001E00, 1);
+out2:
+	func_00000C30();
+out1:
+	func_000008C8();
+	K1_RESTORE(oldk1);
+	return ret;
+}
 
 int func_00001278(void)
 {
