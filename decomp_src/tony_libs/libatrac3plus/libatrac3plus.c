@@ -234,7 +234,33 @@ int sceAtracGetBufferInfoForReseting(unsigned int id, unsigned int pos, AtracBuf
 	return 0;
 }
 
-INCLUDE_ASM("tmp/asm/tony_libs/libatrac3plus/nonmatchings/libatrac3plus", sceAtracResetPlayPosition);
+int sceAtracResetPlayPosition(unsigned int id, unsigned int sample, unsigned int x, unsigned int y)
+{
+	AtracInfo *info;
+	unsigned int pos;
+	int ret;
+
+	if (id >= 4 || !D_00003930[id].inUse)
+		return 0x80630005;
+	info = &D_00003930[id].info;
+	switch (info->state) {
+	case 0:
+		return 0x80630010;
+	case 5:
+		if (info->unk50 == 0)
+			return 0x80630012;
+	default:
+		pos = sample + info->unk10;
+		if (info->unk14 < pos)
+			return 0x80630015;
+		ret = func_00003334(info, pos, x, y);
+		if (ret >= 0)
+			ret = func_00000E0C(&D_00003930[id]);
+		if (ret == 0x807F0002)
+			ret = 0x80630002;
+		return ret;
+	}
+}
 
 int func_00000D3C(AtracCtx *ctx, WaveFmt *fmt)
 {
