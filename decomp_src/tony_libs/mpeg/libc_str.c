@@ -6,7 +6,20 @@
 
 extern char *D_00007D80;
 
-unsigned int func_00007500(int type);
+static __inline__ int __strtok_find(const char *d, char c)
+{
+	int sc;
+
+	while ((sc = *d++) != '\0') {
+		if (sc == c)
+			return sc;
+	}
+	return 0;
+}
+int __tolower_i(int c) __asm__("func_0000720C");
+extern const char D_00007994[];
+
+extern const StreamTypeInfo D_000078F4[];
 /* --- end declarations --- */
 
 char *func_000066F4(const char *s, char c)
@@ -177,7 +190,58 @@ INCLUDE_ASM("tmp/asm/tony_libs/mpeg/nonmatchings/libc_str", func_00006D14);
 
 INCLUDE_ASM("tmp/asm/tony_libs/mpeg/nonmatchings/libc_str", func_00006DE8);
 
-INCLUDE_ASM("tmp/asm/tony_libs/mpeg/nonmatchings/libc_str", func_00006FB8);
+unsigned long func_00006FB8(const char *s, char **endptr, int base)
+{
+	unsigned long v = 0;
+	int c;
+	int f;
+	unsigned int d;
+
+	if (s == NULL)
+		return 0;
+	while (__ctype_flags(*s) & 8)
+		s++;
+	if ((unsigned int)(base - 2) >= 35)
+		base = 0;
+	if (base == 0)
+		base = 10;
+	if (*s == '0') {
+		s++;
+		switch (*s) {
+		case 'x':
+		case 'X':
+			s++;
+			base = 16;
+			break;
+		case 'b':
+		case 'B':
+			s++;
+			base = 2;
+			break;
+		}
+	} else if (toupper(*s) == 'O') {
+		s++;
+		base = 8;
+	}
+	for (;;) {
+		c = *s;
+		f = __ctype_flags(c);
+		s++;
+		if (f & 4)
+			d = c - '0';
+		else if (__ctype_flags(c) & 3)
+			d = __tolower_i(c) - 'a' + 10;
+		else
+			d = 9999999;
+		if (d >= (unsigned int)base)
+			break;
+		v *= base;
+		v += d;
+	}
+	if (endptr != NULL)
+		*endptr = (char *)s - 1;
+	return v;
+}
 
 char *func_00007140(char *dst, const char *src)
 {
