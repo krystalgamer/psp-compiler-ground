@@ -92,7 +92,25 @@ int sceKernelDcacheWritebackAll(void);
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_picture2/nonmatchings/load_tga", sceGimPictureLoadTga);
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_picture2/nonmatchings/load_tga", read_header_4188);
+#define read_header read_header_4188
+#define read_short read_short_424C
+#define copy_pixels copy_pixels_427C
+static const void *read_header(const void *src, TgaHeader *header)
+{
+	src = read_char(src, &header->id_size);
+	src = read_char(src, &header->clut_type);
+	src = read_char(src, &header->image_type);
+	src = read_short(src, &header->first_entry);
+	src = read_short(src, &header->clut_count);
+	src = read_char(src, &header->entry_size);
+	src = read_short(src, &header->org_x);
+	src = read_short(src, &header->org_y);
+	src = read_short(src, &header->width);
+	src = read_short(src, &header->height);
+	src = read_char(src, &header->depth);
+	src = read_char(src, &header->image_desc);
+	return (const char *)src + header->id_size;
+}
 
 static const void *read_char(const void *src, unsigned char *val)
 {
@@ -100,6 +118,16 @@ static const void *read_char(const void *src, unsigned char *val)
 	return (const unsigned char *)src + 1;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_picture2/nonmatchings/load_tga", read_short_424C);
+static const void *read_short(const void *src, short unsigned int *val)
+{
+	if ((int)src & 1) {
+		const unsigned char *cp = src;
+
+		*val = cp[0] | (cp[1] << 8);
+	} else {
+		*val = *(const unsigned short *)src;
+	}
+	return (const unsigned char *)src + 2;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_picture2/nonmatchings/load_tga", copy_pixels_427C);
