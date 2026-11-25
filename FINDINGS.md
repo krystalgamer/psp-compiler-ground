@@ -135,6 +135,14 @@ modules (`tools/nltest.py`, `tools/objcmp.py`).
   cc1; 1.3.1's, 1.6.1's and 1.7.1's emit conditional moves.  This is a
   second, independent confirmation of the 1.5.1 condmove change and that
   1.5.1.internal uses the 1.5.1 compiler; the module build checks it.
+- bigbangbang (1.5.1.internal throughout, with DWARF; `.comment` says
+  `allegrex-2.2.1`, like every 1.4.0–1.5.1 build, against `2.2.2` for
+  1.6.1): its SDK libgu is the same older revision as sampler's and again
+  matches 62 functions with 1.5.1's cc1 and 61 with every other compiler
+  (`sceGuTexLevelMode`).  Its own game code compiles the same with all
+  compilers so far.  Several near-matches there were missing prototypes
+  in our C (implicit declarations change argument evaluation and register
+  choice), not compiler differences.
 - Per-library flags under 1.6.1.internal: UTST99332 demo_luga's copy of the
   gmo model library (an older revision than graphics_model's: different
   function order, a `geModelDoTextureFunc` hook in `sceGmoTextureActivate`)
