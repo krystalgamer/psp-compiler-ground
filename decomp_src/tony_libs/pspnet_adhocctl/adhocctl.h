@@ -36,6 +36,33 @@ extern const char D_00006810[];
 #define _U 01
 #define _L 02
 #define _N 04
+#define WLAN_ATTACH(p, ret, i, fail) \
+	for (;;) { \
+		(i)++; \
+		(ret) = sceWlanDevAttach(); \
+		if ((ret) == 0 || (ret) == 0x80410D0F) \
+			break; \
+		if ((ret) < 0 && (ret) != 0x80410D0E) \
+			goto fail; \
+		if ((i) >= (p)->unk20) { \
+			(ret) = 0x80410B05; \
+			goto fail; \
+		} \
+		sceKernelDelayThread(1000000); \
+	}
+#define WLAN_ATTACH_RET(p, ret, i) \
+	for (;;) { \
+		(i)++; \
+		(ret) = sceWlanDevAttach(); \
+		if ((ret) == 0 || (ret) == 0x80410D0F) \
+			break; \
+		if ((ret) < 0 && (ret) != 0x80410D0E) \
+			return (ret); \
+		if ((i) >= (p)->unk20) \
+			return 0x80410B05; \
+		sceKernelDelayThread(1000000); \
+	}
+#define ERROR_FACILITY(e) (((e) >> 16) & 0xFFF)
 #define isalnum(c) ((_ctype_ + 1)[(unsigned char)(c)] & (_U | _L | _N))
 
 void *memchr(const void *s, int c, int n);
@@ -112,6 +139,47 @@ struct SceNetAdhocctlParameter {
 
 typedef void (*sceNetAdhocctlHandler)(int event, int error_code, void *arg);
 
+struct bss_desc {
+	struct SceNetEtherAddr bssid;	/* 0x00 */
+	unsigned char channel;		/* 0x06 */
+	unsigned char ssid_len;		/* 0x07 */
+	char ssid[32];			/* 0x08 */
+	int unk28;			/* 0x28 */
+	int unk2C;			/* 0x2C */
+	unsigned char unk30[0xE];	/* 0x30 */
+	unsigned short unk3E;		/* 0x3E */
+	unsigned char unk40[0x10];	/* 0x40 */
+};
+
+struct bss_req {
+	struct bss_desc desc;
+	unsigned char unk50[0x14];
+};
+
+struct scan_entry {
+	struct scan_entry *next;
+	struct bss_desc desc;
+};
+
+struct scan_req {
+	int type;			/* 0x00 */
+	unsigned char unk4[6];		/* 0x04 */
+	unsigned char channels[14];	/* 0x0A */
+	unsigned char unk18[0x24];	/* 0x18 */
+	int unk3C;			/* 0x3C */
+	int unk40;			/* 0x40 */
+	int unk44;			/* 0x44 */
+	int unk48;			/* 0x48 */
+};
+
+struct auth_param {
+	int unk0;
+	int unk4;
+	int unk8;
+	int unkC;
+	int unk10;
+};
+
 /* game mode parameters (0x50 bytes, byte aligned) */
 struct gm_param {
 	unsigned char data[0x44];
@@ -131,7 +199,7 @@ struct adhocctl_ctx {
 	int unk20;			/* 0x20 */
 	int unk24;			/* 0x24 */
 	struct SceNetAdhocctlGroupName group_name;	/* 0x28 */
-	unsigned char scan[0x690];	/* 0x30 */
+	struct scan_entry scan[20];	/* 0x30 */
 	struct SceNetAdhocctlScanInfo join_info;	/* 0x6C0 */
 	struct SceNetAdhocctlAdhocId adhoc_id;	/* 0x6D8 */
 };
@@ -142,12 +210,6 @@ struct gm_request {
 	struct gm_param param;		/* 0x64 */
 	int timeout;			/* 0xB4 */
 	int flags;			/* 0xB8 */
-};
-
-struct bss_desc {
-	struct SceNetEtherAddr bssid;
-	unsigned short unk6;
-	int unk8[0x12];
 };
 
 struct gm_info {
@@ -167,6 +229,8 @@ extern struct gm_request D_00006F8C;
 extern struct handler D_00007048[2];
 extern struct handler D_00007060;
 extern const struct gm_param D_00006718[];
+extern const char D_000066E8[];	/* "wlan" */
+extern const char D_000066F0[];	/* "PSP" */
 extern const char D_000066F4[];	/* "SceNetAdhocctl" */
 extern const char D_00006704[];	/* "wlan" */
 extern const char D_0000670C[];	/* "wlan" */
@@ -200,7 +264,10 @@ int func_00000B40(struct adhocctl_ctx *p);
 int func_00000D58(struct adhocctl_ctx *p);
 int func_00000E50(struct adhocctl_ctx *p);
 int func_00001154(struct adhocctl_ctx *p);
-int func_000014B4(struct adhocctl_ctx *p);
+void func_000014B4(struct adhocctl_ctx *p);
+int func_00001520(struct adhocctl_ctx *p, char *ssid, int *channel);
+int func_000015E4(struct adhocctl_ctx *p, char *ssid);
+int func_00001634(struct adhocctl_ctx *p, char *ssid, int mode, const unsigned char *group_name);
 
 /* event */
 int func_00002C84(struct adhocctl_ctx *p);
@@ -214,6 +281,19 @@ int func_0000378C(struct adhocctl_ctx *p, struct gm_request *gm);
 int func_00004730(struct adhocctl_ctx *p, struct gm_request *gm);
 
 /* imports */
+int sceWlanGetSwitchState(void);
+int sceWlanDevAttach(void);
+int sceWlanDevDetach(void);
+int sceNetConfigUpInterface(const char *ifname);
+int sceNetConfigDownInterface(const char *ifname);
+int sceNetConfigSetIfEventFlag(const char *ifname, SceUID evf, unsigned int bits);
+int sceNetConfig80211ScanRequest(const char *ifname, struct scan_req *req, int *size, struct scan_entry *buf, int *unk);
+int sceNetConfig80211ScanCreateRequest(const char *ifname, const char *ssid, int ssid_len, int channel);
+int sceNetConfig80211CreateRequest(const char *ifname, struct bss_req *req, int *unk);
+int sceNetConfig80211JoinRequest(const char *ifname, struct bss_req *req, int *unk);
+int sceNetConfig80211LeaveRequest(const char *ifname, int *unk);
+int sceNetAdhocAuth_lib_89F2A732(const char *ifname, int a1, int a2, struct auth_param *param, int a4, const char *nickname);
+int sceNetAdhocAuth_lib_2E6AA271(void);
 int sceNetConfigGetIfEvent(const char *ifname, int *event, int *data);
 int sceNetAdhocAuthInit(void);
 int sceNetAdhocAuthTerm(void);
@@ -253,6 +333,19 @@ static inline void notify(int event, int error)
 	if (D_00007060.func != NULL)
 		D_00007060.func(event, error, D_00007060.arg);
 	sceKernelSignalSema(p->sema, 1);
+}
+
+static inline int find_bss(struct adhocctl_ctx *p, const struct SceNetEtherAddr *bssid)
+{
+	int i;
+
+	if (p == NULL || bssid == NULL)
+		return 0x80410B0A;
+	for (i = 0; i < 20; i++) {
+		if (memcmp(&p->scan[i].desc.bssid, bssid, sizeof(*bssid)) == 0)
+			return i;
+	}
+	return 0x80410B0A;
 }
 
 #endif
