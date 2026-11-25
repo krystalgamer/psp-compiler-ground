@@ -10,6 +10,18 @@
 #define SCE_SEEK_SET	0
 #define SCE_SEEK_CUR	1
 #define SCE_SEEK_END	2
+#include <psptypes.h>
+struct SceIoStat {
+	SceMode st_mode;
+	unsigned int st_attr;
+	SceOff st_size;
+	ScePspDateTime st_ctime;
+	ScePspDateTime st_atime;
+	ScePspDateTime st_mtime;
+	unsigned int st_private[6];
+};
+typedef struct SceIoStat SceIoStat;
+int sceIoGetstat(const char *name, SceIoStat *buf);
 SceUID sceIoOpen(const char *name, int flag, SceMode mode);
 int sceIoClose(SceUID fd);
 SceSSize sceIoRead(SceUID fd, void *buf, SceSize nbyte);

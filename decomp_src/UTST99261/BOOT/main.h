@@ -50,4 +50,26 @@ int mp3_exit();
 
 void imageCls(void);
 
+void browserImageInit(void);
+void browserImageExit(void);
+int browserInit(void);
+int browserExec(void);
+int browserExit(void);
+int browserFontEX(void);
+int browserAlert(void);
+int browserConfirm(void);
+int browserInput(void);
+int browserSslIn(void);
+int browserSslOut(void);
+int browserFatalerror(void);
+int browserPassword(void);
+int browserDownload(void);
+int browserReaderror(void);
+int contentDownload(void);
+int browserMenu(void);
+int mpegExec(void);
+int mp3Exec(void);
+int fontInit(void);
+int fontExit(void);
+
 #endif

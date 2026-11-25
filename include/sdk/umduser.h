@@ -1,0 +1,6 @@
+#ifndef _UMDUSER_H
+#define _UMDUSER_H
+/* SDK prototypes as used by the decompiled code */
+int sceUmdActivate(int mode, const char *aliasname);
+int sceUmdWaitDriveStat(int stat);
+#endif
