@@ -3,6 +3,8 @@ crt0                                         1.6.1.internal  crt0.c
 main                                         1.6.1.internal  main.c
 bg                                           1.6.1.internal  bg.c
 menu                                         1.6.1.internal  menu.c
+libgu                                        1.6.1.internal  libgu.c
+kernel_bridge                                1.6.1.internal  kernel_bridge.c
 newlib/libc/stdlib/atexit                    1.6.1.internal  ../../../../../newlib-1.12.0/newlib/libc/stdlib/atexit.c
 newlib/libc/stdlib/exit                      1.6.1.internal  ../../../../../newlib-1.12.0/newlib/libc/stdlib/exit.c
 newlib/libc/stdlib/malloc                    1.6.1.internal  ../../../../../newlib-1.12.0/newlib/libc/stdlib/malloc.c
