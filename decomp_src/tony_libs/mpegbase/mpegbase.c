@@ -1,53 +1,282 @@
+/* cflags: -O2 -frename-registers -fno-merge-constants */
 #include "common.h"
 
-INCLUDE_ASM("tmp/asm/tony_libs/mpegbase/nonmatchings/mpegbase", module_start);
+/* --- declarations --- */
+#include "mpegbase.h"
 
-INCLUDE_ASM("tmp/asm/tony_libs/mpegbase/nonmatchings/mpegbase", module_stop);
+static inline int cscSetParam(int arg0)
+{
+	int ret = sceDmacplus_driver_B2EFA681(0, arg0, &D_00001740);
+	D_00001740.unk18 = arg0;
+	D_00001740.unk1C = 0;
+	return ret;
+}
+/* --- end declarations --- */
 
-INCLUDE_ASM("tmp/asm/tony_libs/mpegbase/nonmatchings/mpegbase", sceMpegbase_AC9E717E);
+int module_start(void)
+{
+	func_00000BA0();
+	func_00000828();
+	func_00001278();
+	return 0;
+}
 
-INCLUDE_ASM("tmp/asm/tony_libs/mpegbase/nonmatchings/mpegbase", sceMpegBaseCscInit);
+int module_stop(void)
+{
+	func_000012B4();
+	func_00000BE0();
+	func_00000878();
+	return 0;
+}
 
-INCLUDE_ASM("tmp/asm/tony_libs/mpegbase/nonmatchings/mpegbase", sceMpegBaseCscAvc);
+int sceMpegbase_AC9E717E(int arg0, CscParam *param)
+{
+	register unsigned int k1 asm("$27");
+	unsigned int oldk1;
+	int ret;
 
-INCLUDE_ASM("tmp/asm/tony_libs/mpegbase/nonmatchings/mpegbase", sceMpegBaseCscVme);
+	K1_SAVE(oldk1);
+	ret = sceKernelWaitSema(D_00001740.sema, 1, 0);
+	if (ret < 0) {
+		K1_RESTORE(oldk1);
+		return ret;
+	}
+	if ((k1 & 0x18) && (int)((unsigned int)param | ((unsigned int)param + sizeof(CscParam))) < 0) {
+		ret = 0x80000023;
+	} else {
+		D_00001740.param = *param;
+		ret = sceDmacplus_driver_B2EFA681(0, arg0, &D_00001740);
+		D_00001740.unk18 = arg0;
+		D_00001740.unk1C = 0;
+	}
+	sceKernelSignalSema(D_00001740.sema, 1);
+	K1_RESTORE(oldk1);
+	return ret;
+}
 
-INCLUDE_ASM("tmp/asm/tony_libs/mpegbase/nonmatchings/mpegbase", func_00000828);
+int sceMpegBaseCscInit(int arg0)
+{
+	unsigned int oldk1;
+	int ret;
 
-INCLUDE_ASM("tmp/asm/tony_libs/mpegbase/nonmatchings/mpegbase", func_00000878);
+	K1_SAVE(oldk1);
+	ret = sceKernelWaitSema(D_00001740.sema, 1, 0);
+	if (ret < 0) {
+		K1_RESTORE(oldk1);
+		return ret;
+	}
+	{
+		D_00001740.param.c[0] = 0x95;
+		D_00001740.param.c[1] = 0x0;
+		D_00001740.param.c[2] = 0xCC;
+		D_00001740.param.c[3] = 0x95;
+		D_00001740.param.c[4] = 0x3CE;
+		D_00001740.param.c[5] = 0x398;
+		D_00001740.param.c[6] = 0x95;
+		D_00001740.param.c[7] = 0x102;
+		D_00001740.param.c[8] = 0x0;
+		D_00001740.param.c[9] = 0x10;
+		D_00001740.param.c[10] = 0x1;
+		ret = cscSetParam(arg0);
+		sceKernelSignalSema(D_00001740.sema, 1);
+	}
+	K1_RESTORE(oldk1);
+	return ret;
+}
 
-INCLUDE_ASM("tmp/asm/tony_libs/mpegbase/nonmatchings/mpegbase", func_000008A0);
+int sceMpegBaseCscAvc(unsigned int dst, unsigned int dst2, int width, CscAvcParam *p)
+{
+	register unsigned int k1 asm("$27");
+	unsigned int oldk1;
+	int ret;
+	unsigned int sz1, sz2, size;
 
-INCLUDE_ASM("tmp/asm/tony_libs/mpegbase/nonmatchings/mpegbase", func_000008C8);
+	K1_SAVE(oldk1);
+	ret = sceKernelWaitSema(D_00001740.sema, 1, 0);
+	if (ret < 0) {
+		K1_RESTORE(oldk1);
+		return ret;
+	}
+	sz1 = (unsigned int)(p->width * p->height) / 4;
+	sz2 = (unsigned int)(p->width * p->height) / 8;
+	size = width ? width : D_00001740.unk18;
+	size = size * p->height * 4;
+	if (staBufBad((unsigned int)p, sizeof(CscAvcParam))
+	    || dynBufBad(p->buf[0], sz1)
+	    || dynBufBad(p->buf[2], sz1)
+	    || dynBufBad(p->buf[4], sz2)
+	    || dynBufBad(p->buf[6], sz2)
+	    || dynBufBad(p->buf[1], sz1)
+	    || dynBufBad(p->buf[3], sz1)
+	    || dynBufBad(p->buf[5], sz2)
+	    || dynBufBad(p->buf[7], sz2)
+	    || dynBufBad(dst, size)
+	    || (dst2 != 0 && K1_USER() && !dynBufOk(dst2, size))) {
+		ret = 0x80000023;
+	} else {
+		if (width != 0) {
+			ret = sceDmacplus_driver_B2EFA681(D_00001740.unk1C, width, &D_00001740);
+			if (ret != 0)
+				goto end;
+		}
+		ret = sceDmacplus_driver_1D73DDA8((void *)dst, (void *)dst2, p);
+		if (ret == 0)
+			ret = sceDmacplus_driver_3A98EE05(0, 0);
+	}
+end:
+	sceKernelSignalSema(D_00001740.sema, 1);
+	K1_RESTORE(oldk1);
+	return ret;
+}
 
-INCLUDE_ASM("tmp/asm/tony_libs/mpegbase/nonmatchings/mpegbase", func_000008EC);
+int sceMpegBaseCscVme(unsigned int dst, unsigned int dst2, int width, CscVmeParam *p)
+{
+	register unsigned int k1 asm("$27");
+	unsigned int oldk1;
+	int ret;
+	unsigned int sz1, sz2, size;
 
-INCLUDE_ASM("tmp/asm/tony_libs/mpegbase/nonmatchings/mpegbase", sceMpegbase_0530BE4E);
+	K1_SAVE(oldk1);
+	ret = sceKernelWaitSema(D_00001740.sema, 1, 0);
+	if (ret < 0) {
+		K1_RESTORE(oldk1);
+		return ret;
+	}
+	sz1 = (unsigned int)(p->width * p->height) / 2;
+	sz2 = (unsigned int)(p->width * p->height) / 8;
+	size = width ? width : D_00001740.unk18;
+	size = size * p->height * 4;
+	if (staBufBad((unsigned int)p, sizeof(CscVmeParam))
+	    || dynBufBad(p->buf[0], sz1)
+	    || dynBufBad(p->buf[1], sz1)
+	    || dynBufBad(p->buf[2], sz2)
+	    || dynBufBad(p->buf[3], sz2)
+	    || dynBufBad(p->buf[4], sz2)
+	    || dynBufBad(p->buf[5], sz2)
+	    || dynBufBad(dst, size)
+	    || (dst2 != 0 && K1_USER() && !dynBufOk(dst2, size))) {
+		ret = 0x80000023;
+	} else {
+		if (width != 0) {
+			ret = sceDmacplus_driver_B2EFA681(D_00001740.unk1C, width, &D_00001740);
+			if (ret != 0)
+				goto end;
+		}
+		ret = sceDmacplus_driver_74323807((void *)dst, (void *)dst2, p);
+		if (ret == 0)
+			ret = sceDmacplus_driver_3A98EE05(0, 0);
+	}
+end:
+	sceKernelSignalSema(D_00001740.sema, 1);
+	K1_RESTORE(oldk1);
+	return ret;
+}
+
+int func_00000828(void)
+{
+	D_00001740.sema = sceKernelCreateSema("SceMpegBaseCsc", 0, 1, 1, 0);
+	D_00001740.unk18 = 0;
+	D_00001740.unk1C = 0;
+	return 0;
+}
+
+int func_00000878(void)
+{
+	sceKernelDeleteSema(D_00001740.sema);
+	return 0;
+}
+
+int func_000008A0(void)
+{
+	return sceKernelWaitSema(D_00001740.sema, 1, 0);
+}
+
+int func_000008C8(void)
+{
+	return sceKernelSignalSema(D_00001740.sema, 1);
+}
+
+int func_000008EC(void)
+{
+	return sceKernelPollSema(D_00001740.sema, 1);
+}
+
+int sceMpegbase_0530BE4E(int arg0)
+{
+	unsigned int oldk1;
+	int ret;
+
+	K1_SAVE(oldk1);
+	ret = sceKernelWaitSema(D_00001740.sema, 1, 0);
+	if (ret < 0) {
+		K1_RESTORE(oldk1);
+		return ret;
+	}
+	D_00001740.unk1C = arg0;
+	ret = sceDmacplus_driver_B2EFA681(arg0, D_00001740.unk18, &D_00001740);
+	sceKernelSignalSema(D_00001740.sema, 1);
+	K1_RESTORE(oldk1);
+	return ret;
+}
 
 INCLUDE_ASM("tmp/asm/tony_libs/mpegbase/nonmatchings/mpegbase", sceMpegBasePESpacketCopy);
 
-INCLUDE_ASM("tmp/asm/tony_libs/mpegbase/nonmatchings/mpegbase", func_00000BA0);
+int func_00000BA0(void)
+{
+	D_00001780.sema = sceKernelCreateSema("SceMpegBasePESpacketCopy", 0, 1, 1, 0);
+	return 0;
+}
 
-INCLUDE_ASM("tmp/asm/tony_libs/mpegbase/nonmatchings/mpegbase", func_00000BE0);
+int func_00000BE0(void)
+{
+	sceKernelDeleteSema(D_00001780.sema);
+	return 0;
+}
 
-INCLUDE_ASM("tmp/asm/tony_libs/mpegbase/nonmatchings/mpegbase", func_00000C08);
+int func_00000C08(void)
+{
+	return sceKernelWaitSema(D_00001780.sema, 1, 0);
+}
 
-INCLUDE_ASM("tmp/asm/tony_libs/mpegbase/nonmatchings/mpegbase", func_00000C30);
+int func_00000C30(void)
+{
+	return sceKernelSignalSema(D_00001780.sema, 1);
+}
 
-INCLUDE_ASM("tmp/asm/tony_libs/mpegbase/nonmatchings/mpegbase", func_00000C54);
+int func_00000C54(void)
+{
+	return sceKernelPollSema(D_00001780.sema, 1);
+}
 
 INCLUDE_ASM("tmp/asm/tony_libs/mpegbase/nonmatchings/mpegbase", sceMpegBaseYCrCbCopy);
 
 INCLUDE_ASM("tmp/asm/tony_libs/mpegbase/nonmatchings/mpegbase", sceMpegBaseYCrCbCopyVme);
 
-INCLUDE_ASM("tmp/asm/tony_libs/mpegbase/nonmatchings/mpegbase", func_00001278);
+int func_00001278(void)
+{
+	D_00001E00 = sceKernelCreateSema("SceMpegBaseYCrCb", 0, 1, 1, 0);
+	return 0;
+}
 
-INCLUDE_ASM("tmp/asm/tony_libs/mpegbase/nonmatchings/mpegbase", func_000012B4);
+int func_000012B4(void)
+{
+	sceKernelDeleteSema(D_00001E00);
+	return 0;
+}
 
-INCLUDE_ASM("tmp/asm/tony_libs/mpegbase/nonmatchings/mpegbase", func_000012DC);
+int func_000012DC(void)
+{
+	return sceKernelWaitSema(D_00001E00, 1, 0);
+}
 
-INCLUDE_ASM("tmp/asm/tony_libs/mpegbase/nonmatchings/mpegbase", func_00001304);
+int func_00001304(void)
+{
+	return sceKernelSignalSema(D_00001E00, 1);
+}
 
-INCLUDE_ASM("tmp/asm/tony_libs/mpegbase/nonmatchings/mpegbase", func_00001328);
+int func_00001328(void)
+{
+	return sceKernelPollSema(D_00001E00, 1);
+}
 
 INCLUDE_ASM("tmp/asm/tony_libs/mpegbase/nonmatchings/mpegbase", func_0000134C);
