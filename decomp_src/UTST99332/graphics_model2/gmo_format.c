@@ -22,6 +22,8 @@ typedef struct SceGmoChunk SceGmoChunk;
 
 
 _Bool sceGmoModelCheckFileHeader(const void *buf, int size);
+int sceGmoModelCountChunk(const SceGmoChunk *chunk, int type);
+const SceGmoChunk *sceGmoModelFindChunk(const SceGmoChunk *chunk, int type, int idx);
 
 
 _Bool sceGmoModelCheckFileHeader(const void *buf, int size)
@@ -40,22 +42,26 @@ _Bool sceGmoModelCheckFileHeader(const void *buf, int size)
 	return header->style == 0x505350;
 }
 
-int sceGmoModelGetChunkCount(void *buf, int size) {
-    int var_v1;
+int sceGmoModelGetChunkCount(const void *buf, int size)
+{
+	const SceGmoHeader *header;
+	const SceGmoChunk *chunk;
 
-    var_v1 = 0;
-    if (buf != NULL) {
-        var_v1 = sceGmoModelCountChunk(buf + 0x10, 3);
-    }
-    return var_v1;
+	header = (const SceGmoHeader *)buf;
+	if (header == NULL)
+		return 0;
+	chunk = (const SceGmoChunk *)(header + 1);
+	return sceGmoModelCountChunk(chunk, 3);
 }
 
-SceGmoChunk *sceGmoModelGetChunk(void *buf, int size, int idx) {
-    SceGmoChunk *var_v1;
+const SceGmoChunk *sceGmoModelGetChunk(const void *buf, int size, int idx)
+{
+	const SceGmoHeader *header;
+	const SceGmoChunk *chunk;
 
-    var_v1 = NULL;
-    if (buf != NULL) {
-        var_v1 = sceGmoModelFindChunk(buf + 0x10, 3);
-    }
-    return var_v1;
+	header = (const SceGmoHeader *)buf;
+	if (header == NULL)
+		return NULL;
+	chunk = (const SceGmoChunk *)(header + 1);
+	return sceGmoModelFindChunk(chunk, 3, idx);
 }
