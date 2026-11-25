@@ -192,10 +192,114 @@ INCLUDE_ASM("tmp/asm/tony_libs/memab/nonmatchings/memab", sceMemab_driver_DAE8A6
 
 INCLUDE_ASM("tmp/asm/tony_libs/memab/nonmatchings/memab", sceMemab_driver_CF49BCBB);
 
-INCLUDE_ASM("tmp/asm/tony_libs/memab/nonmatchings/memab", sceMemab_driver_E6D3ACE2);
+int sceMemab_driver_E6D3ACE2(u8 *obj, u32 *data, u32 size, u8 *hdr, int encrypt)
+{
+	int ret = -0x109;
+	u64 ctr;
 
-INCLUDE_ASM("tmp/asm/tony_libs/memab/nonmatchings/memab", sceMemab_driver_B54E1AA7);
+	if (sceKernelWaitSema(D_000028E0, 1, 0) != 0)
+		goto end;
+	ret = -0x200;
+	if (D_00002880 == 0)
+		goto end;
+	ret = -0x400;
+	if (size & 0xF)
+		goto end;
+	ret = -0x401;
+	if (size > 0x910)
+		goto end;
+	ctr = BYTES_TO_U64(obj + 0x3C);
+	ret = func_000006BC(D_00002874, data, size, &ctr, obj, hdr, encrypt);
+	if (ret != 0)
+		goto end;
+	U64_TO_BYTES(obj + 0x3C, ctr);
+end:
+	if (sceKernelSignalSema(D_000028E0, 1) != 0)
+		ret = -0x109;
+	return ret;
+}
 
-INCLUDE_ASM("tmp/asm/tony_libs/memab/nonmatchings/memab", sceMemab_driver_F1D2B9B0);
+int sceMemab_driver_B54E1AA7(u8 *obj, u32 *data, u32 size, u8 *hdr, int decrypt, int check)
+{
+	int ret = -0x109;
+	u64 ctr, min;
 
-INCLUDE_ASM("tmp/asm/tony_libs/memab/nonmatchings/memab", sceMemab_driver_4DF566D3);
+	if (sceKernelWaitSema(D_000028E0, 1, 0) != 0)
+		goto end;
+	ret = -0x200;
+	if (D_00002880 == 0)
+		goto end;
+	ret = -0x400;
+	if (size & 0xF)
+		goto end;
+	ret = -0x401;
+	if (size > 0x910)
+		goto end;
+	min = BYTES_TO_U64(obj + 0x44);
+	ctr = BYTES_TO_U64(hdr);
+	ret = func_00000878(D_00002874, data, size, &ctr, &min, obj, hdr, decrypt, check);
+	if (ret != 0)
+		goto end;
+	if (check)
+		U64_TO_BYTES(obj + 0x44, ctr);
+end:
+	if (sceKernelSignalSema(D_000028E0, 1) != 0)
+		ret = -0x109;
+	return ret;
+}
+
+int sceMemab_driver_F1D2B9B0(u32 *data, u32 size, u8 *hdr, int encrypt)
+{
+	int ret = -0x109;
+	u64 ctr;
+
+	if (sceKernelWaitSema(D_000028E0, 1, 0) != 0)
+		goto end;
+	ret = -0x200;
+	if (D_00002880 == 0)
+		goto end;
+	ret = -0x400;
+	if (size & 0xF)
+		goto end;
+	ret = -0x401;
+	if (size > 0x910)
+		goto end;
+	ctr = D_00002888;
+	ret = func_000006BC(D_00002874, data, size, &ctr, D_000028C0, hdr, encrypt);
+	if (ret != 0)
+		goto end;
+	D_00002888 = ctr;
+end:
+	if (sceKernelSignalSema(D_000028E0, 1) != 0)
+		ret = -0x109;
+	return ret;
+}
+
+int sceMemab_driver_4DF566D3(u8 *obj, u32 *data, u32 size, u8 *hdr, int decrypt, int check)
+{
+	int ret = -0x109;
+	u64 ctr, min;
+
+	if (sceKernelWaitSema(D_000028E0, 1, 0) != 0)
+		goto end;
+	ret = -0x200;
+	if (D_00002880 == 0)
+		goto end;
+	ret = -0x400;
+	if (size & 0xF)
+		goto end;
+	ret = -0x401;
+	if (size > 0x910)
+		goto end;
+	min = BYTES_TO_U64(obj + 0x34);
+	ctr = BYTES_TO_U64(hdr);
+	ret = func_00000878(D_00002874, data, size, &ctr, &min, obj + 0x14, hdr, decrypt, check);
+	if (ret != 0)
+		goto end;
+	if (check)
+		U64_TO_BYTES(obj + 0x34, ctr);
+end:
+	if (sceKernelSignalSema(D_000028E0, 1) != 0)
+		ret = -0x109;
+	return ret;
+}
