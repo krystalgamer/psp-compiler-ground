@@ -135,6 +135,21 @@ struct mbuf *sceNetMFree(struct mbuf *m);
 void sceNetMFreem(struct mbuf *m);
 struct mbuf *func_00002C58(struct mbuf *m, int off, int len, int wait, int deep);
 
+extern const char D_00003A44[];
+extern const char D_00003A50[];
+
+#define MBUF_PANIC() \
+	do { \
+		Kprintf(D_00003A44, D_00003A50, __FUNCTION__); \
+		for (;;) \
+			; \
+	} while (0)
+
+static inline unsigned int min(unsigned int a, unsigned int b)
+{
+	return a < b ? a : b;
+}
+
 extern int D_000043C8;
 extern int D_000043CC;
 extern int D_000043D0;
