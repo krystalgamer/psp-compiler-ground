@@ -1,0 +1,120 @@
+#!/usr/bin/env python3
+"""propagate.py TARGET [MODULE...] [--write] [--from TARGET2...]
+
+Many functions exist in several modules (SDK samples sharing source files,
+menu.c, the mpeg player in UTST99261 and UTST99332).  For every function
+that is still INCLUDE_ASM, try each C definition of a function with the same
+name already in decomp_src (outside NON_MATCHING blocks) in place of it,
+with the unit's own context, and keep the first one that compiles to the
+original (tools/fntest.py's comparison, the unit's cc1 and flags).
+"""
+import argparse
+import re
+import subprocess
+import sys
+import tempfile
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT / "tools"))
+import compiler  # noqa: E402
+import m2c as m2cdraft  # noqa: E402
+import objcmp  # noqa: E402
+from fntest import compile_c  # noqa: E402
+
+DEF = re.compile(r"^(?:static\s+)?[A-Za-z_][\w \t\*]*?\b(\w+)\s*\(([^;{}()]*)\)\s*\n?\{", re.M)
+
+
+def strip_nonmatching(text):
+    return re.sub(r"^#ifdef NON_MATCHING\n.*?^#else\n(.*?)^#endif\n", r"\1", text, flags=re.S | re.M)
+
+
+def definitions(path):
+    """name -> source of each C function defined in a file (brace matched)"""
+    text = strip_nonmatching(path.read_text())
+    out = {}
+    for m in DEF.finditer(text):
+        name = m.group(1)
+        if name in ("if", "while", "for", "switch", "return"):
+            continue
+        i, depth = m.end() - 1, 0
+        while i < len(text):
+            if text[i] == "{":
+                depth += 1
+            elif text[i] == "}":
+                depth -= 1
+                if depth == 0:
+                    break
+            i += 1
+        out[name] = text[m.start():i + 1] + "\n"
+    return out
+
+
+def library(targets):
+    lib = {}
+    for t in targets:
+        for f in sorted((ROOT / "decomp_src" / t).rglob("*.c")):
+            if "/newlib/" in str(f) or "/libgcc/" in str(f):
+                continue
+            for name, body in definitions(f).items():
+                lib.setdefault(name, [])
+                if body not in [b for b, _ in lib[name]]:
+                    lib[name].append((body, f))
+    return lib
+
+
+def try_body(target, module, unit, func, body, mod):
+    path = ROOT / "decomp_src" / target / module / f"{unit}.c"
+    text = path.read_text()
+    pat = re.compile(r'^INCLUDE_ASM\("[^"]+", ' + re.escape(func) + r"\);$", re.M)
+    sdk = m2cdraft.sdk_protos(text)
+    decl = "\n".join(v for k, v in sdk.items() if re.search(rf"\b{k}\(", body))
+    new = pat.sub(lambda _: (decl + "\n" if decl else "") + body.rstrip("\n"), text, count=1)
+    m = re.search(r"cflags: (-O[0-3s](?: -[fm][\w-]+)*)", text)
+    flags = (m.group(1) if m else "-O2") + " " + compiler.driver_flags(target, module, unit)
+    with tempfile.TemporaryDirectory() as td:
+        c = Path(td) / "t.c"
+        c.write_text(new)
+        o = compile_c(c, compiler.compiler(target, module, unit), flags, Path(td) / "t.o",
+                      [path.parent, ROOT / "decomp_src" / target / module])
+        if o is None:
+            return None
+        if objcmp.compare(mod, [o]).get(func) == "same":
+            return new
+    return None
+
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("target")
+    ap.add_argument("modules", nargs="*")
+    ap.add_argument("--write", action="store_true")
+    ap.add_argument("--from", dest="sources", nargs="*", default=["UTST99261", "UTST99332", "sampler", "puzzle_bobble"])
+    a = ap.parse_args()
+    lib = library(a.sources)
+    modules = a.modules or sorted(p.name for p in (ROOT / "decomp_src" / a.target).iterdir() if p.is_dir())
+    total = 0
+    for module in modules:
+        mod = None
+        for path in sorted((ROOT / "decomp_src" / a.target / module).rglob("*.c")):
+            unit = str(path.relative_to(ROOT / "decomp_src" / a.target / module))[:-2]
+            if unit.startswith(("newlib/", "libgcc/", "gcc-3.3.3/")):
+                continue
+            for func in re.findall(r'^INCLUDE_ASM\("[^"]+", (\w+)\);$', path.read_text(), re.M):
+                cands = [(b, f) for b, f in lib.get(func, []) if f != path]
+                if not cands:
+                    continue
+                mod = mod or objcmp.module_funcs(a.target, module)
+                for body, src in cands:
+                    new = try_body(a.target, module, unit, func, body, mod)
+                    if new:
+                        total += 1
+                        print(f"{module}/{unit}:{func}  <- {src.relative_to(ROOT / 'decomp_src')}", flush=True)
+                        if a.write:
+                            path.write_text(new)
+                        break
+    print(f"# {total} functions propagated")
+
+
+if __name__ == "__main__":
+    main()
