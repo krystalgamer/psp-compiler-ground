@@ -381,11 +381,6 @@ void sceGuTerm(void)
 INCLUDE_RODATA("tmp/asm/umdt/graphics_model/nonmatchings/libgu", D_000173D0);
 
 
-INCLUDE_RODATA("tmp/asm/umdt/graphics_model/nonmatchings/libgu", D_00017410);
-
-INCLUDE_RODATA("tmp/asm/umdt/graphics_model/nonmatchings/libgu", D_00017424);
-
-INCLUDE_RODATA("tmp/asm/umdt/graphics_model/nonmatchings/libgu", D_0001747C);
 
 
 void sceGuStart(int type, void *list, int size)
@@ -491,11 +486,102 @@ int sceGuCheckList(void)
 	return (int)pList->current - (int)pList->start;
 }
 
-INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/libgu", sceGuSync);
+int sceGuSync(int mode, int what)
+{
+	switch (mode) {
+	case 0:
+		return sceGeDrawSync(what);
+	case 1:
+	case 2:
+	default:
+		return 0;
+	case 3:
+		return sceGeListSync(queid[0], what);
+	case 4:
+		return sceGeListSync(queid[1], what);
+	}
+}
 
 INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/libgu", sceGuSignalSync);
 
-INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/libgu", sceGuEnable);
+void sceGuEnable(int state)
+{
+	switch (state) {
+	case 0:
+		send_commandi(34, 1);
+		break;
+	case 1:
+		send_commandi(35, 1);
+		break;
+	case 2:
+		_ctx[__aw_list_mode].scissor_enable = 1;
+		send_commandi(212, (_ctx[__aw_list_mode].scissor_start[1] << 10) | _ctx[__aw_list_mode].scissor_start[0]);
+		send_commandi(213, (_ctx[__aw_list_mode].scissor_end[1] << 10) | _ctx[__aw_list_mode].scissor_end[0]);
+		break;
+	case 3:
+		send_commandi(36, 1);
+		break;
+	case 4:
+		send_commandi(33, 1);
+		break;
+	case 5:
+		send_commandi(29, 1);
+		break;
+	case 6:
+		send_commandi(32, 1);
+		break;
+	case 7:
+		send_commandi(31, 1);
+		break;
+	case 8:
+		send_commandi(28, 1);
+		break;
+	case 9:
+		send_commandi(30, 1);
+		break;
+	case 10:
+		send_commandi(23, 1);
+		break;
+	case 11:
+		send_commandi(24, 1);
+		break;
+	case 12:
+		send_commandi(25, 1);
+		break;
+	case 13:
+		send_commandi(26, 1);
+		break;
+	case 14:
+		send_commandi(27, 1);
+		break;
+	case 15:
+		send_commandi(37, 1);
+		break;
+	case 16:
+		send_commandi(38, 1);
+		break;
+	case 17:
+		send_commandi(39, 1);
+		break;
+	case 18:
+		send_commandi(40, 1);
+		break;
+	case 19:
+		send_commandi(81, 1);
+		break;
+	case 20:
+		send_commandi(56, 1);
+		break;
+	case 21:
+		_ctx[__aw_list_mode].fragment_2x = 0x10000;
+		send_commandi(201, 0x10000 | _ctx[__aw_list_mode].texture_function);
+		break;
+	}
+	if (state < 22)
+		__gu_status |= (1 << state);
+}
+
+INCLUDE_RODATA("tmp/asm/umdt/graphics_model/nonmatchings/libgu", D_0001747C);
 
 INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/libgu", sceGuDisable);
 
