@@ -62,7 +62,7 @@ int contentDownload(void)
 	messObjCreate(0x8d, 240, 190, NULL, 0, 6);
 	iDownloadSize = 0;
 	do {
-		pspBrowserExec(0);
+		pspBrowserExec(NULL);
 		browserDraw();
 		ret = messExec(1);
 		sceGuFinish();
@@ -97,7 +97,7 @@ int contentDownload(void)
 	pspBrowserSetState(0x21, &pspSetDownloadStart);
 	while (d_mode == 2) {
 		messObjStateSet(bh, iDownloadSize * 100 / pspGetDownload.contentSize);
-		ret = pspBrowserExec(0);
+		ret = pspBrowserExec(NULL);
 		switch (ret & 0xffff) {
 		case 0:
 		case 34:

@@ -39,4 +39,5 @@ void sceGuClearColor(unsigned int color);
 void sceGuClearDepth(unsigned int depth);
 void sceGuClearStencil(unsigned int stencil);
 void sceGuTexMapMode(int mode, unsigned int a1, unsigned int a2);
+void sceGuClear(int flags);
 #endif

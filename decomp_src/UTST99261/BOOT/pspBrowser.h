@@ -132,6 +132,10 @@ int pspBrowserGetState(int state, void *param);
 
 int pspBrowserAddAnchor(char *ext, PSPBROWSER_ANCHOR_CALLBACK callback);
 
-int pspBrowserExec(int mode);
+int pspBrowserExec(PSPBROWSER_INPUT *input);
+
+int pspBrowserInit(PSPBROWSER_INI *ini);
+int pspBrowserExit(void);
+int pspBrowserSetFocusCallback(PSPBROWSER_FOCUS_CALLBACK callback);
 
 #endif

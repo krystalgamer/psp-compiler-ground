@@ -72,4 +72,9 @@ int mp3Exec(void);
 int fontInit(void);
 int fontExit(void);
 
+int sePlay(int no);
+int addDownload(void);
+int mepgAdd(void);
+int mp3Add();
+
 #endif
