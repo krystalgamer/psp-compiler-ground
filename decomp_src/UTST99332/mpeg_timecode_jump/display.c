@@ -86,11 +86,63 @@ SceInt32 dispbuf_show(t_displayBuffer *pDisp);
 
 INCLUDE_ASM("tmp/asm/UTST99332/mpeg_timecode_jump/nonmatchings/display", dispbuf_create);
 
-INCLUDE_ASM("tmp/asm/UTST99332/mpeg_timecode_jump/nonmatchings/display", swap_buffer);
+int sceDisplaySetFrameBuf(void *topaddr, int bufferwidth, int pixelformat, int sync);
+int sceDisplaySetFrameBuf(void *topaddr, int bufferwidth, int pixelformat, int sync);
+static SceInt32 swap_buffer(SceChar8 *buffer)
+{
+	SceChar8 *storeBuf;
 
-INCLUDE_ASM("tmp/asm/UTST99332/mpeg_timecode_jump/nonmatchings/display", dispbuf_reset);
+	sceDmacMemcpy(displayBuf[0], buffer, 0x88000);
+	sceDisplaySetFrameBuf(displayBuf[0], 512, 3, 1);
+	storeBuf = displayBuf[0];
+	displayBuf[0] = displayBuf[1];
+	displayBuf[1] = storeBuf;
+	return 0;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/mpeg_timecode_jump/nonmatchings/display", dispbuf_delete);
+int sceDisplaySetMode(int mode, int width, int height);
+SceInt32 dispbuf_reset(t_displayBuffer *pDisp)
+{
+	SceInt32 ret;
+
+	frameCount = 0;
+	frameLoss = 0;
+	pDisp->write = 0;
+	pDisp->read = 0;
+	pDisp->count = 0;
+	dispbuf_setMode(pDisp, 1);
+	sceKernelClearEventFlag(pDisp->delayFlag, 0);
+	ret = sceDisplaySetMode(0, 480, 272);
+	if (ret < 0)
+		return ret;
+	sceDisplaySetFrameBuf(NULL, 512, 3, 1);
+	return 0;
+}
+
+int sceKernelDeleteSema(int semid);
+void free(void *p);
+SceInt32 dispbuf_delete(t_displayBuffer *pDisp)
+{
+	SceInt32 i;
+
+	if (pDisp->buf) {
+		for (i = 0; i < pDisp->size; i++) {
+			if (pDisp->buf[i]) {
+				free(pDisp->buf[i]);
+				pDisp->buf[i] = NULL;
+			}
+		}
+		free(pDisp->buf);
+		pDisp->buf = NULL;
+	}
+	if (pDisp->pts) {
+		free(pDisp->pts);
+		pDisp->pts = NULL;
+	}
+	sceKernelDeleteSema(pDisp->lockSema);
+	sceKernelDeleteEventFlag(pDisp->delayFlag);
+	return 0;
+}
 
 int dispbuf_getDrawbuf(t_displayBuffer *pDisp, signed char **buffer) {
     int temp_v0;
@@ -114,7 +166,16 @@ int dispbuf_getPts(t_displayBuffer *pDisp, unsigned int *pPts) {
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/mpeg_timecode_jump/nonmatchings/display", dispbuf_dataSet);
+int sceKernelSignalSema(int semid, int signal);
+int sceKernelWaitSema(int semid, int signal, unsigned int *timeout);
+SceInt32 dispbuf_dataSet(t_displayBuffer *pDisp)
+{
+	sceKernelWaitSema(pDisp->lockSema, 1, NULL);
+	pDisp->count++;
+	pDisp->write = (pDisp->write + 1) % pDisp->size;
+	sceKernelSignalSema(pDisp->lockSema, 1);
+	return 0;
+}
 
 int dispbuf_getCapacity(t_displayBuffer *pDisp) {
     return pDisp->size - pDisp->count;
@@ -124,7 +185,17 @@ int dispbuf_getCurrentCount(t_displayBuffer *pDisp) {
     return pDisp->count;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/mpeg_timecode_jump/nonmatchings/display", dispbuf_checkDecodeEnd);
+static SceInt32 dispbuf_checkDecodeEnd(t_displayBuffer *pDisp)
+{
+	SceUInt32 pattern;
+
+	control_getCondition(pDisp->pCtrl, &pattern);
+	if (pattern & 0x8) {
+		dispbuf_setMode(pDisp, 0xff);
+		return 1;
+	}
+	return 0;
+}
 
 int dispbuf_setMode(t_displayBuffer *pDisp, int mode) {
     pDisp->displayMode = mode;
@@ -143,8 +214,76 @@ int dispbuf_setPlayMode(t_displayBuffer *pDisp) {
     return sceKernelClearEventFlag(pDisp->delayFlag, 0);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/mpeg_timecode_jump/nonmatchings/display", dispbuf_checkDelayMode);
+SceInt32 dispbuf_checkDelayMode(t_displayBuffer *pDisp)
+{
+	SceKernelEventFlagInfo info;
+	SceInt32 ret;
 
-INCLUDE_ASM("tmp/asm/UTST99332/mpeg_timecode_jump/nonmatchings/display", dispbuf_func);
+	info.size = sizeof(info);
+	sceKernelReferEventFlagStatus(pDisp->delayFlag, &info);
+	if (info.currentPattern == 1)
+		ret = 1;
+	else
+		ret = 0;
+	return ret;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/mpeg_timecode_jump/nonmatchings/display", dispbuf_show);
+int sceDisplayWaitVblankStart(void);
+int sceKernelDelayThread(unsigned int delay);
+int printf(const char *fmt, ...);
+SceInt32 dispbuf_func(SceSize size, SceVoid *argp)
+{
+	SceInt32 delayCheck;
+	SceInt32 currentMode;
+	t_avSyncControl **ppAvSync;
+	t_avSyncControl *pAvSync;
+	t_displayBuffer *pDisp;
+
+	ppAvSync = argp;
+	pAvSync = *ppAvSync;
+	pDisp = pAvSync->pDisp;
+	control_waitConditionDispStart(pDisp->pCtrl);
+	while (dispbuf_checkDecodeEnd(pDisp) != 1 || dispbuf_getCurrentCount(pDisp) != 0) {
+		delayCheck = dispbuf_checkDelayMode(pDisp);
+		if (delayCheck == 1) {
+			sceKernelDelayThread(1000000);
+			dispbuf_setPlayMode(pDisp);
+		}
+		currentMode = avsync_Compare(pAvSync);
+		dispbuf_setMode(pDisp, currentMode);
+		if (dispbuf_getCurrentCount(pDisp) > 0) {
+			if (dispbuf_getMode(pDisp) != 4) {
+				dispbuf_show(pDisp);
+				sceKernelWaitSema(pDisp->lockSema, 1, NULL);
+				pDisp->count--;
+				sceKernelSignalSema(pDisp->lockSema, 1);
+				frameCount++;
+			}
+		} else {
+			frameLoss++;
+		}
+		control_setCondition(pDisp->pCtrl, 2);
+		sceDisplayWaitVblankStart();
+	}
+	sceDisplaySetFrameBuf(NULL, 512, 3, 1);
+	printf("frame count = %d\n", frameCount);
+	printf("frame loss  = %d\n", frameLoss);
+	control_setCondition(pDisp->pCtrl, 0x10);
+	sceKernelExitThread(0);
+	return 0;
+}
+
+SceInt32 dispbuf_show(t_displayBuffer *pDisp)
+{
+	SceChar8 *buffer;
+
+	if (dispbuf_getMode(pDisp) == 1 || dispbuf_getMode(pDisp) == 0xff) {
+		buffer = pDisp->buf[pDisp->read];
+		swap_buffer(buffer);
+		pDisp->read = (pDisp->read + 1) % pDisp->size;
+		sceDisplayWaitVblankStart();
+	} else {
+		pDisp->read = (pDisp->read + 1) % pDisp->size;
+	}
+	return 0;
+}
