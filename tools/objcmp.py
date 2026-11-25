@@ -46,16 +46,25 @@ def module_funcs(target, module):
             if ob < len(segs):
                 relocs[segs[ob]["p_offset"] + ofs] = info & 0xFF
     funcs = {}
+    entries = []
     for line in (ROOT / "config" / target / f"symbol_addrs.{module}.txt").read_text().splitlines():
         m = re.match(r"(\w+) = 0x([0-9A-F]+); // type:func(?: size:0x([0-9A-F]+))?", line)
         if m and m[3]:
-            a, n = int(m[2], 16), int(m[3], 16)
+            entries.append((m[1], int(m[2], 16), int(m[3], 16)))
+    # splat's func_XXXXXXXX (statics without a symbol): size from the asm
+    names = {e[0] for e in entries}
+    for f in (ROOT / "tmp" / "asm" / target / module / "nonmatchings").rglob("func_*.s"):
+        m = re.search(r"nonmatching (func_([0-9A-F]{8})), 0x([0-9A-F]+)", f.read_text())
+        if m and m[1] not in names:
+            entries.append((m[1], int(m[2], 16), int(m[3], 16)))
+    for name, a, n in entries:
+        if True:
             words = []
             for k in range(0, n, 4):
                 o = off0 + a + k
                 w = struct.unpack_from("<I", data, o)[0]
                 words.append(mask(w, relocs[o]) if o in relocs else w)
-            funcs[m[1]] = words
+            funcs[name] = words
     return funcs
 
 
