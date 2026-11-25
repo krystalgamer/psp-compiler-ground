@@ -380,7 +380,7 @@ struct domain {
 };
 
 struct protosw {
-	short pr_type;
+	int pr_type;
 	struct domain *pr_domain;
 	short pr_protocol;
 	short pr_flags;
@@ -398,5 +398,40 @@ struct protosw {
 
 #define domains D_0002EB50
 extern struct domain *domains;
+
+/* callouts (pspnet) */
+struct callout {
+	void *c_link[4];
+	void (*c_func)(void *);
+	void *c_arg;
+	u_int c_time;
+	int c_flags;
+	SceUID c_alarm;
+};
+
+void _sce_pspnet_callout_init(struct callout *c);
+void _sce_pspnet_callout_reset(struct callout *c, int ticks, void (*func)(void *), void *arg);
+void _sce_pspnet_callout_stop(struct callout *c);
+#define callout_init _sce_pspnet_callout_init
+#define callout_reset _sce_pspnet_callout_reset
+#define callout_stop _sce_pspnet_callout_stop
+#define hz 100
+
+void sceNetIfhandle_lib_5FB31C72(int *max_linkhdr, int *max_protohdr, int *max_hdr, int *max_datalen);
+void sceNetIfhandle_lib_62B20015(int max_linkhdr, int max_protohdr, int max_hdr, int max_datalen);
+
+/* uipc_domain.c */
+#define ADDDOMAIN(x) { (x).dom_next = domains; domains = &(x); }
+#define MLEN (256 - 0x14)
+#define MHLEN (MLEN - 0x1C)
+#define SOCK_STREAM 1
+#define SOCK_DGRAM 2
+#define SOCK_RAW 3
+extern struct domain D_0002E50C, D_0002E59C, D_0002E768;
+extern int D_0002F29C, D_0002F2E8;
+extern struct callout D_0002F2A0, D_0002F2C4;
+struct domain *func_00001FAC(int family);
+void func_0000227C(void *arg);
+void func_00002320(void *arg);
 
 #endif
