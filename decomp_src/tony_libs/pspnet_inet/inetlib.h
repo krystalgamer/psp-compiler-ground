@@ -1386,6 +1386,7 @@ struct ifnet {
 		int ifq_drops;
 	} if_snd;
 	struct sockaddr_dl *if_sadl;
+	u_int8_t *if_broadcastaddr;
 };
 #define ifqueue ifqueue_
 
@@ -1907,6 +1908,7 @@ struct arphdr {
 #define ar_tha(ap) (((caddr_t)((ap) + 1)) + (ap)->ar_hln + (ap)->ar_pln)
 #define ar_tpa(ap) (((caddr_t)((ap) + 1)) + 2 * (ap)->ar_hln + (ap)->ar_pln)
 #define AF_ARP 28
+#define PF_ARP AF_ARP
 #define pseudo_AF_HDRCMPLT 30
 #define NETISR_ARP 28
 #define LLADDR(s) ((caddr_t)((s)->sdl_data + (s)->sdl_nlen))
@@ -1931,5 +1933,66 @@ int _sce_pspnet_start_of_inet_module_in_if_ethersubr_core(int (*a)(struct ifnet 
 void _sce_pspnet_stop_of_inet_module_in_if_ethersubr_core(void);
 extern void (*D_0002EB6C)(struct mbuf *, u_short, void *);
 extern int D_0002EB70;
+
+/* in_var.h: address hash */
+#define IN_IFADDR_HASH_SIZE 509
+LIST_HEAD(in_ifaddrhashhead, in_ifaddr);
+#define in_ifaddrhashtbl D_0002FF74
+extern struct in_ifaddrhashhead *in_ifaddrhashtbl;
+#define IN_IFADDR_HASH(x) in_ifaddrhashtbl[(u_long)(x) % IN_IFADDR_HASH_SIZE]
+#define IA_SIN(ia) (&(((struct in_ifaddr *)(ia))->ia_addr))
+#define INADDR_TO_IA(addr, ia) { \
+	for (ia = IN_IFADDR_HASH((addr).s_addr).lh_first; \
+	    ia != NULL; \
+	    ia = ia->ia_hash.le_next) { \
+		if (in_hosteq(ia->ia_addr.sin_addr, (addr)) && \
+		    (ia->ia_ifp->if_flags & IFF_UP) != 0) \
+			break; \
+	} \
+}
+#define NEXT_IA_WITH_SAME_ADDR(ia) { \
+	struct in_addr addr; \
+	addr = ia->ia_addr.sin_addr; \
+	do { \
+		ia = ia->ia_hash.le_next; \
+	} while ((ia != NULL) && !in_hosteq(ia->ia_addr.sin_addr, addr)); \
+}
+#define rt_expire rt_rmx.rmx_expire
+#define RTF_ANNOUNCE RTF_PROTO2
+
+/* if_inarp.h / if_arp.c */
+struct llinfo_arp {
+	LIST_ENTRY(llinfo_arp) la_list;
+	struct rtentry *la_rt;
+	struct mbuf *la_hold;
+	long la_asked;
+};
+struct sockaddr_inarp {
+	u_int8_t sin_len;
+	u_int8_t sin_family;
+	u_int16_t sin_port;
+	struct in_addr sin_addr;
+	struct in_addr sin_srcaddr;
+	u_int16_t sin_tos;
+	u_int16_t sin_other;
+};
+#define SIN_PROXY 1
+#define ETHERTYPE_IPTRAILERS 0x1000
+#define arp_rtrequest func_0000F6C8
+#define arpintr func_0000FD8C
+#define in_revarpinput func_00010508
+#define arp_drain func_00010648
+#define arpioctl func_000106E0
+#define arp_ifinit func_000106E8
+#define revarprequest func_000107F8
+#define revarpwhoarewe func_00010938
+void arp_rtrequest(int req, struct rtentry *rt, struct sockaddr *sa);
+void arpintr(void);
+void in_revarpinput(struct mbuf *m);
+void arp_drain(void);
+int arpioctl(u_long cmd, caddr_t data);
+void arp_ifinit(struct ifnet *ifp, struct ifaddr *ifa);
+void revarprequest(struct ifnet *ifp);
+int revarpwhoarewe(struct ifnet *ifp, struct in_addr *serv_in, struct in_addr *clnt_in);
 
 #endif
