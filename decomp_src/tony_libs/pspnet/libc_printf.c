@@ -35,4 +35,3 @@ INCLUDE_RODATA("tmp/asm/tony_libs/pspnet/nonmatchings/libc_printf", D_00009DA0);
 
 INCLUDE_RODATA("tmp/asm/tony_libs/pspnet/nonmatchings/libc_printf", D_00009DA8);
 
-INCLUDE_RODATA("tmp/asm/tony_libs/pspnet/nonmatchings/libc_printf", D_00009F8C);

@@ -236,3 +236,4 @@ sceKernelGetSystemTimeWide = 0x00009384; // type:func
 sceKernelGetSystemTimeLow = 0x0000938C; // type:func
 sceKernelSetAlarm = 0x00009394; // type:func
 sceKernelCancelAlarm = 0x0000939C; // type:func
+__clz_tab = 0x00009F8C; // size:0x100
