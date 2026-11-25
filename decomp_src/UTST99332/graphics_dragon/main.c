@@ -120,7 +120,88 @@ void draw_frame(void) {
     sceGuSync(0, 0);
 }
 
+void sceGuSpecular(float power);
+void sceGuFog(float near, float far, unsigned int color);
+void sceGumPerspective(float fovy, float aspect, float near, float far);
+
+#ifdef NON_MATCHING
+/* the two light vectors' constants load in a different order ($f21 holds 1.0f) */
+static void init_all(void)
+{
+	ScePspIMatrix4 dith = {
+		{ -4, 0, -3, 1 },
+		{ 2, -2, 3, -1 },
+		{ -3, 1, -4, 0 },
+		{ 3, -1, 2, -2 },
+	};
+	ScePspFVector3 vec;
+
+	sceGuInit();
+	sceGuStart(0, disp_list, sizeof(disp_list));
+	sceGuDrawBuffer(1, NULL, 0x200);
+	sceGuDispBuffer(0x1E0, 0x110, (void *)0x44000, 0x200);
+	sceGuDepthBuffer((void *)0x88000, 0x200);
+	sceGuOffset(0x710, 0x778);
+	sceGuViewport(0x800, 0x800, 0x1E0, 0x110);
+	sceGuDepthRange(0xC350, 0x2710);
+	sceGuBlendFunc(0, 2, 3, 0, 0);
+	sceGuEnable(4);
+	sceGuScissor(0, 0, 0x1E0, 0x110);
+	sceGuEnable(2);
+	sceGuAlphaFunc(6, 0, 0xFF);
+	sceGuEnable(0);
+	sceGuDepthFunc(7);
+	sceGuEnable(1);
+	sceGuFrontFace(0);
+	sceGuEnable(0x14);
+	sceGuTexFunc(0, 1);
+	sceGuTexFilter(7, 0);
+	sceGuTexWrap(0, 0);
+	sceGuDisable(9);
+	sceGuSetDither(&dith);
+	sceGuEnable(6);
+	sceGuEnable(8);
+	sceGuShadeModel(1);
+	vec.x = 10.0f;
+	vec.y = 4.0f;
+	vec.z = 10.0f;
+	sceGuLightColor(0, 2, 0xff008000);
+	sceGuLightColor(0, 4, 0xffffffff);
+	sceGuLight(0, 0, 6, &vec);
+	sceGuEnable(0xB);
+	vec.x = -1.0f;
+	vec.y = -2.0f;
+	vec.z = 1.0f;
+	sceGuLightColor(1, 2, 0xff000080);
+	sceGuLight(1, 0, 2, &vec);
+	sceGuEnable(0xC);
+	sceGuEnable(0xA);
+	sceGuSpecular(60.0f);
+	sceGuFog(24.0f, 60.0f, 0xff000000);
+	sceGuEnable(7);
+	sceGuAmbient(0xffc0c0c0);
+	sceGumSetMatrixStack(matrix_stack, 8, 8, 0x20, 0);
+	sceGumMatrixMode(0);
+	sceGumLoadIdentity();
+	sceGumPerspective(0.7853982f, 1.7647059f, 1.0f, 100.0f);
+	sceGumMatrixMode(2);
+	sceGuClearColor(0xff202020);
+	sceGuClearDepth(0);
+	sceGuClearStencil(0);
+	sceGuFinish();
+	sceGuSync(0, 0);
+	sceDisplayWaitVblankStart();
+	pos.x = 0.0f;
+	pos.y = -12.0f;
+	pos.z = -44.0f;
+	rot.x = 16.0f;
+	rot.y = 310.0f;
+	rot.z = 0.0f;
+	sceGuDisplay(1);
+}
+#else
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_dragon/nonmatchings/main", init_all);
+#endif
 
 static int pad_read(void)
 {
