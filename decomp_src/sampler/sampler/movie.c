@@ -256,7 +256,161 @@ static SceInt32 startCheck(t_avSyncControl *pAvSync, t_ringBuffer *pRingCtrl)
 	return ret;
 }
 
+#ifdef NON_MATCHING
+/* the original keeps the audio_init_flag update as branches (ours if-converts
+ * it to movn) and allocates ret/pStreamData and dispbuf/audio_init_flag in
+ * swapped s-registers; identical with every cc1 */
+static SceInt32 playMovie(SceMpeg *pMpeg, SceMpegRingbuffer *pRB, t_mpegStreamData *pStreamData, t_ringBuffer *pRingCtrl, t_avSyncControl *pAvSync)
+{
+	SceInt32 avcAttr;
+	SceInt32 rgbNum;
+	SceUInt32 pts;
+	SceVoid *atracBody;
+	SceChar8 *pSoundCtrlBuf;
+	SceChar8 *pVideoBuf;
+	SceInt32 audio_init_flag;
+	SceInt32 res;
+	SceInt32 ret;
+	SceUInt32 nextpts;
+
+	audio_init_flag = 1;
+	for (;;) {
+		ret = pad_read(pAvSync->pDisp);
+		if (ret != 0)
+			break;
+		startCheck(pAvSync, pRingCtrl);
+		if (read_isEnd(pRingCtrl) == 3) {
+			menu_list.selected = 0;
+			BgmStart();
+			break;
+		}
+		if (read_isEnd(pRingCtrl) == 1 && sceMpegRingbufferAvailableSize(pRB) == 960) {
+			menu_list.selected = 0;
+			BgmStart();
+			break;
+		}
+		if (audioFlag == 1 && soundbuf_getCapacity(pAvSync->pSound) > 0) {
+			res = sceMpegGetAtracAu(pMpeg, pStreamData->pAtracStream, pStreamData->pAtracAu, &atracBody);
+			if (res == 0) {
+				if (menu_list.selected && (SceInt32)pStreamData->pAtracAu->pts.ts >= movie_list[menu_list.current].fullptse) {
+					menu_list.selected = 0;
+					goto end_ret;
+				}
+				soundbuf_getDrawbuf(pAvSync->pSound, &pSoundCtrlBuf);
+				res = sceMpegAtracDecode(pMpeg, pStreamData->pAtracAu, pSoundCtrlBuf, audio_init_flag);
+				if (res != 0) {
+					printf("fatal error : sceMpegAtracDecode() %x\n", res);
+					ret = -1;
+					break;
+				}
+				nextpts = pStreamData->pAtracAu->pts.ts;
+				if (nextpts == 0xFFFFFFFF)
+					nextpts = soundbuf_getLatestPts() + 4180;
+				if ((SceInt32)(nextpts - pinfo[menu_list.current].pts) < -4180)
+					audio_init_flag = 1;
+				else if (audio_init_flag != 1)
+					audio_init_flag = 0;
+				soundbuf_setPts(pAvSync->pSound, pStreamData->pAtracAu->pts.ts);
+				if (audio_init_flag == 0)
+					soundbuf_setBuf(pAvSync->pSound);
+				audio_init_flag = 0;
+			} else {
+				if (read_isFull(pRingCtrl) == 0) {
+					read_decode_sleep(pRingCtrl);
+					if (read_isEnd(pRingCtrl) == 3) {
+						menu_list.selected = 0;
+						goto end_ret;
+					}
+				}
+			}
+		} else {
+			if (read_isFull(pRingCtrl) == 0) {
+				read_decode_sleep(pRingCtrl);
+				if (read_isEnd(pRingCtrl) == 3) {
+					menu_list.selected = 0;
+					goto end_ret;
+				}
+			}
+		}
+		if (dispbuf_getCapacity(pAvSync->pDisp) > 0) {
+			res = sceMpegGetAvcAu(pMpeg, pStreamData->pAvcStream, pStreamData->pAvcAu, &avcAttr);
+			if (res == 0) {
+				if (menu_list.selected && (SceInt32)pStreamData->pAvcAu->pts.ts >= movie_list[menu_list.current].fullptse) {
+					menu_list.selected = 0;
+					goto end_ret;
+				}
+				dispbuf_getDrawbuf(pAvSync->pDisp, &pVideoBuf);
+				dispbuf[0] = pVideoBuf;
+				res = sceMpegAvcDecode(pMpeg, pStreamData->pAvcAu, 512, dispbuf, &rgbNum);
+				if (res != 0) {
+					printf("fatal error : sceMpegAvcDecode() %x\n", res);
+					ret = -1;
+					break;
+				}
+				avsync_video_setPts(pAvSync, pStreamData->pAvcAu->pts.ts);
+				if (rgbNum == 1) {
+					avsync_video_getPts(pAvSync, &pts);
+					dispbuf_setPts(pAvSync->pDisp, pts);
+					dispbuf_dataSet(pAvSync->pDisp);
+				}
+			} else if (res == (SceInt32)0x80618001) {
+				if (read_isFull(pRingCtrl) == 0) {
+					read_decode_sleep(pRingCtrl);
+					if (read_isEnd(pRingCtrl) == 3) {
+						menu_list.selected = 0;
+						goto end_ret;
+					}
+				}
+			} else {
+				printf("fatal error : sceMpegGetAvcAu () %x\n", res);
+				ret = -1;
+				break;
+			}
+		} else {
+			if (read_isFull(pRingCtrl) == 0) {
+				read_decode_sleep(pRingCtrl);
+				if (read_isEnd(pRingCtrl) == 3) {
+					menu_list.selected = 0;
+					goto end_ret;
+				}
+			}
+		}
+		if (read_isFull(pRingCtrl) == 0) {
+			read_decode_sleep(pRingCtrl);
+			if (read_isEnd(pRingCtrl) == 3) {
+				menu_list.selected = 0;
+				goto end_ret;
+			}
+		}
+	}
+	goto end;
+end_ret:
+	ret = 0;
+	BgmStart();
+end:
+	avsync_playStart(pAvSync);
+	read_setDemuxEnd(pRingCtrl);
+	if (audioFlag)
+		soundbuf_setDemuxEnd(pAvSync->pSound);
+	for (;;) {
+		if (dispbuf_getDrawbuf(pAvSync->pDisp, &pVideoBuf) > 0)
+			break;
+		dispbuf_decode_sleep(pAvSync->pDisp);
+	}
+	dispbuf[0] = pVideoBuf;
+	res = sceMpegAvcDecodeStop(pMpeg, 512, dispbuf, &rgbNum);
+	if (res != 0) {
+		printf("fatal error : sceMpegGetAvcDecodeStop() %x\n", res);
+		return -1;
+	}
+	if (rgbNum > 0)
+		dispbuf_dataSet(pAvSync->pDisp);
+	dispbuf_setMode(pAvSync->pDisp, 0xFF);
+	return ret;
+}
+#else
 INCLUDE_ASM("tmp/asm/sampler/sampler/nonmatchings/movie", playMovie);
+#endif
 
 static SceInt32 readHeader(SceMpeg *pMpeg, StrFile *pStrFile, SceInt32 *pFilesize, SceInt32 *strOffset)
 {

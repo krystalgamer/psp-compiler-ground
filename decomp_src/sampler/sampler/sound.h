@@ -26,4 +26,5 @@ SceInt32 soundbuf_setDemuxEnd(t_soundBuffer *pSound);
 SceInt32 soundbuf_setStartFlag(t_soundBuffer *pSound);
 SceInt32 soundbuf_func(SceSize size, void *argp);
 SceInt32 soundbuf_output(t_soundBuffer *pSound);
+SceUInt32 soundbuf_getLatestPts(void);
 #endif
