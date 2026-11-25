@@ -5,6 +5,8 @@ net                                          1.6.1.internal  net.c
 load_modules                                 1.6.1.internal  load_modules.c
 handler                                      1.6.1.internal  handler.c
 menu                                         1.6.1.internal  menu.c
+libgum                                       1.6.1.internal  libgum.c
+libgu                                        1.6.1.internal  libgu.c
 newlib/libm/math/sf_cos                      1.6.1.internal  ../../../../../newlib-1.12.0/newlib/libm/math/sf_cos.c
 newlib/libm/math/sf_sin                      1.6.1.internal  ../../../../../newlib-1.12.0/newlib/libm/math/sf_sin.c
 newlib/libm/math/wf_sqrt                     1.6.1.internal  ../../../../../newlib-1.12.0/newlib/libm/math/wf_sqrt.c
@@ -29,6 +31,7 @@ libgcc/fp-bit/__make_fp                      1.6.1.internal  fp-bit.c
 libgcc/dp-bit/__pack_d                       1.6.1.internal  dp-bit.c
 libgcc/dp-bit/__unpack_d                     1.6.1.internal  dp-bit.c
 libgcc/fp-bit/__pack_f                       1.6.1.internal  fp-bit.c
+kernel_bridge                                1.6.1.internal  kernel_bridge.c
 newlib/libc/stdlib/atexit                    1.6.1.internal  ../../../../../newlib-1.12.0/newlib/libc/stdlib/atexit.c
 newlib/libc/errno/errno                      1.6.1.internal  ../../../../../newlib-1.12.0/newlib/libc/errno/errno.c
 newlib/libc/stdlib/exit                      1.6.1.internal  ../../../../../newlib-1.12.0/newlib/libc/stdlib/exit.c
