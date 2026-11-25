@@ -318,6 +318,28 @@ static inline u_short pdp_newport(struct SceNetEtherAddr *addr)
 	return 0;
 }
 
+/* gamemode.c */
+struct gamemode {
+	TAILQ_ENTRY(gamemode) link;
+	int id;
+	struct SceNetEtherAddr mac;
+	void *ptr;
+	unsigned int size;
+};
+TAILQ_HEAD(gamemode_list, gamemode);
+
+struct gpinfo {
+	unsigned int size;
+	unsigned int val;
+};
+
+extern int D_000073F0;
+extern struct gamemode_list D_00007440;
+
+int func_00006AB8(struct SceNetEtherAddr *mac, void *ptr, unsigned int size);
+int func_00006BB8(int id);
+int func_00006C3C(int id, struct gpinfo *info, int flag);
+
 /* imports */
 int sceKernelSignalSema(SceUID semaid, int signal);
 SceUInt64 sceKernelGetSystemTimeWide(void);
@@ -332,9 +354,9 @@ struct mbuf *sceNetMPullup(struct mbuf *m, int len);
 int sceNetGetLocalEtherAddr(struct SceNetEtherAddr *addr);
 unsigned int sceNetRand(void);
 int sceWlanDevIsGameMode(void);
-int sceWlanGPPrevEstablishActive(void *a, void *b);
-int sceWlanGPSend(void *a, void *b, int c);
-int sceWlanGPRecv(void *a, void *b, int c);
+int sceWlanGPPrevEstablishActive(struct SceNetEtherAddr *mac, void *ptr, unsigned int size);
+int sceWlanGPSend(int a, void *ptr, unsigned int size);
+int sceWlanGPRecv(int id, void *ptr, unsigned int size, struct gpinfo *info);
 void _sce_pspnet_callout_init(struct callout *c);
 void _sce_pspnet_callout_reset_usec(struct callout *c, unsigned int usec, void (*func)(void *), void *arg);
 void _sce_pspnet_callout_stop(struct callout *c);
