@@ -69,6 +69,22 @@ static inline int memab_memcmp(const s8 *a, const s8 *b, int n)
 	return 0;
 }
 
+#define MEMCMP(ret, a, b, n) \
+	do { \
+		const s8 *_a = (const s8 *)(a); \
+		const s8 *_b = (const s8 *)(b); \
+		int _i; \
+		s8 _c1, _c2; \
+		for (_i = 0; _i < (n); _i++) { \
+			_c1 = *_a++; \
+			_c2 = *_b++; \
+			if (_c1 != _c2) { \
+				ret = _c1 - _c2; \
+				break; \
+			} \
+		} \
+	} while (0)
+
 #define BYTES_TO_U64(p) \
 	(((u64)(p)[7] << 56) | ((u64)(p)[6] << 48) | ((u64)(p)[5] << 40) | ((u64)(p)[4] << 32) | \
 	 ((u64)(p)[3] << 24) | ((u64)(p)[2] << 16) | ((u64)(p)[1] << 8) | (u64)(p)[0])
