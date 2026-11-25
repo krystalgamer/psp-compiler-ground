@@ -64,6 +64,16 @@ def module_funcs(target, module):
         if a is not None:
             names.add(m[1])
             entries.append((m[1], a, int(m[2], 16)))
+    # the rest (functions already in C, so without asm): up to the next function
+    # (stripped modules name every function; their asm sizes are known)
+    if len(addrs) > len(names):
+        starts = sorted(set(addrs.values()) | {e[1] for e in entries} | {e[1] + e[2] for e in entries})
+        for name, a in addrs.items():
+            if name not in names:
+                nxt = [x for x in starts if x > a]
+                if nxt:
+                    names.add(name)
+                    entries.append((name, a, nxt[0] - a))
     for name, a, n in entries:
         if True:
             words = []
