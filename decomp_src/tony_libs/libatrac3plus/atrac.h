@@ -96,5 +96,8 @@ int func_0000201C(AtracInfo *info, unsigned int pos);
 int func_0000222C(AtracInfo *info);
 void func_00002884(AtracInfo *info);
 void func_00002938(AtracInfo *info);
+unsigned int func_00001FAC(AtracInfo *info, unsigned int pos);
+int func_00002064(AtracInfo *info, unsigned int pos);
+unsigned int func_00002820(unsigned int a, unsigned int b, unsigned int c);
 
 #endif
