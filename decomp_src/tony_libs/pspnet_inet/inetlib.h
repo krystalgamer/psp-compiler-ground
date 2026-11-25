@@ -1839,4 +1839,37 @@ void rt_ifannouncemsg(struct ifnet *ifp, int what);
 TAILQ_HEAD(ifnet_head, ifnet);
 int _sce_pspnet_get_if_core_variables(int *a, int *b, int *c, struct ifnet_head *d);
 
+/* if.c (inet side) */
+struct sockaddr_dl {
+	u_char sdl_len;
+	u_char sdl_family;
+	u_short sdl_index;
+	u_char sdl_type;
+	u_char sdl_nlen;
+	u_char sdl_alen;
+	u_char sdl_slen;
+	char sdl_data[12];
+};
+#define PRU_PURGEIF 22
+#define PRC_IFDOWN 0
+#define IFAN_ARRIVAL 0
+#define IFAN_DEPARTURE 1
+int _sce_pspnet_if_nulloutput(struct ifnet *, struct mbuf *, struct sockaddr *, struct rtentry *);
+#define if_nulloutput _sce_pspnet_if_nulloutput
+void _sce_pspnet_link_rtrequest(int, struct rtentry *, struct sockaddr *);
+int _sce_pspnet_start_of_inet_module_in_if_core(void (*a)(int, struct rtentry *, struct sockaddr *), void (*b)(void),
+	void (*c)(struct ifnet *), void (*d)(struct ifaddr *), void (*e)(struct ifnet *, int),
+	void (*f)(struct ifnet *), void (*g)(struct ifnet *), void (*h)(struct ifnet *),
+	void (*i)(struct ifnet *), void (*j)(struct ifnet *), int (*k)(void), int (*l)(struct socket *, int *),
+	int (*m)(struct socket *, u_long, caddr_t, struct ifnet *));
+void _sce_pspnet_stop_of_inet_module_in_if_core(void);
+#define if_rt_walktree func_00008F7C
+#define ifa_ifwithladdr func_0000919C
+#define ifa_ifwithaf func_00009364
+#define link_rtrequest func_000096EC
+int if_rt_walktree(struct radix_node *rn, void *v);
+struct ifaddr *ifa_ifwithladdr(struct sockaddr *addr);
+struct ifaddr *ifa_ifwithaf(int af);
+void link_rtrequest(int cmd, struct rtentry *rt, struct sockaddr *sa);
+
 #endif
