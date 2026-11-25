@@ -127,34 +127,34 @@ modules (`tools/nltest.py`, `tools/objcmp.py`).
   schedule differently.
 - `__builtin_allegrex_wsbh` already exists in 1.6.1 (`sceNetHtons` in
   UTST99261 mp3/netmgr uses it).
-- **1.6.1.internal: no `.rodata.cst*` sections.**  In the release
-  toolchains (1.5.1, 1.6.1, and 1.3.1/1.7.1's original cc1s) float and
-  double constants go to `.rodata.cst4`/`.rodata.cst8`, and Sony's
-  `*(.rodata .rodata.*)` links them after the unit's `.rodata` (UTST99261
-  mp3/mp3dec, mp3/l1init, message).  In every 1.6.1.internal unit they sit
-  in `.rodata` in emission order instead, interleaved with the strings
-  (sampler display's `0.125f` before its strings; in UTST99332, e.g.
-  utility_font_basho basho and graphics_depthblur main, there are several
-  float runs between string runs).  That is a cc1 configured without
-  `HAVE_GAS_SHF_MERGE` (an assembler without SHF_MERGE when the internal
-  build was made), which makes `mergeable_constant_section` fall back to
-  `.rodata`.  `config/compilers.txt` passes `-fno-merge-constants` for
-  1.6.1.internal, which has the same effect.  It is a build-configuration
-  difference, not a source patch.
-- **1.6.1.internal also holds back aggregate constants.**  In UTST99332
-  graphics_torus main.c, `init_all`'s auto `ScePspIMatrix4 dith = {...}` is
-  copied from an unnamed constant.  That constant sits at the very end of
-  the unit's `.rodata`, after the float constants of every later function
-  (`pad_read`, `main`).  1.6.1's and 1.7.1's cc1 emit it when the
-  initializer is expanded (`output_constant_def`), so it comes before
-  `init_all`'s own floats.  In the release toolchains
-  (UTST99261, 1.6.1) local array initializers do sit at their function's
-  position.  So the internal cc1 defers non-string constants to the end of
-  the compilation (as if `defer_addressed_constants` were in effect for the
-  whole unit), while strings and the float pool behave normally.  Only one
-  instance has been seen so far, so this is tentative.  The function is
-  kept NON_MATCHING.  (`ScePspIMatrix4` is also 16-byte aligned in Sony's
-  psptypes.h, which DWARF does not record.)
+- **1.6.1.internal's constants: no compiler change, a link-order and
+  library-build difference.**  App code built by 1.6.1.internal keeps its
+  float constants in `.rodata.cst4` (constant merging on, as with every
+  release cc1) and strings and aggregate initializers in `.rodata`.  What
+  differs is how they are linked: Sony's `*(.rodata .rodata.*)` takes an
+  object's sections in the object's own order, and the internal toolchain's
+  assembler creates them in order of first use.  So a unit whose first
+  constant is a float has all its floats *before* its strings and
+  aggregates.  Of 66 internal units with both kinds, 62 are exactly two
+  blocks, floats first (26) or strings first (36).  This is what looked
+  like aggregate constants held back to the end of the unit: in
+  graphics_torus, graphics_gears and graphics_dragon `init_all`'s auto
+  `ScePspIMatrix4 dith = {...}` is the only `.rodata` constant, after
+  every float.  In graphics_vtxformat and graphics_stick the first constant
+  is an aggregate, so the aggregates come first.  graphics_torus's
+  `main.c` built by 1.6.1's own cc1 with this link order and Sony's
+  `ScePspIMatrix4` (`__attribute__((aligned(16)))`, not in DWARF) is
+  byte-identical, `init_all` included.  The release toolchains' objects
+  (UTST99261, sampler, puzzle_bobble) always have `.rodata` first.  The
+  remaining interleaved internal units (utility_font_basho) are `-O0`
+  builds: frame pointer, unsplit addresses, and no constant merging at
+  `-O0`.
+- The internal newlib and libgcc, on the other hand, were built without
+  constant merging: in `_dtoa_r` the strings after the function follow its
+  `double`s in one `.rodata`.  `config/compilers.txt` passes
+  `-fno-merge-constants` for those (`lib:`), and for app units that still
+  mix C with asm (`mixed:`, so C and asm floats stay in one section in
+  emission order) until they are all C.
 
 ## psp-gcc 1.5.0.internal
 

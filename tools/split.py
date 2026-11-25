@@ -121,10 +121,33 @@ def fix_ld_script(ld_path: Path, config_path: Path):
     text = re.sub(r"^(\s*\.\w+_bss) \(NOLOAD\)", r"\1 0x0 (NOLOAD)", text, flags=re.M)
     # PRX parts are packed at their real file offsets (gaps are prxpad).
     text = re.sub(r"^\s*__romPos = ALIGN\(__romPos, \d+\);\n", "", text, flags=re.M)
-    # cc1 puts double/float constants in .rodata.cst8/.rodata.cst4; Sony's
-    # *(.rodata .rodata.*) kept them right after the object's .rodata
-    text = re.sub(r"(\S+\.c\.o)\(\.rodata\);", r"\1(.rodata);\n        \1(.rodata.*);", text)
-    ld_path.write_text(text)
+    ld_path.write_text(rodata_order(text, ld_path.stem))
+
+
+def rodata_order(text, module):
+    """cc1 puts double/float constants in .rodata.cst8/.rodata.cst4 and Sony
+    links *(.rodata .rodata.*), i.e. in each object's own section order.  The
+    release assemblers have .rodata first; the 1.6.1.internal toolchain's
+    creates the sections as they are first used (config/compilers.txt
+    objorder)."""
+    sys.path.insert(0, str(Path(__file__).parent))
+    import compiler
+
+    def rep(m):
+        obj = m[1]
+        u = re.search(r"decomp_src/([^/]+)/" + re.escape(module) + r"/(.+)\.c\.o$", obj)
+        if u and compiler.object_order(u[1], module, u[2]):
+            return f"{obj}(.rodata .rodata.*);"
+        return f"{obj}(.rodata);\n        {obj}(.rodata.*);"
+    text = re.sub(r"(\S+\.c\.o)\(\.rodata \.rodata\.\*\);", r"\1(.rodata);", text)
+    text = re.sub(r"(\S+\.c\.o)\(\.rodata\);\n\s*\1\(\.rodata\.\*\);", r"\1(.rodata);", text)
+    return re.sub(r"(\S+\.c\.o)\(\.rodata\);", rep, text)
+
+
+if __name__ == "__main__" and sys.argv[1:2] == ["--rodata-order"]:
+    for p in sys.argv[2:]:
+        Path(p).write_text(rodata_order(Path(p).read_text(), Path(p).stem))
+    sys.exit(0)
 
 
 def prune_undefined_syms(asm_dir: Path, undef_path: Path):

@@ -4,6 +4,7 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
+LIBS = ("newlib/", "libgcc/", "gcc-3.3.3/")
 
 
 def table(path):
@@ -29,7 +30,26 @@ def compiler(target, module, unit):
 
 def driver_flags(target, module, unit):
     """cc1 options the unit's psp-gcc driver adds."""
-    return " ".join(f for f in entry(target, module, unit)[1:] if not f.startswith("as:"))
+    fl = []
+    for f in entry(target, module, unit)[1:]:
+        if f.startswith("lib:"):
+            if unit.startswith(LIBS):
+                fl.append(f[4:])
+        elif f.startswith("mixed:"):
+            # only while the unit still has asm functions or rodata
+            src = ROOT / "decomp_src" / target / module / f"{unit}.c"
+            if src.exists() and "INCLUDE_" in src.read_text():
+                fl.append(f[6:])
+        elif not f.startswith(("as:", "objorder")):
+            fl.append(f)
+    return " ".join(fl)
+
+
+def object_order(target, module, unit):
+    """True if the unit's .rodata and .rodata.cst* link in the order the
+    object has them (its assembler created them as first used) rather than
+    .rodata first."""
+    return "objorder" in entry(target, module, unit)[1:] and not unit.startswith(LIBS)
 
 
 def as_flags(target, module, unit):
