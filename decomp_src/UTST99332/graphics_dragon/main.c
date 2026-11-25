@@ -63,6 +63,12 @@ struct ScePspFMatrix4 { /* size 0x40 */
 };
 typedef struct ScePspFMatrix4 ScePspFMatrix4;
 
+/* SDK functions */
+void sceGuTerm(void);
+void *sceGuSwapBuffers(void);
+int sceDisplayWaitVblankStart(void);
+int sceCtrlReadBufferPositive(SceCtrlData *data, int count);
+
 extern int _gp;
 extern const int __begin_of_section_lib_ent[1];
 extern const int __end_of_section_lib_ent[1];
@@ -116,7 +122,53 @@ void draw_frame(void) {
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_dragon/nonmatchings/main", init_all);
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_dragon/nonmatchings/main", pad_read);
+static int pad_read(void)
+{
+	u_int32 prev, padd;
+	SceCtrlData buf;
+
+	prev = cont;
+	sceCtrlReadBufferPositive(&buf, 1);
+	cont = buf.Buttons;
+	padd = cont & (cont ^ prev);
+	if (cont & 0x0010) {
+		rot.x -= 4.0f;
+		if (rot.x < 0.0f)
+			rot.x += 360.0f;
+	}
+	if (cont & 0x0040) {
+		rot.x += 4.0f;
+		if (rot.x >= 360.0f)
+			rot.x -= 360.0f;
+	}
+	if (cont & 0x0080) {
+		rot.y -= 4.0f;
+		if (rot.y < 0.0f)
+			rot.y += 360.0f;
+	}
+	if (cont & 0x0020) {
+		rot.y += 4.0f;
+		if (rot.y >= 360.0f)
+			rot.y -= 360.0f;
+	}
+	if (cont & 0x0100)
+		pos.z -= 2.0f;
+	if (cont & 0x0200)
+		pos.z += 2.0f;
+	if (padd & 0x2000)
+		texflag ^= 1;
+	if (padd & 0x0008) {
+		pos.x = 0.0f;
+		pos.y = -12.0f;
+		pos.z = -44.0f;
+		rot.x = 16.0f;
+		rot.y = 310.0f;
+		rot.z = 0.0f;
+	}
+	if (padd & 0x0001)
+		return 0;
+	return 1;
+}
 
 int main(void) {
     menuInit();
@@ -133,4 +185,6 @@ loop_1:
     return 0;
 }
 
+/* init_all's dith initializer: ScePspIMatrix4 is 16-byte aligned */
+__asm__(".section .rodata\n\t.align 4\n.section .text");
 INCLUDE_RODATA("tmp/asm/UTST99332/graphics_dragon/nonmatchings/main", D_00011F30);
