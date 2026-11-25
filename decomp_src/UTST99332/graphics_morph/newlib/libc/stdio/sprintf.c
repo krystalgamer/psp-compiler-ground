@@ -1,5 +1,3 @@
-#include "common.h"
-
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_morph/nonmatchings/newlib/libc/stdio/sprintf", _sprintf_r);
-
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_morph/nonmatchings/newlib/libc/stdio/sprintf", sprintf);
+/* upstream: newlib-1.12.0/newlib/libc/stdio/sprintf.c (unmodified) */
+/* cflags: -O2 -fno-builtin */
+#include "libc/stdio/sprintf.c"
