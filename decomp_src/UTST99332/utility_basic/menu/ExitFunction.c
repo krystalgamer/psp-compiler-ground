@@ -1,11 +1,48 @@
 #include "common.h"
 
-INCLUDE_ASM("tmp/asm/UTST99332/utility_basic/nonmatchings/menu/ExitFunction", ExitFunction_364C);
+/* declarations recovered from DWARF */
+typedef unsigned int SceSize;
+typedef int SceUID;
+struct SceKernelLoadExecParam;
+struct SceKernelLoadExecParam { /* size 0x10 */
+    SceSize size;
+    SceSize args;
+    const void *argp;
+    const char *key;
+};
+typedef struct SceKernelLoadExecParam SceKernelLoadExecParam;
+
+
+
+static int ExitFunction(int count, int arg_impose, void *arg_self);
+static int check_exit(SceSize arglen, void *arg);
+void menuTerm(int cat, int num);
+
+/* SDK functions (tools/sdk_protos.h) */
+int sceKernelCreateThread(const char *name, void *entry, int prio, int stacksize, unsigned int attr, void *option);
+int sceKernelStartThread(int thid, unsigned int arglen, void *argp);
+void sceKernelExitGame(void);
+
+
+int ExitFunction_364C(void) {
+    sceKernelExitGame();
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/utility_basic/nonmatchings/menu/ExitFunction", check_exit);
 
-INCLUDE_ASM("tmp/asm/UTST99332/utility_basic/nonmatchings/menu/ExitFunction", menuInit);
+void menuInit(void) {
+    int temp_v0;
+
+    temp_v0 = sceKernelCreateThread("CheckExitGame", check_exit, 0x10, 0x1000, 0x200000U, NULL);
+    if (temp_v0 >= 0) {
+        sceKernelStartThread(temp_v0, 0U, NULL);
+        sceIoAssign("disc0:", "umd0:", 0, 0, 0, 0);
+    }
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/utility_basic/nonmatchings/menu/ExitFunction", menuTerm);
 
-INCLUDE_ASM("tmp/asm/UTST99332/utility_basic/nonmatchings/menu/ExitFunction", menuGetDevice);
+int menuGetDevice(void) {
+    return 0;
+}
