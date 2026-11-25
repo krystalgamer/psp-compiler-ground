@@ -159,7 +159,6 @@ typedef unsigned long long u_quad_t;
 #define memchr func_0002C82C
 #define memmove func_0002C864
 #define memcmp func_0002C8D8
-#define memset func_0002C94C
 #define bcmp func_0002C978
 #define bcopy func_0002C9B8
 #define bzero func_0002C9DC
@@ -183,8 +182,10 @@ const char *__ctype_ptr(void);
 void *memchr(const void *s, int c, int n);
 void *memmove(void *dst, const void *src, int n);
 int memcmp(const void *a, const void *b, int n);
-void *func_0002C918(void *dst, const void *src, int n);
-void *memset(void *dst, int c, int n);
+void *func_0002C918(void *dst, const void *src, int n) __asm__("memcpy");
+void *func_0002C94C(void *dst, int c, int n) __asm__("memset");
+#define memcpy __builtin_memcpy
+#define memset __builtin_memset
 int bcmp(const void *a, const void *b, int n);
 void bcopy(const void *src, void *dst, int n);
 void bzero(void *p, int n);
