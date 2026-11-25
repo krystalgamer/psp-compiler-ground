@@ -1,26 +1,244 @@
+/* cflags: -O2 -fno-merge-constants */
 #include "common.h"
 #include "m2c_macros.h"
+/* declarations recovered from DWARF of the same library in UTST99332 graphics_picture
+   (this module has none) */
+struct _anon1;
+struct _anon1 { /* size 0x10 */
+    short unsigned int type;
+    short unsigned int unused;
+    unsigned int next_offs;
+    unsigned int child_offs;
+    unsigned int data_offs;
+};
+typedef struct _anon1 SceGimChunk;
+struct SceGimPicture;
+struct _anon2;
+struct _anon2 { /* size 0x30 */
+    short unsigned int header_size;
+    short unsigned int reference;
+    short unsigned int format;
+    short unsigned int order;
+    short unsigned int width;
+    short unsigned int height;
+    short unsigned int bpp;
+    short unsigned int pitch_align;
+    short unsigned int height_align;
+    short unsigned int dim_count;
+    short unsigned int reserved;
+    short unsigned int reserved2;
+    unsigned int offsets;
+    unsigned int images;
+    unsigned int total;
+    unsigned int plane_mask;
+    short unsigned int level_type;
+    short unsigned int level_count;
+    short unsigned int frame_type;
+    short unsigned int frame_count;
+};
+typedef struct _anon2 SceGimImageHeader;
+struct _anon3;
+struct _anon3 { /* size 0x20 */
+    short unsigned int header_size;
+    short unsigned int reference;
+    short unsigned int frame_start;
+    short unsigned int frame_end;
+    short unsigned int frame_rate;
+    short unsigned int reserved;
+    short unsigned int n_constants;
+    short unsigned int n_functions;
+    unsigned int constants;
+    unsigned int functions;
+    unsigned int keyframes;
+    unsigned int total;
+};
+typedef struct _anon3 SceGimSequenceHeader;
+struct SceGimPicture { /* size 0x54 */
+    int m_reference;
+    int m_flags;
+    SceGimImageHeader *m_image;
+    SceGimImageHeader *m_palette;
+    SceGimSequenceHeader *m_sequence;
+    int m_buf_width;
+    int m_clut_load;
+    float m_frame_loop[2];
+    float m_frame_rate;
+    float m_frame;
+    int m_enable_bits;
+    int m_image_frame;
+    int m_image_frame2;
+    int m_palette_frame;
+    int m_palette_frame2;
+    float m_dissolve;
+    float m_image_crop[4];
+};
+typedef struct SceGimPicture SceGimPicture;
+typedef SceGimImageHeader SceGimPaletteHeader;
+typedef unsigned int size_t;
+
+extern const unsigned char __psp_libinfo__[24];
+
+SceGimPicture *sceGimPictureCreate(SceGimChunk *chunk);
+SceGimPicture *sceGimPictureDuplicate(SceGimPicture *picture, int flags);
+_Bool sceGimPictureLoadFile(SceGimPicture *picture, const void *buf, int size, int idx);
+_Bool sceGimPictureLoad(SceGimPicture *picture, const SceGimChunk *chunk);
+static SceGimChunk *SCEGIM_CHUNK_NEXT(SceGimChunk *chunk);
+static SceGimChunk *SCEGIM_CHUNK_CHILD(SceGimChunk *chunk);
+static void *SCEGIM_CHUNK_DATA(SceGimChunk *chunk);
+static int SCEGIM_CHUNK_DATA_SIZE(SceGimChunk *chunk);
+void sceGimPictureUnload(SceGimPicture *picture);
+void sceGimPictureAnimate(SceGimPicture *picture, float step);
+void sceGimPictureActivate(SceGimPicture *picture);
+static int pow2(int n);
+void *sceGimPictureGetImagePixels(SceGimPicture *picture, int level, int frame);
+void *sceGimPictureGetPalettePixels(SceGimPicture *picture, int level, int frame);
+void sceGimPictureSetImagePixels(SceGimPicture *picture, int level, int frame, void *pixels);
+void sceGimPictureSetPalettePixels(SceGimPicture *picture, int level, int frame, void *pixels);
+_Bool sceGimPictureReallocImage(SceGimPicture *picture, int format, int w, int h, int level, int frame, void *pixels);
+_Bool sceGimPictureReallocPalette(SceGimPicture *picture, int format, int w, int level, int frame, void *pixels);
+void sceGimPictureSetFrameLoop(SceGimPicture *picture, float start, float end);
+void sceGimPictureSetImageCrop(SceGimPicture *picture, const float *crop);
+static void reconfigure_picture(SceGimPicture *picture);
+
+
 
 M2C_UNK sceGimPictureFreeMemory(int *);             /* extern */
-M2C_UNK sceGimPictureUnload();                      /* extern */
 
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/gim_picture", sceGimPictureCreate);
+SceGimPicture *sceGimPictureCreate(SceGimChunk *chunk)
+{
+	SceGimPicture *picture;
 
-void sceGimPictureDelete(int *arg0) {
+	picture = (SceGimPicture *)sceGimPictureAllocMemory(sizeof(SceGimPicture));
+	if (picture == NULL)
+		return NULL;
+	picture->m_reference = 1;
+	picture->m_flags = 0;
+	picture->m_image = NULL;
+	picture->m_palette = NULL;
+	picture->m_sequence = NULL;
+	picture->m_buf_width = 0;
+	picture->m_clut_load = 0;
+	picture->m_frame_loop[0] = -1000000.0f;
+	picture->m_frame_loop[1] = 1000000.0f;
+	picture->m_frame_rate = 12.0f;
+	picture->m_frame = 0.0f;
+	picture->m_enable_bits = 0;
+	picture->m_image_frame = 0;
+	picture->m_image_frame2 = 0;
+	picture->m_palette_frame = 0;
+	picture->m_palette_frame2 = 0;
+	picture->m_dissolve = 0.0f;
+	picture->m_image_crop[0] = 0.0f;
+	picture->m_image_crop[1] = 0.0f;
+	picture->m_image_crop[2] = 1.0f;
+	picture->m_image_crop[3] = 1.0f;
+	if (chunk != NULL && !sceGimPictureLoad(picture, chunk)) {
+		sceGimPictureDelete(picture);
+		return NULL;
+	}
+	return picture;
+}
+
+void sceGimPictureDelete(SceGimPicture *picture) {
     int temp_v0;
 
-    if ((arg0 == NULL) || (temp_v0 = *arg0 - 1, *arg0 = temp_v0, (temp_v0 != 0))) {
+    if ((picture == NULL) || (temp_v0 = picture->m_reference - 1, picture->m_reference = temp_v0, (temp_v0 != 0))) {
 
     } else {
-        sceGimPictureUnload();
-        sceGimPictureFreeMemory(arg0);
+        sceGimPictureUnload(picture);
+        sceGimPictureFreeMemory(picture);
     }
 }
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/gim_picture", sceGimPictureDuplicate);
+void *memcpy(void *d, const void *s, unsigned int n);
+void *memcpy(void *d, const void *s, unsigned int n);
+void *memcpy(void *, const void *, size_t);
+SceGimPicture *sceGimPictureDuplicate(SceGimPicture *picture, int flags)
+{
+	SceGimPicture *picture2;
+	SceGimImageHeader *image;
+	SceGimPaletteHeader *palette;
+	SceGimSequenceHeader *sequence;
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/gim_picture", sceGimPictureLoadFile);
+	if (picture == NULL)
+		return NULL;
+	if (flags & 2) {
+		flags &= ~2;
+		if (sceGimPictureHasAnimation(picture))
+			flags |= 1;
+	}
+	if (flags == 0) {
+		picture->m_reference++;
+		return picture;
+	}
+	picture2 = sceGimPictureCreate(NULL);
+	if (picture2 == NULL)
+		return NULL;
+	image = picture->m_image;
+	palette = picture->m_palette;
+	sequence = picture->m_sequence;
+	if (image != NULL)
+		image->reference++;
+	if (palette != NULL)
+		palette->reference++;
+	if (sequence != NULL)
+		sequence->reference++;
+	picture2->m_flags = picture->m_flags;
+	picture2->m_image = image;
+	picture2->m_palette = palette;
+	picture2->m_sequence = sequence;
+	picture2->m_buf_width = picture->m_buf_width;
+	picture2->m_clut_load = picture->m_clut_load;
+	picture2->m_frame_loop[0] = picture->m_frame_loop[0];
+	picture2->m_frame_loop[1] = picture->m_frame_loop[1];
+	picture2->m_frame_rate = picture->m_frame_rate;
+	picture2->m_frame = picture->m_frame;
+	picture2->m_enable_bits = picture->m_enable_bits;
+	picture2->m_image_frame = picture->m_image_frame;
+	picture2->m_image_frame2 = picture->m_image_frame2;
+	picture2->m_palette_frame = picture->m_palette_frame;
+	picture2->m_palette_frame2 = picture->m_palette_frame2;
+	picture2->m_dissolve = picture->m_dissolve;
+	memcpy(picture2->m_image_crop, picture->m_image_crop, sizeof(picture2->m_image_crop));
+	return picture2;
+}
+
+_Bool sceGimPictureLoadTga(SceGimPicture *picture, const void *buf, int size);
+_Bool sceGimPictureLoadBmp(SceGimPicture *picture, const void *buf, int size);
+_Bool sceGimPictureLoadTm2(SceGimPicture *picture, const void *buf, int size, int idx);
+_Bool sceGimPictureCheckFileHeader(const void *buf, int size);
+const SceGimChunk *sceGimPictureGetChunk(const void *buf, int size, int idx);
+_Bool sceGimPictureLoadFile(SceGimPicture *picture, const void *buf, int size, int idx)
+{
+	int signature;
+
+	if (picture == NULL)
+		return 0;
+	if (buf == NULL || size < 4)
+		return 0;
+	signature = *(const int *)buf;
+	if (signature == 0x2E47494D) {
+		const SceGimChunk *chunk;
+
+		if (!sceGimPictureCheckFileHeader(buf, size))
+			return 0;
+		chunk = sceGimPictureGetChunk(buf, size, idx);
+		if (chunk == NULL)
+			return 0;
+		return sceGimPictureLoad(picture, chunk);
+	}
+	if (signature == 0x324D4954)
+		return sceGimPictureLoadTm2(picture, buf, size, idx);
+	if ((signature & 0xffff) == 0x4D42) {
+		if (idx != 0)
+			return 0;
+		return sceGimPictureLoadBmp(picture, buf, size);
+	}
+	if (idx != 0)
+		return 0;
+	return sceGimPictureLoadTga(picture, buf, size);
+}
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/gim_picture", sceGimPictureLoad);
 
@@ -88,7 +306,13 @@ int sceGimPictureHasAnimation(void *arg0) {
     return var_v0;
 }
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/gim_picture", sceGimPictureSetFrameLoop);
+void sceGimPictureSetFrameLoop(SceGimPicture *picture, float start, float end)
+{
+	if (picture == NULL)
+		return;
+	picture->m_frame_loop[0] = start;
+	picture->m_frame_loop[1] = end;
+}
 
 int sceGimPictureGetFrameLoop(int arg0) {
     int var_v0;
@@ -212,7 +436,18 @@ float sceGimPictureGetDissolve(void *arg0) {
     return var_f0;
 }
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/gim_picture", sceGimPictureSetImageCrop);
+void *memcpy(void *, const void *, size_t);
+void sceGimPictureSetImageCrop(SceGimPicture *picture, const float *crop)
+{
+	if (picture == NULL)
+		return;
+	if (crop == NULL) {
+		picture->m_flags &= ~0x20;
+		return;
+	}
+	memcpy(picture->m_image_crop, crop, sizeof(picture->m_image_crop));
+	picture->m_flags |= 0x20;
+}
 
 void *sceGimPictureGetImageCrop(void *arg0) {
     void *var_v1;
