@@ -330,6 +330,9 @@ void sceNetFreeInternal(void *p);
 #define AF_UNSPEC 0
 #define AF_LOCAL 1
 #define AF_INET 2
+#define AF_NS 6
+#define AF_ISO 7
+#define AF_IPX 23
 #define AF_LINK 18
 #define AF_ROUTE 17
 
@@ -1252,7 +1255,9 @@ struct rtentry {
 #define RTM_RESOLVE 0xb
 #define RTM_NEWADDR 0xc
 #define RTM_DELADDR 0xd
-#define RTM_IFINFO 0xe
+#define RTM_OIFINFO 0xe
+#define RTM_IFINFO 0xf
+#define RTM_IFANNOUNCE 0x10
 
 #define RTAX_DST 0
 #define RTAX_GATEWAY 1
@@ -1314,6 +1319,46 @@ struct ifaddr {
 };
 #define ifa_broadaddr ifa_dstaddr
 
+struct if_data {
+	u_char ifi_type;
+	u_char ifi_addrlen;
+	u_char ifi_hdrlen;
+	char ifi_unk3;
+	int ifi_link_state;
+	unsigned long long ifi_mtu;
+	unsigned long long ifi_metric;
+	unsigned long long ifi_baudrate;
+	unsigned long long ifi_ipackets;
+	unsigned long long ifi_ierrors;
+	unsigned long long ifi_opackets;
+	unsigned long long ifi_oerrors;
+	unsigned long long ifi_collisions;
+	unsigned long long ifi_ibytes;
+	unsigned long long ifi_obytes;
+	unsigned long long ifi_imcasts;
+	unsigned long long ifi_omcasts;
+	unsigned long long ifi_iqdrops;
+	unsigned long long ifi_noproto;
+};
+#define if_type if_data.ifi_type
+#define if_addrlen if_data.ifi_addrlen
+#define if_hdrlen if_data.ifi_hdrlen
+#define if_link_state if_data.ifi_link_state
+#define if_mtu if_data.ifi_mtu
+#define if_metric if_data.ifi_metric
+#define if_baudrate if_data.ifi_baudrate
+#define if_ipackets if_data.ifi_ipackets
+#define if_ierrors if_data.ifi_ierrors
+#define if_opackets if_data.ifi_opackets
+#define if_oerrors if_data.ifi_oerrors
+#define if_collisions if_data.ifi_collisions
+#define if_ibytes if_data.ifi_ibytes
+#define if_obytes if_data.ifi_obytes
+#define if_imcasts if_data.ifi_imcasts
+#define if_omcasts if_data.ifi_omcasts
+#define if_iqdrops if_data.ifi_iqdrops
+#define if_noproto if_data.ifi_noproto
+
 struct ifnet {
 	void *if_softc;
 	TAILQ_ENTRY(ifnet) if_list;
@@ -1325,25 +1370,7 @@ struct ifnet {
 	short if_timer;
 	short if_flags;
 	char if_unk32[0x38 - 0x32];
-	u_char if_type;
-	u_char if_addrlen;
-	u_char if_hdrlen;
-	char if_unk3B;
-	int if_link_state;
-	unsigned long long if_mtu;
-	unsigned long long if_metric;
-	unsigned long long if_baudrate;
-	unsigned long long if_ipackets;
-	unsigned long long if_ierrors;
-	unsigned long long if_opackets;
-	unsigned long long if_oerrors;
-	unsigned long long if_collisions;
-	unsigned long long if_ibytes;
-	unsigned long long if_obytes;
-	unsigned long long if_imcasts;
-	unsigned long long if_omcasts;
-	unsigned long long if_iqdrops;
-	unsigned long long if_noproto;
+	struct if_data if_data;
 	int (*if_output)(struct ifnet *, struct mbuf *, struct sockaddr *, struct rtentry *);
 	void (*if_input)(struct ifnet *, struct mbuf *);
 	void (*if_start)(struct ifnet *);
@@ -1723,5 +1750,93 @@ int looutput(struct ifnet *ifp, struct mbuf *m, struct sockaddr *dst, struct rte
 int loioctl(struct ifnet *ifp, u_long cmd, caddr_t data);
 void loopattach(int n);
 void lortrequest(int cmd, struct rtentry *rt, struct sockaddr *sa);
+
+/* rtsock.c */
+struct rt_msghdr {
+	u_short rtm_msglen;
+	u_char rtm_version;
+	u_char rtm_type;
+	u_short rtm_index;
+	int rtm_flags;
+	int rtm_addrs;
+	int rtm_pid;
+	int rtm_seq;
+	int rtm_errno;
+	int rtm_use;
+	u_long rtm_inits;
+	struct rt_metrics rtm_rmx;
+};
+struct if_msghdr {
+	u_short ifm_msglen;
+	u_char ifm_version;
+	u_char ifm_type;
+	int ifm_addrs;
+	int ifm_flags;
+	u_short ifm_index;
+	struct if_data ifm_data;
+};
+struct ifa_msghdr {
+	u_short ifam_msglen;
+	u_char ifam_version;
+	u_char ifam_type;
+	int ifam_addrs;
+	int ifam_flags;
+	u_short ifam_index;
+	int ifam_metric;
+};
+struct if_announcemsghdr {
+	u_short ifan_msglen;
+	u_char ifan_version;
+	u_char ifan_type;
+	u_short ifan_index;
+	char ifan_name[16];
+	u_short ifan_what;
+};
+struct walkarg {
+	int w_op;
+	int w_arg;
+	int w_given;
+	int w_needed;
+	caddr_t w_where;
+	int w_tmemsize;
+	int w_tmemneeded;
+	caddr_t w_tmem;
+};
+#define RTM_VERSION 3
+#define RTA_IFP 0x10
+#define RTA_IFA 0x20
+#define RTV_RPIPE 0x8
+#define RTV_SPIPE 0x10
+#define RTV_SSTHRESH 0x20
+#define RTV_RTT 0x40
+#define RTV_RTTVAR 0x80
+#define RTV_HOPCOUNT 0x2
+#define RTV_EXPIRE 0x4
+#define NET_RT_DUMP 1
+#define NET_RT_FLAGS 2
+#define NET_RT_IFLIST 4
+#define AF_MAX 31
+#define PF_ROUTE 17
+#define route_dst D_0002E4B4
+#define route_src D_0002E4C4
+#define route_proto D_0002E4D4
+extern struct sockaddr route_dst, route_src;
+extern struct sockproto route_proto;
+#define route_usrreq func_0000D3C8
+#define route_output func_0000D618
+#define rt_setmetrics func_0000DD34
+#define rt_xaddrs func_0000DDC0
+#define rt_msg2 func_0000DE48
+#define rt_missmsg func_0000E268
+#define rt_ifmsg func_0000E344
+#define rt_ifannouncemsg func_0000E448
+#define rt_msg1 func_0000E518
+#define sysctl_rtable func_0000E678
+#define sysctl_dumpentry func_0000E89C
+#define sysctl_iflist func_0000EA48
+void rt_ifmsg(struct ifnet *ifp);
+void rt_ifannouncemsg(struct ifnet *ifp, int what);
+TAILQ_HEAD(ifnet_head, ifnet);
+int _sce_pspnet_get_if_core_variables(int *a, int *b, int *c, struct ifnet_head *d);
 
 #endif
