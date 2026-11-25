@@ -69,8 +69,10 @@ def base(name):
 def suffixes(target, module, unit, body):
     """rename NAME_ADDR (the source module's statics) after the target's"""
     d = ROOT / "tmp" / "asm" / target / module / "nonmatchings" / unit
-    names = {base(f.stem): f.stem for f in d.glob("*.s")}
-    return re.sub(r"\b([A-Za-z_]\w*?)_[0-9A-F]{4,8}\b", lambda m: names.get(m[1], m[0]), body)
+    stems = {f.stem for f in d.glob("*.s")}
+    names = {base(n): n for n in stems if base(n) != n}
+    return re.sub(r"\b([A-Za-z_]\w*?)_[0-9A-F]{4,8}\b",
+                  lambda m: m[0] if m[0] in stems else names.get(m[1], m[0]), body)
 
 
 def library(targets):
@@ -80,7 +82,6 @@ def library(targets):
             if "/newlib/" in str(f) or "/libgcc/" in str(f):
                 continue
             for name, body in definitions(f).items():
-                name = base(name)
                 lib.setdefault(name, [])
                 if body not in [b for b, _ in lib[name]]:
                     lib[name].append((body, f))
@@ -168,7 +169,7 @@ def main():
             if unit.startswith(("newlib/", "libgcc/", "gcc-3.3.3/")):
                 continue
             for func in re.findall(r'^INCLUDE_ASM\("[^"]+", (\w+)\);$', path.read_text(), re.M):
-                cands = [(b, f) for b, f in lib.get(base(func), []) if f != path]
+                cands = [(b, f) for b, f in (lib.get(func) or lib.get(base(func), [])) if f != path]
                 if not cands:
                     continue
                 mod = mod or objcmp.module_funcs(a.target, module)
