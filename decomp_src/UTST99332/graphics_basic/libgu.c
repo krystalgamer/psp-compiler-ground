@@ -113,7 +113,7 @@ typedef struct {
 	unsigned char exponent, cutoff;
 } GuLightSettings;
 
-extern const GuLightSettings lcmd[4];
+static const GuLightSettings lcmd[4];
 extern int disp_sw;
 extern void *vram_top;
 extern int aw_frame;
@@ -250,7 +250,12 @@ INCLUDE_RODATA("tmp/asm/UTST99332/graphics_basic/nonmatchings/libgu", tbwcmd_tbl
 
 INCLUDE_RODATA("tmp/asm/UTST99332/graphics_basic/nonmatchings/libgu", tsizecmd_tbl);
 
-INCLUDE_RODATA("tmp/asm/UTST99332/graphics_basic/nonmatchings/libgu", lcmd);
+static const GuLightSettings lcmd[4] = {
+	{ 0x18, 0x5F, 0x63, 0x64, 0x65, 0x6F, 0x70, 0x71, 0x8F, 0x90, 0x91, 0x7B, 0x7C, 0x7D, 0x87, 0x8B },
+	{ 0x19, 0x60, 0x66, 0x67, 0x68, 0x72, 0x73, 0x74, 0x92, 0x93, 0x94, 0x7E, 0x7F, 0x80, 0x88, 0x8C },
+	{ 0x1A, 0x61, 0x69, 0x6A, 0x6B, 0x75, 0x76, 0x77, 0x95, 0x96, 0x97, 0x81, 0x82, 0x83, 0x89, 0x8D },
+	{ 0x1B, 0x62, 0x6C, 0x6D, 0x6E, 0x78, 0x79, 0x7A, 0x98, 0x99, 0x9A, 0x84, 0x85, 0x86, 0x8A, 0x8E },
+};
 
 INCLUDE_RODATA("tmp/asm/UTST99332/graphics_basic/nonmatchings/libgu", color_material);
 
@@ -677,7 +682,12 @@ void sceGuLightMode(int mode)
 	send_commandi(94, mode & 1);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_basic/nonmatchings/libgu", sceGuLightAtt);
+void sceGuLightAtt(int light, float atten0, float atten1, float atten2)
+{
+	send_commandf(lcmd[light].constant, atten0);
+	send_commandf(lcmd[light].linear, atten1);
+	send_commandf(lcmd[light].quadratic, atten2);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_basic/nonmatchings/libgu", sceGuLightSpot);
 
