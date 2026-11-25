@@ -1,2 +1,6 @@
 # unit                                     compiler        source
 ifhandle                                     1.5.1.internal  ifhandle.c
+malloc                                       1.5.1.internal  malloc.c
+mbuf                                         1.5.1.internal  mbuf.c
+mbuf2                                        1.5.1.internal  mbuf2.c
+module                                       1.5.1.internal  module.c

@@ -1,2 +1,7 @@
-# Stripped module: one unit for all of .text until object boundaries are known.
+# Stripped module: .comment lists 5 C objects. Boundaries from rodata strings:
+# malloc (sceNetFree message), mbuf.c and mbuf2.c (__FILE__ strings).
 0x00000 ifhandle         1.5.1.internal  ifhandle.c
+0x01650 malloc           1.5.1.internal  malloc.c
+0x018BC mbuf             1.5.1.internal  mbuf.c
+0x03010 mbuf2            1.5.1.internal  mbuf2.c
+0x03454 module           1.5.1.internal  module.c
