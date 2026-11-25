@@ -35,6 +35,8 @@ def clean(draft):
             continue
         out.append(line)
     t = "\n".join(out)
+    t = re.sub(r"\bs64\b", "long long", t)
+    t = re.sub(r"\bu64\b", "unsigned long long", t)
     t = re.sub(r"\bs32\b", "int", t)
     t = re.sub(r"\bu32\b", "unsigned int", t)
     t = re.sub(r"\bf32\b", "float", t)
