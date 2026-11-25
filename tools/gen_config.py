@@ -438,8 +438,13 @@ def main():
             prev_kind = ".text" if typ == "asm" else ".rodata"
         elif s.name == ".rodata":
             owners = rodata_owners(elf, data, segs, units, s)
+            overrides = rodata_overrides(t, name)
+            if owners is None and overrides:
+                # references out of unit order: only the hand-made split
+                # (`rodata ADDR UNIT` lines), the rest stays asm
+                owners = [(s.addr, None)]
             if owners is not None:
-                for addr, uname in rodata_overrides(t, name):
+                for addr, uname in overrides:
                     ui = next(i for i, u in enumerate(units) if u[2] == uname)
                     owners = sorted([o for o in owners if o[0] != addr] + [(addr, ui)])
                 owners = [o for i, o in enumerate(owners) if i == 0 or o[1] is None or o[1] != owners[i - 1][1]]
