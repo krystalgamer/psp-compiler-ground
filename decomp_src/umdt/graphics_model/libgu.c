@@ -1,4 +1,3 @@
-/* cflags: -O2 -fno-merge-constants */
 #include "common.h"
 
 typedef struct {
@@ -39,9 +38,32 @@ extern GuContext *pList;
 extern GuContext _ctx[3];
 extern int __aw_list_mode;
 extern unsigned int __gu_status;
-
 static void send_commandi(int cmd, int argument);
 static void send_commandf(int cmd, float argument);
+static void send_commandi_stall(int cmd, int argument);
+
+void sceGuInit(void);
+void sceGuStart(int type, void *list, int size);
+int sceGuFinish(void);
+int sceGuFinishId(unsigned int id);
+void sceGuCallList(const void *list);
+int sceGuSync(int mode, int what);
+void sceGuSignalSync(int signal);
+void sceGuEnable(int state);
+void sceGuDisable(int state);
+void sceGuDrawArrayN(int prim, int vtype, int count, int n, const void *indices, const void *vertices);
+void sceGuEndObject(void);
+void sceGuCopyImage(int psm, int sx, int sy, int width, int height, int srcw, void *src, int dx, int dy, int destw, void *dest);
+void sceGuDrawBuffer(int psm, void *fbp, int frame_width);
+void sceGuDepthBuffer(void *zbp, int frame_width);
+int sceGuDisplay(int state);
+void sceGuDepthRange(int near, int far);
+void sceGuPatchPrim(int prim);
+void sceGuLightColor(int light, int component, unsigned int color);
+void sceGuTexImage(int mipmap, int width, int height, int tbw, const void *tbp);
+void sceGuTexScale(float u, float v);
+void sceGuTexOffset(float u, float v);
+void sceGuFog(float near, float far, unsigned int color);
 
 typedef struct ScePspFVector4 { float x, y, z, w; } ScePspFVector4;
 typedef struct ScePspFMatrix4 { ScePspFVector4 x, y, z, w; } ScePspFMatrix4;
@@ -83,6 +105,8 @@ void sceGuMaterial(int mode, unsigned int color);
 extern unsigned int *p_bbox[32];
 
 typedef struct ScePspFVector3 { float x, y, z; } ScePspFVector3;
+void sceGuLight(int light, int type, int components, const ScePspFVector3 *position);
+void sceGuLightSpot(int light, const ScePspFVector3 *direction, float exponent, float cutoff);
 
 typedef struct {
 	unsigned char enable;
@@ -120,6 +144,81 @@ int sceKernelCreateEventFlag(const char *name, int attr, int bits, void *opt);
 void sceGuSetDither(const int *matrix);
 void sceGuPatchDivide(int a0, int a1);
 void sceGuColorMaterial(int a0);
+
+static void send_commandi(int cmd, int argument);
+static void send_commandf(int cmd, float argument);
+static __inline__ unsigned int float_bits(float f);
+static void send_commandf_u(int cmd, float argument);
+static void send_commandi_stall(int cmd, int argument);
+void callback_sig(int id, void *arg);
+void callback_fin(int id, void *arg);
+static void reset_static_value(void);
+void sceGuSendCommandf(int cmd, float argument);
+void sceGuSendCommandi(int cmd, int argument);
+void *sceGuGetMemory(int size);
+void sceGuTerm(void);
+void sceGuCallMode(int mode);
+void sceGuSignal(int signal, int behavior);
+void sceGuBreak(int mode);
+void sceGuContinue(void);
+void sceGuSendList(int mode, const void *list, void *context);
+int sceGuCheckList(void);
+int sceGuGetStatus(int state);
+unsigned int sceGuGetAllStatus(void);
+void sceGuSetStatus(int state, int status);
+void sceGuSetAllStatus(unsigned int status);
+void sceGuSetMatrix(int type, const ScePspFMatrix4 *matrix);
+void sceGuDrawArray(int prim, int vtype, int count, const void *indices, const void *vertices);
+void sceGuDrawBezier(int vtype, int ucount, int vcount, const void *indices, const void *vertices);
+void sceGuDrawSpline(int vtype, int ucount, int vcount, int uedge, int vedge, const void *indices, const void *vertices);
+void sceGuBeginObject(int vtype, int count, const void *indices, const void *vertices);
+void sceGuSpriteMode(int a0, int a1, int a2, int a3);
+void sceGuClearColor(unsigned int color);
+void sceGuClearStencil(unsigned int stencil);
+void sceGuClearDepth(unsigned int depth);
+void sceGuDrawBufferList(int psm, void *fbp, int frame_width);
+void sceGuDispBuffer(int width, int height, void *dbp, int frame_width);
+void *sceGuSwapBuffers(void);
+void sceGuViewport(int cx, int cy, int width, int height);
+void sceGuDepthOffset(unsigned int offset);
+void sceGuOffset(unsigned int x, unsigned int y);
+void sceGuAmbient(unsigned int color);
+void sceGuColor(unsigned int color);
+void sceGuAmbientColor(unsigned int color);
+void sceGuModelColor(unsigned int emissive, unsigned int ambient, unsigned int diffuse, unsigned int specular);
+void sceGuSpecular(float power);
+void sceGuFrontFace(int order);
+void sceGuPatchFrontFace(int arg0);
+void sceGuShadeModel(int mode);
+void sceGuLightMode(int mode);
+void sceGuLightAtt(int light, float atten0, float atten1, float atten2);
+void sceGuTexMode(int tpsm, int maxmips, int a2, int swizzle);
+void sceGuTexFilter(int min, int mag);
+void sceGuTexFunc(int tfx, int tcc);
+void sceGuTexEnvColor(unsigned int color);
+void sceGuTexWrap(int u, int v);
+void sceGuTexLevelMode(unsigned int mode, float bias);
+void sceGuTexMapMode(int mode, unsigned int a1, unsigned int a2);
+void sceGuTexProjMapMode(int mode);
+void sceGuTexSync(void);
+void sceGuTexSlope(float slope);
+void sceGuClutMode(int cpsm, int shift, int mask, int a3);
+void sceGuClutLoad(int num_blocks, const void *cbp);
+void sceGuColorFunc(int func, unsigned int color, unsigned int mask);
+void sceGuAlphaFunc(int a0, int a1, int a2);
+void sceGuDepthFunc(int function);
+void sceGuDepthMask(int mask);
+void sceGuPixelMask(unsigned int mask);
+void sceGuScissor(int x, int y, int w, int h);
+void sceGuStencilFunc(int func, int ref, int mask);
+void sceGuLogicalOp(int op);
+void sceGuStencilOp(int fail, int zfail, int zpass);
+void sceGuBlendFunc(int op, int src, int dest, unsigned int srcfix, unsigned int destfix);
+void sceGuBoneMatrix(unsigned int index, const ScePspFMatrix4 *matrix);
+void sceGuDebugFlush(void);
+void *sceGuSetCallback(int signal, void (*callback)(int));
+void sceGuMorphWeight(int index, float weight);
+
 void callback_sig(int id, void *arg)
 {
 	GuCallbackData *cb = (GuCallbackData *)arg;
@@ -142,9 +241,17 @@ void callback_fin(int id, void *arg)
 
 INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/libgu", send_commandi);
 
-INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/libgu", send_commandi_stall);
+static void send_commandi_stall(int cmd, int argument)
+{
+	send_commandi(cmd, argument);
+	if (!n_bbox && !__aw_list_mode)
+		sceGeListUpdateStallAddr(queid[0], pList->current);
+}
 
-INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/libgu", send_commandf);
+static void send_commandf(int cmd, float argument)
+{
+	send_commandi(cmd, *((unsigned int *)&argument) >> 8);
+}
 
 INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/libgu", draw_region);
 
@@ -244,7 +351,26 @@ INCLUDE_RODATA("tmp/asm/umdt/graphics_model/nonmatchings/libgu", color_material)
 
 INCLUDE_RODATA("tmp/asm/umdt/graphics_model/nonmatchings/libgu", D_000173A0);
 
-INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/libgu", sceGuInit);
+void sceGuInit(void)
+{
+	struct {
+		void (*signal_func)(int, void *);
+		void *signal_arg;
+		void (*finish_func)(int, void *);
+		void *finish_arg;
+	} callback;
+
+	callback.signal_func = callback_sig;
+	callback.signal_arg = &intrParam;
+	callback.finish_func = callback_fin;
+	callback.finish_arg = &intrParam;
+	intrCode = sceGeSetCallback(&callback);
+	vram_top = sceGeEdramGetAddr();
+	queid[0] = sceGeListEnQueue((void *)((unsigned int)initList & 0x1fffffff), 0, intrCode, 0);
+	reset_static_value();
+	intrParam.event = sceKernelCreateEventFlag("SCE_GU_SIGNAL", 0x200, 3, 0);
+	sceGeListSync(queid[0], 0);
+}
 
 void sceGuTerm(void)
 {
@@ -260,9 +386,41 @@ INCLUDE_RODATA("tmp/asm/umdt/graphics_model/nonmatchings/libgu", D_00017424);
 
 INCLUDE_RODATA("tmp/asm/umdt/graphics_model/nonmatchings/libgu", D_0001747C);
 
-INCLUDE_RODATA("tmp/asm/umdt/graphics_model/nonmatchings/libgu", D_000174D4);
 
-INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/libgu", sceGuStart);
+void sceGuStart(int type, void *list, int size)
+{
+	GuContext *context = &_ctx[type];
+	GuDrawBuffer *fb = &FBuf;
+	unsigned int *local_list = (unsigned int *)(((unsigned int)list) | 0x40000000);
+
+	context->parent_context = __aw_list_mode;
+	pList = context;
+	context->current = local_list;
+	context->start = local_list;
+	__aw_list_mode = type;
+	if (!type) {
+		intrParam.index = 0;
+		queid[0] = sceGeListEnQueue(local_list, local_list, intrCode, 0);
+	}
+	if (!gu_init) {
+		GuDitherInit dither_matrix = D_000173D0;
+
+		sceGuSetDither(dither_matrix.m);
+		sceGuPatchDivide(16, 16);
+		sceGuColorMaterial(7);
+		sceGuSpecular(1.0f);
+		sceGuTexScale(1.0f, 1.0f);
+		gu_init = 1;
+	}
+	if (!__aw_list_mode) {
+		int width = fb->frame_width;
+
+		if (width) {
+			send_commandi(156, ((unsigned int)fb->frame_buffer) & 0xffffff);
+			send_commandi(157, ((((unsigned int)fb->frame_buffer) & 0xff000000) >> 8) | width);
+		}
+	}
+}
 
 void sceGuSetDither(const int *matrix)
 {
@@ -287,7 +445,16 @@ void sceGuCallMode(int mode)
 	call_mode = mode;
 }
 
-INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/libgu", sceGuSignal);
+void sceGuSignal(int signal, int behavior)
+{
+	send_commandi(14, (behavior & 0xffff) | ((signal & 0xff) << 16));
+	send_commandi(12, 0);
+	if (signal == 3) {
+		send_commandi(15, 0);
+		send_commandi(12, 0);
+	}
+	send_commandi_stall(0, 0);
+}
 
 void sceGuBreak(int mode)
 {
@@ -365,13 +532,52 @@ void sceGuSetAllStatus(unsigned int status)
 
 INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/libgu", sceGuSetMatrix);
 
-INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/libgu", sceGuDrawArray);
+void sceGuDrawArray(int prim, int vtype, int count, const void *indices, const void *vertices)
+{
+	if (vtype)
+		send_commandi(18, vtype);
+	if (indices) {
+		send_commandi(16, (((unsigned int)indices) >> 8) & 0xf0000);
+		send_commandi(2, ((unsigned int)indices) & 0xffffff);
+	}
+	if (vertices) {
+		send_commandi(16, (((unsigned int)vertices) >> 8) & 0xf0000);
+		send_commandi(1, ((unsigned int)vertices) & 0xffffff);
+	}
+	send_commandi_stall(4, (prim << 16) | count);
+}
 
 INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/libgu", sceGuDrawArrayN);
 
-INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/libgu", sceGuDrawBezier);
+void sceGuDrawBezier(int vtype, int ucount, int vcount, const void *indices, const void *vertices)
+{
+	if (vtype)
+		send_commandi(18, vtype);
+	if (indices) {
+		send_commandi(16, (((unsigned int)indices) >> 8) & 0xf0000);
+		send_commandi(2, ((unsigned int)indices) & 0xffffff);
+	}
+	if (vertices) {
+		send_commandi(16, (((unsigned int)vertices) >> 8) & 0xf0000);
+		send_commandi(1, ((unsigned int)vertices) & 0xffffff);
+	}
+	send_commandi_stall(5, (vcount << 8) | ucount);
+}
 
-INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/libgu", sceGuDrawSpline);
+void sceGuDrawSpline(int vtype, int ucount, int vcount, int uedge, int vedge, const void *indices, const void *vertices)
+{
+	if (vtype)
+		send_commandi(18, vtype);
+	if (indices) {
+		send_commandi(16, (((unsigned int)indices) >> 8) & 0xf0000);
+		send_commandi(2, ((unsigned int)indices) & 0xffffff);
+	}
+	if (vertices) {
+		send_commandi(16, (((unsigned int)vertices) >> 8) & 0xf0000);
+		send_commandi(1, ((unsigned int)vertices) & 0xffffff);
+	}
+	send_commandi_stall(6, (vedge << 18) | (uedge << 16) | (vcount << 8) | ucount);
+}
 
 void sceGuBeginObject(int vtype, int count, const void *indices, const void *vertices)
 {
@@ -424,7 +630,21 @@ void sceGuClearDepth(unsigned int depth)
 
 INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/libgu", sceGuClear);
 
-INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/libgu", sceGuDrawBuffer);
+void sceGuDrawBuffer(int psm, void *fbp, int frame_width)
+{
+	FBuf.pixel_size = psm;
+	FBuf.frame_buffer = fbp;
+	FBuf.frame_width = frame_width;
+	if (!FBuf.depth_buffer && FBuf.height)
+		FBuf.depth_buffer = (char *)fbp + FBuf.height * frame_width * 4;
+	if (!FBuf.depth_width)
+		FBuf.depth_width = frame_width;
+	send_commandi(210, psm);
+	send_commandi(156, ((unsigned int)FBuf.frame_buffer) & 0xffffff);
+	send_commandi(157, ((((unsigned int)FBuf.frame_buffer) & 0xff000000) >> 8) | frame_width);
+	send_commandi(158, ((unsigned int)FBuf.depth_buffer) & 0xffffff);
+	send_commandi(159, ((((unsigned int)FBuf.depth_buffer) & 0xff000000) >> 8) | FBuf.depth_width);
+}
 
 void sceGuDrawBufferList(int psm, void *fbp, int frame_width)
 {
@@ -433,7 +653,16 @@ void sceGuDrawBufferList(int psm, void *fbp, int frame_width)
 	send_commandi(157, ((((unsigned int)fbp) & 0xff000000) >> 8) | frame_width);
 }
 
-INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/libgu", sceGuDepthBuffer);
+void sceGuDepthBuffer(void *zbp, int frame_width)
+{
+	FBuf.depth_buffer = zbp;
+	if (!FBuf.depth_width)
+		FBuf.depth_width = frame_width;
+	if (FBuf.depth_width != frame_width)
+		FBuf.depth_width = frame_width;
+	send_commandi(158, ((unsigned int)FBuf.depth_buffer) & 0xffffff);
+	send_commandi(159, ((((unsigned int)FBuf.depth_buffer) & 0xff000000) >> 8) | FBuf.depth_width);
+}
 
 INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/libgu", sceGuDispBuffer);
 
@@ -550,9 +779,38 @@ void sceGuLightAtt(int light, float atten0, float atten1, float atten2)
 	send_commandf(lcmd[light].quadratic, atten2);
 }
 
-INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/libgu", sceGuLightSpot);
+void sceGuLightSpot(int light, const ScePspFVector3 *direction, float exponent, float cutoff)
+{
+	send_commandf(lcmd[light].exponent, exponent);
+	send_commandf(lcmd[light].cutoff, cutoff);
+	send_commandf(lcmd[light].xdir, direction->x);
+	send_commandf(lcmd[light].ydir, direction->y);
+	send_commandf(lcmd[light].zdir, direction->z);
+}
 
-INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/libgu", sceGuLightColor);
+void sceGuLightColor(int light, int component, unsigned int color)
+{
+	color &= 0xffffff;
+	switch (component) {
+	case 1:
+		send_commandi(lcmd[light].ambient, color);
+		break;
+	case 2:
+		send_commandi(lcmd[light].diffuse, color);
+		break;
+	case 3:
+		send_commandi(lcmd[light].ambient, color);
+		send_commandi(lcmd[light].diffuse, color);
+		break;
+	case 4:
+		send_commandi(lcmd[light].specular, color);
+		break;
+	case 6:
+		send_commandi(lcmd[light].diffuse, color);
+		send_commandi(lcmd[light].specular, color);
+		break;
+	}
+}
 
 void sceGuTexMode(int tpsm, int maxmips, int a2, int swizzle)
 {
@@ -620,9 +878,17 @@ void sceGuTexSync(void)
 
 INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/libgu", sceGuTexImage);
 
-INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/libgu", sceGuTexScale);
+void sceGuTexScale(float u, float v)
+{
+	send_commandf(72, u);
+	send_commandf(73, v);
+}
 
-INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/libgu", sceGuTexOffset);
+void sceGuTexOffset(float u, float v)
+{
+	send_commandf(74, u);
+	send_commandf(75, v);
+}
 
 INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/libgu", sceGuTexFlush);
 
@@ -643,7 +909,17 @@ void sceGuClutLoad(int num_blocks, const void *cbp)
 	send_commandi(196, num_blocks);
 }
 
-INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/libgu", sceGuFog);
+void sceGuFog(float near, float far, unsigned int color)
+{
+	float range = far - near;
+	float distance = 0.0f;
+
+	if (range != 0.0f)
+		distance = 1.0f / range;
+	send_commandi(207, color & 0xffffff);
+	send_commandf(205, far);
+	send_commandf(206, distance);
+}
 
 void sceGuColorFunc(int func, unsigned int color, unsigned int mask)
 {
