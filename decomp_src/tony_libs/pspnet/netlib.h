@@ -343,4 +343,36 @@ int func_000071FC(struct ifnet *ifp, u_long cmd, void *data);
 int func_000016BC(SceSize args, void *argp);
 
 
+extern unsigned int D_0000B0B4[521];
+extern int D_0000B8D8;
+
+static inline void rnd521_refresh(void)
+{
+	int i;
+
+	for (i = 0; i < 32; i++)
+		D_0000B0B4[i] ^= D_0000B0B4[i + 489];
+	for (i = 32; i < 521; i++)
+		D_0000B0B4[i] ^= D_0000B0B4[i - 32];
+}
+
+int sceNetIfhandle_lib_0C391E9F(int poolsize);
+int sceNetIfhandle_lib_29ED84C5(void);
+void sceNetIfhandle_lib_0FB8AE0D(void);
+void func_00007798(unsigned int seed);
+int func_00007738(int poolsize);
+int func_00007778(void);
+int func_00001A00(int prio, int stack);
+void func_00001B7C(void);
+int func_00001F0C(void);
+void func_00002300(void);
+int func_00002B34(int prio, int stack);
+void func_000028D0(void);
+int func_00002FC4(void);
+void func_00003028(void);
+int func_00003438(void);
+void func_0000348C(void);
+void func_000057D8(void);
+void func_0000426C(int n);
+
 #endif
