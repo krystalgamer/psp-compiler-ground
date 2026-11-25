@@ -74,7 +74,7 @@ struct thread_info {
 	SceUID sema;
 	short semacnt;
 	char unk52[0x58 - 0x52];
-	struct adhoc_socket *polllist;
+	void *polllist;
 	int unk5C;
 	struct thread_info *pollnext;
 };

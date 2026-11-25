@@ -5,9 +5,79 @@
 #include "adhoc.h"
 /* --- end declarations --- */
 
-INCLUDE_ASM("tmp/asm/tony_libs/pspnet_adhoc/nonmatchings/adhoc", sceNetAdhocInit);
+int sceNetAdhocInit(void)
+{
+	int s;
+	int ret;
 
-INCLUDE_ASM("tmp/asm/tony_libs/pspnet_adhoc/nonmatchings/adhoc", sceNetAdhocTerm);
+	s = _sce_pspnet_spllock();
+	ret = 0x80410713;
+	if (D_00007400 > 0)
+		goto out;
+	D_00007404.ifq_maxlen = 50;
+	D_00007404.ifq_head = NULL;
+	D_00007404.ifq_len = 0;
+	D_00007404.ifq_drops = 0;
+	D_00007404.ifq_tail = NULL;
+	if ((ret = func_00000D3C()) < 0)
+		goto out;
+	if ((ret = func_000029AC()) < 0)
+		goto err1;
+	if ((ret = func_00005374()) < 0)
+		goto err2;
+	if ((ret = _sce_pspnet_start_of_adhoc_module_in_netintr(func_00000224, func_00000444)) < 0)
+		goto err3;
+	if ((ret = _sce_pspnet_start_of_adhoc_module_in_if_ethersubr_core(func_00000430)) < 0)
+		goto err4;
+	if (func_00006880() < 0)
+		goto err5;
+	D_00007400 = 1;
+	_sce_pspnet_splunlock(s);
+	return 0;
+err5:
+	_sce_pspnet_stop_of_adhoc_module_in_if_ethersubr_core();
+err4:
+	_sce_pspnet_stop_of_adhoc_module_in_netintr();
+err3:
+	func_0000483C();
+err2:
+	func_00002A18();
+err1:
+	func_00000D84();
+out:
+	_sce_pspnet_splunlock(s);
+	return ret;
+}
+
+int sceNetAdhocTerm(void)
+{
+	int s;
+	int ret;
+	struct mbuf *m;
+
+	ret = 0;
+	s = _sce_pspnet_spllock();
+	if (D_00007400 == 0)
+		goto out;
+	if (func_00000FBC() != 0) {
+		ret = 0x80410714;
+		goto out;
+	}
+	func_00006898();
+	_sce_pspnet_stop_of_adhoc_module_in_if_ethersubr_core();
+	_sce_pspnet_stop_of_adhoc_module_in_netintr();
+	func_0000483C();
+	func_00002A18();
+	func_00000D84();
+	while (D_00007404.ifq_head != NULL) {
+		IF_DEQUEUE(&D_00007404, m);
+		sceNetMFreem(m);
+	}
+	D_00007400 = 0;
+out:
+	_sce_pspnet_splunlock(s);
+	return ret;
+}
 
 void func_00000224(void)
 {
@@ -49,7 +119,25 @@ void func_00000444(void *arg)
 
 INCLUDE_ASM("tmp/asm/tony_libs/pspnet_adhoc/nonmatchings/adhoc", sceNetAdhocPollSocket);
 
-INCLUDE_ASM("tmp/asm/tony_libs/pspnet_adhoc/nonmatchings/adhoc", func_0000092C);
+int func_0000092C(struct pollent *pe, int n)
+{
+	int count;
+	int i;
+
+	count = 0;
+	for (i = 0; i < n; i++, pe++) {
+		switch (pe->so->type) {
+		case 1:
+			pe->sd->revents = func_00002C00(pe->so, pe->sd->events);
+			break;
+		case 2:
+			pe->sd->revents = func_000050F8(pe->so, pe->sd->events);
+			break;
+		}
+		count += pe->sd->revents != 0;
+	}
+	return count;
+}
 
 int sceNetAdhocSetSocketAlert(int id, int flag)
 {
