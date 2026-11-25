@@ -65,6 +65,10 @@ SceInt32 sceMpegCreate(SceMpeg *pMpeg, SceVoid *pData, SceInt32 iSize, SceMpegRi
 SceInt32 sceMpegDelete(SceMpeg *pMpeg);
 SceInt32 sceMpegAvcDecodeMode(SceMpeg *pMpeg, SceMpegAvcMode *pMode);
 SceInt32 sceMpegFlushAllStream(SceMpeg *pMpeg);
+SceMpegStream *sceMpegRegistStream(SceMpeg *pMpeg, SceInt32 iStreamID, SceInt32 iUnk);
+SceMpegHandle sceMpegMallocAvcEsBuf(SceMpeg *pMpeg);
+SceInt32 sceMpegInitAu(SceMpeg *pMpeg, SceMpegHandle hEsBuf, SceMpegAu *pAu);
+SceInt32 sceMpegQueryAtracEsSize(SceMpeg *pMpeg, SceInt32 *iEsSize, SceInt32 *iOutSize);
 SceInt32 sceMpegFreeAvcEsBuf(SceMpeg *pMpeg, SceMpegHandle hEsBuf);
 SceInt32 sceMpegUnRegistStream(SceMpeg *pMpeg, SceMpegStream *pStream);
 SceInt32 sceMpegQueryStreamOffset(SceMpeg *pMpeg, SceVoid *pBuffer, SceInt32 *iOffset);

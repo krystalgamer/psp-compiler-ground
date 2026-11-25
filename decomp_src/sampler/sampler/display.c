@@ -38,8 +38,6 @@ void *sceGeEdramGetAddr(void);
 static int init_all(t_displayBuffer *pDisp);
 static void draw_frame(t_displayBuffer *pDisp, SceChar8 *buffer);
 static SceInt32 dispbuf_isEnd(t_displayBuffer *pDisp);
-SceInt32 dispbuf_scale(t_displayBuffer *pDisp, int scale);
-SceInt32 dispbuf_pos(t_displayBuffer *pDisp, int x, int y);
 
 static int init_all(t_displayBuffer *pDisp)
 {

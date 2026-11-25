@@ -34,4 +34,6 @@ SceInt32 dispbuf_func(SceSize size, void *argp);
 SceInt32 dispbuf_decode_sleep(t_displayBuffer *pDisp);
 SceInt32 dispbuf_setStartFlag(t_displayBuffer *pDisp);
 SceInt32 dispbuf_show(t_displayBuffer *pDisp);
+SceInt32 dispbuf_scale(t_displayBuffer *pDisp, int scale);
+SceInt32 dispbuf_pos(t_displayBuffer *pDisp, int x, int y);
 #endif
