@@ -61,6 +61,9 @@ struct ScePspFMatrix4 { /* size 0x40 */
 };
 typedef struct ScePspFMatrix4 ScePspFMatrix4;
 
+/* SDK functions */
+int sceCtrlReadBufferPositive(SceCtrlData *data, int count);
+
 extern float ground[1875];
 extern float sphere[84];
 extern unsigned int checkcolor[1];
@@ -87,6 +90,7 @@ extern char disp_list[65536];
 extern ScePspFMatrix4 matrix_stack[48];
 
 static void fmemcpy(float *dst, float *src, int n);
+int rand(void);
 static void translate_patch(void);
 static void draw_frame(void);
 static void init_all(void);
@@ -100,7 +104,13 @@ void *sceGuSwapBuffers(void);
 int sceDisplayWaitVblankStart(void);
 
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_tamatama/nonmatchings/main", fmemcpy);
+static void fmemcpy(float *dst, float *src, int n)
+{
+	int i;
+
+	for (i = 0; i < n; i++)
+		*dst++ = *src++;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_tamatama/nonmatchings/main", translate_patch);
 
@@ -110,9 +120,95 @@ INCLUDE_ASM("tmp/asm/UTST99332/graphics_tamatama/nonmatchings/main", init_all);
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_tamatama/nonmatchings/main", frame_update);
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_tamatama/nonmatchings/main", init_pos);
+static void init_pos(void)
+{
+	int i, j;
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_tamatama/nonmatchings/main", pad_read);
+	for (i = 0; i < 9; i++) {
+		for (j = 0; j < 9; j++) {
+			spos[i * 9 + j].vec.x = (j - 4) * 0.25f;
+			spos[i * 9 + j].vec.y = 0.0f;
+			spos[i * 9 + j].vec.z = (4 - i) * 0.25f;
+			spos[i * 9 + j].d = (rand() % 10) * 0.007f + 0.05f;
+			spos[i * 9 + j].t = 0;
+		}
+	}
+	for (i = 0; i < 81; i++) {
+		ground_v[i].x = 0.0f;
+		ground_v[i].y = 0.0f;
+		ground_v[i].z = 0.0f;
+	}
+	pos.rot.x = 0.0f;
+	pos.rot.y = 0.0f;
+	pos.rot.z = 0.0f;
+	pos.trans.x = 0.0f;
+	pos.trans.y = -1.5f;
+	pos.trans.z = -5.0f;
+}
+
+static int pad_read(void)
+{
+	SceCtrlData buf;
+	int i;
+
+	sceCtrlReadBufferPositive(&buf, 1);
+	if (buf.Buttons & 0x0010) {
+		pos.rot.x -= 2.0f;
+		if (pos.rot.x <= -360.0f)
+			pos.rot.x = 0.0f;
+	}
+	if (buf.Buttons & 0x0040) {
+		pos.rot.x += 2.0f;
+		if (pos.rot.x >= 360.0f)
+			pos.rot.x = 0.0f;
+	}
+	if (buf.Buttons & 0x0080) {
+		pos.rot.y += 2.0f;
+		if (pos.rot.y >= 360.0f)
+			pos.rot.y = 0.0f;
+	}
+	if (buf.Buttons & 0x0020) {
+		pos.rot.y -= 2.0f;
+		if (pos.rot.y <= -360.0f)
+			pos.rot.y = 0.0f;
+	}
+	if (buf.Buttons & 0x2000) {
+		pos.trans.z -= 1.0f;
+		if (pos.trans.z < -100.0f)
+			pos.trans.z = -100.0f;
+	}
+	if (buf.Buttons & 0x4000) {
+		pos.trans.z += 1.0f;
+		if (pos.trans.z > -5.0f)
+			pos.trans.z = -5.0f;
+	}
+	if (buf.Buttons & 0x1000) {
+		if (++cnt >= 81)
+			cnt = 81;
+	}
+	if (buf.Buttons & 0x8000) {
+		if (--cnt < 2)
+			cnt = 1;
+		for (i = cnt; i < 81; i++)
+			(ground_v + order[i])->y = 0.0f;
+	}
+	if (buf.Buttons & 0x0100)
+		fog -= 0.05f;
+	if (buf.Buttons & 0x0200)
+		fog += 0.05f;
+	if (buf.Buttons & 0x0008) {
+		pos.rot.x = 0.0f;
+		pos.rot.y = 0.0f;
+		pos.rot.z = 0.0f;
+		pos.trans.x = 0.0f;
+		pos.trans.y = -1.5f;
+		pos.trans.z = -5.0f;
+		fog = 3.0f;
+	}
+	if (buf.Buttons & 0x0001)
+		return 0;
+	return 1;
+}
 
 int main(void) {
     menuInit();
