@@ -5,11 +5,20 @@
 
 typedef struct {
 	unsigned int sl;
-	unsigned int mode;
-	char pad8[0xA - 8];
+	union {
+		unsigned int w;
+		u8 b[4];
+	} mode;
+	u8 unk8;
+	u8 unk9;
 	s8 state;
 	char padB;
 } SasEnv;
+
+typedef union {
+	int pack;
+	s16 lr[2];
+} SasVol;
 
 typedef struct {
 	int addr;
@@ -17,9 +26,9 @@ typedef struct {
 	u8 type;
 	u8 loop;
 	u16 pitch;
-	int volL;
-	int volR;
-	int unk14;
+	SasVol vol;
+	SasVol evol;
+	u8 *buf;
 	int height;
 	unsigned int ar;
 	unsigned int dr;
@@ -42,13 +51,16 @@ typedef struct {
 	s16 evolR;
 	int endFlag;
 	SasVoice voice[32];
-	char pad714[0xE20 - 0x714];
+	SasVoice voice2[32];
+	int unkE14;
+	char padE18[0xE20 - 0xE18];
 } SasCore;
 
 extern int D_00001DD0;
 extern void *D_00001DE0;
 void *sceMeCalloc(unsigned int n, unsigned int size);
 void sceMeFree(void *p);
+void sceKernelDcacheWritebackInvalidateAll(void);
 int sceKernelCreateSema(const char *name, unsigned int attr, int init, int max, void *opt);
 int sceKernelDeleteSema(int id);
 extern const s8 D_00001DA0[8];

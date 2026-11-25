@@ -1,4 +1,4 @@
-/* cflags: -O2 -frename-registers -fno-merge-constants */
+/* cflags: -O2 -frename-registers -mext -fno-merge-constants */
 #include "common.h"
 
 /* --- declarations --- */
@@ -178,7 +178,7 @@ int __sceSasSetADSRmode(SasCore *core, unsigned int voice, int flags, int am, in
 		if (res < 0) {
 			ret = res;
 		} else {
-			unsigned int m = core->voice[voice].env.mode;
+			unsigned int m = core->voice[voice].env.mode.w;
 
 			if (flags & 1) {
 				if (am >= 32 || !((0x15 >> am) & 1))
@@ -200,7 +200,7 @@ int __sceSasSetADSRmode(SasCore *core, unsigned int voice, int flags, int am, in
 					goto err;
 				m = __builtin_allegrex_ins(m, rm, 24, 8);
 			}
-			core->voice[voice].env.mode = m;
+			core->voice[voice].env.mode.w = m;
 			sceKernelSignalSema(D_00001DD0, 1);
 			ret = 0;
 			goto end;
@@ -258,7 +258,85 @@ int __sceSasGetEnvelopeHeight(SasCore *core, unsigned int voice)
 
 INCLUDE_ASM("tmp/asm/tony_libs/sc_sascore/nonmatchings/sc_sascore", __sceSasSetSimpleADSR);
 
-INCLUDE_ASM("tmp/asm/tony_libs/sc_sascore/nonmatchings/sc_sascore", __sceSasInit);
+int __sceSasInit(SasCore *core, int grain, int maxVoices, int outMode, int sampleRate)
+{
+	unsigned int oldk1;
+	int ret;
+	u8 *buf;
+	int i;
+
+	if (((unsigned int)core & 0x3F) != 0 || (((unsigned int)core >> 27) & 3) != 1
+	    || !((0x35 >> __builtin_allegrex_ext((unsigned int)core, 29, 3)) & 1))
+		return 0x80420005;
+	oldk1 = pspShiftK1();
+	if (CHECK_CORE(core)) {
+		pspSetK1(oldk1);
+		return 0x80000023;
+	}
+	buf = D_00001DE0;
+	if ((grain & 0x1F) != 0 || grain < 0x40 || grain > 0x100) {
+		ret = 0x80420001;
+	} else if (sampleRate != 44100) {
+		ret = 0x80420004;
+	} else if ((unsigned int)(maxVoices - 1) >= 32) {
+		ret = 0x80420002;
+	} else if ((unsigned int)outMode >= 2) {
+		ret = 0x80420003;
+	} else {
+		{
+			u8 *p = (u8 *)core;
+
+			for (i = sizeof(SasCore) - 1; i >= 0; i--)
+				*p++ = 0;
+		}
+		for (i = 0; i < 32; i++) {
+			SasVoice *v = &core->voice[i];
+
+			v->buf = buf;
+			buf += 0x4C;
+			v->env.state = -1;
+			v->env.mode.b[0] = 0;
+			v->env.mode.b[1] = 1;
+			v->env.mode.b[2] = 1;
+			v->env.mode.b[3] = 1;
+			v->env.unk8 = 7;
+			v->env.unk9 = 7;
+			v->evol.lr[1] = 0x1000;
+			v->evol.lr[0] = 0x1000;
+			v->vol.lr[1] = 0x1000;
+			v->vol.lr[0] = 0x1000;
+			v->pitch = 0x1000;
+		}
+		__builtin_memcpy(core->voice2, core->voice, sizeof(core->voice));
+		core->unk8 = grain / 32;
+		core->unk9 = outMode;
+		core->unk0 = (int)buf;
+		core->endFlag = -1;
+		core->unkE14 = -1;
+		if (sceKernelWaitSema(D_00001DD0, 1, 0) >= 0) {
+			core->evolL = 0;
+			core->rev.b[1] |= 8;
+			core->evolR = 0;
+			sceKernelSignalSema(D_00001DD0, 1);
+		}
+		if (sceKernelWaitSema(D_00001DD0, 1, 0) >= 0) {
+			core->von = 1;
+			core->rev.b[1] |= 8;
+			sceKernelSignalSema(D_00001DD0, 1);
+		}
+		if (sceKernelWaitSema(D_00001DD0, 1, 0) >= 0) {
+			core->rev.w = ((core->rev.w & ~0xFF) + (-1 & 0xFF)) | 0x100;
+			sceKernelSignalSema(D_00001DD0, 1);
+		}
+		if (sceKernelWaitSema(D_00001DD0, 1, 0) >= 0) {
+			core->rev.w = ((core->rev.w & 0xFFFF) + (0 << 24) + (0 << 16)) | 0x200;
+			sceKernelSignalSema(D_00001DD0, 1);
+		}
+		sceKernelDcacheWritebackInvalidateAll();
+		ret = 0;
+	}
+	return pspRetK1(ret, oldk1);
+}
 
 int __sceSasRevVON(SasCore *core, int dry, int wet)
 {
