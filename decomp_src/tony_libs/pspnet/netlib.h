@@ -300,7 +300,9 @@ struct ifnet {
 	void (*if_input)(struct ifnet *, struct mbuf *);
 	void (*if_start)(struct ifnet *);
 	int (*if_ioctl)(struct ifnet *, u_long, void *);
-	char unkC0[0xEC - 0xC0];
+	char unkC0[0xE0 - 0xC0];
+	void *if_sadl;
+	char unkE4[0xEC - 0xE4];
 	u_char if_lladdr[6];
 	char unkF2[0xF4 - 0xF2];
 	int (*if_up)(struct ifnet *);
@@ -379,5 +381,49 @@ void func_0000426C(int n);
 
 void func_0000877C(char **pp, int c);
 int func_00008054(void (*put)(char **, int), char **arg, const char *fmt, va_list ap);
+
+int _sce_pspnet_ifioctl(void *so, u_long cmd, void *data, void *p);
+struct ifnet *_sce_pspnet_ifunit(const char *name);
+
+struct ifreq {
+	char ifr_name[16];
+	union {
+		short ifru_flags;
+		int ifru_int;
+		void *ifru_data;
+		char ifru_pad[16];
+	} ifr_ifru;
+};
+
+struct ifreq_1 {
+	char name[16];
+	int v0;
+};
+
+struct ifreq_2 {
+	char name[16];
+	int v0;
+	int v1;
+};
+
+struct ifreq_3 {
+	char name[16];
+	int v0;
+	int v1;
+	int v2;
+};
+
+struct ifreq_4 {
+	char name[16];
+	int v0;
+	int v1;
+	int v2;
+	int v3;
+};
+
+struct ifevreq {
+	int a;
+	int b;
+};
 
 #endif
