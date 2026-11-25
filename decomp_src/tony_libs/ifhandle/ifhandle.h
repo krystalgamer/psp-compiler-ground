@@ -329,12 +329,27 @@ extern unsigned int D_00003B8C;
 extern unsigned int D_00003B90;
 extern unsigned int D_00003B94;
 extern int D_00003B98;
-extern int D_00003B48;
-extern int D_00003B50;
+extern int (*D_00003B48)(struct mbuf *);
+extern int (*D_00003B50)(struct mbuf *);
 extern int D_00003B9C;
 extern unsigned int D_00003BA0[521];
 extern int D_000043C4;
 int strcmp(const char *, const char *);
+int memcmp(const void *, const void *, unsigned int);
+void sceNetMCopydata(struct mbuf *m, int off, int len, char *cp);
+
+struct ether_header {
+	unsigned char ether_dhost[6];
+	unsigned char ether_shost[6];
+	unsigned short ether_type;
+} __attribute__((packed));
+
+#define ntohs(x) ((unsigned short)__builtin_allegrex_wsbh(x))
+
+#define M_BCAST 0x0100
+#define M_MCAST 0x0200
+
+extern const unsigned char D_00003B20[6];
 
 static inline void rnd521_refresh(void)
 {
