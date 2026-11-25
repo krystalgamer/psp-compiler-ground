@@ -1,0 +1,31 @@
+#include "common.h"
+
+INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/newlib/libm/math/ef_acos", one_7FB80);
+
+INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/newlib/libm/math/ef_acos", pi_7FB84);
+
+INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/newlib/libm/math/ef_acos", pio2_hi);
+
+INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/newlib/libm/math/ef_acos", pio2_lo);
+
+INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/newlib/libm/math/ef_acos", pS0);
+
+INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/newlib/libm/math/ef_acos", pS1);
+
+INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/newlib/libm/math/ef_acos", pS2);
+
+INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/newlib/libm/math/ef_acos", pS3);
+
+INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/newlib/libm/math/ef_acos", pS4);
+
+INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/newlib/libm/math/ef_acos", pS5);
+
+INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/newlib/libm/math/ef_acos", qS1);
+
+INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/newlib/libm/math/ef_acos", qS2);
+
+INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/newlib/libm/math/ef_acos", qS3);
+
+INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/newlib/libm/math/ef_acos", qS4);
+
+INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/newlib/libm/math/ef_acos", __ieee754_acosf);
