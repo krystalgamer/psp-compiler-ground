@@ -172,6 +172,7 @@ segments:
       - [0x12C7C, .rodata, newlib/libm/math/sf_floor]
       - [0x12C84, .rodata, newlib/libm/common/sf_scalbn]
       - [0x12CA4, rodata, asm/rodata_12C24]
+      - [0x12CB0, .rodata, newlib/libc/stdlib/malloc]
       - [0x12CB4, .rodata, newlib/libc/stdio/vfprintf]
       - [0x12E94, .rodata, newlib/libc/stdlib/wctomb_r]
       - [0x12EB8, .rodata, newlib/libc/stdlib/dtoa]

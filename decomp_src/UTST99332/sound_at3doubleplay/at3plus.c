@@ -7,7 +7,3 @@ INCLUDE_ASM("tmp/asm/UTST99332/sound_at3doubleplay/nonmatchings/at3plus", play_a
 INCLUDE_ASM("tmp/asm/UTST99332/sound_at3doubleplay/nonmatchings/at3plus", release_at3playArgID);
 
 INCLUDE_ASM("tmp/asm/UTST99332/sound_at3doubleplay/nonmatchings/at3plus", at3plus_addData);
-
-INCLUDE_RODATA("tmp/asm/UTST99332/sound_at3doubleplay/nonmatchings/at3plus", D_0001F2AC);
-
-INCLUDE_RODATA("tmp/asm/UTST99332/sound_at3doubleplay/nonmatchings/at3plus", D_0001F2DC);

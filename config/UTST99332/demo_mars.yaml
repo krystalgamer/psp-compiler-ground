@@ -177,6 +177,7 @@ segments:
       - [0x14670, .rodata, newlib/libm/common/sf_scalbn]
       - [0x14690, .rodata, libgcc/fp-bit/__unpack_f]
       - [0x146A8, rodata, asm/rodata_14628]
+      - [0x146B4, .rodata, newlib/libc/stdlib/malloc]
       - [0x146B8, .rodata, newlib/libc/stdio/vfprintf]
       - [0x14898, .rodata, newlib/libc/stdlib/wctomb_r]
       - [0x148B8, .rodata, newlib/libc/stdlib/dtoa]

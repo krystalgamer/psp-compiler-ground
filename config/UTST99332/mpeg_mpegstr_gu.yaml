@@ -161,6 +161,7 @@ segments:
       - [0x149D4, .rodata, menu]
       - [0x14A2C, rodata, asm/rodata_149AC]
       - [0x152B4, rodata, asm/rodata_15234]
+      - [0x152C0, .rodata, newlib/libc/stdlib/malign]
       - [0x152C4, .rodata, newlib/libc/stdio/puts]
       - [0x152C8, .rodata, newlib/libc/stdio/vfprintf]
       - [0x154A8, .rodata, newlib/libc/stdlib/wctomb_r]

@@ -1,5 +1,13 @@
 #include "common.h"
 
+INCLUDE_RODATA("tmp/asm/UTST99332/utility_basic/nonmatchings/savedata", D_00016548);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/utility_basic/nonmatchings/savedata", D_00016558);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/utility_basic/nonmatchings/savedata", D_00016578);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/utility_basic/nonmatchings/savedata", D_000166D8);
+
 INCLUDE_ASM("tmp/asm/UTST99332/utility_basic/nonmatchings/savedata", set_savedata_param);
 
 void show_results(void) {

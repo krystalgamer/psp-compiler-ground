@@ -229,6 +229,7 @@ segments:
       - [0x22B6C, .rodata, newlib/libm/common/s_matherr]
       - [0x22B70, .rodata, newlib/libm/common/sf_scalbn]
       - [0x22B90, rodata, asm/rodata_22B10]
+      - [0x22B9C, .rodata, newlib/libc/stdlib/malloc]
       - [0x22BA0, .rodata, newlib/libc/stdio/vfprintf]
       - [0x22D80, .rodata, newlib/libc/stdlib/wctomb_r]
       - [0x22DA0, .rodata, newlib/libc/stdlib/dtoa]

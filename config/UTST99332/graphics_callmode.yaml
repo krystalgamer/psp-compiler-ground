@@ -136,6 +136,7 @@ segments:
       - [0xE908, .rodata, main]
       - [0xE918, .rodata, menu]
       - [0xE970, rodata, asm/rodata_E8F0]
+      - [0xF1EC, .rodata, newlib/libc/stdlib/malloc]
       - [0xF1F0, .rodata, newlib/libc/stdio/vfprintf]
       - [0xF3D0, .rodata, newlib/libc/stdlib/wctomb_r]
       - [0xF3F0, .rodata, newlib/libc/stdlib/dtoa]

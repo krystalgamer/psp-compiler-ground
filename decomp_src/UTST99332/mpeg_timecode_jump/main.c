@@ -18,6 +18,28 @@ INCLUDE_ASM("tmp/asm/UTST99332/mpeg_timecode_jump/nonmatchings/main", checkPlaye
 
 INCLUDE_ASM("tmp/asm/UTST99332/mpeg_timecode_jump/nonmatchings/main", setPlayerEndCondition);
 
+INCLUDE_RODATA("tmp/asm/UTST99332/mpeg_timecode_jump/nonmatchings/main", D_00010390);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/mpeg_timecode_jump/nonmatchings/main", D_000103B0);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/mpeg_timecode_jump/nonmatchings/main", D_000103CC);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/mpeg_timecode_jump/nonmatchings/main", D_000103E0);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/mpeg_timecode_jump/nonmatchings/main", D_000103EC);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/mpeg_timecode_jump/nonmatchings/main", D_00010414);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/mpeg_timecode_jump/nonmatchings/main", D_00010444);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/mpeg_timecode_jump/nonmatchings/main", D_00010450);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/mpeg_timecode_jump/nonmatchings/main", D_00010470);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/mpeg_timecode_jump/nonmatchings/main", D_00010494);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/mpeg_timecode_jump/nonmatchings/main", D_000104B4);
+
 INCLUDE_ASM("tmp/asm/UTST99332/mpeg_timecode_jump/nonmatchings/main", playMovie);
 
 INCLUDE_ASM("tmp/asm/UTST99332/mpeg_timecode_jump/nonmatchings/main", readHeader);

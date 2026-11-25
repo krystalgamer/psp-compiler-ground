@@ -195,6 +195,7 @@ segments:
       - [0x312F8, .rodata, libgcc/dp-bit/__floatsidf]
       - [0x31300, .rodata, libgcc/fp-bit/__unpack_f]
       - [0x31318, rodata, asm/rodata_31298]
+      - [0x31320, .rodata, newlib/libc/stdlib/malign]
       - [0x31324, .rodata, newlib/libc/stdio/puts]
       - [0x31328, .rodata, newlib/libc/stdio/vfprintf]
       - [0x31508, .rodata, newlib/libc/stdlib/wctomb_r]

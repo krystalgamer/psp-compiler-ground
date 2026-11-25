@@ -25,11 +25,3 @@ INCLUDE_RODATA("tmp/asm/UTST99332/utility_basic/nonmatchings/pot", plince);
 INCLUDE_RODATA("tmp/asm/UTST99332/utility_basic/nonmatchings/pot", plince_bottom);
 
 INCLUDE_RODATA("tmp/asm/UTST99332/utility_basic/nonmatchings/pot", plince_frame);
-
-INCLUDE_RODATA("tmp/asm/UTST99332/utility_basic/nonmatchings/pot", D_00016548);
-
-INCLUDE_RODATA("tmp/asm/UTST99332/utility_basic/nonmatchings/pot", D_00016558);
-
-INCLUDE_RODATA("tmp/asm/UTST99332/utility_basic/nonmatchings/pot", D_00016578);
-
-INCLUDE_RODATA("tmp/asm/UTST99332/utility_basic/nonmatchings/pot", D_000166D8);

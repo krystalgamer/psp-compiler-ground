@@ -205,6 +205,7 @@ segments:
       - [0x1FB54, .rodata, newlib/libm/common/s_matherr]
       - [0x1FB58, .rodata, newlib/libm/common/sf_scalbn]
       - [0x1FB78, rodata, asm/rodata_1FAF8]
+      - [0x1FB84, .rodata, newlib/libc/stdlib/malign]
       - [0x1FB88, .rodata, newlib/libc/stdio/vfprintf]
       - [0x1FD68, .rodata, newlib/libc/stdlib/wctomb_r]
       - [0x1FD88, .rodata, newlib/libc/stdlib/dtoa]

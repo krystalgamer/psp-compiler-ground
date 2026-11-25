@@ -187,6 +187,7 @@ segments:
       - [0x18880, .rodata, libgcc/dp-bit/__floatsidf]
       - [0x18888, .rodata, libgcc/fp-bit/__unpack_f]
       - [0x188A0, rodata, asm/rodata_18820]
+      - [0x188AC, .rodata, newlib/libc/stdlib/malloc]
       - [0x188B0, .rodata, newlib/libc/stdio/puts]
       - [0x188B4, .rodata, newlib/libc/stdio/vfprintf]
       - [0x18A94, .rodata, newlib/libc/stdlib/wctomb_r]

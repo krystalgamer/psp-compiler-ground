@@ -12,6 +12,10 @@ INCLUDE_ASM("tmp/asm/UTST99332/sound_ryukyu/nonmatchings/main", sas_thread);
 
 INCLUDE_ASM("tmp/asm/UTST99332/sound_ryukyu/nonmatchings/main", file_read);
 
+INCLUDE_RODATA("tmp/asm/UTST99332/sound_ryukyu/nonmatchings/main", D_00011C30);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/sound_ryukyu/nonmatchings/main", D_00011C64);
+
 INCLUDE_RODATA("tmp/asm/UTST99332/sound_ryukyu/nonmatchings/main", D_00011C98);
 
 INCLUDE_ASM("tmp/asm/UTST99332/sound_ryukyu/nonmatchings/main", sas_setting);

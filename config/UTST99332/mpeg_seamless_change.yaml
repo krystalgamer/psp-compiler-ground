@@ -161,6 +161,7 @@ segments:
       - [0x11E20, .rodata, strfile]
       - [0x11EA4, .rodata, menu]
       - [0x11EFC, rodata, asm/rodata_11E7C]
+      - [0x11F20, .rodata, newlib/libc/stdlib/malign]
       - [0x11F24, .rodata, newlib/libc/stdio/puts]
       - [0x11F28, .rodata, newlib/libc/stdio/vfprintf]
       - [0x12108, .rodata, newlib/libc/stdlib/wctomb_r]

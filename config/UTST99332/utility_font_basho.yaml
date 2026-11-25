@@ -176,6 +176,7 @@ segments:
       - [0x142F4, .rodata, newlib/libm/math/sf_floor]
       - [0x142FC, .rodata, newlib/libm/common/sf_scalbn]
       - [0x1431C, rodata, asm/rodata_1429C]
+      - [0x14328, .rodata, newlib/libc/stdlib/malign]
       - [0x1432C, .rodata, newlib/libc/stdio/vfprintf]
       - [0x1450C, .rodata, newlib/libc/stdlib/wctomb_r]
       - [0x14530, .rodata, newlib/libc/stdlib/dtoa]

@@ -1,5 +1,13 @@
 #include "common.h"
 
+INCLUDE_RODATA("tmp/asm/UTST99332/mpeg_timecode_jump/nonmatchings/newlib/libc/locale/locale", D_00010D40);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/mpeg_timecode_jump/nonmatchings/newlib/libc/locale/locale", D_00010D44);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/mpeg_timecode_jump/nonmatchings/newlib/libc/locale/locale", lconv);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/mpeg_timecode_jump/nonmatchings/newlib/libc/locale/locale", D_00010D78);
+
 INCLUDE_ASM("tmp/asm/UTST99332/mpeg_timecode_jump/nonmatchings/newlib/libc/locale/locale", _setlocale_r);
 
 INCLUDE_ASM("tmp/asm/UTST99332/mpeg_timecode_jump/nonmatchings/newlib/libc/locale/locale", __locale_charset);

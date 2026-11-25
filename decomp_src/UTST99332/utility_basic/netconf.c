@@ -23,5 +23,3 @@ INCLUDE_ASM("tmp/asm/UTST99332/utility_basic/nonmatchings/netconf", OnPush_Netco
 INCLUDE_ASM("tmp/asm/UTST99332/utility_basic/nonmatchings/netconf", OnCancel_Netconf_Adhoc);
 
 INCLUDE_ASM("tmp/asm/UTST99332/utility_basic/nonmatchings/netconf", OnPush_Nectonf_AdhocConnect);
-
-INCLUDE_RODATA("tmp/asm/UTST99332/utility_basic/nonmatchings/netconf", D_00016890);

@@ -33,7 +33,3 @@ INCLUDE_ASM("tmp/asm/UTST99332/sound_stringsound/nonmatchings/at3plus", reset_po
 INCLUDE_ASM("tmp/asm/UTST99332/sound_stringsound/nonmatchings/at3plus", getPlayMode);
 
 INCLUDE_ASM("tmp/asm/UTST99332/sound_stringsound/nonmatchings/at3plus", fadeoutOperation);
-
-INCLUDE_RODATA("tmp/asm/UTST99332/sound_stringsound/nonmatchings/at3plus", D_0001F9BC);
-
-INCLUDE_RODATA("tmp/asm/UTST99332/sound_stringsound/nonmatchings/at3plus", D_0001F9EC);

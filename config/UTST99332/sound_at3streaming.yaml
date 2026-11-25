@@ -182,6 +182,7 @@ segments:
       - [0x2006C, .rodata, newlib/libm/common/sf_scalbn]
       - [0x2008C, rodata, asm/rodata_2000C]
       - [0x200A4, rodata, asm/rodata_20024]
+      - [0x200B0, .rodata, newlib/libc/stdlib/malloc]
       - [0x200B4, .rodata, newlib/libc/stdio/puts]
       - [0x200B8, .rodata, newlib/libc/stdio/vfprintf]
       - [0x20298, .rodata, newlib/libc/stdlib/wctomb_r]

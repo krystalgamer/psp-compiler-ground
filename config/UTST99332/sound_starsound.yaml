@@ -135,9 +135,10 @@ segments:
       - { start: 0x10F08, type: rodata, name: jcr, linker_section: .jcr }
       - { start: 0x10F0C, type: rodata, name: eh_frame, linker_section: .eh_frame }
       - [0x10F70, .rodata, crt0]
-      - [0x11100, .rodata, main]
+      - [0x10F80, .rodata, main]
       - [0x11194, .rodata, menu]
       - [0x111EC, rodata, asm/rodata_1116C]
+      - [0x11A80, .rodata, newlib/libc/stdlib/malloc]
       - [0x11A84, .rodata, newlib/libc/stdio/puts]
       - [0x11A88, .rodata, newlib/libc/stdio/vfprintf]
       - [0x11C68, .rodata, newlib/libc/stdlib/wctomb_r]

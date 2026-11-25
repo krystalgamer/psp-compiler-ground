@@ -143,6 +143,7 @@ segments:
       - [0x128DC, .rodata, starmixloadmodule]
       - [0x12ABC, .rodata, menu]
       - [0x12B14, rodata, asm/rodata_12A94]
+      - [0x133A8, .rodata, newlib/libc/stdlib/malloc]
       - [0x133AC, .rodata, newlib/libc/stdio/puts]
       - [0x133B0, .rodata, newlib/libc/stdio/vfprintf]
       - [0x13590, .rodata, newlib/libc/stdlib/wctomb_r]

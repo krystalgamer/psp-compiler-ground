@@ -185,6 +185,7 @@ segments:
       - [0x1637C, .rodata, adhoc_dialog]
       - [0x163DC, .rodata, adhoc_dialog_int]
       - [0x165C0, rodata, asm/rodata_16540]
+      - [0x165CC, .rodata, newlib/libc/stdlib/malloc]
       - [0x165D0, .rodata, newlib/libc/stdio/puts]
       - [0x165D4, .rodata, newlib/libc/stdio/vfprintf]
       - [0x167B4, .rodata, newlib/libc/stdlib/wctomb_r]

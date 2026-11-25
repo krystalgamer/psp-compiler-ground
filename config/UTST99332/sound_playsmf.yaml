@@ -141,6 +141,7 @@ segments:
       - [0x17564, .rodata, sasload]
       - [0x1763C, .rodata, menu]
       - [0x17694, rodata, asm/rodata_17614]
+      - [0x17F98, .rodata, newlib/libc/stdlib/malloc]
       - [0x17F9C, .rodata, newlib/libc/stdio/puts]
       - [0x17FA0, .rodata, newlib/libc/stdio/vfprintf]
       - [0x18180, .rodata, newlib/libc/stdlib/wctomb_r]

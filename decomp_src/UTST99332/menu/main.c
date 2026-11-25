@@ -8,6 +8,8 @@ INCLUDE_ASM("tmp/asm/UTST99332/menu/nonmatchings/main", InitSE);
 
 INCLUDE_ASM("tmp/asm/UTST99332/menu/nonmatchings/main", PlaySE);
 
+INCLUDE_RODATA("tmp/asm/UTST99332/menu/nonmatchings/main", D_00016F80);
+
 INCLUDE_ASM("tmp/asm/UTST99332/menu/nonmatchings/main", InitFunc);
 
 INCLUDE_ASM("tmp/asm/UTST99332/menu/nonmatchings/main", DrawSprite);

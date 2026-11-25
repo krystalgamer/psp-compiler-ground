@@ -1,5 +1,7 @@
 #include "common.h"
 
+INCLUDE_RODATA("tmp/asm/UTST99332/utility_basic/nonmatchings/msgdialog", D_00016890);
+
 INCLUDE_ASM("tmp/asm/UTST99332/utility_basic/nonmatchings/msgdialog", utility_update_msgdialog);
 
 INCLUDE_ASM("tmp/asm/UTST99332/utility_basic/nonmatchings/msgdialog", OnPush_MsgDialog);

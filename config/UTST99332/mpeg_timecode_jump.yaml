@@ -147,7 +147,27 @@ segments:
       - { start: 0xFDD0, type: rodata, name: dtors, linker_section: .dtors }
       - { start: 0xFDD8, type: rodata, name: jcr, linker_section: .jcr }
       - { start: 0xFDDC, type: rodata, name: eh_frame, linker_section: .eh_frame }
-      - [0xFE40, rodata, rodata]
+      - [0xFE40, .rodata, crt0]
+      - [0xFE50, .rodata, main]
+      - [0x10690, .rodata, display]
+      - [0x106E0, .rodata, fileread]
+      - [0x10728, .rodata, decode]
+      - [0x107A8, .rodata, sound]
+      - [0x107FC, .rodata, avsync]
+      - [0x10800, .rodata, control]
+      - [0x10810, .rodata, parsePsmf]
+      - [0x108B8, .rodata, strfile]
+      - [0x1093C, .rodata, menu]
+      - [0x10994, rodata, asm/rodata_10914]
+      - [0x109B8, .rodata, newlib/libc/stdlib/malign]
+      - [0x109BC, .rodata, newlib/libc/stdio/puts]
+      - [0x109C0, .rodata, newlib/libc/stdio/vfprintf]
+      - [0x10BA0, .rodata, newlib/libc/stdlib/wctomb_r]
+      - [0x10BC0, .rodata, newlib/libc/stdlib/dtoa]
+      - [0x10DC0, .rodata, newlib/libc/locale/locale]
+      - [0x10E08, .rodata, newlib/libc/stdlib/mprec]
+      - [0x10F40, .rodata, libgcc/dp-bit/__floatsidf]
+      - [0x10F48, .rodata, libgcc/dp-bit/__pack_d]
   - name: mpeg_timecode_jump_seg1
     type: code
     start: 0x11060

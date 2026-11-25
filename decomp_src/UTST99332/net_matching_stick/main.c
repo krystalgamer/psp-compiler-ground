@@ -1,6 +1,6 @@
 #include "common.h"
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_matching_stick/nonmatchings/main", gu_init_3E8);
+INCLUDE_ASM("tmp/asm/UTST99332/net_matching_stick/nonmatchings/main", gu_init);
 
 INCLUDE_RODATA("tmp/asm/UTST99332/net_matching_stick/nonmatchings/main", D_00018708);
 

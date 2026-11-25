@@ -181,6 +181,7 @@ segments:
       - [0x15CAC, .rodata, newlib/libm/math/sf_floor]
       - [0x15CB4, .rodata, newlib/libm/common/sf_scalbn]
       - [0x15CD4, rodata, asm/rodata_15C54]
+      - [0x15CE0, .rodata, newlib/libc/stdlib/malign]
       - [0x15CE4, .rodata, newlib/libc/stdio/vfprintf]
       - [0x15EC4, .rodata, newlib/libc/stdlib/wctomb_r]
       - [0x15EE8, .rodata, newlib/libc/stdlib/dtoa]

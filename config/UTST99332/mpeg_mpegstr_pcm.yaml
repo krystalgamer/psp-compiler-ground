@@ -155,6 +155,7 @@ segments:
       - [0xFDF4, .rodata, strfile]
       - [0xFE78, .rodata, menu]
       - [0xFED0, rodata, asm/rodata_FE50]
+      - [0xFEF4, .rodata, newlib/libc/stdlib/malign]
       - [0xFEF8, .rodata, newlib/libc/stdio/puts]
       - [0xFEFC, .rodata, newlib/libc/stdio/vfprintf]
       - [0x100DC, .rodata, newlib/libc/stdlib/wctomb_r]

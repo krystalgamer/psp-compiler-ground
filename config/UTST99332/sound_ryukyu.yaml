@@ -137,10 +137,11 @@ segments:
       - { start: 0x11C38, type: rodata, name: eh_frame, linker_section: .eh_frame }
       - { start: 0x11C9C, type: prxpad, order: .rodata }
       - [0x11CA0, .rodata, crt0]
-      - [0x11D18, .rodata, main]
+      - [0x11CB0, .rodata, main]
       - [0x11DF8, .rodata, sasload]
       - [0x11ED0, .rodata, menu]
       - [0x11F28, rodata, asm/rodata_11EA8]
+      - [0x127BC, .rodata, newlib/libc/stdlib/malloc]
       - [0x127C0, .rodata, newlib/libc/stdio/puts]
       - [0x127C4, .rodata, newlib/libc/stdio/vfprintf]
       - [0x129A4, .rodata, newlib/libc/stdlib/wctomb_r]

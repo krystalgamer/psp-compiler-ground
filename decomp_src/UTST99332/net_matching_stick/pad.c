@@ -12,4 +12,4 @@ INCLUDE_ASM("tmp/asm/UTST99332/net_matching_stick/nonmatchings/pad", pad_up);
 
 INCLUDE_ASM("tmp/asm/UTST99332/net_matching_stick/nonmatchings/pad", pad_down);
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_matching_stick/nonmatchings/pad", pad_read_2770);
+INCLUDE_ASM("tmp/asm/UTST99332/net_matching_stick/nonmatchings/pad", pad_read);

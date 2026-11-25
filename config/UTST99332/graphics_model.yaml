@@ -203,6 +203,7 @@ segments:
       - [0x1EAF4, .rodata, newlib/libm/common/s_matherr]
       - [0x1EAF8, .rodata, newlib/libm/common/sf_scalbn]
       - [0x1EB18, rodata, asm/rodata_1EA98]
+      - [0x1EB24, .rodata, newlib/libc/stdlib/malign]
       - [0x1EB28, .rodata, newlib/libc/stdio/vfprintf]
       - [0x1ED08, .rodata, newlib/libc/stdlib/wctomb_r]
       - [0x1ED28, .rodata, newlib/libc/stdlib/dtoa]

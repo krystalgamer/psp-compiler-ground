@@ -13,3 +13,5 @@ INCLUDE_ASM("tmp/asm/UTST99332/menu/nonmatchings/category", CtrlSpline);
 INCLUDE_ASM("tmp/asm/UTST99332/menu/nonmatchings/category", RunCategory);
 
 INCLUDE_ASM("tmp/asm/UTST99332/menu/nonmatchings/category", KeyCategory);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/menu/nonmatchings/category", D_00017078);
