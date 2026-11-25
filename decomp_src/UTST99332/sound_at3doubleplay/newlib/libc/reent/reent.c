@@ -1,7 +1,3 @@
-#include "common.h"
-
-INCLUDE_ASM("tmp/asm/UTST99332/sound_at3doubleplay/nonmatchings/newlib/libc/reent/reent", cleanup_glue);
-
-INCLUDE_ASM("tmp/asm/UTST99332/sound_at3doubleplay/nonmatchings/newlib/libc/reent/reent", _reclaim_reent);
-
-INCLUDE_ASM("tmp/asm/UTST99332/sound_at3doubleplay/nonmatchings/newlib/libc/reent/reent", _wrapup_reent);
+/* upstream: newlib-1.12.0/newlib/libc/reent/reent.c (unmodified) */
+/* cflags: -O2 -fno-builtin */
+#include "libc/reent/reent.c"

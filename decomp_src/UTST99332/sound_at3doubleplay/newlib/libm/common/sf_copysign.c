@@ -1,3 +1,3 @@
-#include "common.h"
-
-INCLUDE_ASM("tmp/asm/UTST99332/sound_at3doubleplay/nonmatchings/newlib/libm/common/sf_copysign", copysignf);
+/* upstream: newlib-1.12.0/newlib/libm/common/sf_copysign.c (unmodified) */
+/* cflags: -O2 -fno-builtin */
+#include "libm/common/sf_copysign.c"

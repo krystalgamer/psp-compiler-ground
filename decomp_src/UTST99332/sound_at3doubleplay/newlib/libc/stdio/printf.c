@@ -1,5 +1,3 @@
-#include "common.h"
-
-INCLUDE_ASM("tmp/asm/UTST99332/sound_at3doubleplay/nonmatchings/newlib/libc/stdio/printf", _printf_r);
-
-INCLUDE_ASM("tmp/asm/UTST99332/sound_at3doubleplay/nonmatchings/newlib/libc/stdio/printf", printf);
+/* upstream: newlib-1.12.0/newlib/libc/stdio/printf.c (unmodified) */
+/* cflags: -O2 -fno-builtin */
+#include "libc/stdio/printf.c"
