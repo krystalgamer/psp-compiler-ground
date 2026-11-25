@@ -161,7 +161,57 @@ int __sceSasSetSteepWave(SasCore *core, unsigned int voice, unsigned int rate)
 
 INCLUDE_ASM("tmp/asm/tony_libs/sc_sascore/nonmatchings/sc_sascore", __sceSasSetADSR);
 
-INCLUDE_ASM("tmp/asm/tony_libs/sc_sascore/nonmatchings/sc_sascore", __sceSasSetADSRmode);
+int __sceSasSetADSRmode(SasCore *core, unsigned int voice, int flags, int am, int dm, int sm, int rm)
+{
+	unsigned int oldk1 = pspShiftK1();
+	int ret;
+
+	if (CHECK_CORE(core)) {
+		pspSetK1(oldk1);
+		return 0x80000023;
+	}
+	if (voice >= 32) {
+		ret = 0x80420010;
+	} else {
+		int res = sceKernelWaitSema(D_00001DD0, 1, 0);
+
+		if (res < 0) {
+			ret = res;
+		} else {
+			unsigned int m = core->voice[voice].env.mode;
+
+			if (flags & 1) {
+				if (am >= 32 || !((0x15 >> am) & 1))
+					goto err;
+				m = __builtin_allegrex_ins(m, am, 0, 8);
+			}
+			if (flags & 2) {
+				if (dm >= 32 || !((0x2A >> dm) & 1))
+					goto err;
+				m = __builtin_allegrex_ins(m, dm, 8, 8);
+			}
+			if (flags & 4) {
+				if (sm >= 32 || !((0x3F >> sm) & 1))
+					goto err;
+				m = __builtin_allegrex_ins(m, sm, 16, 8);
+			}
+			if (flags & 8) {
+				if (rm >= 32 || !((0x2A >> rm) & 1))
+					goto err;
+				m = __builtin_allegrex_ins(m, rm, 24, 8);
+			}
+			core->voice[voice].env.mode = m;
+			sceKernelSignalSema(D_00001DD0, 1);
+			ret = 0;
+			goto end;
+err:
+			sceKernelSignalSema(D_00001DD0, 1);
+			ret = 0x80420013;
+		}
+	}
+end:
+	return pspRetK1(ret, oldk1);
+}
 
 int __sceSasSetSL(SasCore *core, unsigned int voice, unsigned int sl)
 {
@@ -210,13 +260,102 @@ INCLUDE_ASM("tmp/asm/tony_libs/sc_sascore/nonmatchings/sc_sascore", __sceSasSetS
 
 INCLUDE_ASM("tmp/asm/tony_libs/sc_sascore/nonmatchings/sc_sascore", __sceSasInit);
 
-INCLUDE_ASM("tmp/asm/tony_libs/sc_sascore/nonmatchings/sc_sascore", __sceSasRevVON);
+int __sceSasRevVON(SasCore *core, int dry, int wet)
+{
+	unsigned int oldk1 = pspShiftK1();
+	int ret;
 
-INCLUDE_ASM("tmp/asm/tony_libs/sc_sascore/nonmatchings/sc_sascore", __sceSasRevEVOL);
+	if (CHECK_CORE(core)) {
+		pspSetK1(oldk1);
+		return 0x80000023;
+	}
+	ret = sceKernelWaitSema(D_00001DD0, 1, 0);
+	if (ret >= 0) {
+		core->von = (dry != 0) + ((wet != 0) << 1);
+		core->rev.b[1] |= 8;
+		sceKernelSignalSema(D_00001DD0, 1);
+	}
+	return pspRetK1(ret, oldk1);
+}
 
-INCLUDE_ASM("tmp/asm/tony_libs/sc_sascore/nonmatchings/sc_sascore", __sceSasRevType);
+int __sceSasRevEVOL(SasCore *core, int l, int r)
+{
+	unsigned int oldk1 = pspShiftK1();
+	int ret;
 
-INCLUDE_ASM("tmp/asm/tony_libs/sc_sascore/nonmatchings/sc_sascore", __sceSasRevParam);
+	if (CHECK_CORE(core)) {
+		pspSetK1(oldk1);
+		return 0x80000023;
+	}
+	if (l < 0 || l > 0x1000 || r < 0 || r > 0x1000) {
+		ret = 0x80420023;
+	} else {
+		int res = sceKernelWaitSema(D_00001DD0, 1, 0);
+
+		if (res < 0) {
+			ret = res;
+		} else {
+			core->evolL = l;
+			core->evolR = r;
+			core->rev.b[1] |= 8;
+			sceKernelSignalSema(D_00001DD0, 1);
+			ret = res;
+		}
+	}
+	return pspRetK1(ret, oldk1);
+}
+
+int __sceSasRevType(SasCore *core, int type)
+{
+	unsigned int oldk1 = pspShiftK1();
+	int ret;
+
+	if (CHECK_CORE(core)) {
+		pspSetK1(oldk1);
+		return 0x80000023;
+	}
+	if (type < -1 || type > 8) {
+		ret = 0x80420020;
+	} else {
+		int res = sceKernelWaitSema(D_00001DD0, 1, 0);
+
+		if (res < 0) {
+			ret = res;
+		} else {
+			core->rev.w = ((core->rev.w & ~0xFF) + (type & 0xFF)) | 0x100;
+			sceKernelSignalSema(D_00001DD0, 1);
+			ret = 0;
+		}
+	}
+	return pspRetK1(ret, oldk1);
+}
+
+int __sceSasRevParam(SasCore *core, unsigned int delay, unsigned int fb)
+{
+	unsigned int oldk1 = pspShiftK1();
+	int ret;
+
+	if (CHECK_CORE(core)) {
+		pspSetK1(oldk1);
+		return 0x80000023;
+	}
+	if (delay >= 0x80) {
+		ret = 0x80420022;
+	} else if (fb >= 0x80) {
+		ret = 0x80420021;
+	} else {
+		int res = sceKernelWaitSema(D_00001DD0, 1, 0);
+
+		if (res < 0) {
+			ret = res;
+		} else {
+			core->rev.w = ((core->rev.w & 0xFFFF) + (fb << 24) + (delay << 16)) | 0x200;
+			sceKernelSignalSema(D_00001DD0, 1);
+			ret = 0;
+		}
+	}
+	return pspRetK1(ret, oldk1);
+}
 
 INCLUDE_RODATA("tmp/asm/tony_libs/sc_sascore/nonmatchings/sc_sascore", D_00001DA0);
 

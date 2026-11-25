@@ -5,7 +5,8 @@
 
 typedef struct {
 	unsigned int sl;
-	char pad4[0xA - 4];
+	unsigned int mode;
+	char pad8[0xA - 8];
 	s8 state;
 	char padB;
 } SasEnv;
@@ -20,12 +21,25 @@ typedef struct {
 	int volR;
 	int unk14;
 	int height;
-	char pad1C[0x2C - 0x1C];
+	unsigned int ar;
+	unsigned int dr;
+	unsigned int sr;
+	unsigned int rr;
 	SasEnv env;
 } SasVoice;
 
 typedef struct {
-	char pad0[0x10];
+	int unk0;
+	union {
+		unsigned int w;
+		u8 b[4];
+	} rev;
+	u8 unk8;
+	u8 unk9;
+	u8 von;
+	u8 unkB;
+	s16 evolL;
+	s16 evolR;
 	int endFlag;
 	SasVoice voice[32];
 	char pad714[0xE20 - 0x714];
@@ -69,6 +83,8 @@ static inline int pspRetK1(int ret, unsigned int k1)
 	asm volatile("move $27, %0" : : "r"(k1));
 	return ret;
 }
+
+#define MAX(a, b) ((a) < (b) ? (b) : (a))
 
 #define K1_USER() pspK1IsUserMode()
 #define CHECK_CORE(core) (K1_USER() && (int)((unsigned int)(core) | ((unsigned int)(core) + sizeof(SasCore))) < 0)
