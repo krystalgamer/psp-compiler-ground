@@ -90,7 +90,147 @@ static void copy_pixels(char *dp, const char *sp, int count, int src_step, _Bool
 /* SDK functions */
 int sceKernelDcacheWritebackAll(void);
 
+_Bool sceGimPictureReallocPalette(SceGimPicture *picture, int format, int w, int level, int frame, void *pixels);
+_Bool sceGimPictureReallocImage(SceGimPicture *picture, int format, int w, int h, int level, int frame, void *pixels);
+void *sceGimPictureGetImagePixels(SceGimPicture *picture, int level, int frame);
+void *sceGimPictureGetPalettePixels(SceGimPicture *picture, int level, int frame);
+void sceGimPictureUnload(SceGimPicture *picture);
+
+#ifdef NON_MATCHING
+/* the RLE loop's registers and scheduling differ */
+_Bool sceGimPictureLoadTga(SceGimPicture *picture, const void *buf, int size)
+{
+	TgaHeader header;
+	const void *ptr;
+	int type;
+	int format;
+	int src_step;
+	int dst_step;
+	int width;
+	int height;
+	void *ptr2;
+	int pitch;
+	int pitch2;
+	const char *sp;
+	char *dp;
+
+	if (picture == NULL)
+		return 0;
+	sceGimPictureUnload(picture);
+	ptr = read_header(buf, &header);
+	type = header.image_type & ~8;
+	if (type != 1 && type != 2)
+		return 0;
+	if (header.clut_type != 0) {
+		int clut_count;
+		void *ptr2;
+		const unsigned char *sp;
+		unsigned int *dp;
+
+		clut_count = header.clut_count;
+		sceGimPictureReallocPalette(picture, 3, clut_count, 1, 1, NULL);
+		ptr2 = sceGimPictureGetPalettePixels(picture, 0, 0);
+		if (ptr2 == NULL)
+			return 0;
+		sp = ptr;
+		dp = ptr2;
+		if (header.entry_size == 24) {
+			int i;
+
+			for (i = 0; i < clut_count; i++) {
+				*dp++ = 0xff000000 | (sp[0] << 16) | (sp[1] << 8) | sp[2];
+				sp += 3;
+			}
+		} else {
+			int i;
+
+			for (i = 0; i < clut_count; i++) {
+				*dp++ = (sp[3] << 24) | (sp[0] << 16) | (sp[1] << 8) | sp[2];
+				sp += 4;
+			}
+		}
+		ptr = sp;
+	}
+	format = 5;
+	src_step = 1;
+	dst_step = 1;
+	if (header.depth > 8) {
+		format = 1;
+		src_step = 2;
+		dst_step = 2;
+		if (header.depth > 16) {
+			format = 3;
+			src_step = 3;
+			dst_step = 4;
+			if (header.depth > 24) {
+				src_step = 4;
+				dst_step = 4;
+			}
+		}
+	}
+	width = header.width;
+	height = header.height;
+	sceGimPictureReallocImage(picture, format, width, height, 1, 1, NULL);
+	ptr2 = sceGimPictureGetImagePixels(picture, 0, 0);
+	if (ptr2 == NULL)
+		return 0;
+	sp = ptr;
+	dp = ptr2;
+	pitch = (width * dst_step + 15) & ~15;
+	pitch2 = width * src_step;
+	if (!(header.image_desc & 0x20)) {
+		dp += pitch * (height - 1);
+		pitch = -pitch;
+	}
+	if (!(header.image_type & 8)) {
+		int i;
+
+		for (i = 0; i < height; i++) {
+			copy_pixels(dp, sp, width, src_step, 0);
+			sp += pitch2;
+			dp += pitch;
+		}
+	} else {
+		int x_pos;
+		int y_pos;
+
+		x_pos = 0;
+		y_pos = 0;
+		while (y_pos < height) {
+			int count;
+			_Bool run;
+
+			count = (*sp & 0x7f) + 1;
+			run = (*sp & 0x80) != 0;
+			sp++;
+			while (count > 0) {
+				int step;
+
+				step = width - x_pos;
+				if (count < step)
+					step = count;
+				copy_pixels(dp, sp, step, src_step, run);
+				x_pos += step;
+				if (!run)
+					sp += step * src_step;
+				dp += step * dst_step;
+				count -= step;
+				if (x_pos >= width) {
+					y_pos++;
+					dp += pitch - x_pos * dst_step;
+					x_pos = 0;
+				}
+			}
+			if (run)
+				sp += src_step;
+		}
+	}
+	sceKernelDcacheWritebackAll();
+	return 1;
+}
+#else
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_picture/nonmatchings/load_tga", sceGimPictureLoadTga);
+#endif
 
 #define read_header read_header_3424
 #define read_short read_short_34E8
