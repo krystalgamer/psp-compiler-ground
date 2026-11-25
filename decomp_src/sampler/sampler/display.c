@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <thread.h>
 #include <displaysvc.h>
+#include <libgu.h>
 #include "display.h"
 #include "sound.h"
 #include "avsync.h"
@@ -35,18 +36,65 @@ extern int frame_loss;
 extern int prevcur;
 extern int blinkframe;
 extern int not_ready;
+extern int ablinkframe;
+extern int ablinkdir;
+extern SceChar8 disp_list[65536];
 
 void *sceGeEdramGetAddr(void);
-void *sceGuSwapBuffers(void);
 static int init_all(t_displayBuffer *pDisp);
 static void draw_frame(t_displayBuffer *pDisp, SceChar8 *buffer);
 static SceInt32 dispbuf_isEnd(t_displayBuffer *pDisp);
 SceInt32 dispbuf_scale(t_displayBuffer *pDisp, int scale);
 SceInt32 dispbuf_pos(t_displayBuffer *pDisp, int x, int y);
 
-INCLUDE_ASM("tmp/asm/sampler/sampler/nonmatchings/display", init_all);
+static int init_all(t_displayBuffer *pDisp)
+{
+	sceGuStart(0, disp_list, sizeof(disp_list));
+	sceGuDrawBuffer(3, (void *)0, 512);
+	sceGuDispBuffer(480, 272, (void *)0x88000, 512);
+	sceGuOffset(0, 0);
+	sceGuScissor(0, 0, 480, 272);
+	sceGuEnable(2);
+	sceGuDisable(1);
+	sceGuTexFunc(0, 1);
+	sceGuTexFilter(1, 1);
+	sceGuTexWrap(0, 0);
+	sceGuEnable(9);
+	sceGuBlendFunc(0, 2, 3, 0, 0);
+	sceGuDisable(4);
+	sceGuColor(0xFFFFFFFF);
+	sceGuClearDepth(0);
+	sceGuClearStencil(0);
+	sceGuClearColor(0);
+	sceGuFinish();
+	sceGuSync(0, 0);
+	sceDisplayWaitVblankStart();
+	sceGuDisplay(1);
+	return 0;
+}
 
+#ifdef NON_MATCHING
+/* the original loads ablinkframe after the blinkframe if; ours hoists the load */
+static unsigned char set_blink(void)
+{
+	int val;
+
+	if (blinkframe < 9) {
+		val = blinkframe * 255 / 8;
+		blinkframe++;
+	} else {
+		val = 255;
+	}
+	if (ablinkframe >= 9)
+		ablinkdir = -1;
+	if (ablinkframe < 0)
+		ablinkdir = 1;
+	ablinkframe += ablinkdir;
+	return val;
+}
+#else
 INCLUDE_ASM("tmp/asm/sampler/sampler/nonmatchings/display", set_blink);
+#endif
 
 INCLUDE_ASM("tmp/asm/sampler/sampler/nonmatchings/display", draw_menu);
 
