@@ -1215,6 +1215,7 @@ struct rtentry {
 	caddr_t rt_llinfo;
 	struct rt_metrics rt_rmx;
 	struct rtentry *rt_gwroute;
+	LIST_HEAD(, rttimer) rt_timer;
 	struct rtentry *rt_parent;
 };
 #define rt_key(r) ((struct sockaddr *)((r)->rt_nodes->rn_key))
@@ -1235,6 +1236,8 @@ struct rtentry {
 #define RTF_BLACKHOLE 0x1000
 #define RTF_PROTO2 0x4000
 #define RTF_PROTO1 0x8000
+#define RTF_CLONED 0x2000
+#define RTV_MTU 0x1
 
 #define RTM_ADD 0x1
 #define RTM_DELETE 0x2
@@ -1285,12 +1288,16 @@ struct rt_addrinfo {
 #define rtfree func_0000D090
 #define rt_missmsg func_0000E268
 #define rt_ifmsg func_0000E344
-#define rt_newaddrmsg func_0000E448
 struct rtentry *rtalloc1(struct sockaddr *dst, int report);
 void rtalloc(struct route *ro);
 void rtfree(struct rtentry *rt);
 int rtrequest(int req, struct sockaddr *dst, struct sockaddr *gateway, struct sockaddr *netmask, int flags, struct rtentry **ret_nrt);
 void rt_missmsg(int type, struct rt_addrinfo *rtinfo, int flags, int error);
+void rt_maskedcopy(struct sockaddr *src, struct sockaddr *dst, struct sockaddr *netmask);
+int rt_setgate(struct rtentry *rt0, struct sockaddr *dst, struct sockaddr *gate);
+void rtredirect(struct sockaddr *dst, struct sockaddr *gateway, struct sockaddr *netmask, int flags, struct sockaddr *src, struct rtentry **rtp);
+int rtinit(struct ifaddr *ifa, int cmd, int flags);
+void route_init(void);
 
 /* if.h (Sony layout, from pspnet) */
 struct ifaddr {
@@ -1301,8 +1308,7 @@ struct ifaddr {
 	TAILQ_ENTRY(ifaddr) ifa_list;
 	char ifa_unk18[0x28 - 0x18];
 	void (*ifa_rtrequest)(int, struct rtentry *, struct sockaddr *);
-	u_short ifa_flags;
-	short ifa_unk2E;
+	int ifa_flags;
 	int ifa_refcnt;
 	int ifa_metric;
 };
@@ -1540,5 +1546,80 @@ struct sockaddr_in *in_selectsrc(struct sockaddr_in *sin, struct route *ro, int 
 void *_sce_pspnet_hashinit(int elements, u_long *hashmask);
 #define hashinit _sce_pspnet_hashinit
 u_int32_t sceNetRand(void);
+
+/* route.c */
+struct rttimer {
+	TAILQ_ENTRY(rttimer) rtt_next;
+	LIST_ENTRY(rttimer) rtt_link;
+	struct rttimer_queue *rtt_queue;
+	struct rtentry *rtt_rt;
+	void (*rtt_func)(struct rtentry *, struct rttimer *);
+	long rtt_time;
+};
+
+struct rttimer_queue {
+	long rtq_timeout;
+	TAILQ_HEAD(, rttimer) rtq_head;
+	LIST_ENTRY(rttimer_queue) rtq_link;
+};
+
+struct route_cb_t {
+	int ip_count;
+	int ip6_count;
+	int ipx_count;
+	int ns_count;
+	int iso_count;
+	int any_count;
+};
+
+struct rtstat_t {
+	u_short rts_badredirect;
+	u_short rts_dynamic;
+	u_short rts_newgateway;
+	u_short rts_unreach;
+	u_short rts_wildcard;
+};
+
+#define rt_tables D_0002F308
+#define rtstat D_0002F3AC
+#define route_cb D_0002F3B8
+#define rttrash D_0002F300
+#define rt_init_done D_0002EB84
+#define rttimer_queue_head D_0002F304
+#define rt_timer_ch D_0002F388
+extern struct radix_node_head *rt_tables[32];
+extern struct rtstat_t rtstat;
+extern struct route_cb_t route_cb;
+extern int rttrash;
+extern int rt_init_done;
+extern LIST_HEAD(, rttimer_queue) rttimer_queue_head;
+extern struct callout rt_timer_ch;
+
+#define rtable_init func_0000CF04
+#define rt_timer_queue_destroy func_0000CB28
+#define rt_timer_remove_all func_0000CC10
+#define rt_timer_add func_0000CC8C
+#define rt_timer_timer func_0000CDB8
+#define rt_timer_init func_0000D130
+#define rt_timer_queue_create func_0000D188
+#define rt_timer_queue_change func_0000D25C
+#define rtflushclone1 func_0000D264
+#define rtdeletemsg func_0000D2A4
+#define ifa_ifwithnet func_00008CC0
+#define ifaof_ifpforaddr func_00008E48
+#define ifa_ifwithdstaddr func_000090C0
+struct ifaddr *ifa_ifwithnet(struct sockaddr *addr);
+struct ifaddr *ifaof_ifpforaddr(struct sockaddr *addr, struct ifnet *ifp);
+struct ifaddr *ifa_ifwithdstaddr(struct sockaddr *addr);
+struct ifaddr *ifa_ifwithroute(int flags, struct sockaddr *dst, struct sockaddr *gateway);
+void rt_newaddrmsg(int cmd, struct ifaddr *ifa, int error, struct rtentry *rt);
+#define rt_newaddrmsg func_0000E02C
+void rt_timer_remove_all(struct rtentry *rt);
+void rt_timer_timer(void *arg);
+void _sce_pspnet_ifafree(struct ifaddr *ifa);
+#define ifafree _sce_pspnet_ifafree
+#define IFAFREE(ifa) do { if (--(ifa)->ifa_refcnt == 0) ifafree(ifa); } while (0)
+#define IFAREF(ifa) ((ifa)->ifa_refcnt++)
+long sceNetGetSystemClockSec(void);
 
 #endif
