@@ -1,3 +1,5 @@
-#include "common.h"
-
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_simple/nonmatchings/libgcc/fp-bit/__extendsfdf2", __extendsfdf2);
+/* upstream: libgcc fp-bit.c (_sf_to_df.o), tree: 1.6.1 */
+/* cflags: -O2 */
+#define FINE_GRAINED_LIBRARIES
+#define L_sf_to_df
+#include "fp-bit.c"
