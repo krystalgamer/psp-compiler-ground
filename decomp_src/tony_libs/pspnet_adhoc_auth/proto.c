@@ -94,7 +94,7 @@ Peer *func_000037C0(AuthCtx *ctx, const unsigned char *mac)
 	Peer *p;
 
 	for (p = ctx->first; p; p = p->next)
-		if (memcmp(p->sa.mac, mac, 6) == 0)
+		if (memcmp(p->sa.mac.data, mac, 6) == 0)
 			break;
 	return p;
 }

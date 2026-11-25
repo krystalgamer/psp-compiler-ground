@@ -69,13 +69,27 @@ struct ifqueue {
 		} \
 	} while (0)
 
+typedef struct {
+	unsigned char data[6];
+} EtherAddr;
+
+typedef struct {
+	unsigned char data[0x80];
+} AuthKey;
+
 /* security association, hashed by the last MAC byte */
 struct sa {
 	char unk0[0xC0];
 	struct sa *next;
 	struct sa **prev;
-	unsigned char mac[6];
+	EtherAddr mac;
 };
+
+typedef struct AuthPeerInfo {
+	struct AuthPeerInfo *next;
+	AuthKey key;
+	EtherAddr mac;
+} AuthPeerInfo;
 
 struct sahead {
 	struct sa *first;
@@ -102,7 +116,7 @@ typedef struct Peer {
 	struct Peer **prev;
 	int state;
 	struct sa sa;
-	unsigned char key[0x80];
+	AuthKey key;
 	char pad15C[0x48C - 0x15C];
 	struct alarmarg arg[3];
 	int alarm[3];
@@ -121,8 +135,8 @@ typedef struct AuthCtx {
 	Peer **last;
 	int npeers;
 	void *ifh;
-	unsigned char mac[6];
-	unsigned char key[0x80];
+	EtherAddr mac;
+	AuthKey key;
 	char padA6[2];
 	int unkA8;
 	struct authmsg msg;
@@ -170,6 +184,9 @@ int func_00001214(void);
 void func_00001290(void);
 struct sa *func_0000147C(const unsigned char *mac);
 int sceNetAdhocAuth_lib_2E6AA271(void);
+void func_000038D0(int *p, int v);
+int func_00003968(void);
+void func_000039C4(int locked);
 int func_000012C4(struct sa *sa);
 int func_000013A4(struct sa *sa);
 
@@ -199,7 +216,7 @@ static inline struct sa *sa_lookup(const unsigned char *mac)
 	struct sa *p;
 
 	for (p = D_00003FD8[mac[5] & 0xF].first; p; p = p->next)
-		if (memcmp(p->mac, mac, 6) == 0)
+		if (memcmp(p->mac.data, mac, 6) == 0)
 			break;
 	return p;
 }

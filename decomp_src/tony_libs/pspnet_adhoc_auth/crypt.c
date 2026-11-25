@@ -19,10 +19,10 @@ int func_000012C4(struct sa *sa)
 	struct sahead *head;
 	int ret = 0;
 
-	if (sa_lookup(sa->mac) != 0)
+	if (sa_lookup(sa->mac.data) != 0)
 		ret = 0x80410686;
 	else {
-		head = &D_00003FD8[sa->mac[5] & 0xF];
+		head = &D_00003FD8[sa->mac.data[5] & 0xF];
 		if ((sa->next = head->first) != 0)
 			head->first->prev = &sa->next;
 		else
@@ -38,10 +38,10 @@ int func_000013A4(struct sa *sa)
 	struct sahead *head;
 	int ret = 0;
 
-	if (sa_lookup(sa->mac) == 0)
+	if (sa_lookup(sa->mac.data) == 0)
 		ret = 0x80410685;
 	else {
-		head = &D_00003FD8[sa->mac[5] & 0xF];
+		head = &D_00003FD8[sa->mac.data[5] & 0xF];
 		if (sa->next != 0)
 			sa->next->prev = sa->prev;
 		else
@@ -56,7 +56,7 @@ struct sa *func_0000147C(const unsigned char *mac)
 	struct sa *p;
 
 	for (p = D_00003FD8[mac[5] & 0xF].first; p; p = p->next)
-		if (memcmp(p->mac, mac, 6) == 0)
+		if (memcmp(p->mac.data, mac, 6) == 0)
 			break;
 	return p;
 }
