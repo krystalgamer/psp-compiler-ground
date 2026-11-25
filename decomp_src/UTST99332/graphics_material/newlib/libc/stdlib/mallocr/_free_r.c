@@ -1,5 +1,5 @@
-#include "common.h"
-
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_material/nonmatchings/newlib/libc/stdlib/mallocr/_free_r", _free_r);
-
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_material/nonmatchings/newlib/libc/stdlib/mallocr/_free_r", _malloc_trim_r);
+/* upstream: newlib-1.12.0/newlib/libc/stdlib/mallocr.c (unmodified) */
+/* cflags: -O2 -fno-builtin */
+#define INTERNAL_NEWLIB
+#define DEFINE_FREE
+#include "libc/stdlib/mallocr.c"
