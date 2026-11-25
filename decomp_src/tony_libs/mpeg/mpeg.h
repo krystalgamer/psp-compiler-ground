@@ -259,7 +259,8 @@ typedef struct MpegStream {
 	int unk10;
 	int unk14;
 	int unk18;
-	int unk1C;
+	short unk1C;
+	short unk1E;
 	int unk20;
 	int unk24;
 	int unk28;
@@ -267,6 +268,7 @@ typedef struct MpegStream {
 	int unk30;
 	int unk34;
 	int unk38;
+	unsigned char hdr[4];
 } MpegStream;
 
 typedef struct StreamEntry {
@@ -448,5 +450,7 @@ static __inline__ void BitFill(BitReader *br, int n)
 
 int func_000018A8(BitReader *br, PackHeader *ph);
 int func_00001F38(BitReader *br, SceMpegAuInfo *info);
+
+int func_00004D30(SceMpeg *mp, MpegStream *stream, int type, SceMpegAu *au);
 
 #endif
