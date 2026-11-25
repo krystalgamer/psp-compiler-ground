@@ -67,9 +67,9 @@ $(BUILD)/%.bin.o: %.bin
 
 $(BUILD)/%.c.o: %.c $(UNITS)
 	@mkdir -p $(@D)
-	$(CPP) $(CPPFLAGS) $< | $(call cc1_of,$<) $$(grep -oP "cflags: \K-O[0-3s](?: -[fm][\w-]+)*" $< || echo -O2) $(CFLAGS) -o $(BUILD)/$*.c.s
+	$$(grep -q '^/\* upstream: newlib' $< && echo tools/nlcpp.sh || echo '$(CPP) $(CPPFLAGS)') $< | $(call cc1_of,$<) $$(grep -oP "cflags: \K-O[0-3s](?: -[fm][\w-]+)*" $< || echo -O2) $(CFLAGS) -o $(BUILD)/$*.c.s
 	$(call as_of,$<) -EL -G0 -Iinclude -o $@ $(BUILD)/$*.c.s
-	$(PYTHON) tools/fix_old_gas.py --text-align $$(grep -oP "text-align: \K[0-9]+" $< || echo 4) --data-align 4 $@
+	$(PYTHON) tools/fix_old_gas.py --text-align $$(grep -oP "text-align: \K[0-9]+" $< || echo 4) --data-align $$(grep -oP "data-align: \K[0-9]+" $< || echo 4) $@
 
 $(ELF): $(O_FILES) $(LD_SCRIPT)
 	$(LD) -EL -T $(LD_SCRIPT) -T $(BUILD)/undefined_syms_auto.$(MODULE).txt -T $(BUILD)/undefined_funcs_auto.$(MODULE).txt -T $(BUILD)/abs_syms.$(MODULE).txt -Map $(BUILD)/$(MODULE).map -o $@

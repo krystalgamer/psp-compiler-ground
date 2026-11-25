@@ -17,3 +17,9 @@ version is right when it turns them back into the original machine code.
 
 The compilers are built the way Sony built them: as 32-bit programs on
 Red Hat Linux 9 (gcc 3.2.2).
+
+Library units that are unmodified newlib 1.12.0 sources (`/* upstream:
+newlib-1.12.0/... */`) include the original file from `tmp/src`, fetched by
+`tools/setup_toolchain.sh`, and are preprocessed like Sony's newlib build
+(`tools/nlcpp.sh`). `tools/libsrc.py TARGET MODULE --write` converts the
+ones that reproduce; Sony's modified functions stay asm.

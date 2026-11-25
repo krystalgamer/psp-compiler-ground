@@ -104,4 +104,13 @@ for tool in as ld objcopy objdump nm readelf; do
   printf '#!/bin/sh\nLD_LIBRARY_PATH=%s/usr/lib/x86_64-linux-gnu exec %s/usr/bin/mips-linux-gnu-%s "$@"\n' "$T/binutils" "$T/binutils" "$tool" > "$T/bin/mips-$tool"
   chmod +x "$T/bin/mips-$tool"
 done
+# newlib 1.12.0: the library units of decomp_src that are unmodified newlib
+# sources include them from here (tools/nlcpp.sh).
+S=$ROOT/tmp/src
+if [ ! -d "$S/newlib-1.12.0" ]; then
+  mkdir -p "$S"
+  [ -f "$S/newlib-1.12.0.tar.gz" ] || curl -sfL -o "$S/newlib-1.12.0.tar.gz" https://sourceware.org/pub/newlib/newlib-1.12.0.tar.gz
+  echo "93ed7c1df0f04656b119745671b08b43befdc0a420b5752ea99ff0057f0238ea  $S/newlib-1.12.0.tar.gz" | sha256sum -c --quiet
+  tar xzf "$S/newlib-1.12.0.tar.gz" -C "$S"
+fi
 echo "toolchains ready in $T/bin"
