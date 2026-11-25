@@ -19,10 +19,40 @@ INCLUDE_ASM("tmp/asm/UTST99332/graphics_model2/nonmatchings/gim_callback", sceGi
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_model2/nonmatchings/gim_callback", sceGimPictureSetMemoryManager2);
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_model2/nonmatchings/gim_callback", sceGimPictureAllocMemory);
+extern __typeof__(g_alloc_memory) g_alloc_memory_20184;
+#define g_alloc_memory g_alloc_memory_20184
+void *sceGimPictureAllocMemory(size_t size)
+{
+	if (size == 0)
+		return NULL;
+	return g_alloc_memory(size);
+}
+#undef g_alloc_memory
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_model2/nonmatchings/gim_callback", sceGimPictureAllocMemory2);
+extern __typeof__(g_alloc_memory2) g_alloc_memory2_2018C;
+#define g_alloc_memory2 g_alloc_memory2_2018C
+void *sceGimPictureAllocMemory2(size_t size)
+{
+	if (size == 0)
+		return NULL;
+	return g_alloc_memory2(size);
+}
+#undef g_alloc_memory2
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_model2/nonmatchings/gim_callback", sceGimPictureFreeMemory);
+extern __typeof__(g_free_memory) g_free_memory_20188;
+#define g_free_memory g_free_memory_20188
+void sceGimPictureFreeMemory(void *addr) {
+    if (addr != NULL) {
+        g_free_memory(addr);
+    }
+}
+#undef g_free_memory
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_model2/nonmatchings/gim_callback", sceGimPictureFreeMemory2);
+extern __typeof__(g_free_memory2) g_free_memory2_20190;
+#define g_free_memory2 g_free_memory2_20190
+void sceGimPictureFreeMemory2(void *addr) {
+    if (addr != NULL) {
+        g_free_memory2(addr);
+    }
+}
+#undef g_free_memory2
