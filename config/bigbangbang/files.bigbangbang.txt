@@ -3,4 +3,4 @@
 # functions and names) and the module's .comment version.
 0x03078 libgum          1.5.1.internal  libgum.c
 0x04748 libgu           1.5.1.internal  libgu.c
-0x09348 kernel_bridge   1.5.1.internal  kernel_bridge.c
+0x09A5C kernel_bridge   1.5.1.internal  kernel_bridge.c

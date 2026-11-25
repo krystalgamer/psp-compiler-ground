@@ -1,21 +1,5 @@
 #include "common.h"
 
-INCLUDE_ASM("tmp/asm/bigbangbang/bigbangbang/nonmatchings/kernel_bridge", __extendsfdf2);
-
-INCLUDE_ASM("tmp/asm/bigbangbang/bigbangbang/nonmatchings/kernel_bridge", __make_dp);
-
-INCLUDE_ASM("tmp/asm/bigbangbang/bigbangbang/nonmatchings/kernel_bridge", __truncdfsf2);
-
-INCLUDE_ASM("tmp/asm/bigbangbang/bigbangbang/nonmatchings/kernel_bridge", __unpack_f);
-
-INCLUDE_ASM("tmp/asm/bigbangbang/bigbangbang/nonmatchings/kernel_bridge", __make_fp);
-
-INCLUDE_ASM("tmp/asm/bigbangbang/bigbangbang/nonmatchings/kernel_bridge", __pack_d);
-
-INCLUDE_ASM("tmp/asm/bigbangbang/bigbangbang/nonmatchings/kernel_bridge", __unpack_d);
-
-INCLUDE_ASM("tmp/asm/bigbangbang/bigbangbang/nonmatchings/kernel_bridge", __pack_f);
-
 INCLUDE_ASM("tmp/asm/bigbangbang/bigbangbang/nonmatchings/kernel_bridge", _read);
 
 INCLUDE_ASM("tmp/asm/bigbangbang/bigbangbang/nonmatchings/kernel_bridge", _write);

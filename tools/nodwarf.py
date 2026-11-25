@@ -116,7 +116,7 @@ def analyse(target, module):
         starts = {}
         for x in known:
             starts.setdefault(owners[x], x)
-        starts[gfiles[0]] = fs[0]
+        # functions before the first identified one stay asm (e.g. fp-bit/dp-bit)
         for f in files[lo_i:hi_i + 1]:
             if f not in starts:
                 problems.append(f"{f}: no function of its own in gap 0x{a:X}")
