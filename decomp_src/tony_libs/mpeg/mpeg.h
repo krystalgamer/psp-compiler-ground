@@ -82,4 +82,143 @@ char *strcpy(char *dst, const char *src);
 char *strtok(char *s, const char *delim);
 
 
+/* kernel / codec imports */
+typedef struct {
+	int size;
+	char name[32];
+	unsigned int attr;
+	int initCount;
+	int currentCount;
+	int maxCount;
+	int numWaitThreads;
+} SceKernelSemaInfo;
+
+int sceKernelCreateSema(const char *name, unsigned int attr, int init, int max, void *opt);
+int sceKernelDeleteSema(int id);
+int sceKernelSignalSema(int id, int n);
+int sceKernelWaitSema(int id, int n, unsigned int *timeout);
+int sceKernelPollSema(int id, int n);
+int sceKernelReferSemaStatus(int id, SceKernelSemaInfo *info);
+int sceKernelDcacheWritebackInvalidateRange(const void *p, unsigned int size);
+
+int sceVideocodecGetEDRAM(void *ctx, int type);
+int sceVideocodecReleaseEDRAM(void *ctx);
+int sceVideocodecOpen(void *ctx, int type);
+int sceVideocodecInit(void *ctx, int type);
+int sceVideocodecDecode(void *ctx, int type);
+int sceVideocodecStop(void *ctx, int type);
+int sceVideocodecDelete(void *ctx, int type);
+int sceVideocodecSetMemory(void *ctx, int type);
+
+int sceAudiocodecCheckNeedMem(void *ctx, int codec);
+int sceAudiocodecInit(void *ctx, int codec);
+int sceAudiocodecDecode(void *ctx, int codec);
+int sceAudiocodecGetEDRAM(void *ctx, int codec);
+int sceAudiocodecReleaseEDRAM(void *ctx);
+
+/* sema wrappers */
+int func_00005A58(int init, int max, const char *name, int *id);
+int func_00005AB0(int id);
+int func_00005AE0(int id);
+int func_00005B14(int id, unsigned int timeout);
+int func_00005B4C(int id);
+int func_00005B7C(int id);
+int func_00005BAC(int id, int *count);
+
+/* video codec wrapper */
+typedef struct {
+	int unk0;
+	int unk4;
+	int unk8;
+	int unkC;
+	int unk10;
+	int unk14;
+	int unk18;
+	int unk1C;
+	int unk20;
+	int unk24;
+} VideoInfo;
+
+typedef struct {
+	int unk0;
+	int unk4;
+	int unk8;
+	int unkC;
+	int info;
+	int edram;
+	int unk18;
+	int unk1C;
+	int unk20;
+	int unk24;
+	int unk28;
+	void *unk2C;
+	void *unk30;
+	int unk34;
+	int unk38;
+	int unk3C;
+	int unk40;
+	int unk44;
+	int unk48;
+	int unk4C;
+	int unk50;
+} VideoCtx;
+
+extern VideoCtx *D_00007BC0;
+extern VideoInfo *D_00007BC4;
+extern VideoCtx D_00007C00;
+extern VideoInfo D_00007C80;
+extern int D_00007D84;
+
+int func_00005BF4(void);
+int func_00005CA8(int *out);
+int func_00005CEC(VideoCtx *ctx, VideoInfo *info, void *buf0, void *buf1, int a4, int *edram, int a6, int a7, int a8, int a9, int a10);
+void func_00005E54(void);
+int func_00005E78(int *out);
+int func_00005EC8(void);
+void func_00005ED8(unsigned char *p, int size);
+int func_00005F2C(VideoCtx *ctx);
+int func_00005F80(VideoCtx *ctx);
+int func_00005FD4(VideoCtx *ctx);
+void func_0000603C(unsigned char *p);
+
+/* audio codec wrapper */
+typedef struct {
+	char c[2];
+} AudioParam2;
+
+typedef struct {
+	char c[4];
+} AudioParam4;
+
+typedef struct {
+	int unk0;
+	int unk4;
+	int unk8;
+	int edram;
+	int neededMem;
+	int unk14;
+	int unk18;
+	int unk1C;
+	int unk20;
+	int unk24;
+	AudioParam2 p28;
+	char pad2A[2];
+	AudioParam4 p2C;
+	int unk30;
+	int unk34[14];
+} AudioCtx;
+
+extern AudioCtx *D_00007CC0;
+extern AudioCtx D_00007D00;
+extern int D_00007D88;
+extern const AudioParam2 D_00007A84[];
+extern const AudioParam4 D_00007A88[];
+
+int func_000060E0(void);
+int func_00006158(int *needed, int type);
+int func_00006208(AudioCtx *ctx, int edram, unsigned int size, AudioParam2 *p2, AudioParam4 *p4);
+void func_00006314(void);
+int func_0000634C(int *needed, int type);
+int func_000063A8(void);
+int func_000063B8(AudioCtx *ctx);
 #endif

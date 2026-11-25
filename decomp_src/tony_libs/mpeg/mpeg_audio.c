@@ -1,18 +1,81 @@
+/* cflags: -O2 -frename-registers -fno-merge-constants */
 #include "common.h"
 
-INCLUDE_ASM("tmp/asm/tony_libs/mpeg/nonmatchings/mpeg_audio", func_000060E0);
+/* --- declarations --- */
+#include "mpeg.h"
 
-INCLUDE_ASM("tmp/asm/tony_libs/mpeg/nonmatchings/mpeg_audio", func_00006158);
+extern char *D_00007D80;
+
+unsigned int func_00007500(int type);
+/* --- end declarations --- */
+
+int func_000060E0(void)
+{
+	int needed;
+	int ret;
+
+	D_00007CC0 = &D_00007D00;
+	memset(&D_00007D00, 0, sizeof(AudioCtx));
+	ret = func_00006158(&needed, 0);
+	if (ret != 0)
+		return ret;
+	ret = sceAudiocodecGetEDRAM(D_00007CC0, 0x1000);
+	if (ret == 0)
+		return 0;
+	D_00007CC0->edram = 0;
+	return ret;
+}
+
+int func_00006158(int *needed, int type)
+{
+	int ret;
+	int k = (type == 3);
+
+	D_00007CC0->unk30 = 1;
+	D_00007CC0->p28 = D_00007A84[k];
+	D_00007CC0->p2C = D_00007A88[k];
+	D_00007CC0->unk14 = 1;
+	ret = sceAudiocodecCheckNeedMem(D_00007CC0, 0x1000);
+	*needed = D_00007CC0->neededMem;
+	return ret;
+}
 
 INCLUDE_ASM("tmp/asm/tony_libs/mpeg/nonmatchings/mpeg_audio", func_00006208);
 
-INCLUDE_ASM("tmp/asm/tony_libs/mpeg/nonmatchings/mpeg_audio", func_00006314);
+void func_00006314(void)
+{
+	if (D_00007CC0->edram != 0)
+		sceAudiocodecReleaseEDRAM(D_00007CC0);
+}
 
-INCLUDE_ASM("tmp/asm/tony_libs/mpeg/nonmatchings/mpeg_audio", func_0000634C);
+int func_0000634C(int *needed, int type)
+{
+	int ret;
 
-INCLUDE_ASM("tmp/asm/tony_libs/mpeg/nonmatchings/mpeg_audio", func_000063A8);
+	func_00005AE0(D_00007D88);
+	ret = func_00006158(needed, type);
+	func_00005B7C(D_00007D88);
+	return ret;
+}
 
-INCLUDE_ASM("tmp/asm/tony_libs/mpeg/nonmatchings/mpeg_audio", func_000063B8);
+int func_000063A8(void)
+{
+	return D_00007CC0->edram;
+}
+
+int func_000063B8(AudioCtx *ctx)
+{
+	int ret;
+
+	func_00005AE0(D_00007D88);
+	ret = sceAudiocodecDecode(ctx, 0x1000);
+	if (ret != 0) {
+		func_00005B7C(D_00007D88);
+		return ret;
+	}
+	func_00005B7C(D_00007D88);
+	return 0;
+}
 
 INCLUDE_RODATA("tmp/asm/tony_libs/mpeg/nonmatchings/mpeg_audio", D_00007A84);
 
