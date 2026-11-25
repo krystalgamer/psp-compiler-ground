@@ -119,3 +119,19 @@ modules (`tools/nltest.py`, `tools/objcmp.py`).
   `.rodata`.  `config/compilers.txt` passes `-fno-merge-constants` for
   1.6.1.internal, which has the same effect.  It is a build-configuration
   difference, not a source patch.
+
+## psp-gcc 1.5.0.internal
+
+- Only sampler's libmpeg/libpsmf objects (libpsmf, psmfBase,
+  libmpeg_util) were built with it.  It still has **conditional moves**:
+  `_type_check`, `_version_check` and `scePsmfQueryStreamOffset` need
+  `movz`/`movn`, which 1.5.1's cc1 (`ISA_HAS_INT_CONDMOVE 0`) cannot emit
+  and 1.3.1's original cc1 does.  So 1.5.0.internal is 1.3.1's compiler
+  (its DWARF also has 1.3.1's unnamed 16-byte TImode type);
+  `config/compilers.txt` maps it to `cc1-1.3.1-orig -mno-ulsw`.  The
+  condmove change is new in 1.5.1.
+- Sony built these libraries with register renaming: every value gets a
+  fresh hard register (`-frename-registers`, i.e. `-O3` without its
+  inlining: with `-O3` the small static helpers such as
+  `_streamId2sceMpegStreamId` would be inlined and gone).  The units say
+  `cflags: -O2 -frename-registers`.

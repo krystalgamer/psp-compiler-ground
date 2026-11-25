@@ -5,7 +5,7 @@
 # lwl/lwr and swl/swr instead of byte loads and stores.
 # Versions we have no reconstruction of use the nearest one we do.
 1.4.0           1.5.1   -mno-ulsw
-1.5.0.internal  1.5.1   -mno-ulsw
+1.5.0.internal  1.3.1-orig -mno-ulsw
 1.5.1           1.5.1   -mno-ulsw
 1.5.1.internal  1.5.1   -mno-ulsw
 1.6.1           1.6.1   as:-mulsw
