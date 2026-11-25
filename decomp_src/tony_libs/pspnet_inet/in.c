@@ -3,9 +3,7 @@
 #include "inetlib.h"
 
 #define in_mk D_0002E5E4
-#define in_maxmtu D_0002F53C
 extern TAILQ_HEAD(in_mk_head, in_ifaddr) in_mk;
-extern unsigned long in_maxmtu;
 #define in_fmtaddr_buf D_0002EBB0
 extern char in_fmtaddr_buf[sizeof("123.456.789.123")];
 

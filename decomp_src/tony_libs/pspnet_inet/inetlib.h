@@ -812,6 +812,7 @@ struct sockbuf {
 };
 
 #define SB_MAX (256 * 1024)
+#define roundup(x, y) ((((x)+((y)-1))/(y))*(y))
 #define SB_LOCK 0x01
 #define SB_WANT 0x02
 #define SB_WAIT 0x04
@@ -3199,5 +3200,8 @@ extern int tcp_maxidle;
 extern struct tcp_delack_head tcp_delacks;
 extern int tcp_syn_cache_size, tcp_syn_cache_limit, tcp_syn_bucket_limit;
 extern int tcp_syn_cache_interval, tcp_rst_ppslim;
+
+#define in_maxmtu D_0002F53C
+extern unsigned long in_maxmtu;
 
 #endif
