@@ -141,6 +141,20 @@ modules (`tools/nltest.py`, `tools/objcmp.py`).
   `.rodata`.  `config/compilers.txt` passes `-fno-merge-constants` for
   1.6.1.internal, which has the same effect.  It is a build-configuration
   difference, not a source patch.
+- **1.6.1.internal also holds back aggregate constants.**  In UTST99332
+  graphics_torus main.c, `init_all`'s auto `ScePspIMatrix4 dith = {...}` is
+  copied from an unnamed constant.  That constant sits at the very end of
+  the unit's `.rodata`, after the float constants of every later function
+  (`pad_read`, `main`).  1.6.1's and 1.7.1's cc1 emit it when the
+  initializer is expanded (`output_constant_def`), so it comes before
+  `init_all`'s own floats.  In the release toolchains
+  (UTST99261, 1.6.1) local array initializers do sit at their function's
+  position.  So the internal cc1 defers non-string constants to the end of
+  the compilation (as if `defer_addressed_constants` were in effect for the
+  whole unit), while strings and the float pool behave normally.  Only one
+  instance has been seen so far, so this is tentative.  The function is
+  kept NON_MATCHING.  (`ScePspIMatrix4` is also 16-byte aligned in Sony's
+  psptypes.h, which DWARF does not record.)
 
 ## psp-gcc 1.5.0.internal
 
