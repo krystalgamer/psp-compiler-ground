@@ -1,3 +1,3 @@
-#include "common.h"
-
-INCLUDE_ASM("tmp/asm/UTST99332/net_matching_stick/nonmatchings/newlib/libc/reent/lseekr", _lseek_r);
+/* upstream: newlib-1.12.0/newlib/libc/reent/lseekr.c (unmodified) */
+/* cflags: -O2 -fno-builtin */
+#include "libc/reent/lseekr.c"
