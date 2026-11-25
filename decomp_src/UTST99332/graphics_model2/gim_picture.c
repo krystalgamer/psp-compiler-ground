@@ -101,7 +101,40 @@ static void reconfigure_picture(SceGimPicture *picture);
 
 INCLUDE_RODATA("tmp/asm/UTST99332/graphics_model2/nonmatchings/gim_picture", __psp_libinfo___1EC14);
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_model2/nonmatchings/gim_picture", sceGimPictureCreate);
+SceGimPicture *sceGimPictureCreate(SceGimChunk *chunk)
+{
+	SceGimPicture *picture;
+
+	picture = (SceGimPicture *)sceGimPictureAllocMemory(sizeof(SceGimPicture));
+	if (picture == NULL)
+		return NULL;
+	picture->m_reference = 1;
+	picture->m_flags = 0;
+	picture->m_image = NULL;
+	picture->m_palette = NULL;
+	picture->m_sequence = NULL;
+	picture->m_buf_width = 0;
+	picture->m_clut_load = 0;
+	picture->m_frame_loop[0] = -1000000.0f;
+	picture->m_frame_loop[1] = 1000000.0f;
+	picture->m_frame_rate = 12.0f;
+	picture->m_frame = 0.0f;
+	picture->m_enable_bits = 0;
+	picture->m_image_frame = 0;
+	picture->m_image_frame2 = 0;
+	picture->m_palette_frame = 0;
+	picture->m_palette_frame2 = 0;
+	picture->m_dissolve = 0.0f;
+	picture->m_image_crop[0] = 0.0f;
+	picture->m_image_crop[1] = 0.0f;
+	picture->m_image_crop[2] = 1.0f;
+	picture->m_image_crop[3] = 1.0f;
+	if (chunk != NULL && !sceGimPictureLoad(picture, chunk)) {
+		sceGimPictureDelete(picture);
+		return NULL;
+	}
+	return picture;
+}
 
 void sceGimPictureDelete(SceGimPicture *picture) {
     int temp_v0;
@@ -114,9 +147,94 @@ void sceGimPictureDelete(SceGimPicture *picture) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_model2/nonmatchings/gim_picture", sceGimPictureDuplicate);
+void *memcpy(void *d, const void *s, unsigned int n);
+void *memcpy(void *d, const void *s, unsigned int n);
+void *memcpy(void *, const void *, size_t);
+SceGimPicture *sceGimPictureDuplicate(SceGimPicture *picture, int flags)
+{
+	SceGimPicture *picture2;
+	SceGimImageHeader *image;
+	SceGimPaletteHeader *palette;
+	SceGimSequenceHeader *sequence;
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_model2/nonmatchings/gim_picture", sceGimPictureLoadFile);
+	if (picture == NULL)
+		return NULL;
+	if (flags & 2) {
+		flags &= ~2;
+		if (sceGimPictureHasAnimation(picture))
+			flags |= 1;
+	}
+	if (flags == 0) {
+		picture->m_reference++;
+		return picture;
+	}
+	picture2 = sceGimPictureCreate(NULL);
+	if (picture2 == NULL)
+		return NULL;
+	image = picture->m_image;
+	palette = picture->m_palette;
+	sequence = picture->m_sequence;
+	if (image != NULL)
+		image->reference++;
+	if (palette != NULL)
+		palette->reference++;
+	if (sequence != NULL)
+		sequence->reference++;
+	picture2->m_flags = picture->m_flags;
+	picture2->m_image = image;
+	picture2->m_palette = palette;
+	picture2->m_sequence = sequence;
+	picture2->m_buf_width = picture->m_buf_width;
+	picture2->m_clut_load = picture->m_clut_load;
+	picture2->m_frame_loop[0] = picture->m_frame_loop[0];
+	picture2->m_frame_loop[1] = picture->m_frame_loop[1];
+	picture2->m_frame_rate = picture->m_frame_rate;
+	picture2->m_frame = picture->m_frame;
+	picture2->m_enable_bits = picture->m_enable_bits;
+	picture2->m_image_frame = picture->m_image_frame;
+	picture2->m_image_frame2 = picture->m_image_frame2;
+	picture2->m_palette_frame = picture->m_palette_frame;
+	picture2->m_palette_frame2 = picture->m_palette_frame2;
+	picture2->m_dissolve = picture->m_dissolve;
+	memcpy(picture2->m_image_crop, picture->m_image_crop, sizeof(picture2->m_image_crop));
+	return picture2;
+}
+
+_Bool sceGimPictureLoadTga(SceGimPicture *picture, const void *buf, int size);
+_Bool sceGimPictureLoadBmp(SceGimPicture *picture, const void *buf, int size);
+_Bool sceGimPictureLoadTm2(SceGimPicture *picture, const void *buf, int size, int idx);
+_Bool sceGimPictureCheckFileHeader(const void *buf, int size);
+const SceGimChunk *sceGimPictureGetChunk(const void *buf, int size, int idx);
+_Bool sceGimPictureLoadFile(SceGimPicture *picture, const void *buf, int size, int idx)
+{
+	int signature;
+
+	if (picture == NULL)
+		return 0;
+	if (buf == NULL || size < 4)
+		return 0;
+	signature = *(const int *)buf;
+	if (signature == 0x2E47494D) {
+		const SceGimChunk *chunk;
+
+		if (!sceGimPictureCheckFileHeader(buf, size))
+			return 0;
+		chunk = sceGimPictureGetChunk(buf, size, idx);
+		if (chunk == NULL)
+			return 0;
+		return sceGimPictureLoad(picture, chunk);
+	}
+	if (signature == 0x324D4954)
+		return sceGimPictureLoadTm2(picture, buf, size, idx);
+	if ((signature & 0xffff) == 0x4D42) {
+		if (idx != 0)
+			return 0;
+		return sceGimPictureLoadBmp(picture, buf, size);
+	}
+	if (idx != 0)
+		return 0;
+	return sceGimPictureLoadTga(picture, buf, size);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_model2/nonmatchings/gim_picture", sceGimPictureLoad);
 
@@ -184,7 +302,13 @@ int sceGimPictureHasAnimation(SceGimPicture *picture) {
     return var_v0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_model2/nonmatchings/gim_picture", sceGimPictureSetFrameLoop);
+void sceGimPictureSetFrameLoop(SceGimPicture *picture, float start, float end)
+{
+	if (picture == NULL)
+		return;
+	picture->m_frame_loop[0] = start;
+	picture->m_frame_loop[1] = end;
+}
 
 float *sceGimPictureGetFrameLoop(SceGimPicture *picture) {
     return (picture == NULL) ? NULL : picture->m_frame_loop;
@@ -302,7 +426,18 @@ float sceGimPictureGetDissolve(SceGimPicture *picture) {
     return var_f0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_model2/nonmatchings/gim_picture", sceGimPictureSetImageCrop);
+void *memcpy(void *, const void *, size_t);
+void sceGimPictureSetImageCrop(SceGimPicture *picture, const float *crop)
+{
+	if (picture == NULL)
+		return;
+	if (crop == NULL) {
+		picture->m_flags &= ~0x20;
+		return;
+	}
+	memcpy(picture->m_image_crop, crop, sizeof(picture->m_image_crop));
+	picture->m_flags |= 0x20;
+}
 
 float *sceGimPictureGetImageCrop(SceGimPicture *picture) {
     float *var_v0;
