@@ -48,7 +48,7 @@ def clean(draft):
     return t
 
 
-def try_func(target, module, unit, func, ctx, mod, cc1, dflags=""):
+def try_func(target, module, unit, func, ctx, mod, cc1, dflags="", optsets=("-O2", "-Os")):
     draft, _ = m2cdraft.draft(target, module, unit, func)
     if not draft:
         return None, None
@@ -59,7 +59,7 @@ def try_func(target, module, unit, func, ctx, mod, cc1, dflags=""):
     with tempfile.TemporaryDirectory() as td:
         f = Path(td) / "t.c"
         f.write_text(src)
-        for flags in ("-O2", "-Os"):
+        for flags in optsets:
             o = fntest.compile_c(f, cc1, f"{flags} {dflags}", Path(td) / "t.o")
             if o is None:
                 return "error", body
@@ -75,6 +75,7 @@ def main():
     ap.add_argument("module")
     ap.add_argument("units", nargs="*")
     ap.add_argument("--write", action="store_true")
+    ap.add_argument("--opts", action="append", help="optimization option set to try (default -O2, -Os)")
     a = ap.parse_args()
     mod = objcmp.module_funcs(a.target, a.module)
     units = a.units or list(app_units(a.target, a.module))
@@ -87,9 +88,10 @@ def main():
         funcs = re.findall(r'INCLUDE_ASM\("[^"]+", (\w+)\);', cpath.read_text()) if cpath.exists() else []
         for fn in funcs:
             total += 1
-            res, body = try_func(a.target, a.module, u, fn, ctx, mod, cc1, compiler.driver_flags(a.target, a.module, u))
+            res, body = try_func(a.target, a.module, u, fn, ctx, mod, cc1, compiler.driver_flags(a.target, a.module, u),
+                                 tuple(a.opts or ("-O2", "-Os")))
             print(f"{str(res):14} {u}:{fn}", flush=True)
-            if res in ("-O2", "-Os"):
+            if res in (a.opts or ("-O2", "-Os")):
                 ok += 1
     print(f"# {ok}/{total} functions matched from m2c drafts")
 

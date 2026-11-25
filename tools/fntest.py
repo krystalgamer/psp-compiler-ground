@@ -8,6 +8,7 @@ flags: -O2.  With -v, prints the side-by-side disassembly of the first
 non-identical function for the first cc1.
 """
 import argparse
+import re
 import subprocess
 import sys
 import tempfile
@@ -52,7 +53,8 @@ def main():
     a = ap.parse_args()
     mod = objcmp.module_funcs(a.target, a.module)
     cc1s = a.cc1.split(",") if a.cc1 else ["1.5.1", "1.6.1", "1.3.1-orig", "1.7.1-orig"]
-    flags = a.flags or ["-O2"]
+    m = re.search(r"cflags: (-O[0-3s](?: -[fm][\w-]+)*)", Path(a.file).read_text())
+    flags = a.flags or [m.group(1) if m else "-O2"]
     with tempfile.TemporaryDirectory() as td:
         for c in cc1s:
             for f in flags:
