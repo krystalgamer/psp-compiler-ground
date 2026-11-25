@@ -1,4 +1,4 @@
-/* cflags: -O2 -frename-registers -fno-merge-constants */
+/* cflags: -O2 -frename-registers -fno-strict-aliasing -fno-merge-constants */
 #include "common.h"
 
 /* --- declarations --- */
@@ -22,8 +22,24 @@ typedef struct {
 	unsigned int unk40;
 	unsigned int unk44;
 	unsigned int unk48;
-	char pad4C[0x58 - 0x4C];
+	unsigned int unk4C;
+	unsigned int unk50;
+	char pad54[0x58 - 0x54];
 } AtracInfo;
+
+typedef struct {
+	unsigned int d1;
+	unsigned int d2;
+	unsigned char d4[8];
+} Guid;
+
+typedef struct {
+	unsigned short unk0;
+	unsigned short nChannels;
+	unsigned int unk4;
+	unsigned int unk8;
+	unsigned short nBlockAlign;
+} WaveFmt;
 
 typedef struct {
 	unsigned int buf;
@@ -68,6 +84,11 @@ int func_0000220C(AtracInfo *info);
 int func_00002180(AtracInfo *info);
 int func_00001F7C(AtracInfo *info);
 unsigned int func_000022B0(AtracInfo *info);
+int func_00001F04(const unsigned char *a, const unsigned char *b, unsigned int n);
+int func_0000201C(AtracInfo *info, unsigned int pos);
+int func_0000222C(AtracInfo *info);
+void func_00002884(AtracInfo *info);
+void func_00002938(AtracInfo *info);
 /* --- end declarations --- */
 
 INCLUDE_ASM("tmp/asm/tony_libs/libatrac3plus/nonmatchings/libatrac3plus", sceAtracGetAtracID);
@@ -243,13 +264,31 @@ INCLUDE_ASM("tmp/asm/tony_libs/libatrac3plus/nonmatchings/libatrac3plus", func_0
 
 INCLUDE_ASM("tmp/asm/tony_libs/libatrac3plus/nonmatchings/libatrac3plus", func_000016E4);
 
-INCLUDE_ASM("tmp/asm/tony_libs/libatrac3plus/nonmatchings/libatrac3plus", func_00001D94);
+int func_00001D94(Guid *a, Guid *b)
+{
+	int ret = 0;
+
+	if (a->d1 == b->d1 && a->d2 == b->d2 && func_00001F04(a->d4, b->d4, 8) == 0)
+		ret = 1;
+	return ret;
+}
 
 INCLUDE_ASM("tmp/asm/tony_libs/libatrac3plus/nonmatchings/libatrac3plus", func_00001DFC);
 
 INCLUDE_ASM("tmp/asm/tony_libs/libatrac3plus/nonmatchings/libatrac3plus", func_00001E8C);
 
-INCLUDE_ASM("tmp/asm/tony_libs/libatrac3plus/nonmatchings/libatrac3plus", func_00001F04);
+int func_00001F04(const unsigned char *a, const unsigned char *b, unsigned int size)
+{
+	long long n = size;
+
+	for (; n > 0; n--) {
+		if (*a != *b)
+			return *a < *b ? -1 : 1;
+		a++;
+		b++;
+	}
+	return 0;
+}
 
 int func_00001F7C(AtracInfo *info)
 {
@@ -350,7 +389,25 @@ INCLUDE_ASM("tmp/asm/tony_libs/libatrac3plus/nonmatchings/libatrac3plus", func_0
 
 INCLUDE_ASM("tmp/asm/tony_libs/libatrac3plus/nonmatchings/libatrac3plus", func_00002408);
 
-INCLUDE_ASM("tmp/asm/tony_libs/libatrac3plus/nonmatchings/libatrac3plus", func_00002504);
+int func_00002504(AtracInfo *info, int type)
+{
+	int ret = 0;
+
+	switch (type) {
+	case 3:
+		if (info->codec != 0x1001)
+			ret = 0x80630007;
+		break;
+	case 5:
+		if (info->codec != 0x1000)
+			ret = 0x80630007;
+		break;
+	default:
+		ret = 0x80630008;
+		break;
+	}
+	return ret;
+}
 
 INCLUDE_ASM("tmp/asm/tony_libs/libatrac3plus/nonmatchings/libatrac3plus", func_00002550);
 
@@ -381,7 +438,13 @@ unsigned int func_00002820(unsigned int a, unsigned int b, unsigned int c)
 	return r;
 }
 
-INCLUDE_ASM("tmp/asm/tony_libs/libatrac3plus/nonmatchings/libatrac3plus", func_00002838);
+int func_00002838(AtracInfo *info)
+{
+	func_00002884(info);
+	if ((unsigned int)(info->state - 1) >= 2)
+		func_00002938(info);
+	return 0;
+}
 
 INCLUDE_ASM("tmp/asm/tony_libs/libatrac3plus/nonmatchings/libatrac3plus", func_00002884);
 
