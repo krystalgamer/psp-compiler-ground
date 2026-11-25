@@ -1,17 +1,6 @@
-#include "common.h"
+/* upstream: newlib-1.12.0/newlib/libm/common/sf_scalbn.c (unmodified) */
+/* cflags: -O2 -fno-builtin */
+#include "libm/common/sf_scalbn.c"
 
-INCLUDE_RODATA("tmp/asm/UTST99332/sound_at3streaming/nonmatchings/newlib/libm/common/sf_scalbn", two25);
-
-INCLUDE_RODATA("tmp/asm/UTST99332/sound_at3streaming/nonmatchings/newlib/libm/common/sf_scalbn", twom25);
-
-INCLUDE_RODATA("tmp/asm/UTST99332/sound_at3streaming/nonmatchings/newlib/libm/common/sf_scalbn", huge_1FFF4);
-
-INCLUDE_RODATA("tmp/asm/UTST99332/sound_at3streaming/nonmatchings/newlib/libm/common/sf_scalbn", tiny_1FFF8);
-
-INCLUDE_ASM("tmp/asm/UTST99332/sound_at3streaming/nonmatchings/newlib/libm/common/sf_scalbn", scalbnf);
-
-INCLUDE_RODATA("tmp/asm/UTST99332/sound_at3streaming/nonmatchings/newlib/libm/common/sf_scalbn", D_00020000);
-
-INCLUDE_RODATA("tmp/asm/UTST99332/sound_at3streaming/nonmatchings/newlib/libm/common/sf_scalbn", D_00020004);
-
-INCLUDE_RODATA("tmp/asm/UTST99332/sound_at3streaming/nonmatchings/newlib/libm/common/sf_scalbn", D_00020008);
+/* labels the rest of the module's asm uses */
+__asm__(".globl D_00020000\nD_00020000 = 0x00020000");
