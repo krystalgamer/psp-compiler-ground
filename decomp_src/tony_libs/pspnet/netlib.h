@@ -656,4 +656,15 @@ static inline void bpf_reset_d(struct bpf_d *d)
 	d->bd_dcount = 0;
 }
 
+int func_000040FC(struct bpf_d *d);
+int _sce_pspnet_uiomove(char *cp, int n, struct uio *uio);
+
+#define ROTATE_BUFFERS(d) do { \
+	(d)->bd_hbuf = (d)->bd_sbuf; \
+	(d)->bd_hlen = (d)->bd_slen; \
+	(d)->bd_sbuf = (d)->bd_fbuf; \
+	(d)->bd_slen = 0; \
+	(d)->bd_fbuf = 0; \
+} while (0)
+
 #endif

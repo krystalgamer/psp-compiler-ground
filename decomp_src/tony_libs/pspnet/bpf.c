@@ -9,7 +9,51 @@ SceUInt func_00002D48(void *common);
 int func_00002C74(SceSize args, void *argp);
 /* --- end declarations --- */
 
-INCLUDE_ASM("tmp/asm/tony_libs/pspnet/nonmatchings/bpf", func_000037D4);
+int func_000037D4(int unit, struct uio *uio)
+{
+	struct bpf_d *d = &D_0000B8E4[unit];
+	int error;
+	int s;
+
+	if (uio->uio_resid != d->bd_bufsize)
+		return 22;
+	s = _sce_pspnet_spllock();
+	while (d->bd_hbuf == NULL) {
+		if (d->bd_immediate) {
+			if (d->bd_slen == 0) {
+				_sce_pspnet_splunlock(s);
+				return 11;
+			}
+			ROTATE_BUFFERS(d);
+			break;
+		}
+		if (d->bd_rtout != -1)
+			error = _sce_pspnet_tsleep(d, d->bd_rtout);
+		else
+			error = 11;
+		if (error == 11) {
+			if (d->bd_hbuf)
+				break;
+			if (d->bd_slen == 0) {
+				_sce_pspnet_splunlock(s);
+				return 0;
+			}
+			ROTATE_BUFFERS(d);
+			break;
+		}
+		if (error != 0)
+			goto done;
+	}
+	_sce_pspnet_splunlock(s);
+	error = _sce_pspnet_uiomove(d->bd_hbuf, d->bd_hlen, uio);
+	s = _sce_pspnet_spllock();
+	d->bd_fbuf = d->bd_hbuf;
+	d->bd_hbuf = NULL;
+	d->bd_hlen = 0;
+done:
+	_sce_pspnet_splunlock(s);
+	return error;
+}
 
 INCLUDE_ASM("tmp/asm/tony_libs/pspnet/nonmatchings/bpf", func_00003940);
 
@@ -54,7 +98,36 @@ int func_00003E80(struct bpf_d *d, struct bpf_program *fp)
 	return 22;
 }
 
-INCLUDE_ASM("tmp/asm/tony_libs/pspnet/nonmatchings/bpf", func_00003FA4);
+int func_00003FA4(struct bpf_d *d, struct ifreq *ifr)
+{
+	struct bpf_if *bp;
+	struct ifnet *ifp;
+	int s, error;
+
+	for (bp = D_0000B8E0; bp != NULL; bp = bp->bif_next) {
+		ifp = bp->bif_ifp;
+		if (ifp == NULL || strcmp(ifp->if_xname, ifr->ifr_name) != 0)
+			continue;
+		if (d->bd_sbuf == NULL) {
+			error = func_000040FC(d);
+			if (error != 0)
+				return error;
+		}
+		s = _sce_pspnet_spllock();
+		if (bp != d->bd_bif) {
+			if (d->bd_bif)
+				bpf_detachd(d);
+			d->bd_bif = bp;
+			d->bd_next = bp->bif_dlist;
+			bp->bif_dlist = d;
+			*bp->bif_driverp = bp;
+		}
+		bpf_reset_d(d);
+		_sce_pspnet_splunlock(s);
+		return 0;
+	}
+	return 6;
+}
 
 void func_000040D8(struct bpf_d *d, struct bpf_stat4 *out)
 {
