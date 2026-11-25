@@ -58,6 +58,21 @@ def definitions(path):
     return out
 
 
+SUFFIX = re.compile(r"_[0-9A-F]{4,8}$")
+
+
+def base(name):
+    """splat's name for a static that exists more than once: NAME_ADDR"""
+    return SUFFIX.sub("", name)
+
+
+def suffixes(target, module, unit, body):
+    """rename NAME_ADDR (the source module's statics) after the target's"""
+    d = ROOT / "tmp" / "asm" / target / module / "nonmatchings" / unit
+    names = {base(f.stem): f.stem for f in d.glob("*.s")}
+    return re.sub(r"\b([A-Za-z_]\w*?)_[0-9A-F]{4,8}\b", lambda m: names.get(m[1], m[0]), body)
+
+
 def library(targets):
     lib = {}
     for t in targets:
@@ -65,6 +80,7 @@ def library(targets):
             if "/newlib/" in str(f) or "/libgcc/" in str(f):
                 continue
             for name, body in definitions(f).items():
+                name = base(name)
                 lib.setdefault(name, [])
                 if body not in [b for b, _ in lib[name]]:
                     lib[name].append((body, f))
@@ -152,11 +168,12 @@ def main():
             if unit.startswith(("newlib/", "libgcc/", "gcc-3.3.3/")):
                 continue
             for func in re.findall(r'^INCLUDE_ASM\("[^"]+", (\w+)\);$', path.read_text(), re.M):
-                cands = [(b, f) for b, f in lib.get(func, []) if f != path]
+                cands = [(b, f) for b, f in lib.get(base(func), []) if f != path]
                 if not cands:
                     continue
                 mod = mod or objcmp.module_funcs(a.target, module)
                 for body, src in cands:
+                    body = suffixes(a.target, module, unit, body)
                     body = map_labels(body, src, a.target, module, unit, func)
                     if body is None:
                         continue
