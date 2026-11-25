@@ -24,6 +24,15 @@ typedef int int32_t;
 typedef char *caddr_t;
 typedef unsigned long long SceUInt64;
 typedef long long quad_t;
+
+static __inline int imax(int a, int b) { return (a > b ? a : b); }
+static __inline int imin(int a, int b) { return (a < b ? a : b); }
+static __inline long lmax(long a, long b) { return (a > b ? a : b); }
+static __inline long lmin(long a, long b) { return (a < b ? a : b); }
+static __inline u_int max(u_int a, u_int b) { return (a > b ? a : b); }
+static __inline u_int min(u_int a, u_int b) { return (a < b ? a : b); }
+static __inline u_long ulmax(u_long a, u_long b) { return (a > b ? a : b); }
+static __inline u_long ulmin(u_long a, u_long b) { return (a < b ? a : b); }
 typedef unsigned long long u_quad_t;
 
 /* errno numbers are newlib's */
@@ -261,5 +270,133 @@ typedef u_int socklen_t;
 
 const char *sceNetInetInetNtop(int af, const void *src, char *dst, socklen_t size);
 int func_0002C4CC(const char *cp, void *addr, int strict);
+
+/* radix.h */
+struct radix_node {
+	struct radix_mask *rn_mklist;
+	struct radix_node *rn_p;
+	short rn_b;
+	char rn_bmask;
+	u_char rn_flags;
+#define RNF_NORMAL 1
+#define RNF_ROOT 2
+#define RNF_ACTIVE 4
+	union {
+		struct {
+			caddr_t rn_Key;
+			caddr_t rn_Mask;
+			struct radix_node *rn_Dupedkey;
+		} rn_leaf;
+		struct {
+			int rn_Off;
+			struct radix_node *rn_L;
+			struct radix_node *rn_R;
+		} rn_node;
+	} rn_u;
+};
+
+#define rn_dupedkey rn_u.rn_leaf.rn_Dupedkey
+#define rn_key rn_u.rn_leaf.rn_Key
+#define rn_mask rn_u.rn_leaf.rn_Mask
+#define rn_off rn_u.rn_node.rn_Off
+#define rn_l rn_u.rn_node.rn_L
+#define rn_r rn_u.rn_node.rn_R
+
+struct radix_mask {
+	short rm_b;
+	char rm_unused;
+	u_char rm_flags;
+	struct radix_mask *rm_mklist;
+	union {
+		caddr_t rmu_mask;
+		struct radix_node *rmu_leaf;
+	} rm_rmu;
+	int rm_refs;
+};
+
+#define rm_mask rm_rmu.rmu_mask
+#define rm_leaf rm_rmu.rmu_leaf
+
+struct radix_node_head {
+	struct radix_node *rnh_treetop;
+	int rnh_addrsize;
+	int rnh_pktsize;
+	struct radix_node *(*rnh_addaddr)(void *v, void *mask, struct radix_node_head *head, struct radix_node nodes[]);
+	struct radix_node *(*rnh_addpkt)(void *v, void *mask, struct radix_node_head *head, struct radix_node nodes[]);
+	struct radix_node *(*rnh_deladdr)(void *v, void *mask, struct radix_node_head *head);
+	struct radix_node *(*rnh_delpkt)(void *v, void *mask, struct radix_node_head *head);
+	struct radix_node *(*rnh_matchaddr)(void *v, struct radix_node_head *head);
+	struct radix_node *(*rnh_lookup)(void *v, void *mask, struct radix_node_head *head);
+	struct radix_node *(*rnh_matchpkt)(void *v, struct radix_node_head *head);
+	int (*rnh_walktree)(struct radix_node_head *head, int (*f)(struct radix_node *, void *), void *w);
+	struct radix_node rnh_nodes[3];
+};
+
+#define rn_search func_0000B3FC
+#define rn_search_m func_0000B440
+#define rn_refines func_0000B4A0
+#define rn_lookup func_0000B588
+#define rn_match func_00009FB8
+#define rn_newpair func_0000B63C
+#define rn_insert func_0000A310
+#define rn_addmask func_0000A4BC
+#define rn_addroute func_0000A804
+#define rn_delete func_0000AE9C
+#define rn_walktree func_0000B2DC
+#define rn_inithead func_0000B684
+#define rn_init func_0000B7E8
+
+struct radix_node *rn_search(void *v_arg, struct radix_node *head);
+struct radix_node *rn_search_m(void *v_arg, struct radix_node *head, void *m_arg);
+int rn_refines(void *m_arg, void *n_arg);
+struct radix_node *rn_lookup(void *v_arg, void *m_arg, struct radix_node_head *head);
+struct radix_node *rn_match(void *v_arg, struct radix_node_head *head);
+struct radix_node *rn_newpair(void *v, int b, struct radix_node nodes[2]);
+struct radix_node *rn_insert(void *v_arg, struct radix_node_head *head, int *dupentry, struct radix_node nodes[2]);
+struct radix_node *rn_addmask(void *n_arg, int search, int skip);
+struct radix_node *rn_addroute(void *v_arg, void *n_arg, struct radix_node_head *head, struct radix_node treenodes[2]);
+struct radix_node *rn_delete(void *v_arg, void *netmask_arg, struct radix_node_head *head);
+int rn_walktree(struct radix_node_head *h, int (*f)(struct radix_node *, void *), void *w);
+int rn_inithead(void **head, int off);
+void rn_init(void);
+
+/* domain.h / protosw.h */
+struct mbuf;
+struct socket;
+struct sockaddr;
+
+struct domain {
+	int dom_family;
+	char *dom_name;
+	void (*dom_init)(void);
+	int (*dom_externalize)(struct mbuf *);
+	void (*dom_dispose)(struct mbuf *);
+	struct protosw *dom_protosw;
+	struct protosw *dom_protoswNPROTOSW;
+	struct domain *dom_next;
+	int (*dom_rtattach)(void **, int);
+	int dom_rtoffset;
+	int dom_maxrtkey;
+};
+
+struct protosw {
+	short pr_type;
+	struct domain *pr_domain;
+	short pr_protocol;
+	short pr_flags;
+	void (*pr_input)();
+	int (*pr_output)();
+	void *(*pr_ctlinput)(int, struct sockaddr *, void *);
+	int (*pr_ctloutput)(int, struct socket *, int, int, struct mbuf **);
+	int (*pr_usrreq)(struct socket *, int, struct mbuf *, struct mbuf *, struct mbuf *);
+	void (*pr_init)(void);
+	void (*pr_fasttimo)(void);
+	void (*pr_slowtimo)(void);
+	void (*pr_drain)(void);
+	int (*pr_sysctl)(int *, u_int, void *, size_t *, void *, size_t);
+};
+
+#define domains D_0002EB50
+extern struct domain *domains;
 
 #endif
