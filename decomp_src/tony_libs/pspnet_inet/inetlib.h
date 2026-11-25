@@ -1066,4 +1066,11 @@ int _sce_pspnet_ifioctl(struct socket *so, u_long cmd, caddr_t data, int wait);
 int rtioctl(u_long req, caddr_t data);
 #define IOCGROUP(x) (((x) >> 8) & 0xff)
 
+/* inet_sched.c */
+int _sce_pspnet_start_of_inet_module_in_sched(void (*f1)(struct thread_info *), void (*f2)(struct socket *));
+void _sce_pspnet_stop_of_inet_module_in_sched(void);
+int sceKernelSignalSema(SceUID semaid, int signal);
+void func_00001D94(struct thread_info *ti);
+void func_00001DD8(struct socket *so);
+
 #endif
