@@ -600,4 +600,13 @@ extern struct bpf_if *D_0000B8E0;
 extern struct bpf_d D_0000B8E4[8];
 void _sce_pspnet_selrecord(struct thread_info *selector, struct selinfo *sip);
 
+struct bpf_stat4 {
+	int a, b, c, d;
+};
+
+static inline u_int umin(u_int a, u_int b)
+{
+	return a < b ? a : b;
+}
+
 #endif
