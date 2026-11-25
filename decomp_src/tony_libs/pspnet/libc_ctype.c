@@ -1,9 +1,34 @@
+/* cflags: -O2 -frename-registers -fno-merge-constants */
 #include "common.h"
 
-INCLUDE_ASM("tmp/asm/tony_libs/pspnet/nonmatchings/libc_ctype", func_000087A4);
+/* --- declarations --- */
+#include "netlib.h"
+/* --- end declarations --- */
 
-INCLUDE_ASM("tmp/asm/tony_libs/pspnet/nonmatchings/libc_ctype", func_000087D0);
+char func_000087A4(char c)
+{
+	int f = D_0000A0CC[c + 1];
 
-INCLUDE_ASM("tmp/asm/tony_libs/pspnet/nonmatchings/libc_ctype", func_000087FC);
+	if (f & 2)
+		c -= 0x20;
+	return c;
+}
 
-INCLUDE_ASM("tmp/asm/tony_libs/pspnet/nonmatchings/libc_ctype", func_00008810);
+char func_000087D0(char c)
+{
+	int f = D_0000A0CC[c + 1];
+
+	if (f & 1)
+		c += 0x20;
+	return c;
+}
+
+char func_000087FC(int c)
+{
+	return D_0000A0CC[c + 1];
+}
+
+const char *func_00008810(void)
+{
+	return D_0000A0CC + 1;
+}

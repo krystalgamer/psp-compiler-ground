@@ -1,17 +1,111 @@
+/* cflags: -O2 -frename-registers -fno-merge-constants */
 #include "common.h"
 
-INCLUDE_ASM("tmp/asm/tony_libs/pspnet/nonmatchings/libc_str", func_00007D60);
+/* --- declarations --- */
+#include "netlib.h"
+/* --- end declarations --- */
 
-INCLUDE_ASM("tmp/asm/tony_libs/pspnet/nonmatchings/libc_str", func_00007DE0);
+int func_00007D60(const char *s1, const char *s2)
+{
+	if (s1 == NULL || s2 == NULL) {
+		if (s1 == s2)
+			return 0;
+		return (s1 == NULL) ? -1 : 1;
+	}
+	while (*s1 == *s2++) {
+		if (*s1++ == '\0')
+			return 0;
+	}
+	return *s1 - *(s2 - 1);
+}
 
-INCLUDE_ASM("tmp/asm/tony_libs/pspnet/nonmatchings/libc_str", func_00007E10);
+char *func_00007DE0(const char *s, char c)
+{
+	if (s == NULL)
+		return NULL;
+	do {
+		if (*s == c)
+			return (char *)s;
+	} while (*s++ != '\0');
+	return NULL;
+}
 
-INCLUDE_ASM("tmp/asm/tony_libs/pspnet/nonmatchings/libc_str", func_00007E58);
+char *func_00007E10(const char *s, char c)
+{
+	const char *p = s;
 
-INCLUDE_ASM("tmp/asm/tony_libs/pspnet/nonmatchings/libc_str", func_00007EF0);
+	if (s == NULL)
+		return NULL;
+	while (*p++ != '\0')
+		;
+	p--;
+	do {
+		if (*p == c)
+			return (char *)p;
+	} while (s < p--);
+	return NULL;
+}
 
-INCLUDE_ASM("tmp/asm/tony_libs/pspnet/nonmatchings/libc_str", func_00007F6C);
+int func_00007E58(const char *s1, const char *s2, int n)
+{
+	if (s1 == NULL || s2 == NULL) {
+		if (s1 == s2)
+			return 0;
+		return (s1 == NULL) ? -1 : 1;
+	}
+	while (--n >= 0 && *s1 == *s2++) {
+		if (*s1++ == '\0')
+			return 0;
+	}
+	return (n < 0) ? 0 : *s1 - *(s2 - 1);
+}
 
-INCLUDE_ASM("tmp/asm/tony_libs/pspnet/nonmatchings/libc_str", func_00007F9C);
+char *func_00007EF0(char *dst, const char *src, int n)
+{
+	char *p = dst;
+	int i;
 
-INCLUDE_ASM("tmp/asm/tony_libs/pspnet/nonmatchings/libc_str", func_00007FD4);
+	if (dst == NULL || src == NULL)
+		return NULL;
+	for (i = 0; i < n; i++) {
+		if ((*p++ = *src++) == '\0') {
+			for (i++; i < n; i++)
+				*p++ = '\0';
+			return dst;
+		}
+	}
+	return dst;
+}
+
+char *func_00007F6C(const char *s, char c)
+{
+	if (s == NULL)
+		return NULL;
+	do {
+		if (*s == c)
+			return (char *)s;
+	} while (*s++ != '\0');
+	return NULL;
+}
+
+char *func_00007F9C(char *dst, const char *src)
+{
+	char *p = dst;
+
+	if (dst == NULL || src == NULL)
+		return NULL;
+	while ((*p++ = *src++) != '\0')
+		;
+	return dst;
+}
+
+int func_00007FD4(const char *s)
+{
+	int n = 0;
+
+	if (s == NULL)
+		return 0;
+	while (*s++ != '\0')
+		n++;
+	return n;
+}
