@@ -1,6 +1,183 @@
 #include "common.h"
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/font/utf8_to_utf16be", utf8_to_utf16be);
+/* declarations recovered from DWARF */
+typedef int SceBool;
+typedef short unsigned int SceFont_t_u16;
+typedef SceFont_t_u16 SceFont_t_charCode;
+typedef unsigned int size_t;
+typedef void *SceFont_t_libId;
+typedef long int SceFont_t_s32;
+typedef SceFont_t_s32 SceFont_t_error;
+typedef struct SceFont_t_initRec SceFont_t_initRec;
+struct SceFont_t_initRec;
+typedef void *SceFont_t_pointer;
+typedef long unsigned int SceFont_t_u32;
+typedef struct SceFont_t_cacheSystemInterface SceFont_t_cacheSystemInterface;
+struct SceFont_t_cacheSystemInterface;
+typedef SceFont_t_u32 SceFont_t_bool;
+typedef SceFont_t_s32 SceFont_t_int;
+struct SceFont_t_cacheSystemInterface { /* size 0x34 */
+    SceFont_t_pointer *cacheInstance;
+    SceFont_t_s32 (*lockFunc)(SceFont_t_pointer);
+    SceFont_t_s32 (*unlockFunc)(SceFont_t_pointer);
+    SceFont_t_pointer (*findFunc)(SceFont_t_pointer, SceFont_t_u32, SceFont_t_pointer, SceFont_t_bool *);
+    SceFont_t_s32 (*writeKeyValueToCacheFunc)(SceFont_t_pointer, SceFont_t_pointer, SceFont_t_pointer);
+    SceFont_t_s32 (*write0ToCacheFunc)(SceFont_t_pointer, SceFont_t_pointer, SceFont_t_pointer, SceFont_t_int);
+    SceFont_t_s32 (*write1ToCacheFunc)(SceFont_t_pointer, SceFont_t_pointer, SceFont_t_pointer, SceFont_t_int);
+    SceFont_t_s32 (*write2ToCacheFunc)(SceFont_t_pointer, SceFont_t_pointer, SceFont_t_pointer, SceFont_t_int);
+    SceFont_t_s32 (*write3ToCacheFunc)(SceFont_t_pointer, SceFont_t_pointer, SceFont_t_pointer, SceFont_t_int);
+    SceFont_t_s32 (*read0FromCacheFunc)(SceFont_t_pointer, SceFont_t_pointer, SceFont_t_pointer);
+    SceFont_t_s32 (*read1FromCacheFunc)(SceFont_t_pointer, SceFont_t_pointer, SceFont_t_pointer);
+    SceFont_t_s32 (*read2FromCacheFunc)(SceFont_t_pointer, SceFont_t_pointer, SceFont_t_pointer);
+    SceFont_t_s32 (*read3FromCacheFunc)(SceFont_t_pointer, SceFont_t_pointer, SceFont_t_pointer);
+};
+typedef void *SceFont_t_handle;
+struct SceFont_t_initRec { /* size 0x2c */
+    SceFont_t_pointer userData;
+    SceFont_t_u32 maxNumFonts;
+    SceFont_t_cacheSystemInterface *cache;
+    SceFont_t_pointer (*allocFunc)(SceFont_t_pointer, SceFont_t_u32);
+    void (*freeFunc)(SceFont_t_pointer, SceFont_t_pointer);
+    SceFont_t_handle (*openFunc)(SceFont_t_pointer, SceFont_t_pointer, SceFont_t_error *);
+    SceFont_t_error (*closeFunc)(SceFont_t_pointer, SceFont_t_handle);
+    SceFont_t_u32 (*readFunc)(SceFont_t_pointer, SceFont_t_handle, SceFont_t_pointer, SceFont_t_u32, SceFont_t_u32, SceFont_t_error *);
+    SceFont_t_error (*seekFunc)(SceFont_t_pointer, SceFont_t_handle, SceFont_t_u32);
+    SceFont_t_s32 (*onErrorFunc)(SceFont_t_pointer, SceFont_t_s32);
+    SceFont_t_s32 (*whenDoneReadFunc)(SceFont_t_pointer, SceFont_t_s32);
+};
+struct TextureImageTable;
+struct TextureImageTable { /* size 0xc */
+    int width64;
+    int height64;
+    int *buffer;
+};
+typedef struct SceFont_t_fontStyleInfo SceFont_t_fontStyleInfo;
+struct SceFont_t_fontStyleInfo;
+typedef float SceFont_t_f32;
+typedef unsigned char SceFont_t_u8;
+struct SceFont_t_fontStyleInfo { /* size 0xa8 */
+    SceFont_t_f32 hSize;
+    SceFont_t_f32 vSize;
+    SceFont_t_f32 hResolution;
+    SceFont_t_f32 vResolution;
+    SceFont_t_f32 weight;
+    SceFont_t_u16 familyCode;
+    SceFont_t_u16 style;
+    SceFont_t_u16 subStyle;
+    SceFont_t_u16 languageCode;
+    SceFont_t_u16 regionCode;
+    SceFont_t_u16 countryCode;
+    SceFont_t_u8 fontName[64];
+    SceFont_t_u8 fileName[64];
+    SceFont_t_u32 extraAttributes;
+    SceFont_t_u32 expireDate;
+};
+typedef SceFont_t_s32 SceFont_t_fontIndex;
+typedef void *SceFont_t_fontId;
+typedef struct SceFont_t_userImageBufferRec SceFont_t_userImageBufferRec;
+struct SceFont_t_userImageBufferRec;
+typedef struct SceFont_t_irect SceFont_t_irect;
+struct SceFont_t_irect;
+struct SceFont_t_irect { /* size 0x4 */
+    SceFont_t_u16 width;
+    SceFont_t_u16 height;
+};
+struct SceFont_t_userImageBufferRec { /* size 0x18 */
+    SceFont_t_u32 pixelFormat;
+    SceFont_t_s32 xPos64;
+    SceFont_t_s32 yPos64;
+    SceFont_t_irect rect;
+    SceFont_t_u16 bytesPerLine;
+    SceFont_t_u16 reserved;
+    SceFont_t_u8 *buffer;
+};
+typedef struct SceFont_t_fontInfo SceFont_t_fontInfo;
+struct SceFont_t_fontInfo;
+typedef struct SceFont_t_iGlyphMetricsInfo SceFont_t_iGlyphMetricsInfo;
+struct SceFont_t_iGlyphMetricsInfo;
+struct SceFont_t_iGlyphMetricsInfo { /* size 0x28 */
+    SceFont_t_u32 width64;
+    SceFont_t_u32 height64;
+    SceFont_t_s32 ascender64;
+    SceFont_t_s32 descender64;
+    SceFont_t_s32 horizontalBearingX64;
+    SceFont_t_s32 horizontalBearingY64;
+    SceFont_t_s32 verticalBearingX64;
+    SceFont_t_s32 verticalBearingY64;
+    SceFont_t_s32 horizontalAdvance64;
+    SceFont_t_s32 verticalAdvance64;
+};
+typedef struct SceFont_t_fGlyphMetricsInfo SceFont_t_fGlyphMetricsInfo;
+struct SceFont_t_fGlyphMetricsInfo;
+struct SceFont_t_fGlyphMetricsInfo { /* size 0x28 */
+    SceFont_t_f32 width;
+    SceFont_t_f32 height;
+    SceFont_t_f32 ascender;
+    SceFont_t_f32 descender;
+    SceFont_t_f32 horizontalBearingX;
+    SceFont_t_f32 horizontalBearingY;
+    SceFont_t_f32 verticalBearingX;
+    SceFont_t_f32 verticalBearingY;
+    SceFont_t_f32 horizontalAdvance;
+    SceFont_t_f32 verticalAdvance;
+};
+struct SceFont_t_fontInfo { /* size 0x108 */
+    SceFont_t_iGlyphMetricsInfo maxIGlyphMetrics;
+    SceFont_t_fGlyphMetricsInfo maxFGlyphMetrics;
+    SceFont_t_u16 maxGlyphBitmapWidth;
+    SceFont_t_u16 maxGlyphBitmapHeight;
+    SceFont_t_u32 numChars;
+    SceFont_t_u32 numSubChars;
+    SceFont_t_fontStyleInfo fontStyleInfo;
+    SceFont_t_u8 pixelDepth;
+    SceFont_t_u8 reserved[3];
+};
+typedef struct SceFont_t_charInfo SceFont_t_charInfo;
+struct SceFont_t_charInfo;
+struct SceFont_t_charInfo { /* size 0x3c */
+    SceFont_t_u32 bitmapWidth;
+    SceFont_t_u32 bitmapHeight;
+    SceFont_t_s32 bitmapLeft;
+    SceFont_t_s32 bitmapTop;
+    SceFont_t_iGlyphMetricsInfo glyphMetrics;
+    SceFont_t_u8 reserved0[2];
+    SceFont_t_u16 reserved1;
+};
+typedef int SceUID;
+
+extern struct TextureImageTable DialogTextureImageTable[16];
+extern short unsigned int clut_dialog[16];
+extern int TotalAllocatedSize;
+extern int TotalAllocatedSizePeak;
+
+static int utf8_to_utf16be_sub(SceFont_t_charCode *pUcs2, const char *pUtf8, int nUtf8Num, SceBool bCountOnly, SceBool bBigEndian);
+int convert_char_to_SceFont_t_charCode(char *src_buff, SceFont_t_charCode *dst_buff);
+int init_pss_text_texture(void);
+static SceFont_t_libId myInitFontLibrary(void);
+void myMakeTextTexture(SceFont_t_charCode *pString, struct TextureImageTable *pTextureImage, SceFont_t_fontStyleInfo *fstyle);
+static void *myAlloc(int size);
+static void myFree(void *p);
+static SceFont_t_handle cb_Open(SceFont_t_pointer pMyData, SceFont_t_pointer pFilename, SceFont_t_error *pErrorCode);
+static SceFont_t_u32 cb_Read(SceFont_t_pointer pMyData, SceFont_t_handle FileID, SceFont_t_pointer pBuffer, SceFont_t_u32 NumByte, SceFont_t_u32 NumUnit, SceFont_t_error *pErrorCode);
+static SceFont_t_error cb_Seek(SceFont_t_pointer pMyData, SceFont_t_handle FileID, SceFont_t_u32 Offset);
+
+/* SDK functions (tools/sdk_protos.h) */
+int sceIoClose(int fd);
+unsigned int strlen(const char *s);
+
+
+unsigned short *utf8_to_utf16be(signed char *pUtf8Str, int *nNumOut, int bBigEndian) {
+    int temp_v0_2;
+    int temp_v0_3;
+    unsigned short *temp_v0;
+
+    temp_v0_2 = strlen(pUtf8Str);
+    temp_v0_3 = utf8_to_utf16be_sub(NULL, pUtf8Str, temp_v0_2, 1, bBigEndian);
+    *nNumOut = temp_v0_3;
+    temp_v0 = calloc(temp_v0_3 + 1, 2);
+    utf8_to_utf16be_sub(temp_v0, pUtf8Str, temp_v0_2, 0, bBigEndian);
+    return temp_v0;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/font/utf8_to_utf16be", utf8_to_utf16be_sub);
 
@@ -12,19 +189,27 @@ INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/font/utf8_to_utf16be", myInit
 
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/font/utf8_to_utf16be", myMakeTextTexture);
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/font/utf8_to_utf16be", myDoneFontLibrary);
+void myDoneFontLibrary(void *libID) {
+    sceFontDoneLib();
+}
 
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/font/utf8_to_utf16be", myAlloc);
 
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/font/utf8_to_utf16be", myFree);
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/font/utf8_to_utf16be", cb_Alloc);
+void *cb_Alloc(void *pMyData, unsigned int size) {
+    return myAlloc((int) size);
+}
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/font/utf8_to_utf16be", cb_Free);
+void cb_Free(void *pMyData, void *p) {
+    myFree(p);
+}
 
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/font/utf8_to_utf16be", cb_Open);
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/font/utf8_to_utf16be", cb_Close);
+int cb_Close(void *pMyData, void *FileID) {
+    return (sceIoClose((int) FileID) >= 0) ? 0 : 0x80460006;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/font/utf8_to_utf16be", cb_Read);
 
