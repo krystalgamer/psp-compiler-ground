@@ -917,6 +917,7 @@ TAILQ_HEAD(socklist_head, socket);
 #define PR_CONNREQUIRED 0x04
 #define PR_WANTRCVD 0x08
 #define PR_RIGHTS 0x10
+#define PR_LISTEN 0x20
 
 void _sce_pspnet_wakeup(void *chan);
 int _sce_pspnet_tsleep(void *chan, int timo);
