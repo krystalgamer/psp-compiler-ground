@@ -44,9 +44,29 @@ int random(void) {
     return (int) (temp_v1 >> 4);
 }
 
-INCLUDE_ASM("tmp/asm/bigbangbang/bigbangbang/nonmatchings/particle", InitParticle);
+void sceGumRotateX(float angle);
+void sceGumRotateY(float angle);
+void sceGumRotateZ(float angle);
 
-INCLUDE_ASM("tmp/asm/bigbangbang/bigbangbang/nonmatchings/particle", CheckParticle);
+void InitParticle(void)
+{
+	int i;
+
+	for (i = 0; i < 128; i++)
+		particle[i].flg = 0;
+	nextindex = 0;
+}
+
+int CheckParticle(void)
+{
+	int i;
+
+	for (i = 0; i < 128; i++) {
+		if (particle[i].flg)
+			return 1;
+	}
+	return 0;
+}
 
 INCLUDE_ASM("tmp/asm/bigbangbang/bigbangbang/nonmatchings/particle", SetParticle);
 
