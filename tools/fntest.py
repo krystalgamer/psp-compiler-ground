@@ -46,6 +46,7 @@ def main():
     ap.add_argument("--cc1")
     ap.add_argument("--flags", action="append")
     ap.add_argument("-v", action="store_true")
+    ap.add_argument("--func", help="with -v: show this function")
     a = ap.parse_args()
     mod = objcmp.module_funcs(a.target, a.module)
     cc1s = a.cc1.split(",") if a.cc1 else ["1.5.1", "1.6.1", "1.3.1-orig", "1.7.1-orig"]
@@ -57,7 +58,7 @@ def main():
                 if o is None:
                     print(f"{c:11} {f:12} compile error")
                     continue
-                res = objcmp.compare(mod, [o], verbose=a.v and c == cc1s[0])
+                res = objcmp.compare(mod, [o], verbose=(a.func or True) if a.v and c == cc1s[0] else False)
                 same = [k for k, v in res.items() if v == "same"]
                 bad = {k: v for k, v in res.items() if v != "same"}
                 print(f"{c:11} {f:12} {len(same)}/{len(res)}  " + " ".join(f"{k}:{v.replace(' ', '')}" for k, v in sorted(bad.items())))

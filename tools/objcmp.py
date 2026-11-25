@@ -135,7 +135,7 @@ def compare(mod, objs, verbose=False):
                 else:
                     nd = sum(1 for a, b in zip(words, orig) if a != b)
                     res[fn] = "same" if nd == 0 else f"diff {nd}"
-                if verbose and res[fn] != "same":
+                if verbose and res[fn] != "same" and (verbose is True or verbose == fn):
                     print(f"--- {fn}: ours | original")
                     side_by_side(words, orig)
                     verbose = False
