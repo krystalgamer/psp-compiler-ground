@@ -492,7 +492,11 @@ def main():
     cfg.parent.mkdir(parents=True, exist_ok=True)
     cfg.write_text("".join(out))
     (ROOT / "config" / t / f"{name}.sha1").write_text(f"{sha1}  tmp/baserom/{t}/{name}.prx\n")
-    (ROOT / "config" / t / f"symbol_addrs.{name}.txt").write_text("\n".join(symbol_lines(elf, text_end)) + "\n")
+    sym_path = ROOT / "config" / t / f"symbol_addrs.{name}.txt"
+    # stripped modules: keep the function addresses found so far (func_XXXXXXXX)
+    keep = [l for l in sym_path.read_text().splitlines() if l.startswith("func_")] \
+        if sym_path.exists() and elf.get_section_by_name(".symtab") is None else []
+    sym_path.write_text("\n".join(symbol_lines(elf, text_end) + keep) + "\n")
     if elf.get_section_by_name(".symtab") is None:
         import nids
         nids.name_module(t, name, nids.load_db(), {}, True)
