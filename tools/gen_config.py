@@ -97,10 +97,24 @@ def file_units(t, name, cus, text_end):
     ents = []
     for line in path.read_text().splitlines():
         line = line.split("#")[0].split()
-        if line:
+        if line and line[0] != "rodata":
             ents.append((int(line[0], 16), line[3], line[2]))
     bounds = sorted([e[0] for e in ents] + [c[0] for c in cus] + [text_end])
     return [(lo, next(b for b in bounds if b > lo), src, ver) for lo, src, ver in ents]
+
+
+def rodata_overrides(t, name):
+    """`rodata ADDR UNIT` lines of files.MODULE.txt: .rodata from ADDR on
+    belongs to UNIT (strings only a .data table points to)."""
+    path = ROOT / "config" / t / f"files.{name}.txt"
+    if not path.exists():
+        return []
+    out = []
+    for line in path.read_text().splitlines():
+        line = line.split("#")[0].split()
+        if line and line[0] == "rodata":
+            out.append((int(line[1], 16), line[2]))
+    return out
 
 
 def unit_name(src, used):
@@ -418,6 +432,11 @@ def main():
             prev_kind = ".text" if typ == "asm" else ".rodata"
         elif s.name == ".rodata":
             owners = rodata_owners(elf, data, segs, units, s)
+            if owners is not None:
+                for addr, uname in rodata_overrides(t, name):
+                    ui = next(i for i, u in enumerate(units) if u[2] == uname)
+                    owners = sorted([o for o in owners if o[0] != addr] + [(addr, ui)])
+                owners = [o for i, o in enumerate(owners) if i == 0 or o[1] is None or o[1] != owners[i - 1][1]]
             if owners is None:
                 out.append(f"      - [0x{off:X}, rodata, rodata]\n")
             else:

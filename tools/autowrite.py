@@ -19,7 +19,7 @@ import autodecomp  # noqa: E402
 import compiler  # noqa: E402
 import objcmp  # noqa: E402
 
-STUB = re.compile(r'^(#include "common.h"|INCLUDE_ASM\(.*\);|INCLUDE_RODATA\(.*\);|[A-Za-z_][^;]*\) \{|\}|)$')
+STUB = re.compile(r'^(#include "common.h"|/\*.*\*/|INCLUDE_ASM\(.*\);|INCLUDE_RODATA\(.*\);|[A-Za-z_][^;]*\) \{|\}|)$')
 
 
 def build_ok(target, module):
@@ -32,7 +32,7 @@ def unit_test(target, module, path):
     r = subprocess.run([sys.executable, str(ROOT / "tools/fntest.py"), target, module, str(path),
                         "--cc1", compiler.compiler(target, module, unit_of(target, module, path))],
                        capture_output=True, text=True, cwd=ROOT).stdout.strip().splitlines()
-    m = re.match(r"\S+\s+\S+\s+(\d+)/(\d+)", r[-1]) if r else None
+    m = re.search(r"\s(\d+)/(\d+)(\s|$)", r[-1]) if r else None
     return m and m.group(1) == m.group(2)
 
 
@@ -47,6 +47,13 @@ DECL = re.compile(r"^(extern .*;|.*\);\s*/\* extern \*/)$")
 def decl_name(line):
     m = re.search(r"(\w+)\s*(\(|;|\[)", line.split("/*")[0])
     return m.group(1) if m else line
+
+
+def first_bad(target, module):
+    r = subprocess.run([sys.executable, str(ROOT / "tools/firstdiff.py"), target, module],
+                       capture_output=True, text=True, cwd=ROOT).stdout
+    m = re.search(r"\((\w+)\+0x", r)
+    return m.group(1) if m else None
 
 
 def write_nodwarf(target, module, u, path, text, bodies):
@@ -67,19 +74,31 @@ def write_nodwarf(target, module, u, path, text, bodies):
         code = "\n".join(l for l in lines if not DECL.match(l)).strip("\n")
         saved = dict(decls)
         for k, v in new.items():
-            if k not in decls and k not in bodies:
+            # a typed guess beats a bytewise one
+            if k not in bodies and (k not in decls or (decls[k].startswith("extern u8 ")
+                                                       and not v.startswith("extern u8 "))):
                 decls[k] = v
         done[fn] = code
         path.write_text(render())
         if not unit_test(target, module, path):
+            if os.environ.get("AW_DEBUG"):
+                print(f"  {fn}: unit test fails", flush=True)
+                (ROOT / "tmp" / f"aw_{fn}.c").write_text(render())
             del done[fn]
             decls.clear()
             decls.update(saved)
-    if done:
+    # fntest ignores relocations: drop what the module build shows wrong
+    while done:
         path.write_text(render())
-        if unit_test(target, module, path) and build_ok(target, module):
+        if build_ok(target, module):
             print(f"{u}: wrote {len(done)}/{len(bodies)}", flush=True)
             return len(done)
+        bad = first_bad(target, module)
+        if bad not in done:
+            break
+        del done[bad]
+    if os.environ.get("AW_KEEP"):
+        return 0
     path.write_text(text)
     print(f"{u}: reverted", flush=True)
     return 0
