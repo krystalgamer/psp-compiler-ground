@@ -282,16 +282,184 @@ static int net_connect(void)
 
 INCLUDE_RODATA("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/net", D_00019974);
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/net", net_disconnect);
+void gu_init(void);
+int polling_error(void);
+int matching_start(void);
+int game_init(void);
+int utility_check_connect_completed(int *result);
+int utility_msgdialog(int error);
+int utility_check_msgdialog_completed(int *result);
+void net_update_multi_player(void);
+void send_recv_game_data(void);
+#define net_error_flag D_000DB7EC	/* set when the connection ends in an error */
+extern int net_error_flag;
+static int net_disconnect(void)
+{
+	int ret;
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/net", check_adhocctl_scan_completed);
+	net_delete_ptp();
+	matching_term();
+	game_term();
+	ret = sceNetAdhocctlDisconnect();
+	if (ret < 0) {
+		printf("sceNetAdhocctlDisconnect() failed. ret = 0x%x\n", ret);
+		return 0;
+	}
+	if (_mrinfo.state == MATCHING_ROOM_START_GAME)
+		change_state(MATCHING_ROOM_DISCONNECTING_ROOM);
+	else if (_mrinfo.state == MATCHING_ROOM_DISCONNECT)
+		change_state(MATCHING_ROOM_DISCONNECTING);
+	return 0;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/net", check_adhocctl_connect_completed);
+static int check_adhocctl_scan_completed(void)
+{
+	int adhocctl_state;
+	int ret;
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/net", check_adhocctl_disconnect_completed);
+	ret = 0;
+	if (!(evf & 9))
+		goto END;
+	ret = sceNetAdhocctlGetState(&adhocctl_state);
+	if (ret < 0)
+		goto END;
+	if (adhocctl_state == 2)
+		goto END;
+	ret = polling_error();
+	if (ret < 0)
+		change_state(MATCHING_ROOM_TOP);
+	else
+		change_state(MATCHING_ROOM_SCAN_RESULT);
+END:
+	return ret;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/net", check_adhocctl_connected_error);
+static int check_adhocctl_connect_completed(void)
+{
+	int ret;
+	int done_flag;
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/net", check_error_dialog_closed);
+	ret = 0;
+	done_flag = 0;
+	utility_check_connect_completed(&done_flag);
+	if (done_flag > 0) {
+		if (_mrinfo.state == MATCHING_ROOM_CONNECTING_ROOM) {
+			sceNetGetLocalEtherAddr(&_mrinfo.local_addr);
+			ret = matching_start();
+			if (ret < 0)
+				change_state(MATCHING_ROOM_DISCONNECT);
+			else
+				change_state(MATCHING_ROOM_ROOM_LIST);
+		} else if (_mrinfo.state == MATCHING_ROOM_CONNECTING_GAME) {
+			ret = game_init();
+			if (ret < 0)
+				change_state(MATCHING_ROOM_DISCONNECT);
+			else
+				change_state(MATCHING_ROOM_GAME);
+		}
+	} else if (done_flag < 0) {
+		change_state(MATCHING_ROOM_TOP);
+		net_error_flag = 1;
+	}
+	return ret;
+}
 
+static int check_adhocctl_disconnect_completed(void)
+{
+	int adhocctl_state;
+	int ret;
+
+	ret = sceNetAdhocctlGetState(&adhocctl_state);
+	if (ret < 0)
+		return ret;
+	if (adhocctl_state != 0)
+		return ret;
+	if (_mrinfo.state == MATCHING_ROOM_DISCONNECTING_ROOM) {
+		ret = utility_net_connect((int)&game_group_name);
+		if (ret < 0) {
+			printf(net_connect_failed, ret);
+			change_state(MATCHING_ROOM_TOP);
+		} else {
+			change_state(MATCHING_ROOM_CONNECTING_GAME);
+		}
+	} else if (_mrinfo.state == MATCHING_ROOM_DISCONNECTING) {
+		gu_init();
+		change_state(MATCHING_ROOM_TOP);
+	}
+	return ret;
+}
+
+static int check_adhocctl_connected_error(void)
+{
+	int ret;
+
+	ret = polling_error();
+	if (ret == 0)
+		goto END;
+	ret = utility_msgdialog(ret);
+	if (ret < 0) {
+		printf("utility_msgdialog() failed. ret = 0x%x\n", ret);
+		goto END;
+	}
+	change_state(MATCHING_ROOM_ERROR_DIALOG);
+END:
+	return ret;
+}
+
+static int check_error_dialog_closed(void)
+{
+	int ret;
+	int done_flag;
+
+	done_flag = 0;
+	ret = utility_check_msgdialog_completed(&done_flag);
+	if (done_flag) {
+		change_state(MATCHING_ROOM_DISCONNECT);
+		net_error_flag = 1;
+	}
+	return 0;
+}
+
+#ifdef NON_MATCHING
+/* the closing state check falls through into the call in the original */
+int net_update(void)
+{
+	switch (_mrinfo.state) {
+	case MATCHING_ROOM_SCAN:
+		net_scan();
+		break;
+	case MATCHING_ROOM_SCANNING:
+		check_adhocctl_scan_completed();
+		break;
+	case MATCHING_ROOM_CONNECT_ROOM:
+		net_connect();
+		break;
+	case MATCHING_ROOM_CONNECTING_ROOM:
+	case MATCHING_ROOM_CONNECTING_GAME:
+		check_adhocctl_connect_completed();
+		break;
+	case MATCHING_ROOM_DISCONNECTING_ROOM:
+	case MATCHING_ROOM_DISCONNECTING:
+		check_adhocctl_disconnect_completed();
+		break;
+	case MATCHING_ROOM_ERROR_DIALOG:
+		check_error_dialog_closed();
+		break;
+	case MATCHING_ROOM_START_GAME:
+	case MATCHING_ROOM_DISCONNECT:
+		net_disconnect();
+		break;
+	case MATCHING_ROOM_GAME:
+		send_recv_game_data();
+		break;
+	default:
+		net_update_multi_player();
+		break;
+	}
+	if ((unsigned int)_mrinfo.state >= MATCHING_ROOM_ROOM_LIST)
+		check_adhocctl_connected_error();
+	return 0;
+}
+#else
 INCLUDE_ASM("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/net", net_update);
+#endif
