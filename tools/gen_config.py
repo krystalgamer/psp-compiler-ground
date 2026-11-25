@@ -121,12 +121,15 @@ def symbol_lines(elf, text_end):
         if not elf.get_section(sym["st_shndx"])["sh_flags"] & 2:
             continue
         addr = sym["st_value"] + elf.get_section(sym["st_shndx"])["sh_addr"]
-        syms[sym.name].append((addr, t, sym["st_size"]))
+        syms[sym.name].append((addr, t, sym["st_size"], sym["st_info"]["bind"] == "STB_GLOBAL"))
     by_addr = {}
     for name, ents in syms.items():
         uniq = sorted(set(ents))
-        for (addr, t, size) in uniq:
-            nm = name if len(uniq) == 1 else f"{name}_{addr:X}"
+        # a duplicated name stays plain for its one global definition (what
+        # C elsewhere links against); the static ones get the address
+        glob = [e for e in uniq if e[3]]
+        for (addr, t, size, g) in uniq:
+            nm = name if len(uniq) == 1 or (g and len(glob) == 1) else f"{name}_{addr:X}"
             if not re.match(r"^[A-Za-z_]\w*$", nm):
                 continue
             prev = by_addr.get(addr)
@@ -223,6 +226,7 @@ def rodata_owners(elf, data, segs, units, rodata):
         if i >= 0 and a < dspans[i][1]:
             return dspans[i][2]
         return None
+    anon_ptrs = []
     refs = collections.defaultdict(set)   # rodata addr -> units
     for a, b, u in obj_spans:
         if u is not None:
@@ -260,6 +264,11 @@ def rodata_owners(elf, data, segs, units, rodata):
                     if src is not None and obj_owner(ptr) is None:
                         refs[target].add(src)
                     continue
+                elif ptr < rodata.addr + rodata.size:
+                    # an unnamed table (a local array's initializer): its
+                    # strings go with the code that uses the table
+                    anon_ptrs.append((loc, ptr))
+                    continue
                 else:
                     continue
             else:
@@ -269,6 +278,11 @@ def rodata_owners(elf, data, segs, units, rodata):
                 if o is not None:
                     continue    # a named object: owned by the unit DWARF puts it in
                 refs[target].add(src)
+    starts_sorted = sorted(refs)
+    for loc, ptr in anon_ptrs:
+        i = bisect.bisect_right(starts_sorted, loc) - 1
+        if i >= 0 and len(refs[starts_sorted[i]]) == 1 and obj_owner(ptr) is None:
+            refs[ptr] |= refs[starts_sorted[i]]
     first = {}
     last = {}
     for a in sorted(refs):
