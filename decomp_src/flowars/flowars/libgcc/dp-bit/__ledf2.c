@@ -1,3 +1,5 @@
-#include "common.h"
-
-INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/libgcc/dp-bit/__ledf2", __ledf2);
+/* upstream: libgcc dp-bit.c (_le_df.o), tree: 1.6.1 */
+/* cflags: -O2 */
+#define FINE_GRAINED_LIBRARIES
+#define L_le_df
+#include "dp-bit.c"
