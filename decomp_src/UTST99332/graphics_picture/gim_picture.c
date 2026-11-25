@@ -101,7 +101,40 @@ static void reconfigure_picture(SceGimPicture *picture);
 
 INCLUDE_RODATA("tmp/asm/UTST99332/graphics_picture/nonmatchings/gim_picture", __psp_libinfo___14DF8);
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_picture/nonmatchings/gim_picture", sceGimPictureCreate);
+SceGimPicture *sceGimPictureCreate(SceGimChunk *chunk)
+{
+	SceGimPicture *picture;
+
+	picture = (SceGimPicture *)sceGimPictureAllocMemory(sizeof(SceGimPicture));
+	if (picture == NULL)
+		return NULL;
+	picture->m_reference = 1;
+	picture->m_flags = 0;
+	picture->m_image = NULL;
+	picture->m_palette = NULL;
+	picture->m_sequence = NULL;
+	picture->m_buf_width = 0;
+	picture->m_clut_load = 0;
+	picture->m_frame_loop[0] = -1000000.0f;
+	picture->m_frame_loop[1] = 1000000.0f;
+	picture->m_frame_rate = 12.0f;
+	picture->m_frame = 0.0f;
+	picture->m_enable_bits = 0;
+	picture->m_image_frame = 0;
+	picture->m_image_frame2 = 0;
+	picture->m_palette_frame = 0;
+	picture->m_palette_frame2 = 0;
+	picture->m_dissolve = 0.0f;
+	picture->m_image_crop[0] = 0.0f;
+	picture->m_image_crop[1] = 0.0f;
+	picture->m_image_crop[2] = 1.0f;
+	picture->m_image_crop[3] = 1.0f;
+	if (chunk != NULL && !sceGimPictureLoad(picture, chunk)) {
+		sceGimPictureDelete(picture);
+		return NULL;
+	}
+	return picture;
+}
 
 void sceGimPictureDelete(SceGimPicture *picture) {
     int temp_v0;
@@ -184,7 +217,13 @@ int sceGimPictureHasAnimation(SceGimPicture *picture) {
     return var_v0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_picture/nonmatchings/gim_picture", sceGimPictureSetFrameLoop);
+void sceGimPictureSetFrameLoop(SceGimPicture *picture, float start, float end)
+{
+	if (picture == NULL)
+		return;
+	picture->m_frame_loop[0] = start;
+	picture->m_frame_loop[1] = end;
+}
 
 float *sceGimPictureGetFrameLoop(SceGimPicture *picture) {
     return (picture == NULL) ? NULL : picture->m_frame_loop;
@@ -302,7 +341,18 @@ float sceGimPictureGetDissolve(SceGimPicture *picture) {
     return var_f0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_picture/nonmatchings/gim_picture", sceGimPictureSetImageCrop);
+void *memcpy(void *, const void *, size_t);
+void sceGimPictureSetImageCrop(SceGimPicture *picture, const float *crop)
+{
+	if (picture == NULL)
+		return;
+	if (crop == NULL) {
+		picture->m_flags &= ~0x20;
+		return;
+	}
+	memcpy(picture->m_image_crop, crop, sizeof(picture->m_image_crop));
+	picture->m_flags |= 0x20;
+}
 
 float *sceGimPictureGetImageCrop(SceGimPicture *picture) {
     float *var_v0;
