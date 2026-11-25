@@ -52,7 +52,25 @@ segments:
     start: 0x80
     vram: 0x0
     subsegments:
-      - [0x80, c, pspnet_adhocctl]
+      - [0x80, c, adhocctl]
+      - [0x940, c, connect]
+      - [0x1828, c, main]
+      - [0x2D04, c, event]
+      - [0x2FFC, c, gamemode]
+      - [0x487C, c, ptp]
+      - [0x4DD4, c, module]
+      - [0x4DE4, c, libc_ctype]
+      - [0x4E5C, c, libc_mem]
+      - [0x5034, c, libc_str]
+      - [0x52DC, c, fixunsdfsi]
+      - [0x5360, c, addsub_df]
+      - [0x5784, c, mul_df]
+      - [0x5AFC, c, ge_df]
+      - [0x5B84, c, si_to_df]
+      - [0x5C60, c, df_to_si]
+      - [0x5D30, c, pack_df]
+      - [0x5FCC, c, unpack_df]
+      - [0x60E8, c, fpcmp_parts_df]
       - { start: 0x6238, type: asm, name: sceStub, linker_section: .sceStub.text }
       - { start: 0x63E8, type: prxpad, order: .text }
       - { start: 0x63F0, type: rodata, name: lib_ent_top, linker_section: .lib.ent.top }
@@ -64,7 +82,7 @@ segments:
       - { start: 0x64D0, type: rodata, name: module_info, linker_section: .rodata.sceModuleInfo }
       - { start: 0x6504, type: rodata, name: resident, linker_section: .rodata.sceResident }
       - { start: 0x6690, type: rodata, name: nid, linker_section: .rodata.sceNid }
-      - [0x6768, .rodata, pspnet_adhocctl]
+      - [0x6768, rodata, rodata]
   - name: pspnet_adhocctl_seg1
     type: code
     start: 0x6890

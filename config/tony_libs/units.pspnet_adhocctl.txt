@@ -1,2 +1,20 @@
 # unit                                     compiler        source
-pspnet_adhocctl                              1.5.1.internal  pspnet_adhocctl.c
+adhocctl                                     1.5.1.internal  adhocctl.c
+connect                                      1.5.1.internal  connect.c
+main                                         1.5.1.internal  main.c
+event                                        1.5.1.internal  event.c
+gamemode                                     1.5.1.internal  gamemode.c
+ptp                                          1.5.1.internal  ptp.c
+module                                       1.5.1.internal  module.c
+libc_ctype                                   1.5.1.internal  libc_ctype.c
+libc_mem                                     1.5.1.internal  libc_mem.c
+libc_str                                     1.5.1.internal  libc_str.c
+fixunsdfsi                                   1.5.1.internal  fixunsdfsi.c
+addsub_df                                    1.5.1.internal  addsub_df.c
+mul_df                                       1.5.1.internal  mul_df.c
+ge_df                                        1.5.1.internal  ge_df.c
+si_to_df                                     1.5.1.internal  si_to_df.c
+df_to_si                                     1.5.1.internal  df_to_si.c
+pack_df                                      1.5.1.internal  pack_df.c
+unpack_df                                    1.5.1.internal  unpack_df.c
+fpcmp_parts_df                               1.5.1.internal  fpcmp_parts_df.c

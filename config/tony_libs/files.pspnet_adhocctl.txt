@@ -1,2 +1,22 @@
-# Stripped module: one unit for all of .text until object boundaries are known.
-0x00000 pspnet_adhocctl  1.5.1.internal  pspnet_adhocctl.c
+# Stripped module: .comment lists 20 C objects. Units split by address (guessed
+# boundaries from rodata strings ("wlan" per object), call structure, libc helpers
+# and the libgcc soft-float objects (dp-bit.c, libgcc2.c)).
+0x00000 adhocctl         1.5.1.internal  adhocctl.c
+0x008C0 connect          1.5.1.internal  connect.c
+0x017A8 main             1.5.1.internal  main.c
+0x02C84 event            1.5.1.internal  event.c
+0x02F7C gamemode         1.5.1.internal  gamemode.c
+0x047FC ptp              1.5.1.internal  ptp.c
+0x04D54 module           1.5.1.internal  module.c
+0x04D64 libc_ctype       1.5.1.internal  libc_ctype.c
+0x04DDC libc_mem         1.5.1.internal  libc_mem.c
+0x04FB4 libc_str         1.5.1.internal  libc_str.c
+0x0525C fixunsdfsi       1.5.1.internal  fixunsdfsi.c
+0x052E0 addsub_df        1.5.1.internal  addsub_df.c
+0x05704 mul_df           1.5.1.internal  mul_df.c
+0x05A7C ge_df            1.5.1.internal  ge_df.c
+0x05B04 si_to_df         1.5.1.internal  si_to_df.c
+0x05BE0 df_to_si         1.5.1.internal  df_to_si.c
+0x05CB0 pack_df          1.5.1.internal  pack_df.c
+0x05F4C unpack_df        1.5.1.internal  unpack_df.c
+0x06068 fpcmp_parts_df   1.5.1.internal  fpcmp_parts_df.c
