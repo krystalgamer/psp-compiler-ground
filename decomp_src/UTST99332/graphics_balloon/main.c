@@ -91,7 +91,42 @@ static int pad_read(void);
 
 INCLUDE_RODATA("tmp/asm/UTST99332/graphics_balloon/nonmatchings/main", char_mode);
 
+#ifdef NON_MATCHING
+/* block layout around check_clouds/indicator differs */
+static void draw_mode(void)
+{
+	char buf[8] = ">>>>";
+	int size;
+	int i;
+
+	if (change) {
+		if (check_clouds()) {
+			change = 0;
+		} else {
+			size = 0;
+			for (i = 0; i < 12; i++) {
+				if (char_mode[prev_texture][i] == 0)
+					break;
+				size++;
+			}
+			buf[3 - indicator] = ' ';
+			sceGuDebugPrint(8, 256, 0xffffff, char_mode[prev_texture]);
+			sceGuDebugPrint(size * 8 + 16, 256, 0xffffff, buf);
+			sceGuDebugPrint(size * 8 + 56, 256, 0xffffff, char_mode[texture_mode]);
+			if (frame & 1) {
+				if (++indicator >= 4)
+					indicator = 0;
+			}
+		}
+	}
+	if (!change) {
+		sceGuDebugPrint(8, 256, 0xffffff, char_mode[texture_mode]);
+		indicator = 0;
+	}
+}
+#else
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_balloon/nonmatchings/main", draw_mode);
+#endif
 
 /* Warning: Gap in callee-saved word stack region.
  * Saved: [0x0, 0x4, 0x10, 0x14], gap at: 0x8. */
@@ -112,9 +147,114 @@ void draw_frame(void) {
     sceGuSync(0, 0);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_balloon/nonmatchings/main", init_all);
+void sceGumPerspective(float fovy, float aspect, float near, float far);
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_balloon/nonmatchings/main", pad_read);
+#ifdef NON_MATCHING
+/* load order of the light vector constants differs */
+static void init_all(void)
+{
+	ScePspFVector3 vec;
+
+	sceGuInit();
+	sceGuStart(0, disp_list, sizeof(disp_list));
+	sceGuDrawBuffer(3, NULL, 0x200);
+	sceGuDispBuffer(0x1E0, 0x110, (void *)0x88000, 0x200);
+	sceGuDepthBuffer((void *)0x110000, 0x200);
+	sceGuOffset(0x710, 0x778);
+	sceGuViewport(0x800, 0x800, 0x1E0, 0x110);
+	sceGuDepthRange(0xC350, 0x2710);
+	sceGuScissor(0, 0, 0x1E0, 0x110);
+	sceGuEnable(2);
+	sceGuBlendFunc(0, 2, 3, 0, 0);
+	sceGuEnable(4);
+	sceGuDepthFunc(7);
+	sceGuEnable(1);
+	sceGuFrontFace(0);
+	sceGuShadeModel(1);
+	sceGuEnable(8);
+	vec.x = -1.0f;
+	vec.y = 1.0f;
+	vec.z = 1.0f;
+	sceGuLightColor(0, 2, 0xffc0c0c0);
+	sceGuLightColor(0, 4, 0xffffffff);
+	sceGuLight(0, 0, 6, &vec);
+	sceGuEnable(0xB);
+	sceGuEnable(0xA);
+	sceGuAmbient(0xff808080);
+	sceGuColor(0xffffffff);
+	sceGumSetMatrixStack(matrix_stack, 8, 8, 0x20, 0);
+	sceGumMatrixMode(0);
+	sceGumLoadIdentity();
+	sceGumPerspective(0.7853982f, 1.7647059f, 1.0f, 100.0f);
+	sceGumMatrixMode(2);
+	sceGuClearColor(0xffff4040);
+	sceGuClearDepth(0);
+	sceGuClearStencil(0);
+	sceGuFinish();
+	sceGuSync(0, 0);
+	sceDisplayWaitVblankStart();
+	pos.x = 0.0f;
+	pos.y = 0.0f;
+	pos.z = -15.0f;
+	rot.x = 0.0f;
+	rot.y = 0.0f;
+	rot.z = 0.0f;
+	texture_mode = 0;
+	change = 0;
+	init_balloon();
+	init_clouds();
+	sceGuDisplay(1);
+}
+#else
+INCLUDE_ASM("tmp/asm/UTST99332/graphics_balloon/nonmatchings/main", init_all);
+#endif
+
+static int pad_read(void)
+{
+	u_int32 prev;
+	u_int32 padd;
+	SceCtrlData buf;
+
+	prev = cont;
+	sceCtrlReadBufferPositive(&buf, 1);
+	cont = buf.Buttons;
+	padd = cont & (cont ^ prev);
+	if (!change) {
+		if (padd & 0x0080) {
+			texture_next = texture_mode - 1;
+			if (texture_next < 0)
+				texture_next = 15;
+			set_balloon(2);
+		}
+		if (padd & 0x0020) {
+			texture_next = texture_mode + 1;
+			if (texture_next >= 16)
+				texture_next = 0;
+			set_balloon(2);
+		}
+		if (padd & 0x0010) {
+			if (texture_mode >= 0 && texture_mode < 6)
+				texture_next = 6;
+			else if (texture_mode >= 6 && texture_mode < 12)
+				texture_next = 12;
+			else if (texture_mode >= 12 && texture_mode < 16)
+				texture_next = 0;
+			set_balloon(2);
+		}
+		if (padd & 0x0040) {
+			if (texture_mode >= 0 && texture_mode < 6)
+				texture_next = 12;
+			else if (texture_mode >= 6 && texture_mode < 12)
+				texture_next = 0;
+			else if (texture_mode >= 12 && texture_mode < 16)
+				texture_next = 6;
+			set_balloon(2);
+		}
+	}
+	if (padd & 0x0009)
+		return 0;
+	return 1;
+}
 
 void frame_update(void) {
     int temp_v0;
