@@ -75,9 +75,46 @@ SceInt32 soundbuf_output(t_soundBuffer *pSound);
 
 INCLUDE_ASM("tmp/asm/psp184/mpegon/nonmatchings/sound", soundbuf_create);
 
-INCLUDE_ASM("tmp/asm/psp184/mpegon/nonmatchings/sound", soundbuf_reset);
+SceInt32 soundbuf_reset(t_soundBuffer *pSound)
+{
+	soundframeCount = 0;
+	soundframeDelay = 0;
+	pSound->write = 0;
+	pSound->read = 0;
+	pSound->count = 0;
+	return 0;
+}
 
-INCLUDE_ASM("tmp/asm/psp184/mpegon/nonmatchings/sound", soundbuf_delete);
+int sceKernelDeleteSema(int semid);
+void free(void *p);
+SceInt32 soundbuf_delete(t_soundBuffer *pSound)
+{
+	SceInt32 i;
+
+	sceWaveExit();
+	sceKernelDeleteSema(pSound->lockSema);
+	if (pSound->buf) {
+		for (i = 0; i < pSound->size; i++) {
+			if (pSound->buf[i]) {
+				free(pSound->buf[i]);
+				pSound->buf[i] = NULL;
+			}
+		}
+		free(pSound->buf);
+		pSound->buf = NULL;
+	}
+	if (pSound->pts) {
+		free(pSound->pts);
+		pSound->pts = NULL;
+	}
+	for (i = 0; i < 2; i++) {
+		if (outputBuf[i]) {
+			free(outputBuf[i]);
+			outputBuf[i] = NULL;
+		}
+	}
+	return 0;
+}
 
 int soundbuf_getDrawbuf(t_soundBuffer *pSound, signed char **buffer) {
     int temp_v0;
@@ -113,7 +150,16 @@ int soundbuf_getPts(t_soundBuffer *pSound, unsigned int *pPts) {
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/mpegon/nonmatchings/sound", soundbuf_setBuf);
+int sceKernelSignalSema(int semid, int signal);
+int sceKernelWaitSema(int semid, int signal, unsigned int *timeout);
+SceInt32 soundbuf_setBuf(t_soundBuffer *pSound)
+{
+	sceKernelWaitSema(pSound->lockSema, 1, NULL);
+	pSound->count++;
+	sceKernelSignalSema(pSound->lockSema, 1);
+	pSound->write = (pSound->write + 1) % pSound->size;
+	return 0;
+}
 
 int soundbuf_getCapacity(t_soundBuffer *pSound) {
     return pSound->size - pSound->count;
@@ -123,10 +169,28 @@ int soundbuf_getCurrentCount(t_soundBuffer *pSound) {
     return pSound->count;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/mpegon/nonmatchings/sound", soundbuf_checkDecodeEnd);
+static SceInt32 soundbuf_checkDecodeEnd(t_soundBuffer *pSound)
+{
+	SceUInt32 pattern;
+
+	control_getCondition(pSound->pCtrl, &pattern);
+	if (pattern & 0x8)
+		return 1;
+	return 0;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/mpegon/nonmatchings/sound", soundbuf_func);
 
-INCLUDE_ASM("tmp/asm/psp184/mpegon/nonmatchings/sound", soundbuf_swapbuf);
+void *memcpy(void *d, const void *s, unsigned int n);
+#define currentBuf D_00013768	/* soundbuf_swapbuf's static */
+extern SceInt32 currentBuf;
+static SceInt32 soundbuf_swapbuf(t_soundBuffer *pSound, SceChar8 *buf)
+{
+	memcpy(outputBuf[currentBuf], buf, pSound->bufSize);
+	pSound->read = (pSound->read + 1) % pSound->size;
+	sceWaveAudioWriteBlocking(0, 0x8000, 0x8000, outputBuf[currentBuf]);
+	currentBuf ^= 1;
+	return 0;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/mpegon/nonmatchings/sound", soundbuf_output);
