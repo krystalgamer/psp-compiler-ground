@@ -119,6 +119,9 @@ def main():
                         total += 1
                         print(f"{module}/{unit}:{func}  <- {src.relative_to(ROOT / 'decomp_src')}", flush=True)
                         if a.write:
+                            if "INCLUDE_ASM" not in new:
+                                # all C now: it emits the unit's rodata itself
+                                new = re.sub(r'^INCLUDE_RODATA\("[^"]+", \w+\);\n', "", new, flags=re.M)
                             path.write_text(new)
                         break
     print(f"# {total} functions propagated")
