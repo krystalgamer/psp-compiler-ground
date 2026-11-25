@@ -237,9 +237,60 @@ _Bool sceGimPictureLoadFile(SceGimPicture *picture, const void *buf, int size, i
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_picture2/nonmatchings/gim_picture", sceGimPictureLoad);
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_picture2/nonmatchings/gim_picture", sceGimPictureUnload);
+void sceGimPictureUnload(SceGimPicture *picture)
+{
+	SceGimImageHeader *image;
+	SceGimPaletteHeader *palette;
+	SceGimSequenceHeader *sequence;
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_picture2/nonmatchings/gim_picture", sceGimPictureAnimate);
+	if (picture == NULL)
+		return;
+	image = picture->m_image;
+	if (image != NULL) {
+		if (--image->reference == 0)
+			sceGimPictureFreeMemory2(image);
+		picture->m_image = NULL;
+	}
+	palette = picture->m_palette;
+	if (palette != NULL) {
+		if (--palette->reference == 0)
+			sceGimPictureFreeMemory2(palette);
+		picture->m_palette = NULL;
+	}
+	sequence = picture->m_sequence;
+	if (sequence != NULL) {
+		if (--sequence->reference == 0)
+			sceGimPictureFreeMemory2(sequence);
+		picture->m_sequence = NULL;
+	}
+}
+
+void sceGimPictureAnimate(SceGimPicture *picture, float step)
+{
+	float frame;
+	float start;
+	float end;
+	int f;
+
+	if (picture == NULL || !(picture->m_flags & 0x10))
+		return;
+	frame = picture->m_frame + picture->m_frame_rate * step;
+	start = picture->m_frame_loop[0];
+	end = picture->m_frame_loop[1];
+	if (frame >= end && picture->m_frame < end)
+		frame = start;
+	else if (frame < start && picture->m_frame >= start)
+		frame = end;
+	picture->m_frame = frame;
+	f = (int)frame;
+	if (frame < 0.0f)
+		f--;
+	picture->m_image_frame = f;
+	picture->m_image_frame2 = f + 1;
+	picture->m_palette_frame = f;
+	picture->m_palette_frame2 = f + 1;
+	picture->m_dissolve = frame - (float)f;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_picture2/nonmatchings/gim_picture", sceGimPictureActivate);
 
