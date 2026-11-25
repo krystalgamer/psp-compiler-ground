@@ -39,7 +39,27 @@ int func_000040FC(struct bpf_d *d)
 	return 0;
 }
 
-INCLUDE_ASM("tmp/asm/tony_libs/pspnet/nonmatchings/bpf", func_00004160);
+void func_00004160(struct ifnet *ifp)
+{
+	struct bpf_if *bp, **pbp;
+	struct bpf_d *d;
+	int i, s;
+
+	for (i = 0, d = D_0000B8E4; i < 8; ++i, ++d) {
+		if (d != d->bd_next && d->bd_bif != NULL && d->bd_bif->bif_ifp == ifp) {
+			s = _sce_pspnet_spllock();
+			bpf_detachd(d);
+			_sce_pspnet_splunlock(s);
+		}
+	}
+	for (bp = D_0000B8E0, pbp = &D_0000B8E0; bp != NULL; pbp = &bp->bif_next, bp = bp->bif_next) {
+		if (bp->bif_ifp == ifp) {
+			*pbp = bp->bif_next;
+			sceNetFreeInternal(bp);
+			break;
+		}
+	}
+}
 
 void func_0000426C(int n)
 {
@@ -65,7 +85,27 @@ int func_000042AC(u_int unit)
 	return 0;
 }
 
-INCLUDE_ASM("tmp/asm/tony_libs/pspnet/nonmatchings/bpf", func_00004318);
+int func_00004318(int unit)
+{
+	struct bpf_d *d = &D_0000B8E4[unit];
+	int s;
+
+	s = _sce_pspnet_spllock();
+	if (d->bd_bif)
+		bpf_detachd(d);
+	_sce_pspnet_splunlock(s);
+	if (d->bd_sbuf != NULL) {
+		sceNetFreeInternal(d->bd_sbuf);
+		if (d->bd_hbuf != NULL)
+			sceNetFreeInternal(d->bd_hbuf);
+		if (d->bd_fbuf != NULL)
+			sceNetFreeInternal(d->bd_fbuf);
+	}
+	if (d->bd_filter)
+		sceNetFreeInternal(d->bd_filter);
+	d->bd_next = d;
+	return 0;
+}
 
 int func_00004410(int unit, int events, struct thread_info *p)
 {
@@ -84,7 +124,25 @@ int func_00004410(int unit, int events, struct thread_info *p)
 	return revents;
 }
 
-INCLUDE_ASM("tmp/asm/tony_libs/pspnet/nonmatchings/bpf", func_000044C0);
+void func_000044C0(struct bpf_if *bp, struct mbuf *m)
+{
+	struct bpf_d *d;
+	u_int pktlen, slen;
+	struct mbuf *m0;
+	int s;
+
+	pktlen = 0;
+	for (m0 = m; m0 != NULL; m0 = m0->m_next)
+		pktlen += m0->m_len;
+	s = _sce_pspnet_spllock();
+	for (d = bp->bif_dlist; d != NULL; d = d->bd_next) {
+		++d->bd_rcount;
+		slen = func_000047EC(d->bd_filter, (u_char *)m, pktlen, 0);
+		if (slen != 0)
+			func_000046A0(d, (u_char *)m, pktlen, slen, func_00004618);
+	}
+	_sce_pspnet_splunlock(s);
+}
 
 void func_00004594(struct bpf_if **driverp, struct ifnet *ifp, u_int dlt, u_int hdrlen)
 {

@@ -418,7 +418,7 @@ int sceNetIfhandleIfDown(struct ifnet *ifp);
 int sceNetIfhandleIfIoctl(struct ifnet *ifp, int cmd, void *data);
 int sceNetIfhandleInit(SceUID evf);
 int sceNetIfhandleTerm(void);
-void func_000044C0(void *bpf, struct mbuf *m);
+void func_000044C0(struct bpf_if *bp, struct mbuf *m);
 void func_00004160(struct ifnet *ifp);
 void func_00006B10(struct ifnet *ifp);
 void _sce_pspnet_if_detach(struct ifnet *ifp);
@@ -607,6 +607,25 @@ struct bpf_stat4 {
 static inline u_int umin(u_int a, u_int b)
 {
 	return a < b ? a : b;
+}
+
+u_int func_000047EC(void *pc, u_char *p, u_int wirelen, u_int buflen);
+void func_000046A0(struct bpf_d *d, u_char *pkt, u_int pktlen, u_int snaplen, void *(*cpfn)(void *, const void *, u_int));
+void *func_00004618(void *dst_arg, const void *src_arg, u_int len);
+
+static inline void bpf_detachd(struct bpf_d *d)
+{
+	struct bpf_d **p;
+	struct bpf_if *bp;
+
+	bp = d->bd_bif;
+	p = &bp->bif_dlist;
+	while (*p != d)
+		p = &(*p)->bd_next;
+	*p = (*p)->bd_next;
+	if (bp->bif_dlist == NULL)
+		*bp->bif_driverp = NULL;
+	d->bd_bif = NULL;
 }
 
 #endif
