@@ -1,16 +1,85 @@
+/* cflags: -O0 */
 #include "common.h"
 
-INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/main", malloc);
+typedef struct {
+	float x, y, z;
+} Vec3;
 
-INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/main", free);
+typedef struct {
+	int fpl;
+	void *addr;
+} MemPool;
 
-INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/main", MemPoolCheck);
+void *memset(void *s, int c, unsigned int n);
+int sprintf(char *buf, const char *fmt, ...);
+int sceKernelCreateFpl(const char *name, int part, int attr, unsigned int size, unsigned int blocks, void *opt);
+int sceKernelTryAllocateFpl(int fpl, void **data);
+int sceKernelDeleteFpl(int fpl);
 
-INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/main", __errno);
+extern MemPool _mempool[200];
+extern int g_menu_select;
+extern int g_menu_model;
+extern int g_menu_vertex;
+extern int g_menu_texture;
+extern int g_menu_packet;
+extern int g_menu_count;
+extern int g_menu_cache;
+extern Vec3 g_translate;
+extern Vec3 g_rotate;
+extern char g_running;
+extern char g_reload;
 
-INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/main", _GlobalInit);
+void *malloc(unsigned int size)
+{
+	int i;
+	int ret;
+	void *p = 0;
 
-INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/main", GraphicsModelEntry);
+	for (i = 0; i < 200; i++) {
+		if (_mempool[i].addr == 0) {
+			_mempool[i].fpl = sceKernelCreateFpl("ModelTestFpl", 2, 256, size + 16, 1, 0);
+			if (_mempool[i].fpl < 0) {
+				_mempool[i].fpl = 0;
+				break;
+			}
+			ret = sceKernelTryAllocateFpl(_mempool[i].fpl, &p);
+			if (ret < 0) {
+				p = 0;
+				break;
+			}
+			p = (void *)(((unsigned int)p + 15) & ~15);
+			_mempool[i].addr = p;
+			break;
+		}
+	}
+	return p;
+}
+
+void free(void *addr)
+{
+	int i;
+
+	for (i = 0; i < 200; i++) {
+		if (_mempool[i].addr == addr) {
+			sceKernelDeleteFpl(_mempool[i].fpl);
+			_mempool[i].fpl = 0;
+			_mempool[i].addr = 0;
+			break;
+		}
+	}
+}
+
+static void MemPoolCheck(void)
+{
+	int i;
+
+	for (i = 0; i < 200; i++)
+		;
+}
+
+int *__errno(void)
+{
+}
 
 INCLUDE_RODATA("tmp/asm/umdt/graphics_model/nonmatchings/main", D_00016250);
 
@@ -24,17 +93,38 @@ INCLUDE_RODATA("tmp/asm/umdt/graphics_model/nonmatchings/main", D_00016290);
 
 INCLUDE_RODATA("tmp/asm/umdt/graphics_model/nonmatchings/main", D_000162A0);
 
-INCLUDE_RODATA("tmp/asm/umdt/graphics_model/nonmatchings/main", D_000162B0);
+static void _GlobalInit(void)
+{
+	Vec3 v;
+	static const Vec3 t0 = { -8.609375f, -0.957031012f, 10.5f };
+	static const Vec3 r0 = { 0.0f, -0.942f, 0.0f };
 
-INCLUDE_RODATA("tmp/asm/umdt/graphics_model/nonmatchings/main", D_000162B4);
+	g_menu_select = 0;
+	g_menu_model = 0;
+	g_menu_vertex = 1;
+	g_menu_texture = 1;
+	g_menu_packet = 2;
+	g_menu_count = 10;
+	g_menu_cache = 40;
+	v = t0;
+	g_translate = v;
+	v = r0;
+	g_rotate = v;
+	g_running = 1;
+	g_reload = 1;
+}
 
-INCLUDE_RODATA("tmp/asm/umdt/graphics_model/nonmatchings/main", D_000162B8);
+int GraphicsModelEntry(int a, int b)
+{
+	memset(_mempool, 0, sizeof(_mempool));
+	return 0;
+}
 
-INCLUDE_RODATA("tmp/asm/umdt/graphics_model/nonmatchings/main", D_000162BC);
 
-INCLUDE_RODATA("tmp/asm/umdt/graphics_model/nonmatchings/main", D_000162C0);
 
-INCLUDE_RODATA("tmp/asm/umdt/graphics_model/nonmatchings/main", D_000162C4);
+
+
+
 
 INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/main", GraphicsModelMain);
 
@@ -110,4 +200,7 @@ INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/main", inverse_orthonormal
 
 INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/main", rotate_vector3);
 
-INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/main", GraphicsModelTestVersion);
+void GraphicsModelTestVersion(char *buf)
+{
+	sprintf(buf, "Ver. 041027_2");
+}
