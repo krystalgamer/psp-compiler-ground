@@ -213,7 +213,7 @@ void func_0002D420(char **pp, int c);
 
 struct in_addr {
 	u_int32_t s_addr;
-};
+} __attribute__((__packed__));
 
 #define ntohl(x) __builtin_allegrex_wsbw(x)
 #define htonl(x) __builtin_allegrex_wsbw(x)
