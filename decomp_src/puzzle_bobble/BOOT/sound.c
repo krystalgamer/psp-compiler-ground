@@ -16,6 +16,10 @@ extern int TestSoundNo;
 extern unsigned char *VagAdd[128];
 extern int iFadeOutFlag;
 extern int VoiceCh;
+extern int NowBgm;
+extern char *bgm_name[];
+int at3_bgm_play_end(int fade);
+int at3_bgm_play(const char *path);
 
 
 INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/sound", D_0002EA74);
@@ -83,9 +87,39 @@ void vag_read(void)
 	printf("VOICE MAX = %d\n", VoiceMax);
 }
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/sound", bgm_stop);
+void bgm_stop(void)
+{
+	NextBgm = -1;
+	iFadeOutFlag = 1;
+	at3_bgm_play_end(1);
+}
 
+#ifdef NON_MATCHING
+/* Close: the original returns no from its own register (no copy). */
+int bgm_play(int no)
+{
+	char path[256];
+
+	if (NowBgm == no)
+		return no;
+	if (PlayFlag) {
+		NextBgm = no;
+		iFadeOutFlag = 1;
+		at3_bgm_play_end(1);
+		return -1;
+	}
+	NextBgm = -1;
+	NowBgm = no;
+	sprintf(path, "disc0:/PSP_GAME/USRDIR/wave/%s", bgm_name[no]);
+	while (at3_bgm_play(path) < 0)
+		wait_umd();
+	PlayFlag = 1;
+	iFadeOutFlag = 0;
+	return 0;
+}
+#else
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/sound", bgm_play);
+#endif
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/sound", se_play);
 
