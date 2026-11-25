@@ -1,17 +1,110 @@
 #include "common.h"
+#include <psptypes.h>
+#include <kerneltypes.h>
+#include <stdlib.h>
+#include "display.h"
+#include "sound.h"
+#include "avsync.h"
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mpeg/avsync", avsync_create);
+extern SceUInt32 videoLatestPts;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mpeg/avsync", avsync_init);
+static SceInt32 avsync_init_video(t_avSyncControl *pAvSync);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mpeg/avsync", avsync_end);
+SceInt32 avsync_create(t_avSyncControl *pAvSync, t_displayBuffer *pDisp, t_soundBuffer *pSound, SceInt32 videoNum)
+{
+	pAvSync->pDisp = pDisp;
+	pAvSync->pSound = pSound;
+	pAvSync->video.pts = NULL;
+	pAvSync->video.pts = malloc(videoNum * sizeof(SceUInt32));
+	if (pAvSync->video.pts == NULL)
+		return -1;
+	pAvSync->video.size = videoNum;
+	return 0;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mpeg/avsync", avsync_playStart);
+SceInt32 avsync_init(t_avSyncControl *pAvSync)
+{
+	videoLatestPts = 0;
+	avsync_init_video(pAvSync);
+	return 0;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mpeg/avsync", avsync_init_video);
+SceInt32 avsync_end(t_avSyncControl *pAvSync)
+{
+	if (pAvSync->video.pts) {
+		free(pAvSync->video.pts);
+		pAvSync->video.pts = NULL;
+	}
+	return 0;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mpeg/avsync", avsync_video_setPts);
+SceInt32 avsync_playStart(t_avSyncControl *pAvSync)
+{
+	dispbuf_setStartFlag(pAvSync->pDisp);
+	if (pAvSync->pSound)
+		soundbuf_setStartFlag(pAvSync->pSound);
+	return 0;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mpeg/avsync", avsync_video_getPts);
+static SceInt32 avsync_init_video(t_avSyncControl *pAvSync)
+{
+	pAvSync->video.write = 0;
+	pAvSync->video.read = 0;
+	pAvSync->video.count = 0;
+	return 0;
+}
 
+SceInt32 avsync_video_setPts(t_avSyncControl *pAvSync, SceUInt32 pts)
+{
+	SceInt32 ret = 0;
+
+	if (pts == (SceUInt32)-1)
+		pts = videoLatestPts + 3004;
+	videoLatestPts = pts;
+	pAvSync->video.pts[pAvSync->video.write] = pts;
+	pAvSync->video.count++;
+	pAvSync->video.write = (pAvSync->video.write + 1) % pAvSync->video.size;
+	return ret;
+}
+
+SceInt32 avsync_video_getPts(t_avSyncControl *pAvSync, SceUInt32 *pPts)
+{
+	SceInt32 ret = 0;
+
+	*pPts = pAvSync->video.pts[pAvSync->video.read];
+	pAvSync->video.count--;
+	pAvSync->video.read = (pAvSync->video.read + 1) % pAvSync->video.size;
+	return ret;
+}
+
+#ifdef NON_MATCHING
+/* block layout differs: original falls through into the epilogue after the dispbuf check */
+SceInt32 avsync_Compare(t_avSyncControl *pAvSync)
+{
+	SceInt32 ret;
+	SceInt32 ptsDiff;
+	SceUInt32 soundPts;
+	SceUInt32 videoPts;
+
+	if (pAvSync->pSound == NULL) {
+		ret = 1;
+	} else if (soundbuf_getCurrentCount(pAvSync->pSound) == 0) {
+		ret = 1;
+	} else if (dispbuf_getCurrentCount(pAvSync->pDisp) == 0) {
+		ret = 1;
+	} else {
+		soundbuf_getPts(pAvSync->pSound, &soundPts);
+		dispbuf_getPts(pAvSync->pDisp, &videoPts);
+		ptsDiff = soundPts - videoPts;
+		if (ptsDiff >= -6008 && ptsDiff <= 6008)
+			ret = 1;
+		else if (ptsDiff > 6008)
+			ret = 2;
+		else
+			ret = 3;
+	}
+	return ret;
+}
+#else
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mpeg/avsync", avsync_Compare);
+#endif
