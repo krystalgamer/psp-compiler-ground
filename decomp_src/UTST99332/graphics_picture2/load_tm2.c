@@ -1,150 +1,212 @@
-#include "common.h"
+/* SDK gim_picture library: devkit 0.6.0's src/gim_picture/load_tm2.c, preprocessed (macros expanded) */
+#include "gim_private.h"
 
-/* declarations recovered from DWARF */
-struct SceGimPicture;
-struct _anon1;
-struct _anon1 { /* size 0x30 */
-    short unsigned int header_size;
-    short unsigned int reference;
-    short unsigned int format;
-    short unsigned int order;
-    short unsigned int width;
-    short unsigned int height;
-    short unsigned int bpp;
-    short unsigned int pitch_align;
-    short unsigned int height_align;
-    short unsigned int dim_count;
-    short unsigned int reserved;
-    short unsigned int reserved2;
-    unsigned int offsets;
-    unsigned int images;
-    unsigned int total;
-    unsigned int plane_mask;
-    short unsigned int level_type;
-    short unsigned int level_count;
-    short unsigned int frame_type;
-    short unsigned int frame_count;
-};
-typedef struct _anon1 SceGimImageHeader;
-struct _anon2;
-struct _anon2 { /* size 0x20 */
-    short unsigned int header_size;
-    short unsigned int reference;
-    short unsigned int frame_start;
-    short unsigned int frame_end;
-    short unsigned int frame_rate;
-    short unsigned int reserved;
-    short unsigned int n_constants;
-    short unsigned int n_functions;
-    unsigned int constants;
-    unsigned int functions;
-    unsigned int keyframes;
-    unsigned int total;
-};
-typedef struct _anon2 SceGimSequenceHeader;
-struct SceGimPicture { /* size 0x54 */
-    int m_reference;
-    int m_flags;
-    SceGimImageHeader *m_image;
-    SceGimImageHeader *m_palette;
-    SceGimSequenceHeader *m_sequence;
-    int m_buf_width;
-    int m_clut_load;
-    float m_frame_loop[2];
-    float m_frame_rate;
-    float m_frame;
-    int m_enable_bits;
-    int m_image_frame;
-    int m_image_frame2;
-    int m_palette_frame;
-    int m_palette_frame2;
-    float m_dissolve;
-    float m_image_crop[4];
-};
-typedef struct SceGimPicture SceGimPicture;
-struct _anon3;
-struct _anon3 { /* size 0x10 */
-    int fileid;
-    char version;
-    char format;
-    short int n_pictures;
-    char zero[8];
-};
-typedef struct _anon3 Tm2Header;
-struct _anon4;
-struct _anon4 { /* size 0x30 */
-    int total_size;
-    int clut_size;
-    int image_size;
-    short int header_size;
-    short int clut_colors;
-    char pict_format;
-    char n_mipmaps;
-    char clut_type;
-    char image_type;
-    short int image_width;
-    short int image_height;
-    int gs_tex0[2];
-    int gs_tex1[2];
-    int gs_regs;
-    int gs_texclut;
-};
-typedef struct _anon4 Tm2Pict;
-struct _anon5;
-struct _anon5 { /* size 0x30 */
-    int gs_miptbp1[2];
-    int gs_miptbp2[2];
-    int sizes[8];
-};
-typedef struct _anon5 Tm2MipMap;
+typedef struct {
+ int fileid ;
+ char version ;
+ char format ;
+ short n_pictures ;
+ char zero[ 8 ] ;
+} Tm2Header ;
 
-extern int PixelFormats[6];
+typedef struct {
+ int total_size ;
+ int clut_size ;
+ int image_size ;
+ short header_size ;
+ short clut_colors ;
+ char pict_format ;
+ char n_mipmaps ;
+ char clut_type ;
+ char image_type ;
+ short image_width ;
+ short image_height ;
+ int gs_tex0[ 2 ] ;
+ int gs_tex1[ 2 ] ;
+ int gs_regs ;
+ int gs_texclut ;
+} Tm2Pict ;
 
-_Bool sceGimPictureLoadTm2(SceGimPicture *picture, const void *buf, int size, int idx);
-static void copy_pixels(void *dst, const void *src, int width, int height, int type);
-static void sort_clut(void *clut, int format, int width);
+typedef struct {
+ int gs_miptbp1[ 2 ] ;
+ int gs_miptbp2[ 2 ] ;
+ int sizes[ 8 ] ;
+} Tm2MipMap ;
 
-/* SDK functions */
-int sceKernelDcacheWritebackAll(void);
+enum {
+ TM2_RGBA_5551 = 1,
+ TM2_RGBA_8880 = 2,
+ TM2_RGBA_8888 = 3,
+ TM2_INDEX_4 = 4,
+ TM2_INDEX_8 = 5,
+} ;
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_picture2/nonmatchings/load_tm2", sceGimPictureLoadTm2);
+extern int PixelFormats[];
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_picture2/nonmatchings/load_tm2", copy_pixels_460C);
+static void copy_pixels( void *dst, const void *src, int width, int height, int type ) ;
+static void sort_clut( void *clut, int format, int width ) ;
 
-static void sort_clut(void *clut, int format, int width)
+_Bool sceGimPictureLoadTm2( SceGimPicture *picture, const void *buf, int size, int index )
 {
-	int *ptr;
+ if ( picture == 0 ) return 0 ;
+ sceGimPictureUnload( picture ) ;
 
-	if (width != 256)
-		return;
-	ptr = clut;
-	if (format == 1) {
-		int i;
+ Tm2Header *header = (Tm2Header *)buf ;
+ if ( index < 0 || index >= header->n_pictures ) return 0 ;
+ Tm2Pict *pict = (Tm2Pict *)( header + 1 ) ;
+ if ( header->format ) pict = (Tm2Pict *)( (char *)header + 128 ) ;
+ { int i ; for ( i = 0 ; i < index ; i ++ ) {
+  pict = (Tm2Pict *)( (char *)pict + pict->total_size ) ;
+ } }
 
-		for (i = 0; i < 8; i++) {
-			int j;
+ if ( pict->n_mipmaps != 0 ) {
+  int format = PixelFormats[ (int)( pict->image_type ) ] ;
+  int width = pict->image_width ;
+  int height = pict->image_height ;
+  int level = pict->n_mipmaps ;
+  if ( !sceGimPictureReallocImage( picture, format, width, height, level, 1, 0 ) ) return 0 ;
 
-			for (j = 0; j < 4; j++) {
-				int tmp = ptr[j + 4];
+  Tm2MipMap *mipmap = 0 ;
+  if ( pict->n_mipmaps > 1 ) mipmap = (Tm2MipMap *)( pict + 1 ) ;
+  void *ptr = (char *)pict + pict->header_size ;
 
-				ptr[j + 4] = ptr[j + 8];
-				ptr[j + 8] = tmp;
-			}
-			ptr += 16;
-		}
-	} else if (format == 3) {
-		int i;
+  { int j ; for ( j = 0 ; j < pict->n_mipmaps ; j ++ ) {
+   void *ptr2 = sceGimPictureGetImagePixels( picture, j, 0 ) ;
+   copy_pixels( ptr2, ptr, width, height, pict->image_type ) ;
+   if ( mipmap != 0 ) {
+    width = ( width + 1 ) / 2 ;
+    height = ( height + 1 ) / 2 ;
+    ptr = (char *)ptr + mipmap->sizes[ j ] ;
+   }
+  } }
+ }
 
-		for (i = 0; i < 8; i++) {
-			int j;
+ int clut_type = 7 & pict->clut_type ;
+ if ( clut_type != 0 ) {
+  int clut_format = PixelFormats[ clut_type ] ;
+  int clut_width = pict->clut_colors ;
 
-			for (j = 0; j < 8; j++) {
-				int tmp = ptr[j + 8];
+  void *ptr = (char *)pict + pict->header_size + pict->image_size ;
+  sceGimPictureReallocPalette( picture, clut_format, clut_width, 1, 1, 0 ) ;
+  void *ptr2 = sceGimPictureGetPalettePixels( picture, 0, 0 ) ;
+  if ( ptr2 == 0 ) return 0 ;
+  copy_pixels( ptr2, ptr, clut_width, 1, clut_type ) ;
 
-				ptr[j + 8] = ptr[j + 16];
-				ptr[j + 16] = tmp;
-			}
-			ptr += 32;
-		}
-	}
+  if ( ( 0x80 & pict->clut_type ) == 0 ) {
+   sort_clut( ptr2, clut_format, clut_width ) ;
+  }
+ }
+ sceKernelDcacheWritebackAll();
+ return 1 ;
+}
+
+void copy_pixels( void *dst, const void *src, int width, int height, int type )
+{
+ unsigned char *dp = (unsigned char *)dst ;
+ const unsigned char *sp = (unsigned char *)src ;
+
+ switch ( type ) {
+     case TM2_RGBA_5551 : {
+  int pitch = ( width * 2 + 15 ) & ~15 ;
+  { int i ; for ( i = 0 ; i < height ; i ++ ) {
+   unsigned char *dp2 = (unsigned char *)dp ;
+   { int j ; for ( j = 0 ; j < width ; j ++ ) {
+    dp2[ 0 ] = sp[ 0 ] ;
+    dp2[ 1 ] = sp[ 1 ] ;
+    dp2 += 2 ;
+    sp += 2 ;
+   } }
+   dp += pitch ;
+  } }
+  break ;
+     }
+     case TM2_RGBA_8880 : {
+  int pitch = ( width * 4 + 15 ) & ~15 ;
+  { int i ; for ( i = 0 ; i < height ; i ++ ) {
+   unsigned char *dp2 = (unsigned char *)dp ;
+   { int j ; for ( j = 0 ; j < width ; j ++ ) {
+    dp2[ 0 ] = sp[ 0 ] ;
+    dp2[ 1 ] = sp[ 1 ] ;
+    dp2[ 2 ] = sp[ 2 ] ;
+    dp2[ 3 ] = 0xff ;
+    dp2 += 4 ;
+    sp += 3 ;
+   } }
+   dp += pitch ;
+  } }
+  break ;
+     }
+     case TM2_RGBA_8888 : {
+  int pitch = ( width * 4 + 15 ) & ~15 ;
+  { int i ; for ( i = 0 ; i < height ; i ++ ) {
+   unsigned char *dp2 = (unsigned char *)dp ;
+   { int j ; for ( j = 0 ; j < width ; j ++ ) {
+    int a = sp[ 3 ] * 255 / 128 ;
+    if ( a > 255 ) a = 255 ;
+    dp2[ 0 ] = sp[ 0 ] ;
+    dp2[ 1 ] = sp[ 1 ] ;
+    dp2[ 2 ] = sp[ 2 ] ;
+    dp2[ 3 ] = a ;
+    dp2 += 4 ;
+    sp += 4 ;
+   } }
+   dp += pitch ;
+  } }
+  break ;
+     }
+     case TM2_INDEX_4 : {
+  width = ( width + 1 ) / 2 ;
+  int pitch = ( width + 15 ) & ~15 ;
+  { int i ; for ( i = 0 ; i < height ; i ++ ) {
+   unsigned char *dp2 = (unsigned char *)dp ;
+   { int j ; for ( j = 0 ; j < width ; j ++ ) {
+    *( dp2 ++ ) = *( sp ++ ) ;
+   } }
+   dp += pitch ;
+  } }
+  break ;
+     }
+     case TM2_INDEX_8 : {
+  int pitch = ( width + 15 ) & ~15 ;
+  { int i ; for ( i = 0 ; i < height ; i ++ ) {
+   unsigned char *dp2 = (unsigned char *)dp ;
+   { int j ; for ( j = 0 ; j < width ; j ++ ) {
+    *( dp2 ++ ) = *( sp ++ ) ;
+   } }
+   dp += pitch ;
+  } }
+  break ;
+     }
+ }
+}
+
+void sort_clut( void *clut, int format, int width )
+{
+ if ( width != 256 ) return ;
+
+ int *ptr = (int *)clut ;
+ switch ( format ) {
+     case 1 : {
+  { int i ; for ( i = 0 ; i < 8 ; i ++ ) {
+   { int j ; for ( j = 0 ; j < 4 ; j ++ ) {
+    int tmp = ptr[ 4 + j ] ;
+    ptr[ 4 + j ] = ptr[ 8 + j ] ;
+    ptr[ 8 + j ] = tmp ;
+   } }
+   ptr += 16 ;
+  } }
+  break ;
+     }
+     case 3 : {
+  { int i ; for ( i = 0 ; i < 8 ; i ++ ) {
+   { int j ; for ( j = 0 ; j < 8 ; j ++ ) {
+    int tmp = ptr[ 8 + j ] ;
+    ptr[ 8 + j ] = ptr[ 16 + j ] ;
+    ptr[ 16 + j ] = tmp ;
+   } }
+   ptr += 32 ;
+  } }
+  break ;
+     }
+ }
 }
