@@ -105,13 +105,57 @@ INCLUDE_ASM("tmp/asm/tony_libs/memab/nonmatchings/memab", func_000006BC);
 
 INCLUDE_ASM("tmp/asm/tony_libs/memab/nonmatchings/memab", func_00000878);
 
-INCLUDE_ASM("tmp/asm/tony_libs/memab/nonmatchings/memab", module_start);
+int module_start(void)
+{
+	D_000028E0 = sceKernelCreateSema("SceMemab", 0, 1, 1, 0);
+	return D_000028E0 < 1;
+}
 
-INCLUDE_ASM("tmp/asm/tony_libs/memab/nonmatchings/memab", module_stop);
+int module_stop(void)
+{
+	sceKernelDeleteSema(D_000028E0);
+	return 0;
+}
 
-INCLUDE_ASM("tmp/asm/tony_libs/memab/nonmatchings/memab", sceMemab_driver_01FD1BA0);
+int sceMemab_driver_01FD1BA0(void)
+{
+	int ret = -0x109;
 
-INCLUDE_ASM("tmp/asm/tony_libs/memab/nonmatchings/memab", sceMemab_driver_0C134D3F);
+	if (sceKernelWaitSema(D_000028E0, 1, 0) != 0)
+		goto end;
+	ret = 0;
+	if (D_00002880 != 0)
+		goto end;
+	D_00002888 = 0;
+	ret = -0x100;
+	if (sceUtilsBufferCopyWithRange(D_000028C0, 0x14, 0, 0, 0xE) != 0)
+		goto end;
+	D_00002880 = 1;
+	ret = 0;
+end:
+	if (sceKernelSignalSema(D_000028E0, 1) != 0)
+		ret = -0x109;
+	return ret;
+}
+
+int sceMemab_driver_0C134D3F(void)
+{
+	int ret = -0x109;
+
+	if (sceKernelWaitSema(D_000028E0, 1, 0) != 0)
+		goto end;
+	ret = 0;
+	if (D_00002880 == 0)
+		goto end;
+	MEMSET(D_000028C0, 0, 0x20);
+	D_00002880 = 0;
+	ret = 0;
+	D_00002888 = 0;
+end:
+	if (sceKernelSignalSema(D_000028E0, 1) != 0)
+		ret = -0x109;
+	return ret;
+}
 
 INCLUDE_ASM("tmp/asm/tony_libs/memab/nonmatchings/memab", sceMemab_driver_A4720EED);
 
