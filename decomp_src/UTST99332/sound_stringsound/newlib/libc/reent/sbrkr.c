@@ -1,3 +1,3 @@
-#include "common.h"
-
-INCLUDE_ASM("tmp/asm/UTST99332/sound_stringsound/nonmatchings/newlib/libc/reent/sbrkr", _sbrk_r);
+/* upstream: newlib-1.12.0/newlib/libc/reent/sbrkr.c (unmodified) */
+/* cflags: -O2 -fno-builtin */
+#include "libc/reent/sbrkr.c"
