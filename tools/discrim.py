@@ -80,11 +80,13 @@ def main():
     ap.add_argument("units", nargs="*")
     ap.add_argument("--cc1", default="1.6.1,1.7.1-orig")
     ap.add_argument("--versions", default="1.6.1,1.6.1.internal")
+    ap.add_argument("--libs", action="store_true", help="also newlib/libgcc/libstdc++ units")
     a = ap.parse_args()
     A, B = a.cc1.split(",")
     vers = a.versions.split(",")
     units = a.units or [p.split()[0] for p in (ROOT / "config" / a.target / f"units.{a.module}.txt").read_text().splitlines()
-                        if p.strip() and not p.startswith("#") and len(p.split()) == 3 and p.split()[1] in vers]
+                        if p.strip() and not p.startswith("#") and len(p.split()) == 3 and p.split()[1] in vers
+                        and (a.libs or not p.startswith(("newlib/", "libgcc/", "gcc-3.3.3/")))]
     for u in units:
         cpath = ROOT / "decomp_src" / a.target / a.module / f"{u}.c"
         if not cpath.exists():
