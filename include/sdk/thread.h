@@ -14,4 +14,9 @@ SceUID sceKernelCreateThread(const char *name, SceKernelThreadEntry entry, int i
 int sceKernelStartThread(SceUID thid, SceSize arglen, void *argp);
 int sceKernelTerminateDeleteThread(SceUID thid);
 int sceKernelGetThreadCurrentPriority(void);
+SceUID sceKernelCreateSema(const char *name, SceUInt attr, int initVal, int maxVal, void *option);
+int sceKernelDeleteSema(SceUID semaid);
+int sceKernelSignalSema(SceUID semaid, int signal);
+int sceKernelWaitSema(SceUID semaid, int signal, SceUInt *timeout);
+int sceKernelExitThread(int status);
 #endif
