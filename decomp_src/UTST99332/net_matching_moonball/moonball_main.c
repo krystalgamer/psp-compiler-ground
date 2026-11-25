@@ -199,6 +199,10 @@ extern int __fade;
 extern int __fadestep;
 extern int __fadecolor;
 
+
+/* SDK functions (tools/sdk_protos.h) */
+int sceCtrlPeekBufferPositive(SceCtrlData *data, int count);
+
 static void InitFunc(void);
 void DrawSprite(int x, int y, int w, int h, int u, int v, Gu2dV16T *model);
 void FadeDraw(void);
@@ -261,7 +265,27 @@ void draw_game(void) {
     vcount = (vcount + 1) & 0xFFFF;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/moonball_main", game_pad_read_top);
+extern int D_0007D914;
+
+int game_pad_read_top(void) {
+    SceCtrlData buf;
+    int temp_s0;
+    int temp_s0_2;
+
+    temp_s0 = D_0007D914;
+    sceCtrlPeekBufferPositive(&buf, 1);
+    temp_s0_2 = buf.Buttons & (buf.Buttons ^ temp_s0);
+    D_0007D914 = buf.Buttons;
+    if ((temp_s0_2 & 0x20) && (_mrinfo.hello_opt.req_player_num < 0x10)) {
+        _mrinfo.hello_opt.req_player_num += 1;
+    }
+    if (temp_s0_2 & 0x80) {
+        if (_mrinfo.hello_opt.req_player_num >= 3) {
+            _mrinfo.hello_opt.req_player_num -= 1;
+        }
+    }
+    return 1;
+}
 
 int game_pad_read(void) {
     ProgramSwitch();

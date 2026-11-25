@@ -93,6 +93,7 @@ extern int minfo_num;
 extern struct minfo minfo[16];
 extern u_int32 cont;
 
+
 static void pad_circle(void);
 static void pad_triangle(void);
 static void pad_cross(void);
@@ -101,7 +102,16 @@ int pad_read(void);
 
 INCLUDE_ASM("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/pad", pad_circle);
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/pad", pad_triangle);
+void pad_triangle(void) {
+    int var_a0;
+
+    var_a0 = 1;
+    if ((_mrinfo.state != MATCHING_ROOM_TOP) && (var_a0 = 0xC, (_mrinfo.state != MATCHING_ROOM_ROOM_LIST))) {
+
+    } else {
+        change_state(var_a0);
+    }
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/pad", pad_cross);
 
