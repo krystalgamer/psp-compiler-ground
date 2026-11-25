@@ -1,2 +1,8 @@
 # unit                                     compiler        source
 libatrac3plus                                1.5.1.internal  libatrac3plus.c
+header                                       1.5.1.internal  header.c
+info                                         1.5.1.internal  info.c
+setdata                                      1.5.1.internal  setdata.c
+decode                                       1.5.1.internal  decode.c
+stream                                       1.5.1.internal  stream.c
+reset                                        1.5.1.internal  reset.c

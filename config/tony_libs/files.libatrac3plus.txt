@@ -1,2 +1,12 @@
-# Stripped module: one unit for all of .text until object boundaries are known.
+# Stripped module: objects guessed from the call graph (tiny helpers are always
+# called, never inlined: -O2), and from which callees a function may treat as
+# pure (gcc 3.3 marks functions defined earlier in the same file const/pure):
+# func_00002764 reloads memory after calling func_0000201C, so they are in
+# different objects.  The .comment section lists 8 C objects.
 0x00000 libatrac3plus    1.5.1.internal  libatrac3plus.c
+0x016E4 header           1.5.1.internal  header.c
+0x01F7C info             1.5.1.internal  info.c
+0x022F8 setdata          1.5.1.internal  setdata.c
+0x02838 decode           1.5.1.internal  decode.c
+0x02F10 stream           1.5.1.internal  stream.c
+0x03148 reset            1.5.1.internal  reset.c

@@ -1,0 +1,69 @@
+/* cflags: -O2 -frename-registers -fno-strict-aliasing -fno-merge-constants */
+#include "common.h"
+
+/* --- declarations --- */
+#include "atrac.h"
+/* --- end declarations --- */
+
+unsigned int func_00002F10(unsigned int a, unsigned int b, unsigned int c, unsigned int d)
+{
+	unsigned int r = a + c;
+
+	if (r >= b) {
+		unsigned int m = (b - a) % d;
+		if (b < m + c)
+			r = 0;
+		else
+			r = (r - b) + m;
+	}
+	return r;
+}
+
+unsigned int func_00002F50(unsigned int a, unsigned int b, unsigned int c, unsigned int d)
+{
+	unsigned int r = 0;
+
+	if ((b + c < a) & (c < d))
+		r = b + c;
+	return r;
+}
+
+unsigned int func_00002F74(unsigned int a, unsigned int b, unsigned int start, unsigned int end, unsigned int lim)
+{
+	unsigned int x;
+
+	if (b >= lim)
+		return 0;
+	x = a + b;
+	if (x < end + 1)
+		return x;
+	return start + (x - end - 1) % (end - start + 1);
+}
+
+INCLUDE_ASM("tmp/asm/tony_libs/libatrac3plus/nonmatchings/stream", func_00002FC0);
+
+unsigned int func_0000303C(AtracInfo *info)
+{
+	unsigned int end = info->unk28 + info->unk3C;
+	unsigned int ret = 0;
+
+	if (end < info->unk30)
+		ret = info->unk30 - end;
+	return ret;
+}
+
+INCLUDE_ASM("tmp/asm/tony_libs/libatrac3plus/nonmatchings/stream", func_00003064);
+
+unsigned int func_000030FC(unsigned int a, unsigned int b, unsigned int c, unsigned int d)
+{
+	unsigned int ret = 0;
+
+	if (a + c < b) {
+		ret = b - (a + c);
+	} else {
+		unsigned int m = (b - a) % d;
+		if (b >= m + c)
+			ret = b - m - c;
+	}
+	return ret;
+}
