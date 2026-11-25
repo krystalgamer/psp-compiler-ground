@@ -116,6 +116,13 @@ modules (`tools/nltest.py`, `tools/objcmp.py`).
   loop-invariant; an `if` is turned into `max` by if-conversion after the
   loop optimizer), and constants hoisted to an outer loop (a goto-loop has
   no loop notes, so 3.3's loop.c treats it as part of the outer loop).
+- Per-library flags under 1.6.1.internal: UTST99332 demo_luga's copy of the
+  gmo model library (an older revision than graphics_model's: different
+  function order, a `geModelDoTextureFunc` hook in `sceGmoTextureActivate`)
+  was built with `-O2 -frename-registers`, like sampler's 1.5.0.internal
+  libraries.  graphics_model and graphics_model2 compile the same sources
+  with plain `-O2`.  Same compiler, different makefile: not a compiler
+  change.
 - puzzle_bobble's game code has no DWARF, but its symbol table keeps the
   `STT_FILE` symbols, so it is split into its 23 source files
   (`config/puzzle_bobble/files.BOOT.txt`).  The `.comment` entries in link
