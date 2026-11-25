@@ -327,6 +327,8 @@ struct mbuf {
 
 struct ifevent {
 	TAILQ_ENTRY(ifevent) link;
+	int a;
+	int b;
 };
 
 struct ifqueue {
@@ -369,6 +371,28 @@ struct sockaddr_dl {
 	char sdl_data[12];
 };
 
+struct if_data {
+	u_char ifi_type;
+	u_char ifi_addrlen;
+	u_char ifi_hdrlen;
+	int ifi_link_state;
+	unsigned long long ifi_mtu;
+	unsigned long long ifi_metric;
+	unsigned long long ifi_baudrate;
+	char unk58[0x88 - 0x58];
+	unsigned long long ifi_obytes;
+	char unk90[0xB0 - 0x90];
+};
+
+#define if_type if_data.ifi_type
+#define if_addrlen if_data.ifi_addrlen
+#define if_hdrlen if_data.ifi_hdrlen
+#define if_link_state if_data.ifi_link_state
+#define if_mtu if_data.ifi_mtu
+#define if_metric if_data.ifi_metric
+#define if_baudrate if_data.ifi_baudrate
+#define if_obytes if_data.ifi_obytes
+
 struct ifnet {
 	void *if_softc;
 	TAILQ_ENTRY(ifnet) if_list;
@@ -380,16 +404,7 @@ struct ifnet {
 	short if_timer;
 	short if_flags;
 	char unk32[0x38 - 0x32];
-	u_char if_type;
-	u_char if_addrlen;
-	u_char if_hdrlen;
-	int if_link_state;
-	unsigned long long if_mtu;
-	unsigned long long if_metric;
-	unsigned long long if_baudrate;
-	char unk58[0x88 - 0x58];
-	unsigned long long if_obytes;
-	char unk90[0xB0 - 0x90];
+	struct if_data if_data;
 	int (*if_output)(struct ifnet *, struct mbuf *, void *, void *);
 	void (*if_input)(struct ifnet *, struct mbuf *);
 	void (*if_start)(struct ifnet *);
@@ -411,7 +426,9 @@ struct ifnet {
 	int if_iopending;
 	int if_iostatus;
 	TAILQ_HEAD(, ifevent) if_evq;
-	char unk118[0x128 - 0x118];
+	int if_evmask_a;
+	int if_evmask_b;
+	char unk120[0x128 - 0x120];
 	struct ether_multi *ec_multiaddrs;
 	int ec_multicnt;
 };
@@ -434,9 +451,9 @@ extern void (*D_0000B03C)(struct ifaddr *);
 extern void (*D_0000B040)(struct ifnet *, int);
 extern void (*D_0000B044)(struct ifnet *);
 extern void (*D_0000B048)(struct ifnet *);
-extern void *D_0000B058;
-extern void *D_0000B05C;
-extern void *D_0000B060;
+extern int (*D_0000B058)(u_long, void *, struct ifreq *, int *);
+extern int (*D_0000B05C)(void *, int *);
+extern int (*D_0000B060)(void *, u_long, void *, struct ifnet *);
 extern struct callout D_0000BB2C;
 int sceNetIfhandlePollSema(SceUID sema, int n);
 void _sce_pspnet_callout_reset(struct callout *c, unsigned int ticks, void (*func)(void *), void *arg);
