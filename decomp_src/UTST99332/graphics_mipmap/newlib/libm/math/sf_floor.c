@@ -1,5 +1,3 @@
-#include "common.h"
-
-INCLUDE_RODATA("tmp/asm/UTST99332/graphics_mipmap/nonmatchings/newlib/libm/math/sf_floor", huge_1B06C);
-
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_mipmap/nonmatchings/newlib/libm/math/sf_floor", floorf);
+/* upstream: newlib-1.12.0/newlib/libm/math/sf_floor.c (unmodified) */
+/* cflags: -O2 -fno-builtin */
+#include "libm/math/sf_floor.c"

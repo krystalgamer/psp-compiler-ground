@@ -1,3 +1,3 @@
-#include "common.h"
-
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_mipmap/nonmatchings/newlib/libc/reent/readr", _read_r);
+/* upstream: newlib-1.12.0/newlib/libc/reent/readr.c (unmodified) */
+/* cflags: -O2 -fno-builtin */
+#include "libc/reent/readr.c"
