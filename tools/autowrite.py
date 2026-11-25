@@ -125,7 +125,8 @@ def main():
         if not path.exists():
             continue
         text = path.read_text()
-        drafted = '#include "m2c_macros.h"' in text   # an earlier no-DWARF run
+        # an earlier run's output: more drafts can go in
+        drafted = '#include "m2c_macros.h"' in text or "/* declarations recovered from DWARF */" in text
         if not drafted and not all(STUB.match(l) for l in text.splitlines()):
             continue
         funcs = re.findall(r'INCLUDE_ASM\("[^"]+", (\w+)\);', text)
@@ -151,10 +152,19 @@ def main():
         allbody = "\n".join(bodies.values())
         sdkl = [v for k, v in sdk.items() if re.search(rf"\b{k}\(", allbody)]
 
+        old = text.splitlines()[1:]
+        head = ['#include "common.h"', "", "/* declarations recovered from DWARF */"] + ctxl
+        if "/* declarations recovered from DWARF */" in text:
+            # keep the earlier header; add the prototypes it lacks
+            i = next(n for n, l in enumerate(old) if l.startswith(("INCLUDE_", "static ", "#ifdef")) or
+                     re.match(r"^[A-Za-z_][^;]*\)\s*\{?$", l))
+            head, old = ['#include "common.h"'] + old[:i], old[i:]
+            have = "\n".join(head)
+            sdkl = [l for l in sdkl if l not in have]
+
         def render():
-            out = (['#include "common.h"', "", "/* declarations recovered from DWARF */"] + ctxl +
-                   (["", "/* SDK functions (tools/sdk_protos.h) */"] + sdkl if sdkl else []) + [""])
-            for line in text.splitlines()[1:]:
+            out = head + (["", "/* SDK functions (tools/sdk_protos.h) */"] + sdkl if sdkl else []) + [""]
+            for line in old:
                 m = re.match(r'INCLUDE_ASM\("[^"]+", (\w+)\);', line)
                 out.append(bodies[m.group(1)].strip("\n") if m and m.group(1) in bodies else line)
             return "\n".join(out).rstrip("\n") + "\n"
