@@ -82,30 +82,53 @@ struct sahead {
 	struct sa **last;
 };
 
-typedef struct {
+struct Peer;
+struct AuthCtx;
+
+struct authmsg {
+	int hdr[2];
+	int type;
+	struct Peer *peer;
+};
+
+struct alarmarg {
+	struct AuthCtx *ctx;
+	struct Peer *peer;
+	struct authmsg msg;
+};
+
+typedef struct Peer {
+	struct Peer *next;
+	struct Peer **prev;
+	int state;
+	struct sa sa;
+	unsigned char key[0x80];
+	char pad15C[0x48C - 0x15C];
+	struct alarmarg arg[3];
+	int alarm[3];
+	int unk4E0;
+	int flags;
+	int unk4E8;
+	int unk4EC;
+} Peer;
+
+typedef struct AuthCtx {
 	int unk0;
 	int mbx;
 	int thid;
 	int flags;
-	int unk10;
-	int *unk14;
-	int unk18;
+	Peer *first;
+	Peer **last;
+	int npeers;
 	void *ifh;
 	unsigned char mac[6];
 	unsigned char key[0x80];
 	char padA6[2];
 	int unkA8;
-	char msgAC[8];
-	int unkB4;
-	int unkB8;
+	struct authmsg msg;
 	unsigned int alarmTime;
 	int alarm;
-	void *alarmArg;
-	int unkC8;
-	int unkCC;
-	int unkD0;
-	int unkD4;
-	int unkD8;
+	struct alarmarg arg;
 	int unkDC;
 	int unkE0;
 	int unkE4;
@@ -123,6 +146,8 @@ int sceKernelSignalSema(int id, int n);
 int sceKernelWaitSema(int id, int n, unsigned int *timeout);
 int sceKernelGetThreadId(void);
 int sceKernelSendMbx(int id, void *msg);
+int sceKernelCancelAlarm(int id);
+int sceKernelSetAlarm(unsigned int clock, unsigned int (*handler)(void *), void *common);
 void *sceNetMallocInternal(unsigned int size);
 void sceNetFreeInternal(void *p);
 void sceNetMCopydata(struct mbuf *m, int off, int len, void *cp);
@@ -145,6 +170,20 @@ int func_00001214(void);
 void func_00001290(void);
 struct sa *func_0000147C(const unsigned char *mac);
 int sceNetAdhocAuth_lib_2E6AA271(void);
+int func_000012C4(struct sa *sa);
+int func_000013A4(struct sa *sa);
+
+static inline void cancelAlarm(int *alarm)
+{
+	int s;
+
+	s = sceKernelCpuSuspendIntr();
+	if (*alarm > 0) {
+		sceKernelCancelAlarm(*alarm);
+		*alarm = 0;
+	}
+	sceKernelCpuResumeIntr(s);
+}
 
 extern int D_00003ED0;
 extern int D_00003ED4;

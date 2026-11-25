@@ -17,7 +17,7 @@ int func_00001110(struct mbuf *m)
 	IF_ENQUEUE(&D_00004058, m);
 	if (!(D_00003EE4->flags & 1)) {
 		D_00003EE4->flags |= 1;
-		sceKernelSendMbx(D_00003EE4->mbx, D_00003EE4->msgAC);
+		sceKernelSendMbx(D_00003EE4->mbx, &D_00003EE4->msg);
 	}
 	sceKernelCpuResumeIntr(s);
 	return 0;
