@@ -1,3 +1,3 @@
-#include "common.h"
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/newlib/libc/stdio/fwalk", _fwalk);
+/* upstream: newlib-1.12.0/newlib/libc/stdio/fwalk.c (unmodified) */
+/* cflags: -O2 -fno-builtin */
+#include "libc/stdio/fwalk.c"

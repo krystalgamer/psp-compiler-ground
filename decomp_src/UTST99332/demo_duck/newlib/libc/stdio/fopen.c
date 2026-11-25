@@ -1,5 +1,3 @@
-#include "common.h"
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/newlib/libc/stdio/fopen", _fopen_r);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/newlib/libc/stdio/fopen", fopen);
+/* upstream: newlib-1.12.0/newlib/libc/stdio/fopen.c (unmodified) */
+/* cflags: -O2 -fno-builtin */
+#include "libc/stdio/fopen.c"

@@ -1,3 +1,3 @@
-#include "common.h"
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/newlib/libm/math/s_sin", sin);
+/* upstream: newlib-1.12.0/newlib/libm/math/s_sin.c (unmodified) */
+/* cflags: -O2 -fno-builtin */
+#include "libm/math/s_sin.c"

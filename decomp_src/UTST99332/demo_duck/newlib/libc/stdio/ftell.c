@@ -1,5 +1,3 @@
-#include "common.h"
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/newlib/libc/stdio/ftell", _ftell_r);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/newlib/libc/stdio/ftell", ftell);
+/* upstream: newlib-1.12.0/newlib/libc/stdio/ftell.c (unmodified) */
+/* cflags: -O2 -fno-builtin */
+#include "libc/stdio/ftell.c"
