@@ -9,7 +9,73 @@ SceUInt func_00002D48(void *common);
 int func_00002C74(SceSize args, void *argp);
 /* --- end declarations --- */
 
-INCLUDE_ASM("tmp/asm/tony_libs/pspnet/nonmatchings/if", _sce_pspnet_if_attach);
+void _sce_pspnet_if_attach(struct ifnet *ifp)
+{
+	unsigned int socksize, ifasize;
+	int namelen, masklen;
+	struct sockaddr_dl *sdl;
+	struct ifaddr *ifa;
+	struct ifnet *p;
+	int index = 1;
+
+	TAILQ_INIT(&ifp->if_addrlist);
+	for (;;) {
+		for (p = D_0000BB24.tqh_first; p != NULL; p = p->if_list.tqe_next) {
+			if (p->if_index == index)
+				break;
+		}
+		if (p == NULL)
+			break;
+		if (++index >= 8)
+			break;
+	}
+	if (D_0000B070 < index)
+		D_0000B070 = index;
+	TAILQ_INSERT_TAIL(&D_0000BB24, ifp, if_list);
+	ifp->if_index = index;
+	D_0000B078[ifp->if_index] = ifp;
+
+	namelen = strlen(ifp->if_xname);
+	masklen = 8 + namelen;
+	socksize = masklen + ifp->if_addrlen;
+	if (socksize < sizeof(struct sockaddr_dl))
+		socksize = sizeof(struct sockaddr_dl);
+	socksize = ((socksize - 1) | 3) + 1;
+	ifasize = sizeof(*ifa) + 2 * socksize;
+	ifa = sceNetMallocInternal(ifasize);
+	memset(ifa, 0, ifasize);
+	sdl = (struct sockaddr_dl *)(ifa + 1);
+	sdl->sdl_len = socksize;
+	sdl->sdl_family = 18;
+	bcopy(ifp->if_xname, sdl->sdl_data, namelen);
+	sdl->sdl_nlen = namelen;
+	sdl->sdl_index = ifp->if_index;
+	sdl->sdl_type = ifp->if_type;
+	D_0000B074[ifp->if_index] = ifa;
+	ifa->ifa_refcnt++;
+	ifa->ifa_rtrequest = _sce_pspnet_link_rtrequest;
+	ifa->ifa_ifp = ifp;
+	if ((ifa->ifa_list.tqe_next = ifp->if_addrlist.tqh_first) != NULL)
+		ifp->if_addrlist.tqh_first->ifa_list.tqe_prev = &ifa->ifa_list.tqe_next;
+	else
+		ifp->if_addrlist.tqh_last = &ifa->ifa_list.tqe_next;
+	ifp->if_addrlist.tqh_first = ifa;
+	ifa->ifa_list.tqe_prev = &ifp->if_addrlist.tqh_first;
+	ifa->ifa_refcnt++;
+	ifa->ifa_addr = (struct sockaddr *)sdl;
+	ifp->if_sadl = sdl;
+	sdl = (struct sockaddr_dl *)(socksize + (char *)sdl);
+	ifa->ifa_netmask = (struct sockaddr *)sdl;
+	sdl->sdl_len = masklen;
+	while (namelen != 0)
+		sdl->sdl_data[--namelen] = 0xff;
+	if (ifp->if_snd.ifq_maxlen == 0)
+		ifp->if_snd.ifq_maxlen = D_0000A0AC;
+	ifp->if_unkE4 = NULL;
+	ifp->if_link_state = 0;
+	if (D_0000B068 > 0)
+		D_0000B038(ifp);
+}
 
 INCLUDE_ASM("tmp/asm/tony_libs/pspnet/nonmatchings/if", _sce_pspnet_if_detach);
 

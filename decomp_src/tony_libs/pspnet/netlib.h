@@ -309,6 +309,22 @@ struct ifaddr {
 	struct sockaddr *ifa_netmask;
 	struct ifnet *ifa_ifp;
 	TAILQ_ENTRY(ifaddr) ifa_list;
+	char unk18[0x28 - 0x18];
+	void (*ifa_rtrequest)(int, void *, void *);
+	int unk2C;
+	int ifa_refcnt;
+	int unk34;
+};
+
+struct sockaddr_dl {
+	u_char sdl_len;
+	u_char sdl_family;
+	u_short sdl_index;
+	u_char sdl_type;
+	u_char sdl_nlen;
+	u_char sdl_alen;
+	u_char sdl_slen;
+	char sdl_data[12];
 };
 
 struct ifnet {
@@ -321,7 +337,12 @@ struct ifnet {
 	u_short if_index;
 	short if_timer;
 	short if_flags;
-	char unk32[0xB0 - 0x32];
+	char unk32[0x38 - 0x32];
+	u_char if_type;
+	u_char if_addrlen;
+	u_char if_hdrlen;
+	int if_link_state;
+	char unk40[0xB0 - 0x40];
 	int (*if_output)(struct ifnet *, struct mbuf *, void *, void *);
 	void (*if_input)(struct ifnet *, struct mbuf *);
 	void (*if_start)(struct ifnet *);
@@ -330,8 +351,9 @@ struct ifnet {
 	void (*if_watchdog)(struct ifnet *);
 	void (*if_drain)(struct ifnet *);
 	struct ifqueue if_snd;
-	void *if_sadl;
-	char unkE4[0xEC - 0xE4];
+	struct sockaddr_dl *if_sadl;
+	void *if_unkE4;
+	char unkE8[0xEC - 0xE8];
 	u_char if_lladdr[6];
 	char unkF2[0xF4 - 0xF2];
 	int (*if_up)(struct ifnet *);
@@ -364,8 +386,8 @@ extern void (*D_0000B04C)(struct ifnet *);
 extern void (*D_0000B050)(struct ifnet *);
 extern void (*D_0000B054)(struct ifnet *);
 extern int D_0000B070;
-extern int D_0000B074;
-extern int D_0000B078;
+extern struct ifaddr **D_0000B074;
+extern struct ifnet **D_0000B078;
 extern struct ifnet_head D_0000BB24;
 void func_00005404(struct ifqueue *ifq);
 void sceNetMFreem(struct mbuf *m);
@@ -512,5 +534,9 @@ static inline struct ifnet *if_find(const char *name)
 	_sce_pspnet_splunlock(s);
 	return NULL;
 }
+
+void _sce_pspnet_link_rtrequest(int cmd, void *rt, void *info);
+
+extern int D_0000A0AC;
 
 #endif
