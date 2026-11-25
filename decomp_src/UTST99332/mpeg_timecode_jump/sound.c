@@ -212,7 +212,17 @@ SceInt32 soundbuf_func(SceSize size, SceVoid *argp)
 	return 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/mpeg_timecode_jump/nonmatchings/sound", soundbuf_swapbuf);
+void *memcpy(void *d, const void *s, unsigned int n);
+#define currentBuf D_00011818	/* soundbuf_swapbuf's static */
+extern SceInt32 currentBuf;
+static SceInt32 soundbuf_swapbuf(t_soundBuffer *pSound, SceChar8 *buf)
+{
+	memcpy(outputBuf[currentBuf], buf, pSound->bufSize);
+	pSound->read = (pSound->read + 1) % pSound->size;
+	sceWaveAudioWriteBlocking(0, 0x8000, 0x8000, outputBuf[currentBuf]);
+	currentBuf ^= 1;
+	return 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/mpeg_timecode_jump/nonmatchings/sound", soundbuf_output);
 
