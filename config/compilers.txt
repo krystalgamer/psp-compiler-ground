@@ -9,4 +9,4 @@
 1.5.1           1.5.1   -mno-ulsw
 1.5.1.internal  1.5.1   -mno-ulsw
 1.6.1           1.6.1   as:-mulsw
-1.6.1.internal  1.6.1   as:-mulsw
+1.6.1.internal  1.6.1   -fno-merge-constants as:-mulsw

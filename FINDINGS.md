@@ -105,3 +105,17 @@ modules (`tools/nltest.py`, `tools/objcmp.py`).
   no loop notes, so 3.3's loop.c treats it as part of the outer loop).
 - `__builtin_allegrex_wsbh` already exists in 1.6.1 (`sceNetHtons` in
   UTST99261 mp3/netmgr uses it).
+- **1.6.1.internal: no `.rodata.cst*` sections.**  In the release
+  toolchains (1.5.1, 1.6.1, and 1.3.1/1.7.1's original cc1s) float and
+  double constants go to `.rodata.cst4`/`.rodata.cst8`, and Sony's
+  `*(.rodata .rodata.*)` links them after the unit's `.rodata` (UTST99261
+  mp3/mp3dec, mp3/l1init, message).  In every 1.6.1.internal unit they sit
+  in `.rodata` in emission order instead, interleaved with the strings
+  (sampler display's `0.125f` before its strings; in UTST99332, e.g.
+  utility_font_basho basho and graphics_depthblur main, there are several
+  float runs between string runs).  That is a cc1 configured without
+  `HAVE_GAS_SHF_MERGE` (an assembler without SHF_MERGE when the internal
+  build was made), which makes `mergeable_constant_section` fall back to
+  `.rodata`.  `config/compilers.txt` passes `-fno-merge-constants` for
+  1.6.1.internal, which has the same effect.  It is a build-configuration
+  difference, not a source patch.
