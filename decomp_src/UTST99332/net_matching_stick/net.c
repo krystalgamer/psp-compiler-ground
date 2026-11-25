@@ -147,11 +147,49 @@ static int check_error_dialog_closed(void);
 int net_update(void);
 
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_matching_stick/nonmatchings/net", get_random_num);
+int printf(const char *fmt, ...);
+void *memset(void *s, int c, unsigned int n);
+int rand(void);
+int printf(const char *, ...);
+int rand(void);
+void *memset(void *, int, unsigned int);
+static u_int get_random_num(u_int min, u_int max)
+{
+	u_int num;
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_matching_stick/nonmatchings/net", get_bssid);
+	if (max == min)
+		return min;
+	num = rand();
+	return num / (0x7fffffff / (max - min + 1) + 1) + min;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_matching_stick/nonmatchings/net", randomize_group_name);
+int get_bssid(char *bssid)
+{
+	struct SceNetAdhocctlParameter param;
+	int ret;
+
+	ret = sceNetAdhocctlGetParameter(&param);
+	if (ret < 0) {
+		printf("sceNetAdhocctlGetParameter() failed. ret = 0x%x\n", ret);
+		return ret;
+	}
+	sceNetEtherNtostr(param.bssid.data, bssid);
+	return ret;
+}
+
+int randomize_group_name(struct SceNetAdhocctlGroupName *group_name)
+{
+	u_int i;
+	u_int len;
+	char *ptr;
+
+	len = get_random_num(1, 8);
+	memset(group_name, 0, sizeof(*group_name));
+	ptr = (char *)group_name->data;
+	for (i = 0; i < len; i++)
+		ptr[i] = get_random_num('A', 'Z');
+	return 0;
+}
 
 extern int evf_6C28C;
 
@@ -160,7 +198,29 @@ void clear_evf(void) {
     error_code = 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_matching_stick/nonmatchings/net", adhocctl_handler);
+extern __typeof__(evf) evf_6C28C;
+#define evf evf_6C28C
+static void adhocctl_handler(int event, int error, void *arg)
+{
+	printf("event: [%s] error_code = 0x%x\n", event_str[event], error);
+	if (event == 0) {
+		error_code = error;
+		evf |= 0x01;
+	} else if (event == 1) {
+		error_code = 0;
+		evf |= 0x02;
+	} else if (event == 2) {
+		error_code = 0;
+		evf |= 0x04;
+	} else if (event == 3) {
+		error_code = 0;
+		evf |= 0x08;
+	} else if (event == 4) {
+		error_code = 0;
+		evf |= 0x10;
+	}
+}
+#undef evf
 
 extern int evf_6C28C;
 
@@ -188,7 +248,23 @@ void net_term(void) {
     sceNetTerm();
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_matching_stick/nonmatchings/net", net_scan);
+extern __typeof__(evf) evf_6C28C;
+#define evf evf_6C28C
+static int net_scan(void)
+{
+	int ret;
+
+	evf = 0;
+	ret = sceNetAdhocctlScan();
+	if (ret < 0) {
+		printf("sceNetAdhocctlScan() failed. ret = 0x%x\n", ret);
+		change_state(MATCHING_ROOM_TOP);
+	} else if (_mrinfo.state == MATCHING_ROOM_SCAN) {
+		change_state(MATCHING_ROOM_SCANNING);
+	}
+	return ret;
+}
+#undef evf
 
 INCLUDE_ASM("tmp/asm/UTST99332/net_matching_stick/nonmatchings/net", net_connect);
 
@@ -196,7 +272,30 @@ INCLUDE_ASM("tmp/asm/UTST99332/net_matching_stick/nonmatchings/net", net_disconn
 
 INCLUDE_ASM("tmp/asm/UTST99332/net_matching_stick/nonmatchings/net", net_exit_gamemode);
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_matching_stick/nonmatchings/net", check_adhocctl_scan_completed);
+extern __typeof__(evf) evf_6C28C;
+#define evf evf_6C28C
+static int check_adhocctl_scan_completed(void)
+{
+	int adhocctl_state;
+	int ret;
+
+	ret = 0;
+	if (!(evf & 9))
+		goto END;
+	ret = sceNetAdhocctlGetState(&adhocctl_state);
+	if (ret < 0)
+		goto END;
+	if (adhocctl_state == 2)
+		goto END;
+	ret = polling_error();
+	if (ret < 0)
+		change_state(MATCHING_ROOM_TOP);
+	else
+		change_state(MATCHING_ROOM_SCAN_RESULT);
+END:
+	return ret;
+}
+#undef evf
 
 INCLUDE_ASM("tmp/asm/UTST99332/net_matching_stick/nonmatchings/net", check_adhocctl_connect_completed);
 
