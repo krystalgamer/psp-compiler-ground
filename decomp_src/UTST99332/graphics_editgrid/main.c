@@ -86,6 +86,16 @@ extern const float bezier[48];
 extern const float dot[12];
 extern u_int32 cont;
 
+
+/* SDK functions (tools/sdk_protos.h) */
+void sceGuColor(unsigned int color);
+void sceGuPatchDivide(unsigned int ulevel, unsigned int vlevel);
+void sceGuPatchPrim(int prim);
+void sceGumPushMatrix(void);
+void sceGumPopMatrix(void);
+void sceGumDrawBezier(int vtype, int ucount, int vcount, const void *indices, const void *vertices);
+int sceKernelDcacheWritebackAll(void);
+
 static void draw_bezier(void);
 static void draw_dot(void);
 static void draw_frame(void);
@@ -93,7 +103,15 @@ static void init_all(void);
 static int pad_read(void);
 
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_editgrid/nonmatchings/main", draw_bezier);
+void draw_bezier(void) {
+    sceGuPatchDivide(0x10U, 0x10U);
+    sceGuPatchPrim(primflag[prim]);
+    sceGumPushMatrix();
+    sceGuColor(-0x7F01U);
+    sceGumDrawBezier(0x180, 4, 4, NULL, control);
+    sceKernelDcacheWritebackAll();
+    sceGumPopMatrix();
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_editgrid/nonmatchings/main", draw_dot);
 
