@@ -18,10 +18,10 @@ typedef struct {
 	unsigned int state;
 	int unk38;
 	unsigned int unk3C;
-	unsigned int unk40;
+	unsigned char *unk40;
 	unsigned int unk44;
 	unsigned int unk48;
-	unsigned int unk4C;
+	unsigned char *unk4C;
 	unsigned int unk50;
 	unsigned int unk54;
 } AtracInfo;
@@ -55,11 +55,11 @@ typedef struct {
 } WaveFmt;
 
 typedef struct {
-	unsigned int buf;
+	unsigned char *buf;
 	unsigned int unk4;
 	unsigned int unk8;
 	unsigned int unkC;
-	unsigned int unk10;
+	unsigned char *unk10;
 	unsigned int unk14;
 	unsigned int unk18;
 	unsigned int unk1C;
@@ -110,6 +110,11 @@ int sceAudiocodecReleaseEDRAM(unsigned int *codec);
 int func_00001640(AtracCtx *ctx, int codec);
 unsigned int func_0000114C(unsigned int base, unsigned int pos, unsigned int end, unsigned int size);
 void func_00002288(unsigned char *dst, unsigned char *src, int n);
+void func_00003148(AtracInfo *info, AtracBufInfo *out);
+void func_00003160(AtracInfo *info, AtracBufInfo *out);
+void func_00003178(AtracInfo *info, AtracBufInfo *out);
+void func_0000340C(AtracInfo *info, unsigned int pos, AtracBufInfo *out);
+unsigned int func_0000224C(unsigned int a, unsigned int b);
 
 typedef struct {
 	unsigned int value;

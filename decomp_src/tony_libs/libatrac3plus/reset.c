@@ -1,4 +1,4 @@
-/* cflags: -O2 -frename-registers -fno-strict-aliasing -fno-merge-constants */
+/* cflags: -O2 -frename-registers -fno-merge-constants */
 #include "common.h"
 
 /* --- declarations --- */
@@ -21,9 +21,55 @@ void func_00003160(AtracInfo *info, AtracBufInfo *out)
 	out->unk1C = 0;
 }
 
-INCLUDE_ASM("tmp/asm/tony_libs/libatrac3plus/nonmatchings/reset", func_00003178);
+void func_00003178(AtracInfo *info, AtracBufInfo *out)
+{
+	int end = func_0000201C(info, info->unk1C);
 
-INCLUDE_ASM("tmp/asm/tony_libs/libatrac3plus/nonmatchings/reset", func_000031CC);
+	out->unk10 = info->unk4C;
+	out->unk14 = info->unk50;
+	out->unk18 = info->unk50;
+	out->unk1C = end + 1;
+}
+
+void func_000031CC(AtracInfo *info, unsigned int pos, AtracBufInfo *out)
+{
+	switch (info->state) {
+	default:
+	case 0:
+	case 1:
+		func_00003148(info, out);
+		func_00003160(info, out);
+		break;
+	case 2: {
+		unsigned int start = info->unk2C + info->unk3C;
+		int n = func_0000220C(info);
+		unsigned int x = info->unk2C + (pos / n + 1) * info->sampleSize;
+		unsigned int end = info->unk30;
+		unsigned int base = info->unk40;
+
+		out->unkC = start;
+		out->buf = base + start;
+		out->unk4 = end - start;
+		if (x >= start)
+			out->unk8 = x - start;
+		else
+			out->unk8 = 0;
+		func_00003160(info, out);
+		break;
+	}
+	case 3:
+	case 4:
+		out->buf = info->unk40;
+		out->unkC = func_00001FAC(info, pos);
+		out->unk4 = func_0000224C(info->unk44, info->unk30 - out->unkC);
+		out->unk8 = (func_00002064(info, pos) + 1) * info->sampleSize;
+		func_00003160(info, out);
+		break;
+	case 5:
+		func_0000340C(info, pos, out);
+		break;
+	}
+}
 
 int func_00003334(AtracInfo *info, unsigned int pos, unsigned int x, unsigned int y)
 {

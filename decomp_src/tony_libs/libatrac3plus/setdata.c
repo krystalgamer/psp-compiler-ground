@@ -1,4 +1,4 @@
-/* cflags: -O2 -frename-registers -fno-strict-aliasing -fno-merge-constants */
+/* cflags: -O2 -frename-registers -fno-merge-constants */
 #include "common.h"
 
 /* --- declarations --- */
