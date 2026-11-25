@@ -69,6 +69,20 @@ extern int texture_next;
 extern const char char_mode[16][16];
 extern u_int32 cont;
 
+
+/* SDK functions (tools/sdk_protos.h) */
+void sceGuStart(int type, void *list, int size);
+int sceGuFinish(void);
+int sceGuSync(int mode, int what);
+void sceGuClear(int flags);
+void sceGumLoadIdentity(void);
+void sceGumPushMatrix(void);
+void sceGumPopMatrix(void);
+void sceGumRotateX(float angle);
+void sceGumRotateY(float angle);
+void sceGumRotateZ(float angle);
+void sceGumTranslate(const ScePspFVector3 *v);
+
 static void draw_mode(void);
 static void draw_frame(void);
 static void init_all(void);
@@ -79,7 +93,24 @@ INCLUDE_RODATA("tmp/asm/UTST99332/graphics_balloon/nonmatchings/main", char_mode
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_balloon/nonmatchings/main", draw_mode);
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_balloon/nonmatchings/main", draw_frame);
+/* Warning: Gap in callee-saved word stack region.
+ * Saved: [0x0, 0x4, 0x10, 0x14], gap at: 0x8. */
+void draw_frame(void) {
+    sceGuStart(0, disp_list, 0x10000);
+    sceGuClear(7);
+    draw_mode();
+    sceGumPushMatrix();
+    sceGumLoadIdentity();
+    sceGumTranslate(&pos);
+    sceGumRotateX((rot.x * 3.1415927f) / 180.0f);
+    sceGumRotateY((rot.y * 3.1415927f) / 180.0f);
+    sceGumRotateZ((rot.z * 3.1415927f) / 180.0f);
+    draw_balloon();
+    draw_clouds();
+    sceGumPopMatrix();
+    sceGuFinish();
+    sceGuSync(0, 0);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_balloon/nonmatchings/main", init_all);
 
