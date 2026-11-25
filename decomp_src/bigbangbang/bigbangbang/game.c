@@ -144,6 +144,7 @@ void InitParticle(void);
 void SetParticle(float x, float y, float z, float speed, int number, int c);
 void DrawParticle(void);
 int random(void);
+void random_seed(unsigned int seed);
 int Pickup(int scrw, int scrh, int x, int y, ScePspFVector3 *v0, ScePspFVector3 *v1, ScePspFVector3 *v2);
 
 INCLUDE_ASM("tmp/asm/bigbangbang/bigbangbang/nonmatchings/game", InitBall);
@@ -276,12 +277,120 @@ static void DrawReady(int mode, int a, int s)
 
 
 
-INCLUDE_ASM("tmp/asm/bigbangbang/bigbangbang/nonmatchings/game", DrawMission);
+extern Gu2dV16T D_0006EBD0[4];
+static void DrawMission(int a)
+{
+	/* static model: the original's label */
+	u_int32 c;
+
+	sceGuEnable(9);
+	sceGuTexWrap(0, 0);
+	sceGuTexFilter(0, 0);
+	sceGuTexFunc(0, 1);
+	sceGuTexMode(4, 0, 0, 0);
+	sceGuClutMode(1, 0, 0xff, 0);
+	sceGuClutLoad(1, &clut_mission);
+	sceGuTexImage(0, 256, 128, 256, &chr_mission);
+	SpriteScale(1, 1);
+	c = (a << 24) | 0xffffff;
+	sceGuColor(c);
+	DrawSprite(112, 72, 256, 128, 0, 0, D_0006EBD0);
+	sceGuDisable(9);
+}
 
 INCLUDE_ASM("tmp/asm/bigbangbang/bigbangbang/nonmatchings/game", DrawGame);
 
 INCLUDE_ASM("tmp/asm/bigbangbang/bigbangbang/nonmatchings/game", CheckShoot);
 
-INCLUDE_ASM("tmp/asm/bigbangbang/bigbangbang/nonmatchings/game", KeyGame);
+void KeyGame(u_int32 padd, u_int32 cont)
+{
+	if (game.state == 6) {
+		if (padd & 8) {
+			FadeSetup(2, 0);
+			game.state = 7;
+			game.count = 0;
+			return;
+		}
+	} else if (game.state == 1) {
+		if (padd & 0x2008) {
+			game.state = 2;
+			game.key = 1;
+			game.count = 0;
+			return;
+		}
+	}
+	if (padd & 1)
+		exitflag = 1;
+	if (!game.key)
+		return;
+	paddpush = (paddpush + 1) & 0xffff;
+	if (cont & 0xf0) {
+		if (paddpush >= 5) {
+			paddval++;
+			if (paddval > 12)
+				paddval = 12;
+		}
+	} else {
+		paddval--;
+		if (paddval < 0) {
+			paddvec = 0;
+			paddval = 0;
+		}
+		paddpush = 0;
+		if (paddval) {
+			if (paddvec & 0x10) {
+				scope.pos[1] -= paddval;
+				if (scope.pos[1] < 0)
+					scope.pos[1] = 0;
+			}
+			if (paddvec & 0x40) {
+				scope.pos[1] += paddval;
+				if (scope.pos[1] > 240)
+					scope.pos[1] = 240;
+			}
+			if (paddvec & 0x80) {
+				scope.pos[0] -= paddval;
+				if (scope.pos[0] < 0)
+					scope.pos[0] = 0;
+			}
+			if (paddvec & 0x20) {
+				scope.pos[0] += paddval;
+				if (scope.pos[0] > 448)
+					scope.pos[0] = 448;
+			}
+		}
+	}
+	if (cont & 0x10) {
+		paddvec = (paddvec | 0x10) & ~0x40;
+		scope.pos[1] -= paddval;
+		if (scope.pos[1] < 0)
+			scope.pos[1] = 0;
+	}
+	if (cont & 0x40) {
+		paddvec = (paddvec | 0x40) & ~0x10;
+		scope.pos[1] += paddval;
+		if (scope.pos[1] > 240)
+			scope.pos[1] = 240;
+	}
+	if (cont & 0x80) {
+		paddvec = (paddvec | 0x80) & ~0x20;
+		scope.pos[0] -= paddval;
+		if (scope.pos[0] < 0)
+			scope.pos[0] = 0;
+	}
+	if (cont & 0x20) {
+		paddvec = (paddvec | 0x20) & ~0x80;
+		scope.pos[0] += paddval;
+		if (scope.pos[0] > 448)
+			scope.pos[0] = 448;
+	}
+	if (padd & 0x2000) {
+		random_seed(vcount);
+		scope.bpos[0] = scope.pos[0];
+		scope.bpos[1] = scope.pos[1];
+		scope.beam = 1;
+		CheckShoot();
+	}
+}
 
 INCLUDE_RODATA("tmp/asm/bigbangbang/bigbangbang/nonmatchings/game", D_0000B744);
