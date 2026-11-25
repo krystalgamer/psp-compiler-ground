@@ -144,7 +144,58 @@ fail:
 	return 0;
 }
 
-INCLUDE_ASM("tmp/asm/tony_libs/ifhandle/nonmatchings/mbuf", sceNetMCopypacket);
+struct mbuf *sceNetMCopypacket(struct mbuf *m, int how)
+{
+	struct mbuf *top, *n, *o;
+	unsigned int oldk1;
+
+	K1_SAVE(oldk1);
+	if (m == 0 || (K1_USER() && (int)m < 0))
+		goto fail;
+	MGET(n, how, m->m_type);
+	top = n;
+	if (!n)
+		goto nospace;
+
+	M_COPY_PKTHDR(n, m);
+	n->m_len = m->m_len;
+	if (m->m_flags & M_EXT) {
+		n->m_data = m->m_data;
+		n->m_ext = m->m_ext;
+		MCLADDREFERENCE(m, n);
+	} else {
+		memcpy(mtod(n, char *), mtod(m, char *), n->m_len);
+	}
+
+	m = m->m_next;
+	while (m) {
+		MGET(o, how, m->m_type);
+		if (!o)
+			goto nospace;
+
+		n->m_next = o;
+		n = n->m_next;
+
+		n->m_len = m->m_len;
+		if (m->m_flags & M_EXT) {
+			n->m_data = m->m_data;
+			n->m_ext = m->m_ext;
+			MCLADDREFERENCE(m, n);
+		} else {
+			memcpy(mtod(n, char *), mtod(m, char *), n->m_len);
+		}
+
+		m = m->m_next;
+	}
+	K1_RESTORE(oldk1);
+	return top;
+nospace:
+	sceNetMFreem(top);
+	D_000043D8++;
+fail:
+	K1_RESTORE(oldk1);
+	return 0;
+}
 
 INCLUDE_RODATA("tmp/asm/tony_libs/ifhandle/nonmatchings/mbuf", D_00003A44);
 

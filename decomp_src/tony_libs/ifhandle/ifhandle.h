@@ -34,8 +34,8 @@ extern int D_00003B2C;
 #define M_EOR 0x0004
 #define M_CLUSTER 0x0008
 
-#define M_DONTWAIT 0
-#define M_WAIT 1
+#define M_DONTWAIT 1
+#define M_WAIT 0
 
 struct mbuf;
 
@@ -155,6 +155,17 @@ static inline unsigned int max(unsigned int a, unsigned int b)
 	return a > b ? a : b;
 }
 
+static inline struct mbuf *m_get(int how, int type)
+{
+	struct mbuf *m;
+	unsigned int oldk1;
+
+	K1_SAVE(oldk1);
+	MGET(m, how, type);
+	K1_RESTORE(oldk1);
+	return m;
+}
+
 static inline int k1ok(const void *p)
 {
 	if (!K1_USER())
@@ -167,6 +178,7 @@ void sceNetFreeInternal(void *p);
 void *memset(void *, int, unsigned int);
 void *memcpy(void *, const void *, unsigned int);
 struct mbuf *sceNetMFree(struct mbuf *m);
+struct mbuf *sceNetMGetclr(int how, int type);
 void sceNetMFreem(struct mbuf *m);
 struct mbuf *func_00002C58(struct mbuf *m, int off, int len, int wait, int deep);
 struct mbuf *func_00002434(struct mbuf *m0, int len0, int wait);
