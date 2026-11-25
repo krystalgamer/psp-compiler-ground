@@ -193,7 +193,9 @@ def main():
                 def walk(die, depth):
                     for v in die.iter_children():
                         if v.tag == "DW_TAG_variable" and attr(v, "DW_AT_name"):
-                            loc.append("  " * depth + c.decl(c.ref(v), attr(v, "DW_AT_name")) + ";")
+                            l = attr(v, "DW_AT_location")
+                            static = "static " if isinstance(l, list) and l[:1] == [0x03] else ""
+                            loc.append("  " * depth + static + c.decl(c.ref(v), attr(v, "DW_AT_name")) + ";")
                         elif v.tag == "DW_TAG_lexical_block":
                             loc.append("  " * depth + "{")
                             walk(v, depth + 1)
