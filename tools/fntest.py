@@ -23,10 +23,10 @@ DRIVER = {"1.5.1": ("-mno-ulsw", ""), "1.3.1-orig": ("-mno-ulsw", ""),
           "1.6.1": ("", "-mulsw"), "1.7.1-orig": ("", "-mulsw")}
 
 
-def compile_c(src, cc1, flags, out, incs=()):
+def compile_c(src, cc1, flags, out, incs=(), defs=()):
     i = out.with_suffix(".i")
     subprocess.run(["cpp", "-P", "-undef", "-nostdinc", f"-I{ROOT/'include'}", f"-I{ROOT/'include/sdk'}", f"-I{ROOT/'include/libc'}", f"-I{ROOT/'decomp_src'}", *[f"-I{d}" for d in incs],
-                    "-D__GNUC__=3", "-D_LANGUAGE_C", "-D__psp__", "-D__mips__", "-DM2CTX", str(src), "-o", str(i)],
+                    "-D__GNUC__=3", "-D_LANGUAGE_C", "-D__psp__", "-D__mips__", "-DM2CTX", *[f"-D{d}" for d in defs], str(src), "-o", str(i)],
                    check=True)
     cflags, asflags = DRIVER.get(cc1, ("", ""))
     r = subprocess.run([str(T / f"cc1-{cc1}"), "-quiet", "-G0", *cflags.split(), *flags.split(), str(i), "-o", str(out.with_suffix(".s"))],
@@ -48,6 +48,7 @@ def main():
     ap.add_argument("-v", action="store_true")
     ap.add_argument("--func", help="with -v: show this function")
     ap.add_argument("--inc", action="append", default=[], help="extra include directory")
+    ap.add_argument("-D", dest="defs", action="append", default=[], help="preprocessor define")
     a = ap.parse_args()
     mod = objcmp.module_funcs(a.target, a.module)
     cc1s = a.cc1.split(",") if a.cc1 else ["1.5.1", "1.6.1", "1.3.1-orig", "1.7.1-orig"]
@@ -55,7 +56,7 @@ def main():
     with tempfile.TemporaryDirectory() as td:
         for c in cc1s:
             for f in flags:
-                o = compile_c(Path(a.file), c, f, Path(td) / f"{c}.o", [ROOT / "decomp_src" / a.target / a.module, Path(a.file).resolve().parent, *a.inc])
+                o = compile_c(Path(a.file), c, f, Path(td) / f"{c}.o", [ROOT / "decomp_src" / a.target / a.module, Path(a.file).resolve().parent, *a.inc], a.defs)
                 if o is None:
                     print(f"{c:11} {f:12} compile error")
                     continue

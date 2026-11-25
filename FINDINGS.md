@@ -39,6 +39,14 @@ modules (`tools/nltest.py`, `tools/objcmp.py`).
 - Inline asm can still go into delay slots: `usrKernelIcacheInvalidate`'s
   second `cache` sits in a `j` delay slot, as with every cc1 we have.
 
+- UTST99261's 1.5.1 game code (all 22 units) is decompiled except for 15
+  functions.  Everything that matches does so with the 1.5.1 tree.  The
+  remaining near-misses compile the same way with every cc1 we have, so they
+  are source-level, not compiler, differences.  Units where only 1.5.1
+  matches: `AOSS_Sleep` (1.3.1 uses `movn`, i.e. no integer conditional
+  moves in 1.5.1) and `addDownload`/`CnfSaveInitStart` (byte copies,
+  `-mno-ulsw`).
+
 ## psp-gcc 1.6.1
 
 - **32-bit `HOST_WIDE_INT`** (psp-gcc 1.7.1, `psp: use a 32-bit
