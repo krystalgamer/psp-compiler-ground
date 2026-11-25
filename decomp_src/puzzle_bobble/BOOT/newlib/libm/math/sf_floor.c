@@ -1,5 +1,3 @@
-#include "common.h"
-
-INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/newlib/libm/math/sf_floor", huge_31250);
-
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/newlib/libm/math/sf_floor", floorf);
+/* upstream: newlib-1.12.0/newlib/libm/math/sf_floor.c (unmodified) */
+/* cflags: -O2 -fno-builtin */
+#include "libm/math/sf_floor.c"

@@ -1,5 +1,3 @@
-#include "common.h"
-
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/newlib/libm/math/sf_cos", cosf);
-
-INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/newlib/libm/math/sf_cos", one_3096C);
+/* upstream: newlib-1.12.0/newlib/libm/math/sf_cos.c (unmodified) */
+/* cflags: -O2 -fno-builtin */
+#include "libm/math/sf_cos.c"

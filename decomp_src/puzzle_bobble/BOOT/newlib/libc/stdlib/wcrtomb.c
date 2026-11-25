@@ -1,5 +1,3 @@
-#include "common.h"
-
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/newlib/libc/stdlib/wcrtomb", _wcrtomb_r);
-
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/newlib/libc/stdlib/wcrtomb", wcrtomb);
+/* upstream: newlib-1.12.0/newlib/libc/stdlib/wcrtomb.c (unmodified) */
+/* cflags: -O2 -fno-builtin */
+#include "libc/stdlib/wcrtomb.c"

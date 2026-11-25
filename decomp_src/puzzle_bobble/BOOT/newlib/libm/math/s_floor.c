@@ -1,9 +1,4 @@
-#include "common.h"
-
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/newlib/libm/math/s_floor", floor);
-
-INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/newlib/libm/math/s_floor", huge_311F8);
-
-INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/newlib/libm/math/s_floor", D_00031200);
-
-INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/newlib/libm/math/s_floor", D_00031204);
+/* upstream: newlib-1.12.0/newlib/libm/math/s_floor.c (unmodified) */
+/* cflags: -O2 -fno-builtin */
+/* data-align: 8 */
+#include "libm/math/s_floor.c"
