@@ -121,7 +121,41 @@ int bgm_play(int no)
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/sound", bgm_play);
 #endif
 
+#ifdef NON_MATCHING
+/* Close: no and the VoiceCh address swap s2/s3. */
+void se_play(int no)
+{
+	int i;
+
+	if (no == 6) {
+		sceWaveStop(6);
+		sceWaveSetVoice(6, VagAdd[6], VoiceSize[6] - 0x30, 0);
+		sceWavePlay(6, 127, 127);
+		return;
+	}
+	if (no == 21) {
+		sceWaveStop(7);
+		sceWaveSetVoice(7, VagAdd[21], VoiceSize[21] - 0x30, 0);
+		sceWavePlay(7, 127, 127);
+		return;
+	}
+	do {
+		if (sceWaveGetStat(VoiceCh) == 0)
+			goto play;
+		if (++VoiceCh >= 6)
+			VoiceCh = 0;
+	} while (++i < 7);
+	return;
+play:
+	sceWaveStop(VoiceCh);
+	sceWaveSetVoice(VoiceCh, VagAdd[no], VoiceSize[no] - 0x30, 0);
+	sceWavePlay(VoiceCh, 127, 127);
+	if (++VoiceCh >= 6)
+		VoiceCh = 0;
+}
+#else
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/sound", se_play);
+#endif
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/sound", snd_test);
 
