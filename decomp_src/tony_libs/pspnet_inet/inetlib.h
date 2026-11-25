@@ -1622,4 +1622,42 @@ void _sce_pspnet_ifafree(struct ifaddr *ifa);
 #define IFAREF(ifa) ((ifa)->ifa_refcnt++)
 long sceNetGetSystemClockSec(void);
 
+/* raw_cb.h */
+struct sockproto {
+	u_short sp_family;
+	u_short sp_protocol;
+};
+struct rawcb {
+	LIST_ENTRY(rawcb) rcb_list;
+	struct socket *rcb_socket;
+	struct sockaddr *rcb_faddr;
+	struct sockaddr *rcb_laddr;
+	struct sockproto rcb_proto;
+};
+#define sotorawcb(so) ((struct rawcb *)(so)->so_pcb)
+LIST_HEAD(rawcbhead, rawcb);
+#define rawcb_list D_0002F3D0
+extern struct rawcbhead rawcb_list;
+#define raw_sendspace D_0002E538
+#define raw_recvspace D_0002E53C
+extern u_long raw_sendspace, raw_recvspace;
+#define raw_attach func_0000ECA8
+#define raw_detach func_0000ED48
+#define raw_disconnect func_0000ED94
+#define raw_input func_0000EDF8
+#define raw_usrreq func_0000EFD0
+#define raw_init func_0000F1F8
+#define raw_ctlinput func_0000F204
+#define raw_setsockaddr func_0000F20C
+#define raw_setpeeraddr func_0000F238
+int raw_attach(struct socket *so, int proto);
+void raw_detach(struct rawcb *rp);
+void raw_disconnect(struct rawcb *rp);
+void raw_input(struct mbuf *m0, ...);
+int raw_usrreq(struct socket *so, int req, struct mbuf *m, struct mbuf *nam, struct mbuf *control);
+void raw_init(void);
+void *raw_ctlinput(int cmd, struct sockaddr *arg, void *d);
+void raw_setsockaddr(struct rawcb *rp, struct mbuf *nam);
+void raw_setpeeraddr(struct rawcb *rp, struct mbuf *nam);
+
 #endif
