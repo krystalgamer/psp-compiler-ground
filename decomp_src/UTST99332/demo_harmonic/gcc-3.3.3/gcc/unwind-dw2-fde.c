@@ -89,6 +89,7 @@ extern struct object *unseen_objects;
 extern struct object *seen_objects;
 extern __gthread_mutex_t object_mutex;
 
+
 static unsigned int size_of_encoded_value(unsigned char encoding);
 static const unsigned char *read_uleb128(const unsigned char *p, _Unwind_Word *val);
 static const unsigned char *read_sleb128(const unsigned char *p, _Unwind_Sword *val);
@@ -177,13 +178,17 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/gcc-3.3.3/gcc/unwind-d
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/gcc-3.3.3/gcc/unwind-dw2-fde", __register_frame_info_bases);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/gcc-3.3.3/gcc/unwind-dw2-fde", __register_frame_info);
+void __register_frame_info(void *begin, struct object *ob) {
+    __register_frame_info_bases(begin, ob, NULL, NULL);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/gcc-3.3.3/gcc/unwind-dw2-fde", __register_frame);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/gcc-3.3.3/gcc/unwind-dw2-fde", __register_frame_info_table_bases);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/gcc-3.3.3/gcc/unwind-dw2-fde", __register_frame_info_table);
+void __register_frame_info_table(void *begin, struct object *ob) {
+    __register_frame_info_table_bases(begin, ob, NULL, NULL);
+}
 
 void __register_frame_table(void *begin) {
     __register_frame_info_table(begin, malloc(0x18));
