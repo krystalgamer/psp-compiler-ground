@@ -1,3 +1,3 @@
-#include "common.h"
-
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/newlib/libc/stdlib/strtoull_r", _strtoull_r);
+/* upstream: newlib-1.12.0/newlib/libc/stdlib/strtoull_r.c (unmodified) */
+/* cflags: -O2 -fno-builtin */
+#include "libc/stdlib/strtoull_r.c"

@@ -1,55 +1,8 @@
-#include "common.h"
+/* upstream: newlib-1.12.0/newlib/libc/stdlib/mprec.c (unmodified) */
+/* cflags: -O2 -fno-builtin */
+/* data-align: 8 */
+#include "libc/stdlib/mprec.c"
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/newlib/libc/stdlib/mprec", _Balloc);
-
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/newlib/libc/stdlib/mprec", _Bfree);
-
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/newlib/libc/stdlib/mprec", _multadd);
-
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/newlib/libc/stdlib/mprec", _s2b);
-
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/newlib/libc/stdlib/mprec", _hi0bits);
-
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/newlib/libc/stdlib/mprec", _lo0bits);
-
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/newlib/libc/stdlib/mprec", _i2b);
-
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/newlib/libc/stdlib/mprec", _multiply);
-
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/newlib/libc/stdlib/mprec", _pow5mult);
-
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/newlib/libc/stdlib/mprec", _lshift);
-
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/newlib/libc/stdlib/mprec", __mcmp);
-
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/newlib/libc/stdlib/mprec", __mdiff);
-
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/newlib/libc/stdlib/mprec", _ulp);
-
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/newlib/libc/stdlib/mprec", _b2d);
-
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/newlib/libc/stdlib/mprec", _d2b);
-
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/newlib/libc/stdlib/mprec", _ratio);
-
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/newlib/libc/stdlib/mprec", _mprec_log10);
-
-INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/newlib/libc/stdlib/mprec", D_00146258);
-
-INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/newlib/libc/stdlib/mprec", __mprec_tens);
-
-INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/newlib/libc/stdlib/mprec", __mprec_bigtens);
-
-INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/newlib/libc/stdlib/mprec", D_00146350);
-
-INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/newlib/libc/stdlib/mprec", D_00146354);
-
-INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/newlib/libc/stdlib/mprec", __mprec_tinytens);
-
-INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/newlib/libc/stdlib/mprec", D_00146380);
-
-INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/newlib/libc/stdlib/mprec", D_00146384);
-
-INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/newlib/libc/stdlib/mprec", D_00146388);
-
-INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/newlib/libc/stdlib/mprec", D_0014638C);
+/* labels the rest of the module's asm uses */
+__asm__("D_00146350 = 0x00146350");
+__asm__("D_00146354 = 0x00146354");

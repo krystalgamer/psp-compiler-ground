@@ -1,3 +1,3 @@
-#include "common.h"
-
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/newlib/libc/stdlib/calloc", calloc);
+/* upstream: newlib-1.12.0/newlib/libc/stdlib/calloc.c (unmodified) */
+/* cflags: -O2 -fno-builtin */
+#include "libc/stdlib/calloc.c"

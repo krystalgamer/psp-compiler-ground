@@ -1,3 +1,3 @@
-#include "common.h"
-
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/newlib/libm/math/s_fabs", fabs);
+/* upstream: newlib-1.12.0/newlib/libm/math/s_fabs.c (unmodified) */
+/* cflags: -O2 -fno-builtin */
+#include "libm/math/s_fabs.c"

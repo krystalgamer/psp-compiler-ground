@@ -1,3 +1,3 @@
-#include "common.h"
-
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/newlib/libm/common/s_copysign", copysign);
+/* upstream: newlib-1.12.0/newlib/libm/common/s_copysign.c (unmodified) */
+/* cflags: -O2 -fno-builtin */
+#include "libm/common/s_copysign.c"

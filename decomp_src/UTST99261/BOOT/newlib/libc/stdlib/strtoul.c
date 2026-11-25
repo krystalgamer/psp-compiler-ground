@@ -1,5 +1,3 @@
-#include "common.h"
-
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/newlib/libc/stdlib/strtoul", _strtoul_r);
-
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/newlib/libc/stdlib/strtoul", strtoul);
+/* upstream: newlib-1.12.0/newlib/libc/stdlib/strtoul.c (unmodified) */
+/* cflags: -O2 -fno-builtin */
+#include "libc/stdlib/strtoul.c"

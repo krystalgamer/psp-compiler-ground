@@ -1,9 +1,4 @@
-#include "common.h"
-
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/newlib/libm/math/s_ceil", ceil);
-
-INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/newlib/libm/math/s_ceil", huge_144B10);
-
-INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/newlib/libm/math/s_ceil", D_00144B18);
-
-INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/newlib/libm/math/s_ceil", D_00144B1C);
+/* upstream: newlib-1.12.0/newlib/libm/math/s_ceil.c (unmodified) */
+/* cflags: -O2 -fno-builtin */
+/* data-align: 8 */
+#include "libm/math/s_ceil.c"

@@ -1,7 +1,4 @@
-#include "common.h"
-
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/newlib/libm/math/e_fmod", __ieee754_fmod);
-
-INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/newlib/libm/math/e_fmod", one_144F50);
-
-INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/newlib/libm/math/e_fmod", Zero);
+/* upstream: newlib-1.12.0/newlib/libm/math/e_fmod.c (unmodified) */
+/* cflags: -O2 -fno-builtin */
+/* data-align: 8 */
+#include "libm/math/e_fmod.c"

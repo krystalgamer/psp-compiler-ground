@@ -1,3 +1,3 @@
-#include "common.h"
-
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/newlib/libc/string/strcat", strcat);
+/* upstream: newlib-1.12.0/newlib/libc/string/strcat.c (unmodified) */
+/* cflags: -O2 -fno-builtin */
+#include "libc/string/strcat.c"

@@ -1,5 +1,3 @@
-#include "common.h"
-
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/newlib/libc/stdio/putchar", _putchar_r);
-
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/newlib/libc/stdio/putchar", putchar);
+/* upstream: newlib-1.12.0/newlib/libc/stdio/putchar.c (unmodified) */
+/* cflags: -O2 -fno-builtin */
+#include "libc/stdio/putchar.c"

@@ -1,5 +1,3 @@
-#include "common.h"
-
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/newlib/libc/stdlib/atoi", atoi);
-
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/newlib/libc/stdlib/atoi", _atoi_r);
+/* upstream: newlib-1.12.0/newlib/libc/stdlib/atoi.c (unmodified) */
+/* cflags: -O2 -fno-builtin */
+#include "libc/stdlib/atoi.c"
