@@ -137,6 +137,40 @@ extern const MIPMAP mipmap[4];
 extern char disp_list[65536];
 extern ScePspFMatrix4 matrix_stack[16];
 
+
+/* SDK functions (tools/sdk_protos.h) */
+void sceGuInit(void);
+void sceGuStart(int type, void *list, int size);
+int sceGuFinish(void);
+int sceGuSync(int mode, int what);
+int sceGuDisplay(int state);
+void sceGuDrawBuffer(int psm, void *fbp, int frame_width);
+void sceGuDispBuffer(int width, int height, void *dbp, int frame_width);
+void sceGuDepthBuffer(void *zbp, int frame_width);
+void sceGuViewport(int cx, int cy, int width, int height);
+void sceGuDepthRange(int near, int far);
+void sceGuScissor(int x, int y, int w, int h);
+void sceGuEnable(int state);
+void sceGuDisable(int state);
+void sceGuClearDepth(unsigned int depth);
+void sceGuClearStencil(unsigned int stencil);
+void sceGuColor(unsigned int color);
+void sceGuAmbient(unsigned int color);
+void sceGuShadeModel(int mode);
+void sceGuFrontFace(int order);
+void sceGuDepthFunc(int function);
+void sceGuTexFilter(int min, int mag);
+void sceGuTexFunc(int tfx, int tcc);
+void sceGuTexWrap(int u, int v);
+void sceGuTexOffset(float u, float v);
+void sceGuTexScale(float u, float v);
+void sceGuClutMode(unsigned int cpsm, unsigned int shift, unsigned int mask, unsigned int a3);
+void sceGumMatrixMode(int mode);
+void sceGumLoadIdentity(void);
+void sceGumPerspective(float fovy, float aspect, float near, float far);
+void sceGumLookAt(const ScePspFVector3 *eye, const ScePspFVector3 *center, const ScePspFVector3 *up);
+void sceGumSetMatrixStack(void *stack, int proj, int view, int model, int texture);
+
 static void draw_frame(void);
 static void init_all(void);
 static void init_param(void);
@@ -210,7 +244,49 @@ void frame_update(void) {
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_mipmap/nonmatchings/main", draw_frame);
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_mipmap/nonmatchings/main", init_all);
+/* Warning: Gap in callee-saved word stack region.
+ * Saved: [0x0, 0x10], gap at: 0x4. */
+void init_all(void) {
+    sceGuInit();
+    sceGuStart(0, disp_list, 0x10000);
+    sceGuDrawBuffer(1, NULL, 0x200);
+    sceGuDispBuffer(0x1E0, 0x110, (void *)0x44000, 0x200);
+    sceGuDepthBuffer((void *)0x88000, 0x200);
+    sceGuViewport(0x800, 0x800, 0xF0, 0x88);
+    sceGuDepthRange(0xC350, 0x2710);
+    sceGuScissor(0, 0, 0xF0, 0x88);
+    sceGuEnable(2);
+    sceGuDepthFunc(7);
+    sceGuEnable(1);
+    sceGuFrontFace(1);
+    sceGuShadeModel(1);
+    sceGuDisable(4);
+    sceGuEnable(6);
+    sceGuDisable(0xA);
+    sceGuAmbient(0xFF404040U);
+    sceGuColor(-1U);
+    sceGuTexFilter(7, 1);
+    sceGuTexFunc(0, 0);
+    sceGuTexWrap(0, 0);
+    sceGuTexScale(2.0f, 1.0f);
+    sceGuTexOffset(toffset.u, toffset.v);
+    sceGuClutMode(1U, 0U, 0xFFU, 0U);
+    sceGuEnable(9);
+    sceGumSetMatrixStack(matrix_stack, 4, 4, 8, 0);
+    sceGumMatrixMode(0);
+    sceGumLoadIdentity();
+    sceGumPerspective(1.0471976f, 1.7647059f, 1.0f, 100.0f);
+    sceGumMatrixMode(1);
+    sceGumLoadIdentity();
+    sceGumLookAt(&view.eye, &view.center, &view.up);
+    sceGumMatrixMode(2);
+    sceGumLoadIdentity();
+    sceGuClearDepth(0U);
+    sceGuClearStencil(0U);
+    sceGuFinish();
+    sceGuSync(0, 0);
+    sceGuDisplay(1);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_mipmap/nonmatchings/main", init_param);
 
