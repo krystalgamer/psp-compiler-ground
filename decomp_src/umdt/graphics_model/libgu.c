@@ -381,6 +381,8 @@ void sceGuTerm(void)
 INCLUDE_RODATA("tmp/asm/umdt/graphics_model/nonmatchings/libgu", D_000173D0);
 
 
+INCLUDE_RODATA("tmp/asm/umdt/graphics_model/nonmatchings/libgu", D_00017410);
+
 INCLUDE_RODATA("tmp/asm/umdt/graphics_model/nonmatchings/libgu", D_00017424);
 
 INCLUDE_RODATA("tmp/asm/umdt/graphics_model/nonmatchings/libgu", D_0001747C);
@@ -489,21 +491,7 @@ int sceGuCheckList(void)
 	return (int)pList->current - (int)pList->start;
 }
 
-int sceGuSync(int mode, int what)
-{
-	switch (mode) {
-	case 0:
-		return sceGeDrawSync(what);
-	case 1:
-	case 2:
-	default:
-		return 0;
-	case 3:
-		return sceGeListSync(queid[0], what);
-	case 4:
-		return sceGeListSync(queid[1], what);
-	}
-}
+INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/libgu", sceGuSync);
 
 INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/libgu", sceGuSignalSync);
 
