@@ -1,11 +1,3 @@
-#include "common.h"
-
-INCLUDE_RODATA("tmp/asm/UTST99332/graphics_editspline/nonmatchings/newlib/libm/common/sf_scalbn", two25);
-
-INCLUDE_RODATA("tmp/asm/UTST99332/graphics_editspline/nonmatchings/newlib/libm/common/sf_scalbn", twom25);
-
-INCLUDE_RODATA("tmp/asm/UTST99332/graphics_editspline/nonmatchings/newlib/libm/common/sf_scalbn", huge_1363C);
-
-INCLUDE_RODATA("tmp/asm/UTST99332/graphics_editspline/nonmatchings/newlib/libm/common/sf_scalbn", tiny_13640);
-
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_editspline/nonmatchings/newlib/libm/common/sf_scalbn", scalbnf);
+/* upstream: newlib-1.12.0/newlib/libm/common/sf_scalbn.c (unmodified) */
+/* cflags: -O2 -fno-builtin */
+#include "libm/common/sf_scalbn.c"
