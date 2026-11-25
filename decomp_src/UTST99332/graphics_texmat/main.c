@@ -53,6 +53,9 @@ struct ScePspFMatrix4 { /* size 0x40 */
 };
 typedef struct ScePspFMatrix4 ScePspFMatrix4;
 
+/* SDK functions */
+int sceCtrlReadBufferPositive(SceCtrlData *data, int count);
+
 extern unsigned int checkcolor[1];
 extern unsigned int check32x32[128];
 extern int _gp;
@@ -89,9 +92,73 @@ INCLUDE_ASM("tmp/asm/UTST99332/graphics_texmat/nonmatchings/main", draw_frame);
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_texmat/nonmatchings/main", init_all);
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_texmat/nonmatchings/main", init_pos);
+static void init_pos(void)
+{
+	pos.rot.x = 0.0f;
+	pos.rot.y = 0.0f;
+	pos.rot.z = 0.0f;
+	pos.trans.x = 0.0f;
+	pos.trans.y = 0.0f;
+	pos.trans.z = -10.0f;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_texmat/nonmatchings/main", pad_read);
+#define opadd D_00013BC4	/* pad_read's static */
+extern u_int32 opadd;
+
+static int pad_read(void)
+{
+	u_int32 padd;
+	SceCtrlData buf;
+
+	sceCtrlReadBufferPositive(&buf, 1);
+	padd = buf.Buttons;
+	if (padd & 0x0010) {
+		pos.rot.x -= 1.0f;
+		if (pos.rot.x <= -360.0f)
+			pos.rot.x = 0.0f;
+	}
+	if (padd & 0x0040) {
+		pos.rot.x += 1.0f;
+		if (pos.rot.x >= 360.0f)
+			pos.rot.x = 0.0f;
+	}
+	if (padd & 0x0080) {
+		pos.rot.y -= 1.0f;
+		if (pos.rot.y <= -360.0f)
+			pos.rot.y = 0.0f;
+	}
+	if (padd & 0x0020) {
+		pos.rot.y += 1.0f;
+		if (pos.rot.y >= 360.0f)
+			pos.rot.y = 0.0f;
+	}
+	if (padd & 0x0100) {
+		pos.trans.z -= 1.0f;
+		if (pos.trans.z < -100.0f)
+			pos.trans.z = -100.0f;
+	}
+	if (padd & 0x0200) {
+		pos.trans.z += 1.0f;
+		if (pos.trans.z > -5.0f)
+			pos.trans.z = -5.0f;
+	}
+	if (padd & 0x2000)
+		mode = 0;
+	if (padd & 0x4000)
+		mode = 1;
+	if (padd & 0x1000)
+		mode = 2;
+	if (padd & 0x0008) {
+		if (padd != opadd) {
+			autoflag ^= 1;
+			init_pos();
+		}
+	}
+	if (padd & 0x0001)
+		return 0;
+	opadd = padd;
+	return 1;
+}
 
 int main(void) {
     int temp_a0;
