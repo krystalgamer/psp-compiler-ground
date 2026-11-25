@@ -380,7 +380,6 @@ void sceGuTerm(void)
 
 INCLUDE_RODATA("tmp/asm/umdt/graphics_model/nonmatchings/libgu", D_000173D0);
 
-INCLUDE_RODATA("tmp/asm/umdt/graphics_model/nonmatchings/libgu", D_00017410);
 
 INCLUDE_RODATA("tmp/asm/umdt/graphics_model/nonmatchings/libgu", D_00017424);
 
@@ -490,7 +489,21 @@ int sceGuCheckList(void)
 	return (int)pList->current - (int)pList->start;
 }
 
-INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/libgu", sceGuSync);
+int sceGuSync(int mode, int what)
+{
+	switch (mode) {
+	case 0:
+		return sceGeDrawSync(what);
+	case 1:
+	case 2:
+	default:
+		return 0;
+	case 3:
+		return sceGeListSync(queid[0], what);
+	case 4:
+		return sceGeListSync(queid[1], what);
+	}
+}
 
 INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/libgu", sceGuSignalSync);
 
@@ -708,7 +721,15 @@ void sceGuPatchDivide(int ulevel, int vlevel)
 	send_commandi(54, ((vlevel << 8) | ulevel));
 }
 
-INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/libgu", sceGuPatchPrim);
+void sceGuPatchPrim(int prim)
+{
+	if (prim == 4)
+		send_commandi(55, 0);
+	else if (prim == 2)
+		send_commandi(55, 1);
+	else if (prim == 0)
+		send_commandi(55, 2);
+}
 
 void sceGuAmbient(unsigned int color)
 {
