@@ -7,4 +7,6 @@ int sceWaveStart(int priority);
 int sceWaveEnd(void);
 int sceWaveSetVoice(int voice, void *vag, int size, int loop);
 int sceWavePlay(int voice, int vol_l, int vol_r);
+int sceWaveAudioSetSample(int channel, int samples);
+int sceWaveAudioWriteBlocking(int channel, int vol_l, int vol_r, void *buf);
 #endif

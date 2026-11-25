@@ -18,5 +18,6 @@ SceUID sceKernelCreateSema(const char *name, SceUInt attr, int initVal, int maxV
 int sceKernelDeleteSema(SceUID semaid);
 int sceKernelSignalSema(SceUID semaid, int signal);
 int sceKernelWaitSema(SceUID semaid, int signal, SceUInt *timeout);
+int sceKernelPollSema(SceUID semaid, int signal);
 int sceKernelExitThread(int status);
 #endif
