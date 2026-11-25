@@ -22,4 +22,30 @@ typedef struct {
 } IS_SF_INFO;
 
 typedef float ARRAY2[2];
+
+typedef struct {
+	unsigned int part2_3_length;
+	unsigned int big_values;
+	unsigned int global_gain;
+	unsigned int scalefac_compress;
+	unsigned int window_switching_flag;
+	unsigned int block_type;
+	unsigned int mixed_block_flag;
+	unsigned int table_select[3];
+	unsigned int subblock_gain[3];
+	unsigned int region0_count;
+	unsigned int region1_count;
+	unsigned int preflag;
+	unsigned int scalefac_scale;
+	unsigned int count1table_select;
+} GR_INFO;
+
+typedef struct {
+	unsigned int main_data_begin;
+	unsigned int private_bits;
+	unsigned int scfsi[2];	/* 4 bit flags [ch] */
+	GR_INFO gr[2][2];	/* [gran][ch] */
+} SIDE_INFO;
+
+int bitget(int n);
 #endif
