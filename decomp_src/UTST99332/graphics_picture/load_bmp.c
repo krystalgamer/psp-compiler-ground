@@ -362,4 +362,59 @@ static void copy_8888(void *dst, const void *src, int width, int height, int alp
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_picture/nonmatchings/load_bmp", copy_rle4);
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_picture/nonmatchings/load_bmp", copy_rle8);
+static void copy_rle8(void *dst, const void *src, int width, int height)
+{
+	int pitch2;
+	const char *sp;
+	char *dp;
+	int x_pos;
+	int y_pos;
+	char *dp2;
+
+	pitch2 = (width + 15) & ~15;
+	sp = src;
+	dp = (char *)dst + pitch2 * (height - 1);
+	x_pos = 0;
+	y_pos = 0;
+	dp2 = dp;
+	while (y_pos < height) {
+		int count;
+		_Bool run;
+
+		count = *(const unsigned char *)sp++;
+		run = 1;
+		if (count == 0) {
+			count = *(const unsigned char *)sp++;
+			if (count < 3) {
+				if (count == 1)
+					break;
+				if (count == 0) {
+					dp -= pitch2;
+					dp2 = dp;
+					y_pos++;
+					x_pos = 0;
+				} else {
+					sp += 2;
+				}
+				continue;
+			}
+			run = 0;
+		}
+		if (count > width - x_pos)
+			count = width - x_pos;
+		if (run) {
+			int i;
+
+			for (i = 0; i < count; i++)
+				*dp2++ = *sp;
+			sp++;
+		} else {
+			int i;
+
+			for (i = 0; i < count; i++)
+				*dp2++ = *sp++;
+			sp += count & 1;
+		}
+		x_pos += count;
+	}
+}
