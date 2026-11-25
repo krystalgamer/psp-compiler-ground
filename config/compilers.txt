@@ -1,12 +1,12 @@
 # psp-gcc version (DW_AT_producer / .comment) -> cc1 in tmp/toolchains/bin,
 # then the options the psp-gcc driver of that version passes to cc1, and
 # (as:OPT) options that make the 1.3.1 psp-as behave like that version's
-# assembler: from 1.6.1.internal on, the ulw/usw macros expand to
+# assembler: from 1.6.1 on (no -mno-ulsw), lwl/lwr are accepted and ulw/usw expand to
 # lwl/lwr and swl/swr instead of byte loads and stores.
 # Versions we have no reconstruction of use the nearest one we do.
 1.4.0           1.5.1   -mno-ulsw
 1.5.0.internal  1.5.1   -mno-ulsw
 1.5.1           1.5.1   -mno-ulsw
 1.5.1.internal  1.5.1   -mno-ulsw
-1.6.1           1.6.1
+1.6.1           1.6.1   as:-mulsw
 1.6.1.internal  1.6.1   as:-mulsw

@@ -14,5 +14,6 @@ SceUID sceIoOpen(const char *name, int flag, SceMode mode);
 int sceIoClose(SceUID fd);
 SceSSize sceIoRead(SceUID fd, void *buf, SceSize nbyte);
 SceSSize sceIoWrite(SceUID fd, const void *buf, SceSize nbyte);
+int sceIoRemove(const char *name);
 SceOff sceIoLseek(SceUID fd, SceOff offset, int whence);
 #endif

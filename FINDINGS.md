@@ -32,6 +32,13 @@ modules (`tools/nltest.py`, `tools/objcmp.py`).
 - With these, 170 of UTST99261's 176 newlib functions are reproduced; the
   other 6 are Sony's newlib changes.
 
+- Game code confirms the `-mno-ulsw` driver default: UTST99261's
+  `addDownload` copies a constant string with byte loads/stores (an inline
+  `strcpy`); only the `-mno-ulsw` compilers (1.5.1, 1.3.1) reproduce it,
+  while 1.6.1 and 1.7.1 use `lwl`/`lwr`.
+- Inline asm can still go into delay slots: `usrKernelIcacheInvalidate`'s
+  second `cache` sits in a `j` delay slot, as with every cc1 we have.
+
 ## psp-gcc 1.6.1
 
 - **32-bit `HOST_WIDE_INT`** (psp-gcc 1.7.1, `psp: use a 32-bit

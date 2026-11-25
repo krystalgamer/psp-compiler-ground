@@ -132,4 +132,6 @@ int pspBrowserGetState(int state, void *param);
 
 int pspBrowserAddAnchor(char *ext, PSPBROWSER_ANCHOR_CALLBACK callback);
 
+int pspBrowserExec(int mode);
+
 #endif
