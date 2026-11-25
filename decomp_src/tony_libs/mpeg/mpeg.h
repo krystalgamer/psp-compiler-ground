@@ -412,4 +412,41 @@ int sceMpegBaseCscInit(int width);
 int func_00004CF0(AuNode *node, int addr, int unk4, AuNode *next, int size);
 int func_00004D24(AuNode *node, AuNode *next);
 
+unsigned char *func_000044E0(unsigned char *p, int type);
+int func_000048BC(SceMpegRingbuffer *rb, unsigned char *a, unsigned char *b);
+
+typedef struct BitReader {
+	unsigned int bits;
+	int pos;
+	int unk8;
+	unsigned char *p;
+	int avail;
+	unsigned char *start;
+	unsigned char *end;
+	int unk1C;
+} BitReader;
+
+void func_00003984(BitReader *br, int n);
+
+typedef struct PackHeader {
+	int unk[6];
+} PackHeader;
+
+static __inline__ void BitFill(BitReader *br, int n)
+{
+	br->bits <<= n;
+	br->avail -= n;
+	while (br->avail < 25) {
+		br->bits |= *br->p << (24 - br->avail);
+		br->p++;
+		if (br->p >= br->end)
+			br->p = br->start;
+		br->avail += 8;
+	}
+	br->pos += n;
+}
+
+int func_000018A8(BitReader *br, PackHeader *ph);
+int func_00001F38(BitReader *br, SceMpegAuInfo *info);
+
 #endif

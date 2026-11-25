@@ -5,6 +5,7 @@
 #include "mpeg.h"
 
 extern char *D_00007D80;
+extern const char D_00007994[];
 
 extern const StreamTypeInfo D_000078F4[];
 /* --- end declarations --- */
@@ -13,7 +14,52 @@ INCLUDE_ASM("tmp/asm/tony_libs/mpeg/nonmatchings/mpeg_au", sceMpegGetPcmAu);
 
 INCLUDE_ASM("tmp/asm/tony_libs/mpeg/nonmatchings/mpeg_au", func_000041EC);
 
-INCLUDE_ASM("tmp/asm/tony_libs/mpeg/nonmatchings/mpeg_au", func_000044E0);
+unsigned char *func_000044E0(unsigned char *p, int type)
+{
+	unsigned char *ret;
+
+	switch (type) {
+	case 1:
+		ret = p + 0xE;
+		break;
+	case 2:
+		if (p[0xD] & 2)
+			ret = p + 0x12;
+		else
+			ret = NULL;
+		break;
+	case 0x1F40:
+		ret = func_000044E0(p, 2);
+		if (ret == NULL)
+			ret = func_000044E0(p, 1);
+		ret += 6;
+		break;
+	case 3:
+		if (p[0xD] & 1)
+			ret = func_000044E0(p, 0x1F40);
+		else
+			ret = NULL;
+		break;
+	case 4:
+		ret = func_000044E0(p, 0x1F40);
+		if (p[0xD] & 1)
+			ret += 0x40;
+		break;
+	case 5:
+		if (p[0xD] & 2) {
+			ret = func_000044E0(p, 0x1F40);
+			ret -= 2;
+			ret = p + func_0000752C(ret);
+		} else {
+			ret = NULL;
+		}
+		break;
+	default:
+		ret = NULL;
+		break;
+	}
+	return ret;
+}
 
 INCLUDE_ASM("tmp/asm/tony_libs/mpeg/nonmatchings/mpeg_au", sceMpegGetAtracAu);
 
