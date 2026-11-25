@@ -7,4 +7,5 @@ double atan2(double, double);
 float sinf(float);
 float cosf(float);
 float sqrtf(float);
+double pow(double, double);
 #endif
