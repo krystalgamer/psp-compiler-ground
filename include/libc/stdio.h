@@ -2,11 +2,7 @@
 #define _STDIO_H
 #include <stddef.h>
 typedef struct __sFILE FILE;
-/* newlib: only the head of struct _reent is needed */
-struct _reent {
-	int _errno;
-	FILE *_stdin, *_stdout, *_stderr;
-};
+#include <sys/reent.h>
 extern struct _reent *_impure_ptr;
 #define stdin	(_impure_ptr->_stdin)
 #define stdout	(_impure_ptr->_stdout)
