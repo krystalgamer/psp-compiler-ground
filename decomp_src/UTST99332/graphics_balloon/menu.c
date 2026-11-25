@@ -39,7 +39,22 @@ void menuInit(void) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_balloon/nonmatchings/menu", menuTerm);
+int sprintf(char *, const char *, ...);
+int sceKernelLoadExec(const char *file, SceKernelLoadExecParam *param);
+
+void menuTerm(int cat, int num)
+{
+	SceKernelLoadExecParam param;
+	char arg[32];
+	int len;
+
+	len = sprintf(arg, "%d%c%d%c", cat, 0, num, 0);
+	param.size = sizeof(param);
+	param.args = len;
+	param.argp = arg;
+	param.key = NULL;
+	sceKernelLoadExec("disc0:/PSP_GAME/USRDIR/PRX/menu.prx", &param);
+}
 
 int menuGetDevice(void) {
     return 0;
