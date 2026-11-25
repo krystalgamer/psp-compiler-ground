@@ -27,6 +27,7 @@ void sceGuDrawSprite(int x, int y, int z, int u, int v, int flip, int rotation);
 void sceGuDebugPrint(int x, int y, unsigned int color, const char *str);
 void *sceGuGetMemory(int size);
 void sceGuDrawArray(int prim, int vtype, int count, const void *indices, const void *vertices);
+void sceGuCopyImage(int psm, int sx, int sy, int width, int height, int srcw, void *src, int dx, int dy, int destw, void *dest);
 void sceGuInit(void);
 void sceGuTerm(void);
 int sceGuDisplay(int state);

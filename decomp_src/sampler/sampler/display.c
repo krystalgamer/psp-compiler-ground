@@ -10,6 +10,7 @@
 #include "sound.h"
 #include "avsync.h"
 #include "menu.h"
+#include "utils.h"
 
 
 typedef struct {
@@ -90,7 +91,37 @@ INCLUDE_ASM("tmp/asm/sampler/sampler/nonmatchings/display", set_blink);
 
 INCLUDE_ASM("tmp/asm/sampler/sampler/nonmatchings/display", draw_menu);
 
-INCLUDE_ASM("tmp/asm/sampler/sampler/nonmatchings/display", draw_frame);
+static void draw_frame(t_displayBuffer *pDisp, SceChar8 *buffer)
+{
+	sceGuStart(0, disp_list, sizeof(disp_list));
+	if (not_ready == 1 || menu_list.selected == 0)
+		draw_menu();
+	sceGuDisable(4);
+	sceGuColor(0xFFFFFFFF);
+	sceGuTexMode(3, 0, 0, 0);
+	if (not_ready == 1) {
+		if (menu_list.current == menu_list.saved && menu_list.current != 0) {
+			sceGuTexImage(0, 512, 512, 512, pDisp->buf[1]);
+			UtilsSpriteMode(0x90, 0x50, 0x8F, 0x51);
+			UtilsDrawSprite(*pDisp->posx, *pDisp->posy, 0, 0, 0, 0, 0);
+		}
+	} else {
+		sceGuTexImage(0, 512, 512, 512, buffer);
+		if (*pDisp->scale == 0) {
+			if (menu_list.current != 0) {
+				UtilsSpriteMode(0x90, 0x50, 0x8F, 0x51);
+				UtilsDrawSprite(*pDisp->posx, *pDisp->posy, 0, 0, 0, 0, 0);
+				sceGuCopyImage(3, 0, 0, 0x90, 0x50, 512, pDisp->buf[0], 0, 0, 512, pDisp->buf[1]);
+				menu_list.saved = menu_list.current;
+			}
+		} else {
+			UtilsSpriteMode(0x1E0, 0x110, 0x1E0, 0x110);
+			UtilsDrawSprite(0, 0, 0, 0, 0, 0, 0);
+		}
+	}
+	sceGuFinish();
+	sceGuSync(0, 0);
+}
 
 #ifdef NON_MATCHING
 /* only two stores swapped by the scheduler */
