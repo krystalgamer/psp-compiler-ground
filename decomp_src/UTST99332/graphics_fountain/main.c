@@ -103,6 +103,10 @@ extern const float orifice[96];
 extern const MODEL ground[18];
 extern u_int32 cont;
 
+
+/* SDK functions (tools/sdk_protos.h) */
+int sceCtrlReadBufferPositive(SceCtrlData *data, int count);
+
 static void set_divide(int pt);
 static void init_grain(int i);
 static void move_grain(void);
@@ -169,6 +173,19 @@ void draw_frame(void) {
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_fountain/nonmatchings/main", init_all);
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_fountain/nonmatchings/main", pad_read);
+int pad_read(void) {
+    SceCtrlData buf;
+    int temp_s0;
+    unsigned int temp_s0_2;
+
+    temp_s0_2 = cont;
+    sceCtrlReadBufferPositive(&buf, 1);
+    temp_s0 = buf.Buttons & (buf.Buttons ^ temp_s0_2);
+    cont = buf.Buttons;
+    if (temp_s0 & 0x2000) {
+        autoflag ^= 1;
+    }
+    return (temp_s0 & 9) == 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_fountain/nonmatchings/main", main);
