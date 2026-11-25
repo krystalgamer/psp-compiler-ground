@@ -1,16 +1,21 @@
 #include "common.h"
 #include "m2c_macros.h"
+#include "PuzzleMain.h"
 
 extern int ssTimes;
 M2C_UNK DrawSpriteEz(int, float, float, float, float, float, float, float); /* extern */
-M2C_UNK PzlDataGetWidth();                          /* extern */
+int PzlDataGetWidth(int no);
 int GetKeyHit();                                    /* extern */
 int PollShutter(M2C_UNK);                           /* extern */
 extern int PauseFlag;
 extern unsigned char PauseOk;
 
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", SysTimeIncrement);
+int SysTimeIncrement(void)
+{
+	if (PauseFlag == 0)
+		ssTimes++;
+}
 
 int GetSysTime(void) {
     return ssTimes;
@@ -20,11 +25,29 @@ void ClearSysTime(void) {
     ssTimes = 0;
 }
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", SetCharacters);
+void SetCharacters(PZL_STAT *st, int chara, int which)
+{
+	if (which == 0 && st->chara != chara) {
+		st->chara = chara;
+		st->chara_anim = 0;
+	}
+	if (which == 1)
+		st->chara2 = chara;
+}
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", DoCharacters);
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", SetMonitor);
+void SetMonitor(PZL_STAT *st, int mon)
+{
+	if (mon == 12) {
+		if (st->monitor >= 15 && st->monitor <= 17)
+			return;
+		if (st->monitor == 14)
+			return;
+	}
+	st->monitor = mon;
+	st->monitor_anim = 0;
+}
 
 INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", ChNamePos);
 
@@ -86,11 +109,39 @@ INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", DoReadyGo);
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", DoContinue);
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", InitBubCrush);
+void InitBubCrush(void)
+{
+	int i;
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", SetBubCrush);
+	for (i = 0; i < 1024; i++) {
+		bubx[i] = 0;
+		buby[i] = 0;
+		bubcnt[i] = 0;
+		bubcol[i] = 0;
+	}
+}
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", SetBubCrushEz);
+void SetBubCrush(int x, int y, int col)
+{
+	int i;
+
+	for (i = 0; i < 1024; i++) {
+		if (bubcnt[i] == 0) {
+			bubx[i] = x;
+			buby[i] = y;
+			bubcol[i] = col;
+			bubcnt[i] = 16;
+			return;
+		}
+	}
+}
+
+void SetBubCrushEz(PZL_STAT *st, int x, int y, int col)
+{
+	SetBubCrush(x + MapXBeginPos[st->mapno * 3 + st->mapsub] - 8, y + st->ofs_y + st->scroll * 14 + 32, col);
+}
+
+
 
 INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", bgmsort);
 
@@ -171,8 +222,9 @@ void ZeroMemory(int arg0, int arg1) {
     }
 }
 
-void GetMapWidth(void) {
-    PzlDataGetWidth();
+int GetMapWidth(int no)
+{
+	return PzlDataGetWidth(no);
 }
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", GetMapLeft);
@@ -225,11 +277,40 @@ INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", CheckBallDrop)
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", CheckChain);
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", TermChain);
+
+void TermChain(PZL_STAT *st)
+{
+	int i;
+
+	for (i = 0; i < MAP_SIZE; i++) {
+		if (st->map[i] == 0x68)
+			st->map[i] = 0;
+	}
+}
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", CheckOneColorAll);
 
+#ifdef NON_MATCHING
+/* Close: i and the loop bound test swap registers. */
+int CheckRoundClear(PZL_STAT *st)
+{
+	int i;
+	int ret = 0;
+	int found = 0;
+
+	for (i = 0; i < 0x22E; i++) {
+		if ((st->map[i] >= 1 && st->map[i] <= 9) || st->map[i] == 13) {
+			found = 1;
+			break;
+		}
+	}
+	if (!found)
+		ret = 1;
+	return ret;
+}
+#else
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", CheckRoundClear);
+#endif
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", CheckBallGuide);
 
@@ -243,7 +324,19 @@ void DriveBub(void) {
 void DriveReadyGo(void) {
 }
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", GetBallLine);
+int GetBallLine(PZL_STAT *st)
+{
+	int w = GetMapWidth(st->mapno);
+	int line, i;
+
+	for (line = 32; line >= 0; line--) {
+		for (i = 0; i < w; i++) {
+			if (st->map[i + line * w] >= 1 && st->map[i + line * w] <= 11)
+				return line + st->scroll;
+		}
+	}
+	return st->scroll;
+}
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", PutNumeric);
 
@@ -251,9 +344,27 @@ INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", PutTime);
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", Get2Dim);
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", DoBubStat);
+void DoBubStat(PZL_STAT *st, int arg)
+{
+	st->bubstat_arg = arg;
+	st->bubstat = 1;
+}
 
+#ifdef NON_MATCHING
+/* Close: the original keeps the branch; here it is if-converted to a mask. */
+void SetBubStat(PZL_STAT *st)
+{
+	int line = GetBallLine(st);
+	int stat = (line >= 9) + 1;
+
+	if (line < 7)
+		stat = 0;
+	st->bubline = stat;
+}
+#else
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", SetBubStat);
+#endif
+
 
 void DriveWarning(void) {
 }
