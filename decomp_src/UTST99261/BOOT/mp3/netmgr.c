@@ -27,6 +27,15 @@ int sceNetResolverTerm(void);
 int sceNetInetTerm(void);
 int sceNetTerm(void);
 int sceNetInetClose(int s);
+unsigned int sceNetInetInetAddr(const char *ip);
+int sceNetResolverCreate(int *rid, void *buf, SceSize buflen);
+int sceNetResolverStartNtoA(int rid, const char *hostname, struct SceNetInetInAddr *addr, unsigned int timeout, int retry);
+int sceNetResolverDelete(int rid);
+int sceNetInetSocket(int domain, int type, int protocol);
+int sceNetInetConnect(int s, const struct SceNetInetSockaddrIn *serv_addr, int addrlen);
+int sceNetInetGetErrno(void);
+int sceNetInetSend(int s, const void *buf, SceSize len, int flags);
+int sceNetInetRecv(int s, void *buf, SceSize len, int flags);
 
 extern int handler_id_1EDF08;
 #define handler_id handler_id_1EDF08
@@ -330,7 +339,123 @@ static int StrScanStr(char *org, char *tag, char *buf, int buflen)
 	return result;
 }
 
+static inline SceUShort16 sceNetHtons(SceUShort16 host16)
+{
+	return __builtin_allegrex_wsbh(host16);
+}
+
+#ifdef NON_MATCHING
+/* close: path_name/format-string registers swapped, retry loop scheduled differently */
+static int NetMgrIcyOpenDirect(ICY_PARAM *p)
+{
+	int ret;
+	unsigned int temp;
+	int i;
+	int c;
+	char *src;
+	char *dst;
+	char get_cmd[1024];
+	int tcp_len;
+
+	dst = p->server_name;
+	p->s = -1;
+	p->buf_top = 0;
+	p->buf_size = 0;
+	p->header_skip = 0;
+	p->header_count = 0;
+	p->header_buf[0] = 0;
+	p->meta_int = 0;
+	p->meta_count = 0;
+	p->meta_tagint = 0;
+	p->meta_tagcount = 0;
+	p->meta_buf_index = 0;
+	p->meta_buf[0][0] = 0;
+	p->meta_buf[1][0] = 0;
+
+	src = p->uri;
+	while (*src != 0) {
+		src++;
+		if (src[-1] == ':')
+			break;
+	}
+	while (*src == '/')
+		src++;
+	while (*src != 0 && *src != '/' && *src != ':')
+		*dst++ = *src++;
+	*dst = 0;
+	p->port_number = 80;
+	if (*src == ':') {
+		p->port_number = 0;
+		src++;
+		while ((c = *src) != 0 && c != '/' && c >= '0' && c <= '9') {
+			p->port_number = p->port_number * 10 + c - '0';
+			src++;
+		}
+	}
+	if (*src == 0)
+		src = "/";
+	strcpy(p->path_name, src);
+	printf("server:'%s'  path:'%s' port:%d \n", p->server_name, p->path_name, p->port_number);
+
+	p->sin.sin_family = 2;
+	temp = sceNetInetInetAddr(p->server_name);
+	if (temp == (unsigned int)-1) {
+		int rid;
+		char buf[1024];
+		int buflen;
+
+		ret = sceNetResolverCreate(&rid, buf, sizeof(buf));
+		if (ret < 0) {
+			printf("sceNetResolverCreate() failed. ret = 0x%x\n", ret);
+			return -1;
+		}
+		ret = sceNetResolverStartNtoA(rid, p->server_name, &p->sin.sin_addr, 5000000, 5);
+		if (ret < 0) {
+			printf("sceNetResolverStartNtoA() failed. ret = 0x%x\n", ret);
+			return -1;
+		}
+		sceNetResolverDelete(rid);
+	} else {
+		p->sin.sin_addr.s_addr = temp;
+	}
+	p->sin.sin_port = sceNetHtons(p->port_number);
+
+	i = 0;
+	for (;;) {
+		p->s = sceNetInetSocket(2, 1, 0);
+		i++;
+		if (p->s < 0) {
+			printf("sceNetInetSocket() failed (errno=%d)\n", sceNetInetGetErrno());
+			return -1;
+		}
+		if (sceNetInetConnect(p->s, &p->sin, sizeof(p->sin)) == 0)
+			break;
+		printf("sceNetInetConnect() failed (errno=%d)\n", sceNetInetGetErrno());
+		sceNetInetClose(p->s);
+		if (sceNetInetGetErrno() != 111)
+			return -1;
+		if (i >= 5) {
+			puts("too many refused");
+			return -1;
+		}
+	}
+
+	sprintf(get_cmd, "GET %s HTTP/1.0\r\nHost: %s\r\nUser-Agent: PSPHTTP-Test/0.1\r\nAccept: */*\r\nIcy-MetaData:%d\r\n\r\n",
+		p->path_name, p->server_name, 1);
+	printf("\n%s\n", get_cmd);
+	tcp_len = strlen(get_cmd);
+	ret = sceNetInetSend(p->s, get_cmd, tcp_len, 0);
+	if (ret != tcp_len) {
+		printf("sceNetInetSend() failed (errno=%d)\n", sceNetInetGetErrno());
+		sceNetInetClose(p->s);
+		p->s = -1;
+		return -1;
+	}
+	return (int)p;
+}
+#else
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mp3/netmgr", NetMgrIcyOpenDirect);
+#endif
 
 int NetMgrIcyOpen(const char *uri, int flag, SceMode mode)
 {
