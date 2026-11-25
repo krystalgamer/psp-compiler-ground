@@ -3,6 +3,7 @@
 double sin(double);
 double cos(double);
 double sqrt(double);
+double atan(double);
 double atan2(double, double);
 float sinf(float);
 float cosf(float);
