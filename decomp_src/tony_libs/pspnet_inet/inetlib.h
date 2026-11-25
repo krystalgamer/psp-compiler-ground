@@ -1872,4 +1872,64 @@ struct ifaddr *ifa_ifwithladdr(struct sockaddr *addr);
 struct ifaddr *ifa_ifwithaf(int af);
 void link_rtrequest(int cmd, struct rtentry *rt, struct sockaddr *sa);
 
+/* if_ether.h */
+#define ETHER_ADDR_LEN 6
+struct ether_header {
+	u_int8_t ether_dhost[ETHER_ADDR_LEN];
+	u_int8_t ether_shost[ETHER_ADDR_LEN];
+	u_int16_t ether_type;
+} __attribute__((__packed__));
+#define ETHERTYPE_IP 0x0800
+#define ETHERTYPE_ARP 0x0806
+#define ETHERTYPE_REVARP 0x8035
+#define ETHER_MAP_IP_MULTICAST(ipaddr, enaddr) do { \
+	(enaddr)[0] = 0x01; \
+	(enaddr)[1] = 0x00; \
+	(enaddr)[2] = 0x5e; \
+	(enaddr)[3] = ((u_int8_t *)ipaddr)[1] & 0x7f; \
+	(enaddr)[4] = ((u_int8_t *)ipaddr)[2]; \
+	(enaddr)[5] = ((u_int8_t *)ipaddr)[3]; \
+} while (0)
+struct arphdr {
+	u_int16_t ar_hrd;
+	u_int16_t ar_pro;
+	u_int8_t ar_hln;
+	u_int8_t ar_pln;
+	u_int16_t ar_op;
+} __attribute__((__packed__));
+#define ARPHRD_ETHER 1
+#define ARPOP_REQUEST 1
+#define ARPOP_REPLY 2
+#define ARPOP_REVREQUEST 3
+#define ARPOP_REVREPLY 4
+#define ar_sha(ap) (((caddr_t)((ap) + 1)) + 0)
+#define ar_spa(ap) (((caddr_t)((ap) + 1)) + (ap)->ar_hln)
+#define ar_tha(ap) (((caddr_t)((ap) + 1)) + (ap)->ar_hln + (ap)->ar_pln)
+#define ar_tpa(ap) (((caddr_t)((ap) + 1)) + 2 * (ap)->ar_hln + (ap)->ar_pln)
+#define AF_ARP 28
+#define pseudo_AF_HDRCMPLT 30
+#define NETISR_ARP 28
+#define LLADDR(s) ((caddr_t)((s)->sdl_data + (s)->sdl_nlen))
+#define etherbroadcastaddr D_0002E490
+#define ether_ipmulticast_min D_0002E498
+#define ether_ipmulticast_max D_0002E4A0
+extern u_int8_t etherbroadcastaddr[ETHER_ADDR_LEN];
+extern u_int8_t ether_ipmulticast_min[ETHER_ADDR_LEN];
+extern u_int8_t ether_ipmulticast_max[ETHER_ADDR_LEN];
+#define arpintrq D_0002E54C
+extern struct ifqueue arpintrq;
+#define arpresolve func_0000FB90
+#define revarpinput func_00010770
+int arpresolve(struct ifnet *ifp, struct rtentry *rt, struct mbuf *m, struct sockaddr *dst, u_char *desten);
+void revarpinput(struct mbuf *m);
+#define ether_multiaddr func_000097C4
+#define ether_output func_000099FC
+int ether_output(struct ifnet *ifp, struct mbuf *m0, struct sockaddr *dst, struct rtentry *rt0);
+int _sce_pspnet_start_of_inet_module_in_if_ethersubr_core(int (*a)(struct ifnet *, struct mbuf *, struct sockaddr *, struct rtentry *),
+	void (*b)(struct ifnet *, struct mbuf *, u_short, void *), void (*c)(struct ifnet *, struct mbuf *, u_short, void *, struct ifqueue **, int *, int *),
+	int (*d)(struct sockaddr *, u_int8_t *, u_int8_t *));
+void _sce_pspnet_stop_of_inet_module_in_if_ethersubr_core(void);
+extern void (*D_0002EB6C)(struct mbuf *, u_short, void *);
+extern int D_0002EB70;
+
 #endif
