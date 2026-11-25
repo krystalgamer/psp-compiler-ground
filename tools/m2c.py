@@ -19,6 +19,28 @@ ABI = ["zero", "at", "v0", "v1", "a0", "a1", "a2", "a3",
        "t8", "t9", "k0", "k1", "gp", "sp", "fp", "ra"]
 
 
+KNOWN = {"void", "int", "char", "short", "long", "unsigned", "signed", "float", "double", "const",
+         "static", "u8", "s8", "u16", "s16", "u32", "s32", "f32", "f64", "M2C_UNK"}
+
+
+def c_prototypes(target, module):
+    """Without DWARF: the prototypes of the module's functions already in C
+    (so m2c sees their arguments)."""
+    out = ["typedef unsigned char u8; typedef signed char s8; typedef short s16;",
+           "typedef unsigned short u16; typedef int s32; typedef unsigned int u32;",
+           "typedef float f32; typedef double f64; typedef int M2C_UNK;"]
+    for f in sorted((ROOT / "decomp_src" / target / module).rglob("*.c")):
+        for m in re.finditer(r"^(?:static )?([A-Za-z_][\w ]*?[\w*]) ?\*?\s*(\w+)\(([^;{}()]*)\)\s*\{",
+                             f.read_text(), re.M):
+            line = m.group(0).rstrip("{").strip()
+            words = set(re.findall(r"[A-Za-z_]\w*", re.sub(r"\w+\s*(,|\)|$)", r"\1", m.group(3))))
+            words |= set(re.findall(r"[A-Za-z_]\w*", m.group(1)))
+            if words <= KNOWN and not line.startswith(("if", "while", "for", "switch", "return")):
+                # a draft's void may hide a return value: leave it open
+                out.append(re.sub(r"^void (?!\*)", "M2C_UNK ", re.sub(r"^static ", "", line)) + ";")
+    return "\n".join(out) + "\n"
+
+
 def draft(target, module, unit, func, extra=()):
     asm = ROOT / "tmp/asm" / target / module / "nonmatchings" / unit / f"{func}.s"
     text = re.sub(r"\$(\d+)\b", lambda m: "$" + ABI[int(m[1])] if int(m[1]) < 32 else m[0], asm.read_text())
@@ -28,6 +50,8 @@ def draft(target, module, unit, func, extra=()):
             text = re.sub(r"\b%s\b" % tbl, "jtbl_" + tbl, text)
     ctx = subprocess.run([sys.executable, str(ROOT / "tools/dwarf2c.py"), target, module, unit],
                          capture_output=True, text=True, check=True).stdout
+    if not ctx.strip():
+        ctx = c_prototypes(target, module)
     with tempfile.TemporaryDirectory() as td:
         (Path(td) / "f.s").write_text(text)
         (Path(td) / "ctx.c").write_text(ctx)

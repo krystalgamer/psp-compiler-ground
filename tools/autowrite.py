@@ -61,9 +61,19 @@ def write_nodwarf(target, module, u, path, text, bodies):
     the drafts go in one by one, each kept only if the unit still matches."""
     decls, done = {}, {}
 
+    old = text.splitlines()
+    if '#include "m2c_macros.h"' in old:
+        i = old.index('#include "m2c_macros.h"') + 1
+        head, old = old[:i], old[i:]
+        have = {decl_name(l) for l in old if DECL.match(l)}
+    else:
+        head, old, have = autodecomp.NODWARF_HDR.splitlines(), old[1:], set()
+
+    defined = set(re.findall(r"^[A-Za-z_][^;\n]*?(\w+)\([^;\n]*\)\s*\{", text, re.M))
+
     def render():
-        out = autodecomp.NODWARF_HDR.splitlines() + [""] + list(decls.values()) + [""]
-        for line in text.splitlines()[1:]:
+        out = head + [v for k, v in decls.items() if k not in have and k not in defined and k not in done] + [""]
+        for line in old:
             m = re.match(r'INCLUDE_ASM\("[^"]+", (\w+)\);', line)
             out.append(done[m.group(1)] if m and m.group(1) in done else line)
         return "\n".join(out).rstrip("\n") + "\n"
@@ -75,7 +85,7 @@ def write_nodwarf(target, module, u, path, text, bodies):
         saved = dict(decls)
         for k, v in new.items():
             # a typed guess beats a bytewise one
-            if k not in bodies and (k not in decls or (decls[k].startswith("extern u8 ")
+            if k not in bodies and k not in have and (k not in decls or (decls[k].startswith("extern u8 ")
                                                        and not v.startswith("extern u8 "))):
                 decls[k] = v
         done[fn] = code
@@ -114,7 +124,8 @@ def main():
         if not path.exists():
             continue
         text = path.read_text()
-        if not all(STUB.match(l) for l in text.splitlines()):
+        drafted = '#include "m2c_macros.h"' in text   # an earlier no-DWARF run
+        if not drafted and not all(STUB.match(l) for l in text.splitlines()):
             continue
         funcs = re.findall(r'INCLUDE_ASM\("[^"]+", (\w+)\);', text)
         cc1 = compiler.compiler(target, module, u)
@@ -134,15 +145,27 @@ def main():
         protos = set(bodies)
         ctxl = [l for l in ctx.splitlines()
                 if not any(re.search(rf"\b{re.escape(f)}\s*\(.*\);$", l) for f in protos)]
-        out = ['#include "common.h"', "", "/* declarations recovered from DWARF */"] + ctxl + [""]
-        for line in text.splitlines()[1:]:
-            m = re.match(r'INCLUDE_ASM\("[^"]+", (\w+)\);', line)
-            if m and m.group(1) in bodies:
-                out.append(bodies[m.group(1)].strip("\n"))
-            else:
-                out.append(line)
-        path.write_text("\n".join(out).rstrip("\n") + "\n")
-        if unit_test(target, module, path) and build_ok(target, module):
+
+        def render():
+            out = ['#include "common.h"', "", "/* declarations recovered from DWARF */"] + ctxl + [""]
+            for line in text.splitlines()[1:]:
+                m = re.match(r'INCLUDE_ASM\("[^"]+", (\w+)\);', line)
+                out.append(bodies[m.group(1)].strip("\n") if m and m.group(1) in bodies else line)
+            return "\n".join(out).rstrip("\n") + "\n"
+        ok = False
+        path.write_text(render())
+        if unit_test(target, module, path):
+            # fntest ignores relocations: drop what the module build shows wrong
+            while bodies:
+                path.write_text(render())
+                if build_ok(target, module):
+                    ok = True
+                    break
+                bad = first_bad(target, module)
+                if bad not in bodies:
+                    break
+                del bodies[bad]
+        if ok:
             total += len(bodies)
             print(f"{u}: wrote {len(bodies)}/{len(funcs)}", flush=True)
         else:
