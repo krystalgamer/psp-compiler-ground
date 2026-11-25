@@ -71,28 +71,18 @@ modules (`tools/nltest.py`, `tools/objcmp.py`).
   `min`, and `func_00002064` are `beql`/`bnel` where they use `movz`/`movn`).
   The remaining near-misses compile the same with every cc1, so they are
   source-level.
-- **Open: sc_sascore has integer conditional moves.** It is 1.5.1.internal
-  C (the `$k1` idiom, delay slots filled by the compiler), yet five of its
-  functions use `movz`/`movn` as ordinary if-conversion would (`if (r == 0)
-  r = 1;` as `movz` in a `jal` delay slot; `sltu`/`movn` clamp chains). The
-  1.5.1 tree cannot emit them (`ISA_HAS_INT_CONDMOVE 0`), while the other
-  twelve firmware modules have none and several compile textbook cases with
-  branches instead (audiocodec `func_00000958`: `if (n - 1 >= 0x6C1) n =
-  0x6C1;`; 12 such cases in memab, 9 in pspnet_adhoc, 8 in pspnet_inet). So
-  in 1.5.1 the condmove patterns were probably switched off by an option or
-  a condition, not deleted. Excluded so far: a changed default CPU
-  (allegrex2/3 would give 8-byte stack alignment; every frame is 16-byte
-  aligned) and the 1.3.1/1.5.0.internal cc1 (`.comment` says
-  1.5.1.internal). sc_sascore is also the only module with many
-  `ext`/`ins` and no leftover shift-and-mask pairs, which `-mext` (off by
-  default; it turns such C into `ext`/`ins`) would explain, so one candidate
-  is `ISA_HAS_INT_CONDMOVE` = `TARGET_ALLEGREX31 && TARGET_EXT`. Another is
-  `TARGET_ALLEGREX31 && !TARGET_NO_ULSW`: the 1.5.1 driver passes
-  `-mno-ulsw` and 1.6.1's does not, which would also explain why 1.6.1
-  (with no separate revert) has condmoves again. No 1.5.1 C unit with
-  `lwl`/`lwr` (i.e. `-mulsw`) exists to refute it, and sc_sascore has no
-  unaligned copies to show which way it was built. Both candidates are
-  untested until sc_sascore functions match.
+- **The condmove change is gated by `-mext`.** In 1.5.1, integer
+  conditional moves are available only together with Allegrex insert/extract
+  (`ISA_HAS_INT_CONDMOVE` = `TARGET_ALLEGREX31 && TARGET_EXT`, was
+  `TARGET_ALLEGREX31` in 1.3.1). sc_sascore is the only 1.5.1-era module built
+  with `-mext` (its shifts and masks become exactly the original's `ext`
+  instructions only with it) and the only one with `movz`/`movn` in compiled
+  C (five functions); `__sceSasSetTrianglarWave` matches exactly with the
+  gated tree and `-mext`, and cannot match with conditional moves off. All
+  other modules, built without `-mext`, compile exactly as before (full
+  rebuild unchanged). Excluded: a different default CPU (allegrex2/3 would
+  give 8-byte stack alignment; every frame is 16-byte aligned) and an older
+  cc1 (`.comment` says 1.5.1.internal).
 - gcc 3.3 marks a function defined earlier in the same file const/pure
   (`mark_constant_function`) when it only reads memory, so calls to it don't
   force reloads. Where the original reloads after calling such a helper,
