@@ -24,7 +24,7 @@ STUB = re.compile(r'^(#include "common.h"|/\*.*\*/|INCLUDE_ASM\(.*\);|INCLUDE_RO
 
 
 def build_ok(target, module):
-    r = subprocess.run(["make", "-j" + os.environ.get("AW_JOBS", "3"), f"TARGET={target}", f"MODULE={module}"], cwd=ROOT,
+    r = subprocess.run(["make", "-j" + os.environ.get("AW_JOBS", "1"), f"TARGET={target}", f"MODULE={module}"], cwd=ROOT,
                        capture_output=True, text=True)
     return r.stdout.strip().endswith(": OK")
 
