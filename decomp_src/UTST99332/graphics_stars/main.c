@@ -33,6 +33,13 @@ struct _scemoduleinfo { /* size 0x34 */
     const void *stub_end;
 };
 
+/* SDK functions */
+void sceGuClear(int flags);
+void sceGuColor(unsigned int color);
+void sceGuSpriteMode(int a0, int a1, int a2, int a3);
+void sceGuDrawSprite(int x, int y, int z, int u, int v, int flip, int rotation);
+int sceCtrlReadBufferPositive(SceCtrlData *data, int count);
+
 extern unsigned int starcolor[8];
 extern unsigned int star16x16[64];
 extern int _gp;
@@ -47,6 +54,7 @@ extern POS pos[256];
 extern int maxnum;
 extern char disp_list[131072];
 
+int rand(void);
 static void draw_frame(void);
 static void init_pos(void);
 static int pad_read(void);
@@ -80,7 +88,40 @@ void sceGuClutLoad(int num_blocks, const void *cbp);
 int sceDisplayWaitVblankStart(void);
 
 
+#ifdef NON_MATCHING
+/* Close: constant materialization and conditional-move order differ. */
+static void draw_frame(void)
+{
+	POS *p;
+	int x, y;
+	int px, py;
+	int i, j;
+
+	sceGuStart(0, disp_list, sizeof(disp_list));
+	sceGuClear(7);
+	sceGuEnable(9);
+	sceGuSpriteMode(16, 16, 16, 16);
+	p = pos;
+	for (j = 0; j < maxnum; j++, p++) {
+		p->x += p->dx;
+		p->y += p->dy;
+		x = p->x % 928;
+		y = p->y & 511;
+		for (i = 1; i < 8; i++) {
+			x = (x + p->dx * 2) % 928;
+			y = (y + p->dy * 2) & 511;
+			py = y < 256 ? y : 512 - y;
+			px = x < 464 ? x : 928 - x;
+			sceGuColor(p->col + ((255 / (8 - i)) << 24));
+			sceGuDrawSprite(px, py, 0, 0, 0, 0, 0);
+		}
+	}
+	sceGuFinish();
+	sceGuSync(0, 0);
+}
+#else
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_stars/nonmatchings/main", draw_frame);
+#endif
 
 void init_all(void) {
     sceGuInit();
@@ -111,9 +152,36 @@ void init_all(void) {
     sceGuDisplay(1);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_stars/nonmatchings/main", init_pos);
+static void init_pos(void)
+{
+	int i;
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_stars/nonmatchings/main", pad_read);
+	for (i = 0; i < 256; i++) {
+		pos[i].x = rand() % 928;
+		pos[i].y = rand() % 512;
+		pos[i].dx = rand() % 4 + 2;
+		pos[i].dy = rand() % 4 + 2;
+		pos[i].col = ((rand() % 192 + 64) << 16) | ((rand() % 192 + 64) << 8) | (rand() % 192 + 64);
+	}
+}
+
+static int pad_read(void)
+{
+	SceCtrlData buf;
+
+	sceCtrlReadBufferPositive(&buf, 1);
+	if (buf.Buttons & 0x0080) {
+		if (--maxnum < 2)
+			maxnum = 1;
+	}
+	if (buf.Buttons & 0x0020) {
+		if (++maxnum >= 256)
+			maxnum = 256;
+	}
+	if (buf.Buttons & 0x0001)
+		return 0;
+	return 1;
+}
 
 int main(void) {
     menuInit();
