@@ -55,11 +55,13 @@ modules (`tools/nltest.py`, `tools/objcmp.py`).
   `-mno-ulsw`).
 
 - `tony_libs` (stripped 1.5.1.internal firmware modules) agree with the
-  1.5.1 tree. libatrac3plus is built `-O2 -frename-registers
-  -fno-strict-aliasing` (the same style as libwave): every tiny helper is
-  called, never inlined, so not `-O3` (which in gcc 3.3 would also defer
-  every function to the end of the file); one function needs the in-order
-  loads of `-fno-strict-aliasing`. Kernel modules (audiocodec) save and
+  1.5.1 tree. libatrac3plus is built `-O2 -frename-registers` (the same
+  style as libwave): every tiny helper is called, never inlined, so not
+  `-O3` (which in gcc 3.3 would also defer every function to the end of the
+  file). Strict aliasing is on (the `-O2` default): `func_0000340C` and
+  `func_00003178` move stores to pointer-typed buffer fields past loads of
+  `unsigned int` fields, which only `-fstrict-aliasing` with those types
+  allows. Kernel modules (audiocodec) save and
   shift `$k1` with inline asm and read it as a global register variable;
   the restore is inline asm too, which is why it never lands in a delay
   slot. Sony's code calls `__builtin_allegrex_ext` directly.
