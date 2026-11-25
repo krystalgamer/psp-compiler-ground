@@ -147,21 +147,56 @@ def rodata_ok(o, target, module, unit, ranges):
             al = max(sec["sh_addralign"], 1)
             new += b"\0" * (-len(new) % al) + sec.data()
     if unit not in ranges:
-        return not new
+        return not new, 0
     st, en = ranges[unit]
     rom = __import__("modules").read(target, module)
     old = rom[st:en]
     if len(new) > len(old) or any(old[len(new):]):
-        return False
+        return False, 0
     # labels of the stub past the new bytes belong to objects without code
     if any(st + len(new) <= r < en for r, _ in old_labels(target, module, unit, rom=True).values()):
-        return False
+        return False, 0
     relocs = set()
     for sec in e.iter_sections():
         if sec.name.startswith(".rel.rodata"):
             for r in sec.iter_relocations():
                 relocs.add(r["r_offset"])
-    return all(new[i:i + 4] == old[i:i + 4] or i in relocs for i in range(0, len(new) - len(new) % 4, 4))
+    ok = all(new[i:i + 4] == old[i:i + 4] or i in relocs for i in range(0, len(new) - len(new) % 4, 4))
+    return ok, len(new)
+
+
+def next_rodata(target, module, unit):
+    """the yaml entry after UNIT's .rodata: (kind, name, rom start)"""
+    ents = [(int(m[1], 16), m[2], m[3]) for m in
+            re.finditer(r"- \[0x([0-9A-F]+), (\.?\w+), ([\w/.-]+)\]", (ROOT / "config" / target / f"{module}.yaml").read_text())]
+    for i, (st, kind, name) in enumerate(ents):
+        if kind == ".rodata" and name == unit and i + 1 < len(ents):
+            return ents[i + 1][1], ents[i + 1][2], ents[i + 1][0]
+    return None
+
+
+def fix_gap(target, module, unit, ranges, newlen, write):
+    """The old stub's rodata ended in padding that the original's next object
+    aligned away; give that next object (still a stub) its alignment back.
+    Returns False when that cannot be done."""
+    st, en = ranges[unit]
+    if newlen == en - st:
+        return True
+    nx = next_rodata(target, module, unit)
+    if not nx or nx[0] != ".rodata":
+        return False
+    a = next((a for a in (8, 16) if -(-(st + newlen) // a) * a == en), None)
+    f = ROOT / "decomp_src" / target / module / f"{nx[1]}.c"
+    if a is None or not f.exists():
+        return False
+    t = f.read_text()
+    m = re.search(r"data-align: (\d+)", t)
+    if "upstream:" in t:
+        return bool(m) and int(m[1]) >= a
+    if write and not (m and int(m[1]) >= a):
+        t = re.sub(r"/\* data-align: \d+ \*/\n", "", t)
+        f.write_text(f"/* data-align: {a} */\n" + t)
+    return True
 
 
 _libgcc = {}
@@ -244,8 +279,10 @@ def main():
                     why = "missing " + " ".join(sorted(want - set(res)))
                 elif own_data(o):
                     why = "defines data"
-                elif not rodata_ok(o, a.target, a.module, unit, ranges):
+                elif not (ro := rodata_ok(o, a.target, a.module, unit, ranges))[0]:
                     why = "rodata differs"
+                elif unit in ranges and not fix_gap(a.target, a.module, unit, ranges, ro[1], a.write):
+                    why = "rodata padding before asm"
                 else:
                     why = None
                     e = ELFFile(io.BytesIO(o.read_bytes()))
