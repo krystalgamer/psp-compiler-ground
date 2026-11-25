@@ -1,6 +1,9 @@
 # unit                                     compiler        source
 crt0                                         1.6.1.internal  crt0.c
+CityApp                                      1.6.1.internal  CityApp.cpp
 menu                                         1.6.1.internal  menu.c
+libgum                                       1.6.1.internal  libgum.c
+libgu                                        1.6.1.internal  libgu.c
 newlib/libm/math/sf_atan                     1.6.1.internal  ../../../../../newlib-1.12.0/newlib/libm/math/sf_atan.c
 newlib/libm/math/sf_cos                      1.6.1.internal  ../../../../../newlib-1.12.0/newlib/libm/math/sf_cos.c
 newlib/libm/math/sf_fabs                     1.6.1.internal  ../../../../../newlib-1.12.0/newlib/libm/math/sf_fabs.c
@@ -85,6 +88,7 @@ libgcc/dp-bit/__pack_d                       1.6.1.internal  dp-bit.c
 libgcc/dp-bit/__unpack_d                     1.6.1.internal  dp-bit.c
 libgcc/dp-bit/__fpcmp_parts_d                1.6.1.internal  dp-bit.c
 libgcc/fp-bit/__pack_f                       1.6.1.internal  fp-bit.c
+kernel_bridge                                1.6.1.internal  kernel_bridge.c
 newlib/libc/stdlib/abort                     1.6.1.internal  ../../../../../newlib-1.12.0/newlib/libc/stdlib/abort.c
 newlib/libc/stdlib/atexit                    1.6.1.internal  ../../../../../newlib-1.12.0/newlib/libc/stdlib/atexit.c
 newlib/libc/stdlib/atof                      1.6.1.internal  ../../../../../newlib-1.12.0/newlib/libc/stdlib/atof.c
