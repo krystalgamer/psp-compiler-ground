@@ -1,3 +1,5 @@
-#include "common.h"
-
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_model/nonmatchings/libgcc/dp-bit/__unpack_d", __unpack_d);
+/* upstream: libgcc dp-bit.c (_unpack_df.o), tree: 1.6.1 */
+/* cflags: -O2 */
+#define FINE_GRAINED_LIBRARIES
+#define L_unpack_df
+#include "dp-bit.c"
