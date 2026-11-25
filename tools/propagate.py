@@ -22,7 +22,7 @@ import m2c as m2cdraft  # noqa: E402
 import objcmp  # noqa: E402
 from fntest import compile_c  # noqa: E402
 
-DEF = re.compile(r"^(?:static\s+)?[A-Za-z_][\w \t\*]*?\b(\w+)\s*\(([^;{}()]*)\)\s*\n?\{", re.M)
+DEF = re.compile(r"^(?:static\s+)?[A-Za-z_][\w \t\*]*?\b(\w+)\s*\(((?:[^;{}()]|\((?:[^;{}()]|\([^;{}()]*\))*\))*)\)\s*\n?\{", re.M)
 
 
 def strip_nonmatching(text):
