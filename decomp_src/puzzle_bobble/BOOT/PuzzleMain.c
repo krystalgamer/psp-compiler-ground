@@ -300,9 +300,16 @@ int GetMapWidth(int no)
 	return PzlDataGetWidth(no);
 }
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", GetMapLeft);
+int GetMapLeft(int no)
+{
+	return 160 - GetMapWidth(no) * 8;
+}
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", GetMapRight);
+int GetMapRight(int no)
+{
+	return GetMapWidth(no) * 8 + 160;
+}
+
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", GameValueInit);
 
@@ -314,7 +321,25 @@ INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", EndressValueIn
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", DrawMapData);
 
+#ifdef NON_MATCHING
+/* Close: operand order of the row address. */
+void SetBallMapReverse(PZL_STAT *dst, PZL_STAT *src)
+{
+	int x, y;
+	u8 *sm = src->map;
+	u8 *dm = dst->map;
+
+	for (y = 0; y < 18; y++) {
+		for (x = 0; x < 8; x++) {
+			dm[y / 2 * 2 - y + y * 8 + 7 - x] = sm[y * 8 + x];
+			if ((y & 1) && x == 6)
+				break;
+		}
+	}
+}
+#else
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", SetBallMapReverse);
+#endif
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", SetBallMap);
 
@@ -361,7 +386,37 @@ void TermChain(PZL_STAT *st)
 	}
 }
 
+#ifdef NON_MATCHING
+/* Close: the original addresses the drop entry as st + n * 6 + 0x480 with offsets from 4. */
+int CheckOneColorAll(PZL_STAT *st)
+{
+	int n = 0;
+	int i;
+	u8 col = st->color;
+	int x, y;
+	PZL_DROP *d;
+
+	st->unk429 = 0;
+	if (col >= 1 && col <= 9) {
+		for (i = 0; i < 0x22E; i++) {
+			if (st->map[i] == col || st->attr[i] == 2) {
+				n++;
+				GetBallCoordinate(st, i, &x, &y);
+				d = &st->drop.d[st->ndrop];
+				d->x = x;
+				d->flag = 0;
+				d->y = y;
+				d->col = col;
+				st->map[i] = 0;
+				st->ndrop++;
+			}
+		}
+	}
+	return n;
+}
+#else
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", CheckOneColorAll);
+#endif
 
 #ifdef NON_MATCHING
 /* Close: i and the loop bound test swap registers. */
