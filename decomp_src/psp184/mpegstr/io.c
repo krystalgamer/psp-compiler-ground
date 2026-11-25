@@ -90,7 +90,7 @@ int DvdUmdRetryPollSema(void) {
 int sceIoClose(int fd);
 int printf(const char *fmt, ...);
 int printf(const char *fmt, ...);
-extern char D_000125D4[];
+extern char D_000125B0[];
 SceInt32 DvdUmdRetryReadFile(const char *filepath, SceSize filesize, void *filebuf)
 {
 	int ret;
@@ -104,7 +104,7 @@ SceInt32 DvdUmdRetryReadFile(const char *filepath, SceSize filesize, void *fileb
 	fd = ret;
 	ret = DvdUmdRetryRead(fd, filebuf, filesize);
 	if (ret < 0)
-		printf(D_000125D4, ret, 166);
+		printf(D_000125B0, ret, 166);
 	sceIoClose(fd);
 	return ret;
 }
