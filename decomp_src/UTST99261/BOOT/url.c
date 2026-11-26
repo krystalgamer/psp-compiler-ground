@@ -198,7 +198,23 @@ void UTL_enqueue(QUEUE *q, QUEUE *e) {
 #ifndef NULL
 #define NULL ((void *)0)
 #endif
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/url", UTL_dequeue);
+QUEUE *UTL_dequeue(QUEUE *q) {
+    QUEUE *e;
+    QUEUE *n;
+    QUEUE *ret;
+
+    e = q->next;
+    ret = NULL;
+    if (q != e) {
+        n = e->next;
+        q->next = n;
+        n->prev = q;
+        e->next = NULL;
+        e->prev = NULL;
+        ret = e;
+    }
+    return ret;
+}
 
 void UTL_relqueue(QUEUE *q, QUEUE *e) {
     QUEUE *next;
