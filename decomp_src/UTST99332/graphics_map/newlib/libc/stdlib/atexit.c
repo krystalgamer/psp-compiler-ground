@@ -1,3 +1,5 @@
-#include "common.h"
+/* upstream: newlib-1.12.0/newlib/libc/stdlib/atexit.c (unmodified) */
+/* cflags: -O2 -fno-builtin -fdata-sections */
+#include "libc/stdlib/atexit.c"
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_map/nonmatchings/newlib/libc/stdlib/atexit", atexit);
+/* its static lock (.data.lock.0) is discarded: the module's .data (asm) has it */
