@@ -181,7 +181,96 @@ int dispbuf_func(SceSize size, void *argp);
 SceInt32 dispbuf_show(t_displayBuffer *pDisp);
 
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/mpeg_display", dispbuf_create);
+int sceDisplaySetMode(int mode, int width, int height);
+int sceKernelCreateSema(const char *name, unsigned int attr, int init, int max, void *option);
+int sceKernelCreateEventFlag(const char *name, int attr, int bits, void *opt);
+void *malloc(unsigned int size);
+void *memalign(unsigned int align, unsigned int size);
+void *sceGeEdramGetAddr(void);
+
+const char D_0002F040[] = "display_lockSema";
+const char D_0002F054[] = "display_delay_flag";
+
+SceInt32 dispbuf_create(t_displayBuffer *pDisp, SceInt32 dispSize, SceInt32 dispNum, t_conditionCtrl *pCtrl)
+{
+	SceInt32 i, ret;
+	SceChar8 *geAddr;
+
+	pDisp->size = dispNum;
+	pDisp->pCtrl = pCtrl;
+
+	pDisp->buf = NULL;
+	pDisp->pts = NULL;
+
+	ret = sceDisplaySetMode(0, 480, 272);
+	if (ret < 0) {
+		goto error;
+	}
+
+	ret = sceKernelCreateSema(D_0002F040, 0, 1, 1, NULL);
+	if (ret < 0) {
+		goto error;
+	}
+	pDisp->lockSema = ret;
+
+	ret = sceKernelCreateEventFlag(D_0002F054, 0x200, 0, 0);
+	if (ret < 0) {
+		goto error;
+	}
+	pDisp->delayFlag = ret;
+
+	pDisp->buf = malloc(pDisp->size * sizeof(SceChar8 *));
+	if (pDisp->buf == NULL) {
+		ret = 0x80000022;
+		goto error;
+	}
+
+	for (i = 0; i < pDisp->size; i++) {
+		pDisp->buf[i] = NULL;
+	}
+
+	for (i = 0; i < pDisp->size; i++) {
+		pDisp->buf[i] = memalign(16, dispSize);
+		if (pDisp->buf[i] == NULL) {
+			ret = 0x80000022;
+			goto error;
+		}
+	}
+
+	pDisp->pts = malloc(pDisp->size * sizeof(SceUInt32));
+	if (pDisp->pts == NULL) {
+		ret = 0x80000022;
+		goto error;
+	}
+
+	geAddr = sceGeEdramGetAddr();
+
+	displayBuf[0] = geAddr + 0x88000;
+	displayBuf[1] = geAddr + 0x110000;
+
+	goto term;
+
+error:
+	if (pDisp->buf != NULL) {
+		for (i = 0; i < pDisp->size; i++) {
+			if (pDisp->buf[i] != NULL) {
+				free(pDisp->buf[i]);
+				pDisp->buf[i] = NULL;
+			}
+		}
+
+		free(pDisp->buf);
+		pDisp->buf = NULL;
+	}
+
+	if (pDisp->pts != NULL) {
+		free(pDisp->pts);
+		pDisp->pts = NULL;
+	}
+
+term:
+	return ret;
+}
 
 int sceDisplaySetFrameBuf(void *topaddr, int bufferwidth, int pixelformat, int sync);
 int sceDmacMemcpy(void *dst, const void *src, unsigned int size);
@@ -203,7 +292,27 @@ static SceInt32 swap_buffer(SceChar8 *buffer)
 	return ret;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/mpeg_display", dispbuf_reset);
+int sceKernelClearEventFlag(SceUID evid, unsigned int bits);
+SceInt32 dispbuf_reset(t_displayBuffer *pDisp)
+{
+	SceInt32 ret;
+
+	frameCount = 0;
+	frameLoss = 0;
+	pDisp->write = 0;
+	pDisp->read = 0;
+	pDisp->count = 0;
+	dispbuf_setMode(pDisp, 1);
+	sceKernelClearEventFlag(pDisp->delayFlag, 0);
+	pDisp->statusFlag = 1;
+	ret = sceDisplaySetMode(0, 480, 272);
+	if (ret < 0)
+		return ret;
+	ret = sceDisplaySetFrameBuf(NULL, 512, 3, 1);
+	if (ret < 0)
+		return ret;
+	return 0;
+}
 
 int sceKernelDeleteSema(int semid);
 void free(void *p);
