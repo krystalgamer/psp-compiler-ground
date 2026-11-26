@@ -175,7 +175,31 @@ int playInfo_delete(t_playInfo *pPlayInfo, int audioFlag) {
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/mpeg_stream_change/nonmatchings/playInfo", playInfo_reset);
+SceInt32 playInfo_reset(t_playInfo *pPlayInfo, SceUInt32 currentTimestamp)
+{
+	SceInt32 ret;
+
+	ret = sInfo_reset(&pPlayInfo->sInfo, sInfo_getCurrentStreamTypeNumber(&pPlayInfo->sInfo, 0), sInfo_getCurrentStreamTypeNumber(&pPlayInfo->sInfo, 1));
+	if (ret != 0) {
+		printf("fatal error : sInfo_init() 0x%x\n", ret);
+		goto term;
+	}
+
+	ret = decode_reset(&pPlayInfo->streamData, decode_getCurrentStream(&pPlayInfo->streamData, 0), decode_getCurrentStream(&pPlayInfo->streamData, 1), currentTimestamp);
+	if (ret != 0) {
+		printf("fatal error : decode_iit() 0x%x\n", ret);
+		goto term;
+	}
+
+	playInfo_setPts(pPlayInfo, currentTimestamp);
+
+	playInfo_setOffset(pPlayInfo);
+
+	pPlayInfo->playMode = 0;
+
+term:
+	return ret;
+}
 
 int playInfo_getAudioStreamNum(t_playInfo *pPlayInfo) {
     return sInfo_getNumberOfStreams(&pPlayInfo->sInfo, 1);
