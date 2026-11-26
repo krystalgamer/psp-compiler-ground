@@ -105,7 +105,63 @@ int sceWaveInit(void)
 	return 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/sound_ryukyu/nonmatchings/libwave", sceWaveSetVoice);
+int sceWaveSetVoice(unsigned int ch, void *data, int size, int flags)
+{
+	SceWaveVoice *v;
+
+	if (ch >= 8)
+		return 0x80440005;
+	if ((unsigned int)size > 0x1800000)
+		return 0x80440007;
+	if (sceWaveGetStat(ch) != 0)
+		return 0x80440009;
+	if (!(flags & 0x400)) {
+		if (data == NULL)
+			return 0x80440006;
+		if (size <= 0)
+			return 0x80440007;
+		v = &D_00046334[ch];
+		v->data = data;
+		v->size = size;
+		v->flags = flags;
+		v->pos = 0;
+		v->stat = 0;
+		v->vol_l = 0x1000;
+		v->vol_r = 0x1000;
+		v->unk3C = 0x70;
+		v->unk30 = 0;
+		v->unk34 = 0;
+		v->unk28 = 0;
+		v->unk2C = 0;
+		v->unk24 = 0;
+		v->unk10 = 0;
+		v->unk14 = 0;
+		v->unk40 = 0;
+	} else {
+		if (data != NULL)
+			return 0x80440006;
+		if (size != 0)
+			return 0x80440007;
+		v = &D_00046334[ch];
+		v->data = data;
+		v->size = size;
+		v->flags = flags;
+		v->pos = 0;
+		v->stat = 0;
+		v->vol_l = 0x1000;
+		v->vol_r = 0x1000;
+		v->unk3C = 0x70;
+		v->unk30 = 0;
+		v->unk34 = 0;
+		v->unk28 = 0;
+		v->unk2C = 0;
+		v->unk24 = 0;
+		v->unk10 = 0;
+		v->unk14 = 0;
+		v->unk40 = 0;
+	}
+	return 0;
+}
 
 int sceWaveSetVolume(unsigned int ch, unsigned int left, unsigned int right)
 {
@@ -191,9 +247,71 @@ int sceWaveGetStat(unsigned int ch)
 	return D_00046334[ch].stat;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/sound_ryukyu/nonmatchings/libwave", sceWavePlay);
+int sceWavePlay(unsigned int ch, int left, int right)
+{
+	if (ch >= 8)
+		return 0x80440005;
+	if (left < 0 || left >= 128)
+		return 0x8044000A;
+	if (right < 0 || right >= 128)
+		return 0x8044000A;
+	if (D_00046334[ch].data == NULL && !(D_00046334[ch].flags & 0x400))
+		return 0x80440006;
+	if (D_00046334[ch].stat != 0) {
+		D_00046334[ch].flags |= 0x110000;
+		D_00046594[ch].stat = 1;
+		D_00046594[ch].vol_l = left * 0x1000 / 127;
+		D_00046594[ch].vol_r = right * 0x1000 / 127;
+		D_00046594[ch].pos = 0;
+		D_00046594[ch].unk30 = 0;
+		D_00046594[ch].unk34 = 0;
+		D_00046594[ch].unk28 = 0;
+		D_00046594[ch].unk2C = 0;
+	} else {
+		D_00046334[ch].stat = 1;
+		D_00046334[ch].vol_l = left * 0x1000 / 127;
+		D_00046334[ch].vol_r = right * 0x1000 / 127;
+		D_00046334[ch].pos = 0;
+		D_00046334[ch].unk30 = 0;
+		D_00046334[ch].unk34 = 0;
+		D_00046334[ch].unk28 = 0;
+		D_00046334[ch].unk2C = 0;
+	}
+	return 0;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/sound_ryukyu/nonmatchings/libwave", sceWavePlayEx);
+int sceWavePlayEx(unsigned int ch, unsigned int left, unsigned int right)
+{
+	if (ch >= 8)
+		return 0x80440005;
+	if (left > 0x1000)
+		return 0x8044000A;
+	if (right > 0x1000)
+		return 0x8044000A;
+	if (D_00046334[ch].data == NULL && !(D_00046334[ch].flags & 0x400))
+		return 0x80440006;
+	if (D_00046334[ch].stat != 0) {
+		D_00046334[ch].flags |= 0x110000;
+		D_00046594[ch].stat = 1;
+		D_00046594[ch].vol_l = left;
+		D_00046594[ch].vol_r = right;
+		D_00046594[ch].pos = 0;
+		D_00046594[ch].unk30 = 0;
+		D_00046594[ch].unk34 = 0;
+		D_00046594[ch].unk28 = 0;
+		D_00046594[ch].unk2C = 0;
+	} else {
+		D_00046334[ch].stat = 1;
+		D_00046334[ch].vol_l = left;
+		D_00046334[ch].vol_r = right;
+		D_00046334[ch].pos = 0;
+		D_00046334[ch].unk30 = 0;
+		D_00046334[ch].unk34 = 0;
+		D_00046334[ch].unk28 = 0;
+		D_00046334[ch].unk2C = 0;
+	}
+	return 0;
+}
 
 int sceWaveStop(unsigned int ch)
 {
