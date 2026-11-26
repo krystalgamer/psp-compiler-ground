@@ -222,7 +222,29 @@ INCLUDE_ASM("tmp/asm/UTST99332/graphics_model2/nonmatchings/main", move_objects)
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_model2/nonmatchings/main", draw_objects);
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_model2/nonmatchings/main", clear_cache);
+int sceGmoModelGetCurrentMotion(SceGmoModel *model);
+SceGmoMotion *sceGmoModelGetMotion(SceGmoModel *model, int index);
+const float *sceGmoMotionGetFrameLoop(SceGmoMotion *motion);
+float sceGmoMotionGetFrameRate(SceGmoMotion *motion);
+float sceGmoMotionGetFrame(SceGmoMotion *motion);
+void *memset(void *s, int c, unsigned int n);
+
+static void clear_cache(void)
+{
+	SceGmoModel *model = g_model;
+	int current = sceGmoModelGetCurrentMotion(model);
+	SceGmoMotion *motion = sceGmoModelGetMotion(model, current);
+	const float *loop = sceGmoMotionGetFrameLoop(motion);
+
+	g_cache_loop[0] = (loop == 0) ? 0.0f : loop[0];
+	g_cache_loop[1] = (loop == 0) ? 0.0f : loop[1];
+	g_cache_fps = sceGmoMotionGetFrameRate(motion);
+	g_cache_frame = sceGmoMotionGetFrame(motion);
+
+	memset(g_cache_packets, 0, sizeof(g_cache_packets));
+	g_cache_top = g_cache_buf;
+	g_cache_packet = 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_model2/nonmatchings/main", update_cache);
 
