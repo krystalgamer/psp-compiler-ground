@@ -2,10 +2,18 @@
 #include "common.h"
 #include "lo_box.h"
 #include "m2c_macros.h"
+int html_IMG_inner(void *node, BOX *box);
+BOX *getBodyBox(BOX *box);
+void addBoxList(void *list, BOX *box);
+BOX *createBox(void *ctx, int type);
+void linkBox(BOX *box, BOX *parent, BOX *prev);
+void initNoneContent(BOX *box, void *ctx);
+void initBoxProperty(BOX *box);
+void applyCSSExtStyleSheetToBox(void *node, BOX *box);
+void applyCSSInlinePropertyToBox(void *node, BOX *box);
 extern unsigned char _DOMtabindex;
 char *getDOMAttributeValue(void *node, void *name);
 M2C_UNK MEM_free(M2C_UNK, int);                     /* extern */
-void *getBodyBox(void *);                           /* extern */
 int getRawTextFromDomTree(int);                     /* extern */
 int getSessionSaveData(int);                        /* extern */
 
@@ -80,7 +88,20 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_html_form", html_FIELDSET);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_html_form", html_LABEL);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_html_form", html_LEGEND);
+BOX *html_LEGEND(void *node, BOX *parent, BOX *prev) {
+    BOX *box = createBox(node, 1);
+    if (box == NULL) {
+        return NULL;
+    }
+    linkBox(box, parent, prev);
+    box->display = 1;
+    box->html = 0x37;
+    initNoneContent(box, node);
+    initBoxProperty(box);
+    applyCSSExtStyleSheetToBox(node, box);
+    applyCSSInlinePropertyToBox(node, box);
+    return box;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_html_form", html_LEGEND_after);
 
@@ -93,7 +114,23 @@ int html_OPTGROUP(void) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_html_form", html_IMG_inner);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_html_form", html_IMG);
+BOX *html_IMG(void *node, BOX *parent, BOX *prev) {
+    BOX *box = createBox(node, 1);
+    BOX *body;
+    if (box == NULL) {
+        return NULL;
+    }
+    linkBox(box, parent, prev);
+    box->display = 1;
+    box->html = 0x31;
+    if (html_IMG_inner(node, box) == 1) {
+        body = getBodyBox(box);
+        if (body != NULL && box != NULL) {
+            addBoxList((char *)body->geom + 0xA8, box);
+        }
+    }
+    return box;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_html_form", processArea);
 

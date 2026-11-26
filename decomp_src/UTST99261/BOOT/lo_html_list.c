@@ -2,6 +2,14 @@
 #include "common.h"
 #include "lo_box.h"
 #include "m2c_macros.h"
+BOX *createBox(void *ctx, int type);
+void linkBox(BOX *box, BOX *parent, BOX *prev);
+void initLiContent(BOX *box, void *ctx);
+BOX *getParentBlockBox(BOX *box);
+int getContainingBlockWidth(BOX *box);
+void GUI_Graphics_getStringSize(int font, char *s, int n, int *w, int *h);
+extern char D_0013F088[];
+BOX *getBoxByHTML(BOX *box, int html);
 typedef struct UICOLORS { int color[4][7]; int unk70; int unk74; } UICOLORS;
 #define TEXTCOLOR(b) ((b)->style->unk64 = ((UICOLORS *)ui_global)->color[(b)->style->unk6A][(b)->style->fontSize])
 BOX *createInlineBox(void *ctx, BOX *parent, BOX *prev);
@@ -15,13 +23,47 @@ extern void *ui_global;
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_html_list", getLINumber);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_html_list", createLIBox_li);
+BOX *createLIBox_li(void *node, BOX *parent, BOX *prev) {
+    BOX *box = createBox(node, 1);
+    BOX *cb;
+    if (box == NULL) {
+        return NULL;
+    }
+    linkBox(box, parent, prev);
+    box->display = 0;
+    box->html = 0x38;
+    initLiContent(box, node);
+    initBoxProperty(box);
+    cb = getParentBlockBox(box);
+    if (cb != NULL) {
+        box->width = getContainingBlockWidth(cb);
+    }
+    return box;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_html_list", createLIBox_head);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_html_list", getTypeAtAttr);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_html_list", html_DL);
+BOX *html_DL(void *node, BOX *parent, BOX *prev) {
+    int w;
+    int h;
+    BOX *box = createBlockBox(node, parent, prev);
+    if (box == NULL) {
+        return NULL;
+    }
+    box->html = 0x1D;
+    initBoxProperty(box);
+    GUI_Graphics_getStringSize(box->style->unk64, D_0013F088, 1, &w, &h);
+    box->style->unk20 = h;
+    box->style->unk24 = h;
+    if (getBoxByHTML(parent, 0x1D) != NULL) {
+        box->style->unk26 = ((UICOLORS *)ui_global)->unk74 * 4;
+    }
+    applyCSSExtStyleSheetToBox(node, box);
+    applyCSSInlinePropertyToBox(node, box);
+    return box;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)

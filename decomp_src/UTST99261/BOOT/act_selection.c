@@ -1,6 +1,9 @@
 /* cflags: -O1 */
 #include "common.h"
 #include "m2c_macros.h"
+void *createBox(void *ctx, int type);
+void linkBox(void *box, void *parent, void *prev);
+void initNoneContent(void *box, void *ctx);
 extern char D_0013F038[];
 int checkAtributeByName(void *node, char *name);
 extern unsigned char _DOMcellpadding;
@@ -311,7 +314,17 @@ void attr_FOCUSCOLOR(void *arg0, void *arg1) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/act_selection", html_BODY);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/act_selection", html_HEAD);
+void *html_HEAD(void *node, void *parent, void *prev) {
+    void *box = createBox(node, 1);
+    if (box == NULL) {
+        return NULL;
+    }
+    linkBox(box, parent, prev);
+    M2C_FIELD(box, s16 *, 0x3C) = 0;
+    M2C_FIELD(box, s16 *, 0x3A) = 0x2C;
+    initNoneContent(box, node);
+    return box;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)

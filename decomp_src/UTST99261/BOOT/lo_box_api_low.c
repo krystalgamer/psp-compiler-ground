@@ -2,6 +2,7 @@
 #include "common.h"
 #include "nflayout.h"
 #include "m2c_macros.h"
+void initListContent(BOX *box, void *ctx);
 BOX *createBox(void *ctx, int type);
 void initNoneContent(BOX *box, void *ctx);
 void initBoxProperty(BOX *box);
@@ -57,7 +58,19 @@ BOX *createInlineBox(void *ctx, BOX *parent, BOX *prev) {
     return box;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_box_api_low", createListBox);
+BOX *createListBox(void *ctx, BOX *parent, BOX *prev, int html) {
+    BOX *box = createBox(ctx, 1);
+    if (box == NULL) {
+        return NULL;
+    }
+    linkBox(box, parent, prev);
+    box->display = 0;
+    box->html = html;
+    initListContent(box, ctx);
+    initBoxProperty(box);
+    box->width = getContainingBlockWidth(getParentBlockBox(box));
+    return box;
+}
 
 void linkBox(BOX *box, BOX *parent, BOX *prev) {
     BOX *t;
