@@ -126,6 +126,7 @@ extern int evf;
 extern int error_code;
 extern struct SceNetAdhocctlAdhocId adhoc_id;
 
+void change_state(enum connect_state state, int error_code);
 static void adhocctl_handler(int event, int error, void *arg);
 static int net_init(void);
 static int net_connect(void);
@@ -242,7 +243,67 @@ static int net_connect(void)
 	return ret;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/net", check_connect_completed);
+int utility_check_net_completed(int *done_flag, int *error_code);
+int utility_msgdialog_net(int error_code);
+int sceNetGetLocalEtherAddr(struct SceNetEtherAddr *addr);
+int _sce_pspnet_adhoc_prp_stop(void);
+int _sce_pspnet_adhoc_prp_start(const char *ifname, int prio, int stacksize, struct _sce_pspnet_adhoc_prp_param *param, unsigned int nicklen, char *nickname);
+int sceUtilityGetSystemParamString(int id, char *str, int len);
+int sceNetAdhocDistributeStartServer(int a, int b, int c, int d);
+int sceNetAdhocctlGetParameter(struct SceNetAdhocctlParameter *param);
+int mpeg_term(void);
+extern int error_code_8239C;
+static int check_connect_completed(void)
+{
+	int ret;
+	int done = 0;
+	int err = 0;
+	char nickname[128];
+	struct _sce_pspnet_adhoc_prp_param prp_param;
+
+	ret = utility_check_net_completed(&done, &err);
+	if (done > 0) {
+		evf &= ~2;
+		ret = sceNetGetLocalEtherAddr(&_info.local_addr);
+		if (ret < 0)
+			goto error;
+		_sce_pspnet_adhoc_prp_stop();
+		ret = sceUtilityGetSystemParamString(1, nickname, sizeof(nickname));
+		if (ret < 0)
+			goto error;
+		prp_param.echo_req_int = 1000000;
+		prp_param.rexmt_int = 500000;
+		prp_param.rexmt_cnt = 5;
+		prp_param.keepalive_int = 30000000;
+		prp_param.expire_timer = 300000000;
+		if (_sce_pspnet_adhoc_prp_start("wlan", 0x30, 0x2000, &prp_param, sizeof(nickname), nickname) < 0) {
+			error_code_8239C = 0x80410002;
+			goto error2;
+		}
+		ret = sceNetAdhocDistributeStartServer(0x30, 0x2000, 0x30, 0x2000);
+		if (ret < 0)
+			goto error;
+		sceNetAdhocctlGetParameter(&_info.ibss_param);
+		_info.peer_num = 0;
+		change_state(0xD, 0);
+	} else if (done < 0) {
+		evf &= ~1;
+		mpeg_term();
+		change_state(7, 0);
+		error_code_8239C = 0;
+	}
+	return ret;
+error:
+	error_code_8239C = ret;
+error2:
+	mpeg_term();
+	ret = utility_msgdialog_net(error_code_8239C);
+	if (ret < 0)
+		change_state(0x10, 0);
+	else
+		change_state(0x16, error_code_8239C);
+	return ret;
+}
 
 int net_stop_server(void) {
     sceNetAdhocDistributeStopServer();
