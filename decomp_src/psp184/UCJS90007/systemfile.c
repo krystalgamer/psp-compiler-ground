@@ -360,7 +360,35 @@ end:
 	return ret;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/systemfile", sceSystemFileOverWriteToFile);
+int sceIoWrite(int fd, const void *buf, unsigned int nbyte);
+int sceIoWrite(int fd, const void *buf, unsigned int size);
+int sceSystemFileOverWriteToFile(void *handle, void *index, void *data, unsigned int size)
+{
+	SysFile *sf = handle;
+	SfIndex *ix = index;
+	register int ret;
+
+	if (handle == NULL)
+		SF_ERROR(ret, 3)
+	else if (index == NULL)
+		SF_ERROR(ret, 3)
+	else if (!(sf->flags & 1))
+		SF_ERROR(ret, 3)
+	else if (((SfKeyEnt *)ix->unk0)->maxlen < size)
+		SF_ERROR(ret, 3)
+	else if (sf->fd < 0)
+		SF_ERROR(ret, 3)
+	else if (sceIoLseek(sf->fd, (unsigned int)(sf->hdr->dataofs + ((SfKeyEnt *)ix->unk0)->dataoff), 0) == -1)
+		SF_ERROR(ret, 2)
+	else if (sceIoWrite(sf->fd, data, size) != size)
+		SF_ERROR(ret, 2)
+	else {
+		((SfKeyEnt *)ix->unk0)->len = size;
+		ix->unkC |= 1;
+		ret = 0;
+	}
+	return ret;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/systemfile", sceSystemFileSave);
 
