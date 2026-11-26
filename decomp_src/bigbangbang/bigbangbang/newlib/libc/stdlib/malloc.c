@@ -4,4 +4,6 @@
 
 /* impure.o's "C" (_impure_data's locale name; the struct itself is .data) */
 __asm__(".include \"include/labels.inc\"");
-__asm__(".section .rodata\n.include \"tmp/asm/bigbangbang/bigbangbang/nonmatchings/newlib/libc/stdlib/malloc/D_0000C54C.s\"\n.section .text");
+#define INCLUDE_RODATA(FOLDER, NAME) \
+    __asm__(".section .rodata\n.include \"" FOLDER "/" #NAME ".s\"\n.section .text")
+INCLUDE_RODATA("tmp/asm/bigbangbang/bigbangbang/nonmatchings/newlib/libc/stdlib/malloc", D_0000C54C);

@@ -20,6 +20,14 @@ newlib/libm/math/sf_floor                    1.5.1.internal  ../../../../../newl
 newlib/libm/math/sf_isnan                    1.5.1.internal  ../../../../../newlib-1.12.0/newlib/libm/math/sf_isnan.c
 newlib/libm/common/sf_scalbn                 1.5.1.internal  ../../../../../newlib-1.12.0/newlib/libm/common/sf_scalbn.c
 newlib/libm/common/sf_copysign               1.5.1.internal  ../../../../../newlib-1.12.0/newlib/libm/common/sf_copysign.c
+sf_to_df                                     1.5.1.internal  sf_to_df.c
+make_df                                      1.5.1.internal  make_df.c
+df_to_sf                                     1.5.1.internal  df_to_sf.c
+unpack_sf                                    1.5.1.internal  unpack_sf.c
+make_sf                                      1.5.1.internal  make_sf.c
+pack_df                                      1.5.1.internal  pack_df.c
+unpack_df                                    1.5.1.internal  unpack_df.c
+pack_sf                                      1.5.1.internal  pack_sf.c
 kernel_bridge                                1.5.1.internal  kernel_bridge.c
 newlib/libc/stdlib/atexit                    1.5.1.internal  ../../../../../newlib-1.12.0/newlib/libc/stdlib/atexit.c
 newlib/libc/errno/errno                      1.5.1.internal  ../../../../../newlib-1.12.0/newlib/libc/errno/errno.c

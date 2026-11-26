@@ -3,4 +3,13 @@
 # functions and names) and the module's .comment version.
 0x03078 libgum          1.5.1.internal  libgum.c
 0x04748 libgu           1.5.1.internal  libgu.c
+# libgcc soft-float objects (STT_FILE fp-bit.c/dp-bit.c, one object per L_ function)
+0x09348 sf_to_df        1.5.1.internal  sf_to_df.c
+0x09394 make_df         1.5.1.internal  make_df.c
+0x093C8 df_to_sf        1.5.1.internal  df_to_sf.c
+0x09444 unpack_sf       1.5.1.internal  unpack_sf.c
+0x09510 make_sf         1.5.1.internal  make_sf.c
+0x09540 pack_df         1.5.1.internal  pack_df.c
+0x097DC unpack_df       1.5.1.internal  unpack_df.c
+0x098F8 pack_sf         1.5.1.internal  pack_sf.c
 0x09A5C kernel_bridge   1.5.1.internal  kernel_bridge.c

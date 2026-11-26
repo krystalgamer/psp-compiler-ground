@@ -4,4 +4,6 @@
 
 /* s_lib_ver.o (const data only, _LIB_VERSION = _XOPEN_) */
 __asm__(".include \"include/labels.inc\"");
-__asm__(".section .rodata\n.include \"tmp/asm/bigbangbang/bigbangbang/nonmatchings/newlib/libm/common/s_matherr/__fdlib_version.s\"\n.section .text");
+#define INCLUDE_RODATA(FOLDER, NAME) \
+    __asm__(".section .rodata\n.include \"" FOLDER "/" #NAME ".s\"\n.section .text")
+INCLUDE_RODATA("tmp/asm/bigbangbang/bigbangbang/nonmatchings/newlib/libm/common/s_matherr", __fdlib_version);
