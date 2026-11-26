@@ -184,7 +184,51 @@ int net_term(void) {
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/net", net_init);
+int sceNetInit(int poolsize, int calloutprio, int calloutstack, int netintrprio, int netintrstack);
+int sceNetAdhocInit(void);
+int sceNetAdhocctlInit(int stacksize, int priority, struct SceNetAdhocctlAdhocId *adhoc_id);
+int sceNetAdhocctlAddHandler(void *handler, void *arg);
+int sceNetAdhocMatchingInit(int memsize);
+int sceNetAdhocDistributeInitServer(int memsize);
+int sceNetAdhocDistributeCreateServer(int thread_num, int prio, int stacksize, unsigned int optlen, void *opt, unsigned int datasize, void *databuf, struct SceNetAdhocctlGroupName *groupname);
+extern int error_code_8239C;
+static int net_init(void)
+{
+	int ret;
+	struct SceNetAdhocctlGroupName dummy_groupname = {{0}};
+
+	ret = sceNetInit(0x80000, 0x20, 0x1000, 0x20, 0x1000);
+	if (ret < 0)
+		goto error;
+	ret = sceNetAdhocInit();
+	if (ret < 0)
+		goto error;
+	ret = sceNetAdhocctlInit(0x2000, 0x30, &adhoc_id);
+	if (ret < 0)
+		goto error;
+	evf = 0;
+	error_code_8239C = 0;
+	ret = sceNetAdhocctlAddHandler(adhocctl_handler, NULL);
+	if (ret < 0)
+		goto error;
+	handler_id = ret;
+	ret = sceNetAdhocMatchingInit(0x20000);
+	if (ret < 0)
+		goto error;
+	ret = sceNetAdhocDistributeInitServer(0x20000);
+	if (ret < 0)
+		goto error;
+	ret = sceNetAdhocDistributeCreateServer(_info.thread_num, 0x30, 0x2000, _info.paramsfo_len, _info.paramsfo, _info.datasize, _info.databuf, &dummy_groupname);
+	if (ret < 0)
+		goto error;
+	change_state(8, 0);
+	return 0;
+
+error:
+	net_term();
+	change_state(1, 0);
+	return ret;
+}
 
 static int net_connect(void)
 {
