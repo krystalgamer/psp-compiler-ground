@@ -1,16 +1,95 @@
 /* cflags: -O1 */
 #include "common.h"
 #include "m2c_macros.h"
+
+typedef struct {
+    int kind;
+    int unk4;
+    int unk8;
+} RGEOM;
+
+typedef struct {
+    u8 unk0[0x64];
+    int unk64;
+    s16 unk68;
+    s16 unk6A;
+} RSTYLE;
+
+typedef struct {
+    u8 unk0[0x20];
+    RGEOM *geom;                /* 0x20 */
+    RSTYLE *style;              /* 0x24 */
+    u8 unk28[0x8];
+    void *region;               /* 0x30 */
+    u8 unk34[0x4];
+    s16 content;                /* 0x38 */
+    s16 html;                   /* 0x3A */
+    s16 display;                /* 0x3C */
+    s16 unk3E;
+    u16 flags40;                /* 0x40 */
+} RBOX;
+
+typedef struct {
+    int unk0;
+    int unk4;
+    int unk8;
+    void *lines;                /* 0xC */
+} LOCTX;
+
+typedef struct {
+    RBOX *a;
+    RBOX *b;
+    RBOX *c;
+    void *d;
+    void *e;
+    s16 f;
+} RLCTX;
+
+typedef struct SAVEDATA { /* size 0x1C */
+    int id;
+    int unk4;
+    int unk8;
+    int unkC;
+    int unk10;
+    int unk14;
+    struct SAVEDATA *next;      /* 0x18 */
+} SAVEDATA;
+
+#define SAVELIST ((SAVEDATA *)D_00584CD8)
+typedef struct {
+    u8 unk0[0x68];
+    int unk68;
+    int unk6C;
+} RLOGLOBAL;
+
+extern RLOGLOBAL lo_global;
+extern void *ui_global;
+SAVEDATA *getSessionSaveData(int id);
+void MEM_free(int pool, void *p);
+int adjustLineVposition();
 int getLineHeight(void **);                         /* extern */
 extern void *D_00584CD8;
 M2C_UNK HST_flushHistoryGarbageList();              /* extern */
 void *HST_getHistoryGarbageList();                  /* extern */
-M2C_UNK removeSessionSaveData(int);                 /* extern */
 
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_relayout", restoreSpaceText);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_relayout", terminateBlockBox);
+int terminateBlockBox(LOCTX *ctx, RBOX *box) {
+    int r;
+
+    if (box->html == 0x2C) {
+        return 0;
+    }
+    adjustLineHposition(ctx, ctx->lines);
+    r = adjustLineVposition(ctx, ctx->unk4, ctx->lines);
+    if (box->display == 0) {
+        updateLiFirstLineList(ctx);
+    }
+    initBoxList(ctx->lines);
+    initLinePosition(box);
+    return r;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_relayout", terminateLiBox);
 
@@ -26,7 +105,19 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_relayout", relayoutProc);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_relayout", relayoutProcAfter);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_relayout", relayoutProcBodyOnly);
+void relayoutProcBodyOnly(RBOX *box, int flag) {
+    switch (box->content) {
+    case 1:
+        repositionBox_body(box, flag);
+        break;
+    case 2:
+        repositionBox_frameset(box, 0);
+        break;
+    case 3:
+        repositionBox_frameborder(box, flag);
+        break;
+    }
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_relayout", relayoutBoxTreeLoop);
 
@@ -36,11 +127,30 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_relayout", resizeTextSize);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_relayout", resizeImageSize);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_relayout", resizeButtonSize);
+void resizeButtonSize(RBOX *box) {
+    if (lo_global.unk68 != lo_global.unk6C) {
+        initButtonBoxSize(box);
+    }
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_relayout", resizeTextFieldSize);
+void resizeTextFieldSize(RBOX *box) {
+    RGEOM *g;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_relayout", resizeSelectSize);
+    if (lo_global.unk68 != lo_global.unk6C) {
+        g = box->geom;
+        if (g->kind == 1) {
+            initTextAreaBoxSize(box, g->unk4, g->unk8);
+        } else {
+            initTextFieldBoxSize(box, box->geom->unk4);
+        }
+    }
+}
+
+void resizeSelectSize(RBOX *box) {
+    if (lo_global.unk68 != lo_global.unk6C) {
+        initSelectBoxSize(box);
+    }
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -59,7 +169,20 @@ void updateLiFirstLineList(void *arg0) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_relayout", relayoutAtBody);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_relayout", relayoutAtBodyOnly);
+void relayoutAtBodyOnly(RBOX *box) {
+    RLCTX ctx;
+
+    if (box != NULL && box->content == 1) {
+        ctx.a = box;
+        ctx.b = box;
+        ctx.c = box;
+        ctx.d = (u8 *)box->geom + 0x90;
+        ctx.e = box->region;
+        ctx.f = 0;
+        relayoutBoxTreeLoopBodyOnly(&ctx, box);
+        calcBoxSize(&ctx, box);
+    }
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_relayout", relayoutByFrameBorderMove);
 
@@ -83,11 +206,57 @@ void initSessionSaveDataList(void) {
     D_00584CD8 = temp_v0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_relayout", freeSessionSaveDataList);
+void freeSessionSaveDataList(void) {
+    SAVEDATA *p;
+    SAVEDATA *next;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_relayout", addSessionSaveData);
+    for (p = SAVELIST; p != NULL; p = p->next) {
+        actClearForm(p->id);
+    }
+    for (p = SAVELIST; p != NULL; p = next) {
+        next = p->next;
+        MEM_free(0, p);
+    }
+    D_00584CD8 = NULL;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_relayout", removeSessionSaveData);
+SAVEDATA *addSessionSaveData(int id) {
+    SAVEDATA *p;
+    SAVEDATA *q;
+
+    p = getSessionSaveData(id);
+    if (p != NULL) {
+        return p;
+    }
+    p = (SAVEDATA *)MEM_malloc(0, sizeof(SAVEDATA));
+    p->unk4 = 0;
+    p->unk8 = 0;
+    p->unkC = 0;
+    p->unk10 = 0;
+    p->unk14 = 0;
+    p->next = NULL;
+    p->id = id;
+    for (q = SAVELIST; q->next != NULL; q = q->next)
+        ;
+    q->next = p;
+    return p;
+}
+
+void removeSessionSaveData(int id) {
+    SAVEDATA *prev;
+    SAVEDATA *p;
+
+    actClearForm(id);
+    prev = SAVELIST;
+    for (p = prev->next; p != NULL; p = p->next) {
+        if (p->id == id) {
+            prev->next = p->next;
+            MEM_free(0, p);
+            return;
+        }
+        prev = p;
+    }
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_relayout", getSessionSaveData);
 
