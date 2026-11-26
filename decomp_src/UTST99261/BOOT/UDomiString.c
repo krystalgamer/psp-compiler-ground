@@ -1,5 +1,6 @@
 /* cflags: -O1 */
 #include "common.h"
+#include "parse_ps.h"
 #include "dom_domi.h"
 #include "m2c_macros.h"
 extern const char _ctype_[];
@@ -63,8 +64,6 @@ extern int save_sessionstop;
 int HST_getHeadHistoryNode();                       /* extern */
 M2C_UNK HST_searchCSSRequestFlag(int, int);         /* extern */
 M2C_UNK HST_searchJSRequestFlag(int, int);          /* extern */
-extern unsigned char exMsgBoxList;
-void *ps_getExMsgBox();                             /* extern */
 int *MEM_malloc(M2C_UNK, M2C_UNK);                  /* extern */
 
 
@@ -144,7 +143,19 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", esp_psThread);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", ps_sndmsg);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", setParseMassageToDestTask);
+int setParseMassageToDestTask(int dest, int a, int b, int c, int d, int e, int f, int g) {
+    PsMsg m;
+
+    m.type = 2;
+    m.arg[0] = a;
+    m.arg[1] = b;
+    m.arg[2] = c;
+    m.arg[3] = d;
+    m.arg[4] = e;
+    m.arg[5] = f;
+    m.arg[6] = g;
+    return ps_sndmsg(&m, dest);
+}
 
 void ps_halt(void) {
 }
@@ -172,9 +183,16 @@ int ps_dmyskip(void *arg0) {
     return buf_ps_sts;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", ps_dmy1);
+int ps_dmy1(void *p) {
+    ps_save(p, 0);
+    return buf_ps_sts;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", ps_dmy2);
+int ps_dmy2(void *p) {
+    NOTARGET = 0;
+    ps_save(p, 0);
+    return buf_ps_sts;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -322,7 +340,16 @@ INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", D_00135408);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", ps_LocationGetSend);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", ps_rflagclr);
+void ps_rflagclr(void) {
+    int i;
+    void *n;
+
+    for (i = 1; i < 7; i++) {
+        while ((n = HST_searchRequestFlagHistoryNode(i)) != NULL) {
+            HST_setRequestFlag(n, 0);
+        }
+    }
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", ps_save);
 
@@ -444,32 +471,72 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", ps_errStringParse
 #endif
 
 int ps_initExMsgBoxList(void) {
-    M2C_FIELD(&exMsgBoxList, int *, 0) = 0;
-    M2C_FIELD(&exMsgBoxList, int *, 4) = 0;
-    M2C_FIELD(&exMsgBoxList, int *, 8) = 0;
+    exMsgBoxList.count = 0;
+    exMsgBoxList.first = NULL;
+    exMsgBoxList.last = NULL;
     return 1;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", ps_deleteExMsgBoxList);
+int ps_deleteExMsgBoxList(void) {
+    ExMsgBox *b, *next;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", ps_createExMsgBox);
+    for (b = exMsgBoxList.first; b != NULL; b = next) {
+        next = b->next;
+        ps_deleteExMsgBox(b->id);
+    }
+    ps_initExMsgBoxList();
+    return 1;
+}
+
+int ps_createExMsgBox(void) {
+    ExMsgBox *b = MEM_malloc(0, sizeof(ExMsgBox));
+
+    if (b == NULL) {
+        return -1;
+    }
+    b->id = 0;
+    b->x04 = NULL;
+    b->x08 = NULL;
+    b->x0C = NULL;
+    b->prev = NULL;
+    b->next = NULL;
+    b->id = ++exMsgBoxList.count;
+    if (exMsgBoxList.last != NULL) {
+        exMsgBoxList.last->next = b;
+        b->prev = exMsgBoxList.last;
+    }
+    exMsgBoxList.last = b;
+    if (exMsgBoxList.first == NULL) {
+        exMsgBoxList.first = b;
+    }
+    return b->id;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", ps_deleteExMsgBox);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", ps_getExMsgBox);
+ExMsgBox *ps_getExMsgBox(int id) {
+    ExMsgBox *b;
+
+    for (b = exMsgBoxList.first; b != NULL; b = b->next) {
+        if (b->id == id) {
+            return b;
+        }
+    }
+    return NULL;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
 #endif
 
-int ps_freeExMsgBox(void) {
+int ps_freeExMsgBox(int id) {
     int var_v0;
     void *temp_a1;
     void *temp_s1;
     void *temp_v0;
     void *var_s0;
 
-    temp_v0 = ps_getExMsgBox();
+    temp_v0 = ps_getExMsgBox(id);
     var_v0 = 0;
     if (temp_v0 != NULL) {
         var_s0 = M2C_FIELD(temp_v0, void **, 8);
