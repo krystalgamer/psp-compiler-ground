@@ -170,7 +170,34 @@ INCLUDE_RODATA("tmp/asm/UTST99332/graphics_editbone/nonmatchings/main", D_000127
 
 INCLUDE_RODATA("tmp/asm/UTST99332/graphics_editbone/nonmatchings/main", D_00012770);
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_editbone/nonmatchings/main", calc_bone);
+#ifndef MAXEFF /* sample */
+#define MAXEFF		4
+#endif
+#ifndef SCEGU_PI /* sample */
+#define SCEGU_PI                           3.1415926535897932384626433832f
+#endif
+#ifndef SCEGU_RAD /* sample */
+#define SCEGU_RAD(a)                       ((a)*SCEGU_PI/180.0f)
+#endif
+static void calc_bone(void)
+{
+	ScePspFMatrix4	bonemat;
+	int				i;
+
+	sceGumPushMatrix();
+	{
+		sceGumLoadIdentity();
+		for (i=0; i<MAXEFF; i++) {
+			sceGumTranslate(&effector[i].pos);
+			sceGumRotateX(SCEGU_RAD(effector[i].rot.x));
+			sceGumRotateY(SCEGU_RAD(effector[i].rot.y));
+			sceGumRotateZ(SCEGU_RAD(effector[i].rot.z));
+			sceGumStoreMatrix(&bonemat);
+			sceGuBoneMatrix(i, &bonemat);
+		}
+	}
+	sceGumPopMatrix();
+}
 
 #define SCEGU_PRIM_LINE_STRIP              2
 #define SCEGU_PRIM_TRIANGLE_STRIP          4
