@@ -133,9 +133,31 @@ def map_labels(body, src, target, module, unit, func):
     return out
 
 
+STUB = re.compile(r'^(#include "common.h"|/\*.*\*/|INCLUDE_ASM\(.*\);|INCLUDE_RODATA\(.*\);|)$')
+_ctx = {}
+
+
+def unit_text(target, module, unit, path):
+    """The unit's source; a stub (only INCLUDE_ASMs) gets the DWARF
+    declarations (dwarf2c --extern) so bodies can compile in it."""
+    text = path.read_text()
+    if not all(STUB.match(l) for l in text.splitlines()):
+        return text
+    key = (target, module, unit)
+    if key not in _ctx:
+        _ctx[key] = subprocess.run([sys.executable, str(ROOT / "tools/dwarf2c.py"), "--extern", target, module, unit],
+                                   capture_output=True, text=True).stdout
+    ctx = _ctx[key]
+    if not ctx.strip():
+        return text
+    lines = text.splitlines(keepends=True)
+    i = next((k + 1 for k, l in enumerate(lines) if l.startswith("#include")), 0)
+    return "".join(lines[:i]) + "\n/* declarations recovered from DWARF */\n" + ctx + "\n" + "".join(lines[i:])
+
+
 def try_body(target, module, unit, func, body, mod):
     path = ROOT / "decomp_src" / target / module / f"{unit}.c"
-    text = path.read_text()
+    text = unit_text(target, module, unit, path)
     pat = re.compile(r'^INCLUDE_ASM\("[^"]+", ' + re.escape(func) + r"\);$", re.M)
     sdk = m2cdraft.sdk_protos(text)
     decl = "\n".join(v for k, v in sdk.items() if re.search(rf"\b{k}\(", body))

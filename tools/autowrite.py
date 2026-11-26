@@ -133,11 +133,14 @@ def main():
         cc1 = compiler.compiler(target, module, u)
         ctx = subprocess.run([sys.executable, str(ROOT / "tools/dwarf2c.py"), target, module, u, "--extern"],
                              capture_output=True, text=True).stdout
+        # the unit's own flags (a `cflags: ...` comment, as propagate.py reads it)
+        cf = re.search(r"cflags: (-O[0-3s](?: -[fm][\w-]+)*)", text)
+        opt = cf.group(1) if cf else "-O2"
         bodies = {}
         for fn in funcs:
             res, body = autodecomp.try_func(target, module, u, fn, ctx, mod, cc1,
-                                            compiler.driver_flags(target, module, u))
-            if res in ("-O2",):
+                                            compiler.driver_flags(target, module, u), (opt,))
+            if res == opt:
                 bodies[fn] = body
         if not bodies:
             continue
