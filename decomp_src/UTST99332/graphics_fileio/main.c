@@ -49,13 +49,86 @@ static int file_write(void);
 static int pad_read(void);
 
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_fileio/nonmatchings/main", file_read);
+SceUID sceIoOpen(const char *name, int flag, int mode);
+int sceIoClose(SceUID fd);
+int sceIoRead(SceUID fd, void *buf, SceSize nbyte);
+int sceIoWrite(SceUID fd, const void *buf, SceSize nbyte);
+long long sceIoLseek(SceUID fd, long long offset, int whence);
+void sceKernelDcacheWritebackAll(void);
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_fileio/nonmatchings/main", file_seek);
+static int file_read(void)
+{
+	SceUID fp;
+	SceSize size;
+	int ret;
 
-INCLUDE_RODATA("tmp/asm/UTST99332/graphics_fileio/nonmatchings/main", D_0000EA90);
+	fp = sceIoOpen("disc0:/PSP_GAME/USRDIR/DATA/bin/texture.bin", 1, 0);
+	if (fp < 0) {
+		return 0;
+	}
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_fileio/nonmatchings/main", file_write);
+	size = 0x100000;
+	ret = sceIoRead(fp, buffer, size);
+	if (ret == 0) {
+		sceIoClose(fp);
+		return 0;
+	}
+
+	sceIoClose(fp);
+	sceKernelDcacheWritebackAll();
+	return 1;
+}
+
+static int file_seek(void)
+{
+	SceUID fp;
+	SceSize size;
+	int ret;
+
+	fp = sceIoOpen("disc0:/PSP_GAME/USRDIR/DATA/bin/texture.bin", 1, 0);
+	if (fp < 0) {
+		return 0;
+	}
+
+	size = 0x100000;
+	ret = sceIoLseek(fp, size, 0);
+	if (ret < 0) {
+		sceIoClose(fp);
+		return 0;
+	}
+
+	ret = sceIoRead(fp, buffer, size);
+	if (ret == 0) {
+		sceIoClose(fp);
+		return 0;
+	}
+
+	sceIoClose(fp);
+	sceKernelDcacheWritebackAll();
+	return 1;
+}
+
+static int file_write(void)
+{
+	SceUID fp;
+	SceSize size;
+	int ret;
+
+	fp = sceIoOpen("host0:fileio.out", 0x202, 0);
+	if (fp < 0) {
+		return 0;
+	}
+
+	size = 0x100000;
+	ret = sceIoWrite(fp, buffer, size);
+	if (ret == 0) {
+		sceIoClose(fp);
+		return 0;
+	}
+
+	sceIoClose(fp);
+	return 1;
+}
 
 void draw_frame(void) {
     sceGuStart(0, disp_list, 0x10000);
