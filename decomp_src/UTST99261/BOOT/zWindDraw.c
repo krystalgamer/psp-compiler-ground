@@ -1,6 +1,40 @@
 /* cflags: -O1 */
 #include "common.h"
 #include "m2c_macros.h"
+
+typedef struct {
+    u8 unk0[0xC];
+    int flags;                  /* 0xC */
+    u8 unk10[0x18];
+    int view;                   /* 0x28 */
+} ZWINDDATA;
+
+typedef struct {
+    void *image;
+    int unk4;
+    int unk8;
+    int width;
+    int height;
+} ZINIT;
+
+typedef struct {
+    u8 unk0[0x54];
+    u16 editable;               /* 0x54 */
+} ZWIDGET;
+
+typedef struct {
+    u8 unk0[0x8];
+    u16 key;                    /* 0x8 */
+} ZEVENT;
+
+extern ZWINDDATA s_windsystem_data;
+extern int _i_windsystemOn;
+extern int D_00584BCC;
+extern void *_zWindFontImage;
+extern int _zWindFontWidth;
+extern int _zWindFontHeight;
+int GUI_ScrollPane_getScrollPosition();
+void zWindDrawBox();
 extern int _zWindDrawTexClipHeight;
 extern int _zWindDrawTexClipWidth;
 extern int _zWindDrawTexClipX;
@@ -23,13 +57,33 @@ M2C_UNK zWindLineBox2(short, short, short, short, M2C_UNK, M2C_UNK); /* extern *
 
 
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/zWindDraw", zWindDraw);
+int zWindDraw(void) {
+    int r;
+
+    r = 0;
+    if (_i_windsystemOn) {
+        s_windsystem_data.flags |= 1;
+        r = 1;
+    }
+    return r;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/zWindDraw", zWindFontSet);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/zWindDraw", zWindLocateSet);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/zWindDraw", zWindLocateGet);
+int zWindLocateGet(int *x, int *y) {
+    *x = 0;
+    *y = 0;
+    if (s_windsystem_data.flags & 4) {
+        return 0;
+    }
+    if (s_windsystem_data.view == 0) {
+        return 0;
+    }
+    GUI_ScrollPane_getScrollPosition(s_windsystem_data.view, x, y);
+    return 0;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -50,10 +104,10 @@ void zWindDrawCls(void) {
     _zWindDrawTexHeight = M2C_FIELD(&s_windsystem_init, int *, 0x10);
     _zWindDrawTexClipX = 0;
     _zWindDrawTexClipY = 0;
-    _zWindDrawTexClipWidth = M2C_FIELD(&s_windsystem_init, int *, 0xC);
-    _zWindDrawTexClipHeight = M2C_FIELD(&s_windsystem_init, int *, 0x10);
-    _zWindDrawTexClipX2 = M2C_FIELD(&s_windsystem_init, int *, 0xC);
-    _zWindDrawTexClipY2 = M2C_FIELD(&s_windsystem_init, int *, 0x10);
+    _zWindDrawTexClipWidth = ((ZINIT *)&s_windsystem_init)->width;
+    _zWindDrawTexClipHeight = ((ZINIT *)&s_windsystem_init)->height;
+    _zWindDrawTexClipX2 = ((ZINIT *)&s_windsystem_init)->width;
+    _zWindDrawTexClipY2 = ((ZINIT *)&s_windsystem_init)->height;
 }
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/zWindDraw", zWindDrawClipSet);
@@ -101,7 +155,21 @@ void zWindDrawClipPop(void) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/zWindDraw", zWindDrawBox);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/zWindDraw", zWindDrawBoxP);
+void zWindDrawBoxP(int x1, int y1, int x2, int y2, s16 color) {
+    int t;
+
+    if (x2 < x1) {
+        t = x1;
+        x1 = x2;
+        x2 = t;
+    }
+    if (y2 < y1) {
+        t = y1;
+        y1 = y2;
+        y2 = t;
+    }
+    zWindDrawBox(x1, y1, x2 - x1, y2 - y1, color);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/zWindDraw", zWindDrawLineW);
 
@@ -109,7 +177,21 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/zWindDraw", zWindDrawLineH);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/zWindDraw", zWindLineBox);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/zWindDraw", zWindLineBoxP);
+void zWindLineBoxP(int x1, int y1, int x2, int y2, s16 color) {
+    int t;
+
+    if (x2 < x1) {
+        t = x1;
+        x1 = x2;
+        x2 = t;
+    }
+    if (y2 < y1) {
+        t = y1;
+        y1 = y2;
+        y2 = t;
+    }
+    zWindDrawBox(x1, y1, x2 - x1, y2 - y1, color);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/zWindDraw", zWindLineBox2);
 
@@ -168,7 +250,20 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/zWindDraw", zWindDrawUpdate);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/zWindDraw", zWindChangeFont);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/zWindDraw", zWindSetFontClip);
+void zWindSetFontClip(void *img, int w, int h) {
+    _zWindFontImage = img;
+    _zWindFontWidth = w;
+    _zWindFontHeight = h;
+    _zWindDrawTexdata = (int)img;
+    _zWindDrawTexWidth = w;
+    _zWindDrawTexHeight = h;
+    _zWindDrawTexClipX = 0;
+    _zWindDrawTexClipY = 0;
+    _zWindDrawTexClipWidth = ((ZINIT *)&s_windsystem_init)->width;
+    _zWindDrawTexClipHeight = ((ZINIT *)&s_windsystem_init)->height;
+    _zWindDrawTexClipX2 = ((ZINIT *)&s_windsystem_init)->width;
+    _zWindDrawTexClipY2 = ((ZINIT *)&s_windsystem_init)->height;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/zWindDraw", zWindExcEventButton);
 
