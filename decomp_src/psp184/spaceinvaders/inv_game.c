@@ -295,7 +295,27 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", inv_polydisp_c
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", bg_init);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", bg_control);
+typedef struct { int on; int gmo[5]; float rs[5]; } BG_T;
+typedef struct { int f0, f4; u8 p8[0x2c - 8]; float rx, ry, rz; u8 p38[0x68 - 0x38]; } GMO_R;
+void bg_control(void)
+{
+	BG_T *b = (BG_T *)PD_TBL;
+	int i;
+	GMO_R *g;
+
+	if (b->on == 0)
+		return;
+	for (i = 0; i < 5; i++) {
+		if (b->gmo[i] >= 0) {
+			g = &((GMO_R *)gmo)[b->gmo[i]];
+			g->ry += b->rs[i];
+			while (g->ry < 0.0f)
+				g->ry += 361.0f;
+			while (g->ry > 360.0f)
+				g->ry -= 361.0f;
+		}
+	}
+}
 
 void bg_free(void)
 {
