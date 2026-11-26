@@ -577,7 +577,51 @@ void DrawSelect(void)
 	sceGumDrawArray(2, 0x800100, 5, NULL, D_001B59A4);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/menu/nonmatchings/draw", DrawStar);
+extern const struct pstar6 { Gu2dV16 v[6]; } D_000171F8;
+extern const struct col8 { u_int32 v[8]; } D_0001721C;
+extern Gu2dV16 D_002D87C8[6];
+int rand(void);
+void DrawStar(void)
+{
+	const struct pstar6 primstar = D_000171F8;
+	struct col8 col = D_0001721C;
+	int i;
+
+	for (i = 0; i < 6; i++) {
+		D_002D87C8[i].p[0] = star.x + primstar.v[i].p[0] - 3;
+		D_002D87C8[i].p[1] = star.y + primstar.v[i].p[1] - 3;
+		D_002D87C8[i].p[2] = primstar.v[i].p[2];
+	}
+	sceKernelDcacheWritebackInvalidateRange(D_002D87C8, sizeof(Gu2dV16) * 6);
+	sceGuDisable(9);
+	sceGuColor(col.v[star.col % 8]);
+	sceGumDrawArray(1, 0x800100, 6, NULL, D_002D87C8);
+	star.col++;
+	switch (star.step) {
+	case 0:
+		if (++star.cnt > star.wait)
+			star.step = 1;
+		break;
+	case 1:
+		star.x -= 3;
+		if (star.x < 255) {
+			star.x = 255;
+			star.step = 2;
+		}
+		break;
+	case 2:
+		star.x--;
+		star.y++;
+		if (star.y >= 233) {
+			star.y = 217;
+			star.x = 481;
+			star.cnt = 0;
+			star.wait = rand() % 60 + 30;
+			star.step = 0;
+		}
+		break;
+	}
+}
 
 void InitStar(void) {
     star.y = 0xD9;
