@@ -105,6 +105,9 @@ static void reconfigure_picture(SceGimPicture *picture);
 M2C_UNK sceGimPictureFreeMemory(int *);             /* extern */
 
 
+/* splat put the library info under staff.c; it is gim_picture.c's first .rodata */
+INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/staff", __psp_libinfo___30000);
+
 SceGimPicture *sceGimPictureCreate(SceGimChunk *chunk)
 {
 	SceGimPicture *picture;

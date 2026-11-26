@@ -313,7 +313,7 @@ int SpriteDrawC(int x, int y, SPRDATA *p, float z)
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/wrap_sprite", DrawSprite);
 
-int DrawSpriteEz(int no, float z, float x, float y, float w, float h, float u, float v)
+int DrawSpriteEz(float z, int no, float x, float y, float w, float h, float u, float v)
 {
 	return SpriteDrawEz(no, -1, z, x, y, w, h, u, v);
 }
@@ -323,7 +323,7 @@ int DrawSpriteZoom(int no, int color, float z, float a0, float a1, float a2, flo
 	return SpriteDrawZoom(no, color, z, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10);
 }
 
-int DrawSpriteEx(int no, int flag, float z, float f0, float f1, float f2, float f3, float f4, float f5, float f6, float f7, float f8, float f9, float f10, float f11, float f12, float f13)
+int DrawSpriteEx(int no, float z, float f0, float f1, float f2, float f3, float f4, float f5, float f6, float f7, float f8, float f9, float f10, float f11, float f12, float f13, int flag)
 {
 	return SpriteDraw3D(no, -1, flag, z, f0, f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13);
 }
