@@ -55,4 +55,10 @@ typedef struct PStrBuf {
     int len;
 } PStrBuf;
 
+typedef struct PDocDesc {
+    int a;
+    int b;
+    void *fn;
+} PDocDesc;
+
 #endif
