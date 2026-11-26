@@ -2,6 +2,23 @@
 #ifndef DEMO_DUCK_DEMO_SGL_HPP
 #define DEMO_DUCK_DEMO_SGL_HPP
 
+/* Weak instances (inline virtual destructors, templates) that stay asm in a unit whose static
+   initializer is C++: cc1plus emits them after _GLOBAL__I/D, so their asm goes to .text's
+   subsection 1 (see WaterPatch.c), from top-level asm (no wrapper function: a function in another
+   section makes cc1plus put the float constants in .rodata instead of .rodata.cst4). */
+#if defined(M2CTX) || defined(PERMUTER)
+#define INCLUDE_ASM_WEAK(FOLDER, NAME)
+#else
+#define INCLUDE_ASM_WEAK(FOLDER, NAME) \
+    __asm__(".text 1\n" \
+            "    .set noat\n" \
+            "    .set noreorder\n" \
+            "    .include \"" FOLDER "/" #NAME ".s\"\n" \
+            "    .set reorder\n" \
+            "    .set at\n" \
+            ".text\n")
+#endif
+
 namespace sh {
 class TestEnvSet {
 public:
@@ -343,10 +360,62 @@ public:
 };
 }
 
+/* <iostream> would add an ios_base::Init to every unit's static initializer */
+namespace std {
+extern ostream cout;
+}
+
+/* math::SH::Eval (stand-in until demo/math.hpp declares it) */
 namespace sh {
+float SH_Eval(int l, int m, float theta, float phi) __asm__("_ZN4math2SH4EvalEiiff");
+enum { BANDS = 2, COEFFS = 4 };
+class Vector {
+public:
+    Vector()
+    {
+        v[0] = 0;
+        v[1] = 0;
+        v[2] = 0;
+        v[3] = 0;
+    }
+    void print(const char *) const;
+    float eval(float, float, int) const;
+    float v[COEFFS];
+};
 class Matrix {
 public:
     Matrix();
+    static const Matrix &Identity();
+    Vector operator*(const Vector &) const;
+    Matrix transpose() const;
+    bool equal(Matrix, float) const;
+    void print(bool) const;
+    float m[COEFFS][COEFFS];
+};
+class SphericalRGBFn {
+public:
+    virtual void eval(float theta, float phi, float &r, float &g, float &b) const = 0;
+    virtual ~SphericalRGBFn() {}
+};
+/* stand-ins until demo/base.hpp / demo/math.hpp declare them */
+common::common_internal::Log &Log_float(common::common_internal::Log &, float) __asm__("_ZN6common15common_internal3LoglsEf");
+float math_wrap(float, float, float) __asm__("_ZN4math4wrapEfff");
+int math_min_i(int, int) __asm__("_ZN4math4min_IiEET_S1_S1_");
+class SquareMap : public SphericalRGBFn {
+public:
+    SquareMap(const char *, float);
+    virtual void eval(float theta, float phi, float &r, float &g, float &b) const;
+    virtual ~SquareMap() {}
+    void load(const char *);
+    mutable textures::Texture _tex;     /* 0x04 */
+    char _p54[4];
+    float _exposure;                    /* 0x58 */
+};
+class PolarFunction : public SphericalRGBFn {
+public:
+    virtual void eval(float theta, float phi, float &r, float &g, float &b) const;
+    virtual ~PolarFunction() {}
+    virtual float eval(float theta, float phi) const = 0;
 };
 class PRT {
 public:
@@ -355,6 +424,10 @@ public:
 class VectorRGB {
 public:
     void print(const char *) const;
+    void eval(float, float, float &, float &, float &) const;
+    void save(const char *);
+    void load(const char *);
+    Vector r, g, b;
 };
 }
 

@@ -27,6 +27,15 @@ bss 0x18B76C main_objs/math_ZYZ
 bss 0x18B7EC -
 bss 0x18D9C4 main_objs/math_TransformStackFunc
 bss 0x18DA44 -
+# sh_* objects whose static initializer (the header statics) is C++: .rodata after the vtable, .bss
+rodata 0x16FD1C main_objs/sh_Matrix
+rodata 0x16FD64 -
+rodata 0x171198 main_objs/sh_SquareMap
+rodata 0x1711E8 -
+bss 0x18DED0 main_objs/sh_Matrix
+bss 0x18DFA8 -
+bss 0x18E468 main_objs/sh_SquareMap
+bss 0x18E4EC -
 0x135B4 glut_ReshapeFunc         1.6.1.internal  main_objs/glut_ReshapeFunc.cpp
 0x13E64 app3d_Callbacks          1.6.1.internal  main_objs/app3d_Callbacks.cpp
 0x163B4 common_Date              1.6.1.internal  main_objs/common_Date.cpp   # no static init

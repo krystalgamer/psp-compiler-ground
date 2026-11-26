@@ -398,6 +398,10 @@ segments:
       - [0x1685E8, rodata, asm/rodata_168568]
       - [0x171E34, .rodata, main_objs/math_TransformStackFunc]
       - [0x171E50, rodata, asm/rodata_171DD0]
+      - [0x172CC4, .rodata, main_objs/sh_Matrix]
+      - [0x172D0C, rodata, asm/rodata_172C8C]
+      - [0x174140, .rodata, main_objs/sh_SquareMap]
+      - [0x174190, rodata, asm/rodata_174110]
       - [0x17AA20, .rodata, gcc-3.3.3/libstdc__-v3/libsupc__/eh_personality]
       - [0x17AA54, rodata, asm/rodata_17A9D4]
       - [0x17AA8C, .rodata, gcc-3.3.3/libstdc__-v3/libsupc__/pure]
@@ -418,5 +422,9 @@ segments:
       - { start: 0x18CFCC, type: bss, vram: 0x18EC6C, name: bss_18EC6C }
       - { start: 0x18CFCC, type: .bss, vram: 0x190E44, name: main_objs/math_TransformStackFunc }
       - { start: 0x18CFCC, type: bss, vram: 0x190EC4, name: bss_190EC4 }
+      - { start: 0x18CFCC, type: .bss, vram: 0x191350, name: main_objs/sh_Matrix }
+      - { start: 0x18CFCC, type: bss, vram: 0x191428, name: bss_191428 }
+      - { start: 0x18CFCC, type: .bss, vram: 0x1918E8, name: main_objs/sh_SquareMap }
+      - { start: 0x18CFCC, type: bss, vram: 0x19196C, name: bss_19196C }
   - [0x18CFCC, bin, elf_trailer]
   - [0x70AD04]
