@@ -275,7 +275,27 @@ void sceGumTranslate(const ScePspFVector3 *v);
 
 INCLUDE_ASM("tmp/asm/UTST99332/utility_font_basho/nonmatchings/main", main);
 
-INCLUDE_ASM("tmp/asm/UTST99332/utility_font_basho/nonmatchings/main", draw_frame);
+void draw_basho(void);
+
+static void draw_frame(void)
+{
+	sceGuStart(0, disp_list, sizeof(disp_list));
+	sceGuClear(7);
+
+	sceGumPushMatrix();
+	sceGumLoadIdentity();
+	sceGumTranslate(&pos);
+	sceGumRotateX(rot.x * 3.14159265f / 180.0f);
+	sceGumRotateY(rot.y * 3.14159265f / 180.0f);
+	sceGumRotateZ(rot.z * 3.14159265f / 180.0f);
+
+	draw_basho();
+
+	sceGumPopMatrix();
+
+	sceGuFinish();
+	sceGuSync(0, 0);
+}
 
 typedef int SceInt32;
 typedef char SceChar8;
@@ -339,4 +359,50 @@ static int myUnloadModule(void)
 
 INCLUDE_ASM("tmp/asm/UTST99332/utility_font_basho/nonmatchings/main", init_all);
 
-INCLUDE_ASM("tmp/asm/UTST99332/utility_font_basho/nonmatchings/main", pad_read);
+void change_basho_texture(void);
+void increment_basho_xpos(float pos_diff);
+void increment_basho_ypos(float pos_diff);
+void increment_basho_scale(float scale_diff);
+
+static int pad_read(void)
+{
+	SceCtrlData buf[8];
+	u_int32 padd;
+	extern u_int32 D_00015604;
+	int ret;
+	u_int32 cont;
+
+	ret = sceCtrlReadBufferPositive(buf, 8);
+	if (ret != 0) {
+		cont = buf[0].Buttons;
+	} else {
+		cont = 0;
+	}
+	padd = cont;
+
+	if (padd & 0x80) {
+		increment_basho_xpos(-0.2f);
+	} else if (padd & 0x20) {
+		increment_basho_xpos(0.2f);
+	} else if (padd & 0x10) {
+		increment_basho_ypos(0.2f);
+	} else if (padd & 0x40) {
+		increment_basho_ypos(-0.2f);
+	} else if (padd & 0x200) {
+		increment_basho_scale(0.1f);
+	} else if (padd & 0x100) {
+		increment_basho_scale(-0.1f);
+	}
+
+	if ((padd & 0x8) && !(D_00015604 & 0x8)) {
+		change_basho_texture();
+	}
+
+	if (padd & 0x1) {
+		return 0;
+	}
+
+	D_00015604 = padd;
+
+	return 1;
+}
