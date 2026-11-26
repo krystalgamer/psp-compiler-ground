@@ -332,7 +332,14 @@ ScePspFVector3 *vec3_div(ScePspFVector3 *dst, ScePspFVector3 *src1, ScePspFVecto
     return dst;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/gmo_model/gmo_bone", vec4_scale);
+static vec4 *vec4_scale(vec4 *dst, const vec4 *src1, float src2)
+{
+    dst->x = src1->x * src2;
+    dst->y = src1->y * src2;
+    dst->z = src1->z * src2;
+    dst->w = src1->w * src2;
+    return dst;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/gmo_model/gmo_bone", float_lerp_79CC);
 
