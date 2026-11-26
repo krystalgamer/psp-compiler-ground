@@ -245,7 +245,20 @@ int init_basho_pos_and_scale(void)
 
 INCLUDE_ASM("tmp/asm/UTST99332/utility_font_basho/nonmatchings/basho", draw_basho);
 
-INCLUDE_ASM("tmp/asm/UTST99332/utility_font_basho/nonmatchings/basho", print_basho_pos);
+void print_basho_pos(void)
+{
+	printf("basho.scale.x=%f\n", basho.scale.x);
+	printf("basho.scale.y=%f\n", basho.scale.y);
+	printf("basho.scale.z=%f\n", basho.scale.z);
+
+	printf("basho.rot.x=%f\n", basho.rot.x);
+	printf("basho.rot.y=%f\n", basho.rot.y);
+	printf("basho.rot.z=%f\n", basho.rot.z);
+
+	printf("basho.pos.x=%f\n", basho.pos.x);
+	printf("basho.pos.y=%f\n", basho.pos.y);
+	printf("basho.pos.z=%f\n", basho.pos.z);
+}
 
 void change_basho_texture(void)
 {
