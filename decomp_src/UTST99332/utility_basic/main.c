@@ -201,6 +201,7 @@ static void OnPush_SaveData_7(int selection);
 static void OnPush_SaveData_8(int selection);
 static void OnCancel_SaveData(int selection);
 static void OnPush_Exit(int selection);
+void Menu_WriteLine(const char *str, unsigned int color);
 static int ExitFunction(int count, int arg_impose, void *arg_self);
 static int sub_thread(size_t argSize, void *argBlock);
 int main(int argc, char **argv);
@@ -253,7 +254,21 @@ INCLUDE_ASM("tmp/asm/UTST99332/utility_basic/nonmatchings/main", utility_update_
 
 INCLUDE_ASM("tmp/asm/UTST99332/utility_basic/nonmatchings/main", utility_update_savedata);
 
-INCLUDE_ASM("tmp/asm/UTST99332/utility_basic/nonmatchings/main", utility_update);
+int utility_update(void)
+{
+	switch (sample_type) {
+	case 1:
+		return utility_update_savedata();
+	case 2:
+		return utility_update_osk();
+	case 3:
+		return utility_update_netconf();
+	case 4:
+		return utility_update_msgdialog();
+	}
+
+	return -1;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/utility_basic/nonmatchings/main", CreateMenu_Root);
 
@@ -490,7 +505,12 @@ void OnCancel_SaveData(int selection) {
     CreateMenu_Root();
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/utility_basic/nonmatchings/main", OnPush_Exit);
+void OnPush_Exit(int selection)
+{
+	Menu_WriteLine("OnPush_Exit", 0xFFFFFF);
+
+	loop = 0;
+}
 
 int ExitFunction_1068(void) {
     sceKernelExitGame();
