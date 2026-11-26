@@ -104,28 +104,25 @@ static int init_all(t_displayBuffer *pDisp)
 	return 0;
 }
 
-#ifdef NON_MATCHING
-/* the original loads ablinkframe after the blinkframe if; ours hoists the load */
 static unsigned char set_blink(void)
 {
-	int val;
+	int c;
 
-	if (blinkframe < 9) {
-		val = blinkframe * 255 / 8;
+	c = blinkframe * 255 / 8;
+	if (blinkframe >= 9)
+		c = 255;
+	else
 		blinkframe++;
-	} else {
-		val = 255;
-	}
+
 	if (ablinkframe >= 9)
 		ablinkdir = -1;
+
 	if (ablinkframe < 0)
 		ablinkdir = 1;
+
 	ablinkframe += ablinkdir;
-	return val;
+	return c;
 }
-#else
-INCLUDE_ASM("tmp/asm/sampler/sampler/nonmatchings/display", set_blink);
-#endif
 
 static void draw_menu(void)
 {
@@ -253,8 +250,6 @@ static void draw_frame(t_displayBuffer *pDisp, SceChar8 *buffer)
 	sceGuSync(0, 0);
 }
 
-#ifdef NON_MATCHING
-/* only two stores swapped by the scheduler */
 SceInt32 dispbuf_create(t_displayBuffer *pDisp, SceInt32 disp_size, SceInt32 disp_num, SceInt32 pixelFormat)
 {
 	SceChar8 *ge_addr;
@@ -276,7 +271,6 @@ SceInt32 dispbuf_create(t_displayBuffer *pDisp, SceInt32 disp_size, SceInt32 dis
 	pDisp->buf[0] = ge_addr;
 	pDisp->buf[1] = ge_addr + 0x88000;
 	pDisp->pixelFormat = pixelFormat;
-	dispenv.size = disp_num;
 	pDisp->write = &dispenv.write;
 	pDisp->read = &dispenv.read;
 	pDisp->count = &dispenv.count;
@@ -285,11 +279,9 @@ SceInt32 dispbuf_create(t_displayBuffer *pDisp, SceInt32 disp_size, SceInt32 dis
 	pDisp->posx = &dispenv.posx;
 	pDisp->posy = &dispenv.posy;
 	pDisp->displayMode = &dispenv.mode;
+	*pDisp->size = disp_num;
 	return 0;
 }
-#else
-INCLUDE_ASM("tmp/asm/sampler/sampler/nonmatchings/display", dispbuf_create);
-#endif
 
 SceInt32 dispbuf_init(t_displayBuffer *pDisp)
 {
