@@ -139,7 +139,26 @@ int sceKernelGetThreadId(void);
 void free(void *p);
 
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/net", adhocctl_handler);
+extern int error_code_8239C;
+static void adhocctl_handler(int event, int error, void *arg)
+{
+	if (event == 0) {
+		error_code_8239C = error;
+		evf |= 1;
+	} else if (event == 1) {
+		error_code_8239C = 0;
+		evf |= 2;
+	} else if (event == 2) {
+		error_code_8239C = 0;
+		evf |= 4;
+	} else if (event == 3) {
+		error_code_8239C = 0;
+		evf |= 8;
+	} else if (event == 4) {
+		error_code_8239C = 0;
+		evf |= 0x10;
+	}
+}
 
 int net_term(void) {
     sceNetAdhocDistributeDeleteServer();
