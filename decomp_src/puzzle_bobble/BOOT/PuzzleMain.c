@@ -330,7 +330,38 @@ void VSInit(void)
 	InitBubCrush();
 }
 
+#ifdef NON_MATCHING
+/* Close: the Stat base and enemy get swapped callee-saved registers. */
+void SurvValueInit(void);
+void VSValueInit(int pl, int a1, int flag);
+extern const int bgmsort[];
+void SurvivlaModeInit(int cont)
+{
+	int enemy = Stat[2].player;
+	int n;
+	s8 sel;
+
+	if (cont)
+		enemy = (enemy + 1) % 6;
+	SurvValueInit();
+	VSValueInit(2, 0, 0);
+	SpriteSetFader(1.0f);
+	Stat[1].cur = GetBallNext(&Stat[1], 0);
+	n = GetBallNext(&Stat[1], 0);
+	Stat[2].cur = Stat[1].cur;
+	sel = *(s8 *)&SelectPlayer;
+	Stat[1].snd.unk2 = (sel + 3) % 6;
+	Stat[2].snd.unk2 = ((s8)enemy + 3) % 6;
+	Stat[1].player = sel;
+	Stat[2].player = enemy;
+	Stat[1].next = n;
+	Stat[2].next = n;
+	LoadGimFile(0, gim_bg_vs[6 + (s8)enemy]);
+	bgm_play(bgmsort[Stat[2].player % 6]);
+}
+#else
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", SurvivlaModeInit);
+#endif
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", SurvivalInit);
 
@@ -484,9 +515,93 @@ int GetMapRight(int no)
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", GameValueInit);
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", VSValueInit);
+#ifdef NON_MATCHING
+/* Close: the sb of unk027 (8) is scheduled ahead of the unk454/unk023 stores. */
+extern int OjamaStock[3];
+extern int WinStack[3];
+extern int OjamaCnt[3];
+extern int OjamaPos[3][8];
+extern int OjamaCol[3][8];
+void VSValueInit(int pl, int a1, int flag)
+{
+	PZL_STAT *st;
+	u8 save428;
+	int save434;
+	int i, j;
 
+	if (pl < 1 || pl > 2)
+		pl = 1;
+	st = &Stat[pl];
+	save428 = st->unk428;
+	save434 = st->unk434;
+	ZeroMemory(st, sizeof(PZL_STAT));
+	st->unk45F = 1;
+	st->scroll = -5;
+	st->bx = BallXPos[pl];
+	st->by = 0x116;
+	st->unk00E = 600;
+	st->unk027 = 8;
+	st->unk026 = 8;
+	st->unk454 = 0;
+	st->unk023 = 0;
+	st->unk430 = 0;
+	if (flag < 0)
+		st->unk428 = save428;
+	else
+		st->unk428 = flag != 0;
+	st->unk434 = save434;
+	dsGMInit(pl, StageNum);
+	for (i = 0; i < 3; i++) {
+		OjamaStock[i] = 0;
+		WinStack[i] = 0;
+		OjamaCnt[i] = 0;
+		for (j = 0; j < 8; j++) {
+			OjamaPos[i][j] = 0;
+			OjamaCol[i][j] = 0;
+		}
+	}
+}
+#else
+INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", VSValueInit);
+#endif
+
+#ifdef NON_MATCHING
+/* Close: same unk027 store scheduling as VSValueInit. */
+void SurvValueInit(void)
+{
+	int pl = 1;
+	PZL_STAT *st = &Stat[pl];
+	PZL_STAT tmp;
+	int i, j;
+
+	st->unk428 = 0;
+	tmp = *st;
+	ZeroMemory(st, sizeof(PZL_STAT));
+	st->scroll = tmp.scroll;
+	for (i = 0; i < MAP_SIZE; i++)
+		st->mp.map[i] = tmp.mp.map[i];
+	st->unk45F = 1;
+	st->by = 0xD0 - st->scroll * 14;
+	st->unk00E = 600;
+	st->unk027 = 8;
+	st->unk026 = 8;
+	st->unk430 = 0;
+	st->unk454 = 0;
+	st->unk023 = 0;
+	st->bx = BallXPos[1];
+	for (i = 0; i < 3; i++) {
+		OjamaStock[i] = 0;
+		WinStack[i] = 0;
+		OjamaCnt[i] = 0;
+		for (j = 0; j < 8; j++) {
+			OjamaPos[i][j] = 0;
+			OjamaCol[i][j] = 0;
+		}
+	}
+}
+#else
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", SurvValueInit);
+#endif
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", EndressValueInit);
 
