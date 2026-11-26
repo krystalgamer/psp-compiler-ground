@@ -2149,7 +2149,125 @@ done:
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", CheckBallGuide);
 #endif
 
+#ifdef NON_MATCHING
+/* Rough (6 instructions short): CheckBallGuide with a double step that falls back to
+ * single steps (restoring the previous position) at the ceiling or on a hit; most locals
+ * live in stack slots in the original. */
+extern u8 CpuCheckBall[];
+extern int D_0014E898;
+extern int D_0014E89C;
+extern int D_0014E8A0;
+extern int D_0014E8A4;
+extern int D_0014E8A8;
+extern int D_0014E8AC;
+void CheckBallGuideVS(PZL_STAT *st)
+{
+	int lx, ly;
+	int left, right, top, bottom;
+	int n, frame, anim, end, match;
+	int step, i, p, ix, iy;
+
+	end = 0;
+	match = 0;
+	if (st->mapsub == 0) {
+		left = (GetMapLeft(st->mapno) << 16) + 0x80000;
+		right = (GetMapRight(st->mapno) << 16) - 0x90000;
+	} else if (st->mapsub == 1) {
+		left = 0x200000;
+		right = 0x8F0000;
+	} else {
+		left = 0xB00000;
+		right = 0x11F0000;
+	}
+	bottom = 0x1180000 - (st->scroll * 14 << 16);
+	top = 0x200000 - (st->scroll * 14 << 16);
+	step = 2;
+	D_0014E8A0 = -Cos(st->unk454);
+	n = 0;
+	frame = 0;
+	D_0014E8A4 = -Sin(st->unk454);
+	D_0014E898 = st->bx << 16;
+	D_0014E89C = st->by << 16;
+	anim = st->guide_anim;
+	while (1) {
+		D_0014E8A8 = D_0014E898;
+		D_0014E898 += D_0014E8A0 * step;
+		D_0014E8AC = D_0014E89C;
+		D_0014E89C += D_0014E8A4 * step;
+		if (D_0014E898 < left) {
+			D_0014E8A0 = D_0014E8A0 < 0 ? -D_0014E8A0 : D_0014E8A0;
+			D_0014E898 = left;
+		} else if (right < D_0014E898) {
+			D_0014E8A0 = -(D_0014E8A0 < 0 ? -D_0014E8A0 : D_0014E8A0);
+			D_0014E898 = right;
+		}
+		if (D_0014E89C < top) {
+			D_0014E89C = top;
+			if (step != 1) {
+				step = 1;
+				D_0014E898 = D_0014E8A8;
+				D_0014E89C = D_0014E8AC;
+			} else
+				end = 1;
+		}
+		if (bottom < D_0014E89C)
+			end = 1;
+		iy = D_0014E89C >> 16;
+		ix = *(s16 *)((char *)&D_0014E898 + 2);
+		if ((frame & 3) == 0 && n < 256) {
+			n++;
+			st->gx[n - 1] = ix;
+			st->gy[n - 1] = iy + st->scroll * 14;
+		}
+		ly = iy - st->ofs_y;
+		lx = ix - MapXBeginPos[st->mapno * 3 + st->mapsub];
+		for (i = 0; i < 8; i++) {
+			p = CvtBallPos2MapPosLocal(st, lx + BallCollisionPosition[i].x, ly + BallCollisionPosition[i].y);
+			if (p < 0 || st->mp.map[p] != 0)
+				break;
+		}
+		if (i < 8) {
+			if (step != 1) {
+				step = 1;
+				D_0014E898 = D_0014E8A8;
+				D_0014E89C = D_0014E8AC;
+			} else {
+				GetBallCoordinate(st, GetBallMapAddr(st, lx, ly, 0), &lx, &ly);
+				end = 1;
+				for (i = 1; i < 7; i++) {
+					p = GetBallMapAddr(st, lx, ly, i);
+					if (st->mapsub == 2)
+						CpuCheckBall[i - 1] = st->mp.map[p];
+					if (p >= 0 && st->mp.map[p] == st->cur + 1)
+						match = 1;
+				}
+				break;
+			}
+		}
+		frame++;
+		if (end)
+			break;
+	}
+	st->guide_col = match ? 2 : 1;
+	if (end == 1) {
+		lx = ix - MapXBeginPos[st->mapno * 3 + st->mapsub];
+		ly = iy - st->ofs_y;
+		GetBallCoordinate(st, CvtBallPos2MapPosLocal(st, lx, ly), &lx, &ly);
+		n -= n >= 256;
+		n = n / 8 * 8;
+		for (i = 7; i >= 0; i--) {
+			st->gx[n] = lx + MapXBeginPos[st->mapno * 3 + st->mapsub];
+			st->gy[n] = ly + st->ofs_y + st->scroll * 14;
+			n++;
+		}
+	}
+	anim++;
+	st->guide_anim = anim % 8;
+	st->guide_n = n / 8;
+}
+#else
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", CheckBallGuideVS);
+#endif
 
 extern int D_0014E8B4;
 int CheckGuideLine(PZL_STAT *st)
