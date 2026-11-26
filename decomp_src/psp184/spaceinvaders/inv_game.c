@@ -819,7 +819,51 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", efc_ufohit_sta
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", efc_shot_del);
 
+/* cam_init: the code matches, but its three vector initializers are this
+   unit's first .rodata aggregates (D_0007DF18/24/30, ahead of the strings
+   and floats), which C can only emit there once the unit is all C. */
+#ifdef NON_MATCHING
+typedef struct { float x, y, z; } V3;
+typedef struct {
+	int f0, f4, f8, fc, f10, f14;
+	V3 eye, f24, f30;
+	int f3c;
+	V3 f40;
+	float f4c, f50, f54, f58, f5c;
+} CAMERA;
+#define CAM (*(CAMERA *)&D_005FB330)
+extern float camera_mode[4];
+void cam_init(void)
+{
+	CAM.f0 = 0;
+	{
+		V3 v = { 0.0f, 0.0f, -2800.0f };
+		CAM.eye = v;
+	}
+	{
+		V3 v = { -90.0f, 0.0f, 0.0f };
+		CAM.f30 = v;
+	}
+	CAM.f50 = camera_mode[0];
+	CAM.f54 = camera_mode[1];
+	CAM.f58 = camera_mode[2];
+	CAM.f5c = camera_mode[3];
+	CAM.f3c = 1;
+	{
+		V3 v = { 0.0f, 700.0f, 0.0f };
+		CAM.f40 = v;
+	}
+	CAM.f24.x = 0;
+	CAM.f24.y = 0;
+	CAM.f24.z = 0;
+	CAM.f8 = 0;
+	CAM.fc = 0;
+	CAM.f4c = stage_format[gmain.f.ff28].f4;
+	CAM.f14 = 0;
+}
+#else
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", cam_init);
+#endif
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", cam_control);
 
