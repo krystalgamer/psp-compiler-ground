@@ -248,11 +248,11 @@ extern geMODULE cmodule;
 int main(void);
 void light_ctrl(uint c);
 static void init(void);
-static int pad(uint padd, uint cont, uchar *axis);
+int pad(uint padd, uint cont, uchar *axis);
 static void fade_start(void);
 void draw(void); /* static in the original; global here because asm .data refers to it */
 static void pre(void);
-static void post(void);
+void post(void);
 static void drawinit(void);
 
 
@@ -303,7 +303,18 @@ int main(void) {
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/main", light_ctrl);
+void light_ctrl(uint c)
+{
+	geLIGHT *l[2];
+
+	l[0] = &light[0];
+	l[1] = &light[1];
+
+	l[0]->diff_col = c;
+	l[0]->spec_col = c;
+	l[1]->diff_col = c;
+	l[1]->spec_col = c;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/main", init);
 
@@ -312,7 +323,23 @@ void term(void) {
     term_char();
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/main", pad);
+static inline void fade_out(void)
+{
+	if (geFadeState() == 0) {
+		geFadeSetup(1, 4, 0xffe0f0f0);
+	}
+}
+
+int pad(uint padd, uint cont, uchar *axis)
+{
+	pad_char(padd, cont, axis);
+
+	if (padd & 0x1000) {
+		fade_out();
+	}
+
+	return padd & 1;
+}
 
 void draw(void) {
     geSetLight(0, 1, light);
@@ -333,8 +360,26 @@ void cdraw(void) {
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/main", pre);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/main", post);
+void post(void)
+{
+	post_char();
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/main", drawinit);
+	if (post_ground()) {
+		md->count++;
+		if (md->count >= 21) {
+			fade_out();
+		}
+	}
+
+	post_fly();
+}
+
+static void drawinit(void)
+{
+	geSetContext(&context);
+	geSetLight(0, 1, &light[0]);
+	geSetLight(1, 1, &light[1]);
+	geSetCamera(-1, &camera);
+}
 
 INCLUDE_RODATA("tmp/asm/UTST99332/demo_luga/nonmatchings/main", D_00020D00);
