@@ -24,6 +24,36 @@ int GUI_List_select();
 int GUI_List_deselect();
 int getStringsExtents();
 int strlen();
+int GUI_TextField_getText();
+int GUI_TextArea_getText();
+void *memcpy(void *d, const void *s, unsigned int n);
+char *strncpy(char *d, const char *s, unsigned int n);
+int GUI_Graphics_setColor();
+int GUI_Graphics_drawRect();
+int GUI_Graphics_fillRect();
+int GUI_Graphics_getPixmapSize();
+int GUI_Graphics_getAnimationGIFFrameProperty();
+int GUI_Graphics_getAnimationGIFNextFrame();
+int GUI_Graphics_getBrokenLinePattern();
+int GUI_Graphics_drawTiledPixmap();
+
+extern char D_00133564[];  /* "x" */
+
+typedef struct {
+    int x;
+    int y;
+} RGPOINT;
+
+typedef struct {
+    int type;
+    int pixmap;
+    int anim;
+    int unkC;
+    int unk10;
+    int x;
+    int y;
+    int unk1C;
+} RGIMAGE;
 void rnd_drawRepaintCallback(void);
 int GUI_Component_getParent(int);                   /* extern */
 M2C_UNK GUI_ScrollPane_add(int, int);               /* extern */
@@ -83,9 +113,30 @@ void rnd_gdrawGetViewClientSize(void) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_gdraw", rnd_gdrawCreateTextline);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_gdraw", rnd_gdrawGetTextlineExtents);
+int rnd_gdrawGetTextlineExtents(int font, int n, int *w, int *h) {
+    getStringsExtents(font, D_00133564, 1, w, h);
+    *w = n * *w + 4;
+    *h += 4;
+    return 0;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_gdraw", rnd_gdrawGetTextlineString);
+int rnd_gdrawGetTextlineString(int w, char *buf, int size) {
+    char *s;
+    int n;
+
+    s = (char *)GUI_TextField_getText(w);
+    if (s == NULL) {
+        return 0;
+    }
+    n = strlen(s);
+    if (buf != NULL) {
+        n = n < size ? n : size;
+        memcpy(buf, s, n);
+        buf[n] = 0;
+    }
+    MEM_free(0, s);
+    return n;
+}
 
 int rnd_gdrawGetTextlineSelectionString(int w, char **out) {
     char *s;
@@ -102,7 +153,12 @@ int rnd_gdrawGetTextlineSelectionString(int w, char **out) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_gdraw", rnd_gdrawCreateTextbox);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_gdraw", rnd_gdrawGetTextboxExtents);
+int rnd_gdrawGetTextboxExtents(int font, int rows, int cols, int *w, int *h) {
+    getStringsExtents(font, D_00133564, 1, w, h);
+    *w = cols * *w + 4;
+    *h = rows * *h + 4;
+    return 0;
+}
 
 int rnd_gdrawReplaceTextboxString(int w, char *s, int start, int end) {
     GUI_TextArea_setSelection(w, start, end);
@@ -110,7 +166,26 @@ int rnd_gdrawReplaceTextboxString(int w, char *s, int start, int end) {
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_gdraw", rnd_gdrawGetTextboxString);
+int rnd_gdrawGetTextboxString(int w, char *buf, int size) {
+    char *s;
+    int n;
+
+    s = (char *)GUI_TextArea_getText(w);
+    if (s == NULL) {
+        if (size > 0) {
+            *buf = 0;
+        }
+        return 0;
+    }
+    n = strlen(s);
+    if (buf != NULL) {
+        n = size < n ? size : n;
+        strncpy(buf, s, n);
+        buf[n] = 0;
+    }
+    MEM_free(0, s);
+    return n;
+}
 
 void rnd_gdrawSelectTextbox(int w, int on) {
     if (on == 1) {
@@ -202,21 +277,73 @@ int rnd_gdrawCreatePanel(int arg0) {
     return var_v0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_gdraw", rnd_gdrawRectangle);
+void rnd_gdrawRectangle(int g, int color, int x, int y, int w, int h) {
+    int rgb[3];
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_gdraw", rnd_gdrawFillrectangle);
+    color2rgb(rgb, color);
+    GUI_Graphics_setColor(g, rgb);
+    GUI_Graphics_drawRect(g, x, y, w, h);
+}
+
+void rnd_gdrawFillrectangle(int g, int color, int x, int y, int w, int h) {
+    int rgb[3];
+
+    color2rgb(rgb, color);
+    GUI_Graphics_setColor(g, rgb);
+    GUI_Graphics_fillRect(g, x, y, w, h);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_gdraw", rnd_gdrawMaskFillrectangle);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_gdraw", rnd_gdrawImage);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_gdraw", rnd_gdrawDashedHline);
+void rnd_gdrawDashedHline(int g, int color, int x, int y, int w, int h) {
+    int rgb[3];
+    int p;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_gdraw", rnd_gdrawDashedVline);
+    color2rgb(rgb, color);
+    p = GUI_Graphics_getBrokenLinePattern(rgb, 16, 1, 8, 1);
+    if (p != 0) {
+        GUI_Graphics_drawTiledPixmap(g, p, x, y, w, h, 0, 0);
+        GUI_Graphics_freePixmap(p);
+    }
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_gdraw", rnd_gdrawDottedHline);
+void rnd_gdrawDashedVline(int g, int color, int x, int y, int w, int h) {
+    int rgb[3];
+    int p;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_gdraw", rnd_gdrawDottedVline);
+    color2rgb(rgb, color);
+    p = GUI_Graphics_getBrokenLinePattern(rgb, 1, 16, 1, 8);
+    if (p != 0) {
+        GUI_Graphics_drawTiledPixmap(g, p, x, y, w, h, 0, 0);
+        GUI_Graphics_freePixmap(p);
+    }
+}
+
+void rnd_gdrawDottedHline(int g, int color, int x, int y, int w, int h) {
+    int rgb[3];
+    int p;
+
+    color2rgb(rgb, color);
+    p = GUI_Graphics_getBrokenLinePattern(rgb, 8, 1, 4, 1);
+    if (p != 0) {
+        GUI_Graphics_drawTiledPixmap(g, p, x, y, w, h, 0, 0);
+        GUI_Graphics_freePixmap(p);
+    }
+}
+
+void rnd_gdrawDottedVline(int g, int color, int x, int y, int w, int h) {
+    int rgb[3];
+    int p;
+
+    color2rgb(rgb, color);
+    p = GUI_Graphics_getBrokenLinePattern(rgb, 1, 8, 1, 4);
+    if (p != 0) {
+        GUI_Graphics_drawTiledPixmap(g, p, x, y, w, h, 0, 0);
+        GUI_Graphics_freePixmap(p);
+    }
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_gdraw", rnd_gdrawStrings);
 
@@ -228,7 +355,21 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_gdraw", rnd_gdrawImageDecod
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_gdraw", rnd_gdrawImageDecodeByGifFile);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_gdraw", rnd_gdrawImageProperty);
+int rnd_gdrawImageProperty(RGIMAGE *img, int *w, int *h) {
+    int a;
+    int b;
+    int c;
+
+    if (img == NULL) {
+        return 0;
+    }
+    if (img->type != 2) {
+        GUI_Graphics_getPixmapSize(img->pixmap, w, h);
+    } else {
+        GUI_Graphics_getAnimationGIFFrameProperty(img->anim, &a, &b, w, h, &c);
+    }
+    return img->type == 2;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
