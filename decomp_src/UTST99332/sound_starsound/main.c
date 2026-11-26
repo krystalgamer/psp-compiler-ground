@@ -365,4 +365,42 @@ static void vag_read(void)
 	}
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/sound_starsound/nonmatchings/main", main);
+#define SCE_KERNEL_USER_HIGHEST_PRIORITY        16
+#define SCE_OK							0
+
+int main(void)
+{
+	menuInit();
+
+	if (sceWaveInit() != SCE_OK){
+		printf("sceWaveInit error\n");
+		return -1;
+	}
+
+	vag_read();
+
+	if (sceWaveStart( SCE_KERNEL_USER_HIGHEST_PRIORITY ) != SCE_OK){
+		printf("sceWaveStart error\n");
+		return -1;
+	}
+
+	init_all();
+	init_pos();
+
+	while (pad_read()) {
+		draw_frame();
+		sceDisplayWaitVblankStart();
+		sceGuSwapBuffers();
+	}
+	sceGuTerm();
+
+	if (sceWaveEnd() != SCE_OK){
+		printf("sceWaveEnd() error\n");
+	}
+	if (sceWaveExit() != SCE_OK){
+		printf("sceWaveExit() error\n");
+	}
+	menuTerm(4, 7);
+
+	return 0;
+}
