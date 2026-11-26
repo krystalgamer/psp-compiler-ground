@@ -51,7 +51,26 @@ void sceGuTexSync(void);
 void sceGuTexWrap(int u, int v);
 void sceGuViewport(int cx, int cy, int width, int height);
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_depthblur/nonmatchings/depthblur", MakeRGBA8888);
+u_int32 MakeRGBA8888(float rf,float gf,float bf, float af)
+{
+	u_int32 result;
+	__asm__(
+		"lv.s		s000, %1		\n"
+		"lv.s		s001, %2		\n"
+		"lv.s		s002, %3		\n"
+		"lv.s		s003, %4		\n"
+		"vsat0.q	c000, c000		\n"	
+		"vf2iz.q	c000, c000, 31	\n"	
+		"vi2uc.q	c000, c000		\n"	
+		"sv.s		s000, %0		\n"
+		: "=m" (result)
+		: "m" (rf)
+		, "m" (gf)
+		, "m" (bf)
+		, "m" (af)
+		);
+	return result;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_depthblur/nonmatchings/depthblur", GenFrameBufferBlurmap);
 
