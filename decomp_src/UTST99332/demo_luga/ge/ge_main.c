@@ -312,8 +312,83 @@ int geRandom(void) {
     return (int) (temp_a0 >> 4);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/ge/ge_main", draw_func);
+static void draw_func(void)
+{
+	geDrawStart();
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/ge/ge_main", pad_func);
+	sceGuClear(0x17);
+
+	if (geModule[pProg->mode].draw != NULL) {
+		geModule[pProg->mode].draw();
+	}
+
+	geFadeDraw();
+
+	if (geModuleCommon.draw != NULL) {
+		geModuleCommon.draw();
+	}
+
+	if (ge_start != 0) {
+		if (ge_start != 1) {
+			ge_start -= 1;
+		} else {
+			sceGuFinish();
+			sceGuSync(0, 0);
+			sceDisplayWaitVblankStartCB();
+			sceGuSendList(0, ge_displist[ge_cdb], NULL);
+			ge_start = 0;
+			ge_cdb ^= 1;
+		}
+	}
+}
+
+typedef struct SceCtrlData {
+	unsigned int TimeStamp;
+	unsigned int Buttons;
+	unsigned char Lx;
+	unsigned char Ly;
+	unsigned char Rsrv[6];
+} SceCtrlData;
+
+int sceCtrlReadBufferPositive(SceCtrlData *data, int count);
+
+static void pad_func(void)
+{
+	SceCtrlData buf;
+	uchar analog[2];
+	uint old;
+	uint padd;
+	int i;
+
+	old = pProg->cont;
+
+	if (sceCtrlReadBufferPositive(&buf, 1) != 0) {
+		pProg->cont = buf.Buttons;
+		analog[0] = buf.Lx;
+		analog[1] = buf.Ly;
+	} else {
+		pProg->cont = 0;
+		analog[0] = 127;
+		analog[1] = 127;
+	}
+
+	padd = pProg->cont & (pProg->cont ^ old);
+
+	for (i = 0; i < 2; i++) {
+		if ((127 - pProg->pad_margin) < analog[i] && analog[i] < (127 + pProg->pad_margin)) {
+			analog[i] = 127;
+		}
+	}
+
+	if (geModuleCommon.pad != NULL) {
+		geModuleCommon.pad(padd, pProg->cont, analog);
+	}
+
+	if (geModule[pProg->mode].pad != NULL) {
+		if (geModule[pProg->mode].pad(padd, pProg->cont, analog)) {
+			pProg->exitflag = 1;
+		}
+	}
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/ge/ge_main", program_switch);
