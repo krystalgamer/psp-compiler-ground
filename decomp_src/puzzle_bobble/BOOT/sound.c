@@ -19,6 +19,8 @@ extern int VoiceCh;
 extern int NowBgm;
 extern char *bgm_name[];
 int at3_bgm_play_end(int fade);
+int GetKeyHit(void);
+void sceGuDebugPrint(int x, int y, unsigned int color, const char *str);
 int at3_bgm_play(const char *path);
 
 
@@ -157,7 +159,28 @@ play:
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/sound", se_play);
 #endif
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/sound", snd_test);
+void snd_test(void)
+{
+	char buf[32];
+	int key = GetKeyHit();
+
+	if (key & 0x100) {
+		if (TestSoundNo > 0) {
+			TestSoundNo--;
+			printf("SE %d\n", TestSoundNo);
+			se_play(TestSoundNo);
+		}
+	}
+	if (key & 0x200) {
+		if (TestSoundNo < VoiceMax - 1) {
+			TestSoundNo++;
+			printf("SE %d\n", TestSoundNo);
+			se_play(TestSoundNo);
+		}
+	}
+	sprintf(buf, "SE = %d", TestSoundNo);
+	sceGuDebugPrint(0, 0, 0x20202, buf);
+}
 
 void next_bgm(void) {
     if ((PlayFlag == 0) && (NextBgm >= 0)) {
