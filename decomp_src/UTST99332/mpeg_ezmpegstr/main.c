@@ -193,6 +193,21 @@ int sceCtrlReadBufferPositive(SceCtrlData *data, int count);
 void sceKernelExitGame(void);
 
 
+/* SDK prototypes (tools/sdk_protos.h) */
+void free(void *p);
+void *malloc(unsigned int size);
+void *memalign(unsigned int align, unsigned int size);
+int sceCtrlSetSamplingMode(int mode);
+int sceDisplayGetVcount(void);
+int sceDisplayWaitVblankStart(void);
+int sceKernelChangeThreadPriority(int thid, int prio);
+int sceKernelCreateCallback(const char *name, void *func, void *arg);
+int sceKernelCreateThread(const char *name, void *entry, int prio, int stacksize, unsigned int attr, void *option);
+int sceKernelGetThreadId(void);
+int sceKernelRegisterExitCallback(int cbid);
+int sceKernelStartThread(int thid, unsigned int arglen, void *argp);
+int strcmp(const char *a, const char *b);
+
 int exit_func(int count, int arg1, void *arg2) {
     if (audioFlag == 1) {
         soundbuf_setDemuxEnd(arg2);

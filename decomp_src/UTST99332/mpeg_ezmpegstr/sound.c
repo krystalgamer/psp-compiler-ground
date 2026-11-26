@@ -79,6 +79,10 @@ static SceInt32 soundbuf_swapbuf(t_soundBuffer *pSound, SceChar8 *buf);
 SceInt32 soundbuf_output(t_soundBuffer *pSound);
 
 
+/* SDK prototypes (tools/sdk_protos.h) */
+int puts(const char *s);
+int sceKernelDelayThread(unsigned int delay);
+
 SceInt32 soundbuf_create(t_soundBuffer *pSound, SceInt32 buf_size, SceInt32 buf_num)
 {
 	SceInt32 i, ret;
