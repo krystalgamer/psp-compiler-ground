@@ -15,3 +15,8 @@ rodata 0x3018C libwave
 0x160E4 load_tm2        1.8.4.internal  load_tm2.c
 0x165E0 gim_format      1.8.4.internal  gim_format.c
 0x1675C gim_realloc     1.8.4.internal  gim_realloc.c
+# Sony's psp-newlib exit.o and modreent.o were built with -falign-loops=64: the old
+# assembler pads their .text to a multiple of 64 bytes, so the gaps after them are
+# part of those objects (empty units here, the C objects carry the padding).
+0x225A4 exit_pad        1.8.4.internal  newlib/libc/sys/psp/exit_pad.c
+0x23734 modreent_pad    1.8.4.internal  newlib/libc/sys/psp/modreent_pad.c

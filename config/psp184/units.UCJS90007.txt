@@ -68,6 +68,7 @@ newlib/libc/stdlib/calloc                    1.8.4.internal  ../../../../../newl
 newlib/libc/stdlib/mallocr/_calloc_r         1.8.4.internal  ../../../../../newlib-1.12.0/newlib/libc/stdlib/mallocr.c
 newlib/libc/errno/errno                      1.8.4.internal  ../../../../../newlib-1.12.0/newlib/libc/errno/errno.c
 newlib/libc/sys/psp/exit                     1.8.4.internal  ../../../../../../newlib-1.12.0/newlib/libc/sys/psp/exit.c
+newlib/libc/sys/psp/exit_pad                 1.8.4.internal  newlib/libc/sys/psp/exit_pad.c
 newlib/libc/sys/psp/getreent                 1.8.4.internal  ../../../../../../newlib-1.12.0/newlib/libc/sys/psp/getreent.c
 newlib/libc/stdlib/malign                    1.8.4.internal  ../../../../../newlib-1.12.0/newlib/libc/stdlib/malign.c
 newlib/libc/stdlib/mallocr/_memalign_r       1.8.4.internal  ../../../../../newlib-1.12.0/newlib/libc/stdlib/mallocr.c
@@ -78,6 +79,7 @@ newlib/libc/machine/mips/memcpy              1.8.4.internal  ../../../../../../n
 newlib/libc/machine/mips/memset              1.8.4.internal  ../../../../../../newlib-1.12.0/newlib/libc/machine/mips/memset.c
 newlib/libc/sys/psp/mlock                    1.8.4.internal  ../../../../../../newlib-1.12.0/newlib/libc/sys/psp/mlock.c
 newlib/libc/sys/psp/modreent                 1.8.4.internal  ../../../../../../newlib-1.12.0/newlib/libc/sys/psp/modreent.c
+newlib/libc/sys/psp/modreent_pad             1.8.4.internal  newlib/libc/sys/psp/modreent_pad.c
 newlib/libc/stdio/printf                     1.8.4.internal  ../../../../../newlib-1.12.0/newlib/libc/stdio/printf.c
 newlib/libc/stdio/puts                       1.8.4.internal  ../../../../../newlib-1.12.0/newlib/libc/stdio/puts.c
 newlib/libc/stdlib/rand                      1.8.4.internal  ../../../../../newlib-1.12.0/newlib/libc/stdlib/rand.c
