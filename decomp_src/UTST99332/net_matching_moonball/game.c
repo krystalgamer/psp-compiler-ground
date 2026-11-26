@@ -621,7 +621,110 @@ static void DrawMission(int a)
 	sceGuDisable(SCEGU_TEXTURE);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/game", DrawGame);
+void DrawGame(void)
+{
+	ScePspFVector3 vec;
+	int i;
+
+	sceGuEnable(1);
+	DrawBG();
+	DrawMoon();
+	sceGumPushMatrix();
+	sceGumLoadIdentity();
+	vec.x = fld.x;
+	vec.y = fld.y;
+	vec.z = fld.z;
+	sceGumTranslate(&vec);
+	vec.x = 1.0f;
+	vec.y = 1.0f;
+	vec.z = 1.0f;
+	sceGumScale(&vec);
+	sceGuDisable(13);
+	if (ball.state == 2)
+		DrawBall();
+	sceGuEnable(13);
+	DrawParticle();
+	DrawGround();
+	sceGumPopMatrix();
+	sceGuDisable(1);
+	for (i = 0; i < 17; i++) {
+		DrawBeam(&scope[i]);
+		DrawScope(&scope[i]);
+	}
+	DrawScore();
+	switch (game.state) {
+	case 0:
+		FadeDraw();
+		if (!FadeState()) {
+			if (_info.server_flag > 0) {
+				game.state = 1;
+				game.disp = 1;
+			}
+			scope[0].state = 1;
+		}
+		break;
+	case 1:
+		DrawMission(255);
+		break;
+	case 2:
+		DrawMission(255 - game.count * 2);
+		if (_info.server_flag > 0) {
+			game.count += 4;
+			if (255 - game.count * 2 < 2) {
+				game.state = 3;
+				game.count = 0;
+			}
+		}
+		break;
+	case 3:
+		if (game.count < 60)
+			DrawReady(0, 255, 2);
+		else
+			DrawReady(0, 375 - game.count * 2, 2);
+		if (_info.server_flag > 0) {
+			game.count += 4;
+			if (375 - game.count * 2 < 2) {
+				game.state = 4;
+				game.count = 0;
+			}
+		}
+		break;
+	case 4:
+		DrawReady(1, 255, 2);
+		if (_info.server_flag > 0) {
+			game.count += 4;
+			if (game.count > 30) {
+				game.state = 5;
+				game.count = 0;
+			}
+		}
+		break;
+	case 5:
+		if (game.count != -1) {
+			DrawReady(1, 255 - game.count * 2, 2);
+			if (_info.server_flag > 0) {
+				game.count += 4;
+				if (255 - game.count * 2 < 2)
+					game.count = -1;
+			}
+		}
+		break;
+	case 6:
+		DrawReady(game.result + 2, game.count, 1);
+		if (_info.server_flag > 0) {
+			game.count += 4;
+			if (game.count > 255)
+				game.count = 255;
+		}
+		break;
+	case 7:
+		DrawReady(game.result + 2, 255, 1);
+		FadeDraw();
+		if (!FadeState())
+			InitGame();
+		break;
+	}
+}
 
 static void CheckShoot(SCOPE *sc, int score_1p)
 {
@@ -827,4 +930,3 @@ int check_peer_existence(void)
 	return 0;
 }
 
-INCLUDE_RODATA("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/game", D_0001A184);
