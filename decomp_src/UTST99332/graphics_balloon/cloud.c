@@ -55,9 +55,8 @@ INCLUDE_ASM("tmp/asm/UTST99332/graphics_balloon/nonmatchings/cloud", sort_cloud)
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_balloon/nonmatchings/cloud", draw_clouds);
 
-#ifndef MAX_CLOUD
 #define MAX_CLOUD	10
-#endif
+
 void proc_clouds(void)
 {
 	int			i;
