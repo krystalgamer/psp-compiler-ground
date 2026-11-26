@@ -193,6 +193,66 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_mars/nonmatchings/main", main);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_mars/nonmatchings/main", CLUT_Earth_Color);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_mars/nonmatchings/main", CLUT_Depth_SEA);
+void CLUT_Depth_SEA(int sea)
+{
+	int j, i, r, g, b, a;
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_mars/nonmatchings/main", set_model_data);
+	for (i = 0; i < 256; i++) {
+		if (i < sea) {
+			a = 390 - (i * 128) / sea;
+			if (a > 255) a = 255;
+
+			b = (i * 64) / sea + 160;
+			g = (i * 16) / sea + 48;
+			r = g;
+		} else {
+			a = 0;
+			b = 128;
+			g = 128;
+			r = 128;
+		}
+
+		if (i == sea) {
+			a = 128;
+			b = 220;
+			g = 96;
+			r = 96;
+		}
+
+		cltsea[i].r = r;
+		cltsea[i].g = g;
+		cltsea[i].b = b;
+		cltsea[i].a = a;
+	}
+}
+
+void set_model_data(void)
+{
+	int i, j, k, n;
+
+	for (n = 0; n < 24; n++) {
+		k = 0;
+		for (i = 0; i < 8; i++) {
+			for (j = 0; j < 9; j++) {
+				model[n][k].u = sphere[n][i][j].u;
+				model[n][k].v = sphere[n][i][j].v;
+				model[n][k].nx = sphere[n][i][j].nx;
+				model[n][k].ny = sphere[n][i][j].ny;
+				model[n][k].nz = sphere[n][i][j].nz;
+				model[n][k].vx = sphere[n][i][j].x;
+				model[n][k].vy = sphere[n][i][j].y;
+				model[n][k].vz = sphere[n][i][j].z;
+				k++;
+				model[n][k].u = sphere[n][i + 1][j].u;
+				model[n][k].v = sphere[n][i + 1][j].v;
+				model[n][k].nx = sphere[n][i + 1][j].nx;
+				model[n][k].ny = sphere[n][i + 1][j].ny;
+				model[n][k].nz = sphere[n][i + 1][j].nz;
+				model[n][k].vx = sphere[n][i + 1][j].x;
+				model[n][k].vy = sphere[n][i + 1][j].y;
+				model[n][k].vz = sphere[n][i + 1][j].z;
+				k++;
+			}
+		}
+	}
+}
