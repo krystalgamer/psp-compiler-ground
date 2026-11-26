@@ -146,6 +146,10 @@ modules (`tools/nltest.py`, `tools/objcmp.py`).
   registers the other way round. In the original the later parameter wins
   the tie, in every cc1 (1.3.1-orig..1.8.4) the earlier one does.
 
+- Open candidate (puzzle_bobble `main`, `begin_scene`, maybe `TitleDisp`,
+  1.5.1): the original loads float literals in source order through one
+  register; every cc1 reverses each pair and interleaves the address loads.
+
 ## psp-gcc 1.6.1
 
 - **32-bit `HOST_WIDE_INT`** (psp-gcc 1.7.1, `psp: use a 32-bit
