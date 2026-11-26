@@ -1,4 +1,35 @@
 #include "common.h"
+#include <psptypes.h>
+#include <libgu.h>
+#include <libgum.h>
+
+/* types and file-scope data from the SDK sample's stainglass.c (data defined in the asm data files) */
+typedef unsigned short u_short;
+typedef unsigned int u_int;
+typedef int bool;
+#define true 1
+#define false 0
+
+typedef struct
+{
+	u_short   s, t;
+	u_int     c;
+	float     vx, vy, vz;
+} __attribute__((packed)) VTypeT16C32V32;
+
+extern float _scale;
+extern float _sx;
+extern float _sy;
+
+extern int _num_vertices;
+extern VTypeT16C32V32* _vertices;
+extern ScePspFVector2 *_offsets;
+extern ScePspMatrix4 _transform;
+
+extern bool refraction_texture_fast;
+
+extern unsigned int mipmap_vram[5];
+
 
 /* SDK prototypes (tools/sdk_protos.h) */
 void free(void *p);
@@ -43,6 +74,9 @@ void MatrixMatrixMultiply(void) {
 INCLUDE_RODATA("tmp/asm/UTST99332/graphics_stainglass/nonmatchings/stainglass", _nx);
 
 INCLUDE_RODATA("tmp/asm/UTST99332/graphics_stainglass/nonmatchings/stainglass", _ny);
+
+#define _nx 48
+#define _ny 48
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_stainglass/nonmatchings/stainglass", GenFrameBufferMipmap);
 
