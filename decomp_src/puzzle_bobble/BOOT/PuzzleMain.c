@@ -674,24 +674,24 @@ int EndressMain(void)
 /* One instruction short: the original computes zoom as !(t | (col >= 8)) with t = (scale ==
  * 0) as a value (ours folds it to an and), and in the SpriteDrawZoom call it reloads the
  * 0.0f for v from a stack slot (sw zero / lwc1) instead of mtc1 $0. */
-void DrawBubble(float scale, int x, int y, int col)
+void DrawBubble(float scale, int x, int y, int col, int frame)
 {
-	int anim = frame_anim[col] / 6;
+	int a = frame_anim[col] / 6;
 	int zoom;
 
-	if (anim > 4)
-		anim = 4;
+	if (a > 4)
+		a = 4;
 	if (col == 9)
-		anim = frame_anim[9] * 4 / 30;
+		a = frame_anim[9] * 4 / 30;
 	if (col == 10)
-		anim = 0;
+		a = 0;
 	zoom = !((scale == 0.0f) | (col >= 8));
 	if (scale < 1.0f && scale > 0.0f)
 		zoom = 1;
 	if (!zoom)
-		SpriteDrawEz(col + 50, 2.0f, -1, x, y, 16.0f, 16.0f, anim * 16, 0.0f);
+		SpriteDrawEz(col + 50, 2.0f, -1, x, y, 16.0f, 16.0f, a * 16, 0.0f);
 	else
-		SpriteDrawZoom(col + 50, -1, 2.0f, x, y, 16.0f, 16.0f, anim * 16, 0.0f, 8.0f, 8.0f, scale, scale);
+		SpriteDrawZoom(col + 50, -1, 2.0f, x, y, 16.0f, 16.0f, a * 16, 0.0f, 8.0f, 8.0f, scale, scale);
 }
 #else
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", DrawBubble);
