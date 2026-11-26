@@ -75,9 +75,86 @@ void sceGuTexWrap(int u, int v);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/ge/ge_texture", geTexSet);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/ge/ge_texture", geTexOption);
+int geTexOption(int n, int param, geTEXTURE *tex)
+{
+	geTEXTURE *p;
+	int ret = 0;
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/ge/ge_texture", geTexGet);
+	if (n < 128) {
+		if (n >= 0) {
+			p = &geTexture[n];
+
+			if (param & 1) {
+				p->fil_min = tex->fil_min;
+				p->fil_mag = tex->fil_mag;
+			}
+			if (param & 2) {
+				p->func_mode = tex->func_mode;
+				p->func_comp = tex->func_comp;
+			}
+			if (param & 4) {
+				p->wrapu = tex->wrapu;
+				p->wrapv = tex->wrapv;
+			}
+			if (param & 8) {
+				p->level_mode = tex->level_mode;
+				p->level_offset = tex->level_offset;
+			}
+			if (param & 0x10) {
+				p->su = tex->su;
+				p->sv = tex->sv;
+			}
+			if (param & 0x20) {
+				p->tu = tex->tu;
+				p->tv = tex->tv;
+			}
+			if (param & 0x40) {
+				p->col = tex->col;
+			}
+			if (param & 0x80) {
+				p->map_mode = tex->map_mode;
+				p->map_lu = tex->map_lu;
+				p->map_lv = tex->map_lv;
+			}
+			ret = 1;
+		}
+	}
+
+	return ret;
+}
+
+int geTexGet(int n, geTEXTURE *tex)
+{
+	geTEXTURE *p;
+	int ret = 0;
+
+	if (n < 128) {
+		if (n >= 0) {
+			p = &geTexture[n];
+
+			tex->fil_min = p->fil_min;
+			tex->fil_mag = p->fil_mag;
+			tex->func_mode = p->func_mode;
+			tex->func_comp = p->func_comp;
+			tex->wrapu = p->wrapu;
+			tex->wrapv = p->wrapv;
+			tex->level_mode = p->level_mode;
+			tex->level_offset = p->level_offset;
+			tex->su = p->su;
+			tex->sv = p->sv;
+			tex->tu = p->tu;
+			tex->tv = p->tv;
+			tex->col = p->col;
+			tex->map_mode = p->map_mode;
+			tex->map_lu = p->map_lu;
+			tex->map_lv = p->map_lv;
+
+			ret = 1;
+		}
+	}
+
+	return ret;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/ge/ge_texture", geTexSend);
 
