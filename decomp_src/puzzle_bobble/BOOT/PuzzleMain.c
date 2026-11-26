@@ -52,7 +52,7 @@ int Get2Dim(int x, int a, int b, int c, int d);
 int SpriteDraw(int no, float z, int color, float x0, float y0, float u0, float v0, float x1, float y1, float u1, float v1, float x2, float y2, float u2, float v2, float x3, float y3, float u3, float v3);
 int DrawSpritePt4(int no, float z, int color, float x0, float y0, float u0, float v0, float x1, float y1, float u1, float v1, float x2, float y2, float u2, float v2, float x3, float y3, float u3, float v3);
 int SpriteDrawC(float z, int x, int y, const SPRDATA *p);
-int EndressValueInit(int, int, int);
+void EndressValueInit(int, int, int);
 void SpriteSetFader(float);
 int LoadGimFile(int no, int file);
 int bgm_play(int no);
@@ -594,7 +594,61 @@ void SurvValueInit(void)
 	}
 }
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", EndressValueInit);
+extern int ColorTable[];
+extern int ColorRndMax;
+void EndressValueInit(int pl, int stage, int flag)
+{
+	PZL_STAT *st;
+	u8 save428;
+	int save434;
+	int i, j, k;
+
+	if (pl < 1 || pl > 2)
+		pl = 1;
+	st = &Stat[pl];
+	save428 = st->unk428;
+	save434 = st->unk434;
+	ZeroMemory(st, sizeof(PZL_STAT));
+	st->scroll = -5;
+	st->bx = 160;
+	st->by = 0x116;
+	st->unk00E = 600;
+	st->unk45F = 0;
+	st->unk454 = 0;
+	st->unk023 = 0;
+	st->unk027 = 8;
+	st->unk026 = 8;
+	st->unk430 = 0;
+	if (flag < 0)
+		st->unk428 = save428;
+	else
+		st->unk428 = flag != 0;
+	if (stage >= 0)
+		StageNum = stage;
+	st->unk434 = save434;
+	dsGMInit(pl, StageNum);
+	for (i = 0; i < 242; i++)
+		st->mp.map[i] = 0;
+	st->mp.map[33] = 13;
+	for (i = 0; i < 11; i++) {
+		st->mp.map[44 + i] = 12;
+		st->mp.map[66 + i] = ColorTable[rand() % ColorRndMax];
+	}
+	for (i = 0; i < 10; i++) {
+		st->mp.map[55 + i] = ColorTable[rand() % ColorRndMax];
+		st->mp.map[77 + i] = ColorTable[rand() % ColorRndMax];
+	}
+	st->scroll = -5;
+	for (k = 0; k < 3; k++) {
+		OjamaStock[k] = 0;
+		WinStack[k] = 0;
+		OjamaCnt[k] = 0;
+		for (j = 0; j < 8; j++) {
+			OjamaPos[k][j] = 0;
+			OjamaCol[k][j] = 0;
+		}
+	}
+}
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", DrawMapData);
 
