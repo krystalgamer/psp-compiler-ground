@@ -264,7 +264,20 @@ SceInt32 decode_checkReservedVideoGetAu(t_mpegStreamData *pStreamData)
 	return ret;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/mpeg_seamless_change/nonmatchings/decode", decode_getReservedVideoAuTimestamp);
+SceInt32 decode_getReservedVideoAuTimestamp(t_mpegStreamData *pStreamData, SceUInt32 *pTimestamp)
+{
+	SceInt32 ret;
+
+	ret = decode_checkReservedVideoGetAu(pStreamData);
+	if (ret != 0) {
+		goto term;
+	}
+
+	*pTimestamp = pStreamData->pAvcAu[pStreamData->reservedVideoStream].pts.ts;
+
+term:
+	return ret;
+}
 
 int decode_getCurrentReservedStream(t_mpegStreamData *pStreamData) {
     return pStreamData->reservedVideoStream;
