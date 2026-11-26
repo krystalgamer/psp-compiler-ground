@@ -277,9 +277,61 @@ static void dumpOskUtilityTextResult(unsigned int numInputFields, SceUtilityOskI
 	}
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/utility_basic/nonmatchings/main", utility_update_osk);
+void Menu_Show(void);
+int utility_update_osk(void)
+{
+	int ret;
 
-INCLUDE_ASM("tmp/asm/UTST99332/utility_basic/nonmatchings/main", utility_update_savedata);
+	ret = 0;
+	switch (sceUtilityOskGetStatus()) {
+	case 1:
+		break;
+	case 2:
+		Menu_Hide();
+		ret = sceUtilityOskUpdate(1);
+		break;
+	case 3:
+		ret = sceUtilityOskShutdownStart();
+		dumpOskUtilityTextResult(4, oskInputFieldInfo);
+		break;
+	case 4:
+		break;
+	case 0:
+		Menu_UnlockInput();
+		Menu_Show();
+		sample_type = 0;
+		break;
+	}
+	return ret;
+}
+
+void Menu_Show(void);
+int utility_update_savedata(void)
+{
+	int ret;
+
+	ret = 0;
+	switch (sceUtilitySavedataGetStatus()) {
+	case 1:
+		break;
+	case 2:
+		Menu_Hide();
+		ret = sceUtilitySavedataUpdate(1);
+		break;
+	case 3:
+		ret = sceUtilitySavedataShutdownStart();
+		show_results(&savedata_param);
+		break;
+	case 4:
+		break;
+	case 0:
+		Menu_UnlockInput();
+		Menu_Show();
+		sample_type = 0;
+		break;
+	}
+	return ret;
+}
 
 int utility_update(void)
 {
@@ -297,7 +349,22 @@ int utility_update(void)
 	return -1;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/utility_basic/nonmatchings/main", CreateMenu_Root);
+void OnPush_MsgDialog(int selection);
+void OnPush_ChangeSetting(int selection);
+void OnPush_Netconf_Apnet(int selection);
+void OnPush_Netconf_Adhoc(int selection);
+extern char D_000149B8[];
+void CreateMenu_Root(void)
+{
+	Menu_ClearItems();
+	Menu_AppendItem("osk", OnPush_OSK);
+	Menu_AppendItem("savedata >", OnPush_SaveData);
+	Menu_AppendItem("netconf apnet >", OnPush_Netconf_Apnet);
+	Menu_AppendItem("netconf adhoc >", OnPush_Netconf_Adhoc);
+	Menu_AppendItem("msgdialog >", OnPush_MsgDialog);
+	Menu_AppendItem("change setting >", OnPush_ChangeSetting);
+	Menu_AppendItem(D_000149B8, OnPush_Exit);
+}
 
 INCLUDE_RODATA("tmp/asm/UTST99332/utility_basic/nonmatchings/main", D_000149B8);
 
@@ -544,7 +611,34 @@ int ExitFunction_1068(void) {
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/utility_basic/nonmatchings/main", sub_thread);
+void vsync_frame(void);
+extern char D_000149B8[];
+static int sub_thread(size_t argSize, void *argBlock)
+{
+	int cbid;
+
+	if (LoadRequiredModules() < 0)
+		sceKernelExitDeleteThread(1);
+	init_net();
+	init_all();
+	Menu_Init();
+	CreateMenu_Root();
+	cbid = sceKernelCreateCallback(D_000149B8, ExitFunction_1068, NULL);
+	sceKernelRegisterExitCallback(cbid);
+	loop = 1;
+	while (loop) {
+		draw_frame();
+		Menu_Update();
+		utility_update();
+		sceKernelCheckCallback();
+		vsync_frame();
+	}
+	term_all();
+	Menu_Shutdown();
+	term_net();
+	sceKernelExitDeleteThread(0);
+	return 0;
+}
 
 int main(int argc, char **argv)
 {
