@@ -255,7 +255,46 @@ void geTerm(void) {
     sceGuTerm();
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/ge/ge_main", geMainLoop);
+static inline void pre_func(void)
+{
+	if (geModuleCommon.pre != NULL) {
+		geModuleCommon.pre();
+	}
+	if (geModule[pProg->mode].pre != NULL) {
+		geModule[pProg->mode].pre();
+	}
+}
+
+static inline void post_func(void)
+{
+	if (geModuleCommon.post != NULL) {
+		geModuleCommon.post();
+	}
+	if (geModule[pProg->mode].post != NULL) {
+		geModule[pProg->mode].post();
+	}
+}
+
+int geMainLoop(void)
+{
+	pProg->vcount = 0;
+	pProg->exitflag = 0;
+
+	do {
+		program_switch();
+		pre_func();
+
+		pad_func();
+		draw_func();
+
+		post_func();
+
+		sceGuSwapBuffers();
+		pProg->vcount = (pProg->vcount + 1) & 0x7fffffff;
+	} while (pProg->exitflag == 0);
+
+	return 0;
+}
 
 void geExit(void) {
     pProg->exitflag = 1;
