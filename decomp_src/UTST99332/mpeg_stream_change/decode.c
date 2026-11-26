@@ -150,7 +150,24 @@ INCLUDE_ASM("tmp/asm/UTST99332/mpeg_stream_change/nonmatchings/decode", decode_c
 
 INCLUDE_ASM("tmp/asm/UTST99332/mpeg_stream_change/nonmatchings/decode", decode_initAu);
 
-INCLUDE_ASM("tmp/asm/UTST99332/mpeg_stream_change/nonmatchings/decode", decode_createAu);
+SceInt32 decode_createAu(t_mpegStreamData *pStreamData, SceMpegStrType type)
+{
+	SceInt32 ret;
+
+	switch (type) {
+	case 0:
+		ret = decode_createAvcAu(pStreamData);
+		break;
+	case 1:
+		ret = decode_createAudioAu(pStreamData);
+		break;
+	default:
+		ret = -1;
+		break;
+	}
+
+	return ret;
+}
 
 int decode_createAvcAu(t_mpegStreamData *pStreamData) {
     int var_v1;
