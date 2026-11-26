@@ -286,9 +286,96 @@ static void pad_select(void);
 void pad_read(void);
 
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/pad", pad_circle);
+int utility_msgdialog_fileio(int error_code);
+int utility_msgdialog_mpeg_fileio(int error_code);
+static void pad_circle(void)
+{
+	int ret;
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/pad", pad_triangle);
+	switch (_info.state) {
+	case 2:
+		if (_info.v_cursor_pos == 1) {
+			ret = get_binlist();
+			if (ret < 0) {
+				ret = utility_msgdialog_fileio(ret);
+				if (ret < 0)
+					change_state(2, 0);
+				else
+					change_state(0x17, 0);
+			} else {
+				change_state(0x1A, 0);
+			}
+		} else if (_info.v_cursor_pos == 2) {
+			ret = get_mpeglist();
+			if (ret < 0) {
+				ret = utility_msgdialog_mpeg_fileio(ret);
+				if (ret < 0)
+					change_state(1, 0);
+				else
+					change_state(0x18, 0);
+			} else {
+				change_state(0x1B, 0);
+			}
+		}
+		break;
+	case 0x1A:
+		set_filename();
+		free_binlist();
+		change_state(2, 0);
+		break;
+	case 0x1B:
+		set_mpeg_filename();
+		free_mpeglist();
+		change_state(2, 0);
+		break;
+	}
+}
+
+int get_filename(char *bin_filename);
+int get_paramsfo(char *bin_filename);
+int utility_msgdialog_fileio(int error_code);
+int utility_msgdialog_paramsfo(int error_code);
+static void pad_triangle(void)
+{
+	int ret;
+	char bin_filename[256];
+
+	switch (_info.state) {
+	case 2:
+		if (_info.binlist_entry_num > 0) {
+			ret = get_paramsfo(_info.bin_filename);
+			ret = utility_msgdialog_paramsfo(ret);
+			if (ret < 0)
+				change_state(2, 0);
+			else
+				change_state(0x1C, 0);
+		} else {
+			ret = utility_msgdialog_fileio(0x80410C81);
+			if (ret < 0)
+				change_state(2, 0);
+			else
+				change_state(0x17, 0);
+		}
+		break;
+	case 0xF:
+		ret = utility_msgdialog_paramsfo(0);
+		if (ret < 0)
+			change_state(0x10, 0);
+		else
+			change_state(0x1E, 0);
+		break;
+	case 0x1A:
+		ret = get_filename(bin_filename);
+		if (ret == 0)
+			ret = get_paramsfo(bin_filename);
+		ret = utility_msgdialog_paramsfo(ret);
+		if (ret < 0)
+			change_state(2, 0);
+		else
+			change_state(0x1D, 0);
+		break;
+	}
+}
 
 extern int D_0008D33C;
 static void pad_square(void)
@@ -325,7 +412,28 @@ static void pad_cross(void)
 	}
 }
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/pad", pad_up);
+static void pad_up(void)
+{
+	switch (_info.state) {
+	case 2:
+		if (_info.v_cursor_pos > 0)
+			_info.v_cursor_pos -= 1;
+		break;
+	case 0x1A:
+		if (_info.binlist_v_cursor_pos > 0)
+			_info.binlist_v_cursor_pos -= 1;
+		if (_info.binlist_v_cursor_pos < _info.binlist_top_entry)
+			_info.binlist_top_entry -= 1;
+	case 0x1B:
+		if (_info.mpeglist_v_cursor_pos > 0)
+			_info.mpeglist_v_cursor_pos -= 1;
+		if (_info.mpeglist_v_cursor_pos < _info.mpeglist_top_entry)
+			_info.mpeglist_top_entry -= 1;
+	case 0x12:
+		log_pageup();
+		break;
+	}
+}
 
 void pad_down(void) {
     int temp_v0;
