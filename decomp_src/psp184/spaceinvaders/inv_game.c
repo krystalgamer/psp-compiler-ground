@@ -72,6 +72,17 @@ int get_now_sound_block(void);
 extern int D_005FB330;
 typedef struct { u8 pad[0x188]; s8 a[32]; s8 b[32]; int c[32]; int d[32]; } STC_T;
 
+extern int D_005E728C;
+extern int D_003538BC;
+void inv_laser_all_init(void);
+void inv_laser_priset(void);
+void inv_ring_all_init(void);
+void inv_ring_priset(void);
+void inv_laser_texno(int no);
+void inv_ring_texno(int no);
+typedef struct { int f0; u8 pad[0x98]; } LZ_T;
+typedef struct { u8 f0; u8 pad[0x7F]; } RG_T;
+
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", maingame_all_init);
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", maingame_init);
@@ -415,7 +426,23 @@ void shield_damage(u8 *p, int n)
 	*(int *)(p + 0x10) = 0;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", laser_init);
+void laser_init(void)
+{
+	int i;
+	u8 *g;
+
+	inv_laser_all_init();
+	inv_laser_priset();
+	inv_ring_all_init();
+	inv_ring_priset();
+	for (i = 0; i < 32; i++)
+		((LZ_T *)&D_005E728C)[i].f0 = 0;
+	g = gmain.b;
+	inv_laser_texno(*(int *)(g + 0xF70));
+	inv_ring_texno(*(int *)(g + 0xF70));
+	for (i = 1; i < 3; i++)
+		((RG_T *)&D_003538BC)[i].f0 = 0;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", laser_start);
 
@@ -596,7 +623,28 @@ void df_quake_disp(void)
 	*(float *)(d + 0x2C) = *(float *)(s + 0x18);
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", df_blur_start);
+void df_blur_start(int a, int b, int c, int d, int e, int f, int g, int h, int i, int j)
+{
+	u8 *w = (u8 *)&D_005FB3B0;
+	int cur;
+
+	cur = 0;
+	if (*(int *)(w + 0x44))
+		cur = *(int *)(w + 0x38) * (*(int *)(w + 0x44) - *(int *)(w + 0x40)) / *(int *)(w + 0x44);
+	if (h < cur)
+		return;
+	*(int *)(w + 0x44) = j;
+	*(int *)(w + 0x20) = b;
+	*(int *)(w + 0x24) = c;
+	*(int *)(w + 0x28) = d;
+	*(int *)(w + 0x2C) = e;
+	*(int *)(w + 0x30) = f;
+	*(int *)(w + 0x34) = g;
+	*(int *)(w + 0x38) = h;
+	*(int *)(w + 0x3C) = i;
+	*(int *)(w + 0x40) = 0;
+	*(int *)(w + 0x1C) = a;
+}
 
 void df_blur_end(void)
 {
