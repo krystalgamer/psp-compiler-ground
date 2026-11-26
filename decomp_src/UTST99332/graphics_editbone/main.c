@@ -172,24 +172,13 @@ INCLUDE_RODATA("tmp/asm/UTST99332/graphics_editbone/nonmatchings/main", D_000127
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_editbone/nonmatchings/main", calc_bone);
 
-#ifndef SCEGU_PRIM_LINE_STRIP /* sample */
 #define SCEGU_PRIM_LINE_STRIP              2
-#endif
-#ifndef SCEGU_PRIM_TRIANGLE_STRIP /* sample */
 #define SCEGU_PRIM_TRIANGLE_STRIP          4
-#endif
-#ifndef SCEGU_WEIGHT_4 /* sample */
 #define SCEGU_WEIGHT_4           ( 3 << 14 )
-#endif
-#ifndef SCEGU_WEIGHT_FLOAT /* sample */
 #define SCEGU_WEIGHT_FLOAT       ( 3 <<  9 )
-#endif
-#ifndef SCEGU_VERTEX_FLOAT /* sample */
 #define SCEGU_VERTEX_FLOAT       ( 3 <<  7 )
-#endif
-#ifndef SCEGU_OPEN_OPEN /* sample */
 #define SCEGU_OPEN_OPEN                    3
-#endif
+
 static void draw_cylinder(void)
 {
 	if (!mode)
