@@ -227,6 +227,18 @@ static SceInt32 pad_read(t_displayBuffer *pDisp);
 void sceKernelExitGame(void);
 
 
+/* SDK prototypes (tools/sdk_protos.h) */
+void free(void *p);
+void *memalign(unsigned int align, unsigned int size);
+int sceCtrlSetSamplingMode(int mode);
+int sceKernelChangeThreadPriority(int thid, int prio);
+int sceKernelCreateCallback(const char *name, void *func, void *arg);
+int sceKernelCreateThread(const char *name, void *entry, int prio, int stacksize, unsigned int attr, void *option);
+int sceKernelGetThreadId(void);
+int sceKernelRegisterExitCallback(int cbid);
+int sceKernelStartThread(int thid, unsigned int arglen, void *argp);
+int strcmp(const char *a, const char *b);
+
 static SceInt32 ringbufferCallBack(SceVoid *pBuf, SceInt32 iNum, SceVoid *CallbackData)
 {
 	SceInt32 iTypeSize = 0x800;
