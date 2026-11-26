@@ -818,7 +818,19 @@ void sceGuSpriteMode(int a0, int a1, int a2, int a3)
 	context->sprite_mode[3] = a3;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_cube/nonmatchings/libgu", sceGuCopyImage);
+void sceGuCopyImage(int psm, int sx, int sy, int width, int height, int srcw, void *src, int dx, int dy, int destw, void *dest)
+{
+	int is32 = (psm ^ 0x03) ? 0 : 1;
+
+	send_commandi(178, ((unsigned int)src) & 0xffffff);
+	send_commandi(179, ((((unsigned int)src) & 0xff000000) >> 8) | srcw);
+	send_commandi(235, (sy << 10) | sx);
+	send_commandi(180, ((unsigned int)dest) & 0xffffff);
+	send_commandi(181, ((((unsigned int)dest) & 0xff000000) >> 8) | destw);
+	send_commandi(236, (dy << 10) | dx);
+	send_commandi(238, ((height - 1) << 10) | (width - 1));
+	send_commandi(234, is32);
+}
 
 void sceGuClearColor(unsigned int color)
 {
