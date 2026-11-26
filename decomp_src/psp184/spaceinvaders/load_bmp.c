@@ -1,10 +1,41 @@
 #include "common.h"
+#define read_header read_header_62DDC
+#define read_short read_short_62EB8
+#include "load_bmp_sdk.h"
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/load_bmp", sceGimPictureLoadBmp);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/load_bmp", read_header_62DDC);
+void *read_header( void *src, BmpHeader *header )
+{
+ src = read_short( src, &header->type ) ;
+ src = read_int( src, &header->size ) ;
+ src = read_short( src, &header->res1 ) ;
+ src = read_short( src, &header->res2 ) ;
+ src = read_int( src, &header->bits ) ;
+ src = read_int( src, &header->size2 ) ;
+ src = read_int( src, &header->width ) ;
+ src = read_int( src, &header->height ) ;
+ src = read_short( src, &header->plane_count ) ;
+ src = read_short( src, &header->bit_count ) ;
+ src = read_int( src, &header->compress ) ;
+ src = read_int( src, &header->image_size ) ;
+ src = read_int( src, &header->xppm ) ;
+ src = read_int( src, &header->yppm ) ;
+ src = read_int( src, &header->used_cols ) ;
+ src = read_int( src, &header->important ) ;
+ return src ;
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/load_bmp", read_short_62EB8);
+void *read_short( void *src, short *val )
+{
+ if ( 1 & (int)src ) {
+  unsigned char *cp = (unsigned char *)src ;
+  *val = ( cp[ 1 ] << 8 ) | cp[ 0 ] ;
+ } else {
+  *val = *(short *)src ;
+ }
+ return (short *)src + 1 ;
+}
 
 void *read_int( void *src, int *val )
 {
@@ -146,7 +177,6 @@ void copy_rle4( void *dst, void *src, int width, int height )
  int pitch2 = ( ( width + 1 ) / 2 + 15 ) & ~15 ;
  char *sp = (char *)src ;
  char *dp = (char *)dst + pitch2 * ( height - 1 ) ;
-
  int x_pos = 0 ;
  int y_pos = 0 ;
  char *dp2 = dp ;
@@ -162,7 +192,6 @@ void copy_rle4( void *dst, void *src, int width, int height )
      y_pos ++ ;
      x_pos = 0 ;
     } else {
-
      sp += 2 ;
     }
     continue ;
@@ -212,7 +241,6 @@ void copy_rle8( void *dst, void *src, int width, int height )
  int pitch2 = ( width + 15 ) & ~15 ;
  char *sp = (char *)src ;
  char *dp = (char *)dst + pitch2 * ( height - 1 ) ;
-
  int x_pos = 0 ;
  int y_pos = 0 ;
  char *dp2 = dp ;
@@ -228,7 +256,6 @@ void copy_rle8( void *dst, void *src, int width, int height )
      y_pos ++ ;
      x_pos = 0 ;
     } else {
-
      sp += 2 ;
     }
     continue ;
@@ -250,3 +277,4 @@ void copy_rle8( void *dst, void *src, int width, int height )
   x_pos += count ;
  }
 }
+

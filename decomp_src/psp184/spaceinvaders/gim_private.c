@@ -1,24 +1,28 @@
 #include "common.h"
+#include "gim_private_sdk.h"
 
-/* declarations recovered from DWARF (UTST99332 graphics_model gim_private) */
-struct _anon1;
-struct _anon1 { /* size 0x10 */
-    short unsigned int type;
-    short unsigned int unused;
-    unsigned int next_offs;
-    unsigned int child_offs;
-    unsigned int data_offs;
-};
-typedef struct _anon1 SceGimChunk;
+extern int sceGimPictureCountChunk( SceGimChunk *chunk, int type ) ;
+extern SceGimChunk *sceGimPictureFindChunk( SceGimChunk *chunk, int type, int idx ) ;
+int sceGimPictureCountChunk( SceGimChunk *chunk, int type )
+{
+ int count = 0 ;
+ SceGimChunk *end = SCEGIM_CHUNK_NEXT( chunk ) ;
+ for ( chunk = SCEGIM_CHUNK_CHILD( chunk ) ; chunk < end ; chunk = SCEGIM_CHUNK_NEXT( chunk ) ) {
+  if ( type == 0 || SCEGIM_CHUNK_TYPE( chunk ) == type ) {
+   count ++ ;
+  }
+ }
+ return count ;
+}
 
+SceGimChunk *sceGimPictureFindChunk( SceGimChunk *chunk, int type, int index )
+{
+ SceGimChunk *end = SCEGIM_CHUNK_NEXT( chunk ) ;
+ for ( chunk = SCEGIM_CHUNK_CHILD( chunk ) ; chunk < end ; chunk = SCEGIM_CHUNK_NEXT( chunk ) ) {
+  if ( type == 0 || SCEGIM_CHUNK_TYPE( chunk ) == type ) {
+   if ( -- index == -1 ) return chunk ;
+  }
+ }
+ return 0 ;
+}
 
-
-int sceGimPictureCountChunk(const SceGimChunk *chunk, int type);
-static SceGimChunk *SCEGIM_CHUNK_NEXT(SceGimChunk *chunk);
-static SceGimChunk *SCEGIM_CHUNK_CHILD(SceGimChunk *chunk);
-static int SCEGIM_CHUNK_TYPE(SceGimChunk *chunk);
-const SceGimChunk *sceGimPictureFindChunk(const SceGimChunk *chunk, int type, int idx);
-
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gim_private", sceGimPictureCountChunk);
-
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gim_private", sceGimPictureFindChunk);
