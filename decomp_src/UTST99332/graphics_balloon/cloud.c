@@ -1,5 +1,22 @@
 #include "common.h"
 
+/* SDK prototypes (tools/sdk_protos.h) */
+void *memcpy(void *d, const void *s, unsigned int n);
+int rand(void);
+void sceGuClutLoad(int num_blocks, const void *cbp);
+void sceGuClutMode(unsigned int cpsm, unsigned int shift, unsigned int mask, unsigned int a3);
+void sceGuColor(unsigned int color);
+void sceGuEnable(int state);
+void sceGuTexFilter(int min, int mag);
+void sceGuTexFunc(int tfx, int tcc);
+void sceGuTexImage(int mipmap, int width, int height, int tbw, const void *tbp);
+void sceGuTexMapMode(int mode, unsigned int a1, unsigned int a2);
+void sceGuTexMode(int tpsm, int maxmips, int a2, int swizzle);
+void sceGuTexWrap(int u, int v);
+void sceGumDrawArray(int prim, int vtype, int count, const void *indices, const void *vertices);
+void sceGumPopMatrix(void);
+void sceGumPushMatrix(void);
+
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_balloon/nonmatchings/cloud", set_texture);
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_balloon/nonmatchings/cloud", set_vram_texture);

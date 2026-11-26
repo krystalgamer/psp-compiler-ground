@@ -28,6 +28,16 @@ static void ctrl_spline(int mode);
 int proc_balloon(void);
 
 
+/* SDK prototypes (tools/sdk_protos.h) */
+int rand(void);
+void sceGuColor(unsigned int color);
+void sceGuDisable(int state);
+void sceGuSpecular(float power);
+void sceGumPopMatrix(void);
+void sceGumPushMatrix(void);
+void sceGumScale(const ScePspFVector3 *v);
+void sceGumTranslate(const ScePspFVector3 *v);
+
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_balloon/nonmatchings/balloon", init_balloon);
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_balloon/nonmatchings/balloon", draw_balloon);
