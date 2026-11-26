@@ -186,9 +186,31 @@ INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_save", D_0007BD5
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_save", ms_delete);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_save", savedata_sumcreate);
+extern unsigned char save_data;
+typedef struct { unsigned char b[0x45c]; int sum; } SAVE_SUM;
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_save", savedata_sumchk);
+extern unsigned char save_data_tmp;
+void savedata_sumcreate(void)
+{
+	int i;
+	int sum = 0;
+	unsigned char *p = &save_data;
+
+	for (i = 0; i < 0x45c; i++)
+		sum = (*p++ + sum) & 0xff;
+	((SAVE_SUM *)&save_data)->sum = sum;
+}
+
+int savedata_sumchk(void)
+{
+	int i;
+	int sum = 0;
+	unsigned char *p = &save_data_tmp;
+
+	for (i = 0; i < 0x45c; i++)
+		sum = (*p++ + sum) & 0xff;
+	return ((SAVE_SUM *)&save_data_tmp)->sum == sum;
+}
 
 INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_save", D_0007BD6C);
 
