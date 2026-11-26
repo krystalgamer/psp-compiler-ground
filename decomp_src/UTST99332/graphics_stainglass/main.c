@@ -1,4 +1,52 @@
 #include "common.h"
+#include <psptypes.h>
+#include <libgu.h>
+#include <libgum.h>
+#include <kerneltypes.h>
+
+/* types and file-scope data from the SDK sample's main.c (data defined in the asm data files) */
+typedef unsigned short u_short;
+typedef unsigned int u_int;
+typedef int bool;
+#define true 1
+#define false 0
+
+typedef struct
+{
+	ScePspFVector3 _pos;
+	ScePspFVector3 _rot;
+
+} Positioning;
+
+extern char disp_list[0x10000];
+extern ScePspFMatrix4 matrix_stack[8+8+32+0];
+extern Positioning _camera_inverse_transform;
+extern Positioning _dragon_transform;
+extern Positioning _stainglass_transform;
+extern int texflag;
+extern float distort;
+extern u_int32 cont;
+
+extern void DrawDragon(int tex);
+void GenFrameBufferMipmap(void);
+void UseFrameBufferMipmap(void);
+void StainGlassInit(void);
+void StainGlassRelease(void);
+void StainGlassUpdate(void);
+void StainGlassDraw( bool textured );
+void StainGlassSetTransform( const ScePspFMatrix4 *m );
+void StainGlassSetDistorsion( const float _Distort );
+
+void ResetAllPositioning();
+static void PositioningMultMatrix( Positioning* _Positioning );
+static void PositioningStoreMatrix( Positioning* _Positioning, ScePspMatrix4* _Mat );
+static void draw_dragon_with_camera_transform();
+static void draw_frame(void);
+static void init_all(void);
+static int pad_read(void);
+int MainThread( SceSize _ArgNum, void* _ArgData );
+void StartMainThread();
+
 
 /* SDK prototypes (tools/sdk_protos.h) */
 int puts(const char *s);
