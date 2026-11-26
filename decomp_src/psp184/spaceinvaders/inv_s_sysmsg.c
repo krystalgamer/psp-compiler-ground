@@ -1,7 +1,7 @@
 /* cflags: -O2 */
 #include "common.h"
 #include "m2c_macros.h"
-M2C_UNK startMsgDialog(int);                        /* extern */
+void startMsgDialog();
 extern unsigned char msgdialog_param_28E1FC;
 
 
@@ -40,7 +40,46 @@ int utility_update_msgdialog_16468(void)
 	return ret;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_sysmsg", sub_thread_164DC);
+extern int looprule;
+extern int exit_cb, utility_type;
+void psp_loopstart(void);
+void psp_loopend(void);
+int sceKernelGetCallbackCount(int cb);
+int sceKernelCheckCallback(void);
+int sceDisplayWaitVblankStartCB(void);
+int sceKernelExitDeleteThread(int status);
+
+typedef struct {
+	int size, language, buttonSwap, graphicsThread, accessThread, fontThread, soundThread;
+	int f1c[6];
+	int mode, errorValue;
+	char message[512];
+} MDPARAM2;
+int GetMessageLang(void);
+int GetAssign(void);
+int sceUtilityMsgDialogInitStart(void *p);
+#define MDP (*(MDPARAM2 *)&msgdialog_param_28E1FC)
+int sub_thread_164DC(void)
+{
+	int cnt;
+
+	loop_28E444 = 1;
+	utility_type = 1;
+	do {
+		if (looprule)
+			psp_loopstart();
+		cnt = sceKernelGetCallbackCount(exit_cb);
+		utility_update_msgdialog_16468();
+		sceKernelCheckCallback();
+		if (looprule)
+			psp_loopend();
+		else
+			sceDisplayWaitVblankStartCB();
+	} while (cnt == 0 && loop_28E444 != 0);
+	sceKernelExitDeleteThread(0);
+	utility_type = -1;
+	return 0;
+}
 
 typedef struct {
 	int size, language, buttonSwap, graphicsThread, accessThread, fontThread, soundThread;
@@ -91,7 +130,19 @@ int sysmsg_errornum(int err, int rule)
 	return 0;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_sysmsg", startMsgDialog);
+void startMsgDialog(char *msg)
+{
+	MDP.size = 0x244;
+	MDP.language = GetMessageLang();
+	MDP.buttonSwap = GetAssign();
+	MDP.graphicsThread = 0x11;
+	MDP.accessThread = 0x13;
+	MDP.fontThread = 0x12;
+	MDP.soundThread = 0x10;
+	MDP.mode = 1;
+	memcpy(MDP.message, msg, 512);
+	sceUtilityMsgDialogInitStart(&MDP);
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
