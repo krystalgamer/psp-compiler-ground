@@ -1,5 +1,6 @@
 /* cflags: -O1 */
 #include "common.h"
+#include "parse_hist.h"
 #include "m2c_macros.h"
 int HST_initHistory();                              /* extern */
 extern int history;
@@ -9,8 +10,6 @@ M2C_UNK OS_thread_mutex_unlock(int);                /* extern */
 int HST_httpHeaderDuplicate(int);                   /* extern */
 M2C_UNK HST_httpHeaderFree(int);                    /* extern */
 M2C_UNK MEM_free(M2C_UNK, void *);                  /* extern */
-M2C_UNK freeFragmentIDs(int);                       /* extern */
-M2C_UNK searchHistoryNodeInner(M2C_UNK, int, M2C_UNK); /* extern */
 M2C_UNK HST_deleteHistoryNode(int);                 /* extern */
 
 
@@ -55,7 +54,11 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/history", HST_deleteHistoryNode
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/history", HST_registHistoryNode);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/history", HST_getHeadHistoryNode);
+void *HST_getHeadHistoryNode(void) {
+    void *cur = M2C_FIELD(history, void **, 0);
+
+    return cur != NULL ? M2C_FIELD(cur, void **, 0) : NULL;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/history", HST_getHistoryLength);
 
@@ -93,7 +96,14 @@ int HST_getPrevSiblingHistoryNode(void *arg0) {
     return M2C_FIELD(arg0, int *, 0xB4);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/history", HST_addChildHistoryNode);
+int HST_addChildHistoryNode(void *parent, void *child) {
+    if (M2C_FIELD(parent, void **, 0xAC) != NULL) {
+        return HST_addSiblingHistoryNode(M2C_FIELD(parent, void **, 0xAC), child);
+    }
+    M2C_FIELD(parent, void **, 0xAC) = child;
+    M2C_FIELD(child, void **, 0xA8) = parent;
+    return 0;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -183,7 +193,21 @@ int HST_getHistoryWithOffset(int arg0) {
     return var_v0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/history", HST_setCurURI);
+int HST_setCurURI(HstStr *s, const char *src, int len) {
+    char *p = MEM_malloc(0, len + 1);
+
+    if (p == NULL) {
+        return -1;
+    }
+    if (s->p != NULL) {
+        MEM_free(0, s->p);
+    }
+    memcpy(p, src, len);
+    p[len] = 0;
+    s->p = p;
+    s->len = len;
+    return 0;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -215,7 +239,21 @@ int HST_getBaseURIlen(void *arg0) {
     return M2C_FIELD(arg0, int *, 0xC);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/history", HST_setRefURI);
+int HST_setRefURI(void *node, const char *src, int len) {
+    char *p = MEM_malloc(0, len + 1);
+
+    if (p == NULL) {
+        return -1;
+    }
+    if (M2C_FIELD(node, char **, 0x10) != NULL) {
+        MEM_free(0, M2C_FIELD(node, char **, 0x10));
+    }
+    memcpy(p, src, len);
+    p[len] = 0;
+    M2C_FIELD(node, char **, 0x10) = p;
+    M2C_FIELD(node, int *, 0x14) = len;
+    return 0;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -231,7 +269,21 @@ int HST_getRefURIlen(void *arg0) {
     return M2C_FIELD(arg0, int *, 0x14);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/history", HST_setTargetName);
+int HST_setTargetName(void *node, const char *src, int len) {
+    char *p = MEM_malloc(0, len + 1);
+
+    if (p == NULL) {
+        return -1;
+    }
+    if (M2C_FIELD(node, char **, 0x18) != NULL) {
+        MEM_free(0, M2C_FIELD(node, char **, 0x18));
+    }
+    memcpy(p, src, len);
+    p[len] = 0;
+    M2C_FIELD(node, char **, 0x18) = p;
+    M2C_FIELD(node, int *, 0x1C) = len;
+    return 0;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -247,7 +299,21 @@ int HST_getTargetNamelen(void *arg0) {
     return M2C_FIELD(arg0, int *, 0x1C);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/history", HST_setDefaultTarget);
+int HST_setDefaultTarget(void *node, const char *src, int len) {
+    char *p = MEM_malloc(0, len + 1);
+
+    if (p == NULL) {
+        return -1;
+    }
+    if (M2C_FIELD(node, char **, 0x20) != NULL) {
+        MEM_free(0, M2C_FIELD(node, char **, 0x20));
+    }
+    memcpy(p, src, len);
+    p[len] = 0;
+    M2C_FIELD(node, char **, 0x20) = p;
+    M2C_FIELD(node, int *, 0x24) = len;
+    return 0;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -263,7 +329,21 @@ int HST_getDefaultTargetlen(void *arg0) {
     return M2C_FIELD(arg0, int *, 0x24);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/history", HST_setTitle);
+int HST_setTitle(void *node, const char *src, int len) {
+    char *p = MEM_malloc(0, len + 1);
+
+    if (p == NULL) {
+        return -1;
+    }
+    if (M2C_FIELD(node, char **, 0x28) != NULL) {
+        MEM_free(0, M2C_FIELD(node, char **, 0x28));
+    }
+    memcpy(p, src, len);
+    p[len] = 0;
+    M2C_FIELD(node, char **, 0x28) = p;
+    M2C_FIELD(node, int *, 0x2C) = len;
+    return 0;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -317,7 +397,22 @@ int HST_getJSURIlen(void *arg0) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/history", HST_getJSURI);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/history", HST_deleteJSURI);
+int HST_deleteJSURI(void *node) {
+    void *p, *next;
+
+    if (M2C_FIELD(node, void **, 0x74) == NULL) {
+        return 0;
+    }
+    for (p = M2C_FIELD(node, void **, 0x74); p != NULL; p = next) {
+        MEM_free(0, M2C_FIELD(p, void **, 0));
+        if (M2C_FIELD(p, void **, 0x10) != NULL) {
+            MEM_free(0, M2C_FIELD(p, void **, 0x10));
+        }
+        next = M2C_FIELD(p, void **, 0xB0);
+        MEM_free(0, p);
+    }
+    return 0;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -479,7 +574,21 @@ int HST_getUnitId(void *arg0) {
     return M2C_FIELD(arg0, int *, 0x4C);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/history", HST_setAuthUsername);
+int HST_setAuthUsername(void *node, const char *src, int len) {
+    char *p = MEM_malloc(0, len + 1);
+
+    if (p == NULL) {
+        return -1;
+    }
+    if (M2C_FIELD(node, char **, 0x50) != NULL) {
+        MEM_free(0, M2C_FIELD(node, char **, 0x50));
+    }
+    memcpy(p, src, len);
+    p[len] = 0;
+    M2C_FIELD(node, char **, 0x50) = p;
+    M2C_FIELD(node, int *, 0x54) = len;
+    return 0;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -495,7 +604,21 @@ int HST_getAuthUsernamelen(void *arg0) {
     return M2C_FIELD(arg0, int *, 0x54);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/history", HST_setAuthPassword);
+int HST_setAuthPassword(void *node, const char *src, int len) {
+    char *p = MEM_malloc(0, len + 1);
+
+    if (p == NULL) {
+        return -1;
+    }
+    if (M2C_FIELD(node, char **, 0x58) != NULL) {
+        MEM_free(0, M2C_FIELD(node, char **, 0x58));
+    }
+    memcpy(p, src, len);
+    p[len] = 0;
+    M2C_FIELD(node, char **, 0x58) = p;
+    M2C_FIELD(node, int *, 0x5C) = len;
+    return 0;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -633,7 +756,15 @@ int HST_getFragmentIDsPosition(void *arg0) {
     return M2C_FIELD(arg0, int *, 0x88);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/history", HST_moveFragmentIDs);
+int HST_moveFragmentIDs(void *node, int d) {
+    int i = M2C_FIELD(node, int *, 0x88) + d;
+
+    if (i < 0 || M2C_FIELD(node, int *, 0x84) < i) {
+        return 0;
+    }
+    M2C_FIELD(node, int *, 0x88) = i;
+    return 1;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -652,7 +783,11 @@ int HST_getTransStatus(void *arg0) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/history", HST_searchSessionIDHistoryNode);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/history", HST_searchRequestFlagHistoryNode);
+void *HST_searchRequestFlagHistoryNode(int flag) {
+    int key = flag;
+
+    return searchHistoryNodeInner(2, &key, 0);
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -662,7 +797,11 @@ void HST_searchDocumentHistoryNode(int arg0) {
     searchHistoryNodeInner(3, arg0, 0);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/history", HST_searchTargetNameHistoryNode);
+void *HST_searchTargetNameHistoryNode(void *a, void *b) {
+    void *key = b;
+
+    return searchHistoryNodeInner(4, a, &key);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/history", HST_searchUriHistoryNode);
 
@@ -795,9 +934,34 @@ void deleteHistory(void *arg0) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/history", searchHistoryNodeInner);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/history", addHistoryGarbage);
+void addHistoryGarbage(void *p) {
+    void **g = MEM_malloc(0, 8);
+    void *q;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/history", uricmp_5704C);
+    g[0] = p;
+    g[1] = NULL;
+    if (M2C_FIELD(history, void **, 4) == NULL) {
+        M2C_FIELD(history, void **, 4) = g;
+        return;
+    }
+    for (q = M2C_FIELD(history, void **, 4); M2C_FIELD(q, void **, 4) != NULL; q = M2C_FIELD(q, void **, 4)) {
+    }
+    M2C_FIELD(q, void **, 4) = g;
+}
+
+int uricmp_5704C(HstStr *a, HstStr *b) {
+    int i;
+
+    if (a->len != b->len) {
+        return 0;
+    }
+    for (i = 0; i < a->len; i++) {
+        if (a->p[i] != b->p[i]) {
+            return 0;
+        }
+    }
+    return 1;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/history", freeFragmentIDs);
 
