@@ -139,7 +139,40 @@ INCLUDE_RODATA("tmp/asm/UTST99332/utility_basic/nonmatchings/savedata", D_000165
 
 INCLUDE_RODATA("tmp/asm/UTST99332/utility_basic/nonmatchings/savedata", D_000166D8);
 
-INCLUDE_ASM("tmp/asm/UTST99332/utility_basic/nonmatchings/savedata", set_savedata_param);
+int set_savedata_param(const int type, SceUtilitySavedataParam *pParam)
+{
+	pParam->overWriteMode = 1;
+	pParam->type = type;
+
+	switch (type) {
+	case 0:
+	case 2:
+		set_param_load(pParam);
+		break;
+	case 1:
+	case 3:
+		set_param_save(pParam);
+		break;
+	case 4:
+		set_param_listload(pParam);
+		break;
+	case 5:
+		set_param_listsave(pParam);
+		break;
+	case 6:
+		set_param_listdelete(pParam);
+		break;
+	case 7:
+		break;
+	case 8:
+		set_param_sizes(pParam);
+		break;
+	default:
+		return 1;
+	}
+
+	return 0;
+}
 
 void show_results(SceUtilitySavedataParam *pParam) {
 }
