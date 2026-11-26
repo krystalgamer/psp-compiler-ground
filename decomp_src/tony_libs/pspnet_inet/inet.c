@@ -469,7 +469,29 @@ sceNetInet_lib_3FDDB0BA(void)
 	    (struct sockaddr *)&mask, RTF_GATEWAY | RTF_STATIC);
 }
 
-INCLUDE_ASM("tmp/asm/tony_libs/pspnet_inet/nonmatchings/inet", sceNetInet_lib_8FE19FC4);
+__attribute__((noinline)) int
+sceNetInet_lib_8FE19FC4(u_char *out)
+{
+	struct rtentstat rt;
+	int size = sizeof(rt);
+	int ret;
+	u_int v;
+
+	ret = sceNetInet_lib_3D905F34(&size, &rt);
+	if (ret < 0)
+		goto out;
+	if (rt.dst.s_addr != 0) {
+		ret = 0x80410207;
+		goto out;
+	}
+	v = rt.gateway.s_addr;
+	out[0] = v;
+	out[1] = v >> 8;
+	out[2] = v >> 16;
+	out[3] = v >> 24;
+out:
+	return ret;
+}
 
 __attribute__((noinline)) void
 func_00001584(void)
