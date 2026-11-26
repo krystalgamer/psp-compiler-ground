@@ -21,11 +21,9 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Shape"
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Shape", _ZN5scene5ShapeC1ESsb);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Shape", _ZN5scene5ShapeD2Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Shape", _ZN5scene5ShapeD1Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Shape", _ZN5scene5ShapeD0Ev);
+scene::Shape::~Shape()
+{
+}
 
 const common::handle<scene::Setup> &scene::Shape::getSetup(Pass p) const
 {
