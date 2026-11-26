@@ -7,7 +7,13 @@
 typedef struct { /* size 0xD8 */
     int unk0;
     int flags;
-    u8 unk8[0x94];
+    int unk8;
+    int widget;                                 /* 0xC */
+    void *unk10;
+    void *unk14;
+    u8 unk18[0x7C];
+    void *unk94;
+    void *unk98;
     PSPBROWSER_FOCUS_CALLBACK focusCallback;    /* 0x9C */
     int unkA0;
     PSPBROWSER_UNLOAD_CALLBACK unloadCallback;  /* 0xA4 */
@@ -16,7 +22,9 @@ typedef struct { /* size 0xD8 */
     u8 anchorExt[8];                            /* 0xB0 */
     u8 imageReq[8];                             /* 0xB8 */
     u8 imageExt[8];                             /* 0xC0 */
-    u8 unkC8[0xC];
+    void *unkC8;
+    int unkCC;
+    void **unkD0;                               /* 0xD0 */
     int mutex;                                  /* 0xD4 */
 } PSPBROWSER_INSTANCE;
 
@@ -255,7 +263,75 @@ void pspBrowserExecuteImageExtensionCallback(void) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/pspBrowser", pspBrowserInit);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/pspBrowser", pspBrowserExit);
+void ESP_destroyCore();
+int GUI_Component_remove();
+int zWindExit();
+int OS_thread_mutex_destroy();
+
+int pspBrowserExit(void) {
+    void **p;
+    IMGREQ *r;
+    int r2;
+
+    if (pspBrowserInstance.unk0 == 0) {
+        return -1;
+    }
+    if (pspBrowserInstance.unk10 != NULL) {
+        ESP_free(pspBrowserInstance.unk10);
+        pspBrowserInstance.unk10 = NULL;
+    }
+    if (pspBrowserInstance.unk94 != NULL) {
+        ESP_free(pspBrowserInstance.unk94);
+        pspBrowserInstance.unk94 = NULL;
+    }
+    for (p = (void **)pspBrowserInstance.unkA8; p != NULL; p = (void **)pspBrowserInstance.unkA8) {
+        pspBrowserInstance.unkA8 = (int)*p;
+        ESP_free((signed char *)p);
+    }
+    if (pspBrowserInstance.unk14 != NULL) {
+        ESP_free(pspBrowserInstance.unk14);
+        pspBrowserInstance.unk14 = NULL;
+    }
+    if (pspBrowserInstance.anchorUrl != NULL) {
+        URL_free(pspBrowserInstance.anchorUrl);
+        pspBrowserInstance.anchorUrl = NULL;
+    }
+    pspBrowserDeleteExtensionCallback(pspBrowserInstance.anchorExt, NULL);
+    while ((r = UTL_dequeue(pspBrowserInstance.imageReq)) != NULL) {
+        URL_free(r->url);
+        ESP_free((signed char *)r);
+    }
+    pspBrowserDeleteExtensionCallback(pspBrowserInstance.imageExt, NULL);
+    if (pspBrowserInstance.unkC8 != NULL) {
+        ESP_free(pspBrowserInstance.unkC8);
+        pspBrowserInstance.unkC8 = NULL;
+    }
+    if (pspBrowserInstance.unkD0 != NULL) {
+        ESP_free(pspBrowserInstance.unkD0[0]);
+        ESP_free(pspBrowserInstance.unkD0[1]);
+        ESP_free((signed char *)pspBrowserInstance.unkD0);
+        pspBrowserInstance.unkD0 = NULL;
+    }
+    if (pspBrowserInstance.unk98 != NULL) {
+        ESP_free(pspBrowserInstance.unk98);
+        pspBrowserInstance.unk98 = NULL;
+    }
+    pspBrowserInstance.focusCallback = NULL;
+    pspBrowserInstance.unkA0 = 0;
+    pspBrowserInstance.unloadCallback = NULL;
+    OS_thread_mutex_destroy(pspBrowserInstance.mutex);
+    pspBrowserInstance.mutex = 0;
+    ESP_destroyCore();
+    if (pspBrowserInstance.widget != 0) {
+        GUI_Component_remove(pspBrowserInstance.widget);
+    }
+    r2 = zWindExit();
+    pspBrowserInstance.unk0 = 0;
+    if (r2 != 0) {
+        return -1;
+    }
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/pspBrowser", pspBrowserExec);
 
