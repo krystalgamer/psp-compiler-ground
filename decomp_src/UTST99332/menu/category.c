@@ -66,7 +66,47 @@ void InitCategory(void)
 	InitSpline();
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/menu/nonmatchings/category", DrawCategory);
+extern const ScePspFVector3 D_00017078;
+void DrawBG(void);
+void DrawDice(float scale);
+void DiceTexture(void);
+void DrawShadow(float scale);
+void DrawCategoryString(int mode);
+void DrawItemBar(void);
+void DrawCategory(void)
+{
+	ScePspFVector3 vec;
+	ScePspFVector3 t;
+
+	sceGuDisable(1);
+	sceGuDisable(9);
+	DrawBG();
+	sceGuEnable(1);
+	sceGumLoadIdentity();
+	t = D_00017078;
+	vec = t;
+	sceGumTranslate(&vec);
+	sceGumPushMatrix();
+	sceGumTranslate(&menu->pos);
+	sceGumRotateX(menu->rot.x * 3.1415927f / 180.0f);
+	sceGumRotateY(menu->rot.y * 3.1415927f / 180.0f);
+	sceGumRotateZ(menu->rot.z * 3.1415927f / 180.0f);
+	DrawDice(1.0f);
+	DiceTexture();
+	sceGumPopMatrix();
+	sceGumPushMatrix();
+	sceGumRotateY(menu->rot.y * 3.1415927f / 180.0f);
+	t.x = 1.0f;
+	t.y = 1.0f;
+	t.z = cat.scale;
+	vec = t;
+	sceGumScale(&vec);
+	DrawShadow(1.0f);
+	sceGumPopMatrix();
+	sceGuDisable(1);
+	DrawCategoryString(0);
+	DrawItemBar();
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/menu/nonmatchings/category", InitSpline);
 
