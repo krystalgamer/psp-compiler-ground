@@ -231,7 +231,46 @@ int playInfo_getPts(t_playInfo *pPlayInfo, unsigned int *pTimestamp) {
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/mpeg_seamless_change/nonmatchings/playInfo", playInfo_changeVideoStream);
+extern const char D_000117B4[]; /* shared rodata string */
+SceInt32 playInfo_changeVideoStream(t_playInfo *pPlayInfo, t_avSyncControl *pAvSync)
+{
+	SceInt32 ret;
+	SceUInt32 pts;
+	SceUInt32 idrPts;
+	SceInt32 currentVideoNumber;
+	SceInt32 reservedVideoNumber;
+
+	if (pPlayInfo->videoChangeMode != 0) {
+		return 0;
+	}
+
+	if (sInfo_getNumberOfStreams(&pPlayInfo->sInfo, 0) < 2) {
+		return 0;
+	}
+
+	pPlayInfo->videoChangeMode = 1;
+
+	avsync_video_getLatestPts(pAvSync, &pts);
+
+	currentVideoNumber = decode_getCurrentStream(&pPlayInfo->streamData, 0);
+
+	reservedVideoNumber = (currentVideoNumber + 1) % sInfo_getNumberOfStreams(&pPlayInfo->sInfo, 0);
+
+	ret = sInfo_setCurrentStream(&pPlayInfo->sInfo, 0, reservedVideoNumber);
+	if (ret != 0) {
+		printf(D_000117B4, ret);
+		goto term;
+	}
+
+	sInfo_getNextEPTimestamp(&pPlayInfo->sInfo, pts, &idrPts);
+
+	decode_setReservedMode(&pPlayInfo->streamData, 0, reservedVideoNumber);
+
+	pPlayInfo->nextIdrTimestamp = idrPts;
+
+term:
+	return ret;
+}
 
 SceInt32 playInfo_audioDecode(t_playInfo *pPlayInfo, t_avSyncControl *pAvSync, SceInt32 audio_init_flag)
 {
