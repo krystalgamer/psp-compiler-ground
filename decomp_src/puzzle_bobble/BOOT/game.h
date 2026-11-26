@@ -8,7 +8,7 @@ void release_gims(int no);
 int get_gims(int no);
 int LoadGimFile(int no, int file);
 void SetSpriteColorRGBA(int r, int g, int b, int a);
-void DrawSpriteEz(int no, float x, float y, float u, float v, float w, float h, float z);
+int DrawSpriteEz(int no, float z, float x, float y, float w, float h, float u, float v);
 
 /* game_main.c */
 int GetKeyHit(void);
