@@ -1,5 +1,6 @@
 #include "common.h"
 
+
 struct _anon1;
 typedef long long int long64;
 struct _anon1 { /* size 0x78 */
@@ -93,7 +94,22 @@ __asm__(".globl count_bingo_line");
 
 INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/mission", get_mission_grade);
 
-INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/mission", get_rand_mission);
+static int get_rand_mission(int grade)
+{
+	switch (grade) {
+	case 1:
+		return rand() % 12;
+	case 2:
+		return rand() % 20;
+	case 3:
+		return rand() % 11;
+	case 4:
+		return rand() % 5;
+	case 5:
+		return rand() % 11;
+	}
+	return -1;
+}
 
 INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/mission", get_mission_paes);
 
@@ -122,4 +138,16 @@ INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/mission", assign_mission);
 
 INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/mission", check_mission_success);
 
-INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/mission", reg_mission_pae);
+static int reg_mission_pae(int flagPlayer, int pae_num)
+{
+	int index;
+
+	index = find_array(pae_num, g_mission_pae, g_mission_pae_num);
+	if (index >= 0 && g_mission_who[index] == -1) {
+		g_mission_who[index] = flagPlayer;
+		return index + 1;
+	}
+	return 0;
+}
+
+__asm__(".globl reg_mission_pae");
