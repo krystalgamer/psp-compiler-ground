@@ -149,7 +149,188 @@ int pad_read(void) {
     return 1;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/sound_ryukyu/nonmatchings/main", sas_thread);
+#ifndef SCE_CTRL_UP
+#define SCE_CTRL_UP					(1<<4)
+#endif
+#ifndef SCE_CTRL_START
+#define SCE_CTRL_START				(1<<3)
+#endif
+#ifndef SCE_CTRL_DOWN
+#define SCE_CTRL_DOWN				(1<<6)
+#endif
+#ifndef SCE_CTRL_LEFT
+#define SCE_CTRL_LEFT				(1<<7)
+#endif
+#ifndef SCE_CTRL_RIGHT
+#define SCE_CTRL_RIGHT				(1<<5)
+#endif
+#ifndef SCE_CTRL_L
+#define SCE_CTRL_L					(1<<8)
+#endif
+#ifndef SCE_CTRL_L1
+#define SCE_CTRL_L1					SCE_CTRL_L
+#endif
+#ifndef SCE_CTRL_R
+#define SCE_CTRL_R					(1<<9)
+#endif
+#ifndef SCE_CTRL_R1
+#define SCE_CTRL_R1					SCE_CTRL_R
+#endif
+#ifndef SCE_CTRL_TRIANGLE
+#define SCE_CTRL_TRIANGLE			(1<<12)
+#endif
+#ifndef SCE_CTRL_CROSS
+#define SCE_CTRL_CROSS				(1<<14)
+#endif
+#ifndef SCE_CTRL_SQUARE
+#define SCE_CTRL_SQUARE				(1<<15)
+#endif
+#ifndef SCE_CTRL_CIRCLE
+#define SCE_CTRL_CIRCLE				(1<<13)
+#endif
+static int sas_thread(SceSize args, ScePVoid argp)
+{
+	volatile int iSide = 0;
+	int iPitch;
+
+	while(iThreadExitFlag == 0){
+
+		if (s_updateFlag != 0){
+			s_updateFlag = 0;
+
+			
+			if (((s_padd & SCE_CTRL_UP) != 0) && ((s_oldpadd & SCE_CTRL_UP) == 0)){
+				
+				iPitch = 0x0800;
+				sceSasSetPitch( 0,iPitch);
+				sceSasSetPitch( 1,iPitch);
+				sceSasSetKeyOff( 0);
+				sceSasSetKeyOff( 1);
+				sceSasSetKeyOn( 0);
+				sceSasSetKeyOn( 1);
+			}
+
+			if (((s_padd & SCE_CTRL_START) != 0) && ((s_oldpadd & SCE_CTRL_START) == 0)){
+				
+				iPitch = 0x08fb;
+				sceSasSetPitch(14,iPitch);
+				sceSasSetPitch(15,iPitch);
+				sceSasSetKeyOff(14);
+				sceSasSetKeyOff(15);
+				sceSasSetKeyOn(14);
+				sceSasSetKeyOn(15);
+			}
+
+			if (((s_padd & SCE_CTRL_DOWN) != 0) && ((s_oldpadd & SCE_CTRL_DOWN) == 0)){
+				
+				iPitch = 0x0a14;
+				sceSasSetPitch( 2,iPitch);
+				sceSasSetPitch( 3,iPitch);
+				sceSasSetKeyOff( 2);
+				sceSasSetKeyOff( 3);
+				sceSasSetKeyOn( 2);
+				sceSasSetKeyOn( 3);
+			}
+
+			if (((s_padd & SCE_CTRL_LEFT) != 0) && ((s_oldpadd & SCE_CTRL_LEFT) == 0)){
+				
+				iPitch = 0x0aae;
+				sceSasSetPitch( 4,iPitch);
+				sceSasSetPitch( 5,iPitch);
+				sceSasSetKeyOff( 4);
+				sceSasSetKeyOff( 5);
+				sceSasSetKeyOn( 4);
+				sceSasSetKeyOn( 5);
+			}
+
+			if (((s_padd & SCE_CTRL_RIGHT) != 0) && ((s_oldpadd & SCE_CTRL_RIGHT) == 0)){
+				
+				iPitch = 0x0bfd;
+				sceSasSetPitch( 6,iPitch);
+				sceSasSetPitch( 7,iPitch);
+				sceSasSetKeyOff( 6);
+				sceSasSetKeyOff( 7);
+				sceSasSetKeyOn( 6);
+				sceSasSetKeyOn( 7);
+			}
+
+			if (((s_padd & SCE_CTRL_L1) != 0) && ((s_oldpadd & SCE_CTRL_L1) == 0)){
+				
+				iPitch = 0x0f1a;
+				sceSasSetPitch( 8,iPitch);
+				sceSasSetPitch( 9,iPitch);
+				sceSasSetKeyOff( 8);
+				sceSasSetKeyOff( 9);
+				sceSasSetKeyOn( 8);
+				sceSasSetKeyOn( 9);
+			}
+
+			if (((s_padd & SCE_CTRL_R1) != 0) && ((s_oldpadd & SCE_CTRL_R1) == 0)){
+				
+				iPitch = 0x1000;
+				sceSasSetPitch(10,iPitch);
+				sceSasSetPitch(11,iPitch);
+				sceSasSetKeyOff(10);
+				sceSasSetKeyOff(11);
+				sceSasSetKeyOn(10);
+				sceSasSetKeyOn(11);
+			}
+
+			if (((s_padd & SCE_CTRL_TRIANGLE) != 0) && ((s_oldpadd & SCE_CTRL_TRIANGLE) == 0)){
+				
+				iPitch = 0x1429;
+				sceSasSetPitch(12,iPitch);
+				sceSasSetPitch(13,iPitch);
+				sceSasSetKeyOff(12);
+				sceSasSetKeyOff(13);
+				sceSasSetKeyOn(12);
+				sceSasSetKeyOn(13);
+			}
+
+			if (((s_padd & SCE_CTRL_CROSS) != 0) && ((s_oldpadd & SCE_CTRL_CROSS) == 0)){
+				
+				iPitch = 0x155c;
+				sceSasSetPitch(14,iPitch);
+				sceSasSetPitch(15,iPitch);
+				sceSasSetKeyOff(14);
+				sceSasSetKeyOff(15);
+				sceSasSetKeyOn(14);
+				sceSasSetKeyOn(15);
+			}
+
+			if (((s_padd & SCE_CTRL_SQUARE) != 0) && ((s_oldpadd & SCE_CTRL_SQUARE) == 0)){
+				
+				iPitch = 0x17f9;
+				sceSasSetPitch( 0,iPitch);
+				sceSasSetPitch( 1,iPitch);
+				sceSasSetKeyOff( 0);
+				sceSasSetKeyOff( 1);
+				sceSasSetKeyOn( 0);
+				sceSasSetKeyOn( 1);
+			}
+
+			if (((s_padd & SCE_CTRL_CIRCLE) != 0) && ((s_oldpadd & SCE_CTRL_CIRCLE) == 0)){
+				
+				iPitch = 0x1e34;
+				sceSasSetPitch( 2,iPitch);
+				sceSasSetPitch( 3,iPitch);
+				sceSasSetKeyOff( 2);
+				sceSasSetKeyOff( 3);
+				sceSasSetKeyOn( 2);
+				sceSasSetKeyOn( 3);
+			}
+		}
+
+		
+		sceSasCore((short*)pcmBuf[iSide]);
+
+		sceWaveAudioWriteBlocking(0,0x8000,0x8000,pcmBuf[iSide]);
+		iSide ^= 1;
+	}
+
+	sceKernelExitThread(0);
+	return 0;
+}
 
 int sceIoOpen(const char *file, int flags, int mode);
 long long sceIoLseek(int fd, long long offset, int whence);
