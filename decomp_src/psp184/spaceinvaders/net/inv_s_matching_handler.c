@@ -91,13 +91,51 @@ extern struct minfo minfo[16];
 extern char *eventtypestr[11];
 
 static int get_minfo_id(struct SceNetEtherAddr *addr);
-int clear_minfo(int index);
 void child_handler(int id, int ev, struct SceNetEtherAddr *peer, int optlen, void *opt);
 void parent_handler(int id, int ev, struct SceNetEtherAddr *peer, int optlen, void *opt);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_matching_handler", get_minfo_id);
+void *memcpy(void *, const void *, unsigned int);
+int memcmp(const void *, const void *, unsigned int);
+void *memset(void *, int, unsigned int);
+int sceNetAdhocctlGetNameByAddr(const struct SceNetEtherAddr *addr, struct SceNetAdhocctlNickname *nickname);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_matching_handler", clear_minfo);
+void *memcpy(void *, const void *, unsigned int);
+int memcmp(const void *, const void *, unsigned int);
+void *memset(void *, int, unsigned int);
+int sceNetAdhocctlGetNameByAddr(const struct SceNetEtherAddr *addr, struct SceNetAdhocctlNickname *nickname);
+static int get_minfo_id(struct SceNetEtherAddr *addr)
+{
+	int i;
+	struct SceNetEtherAddr *p;
+
+	for (i = 0; i < 4; i++) {
+		p = &minfo[i].addr;
+		if (memcmp(p, addr, 6) == 0)
+			return i;
+		if (minfo[i].status == 0) {
+			minfo[i].status = 1;
+			*p = *addr;
+			sceNetAdhocctlGetNameByAddr(addr, &minfo[i].hello_opt.nickname);
+			minfo_num++;
+			return i;
+		}
+	}
+	return -1;
+}
+
+int clear_minfo(int id)
+{
+	int i;
+
+	memset(&minfo[id], 0, sizeof(struct minfo));
+	minfo[id].status = 0;
+	for (i = id; i < 3; i++)
+		memcpy(&minfo[i], &minfo[i + 1], sizeof(struct minfo));
+	memset(&minfo[3], 0, sizeof(struct minfo));
+	minfo[3].status = 0;
+	minfo_num--;
+	return 0;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_matching_handler", child_handler);
 
