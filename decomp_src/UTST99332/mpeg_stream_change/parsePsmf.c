@@ -64,7 +64,17 @@ int sInfo_setPsmf(t_streamInfo *pStreamInfo, ScePsmf *pVideoPsmf, ScePsmf *pAudi
 
 INCLUDE_ASM("tmp/asm/UTST99332/mpeg_stream_change/nonmatchings/parsePsmf", sInfo_reset);
 
-INCLUDE_ASM("tmp/asm/UTST99332/mpeg_stream_change/nonmatchings/parsePsmf", sInfo_getNumberOfStreams);
+SceInt32 sInfo_getNumberOfStreams(t_streamInfo *pStreamInfo, SceInt32 streamType)
+{
+	switch (streamType) {
+	case 0:
+		return pStreamInfo->numberOfAvcStreams;
+	case 1:
+		return pStreamInfo->numberOfAudioStreams;
+	default:
+		return -1;
+	}
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/mpeg_stream_change/nonmatchings/parsePsmf", setNumberOfStreams);
 
