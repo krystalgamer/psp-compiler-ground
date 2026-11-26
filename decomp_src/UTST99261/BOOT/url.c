@@ -8,6 +8,58 @@ typedef struct QUEUE {
 } QUEUE;
 
 extern const char _ctype_[];
+extern char D_00132354[];   /* "file:" */
+
+typedef struct {
+    QUEUE q;
+    int len;            /* 0x8 */
+} MBLOCK;
+
+typedef struct {
+    int unk0;
+    int size;           /* 0x4 */
+    QUEUE q;            /* 0x8 */
+    int unk10;
+    MBLOCK *cur;        /* 0x14 */
+    int off;            /* 0x18 */
+} MFILE;
+
+typedef struct {
+    char *scheme;
+    char *host;
+    int port;
+    char *path;         /* 0xC */
+    char *query;        /* 0x10 */
+    char *frag;         /* 0x14 */
+} URL;
+
+typedef struct {
+    int unk0;
+    u16 width;          /* 0x4 */
+    u16 height;
+    u8 unk8[0x10];
+    int unk18;
+    int unk1C;
+    u8 unk20[0x38];
+    int unk58;
+} GIFCTX;
+
+typedef struct {
+    s16 width;
+    s16 height;
+    int unk4;
+    int unk8;
+    int unkC;
+    int unk10;
+} IMGDATA;
+
+char *strrchr(const char *s, int c);
+int strncasecmp(const char *a, const char *b, unsigned int n);
+int UTL_guessMIMETypeFromName(char *name);
+QUEUE *UTL_dequeue(QUEUE *q);
+void MEM_free(void *pool, void *p);
+char *pathMake(char *path);
+int GIFParser(GIFCTX *ctx, int flag);
 int UTL_mfileread(void *f, void *buf, unsigned int n);
 QUEUE *UTL_peekqueue(QUEUE *q, QUEUE *e);
 int UTL_mfilewrite(void *f, void *buf, unsigned int n);
@@ -30,7 +82,24 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/url", toAbsoluteURL);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/url", URL_new);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/url", URL_free);
+void URL_free(URL *u) {
+    if (u->scheme != NULL) {
+        MEM_free(NULL, u->scheme);
+    }
+    if (u->host != NULL) {
+        MEM_free(NULL, u->host);
+    }
+    if (u->path != NULL) {
+        MEM_free(NULL, u->path);
+    }
+    if (u->query != NULL) {
+        MEM_free(NULL, u->query);
+    }
+    if (u->frag != NULL) {
+        MEM_free(NULL, u->frag);
+    }
+    MEM_free(NULL, u);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/url", URL_setScheme);
 
@@ -67,11 +136,24 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/url", URL_decode);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/url", URL_checkFileStrage);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/url", URL_toLocalFileName);
+char *URL_toLocalFileName(char *url) {
+    if (strncasecmp(url, D_00132354, 5) == 0) {
+        url += 5;
+    }
+    if (url[0] == '/' && url[1] == '/') {
+        url += 2;
+    }
+    return pathMake(url);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/url", UTL_isSupportedMIMEType);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/url", UTL_isSupportedFileType);
+int UTL_isSupportedFileType(char *name) {
+    if (strrchr(name, '.') == NULL) {
+        return 1;
+    }
+    return UTL_guessMIMETypeFromName(name) != -1;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/url", UTL_guessMIMETypeFromName);
 
@@ -95,44 +177,28 @@ int UTL_isNumber(char *s, int len) {
 #ifndef NULL
 #define NULL ((void *)0)
 #endif
-void UTL_initqueue(void *arg0) {
-    M2C_FIELD(arg0, void **, 0) = arg0;
-    M2C_FIELD(arg0, void **, 4) = arg0;
+void UTL_initqueue(QUEUE *q) {
+    q->next = q;
+    q->prev = q;
 }
 
 #ifndef NULL
 #define NULL ((void *)0)
 #endif
-void UTL_enqueue(M2C_UNK *arg0, M2C_UNK *arg1) {
-    M2C_UNK *temp_v0;
+void UTL_enqueue(QUEUE *q, QUEUE *e) {
+    QUEUE *last;
 
-    temp_v0 = M2C_FIELD(arg0, M2C_UNK **, 4);
-    M2C_FIELD(arg0, M2C_UNK **, 4) = arg1;
-    *temp_v0 = arg1;
-    M2C_FIELD(arg1, M2C_UNK **, 0) = arg0;
-    M2C_FIELD(arg1, M2C_UNK **, 4) = temp_v0;
+    last = q->prev;
+    q->prev = e;
+    last->next = e;
+    e->next = q;
+    e->prev = last;
 }
 
 #ifndef NULL
 #define NULL ((void *)0)
 #endif
-void *UTL_dequeue(void **arg0) {
-    void *temp_v0;
-    void *temp_v1;
-    void *var_v0;
-
-    temp_v1 = *arg0;
-    var_v0 = NULL;
-    if (arg0 != temp_v1) {
-        temp_v0 = M2C_FIELD(temp_v1, void **, 0);
-        *arg0 = temp_v0;
-        M2C_FIELD(temp_v0, void ***, 4) = arg0;
-        M2C_FIELD(temp_v1, void **, 0) = NULL;
-        M2C_FIELD(temp_v1, int *, 4) = 0;
-        var_v0 = temp_v1;
-    }
-    return var_v0;
-}
+INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/url", UTL_dequeue);
 
 void UTL_relqueue(QUEUE *q, QUEUE *e) {
     QUEUE *next;
@@ -196,7 +262,17 @@ int UTL_sizequeue(QUEUE *q) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/url", UTL_mfilecreate);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/url", UTL_mfiledelete);
+int UTL_mfiledelete(MFILE *f) {
+    void *b;
+
+    if (f != NULL) {
+        while ((b = UTL_dequeue(&f->q)) != NULL) {
+            MEM_free(NULL, b);
+        }
+        MEM_free(NULL, f);
+    }
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/url", UTL_mfileread);
 
@@ -225,8 +301,8 @@ int UTL_mfileputc(void *f, int c) {
 #endif
 unsigned int strlen(const char *s);
 
-void UTL_mfileputs(int arg0, signed char *arg1) {
-    UTL_mfilewrite(arg0, arg1, strlen(arg1));
+int UTL_mfileputs(void *f, char *s) {
+    return UTL_mfilewrite(f, s, strlen(s));
 }
 
 #ifndef NULL
@@ -236,7 +312,16 @@ int UTL_mfilesize(void *arg0) {
     return M2C_FIELD(arg0, int *, 4);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/url", UTL_mfilepos);
+int UTL_mfilepos(MFILE *f) {
+    MBLOCK *b;
+    int pos;
+
+    pos = f->off;
+    for (b = (MBLOCK *)UTL_peekqueue(&f->q, NULL); b != NULL && b != f->cur; b = (MBLOCK *)UTL_peekqueue(&f->q, &b->q)) {
+        pos += b->len;
+    }
+    return pos;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/url", UTL_mfileseek);
 
@@ -292,7 +377,18 @@ int IMG_gifStartDecompress(void) {
     return 1;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/url", IMG_gifGetImageData);
+int IMG_gifGetImageData(GIFCTX *ctx, IMGDATA *info) {
+    int r;
+
+    r = GIFParser(ctx, 1);
+    info->width = ctx->width;
+    info->height = ctx->height;
+    info->unk8 = ctx->unk1C;
+    info->unk4 = ctx->unk18;
+    info->unkC = 0;
+    info->unk10 = ctx->unk58;
+    return r;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/url", IMG_gifReadHeader);
 
