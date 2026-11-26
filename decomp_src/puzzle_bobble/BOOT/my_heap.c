@@ -15,7 +15,19 @@ void myHeapTerm(void) {
     g_size = 0;
 }
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/my_heap", myHeapAlloc);
+void *myHeapAlloc(unsigned int size)
+{
+	char *p;
+
+	if (size == 0)
+		return NULL;
+	if (g_size < size)
+		return NULL;
+	p = g_addr;
+	g_addr = p + size;
+	g_size = g_size - size;
+	return p;
+}
 
 void myHeapFree(void) {
 }
