@@ -263,13 +263,227 @@ void net_delete_ptp(void) {
     ptp_sock_id0 = 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_matching_stick/nonmatchings/net_multi_player", net_connect_socket);
+int sceNetAdhocPtpConnect(int id, unsigned int timeout, int flag);
+int sceNetAdhocPtpFlush(int id, unsigned int timeout, int flag);
+SceULong64 sceKernelGetSystemTimeWide(void);
+void clear_minfo(int id);
+int net_connect_socket(void)
+{
+	int ret, ignore;
+	SceULong64 time;
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_matching_stick/nonmatchings/net_multi_player", net_send_members_ptp);
+	ignore = 0;
+	if (_mrinfo.state != MATCHING_ROOM_PARENT_INFORM_CONNECT) {
+		ret = 0;
+		ignore = 1;
+		goto ignore;
+	}
+	time = sceKernelGetSystemTimeWide();
+	if (time - _mrinfo.ptp_start_time > 5000000) {
+		sceKernelWaitSema(minfo_sid, 1, NULL);
+		clear_minfo(_mrinfo.informing_minfo_id);
+		sceKernelSignalSema(minfo_sid, 1);
+		net_delete_ptp();
+		change_state(MATCHING_ROOM_PARENT_START_INFORM);
+		ret = 0;
+		ignore = 1;
+		goto ignore;
+	}
+	ret = sceNetAdhocPtpConnect(ptp_sock_id0, 0, 1);
+	if (ret == (int)0x80410709) {
+		ret = 0;
+		ignore = 1;
+		goto ignore;
+	}
+	if (ret < 0) {
+		printf("sceNetAdhocPtpConnect() failed. ret = 0x%x\n", ret);
+		goto error;
+	}
+error:
+ignore:
+	if (ignore > 0)
+		return 0;
+	if (ret < 0)
+		change_state(MATCHING_ROOM_DISCONNECT);
+	else
+		change_state(MATCHING_ROOM_PARENT_INFORM_SEND);
+	return ret;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_matching_stick/nonmatchings/net_multi_player", net_flush_members_ptp);
+int sceNetAdhocPtpSend(int id, void *data, int *len, unsigned int timeout, int flag);
+SceULong64 sceKernelGetSystemTimeWide(void);
+int net_send_members_ptp(void)
+{
+	int buflen;
+	int num;
+	int i, ret, ignore;
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_matching_stick/nonmatchings/net_multi_player", net_recv_members_ptp);
+	ignore = 0;
+	ret = 0;
+	buflen = 0;
+	sceKernelWaitSema(minfo_sid, 1, NULL);
+	if (_mrinfo.state != MATCHING_ROOM_PARENT_INFORM_SEND) {
+		ignore = 1;
+		goto ignore;
+	}
+	memset(_mrinfo.members, 0, sizeof(_mrinfo.members));
+	memcpy(&ptp_buf[4], &_mrinfo.local_addr, 6);
+	memcpy(&_mrinfo.members[0], &_mrinfo.local_addr, 6);
+	num = 1;
+	for (i = 0; i < 16; i++) {
+		if (minfo[i].status != 5 && minfo[i].status != 6)
+			continue;
+		memcpy(&ptp_buf[4 + num * 6], &minfo[i].addr, 6);
+		memcpy(&_mrinfo.members[num], &minfo[i].addr, 6);
+		num++;
+	}
+	if (num <= 0) {
+		ret = 0;
+		ignore = 1;
+		goto ignore;
+	}
+	memcpy(ptp_buf, &num, 4);
+	buflen = num * 6 + 4;
+	ret = sceNetAdhocPtpSend(ptp_sock_id0, ptp_buf, &buflen, 0, 1);
+	if (ret == (int)0x80410709) {
+		ret = 0;
+		ignore = 1;
+		goto ignore;
+	}
+	if (ret < 0) {
+		printf("sceNetAdhocPtpSend() failed. ret = 0x%x\n", ret);
+		goto error;
+	}
+	_mrinfo.ptp_start_time = sceKernelGetSystemTimeWide();
+error:
+ignore:
+	sceKernelSignalSema(minfo_sid, 1);
+	if (ignore > 0)
+		return 0;
+	if (ret < 0)
+		change_state(MATCHING_ROOM_DISCONNECT);
+	else
+		change_state(MATCHING_ROOM_PARENT_INFORM_FLUSH);
+	return ret;
+}
+
+int sceNetAdhocPtpConnect(int id, unsigned int timeout, int flag);
+int sceNetAdhocPtpFlush(int id, unsigned int timeout, int flag);
+SceULong64 sceKernelGetSystemTimeWide(void);
+void clear_minfo(int id);
+int net_flush_members_ptp(void)
+{
+	int ret, ignore;
+	SceULong64 time;
+
+	ignore = 0;
+	if (_mrinfo.state != MATCHING_ROOM_PARENT_INFORM_FLUSH) {
+		ret = 0;
+		ignore = 1;
+		goto ignore;
+	}
+	time = sceKernelGetSystemTimeWide();
+	if (time - _mrinfo.ptp_start_time > 5000000) {
+		sceKernelWaitSema(minfo_sid, 1, NULL);
+		clear_minfo(_mrinfo.informing_minfo_id);
+		sceKernelSignalSema(minfo_sid, 1);
+		net_delete_ptp();
+		change_state(MATCHING_ROOM_PARENT_START_INFORM);
+		ret = 0;
+		ignore = 1;
+		goto ignore;
+	}
+	ret = sceNetAdhocPtpFlush(ptp_sock_id0, 0, 1);
+	if (ret == (int)0x80410709) {
+		ret = 0;
+		ignore = 1;
+		goto ignore;
+	}
+	if (ret < 0) {
+		printf("sceNetAdhocPtpFlush() failed. ret = 0x%x\n", ret);
+		goto error;
+	}
+	minfo[_mrinfo.informing_minfo_id].status = 6;
+error:
+ignore:
+	if (ignore > 0)
+		return 0;
+	net_delete_ptp();
+	if (ret < 0)
+		change_state(MATCHING_ROOM_DISCONNECT);
+	else
+		change_state(MATCHING_ROOM_PARENT_START_INFORM);
+	return ret;
+}
+
+int sceNetAdhocPtpAccept(int id, struct SceNetEtherAddr *addr, unsigned short *port, unsigned int timeout, int flag);
+int sceNetAdhocPtpRecv(int id, void *buf, int *len, unsigned int timeout, int flag);
+int net_recv_members_ptp(void)
+{
+	struct SceNetEtherAddr parent_addr;
+	int buflen;
+	int num;
+	int i, ret, ignore;
+
+	ignore = 0;
+	sceKernelWaitSema(minfo_sid, 1, NULL);
+	if (_mrinfo.state != MATCHING_ROOM_CHILD_WAIT) {
+		ret = 0;
+		ignore = 1;
+		goto ignore;
+	}
+	if (ptp_sock_id > 0)
+		goto recv_from_parent;
+	ret = sceNetAdhocPtpAccept(ptp_sock_id0, &parent_addr, NULL, 0, 1);
+	if (ret == (int)0x80410709) {
+		ret = 0;
+		ignore = 1;
+		goto ignore;
+	}
+	if (ret < 0)
+		goto error;
+	if (memcmp(&minfo[_mrinfo.requesting_minfo_id].addr, &parent_addr, 6) != 0) {
+		ret = 0;
+		ignore = 1;
+		goto ignore;
+	}
+	ptp_sock_id = ret;
+recv_from_parent:
+	buflen = sizeof(ptp_buf);
+	ret = sceNetAdhocPtpRecv(ptp_sock_id, ptp_buf, &buflen, 0, 1);
+	if (ret == (int)0x80410709) {
+		ret = 0;
+		ignore = 1;
+		goto ignore;
+	}
+	if (ret < 0)
+		goto error;
+	if (buflen < 4) {
+		ret = 0;
+		ignore = 1;
+		goto ignore;
+	}
+	memcpy(&num, ptp_buf, 4);
+	if (num <= 0) {
+		ret = 0;
+		ignore = 1;
+		goto ignore;
+	}
+	ret = num;
+	memset(_mrinfo.members, 0, sizeof(_mrinfo.members));
+	for (i = 0; i < num; i++)
+		memcpy(&_mrinfo.members[i], &ptp_buf[4 + i * 6], 6);
+error:
+ignore:
+	sceKernelSignalSema(minfo_sid, 1);
+	if (ignore > 0)
+		return 0;
+	if (ret < 0)
+		change_state(MATCHING_ROOM_DISCONNECT);
+	else
+		change_state(MATCHING_ROOM_START_GAME);
+	return ret;
+}
 
 int matching_restart_to_create_room(void);
 int net_update_multi_player(void)
