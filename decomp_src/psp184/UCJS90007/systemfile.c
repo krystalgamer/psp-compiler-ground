@@ -11,7 +11,8 @@ typedef struct {
 #define SF_ERROR(r, e) { (r) = 0x80120000; (r) |= (e); }
 
 typedef struct __attribute__((packed)) {
-	char unk0[8];
+	char magic[4];
+	int version;
 	int keyofs;
 	int dataofs;
 	int count;
@@ -228,7 +229,26 @@ INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/systemfile", sceSystemFileLoa
 
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/systemfile", sceSystemFileOverWriteToMem);
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/systemfile", sceSystemFileFree);
+int sceSystemFileFree(void *handle)
+{
+	SysFile *sf = handle;
+	register int ret;
+
+	if (handle == NULL)
+		SF_ERROR(ret, 3)
+	else {
+		if (!(sf->flags & 2)) {
+			SysFile *s = handle;
+			unsigned int i;
+
+			for (i = 0; i < s->max; i++)
+				__sceSystemFileRemoveIndex(s, &s->index[i]);
+		}
+		sf_freep(sf);
+		ret = 0;
+	}
+	return ret;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/systemfile", sceSystemFileInitFormatW);
 
@@ -363,7 +383,40 @@ end:
 	return ret;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/systemfile", sceSystemFileGetIndex);
+int sceSystemFileGetIndex(void *handle, const char *name, void **pindex)
+{
+	register int ret;
+
+	*pindex = NULL;
+	if (handle == NULL)
+		SF_ERROR(ret, 3)
+	else {
+		if (((SysFile *)handle)->flags & 2) {
+			SfKeyFile *kf = handle;
+			void *e;
+
+			e = _searchindexL(kf, name);
+			if (e == NULL) {
+				SF_ERROR(ret, 5)
+				goto end;
+			}
+			*pindex = e;
+		} else {
+			SysFile *s = handle;
+			SfIndex *ix;
+
+			ix = _searchindex(s, name);
+			if (ix == NULL) {
+				SF_ERROR(ret, 5)
+				goto end;
+			}
+			*pindex = ix;
+		}
+		ret = 0;
+	}
+end:
+	return ret;
+}
 
 SfIndex *__sceSystemFileNewIndex(SysFile *sf, const char *name, int type, unsigned int n, int unused)
 {
@@ -397,7 +450,27 @@ SfIndex *__sceSystemFileNewIndex(SysFile *sf, const char *name, int type, unsign
 
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/systemfile", sceSystemFileAddIndexW);
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/systemfile", sceSystemFileRemoveIndexW);
+int sceSystemFileRemoveIndexW(void *handle, const char *name)
+{
+	SysFile *sf = handle;
+	SfIndex *ix;
+	register int ret;
+
+	if (handle == NULL)
+		SF_ERROR(ret, 3)
+	else if (sf->flags & 2)
+		SF_ERROR(ret, 3)
+	else {
+		ix = _searchindex(sf, name);
+		if (ix == NULL)
+			SF_ERROR(ret, 5)
+		else {
+			__sceSystemFileRemoveIndex(sf, ix);
+			ret = 0;
+		}
+	}
+	return ret;
+}
 
 void __sceSystemFileRemoveIndex(SysFile *sf, SfIndex *ix)
 {
@@ -439,7 +512,23 @@ int sceSystemFileGetFD(void *handle)
 
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/systemfile", sceSystemFileGetIndexInfo);
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/systemfile", sceSystemFileGetHeader);
+int sceSystemFileGetHeader(void *handle, SfHeader **phdr, int *pversion, int *pflag)
+{
+	SysFile *sf = handle;
+	register int ret;
+
+	if (handle == NULL)
+		SF_ERROR(ret, 3)
+	else if (sf->hdr == NULL)
+		SF_ERROR(ret, 3)
+	else {
+		*phdr = sf->hdr;
+		*pversion = (sf->hdr->version >> 8) & 0xFFFFFF;
+		*pflag = sf->hdr->version & 0xFF;
+		ret = 0;
+	}
+	return ret;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/systemfile", sceSystemFileSetHeaderW);
 
