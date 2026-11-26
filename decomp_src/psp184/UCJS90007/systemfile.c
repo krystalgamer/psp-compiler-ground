@@ -7,6 +7,33 @@ typedef struct {
 	int vplid;
 } SfMemHeader;
 
+
+#define SF_ERROR(r, e) { (r) = 0x80120000; (r) |= (e); }
+
+typedef struct __attribute__((packed)) {
+	char unk0[0x10];
+	int count;
+} SfHeader;
+
+typedef struct __attribute__((packed)) {
+	int unk0;
+	char *name;
+	int unk8;
+	int unkC;
+} SfIndex;
+
+typedef struct __attribute__((packed)) {
+	int flags;
+	SfHeader *hdr;
+	int unk8;
+	int fd;
+	int unk10;
+	int nsorted;
+	char unk18[0x1C];
+	SfIndex *index;
+	int unk38;
+} SysFile;
+
 extern char D_0002F31C[];
 extern void *sf_mallocp;
 extern void *sf_freep;
@@ -58,13 +85,42 @@ INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/systemfile", sceSystemFileFre
 
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/systemfile", sceSystemFileInitFormatW);
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/systemfile", _indexcompare);
+int _indexcompare(const void *a, const void *b)
+{
+	const char *na = ((const SfIndex *)a)->name;
+	const char *nb = ((const SfIndex *)b)->name;
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/systemfile", __sceSystemFilePrepareSearch);
+	if (na == NULL)
+		return 1;
+	if (nb == NULL)
+		return -1;
+	return sf_strcmp(na, nb);
+}
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/systemfile", _keysearch);
+void __sceSystemFilePrepareSearch(SysFile *sf)
+{
+	if (sf->flags & 4)
+		return;
+	if (sf->flags & 2)
+		return;
+	sf_ssort(sf->index, sf->nsorted, 0x10, _indexcompare);
+	sf->flags |= 4;
+	sf->nsorted = sf->hdr->count;
+}
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/systemfile", _searchindex);
+int _keysearch(const void *key, const void *elem)
+{
+	const char *k = key;
+	const SfIndex *e = elem;
+
+	return sf_strcmp(k, e->name);
+}
+
+void *_searchindex(SysFile *sf, const char *key)
+{
+	__sceSystemFilePrepareSearch(sf);
+	return sf_bsearch(key, sf->index, sf->hdr->count, 0x10, _keysearch);
+}
 
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/systemfile", _keysearchL);
 
