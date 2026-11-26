@@ -581,11 +581,168 @@ static void draw_title_mini(void)
 	DrawTitleLine();
 }
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/main", draw_config);
+static void draw_config(void)
+{
+	char buf[128];
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/main", draw_bottomline);
+	snprintf(buf, sizeof(buf), "Thread # : %d", _info.thread_num);
+	if (_info.v_cursor_pos == 0)
+		sceGuDebugPrint(0xA9, 0x29, 0xFFFF, buf);
+	else
+		sceGuDebugPrint(0xA9, 0x29, 0xFFFFFF, buf);
+	if (_info.binlist_entry_num > 0)
+		snprintf(buf, sizeof(buf), "Game Data : %s", _info.bin_filename);
+	else
+		snprintf(buf, sizeof(buf), "Game Data : (no file)");
+	if (_info.v_cursor_pos == 1)
+		sceGuDebugPrint(0xA1, 0x33, 0xFFFF, buf);
+	else
+		sceGuDebugPrint(0xA1, 0x33, 0xFFFFFF, buf);
+	if (_info.mpeglist_entry_num > 0)
+		snprintf(buf, sizeof(buf), "Video Data : %s", _info.movie_filename[0]);
+	else
+		snprintf(buf, sizeof(buf), "Video Data : (no file)");
+	if (_info.v_cursor_pos == 2)
+		sceGuDebugPrint(0x99, 0x3D, 0xFFFF, buf);
+	else
+		sceGuDebugPrint(0x99, 0x3D, 0xFFFFFF, buf);
+	sceGuDebugPrint((480 - strlen(disp_line) * 8) / 2 + 1, 0x47, disp_line_color, disp_line);
+}
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/main", draw_frame);
+static void draw_bottomline(void)
+{
+	char buf[128];
+
+	switch (_info.state) {
+	case 2:
+		snprintf(buf, sizeof(buf), "[START]: Start Game Sharing Server");
+		sceGuDebugPrint((480 - strlen(buf) * 8) / 2 + 1, 0xE8, 0xFFFFFF, buf);
+		memset(buf, 0, sizeof(buf));
+		snprintf(buf, sizeof(buf), "t: Show game info   s: Show log");
+		sceGuDebugPrint((480 - strlen(buf) * 8) / 2 + 1, 0xF2, 0xFFFFFF, buf);
+		break;
+	case 15:
+		snprintf(buf, sizeof(buf), "[START]: Back to Video   t: Show game info   s: Show log");
+		sceGuDebugPrint((480 - strlen(buf) * 8) / 2 + 1, 0xF2, 0xFFFFFF, buf);
+		break;
+	case 18:
+		snprintf(buf, sizeof(buf), "x: Back");
+		sceGuDebugPrint((480 - strlen(buf) * 8) / 2 + 1, 0xF2, 0xFFFFFF, buf);
+		snprintf(buf, sizeof(buf), "up: Previous Page    down: Next Page");
+		sceGuDebugPrint((480 - strlen(buf) * 8) / 2 + 1, 0xFC, 0xFFFFFF, buf);
+		break;
+	case 21:
+		snprintf(buf, sizeof(buf), "x: Back");
+		sceGuDebugPrint((480 - strlen(buf) * 8) / 2 + 1, 0xF2, 0xFFFFFF, buf);
+		break;
+	case 26:
+		snprintf(buf, sizeof(buf), "o: Select   x: Cancel   t: Show game info");
+		sceGuDebugPrint((480 - strlen(buf) * 8) / 2 + 1, 0xF2, 0xFFFFFF, buf);
+		break;
+	case 27:
+		snprintf(buf, sizeof(buf), "o: Select   x: Cancel");
+		sceGuDebugPrint((480 - strlen(buf) * 8) / 2 + 1, 0xF2, 0xFFFFFF, buf);
+		break;
+	}
+}
+
+void sceGuClear(int flags);
+void sceGuClear(int flags);
+int utility_update_netconf(void);
+int utility_update_msgdialog(void);
+int utility_update_osk(void);
+void draw_distribute(void);
+void draw_log(void);
+void draw_log_ms(void);
+void draw_binlist(void);
+void draw_mpeglist(void);
+static void draw_frame(void)
+{
+	if (_info.state == 14)
+		return;
+	sceGuStart(0, disp_list, sizeof(disp_list));
+	switch (_info.state) {
+	case 2:
+	case 3:
+	case 18:
+	case 19:
+	case 20:
+	case 21:
+	case 26:
+	case 27:
+	case 28:
+	case 29:
+	case 30:
+		sceGuClearColor(0xFF000000);
+		sceGuClear(7);
+		draw_headline();
+		break;
+	case 5:
+		if (_info.prev_state == 3)
+			sceGuClearColor(0xFF000000);
+		else
+			sceGuClearColor(0xFF202020);
+		sceGuClear(7);
+		break;
+	case 15:
+		sceGuClearColor(0xFF000000);
+		sceGuClear(7);
+		break;
+	default:
+		sceGuClearColor(0xFF202020);
+		sceGuClear(7);
+		break;
+	}
+	switch (_info.state) {
+	case 1:
+		draw_top();
+		break;
+	case 2:
+		draw_config();
+		break;
+	case 9:
+	case 22:
+	case 23:
+	case 24:
+		draw_title_mini();
+		break;
+	case 15:
+		draw_distribute();
+		break;
+	case 18:
+		draw_log_ms();
+		break;
+	case 21:
+		draw_log();
+		break;
+	case 26:
+		draw_binlist();
+		break;
+	case 27:
+		draw_mpeglist();
+		break;
+	}
+	draw_bottomline();
+	_info.blink_counter++;
+	sceGuFinish();
+	sceGuSync(0, 0);
+	switch (_info.state) {
+	case 9:
+		utility_update_netconf();
+		break;
+	case 22:
+	case 23:
+	case 24:
+	case 28:
+	case 29:
+	case 30:
+		utility_update_msgdialog();
+		break;
+	case 25:
+		utility_update_osk();
+		break;
+	}
+}
 
 static void check_osk_completed(void)
 {
