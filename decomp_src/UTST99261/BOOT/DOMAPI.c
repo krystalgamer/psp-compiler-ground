@@ -21,6 +21,23 @@ SDomiDocManager *AcsExterngDomiDocManager(void);
 void SDomiImplementation_Initialize(SDomiImplementation *impl, const SDomiImplementationVt *vt);
 int SDomiDocument_createCharacterData(SDomiDocument *doc, int type, const SDomiString *s, SDomiNode **out);
 SDomiImplementation *DOMAPI_NewDOMImplementation(void);
+typedef void Node;
+extern DOMString _DOMhtml, _DOMhead, _DOMtitle, _DOMbody, _DOMframeset, _DOMnull;
+extern DOMString _DOMbutton, _DOMfieldset, _DOMinput, _DOMisindex, _DOMlabel, _DOMlegend, _DOMobject, _DOMselect, _DOMtextarea;
+extern DOMString _DOMoption, _DOMmultiple, _DOM_select_one, _DOM_select_multiple;
+Node *DOMImplementation_createDocument(SDomiImplementation *impl, const DOMString *ns, const DOMString *qname, Node *doctype);
+Node *Document_createElement(Node *doc, const DOMString *tag);
+Node *Document_getDocumentElement(Node *doc);
+Node *Node_appendChild(Node *n, Node *child);
+Node *Node_getFirstChild(Node *n);
+Node *Node_getNextSibling(Node *n);
+Node *Node_getParentNode(Node *n);
+int Node_getNodeType(Node *n);
+DOMString Element_getTagName(Node *n);
+int Element_hasAttribute(Node *n, const DOMString *name);
+DOMString CharacterData_getData(Node *n);
+int DOMStringcasecmpFast(const DOMString *a, const DOMString *b);
+Node *Util_Node_TraceNode(Node *n, Node *root);
 void DOMAPI_DeleteDOMImplementation(SDomiImplementation *impl);
 
 void DOMAPI_Initialize(void) {
@@ -94,9 +111,39 @@ void Util_DOMAPI_DeleteHTMLDOMImplementation(SDomiImplementation *impl) {
     DOMAPI_DeleteDOMImplementation(impl);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/DOMAPI", Util_HTMLDOMImplementation_createHTMLDocument);
+Node *Util_HTMLDOMImplementation_createHTMLDocument(SDomiImplementation *impl) {
+    Node *doc, *html, *head, *body;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/DOMAPI", Util_Elament_getCharactorData);
+    doc = DOMImplementation_createDocument(impl, NULL, NULL, NULL);
+    html = Document_createElement(doc, &_DOMhtml);
+    head = Document_createElement(doc, &_DOMhead);
+    if (html == NULL || head == NULL) {
+        return NULL;
+    }
+    Node_appendChild(html, head);
+    Node_appendChild(head, Document_createElement(doc, &_DOMtitle));
+    body = Document_createElement(doc, &_DOMbody);
+    if (body == NULL) {
+        return NULL;
+    }
+    Node_appendChild(html, body);
+    Node_appendChild(doc, html);
+    return doc;
+}
+
+DOMString Util_Elament_getCharactorData(Node *e) {
+    Node *n;
+
+    for (n = Node_getFirstChild(e); n != NULL; n = Node_getNextSibling(n)) {
+        if (Node_getNodeType(n) == 3) {
+            break;
+        }
+    }
+    if (n == NULL) {
+        return _DOMnull;
+    }
+    return CharacterData_getData(n);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/DOMAPI", Util_HTMLDocument_getBody);
 
@@ -104,11 +151,61 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/DOMAPI", Util_HTMLFormElement_g
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/DOMAPI", Util_HTMLSelectElement_getLength);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/DOMAPI", Util_HTMLSelectElement_getType);
+DOMString Util_HTMLSelectElement_getType(Node *sel) {
+    if (Element_hasAttribute(sel, &_DOMmultiple)) {
+        return _DOM_select_multiple;
+    }
+    return _DOM_select_one;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/DOMAPI", Util_HTMLOptionElement_getIndex);
+int Util_HTMLOptionElement_getIndex(Node *opt) {
+    Node *n, *sel;
+    DOMString tag;
+    int count = 0;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/DOMAPI", Util_Node_TraceNode);
+    for (n = opt; (n = Node_getParentNode(n)) != NULL; ) {
+        if (Node_getNodeType(n) == 1) {
+            tag = Element_getTagName(n);
+            if (DOMStringcasecmpFast(&tag, &_DOMselect) == 0) {
+                sel = n;
+                break;
+            }
+        }
+    }
+    if (n == NULL) {
+        return 0;
+    }
+    while ((n = Util_Node_TraceNode(n, sel)) != NULL) {
+        if (n == opt) {
+            return count;
+        }
+        if (Node_getNodeType(n) == 1) {
+            tag = Element_getTagName(n);
+            count += DOMStringcasecmpFast(&tag, &_DOMoption) == 0;
+        }
+    }
+    return 0;
+}
+
+Node *Util_Node_TraceNode(Node *n, Node *root) {
+    Node *next;
+
+    if ((next = Node_getFirstChild(n)) != NULL) {
+        return next;
+    }
+    if ((next = Node_getNextSibling(n)) != NULL) {
+        return next;
+    }
+    for (;;) {
+        n = Node_getParentNode(n);
+        if (n == NULL || n == root) {
+            return NULL;
+        }
+        if ((next = Node_getNextSibling(n)) != NULL) {
+            return next;
+        }
+    }
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/DOMAPI", Util_getNodeByTagName);
 
