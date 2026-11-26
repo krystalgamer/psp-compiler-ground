@@ -202,6 +202,96 @@ void sound_end(void) {
     sceWaveExit();
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/sound_starmix/nonmatchings/main", pad_read);
+#define SCE_CTRL_LEFT				(1<<7)
+#define SCE_CTRL_RIGHT				(1<<5)
+#define MAXNUM			256
+#define SCE_CTRL_SELECT				(1<<0)
+#define SCE_CTRL_R					(1<<9)
+#define SCE_CTRL_R1					SCE_CTRL_R
+#define SCE_CTRL_TRIANGLE			(1<<12)
+#define V2 ((0)+2)
+#define SCE_CTRL_CIRCLE				(1<<13)
+#define V1 ((0)+1)
+#define SCE_CTRL_SQUARE				(1<<15)
+#define V0 (0)
+#define SCE_CTRL_CROSS				(1<<14)
+#define V3 ((0)+3)
+
+static int pad_read(void)
+{
+	extern u_int32 D_00014240;
+	extern u_int32 D_00014244;
+	SceCtrlData		buf;
+
+	D_00014240 = D_00014244;
+	sceCtrlReadBufferPositive(&buf, 1);
+	D_00014244 = buf.Buttons;
+
+	
+	if (D_00014244 & SCE_CTRL_LEFT) {
+		maxnum--;
+		if (maxnum <= 1) {
+			maxnum = 1;
+		}
+	}
+	
+	if (D_00014244 & SCE_CTRL_RIGHT) {
+		maxnum++;
+		if (maxnum >= MAXNUM) {
+			maxnum = MAXNUM;
+		}
+	}
+	
+	if (D_00014244 & SCE_CTRL_SELECT) {
+		return 0;	
+	}
+	
+	if (((D_00014244 & SCE_CTRL_R1) != 0) && ((D_00014240 & SCE_CTRL_R1) == 0)){
+		fxsw ^= 1;	
+		sceSasSetEffect(1, fxsw);		
+		printf("Effect %s\n",(fxsw)? "ON":"OFF");
+	}
+
+	
+	if((D_00014244 & SCE_CTRL_TRIANGLE) !=0){
+		
+		if(ipitch < 0x4000){
+			ipitch += 30;	
+			if(ipitch > 0x4000) ipitch = 0x4000;	
+			sceSasSetPitch(V2, ipitch);
+		}
+	}else
+	{
+		
+		
+		if(ipitch > 0x0080){
+			ipitch -= 30;	
+			if(ipitch < 0x0080) ipitch = 0x0080;
+			sceSasSetPitch(V2, ipitch);
+		}
+	}
+
+	
+	if (((D_00014244 & SCE_CTRL_CIRCLE) != 0) && ((D_00014240 & SCE_CTRL_CIRCLE) == 0)){
+		sceSasSetKeyOff(V1);
+		sceSasSetKeyOn(V1);
+	}
+	
+	if (((D_00014244 & SCE_CTRL_SQUARE) != 0) && ((D_00014240 & SCE_CTRL_SQUARE) == 0)){
+		sceSasSetKeyOff(V0);
+		sceSasSetKeyOn(V0);
+	}
+	
+	if ((D_00014244 & SCE_CTRL_CROSS) != 0){
+		if((D_00014240 & SCE_CTRL_CROSS) ==0){
+			sceSasSetKeyOn(V3);
+		}
+	}else{
+		if ((D_00014240 & SCE_CTRL_CROSS) != 0){
+			sceSasSetKeyOff(V3);
+		}
+	}
+	return 1;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/sound_starmix/nonmatchings/main", main);
