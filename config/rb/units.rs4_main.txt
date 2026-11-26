@@ -119,7 +119,9 @@ gim_callback                                 1.9.2           gim_callback.c
 gim_picture                                  1.9.2           gim_picture.c
 gim_animate                                  1.9.2           gim_animate.c
 gim_activate                                 1.9.2           gim_activate.c
+gim_realloc                                  1.9.2           gim_realloc.c
 gim_metrics                                  1.9.2           gim_metrics.c
+gu_inter                                     1.9.2           gu_inter.c
 load_bmp                                     1.9.2           load_bmp.c
 load_tga                                     1.9.2           load_tga.c
 load_tm2                                     1.9.2           load_tm2.c
