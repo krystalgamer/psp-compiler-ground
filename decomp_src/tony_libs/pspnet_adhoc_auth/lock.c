@@ -10,7 +10,14 @@ void func_000038D0(int *p, int v)
 	*p = v;
 }
 
-INCLUDE_ASM("tmp/asm/tony_libs/pspnet_adhoc_auth/nonmatchings/lock", func_000038D8);
+int func_000038D8(void)
+{
+	D_00003ED0 = sceKernelCreateSema("SceNetAdhocAuthLock", 0, 1, 1, 0);
+	if (D_00003ED0 < 0)
+		return D_00003ED0;
+	D_00003ED4 = -1;
+	return 0;
+}
 
 void func_0000392C(void)
 {
