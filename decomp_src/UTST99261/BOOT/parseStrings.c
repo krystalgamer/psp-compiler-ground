@@ -79,7 +79,60 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parseStrings", parseFindName);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parseStrings", procMetaTag);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parseStrings", parseFindMetaTag);
+void parseFindMetaTag(char *s, int *start, int *end, int *adv, int n) {
+    int b;
+    int st;
+    int i;
+    int r;
+
+    b = 0;
+    st = 0;
+    i = 0;
+    for (;;) {
+        if (i >= n) {
+            break;
+        }
+        switch (st) {
+        case 0:
+            if (s[i] == '<') {
+                st = 1;
+                b = i + 1;
+            }
+            break;
+        case 1:
+            if (s[i] == '>') {
+                r = (n - b < 5) ? -1 : strncasecmp(s + b, "meta ", 5);
+                st = 0;
+                if (r == 0) {
+                    *start = b + 5;
+                    *end = i;
+                    goto out;
+                }
+                b = 0;
+            } else {
+                r = (n - i < 3) ? -1 : strncmp(s + i, "!--", 3);
+                if (r == 0 && s[i - 1] == '<') {
+                    st = 2;
+                }
+            }
+            break;
+        case 2:
+            if (s[i] == '-') {
+                r = (n - i < 3) ? -1 : strncmp(s + i, "-->", 3);
+                if (r == 0) {
+                    st = 0;
+                    i += 2;
+                }
+            }
+            break;
+        }
+        i++;
+    }
+    *start = 0;
+    *end = 0;
+out:
+    *adv = i;
+}
 
 int parseCheckMetaCharset(char *buf, int len) {
     int start;
