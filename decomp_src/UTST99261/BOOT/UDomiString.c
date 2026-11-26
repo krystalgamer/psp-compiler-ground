@@ -1,8 +1,13 @@
 /* cflags: -O1 */
 #include "common.h"
+#include "parse_hist.h"
 #include "parse_ps.h"
 #include "dom_domi.h"
 #include "m2c_macros.h"
+extern int mq_ps;
+extern int mq_ps_su;
+extern int buf_sessionUI;
+extern int buf_localUI;
 extern char D_00135598[];
 extern int mq_js;
 extern char D_0013559C[];
@@ -10,7 +15,6 @@ extern const char _ctype_[];
 extern int buf_ps_sts;
 M2C_UNK MEM_free(M2C_UNK, int);                     /* extern */
 int ps_isMoveHistory(int, int, int);                /* extern */
-M2C_UNK ps_save(void *, M2C_UNK);                   /* extern */
 extern int buf_sessionID;
 extern int buf_sessionURL;
 extern int buf_sessionstop;
@@ -158,7 +162,7 @@ int setParseMassageToDestTask(int dest, int a, int b, int c, int d, int e, int f
     return ps_sndmsg(&m, dest);
 }
 
-void ps_halt(void) {
+void ps_halt(char *msg) {
 }
 
 #ifndef NULL
@@ -352,7 +356,20 @@ void ps_rflagclr(void) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", ps_save);
+void ps_save(PsIpc *msg, int sid) {
+    struct {
+        int x00;
+        PsIpc body;
+    } m;
+
+    m.body = *msg;
+    if (sid != 0) {
+        m.body.x14 = sid;
+    }
+    if (OS_mq_send(mq_ps_su, &m, sizeof(m), 0) < 0) {
+        ps_halt("Parser : cmk_mbox_send(ps_save) failed");
+    }
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", ps_Security);
 
@@ -460,7 +477,15 @@ void ps_JSMailBoxfree(void) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", ps_MailBoxClean);
+void ps_MailBoxClean(void) {
+    PsMqMsg m;
+
+    while (GetMQUEUE(mq_ps_su, &m)) {
+        if (OS_mq_send(mq_ps, &m, sizeof(m), 0) < 0) {
+            ps_halt("Parser : cmk_mbox_send(ps_MailBoxClean) failed");
+        }
+    }
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", ps_ParseDomBuildCall);
 
@@ -530,7 +555,16 @@ void ps_ParseDomBuildFree(void) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", ps_SendIOMChk);
+int ps_SendIOMChk(int n, char *s) {
+    int i;
+
+    for (i = 0; i < n; i++) {
+        if (icmpstr(s + i, "#", 1) == 1) {
+            return i;
+        }
+    }
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", ps_Terminate);
 
@@ -665,9 +699,29 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", ps_getExMsg);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", ps_getBottomExMsg);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", ps_moveExMsgToExMsg);
+int ps_moveExMsgToExMsg(int from, int to, int sid) {
+    PsIpc m;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", ps_moveExMsgToTopExMsg);
+    while (ps_getExMsg(from, &m) == 1) {
+        if (sid != 0) {
+            m.x04 = sid;
+        }
+        ps_setExMsg(to, &m);
+    }
+    return 1;
+}
+
+int ps_moveExMsgToTopExMsg(int from, int to, int sid) {
+    PsIpc m;
+
+    while (ps_getBottomExMsg(from, &m) == 1) {
+        if (sid != 0) {
+            m.x04 = sid;
+        }
+        ps_setTopExMsg(to, &m);
+    }
+    return 1;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", ps_sendAbortPageToDiffHistory);
 
@@ -802,9 +856,26 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", initMPU_SIG_EXTDA
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", sendStart);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", sendComplete);
+void sendComplete(PsIpc *m) {
+    initMPU_SIG_LAYOUT_COMPLETE(m);
+    m->x04 = buf_sessionUI;
+    m->x14 = buf_localUI;
+    ps_sndmsg(m, 1);
+    initMPU_SIG_RECV_COMPLETE(m);
+    m->x04 = buf_sessionUI;
+    m->x14 = buf_localUI;
+    ps_sndmsg(m, 1);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", sendMPL_REQ_LOAD_PAGE);
+void sendMPL_REQ_LOAD_PAGE(PsIpc *m, int sid) {
+    initMPL_REQ_LOAD_PAGE(m);
+    m->x04 = sid;
+    ps_sndmsg(m, 4);
+    initMPL_REQ_LOAD_PAGE(m);
+    m->x04 = sid;
+    m->x10 = 1;
+    ps_sndmsg(m, 4);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", initMSGQUEUE);
 
