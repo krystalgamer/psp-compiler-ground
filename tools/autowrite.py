@@ -68,7 +68,11 @@ def write_nodwarf(target, module, u, path, text, bodies):
         head, old = old[:i], old[i:]
         have = {decl_name(l) for l in old if DECL.match(l)}
     else:
-        head, old, have = autodecomp.NODWARF_HDR.splitlines(), old[1:], set()
+        # keep a leading `/* cflags: ... */` line
+        if old and old[0].startswith("/* cflags"):
+            head, old, have = [old[0]] + autodecomp.NODWARF_HDR.splitlines(), old[2:], set()
+        else:
+            head, old, have = autodecomp.NODWARF_HDR.splitlines(), old[1:], set()
 
     defined = set(re.findall(r"^[A-Za-z_][^;\n]*?(\w+)\([^;\n]*\)\s*\{", text, re.M))
 
@@ -137,11 +141,15 @@ def main():
         cf = re.search(r"cflags: (-O[0-3s](?: -(?:[fm][\w-]+|std)(?:=[\w.:]+)?)*)", text)
         opt = cf.group(1) if cf else "-O2"
         bodies = {}
-        for fn in funcs:
-            res, body = autodecomp.try_func(target, module, u, fn, ctx, mod, cc1,
-                                            compiler.driver_flags(target, module, u), (opt,))
-            if res == opt:
-                bodies[fn] = body
+        # AW_PAR drafts tried in parallel (default 1)
+        from concurrent.futures import ProcessPoolExecutor
+        with ProcessPoolExecutor(int(os.environ.get("AW_PAR", "1"))) as ex:
+            futs = {fn: ex.submit(autodecomp.try_func, target, module, u, fn, ctx, mod, cc1,
+                                  compiler.driver_flags(target, module, u), (opt,)) for fn in funcs}
+            for fn in funcs:
+                res, body = futs[fn].result()
+                if res == opt:
+                    bodies[fn] = body
         if not bodies:
             continue
         if not ctx.strip():
