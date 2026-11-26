@@ -78,7 +78,39 @@ SceInt32 sInfo_getNumberOfStreams(t_streamInfo *pStreamInfo, SceInt32 streamType
 
 INCLUDE_ASM("tmp/asm/UTST99332/mpeg_stream_change/nonmatchings/parsePsmf", setNumberOfStreams);
 
-INCLUDE_ASM("tmp/asm/UTST99332/mpeg_stream_change/nonmatchings/parsePsmf", sInfo_setCurrentStream);
+SceInt32 sInfo_setCurrentStream(t_streamInfo *pStreamInfo, SceMpegStrType streamType, SceInt32 streamTypeId)
+{
+	SceInt32 ret;
+
+	switch (streamType) {
+	case 0:
+		ret = scePsmfSpecifyStreamWithStreamTypeNumber(pStreamInfo->pVideoPsmf, 0, streamTypeId);
+		if (ret != 0) {
+			goto term;
+		}
+		pStreamInfo->currentAvcStreamTypeId = streamTypeId;
+		break;
+	case 1:
+		if (pStreamInfo->numberOfAudioStreams == 0) {
+			ret = 0;
+			goto term;
+		}
+		ret = scePsmfSpecifyStreamWithStreamTypeNumber(pStreamInfo->pAudioPsmf, 1, streamTypeId);
+		if (ret != 0) {
+			goto term;
+		}
+		pStreamInfo->currentAudioStreamTypeId = streamTypeId;
+		break;
+	default:
+		ret = -1;
+		goto term;
+	}
+
+	ret = 0;
+
+term:
+	return ret;
+}
 
 SceInt32 sInfo_getCurrentStreamCh(t_streamInfo *pStreamInfo, SceInt32 *ch, SceMpegStrType streamType)
 {
