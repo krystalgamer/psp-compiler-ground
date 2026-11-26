@@ -135,6 +135,13 @@ void draw_net_established_list(int *x_ptr, int *y_ptr);
 static int get_nickname(int buflen, struct SceNetEtherAddr *addr, struct SceNetAdhocctlNickname **n);
 void draw_net_member_list(int *x_ptr, int *y_ptr);
 void draw_net_neighbors(int *x_ptr, int *y_ptr);
+void sceNetEtherNtostr(const struct SceNetEtherAddr *addr, char *str);
+void draw_p2p_game_parameter(int index, int color, int x, int *y_ptr);
+extern char D_00018A1C[];
+extern char D_00018A28[];
+extern char D_00018A70[];
+int sceNetAdhocMatchingGetMembers(int id, int *buflen, struct SceNetAdhocMatchingMember *buf);
+int sceNetAdhocctlGetPeerList(int *buflen, struct SceNetAdhocctlPeerInfo *buf);
 
 
 /* SDK prototypes (tools/sdk_protos.h) */
@@ -145,11 +152,103 @@ int sceKernelSignalSema(int semid, int signal);
 int sceKernelWaitSema(int semid, int signal, unsigned int *timeout);
 int sprintf(char *buf, const char *fmt, ...);
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_matching_stick/nonmatchings/draw_net", draw_net_scan_result_list);
+int sceNetAdhocctlGetScanInfo(int *buflen, struct SceNetAdhocctlScanInfo *buf);
+int snprintf(char *buf, unsigned int size, const char *fmt, ...);
+void *memcpy(void *d, const void *s, unsigned int n);
+extern __typeof__(scaninfo) scaninfo_6BE40;
+#define scaninfo scaninfo_6BE40
+void draw_net_scan_result_list(int *x_ptr, int *y_ptr)
+{
+	char group_name_str[9];
+	struct SceNetAdhocctlScanInfo *sinfo;
+	char mess_buff[128];
+	int ret, x, y, buflen, i, n;
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_matching_stick/nonmatchings/draw_net", draw_net_hello_list);
+	x = *x_ptr;
+	y = *y_ptr;
+	buflen = sizeof(scaninfo);
+	ret = sceNetAdhocctlGetScanInfo(&buflen, scaninfo);
+	if (ret < 0) {
+		printf("sceNetAdhocctlGetScanInfo() failed. ret = 0x%x\n", ret);
+		goto error;
+	}
+	if (buflen != 0) {
+		for (sinfo = scaninfo; sinfo != NULL; sinfo = sinfo->next) {
+			ret = snprintf(mess_buff, sizeof(mess_buff), "ch: %d  BSSID: ", sinfo->channel);
+			sceNetEtherNtostr((struct SceNetEtherAddr *)&sinfo->bssid, mess_buff + ret);
+			n = ret + 17;
+			memcpy(group_name_str, sinfo->group_name.data, 8);
+			group_name_str[8] = '\0';
+			snprintf(mess_buff + n, sizeof(mess_buff) - n, "  Group Name: %s", group_name_str);
+			sceGuDebugPrint(x, y, 0xffffff, mess_buff);
+			y += 10;
+		}
+	}
+error:
+	*x_ptr = x;
+	*y_ptr = y;
+}
+#undef scaninfo
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_matching_stick/nonmatchings/draw_net", draw_net_established_list);
+void draw_net_hello_list(int *x_ptr, int *y_ptr)
+{
+	char etherstr[32];
+	char mess_buff[128];
+	int x, y, i, color;
+
+	x = *x_ptr;
+	y = *y_ptr;
+	sceKernelWaitSema(minfo_sid, 1, NULL);
+	for (i = 0; i < 16; i++) {
+		if (minfo[i].status == 0)
+			continue;
+		color = (i == _mrinfo.v_cursor_pos) ? 0xff : 0xffffff;
+		sceNetEtherNtostr(&minfo[i].addr, etherstr);
+		if (minfo[i].hello_opt.nickname.data[0] != 0)
+			sprintf(mess_buff, D_00018A1C, minfo[i].hello_opt.nickname.data, etherstr);
+		else
+			sprintf(mess_buff, D_00018A28, etherstr);
+		sceGuDebugPrint(x, y, color, mess_buff);
+		y += 10;
+		draw_p2p_game_parameter(i, color, x + 16, &y);
+		y += 5;
+	}
+	sceKernelSignalSema(minfo_sid, 1);
+	*x_ptr = x;
+	*y_ptr = y;
+}
+
+void draw_net_established_list(int *x_ptr, int *y_ptr)
+{
+	char etherstr[32];
+	char mess_buff[128];
+	int x, y, i;
+
+	x = *x_ptr;
+	y = *y_ptr;
+	sceNetEtherNtostr(&_mrinfo.local_addr, etherstr);
+	if (_mrinfo.hello_opt.nickname.data[0] != 0)
+		sprintf(mess_buff, D_00018A1C, _mrinfo.hello_opt.nickname.data, etherstr);
+	else
+		sprintf(mess_buff, D_00018A28, etherstr);
+	sceGuDebugPrint(x, y, 0xffffff, mess_buff);
+	y += 10;
+	sceKernelWaitSema(minfo_sid, 1, NULL);
+	for (i = 0; i < 16; i++) {
+		if (minfo[i].status != 5)
+			continue;
+		sceNetEtherNtostr(&minfo[i].addr, etherstr);
+		if (minfo[i].hello_opt.nickname.data[0] != 0)
+			sprintf(mess_buff, D_00018A1C, minfo[i].hello_opt.nickname.data, etherstr);
+		else
+			sprintf(mess_buff, D_00018A28, etherstr);
+		sceGuDebugPrint(x, y, 0xffffff, mess_buff);
+		y += 10;
+	}
+	sceKernelSignalSema(minfo_sid, 1);
+	*x_ptr = x;
+	*y_ptr = y;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/net_matching_stick/nonmatchings/draw_net", get_nickname);
 
@@ -157,8 +256,73 @@ INCLUDE_RODATA("tmp/asm/UTST99332/net_matching_stick/nonmatchings/draw_net", D_0
 
 INCLUDE_RODATA("tmp/asm/UTST99332/net_matching_stick/nonmatchings/draw_net", D_00018A28);
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_matching_stick/nonmatchings/draw_net", draw_net_member_list);
+void draw_net_member_list(int *x_ptr, int *y_ptr)
+{
+	char etherstr[32];
+	struct SceNetAdhocctlNickname *nickname;
+	struct SceNetAdhocMatchingMember *m;
+	char mess_buff[128];
+	int ret, x, y, buflen;
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_matching_stick/nonmatchings/draw_net", draw_net_neighbors);
+	x = *x_ptr;
+	y = *y_ptr;
+	buflen = sizeof(mmember);
+	ret = sceNetAdhocMatchingGetMembers(_mrinfo.ctx_id, &buflen, mmember);
+	if (ret < 0) {
+		printf("sceNetAdhocMatchingGetMembers() failed. ret = 0x%x\n", ret);
+		goto error;
+	}
+	if (buflen == 0)
+		goto error;
+	buflen = sizeof(peerinfo);
+	ret = sceNetAdhocctlGetPeerList(&buflen, peerinfo);
+	if (ret < 0) {
+		printf(D_00018A70, ret);
+		goto error;
+	}
+	for (m = mmember; m != NULL; m = m->next) {
+		sceNetEtherNtostr(&m->addr, etherstr);
+		if (get_nickname(buflen, &m->addr, &nickname) > 0)
+			sprintf(mess_buff, D_00018A1C, nickname->data, etherstr);
+		else
+			sprintf(mess_buff, D_00018A28, etherstr);
+		sceGuDebugPrint(x, y, 0xffffff, mess_buff);
+		y += 10;
+	}
+error:
+	*x_ptr = x;
+	*y_ptr = y;
+}
+
+void draw_net_neighbors(int *x_ptr, int *y_ptr)
+{
+	char etherstr[32];
+	struct SceNetAdhocctlPeerInfo *peer;
+	char mess_buff[128];
+	int ret, x, y, n, buflen;
+
+	x = *x_ptr;
+	y = *y_ptr;
+	buflen = sizeof(peerinfo);
+	ret = sceNetAdhocctlGetPeerList(&buflen, peerinfo);
+	if (ret < 0) {
+		printf(D_00018A70, ret);
+		goto error;
+	}
+	if (buflen == 0)
+		goto error;
+	for (peer = peerinfo; peer != NULL; peer = peer->next) {
+		sceNetEtherNtostr(&peer->mac_addr, etherstr);
+		if (peer->nickname.data[0] != 0)
+			sprintf(mess_buff, D_00018A1C, peer->nickname.data, etherstr);
+		else
+			sprintf(mess_buff, D_00018A28, etherstr);
+		sceGuDebugPrint(x, y, 0xffffff, mess_buff);
+		y += 10;
+	}
+error:
+	*x_ptr = x;
+	*y_ptr = y;
+}
 
 INCLUDE_RODATA("tmp/asm/UTST99332/net_matching_stick/nonmatchings/draw_net", D_00018A70);
