@@ -80,6 +80,9 @@ void EndressModeInit(void);
 void VSInit(void);
 void InitBubCrush(void);
 void SetMonitor(PZL_STAT *st, int mon);
+/* ball outline points tested against the map */
+typedef struct { s16 x, y; } BCPOS;
+extern const BCPOS BallCollisionPosition[8];
 int CvtBallPos2MapPosLocal(PZL_STAT *st, int x, int y);
 int CheckNext(PZL_STAT *st);
 int rand(void);
@@ -1279,8 +1282,6 @@ int GetBallNext(PZL_STAT *st, int flag)
 #ifdef NON_MATCHING
 /* Right size, diff 224: logic complete (bomb 9, rainbow 13 and 8 balls); the original
  * allocates st/flag/i/hit to other saved registers and tests `p < 0` after loading cur. */
-typedef struct { s16 x, y; } BCPOS;
-extern const BCPOS BallCollisionPosition[8];
 int CheckBallTouch(PZL_STAT *st, int flag)
 {
 	int x, y, x1, y1, x2, y2, x3, y3, x4, y4;
@@ -2054,8 +2055,6 @@ extern int D_0014E88C;
 extern int D_0014E890;
 extern int D_0014E894;
 extern u8 CpuCheckBall[];
-typedef struct { s16 x, y; } BCPOS;
-extern const BCPOS BallCollisionPosition[8];
 void CheckBallGuide(PZL_STAT *st)
 {
 	int lx, ly;
