@@ -23,6 +23,7 @@ int GUI_TextArea_selectAll();
 int GUI_List_select();
 int GUI_List_deselect();
 int getStringsExtents();
+int GUI_Graphics_drawPixmap();
 int strlen();
 int GUI_TextField_getText();
 int GUI_TextArea_getText();
@@ -242,11 +243,35 @@ int rnd_gdrawGetButtonExtents(int a, int b, int c, int *w, int *h) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_gdraw", rnd_gdrawCreatePulldown);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_gdraw", rnd_gdrawGetPulldownExtents);
+int rnd_gdrawGetPulldownExtents(int font, char *s, int n2, int *w, int *h) {
+    int n;
+
+    n = strlen(s);
+    if (n == 0) {
+        getStringsExtents(font, D_00133564, 1, w, h);
+    } else {
+        getStringsExtents(font, s, n, w, h);
+    }
+    *w = n2 * *w + 26;
+    *h += 4;
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_gdraw", rnd_gdrawCreateList);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_gdraw", rnd_gdrawGetListExtents);
+int rnd_gdrawGetListExtents(int font, char *s, int rows, int *w, int *h) {
+    int n;
+
+    n = strlen(s);
+    if (n == 0) {
+        getStringsExtents(font, D_00133564, 1, w, h);
+    } else {
+        getStringsExtents(font, s, n, w, h);
+    }
+    *w += 20;
+    *h = rows * *h + 4;
+    return 0;
+}
 
 void rnd_gdrawSetListState(int w, int index, int state) {
     if (state == 1) {
@@ -295,7 +320,9 @@ void rnd_gdrawFillrectangle(int g, int color, int x, int y, int w, int h) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_gdraw", rnd_gdrawMaskFillrectangle);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_gdraw", rnd_gdrawImage);
+void rnd_gdrawImage(int g, int a1, int a2, int a3, int a4, int a5, int a6, int a7, int a8, int pixmap) {
+    GUI_Graphics_drawPixmap(g, pixmap, a1, a2, a3, a4, a5, a6, a7, a8);
+}
 
 void rnd_gdrawDashedHline(int g, int color, int x, int y, int w, int h) {
     int rgb[3];
