@@ -3,6 +3,25 @@
 
 extern int D_000185C8;
 #define g_state D_000185C8
+extern int D_00128E94[];
+extern int D_00128F14;
+extern int D_00128F18[];
+#define g_hd D_00128E94
+#define g_maxvoice D_00128F14
+#define g_expvel D_00128F18
+int func_00008544();
+int func_00008628();
+int voice_getVoiceByChannel2(int ch, int a1);
+int voice_setReservedVoice(int voice, int mode);
+unsigned int sceSasGetEndFlag(void);
+int smf_atick();
+int voice_refresh(void *buf);
+int sceSasExit(void);
+int smf_bindSmf(void *smf, int size);
+int smf_setHdId(int id, int hd);
+int sceSasInit();
+int smf_init(int n);
+int voice_init(int n);
 
 int voice_setSustain(int a0, int a1);
 int voice_noteOff(int a0);
@@ -36,11 +55,40 @@ int voice_getVoiceStatus(int a0);
 
 INCLUDE_ASM("tmp/asm/UTST99332/sound_playsmf/nonmatchings/libsndp", _sceSsCalcAddPitch);
 
-INCLUDE_ASM("tmp/asm/UTST99332/sound_playsmf/nonmatchings/libsndp", sceSsInit);
+int sceSsInit(int maxvoice)
+{
+	int ret;
+	int i;
+
+	ret = sceSasInit();
+	if (ret != 0)
+		return ret;
+	smf_init(256);
+	ret = voice_init(maxvoice);
+	if (ret != 0)
+		return ret;
+	for (i = 0; i < 32; i++)
+		g_hd[i] = 0;
+	for (i = 0; i < 32; i++)
+		g_expvel[i] = 0x7f;
+	g_maxvoice = maxvoice;
+	g_state = 0;
+	return 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/sound_playsmf/nonmatchings/libsndp", sceSsBindSoundData);
 
-INCLUDE_ASM("tmp/asm/UTST99332/sound_playsmf/nonmatchings/libsndp", sceSsUnbindSoundData);
+int sceSsUnbindSoundData(unsigned int hd)
+{
+	if (g_state == -1)
+		return 0x80450001;
+	if (hd >= 33)
+		return 0x80450002;
+	if (g_hd[hd] == 0)
+		return 0x80450002;
+	g_hd[hd] = 0;
+	return 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/sound_playsmf/nonmatchings/libsndp", sceSsNoteOn);
 
@@ -59,25 +107,85 @@ int sceSsVoiceSetSustainHold(int a0, int a1)
 
 INCLUDE_ASM("tmp/asm/UTST99332/sound_playsmf/nonmatchings/libsndp", sceSsSetEffectParam);
 
-INCLUDE_ASM("tmp/asm/UTST99332/sound_playsmf/nonmatchings/libsndp", sceSsSMFBind);
+int sceSsSMFBind(void *smf, int size, unsigned int hd)
+{
+	int ret;
 
-INCLUDE_ASM("tmp/asm/UTST99332/sound_playsmf/nonmatchings/libsndp", _sceSsSetExpVel);
+	if (g_state == -1)
+		return 0x80450001;
+	if (hd >= 33)
+		return 0x80450002;
+	if (g_hd[hd] == 0)
+		return 0x80450002;
+	ret = smf_bindSmf(smf, size);
+	if (ret < 0)
+		return ret;
+	smf_setHdId(ret, hd);
+	return ret;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/sound_playsmf/nonmatchings/libsndp", _sceSsGetExpVel);
+void _sceSsSetExpVel(int ch, int vel)
+{
+	g_expvel[ch] = vel;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/sound_playsmf/nonmatchings/libsndp", sceSsExit);
+int _sceSsGetExpVel(int ch)
+{
+	return g_expvel[ch];
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/sound_playsmf/nonmatchings/libsndp", sceSsSynthesis);
+int sceSsExit(void)
+{
+	int ret;
 
-INCLUDE_ASM("tmp/asm/UTST99332/sound_playsmf/nonmatchings/libsndp", sceSsNoteOnByTone);
+	if (g_state == -1)
+		return 0x80450001;
+	ret = sceSasExit();
+	if (ret != 0)
+		return ret;
+	g_state = -1;
+	return 0;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/sound_playsmf/nonmatchings/libsndp", sceSsKeyOnByTone);
+int sceSsSynthesis(void *buf)
+{
+	if (g_state == -1)
+		return 0x80450001;
+	smf_atick();
+	voice_refresh(buf);
+	return 0;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/sound_playsmf/nonmatchings/libsndp", sceSsVoiceNoteOnByTone);
+int sceSsNoteOnByTone(int a0, int a1, int a2, int a3, int a4)
+{
+	return func_00008544(a0, a1, 0xff, a2, 0, 0, a3, a4);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/sound_playsmf/nonmatchings/libsndp", sceSsVoiceKeyOnByTone);
+int sceSsKeyOnByTone(int a0, int a1, int a2, int a3, int a4)
+{
+	return func_00008544(a0, a1, 0xff, 0xff, a2, 0, a3, a4);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/sound_playsmf/nonmatchings/libsndp", sceSsGetVoice);
+int sceSsVoiceNoteOnByTone(int a0, int a1, int a2, int a3, int a4, int a5)
+{
+	return func_00008628(a0, a1, a2, 0xff, a3, 0, 0, a4, a5);
+}
+
+int sceSsVoiceKeyOnByTone(int a0, int a1, int a2, int a3, int a4, int a5)
+{
+	return func_00008628(a0, a1, a2, 0xff, 0xff, a3, 0, a4, a5);
+}
+
+int sceSsGetVoice(unsigned int ch, int a1)
+{
+	int ret = 0;
+
+	if (g_state != -1) {
+		if (ch < 16)
+			ret = voice_getVoiceByChannel2(ch, a1);
+	}
+	return ret;
+}
 
 int sceSsVoiceKeyoff(int a0)
 {
@@ -86,7 +194,14 @@ int sceSsVoiceKeyoff(int a0)
 	return voice_noteOff(a0);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/sound_playsmf/nonmatchings/libsndp", sceSsVoiceSetReserveMode);
+int sceSsVoiceSetReserveMode(int voice, unsigned int mode)
+{
+	if (g_state == -1)
+		return 0x80450001;
+	if (mode >= 2)
+		return 0x8054000a;
+	return voice_setReservedVoice(voice, mode);
+}
 
 int sceSsVoiceSetPitch(int a0, int a1)
 {
@@ -123,9 +238,25 @@ int sceSsVoiceSetSendPanpot(int a0, int a1)
 	return voice_setSendPan(a0, a1);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/sound_playsmf/nonmatchings/libsndp", sceSsVoiceAllKeyOff);
+int sceSsVoiceAllKeyOff(void)
+{
+	int i;
 
-INCLUDE_ASM("tmp/asm/UTST99332/sound_playsmf/nonmatchings/libsndp", sceSsVoiceGetEndFlag);
+	if (g_state == -1)
+		return 0x80450001;
+	for (i = 0; i < 32; i++) {
+		sceSsVoiceSetSustainHold(i, 0);
+		voice_noteOff(i);
+	}
+	return 0;
+}
+
+int sceSsVoiceGetEndFlag(int voice)
+{
+	if (g_state == -1)
+		return 0x80450001;
+	return (sceSasGetEndFlag() >> voice) & 1;
+}
 
 int sceSsVoiceGetEnvelope(int a0)
 {
