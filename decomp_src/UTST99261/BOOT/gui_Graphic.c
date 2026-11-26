@@ -5,13 +5,21 @@
 
 typedef struct GUIFRAME {
     struct GUIFRAME *next;
-    u8 unk4[0xC];
+    s16 x;                      /* 0x4 */
+    s16 y;
+    s16 w;
+    s16 h;
+    int delay;                  /* 0xC */
     GUIPIXMAP *pixmap;          /* 0x10 */
 } GUIFRAME;
 
 typedef struct {
     s8 type;                    /* 5 */
     GUIFRAME *frames;           /* 0x4 */
+    GUIFRAME *cur;              /* 0x8 */
+    int count;                  /* 0xC */
+    int unk10;
+    int loop;                   /* 0x14 */
 } GUIANIM;
 
 void _GUI_Graphics_Push(GUIGRAPHICS *g);
@@ -281,9 +289,83 @@ void _GUI_Graphics_Pop(void) {
 void GUI_Graphics_getAnimationGIFGlobalProperty(void) {
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Graphic", GUI_Graphics_getAnimationGIFNextFrame);
+GUIPIXMAP *GUI_Graphics_getAnimationGIFNextFrame(GUIANIM *a, int reset) {
+    GUIFRAME *f;
+    int n;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Graphic", GUI_Graphics_getAnimationGIFFrameProperty);
+    if (a == NULL) {
+        puts("[X1]GUI_Graphics_getAnimationGIFNextFrame");
+        return NULL;
+    }
+    if (a->type != 5) {
+        puts("[X2]GUI_Graphics_getAnimationGIFNextFrame");
+        return NULL;
+    }
+    if (reset == 1) {
+        a->cur = NULL;
+        a->loop = 0;
+        return NULL;
+    }
+    f = a->cur;
+    if (f == NULL) {
+        f = a->frames;
+    } else if (f->next == NULL) {
+        n = a->count;
+        if (n == -1) {
+            f = a->frames;
+        } else if (a->loop == n) {
+            return f->pixmap;
+        } else {
+            a->loop++;
+            f = a->frames;
+        }
+    } else {
+        f = f->next;
+    }
+    if (f == NULL) {
+        puts("[X4]GUI_Graphics_getAnimationGIFNextFrame");
+        return NULL;
+    }
+    a->cur = f;
+    return f->pixmap;
+}
+
+void GUI_Graphics_getAnimationGIFFrameProperty(GUIANIM *a, int *x, int *y, int *w, int *h, int *delay) {
+    GUIFRAME *f;
+    int d;
+
+    *x = 0;
+    *y = 0;
+    *w = 0;
+    *h = 0;
+    *delay = 0;
+    if (a == NULL) {
+        puts("[X1]GUI_Graphics_getAnimationGIFFrameProperty");
+        return;
+    }
+    if (a->type != 5) {
+        puts("[X2]GUI_Graphics_getAnimationGIFFrameProperty");
+        return;
+    }
+    f = a->cur;
+    if (f == NULL) {
+        f = a->frames;
+        if (f == NULL) {
+            puts("[X3]GUI_Graphics_getAnimationGIFFrameProperty");
+            return;
+        }
+    }
+    *x = f->x;
+    *y = f->y;
+    *w = f->w;
+    *h = f->h;
+    if (a->loop != a->count || f->next != NULL) {
+        d = f->delay;
+    } else {
+        d = -1;
+    }
+    *delay = d;
+}
 
 GUIWIDGET *GUI_createFrame(GUIWIDGET *parent, char *text) {
     GUIWIDGET *w;
