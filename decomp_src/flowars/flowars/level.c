@@ -206,7 +206,48 @@ static void update_data()
 
 __asm__(".globl update_data");
 
-INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/level", update_level_mission);
+static void update_level_mission()
+{
+	UserStat ustat;
+
+	userManager.get_stat(0, &ustat);
+	if (ustat.sp_success[2])
+		l_mod_player.success_level_mission[0]++;
+	if (ustat.sp_success[1])
+		l_mod_player.success_level_mission[1]++;
+	if (ustat.sp_success[3])
+		l_mod_player.success_level_mission[2]++;
+	if (ustat.sp_success[4])
+		l_mod_player.success_level_mission[3]++;
+	if (ustat.sp_success[5])
+		l_mod_player.success_level_mission[4]++;
+	if (g_result_score.g_bak && g_result_score.m_bak && g_result_score.p_bak)
+		l_mod_player.success_level_mission[0]++;
+	if (ustat.go >= 5)
+		l_mod_player.success_level_mission[6]++;
+	if (ustat.go >= 6)
+		l_mod_player.success_level_mission[7]++;
+	if (ustat.go >= 7)
+		l_mod_player.success_level_mission[8]++;
+	if (ustat.sp_success[7])
+		l_mod_player.success_level_mission[9]++;
+	if (ustat.shake >= 2)
+		l_mod_player.success_level_mission[10]++;
+	if (ustat.sp_success[5] && ustat.go >= 6) {
+		if (l_mod_player.hidden_character != 1 || l_mod_player.hidden_game_rest <= 0) {
+			l_mod_player.hidden_character = 1;
+			l_mod_player.hidden_game_rest = 10;
+		}
+	}
+	if (ustat.sp_success[2] && ustat.sp_success[1] && ustat.sp_success[4] && ustat.go >= 6) {
+		if (l_mod_player.hidden_character != 2 || l_mod_player.hidden_game_rest <= 0) {
+			l_mod_player.hidden_character = 2;
+			l_mod_player.hidden_game_rest = 10;
+		}
+	}
+}
+
+__asm__(".globl update_level_mission");
 
 INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/level", is_level_cleared);
 
