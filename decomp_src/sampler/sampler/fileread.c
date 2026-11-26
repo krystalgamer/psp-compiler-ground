@@ -61,8 +61,6 @@ SceInt32 read_getCapacity(t_ringBuffer *pRing)
 	return sceMpegRingbufferAvailableSize(pRing->pRingbuf);
 }
 
-#ifdef NON_MATCHING
-/* only the data_len - readSize subtraction is scheduled after the branch */
 SceInt32 read_func(SceSize size, void *argp)
 {
 	t_ringBuffer *pRing;
@@ -78,8 +76,10 @@ SceInt32 read_func(SceSize size, void *argp)
 		iCapacitySize = sceMpegRingbufferAvailableSize(pRing->pRingbuf);
 		if (iCapacitySize > 0 && readSize < pRing->data_len) {
 				iReadSize = 32;
-				if (iCapacitySize < 32)
-					iReadSize = MIN(iCapacitySize, pRing->data_len - readSize);
+				if (iCapacitySize < 32) {
+					size = pRing->data_len - readSize;
+					iReadSize = MIN(iCapacitySize, (SceInt32)size);
+				}
 				getSize = sceMpegRingbufferPut(pRing->pRingbuf, iReadSize, iCapacitySize);
 				if (getSize < 0) {
 					printf("error error error\n %d total = %d\n", getSize, readSize);
@@ -97,6 +97,3 @@ SceInt32 read_func(SceSize size, void *argp)
 	sceKernelExitThread(0);
 	return 0;
 }
-#else
-INCLUDE_ASM("tmp/asm/sampler/sampler/nonmatchings/fileread", read_func);
-#endif
