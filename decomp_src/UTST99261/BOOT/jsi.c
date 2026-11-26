@@ -2,6 +2,8 @@
 #include "common.h"
 #include "dom_esp.h"
 #include "m2c_macros.h"
+extern DOMStr _DOMvalue;
+DOMStr Element_getAttribute(void *node, DOMStr *name);
 extern int destroyFlag;
 extern void *gBEINSI_UI;
 extern EspContext *esp_context;
@@ -120,7 +122,31 @@ int JSI_getElementPosition(void *node, int *x, int *y) {
     return 1;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSI_setButtonValue);
+int JSI_setButtonValue(void *node, DOMStr *s) {
+    LayoutBox *box;
+    char *buf;
+
+    if (node == NULL || s == NULL || (box = Node_getBox(node)) == NULL || box->type != 0x10) {
+        return 0;
+    }
+    buf = MEM_malloc(0, s->len * 3 + 1);
+    if (buf == NULL) {
+        return 0;
+    }
+    Element_setAttribute(node, &_DOMvalue, s);
+    buf[ucs2ToUtf8(buf, s->str, s->len)] = 0;
+    OS_thread_mutex_lock(M2C_FIELD(gESPRIT_LO_GLOBAL_NDA, void **, 0x3C));
+    if (M2C_FIELD(box->data, char **, 8) != NULL) {
+        MEM_free(0, M2C_FIELD(box->data, char **, 8));
+    }
+    M2C_FIELD(box->data, char **, 8) = buf;
+    OS_thread_mutex_unlock(M2C_FIELD(gESPRIT_LO_GLOBAL_NDA, void **, 0x3C));
+    if (box->widget != NULL) {
+        GUI_Button_setLabel(box->widget, buf);
+        GUI_Component_update(box->widget, 0, 0, 0, 0);
+    }
+    return 1;
+}
 
 int JSI_getCheckboxState(void *node) {
     LayoutBox *box;
@@ -459,7 +485,42 @@ void JSI_getBrowserHomeURL(void) {
     newDOMString_4B5FC(M2C_FIELD(temp_s0, int *, 0x40), strlen(M2C_FIELD(temp_s0, signed char **, 0x40)));
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSI_getAbsoluteURL);
+DOMStr *JSI_getAbsoluteURL(void *node, DOMStr *s) {
+    void *h;
+    char *base;
+    char *buf;
+    char *abs;
+    DOMStr *r;
+
+    if (node == NULL || s == NULL) {
+        return NULL;
+    }
+    if (attached == 0) {
+        JSI_init();
+    }
+    h = HST_searchSessionIDHistoryNode(Node_getSid(node));
+    if (h == NULL) {
+        return NULL;
+    }
+    base = HST_getBaseURI(h);
+    if (base == NULL) {
+        base = HST_getCurURI(h);
+    }
+    buf = MEM_malloc(0, s->len * 3 + 1);
+    if (buf == NULL) {
+        return NULL;
+    }
+    buf[ucs2ToUtf8(buf, s->str, s->len)] = 0;
+    abs = URL_toAbsoluteURL(base, buf);
+    if (abs == NULL) {
+        MEM_free(0, buf);
+        return NULL;
+    }
+    MEM_free(0, buf);
+    r = newDOMString_4B5FC(abs, strlen(abs));
+    MEM_free(0, abs);
+    return r;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
