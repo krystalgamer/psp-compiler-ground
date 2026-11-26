@@ -443,7 +443,46 @@ int sceSystemFileLoadAll2(void *buf, unsigned int size, void **phandle)
 	return ret;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/systemfile", sceSystemFileOverWriteToMem);
+int sceSystemFileOverWriteToMem(void *handle, void *index, void *data, unsigned int size)
+{
+	SysFile *sf = handle;
+	register int ret;
+
+	if (handle == NULL)
+		SF_ERROR(ret, 3)
+	else if (index == NULL)
+		SF_ERROR(ret, 3)
+	else if (sf->flags & 1)
+		SF_ERROR(ret, 3)
+	else {
+		if (sf->flags & 2) {
+			SfKeyFile *kf = (SfKeyFile *)sf;
+			SfKeyEnt *ent = index;
+			char *dst;
+
+			if (ent->maxlen < size) {
+				SF_ERROR(ret, 3)
+				goto end;
+			}
+			dst = kf->data + ent->dataoff;
+			sf_memcpy(dst, data, size);
+			ent->len = size;
+		} else {
+			SfIndex *ix = index;
+
+			if (((SfKeyEnt *)ix->unk0)->maxlen < size) {
+				SF_ERROR(ret, 3)
+				goto end;
+			}
+			sf_memcpy((void *)ix->unk8, data, size);
+			((SfKeyEnt *)ix->unk0)->len = size;
+			ix->unkC |= 1;
+		}
+		ret = 0;
+	}
+end:
+	return ret;
+}
 
 int sceSystemFileFree(void *handle)
 {
