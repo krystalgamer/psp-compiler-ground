@@ -428,6 +428,11 @@ static void draw_frame(void);
 void init_all(void);
 void start_timer(int sec);
 void check_dialog_finish(void);
+int sceUtilitySavedataGetStatus(void);
+int sceUtilitySavedataShutdownStart(void);
+int modSaveResult(void);
+int modSaveResultAborted(void);
+extern int D_0005AE44;
 
 /* SDK functions (tools/sdk_protos.h) */
 void sceKernelExitGame(void);
@@ -493,7 +498,49 @@ void stop_timer(void) {
     g_timer_switch = 0;
 }
 
-INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/main", check_dialog_finish);
+void check_dialog_finish(void)
+{
+	int status;
+
+	status = sceUtilitySavedataGetStatus();
+	if (status == 3) {
+		int ret;
+
+		ret = sceUtilitySavedataShutdownStart();
+		if (ret != 0)
+			g_save_error = 7;
+	}
+	if (status == 0 && g_check_saved == 0) {
+		int r;
+
+		r = modSaveResult();
+		g_check_saved = 1;
+		if (r == 0) {
+			g_save_error = 0;
+			show_dialog_result = 0;
+			gameManager.goto_stage(95);
+		} else if (r == (int)0x80110382)
+			g_save_error = 1;
+		else if (r == (int)0x80110383)
+			g_save_error = 2;
+		else if (r == (int)0x80110384)
+			g_save_error = 3;
+		else if (r == (int)0x80110385)
+			g_save_error = 4;
+		else if (r == (int)0x8011038B)
+			g_save_error = 5;
+		else if (r == (int)0x80110381)
+			g_save_error = 6;
+		else if (r == 2) {
+			if (modSaveResultAborted())
+				g_save_error = 7;
+			else
+				g_save_error = 8;
+		} else
+			g_save_error = 8;
+	}
+	D_0005AE44 = status;	/* static int last_status */
+}
 
 int power_handler(int a, int b, void *p) {
     if (b & 0x20000) {
