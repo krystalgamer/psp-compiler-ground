@@ -27,7 +27,14 @@ void cmDomiImplementation_Finalize(SDomiImplementation *impl) {
     SDomiNodeSLink_DeleteAll(&impl->trash);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/SDomiExternalNode", cmDomiImplementation_hasFeature);
+int cmDomiImplementation_hasFeature(SDomiImplementation *impl, const SDomiString *feature, const SDomiString *version) {
+    if (UDomiString_CompareNoCase(feature->str, feature->len, gSCore.str, gSCore.len) == 0 &&
+        (UDomiString_CompareNoCase(version->str, version->len, gSv1.str, gSv1.len) == 0 ||
+         UDomiString_CompareNoCase(version->str, version->len, gSv2.str, gSv2.len) == 0)) {
+        return 1;
+    }
+    return 0;
+}
 
 int cmDomiImplementation_createDocumentType(SDomiImplementation *impl, const SDomiString *name, const SDomiString *publicId,
                                             const SDomiString *systemId, SDomiNode **out) {

@@ -145,7 +145,24 @@ DOMString Util_Elament_getCharactorData(Node *e) {
     return CharacterData_getData(n);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/DOMAPI", Util_HTMLDocument_getBody);
+Node *Util_HTMLDocument_getBody(Node *doc) {
+    Node *root, *n;
+    DOMString tag;
+
+    root = Document_getDocumentElement(doc);
+    if (root == NULL) {
+        root = Node_getFirstChild(doc);
+    }
+    for (n = Node_getFirstChild(root); n != NULL; n = Node_getNextSibling(n)) {
+        if (Node_getNodeType(n) == 1) {
+            tag = Element_getTagName(n);
+            if (DOMStringcasecmpFast(&tag, &_DOMbody) == 0 || DOMStringcasecmpFast(&tag, &_DOMframeset) == 0) {
+                return n;
+            }
+        }
+    }
+    return NULL;
+}
 
 int Util_HTMLFormElement_getLength(Node *form) {
     Node *n;

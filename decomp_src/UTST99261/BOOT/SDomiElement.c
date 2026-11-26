@@ -27,9 +27,15 @@ int SDomiElement_BuildTagElementList(SDomiNodeSet *set);
 int SDomiElement_getAttributeNode(SDomiElement *e, const SDomiString *name, SDomiAttr **out);
 int SDomiElement_setAttributeNode(SDomiElement *e, SDomiAttr *a, SDomiAttr **out);
 int SDomiElement_removeAttributeNode(SDomiElement *e, SDomiAttr *a, SDomiAttr **out);
-int TagFilter(SDomiNodeSet *set, SDomiNode *n);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/SDomiElement", TagFilter);
+static int TagFilter(SDomiNodeSet *set, SDomiNode *n) {
+    if (n->nodeType == 1 &&
+        (UDomiString_CompareBinary(set->name.d->s.str, set->name.d->s.len, gSwildcard.str, gSwildcard.len) == 0 ||
+         UDomiString_CompareBinary(set->name.d->s.str, set->name.d->s.len, n->nodeName.d->s.str, n->nodeName.d->s.len) == 0)) {
+        return 2;
+    }
+    return 1;
+}
 
 static int PutAttribute(SDomiElement *e, int specified, SDomiAttr *a, SDomiAttr **out) {
     SDomiAttr *old;
