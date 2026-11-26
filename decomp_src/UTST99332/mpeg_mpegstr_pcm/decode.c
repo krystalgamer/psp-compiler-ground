@@ -120,7 +120,15 @@ SceInt32 decode_videoDecodeEnd(SceMpeg *pMpeg, t_avSyncControl *pAvSync);
 int printf(const char *fmt, ...);
 void *memcpy(void *d, const void *s, unsigned int n);
 
-INCLUDE_ASM("tmp/asm/UTST99332/mpeg_mpegstr_pcm/nonmatchings/decode", decode_setStreamData);
+SceInt32 decode_setStreamData(t_mpegStreamData *pStreamData, SceMpegStream *pStreamV, SceMpegAu *pAvcAu, SceMpegStream *pStreamA, SceMpegAu *pPcmAu)
+{
+	pStreamData->pAvcStream = pStreamV;
+	pStreamData->pPcmStream = pStreamA;
+	pStreamData->pAvcAu = pAvcAu;
+	pStreamData->pPcmAu = pPcmAu;
+
+	return 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/mpeg_mpegstr_pcm/nonmatchings/decode", decode_pcmDemux);
 
