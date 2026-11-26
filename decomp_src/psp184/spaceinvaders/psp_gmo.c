@@ -5,6 +5,19 @@ extern unsigned char gmo;
 extern unsigned char gmo_file;
 extern int gmo_file_max;
 extern int gmo_max;
+typedef struct { int used; void *model; } GMO_FILE;
+typedef struct {
+	int used, f4, f8, fc;
+	u8 _p10[0x44 - 0x10];
+	int anime, motion, f4c;
+	float speed;
+	void *model;
+	int effect[4];
+} GMO_W;
+#define GMO ((GMO_W *)&gmo)
+#define GMO_FILE_W ((GMO_FILE *)&gmo_file)
+int sceGmoModelDelete(void *model);
+int sceGmoModelSetCurrentMotion(void *model, int motion, float speed);
 
 
 #ifndef NULL
@@ -22,7 +35,22 @@ void gmo_init(void) {
     gmo_max = 0;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_gmo", gmo_file_load);
+void *LoadFile(char *name, int *size);
+void psp_free(void *p);
+int gmo_addr_load(void *buf);
+int gmo_file_load(char *name)
+{
+	int size;
+	void *buf;
+	int ret;
+
+	buf = LoadFile(name, &size);
+	if (buf == 0)
+		return -1;
+	ret = gmo_addr_load(buf);
+	psp_free(buf);
+	return ret;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_gmo", gmo_addr_load);
 
@@ -42,19 +70,6 @@ INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_gmo", D_0007A8A4);
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_gmo", gmo_load);
 
-typedef struct { int used; void *model; } GMO_FILE;
-typedef struct {
-	int used, f4, f8, fc;
-	u8 _p10[0x44 - 0x10];
-	int anime, motion, f4c;
-	float speed;
-	void *model;
-	int effect[4];
-} GMO_W;
-#define GMO ((GMO_W *)&gmo)
-#define GMO_FILE_W ((GMO_FILE *)&gmo_file)
-int sceGmoModelDelete(void *model);
-int sceGmoModelSetCurrentMotion(void *model, int motion, float speed);
 int gmo_unload(int no)
 {
 	GMO_W *g;
