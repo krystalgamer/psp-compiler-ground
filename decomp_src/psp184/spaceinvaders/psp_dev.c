@@ -28,6 +28,24 @@ int sceGeEdramGetSize(void);
 void *sceGeEdramGetAddr(void);
 void myHeapInit(int addr, int size);
 
+extern int double_buffer;
+extern int exit_cb;
+extern int gPowerCallBackId;
+extern unsigned char g_launch_buf;
+int sceGeEdramGetSize(void);
+void *sceGeEdramGetAddr(void);
+int exit_func(void);
+static int powercallback(int unknown, int pwrflags, void *common);
+int sceKernelCreateCallback(const char *name, void *func, void *arg);
+int sceKernelRegisterExitCallback(int cbid);
+int scePowerRegisterCallback(int slot, int cbid);
+void psp_begin_scene(void);
+void psp_end_scene(void);
+void sceGuCallList(const void *list);
+int sceGuFinish(void);
+int sceKernelPowerTick(int type);
+int pad_read(void);
+
 int exit_func(void) {
     UtilityClose();
     sceKernelExitGame();
@@ -49,9 +67,43 @@ static int powercallback(int unknown, int pwrflags, void *common)
 	return 0;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_dev", psp_sxit_callback);
+void psp_sxit_callback(void)
+{
+	int arg[4];
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_dev", psp_edram_init);
+	arg[0] = 0x100;
+	exit_cb = sceKernelCreateCallback("name", exit_func, arg);
+	sceKernelRegisterExitCallback(exit_cb);
+	gPowerCallBackId = sceKernelCreateCallback("POWER", powercallback, 0);
+	scePowerRegisterCallback(0, gPowerCallBackId);
+}
+
+extern int double_buffer;
+extern int exit_cb;
+extern int gPowerCallBackId;
+extern unsigned char g_launch_buf;
+int sceGeEdramGetSize(void);
+void *sceGeEdramGetAddr(void);
+int exit_func(void);
+static int powercallback(int unknown, int pwrflags, void *common);
+int sceKernelCreateCallback(const char *name, void *func, void *arg);
+int sceKernelRegisterExitCallback(int cbid);
+int scePowerRegisterCallback(int slot, int cbid);
+void psp_begin_scene(void);
+void psp_end_scene(void);
+void sceGuCallList(const void *list);
+int sceGuFinish(void);
+int sceKernelPowerTick(int type);
+int pad_read(void);
+void psp_edram_init(void)
+{
+	int size;
+	int off;
+
+	size = sceGeEdramGetSize();
+	off = 0x154000;
+	myHeapInit((int)sceGeEdramGetAddr() + off, size - off);
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_dev", psp_init);
 
@@ -144,7 +196,24 @@ void psp_draw_objects(void) {
     sprite_scr_disp();
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_dev", psp_loopstart);
+void psp_loopstart(void)
+{
+	if (double_buffer) {
+		sceGuStart(0, &g_launch_buf, 0x1000);
+		psp_begin_scene();
+		if (g_packet >= 0)
+			sceGuCallList(&g_packet_buf + (g_packet << 20));
+		psp_end_scene();
+		sceGuFinish();
+		g_packet = g_packet == 0;
+		sceGuStart(1, &g_packet_buf + (g_packet << 20), 0x100000);
+	} else {
+		sceGuStart(0, &g_packet_buf, 0x100000);
+		psp_begin_scene();
+	}
+	sceKernelPowerTick(0);
+	pad_read();
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_dev", psp_loopend);
 
