@@ -22,7 +22,20 @@ extern const char D_00007994[];
 extern const StreamTypeInfo D_000078F4[];
 /* --- end declarations --- */
 
-INCLUDE_ASM("tmp/asm/tony_libs/mpeg/nonmatchings/libc_mem", func_0000647C);
+void *func_0000647C(const void *s, int c, int n)
+{
+	const unsigned char *p = s;
+	unsigned char ch = c;
+
+	if (p != NULL) {
+		for (; n > 0; n--) {
+			if (*p == ch)
+				return (void *)p;
+			p++;
+		}
+	}
+	return NULL;
+}
 
 void *func_000064B4(void *dst, const void *src, int n)
 {
