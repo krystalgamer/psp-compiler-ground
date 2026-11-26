@@ -13,8 +13,8 @@ typedef struct {
 typedef struct __attribute__((packed)) {
 	char magic[4];
 	int version;
-	int keyofs;
-	int dataofs;
+	unsigned int keyofs;
+	unsigned int dataofs;
 	int count;
 } SfHeader;
 
@@ -174,7 +174,27 @@ int isValidType(unsigned short type)
 	return ret;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/systemfile", isValidSysFileHeader);
+extern char D_0002F2EC[];
+int isValidSysFileHeader(SfHeader *hdr, unsigned int size)
+{
+	register int ret;
+
+	if (sf_memcmp(hdr, D_0002F2EC, 4) != 0)
+		SF_ERROR(ret, 4)
+	else if (checkVersion(hdr->version) != 0)
+		SF_ERROR(ret, 7)
+	else if (size < hdr->keyofs)
+		SF_ERROR(ret, 3)
+	else if (size < hdr->dataofs)
+		SF_ERROR(ret, 3)
+	else if (size < hdr->count * 16 + 0x14)
+		SF_ERROR(ret, 3)
+	else if (hdr->dataofs < hdr->keyofs)
+		SF_ERROR(ret, 3)
+	else
+		ret = 0;
+	return ret;
+}
 
 int isValidSysFileKeyTable(char *base, unsigned int off, SfHeader *hdr, unsigned int size)
 {
@@ -215,7 +235,56 @@ INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/systemfile", sceSystemFileLoa
 
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/systemfile", sceSystemFileLoadIndex);
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/systemfile", sceSystemFileGetValue);
+int sceIoRead(int fd, void *buf, unsigned int nbyte);
+long long sceIoLseek(int fd, long long offset, int whence);
+int sceIoRead(int fd, void *buf, unsigned int size);
+int sceSystemFileGetValue(void *handle, void *index, void *buf)
+{
+	SysFile *sf = handle;
+	register int ret;
+
+	if (handle == NULL)
+		SF_ERROR(ret, 3)
+	else if (index == NULL)
+		SF_ERROR(ret, 3)
+	else {
+		if (sf->flags & 2) {
+			SfKeyFile *kf = (SfKeyFile *)sf;
+			SfKeyEnt *ent = index;
+			char *p = kf->data + ent->dataoff;
+
+			sf_memcpy(buf, p, ent->len);
+		} else {
+			SysFile *s;
+			SfIndex *ix;
+
+			s = sf;
+			ix = index;
+			if (ix->unk0 == 0) {
+				SF_ERROR(ret, 3)
+				goto end;
+			}
+			if (ix->unk8 != 0) {
+				sf_memcpy(buf, (void *)ix->unk8, ((SfKeyEnt *)ix->unk0)->len);
+			} else if (s->fd >= 0) {
+				if (sceIoLseek(s->fd, (unsigned int)(s->hdr->dataofs + ((SfKeyEnt *)ix->unk0)->dataoff), 0) == -1) {
+					SF_ERROR(ret, 2)
+					goto end;
+				}
+				if (sceIoRead(s->fd, buf, ((SfKeyEnt *)ix->unk0)->len) != ((SfKeyEnt *)ix->unk0)->len) {
+					SF_ERROR(ret, 2)
+					goto end;
+				}
+			} else {
+				SF_ERROR(ret, 3)
+				goto end;
+			}
+		}
+		ret = 0;
+	}
+end:
+	return ret;
+}
 
 int sceSystemFileGetValue2(void *handle, void *index, void *buf, unsigned int size)
 {
