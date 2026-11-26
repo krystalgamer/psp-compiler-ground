@@ -646,10 +646,73 @@ void zWindWidgetTextFieldDraw(ZW *w) {
     }
 }
 
-void zWindWidgetContentviewDraw(void) {
+void zWindWidgetContentviewDraw() {
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/zWindDraw", zWindWidgetDraw);
+void zWindWidgetButtonDraw(ZW *w);
+void zWindWidgetListDraw(ZW *w);
+void zWindWidgetTextAreaDraw(ZW *w);
+void zWindDrawUpdate(ZW *w, int x, int y, int wd, int h);
+
+void zWindWidgetDraw(ZW *w, int x, int y) {
+    int sx;
+    int sy;
+
+    _zWindDrawTexClipOffX = 0;
+    _zWindDrawTexClipOffY = 0;
+    if (w == NULL) {
+        return;
+    }
+    if (w->type != 1) {
+        return;
+    }
+    w->px = x + w->x;
+    w->py = y + w->y;
+    if (w->flags & 0x800000) {
+        zWindDrawUpdate(w, w->dirty[0], w->dirty[1], w->dirty[2], w->dirty[3]);
+        w->flags &= ~0x800000;
+    }
+    switch (w->flags & 0xF) {
+    case 1:
+        zWindWidgetFrameDraw(w);
+        break;
+    case 3:
+        zWindWidgetButtonDraw(w);
+        break;
+    case 4:
+        zWindWidgetCheckboxDraw(w);
+        break;
+    case 6:
+        zWindWidgetRadioboxDraw(w);
+        break;
+    case 8:
+        zWindWidgetListDraw(w);
+        break;
+    case 9:
+        zWindWidgetChoiceDraw(w);
+        break;
+    case 10:
+        zWindWidgetTextFieldDraw(w);
+        break;
+    case 11:
+        zWindWidgetTextAreaDraw(w);
+        break;
+    case 12:
+        zWindWidgetContentviewDraw(w);
+        break;
+    }
+    if ((w->flags & 0xF) == 12) {
+        if (w->child != NULL) {
+            GUI_ScrollPane_getScrollPosition(w, &sx, &sy);
+            zWindWidgetDraw(w->child, x + w->x - sx, y + w->y - sy);
+        }
+    } else if (w->child != NULL) {
+        zWindWidgetDraw(w->child, x + w->x, y + w->y);
+    }
+    if (w->next != NULL) {
+        zWindWidgetDraw(w->next, x, y);
+    }
+}
 
 extern ZGFONT *D_00584B68;
 extern u8 D_00584BB6;
@@ -1022,6 +1085,14 @@ int zWindExcEventTextField(ZWIDGET *w, int type, ZEVENT *ev) {
 }
 
 int zWindExcEventTextArea(ZW *w, int type, ZEVENT *ev, int x, int y);
+typedef struct {
+    u8 unk0[0x52];
+    s16 line;                   /* 0x52 */
+    s16 lines;                  /* 0x54 */
+    s16 unk56;
+    int editable;               /* 0x58 */
+} ZTAREA;
+
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/zWindDraw", zWindExcEventTextArea);
 
 extern void (*D_00584B60)(ZW *w, ZEVENT *ev);
