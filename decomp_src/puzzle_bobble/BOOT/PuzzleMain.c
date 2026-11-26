@@ -52,7 +52,7 @@ int Get2Dim(int x, int a, int b, int c, int d);
 int SpriteDraw(int no, float z, int color, float x0, float y0, float u0, float v0, float x1, float y1, float u1, float v1, float x2, float y2, float u2, float v2, float x3, float y3, float u3, float v3);
 int DrawSpritePt4(int no, float z, int color, float x0, float y0, float u0, float v0, float x1, float y1, float u1, float v1, float x2, float y2, float u2, float v2, float x3, float y3, float u3, float v3);
 int SpriteDrawC(float z, int x, int y, const SPRDATA *p);
-void EndressValueInit(int, int, int);
+int EndressValueInit(int, int, int);
 void SpriteSetFader(float);
 int LoadGimFile(int no, int file);
 int bgm_play(int no);
@@ -596,7 +596,8 @@ void SurvValueInit(void)
 
 extern int ColorTable[];
 extern int ColorRndMax;
-void EndressValueInit(int pl, int stage, int flag)
+/* int with no return value: callers were built against an int (implicit) declaration */
+int EndressValueInit(int pl, int stage, int flag)
 {
 	PZL_STAT *st;
 	u8 save428;
