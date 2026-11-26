@@ -239,7 +239,25 @@ int playInfo_getPts(t_playInfo *pPlayInfo, unsigned int *pTimestamp) {
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/mpeg_stream_change/nonmatchings/playInfo", playInfo_changeVideoStream);
+SceInt32 playInfo_changeVideoStream(t_playInfo *pPlayInfo)
+{
+	SceInt32 ret;
+	SceInt32 videoStreamNum;
+	SceInt32 currentVideoStream;
+	SceInt32 nextVideoStream;
+
+	videoStreamNum = sInfo_getNumberOfStreams(&pPlayInfo->sInfo, 0);
+
+	currentVideoStream = sInfo_getCurrentStreamTypeNumber(&pPlayInfo->sInfo, 0);
+
+	nextVideoStream = (currentVideoStream + 1) % videoStreamNum;
+
+	sInfo_setCurrentStream(&pPlayInfo->sInfo, 0, nextVideoStream);
+
+	decode_setCurrentStream(&pPlayInfo->streamData, 0, nextVideoStream);
+
+	return 0;
+}
 
 int playInfo_getAudioOutSize(t_playInfo *pPlayInfo) {
     return decode_getAudioOutSize(&pPlayInfo->streamData);
