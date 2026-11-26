@@ -168,7 +168,66 @@ term:
 	return ret;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/mpeg_stream_change/nonmatchings/decode", decode_reset);
+SceInt32 decode_reset(t_mpegStreamData *pStreamData, SceInt32 videoStream, SceInt32 audioStream, SceUInt32 timestamp)
+{
+	SceInt32 ret;
+	SceInt32 flag;
+	SceInt32 i;
+
+	pStreamData->currentVideoStream = videoStream;
+	pStreamData->currentAudioStream = audioStream;
+
+	for (i = 0; i < pStreamData->videoStreamNum; i++) {
+		ret = decode_initAu(pStreamData, 0, i);
+		if (ret != 0) {
+			printf("fatal error : decode_initAu() M4AVC 0x%x\n", ret);
+			goto term;
+		}
+	}
+
+	for (i = 0; i < pStreamData->videoStreamNum; i++) {
+		if (i == pStreamData->currentVideoStream) {
+			flag = 1;
+		} else {
+			flag = 0;
+		}
+
+		ret = decode_changeAuMode(pStreamData, 0, i, flag);
+		if (ret != 0) {
+			printf("fatal error : decode_changeAuMode() M4AVC 0x%x\n", ret);
+			goto term;
+		}
+	}
+
+	for (i = 0; i < pStreamData->audioStreamNum; i++) {
+		ret = decode_initAu(pStreamData, 1, i);
+		if (ret != 0) {
+			printf("fatal error : decode_initAu() ATRAC 0x%x\n", ret);
+			goto term;
+		}
+	}
+
+	for (i = 0; i < pStreamData->audioStreamNum; i++) {
+		if (i == pStreamData->currentAudioStream) {
+			flag = 1;
+		} else {
+			flag = 0;
+		}
+
+		ret = decode_changeAuMode(pStreamData, 1, i, flag);
+		if (ret != 0) {
+			printf("fatal error : decode_changeAuMode() ATRAC 0x%x\n", ret);
+			goto term;
+		}
+	}
+
+	pStreamData->startTimestamp = timestamp;
+
+	ret = 0;
+
+term:
+	return ret;
+}
 
 SceInt32 decode_delete(t_mpegStreamData *pStreamData)
 {
