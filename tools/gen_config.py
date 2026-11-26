@@ -99,7 +99,7 @@ def file_units(t, name, cus, text_end):
     ents = []
     for line in path.read_text().splitlines():
         line = line.split("#")[0].split()
-        if line and line[0] != "rodata":
+        if line and line[0] not in ("rodata", "bss"):
             ents.append((int(line[0], 16), line[3], line[2]))
             NODWARF_UNITS.update({line[1], os.path.splitext(line[3])[0]})
     bounds = sorted([e[0] for e in ents] + [c[0] for c in cus] + [text_end])
@@ -119,6 +119,20 @@ def rodata_overrides(t, name):
         if line and line[0] == "rodata" and line[1] != "blob":
             out.append((int(line[1], 16), line[2]))
     return out
+
+
+def bss_overrides(t, name):
+    """`bss ADDR UNIT` lines of files.MODULE.txt (opt-in): segment 1's .bss
+    from ADDR (vram) on is UNIT's C object's .bss; UNIT `-`: asm again."""
+    path = ROOT / "config" / t / f"files.{name}.txt"
+    if not path.exists():
+        return []
+    out = []
+    for line in path.read_text().splitlines():
+        line = line.split("#")[0].split()
+        if line and line[0] == "bss":
+            out.append((int(line[1], 16), line[2]))
+    return sorted(out)
 
 
 def rodata_blob(t, name):
@@ -521,7 +535,17 @@ def main():
     for s in s1:
         if s.nobits:
             if not bss_done:
-                out.append(f"      - {{ start: 0x{fpos:X}, type: bss, vram: 0x{s.addr:X} }}\n")
+                ov = bss_overrides(t, name)
+                if not ov:
+                    out.append(f"      - {{ start: 0x{fpos:X}, type: bss, vram: 0x{s.addr:X} }}\n")
+                else:
+                    if ov[0][0] != s.addr:
+                        ov = [(s.addr, "-")] + ov
+                    for a, u in ov:
+                        if u == "-":
+                            out.append(f"      - {{ start: 0x{fpos:X}, type: bss, vram: 0x{a:X}, name: bss_{a:X} }}\n")
+                        else:
+                            out.append(f"      - {{ start: 0x{fpos:X}, type: .bss, vram: 0x{a:X}, name: {u} }}\n")
                 bss_done = True
         else:
             out.append(f"      - [0x{s.offset:X}, data, {s.name.strip('.')}]\n")

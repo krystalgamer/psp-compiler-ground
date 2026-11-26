@@ -114,10 +114,19 @@ def fix_ld_script(ld_path: Path, config_path: Path):
             continue
         name, base = seg["name"], seg["vram"]
         text = re.sub(rf"^(\s*\.{name}) 0x[0-9A-Fa-f]+ :", r"\1 0x0 :", text, flags=re.M)
-        for sub in seg.get("subsegments", []):
-            if isinstance(sub, dict) and sub.get("type") == "bss":
-                off = sub["vram"] - base
-                text = re.sub(rf"^(\s*\.{name}_bss)( 0x[0-9A-Fa-f]+)? \(NOLOAD\)", rf"\1 0x{off:X} (NOLOAD)", text, flags=re.M)
+        bss = [sub for sub in seg.get("subsegments", []) if isinstance(sub, dict) and sub.get("type") in ("bss", ".bss")]
+        if bss:
+            # the segment's bss starts at its first bss subsegment
+            off = bss[0]["vram"] - base
+            text = re.sub(rf"^(\s*\.{name}_bss)( 0x[0-9A-Fa-f]+)? \(NOLOAD\)", rf"\1 0x{off:X} (NOLOAD)", text, flags=re.M)
+        for sub in bss:
+            if sub["type"] == ".bss":
+                # a unit's .bss given its place here (config `bss ADDR UNIT`):
+                # not also in segment 0's bss, which comes first
+                obj = re.escape(f"/{sub['name']}.c.o(.bss);")
+                m = re.search(rf"^\s*\.{name}_bss ", text, re.M)
+                head, tail = text[:m.start()], text[m.start():]
+                text = re.sub(rf"^\s*\S+{obj}\n", "", head, count=1, flags=re.M) + tail
     text = re.sub(r"^(\s*\.\w+_bss) \(NOLOAD\)", r"\1 0x0 (NOLOAD)", text, flags=re.M)
     # PRX parts are packed at their real file offsets (gaps are prxpad).
     text = re.sub(r"^\s*__romPos = ALIGN\(__romPos, \d+\);\n", "", text, flags=re.M)

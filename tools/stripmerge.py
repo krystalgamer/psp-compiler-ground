@@ -30,7 +30,7 @@ def units(t, m):
     ents = []
     for line in (ROOT / "config" / t / f"files.{m}.txt").read_text().splitlines():
         f = line.split("#")[0].split()
-        if f and f[0] != "rodata":
+        if f and f[0] not in ("rodata", "bss"):
             ents.append((int(f[0], 16), f[1]))
     return sorted(ents)
 

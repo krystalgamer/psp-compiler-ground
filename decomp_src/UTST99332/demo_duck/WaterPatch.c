@@ -14,10 +14,7 @@ extern template vertex_formats::T2UB_V3F *__uninitialized_fill_n_aux(vertex_form
 extern template unsigned short *fill_n(unsigned short *, unsigned int, const unsigned short &);
 }
 
-/* static in WaterPatch.cpp; stays in the module's .bss (asm) */
-extern unsigned int mipmap_offset[5];
-/* set_disk's `static int seed` */
-extern int set_disk_seed __asm__("_ZZN10WaterPatch8set_diskEN4math11vector_xyzwEfffE4seed");
+static unsigned int mipmap_offset[5];
 
 /* the strings stay in the module's .rodata (asm) */
 extern const char D_0015DB64[];     /* " *** error " */
@@ -34,12 +31,7 @@ extern const char WaterPatch_ctor_name[] __asm__("_ZZN10WaterPatchC1EjjfiffE19__
         common::common_internal::clash(); \
     }
 
-/* emitted first, like the static constructors -O3 puts before the deferred functions */
-#ifndef M2CTX
-__asm__(".set noat\n.set noreorder\n"
-        ".include \"tmp/asm/UTST99332/demo_duck/nonmatchings/WaterPatch/_Z41__static_initialization_and_destruction_0ii_3E8.s\"\n"
-        ".set reorder\n.set at\n");
-#endif
+INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/WaterPatch", _Z41__static_initialization_and_destruction_0ii_3E8);
 
 WaterPatch::WaterPatch(unsigned int nx, unsigned int ny, float size, int mode, float damping, float speed)
     : _nx(nx), _ny(ny), _size(size), _pos(nx * ny), _normal(nx * ny), _vtx0(nx * ny), _vtx1(nx * ny),
@@ -83,7 +75,8 @@ float WaterPatch::set_disk(math::vector_xyzw c, float radius, float, float heigh
         r = 1;
     int cx = (int)(c.x / _size + ((float)_nx - 1) * 0.5f);
     int cy = (int)(c.y / _size + ((float)_ny - 1) * 0.5f);
-    set_disk_seed++;
+    static int seed;
+    seed++;
     for (int i = -r; i <= r; i++)
         for (int j = -r; j <= r; j++)
             if (i * i + j * j <= r * r)
