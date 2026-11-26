@@ -2,12 +2,14 @@
 #include "common.h"
 
 typedef struct {
-	unsigned char unk1;
-	unsigned char vel;
+	unsigned char unk0;
+	unsigned char vol;
+	unsigned char exp;
 	unsigned char pan;
-	unsigned char unk3[5];
+	unsigned char unk4;
+	unsigned char unk5[3];
 	int id;
-	int unkC;
+	int bend;
 } SmfChannel;
 
 typedef struct {
@@ -37,6 +39,12 @@ extern SmfData *D_00128F9C[128];
 #define g_smf D_00128F9C
 int sceSsSetSustainHold(int a0, int a1, int a2);
 int sceSsKeyOffByID(int id);
+int sceSsGetVoice(int ch, int id);
+int _sceSsGetExpVel(int voice);
+int sceSsVoiceSetPanpot(int voice, int pan);
+int sceSsVoiceSetSendPanpot(int voice, int pan);
+int sceSsVoiceSetVelocity(int voice, unsigned char vel);
+int sceSsVoiceSetSendVelocity(int voice, unsigned char vel);
 
 INCLUDE_ASM("tmp/asm/UTST99332/sound_playsmf/nonmatchings/smf", smf_bindSmf);
 
@@ -101,9 +109,63 @@ int smf_getPlayVelocity(unsigned int id)
 
 INCLUDE_ASM("tmp/asm/UTST99332/sound_playsmf/nonmatchings/smf", smf_setPlaySendVelocity);
 
-INCLUDE_ASM("tmp/asm/UTST99332/sound_playsmf/nonmatchings/smf", smf_setPlayPanpot);
+int smf_setPlayPanpot(unsigned int id, unsigned int pan)
+{
+	unsigned int ch;
+	unsigned int v;
+	unsigned int mask;
+	int p;
 
-INCLUDE_ASM("tmp/asm/UTST99332/sound_playsmf/nonmatchings/smf", smf_setPlaySendPanpot);
+	if (id > 128)
+		return 0x80540007;
+	if (g_smf[id] == NULL)
+		return 0x80540007;
+	if (pan >= 128)
+		return 0x8054000a;
+	g_smf[id]->pan = pan;
+	for (ch = 0; ch < 16; ch++) {
+		mask = sceSsGetVoice(ch, g_smf[id]->ch[ch].id);
+		if (mask != 0) {
+		for (v = 0; v < 32; v++) {
+			if ((mask >> v) & 1) {
+				p = g_smf[id]->pan + g_smf[id]->ch[ch].pan - 64;
+				p = p < 0 ? 0 : p;
+				sceSsVoiceSetPanpot(v, p > 127 ? 127 : p);
+			}
+		}
+		}
+	}
+	return 0;
+}
+
+int smf_setPlaySendPanpot(unsigned int id, unsigned int pan)
+{
+	unsigned int ch;
+	unsigned int v;
+	unsigned int mask;
+	int p;
+
+	if (id > 128)
+		return 0x80540007;
+	if (g_smf[id] == NULL)
+		return 0x80540007;
+	if (pan >= 128)
+		return 0x8054000a;
+	g_smf[id]->sendPan = pan;
+	for (ch = 0; ch < 16; ch++) {
+		mask = sceSsGetVoice(ch, g_smf[id]->ch[ch].id);
+		if (mask != 0) {
+		for (v = 0; v < 32; v++) {
+			if ((mask >> v) & 1) {
+				p = g_smf[id]->sendPan + g_smf[id]->ch[ch].pan - 64;
+				p = p < 0 ? 0 : p;
+				sceSsVoiceSetSendPanpot(v, p > 127 ? 127 : p);
+			}
+		}
+		}
+	}
+	return 0;
+}
 
 int smf_setChannelMute(unsigned int id, unsigned int ch)
 {
