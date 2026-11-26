@@ -57,9 +57,46 @@ extern SsVoice D_001291C8[];
 #define g_vstate D_000186E4
 #define g_vmax D_0012919C
 #define g_voice D_001291C8
-
-extern SsVoice *D_00129F48[];
 extern unsigned int D_001291A4;
+extern SsVoice *D_00129F48[32];
+extern unsigned int D_001291A8;
+extern SsVoice *D_00129FC8[32];
+extern unsigned int D_001291AC;
+extern SsVoice *D_0012A048[32];
+extern unsigned int D_001291B0;
+extern SsVoice *D_0012A0C8[32];
+extern unsigned int D_001291B4;
+extern SsVoice *D_0012A148[32];
+extern unsigned int D_001291B8;
+extern SsVoice *D_0012A1C8[32];
+extern unsigned int D_001291BC;
+extern SsVoice *D_0012A248[32];
+extern unsigned int D_001291C0;
+extern SsVoice *D_0012A2C8[32];
+extern unsigned int D_001291C4;
+extern SsVoice *D_0012A348[32];
+#define g_cnt1 D_001291A4
+#define g_lst1 D_00129F48
+#define g_cnt2 D_001291A8
+#define g_lst2 D_00129FC8
+#define g_cnt3 D_001291AC
+#define g_lst3 D_0012A048
+#define g_cnt4 D_001291B0
+#define g_lst4 D_0012A0C8
+#define g_cnt5 D_001291B4
+#define g_lst5 D_0012A148
+#define g_cnt6 D_001291B8
+#define g_lst6 D_0012A1C8
+#define g_cnt7 D_001291BC
+#define g_lst7 D_0012A248
+#define g_cnt8 D_001291C0
+#define g_lst8 D_0012A2C8
+#define g_cnt9 D_001291C4
+#define g_lst9 D_0012A348
+
+static void func_0000C1B0(SsVoice *p);
+SsVoice *func_0000C240(unsigned int *pCount, SsVoice **list, unsigned int *pOutCount, SsVoice **outList, unsigned int no);
+
 
 int voice_init(unsigned int num)
 {
@@ -76,9 +113,9 @@ int voice_init(unsigned int num)
 		p->i4 = 0;
 		func_0000C1B0(p);
 		p->no = i;
-		D_00129F48[i] = p;
+		g_lst1[i] = p;
 	}
-	D_001291A4 = g_vmax;
+	g_cnt1 = g_vmax;
 	g_vstate = 0;
 	return 0;
 }
@@ -89,9 +126,91 @@ INCLUDE_ASM("tmp/asm/UTST99332/sound_playsmf/nonmatchings/voice", voice_allocVoi
 
 INCLUDE_ASM("tmp/asm/UTST99332/sound_playsmf/nonmatchings/voice", voice_noteOn);
 
-INCLUDE_ASM("tmp/asm/UTST99332/sound_playsmf/nonmatchings/voice", voice_noteOff);
+int voice_noteOff(unsigned int v)
+{
+	SsVoice *p;
+	SsVoice *q;
 
-INCLUDE_ASM("tmp/asm/UTST99332/sound_playsmf/nonmatchings/voice", voice_setSustain);
+	if (g_vstate == -1)
+		return 0x80450001;
+	if (v >= g_vmax)
+		return 0x80540011;
+	p = &g_voice[v];
+	switch (p->status) {
+	case 0:
+		return 0x80540012;
+	case 2:
+		if (p->i18 == 0)
+			{
+			q = func_0000C240(&g_cnt2, g_lst2, &g_cnt1, g_lst1, v);
+			q->status = 1;
+		}
+		else
+			{
+			q = func_0000C240(&g_cnt2, g_lst2, &g_cnt9, g_lst9, v);
+			q->status = 9;
+		}
+		break;
+	case 3:
+		if (p->i18 == 0)
+			{
+			q = func_0000C240(&g_cnt3, g_lst3, &g_cnt4, g_lst4, v);
+			q->status = 4;
+		}
+		else
+			{
+			q = func_0000C240(&g_cnt3, g_lst3, &g_cnt7, g_lst7, v);
+			q->status = 7;
+		}
+		break;
+	case 6:
+		if (p->i18 == 0)
+			{
+			q = func_0000C240(&g_cnt6, g_lst6, &g_cnt4, g_lst4, v);
+			q->status = 4;
+		}
+		else
+			{
+			q = func_0000C240(&g_cnt6, g_lst6, &g_cnt8, g_lst8, v);
+			q->status = 8;
+		}
+		break;
+	}
+	return 0;
+}
+
+int voice_setSustain(unsigned int v, unsigned int on)
+{
+	SsVoice *p;
+	SsVoice *q;
+
+	if (g_vstate == -1)
+		return 0x80450001;
+	if (v >= g_vmax)
+		return 0x80540011;
+	if (on >= 2)
+		return 0x8054000a;
+	p = &g_voice[v];
+	if (p->status == 0)
+		return 0x80540012;
+	if (on == 0) {
+		if (p->status == 7) {
+			q = func_0000C240(&g_cnt7, g_lst7, &g_cnt4, g_lst4, v);
+			q->status = 4;
+			q->i18 = 0;
+		} else if (p->status == 3) {
+			p->i18 = 0;
+		} else if (p->status == 2 || p->status == 6) {
+			p->i18 = 0;
+		}
+	} else {
+		if (p->status == 3)
+			p->i18 = on;
+		if (p->status == 2 || p->status == 6)
+			p->i18 = on;
+	}
+	return 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/sound_playsmf/nonmatchings/voice", voice_setReservedVoice);
 
