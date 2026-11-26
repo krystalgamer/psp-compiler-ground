@@ -67,6 +67,33 @@ int Node_getJSObj(int node);
 int sendJSEvent(int obj, JSEVENT *ev);
 int make_msg_LP12();
 int make_msg_LP17();
+int make_msg_LP18();
+int make_msg_LJ6();
+int HST_getDomObject();
+int actSearchString();
+int getJSSEM();
+int OS_thread_mutex_unlock();
+typedef struct {
+    u16 unk0;
+    u16 unk2;
+    u16 unk4;
+    u16 unk6;
+    u8 unk8[4];
+    char *str;                  /* 0xC */
+} JSRCH;
+typedef struct {
+    int unk0;
+    int session;                /* 0x4 */
+    u8 unk8[8];
+    int unk10;
+    u8 unk14[8];
+    void *data;                 /* 0x1C */
+} JMSG;
+typedef struct {
+    u8 unk0[0x6C];
+    void *body;                 /* 0x6C */
+} THIST;
+
 
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_text", divOverText);
@@ -233,7 +260,22 @@ void proc_msg_JL6(void *arg0) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_text", proc_msg_JL7);
+void proc_msg_JL7(JMSG *m) {
+    JSRCH *s;
+    int r;
+    int out;
+
+    if (m->unk10 == 0) {
+        s = m->data;
+        r = actSearchString(Node_getBox(HST_getDomObject(HST_searchSessionIDHistoryNode(m->session))), s->str, s->unk2, s->unk4);
+        MEM_free(0, m->data);
+        out = make_msg_LJ6(m, r);
+    } else {
+        out = make_msg_LP17(m, 1);
+        lo_global.flags |= 0x80;
+    }
+    putLLIST((M2C_UNK *)&REQUEST_LLIST, out);
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -258,7 +300,22 @@ void proc_msg_JL8(void *arg0) {
     actSetFocusByBox(temp_a0, var_s0, var_s2);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_text", proc_msg_JL9);
+void proc_msg_JL9(JMSG *m) {
+    THIST *h;
+
+    h = HST_searchSessionIDHistoryNode(m->session);
+    if (h == NULL || h->body == NULL || !checkBoxValidity((int)h->body)) {
+        goto fail;
+    }
+    getBodyBox(h->body);
+    if (lo_global.flags & 0x18) {
+fail:
+        MEM_free(0, m->data);
+        OS_thread_mutex_unlock(getJSSEM());
+        return;
+    }
+    putLLIST((M2C_UNK *)&REQUEST_LLIST, make_msg_LP18(m));
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
