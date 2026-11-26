@@ -1019,7 +1019,1021 @@ __asm__(".globl D_0002FBCC\nD_0002FBCC = 0x0002FBCC");
 
 
 
+#ifdef NON_MATCHING
+/* Close: every stage block has the original size and instructions; ~460 lines
+ * differ only in register choice (our GCSE keeps hi(panManager) in s8 across
+ * stages 6/17/19, so flagBbuck is spilled; game_type compare regs swapped). */
+#define process_stage process_stage_E1E0
+extern int D_00055810;	/* static int inform_frame */
+extern int D_00055814;	/* static int levelResult */
+#define inform_frame D_00055810
+#define levelResult D_00055814
+extern ModSystem mod_system_z __asm__("mod_system_zero");
+__asm__("mod_system_zero = 0");
+extern ModGame mod_game_z __asm__("PRX_ZERO");
+#define mod_system mod_system_z
+#define mod_game mod_game_z
+extern char g_bgm_file_a[20] __asm__("g_bgm_file") __attribute__((aligned(4)));
+#define g_bgm_file g_bgm_file_a
+int find_array(int seed, int *a, int a_size);
+int count_array(int *a, int a_size);
+void start_timer(int sec);
+void stop_timer(void);
+void modAtracPlay(char *file);
+void modAtracStop(void);
+void modSaveData(void);
+int sceKernelTerminateDeleteThread(SceUID thid);
+int sceRtcGetCurrentTick(SceRtcTick *tick);
+char *strcpy(char *d, const char *s);
+void *memcpy(void *d, const void *s, unsigned int n);
+static void process_stage()
+{
+	int player;
+	int my_turn;
+	Point pt;
+	int sound;
+
+	my_turn = g_player_index == g_turn;
+	player = !my_turn;
+
+	int stage = g_stage_status;
+
+	if (stage == 11) {
+		sceRtcGetCurrentTick(&rtc_tick);
+		g_old_tick = rtc_tick.tick;
+		goto_stage(12);
+	}
+
+	if (stage == 12) {
+		sceRtcGetCurrentTick(&rtc_tick);
+		if ((int)(rtc_tick.tick - g_old_tick) / 1000 > g_delay) {
+			animator.clear();
+			g_wait_func = 0;
+			goto_stage(g_next_stage);
+		}
+	}
+
+	if (stage == 3) {
+		clear_stage();
+		sceKernelTerminateDeleteThread(idload);
+		init_game();
+		goto_stage(4);
+	}
+
+	if (stage == 4) {
+		clear_stage();
+		print_nothing("STAGE_INIT...\n");
+		init_all();
+		memset(g_chongtong_kind, 0, sizeof(g_chongtong_kind));
+		memset(g_shake_kind, 0, sizeof(g_shake_kind));
+		deckManager.shuffle();
+		if (mod_game.game_type == 1 && g_game_count == 2)
+			goto_stage(8);
+		else
+			wait_stage(6, 300, 0);
+		if ((mod_game.game_type == 1 && l_mod_player.hidden_game_rest > 0) || g_opp_party[0] == 5)
+			strcpy(g_bgm_file, "snd/bgm_ch.at3");
+		else
+			sprintf(g_bgm_file, "snd/bgm_c%d%d.at3", g_opp_party[0] + 1, 3 - g_opp_char[0]);
+		modAtracPlay(g_bgm_file);
+	}
+
+	if (stage == 6) {
+		clear_stage();
+		print_nothing("STAGE_DEAL...\n");
+		g_sun = g_turn;
+		int index;
+		for (index = 0; index < 10; index++)
+			handManager.add(1, deckManager.get_pae());
+		for (index = 0; index < 10; index++)
+			handManager.add(0, deckManager.get_pae());
+		handManager.sort(0);
+		for (index = 0; index < 8; index++)
+			panManager.add(deckManager.get_pae(), 0, 0);
+		missionManager.assign(l_mod_player.level);
+		wait_stage(7, 300, 0);
+	}
+
+	if (stage == 8) {
+		if (inform_frame > 300) {
+			inform_frame = 0;
+			graphics.stop_vs_menu();
+			goto_stage(6);
+			return;
+		}
+		inform_frame++;
+		g_draw_vs_switch = 1;
+		g_timer_pause = 1;
+		return;
+	}
+
+	if (stage == 7) {
+		g_draw_sun = player;
+		int chongtong_kind = panManager.check_chongtong();
+		if (chongtong_kind > 0) {
+			dialog_param[0] = chongtong_kind * 4 - 3;
+			dialog_param[1] = chongtong_kind * 4 - 2;
+			dialog_param[2] = chongtong_kind * 4 - 1;
+			dialog_param[3] = chongtong_kind * 4;
+			goto_stage(34);
+			return;
+		}
+		int pos = panManager.get_kind_pos(13);
+		if (pos != -1) {
+			int pae = panManager.remove_pos(pos);
+			give_pae(player, pae, pos, 13);
+			panManager.compact();
+			int newpae = deckManager.get_pae();
+			int sx = 0, sy = 0;
+			deckManager.get_back_pos(&sx, &sy);
+			panManager.add(newpae, &pt, 0);
+			animator.add_pae(newpae, sx, sy, pt.x, pt.y, 0, -1);
+			wait_stage(7, 3000, animator.play_bonus_pae);
+			return;
+		} else {
+			goto_stage(51);
+		}
+	}
+
+	if (stage == 51) {
+		print_nothing("[STAGE_READY_TURN]\n");
+		if (g_player_index != 0 && g_player_index != 1) {
+			printGlobal("from stage_ready_turn");
+			exit(0);
+		}
+		if (g_turn == g_sun) {
+			g_round_count++;
+			print_nothing("[%03d]Round : %d--------------------------\n", g_game_count, g_round_count);
+			if (g_round_count == 2) {
+				missionManager.set_mission_state(1);
+				soundUtil.play(26, 127);
+			}
+		}
+		if (my_turn)
+			soundUtil.play(10, 127);
+		inputManager.set_key_enable(1, 0);
+		inputManager.set_key_enable(7, 0);
+		goto_stage(14);
+	}
+
+	if (stage == 14) {
+		inputManager.set_key_enable(1, 0);
+		inputManager.set_key_enable(7, 0);
+		skinManager.set_char_feel(player, 0);
+		flag_sort_done = 0;
+		handManager.sort(g_turn);
+		flag_sort_done = 1;
+		inputManager.set_key_enable(1, 1);
+		inputManager.set_key_enable(7, 1);
+		if (g_round_count == 1 || g_flag_bonus_chongtong == 1) {
+			int chongtong_kind = handManager.check_chongtong(player);
+			if (chongtong_kind > 0 && find_array(chongtong_kind, g_chongtong_kind, 4) == -1) {
+				dialog_param[0] = chongtong_kind * 4 - 3;
+				dialog_param[1] = chongtong_kind * 4 - 2;
+				dialog_param[2] = chongtong_kind * 4 - 1;
+				dialog_param[3] = chongtong_kind * 4;
+				if (my_turn) {
+					switch (g_confirm) {
+					case 2:
+						g_flag_bonus_chongtong = 0;
+						g_confirm = 0;
+						g_chongtong_kind[count_array(g_chongtong_kind, 4)] = chongtong_kind;
+						return;
+					case 1:
+						g_flag_bonus_chongtong = 0;
+						g_confirm = 0;
+						g_chongtong_kind[count_array(g_chongtong_kind, 4)] = chongtong_kind;
+						goto_stage(34);
+						return;
+					case 0:
+						handManager.get_kind(0, chongtong_kind, dialog_param);
+						if (!g_timer_switch) start_timer(10);
+						goto_stage(27);
+						return;
+					}
+					return;
+				} else {
+					g_flag_bonus_chongtong = 0;
+					g_confirm = 0;
+					goto_stage(34);
+					return;
+				}
+			}
+		}
+		if (!my_turn) {
+			if (flag_ai)
+				g_player_pae_pos = aiManager.judge(player);
+			flag_ai = 1;
+			if (g_player_pae_pos < 0)
+				g_player_pae_pos = 0;
+			goto_stage(15);
+		} else {
+			if (!g_timer_switch) {
+				if (flag_ai)
+					g_player_pae_pos = aiManager.judge(player);
+				flag_ai = 1;
+				inputManager.g_cursor_pos = g_player_pae_pos;
+				g_show_cursor = 1;
+				start_timer(15);
+			}
+		}
+	}
+
+	if (stage == 15) {
+		print_nothing("[STAGE_CONFIRM_SHAKE]\n");
+		clear_stage();
+		if (g_player_index != 0 && g_player_index != 1) {
+			printGlobal("from stage_confirm_shake");
+			exit(0);
+		}
+		int pae = handManager.get_pae_at(player, g_player_pae_pos);
+		if (pae == 0) {
+			print_nothing("pae is zero.\n");
+			return;
+		}
+		int kind = paeManager.get_pae_kind(pae);
+		int pos = panManager.get_kind_pos(kind);
+		int hand_pae_count = handManager.count_kind(player, kind);
+		if (pae < 49 && hand_pae_count >= 3 && pos == -1 && find_array(kind, g_shake_kind, 9) == -1) {
+			print_nothing("\xc8\xe7\xb5\xe9\xb1\xe2\xc8\xae\xc0\xce:player-%d, g_confirm-%d, kind-%d, count-%d\n", player, g_confirm, kind, hand_pae_count);
+			if (my_turn) {
+				flag_ai = 0;
+				switch (g_confirm) {
+				case 2:
+					print_nothing("[%03d]\xc8\xe7\xb5\xe9\xbe\xfa\xc0\xbd-player:%d, kind:%d, pae:%d\n", g_game_count, player, kind, pae);
+					g_confirm = 0;
+					g_shake_kind[count_array(g_shake_kind, 9)] = kind;
+					userManager.shake(0);
+					flag_sort_done = 0;
+					if (hand_pae_count == 4)
+						goto_stage(36);
+					else
+						goto_stage(33);
+					return;
+				case 1:
+					g_confirm = 0;
+					g_shake_kind[count_array(g_shake_kind, 9)] = kind;
+					memset(dialog_param, 0, sizeof(dialog_param));
+					inputManager.set_key_enable(1, 0);
+					inputManager.set_key_enable(7, 0);
+					flag_sort_done = 0;
+					goto_stage(14);
+					return;
+				case 0:
+					print_nothing("[%03d]\xc8\xe7\xb5\xe9\xb1\xee \xb0\xed\xb9\xce\xc1\xdf-player:%d, kind:%d, pae:%d\n", g_game_count, player, kind, pae);
+					handManager.get_kind(0, kind, dialog_param);
+					if (!g_timer_switch) start_timer(10);
+					goto_stage(28);
+					return;
+				}
+			} else {
+				if (player == 1) {
+					handManager.get_kind(1, kind, dialog_param);
+					g_shake_kind[count_array(g_shake_kind, 9)] = kind;
+					userManager.shake(1);
+					if (hand_pae_count == 4)
+						goto_stage(36);
+					else
+						goto_stage(33);
+					return;
+				}
+				handManager.get_kind(2, kind, dialog_param);
+				g_shake_kind[count_array(g_shake_kind, 9)] = kind;
+				userManager.shake(2);
+				if (hand_pae_count == 4)
+					goto_stage(36);
+				else
+					goto_stage(33);
+				return;
+			}
+		}
+		goto_stage(16);
+	}
+
+	if (stage == 33) {
+		if (inform_frame > 90) {
+			inform_frame = 0;
+			memset(dialog_param, 0, sizeof(dialog_param));
+			goto_stage(14);
+		} else {
+			if (inform_frame == 0)
+				soundUtil.play(58, 127);
+			inform_frame++;
+		}
+	}
+
+	if (stage == 36) {
+		if (inform_frame > 90) {
+			inform_frame = 0;
+			memset(dialog_param, 0, sizeof(dialog_param));
+			goto_stage(14);
+		} else {
+			if (inform_frame == 0)
+				soundUtil.play(58, 127);
+			inform_frame++;
+		}
+	}
+
+	if (stage == 16) {
+		print_nothing("[STAGE_READY_PUT]\n");
+		clear_stage();
+		flag_sort_done = 0;
+		int pae = handManager.get_pae_at(player, g_player_pae_pos);
+		print_nothing("[%03d]\xc6\xd0\xb4\xf8\xc1\xfc : player-%d, pos-%d, pae-%d\n", g_game_count, player, g_player_pae_pos, pae);
+		print_nothing("[%03d]player hand - ", g_game_count);
+		int i;
+		for (i = 0; i < handManager.count(player); i++)
+			print_nothing("[%d]", handManager.get_pae_at(player, i));
+		print_nothing(" [");
+		for (i = 0; i < 9; i++)
+			print_nothing("%d,", g_shake_kind[i]);
+		print_nothing("]\n");
+		if (my_turn) {
+			int limit = handManager.count(player);
+			if (inputManager.g_cursor_pos >= limit)
+				inputManager.g_cursor_pos = limit - 1;
+		}
+		if (pae == 51) {
+			handManager.remove_pae_at(player, g_player_pae_pos);
+			g_last_pae = pae;
+			goto_stage(18);
+			return;
+		}
+		if (pae == 49 || pae == 50) {
+			handManager.remove_pae_at(player, g_player_pae_pos);
+			collectManager.add(player, pae);
+			int newpae = deckManager.get_pae();
+			handManager.add(player, newpae);
+			print_nothing("[%03d]\xc6\xd0 \xb0\xa1\xc1\xae\xbf\xc8 : player-%d, pae-%d\n", g_game_count, newpae);
+			int sx = 0, sy = 0;
+			deckManager.get_back_pos(&sx, &sy);
+			if (my_turn) {
+				int dx = (g_player_pae_pos % 5) * 26 + 348;
+				int dy = (g_player_pae_pos / 5) * 40 + 190;
+				animator.add_pae(newpae, sx, sy, dx, dy, 0, 53);
+			} else if (player == 1) {
+				int dx = (g_player_pae_pos % 5) * 6 + 133;
+				int dy = (g_player_pae_pos / 5) * 26 + 3;
+				animator.add_pae(52, sx, sy, dx, dy, 0, 53);
+			} else {
+				int dx = g_player_pae_pos * 6 + 298;
+				int dy = 3;
+				animator.add_pae(52, sx, sy, dx, dy, 0, 53);
+			}
+			wait_stage(23, 3000, animator.pan_to_hand);
+			return;
+		}
+		goto_stage(17);
+	}
+
+	if (stage == 23) {
+		int chongtong_kind = handManager.check_chongtong(player);
+		if (chongtong_kind > 0 && find_array(chongtong_kind, g_chongtong_kind, 4) == -1) {
+			print_nothing("[%03d]\xba\xb8\xb3\xca\xbd\xba\xc8\xc4 \xc3\xd1\xc5\xeb \xbc\xba\xb8\xb3:player-%d, kind-%d\n", g_game_count, player, chongtong_kind);
+			g_flag_bonus_chongtong = 1;
+			dialog_param[0] = chongtong_kind * 4 - 3;
+			dialog_param[1] = chongtong_kind * 4 - 2;
+			dialog_param[2] = chongtong_kind * 4 - 1;
+			dialog_param[3] = chongtong_kind * 4;
+			if (my_turn) {
+				switch (g_confirm) {
+				case 2:
+					inputManager.set_key_enable(1, 0);
+					inputManager.set_key_enable(7, 0);
+					g_flag_bonus_chongtong = 0;
+					g_confirm = 0;
+					g_chongtong_kind[count_array(g_chongtong_kind, 4)] = chongtong_kind;
+					return;
+				case 1:
+					inputManager.set_key_enable(1, 0);
+					inputManager.set_key_enable(7, 0);
+					g_flag_bonus_chongtong = 0;
+					g_confirm = 0;
+					g_chongtong_kind[count_array(g_chongtong_kind, 4)] = chongtong_kind;
+					goto_stage(34);
+					return;
+				case 0:
+					handManager.get_kind(0, chongtong_kind, dialog_param);
+					if (!g_timer_switch) start_timer(10);
+					goto_stage(27);
+					return;
+				}
+				return;
+			} else {
+				g_flag_bonus_chongtong = 0;
+				g_confirm = 0;
+				goto_stage(34);
+				return;
+			}
+		}
+		userManager.update();
+		inputManager.set_key_enable(1, 0);
+		inputManager.set_key_enable(7, 0);
+		wait_stage(14, 300, 0);
+		return;
+	}
+
+	if (stage == 17) {
+		print_nothing("[STAGE_PUT]\n");
+		clear_stage();
+		int bomb = 0;
+		int pae, k, index, pos;
+		int sx = 0, sy;
+		pae = handManager.get_pae_at(player, g_player_pae_pos);
+		if (pae == 0) {
+			print_nothing("\xc0\xdf\xb8\xf8\xb5\xc8 \xc6\xd0:%d,%d,%d\n", pae, player, g_player_pae_pos);
+			return;
+		}
+		k = paeManager.get_pae_kind(pae);
+		int hand_pae_count = handManager.count_kind(player, k);
+		g_pan_pae_count = panManager.get_kind(k, dialog_param);
+		pos = panManager.get_kind_pos(k);
+		print_nothing("\xc6\xf8\xc5\xba\xc8\xae\xc0\xce-player:%d, pos:%d, pae:%d, hand:%d, pan:%d\n", player, g_player_pae_pos, pae, hand_pae_count, g_pan_pae_count);
+		if (hand_pae_count == 3 && pos != -1) {
+			if (find_array(k, g_shake_kind, 9) == -1)
+				bomb = 1;
+			else
+				bomb = find_array(k, g_chongtong_kind, 4) != -1;
+		}
+		print_nothing("\xc6\xf8\xc5\xba\xc8\xae\xc0\xce \xb0\xe1\xb0\xfa:%d\n", bomb);
+		if (bomb) {
+			int pos, p;
+			print_nothing("[%03d]\xc6\xf8\xc5\xba!!-player:%d, pae:%d, kind:%d\n", g_game_count, player, pae, k);
+			index = 0;
+			while (handManager.get_first_kind(player, k, &pos, &p)) {
+				if (my_turn) {
+					if (index == 0)
+						sx = (pos % 5) * 26 + 348;
+					else
+						sx += index * 10;
+					sy = (pos / 5) * 40 + 190;
+				} else if (player == 1) {
+					if (index == 0)
+						sx = (pos % 5) * 6 + 133;
+					else
+						sx += index * 10;
+					sy = (pos / 5) * 26 + 3;
+				} else {
+					if (index == 0)
+						sx = pos * 6 + 298;
+					else
+						sx += index * 10;
+					sy = 3;
+				}
+				panManager.add(p, &pt, &sound);
+				handManager.remove_pae_at(player, pos);
+				animator.add_pae_bomb(p, sx, sy, pt.x, pt.y, index * 20, 9);
+				index++;
+			}
+			handManager.add(player, 51);
+			handManager.add(player, 51);
+			handManager.sort(player);
+		} else {
+			if (my_turn) {
+				sx = (g_player_pae_pos % 5) * 26 + 348;
+				sy = (g_player_pae_pos / 5) * 40 + 190;
+			} else if (player == 1) {
+				sx = (g_player_pae_pos % 5) * 6 + 133;
+				sy = (g_player_pae_pos / 5) * 26 + 3;
+			} else {
+				sx = g_player_pae_pos * 6 + 298;
+				sy = 3;
+			}
+			panManager.add(pae, &pt, &sound);
+			handManager.remove_pae_at(player, g_player_pae_pos);
+			animator.add_pae(pae, sx, sy, pt.x, pt.y, 0, sound);
+		}
+		g_last_pae = pae;
+		if (my_turn) {
+			int limit = handManager.count(player) - 1;
+			inputManager.g_cursor_pos = inputManager.g_cursor_pos > limit ? limit : inputManager.g_cursor_pos;
+		}
+		if (g_pan_pae_count == 2) {
+			if (paeManager.is_pi(dialog_param[0]) == 1 && paeManager.is_pi(dialog_param[1]) == 1) {
+				g_confirm = 2;
+			} else if (my_turn) {
+				if (!g_timer_switch) start_timer(10);
+				wait_stage(31, 3000, animator.me_to_pan);
+				return;
+			} else {
+				if (aiManager.get_pae_priority(dialog_param[0]) < aiManager.get_pae_priority(dialog_param[1]))
+					g_confirm = 1;
+				else
+					g_confirm = 2;
+			}
+		}
+		if (bomb) {
+			wait_stage(18, 3000, animator.me_to_bomb);
+			set_char_feel(player, 1, 2);
+		} else {
+			wait_stage(18, 3000, animator.me_to_pan);
+		}
+	}
+
+	if (stage == 18) {
+		print_nothing("[STAGE_TURNOVER]\n");
+		clear_stage();
+		g_turn_pae = deckManager.get_pae();
+		print_nothing("[%03d]\xb5\xda\xc1\xfd\xc0\xbd-player:%d, pae:%d\n", g_game_count, player, g_turn_pae);
+		if (g_turn_pae != 49 && g_turn_pae != 50)
+			g_last_turn_pae = g_turn_pae;
+		goto_stage(19);
+	}
+
+	if (stage == 19) {
+		print_nothing("[STAGE_PUT_TURN_PAE]\n");
+		clear_stage();
+		int kind = paeManager.get_pae_kind(g_turn_pae);
+		int kind_count = panManager.get_kind(kind, dialog_param2);
+		int sx = 0, sy = 0;
+		deckManager.get_back_pos(&sx, &sy);
+		int flagBbuck = 0;
+		if (kind == 13) {
+			if (g_last_pae == 51) {
+				panManager.add(g_turn_pae, &pt, &sound);
+				animator.add_pae(g_turn_pae, sx, sy, pt.x, pt.y, 0, sound);
+			} else {
+				panManager.add_kind(g_turn_pae, paeManager.get_pae_kind(g_last_pae), &pt, &sound);
+				animator.add_pae(g_turn_pae, sx, sy, pt.x, pt.y, 0, 16);
+			}
+			wait_stage(18, 3000, animator.me_to_pan);
+			return;
+		}
+		if (kind_count == 2 && paeManager.get_pae_kind(g_last_pae) == kind) {
+			print_nothing("[%03d]\xbb\xb6-player:%d, kind:%d\n", g_game_count, player, kind);
+			flagBbuck = handManager.count(player) > 0;
+		}
+		if (kind_count == 2 && paeManager.get_pae_kind(g_last_pae) != kind) {
+			if (paeManager.is_pi(dialog_param2[0]) == 1 && paeManager.is_pi(dialog_param2[1]) == 1) {
+				g_confirm2 = 2;
+			} else {
+				panManager.add(g_turn_pae, &pt, &sound);
+				animator.add_pae(g_turn_pae, sx, sy, pt.x, pt.y, 0, sound);
+				g_turn_pae = 0;
+				if (!my_turn) {
+					if (aiManager.get_pae_priority(dialog_param2[0]) < aiManager.get_pae_priority(dialog_param2[1]))
+						g_confirm2 = 1;
+					else
+						g_confirm2 = 2;
+					wait_stage(20, 3000, animator.me_to_pan);
+					return;
+				} else {
+					if (!g_timer_switch) start_timer(10);
+					wait_stage(32, 3000, animator.me_to_pan);
+					return;
+				}
+			}
+		}
+		panManager.add(g_turn_pae, &pt, &sound);
+		if (flagBbuck) {
+			set_char_feel(player, 2, 0);
+			sound = 7;
+		}
+		animator.add_pae(g_turn_pae, sx, sy, pt.x, pt.y, 0, sound);
+		g_turn_pae = 0;
+		wait_stage(20, 3000, animator.me_to_pan);
+	}
+
+	if (stage == 20) {
+		print_nothing("[STAGE_JUDGE]\n");
+		clear_stage();
+		judge_game(player);
+		print_nothing("[END_OF_JUDGE]\n");
+	}
+
+	if (stage == 21) {
+		wait_stage(22, 3000, animator.pan_to_collect);
+	}
+
+	if (stage == 22) {
+		g_event = userManager.get_event(player);
+		if (g_event & 0x40)
+			animator.add_ani(18, 140, 53, 0, 30, 50);
+		if (g_event & 0x20)
+			animator.add_ani(16, 140, 53, 0, 30, 45);
+		if (g_event & 0x10)
+			animator.add_ani(17, 140, 53, 0, 30, 46);
+		if (g_event & 0x08)
+			animator.add_ani(19, 142, 45, 1, 100, 49);
+		if (g_event & 0x04)
+			animator.add_ani(20, 105, 6, 0, 30, 48);
+		if (g_event & 0x02) {
+			if (g_turn == 1)
+				animator.add_ani(21, 89, 24, 0, 30, 56);
+			else if (g_turn == 2)
+				animator.add_ani(21, 389, 24, 0, 30, 56);
+			else
+				animator.add_ani(21, 89, 112, 0, 30, 56);
+		}
+		if (animator.count_ani() > 0)
+			wait_stage(41, 3000, animator.start_ani);
+		else
+			goto_stage(41);
+	}
+
+	if (stage == 41) {
+		clear_stage();
+		int delay = 1000;
+		if (g_event == 0)
+			delay = 0;
+		if (g_steal > 0) {
+			int sound = -1;
+			int n_ani = 0;
+			if (g_steal == 1) {
+				sound = 57;
+				n_ani = 12;
+			} else if (g_steal == 2) {
+				sound = 61;
+				n_ani = 12;
+			} else if (g_steal >= 3) {
+				sound = 55;
+				n_ani = 12;
+			}
+			animator.add_ani(n_ani, 147, 50, 0, 10, sound);
+			wait_stage(43, delay, animator.start_ani);
+		} else
+			wait_stage(43, delay, 0);
+	}
+
+	if (stage == 43) {
+		clear_stage();
+		int delay;
+		if (my_turn) {
+			collectManager.take_from(1, 0, g_steal);
+			delay = 300;
+		} else {
+			collectManager.take_from(0, 1, g_steal);
+			delay = 0;
+		}
+		userManager.update();
+		if (g_steal > 0 && handManager.count(player) > 0)
+			delay = 3000;
+		wait_stage(45, delay, animator.collect_to_collect);
+	}
+
+	if (stage == 45) {
+		clear_stage();
+		wait_stage(61, 300, 0);
+	}
+
+	if (stage == 61) {
+		print_nothing("[STAGE_JUDGE_END]\n");
+		clear_stage();
+		int Network;
+		UserScore score;
+		UserStat stat;
+		userManager.get_score(player, &score);
+		if (!g_gukjin_checked && collectManager.find_gukjin(player)) {
+			int cflag = 0, m_cnt = 0, pi_cnt = 0;
+			collectManager.count(player, 0, &m_cnt, 0, &pi_cnt);
+			if (my_turn) {
+				if (score.total == 5) {
+					if (pi_cnt >= 9 && m_cnt < 5)
+						cflag = 1;
+				} else if (score.total == 6) {
+					if ((pi_cnt >= 8 && m_cnt < 5) || (pi_cnt >= 9 && m_cnt >= 5))
+						cflag = 1;
+				} else if (score.total >= 7) {
+					if (pi_cnt >= 8)
+						cflag = 1;
+				}
+				print_nothing("gukjin - player:%d, cflag:%d, score:%d, m_cnt:%d, p_cnt:%d\n", player, cflag, score.total, m_cnt, pi_cnt);
+				if (cflag) {
+					switch (g_confirm) {
+					case 2:
+						print_nothing("[%03d]\xb1\xb9\xc1\xf8\xc0\xcc\xb5\xbf-player:%d\n", g_game_count, player);
+						g_gukjin_checked = 1;
+						g_confirm = 0;
+						collectManager.move_gukjin(player);
+						userManager.update();
+						userManager.get_score(player, &score);
+						memset(dialog_param, 0, sizeof(dialog_param));
+						break;
+					case 1:
+						g_gukjin_checked = 1;
+						g_confirm = 0;
+						memset(dialog_param, 0, sizeof(dialog_param));
+						break;
+					case 0:
+						print_nothing("[%03d]\xb1\xb9\xc1\xf8\xc0\xcc\xb5\xbf\xb4\xeb\xb1\xe2-player:%d\n", g_game_count, player);
+						memset(dialog_param, 0, sizeof(dialog_param));
+						dialog_param[0] = 33;
+						if (!g_timer_switch) start_timer(10);
+						goto_stage(29);
+						return;
+					}
+				}
+			} else {
+				cflag = 0;
+				if (score.total == 5) {
+					if (pi_cnt >= 9 && m_cnt < 5)
+						cflag = 1;
+				} else if (score.total == 6) {
+					if ((pi_cnt >= 8 && m_cnt < 5) || (pi_cnt >= 9 && m_cnt >= 5))
+						cflag = 1;
+				} else if (score.total >= 7) {
+					if (pi_cnt >= 8)
+						cflag = 1;
+				}
+				print_nothing("gukjin - player:%d, cflag:%d, score:%d, m_cnt:%d, p_cnt:%d\n", player, cflag, score.total, m_cnt, pi_cnt);
+				if (cflag) {
+					g_confirm = 0;
+					g_gukjin_checked = 1;
+					collectManager.move_gukjin(player);
+					userManager.update();
+					userManager.get_score(player, &score);
+					memset(dialog_param, 0, sizeof(dialog_param));
+				}
+			}
+		}
+		if (score.total >= 7) {
+			print_nothing("win. jum = %d, back remain : %d\n", score.total, deckManager.count());
+			if (score.last_go < score.total) {
+				if (handManager.count(player) == 0) {
+					print_nothing("auto stop\n");
+					goto_stage(72);
+					return;
+				}
+				set_char_feel(player, 1, 2);
+				if (my_turn) {
+					print_nothing("bigger than last go. confirm is %d\n", g_confirm);
+					switch (g_confirm) {
+					case 2:
+						g_confirm = 0;
+						userManager.go(player);
+						userManager.get_stat(player, &stat);
+						print_nothing("[%03d]\xb0\xed!!-player%d, jum:%d, go:%d\n", g_game_count, player, score.total, stat.go);
+						animator.add_ani(stat.go, 124, 59, 0, 30, stat.go + 32);
+						g_turn = !g_turn;
+						inputManager.set_key_enable(1, 0);
+						inputManager.set_key_enable(7, 0);
+						wait_stage(14, 1000, animator.start_ani);
+						if (stat.go == 1) {
+							modAtracStop();
+							if ((mod_game.game_type == 1 && l_mod_player.hidden_game_rest > 0) || g_opp_party[0] == 5)
+								strcpy(g_bgm_file, "snd/bgm_goh.at3");
+							else
+								sprintf(g_bgm_file, "snd/bgm_go%d.at3", g_opp_party[0] + 1);
+							modAtracPlay(g_bgm_file);
+						}
+						return;
+					case 1:
+						g_confirm = 0;
+						print_nothing("[%03d]\xbd\xba\xc5\xe9!!-player%d, jum:%d, go:%d\n", g_game_count, player, score.total, stat.go);
+						soundUtil.play(59, 127);
+						goto_stage(72);
+						return;
+					case 0:
+						print_nothing("[%03d]\xb0\xed,\xbd\xba\xc5\xe9 \xb0\xed\xb9\xce\xc1\xdf-player%d, jum:%d\n", g_game_count, player, score.total);
+						if (!g_timer_switch) start_timer(10);
+						userManager.update();
+						userManager.set_result_score(player, 1);
+						goto_stage(71);
+						return;
+					}
+				} else {
+					print_nothing("opp bigger than last go. confirm is %d\n", g_confirm);
+					userManager.get_score(0, &score);
+					if (score.total >= 4) {
+						soundUtil.play(59, 127);
+						goto_stage(72);
+						return;
+					}
+					userManager.go(1);
+					userManager.get_stat(1, &stat);
+					animator.add_ani(stat.go, 124, 59, 0, 30, stat.go + 32);
+					if (stat.go == 1) {
+						modAtracStop();
+						if ((mod_game.game_type == 1 && l_mod_player.hidden_game_rest > 0) || g_opp_party[0] == 5)
+							strcpy(g_bgm_file, "snd/bgm_goh.at3");
+						else
+							sprintf(g_bgm_file, "snd/bgm_go%d.at3", g_opp_party[0] + 1);
+						modAtracPlay(g_bgm_file);
+					}
+				}
+			}
+		}
+		if (handManager.count(0) == 0 && handManager.count(1) == 0 && handManager.count(2) == 0) {
+			goto_stage(91);
+			return;
+		}
+		g_turn = !g_turn;
+		wait_stage(51, 1000, animator.start_ani);
+		print_nothing("[ENDOF_JUDGE_END next:%d,%d]\n", g_stage_status, g_next_stage);
+	}
+
+	if (stage == 91) {
+		print_nothing("[STAGE_NAGARI]\n");
+		clear_stage();
+		soundUtil.play(27, 127);
+		print_nothing("[%03d]\xb3\xaa\xb0\xa1\xb8\xae..\n", g_game_count);
+		print_nothing("*** NAGARI\n");
+		g_win_player = -1;
+		g_turn = !g_turn;
+		tmp_mod_player = l_mod_player;
+		memcpy(tmp_level_mission, g_level_mission, sizeof(g_level_mission));
+		wait_stage(92, 300, 0);
+	}
+
+	if (stage == 72) {
+		print_nothing("[STAGE_STOP]\n");
+		int pi_cnt;
+		clear_stage();
+		g_sun = g_turn;
+		if (my_turn) {
+			collectManager.count(1, 0, 0, 0, &pi_cnt);
+			if (!g_gukjin_checked && pi_cnt > 0 && pi_cnt < 8)
+				collectManager.move_gukjin(1);
+			soundUtil.play(15, 127);
+			g_win_player = 0;
+		} else if (player == 1) {
+			collectManager.count(0, 0, 0, 0, &pi_cnt);
+			if (!g_gukjin_checked && pi_cnt > 0 && pi_cnt < 8)
+				collectManager.move_gukjin(0);
+			soundUtil.play(22, 127);
+			g_win_player = 1;
+		} else {
+			collectManager.count(0, 0, 0, 0, &pi_cnt);
+			if (!g_gukjin_checked && pi_cnt > 0 && pi_cnt < 8)
+				collectManager.move_gukjin(0);
+			collectManager.count(1, 0, 0, 0, &pi_cnt);
+			if (!g_gukjin_checked && pi_cnt > 0 && pi_cnt < 8)
+				collectManager.move_gukjin(1);
+			soundUtil.play(22, 127);
+			g_win_player = 2;
+		}
+		tmp_mod_player = l_mod_player;
+		memcpy(tmp_level_mission, g_level_mission, sizeof(g_level_mission));
+		wait_stage(92, 300, 0);
+	}
+
+	if (stage == 81) {
+		print_nothing("[STAGE_3BBUCK]\n");
+		clear_stage();
+		g_sun = g_turn;
+		if (my_turn) {
+			soundUtil.play(15, 127);
+			g_win_player = 0;
+		} else {
+			soundUtil.play(22, 127);
+			g_win_player = player;
+		}
+		tmp_mod_player = l_mod_player;
+		memcpy(tmp_level_mission, g_level_mission, sizeof(g_level_mission));
+		wait_stage(92, 300, 0);
+	}
+
+	if (stage == 34) {
+		if (inform_frame > 90) {
+			inform_frame = 0;
+			memset(dialog_param, 0, sizeof(dialog_param));
+			goto_stage(83);
+		} else {
+			if (inform_frame == 0)
+				soundUtil.play(47, 127);
+			inform_frame++;
+		}
+	}
+
+	if (stage == 83) {
+		clear_stage();
+		g_sun = g_turn;
+		userManager.set_sp_success(player, 8);
+		if (my_turn) {
+			soundUtil.play(15, 127);
+			g_win_player = 0;
+		} else {
+			soundUtil.play(22, 127);
+			g_win_player = player;
+		}
+		tmp_mod_player = l_mod_player;
+		memcpy(tmp_level_mission, g_level_mission, sizeof(g_level_mission));
+		wait_stage(92, 300, 0);
+	}
+
+	if (stage == 92) {
+		print_nothing("[STAGE_END]\n");
+		clear_stage();
+		userManager.update();
+		userManager.set_result_score(g_win_player, 0);
+		if (g_win_player == 0) {
+			l_mod_player.win++;
+			if (l_mod_player.win > 49999)
+				l_mod_player.win = 0;
+			if (l_mod_player.opp_money <= g_result_score.money_sum) {
+				l_mod_player.my_money += l_mod_player.opp_money;
+				l_mod_player.opp_money = 0;
+				all_in_player = 2;
+				levelResult = 1;
+			} else {
+				l_mod_player.my_money += g_result_score.money_sum;
+				l_mod_player.opp_money -= g_result_score.money_sum;
+				levelResult = 0;
+			}
+			if (mod_game.game_type == 1) {
+				levelManager.update_level_mission();
+				if (levelManager.is_level_cleared()) {
+					if (l_mod_player.hidden_game_rest > 0) {
+						l_mod_player.hidden_character = 0;
+						l_mod_player.hidden_game_rest = 0;
+					}
+					levelResult = 1;
+				}
+			}
+		} else if (g_win_player != -1) {
+			l_mod_player.lose++;
+			if (l_mod_player.lose > 49999)
+				l_mod_player.lose = 0;
+			if (l_mod_player.my_money <= g_result_score.money_sum) {
+				l_mod_player.my_money = 0;
+				l_mod_player.opp_money += l_mod_player.my_money;
+				all_in_player = 1;
+				if (mod_game.game_type == 1 && l_mod_player.hidden_game_rest > 0) {
+					l_mod_player.hidden_character = 0;
+					l_mod_player.hidden_game_rest = 0;
+				}
+				levelResult = 2;
+			} else {
+				l_mod_player.opp_money += g_result_score.money_sum;
+				l_mod_player.my_money -= g_result_score.money_sum;
+			}
+		} else {
+			g_result_score.money_sum = 0;
+		}
+		modAtracStop();
+		if (mod_game.game_type == 1) {
+			if (levelResult == 1) {
+				levelManager.update_data();
+				memcpy(tmp_mod_player.success_level_mission, l_mod_player.success_level_mission, sizeof(l_mod_player.success_level_mission));
+				levelManager.next_level();
+			} else if (levelResult == 2) {
+				levelManager.level_initialize();
+			}
+			levelManager.update_data();
+			goto_stage(93);
+		} else
+			goto_stage(95);
+	}
+
+	if (stage == 93) {
+		g_check_saved = 0;
+		g_save_error = 0;
+		show_dialog_result = 1;
+		inputManager.set_key_enable(-1, 0);
+		modSaveData();
+		goto_stage(94);
+	}
+
+	if (stage == 96) {
+		clear_stage();
+		g_show_wait = 0;
+		if (g_timer_switch) stop_timer();
+		if (levelResult == 1) {
+			if (mod_game.game_type == 1) {
+				mod_game.result = 1;
+				mod_system.return_value = 29;
+			} else if (mod_game.game_type == 3 || mod_game.game_type == 4) {
+				mod_system.return_value = 22;
+			} else {
+				mod_system.return_value = 7;
+			}
+			g_continue = 0;
+		} else if (levelResult == 2) {
+			if (mod_game.game_type == 1) {
+				mod_system.return_value = 29;
+				mod_game.result = 0;
+			} else if (mod_game.game_type == 3 || mod_game.game_type == 4) {
+				mod_system.return_value = 22;
+			} else {
+				mod_system.return_value = 7;
+			}
+			g_continue = 0;
+		} else {
+			if ((mod_game.game_type == 3 || mod_game.game_type == 4) && mod_game.play_time > 0 && mod_game.play_time < g_game_count) {
+				mod_system.return_value = 22;
+				g_continue = 0;
+			}
+		}
+		if (levelResult == 0) {
+			if (g_win_player == -1) {
+				g_nagari_count++;
+				if (g_nagari_count > 3)
+					g_nagari_count = 3;
+			}
+			goto_stage(4);
+		}
+	}
+}
+__asm__(".globl process_stage_E1E0");
+#undef process_stage
+#undef inform_frame
+#undef levelResult
+#undef mod_system
+#undef mod_game
+#undef g_bgm_file
+#else
 INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/game", process_stage_E1E0);
+#endif
 
 static void clear_stage()
 {

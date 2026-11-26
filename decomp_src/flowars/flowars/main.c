@@ -595,7 +595,351 @@ void show_debug_info(void)
 
 INCLUDE_RODATA("tmp/asm/flowars/flowars/nonmatchings/main", D_00030810);
 
+#ifdef NON_MATCHING
+/* Close (13 lines): the original keeps p_bak's 0 as a copy of g_bak's register
+ * (addu s3,s2,zero) in the first status pair, and local-alloc picks v1/a0 where
+ * we get a3/v1 around the draw_char_name / draw_win_lose calls. */
+extern SceRtcTick D_0005AE20;	/* static SceRtcTick tt */
+extern SceRtcTick D_0005AE28;	/* static SceRtcTick ott */
+extern SceRtcTick D_0005AE30;	/* static SceRtcTick btt */
+extern int D_0005AE38;	/* static int frames */
+extern int D_0005AE3C;	/* static int fps */
+extern int D_0005AE40;	/* static int old_time_left */
+#define tt D_0005AE20
+#define ott D_0005AE28
+#define btt D_0005AE30
+#define frames D_0005AE38
+#define fps D_0005AE3C
+#define old_time_left D_0005AE40
+int sceRtcGetCurrentTick(SceRtcTick *tick);
+void stop_timer(void);
+int count_array(int *a, int a_size);
+static void draw_frame(void)
+{
+
+	char buf[100];
+
+	sceRtcGetCurrentTick(&tt);
+	if (btt.tick == 0) btt = tt;
+	frames++;
+	if ((tt.tick - ott.tick) / 1000 > 1000) {
+		fps = frames;
+		frames = 0;
+		ott = tt;
+	}
+
+	if (mod_game.game_type != 1 || g_draw_vs_switch != 1 || g_stage_status == 8) {
+
+		if (g_game_paused != 1) {
+
+			if (g_continue)
+				process_stage_11DF0();
+		}
+	}
+
+	if (g_stage_status == 2) {
+
+		graphics.draw_loading(255);
+		return;
+	}
+
+	int player;
+	player = g_player_index != g_turn;
+
+	skinManager.draw_stage();
+	skinManager.draw_turn(player);
+
+	skinManager.draw_character(0, 0, 208, 7);
+	graphics.draw_char_name(60, 210, g_char_name[0]);
+
+	if (g_stage_status >= 92 && g_stage_status <= 95)
+		graphics.draw_win_lose(5, 184, tmp_mod_player.win, tmp_mod_player.lose);
+	else
+		graphics.draw_win_lose(5, 184, l_mod_player.win, l_mod_player.lose);
+
+	skinManager.draw_character(1, 0, 0, 5);
+	graphics.draw_char_name(60, 42, g_char_name[1]);
+
+	skinManager.draw_sun(g_draw_sun);
+
+	if (all_in_player > 0)
+		graphics.draw_all_in(all_in_player - 1);
+
+	skinManager.draw_face(10);
+
+	int j, pos;
+	int index;
+	for (index = 0; index < 13; index++) {
+		for (j = 0; j < g_pan[index].count; j++) {
+			pos = g_pan[index].pos;
+			graphics.draw_pae(g_pan[index].pae[j], g_pan_pos[pos][0] + j * 5, g_pan_pos[pos][1], 1.0f, 2);
+		}
+	}
+
+	for (index = 0; index < deckManager.count_all(); index++) {
+
+		graphics.draw_back_pae(215 - (index / 5) * 2, 110 - (index / 5) * 2, 1.0f, 2);
+	}
+
+	UserScore score_me, score_opp;
+	UserStat stat_me, stat_opp;
+	userManager.get_score(0, &score_me);
+	userManager.get_score(1, &score_opp);
+	userManager.get_stat(0, &stat_me);
+	userManager.get_stat(1, &stat_opp);
+
+	if (mod_game.game_type == 1) {
+		levelManager.show_level_mission();
+	}
+
+	if (g_mission_state != 1 || g_mission_type != 3) {
+
+		skinManager.draw_title_mission(6, 94);
+	}
+
+	if (g_mission_state == 1 || g_mission_state == 2) {
+		if (g_mission_type == 1) {
+			int x, y;
+			for (index = 0; index < g_mission_pae_num; index++) {
+				if (g_mission_pae_num == 3) x = 11 + index * 19; else x = 11 + index * 17;
+				y = 145;
+				graphics.draw_pae2(g_mission_pae[index], x, y, 1.0f, 3);
+				if (g_mission_who[index] != -1)
+					graphics.draw_ox(g_mission_who[index], x, y);
+			}
+
+			skinManager.draw_num_mission(g_mission_baesu, 76, 148);
+
+		} else if (g_mission_type == 2) {
+			int x, y;
+			for (index = 0; index < g_mission_pae_num; index++) {
+				x = 11 + index * 23;
+				y = 145;
+				graphics.draw_pae2(g_mission_pae[index], x, y, 1.0f, 3);
+
+				skinManager.draw_x2_mission(17 + index * 23, 161);
+
+				if (g_mission_who[index] != -1)
+					graphics.draw_ox(g_mission_who[index], x, y);
+			}
+
+		} else if (g_mission_type == 3) {
+			int x_pos, y_pos;
+			int x, y;
+			for (index = 0; index < g_mission_pae_num; index++) {
+				x_pos = index % 3;
+				y_pos = index / 3;
+				x = x_pos * 17 + 11;
+				y = y_pos * 27 + 97;
+				graphics.draw_pae2(g_mission_pae[index], x, y, 1.0f, 3);
+
+				if (g_mission_who[index] != -1)
+					graphics.draw_ox(g_mission_who[index], x, y);
+
+				skinManager.draw_num_bingo(stat_me.sp_success[6], 64, 148);
+				skinManager.draw_title_bingo(63, 122);
+				skinManager.draw_num_bingo(stat_opp.sp_success[6], 64, 101);
+			}
+		}
+	}
+
+	skinManager.draw_num_jum(score_me.total, 133, 246);
+	skinManager.draw_num_jum(score_opp.total, 133, 31);
+
+	if (g_stage_status >= 92 && g_stage_status <= 95) {
+
+		graphics.draw_number(tmp_mod_player.my_money, 5, 198, 13, 1, 0);
+		graphics.draw_number(tmp_mod_player.opp_money, 5, 65, 13, 1, 0);
+
+	} else if (g_continue) {
+		graphics.draw_number(l_mod_player.my_money, 5, 198, 13, 1, 0);
+		graphics.draw_number(l_mod_player.opp_money, 5, 65, 13, 1, 0);
+	}
+
+	skinManager.draw_num_go(stat_opp.go, 77, 73);
+	skinManager.draw_num_go(stat_me.go, 77, 182);
+
+	int p_num, p_bak, g_bak;
+
+	p_num = collectManager.count_not_flying_pi(1);
+	p_bak = (score_me.pi > 0 && p_num > 0 && p_num < 8);
+	g_bak = (score_me.gwang > 0 && count_array(g_opp_collection_gwang, 5) <= 0);
+	skinManager.draw_status(65, 8, stat_opp.bbuck, p_bak, stat_opp.shake, g_bak);
+
+	p_num = collectManager.count_not_flying_pi(0);
+	p_bak = (score_opp.pi > 0 && p_num > 0 && p_num < 8);
+	g_bak = (score_opp.gwang > 0 && count_array(g_my_collection_gwang, 5) <= 0);
+	skinManager.draw_status(65, 236, stat_me.bbuck, p_bak, stat_me.shake, g_bak);
+
+	graphics.draw_my_hand();
+	graphics.draw_my_collection();
+
+	graphics.draw_opp_hand();
+	graphics.draw_opp_collection();
+
+	if (g_stage_status == 14) {
+
+		if (g_player_index == g_turn && g_show_cursor)
+			graphics.draw_cursor(inputManager.g_cursor_pos);
+	}
+
+	if (g_wait_func)
+		g_wait_func();
+
+	if (g_stage_status == 28) {
+		graphics.draw_dialog_box(0, dialog_param);
+		inputManager.set_key_enable(1, 1);
+		inputManager.set_key_enable(3, 1);
+	}
+	if (g_stage_status == 31) {
+		graphics.draw_dialog_box(1, dialog_param);
+		inputManager.set_key_enable(1, 1);
+		inputManager.set_key_enable(3, 1);
+	}
+
+	if (g_stage_status == 32) {
+		graphics.draw_dialog_box(1, dialog_param2);
+
+		inputManager.set_key_enable(1, 1);
+		inputManager.set_key_enable(3, 1);
+	}
+
+	if (g_stage_status == 71) {
+		graphics.draw_dialog_box(2, 0);
+		graphics.show_gostop_info();
+		inputManager.set_key_enable(1, 1);
+		inputManager.set_key_enable(3, 1);
+	}
+
+	if (g_stage_status == 29) {
+		graphics.draw_dialog_box(3, dialog_param);
+		inputManager.set_key_enable(1, 1);
+		inputManager.set_key_enable(3, 1);
+	}
+
+	if (g_stage_status == 27) {
+		graphics.draw_dialog_box(4, dialog_param);
+		inputManager.set_key_enable(1, 1);
+		inputManager.set_key_enable(3, 1);
+	}
+
+	if (g_stage_status == 33) {
+		inputManager.set_key_enable(1, 0);
+		inputManager.set_key_enable(7, 0);
+		graphics.draw_dialog_box(5, dialog_param);
+		graphics.draw_animation(15, 244, 28, 1);
+	}
+
+	if (g_stage_status == 35) {
+		inputManager.set_key_enable(1, 0);
+		inputManager.set_key_enable(7, 0);
+		if (g_player_index != g_turn)
+			graphics.draw_dialog_box(10, 0);
+	}
+
+	if (g_stage_status == 34) {
+		inputManager.set_key_enable(1, 0);
+		inputManager.set_key_enable(7, 0);
+		graphics.draw_dialog_box(6, dialog_param);
+	}
+
+	if (g_stage_status == 36) {
+		inputManager.set_key_enable(1, 0);
+		inputManager.set_key_enable(7, 0);
+		graphics.draw_dialog_box(11, dialog_param);
+	}
+
+	if (g_stage_status == 95) {
+		g_check_saved = 1;
+
+		if (g_win_player == -1)
+			graphics.draw_dialog_box(9, 0);
+		else if (g_win_player == 0)
+			graphics.draw_dialog_box(7, 0);
+		else
+			graphics.draw_dialog_box(8, 0);
+
+		graphics.show_result_dialog();
+
+		if (sceUtilitySavedataGetStatus() != 2) {
+			inputManager.set_key_enable(1, 1);
+			inputManager.set_key_enable(4, 1);
+		}
+	}
+
+	if (g_timer_switch == 1) {
+		u_long64 tick_this_cycle = 0;
+		int time_left;
+
+		if (!g_timer_pause) {
+			sceRtcGetCurrentTick(&g_timer_tick_now);
+			tick_this_cycle = g_timer_tick_now.tick - g_timer_tick_old.tick;
+			if (tick_this_cycle > 199999)
+				tick_this_cycle = 0;
+		}
+
+		g_timer_tick_spend += tick_this_cycle;
+		time_left = g_timer_limit_sec - g_timer_tick_spend / 1000000;
+
+		if (time_left >= 1 && time_left <= 5) {
+			if (time_left != old_time_left) {
+				soundUtil.play(31, 127);
+				old_time_left = time_left;
+			}
+
+			if (g_stage_status != 95)
+				graphics.draw_timer(time_left);
+
+		} else if (time_left <= 0) {
+			inputManager.press_circle();
+			stop_timer();
+			if (g_show_collect_paes != -2)
+				g_show_collect_paes = -2;
+		}
+
+		g_timer_tick_old = g_timer_tick_now;
+	}
+
+	if (mod_game.game_type == 1 && g_draw_vs_switch == 1)
+		graphics.draw_vs_menu();
+
+	if (g_show_collect_paes != -2) {
+
+		graphics.draw_collect_paes(g_show_collect_paes);
+	}
+
+	if (g_game_paused == 1) {
+		inputManager.set_key_enable(1, 1);
+		inputManager.set_key_enable(4, 1);
+		graphics.draw_pause();
+	}
+
+	if (g_stage_status == 94) {
+		if (!g_check_saved)
+			graphics.draw_save();
+		else {
+			if (g_save_error) {
+				inputManager.set_key_enable(1, 1);
+				inputManager.set_key_enable(4, 1);
+				graphics.draw_error(g_save_error_msg[g_save_error]);
+			}
+		}
+	}
+
+	if (g_stage_status == 13 && g_show_wait && g_continue)
+		graphics.show_warning("\xbb\xf3\xb4\xeb\xb9\xe6\xc0\xc7 \xc0\xc0\xb4\xe4\xc0\xbb \xb1\xe2\xb4\xd9\xb8\xb3\xb4\xcf\xb4\xd9.\n\n\xc0\xe1\xbd\xc3 \xb1\xe2\xb4\xd9\xb7\xc1 \xc1\xd6\xbd\xca\xbd\xc3\xbf\xc0", 128);
+
+}
+__asm__(".globl draw_frame");
+#undef tt
+#undef ott
+#undef btt
+#undef frames
+#undef fps
+#undef old_time_left
+#else
 INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/main", draw_frame);
+#endif
 
 void init_all(void)
 {
