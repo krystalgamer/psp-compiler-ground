@@ -181,7 +181,16 @@ int playInfo_getAudioStreamNum(t_playInfo *pPlayInfo) {
     return sInfo_getNumberOfStreams(&pPlayInfo->sInfo, 1);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/mpeg_stream_change/nonmatchings/playInfo", playInfo_setOffset);
+SceInt32 playInfo_setOffset(t_playInfo *pPlayInfo)
+{
+	SceInt32 offset;
+
+	sInfo_getEPOffset(&pPlayInfo->sInfo, pPlayInfo->timestamp, &offset);
+
+	pPlayInfo->offset = offset;
+
+	return 0;
+}
 
 int playInfo_getOffset(t_playInfo *pPlayInfo) {
     return pPlayInfo->offset;
