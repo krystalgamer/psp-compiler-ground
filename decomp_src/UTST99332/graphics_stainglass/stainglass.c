@@ -395,6 +395,9 @@ void StainGlassDraw( bool textured  )
 	sceGumPopMatrix();
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_stainglass/nonmatchings/stainglass", StainGlassSetTransform);
+void StainGlassSetTransform( const ScePspFMatrix4 *m )
+{
+	_transform.fm = *m;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_stainglass/nonmatchings/stainglass", StainGlassSetDistorsion);
