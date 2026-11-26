@@ -50,7 +50,38 @@ static int draw_eng_font(int ax, int ay, int px, int py, int code, int color, fl
 	return 1;
 }
 
-INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/han", printhanln_scale);
+void printhanln_scale(int ax, int ay, int color, char *str, float scale_x, float scale_y)
+{
+	int index;
+	char ch;
+	int code;
+	int x;
+	int y;
+
+	index = 0;
+
+
+	x = y = 0;
+	for (;;) {
+		ch = str[index++];
+		if (ch == 0)
+			break;
+		if (ch == '\n') {
+			y++;
+			x = 0;
+			if (y > 16)
+				break;
+		}
+
+		if ((unsigned int)ch >> 31) {
+			code = (unsigned char)str[index++] | (ch << 8);
+			draw_han_font(ax, ay, x, y, code, color, scale_x, scale_y);
+			x += 2;
+		} else {
+			x += draw_eng_font(ax, ay, x, y, ch, color, scale_x, scale_y);
+		}
+	}
+}
 
 void printhanln(int ax, int ay, int color, signed char *str) {
     printhanln_scale(ax, ay, color, str, 1.0f, 1.0f);
@@ -86,4 +117,17 @@ short int map_wansung_to_johab(unsigned char first, unsigned char last)
 	return 0;
 }
 
-INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/han", wansung_to_johab);
+void wansung_to_johab(char *dst, char *src)
+{
+	strcpy(dst, src);
+	char *p = dst;
+	while (*p) {
+		if ((unsigned int)*p >> 31) {
+			unsigned short r = map_wansung_to_johab(p[0], p[1]);
+			*p = r >> 8;
+			p++;
+			*p = r;
+		}
+		p++;
+	}
+}
