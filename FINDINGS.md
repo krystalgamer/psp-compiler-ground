@@ -141,6 +141,11 @@ modules (`tools/nltest.py`, `tools/objcmp.py`).
   and copied with `mov.s` by every cc1; the original converts straight into
   `$f16`. Several call/temporary forms tried.
 
+- Open candidate (puzzle_bobble `SpriteDrawZoom` no/color, `DrawSprite`
+  f0/f1, 1.5.1): two parameters with equal allocation priority get their
+  registers the other way round. In the original the later parameter wins
+  the tie, in every cc1 (1.3.1-orig..1.8.4) the earlier one does.
+
 ## psp-gcc 1.6.1
 
 - **32-bit `HOST_WIDE_INT`** (psp-gcc 1.7.1, `psp: use a 32-bit
