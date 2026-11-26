@@ -2461,7 +2461,12 @@ void PauseControl(void *arg0) {
 }
 
 #ifdef NON_MATCHING
-/* draft: logic complete, ~210 differing lines (register allocation, loop-invariant hoisting) */
+/* Draft, logic complete: 1952/1957 insns, ~210 differing lines (134 ignoring register names).
+ * Known: function-scope temporaries i (s1) and k (s0) are shared between cases, as the
+ * original's register use shows; ent/drop arrays are indexed directly (st->ent[i].x),
+ * which gives gcc's DECL_FIELD_OFFSET split (st + 0x13B0 + 8i, offset 4).  Open: the
+ * case 9 loop hoists all of k * 6 / 16 % 4 and / 4 (original: only f and f + rounding,
+ * spilled to the stack), the ent loop's x/col registers, f27/f28 and s4/s6 swaps. */
 extern int KeyStat;
 extern int KeyHit;
 extern int VKeyHit;
@@ -3216,7 +3221,8 @@ int GetOjamaPat(int mode)
 }
 
 #ifdef NON_MATCHING
-/* draft: logic complete (same length within 6 insns), ~480 differing lines (register allocation, scheduling) */
+/* Draft, logic complete: 2530/2536 insns, ~480 differing lines (245 ignoring register
+ * names); same open points as PuzzleBody (case 9 hoisting), register allocation. */
 extern int KeyStat;
 extern int KeyHit;
 extern int VKeyHit;
@@ -4094,7 +4100,8 @@ INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", VSModeBody);
 #endif
 
 #ifdef NON_MATCHING
-/* draft: logic complete, ~220 differing lines (register allocation/spills) */
+/* Draft, logic complete: 1637/1640 insns, ~220 differing lines (160 ignoring register
+ * names); same open points as PuzzleBody, plus zen/light spilled to the stack. */
 extern int KeyStat;
 extern int KeyHit;
 extern int VKeyHit;
