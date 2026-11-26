@@ -386,6 +386,8 @@ segments:
       - [0x165678, .rodata, main_objs/math_SphericalCoord]
       - [0x1656A8, .rodata, main_objs/math_ZYZ]
       - [0x1656C8, rodata, asm/rodata_165648]
+      - [0x16EF0C, .rodata, main_objs/math_TransformStackFunc]
+      - [0x16EF28, rodata, asm/rodata_16EEA8]
       - [0x1776F0, .rodata, gcc-3.3.3/libstdc__-v3/libsupc__/eh_personality]
       - [0x177724, rodata, asm/rodata_1776A4]
       - [0x17775C, .rodata, gcc-3.3.3/libstdc__-v3/libsupc__/pure]
@@ -402,5 +404,7 @@ segments:
       - { start: 0x189CE4, type: .bss, vram: 0x18B6EC, name: main_objs/math_SphericalCoord }
       - { start: 0x189CE4, type: .bss, vram: 0x18B76C, name: main_objs/math_ZYZ }
       - { start: 0x189CE4, type: bss, vram: 0x18B7EC, name: bss_18B7EC }
+      - { start: 0x189CE4, type: .bss, vram: 0x18D9C4, name: main_objs/math_TransformStackFunc }
+      - { start: 0x189CE4, type: bss, vram: 0x18DA44, name: bss_18DA44 }
   - [0x189CE4, bin, elf_trailer]
   - [0x6F94A8]

@@ -74,6 +74,71 @@ public:
 };
 }
 
+namespace math {
+class SphericalCoord {
+public:
+    SphericalCoord();
+    SphericalCoord(float theta, float phi);
+    void setThetaD(float);
+    void setPhiD(float);
+    void setTheta(float);
+    void setPhi(float);
+    void incrTheta(float);
+    void incrPhi(float);
+    void set(float, float);
+    void reset();
+    matrix transformMatrix() const;
+    void sync_direction();
+    float _theta, _phi;                                 /* 0x0 */
+    vector_xyzw _dir;                                   /* 0x8 */
+};
+}
+
+namespace math {
+/* layout not known yet (only what decompiled code needs) */
+struct TransformStack {
+    TransformStack();
+    virtual ~TransformStack();
+    void push();
+    void pop();
+    void mult(const matrix &);
+    void load(const matrix &);
+    void identity();
+    void rotate(float, float, float, float);
+    void rotateX(float);
+    void rotateY(float);
+    void rotateZ(float);
+    void scale(float, float, float);
+    void scale(float);
+    void translate(float, float, float);
+    const matrix &top() const;
+    matrix &top();
+    const matrix &top_inv() const;
+    matrix &top_inv();
+};
+/* a non-polymorphic base of sgl::MeshBuilder (typeinfo without bases) */
+class TransformStackFunc {
+public:
+    void pushTransform();
+    void popTransform();
+    void multTransform(const matrix &);
+    void loadTransform(const matrix &);
+    void loadIdentity();
+    void rotate(float, float, float, float);
+    void rotateX(float);
+    void rotateY(float);
+    void rotateZ(float);
+    void scale(float, float, float);
+    void scale(float);
+    void translate(float, float, float);
+    const matrix &getTransform() const;
+    matrix &getTransform();
+    const matrix &getTransformInverse() const;
+    matrix &getTransformInverse();
+    TransformStack _stack;                              /* 0x0 */
+};
+}
+
 /* accessors (generated from the asm; members named by offset) */
 namespace math {
 class Trackball {

@@ -5,33 +5,63 @@
 #define DEMO_STATICS_MATH
 #include "../main.hpp"
 
-/* the module's .ctors/.dtors (asm) refer to the static constructor/destructor,
-   keyed to the first function (still asm: its wrapper's name + __asm) */
-__asm__(".globl _GLOBAL__I__ZN4math14SphericalCoordC2Ev\n_GLOBAL__I__ZN4math14SphericalCoordC2Ev = _GLOBAL__I__ZN4math14SphericalCoordC2Ev__asm");
+/* the module's .ctors refer to the static constructor */
+__asm__(".globl _GLOBAL__I__ZN4math14SphericalCoordC2Ev");
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_SphericalCoord", _ZN4math14SphericalCoordC2Ev);
+math::SphericalCoord::SphericalCoord() : _theta(0), _phi(0), _dir(0, 0, 1, 0)
+{
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_SphericalCoord", _ZN4math14SphericalCoordC1Ev);
+math::SphericalCoord::SphericalCoord(float theta, float phi) : _theta(theta), _phi(phi)
+{
+    sync_direction();
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_SphericalCoord", _ZN4math14SphericalCoordC2Eff);
+void math::SphericalCoord::setThetaD(float t)
+{
+    setTheta(t * 0.017453292f);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_SphericalCoord", _ZN4math14SphericalCoordC1Eff);
+void math::SphericalCoord::setPhiD(float p)
+{
+    setPhi(p * 0.017453292f);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_SphericalCoord", _ZN4math14SphericalCoord9setThetaDEf);
+void math::SphericalCoord::setTheta(float t)
+{
+    _theta = t;
+    sync_direction();
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_SphericalCoord", _ZN4math14SphericalCoord7setPhiDEf);
+void math::SphericalCoord::setPhi(float p)
+{
+    _phi = p;
+    sync_direction();
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_SphericalCoord", _ZN4math14SphericalCoord8setThetaEf);
+void math::SphericalCoord::incrTheta(float d)
+{
+    setTheta(_theta + d);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_SphericalCoord", _ZN4math14SphericalCoord6setPhiEf);
+void math::SphericalCoord::incrPhi(float d)
+{
+    setPhi(_phi + d);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_SphericalCoord", _ZN4math14SphericalCoord9incrThetaEf);
+void math::SphericalCoord::set(float theta, float phi)
+{
+    _theta = theta;
+    _phi = phi;
+    sync_direction();
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_SphericalCoord", _ZN4math14SphericalCoord7incrPhiEf);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_SphericalCoord", _ZN4math14SphericalCoord3setEff);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_SphericalCoord", _ZN4math14SphericalCoord5resetEv);
+void math::SphericalCoord::reset()
+{
+    _theta = 0;
+    _phi = 0;
+    sync_direction();
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_SphericalCoord", _ZNK4math14SphericalCoord15transformMatrixEv);
 

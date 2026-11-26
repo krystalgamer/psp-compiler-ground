@@ -20,9 +20,13 @@ rodata 0x1776F8 -
 rodata 0x1655F8 main_objs/math_SphericalCoord
 rodata 0x165628 main_objs/math_ZYZ
 rodata 0x165648 -
+rodata 0x16EE8C main_objs/math_TransformStackFunc
+rodata 0x16EEA8 -
 bss 0x18B6EC main_objs/math_SphericalCoord
 bss 0x18B76C main_objs/math_ZYZ
 bss 0x18B7EC -
+bss 0x18D9C4 main_objs/math_TransformStackFunc
+bss 0x18DA44 -
 0x135B4 glut_ReshapeFunc         1.6.1.internal  main_objs/glut_ReshapeFunc.cpp
 0x13E64 app3d_Callbacks          1.6.1.internal  main_objs/app3d_Callbacks.cpp
 0x163B4 common_Date              1.6.1.internal  main_objs/common_Date.cpp   # no static init
