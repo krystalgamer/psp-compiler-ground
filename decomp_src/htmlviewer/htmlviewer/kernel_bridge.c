@@ -1,4 +1,5 @@
 #include "common.h"
+/* cflags: -O2 -frename-registers */
 
 /* declarations recovered from DWARF */
 typedef long int off_t;
@@ -50,7 +51,7 @@ typedef int SceUID;
 extern char *currentheap;
 extern char *minheap;
 extern char *maxheap;
-extern int sce_newlib_heap_kb_size;
+extern int sce_newlib_heap_kb_size __attribute__((weak));
 extern SceUID mbid;
 extern void (*const sce_newlib_stop_func)(void);
 
@@ -69,23 +70,178 @@ void __free_heap(void);
 int sigfillset(sigset_t *set);
 
 
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/kernel_bridge", _open);
+static __inline__ int _sys_open(const char *path, int flags)
+{
+	return sceIoOpen(path, flags, 0644);
+}
+static __inline__ int FileToUID(int fd)
+{
+	switch (fd) {
+	case 0:
+		return sceKernelStdin();
+	case 1:
+		return sceKernelStdout();
+	case 2:
+		return sceKernelStderr();
+	}
+	return fd;
+}
+long long sceIoLseek(SceUID fd, long long offset, int whence);
+static __inline__ off_t _sys_lseek(int file, off_t offset, int dir)
+{
+	return sceIoLseek(FileToUID(file), offset, dir);
+}
 
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/kernel_bridge", _lseek);
+int _open(const char *path, int flags, ...)
+{
+	int sflags = 0;
 
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/kernel_bridge", _exit);
+	switch ((unsigned int)flags & 3) {
+	case 0:
+		sflags = 1;
+		break;
+	case 1:
+		sflags = 2;
+		break;
+	case 2:
+		sflags = 3;
+		break;
+	default:
+		break;
+	}
+	if (flags & 0x0008) sflags |= 0x0100;
+	if (flags & 0x0200) sflags |= 0x0200;
+	if (flags & 0x0400) sflags |= 0x0400;
+	if (flags & 0x0800) sflags |= 0x0800;
+	if (flags & 0x4000) sflags |= 0x0004;
+	return _sys_open(path, sflags);
+}
+
+off_t _lseek(int file, off_t offset, int dir)
+{
+	off_t result;
+	int newdir;
+	int fd = FileToUID(file);
+
+	if (fd < 0) {
+		return -9;
+	}
+	switch (dir) {
+	case 0: newdir = 0; break;
+	case 1: newdir = 1; break;
+	case 2: newdir = 2; break;
+	default: newdir = dir; break;
+	}
+
+	result = _sys_lseek(fd, offset, newdir);
+	return result;
+}
+
+struct _reent;
+extern struct _reent *_getmodreent(void) __attribute__((weak));
+extern int _clrmodreent(struct _reent *) __attribute__((weak));
+struct _reent *__getreent(void);
+void _reclaim_reent(struct _reent *);
+int sceKernelPrintf(const char *fmt, ...);
+int sceKernelExitThread(int status);
+int sceKernelGetModuleId(void);
+int sceKernelStopModule(SceUID modid, unsigned int argsize, void *argp, int *status, void *option);
+int sceKernelUnloadModule(SceUID modid);
+int sceKernelSelfStopUnloadModule(int exitcode, unsigned int argsize, void *argp);
+void _exit(int status)
+{
+	int rtn;
+	struct _reent *ptr;
+	int mid;
+
+	if (_getmodreent) {
+		ptr = _getmodreent();
+
+		if (ptr != __getreent()) {
+			sceKernelPrintf("libc:%s: should be called from main thread\n",
+					__FUNCTION__);
+			sceKernelExitThread(status);
+		}
+
+		_reclaim_reent(ptr);
+		mid = _clrmodreent(ptr);
+
+		if (sceKernelGetModuleId() != mid) {
+			sceKernelStopModule(mid, 0, NULL, &rtn, NULL);
+			sceKernelUnloadModule(mid);
+			sceKernelExitThread(status);
+		}
+	}
+
+	sceKernelSelfStopUnloadModule(1, 0, NULL);
+}
 
 INCLUDE_RODATA("tmp/asm/htmlviewer/htmlviewer/nonmatchings/kernel_bridge", sce_newlib_stop_func);
 
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/kernel_bridge", _sbrk);
+void *_sbrk(ptrdiff_t incr)
+{
+	char *newheap;
+	char *oldheap;
 
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/kernel_bridge", _read);
+	if (minheap == 0) {
+		int size;
 
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/kernel_bridge", _write);
+		if (&sce_newlib_heap_kb_size == 0 || sce_newlib_heap_kb_size == 0)
+			size = 0x10000;
+		else
+			size = sce_newlib_heap_kb_size << 10;
+		if (size != 0) {
+			mbid = sceKernelAllocPartitionMemory(2, "UserSbrk", 3, size, (void *)0x1000);
+			if (mbid > 0) {
+				char *head = sceKernelGetBlockHeadAddr(mbid);
+				maxheap = head + size;
+				currentheap = head;
+				minheap = head;
+			}
+		}
+	}
+	if (minheap != 0) {
+		newheap = currentheap + incr;
+		if (newheap >= minheap && newheap <= maxheap) {
+			oldheap = currentheap;
+			currentheap = newheap;
+			return oldheap;
+		}
+	}
+	return (void *)-1;
+}
 
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/kernel_bridge", _close);
+int sceIoRead(int fd, void *buf, unsigned int nbyte);
+int _read(int file, void *ptr, size_t len)
+{
+	int fd = FileToUID(file);
+	if (fd < 0)
+		return -9;
+	return sceIoRead(fd, ptr, len);
+}
 
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/kernel_bridge", _fstat);
+int sceIoWrite(int fd, const void *buf, unsigned int nbyte);
+int _write(int file, const void *ptr, size_t len)
+{
+	int fd = FileToUID(file);
+	if (fd < 0)
+		return -9;
+	return sceIoWrite(fd, ptr, len);
+}
+
+int sceIoClose(int fd);
+int _close(int file)
+{
+	int fd = FileToUID(file);
+	if (fd < 0)
+		return -9;
+	return sceIoClose(fd);
+}
+
+int _fstat(int file, struct stat *st) {
+    st->st_mode = 0x2000;
+    return 0;
+}
 
 int isatty(int file) {
     return 1;
@@ -131,7 +287,12 @@ int _execve(signed char *filename, signed char **argv, signed char **envp) {
     return -1;
 }
 
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/kernel_bridge", __free_heap);
+void __free_heap(void) {
+    if (mbid != 0) {
+        sceKernelFreePartitionMemory(mbid);
+        mbid = 0;
+    }
+}
 
 unsigned int clock(void) {
     return sceKernelLibcClock();
@@ -150,7 +311,10 @@ unsigned int _times(struct tms *buf) {
 }
 /* Warning: struct tms is not defined (only forward-declared) */
 
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/kernel_bridge", sigfillset);
+int sigfillset(sigset_t *set) {
+    *set = -1;
+    return 0;
+}
 
 int sigprocmask(int how, int *set, int *oldset) {
     return -1;

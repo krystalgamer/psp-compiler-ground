@@ -1,752 +1,1642 @@
-#include "common.h"
+/* SDK 2.5.0 libgu (libgu.o, the same object as UCJS90007's apart from the encoded __psp_libinfo__: libgu.c with libgup.h inlined), built -O3 by 1.8.4.internal.
+   Reconstructed from the SDK 6.6.0 source (src/gu/libgu.c, include/libgup.h, gecmd.h):
+   older revision without the debug-font callbacks (direct calls), sceGuFinish,
+   sceGuSetCallback2, sceGuContinue, sceGuSignalCall/Ret/DrawSync, sceGuFlush,
+   sceGuClutCopyLoad; one-argument callbacks; SceGupContext {size, list, state, bbox};
+   address commands written address first; no GE bezier/spline workaround;
+   integer viewport/depth-range halves; SCE_GE_EXTRACT_FLOAT24 as a pointer cast;
+   matrix inline asm (not volatile) reloads the command word for every row.
+   Sony compiled it with -std=iso9899:1999, which the cflags line cannot carry: the extra
+   braces around every if/while/for/do/switch statement and body are the block scopes
+   gcc 3.3 adds in C99 mode (c-parse.in c99_block_start), made explicit for a C89 compile. */
+/* cflags: -O3 */
+/* data-align: 16 */
+#include "libgu_sdk.h"
 
-/* declarations recovered from DWARF */
-typedef struct SceGupContext SceGupContext;
-struct SceGupContext;
-struct _anon1;
-struct _anon1 { /* size 0xc */
-    unsigned int *start;
-    unsigned int *current;
-    unsigned int size;
-};
-typedef struct SceGupState SceGupState;
-struct SceGupState;
-struct _anon2;
-struct _anon2 { /* size 0xc */
-    int fpf;
-    int width;
-    int height;
-};
-struct _anon3;
-struct _anon3 { /* size 0x14 */
-    int en;
-    int x1;
-    int y1;
-    int x2;
-    int y2;
-};
-struct _anon4;
-struct _anon4 { /* size 0x10 */
-    int sw;
-    int sh;
-    int dw;
-    int dh;
-};
-struct _anon5;
-struct _anon5 { /* size 0xc */
-    unsigned int color;
-    int stencil;
-    int depth;
-};
-struct _anon6;
-struct _anon6 { /* size 0xc */
-    int znear;
-    int zfar;
-    int offset;
-};
-struct _anon7;
-struct _anon7 { /* size 0x14 */
-    int tfunc_cd;
-    int tfunc_txf;
-    int tfunc_tcc;
-    int tmi;
-    int tmn;
-};
-struct SceGupState { /* size 0x64 */
-    unsigned int size;
-    unsigned int features;
-    struct _anon2 fbuf;
-    struct _anon3 scissor;
-    struct _anon4 sprite;
-    struct _anon5 clear;
-    struct _anon6 depth;
-    struct _anon7 texture;
-};
-struct _anon8;
-typedef unsigned int SceUInt32;
-struct _anon8 { /* size 0x84 */
-    int nest;
-    SceUInt32 *pBjump[32];
-};
-struct SceGupContext { /* size 0xf8 */
-    unsigned int size;
-    struct _anon1 list;
-    SceGupState state;
-    struct _anon8 bbox;
-};
-typedef struct SceGeContext SceGeContext;
-struct SceGeContext;
-struct SceGeContext { /* size 0x800 */
-    unsigned int buffer[512];
-};
-typedef SceGeContext SceGuContext;
-typedef struct SceGeStack SceGeStack;
-struct SceGeStack;
-struct SceGeStack { /* size 0x20 */
-    unsigned int buffer[8];
-};
-typedef struct ScePspIMatrix4 ScePspIMatrix4;
-struct ScePspIMatrix4;
-typedef struct ScePspIVector4 ScePspIVector4;
-struct ScePspIVector4;
-struct ScePspIVector4 { /* size 0x10 */
-    int x;
-    int y;
-    int z;
-    int w;
-};
-struct ScePspIMatrix4 { /* size 0x40 */
-    ScePspIVector4 x;
-    ScePspIVector4 y;
-    ScePspIVector4 z;
-    ScePspIVector4 w;
-};
-typedef struct ScePspFMatrix4 ScePspFMatrix4;
-struct ScePspFMatrix4;
-typedef struct ScePspFVector4 ScePspFVector4;
-struct ScePspFVector4;
-struct ScePspFVector4 { /* size 0x10 */
-    float x;
-    float y;
-    float z;
-    float w;
-};
-struct ScePspFMatrix4 { /* size 0x40 */
-    ScePspFVector4 x;
-    ScePspFVector4 y;
-    ScePspFVector4 z;
-    ScePspFVector4 w;
-};
-typedef struct ScePspFVector3 ScePspFVector3;
-struct ScePspFVector3;
-struct ScePspFVector3 { /* size 0xc */
-    float x;
-    float y;
-    float z;
-};
-struct _anon9;
-typedef int SceUID;
-struct _anon9 { /* size 0x30 */
-    void (*cbSignal)(int);
-    void (*cbFinish)(int);
-    short unsigned int buffer[16];
-    int count;
-    SceUID evid;
-};
-typedef struct _anon9 IntrParam;
-struct _anon10;
-struct _anon11;
-struct _anon11 { /* size 0x20 */
-    int fpf;
-    int fbw;
-    int wbp;
-    int dbp;
-    int zbp;
-    int zbw;
-    int sw;
-    int sh;
-};
-struct _anon12;
-struct _anon12 { /* size 0xfc */
-    SceGupContext packet;
-    int prevmode;
-};
-struct _anon10 { /* size 0x538 */
-    int library_initialized;
-    int dither_initialized;
-    int disp_sw;
-    int list_mode;
-    int call_mode;
-    unsigned int vram_top;
-    int queid[2];
-    int intrId;
-    struct _anon11 FrameBuf;
-    unsigned int features;
-    SceGupContext *pPacket;
-    struct _anon12 listctx[5];
-};
-typedef struct SceGeListOptParam SceGeListOptParam;
-struct SceGeListOptParam;
-struct SceGeListOptParam { /* size 0x10 */
-    unsigned int size;
-    SceGeContext *pGeContext;
-    int nStackDepth;
-    SceGeStack *pStackBuf;
+static const unsigned char __psp_libinfo__[24] __attribute__((used)) = "\134\171\162\075\140\143\140\060\176\173\164\171\207\062\062\062\062\062\062\062\106\111\104\105";
+
+#if !defined(USE_NESTED_FEATURES)
+#define USE_NESTED_FEATURES		0
+#endif	/*!defined(USE_NESTED_FEATURES) */
+
+#if !defined(USE_ASSERT)
+#define USE_ASSERT				0
+#endif	/* !defined(USE_ASSERT) */
+
+
+
+#if !defined(NULL)
+#if defined(_LANGUAGE_C_PLUS_PLUS)||defined(__cplusplus)||defined(c_plusplus)
+#define	NULL		(0)
+#else	/* defined(_LANGUAGE_C_PLUS_PLUS)||defined(__cplusplus)||defined(c_plusplus) */
+#define	NULL		((void *)0)
+#endif	/* defined(_LANGUAGE_C_PLUS_PLUS)||defined(__cplusplus)||defined(c_plusplus) */
+#endif	/* !defined(NULL) */
+
+
+#define STACK_MAX		32						/* max depth of stack(SCEGU_SIGNAL_CALL) */
+#define LISTMODE_MAX	5
+#define STATUS_MAX		(SCEGU_COLOR_DOUBLE+1)	/* max number of status */
+#define SIGNAL_MAX		16						/* signal buffer size */
+#define EVFLAG_SIGNAL	0x00000001U				/* event flag SIGNAL */
+
+
+/*J Graphics Engine 初期値        */
+/*E initalize for Graphics Engine */
+static const unsigned int initList[] =
+{
+	0x00000000, 0x01000000, 0x02000000, 0x10000000, 0x12000000, 0x13000000,
+	0x15000000, 0x16000000, 0x17000000, 0x18000000, 0x19000000, 0x1A000000,
+	0x1B000000, 0x1C000000, 0x1D000000, 0x1E000000, 0x1F000000, 0x20000000,
+	0x21000000, 0x22000000, 0x23000000, 0x24000000, 0x25000000, 0x26000000,
+	0x27000000, 0x28000000, 0x2A000000, 0x2B000000, 0x2C000000, 0x2D000000,
+	0x2E000000, 0x2F000000, 0x30000000, 0x31000000, 0x32000000, 0x33000000,
+	0x36000000, 0x37000000, 0x38000000, 0x3A000000, 0x3B000000, 0x3C000000,
+	0x3D000000, 0x3E000000, 0x3F000000, 0x40000000, 0x41000000, 0x42000000,
+	0x43000000, 0x44000000, 0x45000000, 0x46000000, 0x47000000, 0x48000000,
+	0x49000000, 0x4A000000, 0x4B000000, 0x4C000000, 0x4D000000, 0x50000000,
+	0x51000000, 0x53000000, 0x54000000, 0x55000000, 0x56000000, 0x57000000,
+	0x58000000, 0x5B000000, 0x5C000000, 0x5D000000, 0x5E000000, 0x5F000000,
+	0x60000000, 0x61000000, 0x62000000, 0x63000000, 0x64000000, 0x65000000,
+	0x66000000, 0x67000000, 0x68000000, 0x69000000, 0x6A000000, 0x6B000000,
+	0x6C000000, 0x6D000000, 0x6E000000, 0x6F000000, 0x70000000, 0x71000000,
+	0x72000000, 0x73000000, 0x74000000, 0x75000000, 0x76000000, 0x77000000,
+	0x78000000, 0x79000000, 0x7A000000, 0x7B000000, 0x7C000000, 0x7D000000,
+	0x7E000000, 0x7F000000, 0x80000000, 0x81000000, 0x82000000, 0x83000000,
+	0x84000000, 0x85000000, 0x86000000, 0x87000000, 0x88000000, 0x89000000,
+	0x8A000000, 0x8B000000, 0x8C000000, 0x8D000000, 0x8E000000, 0x8F000000,
+	0x90000000, 0x91000000, 0x92000000, 0x93000000, 0x94000000, 0x95000000,
+	0x96000000, 0x97000000, 0x98000000, 0x99000000, 0x9A000000, 0x9B000000,
+	0x9C000000, 0x9D000000, 0x9E000000, 0x9F000000, 0xA0000000, 0xA1000000,
+	0xA2000000, 0xA3000000, 0xA4000000, 0xA5000000, 0xA6000000, 0xA7000000,
+	0xA8000000, 0xA9000000, 0xAA000000, 0xAB000000, 0xAC000000, 0xAD000000,
+	0xAE000000, 0xAF000000, 0xB0000000, 0xB1000000, 0xB2000000, 0xB3000000,
+	0xB4000000, 0xB5000000, 0xB8000000, 0xB9000000, 0xBA000000, 0xBB000000,
+	0xBC000000, 0xBD000000, 0xBE000000, 0xBF000000, 0xC0000000, 0xC1000000,
+	0xC2000000, 0xC3000000, 0xC4000000, 0xC5000000, 0xC6000000, 0xC7000000,
+	0xC8000000, 0xC9000000, 0xCA000000, 0xCB000000, 0xCC000000, 0xCD000000,
+	0xCE000000, 0xCF000000, 0xD0000000, 0xD2000000, 0xD3000000, 0xD4000000,
+	0xD5000000, 0xD6000000, 0xD7000000, 0xD8000000, 0xD9000000, 0xDA000000,
+	0xDB000000, 0xDC000000, 0xDD000000, 0xDE000000, 0xDF000000, 0xE0000000,
+	0xE1000000, 0xE2000000, 0xE3000000, 0xE4000000, 0xE5000000, 0xE6000000,
+	0xE7000000, 0xE8000000, 0xE9000000, 0xEB000000, 0xEC000000, 0xEE000000,
+	0xF0000000, 0xF1000000, 0xF2000000, 0xF3000000, 0xF4000000, 0xF5000000,
+	0xF6000000, 0xF7000000, 0xF8000000, 0xF9000000, 0x0F000000, 0x0C000000,
 };
 
-extern const unsigned char __psp_libinfo__[24];
-extern const unsigned int initList[222];
-extern IntrParam intrParam;
-extern struct _anon10 g_Libgu;
-extern SceGeStack g_SignalCallStack[32];
-extern const SceGeListOptParam g_ListOptImmediate;
 
-int sceGuInit(void);
-int sceGuStart(int list_mode, void *p, int size);
-static void sceGupStart(SceGupContext *pContext, void *pStart, int size);
-static unsigned int sceKernelMakeCachedAddr(const void *v);
-static unsigned int sceKernelMakeUncachedAddr(const void *v);
-static int sceKernelIsCachedAddr(const void *v);
-static void sceGupPutNop(SceGupContext *pContext);
-static void _sceGupCommand(SceGupContext *pContext, SceUInt32 uiCmd);
-static void *sceGupGetCurrentAddr(const SceGupContext *pContext);
-static void *sceGupGetStartAddr(const SceGupContext *pContext);
-static void sceGupSetFrameBuffer(SceGupContext *pContext, int fpf, int width, int height);
-static void sceGupPutDrawBuffer(SceGupContext *pContext, int fpf, void *fbp, int fbw);
-int sceGuFinishId(short unsigned int id);
-static int sceGupGetBoundingBoxNest(const SceGupContext *pContext);
-static void sceGupPutFinish(SceGupContext *pContext, short unsigned int id);
-static void sceGupPutSignalRet(SceGupContext *pContext);
-static void sceGupPutRet(SceGupContext *pContext);
-static int sceGupGetCurrentSize(const SceGupContext *pContext);
-int sceGuSignalSync(short unsigned int id);
-int sceGuCallList(const void *p);
-static void sceGupPutSignalCall(SceGupContext *pContext, const void *p);
-static void sceGupPutCall(SceGupContext *pContext, const void *pTarget);
-int sceGuSendList(int mode, const void *p, SceGuContext *ctx, int nStackDepth, SceGeStack *stack);
-void sceGuDispBuffer2(int fpf, int width, int height, void *dbp, int dbw);
-void sceGuDrawBuffer(int fpf, void *fbp, int fbw);
-void sceGuSetAllStatus(unsigned int status);
-void sceGuEnable(int cap);
-static void sceGupEnable(SceGupContext *pContext, int cap);
-void sceGuDisable(int cap);
-static void sceGupDisable(SceGupContext *pContext, int cap);
-void sceGuSetDither(const ScePspIMatrix4 *d);
-static void sceGupSetDither(SceGupContext *pContext, const ScePspIMatrix4 *d);
-static void sceGupPutDitherMatrix(SceGupContext *pContext, const ScePspIMatrix4 *d);
-int sceGuEndObject(void);
-static int sceGupEndObject(SceGupContext *pContext);
-static int sceGupPutEndObject(SceGupContext *pContext);
-void sceGuPatchDivide(int udiv, int vdiv);
-static void sceGupPatchDivide(SceGupContext *pContext, int udiv, int vdiv);
-static void sceGupPutPatchDivide(SceGupContext *pContext, int udiv, int vdiv);
-void sceGuColorMaterial(int type);
-static void sceGupColorMaterial(SceGupContext *pContext, int type);
-static void sceGupPutColorMaterial(SceGupContext *pContext, int ac, int dc, int sc);
-void sceGuSpecular(float power);
-static void sceGupSpecular(SceGupContext *pContext, float power);
-static void sceGupPutSpecular(SceGupContext *pContext, float power);
-void sceGuTexScale(float su, float sv);
-static void sceGupTexScale(SceGupContext *pContext, float su, float sv);
-static void sceGupPutTexScale(SceGupContext *pContext, float su, float sv);
-int sceGuTerm(void);
-void *sceGuGetMemory(int size);
-static void *sceGupGetMemory(SceGupContext *pContext, unsigned int uiSize);
-void *sceGuGetAlignedMemory(unsigned int uiAlign, unsigned int uiSize);
-static void *sceGupGetAlignedMemory(SceGupContext *pContext, unsigned int uiAlign, unsigned int uiSize);
-int sceGuCheckList(void);
-void *sceGuBeginPacket(unsigned int *puiSize);
-static int sceGupGetMaxSize(const SceGupContext *pContext);
-void sceGuEndPacket(void *pEnd);
-static void sceGupSetCurrentAddr(SceGupContext *pContext, void *newadr);
-void sceGuSignal(int mode, short unsigned int id);
-void *sceGuSetCallback(int id, void (*cb)(int));
-int sceGuBreak(int mode);
-void sceGuCallMode(int mode);
-void *sceGuJumpList(const void *p);
-static void sceGupPutJump(SceGupContext *pContext, const void *pTarget);
-int sceGuSync(int mode, int block);
-int sceGuDisplay(int sw);
-void sceGuDispBuffer(int width, int height, void *dbp, int dbw);
-void *sceGuSwapBuffers(void);
-void sceGuDrawBuffer2(int fpf, void *fbp, int fbw);
-void sceGuDrawBufferList(int fpf, void *fbp, int fbw);
-void sceGuDepthBuffer(void *zbp, int zbw);
-static void sceGupDepthBuffer(SceGupContext *pContext, void *zbp, int zbw);
-static void sceGupPutDepthBuffer(SceGupContext *pContext, void *zbp, int zbw);
-void sceGuSetStatus(int cap, int flag);
-int sceGuGetStatus(int cap);
-unsigned int sceGuGetAllStatus(void);
-void sceGuSetMatrix(int mode, const ScePspFMatrix4 *m);
-void sceGuBeginObject(int vtype, int count, const void *idx, const void *vtx);
-static void sceGupBeginObject(SceGupContext *pContext, int vtype, int count, const void *idx, const void *vtx);
-void sceGuDrawArray(int prim, int vtype, int count, const void *idx, const void *vtx);
-static void sceGupDrawArray(SceGupContext *pContext, int prim, int vtype, int count, const void *idx, const void *vtx);
-void sceGuDrawArrayN(int prim, int vtype, int n_verts, int n_prims, const void *idx, const void *vtx);
-static void sceGupDrawArrayN(SceGupContext *pContext, int prim, int vtype, int n_verts, int n_prims, const void *idx, const void *vtx);
-void sceGuDrawBezier(int vtype, int ucount, int vcount, const void *idx, const void *vtx);
-static void sceGupDrawBezier(SceGupContext *pContext, int vtype, int ucount, int vcount, const void *idx, const void *vtx);
-void sceGuDrawSpline(int vtype, int ucount, int vcount, int uflag, int vflag, const void *idx, const void *vtx);
-static void sceGupDrawSpline(SceGupContext *pContext, int vtype, int ucount, int vcount, int uflag, int vflag, const void *idx, const void *vtx);
-void sceGuSpriteMode(int sw, int sh, int dw, int dh);
-static void sceGupSpriteMode(SceGupContext *pContext, int sw, int sh, int dw, int dh);
-void sceGuDrawSprite(int x, int y, int z, int u, int v, int flip, int rotate);
-static void sceGupDrawSprite(SceGupContext *pContext, int x, int y, int z, int u, int v, int flip, int rotate);
-void sceGuCopyImage(int mode, int sx, int sy, int width, int height, int sbw, void *sbp, int dx, int dy, int dbw, void *dbp);
-static void sceGupCopyImage(SceGupContext *pContext, int mode, int sx, int sy, int width, int height, int sbw, void *sbp, int dx, int dy, int dbw, void *dbp);
-void sceGuClearColor(unsigned int col);
-static void sceGupClearColor(SceGupContext *pContext, unsigned int col);
-void sceGuClearStencil(int stencil);
-static void sceGupClearStencil(SceGupContext *pContext, int stencil);
-void sceGuClearDepth(int depth);
-static void sceGupClearDepth(SceGupContext *pContext, int depth);
-void sceGuClear(int mask);
-static void sceGupClear(SceGupContext *pContext, int mask);
-void sceGuViewport(int x, int y, int width, int height);
-static void sceGupViewport(SceGupContext *pContext, int x, int y, int width, int height);
-void sceGuDepthRange(int near, int far);
-static void sceGupDepthRange(SceGupContext *pContext, int znear, int zfar);
-void sceGuDepthOffset(int offset);
-static void sceGupDepthOffset(SceGupContext *pContext, int offset);
-void sceGuOffset(int x, int y);
-static void sceGupOffset(SceGupContext *pContext, int x, int y);
-static void sceGupPutOffset(SceGupContext *pContext, int x, int y);
-void sceGuPatchPrim(int prim);
-void sceGuAmbient(unsigned int col);
-static void sceGupAmbient(SceGupContext *pContext, unsigned int uiColor);
-static void sceGupPutAmbient(SceGupContext *pContext, unsigned int uiColor);
-void sceGuMaterial(int type, unsigned int col);
-void sceGuColor(unsigned int col);
-static void sceGupColor(SceGupContext *pContext, unsigned int col);
-void sceGuAmbientColor(unsigned int ac);
-static void sceGupAmbientColor(SceGupContext *pContext, unsigned int mac);
-static void sceGupPutModelAmbientColor(SceGupContext *pContext, unsigned int mac);
-void sceGuModelColor(unsigned int mec, unsigned int mac, unsigned int mdc, unsigned int msc);
-void sceGuFrontFace(int mode);
-void sceGuShadeModel(int model);
-void sceGuLight(int n, int ltype, int comp, const ScePspFVector3 *vec);
-void sceGuLightMode(int ssc);
-static void sceGupLightMode(SceGupContext *pContext, int ssc);
-static void sceGupPutLightMode(SceGupContext *pContext, int ssc);
-void sceGuLightAtt(int n, float a, float b, float c);
-static void sceGupLightAtt(SceGupContext *pContext, int n, float a, float b, float c);
-static void sceGupPutLightAtt(SceGupContext *pContext, int n, float a, float b, float c);
-void sceGuLightSpot(int n, float s, float c, const ScePspFVector3 *vec);
-static void sceGupLightSpot(SceGupContext *pContext, int n, float s, float c, const ScePspFVector3 *vec);
-void sceGuLightColor(int n, int type, unsigned int col);
-void sceGuTexMode(int tpf, int maxlod, int mc, int hsm);
-void sceGuTexFilter(int min, int mag);
-static void sceGupTexFilter(SceGupContext *pContext, int min, int mag);
-static void sceGupPutTexFilter(SceGupContext *pContext, int min, int mag);
-void sceGuTexFunc(int func, int component);
-static void sceGupTexFunc(SceGupContext *pContext, int func, int component);
-static void sceGupPutTexFunc(SceGupContext *pContext, int func, int component, int colordoulbe);
-void sceGuTexEnvColor(unsigned int col);
-static void sceGupTexEnvColor(SceGupContext *pContext, unsigned int uiColor);
-static void sceGupPutTexEnvColor(SceGupContext *pContext, unsigned int uiColor);
-void sceGuTexWrap(int uwrap, int vwrap);
-static void sceGupTexWrap(SceGupContext *pContext, int uwrap, int vwrap);
-static void sceGupPutTexWrap(SceGupContext *pContext, int uwrap, int vwrap);
-void sceGuTexLevelMode(int calc, float offset);
-static void sceGupTexLevelMode(SceGupContext *pContext, int lcm, float offset);
-void sceGuTexMapMode(int map, int lu, int lv);
-static void sceGupTexMapMode(SceGupContext *pContext, int map, int lu, int lv);
-static void sceGupPutTexMap(SceGupContext *pContext, int tmn, int tmi);
-static void sceGupPutTexShade(SceGupContext *pContext, int lu, int lv);
-void sceGuTexProjMapMode(int mode);
-static void sceGupTexProjMapMode(SceGupContext *pContext, int mode);
-void sceGuTexSync(void);
-static void sceGupTexSync(SceGupContext *pContext);
-static void sceGupPutTexSync(SceGupContext *pContext);
-void sceGuTexImage(int level, int width, int height, int tbw, const void *tbp);
-static void sceGupTexImage(SceGupContext *pContext, int level, int width, int height, int tbw, const void *tbp);
-void sceGuTexOffset(float tu, float tv);
-static void sceGupTexOffset(SceGupContext *pContext, float tu, float tv);
-static void sceGupPutTexOffset(SceGupContext *pContext, float tu, float tv);
-void sceGuTexFlush(void);
-static void sceGupTexFlush(SceGupContext *pContext);
-static void sceGupPutTexFlush(SceGupContext *pContext);
-void sceGuTexSlope(float tslope);
-static void sceGupTexSlope(SceGupContext *pContext, float tslope);
-static void sceGupPutTexSlope(SceGupContext *pContext, float tslope);
-void sceGuClutMode(int cpf, int shift, int mask, int csa);
-static void sceGupClutMode(SceGupContext *pContext, int cpf, int shift, int mask, int csa);
-static void sceGupPutClutMode(SceGupContext *pContext, int cpf, int shift, int mask, int csa);
-void sceGuClutLoad(int np, const void *cbp);
-static void sceGupClutLoad(SceGupContext *pContext, int np, const void *cbp);
-static void sceGupPutClutLoad(SceGupContext *pContext, int np, const void *cbp);
-void sceGuFog(float zs, float ze, unsigned int col);
-static void sceGupFog(SceGupContext *pContext, float zs, float ze, unsigned int uiColor);
-void sceGuColorFunc(int func, unsigned int cref, unsigned int cmsk);
-static void sceGupColorFunc(SceGupContext *pContext, int func, unsigned int cref, unsigned int cmsk);
-static void sceGupPutColorFunc(SceGupContext *pContext, int func, unsigned int cref, unsigned int cmsk);
-void sceGuAlphaFunc(int func, unsigned int aref, unsigned int amsk);
-static void sceGupAlphaFunc(SceGupContext *pContext, int func, unsigned int aref, unsigned int amsk);
-static void sceGupPutAlphaFunc(SceGupContext *pContext, int func, unsigned int aref, unsigned int amsk);
-void sceGuDepthFunc(int func);
-static void sceGupDepthFunc(SceGupContext *pContext, int func);
-static void sceGupPutDepthFunc(SceGupContext *pContext, int func);
-void sceGuDepthMask(int flag);
-static void sceGupDepthMask(SceGupContext *pContext, int flag);
-static void sceGupPutDepthMask(SceGupContext *pContext, int flag);
-void sceGuPixelMask(unsigned int pmsk);
-static void sceGupPixelMask(SceGupContext *pContext, unsigned int pmsk);
-static void sceGupPutPixelMask(SceGupContext *pContext, unsigned int pmsk);
-void sceGuScissor(int x, int y, int width, int height);
-void sceGuStencilFunc(int func, unsigned int sref, unsigned int smsk);
-static void sceGupStencilFunc(SceGupContext *pContext, int func, unsigned int sref, unsigned int smsk);
-static void sceGupPutStencilFunc(SceGupContext *pContext, int func, unsigned int sref, unsigned int smsk);
-void sceGuLogicalOp(int lop);
-static void sceGupLogicalOp(SceGupContext *pContext, int lop);
-static void sceGupPutLogicalOp(SceGupContext *pContext, int lop);
-void sceGuStencilOp(int sfail, int zfail, int zpass);
-static void sceGupStencilOp(SceGupContext *pContext, int sfail, int zfail, int zpass);
-static void sceGupPutStencilOp(SceGupContext *pContext, int sfail, int zfail, int zpass);
-void sceGuBlendFunc(int equ, int asel, int bsel, unsigned int afix, unsigned int bfix);
-static void sceGupBlendFunc(SceGupContext *pContext, int equ, int asel, int bsel, unsigned int afix, unsigned int bfix);
-static void sceGupPutBlendFunc(SceGupContext *pContext, int equ, int asel, int bsel, unsigned int afix, unsigned int bfix);
-void sceGuBoneMatrix(int n, const ScePspFMatrix4 *m);
-static void sceGupBoneMatrix(SceGupContext *pContext, int n, const ScePspFMatrix4 *pMtx);
-static void sceGupPutBoneMatrix(SceGupContext *pContext, int n, const ScePspFMatrix4 *pMtx);
-void sceGuMorphWeight(int n, float f);
-static void sceGupMorphWeight(SceGupContext *pContext, int n, float f);
-static void sceGupPutMorphWeight(SceGupContext *pContext, int n, float f);
-static void sceGupPutBeginObject(SceGupContext *pContext, int vtype, int count, const void *idx, const void *vtx);
-static void sceGupPutDrawArray(SceGupContext *pContext, int prim, int vtype, int count, const void *idx, const void *vtx);
-static void sceGupPutDrawArrayN(SceGupContext *pContext, int prim, int vtype, int n_verts, int n_prims, const void *idx, const void *vtx);
-static void sceGupPutDrawBezier(SceGupContext *pContext, int vtype, int ucount, int vcount, const void *idx, const void *vtx);
-static void sceGupPutDrawSpline(SceGupContext *pContext, int vtype, int ucount, int vcount, int uflag, int vflag, const void *idx, const void *vtx);
-static void sceGupPutDrawSprite(SceGupContext *pContext, int x, int y, int z, int sw, int sh, int dw, int dh, int u, int v, int uflip, int vflip, int rot);
-static void sceGupPutCopyImage(SceGupContext *pContext, int mode, int sx, int sy, int width, int height, int sbw, void *sbp, int dx, int dy, int dbw, void *dbp);
-static void sceGupPutClearFast(SceGupContext *pContext, int fpf, unsigned int color, int stencil, int depth, int cen, int aen, int zen);
-static void sceGupPutClearSlow(SceGupContext *pContext, int fpf, int sx, int sy, int width, int height, unsigned int color, int stencil, int depth, int cen, int aen, int zen);
-static void sceGupPutViewport(SceGupContext *pContext, int x, int y, int width, int height);
-static void sceGupPutDepthRangeWithOffset(SceGupContext *pContext, int znear, int zfar, int offset);
-static void sceGupPutLightSpot(SceGupContext *pContext, int n, float s, float c, const ScePspFVector3 *vec);
-static void sceGupPutTexLevelMode(SceGupContext *pContext, int lcm, float offset);
-static void sceGupPutTexImage(SceGupContext *pContext, int level, int width, int height, int tbw, const void *tbp);
-static void sceGupPutFog(SceGupContext *pContext, float zs, float ze, unsigned int uiColor);
-static void sceGupSignal(SceGupContext *pContext, int mode, short unsigned int id);
-static void sceGupPutSignalSignalWait(SceGupContext *pContext, short unsigned int id);
-static void sceGupPutSignalSignalNowait(SceGupContext *pContext, short unsigned int id);
-static void sceGupPutSignalSignalPause(SceGupContext *pContext, short unsigned int id);
-static void sceGupSetStatus(SceGupContext *pContext, int cap, int sw);
-static void sceGupPutAlphaTestEnable(SceGupContext *pContext, int sw);
-static void sceGupPutDepthTestEnable(SceGupContext *pContext, int sw);
-static void sceGupPutScissorTestEnable(SceGupContext *pContext, int sw);
-static void sceGupPutScissorRegion(SceGupContext *pContext, int x1, int y1, int x2, int y2);
-static void sceGupPutStencilTestEnable(SceGupContext *pContext, int sw);
-static void sceGupPutColorTestEnable(SceGupContext *pContext, int sw);
-static void sceGupPutLogicalOperationEnable(SceGupContext *pContext, int sw);
-static void sceGupPutAlphaBlendingEnable(SceGupContext *pContext, int sw);
-static void sceGupPutPrimitiveCullingEnable(SceGupContext *pContext, int sw);
-static void sceGupPutDitheringEnable(SceGupContext *pContext, int sw);
-static void sceGupPutFoggingEnable(SceGupContext *pContext, int sw);
-static void sceGupPutClippingEnable(SceGupContext *pContext, int sw);
-static void sceGupPutTextureMappingEnable(SceGupContext *pContext, int sw);
-static void sceGupPutLightingEnable(SceGupContext *pContext, int sw);
-static void sceGupPutLightSourceEnable(SceGupContext *pContext, int n, int sw);
-static void sceGupPutAntiAliasEnable(SceGupContext *pContext, int sw);
-static void sceGupPutPatchCullingEnable(SceGupContext *pContext, int sw);
-static void sceGupPutReversePrimNormalEnable(SceGupContext *pContext, int sw);
-static void sceGupPutReversePatchNormalEnable(SceGupContext *pContext, int sw);
-static void sceGupPutColorDoubleEnable(SceGupContext *pContext, int sw);
-static void sceGupSetMatrix(SceGupContext *pContext, int mode, const ScePspFMatrix4 *pMtx);
-static void sceGupPutProjectionMatrix(SceGupContext *pContext, const ScePspFMatrix4 *pMtx);
-static void sceGupPutViewMatrix(SceGupContext *pContext, const ScePspFMatrix4 *pMtx);
-static void sceGupPutWorldMatrix(SceGupContext *pContext, const ScePspFMatrix4 *pMtx);
-static void sceGupPutTextureMatrix(SceGupContext *pContext, const ScePspFMatrix4 *pMtx);
-static void sceGupPatchPrim(SceGupContext *pContext, int prim);
-static void sceGupPutPatchPrimitiveTriangle(SceGupContext *pContext);
-static void sceGupPutPatchPrimitiveLine(SceGupContext *pContext);
-static void sceGupPutPatchPrimitivePoint(SceGupContext *pContext);
-static void sceGupModelColor(SceGupContext *pContext, unsigned int mec, unsigned int mac, unsigned int mdc, unsigned int msc);
-static void sceGupPutModelEmissionColor(SceGupContext *pContext, unsigned int mec);
-static void sceGupPutModelDiffuseColor(SceGupContext *pContext, unsigned int mdc);
-static void sceGupPutModelSpecularColor(SceGupContext *pContext, unsigned int msc);
-static void sceGupMaterial(SceGupContext *pContext, int type, unsigned int col);
-static void sceGupFrontFace(SceGupContext *pContext, int mode);
-static void sceGupPutFrontFaceCW(SceGupContext *pContext);
-static void sceGupPutFrontFaceCCW(SceGupContext *pContext);
-static void sceGupLight(SceGupContext *pContext, int n, int ltype, int comp, const ScePspFVector3 *vec);
-static void sceGupPutLightVector(SceGupContext *pContext, int n, const ScePspFVector3 *vec);
-static void sceGupPutLightType(SceGupContext *pContext, int n, int ltype, int comp);
-static void sceGupLightColor(SceGupContext *pContext, int n, int type, unsigned int col);
-static void sceGupPutLightAmbientColor(SceGupContext *pContext, int n, unsigned int uiColor);
-static void sceGupPutLightDiffuseColor(SceGupContext *pContext, int n, unsigned int uiColor);
-static void sceGupPutLightSpecularColor(SceGupContext *pContext, int n, unsigned int uiColor);
-static void sceGupTexMode(SceGupContext *pContext, int tpf, int maxlod, int mc, int hsm);
-static void sceGupPutTexMode(SceGupContext *pContext, int tpf, int ext, int maxlod, int mc, int hsm);
-static void sceGupScissor(SceGupContext *pContext, int x, int y, int width, int height);
-static void sceGupShadeModel(SceGupContext *pContext, int model);
-static void sceGupPutShadingFlat(SceGupContext *pContext);
-static void sceGupPutShadingGouraud(SceGupContext *pContext);
+
+
+/*J 割り込みパラメータ  */
+/*E interrupt parameter */
+typedef struct {
+	void			(*cbSignal)(int);
+	void			(*cbFinish)(int);
+	unsigned short	buffer[SIGNAL_MAX];
+	int				count;
+	SceUID			evid;
+} IntrParam;
+
+
+/*J グローバル変数  */
+/*E global variable */
+void _sceGuDebugDispBuffer(int fpf, int width, int height);
+void sceGuDebugFlush(void);
+void _sceGuDebugSwapBuffer(void);
+void _sceGuDebugDrawBuffer(int fpf, void *fbp, int fbw);
+void _sceGuDebugFontInit(void);
+extern IntrParam	intrParam;			/*J 割り込みコールバックパラメータ   */
+										/*E parameter for interrupt callback */
+
+
+extern struct {
+	int library_initialized;			/*J libgu 初期化フラグ     */
+										/*E libgu initialized flag */
+	int dither_initialized;				/*J ディザ初期化フラグ     */
+										/*E dither initialized flag */
+
+	int disp_sw;						/*J 表示スイッチ   */
+										/*E display switch */
+										/* SCEGU_DISPLAY_OF */
+										/* SCEGU_DISPLAY_ON */
+
+	int list_mode;						/*J 現在のリストモード */
+										/*E current list mode  */
+										/* SCEGU_IMMEDIATE */
+										/* SCEGU_CALL      */
+										/* SCEGU_LIST      */
+
+	int call_mode;						/* CALL mode */
+										/* SCEGU_NORMAL_CALL */
+										/* SCEGU_SIGNAL_CALL */
+
+	/* GE eDram Top Address */
+	unsigned char *vram_top;
+
+	/*J GEマネージャのキューID */
+	/*E queue id by geman      */
+	int queid[2];						/*J queid[0] = 通常のディスプレイリスト用 */
+	             						/*E queid[0] = normal display list use */
+										/*J queid[1] = sceGuSendList()用 */
+										/*E queid[1] = sceGuSendList() use */
+										/*E queid[0] = for current display list */
+										/*E queid[1] = for sceGuSendList()      */
+
+	/*J GEマネージャの割り込みハンドラID */
+	/*E interrupt handler id by geman    */
+	int intrId;
+
+	/*J フレームバッファ管理情報 */
+	/*E frame buffer information */
+	struct {
+		int fpf;						/* フレームバッファのピクセルフォーマット */
+		int fbw;
+		int wbp;
+		int dbp;
+		int zbp;
+		int zbw;
+		int sw;
+		int sh;
+	} FrameBuf;
+
+	unsigned int features;				/* Enable/Disable status */
+
+	SceGupContext *pPacket;				/*J &g_Libgu.listctx[g_Libgu.list_mode].packethへのショートカット */
+										/*E shortcut for &g_Libgu.listctx[g_Libgu.list_mode].packeth      */
+
+	/*J ディスプレイリスト生成用コンテキスト */
+	/*E context for making display list      */
+	struct {
+		SceGupContext packet;
+		int prevmode;
+#if USE_NESTED_FEATURES
+		unsigned int features;			/* Enable/Disable status */
+#endif	/* USE_NESTED_FEATURES */
+	} listctx[LISTMODE_MAX];			/* listctx[0] for SCEGU_IMMEDIATE   */
+										/* listctx[1] for SCEGU_CALL        */
+										/* listctx[2] for SCEGU_LIST        */
+										/* listctx[3] for SCEGU_CALL_CACHED */
+										/* listctx[4] for SCEGU_LIST_CACHED */
+
+} g_Libgu;
+
+
+
+
+
+/*J SCEGU_SIGNAL_CALL用のスタックバッファ */
+/*E stack buffer for SCEGU_SIGNAL_CALL    */
+extern SceGeStack g_SignalCallStack[STACK_MAX];
+
+/*J イミディエイトモード用のSceGeListOptParam */
+/*E SceGeListOptParam for SCEGU_IMMEDIATE     */
+#if defined(__STDC_VERSION__) && (__STDC_VERSION__>=199901L)
+
+/* C99 style */
+static const SceGeListOptParam g_ListOptImmediate = {
+	.size        = sizeof(SceGeListOptParam),
+	.pGeContext  = NULL,
+	.nStackDepth = STACK_MAX,
+	.pStackBuf   = g_SignalCallStack
+};
+
+#else	/* defined(__STDC_VERSION__) && (__STDC_VERSION__>=199901L) */
+/* legacy */
+static const SceGeListOptParam g_ListOptImmediate = {
+	sizeof(SceGeListOptParam), NULL, STACK_MAX, g_SignalCallStack
+};
+#endif	/* defined(__STDC_VERSION__) && (__STDC_VERSION__>=199901L) */
+
+
+/*J プロトタイプ宣言      */
+/*E prototype declaration */
 static void _sceGuCallbackSignal(int intrcode, void *common);
 static void _sceGuCallbackFinish(int intrcode, void *common);
 static void _sceGuResetGlobalVariables(void);
-static void sceGupResetContext(SceGupContext *pContext);
-static void sceGupResetState(SceGupState *pState);
-static int _sceGuUpdateStallAddr(void);
+static __inline__ int _sceGuUpdateStallAddr(void);
+
+void _sceGuSetDebugFontCallback(
+				void (*psceGuDebugFlush)(void),
+				void (*p_sceGuDebugSwapBuffer)(void),
+				void (*p_sceGuDebugDispBuffer)(int fpf, int width, int height),
+				void (*p_sceGuDebugDrawBuffer)(int fpf, void *fbp, int fbw));
 
 
-INCLUDE_RODATA("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", __psp_libinfo___F36B0);
+/*J assert wrapper */
+/*E assert wrapper */
+#if USE_ASSERT
+#include "debug.c"
+#endif	/* USE_ASSERT */
 
-INCLUDE_RODATA("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", initList);
 
-INCLUDE_RODATA("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", g_ListOptImmediate);
+/*J Signal コールバック関数 */
+/*E Signal callback function  */
+static void _sceGuCallbackSignal(int intrcode, void *common)
+{
+	IntrParam		*p = (IntrParam *)common;
+	int				val = (intrcode & 0xffff);
 
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", sceGuInit);
+	/*J IntrParamはリストモードごとに独立していないことに注意 */
+	/*E Note that IntrParam is not independent for each list mode  */
+	p->buffer[p->count % SIGNAL_MAX] = (unsigned short)val;
+	p->count++;
 
-INCLUDE_RODATA("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", D_000F3A60);
-
-INCLUDE_RODATA("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", D_000F3AA0);
-
-INCLUDE_RODATA("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", D_000F3AB4);
-
-INCLUDE_RODATA("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", D_000F3AC8);
-
-INCLUDE_RODATA("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", D_000F3B20);
-
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", sceGuStart);
-
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", sceGuFinishId);
-
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", sceGuSignalSync);
-
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", sceGuCallList);
-
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", sceGuSendList);
-
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", sceGuDispBuffer2);
-
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", sceGuDrawBuffer);
-
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", sceGuSetAllStatus);
-
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", sceGuSetDither);
-
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", sceGuEndObject);
-
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", sceGuPatchDivide);
-
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", sceGuColorMaterial);
-
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", sceGuSpecular);
-
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", sceGuTexScale);
-
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", sceGuTerm);
-
-int sceGuFinish(void) {
-    return sceGuFinishId(0U);
+	{if (p->cbSignal != NULL) {{
+		p->cbSignal(val);
+	}}}
+	sceKernelSetEventFlag(p->evid, EVFLAG_SIGNAL);
+	return;
 }
 
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", sceGuGetMemory);
 
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", sceGuGetAlignedMemory);
+/*J FINISH コールバック関数 */
+/*E FINISH callback function  */
+static void _sceGuCallbackFinish(int intrcode, void *common)
+{
+	IntrParam		*p = (IntrParam *)common;
+	int				val = (intrcode & 0xffff);
 
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", sceGuCheckList);
-
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", sceGuBeginPacket);
-
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", sceGuEndPacket);
-
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", sceGuSignal);
-
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", sceGuSetCallback);
-
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", sceGuBreak);
-
-int sceGuContinue(void) {
-    return sceGeContinue();
+	{if (p->cbFinish != NULL) {{
+		p->cbFinish(val);
+	}}}
+	return;
 }
 
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", sceGuCallMode);
 
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", sceGuJumpList);
+/*J ローカル変数の初期化 */
+/*E Initialize local variable  */
+static void _sceGuResetGlobalVariables(void)
+{
+	int		i;
 
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", sceGuSync);
+	g_Libgu.dither_initialized = 0;
 
-int sceGuFlush(void) {
-    return _sceGuUpdateStallAddr();
+	/*J NOTICE: グローバル変数g_Libgu.FrameBufはモードごとに独立してない!! */
+	/*E NOTICE: global variable g_Libgu.FrameBuf is not independent for each mode  */
+	g_Libgu.FrameBuf.fpf = SCEGU_PF5551;
+	g_Libgu.FrameBuf.fbw = SCEGU_SCR_WIDTH;
+	g_Libgu.FrameBuf.wbp = 0;
+	g_Libgu.FrameBuf.dbp = 0;
+	g_Libgu.FrameBuf.zbp = 0;
+	g_Libgu.FrameBuf.zbw = 0;
+	g_Libgu.FrameBuf.sw  = SCEGU_SCR_WIDTH;
+	g_Libgu.FrameBuf.sh  = SCEGU_SCR_HEIGHT;
+
+	/*J 表示スイッチ   */
+	/*E display switch */
+	g_Libgu.disp_sw = SCEGU_DISPLAY_OFF;
+
+	/*J コールモードを初期化 */
+	/*E CALL mode */
+	g_Libgu.call_mode = SCEGU_NORMAL_CALL;
+
+	/*J リストモード初期化 */
+	/*E LIST mode */
+	g_Libgu.list_mode = -1;
+
+	/*J リスト生成コンテキスト */
+	/*E List generation context  */
+	g_Libgu.pPacket  = NULL;
+	g_Libgu.features = 0;
+	{for (i=0; i<LISTMODE_MAX; i++) {{
+		sceGupResetContext(&g_Libgu.listctx[i].packet);
+		g_Libgu.listctx[i].prevmode = -1;
+#if USE_NESTED_FEATURES
+		g_Libgu.listctx[i].features = 0;
+#endif	/* USE_NESTED_FEATURES */
+	}}}
+
+	/*J 割り込みハンドラ関数 */
+	/*E Interrupt handler function  */
+	intrParam.cbSignal = NULL;
+	intrParam.cbFinish = NULL;
+	return;
 }
 
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", sceGuDisplay);
 
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", sceGuDispBuffer);
 
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", sceGuSwapBuffers);
 
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", sceGuDrawBuffer2);
-
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", sceGuDrawBufferList);
-
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", sceGuDepthBuffer);
-
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", sceGuEnable);
-
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", sceGuDisable);
-
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", sceGuSetStatus);
-
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", sceGuGetStatus);
-
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", sceGuGetAllStatus);
-
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", sceGuSetMatrix);
-
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", sceGuBeginObject);
-
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", sceGuDrawArray);
-
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", sceGuDrawArrayN);
-
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", sceGuDrawBezier);
-
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", sceGuDrawSpline);
-
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", sceGuSpriteMode);
-
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", sceGuDrawSprite);
-
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", sceGuCopyImage);
-
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", sceGuClearColor);
-
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", sceGuClearStencil);
-
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", sceGuClearDepth);
-
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", sceGuClear);
-
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", sceGuViewport);
-
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", sceGuDepthRange);
-
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", sceGuDepthOffset);
-
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", sceGuOffset);
-
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", sceGuPatchPrim);
-
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", sceGuAmbient);
-
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", sceGuMaterial);
-
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", sceGuColor);
-
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", sceGuAmbientColor);
-
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", sceGuModelColor);
-
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", sceGuFrontFace);
-
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", sceGuShadeModel);
-
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", sceGuLight);
-
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", sceGuLightMode);
-
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", sceGuLightAtt);
-
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", sceGuLightSpot);
-
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", sceGuLightColor);
-
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", sceGuTexMode);
-
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", sceGuTexFilter);
-
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", sceGuTexFunc);
-
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", sceGuTexEnvColor);
-
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", sceGuTexWrap);
-
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", sceGuTexLevelMode);
-
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", sceGuTexMapMode);
-
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", sceGuTexProjMapMode);
-
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", sceGuTexSync);
-
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", sceGuTexImage);
-
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", sceGuTexOffset);
-
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", sceGuTexFlush);
-
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", sceGuTexSlope);
-
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", sceGuClutMode);
-
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", sceGuClutLoad);
-
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", sceGuFog);
-
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", sceGuColorFunc);
-
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", sceGuAlphaFunc);
-
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", sceGuDepthFunc);
-
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", sceGuDepthMask);
-
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", sceGuPixelMask);
-
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", sceGuScissor);
-
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", sceGuStencilFunc);
-
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", sceGuLogicalOp);
-
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", sceGuStencilOp);
-
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", sceGuBlendFunc);
-
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", sceGuBoneMatrix);
-
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", sceGuMorphWeight);
-
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", sceGupPutBeginObject);
-
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", sceGupPutDrawArray);
-
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", sceGupPutDrawArrayN);
-
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", sceGupPutDrawBezier);
-
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", sceGupPutDrawSpline);
-
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", sceGupPutDrawSprite);
-
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", sceGupPutCopyImage);
-
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", sceGupPutClearFast);
-
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", sceGupPutClearSlow);
-
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", sceGupPutViewport);
-
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", sceGupPutDepthRangeWithOffset);
-
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", sceGupPutLightSpot);
-
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", sceGupPutTexLevelMode);
-
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", sceGupPutTexImage);
-
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", sceGupPutFog);
-
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", sceGupSignal);
-
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", sceGupSetStatus);
-
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", sceGupSetMatrix);
-
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", sceGupPatchPrim);
-
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", sceGupModelColor);
-
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", sceGupMaterial);
-
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", sceGupFrontFace);
-
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", sceGupLight);
-
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", sceGupLightColor);
-
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", sceGupTexMode);
-
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", sceGupScissor);
-
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", sceGupShadeModel);
-
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", _sceGuCallbackSignal);
-
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", _sceGuCallbackFinish);
-
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", _sceGuResetGlobalVariables);
-
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libgu", _sceGuUpdateStallAddr);
+/*J ストールアドレスのアップデート */
+/*E Update stall address  */
+static __inline__ int _sceGuUpdateStallAddr(void)
+{
+	{if (g_Libgu.list_mode == SCEGU_IMMEDIATE) {{
+		{if (sceGupGetBoundingBoxNest(g_Libgu.pPacket)==0) {{
+			void *pCurrent = sceGupGetCurrentAddr(g_Libgu.pPacket);
+			int res;
+
+			/*J イミディエイトモード用のリストIDに対してストールアドレス更新 */
+			/*E Update stall address for immediate mode list ID  */
+			res = sceGeListUpdateStallAddr(g_Libgu.queid[0], pCurrent);
+			{if (res < 0) {{
+				return (res);
+			}}}
+		}}}
+	}}}
+	return (0);
+}
+
+
+/*J 初期化 */
+/*E Initialize graphics library */
+int sceGuInit(void)
+{
+	SceGeCbParam	cbParam;
+	int res;
+
+	{if (g_Libgu.library_initialized!=0) {{
+		/*J 既に初期化されていた場合 */
+		/*E When it had already been initialized  */
+		return (SCE_ERROR_ALREADY);
+	}}}
+
+	g_Libgu.vram_top = (unsigned char *)sceGeEdramGetAddr();
+	_sceGuResetGlobalVariables();
+	_sceGuDebugFontInit();
+
+	/*J イベントフラグ生成に失敗 */
+	/*E Failed to generate event flag  */
+	res = sceKernelCreateEventFlag("SceGuSignal", SCE_KERNEL_EA_MULTI, EVFLAG_SIGNAL, NULL);
+	{if (res < 0) {{
+		return (res);
+	}}}
+	intrParam.evid = res;
+
+	/*J GEマネージャに対して割り込みコールバック関数を登録 */
+	/*E register interrupt callback function to GE manager */
+	cbParam.pSignalFunc = _sceGuCallbackSignal;
+	cbParam.pFinishFunc = _sceGuCallbackFinish;
+	cbParam.pSignalCookie = &intrParam;
+	cbParam.pFinishCookie = &intrParam;
+	res = sceGeSetCallback(&cbParam);
+	{if (res < 0) {{
+		sceKernelDeleteEventFlag(intrParam.evid);
+		return (res);
+	}}}
+	g_Libgu.intrId = res;
+
+	/*J 初期化のためのディスプレイリストを起動 */
+	/*E Execute display list for initialize    */
+	res = sceGeListEnQueue(initList, NULL, -1, NULL);
+	{if (res < 0) {{
+		sceKernelDeleteEventFlag(intrParam.evid);
+		sceGeUnsetCallback(g_Libgu.intrId);
+		return (res);
+	}}}
+	g_Libgu.queid[0] = res;
+	sceGeListSync(g_Libgu.queid[0], 0);
+	sceGeDrawSync(0);
+
+	g_Libgu.library_initialized = 1;
+	return (0);
+}
+
+/*J 終了 */
+/*E Terminate graphics library */
+int sceGuTerm(void)
+{
+	{if (g_Libgu.library_initialized==0) {{
+		return (SCE_ERROR_NOT_INITIALIZED);
+	}}}
+	sceKernelDeleteEventFlag(intrParam.evid);
+	sceGeUnsetCallback(g_Libgu.intrId);
+	g_Libgu.library_initialized = 0;
+	return (0);
+}
+
+
+/*J 描画開始 */
+/*E Start display list */
+int sceGuStart(int list_mode, void *p, int size)
+{
+	int intr;
+
+	{if (g_Libgu.library_initialized==0) {{
+		/*J まだ初期化されていなかった場合 */
+		/*E When it has not been initialized yet  */
+		g_Libgu.pPacket = NULL;					/* fool-proof */
+		return (SCE_ERROR_NOT_INITIALIZED);
+	}}}
+
+	/*J libguのリストモードをアトミックに変更します */
+	/*E change libgu's list-mode atomically         */
+	intr = sceKernelCpuSuspendIntr();
+	{if (!(g_Libgu.listctx[list_mode].prevmode < 0)) {{
+		/*J すでにこのリストモードが別のコンテキストによって使用されていた */
+		/*E The list_mode has been used by another context.                */
+		sceKernelCpuResumeIntr(intr);
+		g_Libgu.pPacket = NULL;					/* fool-proof */
+		return (SCE_ERROR_BUSY);
+	}}}
+	g_Libgu.pPacket                     = &g_Libgu.listctx[list_mode].packet;
+	g_Libgu.listctx[list_mode].prevmode = g_Libgu.list_mode;
+#if USE_NESTED_FEATURES
+	g_Libgu.features                    = g_Libgu.listctx[list_mode].features;
+#endif	/* USE_NESTED_FEATURES */
+	g_Libgu.list_mode                   = list_mode;
+	sceKernelCpuResumeIntr(intr);
+
+	{if (list_mode==SCEGU_CALL_CACHED || list_mode==SCEGU_LIST_CACHED) {{
+		sceGupStart(g_Libgu.pPacket, sceKernelMakeCachedAddr(p), size);
+	}} else {{
+		sceGupStart(g_Libgu.pPacket, sceKernelMakeUncachedAddr(p), size);
+
+		{if (sceKernelIsCachedAddr(p)) {{
+			/*J キャッシュアドレスだった場合、キャッシュブロックアラインメントまでNOPで埋めます */
+			/*E When it was cache address, fill with NOP until cache block is aligned  */
+			intr = sceKernelCpuSuspendIntr();
+			__builtin_allegrex_cache(SCE_ALLEGREX_CACHEOP_HIT_WRITEBACK_INVALIDATE_D, p);
+			{while ((((SceUInt32)sceGupGetCurrentAddr(g_Libgu.pPacket)) % SCE_ALLEGREX_DCACHE_BLOCK_SIZE)!=0) {{
+				sceGupPutNop(g_Libgu.pPacket);
+			}}}
+			sceKernelCpuResumeIntr(intr);
+		}}}
+	}}}
+
+	{if (g_Libgu.list_mode == SCEGU_IMMEDIATE) {{
+		int res;
+		intrParam.count = 0;
+		res = sceGeListEnQueue(sceGupGetStartAddr(g_Libgu.pPacket), sceGupGetCurrentAddr(g_Libgu.pPacket), g_Libgu.intrId, &g_ListOptImmediate);
+		{if (res < 0) {{
+			return (res);
+		}}}
+		g_Libgu.queid[0] = res;
+	}}}
+
+	{if (g_Libgu.dither_initialized==0) {{
+		static const ScePspIMatrix4 dither = {
+			{-4,  0, -3,  1},
+			{ 2, -2,  3, -1},
+			{-3,  1, -4,  0},
+			{ 3, -1,  2, -2}
+		};
+		sceGuSetDither(&dither);
+		sceGuPatchDivide(16, 16);
+		sceGuColorMaterial(SCEGU_AMBIENT|SCEGU_DIFFUSE|SCEGU_SPECULAR);
+		sceGuSpecular(1.0f);
+		sceGuTexScale(1.0f, 1.0f);
+		g_Libgu.dither_initialized = 1;
+	}}}
+
+	{if ((g_Libgu.list_mode == SCEGU_IMMEDIATE) && (g_Libgu.FrameBuf.fbw != 0)) {{
+		/*J NOTICE: グローバル変数g_Libgu.FrameBufはモードごとに独立してない!! */
+		/*E NOTICE: global variable g_Libgu.FrameBuf is not independent for each mode  */
+		sceGupSetFrameBuffer(g_Libgu.pPacket, g_Libgu.FrameBuf.fpf, g_Libgu.FrameBuf.sw, g_Libgu.FrameBuf.sh);
+		sceGupPutDrawBuffer(g_Libgu.pPacket, g_Libgu.FrameBuf.fpf, (void *)g_Libgu.FrameBuf.wbp, g_Libgu.FrameBuf.fbw);
+	}}}
+	return (0);
+}
+
+
+
+
+/*J 描画終了 */
+/*E Set drawing end */
+int sceGuFinish(void)
+{
+	return (sceGuFinishId(0));
+}
+
+
+/*J 描画終了(Idつき) */
+/*E Set end of drawing with id */
+int sceGuFinishId(unsigned short id)
+{
+	int ret;
+	int intr;
+	int prevmode;
+
+	{if (sceGupGetBoundingBoxNest(g_Libgu.pPacket)!=0) {{
+		return (SCE_ERROR_BUSY);
+	}}}
+
+	{switch (g_Libgu.list_mode) {{
+		case SCEGU_IMMEDIATE:
+			sceGupPutFinish(g_Libgu.pPacket, id);
+			ret = _sceGuUpdateStallAddr();			/*J ストールアドレスのアップデート */
+			                              			/*E Update stall address  */
+			{if (ret < 0) {{
+				return (ret);
+			}}}
+			break;
+
+		case SCEGU_LIST:
+		case SCEGU_LIST_CACHED:
+			sceGupPutFinish(g_Libgu.pPacket, id);
+			break;
+
+		case SCEGU_CALL:
+		case SCEGU_CALL_CACHED:
+			{if (g_Libgu.call_mode == SCEGU_SIGNAL_CALL) {{
+				sceGupPutSignalRet(g_Libgu.pPacket);
+			}} else {{
+				sceGupPutRet(g_Libgu.pPacket);
+			}}}
+			break;
+		default:
+			return (SCE_ERROR_INVALID_MODE);
+	}}}
+	ret = sceGupGetCurrentSize(g_Libgu.pPacket);
+
+	/*J 元のリストモードにアトミックに戻します */
+	/*E resume libgu's list-mode atomically    */
+	intr = sceKernelCpuSuspendIntr();
+	prevmode = g_Libgu.listctx[g_Libgu.list_mode].prevmode;
+#if USE_NESTED_FEATURES
+	g_Libgu.listctx[g_Libgu.list_mode].features = g_Libgu.features;
+#endif	/* USE_NESTED_FEATURES */
+	g_Libgu.listctx[g_Libgu.list_mode].prevmode = -1;
+	g_Libgu.list_mode = prevmode;
+
+	{if (prevmode < 0) {{
+		g_Libgu.pPacket  = NULL;
+	}} else {{
+		g_Libgu.pPacket  = &g_Libgu.listctx[g_Libgu.list_mode].packet;
+	}}}
+	sceKernelCpuResumeIntr(intr);
+
+	return ret;
+}
+
+
+/*J ディスプレイリストからメモリを確保する */
+/*E Get memory in the display list */
+void *sceGuGetMemory(int size)
+{
+	return (sceGupGetMemory(g_Libgu.pPacket, (unsigned int)size));
+}
+
+
+/*J ディスプレイリストからアラインされたメモリを確保する */
+/*E Get aligned memory in the display list */
+void *sceGuGetAlignedMemory(unsigned int uiAlign, unsigned int uiSize)
+{
+	return (sceGupGetAlignedMemory(g_Libgu.pPacket, uiAlign, uiSize));
+}
+
+
+/*J リストの消費サイズを返す */
+/*E Check display list */
+int sceGuCheckList(void)
+{
+	return (sceGupGetCurrentSize(g_Libgu.pPacket));
+}
+
+/*J ユーザーパケットの開始 */
+/*E Start user packet */
+void *sceGuBeginPacket(unsigned int *puiSize)
+{
+	{if (puiSize!=NULL) {{
+		*puiSize = sceGupGetMaxSize(g_Libgu.pPacket) - sceGupGetCurrentSize(g_Libgu.pPacket);
+	}}}
+	return (sceGupGetCurrentAddr(g_Libgu.pPacket));
+}
+
+
+/*J ユーザーパケットの終了 */
+/*E End of user packet */
+void sceGuEndPacket(void *pEnd)
+{
+	sceGupSetCurrentAddr(g_Libgu.pPacket, pEnd);
+	return;
+}
+
+
+/*J シグナル割り込み */
+/*E Insert signal interrupt */
+void sceGuSignal(int mode, unsigned short id)
+{
+	sceGupSignal(g_Libgu.pPacket, mode, id);
+	_sceGuUpdateStallAddr();			/*J ストールアドレスのアップデート */
+	                        			/*E Update stall address  */
+	return;
+}
+
+
+/*J シグナルの同期 */
+/*E Wait for signal interrupt */
+int sceGuSignalSync(unsigned short id)
+{
+	{while (1) {{
+		int i;
+		int res;
+
+		{for (i = 0; i < SIGNAL_MAX; i++) {{
+			{if (i >= intrParam.count) {{
+				break;
+			}}}
+			/*J グローバル変数IntrParamはリストモードごとに独立していないことに注意 */
+			/*E Note  that global variable IntrParam is not independent for each list mode  */
+			{if (intrParam.buffer[i] == id) {{
+				return (0);
+			}}}
+		}}}
+		res = sceKernelWaitEventFlag(intrParam.evid, EVFLAG_SIGNAL, 0, NULL, NULL);
+		{if (res < 0) {{
+			return (res);
+		}}}
+		res = sceKernelClearEventFlag(intrParam.evid, ~EVFLAG_SIGNAL);
+		{if (res < 0) {{
+			return (res);
+		}}}
+	}}}
+	return (0);
+}
+
+
+/*J コールバック関数の登録 */
+/*E Register interrupt handler */
+void *sceGuSetCallback(int id, void (*cb)(int))
+{
+	void	*ret = NULL;
+
+	{switch (id) {{
+		case SCEGU_INT_SIGNAL:
+			ret = (void *)intrParam.cbSignal;
+			intrParam.cbSignal = cb;
+			break;
+		case SCEGU_INT_FINISH:
+			ret = (void *)intrParam.cbFinish;
+			intrParam.cbFinish = cb;
+			break;
+		default:
+			/*J 不正なID値 */
+			/*E invalid ID */
+			break;
+	}}}
+	return ret;
+}
+
+
+
+/*J 描画の中断 */
+/*E Suspend drawing */
+int sceGuBreak(int mode)
+{
+	/*J sceGeBreak()関数用ワークエリア */
+	/*E workarea for sceGeBreak()      */
+	extern SceGeBreakParam bParam __asm__("D_006A0564");
+	int res;
+
+	res = sceGeBreak(mode, &bParam);
+	return (res);
+}
+
+
+
+
+/*J 描画の再開 */
+/*E Restart drawing */
+int sceGuContinue(void)
+{
+	int res;
+	res = sceGeContinue();
+	return (res);
+}
+
+
+/*J コールモードを設定 */
+/*E Set call mode      */
+void sceGuCallMode(int mode)
+{
+	g_Libgu.call_mode = mode;
+	return;
+}
+
+
+/*J リストのコール */
+/*E Call display list */
+int sceGuCallList(const void *p)
+{
+	int res;
+	{if (g_Libgu.call_mode == SCEGU_SIGNAL_CALL) {{
+		sceGupPutSignalCall(g_Libgu.pPacket, p);
+		res = _sceGuUpdateStallAddr();
+		{if (res < 0) {{
+			return (res);
+		}}}
+	}} else {{
+		sceGupPutCall(g_Libgu.pPacket, p);
+	}}}
+	return (0);
+}
+
+
+/*J リストのジャンプ */
+/*E Jump display list */
+void *sceGuJumpList(const void *p)
+{
+	sceGupPutJump(g_Libgu.pPacket, p);
+	return (sceGupGetCurrentAddr(g_Libgu.pPacket));
+}
+
+
+/*J リストのキューイング */
+/*E Queue display list */
+int sceGuSendList(int mode, const void *p, SceGuContext *ctx, int nStackDepth, SceGeStack *stack)
+{
+	SceGeListOptParam	opt;
+	int res;
+
+	intrParam.count = 0;
+	opt.size = sizeof(SceGeListOptParam);
+	opt.pGeContext = ctx;
+	opt.nStackDepth = nStackDepth;
+	opt.pStackBuf   = stack;
+
+	{if (mode == SCEGU_QUEUE_HEAD) {{
+		res = sceGeListEnQueueHead(p, NULL, g_Libgu.intrId, &opt);
+	}} else {{
+		res = sceGeListEnQueue(p, NULL, g_Libgu.intrId, &opt);
+	}}}
+	{if (res < 0) {{
+		return (res);
+	}}}
+	g_Libgu.queid[1] = res;
+	return (0);
+}
+
+
+
+
+
+
+
+
+/*J 描画の同期 */
+/*E Drawing and DMA end wait */
+int sceGuSync(int mode, int block)
+{
+	int		ret;
+
+	{switch (mode) {{
+		case SCEGU_SYNC_FINISH:
+			ret = sceGeDrawSync(block);
+			break;
+		case SCEGU_SYNC_LIST:
+			ret = sceGeListSync(g_Libgu.queid[0], block);
+			break;
+		case SCEGU_SYNC_SENDLIST:
+			ret = sceGeListSync(g_Libgu.queid[1], block);
+			break;
+		case SCEGU_SYNC_SIGNAL:
+		case SCEGU_SYNC_END:
+		default:
+			ret = 0;
+			break;
+	}}}
+	return ret;
+}
+
+
+/*J イミディエイトモードでストールアドレスの更新を行います */
+/*E Update stall address in immediate mode */
+int sceGuFlush(void)
+{
+	return (_sceGuUpdateStallAddr());
+}
+
+
+
+
+/*J ディスプレイの表示 */
+/*E Control screen display */
+int sceGuDisplay(int sw)
+{
+	int prev_sw;
+
+	{if (sw == SCEGU_DISPLAY_OFF) {{
+		sceDisplaySetFrameBuf(NULL, 0, 0, SCE_DISPLAY_UPDATETIMING_NEXTVSYNC);
+	}} else {{
+		/*J NOTICE: グローバル変数g_Libgu.FrameBufはモードごとに独立してない!! */
+		/*E NOTICE: global variable g_Libgu.FrameBuf is not independent for each mode  */
+		sceDisplaySetFrameBuf((const void *)(g_Libgu.vram_top + g_Libgu.FrameBuf.dbp), g_Libgu.FrameBuf.fbw, g_Libgu.FrameBuf.fpf, SCE_DISPLAY_UPDATETIMING_NEXTVSYNC);
+	}}}
+	prev_sw         = g_Libgu.disp_sw;
+	g_Libgu.disp_sw = sw;
+
+	return prev_sw;
+}
+
+
+/*J 表示バッファの設定(obsolete) */
+/*E Set display buffer(obsolete) */
+void sceGuDispBuffer(int width, int height, void *dbp, int dbw)
+{
+	int i;
+
+	sceGuDispBuffer2(g_Libgu.FrameBuf.fpf, width, height, dbp, dbw);
+
+	/*J 互換のために、全てのリストモードにおけるバッファ設定を更新します */
+	/*E for old version compatibility, updates all list_mode's draw buffer */
+	{for (i=0; i<LISTMODE_MAX; i++) {{
+		sceGupSetFrameBuffer(&g_Libgu.listctx[i].packet, g_Libgu.FrameBuf.fpf, g_Libgu.FrameBuf.sw, g_Libgu.FrameBuf.sh);
+	}}}
+	return;
+}
+
+
+/*J 表示バッファの設定 */
+/*E Set display buffer */
+void sceGuDispBuffer2(int fpf, int width, int height, void *dbp, int dbw)
+{
+	_sceGuDebugDispBuffer(fpf, width, height);
+
+	/*J NOTICE: グローバル変数g_Libgu.FrameBufはモードごとに独立してない!! */
+	/*E NOTICE: global variable g_Libgu.FrameBuf is not independent for each mode  */
+	g_Libgu.FrameBuf.fpf = fpf;
+	g_Libgu.FrameBuf.sw  = width;
+	g_Libgu.FrameBuf.sh  = height;
+	g_Libgu.FrameBuf.dbp = (unsigned int)dbp;
+	{if (g_Libgu.FrameBuf.fbw == 0) {{
+		g_Libgu.FrameBuf.fbw = dbw;
+	}}}
+	g_Libgu.FrameBuf.fbw = dbw;
+
+	sceDisplaySetMode(SCE_DISPLAY_MODE_LCD, (int)g_Libgu.FrameBuf.sw, (int)g_Libgu.FrameBuf.sh);
+	{if (g_Libgu.disp_sw == SCEGU_DISPLAY_ON) {{
+		sceDisplaySetFrameBuf((const void *)(g_Libgu.vram_top + g_Libgu.FrameBuf.dbp), dbw, fpf, SCE_DISPLAY_UPDATETIMING_NEXTVSYNC);
+	}}}
+	return;
+}
+
+
+/*J バッファのスワップ */
+/*E Swap buffers */
+void *sceGuSwapBuffers(void)
+{
+	unsigned int tmp;
+
+	sceGuDebugFlush();
+
+	/*J NOTICE: グローバル変数g_Libgu.FrameBufはモードごとに独立してない!! */
+	/*E NOTICE: global variable g_Libgu.FrameBuf is not independent for each mode  */
+	tmp      = g_Libgu.FrameBuf.dbp;
+	g_Libgu.FrameBuf.dbp = g_Libgu.FrameBuf.wbp;
+	g_Libgu.FrameBuf.wbp = tmp;
+	{if (g_Libgu.disp_sw == SCEGU_DISPLAY_ON) {{
+		sceDisplaySetFrameBuf((const void *)(g_Libgu.vram_top + g_Libgu.FrameBuf.dbp), g_Libgu.FrameBuf.fbw, g_Libgu.FrameBuf.fpf, SCE_DISPLAY_UPDATETIMING_NEXTHSYNC);
+	}}}
+	_sceGuDebugSwapBuffer();
+	_sceGuDebugDrawBuffer(g_Libgu.FrameBuf.fpf, (void *)g_Libgu.FrameBuf.wbp, g_Libgu.FrameBuf.fbw);
+	return ((void *)g_Libgu.FrameBuf.wbp);
+}
+
+
+
+/*J 描画バッファの設定 */
+/*E Set drawing buffer */
+void sceGuDrawBuffer(int fpf, void *fbp, int fbw)
+{
+	int i;
+
+	_sceGuDebugDrawBuffer(fpf, fbp, fbw);
+	sceGupPutDrawBuffer(g_Libgu.pPacket, fpf, fbp, fbw);
+
+	/*J 互換のために、全てのリストモードにおけるバッファ設定を更新します */
+	/*E for old version compatibility, updates all list_mode's draw buffer */
+	{for (i=0; i<LISTMODE_MAX; i++) {{
+		sceGupSetFrameBuffer(&g_Libgu.listctx[i].packet, fpf, g_Libgu.FrameBuf.sw, g_Libgu.FrameBuf.sh);
+	}}}
+
+	/*J NOTICE: グローバル変数g_Libgu.FrameBufはモードごとに独立してない!! */
+	/*E NOTICE: global variable g_Libgu.FrameBuf is not independent for each mode  */
+	g_Libgu.FrameBuf.fpf = fpf;
+	g_Libgu.FrameBuf.wbp = (unsigned int)fbp;
+	g_Libgu.FrameBuf.fbw = fbw;
+
+	/*J デプスバッファ設定されていない時は仮決めする */
+	/*E Conditionally approve when depth buffer has not been set */
+	{if ((g_Libgu.FrameBuf.zbp == 0) && (g_Libgu.FrameBuf.sh != 0)) {{
+		g_Libgu.FrameBuf.zbp = g_Libgu.FrameBuf.wbp;
+		g_Libgu.FrameBuf.zbp += g_Libgu.FrameBuf.sh * (fbw * 2) * 2; /* draw disp depth */
+	}}}
+	{if (g_Libgu.FrameBuf.zbw == 0) {{
+		g_Libgu.FrameBuf.zbw = fbw;
+	}}}
+	return;
+}
+
+
+
+/*J 描画バッファの設定 */
+/*E Set drawing buffer */
+void sceGuDrawBuffer2(int fpf, void *fbp, int fbw)
+{
+	_sceGuDebugDrawBuffer(fpf, fbp, fbw);
+	sceGupSetFrameBuffer(g_Libgu.pPacket, fpf, g_Libgu.FrameBuf.sw, g_Libgu.FrameBuf.sh);
+	sceGupPutDrawBuffer(g_Libgu.pPacket, fpf, fbp, fbw);
+	return;
+}
+
+
+/*J 描画バッファの変更 */
+/*E Draw buffer setting */
+void sceGuDrawBufferList(int fpf, void *fbp, int fbw)
+{
+	sceGupPutDrawBuffer(g_Libgu.pPacket, fpf, fbp, fbw);
+	return;
+}
+
+
+/*J デプスバッファの設定 */
+/*E Set depth buffer */
+void sceGuDepthBuffer(void *zbp, int zbw)
+{
+	sceGupDepthBuffer(g_Libgu.pPacket, zbp, zbw);
+
+	/*J NOTICE: グローバル変数g_Libgu.FrameBufはモードごとに独立してない!! */
+	/*E NOTICE: global variable g_Libgu.FrameBuf is not independent for each mode  */
+	g_Libgu.FrameBuf.zbp = (unsigned int)zbp;
+	g_Libgu.FrameBuf.zbw = zbw;
+	return;
+}
+
+
+
+/*J 各種設定の有効 */
+/*E Enable feature */
+void sceGuEnable(int cap)
+{
+	sceGupEnable(g_Libgu.pPacket, cap);
+
+	/*J NOTICE: グローバル変数g_Libgu.featuresはモードごとに独立してない!! */
+	/*E NOTICE: Global variable g_Libgu.features is not independent for each mode!!  */
+	g_Libgu.features |= (1<<cap);
+	return;
+}
+
+
+/*J 各種設定の無効 */
+/*E Disable feature */
+void sceGuDisable(int cap)
+{
+	sceGupDisable(g_Libgu.pPacket, cap);
+
+	/*J NOTICE: グローバル変数g_Libgu.featuresはモードごとに独立してない!! */
+	/*E NOTICE: Global variable g_Libgu.features is not independent for each mode!!  */
+	g_Libgu.features &= ~(1<<cap);
+	return;
+}
+
+
+/*J 各種設定の設定 */
+/*E Set feature status */
+void sceGuSetStatus(int cap, int flag)
+{
+	{if (flag!=0) {{
+		sceGuEnable(cap);
+	}} else {{
+		sceGuDisable(cap);
+	}}}
+	return;
+}
+
+
+/*J 各種設定の取得 */
+/*E Get feature status */
+int sceGuGetStatus(int cap)
+{
+	{if (cap < STATUS_MAX) {{
+		/*J NOTICE: グローバル変数g_Libgu.featuresはモードごとに独立してない!! */
+		/*E NOTICE: Global variable g_Libgu.features is not independent for each mode!!  */
+		return (g_Libgu.features>>cap) & 1;
+	}}}
+	return 0;
+}
+
+
+/*J 各種設定の全設定 */
+/*E Set statuses of all features */
+void sceGuSetAllStatus(unsigned int status)
+{
+	int		i;
+
+	{for (i = 0; i < STATUS_MAX; i++) {{
+		{if ((status>>i) & 1) {{
+			sceGuEnable(i);
+		}} else {{
+			sceGuDisable(i);
+		}}}
+	}}}
+	return;
+}
+
+
+/*J 各種設定の全取得 */
+/*E Set status of all features */
+unsigned int sceGuGetAllStatus(void)
+{
+	/*J NOTICE: グローバル変数g_Libgu.featuresはモードごとに独立してない!! */
+	/*E NOTICE: Global variable g_Libgu.features is not independent for each mode!!  */
+	return g_Libgu.features;
+}
+
+
+/*J ディザマトリックスの設定 */
+/*E Set dither matrix */
+void sceGuSetDither(const ScePspIMatrix4 *d)
+{
+	sceGupSetDither(g_Libgu.pPacket, d);
+	return;
+}
+
+
+/*J 座標変換行列の設定 */
+/*E Set matrix */
+void sceGuSetMatrix(int mode, const ScePspFMatrix4 *m)
+{
+	sceGupSetMatrix(g_Libgu.pPacket, mode, m);
+	return;
+}
+
+
+/*J オブジェクトの開始 */
+/*E Begin bounding box */
+void sceGuBeginObject(int vtype, int count, const void *idx, const void *vtx)
+{
+	sceGupBeginObject(g_Libgu.pPacket, vtype, count, idx, vtx);
+	return;
+}
+
+
+/*J オブジェクトの終了 */
+/*E End bounding box */
+int sceGuEndObject(void)
+{
+	int res;
+	res = sceGupEndObject(g_Libgu.pPacket);
+	{if (res < 0) {{
+		/* sceGuBeinObject()との対応関係が破綻             */
+		/*E fail in corresponding with sceGupBeginObject() */
+		return (res);
+	}}}
+	{if (g_Libgu.list_mode == SCEGU_IMMEDIATE) {{
+		void *pCurrent = sceGupGetCurrentAddr(g_Libgu.pPacket);
+
+		/*J カレントアドレスまでストールアドレスを移動 */
+		res = sceGeListUpdateStallAddr(g_Libgu.queid[0], pCurrent);
+		{if (res < 0) {{
+			return (res);
+		}}}
+	}}}
+	return (0);
+}
+
+
+/*J 基本プリミティブの描画 */
+/*E Draw primitive */
+void sceGuDrawArray(int prim, int vtype, int count, const void *idx, const void *vtx)
+{
+	sceGupDrawArray(g_Libgu.pPacket, prim, vtype, count, idx, vtx);
+	_sceGuUpdateStallAddr();			/*J ストールアドレスのアップデート */
+	                        			/*E Update stall address  */
+	return;
+}
+
+
+/*J 基本プリミティブの描画 (N 個) */
+/*E Draw primitives continuously */
+void sceGuDrawArrayN(int prim, int vtype, int n_verts, int n_prims, const void *idx, const void *vtx)
+{
+	sceGupDrawArrayN(g_Libgu.pPacket, prim, vtype, n_verts, n_prims, idx, vtx);
+	_sceGuUpdateStallAddr();			/*J ストールアドレスのアップデート */
+	                        			/*E Update stall address  */
+	return;
+}
+
+
+/*J ベジェパッチの描画 */
+/*E Draw Bezier Surface */
+void sceGuDrawBezier(int vtype, int ucount, int vcount, const void *idx, const void *vtx)
+{
+	sceGupDrawBezier(g_Libgu.pPacket, vtype, ucount, vcount, idx, vtx);
+	_sceGuUpdateStallAddr();			/*J ストールアドレスのアップデート */
+	                        			/*E Update stall address  */
+	return;
+}
+
+/*J スプラインパッチの描画 */
+/*E Draw splined curve */
+void sceGuDrawSpline(int vtype, int ucount, int vcount, int uflag, int vflag, const void *idx, const void *vtx)
+{
+	sceGupDrawSpline(g_Libgu.pPacket, vtype, ucount, vcount, uflag, vflag, idx, vtx);
+	_sceGuUpdateStallAddr();			/*J ストールアドレスのアップデート */
+	                        			/*E Update stall address  */
+	return;
+}
+
+
+/*J スプライトのパラメータを設定 */
+/*E Sprite parameter set up */
+void sceGuSpriteMode(int sw, int sh, int dw, int dh)
+{
+	sceGupSpriteMode(g_Libgu.pPacket, sw, sh, dw, dh);
+	return;
+}
+
+
+/*J スプライトの描画 */
+/*E Draw sprite */
+void sceGuDrawSprite(int x, int y, int z, int u, int v, int flip, int rotate)
+{
+	sceGupDrawSprite(g_Libgu.pPacket, x, y, z, u, v, flip, rotate);
+	_sceGuUpdateStallAddr();			/*J ストールアドレスのアップデート */
+	                        			/*E Update stall address  */
+	return;
+}
+
+
+/*J バッファ間の転送 */
+/*E Copy pixel data */
+void sceGuCopyImage(int mode, int sx, int sy, int width, int height,
+	int sbw, void *sbp, int dx, int dy, int dbw, void *dbp)
+{
+	sceGupCopyImage(g_Libgu.pPacket, mode, sx, sy, width, height, sbw, sbp, dx, dy, dbw, dbp);
+	return;
+}
+
+
+/*J クリアカラーの設定 */
+/*E Set clear color */
+void sceGuClearColor(unsigned int col)
+{
+	sceGupClearColor(g_Libgu.pPacket, col);
+	return;
+}
+
+
+/*J ステンシルのクリア値 設定 */
+/*E Set stencil bit clear value */
+void sceGuClearStencil(int stencil)
+{
+	sceGupClearStencil(g_Libgu.pPacket, stencil);
+	return;
+}
+
+
+/*J Z-Bufferの クリア値 設定 */
+/*E Set depth buffer clear value */
+void sceGuClearDepth(int depth)
+{
+	sceGupClearDepth(g_Libgu.pPacket, depth);
+	return;
+}
+
+
+/*J バッファのクリア */
+/*E Clear drawing buffer */
+void sceGuClear(int mask)
+{
+	sceGupClear(g_Libgu.pPacket, mask);
+	return;
+}
+
+
+/*J ビューポートの設定 */
+/*E Set viewport */
+void sceGuViewport(int x, int y, int width, int height)
+{
+	sceGupViewport(g_Libgu.pPacket, x, y, width, height);
+	return;
+}
+
+
+/*J デプスレンジの設定 */
+/*E Set depth range */
+void sceGuDepthRange(int near, int far)
+{
+	sceGupDepthRange(g_Libgu.pPacket, near, far);
+	return;
+}
+
+
+/*J デプスオフセットの設定 */
+/*E Set depth offset */
+void sceGuDepthOffset(int offset)
+{
+	sceGupDepthOffset(g_Libgu.pPacket, offset);
+	return;
+}
+
+
+/*J オフセットの設定 */
+/*E Set offset */
+void sceGuOffset(int x, int y)
+{
+	sceGupOffset(g_Libgu.pPacket, x, y);
+	return;
+}
+
+
+/*J パッチの分割数の設定 */
+/*E Set patch division */
+void sceGuPatchDivide(int udiv, int vdiv)
+{
+	sceGupPatchDivide(g_Libgu.pPacket, udiv, vdiv);
+	return;
+}
+
+
+/*J パッチ分割後のプリミティブの設定 */
+/*E Set patch drawing primitive */
+void sceGuPatchPrim(int prim)
+{
+	sceGupPatchPrim(g_Libgu.pPacket, prim);
+	return;
+}
+
+
+/*J 環境光の設定 */
+/*E Set ambient light */
+void sceGuAmbient(unsigned int col)
+{
+	sceGupAmbient(g_Libgu.pPacket, col);
+	return;
+}
+
+
+/*J マテリアルカラー値の追従 */
+/*E Track material color value */
+void sceGuColorMaterial(int type)
+{
+	sceGupColorMaterial(g_Libgu.pPacket, type);
+	return;
+}
+
+
+/*J マテリアルカラー値の設定 */
+/*E Set model color */
+void sceGuMaterial(int type, unsigned int col)
+{
+	sceGupMaterial(g_Libgu.pPacket, type, col);
+	return;
+}
+
+
+/*J 現在のカラー値の設定 */
+/*E Set current color value */
+void sceGuColor(unsigned int col)
+{
+	sceGupColor(g_Libgu.pPacket, col);
+	return;
+}
+
+
+/*J アンビエントカラーの設定 */
+/*E Set model ambient light */
+void sceGuAmbientColor(unsigned int ac)
+{
+	sceGupAmbientColor(g_Libgu.pPacket, ac);
+	return;
+}
+
+
+/*J モデルカラー値の設定 */
+/*E Set all model colors */
+void sceGuModelColor(unsigned int mec, unsigned int mac, unsigned int mdc, unsigned int msc)
+{
+	sceGupModelColor(g_Libgu.pPacket, mec, mac, mdc, msc);
+	return;
+}
+
+
+/*J 鏡面反射光の指数の設定 */
+/*E Set exponent of specular reflection light */
+void sceGuSpecular(float power)
+{
+	sceGupSpecular(g_Libgu.pPacket, power);
+	return;
+}
+
+
+/*J バックフェースカリング時の表面の指定 */
+/*E Specify front face for back face culling */
+void sceGuFrontFace(int mode)
+{
+	sceGupFrontFace(g_Libgu.pPacket, mode);
+	return;
+}
+
+
+/*J シェーディングの設定 */
+/*E Set shading mode */
+void sceGuShadeModel(int model)
+{
+	sceGupShadeModel(g_Libgu.pPacket, model);
+	return;
+}
+
+
+/*J ライトの設定 */
+/*E Set light source parameter */
+void sceGuLight(int n, int ltype, int comp, const ScePspFVector3 *vec)
+{
+	sceGupLight(g_Libgu.pPacket, n, ltype, comp, vec);
+	return;
+}
+
+
+/*J ライトモード */
+/*E Set light mode */
+void sceGuLightMode(int ssc)
+{
+	sceGupLightMode(g_Libgu.pPacket, ssc);
+	return;
+}
+
+
+/*J ライト距離減衰係数 */
+/*E Set light attenuation coeficient */
+void sceGuLightAtt(int n, float a, float b, float c)
+{
+	sceGupLightAtt(g_Libgu.pPacket, n, a, b, c);
+	return;
+}
+
+
+/*J スポットライトパラメータ */
+/*E Set spot light */
+void sceGuLightSpot(int n, float s, float c, const ScePspFVector3 *vec)
+{
+	sceGupLightSpot(g_Libgu.pPacket, n, s, c, vec);
+	return;
+}
+
+
+/*J ライトカラーの設定 */
+/*E Set light color */
+void sceGuLightColor(int n, int type, unsigned int col)
+{
+	sceGupLightColor(g_Libgu.pPacket, n, type, col);
+	return;
+}
+
+
+/*J テクスチャモードの設定 */
+/*E Set texture mode */
+void sceGuTexMode(int tpf, int maxlod, int mc, int hsm)
+{
+	sceGupTexMode(g_Libgu.pPacket, tpf, maxlod, mc, hsm);
+	return;
+}
+
+
+/*J テクスチャフィルタの設定 */
+/*E Set texture filter */
+void sceGuTexFilter(int min, int mag)
+{
+	sceGupTexFilter(g_Libgu.pPacket, min, mag);
+	return;
+}
+
+
+/*J テクスチャファンクションの設定 */
+/*E Set texture function */
+void sceGuTexFunc(int func, int component)
+{
+	sceGupTexFunc(g_Libgu.pPacket, func, component);
+	return;
+}
+
+
+/*J テクスチャ環境カラーの設定 */
+/*E Set texture environment color */
+void sceGuTexEnvColor(unsigned int col)
+{
+	sceGupTexEnvColor(g_Libgu.pPacket, col);
+	return;
+}
+
+
+/*J テクスチャラップモードの設定 */
+/*E Set texture wrap mode */
+void sceGuTexWrap(int uwrap, int vwrap)
+{
+	sceGupTexWrap(g_Libgu.pPacket, uwrap, vwrap);
+	return;
+}
+
+
+/*J テクスチャレベルモードの設定 */
+/*E Set texture level calculation mode */
+void sceGuTexLevelMode(int calc, float offset)
+{
+	sceGupTexLevelMode(g_Libgu.pPacket, calc, offset);
+	return;
+}
+
+
+/*J テクスチャマップモードの設定 */
+/*E Set texture map mode */
+void sceGuTexMapMode(int map, int lu, int lv)
+{
+	sceGupTexMapMode(g_Libgu.pPacket, map, lu, lv);
+	return;
+}
+
+
+/*J プロジェクションマップモードの設定 */
+/*E Set projection map mode */
+void sceGuTexProjMapMode(int mode)
+{
+	sceGupTexProjMapMode(g_Libgu.pPacket, mode);
+	return;
+}
+
+
+/*J テクスチャと描画の同期 */
+/*E Block frame buffer access */
+void sceGuTexSync(void)
+{
+	sceGupTexSync(g_Libgu.pPacket);
+	return;
+}
+
+
+/*J テクスチャイメージの設定 */
+/*E Set texture buffer */
+void sceGuTexImage(int level, int width, int height, int tbw, const void *tbp)
+{
+	sceGupTexImage(g_Libgu.pPacket, level, width, height, tbw, tbp);
+	return;
+}
+
+
+/*J テクスチャスケール */
+/*E Set texture coordinate scaling */
+void sceGuTexScale(float su, float sv)
+{
+	sceGupTexScale(g_Libgu.pPacket, su, sv);
+	return;
+}
+
+
+/*J テクスチャオフセット */
+/*E Set texture coordinate offset */
+void sceGuTexOffset(float tu, float tv)
+{
+	sceGupTexOffset(g_Libgu.pPacket, tu, tv);
+	return;
+}
+
+
+/*J テクスチャフラッシュ */
+/*E Flush texture cache */
+void sceGuTexFlush(void)
+{
+	sceGupTexFlush(g_Libgu.pPacket);
+	return;
+}
+
+
+/*J テクスチャスロープ */
+/*E Set texture slope */
+void sceGuTexSlope(float tslope)
+{
+	sceGupTexSlope(g_Libgu.pPacket, tslope);
+	return;
+}
+
+
+/*J CLUT の設定 */
+/*E Set CLUT buffer */
+void sceGuClutMode(int cpf, int shift, int mask, int csa)
+{
+	sceGupClutMode(g_Libgu.pPacket, cpf, shift, mask, csa);
+	return;
+}
+
+
+/*J CLUT のロード */
+/*E Load CLUT buffer */
+void sceGuClutLoad(int np, const void *cbp)
+{
+	sceGupClutLoad(g_Libgu.pPacket, np, cbp);
+	return;
+}
+
+
+
+
+/*J フォグの設定 */
+/*E Set fog parameter */
+void sceGuFog(float zs, float ze, unsigned int col)
+{
+	sceGupFog(g_Libgu.pPacket, zs, ze, col);
+	return;
+}
+
+
+/*J カラーテストパラメータの設定 */
+/*E Set color test parameter */
+void sceGuColorFunc(int func, unsigned int cref, unsigned int cmsk)
+{
+	sceGupColorFunc(g_Libgu.pPacket, func, cref, cmsk);
+	return;
+}
+
+
+/*J アルファテストパラメータの設定 */
+/*E Set alpha test parameter */
+void sceGuAlphaFunc(int func, unsigned int aref, unsigned int amsk)
+{
+	sceGupAlphaFunc(g_Libgu.pPacket, func, aref, amsk);
+	return;
+}
+
+
+/*J デプステストパラメータの設定 */
+/*E Set depth test parameter */
+void sceGuDepthFunc(int func)
+{
+	sceGupDepthFunc(g_Libgu.pPacket, func);
+	return;
+}
+
+
+/*J デプスバッファマスクの設定 */
+/*E Set depth buffer mask */
+void sceGuDepthMask(int flag)
+{
+	sceGupDepthMask(g_Libgu.pPacket, flag);
+	return;
+}
+
+
+/*J ピクセルマスクの設定 */
+/*E Set pixel mask */
+void sceGuPixelMask(unsigned int pmsk)
+{
+	sceGupPixelMask(g_Libgu.pPacket, pmsk);
+	return;
+}
+
+
+/*J シザリング領域の設定 */
+/*E Set scissoring area */
+void sceGuScissor(int x, int y, int width, int height)
+{
+	sceGupScissor(g_Libgu.pPacket, x, y, width, height);
+	return;
+}
+
+
+/*J ステンシルテストファンクションの設定 */
+/*E Set stencil test function */
+void sceGuStencilFunc(int func, unsigned int sref, unsigned int smsk)
+{
+	sceGupStencilFunc(g_Libgu.pPacket, func, sref, smsk);
+	return;
+}
+
+
+/*J ロジカルオペレーション */
+/*E Set logical operation */
+void sceGuLogicalOp(int lop)
+{
+	sceGupLogicalOp(g_Libgu.pPacket, lop);
+	return;
+}
+
+
+/*J ステンシルテストオペレーションの設定 */
+/*E Set stencil test operation */
+void sceGuStencilOp(int sfail, int zfail, int zpass)
+{
+	sceGupStencilOp(g_Libgu.pPacket, sfail, zfail, zpass);
+	return;
+}
+
+
+/*J アルファブレンドパラメータの設定 */
+/*E Set alpha blend parameter */
+void sceGuBlendFunc(int equ, int asel, int bsel, unsigned int afix, unsigned int bfix)
+{
+	sceGupBlendFunc(g_Libgu.pPacket, equ, asel, bsel, afix, bfix);
+	return;
+}
+
+
+/*J ボーン行列の設定 */
+/*E Set Bone Matrix */
+void sceGuBoneMatrix(int n, const ScePspFMatrix4 *m)
+{
+	sceGupBoneMatrix(g_Libgu.pPacket, n, m);
+	return;
+}
+
+
+/*J モーフィングウェイトの設定 */
+/*E Set morphing weight */
+void sceGuMorphWeight(int n, float f)
+{
+	sceGupMorphWeight(g_Libgu.pPacket, n, f);
+	return;
+}
+
+
+/* Local variables: */
+/* tab-width: 4 */
+/* End: */
+/* vi:set tabstop=4: */
