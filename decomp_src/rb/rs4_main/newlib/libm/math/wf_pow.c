@@ -1,3 +1,4 @@
+/* data-align: 8 */
 #include "common.h"
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/newlib/libm/math/wf_pow", powf);

@@ -1,5 +1,4 @@
-#include "common.h"
-
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/newlib/libm/common/s_rint", rint);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/newlib/libm/common/s_rint", TWO52);
+/* upstream: newlib-1.12.0/newlib/libm/common/s_rint.c (unmodified) */
+/* cflags: -O2 -fno-builtin */
+/* data-align: 8 */
+#include "libm/common/s_rint.c"

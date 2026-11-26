@@ -1,7 +1,3 @@
-#include "common.h"
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/newlib/libm/math/ef_sqrt", one_11057C);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/newlib/libm/math/ef_sqrt", tiny_110580);
-
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/newlib/libm/math/ef_sqrt", __ieee754_sqrtf);
+/* upstream: newlib-1.12.0/newlib/libm/math/ef_sqrt.c (unmodified) */
+/* cflags: -O2 -fno-builtin */
+#include "libm/math/ef_sqrt.c"
