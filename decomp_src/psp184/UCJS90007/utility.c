@@ -231,7 +231,20 @@ int utility_check_osk_completed(int *done_flag, int *error_code);
 int utility_get_osk_result(char *ptr, SceUInt size);
 
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/utility", utility_init_netconf);
+static int utility_init_netconf(SceUtilityNetconfType type)
+{
+	memset(&netconfParam, 0, sizeof(netconfParam));
+	netconfParam.base.size = sizeof(netconfParam);
+	netconfParam.base.message_lang = _info.lang;
+	netconfParam.base.ctrl_assign = _info.ctrl_assign;
+	netconfParam.base.main_thread_priority = 0x11;
+	netconfParam.base.sub_thread_priority = 0x13;
+	netconfParam.base.font_thread_priority = 0x12;
+	netconfParam.base.sound_thread_priority = 0x10;
+	netconfParam.type = type;
+	netconfParam.adhoc_param = &adhocParam;
+	return sceUtilityNetconfInitStart(&netconfParam);
+}
 
 int utility_update_netconf(void)
 {
@@ -271,7 +284,22 @@ error:
 	return ret;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/utility", utility_msgdialog_net);
+void *memset(void *s, int c, unsigned int n);
+void *memset(void *s, int c, unsigned int n);
+int utility_msgdialog_net(int error_code)
+{
+	memset(&msgdialogParam, 0, sizeof(msgdialogParam));
+	msgdialogParam.base.size = sizeof(msgdialogParam);
+	msgdialogParam.base.message_lang = _info.lang;
+	msgdialogParam.base.ctrl_assign = _info.ctrl_assign;
+	msgdialogParam.base.main_thread_priority = 0x11;
+	msgdialogParam.base.sub_thread_priority = 0x13;
+	msgdialogParam.base.font_thread_priority = 0x12;
+	msgdialogParam.base.sound_thread_priority = 0x10;
+	msgdialogParam.type = 0;
+	msgdialogParam.errorNum = error_code;
+	return sceUtilityMsgDialogInitStart(&msgdialogParam);
+}
 
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/utility", utility_msgdialog_fileio);
 
@@ -437,7 +465,33 @@ int utility_update_osk(void)
 	return ret;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/utility", utility_check_osk_completed);
+int utility_check_osk_completed(int *done_flag, int *error_code)
+{
+	int ret;
+
+	ret = sceUtilityOskGetStatus();
+	if (ret < 0)
+		goto error;
+	switch (ret) {
+	case 0:
+		if (osk_param.base.result == 0) {
+			if (osk_param.input_field_info->result == 2)
+				*done_flag = 1;
+			else
+				*done_flag = -1;
+		} else {
+			*done_flag = -1;
+			if (osk_param.base.result < 0)
+				*error_code = osk_param.base.result;
+		}
+		break;
+	case 3:
+		ret = sceUtilityOskShutdownStart();
+		break;
+	}
+error:
+	return ret;
+}
 
 int utility_get_osk_result(char *ptr, SceUInt size)
 {
