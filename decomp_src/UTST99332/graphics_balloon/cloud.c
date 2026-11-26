@@ -17,6 +17,44 @@ void sceGumDrawArray(int prim, int vtype, int count, const void *indices, const 
 void sceGumPopMatrix(void);
 void sceGumPushMatrix(void);
 
+#define MAX_CLOUD	10
+
+enum {
+	MODE_IN,
+	MODE_FLOAT,
+	MODE_OUT
+};
+
+enum {
+	TEX_PFIDX4,
+	TEX_PFIDX8,
+	TEX_PF5551,
+	TEX_PF5650,
+	TEX_PF4444,
+	TEX_PF8888,
+	TEX_PFIDX4_VRAM,
+	TEX_PFIDX8_VRAM,
+	TEX_PF5551_VRAM,
+	TEX_PF5650_VRAM,
+	TEX_PF4444_VRAM,
+	TEX_PF8888_VRAM,
+	TEX_PF5551_FAST,
+	TEX_PF5650_FAST,
+	TEX_PF4444_FAST,
+	TEX_PF8888_FAST,
+	MAX_TEX_PF
+};
+
+typedef struct {
+	int mode;
+	struct { float x, y, z; } pos;
+	float dir;
+	float d;
+} CLOUDDAT;
+
+extern CLOUDDAT cloud[10];
+extern int texture_mode;
+
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_balloon/nonmatchings/cloud", set_texture);
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_balloon/nonmatchings/cloud", set_vram_texture);
@@ -36,16 +74,6 @@ void init_clouds(void)
 
 	set_vram_texture();
 }
-
-typedef struct {
-	int mode;
-	struct { float x, y, z; } pos;
-	float dir;
-	float d;
-} CLOUDDAT;
-
-extern CLOUDDAT cloud[10];
-extern int texture_mode;
 
 int check_clouds(void)
 {
@@ -68,11 +96,30 @@ int check_clouds(void)
 	return 1;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_balloon/nonmatchings/cloud", sort_cloud);
+extern int index_cloud[];
+static void sort_cloud(void)
+{
+	CLOUDDAT	*p0, *p1;
+	int			tmp;
+	int			i, j;
+
+	for (i=0; i<MAX_CLOUD; i++)
+		index_cloud[i]=i;
+
+	for (i=0; i<MAX_CLOUD-1; i++) {
+		for (j=i+1; j<MAX_CLOUD; j++) {
+			p0=&cloud[index_cloud[i]];
+			p1=&cloud[index_cloud[j]];
+			if (p0->pos.z>p1->pos.z) {
+				tmp=index_cloud[j];
+				index_cloud[j]=index_cloud[i];
+				index_cloud[i]=tmp;
+			}
+		}
+	}
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_balloon/nonmatchings/cloud", draw_clouds);
-
-#define MAX_CLOUD	10
 
 void proc_clouds(void)
 {
