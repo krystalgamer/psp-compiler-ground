@@ -23,6 +23,26 @@ int ExitFunction_16C74(void) {
     return 0;
 }
 
+extern void *_Icon0;
+extern int _Icon0Size;
+extern void *_Pic1;
+extern int _Pic1Size;
+extern int autoloadflg;
+int autoload(void);
+typedef struct {
+	void *buf;
+	int bufSize;
+	int size;
+	int unknown;
+} SaveFileData;
+typedef struct {
+	char _pad[0x584];
+	SaveFileData icon0;
+	SaveFileData icon1;
+	SaveFileData pic1;
+	SaveFileData snd0;
+} SaveParam;
+
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_save", utility_update_savedata);
 
 void UtilityClose(void) {
@@ -118,13 +138,33 @@ void set_params(int arg0) {
     M2C_FIELD(temp_s3, signed char *, 0x500) = 1;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_save", set_icon0);
+static void set_icon0(SaveParam *p)
+{
+	p->icon0.buf = _Icon0;
+	p->icon0.bufSize = _Icon0Size;
+	p->icon0.size = _Icon0Size;
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_save", set_pic1);
+static void set_pic1(SaveParam *p)
+{
+	p->pic1.buf = _Pic1;
+	p->pic1.bufSize = _Pic1Size;
+	p->pic1.size = _Pic1Size;
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_save", set_icon1);
+static void set_icon1(SaveParam *p)
+{
+	p->icon1.buf = 0;
+	p->icon1.bufSize = 0;
+	p->icon1.size = 0;
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_save", set_snd0);
+static void set_snd0(SaveParam *p)
+{
+	p->snd0.buf = 0;
+	p->snd0.bufSize = 0;
+	p->snd0.size = 0;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_save", set_param_sizes);
 

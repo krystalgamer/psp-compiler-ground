@@ -18,10 +18,27 @@ typedef long long int SceOff;
 SceInt32 strFileAssign(StrFile *file, const SceChar8 *filename);
 SceInt32 strFileOpen(StrFile *file, const SceChar8 *filename, SceInt32 flags);
 SceInt32 strFileClose(StrFile *file);
-SceInt32 strFileUnassign(StrFile *file);
-SceInt32 strFileRead(StrFile *file, SceVoid *buff, SceInt32 size);
 SceInt32 strFileWrite(StrFile *file, SceVoid *buff, SceInt32 size);
 SceOff strFileLseek(StrFile *file, SceOff offset, SceInt32 whence);
+
+extern char D_0007AF2C[];
+int memcmp(const void *a, const void *b, unsigned int n);
+char *strcpy(char *d, const char *s);
+int strcmp(const char *a, const char *b);
+int sceIoOpen(const char *name, int flags, int mode);
+int sceUmdActivate(int mode, const char *aliasname);
+int sceUmdDeactivate(int mode, const char *aliasname);
+int sceIoOpenAsync(const char *name, int flags, int mode);
+int sceIoReadAsync(int fd, void *buf, unsigned int nbyte);
+int sceIoWaitAsyncCB(int fd, long long *res);
+SceInt32 DvdUmdIoInit(void);
+SceInt32 DvdUmdIoTerm(void);
+SceInt32 DvdUmdRetryOpen(const char *filepath, int flag, int mode);
+SceInt32 DvdUmdRetryOpenCB(const char *filepath, int flag, int mode);
+SceInt32 DvdUmdRetryRead(SceUID fd, void *readbuf, unsigned int readsize);
+SceInt32 DvdUmdRetryReadCB(SceUID fd, void *readbuf, unsigned int readsize);
+static SceUID sceIoOpenCB(const char *name, int flags, int mode);
+static int sceIoReadCB_1017C(SceUID fd, void *buf, unsigned int nbyte);
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/mpeg/strfile", strFileAssign);
 
@@ -42,11 +59,31 @@ int strFileClose(StrFile *file) {
     return var_v1;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/mpeg/strfile", strFileUnassign);
+SceInt32 strFileUnassign(StrFile *file)
+{
+	SceInt32 ret;
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/mpeg/strfile", strFileRead);
+	ret = 1;
+	if (strcmp(file->assignName, D_0007AF2C) == 0) {
+		ret = sceUmdDeactivate(2, D_0007AF2C);
+		DvdUmdIoTerm();
+	}
+	return ret;
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/mpeg/strfile", strFileReadCB);
+SceInt32 strFileRead(StrFile *file, SceVoid *buff, SceInt32 size)
+{
+	if (strcmp(file->assignName, D_0007AF2C) == 0)
+		return DvdUmdRetryRead(file->fd, buff, size);
+	return sceIoRead(file->fd, buff, size);
+}
+
+SceInt32 strFileReadCB(StrFile *file, SceVoid *buff, SceInt32 size)
+{
+	if (strcmp(file->assignName, D_0007AF2C) == 0)
+		return DvdUmdRetryReadCB(file->fd, buff, size);
+	return sceIoReadCB_1017C(file->fd, buff, size);
+}
 
 int sceIoRead(int fd, void *buf, unsigned int nbyte);
 int strFileReadNoRetry(StrFile *file, void *buff, unsigned int size) {
@@ -69,9 +106,34 @@ int strFileUmdReadBreak(void) {
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/mpeg/strfile", sceIoOpenCB);
+static SceUID sceIoOpenCB(const char *name, int flags, int mode)
+{
+	long long res;
+	SceInt32 ret;
+	SceUID fd;
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/mpeg/strfile", sceIoReadCB_1017C);
+	fd = sceIoOpenAsync(name, flags, mode);
+	if (fd < 0)
+		return fd;
+	ret = sceIoWaitAsyncCB(fd, &res);
+	if (ret == 0)
+		ret = (SceInt32)res;
+	return ret;
+}
+
+static int sceIoReadCB_1017C(SceUID fd, void *buf, unsigned int nbyte)
+{
+	long long res;
+	SceInt32 ret;
+
+	ret = sceIoReadAsync(fd, buf, nbyte);
+	if (ret < 0)
+		return ret;
+	ret = sceIoWaitAsyncCB(fd, &res);
+	if (ret == 0)
+		ret = (SceInt32)res;
+	return ret;
+}
 
 INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/mpeg/strfile", D_0007AF24);
 

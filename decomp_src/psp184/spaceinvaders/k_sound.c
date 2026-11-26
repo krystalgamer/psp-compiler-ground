@@ -10,7 +10,23 @@ M2C_UNK sceWaveStop(M2C_UNK);                       /* extern */
 extern unsigned char se;
 
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/k_sound", load_module);
+extern int sound_volume;
+extern int sound1_volume;
+typedef struct SceKernelLMOption SceKernelLMOption;
+int module_file_start(int *mid, char *path, SceKernelLMOption *opt);
+#define MAX(a, b) ((a) > (b) ? (a) : (b))
+#define MIN(a, b) ((a) < (b) ? (a) : (b))
+
+int module_file_start(int *mid, char *path, SceKernelLMOption *opt);
+#define MAX(a, b) ((a) > (b) ? (a) : (b))
+#define MIN(a, b) ((a) < (b) ? (a) : (b))
+static int load_module(char *path, SceKernelLMOption *opt)
+{
+	int mid;
+
+	module_file_start(&mid, path, opt);
+	return mid;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/k_sound", unload_module);
 
@@ -222,9 +238,19 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/k_sound", sound_start1);
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/k_sound", sound_stop1);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/k_sound", sound_volume_set);
+void sound_volume_set(int vol)
+{
+	vol = MAX(vol, 0);
+	if (vol > 0x8000) vol = 0x8000;
+	sound_volume = vol;
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/k_sound", sound_volume_set1);
+void sound_volume_set1(int vol)
+{
+	vol = MAX(vol, 0);
+	if (vol > 0x8000) vol = 0x8000;
+	sound1_volume = vol;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/k_sound", sound_play_get);
 

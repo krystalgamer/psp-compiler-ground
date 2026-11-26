@@ -191,15 +191,79 @@ static SceInt32 readPspStream(SceMpegRingbuffer *pRB);
 static SceInt32 startCheck(t_avSyncControl *pAvSync, SceMpegRingbuffer *pRB, SceInt32 filesize, SceInt32 demuxsize);
 static SceInt32 playMovie(SceMpeg *pMpeg, SceMpegRingbuffer *pRB, t_mpegStreamData *pStreamData, t_avSyncControl *pAvSync, SceInt32 filesize);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/mpeg/mpeg_main", loadModule);
+extern SceUID videoMid;
+extern SceUID baseMid;
+extern SceUID mpegMid;
+int module_file_start(SceUID *mid, SceChar8 *filename, SceKernelLMOption *option);
+int strFileReadNoRetry(StrFile *file, void *buff, unsigned int size);
+int sceKernelStopModule(SceUID modid, SceSize argsize, void *argp, int *status, void *option);
+int sceKernelUnloadModule(SceUID modid);
+static SceInt32 loadModule(SceUID *mid, SceChar8 *filename, SceKernelLMOption *option)
+{
+	module_file_start(mid, filename, option);
+	return 0;
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/mpeg/mpeg_main", unloadModule);
+static SceInt32 unloadModule(SceUID *mid)
+{
+	int status;
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/mpeg/mpeg_main", ringbufferCallBack);
+	if (sceKernelStopModule(*mid, 0, NULL, &status, NULL) < 0)
+		return -1;
+	if (sceKernelUnloadModule(*mid) < 0)
+		return -1;
+	return 0;
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/mpeg/mpeg_main", mpeg_init);
+static SceInt32 ringbufferCallBack(SceVoid *pBuf, SceInt32 iNum, SceVoid *CallbackData)
+{
+	SceInt32 iTypeSize;
+	SceInt32 iReadSize;
+	SceInt32 ret;
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/mpeg/mpeg_main", mpeg_end);
+	iTypeSize = 2048;
+	iReadSize = strFileReadNoRetry((StrFile *)CallbackData, pBuf, iTypeSize * iNum);
+	if (iReadSize == 0x80210003 || iReadSize == 0x80210001)
+		ret = 0;
+	else
+		ret = (iReadSize % iTypeSize) ? -1 : iReadSize / iTypeSize;
+	return ret;
+}
+
+void mpeg_init(void)
+{
+	SceKernelLMOption option;
+	SceKernelLMOption option2;
+
+	option.size = sizeof(option);
+	option.mpidtext = 1;
+	option.mpiddata = 1;
+	option.position = 0;
+	option.access = 1;
+	option2.size = sizeof(option2);
+	option2.mpidtext = 2;
+	option2.mpiddata = 2;
+	option2.position = 0;
+	option2.access = 1;
+	if (loadModule(&videoMid, "disc0:/PSP_GAME/USRDIR/kmodule/videocodec.prx", &option) != 0)
+		goto err;
+	if (loadModule(&baseMid, "disc0:/PSP_GAME/USRDIR/kmodule/mpegbase.prx", &option) != 0)
+		goto err;
+	if (loadModule(&mpegMid, "disc0:/PSP_GAME/USRDIR/module/mpeg.prx", &option2) != 0)
+		goto err;
+	return;
+err:
+	unloadModule(&mpegMid);
+	unloadModule(&baseMid);
+	unloadModule(&videoMid);
+}
+
+void mpeg_end(void)
+{
+	unloadModule(&mpegMid);
+	unloadModule(&baseMid);
+	unloadModule(&videoMid);
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/mpeg/mpeg_main", mpeg_main);
 

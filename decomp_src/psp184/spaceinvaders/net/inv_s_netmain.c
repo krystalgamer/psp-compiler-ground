@@ -122,6 +122,16 @@ static int get_nickname(int buflen, struct SceNetEtherAddr *addr, struct SceNetA
 void draw_net_member_list(int *x_ptr, int *y_ptr);
 void draw_net_neighbors(int *x_ptr, int *y_ptr);
 
+extern int net_error;
+extern int net_gid[];
+extern int net_num;
+extern int net_pause;
+extern int net_timeerror;
+int pad_sw(void);
+void utility_update(void);
+int net_update(void);
+int net_gamecomm_packinit(void);
+
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_netmain", win_init);
 
 void gu_init(void) {
@@ -165,7 +175,20 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_netmain", drawp
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_netmain", net_init);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_netmain", net_core);
+extern int net_error;
+extern int net_gid[];
+extern int net_num;
+extern int net_pause;
+extern int net_timeerror;
+int pad_sw(void);
+void utility_update(void);
+int net_update(void);
+int net_gamecomm_packinit(void);
+void net_core(void)
+{
+	utility_update();
+	net_update();
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_netmain", net_term);
 
@@ -173,34 +196,78 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_netmain", net_l
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_netmain", net_lobby);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_netmain", net_gamecomm_pack);
+int net_gamecomm_pack(void)
+{
+	net_core();
+	return 0;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_netmain", net_gamecomm_packinit);
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_netmain", net_gamecomm_packend);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_netmain", net_mynumget);
+int net_mynumget(void)
+{
+	return net_num;
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_netmain", net_mynumset);
+void net_mynumset(int num)
+{
+	net_num = num;
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_netmain", net_errorget);
+int net_errorget(void)
+{
+	return net_error;
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_netmain", net_errorset);
+void net_errorset(int err)
+{
+	net_error = err;
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_netmain", net_gidget);
+int net_gidget(int i)
+{
+	return net_gid[i];
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_netmain", net_gidgetadd);
+int *net_gidgetadd(void)
+{
+	return net_gid;
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_netmain", net_gidset);
+void net_gidset(int gid, int i)
+{
+	net_gid[i] = gid;
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_netmain", net_pauseset);
+void net_pauseset(void)
+{
+	net_pause = (net_pause + 1) & 1;
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_netmain", net_pausewait);
+void net_pausewait(void)
+{
+	net_timeerror = 0;
+	net_gamecomm_packinit();
+	net_timeerror = 1;
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_netmain", net_pauseget);
+int net_pauseget(void)
+{
+	return net_pause;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_netmain", net_entryget);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_netmain", net_timeerrorget);
+int net_timeerrorget(void)
+{
+	return net_timeerror;
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_netmain", net_user_cancel);
+int net_user_cancel(void)
+{
+	if (pad_sw() & 8)
+		return 1;
+	return 0;
+}

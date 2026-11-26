@@ -8,13 +8,22 @@ extern int D_00287350;
 extern int D_00287354;
 
 
+extern int D_00287388;
+
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_pad", pad_init);
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_pad", pad_read);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_pad", pad_ret_button);
+extern int D_00287388;
+int pad_ret_button(void)
+{
+	return (D_00287388 == 0) ? 0x2000 : 0x4000;
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_pad", pad_cansel_button);
+int pad_cansel_button(void)
+{
+	return (D_00287388 == 0) ? 0x4000 : 0x2000;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)

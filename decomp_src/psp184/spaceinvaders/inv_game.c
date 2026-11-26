@@ -1,4 +1,29 @@
 #include "common.h"
+#include "m2c_macros.h"
+extern int D_005FB738;
+extern int D_005E860C;
+extern signed char D_0035393C;
+int tex_make(M2C_UNK, M2C_UNK, M2C_UNK, M2C_UNK);   /* extern */
+extern int D_005FB3B0;
+M2C_UNK bmp_file_unload(int);                       /* extern */
+M2C_UNK df_blur_control();                          /* extern */
+M2C_UNK df_cap_control();                           /* extern */
+M2C_UNK df_fade_control();                          /* extern */
+M2C_UNK df_flash_control();                         /* extern */
+M2C_UNK df_quake_control();                         /* extern */
+M2C_UNK df_blur_disp();                             /* extern */
+M2C_UNK df_cap_disp();                              /* extern */
+M2C_UNK df_fade_disp();                             /* extern */
+M2C_UNK df_flash_disp();                            /* extern */
+M2C_UNK df_quake_disp();                            /* extern */
+extern unsigned char D_005FB76C;
+extern int D_005FB784;
+extern int D_005FB77C;
+extern int D_005FB788;
+M2C_UNK sprite_set(int, M2C_UNK, M2C_UNK, M2C_UNK, M2C_UNK, M2C_UNK, M2C_UNK, M2C_UNK, int, int, int, int, int, int, int, int, int, int, int); /* extern */
+extern int D_004B4D04;
+extern unsigned char D_005FB7A8;
+
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", maingame_all_init);
 
@@ -164,7 +189,13 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", ziki_break_che
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", ziki_break_success_check);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", ziki_break_errer_check);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+int ziki_break_errer_check(void) {
+    return D_005FB738 < 2;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", ziki_beat_check);
 
@@ -290,7 +321,13 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", laser_hit_chec
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", laser_disp);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", laser2_init);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void laser2_init(void) {
+    D_005E860C = 0;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", laser2_start);
 
@@ -298,7 +335,14 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", laser2_c_set);
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", laser2_start2);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", laser2_end);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void laser2_end(void) {
+    D_0035393C = 0;
+    D_005E860C = 0;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", laser2_control);
 
@@ -344,9 +388,23 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", cam_init);
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", cam_control);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", dispeffect_all_init);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", dispeffect_all_free);
+void dispeffect_all_init(void) {
+    D_005FB3B0 = tex_make(5, 0, 0x100, 0x100);
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void dispeffect_all_free(void) {
+    if (D_005FB3B0 >= 0) {
+        bmp_file_unload(D_005FB3B0);
+    }
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", dispeffect_init);
 
@@ -386,9 +444,29 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", df_fade_contro
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", df_fade_disp);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", disp_effect_control);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", disp_effect_disp);
+void disp_effect_control(void) {
+    df_quake_control();
+    df_blur_control();
+    df_cap_control();
+    df_flash_control();
+    df_fade_control();
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void disp_effect_disp(void) {
+    df_quake_disp();
+    df_blur_disp();
+    df_cap_disp();
+    df_flash_disp();
+    df_fade_disp();
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", timer_init);
 
@@ -402,23 +480,78 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", bgm_init);
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", bgm_control);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", bgm_rankdown);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", bgm_rankup);
+void bgm_rankdown(void) {
+    if (M2C_FIELD(&D_005FB76C, int *, 0) != -1) {
+        if ((M2C_FIELD(&D_005FB76C, int *, 0xC) > 0) && (get_now_sound_block() != 0xB)) {
+            if (M2C_FIELD(&D_005FB76C, int *, 8) == 0) {
+                M2C_FIELD(&D_005FB76C, int *, 8) = -1;
+                M2C_FIELD(&D_005FB76C, int *, 0xC) = (int) (M2C_FIELD(&D_005FB76C, int *, 0x10) - 1);
+                sound_next_block_set(M2C_FIELD(&D_005FB76C, int *, 0x10));
+            }
+        }
+    }
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void bgm_rankup(void) {
+    if (M2C_FIELD(&D_005FB76C, int *, 0) != -1) {
+        if (M2C_FIELD(&D_005FB76C, int *, 0xC) != (M2C_FIELD(&D_005FB76C, int *, 4) - 1)) {
+            if (get_now_sound_block() != 0xB) {
+                if (M2C_FIELD(&D_005FB76C, int *, 8) != 1) {
+                    M2C_FIELD(&D_005FB76C, int *, 8) = 1;
+                    M2C_FIELD(&D_005FB76C, int *, 0xC) = (int) (M2C_FIELD(&D_005FB76C, int *, 0x10) + 1);
+                    M2C_FIELD(&D_005FB76C, int *, 0x14) = 0;
+                    sound_next_block_set(M2C_FIELD(&D_005FB76C, int *, 0x10) + 2);
+                }
+            }
+        }
+    }
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", bgm_rank_start);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", bgm_clear_play);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", bgm_clear_play_check);
+void bgm_clear_play(void) {
+    D_005FB784 = 1;
+    sound_next_block_set(9);
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int bgm_clear_play_check(void) {
+    return get_now_sound_block() == 9;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", bgm_rank_max_check);
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", bgm_rank_max);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", bgm_rank);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", debprint_init);
+int bgm_rank(void) {
+    return D_005FB77C;
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void debprint_init(void) {
+    D_005FB788 = 0;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", debprint_set);
 
@@ -462,7 +595,13 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", inv_nowloading
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", inv_nowloading_reset);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", inv_nowloading_disp2);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void inv_nowloading_disp2(void) {
+    sprite_set(D_004B4D04, 0x19E, 0x107, 0x40, 8, 0, 0, 0x64, 0x64, 0, 0, 0xFF, 0xFF, 0xFF, 0xFF, 0xA, 2, 1, 0xFF);
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", inv_nowloading_disp);
 
@@ -474,7 +613,17 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", risarju_contro
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", beat_help_init);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", beat_help_set);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void beat_help_set(int arg0) {
+    if (M2C_FIELD(&D_005FB7A8, int *, 0) != 1) {
+        M2C_FIELD(&D_005FB7A8, int *, 0) = 1;
+        M2C_FIELD(&D_005FB7A8, int *, 4) = arg0;
+        M2C_FIELD(&D_005FB7A8, int *, 8) = 0;
+    }
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", beat_help_off);
 

@@ -37,12 +37,8 @@ extern SceUID gDvdUmdIoSemaphoreId;
 SceInt32 DvdUmdIoInit(void);
 SceInt32 DvdUmdIoTerm(void);
 SceInt32 DvdUmdRetryPollSema(void);
-SceInt32 DvdUmdRetryReadFile(const char *filepath, SceSize filesize, void *filebuf);
-SceInt32 DvdUmdRetryReadFileCB(const char *filepath, SceSize filesize, void *filebuf);
-SceInt32 DvdUmdRetryReadSector(SceUInt32 lba, SceSize lbanum, void *lbabuf);
 static int DvdUmdRetryWaitSema(void);
 static int DvdUmdRetrySignalSema(void);
-SceInt32 DvdUmdRetryReadSectorCB(SceUInt32 lba, SceSize lbanum, void *lbabuf);
 SceInt32 DvdUmdRetryOpen(const char *filepath, int flag, SceMode mode);
 SceInt32 DvdUmdRetryOpenCB(const char *filepath, int flag, SceMode mode);
 static int DvdUmdRetryWaitSemaCB(void);
@@ -85,13 +81,91 @@ SceInt32 DvdUmdIoTerm(void)
 	return 0;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/mpeg/io", DvdUmdRetryReadFile);
+int sceUmdWaitDriveStatCB(int stat, int timeout);
+int sceUmdWaitDriveStat(int stat);
+long long sceIoLseek(SceUID fd, long long offset, int whence);
+int sceIoReadAsync(SceUID fd, void *buf, SceSize nbyte);
+int sceIoWaitAsyncCB(SceUID fd, long long *res);
+int sceIoClose(SceUID fd);
+SceInt32 DvdUmdRetryReadFile(const char *filepath, SceSize filesize, void *filebuf)
+{
+	int ret;
+	SceUID fd;
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/mpeg/io", DvdUmdRetryReadFileCB);
+	if (filepath == NULL || filesize == 0 || filebuf == NULL)
+		return 0x80010016;
+	ret = DvdUmdRetryOpen(filepath, 1, 0644);
+	if (ret < 0)
+		return ret;
+	fd = ret;
+	ret = DvdUmdRetryRead(fd, filebuf, filesize);
+	sceIoClose(fd);
+	return ret;
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/mpeg/io", DvdUmdRetryReadSector);
+SceInt32 DvdUmdRetryReadFileCB(const char *filepath, SceSize filesize, void *filebuf)
+{
+	int ret;
+	SceUID fd;
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/mpeg/io", DvdUmdRetryReadSectorCB);
+	if (filepath == NULL || filesize == 0 || filebuf == NULL)
+		return 0x80010016;
+	ret = DvdUmdRetryOpenCB(filepath, 1, 0644);
+	if (ret < 0)
+		return ret;
+	fd = ret;
+	ret = DvdUmdRetryReadCB(fd, filebuf, filesize);
+	sceIoClose(fd);
+	return ret;
+}
+
+SceInt32 DvdUmdRetryReadSector(SceUInt32 lba, SceSize lbanum, void *lbabuf)
+{
+	int ret;
+	SceUID fd;
+
+	if (lbabuf == NULL)
+		return 0x80010016;
+	ret = sceUmdWaitDriveStat(0x30);
+	if (ret < 0)
+		return ret;
+	ret = DvdUmdRetryOpen("umd1:", 1, 0644);
+	if (ret < 0)
+		return ret;
+	fd = ret;
+	ret = sceIoLseek(fd, lba, 1);
+	if (ret < 0) {
+		sceIoClose(fd);
+		return ret;
+	}
+	ret = DvdUmdRetryRead(fd, lbabuf, lbanum);
+	sceIoClose(fd);
+	return ret;
+}
+
+SceInt32 DvdUmdRetryReadSectorCB(SceUInt32 lba, SceSize lbanum, void *lbabuf)
+{
+	int ret;
+	SceUID fd;
+
+	if (lbabuf == NULL)
+		return 0x80010016;
+	ret = sceUmdWaitDriveStatCB(0x30, 0);
+	if (ret < 0)
+		return ret;
+	ret = DvdUmdRetryOpenCB("umd1:", 1, 0644);
+	if (ret < 0)
+		return ret;
+	fd = ret;
+	ret = sceIoLseek(fd, lba, 1);
+	if (ret < 0) {
+		sceIoClose(fd);
+		return ret;
+	}
+	ret = DvdUmdRetryReadCB(fd, lbabuf, lbanum);
+	sceIoClose(fd);
+	return ret;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/mpeg/io", DvdUmdRetryOpen);
 
@@ -115,4 +189,3 @@ static SceSSize sceIoReadCB(SceUID fd, void *buf, SceSize nbyte)
 	return ret;
 }
 
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/mpeg/io", D_0007AF50);

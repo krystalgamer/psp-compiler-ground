@@ -37,7 +37,11 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_tex", bmp_file_unload
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_tex", bmp_file_all_unload);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_tex", bmp_file_copy);
+int bmp_file_copy_addrset(int no, int addr);
+int bmp_file_copy(int no)
+{
+	return bmp_file_copy_addrset(no, 0);
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_tex", bmp_file_copy_addrset);
 
