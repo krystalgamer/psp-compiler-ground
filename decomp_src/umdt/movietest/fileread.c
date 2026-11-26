@@ -62,4 +62,41 @@ SceInt32 read_getCapacity(t_ringBuffer *pRing)
 	return sceMpegRingbufferAvailableSize(pRing->pRingbuf);
 }
 
-INCLUDE_ASM("tmp/asm/umdt/movietest/nonmatchings/fileread", read_func);
+SceInt32 read_func(SceSize size, void *argp)
+{
+	t_ringBuffer *pRing;
+	SceInt32 total;
+	SceInt32 ret;
+	SceInt32 avail;
+	SceInt32 n;
+	char msg[112];
+
+	pRing = (t_ringBuffer *)argp;
+	total = 0;
+	while (read_isEnd(pRing) != 2) {
+		ret = 0;
+		avail = sceMpegRingbufferAvailableSize(pRing->pRingbuf);
+		if (avail > 0 && total < pRing->data_len) {
+			if (avail >= 32)
+				n = 32;
+			else if (pRing->data_len - total < avail)
+				n = pRing->data_len - total;
+			else
+				n = avail;
+			ret = sceMpegRingbufferPut(pRing->pRingbuf, n, avail);
+			if (ret < 0) {
+				sprintf(msg, "error error error\n %d total = %d\n", ret, total);
+				sceIoWrite(0, msg, strlen(msg));
+				break;
+			}
+		} else {
+			ret = 0;
+		}
+		total += ret * 2048;
+		sceKernelSignalSema(pRing->ringbuf_sema, 1);
+		if (total == pRing->data_len && *pRing->end_flag == 0)
+			*pRing->end_flag = 1;
+	}
+	sceKernelExitThread(0);
+	return 0;
+}
