@@ -1,4 +1,3 @@
-/* cflags: -O2 -fno-if-conversion2 */
 #include "common.h"
 
 /* declarations recovered from DWARF */
@@ -398,6 +397,8 @@ SceInt32 sceMpegRingbufferAvailableSize(SceMpegRingbuffer *pRingbuffer);
 int sceKernelCheckCallback(void);
 int printf(const char *fmt, ...);
 
+#ifdef NON_MATCHING
+/* matches with -fno-if-conversion2 (as in mpeg_mpegstr), but readHeader here needs if-conversion2 */
 static SceInt32 playMovie(SceMpeg *pMpeg, SceMpegRingbuffer *pRB, t_mpegStreamData *pStreamData, t_ringBuffer *pRingCtrl, t_avSyncControl *pAvSync, t_conditionCtrl *pCtrl)
 {
 	SceInt32 audio_init_flag;
@@ -472,6 +473,9 @@ error:
 term:
 	return ret;
 }
+#else
+INCLUDE_ASM("tmp/asm/UTST99332/mpeg_timecode_jump/nonmatchings/main", playMovie);
+#endif
 
 long long strFileLseek(StrFile *file, long long offset, SceInt32 whence);
 extern const char D_00010390[];
