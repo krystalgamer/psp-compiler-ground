@@ -643,7 +643,35 @@ int ps_createExMsgBox(void) {
     return b->id;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", ps_deleteExMsgBox);
+int ps_deleteExMsgBox(int id) {
+    ExMsgBox *b;
+    ExMsgBox *n;
+
+    b = ps_getExMsgBox(id);
+    if (b == NULL) {
+        return 0;
+    }
+    ps_freeExMsgBox(id);
+    if (b->prev != NULL) {
+        b->prev->next = b->next;
+    } else {
+        n = b->next;
+        exMsgBoxList.first = n;
+        if (n != NULL) {
+            n->prev = NULL;
+        }
+    }
+    if (b->next != NULL) {
+        b->next->prev = b->prev;
+    } else {
+        exMsgBoxList.last = b->prev;
+        if (exMsgBoxList.first != NULL) {
+            exMsgBoxList.first->next = NULL;
+        }
+    }
+    MEM_free(0, b);
+    return 1;
+}
 
 ExMsgBox *ps_getExMsgBox(int id) {
     ExMsgBox *b;
