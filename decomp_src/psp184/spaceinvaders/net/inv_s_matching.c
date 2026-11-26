@@ -89,9 +89,7 @@ extern int minfo_sid;
 extern int minfo_num;
 extern struct minfo minfo[16];
 
-int matching_start_to_enter_room(void);
 int matching_restart_to_create_room(void);
-int matching_select(int peer_idx);
 
 
 extern int minfo_sid;
@@ -110,7 +108,36 @@ void *memset(void *, int, unsigned int);
 void change_state(int state);
 extern int D_0039AE60;
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_matching", matching_start_to_enter_room);
+int sceNetAdhocMatchingCreate(int mode, int maxnum, int port, int rxbuflen, unsigned int hello_int, unsigned int ping_int, int init_count, unsigned int msg_delay, void *handler);
+int sceNetAdhocMatchingStart(int id, int prio, int stack, int prio2, int stack2, int optlen, void *opt);
+int sceNetAdhocMatchingSelectTarget(int id, void *addr, int optlen, void *opt);
+int sceUtilityGetSystemParamString(int id, void *str, int len);
+int randomize_group_name(void *group_name);
+void child_handler(int id, int event, void *addr, int optlen, void *opt);
+void parent_handler(int id, int event, void *addr, int optlen, void *opt);
+typedef struct { int state; char opt[0x80]; int f84; int f88; int f8c; int f90; int f94; char pad[0x10]; int ctx_id; } MRI_SM; /* spaceinvaders _mrinfo layout */
+#define MR (*(MRI_SM *)&_mrinfo)
+
+#define MR (*(MRI_SM *)&_mrinfo)
+int matching_start_to_enter_room(void)
+{
+	int ret;
+
+	MR.f84 = 0;
+	ret = sceNetAdhocMatchingCreate(2, MR.f8c, 1, 0x400, 1000000, 2000000, 3, 500000, child_handler);
+	if (ret < 0)
+		goto error;
+	MR.ctx_id = ret;
+	sceUtilityGetSystemParamString(1, MR.opt, 0x80);
+	ret = sceNetAdhocMatchingStart(MR.ctx_id, 0x36, 0x2000, 0x36, 0x2000, 0x8C, MR.opt);
+	if (ret < 0)
+		goto error;
+	return 0;
+
+error:
+	matching_stop();
+	return ret;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_matching", matching_restart_to_create_room);
 
@@ -173,7 +200,24 @@ void matching_term(void)
 	minfo_num = 0;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_matching", matching_select);
+int matching_select(int peer_idx)
+{
+	int ret;
+
+	sceKernelWaitSemaCB(minfo_sid, 1, 0);
+	if (minfo[peer_idx].status == 2) {
+		ret = sceNetAdhocMatchingSelectTarget(MR.ctx_id, &minfo[peer_idx].addr, 0, 0);
+	} else {
+		randomize_group_name(&game_group_name);
+		ret = sceNetAdhocMatchingSelectTarget(MR.ctx_id, &minfo[peer_idx].addr, 8, &game_group_name);
+	}
+	if (ret >= 0 && minfo[peer_idx].status == 2) {
+		minfo[peer_idx].status = 4;
+		MR.f94 = peer_idx;
+	}
+	sceKernelSignalSema(minfo_sid, 1);
+	return 0;
+}
 
 int matching_cancel(int peer_idx)
 {
