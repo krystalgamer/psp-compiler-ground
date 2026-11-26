@@ -316,6 +316,47 @@ static void init_param(void)
 	maxlod = 8;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_mipmap/nonmatchings/main", pad_read);
+extern u_int32 D_0001BE08; /* static u_int32 opadd in pad_read (bss is asm) */
+
+static int pad_read(void)
+{
+	u_int32 padd;
+	SceCtrlData buf;
+
+	sceCtrlReadBufferPositive(&buf, 1);
+	padd = buf.Buttons;
+
+	if (padd != D_0001BE08) {
+		if (padd & 0x8) {
+			moving ^= 1;
+		}
+
+		if (padd & 0x10) {
+			maxlod++;
+			if (maxlod >= 8) {
+				maxlod = 8;
+			}
+		}
+
+		if (padd & 0x40) {
+			maxlod--;
+			if (maxlod < 2) {
+				maxlod = 1;
+			}
+		}
+
+		if (padd & 0x2000) {
+			mode ^= 1;
+		}
+	}
+
+	if (padd & 0x1) {
+		return 0;
+	}
+
+	D_0001BE08 = padd;
+
+	return 1;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_mipmap/nonmatchings/main", main);
