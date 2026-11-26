@@ -1,5 +1,6 @@
-#include "common.h"
+/* upstream: newlib-1.12.0/newlib/libm/common/s_matherr.c (unmodified) */
+/* cflags: -O2 -fno-builtin */
+#include "libm/common/s_matherr.c"
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/newlib/libm/common/s_matherr", matherr);
-
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/newlib/libm/common/s_matherr", __fdlib_version);
+/* s_lib_ver.o's __fdlib_version, split into this object's rodata */
+__asm__(".pushsection .rodata\n.align 2\n.globl __fdlib_version\n__fdlib_version:\n.word 1\n.popsection");
