@@ -98,15 +98,29 @@ int isatty(int fd)
 	return 1;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/kernel_bridge", _rename);
+int _rename(const char *oldpath, const char *newpath)
+{
+	return sceIoRename(oldpath, newpath);
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/kernel_bridge", _stat);
+int _stat(const char *file_name, struct stat *buf)
+{
+	return -1;
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/kernel_bridge", _fcntl);
+int _fcntl(int fd, int cmd) {
+    return -1;
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/kernel_bridge", _link);
+int _link(const char *oldpath, const char *newpath)
+{
+	return -1;
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/kernel_bridge", _unlink);
+int _unlink(const char *pathname)
+{
+	return -1;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/kernel_bridge", _exit);
 
@@ -130,11 +144,20 @@ int _wait(int *status)
 	return -1;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/kernel_bridge", _execve);
+int _execve(const char *filename, char *const *argv, char *const *envp)
+{
+	return -1;
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/kernel_bridge", clock);
+clock_t clock(void)
+{
+	return sceKernelLibcClock();
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/kernel_bridge", time);
+time_t time(time_t *pTime)
+{
+	return sceKernelLibcTime(pTime);
+}
 
 int _gettimeofday(struct timeval *p, struct timezone *z)
 {

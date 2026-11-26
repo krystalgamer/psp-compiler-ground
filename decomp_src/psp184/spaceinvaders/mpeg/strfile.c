@@ -1,12 +1,54 @@
 #include "common.h"
 
+/* declarations recovered from DWARF (UTST99261 BOOT mpeg/strfile) */
+struct _anon1;
+typedef int SceUID;
+typedef char SceChar8;
+struct _anon1 { /* size 0x10 */
+    SceUID fd;
+    SceChar8 assignName[10];
+};
+typedef struct _anon1 StrFile;
+typedef int SceInt32;
+typedef long long int SceOff;
+typedef int SceMode;
+typedef SceUID (*FUNC_OPEN)(const char *, int, SceMode);
+typedef int (*FUNC_CLOSE)(SceUID);
+typedef SceOff (*FUNC_LSEEK)(SceUID, SceOff, int);
+typedef unsigned int SceSize;
+typedef int SceSSize;
+typedef SceSSize (*FUNC_READ)(SceUID, void *, SceSize);
+
+extern FUNC_OPEN localOpen;
+extern FUNC_CLOSE localClose;
+extern FUNC_LSEEK localLseek;
+extern FUNC_READ localRead;
+
+SceInt32 strFileAssign(StrFile *file, const SceChar8 *filename, SceInt32 flags);
+SceInt32 strFileUnassign(StrFile *file);
+SceInt32 strFileOpen(StrFile *file, const SceChar8 *filename, SceInt32 flags);
+SceInt32 strFileClose(StrFile *file);
+SceInt32 strFileRead(StrFile *file, void *buff, SceInt32 size);
+SceOff strFileLseek(StrFile *file, SceOff offset, SceInt32 whence);
+
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/mpeg/strfile", strFileAssign);
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/mpeg/strfile", strFileOpen);
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/mpeg/strfile", strFileOpenCB);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/mpeg/strfile", strFileClose);
+int sceIoClose(int fd);
+int strFileClose(StrFile *file) {
+    int temp_v0;
+    int var_v1;
+
+    var_v1 = -1;
+    temp_v0 = file->fd;
+    if (temp_v0 >= 0) {
+        var_v1 = sceIoClose(temp_v0);
+    }
+    return var_v1;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/mpeg/strfile", strFileUnassign);
 
@@ -14,13 +56,26 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/mpeg/strfile", strFileRea
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/mpeg/strfile", strFileReadCB);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/mpeg/strfile", strFileReadNoRetry);
+int sceIoRead(int fd, void *buf, unsigned int nbyte);
+int strFileReadNoRetry(StrFile *file, void *buff, unsigned int size) {
+    return sceIoRead(file->fd, buff, size);
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/mpeg/strfile", strFileWrite);
+int sceIoWrite(int fd, const void *buf, unsigned int nbyte);
+int strFileWrite(StrFile *file, void *buff, int size) {
+    return sceIoWrite(file->fd, buff, (unsigned int) size);
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/mpeg/strfile", strFileLseek);
+SceOff sceIoLseek(SceUID fd, SceOff offset, int whence);
+SceOff strFileLseek(StrFile *file, SceOff offset, SceInt32 whence)
+{
+	return sceIoLseek(file->fd, offset, whence);
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/mpeg/strfile", strFileUmdReadBreak);
+int strFileUmdReadBreak(void) {
+    DvdUmdIoTerm();
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/mpeg/strfile", sceIoOpenCB);
 
