@@ -1,4 +1,8 @@
-#include "common.h"
+/* lang: c++ */
+/* cflags: -O3 -fno-exceptions */
+#undef __EXCEPTIONS
+#include "cxx/defer_asm.h"
+#include "../main.hpp"
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_Box", _Z41__static_initialization_and_destruction_0ii_A5028);
 
@@ -22,7 +26,19 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_Box", _ZNK3s
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_Box", _ZNK3sgl3Box4drawEv);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_Box", _GLOBAL__I__ZN3sgl3BoxC2Ev);
+extern "C" {
+void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_A5028");
+void _GLOBAL__I__ZN3sgl3BoxC2Ev(void);
+void _GLOBAL__D__ZN3sgl3BoxC2Ev(void);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_Box", _GLOBAL__D__ZN3sgl3BoxC2Ev);
+void _GLOBAL__I__ZN3sgl3BoxC2Ev(void)
+{
+    static_init(1, 0xFFFF);
+}
+
+void _GLOBAL__D__ZN3sgl3BoxC2Ev(void)
+{
+    static_init(0, 0xFFFF);
+}
 

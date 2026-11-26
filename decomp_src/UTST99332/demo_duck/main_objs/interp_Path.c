@@ -28,9 +28,21 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/interp_Path", _Z
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/interp_Path", _ZNK6interp4Path4sizeEv);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/interp_Path", _GLOBAL__I__ZN6interp4PathC2Ev);
+extern "C" {
+void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_27A88");
+void _GLOBAL__I__ZN6interp4PathC2Ev(void);
+void _GLOBAL__D__ZN6interp4PathC2Ev(void);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/interp_Path", _GLOBAL__D__ZN6interp4PathC2Ev);
+void _GLOBAL__I__ZN6interp4PathC2Ev(void)
+{
+    static_init(1, 0xFFFF);
+}
+
+void _GLOBAL__D__ZN6interp4PathC2Ev(void)
+{
+    static_init(0, 0xFFFF);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/interp_Path", _ZN6interp20KeyFrameSequenceBaseIfEC2Ev);
 

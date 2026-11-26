@@ -1,4 +1,8 @@
-#include "common.h"
+/* lang: c++ */
+/* cflags: -O3 -fno-exceptions */
+#undef __EXCEPTIONS
+#include "cxx/defer_asm.h"
+#include "../main.hpp"
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_basic_net_basic_net", _Z41__static_initialization_and_destruction_0ii_4D75C);
 
@@ -14,7 +18,15 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_basic_n
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_basic_net_basic_net", _ZNK4math9basic_net6draw_wEv);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_basic_net_basic_net", _GLOBAL__I__ZN4math9basic_netC2Ev);
+extern "C" {
+void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_4D75C");
+void _GLOBAL__I__ZN4math9basic_netC2Ev(void);
+}
+
+void _GLOBAL__I__ZN4math9basic_netC2Ev(void)
+{
+    static_init(1, 0xFFFF);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_basic_net_basic_net", _ZN6common9t_array2dIN4math11vector_xyzwEEC2Ev);
 

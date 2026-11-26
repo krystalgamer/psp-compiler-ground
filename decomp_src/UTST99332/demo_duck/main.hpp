@@ -18,28 +18,6 @@ extern "C" {
 
 #include <vector>
 
-/* the demo's OpenGL emulation (C linkage) */
-extern "C" {
-typedef unsigned int GLenum;
-typedef float GLfloat;
-void glPushMatrix(void);
-void glPopMatrix(void);
-void glMultMatrixf(const GLfloat *);
-void glScalef(GLfloat, GLfloat, GLfloat);
-void glDisable(GLenum);
-void glEnable(GLenum);
-void glBlendFunc(GLenum, GLenum);
-void glPushAttrib(unsigned int);
-void glPopAttrib(void);
-void glBegin(GLenum);
-void glEnd(void);
-void glColor3f(GLfloat, GLfloat, GLfloat);
-void glNormal3f(GLfloat, GLfloat, GLfloat);
-void glVertex3f(GLfloat, GLfloat, GLfloat);
-}
-#define GL_LINE_LOOP 0x0002
-#define GL_QUADS 0x0007
-#define GL_LIGHTING 0x0B50
 
 namespace math {
 struct TransformStack;
@@ -204,6 +182,7 @@ public:
 
 extern "C" void menuInit(void);
 void run_city();
+void run_ahiru();
 
 /* demo_harmonic's application */
 class CityApp : public app3d::Callbacks {

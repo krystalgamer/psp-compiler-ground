@@ -73,9 +73,21 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Graph"
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Graph", _ZN5scene5Graph6finishEv);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Graph", _GLOBAL__I__ZN5scene5Graph26disable_reflection_mappingE);
+extern "C" {
+void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_5DF00");
+void _GLOBAL__I__ZN5scene5Graph26disable_reflection_mappingE(void);
+void _GLOBAL__D__ZN5scene5Graph26disable_reflection_mappingE(void);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Graph", _GLOBAL__D__ZN5scene5Graph26disable_reflection_mappingE);
+void _GLOBAL__I__ZN5scene5Graph26disable_reflection_mappingE(void)
+{
+    static_init(1, 0xFFFF);
+}
+
+void _GLOBAL__D__ZN5scene5Graph26disable_reflection_mappingE(void)
+{
+    static_init(0, 0xFFFF);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Graph", _ZN6common6handleIN5scene5SetupEE10invalidateEv);
 

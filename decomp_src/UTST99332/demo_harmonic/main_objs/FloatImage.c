@@ -1,4 +1,8 @@
-#include "common.h"
+/* lang: c++ */
+/* cflags: -O3 -fno-exceptions */
+#undef __EXCEPTIONS
+#include "cxx/defer_asm.h"
+#include "../main.hpp"
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/FloatImage", _Z41__static_initialization_and_destruction_0ii_FC988);
 
@@ -64,9 +68,21 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/FloatImage",
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/FloatImage", _ZN10FloatImage4blurEif);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/FloatImage", _GLOBAL__I__ZN10FloatImageC2Ev);
+extern "C" {
+void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_FC988");
+void _GLOBAL__I__ZN10FloatImageC2Ev(void);
+void _GLOBAL__D__ZN10FloatImageC2Ev(void);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/FloatImage", _GLOBAL__D__ZN10FloatImageC2Ev);
+void _GLOBAL__I__ZN10FloatImageC2Ev(void)
+{
+    static_init(1, 0xFFFF);
+}
+
+void _GLOBAL__D__ZN10FloatImageC2Ev(void)
+{
+    static_init(0, 0xFFFF);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/FloatImage", _ZN6common9t_array2dI10ABGR_FLOATEC2Ev);
 

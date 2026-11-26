@@ -1,4 +1,8 @@
-#include "common.h"
+/* lang: c++ */
+/* cflags: -O3 -fno-exceptions */
+#undef __EXCEPTIONS
+#include "cxx/defer_asm.h"
+#include "../main.hpp"
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_VertexArray", _Z41__static_initialization_and_destruction_0ii_9C520);
 
@@ -18,9 +22,21 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Vertex
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_VertexArray", _ZN5scene11VertexArray3useENS_4PassE);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_VertexArray", _GLOBAL__I__ZN5scene11VertexArrayC2Ev);
+extern "C" {
+void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_9C520");
+void _GLOBAL__I__ZN5scene11VertexArrayC2Ev(void);
+void _GLOBAL__D__ZN5scene11VertexArrayC2Ev(void);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_VertexArray", _GLOBAL__D__ZN5scene11VertexArrayC2Ev);
+void _GLOBAL__I__ZN5scene11VertexArrayC2Ev(void)
+{
+    static_init(1, 0xFFFF);
+}
+
+void _GLOBAL__D__ZN5scene11VertexArrayC2Ev(void)
+{
+    static_init(0, 0xFFFF);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_VertexArray", _ZNSt6vectorIN14vertex_formats16T2F_C4UB_N3F_V3FESaIS1_EE5eraseEN9__gnu_cxx17__normal_iteratorIPS1_S3_EES7_);
 

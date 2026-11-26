@@ -1,4 +1,8 @@
-#include "common.h"
+/* lang: c++ */
+/* cflags: -O3 -fno-exceptions */
+#undef __EXCEPTIONS
+#include "cxx/defer_asm.h"
+#include "../main.hpp"
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sh_Env", _Z41__static_initialization_and_destruction_0ii_D9170);
 
@@ -14,9 +18,21 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sh_Env", _ZN2sh3
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sh_Env", _ZN2sh3Env4loadEb);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sh_Env", _GLOBAL__I__ZN2sh3EnvC2ENS_4Args3EnvE);
+extern "C" {
+void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_D9170");
+void _GLOBAL__I__ZN2sh3EnvC2ENS_4Args3EnvE(void);
+void _GLOBAL__D__ZN2sh3EnvC2ENS_4Args3EnvE(void);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sh_Env", _GLOBAL__D__ZN2sh3EnvC2ENS_4Args3EnvE);
+void _GLOBAL__I__ZN2sh3EnvC2ENS_4Args3EnvE(void)
+{
+    static_init(1, 0xFFFF);
+}
+
+void _GLOBAL__D__ZN2sh3EnvC2ENS_4Args3EnvE(void)
+{
+    static_init(0, 0xFFFF);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sh_Env", _ZNK2sh17FunctionEvaluator4evalEffRfS1_S1_);
 

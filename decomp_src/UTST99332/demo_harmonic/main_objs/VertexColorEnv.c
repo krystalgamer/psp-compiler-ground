@@ -1,4 +1,8 @@
-#include "common.h"
+/* lang: c++ */
+/* cflags: -O3 -fno-exceptions */
+#undef __EXCEPTIONS
+#include "cxx/defer_asm.h"
+#include "../main.hpp"
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/VertexColorEnv", _Z41__static_initialization_and_destruction_0ii_9E5F4);
 
@@ -10,9 +14,21 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/VertexColorE
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/VertexColorEnv", _ZN14VertexColorEnv4drawEf);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/VertexColorEnv", _GLOBAL__I__ZN14VertexColorEnvC2Ebi);
+extern "C" {
+void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_9E5F4");
+void _GLOBAL__I__ZN14VertexColorEnvC2Ebi(void);
+void _GLOBAL__D__ZN14VertexColorEnvC2Ebi(void);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/VertexColorEnv", _GLOBAL__D__ZN14VertexColorEnvC2Ebi);
+void _GLOBAL__I__ZN14VertexColorEnvC2Ebi(void)
+{
+    static_init(1, 0xFFFF);
+}
+
+void _GLOBAL__D__ZN14VertexColorEnvC2Ebi(void)
+{
+    static_init(0, 0xFFFF);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/VertexColorEnv", _ZNSt6vectorIN14VertexColorEnv6VertexESaIS1_EE5eraseEN9__gnu_cxx17__normal_iteratorIPS1_S3_EES7_);
 

@@ -1,4 +1,8 @@
-#include "common.h"
+/* lang: c++ */
+/* cflags: -O3 -fno-exceptions */
+#undef __EXCEPTIONS
+#include "cxx/defer_asm.h"
+#include "../main.hpp"
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sh_HDRMap", _Z41__static_initialization_and_destruction_0ii_D8964);
 
@@ -32,9 +36,21 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sh_HDRMap", 
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sh_HDRMap", _ZNK2sh6HDRMap4evalEffRfS1_S1_);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sh_HDRMap", _GLOBAL__I__ZN2sh6HDRMapC2EPKcf);
+extern "C" {
+void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_D8964");
+void _GLOBAL__I__ZN2sh6HDRMapC2EPKcf(void);
+void _GLOBAL__D__ZN2sh6HDRMapC2EPKcf(void);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sh_HDRMap", _GLOBAL__D__ZN2sh6HDRMapC2EPKcf);
+void _GLOBAL__I__ZN2sh6HDRMapC2EPKcf(void)
+{
+    static_init(1, 0xFFFF);
+}
+
+void _GLOBAL__D__ZN2sh6HDRMapC2EPKcf(void)
+{
+    static_init(0, 0xFFFF);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sh_HDRMap", _ZN2sh6HDRMapD1Ev);
 

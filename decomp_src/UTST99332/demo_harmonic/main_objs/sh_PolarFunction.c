@@ -1,12 +1,28 @@
-#include "common.h"
+/* lang: c++ */
+/* cflags: -O3 -fno-exceptions */
+#undef __EXCEPTIONS
+#include "cxx/defer_asm.h"
+#include "../main.hpp"
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sh_PolarFunction", _Z41__static_initialization_and_destruction_0ii_E7284);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sh_PolarFunction", _ZNK2sh13PolarFunction4evalEffRfS1_S1_);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sh_PolarFunction", _GLOBAL__I__ZNK2sh13PolarFunction4evalEffRfS1_S1_);
+extern "C" {
+void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_E7284");
+void _GLOBAL__I__ZNK2sh13PolarFunction4evalEffRfS1_S1_(void);
+void _GLOBAL__D__ZNK2sh13PolarFunction4evalEffRfS1_S1_(void);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sh_PolarFunction", _GLOBAL__D__ZNK2sh13PolarFunction4evalEffRfS1_S1_);
+void _GLOBAL__I__ZNK2sh13PolarFunction4evalEffRfS1_S1_(void)
+{
+    static_init(1, 0xFFFF);
+}
+
+void _GLOBAL__D__ZNK2sh13PolarFunction4evalEffRfS1_S1_(void)
+{
+    static_init(0, 0xFFFF);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sh_PolarFunction", _ZN2sh13PolarFunctionD1Ev);
 

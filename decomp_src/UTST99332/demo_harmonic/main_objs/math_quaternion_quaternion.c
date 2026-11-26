@@ -1,4 +1,8 @@
-#include "common.h"
+/* lang: c++ */
+/* cflags: -O3 -fno-exceptions */
+#undef __EXCEPTIONS
+#include "cxx/defer_asm.h"
+#include "../main.hpp"
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_quaternion_quaternion", _Z41__static_initialization_and_destruction_0ii_5B264);
 
@@ -66,4 +70,12 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_quatern
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_quaternion_quaternion", _ZN4math10quaternion5SlerpES0_S0_f);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_quaternion_quaternion", _GLOBAL__I__ZN4math10quaternionC2ERKNS_6matrixE);
+extern "C" {
+void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_5B264");
+void _GLOBAL__I__ZN4math10quaternionC2ERKNS_6matrixE(void);
+}
+
+void _GLOBAL__I__ZN4math10quaternionC2ERKNS_6matrixE(void)
+{
+    static_init(1, 0xFFFF);
+}

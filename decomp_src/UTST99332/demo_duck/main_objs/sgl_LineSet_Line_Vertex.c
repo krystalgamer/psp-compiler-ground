@@ -1,4 +1,8 @@
-#include "common.h"
+/* lang: c++ */
+/* cflags: -O3 -fno-exceptions */
+#undef __EXCEPTIONS
+#include "cxx/defer_asm.h"
+#include "../main.hpp"
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_LineSet_Line_Vertex", _Z41__static_initialization_and_destruction_0ii_A9488);
 
@@ -30,9 +34,21 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_LineSet_Line
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_LineSet_Line_Vertex", _ZN3sgl7LineSet10set_creaseEf);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_LineSet_Line_Vertex", _GLOBAL__I__ZN3sgl7LineSet4Line6VertexC2Ev);
+extern "C" {
+void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_A9488");
+void _GLOBAL__I__ZN3sgl7LineSet4Line6VertexC2Ev(void);
+void _GLOBAL__D__ZN3sgl7LineSet4Line6VertexC2Ev(void);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_LineSet_Line_Vertex", _GLOBAL__D__ZN3sgl7LineSet4Line6VertexC2Ev);
+void _GLOBAL__I__ZN3sgl7LineSet4Line6VertexC2Ev(void)
+{
+    static_init(1, 0xFFFF);
+}
+
+void _GLOBAL__D__ZN3sgl7LineSet4Line6VertexC2Ev(void)
+{
+    static_init(0, 0xFFFF);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_LineSet_Line_Vertex", _ZNSt6vectorIN3sgl7LineSet4LineESaIS2_EE13_M_insert_auxEN9__gnu_cxx17__normal_iteratorIPS2_S4_EERKS2_);
 

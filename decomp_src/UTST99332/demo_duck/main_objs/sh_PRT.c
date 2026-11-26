@@ -53,9 +53,21 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sh_PRT", _ZN2sh3
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sh_PRT", _ZN2sh3PRT4loadEv);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sh_PRT", _GLOBAL__I__ZN2sh3PRTC2ENS_4Args4ToolE);
+extern "C" {
+void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_E2CD4");
+void _GLOBAL__I__ZN2sh3PRTC2ENS_4Args4ToolE(void);
+void _GLOBAL__D__ZN2sh3PRTC2ENS_4Args4ToolE(void);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sh_PRT", _GLOBAL__D__ZN2sh3PRTC2ENS_4Args4ToolE);
+void _GLOBAL__I__ZN2sh3PRTC2ENS_4Args4ToolE(void)
+{
+    static_init(1, 0xFFFF);
+}
+
+void _GLOBAL__D__ZN2sh3PRTC2ENS_4Args4ToolE(void)
+{
+    static_init(0, 0xFFFF);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sh_PRT", _ZNSt6vectorIN2sh3PRT13PerVertexDataESaIS2_EE6resizeEjRKS2_);
 

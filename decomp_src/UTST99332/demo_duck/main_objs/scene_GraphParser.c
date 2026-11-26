@@ -1,4 +1,8 @@
-#include "common.h"
+/* lang: c++ */
+/* cflags: -O3 -fno-exceptions */
+#undef __EXCEPTIONS
+#include "cxx/defer_asm.h"
+#include "../main.hpp"
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_GraphParser", _Z41__static_initialization_and_destruction_0ii_75580);
 
@@ -42,9 +46,21 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_GraphParse
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_GraphParser", _ZN5scene5Graph4loadESsjSs);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_GraphParser", _GLOBAL__I__ZN5scene11GraphParserC2ERNS_5GraphESsj);
+extern "C" {
+void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_75580");
+void _GLOBAL__I__ZN5scene11GraphParserC2ERNS_5GraphESsj(void);
+void _GLOBAL__D__ZN5scene11GraphParserC2ERNS_5GraphESsj(void);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_GraphParser", _GLOBAL__D__ZN5scene11GraphParserC2ERNS_5GraphESsj);
+void _GLOBAL__I__ZN5scene11GraphParserC2ERNS_5GraphESsj(void)
+{
+    static_init(1, 0xFFFF);
+}
+
+void _GLOBAL__D__ZN5scene11GraphParserC2ERNS_5GraphESsj(void)
+{
+    static_init(0, 0xFFFF);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_GraphParser", _ZN5scene5Graph7newNodeINS_5GroupEEEN6common6handleIT_EESsb);
 

@@ -1,4 +1,8 @@
-#include "common.h"
+/* lang: c++ */
+/* cflags: -O3 -fno-exceptions */
+#undef __EXCEPTIONS
+#include "cxx/defer_asm.h"
+#include "../main.hpp"
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/common_StateMachine_VirtualState", _Z41__static_initialization_and_destruction_0ii_13AC0);
 
@@ -40,7 +44,19 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/common_StateMach
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/common_StateMachine_VirtualState", _ZN6common12StateMachine6setTopENS_8safe_ptrIPNS0_12VirtualStateEEE);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/common_StateMachine_VirtualState", _GLOBAL__I__ZN6common12StateMachine12VirtualState3popEv);
+extern "C" {
+void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_13AC0");
+void _GLOBAL__I__ZN6common12StateMachine12VirtualState3popEv(void);
+void _GLOBAL__D__ZN6common12StateMachine12VirtualState3popEv(void);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/common_StateMachine_VirtualState", _GLOBAL__D__ZN6common12StateMachine12VirtualState3popEv);
+void _GLOBAL__I__ZN6common12StateMachine12VirtualState3popEv(void)
+{
+    static_init(1, 0xFFFF);
+}
+
+void _GLOBAL__D__ZN6common12StateMachine12VirtualState3popEv(void)
+{
+    static_init(0, 0xFFFF);
+}
 

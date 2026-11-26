@@ -1,4 +1,8 @@
-#include "common.h"
+/* lang: c++ */
+/* cflags: -O3 -fno-exceptions */
+#undef __EXCEPTIONS
+#include "cxx/defer_asm.h"
+#include "../main.hpp"
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/vector_font_OutputText", _Z41__static_initialization_and_destruction_0ii_4A534);
 
@@ -28,4 +32,12 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/vector_font_
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/vector_font_OutputText", _ZN11vector_font10OutputText8BracketsESs);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/vector_font_OutputText", _GLOBAL__I__ZN11vector_font10OutputText8_currentE);
+extern "C" {
+void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_4A534");
+void _GLOBAL__I__ZN11vector_font10OutputText8_currentE(void);
+}
+
+void _GLOBAL__I__ZN11vector_font10OutputText8_currentE(void)
+{
+    static_init(1, 0xFFFF);
+}

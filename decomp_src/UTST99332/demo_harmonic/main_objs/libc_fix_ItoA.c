@@ -24,6 +24,18 @@ int libc_fix::AtoI(const char *s)
     return atoi(s);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/libc_fix_ItoA", _GLOBAL__I__ZN8libc_fix4ItoAEiPci);
+extern "C" {
+void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_1A854");
+void _GLOBAL__I__ZN8libc_fix4ItoAEiPci(void);
+void _GLOBAL__D__ZN8libc_fix4ItoAEiPci(void);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/libc_fix_ItoA", _GLOBAL__D__ZN8libc_fix4ItoAEiPci);
+void _GLOBAL__I__ZN8libc_fix4ItoAEiPci(void)
+{
+    static_init(1, 0xFFFF);
+}
+
+void _GLOBAL__D__ZN8libc_fix4ItoAEiPci(void)
+{
+    static_init(0, 0xFFFF);
+}

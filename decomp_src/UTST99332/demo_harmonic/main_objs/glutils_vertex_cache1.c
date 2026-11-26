@@ -1,4 +1,8 @@
-#include "common.h"
+/* lang: c++ */
+/* cflags: -O3 -fno-exceptions */
+#undef __EXCEPTIONS
+#include "cxx/defer_asm.h"
+#include "../main.hpp"
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/glutils_vertex_cache1", _Z41__static_initialization_and_destruction_0ii_37A20);
 
@@ -34,9 +38,21 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/glutils_vert
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/glutils_vertex_cache1", _ZN7glutils15wire_revolutionEPKNS_6vertexEiiff);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/glutils_vertex_cache1", _GLOBAL__I__ZN7glutils13vertex_cache1E);
+extern "C" {
+void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_37A20");
+void _GLOBAL__I__ZN7glutils13vertex_cache1E(void);
+void _GLOBAL__D__ZN7glutils13vertex_cache1E(void);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/glutils_vertex_cache1", _GLOBAL__D__ZN7glutils13vertex_cache1E);
+void _GLOBAL__I__ZN7glutils13vertex_cache1E(void)
+{
+    static_init(1, 0xFFFF);
+}
+
+void _GLOBAL__D__ZN7glutils13vertex_cache1E(void)
+{
+    static_init(0, 0xFFFF);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/glutils_vertex_cache1", _ZN6common9tmp_arrayIN7glutils6vertexEEC1Ej);
 

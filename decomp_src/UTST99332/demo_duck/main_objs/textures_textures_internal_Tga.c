@@ -1,4 +1,8 @@
-#include "common.h"
+/* lang: c++ */
+/* cflags: -O3 -fno-exceptions */
+#undef __EXCEPTIONS
+#include "cxx/defer_asm.h"
+#include "../main.hpp"
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/textures_textures_internal_Tga", _Z41__static_initialization_and_destruction_0ii_107670);
 
@@ -14,9 +18,21 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/textures_texture
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/textures_textures_internal_Tga", _ZN8textures20TgaAutoNamedSnapshotEPKc);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/textures_textures_internal_Tga", _GLOBAL__I__ZN8textures17textures_internal3Tga4loadEPKc);
+extern "C" {
+void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_107670");
+void _GLOBAL__I__ZN8textures17textures_internal3Tga4loadEPKc(void);
+void _GLOBAL__D__ZN8textures17textures_internal3Tga4loadEPKc(void);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/textures_textures_internal_Tga", _GLOBAL__D__ZN8textures17textures_internal3Tga4loadEPKc);
+void _GLOBAL__I__ZN8textures17textures_internal3Tga4loadEPKc(void)
+{
+    static_init(1, 0xFFFF);
+}
+
+void _GLOBAL__D__ZN8textures17textures_internal3Tga4loadEPKc(void)
+{
+    static_init(0, 0xFFFF);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/textures_textures_internal_Tga", _ZN8textures17textures_internal3TgaD1Ev);
 

@@ -40,9 +40,21 @@ void scene::DefaultShader::flatten(math::TransformStack &) {
 void scene::DefaultShader::save(std::ostream &) {
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_DefaultShader", _GLOBAL__I__ZN5scene13DefaultShaderC2ESsb);
+extern "C" {
+void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_5F3B4");
+void _GLOBAL__I__ZN5scene13DefaultShaderC2ESsb(void);
+void _GLOBAL__D__ZN5scene13DefaultShaderC2ESsb(void);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_DefaultShader", _GLOBAL__D__ZN5scene13DefaultShaderC2ESsb);
+void _GLOBAL__I__ZN5scene13DefaultShaderC2ESsb(void)
+{
+    static_init(1, 0xFFFF);
+}
+
+void _GLOBAL__D__ZN5scene13DefaultShaderC2ESsb(void)
+{
+    static_init(0, 0xFFFF);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_DefaultShader", _ZNK5scene4Node7isGroupEv);
 

@@ -17,8 +17,20 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sh_Vector", 
 void sh::VectorRGB::print(const char *) const {
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sh_Vector", _GLOBAL__I__ZNK2sh6Vector5printEPKc);
+extern "C" {
+void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_F2CD0");
+void _GLOBAL__I__ZNK2sh6Vector5printEPKc(void);
+void _GLOBAL__D__ZNK2sh6Vector5printEPKc(void);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sh_Vector", _GLOBAL__D__ZNK2sh6Vector5printEPKc);
+void _GLOBAL__I__ZNK2sh6Vector5printEPKc(void)
+{
+    static_init(1, 0xFFFF);
+}
+
+void _GLOBAL__D__ZNK2sh6Vector5printEPKc(void)
+{
+    static_init(0, 0xFFFF);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sh_Vector", _ZNK2sh6Vector4evalEffi);

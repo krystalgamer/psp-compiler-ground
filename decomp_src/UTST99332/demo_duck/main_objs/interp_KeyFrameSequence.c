@@ -23,9 +23,21 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/interp_KeyFrameS
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/interp_KeyFrameSequence", _ZN6interp16KeyFrameSequenceIN4math10quaternionEE9typed_fixEv);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/interp_KeyFrameSequence", _GLOBAL__I__ZNK6interp16KeyFrameSequenceIN4math10quaternionEE4dumpEPKc);
+extern "C" {
+void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_4D7EC");
+void _GLOBAL__I__ZNK6interp16KeyFrameSequenceIN4math10quaternionEE4dumpEPKc(void);
+void _GLOBAL__D__ZNK6interp16KeyFrameSequenceIN4math10quaternionEE4dumpEPKc(void);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/interp_KeyFrameSequence", _GLOBAL__D__ZNK6interp16KeyFrameSequenceIN4math10quaternionEE4dumpEPKc);
+void _GLOBAL__I__ZNK6interp16KeyFrameSequenceIN4math10quaternionEE4dumpEPKc(void)
+{
+    static_init(1, 0xFFFF);
+}
+
+void _GLOBAL__D__ZNK6interp16KeyFrameSequenceIN4math10quaternionEE4dumpEPKc(void)
+{
+    static_init(0, 0xFFFF);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/interp_KeyFrameSequence", _ZN6interp16KeyFrameSequenceIN4math10quaternionEED1Ev);
 

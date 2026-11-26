@@ -1,4 +1,8 @@
-#include "common.h"
+/* lang: c++ */
+/* cflags: -O3 -fno-exceptions */
+#undef __EXCEPTIONS
+#include "cxx/defer_asm.h"
+#include "../main.hpp"
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/glutils_Picking", _Z41__static_initialization_and_destruction_0ii_2F334);
 
@@ -26,9 +30,21 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/glutils_Pick
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/glutils_Picking", _ZN7glutils7Picking3endEv);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/glutils_Picking", _GLOBAL__I__ZN7glutils7Picking9THRESHOLDE);
+extern "C" {
+void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_2F334");
+void _GLOBAL__I__ZN7glutils7Picking9THRESHOLDE(void);
+void _GLOBAL__D__ZN7glutils7Picking9THRESHOLDE(void);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/glutils_Picking", _GLOBAL__D__ZN7glutils7Picking9THRESHOLDE);
+void _GLOBAL__I__ZN7glutils7Picking9THRESHOLDE(void)
+{
+    static_init(1, 0xFFFF);
+}
+
+void _GLOBAL__D__ZN7glutils7Picking9THRESHOLDE(void)
+{
+    static_init(0, 0xFFFF);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/glutils_Picking", _ZNSt6vectorIjSaIjEEaSERKS1_);
 

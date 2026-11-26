@@ -49,9 +49,21 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Heap", _
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Heap", _ZN3sgl4Heap4TestEv);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Heap", _GLOBAL__I__ZN3sgl4HeapC2Ev);
+extern "C" {
+void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_A5F08");
+void _GLOBAL__I__ZN3sgl4HeapC2Ev(void);
+void _GLOBAL__D__ZN3sgl4HeapC2Ev(void);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Heap", _GLOBAL__D__ZN3sgl4HeapC2Ev);
+void _GLOBAL__I__ZN3sgl4HeapC2Ev(void)
+{
+    static_init(1, 0xFFFF);
+}
+
+void _GLOBAL__D__ZN3sgl4HeapC2Ev(void)
+{
+    static_init(0, 0xFFFF);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Heap", _ZN6common4SwapIN3sgl4Heap7ElementEEEvRT_S5_);
 

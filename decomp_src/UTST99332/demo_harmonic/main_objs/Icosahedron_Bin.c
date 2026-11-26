@@ -1,4 +1,8 @@
-#include "common.h"
+/* lang: c++ */
+/* cflags: -O3 -fno-exceptions */
+#undef __EXCEPTIONS
+#include "cxx/defer_asm.h"
+#include "../main.hpp"
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/Icosahedron_Bin", _Z41__static_initialization_and_destruction_0ii_DA398);
 
@@ -60,9 +64,21 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/Icosahedron_
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/Icosahedron_Bin", _ZN11Icosahedron24listPosHalfSpaceLeafBinsERSt6vectorIPNS_3BinESaIS2_EERKN4math11vector_xyzwE);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/Icosahedron_Bin", _GLOBAL__I__ZN11Icosahedron3BinC2EN4math11vector_xyzwES2_S2_h);
+extern "C" {
+void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_DA398");
+void _GLOBAL__I__ZN11Icosahedron3BinC2EN4math11vector_xyzwES2_S2_h(void);
+void _GLOBAL__D__ZN11Icosahedron3BinC2EN4math11vector_xyzwES2_S2_h(void);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/Icosahedron_Bin", _GLOBAL__D__ZN11Icosahedron3BinC2EN4math11vector_xyzwES2_S2_h);
+void _GLOBAL__I__ZN11Icosahedron3BinC2EN4math11vector_xyzwES2_S2_h(void)
+{
+    static_init(1, 0xFFFF);
+}
+
+void _GLOBAL__D__ZN11Icosahedron3BinC2EN4math11vector_xyzwES2_S2_h(void)
+{
+    static_init(0, 0xFFFF);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/Icosahedron_Bin", _ZNSt6vectorIPN11Icosahedron3BinESaIS2_EE13_M_insert_auxEN9__gnu_cxx17__normal_iteratorIPS2_S4_EERKS2_);
 

@@ -1,4 +1,8 @@
-#include "common.h"
+/* lang: c++ */
+/* cflags: -O3 -fno-exceptions */
+#undef __EXCEPTIONS
+#include "cxx/defer_asm.h"
+#include "../main.hpp"
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/draw_mesh_enabled", _Z41__static_initialization_and_destruction_0ii_8D9CC);
 
@@ -28,9 +32,21 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/draw_mesh_enable
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/draw_mesh_enabled", _ZN5scene16DrawFuncNonIndex4drawEPN14vertex_formats16T2F_C4UB_N3F_V3FERKN3sgl14PrimitiveIndexIsEE);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/draw_mesh_enabled", _GLOBAL__I_draw_mesh_enabled);
+extern "C" {
+void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_8D9CC");
+void _GLOBAL__I_draw_mesh_enabled(void);
+void _GLOBAL__D_draw_mesh_enabled(void);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/draw_mesh_enabled", _GLOBAL__D_draw_mesh_enabled);
+void _GLOBAL__I_draw_mesh_enabled(void)
+{
+    static_init(1, 0xFFFF);
+}
+
+void _GLOBAL__D_draw_mesh_enabled(void)
+{
+    static_init(0, 0xFFFF);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/draw_mesh_enabled", _ZN3sgl14PrimitiveIndexIsEC1Ev);
 

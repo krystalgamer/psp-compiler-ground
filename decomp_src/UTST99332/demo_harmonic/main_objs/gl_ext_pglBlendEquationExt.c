@@ -1,4 +1,8 @@
-#include "common.h"
+/* lang: c++ */
+/* cflags: -O3 -fno-exceptions */
+#undef __EXCEPTIONS
+#include "cxx/defer_asm.h"
+#include "../main.hpp"
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/gl_ext_pglBlendEquationExt", _Z41__static_initialization_and_destruction_0ii_3A600);
 
@@ -14,7 +18,15 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/gl_ext_pglBl
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/gl_ext_pglBlendEquationExt", _ZN6gl_ext12VAIOBugCheckEv);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/gl_ext_pglBlendEquationExt", _GLOBAL__I__ZN6gl_ext19pglBlendEquationExtE);
+extern "C" {
+void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_3A600");
+void _GLOBAL__I__ZN6gl_ext19pglBlendEquationExtE(void);
+}
+
+void _GLOBAL__I__ZN6gl_ext19pglBlendEquationExtE(void)
+{
+    static_init(1, 0xFFFF);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/gl_ext_pglBlendEquationExt", _ZN6gl_ext13InitExtensionIPFvjEEEvRSt6vectorISsSaISsEERT_PKc);
 

@@ -1,4 +1,8 @@
-#include "common.h"
+/* lang: c++ */
+/* cflags: -O3 -fno-exceptions */
+#undef __EXCEPTIONS
+#include "cxx/defer_asm.h"
+#include "../main.hpp"
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Switch", _Z41__static_initialization_and_destruction_0ii_94488);
 
@@ -20,9 +24,21 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Switch", _
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Switch", _ZN5scene6Switch8getChildEv);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Switch", _GLOBAL__I__ZN5scene6SwitchC2ESsb);
+extern "C" {
+void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_94488");
+void _GLOBAL__I__ZN5scene6SwitchC2ESsb(void);
+void _GLOBAL__D__ZN5scene6SwitchC2ESsb(void);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Switch", _GLOBAL__D__ZN5scene6SwitchC2ESsb);
+void _GLOBAL__I__ZN5scene6SwitchC2ESsb(void)
+{
+    static_init(1, 0xFFFF);
+}
+
+void _GLOBAL__D__ZN5scene6SwitchC2ESsb(void)
+{
+    static_init(0, 0xFFFF);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Switch", _ZNK5scene6Switch11getTypeNameEv);
 

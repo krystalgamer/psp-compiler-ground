@@ -1,4 +1,8 @@
-#include "common.h"
+/* lang: c++ */
+/* cflags: -O3 -fno-exceptions */
+#undef __EXCEPTIONS
+#include "cxx/defer_asm.h"
+#include "../main.hpp"
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_MeshData", _Z41__static_initialization_and_destruction_0ii_8775C);
 
@@ -28,9 +32,21 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_MeshDa
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_MeshData", _ZN5scene8MeshData5clearEv);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_MeshData", _GLOBAL__I__ZN5scene8MeshDataC2Ev);
+extern "C" {
+void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_8775C");
+void _GLOBAL__I__ZN5scene8MeshDataC2Ev(void);
+void _GLOBAL__D__ZN5scene8MeshDataC2Ev(void);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_MeshData", _GLOBAL__D__ZN5scene8MeshDataC2Ev);
+void _GLOBAL__I__ZN5scene8MeshDataC2Ev(void)
+{
+    static_init(1, 0xFFFF);
+}
+
+void _GLOBAL__D__ZN5scene8MeshDataC2Ev(void)
+{
+    static_init(0, 0xFFFF);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_MeshData", _ZN4math4max_IfEET_S1_S1_);
 

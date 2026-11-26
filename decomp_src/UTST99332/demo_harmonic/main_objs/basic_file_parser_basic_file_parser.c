@@ -1,4 +1,8 @@
-#include "common.h"
+/* lang: c++ */
+/* cflags: -O3 -fno-exceptions */
+#undef __EXCEPTIONS
+#include "cxx/defer_asm.h"
+#include "../main.hpp"
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/basic_file_parser_basic_file_parser", _Z41__static_initialization_and_destruction_0ii_F7248);
 
@@ -16,6 +20,18 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/basic_file_p
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/basic_file_parser_basic_file_parser", _ZN17basic_file_parser10preprocessEv);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/basic_file_parser_basic_file_parser", _GLOBAL__I__ZN17basic_file_parserC2ESsjPKc);
+extern "C" {
+void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_F7248");
+void _GLOBAL__I__ZN17basic_file_parserC2ESsjPKc(void);
+void _GLOBAL__D__ZN17basic_file_parserC2ESsjPKc(void);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/basic_file_parser_basic_file_parser", _GLOBAL__D__ZN17basic_file_parserC2ESsjPKc);
+void _GLOBAL__I__ZN17basic_file_parserC2ESsjPKc(void)
+{
+    static_init(1, 0xFFFF);
+}
+
+void _GLOBAL__D__ZN17basic_file_parserC2ESsjPKc(void)
+{
+    static_init(0, 0xFFFF);
+}

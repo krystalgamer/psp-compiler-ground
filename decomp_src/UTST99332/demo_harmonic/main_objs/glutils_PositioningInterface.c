@@ -41,9 +41,21 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/glutils_Posi
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/glutils_PositioningInterface", _ZNK7glutils20PositioningInterface12getTransformEv);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/glutils_PositioningInterface", _GLOBAL__I__ZN7glutils20PositioningInterfaceC2Ev);
+extern "C" {
+void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_306E8");
+void _GLOBAL__I__ZN7glutils20PositioningInterfaceC2Ev(void);
+void _GLOBAL__D__ZN7glutils20PositioningInterfaceC2Ev(void);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/glutils_PositioningInterface", _GLOBAL__D__ZN7glutils20PositioningInterfaceC2Ev);
+void _GLOBAL__I__ZN7glutils20PositioningInterfaceC2Ev(void)
+{
+    static_init(1, 0xFFFF);
+}
+
+void _GLOBAL__D__ZN7glutils20PositioningInterfaceC2Ev(void)
+{
+    static_init(0, 0xFFFF);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/glutils_PositioningInterface", _ZThn8_N7glutils20PositioningInterfaceD1Ev);
 

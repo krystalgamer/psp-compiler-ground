@@ -43,9 +43,21 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph_3", 
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph_3", _ZN5scene10SaveVectorIN3sgl5ColorEEEvRSoRKSt6vectorIT_SaIS5_EEjPKc);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph_3", _GLOBAL__I__ZN5scene5Graph4saveEPKc);
+extern "C" {
+void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_7FDA0");
+void _GLOBAL__I__ZN5scene5Graph4saveEPKc(void);
+void _GLOBAL__D__ZN5scene5Graph4saveEPKc(void);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph_3", _GLOBAL__D__ZN5scene5Graph4saveEPKc);
+void _GLOBAL__I__ZN5scene5Graph4saveEPKc(void)
+{
+    static_init(1, 0xFFFF);
+}
+
+void _GLOBAL__D__ZN5scene5Graph4saveEPKc(void)
+{
+    static_init(0, 0xFFFF);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph_3", _ZN5scene5Graph10getSublistINS_4MeshEEEvRN6common12handles_listIT_EE);
 

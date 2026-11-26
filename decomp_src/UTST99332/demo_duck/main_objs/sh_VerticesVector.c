@@ -1,4 +1,8 @@
-#include "common.h"
+/* lang: c++ */
+/* cflags: -O3 -fno-exceptions */
+#undef __EXCEPTIONS
+#include "cxx/defer_asm.h"
+#include "../main.hpp"
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sh_VerticesVector", _Z41__static_initialization_and_destruction_0ii_F7100);
 
@@ -6,6 +10,18 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sh_VerticesVecto
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sh_VerticesVector", _ZN2sh14VerticesVector4saveESs);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sh_VerticesVector", _GLOBAL__I__ZN2sh14VerticesVector4loadESs);
+extern "C" {
+void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_F7100");
+void _GLOBAL__I__ZN2sh14VerticesVector4loadESs(void);
+void _GLOBAL__D__ZN2sh14VerticesVector4loadESs(void);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sh_VerticesVector", _GLOBAL__D__ZN2sh14VerticesVector4loadESs);
+void _GLOBAL__I__ZN2sh14VerticesVector4loadESs(void)
+{
+    static_init(1, 0xFFFF);
+}
+
+void _GLOBAL__D__ZN2sh14VerticesVector4loadESs(void)
+{
+    static_init(0, 0xFFFF);
+}

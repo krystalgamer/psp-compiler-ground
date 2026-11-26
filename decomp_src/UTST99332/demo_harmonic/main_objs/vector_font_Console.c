@@ -45,9 +45,21 @@ void vector_font::Console::setColor(float r_, float g_, float b_)
     b = b_;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/vector_font_Console", _GLOBAL__I__ZN11vector_font7ConsoleC2Ejj);
+extern "C" {
+void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_28E88");
+void _GLOBAL__I__ZN11vector_font7ConsoleC2Ejj(void);
+void _GLOBAL__D__ZN11vector_font7ConsoleC2Ejj(void);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/vector_font_Console", _GLOBAL__D__ZN11vector_font7ConsoleC2Ejj);
+void _GLOBAL__I__ZN11vector_font7ConsoleC2Ejj(void)
+{
+    static_init(1, 0xFFFF);
+}
+
+void _GLOBAL__D__ZN11vector_font7ConsoleC2Ejj(void)
+{
+    static_init(0, 0xFFFF);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/vector_font_Console", _ZNSt6vectorIN11vector_font7Console4LineESaIS2_EE5eraseEN9__gnu_cxx17__normal_iteratorIPS2_S4_EES8_);
 

@@ -1,4 +1,8 @@
-#include "common.h"
+/* lang: c++ */
+/* cflags: -O3 -fno-exceptions */
+#undef __EXCEPTIONS
+#include "cxx/defer_asm.h"
+#include "../main.hpp"
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/textures_Texture_2", _Z41__static_initialization_and_destruction_0ii_10447C);
 
@@ -16,6 +20,18 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/textures_Tex
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/textures_Texture_2", _ZN8textures7Texture6drawGLEv);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/textures_Texture_2", _GLOBAL__I__ZN8textures7Texture6initGlEi);
+extern "C" {
+void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_10447C");
+void _GLOBAL__I__ZN8textures7Texture6initGlEi(void);
+void _GLOBAL__D__ZN8textures7Texture6initGlEi(void);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/textures_Texture_2", _GLOBAL__D__ZN8textures7Texture6initGlEi);
+void _GLOBAL__I__ZN8textures7Texture6initGlEi(void)
+{
+    static_init(1, 0xFFFF);
+}
+
+void _GLOBAL__D__ZN8textures7Texture6initGlEi(void)
+{
+    static_init(0, 0xFFFF);
+}

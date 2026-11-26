@@ -1,4 +1,8 @@
-#include "common.h"
+/* lang: c++ */
+/* cflags: -O3 -fno-exceptions */
+#undef __EXCEPTIONS
+#include "cxx/defer_asm.h"
+#include "../main.hpp"
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_Trackball", _Z41__static_initialization_and_destruction_0ii_32AA0);
 
@@ -20,6 +24,18 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_Trackba
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_Trackball", _ZNK4math9Trackball11getDeltaRotEv);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_Trackball", _GLOBAL__I__ZN4math9TrackballC2ERKNS_6matrixE);
+extern "C" {
+void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_32AA0");
+void _GLOBAL__I__ZN4math9TrackballC2ERKNS_6matrixE(void);
+void _GLOBAL__D__ZN4math9TrackballC2ERKNS_6matrixE(void);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_Trackball", _GLOBAL__D__ZN4math9TrackballC2ERKNS_6matrixE);
+void _GLOBAL__I__ZN4math9TrackballC2ERKNS_6matrixE(void)
+{
+    static_init(1, 0xFFFF);
+}
+
+void _GLOBAL__D__ZN4math9TrackballC2ERKNS_6matrixE(void)
+{
+    static_init(0, 0xFFFF);
+}

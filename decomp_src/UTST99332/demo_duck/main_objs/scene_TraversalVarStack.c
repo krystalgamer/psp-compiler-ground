@@ -1,4 +1,8 @@
-#include "common.h"
+/* lang: c++ */
+/* cflags: -O3 -fno-exceptions */
+#undef __EXCEPTIONS
+#include "cxx/defer_asm.h"
+#include "../main.hpp"
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_TraversalVarStack", _Z41__static_initialization_and_destruction_0ii_9AB00);
 
@@ -22,9 +26,21 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_TraversalV
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_TraversalVarStack", _ZN5scene17TraversalVarStack6enableENS0_7EnabledEb);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_TraversalVarStack", _GLOBAL__I__ZN5scene17TraversalVarStackC2ENS_13TraversalTypeERN3sgl7FrustumEN4math6matrixES6_S6_N2sh9VectorRGBEf);
+extern "C" {
+void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_9AB00");
+void _GLOBAL__I__ZN5scene17TraversalVarStackC2ENS_13TraversalTypeERN3sgl7FrustumEN4math6matrixES6_S6_N2sh9VectorRGBEf(void);
+void _GLOBAL__D__ZN5scene17TraversalVarStackC2ENS_13TraversalTypeERN3sgl7FrustumEN4math6matrixES6_S6_N2sh9VectorRGBEf(void);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_TraversalVarStack", _GLOBAL__D__ZN5scene17TraversalVarStackC2ENS_13TraversalTypeERN3sgl7FrustumEN4math6matrixES6_S6_N2sh9VectorRGBEf);
+void _GLOBAL__I__ZN5scene17TraversalVarStackC2ENS_13TraversalTypeERN3sgl7FrustumEN4math6matrixES6_S6_N2sh9VectorRGBEf(void)
+{
+    static_init(1, 0xFFFF);
+}
+
+void _GLOBAL__D__ZN5scene17TraversalVarStackC2ENS_13TraversalTypeERN3sgl7FrustumEN4math6matrixES6_S6_N2sh9VectorRGBEf(void)
+{
+    static_init(0, 0xFFFF);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_TraversalVarStack", _ZNSt11_Deque_baseIN5scene17TraversalVarStack12StackElementESaIS2_EED2Ev);
 

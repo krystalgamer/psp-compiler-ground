@@ -3,6 +3,7 @@
 #undef __EXCEPTIONS
 #include "cxx/defer_asm.h"
 #include "main.hpp"
+#include "gl.hpp"
 
 /* these template instances are still asm below */
 namespace std {

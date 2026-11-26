@@ -1,4 +1,8 @@
-#include "common.h"
+/* lang: c++ */
+/* cflags: -O3 -fno-exceptions */
+#undef __EXCEPTIONS
+#include "cxx/defer_asm.h"
+#include "../main.hpp"
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_BV", _Z41__static_initialization_and_destruction_0ii_A19B0);
 
@@ -30,9 +34,21 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_BV", _ZNK3sg
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_BV", _ZNK3sgl2BV11longestAxisEv);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_BV", _GLOBAL__I__ZN3sgl2BV7_pointsE);
+extern "C" {
+void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_A19B0");
+void _GLOBAL__I__ZN3sgl2BV7_pointsE(void);
+void _GLOBAL__D__ZN3sgl2BV7_pointsE(void);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_BV", _GLOBAL__D__ZN3sgl2BV7_pointsE);
+void _GLOBAL__I__ZN3sgl2BV7_pointsE(void)
+{
+    static_init(1, 0xFFFF);
+}
+
+void _GLOBAL__D__ZN3sgl2BV7_pointsE(void)
+{
+    static_init(0, 0xFFFF);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_BV", _ZN3sgl6KdTreeIN4math11vector_xyzwEEC1ERSt6vectorIS2_SaIS2_EEif);
 

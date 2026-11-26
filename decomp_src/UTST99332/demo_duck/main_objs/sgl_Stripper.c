@@ -1,4 +1,8 @@
-#include "common.h"
+/* lang: c++ */
+/* cflags: -O3 -fno-exceptions */
+#undef __EXCEPTIONS
+#include "cxx/defer_asm.h"
+#include "../main.hpp"
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_Stripper", _Z41__static_initialization_and_destruction_0ii_CF2FC);
 
@@ -50,9 +54,21 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_Stripper", _
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_Stripper", _ZN3sgl8Stripper21convert_to_new_formatEv);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_Stripper", _GLOBAL__I__ZN3sgl8Stripper14adjacent_checkEPKc);
+extern "C" {
+void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_CF2FC");
+void _GLOBAL__I__ZN3sgl8Stripper14adjacent_checkEPKc(void);
+void _GLOBAL__D__ZN3sgl8Stripper14adjacent_checkEPKc(void);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_Stripper", _GLOBAL__D__ZN3sgl8Stripper14adjacent_checkEPKc);
+void _GLOBAL__I__ZN3sgl8Stripper14adjacent_checkEPKc(void)
+{
+    static_init(1, 0xFFFF);
+}
+
+void _GLOBAL__D__ZN3sgl8Stripper14adjacent_checkEPKc(void)
+{
+    static_init(0, 0xFFFF);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_Stripper", _ZNSt6vectorIiSaIiEE7reserveEj);
 

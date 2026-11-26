@@ -1,4 +1,8 @@
-#include "common.h"
+/* lang: c++ */
+/* cflags: -O3 -fno-exceptions */
+#undef __EXCEPTIONS
+#include "cxx/defer_asm.h"
+#include "../main.hpp"
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgi_rgb_bwtorgba", _Z41__static_initialization_and_destruction_0ii_1062E8);
 
@@ -16,9 +20,21 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgi_rgb_bwto
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgi_rgb_bwtorgba", _ZN7sgi_rgb4ReadEPKcPiS2_S2_);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgi_rgb_bwtorgba", _GLOBAL__I__ZN7sgi_rgb8bwtorgbaEPhS0_i);
+extern "C" {
+void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_1062E8");
+void _GLOBAL__I__ZN7sgi_rgb8bwtorgbaEPhS0_i(void);
+void _GLOBAL__D__ZN7sgi_rgb8bwtorgbaEPhS0_i(void);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgi_rgb_bwtorgba", _GLOBAL__D__ZN7sgi_rgb8bwtorgbaEPhS0_i);
+void _GLOBAL__I__ZN7sgi_rgb8bwtorgbaEPhS0_i(void)
+{
+    static_init(1, 0xFFFF);
+}
+
+void _GLOBAL__D__ZN7sgi_rgb8bwtorgbaEPhS0_i(void)
+{
+    static_init(0, 0xFFFF);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgi_rgb_bwtorgba", _ZN6common7t_arrayIjEC1Ev);
 

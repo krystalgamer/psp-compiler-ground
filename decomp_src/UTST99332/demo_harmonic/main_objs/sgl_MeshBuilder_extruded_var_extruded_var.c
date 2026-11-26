@@ -193,9 +193,21 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_MeshBuil
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_MeshBuilder_extruded_var_extruded_var", _ZN3sgl11MeshBuilder6finishEv);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_MeshBuilder_extruded_var_extruded_var", _GLOBAL__I__ZN3sgl11MeshBuilder12extruded_varC2Ev);
+extern "C" {
+void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_C17C4");
+void _GLOBAL__I__ZN3sgl11MeshBuilder12extruded_varC2Ev(void);
+void _GLOBAL__D__ZN3sgl11MeshBuilder12extruded_varC2Ev(void);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_MeshBuilder_extruded_var_extruded_var", _GLOBAL__D__ZN3sgl11MeshBuilder12extruded_varC2Ev);
+void _GLOBAL__I__ZN3sgl11MeshBuilder12extruded_varC2Ev(void)
+{
+    static_init(1, 0xFFFF);
+}
+
+void _GLOBAL__D__ZN3sgl11MeshBuilder12extruded_varC2Ev(void)
+{
+    static_init(0, 0xFFFF);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_MeshBuilder_extruded_var_extruded_var", _ZNSt6vectorIN3sgl7LineSet4LineESaIS2_EEaSERKS4_);
 

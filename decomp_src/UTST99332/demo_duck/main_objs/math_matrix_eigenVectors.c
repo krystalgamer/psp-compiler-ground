@@ -1,4 +1,8 @@
-#include "common.h"
+/* lang: c++ */
+/* cflags: -O3 -fno-exceptions */
+#undef __EXCEPTIONS
+#include "cxx/defer_asm.h"
+#include "../main.hpp"
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/math_matrix_eigenVectors", _Z41__static_initialization_and_destruction_0ii_52538);
 
@@ -8,7 +12,15 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/math_matrix_eige
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/math_matrix_eigenVectors", _ZN5eigen4tqliEPdS0_iPA4_d);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/math_matrix_eigenVectors", _GLOBAL__I__ZNK4math6matrix12eigenVectorsEv);
+extern "C" {
+void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_52538");
+void _GLOBAL__I__ZNK4math6matrix12eigenVectorsEv(void);
+}
+
+void _GLOBAL__I__ZNK4math6matrix12eigenVectorsEv(void)
+{
+    static_init(1, 0xFFFF);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/math_matrix_eigenVectors", _ZN4math3sqrIdEET_S1_);
 

@@ -23,7 +23,15 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Transfor
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_TransformSet_Transform", _ZN3sgl12TransformSet10set_creaseEf);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_TransformSet_Transform", _GLOBAL__I__ZN3sgl12TransformSet9TransformC2Ev);
+extern "C" {
+void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_D036C");
+void _GLOBAL__I__ZN3sgl12TransformSet9TransformC2Ev(void);
+}
+
+void _GLOBAL__I__ZN3sgl12TransformSet9TransformC2Ev(void)
+{
+    static_init(1, 0xFFFF);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_TransformSet_Transform", _ZNSt6vectorIN3sgl12TransformSet9TransformESaIS2_EE13_M_insert_auxEN9__gnu_cxx17__normal_iteratorIPS2_S4_EERKS2_);
 

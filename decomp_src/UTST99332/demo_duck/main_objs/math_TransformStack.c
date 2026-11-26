@@ -1,4 +1,8 @@
-#include "common.h"
+/* lang: c++ */
+/* cflags: -O3 -fno-exceptions */
+#undef __EXCEPTIONS
+#include "cxx/defer_asm.h"
+#include "../main.hpp"
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/math_TransformStack", _Z41__static_initialization_and_destruction_0ii_D2FF0);
 
@@ -44,5 +48,13 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/math_TransformSt
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/math_TransformStack", _ZN4math14TransformStack7top_invEv);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/math_TransformStack", _GLOBAL__I__ZN4math14TransformStackC2Ev);
+extern "C" {
+void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_D2FF0");
+void _GLOBAL__I__ZN4math14TransformStackC2Ev(void);
+}
+
+void _GLOBAL__I__ZN4math14TransformStackC2Ev(void)
+{
+    static_init(1, 0xFFFF);
+}
 
