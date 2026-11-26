@@ -149,7 +149,100 @@ int ModeSelInt(void)
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/plsel", ModeSelInt);
 #endif
 
+#ifdef NON_MATCHING
+/* One instruction long: %hi(D_00154020) and %hi(SelWork) swap s2/s3, and in the key & 0x20
+ * branch the delay slot gets an extra reload of D_00154020 instead of the lui.  The 64
+ * unused bytes of frame are reproduced by buf[64]. */
+extern int MsAccessFlag;
+extern int D_0015401C;
+extern int D_00154020;
+extern int D_00154024;
+extern int SelectModeFlag;
+extern int NowMode;
+extern const int mode_stop[];
+int GetKeyHit(void);
+void SpriteInit(void);
+void SpriteKick(void);
+void SpriteSetFader(float);
+int se_play(int no);
+void sel_obj_move(void);
+void sel_obj_move2(int i);
+int DrawSpriteEx(int no, float z, float f0, float f1, float f2, float f3, float f4, float f5, float f6, float f7, float f8, float f9, float f10, float f11, float f12, float f13, int flag);
+int ModeSelect(void)
+{
+	int ret = 0;
+	int key;
+	char buf[64];
+
+	SpriteInit();
+	if (MsAccessFlag) {
+		key = 0;
+		SpriteSetFader(0.5f);
+	} else {
+		key = GetKeyHit();
+		SpriteSetFader(1.0f);
+		if (key & 0x20) {
+			se_play(4);
+			D_00154024 = -2;
+			D_00154020--;
+		}
+	}
+	if (D_00154020 < 0)
+		D_00154020 = 4;
+	if (key & 0x80) {
+		se_play(4);
+		D_00154024 = 2;
+		D_00154020++;
+	}
+	if (D_00154020 >= 5)
+		D_00154020 = 0;
+	if (key & 0x2008) {
+		se_play(1);
+		SelectModeFlag = NowMode;
+		switch (D_00154020) {
+		case 0:
+			ret = 6;
+			NowMode = 0;
+			break;
+		case 1:
+			ret = 7;
+			NowMode = 1;
+			break;
+		case 2:
+			ret = 7;
+			NowMode = 2;
+			break;
+		case 3:
+			ret = 7;
+			NowMode = 3;
+			break;
+		case 4:
+			ret = 8;
+			break;
+		}
+	}
+	sel_obj_move();
+	sel_obj_move2(0);
+	disp_title_bg(255);
+	DrawSpriteEz(3.0f, SelWork[0].x, SelWork[0].y, 304.0f, 304.0f, 0.0f, 0.0f, 4);
+	if (D_0015401C != mode_stop[D_00154020])
+		D_0015401C += D_00154024;
+	else
+		DrawSpriteEz(3.0f, 120.0f, 200.0f, 240.0f, 32.0f, 0.0f, D_00154020 * 48 + 10, 6);
+	D_0015401C %= 180;
+	if (D_0015401C < 0)
+		D_0015401C += 180;
+	SetSpriteColorRGBA(255, 255, 255, 255);
+	DrawSpriteEx(3, 3.0f, SelWork[1].x, SelWork[1].y, 424.0f, 424.0f, 0, 0, 0, 0, 0, 0, 0, 0, (float)D_0015401C * 3.14f / 90.0f, 1.0f, 0);
+	DrawSpriteEz(2.0f, 40.0f, 8.0f, 400.0f, 48.0f, 0.0f, 48.0f, 7);
+	DrawSpriteEz(2.0f, 104.0f, 56.0f, 272.0f, 32.0f, 0.0f, 0.0f, 5);
+	DrawSpriteEz(2.0f, 148.0f, 248.0f, 184.0f, 24.0f, 0.0f, 0.0f, 8);
+	SpriteKick();
+	return ret;
+}
+#else
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/plsel", ModeSelect);
+#endif
 
 int GetRound(void) {
     return Round;
