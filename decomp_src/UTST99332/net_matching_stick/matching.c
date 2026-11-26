@@ -119,15 +119,77 @@ int sceKernelCreateSema(const char *name, unsigned int attr, int init, int max, 
 int sceKernelSignalSema(int semid, int signal);
 int sceKernelWaitSema(int semid, int signal, unsigned int *timeout);
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_matching_stick/nonmatchings/matching", matching_start_to_enter_room);
+typedef void (*SceNetAdhocMatchingHandler)(int id, int event, struct SceNetEtherAddr *peer, int optlen, void *opt);
+int sceNetAdhocMatchingCreate(int mode, int maxnum, unsigned short port, int rxbuflen, unsigned int hello_int, unsigned int keepalive_int, int retry_cnt, unsigned int rexmt_int, SceNetAdhocMatchingHandler handler);
+int sceNetAdhocMatchingStart(int id, int evthpri, int evthstack, int inthpri, int inthstack, int optlen, void *opt);
+int sceUtilityGetSystemParamString(int id, char *str, int len);
+void matching_stop(void);
+void child_handler(int id, int ev, struct SceNetEtherAddr *peer, int optlen, void *opt);
+void parent_handler(int id, int ev, struct SceNetEtherAddr *peer, int optlen, void *opt);
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_matching_stick/nonmatchings/matching", matching_restart_to_create_room);
+int matching_start_to_enter_room(void)
+{
+	int ret;
 
-INCLUDE_RODATA("tmp/asm/UTST99332/net_matching_stick/nonmatchings/matching", D_00018E60);
+	_mrinfo.hello_opt.game_type = GAME_TYPE_CHILD;
+	ret = sceNetAdhocMatchingCreate(2, _mrinfo.hello_opt.req_player_num, 1, 1024, 1000000, 2000000, 3, 500000, child_handler);
+	if (ret < 0) {
+		printf("sceNetAdhocMatchingCreate() failed. ret = 0x%x\n", ret);
+		goto error;
+	}
+	_mrinfo.ctx_id = ret;
 
-INCLUDE_RODATA("tmp/asm/UTST99332/net_matching_stick/nonmatchings/matching", D_00018E90);
+	ret = sceUtilityGetSystemParamString(1, (char *)&_mrinfo.hello_opt.nickname, sizeof(struct SceNetAdhocctlNickname));
+	if (ret < 0) {
+		printf("sceUtilityGetSystemParamString() failed. ret = 0x%x\n", ret);
+	}
 
-INCLUDE_RODATA("tmp/asm/UTST99332/net_matching_stick/nonmatchings/matching", D_00018EC8);
+	ret = sceNetAdhocMatchingStart(_mrinfo.ctx_id, 54, 0x2000, 54, 0x2000, sizeof(struct p2p_hello_opt), &_mrinfo.hello_opt);
+	if (ret < 0) {
+		printf("sceNetAdhocMatchingStart() failed. ret = 0x%x\n", ret);
+		goto error;
+	}
+
+	return 0;
+
+error:
+	matching_stop();
+	return ret;
+}
+
+int matching_restart_to_create_room(void)
+{
+	int ret;
+
+	matching_stop();
+
+	_mrinfo.hello_opt.game_type = GAME_TYPE_PARENT;
+	randomize_group_name(&game_group_name);
+	ret = sceNetAdhocMatchingCreate(1, _mrinfo.hello_opt.req_player_num, 1, 1024, 1000000, 2000000, 3, 500000, parent_handler);
+	if (ret < 0) {
+		printf("sceNetAdhocMatchingCreate() failed. ret = 0x%x\n", ret);
+		goto error;
+	}
+	_mrinfo.ctx_id = ret;
+	_mrinfo.hello_opt.cur_player_num = 1;
+
+	ret = sceUtilityGetSystemParamString(1, (char *)&_mrinfo.hello_opt.nickname, sizeof(struct SceNetAdhocctlNickname));
+	if (ret < 0) {
+		printf("sceUtilityGetSystemParamString() failed. ret = 0x%x\n", ret);
+	}
+
+	ret = sceNetAdhocMatchingStart(_mrinfo.ctx_id, 54, 0x2000, 54, 0x2000, sizeof(struct p2p_hello_opt), &_mrinfo.hello_opt);
+	if (ret < 0) {
+		printf("sceNetAdhocMatchingStart() failed. ret = 0x%x\n", ret);
+		goto error;
+	}
+
+	return 0;
+
+error:
+	matching_stop();
+	return ret;
+}
 
 void matching_stop(void) {
     int temp_v0;
@@ -148,7 +210,41 @@ void matching_stop(void) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_matching_stick/nonmatchings/matching", matching_start);
+int sceNetAdhocMatchingInit(int poolsize);
+void matching_term(void);
+
+int matching_start(void)
+{
+	int ret;
+
+	minfo_num = 0;
+
+	ret = sceKernelCreateSema("Minfo_Sema", 0, 1, 1, NULL);
+	if (ret < 0) {
+		printf("sceKernelCreaeSema() failed. ret = 0x%x\n", ret);
+		goto error;
+	}
+	minfo_sid = ret;
+
+	memset(minfo, 0, sizeof(minfo));
+
+	ret = sceNetAdhocMatchingInit(0x8000);
+	if (ret < 0) {
+		printf("sceNetAdhocMatchingInit() failed. ret = 0x%x\n", ret);
+		goto error;
+	}
+
+	ret = matching_start_to_enter_room();
+	if (ret < 0) {
+		goto error;
+	}
+
+	return 0;
+
+error:
+	matching_term();
+	return ret;
+}
 
 void matching_term(void) {
     int temp_v0;
@@ -167,6 +263,53 @@ void matching_term(void) {
     minfo_num = 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_matching_stick/nonmatchings/matching", matching_select);
+int sceNetAdhocMatchingSelectTarget(int id, const struct SceNetEtherAddr *mac, int optlen, void *opt);
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_matching_stick/nonmatchings/matching", matching_cancel);
+int matching_select(int peer_idx)
+{
+	int ret;
+
+	sceKernelWaitSema(minfo_sid, 1, NULL);
+	if (minfo[peer_idx].status == 2) {
+		ret = sceNetAdhocMatchingSelectTarget(_mrinfo.ctx_id, &minfo[peer_idx].addr, 0, NULL);
+	} else {
+		randomize_group_name(&game_group_name);
+		ret = sceNetAdhocMatchingSelectTarget(_mrinfo.ctx_id, &minfo[peer_idx].addr, sizeof(game_group_name), &game_group_name);
+	}
+
+	if (ret < 0) {
+		printf("sceNetAdhocMatchingSelectTarget() failed. ret = 0x%x\n", ret);
+		goto error;
+	}
+
+	if (minfo[peer_idx].status == 2) {
+		minfo[peer_idx].status = 4;
+		_mrinfo.requesting_minfo_id = peer_idx;
+	}
+
+error:
+	sceKernelSignalSema(minfo_sid, 1);
+	return 0;
+}
+
+int sceNetAdhocMatchingCancelTarget(int id, const struct SceNetEtherAddr *mac);
+void change_state(enum matching_room_state state);
+
+int matching_cancel(int peer_idx)
+{
+	int ret;
+
+	sceKernelWaitSema(minfo_sid, 1, NULL);
+	ret = sceNetAdhocMatchingCancelTarget(_mrinfo.ctx_id, &minfo[peer_idx].addr);
+	if (ret < 0) {
+		printf("sceNetAdhocMatchingCancelTarget() failed. ret = 0x%x\n", ret);
+		goto error;
+	}
+
+	minfo[peer_idx].status = 2;
+
+error:
+	sceKernelSignalSema(minfo_sid, 1);
+	change_state(MATCHING_ROOM_ROOM_LIST);
+	return 0;
+}
