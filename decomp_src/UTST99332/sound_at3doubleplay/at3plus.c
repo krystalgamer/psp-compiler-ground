@@ -71,7 +71,88 @@ RELEASE_ARG:
 	return status;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/sound_at3doubleplay/nonmatchings/at3plus", play_atrac3plus);
+int sceAtracGetRemainFrame(SceInt32 atracId, SceInt32 *piRemainFrame);
+int sceAtracDecodeData(SceInt32 atracId, short *pOutAddr, SceUInt32 *pSamples, SceUInt32 *pFinishFlag, SceInt32 *piRemainFrame);
+int sceAtracGetInternalErrorInfo(SceInt32 atracId, SceInt32 *piResult);
+
+int sceWaveAudioSetSample(int ch, int samples);
+int sceWaveAudioWriteBlocking(int ch, int vl, int vr, void *buf);
+void release_at3playArgID(ScePlayArg *pPlayArg);
+int sceKernelExitThread(int status);
+SceInt32 play_atrac3plus(SceSize args, ScePVoid argp)
+{
+	extern SceInt32 iFadeOutFlag;
+	ScePlayArg *pPlayArg;
+	SceInt32 status;
+	SceUInt32 finishflag, uiWritePosition, uiPlayPosition;
+	SceInt32 iRemainFrame;
+	SceInt32 iReadThreshold;
+	SceInt32 iVol;
+	SceInt32 *outputBuf;
+	SceInt32 aiOutputBuf[0x2010];
+
+	pPlayArg = (ScePlayArg *)argp;
+	uiWritePosition = 0;
+	uiPlayPosition = 0;
+	iVol = 0x8000;
+	outputBuf = (SceInt32 *)((SceUInt32)(aiOutputBuf + 15) & ~63);
+
+	status = sceAtracGetRemainFrame(pPlayArg->atracId, &iRemainFrame);
+	if (status < 0)
+		printf("sceAtracGetRemainFrame err 0x%x\n", status);
+	iReadThreshold = iRemainFrame / 2;
+	if (iReadThreshold < 1)
+		iReadThreshold = 1;
+
+	do {
+		SceUInt32 sample;
+
+		status = sceAtracDecodeData(pPlayArg->atracId, (short *)&outputBuf[uiWritePosition], &sample, &finishflag, &iRemainFrame);
+		if (status < 0) {
+			SceInt32 innerInfo;
+
+			sceAtracGetInternalErrorInfo(pPlayArg->atracId, &innerInfo);
+			printf("sceAtracDecodeData err 0x%x (%d)\n", status, innerInfo);
+			break;
+		}
+		uiWritePosition += sample;
+		if (uiWritePosition - uiPlayPosition >= 0x800) {
+			SceInt32 output_samples;
+
+			output_samples = (uiWritePosition - uiPlayPosition) & ~63;
+			sceWaveAudioSetSample(pPlayArg->outputChannel, output_samples);
+			if (iFadeOutFlag) {
+				iVol -= (output_samples << 8) >> 10;
+				if (iVol < 0) {
+					iVol = 0;
+					break;
+				}
+			}
+			sceWaveAudioWriteBlocking(pPlayArg->outputChannel, iVol, iVol, &outputBuf[uiPlayPosition]);
+			uiPlayPosition += output_samples;
+		}
+		if (uiWritePosition >= 0x1800) {
+			uiWritePosition -= uiPlayPosition;
+			memcpy(outputBuf, &outputBuf[uiPlayPosition], uiWritePosition * 4);
+			uiPlayPosition = 0;
+		}
+		if (iRemainFrame <= iReadThreshold && iRemainFrame != -1 && iRemainFrame != -2)
+			at3plus_addData(pPlayArg->atracId, pPlayArg->fd);
+	} while (!finishflag);
+
+	if (iVol != 0 && uiPlayPosition < uiWritePosition) {
+		SceInt32 paddingSize;
+
+		paddingSize = uiWritePosition - uiPlayPosition;
+		memset(&outputBuf[uiWritePosition], 0, (0x800 - paddingSize) * 4);
+		sceWaveAudioSetSample(pPlayArg->outputChannel, 0x800);
+		sceWaveAudioWriteBlocking(pPlayArg->outputChannel, iVol, iVol, &outputBuf[uiPlayPosition]);
+	}
+	sceWaveAudioWriteBlocking(pPlayArg->outputChannel, iVol, iVol, NULL);
+	release_at3playArgID(pPlayArg);
+	sceKernelExitThread(0);
+	return 0;
+}
 
 void release_at3playArgID(ScePlayArg *pPlayArg) {
     int temp_v0;
