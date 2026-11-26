@@ -212,11 +212,12 @@ void set_translate(void)
 	g_translate[1].z = 0.0f;
 }
 
-extern const ScePspFVector3 begin_scene_eye __asm__("D_0002EF58");
-extern const ScePspFVector3 begin_scene_center __asm__("D_0002EF64");
-extern const ScePspFVector3 begin_scene_up __asm__("D_0002EF70");
 void begin_scene(void)
 {
+	static const ScePspFVector3 eye = { 0.0f, 0.0f, 50.0f };
+	static const ScePspFVector3 center = { 0.0f, 0.0f, 0.0f };
+	static const ScePspFVector3 up = { 0.0f, 1.0f, 0.0f };
+
 	sceGuViewport(2048, 2048, 480, 272);
 	sceGuDepthRange(0xE000, 0x1000);
 	sceGuEnable(2);
@@ -226,7 +227,7 @@ void begin_scene(void)
 	sceGuClear(7);
 	sceGumMatrixMode(1);
 	sceGumLoadIdentity();
-	sceGumLookAt((ScePspFVector3 *)&begin_scene_eye, (ScePspFVector3 *)&begin_scene_center, (ScePspFVector3 *)&begin_scene_up);
+	sceGumLookAt(&eye, &center, &up);
 	sceGumMatrixMode(0);
 	sceGumLoadIdentity();
 	sceGumPerspective(3.14f / 3.0f, 480.0f / 272.0f, 1.0f, 1000000.0f);
@@ -244,28 +245,6 @@ void begin_scene(void)
 	sceGuTexFunc(0, 1);
 	sceGuTexWrap(1, 1);
 }
-
-INCLUDE_RODATA("tmp/asm/psp184/UCJS90007/nonmatchings/view", D_0002EF38);
-
-INCLUDE_RODATA("tmp/asm/psp184/UCJS90007/nonmatchings/view", D_0002EF3C);
-
-INCLUDE_RODATA("tmp/asm/psp184/UCJS90007/nonmatchings/view", D_0002EF40);
-
-INCLUDE_RODATA("tmp/asm/psp184/UCJS90007/nonmatchings/view", D_0002EF44);
-
-INCLUDE_RODATA("tmp/asm/psp184/UCJS90007/nonmatchings/view", D_0002EF48);
-
-INCLUDE_RODATA("tmp/asm/psp184/UCJS90007/nonmatchings/view", D_0002EF4C);
-
-INCLUDE_RODATA("tmp/asm/psp184/UCJS90007/nonmatchings/view", D_0002EF50);
-
-INCLUDE_RODATA("tmp/asm/psp184/UCJS90007/nonmatchings/view", D_0002EF54);
-
-INCLUDE_RODATA("tmp/asm/psp184/UCJS90007/nonmatchings/view", D_0002EF58);
-
-INCLUDE_RODATA("tmp/asm/psp184/UCJS90007/nonmatchings/view", D_0002EF64);
-
-INCLUDE_RODATA("tmp/asm/psp184/UCJS90007/nonmatchings/view", D_0002EF70);
 
 int sceIoDevctl(const char *dev, unsigned int cmd, void *indata, int inlen, void *outdata, int outlen);
 SceUInt64 sceKernelGetSystemTimeWide(void);
@@ -332,11 +311,123 @@ void process_fade(void)
 	}
 }
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/view", draw_objects);
+void sceGumDrawArray(int prim, int vtype, int count, const void *indices, const void *vertices);
+int sceGimPictureAnimate(SceGimPicture *picture, float frame);
+int sceGimPictureActivate(SceGimPicture *picture);
+const float *sceGimPictureGetImageCrop(SceGimPicture *picture);
+void sceGumRotateX(float angle);
+void sceGumRotateY(float angle);
+void sceGumRotateZ(float angle);
+void sceGuTexOffset(float u, float v);
+void sceGuTexScale(float u, float v);
+void sceGumTranslate(const ScePspFVector3 *v);
+void sceGumScale(const ScePspFVector3 *v);
+void sceGumPushMatrix(void);
+void sceGumPopMatrix(void);
+void draw_objects(int index)
+{
+	int i;
+	ScePspFVector3 move;
+	const float *crop;
+	SceGimPicture *picture;
+	static const float NoCrop[4] = { 0.0f, 0.0f, 1.0f, 1.0f };
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/view", load_objects);
+	sceGumMatrixMode(2);
+	sceGumLoadIdentity();
+	sceGumTranslate(&g_translate[index]);
+	sceGumRotateY(g_rotate[index].y);
+	sceGumRotateX(g_rotate[index].x);
+	sceGumRotateZ(g_rotate[index].z);
+	sceGumScale(&g_scale[index]);
+	for (i = 0; i < 1; i++) {
+		sceGumPushMatrix();
+		move.x = (float)i;
+		move.y = 0.0f;
+		move.z = 0.0f;
+		sceGumTranslate(&move);
+		picture = g_copies[i][index];
+		sceGimPictureAnimate(picture, 1.0f / 60.0f);
+		sceGimPictureActivate(picture);
+		crop = sceGimPictureGetImageCrop(picture);
+		if (crop == NULL)
+			crop = NoCrop;
+		sceGuTexOffset(crop[0], crop[1]);
+		sceGuTexScale(crop[2], crop[3]);
+		sceGumDrawArray(4, g_vformat, 4, NULL, g_vbuffer);
+		sceGumPopMatrix();
+	}
+	sceGuTexOffset(0.0f, 0.0f);
+	sceGuTexScale(1.0f, 1.0f);
+}
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/view", load_file);
+SceGimPicture *sceGimPictureCreate(void *mem);
+int sceGimPictureLoadFile(SceGimPicture *picture, void *buf, unsigned int size, int flags);
+SceGimPicture *sceGimPictureDuplicate(SceGimPicture *picture, int mode);
+void sceGimPictureSetCurrentSequence(SceGimPicture *picture, int seq);
+void sceGimPictureSetFrameRate(SceGimPicture *picture, float rate);
+SceGimImageHeader *sceGimPictureGetImage(SceGimPicture *picture);
+void free(void *p);
+extern float load_objects_FrameRates[1] __asm__("D_00030D54");
+int load_objects(const char *filename, int index)
+{
+	int i;
+	int *data;
+	unsigned int size;
+	SceGimImageHeader *image;
+
+	if (g_picture[index] != NULL)
+		return 0;
+	if (!load_file(filename, &data, &size))
+		return 0;
+	g_picture[index] = sceGimPictureCreate(NULL);
+	sceGimPictureLoadFile(g_picture[index], data, size, 0);
+	for (i = 0; i < 1; i++) {
+		g_copies[i][index] = sceGimPictureDuplicate(g_picture[index], 2);
+		sceGimPictureSetCurrentSequence(g_copies[i][index], 0);
+		sceGimPictureSetFrameRate(g_copies[i][index], load_objects_FrameRates[i]);
+	}
+	g_translate[index].x = 0.0f;
+	g_translate[index].y = 0.0f;
+	g_translate[index].z = 0.0f;
+	g_rotate[index].x = 0.0f;
+	g_rotate[index].y = 0.0f;
+	g_rotate[index].z = 0.0f;
+	g_scale[index].x = 1.0f;
+	g_scale[index].y = 1.0f;
+	g_scale[index].z = 1.0f;
+	image = sceGimPictureGetImage(g_picture[index]);
+	if (image != NULL) {
+		g_scale[index].x = image->width * 0.212261036f;
+		g_scale[index].y = image->height * 0.212261036f;
+	}
+	free(data);
+	return g_picture[index] != NULL;
+}
+
+long long sceIoLseek(SceUID fd, long long offset, int whence);
+void *malloc(unsigned int size);
+SceBool load_file(const char *filename, int **buf, unsigned int *size)
+{
+	SceUID fd;
+
+	fd = sceIoOpen(filename, 1, 0777);
+	if (fd < 0)
+		return 0;
+	*size = sceIoLseek(fd, 0, 2);
+	if (*size == 0) {
+		sceIoClose(fd);
+		return 0;
+	}
+	sceIoLseek(fd, 0, 0);
+	*buf = malloc(*size);
+	if (*buf == NULL) {
+		sceIoClose(fd);
+		return 0;
+	}
+	sceIoRead(fd, *buf, *size);
+	sceIoClose(fd);
+	return 1;
+}
 
 void unload_objects(int index)
 {
@@ -353,7 +444,6 @@ void SpriteScale(int x, int y) {
     __sscale_y = y;
 }
 
-void sceGumDrawArray(int prim, int vtype, int count, const void *indices, const void *vertices);
 void sceKernelDcacheWritebackRange(const void *p, unsigned int size);
 void sceGumDrawArray(int prim, int vtype, int count, const void *indices, const void *vertices);
 void DrawSprite(int x, int y, int w, int h, int u, int v, SceGeVertexT16V16_UV_NORMAL *model)
@@ -383,8 +473,24 @@ void DrawSprite(int x, int y, int w, int h, int u, int v, SceGeVertexT16V16_UV_N
 	sceGumDrawArray(4, 0x800102, 4, NULL, model);
 }
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/view", DrawTitleLine);
+extern MODEL line_model[2] __asm__("D_00030D68");
+void DrawTitleLine(void)
+{
+	ScePspFVector3 rect_translate = { 0.0f, 0.0f, 0.0f };
+	static const ScePspFVector3 rect_scale = { 1.0f, 1.0f, 1.0f };
 
-INCLUDE_RODATA("tmp/asm/psp184/UCJS90007/nonmatchings/view", D_0002EF88);
-
-INCLUDE_RODATA("tmp/asm/psp184/UCJS90007/nonmatchings/view", D_0002EF98);
+	line_model[0].rgba = _fade_info.color;
+	line_model[1].rgba = _fade_info.color;
+	sceGumMatrixMode(2);
+	sceGumLoadIdentity();
+	if (_info.state == 9) {
+		rect_translate.x = 26.0f;
+		rect_translate.y = -24.5f;
+	} else {
+		rect_translate.x = -30.0f;
+		rect_translate.y = 28.0f;
+	}
+	sceGumTranslate(&rect_translate);
+	sceGumScale(&rect_scale);
+	sceGumDrawArray(1, 0x1FC, 2, NULL, line_model);
+}
