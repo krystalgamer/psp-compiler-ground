@@ -1826,7 +1826,28 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", netgame_zako_d
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", netgame_zako_damage_get);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", netgame_zako_dead_set);
+#define NE(p, o) (*(int *)((u8 *)(p) + *(p) * 0x18 + (o)))
+void netgame_zako_dead_set(int a, int b, int c)
+{
+	int *p;
+
+	if (gmain.f.f1c == 0)
+		return;
+	p = (int *)&gmain.b[0x24 + gmain.f.f20 * 0x3A0];
+	for (;;) {
+		if (*p >= 38)
+			return;
+		if (NE(p, 0x10) == 0)
+			break;
+		(*p)++;
+	}
+	NE(p, 0x10) = 2;
+	NE(p, 0x14) = (a << 16) + (b << 8) + c;
+	NE(p, 0x18) = 0;
+	NE(p, 0x1C) = genrand_int32();
+	NE(p, 0x20) = 4;
+	(*p)++;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", netgame_zako_dead_get);
 
