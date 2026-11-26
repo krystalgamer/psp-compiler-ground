@@ -102,7 +102,17 @@ INCLUDE_ASM("tmp/asm/UTST99332/graphics_material/nonmatchings/main", draw_descri
 
 INCLUDE_RODATA("tmp/asm/UTST99332/graphics_material/nonmatchings/main", D_00011E90);
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_material/nonmatchings/main", draw_primitive);
+void DrawCone(float *array, float r, float h);
+void DrawSphere(ScePspFVector3 *array, float r);
+
+static void draw_primitive(void)
+{
+	if (primflag == 0) {
+		DrawCone(array_cone, 1.0f, 2.0f);
+	} else {
+		DrawSphere(array_sphere, 1.0f);
+	}
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_material/nonmatchings/main", draw_frame);
 
