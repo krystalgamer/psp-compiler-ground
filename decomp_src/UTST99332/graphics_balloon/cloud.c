@@ -55,4 +55,28 @@ INCLUDE_ASM("tmp/asm/UTST99332/graphics_balloon/nonmatchings/cloud", sort_cloud)
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_balloon/nonmatchings/cloud", draw_clouds);
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_balloon/nonmatchings/cloud", proc_clouds);
+#ifndef MAX_CLOUD
+#define MAX_CLOUD	10
+#endif
+void proc_clouds(void)
+{
+	int			i;
+	CLOUDDAT	*p;
+
+	for (i=0; i<MAX_CLOUD; i++) {
+		p=&cloud[i];
+
+		if (p->mode!=texture_mode)
+			p->pos.x+=(0.15f*p->dir);
+		else
+			p->pos.x+=p->d;
+		if (p->dir<0.0f) {
+			if (p->pos.x<-14.0f)
+				init_cloud(i);
+		}
+		else {
+			if (p->pos.x>14.0f)
+				init_cloud(i);
+		}
+	}
+}
