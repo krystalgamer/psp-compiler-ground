@@ -406,7 +406,104 @@ INCLUDE_RODATA("tmp/asm/UTST99332/mpeg_seamless_change/nonmatchings/main", D_000
 
 INCLUDE_RODATA("tmp/asm/UTST99332/mpeg_seamless_change/nonmatchings/main", D_00011540);
 
+SceInt32 playInfo_audioDecode(t_playInfo *pPlayInfo, t_avSyncControl *pAvSync, SceInt32 audio_init_flag);
+SceInt32 playInfo_videoDecode(t_playInfo *pPlayInfo, t_avSyncControl *pAvSync);
+SceInt32 playInfo_videoDecodeEnd(t_playInfo *pPlayInfo, t_avSyncControl *pAvSync);
+SceInt32 playInfo_flushDecoder(t_playInfo *pPlayInfo);
+SceInt32 playInfo_changeAudioStream(t_playInfo *pPlayInfo);
+SceInt32 playInfo_changeVideoStream(t_playInfo *pPlayInfo, t_avSyncControl *pAvSync);
+SceInt32 read_isEnd(t_ringBuffer *pRing);
+SceInt32 read_isFull(t_ringBuffer *pRing);
+SceInt32 read_decode_sleep(t_ringBuffer *pRing);
+SceInt32 control_setCondition(t_conditionCtrl *pCtrl, SceUInt32 pattern);
+SceInt32 startCheck(t_avSyncControl *pAvSync, t_ringBuffer *pRingCtrl, t_conditionCtrl *pCtrl);
+SceInt32 sceMpegRingbufferAvailableSize(SceMpegRingbuffer *pRingbuffer);
+int sceKernelCheckCallback(void);
+int printf(const char *fmt, ...);
+
+#ifdef NON_MATCHING
+/* matches with -fno-if-conversion2 (as in mpeg_mpegstr), but readHeader here needs if-conversion2 */
+static SceInt32 playMovie(SceMpegRingbuffer *pRB, t_playInfo *pPlayInfo, t_ringBuffer *pRingCtrl, t_avSyncControl *pAvSync, t_conditionCtrl *pCtrl)
+{
+	SceInt32 audio_init_flag;
+	SceInt32 ret;
+	SceInt32 startFlag;
+
+	audio_init_flag = 1;
+	startFlag = -1;
+
+	while (1) {
+		if (startFlag != 0) {
+			startFlag = startCheck(pAvSync, pRingCtrl, pCtrl);
+		} else {
+			ret = pad_read(pAvSync->pDisp, pPlayInfo);
+			if (ret == 3) {
+				audio_init_flag = 1;
+				playInfo_changeAudioStream(pPlayInfo);
+			} else if (ret == 4) {
+				playInfo_changeVideoStream(pPlayInfo, pAvSync);
+			} else if (ret != 0) {
+				playInfo_flushDecoder(pPlayInfo);
+				goto error;
+			}
+		}
+
+		if (read_isEnd(pRingCtrl) == 1 && sceMpegRingbufferAvailableSize(pRB) == 0x12C0)
+			break;
+
+		ret = checkPlayerErrCondition(pCtrl);
+		if (ret != 0) {
+			printf("fatal error : checkPlayerErrCondition()\n");
+			goto error;
+		}
+
+		if (audioFlag == 1) {
+			ret = playInfo_audioDecode(pPlayInfo, pAvSync, audio_init_flag);
+			if (ret == 0) {
+				audio_init_flag = 0;
+			} else if (ret <= 0) {
+				if (ret != (SceInt32)0x80618001) {
+					printf("fatal error : decode_audioDecode() 0x%x\n", ret);
+					goto error;
+				}
+			}
+		}
+
+		ret = playInfo_videoDecode(pPlayInfo, pAvSync);
+		if (ret != 0) {
+			if (ret == (SceInt32)0x80618001) {
+				if (read_isFull(pRingCtrl) == 0)
+					read_decode_sleep(pRingCtrl);
+			} else if (ret < 0) {
+				printf("fatal error : sceMpegGetAvcAu video() 0x%x\n", ret);
+				goto error;
+			}
+		}
+
+		if (read_isFull(pRingCtrl) == 0)
+			read_decode_sleep(pRingCtrl);
+
+		sceKernelCheckCallback();
+	}
+
+	control_setCondition(pCtrl, 8);
+
+	do {
+		ret = playInfo_videoDecodeEnd(pPlayInfo, pAvSync);
+		if (ret < 0) {
+			printf("fatal error : decode_videoDecodeEnd() 0x%x\n", ret);
+			goto error;
+		}
+	} while (ret != 0);
+
+error:
+	setPlayerEndCondition(pCtrl);
+term:
+	return ret;
+}
+#else
 INCLUDE_ASM("tmp/asm/UTST99332/mpeg_seamless_change/nonmatchings/main", playMovie);
+#endif
 
 long long strFileLseek(StrFile *file, long long offset, SceInt32 whence);
 extern const char D_0001140C[];
