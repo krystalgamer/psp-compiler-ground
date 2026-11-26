@@ -9,7 +9,20 @@ typedef struct {
 } RGEOM;
 
 typedef struct {
-    u8 unk0[0x64];
+    u8 unk0[0x20];
+    s16 unk20;
+    s16 unk22;
+    s16 unk24;
+    s16 unk26;
+    s16 unk28;
+    s16 unk2A;
+    s16 unk2C;
+    s16 unk2E;
+    s16 unk30;
+    s16 unk32;
+    s16 unk34;
+    s16 unk36;
+    u8 unk38[0x2C];
     int unk64;
     s16 unk68;
     s16 unk6A;
@@ -20,7 +33,8 @@ typedef struct RBOX {
     struct RBOX *child;         /* 0x4 */
     struct RBOX *unk8;
     struct RBOX *next;          /* 0xC */
-    u8 unk10[0x8];
+    int x;                      /* 0x10 */
+    int y;                      /* 0x14 */
     int unk18;
     int unk1C;
     RGEOM *geom;                /* 0x20 */
@@ -143,13 +157,86 @@ int terminateBlockBox(LOCTX *ctx, RBOX *box) {
     return r;
 }
 
+typedef struct RLNODE {
+    struct RLNODE *next;
+    struct RLNODE *prev;
+    RBOX *box;
+} RLNODE;
+
+typedef struct {
+    RLNODE *head;
+} RLLIST;
+
+typedef struct {
+    int kind;
+    RLLIST lines;
+} RLIGEOM;
+
+int getListBox();
+int GUI_Graphics_getStringSize(int font, char *s, int len, int *w, int *h);
+
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_relayout", terminateLiBox);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_relayout", repositionBox_body);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_relayout", repositionBox_body2);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_relayout", repositionBox_frameset);
+#define FG(b) ((int *)(b)->geom)
+int getFramesetBox();
+void getFrameSizeFromFramesetBox();
+RBOX *getMyRowFrameBorder();
+RBOX *getMyColFrameBorder();
+void setFrameSizeToFramesetBox();
+void initFrameSize();
+void reinitFrameSize();
+
+void repositionBox_frameset(RBOX *b, int mode) {
+    RBOX *parent;
+    RBOX *br;
+    RBOX *body;
+    int fs;
+    int idx;
+    int x;
+    int y;
+    int w;
+    int h;
+
+    if (b->content != 2) {
+        return;
+    }
+    parent = b->parent;
+    if (parent->content == b->content) {
+        fs = getFramesetBox(parent);
+        if (fs == 0) {
+            return;
+        }
+        idx = FG(b)[0xA8 / 4];
+        getFrameSizeFromFramesetBox(&x, &y, &w, &h, fs, idx);
+        br = getMyRowFrameBorder(b);
+        if (br != NULL) {
+            br->y = h - br->unk1C;
+        }
+        br = getMyColFrameBorder(b);
+        if (br != NULL) {
+            br->x = w - br->unk18;
+        }
+        FG(b)[0x8C / 4] = w;
+        FG(b)[0x90 / 4] = h;
+        FG(b)[0x94 / 4] = x;
+        FG(b)[0x98 / 4] = y;
+        setFrameSizeToFramesetBox(x, y, parent, idx);
+    } else {
+        body = (RBOX *)getBodyBox(b);
+        FG(b)[0x94 / 4] = FG(body)[2];
+        FG(b)[0x98 / 4] = FG(body)[3];
+    }
+    getBodyBox(b);
+    if (mode != 1) {
+        initFrameSize(b, FG(b)[0xB0 / 4], FG(b)[0xB4 / 4]);
+    } else {
+        reinitFrameSize(b, FG(b)[0xB0 / 4], FG(b)[0xB4 / 4]);
+    }
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_relayout", repositionBox_frameborder);
 
