@@ -323,7 +323,35 @@ ScePspFVector2 Rand()
 	return retval;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_stainglass/nonmatchings/stainglass", ColorAt);
+static u_int ColorAt( ScePspFVector2 st )
+{
+
+
+
+
+
+
+	st.x -= 0.5f;
+	st.y -= 0.5f;
+
+	float d = 2.f*sqrtf( st.x * st.x + st.y * st.y );
+
+	if ( d > 1.f )	d = 1.f;
+
+	float r=1.0f;
+	float g=0.2f;
+	float b=0.5f;
+
+	float t = ( 3 * d * d - 2 * d * d * d );
+
+	r = ( 1.f - r ) * t + r;
+	g = ( 1.f - g ) * t + g;
+	b = ( 1.f - b ) * t + b;
+
+	return MakeRGBA8888(
+		st.x>0.f?r:g,
+		st.y>0.f?b:g, b, 0.f);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_stainglass/nonmatchings/stainglass", OffsetAt);
 
