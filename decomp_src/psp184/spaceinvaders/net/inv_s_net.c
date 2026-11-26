@@ -43,6 +43,19 @@ int net_delete_ptp(void);
 void matching_term(void);
 int game_term(void);
 
+typedef struct { int state; char pad[0x9c]; u8 local_addr[6]; } MRI_SN;
+int game_init(void);
+int matching_start(void);
+int sceNetGetLocalEtherAddr(void *addr);
+int utility_check_connect_completed(int *result);
+extern char game_group_name[];
+int net_gidget(int i);
+char mac2a(int c);
+void gu_init(void);
+int net_pauseget(void);
+void send_recv_game_data(void);
+void net_update_multi_player(void);
+
 char mac2a(int n)
 {
 	return *nametbl[n % 62];
@@ -191,9 +204,84 @@ end:
 	return ret;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_net", check_adhocctl_connect_completed);
+int game_init(void);
+int matching_start(void);
+int sceNetGetLocalEtherAddr(void *addr);
+int utility_check_connect_completed(int *result);
+extern char game_group_name[];
+int net_gidget(int i);
+char mac2a(int c);
+void gu_init(void);
+int net_pauseget(void);
+void send_recv_game_data(void);
+void net_update_multi_player(void);
+static int check_adhocctl_connect_completed(void)
+{
+	int ret;
+	int done_flag;
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_net", check_adhocctl_disconnect_completed);
+	ret = 0;
+	done_flag = 0;
+	utility_check_connect_completed(&done_flag);
+	if (done_flag > 0) {
+		switch (_mrinfo) {
+		case 5:
+			sceNetGetLocalEtherAddr(((MRI_SN *)&_mrinfo)->local_addr);
+			ret = matching_start();
+			if (ret < 0)
+				change_state(17);
+			else
+				change_state(11);
+			break;
+		case 8:
+			ret = game_init();
+			if (ret < 0)
+				change_state(17);
+			else
+				change_state(26);
+			break;
+		}
+	} else if (done_flag < 0) {
+		change_state(0);
+		D_0039AE54 = 1;
+	}
+	return ret;
+}
+
+static int check_adhocctl_disconnect_completed(void)
+{
+	char buf[0x30];
+	int adhocctl_state;
+	int ret;
+
+	ret = sceNetAdhocctlGetState(&adhocctl_state);
+	if (ret < 0)
+		return ret;
+	if (adhocctl_state != 0)
+		return ret;
+	switch (_mrinfo) {
+	case 7:
+		game_group_name[0] = mac2a(net_gidget(0));
+		game_group_name[1] = mac2a(net_gidget(1));
+		game_group_name[2] = mac2a(net_gidget(2));
+		game_group_name[3] = mac2a(net_gidget(3));
+		game_group_name[4] = mac2a(net_gidget(4));
+		game_group_name[5] = mac2a(net_gidget(5));
+		game_group_name[6] = mac2a(net_gidget(6));
+		game_group_name[7] = mac2a(net_gidget(7));
+		ret = utility_net_connect(game_group_name);
+		if (ret < 0)
+			change_state(0);
+		else
+			change_state(8);
+		break;
+	case 9:
+		gu_init();
+		change_state(0);
+		break;
+	}
+	return ret;
+}
 
 static int check_adhocctl_connected_error(void)
 {
