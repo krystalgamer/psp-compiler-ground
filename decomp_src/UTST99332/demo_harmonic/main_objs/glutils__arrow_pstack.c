@@ -8,19 +8,31 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/glutils__arr
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/glutils__arrow_pstack", _ZN7glutils15PushPointParamsEv);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/glutils__arrow_pstack", _ZN7glutils14PopPointParamsEv);
+void glutils::PopPointParams()
+{
+    _point_pstack.pop();
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/glutils__arrow_pstack", _ZN7glutils15PushArrowParamsEv);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/glutils__arrow_pstack", _ZN7glutils14PopArrowParamsEv);
+void glutils::PopArrowParams()
+{
+    _arrow_pstack.pop();
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/glutils__arrow_pstack", _ZN7glutils19PushUnitFrameParamsEv);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/glutils__arrow_pstack", _ZN7glutils18PopUnitFrameParamsEv);
+void glutils::PopUnitFrameParams()
+{
+    _unit_frame_pstack.pop();
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/glutils__arrow_pstack", _ZN7glutils23PushCircularArrowParamsEv);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/glutils__arrow_pstack", _ZN7glutils22PopCircularArrowParamsEv);
+void glutils::PopCircularArrowParams()
+{
+    _circular_arrow_pstack.pop();
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/glutils__arrow_pstack", _ZN7glutils8SetParamENS_11FloatParamsEf);
 

@@ -407,7 +407,10 @@ extern "C" void glutJoystickFunc(void) {
 extern "C" void glutSetColor(void) {
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/gluBeginCurve", glutGetColor);
+extern "C" float glutGetColor(void)
+{
+    return 0;
+}
 
 extern "C" void glutCopyColormap(void) {
 }

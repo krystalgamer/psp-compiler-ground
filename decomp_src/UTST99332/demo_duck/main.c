@@ -2,7 +2,29 @@
 /* cflags: -O3 -fno-exceptions */
 #undef __EXCEPTIONS
 #include "cxx/defer_asm.h"
+/* Identity()'s 1.0f stays in the module's .rodata (asm) */
+extern const float D_0015E748;
+#define MATH_IDENTITY_ONE D_0015E748
 #include "main.hpp"
+#include "gl.hpp"
+
+/* handle<> instances this object has as asm */
+namespace common {
+extern template class handle<scene::Node>;
+extern template class handle<scene::Group>;
+extern template class handle<scene::Switch>;
+extern template class handle<scene::Texture>;
+extern template class handle<scene::Object>;
+extern template class handle<glutils::PositioningInterface>;
+}
+
+extern const char D_0015DCF0[];     /* " " */
+extern const char D_0015DD00[];     /* "main.cpp" */
+extern const char D_0015DD0C[];     /* " *** error " */
+extern const char D_0015DF18[];     /* "_obj_switch->children().size() == 2" */
+extern const char TestApp_switch_object_fn[] __asm__("_ZZN7TestApp13switch_objectEvE19__PRETTY_FUNCTION__");
+extern const float D_0015E750;
+
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _Z41__static_initialization_and_destruction_0ii_2D3C);
 
@@ -10,13 +32,41 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZN7TestApp4initEv)
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZN7TestApp15local_water_shlEv);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZN7TestApp8draw_allEv);
+void TestApp::draw_all()
+{
+    draw_sink_background();
+    if (draw_water_enabled)
+        _water.prepareRefraction();
+    if (draw_objects_enabled)
+        draw_objects(false);
+    if (draw_water_enabled)
+        _water.draw((WaterPatch::Pass)0);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZN7TestApp20draw_sink_backgroundEv);
+void TestApp::draw_sink_background()
+{
+    math::matrix m = _trackball.getTransform();
+    math::matrix cam = getCamera()->getTransformInverse();
+    apps_ext::Group_traverse(_sink_background.operator->(), (scene::TraversalType)0, frustum(), m,
+                             math::matrix::Identity(), cam, _graph_light, _f1538);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZN7TestApp12draw_objectsEb);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZN7TestApp16draw_environmentEv);
+void TestApp::draw_environment()
+{
+    glPushAttrib(0x2000);
+    glDisable(GL_LIGHTING);
+    glPushMatrix();
+    math::matrix m = _trackball.getTransform();
+    glMultMatrixf(&m.r[0].x);
+    if (!_vertex_color_env)
+        apps_ext::TestEnvSet_draw(&_env, _f1638);
+    else
+        _vce.draw(D_0015E750);
+    glPopMatrix();
+    glPopAttrib();
+}
 
 void TestApp::print_help() {
 }
@@ -28,7 +78,13 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZN7TestApp9envChan
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZN7TestApp14control_objectEv);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZN7TestApp13switch_objectEv);
+void TestApp::switch_object()
+{
+    SGL_ASSERT(_obj_switch->children().size() == 2, D_0015DD0C, D_0015DF18, D_0015DD00, TestApp_switch_object_fn, 0x2B5,
+               D_0015DCF0);
+    _obj_switch->select(1 - _obj_switch->getSelected());
+    _object = _obj_switch->getChild();
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZN7TestApp12dealWithMenuEv);
 

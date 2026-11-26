@@ -4,6 +4,11 @@
 #include "cxx/defer_asm.h"
 #include "../main.hpp"
 
+namespace common {
+extern template class handle<glutils::PositioningInterface>;
+extern template class handle<glutils::TurnTable>;
+}
+
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/app3d_Callbacks", _Z41__static_initialization_and_destruction_0ii_E548);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/app3d_Callbacks", _ZN5app3d9CallbacksC2Ej);
@@ -28,11 +33,20 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/app3d_Callbacks"
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/app3d_Callbacks", _ZN5app3d9Callbacks11resetCameraEv);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/app3d_Callbacks", _ZN5app3d9Callbacks9getCameraEv);
+common::handle<glutils::PositioningInterface> app3d::Callbacks::getCamera()
+{
+    return _camera;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/app3d_Callbacks", _ZNK5app3d9Callbacks9getCameraEv);
+const common::handle<glutils::PositioningInterface> &app3d::Callbacks::getCamera() const
+{
+    return _camera;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/app3d_Callbacks", _ZN5app3d9Callbacks13replaceCameraEN6common6handleIN7glutils20PositioningInterfaceEEE);
+void app3d::Callbacks::replaceCamera(common::handle<glutils::PositioningInterface> c)
+{
+    _camera = c;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/app3d_Callbacks", _ZN5app3d9Callbacks4idleEv);
 

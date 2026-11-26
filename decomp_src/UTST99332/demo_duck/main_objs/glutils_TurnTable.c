@@ -10,7 +10,11 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/glutils_TurnTabl
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/glutils_TurnTable", _ZN7glutils9TurnTableC1Ev);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/glutils_TurnTable", _ZN7glutils9TurnTable5speedENS0_5SpeedEf);
+void glutils::TurnTable::speed(Speed s, float v)
+{
+    if (s < NUM_SPEEDS)
+        _speed[s] = v;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/glutils_TurnTable", _ZN7glutils9TurnTable5resetEv);
 
@@ -30,7 +34,10 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/glutils_TurnTabl
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/glutils_TurnTable", _ZN7glutils9TurnTable8setPivotEf);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/glutils_TurnTable", _ZNK7glutils9TurnTable8getPivotEv);
+math::vector_xyzw glutils::TurnTable::getPivot() const
+{
+    return _pivot;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/glutils_TurnTable", _ZNK7glutils9TurnTable13getPivotFrameEv);
 

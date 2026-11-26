@@ -14,7 +14,10 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/textures_texture
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/textures_textures_internal_Tga", _ZN8textures12SaveGlBufferEPKci);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/textures_textures_internal_Tga", _ZN8textures11TgaSnapshotEPKc);
+void textures::TgaSnapshot(const char *name)
+{
+    SaveGlBuffer(name, 0);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/textures_textures_internal_Tga", _ZN8textures20TgaAutoNamedSnapshotEPKc);
 

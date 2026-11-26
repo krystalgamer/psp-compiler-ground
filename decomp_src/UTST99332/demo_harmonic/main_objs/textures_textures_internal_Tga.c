@@ -14,7 +14,10 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/textures_tex
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/textures_textures_internal_Tga", _ZN8textures12SaveGlBufferEPKci);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/textures_textures_internal_Tga", _ZN8textures11TgaSnapshotEPKc);
+void textures::TgaSnapshot(const char *name)
+{
+    SaveGlBuffer(name, 0);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/textures_textures_internal_Tga", _ZN8textures20TgaAutoNamedSnapshotEPKc);
 
@@ -41,3 +44,4 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/textures_tex
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/textures_textures_internal_Tga", _ZN10byte_array4readIhEEvjRT_);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/textures_textures_internal_Tga", _ZN10byte_array5writeIhEEvjT_);
+

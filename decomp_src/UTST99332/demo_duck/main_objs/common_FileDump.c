@@ -20,7 +20,10 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/common_FileDump"
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/common_FileDump", _ZN6common8FileDump4saveEPKc);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/common_FileDump", _ZN6common8FileDump6binaryEv);
+void common::FileDump::binary()
+{
+    _f20 = true;
+}
 
 void common::FileDump::text()
 {

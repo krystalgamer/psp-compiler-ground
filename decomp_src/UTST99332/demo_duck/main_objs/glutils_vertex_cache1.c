@@ -26,7 +26,10 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/glutils_vertex_c
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/glutils_vertex_cache1", _ZN7glutils8DrawConeEffii);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/glutils_vertex_cache1", _ZN7glutils8DrawCubeEf);
+void glutils::DrawCube(float s)
+{
+    DrawCube(s, s, s);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/glutils_vertex_cache1", _ZN7glutils8DrawCubeEfff);
 

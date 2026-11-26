@@ -26,7 +26,10 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/glutils_vert
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/glutils_vertex_cache1", _ZN7glutils8DrawConeEffii);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/glutils_vertex_cache1", _ZN7glutils8DrawCubeEf);
+void glutils::DrawCube(float s)
+{
+    DrawCube(s, s, s);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/glutils_vertex_cache1", _ZN7glutils8DrawCubeEfff);
 
@@ -57,3 +60,4 @@ void _GLOBAL__D__ZN7glutils13vertex_cache1E(void)
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/glutils_vertex_cache1", _ZN6common9tmp_arrayIN7glutils6vertexEEC1Ej);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/glutils_vertex_cache1", _ZN6common9tmp_arrayIN7glutils6vertexEE3getEj);
+

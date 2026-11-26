@@ -44,7 +44,14 @@ app::Callbacks::~Callbacks()
 {
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/glut_ReshapeFunc", _ZN3app9Callbacks3runEv);
+void app::Callbacks::run()
+{
+    glut::app_ptr = this;
+    if (!init_glut) {
+        init_glut = true;
+        psp::StartMainThread();
+    }
+}
 
 void app::Callbacks::init() {
 }

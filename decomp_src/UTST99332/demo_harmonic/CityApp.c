@@ -51,7 +51,24 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN7CityApp1
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN7CityApp22real_demo_lightcontrolEv);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN7CityApp14depthblur_idleEv);
+void CityApp::depthblur_idle()
+{
+    if (psp::pad().press(6))
+        DepthBlurNextMode();
+    if (psp::pad().press(5))
+        DepthBlurToggleSpread();
+    if (psp::pad().press(7))
+        DepthBlurCycleDebugMode();
+    if (psp::pad().down(0))
+        DepthBlurIncrFocus();
+    if (psp::pad().down(1))
+        DepthBlurDecrFocus();
+    if (psp::pad().down(3))
+        DepthBlurIncrRange();
+    if (psp::pad().down(2))
+        DepthBlurDecrRange();
+    DepthBlurPrint();
+}
 
 void CityApp::all_modes_idle()
 {

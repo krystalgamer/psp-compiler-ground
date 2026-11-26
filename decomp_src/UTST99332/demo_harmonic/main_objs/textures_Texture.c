@@ -218,7 +218,10 @@ void textures::Texture::swap(Texture &t)
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/textures_Texture", _ZN8textures7Texture4loadEPKc);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/textures_Texture", _ZNK8textures7Texture4is32Ev);
+bool textures::Texture::is32() const
+{
+    return m.info.format == FORMAT_1 || m.info.format == FORMAT_2;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/textures_Texture", _ZN8textures7Texture9convert32Ev);
 
@@ -248,7 +251,10 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/textures_Tex
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/textures_Texture", _ZN8textures7Texture10resizePow2Ebbb);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/textures_Texture", _ZN8textures7Texture6isPow2Ev);
+bool textures::Texture::isPow2()
+{
+    return IsPow2(m.info.width) && IsPow2(m.info.height);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/textures_Texture", _ZN8textures10FormatNameENS_6FormatE);
 

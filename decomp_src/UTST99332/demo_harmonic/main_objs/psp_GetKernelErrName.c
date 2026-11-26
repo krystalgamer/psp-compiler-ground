@@ -8,9 +8,11 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/psp_GetKerne
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/psp_GetKernelErrName", _ZN3psp16GetKernelErrNameEj);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/psp_GetKernelErrName", _ZN6common4FileC2Ev);
+common::File::File()
+{
+    handle = new Handle;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/psp_GetKernelErrName", _ZN6common4FileC1Ev);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/psp_GetKernelErrName", _ZN6common4FileD2Ev);
 

@@ -16,9 +16,15 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/glutils_Position
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/glutils_PositioningInterface", _ZN7glutils20PositioningInterfaceD0Ev);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/glutils_PositioningInterface", _ZNK7glutils20PositioningInterface13get_transformEv);
+const math::matrix &glutils::PositioningInterface::get_transform() const
+{
+    return _transform;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/glutils_PositioningInterface", _ZNK7glutils20PositioningInterface21get_inverse_transformEv);
+const math::matrix &glutils::PositioningInterface::get_inverse_transform() const
+{
+    return _inverse;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/glutils_PositioningInterface", _ZN7glutils20PositioningInterface13set_transformEN4math6matrixE);
 
@@ -37,9 +43,15 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/glutils_Position
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/glutils_PositioningInterface", _ZNK7glutils20PositioningInterface3getEv);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/glutils_PositioningInterface", _ZNK7glutils20PositioningInterface19getTransformInverseEv);
+const math::matrix &glutils::PositioningInterface::getTransformInverse() const
+{
+    return _inverse;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/glutils_PositioningInterface", _ZNK7glutils20PositioningInterface12getTransformEv);
+const math::matrix &glutils::PositioningInterface::getTransform() const
+{
+    return _transform;
+}
 
 extern "C" {
 void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_326A0");

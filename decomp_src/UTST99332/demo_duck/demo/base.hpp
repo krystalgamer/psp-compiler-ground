@@ -35,7 +35,15 @@ public:
 extern Vram vram;
 }
 
+namespace psp {
+void StartMainThread();
+}
+namespace app {
+class Callbacks;
+extern bool init_glut;
+}
 namespace glut {
+extern app::Callbacks *app_ptr;
 extern int screen_width;
 extern int screen_height;
 }
@@ -61,30 +69,30 @@ private:
 };
 }
 
-namespace app3d {
-class Callbacks : public app::Callbacks {
+
+/* buttons: 12 x {down, ?, ?, press, ?} (psp::pad()'s static Pad is zeroed
+   button by button); down()/press() assert(i < 12), folded away for the
+   constant indices the demos use */
+namespace psp {
+enum PadB { };
+}
+namespace input {
+template<class T> class ButtonSet {
 public:
-    Callbacks(unsigned int);
-    virtual void init();
-    virtual void idle();
-    virtual ~Callbacks();
-    virtual void draw();
-    virtual void before_vsync();
-    void reset_camera();
-    void toggleGrid();
-    void displayGrid(bool);
-    void setSceneScale(float);
-    void togglePivot();
-private:
-    char _pad5[0xEE1 - 5];
-    bool grid;          /* 0xEE1 */
-    bool pivot;         /* 0xEE2 */
-    float scene_scale;  /* 0xEE4 */
+    enum { N = 12 };
+    struct Button {
+        Button() : down(false), f1(false), f2(false), press(false), f4(false) {}
+        bool down, f1, f2, press, f4;
+    };
+    void set(unsigned int, bool);
+    bool down(unsigned int i) const { return b[i].down; }
+    bool press(unsigned int i) const { return b[i].press; }
+    Button b[N];
 };
 }
-
 namespace psp {
-class Pad;
+class Pad : public input::ButtonSet<PadB> {
+};
 Pad &pad();
 }
 
@@ -103,6 +111,7 @@ namespace common {
 class shared_object_base;
 namespace handle_internal {
 struct data {
+    data(shared_object_base *o) : count(0), obj(o) {}
     int count;
     shared_object_base *obj;
 };
@@ -117,6 +126,7 @@ public:
 
 class shared_object_base : public handle_internal::data_owner {
 public:
+    shared_object_base() { d = new handle_internal::data(this); }
     virtual ~shared_object_base() {
         d->obj = 0;
         if (d->count == 0)
@@ -126,38 +136,40 @@ public:
 
 template<class T> class handle : public handle_internal::data_owner {
 public:
-    handle() {}
-    handle(const handle &o);
+    handle() { d = 0; }
+    handle(T *p) {
+        if (p) {
+            d = p->d;
+            d->count++;
+        }
+    }
+    handle(const handle &o) {
+        d = o.d;
+        if (d)
+            d->count++;
+    }
     template<class U> handle(const handle<U> &o);
-    virtual ~handle();
+    virtual ~handle() { invalidate(); }
     void invalidate();
     handle &operator=(const handle &o);
     template<class U> handle &operator=(const handle<U> &o);
-    T *get() const { return d ? static_cast<T *>(d->obj) : 0; }
-    T *operator->() const { return static_cast<T *>(d->obj); }
-    T &operator*() const { return *static_cast<T *>(d->obj); }
+    T *get() const { return d ? dynamic_cast<T *>(d->obj) : 0; }
+    T *operator->() const { return dynamic_cast<T *>(d->obj); }
+    T &operator*() const { return *dynamic_cast<T *>(d->obj); }
     bool valid() const { return d && d->obj; }
 };
 
 #ifdef DEMO_TEMPLATE_DEFS
-template<class T> handle<T>::handle(const handle &o)
-{
-    d = o.d;
-    if (d)
-        d->count++;
-}
 template<class T> template<class U> handle<T>::handle(const handle<U> &o)
 {
     d = o.d;
     if (d) {
-        T *t = dynamic_cast<T *>(d->obj);
-        if (t)
+        if (operator->())
             d->count++;
         else
             d = 0;
     }
 }
-template<class T> handle<T>::~handle() { invalidate(); }
 template<class T> void handle<T>::invalidate()
 {
     if (d) {
@@ -184,8 +196,12 @@ template<class T> template<class U> handle<T> &handle<T>::operator=(const handle
 {
     if (d != o.d) {
         invalidate();
-        T *t = dynamic_cast<T *>(o.d->obj);
-        set_data(t ? t->d : 0);
+        handle_internal::data *n;
+        if (T *t = dynamic_cast<T *>(o.d->obj))
+            n = t->d;
+        else
+            n = 0;
+        set_data(n);
         if (d)
             d->count++;
     }
@@ -353,14 +369,51 @@ template<class T> const T &t_array2d<T>::at(int x, int y) const
 }
 
 namespace common {
+template<class T> class safe_ptr {
+public:
+    T p;
+};
+class StateMachine {
+public:
+    class VirtualState {
+    public:
+        VirtualState(const char *);
+        virtual ~VirtualState();
+        void pop();
+        void pushChild(safe_ptr<VirtualState *>);
+        void popChild();
+        void change(safe_ptr<VirtualState *>);
+        void update_internal();
+        const char *getName();
+        char _p4[0xC - 4];
+        StateMachine *_machine;         /* 0xC */
+        char _p10[0x14 - 0x10];
+        std::string _name;              /* 0x14 */
+    };
+    StateMachine(safe_ptr<VirtualState *>);
+    virtual ~StateMachine();
+    void destroy_top();
+    void process();
+    void setTop(safe_ptr<VirtualState *>);
+    char _p4[8 - 4];
+    safe_ptr<VirtualState *> _next;     /* 0x8 */
+    char _pc[0x10 - 0xC];
+    bool _pop;                          /* 0x10 */
+};
+
 extern bool no_crash;
 void NoCrash(bool);
 class File {
 public:
+    File();
     bool is_open() const;
     int flush();
 private:
-    struct Handle { int fd; } *handle;
+    struct Handle {
+        Handle() : fd(-1), pos(0) {}
+        int fd;
+        int pos;
+    } *handle;
 };
 class Date {
 public:
@@ -418,7 +471,13 @@ void DepthBlurIncrRange();
 void DepthBlurDecrRange();
 int DepthBlurGetRange();
 void DepthBlurSetFocus(float);
+void DepthBlurIncrFocus();
+void DepthBlurDecrFocus();
 float DepthBlurGetFocus();
+void DepthBlurPrint();
+void DepthBlurUpdate();
+void DepthBlurDraw();
+void DepthBlurIdle();
 void DepthBlurCycleDebugMode();
 int DepthBlurGetDebugMode();
 void DepthBlurNextMode();
@@ -494,13 +553,71 @@ private:
     static textures::Texture _checker_texture;
     static unsigned int _name;
 };
-class PositioningInterface {
+class PositioningInterface : public common::shared_object_base {
 public:
     void set_callback();
+    const math::matrix &getTransform() const;
+    const math::matrix &get_transform() const;
+    const math::matrix &getTransformInverse() const;
+    const math::matrix &get_inverse_transform() const;
+    char _p8[0xD0 - 8];                 /* 0x8: interp::HasPathInterface<Path, Frame> base, ... */
+    math::matrix _transform;            /* 0xD0 */
+    math::matrix _inverse;              /* 0x110 */
 };
+namespace Params {
+struct Point;
+struct Arrow;
+struct UnitFrame;
+struct CircularArrow;
+}
+template<class T> class ParamsStack {
+public:
+    void pop();
+};
+extern ParamsStack<Params::Point> _point_pstack;
+extern ParamsStack<Params::Arrow> _arrow_pstack;
+extern ParamsStack<Params::UnitFrame> _unit_frame_pstack;
+extern ParamsStack<Params::CircularArrow> _circular_arrow_pstack;
+void PushPointParams();
+void PopPointParams();
+void PushArrowParams();
+void PopArrowParams();
+void PushUnitFrameParams();
+void PopUnitFrameParams();
+void PushCircularArrowParams();
+void PopCircularArrowParams();
+void DrawCube(float);
+void DrawCube(float, float, float);
 class TrackballInterface : public PositioningInterface {
 public:
     void track();
+};
+}
+
+namespace app3d {
+class Callbacks : public app::Callbacks {
+public:
+    Callbacks(unsigned int);
+    virtual void init();
+    virtual void idle();
+    virtual ~Callbacks();
+    virtual void draw();
+    virtual void before_vsync();
+    void reset_camera();
+    void toggleGrid();
+    void displayGrid(bool);
+    void setSceneScale(float);
+    void togglePivot();
+    common::handle<glutils::PositioningInterface> getCamera();
+    const common::handle<glutils::PositioningInterface> &getCamera() const;
+    void replaceCamera(common::handle<glutils::PositioningInterface>);
+private:
+    char _pad5[0xC - 5];
+    common::handle<glutils::PositioningInterface> _camera;  /* 0xC */
+    char _pad14[0xEE1 - 0x14];
+    bool grid;          /* 0xEE1 */
+    bool pivot;         /* 0xEE2 */
+    float scene_scale;  /* 0xEE4 */
 };
 }
 
@@ -530,6 +647,20 @@ public:
     void *output;               /* 0xC */
 };
 
+class BVH {
+public:
+    struct Node {
+        ~Node();
+        void draw() const;
+        char _p0[0x16C];
+    };
+    BVH();
+    void draw() const;
+    void print();
+    void print(Node *);
+    Node _root;
+};
+
 namespace gl_ext {
 extern bool use_extensions;
 bool Enabled();
@@ -549,6 +680,7 @@ public:
 namespace common {
 class FileDump {
 public:
+    void binary();
     void text();
     void blocking(bool);
     /* data */
@@ -575,15 +707,30 @@ public:
 };
 class StippleMask {
 public:
+    enum { ROWS = 32, ROW_BYTES = 4 };
+    StippleMask();
+    void clear();
+    void setPixel(unsigned int, unsigned int, bool);
     void *mask();
+    void sparse(unsigned char, unsigned char);
+    void sparse(unsigned char);
+    void checker(unsigned char, unsigned char);
+    void checker(unsigned char);
+    unsigned char _mask[ROWS][ROW_BYTES];
 };
 class TurnTable {
 public:
+    enum Speed { NUM_SPEEDS = 3 };
     void setIsYUp(bool);
     bool isYUp() const;
+    void speed(Speed, float);
+    math::vector_xyzw getPivot() const;
     /* data */
-    char _p0[0x1A0];
+    char _p0[0x150];
+    math::vector_xyzw _pivot;   /* 0x150 */
+    char _p160[0x1A0 - 0x160];
     bool _f1A0;
+    float _speed[NUM_SPEEDS];   /* 0x1A4 */
 };
 }
 
@@ -600,6 +747,18 @@ public:
         char _p4[0xD0];
         int _fD4;
     };
+};
+}
+
+namespace psp {
+class DisplayList {
+public:
+    static bool _wflag;
+    void resize(unsigned int);
+    void set_name(const char *);
+    void finish(bool);
+    char _p0[0x14];
+    char _name[32];             /* 0x14 */
 };
 }
 
@@ -690,6 +849,7 @@ public:
     void flipVertical();
     void resize(int, int, bool);
     bool isPow2();
+    static bool IsPow2(int x) { return ((x | 0x80000000) & (x - 1)) == 0; }
     void setChannel(Channel, unsigned char);
     void invertChannel(Channel);
     void copyChannel(Channel, unsigned char *);
@@ -706,6 +866,10 @@ public:
     common::t_array<unsigned char> clut;    /* 0x3C */
 };
 const char *FormatName(Format);
+void SaveTga(const char *, int, int, const unsigned char *, int);
+void SaveGlBuffer(const char *, int);
+void TgaSnapshot(const char *);
+void TgaAutoNamedSnapshot(const char *);
 int closestPow2(int, bool);
 }
 

@@ -16,7 +16,10 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/BVH", _ZNK3B
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/BVH", _ZN3BVH8setChildENS_4Node9ChildEnumEPS0_S2_);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/BVH", _ZN3BVH5printEv);
+void BVH::print()
+{
+    print(&_root);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/BVH", _ZN3BVH5printEPNS_4NodeE);
 

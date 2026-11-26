@@ -4,11 +4,19 @@
 #include "cxx/defer_asm.h"
 #include "../main.hpp"
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/glutils_StippleMask", _ZN7glutils11StippleMaskC2Ev);
+glutils::StippleMask::StippleMask()
+{
+    clear();
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/glutils_StippleMask", _ZN7glutils11StippleMaskC1Ev);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/glutils_StippleMask", _ZN7glutils11StippleMask5clearEv);
+void glutils::StippleMask::clear()
+{
+    unsigned char *p = &_mask[0][0];
+    for (unsigned int i = 0; i < ROWS; i++)
+        for (unsigned int j = 0; j < ROW_BYTES; j++)
+            *p++ = 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/glutils_StippleMask", _ZN7glutils11StippleMask8setPixelEjjb);
 
@@ -23,6 +31,9 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/glutils_StippleM
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/glutils_StippleMask", _ZN7glutils11StippleMask7checkerEhh);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/glutils_StippleMask", _ZN7glutils11StippleMask7checkerEh);
+void glutils::StippleMask::checker(unsigned char c)
+{
+    checker(c, c);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/glutils_StippleMask", _ZN7glutils11StippleMask8diagonalEhb);

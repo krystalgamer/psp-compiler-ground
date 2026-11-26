@@ -20,7 +20,10 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/common_FileD
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/common_FileDump", _ZN6common8FileDump4saveEPKc);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/common_FileDump", _ZN6common8FileDump6binaryEv);
+void common::FileDump::binary()
+{
+    _f20 = true;
+}
 
 void common::FileDump::text()
 {
@@ -73,3 +76,4 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/common_FileD
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/common_FileDump", _ZN6common7t_arrayIhE4fillERKh);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/common_FileDump", _ZN6common4SwapINS_7t_arrayIhE7MembersEEEvRT_S5_);
+

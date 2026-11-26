@@ -6,17 +6,27 @@
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/common_StateMachine_VirtualState", _Z41__static_initialization_and_destruction_0ii_19198);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/common_StateMachine_VirtualState", _ZN6common12StateMachine12VirtualState3popEv);
+void common::StateMachine::VirtualState::pop()
+{
+    if (_machine)
+        _machine->_pop = true;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/common_StateMachine_VirtualState", _ZN6common12StateMachine12VirtualState9pushChildENS_8safe_ptrIPS1_EE);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/common_StateMachine_VirtualState", _ZN6common12StateMachine12VirtualState8popChildEv);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/common_StateMachine_VirtualState", _ZN6common12StateMachine12VirtualState6changeENS_8safe_ptrIPS1_EE);
+void common::StateMachine::VirtualState::change(safe_ptr<VirtualState *> s)
+{
+    _machine->_next = s;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/common_StateMachine_VirtualState", _ZN6common12StateMachine12VirtualState15update_internalEv);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/common_StateMachine_VirtualState", _ZN6common12StateMachine12VirtualState7getNameEv);
+const char *common::StateMachine::VirtualState::getName()
+{
+    return _name.c_str();
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/common_StateMachine_VirtualState", _ZN6common12StateMachine12VirtualStateC2EPKc);
 
@@ -59,3 +69,4 @@ void _GLOBAL__D__ZN6common12StateMachine12VirtualState3popEv(void)
 {
     static_init(0, 0xFFFF);
 }
+
