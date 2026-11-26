@@ -375,7 +375,78 @@ void repositionBox_frameset(RBOX *b, int mode) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_relayout", repositionBox_frameborder);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_relayout", relayoutProc);
+void resizeTextSize(RBOX *box);
+void resizeImageSize(RBOX *box);
+void resizeButtonSize(RBOX *box);
+void resizeTextFieldSize(RBOX *box);
+void resizeSelectSize(RBOX *box);
+void calcBoxPosition(RLCTX *ctx, RBOX *b);
+
+void relayoutProc(RLCTX *ctx, RBOX *b) {
+    switch (b->content) {
+    case 0:
+        if (b->html == 0x45) {
+            break;
+        }
+        goto calc;
+    case 1:
+        ctx->a = b;
+        ctx->b = b;
+        ctx->c = b;
+        ctx->d = (char *)b->geom + 0x90;
+        ctx->e = b->region;
+        repositionBox_body(b, 0);
+        break;
+    case 2:
+        repositionBox_frameset(b, 0);
+        break;
+    case 3:
+        repositionBox_frameborder(b);
+        break;
+    case 9:
+        if (TXT(b)->merge == 1) {
+            break;
+        }
+        if (b->html == 0x66) {
+            goto list;
+        }
+        resizeTextSize(b);
+        goto calc;
+    case 10:
+        if (b->html == 0x66) {
+        list:
+            if (getListBox(b) != 0) {
+                break;
+            }
+            goto calc;
+        }
+        resizeImageSize(b);
+        goto calc;
+    case 13:
+        resizeTextFieldSize(b);
+        goto calc;
+    case 16:
+        resizeButtonSize(b);
+        goto calc;
+    case 18:
+        resizeSelectSize(b);
+    default:
+    calc:
+        calcBoxPosition(ctx, b);
+        break;
+    }
+    if (b->content == 0x11) {
+        ctx->c = b;
+        ctx->d = (char *)b->geom + 4;
+        ctx->e = b->region;
+    }
+    if (b->display == 0 || b->display == 3) {
+        ctx->b = b;
+    }
+    if (b->region != NULL) {
+        ctx->e = b->region;
+    }
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_relayout", relayoutProcAfter);
 
