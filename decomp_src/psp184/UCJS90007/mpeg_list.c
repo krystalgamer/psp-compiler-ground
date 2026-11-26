@@ -162,6 +162,20 @@ INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/mpeg_list", free_mpeglist);
 
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/mpeg_list", draw_mpeglist);
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/mpeg_list", set_mpeg_filename);
+char *strcpy(char *d, const char *s);
+char *strcpy(char *d, const char *s);
+void set_mpeg_filename(void)
+{
+	struct mpeglist_entry *entry;
+	int i = 0;
+
+	for (entry = mpeglist_head.tqh_first; entry != NULL; entry = entry->link.tqe_next) {
+		if (i == _info.mpeglist_v_cursor_pos) {
+			strcpy(_info.movie_filename[0], entry->name);
+			break;
+		}
+		i++;
+	}
+}
 
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/mpeg_list", get_mpeg_filename);

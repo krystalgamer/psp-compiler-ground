@@ -172,7 +172,16 @@ static int set_poolstat_color(struct SceNetMallocStat *poolstat);
 void draw_distribute(void);
 
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/draw_distribute", set_poolstat_color);
+static int set_poolstat_color(struct SceNetMallocStat *poolstat)
+{
+	float ratio = (float)poolstat->freesize / (float)poolstat->poolsize;
+
+	if (ratio > 0.1f)
+		return 0xFFFFFF;
+	if (ratio > 0.05f)
+		return 0xFFFF;
+	return 0xFF;
+}
 
 INCLUDE_RODATA("tmp/asm/psp184/UCJS90007/nonmatchings/draw_distribute", D_0002DC94);
 

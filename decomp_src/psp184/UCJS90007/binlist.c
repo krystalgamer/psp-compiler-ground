@@ -164,6 +164,20 @@ INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/binlist", free_binlist);
 
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/binlist", draw_binlist);
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/binlist", set_filename);
+char *strcpy(char *d, const char *s);
+char *strcpy(char *d, const char *s);
+void set_filename(void)
+{
+	struct binlist_entry *entry;
+	int i = 0;
+
+	for (entry = binlist_head.tqh_first; entry != NULL; entry = entry->link.tqe_next) {
+		if (i == _info.binlist_v_cursor_pos) {
+			strcpy(_info.bin_filename, entry->name);
+			break;
+		}
+		i++;
+	}
+}
 
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/binlist", get_filename);

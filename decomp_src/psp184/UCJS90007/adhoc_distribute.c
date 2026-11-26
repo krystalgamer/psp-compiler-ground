@@ -225,7 +225,18 @@ struct worker_ctx *_sce_pspnet_adhoc_distribute_get_worker_ctx(int id) {
     return var_v1;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/adhoc_distribute", sceNetAdhocDistributeInitServer);
+int sceNetAdhocDistributeInitServer(unsigned int poolsize)
+{
+	int ret;
+
+	if (inited != 0)
+		return 0x80410C11;
+	ret = adhoc_distribute_malloc_init(poolsize);
+	if (ret < 0)
+		return ret;
+	inited = 1;
+	return 0;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/adhoc_distribute", sceNetAdhocDistributeCreateServer);
 
@@ -235,7 +246,16 @@ INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/adhoc_distribute", sceNetAdho
 
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/adhoc_distribute", sceNetAdhocDistributeDeleteServer);
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/adhoc_distribute", sceNetAdhocDistributeTermServer);
+int sceNetAdhocDistributeTermServer(void)
+{
+	if (inited == 0)
+		return 0;
+	if (sctx != NULL)
+		return 0x80410C14;
+	adhoc_distribute_malloc_term();
+	inited = 0;
+	return 0;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/adhoc_distribute", adhoc_distribute_server_matching_cb_func);
 
@@ -264,7 +284,21 @@ void adhoc_distribute_free(void *ptr) {
     sceKernelFreeVpl(vplid, ptr);
 }
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/adhoc_distribute", adhoc_download_maketag);
+void *memcpy(void *d, const void *s, unsigned int n);
+void *memcpy(void *d, const void *s, unsigned int n);
+static void *adhoc_download_maketag(u_int8_t type, void *data, int datalen, void *buf)
+{
+	u_int8_t *p = buf;
+	u_int16_t len;
+
+	len = __builtin_allegrex_wsbh((u_int16_t)datalen);
+	*p++ = type;
+	__builtin_memcpy(p, &len, 2);
+	p += 2;
+	memcpy(p, data, datalen);
+	p += datalen;
+	return p;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/adhoc_distribute", adhoc_download_gettag);
 

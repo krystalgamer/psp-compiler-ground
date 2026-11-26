@@ -295,7 +295,15 @@ int sound_setStatus(t_soundBuffer *pSound, int status) {
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/mpeg_sound", sound_checkConditionEnd);
+SceInt32 sound_checkConditionEnd(t_soundBuffer *pSound)
+{
+	SceUInt32 pattern;
+
+	control_getCondition(pSound->pCtrl, &pattern);
+	if ((pattern & 0xFF) == 0xFF)
+		sound_setStatus(pSound, 3);
+	return 0;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/mpeg_sound", soundbuf_func);
 

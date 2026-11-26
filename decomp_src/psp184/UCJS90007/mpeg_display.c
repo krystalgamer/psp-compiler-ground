@@ -314,7 +314,15 @@ int disp_setStatus(t_displayBuffer *pDisp, int status) {
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/mpeg_display", disp_checkConditionEnd);
+SceInt32 disp_checkConditionEnd(t_displayBuffer *pDisp)
+{
+	SceUInt32 pattern;
+
+	control_getCondition(pDisp->pCtrl, &pattern);
+	if ((pattern & 0xFF) == 0xFF)
+		disp_setStatus(pDisp, 3);
+	return 0;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/mpeg_display", dispbuf_func);
 

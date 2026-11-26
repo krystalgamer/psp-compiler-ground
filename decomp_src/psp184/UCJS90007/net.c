@@ -204,7 +204,16 @@ static int check_disconnect_completed(void)
 
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/net", net_connected);
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/net", check_dialog_completed);
+static int check_dialog_completed(void)
+{
+	int ret;
+	int done = 0;
+
+	ret = utility_check_msgdialog_completed(&done);
+	if (ret < 0 || done)
+		change_state(0x10, 0);
+	return ret;
+}
 
 extern int D_0008D33C;
 
