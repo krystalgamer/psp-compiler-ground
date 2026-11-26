@@ -357,9 +357,9 @@ static void DrawScope(void)
 #define SETV(m, x, y, z, col) ((m).p[0] = (x), (m).p[1] = (y), (m).p[2] = (z), (m).c = (col))
 
 #define SETVC(m, x, y, z, col) ((m).c = (col), (m).p[0] = (x), (m).p[1] = (y), (m).p[2] = (z))
+extern Gu2dV16C D_0006EB48[2][4];
 static void DrawBeam(void)
 {
-	static Gu2dV16C model[2][4];
 	int px;
 	int py;
 	int pwl;
@@ -379,16 +379,16 @@ static void DrawBeam(void)
 	else
 		pwr = px + (int)((float)(480 - px) * scope.beamlevel);
 	ph = py + (int)((float)(272 - py) * scope.beamlevel);
-	SETVC(model[0][0], pwl, ph, 0, 0x1000ffff);
-	SETVC(model[0][1], px, py, 0, 0xc00080ff);
-	SETVC(model[0][2], pwl, ph + 5, 0, 0x1000ffff);
-	SETVC(model[0][3], px, py + 5, 0, 0xc00080ff);
-	sceGumDrawArray(4, 0x80011c, 4, NULL, model[0]);
-	SETVC(model[1][0], pwr, ph + 5, 0, 0x1000ffff);
-	SETVC(model[1][1], px, py + 5, 0, 0xc00080ff);
-	SETVC(model[1][2], pwr, ph, 0, 0x1000ffff);
-	SETVC(model[1][3], px, py, 0, 0xc00080ff);
-	sceGumDrawArray(4, 0x80011c, 4, NULL, model[1]);
+	SETVC(D_0006EB48[0][0], pwl, ph, 0, 0x1000ffff);
+	SETVC(D_0006EB48[0][1], px, py, 0, 0xc00080ff);
+	SETVC(D_0006EB48[0][2], pwl, ph + 5, 0, 0x1000ffff);
+	SETVC(D_0006EB48[0][3], px, py + 5, 0, 0xc00080ff);
+	sceGumDrawArray(4, 0x80011c, 4, NULL, D_0006EB48[0]);
+	SETVC(D_0006EB48[1][0], pwr, ph + 5, 0, 0x1000ffff);
+	SETVC(D_0006EB48[1][1], px, py + 5, 0, 0xc00080ff);
+	SETVC(D_0006EB48[1][2], pwr, ph, 0, 0x1000ffff);
+	SETVC(D_0006EB48[1][3], px, py, 0, 0xc00080ff);
+	sceGumDrawArray(4, 0x80011c, 4, NULL, D_0006EB48[1]);
 	scope.beamlevel -= 0.1f;
 	if (scope.beamlevel <= 0.0f) {
 		scope.beam = 0;
