@@ -152,7 +152,17 @@ INCLUDE_ASM("tmp/asm/UTST99332/graphics_orizuru/nonmatchings/main", tick);
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_orizuru/nonmatchings/main", add_orizuru);
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_orizuru/nonmatchings/main", remove_orizuru);
+static void remove_orizuru(void)
+{
+	int i;
+
+	for (i = 127; i > 0; i--) {
+		if (orizuru[i].speed != 0.0f) {
+			orizuru[i].speed = 0.0f;
+			return;
+		}
+	}
+}
 
 void model_orizuru(void) {
     sceGumDrawArray(4, 0x9E0, 0xC, neck_index, neck);
