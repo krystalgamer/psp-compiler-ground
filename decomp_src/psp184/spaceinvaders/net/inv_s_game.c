@@ -164,4 +164,17 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_game", get_game
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_game", update_game_data);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_game", check_peer_existence);
+int check_peer_existence(void)
+{
+	int i;
+
+	last_v++;
+	scope[0].last_v = last_v;
+	for (i = 1; i < 4; i++) {
+		if (last_v - scope[i].last_v <= 60)
+			continue;
+		scope[i].last_v = 0;
+		scope[i].state = 0;
+	}
+	return 0;
+}

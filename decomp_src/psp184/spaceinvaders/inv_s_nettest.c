@@ -36,6 +36,13 @@ int hato(int cur, int target, int shift)
 	return cur;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_nettest", dis2d);
+float sqrtf(float);
+int dis2d(int x0, int y0, int x1, int y1)
+{
+	int dx = x1 - x0;
+	int dy = y1 - y0;
+
+	return sqrtf(dx * dx + dy * dy);
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_nettest", inv_labo);
