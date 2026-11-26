@@ -210,7 +210,19 @@ end:
 	return ret;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_net", check_error_dialog_closed);
+int utility_check_msgdialog_completed(int *result);
+static int check_error_dialog_closed(void)
+{
+	int result;
+
+	result = 0;
+	utility_check_msgdialog_completed(&result);
+	if (result) {
+		change_state(17);
+		D_0039AE54 = 1;
+	}
+	return 0;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_net", net_update);
 

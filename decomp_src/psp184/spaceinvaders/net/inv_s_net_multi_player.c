@@ -103,7 +103,19 @@ int net_flush_members_ptp(void);
 int net_recv_members_ptp(void);
 int net_update_multi_player(void);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_net_multi_player", net_create_listen_socket);
+extern u8 D_0039AE58[];
+
+extern u8 D_0039AE58[];
+static void net_create_listen_socket(void)
+{
+	if (ptp_sock_id0 > 0)
+		return;
+	ptp_sock_id0 = sceNetAdhocPtpListen((void *)D_0039AE58, 0x42, 0x4000, 200000, 200000, 1, 0);
+	if (ptp_sock_id0 < 0)
+		change_state(17);
+	else
+		change_state(19);
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_net_multi_player", net_create_connect_socket);
 

@@ -105,12 +105,31 @@ int pad_read(void);
 
 extern int minfo_num;
 
+void matching_cancel(int id);
+
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_netpad", pad_circle);
 
 void pad_triangle(void) {
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_netpad", pad_cross);
+typedef struct { int state; char pad[0x90]; int id; } MRI_SI; /* spaceinvaders _mrinfo layout */
+
+static void pad_cross(void)
+{
+	switch (_mrinfo.state) {
+	case 13:
+		matching_cancel(((MRI_SI *)&_mrinfo)->id);
+		break;
+	case 3:
+	case 11:
+	case 12:
+	case 14:
+	case 15:
+	case 21:
+		change_state(0);
+		break;
+	}
+}
 
 void pad_square(void) {
     if (_mrinfo.state != MATCHING_ROOM_ROOM_LIST) {

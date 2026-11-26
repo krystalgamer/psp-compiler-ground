@@ -60,7 +60,6 @@ extern SceUtilityMsgDialogParam msgdialog_param __asm__("msgdialog_param_28DDF4"
 int utility_init_netconf(SceUtilityNetconfType type, struct SceNetAdhocctlGroupName *group_name);
 int utility_update_netconf(void);
 int utility_net_connect(struct SceNetAdhocctlGroupName *group_name);
-int utility_check_connect_completed(int *done_flag);
 int utility_update_msgdialog(void);
 int utility_check_msgdialog_completed(int *done_flag);
 
@@ -79,7 +78,28 @@ int utility_net_connect(struct SceNetAdhocctlGroupName *group_name) {
     return utility_init_netconf(SCE_UTILITY_NETCONF_TYPE_CONNECT_ADHOC, group_name);
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_utility", utility_check_connect_completed);
+int sceUtilityNetconfGetStatus(void);
+int sceUtilityNetconfShutdownStart(void);
+extern int D_0028DDD0;
+int utility_check_connect_completed(int *result)
+{
+	int ret;
+
+	ret = sceUtilityNetconfGetStatus();
+	if (ret < 0)
+		goto end;
+	if (ret == 0) {
+		if (D_0028DDD0 == 0)
+			*result = 1;
+		else
+			*result = -1;
+		goto end;
+	}
+	if (ret == 3)
+		ret = sceUtilityNetconfShutdownStart();
+end:
+	return ret;
+}
 
 int utility_msgdialog(int error_code) {
     int temp_v0;
