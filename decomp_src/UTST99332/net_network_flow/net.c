@@ -1,3 +1,4 @@
+/* cflags: -O2 -fmerge-constants */
 #include "common.h"
 
 /* declarations recovered from DWARF */
@@ -170,7 +171,98 @@ send_position(OBJECT *obj)
 	return ret;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_network_flow/nonmatchings/net", recv_allpacket);
+#define RXBUFLEN	1024						
+#define MAX_OBJ		8
+
+int
+recv_allpacket(OBJECT *obj)
+{
+	int i, repeat_i, ret;
+	struct SceNetEtherAddr saddr;
+	struct SceNetAdhocPdpStat stat;
+	u_int16 sport;
+	int buflen;
+	char buf[RXBUFLEN];
+	int repeat = 0;
+	int stat_buflen;
+
+	
+	
+	obj[0].last_v++;
+
+	stat_buflen = sizeof(struct SceNetAdhocPdpStat);
+	ret = sceNetAdhocGetPdpStat(&stat_buflen, (void *)&stat);
+	if (ret < 0) {
+		printf("sceNetAdhocGetPdpStat() failed. ret = 0x%x\n", ret);
+		return ret;
+	}
+	if (stat_buflen == 0 || stat.id != socket_id) {
+		printf("sceNetAdhocGetPdpStat() invalid data.\n");
+		return -1;
+	}
+
+	
+	
+	repeat = stat.rcv_sb_cc / PAYLOAD_MOVE_LEN;
+	for (repeat_i=0; repeat_i<repeat; repeat_i++) {
+		buflen = RXBUFLEN;
+		ret = sceNetAdhocPdpRecv(
+				socket_id,
+				&saddr,
+				&sport,
+				buf,
+				&buflen,
+				0,
+				SCE_NET_ADHOC_F_NONBLOCK);
+
+		if (ret == SCE_ERROR_NET_ADHOC_WOULD_BLOCK) {
+			ret = SCE_OK;
+			break;
+		}
+		
+		if (memcmp(&local_addr, &saddr, SCE_NET_ETHER_ADDR_LEN) == 0)
+			continue;
+		
+		if (sport != PORT)
+			continue;
+		if (buflen == PAYLOAD_MOVE_LEN && buf[0] == PAYLOAD_MOVE_TYPE) {
+			for (i=1; i<MAX_OBJ; i++) {
+				if (obj[i].detect == 0 ||
+					(obj[i].detect==1 &&
+					memcmp(&obj[i].addr.data, &saddr, SCE_NET_ETHER_ADDR_LEN) == 0)) {
+					memcpy(&obj[i].x, &buf[1], sizeof(int));
+					memcpy(&obj[i].y, &buf[5], sizeof(int));
+					memcpy(&obj[i].c, &buf[9], sizeof(int));
+					memcpy(&obj[i].comp, &buf[13], sizeof(int));
+					memcpy(&obj[i].vtx_x, &buf[17], sizeof(float));
+					memcpy(&obj[i].vtx_y, &buf[21], sizeof(float));
+					if (obj[i].detect == 0) {
+						memcpy(&obj[i].addr, &saddr, SCE_NET_ETHER_ADDR_LEN);
+						
+						sceNetAdhocctlGetNameByAddr(&saddr, &obj[i].nickname);
+					}
+					obj[i].last_v = obj[0].last_v;
+					obj[i].detect = 1;
+					break;
+				}
+			}
+		}
+	}
+
+	
+	
+	for (i=1; i<MAX_OBJ; i++) {
+		if ((obj[0].last_v - obj[i].last_v) > 60) {
+			obj[i].high = 2.0f;
+			obj[i].vtx_x = 0.0f;
+			obj[i].vtx_y = 0.0f;
+			obj[i].last_v = 0;
+			obj[i].detect = 0;
+		}
+	}
+	
+	return ret;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/net_network_flow/nonmatchings/net", disconnect_ibss);
 
@@ -194,4 +286,3 @@ int disconnect_check(void) {
     return 0;
 }
 
-INCLUDE_RODATA("tmp/asm/UTST99332/net_network_flow/nonmatchings/net", D_000152E4);
