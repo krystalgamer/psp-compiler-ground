@@ -53,7 +53,18 @@ void sceGumRotateZ(float angle);
 void sceGumScale(const ScePspFVector3 *v);
 void sceGumTranslate(const ScePspFVector3 *v);
 
-INCLUDE_ASM("tmp/asm/UTST99332/menu/nonmatchings/category", InitCategory);
+void InitCategory(void)
+{
+	cat.cnt_rot = 0;
+	cat.flag_rot = 0;
+	cat.sbuf[0] = 0.0f;
+	cat.sbuf[1] = 0.0f;
+	cat.sbuf[2] = 0.0f;
+	cat.scnt = 0;
+	cat.t = 0.0f;
+	cat.scale = 1.0f;
+	InitSpline();
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/menu/nonmatchings/category", DrawCategory);
 
