@@ -197,14 +197,14 @@ typedef struct {
 	int x, y;
 	unsigned int color;
 	char c;
-} GuDebugChar2;
+} GuDebugChar;
 extern int aw_fontcnt[2];
-extern GuDebugChar2 aw_fontbuf[2][1024];
+extern GuDebugChar aw_fontbuf[2][1024];
 extern const unsigned int fonttex[][2];
 void flush_font(void)
 {
 	int n = aw_fontcnt[aw_frame];
-	GuDebugChar2 *c = aw_fontbuf[aw_frame];
+	GuDebugChar *c = aw_fontbuf[aw_frame];
 	GuDrawBuffer *fb = &FBuf;
 	unsigned int bits = 0, mask = 0;
 	int i, j, x, y, psm, fw, color;
@@ -1498,15 +1498,7 @@ void sceGuMorphWeight(int index, float weight)
 
 #ifdef NON_MATCHING
 /* Close: x/p registers swap and (g >> 4) << 4 folds to andi 0xf0 (the original keeps sra/sll). */
-typedef struct {
-	int x, y;
-	unsigned int color;
-	char c;
-} GuDebugChar;
-
-extern int aw_fontcnt[2];
-extern GuDebugChar aw_fontbuf[2][1024];
-
+/* GuDebugChar, aw_fontcnt and aw_fontbuf come with the flush_font draft above */
 void sceGuDebugPrint(int x, int y, unsigned int color, const char *str)
 {
 	int cnt = aw_fontcnt[aw_frame];
