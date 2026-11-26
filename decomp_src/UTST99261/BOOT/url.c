@@ -309,7 +309,65 @@ void URL_setAnchor(URL *u, char *s) {
     u->frag = p;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/url", URL_toString);
+char *URL_toString(URL *u) {
+    unsigned int len;
+    int p;
+    int n;
+    char *buf;
+    char *s;
+
+    len = 0;
+    if (u == NULL) {
+        return NULL;
+    }
+    if (u->scheme != NULL) {
+        len += strlen(u->scheme);
+        if (u->host != NULL) {
+            len += strlen(u->host) + 2;
+            if (u->port != 80) {
+                n = 0;
+                for (p = u->port; p > 0; p /= 10) {
+                    n++;
+                }
+                len += n + 1;
+            }
+        }
+    }
+    if (u->path != NULL) {
+        len += strlen(u->path);
+    }
+    if (u->query != NULL) {
+        len += strlen(u->query);
+    }
+    if (u->frag != NULL) {
+        len += strlen(u->frag);
+    }
+    buf = MEM_malloc(NULL, len + 1);
+    if (buf == NULL) {
+        return NULL;
+    }
+    *buf = 0;
+    s = buf;
+    if (u->scheme != NULL) {
+        s += sprintf(s, "%s", u->scheme);
+        if (u->host != NULL) {
+            s += sprintf(s, "//%s", u->host);
+            if (u->port != 0) {
+                s += sprintf(s, ":%d", u->port);
+            }
+        }
+    }
+    if (u->path != NULL) {
+        s += sprintf(s, "%s", u->path);
+    }
+    if (u->query != NULL) {
+        s += sprintf(s, "%s", u->query);
+    }
+    if (u->frag != NULL) {
+        sprintf(s, "%s", u->frag);
+    }
+    return buf;
+}
 
 char *URL_toAbsoluteURL(char *base, char *rel) {
     char *b;
