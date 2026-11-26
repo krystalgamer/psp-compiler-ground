@@ -42,7 +42,42 @@ int sceKernelExitThread(int);
 int sceWaveAudioSetSample(int, int);
 int sceWaveAudioWriteBlocking(int, int, int, void *);
 
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/at3plus", init_atrac3plus);
+SceInt32 init_atrac3plus(SceUChar8 *pucReadBuf, SceInt32 iInputBufferSize, SceInt32 iOutputChannel, SceAtracArg *pPlayArg)
+{
+    SceSSize filesize;
+    SceInt32 status;
+    SceInt32 iLoopStartSample, iLoopEndSample;
+
+    pPlayArg->atracID = -1;
+    pPlayArg->finishflag = -1;
+    pPlayArg->outputChannel = iOutputChannel;
+    pPlayArg->atracID = sceAtracSetDataAndGetID(pucReadBuf, iInputBufferSize);
+    if (pPlayArg->atracID < 0) {
+        status = pPlayArg->atracID;
+        printf("status = 0x%x(in sceAtracSetDataAndGetID)\n", status);
+        goto RELEASE_ARG;
+    }
+    pPlayArg->finishflag = sceKernelCreateEventFlag("finishflag", 0, 0, 0);
+    if (pPlayArg->finishflag < 0) {
+        status = pPlayArg->finishflag;
+        printf("status = 0x%x(in sceKernelCreateEventflag)\n", status);
+        goto RELEASE_ARG;
+    }
+    status = sceAtracGetSoundSample(pPlayArg->atracID, &pPlayArg->iEndSample, &iLoopStartSample, &iLoopEndSample);
+    if (status < 0) {
+        printf("status = 0x%x(in sceAtracGetSoundSample)\n", status);
+        goto RELEASE_ARG;
+    }
+    status = sceAtracSetLoopNum(pPlayArg->atracID, -1);
+    if (status < 0) {
+        printf("status = 0x%x(in sceAtracSetLoopNum)\n", status);
+    }
+    return 0;
+
+RELEASE_ARG:
+    release_arg(pPlayArg);
+    return status;
+}
 
 int play_atrac3plus(SceSize args, void *argp)
 {
