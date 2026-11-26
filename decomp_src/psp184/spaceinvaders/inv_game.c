@@ -1294,7 +1294,27 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", hit_check_enem
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", hit_check_ufo);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", hit_check_laser);
+typedef struct { int f0, f4, f8; u8 _pc[0x24 - 0xC]; float x, y, z; u8 _p30[0x9C - 0x30]; } LASER_T;
+void inv_laser_end(int no);
+void efc_shot_del(float x, float y, float z);
+#define LZ ((LASER_T *)&D_005E728C)
+int hit_check_laser(float *pos, float r)
+{
+	int i;
+
+	for (i = 0; i < 32; i++) {
+		if (LZ[i].f0 == 0)
+			continue;
+		if (LZ[i].f8 != 1)
+			continue;
+		if (pos_fast_length_xyz_check(pos[0] - LZ[i].x, pos[1] - LZ[i].y, pos[2] - LZ[i].z, r) == 1) {
+			LZ[i].f0 = 0;
+			inv_laser_end(LZ[i].f4);
+			efc_shot_del(LZ[i].x, LZ[i].y, LZ[i].z);
+		}
+	}
+	return 0;
+}
 
 void *memset(void *s, int c, unsigned int n);
 void inv_stagestart_set(void);
