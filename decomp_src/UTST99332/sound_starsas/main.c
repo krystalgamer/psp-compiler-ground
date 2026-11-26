@@ -166,7 +166,25 @@ static void init_pos(void)
 
 INCLUDE_ASM("tmp/asm/UTST99332/sound_starsas/nonmatchings/main", sound_init_all);
 
-INCLUDE_ASM("tmp/asm/UTST99332/sound_starsas/nonmatchings/main", sound_idle);
+static SceInt32 sound_idle(SceSize args, ScePVoid argp)
+{
+	volatile int iSide;
+
+	iSide = 0;
+	sceSasSetKeyOn(2);
+
+	while (thread_on) {
+		sceSasCore(pcmBuf[iSide]);
+
+		sceWaveAudioWriteBlocking(0, 0x8000, 0x8000, pcmBuf[iSide]);
+		iSide ^= 1;
+	}
+
+	sceSasSetKeyOff(2);
+	sceKernelExitThread(0);
+
+	return 0;
+}
 
 void sound_end(void) {
     sceWaveAudioWriteBlocking(0, 0x8000, 0x8000, 0);
