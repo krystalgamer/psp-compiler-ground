@@ -55,7 +55,26 @@ int flashData_check_5E793970(void)
 	return D_00000820[1];
 }
 
-INCLUDE_ASM("tmp/asm/umdt/flashData_check/nonmatchings/flashData_check", func_000000F0);
+static int func_000000F0(SceSize args, void *argp)
+{
+	unsigned char buf[0x8000];
+	int ret;
+
+	memset(buf, 0, sizeof(buf));
+	if (sceIdStorage_driver_FEFA40C2() == 0) {
+		D_00000820[1] = -1;
+		goto end;
+	}
+	ret = func_0000027C(buf);
+	if (ret < 0) {
+		D_00000820[1] = ret;
+		goto end;
+	}
+	D_00000820[1] = func_00000284(buf);
+end:
+	ThreadManForKernel_809CE29B(0);
+	return 0;
+}
 
 int flashData_check_CAFC6E68(unsigned char *buf)
 {
