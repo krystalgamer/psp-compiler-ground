@@ -33,3 +33,5 @@
 
 # rodata ADDR UNIT: the bgm names after Title's float constants are sound.c's
 rodata 0x2EA74 sound
+# gim_picture.c's libinfo (the first rodata after staff's)
+rodata 0x30000 gim_picture

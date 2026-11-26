@@ -208,7 +208,7 @@ segments:
       - [0x2F768, .rodata, savedata]
       - [0x2FA38, .rodata, module_load]
       - [0x2FD70, .rodata, staff]
-      - [0x30098, .rodata, gim_picture]
+      - [0x30080, .rodata, gim_picture]
       - [0x300A8, .rodata, load_bmp]
       - [0x3011C, .rodata, load_tm2]
       - [0x30134, .rodata, libgum]

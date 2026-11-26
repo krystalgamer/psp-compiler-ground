@@ -4,7 +4,7 @@
 #include "umdt/graphics_model/gim_private.h"
 
 /* the library info bytes differ from umdt's copy; splat put them under staff.c */
-INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/staff", __psp_libinfo___30000);
+INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/gim_picture", __psp_libinfo___30000);
 
 extern char D_00054B5C[]; /* Bpps (sceGimPictureReallocImage) */
 extern char D_00054B64[]; /* Bpps (sceGimPictureReallocPalette) */
