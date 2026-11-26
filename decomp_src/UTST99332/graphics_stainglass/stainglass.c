@@ -30,6 +30,9 @@ extern bool refraction_texture_fast;
 
 extern unsigned int mipmap_vram[5];
 
+static u_int ColorAt( ScePspFVector2 st );
+static ScePspFVector2 OffsetAt( ScePspFVector2 st, int index );
+
 
 /* SDK prototypes (tools/sdk_protos.h) */
 void free(void *p);
