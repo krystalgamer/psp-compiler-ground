@@ -106,9 +106,120 @@ int esp_postMsgQuit(int q) {
     return esp_postMessage(q, &m);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/esp_msg", esp_postMsgLoadPage);
+int esp_postMsgLoadPage(int q, char *url, char *ref, int arg, int a, int b, int c) {
+    EspMsg m;
+    int ulen;
+    int rlen;
+    struct {
+        short a;
+        short b;
+        short c;
+        short d;
+        int ulen;
+        char *url;
+        int rlen;
+        char *ref;
+        int pad[2];
+        char buf[1];
+    } *d;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/esp_msg", esp_postMsgSubmitForm);
+    if (url != NULL) {
+        ulen = strlen(url);
+    } else {
+        ulen = 0;
+    }
+    rlen = 0;
+    if (ulen > 0 && ref != NULL) {
+        rlen = strlen(ref);
+    }
+    m.x00 = 0;
+    m.x08 = 0;
+    m.x0C = 0;
+    m.x18 = 0;
+    m.data = NULL;
+    m.src = 1;
+    m.cmd = 2;
+    m.arg = arg;
+    m.len = ulen + rlen + 0x22;
+    d = MEM_calloc(0, m.len);
+    if (d == NULL) {
+        return -1;
+    }
+    d->a = a;
+    d->b = b;
+    d->c = c;
+    d->d = 0;
+    if (ulen > 0) {
+        d->ulen = ulen;
+        d->url = d->buf;
+        strcpy(d->url, url);
+        if (rlen > 0) {
+            d->rlen = rlen;
+            d->ref = d->url + d->ulen + 1;
+            strcpy(d->ref, ref);
+        }
+    }
+    m.data = d;
+    if (esp_postMessage(q, &m) != 0) {
+        MEM_free(0, m.data);
+        return -1;
+    }
+    return 0;
+}
+
+int esp_postMsgSubmitForm(int q, char *url, char *data, int dlen, char *ref, int x, char *hdr) {
+    EspMsg m;
+    int ulen;
+    int rlen;
+    int hlen;
+    int *d;
+    char *p;
+
+    ulen = strlen(url) + 1;
+    rlen = 0;
+    if (ref != NULL) {
+        rlen = strlen(ref) + 1;
+    }
+    hlen = 0;
+    if (hdr != NULL) {
+        hlen = strlen(hdr);
+    }
+    m.x00 = 0;
+    m.x08 = 0;
+    m.x0C = 0;
+    m.x18 = 0;
+    m.data = NULL;
+    m.src = 1;
+    m.cmd = 0x37;
+    m.arg = 0;
+    m.len = ulen + rlen + hlen + dlen + 0x14;
+    d = MEM_calloc(0, m.len);
+    if (d == NULL) {
+        return -1;
+    }
+    d[0] = x;
+    m.data = d;
+    p = (char *)(d + 5);
+    d[1] = (int)p;
+    strcpy(p, url);
+    p += ulen;
+    if (rlen > 0) {
+        d[2] = (int)p;
+        strcpy(p, ref);
+        p += rlen;
+    }
+    if (hlen + dlen > 0) {
+        d[3] = hlen + dlen;
+        d[4] = (int)p;
+        memcpy(p, hdr, hlen);
+        memcpy((char *)d[4] + hlen, data, dlen);
+    }
+    if (esp_postMessage(q, &m) != 0) {
+        MEM_free(0, m.data);
+        return -1;
+    }
+    return 0;
+}
 
 int esp_postMsgRepaint(int q) {
     EspMsg m;
