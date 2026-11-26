@@ -187,7 +187,26 @@ void geDrawStart(void);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/ge/ge_context", geSetLight);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/ge/ge_context", geSetCamera);
+void geSetCamera(int param, geCAMERA *camera)
+{
+	geDrawStart();
+
+	if (param & 2) {
+		sceGumMatrixMode(1);
+		sceGumLoadIdentity();
+		sceGumLookAt(&camera->cam_eye, &camera->cam_center, &camera->cam_up);
+	}
+
+	if (param & 1) {
+		sceGumMatrixMode(0);
+		sceGumLoadIdentity();
+		sceGumPerspective(camera->cam_fovy, camera->cam_aspect, camera->cam_near, camera->cam_far);
+	}
+
+	sceGumMatrixMode(2);
+
+	geDrawFinWait();
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/ge/ge_context", geSetContext);
 
