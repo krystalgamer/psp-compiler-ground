@@ -199,7 +199,7 @@ INCLUDE_RODATA("tmp/asm/UTST99332/graphics_depthblur/nonmatchings/main", D_00015
 
 INCLUDE_RODATA("tmp/asm/UTST99332/graphics_depthblur/nonmatchings/main", modes);
 
-INCLUDE_RODATA("tmp/asm/UTST99332/graphics_depthblur/nonmatchings/main", D_00015258);
+static const float D_00015258[14] = { -1.0f, 0.0f, -1.0f, 1.333333254f, 1.0f, 1.333333254f, 1.0f, 0.0f, 1.0f, -1.333333254f, -1.0f, -1.333333254f, -1.0f, 0.0f };
 
 INCLUDE_RODATA("tmp/asm/UTST99332/graphics_depthblur/nonmatchings/main", D_00015290);
 
@@ -278,7 +278,55 @@ void InitWall(void)
 	}
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_depthblur/nonmatchings/main", DrawTorus);
+
+#ifndef SCEGU_PI /* sample */
+#define SCEGU_PI                           3.1415926535897932384626433832f
+#endif
+#ifndef SCEGU_VERTEX_FLOAT /* sample */
+#define SCEGU_VERTEX_FLOAT       ( 3 <<  7 )
+#endif
+#ifndef SCEGU_NORMAL_REVERSE_PATCH /* sample */
+#define SCEGU_NORMAL_REVERSE_PATCH        20
+#endif
+void DrawTorus(float inner, float outer)
+{
+	int		i, cnt;
+	float	dist;
+
+	cnt=0;
+	
+	float* arry = sceGuGetMemory(7*7*3*4);
+	
+	for (i=0; i<7; i++) {
+		dist=outer+inner*(float)cosf(0.0f);
+		arry[cnt+0 ]=arry[cnt+3]=D_00015258[i*2+0]*dist;
+		arry[cnt+1 ]=arry[cnt+4]=D_00015258[i*2+1]*dist;
+		arry[cnt+2 ]=0.0f;
+		arry[cnt+5 ]=inner*1.333333f;
+
+		dist=outer+inner*(float)cosf(SCEGU_PI);
+		arry[cnt+6 ]=arry[cnt+ 9]=D_00015258[i*2+0]*dist;
+		arry[cnt+7 ]=arry[cnt+10]=D_00015258[i*2+1]*dist;
+		arry[cnt+8 ]=inner*1.333333f;
+		arry[cnt+11]=0.0f;
+
+		arry[cnt+12]= arry[cnt+6];
+		arry[cnt+13]= arry[cnt+7];
+		arry[cnt+14]=-arry[cnt+8];
+
+		arry[cnt+15]= arry[cnt+3];
+		arry[cnt+16]= arry[cnt+4];
+		arry[cnt+17]=-arry[cnt+5];
+
+		arry[cnt+18]=arry[cnt+0];
+		arry[cnt+19]=arry[cnt+1];
+		arry[cnt+20]=arry[cnt+2];
+		cnt+=21;
+	}
+	sceGuDisable(SCEGU_NORMAL_REVERSE_PATCH);
+	sceGumDrawBezier(SCEGU_VERTEX_FLOAT, 7, 7, 0, arry);
+	sceGuEnable(SCEGU_NORMAL_REVERSE_PATCH);
+}
 
 #define SCEGU_PFIDX4                       4
 #define SCEGU_SINGLE_CLUT                  0
