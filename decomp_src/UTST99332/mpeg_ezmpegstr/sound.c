@@ -79,7 +79,92 @@ static SceInt32 soundbuf_swapbuf(t_soundBuffer *pSound, SceChar8 *buf);
 SceInt32 soundbuf_output(t_soundBuffer *pSound);
 
 
-INCLUDE_ASM("tmp/asm/UTST99332/mpeg_ezmpegstr/nonmatchings/sound", soundbuf_create);
+SceInt32 soundbuf_create(t_soundBuffer *pSound, SceInt32 buf_size, SceInt32 buf_num)
+{
+	SceInt32 i, ret;
+
+	pSound->buf = NULL;
+	pSound->pts = NULL;
+
+	ret = 0;
+
+	if (sceWaveInit() != 0) {
+		printf("fatal error : sceWaveInit()\n");
+		ret = -1;
+		goto error;
+	}
+
+	if (sceWaveAudioSetSample(0, 2048) != 0) {
+		ret = -1;
+		goto error;
+	}
+
+	pSound->lock_sema = sceKernelCreateSema("sound_lock_sema", 0, 1, 1, NULL);
+
+	pSound->status_flag = sceKernelCreateEventFlag("sound_status_eventflag", 0, 0, 0);
+
+	pSound->buf = malloc(buf_num * sizeof(SceChar8 *));
+	if (pSound->buf == NULL) {
+		ret = -1;
+		goto error;
+	}
+
+	for (i = 0; i < buf_num; i++) {
+		pSound->buf[i] = NULL;
+	}
+
+	for (i = 0; i < buf_num; i++) {
+		pSound->buf[i] = memalign(64, buf_size);
+		if (pSound->buf[i] == NULL) {
+			ret = -1;
+			goto error;
+		}
+	}
+
+	pSound->pts = malloc(buf_num * sizeof(SceUInt32));
+	if (pSound->pts == NULL) {
+		ret = -1;
+		goto error;
+	}
+
+	for (i = 0; i < 2; i++) {
+		output_buf[i] = malloc(buf_size);
+		if (output_buf[i] == NULL) {
+			goto error;
+		}
+	}
+
+	pSound->buf_size = buf_size;
+	pSound->size = buf_num;
+
+	soundIntervalSize = 4179;
+
+	goto term;
+
+error:
+	if (pSound->buf != NULL) {
+		for (i = 0; i < pSound->size; i++) {
+			if (pSound->buf[i] != NULL) {
+				free(pSound->buf[i]);
+			}
+		}
+
+		free(pSound->buf);
+	}
+
+	if (pSound->pts != NULL) {
+		free(pSound->pts);
+	}
+
+	for (i = 0; i < 2; i++) {
+		if (output_buf[i] != NULL) {
+			free(output_buf[i]);
+		}
+	}
+
+term:
+	return ret;
+}
 
 SceInt32 soundbuf_reset(t_soundBuffer *pSound)
 {
