@@ -55,4 +55,28 @@ void release_at3playArgID(ScePlayArg *pPlayArg) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/sound_at3doubleplay/nonmatchings/at3plus", at3plus_addData);
+int sceAtracGetStreamDataInfo(SceInt32 atracID, SceUChar8 **ppucWritePointer, SceUInt32 *puiWritableByte, SceUInt32 *puiReadPosition);
+long long sceIoLseek(int fd, long long offset, int whence);
+int sceIoRead(int fd, void *data, unsigned int size);
+int sceAtracAddStreamData(SceInt32 atracID, SceUInt32 uiAddByte);
+static void at3plus_addData(SceInt32 atracId, SceInt32 fd)
+{
+	SceUChar8 *pucWritePointer;
+	SceUInt32 uiWritableByte, uiReadPosition;
+	SceInt32 status, iAddByte;
+
+	status = sceAtracGetStreamDataInfo(atracId, &pucWritePointer, &uiWritableByte, &uiReadPosition);
+	if (status < 0)
+		printf("status = 0x%x (in sceAtracGetStreamDataInfo)", status);
+	status = sceIoLseek(fd, uiReadPosition, 0);
+	if (status < 0)
+		printf("status = 0x%x (in sceIoLseek)", status);
+	iAddByte = sceIoRead(fd, pucWritePointer, uiWritableByte);
+	if (iAddByte < 0) {
+		printf("status = 0x%x (in sceIoRead)", iAddByte);
+		return;
+	}
+	status = sceAtracAddStreamData(atracId, (SceUInt32)iAddByte);
+	if (status < 0)
+		printf("status = 0x%x (in sceAtracAddStreamData)", status);
+}
