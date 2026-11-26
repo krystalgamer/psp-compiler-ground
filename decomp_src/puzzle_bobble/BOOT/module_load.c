@@ -51,7 +51,50 @@ INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/module_load", D_0002FB04
 
 INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/module_load", s_modules_path);
 
+#ifdef NON_MATCHING
+/* diff 24 with every cc1: fd and modid swap s1/s2 (original: s0 ret, s1 modid, s2 fd)
+ * plus the resulting schedule; strings live in the asm's .rodata. */
+SceUID LoadModule(const char *path, SceUID mpid)
+{
+	SceInt32 ret = 0;
+	SceInt32 mresult = 0;
+	SceKernelLMOption opt;
+	SceUID modid;
+	SceUID fd;
+
+	memset(&opt, 0, sizeof(opt));
+	opt.size = sizeof(opt);
+	opt.mpidtext = mpid;
+	opt.position = 0;
+	fd = sceIoOpen(path, SCE_O_RDONLY, 0);
+	if (fd < 0) {
+		printf("sceIoOpen() returns 0x%x\n", ret);
+		return ret;
+	}
+	ret = sceKernelLoadModuleByID(fd, 0, &opt);
+	modid = ret;
+	if (modid < 0) {
+		printf("sceKerelLoadMoule() returns 0x%x\n", modid);
+	} else {
+		ret = sceKernelStartModule(modid, 0, NULL, &mresult, NULL);
+		if (ret >= 0) {
+			printf("%s start with 0x%x code\n", path, mresult);
+			return modid;
+		}
+		printf("sceKernelStartModule() returns 0x%x", ret);
+		if (modid > 0) {
+			sceKernelStopModule(modid, 0, NULL, &mresult, NULL);
+			printf("try to stop modules.. code = 0x%x\n", mresult);
+			sceKernelUnloadModule(modid);
+		}
+	}
+	if (fd > 0)
+		sceIoClose(fd);
+	return ret;
+}
+#else
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/module_load", LoadModule);
+#endif
 
 int LoadRequiredModules(void)
 {
