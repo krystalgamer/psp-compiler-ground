@@ -193,7 +193,15 @@ void init_all(void) {
     sceGuDisplay(1);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/sound_stringsound/nonmatchings/main", init_pos);
+static void init_pos(void)
+{
+	pos.rot.x = 10.0f;
+	pos.rot.y = 0.0f;
+	pos.rot.z = 0.0f;
+	pos.trans.x = 0.0f;
+	pos.trans.y = -1.0f;
+	pos.trans.z = -12.0f;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/sound_stringsound/nonmatchings/main", pad_read);
 
