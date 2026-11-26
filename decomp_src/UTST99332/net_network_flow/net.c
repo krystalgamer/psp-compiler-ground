@@ -128,27 +128,14 @@ void net_term(void) {
     sceNetTerm();
 }
 
-#ifndef SCE_NET_ETHER_ADDR_LEN
 #define SCE_NET_ETHER_ADDR_LEN 6
-#endif
-#ifndef PAYLOAD_MOVE_TYPE
 #define PAYLOAD_MOVE_TYPE	0x01
-#endif
-#ifndef PORT
 #define PORT		777							
-#endif
-#ifndef PAYLOAD_MOVE_LEN
 #define PAYLOAD_MOVE_LEN	(1+4+4+4+4+4+4)		
-#endif
-#ifndef SCE_NET_ADHOC_F_NONBLOCK
 #define SCE_NET_ADHOC_F_NONBLOCK		0x0001
-#endif
-#ifndef SCE_ERROR_NET_ADHOC_WOULD_BLOCK
 #define SCE_ERROR_NET_ADHOC_WOULD_BLOCK				0x80410709
-#endif
-#ifndef SCE_OK
 #define SCE_OK							0
-#endif
+
 int
 send_position(OBJECT *obj)
 {
