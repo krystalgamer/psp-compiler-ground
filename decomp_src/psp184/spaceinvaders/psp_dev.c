@@ -344,7 +344,37 @@ void MatrixVectorMultiply(FVEC4 *o, FMAT4 *m, FVEC4 *v)
 	o->w = v->x * m->x.w + v->y * m->y.w + v->z * m->z.w + v->w * m->w.w;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_dev", mat_local2screen);
+void sceGumMatrixMode(int mode);
+void sceGumLoadMatrix(const FMAT4 *m);
+void sceGumMultMatrix(const FMAT4 *m);
+void mat_local2screen(FVEC3 *v, FVEC3 *o)
+{
+	FMAT4 m, proj, view, model;
+	FVEC4 in, out;
+
+	sceGumMatrixMode(0);
+	sceGumStoreMatrix(&proj);
+	sceGumMatrixMode(1);
+	sceGumStoreMatrix(&view);
+	sceGumMatrixMode(2);
+	sceGumStoreMatrix(&model);
+	sceGumPushMatrix();
+	sceGumLoadMatrix(&proj);
+	sceGumMultMatrix(&view);
+	sceGumMultMatrix(&model);
+	sceGumStoreMatrix(&m);
+	sceGumPopMatrix();
+	in.x = v->x;
+	in.y = v->y;
+	in.z = v->z;
+	in.w = 1.0f;
+	MatrixVectorMultiply(&out, &m, &in);
+	if (out.w > -0.01f && out.w < 0.01f)
+		out.w = 0.01f;
+	o->x = out.x * 240.0f / out.w + 240.0f;
+	o->y = -out.y * 136.0f / out.w + 136.0f;
+	o->z = out.w;
+}
 
 float sinf(float x);
 float cosf(float x);
@@ -458,7 +488,26 @@ void vec_one(FVEC3 *v, FVEC3 *o)
 	o->z = v->z / l;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_dev", vec_axis_rot);
+void vec_one(FVEC3 *v, FVEC3 *o);
+void vec_axis_rot(FVEC3 *p, FVEC3 *ax, FVEC3 *o, float ang)
+{
+	FVEC3 n;
+	float rad, x, y, z, xx, yy, zz, s, c;
+
+	vec_one(ax, &n);
+	x = n.x;
+	y = n.y;
+	z = n.z;
+	xx = x * x;
+	yy = y * y;
+	zz = z * z;
+	rad = DEG2RAD(ang);
+	s = sinf(rad);
+	c = cosf(rad);
+	o->x = (p->x - ax->x) * xx + (1.0f - xx) * c + (p->y - ax->y) * (x * y * (1.0f - c) - z * s) + (p->z - ax->z) * (x * z * (1.0f - c) + y * s) + ax->x;
+	o->y = (p->x - ax->x) * (x * y * (1.0f - c) + z * s) + ((p->y - ax->y) * yy + (1.0f - yy) * c) + (p->z - ax->z) * (y * z * (1.0f - c) - x * s) + ax->y;
+	o->z = (p->x - ax->x) * (x * z * (1.0f - c) - y * s) + (p->y - ax->y) * (y * z * (1.0f - c) + x * s) + ((p->z - ax->z) * zz + (1.0f - zz) * c) + ax->z;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
