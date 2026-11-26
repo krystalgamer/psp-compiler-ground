@@ -190,9 +190,47 @@ void sceGumPushMatrix(void);
 void sceGumScale(const ScePspFVector3 *v);
 void sceGumTranslate(const ScePspFVector3 *v);
 
-INCLUDE_ASM("tmp/asm/UTST99332/menu/nonmatchings/draw", SwapDice);
+void SwapDice(int dir)
+{
+	int tmp;
 
-INCLUDE_ASM("tmp/asm/UTST99332/menu/nonmatchings/draw", GetDice);
+	if (dir & 1) {
+		tmp = table_dice[2];
+		table_dice[2] = table_dice[3];
+		table_dice[3] = table_dice[4];
+		table_dice[4] = table_dice[1];
+		table_dice[1] = tmp;
+	}
+	if (dir & 2) {
+		tmp = table_dice[4];
+		table_dice[4] = table_dice[3];
+		table_dice[3] = table_dice[2];
+		table_dice[2] = table_dice[1];
+		table_dice[1] = tmp;
+	}
+	if (dir & 4) {
+		tmp = table_dice[1];
+		table_dice[1] = table_dice[5];
+		table_dice[5] = table_dice[3];
+		table_dice[3] = table_dice[0];
+		table_dice[0] = tmp;
+	}
+	if (dir & 8) {
+		tmp = table_dice[3];
+		table_dice[3] = table_dice[5];
+		table_dice[5] = table_dice[1];
+		table_dice[1] = table_dice[0];
+		table_dice[0] = tmp;
+	}
+}
+
+extern const struct tcat6 { int v[6]; } D_0001713C;
+int GetDice(void)
+{
+	struct tcat6 table_cat = D_0001713C;
+
+	return table_cat.v[table_dice[3]];
+}
 
 void SetDice(int n) {
     int var_s0;
