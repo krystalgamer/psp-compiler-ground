@@ -3,6 +3,12 @@
 extern int D_0035AE84;
 
 
+typedef struct { u8 pad[0xC]; int nearest; u8 rest[0xD0 - 0x10]; } SPRITE_W;
+typedef struct { u8 pad[0x14]; int nearest; u8 rest[0x168 - 0x18]; } BILL_W;
+extern SPRITE_W sprite[];
+extern BILL_W billbord[];
+int bmp_file_unload(int no);
+
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_tex", tex_init);
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_tex", bmp_file_load);
@@ -35,7 +41,13 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_tex", tex_make);
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_tex", bmp_file_unload);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_tex", bmp_file_all_unload);
+void bmp_file_all_unload(void)
+{
+	int i;
+
+	for (i = 0; i < 64; i++)
+		bmp_file_unload(i);
+}
 
 int bmp_file_copy_addrset(int no, int addr);
 int bmp_file_copy(int no)
@@ -53,7 +65,11 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_tex", sprite_center_s
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_tex", sprite_gt4_set);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_tex", sprite_nearest);
+void sprite_nearest(unsigned int no)
+{
+	if (no < 345)
+		sprite[no].nearest = 1;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_tex", poly_set);
 
@@ -65,7 +81,11 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_tex", sprite_set_3d_e
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_tex", sprite_set_3d_efc_rot);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_tex", sprite_3d_nearest);
+void sprite_3d_nearest(unsigned int no)
+{
+	if (no < 512)
+		billbord[no].nearest = 1;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_tex", sprite_bg_disp);
 
