@@ -135,11 +135,104 @@ void sceGumPerspective(float fovy, float aspect, float near, float far);
 void sceGumSetMatrixStack(void *stack, int proj, int view, int model, int texture);
 int sceKernelDcacheWritebackAll(void);
 
-INCLUDE_RODATA("tmp/asm/UTST99332/graphics_stick/nonmatchings/main", D_00011BE0);
+#define MAXCONTROL	(MAX_U*MAX_V)
+#define MAX_V		31
+#define MAX_OBJ		2
+#define MAX_U		31
+#define SCEGU_IMMEDIATE                    0
+#define SCEGU_PF5551                       1
+#define SCEGU_VRAM_BP_0       (void *)(SCEGU_VRAM_TOP)
+#define SCEGU_VRAM_BP_1       (void *)(SCEGU_VRAM_TOP+SCEGU_VRAM_BUFSIZE)
+#define SCEGU_VRAM_TOP        0x00000000
+#define SCEGU_VRAM_BUFSIZE    (SCEGU_VRAM_WIDTH*SCEGU_SCR_HEIGHT*2)
+#define SCEGU_VRAM_BP_2       (void *)(SCEGU_VRAM_TOP+(SCEGU_VRAM_BUFSIZE*2))
+#define SCEGU_VRAM_WIDTH      512
+#define SCEGU_SCR_OFFSETX     ((4096 - SCEGU_SCR_WIDTH) / 2)
+#define SCEGU_SCR_OFFSETY     ((4096 - SCEGU_SCR_HEIGHT) / 2)
+#define SCEGU_SCISSOR_TEST                 2
+#define SCEGU_GEQUAL                       7
+#define SCEGU_DEPTH_TEST                   1
+#define SCEGU_CLIP_PLANE                   8
+#define SCEGU_CULL_PATCH                  16
+#define SCEGU_SMOOTH                       1
+#define SCEGU_NORMAL_REVERSE_PATCH        20
+#define SCEGU_LIGHT_DIRECTION              0
+#define SCEGU_DIFFUSE                      2
+#define SCEGU_LIGHT0                      11
+#define SCEGU_LIGHTING                    10
+#define SCEGU_MATRIX_PROJECTION            0
+#define SCEGU_PI                           3.1415926535897932384626433832f
+#define SCEGU_RAD(a)                       ((a)*SCEGU_PI/180.0f)
+#define SCEGU_SCR_WIDTH       480
+#define SCEGU_SCR_HEIGHT      272
+#define SCEGU_SCR_ASPECT      ((float)SCEGU_SCR_WIDTH / (float)SCEGU_SCR_HEIGHT)
+#define SCEGU_MATRIX_WORLD                 2
+#define SCEGU_SYNC_FINISH                  0
+#define SCEGU_SYNC_WAIT                    0
+#define SCEGU_DISPLAY_ON		1
 
-INCLUDE_RODATA("tmp/asm/UTST99332/graphics_stick/nonmatchings/main", D_00011C04);
+static void set_object(float *analog)
+{
+	MODEL		*p;
+	int			i,j;
+	int			n;
+	float		h;
+	u_int32		c;
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_stick/nonmatchings/main", set_object);
+	const	int	tbl_m[9]={
+		-MAX_U-1,
+		-MAX_U,
+		-MAX_U+1,
+		-1,
+		 0,
+		 1,
+		 MAX_U-1,
+		 MAX_U,
+		 MAX_U+1,
+	};
+
+	const	int	tbl_c[12]={
+		-MAX_U*2-1,
+		-MAX_U*2,
+		-MAX_U*2+1,
+		-MAX_U-2,
+		-MAX_U+2,
+		-2,
+		 2,
+		 MAX_U-2,
+		 MAX_U+2,
+		 MAX_U*2+1,
+		 MAX_U*2,
+		 MAX_U*2-1,
+	};
+
+	for (i=0; i<MAXCONTROL; i++) {
+		p=&model[i];
+		p->vtx.x=((float)-(MAX_U/2)+(float)(i%MAX_U))*0.3f;
+		p->vtx.y=((float) (MAX_V/2)-(float)(i/MAX_V))*0.3f;
+		p->vtx.z=0.0f;
+
+		p->c=0xffffffff;
+	}
+
+	for (i=0; i<MAX_OBJ; i++) {
+		n=obj[i].y*MAX_U+obj[i].x;
+		c=obj[i].c;
+		h=obj[i].high*(!obj[i].comp?1.0f:0.5f);
+		for (j=0; j<9; j++) {
+			p=&model[n+tbl_m[j]];
+			p->vtx.x+=analog[0];
+			p->vtx.y+=analog[1];
+			p->vtx.z=h;
+			p->c=c;
+		}
+		for (j=0; j<12; j++) {
+			p=&model[n+tbl_c[j]];
+			p->c=c;
+		}
+	}
+	sceKernelDcacheWritebackAll();
+}
 
 void draw_model(void) {
     sceGumPushMatrix();
@@ -186,7 +279,66 @@ static void init_param(void)
 	obj[1].high = 2.0f;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_stick/nonmatchings/main", init_all);
+static void init_all(void)
+{
+	ScePspFVector3	vec;
+
+	sceGuInit();
+
+	sceGuStart(SCEGU_IMMEDIATE, disp_list, sizeof(disp_list));
+	sceGuDrawBuffer(SCEGU_PF5551, SCEGU_VRAM_BP_0, SCEGU_VRAM_WIDTH);
+	sceGuDispBuffer(SCEGU_SCR_WIDTH, SCEGU_SCR_HEIGHT,
+					SCEGU_VRAM_BP_1, SCEGU_VRAM_WIDTH);
+	sceGuDepthBuffer(SCEGU_VRAM_BP_2, SCEGU_VRAM_WIDTH);
+
+	sceGuOffset(SCEGU_SCR_OFFSETX, SCEGU_SCR_OFFSETY);
+	sceGuViewport(2048, 2048, SCEGU_SCR_WIDTH, SCEGU_SCR_HEIGHT);
+	sceGuDepthRange(50000, 10000);
+
+	sceGuScissor(0, 0, SCEGU_SCR_WIDTH, SCEGU_SCR_HEIGHT);
+	sceGuEnable(SCEGU_SCISSOR_TEST);
+
+	sceGuDepthFunc(SCEGU_GEQUAL);
+	sceGuEnable(SCEGU_DEPTH_TEST);
+
+	sceGuEnable(SCEGU_CLIP_PLANE);
+	sceGuEnable(SCEGU_CULL_PATCH);
+	sceGuShadeModel(SCEGU_SMOOTH);
+
+	sceGuEnable(SCEGU_NORMAL_REVERSE_PATCH);
+	sceGuPatchDivide(16, 16);
+
+	vec.x=0.614497f;
+	vec.y=0.691714f;
+	vec.z=0.379372f;
+	sceGuLightColor(0, SCEGU_DIFFUSE, 0xffffffff);
+	sceGuLight(0, SCEGU_LIGHT_DIRECTION, SCEGU_DIFFUSE, &vec);
+	sceGuEnable(SCEGU_LIGHT0);
+	sceGuEnable(SCEGU_LIGHTING);
+
+	sceGuAmbient(0xffc0c0c0);
+
+	sceGumSetMatrixStack(&matrix_stack[0], 8, 8, 32, 0);
+
+	sceGumMatrixMode(SCEGU_MATRIX_PROJECTION);
+	sceGumLoadIdentity();
+	sceGumPerspective(SCEGU_RAD(45.0f), SCEGU_SCR_ASPECT,
+					1.000000f, 100.000000f);
+
+	sceGumMatrixMode(SCEGU_MATRIX_WORLD);
+
+	sceGuClearColor(0x00202020);
+	sceGuClearDepth(0);
+	sceGuClearStencil(0);
+
+	sceGuFinish();
+	sceGuSync(SCEGU_SYNC_FINISH, SCEGU_SYNC_WAIT);
+	sceDisplayWaitVblankStart();
+
+	init_param();
+
+	sceGuDisplay(SCEGU_DISPLAY_ON);
+}
 
 #define cont D_00013800	/* pad_read's static */
 extern u_int32 cont;
