@@ -366,7 +366,35 @@ INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/systemfile", sceSystemFileSav
 
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/systemfile", sceSystemFileLoadAll);
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/systemfile", sceSystemFileLoadAll2);
+int sceSystemFileLoadAll2(void *buf, unsigned int size, void **phandle)
+{
+	int r;
+	SfHeader *hdr;
+	register int ret;
+
+	if (buf == NULL)
+		SF_ERROR(ret, 3)
+	else {
+		hdr = buf;
+		r = isValidSysFileHeader(hdr, size);
+		if (r != 0)
+			ret = r;
+		else {
+			r = isValidSysFileKeyTable(buf, hdr->keyofs, hdr, size);
+			if (r != 0)
+				ret = r;
+			else {
+				r = isValidSysFileIndexTable(buf, 0x14, hdr, size);
+				if (r != 0) {
+					register int t = r;
+					ret = t;
+				} else
+					ret = sceSystemFileLoadAll(buf, phandle);
+			}
+		}
+	}
+	return ret;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/systemfile", sceSystemFileOverWriteToMem);
 
@@ -862,7 +890,52 @@ const char *str2alignment(const char *s, int *out)
 	return p;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/systemfile", __sceSystemFileStr2TypeValue);
+int __sceSystemFileStr2TypeValue(const char *str)
+{
+	char c;
+	int align;
+	register int ret;
+
+	if (str == NULL)
+		SF_ERROR(ret, 3)
+	else if (str[0] == 0)
+		SF_ERROR(ret, 3)
+	else {
+		c = str[0];
+		if (c == 'V') {
+			if (str[2] != 0)
+				SF_ERROR(ret, 3)
+			else {
+				switch (str[1]) {
+				case 's':
+					ret = 0x204;
+					break;
+				case 'i':
+					ret = 0x404;
+					break;
+				case 'f':
+					ret = 0x504;
+					break;
+				default:
+					SF_ERROR(ret, 3)
+					break;
+				}
+			}
+		} else {
+			if (str2alignment(str + 1, &align) == 0)
+				SF_ERROR(ret, 3)
+			else if (align == 0)
+				SF_ERROR(ret, 3)
+			else if (c == 'F')
+				ret = align | 0x100;
+			else if (c == 'R')
+				{ register int t = align; ret = t; }
+			else
+				SF_ERROR(ret, 3)
+		}
+	}
+	return ret;
+}
 
 int sceSystemFileSetMallocFunc(void *m, void *f)
 {
