@@ -58,6 +58,9 @@ int strncasecmp(const char *a, const char *b, unsigned int n);
 int UTL_guessMIMETypeFromName(char *name);
 QUEUE *UTL_dequeue(QUEUE *q);
 void MEM_free(void *pool, void *p);
+void *MEM_malloc(void *pool, unsigned int n);
+void *memcpy(void *d, const void *s, unsigned int n);
+unsigned int strlen(const char *s);
 char *pathMake(char *path);
 int GIFParser(GIFCTX *ctx, int flag);
 int UTL_mfileread(void *f, void *buf, unsigned int n);
@@ -101,9 +104,59 @@ void URL_free(URL *u) {
     MEM_free(NULL, u);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/url", URL_setScheme);
+void URL_setScheme(URL *u, char *s) {
+    int len;
+    char *p;
+    int add = 0;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/url", URL_setHost);
+    if (s == NULL || (len = strlen(s)) <= 0) {
+        if (u->scheme != NULL) {
+            MEM_free(NULL, u->scheme);
+            u->scheme = NULL;
+        }
+        return;
+    }
+    if (s[len - 1] != ':') {
+        add = 1;
+    }
+    p = MEM_malloc(NULL, len + add + 1);
+    if (p == NULL) {
+        return;
+    }
+    memcpy(p, s, len);
+    if (add == 1) {
+        p[len] = ':';
+        len++;
+    }
+    p[len] = 0;
+    if (u->scheme != NULL) {
+        MEM_free(NULL, u->scheme);
+    }
+    u->scheme = p;
+}
+
+void URL_setHost(URL *u, char *s) {
+    int len;
+    char *p;
+
+    if (s == NULL || (len = strlen(s)) <= 0) {
+        if (u->host != NULL) {
+            MEM_free(NULL, u->host);
+            u->host = NULL;
+        }
+        return;
+    }
+    p = MEM_malloc(NULL, len + 1);
+    if (p == NULL) {
+        return;
+    }
+    memcpy(p, s, len);
+    p[len] = 0;
+    if (u->host != NULL) {
+        MEM_free(NULL, u->host);
+    }
+    u->host = p;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -114,11 +167,94 @@ void URL_setPort(void *arg0, int arg1) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/url", URL_setPath);
+void URL_setPath(URL *u, char *s) {
+    int len;
+    char *p;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/url", URL_setQuery);
+    if (s == NULL || (len = strlen(s)) <= 0) {
+        if (u->path != NULL) {
+            MEM_free(NULL, u->path);
+            u->path = NULL;
+        }
+        return;
+    }
+    p = MEM_malloc(NULL, len + 1);
+    if (p == NULL) {
+        return;
+    }
+    memcpy(p, s, len);
+    p[len] = 0;
+    if (u->path != NULL) {
+        MEM_free(NULL, u->path);
+    }
+    u->path = p;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/url", URL_setAnchor);
+void URL_setQuery(URL *u, char *s) {
+    int len;
+    char *p;
+    int add = 0;
+
+    if (s == NULL || (len = strlen(s)) <= 0) {
+        if (u->query != NULL) {
+            MEM_free(NULL, u->query);
+            u->query = NULL;
+        }
+        return;
+    }
+    if (s[0] != '?') {
+        add = 1;
+    }
+    p = MEM_malloc(NULL, len + add + 1);
+    if (p == NULL) {
+        return;
+    }
+    if (add == 1) {
+        p[0] = '?';
+        memcpy(p + 1, s, len);
+        len++;
+    } else {
+        memcpy(p, s, len);
+    }
+    p[len] = 0;
+    if (u->query != NULL) {
+        MEM_free(NULL, u->query);
+    }
+    u->query = p;
+}
+
+void URL_setAnchor(URL *u, char *s) {
+    int len;
+    char *p;
+    int add = 0;
+
+    if (s == NULL || (len = strlen(s)) <= 0) {
+        if (u->frag != NULL) {
+            MEM_free(NULL, u->frag);
+            u->frag = NULL;
+        }
+        return;
+    }
+    if (s[0] != '#') {
+        add = 1;
+    }
+    p = MEM_malloc(NULL, len + add + 1);
+    if (p == NULL) {
+        return;
+    }
+    if (add == 1) {
+        p[0] = '#';
+        memcpy(p + 1, s, len);
+        len++;
+    } else {
+        memcpy(p, s, len);
+    }
+    p[len] = 0;
+    if (u->frag != NULL) {
+        MEM_free(NULL, u->frag);
+    }
+    u->frag = p;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/url", URL_toString);
 
