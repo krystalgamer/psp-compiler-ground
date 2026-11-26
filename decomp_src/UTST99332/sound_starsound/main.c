@@ -127,7 +127,103 @@ static void init_pos(void)
 	}
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/sound_starsound/nonmatchings/main", pad_read);
+#ifndef SCE_CTRL_LEFT
+#define SCE_CTRL_LEFT				(1<<7)
+#endif
+#ifndef SCE_CTRL_RIGHT
+#define SCE_CTRL_RIGHT				(1<<5)
+#endif
+#ifndef MAXNUM
+#define MAXNUM			256
+#endif
+#ifndef SCE_CTRL_SELECT
+#define SCE_CTRL_SELECT				(1<<0)
+#endif
+#ifndef SCE_CTRL_UP
+#define SCE_CTRL_UP					(1<<4)
+#endif
+#ifndef SCE_CTRL_DOWN
+#define SCE_CTRL_DOWN				(1<<6)
+#endif
+#ifndef SCE_CTRL_L
+#define SCE_CTRL_L					(1<<8)
+#endif
+#ifndef SCE_CTRL_L1
+#define SCE_CTRL_L1					SCE_CTRL_L
+#endif
+#ifndef SCE_CTRL_R
+#define SCE_CTRL_R					(1<<9)
+#endif
+#ifndef SCE_CTRL_R1
+#define SCE_CTRL_R1					SCE_CTRL_R
+#endif
+#ifndef SCE_CTRL_CROSS
+#define SCE_CTRL_CROSS				(1<<14)
+#endif
+#ifndef SCE_CTRL_SQUARE
+#define SCE_CTRL_SQUARE				(1<<15)
+#endif
+#ifndef SCE_CTRL_CIRCLE
+#define SCE_CTRL_CIRCLE				(1<<13)
+#endif
+#ifndef SCE_CTRL_TRIANGLE
+#define SCE_CTRL_TRIANGLE			(1<<12)
+#endif
+static int pad_read(void)
+{
+	extern u_int32 D_000128C0;
+	extern u_int32 D_000128C4;
+	SceCtrlData		buf;
+
+	D_000128C0 = D_000128C4;
+	sceCtrlReadBufferPositive(&buf, 1);
+	D_000128C4 = buf.Buttons;
+
+	if (D_000128C4 & SCE_CTRL_LEFT) {
+		maxnum--;
+		if (maxnum <= 1) {
+			maxnum = 1;
+		}
+	}
+	if (D_000128C4 & SCE_CTRL_RIGHT) {
+		maxnum++;
+		if (maxnum >= MAXNUM) {
+			maxnum = MAXNUM;
+		}
+	}
+	if (D_000128C4 & SCE_CTRL_SELECT) {
+		return 0;
+	}
+
+	
+	if (((D_000128C4 & SCE_CTRL_UP) != 0) && ((D_000128C0 & SCE_CTRL_UP) == 0)){
+		sceWavePlay( 0,127,127);
+	}
+	if (((D_000128C4 & SCE_CTRL_DOWN) != 0) && ((D_000128C0 & SCE_CTRL_DOWN) == 0)){
+		sceWavePlay( 1,127,127);
+	}
+	if (((D_000128C4 & SCE_CTRL_L1) != 0) && ((D_000128C0 & SCE_CTRL_L1) == 0)){
+		sceWavePlay( 2,127,0);
+	}
+	if (((D_000128C4 & SCE_CTRL_R1) != 0) && ((D_000128C0 & SCE_CTRL_R1) == 0)){
+		sceWavePlay( 3,0,127);
+	}
+
+	if (((D_000128C4 & SCE_CTRL_CROSS) != 0) && ((D_000128C0 & SCE_CTRL_CROSS) == 0)){
+		sceWavePlay( 4,127,127);
+	}
+	if (((D_000128C4 & SCE_CTRL_SQUARE) != 0) && ((D_000128C0 & SCE_CTRL_SQUARE) == 0)){
+		sceWavePlay( 5,127,127);
+	}
+	if (((D_000128C4 & SCE_CTRL_CIRCLE) != 0) && ((D_000128C0 & SCE_CTRL_CIRCLE) == 0)){
+		sceWavePlay( 6,127,127);
+	}
+	if (((D_000128C4 & SCE_CTRL_TRIANGLE) != 0) && ((D_000128C0 & SCE_CTRL_TRIANGLE) == 0)){
+		sceWavePlay( 7,127,127);
+	}
+
+	return 1;
+}
 
 int sceIoOpen(const char *file, int flags, int mode);
 long long sceIoLseek(int fd, long long offset, int whence);
