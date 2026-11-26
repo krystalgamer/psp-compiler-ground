@@ -6,7 +6,8 @@
 
 typedef struct { /* size 0xD8 */
     int unk0;
-    u8 unk4[0x98];
+    int flags;
+    u8 unk8[0x94];
     PSPBROWSER_FOCUS_CALLBACK focusCallback;    /* 0x9C */
     int unkA0;
     PSPBROWSER_UNLOAD_CALLBACK unloadCallback;  /* 0xA4 */
@@ -27,6 +28,20 @@ signed char *ESP_malloc(int);                                /* extern */
 M2C_UNK UTL_enqueue(int, signed char *);                     /* extern */
 M2C_UNK zWindDrawClipSet();                         /* extern */
 extern int _i_pspBrowserFontState;
+
+typedef struct EXTCB {
+    struct EXTCB *next;
+    struct EXTCB *prev;
+    char *name;
+    int callback;
+} EXTCB;
+
+void *UTL_peekqueue(void *q, void *e);
+int UTL_relqueue(void *q, void *e);
+int strcmp(const char *, const char *);
+extern u8 D_0025B0DC[];
+extern u8 D_0025B0EC[];
+EXTCB *pspBrowserGetExtensionCallback(void *q, char *name);
 
 M2C_UNK sjisToUtf8();                               /* extern */
 int sjisToUcs2();                                   /* extern */
@@ -64,9 +79,39 @@ int pspBrowserStrcpyTo(void *arg0, int arg1, void *arg2, int arg3) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/pspBrowser", pspBrowserReportValue);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/pspBrowser", pspBrowserGetExtensionCallback);
+EXTCB *pspBrowserGetExtensionCallback(void *q, char *name) {
+    EXTCB *e;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/pspBrowser", pspBrowserDeleteExtensionCallback);
+    if (name == NULL || *name == 0) {
+        return NULL;
+    }
+    e = NULL;
+    while ((e = UTL_peekqueue(q, e)) != NULL) {
+        if (strcmp(e->name, name) == 0) {
+            break;
+        }
+    }
+    return e;
+}
+
+int pspBrowserDeleteExtensionCallback(void *q, char *name) {
+    EXTCB *e;
+
+    if (name == NULL) {
+        while ((e = UTL_peekqueue(q, NULL)) != NULL) {
+            pspBrowserDeleteExtensionCallback(q, e->name);
+        }
+        return 0;
+    }
+    e = pspBrowserGetExtensionCallback(q, name);
+    if (e == NULL) {
+        return -1;
+    }
+    UTL_relqueue(q, e);
+    ESP_free((signed char *)e->name);
+    ESP_free((signed char *)e);
+    return 0;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -118,9 +163,39 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/pspBrowser", pspBrowserSetState
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/pspBrowser", pspBrowserGetState);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/pspBrowser", pspBrowserAddAnchor);
+int pspBrowserAddAnchor(char *name, PSPBROWSER_ANCHOR_CALLBACK callback) {
+    if (pspBrowserInstance.unk0 == 0) {
+        return -5;
+    }
+    if (name == NULL || *name == 0 || callback == 0) {
+        return -1;
+    }
+    if (pspBrowserGetExtensionCallback(D_0025B0DC, name) != NULL) {
+        return -1;
+    }
+    if (pspBrowserNewExtensionCallback((int)D_0025B0DC, (signed char *)name, (int)callback) != NULL) {
+        return 0;
+    }
+    pspBrowserInstance.flags |= 0x4000000;
+    return -1;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/pspBrowser", pspBrowserAddImage);
+int pspBrowserAddImage(char *name, int callback) {
+    if (pspBrowserInstance.unk0 == 0) {
+        return -5;
+    }
+    if (name == NULL || *name == 0 || callback == 0) {
+        return -1;
+    }
+    if (pspBrowserGetExtensionCallback(D_0025B0EC, name) != NULL) {
+        return -1;
+    }
+    if (pspBrowserNewExtensionCallback((int)D_0025B0EC, (signed char *)name, (int)callback) != NULL) {
+        return 0;
+    }
+    pspBrowserInstance.flags |= 0x4000000;
+    return -1;
+}
 
 int pspBrowserSetFocusCallback(PSPBROWSER_FOCUS_CALLBACK callback) {
     if (pspBrowserInstance.unk0 == 0) {
