@@ -129,7 +129,37 @@ void parseProcessingInstruction(PCtx *c) {
     parseSkipChar(c, 1);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", parseEndTag);
+void parseEndTag(PCtx *c, int skip) {
+    PChar name[0x408];
+    int n;
+    int st;
+    PChar ch;
+
+    n = 0;
+    st = 0;
+    parseSkipChar(c, skip);
+    if (*c->buf->cur == '>') {
+        return;
+    }
+    while (*c->buf->cur != '>') {
+        ch = *c->buf->cur;
+        if ((ch != ' ' && ch != '\t') && ch != '\n' && (ch != '\r' && st != 2)) {
+            st = 1;
+            if (n < 0x400) {
+                name[n] = (c->buf->cur[0] >= 'A' && c->buf->cur[0] <= 'Z') ? c->buf->cur[0] + 0x20 : c->buf->cur[0];
+                n++;
+            }
+        } else if (st == 1) {
+            st = 2;
+        }
+        if (parseNextChar(c) == 1) {
+            return;
+        }
+    }
+    name[n] = 0;
+    *(PTag *)((char *)c + 0x34) = parseTagNameCmp(name);
+    parseTagTransact(4, c, 0, 0, 0, 0);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", parseContents);
 
