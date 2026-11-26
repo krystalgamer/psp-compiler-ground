@@ -380,7 +380,30 @@ static void DrawMoon(void)
 	sceGuDisable(9);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_moonball/nonmatchings/game", DrawScope);
+#define FALSE (0)
+
+static void DrawScope(void)
+{
+	extern Gu2dV16T	D_00077A60[4];
+
+	if (scope.state==FALSE)
+		return;
+	sceGuEnable(SCEGU_TEXTURE);
+	sceGuTexWrap(SCEGU_REPEAT, SCEGU_REPEAT);
+	sceGuTexFilter(SCEGU_NEAREST, SCEGU_NEAREST);
+	sceGuTexFunc(SCEGU_TEX_MODULATE, SCEGU_RGBA);
+
+	sceGuTexMode(SCEGU_PFIDX4, 0, SCEGU_SINGLE_CLUT, SCEGU_TEXBUF_NORMAL);
+	sceGuClutMode(SCEGU_PF5551, 0, 0xff, 0);
+	sceGuClutLoad(1, (void *)clut_scope);
+	sceGuTexImage(0, 32, 32, 32, (void *)chr_scope);
+
+	SpriteScale(1, 1);
+	sceGuColor(0xffffffff);
+	DrawSprite(scope.pos[0], scope.pos[1], 32, 32, 0, 0, D_00077A60);
+
+	sceGuDisable(SCEGU_TEXTURE);
+}
 
 #define SETV(m, x, y, z, col) ((m).p[0] = (x), (m).p[1] = (y), (m).p[2] = (z), (m).c = (col))
 #define SETVC(m, x, y, z, col) ((m).c = (col), (m).p[0] = (x), (m).p[1] = (y), (m).p[2] = (z))
