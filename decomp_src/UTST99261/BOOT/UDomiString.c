@@ -445,15 +445,14 @@ void *ps_ExternalSearchSessionHistoryNode(void *a, int b) {
 #define NULL ((void *)0)
 #endif
 
-void ps_ExternalSearchRequestFlag(int arg0, int arg1) {
+void *ps_ExternalSearchRequestFlag(int arg0, int arg1) {
     int temp_a0;
 
     temp_a0 = HST_getHeadHistoryNode();
     if (arg1 == 1) {
-        HST_searchCSSRequestFlag(temp_a0, arg0);
-        return;
+        return HST_searchCSSRequestFlag(temp_a0, arg0);
     }
-    HST_searchJSRequestFlag(temp_a0, arg0);
+    return HST_searchJSRequestFlag(temp_a0, arg0);
 }
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", parseSetAuthData);
@@ -1040,7 +1039,41 @@ int ps_sendAbortPage(int sid, int a, int b, int name, int len) {
     return 1;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", ps_sendGetStop);
+void ps_sendGetStop(PsIpc *m) {
+    int i;
+    int *n;
+
+    for (i = 1; i < 7; i++) {
+        HST_searchRequestFlagHistoryNode(i);
+        while ((n = HST_searchRequestFlagHistoryNode(i)) != NULL) {
+            m->x14 = 0;
+            m->x04 = HST_getSessionID(n);
+            if (m->x04 == 0) {
+                ps_halt("HST_getSessionID failed");
+            }
+            ps_sndmsg(m, 5);
+            n[15] = 8;
+        }
+        while ((n = ps_ExternalSearchRequestFlag(i, 1)) != NULL) {
+            m->x14 = 1;
+            m->x04 = HST_getSessionID(n);
+            if (m->x04 == 0) {
+                ps_halt("HST_getSessionID failed");
+            }
+            ps_sndmsg(m, 5);
+            n[15] = 8;
+        }
+        while ((n = ps_ExternalSearchRequestFlag(i, 2)) != NULL) {
+            m->x14 = 2;
+            m->x04 = HST_getSessionID(n);
+            if (m->x04 == 0) {
+                ps_halt("HST_getSessionID failed");
+            }
+            ps_sndmsg(m, 5);
+            n[15] = 8;
+        }
+    }
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
