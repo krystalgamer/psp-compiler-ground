@@ -140,7 +140,28 @@ INCLUDE_ASM("tmp/asm/sampler/sampler/nonmatchings/libwave", sceWavePlayEx);
 
 INCLUDE_RODATA("tmp/asm/sampler/sampler/nonmatchings/libwave", D_000174B4);
 
-INCLUDE_ASM("tmp/asm/sampler/sampler/nonmatchings/libwave", sceWaveStart);
+static inline int _waveThreadStart(int prio)
+{
+	D_002F1B24 = 0;
+	D_002F2E68.thid = sceKernelCreateThread("SceWaveMain", func_00009720, prio, 0x1000, 0, NULL);
+	if (D_002F2E68.thid < 0)
+		return 0x80440003;
+	D_002F2E68.prio = prio;
+	if (sceKernelStartThread(D_002F2E68.thid, sizeof(SceWaveMain), &D_002F2E68) != 0)
+		return 0x80440003;
+	sceKernelDelayThread(10000);
+	D_002F1B20 = 3;
+	return 0;
+}
+
+int sceWaveStart(int prio)
+{
+	if (D_002F1B20 != 1)
+		return 0x80440003;
+	if ((unsigned int)(prio - 8) >= 0x70)
+		return 0x80440012;
+	return _waveThreadStart(prio);
+}
 
 int sceWaveEnd(void)
 {
