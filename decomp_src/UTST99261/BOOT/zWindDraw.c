@@ -653,11 +653,45 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/zWindDraw", zWindWidgetDraw);
 
 extern ZGFONT *D_00584B68;
 extern u8 D_00584BB6;
-void zWindFontDrawHF(ZGFONT *f, int x, int y, int c, int color);
+void zWindFontDrawHF(ZGFONT *f, int x, int y, int c, short color);
 void zWindFontDrawZE(ZGFONT *f, int x, int y, int c, int color);
 int pspBrowserUtf8ToSjis();
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/zWindDraw", zWindFontDrawHF);
+void zWindFontDrawHF(ZGFONT *f, int x, int y, int c, short color) {
+    u16 buf[128];
+    u16 *d;
+    s8 *p;
+    int n;
+    s8 b;
+
+    if (*(s16 *)&D_00584BB6 >= 0) {
+        return;
+    }
+    d = buf;
+    if (c < 0x20) {
+        return;
+    }
+    if (c >= 0x80) {
+        if (c < 0xA2) {
+            return;
+        }
+        c -= 0x22;
+    }
+    p = (s8 *)s_windsystemChar.font[0];
+    p += (c - 0x20) * s_windsystemChar.hbytes;
+    for (n = s_windsystemChar.bpp; n > 0; n--) {
+        b = *p++;
+        *d++ = (b & 0x80) ? color : 0;
+        *d++ = (b & 0x40) ? color : 0;
+        *d++ = (b & 0x20) ? color : 0;
+        *d++ = (b & 0x10) ? color : 0;
+        *d++ = (b & 0x08) ? color : 0;
+        *d++ = (b & 0x04) ? color : 0;
+        *d++ = (b & 0x02) ? color : 0;
+        *d++ = (b & 0x01) ? color : 0;
+    }
+    zWindDrawImage(x, y, s_windsystemChar.h, s_windsystemChar.bpp, buf, 0);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/zWindDraw", zWindFontDrawZE_K);
 
