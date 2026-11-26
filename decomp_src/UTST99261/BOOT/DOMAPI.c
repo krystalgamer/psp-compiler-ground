@@ -285,15 +285,61 @@ void DOMStringfree(DOMString *s) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/DOMAPI", UTF8toDOMString);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/DOMAPI", ASCIItoDOMString);
+DOMString ASCIItoDOMString(const char *s) {
+    DOMString r;
+    int len;
+    int i;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/DOMAPI", DOMStringtoJIS);
+    len = strlen(s);
+    if (len == 0 || (r.str = MEM_malloc(0, len * 2)) == NULL) {
+        return _DOMnull;
+    }
+    for (i = 0; *s != 0; s++, i++) {
+        r.str[i] = *s & 0x7F;
+    }
+    r.size = r.len = i;
+    return r;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/DOMAPI", DOMStringtoSJIS);
+char *DOMStringtoJIS(const DOMString *s) {
+    char *p = MEM_malloc(0, s->len * 6 + 4);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/DOMAPI", DOMStringtoEUC);
+    if (p == NULL) {
+        return NULL;
+    }
+    p[ucs2ToJis(p, s->str, s->len)] = 0;
+    return p;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/DOMAPI", DOMStringtoUTF8);
+char *DOMStringtoSJIS(const DOMString *s) {
+    char *p = MEM_malloc(0, s->len * 2 + 1);
+
+    if (p == NULL) {
+        return NULL;
+    }
+    p[ucs2ToSjis(p, s->str, s->len)] = 0;
+    return p;
+}
+
+char *DOMStringtoEUC(const DOMString *s) {
+    char *p = MEM_malloc(0, s->len * 3 + 1);
+
+    if (p == NULL) {
+        return NULL;
+    }
+    p[ucs2ToEuc(p, s->str, s->len)] = 0;
+    return p;
+}
+
+char *DOMStringtoUTF8(const DOMString *s) {
+    char *p = MEM_malloc(0, s->len * 3 + 1);
+
+    if (p == NULL) {
+        return NULL;
+    }
+    p[ucs2ToUtf8(p, s->str, s->len)] = 0;
+    return p;
+}
 
 unsigned char *DOMStringtoASCII(const DOMString *s) {
     unsigned char *p = MEM_malloc(0, s->len * 2 + 1);
@@ -305,21 +351,118 @@ unsigned char *DOMStringtoASCII(const DOMString *s) {
     return p;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/DOMAPI", DOMStringEncode);
+char *DOMStringEncode(const DOMString *s, int enc) {
+    switch (enc) {
+    case 1:
+        return DOMStringtoJIS(s);
+    case 2:
+        return DOMStringtoSJIS(s);
+    case 3:
+        return DOMStringtoEUC(s);
+    case 5:
+        return DOMStringtoUTF8(s);
+    }
+    return DOMStringtoASCII(s);
+}
 
 int DOMStringlen(const DOMString *s) {
     return s->len;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/DOMAPI", DOMStringcat);
+DOMString DOMStringcat(const DOMString *a, const DOMString *b) {
+    DOMString r;
+    int len;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/DOMAPI", DOMStringcasecmp);
+    len = DOMStringlen(a) + DOMStringlen(b);
+    if (len > 0 && (r.str = MEM_malloc(0, len * 2)) != NULL) {
+        memcpy(r.str, a->str, a->len * 2);
+        memcpy(r.str + a->len, b->str, b->len * 2);
+        r.len = len;
+        r.size = len;
+        return r;
+    }
+    return _DOMnull;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/DOMAPI", DOMStringcasecmpFast);
+int DOMStringcasecmp(const DOMString *a, const DOMString *b) {
+    unsigned int n = b->len;
+    unsigned int i;
+    int r = 0;
+    unsigned int c1, c2;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/DOMAPI", DOMStringcasecmpChar);
+    if (a->len < n) {
+        n = a->len;
+    }
+    for (i = 0; i < n; i++) {
+        c1 = a->str[i];
+        if (c1 >= 'a' && c1 <= 'z') {
+            c1 -= 0x20;
+        }
+        c2 = b->str[i];
+        if (c2 >= 'a' && c2 <= 'z') {
+            c2 = c1 - 0x20;
+        }
+        r = c1 - c2;
+        if (r != 0) {
+            return r;
+        }
+    }
+    if (a->len > b->len) {
+        return 1;
+    }
+    if (a->len < b->len) {
+        return -1;
+    }
+    return r;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/DOMAPI", DOMStringcasecmpCharFast);
+int DOMStringcasecmpFast(const DOMString *a, const DOMString *b) {
+    if (a->len != b->len) {
+        return 1;
+    }
+    return DOMStringcasecmp(a, b);
+}
+
+int DOMStringcasecmpChar(const DOMString *a, const char *str) {
+    DOMChar *p = a->str;
+    const char *s = str;
+    unsigned int slen = strlen(str);
+    int n = slen;
+    int i;
+    unsigned char c;
+    DOMChar d;
+
+    if (a->len < slen) {
+        n = a->len;
+    }
+    for (i = 0; i < n; s++, i++, p++) {
+        c = *s;
+        if (c >= 'a' && c <= 'z') {
+            c -= 0x20;
+        }
+        d = *p;
+        if (d >= 'a' && d <= 'z') {
+            d -= 0x20;
+        }
+        if (d != c) {
+            return d - c;
+        }
+    }
+    if (a->len > slen) {
+        return 1;
+    }
+    if (a->len < slen) {
+        return -1;
+    }
+    return 0;
+}
+
+int DOMStringcasecmpCharFast(const DOMString *a, const char *s) {
+    if (a->len != strlen(s)) {
+        return 1;
+    }
+    return DOMStringcasecmpChar(a, s);
+}
 
 void cmDomiCharacterData_Finalize(SDomiCharacterData *n) {
     SDomiStrAcu_Finalize(&n->data);

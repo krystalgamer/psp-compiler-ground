@@ -226,7 +226,7 @@ typedef struct SDomiElementVt {
 /* string of the DOM API layer (DOMAPI.c) */
 typedef struct DOMString {
     int size;
-    int len;
+    unsigned int len;
     DOMChar *str;
 } DOMString;
 
