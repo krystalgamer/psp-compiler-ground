@@ -400,6 +400,7 @@ char *URL_encode(char *s_, int len) {
     return buf;
 }
 
+#define CT(c) ((_ctype_ + 1)[(int)(c)])
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/url", URL_decode);
 
 int URL_checkFileStrage(URL *u) {
@@ -450,7 +451,47 @@ int UTL_isSupportedFileType(char *name) {
     return UTL_guessMIMETypeFromName(name) != -1;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/url", UTL_guessMIMETypeFromName);
+int UTL_guessMIMETypeFromName(char *name) {
+    char *buf;
+    char *p;
+    int i;
+    int j;
+    char **ext;
+
+    buf = MEM_malloc(NULL, strlen(name) + 1);
+    if (buf == NULL) {
+        return -1;
+    }
+    strcpy(buf, name);
+    p = strchr(buf, '#');
+    if (p != NULL) {
+        *p = 0;
+    }
+    p = strchr(buf, '?');
+    if (p != NULL) {
+        *p = 0;
+    }
+    p = strrchr(buf, '.');
+    if (p == NULL) {
+        MEM_free(NULL, buf);
+        return 5;
+    }
+    p++;
+    for (i = 0; cnt_tbl[i].type != -1; i++) {
+        if (cnt_tbl[i].ext == NULL) {
+            continue;
+        }
+        ext = (char **)cnt_tbl[i].ext;
+        for (j = 0; ext[j] != NULL; j++) {
+            if (strcasecmp(p, ext[j]) == 0) {
+                MEM_free(NULL, buf);
+                return cnt_tbl[i].type;
+            }
+        }
+    }
+    MEM_free(NULL, buf);
+    return -1;
+}
 
 int UTL_guessMIMEType(char *mime) {
     int i;
