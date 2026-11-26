@@ -295,7 +295,36 @@ int SpriteDrawEz(int no, float z, int color, float x, float y, float w, float h,
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/wrap_sprite", SpriteDrawZoom);
 
+#ifdef NON_MATCHING
+/* Close: right register allocation, but f[0]/f[1] stores come out swapped. */
+int SpriteDraw3D(int no, int color, int flag, float z, float f0, float f1, float f2, float f3, float f4, float f5, float f6, float f7, float f8, float f9, float f10, float f11, float f12, float f13)
+{
+	SPRITE *sp = GetSpriteBuf((int)z);
+
+	sp->type = 2;
+	sp->no = no;
+	sp->z = z;
+	if (color == -1) sp->color = global_color; else sp->color = color;
+	sp->f[0] = f0;
+	sp->f[2] = f2;
+	sp->f[3] = f3;
+	sp->f[4] = f4;
+	sp->f[5] = f5;
+	sp->f[6] = f6;
+	sp->flag = flag;
+	sp->f[7] = f7;
+	sp->f[8] = f8;
+	sp->f[9] = f9;
+	sp->f[10] = f10;
+	sp->f[11] = f11;
+	sp->f[12] = f12;
+	sp->f[13] = f13;
+	sp->f[1] = f1;
+	return 1;
+}
+#else
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/wrap_sprite", SpriteDraw3D);
+#endif
 
 int SpriteDrawC(float z, int x, int y, SPRDATA *p)
 {
