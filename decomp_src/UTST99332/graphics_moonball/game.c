@@ -456,7 +456,37 @@ static void DrawBeam(void)
 	}
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_moonball/nonmatchings/game", DrawReady);
+#ifndef SCEGU_PFIDX8
+#define SCEGU_PFIDX8                       5
+#endif
+#ifndef ALPHA
+#define ALPHA(a,c)		(u_int32)(((u_int32)a<<24)|((u_int32)c))
+#endif
+static void DrawReady(int mode, int a, int s)
+{
+	extern Gu2dV16T	D_00077AE8[4];
+	u_int32	c;
+	int		x, y;
+
+	sceGuEnable(SCEGU_TEXTURE);
+	sceGuTexWrap(SCEGU_REPEAT, SCEGU_REPEAT);
+	sceGuTexFilter(SCEGU_NEAREST, SCEGU_NEAREST);
+	sceGuTexFunc(SCEGU_TEX_MODULATE, SCEGU_RGBA);
+
+	sceGuTexMode(SCEGU_PFIDX8, 0, SCEGU_SINGLE_CLUT, SCEGU_TEXBUF_NORMAL);
+	sceGuClutMode(SCEGU_PF5551, 0, 0xff, 0);
+	sceGuClutLoad(16, (void *)clut_ready);
+	sceGuTexImage(0, 256, 128, 256, (void *)chr_ready);
+
+	SpriteScale(s, s);
+	c=ALPHA(a, 0x00ffffff);
+	sceGuColor(c);
+	x=(LCDW-(256*s))/2;
+	y=(LCDH-(32*s))/2-16;
+	DrawSprite(x, y, 256, 32, 0, mode*32, D_00077AE8);
+
+	sceGuDisable(SCEGU_TEXTURE);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_moonball/nonmatchings/game", DrawMission);
 
