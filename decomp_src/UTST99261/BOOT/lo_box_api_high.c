@@ -1,51 +1,40 @@
 /* cflags: -O1 */
 #include "common.h"
 #include "UTST99261/BOOT/nflayout.h"
-#include "m2c_macros.h"
-void *HST_getHeadHistoryNode();                     /* extern */
 
 
 
 #ifndef NULL
 #define NULL ((void *)0)
 #endif
-M2C_UNK *getBoxByContent(M2C_UNK *arg0, int arg1) {
-    M2C_UNK *var_a0;
-
-    var_a0 = arg0;
-    if ((var_a0 != NULL) && (M2C_FIELD(var_a0, short *, 0x38) != arg1)) {
-loop_2:
-        var_a0 = *var_a0;
-        if (var_a0 != NULL) {
-            if (M2C_FIELD(var_a0, short *, 0x38) != arg1) {
-                goto loop_2;
-            }
-        }
+BOX *getBoxByContent(BOX *box, int content) {
+    while (box != NULL && box->content != content) {
+        box = box->parent;
     }
-    return var_a0;
+    return box;
 }
 
 #ifndef NULL
 #define NULL ((void *)0)
 #endif
 
-int getRootBox(void) {
-    int var_v1;
-    void *temp_v0;
+BOX *getRootBox(void) {
+    HISTNODE *h;
+    BOX *box;
 
-    temp_v0 = HST_getHeadHistoryNode();
-    var_v1 = 0;
-    if (temp_v0 != NULL) {
-        var_v1 = M2C_FIELD(temp_v0, int *, 0x6C);
+    h = HST_getHeadHistoryNode();
+    box = NULL;
+    if (h != NULL) {
+        box = h->body;
     }
-    return var_v1;
+    return box;
 }
 
 #ifndef NULL
 #define NULL ((void *)0)
 #endif
-void getBodyBox(int *arg0) {
-    getBoxByContent(arg0, 1);
+BOX *getBodyBox(BOX *box) {
+    return getBoxByContent(box, 1);
 }
 
 BOX *getListBox(BOX *box) {
@@ -61,15 +50,15 @@ BOX *getListBox(BOX *box) {
 #ifndef NULL
 #define NULL ((void *)0)
 #endif
-void getFramesetBox(int *arg0) {
-    getBoxByContent(arg0, 2);
+BOX *getFramesetBox(BOX *box) {
+    return getBoxByContent(box, 2);
 }
 
 #ifndef NULL
 #define NULL ((void *)0)
 #endif
-void getTableBox(int *arg0) {
-    getBoxByContent(arg0, 4);
+BOX *getTableBox(BOX *box) {
+    return getBoxByContent(box, 4);
 }
 
 BOX *getTrBox(BOX *box) {
@@ -86,8 +75,8 @@ BOX *getTrBox(BOX *box) {
 #ifndef NULL
 #define NULL ((void *)0)
 #endif
-void getTdBox(int **arg0) {
-    getBoxByContent(*arg0, 6);
+BOX *getTdBox(BOX *box) {
+    return getBoxByContent(box->parent, 6);
 }
 
 BOX *getParentBlockBox(BOX *box) {
@@ -103,20 +92,11 @@ BOX *getParentBlockBox(BOX *box) {
 #ifndef NULL
 #define NULL ((void *)0)
 #endif
-M2C_UNK *getBoxByHTML(M2C_UNK *arg0, int arg1) {
-    M2C_UNK *var_a0;
-
-    var_a0 = arg0;
-    if ((var_a0 != NULL) && (M2C_FIELD(var_a0, short *, 0x3A) != arg1)) {
-loop_2:
-        var_a0 = *var_a0;
-        if (var_a0 != NULL) {
-            if (M2C_FIELD(var_a0, short *, 0x3A) != arg1) {
-                goto loop_2;
-            }
-        }
+BOX *getBoxByHTML(BOX *box, int html) {
+    while (box != NULL && box->html != html) {
+        box = box->parent;
     }
-    return var_a0;
+    return box;
 }
 
 BOX *getBoxByHTML_intd(BOX *box, BOX *stop, int html) {
@@ -159,11 +139,11 @@ int checkBoxValidity(BOX *box) {
 #ifndef NULL
 #define NULL ((void *)0)
 #endif
-int getContainingBlockWidth(void *arg0) {
-    void *temp_a1;
+int getContainingBlockWidth(BOX *box) {
+    BOXSTYLE *s;
 
-    temp_a1 = M2C_FIELD(arg0, void **, 0x24);
-    return (((((M2C_FIELD(arg0, int *, 0x18) - M2C_FIELD(temp_a1, short *, 0x26)) - M2C_FIELD(temp_a1, short *, 0x36)) - M2C_FIELD(temp_a1, short *, 0x2E)) - M2C_FIELD(temp_a1, short *, 0x2A)) - M2C_FIELD(temp_a1, short *, 0x32)) - M2C_FIELD(temp_a1, short *, 0x22);
+    s = box->style;
+    return box->width - s->unk26 - s->unk36 - s->unk2E - s->unk2A - s->unk32 - s->unk22;
 }
 
 void *getPageRegion(BOX *box) {
