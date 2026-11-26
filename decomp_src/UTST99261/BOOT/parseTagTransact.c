@@ -1,5 +1,15 @@
 /* cflags: -O1 */
 #include "common.h"
+#include "m2c_macros.h"
+M2C_UNK parseSearchDtDdNode(void *);                /* extern */
+M2C_UNK parseSearchListNode(void *);                /* extern */
+M2C_UNK parseSearchOptionNode(void *);              /* extern */
+M2C_UNK parseSearchPNode();                         /* extern */
+M2C_UNK parseSearchRowGroupNode(void *);            /* extern */
+M2C_UNK parseSearchTableNode(void *);               /* extern */
+M2C_UNK parseSearchTdThNode(void *);                /* extern */
+M2C_UNK parseSearchTrNode(void *);                  /* extern */
+
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parseTagTransact", parseTagTransact);
 
@@ -79,7 +89,49 @@ INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/parseTagTransact", D_00138CD
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parseTagTransact", parseSearchPNode);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parseTagTransact", parseOmissibleTag);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void parseOmissibleTag(void *arg0) {
+    short temp_v0;
+
+    if ((M2C_FIELD(arg0, signed char *, 0x3C) == 1) && (M2C_FIELD(arg0, short *, 0x3E) != 0x4E)) {
+        parseSearchPNode();
+    }
+    temp_v0 = M2C_FIELD(arg0, short *, 0x3E);
+    switch (temp_v0) {
+    case 0x50:
+    case 0x53:
+        parseSearchTdThNode(arg0);
+        return;
+    case 0x34:
+        parseSearchListNode(arg0);
+        return;
+    case 0x15:
+    case 0x1B:
+        parseSearchDtDdNode(arg0);
+        return;
+    case 0x3D:
+    case 0x3E:
+        parseSearchOptionNode(arg0);
+        return;
+    case 0x56:
+        parseSearchTrNode(arg0);
+        return;
+    case 0x4E:
+        parseSearchTableNode(arg0);
+        return;
+    case 0x4F:
+    case 0x52:
+    case 0x54:
+        parseSearchRowGroupNode(arg0);
+        /* fallthrough */
+        /* fallthrough */
+    default:
+        return;
+    }
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parseTagTransact", parseEndTagDefault);
 

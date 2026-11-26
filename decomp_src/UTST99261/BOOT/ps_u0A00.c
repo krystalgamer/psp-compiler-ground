@@ -1,6 +1,8 @@
 /* cflags: -O1 */
 #include "common.h"
 #include "m2c_macros.h"
+extern int buf_ps_sts;
+
 M2C_UNK sendMPL_REQ_DATA_ATTR();                    /* extern */
 
 
@@ -15,7 +17,14 @@ int ps_u0A03(void) {
     return 0xF;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/ps_u0A00", ps_u0A06);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+int ps_u0A06(void) {
+    sendMPL_REQ_DATA_ATTR();
+    return buf_ps_sts;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/ps_u0A00", ps_u0B03);
 

@@ -91,7 +91,21 @@ int cmDomiElementNamedNodeSet_setNamedItem(SDomiNamedNodeSet *s, SDomiAttr *a, S
     return SDomiElement_setAttributeNode((SDomiElement *)s->owner, a, out);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/SDomiElement", cmDomiElementNamedNodeSet_removeNamedItem);
+int cmDomiElementNamedNodeSet_removeNamedItem(SDomiNamedNodeSet *s, const SDomiString *name, SDomiAttr **out) {
+    SDomiAttr *a;
+    SDomiAttr *b;
+    int r;
+
+    *out = NULL;
+    if (!ELEMVT(s->owner)->GetAttrNode(s->owner, name, &a)) {
+        r = -1;
+    } else if ((b = a) == NULL) {
+        r = 0;
+    } else {
+        r = SDomiElement_removeAttributeNode((SDomiElement *)s->owner, b, out);
+    }
+    return r;
+}
 
 SDomiNode *cmDomiElementNamedNodeSet_item(SDomiNamedNodeSet *s, unsigned int i) {
     return SDomiPtrArray_GetItem(&((SDomiElement *)s->owner)->attrs, i);

@@ -1,12 +1,21 @@
 /* cflags: -O1 */
 #include "common.h"
 #include "m2c_macros.h"
+extern int buf_ps_sts;
+
 M2C_UNK sendMPU_RPL_DATA_ATTR();                    /* extern */
 
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/ps_l1900", sendMPU_RPL_DATA_ATTR);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/ps_l1900", ps_l1903);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+int ps_l1903(void) {
+    sendMPU_RPL_DATA_ATTR();
+    return buf_ps_sts;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)

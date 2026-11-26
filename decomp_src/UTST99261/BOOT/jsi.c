@@ -1,6 +1,24 @@
 /* cflags: -O1 */
 #include "common.h"
 #include "m2c_macros.h"
+M2C_UNK HST_attachHistory();                        /* extern */
+int GUI_RadioButton_getState(int);                  /* extern */
+void *Node_getBox();                                /* extern */
+extern void *gPREF_UI;
+M2C_UNK MEM_free(M2C_UNK, void *);                  /* extern */
+void *duplicateDOMString(int);                      /* extern */
+void *MEM_malloc(M2C_UNK, M2C_UNK);                 /* extern */
+extern void *gNDA_NAME_JS_GLOBAL;
+extern void *g_JS_TIMER_;
+M2C_UNK js_delTimerID(int, M2C_UNK, M2C_UNK);       /* extern */
+int OS_thread_self();                               /* extern */
+int *HST_getHeadHistoryNode();                      /* extern */
+int esp_postMsgLoadPage(int, int, int, M2C_UNK, M2C_UNK, int, M2C_UNK); /* extern */
+extern void *esp_context;
+M2C_UNK esp_postMsgSaveURL(int, int, int);          /* extern */
+M2C_UNK esp_postMsgDataAttr(int, M2C_UNK, int, int); /* extern */
+int MEM_addHaltCallback(M2C_UNK, int);              /* extern */
+
 extern int attached;
 M2C_UNK newDOMString_4B5FC();                       /* extern */
 M2C_UNK esp_getMemoNum();                           /* extern */
@@ -14,7 +32,15 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", newDOMString_4B5FC);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", duplicateDOMString);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSI_init);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+int JSI_init(void) {
+    HST_attachHistory();
+    attached = 1;
+    return 1;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -42,7 +68,13 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSI_getDocumentLastModifi
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSI_getDocumentReferrer);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSI_getDocumentSelection);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void JSI_getDocumentSelection(void) {
+    newDOMString_4B5FC(0, 0);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSI_getDocumentSize);
 
@@ -64,7 +96,18 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSI_getOptionText);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSI_setOptionText);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSI_getRadioState);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+int JSI_getRadioState(int arg0) {
+    void *temp_v0;
+
+    if ((arg0 == 0) || (temp_v0 = Node_getBox(), (temp_v0 == NULL)) || (M2C_FIELD(temp_v0, short *, 0x38) != 0xF)) {
+        return -1;
+    }
+    return GUI_RadioButton_getState(M2C_FIELD(temp_v0, int *, 0x2C)) != 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSI_setRadioState);
 
@@ -82,15 +125,68 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSI_getWindowName);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSI_setWindowName);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSI_getBrowserHomeURL);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+unsigned int strlen(const char *s);
+
+void JSI_getBrowserHomeURL(void) {
+    void *temp_s0;
+
+    temp_s0 = gPREF_UI;
+    newDOMString_4B5FC(M2C_FIELD(temp_s0, int *, 0x40), strlen(M2C_FIELD(temp_s0, signed char **, 0x40)));
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSI_getAbsoluteURL);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSI_freeDOMString);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSI_freeURLRec);
+void JSI_freeDOMString(void *arg0) {
+    void *temp_a1;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSI_setURLProtocol);
+    if (arg0 != NULL) {
+        temp_a1 = M2C_FIELD(arg0, void **, 8);
+        if (temp_a1 != NULL) {
+            MEM_free(0, temp_a1);
+        }
+        MEM_free(0, arg0);
+    }
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void JSI_freeURLRec(void *arg0) {
+    if (arg0 != NULL) {
+        JSI_freeDOMString(M2C_FIELD(arg0, int *, 4));
+        JSI_freeDOMString(M2C_FIELD(arg0, int *, 8));
+        JSI_freeDOMString(M2C_FIELD(arg0, int *, 0xC));
+        JSI_freeDOMString(M2C_FIELD(arg0, int *, 0x10));
+        JSI_freeDOMString(M2C_FIELD(arg0, int *, 0x14));
+        MEM_free(0, arg0);
+    }
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void JSI_setURLProtocol(void *arg0, int arg1) {
+    int temp_a0;
+    void *temp_v0;
+
+    temp_v0 = duplicateDOMString(arg1);
+    temp_a0 = M2C_FIELD(temp_v0, int *, 4);
+    if ((temp_a0 != 0) && (M2C_FIELD(((temp_a0 * 2) + M2C_FIELD(temp_v0, int *, 8)), unsigned short *, -2) == 0x3A)) {
+        M2C_FIELD(temp_v0, int *, 0) = (int) (M2C_FIELD(temp_v0, int *, 0) - 1);
+        M2C_FIELD(temp_v0, int *, 4) = (int) (temp_a0 - 1);
+    }
+    JSI_freeDOMString(M2C_FIELD(arg0, void **, 4));
+    M2C_FIELD(arg0, void **, 4) = temp_v0;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -99,7 +195,17 @@ void JSI_setURLPort(short *arg0, short arg1) {
     *arg0 = arg1;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSI_setURLHost);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void JSI_setURLHost(void *arg0, int arg1) {
+    int temp_s1;
+
+    temp_s1 = duplicateDOMString(arg1);
+    JSI_freeDOMString(M2C_FIELD(arg0, int *, 8));
+    M2C_FIELD(arg0, int *, 8) = temp_s1;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSI_setURLPathname);
 
@@ -119,33 +225,177 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSSendMail);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSWaitMail);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", SetIpcMember);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+void SetIpcMember(void *arg0, int arg1, int arg2, int arg3, int arg4, int arg5, int arg6, int arg7) {
+    M2C_FIELD(arg0, int *, 0) = arg1;
+    M2C_FIELD(arg0, int *, 4) = arg2;
+    M2C_FIELD(arg0, int *, 8) = arg3;
+    M2C_FIELD(arg0, int *, 0xC) = arg4;
+    M2C_FIELD(arg0, int *, 0x10) = arg5;
+    M2C_FIELD(arg0, int *, 0x14) = 0;
+    M2C_FIELD(arg0, int *, 0x18) = arg6;
+    M2C_FIELD(arg0, int *, 0x1C) = arg7;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", SetIpcmsg);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", init_global_ptr);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", delete_global_ptr);
+void *init_global_ptr(void) {
+    void *temp_v0;
+    void *var_v0;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", get_global_ptr);
+    temp_v0 = MEM_malloc(0, 0x24);
+    var_v0 = NULL;
+    if (temp_v0 != NULL) {
+        M2C_FIELD(temp_v0, int *, 0) = 0;
+        M2C_FIELD(temp_v0, int *, 4) = 0;
+        M2C_FIELD(temp_v0, int *, 8) = 0;
+        M2C_FIELD(temp_v0, int *, 0xC) = 0;
+        M2C_FIELD(temp_v0, int *, 0x10) = 0;
+        M2C_FIELD(temp_v0, int *, 0x14) = 0;
+        M2C_FIELD(temp_v0, int *, 0x18) = 0;
+        M2C_FIELD(temp_v0, int *, 0x1C) = 0;
+        M2C_FIELD(temp_v0, int *, 0x20) = 0;
+        gNDA_NAME_JS_GLOBAL = temp_v0;
+        var_v0 = temp_v0;
+    }
+    return var_v0;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", js_InitTimer);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void delete_global_ptr(void) {
+    int temp_v0;
+
+    temp_v0 = get_global_ptr();
+    gNDA_NAME_JS_GLOBAL = 0;
+    MEM_free(0, temp_v0);
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+int get_global_ptr(void) {
+    return gNDA_NAME_JS_GLOBAL;
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void js_InitTimer(void) {
+    void *temp_v0;
+
+    temp_v0 = MEM_malloc(0, 0x18);
+    M2C_FIELD(temp_v0, int *, 4) = -1;
+    M2C_FIELD(temp_v0, int *, 8) = 0;
+    M2C_FIELD(temp_v0, int *, 0xC) = 0;
+    M2C_FIELD(temp_v0, int *, 0x10) = 0;
+    M2C_FIELD(temp_v0, int *, 0x14) = 0;
+    g_JS_TIMER_ = temp_v0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", js_getTimerStatus);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", getTimerNum);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", js_checkAddTimer);
+int getTimerNum(void) {
+    int var_v1;
+    void *var_v0;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", js_DestroyTimer);
+    var_v1 = 0;
+    if (g_JS_TIMER_ != NULL) {
+        var_v0 = M2C_FIELD(g_JS_TIMER_, void **, 0x14);
+        if (var_v0 != NULL) {
+            do {
+                var_v0 = M2C_FIELD(var_v0, void **, 0x14);
+                var_v1 += 1;
+            } while (var_v0 != NULL);
+        }
+    }
+    return var_v1;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", js_addTimer);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+int js_checkAddTimer(void) {
+    return (getTimerNum() < 0xB) - 1;
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void js_DestroyTimer(void) {
+    void *temp_s0;
+
+    temp_s0 = g_JS_TIMER_;
+    if (M2C_FIELD(temp_s0, void **, 0x14) != NULL) {
+        do {
+            js_delTimerID(M2C_FIELD(M2C_FIELD(temp_s0, void **, 0x14), int *, 4), 3, 0);
+        } while (M2C_FIELD(temp_s0, void **, 0x14) != NULL);
+    }
+    MEM_free(0, temp_s0);
+    g_JS_TIMER_ = NULL;
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void js_addTimer(int arg0, int arg1, int arg2, int arg3) {
+    void *temp_v0;
+    void *var_s4;
+
+    var_s4 = g_JS_TIMER_;
+    temp_v0 = MEM_malloc(0, 0x18);
+    M2C_FIELD(temp_v0, int *, 0) = arg1;
+    M2C_FIELD(temp_v0, int *, 4) = arg0;
+    M2C_FIELD(temp_v0, int *, 8) = 0;
+    M2C_FIELD(temp_v0, int *, 0xC) = arg2;
+    M2C_FIELD(temp_v0, int *, 0x10) = arg3;
+    M2C_FIELD(temp_v0, int *, 0x14) = 0;
+    if (M2C_FIELD(var_s4, int *, 0x14) != 0) {
+        do {
+            var_s4 = M2C_FIELD(var_s4, void **, 0x14);
+        } while (M2C_FIELD(var_s4, int *, 0x14) != 0);
+    }
+    M2C_FIELD(var_s4, void **, 0x14) = temp_v0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", js_delTimerID);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", searchTimerCx);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", js_delTimerCx);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void js_delTimerCx(int arg0) {
+    void *var_s0;
+
+    var_s0 = g_JS_TIMER_;
+    if (var_s0 != NULL) {
+        do {
+            if (M2C_FIELD(var_s0, int *, 0x10) == arg0) {
+                js_delTimerID(M2C_FIELD(var_s0, int *, 4), 3, 1);
+            }
+            var_s0 = M2C_FIELD(var_s0, void **, 0x14);
+        } while (var_s0 != NULL);
+    }
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSPtrListInit);
 
@@ -163,7 +413,15 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSPtrListDel);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSPtrListDelAll);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSRunStart);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void JSRunStart(void *arg0) {
+    if (arg0 != NULL) {
+        M2C_FIELD(arg0, int *, 0xC) = OS_thread_self();
+    }
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -214,7 +472,23 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_submitForm);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_moveHistory);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_reloadPage);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+int ESP_reloadPage(int arg0) {
+    int *temp_v0;
+    int temp_s0;
+    int var_v0;
+
+    temp_v0 = HST_getHeadHistoryNode();
+    var_v0 = -1;
+    if (temp_v0 != NULL) {
+        temp_s0 = HST_getCurURI(temp_v0);
+        var_v0 = esp_postMsgLoadPage(M2C_FIELD(esp_context, int *, 0xF8), temp_s0, HST_getRefURI(temp_v0), 0, 1, arg0 != 1, 0);
+    }
+    return var_v0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_abortLoading);
 
@@ -257,17 +531,42 @@ void ESP_loadSavedPageList(void) {
     esp_loadMemoList();
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_freeSavedPageList);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+void ESP_freeSavedPageList(int arg0) {
+    if (arg0 != 0) {
+        esp_freeMemoList();
+    }
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_downloadURL);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void ESP_downloadURL(int arg0, int arg1) {
+    esp_postMsgSaveURL(M2C_FIELD(esp_context, int *, 0xF8), arg0, arg1);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_setFreeScrollEnabled);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_findString);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_getPositionAttribute);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_getFocusAttribute);
+void ESP_getPositionAttribute(int arg0, int arg1) {
+    esp_postMsgDataAttr(M2C_FIELD(esp_context, int *, 0xF8), 0, arg0, arg1);
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void ESP_getFocusAttribute(void) {
+    esp_postMsgDataAttr(M2C_FIELD(esp_context, int *, 0xF8), 1, 0, 0);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_setTextField);
 
@@ -362,13 +661,59 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_setCacheSize);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_getCacheSize);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_guiMemAlloc);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_guiMemFree);
+int ESP_guiMemAlloc(int arg0) {
+    int temp_s0;
+    int var_s1;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_malloc);
+    var_s1 = 0;
+    if (esp_context != 0) {
+        temp_s0 = MEM_addHaltCallback(0, 0);
+        var_s1 = MEM_malloc(0, arg0);
+        MEM_addHaltCallback(0, temp_s0);
+    }
+    return var_s1;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_free);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void ESP_guiMemFree(int arg0) {
+    if (esp_context != 0) {
+        MEM_free(0, arg0);
+    }
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+int ESP_malloc(int arg0) {
+    int temp_s0;
+    int var_s1;
+
+    var_s1 = 0;
+    if (esp_context != 0) {
+        temp_s0 = MEM_addHaltCallback(0, 0);
+        var_s1 = MEM_malloc(0, arg0);
+        MEM_addHaltCallback(0, temp_s0);
+    }
+    return var_s1;
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void ESP_free(int arg0) {
+    if (esp_context != 0) {
+        MEM_free(0, arg0);
+    }
+}
 
 #ifndef NULL
 #define NULL ((void *)0)

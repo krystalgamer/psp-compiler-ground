@@ -1,7 +1,33 @@
 /* cflags: -O1 */
 #include "common.h"
+#include "m2c_macros.h"
+M2C_UNK MEM_free(M2C_UNK, void *);                  /* extern */
+void *MEM_malloc(M2C_UNK, int);                     /* extern */
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/esp_msg", cnvExtSchemeSelected);
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+void *memset(void *s, int c, unsigned int n);
+void *memcpy(void *d, const void *s, unsigned int n);
+
+void *cnvExtSchemeSelected(void *arg0) {
+    void *temp_s1;
+    void *temp_v0;
+    void *var_v0;
+
+    temp_s1 = M2C_FIELD(arg0, void **, 0x1C);
+    temp_v0 = MEM_malloc(0, M2C_FIELD(temp_s1, unsigned int *, 0) + 1);
+    var_v0 = NULL;
+    if (temp_v0 != NULL) {
+        memset(temp_v0, 0, M2C_FIELD(temp_s1, unsigned int *, 0) + 1);
+        memcpy(temp_v0, M2C_FIELD(temp_s1, void **, 4), M2C_FIELD(temp_s1, unsigned int *, 0));
+        MEM_free(0, temp_s1);
+        M2C_FIELD(arg0, void **, 0x1C) = temp_v0;
+        var_v0 = arg0;
+    }
+    return var_v0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/esp_msg", esp_msgThread);
 

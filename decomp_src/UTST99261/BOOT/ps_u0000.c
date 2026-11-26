@@ -1,10 +1,25 @@
 /* cflags: -O1 */
 #include "common.h"
 #include "m2c_macros.h"
+int ps_sessionGen();                                /* extern */
+M2C_UNK setParseMassageToDestTask(M2C_UNK, int, M2C_UNK, M2C_UNK, M2C_UNK, M2C_UNK, M2C_UNK, M2C_UNK); /* extern */
+extern int buf_localUI;
+extern int buf_sessionUI;
+extern int buf_ps_sts;
+
 M2C_UNK ps_dmy();                                   /* extern */
 
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/ps_u0000", ps_u0000);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+int ps_u0000(void *arg0) {
+    buf_sessionUI = M2C_FIELD(arg0, int *, 4);
+    buf_localUI = M2C_FIELD(arg0, int *, 0x14);
+    setParseMassageToDestTask(4, ps_sessionGen(), 0, 0x301, 0, 0, 0, 0);
+    return 1;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/ps_u0000", ps_u0103);
 
@@ -20,9 +35,27 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/ps_u0000", ps_u0212);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/ps_u0000", ps_u0217);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/ps_u0000", ps_u0303);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/ps_u0000", ps_u0306);
+int ps_u0303(void *arg0) {
+    buf_sessionUI = M2C_FIELD(arg0, int *, 4);
+    buf_localUI = M2C_FIELD(arg0, int *, 0x14);
+    setParseMassageToDestTask(4, ps_sessionGen(), 0, 0x305, M2C_FIELD(arg0, int *, 0x10), 0, 0, 0);
+    return 0x10;
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+int ps_u0306(void *arg0) {
+    buf_sessionUI = M2C_FIELD(arg0, int *, 4);
+    buf_localUI = M2C_FIELD(arg0, int *, 0x14);
+    setParseMassageToDestTask(4, ps_sessionGen(), 0, 0x305, M2C_FIELD(arg0, int *, 0x10), 0, 0, 0);
+    return buf_ps_sts;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/ps_u0000", ps_u0506);
 

@@ -1,6 +1,8 @@
 /* cflags: -O1 */
 #include "common.h"
 #include "m2c_macros.h"
+M2C_UNK MEM_free(M2C_UNK, int);                     /* extern */
+
 M2C_UNK do_string();                                /* extern */
 M2C_UNK __floatsidf(int);                           /* extern */
 
@@ -13,7 +15,18 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/esp_config", do_string);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/esp_config", esp_defaultConfig);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/esp_config", esp_freeConfig);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void esp_freeConfig(void *arg0) {
+    MEM_free(0, M2C_FIELD(arg0, int *, 0x40));
+    MEM_free(0, M2C_FIELD(arg0, int *, 0x44));
+    MEM_free(0, M2C_FIELD(arg0, int *, 0x28));
+    MEM_free(0, M2C_FIELD(arg0, int *, 0x30));
+    MEM_free(0, M2C_FIELD(arg0, int *, 0x34));
+    MEM_free(0, M2C_FIELD(arg0, int *, 0x38));
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
