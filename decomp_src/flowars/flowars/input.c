@@ -168,8 +168,9 @@ extern int g_game_paused;
 extern Graphics graphics;
 extern int g_draw_vs_switch;
 extern L_Mod_Player l_mod_player;
-extern ModSystem mod_system __asm__("PRX_ZERO");
-extern ModPlayer mod_player __asm__("PRX_ZERO");
+extern ModSystem mod_system __asm__("mod_system_zero");
+__asm__("mod_system_zero = 0");
+extern ModPlayer mod_player __asm__("_init");
 extern ModGame mod_game __asm__("PRX_ZERO");
 extern int key_pressed;
 extern unsigned int counter;
@@ -181,7 +182,12 @@ extern char warning_msg[100];
 static void set_key_enable(int key, int flag);
 int sceCtrlSetSamplingMode(unsigned int uiMode);
 void stop_timer(void);
-/* "input changed confirm to 1\n", shared with pad_read (still asm) */
+int count_array(int *a, int a_size);
+int sceKernelGetGPI(void);
+int sceCtrlReadBufferPositive(SceCtrlData *pad_data, int count);
+void init_all(void);
+void printGlobal(char *msg);
+char *strcpy(char *dst, const char *src);
 static void init();
 static void init_63EC();
 static void press_circle();
@@ -271,11 +277,449 @@ static void press_circle()
 
 __asm__(".globl press_circle");
 
-/* press_circle (C) emits this string first; pad_read (asm) uses it too */
-__asm__(".globl D_0002F7A8\nD_0002F7A8 = 0x0002F7A8");
 
-INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/input", pad_read);
+extern int D_000554AC;	/* static int prev_padd (pad_read) */
+extern int D_000554B0;	/* static int cheat_money (pad_read) */
+#define prev_padd D_000554AC
+#define cheat_money D_000554B0
 
-INCLUDE_RODATA("tmp/asm/flowars/flowars/nonmatchings/input", D_0002F7F0);
+static int pad_read()
+{
+	counter++;
 
-INCLUDE_RODATA("tmp/asm/flowars/flowars/nonmatchings/input", D_0002F81C);
+
+
+
+
+
+
+	int limit;
+	u_int32 padd, analog_x;
+	SceCtrlData buf;
+
+
+	sceCtrlReadBufferPositive(&buf, 1);
+
+
+
+
+
+
+
+
+	padd = buf.Buttons;
+	if (g_press_button) {
+		padd |= g_press_button;
+		g_press_button = 0;
+	}
+
+
+
+	analog_x = buf.Lx;
+	limit = count_array(g_my_hand, 10);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	if (sceKernelGetGPI() & 0xC)
+		press_circle();
+
+
+
+
+
+	if (padd && key_pressed) {
+		if (delay > 0) delay--;
+		if (delay > 0) return 1;
+
+		if (counter % 3 != 0) return 1;
+	}
+
+
+	if (padd) {
+		key_pressed = 1;
+	} else {
+		key_pressed = 0;
+		delay = 20;
+	}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	if (prev_padd == padd) return;
+	prev_padd = padd;
+
+
+	if ((padd & 0x8) && key_enable[5]) {
+
+		g_game_paused = !g_game_paused;
+		g_timer_pause = !g_timer_pause;
+
+		set_key_enable(5, 0);
+	}
+
+
+	if (g_game_paused == 1) {
+		if ((padd & 0x2000) && key_enable[1]) {
+			g_game_paused = 0;
+			g_timer_pause = 0;
+			set_key_enable(1, 0);
+
+
+
+		} else if ((padd & 0x4000) && key_enable[4]) {
+			g_game_paused = 0;
+			strcpy(warning_msg, "  \xb0\xd4\xc0\xd3\xc0\xbb \xc1\xbe\xb7\xe1\xc7\xd5\xb4\xcf\xb4\xd9.\n\n  \xb8\xde\xb4\xba\xb7\xce \xb5\xb9\xbe\xc6\xb0\xa9\xb4\xcf\xb4\xd9");
+			mod_system.return_value = 6;
+			g_continue = 0;
+			set_key_enable(-1, 0);
+		}
+
+		return 1;
+	}
+
+
+
+
+	if (padd & 0x200) {
+		if (mod_game.game_type == 1 && g_stage_status != 8 && g_show_collect_paes == -2) {
+			if (g_draw_vs_switch == 1) {
+				graphics.stop_vs_menu();
+				g_draw_vs_switch = 0;
+				g_timer_pause = 0;
+			} else {
+
+				g_draw_vs_switch = 1;
+				g_timer_pause = 1;
+			}
+		}
+	}
+
+
+
+
+	if (g_draw_vs_switch == 1) return 1;
+
+	if (padd & 0x100) {
+		switch (g_show_collect_paes) {
+		case -2:
+			g_show_collect_paes = 0;
+			break;
+
+
+
+
+
+
+
+
+
+		case 0:
+			g_show_collect_paes = 1;
+			break;
+
+		case 1:
+			g_show_collect_paes = -1;
+			break;
+
+		case 2:
+			g_show_collect_paes = 1;
+			break;
+
+
+
+
+
+
+
+
+
+		case -1:
+		default:
+			g_show_collect_paes = -2;
+			break;
+		}
+	}
+
+
+	if (g_show_collect_paes != -2) return 1;
+
+
+
+
+
+
+
+	if (analog_x < 80) {
+		if (cheat_money == 0) cheat_money = l_mod_player.opp_money / 200;
+		l_mod_player.my_money -= cheat_money;
+		l_mod_player.opp_money += cheat_money;
+	}
+
+	if (analog_x > 170) {
+		if (cheat_money == 0) cheat_money = l_mod_player.opp_money / 200;
+		l_mod_player.my_money += cheat_money;
+		l_mod_player.opp_money -= cheat_money;
+	}
+
+
+
+	if ((padd & 0x80) && key_enable[7]) {
+		if (g_stage_status != 14) return 1;
+		inputManager.g_cursor_pos--;
+		set_key_enable(7, 0);
+	}
+
+
+	if ((padd & 0x20) && key_enable[7]) {
+		if (g_stage_status != 14) return 1;
+		inputManager.g_cursor_pos++;
+		set_key_enable(7, 0);
+	}
+
+
+	if ((padd & 0x10) && key_enable[7]) {
+		if (inputManager.g_cursor_pos >= 5)
+			inputManager.g_cursor_pos -= 5;
+
+		set_key_enable(7, 0);
+	}
+
+
+	if ((padd & 0x40) && key_enable[7]) {
+
+		if (inputManager.g_cursor_pos < 5 && limit >= 5)
+			inputManager.g_cursor_pos += 5;
+
+		set_key_enable(7, 0);
+	}
+
+
+	if (inputManager.g_cursor_pos <= 0)
+		inputManager.g_cursor_pos = 0;
+
+	if (inputManager.g_cursor_pos >= limit)
+		inputManager.g_cursor_pos = limit - 1;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	if ((padd & 0x1000) && key_enable[2]) {
+		stop_timer();
+
+
+
+
+		init_all();
+		gameManager.goto_stage(4);
+
+		set_key_enable(2, 0);
+	}
+
+
+
+	if ((padd & 0x4000) && key_enable[4]) {
+
+		set_key_enable(4, 0);
+
+		if (g_stage_status == 94) {
+			set_key_enable(1, 0);
+
+			gameManager.goto_stage(95);
+			return;
+
+
+
+		} else if (g_stage_status == 95) {
+
+
+
+
+
+
+
+
+
+
+
+
+			if (mod_game.game_type == 1 && mod_player.level[mod_player.active_player] >= 13) {
+				stop_timer();
+				gameManager.goto_stage(96);
+				set_key_enable(3, 0);
+				set_key_enable(4, 0);
+				return;
+			}
+
+			mod_system.return_value = 6;
+			g_continue = 0;
+		}
+
+
+
+
+		strcpy(warning_msg, "  \xb0\xd4\xc0\xd3\xc0\xbb \xc1\xbe\xb7\xe1\xc7\xd5\xb4\xcf\xb4\xd9.\n\n  \xb8\xde\xb4\xba\xb7\xce \xb5\xb9\xbe\xc6\xb0\xa9\xb4\xcf\xb4\xd9");
+	}
+
+
+
+	if ((padd & 0x8000) && key_enable[3]) {
+
+		stop_timer();
+
+		if (g_stage_status == 28) {
+
+
+
+
+
+
+
+
+
+
+
+
+			g_confirm = 1;
+			gameManager.goto_stage(15);
+
+
+
+
+
+
+
+
+			set_key_enable(1, 0);
+			set_key_enable(3, 0);
+			return 1;
+		} else if (g_stage_status == 27) {
+
+
+
+
+
+
+
+			g_confirm = 1;
+			gameManager.goto_stage(14);
+
+			set_key_enable(1, 0);
+			set_key_enable(3, 0);
+			return 1;
+		} else if (g_stage_status == 31) {
+			print_nothing("input changed confirm to 1\n");
+
+
+
+
+
+
+			g_confirm = 1;
+			gameManager.goto_stage(18);
+
+			set_key_enable(1, 0);
+			set_key_enable(3, 0);
+			return 1;
+		} else if (g_stage_status == 29) {
+			print_nothing("input changed confirm to 1\n");
+
+
+
+
+
+
+			g_confirm = 1;
+			gameManager.goto_stage(61);
+
+			set_key_enable(1, 0);
+			set_key_enable(3, 0);
+			return 1;
+		} else if (g_stage_status == 32) {
+			print_nothing("input changed confirm2 to 1\n");
+
+
+
+
+
+
+			g_confirm2 = 1;
+			gameManager.goto_stage(20);
+
+			set_key_enable(1, 0);
+			set_key_enable(3, 0);
+			return 1;
+		} else if (g_stage_status == 71) {
+
+
+
+
+
+
+			g_confirm = 1;
+
+			gameManager.goto_stage(61);
+
+			set_key_enable(1, 0);
+			set_key_enable(3, 0);
+			return 1;
+		} else {
+			printGlobal("from input");
+			set_key_enable(3, 0);
+		}
+	}
+
+
+
+	if ((padd & 0x2000) && key_enable[1]) {
+		press_circle();
+		set_key_enable(1, 0);
+	}
+
+
+
+	return 1;
+}
+
+__asm__(".globl pad_read");
+
+
+
