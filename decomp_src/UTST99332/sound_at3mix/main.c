@@ -119,7 +119,33 @@ void sceGumPerspective(float fovy, float aspect, float near, float far);
 void sceGumSetMatrixStack(void *stack, int proj, int view, int model, int texture);
 
 
-INCLUDE_ASM("tmp/asm/UTST99332/sound_at3mix/nonmatchings/main", file_read);
+int sceIoOpen(const char *file, int flags, int mode);
+long long sceIoLseek(int fd, long long offset, int whence);
+int sceIoRead(int fd, void *data, unsigned int size);
+int sceIoClose(int fd);
+void sceKernelDcacheWritebackAll(void);
+
+static int file_read(const char *pFile, void *pBuf, unsigned int uBufSize, unsigned int *uSize, unsigned int uOffset)
+{
+	SceUID fd;
+
+	fd = sceIoOpen(pFile, 1, 0);
+	if (fd < 0) {
+		return -1;
+	}
+
+	*uSize = sceIoLseek(fd, 0, 2) - uOffset;
+	if (*uSize > uBufSize) {
+		*uSize = uBufSize;
+	}
+
+	sceIoLseek(fd, uOffset, 0);
+	sceIoRead(fd, pBuf, *uSize);
+	sceIoClose(fd);
+	sceKernelDcacheWritebackAll();
+
+	return 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/sound_at3mix/nonmatchings/main", sound_init_all);
 
