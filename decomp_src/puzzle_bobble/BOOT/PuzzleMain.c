@@ -1103,7 +1103,31 @@ int GetBallNext(PZL_STAT *st, int flag)
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", CheckBallTouch);
 
+#ifdef NON_MATCHING
+/* Close (diff 21): st and pos get s1/s0 swapped (the original gives st s0) and pos / w lands in
+ * pos's register instead of a scratch one. */
+int CheckBallCollision(PZL_STAT *st)
+{
+	int ret = 0;
+	int pos, w;
+
+	st->color = 0;
+	if (st->cur + 1 > 0 && st->cur + 1 < 9) {
+		pos = CvtBallPos2MapPos(st, 0, 0);
+		st->mp.map[pos] = st->cur + 1;
+		w = GetMapWidth(st->mapno);
+		if (CheckBallAround(st, (pos % w * 2 + (pos / w & 1)) * 8, pos / w * 14) && st->color)
+			ret = 1;
+	}
+	if (st->unk45C)
+		st->color = st->snd.unk0;
+	if (st->color)
+		CheckOneColorAll(st);
+	return ret;
+}
+#else
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", CheckBallCollision);
+#endif
 
 int CvtBallPos2MapPos(PZL_STAT *st, int x, int y)
 {
