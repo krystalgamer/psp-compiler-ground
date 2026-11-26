@@ -403,7 +403,86 @@ loop_1:
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_depthblur/nonmatchings/main", StartMainThread);
+#define SCE_KERNEL_USER_LOWEST_PRIORITY         111
+#define SCE_KERNEL_TH_USE_ScratchSRAM   0x00008000U
+#define SCE_KERNEL_TH_USE_VFPU          0x00004000U
+#define SCE_KERNEL_ERROR_NO_MEMORY 0x80020190
+#define SCE_KERNEL_ERROR_ILLEGAL_ATTR 0x80020191
+#define SCE_KERNEL_ERROR_ILLEGAL_STACK_SIZE 0x80020194
+#define SCE_KERNEL_ERROR_ILLEGAL_PRIORITY 0x80020193
+#define SCE_KERNEL_ERROR_ILLEGAL_ENTRY 0x80020192
+#define SCE_KERNEL_ERROR_SPAD_INUSE 0x800201b9
+#define SCE_KERNEL_ERROR_UNKNOWN_THID 0x80020198
+#define SCE_KERNEL_ERROR_ILLEGAL_THID 0x80020197
+#define SCE_KERNEL_ERROR_ILLEGAL_CONTEXT 0x80020064
+#define SCE_KERNEL_ERROR_NOT_DORMANT 0x800201a4
+
+extern const char D_00015340[], D_00015348[], D_00015358[], D_00015368[], D_00015394[], D_000153A0[], D_000153B0[], D_000153BC[], D_000153CC[], D_000153E0[], D_000153F4[], D_00015404[];
+int puts(const char *s);
+void StartMainThread()
+{
+	SceUID main_thread = 0;
+
+	main_thread = sceKernelCreateThread( D_00015340, MainThread,
+		SCE_KERNEL_USER_LOWEST_PRIORITY, 256*100,
+		SCE_KERNEL_TH_USE_VFPU, NULL );
+
+	if ( ((unsigned int)main_thread) == SCE_KERNEL_ERROR_NO_MEMORY )
+	{
+		puts(D_00015404);
+	}
+	else if ( ((unsigned int)main_thread) == SCE_KERNEL_ERROR_ILLEGAL_ATTR )
+	{
+		puts(D_000153F4);
+	}
+	else if ( ((unsigned int)main_thread) == SCE_KERNEL_ERROR_ILLEGAL_STACK_SIZE )
+	{
+		puts(D_000153E0);
+	}
+	else if ( ((unsigned int)main_thread) == SCE_KERNEL_ERROR_ILLEGAL_CONTEXT )
+	{
+		puts(D_000153A0);
+	}
+	else if ( ((unsigned int)main_thread) == SCE_KERNEL_ERROR_ILLEGAL_PRIORITY )
+	{
+		puts(D_000153CC);
+	}
+	else if ( ((unsigned int)main_thread) == SCE_KERNEL_ERROR_ILLEGAL_ENTRY )
+	{
+		puts(D_000153BC);
+	}
+	else if ( ((unsigned int)main_thread) == SCE_KERNEL_ERROR_SPAD_INUSE )
+	{
+		puts(D_000153B0);
+	}
+	else
+	{
+		int err = sceKernelStartThread( main_thread, 0, NULL );
+
+		if ( ((unsigned int)err) == SCE_KERNEL_ERROR_UNKNOWN_THID )
+		{
+			puts(D_00015348);
+		}
+		else if ( ((unsigned int)err) == SCE_KERNEL_ERROR_ILLEGAL_THID )
+		{
+			puts(D_00015358);
+		}
+		else if ( ((unsigned int)err) == SCE_KERNEL_ERROR_ILLEGAL_CONTEXT )
+		{
+			puts(D_000153A0);
+		}
+		else if ( ((unsigned int)err) == SCE_KERNEL_ERROR_NOT_DORMANT )
+		{
+			puts(D_00015394);
+		}
+		else
+		{
+			puts(D_00015368);
+
+			sceKernelSleepThread();
+		}
+	}
+}
 
 int main(void) {
     StartMainThread();
