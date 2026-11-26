@@ -355,7 +355,8 @@ modules (`tools/nltest.py`, `tools/objcmp.py`).
   release 1.6.1 objects link `.rodata`, `.rodata.cst4`, `.rodata.cst8` in
   first-use order (all units fit; `-fno-merge-constants` contradicts 5 of
   them, e.g. `psp_dev`, `inv_game`), while UTST99261's 1.6.1 mp3 units break
-  with that order. `config/compilers.txt` now takes per-module additions
+  with that order. flowars is the same (animator: every function's doubles,
+  then floats, then strings). `config/compilers.txt` now takes per-module additions
   (`@psp184/spaceinvaders 1.6.1 objorder`). Its libwave/libgum are built
   `-O2 -frename-registers`, UTST99332's plain `-O2`: also per game.
 
