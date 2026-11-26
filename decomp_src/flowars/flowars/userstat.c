@@ -167,6 +167,9 @@ static int go(int flagPlayer);
 static void get_user_score(int flagPlayer, UserScore *userScore);
 static void get_user_stat(int flagPlayer, UserStat *userStat);
 static void set_result_score(int win_user, int flag_think_gukjin);
+double pow(double x, double y);
+int count_array(int *a, int a_size);
+void *memset(void *s, int c, unsigned int n);
 
 
 extern int D_000656C8;
@@ -448,7 +451,149 @@ static void get_user_stat(int flagPlayer, UserStat *userStat)
 
 __asm__(".globl get_user_stat");
 
-INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/userstat", set_result_score);
+static void set_result_score(int win_user, int flag_think_gukjin)
+{
+	UserScore uscore;
+	UserStat ustat, oppstat;
 
-/* set_result_score's double 2.0 (asm until set_result_score is C), in .rodata.cst8 like C */
-__asm__(".pushsection .rodata.cst8,\"aM\",@progbits,8\n\t.align 3\n.globl D_0002F850\nD_0002F850:\n\t.word 0x00000000\n.globl D_0002F854\nD_0002F854:\n\t.word 0x40000000\n\t.popsection");
+	int totalsum;
+	int baesu = 1;
+
+	int no_eat_except = 0;
+
+	memset(&g_result_score, 0, sizeof(g_result_score));
+
+	if (win_user == -1)
+		return;
+	userManager.get_score(win_user, &uscore);
+	userManager.get_stat(win_user, &ustat);
+
+	g_result_score.score = uscore;
+	totalsum = uscore.total;
+
+	if (win_user == 1) {
+		userManager.get_stat(0, &oppstat);
+
+		int pnum = collectManager.count_not_flying_pi(0);
+
+		if (flag_think_gukjin == 1 && g_stage_status < 72) {
+			if (collectManager.find_gukjin(0))
+				pnum += 2;
+		}
+
+		if (uscore.pi > 0 && pnum > 0 && pnum < 8)
+			g_result_score.p_bak = 1;
+		else
+			g_result_score.p_bak = 0;
+
+		if (uscore.gwang > 0 && count_array(g_my_collection_gwang, 5) == 0)
+			g_result_score.g_bak = 1;
+		else
+			g_result_score.g_bak = 0;
+
+		if (count_array(g_opp_collection_mung, 9) >= 7)
+			g_result_score.m_bak = 1;
+		else
+			g_result_score.m_bak = 0;
+
+		if (collectManager.count(0, 0, 0, 0, 0) == 0)
+			no_eat_except = 1;
+	} else {
+		userManager.get_stat(1, &oppstat);
+
+		int pnum = collectManager.count_not_flying_pi(1);
+
+		if (g_stage_status < 72) {
+			if (collectManager.find_gukjin(1))
+				pnum += 2;
+		}
+
+		if (uscore.pi > 0 && pnum > 0 && pnum < 8)
+			g_result_score.p_bak = 1;
+		else
+			g_result_score.p_bak = 0;
+
+		if (uscore.gwang > 0 && count_array(g_opp_collection_gwang, 5) == 0)
+			g_result_score.g_bak = 1;
+		else
+			g_result_score.g_bak = 0;
+
+		if (count_array(g_my_collection_mung, 9) >= 7)
+			g_result_score.m_bak = 1;
+		else
+			g_result_score.m_bak = 0;
+
+		if (collectManager.count(1, 0, 0, 0, 0) == 0)
+			no_eat_except = 1;
+	}
+
+	if (ustat.go > 0) {
+		g_result_score.go_add = ustat.go;
+		totalsum += ustat.go;
+	}
+
+	if (oppstat.go > 0) {
+		g_result_score.go_bak = 2;
+		baesu = 2;
+	}
+
+	if (g_result_score.p_bak > 0) baesu *= 2;
+	if (g_result_score.g_bak > 0) baesu *= 2;
+	if (g_result_score.m_bak > 0) baesu *= 2;
+
+	if (ustat.go >= 3) {
+		g_result_score.go_baesu = (int)pow(2.0, ustat.go - 2);
+		baesu *= g_result_score.go_baesu;
+	}
+
+	if (ustat.shake > 0) {
+		g_result_score.shake_baesu = (int)pow(2.0, ustat.shake);
+		baesu *= g_result_score.shake_baesu;
+	}
+
+	if (ustat.sp_success[6]) {
+		if (g_mission_type == 1)
+			g_result_score.mission_baesu = g_mission_baesu;
+		else if (g_mission_type == 2)
+			g_result_score.mission_baesu = (int)pow(2.0, ustat.sp_success[6]);
+		else if (g_mission_type == 3)
+			g_result_score.mission_baesu = ustat.sp_success[6] * 2;
+
+		if (g_result_score.mission_baesu > 0)
+			baesu *= g_result_score.mission_baesu;
+	}
+
+	if (g_nagari_count > 0) {
+		g_result_score.nagari_baesu = (int)pow(2.0, g_nagari_count);
+		baesu *= g_result_score.nagari_baesu;
+	} else
+		g_result_score.nagari_baesu = 1;
+
+	totalsum *= baesu;
+	g_result_score.total_baesu = baesu;
+	g_result_score.score.total = totalsum;
+
+	if (ustat.sp_success[7]) {
+		if (g_round_count == 3) {
+			g_result_score.money_sum = g_bet_money * 28;
+			g_result_score.total_baesu = g_result_score.nagari_baesu * 4;
+		} else {
+			g_result_score.money_sum = g_bet_money * 7;
+			g_result_score.total_baesu = g_result_score.nagari_baesu * 2;
+		}
+		if (g_nagari_count > 0)
+			g_result_score.money_sum *= g_result_score.nagari_baesu;
+	} else if (ustat.sp_success[8]) {
+		g_result_score.money_sum = g_bet_money * 14;
+		g_result_score.total_baesu = g_result_score.nagari_baesu * 2;
+		if (g_nagari_count > 0)
+			g_result_score.money_sum *= g_result_score.nagari_baesu;
+	} else {
+		g_result_score.money_sum = totalsum * g_bet_money;
+		if (no_eat_except)
+			g_result_score.money_sum = 0;
+	}
+}
+
+__asm__(".globl set_result_score");
+
