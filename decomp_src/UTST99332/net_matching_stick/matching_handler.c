@@ -179,8 +179,150 @@ INCLUDE_RODATA("tmp/asm/UTST99332/net_matching_stick/nonmatchings/matching_handl
 
 INCLUDE_RODATA("tmp/asm/UTST99332/net_matching_stick/nonmatchings/matching_handler", D_000190B4);
 
-INCLUDE_RODATA("tmp/asm/UTST99332/net_matching_stick/nonmatchings/matching_handler", D_000190B8);
+void change_state(enum matching_room_state state);
+int sceNetEtherNtostr(const struct SceNetEtherAddr *addr, char *str);
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_matching_stick/nonmatchings/matching_handler", child_handler);
+void child_handler(int id, int ev, struct SceNetEtherAddr *peer, int optlen, void *opt)
+{
+	char etherstr[18];
+	int i;
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_matching_stick/nonmatchings/matching_handler", parent_handler);
+	if (ev == 1 && optlen == sizeof(struct p2p_hello_opt)) {
+		if (((struct p2p_hello_opt *)opt)->game_type != GAME_TYPE_PARENT) {
+			return;
+		}
+	}
+
+	sceNetEtherNtostr(peer, etherstr);
+	printf("%s from %s\n", eventtypestr[ev], etherstr);
+
+	sceKernelWaitSema(minfo_sid, 1, NULL);
+	i = get_minfo_id(peer);
+	if (i < 0) {
+		goto bad;
+	}
+
+	switch (ev) {
+	case 1:
+		if (minfo[i].status == 5) {
+			break;
+		}
+		minfo[i].status = 2;
+		memcpy(&minfo[i].addr, peer, sizeof(struct SceNetEtherAddr));
+		if (optlen == sizeof(struct p2p_hello_opt)) {
+			memcpy(&minfo[i].hello_opt, opt, sizeof(struct p2p_hello_opt));
+		}
+		break;
+	case 4:
+		if (_mrinfo.state == MATCHING_ROOM_REQUESTING && i == _mrinfo.requesting_minfo_id) {
+			clear_minfo(i);
+			change_state(MATCHING_ROOM_DENIED);
+		}
+		break;
+	case 6:
+		if (optlen == sizeof(struct SceNetAdhocctlGroupName)) {
+			game_group_name = *(struct SceNetAdhocctlGroupName *)opt;
+		}
+		break;
+	case 7:
+		memcpy(&_mrinfo.parent_addr, peer, sizeof(struct SceNetEtherAddr));
+		_mrinfo.agreed_hello_opt = &minfo[i].hello_opt;
+		minfo[i].status = 5;
+		change_state(MATCHING_ROOM_CHILD_ENTER_ROOM);
+		break;
+	case 10:
+		if ((_mrinfo.state == MATCHING_ROOM_CHILD_ENTER_ROOM || _mrinfo.state == MATCHING_ROOM_CHILD_WAIT)
+		    && i == _mrinfo.requesting_minfo_id) {
+			clear_minfo(i);
+			change_state(MATCHING_ROOM_CANCELED);
+			break;
+		}
+		if (minfo[i].status == 5) {
+			break;
+		}
+		/* fallthrough */
+	case 8:
+		clear_minfo(i);
+		if (i != _mrinfo.requesting_minfo_id) {
+			break;
+		}
+		switch (_mrinfo.state) {
+		case MATCHING_ROOM_REQUESTING:
+			change_state(MATCHING_ROOM_DENIED);
+			break;
+		case MATCHING_ROOM_CHILD_ENTER_ROOM:
+		case MATCHING_ROOM_CHILD_WAIT:
+			change_state(MATCHING_ROOM_CANCELED);
+			break;
+		default:
+			break;
+		}
+		break;
+	}
+
+bad:
+	sceKernelSignalSema(minfo_sid, 1);
+}
+
+int matching_parent_select(struct SceNetEtherAddr *addr);
+int sceNetAdhocMatchingCancelTarget(int id, const struct SceNetEtherAddr *mac);
+int sceNetAdhocMatchingSetHelloOpt(int id, int optlen, const void *opt);
+
+void parent_handler(int id, int ev, struct SceNetEtherAddr *peer, int optlen, void *opt)
+{
+	int ret, i;
+	char etherstr[18];
+
+	sceNetEtherNtostr(peer, etherstr);
+	printf("%s from %s\n", eventtypestr[ev], etherstr);
+
+	if (_mrinfo.state >= MATCHING_ROOM_PARENT_START_INFORM && _mrinfo.state <= MATCHING_ROOM_PARENT_INFORM_FLUSH) {
+		goto bad;
+	}
+
+	sceKernelWaitSema(minfo_sid, 1, NULL);
+
+	i = get_minfo_id(peer);
+	if (i < 0) {
+		goto bad;
+	}
+
+	switch (ev) {
+	case 2:
+		if (_mrinfo.state != MATCHING_ROOM_PARENT_WAIT) {
+			sceNetAdhocMatchingCancelTarget(_mrinfo.ctx_id, &minfo[i].addr);
+			break;
+		}
+		memcpy(&minfo[i].addr, peer, sizeof(struct SceNetEtherAddr));
+		matching_parent_select(peer);
+		minfo[i].status = 3;
+		break;
+	case 3:
+	case 5:
+		if (minfo[i].status == 3) {
+			clear_minfo(i);
+			break;
+		}
+		/* fallthrough */
+	case 8:
+	case 10:
+		if (minfo[i].status == 6) {
+			break;
+		}
+		if (minfo[i].status == 5) {
+			_mrinfo.hello_opt.cur_player_num--;
+			sceNetAdhocMatchingSetHelloOpt(_mrinfo.ctx_id, sizeof(struct p2p_hello_opt), &_mrinfo.hello_opt);
+		}
+		clear_minfo(i);
+		break;
+	case 7:
+		_mrinfo.agreed_hello_opt = &_mrinfo.hello_opt;
+		minfo[i].status = 5;
+		_mrinfo.hello_opt.cur_player_num++;
+		sceNetAdhocMatchingSetHelloOpt(_mrinfo.ctx_id, sizeof(struct p2p_hello_opt), &_mrinfo.hello_opt);
+		break;
+	}
+
+bad:
+	sceKernelSignalSema(minfo_sid, 1);
+}
