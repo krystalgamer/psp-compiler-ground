@@ -118,7 +118,39 @@ void MEM_free(MEMHEAP *pool, void *p) {
     mem_free(pool, p);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/wsmem", MEM_addHaltCallback);
+void *MEM_addHaltCallback(MEMHEAP *h_, void (*handler)(void)) {
+    void *old;
+    int self;
+    int i;
+    MEMHEAP *h;
+
+    h = h_;
+    if (h == NULL) {
+        h = mem_defaultPool;
+    }
+    old = NULL;
+    self = OS_thread_self();
+    OS_thread_mutex_lock(h->mutex);
+    for (i = 0; i < 16; i++) {
+        if (h->handlers[i].state != 0 && h->handlers[i].thread == self) {
+            old = h->handlers[i].handler;
+            h->handlers[i].handler = handler;
+            break;
+        }
+    }
+    if (i >= 16) {
+        for (i = 0; i < 16; i++) {
+            if (h->handlers[i].state == 0) {
+                h->handlers[i].state = 1;
+                h->handlers[i].thread = self;
+                h->handlers[i].handler = handler;
+                break;
+            }
+        }
+    }
+    OS_thread_mutex_unlock(h->mutex);
+    return old;
+}
 
 void MEM_agent(MEMHEAP *pool, int flag) {
     MEMBLOCK *b;
