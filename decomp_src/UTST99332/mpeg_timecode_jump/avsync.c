@@ -152,7 +152,38 @@ SceInt32 avsync_video_getPts(t_avSyncControl *pAvSync, SceUInt32 *pPts)
 	return ret;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/mpeg_timecode_jump/nonmatchings/avsync", avsync_Compare);
+SceInt32 avsync_Compare(t_avSyncControl *pAvSync)
+{
+	SceInt32 ret;
+	SceInt32 ptsDiff;
+	SceUInt32 soundPts, videoPts;
+
+	if (pAvSync->pSound == NULL) {
+		ret = 1;
+		goto term;
+	}
+
+	if (soundbuf_getCurrentCount(pAvSync->pSound) == 0 || dispbuf_getCurrentCount(pAvSync->pDisp) == 0) {
+		ret = 1;
+		goto term;
+	}
+
+	soundbuf_getPts(pAvSync->pSound, &soundPts);
+	dispbuf_getPts(pAvSync->pDisp, &videoPts);
+
+	ptsDiff = soundPts - videoPts;
+
+	if (ptsDiff >= -(videoIntervalSize * 2) && ptsDiff <= videoIntervalSize * 2) {
+		ret = 1;
+	} else {
+		if (ptsDiff > videoIntervalSize * 2)
+			ret = 2;
+		else
+			ret = 4;
+	}
+term:
+	return ret;
+}
 
 int avsync_video_createNextPts(t_avSyncControl *pAvSync, unsigned int pts, unsigned int *pNextPts) {
     unsigned int var_a1;
