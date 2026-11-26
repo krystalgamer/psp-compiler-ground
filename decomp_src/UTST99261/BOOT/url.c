@@ -72,6 +72,16 @@ MFILE *UTL_mfilecreate(int bsize);
 QUEUE *UTL_peekqueue(QUEUE *q, QUEUE *e);
 int UTL_mfilewrite(void *f, void *buf, unsigned int n);
 
+typedef struct {
+    int type;
+    char *mime;
+    char *ext;
+} CNTTBL;
+extern const CNTTBL cnt_tbl[];
+int strcasecmp(const char *a, const char *b);
+char *trimspace(char *s);
+char *toAbsoluteURL(char *base, char *rel);
+
 M2C_UNK createGifContext();                         /* extern */
 M2C_UNK deleteGifContext();                         /* extern */
 M2C_UNK initializeGifContext();                     /* extern */
@@ -263,7 +273,25 @@ void URL_setAnchor(URL *u, char *s) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/url", URL_toString);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/url", URL_toAbsoluteURL);
+char *URL_toAbsoluteURL(char *base, char *rel) {
+    char *b;
+    char *r;
+    char *res;
+
+    b = trimspace(base);
+    if (b == NULL) {
+        return NULL;
+    }
+    r = trimspace(rel);
+    if (r == NULL) {
+        MEM_free(NULL, b);
+        return NULL;
+    }
+    res = toAbsoluteURL(b, r);
+    MEM_free(NULL, r);
+    MEM_free(NULL, b);
+    return res;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/url", URL_equals);
 
@@ -287,7 +315,19 @@ char *URL_toLocalFileName(char *url) {
     return pathMake(url);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/url", UTL_isSupportedMIMEType);
+int UTL_isSupportedMIMEType(char *mime) {
+    int i;
+
+    if (mime == NULL) {
+        return 0;
+    }
+    for (i = 0; cnt_tbl[i].type != -1; i++) {
+        if (cnt_tbl[i].mime != NULL && strcasecmp(cnt_tbl[i].mime, mime) == 0) {
+            return 1;
+        }
+    }
+    return 0;
+}
 
 int UTL_isSupportedFileType(char *name) {
     if (strrchr(name, '.') == NULL) {
@@ -298,7 +338,19 @@ int UTL_isSupportedFileType(char *name) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/url", UTL_guessMIMETypeFromName);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/url", UTL_guessMIMEType);
+int UTL_guessMIMEType(char *mime) {
+    int i;
+
+    if (mime == NULL) {
+        return -1;
+    }
+    for (i = 0; cnt_tbl[i].type != -1; i++) {
+        if (cnt_tbl[i].mime != NULL && strcasecmp(cnt_tbl[i].mime, mime) == 0) {
+            return cnt_tbl[i].type;
+        }
+    }
+    return -1;
+}
 
 int UTL_isNumber(char *s, int len) {
     int i;
