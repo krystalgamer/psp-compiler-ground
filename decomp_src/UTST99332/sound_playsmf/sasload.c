@@ -44,7 +44,25 @@ int load_module(unsigned char *filename, SceKernelLMOption *lm_opt, SceKernelSMO
     return temp_v0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/sound_playsmf/nonmatchings/sasload", unload_module);
+int printf(const char *fmt, ...);
+int sceKernelStopModule(SceUID modid, SceSize argsize, void *argp, int *status, SceKernelSMOption *option);
+int sceKernelUnloadModule(SceUID modid);
+static int unload_module(SceUID mid)
+{
+	int ret;
+
+	ret = sceKernelStopModule(mid, 0, NULL, NULL, NULL);
+	if (ret < 0) {
+		printf("fatal error : cannot stop module 0x%08x\n", ret);
+		return ret;
+	}
+	ret = sceKernelUnloadModule(mid);
+	if (ret < 0) {
+		printf("fatal error : cannot unload module 0x%08x\n", ret);
+		return ret;
+	}
+	return 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/sound_playsmf/nonmatchings/sasload", sasload);
 
