@@ -15,8 +15,12 @@ typedef struct {
     s16 unk6A;
 } RSTYLE;
 
-typedef struct {
-    u8 unk0[0x20];
+typedef struct RBOX {
+    struct RBOX *parent;
+    struct RBOX *child;         /* 0x4 */
+    struct RBOX *unk8;
+    struct RBOX *next;          /* 0xC */
+    u8 unk10[0x10];
     RGEOM *geom;                /* 0x20 */
     RSTYLE *style;              /* 0x24 */
     u8 unk28[0x8];
@@ -184,7 +188,21 @@ void relayoutAtBodyOnly(RBOX *box) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_relayout", relayoutByFrameBorderMove);
+void relayoutByFrameBorderMove(RBOX *box) {
+    RLCTX ctx;
+
+    if (box != NULL && box->content == 1) {
+        ctx.a = box;
+        ctx.b = box;
+        ctx.c = box;
+        ctx.d = (u8 *)box->geom + 0x90;
+        ctx.e = box->region;
+        ctx.f = 0;
+        repositionBox_body(box, 0);
+        relayoutBoxTreeLoop(&ctx, box);
+        calcBoxSize(&ctx, box);
+    }
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_relayout", relayoutFramesetByFrameBorderMove);
 
