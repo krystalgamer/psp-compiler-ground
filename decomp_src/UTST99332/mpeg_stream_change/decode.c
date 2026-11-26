@@ -406,7 +406,36 @@ int decode_getAudioOutSize(t_mpegStreamData *pStreamData) {
     return pStreamData->audioOutSize;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/mpeg_stream_change/nonmatchings/decode", decode_setRegistStream);
+SceInt32 decode_setRegistStream(t_mpegStreamData *pStreamData, SceInt32 streamType, SceInt32 ch)
+{
+	SceInt32 ret;
+	SceMpegStream *pStream;
+
+	ret = 0;
+
+	switch (streamType) {
+	case 0:
+		if (pStreamData->videoStreamNum < 16) {
+			pStream = sceMpegRegistStream(pStreamData->pMpeg, streamType, ch);
+			pStreamData->pVideoStream[pStreamData->videoStreamNum] = pStream;
+			pStreamData->videoStreamNum++;
+		} else {
+			return -1;
+		}
+		break;
+	case 1:
+		if (pStreamData->audioStreamNum < 16) {
+			pStream = sceMpegRegistStream(pStreamData->pMpeg, streamType, ch);
+			pStreamData->pAudioStream[pStreamData->audioStreamNum] = pStream;
+			pStreamData->audioStreamNum++;
+		} else {
+			ret = -1;
+		}
+		break;
+	}
+
+	return ret;
+}
 
 SceInt32 decode_unRegistStream(t_mpegStreamData *pStreamData, SceMpegStrType streamType)
 {
