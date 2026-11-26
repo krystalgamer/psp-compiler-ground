@@ -20,14 +20,20 @@ typedef struct {
     int flags;                  /* 0x0 */
     u8 unk4[0x44];
     int timer;                  /* 0x48 */
-    u8 unk4C[0x28];
+    u8 unk4C[0x1C];
+    int unk68;
+    int unk6C;
+    int unk70;
     PJSCTX *js;                 /* 0x74 */
 } PLOGLOBAL;
 
 typedef struct {
     int unk0;
     int unk4;
-    u8 unk8[0x14];
+    int unk8;
+    int unkC;
+    int unk10;
+    u8 unk14[0x8];
     void *data;                 /* 0x1C */
 } PMSG;
 
@@ -51,6 +57,45 @@ void JSStart();
 void getDataAttribute();
 int make_msg_LP11();
 void putLLIST();
+typedef struct {
+    u8 unk0[0x70];
+    void *focus;                /* 0x70 */
+} PGEOM;
+typedef struct {
+    u8 unk0[0x20];
+    PGEOM *geom;                /* 0x20 */
+    u8 unk24[0x1A];
+    s16 unk3E;                  /* 0x3E */
+} PBOX;
+typedef struct {
+    u8 unk0[0xC];
+    PBOX *box;                  /* 0xC */
+} PFOCUS;
+typedef struct {
+    u8 unk0[0x6C];
+    PBOX *body;                 /* 0x6C */
+} PHIST;
+typedef struct {
+    u8 unk0[0x24];
+    int unk24;
+} PPREF;
+typedef struct {
+    int session;
+} PNDA;
+extern PPREF *gPREF_UI;
+extern PNDA *gESPRIT_LO_GLOBAL_NDA;
+PHIST *HST_searchSessionIDHistoryNode(int id);
+int checkBoxValidity(PBOX *b);
+void setUiGlobal_browser(void);
+void GUI_Toolkit_mutexLock(void);
+void GUI_Toolkit_mutexUnlock(void);
+void relayoutAtBody(PBOX *b, int f);
+void drawPaint(PBOX *b);
+PBOX *lo_getActiveFrameBodybox(void);
+void setFocusFocusItem(PBOX *b, void *f, int n);
+void drawFocusItem(void *f);
+int make_msg_LJ7();
+int setTextStrings(PBOX *b, char *s);
 
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_msgBranch_ps", sendJSUnloadEvent);
@@ -83,7 +128,33 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_msgBranch_ps", proc_msg_PL3)
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_msgBranch_ps", proc_msg_PL4);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_msgBranch_ps", proc_msg_PL5);
+void proc_msg_PL5(PMSG *m) {
+    PHIST *h;
+    PBOX *body;
+
+    h = (PHIST *)HST_getHeadHistoryNode();
+    if (h == NULL) {
+        return;
+    }
+    body = h->body;
+    if (body == NULL) {
+        return;
+    }
+    setUiGlobal_browser();
+    GUI_Toolkit_mutexLock();
+    if (m->unk10 == 0) {
+        PPREF *pref;
+
+        pref = gPREF_UI;
+        lo_global.unk6C = pref->unk24;
+        relayoutAtBody(body, 1);
+        lo_global.unk68 = lo_global.unk6C;
+    } else {
+        relayoutAtBody(body, 0);
+    }
+    GUI_Toolkit_mutexUnlock();
+    drawPaint(body);
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -107,7 +178,28 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_msgBranch_ps", proc_msg_PL8)
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_msgBranch_ps", proc_msg_PL11);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_msgBranch_ps", proc_msg_PL15);
+void proc_msg_PL15(PMSG *m) {
+    void *out;
+    PBOX *b;
+    void *f;
+
+    out = NULL;
+    b = lo_getActiveFrameBodybox();
+    if (b != NULL && (f = b->geom->focus) != NULL) {
+        setFocusFocusItem(b, f, 1);
+        drawFocusItem(f);
+    }
+    if (lo_global.flags & 0x40) {
+        lo_global.flags &= ~0x40;
+        out = (void *)make_msg_LJ7(m);
+    } else if (lo_global.flags & 0x80) {
+        lo_global.flags &= ~0x80;
+    }
+    MEM_free(0, m->data);
+    if (out != NULL) {
+        putLLIST(&REQUEST_LLIST, out);
+    }
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_msgBranch_ps", proc_msg_PL13);
 
@@ -132,7 +224,44 @@ char *getInputDataFromMsg(PMSG *msg) {
     return buf;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_msgBranch_ps", proc_msg_PL18);
+void proc_msg_PL18(PMSG *m) {
+    PHIST *h;
+    PBOX *body;
+    PFOCUS *f;
+    PBOX *t;
+    char *s;
+
+    if (gESPRIT_LO_GLOBAL_NDA->session == 0) {
+        return;
+    }
+    h = HST_searchSessionIDHistoryNode(gESPRIT_LO_GLOBAL_NDA->session);
+    if (h == NULL) {
+        return;
+    }
+    body = h->body;
+    if (body == NULL) {
+        return;
+    }
+    if (!checkBoxValidity(body)) {
+        return;
+    }
+    f = body->geom->focus;
+    if (f == NULL) {
+        return;
+    }
+    t = f->box;
+    if (t->unk3E == 1) {
+        return;
+    }
+    s = getInputDataFromMsg(m);
+    if (s != NULL) {
+        setTextStrings(t, s);
+        MEM_free(0, s);
+    }
+    if (m->data != NULL) {
+        MEM_free(0, m->data);
+    }
+}
 
 void proc_msg_PL19(PMSG *msg) {
     int *d;
