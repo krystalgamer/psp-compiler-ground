@@ -303,7 +303,16 @@ void sceGuCallMode(int mode)
 	call_mode = mode;
 }
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", sceGuSignal);
+void sceGuSignal(int signal, int behavior)
+{
+	send_commandi(14, (behavior & 0xffff) | ((signal & 0xff) << 16));
+	send_commandi(12, 0);
+	if (signal == 3) {
+		send_commandi(15, 0);
+		send_commandi(12, 0);
+	}
+	send_commandi_stall(0, 0);
+}
 
 void sceGuBreak(int mode)
 {
@@ -449,7 +458,16 @@ void sceGuDrawBufferList(int psm, void *fbp, int frame_width)
 	send_commandi(157, ((((unsigned int)fbp) & 0xff000000) >> 8) | frame_width);
 }
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", sceGuDepthBuffer);
+void sceGuDepthBuffer(void *zbp, int zbw)
+{
+	FBuf.depth_buffer = zbp;
+	if (!FBuf.depth_width)
+		FBuf.depth_width = zbw;
+	if (FBuf.depth_width != zbw)
+		FBuf.depth_width = zbw;
+	send_commandi(158, ((unsigned int)FBuf.depth_buffer) & 0xffffff);
+	send_commandi(159, ((((unsigned int)FBuf.depth_buffer) & 0xff000000) >> 8) | FBuf.depth_width);
+}
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", sceGuDispBuffer);
 
@@ -494,7 +512,15 @@ void sceGuPatchDivide(int ulevel, int vlevel)
 	send_commandi(54, ((vlevel << 8) | ulevel));
 }
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", sceGuPatchPrim);
+void sceGuPatchPrim(int prim)
+{
+	if (prim == 4)
+		send_commandi(55, 0);
+	else if (prim == 2)
+		send_commandi(55, 1);
+	else if (prim == 0)
+		send_commandi(55, 2);
+}
 
 void sceGuAmbient(unsigned int color)
 {
