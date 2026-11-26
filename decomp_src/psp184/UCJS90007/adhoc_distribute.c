@@ -525,6 +525,11 @@ static void *adhoc_download_maketag(u_int8_t type, void *data, int datalen, void
 	return p;
 }
 
+static __inline__ SceUInt32 sceNetHtonl(SceUInt32 host32)
+{
+	return __builtin_allegrex_wsbw(host32);
+}
+
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/adhoc_distribute", adhoc_download_gettag);
 
 int sceKernelCpuSuspendIntr(void);
@@ -605,4 +610,85 @@ static int adhoc_distribute_worker_thread(SceSize argsize, void *arg)
 	return 0;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/adhoc_distribute", adhoc_distribute_send);
+int sceKernelDelayThread(unsigned int delay);
+int sceNetGetLocalEtherAddr(struct SceNetEtherAddr *addr);
+int sceRtcGetCurrentClockLocalTime(struct ScePspDateTime *time);
+int sceNetAdhocPtpOpen(struct SceNetEtherAddr *srcmac, int srcport, struct SceNetEtherAddr *destmac, int destport, unsigned int bufsize, unsigned int delay, int count, int unk);
+int sceNetAdhocPtpConnect(int id, unsigned int timeout, int nonblock);
+int sceNetAdhocPtpSend(int id, void *data, int *datasize, unsigned int timeout, int nonblock);
+int sceNetAdhocPtpFlush(int id, unsigned int timeout, int nonblock);
+int sceNetAdhocPtpClose(int id, int unk);
+int sceKernelDelayThread(unsigned int delay);
+void adhoc_distribute_log(int color, struct SceNetEtherAddr *peer, const char *fmt, ...);
+static void adhoc_distribute_send(int id)
+{
+	int s;
+	int ret;
+	int leftsize;
+	int len;
+	SceUInt32 datasize;
+	int ptr;
+	struct SceNetEtherAddr local;
+	int retry = 20;
+
+	if (sceNetGetLocalEtherAddr(&local) < 0)
+		return;
+again:
+	if (_info.state != 10 && _info.state != 14 && _info.state != 15 && _info.state != 21 && _info.state != 30)
+		return;
+	sceRtcGetCurrentClockLocalTime(&wctx[id].log_info.start);
+	s = sceNetAdhocPtpOpen(&local, 0x8001, &wctx[id].peer, 0x8001, 0x2D20, 200000, 50, 0);
+	if (s < 0) {
+		ret = s;
+		goto bad;
+	}
+	sctx->workersid[id] = s;
+	ret = sceNetAdhocPtpConnect(s, 10000000, 0);
+	if (ret < 0) {
+		if (ret == (int)0x80410718 && retry-- > 0) {
+			sctx->workersid[id] = 0;
+			sceNetAdhocPtpClose(s, 0);
+			sceKernelDelayThread(500000);
+			goto again;
+		}
+		goto bad;
+	}
+	datasize = sceNetHtonl(sctx->datasize);
+	len = sizeof(datasize);
+	ret = sceNetAdhocPtpSend(s, &datasize, &len, 0, 0);
+	if (ret < 0)
+		goto bad;
+	ret = sceNetAdhocPtpFlush(s, 0, 0);
+	if (ret < 0)
+		goto bad;
+	ptr = 0;
+	leftsize = sctx->datasize;
+	while (leftsize > 0) {
+		len = (leftsize < 0x5A4) ? leftsize : 0x5A4;
+		ret = sceNetAdhocPtpSend(s, (char *)sctx->databuf + ptr, &len, 0, 0);
+		if (ret < 0)
+			goto bad;
+		leftsize -= len;
+		wctx[id].transferred += len;
+		ptr += len;
+	}
+	ret = sceNetAdhocPtpFlush(s, 10000000, 0);
+	if (ret < 0 && ret != (int)0x80410715)
+		goto bad;
+	sceRtcGetCurrentClockLocalTime(&wctx[id].log_info.finish);
+	sctx->workersid[id] = 0;
+	if (s > 0)
+		sceNetAdhocPtpClose(s, 0);
+	sctx->success++;
+	wctx[id].log_info.error_code = 0;
+	adhoc_distribute_log(0xFF00, &wctx[id].peer, "OK");
+	return;
+bad:
+	sceRtcGetCurrentClockLocalTime(&wctx[id].log_info.finish);
+	sctx->workersid[id] = 0;
+	if (s > 0)
+		sceNetAdhocPtpClose(s, 0);
+	sctx->fail++;
+	wctx[id].log_info.error_code = ret;
+	adhoc_distribute_log(0xFF, &wctx[id].peer, "NG (0x%x)", ret);
+}
