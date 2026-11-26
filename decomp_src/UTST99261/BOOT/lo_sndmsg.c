@@ -11,6 +11,7 @@ extern signed char D_00133950;
 void *memset(void *s, int c, unsigned int n);
 void *memcpy(void *d, const void *s, unsigned int n);
 void MEM_free();
+int utf8ToUcs2();
 unsigned int strlen(const char *s);
 
 void *make_layoutMsg_template(int arg0, int arg1, int arg2) {
@@ -272,7 +273,34 @@ void make_msg_LJ6(void *arg0, int arg1) {
     M2C_FIELD(make_layoutMsg_template(8, M2C_FIELD(arg0, int *, 4), 0x406), int *, 0x34) = (int) (arg1 == 0);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_sndmsg", make_msg_LJ7);
+void *make_msg_LJ7(void *msg) {
+    void *m;
+    u8 *d;
+    int len;
+    int size;
+    int *buf;
+
+    size = 0;
+    buf = NULL;
+    m = make_layoutMsg_template(8, M2C_FIELD(msg, int *, 4), 0x407);
+    M2C_FIELD(m, int *, 0x34) = M2C_FIELD(msg, int *, 0x10);
+    d = M2C_FIELD(msg, u8 **, 0x1C);
+    if (*(int *)d == 2) {
+        len = ((int *)d)[1];
+        d += (len + 3) / 4 * 4 + 8;
+        len = *(int *)d;
+        d += 4;
+        if (len > 0) {
+            size = len * 2 + 6;
+            buf = MEM_malloc(0, size);
+            buf[0] = utf8ToUcs2((u16 *)(buf + 1), d, len);
+            ((u16 *)(buf + 1))[buf[0]] = 0;
+        }
+    }
+    M2C_FIELD(m, int *, 0x3C) = size;
+    M2C_FIELD(m, int **, 0x40) = buf;
+    return m;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
