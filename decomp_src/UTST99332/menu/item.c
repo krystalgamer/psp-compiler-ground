@@ -1,5 +1,62 @@
 #include "common.h"
 
+/* declarations recovered from DWARF */
+typedef unsigned int u_int32;
+struct _anon1;
+struct _anon1 { /* size 0x6 */
+    short int p[3];
+};
+typedef struct _anon1 Gu2dV16;
+typedef struct ScePspFVector3 ScePspFVector3;
+struct ScePspFVector3;
+struct ScePspFVector3 { /* size 0xc */
+    float x;
+    float y;
+    float z;
+};
+struct _anon2;
+struct _anon2 { /* size 0x24 */
+    ScePspFVector3 pos;
+    ScePspFVector3 rot;
+    int cat;
+    int num;
+    int ret;
+};
+typedef struct _anon2 *PMENUDATA;
+struct _anon3;
+struct _anon3 { /* size 0x28 */
+    int step;
+    int cnt;
+    float scale;
+    int alpha;
+    int xstep;
+    int ystep;
+    int max;
+    int select;
+    int repeat;
+    int crossfade;
+};
+typedef struct _anon3 ITEMDATA;
+
+extern PMENUDATA menu;
+extern int catlist[6];
+extern ITEMDATA item;
+
+void InitItem(void);
+static void _DrawItemFade(u_int32 c);
+static void DrawItem2D(void);
+void DrawItem(void);
+void RunItem(void);
+void KeyItem(u_int32 padd, u_int32 cont, float *axis);
+
+void InitItemList(int max);
+void InitLR(void);
+void InitStar(void);
+void SetDice(int cat);
+void SetItemSelect(int num);
+void FadeSetup(int mode, int step, int color);
+void SetLRAnim(int flag);
+
 /* SDK prototypes (tools/sdk_protos.h) */
 void sceGuColor(unsigned int color);
 void sceGuDisable(int state);
@@ -12,9 +69,42 @@ void sceGumRotateX(float angle);
 void sceGumRotateY(float angle);
 void sceGumRotateZ(float angle);
 
-INCLUDE_ASM("tmp/asm/UTST99332/menu/nonmatchings/item", InitItem);
+void InitItem(void)
+{
+	item.alpha = 255;
+	item.max = 0;
+	item.cnt = 0;
+	item.xstep = 0;
+	item.ystep = 0;
+	item.select = 0;
+	item.repeat = 0;
+	item.crossfade = 0;
+	item.step = 0;
+	item.scale = 1.0f;
+	item.max = catlist[menu->cat];
+	InitItemList(item.max);
+	InitLR();
+	InitStar();
+	if (menu->ret) {
+		SetDice(menu->cat);
+		SetItemSelect(menu->num);
+		item.step = 9;
+		menu->ret = 0;
+		item.scale = 1.7f;
+		FadeSetup(1, 8, 0);
+		item.crossfade = 1;
+	} else {
+		SetLRAnim(1);
+	}
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/menu/nonmatchings/item", _DrawItemFade);
+extern Gu2dV16 D_001A3E54[];
+static void _DrawItemFade(u_int32 c)
+{
+	sceGuDisable(9);
+	sceGuColor(c);
+	sceGumDrawArray(6, 0x800100, 2, NULL, D_001A3E54);
+}
 
 INCLUDE_RODATA("tmp/asm/UTST99332/menu/nonmatchings/item", D_0001708C);
 
