@@ -154,7 +154,93 @@ void init_all(void) {
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_pot/nonmatchings/main", init_pos);
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_pot/nonmatchings/main", pad_read);
+extern u_int32 D_000153C8; /* static u_int32 opadd in pad_read (bss is asm) */
+
+static int pad_read(void)
+{
+	u_int32 padd;
+	SceCtrlData buf;
+
+	sceCtrlReadBufferPositive(&buf, 1);
+	padd = buf.Buttons;
+
+	if (padd & 0x10) {
+		pos.rot.x -= 15.0f;
+		if (pos.rot.x <= -360.0f) {
+			pos.rot.x = 0.0f;
+		}
+	}
+
+	if (padd & 0x40) {
+		pos.rot.x += 15.0f;
+		if (pos.rot.x >= 360.0f) {
+			pos.rot.x = 0.0f;
+		}
+	}
+
+	if (padd & 0x80) {
+		pos.rot.y -= 15.0f;
+		if (pos.rot.y <= -360.0f) {
+			pos.rot.y = 0.0f;
+		}
+	}
+
+	if (padd & 0x20) {
+		pos.rot.y += 15.0f;
+		if (pos.rot.y >= 360.0f) {
+			pos.rot.y = 0.0f;
+		}
+	}
+
+	if (padd & 0x100) {
+		pos.trans.z -= 3.0f;
+		if (pos.trans.z < -100.0f) {
+			pos.trans.z = -100.0f;
+		}
+	}
+
+	if (padd & 0x200) {
+		pos.trans.z += 3.0f;
+		if (pos.trans.z > -5.0f) {
+			pos.trans.z = -5.0f;
+		}
+	}
+
+	if (padd & 0x2000) {
+		mode = 1;
+		changed = 1;
+	}
+
+	if (padd & 0x4000) {
+		mode = 2;
+		changed = 1;
+	}
+
+	if (padd & 0x1000) {
+		mode = 3;
+		changed = 1;
+	}
+
+	if (padd & 0x8000) {
+		mode = 0;
+		changed = 1;
+	}
+
+	if (padd & 0x8) {
+		if (D_000153C8 != padd) {
+			init_pos();
+			autoflag ^= 1;
+		}
+	}
+
+	if (padd & 0x1) {
+		return 0;
+	}
+
+	D_000153C8 = padd;
+
+	return 1;
+}
 
 int main(void) {
     int temp_a0;
