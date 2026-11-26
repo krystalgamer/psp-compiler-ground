@@ -1,4 +1,4 @@
-/* cflags: -O2 -frename-registers */
+/* cflags: -O3 */
 #include "common.h"
 
 /* declarations recovered from DWARF */
@@ -80,7 +80,7 @@ struct ScePspFVector4 { /* size 0x10 */
     float y;
     float z;
     float w;
-};
+} __attribute__((aligned(16)));
 struct ScePspFMatrix4 { /* size 0x40 */
     ScePspFVector4 x;
     ScePspFVector4 y;
@@ -159,8 +159,6 @@ void sceGmoModelUpdate(SceGmoModel *model);
 int sceGmoModelGetCurrentMotion(SceGmoModel *model);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/ge/ge_model", geModelNormalTexFunc);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/ge/ge_model", geObjectDraw);
 
 SceGmoModel *sceGmoModelCreate(void *chunk);
 int sceGmoModelLoadFile(SceGmoModel *model, const void *buf, int size, int index);
@@ -300,13 +298,44 @@ void geObjectSetProc(int n, int (*proc)(void *)) {
     ObjProc[n] = proc;
 }
 
+void geObjectDraw(geOBJECT *obj)
+{
+	sceGumPushMatrix();
+
+	sceGumTranslate(&obj->t);
+	sceGumRotateX(obj->r.x * 3.14159265f / 180.0f);
+	sceGumRotateY(obj->r.y * 3.14159265f / 180.0f);
+	sceGumRotateZ(obj->r.z * 3.14159265f / 180.0f);
+	sceGumScale(&obj->s);
+
+	switch (obj->type) {
+	case 0:
+		if (obj->swflag & 0x80000000) {
+			if (geModelMotionFrame(obj->model) <= 1.0f) {
+				obj->model = obj->swflag & 0x7fffffff;
+				obj->swflag = 0x40000000;
+			}
+		} else if (obj->swflag & 0x40000000) {
+			obj->swflag = 0;
+		}
+		sceGumStoreMatrix(&obj->m);
+		geModelDraw(obj->model, obj->step);
+		break;
+	case 1:
+		ObjProc[obj->model](obj);
+		break;
+	}
+
+	sceGumPopMatrix();
+}
+
 void geObjectSwitch(geOBJECT *obj, int num) {
     int temp_a2;
 
     if (obj->type == 0) {
-        temp_a2 = obj->dummy[2];
+        temp_a2 = obj->swflag;
         if ((temp_a2 >= 0) && !(temp_a2 & 0x40000000)) {
-            obj->dummy[2] = num | 0x80000000;
+            obj->swflag = num | 0x80000000;
         }
     }
 }
