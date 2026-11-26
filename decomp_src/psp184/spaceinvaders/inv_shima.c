@@ -29,6 +29,8 @@ extern int wwx, wwy, wwh, www;
 void classic_inv_shotsub(int a, int b, int c, int d, int e, int f, int g, int h, int i, int j);
 
 typedef struct { int f0; int f4; int f8; int fC; int f10; int f14; int f18; int f1C; } SEXP_T;
+typedef struct { int f0, f4, f8, fc, f10, f14, f18, f1c, f20, f24, f28, f2c, f30, f34, f38, f3c, f40, f44; } SPR_T;
+extern SPR_T *spr[];
 
 extern int classic_fade_x;
 extern int D_0039AED0;
@@ -137,7 +139,32 @@ void classic_inv_init_pos(void) {
     classic_inv_init_pos_sub(1);
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_shima", classic_inv_ready);
+extern int enemove_c_1p, enemove_c_2p;
+int classic_inv_ready(void)
+{
+	int ret = 0;
+
+	if (gcnt_28F36C >= 7) {
+		if (nowplay == 0) {
+			spr[enemove_c_1p]->f14 = 0;
+			spr[enemove_c_1p]->f30++;
+			enemove_c_1p--;
+			if (enemove_c_1p <= 0) {
+				ret = 1;
+				enemove_c_1p = 55;
+			}
+		} else {
+			spr[enemove_c_2p]->f14 = 1;
+			spr[enemove_c_2p]->f30++;
+			enemove_c_2p--;
+			if (enemove_c_2p < 62) {
+				enemove_c_2p = 116;
+				ret = 1;
+			}
+		}
+	}
+	return ret;
+}
 
 INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_shima", D_0007C05C);
 
@@ -440,7 +467,35 @@ void classic_inv_expsys_set_enemy(int a, int b, int c, int d, int e, int f)
 	classic_inv_expsys_setsub(a, b, c, d, e, f, 1);
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_shima", classic_inv_expsys);
+extern int *maskbuf;
+void spr_boxmask(int tex, int x, int y, int w, int a, int b, int c, int d);
+void classic_inv_expsys(void)
+{
+	int i;
+	SEXP_T *p = (SEXP_T *)&sexp;
+
+	for (i = 0; i < 10; i++, p++) {
+		if (p->f0 != 0) {
+			if (p->f1C) {
+				p->f1C--;
+			} else {
+				switch (p->f0) {
+				case 1:
+					spr_boxfill(p->f4, p->fC, p->f10, p->f14, p->f18, 0);
+					p->f0 = 0;
+					break;
+				case 2:
+					spr_boxmask(maskbuf[7], p->f4, p->fC, p->f10, 16, 16, 256, 256);
+					p->f0 = 0;
+					break;
+				default:
+					p->f0 = 0;
+					break;
+				}
+			}
+		}
+	}
+}
 
 int classic_inv_expsys_chksub(int no)
 {
