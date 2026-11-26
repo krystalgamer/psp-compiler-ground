@@ -71,7 +71,38 @@ INCLUDE_ASM("tmp/asm/tony_libs/pspnet_adhoc_auth/nonmatchings/proto", func_00002
 
 INCLUDE_ASM("tmp/asm/tony_libs/pspnet_adhoc_auth/nonmatchings/proto", func_00002EE0);
 
-INCLUDE_ASM("tmp/asm/tony_libs/pspnet_adhoc_auth/nonmatchings/proto", func_00003188);
+void func_00003188(AuthCtx *ctx, Peer *peer, char *pkt)
+{
+	SaKey key;
+	int s;
+
+	if (ctx->unk0 != 1)
+		return;
+	if (peer == 0 || peer->state != 2)
+		return;
+	key = peer->sa.key;
+	if (sceMemab_driver_CF49BCBB(&key, pkt + 0x14) < 0)
+		return;
+	cancelAlarm(&peer->alarm[0]);
+	peer->sa.key = key;
+	peer->unk4E8 = 0;
+	peer->seq = 0;
+	s = sceKernelCpuSuspendIntr();
+	if (peer->alarm[2] > 0) {
+		sceKernelCancelAlarm(peer->alarm[2]);
+		peer->alarm[2] = 0;
+	}
+	peer->alarm[2] = sceKernelSetAlarm(ctx->unkE8, func_000034D0, &peer->arg[2]);
+	sceKernelCpuResumeIntr(s);
+	s = sceKernelCpuSuspendIntr();
+	if (peer->alarm[1] > 0) {
+		sceKernelCancelAlarm(peer->alarm[1]);
+		peer->alarm[1] = 0;
+	}
+	peer->alarm[1] = sceKernelSetAlarm(ctx->unkE4, func_00003528, &peer->arg[1]);
+	sceKernelCpuResumeIntr(s);
+	func_00003818(ctx, peer, 4);
+}
 
 INCLUDE_ASM("tmp/asm/tony_libs/pspnet_adhoc_auth/nonmatchings/proto", func_00003330);
 

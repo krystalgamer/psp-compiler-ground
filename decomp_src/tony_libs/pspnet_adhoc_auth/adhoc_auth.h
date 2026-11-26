@@ -166,8 +166,12 @@ typedef struct {
 } AuthKey;
 
 /* security association, hashed by the last MAC byte */
+typedef struct {
+	int w[0x30];
+} SaKey;
+
 struct sa {
-	char unk0[0xC0];
+	SaKey key;
 	struct sa *next;
 	struct sa **prev;
 	EtherAddr mac;
@@ -286,6 +290,7 @@ int sceMemab_driver_0C134D3F(void);
 int sceMemab_driver_4DF566D3(struct sa *sa, void *data, int len, void *hdr, int a, int b);
 int sceMemab_driver_B54E1AA7(struct sa *sa, void *data, int len, void *hdr, int a, int b);
 int sceMemab_driver_E6D3ACE2(struct sa *sa, void *data, int len, void *hdr, int a);
+int sceMemab_driver_CF49BCBB(SaKey *key, void *data);
 int sceMemab_driver_F1D2B9B0(void *data, int len, void *hdr, int a);
 int sceNetIfhandle_driver_0542835F(int (*a)(struct mbuf *), int (*b)(struct mbuf *), int (*c)(struct mbuf *));
 int sceNetIfhandle_driver_773FC77C(void);
