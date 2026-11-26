@@ -1,9 +1,4 @@
-#include "common.h"
-
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/newlib/libc/stdio/stdio", __sread);
-
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/newlib/libc/stdio/stdio", __swrite);
-
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/newlib/libc/stdio/stdio", __sseek);
-
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/newlib/libc/stdio/stdio", __sclose);
+/* upstream: newlib-1.12.0/newlib/libc/stdio/stdio.c (Sony's 1.8.x psp-newlib build: _REENT is __getreent()) */
+/* cflags: -O2 -fno-builtin */
+#define __DYNAMIC_REENT__
+#include "libc/stdio/stdio.c"

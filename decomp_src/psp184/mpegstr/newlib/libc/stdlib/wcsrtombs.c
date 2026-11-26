@@ -1,5 +1,4 @@
-#include "common.h"
-
-INCLUDE_ASM("tmp/asm/psp184/mpegstr/nonmatchings/newlib/libc/stdlib/wcsrtombs", _wcsrtombs_r);
-
-INCLUDE_ASM("tmp/asm/psp184/mpegstr/nonmatchings/newlib/libc/stdlib/wcsrtombs", wcsrtombs);
+/* upstream: newlib-1.12.0/newlib/libc/stdlib/wcsrtombs.c (Sony's 1.8.x psp-newlib build: _REENT is __getreent()) */
+/* cflags: -O2 -fno-builtin */
+#define __DYNAMIC_REENT__
+#include "libc/stdlib/wcsrtombs.c"

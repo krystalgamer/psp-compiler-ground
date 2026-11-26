@@ -1,3 +1,4 @@
-#include "common.h"
-
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/newlib/libc/stdio/fvwrite", __sfvwrite);
+/* upstream: newlib-1.12.0/newlib/libc/stdio/fvwrite.c (Sony's 1.8.x psp-newlib build: _REENT is __getreent()) */
+/* cflags: -O2 -fno-builtin */
+#define __DYNAMIC_REENT__
+#include "libc/stdio/fvwrite.c"
