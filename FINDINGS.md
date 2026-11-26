@@ -116,6 +116,19 @@ modules (`tools/nltest.py`, `tools/objcmp.py`).
   with a separate `chunk` local (from DWARF). No cc1 reproduces it from the
   older source and 1.6.1 does from the newer.
 
+- bigbangbang (1.5.1.internal): newlib 31/31 and libgcc fp-bit/dp-bit 8/8
+  from upstream source. Sony's newlib malloc is built with
+  `MALLOC_ALIGNMENT 16`; `mlock.c` is Sony's own. Only 1.5.1's cc1 matches
+  `malloc_extend_top`, `_malloc_r`, `__truncdfsf2`, `__pack_d`, `__pack_f`
+  (condmove).
+- 1.5.1.internal objects were built without `-fno-merge-constants`: float
+  constants go to `.rodata.cst4`, which comes first in the object (objorder),
+  before strings and jump tables. Fully-C units match at plain `-O2`.
+- Open candidate: bigbangbang `DrawGround`. All cc1s give the same code,
+  3 instructions off. The two loop-invariant float constant loads (1.0,
+  -16.0) are hoisted in the opposite order and the -16.0 address uses `v1`
+  instead of `v0`. ~20 source forms tried.
+
 ## psp-gcc 1.6.1
 
 - **32-bit `HOST_WIDE_INT`** (psp-gcc 1.7.1, `psp: use a 32-bit
