@@ -11,7 +11,13 @@ typedef struct { /* size 0xD8 */
     PSPBROWSER_FOCUS_CALLBACK focusCallback;    /* 0x9C */
     int unkA0;
     PSPBROWSER_UNLOAD_CALLBACK unloadCallback;  /* 0xA4 */
-    u8 unkA8[0x30];
+    int unkA8;
+    struct PURL *anchorUrl;                     /* 0xAC */
+    u8 anchorExt[8];                            /* 0xB0 */
+    u8 imageReq[8];                             /* 0xB8 */
+    u8 imageExt[8];                             /* 0xC0 */
+    u8 unkC8[0xC];
+    int mutex;                                  /* 0xD4 */
 } PSPBROWSER_INSTANCE;
 
 extern PSPBROWSER_INSTANCE pspBrowserInstance;
@@ -33,8 +39,34 @@ typedef struct EXTCB {
     struct EXTCB *next;
     struct EXTCB *prev;
     char *name;
-    int callback;
+    int (*callback)();
 } EXTCB;
+
+typedef struct PURL {
+    char *scheme;
+    char *host;
+    int port;
+    u8 *path;
+    u8 *query;
+} PURL;
+
+typedef struct {
+    void *next;
+    void *prev;
+    PURL *url;
+    int data;
+} IMGREQ;
+
+extern char D_00130214[];
+int OS_thread_mutex_lock(int);
+int OS_thread_mutex_unlock(int);
+int ESP_hasPreviousHistory(void);
+int ESP_hasNextHistory(void);
+int ESP_moveHistory(int);
+int ESP_reloadPage(int);
+void URL_free(void *);
+void UTL_initqueue(void *);
+void *UTL_dequeue(void *);
 
 void *UTL_peekqueue(void *q, void *e);
 int UTL_relqueue(void *q, void *e);
@@ -147,11 +179,79 @@ signed char *pspBrowserNewExtensionCallback(int arg0, signed char *arg1, int arg
     return var_v0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/pspBrowser", pspBrowserBuildInAnchorExtensionCallback);
+int pspBrowserBuildInAnchorExtensionCallback(char *name) {
+    if (name != NULL) {
+        if (strcmp(name, "backward") == 0) {
+            if (ESP_hasPreviousHistory() == 0) {
+                return -1;
+            }
+            if (ESP_moveHistory(-1) != 0) {
+                return -1;
+            }
+            return 0;
+        }
+        if (strcmp(name, "forward") == 0) {
+            if (ESP_hasNextHistory() == 0) {
+                return -1;
+            }
+            if (ESP_moveHistory(1) != 0) {
+                return -1;
+            }
+            return 0;
+        }
+        if (strcmp(name, "reload") == 0) {
+            if (ESP_reloadPage(0) != 0) {
+                return -1;
+            }
+            return 0;
+        }
+    }
+    return -1;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/pspBrowser", pspBrowserExecuteAnchorExtensionCallback);
+void pspBrowserExecuteAnchorExtensionCallback(void) {
+    PURL *url;
+    EXTCB *e;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/pspBrowser", pspBrowserExecuteImageExtensionCallback);
+    OS_thread_mutex_lock(pspBrowserInstance.mutex);
+    url = pspBrowserInstance.anchorUrl;
+    if (url != NULL) {
+        pspBrowserInstance.anchorUrl = NULL;
+    }
+    OS_thread_mutex_unlock(pspBrowserInstance.mutex);
+    if (url == NULL) {
+        return;
+    }
+    if (url->scheme != NULL && strcmp(D_00130214, url->scheme) == 0
+        && (e = pspBrowserGetExtensionCallback(pspBrowserInstance.anchorExt, url->host)) != NULL) {
+        e->callback((url->path != NULL && *url->path != 0) ? url->path + 1 : NULL,
+                    (url->query != NULL && *url->query != 0) ? url->query + 1 : NULL);
+    }
+    URL_free(url);
+}
+
+void pspBrowserExecuteImageExtensionCallback(void) {
+    u8 q[8];
+    IMGREQ *r;
+    EXTCB *e;
+
+    UTL_initqueue(q);
+    OS_thread_mutex_lock(pspBrowserInstance.mutex);
+    while ((r = UTL_dequeue(pspBrowserInstance.imageReq)) != NULL) {
+        UTL_enqueue((int)q, (signed char *)r);
+    }
+    OS_thread_mutex_unlock(pspBrowserInstance.mutex);
+    while ((r = UTL_dequeue(q)) != NULL) {
+        if (r->url->scheme != NULL && strcmp(D_00130214, r->url->scheme) == 0
+            && (e = pspBrowserGetExtensionCallback(pspBrowserInstance.imageExt, r->url->host)) != NULL) {
+            e->callback((r->url->path != NULL && *r->url->path != 0) ? r->url->path + 1 : NULL,
+                        (r->url->query != NULL && *r->url->query != 0) ? r->url->query + 1 : NULL,
+                        &r->data);
+        }
+        URL_free(r->url);
+        ESP_free((signed char *)r);
+    }
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/pspBrowser", pspBrowserInit);
 
