@@ -21,6 +21,10 @@ void glEnd(void);
 void glColor3f(GLfloat, GLfloat, GLfloat);
 void glNormal3f(GLfloat, GLfloat, GLfloat);
 void glVertex3f(GLfloat, GLfloat, GLfloat);
+void glTranslatef(GLfloat, GLfloat, GLfloat);
+void glClearColor(GLfloat, GLfloat, GLfloat, GLfloat);
+void glGenTextures(int, unsigned int *);
+void glDeleteTextures(int, const unsigned int *);
 }
 #define GL_LINE_LOOP 0x0002
 #define GL_QUADS 0x0007

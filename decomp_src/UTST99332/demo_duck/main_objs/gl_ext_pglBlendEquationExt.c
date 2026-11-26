@@ -12,9 +12,15 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/gl_ext_pglBlendE
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/gl_ext_pglBlendEquationExt", _ZN6gl_ext10InitializeEv);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/gl_ext_pglBlendEquationExt", _ZN6gl_ext6ToggleEv);
+void gl_ext::Toggle()
+{
+    use_extensions = !use_extensions;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/gl_ext_pglBlendEquationExt", _ZN6gl_ext7EnabledEv);
+bool gl_ext::Enabled()
+{
+    return use_extensions;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/gl_ext_pglBlendEquationExt", _ZN6gl_ext12VAIOBugCheckEv);
 

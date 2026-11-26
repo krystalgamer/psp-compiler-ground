@@ -12,7 +12,10 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/vector_font_
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/vector_font_Console", _ZN11vector_font7Console6resizeEjj);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/vector_font_Console", _ZN11vector_font7Console6enableEb);
+void vector_font::Console::enable(bool e)
+{
+    enabled = e;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/vector_font_Console", _ZN11vector_font7Console5clearEv);
 

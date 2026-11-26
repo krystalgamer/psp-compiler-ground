@@ -4,6 +4,17 @@
 #include "cxx/defer_asm.h"
 #include "../main.hpp"
 
+
+/* the GL emulation's state (only the members used so far) */
+struct HouseKeepingState {
+    char _pad0[0x54];
+    unsigned int array_format;  /* 0x54 */
+    const void *array_pointer;  /* 0x58 */
+    int array_stride;           /* 0x5C */
+};
+extern HouseKeepingState hk;
+extern unsigned int D_0018A99C;     /* glBindTexture's current texture */
+
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/HouseKeeping_AttribStack", _Z41__static_initialization_and_destruction_0ii_24D88);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/HouseKeeping_AttribStack", _Z16PspLogEnableBitsPKc);
@@ -140,7 +151,10 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/HouseKeeping
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/HouseKeeping_AttribStack", glDepthFunc);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/HouseKeeping_AttribStack", glDepthMask);
+extern "C" void glDepthMask(unsigned char flag)
+{
+    sceGuDepthMask(flag);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/HouseKeeping_AttribStack", glDepthRange);
 
@@ -198,11 +212,19 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/HouseKeeping
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/HouseKeeping_AttribStack", glScaled);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/HouseKeeping_AttribStack", glScalef);
+extern "C" void glScalef(float x, float y, float z)
+{
+    ScePspFVector3 v = { x, y, z };
+    sceGumScale(&v);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/HouseKeeping_AttribStack", glTranslated);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/HouseKeeping_AttribStack", glTranslatef);
+extern "C" void glTranslatef(float x, float y, float z)
+{
+    ScePspFVector3 v = { x, y, z };
+    sceGumTranslate(&v);
+}
 
 extern "C" int glIsList(void)
 {
@@ -658,7 +680,10 @@ extern "C" void glRectiv(void) {
 extern "C" void glRectsv(void) {
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/HouseKeeping_AttribStack", glShadeModel);
+extern "C" void glShadeModel(unsigned int mode)
+{
+    sceGuShadeModel(mode == 0x1D01);
+}
 
 extern "C" void glLightf(void) {
 }
@@ -953,7 +978,10 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/HouseKeeping
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/HouseKeeping_AttribStack", glDeleteTextures);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/HouseKeeping_AttribStack", glBindTexture);
+extern "C" void glBindTexture(unsigned int, unsigned int texture)
+{
+    D_0018A99C = texture;
+}
 
 extern "C" void glPrioritizeTextures(void) {
 }
@@ -1015,7 +1043,12 @@ extern "C" void glDrawArrays(void) {
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/HouseKeeping_AttribStack", glDrawElements);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/HouseKeeping_AttribStack", glInterleavedArrays);
+extern "C" void glInterleavedArrays(unsigned int format, int stride, const void *pointer)
+{
+    hk.array_format = format;
+    hk.array_pointer = pointer;
+    hk.array_stride = stride;
+}
 
 extern "C" void glDrawRangeElements(void) {
 }

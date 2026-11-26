@@ -12,9 +12,15 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/gl_ext_pglBl
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/gl_ext_pglBlendEquationExt", _ZN6gl_ext10InitializeEv);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/gl_ext_pglBlendEquationExt", _ZN6gl_ext6ToggleEv);
+void gl_ext::Toggle()
+{
+    use_extensions = !use_extensions;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/gl_ext_pglBlendEquationExt", _ZN6gl_ext7EnabledEv);
+bool gl_ext::Enabled()
+{
+    return use_extensions;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/gl_ext_pglBlendEquationExt", _ZN6gl_ext12VAIOBugCheckEv);
 
@@ -31,3 +37,4 @@ void _GLOBAL__I__ZN6gl_ext19pglBlendEquationExtE(void)
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/gl_ext_pglBlendEquationExt", _ZN6gl_ext13InitExtensionIPFvjEEEvRSt6vectorISsSaISsEERT_PKc);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/gl_ext_pglBlendEquationExt", _ZN6gl_ext13InitExtensionIPFvffffEEEvRSt6vectorISsSaISsEERT_PKc);
+

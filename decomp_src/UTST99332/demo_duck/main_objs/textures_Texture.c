@@ -4,6 +4,36 @@
 #include "cxx/defer_asm.h"
 #include "../main.hpp"
 
+/* the strings stay in the module's .rodata (asm) */
+extern const char D_0017641C[];     /* "" */
+extern const char D_0017645C[];     /* " *** error " */
+extern const char D_00176468[];     /* "_Value == ALPHA_BLEND || _Value == ALPHA_TEST || _Value == 0" */
+extern const char D_001764A8[];     /* "../lib/textures/Texture.cpp" */
+extern const char D_001764C4[];     /* " " */
+extern const char D_00176504[];     /* "value == GetBitField( reg, start_bit, bit_size )" */
+extern const char SetBitField_name[] __asm__("_ZZN8textures11SetBitFieldERjiiiE19__PRETTY_FUNCTION__");
+extern const char setAlphaFlags_name[] __asm__("_ZZN8textures7Texture13setAlphaFlagsENS_9AlphaMaskEE19__PRETTY_FUNCTION__");
+#define TEX_ASSERT(c, s, fn, line) \
+    if (!(c)) { \
+        common::common_internal::assert_display(D_0017645C, s, D_001764A8, fn, line, D_001764C4); \
+        common::common_internal::on_error(); \
+        common::common_internal::clash(); \
+    }
+
+namespace textures {
+inline int GetBitField(unsigned int reg, int start_bit, int bit_size)
+{
+    return (reg >> start_bit) & ((1 << bit_size) - 1);
+}
+
+inline void SetBitField(unsigned int &reg, int value, int start_bit, int bit_size)
+{
+    unsigned int mask = (1 << bit_size) - 1;
+    reg = (reg & ~(mask << start_bit)) | ((value & mask) << start_bit);
+    TEX_ASSERT(value == GetBitField(reg, start_bit, bit_size), D_00176504, SetBitField_name, 229);
+}
+}
+
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/textures_Texture", _Z41__static_initialization_and_destruction_0ii_101494);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/textures_Texture", _ZN8textures7TextureaSERKS0_);
@@ -20,9 +50,10 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/textures_Texture
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/textures_Texture", _ZN8textures7TextureC1EiiRKS0_);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/textures_Texture", _ZN8textures7TextureD2Ev);
+textures::Texture::~Texture()
+{
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/textures_Texture", _ZN8textures7TextureD1Ev);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/textures_Texture", _ZN8textures7Texture5resetEb);
 
@@ -32,68 +63,130 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/textures_Texture
 
 int textures::Texture::width() const
 {
-    return _f0;
+    return m.info.width;
 }
 
 int textures::Texture::height() const
 {
-    return _f4;
+    return m.info.height;
 }
 
-int textures::Texture::format() const
+textures::Format textures::Texture::format() const
 {
-    return _f8;
+    return m.info.format;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/textures_Texture", _ZNK8textures7Texture4pathEv);
-
-int textures::Texture::alpha_flags() const
+const char *textures::Texture::path() const
 {
-    return _f14;
+    return m.path.c_str();
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/textures_Texture", _ZNK8textures7Texture9imagedataEv);
+textures::AlphaMask textures::Texture::alpha_flags() const
+{
+    return m.alpha_flags;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/textures_Texture", _ZNK8textures7Texture8clutdataEv);
+const unsigned char *textures::Texture::imagedata() const
+{
+    return image.addr();
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/textures_Texture", _ZNK8textures7Texture14getLoadedWidthEv);
+const unsigned char *textures::Texture::clutdata() const
+{
+    return clut.addr();
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/textures_Texture", _ZNK8textures7Texture15getLoadedHeightEv);
+int textures::Texture::getLoadedWidth() const
+{
+    return m.load.width ? m.load.width : m.info.width;
+}
+
+int textures::Texture::getLoadedHeight() const
+{
+    return m.load.height ? m.load.height : m.info.height;
+}
 
 int textures::Texture::getLoadedAlphaflags() const
 {
-    return _f24;
+    return m.load.alpha_flags;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/textures_Texture", _ZN8textures7Texture13setAlphaFlagsENS_9AlphaMaskE);
+void textures::Texture::setAlphaFlags(AlphaMask _Value)
+{
+    TEX_ASSERT(_Value == ALPHA_BLEND || _Value == ALPHA_TEST || _Value == 0, D_00176468, setAlphaFlags_name, 201);
+    m.alpha_flags = _Value;
+    if (_Value == ALPHA_BLEND || _Value == ALPHA_TEST)
+        m.alpha_flags = (AlphaMask)(_Value | 1);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/textures_Texture", _ZN8textures7Texture14setTextureFuncENS_15TextureFunctionE);
+void textures::Texture::setTextureFunc(TextureFunction f)
+{
+    SetBitField(m.info.flags, f, 1, 2);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/textures_Texture", _ZNK8textures7Texture14getTextureFuncEv);
+textures::TextureFunction textures::Texture::getTextureFunc() const
+{
+    return (TextureFunction)GetBitField(m.info.flags, 1, 2);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/textures_Texture", _ZN8textures7Texture12setFilteringENS_9FilteringE);
+void textures::Texture::setFiltering(Filtering f)
+{
+    SetBitField(m.info.flags, f, 0, 1);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/textures_Texture", _ZNK8textures7Texture12getFilteringEv);
+textures::Filtering textures::Texture::getFiltering() const
+{
+    return (Filtering)GetBitField(m.info.flags, 0, 1);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/textures_Texture", _ZN8textures7Texture8setWrapSENS_8WrappingE);
+void textures::Texture::setWrapS(Wrapping w)
+{
+    SetBitField(m.info.flags, w, 3, 1);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/textures_Texture", _ZNK8textures7Texture8getWrapSEv);
+textures::Wrapping textures::Texture::getWrapS() const
+{
+    return (Wrapping)GetBitField(m.info.flags, 3, 1);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/textures_Texture", _ZN8textures7Texture8setWrapTENS_8WrappingE);
+void textures::Texture::setWrapT(Wrapping w)
+{
+    SetBitField(m.info.flags, w, 4, 1);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/textures_Texture", _ZNK8textures7Texture8getWrapTEv);
+textures::Wrapping textures::Texture::getWrapT() const
+{
+    return (Wrapping)GetBitField(m.info.flags, 4, 1);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/textures_Texture", _ZN8textures7Texture6linearEv);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/textures_Texture", _ZN8textures7Texture7nearestEv);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/textures_Texture", _ZNK8textures7Texture5validEv);
+bool textures::Texture::valid() const
+{
+    return image.addr() != 0;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/textures_Texture", _ZNK8textures7Texture7invalidEv);
+bool textures::Texture::invalid() const
+{
+    return image.addr() == 0;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/textures_Texture", _ZN8textures7Texture7setPathESs);
+void textures::Texture::setPath(std::string p)
+{
+    m.path = p;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/textures_Texture", _ZN8textures7Texture13OverrideAlphaEi);
+void textures::Texture::OverrideAlpha(int a)
+{
+    if (a == -1)
+        override_alpha_on = false;
+    else if (a == -2)
+        override_alpha_on = true;
+    else
+        override_alpha_value = a;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/textures_Texture", _ZN8textures7Texture14set_4idx_pixelEiih);
 
@@ -105,11 +198,23 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/textures_Texture
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/textures_Texture", _ZN8textures7Texture9makeDummyEii);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/textures_Texture", _ZN8textures7Texture4makeEiiNS_6FormatE);
+void textures::Texture::make(int w, int h, Format f)
+{
+    reset(false);
+    m.info.width = w;
+    m.info.height = h;
+    m.info.format = f;
+    allocate_for(f);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/textures_Texture", _ZN8textures7Texture5printERSo);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/textures_Texture", _ZN8textures7Texture4swapERS0_);
+void textures::Texture::swap(Texture &t)
+{
+    common::Swap(m, t.m);
+    image.swap(t.image);
+    clut.swap(t.clut);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/textures_Texture", _ZN8textures7Texture4loadEPKc);
 

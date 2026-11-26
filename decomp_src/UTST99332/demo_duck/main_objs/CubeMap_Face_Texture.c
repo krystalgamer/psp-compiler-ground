@@ -20,9 +20,15 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/CubeMap_Face_Tex
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/CubeMap_Face_Texture", _ZN7CubeMap11setBasenameEPKc);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/CubeMap_Face_Texture", _ZNK7CubeMap11getBasenameEv);
+const std::string &CubeMap::getBasename() const
+{
+    return basename;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/CubeMap_Face_Texture", _ZN7CubeMap9init_faceENS_8FaceEnumE);
+void CubeMap::init_face(FaceEnum f)
+{
+    faces[f].init(f);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/CubeMap_Face_Texture", _ZN7CubeMap12init_textureERNS_4Face7TextureE);
 
@@ -46,17 +52,35 @@ void CubeMap::draw_cube_w() {
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/CubeMap_Face_Texture", _ZN7CubeMap4drawEb);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/CubeMap_Face_Texture", _ZN7CubeMap9setLinearEb);
+void CubeMap::setLinear(bool l)
+{
+    linear = l;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/CubeMap_Face_Texture", _ZN7CubeMap9setResizeEi);
+void CubeMap::setResize(int r)
+{
+    resize = r;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/CubeMap_Face_Texture", _ZN7CubeMap11setCubeSizeEf);
+void CubeMap::setCubeSize(float s)
+{
+    cube_size = s;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/CubeMap_Face_Texture", _ZN7CubeMap14toggleTexturesEv);
+void CubeMap::toggleTextures()
+{
+    textures = !textures;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/CubeMap_Face_Texture", _ZN7CubeMap15toggleWireframeEv);
+void CubeMap::toggleWireframe()
+{
+    wireframe = !wireframe;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/CubeMap_Face_Texture", _ZN7CubeMap15toggleFilteringEv);
+void CubeMap::toggleFiltering()
+{
+    linear = !linear;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/CubeMap_Face_Texture", _ZN7CubeMap11GetFaceNameEi);
 

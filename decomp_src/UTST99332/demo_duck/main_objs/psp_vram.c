@@ -16,9 +16,16 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/psp_vram", _ZNK3
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/psp_vram", _ZN3psp4Vram14copyImageBeginEb);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/psp_vram", _ZN3psp4Vram14copyImageSrcPfENS_11PixelFormatE);
+void psp::Vram::copyImageSrcPf(PixelFormat pf)
+{
+    src_pf = pf;
+    sceGuTexMode(pf, 0, 0, 0);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/psp_vram", _ZN3psp4Vram14copyImageDstPfENS_11PixelFormatE);
+void psp::Vram::copyImageDstPf(PixelFormat pf)
+{
+    dst_pf = pf;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/psp_vram", _ZN3psp4Vram12copyImageEndEv);
 

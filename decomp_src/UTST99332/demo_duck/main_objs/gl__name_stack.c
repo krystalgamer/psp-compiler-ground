@@ -4,11 +4,38 @@
 #include "cxx/defer_asm.h"
 #include "../main.hpp"
 
+#include <deque>
+#include "UTST99332/demo_duck/gl.hpp"
+
+namespace gl {
+enum MatrixModeEnum { };
+extern std::deque<unsigned int> _name_stack;
+extern MatrixModeEnum _matrix_mode;
+extern std::deque<math::matrix> _matrix_stacks[];
+void GenTextures(int, unsigned int *);
+void DeleteTextures(int, const unsigned int *);
+bool IsNameStackEmpty();
+std::deque<math::matrix> &mstack();
+void Translatefv(const float *);
+void Translatefv(const math::vector_xyzw &);
+void ClearColorv(const math::vector_xyzw &);
+void Colorv(const math::vector_xyzw &);
+void Vertexv(const math::vector_xyzw &);
+}
+
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/gl__name_stack", _Z41__static_initialization_and_destruction_0ii_485D8);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/gl__name_stack", _ZN2gl11GenTexturesEiPj);
+void gl::GenTextures(int n, unsigned int *names)
+{
+    if (names)
+        glGenTextures(n, names);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/gl__name_stack", _ZN2gl14DeleteTexturesEiPKj);
+void gl::DeleteTextures(int n, const unsigned int *names)
+{
+    if (names)
+        glDeleteTextures(n, names);
+}
 
 bool gl::find_texture(unsigned int)
 {
@@ -30,9 +57,15 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/gl__name_stack",
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/gl__name_stack", _ZN2gl15GetNameStackTopEv);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/gl__name_stack", _ZN2gl16IsNameStackEmptyEv);
+bool gl::IsNameStackEmpty()
+{
+    return _name_stack.empty();
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/gl__name_stack", _ZN2gl6mstackEv);
+std::deque<math::matrix> &gl::mstack()
+{
+    return _matrix_stacks[_matrix_mode];
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/gl__name_stack", _ZN2gl4syncEv);
 
@@ -59,17 +92,32 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/gl__name_stack",
 void gl::PickMatrix(float, float, float, float, int *) {
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/gl__name_stack", _ZN2gl11TranslatefvEPKf);
+void gl::Translatefv(const float *v)
+{
+    glTranslatef(v[0], v[1], v[2]);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/gl__name_stack", _ZN2gl11TranslatefvERKN4math11vector_xyzwE);
+void gl::Translatefv(const math::vector_xyzw &v)
+{
+    glTranslatef(v.x, v.y, v.z);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/gl__name_stack", _ZN2gl14ScalefCanceledEv);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/gl__name_stack", _ZN2gl11ClearColorvERKN4math11vector_xyzwE);
+void gl::ClearColorv(const math::vector_xyzw &v)
+{
+    glClearColor(v.x, v.y, v.z, v.w);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/gl__name_stack", _ZN2gl6ColorvERKN4math11vector_xyzwE);
+void gl::Colorv(const math::vector_xyzw &v)
+{
+    glColor3f(v.x, v.y, v.z);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/gl__name_stack", _ZN2gl7VertexvERKN4math11vector_xyzwE);
+void gl::Vertexv(const math::vector_xyzw &v)
+{
+    glVertex3f(v.x, v.y, v.z);
+}
 
 void gl::ErrorCheck(const char *, int) {
 }

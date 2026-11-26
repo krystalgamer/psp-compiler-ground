@@ -10,11 +10,21 @@ CCmpr::CCmpr() {
 CCmpr::~CCmpr() {
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/CCmpr", _ZN5CCmpr12SetInputDataEPKvi);
+void CCmpr::SetInputData(const void *p, int n)
+{
+    input_size = n;
+    input = p;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/CCmpr", _ZN5CCmpr13GetOutputDataEv);
+void *CCmpr::GetOutputData()
+{
+    return output;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/CCmpr", _ZN5CCmpr13GetOutputSizeEv);
+int CCmpr::GetOutputSize()
+{
+    return output_size;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/CCmpr", _ZN5CCmpr14CreateItemListEv);
 

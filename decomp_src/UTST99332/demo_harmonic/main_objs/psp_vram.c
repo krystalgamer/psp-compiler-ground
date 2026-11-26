@@ -16,9 +16,16 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/psp_vram", _
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/psp_vram", _ZN3psp4Vram14copyImageBeginEb);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/psp_vram", _ZN3psp4Vram14copyImageSrcPfENS_11PixelFormatE);
+void psp::Vram::copyImageSrcPf(PixelFormat pf)
+{
+    src_pf = pf;
+    sceGuTexMode(pf, 0, 0, 0);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/psp_vram", _ZN3psp4Vram14copyImageDstPfENS_11PixelFormatE);
+void psp::Vram::copyImageDstPf(PixelFormat pf)
+{
+    dst_pf = pf;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/psp_vram", _ZN3psp4Vram12copyImageEndEv);
 
@@ -39,3 +46,4 @@ void _GLOBAL__D__ZN3psp4vramE(void)
 {
     static_init(0, 0xFFFF);
 }
+

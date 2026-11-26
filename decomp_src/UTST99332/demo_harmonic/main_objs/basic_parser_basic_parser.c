@@ -24,7 +24,10 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/basic_parser
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/basic_parser_basic_parser", _ZN12basic_parser10separatorsEPKc);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/basic_parser_basic_parser", _ZN12basic_parser10expect_eofEb);
+void basic_parser::expect_eof(bool b)
+{
+    _expect_eof = b;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/basic_parser_basic_parser", _ZN12basic_parser10step_whileEPKc);
 
