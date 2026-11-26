@@ -553,7 +553,60 @@ INCLUDE_ASM("tmp/asm/UTST99332/menu/nonmatchings/draw", DrawItemListOpen);
 
 INCLUDE_ASM("tmp/asm/UTST99332/menu/nonmatchings/draw", DrawItemListAnim);
 
-INCLUDE_ASM("tmp/asm/UTST99332/menu/nonmatchings/draw", DrawItemList);
+void DrawSprite(float x, float y, float w, float h, int u, int v);
+int GetItem(int cat, int num);
+void DrawItemList(void)
+{
+	DRAWITEM *p;
+	int i, n;
+	float x, y, w, h, d;
+
+	sceGuEnable(9);
+	for (i = 0; i < 11; i++) {
+		p = &drawitem[i];
+		if (p->pos < 0 || p->pos >= 10)
+			continue;
+		{
+			switch (p->pos) {
+			case 3:
+				w = 48.0f;
+				h = 27.0f;
+				d = 9.0f;
+				break;
+			case 5:
+				if (p->x >= 496.0f) {
+					w = p->w;
+					h = p->h;
+					d = 0.0f;
+				} else {
+					w = 48.0f;
+					h = 27.0f;
+					d = 9.0f;
+				}
+				break;
+			case 4:
+				w = 64.0f;
+				h = 36.0f;
+				d = 18.0f;
+				break;
+			default:
+				w = p->w;
+				h = p->h;
+				d = 0.0f;
+				break;
+			}
+			x = p->x - w * 0.5f;
+			y = p->y - p->h * 0.5f - d;
+			n = GetItem(menu->cat, p->tex);
+			sceGuClutMode(1, 0, 0xff, 0);
+			sceGuClutLoad(1, clut_4bit[n]);
+			sceGuTexMode(4, 0, 0, 0);
+			sceGuTexImage(0, 64, 64, 64, pix_4bit[n]);
+			sceGuColor(itemlist_col[p->pos]);
+			DrawSprite(x, y, w, h, 64, 36);
+		}
+	}
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/menu/nonmatchings/draw", SetItemSelect);
 
