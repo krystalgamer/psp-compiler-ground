@@ -288,7 +288,33 @@ void init_all(void) {
     sceGuDisplay(1);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_mipmap/nonmatchings/main", init_param);
+static void init_param(void)
+{
+	view.eye.x = 0.0f;
+	view.eye.y = 2.0f;
+	view.eye.z = 0.0f;
+	view.center.x = 0.0f;
+	view.center.y = 0.0f;
+	view.center.z = -3.0f;
+	view.up.x = 0.0f;
+	view.up.y = 1.0f;
+	view.up.z = 0.0f;
+
+	pos.rot.x = 0.0f;
+	pos.rot.y = 0.0f;
+	pos.rot.z = 0.0f;
+	pos.trans.x = 0.0f;
+	pos.trans.y = 0.0f;
+	pos.trans.z = -16.0f;
+	pos.scale.x = 4.0f;
+	pos.scale.y = 1.0f;
+	pos.scale.z = 4.0f;
+
+	toffset.u = 0.0f;
+	toffset.v = -0.044444f;
+	moving = 1;
+	maxlod = 8;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_mipmap/nonmatchings/main", pad_read);
 
