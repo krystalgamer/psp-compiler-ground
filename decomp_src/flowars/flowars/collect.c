@@ -194,7 +194,39 @@ int count_pi(int flagPlayer, int *danpi, int *ssangpi, int *sampi)
 	return cnt;
 }
 
-INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/collect", add_collect);
+static void add_collect(int flagPlayer, int pae)
+{
+	if (flagPlayer == 1) {
+		if (paeManager.is_gwang(pae))
+			g_opp_collection_gwang[count_array(g_opp_collection_gwang, 5)] = pae;
+		else if (paeManager.is_mung(pae))
+			g_opp_collection_mung[count_array(g_opp_collection_mung, 9)] = pae;
+		else if (paeManager.is_dan(pae))
+			g_opp_collection_dan[count_array(g_opp_collection_dan, 10)] = pae;
+		else if (paeManager.is_pi(pae))
+			g_opp_collection_pi[count_array(g_opp_collection_pi, 25)] = pae;
+	} else if (flagPlayer == 2) {
+		if (paeManager.is_gwang(pae))
+			g_opp2_collection_gwang[count_array(g_opp2_collection_gwang, 5)] = pae;
+		else if (paeManager.is_mung(pae))
+			g_opp2_collection_mung[count_array(g_opp2_collection_mung, 9)] = pae;
+		else if (paeManager.is_dan(pae))
+			g_opp2_collection_dan[count_array(g_opp2_collection_dan, 10)] = pae;
+		else if (paeManager.is_pi(pae))
+			g_opp2_collection_pi[count_array(g_opp2_collection_pi, 25)] = pae;
+	} else if (flagPlayer == 0) {
+		if (paeManager.is_gwang(pae))
+			g_my_collection_gwang[count_array(g_my_collection_gwang, 5)] = pae;
+		else if (paeManager.is_mung(pae))
+			g_my_collection_mung[count_array(g_my_collection_mung, 9)] = pae;
+		else if (paeManager.is_dan(pae))
+			g_my_collection_dan[count_array(g_my_collection_dan, 10)] = pae;
+		else if (paeManager.is_pi(pae))
+			g_my_collection_pi[count_array(g_my_collection_pi, 25)] = pae;
+	}
+}
+
+__asm__(".globl add_collect");
 
 INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/collect", move_collect);
 
