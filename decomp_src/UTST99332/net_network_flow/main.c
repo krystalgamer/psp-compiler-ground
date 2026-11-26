@@ -222,7 +222,7 @@ void sceGumRotateZ(float angle);
 void sceGumSetMatrixStack(void *stack, int proj, int view, int model, int texture);
 void sceGumStoreMatrix(ScePspFMatrix4 *m);
 void sceGumTranslate(const ScePspFVector3 *v);
-int sceKernelDcacheWritebackAll(void);
+void sceKernelDcacheWritebackAll(void);
 int sprintf(char *buf, const char *fmt, ...);
 
 void handler_p2p(int id, int ev, struct SceNetEtherAddr *peer, int optlen, void *opt)
@@ -272,47 +272,26 @@ void handler_p2p(int id, int ev, struct SceNetEtherAddr *peer, int optlen, void 
 	}
 }
 
-INCLUDE_RODATA("tmp/asm/UTST99332/net_network_flow/nonmatchings/main", D_00014D68);
 
-INCLUDE_RODATA("tmp/asm/UTST99332/net_network_flow/nonmatchings/main", D_00014D8C);
 
-INCLUDE_RODATA("tmp/asm/UTST99332/net_network_flow/nonmatchings/main", D_00014DBC);
 
-INCLUDE_RODATA("tmp/asm/UTST99332/net_network_flow/nonmatchings/main", D_00014DD4);
 
-INCLUDE_RODATA("tmp/asm/UTST99332/net_network_flow/nonmatchings/main", D_00014DE4);
 
-INCLUDE_RODATA("tmp/asm/UTST99332/net_network_flow/nonmatchings/main", D_00014DF8);
 
-INCLUDE_RODATA("tmp/asm/UTST99332/net_network_flow/nonmatchings/main", D_00014E0C);
 
-INCLUDE_RODATA("tmp/asm/UTST99332/net_network_flow/nonmatchings/main", D_00014E24);
 
-INCLUDE_RODATA("tmp/asm/UTST99332/net_network_flow/nonmatchings/main", D_00014E3C);
 
-INCLUDE_RODATA("tmp/asm/UTST99332/net_network_flow/nonmatchings/main", D_00014E4C);
 
-INCLUDE_RODATA("tmp/asm/UTST99332/net_network_flow/nonmatchings/main", D_00014E5C);
 
-INCLUDE_RODATA("tmp/asm/UTST99332/net_network_flow/nonmatchings/main", D_00014E6C);
 
-INCLUDE_RODATA("tmp/asm/UTST99332/net_network_flow/nonmatchings/main", D_00014E98);
 
-INCLUDE_RODATA("tmp/asm/UTST99332/net_network_flow/nonmatchings/main", D_00014EA8);
 
-INCLUDE_RODATA("tmp/asm/UTST99332/net_network_flow/nonmatchings/main", D_00014ECC);
 
-INCLUDE_RODATA("tmp/asm/UTST99332/net_network_flow/nonmatchings/main", D_00014F04);
 
-INCLUDE_RODATA("tmp/asm/UTST99332/net_network_flow/nonmatchings/main", D_00014F3C);
 
-INCLUDE_RODATA("tmp/asm/UTST99332/net_network_flow/nonmatchings/main", D_00014F74);
 
-INCLUDE_RODATA("tmp/asm/UTST99332/net_network_flow/nonmatchings/main", D_00014F98);
 
-INCLUDE_RODATA("tmp/asm/UTST99332/net_network_flow/nonmatchings/main", D_00014FCC);
 
-INCLUDE_RODATA("tmp/asm/UTST99332/net_network_flow/nonmatchings/main", D_00014FD8);
 
 #define SCEGU_MATRIX_PROJECTION            0
 #define SCEGU_MATRIX_WORLD                 2
@@ -354,9 +333,135 @@ static void rot_trans_pers(ScePspFVector3 *in, ScePspIVector2 *out)
 	out->y = (int)((-SCEGU_SCR_HEIGHT/2)*tmp2.y/tmp2.w+SCEGU_SCR_HEIGHT/2);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_network_flow/nonmatchings/main", set_object);
+static void set_object(float *analog)
+{
+	MODEL		*p;
+	int			i,j;
+	int			n;
+	float		h;
+	u_int32		c;
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_network_flow/nonmatchings/main", draw_string);
+	const	int	tbl_m[9]={
+		-MAX_U-1,
+		-MAX_U,
+		-MAX_U+1,
+		-1,
+		 0,
+		 1,
+		 MAX_U-1,
+		 MAX_U,
+		 MAX_U+1,
+	};
+
+	const	int	tbl_c[12]={
+		-MAX_U*2-1,
+		-MAX_U*2,
+		-MAX_U*2+1,
+		-MAX_U-2,
+		-MAX_U+2,
+		-2,
+		 2,
+		 MAX_U-2,
+		 MAX_U+2,
+		 MAX_U*2+1,
+		 MAX_U*2,
+		 MAX_U*2-1,
+	};
+
+	for (i=0; i<MAXCONTROL; i++) {
+		p=&model[i];
+		p->vtx.x=((float)-(MAX_U/2)+(float)(i%MAX_U))*0.3f;
+		p->vtx.y=((float) (MAX_V/2)-(float)(i/MAX_V))*0.3f;
+		p->vtx.z=0.0f;
+
+		if (connect_state == PRIMARY_IBSS)
+			p->c=0xffffffff;
+		else if (connect_state == SECONDARY_IBSS)
+			p->c=0xff00f0f0;
+	}
+
+	for (i=0; i<MAX_OBJ; i++) {
+		if (obj[i].detect==0)
+			continue;
+
+		n=obj[i].y*MAX_U+obj[i].x;
+		c=obj[i].c;
+		h=obj[i].high*(!obj[i].comp?1.0f:0.5f);
+		for (j=0; j<9; j++) {
+			p=&model[n+tbl_m[j]];
+			if (i==0) {
+				p->vtx.x+=analog[0];
+				p->vtx.y+=analog[1];
+			} else {
+				p->vtx.x+=obj[i].vtx_x;
+				p->vtx.y+=obj[i].vtx_y;
+			}
+			p->vtx.z=h;
+			p->c=c;
+		}
+		for (j=0; j<12; j++) {
+			p=&model[n+tbl_c[j]];
+			p->c=c;
+		}
+	}
+
+	sceKernelDcacheWritebackAll();
+}
+
+char *strncpy(char *d, const char *s, unsigned int n);
+static void draw_string(void)
+{
+	ScePspIVector2	vec;
+	MODEL			*p;
+	char			str[128];
+	int				i;
+
+	sceGumPushMatrix();
+	for (i=0; i<MAX_OBJ; i++) {
+		if (obj[i].detect==0)
+			continue;
+
+				p = &model[obj[i].y*MAX_U+obj[i].x];
+		rot_trans_pers(&p->vtx, &vec);
+		strncpy(str, (char *)obj[i].nickname.data, 128);
+		sceGuDebugPrint(vec.x-16, vec.y-8, obj[i].c, str) ;
+
+		if (i==0 || connect_state == SECONDARY_IBSS)
+			continue;
+
+				if (obj[i].peer_state == MATCHING_DISCONNECTED)
+			sceGuDebugPrint(vec.x-16, vec.y-16, obj[i].c, "matching: DISCONNECTED");
+		if (obj[i].peer_state == MATCHING_HELLO)
+			sceGuDebugPrint(vec.x-16, vec.y-16, obj[i].c, "matching: recv HELLO");
+		if (obj[i].peer_state == MATCHING_SEND_REQ)
+			sceGuDebugPrint(vec.x-16, vec.y-16, obj[i].c, "matching: send REQ");
+		if (obj[i].peer_state == MATCHING_RECV_REQ)
+			sceGuDebugPrint(vec.x-16, vec.y-16, obj[i].c, "matching: recv REQ");
+		if (obj[i].peer_state == MATCHING_DENY)
+			sceGuDebugPrint(vec.x-16, vec.y-16, obj[i].c, "matching: DENY");
+		if (obj[i].peer_state == MATCHING_ESTABLISHED)
+			sceGuDebugPrint(vec.x-16, vec.y-16, obj[i].c, "matching: ESTABLISHED");
+
+		if (i == focused_peer) {
+			pointer[0][0] = 0xffff;
+			pointer[0][1] = p->vtx.x-0.5f;
+			pointer[0][2] = p->vtx.y+0.2f;
+			pointer[0][3] = 2.2f;
+			pointer[1][0] = 0xffff;
+			pointer[1][1] = p->vtx.x;
+			pointer[1][2] = p->vtx.y-0.4f;
+			pointer[1][3] = 2.2f;
+			pointer[2][0] = 0xc0;
+			pointer[2][1] = p->vtx.x+0.5f;
+			pointer[2][2] = p->vtx.y+0.2f;
+			pointer[2][3] = 2.2f;
+			sceGumDrawArray(5,
+				0x19C,
+				3, 0, (void *)pointer);
+		}
+	}
+	sceGumPopMatrix();
+}
 
 void draw_model(void) {
     sceGumPushMatrix();
@@ -365,11 +470,6 @@ void draw_model(void) {
     sceGumPopMatrix();
 }
 
-extern char D_00014E3C[];
-extern char D_00014E4C[];
-extern char D_00014E5C[];
-extern char D_00014E6C[];
-extern char D_00014E98[];
 extern short int board_16A8C[2][3];
 static void draw_menu(void)
 {
@@ -378,20 +478,49 @@ static void draw_menu(void)
 	sceGumPushMatrix();
 	sceGuColor(0x90000000);
 	sceGumDrawArray(6, 0x800100, 2, NULL, board_16A8C);
-	sprintf(line_buff, D_00014E3C, etherstr);
+	sprintf(line_buff, "MAC addr  :%s", etherstr);
 	sceGuDebugPrint(8, 8, 0xffffff, line_buff);
-	sprintf(line_buff, D_00014E4C, adhocctl_param.group_name.data);
+	sprintf(line_buff, "group_name:%s", adhocctl_param.group_name.data);
 	sceGuDebugPrint(8, 24, 0xffffff, line_buff);
-	sprintf(line_buff, D_00014E5C, adhocctl_param.channel);
+	sprintf(line_buff, "channel   :%d", adhocctl_param.channel);
 	sceGuDebugPrint(8, 32, 0xffffff, line_buff);
-	sprintf(line_buff, D_00014E6C, adhocctl_param.bssid.data[0], adhocctl_param.bssid.data[1], adhocctl_param.bssid.data[2], adhocctl_param.bssid.data[3], adhocctl_param.bssid.data[4], adhocctl_param.bssid.data[5]);
+	sprintf(line_buff, "BSSID     :%02x:%02x:%02x:%02x:%02x:%02x", adhocctl_param.bssid.data[0], adhocctl_param.bssid.data[1], adhocctl_param.bssid.data[2], adhocctl_param.bssid.data[3], adhocctl_param.bssid.data[4], adhocctl_param.bssid.data[5]);
 	sceGuDebugPrint(8, 40, 0xffffff, line_buff);
-	sprintf(line_buff, D_00014E98, adhocctl_param.nickname.data);
+	sprintf(line_buff, "nickname  :%s", adhocctl_param.nickname.data);
 	sceGuDebugPrint(8, 48, 0xffffff, line_buff);
 	sceGumPopMatrix();
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_network_flow/nonmatchings/main", draw_frame_DB4);
+extern char disp_list_17400[65536];
+void draw_model(void);
+static void draw_frame_DB4(void)
+{
+	switch (connect_state) {
+	case PRIMARY_IBSS:
+	case SECONDARY_IBSS:
+		sceGuStart(0, disp_list_17400, sizeof(disp_list_17400));
+		sceGuClear(7);
+		sceGumPushMatrix();
+		sceGumLoadIdentity();
+		sceGumTranslate(&world.pos);
+		sceGumRotateX(world.rot.x * 3.14159265358979323846f / 180.0f);
+		sceGumRotateY(world.rot.y * 3.14159265358979323846f / 180.0f);
+		sceGumRotateZ(world.rot.z * 3.14159265358979323846f / 180.0f);
+		if (display_menu)
+			draw_menu();
+		draw_string();
+		draw_model();
+		sceGumPopMatrix();
+		sceGuFinish();
+		sceGuSync(0, 0);
+		break;
+	case CONNECTING_PRIMARY_IBSS:
+	case CONNECTING_SECONDARY_IBSS:
+	case ERROR_DIALOG:
+		sceNetAdhocDialogUpdate();
+		break;
+	}
+}
 
 static void init_param(void)
 {
@@ -425,9 +554,184 @@ static void init_param(void)
 	focused_peer = 1;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_network_flow/nonmatchings/main", init_all);
+extern char disp_list_17400[65536];
+int net_init(OBJECT *obj, struct SceNetAdhocctlNickname *nickname);
+static int init_all(struct SceNetAdhocctlNickname *nickname)
+{
+	ScePspFVector3	vec;
+	int				ret;
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_network_flow/nonmatchings/main", pad_read_11DC);
+	sceGuInit();
+
+	sceGuStart(0, disp_list_17400, sizeof(disp_list_17400));
+	sceGuDrawBuffer(1, (void *)0, 512);
+	sceGuDispBuffer(SCEGU_SCR_WIDTH, SCEGU_SCR_HEIGHT,
+					(void *)0x44000, 512);
+	sceGuDepthBuffer((void *)0x88000, 512);
+
+	sceGuOffset(1808, 1912);
+	sceGuViewport(2048, 2048, SCEGU_SCR_WIDTH, SCEGU_SCR_HEIGHT);
+	sceGuDepthRange(50000, 10000);
+
+	sceGuScissor(0, 0, SCEGU_SCR_WIDTH, SCEGU_SCR_HEIGHT);
+	sceGuEnable(2);
+
+	sceGuDepthFunc(7);
+	sceGuEnable(1);
+
+	sceGuEnable(8);
+	sceGuEnable(16);
+	sceGuShadeModel(1);
+
+	sceGuEnable(20);
+	sceGuPatchDivide(16, 16);
+
+	vec.x=0.614497f;
+	vec.y=0.691714f;
+	vec.z=0.379372f;
+	sceGuLightColor(0, 2, 0xffffffff);
+	sceGuLight(0, 0, 2, &vec);
+	sceGuEnable(11);
+	sceGuEnable(10);
+
+	sceGuAmbient(0xffc0c0c0);
+
+	sceGumSetMatrixStack(&matrix_stack[0], 8, 8, 32, 0);
+
+	sceGumMatrixMode(SCEGU_MATRIX_PROJECTION);
+	sceGumLoadIdentity();
+	sceGumPerspective((45.0f*3.14159265358979323846f/180.0f), ((float)480/(float)272),
+					1.000000f, 100.000000f);
+
+	sceGumMatrixMode(SCEGU_MATRIX_WORLD);
+
+	sceGuClearColor(0x00202020);
+	sceGuClearDepth(0);
+	sceGuClearStencil(0);
+
+	sceGuFinish();
+	sceGuSync(0, 0);
+	sceDisplayWaitVblankStart();
+
+	init_param();
+	obj[0].c=0xff0000ff;
+	ret = net_init(&obj[0], nickname);
+	sceGuDisplay(1);
+
+	return ret;
+}
+
+extern u_int32 cont_322B0;
+#define cont cont_322B0
+extern int matching_ctx_id_17344;
+static int pad_read_11DC(void)
+{
+	u_int32			prev=cont;
+	u_int32			padd;
+	SceCtrlData		buf;
+	float			axis[2];
+	OBJECT			*o;
+	int				ret;
+
+	o=&obj[0];
+
+	sceCtrlReadBufferPositive( &buf, 1 );
+	cont = buf.Buttons;
+	axis[0]=(float)((int)buf.Lx-128)* 0.01f;
+	axis[1]=(float)((int)buf.Ly-128)*-0.01f;
+	padd=cont&(cont^prev);
+	o->vtx_x = axis[0];
+	o->vtx_y = axis[1];
+
+	if (connect_state != PRIMARY_IBSS && connect_state != SECONDARY_IBSS)
+		return 1;
+	if (ignore_pad_input == 1) {
+		ignore_pad_input = 0;
+		return 1;
+	}
+
+	if (cont & 0x0010) {
+		o->y-=GRID;
+		if (o->y<GRID) o->y=GRID;
+	}
+	if (cont & 0x0040) {
+		o->y+=GRID;
+		if (o->y>=(MAX_V-GRID)) o->y-=GRID;
+	}
+	if (cont & 0x0080) {
+		o->x-=GRID;
+		if (o->x<GRID) o->x=GRID;
+	}
+	if (cont & 0x0020) {
+		o->x+=GRID;
+		if (o->x>=(MAX_U-GRID)) o->x-=GRID;
+	}
+	o->comp=0;
+	if (cont & 0x0100)
+		o->comp=1;
+	if (cont& 0x1000)
+		o->c += 0xff;
+	if (padd & 0x8000)
+		display_menu = (display_menu)?0:1;
+
+	if (padd & 0x0200) {
+		int i;
+		for (i=1; i<MAX_OBJ; i++) {
+			focused_peer++;
+			focused_peer = (focused_peer>=MAX_OBJ)?1:focused_peer; 
+
+			if (obj[focused_peer].detect == 1)
+				break;
+		}
+		if (i==MAX_OBJ)
+			focused_peer = 0;
+	}
+		
+	if (padd & 0x2000) {
+		if (obj[focused_peer].detect == 1 && 
+			(obj[focused_peer].peer_state ==  MATCHING_HELLO ||
+			 obj[focused_peer].peer_state ==  MATCHING_RECV_REQ) &&
+			 connect_state == PRIMARY_IBSS) {
+			ret = sceNetAdhocMatchingSelectTarget(
+					matching_ctx_id_17344, 
+					&obj[focused_peer].addr, 
+					sizeof(obj[focused_peer].nickname),
+					(void *)(&obj[focused_peer].nickname));
+			if (ret < 0 && ret != (int)0x80410810) {
+				printf("sceNetAdhocMatchingSelectTarget() failed. ret = 0x%x\n", ret);
+				return ret;
+			}
+			adversary = &obj[focused_peer].addr;
+			obj[focused_peer].peer_state = MATCHING_SEND_REQ;
+		}
+	}
+
+	if (padd & 0x4000) {
+		if (obj[focused_peer].detect == 1 && connect_state == PRIMARY_IBSS) {
+			ret = sceNetAdhocMatchingCancelTarget(matching_ctx_id_17344, &obj[focused_peer].addr);
+			if (ret < 0) {
+				printf("sceNetAdhocMatchingCancelTarget() failed. ret = 0x%x\n", ret);
+				return ret;
+			}
+			obj[focused_peer].peer_state = MATCHING_DISCONNECTED;
+		} else if (connect_state == SECONDARY_IBSS) {
+			connect_state = DISCONNECT_SECONDARY_IBSS;
+		}
+	}
+
+	set_object(axis);
+
+	/* Reset Parameter */
+	if (padd & 0x0008)
+		init_param();
+
+	/* Exit */
+	if (padd & 0x0001)
+		return 0;
+
+	return 1;
+}
+#undef cont
 
 extern int matching_ctx_id_17344;
 int net_create_pdp(char *etherstr);
@@ -471,4 +775,62 @@ error:
 	return ret;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_network_flow/nonmatchings/main", main);
+int send_position(OBJECT *obj);
+int recv_allpacket(OBJECT *obj);
+int sceNetAdhocDialogConnect(void *group_name);
+extern struct SceNetAdhocctlNickname D_0001734C;
+#define nickname D_0001734C
+int main(int ac, char **av)
+{
+	int ret;
+
+	menuInit();
+	if (load_required_modules() < 0)
+		return 1;
+	memset(&nickname, 0, sizeof(nickname));
+	ret = sceUtilityGetSystemParamString(1, (char *)nickname.data, sizeof(nickname));
+	if (ret < 0)
+		printf("sceUtilityGetSystemParamString() failed. ret = 0x%x\n", ret);
+	sceCtrlSetSamplingMode(1);
+	if (init_all(&nickname) < 0)
+		return 1;
+	ret = sceNetAdhocDialogConnect(NULL);
+	if (ret < 0) {
+		printf("sceNetAdhoDialogConnect() failed. ret = 0x%x\n", ret);
+		return 1;
+	}
+	connect_state = CONNECTING_PRIMARY_IBSS;
+	while (1) {
+		if (pad_read_11DC() <= 0)
+			connect_state = ERROR_DISCONNECT;
+		if (connect_state == PRIMARY_IBSS || connect_state == SECONDARY_IBSS) {
+			ret = polling_error();
+			if (ret < 0) {
+				printf("polling_error() failed. ret = 0x%x\n", ret);
+				ret = sceNetAdhocDialogWlanError(ret);
+				if (ret < 0)
+					printf("sceNetAdhocDialogWlanError() failed. ret = 0x%x\n", ret);
+				else
+					connect_state = ERROR_DIALOG;
+			} else {
+				send_position(&obj[0]);
+				recv_allpacket(obj);
+			}
+		}
+		disconnect_check();
+		poll_adhoc_dialog_state();
+		draw_frame_DB4();
+		sceDisplayWaitVblankStart();
+		sceGuSwapBuffers();
+		if (connect_state == DISCONNECTED)
+			break;
+	}
+	net_term();
+	sceGuTerm();
+	if (unload_required_modules() < 0)
+		return 1;
+	printf("terminated.\n");
+	menuTerm(3, 2);
+	return 1;
+}
+#undef nickname
