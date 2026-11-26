@@ -24,7 +24,25 @@ void clear_evf(void) {
     error_code = 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_network_flow/nonmatchings/handler", adhocctl_handler);
+#define evf evf_322D0
+void adhocctl_handler(int event, int error, void *arg)
+{
+	printf("event: [%s] error_code = 0x%x\n", event_str[event], error);
+	if (event == 0) {
+		error_code = error;
+		evf |= 0x01;
+	} else if (event == 1) {
+		error_code = 0;
+		evf |= 0x02;
+	} else if (event == 2) {
+		error_code = 0;
+		evf |= 0x04;
+	} else if (event == 3) {
+		error_code = 0;
+		evf |= 0x08;
+	}
+}
+#undef evf
 
 extern int evf_322D0;
 
@@ -39,8 +57,57 @@ int polling_error(void) {
     return var_a0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_network_flow/nonmatchings/handler", wait_connect);
+#define evf evf_322D0
+int wait_connect(void)
+{
+	int ret;
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_network_flow/nonmatchings/handler", wait_disconnect);
+	ret = 0;
+	while (1) {
+		if (evf & 0x02)
+			break;
+		if (evf & 0x01) {
+			ret = error_code;
+			evf &= ~0x01;
+			break;
+		}
+		sceKernelDelayThread(1000000);
+	}
+	evf &= ~0x02;
+	return ret;
+}
+#undef evf
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_network_flow/nonmatchings/handler", wait_scan);
+#define evf evf_322D0
+int wait_disconnect(void)
+{
+	while (1) {
+		if (evf & 0x04)
+			break;
+		sceKernelDelayThread(1000000);
+	}
+	evf &= ~0x04;
+	return 0;
+}
+#undef evf
+
+#define evf evf_322D0
+int wait_scan(void)
+{
+	int ret;
+
+	ret = 0;
+	while (1) {
+		if (evf & 0x08)
+			break;
+		if (evf & 0x01) {
+			ret = error_code;
+			evf &= ~0x01;
+			break;
+		}
+		sceKernelDelayThread(1000000);
+	}
+	evf &= ~0x08;
+	return ret;
+}
+#undef evf
