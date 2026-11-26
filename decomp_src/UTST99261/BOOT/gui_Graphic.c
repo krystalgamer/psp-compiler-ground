@@ -70,7 +70,34 @@ int GUI_Graphics_freeGraphics(GUIGRAPHICS *g) {
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Graphic", GUI_Graphics_createPixmap);
+GUIPIXMAP *GUI_Graphics_createPixmap(int w, int h) {
+    WINDSYSTEMDATA *sd;
+    GUIPIXMAP *pm;
+
+    sd = &s_windsystem_data;
+    if (sd->pixmap != NULL && w * h <= sd->width * sd->height) {
+        ((GUIPIXMAP *)sd->pixmap)->w = w;
+        ((GUIPIXMAP *)sd->pixmap)->h = h;
+        sd->pixmap2 = sd->pixmap;
+        sd->pixmap = NULL;
+        return sd->pixmap2;
+    }
+    pm = GuipixmapCreate();
+    if (pm == NULL) {
+        puts("[X1]GUI_Graphics_createPixmap");
+        return NULL;
+    }
+    pm->w = w;
+    pm->h = h;
+    pm->data = ESP_guiMemAlloc(w * h * 2);
+    pm->kind = 0;
+    if (pm->data == NULL) {
+        puts("[X2]GUI_Graphics_createPixmap");
+        GuipixmapDelete(pm);
+        return NULL;
+    }
+    return pm;
+}
 
 void GUI_Graphics_freePixmap(GUIPIXMAP *p) {
     if (p == NULL) {
@@ -1124,9 +1151,91 @@ char *GUI_List_getItem(GUIWIDGET *w, int idx) {
     return s;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Graphic", GUI_List_select);
+int GUI_List_select(GUIWIDGET *w, int idx) {
+    GUILISTITEM *p;
+    int i;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Graphic", GUI_List_deselect);
+    if (w == NULL) {
+        puts("[X1]GUI_List_select");
+        return -1;
+    }
+    if (w->type != 1) {
+        puts("[X2]GUI_List_select");
+        return -1;
+    }
+    if ((w->flags & 0xF) != 8) {
+        puts("[X3]GUI_List_select");
+        return -1;
+    }
+    s_windsystem_data.flags |= 4;
+    if (w->unk4C == NULL) {
+        w->u.list.unk58 = idx;
+    } else {
+        p = w->unk50.p;
+        i = 0;
+        while (i++ != idx) {
+            if (p == NULL) {
+                s_windsystem_data.flags &= ~4;
+                return -1;
+            }
+            if (i >= w->u.list.count) {
+                s_windsystem_data.flags &= ~4;
+                return -1;
+            }
+            p = p->next;
+        }
+        if (p == NULL) {
+            s_windsystem_data.flags &= ~4;
+            return -1;
+        }
+        p->state = 0;
+    }
+    zWindDraw();
+    s_windsystem_data.flags &= ~4;
+    return 0;
+}
+
+int GUI_List_deselect(GUIWIDGET *w, int idx) {
+    GUILISTITEM *p;
+    int i;
+
+    if (w == NULL) {
+        puts("[X1]GUI_List_deselect");
+        return -1;
+    }
+    if (w->type != 1) {
+        puts("[X2]GUI_List_deselect");
+        return -1;
+    }
+    if ((w->flags & 0xF) != 8) {
+        puts("[X3]GUI_List_deselect");
+        return -1;
+    }
+    s_windsystem_data.flags |= 4;
+    if ((int)w->unk4C == 1) {
+        p = w->unk50.p;
+        i = 0;
+        while (i++ != idx) {
+            if (p == NULL) {
+                s_windsystem_data.flags &= ~4;
+                return -1;
+            }
+            if (i >= w->u.list.count) {
+                s_windsystem_data.flags &= ~4;
+                return -1;
+            }
+            p = p->next;
+        }
+        if (p == NULL) {
+            s_windsystem_data.flags &= ~4;
+            return -1;
+        }
+        p->state = -1;
+    }
+    zWindDraw();
+    s_windsystem_data.flags &= ~4;
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Graphic", GUI_List_isIndexSelected);
 
