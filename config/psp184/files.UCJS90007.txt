@@ -2,3 +2,14 @@
 # SDK 2.5.0 libwave (no DWARF; its version string precedes its rodata).
 0x1F728 libwave         1.8.4.internal  libwave.c
 rodata 0x3018C libwave
+# SDK 2.5.0 libgim_picture (no DWARF), objects in the SDK 6.6.0 source's function order.
+0x125F8 gim_callback    1.8.4.internal  gim_callback.c
+0x12B44 gim_picture     1.8.4.internal  gim_picture.c
+0x13BC8 gim_animate     1.8.4.internal  gim_animate.c
+0x1417C gim_activate    1.8.4.internal  gim_activate.c
+0x14FDC gu_inter        1.8.4.internal  gu_inter.c
+0x150CC load_bmp        1.8.4.internal  load_bmp.c
+0x15B24 load_tga        1.8.4.internal  load_tga.c
+0x160E4 load_tm2        1.8.4.internal  load_tm2.c
+0x165E0 gim_format      1.8.4.internal  gim_format.c
+0x1675C gim_realloc     1.8.4.internal  gim_realloc.c

@@ -24,6 +24,16 @@ mpeg_strfile                                 1.8.4.internal  mpeg_strfile.c
 mpeg_io                                      1.8.4.internal  mpeg_io.c
 mpeg_list                                    1.8.4.internal  mpeg_list.c
 userinterrupt                                1.8.4.internal  userinterrupt.c
+gim_callback                                 1.8.4.internal  gim_callback.c
+gim_picture                                  1.8.4.internal  gim_picture.c
+gim_animate                                  1.8.4.internal  gim_animate.c
+gim_activate                                 1.8.4.internal  gim_activate.c
+gu_inter                                     1.8.4.internal  gu_inter.c
+load_bmp                                     1.8.4.internal  load_bmp.c
+load_tga                                     1.8.4.internal  load_tga.c
+load_tm2                                     1.8.4.internal  load_tm2.c
+gim_format                                   1.8.4.internal  gim_format.c
+gim_realloc                                  1.8.4.internal  gim_realloc.c
 libgu                                        1.8.4.internal  libgu.c
 font/sceGuDebugPrint                         1.8.4.internal  font.c
 libgum                                       1.8.4.internal  libgum.c
