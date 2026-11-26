@@ -38,7 +38,27 @@ void sceGumPushMatrix(void);
 void sceGumScale(const ScePspFVector3 *v);
 void sceGumTranslate(const ScePspFVector3 *v);
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_balloon/nonmatchings/balloon", init_balloon);
+#define MODE_IN (0)
+#define RANGERAND(b,u,r)	(b+u*(float)(rand()%r))
+#define SIGN				((rand()%2)?-1.0f:1.0f)
+
+void init_balloon(void)
+{
+	int		i;
+
+	balloon.mode=MODE_IN;
+	balloon.pos.x= 0.0f;
+	balloon.pos.y=-8.0f;
+	balloon.pos.z= 0.0f;
+	balloon.t=0.0f;
+	balloon.scnt=2;
+
+	for (i=0; i<3; i++) {
+		balloon.sbuf[i].x=RANGERAND(0.0f, 0.02f, 200)*SIGN;
+		balloon.sbuf[i].y=RANGERAND(0.0f, 0.01f, 200)*SIGN;
+		balloon.sbuf[i].z=RANGERAND(0.0f, 0.01f, 20)*SIGN;
+	}
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_balloon/nonmatchings/balloon", draw_balloon);
 
