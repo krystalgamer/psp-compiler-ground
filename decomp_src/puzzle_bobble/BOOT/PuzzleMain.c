@@ -515,13 +515,14 @@ int GetMapRight(int no)
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", GameValueInit);
 
-#ifdef NON_MATCHING
-/* Close: the sb of unk027 (8) is scheduled ahead of the unk454/unk023 stores. */
 extern int OjamaStock[3];
 extern int WinStack[3];
 extern int OjamaCnt[3];
 extern int OjamaPos[3][8];
 extern int OjamaCol[3][8];
+
+#ifdef NON_MATCHING
+/* Close: the sb of unk027 (8) is scheduled ahead of the unk454/unk023 stores. */
 void VSValueInit(int pl, int a1, int flag)
 {
 	PZL_STAT *st;
@@ -565,8 +566,6 @@ void VSValueInit(int pl, int a1, int flag)
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", VSValueInit);
 #endif
 
-#ifdef NON_MATCHING
-/* Close: same unk027 store scheduling as VSValueInit. */
 void SurvValueInit(void)
 {
 	int pl = 1;
@@ -583,11 +582,11 @@ void SurvValueInit(void)
 	st->unk45F = 1;
 	st->by = 0xD0 - st->scroll * 14;
 	st->unk00E = 600;
-	st->unk027 = 8;
-	st->unk026 = 8;
 	st->unk430 = 0;
 	st->unk454 = 0;
 	st->unk023 = 0;
+	st->unk027 = 8;
+	st->unk026 = 8;
 	st->bx = BallXPos[1];
 	for (i = 0; i < 3; i++) {
 		OjamaStock[i] = 0;
@@ -599,9 +598,6 @@ void SurvValueInit(void)
 		}
 	}
 }
-#else
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", SurvValueInit);
-#endif
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", EndressValueInit);
 
