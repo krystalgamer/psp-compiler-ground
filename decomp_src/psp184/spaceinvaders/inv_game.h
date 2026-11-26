@@ -53,5 +53,10 @@ extern TEXPOS texpos_inv_effect[];
 /* ufos at gmain + 0xEB9D4 (count at gmain + 0xEB9D0), 0xA4 bytes each */
 extern int D_005A09BC;
 #define UFO_W(i) ((int *)((u8 *)&D_005A09BC + (i) * 0xA4))
+typedef struct { int f[0xA4 / 4]; } UFO_T;
+#define ufo_t ((UFO_T *)&D_005A09BC)
+
+/* net send queue of a player (count first): field O of the current entry */
+#define NE(p, o) (*(int *)((u8 *)(p) + *(p) * 0x18 + (o)))
 
 #endif

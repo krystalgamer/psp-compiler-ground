@@ -1822,11 +1822,30 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", inv_netgame_li
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", inv_netgame_linkcheck2);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", netgame_zako_damage_set);
+void netgame_zako_damage_set(int a, int b, int c, int dmg)
+{
+	int *p;
+
+	if (gmain.f.f1c == 0)
+		return;
+	p = (int *)&gmain.b[0x24 + gmain.f.f20 * 0x3A0];
+	for (;;) {
+		if (*p >= 38)
+			return;
+		if (NE(p, 0x10) == 0)
+			break;
+		(*p)++;
+	}
+	NE(p, 0x10) = 1;
+	NE(p, 0x14) = (a << 16) + (b << 8) + c;
+	NE(p, 0x18) = dmg;
+	NE(p, 0x1C) = genrand_int32();
+	NE(p, 0x20) = 4;
+	(*p)++;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", netgame_zako_damage_get);
 
-#define NE(p, o) (*(int *)((u8 *)(p) + *(p) * 0x18 + (o)))
 void netgame_zako_dead_set(int a, int b, int c)
 {
 	int *p;
@@ -1851,7 +1870,32 @@ void netgame_zako_dead_set(int a, int b, int c)
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", netgame_zako_dead_get);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", netgame_ufo_damage_set);
+extern int D_005A0D14;
+void netgame_ufo_damage_set(int no, int dmg)
+{
+	int *p;
+
+	if (gmain.f.f1c == 0)
+		return;
+	p = (int *)&gmain.b[0x24 + gmain.f.f20 * 0x3A0];
+	for (;;) {
+		if (*p >= 38)
+			return;
+		if (NE(p, 0x10) == 0)
+			break;
+		(*p)++;
+	}
+	NE(p, 0x10) = 3;
+	NE(p, 0x14) = no;
+	NE(p, 0x18) = dmg;
+	NE(p, 0x1C) = genrand_int32();
+	NE(p, 0x20) = 4;
+	if (gmain.f.ff28 != 13)
+		NE(p, 0x24) = ufo_t[no].f[9];
+	else
+		NE(p, 0x24) = D_005A0D14;
+	(*p)++;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", netgame_ufo_damage_get);
 
