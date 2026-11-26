@@ -108,6 +108,27 @@ void sceGumSetMatrixStack(void *stack, int proj, int view, int model, int textur
 int sceDisplayWaitVblankStart(void);
 
 
+/* SDK prototypes (tools/sdk_protos.h) */
+void sceGuAmbient(unsigned int color);
+void sceGuClear(int flags);
+void sceGuClutLoad(int num_blocks, const void *cbp);
+void sceGuClutMode(unsigned int cpsm, unsigned int shift, unsigned int mask, unsigned int a3);
+void sceGuColor(unsigned int color);
+void sceGuLight(int light, int type, int components, const ScePspFVector3 *position);
+void sceGuLightColor(int light, int component, unsigned int color);
+void sceGuTexFilter(int min, int mag);
+void sceGuTexFunc(int tfx, int tcc);
+void sceGuTexImage(int mipmap, int width, int height, int tbw, const void *tbp);
+void sceGuTexMapMode(int mode, unsigned int a1, unsigned int a2);
+void sceGuTexMode(int tpsm, int maxmips, int a2, int swizzle);
+void sceGuTexWrap(int u, int v);
+void sceGumPopMatrix(void);
+void sceGumPushMatrix(void);
+void sceGumRotateX(float angle);
+void sceGumRotateXYZ(const ScePspFVector3 *v);
+void sceGumRotateY(float angle);
+void sceGumTranslate(const ScePspFVector3 *v);
+
 INCLUDE_RODATA("tmp/asm/UTST99332/graphics_pot/nonmatchings/main", env_clut);
 
 INCLUDE_RODATA("tmp/asm/UTST99332/graphics_pot/nonmatchings/main", env_tex);
