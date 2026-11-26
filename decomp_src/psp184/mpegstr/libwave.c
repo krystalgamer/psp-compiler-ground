@@ -90,9 +90,71 @@ int sceWaveGetStat(unsigned int ch)
 	return D_000145E4[ch].stat;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/mpegstr/nonmatchings/libwave", sceWavePlay);
+int sceWavePlay(unsigned int ch, int left, int right)
+{
+	if (ch >= 8)
+		return 0x80440005;
+	if (left < 0 || left >= 128)
+		return 0x8044000A;
+	if (right < 0 || right >= 128)
+		return 0x8044000A;
+	if (D_000145E4[ch].data == NULL && !(D_000145E4[ch].flags & 0x400))
+		return 0x80440006;
+	if (D_000145E4[ch].stat != 0) {
+		D_000145E4[ch].flags |= 0x110000;
+		D_00014844[ch].stat = 1;
+		D_00014844[ch].vol_l = left * 0x1000 / 127;
+		D_00014844[ch].vol_r = right * 0x1000 / 127;
+		D_00014844[ch].pos = 0;
+		D_00014844[ch].unk30 = 0;
+		D_00014844[ch].unk34 = 0;
+		D_00014844[ch].unk28 = 0;
+		D_00014844[ch].unk2C = 0;
+	} else {
+		D_000145E4[ch].stat = 1;
+		D_000145E4[ch].vol_l = left * 0x1000 / 127;
+		D_000145E4[ch].vol_r = right * 0x1000 / 127;
+		D_000145E4[ch].pos = 0;
+		D_000145E4[ch].unk30 = 0;
+		D_000145E4[ch].unk34 = 0;
+		D_000145E4[ch].unk28 = 0;
+		D_000145E4[ch].unk2C = 0;
+	}
+	return 0;
+}
 
-INCLUDE_ASM("tmp/asm/psp184/mpegstr/nonmatchings/libwave", sceWavePlayEx);
+int sceWavePlayEx(unsigned int ch, unsigned int left, unsigned int right)
+{
+	if (ch >= 8)
+		return 0x80440005;
+	if (left > 0x1000)
+		return 0x8044000A;
+	if (right > 0x1000)
+		return 0x8044000A;
+	if (D_000145E4[ch].data == NULL && !(D_000145E4[ch].flags & 0x400))
+		return 0x80440006;
+	if (D_000145E4[ch].stat != 0) {
+		D_000145E4[ch].flags |= 0x110000;
+		D_00014844[ch].stat = 1;
+		D_00014844[ch].vol_l = left;
+		D_00014844[ch].vol_r = right;
+		D_00014844[ch].pos = 0;
+		D_00014844[ch].unk30 = 0;
+		D_00014844[ch].unk34 = 0;
+		D_00014844[ch].unk28 = 0;
+		D_00014844[ch].unk2C = 0;
+	} else {
+		D_000145E4[ch].stat = 1;
+		D_000145E4[ch].vol_l = left;
+		D_000145E4[ch].vol_r = right;
+		D_000145E4[ch].pos = 0;
+		D_000145E4[ch].unk30 = 0;
+		D_000145E4[ch].unk34 = 0;
+		D_000145E4[ch].unk28 = 0;
+		D_000145E4[ch].unk2C = 0;
+	}
+	return 0;
+}
 
 int sceWaveStop(unsigned int ch)
 {

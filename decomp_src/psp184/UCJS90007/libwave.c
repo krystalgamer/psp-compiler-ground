@@ -90,9 +90,71 @@ int sceWaveGetStat(unsigned int ch)
 	return D_0008CCEC[ch].stat;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/libwave", sceWavePlay);
+int sceWavePlay(unsigned int ch, int left, int right)
+{
+	if (ch >= 8)
+		return 0x80440005;
+	if (left < 0 || left >= 128)
+		return 0x8044000A;
+	if (right < 0 || right >= 128)
+		return 0x8044000A;
+	if (D_0008CCEC[ch].data == NULL && !(D_0008CCEC[ch].flags & 0x400))
+		return 0x80440006;
+	if (D_0008CCEC[ch].stat != 0) {
+		D_0008CCEC[ch].flags |= 0x110000;
+		D_0008CF4C[ch].stat = 1;
+		D_0008CF4C[ch].vol_l = left * 0x1000 / 127;
+		D_0008CF4C[ch].vol_r = right * 0x1000 / 127;
+		D_0008CF4C[ch].pos = 0;
+		D_0008CF4C[ch].unk30 = 0;
+		D_0008CF4C[ch].unk34 = 0;
+		D_0008CF4C[ch].unk28 = 0;
+		D_0008CF4C[ch].unk2C = 0;
+	} else {
+		D_0008CCEC[ch].stat = 1;
+		D_0008CCEC[ch].vol_l = left * 0x1000 / 127;
+		D_0008CCEC[ch].vol_r = right * 0x1000 / 127;
+		D_0008CCEC[ch].pos = 0;
+		D_0008CCEC[ch].unk30 = 0;
+		D_0008CCEC[ch].unk34 = 0;
+		D_0008CCEC[ch].unk28 = 0;
+		D_0008CCEC[ch].unk2C = 0;
+	}
+	return 0;
+}
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/libwave", sceWavePlayEx);
+int sceWavePlayEx(unsigned int ch, unsigned int left, unsigned int right)
+{
+	if (ch >= 8)
+		return 0x80440005;
+	if (left > 0x1000)
+		return 0x8044000A;
+	if (right > 0x1000)
+		return 0x8044000A;
+	if (D_0008CCEC[ch].data == NULL && !(D_0008CCEC[ch].flags & 0x400))
+		return 0x80440006;
+	if (D_0008CCEC[ch].stat != 0) {
+		D_0008CCEC[ch].flags |= 0x110000;
+		D_0008CF4C[ch].stat = 1;
+		D_0008CF4C[ch].vol_l = left;
+		D_0008CF4C[ch].vol_r = right;
+		D_0008CF4C[ch].pos = 0;
+		D_0008CF4C[ch].unk30 = 0;
+		D_0008CF4C[ch].unk34 = 0;
+		D_0008CF4C[ch].unk28 = 0;
+		D_0008CF4C[ch].unk2C = 0;
+	} else {
+		D_0008CCEC[ch].stat = 1;
+		D_0008CCEC[ch].vol_l = left;
+		D_0008CCEC[ch].vol_r = right;
+		D_0008CCEC[ch].pos = 0;
+		D_0008CCEC[ch].unk30 = 0;
+		D_0008CCEC[ch].unk34 = 0;
+		D_0008CCEC[ch].unk28 = 0;
+		D_0008CCEC[ch].unk2C = 0;
+	}
+	return 0;
+}
 
 int sceWaveStop(unsigned int ch)
 {
