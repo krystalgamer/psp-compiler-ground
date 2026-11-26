@@ -100,7 +100,27 @@ int memcmp(const void *a, const void *b, unsigned int n);
 void *memset(void *s, int c, unsigned int n);
 int printf(const char *fmt, ...);
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/moonball_net", game_net_init);
+void *memcpy(void *d, const void *s, unsigned int n);
+int game_net_init(void)
+{
+	int ret;
+
+	sceNetGetLocalEtherAddr(&local_addr);
+	if (_mrinfo.hello_opt.game_type == GAME_TYPE_PARENT) {
+		_info.server_flag = 1;
+	} else {
+		_info.server_flag = 0;
+		memcpy(&_info.server, &minfo[_mrinfo.requesting_minfo_id].addr, sizeof(struct SceNetEtherAddr));
+	}
+	ret = sceNetAdhocPdpCreate(&local_addr, 0x309, 0x400, 0);
+	if (ret < 0) {
+		printf("sceNetAdhocPdpCreate() failed. ret = 0x%x\n", ret);
+		goto error;
+	}
+	socket_id = ret;
+error:
+	return ret;
+}
 
 int game_net_term(void) {
     int temp_v0;
@@ -115,4 +135,32 @@ int game_net_term(void) {
     return var_v1;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/moonball_net", send_recv_game_data);
+int get_game_data(void *data);
+int update_game_data(struct SceNetEtherAddr *addr, void *data);
+int check_peer_existence(void);
+int send_recv_game_data(void)
+{
+	struct SceNetEtherAddr addr;
+	char buf[0x400];
+	SceUShort16 port;
+	int len;
+	int ret;
+
+	memset(&addr, 0xff, sizeof(addr));
+	len = get_game_data(buf);
+	ret = sceNetAdhocPdpSend(socket_id, &addr, 0x309, buf, len, 0, 1);
+	while (1) {
+		len = sizeof(buf);
+		ret = sceNetAdhocPdpRecv(socket_id, &addr, &port, buf, &len, 0, 1);
+		if (ret == (int)0x80410709)
+			break;
+		if (memcmp(&local_addr, &addr, 6) == 0)
+			continue;
+		if (port != 0x309)
+			continue;
+		update_game_data(&addr, buf);
+	}
+error:
+	check_peer_existence();
+	return 0;
+}
