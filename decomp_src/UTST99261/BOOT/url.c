@@ -1,7 +1,16 @@
 /* cflags: -O1 */
 #include "common.h"
 #include "m2c_macros.h"
-M2C_UNK UTL_mfilewrite(int, signed char *, unsigned int);             /* extern */
+
+typedef struct QUEUE {
+    struct QUEUE *next;
+    struct QUEUE *prev;
+} QUEUE;
+
+extern const char _ctype_[];
+int UTL_mfileread(void *f, void *buf, unsigned int n);
+QUEUE *UTL_peekqueue(QUEUE *q, QUEUE *e);
+int UTL_mfilewrite(void *f, void *buf, unsigned int n);
 
 M2C_UNK createGifContext();                         /* extern */
 M2C_UNK deleteGifContext();                         /* extern */
@@ -68,7 +77,20 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/url", UTL_guessMIMETypeFromName
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/url", UTL_guessMIMEType);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/url", UTL_isNumber);
+int UTL_isNumber(char *s, int len) {
+    int i;
+
+    if (s == NULL) {
+        return 0;
+    }
+    for (i = 0; i < len; i++) {
+        if (!((_ctype_ + 1)[(int)*s] & 4)) {
+            return 0;
+        }
+        s++;
+    }
+    return 1;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -112,15 +134,65 @@ void *UTL_dequeue(void **arg0) {
     return var_v0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/url", UTL_relqueue);
+void UTL_relqueue(QUEUE *q, QUEUE *e) {
+    QUEUE *next;
+    QUEUE *prev;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/url", UTL_insqueue);
+    next = e->next;
+    prev = e->prev;
+    prev->next = next;
+    next->prev = prev;
+    e->next = NULL;
+    e->prev = NULL;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/url", UTL_peekqueue);
+void UTL_insqueue(QUEUE *q, QUEUE *pos, QUEUE *e) {
+    QUEUE *prev;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/url", UTL_peekprevqueue);
+    prev = pos->prev;
+    e->next = pos;
+    e->prev = prev;
+    pos->prev = e;
+    prev->next = e;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/url", UTL_sizequeue);
+QUEUE *UTL_peekqueue(QUEUE *q, QUEUE *e) {
+    QUEUE *n;
+
+    if (e == NULL) {
+        e = q;
+    }
+    n = e->next;
+    if (q != n) {
+        return n;
+    }
+    return NULL;
+}
+
+QUEUE *UTL_peekprevqueue(QUEUE *q, QUEUE *e) {
+    QUEUE *n;
+
+    if (e == NULL) {
+        e = q;
+    }
+    n = e->prev;
+    if (q != n) {
+        return n;
+    }
+    return NULL;
+}
+
+int UTL_sizequeue(QUEUE *q) {
+    QUEUE *e;
+    int n;
+
+    e = NULL;
+    n = 0;
+    while ((e = UTL_peekqueue(q, e)) != NULL) {
+        n++;
+    }
+    return n;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/url", UTL_mfilecreate);
 
@@ -130,11 +202,23 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/url", UTL_mfileread);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/url", UTL_mfilewrite);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/url", UTL_mfilegetc);
+int UTL_mfilegetc(void *f) {
+    u8 c;
+
+    if (UTL_mfileread(f, &c, 1) != 1) {
+        return -1;
+    }
+    return c;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/url", UTL_mfileclean);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/url", UTL_mfileputc);
+int UTL_mfileputc(void *f, int c) {
+    u8 ch;
+
+    ch = c;
+    return UTL_mfilewrite(f, &ch, 1);
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
