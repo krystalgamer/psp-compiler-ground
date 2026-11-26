@@ -2,13 +2,14 @@
 #include "common.h"
 #include "dom_esp.h"
 #include "m2c_macros.h"
+int JSPtrListFind(JSPtr *p);
+int JSPtrListFindEmpty(void);
 M2C_UNK HST_attachHistory();                        /* extern */
 int GUI_RadioButton_getState(int);                  /* extern */
 void *Node_getBox();                                /* extern */
 extern void *gPREF_UI;
 void *duplicateDOMString(int);                      /* extern */
 extern void *gNDA_NAME_JS_GLOBAL;
-extern void *g_JS_TIMER_;
 M2C_UNK js_delTimerID(int, M2C_UNK, M2C_UNK);       /* extern */
 int OS_thread_self();                               /* extern */
 int esp_postMsgLoadPage(int, int, int, M2C_UNK, M2C_UNK, int, M2C_UNK); /* extern */
@@ -300,7 +301,16 @@ void js_InitTimer(void) {
     g_JS_TIMER_ = temp_v0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", js_getTimerStatus);
+int js_getTimerStatus(int id) {
+    JSTimer *t;
+
+    for (t = g_JS_TIMER_; t != NULL; t = t->next) {
+        if (t->id == id) {
+            return t->status;
+        }
+    }
+    return -1;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -374,7 +384,16 @@ void js_addTimer(int arg0, int arg1, int arg2, int arg3) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", js_delTimerID);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", searchTimerCx);
+int searchTimerCx(void *cx) {
+    JSTimer *t;
+
+    for (t = g_JS_TIMER_; t != NULL; t = t->next) {
+        if (t->cx == cx) {
+            return t->id;
+        }
+    }
+    return -1;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -394,21 +413,149 @@ void js_delTimerCx(int arg0) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSPtrListInit);
+void JSPtrListInit(void) {
+    JSPtr **list = MEM_malloc(0, 10 * sizeof(JSPtr *));
+    int i;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSPtrListDestroy);
+    for (i = 0; i < 10; i++) {
+        list[i] = MEM_malloc(0, sizeof(JSPtr));
+        list[i]->cx = NULL;
+        list[i]->x04 = 0;
+        list[i]->next = NULL;
+    }
+    g_JSPTRLIST_ = list;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSPtrListFindCx);
+void JSPtrListDestroy(void) {
+    JSPtr **list = g_JSPTRLIST_;
+    int i;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSPtrListFind);
+    for (i = 0; i < 10; i++) {
+        MEM_free(0, list[i]);
+    }
+    MEM_free(0, list);
+    g_JSPTRLIST_ = NULL;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSPtrListFindEmpty);
+int JSPtrListFindCx(void *cx) {
+    JSPtr **list;
+    int i;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSPtrListAdd);
+    if (cx == NULL) {
+        return -1;
+    }
+    list = g_JSPTRLIST_;
+    for (i = 0; i < 10; i++) {
+        if (list[i]->cx == cx) {
+            return i;
+        }
+    }
+    return -1;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSPtrListDel);
+int JSPtrListFind(JSPtr *p) {
+    JSPtr **list;
+    int i;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSPtrListDelAll);
+    if (p == NULL) {
+        return -1;
+    }
+    list = g_JSPTRLIST_;
+    for (i = 0; i < 10; i++) {
+        if (list[i]->cx == p->cx) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+int JSPtrListFindEmpty(void) {
+    JSPtr **list = g_JSPTRLIST_;
+    int i;
+
+    for (i = 0; i < 10; i++) {
+        if (list[i]->cx == NULL) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+void JSPtrListAdd(JSPtr *p) {
+    JSPtr **list;
+    JSPtr *q;
+    int i;
+
+    if (p == NULL) {
+        return;
+    }
+    list = g_JSPTRLIST_;
+    p->next = NULL;
+    i = JSPtrListFind(p);
+    if (i != -1) {
+        q = list[i];
+        while (q->next != NULL) {
+            q = q->next;
+            if (q == p) {
+                return;
+            }
+        }
+        q->next = p;
+        return;
+    }
+    i = JSPtrListFindEmpty();
+    if (i == -1) {
+        return;
+    }
+    list[i]->x0C = 0;
+    list[i]->next = p;
+    list[i]->cx = p->cx;
+}
+
+void JSPtrListDel(JSPtr *p) {
+    JSPtr **list;
+    JSPtr *q;
+    int i;
+
+    if (p == NULL) {
+        return;
+    }
+    i = JSPtrListFind(p);
+    if (i == -1) {
+        return;
+    }
+    list = g_JSPTRLIST_;
+    q = list[i];
+    while (q->next != p) {
+        q = q->next;
+        if (q == NULL) {
+            return;
+        }
+    }
+    q->next = p->next;
+    p->next = NULL;
+    if (list[i]->next == NULL) {
+        list[i]->cx = NULL;
+        list[i]->x0C = 0;
+    }
+}
+
+void JSPtrListDelAll(JSPtr *p) {
+    JSPtr **list;
+    int i;
+
+    if (p == NULL) {
+        return;
+    }
+    i = JSPtrListFind(p);
+    if (i == -1) {
+        return;
+    }
+    list = g_JSPTRLIST_;
+    list[i]->next = NULL;
+    list[i]->cx = NULL;
+    list[i]->x0C = 0;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -429,11 +576,57 @@ void JSRunFinish(void *arg0) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSPtrListDumpAll);
+void JSPtrListDumpAll(void) {
+    JSPtr **list = g_JSPTRLIST_;
+    JSPtr *q;
+    int i;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSPtrListDumpOne);
+    for (i = 0; i < 10; i++) {
+        for (q = list[i]->next; q != NULL; q = q->next) {
+        }
+    }
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSFreeJSPtr);
+void JSPtrListDumpOne(JSPtr *p) {
+    JSPtr *q;
+    int i;
+
+    if (p == NULL) {
+        return;
+    }
+    i = JSPtrListFind(p);
+    if (i == -1) {
+        return;
+    }
+    for (q = g_JSPTRLIST_[i]->next; q != NULL; q = q->next) {
+    }
+}
+
+int JSFreeJSPtr(JSPtr *p) {
+    JSPtr **list;
+    JSPtr *q, *next;
+    int i;
+
+    if (p == NULL) {
+        return -1;
+    }
+    js_delTimerCx(p->cx);
+    mes_context_free(p->cx);
+    i = JSPtrListFind(p);
+    if (i == -1) {
+        return -1;
+    }
+    list = g_JSPTRLIST_;
+    q = list[i]->next;
+    list[i]->next = NULL;
+    list[i]->cx = NULL;
+    while (q != NULL) {
+        next = q->next;
+        MEM_free(0, q);
+        q = next;
+    }
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSCreate);
 

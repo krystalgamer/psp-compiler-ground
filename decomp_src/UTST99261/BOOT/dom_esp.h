@@ -27,6 +27,25 @@ typedef struct EspContext {
 
 extern EspContext *esp_context;
 
+typedef struct JSTimer {
+    int x00;
+    int id;                           /* 0x04 */
+    int status;                       /* 0x08 */
+    void *x0C;
+    void *cx;                         /* 0x10 */
+    struct JSTimer *next;             /* 0x14 */
+} JSTimer;
+
+typedef struct JSPtr {
+    void *cx;
+    int x04;
+    struct JSPtr *next;               /* 0x08 */
+    int x0C;
+} JSPtr;
+
+extern JSTimer *g_JS_TIMER_;
+extern JSPtr **g_JSPTRLIST_;
+
 void *MEM_malloc(int pool, unsigned int size);
 void MEM_free(int pool, void *p);
 
