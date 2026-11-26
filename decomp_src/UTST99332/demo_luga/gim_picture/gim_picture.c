@@ -143,7 +143,41 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/gim_picture/gim_picture", 
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/gim_picture/gim_picture", sceGimPictureUnload);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/gim_picture/gim_picture", sceGimPictureAnimate);
+void sceGimPictureAnimate(SceGimPicture *picture, float step)
+{
+	float frame;
+	float prev;
+	float start, end;
+	int i;
+
+	if (picture == NULL) {
+		return;
+	}
+	if (!(picture->m_flags & 0x10)) {
+		return;
+	}
+
+	prev = picture->m_frame;
+	frame = prev + picture->m_frame_rate * step;
+	start = picture->m_frame_loop[0];
+	end = picture->m_frame_loop[1];
+	if (frame >= end && prev < end) {
+		frame = start;
+	} else if (frame < start && prev >= start) {
+		frame = end;
+	}
+	picture->m_frame = frame;
+
+	i = (int)frame;
+	if (frame < 0.0f) {
+		i--;
+	}
+	picture->m_image_frame = i;
+	picture->m_image_frame2 = i + 1;
+	picture->m_palette_frame = i;
+	picture->m_palette_frame2 = i + 1;
+	picture->m_dissolve = frame - (float)i;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/gim_picture/gim_picture", sceGimPictureActivate);
 
