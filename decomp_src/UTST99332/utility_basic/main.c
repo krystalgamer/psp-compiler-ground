@@ -519,4 +519,27 @@ int ExitFunction_1068(void) {
 
 INCLUDE_ASM("tmp/asm/UTST99332/utility_basic/nonmatchings/main", sub_thread);
 
-INCLUDE_ASM("tmp/asm/UTST99332/utility_basic/nonmatchings/main", main);
+int main(int argc, char **argv)
+{
+	int ret;
+
+	menuInit();
+
+	thread_id = sceKernelCreateThread("Utility Test", sub_thread, 0x10, 0x10000, 0, NULL);
+	if (thread_id <= 0) {
+		goto end;
+	}
+
+	ret = sceKernelStartThread(thread_id, 0, NULL);
+	if (ret != 0) {
+		sceKernelDeleteThread(thread_id);
+		goto end;
+	}
+
+	sceKernelWaitThreadEnd(thread_id, NULL);
+
+end:
+	menuTerm(5, 1);
+
+	return 0;
+}
