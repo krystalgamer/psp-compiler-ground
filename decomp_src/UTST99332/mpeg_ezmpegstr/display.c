@@ -194,4 +194,19 @@ SceInt32 dispbuf_display(SceVoid *pAv)
 	return 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/mpeg_ezmpegstr/nonmatchings/display", dispbuf_show);
+SceInt32 dispbuf_show(t_displayBuffer *pDisp)
+{
+	SceChar8 *buffer;
+
+	if (dispbuf_getMode(pDisp) == 1) {
+		buffer = pDisp->buf[pDisp->read];
+
+		swap_buffer(buffer);
+		pDisp->read = (pDisp->read + 1) % pDisp->size;
+		sceDisplayWaitVblankStart();
+	} else {
+		pDisp->read = (pDisp->read + 1) % pDisp->size;
+	}
+
+	return 0;
+}
