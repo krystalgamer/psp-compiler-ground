@@ -114,7 +114,56 @@ int getRestImageTotalSquareSize(void) {
 void incrementImageTotalSquareSize(void) {
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_image", addImageList);
+void addBoxList();
+void delBoxList();
+unsigned int strlen(const char *s);
+char *strcpy(char *d, const char *s);
+
+void addImageList(IMGLIST *list, BOX *box, char *name) {
+    IMGENT *e;
+    char *s;
+    IMGENT *tail;
+
+    if (box->content == 10 && ((IMGENT **)box->geom)[9] != NULL) {
+        delBoxList(&((IMGENT **)box->geom)[9]->boxes, box);
+    }
+    for (e = list->head; e != NULL; e = e->next) {
+        if (strcmp(name, e->name) == 0) {
+            break;
+        }
+    }
+    if (e != NULL) {
+        addBoxList(&e->boxes, box);
+    } else {
+        e = MEM_malloc(0, 0x28);
+        e->next = NULL;
+        e->unk4 = 0;
+        e->unk8 = 0;
+        e->name = NULL;
+        e->image = NULL;
+        e->unk14 = 0;
+        e->type = 0;
+        e->boxes.head = NULL;
+        e->boxes.tail = NULL;
+        e->boxes.count = 0;
+        tail = (IMGENT *)list->unkC;
+        if (tail != NULL) {
+            tail->next = e;
+            e->unk4 = (int)tail;
+        } else {
+            list->head = e;
+        }
+        list->unkC = (int)e;
+        addBoxList(&e->boxes, box);
+        s = MEM_malloc(0, strlen(name) + 1);
+        strcpy(s, name);
+        e->name = s;
+        list->unk0++;
+    }
+    if (box->content == 10) {
+        ((IMGENT **)box->geom)[9] = e;
+    }
+}
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/lo_image", defImage);
 
