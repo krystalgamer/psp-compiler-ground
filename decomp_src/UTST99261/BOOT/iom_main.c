@@ -2,6 +2,8 @@
 #include "common.h"
 #include "iom_types.h"
 #include "m2c_macros.h"
+extern int D_00139D90[];
+extern int D_00139DC4[];
 void iom_detachCache(void);
 void iom_detachCookie(void);
 void iom_detachHttpCtx(void);
@@ -114,7 +116,18 @@ void iom_end(void) {
     OS_mq_close(iom.mq);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iom_main", iom_translateMsg);
+int iom_translateMsg(IOMMSG *msg) {
+    if (msg->b.x4 == 2 && (unsigned int)msg->b.code < 0xD) {
+        return D_00139D90[msg->b.code];
+    }
+    if (msg->b.x4 == 4 && (unsigned int)(msg->b.code - 0x10) < 3) {
+        return D_00139DC4[msg->b.code - 0x10];
+    }
+    if (msg->b.x4 == 5 && (unsigned int)msg->b.code < 0x13) {
+        return msg->b.code;
+    }
+    return -1;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
