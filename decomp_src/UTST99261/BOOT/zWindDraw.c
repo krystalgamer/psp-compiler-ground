@@ -693,7 +693,39 @@ void zWindFontDrawHF(ZGFONT *f, int x, int y, int c, short color) {
     zWindDrawImage(x, y, s_windsystemChar.h, s_windsystemChar.bpp, buf, 0);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/zWindDraw", zWindFontDrawZE_K);
+int zWindFontDrawZE_K(ZGFONT *f, int x, int y, int c, short color) {
+    u16 buf[256];
+    u16 *d;
+    s8 *p;
+    int n;
+    s8 b;
+
+    if (c <= 0xABFF) {
+        return -1;
+    }
+    if (c > 0xD7A3) {
+        return -1;
+    }
+    if (!(*(u16 *)&D_00584BB6 & 0x4000)) {
+        return -1;
+    }
+    d = buf;
+    p = (s8 *)s_windsystemChar.font[1];
+    p += (c - 0xAC00) * s_windsystemChar.wbytes;
+    for (n = s_windsystemChar.wbytes; n > 0; n--) {
+        b = *p++;
+        *d++ = (b & 0x80) ? color : 0;
+        *d++ = (b & 0x40) ? color : 0;
+        *d++ = (b & 0x20) ? color : 0;
+        *d++ = (b & 0x10) ? color : 0;
+        *d++ = (b & 0x08) ? color : 0;
+        *d++ = (b & 0x04) ? color : 0;
+        *d++ = (b & 0x02) ? color : 0;
+        *d++ = (b & 0x01) ? color : 0;
+    }
+    zWindDrawImage(x, y, s_windsystemChar.w, s_windsystemChar.bpp, buf, 0);
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/zWindDraw", zWindFontDrawZE);
 
