@@ -114,7 +114,38 @@ static void ctrl_spline(int mode)
 	}
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_balloon/nonmatchings/balloon", proc_balloon);
+#define MODE_FLOAT ((0)+1)
+#define MODE_OUT ((0)+2)
+
+int proc_balloon(void)
+{
+	switch (balloon.mode) {
+	case MODE_IN:
+		ctrl_spline(SPLINE_X|SPLINE_Z);
+		balloon.pos.y+=0.05f;
+		if (balloon.pos.y>=0.0f) {
+			int		i;
+			for (i=0; i<3; i++)
+				balloon.sbuf[i].y=0.0f;
+			balloon.mode=MODE_FLOAT;
+		}
+		break;
+	case MODE_FLOAT:
+		ctrl_spline(SPLINE_X|SPLINE_Y|SPLINE_Z);
+		break;
+	case MODE_OUT:
+		ctrl_spline(SPLINE_X|SPLINE_Z);
+		balloon.pos.y+=0.1f;
+		if (balloon.pos.y>=10.0f) {
+			init_balloon();
+			balloon.mode=MODE_IN;
+		}
+		break;
+	default:
+		break;
+	}
+	return 0;
+}
 
 void set_balloon(int mode) {
     balloon.mode = mode;
