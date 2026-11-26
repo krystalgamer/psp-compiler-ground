@@ -22,8 +22,7 @@ typedef struct GMAIN_FIELDS {
 	int f4c; /* netgame_ufo_pos_set */
 	u8 _pad50[0xe54];
 	int fea4; /* inv_netgame_init, netgame_ufo_damage_get, netgame_zako_damage_get */
-	int fea8; /* inv_netgame_init, netgame_ufo_damage_get, netgame_zako_damage_get */
-	u8 _padeac[0x7c];
+	int fea8[32]; /* net received-id ring: inv_netgame_init, netgame_*_damage_get */
 	int ff28; /* boss_ufo_control, boss_ufo_disp, boss_ufo_init */
 	int ff2c; /* maingame_init */
 	int ff30; /* bgm_init, maingame_init, ziki_control */
