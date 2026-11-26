@@ -617,9 +617,126 @@ int createJpgContext(M2C_UNK **arg0) {
     return 1;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jpg_parser", initializeJpgContext);
+typedef struct {
+    int unk0;
+    void *len;
+    void *code;
+    void *val;
+} JHUFF;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jpg_parser", deleteJpgContext);
+typedef struct {
+    void *bs;                   /* 0x0 */
+    void *image;                /* 0x4 */
+    void *buf[3];               /* 0x8 */
+    u8 unk14[0x8];
+    void *unk1C;                /* 0x1C */
+    u8 unk20[0x80];
+    void *dc[3];                /* 0xA0 */
+    void *ac[3];                /* 0xAC */
+    u8 unkB8[0x12];
+    u8 ncomp;                   /* 0xCA */
+    u8 unkCB[0x41];
+    JHUFF huff[2][4];           /* 0x10C */
+} JFULLCTX;
+
+void ESP_free(void *p);
+
+int initializeJpgContext(JFULLCTX *c) {
+    int i;
+    int j;
+    JBS *bs;
+
+    for (i = 0; i < 2; i++) {
+        for (j = 0; j < 4; j++) {
+            if (c->huff[i][j].len != NULL) {
+                ESP_free(c->huff[i][j].len);
+            }
+            if (c->huff[i][j].code != NULL) {
+                ESP_free(c->huff[i][j].code);
+            }
+            if (c->huff[i][j].val != NULL) {
+                ESP_free(c->huff[i][j].val);
+            }
+        }
+    }
+    if (c->image != NULL) {
+        ESP_free(c->image);
+        c->image = NULL;
+    }
+    if (c->unk1C != NULL) {
+        ESP_free(c->unk1C);
+        c->unk1C = NULL;
+    }
+    for (i = 0; i < c->ncomp; i++) {
+        if (c->dc[i] != NULL) {
+            ESP_free(c->dc[i]);
+            c->dc[i] = NULL;
+        }
+        if (c->ac[i] != NULL) {
+            ESP_free(c->ac[i]);
+            c->ac[i] = NULL;
+        }
+    }
+    for (i = 0; i < c->ncomp; i++) {
+        if (c->buf[i] != NULL) {
+            ESP_free(c->buf[i]);
+            c->buf[i] = NULL;
+        }
+    }
+    bs = c->bs;
+    memset(c, 0, 0x6A4);
+    c->bs = bs;
+    bs->bit = 7;
+    ((JBS *)c->bs)->unk14 = 1;
+    ((JBS *)c->bs)->valid = 1;
+    return 1;
+}
+
+int deleteJpgContext(JFULLCTX *c) {
+    int i;
+    int j;
+
+    if (c == NULL) {
+        return -1;
+    }
+    if (c->bs != NULL) {
+        ESP_free(c->bs);
+    }
+    for (i = 0; i < 2; i++) {
+        for (j = 0; j < 4; j++) {
+            if (c->huff[i][j].len != NULL) {
+                ESP_free(c->huff[i][j].len);
+            }
+            if (c->huff[i][j].code != NULL) {
+                ESP_free(c->huff[i][j].code);
+            }
+            if (c->huff[i][j].val != NULL) {
+                ESP_free(c->huff[i][j].val);
+            }
+        }
+    }
+    if (c->image != NULL) {
+        ESP_free(c->image);
+    }
+    if (c->unk1C != NULL) {
+        ESP_free(c->unk1C);
+    }
+    for (i = 0; i < c->ncomp; i++) {
+        if (c->dc[i] != NULL) {
+            ESP_free(c->dc[i]);
+        }
+        if (c->ac[i] != NULL) {
+            ESP_free(c->ac[i]);
+        }
+    }
+    for (i = 0; i < c->ncomp; i++) {
+        if (c->buf[i] != NULL) {
+            ESP_free(c->buf[i]);
+        }
+    }
+    ESP_free(c);
+    return 1;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
