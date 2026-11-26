@@ -105,7 +105,28 @@ M2C_UNK initializeGifContext();                     /* extern */
 M2C_UNK setGifBuffer();                             /* extern */
 
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/url", trimspace);
+char *strcpy(char *d, const char *s);
+
+char *trimspace(char *s) {
+    char *buf;
+    char *p;
+
+    buf = MEM_malloc(NULL, strlen(s) + 1);
+    if (buf == NULL) {
+        return NULL;
+    }
+    p = s;
+    while (*p == ' ' || *p == '\t' || *p == '\r' || *p == '\n') {
+        p++;
+    }
+    strcpy(buf, p);
+    p = buf + strlen(buf) - 1;
+    while (buf < p && (*p == ' ' || *p == '\t' || *p == '\r' || *p == '\n')) {
+        *p = 0;
+        p--;
+    }
+    return buf;
+}
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/url", D_001322F4);
 
