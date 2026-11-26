@@ -84,7 +84,9 @@ def module_funcs(target, module):
                 o = off0 + a + k
                 w = struct.unpack_from("<I", data, o)[0]
                 if relocs.get(o) == R_MIPS_26 and (w >> 26) in (2, 3):
-                    calls[k // 4] = byaddr.get((w & 0x3FFFFFF) << 2)
+                    t = (w & 0x3FFFFFF) << 2
+                    # a jump inside the function: its offset from the start
+                    calls[k // 4] = ("+", t - a) if (w >> 26) == 2 and a <= t < a + n else byaddr.get(t)
                 words.append(mask(w, relocs[o]) if o in relocs else w)
             funcs[name] = words
             funcs.calls[name] = calls
@@ -120,7 +122,8 @@ def obj_funcs(data):
                     rel[r["r_offset"]] = r["r_info_type"]
                     if r["r_info_type"] == R_MIPS_26:
                         sym = symtab.get_symbol(r["r_info_sym"])
-                        relsym[r["r_offset"]] = sym.name if sym["st_info"]["type"] != "STT_SECTION" else None
+                        relsym[r["r_offset"]] = sym.name if sym["st_info"]["type"] != "STT_SECTION" else \
+                            ("sec", (struct.unpack_from("<I", text, r["r_offset"])[0] & 0x3FFFFFF) << 2)
         for s in symtab.iter_symbols():
             if s["st_info"]["type"] == "STT_FUNC" and s["st_shndx"] == elf.get_section_index(sec.name):
                 a, n = s["st_value"], s["st_size"]
@@ -129,7 +132,8 @@ def obj_funcs(data):
                     w = struct.unpack_from("<I", text, k)[0]
                     words.append(mask(w, rel[k]) if k in rel else w)
                 out[s.name] = words
-                OBJCALLS[s.name] = {(k - a) // 4: relsym[k] for k in range(a, a + n, 4) if k in relsym}
+                OBJCALLS[s.name] = {(k - a) // 4: (("+", relsym[k][1] - a) if isinstance(relsym[k], tuple) else relsym[k])
+                                    for k in range(a, a + n, 4) if k in relsym}
     return out
 
 
@@ -192,9 +196,13 @@ def compare(mod, objs, verbose=False):
                     res[fn] = "same" if nd == 0 else f"diff {nd}"
                     # same bytes but other callees (jal targets are masked above)
                     oc, mc = OBJCALLS.get(fn, {}), getattr(mod, "calls", {}).get(key, {})
-                    bad = [i for i, t in oc.items() if t and mc.get(i) and base_name(t) != base_name(mc[i])]
+                    bad = [i for i, t in oc.items() if t and mc.get(i) and not isinstance(t, tuple)
+                           and not isinstance(mc[i], tuple) and base_name(t) != base_name(mc[i])]
+                    jbad = [i for i, t in oc.items() if isinstance(t, tuple) and isinstance(mc.get(i), tuple) and t != mc[i]]
                     if nd == 0 and bad:
                         res[fn] = "calls " + ",".join(f"{oc[i]}!={mc[i]}" for i in bad[:3])
+                    elif nd == 0 and jbad:
+                        res[fn] = f"jumps {len(jbad)}"
                 if verbose and res[fn] != "same" and (verbose is True or verbose == fn):
                     print(f"--- {fn}: ours | original")
                     side_by_side(words, orig)
