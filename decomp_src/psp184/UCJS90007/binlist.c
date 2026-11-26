@@ -154,7 +154,17 @@ void set_filename(void);
 int get_filename(char *bin_filename);
 
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/binlist", binlist_init);
+extern const int D_0002EE88[3];
+void binlist_init(void)
+{
+	binlist_head.tqh_first = NULL;
+	binlist_head.tqh_last = &binlist_head.tqh_first;
+	if (get_binlist() > 0) {
+		set_filename();
+		free_binlist();
+	}
+	__builtin_memcpy(_info.bin_filename, D_0002EE88, 12);
+}
 
 INCLUDE_RODATA("tmp/asm/psp184/UCJS90007/nonmatchings/binlist", D_0002EE88);
 
@@ -180,4 +190,18 @@ void set_filename(void)
 	}
 }
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/binlist", get_filename);
+char *strcpy(char *d, const char *s);
+int get_filename(char *bin_filename)
+{
+	struct binlist_entry *entry;
+	int i = 0;
+
+	for (entry = binlist_head.tqh_first; entry != NULL; entry = entry->link.tqe_next) {
+		if (i == _info.binlist_v_cursor_pos) {
+			strcpy(bin_filename, entry->name);
+			return 0;
+		}
+		i++;
+	}
+	return 0x80410C81;
+}

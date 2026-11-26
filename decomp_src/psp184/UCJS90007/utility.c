@@ -381,7 +381,27 @@ int utility_update_msgdialog(void)
 	return ret;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/utility", utility_check_msgdialog_completed);
+extern int D_00082D0C;
+int utility_check_msgdialog_completed(int *done_flag)
+{
+	int ret;
+
+	ret = sceUtilityMsgDialogGetStatus();
+	if (ret < 0)
+		return ret;
+	switch (ret) {
+	case 0:
+		if (D_00082D0C == 0)
+			*done_flag = 1;
+		else
+			*done_flag = -1;
+		break;
+	case 3:
+		ret = sceUtilityMsgDialogShutdownStart();
+		break;
+	}
+	return ret;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/utility", utility_osk);
 

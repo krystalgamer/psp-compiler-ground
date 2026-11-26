@@ -412,11 +412,29 @@ static void fade_init(void)
 	_fade_info.alpha = 0;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/main", sysparam_init);
+int sceUtilityGetSystemParamInt(int id, int *value);
+static int sysparam_init(void)
+{
+	if (sceUtilityGetSystemParamInt(8, &_info.lang) >= 0) {
+		if (_info.lang >= 6)
+			_info.lang = 1;
+		sceUtilityGetSystemParamInt(9, &_info.ctrl_assign);
+	}
+}
 
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/main", ms_data_init);
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/main", draw_headline);
+void sceGuDebugPrint(int x, int y, unsigned int color, const char *str);
+unsigned int strlen(const char *s);
+int snprintf(char *buf, unsigned int size, const char *fmt, ...);
+unsigned int strlen(const char *s);
+static void draw_headline(void)
+{
+	char buf[128];
+
+	snprintf(buf, sizeof(buf), "****** Game Sharing Server Disc ver.%d.%02d (C)2005 SCEI *****", 2, 0);
+	sceGuDebugPrint((480 - strlen(buf) * 8) / 2 + 1, 11, 0xFFFFFF, buf);
+}
 
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/main", draw_top);
 

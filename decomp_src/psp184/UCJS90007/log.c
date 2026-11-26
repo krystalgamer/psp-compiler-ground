@@ -159,7 +159,19 @@ void free(void *p);
 
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/log", log_init);
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/log", insert_log);
+int atoi(const char *s);
+int insert_log(struct log_display *log)
+{
+	log->link.tqe_next = NULL;
+	log->link.tqe_prev = log_head.tqh_last;
+	*log_head.tqh_last = log;
+	log_head.tqh_last = &log->link.tqe_next;
+	if (atoi(log->error_code) == 0)
+		count_success++;
+	else
+		count_failure++;
+	return 0;
+}
 
 void free_log(void) {
     struct log_display **temp_v0;

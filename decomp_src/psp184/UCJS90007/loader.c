@@ -184,7 +184,12 @@ signed char *skipsp(signed char *cp) {
     return var_a0;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/loader", skipnonsp);
+static char *skipnonsp(char *cp)
+{
+	while (*cp != '\0' && *cp != ',' && *cp != '\n')
+		cp++;
+	return cp;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/loader", split);
 
@@ -198,6 +203,20 @@ INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/loader", start_load);
 
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/loader", check_load_completed);
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/loader", check_loader_dialog_completed);
+extern int D_0008D338;
+static int check_loader_dialog_completed(void)
+{
+	int ret;
+	int done = 0;
+
+	ret = utility_check_msgdialog_completed(&done);
+	if (ret < 0 || done) {
+		if (D_0008D338 == 0)
+			change_state(0, 0);
+		else
+			change_state(1, 0);
+	}
+	return ret;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/loader", loader_update);

@@ -244,7 +244,15 @@ INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/view", load_objects);
 
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/view", load_file);
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/view", unload_objects);
+void unload_objects(int index)
+{
+	if (g_picture[index] != NULL) {
+		sceGimPictureDelete(g_copies[0][index]);
+		g_copies[0][index] = NULL;
+		sceGimPictureDelete(g_picture[index]);
+		g_picture[index] = NULL;
+	}
+}
 
 void SpriteScale(int x, int y) {
     __sscale_x = x;

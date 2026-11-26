@@ -360,7 +360,21 @@ INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/mpeg_main", start_mpeg_init_t
 
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/mpeg_main", check_mpeg_init_completed);
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/mpeg_main", check_mpeg_dialog_completed);
+extern int D_0008D338;
+static int check_mpeg_dialog_completed(void)
+{
+	int ret;
+	int done = 0;
+
+	ret = utility_check_msgdialog_completed(&done);
+	if (ret < 0 || done) {
+		if (D_0008D338 == 14)
+			change_state(0x10, 0);
+		else
+			change_state(1, 0);
+	}
+	return ret;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/mpeg_main", monitor_mpeg_play_thread);
 

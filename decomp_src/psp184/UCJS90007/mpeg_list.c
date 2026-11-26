@@ -178,4 +178,18 @@ void set_mpeg_filename(void)
 	}
 }
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/mpeg_list", get_mpeg_filename);
+char *strcpy(char *d, const char *s);
+int get_mpeg_filename(char *bin_filename)
+{
+	struct mpeglist_entry *entry;
+	int i = 0;
+
+	for (entry = mpeglist_head.tqh_first; entry != NULL; entry = entry->link.tqe_next) {
+		if (i == _info.mpeglist_v_cursor_pos) {
+			strcpy(bin_filename, entry->name);
+			return 0;
+		}
+		i++;
+	}
+	return 0x80410C81;
+}
