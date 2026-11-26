@@ -208,9 +208,94 @@ int ms_autosave(void)
 	return ((SDBASE *)&savedata_param)->result;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_save", autosave);
+extern char *AutoSaveLoadMsgTbl_809CC[];
+int sysmsg_string(char *msg, unsigned int type, int rule);
+int ms_delete(void);
+int _ms_save(void);
+#define SD_AUTO (*(int *)&save_data)
+void autosave(void)
+{
+	int loop;
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_save", ms_save);
+	if (SD_AUTO == 0)
+		return;
+	loop = 1;
+	do {
+		psp_loopstart();
+		switch (_ms_save()) {
+		case 0x80110383:
+			ms_delete();
+			break;
+		case 2:
+			sysmsg_string(AutoSaveLoadMsgTbl_809CC[12], 3, 1);
+			if (SD_AUTO) {
+				sysmsg_string(AutoSaveLoadMsgTbl_809CC[3], 3, 1);
+				SD_AUTO = 0;
+			}
+			loop = 0;
+			break;
+		case 0x80110381:
+		case 0x80110382:
+		case 0x80110384:
+		case 0x80110385:
+		case 0x80110388:
+		case 0x80110389:
+		case 0x8011038a:
+		case 0x8011038b:
+			if (SD_AUTO) {
+				sysmsg_string(AutoSaveLoadMsgTbl_809CC[3], 3, 1);
+				SD_AUTO = 0;
+			}
+			loop = 0;
+			break;
+		default:
+			loop = 0;
+			break;
+		}
+		psp_loopend();
+	} while (loop);
+}
+
+void ms_save(void)
+{
+	int loop;
+
+	loop = 1;
+	do {
+		psp_loopstart();
+		switch (_ms_save()) {
+		case 0x80110383:
+			ms_delete();
+			break;
+		case 2:
+			sysmsg_string(AutoSaveLoadMsgTbl_809CC[12], 3, 1);
+			if (SD_AUTO) {
+				sysmsg_string(AutoSaveLoadMsgTbl_809CC[3], 3, 1);
+				SD_AUTO = 0;
+			}
+			loop = 0;
+			break;
+		case 0x80110381:
+		case 0x80110382:
+		case 0x80110384:
+		case 0x80110385:
+		case 0x80110388:
+		case 0x80110389:
+		case 0x8011038a:
+		case 0x8011038b:
+			if (SD_AUTO) {
+				sysmsg_string(AutoSaveLoadMsgTbl_809CC[3], 3, 1);
+				SD_AUTO = 0;
+			}
+			loop = 0;
+			break;
+		default:
+			loop = 0;
+			break;
+		}
+		psp_loopend();
+	} while (loop);
+}
 
 int _ms_load(void)
 {
