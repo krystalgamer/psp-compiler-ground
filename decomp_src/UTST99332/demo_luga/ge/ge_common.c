@@ -38,7 +38,14 @@ void geCommonInit(void)
 	}
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/ge/ge_common", geCommonSetModule);
+void geCommonSetModule(geMODULE *module)
+{
+	unsigned int i;
+
+	for (i = 0; i < 6; i++) {
+		((void **)&geModuleCommon)[i] = ((void **)module)[i];
+	}
+}
 
 void geCommonSetProc(int num, geCOMMON *common) {
     if (num < 0x20) {
