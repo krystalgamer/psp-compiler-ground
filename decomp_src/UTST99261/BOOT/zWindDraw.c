@@ -103,8 +103,26 @@ extern int _zwindPop;
 void zWindDrawLineW(int x, int y, int len, short color);
 void zWindDrawParts(int x, int y, int n, short color);
 void zWindLineBox(int x, int y, int w, int h, short color);
+void zWindLineBox2(int x, int y, int w, int h, short c1, short c2);
+void zWindFontDraw(void *font, int x, int y, char *s, short color, int len);
+void zWindFontDrawPassword(void *font, int x, int y, char *s, short color, int len);
+typedef struct {
+    u8 unk0[0x4C];
+    char *text;                 /* 0x4C */
+    s16 len;                    /* 0x50 */
+} ZTEXTW;
 void zWindDrawClipSet(int x, int y, int w, int h);
 extern int _iZwindPartsSize;
+typedef struct {
+    int font[4];
+    s16 w;                      /* 0x10 */
+    s16 h;
+    s16 bpp;
+    s16 wbytes;                 /* 0x16 */
+    s16 hbytes;
+    u16 flags;                  /* 0x1A */
+} ZCHAR;
+extern ZCHAR s_windsystemChar;
 extern s8 *zdata_ImageRadioOff;
 extern s8 *zdata_ImageRadioOn;
 extern s8 *zdata_ImageChoiceOff;
@@ -551,7 +569,38 @@ void zWindWidgetChoiceListDelete(ZW *w) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/zWindDraw", zWindWidgetTextAreaDraw);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/zWindDraw", zWindWidgetTextFieldDraw);
+void zWindWidgetTextFieldDraw(ZW *w) {
+    int x;
+    int y;
+    int wd;
+    int h;
+    int c;
+
+    x = w->px;
+    y = w->py;
+    wd = w->w;
+    h = w->h;
+    zWindDrawBox(x, y, wd - 1, h - 1, w->bg15);
+    if (s_windsystem_data.focus == w && w->focus15 != 0) {
+        zWindLineBox(x, y, wd - 1, h - 1, w->focus15);
+    } else {
+        zWindLineBox2(x, y, wd - 1, h - 1, 0, 0x7FFF);
+    }
+    zWindLineBox(x + 1, y + 1, wd - 3, h - 3, 0x294A);
+    if (((ZTEXTW *)w)->len != 0) {
+        zWindDrawClipSet(x + 2, y + 2, wd - 4, h - 4);
+        c = w->fg15;
+        if (w->flags & 0x40000000) {
+            c = 0x318C;
+        }
+        if (!(w->u.state & 0x10000)) {
+            zWindFontDraw(w->font, x + 2, y + 2, ((ZTEXTW *)w)->text, c, ((ZTEXTW *)w)->len);
+        } else {
+            zWindFontDrawPassword(w->font, x + 2, y + 2, ((ZTEXTW *)w)->text, c, ((ZTEXTW *)w)->len);
+        }
+        zWindDrawClipSet(0, 0, ((ZINIT *)&s_windsystem_init)->width, ((ZINIT *)&s_windsystem_init)->height);
+    }
+}
 
 void zWindWidgetContentviewDraw(void) {
 }
