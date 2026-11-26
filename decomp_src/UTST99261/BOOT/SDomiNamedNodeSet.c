@@ -1,168 +1,119 @@
 /* cflags: -O1 */
 #include "common.h"
-#include "m2c_macros.h"
-M2C_UNK SDomiStringH_Finalize(int);                 /* extern */
-M2C_UNK AcsExterngDomiNodeSetEmpty();               /* extern */
-M2C_UNK AcsExterngSnull();                          /* extern */
+#include "dom_domi.h"
+void *AcsExterngDomiNodeSetEmpty(void);
+SDomiDocument *SDomiNode_GetContextDocument(SDomiNode *n);
 
-
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
-void SDomiNamedNodeSet_Initialize(void *arg0, int arg1, int arg2) {
-    M2C_FIELD(arg0, int *, 0) = arg1;
-    M2C_FIELD(arg0, int *, 4) = arg2;
-    M2C_FIELD(arg0, signed char *, 8) = 0;
+void SDomiNamedNodeSet_Initialize(SDomiNamedNodeSet *s, const SDomiNamedNodeSetVt *vt, SDomiNode *owner) {
+    s->vt = vt;
+    s->owner = owner;
+    s->x8 = 0;
 }
 
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
-
-void cmDomiNode_Finalize(int arg0) {
-    SDomiStringH_Finalize(arg0 + 0x10);
+void cmDomiNode_Finalize(SDomiNode *n) {
+    SDomiStringH_Finalize(&n->nodeName);
 }
 
-void cmDomiNode_Changed(void) {
+void cmDomiNode_Changed(SDomiNode *n) {
 }
 
-void cmDomiNode_SetParentNode(void) {
+void cmDomiNode_SetParentNode(SDomiNode *n, SDomiNode *p) {
 }
 
-void cmDomiNode_SetPreviousSibling(void) {
+void cmDomiNode_SetPreviousSibling(SDomiNode *n, SDomiNode *p) {
 }
 
-void cmDomiNode_SetNextSibling(void) {
+void cmDomiNode_SetNextSibling(SDomiNode *n, SDomiNode *p) {
 }
 
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
-void cmDomiNode_InheritObjInfo(void *arg0, int arg1) {
-    M2C_FIELD(arg0, unsigned char *, 4) = (unsigned char) (M2C_FIELD(arg0, unsigned char *, 4) | arg1);
+void cmDomiNode_InheritObjInfo(SDomiNode *n, int flags) {
+    n->flags |= flags;
 }
 
-void cmDomiNode_FreeTrash(void) {
+void cmDomiNode_FreeTrash(SDomiNode *n) {
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/SDomiNamedNodeSet", cmDomiNode_get_nodeValue);
+int cmDomiNode_get_nodeValue(SDomiNode *n, SDomiString *out) {
+    out->len = 0;
+    return 0;
+}
 
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
-int cmDomiNode_set_nodeValue(void) {
+int cmDomiNode_set_nodeValue(SDomiNode *n, const SDomiString *s) {
     return 7;
 }
 
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
-int cmDomiNode_get_parentNode(void) {
-    return 0;
+SDomiNode *cmDomiNode_get_parentNode(SDomiNode *n) {
+    return NULL;
 }
 
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
-
-void cmDomiNode_get_childNodes(void) {
-    AcsExterngDomiNodeSetEmpty();
+void *cmDomiNode_get_childNodes(SDomiNode *n) {
+    return AcsExterngDomiNodeSetEmpty();
 }
 
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
-int cmDomiNode_get_firstChild(void) {
-    return 0;
+SDomiNode *cmDomiNode_get_firstChild(SDomiNode *n) {
+    return NULL;
 }
 
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
-int cmDomiNode_get_lastChild(void) {
-    return 0;
+SDomiNode *cmDomiNode_get_lastChild(SDomiNode *n) {
+    return NULL;
 }
 
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
-int cmDomiNode_get_previousSibling(void) {
-    return 0;
+SDomiNode *cmDomiNode_get_previousSibling(SDomiNode *n) {
+    return NULL;
 }
 
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
-int cmDomiNode_get_nextSibling(void) {
-    return 0;
+SDomiNode *cmDomiNode_get_nextSibling(SDomiNode *n) {
+    return NULL;
 }
 
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
-int cmDomiNode_get_attributes(void) {
-    return 0;
+void *cmDomiNode_get_attributes(SDomiNode *n) {
+    return NULL;
 }
 
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
-int cmDomiNode_insertBefore(void) {
+int cmDomiNode_insertBefore(SDomiNode *n, SDomiNode *newChild, SDomiNode *refChild, SDomiNode **out) {
     return 3;
 }
 
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
-int cmDomiNode_removeChild(void) {
+int cmDomiNode_removeChild(SDomiNode *n, SDomiNode *oldChild, SDomiNode **out) {
     return 8;
 }
 
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
-int cmDomiNode_hasChildNodes(void) {
+int cmDomiNode_hasChildNodes(SDomiNode *n) {
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/SDomiNamedNodeSet", cmDomiNode_cloneNode);
-
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/SDomiNamedNodeSet", cmDomiNode_isSupported);
-
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
-
-void cmDomiNode_get_namespaceURI(void) {
-    AcsExterngSnull();
+int cmDomiNode_cloneNode(SDomiNode *n, int deep, SDomiNode **out) {
+    *out = NULL;
+    return 9;
 }
 
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
+int cmDomiNode_isSupported(SDomiNode *n, const SDomiString *feature, const SDomiString *version) {
+    SDomiDocument *doc = SDomiNode_GetContextDocument(n);
+    SDomiImplementation *impl;
 
-void cmDomiNode_get_prefix(void) {
-    AcsExterngSnull();
+    if (doc == NULL) {
+        return 0;
+    }
+    impl = doc->implementation;
+    return impl->vt->hasFeature(impl, feature, version);
 }
 
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
-int cmDomiNode_set_prefix(void) {
-    return 0xE;
+const SDomiString *cmDomiNode_get_namespaceURI(SDomiNode *n) {
+    return AcsExterngSnull();
 }
 
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
-
-void cmDomiNode_get_localName(void) {
-    AcsExterngSnull();
+const SDomiString *cmDomiNode_get_prefix(SDomiNode *n) {
+    return AcsExterngSnull();
 }
 
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
-int cmDomiNode_hasAttributes(void) {
+int cmDomiNode_set_prefix(SDomiNode *n, const SDomiString *s) {
+    return 14;
+}
+
+const SDomiString *cmDomiNode_get_localName(SDomiNode *n) {
+    return AcsExterngSnull();
+}
+
+int cmDomiNode_hasAttributes(SDomiNode *n) {
     return 0;
 }

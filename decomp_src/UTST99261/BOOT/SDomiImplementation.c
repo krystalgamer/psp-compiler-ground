@@ -1,6 +1,16 @@
 /* cflags: -O1 */
 #include "common.h"
+#include "dom_domi.h"
+extern const SDomiImplementationVt gImplementationVt;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/SDomiImplementation", SDomiImplementation_Initialize);
+void SDomiImplementation_Initialize(SDomiImplementation *impl, const SDomiImplementationVt *vt) {
+    if (vt == NULL) {
+        vt = &gImplementationVt;
+    }
+    impl->vt = vt;
+    impl->trash.next = &impl->trash;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/SDomiImplementation", SDomiImplementation_TrashNode);
+void SDomiImplementation_TrashNode(SDomiImplementation *impl, SDomiNode *n) {
+    SDomiSLink_Insert(&impl->trash, &n->trash);
+}

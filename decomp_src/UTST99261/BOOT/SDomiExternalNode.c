@@ -1,42 +1,52 @@
 /* cflags: -O1 */
 #include "common.h"
-#include "m2c_macros.h"
-extern unsigned char gSv2;
-extern unsigned char gSv1;
-M2C_UNK SDomiNodeSLink_DeleteAll(int);              /* extern */
+#include "dom_domi.h"
+extern SDomiString gSCore;
+extern SDomiString gSv1;
+extern SDomiString gSv2;
+int UDomiString_CompareNoCase(const DOMChar *a, unsigned int alen, const DOMChar *b, unsigned int blen);
+void SDomiDocument_Initialize(SDomiDocument *doc, const SDomiNodeVt *vt, SDomiImplementation *impl, const SDomiStringH *name);
 
+void SDomiExternalNode_Initialize(SDomiNode *n, const SDomiNodeVt *vt, int flags, int type,
+                                  SDomiDocument *doc, const SDomiStringH *name) {
+    SDomiNode_Initialize(n, vt, flags, type, doc, name);
+    ((SDomiExternalNode *)n)->parentNode = NULL;
+    ((SDomiExternalNode *)n)->previousSibling = NULL;
+    ((SDomiExternalNode *)n)->nextSibling = NULL;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/SDomiExternalNode", SDomiExternalNode_Initialize);
-
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
-
-M2C_UNK *AcsExterngSv2(void) {
+SDomiString *AcsExterngSv2(void) {
     return &gSv2;
 }
 
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
-
-M2C_UNK *AcsExterngSv1(void) {
+SDomiString *AcsExterngSv1(void) {
     return &gSv1;
 }
 
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
-
-void cmDomiImplementation_Finalize(int arg0) {
-    SDomiNodeSLink_DeleteAll(arg0 + 4);
+void cmDomiImplementation_Finalize(SDomiImplementation *impl) {
+    SDomiNodeSLink_DeleteAll(&impl->trash);
 }
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/SDomiExternalNode", cmDomiImplementation_hasFeature);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/SDomiExternalNode", cmDomiImplementation_createDocumentType);
+int cmDomiImplementation_createDocumentType(SDomiImplementation *impl, const SDomiString *name, const SDomiString *publicId,
+                                            const SDomiString *systemId, SDomiNode **out) {
+    *out = NULL;
+    return 9;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/SDomiExternalNode", cmDomiImplementation_createDocument);
+int cmDomiImplementation_createDocument(SDomiImplementation *impl, const SDomiString *ns, const SDomiString *name,
+                                        SDomiNode *doctype, SDomiDocument **out) {
+    SDomiDocument *doc = UDomiMemory_Allocate(sizeof(SDomiDocument));
+
+    if (doc != NULL) {
+        SDomiDocument_Initialize(doc, NULL, impl, AcsExterngSHnull());
+        *out = doc;
+        return 0;
+    }
+    *out = NULL;
+    return -1;
+}
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/SDomiExternalNode", gCACore);
 

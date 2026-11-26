@@ -89,13 +89,33 @@ typedef struct SDomiTrunkNode {
     SDomiNode *nextSibling;           /* 0x34 */
 } SDomiTrunkNode;
 
+typedef struct SDomiImplementationVt {
+    void (*Finalize)();               /* 0x00 */
+    int (*hasFeature)();              /* 0x04 */
+    int (*createDocumentType)();      /* 0x08 */
+    int (*createDocument)();          /* 0x0C */
+} SDomiImplementationVt;
+
+typedef struct SDomiImplementation {
+    const SDomiImplementationVt *vt;
+    SDomiSLink trash;                 /* 0x04 */
+} SDomiImplementation;
+
 typedef struct SDomiDocument {
     SDomiInternalNode i;
-    void *implementation;             /* 0x2C */
+    SDomiImplementation *implementation; /* 0x2C */             /* 0x2C */
     void *x30;
     int changed;                      /* 0x34 */
     SDomiSLink trash;                 /* 0x38 */
 } SDomiDocument;
+
+typedef struct SDomiEntity {
+    SDomiInternalNode i;
+    void *x2C;
+    SDomiStringH publicId;            /* 0x30 */
+    SDomiStringH systemId;            /* 0x34 */
+    SDomiStringH notationName;        /* 0x38 */
+} SDomiEntity;
 
 typedef struct SDomiNotation {
     SDomiNode n;
@@ -163,6 +183,8 @@ typedef struct SDomiNamedNodeSetVt {
 
 typedef struct SDomiNamedNodeSet {
     const SDomiNamedNodeSetVt *vt;
+    SDomiNode *owner;
+    unsigned char x8;
 } SDomiNamedNodeSet;
 
 extern SDomiStringData gSDnull;
@@ -219,6 +241,10 @@ void SDomiExternalNode_Initialize(SDomiNode *n, const SDomiNodeVt *vt, int flags
                                   struct SDomiDocument *doc, const SDomiStringH *name);
 void SDomiInternalNode_Initialize(SDomiNode *n, const SDomiNodeVt *vt, int flags, int type,
                                   struct SDomiDocument *doc, const SDomiStringH *name);
+void SDomiTrunkNode_Initialize(SDomiTrunkNode *n, const SDomiNodeVt *vt, int flags, int type,
+                               struct SDomiDocument *doc, const SDomiStringH *name);
+int SDomiInternalNode_CloneChildren(SDomiNode *n, SDomiNode *clone);
+SDomiStringH *AcsExterngSHnull(void);
 void cmDomiNode_Finalize(SDomiNode *n);
 void cmDomiInternalNode_Changed(SDomiNode *n);
 
