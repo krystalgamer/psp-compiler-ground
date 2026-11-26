@@ -298,7 +298,44 @@ out:
 	return _sce_pspnet_thread_leave(ti, error);
 }
 
-INCLUDE_ASM("tmp/asm/tony_libs/pspnet_inet/nonmatchings/uipc_syscalls", sceNetInetGetsockname);
+int
+sceNetInetGetsockname(int s, struct sockaddr *asa, socklen_t *alen)
+{
+	struct thread_info *ti;
+	struct socket *so;
+	struct mbuf *m;
+	unsigned int len;
+	int error;
+
+	ti = _sce_pspnet_thread_enter();
+	if (ti == NULL)
+		return -1;
+	so = getsock(s);
+	if (so == NULL) {
+		error = EBADF;
+		goto out;
+	}
+	sothread_attach(ti, so);
+	len = *alen;
+	error = ENOMEM;
+	m = m_getclr(M_WAIT, MT_SONAME);
+	if (m == NULL)
+		goto detach;
+	error = (*so->so_proto->pr_usrreq)(so, PRU_SOCKADDR, (struct mbuf *)0,
+	    m, (struct mbuf *)0);
+	if (error)
+		goto bad;
+	if (len > m->m_len)
+		len = m->m_len;
+	bcopy(mtod(m, caddr_t), (caddr_t)asa, len);
+	*alen = len;
+bad:
+	m_freem(m);
+detach:
+	sothread_detach(ti, so);
+out:
+	return _sce_pspnet_thread_leave(ti, error);
+}
 
 int
 sceNetInetGetpeername(int s, struct sockaddr *asa, socklen_t *alen)
