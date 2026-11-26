@@ -192,7 +192,54 @@ int __sceSasSetSteepWave(SasCore *core, unsigned int voice, unsigned int rate)
 	return pspRetK1(ret, oldk1);
 }
 
-INCLUDE_ASM("tmp/asm/tony_libs/sc_sascore/nonmatchings/sc_sascore", __sceSasSetADSR);
+int __sceSasSetADSR(SasCore *core, unsigned int voice, int flags, unsigned int a, unsigned int d, unsigned int s, unsigned int r)
+{
+	unsigned int oldk1 = pspShiftK1();
+	int ret;
+
+	if (CHECK_CORE(core)) {
+		pspSetK1(oldk1);
+		return 0x80000023;
+	}
+	{
+		unsigned int ta = a;
+		unsigned int td = d;
+		unsigned int ts = s;
+		unsigned int tr = r;
+
+		if (voice >= 32) {
+			ret = 0x80420010;
+		} else {
+			SasVoice *v = &core->voice[voice];
+			int res = sceKernelWaitSema(D_00001DD0, 1, 0);
+
+			if (res < 0) {
+				ret = res;
+			} else {
+				if (!(flags & 1))
+					ta = v->ar;
+				if (!(flags & 2))
+					td = v->dr;
+				if (!(flags & 4))
+					ts = v->sr;
+				if (!(flags & 8))
+					tr = v->rr;
+				if ((int)MAX(MAX(MAX(ta, td), ts), tr) < 0) {
+					sceKernelSignalSema(D_00001DD0, 1);
+					ret = 0x80420019;
+				} else {
+					v->ar = ta;
+					v->dr = td;
+					v->sr = ts;
+					v->rr = tr;
+					sceKernelSignalSema(D_00001DD0, 1);
+					ret = 0;
+				}
+			}
+		}
+	}
+	return pspRetK1(ret, oldk1);
+}
 
 int __sceSasSetADSRmode(SasCore *core, unsigned int voice, int flags, int am, int dm, int sm, int rm)
 {
