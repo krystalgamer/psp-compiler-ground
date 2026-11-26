@@ -530,7 +530,35 @@ static __inline__ SceUInt32 sceNetHtonl(SceUInt32 host32)
 	return __builtin_allegrex_wsbw(host32);
 }
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/adhoc_distribute", adhoc_download_gettag);
+static __inline__ SceUShort16 sceNetNtohs(SceUShort16 net16)
+{
+	return __builtin_allegrex_wsbh(net16);
+}
+
+void *adhoc_download_gettag(u_int8_t type, void *buf, int buflen, int *datalen)
+{
+	u_int8_t *p = buf;
+	u_int8_t *end = p + buflen;
+	u_int8_t t;
+	u_int16_t len;
+
+	while (p < end) {
+		t = *p++;
+		if (end - p < sizeof(len))
+			return NULL;
+		__builtin_memcpy(&len, p, 2);
+		p += 2;
+		len = sceNetNtohs(len);
+		if (end - p < len)
+			return NULL;
+		if (t == type) {
+			*datalen = len;
+			return p;
+		}
+		p += len;
+	}
+	return NULL;
+}
 
 int sceKernelCpuSuspendIntr(void);
 void sceKernelCpuResumeIntr(int intr);
@@ -574,7 +602,22 @@ int sceNetAdhocDistributeUpdateServerHelloOpt(void)
 	return ret;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/adhoc_distribute", adhoc_distribute_get_reqmsg);
+static struct request_message *adhoc_distribute_get_reqmsg(void)
+{
+	int i;
+	int oldstat;
+
+	oldstat = sceKernelCpuSuspendIntr();
+	for (i = 0; i < 8; i++) {
+		if (!(sctx->reqmsg[i].flag & 1)) {
+			sctx->reqmsg[i].flag |= 1;
+			sceKernelCpuResumeIntr(oldstat);
+			return &sctx->reqmsg[i];
+		}
+	}
+	sceKernelCpuResumeIntr(oldstat);
+	return NULL;
+}
 
 int sceKernelReceiveMbx(int mbxid, void **pmessage, unsigned int *timeout);
 int sceNetAdhocMatchingCancelTarget(int id, struct SceNetEtherAddr *mac);
