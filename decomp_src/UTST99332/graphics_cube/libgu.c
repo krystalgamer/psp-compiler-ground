@@ -121,9 +121,9 @@ extern int aw_frame;
 int sceDisplaySetMode(int mode, int width, int height);
 int sceDisplaySetFrameBuf(void *topaddr, int bufferwidth, int pixelformat, int sync);
 
-extern const unsigned int tbpcmd_tbl[8];
-extern const unsigned int tbwcmd_tbl[8];
-extern const unsigned int tsizecmd_tbl[8];
+static const unsigned int tbpcmd_tbl[8];
+static const unsigned int tbwcmd_tbl[8];
+static const unsigned int tsizecmd_tbl[8];
 void sceGuTexFlush(void);
 int get_exp(int val);
 
@@ -254,11 +254,11 @@ INCLUDE_RODATA("tmp/asm/UTST99332/graphics_cube/nonmatchings/libgu", fonttex);
 
 INCLUDE_RODATA("tmp/asm/UTST99332/graphics_cube/nonmatchings/libgu", initList);
 
-INCLUDE_RODATA("tmp/asm/UTST99332/graphics_cube/nonmatchings/libgu", tbpcmd_tbl);
+static const unsigned int tbpcmd_tbl[8] = { 0xA0, 0xA1, 0xA2, 0xA3, 0xA4, 0xA5, 0xA6, 0xA7 };
 
-INCLUDE_RODATA("tmp/asm/UTST99332/graphics_cube/nonmatchings/libgu", tbwcmd_tbl);
+static const unsigned int tbwcmd_tbl[8] = { 0xA8, 0xA9, 0xAA, 0xAB, 0xAC, 0xAD, 0xAE, 0xAF };
 
-INCLUDE_RODATA("tmp/asm/UTST99332/graphics_cube/nonmatchings/libgu", tsizecmd_tbl);
+static const unsigned int tsizecmd_tbl[8] = { 0xB8, 0xB9, 0xBA, 0xBB, 0xBC, 0xBD, 0xBE, 0xBF };
 
 static const GuLightSettings lcmd[4] = {
 	{ 0x18, 0x5F, 0x63, 0x64, 0x65, 0x6F, 0x70, 0x71, 0x8F, 0x90, 0x91, 0x7B, 0x7C, 0x7D, 0x87, 0x8B },
@@ -1108,7 +1108,17 @@ void sceGuTexSync(void)
 	send_commandi(204, 0x000000);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_cube/nonmatchings/libgu", sceGuTexImage);
+void sceGuTexImage(int mipmap, int width, int height, int tbw, const void *tbp)
+{
+	int w = get_exp(width);
+	int h = get_exp(height);
+	unsigned int hi = (((unsigned int)tbp) >> 8) & 0x0f0000;
+
+	send_commandi((unsigned char)tbpcmd_tbl[mipmap], ((unsigned int)tbp) & 0xffffff);
+	send_commandi((unsigned char)tbwcmd_tbl[mipmap], hi | tbw);
+	send_commandi((unsigned char)tsizecmd_tbl[mipmap], (h << 8) | w);
+	sceGuTexFlush();
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_cube/nonmatchings/libgu", sceGuTexScale);
 
