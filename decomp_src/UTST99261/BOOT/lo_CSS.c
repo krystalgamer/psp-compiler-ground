@@ -1,8 +1,24 @@
 /* cflags: -O1 */
 #include "common.h"
+#include "dom_domi.h"
 #include "nflayout.h"
 #include "lo_css.h"
 #include "m2c_macros.h"
+extern int *gCOOKIE_IDX_GLOBAL;
+extern int D_00585114[];
+extern char D_00139C00[];
+void UTL_initqueue(void *q);
+int OS_thread_mutex_create(void);
+int OS_thread_mutex_init(int m, int a);
+int iom_loadCookie(void);
+char *iom_getCookie();
+void *iom_malloc(int size);
+void iom_mfree(void *p);
+unsigned int strlen(const char *s);
+int sprintf(char *buf, const char *fmt, ...);
+#define CSS_TOUPPER(c) ((c) - (((u16)((c) - 'a') < 26) << 5))
+extern char D_00139A8C[];
+void GUI_Graphics_getStringSize(int font, char *s, int n, int *w, int *h);
 extern int *iomCookie;
 void *UTL_peekqueue(void *q, int a1);
 void iom_deleteCookie(void *c);
@@ -39,7 +55,25 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_CSS", cssBackgroundColor);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_CSS", cssBackgroundImage);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_CSS", cssBackgroundRepeat);
+void cssBackgroundRepeat(void *ctx, BOX *box, CSSVALUE *val, int n) {
+    switch (val->ident) {
+    case 0x88:
+        box->style->unk12 = 0;
+        break;
+    case 0x89:
+        box->style->unk12 = 1;
+        break;
+    case 0x8A:
+        box->style->unk12 = 2;
+        break;
+    case 0x78:
+        box->style->unk12 = 3;
+        break;
+    case 0x4D:
+        box->style->unk12 = box->parent != NULL ? box->parent->style->unk12 : 0;
+        break;
+    }
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_CSS", cssBackground);
 
@@ -252,7 +286,21 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_CSS", cssColor);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_CSS", cssFont);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_CSS", transFontSize);
+int transFontSize(int h) {
+    int i;
+    int w;
+    int hh;
+    for (i = 6; i >= 0; i--) {
+        GUI_Graphics_getStringSize(ui_global->color[0][i], D_00139A8C, 1, &w, &hh);
+        if (h >= hh) {
+            break;
+        }
+    }
+    if (i < 0) {
+        i = 0;
+    }
+    return i;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_CSS", cssFontSize);
 
@@ -269,7 +317,28 @@ void cssFontStyle(void *ctx, BOX *box, CSSVALUE *val, int n) {
     box->style->unk64 = ui_global->color[box->style->unk6A][box->style->fontSize];
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_CSS", cssFontWeight);
+void cssFontWeight(void *ctx, BOX *box, CSSVALUE *val, int n) {
+    switch (val->ident) {
+    case 5:
+    case 6:
+    case 7:
+    case 8:
+    case 0x16:
+    case 0x17:
+        box->style->unk6A |= 1;
+        break;
+    case 0:
+    case 1:
+    case 2:
+    case 3:
+    case 4:
+    case 0x5E:
+    case 0x7A:
+        box->style->unk6A &= ~1;
+        break;
+    }
+    box->style->unk64 = ui_global->color[box->style->unk6A][box->style->fontSize];
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_CSS", cssHeight);
 
@@ -375,7 +444,25 @@ void cssPadding(void *ctx, BOX *box, CSSVALUE *val, int n) {
     innerCSSCallFunc(ctx, box, val, n, 3);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_CSS", cssPosition);
+void cssPosition(void *ctx, BOX *box, CSSVALUE *val, int n) {
+    switch (val->ident) {
+    case 0xA6:
+        box->style->unk72 = 0;
+        break;
+    case 0x87:
+        box->style->unk72 = 1;
+        break;
+    case 0xA:
+        box->style->unk72 = 2;
+        break;
+    case 0x41:
+        box->style->unk72 = 3;
+        break;
+    case 0x4D:
+        box->style->unk72 = box->parent != NULL ? box->parent->style->unk72 : 0;
+        break;
+    }
+}
 
 void cssTextAlign(void *ctx, BOX *box, CSSVALUE *val, int n) {
     switch (val->ident) {
@@ -394,7 +481,30 @@ void cssTextAlign(void *ctx, BOX *box, CSSVALUE *val, int n) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_CSS", cssTextDecoration);
+void cssTextDecoration(void *ctx, BOX *box, CSSVALUE *val, int n) {
+    for (; val != NULL; val = val->next) {
+        switch (val->ident) {
+        case 0x79:
+            box->style->unk6C[0] = 0;
+            break;
+        case 0x82:
+            box->style->unk6C[0] |= 1;
+            break;
+        case 0xBD:
+            box->style->unk6C[0] |= 2;
+            break;
+        case 0x5F:
+            box->style->unk6C[0] |= 4;
+            break;
+        case 0x14:
+            box->style->unk6C[0] |= 8;
+            break;
+        case 0x4D:
+            box->style->unk6C[0] = box->parent != NULL ? box->parent->style->unk6C[0] : 0;
+            break;
+        }
+    }
+}
 
 void cssTop(void *ctx, BOX *box, CSSVALUE *val, int n) {
     BOX *parent = box->parent;
@@ -455,7 +565,26 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_CSS", applyCSSExtStyleSheetT
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_CSS", applyCSSInlinePropertyToBox);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_CSS", iom_attachCookie);
+int iom_attachCookie(void) {
+    int r;
+    int *p;
+    iomCookie = D_00585114;
+    UTL_initqueue(iomCookie + 1);
+    UTL_initqueue(iomCookie + 3);
+    p = iomCookie;
+    p[5] = OS_thread_mutex_create();
+    if (OS_thread_mutex_init(iomCookie[5], 0) != 0) {
+        r = -0x12C;
+    } else {
+        OS_thread_mutex_lock(iomCookie[5]);
+        gCOOKIE_IDX_GLOBAL = iomCookie;
+        iomCookie[0] = 0;
+        r = iom_loadCookie();
+        iom_saveCookie();
+        OS_thread_mutex_unlock(iomCookie[5]);
+    }
+    return r;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_CSS", iom_detachCookie);
 
@@ -607,4 +736,23 @@ INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/lo_CSS", D_00139BEC);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_CSS", set_cookie);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_CSS", get_cookie);
+char *get_cookie(void *url) {
+    char *c;
+    char *buf;
+    iomCookie = gCOOKIE_IDX_GLOBAL;
+    if (iomCookie == NULL) {
+        return NULL;
+    }
+    c = iom_getCookie(url);
+    if (c == NULL) {
+        return NULL;
+    }
+    buf = iom_malloc(strlen(c) + 9);
+    if (buf == NULL) {
+        iom_mfree(c);
+        return NULL;
+    }
+    sprintf(buf, D_00139C00, c);
+    iom_mfree(c);
+    return buf;
+}

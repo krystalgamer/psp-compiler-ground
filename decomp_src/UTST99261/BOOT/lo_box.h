@@ -10,8 +10,10 @@ typedef struct {
 } BOXGEOM;
 
 typedef struct {
-    u8 unk0[0x14];
-    unsigned int flags;         /* 0x14: bits 2-3 height type */
+    u8 unk0[0x12];
+    u8 unk12;                   /* 0x12: background repeat */
+    u8 unk13;
+    unsigned int flags;         /* 0x14: bits 0-1 width type, 2-3 height type */
     int width;                  /* 0x18 */
     int height;                 /* 0x1C */
     s16 unk20;
@@ -43,7 +45,8 @@ typedef struct {
     s16 unk6A;                  /* 0x6A: font style bits */
     u8 unk6C[0x3];
     u8 unk6F;
-    u8 unk70[0x3];
+    u8 unk70[0x2];
+    u8 unk72;
     u8 unk73;
     u8 unk74;
 } BOXSTYLE;

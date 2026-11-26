@@ -47,7 +47,7 @@ void innerCSSCallFunc(void *ctx, BOX *box, CSSVALUE *val, int n, int kind);
 void innerCSSSetBorder(void *ctx, BOX *box, CSSVALUE *val, int n, int side);
 void innerCSSSetShortIntParam(CSSVALUE *val, s16 *out, BOX *parent, int fontSize, int inherit);
 void innerCSSSetBorderColor(CSSVALUE *val, s16 *width, int *color, int inherit);
-void innerCSSSetBorderStyle(int ident, s16 *width, s16 *style, int inherit);
+void innerCSSSetBorderStyle(int ident, s16 *width, s16 *style, s16 inherit);
 void innerCSSSetBorderWidth(BOX *parent, CSSVALUE *val, s16 *out, int fontSize, int inherit);
 
 #endif
