@@ -54,13 +54,31 @@ void psp_xend(void) {
     psp_loopend();
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_shima", nickname_set);
+typedef struct { int f0, f4, f8, fC; void *f10; } TAMA;
+extern TAMA ztama[], etama[];
+
+void SprFree(void *p);
+
+char *GetMessageNickName(void);
+int strlen(const char *s);
+char *strcat(char *d, const char *s);
+void *memcpy(void *d, const void *s, unsigned int n);
+void *memset(void *s, int c, unsigned int n);
+extern char D_005FB7D4[][9];
+void nickname_set(int no)
+{
+	if (strlen(GetMessageNickName()) < 8) {
+		memcpy(D_005FB7D4[no], GetMessageNickName(), 8);
+	} else {
+		memset(D_005FB7D4[no], 0, 9);
+		memcpy(D_005FB7D4[no], GetMessageNickName(), 5);
+		strcat(D_005FB7D4[no], "...");
+	}
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_shima", classic_game_init);
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_shima", classic_game_stageinit);
-
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_shima", D_0007C028);
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_shima", main_classicinv);
 
@@ -152,9 +170,73 @@ static void SprMoveHitWait2(int x)
 		spr_boxfill(tex, wwx, wwy, wwh, www, 0);
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_shima", classic_inv_tamainit);
+void classic_inv_tamainit(void)
+{
+	ztama[0].f0 = 0;
+	ztama[0].f10 = 0;
+	ztama[1].f10 = 0;
+	ztama[1].f0 = 0;
+	etama[0].f0 = 0;
+	etama[0].f10 = 0;
+	etama[0].fC = -1;
+	etama[1].f10 = 0;
+	etama[1].f0 = 0;
+	etama[1].fC = -1;
+	etama[2].f10 = 0;
+	etama[2].f0 = 0;
+	etama[2].fC = -1;
+	etama[3].f10 = 0;
+	etama[3].f0 = 0;
+	etama[3].fC = -1;
+	etama[4].f10 = 0;
+	etama[4].f0 = 0;
+	etama[4].fC = -1;
+	etama[5].f10 = 0;
+	etama[5].f0 = 0;
+	etama[5].fC = -1;
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_shima", classic_inv_tamainit2);
+void classic_inv_tamainit2(void)
+{
+	if (ztama[0].f10)
+		SprFree(ztama[0].f10);
+	ztama[0].f0 = 0;
+	ztama[0].f10 = 0;
+	if (ztama[1].f10)
+		SprFree(ztama[1].f10);
+	ztama[1].f0 = 0;
+	ztama[1].f10 = 0;
+	if (etama[0].f10)
+		SprFree(etama[0].f10);
+	etama[0].f0 = 0;
+	etama[0].f10 = 0;
+	etama[0].fC = -1;
+	if (etama[1].f10)
+		SprFree(etama[1].f10);
+	etama[1].f10 = 0;
+	etama[1].f0 = 0;
+	etama[1].fC = -1;
+	if (etama[2].f10)
+		SprFree(etama[2].f10);
+	etama[2].f10 = 0;
+	etama[2].f0 = 0;
+	etama[2].fC = -1;
+	if (etama[3].f10)
+		SprFree(etama[3].f10);
+	etama[3].f10 = 0;
+	etama[3].f0 = 0;
+	etama[3].fC = -1;
+	if (etama[4].f10)
+		SprFree(etama[4].f10);
+	etama[4].f10 = 0;
+	etama[4].f0 = 0;
+	etama[4].fC = -1;
+	if (etama[5].f10)
+		SprFree(etama[5].f10);
+	etama[5].f10 = 0;
+	etama[5].f0 = 0;
+	etama[5].fC = -1;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_shima", classic_inv_tamafree);
 
