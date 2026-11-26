@@ -124,7 +124,63 @@ INCLUDE_ASM("tmp/asm/UTST99332/mpeg_timecode_jump/nonmatchings/decode", decode_s
 
 INCLUDE_ASM("tmp/asm/UTST99332/mpeg_timecode_jump/nonmatchings/decode", decode_audioDecode);
 
-INCLUDE_ASM("tmp/asm/UTST99332/mpeg_timecode_jump/nonmatchings/decode", decode_videoDecode);
+SceInt32 decode_videoDecode(SceMpeg *pMpeg, t_mpegStreamData *pStreamData, t_avSyncControl *pAvSync)
+{
+	SceChar8 *pVideoBuf;
+	SceUInt32 pts;
+	SceInt32 rgbNum;
+	SceInt32 ret;
+	SceInt32 avcAttr;
+	SceUInt32 currentPts;
+	SceInt32 auTimestamp;
+	SceInt32 video_init_flag;
+
+	ret = 1;
+	if (dispbuf_getCapacity(pAvSync->pDisp) == 0) {
+		goto term;
+	}
+
+	ret = sceMpegGetAvcAu(pMpeg, pStreamData->pAvcStream, pStreamData->pAvcAu, &avcAttr);
+	if (ret != 0) {
+		goto term;
+	}
+
+	dispbuf_getDrawbuf(pAvSync->pDisp, &pVideoBuf);
+
+	dispbuf[0] = pVideoBuf;
+
+	ret = sceMpegAvcDecode(pMpeg, pStreamData->pAvcAu, 512, dispbuf, &rgbNum);
+	if (ret != 0) {
+		printf("fatal error : sceMpegAvcDecode() 0x%x\n", ret);
+		goto term;
+	}
+
+	avsync_video_createNextPts(pAvSync, pStreamData->pAvcAu->pts.ts, &currentPts);
+
+	auTimestamp = avsync_video_getAuTimestamp(pAvSync);
+
+	video_init_flag = ((SceInt32)(currentPts - pStreamData->timestamp) < -auTimestamp);
+
+	if (video_init_flag == 1) {
+		avsync_setVideoStartPts(pAvSync, pStreamData->pAvcAu->pts.ts);
+	} else {
+		avsync_video_setPts(pAvSync, pStreamData->pAvcAu->pts.ts);
+	}
+
+	if (rgbNum == 1) {
+		if (video_init_flag == 0) {
+			avsync_video_getPts(pAvSync, &pts);
+
+			dispbuf_setPts(pAvSync->pDisp, pts);
+			dispbuf_dataSet(pAvSync->pDisp);
+		}
+	}
+
+	ret = 0;
+
+term:
+	return ret;
+}
 
 SceInt32 decode_videoDecodeEnd(SceMpeg *pMpeg, t_avSyncControl *pAvSync)
 {
