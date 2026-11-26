@@ -141,7 +141,17 @@ int dispbuf_getPts(t_displayBuffer *pDisp, unsigned int *pPts) {
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/mpeg_ezmpegstr/nonmatchings/display", dispbuf_dataSet);
+SceInt32 dispbuf_dataSet(t_displayBuffer *pDisp)
+{
+	sceKernelWaitSema(pDisp->lock_sema, 1, NULL);
+
+	pDisp->count++;
+	pDisp->write = (pDisp->write + 1) % pDisp->size;
+
+	sceKernelSignalSema(pDisp->lock_sema, 1);
+
+	return 0;
+}
 
 int dispbuf_getCapacity(t_displayBuffer *pDisp) {
     return pDisp->size - pDisp->count;
