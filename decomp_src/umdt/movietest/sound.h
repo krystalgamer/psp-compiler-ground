@@ -5,15 +5,14 @@ typedef struct t_soundBuffer {
 	SceUID lock_sema;
 	SceInt32 *terminate_flag;
 	SceChar8 **buf;
-	SceUInt32 *pts;
 	SceInt32 *write;
 	SceInt32 *read;
 	SceInt32 *count;
 	SceInt32 *size;
-	SceUID start_sema;
+	SceUID sync_sema;
 } t_soundBuffer;
 
-SceInt32 soundbuf_create(t_soundBuffer *pSound, SceInt32 buf_size, SceInt32 buf_num);
+SceInt32 soundbuf_create(t_soundBuffer *pSound, SceInt32 buf_size, SceInt32 buf_num, SceUID sync_sema);
 SceInt32 soundbuf_init(t_soundBuffer *pSound);
 SceInt32 soundbuf_end(t_soundBuffer *pSound);
 SceInt32 soundbuf_getDrawbuf(t_soundBuffer *pSound, SceChar8 **buffer);
