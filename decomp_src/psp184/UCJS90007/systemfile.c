@@ -27,12 +27,31 @@ typedef struct __attribute__((packed)) {
 	SfHeader *hdr;
 	int unk8;
 	int fd;
-	int unk10;
-	int nsorted;
-	char unk18[0x1C];
+	unsigned int max;
+	unsigned int nindex;
+	int unk18;
+	unsigned int nkeys;
+	char unk20[0x14];
 	SfIndex *index;
-	int unk38;
+	char *keys;
 } SysFile;
+
+typedef struct __attribute__((packed)) {
+	int flags;
+	SfHeader *hdr;
+	void *table;
+	char *strtab;
+} SfKeyFile;
+
+typedef struct __attribute__((packed)) {
+	unsigned short off;
+	char unk2[14];
+} SfKeyEnt;
+
+typedef struct {
+	const char *key;
+	const char *strtab;
+} SfKeyCtx;
 
 extern char D_0002F31C[];
 extern void *sf_mallocp;
@@ -53,7 +72,16 @@ INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/systemfile", _newSystemFile);
 
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/systemfile", keymapping);
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/systemfile", realignkeys);
+void realignkeys(char *base, SfKeyEnt *ents, int n)
+{
+	int i;
+	int off;
+
+	for (i = n - 1; i > 0; i--) {
+		off = ents[i].off;
+		sf_strcpy(base + i * 32, base + off);
+	}
+}
 
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/systemfile", isValidType);
 
@@ -103,9 +131,9 @@ void __sceSystemFilePrepareSearch(SysFile *sf)
 		return;
 	if (sf->flags & 2)
 		return;
-	sf_ssort(sf->index, sf->nsorted, 0x10, _indexcompare);
+	sf_ssort(sf->index, sf->nindex, 0x10, _indexcompare);
 	sf->flags |= 4;
-	sf->nsorted = sf->hdr->count;
+	sf->nindex = sf->hdr->count;
 }
 
 int _keysearch(const void *key, const void *elem)
@@ -122,15 +150,56 @@ void *_searchindex(SysFile *sf, const char *key)
 	return sf_bsearch(key, sf->index, sf->hdr->count, 0x10, _keysearch);
 }
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/systemfile", _keysearchL);
+int _keysearchL(const void *a, const void *b)
+{
+	const SfKeyCtx *ctx = a;
+	const SfKeyEnt *e = b;
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/systemfile", _searchindexL);
+	return sf_strcmp(ctx->key, ctx->strtab + e->off);
+}
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/systemfile", _findblankinfo);
+void *_searchindexL(SfKeyFile *sf, const char *key)
+{
+	SfKeyCtx ctx;
+
+	ctx.key = key;
+	ctx.strtab = sf->strtab;
+	return sf_bsearch(&ctx, sf->table, sf->hdr->count, 0x10, _keysearchL);
+}
+
+SfIndex *_findblankinfo(SysFile *sf)
+{
+	unsigned int i;
+	SfIndex *p;
+
+	if (sf->nindex >= sf->max) {
+		p = sf->index;
+		for (i = 0; i < sf->max; i++, p++) {
+			if (p->unk0 == 0)
+				return p;
+		}
+		return NULL;
+	}
+	return &sf->index[sf->nindex++];
+}
 
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/systemfile", _findblankindex);
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/systemfile", _findblankkey);
+char *_findblankkey(SysFile *sf)
+{
+	unsigned int i;
+	char *p;
+
+	if (sf->nkeys >= sf->max) {
+		p = sf->keys;
+		for (i = 0; i < sf->max; i++, p += 32) {
+			if (*p == 0)
+				return p;
+		}
+		return NULL;
+	}
+	return &sf->keys[sf->nkeys++ * 32];
+}
 
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/systemfile", sceSystemFileSetValueSize);
 
