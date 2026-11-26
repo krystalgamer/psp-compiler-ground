@@ -1,7 +1,9 @@
 /* cflags: -O1 */
 #include "common.h"
+#include <ctype.h>
 #include "parse_str.h"
 #include "m2c_macros.h"
+extern const PDStr D_00137E3C;
 PMb parseAttrName(PCtx *c);
 PMb parseAttrValue(PCtx *c);
 PDStr Attr_getValue(void *attr);
@@ -33,7 +35,41 @@ void parseReleaseResource(void) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", parseDocument);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", parseDocumentTEXT);
+int parseDocumentTEXT(PCtx *c) {
+    PStrBuf *b;
+    PDStr pre;
+    void *el;
+    PDStr *d;
+    void *t;
+
+    if (c->x44[0] == 0) {
+        return 0;
+    }
+    b = parseCreateBuffer();
+    do {
+        parseSetBuffer(b, *c->buf->cur);
+    } while (parseNextChar(c) != 1 || c->buf->count != c->buf->x04 - 1 || c->x1C[0] != c->x1C[1] - 1);
+    if (b->len != 0) {
+        parseAdjustBuffer(b);
+    }
+    pre = D_00137E3C;
+    el = Document_createElement(c->doc, &pre);
+    if (el != NULL) {
+        Node_appendChild(CF(c, 0x11C), el);
+        CF(c, 0x11C) = (int)el;
+    }
+    d = parseMBtoDScopy(b->data, b->len);
+    MEM_free(0, b->data);
+    b->data = NULL;
+    MEM_free(0, b);
+    t = Document_createTextNode(c->doc, 0);
+    CharacterData_setData(t, d);
+    Node_appendChild(CF(c, 0x11C), t);
+    MEM_free(0, d->data);
+    d->data = NULL;
+    MEM_free(0, d);
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", parseHTMLTag);
 
@@ -207,11 +243,41 @@ int parseWellFormedCommentWC(PCtx *c) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", parseWellFormedScriptWC);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", parseWellFormedScriptMB);
+int parseWellFormedScriptMB(char *s, int n) {
+    int i;
+    int st;
+
+    st = 0;
+    for (i = 0; i < n; i++) {
+        if (s[i] == '<' && i < n - 7 && toupper(s[i + 1]) == '/' && toupper(s[i + 2]) == 'S' && toupper(s[i + 3]) == 'C' && toupper(s[i + 4]) == 'R' && toupper(s[i + 5]) == 'I' && toupper(s[i + 6]) == 'P' && toupper(s[i + 7]) == 'T') {
+            st = 1;
+        }
+        if (st == 1 && s[i] == '>') {
+            st = 2;
+            break;
+        }
+    }
+    return st;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", parseWellFormedStyleWC);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", parseWellFormedStyleMB);
+int parseWellFormedStyleMB(char *s, int n) {
+    int i;
+    int st;
+
+    st = 0;
+    for (i = 0; i < n; i++) {
+        if (s[i] == '<' && i < n - 6 && toupper(s[i + 1]) == '/' && toupper(s[i + 2]) == 'S' && toupper(s[i + 3]) == 'T' && toupper(s[i + 4]) == 'Y' && toupper(s[i + 5]) == 'L' && toupper(s[i + 6]) == 'E') {
+            st = 1;
+        }
+        if (st == 1 && s[i] == '>') {
+            st = 2;
+            break;
+        }
+    }
+    return st;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", parseWellFormedTagWC);
 
