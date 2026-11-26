@@ -248,7 +248,29 @@ static void setOskUtilityPraram(unsigned int numInputFields, SceWChar16 **messag
     return;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/utility_basic/nonmatchings/main", dumpOskUtilityTextResult);
+static void dumpOskUtilityTextResult(unsigned int numInputFields, SceUtilityOskInputFieldInfo *inputField)
+{
+	int i;
+
+	for (i = 0; i < (int)numInputFields; i++) {
+		switch (inputField[i].result) {
+		case SCE_UTILITY_OSK_INPUT_FIELD_RESULT_UNEDITED:
+			break;
+		case SCE_UTILITY_OSK_INPUT_FIELD_RESULT_CANCELED:
+			break;
+		case SCE_UTILITY_OSK_INPUT_FIELD_RESULT_EDITED:
+			{
+				SceWChar16 *pStr = inputField[i].result_text_buffer;
+				while (*pStr != 0) {
+					pStr++;
+				}
+			}
+			break;
+		default:
+			break;
+		}
+	}
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/utility_basic/nonmatchings/main", utility_update_osk);
 
