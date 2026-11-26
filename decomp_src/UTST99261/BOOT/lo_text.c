@@ -20,6 +20,54 @@ int make_msg_LP1();                                 /* extern */
 M2C_UNK putLLIST(M2C_UNK *, int);                   /* extern */
 extern unsigned char REQUEST_LLIST;
 
+typedef struct TIMER {
+    int id;
+    int timer;
+    struct TIMER *next;
+} TIMER;
+
+typedef struct {
+    int count;
+    TIMER *head;
+    int unk8;
+} TIMERLIST;
+
+typedef struct {
+    int flags;                  /* 0x0 */
+    u8 unk4[0x40];
+    TIMERLIST *timers;          /* 0x44 */
+    u8 unk48[0x38];
+    int unk80;
+} TLOGLOBAL;
+
+typedef struct {
+    int unk0;
+    int target;
+} JSEVENT;
+
+typedef struct {
+    int unk0;
+    int unk4;
+    void *unk8;
+} TMSGDATA;
+
+typedef struct {
+    u8 unk0[0x14];
+    int unk14;
+    int unk18;
+    void *data;                 /* 0x1C */
+} TMSG;
+
+extern TLOGLOBAL lo_global;
+extern int *gJSI_NAVIGATOR_REC;
+extern int *gJSI_SCREEN_REC;
+void freeDOMString(int s);
+int Node_getParentNode(int node);
+int Node_getJSObj(int node);
+int sendJSEvent(int obj, JSEVENT *ev);
+int make_msg_LP12();
+int make_msg_LP17();
+
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_text", divOverText);
 
@@ -33,7 +81,20 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_text", divPreTextBox);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_text", integrateTextBox);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_text", lo_initTimer);
+void lo_initTimer(void) {
+    TIMERLIST *t;
+    TIMER *n;
+
+    t = MEM_malloc(0, sizeof(TIMERLIST));
+    t->count = 0;
+    n = MEM_malloc(0, sizeof(TIMER));
+    n->id = t->count++;
+    n->timer = 0;
+    n->next = NULL;
+    t->head = n;
+    lo_global.timers = t;
+    t->unk8 = lo_global.unk80;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -86,7 +147,21 @@ int lo_setTimer(int arg0, int arg1, int arg2, int arg3) {
     return temp_v0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_text", lo_clearTimer);
+void lo_clearTimer(int id) {
+    TIMER *prev;
+    TIMER *p;
+
+    prev = lo_global.timers->head;
+    for (p = prev->next; p != NULL; p = p->next) {
+        if (p->id == id) {
+            prev->next = p->next;
+            OS_timer_clear(p->timer);
+            MEM_free(0, p);
+            return;
+        }
+        prev = p;
+    }
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_text", initJSEnv);
 
@@ -96,7 +171,22 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_text", initJSEvent);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_text", sendJSEvent);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_text", sendJSBubbleUpEvent);
+int sendJSBubbleUpEvent(int node, JSEVENT *ev) {
+    int obj;
+    int handled;
+
+    handled = 0;
+    for (; node != 0; node = Node_getParentNode(node)) {
+        obj = Node_getJSObj(node);
+        if (obj != 0) {
+            ev->target = node;
+            if (sendJSEvent(obj, ev) != 0) {
+                handled = 1;
+            }
+        }
+    }
+    return handled;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -106,7 +196,19 @@ void proc_msg_JL1(void) {
     putLLIST(&REQUEST_LLIST, make_msg_LP1());
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_text", proc_msg_JL2);
+void proc_msg_JL2(TMSG *msg) {
+    TMSGDATA *d;
+
+    if (msg->unk14 == 0) {
+        putLLIST((M2C_UNK *)&REQUEST_LLIST, make_msg_LP12(msg));
+        return;
+    }
+    d = msg->data;
+    if (d->unk8 != NULL) {
+        MEM_free(0, d->unk8);
+    }
+    MEM_free(0, d);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_text", proc_msg_JL3);
 
@@ -176,7 +278,13 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_text", proc_msg_JL11);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_text", proc_msg_JL12);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_text", proc_msg_JL13);
+void proc_msg_JL13(TMSG *msg) {
+    if (msg->data != NULL) {
+        putLLIST((M2C_UNK *)&REQUEST_LLIST, make_msg_LP17(msg, 0));
+        lo_global.flags |= 0x40;
+        MEM_free(0, msg->data);
+    }
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_text", proc_msg_JL14);
 
