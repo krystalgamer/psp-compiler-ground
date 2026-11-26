@@ -3,6 +3,7 @@
 #include "parse_rnd.h"
 #include "parse_str.h"
 #include "m2c_macros.h"
+#define CI(c, C) (((c) >= 'a' && (c) <= 'z') ? ((c) == (C) + 0x20) : ((c) == (C)))
 void HST_addAuthorizationDB();
 extern int DOM_NODE_MAX_SIZE;
 extern PChar DomMaxAlert[];
@@ -610,7 +611,71 @@ void parseBackTag(PCtx *c) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parseStrings", parseWellFormedTag);
+int parseWellFormedTag(PChar *buf, int n) {
+    int type;
+    int i;
+
+    type = 0;
+    for (i = 0; i < n; i++) {
+        if (buf[i] == '<') {
+            if (CI(buf[i + 1], 'S') && CI(buf[i + 2], 'C') && CI(buf[i + 3], 'R') && CI(buf[i + 4], 'I') && CI(buf[i + 5], 'P') && CI(buf[i + 6], 'T')) {
+                type = 1;
+                break;
+            }
+            if (CI(buf[i + 1], 'S') && CI(buf[i + 2], 'T') && CI(buf[i + 3], 'Y') && CI(buf[i + 4], 'L') && CI(buf[i + 5], 'E')) {
+                type = 0x10;
+                break;
+            }
+        }
+    }
+    switch (type) {
+    case 0:
+        type = 0;
+        for (i = n - 1; i >= 0; i--) {
+            if (buf[i] == '>') {
+                type = 1;
+            }
+            if (buf[i] == '<') {
+                if (((char)buf[i + 1] >= 'A' && (char)buf[i + 1] <= 'Z') || ((char)buf[i + 1] >= 'a' && (char)buf[i + 1] <= 'z') || (char)buf[i + 1] == '!' || (char)buf[i + 1] == '/' || (char)buf[i + 1] == '?') {
+                    if (type == 1) {
+                        return 1;
+                    }
+                    return 1;
+                }
+            }
+        }
+        break;
+    case 1:
+        type = 0;
+        for (i = n - 1; i >= 0; i--) {
+            if (buf[i] == '>') {
+                type = 1;
+            }
+            if (type == 1 && buf[i] == '<') {
+                if (CI(buf[i + 1], '/') && CI(buf[i + 2], 'S') && CI(buf[i + 3], 'C') && CI(buf[i + 4], 'R') && CI(buf[i + 5], 'I') && CI(buf[i + 6], 'P') && CI(buf[i + 7], 'T')) {
+                    return 0x10;
+                }
+                return 0;
+            }
+        }
+        break;
+    case 0x10:
+        type = 0;
+        for (i = n - 1; i >= 0; i--) {
+            if (buf[i] == '>') {
+                type = 1;
+            }
+            if (type == 1 && buf[i] == '<') {
+                if (CI(buf[i + 1], '/') && CI(buf[i + 2], 'S') && CI(buf[i + 3], 'T') && CI(buf[i + 4], 'Y') && CI(buf[i + 5], 'L') && CI(buf[i + 6], 'E')) {
+                    return 0x100;
+                }
+                return 0;
+            }
+        }
+        break;
+    }
+    return 0;
+}
 
 void parseAlertMessage(PCtx *c) {
     void *body;
