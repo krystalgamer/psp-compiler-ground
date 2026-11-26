@@ -1,6 +1,8 @@
 /* cflags: -O1 */
 #include "common.h"
+#include "dom_domi.h"
 #include "m2c_macros.h"
+extern const char _ctype_[];
 extern int buf_ps_sts;
 M2C_UNK MEM_free(M2C_UNK, int);                     /* extern */
 int ps_isMoveHistory(int, int, int);                /* extern */
@@ -65,46 +67,69 @@ extern unsigned char exMsgBoxList;
 void *ps_getExMsgBox();                             /* extern */
 int *MEM_malloc(M2C_UNK, M2C_UNK);                  /* extern */
 
-M2C_UNK UDomiMemory_Allocate(int);                  /* extern */
-M2C_UNK UDomiMemory_Free();                         /* extern */
 
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", UDomiString_ToLower);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", UDomiString_ToUpper);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", UDomiString_CompareNoCase);
+int UDomiString_CompareNoCase(const DOMChar *s1, unsigned int n1, const DOMChar *s2, unsigned int n2) {
+    int d;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", UDomiString_CompareBinary);
+    while (n1 != 0 && n2 != 0) {
+        d = UDomiString_ToUpper(*s1++);
+        d -= UDomiString_ToUpper(*s2++);
+        if (d != 0) {
+            return d > 0 ? 1 : -1;
+        }
+        n1--;
+        n2--;
+    }
+    if (n1 != n2) {
+        return n1 < n2 ? -1 : 1;
+    }
+    return 0;
+}
 
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
+int UDomiString_CompareBinary(const DOMChar *s1, unsigned int n1, const DOMChar *s2, unsigned int n2) {
+    int d;
 
-void UDomiString_Allocate(int arg0) {
-    UDomiMemory_Allocate(arg0 * 2);
+    while (n1 != 0 && n2 != 0) {
+        d = *s1++ - *s2++;
+        if (d != 0) {
+            return d > 0 ? 1 : -1;
+        }
+        n1--;
+        n2--;
+    }
+    if (n1 != n2) {
+        return n1 < n2 ? -1 : 1;
+    }
+    return 0;
 }
 
 #ifndef NULL
 #define NULL ((void *)0)
 #endif
 
-void UDomiString_Free(void) {
-    UDomiMemory_Free();
+DOMChar *UDomiString_Allocate(unsigned int len) {
+    return UDomiMemory_Allocate(len * 2);
 }
 
 #ifndef NULL
 #define NULL ((void *)0)
 #endif
-void UDomiString_Copy(void *arg0, void *arg1, int arg2) {
-    UDomiMemory_Copy(arg0, arg1, arg2 * 2);
+
+void UDomiString_Free(DOMChar *s) {
+    UDomiMemory_Free(s);
 }
 
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
-void UDomiString_Move(void *arg0, void *arg1, int arg2) {
-    UDomiMemory_Move(arg0, arg1, arg2 * 2);
+void UDomiString_Copy(DOMChar *d, const DOMChar *s, unsigned int len) {
+    UDomiMemory_Copy(d, s, len * 2);
+}
+
+void UDomiString_Move(DOMChar *d, const DOMChar *s, unsigned int len) {
+    UDomiMemory_Move(d, s, len * 2);
 }
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", inverseDCT);
