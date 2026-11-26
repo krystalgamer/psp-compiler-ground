@@ -352,4 +352,56 @@ static int pad_read(void)
 	return 1;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/sound_starsas/nonmatchings/main", main);
+#define SCE_KERNEL_USER_HIGHEST_PRIORITY        16
+#define STACKSIZE	(1024 * 64)
+#define SCE_KERNEL_ERROR_OK    0x0
+
+int main(void)
+{
+	SceUID thread_id;
+	SceInt32 thread_status;
+	int ret = 0;
+
+	menuInit();
+	if (sasload() < 0) {
+		return -1;
+	}
+	if (sound_init_all() < 0) {
+		ret = -1;
+		goto unload;
+	}
+	thread_on = 1;
+	thread_id = sceKernelCreateThread("thread 1", sound_idle, SCE_KERNEL_USER_HIGHEST_PRIORITY, STACKSIZE, 0, NULL);
+	if (thread_id < 0) {
+		printf("sceKernelCreateThread:%08X\n", thread_id);
+		ret = -1;
+		goto end;
+	}
+	thread_status = sceKernelStartThread(thread_id, 0, 0);
+	if (thread_status != SCE_KERNEL_ERROR_OK) {
+		printf("sceKernelStartThread:%08X\n", thread_status);
+		ret = -1;
+		goto end;
+	}
+	init_all();
+	init_pos();
+	while (pad_read()) {
+		draw_frame();
+		sceDisplayWaitVblankStart();
+		sceGuSwapBuffers();
+	}
+	sceGuTerm();
+	thread_on = 0;
+	thread_status = sceKernelWaitThreadEnd(thread_id, NULL);
+	thread_status = sceKernelDeleteThread(thread_id);
+	if (thread_status != SCE_KERNEL_ERROR_OK) {
+		printf("sceKernelDeleteThread: %08X\n", thread_status);
+		ret = -1;
+	}
+end:
+	sound_end();
+unload:
+	sasunload();
+	menuTerm(4, 6);
+	return ret;
+}
