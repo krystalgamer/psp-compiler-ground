@@ -110,6 +110,31 @@ int sceDisplayWaitVblankStart(void);
 int sceCtrlSetSamplingMode(int mode);
 
 
+/* SDK prototypes (tools/sdk_protos.h) */
+void sceGuAmbient(unsigned int color);
+void sceGuClearColor(unsigned int color);
+void sceGuClearDepth(unsigned int depth);
+void sceGuClearStencil(unsigned int stencil);
+void sceGuDepthBuffer(void *zbp, int frame_width);
+void sceGuDepthFunc(int function);
+void sceGuDepthRange(int near, int far);
+void sceGuDispBuffer(int width, int height, void *dbp, int frame_width);
+int sceGuDisplay(int state);
+void sceGuDrawBuffer(int psm, void *fbp, int frame_width);
+void sceGuEnable(int state);
+void sceGuInit(void);
+void sceGuLight(int light, int type, int components, const ScePspFVector3 *position);
+void sceGuLightColor(int light, int component, unsigned int color);
+void sceGuOffset(unsigned int x, unsigned int y);
+void sceGuPatchDivide(unsigned int ulevel, unsigned int vlevel);
+void sceGuScissor(int x, int y, int w, int h);
+void sceGuShadeModel(int mode);
+void sceGuViewport(int cx, int cy, int width, int height);
+void sceGumMatrixMode(int mode);
+void sceGumPerspective(float fovy, float aspect, float near, float far);
+void sceGumSetMatrixStack(void *stack, int proj, int view, int model, int texture);
+int sceKernelDcacheWritebackAll(void);
+
 INCLUDE_RODATA("tmp/asm/UTST99332/graphics_stick/nonmatchings/main", D_00011BE0);
 
 INCLUDE_RODATA("tmp/asm/UTST99332/graphics_stick/nonmatchings/main", D_00011C04);
