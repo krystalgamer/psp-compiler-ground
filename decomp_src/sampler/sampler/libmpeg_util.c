@@ -57,97 +57,88 @@ SceMpegStreamId _sceMpegType2id(SceMpegStrType type, SceInt32 ch)
 	return _strmap[type].str_id | (ch << sh);
 }
 
-#ifdef NON_MATCHING
-/* same blocks; the original's switch layout and register use differ */
 SceInt32 _sceMpegId2type(SceMpegStrType *type, SceInt32 *ch, SceUInt32 str_id)
 {
-	int i;
-	int found;
-	SceUInt32 id;
-	SceUInt32 chmask;
-	SceUInt32 sid;
+	SceInt32 ret = 0;
+	SceUInt32 str_id_base = 0;
+	SceUInt32 str_id_ref;
+	SceUInt32 mask = 0;
+	SceInt32 i = 0;
 
-	found = 0;
-	id = 0;
-	chmask = 0;
-	for (i = 0; i <= STRTYPE_MAX && !found; i++) {
+	for (i = 0; i <= STRTYPE_MAX && ret == 0; i++) {
 		switch (_strmap[i].str_mask) {
-		case 0xFF000000:
-			sid = _strmap[i].str_id;
-			if (sid == 0xE0000000) {
-				id = str_id & 0xF0000000;
-				chmask = 0xF;
-			} else if (sid == 0xC0000000) {
-				id = str_id & 0xE0000000;
-				chmask = 0x1F;
-			} else {
-				id = str_id & 0xFF000000;
-				chmask = 0;
-			}
-			if (id == sid) {
-				found = 1;
+		case 0xFFFFFFFF:
+			str_id_base = str_id & 0xFFFFFF00;
+			if (str_id_base == _strmap[i].str_id) {
 				*type = i;
-				*ch = (str_id >> 24) & chmask;
+				ret = 1;
+				*ch = str_id & 0xFFFF;
+			}
+			break;
+		case 0xFFFFFF00:
+			str_id_ref = _strmap[i].str_id;
+			if (str_id_ref == 0xBF01E000) {
+				str_id_base = str_id & 0xFFFFE000;
+				mask = 0x1F;
+			}
+			if (str_id_base == str_id_ref) {
+				*type = i;
+				*ch = (str_id >> 8) & mask;
+				ret = 1;
 			}
 			break;
 		case 0xFFFF0000:
-			sid = _strmap[i].str_id;
-			switch (sid) {
+			str_id_ref = _strmap[i].str_id;
+			switch (str_id_ref) {
+			case 0xBD800000:
+				str_id_base = str_id & 0xFFE00000;
+				mask = 0x1F;
+				break;
 			case 0xBD000000:
 			case 0xBD100000:
 			case 0xBD200000:
-				id = str_id & 0xFFF00000;
-				chmask = 0xF;
-				break;
-			case 0xBD800000:
-				id = str_id & 0xFFE00000;
-				chmask = 0x1F;
+				str_id_base = str_id & 0xFFF00000;
+				mask = 0xF;
 				break;
 			case 0xBD880000:
 			case 0xBD900000:
 			case 0xBDA00000:
-				id = str_id & 0xFFF80000;
-				chmask = 0x7;
+				str_id_base = str_id & 0xFFF80000;
+				mask = 0x7;
 				break;
 			default:
-				id = str_id & 0xFFFF0000;
-				chmask = 0;
+				str_id_base = str_id & 0xFFFF0000;
+				mask = 0;
 				break;
 			}
-			if (id == sid) {
-				found = 1;
+			if (str_id_base == str_id_ref) {
 				*type = i;
-				*ch = (str_id >> 16) & chmask;
+				*ch = (str_id >> 16) & mask;
+				ret = 1;
 			}
 			break;
-		case 0xFFFFFF00:
-			sid = _strmap[i].str_id;
-			if (sid == 0xBF01E000) {
-				id = str_id & 0xFFFFE000;
-				chmask = 0x1F;
+		case 0xFF000000:
+			str_id_ref = _strmap[i].str_id;
+			if (str_id_ref == 0xE0000000) {
+				str_id_base = str_id & 0xF0000000;
+				mask = 0xF;
+			} else if (str_id_ref == 0xC0000000) {
+				str_id_base = str_id & 0xE0000000;
+				mask = 0x1F;
+			} else {
+				str_id_base = str_id & 0xFF000000;
+				mask = 0;
 			}
-			if (id == sid) {
-				found = 1;
+			if (str_id_base == str_id_ref) {
 				*type = i;
-				*ch = (str_id >> 8) & chmask;
-			}
-			break;
-		case 0xFFFFFFFF:
-			sid = _strmap[i].str_id;
-			id = str_id & 0xFFFFFF00;
-			if (id == sid) {
-				found = 1;
-				*type = i;
-				*ch = str_id & 0xFFFF;
+				*ch = (str_id >> 24) & mask;
+				ret = 1;
 			}
 			break;
 		}
 	}
-	return found;
+	return ret;
 }
-#else
-INCLUDE_ASM("tmp/asm/sampler/sampler/nonmatchings/libmpeg_util", _sceMpegId2type);
-#endif
 
 SceMpegStreamId _sceMpegType2Mask(SceMpegStrType iStreamType)
 {
