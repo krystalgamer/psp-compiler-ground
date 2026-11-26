@@ -42,9 +42,54 @@ int utility_update_msgdialog_16468(void)
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_sysmsg", sub_thread_164DC);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_sysmsg", OnPush_MsgDialogNumber);
+typedef struct {
+	int size, language, buttonSwap, graphicsThread, accessThread, fontThread, soundThread;
+	int f1c[6];
+	int mode, errorValue;
+} MDPARAM;
+void *memset(void *s, int c, unsigned int n);
+int GetMessageLang(void);
+int GetAssign(void);
+int sceUtilityMsgDialogInitStart(void *p);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_sysmsg", sysmsg_errornum);
+extern int looprule, thread_id_28E440;
+extern const char D_0007B804[];
+int sub_thread_164DC();
+int sceKernelCreateThread(const char *name, void *entry, int prio, int stack, int attr, void *opt);
+int sceKernelStartThread(int thid, int len, void *argp);
+int sceKernelDeleteThread(int thid);
+int sceKernelWaitThreadEnd(int thid, void *timeout);
+void OnPush_MsgDialogNumber(int err)
+{
+	MDPARAM *p = (MDPARAM *)&msgdialog_param_28E1FC;
+
+	memset(p, 0, 0x244);
+	p->size = 0x244;
+	p->language = GetMessageLang();
+	p->buttonSwap = GetAssign();
+	p->graphicsThread = 0x11;
+	p->accessThread = 0x13;
+	p->fontThread = 0x12;
+	p->soundThread = 0x10;
+	p->mode = 0;
+	p->errorValue = err;
+	sceUtilityMsgDialogInitStart(p);
+}
+
+int sysmsg_errornum(int err, int rule)
+{
+	looprule = rule;
+	thread_id_28E440 = sceKernelCreateThread(D_0007B804, sub_thread_164DC, 0x10, 0x10000, 0, 0);
+	if (thread_id_28E440 <= 0)
+		return 1;
+	OnPush_MsgDialogNumber(err);
+	if (sceKernelStartThread(thread_id_28E440, 0, 0) != 0) {
+		sceKernelDeleteThread(thread_id_28E440);
+		return 1;
+	}
+	sceKernelWaitThreadEnd(thread_id_28E440, 0);
+	return 0;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_sysmsg", startMsgDialog);
 
