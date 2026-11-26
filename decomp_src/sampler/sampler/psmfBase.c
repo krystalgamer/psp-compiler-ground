@@ -134,24 +134,22 @@ SceInt32 scePsmfCheckStreamType_Base(SceUInt32 stream_id, SceUInt32 private_stre
 	return SCE_PSMF_ERROR_UNKNOWN_STREAM;
 }
 
-#ifdef NON_MATCHING
 static SceInt32 _GetRelavantEP_map(ScePsmf_EP *pEp_map, SceUInt32 ep_id, SceUInt32 timestamp)
 {
 	SceInt32 i;
+	ScePsmf_EP *pEp;
 
-	for (i = 0; i < (SceInt32)ep_id; i++) {
-		if (timestamp < sceMpegSwap4(pEp_map[i].pts_ep_start))
+	pEp = pEp_map;
+	for (i = 0; i < (SceInt32)ep_id; i++, pEp++) {
+		if (timestamp < sceMpegSwap4(pEp->pts_ep_start))
 			break;
 	}
 	if (i > 0)
-		return i - 1;
-	if (i == 0)
-		return SCE_PSMF_ERROR_NOT_FOUND;
+		i--;
+	else if (i == 0)
+		i = SCE_PSMF_ERROR_NOT_FOUND;
 	return i;
 }
-#else
-INCLUDE_ASM("tmp/asm/sampler/sampler/nonmatchings/psmfBase", _GetRelavantEP_map);
-#endif
 
 SceInt32 scePsmfBaseStartEntry(void)
 {
