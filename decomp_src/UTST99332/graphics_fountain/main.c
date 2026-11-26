@@ -185,7 +185,29 @@ INCLUDE_RODATA("tmp/asm/UTST99332/graphics_fountain/nonmatchings/main", ground);
 
 INCLUDE_RODATA("tmp/asm/UTST99332/graphics_fountain/nonmatchings/main", D_000122E0);
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_fountain/nonmatchings/main", init_grain);
+#define DY			(0.2f+0.001f*(rand()%100))
+#define SCALE		0.12f
+
+static void init_grain(int i)
+{
+	GRAIN_DAT	*p;
+	float		r=(float)(rand()%360);
+
+	p=&grain[i];
+	p->pos.x=0.0f;
+	p->pos.y=0.0f;
+	p->pos.z=0.0f;
+	p->dpos.x=cosf(r)*(0.01f*(rand()%10));
+	p->dpos.y=DY;
+	p->dpos.z=sinf(r)*(0.01f*(rand()%10));
+	p->rot=(float)(rand()%360);
+	p->scale=SCALE;
+	p->t=0;
+	p->a=0xd0;
+	p->d=(rand()%3)+1;
+	p->c=((0xc0+(rand()%0x40))<<16)|0x0000a060;
+	p->w=rand()%100;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_fountain/nonmatchings/main", move_grain);
 
