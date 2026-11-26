@@ -684,7 +684,38 @@ int ps_isGetRequest(void *node) {
     return 1;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", ps_errStringParseDomBuild);
+void ps_errStringParseDomBuild(int *node, char *str) {
+    PsIpc m;
+    PsDomBuild b;
+    void *r;
+
+    HST_setRequestFlag(node, 5);
+    if (HST_getSessionID(node) == 0) {
+        HST_setSessionID(node, ps_sessionGen());
+    }
+    memset(&b, 0, sizeof(b));
+    b.x[0] = node[1];
+    b.x[1] = node[0];
+    b.x[2] = node[5];
+    b.x[3] = node[4];
+    b.x[4] = node[7];
+    b.x[5] = node[6];
+    b.x[6] = strlen(str);
+    b.x[7] = (int)str;
+    b.x[9] = HST_getSessionID(node);
+    b.x[11] = 0;
+    b.x[12] = 0;
+    b.x[13] = Accession;
+    r = parseDomBuild(&b);
+    if (r != NULL) {
+        MEM_free(0, r);
+    }
+    initMPL_REQ_LOAD_PAGE(&m);
+    m.x04 = HST_getSessionID(node);
+    ps_sndmsg(&m, 4);
+    m.x10 = 1;
+    ps_sndmsg(&m, 4);
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -808,9 +839,75 @@ int ps_freeExMsgBox(int id) {
     return var_v0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", ps_setExMsg);
+int ps_setExMsg(int id, PsIpc *msg) {
+    ExMsgBox *b;
+    ExMsgNode *n;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", ps_setTopExMsg);
+    b = ps_getExMsgBox(id);
+    if (b == NULL) {
+        return 0;
+    }
+    n = MEM_malloc(0, sizeof(ExMsgNode));
+    if (n == NULL) {
+        return 0;
+    }
+    n->msg = NULL;
+    n->prev = NULL;
+    n->next = NULL;
+    n->msg = MEM_malloc(0, sizeof(PsIpc));
+    if (n->msg == NULL) {
+        MEM_free(0, n);
+        return 0;
+    }
+    *n->msg = *msg;
+    if (b->x0C != NULL) {
+        ((ExMsgNode *)b->x0C)->next = n;
+        n->prev = b->x0C;
+        b->x0C = n;
+    } else {
+        b->x0C = n;
+    }
+    if (b->x08 == NULL) {
+        b->x08 = n;
+    }
+    b->x04 = (void *)((int)b->x04 + 1);
+    return 1;
+}
+
+int ps_setTopExMsg(int id, PsIpc *msg) {
+    ExMsgBox *b;
+    ExMsgNode *n;
+
+    b = ps_getExMsgBox(id);
+    if (b == NULL) {
+        return 0;
+    }
+    n = MEM_malloc(0, sizeof(ExMsgNode));
+    if (n == NULL) {
+        return 0;
+    }
+    n->msg = NULL;
+    n->prev = NULL;
+    n->next = NULL;
+    n->msg = MEM_malloc(0, sizeof(PsIpc));
+    if (n->msg == NULL) {
+        MEM_free(0, n);
+        return 0;
+    }
+    *n->msg = *msg;
+    if (b->x08 != NULL) {
+        ((ExMsgNode *)b->x08)->prev = n;
+        n->next = b->x08;
+        b->x08 = n;
+    } else {
+        b->x08 = n;
+    }
+    if (b->x0C == NULL) {
+        b->x0C = n;
+    }
+    b->x04 = (void *)((int)b->x04 + 1);
+    return 1;
+}
 
 int ps_getExMsg(int id, PsIpc *out) {
     ExMsgBox *b;
