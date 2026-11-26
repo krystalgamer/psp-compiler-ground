@@ -94,11 +94,94 @@ void *memset(void *s, int c, unsigned int n);
 int printf(const char *fmt, ...);
 int puts(const char *s);
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_network_flow/nonmatchings/net", matching_start);
+extern int matching_ctx_id_322C4;
+void handler_p2p(int id, int event, struct SceNetEtherAddr *peer, int optlen, void *opt);
+int matching_start(OBJECT *obj)
+{
+	int ret;
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_network_flow/nonmatchings/net", net_init);
+	ret = sceNetAdhocMatchingInit(0x20000);
+	if (ret < 0) {
+		printf("sceNetAdhocMatchingInit() failed. ret = 0x%x\n", ret);
+		return ret;
+	}
+	ret = sceNetAdhocMatchingCreate(3, 2, 0x22b, 0x800, 5000000, 10000000, 3, 500000, handler_p2p);
+	if (ret < 0) {
+		printf("sceNetAdhocMatchingCreate() failed. ret = 0x%x\n", ret);
+		return ret;
+	}
+	matching_ctx_id_322C4 = ret;
+	ret = sceNetAdhocMatchingStart(ret, 0x10, 0x2000, 0x10, 0x2000, 0x80, obj->nickname.data);
+	if (ret < 0) {
+		printf("sceNetAdhocMatchingStart() failed. ret = 0x%x\n", ret);
+		return ret;
+	}
+	return matching_ctx_id_322C4;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_network_flow/nonmatchings/net", net_create_pdp);
+void adhocctl_handler(int event, int error, void *arg);
+int net_init(OBJECT *obj, struct SceNetAdhocctlNickname *nickname)
+{
+	int ret;
+
+	ret = sceNetInit(0x20000, 0x20, 0x1000, 0x20, 0x1000);
+	if (ret < 0) {
+		printf("sceNetInit() failed. ret = 0x%x\n", ret);
+		goto error;
+	}
+	ret = sceNetAdhocInit();
+	if (ret < 0) {
+		printf("sceNetAdhocInit() failed. ret = 0x%x\n", ret);
+		goto error;
+	}
+	ret = sceNetAdhocctlInit(0x2000, 0x30, &adhoc_id);
+	if (ret < 0) {
+		printf("sceNetAdhocctlInit() failed. ret = 0x%x\n", ret);
+		goto error;
+	}
+	clear_evf();
+	ret = sceNetAdhocctlAddHandler(adhocctl_handler, NULL);
+	if (ret < 0) {
+		printf("sceNetAdhocctlAddHandler() failed. ret = 0x%x\n", ret);
+		goto error;
+	}
+	handlerId = ret;
+	strncpy((char *)obj->nickname.data, (const char *)nickname, 128);
+	ret = sceNetAdhocDialogInit();
+	if (ret < 0) {
+		printf("sceNetAdhocDialogInit() failed. ret = 0x%x\n", ret);
+		goto error;
+	}
+	return 0;
+
+error:
+	sceNetAdhocDialogTerm();
+	if (handlerId > 0)
+		sceNetAdhocctlDelHandler(handlerId);
+	sceNetAdhocctlTerm();
+	sceNetAdhocTerm();
+	sceNetTerm();
+	return -1;
+}
+
+void sceNetEtherNtostr(const struct SceNetEtherAddr *addr, char *str);
+int net_create_pdp(char *etherstr)
+{
+	int ret;
+
+	sceNetGetLocalEtherAddr(&local_addr);
+	memset(etherstr, 0, 4);
+	sceNetEtherNtostr(&local_addr, etherstr);
+	ret = sceNetAdhocPdpCreate(&local_addr, 0x309, 0x400, 0);
+	if (ret < 0) {
+		printf("sceNetAdhocPdpCreate() failed. ret = 0x%x\n", ret);
+		goto error;
+	}
+	socket_id = ret;
+	return 0;
+error:
+	return -1;
+}
 
 extern int matching_ctx_id_322C4;
 
@@ -264,9 +347,67 @@ recv_allpacket(OBJECT *obj)
 	return ret;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_network_flow/nonmatchings/net", disconnect_ibss);
+int net_stop(void);
+int sceNetAdhocDialogConnect(struct SceNetAdhocctlGroupName *group_name);
+int disconnect_ibss(void)
+{
+	int ret;
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_network_flow/nonmatchings/net", check_disconnect_completed);
+	net_stop();
+	ret = sceNetAdhocctlDisconnect();
+	if (ret < 0) {
+		printf("sceNetAdhocctlDisconnect() failed. ret = 0x%x\n", ret);
+		return 0;
+	}
+	switch (connect_state) {
+	case DISCONNECT_PRIMARY_IBSS:
+		connect_state = DISCONNECTING_PRIMARY_IBSS;
+		break;
+	case DISCONNECT_SECONDARY_IBSS:
+		connect_state = DISCONNECTING_SECONDARY_IBSS;
+		break;
+	case ERROR_DIALOG:
+	case ERROR_DISCONNECT:
+		connect_state = ERROR_DISCONNECTING;
+		break;
+	}
+	return 0;
+}
+
+int check_disconnect_completed(void)
+{
+	int adhocctl_state;
+	int ret;
+
+	ret = sceNetAdhocctlGetState(&adhocctl_state);
+	if (ret < 0)
+		goto error;
+	if (adhocctl_state != 0)
+		return ret;
+	switch (connect_state) {
+	case DISCONNECTING_PRIMARY_IBSS:
+		ret = sceNetAdhocDialogConnect(&group_name);
+		if (ret < 0) {
+			printf("sceNetAdhocDialogConnect() failed. ret = 0x%x\n", ret);
+			return ret;
+		}
+		connect_state = CONNECTING_SECONDARY_IBSS;
+		break;
+	case DISCONNECTING_SECONDARY_IBSS:
+		ret = sceNetAdhocDialogConnect(NULL);
+		if (ret < 0) {
+			printf("sceNetAdhocDialogConnect() failed. ret = 0x%x\n", ret);
+			return ret;
+		}
+		connect_state = CONNECTING_PRIMARY_IBSS;
+		break;
+	case ERROR_DISCONNECTING:
+		connect_state = DISCONNECTED;
+		break;
+	}
+error:
+	return ret;
+}
 
 int disconnect_check(void) {
     switch (connect_state) {
