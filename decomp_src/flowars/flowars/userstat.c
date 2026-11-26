@@ -266,7 +266,170 @@ static void set_sp_success(int flagPlayer, int Event)
 
 __asm__(".globl set_sp_success");
 
-INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/userstat", update_user_stat);
+static void update_user_stat(int flagPlayer)
+{
+	int i, n, g, dan[4];
+	int *collection_gwang, *collection_mung, *collection_dan, *collection_pi;
+	UserScore *userScore;
+	UserStat *userStat;
+
+	if (flagPlayer == 1) {
+		collection_gwang = g_opp_collection_gwang;
+		collection_mung = g_opp_collection_mung;
+		collection_dan = g_opp_collection_dan;
+		collection_pi = g_opp_collection_pi;
+		userScore = &g_opp_score;
+		userStat = &g_opp_stat;
+	} else if (flagPlayer == 2) {
+		collection_gwang = g_opp2_collection_gwang;
+		collection_mung = g_opp2_collection_mung;
+		collection_dan = g_opp2_collection_dan;
+		collection_pi = g_opp2_collection_pi;
+		userScore = &g_opp2_score;
+		userStat = &g_opp2_stat;
+	} else {
+		collection_gwang = g_my_collection_gwang;
+		collection_mung = g_my_collection_mung;
+		collection_dan = g_my_collection_dan;
+		collection_pi = g_my_collection_pi;
+		userScore = &g_my_score;
+		userStat = &g_my_stat;
+	}
+
+
+	memset(dan, 0, sizeof(dan));
+	userStat->turn_event = 0;
+
+
+	for (i = 0, n = 0; i < 5 && collection_gwang[i] != 0; i++) {
+		n += paeManager.is_gwang(collection_gwang[i]);
+		missionManager.reg_mission_pae(flagPlayer, collection_gwang[i]);
+
+		aiManager.set_sp_status(flagPlayer, collection_gwang[i], 5);
+	}
+
+
+	userStat->sp_bisang[5] = i;
+
+	if (n < 5)
+		userScore->gwang = 0;
+	else if (n < 7)
+		userScore->gwang = n / 2;
+	else if (n < 9)
+		userScore->gwang = n - n / 2;
+	else if (n == 9) {
+		userScore->gwang = 15;
+		if (userStat->sp_success[5] != 1) {
+			set_turn_event(flagPlayer, 5);
+			userStat->sp_success[5] = 1;
+		}
+	}
+
+
+	for (i = 0, n = 0; i < 9 && collection_mung[i] != 0; i++) {
+		n += paeManager.is_godori(collection_mung[i]);
+		missionManager.reg_mission_pae(flagPlayer, collection_mung[i]);
+
+		aiManager.set_sp_status(flagPlayer, collection_mung[i], 4);
+	}
+
+
+	if (i < 5)
+		userScore->mung = 0;
+	else
+		userScore->mung = i - 4;
+
+
+	userStat->sp_bisang[4] = n;
+
+	if (n >= 3) {
+		userScore->mung += 5;
+		if (userStat->sp_success[4] != 1) {
+			set_turn_event(flagPlayer, 4);
+			userStat->sp_success[4] = 1;
+		}
+	}
+
+
+	for (i = 0; i < 10 && collection_dan[i] != 0; i++) {
+		dan[1] += paeManager.is_hong(collection_dan[i]);
+		dan[2] += paeManager.is_chung(collection_dan[i]);
+		dan[3] += paeManager.is_cho(collection_dan[i]);
+		missionManager.reg_mission_pae(flagPlayer, collection_dan[i]);
+
+		aiManager.set_sp_status(flagPlayer, collection_dan[i], 1);
+		aiManager.set_sp_status(flagPlayer, collection_dan[i], 2);
+		aiManager.set_sp_status(flagPlayer, collection_dan[i], 3);
+	}
+
+
+	if (i < 5)
+		userScore->dan = 0;
+	else
+		userScore->dan = i - 4;
+
+	userStat->sp_bisang[1] = dan[1];
+	userStat->sp_bisang[2] = dan[2];
+	userStat->sp_bisang[3] = dan[3];
+
+
+	if (dan[1] >= 3) {
+		userScore->dan += 3;
+		if (userStat->sp_success[1] != 1) {
+			set_turn_event(flagPlayer, 1);
+			userStat->sp_success[1] = 1;
+		}
+	}
+
+	if (dan[2] >= 3) {
+		userScore->dan += 3;
+		if (userStat->sp_success[2] != 1) {
+			set_turn_event(flagPlayer, 2);
+			userStat->sp_success[2] = 1;
+		}
+	}
+
+	if (dan[3] >= 3) {
+		userScore->dan += 3;
+		if (userStat->sp_success[3] != 1) {
+			set_turn_event(flagPlayer, 3);
+			userStat->sp_success[3] = 1;
+		}
+	}
+
+
+	for (i = 0, n = 0; i < 25 && collection_pi[i] != 0; i++) {
+		n += paeManager.is_pi(collection_pi[i]);
+		missionManager.reg_mission_pae(flagPlayer, collection_pi[i]);
+	}
+
+	if (n < 10)
+		userScore->pi = 0;
+	else
+		userScore->pi = n - 9;
+
+
+	if (g_mission_state == 1) {
+		if (g_mission_type == 1) {
+			if (missionManager.check_mission_success(flagPlayer) > 0) {
+				if (userStat->sp_success[6] != 1) {
+					set_turn_event(flagPlayer, 6);
+					userStat->sp_success[6] = 1;
+				}
+			} else
+				userStat->sp_success[6] = 0;
+		} else if (g_mission_type == 2) {
+			userStat->sp_success[6] = missionManager.check_mission_success(flagPlayer);
+		} else if (g_mission_type == 3) {
+			userStat->sp_success[6] = missionManager.check_mission_success(flagPlayer);
+		}
+	}
+
+	userScore->total = userScore->gwang + userScore->mung + userScore->dan + userScore->pi;
+}
+
+__asm__(".globl update_user_stat");
+
 
 static void init_stat(void)
 {
