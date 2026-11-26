@@ -1,92 +1,94 @@
-#include "common.h"
+/* lang: c++ */
+/* the gcc-3.3.3 libstdc++ eh_globals.cc of the 1.6.1 tree, as built for psp-gcc 1.6.1.internal;
+   its variables stay in the module's asm .data/.bss (declared extern instead of
+   defined static) */
+#include <exception>
+#include <cstdlib>
+#include "../gcc1.6.1_src/libstdc++-v3/libsupc++/unwind-cxx.h"
+#include "bits/c++config.h"
+#include "bits/gthr.h"
 
-/* declarations recovered from DWARF */
-typedef char __gthread_once_t;
-struct __cxa_eh_globals;
-struct __cxa_exception;
-struct type_info;
-typedef void (*unexpected_handler)();
-typedef void (*terminate_handler)();
-typedef unsigned int _Unwind_Ptr;
-struct _Unwind_Exception;
-typedef long long unsigned int _Unwind_Exception_Class;
-enum _Unwind_Reason_Code {
-    _URC_NO_REASON = 0,
-    _URC_FOREIGN_EXCEPTION_CAUGHT = 1,
-    _URC_FATAL_PHASE2_ERROR = 2,
-    _URC_FATAL_PHASE1_ERROR = 3,
-    _URC_NORMAL_STOP = 4,
-    _URC_END_OF_STACK = 5,
-    _URC_HANDLER_FOUND = 6,
-    _URC_INSTALL_CONTEXT = 7,
-    _URC_CONTINUE_UNWIND = 8,
-};
-typedef void (*_Unwind_Exception_Cleanup_Fn)(enum _Unwind_Reason_Code, struct _Unwind_Exception *);
-typedef unsigned int _Unwind_Word;
-struct _Unwind_Exception { /* size 0x20 */
-    _Unwind_Exception_Class exception_class;
-    _Unwind_Exception_Cleanup_Fn exception_cleanup;
-    _Unwind_Word private_1;
-    _Unwind_Word private_2;
-};
-struct __cxa_exception { /* size 0x50 */
-    struct type_info *exceptionType;
-    void (*exceptionDestructor)(void *);
-    unexpected_handler unexpectedHandler;
-    terminate_handler terminateHandler;
-    struct __cxa_exception *nextException;
-    int handlerCount;
-    int handlerSwitchValue;
-    const unsigned char *actionRecord;
-    const unsigned char *languageSpecificData;
-    _Unwind_Ptr catchTemp;
-    void *adjustedPtr;
-    struct _Unwind_Exception unwindHeader;
-};
-struct __cxa_eh_globals { /* size 0x8 */
-    struct __cxa_exception *caughtExceptions;
-    unsigned int uncaughtExceptions;
-};
-typedef int __gthread_key_t;
+using namespace __cxxabiv1;
 
-extern struct __cxa_eh_globals globals_static;
+
+// Single-threaded fallback buffer.
+extern __cxa_eh_globals globals_static;
+
+#if __GTHREADS
 extern __gthread_key_t globals_key;
 extern int use_thread_key;
-extern const _Unwind_Exception_Class __gxx_exception_class;
 
-
-/* SDK functions (tools/sdk_protos.h) */
-void free(void *p);
-
-static void get_globals_dtor(void *ptr);
-static void get_globals_init();
-static void get_globals_init_once();
-static int __gthread_once(__gthread_once_t *once, void (*func)());
-struct __cxa_eh_globals *__cxa_get_globals_fast();
-struct __cxa_eh_globals *__cxa_get_globals();
-
-
-void _Z16get_globals_dtorPv(void *arg0) {
-    if (arg0 != NULL) {
-        free(arg0);
-    }
+static void
+get_globals_dtor (void *ptr)
+{
+  __gthread_key_dtor (globals_key, ptr);
+  if (ptr)
+    std::free (ptr);
 }
 
-void _Z16get_globals_initv(void) {
+static void
+get_globals_init ()
+{
+  use_thread_key =
+    (__gthread_key_create (&globals_key, get_globals_dtor) == 0);
+}
+
+static void
+get_globals_init_once ()
+{
+  extern __gthread_once_t once __asm__("_ZZ21get_globals_init_oncevE4once");
+  if (__gthread_once (&once, get_globals_init) != 0
+      || use_thread_key < 0)
     use_thread_key = 0;
 }
+#endif
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/gcc-3.3.3/libstdc__-v3/libsupc__/eh_globals", _Z21get_globals_init_oncev);
-
-struct __cxa_eh_globals *__cxa_get_globals_fast(void) {
-    struct __cxa_eh_globals *var_v0;
-
-    var_v0 = NULL;
-    if (use_thread_key == 0) {
-        var_v0 = &globals_static;
-    }
-    return var_v0;
+extern "C" __cxa_eh_globals *
+__cxa_get_globals_fast ()
+{
+#if __GTHREADS
+  if (use_thread_key)
+    return (__cxa_eh_globals *) __gthread_getspecific (globals_key);
+  else
+    return &globals_static;
+#else
+  return &globals_static;
+#endif
 }
-/* Warning: struct type_info is not defined (only forward-declared) */
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/gcc-3.3.3/libstdc__-v3/libsupc__/eh_globals", __cxa_get_globals);
+extern "C" __cxa_eh_globals *
+__cxa_get_globals ()
+{
+#if __GTHREADS
+  __cxa_eh_globals *g;
+
+  if (use_thread_key == 0)
+    return &globals_static;
+
+  if (use_thread_key < 0)
+    {
+      get_globals_init_once ();
+
+      // Make sure use_thread_key got initialized.
+      if (use_thread_key == 0)
+	return &globals_static;
+    }
+
+  g = (__cxa_eh_globals *) __gthread_getspecific (globals_key);
+  if (! g)
+    {
+      if ((g = (__cxa_eh_globals *)
+	   std::malloc (sizeof (__cxa_eh_globals))) == 0
+	  || __gthread_setspecific (globals_key, (void *) g) != 0)
+        std::terminate ();
+      g->caughtExceptions = 0;
+      g->uncaughtExceptions = 0;
+    }
+
+  return g;
+#else
+  return &globals_static;
+#endif
+}
+/* static in eh_globals.cc; the module's .eh_frame (asm) refers to it */
+__asm__(".globl _Z21get_globals_init_oncev");

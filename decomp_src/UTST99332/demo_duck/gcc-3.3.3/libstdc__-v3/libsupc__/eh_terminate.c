@@ -1,44 +1,60 @@
-#include "common.h"
+/* lang: c++ */
+/* the gcc-3.3.3 libstdc++ eh_terminate.cc of the 1.6.1 tree, as built for psp-gcc 1.6.1.internal;
+   the handler variables stay in the module's asm .data (only their definitions are left out) */
+#include "../gcc1.6.1_src/libstdc++-v3/libsupc++/typeinfo"
+#include "../gcc1.6.1_src/libstdc++-v3/libsupc++/exception"
+#include <cstdlib>
+#include "../gcc1.6.1_src/libstdc++-v3/libsupc++/unwind-cxx.h"
+#include "../gcc1.6.1_src/libstdc++-v3/libsupc++/exception_defines.h"
 
-/* declarations recovered from DWARF */
-typedef void (*terminate_handler)();
-typedef void (*unexpected_handler)();
-typedef long long unsigned int _Unwind_Exception_Class;
+using namespace __cxxabiv1;
 
-extern const _Unwind_Exception_Class __gxx_exception_class;
+/* The current installed user handlers.  */
+/* std::terminate_handler __cxxabiv1::__terminate_handler = std::abort; */
+/* std::unexpected_handler __cxxabiv1::__unexpected_handler = std::terminate; */
 
-void __terminate(terminate_handler handler);
-void terminate();
-void __unexpected(unexpected_handler handler);
-void unexpected();
-terminate_handler set_terminate(terminate_handler func);
-unexpected_handler set_unexpected(unexpected_handler func);
-
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/gcc-3.3.3/libstdc__-v3/libsupc__/eh_terminate", _ZN10__cxxabiv111__terminateEPFvvE);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/gcc-3.3.3/libstdc__-v3/libsupc__/eh_terminate", _ZSt9terminatev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/gcc-3.3.3/libstdc__-v3/libsupc__/eh_terminate", _ZN10__cxxabiv112__unexpectedEPFvvE);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/gcc-3.3.3/libstdc__-v3/libsupc__/eh_terminate", _ZSt10unexpectedv);
-
-extern int _ZN10__cxxabiv119__terminate_handlerE;
-
-int _ZSt13set_terminatePFvvE(int arg0) {
-    int temp_v0;
-
-    temp_v0 = _ZN10__cxxabiv119__terminate_handlerE;
-    _ZN10__cxxabiv119__terminate_handlerE = arg0;
-    return temp_v0;
+void
+__cxxabiv1::__terminate (std::terminate_handler handler)
+{
+  try {
+    handler ();
+    std::abort ();
+  } catch (...) {
+    std::abort ();
+  }
 }
 
-extern int _ZN10__cxxabiv120__unexpected_handlerE;
+void
+std::terminate ()
+{
+  __terminate (__terminate_handler);
+}
 
-int _ZSt14set_unexpectedPFvvE(int arg0) {
-    int temp_v0;
+void
+__cxxabiv1::__unexpected (std::unexpected_handler handler)
+{
+  handler();
+  std::terminate ();
+}
 
-    temp_v0 = _ZN10__cxxabiv120__unexpected_handlerE;
-    _ZN10__cxxabiv120__unexpected_handlerE = arg0;
-    return temp_v0;
+void
+std::unexpected ()
+{
+  __unexpected (__unexpected_handler);
+}
+
+std::terminate_handler
+std::set_terminate (std::terminate_handler func) throw()
+{
+  std::terminate_handler old = __terminate_handler;
+  __terminate_handler = func;
+  return old;
+}
+
+std::unexpected_handler
+std::set_unexpected (std::unexpected_handler func) throw()
+{
+  std::unexpected_handler old = __unexpected_handler;
+  __unexpected_handler = func;
+  return old;
 }

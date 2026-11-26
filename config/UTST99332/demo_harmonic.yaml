@@ -382,7 +382,11 @@ segments:
       - { start: 0x14F594, type: rodata, name: eh_frame, linker_section: .eh_frame }
       - { start: 0x15717C, type: rodata, name: gcc_except_table, linker_section: .gcc_except_table }
       - { start: 0x159838, type: prxpad, order: .rodata }
-      - [0x159840, rodata, rodata]
+      - [0x159840, rodata, asm/rodata_1597C0]
+      - [0x1776F0, .rodata, gcc-3.3.3/libstdc__-v3/libsupc__/eh_personality]
+      - [0x177724, rodata, asm/rodata_1776A4]
+      - [0x17775C, .rodata, gcc-3.3.3/libstdc__-v3/libsupc__/pure]
+      - [0x177778, rodata, asm/rodata_1776F8]
   - [0x178EC8, bin, seg1_align]
   - name: demo_harmonic_seg1
     type: code

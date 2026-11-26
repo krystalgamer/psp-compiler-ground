@@ -1,15 +1,3 @@
-#include "common.h"
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/gcc-3.3.3/libstdc__-v3/libsupc__/eh_exception", _ZNSt9exceptionD2Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/gcc-3.3.3/libstdc__-v3/libsupc__/eh_exception", _ZNSt9exceptionD1Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/gcc-3.3.3/libstdc__-v3/libsupc__/eh_exception", _ZNSt9exceptionD0Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/gcc-3.3.3/libstdc__-v3/libsupc__/eh_exception", _ZNSt13bad_exceptionD2Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/gcc-3.3.3/libstdc__-v3/libsupc__/eh_exception", _ZNSt13bad_exceptionD1Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/gcc-3.3.3/libstdc__-v3/libsupc__/eh_exception", _ZNSt13bad_exceptionD0Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/gcc-3.3.3/libstdc__-v3/libsupc__/eh_exception", _ZNKSt9exception4whatEv);
+/* lang: c++ */
+/* the gcc-3.3.3 libstdc++ source of the 1.6.1 tree, as built for psp-gcc 1.6.1.internal */
+#include "../gcc1.6.1_src/libstdc++-v3/libsupc++/eh_exception.cc"

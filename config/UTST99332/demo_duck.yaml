@@ -390,7 +390,11 @@ segments:
       - { start: 0x153888, type: rodata, name: jcr, linker_section: .jcr }
       - { start: 0x15388C, type: rodata, name: eh_frame, linker_section: .eh_frame }
       - { start: 0x15B474, type: rodata, name: gcc_except_table, linker_section: .gcc_except_table }
-      - [0x15DB30, rodata, rodata]
+      - [0x15DB30, rodata, asm/rodata_15DAB0]
+      - [0x17AA20, .rodata, gcc-3.3.3/libstdc__-v3/libsupc__/eh_personality]
+      - [0x17AA54, rodata, asm/rodata_17A9D4]
+      - [0x17AA8C, .rodata, gcc-3.3.3/libstdc__-v3/libsupc__/pure]
+      - [0x17AAA8, rodata, asm/rodata_17AA28]
   - [0x17C1F8, bin, seg1_align]
   - name: demo_duck_seg1
     type: code

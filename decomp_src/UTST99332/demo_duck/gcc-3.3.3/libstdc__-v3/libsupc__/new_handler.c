@@ -1,34 +1,19 @@
-#include "common.h"
+/* lang: c++ */
+/* the gcc-3.3.3 libstdc++ new_handler.cc of the 1.6.1 tree, as built for psp-gcc 1.6.1.internal;
+   std::nothrow and __new_handler stay in the module's asm data (only their definitions are left out) */
+#include "../gcc1.6.1_src/libstdc++-v3/libsupc++/new"
 
-/* declarations recovered from DWARF */
-typedef void (*new_handler)();
-struct __class_type_info_pseudo;
-struct __class_type_info_pseudo { /* size 0x8 */
+/* const std::nothrow_t std::nothrow = { }; */
 
-};
-struct __si_class_type_info_pseudo;
-struct __si_class_type_info_pseudo { /* size 0xc */
-
-};
-
-extern const struct __class_type_info_pseudo _ZTISt9exception;
-extern const struct __si_class_type_info_pseudo _ZTISt9bad_alloc;
+using std::new_handler;
 extern new_handler __new_handler;
-extern const char _ZTSSt9bad_alloc[13];
 
-new_handler set_new_handler(new_handler handler);
-
-
-void (*_ZSt15set_new_handlerPFvvE(void (*arg0)()))() {
-    void (*temp_v0)();
-
-    temp_v0 = __new_handler;
-    __new_handler = arg0;
-    return temp_v0;
+new_handler
+std::set_new_handler (new_handler handler) throw()
+{
+  new_handler prev_handler = __new_handler;
+  __new_handler = handler;
+  return prev_handler;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/gcc-3.3.3/libstdc__-v3/libsupc__/new_handler", _ZNSt9bad_allocD2Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/gcc-3.3.3/libstdc__-v3/libsupc__/new_handler", _ZNSt9bad_allocD1Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/gcc-3.3.3/libstdc__-v3/libsupc__/new_handler", _ZNSt9bad_allocD0Ev);
+std::bad_alloc::~bad_alloc() throw() { }
