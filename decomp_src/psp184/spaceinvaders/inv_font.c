@@ -91,7 +91,24 @@ int inv_font_etc_check_w(int c, int size)
 	return ((font_w[(u8)(c - 0x20)] - 1) * size) / 100;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_font", inv_font_set);
+typedef struct { int used, x, x2, y, y2; float u0, u1, v0, v1; short pri; } FONT_T;
+void inv_font_set(FONT_T *f, int c, int x, int y, int sx, int sy, short pri)
+{
+	float u, v;
+
+	f->used = 1;
+	f->x = x;
+	f->y = y;
+	f->x2 = x + (font_w[c] * sx) / 100;
+	u = (c % 16) * 24;
+	v = (c / 16) * 24;
+	f->u0 = u;
+	f->v0 = v;
+	f->y2 = y + (sy * 24) / 100;
+	f->u1 = u + font_w[c];
+	f->pri = pri;
+	f->v1 = v + 24.0f;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_font", inv_font_disp);
 
