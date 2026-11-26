@@ -245,6 +245,83 @@ INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/log", draw_log);
 
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/log", draw_log_ms);
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/log", adhoc_distribute_log);
+int sceKernelSignalSema(int semid, int signal);
+int sceKernelWaitSema(int semid, int signal, unsigned int *timeout);
+int sprintf(char *buf, const char *fmt, ...);
+void *memcpy(void *d, const void *s, unsigned int n);
+int sceKernelWaitSema(int semaid, int signal, unsigned int *timeout);
+int sceKernelSignalSema(int semaid, int signal);
+int sceNetEtherNtostr(struct SceNetEtherAddr *mac, char *name);
+int sceRtcGetCurrentClockLocalTime(struct ScePspDateTime *time);
+int sprintf(char *buf, const char *fmt, ...);
+int vsprintf(char *buf, const char *fmt, va_list ap);
+void *memcpy(void *dst, const void *src, unsigned int n);
+void adhoc_distribute_log(int color, struct SceNetEtherAddr *peer, const char *fmt, ...)
+{
+	va_list ap;
+	struct ScePspDateTime time;
+	char ether_buff[64];
+	int i;
+	int len;
+	int ret;
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/log", adhoc_distribute_log_ms);
+	ret = sceKernelWaitSema(log_sema, 1, NULL);
+	if (ret < 0)
+		return;
+	for (i = 0; i < 15; i++) {
+		log_color[i] = log_color[i + 1];
+		memcpy(log_line[i], log_line[i + 1], sizeof(log_line[i]));
+	}
+	log_color[15] = color;
+	sceNetEtherNtostr(peer, ether_buff);
+	sceRtcGetCurrentClockLocalTime(&time);
+	len = sprintf(log_line[15], "%02d/%02d %02d:%02d:%02d %s ", time.month, time.day, time.hour, time.minute, time.second, ether_buff);
+	__builtin_va_start(ap, fmt);
+	vsprintf(log_line[15] + len, fmt, ap);
+	__builtin_va_end(ap);
+	sceKernelSignalSema(log_sema, 1);
+}
+
+int sceIoOpen(const char *name, int flag, int mode);
+int sceIoClose(int fd);
+int sceIoWrite(int fd, const void *buf, unsigned int nbyte);
+unsigned int strlen(const char *s);
+int sceNetEtherNtostr(struct SceNetEtherAddr *mac, char *name);
+int sceRtcGetCurrentClockLocalTime(struct ScePspDateTime *time);
+int sprintf(char *buf, const char *fmt, ...);
+char *strncat(char *dst, const char *src, unsigned int n);
+int sceIoOpen(const char *name, int flag, int mode);
+int sceIoWrite(int fd, const void *data, unsigned int size);
+int sceIoClose(int fd);
+int sceRtcGetTime_t(const struct ScePspDateTime *date, unsigned int *time);
+unsigned int strlen(const char *s);
+int adhoc_distribute_log_ms(struct SceNetEtherAddr *peer, struct log_info *log_info)
+{
+	int fd;
+	char filename[256];
+	char src_buff[32];
+	char dst_buff[32];
+	char log_buff[256];
+	unsigned int start_time;
+	unsigned int finish_time;
+
+	strcpy(filename, "ms0:/");
+	strncat(filename, _info.log_filename, 128);
+	fd = sceIoOpen(filename, 0x302, 0644);
+	if (fd < 0)
+		return -1;
+	sceNetEtherNtostr(&_info.local_addr, src_buff);
+	sceNetEtherNtostr(peer, dst_buff);
+	sceRtcGetTime_t(&log_info->start, &start_time);
+	sceRtcGetTime_t(&log_info->finish, &finish_time);
+	sprintf(log_buff, "%s,%d,%s,%s,%04d/%02d/%02d,%02d:%02d:%02d,%04d/%02d/%02d,%02d:%02d:%02d,%ld,%x\n",
+		_info.paramsfo_discid, _info.ibss_param.channel, src_buff, dst_buff,
+		log_info->start.year, log_info->start.month, log_info->start.day,
+		log_info->start.hour, log_info->start.minute, log_info->start.second,
+		log_info->finish.year, log_info->finish.month, log_info->finish.day,
+		log_info->finish.hour, log_info->finish.minute, log_info->finish.second,
+		finish_time - start_time, log_info->error_code);
+	sceIoWrite(fd, log_buff, strlen(log_buff));
+	sceIoClose(fd);
+	return 0;
+}
