@@ -295,7 +295,13 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/gmo_model/gmo_bone", mat4_
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/gmo_model/gmo_bone", mat4_app);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/gmo_model/gmo_bone", vec3_mul);
+static vec3 *vec3_mul(vec3 *dst, const vec3 *src1, const vec3 *src2)
+{
+    dst->x = src1->x * src2->x;
+    dst->y = src1->y * src2->y;
+    dst->z = src1->z * src2->z;
+    return dst;
+}
 
 ScePspFVector3 *vec3_div(ScePspFVector3 *dst, ScePspFVector3 *src1, ScePspFVector3 *src2) {
     float temp_f1;
