@@ -105,7 +105,63 @@ int sceWaveInit(void)
 	return 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/mpeg_mpegstr_gu/nonmatchings/libwave", sceWaveSetVoice);
+int sceWaveSetVoice(unsigned int ch, void *data, int size, int flags)
+{
+	SceWaveVoice *v;
+
+	if (ch >= 8)
+		return 0x80440005;
+	if ((unsigned int)size > 0x1800000)
+		return 0x80440007;
+	if (sceWaveGetStat(ch) != 0)
+		return 0x80440009;
+	if (!(flags & 0x400)) {
+		if (data == NULL)
+			return 0x80440006;
+		if (size <= 0)
+			return 0x80440007;
+		v = &D_0002F118[ch];
+		v->data = data;
+		v->size = size;
+		v->flags = flags;
+		v->pos = 0;
+		v->stat = 0;
+		v->vol_l = 0x1000;
+		v->vol_r = 0x1000;
+		v->unk3C = 0x70;
+		v->unk30 = 0;
+		v->unk34 = 0;
+		v->unk28 = 0;
+		v->unk2C = 0;
+		v->unk24 = 0;
+		v->unk10 = 0;
+		v->unk14 = 0;
+		v->unk40 = 0;
+	} else {
+		if (data != NULL)
+			return 0x80440006;
+		if (size != 0)
+			return 0x80440007;
+		v = &D_0002F118[ch];
+		v->data = data;
+		v->size = size;
+		v->flags = flags;
+		v->pos = 0;
+		v->stat = 0;
+		v->vol_l = 0x1000;
+		v->vol_r = 0x1000;
+		v->unk3C = 0x70;
+		v->unk30 = 0;
+		v->unk34 = 0;
+		v->unk28 = 0;
+		v->unk2C = 0;
+		v->unk24 = 0;
+		v->unk10 = 0;
+		v->unk14 = 0;
+		v->unk40 = 0;
+	}
+	return 0;
+}
 
 int sceWaveSetVolume(unsigned int ch, unsigned int left, unsigned int right)
 {
@@ -191,9 +247,71 @@ int sceWaveGetStat(unsigned int ch)
 	return D_0002F118[ch].stat;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/mpeg_mpegstr_gu/nonmatchings/libwave", sceWavePlay);
+int sceWavePlay(unsigned int ch, int left, int right)
+{
+	if (ch >= 8)
+		return 0x80440005;
+	if (left < 0 || left >= 128)
+		return 0x8044000A;
+	if (right < 0 || right >= 128)
+		return 0x8044000A;
+	if (D_0002F118[ch].data == NULL && !(D_0002F118[ch].flags & 0x400))
+		return 0x80440006;
+	if (D_0002F118[ch].stat != 0) {
+		D_0002F118[ch].flags |= 0x110000;
+		D_0002F378[ch].stat = 1;
+		D_0002F378[ch].vol_l = left * 0x1000 / 127;
+		D_0002F378[ch].vol_r = right * 0x1000 / 127;
+		D_0002F378[ch].pos = 0;
+		D_0002F378[ch].unk30 = 0;
+		D_0002F378[ch].unk34 = 0;
+		D_0002F378[ch].unk28 = 0;
+		D_0002F378[ch].unk2C = 0;
+	} else {
+		D_0002F118[ch].stat = 1;
+		D_0002F118[ch].vol_l = left * 0x1000 / 127;
+		D_0002F118[ch].vol_r = right * 0x1000 / 127;
+		D_0002F118[ch].pos = 0;
+		D_0002F118[ch].unk30 = 0;
+		D_0002F118[ch].unk34 = 0;
+		D_0002F118[ch].unk28 = 0;
+		D_0002F118[ch].unk2C = 0;
+	}
+	return 0;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/mpeg_mpegstr_gu/nonmatchings/libwave", sceWavePlayEx);
+int sceWavePlayEx(unsigned int ch, unsigned int left, unsigned int right)
+{
+	if (ch >= 8)
+		return 0x80440005;
+	if (left > 0x1000)
+		return 0x8044000A;
+	if (right > 0x1000)
+		return 0x8044000A;
+	if (D_0002F118[ch].data == NULL && !(D_0002F118[ch].flags & 0x400))
+		return 0x80440006;
+	if (D_0002F118[ch].stat != 0) {
+		D_0002F118[ch].flags |= 0x110000;
+		D_0002F378[ch].stat = 1;
+		D_0002F378[ch].vol_l = left;
+		D_0002F378[ch].vol_r = right;
+		D_0002F378[ch].pos = 0;
+		D_0002F378[ch].unk30 = 0;
+		D_0002F378[ch].unk34 = 0;
+		D_0002F378[ch].unk28 = 0;
+		D_0002F378[ch].unk2C = 0;
+	} else {
+		D_0002F118[ch].stat = 1;
+		D_0002F118[ch].vol_l = left;
+		D_0002F118[ch].vol_r = right;
+		D_0002F118[ch].pos = 0;
+		D_0002F118[ch].unk30 = 0;
+		D_0002F118[ch].unk34 = 0;
+		D_0002F118[ch].unk28 = 0;
+		D_0002F118[ch].unk2C = 0;
+	}
+	return 0;
+}
 
 int sceWaveStop(unsigned int ch)
 {
