@@ -134,7 +134,61 @@ static void draw_alphabet(void)
 	sceGumPopMatrix();
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/sound_at3streaming/nonmatchings/draw", update_data);
+#define MAX_WORDLEN		16
+#define WAIT_CNT		10
+#define STAT_WAIT ((0)+2)
+#define STAT_MORPH ((0)+1)
+#define FRAME_CNT		15
+#define STAT_INIT (0)
+#define A_SIZEW			23.5f
+
+static void update_data(void)
+{
+	char	*p;
+	int		i;
+
+	switch (cur_stat) {
+	case STAT_INIT:
+		p = ParseString();
+		cur_len = 0;
+		new_len = 0;
+		for (i = 0; i < MAX_WORDLEN; i++) {
+			if ((p[i] != 0) || (cur_word[i] != 0)) {
+				if (p[i] != 0) {
+					new_len++;
+				}
+				cur_len++;
+				init_morph(i, cur_word[i], p[i]);
+			}
+			cur_word[i] = p[i];
+		}
+		wait = WAIT_CNT;
+		frame = 0;
+		cur_stat = STAT_WAIT;
+		if (new_len != 0) {
+			stepx = (-A_SIZEW*(new_len/2.0f+0.5f) - startx) / FRAME_CNT;
+		} else {
+			stepx = (-startx) / FRAME_CNT;
+		}
+		break;
+	case STAT_WAIT:
+		if (wait-- <= 0) {
+			cur_stat = STAT_MORPH;
+		}
+		break;
+	case STAT_MORPH:
+		update_morph(frame);
+		if (frame++ >= FRAME_CNT) {
+			cur_stat = STAT_INIT;
+			startx = -A_SIZEW*(new_len/2.0f+0.5f);
+		} else {
+			startx += stepx;
+		}
+		break;
+	default:
+		break;
+	}
+}
 
 void sceGuEnable(int state);
 void sceGuDisable(int state);
