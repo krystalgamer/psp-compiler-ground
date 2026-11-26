@@ -510,7 +510,18 @@ void *sceGuSwapBuffers(void)
 	return FBuf.frame_buffer;
 }
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", sceGuViewport);
+void sceGuViewport(int cx, int cy, int width, int height)
+{
+	float sx = width / 2;
+	float sy = -height / 2;
+	float x = cx;
+	float y = cy;
+
+	send_commandf(66, sx);
+	send_commandf(67, sy);
+	send_commandf(69, x);
+	send_commandf(70, y);
+}
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", sceGuDepthRange);
 
@@ -734,7 +745,17 @@ void sceGuClutLoad(int num_blocks, const void *cbp)
 	send_commandi(196, num_blocks);
 }
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", sceGuFog);
+void sceGuFog(float near, float far, unsigned int color)
+{
+	float distance = far - near;
+	float d = 0.0f;
+
+	if (distance != 0)
+		d = 1.0f / distance;
+	send_commandi(207, color & 0xffffff);
+	send_commandf(205, far);
+	send_commandf(206, d);
+}
 
 void sceGuColorFunc(int func, unsigned int color, unsigned int mask)
 {
@@ -764,7 +785,21 @@ void sceGuPixelMask(unsigned int mask)
 	send_commandi(233, mask >> 24);
 }
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", sceGuScissor);
+void sceGuScissor(int x, int y, int w, int h)
+{
+	GuContext *context = &_ctx[__aw_list_mode];
+	int ex = x + w - 1;
+	int ey = y + h - 1;
+
+	context->scissor_start[0] = x;
+	context->scissor_start[1] = y;
+	context->scissor_end[0] = ex;
+	context->scissor_end[1] = ey;
+	if (context->scissor_enable) {
+		send_commandi(212, (y << 10) | x);
+		send_commandi(213, (ey << 10) | ex);
+	}
+}
 
 void sceGuStencilFunc(int func, int ref, int mask)
 {
