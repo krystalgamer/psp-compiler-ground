@@ -2,6 +2,11 @@
 #include "common.h"
 #include "css_types.h"
 #include "m2c_macros.h"
+u16 *CSS_nstring(u16 *p, u16 **out);
+typedef struct CSSPROPNAME { u16 *name; u16 id; } CSSPROPNAME;
+extern CSSPROPNAME CSSPropertyNames[];
+extern int CSSPropertyIndexTable[];
+int UCS_strcasecmp(u16 *a, u16 *b);
 CSSVALUE *duplicateCSSValue(CSSVALUE *v);
 CSSVALUE *newCSSValue();
 void addCSSValue(void *decl, CSSVALUE *v);
@@ -1343,7 +1348,43 @@ u16 *ParseCSSZIndex(void *decl, u16 *p) {
     return r;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_ParseProperties", find_Property);
+int find_Property(u16 *name) {
+    int c;
+    int lo;
+    int hi = 0;
+    int mid;
+    int r;
+    if (!((unsigned int)(name[0] - 'A') < 26) && !((unsigned int)(name[0] - 'a') < 26)) {
+        return -1;
+    }
+    if ((u16)(name[0] - 'a') < 26) {
+        c = name[0] - 'a';
+    } else {
+        c = name[0] - 'A';
+    }
+    lo = CSSPropertyIndexTable[c];
+    if (lo < 0) {
+        return -1;
+    }
+    for (c++; c < 27; c++) {
+        hi = CSSPropertyIndexTable[c];
+        if (hi >= 0) {
+            break;
+        }
+    }
+    while (lo < hi) {
+        mid = (lo + hi) / 2;
+        r = UCS_strcasecmp(CSSPropertyNames[mid].name, name);
+        if (r < 0) {
+            lo = mid + 1;
+        } else if (r > 0) {
+            hi = mid;
+        } else {
+            return CSSPropertyNames[mid].id;
+        }
+    }
+    return -1;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_ParseProperties", ParseCSSDeclaration);
 
