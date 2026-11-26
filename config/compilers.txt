@@ -24,8 +24,8 @@
 1.8.3           1.8.3   as:-mulsw
 1.8.3.internal  1.8.3   as:-mulsw
 1.8.4.internal  1.8.4   mixed:-fno-merge-constants as:-mulsw
-1.9.2           1.8.4   as:-mulsw
-1.9.2.internal  1.8.4   as:-mulsw
+1.9.2           1.9.2   as:-mulsw
+1.9.2.internal  1.9.2   as:-mulsw
 # Per-module additions (the game's own build, not the compiler's):
 # spaceinvaders' release 1.6.1 objects link their .rodata/.rodata.cst4/.rodata.cst8 in
 # first-use order (5 units contradict -fno-merge-constants); UTST99261's 1.6.1 units don't.
