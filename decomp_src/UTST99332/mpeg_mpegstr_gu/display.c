@@ -114,7 +114,34 @@ INCLUDE_ASM("tmp/asm/UTST99332/mpeg_mpegstr_gu/nonmatchings/display", dispbuf_cr
 
 INCLUDE_ASM("tmp/asm/UTST99332/mpeg_mpegstr_gu/nonmatchings/display", dispbuf_reset);
 
-INCLUDE_ASM("tmp/asm/UTST99332/mpeg_mpegstr_gu/nonmatchings/display", dispbuf_delete);
+SceInt32 dispbuf_delete(t_displayBuffer *pDisp)
+{
+	SceInt32 i;
+
+	sceGuTerm();
+
+	sceKernelDeleteSema(pDisp->lock_sema);
+	sceKernelDeleteEventFlag(pDisp->delayFlag);
+
+	if (pDisp->buf != NULL) {
+		for (i = 0; i < pDisp->size; i++) {
+			if (pDisp->buf[i] != NULL) {
+				free(pDisp->buf[i]);
+				pDisp->buf[i] = NULL;
+			}
+		}
+
+		free(pDisp->buf);
+		pDisp->buf = NULL;
+	}
+
+	if (pDisp->pts != NULL) {
+		free(pDisp->pts);
+		pDisp->pts = NULL;
+	}
+
+	return 0;
+}
 
 int dispbuf_getDrawbuf(t_displayBuffer *pDisp, signed char **buffer) {
     int temp_v0;
