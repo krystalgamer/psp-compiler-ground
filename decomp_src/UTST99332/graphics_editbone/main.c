@@ -172,7 +172,37 @@ INCLUDE_RODATA("tmp/asm/UTST99332/graphics_editbone/nonmatchings/main", D_000127
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_editbone/nonmatchings/main", calc_bone);
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_editbone/nonmatchings/main", draw_cylinder);
+#ifndef SCEGU_PRIM_LINE_STRIP /* sample */
+#define SCEGU_PRIM_LINE_STRIP              2
+#endif
+#ifndef SCEGU_PRIM_TRIANGLE_STRIP /* sample */
+#define SCEGU_PRIM_TRIANGLE_STRIP          4
+#endif
+#ifndef SCEGU_WEIGHT_4 /* sample */
+#define SCEGU_WEIGHT_4           ( 3 << 14 )
+#endif
+#ifndef SCEGU_WEIGHT_FLOAT /* sample */
+#define SCEGU_WEIGHT_FLOAT       ( 3 <<  9 )
+#endif
+#ifndef SCEGU_VERTEX_FLOAT /* sample */
+#define SCEGU_VERTEX_FLOAT       ( 3 <<  7 )
+#endif
+#ifndef SCEGU_OPEN_OPEN /* sample */
+#define SCEGU_OPEN_OPEN                    3
+#endif
+static void draw_cylinder(void)
+{
+	if (!mode)
+		sceGuPatchPrim(SCEGU_PRIM_LINE_STRIP);
+	else
+		sceGuPatchPrim(SCEGU_PRIM_TRIANGLE_STRIP);
+
+	sceGuColor(0xffffff80);
+	sceGumDrawSpline(SCEGU_WEIGHT_4|SCEGU_WEIGHT_FLOAT|SCEGU_VERTEX_FLOAT,
+		4, 7, SCEGU_OPEN_OPEN, SCEGU_OPEN_OPEN, 0, &cylinder[0]);
+	sceGumDrawSpline(SCEGU_WEIGHT_4|SCEGU_WEIGHT_FLOAT|SCEGU_VERTEX_FLOAT,
+		4, 7, SCEGU_OPEN_OPEN, SCEGU_OPEN_OPEN, 0, &cylinder[28*7]);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_editbone/nonmatchings/main", draw_effector);
 
