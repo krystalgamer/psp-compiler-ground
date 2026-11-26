@@ -1,19 +1,23 @@
-#include "common.h"
+/* upstream: newlib-1.12.0/newlib/libc/locale/locale.c (unmodified) */
+/* cflags: -O2 -fno-builtin */
 
-INCLUDE_RODATA("tmp/asm/UTST99332/mpeg_seamless_change/nonmatchings/newlib/libc/locale/locale", D_00012128);
+/* The module's .data/.bss (asm) define the variables: declared first into
+   .data.* sections, which the linker script discards (-fdata-sections would
+   also move lconv out of .rodata), and weak in the assembler only.  charset
+   is static: made global so that the module's label is the one used. */
+#define DISCARD(n) __attribute__((section(".data." #n)))
+extern int __mb_cur_max DISCARD(__mb_cur_max);
+extern int __nlocale_changed DISCARD(__nlocale_changed);
+extern int __mlocale_changed DISCARD(__mlocale_changed);
+extern char *_PathLocale DISCARD(_PathLocale);
+extern char *charset DISCARD(charset);
+extern char __lc_ctype[12] DISCARD(__lc_ctype);
+#undef DISCARD
+#define static
+#include "libc/locale/locale.c"
+#undef static
+__asm__(".weak __mb_cur_max\n.weak __nlocale_changed\n.weak __mlocale_changed\n"
+        ".weak _PathLocale\n.weak charset\n.weak __lc_ctype");
 
-INCLUDE_RODATA("tmp/asm/UTST99332/mpeg_seamless_change/nonmatchings/newlib/libc/locale/locale", D_0001212C);
-
-INCLUDE_RODATA("tmp/asm/UTST99332/mpeg_seamless_change/nonmatchings/newlib/libc/locale/locale", lconv);
-
-INCLUDE_RODATA("tmp/asm/UTST99332/mpeg_seamless_change/nonmatchings/newlib/libc/locale/locale", D_00012160);
-
-INCLUDE_ASM("tmp/asm/UTST99332/mpeg_seamless_change/nonmatchings/newlib/libc/locale/locale", _setlocale_r);
-
-INCLUDE_ASM("tmp/asm/UTST99332/mpeg_seamless_change/nonmatchings/newlib/libc/locale/locale", __locale_charset);
-
-INCLUDE_ASM("tmp/asm/UTST99332/mpeg_seamless_change/nonmatchings/newlib/libc/locale/locale", _localeconv_r);
-
-INCLUDE_ASM("tmp/asm/UTST99332/mpeg_seamless_change/nonmatchings/newlib/libc/locale/locale", setlocale);
-
-INCLUDE_ASM("tmp/asm/UTST99332/mpeg_seamless_change/nonmatchings/newlib/libc/locale/locale", localeconv);
+/* labels the rest of the module's asm uses */
+__asm__(".globl D_00012160\nD_00012160 = 0x00012160");
