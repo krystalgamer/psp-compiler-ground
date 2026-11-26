@@ -157,7 +157,24 @@ INCLUDE_ASM("tmp/asm/UTST99332/mpeg_seamless_change/nonmatchings/decode", decode
 
 INCLUDE_ASM("tmp/asm/UTST99332/mpeg_seamless_change/nonmatchings/decode", decode_initAu);
 
-INCLUDE_ASM("tmp/asm/UTST99332/mpeg_seamless_change/nonmatchings/decode", decode_createAu);
+SceInt32 decode_createAu(t_mpegStreamData *pStreamData, SceMpegStrType type)
+{
+	SceInt32 ret;
+
+	switch (type) {
+	case 0:
+		ret = decode_createAvcAu(pStreamData);
+		break;
+	case 1:
+		ret = decode_createAudioAu(pStreamData);
+		break;
+	default:
+		ret = -1;
+		break;
+	}
+
+	return ret;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/mpeg_seamless_change/nonmatchings/decode", decode_createAvcAu);
 
