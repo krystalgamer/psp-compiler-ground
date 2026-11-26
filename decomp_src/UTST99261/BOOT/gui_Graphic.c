@@ -55,7 +55,49 @@ GUIGRAPHICS *GUI_Graphics_createGraphics(GUIWIDGET *w) {
     return g;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Graphic", GUI_Graphics_getGraphics);
+GUIGRAPHICS *GUI_Graphics_getGraphics(GUIGRAPHICS *g, GUIPIXMAP *pm) {
+    WINDSYSTEMDATA *sd;
+    GUIGRAPHICS *gr;
+
+    if (pm == NULL) {
+        puts("[X1]GUI_Graphics_getGraphics");
+        return NULL;
+    }
+    if (pm->type != 3) {
+        puts("[X2]GUI_Graphics_getGraphics");
+        return NULL;
+    }
+    sd = &s_windsystem_data;
+    if (sd->graphics != NULL && sd->pixmap2 == pm) {
+        ((GUIGRAPHICS *)sd->graphics)->pixmap = pm;
+        ((GUIGRAPHICS *)sd->graphics)->x = 0;
+        ((GUIGRAPHICS *)sd->graphics)->y = 0;
+        ((GUIGRAPHICS *)sd->graphics)->ox = pm->w;
+        ((GUIGRAPHICS *)sd->graphics)->oy = pm->h;
+        ((GUIGRAPHICS *)sd->graphics)->clip[0] = 0;
+        ((GUIGRAPHICS *)sd->graphics)->clip[1] = 0;
+        ((GUIGRAPHICS *)sd->graphics)->clip[2] = pm->w;
+        ((GUIGRAPHICS *)sd->graphics)->clip[3] = pm->h;
+        sd->graphics2 = sd->graphics;
+        sd->graphics = NULL;
+        return sd->graphics2;
+    }
+    gr = GuigraphicsCreate();
+    if (gr == NULL) {
+        puts("[X3]GUI_Graphics_getGraphics");
+        return NULL;
+    }
+    gr->pixmap = pm;
+    gr->x = 0;
+    gr->y = 0;
+    gr->ox = pm->w;
+    gr->oy = pm->h;
+    gr->clip[0] = 0;
+    gr->clip[1] = 0;
+    gr->clip[2] = pm->w;
+    gr->clip[3] = pm->h;
+    return gr;
+}
 
 int GUI_Graphics_freeGraphics(GUIGRAPHICS *g) {
     if (s_windsystem_data.graphics2 != NULL && s_windsystem_data.graphics2 == g) {
@@ -287,7 +329,24 @@ void GUI_Graphics_freeAnimationGIF(GUIANIM *a_) {
     ESP_guiMemFree(a);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Graphic", GUI_Graphics_getMaskPattern);
+GUIPIXMAP *GUI_Graphics_getMaskPattern(int *c1, int *c2) {
+    GUIPIXMAP *pm;
+    u16 *d;
+
+    pm = GuipixmapCreate();
+    if (pm == NULL) {
+        puts("[X1]GUI_Graphics_getMaskPattern");
+        return NULL;
+    }
+    pm->w = 2;
+    pm->h = 2;
+    pm->data = ESP_guiMemAlloc(8);
+    pm->kind = 0;
+    d = pm->data;
+    d[0] = d[3] = (c1[0] >> 3) | ((c1[1] >> 3) << 5) | ((c1[2] >> 3) << 10);
+    d[1] = d[2] = (c2[0] >> 3) | ((c2[1] >> 3) << 5) | ((c2[2] >> 3) << 10);
+    return pm;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Graphic", GUI_Graphics_getBrokenLinePattern);
 
@@ -964,7 +1023,47 @@ int GUI_Button_setImage(GUIWIDGET *w, void * v) {
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Graphic", GUI_Button_setLabel);
+int GUI_Button_setLabel(GUIWIDGET *w_, char *label) {
+    GUIWIDGET *w;
+    int len;
+    char *s;
+
+    if (w_ == NULL) {
+        puts("[X1]GUI_Button_setLabel");
+        return -1;
+    }
+    w = w_;
+    if (w->type != 1) {
+        puts("[X2]GUI_Button_setLabel");
+        return -1;
+    }
+    if ((w->flags & 0xF) != 3) {
+        puts("[X3]GUI_Button_setLabel");
+        return -1;
+    }
+    len = 0;
+    if (label != NULL) {
+        len = strlen(label);
+    }
+    s = NULL;
+    if (len != 0) {
+        s = ESP_guiMemAlloc(len + 1);
+        if (s == NULL) {
+            puts("[X4]GUI_Button_setLabel");
+            return -1;
+        }
+        memcpy(s, label, len);
+        s[len] = 0;
+    }
+    s_windsystem_data.flags |= 4;
+    if (w->unk50.p != NULL) {
+        ESP_guiMemFree(w->unk50.p);
+    }
+    w->unk50.p = s;
+    zWindDraw();
+    s_windsystem_data.flags &= ~4;
+    return 0;
+}
 
 int GUI_RadioButton_setState(GUIWIDGET *w, int state) {
     if (w == NULL) {
