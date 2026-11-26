@@ -11,7 +11,8 @@ so one is put before every such branch (local $L labels make no symbols).
 import re
 import sys
 
-BRANCH = re.compile(r"\s+(b[a-z0-9.]*|j|jal|jalr|jr)\s")
+# a plain `j` (e.g. a switch break) still gets its slot filled
+BRANCH = re.compile(r"\s+(b[a-z0-9.]*|jal|jalr|jr)\s")
 
 
 def fix(text):
