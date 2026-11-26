@@ -1,12 +1,13 @@
 # psp-compiler-ground
 
-Reconstructing the psp-gcc 1.5.1, 1.6.1, 1.8.3 and 1.8.4.internal compilers
+Reconstructing the psp-gcc 1.5.1, 1.6.1, 1.8.3, 1.8.4.internal and 1.9.2 compilers
 from PSP modules they built. The decompiled sources in `decomp_src/` are the
 tests: each compiler version is right when it turns them back into the
 original machine code.
 
 - `inputs/` – the original modules (`151_and_161.zip`, `psp_161_to_184.zip`,
-  plus `bigbangbang.prx`, `flowars.prx`, `171_184_htmlviewer.prx`, `umdt.zip`, `tony_libs.zip`, 13 stripped
+  plus `bigbangbang.prx`, `flowars.prx`, `171_184_htmlviewer.prx`, `umdt.zip`,
+  `psp_random_batch.zip` (target `rb`), `tony_libs.zip`, 13 stripped
   1.5.1.internal firmware modules, and `psp_devkit.zip`/`psp_sdk_660.7z`,
   SDKs with library sources); **not committed**
 - `config/` – splat configs, one per module
@@ -18,6 +19,9 @@ original machine code.
 - `gcc1.8.3_src/`, `gcc1.8.4_src/` – psp-gcc 1.8.3 and 1.8.4.internal; they
   start from the reconstructed psp-gcc 1.7.1 (`~/psp-gcc-1.7.1`, branch
   `sony`)
+- `gcc1.9.2_src/` – psp-gcc 1.9.2: pristine GCC 3.3.6 plus the gcc-3.3.3 →
+  `gcc1.8.4_src` patch set, plus what the 1.9.2-built module rb/rs4_main
+  proves (FINDINGS.md); `tools/build_gcc.sh VERSION --cxx` also builds cc1plus
 - `tools/` – helper scripts
 - `tmp/` – everything generated (toolchains, splat output, builds); **not
   committed**

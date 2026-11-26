@@ -208,7 +208,7 @@ def try_body1(target, module, unit, func, body, mod, protos):
     decl = "\n".join(x for x in [decl] + extra if x)
     new = pat.sub(lambda _: (decl + "\n" if decl else "") + body.rstrip("\n"), text, count=1)
     new = drop_jump_tables(target, module, unit, func, new)
-    m = re.search(r"cflags: (-O[0-3s](?: -(?:[fm][\w-]+|std)(?:=[\w.:]+)?)*)", text)
+    m = re.search(r"cflags: (-O[0-9s](?: -(?:[fm][\w-]+|std)(?:=[\w.:]+)?)*)", text)
     flags = (m.group(1) if m else "-O2") + " " + compiler.driver_flags(target, module, unit)
     with tempfile.TemporaryDirectory() as td:
         c = Path(td) / "t.c"

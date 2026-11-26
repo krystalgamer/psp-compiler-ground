@@ -138,7 +138,7 @@ def main():
         ctx = subprocess.run([sys.executable, str(ROOT / "tools/dwarf2c.py"), target, module, u, "--extern"],
                              capture_output=True, text=True).stdout
         # the unit's own flags (a `cflags: ...` comment, as propagate.py reads it)
-        cf = re.search(r"cflags: (-O[0-3s](?: -(?:[fm][\w-]+|std)(?:=[\w.:]+)?)*)", text)
+        cf = re.search(r"cflags: (-O[0-9s](?: -(?:[fm][\w-]+|std)(?:=[\w.:]+)?)*)", text)
         opt = cf.group(1) if cf else "-O2"
         bodies = {}
         # AW_PAR drafts tried in parallel (default 1)
