@@ -354,7 +354,33 @@ char *_findblankkey(SysFile *sf)
 	return &sf->keys[sf->nkeys++ * 32];
 }
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/systemfile", sceSystemFileSetValueSize);
+int sceSystemFileSetValueSize(void *handle, void *index, unsigned int size)
+{
+	register int ret;
+
+	if (handle == NULL)
+		SF_ERROR(ret, 3)
+	else if (index == NULL)
+		SF_ERROR(ret, 3)
+	else {
+		if (((SysFile *)handle)->flags & 2) {
+			SfKeyEnt *ent = index;
+
+			ent->len = size;
+		} else {
+			SfIndex *ix = index;
+
+			if (ix->unk0 == 0) {
+				SF_ERROR(ret, 3)
+				goto end;
+			}
+			((SfKeyEnt *)ix->unk0)->len = size;
+		}
+		ret = 0;
+	}
+end:
+	return ret;
+}
 
 int sceSystemFileGetValuePtr(void *handle, void *index, void **pp)
 {
@@ -557,7 +583,28 @@ int sceSystemFileGetHeader(void *handle, SfHeader **phdr, int *pversion, int *pf
 	return ret;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/systemfile", sceSystemFileSetHeaderW);
+extern char D_0002F2F4[];
+int sceSystemFileSetHeaderW(void *handle, const char *magic, int version, int flag)
+{
+	SysFile *sf = handle;
+	register int ret;
+
+	if (handle == NULL)
+		SF_ERROR(ret, 3)
+	else if (sf->hdr == NULL)
+		SF_ERROR(ret, 3)
+	else if (sf->flags & 2)
+		SF_ERROR(ret, 3)
+	else {
+		if (magic == NULL)
+			sf_memcpy(sf->hdr, D_0002F2F4, 4);
+		else
+			sf_memcpy(sf->hdr, magic, 4);
+		sf->hdr->version = ((version & 0xFFFFFF) << 8) | (flag & 0xFF);
+		ret = 0;
+	}
+	return ret;
+}
 
 INCLUDE_RODATA("tmp/asm/psp184/UCJS90007/nonmatchings/systemfile", D_0002F2EC);
 
