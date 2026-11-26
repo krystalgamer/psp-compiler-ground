@@ -74,6 +74,14 @@ static SceInt32 soundbuf_swapbuf(t_soundBuffer *pSound, SceChar8 *buf);
 SceInt32 soundbuf_output(t_soundBuffer *pSound);
 
 
+/* SDK prototypes (tools/sdk_protos.h) */
+void *malloc(unsigned int size);
+void *memalign(unsigned int align, unsigned int size);
+int printf(const char *fmt, ...);
+int puts(const char *s);
+int sceKernelCreateSema(const char *name, unsigned int attr, int init, int max, void *option);
+int sceKernelDelayThread(unsigned int delay);
+
 INCLUDE_ASM("tmp/asm/UTST99332/mpeg_mpegstr_pcm/nonmatchings/sound", soundbuf_create);
 
 SceInt32 soundbuf_reset(t_soundBuffer *pSound)
