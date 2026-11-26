@@ -364,7 +364,54 @@ INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/systemfile", sceSystemFileOve
 
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/systemfile", sceSystemFileSave);
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/systemfile", sceSystemFileLoadAll);
+int sceSystemFileLoadAll(void *buf, void **phandle)
+{
+	SfKeyFile *kf = NULL;
+	char *tbl;
+	unsigned int sz;
+	unsigned int strtab;
+	int err;
+	register int ret;
+
+	if (phandle == NULL)
+		SF_ERROR(ret, 3)
+	else {
+		*phandle = NULL;
+		kf = _newSystemFile(1, 0);
+		if (kf == NULL)
+			SF_ERROR(ret, 1)
+		else {
+			kf->flags |= 4;
+			kf->hdr = buf;
+			if (sf_memcmp(kf->hdr, D_0002F2EC, 4) != 0) {
+				err = 0x80120004;
+				goto fail;
+			}
+			if (checkVersion(kf->hdr->version) != 0) {
+				err = 0x80120007;
+				goto fail;
+			}
+			if (kf->hdr->dataofs < kf->hdr->keyofs)
+				goto fail;
+			tbl = (char *)buf + 0x14;
+			sz = kf->hdr->count << 4;
+			strtab = sz;
+			strtab += (unsigned int)tbl;
+			kf->strtab = (char *)strtab;
+			kf->data = (char *)kf->hdr + kf->hdr->dataofs;
+			kf->table = tbl;
+			keymapping(kf);
+			*phandle = kf;
+			ret = 0;
+			goto end;
+fail:
+			sceSystemFileFree(kf);
+			ret = err;
+		}
+	}
+end:
+	return ret;
+}
 
 int sceSystemFileLoadAll2(void *buf, unsigned int size, void **phandle)
 {
