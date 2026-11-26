@@ -259,7 +259,35 @@ void SpriteScale(int x, int y) {
     __sscale_y = y;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/view", DrawSprite);
+void sceGumDrawArray(int prim, int vtype, int count, const void *indices, const void *vertices);
+void sceKernelDcacheWritebackRange(const void *p, unsigned int size);
+void sceGumDrawArray(int prim, int vtype, int count, const void *indices, const void *vertices);
+void DrawSprite(int x, int y, int w, int h, int u, int v, SceGeVertexT16V16_UV_NORMAL *model)
+{
+	sceGuEnable(9);
+	model[0].u = u;
+	model[0].v = v + h;
+	model[0].vx = x;
+	model[0].vy = y + h * __sscale_y;
+	model[0].vz = 0;
+	model[1].u = u;
+	model[1].v = v;
+	model[1].vx = x;
+	model[1].vy = y;
+	model[1].vz = 0;
+	model[2].u = u + w;
+	model[2].v = v + h;
+	model[2].vx = x + w * __sscale_x;
+	model[2].vy = y + h * __sscale_y;
+	model[2].vz = 0;
+	model[3].u = u + w;
+	model[3].v = v;
+	model[3].vx = x + w * __sscale_x;
+	model[3].vy = y;
+	model[3].vz = 0;
+	sceKernelDcacheWritebackRange(model, sizeof(SceGeVertexT16V16_UV_NORMAL) * 4);
+	sceGumDrawArray(4, 0x800102, 4, NULL, model);
+}
 
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/view", DrawTitleLine);
 
