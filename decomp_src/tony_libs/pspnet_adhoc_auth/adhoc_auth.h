@@ -182,6 +182,10 @@ typedef struct {
 	AuthKey key;
 } AuthBuf;
 
+typedef struct {
+	int w[0x40];
+} AuthBuf2;
+
 typedef struct AuthPeerInfo {
 	struct AuthPeerInfo *next;
 	AuthKey key;
@@ -215,10 +219,11 @@ typedef struct Peer {
 	struct sa sa;
 	AuthKey key;
 	AuthBuf unk15C;
-	char pad27C[0x48C - 0x27C];
+	char pad27C[0x38C - 0x27C];
+	AuthBuf2 unk38C;
 	struct alarmarg arg[3];
 	int alarm[3];
-	int unk4E0;
+	unsigned int unk4E0;
 	int flags;
 	unsigned int unk4E8;
 	unsigned int seq;
@@ -301,6 +306,7 @@ int sceMemab_driver_E6D3ACE2(struct sa *sa, void *data, int len, void *hdr, int 
 int sceMemab_driver_CF49BCBB(SaKey *key, void *data);
 int sceMemab_driver_A4720EED(struct sa *sa, AuthBuf *buf);
 int sceMemab_driver_DAE8A629(SaKey *key, void *data, void *out);
+int sceMemab_driver_8DAC2343(SaKey *key, void *data, AuthBuf2 *out);
 int sceMemab_driver_F1D2B9B0(void *data, int len, void *hdr, int a);
 int sceNetIfhandle_driver_0542835F(int (*a)(struct mbuf *), int (*b)(struct mbuf *), int (*c)(struct mbuf *));
 int sceNetIfhandle_driver_773FC77C(void);
