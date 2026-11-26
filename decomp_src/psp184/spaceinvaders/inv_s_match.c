@@ -59,7 +59,42 @@ void inv_matchup_start(void) {
     RT = 3;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_match", inv_matchup_startdemo);
+typedef struct { int f[0x80 / 4]; } MSPR;
+extern MSPR *m_inv[];
+extern int demo_type, handycap[2];
+void inv_matchup_startdemo(void)
+{
+	switch (demo_type) {
+	case 0:
+		demo_type = 1;
+		break;
+	case 1:
+		m_inv[0]->f[0x28 / 4] -= 2;
+		m_inv[3]->f[0x28 / 4] += 2;
+		if (m_inv[0]->f[0x28 / 4] < 153 && m_inv[3]->f[0x28 / 4] >= 256) {
+			m_inv[0]->f[0x28 / 4] = 152;
+			m_inv[3]->f[0x28 / 4] = 256;
+			demo_type = 2;
+		}
+		break;
+	case 2:
+		m_inv[0]->f[0x78 / 4] -= 4;
+		m_inv[3]->f[0x78 / 4] += 4;
+		if (m_inv[0]->f[0x78 / 4] < 271 && m_inv[3]->f[0x78 / 4] >= 90) {
+			m_inv[0]->f[0x78 / 4] = 270;
+			m_inv[3]->f[0x78 / 4] = 90;
+			demo_type = 3;
+		}
+		break;
+	case 3:
+		RT = 4;
+		handycap[0] = 0;
+		handycap[1] = 0;
+		gcnt_28FC04 = 0;
+		break;
+	}
+	ASC_SetStringRGBA(2, &D_0007CCD8, 188, 200, 64, 255, 255, 255);
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_match", inv_matchup_handycap);
 
