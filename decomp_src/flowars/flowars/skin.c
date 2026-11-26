@@ -155,7 +155,7 @@ extern int g_bet_money;
 extern L_Mod_Player l_mod_player;
 extern int g_nagari_count;
 extern Graphics graphics;
-extern ModGame mod_game;
+extern ModGame mod_game __asm__("PRX_ZERO");
 extern SkinManager skinManager;
 extern SceGimPicture *g_img_char[2][5];
 extern SceGimPicture *g_img_stage;
@@ -266,7 +266,59 @@ INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/skin", draw_character);
 
 INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/skin", draw_face);
 
-INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/skin", draw_stage);
+static int draw_stage()
+{
+	int index;
+
+	sceGimPictureActivate(g_img_stage);
+	sceGuColor(0xFFFFFFFF);
+	graphics.draw_sprite(0, 0, 480, 272, 0);
+	sceGimPictureActivate(g_img_bet_money);
+	sceGuSpriteMode(42, 14, 42, 14);
+	switch (g_bet_money) {
+	case 10:
+		index = 0;
+		break;
+	case 100:
+		index = 1;
+		break;
+	case 500:
+		index = 2;
+		break;
+	case 1000:
+		index = 3;
+		break;
+	case 2000:
+		index = 4;
+		break;
+	case 5000:
+		index = 5;
+		break;
+	case 10000:
+		index = 6;
+		break;
+	case 50000:
+		index = 7;
+		break;
+	case 100000:
+		index = 8;
+		break;
+	default:
+		return 0;
+	}
+	sceGuDrawSprite(299, 190, 0, 0, index * 14, 0, 0);
+	if (g_nagari_count >= 1 && g_nagari_count <= 3) {
+		sceGimPictureActivate(g_img_nagari_num);
+		graphics.draw_sprite2(118, 180, 81, 25, 0, (g_nagari_count - 1) * 25, 0);
+	}
+	if (mod_game.game_type == 2 || mod_game.game_type == 3) {
+		sceGimPictureActivate(g_img_mission_cover);
+		graphics.draw_sprite(347, 133, 129, 51, 0);
+	}
+	return 0;
+}
+
+__asm__(".globl draw_stage");
 
 static void draw_sun(int flagPlayer)
 {
