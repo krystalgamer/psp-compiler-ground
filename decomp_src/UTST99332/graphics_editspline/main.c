@@ -85,6 +85,49 @@ static void init_all(void);
 static int pad_read(void);
 
 
+/* SDK prototypes (tools/sdk_protos.h) */
+int sceCtrlReadBufferPositive(SceCtrlData *data, int count);
+void sceGuAmbient(unsigned int color);
+void sceGuClear(int flags);
+void sceGuClearColor(unsigned int color);
+void sceGuClearDepth(unsigned int depth);
+void sceGuClearStencil(unsigned int stencil);
+void sceGuColor(unsigned int color);
+void sceGuDebugPrint(int x, int y, unsigned int color, const char *str);
+void sceGuDepthBuffer(void *zbp, int frame_width);
+void sceGuDepthFunc(int function);
+void sceGuDepthRange(int near, int far);
+void sceGuDisable(int state);
+void sceGuDispBuffer(int width, int height, void *dbp, int frame_width);
+int sceGuDisplay(int state);
+void sceGuDrawBuffer(int psm, void *fbp, int frame_width);
+void sceGuEnable(int state);
+int sceGuFinish(void);
+void sceGuInit(void);
+void sceGuLight(int light, int type, int components, const ScePspFVector3 *position);
+void sceGuLightColor(int light, int component, unsigned int color);
+void sceGuOffset(unsigned int x, unsigned int y);
+void sceGuPatchDivide(unsigned int ulevel, unsigned int vlevel);
+void sceGuPatchPrim(int prim);
+void sceGuScissor(int x, int y, int w, int h);
+void sceGuShadeModel(int mode);
+void sceGuStart(int type, void *list, int size);
+int sceGuSync(int mode, int what);
+void sceGuViewport(int cx, int cy, int width, int height);
+void sceGumDrawArray(int prim, int vtype, int count, const void *indices, const void *vertices);
+void sceGumDrawSpline(int vtype, int ucount, int vcount, int uedge, int vedge, const void *indices, const void *vertices);
+void sceGumLoadIdentity(void);
+void sceGumMatrixMode(int mode);
+void sceGumPerspective(float fovy, float aspect, float near, float far);
+void sceGumPopMatrix(void);
+void sceGumPushMatrix(void);
+void sceGumRotateX(float angle);
+void sceGumRotateY(float angle);
+void sceGumRotateZ(float angle);
+void sceGumSetMatrixStack(void *stack, int proj, int view, int model, int texture);
+void sceGumTranslate(const ScePspFVector3 *v);
+int sceKernelDcacheWritebackAll(void);
+
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_editspline/nonmatchings/main", resize_model);
 
 static int get_knotflag(int s, int e)
