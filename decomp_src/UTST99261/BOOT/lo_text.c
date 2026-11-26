@@ -114,6 +114,13 @@ typedef struct {
 } TBOX;
 TBOX *createBox();
 void insLinkBox();
+int newDOMString(const char *s, int len);
+unsigned int strlen(const char *s);
+typedef struct {
+    u8 unk0[0x30];
+    char *ua;                   /* 0x30 */
+} TPREF;
+extern TPREF *gPREF_UI;
 typedef struct {
     int unk0;
     JSEVENT ev;                 /* 0x4 */
@@ -313,7 +320,49 @@ void lo_clearTimer(int id) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_text", initJSEnv);
+int initJSEnv(void) {
+    int *nav;
+    int *scr;
+    TPREF *p;
+
+    nav = MEM_malloc(0, 0x18);
+    if (nav == NULL) {
+        return -1;
+    }
+    nav[0] = 0;
+    nav[1] = 0;
+    nav[2] = 0;
+    nav[3] = 0;
+    nav[4] = 0;
+    nav[5] = 0;
+    nav[0] = newDOMString("SCE PSP BROWSER", 15);
+    nav[1] = newDOMString("SCE PSP BROWSER", 15);
+    nav[2] = newDOMString("1.0", 3);
+    nav[3] = newDOMString("ja", 2);
+    nav[4] = newDOMString("PSP", 3);
+    p = gPREF_UI;
+    if (p->ua != NULL) {
+        nav[5] = newDOMString(p->ua, strlen(p->ua));
+    } else {
+        nav[5] = newDOMString("SCE PSP BROWSER 0100", 10);
+    }
+    gJSI_NAVIGATOR_REC = nav;
+    scr = MEM_malloc(0, 0x20);
+    if (scr == NULL) {
+        MEM_free(0, nav);
+        return -1;
+    }
+    scr[0] = 480;
+    scr[1] = 272;
+    scr[2] = 0;
+    scr[3] = 0;
+    scr[4] = 480;
+    scr[5] = 272;
+    scr[6] = 32;
+    scr[7] = 32;
+    gJSI_SCREEN_REC = scr;
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_text", destroyJSEnv);
 
