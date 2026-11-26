@@ -1,5 +1,7 @@
 #include "common.h"
 
+void Menu_WriteLine(const char *line, int color);
+
 /* declarations recovered from DWARF */
 enum _anon1 {
     SCE_UTILITY_NETCONF_TYPE_CONNECT_APNET = 0,

@@ -1,5 +1,7 @@
 #include "common.h"
 
+void Menu_WriteLine(const char *line, int color);
+
 /* declarations recovered from DWARF */
 struct SceNetAdhocctlAdhocId;
 typedef unsigned char SceUChar8;

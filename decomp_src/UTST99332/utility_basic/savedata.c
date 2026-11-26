@@ -1,5 +1,7 @@
 #include "common.h"
 
+void Menu_WriteLine(const char *line, int color);
+
 INCLUDE_RODATA("tmp/asm/UTST99332/utility_basic/nonmatchings/savedata", D_00016548);
 
 INCLUDE_RODATA("tmp/asm/UTST99332/utility_basic/nonmatchings/savedata", D_00016558);
