@@ -375,7 +375,94 @@ int calc_hc(HCODE *t, int maxlen, int n, int rev) {
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/wszlib", read_code_length);
+int read_code_length(ZBUF *zb, HCODE *out, HCODE *cl, int bits, int maxBits, int n, int *minLen, int *maxLen) {
+    int i;
+    int prev;
+    int maxl;
+    unsigned int code;
+    unsigned int bit;
+    int len;
+    int found;
+    int k;
+    int r;
+    unsigned int j;
+
+    i = 0;
+    prev = -1;
+    *minLen = 15;
+    maxl = 0;
+    while (i < n) {
+        code = 0;
+        len = bits;
+        found = 0;
+        if ((r = readBits(zb, len, 1, &code)) != 0) {
+            return r;
+        }
+        for (k = 0; k < 19; k++) {
+            if (cl[k].len == len && code == cl[k].code) {
+                found = 1;
+                break;
+            }
+        }
+        if (!found) {
+            while (len <= maxBits) {
+                if ((r = readBits(zb, 1, 1, &bit)) != 0) {
+                    return r;
+                }
+                len++;
+                code = (code << 1) | bit;
+                for (k = 0; k < 19; k++) {
+                    if (cl[k].len == len && code == cl[k].code) {
+                        found = 1;
+                        break;
+                    }
+                }
+                if (found) {
+                    break;
+                }
+            }
+            if (!found) {
+                return -3;
+            }
+        }
+        if (k < 16) {
+            out[i].len = k;
+            i++;
+            prev = k;
+            if (k > 0 && k < *minLen) {
+                *minLen = k;
+            }
+            if (maxl < k) {
+                maxl = k;
+            }
+        } else if (k == 16) {
+            if (prev == -1) {
+                return -3;
+            }
+            if ((r = readBits(zb, 2, 0, &bit)) != 0) {
+                return r;
+            }
+            for (j = 0; j < bit + 3; j++) {
+                out[i].len = prev;
+                i++;
+            }
+        } else if (k == 17) {
+            if ((r = readBits(zb, 3, 0, &bit)) != 0) {
+                return r;
+            }
+            i += bit + 3;
+        } else if (k == 18) {
+            if ((r = readBits(zb, 7, 0, &bit)) != 0) {
+                return r;
+            }
+            i += bit + 11;
+        } else {
+            return -3;
+        }
+    }
+    *maxLen = maxl;
+    return 0;
+}
 
 void quick_sort(HCODE *t, int lo, int hi) {
     unsigned int pivot;
