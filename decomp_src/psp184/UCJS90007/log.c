@@ -157,7 +157,28 @@ int sceKernelDeleteSema(int semid);
 void free(void *p);
 
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/log", log_init);
+int sceKernelCreateSema(const char *name, unsigned int attr, int init, int max, void *option);
+void *memset(void *s, int c, unsigned int n);
+char *strcpy(char *dst, const char *src);
+int log_init(void)
+{
+	int ret;
+
+	log_head.tqh_first = NULL;
+	log_head.tqh_last = &log_head.tqh_first;
+	display_logpage = 1;
+	count_success = 0;
+	count_failure = 0;
+	ret = sceKernelCreateSema("AdhocDistributeServerLog", 0, 1, 1, NULL);
+	if (ret < 0)
+		goto error;
+	log_sema = ret;
+	memset(log_color, 0, sizeof(log_color));
+	memset(log_line, 0, sizeof(log_line));
+	strcpy(_info.log_filename, "GSSLOG.CSV");
+error:
+	return ret;
+}
 
 int atoi(const char *s);
 int insert_log(struct log_display *log)
