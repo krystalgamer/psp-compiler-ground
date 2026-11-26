@@ -53,6 +53,52 @@ void *sceGuSwapBuffers(void);
 int sceDisplayWaitVblankStart(void);
 
 
+/* SDK prototypes (tools/sdk_protos.h) */
+void sceGuAmbient(unsigned int color);
+void sceGuClear(int flags);
+void sceGuClearColor(unsigned int color);
+void sceGuClearDepth(unsigned int depth);
+void sceGuClearStencil(unsigned int stencil);
+void sceGuClutLoad(int num_blocks, const void *cbp);
+void sceGuClutMode(unsigned int cpsm, unsigned int shift, unsigned int mask, unsigned int a3);
+void sceGuColor(unsigned int color);
+void sceGuDepthBuffer(void *zbp, int frame_width);
+void sceGuDepthFunc(int function);
+void sceGuDepthRange(int near, int far);
+void sceGuDisable(int state);
+void sceGuDispBuffer(int width, int height, void *dbp, int frame_width);
+int sceGuDisplay(int state);
+void sceGuDrawBuffer(int psm, void *fbp, int frame_width);
+void sceGuEnable(int state);
+int sceGuFinish(void);
+void sceGuFrontFace(int order);
+void sceGuInit(void);
+void sceGuLight(int light, int type, int components, const ScePspFVector3 *position);
+void sceGuLightColor(int light, int component, unsigned int color);
+void sceGuOffset(unsigned int x, unsigned int y);
+void sceGuScissor(int x, int y, int w, int h);
+void sceGuShadeModel(int mode);
+void sceGuSpecular(float power);
+void sceGuStart(int type, void *list, int size);
+int sceGuSync(int mode, int what);
+void sceGuTexFilter(int min, int mag);
+void sceGuTexFunc(int tfx, int tcc);
+void sceGuTexImage(int mipmap, int width, int height, int tbw, const void *tbp);
+void sceGuTexMapMode(int mode, unsigned int a1, unsigned int a2);
+void sceGuTexMode(int tpsm, int maxmips, int a2, int swizzle);
+void sceGuTexWrap(int u, int v);
+void sceGuViewport(int cx, int cy, int width, int height);
+void sceGumLoadIdentity(void);
+void sceGumMatrixMode(int mode);
+void sceGumPerspective(float fovy, float aspect, float near, float far);
+void sceGumPopMatrix(void);
+void sceGumPushMatrix(void);
+void sceGumRotateX(float angle);
+void sceGumRotateXYZ(const ScePspFVector3 *v);
+void sceGumRotateY(float angle);
+void sceGumSetMatrixStack(void *stack, int proj, int view, int model, int texture);
+void sceGumTranslate(const ScePspFVector3 *v);
+
 INCLUDE_RODATA("tmp/asm/UTST99332/utility_basic/nonmatchings/draw", env_clut);
 
 INCLUDE_RODATA("tmp/asm/UTST99332/utility_basic/nonmatchings/draw", env_tex);

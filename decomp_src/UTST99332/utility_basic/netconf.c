@@ -53,6 +53,9 @@ void OnPush_Netconf_Adhoc(int selection);
 static void OnCancel_Netconf_Adhoc(int selection);
 
 
+/* SDK prototypes (tools/sdk_protos.h) */
+int printf(const char *fmt, ...);
+
 void apctl_handler(int prev_state, int new_state, int event, int error_code, void *arg) {
     if ((new_state == 0) & (event == 5)) {
         disconnected = 1;

@@ -34,6 +34,10 @@ void StopDeleteLoadedModules(void);
 int sceKernelStopModule(SceUID modid, SceSize argsize, void *argp, int *status, void *option);
 int sceKernelUnloadModule(SceUID modid);
 
+/* SDK prototypes (tools/sdk_protos.h) */
+int sceIoClose(int fd);
+int sceIoOpen(const char *name, int flag, int mode);
+
 INCLUDE_ASM("tmp/asm/UTST99332/utility_basic/nonmatchings/module_load", LoadModule);
 
 INCLUDE_ASM("tmp/asm/UTST99332/utility_basic/nonmatchings/module_load", LoadRequiredModules);

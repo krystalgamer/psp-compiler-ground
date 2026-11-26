@@ -208,6 +208,11 @@ int main(int argc, char **argv);
 
 
 void *memset(void *s, int c, unsigned int n);
+/* SDK prototypes (tools/sdk_protos.h) */
+int sceKernelCreateCallback(const char *name, void *func, void *arg);
+int sceKernelExitDeleteThread(int status);
+int sceKernelRegisterExitCallback(int cbid);
+
 static void setOskUtilityPraram(unsigned int numInputFields, SceWChar16 **messageString, SceWChar16 **initString, SceWChar16 **resultTextBuffer, unsigned int bufferSize, SceUtilityOskInputFieldInfo *inputField, SceUtilityOskParam *pParam)
 {
     int i;
