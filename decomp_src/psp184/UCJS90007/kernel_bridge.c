@@ -70,21 +70,142 @@ void __free_heap(void);
 int sigfillset(sigset_t *set);
 
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/kernel_bridge", _open);
+static __inline__ int _sys_open(const char *path, int flags)
+{
+	return sceIoOpen(path, flags, 0644);
+}
+static __inline__ int FileToUID(int fd)
+{
+	switch (fd) {
+	case 0:
+		return sceKernelStdin();
+	case 1:
+		return sceKernelStdout();
+	case 2:
+		return sceKernelStderr();
+	}
+	return fd;
+}
+long long sceIoLseek(SceUID fd, long long offset, int whence);
+static __inline__ off_t _sys_lseek(int file, off_t offset, int dir)
+{
+	return sceIoLseek(FileToUID(file), offset, dir);
+}
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/kernel_bridge", _lseek);
+int _open(const char *path, int flags, ...)
+{
+	int sflags = 0;
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/kernel_bridge", _exit);
+	switch ((unsigned int)flags & 3) {
+	case 0:
+		sflags = 1;
+		break;
+	case 1:
+		sflags = 2;
+		break;
+	case 2:
+		sflags = 3;
+		break;
+	default:
+		break;
+	}
+	if (flags & 0x0008) sflags |= 0x0100;
+	if (flags & 0x0200) sflags |= 0x0200;
+	if (flags & 0x0400) sflags |= 0x0400;
+	if (flags & 0x0800) sflags |= 0x0800;
+	if (flags & 0x4000) sflags |= 0x0004;
+	return _sys_open(path, sflags);
+}
+
+off_t _lseek(int file, off_t offset, int dir)
+{
+	off_t result;
+	int newdir;
+	int fd = FileToUID(file);
+
+	if (fd < 0) {
+		return -9;
+	}
+	switch (dir) {
+	case 0: newdir = 0; break;
+	case 1: newdir = 1; break;
+	case 2: newdir = 2; break;
+	default: newdir = dir; break;
+	}
+
+	result = _sys_lseek(fd, offset, newdir);
+	return result;
+}
+
+struct _reent;
+extern struct _reent *_getmodreent(void) __attribute__((weak));
+extern int _clrmodreent(struct _reent *) __attribute__((weak));
+struct _reent *__getreent(void);
+void _reclaim_reent(struct _reent *);
+int sceKernelPrintf(const char *fmt, ...);
+int sceKernelExitThread(int status);
+int sceKernelGetModuleId(void);
+int sceKernelStopModule(SceUID modid, unsigned int argsize, void *argp, int *status, void *option);
+int sceKernelUnloadModule(SceUID modid);
+int sceKernelSelfStopUnloadModule(int exitcode, unsigned int argsize, void *argp);
+void _exit(int status)
+{
+	int rtn;
+	struct _reent *ptr;
+	int mid;
+
+	if (_getmodreent) {
+		ptr = _getmodreent();
+
+		if (ptr != __getreent()) {
+			sceKernelPrintf("libc:%s: should be called from main thread\n",
+					__FUNCTION__);
+			sceKernelExitThread(status);
+		}
+
+		_reclaim_reent(ptr);
+		mid = _clrmodreent(ptr);
+
+		if (sceKernelGetModuleId() != mid) {
+			sceKernelStopModule(mid, 0, NULL, &rtn, NULL);
+			sceKernelUnloadModule(mid);
+			sceKernelExitThread(status);
+		}
+	}
+
+	sceKernelSelfStopUnloadModule(1, 0, NULL);
+}
 
 INCLUDE_RODATA("tmp/asm/psp184/UCJS90007/nonmatchings/kernel_bridge", sce_newlib_stop_func);
 
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/kernel_bridge", _sbrk);
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/kernel_bridge", _read);
+int sceIoRead(int fd, void *buf, unsigned int nbyte);
+int _read(int file, void *ptr, size_t len)
+{
+	int fd = FileToUID(file);
+	if (fd < 0)
+		return -9;
+	return sceIoRead(fd, ptr, len);
+}
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/kernel_bridge", _write);
+int sceIoWrite(int fd, const void *buf, unsigned int nbyte);
+int _write(int file, const void *ptr, size_t len)
+{
+	int fd = FileToUID(file);
+	if (fd < 0)
+		return -9;
+	return sceIoWrite(fd, ptr, len);
+}
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/kernel_bridge", _close);
+int sceIoClose(int fd);
+int _close(int file)
+{
+	int fd = FileToUID(file);
+	if (fd < 0)
+		return -9;
+	return sceIoClose(fd);
+}
 
 int _fstat(int file, struct stat *st) {
     st->st_mode = 0x2000;
