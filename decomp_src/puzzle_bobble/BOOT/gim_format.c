@@ -1,49 +1,66 @@
-#include "common.h"
-#include "m2c_macros.h"
+/* SDK gim_picture library: devkit 0.6.0's src/gim_picture/gim_format.c, preprocessed (macros expanded) */
+#include "umdt/graphics_model/gim_private.h"
 
-
-
-int sceGimPictureCheckFileHeader(void *arg0, int arg1) {
-    int var_a2;
-
-    var_a2 = 0;
-    if ((arg0 != NULL) && ((unsigned int) (arg1 - 1) >= 0x1FU) && (M2C_FIELD(arg0, int *, 0) == 0x2E47494D)) {
-        if (M2C_FIELD(arg0, int *, 4) == 0x312E3030) {
-            var_a2 = M2C_FIELD(arg0, int *, 8) == 0x505350;
-        }
-    }
-    return var_a2;
+_Bool sceGimPictureCheckFileHeader( const void *buf, int size )
+{
+ if ( buf == 0 ) return 0 ;
+ if ( size > 0 && size < sizeof( SceGimHeader ) + sizeof( SceGimChunk ) ) {
+  ;
+  return 0 ;
+ }
+ SceGimHeader *header = (SceGimHeader *)buf ;
+ if ( header->signature != (0x2e47494d) ) {
+  ;
+  return 0 ;
+ }
+ if ( header->version != (0x312e3030) ) {
+  ;
+  return 0 ;
+ }
+ if ( header->style != (0x00505350) ) {
+  ;
+  return 0 ;
+ }
+ return 1 ;
 }
 
-int sceGimPictureGetChunkCount(void *buf, int size) {
-    int var_v1;
-
-    var_v1 = 0;
-    if (buf != NULL) {
-        var_v1 = sceGimPictureCountChunk(buf + 0x10, 3);
-    }
-    return var_v1;
+int sceGimPictureGetChunkCount( const void *buf, int size )
+{
+ if ( buf == 0 ) return 0 ;
+ SceGimHeader *header = (SceGimHeader *)buf ;
+ SceGimChunk *chunk = (SceGimChunk *)( header + 1 ) ;
+ return sceGimPictureCountChunk( chunk, SCEGIM_PICTURE ) ;
 }
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/gim_format", sceGimPictureGetChunk);
-
-int sceGimPictureCountChunk(void *arg0, int arg1) {
-    int var_a2;
-    void *temp_a3;
-    void *var_a0;
-
-    temp_a3 = arg0 + M2C_FIELD(arg0, int *, 4);
-    var_a0 = arg0 + M2C_FIELD(arg0, int *, 8);
-    var_a2 = 0;
-    if ((unsigned int) var_a0 < (unsigned int) temp_a3) {
-        do {
-            if ((arg1 == 0) || (M2C_FIELD(var_a0, unsigned short *, 0) == arg1)) {
-                var_a2 += 1;
-            }
-            var_a0 += M2C_FIELD(var_a0, int *, 4);
-        } while ((unsigned int) var_a0 < (unsigned int) temp_a3);
-    }
-    return var_a2;
+SceGimChunk *sceGimPictureGetChunk( const void *buf, int size, int index )
+{
+ if ( buf == 0 ) return 0 ;
+ SceGimHeader *header = (SceGimHeader *)buf ;
+ SceGimChunk *chunk = (SceGimChunk *)( header + 1 ) ;
+ return sceGimPictureFindChunk( chunk, SCEGIM_PICTURE, index ) ;
 }
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/gim_format", sceGimPictureFindChunk);
+/* gim_private.c (the split puts it in this unit: it has no local symbols) */
+
+int sceGimPictureCountChunk( SceGimChunk *chunk, int type )
+{
+ int count = 0 ;
+ SceGimChunk *end = SCEGIM_CHUNK_NEXT( chunk ) ;
+ for ( chunk = SCEGIM_CHUNK_CHILD( chunk ) ; chunk < end ; chunk = SCEGIM_CHUNK_NEXT( chunk ) ) {
+  if ( type == 0 || SCEGIM_CHUNK_TYPE( chunk ) == type ) {
+   count ++ ;
+  }
+ }
+ return count ;
+}
+
+SceGimChunk *sceGimPictureFindChunk( SceGimChunk *chunk, int type, int index )
+{
+ SceGimChunk *end = SCEGIM_CHUNK_NEXT( chunk ) ;
+ for ( chunk = SCEGIM_CHUNK_CHILD( chunk ) ; chunk < end ; chunk = SCEGIM_CHUNK_NEXT( chunk ) ) {
+  if ( type == 0 || SCEGIM_CHUNK_TYPE( chunk ) == type ) {
+   if ( -- index == -1 ) return chunk ;
+  }
+ }
+ return 0 ;
+}
