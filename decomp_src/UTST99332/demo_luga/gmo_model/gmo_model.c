@@ -247,6 +247,35 @@ void sceGumMatrixMode(int mode);
 void sceGumUpdateMatrix(void);
 int sceKernelDcacheWritebackAll(void);
 
+/* module functions defined in other units */
+void sceGmoBaseConstruct(SceGmoBase *base);
+void sceGmoBaseCopy(SceGmoBase *base, const SceGmoBase *src);
+SceGmoBone *sceGmoBoneCreate(const SceGmoChunk *chunk);
+void sceGmoBoneDelete(SceGmoBone *bone);
+void sceGmoBoneDraw(SceGmoBone *bone, SceGmoModel *model);
+SceGmoBone *sceGmoBoneDuplicate(SceGmoBone *bone, int flags);
+void sceGmoContextBegin(void);
+void sceGmoContextDefaultEnableBits(int mask, int bits);
+void sceGmoContextEnd(void);
+SceGmoMaterial *sceGmoMaterialCreate(const SceGmoChunk *chunk);
+void sceGmoMaterialDelete(SceGmoMaterial *material);
+SceGmoMaterial *sceGmoMaterialDuplicate(SceGmoMaterial *material, int flags);
+void *sceGmoModelAllocMemory(unsigned int size);
+_Bool sceGmoModelCheckFileHeader(const void *buf, int size);
+int sceGmoModelCountChunk(const SceGmoChunk *chunk, int type);
+SceGmoMotion *sceGmoMotionCreate(const SceGmoChunk *chunk);
+void sceGmoMotionDelete(SceGmoMotion *motion);
+SceGmoMotion *sceGmoMotionDuplicate(SceGmoMotion *motion, int flags);
+void sceGmoMotionUpdate(SceGmoMotion *motion, SceGmoModel *model, float step);
+SceGmoPart *sceGmoPartCreate(const SceGmoChunk *chunk);
+void sceGmoPartDelete(SceGmoPart *part);
+SceGmoPart *sceGmoPartDuplicate(SceGmoPart *part, int flags);
+SceGmoTexture *sceGmoTextureCreate(const SceGmoChunk *chunk);
+void sceGmoTextureDelete(SceGmoTexture *texture);
+SceGmoTexture *sceGmoTextureDuplicate(SceGmoTexture *texture, int flags);
+_Bool sceGmoTextureHasAnimation(SceGmoTexture *texture);
+void sceGmoTextureUpdate(SceGmoTexture *texture, SceGmoModel *model, float step);
+
 INCLUDE_RODATA("tmp/asm/UTST99332/demo_luga/nonmatchings/gmo_model/gmo_model", __psp_libinfo___2171C);
 
 INCLUDE_RODATA("tmp/asm/UTST99332/demo_luga/nonmatchings/gmo_model/gmo_model", D_00021734);

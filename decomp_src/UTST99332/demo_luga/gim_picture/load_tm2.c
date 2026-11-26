@@ -73,6 +73,13 @@ static void sort_clut(void *clut, int format, int width);
 /* SDK prototypes (tools/sdk_protos.h) */
 int sceKernelDcacheWritebackAll(void);
 
+/* module functions defined in other units */
+void *sceGimPictureGetImagePixels(SceGimPicture *picture, int level, int frame);
+void *sceGimPictureGetPalettePixels(SceGimPicture *picture, int level, int frame);
+_Bool sceGimPictureReallocImage(SceGimPicture *picture, int format, int w, int h, int level, int frame, void *pixels);
+_Bool sceGimPictureReallocPalette(SceGimPicture *picture, int format, int w, int level, int frame, void *pixels);
+void sceGimPictureUnload(SceGimPicture *picture);
+
 INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/gim_picture/load_tm2", sceGimPictureLoadTm2);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/gim_picture/load_tm2", copy_pixels_F380);

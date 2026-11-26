@@ -243,6 +243,15 @@ void sceGuBlendFunc(int op, int src, int dest, unsigned int srcfix, unsigned int
 void sceGuMaterial(int mode, unsigned int color);
 void sceGuSpecular(float power);
 
+/* module functions defined in other units */
+void sceGmoBaseConstruct(SceGmoBase *base);
+void sceGmoBaseCopy(SceGmoBase *base, const SceGmoBase *src);
+void sceGmoContextSetEnableBits(int mask, int bits);
+void sceGmoContextSetTexCrop(const rect *crop);
+void sceGmoContextSetTexture(SceGmoTexture *texture, SceGmoModel *model);
+void *sceGmoModelAllocMemory(unsigned int size);
+SceGmoTexture *sceGmoModelGetTexture(SceGmoModel *model, int idx);
+
 INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/gmo_model/gmo_material", sceGmoMaterialCreate);
 
 void sceGmoMaterialDelete(SceGmoMaterial *material) {

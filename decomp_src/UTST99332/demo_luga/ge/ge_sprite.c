@@ -43,6 +43,9 @@ int geSpriteDraw(int n);
 /* SDK prototypes (tools/sdk_protos.h) */
 void sceGumDrawArray(int prim, int vtype, int count, const void *indices, const void *vertices);
 
+/* module functions defined in other units */
+int geTexSend(int n);
+
 INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/ge/ge_sprite", geSpriteSet);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/ge/ge_sprite", geSpriteParam);

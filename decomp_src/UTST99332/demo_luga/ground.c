@@ -143,6 +143,15 @@ static void __sort_gnd(int *lst);
 static uint set_ground_light(float z);
 
 
+/* module functions defined in other units */
+int geModelLoad(int num, int *model, int size);
+void geModelNormalTexFunc(SceGimPicture *picture);
+void geModelSetTexFunc(void (*callback)(SceGimPicture *));
+void geModelTexFunc(int mode);
+void geObjectDraw(geOBJECT *obj);
+int geTexSend(int n);
+void light_ctrl(uint c);
+
 INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/ground", post_ground);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/ground", set_nextgnd);

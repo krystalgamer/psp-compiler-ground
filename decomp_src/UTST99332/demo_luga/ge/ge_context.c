@@ -181,6 +181,10 @@ void sceGumMatrixMode(int mode);
 void sceGumPerspective(float fovy, float aspect, float near, float far);
 void sceGumSetMatrixStack(void *stack, int proj, int view, int model, int texture);
 
+/* module functions defined in other units */
+void geDrawFinWait(void);
+void geDrawStart(void);
+
 INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/ge/ge_context", geSetLight);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/ge/ge_context", geSetCamera);

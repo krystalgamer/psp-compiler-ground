@@ -251,6 +251,16 @@ void sceGuMorphWeight(int index, float weight);
 void sceGuSetMatrix(int type, const ScePspFMatrix4 *matrix);
 float sinf(float x);
 
+/* module functions defined in other units */
+void sceGmoBaseConstruct(SceGmoBase *base);
+void sceGmoBaseCopy(SceGmoBase *base, const SceGmoBase *src);
+void *sceGmoModelAllocMemory(unsigned int size);
+int sceGmoModelCountChunk(const SceGmoChunk *chunk, int type);
+SceGmoBone *sceGmoModelGetBone(SceGmoModel *model, int idx);
+SceGmoPart *sceGmoModelGetPart(SceGmoModel *model, int idx);
+const struct ScePspFMatrix4 *sceGmoModelGetVertexOffset(SceGmoModel *model);
+void sceGmoPartDraw(SceGmoPart *part, SceGmoModel *model, SceGmoBone *bone);
+
 INCLUDE_RODATA("tmp/asm/UTST99332/demo_luga/nonmatchings/gmo_model/gmo_bone", D_00021798);
 
 INCLUDE_RODATA("tmp/asm/UTST99332/demo_luga/nonmatchings/gmo_model/gmo_bone", D_000217A4);

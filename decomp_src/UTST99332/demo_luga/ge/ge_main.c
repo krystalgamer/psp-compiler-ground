@@ -140,6 +140,13 @@ void sceGuStart(int type, void *list, int size);
 void *sceGuSwapBuffers(void);
 int sceGuSync(int mode, int what);
 
+/* module functions defined in other units */
+void geCommonInit(void);
+void geFadeDraw(void);
+void geModelInit(int heap);
+void geSetCamera(int param, geCAMERA *camera);
+void geSetContext(geCONTEXT *context);
+
 INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/ge/ge_main", geDrawStart);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/ge/ge_main", geSetModule);

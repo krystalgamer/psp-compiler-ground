@@ -146,6 +146,19 @@ void sceGumScale(const ScePspFVector3 *v);
 void sceGumStoreMatrix(ScePspFMatrix4 *m);
 void sceGumTranslate(const ScePspFVector3 *v);
 
+/* module functions defined in other units */
+void geDrawFinWait(void);
+void geDrawStart(void);
+void sceGimPictureSetMemoryManager(void *(*alloc_func)(size_t), void (*free_func)(void *));
+void sceGimPictureSetMemoryManager2(void *(*alloc_func)(size_t), void (*free_func)(void *));
+void sceGmoModelAnimate(SceGmoModel *model, float step);
+void sceGmoModelDelete(SceGmoModel *model);
+void sceGmoModelDraw(SceGmoModel *model);
+void sceGmoModelSetCurrentMotion(SceGmoModel *model, int idx, float delay);
+void sceGmoModelSetMemoryManager(void *(*alloc_func)(size_t), void (*free_func)(void *));
+void sceGmoModelSetMemoryManager2(void *(*alloc_func)(size_t), void (*free_func)(void *));
+void sceGmoModelUpdate(SceGmoModel *model);
+
 INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/ge/ge_model", geModelNormalTexFunc);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/ge/ge_model", geObjectDraw);

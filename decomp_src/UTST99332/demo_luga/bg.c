@@ -86,6 +86,11 @@ void draw_bg(void);
 /* SDK prototypes (tools/sdk_protos.h) */
 void sceGuDisable(int state);
 
+/* module functions defined in other units */
+void geDrawArray(gePRIM *p);
+void geObjectDraw(geOBJECT *obj);
+void geObjectSetProc(int n, int (*proc)(void *));
+
 INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/bg", init_bg);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/bg", proc_bg);

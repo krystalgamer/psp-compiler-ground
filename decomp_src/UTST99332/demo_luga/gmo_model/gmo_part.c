@@ -288,6 +288,15 @@ void sceGuDrawSpline(int vtype, int ucount, int vcount, int uedge, int vedge, co
 void *sceGuGetMemory(int size);
 int sceKernelDcacheWritebackAll(void);
 
+/* module functions defined in other units */
+void sceGmoBaseConstruct(SceGmoBase *base);
+void sceGmoContextSetBone(SceGmoBone *bone, SceGmoModel *model, const int *indices, int n_indices);
+int sceGmoContextSetMaterial(SceGmoMaterial *material, SceGmoModel *model, int idx);
+void *sceGmoModelAllocMemory(unsigned int size);
+int sceGmoModelCountChunk(const SceGmoChunk *chunk, int type);
+void sceGmoModelFreeMemory2(void *addr);
+SceGmoMaterial *sceGmoModelGetMaterial(SceGmoModel *model, int idx);
+
 INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/gmo_model/gmo_part", sceGmoPartCreate);
 
 void sceGmoPartDelete(SceGmoPart *part) {

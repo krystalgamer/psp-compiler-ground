@@ -111,6 +111,15 @@ void sceGuTexImage(int mipmap, int width, int height, int tbw, const void *tbp);
 void sceGuTexMode(int tpsm, int maxmips, int a2, int swizzle);
 int sceKernelDcacheWritebackAll(void);
 
+/* module functions defined in other units */
+_Bool sceGimPictureCheckFileHeader(const void *buf, int size);
+void sceGimPictureFreeMemory(void *addr);
+void sceGimPictureFreeMemory2(void *addr);
+const SceGimChunk *sceGimPictureGetChunk(const void *buf, int size, int idx);
+_Bool sceGimPictureLoadBmp(SceGimPicture *picture, const void *buf, int size);
+_Bool sceGimPictureLoadTga(SceGimPicture *picture, const void *buf, int size);
+_Bool sceGimPictureLoadTm2(SceGimPicture *picture, const void *buf, int size, int idx);
+
 INCLUDE_RODATA("tmp/asm/UTST99332/demo_luga/nonmatchings/gim_picture/gim_picture", __psp_libinfo___21BD4);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/gim_picture/gim_picture", sceGimPictureCreate);

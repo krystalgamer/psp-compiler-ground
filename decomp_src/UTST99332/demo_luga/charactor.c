@@ -140,6 +140,16 @@ void texture_char(SceGimPicture *picture);
 void draw_char(void);
 
 
+/* module functions defined in other units */
+int geModelLoad(int num, int *model, int size);
+void geModelNormalTexFunc(SceGimPicture *picture);
+void geModelSetTexFunc(void (*callback)(SceGimPicture *));
+void geModelTexFunc(int mode);
+void geObjectDraw(geOBJECT *obj);
+void geObjectSwitch(geOBJECT *obj, int num);
+int geRandom(void);
+int geTexSend(int n);
+
 INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/charactor", pad_char);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/charactor", post_char);

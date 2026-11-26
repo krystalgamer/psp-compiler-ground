@@ -18,6 +18,10 @@ int sceGimPictureGetChunkCount(const void *buf, int size);
 const SceGimChunk *sceGimPictureGetChunk(const void *buf, int size, int idx);
 
 
+/* module functions defined in other units */
+int sceGimPictureCountChunk(const SceGimChunk *chunk, int type);
+const SceGimChunk *sceGimPictureFindChunk(const SceGimChunk *chunk, int type, int idx);
+
 INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/gim_picture/gim_format", sceGimPictureCheckFileHeader);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/gim_picture/gim_format", sceGimPictureGetChunkCount);

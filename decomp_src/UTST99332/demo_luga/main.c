@@ -255,6 +255,37 @@ static void post(void);
 static void drawinit(void);
 
 
+/* module functions defined in other units */
+void draw_bg(void);
+void draw_char(void);
+void draw_fly(void);
+void draw_ground(void);
+void geCommonSetModule(geMODULE *module);
+void geFadeSetup(int mode, int step, uint c);
+int geFadeState(void);
+void geInit(void);
+int geMainLoop(void);
+void geSendProc(void (*func)(void));
+void geSetCamera(int param, geCAMERA *camera);
+void geSetContext(geCONTEXT *context);
+void geSetLight(int n, int param, geLIGHT *light);
+int geSetModule(int num, geMODULE *module);
+void geSetWorld(geWORLD *world);
+int geTexOption(int n, int param, geTEXTURE *tex);
+int geTexSet(int n, geTEXTURE *tex);
+void init_bg(void);
+void init_char(void);
+void init_fly(void);
+void init_ground(void);
+void init_logo(void);
+void menuTerm(int cat, int num);
+int pad_char(uint padd, uint cont, uchar *axis);
+void post_char(void);
+void post_fly(void);
+int post_ground(void);
+void set_char_pos(void);
+void set_nextgnd(void);
+
 INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/main", main);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/main", light_ctrl);

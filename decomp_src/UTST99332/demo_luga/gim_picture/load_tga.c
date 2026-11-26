@@ -91,6 +91,13 @@ static void copy_pixels(char *dp, const char *sp, int count, int src_step, _Bool
 /* SDK prototypes (tools/sdk_protos.h) */
 int sceKernelDcacheWritebackAll(void);
 
+/* module functions defined in other units */
+void *sceGimPictureGetImagePixels(SceGimPicture *picture, int level, int frame);
+void *sceGimPictureGetPalettePixels(SceGimPicture *picture, int level, int frame);
+_Bool sceGimPictureReallocImage(SceGimPicture *picture, int format, int w, int h, int level, int frame, void *pixels);
+_Bool sceGimPictureReallocPalette(SceGimPicture *picture, int format, int w, int level, int frame, void *pixels);
+void sceGimPictureUnload(SceGimPicture *picture);
+
 INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/gim_picture/load_tga", sceGimPictureLoadTga);
 
 int read_header_EEFC(void *arg0, unsigned char *arg1) {

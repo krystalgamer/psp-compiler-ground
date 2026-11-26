@@ -233,6 +233,16 @@ SceGmoChunk *sceGmoMotionGetFcurve(SceGmoMotion *motion, int idx);
 float sinf(float x);
 float sqrtf(float x);
 
+/* module functions defined in other units */
+void sceGmoBaseConstruct(SceGmoBase *base);
+void sceGmoBaseCopy(SceGmoBase *base, const SceGmoBase *src);
+void sceGmoBoneAnimate(SceGmoBone *bone, int type, int idx, const float *val, int cnt, float weight);
+void sceGmoMaterialAnimate(SceGmoMaterial *material, int type, int idx, const float *val, int cnt, float weight);
+void *sceGmoModelAllocMemory(unsigned int size);
+int sceGmoModelCountChunk(const SceGmoChunk *chunk, int type);
+SceGmoBone *sceGmoModelGetBone(SceGmoModel *model, int idx);
+SceGmoMaterial *sceGmoModelGetMaterial(SceGmoModel *model, int idx);
+
 INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/gmo_model/gmo_motion", sceGmoMotionCreate);
 
 void sceGmoMotionDelete(SceGmoMotion *motion) {

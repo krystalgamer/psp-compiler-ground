@@ -95,6 +95,12 @@ void draw_logo(void);
 void sceGuDisable(int state);
 void sceGuEnable(int state);
 
+/* module functions defined in other units */
+void geDrawArray(gePRIM *p);
+void geObjectDraw(geOBJECT *obj);
+void geObjectSetProc(int n, int (*proc)(void *));
+int geTexSend(int n);
+
 INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/logo", init_logo);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/logo", proc_logo);
