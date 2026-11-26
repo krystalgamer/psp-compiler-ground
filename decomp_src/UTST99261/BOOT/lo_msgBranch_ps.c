@@ -1,5 +1,9 @@
 /* cflags: -O1 */
 #include "common.h"
+#include "m2c_macros.h"
+int HST_getHeadHistoryNode();                       /* extern */
+M2C_UNK handleMouseEvent(int);                      /* extern */
+
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_msgBranch_ps", sendJSUnloadEvent);
 
@@ -17,7 +21,15 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_msgBranch_ps", proc_msg_PL4)
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_msgBranch_ps", proc_msg_PL5);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_msgBranch_ps", proc_msg_PL6);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void proc_msg_PL6(int arg0) {
+    if (HST_getHeadHistoryNode() != 0) {
+        handleMouseEvent(arg0);
+    }
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_msgBranch_ps", proc_msg_PL7);
 
