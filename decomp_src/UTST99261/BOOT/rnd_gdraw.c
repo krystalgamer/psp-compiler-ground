@@ -768,4 +768,47 @@ void rnd_resetAnimTextBoxnode(void) {
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_gdraw", D_001335E0);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_gdraw", lo_sendHalt);
+typedef struct {
+    int code;
+    char *msg;
+} RHALTDATA;
+
+typedef struct {
+    int type;
+    int unk4;
+    int unk8;
+    int code;                   /* 0xC */
+    u8 unk10[0xC];
+    RHALTDATA *data;            /* 0x1C */
+} RHALTBODY;
+
+typedef struct {
+    int unk0;
+    RHALTBODY body;             /* 0x4 */
+} RHALTMSG;
+
+typedef struct {
+    u8 unk0[0x4C];
+    RHALTMSG *haltMsg;          /* 0x4C */
+    u8 unk50[0x40];
+    int mq;                     /* 0x90 */
+} RLOGLOBAL;
+
+extern RLOGLOBAL lo_global;
+int OS_mq_send(int mq, void *msg, int size, int flag);
+
+void lo_sendHalt(void) {
+    RHALTBODY *b;
+
+    if (lo_global.haltMsg != NULL) {
+        b = &lo_global.haltMsg->body;
+        b->type = 4;
+        b->code = 0xFFFF;
+        b->data->code = -1;
+        b->data->msg = "AllocationError(Layout)";
+        OS_mq_send(lo_global.mq, lo_global.haltMsg, 0x24, 0);
+        lo_global.haltMsg = NULL;
+    }
+}
+
+static const char D_00133604[] = "";
