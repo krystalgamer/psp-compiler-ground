@@ -11,7 +11,7 @@ namespace common {
 /* flag set indexed by an enum (only scene::Node uses it) */
 template<class E, class V> class VarSetFunc {
 public:
-    unsigned char bits;
+    V bits;
 };
 }
 
@@ -36,6 +36,15 @@ public:
         } \
     } while (0)
 
+/* the library's warning (common/assert.h): message, expression, file, function, line, text */
+#define SCENE_WARN(c, warn, expr, file, func, line, text) \
+    do { \
+        if (!(c)) { \
+            common::common_internal::assert_display(warn, expr, file, func, line, text); \
+            common::common_internal::on_warning(); \
+        } \
+    } while (0)
+
 #ifndef GL_COLOR_MATERIAL
 #define GL_COLOR_MATERIAL 0x0B57
 #endif
@@ -48,6 +57,8 @@ public:
    labels (extern const char x[] __asm__("D_...");) before including main.hpp. */
 extern const char scene_bvdata_err[], scene_bvdata_valid[], scene_bvdata_file[], scene_bvdata_sp[];
 extern const char scene_bvdata_get_name[];
+/* BVdata::create: " *** warning ", "! valid()", __PRETTY_FUNCTION__, "bounding box already created" */
+extern const char scene_bvdata_warn[], scene_bvdata_notvalid[], scene_bvdata_create_name[], scene_bvdata_created[];
 extern const char scene_mesh_err[], scene_mesh_expr[], scene_mesh_file[], scene_mesh_sp[];
 extern const char scene_mesh_getData_name[];
 
@@ -67,29 +78,43 @@ class Material;
 class Texture;
 
 
-/* handle<T>'s pointer: the object through a dynamic_cast */
+/* handle<T>::get() and the tests as the original inlines them: get() returns
+   early on a null d (base.hpp's ternary threads the null-object path
+   differently: Shape::enter/leave), valid is `d && get()` (d tested twice),
+   null its negation kept as a bool (Group::traverse_children) */
 template<class T> inline T *hget(const common::handle<T> &h)
 {
-    return h.d ? dynamic_cast<T *>(h.d->obj) : 0;
-}
-
-template<class T> inline T *hptr(const common::handle<T> &h)
-{
+    if (!h.d)
+        return 0;
     return dynamic_cast<T *>(h.d->obj);
 }
 template<class T> inline bool hvalid(const common::handle<T> &h)
 {
-    return h.d && dynamic_cast<T *>(h.d->obj);
+    return h.d && hget(h);
 }
-
 template<class T> inline bool hnull(const common::handle<T> &h)
 {
     return !hvalid(h);
 }
 
+/* GL calls (HouseKeeping_AttribStack.c defines them as C stubs `(void)`) */
+void scene_glPushAttrib(unsigned int) __asm__("glPushAttrib");
+void scene_glPopAttrib() __asm__("glPopAttrib");
+#ifndef GL_LIGHTING_BIT
+#define GL_LIGHTING_BIT 0x00000040
+#endif
+#ifndef GL_ENABLE_BIT
+#define GL_ENABLE_BIT 0x00002000
+#endif
+
 extern "C" {
 void glLoadMatrixf(const float *);
 void sceGumSetCurMatrix(void);
+void sceGuEnable(int state);
+void sceGuDisable(int state);
+void sceGuLight(int light, int type, int components, const ScePspFVector3 *position);
+void sceGuTexMapMode(int mode, unsigned int a1, unsigned int a2);
+void sceGuBlendFunc(int op, int src, int dest, unsigned int srcfix, unsigned int destfix);
 }
 
 /* methods of other parts' classes not declared in their headers yet (same
@@ -112,6 +137,14 @@ public:
         }
     }
     bool valid() const { return _bv != 0; }
+    void create(sgl::BV::Type t) {
+        SCENE_WARN(!valid(), scene_bvdata_warn, scene_bvdata_notvalid, scene_bvdata_file, scene_bvdata_create_name, 83,
+                   scene_bvdata_created);
+        if (!valid()) {
+            _bv = new sgl::BV;
+            _bv->setType(t);
+        }
+    }
     sgl::BV &get() {
         SCENE_ASSERT(valid(), scene_bvdata_err, scene_bvdata_valid, scene_bvdata_file, scene_bvdata_get_name, 62,
                      scene_bvdata_sp);
@@ -182,8 +215,14 @@ public:
     virtual bool isGroup() const;
     virtual bool isClonable() const;
     void calcbv();
+    void traverse(TraversalType, sgl::Frustum &, const math::matrix &, const math::matrix &, const math::matrix &,
+                  const sh::VectorRGB &, float);
     void traverse_children(math::TransformStack &, sgl::BV &);
     void traverse_children(TraversalVarStack &);
+    void addChild(common::handle<Node>);
+    void addChild(common::handle<Group>, common::handle<Node>);
+    void addChild(common::handle<Group>, common::handle<Group>, common::handle<Node>);
+    void removeChild(common::handle<Node>);
     void clearChildren(bool);
     std::list<common::handle<Node> > &children();
     const std::list<common::handle<Node> > &children() const;
@@ -304,6 +343,9 @@ public:
     const common::handle<Setup> &getSetup(Pass) const;
     void attachSetup(common::handle<Setup>, Pass);
     void detachSetup(Pass);
+    void attachMaterial(common::handle<Material> &, Pass);
+    void detachMaterial(Pass);
+    void attachTexture(common::handle<Texture> &, Pass);
     common::handle<Setup> _setup[2];       /* 0x30 */
 };
 
@@ -417,6 +459,8 @@ public:
         math::matrix mF0;           /* 0xF0 */
         math::vector_xyzw v130;     /* 0x130 */
     };
+    TraversalVarStack(TraversalType, sgl::Frustum &, math::matrix, math::matrix, math::matrix, sh::VectorRGB, float);
+    ~TraversalVarStack();
     void push();
     void pop();
     void internal_push();
@@ -424,13 +468,14 @@ public:
     void enable(Enabled, bool);
     void mult(const math::matrix &, bool, bool);
     char _p0[4];
-    std::deque<StackElement> _stack;    /* 0x4 */
+    std::stack<StackElement> _stack;    /* 0x4 */
     char _p2C[0x54 - 0x2C];
     int _pass;                      /* 0x54 */
     char _p58[0x15C - 0x58];
     unsigned int _enabled;          /* 0x15C */
     sgl::Frustum *_frustum;         /* 0x160 */
     int _depth;                     /* 0x164 */
+    char _p168[0x170 - 0x168];
 };
 
 class Graph {
@@ -442,6 +487,13 @@ public:
     void printMapU();
     void printMapO();
     void save_vrml(std::string);
+    void traverse(TraversalType, sgl::Frustum &, const math::matrix &, const math::matrix &, const math::matrix &,
+                  float);
+    char _p0[0x70];
+    sh::VectorRGB _light;               /* 0x70 */
+    common::handle<Group> _root;        /* 0xA0 */
+    char _pA8[0xF4 - 0xA8];
+    bool _finish_called;                /* 0xF4 */
 };
 }
 

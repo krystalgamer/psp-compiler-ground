@@ -32,9 +32,9 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Traver
 void scene::TraversalVarStack::internal_pop()
 {
     SCENE_ASSERT(! _stack.empty(), D_0016A3A0, D_0016A368, D_0016A37C, internal_pop_name, 82, D_0016A3AC);
-    _stack.pop_back();
+    _stack.pop();
     if (!_stack.empty()) {
-        glLoadMatrixf((const float *)&_stack.back().m70);
+        glLoadMatrixf((const float *)&_stack.top().m70);
         sceGumSetCurMatrix();
     }
 }

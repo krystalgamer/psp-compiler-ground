@@ -12,26 +12,39 @@ extern template class handle<scene::DefaultShader>;
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_DefaultShader", _Z41__static_initialization_and_destruction_0ii_5F3B4);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_DefaultShader", _ZN5scene13DefaultShaderC2ESsb);
+scene::DefaultShader::DefaultShader(std::string name, bool b) : Setup(name, b)
+{
+    set_default_name();
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_DefaultShader", _ZN5scene13DefaultShaderC1ESsb);
+scene::DefaultShader::~DefaultShader()
+{
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_DefaultShader", _ZN5scene13DefaultShaderD2Ev);
+void scene::DefaultShader::enter()
+{
+    scene_glPushAttrib(GL_ENABLE_BIT);
+    if (hvalid(_material)) _material->enter(); if (hvalid(_texture)) _texture->enter();
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_DefaultShader", _ZN5scene13DefaultShaderD1Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_DefaultShader", _ZN5scene13DefaultShaderD0Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_DefaultShader", _ZN5scene13DefaultShader5enterEv);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_DefaultShader", _ZN5scene13DefaultShader5leaveEv);
+void scene::DefaultShader::leave()
+{
+    if (hvalid(_material))
+        _material->leave();
+    if (hvalid(_texture))
+        _texture->leave();
+    scene_glPopAttrib();
+}
 
 void scene::DefaultShader::attachMaterial(common::handle<Material> &m)
 {
     _material = m;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_DefaultShader", _ZN5scene13DefaultShader14detachMaterialEv);
+void scene::DefaultShader::detachMaterial()
+{
+    _material = common::handle<Material>();
+}
 
 void scene::DefaultShader::attachTexture(common::handle<Texture> &t)
 {

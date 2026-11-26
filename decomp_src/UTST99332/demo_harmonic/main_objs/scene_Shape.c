@@ -2,6 +2,12 @@
 /* cflags: -O3 -fno-exceptions */
 #undef __EXCEPTIONS
 #include "cxx/defer_asm.h"
+/* BVdata::create's strings in this object */
+extern const char scene_bvdata_warn[] __asm__("D_00169E10");         /* " *** warning " */
+extern const char scene_bvdata_notvalid[] __asm__("D_00169E20");     /* "! valid()" */
+extern const char scene_bvdata_file[] __asm__("D_00169E2C");         /* "../lib/scene/BVdata.h" */
+extern const char scene_bvdata_created[] __asm__("D_00169E44");      /* "bounding box already created" */
+extern const char scene_bvdata_create_name[] __asm__("_ZZN5scene6BVdata6createEN3sgl2BV4TypeEE19__PRETTY_FUNCTION___169DE4");
 #include "../main.hpp"
 
 /* these template instances are still asm below */
@@ -31,17 +37,66 @@ void scene::Shape::attachSetup(common::handle<Setup> s, Pass p)
     _setup[p] = s;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Shape", _ZN5scene5Shape11detachSetupENS_4PassE);
+void scene::Shape::detachSetup(Pass p)
+{
+    _setup[p] = common::handle<Setup>();
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Shape", _ZN5scene5Shape14attachMaterialERN6common6handleINS_8MaterialEEENS_4PassE);
+void scene::Shape::attachMaterial(common::handle<Material> &m, Pass p)
+{
+    common::handle<DefaultShader> ds = _setup[p];
+    if (hnull(ds))
+        return;
+    ds->attachMaterial(m);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Shape", _ZN5scene5Shape14detachMaterialENS_4PassE);
+void scene::Shape::detachMaterial(Pass p)
+{
+    common::handle<DefaultShader> ds = _setup[p];
+    if (hnull(ds))
+        return;
+    ds->detachMaterial();
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Shape", _ZN5scene5Shape13attachTextureERN6common6handleINS_7TextureEEENS_4PassE);
+void scene::Shape::attachTexture(common::handle<Texture> &t, Pass p)
+{
+    common::handle<DefaultShader> ds = _setup[p];
+    if (hnull(ds))
+        return;
+    ds->attachTexture(t);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Shape", _ZN5scene5Shape5enterENS_4PassE);
+/* Shape::enter's function-local statics (light directions, in the module's .data) */
+extern ScePspFVector3 shape_enter_vec __asm__("_ZZN5scene5Shape5enterENS_4PassEE3vec");
+extern ScePspFVector3 shape_enter_vec2 __asm__("_ZZN5scene5Shape5enterENS_4PassEE4vec2");
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Shape", _ZN5scene5Shape5leaveENS_4PassE);
+void scene::Shape::enter(Pass p)
+{
+    if (hget(_setup[p]))
+        _setup[p]->enter();
+    if (p == 1) {
+        sceGuEnable(11);
+        sceGuEnable(12);
+        sceGuLight(0, 0, 2, &shape_enter_vec);
+        sceGuLight(1, 0, 2, &shape_enter_vec2);
+        sceGuTexMapMode(2, 0, 1);
+        sceGuEnable(9);
+        sceGuBlendFunc(0, 10, 10, 0x40404040, 0xFFFFFFFF);
+        sceGuEnable(4);
+    }
+}
+
+void scene::Shape::leave(Pass p)
+{
+    if (hget(_setup[p]))
+        _setup[p]->leave();
+    if (p == 1) {
+        sceGuDisable(11);
+        sceGuDisable(12);
+        sceGuTexMapMode(0, 0, 0);
+        sceGuDisable(4);
+    }
+}
 
 void scene::Shape::flatten(math::TransformStack &ts)
 {

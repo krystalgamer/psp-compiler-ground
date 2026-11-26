@@ -32,9 +32,9 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_TraversalV
 void scene::TraversalVarStack::internal_pop()
 {
     SCENE_ASSERT(! _stack.empty(), D_0016D2C8, D_0016D290, D_0016D2A4, internal_pop_name, 82, D_0016D2D4);
-    _stack.pop_back();
+    _stack.pop();
     if (!_stack.empty()) {
-        glLoadMatrixf((const float *)&_stack.back().m70);
+        glLoadMatrixf((const float *)&_stack.top().m70);
         sceGumSetCurMatrix();
     }
 }

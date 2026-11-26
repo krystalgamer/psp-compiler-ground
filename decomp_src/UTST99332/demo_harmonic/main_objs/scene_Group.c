@@ -4,6 +4,13 @@
 #include "cxx/defer_asm.h"
 #include "../main.hpp"
 
+/* the strings stay in the module's .rodata (asm) */
+extern const char D_001688A8[];     /* " " */
+extern const char D_001688AC[];     /* " *** error " */
+extern const char D_001688C4[];     /* "../lib/scene/Group.cpp" */
+extern const char D_00168994[];     /* "_children.empty()" */
+extern const char clearChildren_name[] __asm__("_ZZN5scene5Group13clearChildrenEbE19__PRETTY_FUNCTION__");
+
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Group", _Z41__static_initialization_and_destruction_0ii_835E4);
 
 scene::Group::Group(std::string name, bool b) : Node(name, b)
@@ -16,7 +23,13 @@ scene::Group::~Group()
     clearChildren(true);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Group", _ZN5scene5Group8addChildEN6common6handleINS_4NodeEEE);
+void scene::Group::addChild(common::handle<Node> n)
+{
+    if (hnull(n))
+        return;
+    n->incrParentCount();
+    _children.push_back(n);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Group", _ZN5scene5Group8addChildEN6common6handleIS0_EENS2_INS_4NodeEEE);
 
@@ -24,9 +37,23 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Group"
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Group", _ZN5scene5Group11removeChildEN6common6handleINS_4NodeEEE);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Group", _ZN5scene5Group13clearChildrenEb);
+void scene::Group::clearChildren(bool decr)
+{
+    for (std::list<common::handle<Node> >::iterator it = _children.begin(); it != _children.end(); ++it) {
+        if (hnull(*it))
+            continue;
+        if (decr)
+            (*it)->decrParentCount();
+    }
+    _children.clear();
+    SCENE_ASSERT(_children.empty(), D_001688AC, D_00168994, D_001688C4, clearChildren_name, 104, D_001688A8);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Group", _ZN5scene5Group7flattenERN4math14TransformStackE);
+void scene::Group::flatten(math::TransformStack &ts)
+{
+    for (std::list<common::handle<Node> >::iterator it = _children.begin(); it != _children.end(); ++it)
+        (*it)->flatten(ts);
+}
 
 std::list<common::handle<scene::Node> > &scene::Group::children()
 {
@@ -38,7 +65,12 @@ const std::list<common::handle<scene::Node> > &scene::Group::children() const
     return _children;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Group", _ZN5scene5Group8traverseENS_13TraversalTypeERN3sgl7FrustumERKN4math6matrixES8_S8_RKN2sh9VectorRGBEf);
+void scene::Group::traverse(TraversalType type, sgl::Frustum &frustum, const math::matrix &m0, const math::matrix &m1,
+                            const math::matrix &m2, const sh::VectorRGB &light, float f)
+{
+    TraversalVarStack tvs(type, frustum, m0, m1, m2, light, f);
+    traverse(tvs);
+}
 
 extern "C" {
 void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_835E4");
