@@ -447,7 +447,31 @@ INCLUDE_ASM("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/game", DrawBea
 
 INCLUDE_ASM("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/game", DrawReady);
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/game", DrawMission);
+#define ALPHA(a,c) (u_int32)(((u_int32)a<<24)|((u_int32)c))
+
+static void DrawMission(int a)
+{
+	extern Gu2dV16T	D_000CEBB8[4];
+	u_int32	c;
+
+	sceGuEnable(SCEGU_TEXTURE);
+	sceGuTexWrap(SCEGU_REPEAT, SCEGU_REPEAT);
+	sceGuTexFilter(SCEGU_NEAREST, SCEGU_NEAREST);
+	sceGuTexFunc(SCEGU_TEX_MODULATE, SCEGU_RGBA);
+
+	sceGuTexMode(SCEGU_PFIDX4, 0, SCEGU_SINGLE_CLUT, SCEGU_TEXBUF_NORMAL);
+	sceGuClutMode(SCEGU_PF5551, 0, 0xff, 0);
+	sceGuClutLoad(1, (void *)clut_mission);
+	sceGuTexImage(0, 256, 128, 256, (void *)chr_mission);
+
+	SpriteScale(1, 1);
+	c=ALPHA(a, 0x00ffffff);
+	sceGuColor(c);
+
+	DrawSprite((LCDW-256)/2, (LCDH-128)/2, 256, 128, 0, 0, D_000CEBB8);
+
+	sceGuDisable(SCEGU_TEXTURE);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/game", DrawGame);
 
