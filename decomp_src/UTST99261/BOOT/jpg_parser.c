@@ -1,8 +1,29 @@
 /* cflags: -O1 */
 #include "common.h"
 #include "m2c_macros.h"
-int getWord(int, M2C_UNK);                          /* extern */
-M2C_UNK skipByte(int, M2C_UNK);                     /* extern */
+
+typedef struct {
+    u8 *cur;                    /* 0x0 */
+    u8 *base;                   /* 0x4 */
+    u8 *end;                    /* 0x8 */
+    int unkC;
+    int bit;                    /* 0x10 */
+    int unk14;
+    int valid;                  /* 0x18 */
+} JBS;
+
+typedef struct {
+    JBS *bs;                    /* 0x0 */
+    u8 unk4[0xC4];
+    u16 lines;                  /* 0xC8 */
+} JCTX;
+
+extern int (*markerTable[])(JCTX *ctx);
+int getWord(JBS *bs, int n);
+int skipByte(JBS *bs, int n);
+void nextByte(JBS *bs);
+int getByte(JBS *bs);
+int getMarker(JCTX *ctx);
 M2C_UNK *ESP_malloc(M2C_UNK);                       /* extern */
 
 M2C_UNK sortImage();                                /* extern */
@@ -474,7 +495,22 @@ int mrkCOM(int *arg0) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jpg_parser", readMarker);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jpg_parser", getMarker);
+int getMarker(JCTX *ctx) {
+    int c;
+
+    for (;;) {
+        if (!ctx->bs->valid) {
+            return -1;
+        }
+        if (getByte(ctx->bs) != 0xFF) {
+            continue;
+        }
+        c = getByte(ctx->bs);
+        if (c != 0) {
+            return c;
+        }
+    }
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jpg_parser", analysisMarker);
 
@@ -535,9 +571,32 @@ int setJpgBuffer(void **arg0, int arg1, int arg2) {
     return -1;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jpg_parser", nextByte);
+void nextByte(JBS *bs) {
+    if (bs->cur + 1 >= bs->end) {
+        bs->valid = 0;
+    } else {
+        bs->cur++;
+    }
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jpg_parser", getByte);
+int getByte(JBS *bs) {
+    int c;
+
+    if (!bs->valid) {
+        return 0;
+    }
+    if (bs->bit != 7) {
+        nextByte(bs);
+        bs->bit = 7;
+    }
+    if (!bs->valid) {
+        return 0;
+    }
+    c = *bs->cur;
+    nextByte(bs);
+    bs->unk14 = 1;
+    return c;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jpg_parser", getWord);
 
@@ -549,9 +608,26 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jpg_parser", getBits);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jpg_parser", getOneBit);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jpg_parser", skipByte);
+int skipByte(JBS *bs, int n) {
+    if (bs->end < bs->cur + n) {
+        return -1;
+    }
+    bs->cur += n;
+    if (bs->cur >= bs->end) {
+        bs->valid = 0;
+    }
+    return 0;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jpg_parser", getNextAddress);
+u8 *getNextAddress(JBS *bs) {
+    if (bs->bit == 7) {
+        return bs->cur;
+    }
+    if (bs->cur < bs->end) {
+        return bs->cur + 1;
+    }
+    return NULL;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -560,9 +636,24 @@ int getCurrentOffset(void *arg0) {
     return M2C_FIELD(arg0, int *, 0) - M2C_FIELD(arg0, int *, 4);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jpg_parser", goNextOffset);
+int goNextOffset(JBS *bs, int off) {
+    if (bs->end < bs->base + off) {
+        return -1;
+    }
+    bs->valid = 1;
+    bs->cur = bs->base + off;
+    if (bs->cur >= bs->end) {
+        bs->valid = 0;
+    }
+    return 0;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jpg_parser", fillBits);
+void fillBits(JBS *bs) {
+    if (bs->bit != 7) {
+        bs->bit = 7;
+        nextByte(bs);
+    }
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
