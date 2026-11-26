@@ -29,7 +29,9 @@ typedef struct {
 	int prio;
 } SceWaveMain;
 
-extern int D_005612EC;
+/* state and stop flag, shared with the audio thread */
+extern volatile int D_005612EC;
+extern volatile int D_005612F0;
 extern int D_0008BF30;
 extern char D_005612F4[];
 extern char D_00561364[];
@@ -60,11 +62,55 @@ int sceKernelDeleteThread(int thid);
 int sceKernelExitThread(int status);
 static int func_0001EA80(unsigned int args, void *argp);
 
+/* sceWaveStop's body, inlined into sceWaveAllStop too */
+static inline int _waveStop(unsigned int ch)
+{
+	if (ch >= 8)
+		return 0x80440005;
+	if (D_00562174[ch].stat != 0) {
+		D_00562174[ch].flags |= 0x120000;
+		D_005623D4[ch].stat = 0;
+		D_005623D4[ch].pos = 0;
+		D_005623D4[ch].unk30 = 0;
+		D_005623D4[ch].unk34 = 0;
+		D_005623D4[ch].unk28 = 0;
+		D_005623D4[ch].unk2C = 0;
+	} else {
+		D_00562174[ch].pos = 0;
+		D_00562174[ch].unk30 = 0;
+		D_00562174[ch].unk34 = 0;
+		D_00562174[ch].unk28 = 0;
+		D_00562174[ch].unk2C = 0;
+	}
+	return 0;
+}
+
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libwave", sceWaveInit);
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libwave", sceWaveSetVoice);
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libwave", sceWaveGetVolume);
+int sceWaveGetVolume(unsigned int ch, int *left, int *right)
+{
+	if (ch >= 8)
+		return 0x80440005;
+	if (left == NULL)
+		return 0x8044000A;
+	if (right == NULL)
+		return 0x8044000A;
+	if (D_00562174[ch].vol_l <= 0)
+		*left = 0;
+	else if (D_00562174[ch].vol_l >= 128)
+		*left = (D_00562174[ch].vol_l - 1) / 32;
+	else
+		*left = D_00562174[ch].vol_l / 32;
+	if (D_00562174[ch].vol_r <= 0)
+		*right = 0;
+	else if (D_00562174[ch].vol_r >= 128)
+		*right = (D_00562174[ch].vol_r - 1) / 32;
+	else
+		*right = D_00562174[ch].vol_r / 32;
+	return 0;
+}
 
 int sceWaveGetRestByte(unsigned int ch, int *rest)
 {
@@ -94,9 +140,44 @@ INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libwave", sceWavePlayEx);
 
 INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libwave", D_00030954);
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libwave", sceWaveStart);
+static inline int _waveThreadStart(int prio)
+{
+	D_005612F0 = 0;
+	D_00562634.thid = sceKernelCreateThread("SceWaveMain", func_0001EA80, prio, 0x1000, 0, NULL);
+	if (D_00562634.thid < 0)
+		return 0x80440003;
+	D_00562634.prio = prio;
+	if (sceKernelStartThread(D_00562634.thid, sizeof(SceWaveMain), &D_00562634) != 0)
+		return 0x80440003;
+	sceKernelDelayThread(10000);
+	D_005612EC = 3;
+	return 0;
+}
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libwave", sceWaveEnd);
+int sceWaveStart(int prio)
+{
+	if (D_005612EC != 1)
+		return 0x80440003;
+	if ((unsigned int)(prio - 8) >= 0x70)
+		return 0x80440012;
+	return _waveThreadStart(prio);
+}
+
+int sceWaveEnd(void)
+{
+	int i;
+
+	if (D_005612EC != 3)
+		return 0x80440004;
+	for (i = 0; i < 8; i++)
+		_waveStop(i);
+	D_005612F0 = 1;
+	sceKernelWaitThreadEnd(D_00562634.thid, NULL);
+	sceKernelDeleteThread(D_00562634.thid);
+	D_005612F0 = 0;
+	D_005612EC = 1;
+	return 0;
+}
 
 int sceWaveExit(void)
 {
@@ -161,7 +242,10 @@ int sceWaveSetLoopMode(unsigned int ch, int mode)
 	return 0;
 }
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libwave", sceWaveStop);
+int sceWaveStop(unsigned int ch)
+{
+	return _waveStop(ch);
+}
 
 int sceWavePause(unsigned int ch)
 {
@@ -183,7 +267,13 @@ int sceWaveReplay(unsigned int ch)
 	return 0;
 }
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libwave", sceWaveAllStop);
+void sceWaveAllStop(void)
+{
+	int i;
+
+	for (i = 0; i < 8; i++)
+		_waveStop(i);
+}
 
 int sceWaveAudioSetSample(unsigned int ch, int samplecount)
 {
