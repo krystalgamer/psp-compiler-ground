@@ -203,4 +203,29 @@ int pad_read(void) {
     return (temp_s0 & 9) == 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_fountain/nonmatchings/main", main);
+void menuInit(void);
+void menuTerm(int cat, int num);
+
+int main(void)
+{
+	menuInit();
+
+	init_all();
+
+	while (pad_read()) {
+		draw_frame();
+		sceDisplayWaitVblankStart();
+		sceGuSwapBuffers();
+
+		move_grain();
+		if (autoflag) {
+			rot.y += 2.0f;
+		}
+	}
+
+	sceGuTerm();
+
+	menuTerm(1, 11);
+
+	return 0;
+}
