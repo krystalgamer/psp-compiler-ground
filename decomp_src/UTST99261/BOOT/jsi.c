@@ -1,20 +1,17 @@
 /* cflags: -O1 */
 #include "common.h"
+#include "dom_esp.h"
 #include "m2c_macros.h"
 M2C_UNK HST_attachHistory();                        /* extern */
 int GUI_RadioButton_getState(int);                  /* extern */
 void *Node_getBox();                                /* extern */
 extern void *gPREF_UI;
-M2C_UNK MEM_free(M2C_UNK, void *);                  /* extern */
 void *duplicateDOMString(int);                      /* extern */
-void *MEM_malloc(M2C_UNK, M2C_UNK);                 /* extern */
 extern void *gNDA_NAME_JS_GLOBAL;
 extern void *g_JS_TIMER_;
 M2C_UNK js_delTimerID(int, M2C_UNK, M2C_UNK);       /* extern */
 int OS_thread_self();                               /* extern */
-int *HST_getHeadHistoryNode();                      /* extern */
 int esp_postMsgLoadPage(int, int, int, M2C_UNK, M2C_UNK, int, M2C_UNK); /* extern */
-extern void *esp_context;
 M2C_UNK esp_postMsgSaveURL(int, int, int);          /* extern */
 M2C_UNK esp_postMsgDataAttr(int, M2C_UNK, int, int); /* extern */
 int MEM_addHaltCallback(M2C_UNK, int);              /* extern */
@@ -548,7 +545,15 @@ void ESP_downloadURL(int arg0, int arg1) {
     esp_postMsgSaveURL(M2C_FIELD(esp_context, int *, 0xF8), arg0, arg1);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_setFreeScrollEnabled);
+int ESP_setFreeScrollEnabled(int en) {
+    if (esp_context == NULL) {
+        return -1;
+    }
+    if (esp_context->state == 2) {
+        return -1;
+    }
+    return esp_postMsgFreeScroll(esp_context->msg, en);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_findString);
 
@@ -590,9 +595,19 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_getHistoryURL);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_getHistoryTitle);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_hasNextHistory);
+int ESP_hasNextHistory(void) {
+    if (HST_getHistoryWithOffset(1) != NULL) {
+        return 1;
+    }
+    return HST_getFragmentIDs(HST_getHeadHistoryNode(), 1) != 0;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_hasPreviousHistory);
+int ESP_hasPreviousHistory(void) {
+    if (HST_getHistoryWithOffset(-1) != NULL) {
+        return 1;
+    }
+    return HST_getFragmentIDs(HST_getHeadHistoryNode(), -1) != 0;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -601,65 +616,382 @@ int ESP_deleteCache(void) {
     return -1;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_setCookieEnabled);
+int ESP_setCookieEnabled(int en) {
+    if (esp_context == NULL) {
+        return -1;
+    }
+    if (esp_context->state == 2) {
+        return -1;
+    }
+    if (esp_context->config.cookieEnabled == en) {
+        return 0;
+    }
+    if (ESP_beginConfig() != 0) {
+        return -1;
+    }
+    ESP_setBoolPreference(0, en);
+    if (ESP_endConfig() != 0) {
+        return -1;
+    }
+    return 0;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_deleteAllCookies);
+int ESP_deleteAllCookies(void) {
+    if (esp_context == NULL) {
+        return -1;
+    }
+    if (esp_context->state == 2) {
+        return -1;
+    }
+    return esp_postMsgDeleteCookie(esp_context->msg);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_setMouseTracking);
+int ESP_setMouseTracking(int en) {
+    if (esp_context == NULL) {
+        return -1;
+    }
+    if (esp_context->state == 2) {
+        return -1;
+    }
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_beginConfig);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_endConfig);
+int ESP_endConfig(void) {
+    int r;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_setBoolPreference);
+    if (esp_context == NULL) {
+        return -1;
+    }
+    if (esp_context->state == 2) {
+        return -1;
+    }
+    if (esp_context->prefs == NULL) {
+        return -1;
+    }
+    esp_freeConfig(&esp_context->config);
+    r = esp_copyConfig(&esp_context->config, esp_context->prefs);
+    if (r != 0) {
+        return r;
+    }
+    esp_postMsgConfigChanged(esp_context->msg);
+    esp_freeConfig(esp_context->prefs);
+    MEM_free(0, esp_context->prefs);
+    esp_context->prefs = NULL;
+    return 0;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_getBoolPreference);
+int ESP_setBoolPreference(int key, int value) {
+    if (esp_context == NULL) {
+        return -1;
+    }
+    if (esp_context->state == 2) {
+        return -1;
+    }
+    if (esp_context->prefs == NULL) {
+        return -1;
+    }
+    return esp_setBoolConfig(esp_context->prefs, key, value);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_setIntPreference);
+int ESP_getBoolPreference(int key, void *value) {
+    if (esp_context == NULL) {
+        return -1;
+    }
+    if (esp_context->state == 2) {
+        return -1;
+    }
+    if (value == NULL) {
+        return -1;
+    }
+    return esp_getBoolConfig(&esp_context->config, key, value);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_getIntPreference);
+int ESP_setIntPreference(int key, int value) {
+    if (esp_context == NULL) {
+        return -1;
+    }
+    if (esp_context->state == 2) {
+        return -1;
+    }
+    if (esp_context->prefs == NULL) {
+        return -1;
+    }
+    return esp_setIntConfig(esp_context->prefs, key, value);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_setStringPreference);
+int ESP_getIntPreference(int key, void *value) {
+    if (esp_context == NULL) {
+        return -1;
+    }
+    if (esp_context->state == 2) {
+        return -1;
+    }
+    if (value == NULL) {
+        return -1;
+    }
+    return esp_getIntConfig(&esp_context->config, key, value);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_getStringPreference);
+int ESP_setStringPreference(int key, int value) {
+    if (esp_context == NULL) {
+        return -1;
+    }
+    if (esp_context->state == 2) {
+        return -1;
+    }
+    if (esp_context->prefs == NULL) {
+        return -1;
+    }
+    return esp_setStringConfig(esp_context->prefs, key, value);
+}
+
+int ESP_getStringPreference(int key, void *value) {
+    if (esp_context == NULL) {
+        return -1;
+    }
+    if (esp_context->state == 2) {
+        return -1;
+    }
+    if (value == NULL) {
+        return -1;
+    }
+    return esp_getStringConfig(&esp_context->config, key, value);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_setEncoding);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_getEncoding);
+int ESP_getEncoding(int *value) {
+    if (esp_context == NULL) {
+        return -1;
+    }
+    if (esp_context->state == 2) {
+        return -1;
+    }
+    if (value == NULL) {
+        return -1;
+    }
+    return esp_getIntConfig(&esp_context->config, 0x1001, value);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_setOnlineEnabled);
+int ESP_setOnlineEnabled(int en) {
+    if (esp_context == NULL) {
+        return -1;
+    }
+    if (esp_context->state == 2) {
+        return -1;
+    }
+    return esp_setIntConfig(&esp_context->config, 0x1004, en);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_setFontSize);
+int ESP_setFontSize(int size) {
+    if (esp_context == NULL) {
+        return -1;
+    }
+    if (esp_context->state == 2) {
+        return -1;
+    }
+    if (size < 1 || size > 5) {
+        return -1;
+    }
+    if (esp_setIntConfig(&esp_context->config, 0x1002, size) < 0) {
+        return -1;
+    }
+    return esp_postMsgRepaint(esp_context->msg);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_getFontSize);
+int ESP_getFontSize(void) {
+    int size;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_setInputData);
+    if (esp_context == NULL) {
+        return -1;
+    }
+    if (esp_context->state == 2) {
+        return -1;
+    }
+    if (esp_getIntConfig(&esp_context->config, 0x1002, &size) < 0) {
+        return -1;
+    }
+    return size;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_setEnabledInputDevice);
+int ESP_setInputData(void *data) {
+    if (esp_context == NULL) {
+        return -1;
+    }
+    if (esp_context->state == 2) {
+        return -1;
+    }
+    return esp_postMsgInputData(esp_context->msg, data);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_setUnitId);
+int ESP_setEnabledInputDevice(int dev) {
+    if (esp_context == NULL) {
+        return -1;
+    }
+    if (esp_context->state == 2) {
+        return -1;
+    }
+    esp_context->inputDevice = dev;
+    return 0;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_getUnitId);
+int ESP_setUnitId(void *value) {
+    if (esp_context == NULL) {
+        return -1;
+    }
+    if (esp_context->state == 2) {
+        return -1;
+    }
+    if (esp_setStringConfig(&esp_context->config, 0x2004, value) < 0) {
+        return -1;
+    }
+    return 0;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_setBgColor);
+int ESP_getUnitId(void *value) {
+    if (esp_context == NULL) {
+        return -1;
+    }
+    if (esp_context->state == 2) {
+        return -1;
+    }
+    if (esp_getStringConfig(&esp_context->config, 0x2004, value) < 0) {
+        return -1;
+    }
+    return 0;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_getBgColor);
+int ESP_setBgColor(void *value) {
+    if (esp_context == NULL) {
+        return -1;
+    }
+    if (esp_context->state == 2) {
+        return -1;
+    }
+    if (esp_setStringConfig(&esp_context->config, 0x2005, value) < 0) {
+        return -1;
+    }
+    return 0;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_setThreadPriority);
+int ESP_getBgColor(void *value) {
+    if (esp_context == NULL) {
+        return -1;
+    }
+    if (esp_context->state == 2) {
+        return -1;
+    }
+    if (esp_getStringConfig(&esp_context->config, 0x2005, value) < 0) {
+        return -1;
+    }
+    return 0;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_getThreadPriority);
+int ESP_setThreadPriority(void *value) {
+    if (esp_context == NULL) {
+        return -1;
+    }
+    if (esp_context->state == 2) {
+        return -1;
+    }
+    if (esp_setIntConfig(&esp_context->config, 0x1005, value) < 0) {
+        return -1;
+    }
+    return 0;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_setHomePageURL);
+int ESP_getThreadPriority(void *value) {
+    if (esp_context == NULL) {
+        return -1;
+    }
+    if (esp_context->state == 2) {
+        return -1;
+    }
+    if (esp_getIntConfig(&esp_context->config, 0x1005, value) < 0) {
+        return -1;
+    }
+    return 0;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_getHomePageURL);
+int ESP_setHomePageURL(void *value) {
+    if (esp_context == NULL) {
+        return -1;
+    }
+    if (esp_context->state == 2) {
+        return -1;
+    }
+    if (esp_setStringConfig(&esp_context->config, 0x2000, value) < 0) {
+        return -1;
+    }
+    return 0;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_setUserAgent);
+int ESP_getHomePageURL(void *value) {
+    if (esp_context == NULL) {
+        return -1;
+    }
+    if (esp_context->state == 2) {
+        return -1;
+    }
+    if (esp_getStringConfig(&esp_context->config, 0x2000, value) < 0) {
+        return -1;
+    }
+    return 0;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_getUserAgent);
+int ESP_setUserAgent(void *value) {
+    if (esp_context == NULL) {
+        return -1;
+    }
+    if (esp_context->state == 2) {
+        return -1;
+    }
+    if (esp_setStringConfig(&esp_context->config, 0x2003, value) < 0) {
+        return -1;
+    }
+    return 0;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_setCacheSize);
+int ESP_getUserAgent(void *value) {
+    if (esp_context == NULL) {
+        return -1;
+    }
+    if (esp_context->state == 2) {
+        return -1;
+    }
+    if (esp_getStringConfig(&esp_context->config, 0x2003, value) < 0) {
+        return -1;
+    }
+    return 0;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_getCacheSize);
+int ESP_setCacheSize(void *value) {
+    if (esp_context == NULL) {
+        return -1;
+    }
+    if (esp_context->state == 2) {
+        return -1;
+    }
+    if (esp_setIntConfig(&esp_context->config, 0x1000, value) < 0) {
+        return -1;
+    }
+    return 0;
+}
+
+int ESP_getCacheSize(void *value) {
+    if (esp_context == NULL) {
+        return -1;
+    }
+    if (esp_context->state == 2) {
+        return -1;
+    }
+    if (esp_getIntConfig(&esp_context->config, 0x1000, value) < 0) {
+        return -1;
+    }
+    return 0;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
