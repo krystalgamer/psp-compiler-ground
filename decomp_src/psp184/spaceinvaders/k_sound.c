@@ -57,6 +57,9 @@ int sceKernelStartThread(int thid, int argsize, void *argp);
 int sceCtrlSetSamplingCycle(int cycle);
 int play_atrac3plus(int args, void *argp);
 
+extern int playArg1;
+int play_atrac3plus1(int args, void *argp);
+
 static int load_module(char *path, SceKernelLMOption *opt, int flags)
 {
 	int mid;
@@ -437,7 +440,28 @@ void se_stop(void) {
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/k_sound", play_atrac3plus1);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/k_sound", sound_start1);
+extern int playArg1;
+int play_atrac3plus1(int args, void *argp);
+int sound_start1(int no)
+{
+	if (sd[sound_block_no1].f0 == 0)
+		return -1;
+	if (sound_start_flag1 == 1)
+		sound_stop1();
+	next_sound_block_no1 = -1;
+	sound_block_no1 = no;
+	iFadeOutFlag1 = 0;
+	if (init_atrac3plus((void *)sd[no].f0, sd[no].f4, 1, &playArg1) < 0)
+		return -1;
+	thid2 = sceKernelCreateThread(D_0007AB1C, play_atrac3plus1, 0x10, 0x10000, 0, 0);
+	if (thid2 < 0)
+		return -1;
+	if (sceKernelStartThread(thid2, 0xC, &playArg1) != 0)
+		return -1;
+	sceCtrlSetSamplingCycle(0);
+	sound_start_flag1 = 1;
+	return 0;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/k_sound", sound_stop1);
 
