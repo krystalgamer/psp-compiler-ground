@@ -148,6 +148,39 @@ void sceGumRotateX(float angle);
 void sceGumRotateY(float angle);
 void sceGumRotateZ(float angle);
 
+/* SDK prototypes (tools/sdk_protos.h) */
+void sceGuAlphaFunc(int a0, int a1, int a2);
+void sceGuAmbient(unsigned int color);
+void sceGuBlendFunc(int op, int src, int dest, unsigned int srcfix, unsigned int destfix);
+void sceGuClearColor(unsigned int color);
+void sceGuClearDepth(unsigned int depth);
+void sceGuClearStencil(unsigned int stencil);
+void sceGuColorMaterial(int components);
+void sceGuDepthBuffer(void *zbp, int frame_width);
+void sceGuDepthFunc(int function);
+void sceGuDepthRange(int near, int far);
+void sceGuDisable(int state);
+void sceGuDispBuffer(int width, int height, void *dbp, int frame_width);
+void sceGuDrawBuffer(int psm, void *fbp, int frame_width);
+void sceGuEnable(int state);
+void sceGuFog(float near, float far, unsigned int color);
+void sceGuFrontFace(int order);
+void sceGuLight(int light, int type, int components, const ScePspFVector3 *position);
+void sceGuLightAtt(int light, float atten0, float atten1, float atten2);
+void sceGuLightColor(int light, int component, unsigned int color);
+void sceGuLightSpot(int light, const ScePspFVector3 *direction, float exponent, float cutoff);
+void sceGuOffset(unsigned int x, unsigned int y);
+void sceGuPatchDivide(unsigned int ulevel, unsigned int vlevel);
+void sceGuScissor(int x, int y, int w, int h);
+void sceGuSetDither(const void *matrix);
+void sceGuShadeModel(int mode);
+void sceGuSpecular(float power);
+void sceGuViewport(int cx, int cy, int width, int height);
+void sceGumLookAt(const ScePspFVector3 *eye, const ScePspFVector3 *center, const ScePspFVector3 *up);
+void sceGumMatrixMode(int mode);
+void sceGumPerspective(float fovy, float aspect, float near, float far);
+void sceGumSetMatrixStack(void *stack, int proj, int view, int model, int texture);
+
 INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/ge/ge_context", geSetLight);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/ge/ge_context", geSetCamera);

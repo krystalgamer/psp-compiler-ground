@@ -237,6 +237,12 @@ SceGmoLayer *sceGmoMaterialGetLayer(SceGmoMaterial *material, int idx);
 static void complement_animation(SceGmoMaterial *material);
 
 
+/* SDK prototypes (tools/sdk_protos.h) */
+void *memcpy(void *d, const void *s, unsigned int n);
+void sceGuBlendFunc(int op, int src, int dest, unsigned int srcfix, unsigned int destfix);
+void sceGuMaterial(int mode, unsigned int color);
+void sceGuSpecular(float power);
+
 INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/gmo_model/gmo_material", sceGmoMaterialCreate);
 
 void sceGmoMaterialDelete(SceGmoMaterial *material) {

@@ -126,6 +126,20 @@ static void pad_func(void);
 static void program_switch(void);
 
 
+/* SDK prototypes (tools/sdk_protos.h) */
+int sceCtrlSetSamplingCycle(int cycle);
+int sceCtrlSetSamplingMode(int mode);
+int sceDisplayWaitVblankStartCB(void);
+void sceGuClear(int flags);
+int sceGuDisplay(int state);
+void sceGuDrawBufferList(int psm, void *fbp, int frame_width);
+int sceGuFinish(void);
+void sceGuInit(void);
+void sceGuSendList(int mode, const void *list, void *context);
+void sceGuStart(int type, void *list, int size);
+void *sceGuSwapBuffers(void);
+int sceGuSync(int mode, int what);
+
 INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/ge/ge_main", geDrawStart);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/ge/ge_main", geSetModule);

@@ -229,6 +229,10 @@ SceGmoChunk *sceGmoMotionGetAnimation(SceGmoMotion *motion, int idx);
 SceGmoChunk *sceGmoMotionGetFcurve(SceGmoMotion *motion, int idx);
 
 
+/* SDK prototypes (tools/sdk_protos.h) */
+float sinf(float x);
+float sqrtf(float x);
+
 INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/gmo_model/gmo_motion", sceGmoMotionCreate);
 
 void sceGmoMotionDelete(SceGmoMotion *motion) {

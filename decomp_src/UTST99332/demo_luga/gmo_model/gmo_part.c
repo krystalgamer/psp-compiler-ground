@@ -281,6 +281,13 @@ SceGmoMesh *sceGmoPartGetMesh(SceGmoPart *part, int idx);
 SceGmoMesh *sceGmoMeshDuplicate(SceGmoMesh *mesh, int flags);
 
 
+/* SDK prototypes (tools/sdk_protos.h) */
+void sceGuDrawArrayN(int prim, int vtype, int count, int a3, const void *indices, const void *vertices);
+void sceGuDrawBezier(int vtype, int ucount, int vcount, const void *indices, const void *vertices);
+void sceGuDrawSpline(int vtype, int ucount, int vcount, int uedge, int vedge, const void *indices, const void *vertices);
+void *sceGuGetMemory(int size);
+int sceKernelDcacheWritebackAll(void);
+
 INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/gmo_model/gmo_part", sceGmoPartCreate);
 
 void sceGmoPartDelete(SceGmoPart *part) {

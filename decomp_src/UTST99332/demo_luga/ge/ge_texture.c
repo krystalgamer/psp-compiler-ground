@@ -56,6 +56,23 @@ int geTexGet(int n, geTEXTURE *tex);
 int geTexSend(int n);
 
 
+/* SDK prototypes (tools/sdk_protos.h) */
+void sceGuBlendFunc(int op, int src, int dest, unsigned int srcfix, unsigned int destfix);
+void sceGuClutLoad(int num_blocks, const void *cbp);
+void sceGuClutMode(unsigned int cpsm, unsigned int shift, unsigned int mask, unsigned int a3);
+void sceGuDisable(int state);
+void sceGuEnable(int state);
+void sceGuTexEnvColor(unsigned int color);
+void sceGuTexFilter(int min, int mag);
+void sceGuTexFunc(int tfx, int tcc);
+void sceGuTexImage(int mipmap, int width, int height, int tbw, const void *tbp);
+void sceGuTexLevelMode(unsigned int mode, float bias);
+void sceGuTexMapMode(int mode, unsigned int a1, unsigned int a2);
+void sceGuTexMode(int tpsm, int maxmips, int a2, int swizzle);
+void sceGuTexOffset(float u, float v);
+void sceGuTexScale(float u, float v);
+void sceGuTexWrap(int u, int v);
+
 INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/ge/ge_texture", geTexSet);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/ge/ge_texture", geTexOption);

@@ -242,6 +242,15 @@ static void calc_local_matrix(SceGmoBone *bone);
 static void calc_stack_matrix(SceGmoBone *bone, SceGmoModel *model);
 
 
+/* SDK prototypes (tools/sdk_protos.h) */
+float cosf(float x);
+void *memcpy(void *d, const void *s, unsigned int n);
+void *memset(void *s, int c, unsigned int n);
+void sceGuBoneMatrix(unsigned int index, const ScePspFMatrix4 *matrix);
+void sceGuMorphWeight(int index, float weight);
+void sceGuSetMatrix(int type, const ScePspFMatrix4 *matrix);
+float sinf(float x);
+
 INCLUDE_RODATA("tmp/asm/UTST99332/demo_luga/nonmatchings/gmo_model/gmo_bone", D_00021798);
 
 INCLUDE_RODATA("tmp/asm/UTST99332/demo_luga/nonmatchings/gmo_model/gmo_bone", D_000217A4);

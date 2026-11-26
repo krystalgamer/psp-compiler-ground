@@ -26,6 +26,14 @@ void geFadeSetup(int mode, int step, uint c);
 int geFadeState(void);
 
 
+/* SDK prototypes (tools/sdk_protos.h) */
+void sceGuBlendFunc(int op, int src, int dest, unsigned int srcfix, unsigned int destfix);
+void sceGuColor(unsigned int color);
+void sceGuDisable(int state);
+void sceGuEnable(int state);
+void sceGumDrawArray(int prim, int vtype, int count, const void *indices, const void *vertices);
+int sceKernelDcacheWritebackAll(void);
+
 INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/ge/ge_effect", geFadeDraw);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/ge/ge_effect", geFadeSetup);

@@ -23,6 +23,9 @@ float geAnalogDegree(int mode, uchar ax, uchar ay);
 void geSetAnalogMargin(int m);
 
 
+/* SDK prototypes (tools/sdk_protos.h) */
+float sqrtf(float x);
+
 INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/ge/ge_control", geAnalogDegree);
 
 void geSetAnalogMargin(int m) {

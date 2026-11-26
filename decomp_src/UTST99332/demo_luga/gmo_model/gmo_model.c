@@ -242,6 +242,11 @@ SceGmoMaterial *sceGmoModelGetMaterial(SceGmoModel *model, int idx);
 SceGmoTexture *sceGmoModelGetTexture(SceGmoModel *model, int idx);
 
 
+/* SDK prototypes (tools/sdk_protos.h) */
+void sceGumMatrixMode(int mode);
+void sceGumUpdateMatrix(void);
+int sceKernelDcacheWritebackAll(void);
+
 INCLUDE_RODATA("tmp/asm/UTST99332/demo_luga/nonmatchings/gmo_model/gmo_model", __psp_libinfo___2171C);
 
 INCLUDE_RODATA("tmp/asm/UTST99332/demo_luga/nonmatchings/gmo_model/gmo_model", D_00021734);

@@ -103,6 +103,14 @@ void sceGimPictureSetImageCrop(SceGimPicture *picture, const float *crop);
 const float *sceGimPictureGetImageCrop(SceGimPicture *picture);
 
 
+/* SDK prototypes (tools/sdk_protos.h) */
+void *memcpy(void *d, const void *s, unsigned int n);
+void sceGuClutLoad(int num_blocks, const void *cbp);
+void sceGuClutMode(unsigned int cpsm, unsigned int shift, unsigned int mask, unsigned int a3);
+void sceGuTexImage(int mipmap, int width, int height, int tbw, const void *tbp);
+void sceGuTexMode(int tpsm, int maxmips, int a2, int swizzle);
+int sceKernelDcacheWritebackAll(void);
+
 INCLUDE_RODATA("tmp/asm/UTST99332/demo_luga/nonmatchings/gim_picture/gim_picture", __psp_libinfo___21BD4);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/gim_picture/gim_picture", sceGimPictureCreate);

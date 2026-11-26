@@ -88,6 +88,9 @@ static const void *read_short(const void *src, short unsigned int *val);
 static void copy_pixels(char *dp, const char *sp, int count, int src_step, _Bool run);
 
 
+/* SDK prototypes (tools/sdk_protos.h) */
+int sceKernelDcacheWritebackAll(void);
+
 INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/gim_picture/load_tga", sceGimPictureLoadTga);
 
 int read_header_EEFC(void *arg0, unsigned char *arg1) {

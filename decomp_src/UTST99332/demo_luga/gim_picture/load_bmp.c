@@ -1,5 +1,8 @@
 #include "common.h"
 
+/* SDK prototypes (tools/sdk_protos.h) */
+int sceKernelDcacheWritebackAll(void);
+
 INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/gim_picture/load_bmp", sceGimPictureLoadBmp);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/gim_picture/load_bmp", read_header_E464);
