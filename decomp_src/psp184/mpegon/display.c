@@ -228,6 +228,74 @@ SceInt32 dispbuf_checkDelayMode(t_displayBuffer *pDisp)
 	return ret;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/mpegon/nonmatchings/display", dispbuf_func);
+SceInt32 control_setCondition(t_conditionCtrl *pCtrl, SceInt32 cond);
+SceInt32 control_waitConditionDispStart(t_conditionCtrl *pCtrl);
+SceInt32 avsync_Compare(t_avSyncControl *pAvSync);
+int sceKernelPowerTick(int type);
+int sceKernelExitThread(int status);
+int sceKernelDelayThread(unsigned int delay);
+int sceKernelWaitSema(SceUID semid, int signal, unsigned int *timeout);
+int sceKernelSignalSema(SceUID semid, int signal);
+int printf(const char *fmt, ...);
 
-INCLUDE_ASM("tmp/asm/psp184/mpegon/nonmatchings/display", dispbuf_show);
+const char D_000123EC[] = "frame count = %d\n";
+const char D_00012400[] = "frame loss  = %d\n";
+
+int dispbuf_func(SceSize size, void *argp)
+{
+	SceInt32 delayCheck;
+	SceInt32 currentMode;
+	t_avSyncControl **ppAvSync;
+	t_avSyncControl *pAvSync;
+	t_displayBuffer *pDisp;
+
+	ppAvSync = argp;
+	pAvSync = *ppAvSync;
+	pDisp = pAvSync->pDisp;
+	control_waitConditionDispStart(pDisp->pCtrl);
+	while (dispbuf_checkDecodeEnd(pDisp) != 1 || dispbuf_getCurrentCount(pDisp) != 0) {
+		delayCheck = dispbuf_checkDelayMode(pDisp);
+		if (delayCheck == 1) {
+			sceKernelDelayThread(1000000);
+			dispbuf_setPlayMode(pDisp);
+		}
+		currentMode = avsync_Compare(pAvSync);
+		dispbuf_setMode(pDisp, currentMode);
+		if (dispbuf_getCurrentCount(pDisp) > 0) {
+			if (dispbuf_getMode(pDisp) != 4) {
+				dispbuf_show(pDisp);
+				sceKernelWaitSema(pDisp->lockSema, 1, NULL);
+				pDisp->count--;
+				sceKernelSignalSema(pDisp->lockSema, 1);
+				frameCount++;
+			}
+		} else {
+			frameLoss++;
+		}
+		control_setCondition(pDisp->pCtrl, 2);
+		control_waitDisp(pDisp->pCtrl);
+		sceKernelPowerTick(6);
+	}
+	sceDisplaySetFrameBuf(NULL, 512, 3, 1);
+	printf(D_000123EC, frameCount);
+	printf(D_00012400, frameLoss);
+	control_setCondition(pDisp->pCtrl, 0x10);
+	sceKernelExitThread(0);
+	return 0;
+}
+
+SceInt32 control_waitDisp(t_conditionCtrl *pCtrl);
+SceInt32 dispbuf_show(t_displayBuffer *pDisp)
+{
+	SceChar8 *buffer;
+
+	if (dispbuf_getMode(pDisp) == 1 || dispbuf_getMode(pDisp) == 0xff) {
+		buffer = pDisp->buf[pDisp->read];
+		swap_buffer(buffer);
+		pDisp->read = (pDisp->read + 1) % pDisp->size;
+		control_waitDisp(pDisp->pCtrl);
+	} else {
+		pDisp->read = (pDisp->read + 1) % pDisp->size;
+	}
+	return 0;
+}

@@ -344,4 +344,21 @@ SceInt32 disp_checkConditionEnd(t_displayBuffer *pDisp)
 
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/mpeg_display", dispbuf_func);
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/mpeg_display", dispbuf_show);
+SceInt32 control_waitDisp(t_conditionCtrl *pCtrl);
+SceInt32 dispbuf_show(t_displayBuffer *pDisp)
+{
+	SceInt32 ret = 0;
+	SceChar8 *buffer;
+
+	if (dispbuf_getMode(pDisp) == 1 || dispbuf_getMode(pDisp) == 0xff) {
+		buffer = pDisp->buf[pDisp->read];
+		ret = swap_buffer(buffer);
+		if (ret < 0)
+			return ret;
+		pDisp->read = (pDisp->read + 1) % pDisp->size;
+		ret = control_waitDisp(pDisp->pCtrl);
+	} else {
+		pDisp->read = (pDisp->read + 1) % pDisp->size;
+	}
+	return ret;
+}
