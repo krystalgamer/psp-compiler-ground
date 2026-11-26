@@ -441,6 +441,10 @@ static void process_stage();
 static void clear_stage();
 static void goto_stage(int stage);
 static void wait_stage(int stage, int delay, void (*func)());
+double pow(double x, double y);
+int rand(void);
+void *memset(void *s, int c, unsigned int n);
+void exit(int status);
 
 
 void set_char_feel(int flagPlayer, int player_feel, int other_feel)
@@ -533,23 +537,487 @@ static void give_pae(int to_player, int pae, int pos, int kind)
 }
 
 
-INCLUDE_RODATA("tmp/asm/flowars/flowars/nonmatchings/game", D_0002FAE0);
 
-INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/game", judge_game);
+static void judge_game(int player)
+{
+	int index;
+	int pae;
+	int depth;
+	int p;
 
-INCLUDE_RODATA("tmp/asm/flowars/flowars/nonmatchings/game", D_0002FB18);
 
-INCLUDE_RODATA("tmp/asm/flowars/flowars/nonmatchings/game", D_0002FB48);
 
-INCLUDE_RODATA("tmp/asm/flowars/flowars/nonmatchings/game", D_0002FB5C);
 
-INCLUDE_RODATA("tmp/asm/flowars/flowars/nonmatchings/game", D_0002FB7C);
 
-INCLUDE_RODATA("tmp/asm/flowars/flowars/nonmatchings/game", D_0002FB8C);
+	int kind = paeManager.get_pae_kind(g_last_pae);
+	int kind_count = panManager.count_kind(kind);
+	int pos = panManager.get_kind_pos(kind);
 
-INCLUDE_RODATA("tmp/asm/flowars/flowars/nonmatchings/game", D_0002FBAC);
 
-INCLUDE_RODATA("tmp/asm/flowars/flowars/nonmatchings/game", D_0002FBCC);
+
+
+
+	int kind2 = paeManager.get_pae_kind(g_last_turn_pae);
+	int kind_count2 = panManager.count_kind(kind2);
+	int pos2 = panManager.get_kind_pos(kind2);
+
+	g_steal = 0;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	if (g_last_pae == 51) {
+		while ((pos = panManager.get_kind_pos(13)) != -1) {
+
+
+			int pae = panManager.remove_pos(pos);
+			give_pae(player, pae, pos, 13);
+			panManager.compact();
+		}
+	}
+
+
+
+
+	if (kind != kind2) {
+
+		switch (kind_count) {
+		case 1:
+
+			while ((pae = panManager.remove_bonus_pae(kind)) > 0)
+				give_pae(player, pae, pos, kind);
+			break;
+
+
+
+
+		case 2:
+			while ((pae = panManager.remove_pos(pos)) > 0)
+				give_pae(player, pae, pos, kind);
+			break;
+
+
+
+
+		case 3:
+			if (g_confirm == 1)
+				p = dialog_param[0];
+			else if (g_confirm == 2)
+				p = dialog_param[1];
+			else {
+				print_nothing("error! g_confirm is invalid:%d\n", g_confirm);
+				printGlobal("from judge put");
+				exit(0);
+			}
+
+
+			print_nothing("[%03d]\xbc\xb1\xc5\xc3-player:%d, pae:%d,%d, confirm:%d\n", g_game_count, player, dialog_param[0], dialog_param[1], g_confirm);
+			g_confirm = 0;
+			memset(dialog_param, 0, sizeof(dialog_param));
+
+
+			while ((pae = panManager.remove_bonus_pae(kind)) > 0)
+				give_pae(player, pae, pos, kind);
+
+
+
+			pae = panManager.remove_pos(pos);
+
+			give_pae(player, pae, pos, kind);
+
+
+			pae = panManager.remove_pae(p);
+
+			give_pae(player, pae, pos, kind);
+
+			break;
+
+
+		case 4:
+			depth = panManager.get_max_depth(kind);
+			for (index = 0; index < depth; index++) {
+				pae = panManager.remove_pos(pos);
+				give_pae(player, pae, pos, kind);
+			}
+
+
+			g_steal++;
+			set_char_feel(player, 1, 3);
+
+			if (userManager.is_jabbuck(player, kind))
+				g_steal++;
+			break;
+		}
+
+
+
+
+		switch (kind_count2) {
+		case 1:
+			break;
+
+
+		case 2:
+			while ((pae = panManager.remove_pos(pos2)) > 0)
+				give_pae(player, pae, pos2, kind2);
+			break;
+
+
+
+
+
+
+		case 3:
+			if (g_confirm2 == 1)
+				p = dialog_param2[0];
+			else if (g_confirm2 == 2)
+				p = dialog_param2[1];
+			else {
+				print_nothing("error! g_confirm2 is invalid:%d\n", g_confirm2);
+				printGlobal("from judge turnover");
+				exit(0);
+			}
+
+
+			print_nothing("[%03d]\xbc\xb1\xc5\xc3-player:%d, pae:%d,%d, confirm:%d\n", g_game_count, player, dialog_param[0], dialog_param[1], g_confirm);
+			g_confirm2 = 0;
+			memset(dialog_param2, 0, sizeof(dialog_param2));
+
+
+			while ((pae = panManager.remove_bonus_pae(kind2)) > 0)
+				give_pae(player, pae, pos2, kind2);
+
+
+
+			pae = panManager.remove_pos(pos2);
+
+			give_pae(player, pae, pos2, kind2);
+
+
+			pae = panManager.remove_pae(p);
+
+			give_pae(player, pae, pos2, kind2);
+
+			break;
+
+
+		case 4:
+			g_confirm = 0;
+			depth = panManager.get_max_depth(kind2);
+			for (index = 0; index < depth; index++) {
+				pae = panManager.remove_pos(pos2);
+				give_pae(player, pae, pos2, kind2);
+			}
+
+
+			g_steal++;
+			set_char_feel(player, 1, 3);
+
+			if (userManager.is_jabbuck(player, kind2))
+				g_steal++;
+			break;
+		}
+	} else {
+		switch (kind_count) {
+		case 2:
+			print_nothing("[%03d]\xc2\xca-player:%d, kind:%d\n", g_game_count, player, kind);
+			if (handManager.count(player) > 0) {
+				soundUtil.play(54, 127);
+				g_steal++;
+			}
+
+
+			depth = panManager.get_max_depth(kind);
+			for (index = 0; index < depth; index++) {
+				set_char_feel(player, 1, 3);
+				pae = panManager.remove_pos(pos);
+				give_pae(player, pae, pos, kind);
+			}
+
+
+			break;
+
+
+
+		case 3:
+			if (handManager.count(player) == 0) {
+				int paeTemp = panManager.remove_pos(pos);
+
+
+				while ((pae = panManager.remove_bonus_pae(kind)) > 0)
+					give_pae(player, pae, pos, kind);
+
+
+				pae = panManager.remove_pos(pos);
+				give_pae(player, pae, pos, kind);
+				pae = panManager.remove_pos(pos);
+				give_pae(player, pae, pos, kind);
+
+				panManager.add(paeTemp, 0, 0);
+
+			} else {
+				print_nothing("[%03d]\xbb\xb6-player:%d, kind:%d\n", g_game_count, player, kind);
+
+				userManager.bbuck(player, kind);
+
+
+				skinManager.set_char_feel(player, 2);
+
+				UserStat stat;
+				userManager.get_stat(player, &stat);
+
+				if (stat.bbuck == 3) {
+
+
+
+
+
+
+					wait_stage(81, 300, 0);
+
+					userManager.set_sp_success(player, 7);
+					return;
+				}
+
+
+
+
+				if (stat.bbuck == g_round_count) {
+					int money_take = g_bet_money * stat.bbuck * (int)pow(2.0, g_nagari_count) * 7;
+
+					if (rand() % 2 == 0)
+						animator.add_ani(14, 179, 80, 0, 30, 43);
+					else
+						animator.add_ani(13, 179, 80, 0, 30, 43);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+					if (player == 0) {
+						g_take_don = money_take;
+
+						if (l_mod_player.opp_money < money_take)
+							money_take = l_mod_player.opp_money;
+						l_mod_player.my_money += money_take;
+						l_mod_player.opp_money -= money_take;
+					} else {
+						g_take_don = -money_take;
+
+						if (l_mod_player.my_money < money_take)
+							money_take = l_mod_player.opp_money;
+						l_mod_player.my_money -= money_take;
+						l_mod_player.opp_money += money_take;
+					}
+				} else {
+
+
+
+
+
+					g_take_don = 0;
+					if (rand() % 2 == 0)
+						animator.add_ani(14, 179, 80, 0, 30, 43);
+					else
+						animator.add_ani(13, 139, 80, 0, 30, 43);
+				}
+			}
+			break;
+
+
+		case 4:
+			g_confirm = 0;
+			memset(dialog_param, 0, sizeof(dialog_param));
+
+			if (handManager.count(player) > 0) {
+				print_nothing("[%03d]\xb5\xfb\xb4\xda-player:%d, kind:%d\n", g_game_count, player, kind);
+				animator.add_ani(11, 139, 41, 0, 30, 60);
+				g_steal++;
+
+				set_char_feel(player, 1, 3);
+
+				if (g_round_count == 1) {
+					int money_take = g_bet_money * g_round_count * (int)pow(2.0, g_nagari_count) * 7;
+
+					userManager.bbuck(player, kind);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+					if (player == 0) {
+						g_take_don = money_take;
+
+						if (l_mod_player.opp_money < money_take)
+							money_take = l_mod_player.opp_money;
+						l_mod_player.my_money += money_take;
+						l_mod_player.opp_money -= money_take;
+					} else {
+						g_take_don = -money_take;
+
+						if (l_mod_player.my_money < money_take)
+							money_take = l_mod_player.opp_money;
+						l_mod_player.my_money -= money_take;
+						l_mod_player.opp_money += money_take;
+					}
+				}
+			}
+
+
+
+
+
+			depth = panManager.get_max_depth(kind);
+			for (index = 0; index < depth; index++) {
+				pae = panManager.remove_pos(pos);
+				give_pae(player, pae, pos, kind);
+			}
+			break;
+		}
+	}
+
+
+
+
+
+
+
+
+	panManager.compact();
+
+
+	if (panManager.count() == 0 && handManager.count(player) > 0) {
+
+		print_nothing("[%03d]\xbe\xb5-player:%d\n", g_game_count, player);
+		animator.add_ani(10, 146, 54, 0, 30, 42);
+		set_char_feel(player, 1, 3);
+
+		g_steal++;
+	}
+
+
+
+	userManager.update();
+
+
+	g_last_pae = 0;
+	g_last_turn_pae = 0;
+
+	if (animator.count_ani() > 0)
+		wait_stage(21, 1000, animator.start_ani);
+	else
+		goto_stage(21);
+
+
+
+}
+
+__asm__(".globl judge_game");
+
+/* judge_game (C) emits this string; process_stage (asm) uses it too */
+__asm__(".globl D_0002FBCC\nD_0002FBCC = 0x0002FBCC");
+
+
+
+
+
+
+
+
 
 INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/game", process_stage_E1E0);
 
@@ -680,6 +1148,4 @@ INCLUDE_RODATA("tmp/asm/flowars/flowars/nonmatchings/game", D_00030124);
 
 INCLUDE_RODATA("tmp/asm/flowars/flowars/nonmatchings/game", D_00030138);
 
-INCLUDE_RODATA("tmp/asm/flowars/flowars/nonmatchings/game", D_00030148);
 
-INCLUDE_RODATA("tmp/asm/flowars/flowars/nonmatchings/game", D_0003014C);
