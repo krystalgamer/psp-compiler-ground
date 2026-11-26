@@ -1,9 +1,13 @@
 /* cflags: -O1 */
 #include "common.h"
+#include "dom_domi.h"
 #include "m2c_macros.h"
+void Element_getAttribute(DOMString *s, void *elem, void *name);
+char *DOMStringtoUTF8(DOMString *s);
+int strcmp(const char *a, const char *b);
+void adaptArea(void *a0, void *area, void *a2, s8 n);
 int MEM_malloc(M2C_UNK, M2C_UNK);                   /* extern */
 M2C_UNK MEM_free(M2C_UNK, void *);                  /* extern */
-void *getMapList();                                 /* extern */
 
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_map", parseCoords);
@@ -140,9 +144,31 @@ void *addMapList(void *arg0, signed char *arg1) {
     return var_s1;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_map", addMapUserList);
+void *addMapUserList(void *a0, void *a1, void *name, void *data) {
+    void *map;
+    void *u;
+    if (name == NULL) {
+        return NULL;
+    }
+    map = addMapList(a0, a1);
+    u = (void *)MEM_malloc(0, 0xC);
+    M2C_FIELD(u, void **, 0) = name;
+    M2C_FIELD(u, void **, 4) = data;
+    M2C_FIELD(u, void **, 8) = NULL;
+    M2C_FIELD(M2C_FIELD(map, void **, 8), void **, 8) = u;
+    M2C_FIELD(map, void **, 8) = u;
+    return u;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_map", getMapList);
+void *getMapList(void *box, char *name) {
+    void *m;
+    for (m = M2C_FIELD(M2C_FIELD(M2C_FIELD(box, void **, 0x20), void **, 0x74), void **, 0x14); m != NULL; m = M2C_FIELD(m, void **, 0x14)) {
+        if (strcmp(M2C_FIELD(m, char **, 0), name) == 0) {
+            break;
+        }
+    }
+    return m;
+}
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/lo_map", D_001392D8);
 
@@ -197,7 +223,14 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_map", getAreaList);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_map", adaptArea);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_map", adaptAreaList);
+void adaptAreaList(void *a0, void *map, void *a2) {
+    void *a;
+    int i = 1;
+    for (a = M2C_FIELD(M2C_FIELD(map, void **, 0xC), void **, 0xC); a != NULL; a = M2C_FIELD(a, void **, 0xC)) {
+        adaptArea(a0, a, a2, i);
+        i++;
+    }
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_map", createAreaInfo);
 
@@ -218,7 +251,16 @@ void freeDOMString(void *arg0) {
     MEM_free(0, arg0);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_map", getDOMAttributeValue);
+char *getDOMAttributeValue(void *elem, void *name) {
+    DOMString s;
+    char *r;
+    Element_getAttribute(&s, elem, name);
+    r = NULL;
+    if (s.len != 0) {
+        r = DOMStringtoUTF8(&s);
+    }
+    return r;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_map", getDOMAttributeValue_PositiveNum);
 

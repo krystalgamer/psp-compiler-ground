@@ -1,6 +1,10 @@
 /* cflags: -O1 */
 #include "common.h"
+#include "iom_types.h"
 #include "m2c_macros.h"
+void iom_detachCache(void);
+void iom_detachCookie(void);
+void iom_detachHttpCtx(void);
 M2C_UNK MEM_free(M2C_UNK, void *);                  /* extern */
 extern void *D_005850D4;
 extern void *D_005850D8;
@@ -95,7 +99,20 @@ INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/iom_main", D_00139D68);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iom_main", iom_halt);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iom_main", iom_end);
+void iom_end(void) {
+    IOMMSG *m;
+    iom_detachCache();
+    iom_detachCookie();
+    iom_detachHttpCtx();
+    iom.x100 = 0;
+    m = fatalErrRepMsg;
+    fatalErrRepMsg = NULL;
+    m->b.code = 0x21;
+    iom_sendMsg(m, iom.mqReply);
+    OS_mq_close(iom.mqReply);
+    OS_mq_close(iom.mq8);
+    OS_mq_close(iom.mq);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iom_main", iom_translateMsg);
 
@@ -149,9 +166,32 @@ int iom_freeMsg(void *arg0) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iom_main", iom_sendMsg);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iom_main", iom_recvMsg);
+IOMMSG *iom_recvMsg(int mq) {
+    IOMMSG *msg;
+    int attr[4];
+    unsigned int prio;
+    msg = MEM_malloc(0, 0x24);
+    OS_mq_getattr(mq, attr);
+    OS_mq_receive(mq, msg, 0x24, &prio);
+    return msg;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iom_main", iom_waitMsg);
+IOMMSG *iom_waitMsg(int code, int mq) {
+    IOMMSG *msg;
+    IOMBODY *b;
+    unsigned int prio;
+    msg = MEM_malloc(0, 0x24);
+    b = &msg->b;
+    for (;;) {
+        OS_mq_receive(mq, msg, 0x24, &prio);
+        if (b->code == code) {
+            return msg;
+        }
+        if (b->data != NULL) {
+            MEM_free(0, b->data);
+        }
+    }
+}
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/iom_main", D_00139D90);
 

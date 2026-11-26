@@ -1,10 +1,56 @@
+/* cflags: -O1 */
 #include "common.h"
+#include "m2c_macros.h"
+M2C_UNK MEM_free(M2C_UNK, void *);                  /* extern */
+extern unsigned char search;
+
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/act_formdata", URLencode);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/act_formdata", newFormCollect);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int newFormCollect(int arg0, int arg1, void *arg2) {
+    M2C_FIELD(arg2, int *, 4) = arg0;
+    M2C_FIELD(arg2, int *, 8) = arg1;
+    M2C_FIELD(arg2, int *, 0xC) = 0;
+    M2C_FIELD(arg2, int *, 0x10) = 0;
+    M2C_FIELD(arg2, int *, 0x14) = 0;
+    return 0;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/act_formdata", deleteFormCollect);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void deleteFormCollect(void *arg0) {
+    int temp_a0;
+    void *temp_a1;
+    void *temp_a1_2;
+    void *temp_s1;
+    void *var_s0;
+
+    var_s0 = M2C_FIELD(arg0, void **, 0x10);
+    if (var_s0 != NULL) {
+        do {
+            temp_a1 = M2C_FIELD(var_s0, void **, 0);
+            temp_s1 = M2C_FIELD(var_s0, void **, 0xC);
+            if (temp_a1 != NULL) {
+                MEM_free(0, temp_a1);
+            }
+            temp_a1_2 = M2C_FIELD(var_s0, void **, 4);
+            if (temp_a1_2 != NULL) {
+                MEM_free(0, temp_a1_2);
+            }
+            temp_a0 = M2C_FIELD(var_s0, int *, 8);
+            if (temp_a0 != 0) {
+                deleteFileData(temp_a0);
+            }
+            MEM_free(0, var_s0);
+            var_s0 = temp_s1;
+        } while (temp_s1 != NULL);
+    }
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/act_formdata", getFormCollectData);
 
@@ -14,11 +60,37 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/act_formdata", fileContentType)
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/act_formdata", newFileData);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/act_formdata", deleteFileData);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void deleteFileData(void *arg0) {
+    void *temp_a1;
+
+    temp_a1 = M2C_FIELD(arg0, void **, 8);
+    if (temp_a1 != NULL) {
+        MEM_free(0, temp_a1);
+    }
+    MEM_free(0, arg0);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/act_formdata", memstr);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/act_formdata", clearSearchStrings);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void clearSearchStrings(void) {
+    M2C_FIELD(&search, int *, 0) = 0;
+    M2C_FIELD(&search, int *, 4) = 0;
+    M2C_FIELD(&search, int *, 0xC) = 0;
+    M2C_FIELD(&search, int *, 8) = 0;
+    M2C_FIELD(&search, int *, 0x10) = 0;
+    if (M2C_FIELD(&search, int *, 0x14) != 0) {
+        MEM_free(0, M2C_FIELD(&search, int *, 0x14));
+        M2C_FIELD(&search, int *, 0x14) = 0;
+    }
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/act_formdata", searchStrings);
 

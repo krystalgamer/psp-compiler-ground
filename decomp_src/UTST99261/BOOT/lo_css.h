@@ -2,12 +2,7 @@
 #define LO_CSS_H
 /* CSS properties applied to layout boxes (lo_CSS) */
 
-typedef struct CSSVALUE {
-    u8 unk0[0x18];
-    struct CSSVALUE *next;      /* 0x18 */
-    u8 unk1C[0xC];
-    int ident;                  /* 0x28: keyword */
-} CSSVALUE;
+#include "css_types.h"
 
 void cssBorderTopColor(void *ctx, BOX *box, CSSVALUE *val, int n);
 void cssBorderTopStyle(void *ctx, BOX *box, CSSVALUE *val, int n);

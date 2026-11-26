@@ -1,6 +1,15 @@
 /* cflags: -O1 */
 #include "common.h"
+#include "dom_domi.h"
 #include "m2c_macros.h"
+typedef struct COLCONTENT { int x0; int span; int x8; u8 align; int x10; int x14; int x18; } COLCONTENT;
+void CharacterData_getData(DOMString *s, void *node);
+char *DOMStringtoUTF8(DOMString *s);
+int Node_getNodeType(void *node);
+void *Node_getOwnerDocument(void *node);
+void Node_getNodeName(DOMString *s, void *node);
+int ucs2ToUtf8(char *dst, DOMChar *src, unsigned int len);
+extern char tag_global[];
 void *MEM_malloc(M2C_UNK, M2C_UNK);                 /* extern */
 M2C_UNK initMapList(void *);                        /* extern */
 extern void *ui_global;
@@ -22,19 +31,48 @@ extern unsigned char _DOMsize;
 
 
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_domApi", DomStringToUtf8);
+void DomStringToUtf8(DOMString *s, char *buf, int size) {
+    unsigned int n = (size - 1) / 3;
+    unsigned int len = s->len;
+    if (n < len) {
+        len = n;
+    }
+    buf[ucs2ToUtf8(buf, s->str, len)] = 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_domApi", checkAtributeByName);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_domApi", getTagName);
+char *getTagName(void *node) {
+    DOMString s;
+    if (Node_getNodeType(node) != 1) {
+        return NULL;
+    }
+    Node_getNodeName(&s, node);
+    DomStringToUtf8(&s, tag_global, 0x100);
+    return tag_global;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_domApi", getRawTextFromDomNode);
+char *getRawTextFromDomNode(void *node) {
+    DOMString s;
+    char *r;
+    CharacterData_getData(&s, node);
+    r = NULL;
+    if (s.len != 0) {
+        r = DOMStringtoUTF8(&s);
+    }
+    return r;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_domApi", getRawTextFromDomTree);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_domApi", getTextFromDomTree);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_domApi", getDOMDocument);
+void *getDOMDocument(void *node) {
+    if (Node_getNodeType(node) == 9) {
+        return node;
+    }
+    return Node_getOwnerDocument(node);
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -182,7 +220,14 @@ void initTdContent(void *arg0) {
     M2C_FIELD(arg0, unsigned short *, 0x40) = (unsigned short) (M2C_FIELD(arg0, unsigned short *, 0x40) | 1);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_domApi", initColContent);
+void initColContent(void *box, void *a1, int align) {
+    COLCONTENT *c = MEM_malloc(0, sizeof(COLCONTENT));
+    memset(c, 0, sizeof(COLCONTENT));
+    c->align = align;
+    c->span = 1;
+    M2C_FIELD(box, void **, 0x20) = c;
+    M2C_FIELD(box, s16 *, 0x38) = 7;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
