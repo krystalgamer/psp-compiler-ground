@@ -1,5 +1,7 @@
 /* lang: c++ */
-/* cflags: -O2 -frename-registers */
+/* cflags: -O3 -fno-exceptions */
+#undef __EXCEPTIONS
+#include "cxx/defer_asm.h"
 #include "../main.hpp"
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/MakeRGBA8888", _Z12MakeRGBA8888ffff);

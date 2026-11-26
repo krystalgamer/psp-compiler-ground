@@ -1,5 +1,7 @@
 /* lang: c++ */
-/* cflags: -O2 -frename-registers */
+/* cflags: -O3 -fno-exceptions */
+#undef __EXCEPTIONS
+#include "cxx/defer_asm.h"
 #include "../main.hpp"
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/psp_GetKernelErrName", _Z41__static_initialization_and_destruction_0ii_17488);

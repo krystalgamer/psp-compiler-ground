@@ -1,5 +1,7 @@
 /* lang: c++ */
-/* cflags: -O3 */
+/* cflags: -O3 -fno-exceptions */
+#undef __EXCEPTIONS
+#include "cxx/defer_asm.h"
 #include "../main.hpp"
 
 /* the strings stay in the module's .rodata (asm) */

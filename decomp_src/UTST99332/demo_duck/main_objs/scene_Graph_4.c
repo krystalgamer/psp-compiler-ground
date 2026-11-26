@@ -1,4 +1,7 @@
 /* lang: c++ */
+/* cflags: -O3 -fno-exceptions */
+#undef __EXCEPTIONS
+#include "cxx/defer_asm.h"
 #include "../main.hpp"
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph_4", _Z41__static_initialization_and_destruction_0ii_84160);

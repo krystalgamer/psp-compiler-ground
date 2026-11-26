@@ -1,4 +1,7 @@
 /* lang: c++ */
+/* cflags: -O3 -fno-exceptions */
+#undef __EXCEPTIONS
+#include "cxx/defer_asm.h"
 #include "../main.hpp"
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/gl__name_stack", _Z41__static_initialization_and_destruction_0ii_4615C);
