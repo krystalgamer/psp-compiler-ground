@@ -111,7 +111,47 @@ static int get_rand_mission(int grade)
 	return -1;
 }
 
-INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/mission", get_mission_paes);
+static int get_mission_paes(int *p)
+{
+	int pae_num = 0, i = 0;
+	int *mission_pae;
+
+	memset(p, 0, sizeof(int) * 9);
+
+	if (g_mission_grade < 6) {
+		switch (g_mission_grade) {
+		case 1:
+			mission_pae = mission_1[g_mission_index];
+			break;
+		case 2:
+			mission_pae = mission_2[g_mission_index];
+			break;
+		case 3:
+			mission_pae = mission_3[g_mission_index];
+			break;
+		case 4:
+			mission_pae = mission_4[g_mission_index];
+			break;
+		case 5:
+			mission_pae = mission_5[g_mission_index];
+			break;
+		default:
+			return 0;
+		}
+
+		pae_num = mission_pae[0];
+		for (i = 0; i < pae_num; i++)
+			p[i] = mission_pae[i + 1];
+	} else {
+		pae_num = 9;
+
+		shuffle(mission_bingo_pae, 23);
+		for (i = 0; i < 9; i++)
+			p[i] = mission_bingo_pae[i];
+	}
+
+	return pae_num;
+}
 
 static void set_mission_state(int state)
 {
