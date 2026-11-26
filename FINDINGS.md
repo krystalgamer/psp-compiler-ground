@@ -406,6 +406,18 @@ consistent with 1.7.1-orig but doesn't distinguish it from 1.6.1/1.8.x. Its
   `scePsmfCheckStreamType_Base`, `_sceMpegId2type`); the 1.3.1 side is the
   one that matches.
 
+- sampler's 1.5.0.internal libraries (libpsmf, psmfBase, libmpeg_util):
+  every function has DWARF "declared inline but not inlined"
+  (`DW_AT_inline` 2), which 1.3.1's cc1 emits only with
+  `-finline-functions`; psmfBase's DWARF also shows helpers inlined into
+  later functions. So they were not plain `-O2 -frename-registers`. `-O3`
+  with default limits doesn't reproduce the function order, so probably a
+  smaller inline limit; the units use `-O2 -frename-registers` with the
+  inlined helpers as `static inline` copies.
+- Sony's newlib `vfprintf` (sampler) declares `base` as `int` instead of
+  the enum and is built with long long support; with that the whole unit
+  matches upstream.
+
 ## psp-gcc 1.8.3
 
 psp184's mpegon and mpegstr (Sony's mpeg player sample) are built by the
