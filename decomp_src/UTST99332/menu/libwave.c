@@ -489,9 +489,71 @@ static int func_0000A3A4(int prio)
 	return 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/menu/nonmatchings/libwave", func_0000A448);
+extern char D_002E0D7C[2][0x700];
+static int func_0000A564(char *buf);
 
-INCLUDE_ASM("tmp/asm/UTST99332/menu/nonmatchings/libwave", func_0000A564);
+static int func_0000A448(unsigned int args, void *argp)
+{
+	SceWaveMain *m = (SceWaveMain *)argp;
+	int i = 0;
+	int j;
+
+	while (D_002E0CF8 == 0) {
+		if (func_0000A564(D_002E0D7C[i]) == 0) {
+			sceKernelDelayThread(10000);
+			continue;
+		}
+		for (j = 1; j < 16; j++)
+			func_0000A564(D_002E0D7C[i] + j * 0x70);
+		sceAudioOutputBlocking(m->ch, 0x8000, D_002E0D7C[i]);
+		i = (i + 1) % 2;
+	}
+	sceAudioOutputBlocking(m->ch, 0, NULL);
+	sceKernelExitThread(0);
+	return 0;
+}
+
+static void func_0000A73C(void *dst, void *src, int *a, int *b);
+static void func_0000A880(int ch, void *buf);
+static void func_0000AB1C(int ch, void *buf);
+static void func_0000B034(int ch, char *dst, void *src);
+typedef int (*SceWaveCallback)(int ch, void *buf, int size, int arg);
+
+static int func_0000A564(char *buf)
+{
+	int ch;
+	int n = 0;
+
+	wclr(buf, 0x70);
+	for (ch = 0; ch < 8; ch++) {
+		if (D_002E1B7C[ch].stat == 0)
+			continue;
+		n++;
+		if (!(D_002E1B7C[ch].flags & 0x400)) {
+			if (!(D_002E1B7C[ch].flags & 0x100)) {
+				if (D_002E1B7C[ch].data != NULL)
+					func_0000A880(ch, D_002E204C);
+			} else {
+				if (D_002E1B7C[ch].data != NULL)
+					func_0000AB1C(ch, D_002E204C);
+			}
+		} else {
+			if (D_002E1B7C[ch].unk44 != 0) {
+				wclr(D_002E204C, 0x70);
+				if (!(D_002E1B7C[ch].flags & 0x100)) {
+					if (((SceWaveCallback)D_002E1B7C[ch].unk44)(ch, D_002E2048, 0x10, D_002E1B7C[ch].unk48))
+						D_002E1B7C[ch].stat = 0;
+					func_0000A73C(D_002E204C, D_002E2048, &D_002E1B7C[ch].unk30, &D_002E1B7C[ch].unk34);
+				} else {
+					if (((SceWaveCallback)D_002E1B7C[ch].unk44)(ch, D_002E204C, 0x70, D_002E1B7C[ch].unk48))
+						D_002E1B7C[ch].stat = 0;
+				}
+			}
+		}
+		func_0000B034(ch, buf, D_002E204C);
+	}
+	return n;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/menu/nonmatchings/libwave", func_0000A73C);
 
