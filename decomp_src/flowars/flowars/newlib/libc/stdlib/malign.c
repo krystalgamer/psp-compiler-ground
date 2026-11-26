@@ -1,5 +1,3 @@
-#include "common.h"
-
-INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/newlib/libc/stdlib/malign", memalign);
-
-INCLUDE_RODATA("tmp/asm/flowars/flowars/nonmatchings/newlib/libc/stdlib/malign", D_0003194C);
+/* upstream: newlib-1.12.0/newlib/libc/stdlib/malign.c (unmodified) */
+/* cflags: -O2 -fno-builtin */
+#include "libc/stdlib/malign.c"

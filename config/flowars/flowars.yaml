@@ -214,7 +214,7 @@ segments:
       - [0x318A8, .rodata, libgcc/dp-bit/__thenan_df]
       - [0x318C0, .rodata, libgcc/libgcc2/__clz_tab]
       - [0x319C0, .rodata, kernel_bridge]
-      - [0x319CC, .rodata, newlib/libc/stdlib/malign]
+      - [0x319CC, .rodata, newlib/libc/reent/impure]
       - [0x319D0, .rodata, newlib/libc/stdio/puts]
       - [0x319D4, .rodata, newlib/libc/stdio/vfprintf]
       - [0x31BB4, .rodata, newlib/libc/stdlib/wctomb_r]
