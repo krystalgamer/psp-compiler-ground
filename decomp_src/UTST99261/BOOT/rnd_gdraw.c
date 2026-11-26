@@ -92,8 +92,30 @@ int GUI_Graphics_getMaskPattern();
 void rnd_drawFrameCallback();
 M2C_UNK rnd_drawRepaint();                          /* extern */
 M2C_UNK GUI_ScrollPane_getViewportSize();           /* extern */
-M2C_UNK rnd_updateAnimImageBoxnode();               /* extern */
-M2C_UNK rnd_updateAnimTextBoxnode();                /* extern */
+int rnd_updateAnimImageBoxnode();
+int rnd_updateAnimTextBoxnode();
+typedef struct {
+    u8 unk0[0x6C];
+    u8 flags;                   /* 0x6C */
+} RBSTYLE;
+typedef struct {
+    RGIMAGE *img;
+} RBSUB;
+typedef struct RBN {
+    struct RBN *next;
+    u8 unk4[0xC];
+    int x;                      /* 0x10 */
+    int y;
+    int w;
+    int h;
+    RBSUB *sub;                 /* 0x20 */
+    RBSTYLE *style;             /* 0x24 */
+    int unk28;
+    int widget;                 /* 0x2C */
+} RBN;
+RBN *rnd_findParentBoxnode(RBN *n, int type);
+void rnd_gdrawGetViewClientSize();
+int GUI_ScrollPane_getScrollPosition();
 
 
 int color2rgb(int *rgb, int c) {
@@ -134,7 +156,7 @@ int rnd_gdrawCreateView(int parent, RGBOX *box) {
 #define NULL ((void *)0)
 #endif
 
-void rnd_gdrawGetViewClientSize(void) {
+void rnd_gdrawGetViewClientSize() {
     GUI_ScrollPane_getViewportSize();
 }
 
@@ -548,7 +570,28 @@ void rnd_gdrawFillrectangle(int g, int color, int x, int y, int w, int h) {
     GUI_Graphics_fillRect(g, x, y, w, h);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_gdraw", rnd_gdrawMaskFillrectangle);
+void rnd_gdrawMaskFillrectangle(int g, int color, int x, int y, int w, int h) {
+    int c1[3];
+    int c2[3];
+    int p;
+    int b;
+
+    b = 3;
+    color2rgb(c1, 0xFFFFFF);
+    color2rgb(c2, color);
+    p = GUI_Graphics_getMaskPattern(c1, c2);
+    if (p == 0) {
+        return;
+    }
+    if (w < 3 || h < 3) {
+        b = w < h ? w : h;
+    }
+    GUI_Graphics_drawTiledPixmap(g, p, x, y, b, h, 0, 0);
+    GUI_Graphics_drawTiledPixmap(g, p, x + w - b, y, b, h, 0, 0);
+    GUI_Graphics_drawTiledPixmap(g, p, x, y, w, b, 0, 0);
+    GUI_Graphics_drawTiledPixmap(g, p, x, y + h - b, w, b, 0, 0);
+    GUI_Graphics_freePixmap(p);
+}
 
 void rnd_gdrawImage(int g, int a1, int a2, int a3, int a4, int a5, int a6, int a7, int a8, int pixmap) {
     GUI_Graphics_drawPixmap(g, pixmap, a1, a2, a3, a4, a5, a6, a7, a8);
@@ -655,7 +698,28 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_gdraw", rnd_gdrawImageReset
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_gdraw", rnd_drawImageBoxnode);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_gdraw", rnd_updateAnimImageBoxnode);
+int rnd_updateAnimImageBoxnode(n)
+    RBN *n;
+{
+    RBN *p;
+    int px;
+    int py;
+    int sw;
+    int sh;
+    int ret;
+
+    if (n->sub->img == NULL || n->sub->img->type != 2 || (p = rnd_findParentBoxnode(n, 1)) == NULL) {
+        return 0;
+    }
+    GUI_ScrollPane_getScrollPosition(p->widget, &px, &py);
+    rnd_gdrawGetViewClientSize(p->widget, &sw, &sh);
+    rnd_findParentBoxnode(n, 0x13);
+    ret = 0;
+    if (px < n->x + n->w && n->x < px + sw && py < n->y + n->h && n->y < py + sh) {
+        ret = 1;
+    }
+    return ret;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -671,7 +735,28 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_gdraw", rnd_drawRepaint);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_gdraw", rnd_drawTextBoxnode);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_gdraw", rnd_updateAnimTextBoxnode);
+int rnd_updateAnimTextBoxnode(n)
+    RBN *n;
+{
+    RBN *p;
+    int px;
+    int py;
+    int sw;
+    int sh;
+    int ret;
+
+    if (!(n->style->flags & 8) || (p = rnd_findParentBoxnode(n, 1)) == NULL) {
+        return 0;
+    }
+    GUI_ScrollPane_getScrollPosition(p->widget, &px, &py);
+    rnd_gdrawGetViewClientSize(p->widget, &sw, &sh);
+    rnd_findParentBoxnode(n, 0x13);
+    ret = 0;
+    if (px < n->x + n->w && n->x < px + sw && py < n->y + n->h && n->y < py + sh) {
+        ret = 1;
+    }
+    return ret;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
