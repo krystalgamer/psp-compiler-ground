@@ -82,6 +82,8 @@ int strcasecmp(const char *a, const char *b);
 char *trimspace(char *s);
 char *toAbsoluteURL(char *base, char *rel);
 
+extern char *FILESTRAGE_TABLE[];
+
 M2C_UNK createGifContext();                         /* extern */
 M2C_UNK deleteGifContext();                         /* extern */
 M2C_UNK initializeGifContext();                     /* extern */
@@ -303,7 +305,22 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/url", URL_encode);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/url", URL_decode);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/url", URL_checkFileStrage);
+int URL_checkFileStrage(URL *u) {
+    int i;
+
+    if (u->scheme == NULL || u->host == NULL) {
+        return -1;
+    }
+    if (strcasecmp(u->scheme, D_00132354) != 0) {
+        return -1;
+    }
+    for (i = 0; FILESTRAGE_TABLE[i] != NULL; i++) {
+        if (strncasecmp(u->host, FILESTRAGE_TABLE[i], strlen(FILESTRAGE_TABLE[i])) == 0) {
+            return i;
+        }
+    }
+    return -1;
+}
 
 char *URL_toLocalFileName(char *url) {
     if (strncasecmp(url, D_00132354, 5) == 0) {
@@ -655,7 +672,29 @@ int directoryCheck(void) {
     return 1;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/url", pathMake);
+char *pathMake(char *path) {
+    int len;
+    char *p;
+
+    if (path == NULL) {
+        return NULL;
+    }
+    for (len = 0; ((u8 *)path)[len] != 0 && ((u8 *)path)[len] != '?' && ((u8 *)path)[len] != '#'; len++) {
+    }
+    if (len == 0) {
+        return NULL;
+    }
+    if (len > 0x800) {
+        return NULL;
+    }
+    p = MEM_malloc(NULL, len + 1);
+    if (p == NULL) {
+        return NULL;
+    }
+    memcpy(p, path, len);
+    p[len] = 0;
+    return p;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
