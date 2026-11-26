@@ -77,7 +77,28 @@ int sceWaveSetVolume(unsigned int ch, unsigned int left, unsigned int right)
 	return 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/sound_starmix/nonmatchings/libwave", sceWaveGetVolume);
+int sceWaveGetVolume(unsigned int ch, int *left, int *right)
+{
+	if (ch >= 8)
+		return 0x80440005;
+	if (left == NULL)
+		return 0x8044000A;
+	if (right == NULL)
+		return 0x8044000A;
+	if (D_0004F1B4[ch].vol_l <= 0)
+		*left = 0;
+	else if (D_0004F1B4[ch].vol_l >= 128)
+		*left = (D_0004F1B4[ch].vol_l - 1) / 32;
+	else
+		*left = D_0004F1B4[ch].vol_l / 32;
+	if (D_0004F1B4[ch].vol_r <= 0)
+		*right = 0;
+	else if (D_0004F1B4[ch].vol_r >= 128)
+		*right = (D_0004F1B4[ch].vol_r - 1) / 32;
+	else
+		*right = D_0004F1B4[ch].vol_r / 32;
+	return 0;
+}
 
 int sceWaveSetVolumeEx(unsigned int ch, unsigned int left, unsigned int right)
 {
