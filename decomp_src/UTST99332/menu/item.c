@@ -126,7 +126,67 @@ INCLUDE_ASM("tmp/asm/UTST99332/menu/nonmatchings/item", DrawItem);
 
 INCLUDE_RODATA("tmp/asm/UTST99332/menu/nonmatchings/item", D_000170D0);
 
-INCLUDE_ASM("tmp/asm/UTST99332/menu/nonmatchings/item", RunItem);
+extern const float D_00017094, D_00017098, D_0001709C;
+int FadeState(void);
+void ProgramChange(int mode);
+void PrxExec(int cat, int num);
+void RunItem(void)
+{
+	switch (item.step) {
+	case 0:
+		item.scale += D_00017094;
+		item.alpha -= 38;
+		if (item.alpha < 0)
+			item.alpha = 0;
+		if (item.scale >= D_00017098) {
+			item.step = 1;
+			item.scale = D_00017098;
+			item.xstep = 101;
+			item.ystep = 57;
+		}
+		break;
+	case 1:
+		item.xstep -= 10;
+		if (item.xstep < 0) {
+			item.step = 2;
+			item.xstep = 0;
+		}
+		break;
+	case 2:
+		item.ystep -= 6;
+		if (item.ystep < 0) {
+			item.step = 3;
+			item.ystep = 0;
+			item.cnt = 0;
+		}
+		break;
+	case 3:
+		item.cnt++;
+		break;
+	case 7:
+		item.scale -= D_00017094;
+		item.alpha += 38;
+		if (item.alpha >= 256)
+			item.alpha = 255;
+		if (item.scale <= D_0001709C) {
+			item.scale = D_0001709C;
+			ProgramChange(0);
+		}
+		break;
+	case 8:
+		if (++item.cnt > 60) {
+			if (FadeState() == 0)
+				PrxExec(menu->cat, menu->num);
+		}
+		break;
+	case 9:
+		if (FadeState() == 0) {
+			if (item.crossfade == 0)
+				item.step = 4;
+		}
+		break;
+	}
+}
 
 extern const float D_000170A0, D_000170A4;
 int SetItemListAnim(int dir);
