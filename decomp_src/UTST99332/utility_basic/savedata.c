@@ -273,9 +273,52 @@ void set_param_listload(SceUtilitySavedataParam *pParam)
 	pParam->pic1.dataBufSize = 0x100000;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/utility_basic/nonmatchings/savedata", set_param_listsave);
+void set_param_listsave(SceUtilitySavedataParam *pParam)
+{
+	int len, dirNum;
 
-INCLUDE_ASM("tmp/asm/UTST99332/utility_basic/nonmatchings/savedata", set_param_listdelete);
+	memcpy(pParam->titleId, D_00016714, 9);
+	pParam->titleId[9] = 0;
+
+	for (dirNum = 0; dirNum < 20; dirNum++) {
+		sprintf(_listUserDirName[dirNum], D_00016754, dirNum);
+	}
+	_listUserDirName[20][0] = 0;
+
+	pParam->pUserIds = _listUserDirName;
+
+	sprintf(pParam->fileName, D_00016728, D_0001672C);
+
+	len = 27;
+	memcpy(_dataBuf, D_00016738, len);
+	pParam->pDataBuf = _dataBuf;
+	pParam->dataBufSize = 0x100000;
+	pParam->dataFileSize = len;
+
+	set_params(pParam);
+
+	set_icon0(pParam);
+	set_icon1(pParam);
+	set_pic1(pParam);
+	set_snd0(pParam);
+
+	set_newdata_item(pParam);
+}
+
+void set_param_listdelete(SceUtilitySavedataParam *pParam)
+{
+	int i, len;
+
+	memcpy(pParam->titleId, D_00016714, 9);
+	pParam->titleId[9] = 0;
+
+	for (i = 0; i < 20; i++) {
+		sprintf(_listUserDirName[i], D_00016754, i);
+	}
+	_listUserDirName[20][0] = 10;
+
+	pParam->pUserIds = _listUserDirName;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/utility_basic/nonmatchings/savedata", set_params);
 
