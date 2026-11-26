@@ -56,10 +56,10 @@ typedef struct {
 } SfKeyCtx;
 
 extern char D_0002F31C[];
-extern char D_0002F2FC[];
-extern char D_0002F300[];
-extern char D_0002F304[];
-extern char D_0002F308[];
+extern const char D_0002F2FC[];
+extern const char D_0002F300[];
+extern const char D_0002F304[];
+extern const char D_0002F308[];
 extern void *(*sf_mallocp)(unsigned int);
 extern void (*sf_freep)(void *);
 
@@ -370,7 +370,27 @@ INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/systemfile", sceSystemFileAdd
 
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/systemfile", sceSystemFileRemoveIndexW);
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/systemfile", __sceSystemFileRemoveIndex);
+void __sceSystemFileRemoveIndex(SysFile *sf, SfIndex *ix)
+{
+	if (sf == NULL || ix == NULL)
+		return;
+	if (sf->flags & 2)
+		return;
+	if (ix->unk0 && (ix->unkC & 2)) {
+		if (ix->name) {
+			*ix->name = 0;
+			ix->name = NULL;
+		}
+		((SfKeyEnt *)ix->unk0)->off |= 0xFFFF;
+		ix->unk0 = 0;
+	}
+	ix->unk8 = 0;
+	ix->unkC = 0;
+	sf->hdr->count = sf->hdr->count - 1;
+	if (sf->flags & 4)
+		sf->flags ^= 4;
+	sf->flags |= 0x40;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/systemfile", sceSystemFileGetFD);
 
@@ -384,7 +404,56 @@ INCLUDE_RODATA("tmp/asm/psp184/UCJS90007/nonmatchings/systemfile", D_0002F2EC);
 
 INCLUDE_RODATA("tmp/asm/psp184/UCJS90007/nonmatchings/systemfile", D_0002F2F4);
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/systemfile", __sceSystemFileTypeValue2Str);
+const char D_0002F2FC[] = "4";
+const char D_0002F300[] = "8";
+const char D_0002F304[] = "16";
+const char D_0002F308[] = "32";
+
+char *__sceSystemFileTypeValue2Str(char *buf, int type)
+{
+	switch (type) {
+	case 0x204:
+	case 0x304:
+	case 0x404:
+	case 0x504:
+		buf[0] = 'V';
+		buf[2] = 0;
+		switch (type) {
+		case 0x204:
+		case 0x304:
+			buf[1] = 's';
+			return buf;
+		case 0x404:
+			buf[1] = 'i';
+			return buf;
+		case 0x504:
+			buf[1] = 'f';
+			return buf;
+		}
+		break;
+	}
+	if ((type & 0xFF00) == 0x100)
+		buf[0] = 'F';
+	else if ((type & 0xFF00) == 0)
+		buf[0] = 'R';
+	else
+		return NULL;
+	switch (type & 0xFF) {
+	case 4:
+		sf_strcpy(buf + 1, D_0002F2FC);
+		return buf;
+	case 8:
+		sf_strcpy(buf + 1, D_0002F300);
+		return buf;
+	case 16:
+		sf_strcpy(buf + 1, D_0002F304);
+		return buf;
+	case 32:
+		sf_strcpy(buf + 1, D_0002F308);
+		return buf;
+	}
+	return NULL;
+}
 
 const char *str2num(const char *s, int *out)
 {
