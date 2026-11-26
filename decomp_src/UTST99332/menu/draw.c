@@ -399,7 +399,22 @@ int GetItemSelect(void)
 	return -1;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/menu/nonmatchings/draw", SetItemListAnim);
+int SetItemListAnim(int dir)
+{
+	DRAWITEM *p;
+	int n;
+
+	p = drawitem;
+	if (p->pos == 4 && p->tex == 0 && dir)
+		return -1;
+	n = GetItemSelect();
+	p = &drawitem[n];
+	if (p->tex == itemlist.max - 1 && dir == 0)
+		return -1;
+	itemlist.anim = 0;
+	itemlist.dir = dir;
+	return 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/menu/nonmatchings/draw", DrawItemListOpen);
 
