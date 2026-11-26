@@ -206,6 +206,9 @@ static void draw_turn(int flagPlayer);
 
 /* SDK functions (tools/sdk_protos.h) */
 void sceGimPictureActivate(SceGimPicture *picture);
+void sceGimPictureSetFrame(SceGimPicture *picture, float frame);
+float sceGimPictureGetFrame(SceGimPicture *picture);
+u_long64 get_tick();
 void sceGimPictureAnimate(SceGimPicture *picture, float time);
 void sceGimPictureDelete(SceGimPicture *picture);
 void sceGuColor(unsigned int color);
@@ -262,7 +265,37 @@ void set_char_feel_156F8(unsigned int arg0, int arg1) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/skin", draw_character);
+static int draw_character(int char_num, int x, int y, int animate_term)
+{
+	int feel;
+	SceGimPicture *ani;
+	skin_ani_param *p;
+
+	feel = g_char_feel[char_num];
+	ani = g_img_char[char_num][feel];
+	p = &g_char_param[char_num][feel];
+	if (ani == NULL)
+		return 0;
+	if (g_char_draw_tick[char_num] == 0) {
+		g_char_draw_tick[char_num] = get_tick();
+		sceGimPictureSetFrame(ani, 0);
+	}
+	if ((int)(get_tick() - g_char_draw_tick[char_num]) / 1000000 >= animate_term || draw_char_now[char_num]) {
+		if (sceGimPictureGetFrame(ani) < p->totalframes)
+			sceGimPictureAnimate(ani, p->step);
+		else {
+			sceGimPictureSetFrame(ani, 0);
+			g_char_draw_tick[char_num] = get_tick();
+			draw_char_now[char_num] = 0;
+		}
+	}
+	sceGimPictureActivate(ani);
+	sceGuColor(0xFFFFFFFF);
+	graphics.draw_sprite(x, y, p->width, p->height, 0);
+	return 1;
+}
+
+__asm__(".globl draw_character");
 
 INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/skin", draw_face);
 
