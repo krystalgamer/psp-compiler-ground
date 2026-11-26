@@ -955,7 +955,19 @@ void sceGuDispBuffer(int width, int height, void *dispbp, int dispbw)
 		sceDisplaySetFrameBuf((char *)vram_top + (unsigned int)FBuf.disp_buffer, dispbw, FBuf.pixel_size, 1);
 }
 
-INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/libgu", sceGuDisplay);
+int sceGuDisplay(int state)
+{
+	int old;
+	GuDrawBuffer *fb = &FBuf;
+
+	if (!state)
+		sceDisplaySetFrameBuf(0, 0, 0, 1);
+	else
+		sceDisplaySetFrameBuf((char *)vram_top + (unsigned int)fb->disp_buffer, fb->frame_width, fb->pixel_size, 1);
+	old = disp_sw;
+	disp_sw = state;
+	return old;
+}
 
 void *sceGuSwapBuffers(void)
 {
@@ -1078,9 +1090,28 @@ void sceGuPatchFrontFace(int arg0)
 	send_commandi(56, arg0);
 }
 
-INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/libgu", sceGuShadeModel);
+void sceGuShadeModel(int mode)
+{
+	if (mode != 1)
+		send_commandi(80, 0);
+	else
+		send_commandi(80, 1);
+}
 
-INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/libgu", sceGuLight);
+void sceGuLight(int light, int type, int components, const ScePspFVector3 *position)
+{
+	int kind;
+
+	type &= 3;
+	send_commandf(lcmd[light].xpos, position->x);
+	send_commandf(lcmd[light].ypos, position->y);
+	send_commandf(lcmd[light].zpos, position->z);
+	if (components == 8)
+		kind = 2;
+	else
+		kind = (components == 6) ? 1 : 0;
+	send_commandi(lcmd[light].type, (type << 8) | kind);
+}
 
 void sceGuLightMode(int mode)
 {
