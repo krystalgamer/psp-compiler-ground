@@ -442,6 +442,15 @@ char *strncpy(char *dst, const char *src, unsigned int n);
 
 /* SDK functions (tools/sdk_protos.h) */
 void sceKernelExitGame(void);
+int sceKernelCreateCallback(const char *name, void *func, void *arg);
+int scePowerRegisterCallback(int slot, int cbid);
+int scePowerUnregisterCallback(int slot);
+int sceDisplayWaitVblankStart(void);
+int sceKernelCreateThread(const char *name, void *entry, int prio, int stacksize, unsigned int attr, void *option);
+int sceKernelStartThread(int thid, unsigned int arglen, void *argp);
+int sceKernelWakeupThread(int thid);
+int power_handler(int a, int b, void *p);
+void modAtracStop(void);
 
 
 int exit_handler(void) {
@@ -496,7 +505,80 @@ INCLUDE_RODATA("tmp/asm/flowars/flowars/nonmatchings/main", D_00030698);
 
 INCLUDE_RODATA("tmp/asm/flowars/flowars/nonmatchings/main", D_000306C8);
 
-INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/main", main);
+int main(void)
+{
+	g_power_cb = sceKernelCreateCallback("powerhandler", power_handler, 0);
+	scePowerRegisterCallback(0, g_power_cb);
+
+	init_all();
+	graphics.init();
+
+	graphics.draw_loading(0);
+	gameManager.goto_stage(2);
+
+	levelManager.load_data();
+
+	idload = sceKernelCreateThread("loaderThread", image_load, 0x32, 0x2000, 0, 0);
+	sceKernelStartThread(idload, 0, 0);
+
+	while (g_continue) {
+		check_dialog_finish();
+
+		inputManager.set_key_enable(0, 1);
+
+		if (g_stage_status == 2 || g_stage_status == 93 || g_stage_status == 94)
+			inputManager.set_key_enable(5, 0);
+		else
+			inputManager.set_key_enable(5, 1);
+
+		inputManager.pad_read();
+
+		graphics.init_sprite();
+		draw_frame();
+		graphics.sync_sprite();
+
+		sceDisplayWaitVblankStart();
+		graphics.swap_buffers();
+	}
+
+	modAtracStop();
+
+	int fo_frame = 0;
+	unsigned int fo_alpha;
+
+	while (fo_frame < 120 || !g_check_saved) {
+		check_dialog_finish();
+
+		fo_alpha = 0;
+		if (g_check_saved) {
+			if (fo_frame < 60)
+				fo_alpha = 20;
+			else {
+				fo_alpha = fo_frame * 4 - 220;
+				if (fo_alpha >= 255)
+					fo_alpha = 255;
+			}
+			fo_frame++;
+		}
+
+		graphics.init_sprite();
+		draw_frame();
+		graphics.fade_out(fo_alpha);
+		if (warning_msg[0] != 0)
+			graphics.show_warning(warning_msg, 255 - fo_alpha);
+		graphics.sync_sprite();
+		graphics.swap_buffers();
+	}
+
+	skinManager.term();
+	graphics.destroy();
+
+	scePowerUnregisterCallback(0);
+
+	sceKernelWakeupThread(mod_system.caller_id);
+	return 0;
+}
+
 
 static void process_stage_11DF0(void)
 {
