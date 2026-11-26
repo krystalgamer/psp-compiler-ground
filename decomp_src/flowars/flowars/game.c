@@ -455,9 +455,46 @@ void set_char_feel(int flagPlayer, int player_feel, int other_feel)
 	}
 }
 
-INCLUDE_RODATA("tmp/asm/flowars/flowars/nonmatchings/game", D_0002F92C);
 
-INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/game", printGlobal);
+void printGlobal(char *msg)
+{
+	int player;
+	int kind;
+	int kind_count;
+	int pos;
+	int kind2;
+	int kind_count2;
+	int pos2;
+
+	print_nothing("=========================  GLOBAL \272\257\274\366\265\351 =========================\n");
+	print_nothing("%s\n", msg);
+	print_nothing("g_stage_status:%d\n", g_stage_status);
+	print_nothing("g_confirm:%d\n", g_confirm);
+	print_nothing("g_confirm2:%d\n", g_confirm2);
+	print_nothing("g_pan_pae_count:%d\n", g_pan_pae_count);
+	print_nothing("g_player_pae_pos:%d\n", g_player_pae_pos);
+	print_nothing("g_player_index:%d\n", g_player_index);
+	print_nothing("g_turn:%d\n", g_turn);
+	print_nothing("deck remain:%d\n", deckManager.count());
+	print_nothing("g_cursor_pos:%d\n", inputManager.g_cursor_pos);
+	player = g_player_index != g_turn;
+	print_nothing("current pae:%d\n", handManager.get_pae_at(player, g_player_pae_pos));
+	kind = paeManager.get_pae_kind(g_last_pae);
+	kind_count = panManager.count_kind(kind);
+	pos = panManager.get_kind_pos(kind);
+	print_nothing("g_last_pae:%d\n", g_last_pae);
+	print_nothing("kind:%d\n", kind);
+	print_nothing("kind_count:%d\n", kind_count);
+	print_nothing("pos:%d\n", pos);
+	kind2 = paeManager.get_pae_kind(g_last_turn_pae);
+	kind_count2 = panManager.count_kind(kind2);
+	pos2 = panManager.get_kind_pos(kind2);
+	print_nothing("g_last_turn_pae:%d\n", g_last_turn_pae);
+	print_nothing("kind2:%d\n", kind2);
+	print_nothing("kind_count2:%d\n", kind_count2);
+	print_nothing("pos2:%d\n", pos2);
+	print_nothing("=========================  GLOBAL \272\257\274\366 \263\241 =========================\n");
+}
 
 void process_network_input(void) {
 }
@@ -495,7 +532,6 @@ static void give_pae(int to_player, int pae, int pos, int kind)
 		animator.add_pae(pae, sx, sy, dx + 4, dy, 0, -1);
 }
 
-INCLUDE_RODATA("tmp/asm/flowars/flowars/nonmatchings/game", D_0002FA98);
 
 INCLUDE_RODATA("tmp/asm/flowars/flowars/nonmatchings/game", D_0002FAE0);
 
