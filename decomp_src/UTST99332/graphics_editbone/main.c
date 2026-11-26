@@ -1,3 +1,4 @@
+/* data-align: 16 */
 /* cflags: -O2 -fmerge-constants */
 #include "common.h"
 
@@ -40,7 +41,7 @@ struct ScePspIMatrix4 { /* size 0x40 */
     ScePspIVector4 y;
     ScePspIVector4 z;
     ScePspIVector4 w;
-};
+} __attribute__((aligned(16)));
 typedef struct ScePspIMatrix4 ScePspIMatrix4;
 struct SceCtrlData;
 struct SceCtrlData { /* size 0x10 */
@@ -167,7 +168,6 @@ INCLUDE_RODATA("tmp/asm/UTST99332/graphics_editbone/nonmatchings/main", cylinder
 
 INCLUDE_RODATA("tmp/asm/UTST99332/graphics_editbone/nonmatchings/main", char_mode);
 
-INCLUDE_RODATA("tmp/asm/UTST99332/graphics_editbone/nonmatchings/main", D_00012750);
 
 #ifndef MAXEFF /* sample */
 #define MAXEFF		4
@@ -219,7 +219,41 @@ static void draw_cylinder(void)
 		4, 7, SCEGU_OPEN_OPEN, SCEGU_OPEN_OPEN, 0, &cylinder[28*7]);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_editbone/nonmatchings/main", draw_effector);
+#ifndef SCEGU_PRIM_TRIANGLES /* sample */
+#define SCEGU_PRIM_TRIANGLES               3
+#endif
+#ifndef SCEGU_NORMAL_FLOAT /* sample */
+#define SCEGU_NORMAL_FLOAT       ( 3 <<  5 )
+#endif
+#ifndef SCEGU_INDEX_UBYTE /* sample */
+#define SCEGU_INDEX_UBYTE        ( 1 << 11 )
+#endif
+#ifndef SCEGU_PRIM_TRIANGLE_STRIP /* sample */
+#define SCEGU_PRIM_TRIANGLE_STRIP          4
+#endif
+#ifndef SCEGU_VERTEX_FLOAT /* sample */
+#define SCEGU_VERTEX_FLOAT       ( 3 <<  7 )
+#endif
+#ifndef SCEGU_OPEN_OPEN /* sample */
+#define SCEGU_OPEN_OPEN                    3
+#endif
+static void draw_effector(int c)
+{
+	const u_char8 index[]={	2, 0, 1, 3, 0, 2, 4, 5, 6, 7,
+							8, 9, 10, 11, 12, 13, 14, 15};
+
+	sceGuColor(c);
+	sceGumDrawArray(SCEGU_PRIM_TRIANGLES,
+				SCEGU_NORMAL_FLOAT|SCEGU_VERTEX_FLOAT|SCEGU_INDEX_UBYTE,
+				18, index, pole);
+
+	sceGuPatchPrim(SCEGU_PRIM_TRIANGLE_STRIP);
+	sceGuColor(c);
+	sceGumDrawSpline(SCEGU_VERTEX_FLOAT, 4, 4,
+					SCEGU_OPEN_OPEN, SCEGU_OPEN_OPEN, 0, &sphere[0]);
+	sceGumDrawSpline(SCEGU_VERTEX_FLOAT, 4, 4,
+					SCEGU_OPEN_OPEN, SCEGU_OPEN_OPEN, 0, &sphere[48]);
+}
 
 #ifndef SCEGU_IMMEDIATE /* sample */
 #define SCEGU_IMMEDIATE                    0
