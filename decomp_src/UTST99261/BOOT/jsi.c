@@ -2,6 +2,7 @@
 #include "common.h"
 #include "dom_esp.h"
 #include "m2c_macros.h"
+#define VESP (*(EspContext *volatile *)&esp_context)
 extern void *jsapi_lock;
 extern char *gESPRIT_LO_GLOBAL_NDA;
 void OS_thread_mutex_lock(void *m);
@@ -151,7 +152,26 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSI_setDocumentCookie);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSI_getDocumentLastModified);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSI_getDocumentReferrer);
+DOMStr *JSI_getDocumentReferrer(void *node) {
+    void *h;
+    char *ref;
+
+    if (node == NULL) {
+        return NULL;
+    }
+    if (attached == 0) {
+        JSI_init();
+    }
+    h = HST_searchSessionIDHistoryNode(Node_getSid(node));
+    if (h == NULL) {
+        return NULL;
+    }
+    ref = HST_getRefURI(h);
+    if (ref == NULL) {
+        return NULL;
+    }
+    return newDOMString_4B5FC(ref, HST_getRefURIlen(h));
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -825,7 +845,16 @@ int ESP_initCookie(int a, int b, int c) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_startCore);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_terminateCore);
+int ESP_terminateCore(void) {
+    if (esp_context == NULL) {
+        return -1;
+    }
+    if (esp_context->state == 1) {
+        esp_postMsgQuit(esp_context->msg);
+        esp_context->state = 2;
+    }
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_destroyCore);
 
@@ -835,7 +864,12 @@ INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", D_00133BB8);
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", D_00133BC4);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_submitForm);
+int ESP_submitForm(unsigned char *url, char *data, int len) {
+    if (url == NULL || *url == 0 || len < 0 || (len > 0 && data == NULL)) {
+        return -1;
+    }
+    return esp_postMsgSubmitForm(esp_context->msg, url, data, len, 0, 0, "Content-Type: application/x-www-form-urlencoded\r\n\r\n");
+}
 
 int ESP_moveHistory(int off) {
     void *head;
@@ -876,7 +910,17 @@ int ESP_reloadPage(int arg0) {
     return var_v0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_abortLoading);
+int ESP_abortLoading(void) {
+    int r;
+
+    if (esp_context == NULL) {
+        return -1;
+    }
+    if (esp_context->state == 2) {
+        return -1;
+    }
+    return esp_postMsgStop(esp_context->msg);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_handleDeviceEvent);
 
