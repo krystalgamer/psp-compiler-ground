@@ -300,7 +300,128 @@ void set_ms_dialog(int no)
 	MsSkip = 1;
 }
 
+#ifdef NON_MATCHING
+/* Rough (7 instructions short): the logic of all seven MsType cases, with ms_check()
+ * (from the MsSave draft) inlined four times as in the original; the original shares more
+ * tails between the cases (crossjumping) and keeps the two sprite floats in $f20-$f22. */
+void disp_ms_dialog(void)
+{
+	if (MsGim < 0)
+		return;
+	if (MsSkip) {
+		MsSkip = 0;
+	} else {
+		SetSpriteColorRGBA(255, 255, 255, 255);
+		DrawSpriteEz(0.0f, 0.0f, 84.0f, 240.0f, 104.0f, 0.0f, 0.0f, MsGim);
+		DrawSpriteEz(0.0f, 240.0f, 84.0f, 240.0f, 104.0f, 240.0f, 0.0f, MsGim);
+		D_00153A38 = (D_00153A38 + 1) & 0xFF;
+	}
+	if (UtilityFlag > 0)
+		return;
+	switch (MsType) {
+	case 1:
+		if (GetKeyHit() & 0x2000) {
+			MsType = 0;
+			MsSave();
+		}
+		if (GetKeyHit() & 0x4000) {
+			MsType = 0;
+			release_gims(MsGim);
+			MsGim = -1;
+			se_play(3);
+			MsAccessFlag = 0;
+		}
+		break;
+	case 2:
+		if (--MsWait < 0) {
+			MsType = 0;
+			release_gims(MsGim);
+			MsGim = -1;
+			NowSaveFlag = 0;
+			MsAccessFlag = 0;
+		}
+		break;
+	case 3:
+		if (ms_check() > 0) {
+			NowSaveFlag = 0;
+			MsAccessFlag = 0;
+			MsType = 0;
+			OldError = 0;
+			MsLoad();
+		}
+		if (GetKeyHit() & 0x4000) {
+			MsType = 0;
+			release_gims(MsGim);
+			MsGim = -1;
+			NowSaveFlag = 0;
+			MsAccessFlag = 0;
+		}
+		break;
+	case 4:
+		if (ms_check() > 0) {
+			NowSaveFlag = 0;
+			MsAccessFlag = 0;
+			OldError = 0;
+			MsType = 0;
+			MsLoad();
+		}
+		if (GetKeyHit() & 0x4000) {
+			MsType = 0;
+			release_gims(MsGim);
+			MsGim = -1;
+			NowSaveFlag = 0;
+			MsAccessFlag = 0;
+			OldError = 0;
+		}
+		break;
+	case 5:
+		if (ms_check() > 0) {
+			MsType = 0;
+			puts("MsSave");
+			NowSaveFlag = 0;
+			MsAccessFlag = 0;
+			OldError = 0;
+			MsSave();
+		}
+		if (GetKeyHit() & 0x4000) {
+			MsType = 0;
+			release_gims(MsGim);
+			MsGim = -1;
+			NowSaveFlag = 0;
+			MsAccessFlag = 0;
+		}
+		break;
+	case 6:
+		if (ms_check() == 0) {
+			MsType = 0;
+			puts("MsSave");
+			NowSaveFlag = 0;
+			MsAccessFlag = 0;
+			OldError = 0;
+			MsSave();
+		}
+		if (GetKeyHit() & 0x4000) {
+			MsType = 0;
+			release_gims(MsGim);
+			MsGim = -1;
+			NowSaveFlag = 0;
+			MsAccessFlag = 0;
+		}
+		break;
+	default:
+		if (GetKeyHit() & 0x4008) {
+			MsType = 0;
+			release_gims(MsGim);
+			MsGim = -1;
+			NowSaveFlag = 0;
+			MsAccessFlag = 0;
+		}
+		break;
+	}
+}
+#else
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/file_sub", disp_ms_dialog);
+#endif
 
 void save_data_init(void)
 {
