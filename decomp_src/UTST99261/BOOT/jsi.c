@@ -199,9 +199,40 @@ void JSI_getDocumentSelection(void) {
     newDOMString_4B5FC(0, 0);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSI_getDocumentSize);
+int JSI_getDocumentSize(void *node, int *w, int *h) {
+    LayoutBox *box;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSI_getFileUploadValue);
+    if (attached == 0) {
+        JSI_init();
+    }
+    if (node == NULL || (box = Node_getBox(node)) == NULL) {
+        return 0;
+    }
+    if (w != NULL) {
+        *w = ((int *)box)[6];
+    }
+    if (h != NULL) {
+        *h = ((int *)box)[7];
+    }
+    return 1;
+}
+
+DOMStr *JSI_getFileUploadValue(void *node) {
+    LayoutBox *box;
+    char *text;
+    DOMStr *r;
+
+    if (node == NULL || (box = Node_getBox(node)) == NULL || box->type != 0xD || box->widget == NULL) {
+        return NULL;
+    }
+    text = GUI_TextField_getText(box->widget);
+    if (text == NULL) {
+        return NULL;
+    }
+    r = newDOMString_4B5FC(text, strlen(text));
+    MEM_free(0, text);
+    return r;
+}
 
 int JSI_getImageComplete(void *node) {
     LayoutBox *box;
