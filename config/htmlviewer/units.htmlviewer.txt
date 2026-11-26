@@ -1,4 +1,5 @@
 # unit                                     compiler        source
+crtbegin                                     1.7.1           crtbegin.c
 crt0                                         1.8.4.internal  crt0.c
 main                                         1.7.1           main.c
 menu                                         1.7.1           menu.c
@@ -104,3 +105,4 @@ libgcc/dp-bit/__floatsidf                    1.7.1           dp-bit.c
 libgcc/dp-bit/__fixdfsi                      1.7.1           dp-bit.c
 libgcc/dp-bit/__negdf2                       1.7.1           dp-bit.c
 libgcc/dp-bit/__fpcmp_parts_d                1.7.1           dp-bit.c
+crtend                                       1.7.1           crtend.c

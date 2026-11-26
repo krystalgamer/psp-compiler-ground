@@ -55,7 +55,7 @@ segments:
     subsegments:
       - { start: 0x80, type: asm, name: init, linker_section: .init }
       - { start: 0xA4, type: prxpad, order: .text }
-      - [0xC0, asm, asm/text_40]
+      - [0xC0, c, crtbegin]
       - [0x1A8, c, crt0]
       - [0x538, c, main]
       - [0x10B8, c, menu]
@@ -165,7 +165,7 @@ segments:
       - [0x1A670, c, libgcc/dp-bit/__fixdfsi]
       - [0x1A744, c, libgcc/dp-bit/__negdf2]
       - [0x1A788, c, libgcc/dp-bit/__fpcmp_parts_d]
-      - [0x1A8EC, asm, asm/text_1A86C]
+      - [0x1A8EC, c, crtend]
       - { start: 0x1A944, type: asm, name: fini, linker_section: .fini }
       - { start: 0x1A960, type: asm, name: sceStub, linker_section: .sceStub.text }
       - { start: 0x1AD50, type: rodata, name: lib_ent_top, linker_section: .lib.ent.top }

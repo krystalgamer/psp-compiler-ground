@@ -7,3 +7,6 @@ rodata 0xF362C libwave
 # part of those objects (empty units here, the C objects carry the padding).
 0x10DA4 exit_pad        1.7.1           newlib/libc/sys/psp/exit_pad.c
 0x11C74 modreent_pad    1.7.1           newlib/libc/sys/psp/modreent_pad.c
+# gcc 3.3.3 crtstuff.c (CRT_BEGIN / CRT_END): the psp-gcc 1.7.1 toolchain's crtbegin.o and crtend.o .text.
+0x40    crtbegin        1.7.1           crtbegin.c
+0x1A86C crtend          1.7.1           crtend.c
