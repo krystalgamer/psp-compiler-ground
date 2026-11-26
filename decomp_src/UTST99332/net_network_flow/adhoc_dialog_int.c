@@ -61,6 +61,17 @@ static void print_wlan_error_message(struct SceNetAdhocDialogInfo *info);
 static void pad_read(struct SceNetAdhocDialogInfo *info);
 
 
+/* SDK prototypes (tools/sdk_protos.h) */
+void sceGuClear(int flags);
+void sceGuColor(unsigned int color);
+void sceGuDebugPrint(int x, int y, unsigned int color, const char *str);
+void sceGuDrawArray(int prim, int vtype, int count, const void *indices, const void *vertices);
+int sceGuFinish(void);
+void sceGuStart(int type, void *list, int size);
+int sceGuSync(int mode, int what);
+int sprintf(char *buf, const char *fmt, ...);
+unsigned int strlen(const char *s);
+
 INCLUDE_ASM("tmp/asm/UTST99332/net_network_flow/nonmatchings/adhoc_dialog_int", _sce_pspnet_adhoc_dialog_adhocctl_handler);
 
 INCLUDE_ASM("tmp/asm/UTST99332/net_network_flow/nonmatchings/adhoc_dialog_int", _sce_pspnet_adhoc_dialog_set_error_state);

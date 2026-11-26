@@ -15,6 +15,10 @@ int wait_scan(void);
 
 extern int evf_322D0;
 
+/* SDK prototypes (tools/sdk_protos.h) */
+int printf(const char *fmt, ...);
+int sceKernelDelayThread(unsigned int delay);
+
 void clear_evf(void) {
     evf_322D0 = 0;
     error_code = 0;

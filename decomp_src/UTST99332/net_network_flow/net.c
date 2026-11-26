@@ -87,6 +87,12 @@ int disconnect_ibss(void);
 int check_disconnect_completed(void);
 
 
+/* SDK prototypes (tools/sdk_protos.h) */
+int memcmp(const void *a, const void *b, unsigned int n);
+void *memset(void *s, int c, unsigned int n);
+int printf(const char *fmt, ...);
+int puts(const char *s);
+
 INCLUDE_ASM("tmp/asm/UTST99332/net_network_flow/nonmatchings/net", matching_start);
 
 INCLUDE_ASM("tmp/asm/UTST99332/net_network_flow/nonmatchings/net", net_init);

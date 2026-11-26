@@ -178,6 +178,53 @@ void sceGumPopMatrix(void);
 void sceGumDrawBezier(int vtype, int ucount, int vcount, const void *indices, const void *vertices);
 
 
+/* SDK prototypes (tools/sdk_protos.h) */
+int memcmp(const void *a, const void *b, unsigned int n);
+void *memset(void *s, int c, unsigned int n);
+int printf(const char *fmt, ...);
+int puts(const char *s);
+int sceCtrlReadBufferPositive(SceCtrlData *data, int count);
+int sceCtrlSetSamplingMode(int mode);
+int sceDisplayWaitVblankStart(void);
+void sceGuAmbient(unsigned int color);
+void sceGuClear(int flags);
+void sceGuClearColor(unsigned int color);
+void sceGuClearDepth(unsigned int depth);
+void sceGuClearStencil(unsigned int stencil);
+void sceGuDebugPrint(int x, int y, unsigned int color, const char *str);
+void sceGuDepthBuffer(void *zbp, int frame_width);
+void sceGuDepthFunc(int function);
+void sceGuDepthRange(int near, int far);
+void sceGuDispBuffer(int width, int height, void *dbp, int frame_width);
+int sceGuDisplay(int state);
+void sceGuDrawBuffer(int psm, void *fbp, int frame_width);
+void sceGuEnable(int state);
+int sceGuFinish(void);
+void sceGuInit(void);
+void sceGuLight(int light, int type, int components, const ScePspFVector3 *position);
+void sceGuLightColor(int light, int component, unsigned int color);
+void sceGuOffset(unsigned int x, unsigned int y);
+void sceGuPatchDivide(unsigned int ulevel, unsigned int vlevel);
+void sceGuScissor(int x, int y, int w, int h);
+void sceGuShadeModel(int mode);
+void sceGuStart(int type, void *list, int size);
+void *sceGuSwapBuffers(void);
+int sceGuSync(int mode, int what);
+void sceGuTerm(void);
+void sceGuViewport(int cx, int cy, int width, int height);
+void sceGumDrawArray(int prim, int vtype, int count, const void *indices, const void *vertices);
+void sceGumLoadIdentity(void);
+void sceGumMatrixMode(int mode);
+void sceGumPerspective(float fovy, float aspect, float near, float far);
+void sceGumRotateX(float angle);
+void sceGumRotateY(float angle);
+void sceGumRotateZ(float angle);
+void sceGumSetMatrixStack(void *stack, int proj, int view, int model, int texture);
+void sceGumStoreMatrix(ScePspFMatrix4 *m);
+void sceGumTranslate(const ScePspFVector3 *v);
+int sceKernelDcacheWritebackAll(void);
+int sprintf(char *buf, const char *fmt, ...);
+
 INCLUDE_ASM("tmp/asm/UTST99332/net_network_flow/nonmatchings/main", handler_p2p);
 
 INCLUDE_RODATA("tmp/asm/UTST99332/net_network_flow/nonmatchings/main", D_00014D68);
