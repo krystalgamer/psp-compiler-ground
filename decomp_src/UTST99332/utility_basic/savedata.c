@@ -212,7 +212,33 @@ void set_param_load(SceUtilitySavedataParam *pParam)
 	pParam->pic1.dataBufSize = 0x100000;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/utility_basic/nonmatchings/savedata", set_param_save);
+extern const char D_00016738[]; /* save data text (shared rodata) */
+
+void set_param_save(SceUtilitySavedataParam *pParam)
+{
+	int len;
+
+	memcpy(pParam->titleId, D_00016714, 9);
+	pParam->titleId[9] = 0;
+
+	memcpy(pParam->userId, D_00016720, 4);
+	pParam->userId[4] = 0;
+
+	sprintf(pParam->fileName, D_00016728, D_0001672C);
+
+	len = 27;
+	memcpy(_dataBuf, D_00016738, len);
+	pParam->pDataBuf = _dataBuf;
+	pParam->dataBufSize = 0x100000;
+	pParam->dataFileSize = len;
+
+	set_params(pParam);
+
+	set_icon0(pParam);
+	set_icon1(pParam);
+	set_pic1(pParam);
+	set_snd0(pParam);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/utility_basic/nonmatchings/savedata", set_param_listload);
 
