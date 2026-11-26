@@ -478,7 +478,40 @@ INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", SHUTTER_PAR
 
 INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", D_0002E750);
 
+#ifdef NON_MATCHING
+/* One instruction short: logic complete, but the original keeps x = bubx[i] + 80 in a
+ * saved register and subtracts 56 in each branch, where ours keeps bubx[i] and folds
+ * the offsets to +24 (every statement order tried). */
+int DrawSpriteZoom(int no, int color, float z, float x, float y, float w, float h, float u, float v, float cx, float cy, float sx, float sy, float rot);
+void DoBubCrush(void)
+{
+	int i, t, x, y, col, color, f;
+	float s;
+
+	for (i = 0; i < 1024; i++) {
+		if (bubcnt[i] == 0)
+			continue;
+		t = 16 - bubcnt[i];
+		color = ((int)(bubcnt[i] * 0.0625f * 255.0f) << 24) | 0xFFFFFF;
+		x = bubx[i] + 80;
+		y = buby[i] - 32;
+		s = t * 0.25f + 1.0f;
+		DrawSpriteZoom(bubcol[i] + 49, color, 0, x, y, 16.0f, 16.0f, 0, 0, 8.0f, 8.0f, s, s, 0);
+		col = bubcol[i];
+		if (col != 9 && col != 14) {
+			DrawSpriteZoom(45, color, 1.0f, x - 56, y - 56, 128.0f, 128.0f, 0, 0, 64.0f, 64.0f, s * 0.25f, s * 0.25f, 0);
+		} else if (col == 9) {
+			DrawSpriteZoom(46, color, 1.0f, x - 56, y - 56, 128.0f, 128.0f, 0, 0, 64.0f, 64.0f, s, s, t * 0.3f * 3.14f * 0.0625f);
+		} else {
+			f = t * 6 / 16;
+			SpriteDrawEz(47, 0, -1, x - 56, y - 56, 128.0f, 128.0f, f % 4 * 128, f / 4 * 128);
+		}
+		bubcnt[i]--;
+	}
+}
+#else
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", DoBubCrush);
+#endif
 
 int PuzzleInit(void)
 {
