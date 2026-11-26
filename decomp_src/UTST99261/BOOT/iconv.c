@@ -147,7 +147,50 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iconv", checkShiftJIS);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iconv", checkEUC);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iconv", checkUTF8);
+int checkUTF8(const u8 *s, int len) {
+    int state;
+    int count;
+    int i;
+    int ok;
+    u8 c;
+
+    state = 0;
+    count = 0;
+    for (i = 0; i < len; i++) {
+        c = s[i];
+        switch (state) {
+        case 0:
+            if (c >= 0xE0 && c <= 0xEF) {
+                state = 3;
+            } else if (c >= 0xC0 && c <= 0xDF) {
+                state = 2;
+            } else if ((s8)c < 0) {
+                return 4;
+            }
+            break;
+        case 3:
+            ok = c >= 0x80 && c <= 0xBF;
+            state = 4;
+            if (!ok) {
+                return 4;
+            }
+            break;
+        case 2:
+        case 4:
+            ok = c >= 0x80 && c <= 0xBF;
+            count++;
+            state = 0;
+            if (!ok) {
+                return 4;
+            }
+            break;
+        }
+        if (count >= 5) {
+            return 5;
+        }
+    }
+    return 4;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iconv", checkEncode);
 
