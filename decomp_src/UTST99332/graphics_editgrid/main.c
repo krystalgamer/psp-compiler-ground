@@ -103,6 +103,44 @@ static void init_all(void);
 static int pad_read(void);
 
 
+/* SDK prototypes (tools/sdk_protos.h) */
+int sceCtrlReadBufferPositive(SceCtrlData *data, int count);
+void sceGuAlphaFunc(int a0, int a1, int a2);
+void sceGuAmbient(unsigned int color);
+void sceGuBlendFunc(int op, int src, int dest, unsigned int srcfix, unsigned int destfix);
+void sceGuClear(int flags);
+void sceGuClearColor(unsigned int color);
+void sceGuClearDepth(unsigned int depth);
+void sceGuClearStencil(unsigned int stencil);
+void sceGuDebugPrint(int x, int y, unsigned int color, const char *str);
+void sceGuDepthBuffer(void *zbp, int frame_width);
+void sceGuDepthFunc(int function);
+void sceGuDepthRange(int near, int far);
+void sceGuDisable(int state);
+void sceGuDispBuffer(int width, int height, void *dbp, int frame_width);
+int sceGuDisplay(int state);
+void sceGuDrawBuffer(int psm, void *fbp, int frame_width);
+void sceGuEnable(int state);
+int sceGuFinish(void);
+void sceGuFrontFace(int order);
+void sceGuInit(void);
+void sceGuLight(int light, int type, int components, const ScePspFVector3 *position);
+void sceGuLightColor(int light, int component, unsigned int color);
+void sceGuOffset(unsigned int x, unsigned int y);
+void sceGuScissor(int x, int y, int w, int h);
+void sceGuSetDither(const void *matrix);
+void sceGuShadeModel(int mode);
+void sceGuStart(int type, void *list, int size);
+int sceGuSync(int mode, int what);
+void sceGuViewport(int cx, int cy, int width, int height);
+void sceGumLoadIdentity(void);
+void sceGumMatrixMode(int mode);
+void sceGumPerspective(float fovy, float aspect, float near, float far);
+void sceGumRotateX(float angle);
+void sceGumRotateY(float angle);
+void sceGumRotateZ(float angle);
+void sceGumSetMatrixStack(void *stack, int proj, int view, int model, int texture);
+
 void draw_bezier(void) {
     sceGuPatchDivide(0x10U, 0x10U);
     sceGuPatchPrim(primflag[prim]);
