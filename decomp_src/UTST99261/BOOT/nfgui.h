@@ -98,6 +98,13 @@ typedef struct GUIWIDGET { /* size 0x64 */
             int areaEditable;           /* 0x58 (TextArea) */
         } text;
         struct {
+            s16 sel;                    /* 0x54 */
+        } choice;
+        struct {
+            int unk54;
+            void *image;                /* 0x58 */
+        } button;
+        struct {
             int state;                  /* 0x54 */
             s16 unk58;
             s16 count;                  /* 0x5A */

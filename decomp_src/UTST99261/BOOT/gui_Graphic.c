@@ -213,21 +213,102 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Graphic", GUI_createTextAre
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Graphic", GUI_createContentView);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Graphic", GUI_ContentView_setArgument);
+void GUI_ContentView_setArgument(GUIWIDGET *w, void * v) {
+    if (w == NULL) {
+        puts("[X1]GUI_ContentView_setArgument");
+        return;
+    }
+    if (w->type != 1) {
+        puts("[X2]GUI_ContentView_setArgument");
+        return;
+    }
+    if ((w->flags & 0xF) != 12) {
+        puts("[X3]GUI_ContentView_setArgument");
+        return;
+    }
+    s_windsystem_data.flags |= 4;
+    w->unk50.p = v;
+    zWindDraw();
+    s_windsystem_data.flags &= ~4;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Graphic", GUI_createFrameBorder);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Graphic", GUI_Button_setImage);
+int GUI_Button_setImage(GUIWIDGET *w, void * v) {
+    if (w == NULL) {
+        puts("[X1]GUI_Button_setImage");
+        return -1;
+    }
+    if (w->type != 1) {
+        puts("[X2]GUI_Button_setImage");
+        return -1;
+    }
+    if ((w->flags & 0xF) != 3) {
+        puts("[X3]GUI_Button_setImage");
+        return -1;
+    }
+    s_windsystem_data.flags |= 4;
+    w->u.button.image = v;
+    zWindDraw();
+    s_windsystem_data.flags &= ~4;
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Graphic", GUI_Button_setLabel);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Graphic", GUI_RadioButton_setState);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Graphic", GUI_RadioButton_getState);
+int GUI_RadioButton_getState(GUIWIDGET *w) {
+    if (w == NULL) {
+        puts("[X1]GUI_RadioButton_getState");
+        return -1;
+    }
+    if (w->type != 1) {
+        puts("[X2]GUI_RadioButton_getState");
+        return -1;
+    }
+    if ((w->flags & 0xF) != 6) {
+        puts("[X3]GUI_RadioButton_getState");
+        return -1;
+    }
+    return w->u.list.state;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Graphic", GUI_RadioButton_getGroup);
+GUIWIDGET * GUI_RadioButton_getGroup(GUIWIDGET *w) {
+    if (w == NULL) {
+        puts("[X1]GUI_RadioButton_getGroup");
+        return NULL;
+    }
+    if (w->type != 1) {
+        puts("[X2]GUI_RadioButton_getGroup");
+        return NULL;
+    }
+    if ((w->flags & 0xF) != 6) {
+        puts("[X3]GUI_RadioButton_getGroup");
+        return NULL;
+    }
+    return w->parent;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Graphic", GUI_Checkbox_setState);
+int GUI_Checkbox_setState(GUIWIDGET *w, int v) {
+    if (w == NULL) {
+        puts("[X1]GUI_Checkbox_setState");
+        return -1;
+    }
+    if (w->type != 1) {
+        puts("[X2]GUI_Checkbox_setState");
+        return -1;
+    }
+    if ((w->flags & 0xF) != 4) {
+        puts("[X3]GUI_Checkbox_setState");
+        return -1;
+    }
+    s_windsystem_data.flags |= 4;
+    w->u.list.state = v;
+    zWindDraw();
+    s_windsystem_data.flags &= ~4;
+    return 0;
+}
 
 int GUI_Checkbox_getState(GUIWIDGET *w) {
     if (w == NULL) {
@@ -278,6 +359,38 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Graphic", GUI_Choice_remove
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Graphic", GUI_Choice_getItem);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Graphic", GUI_Choice_select);
+int GUI_Choice_select(GUIWIDGET *w, int v) {
+    if (w == NULL) {
+        puts("[X1]GUI_Choice_select");
+        return -1;
+    }
+    if (w->type != 1) {
+        puts("[X2]GUI_Choice_select");
+        return -1;
+    }
+    if ((w->flags & 0xF) != 9) {
+        puts("[X3]GUI_Choice_select");
+        return -1;
+    }
+    s_windsystem_data.flags |= 4;
+    w->u.choice.sel = v;
+    zWindDraw();
+    s_windsystem_data.flags &= ~4;
+    return 0;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Graphic", GUI_Choice_getSelectedItem);
+int GUI_Choice_getSelectedItem(GUIWIDGET *w) {
+    if (w == NULL) {
+        puts("[X1]GUI_Choice_getSelectedItem");
+        return -1;
+    }
+    if (w->type != 1) {
+        puts("[X2]GUI_Choice_getSelectedItem");
+        return -1;
+    }
+    if ((w->flags & 0xF) != 9) {
+        puts("[X3]GUI_Choice_getSelectedItem");
+        return -1;
+    }
+    return w->u.choice.sel;
+}
