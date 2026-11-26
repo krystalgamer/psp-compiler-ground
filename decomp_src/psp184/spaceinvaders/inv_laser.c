@@ -36,7 +36,43 @@ int inv_laser_priget(void) {
     return laser_pri_no;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_laser", inv_laser_start);
+typedef struct { float x, y, z; } LZV;
+typedef struct {
+	int used, f4, type, fC, f10, f14;
+	u8 _p18[0x88 - 0x18];
+	LZV v[4];
+	u8 _pb8[0xE8 - 0xB8];
+} LZ_S;
+void inv_laser_texupdate(LZ_S *l);
+int inv_laser_start(int type, int a1)
+{
+	LZ_S *l = (LZ_S *)&inv_laser;
+	int i;
+
+	for (i = 0; i < 32; i++, l++) {
+		if (l->used == 0) {
+			l->used = 1;
+			l->type = type;
+			l->f10 = -1;
+			l->f14 = a1;
+			l->f4 = 0;
+			l->fC = 0;
+			l->v[0].x = 0;
+			l->v[0].y = 0;
+			l->v[0].z = 0;
+			l->v[1].x = 0;
+			l->v[1].y = 0;
+			l->v[1].z = 0;
+			l->v[2].x = 0;
+			l->v[2].y = 0;
+			l->v[2].z = 0;
+			{ LZV z = {0, 0, 0}; l->v[3] = z; }
+			inv_laser_texupdate(l);
+			return i;
+		}
+	}
+	return -1;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_laser", inv_laser_texupdate);
 
