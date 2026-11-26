@@ -58,7 +58,13 @@ typedef struct ZW {
     s16 dirty[4];
     void (*draw)();             /* 0x4C */
     void *arg;                  /* 0x50 */
-    int state;                  /* 0x54 */
+    union {
+        int state;              /* 0x54 */
+        struct {
+            s16 unk54;
+            s16 pressed;        /* 0x56 */
+        } b;
+    } u;
 } ZW;
 
 extern ZWINDDATA s_windsystem_data;
@@ -385,7 +391,7 @@ void zWindWidgetCheckboxDraw(ZW *w) {
 
     x = w->px;
     y = w->py;
-    if (w->state == 1) {
+    if (w->u.state == 1) {
         zWindDrawParts(x, y, 1, w->bg15);
     } else {
         zWindDrawParts(x, y, 0, w->bg15);
@@ -395,7 +401,21 @@ void zWindWidgetCheckboxDraw(ZW *w) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/zWindDraw", zWindWidgetRadioboxDraw);
+void zWindWidgetRadioboxDraw(ZW *w) {
+    int x;
+    int y;
+
+    x = w->px;
+    y = w->py;
+    if (w->u.state == 1) {
+        zWindDrawParts(x, y, 3, w->bg15);
+    } else {
+        zWindDrawParts(x, y, 2, w->bg15);
+    }
+    if (s_windsystem_data.focus == w && w->focus15 != 0) {
+        zWindLineBox(x, y, _iZwindPartsSize - 1, _iZwindPartsSize - 1, w->focus15);
+    }
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/zWindDraw", zWindWidgetListDraw);
 
@@ -472,7 +492,38 @@ void zWindSetFontClip(void *img, int w, int h) {
     _zWindDrawTexClipY2 = ((ZINIT *)&s_windsystem_init)->height;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/zWindDraw", zWindExcEventButton);
+int zWindExcEventButton(ZW *w, int type, ZEVENT *ev) {
+    switch (type) {
+    case 1:
+        if (ev->button != 1) {
+            break;
+        }
+        w->u.b.pressed = 1;
+        zWindDraw();
+        ev->target = w;
+        break;
+    case 2:
+        if (ev->button != 1) {
+            break;
+        }
+        w->u.b.pressed = 0;
+        zWindDraw();
+        ev->target = w;
+        break;
+    case 7:
+        if (ev->key == 0xA2) {
+            w->u.b.pressed = 1;
+        } else if (ev->key == 0xA3) {
+            w->u.b.pressed = 0;
+        } else {
+            break;
+        }
+        zWindDraw();
+        ev->target = w;
+        return 0;
+    }
+    return -1;
+}
 
 int zWindExcEventCheckbox(ZW *w, int type, ZEVENT *ev) {
     switch (type) {
@@ -563,7 +614,27 @@ int zWindExcEventChoice(void *w, int type, ZEVENT *ev) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/zWindDraw", zWindChoiceButton);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/zWindDraw", zWindExcEventTextField);
+int zWindExcEventTextField(ZWIDGET *w, int type, ZEVENT *ev) {
+    switch (type) {
+    case 7:
+        if (ev->key != 0x80) {
+            break;
+        }
+        if (w->editable == 0) {
+            return 0;
+        }
+        break;
+    case 3:
+        if (!(D_00584BCC & 0x20000000)) {
+            break;
+        }
+        if (w->editable == 0) {
+            return 0;
+        }
+        break;
+    }
+    return -1;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/zWindDraw", zWindExcEventTextArea);
 
