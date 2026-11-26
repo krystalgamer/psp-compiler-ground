@@ -282,7 +282,17 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", ziki_damage);
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", ziki_break_check);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", ziki_break_success_check);
+int ziki_break_success_check(void)
+{
+	u8 *z = (u8 *)&D_005FB714;
+	u8 *a = (u8 *)&D_005A06D8;
+
+	if (*(int *)(z + 0x24) == 3 && *(int *)(z + 0x20) == 3 && *(int *)(z + 0x1C) >= 0) {
+		if (*(int *)(a + 0x4C) >= 180)
+			return 1;
+	}
+	return 0;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
