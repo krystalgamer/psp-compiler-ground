@@ -114,7 +114,7 @@ typedef struct SDomiImplementation {
 typedef struct SDomiDocument {
     SDomiInternalNode i;
     SDomiImplementation *implementation; /* 0x2C */             /* 0x2C */
-    void *x30;
+    SDomiNode *documentElement;       /* 0x30 */
     int changed;                      /* 0x34 */
     SDomiSLink trash;                 /* 0x38 */
 } SDomiDocument;
@@ -226,7 +226,7 @@ typedef struct SDomiElementVt {
 /* string of the DOM API layer (DOMAPI.c) */
 typedef struct DOMString {
     int size;
-    int len;
+    unsigned int len;
     DOMChar *str;
 } DOMString;
 
@@ -242,6 +242,9 @@ void *UDomiMemory_Allocate(unsigned int size);
 void UDomiMemory_Free(void *p);
 void UDomiMemory_Copy(void *d, const void *s, unsigned int n);
 void UDomiMemory_Move(void *d, const void *s, unsigned int n);
+/* gcc marks these const when they are defined earlier in the same file; keep that while they are asm */
+DOMChar UDomiString_ToLower(DOMChar c) __attribute__((const));
+DOMChar UDomiString_ToUpper(DOMChar c) __attribute__((const));
 DOMChar *UDomiString_Allocate(unsigned int len);
 void UDomiString_Free(DOMChar *s);
 void UDomiString_Copy(DOMChar *d, const DOMChar *s, unsigned int len);

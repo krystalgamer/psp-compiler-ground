@@ -1,10 +1,20 @@
 /* cflags: -O1 */
 #include "common.h"
+#include "parse_hist.h"
+#include "parse_ps.h"
+#include "dom_domi.h"
 #include "m2c_macros.h"
+extern int mq_ps;
+extern int mq_ps_su;
+extern int buf_sessionUI;
+extern int buf_localUI;
+extern char D_00135598[];
+extern int mq_js;
+extern char D_0013559C[];
+extern const char _ctype_[];
 extern int buf_ps_sts;
 M2C_UNK MEM_free(M2C_UNK, int);                     /* extern */
 int ps_isMoveHistory(int, int, int);                /* extern */
-M2C_UNK ps_save(void *, M2C_UNK);                   /* extern */
 extern int buf_sessionID;
 extern int buf_sessionURL;
 extern int buf_sessionstop;
@@ -30,7 +40,6 @@ extern int LAYOUT_STOP;
 extern int Layout_Cont;
 extern int NOTARGET;
 extern int On_Save;
-extern int PS_LOCATION_HEAD;
 extern signed char PageGetType;
 extern int RECIEVE_MSG;
 extern int RELOAD_FLG;
@@ -55,56 +64,76 @@ extern int buf_ps_evt;
 extern int buf_ps_parcent;
 extern int gpsCntxtTable;
 extern int psCacheMode;
-extern int rcvInfo;
 extern int save_sessionURL;
 extern int save_sessionstop;
 int HST_getHeadHistoryNode();                       /* extern */
 M2C_UNK HST_searchCSSRequestFlag(int, int);         /* extern */
 M2C_UNK HST_searchJSRequestFlag(int, int);          /* extern */
-extern unsigned char exMsgBoxList;
-void *ps_getExMsgBox();                             /* extern */
 int *MEM_malloc(M2C_UNK, M2C_UNK);                  /* extern */
 
-M2C_UNK UDomiMemory_Allocate(int);                  /* extern */
-M2C_UNK UDomiMemory_Free();                         /* extern */
 
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", UDomiString_ToLower);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", UDomiString_ToUpper);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", UDomiString_CompareNoCase);
+int UDomiString_CompareNoCase(const DOMChar *s1, unsigned int n1, const DOMChar *s2, unsigned int n2) {
+    int d;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", UDomiString_CompareBinary);
+    while (n1 != 0 && n2 != 0) {
+        d = UDomiString_ToUpper(*s1++);
+        d -= UDomiString_ToUpper(*s2++);
+        if (d != 0) {
+            return d > 0 ? 1 : -1;
+        }
+        n1--;
+        n2--;
+    }
+    if (n1 != n2) {
+        return n1 < n2 ? -1 : 1;
+    }
+    return 0;
+}
 
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
+int UDomiString_CompareBinary(const DOMChar *s1, unsigned int n1, const DOMChar *s2, unsigned int n2) {
+    int d;
 
-void UDomiString_Allocate(int arg0) {
-    UDomiMemory_Allocate(arg0 * 2);
+    while (n1 != 0 && n2 != 0) {
+        d = *s1++ - *s2++;
+        if (d != 0) {
+            return d > 0 ? 1 : -1;
+        }
+        n1--;
+        n2--;
+    }
+    if (n1 != n2) {
+        return n1 < n2 ? -1 : 1;
+    }
+    return 0;
 }
 
 #ifndef NULL
 #define NULL ((void *)0)
 #endif
 
-void UDomiString_Free(void) {
-    UDomiMemory_Free();
+DOMChar *UDomiString_Allocate(unsigned int len) {
+    return UDomiMemory_Allocate(len * 2);
 }
 
 #ifndef NULL
 #define NULL ((void *)0)
 #endif
-void UDomiString_Copy(void *arg0, void *arg1, int arg2) {
-    UDomiMemory_Copy(arg0, arg1, arg2 * 2);
+
+void UDomiString_Free(DOMChar *s) {
+    UDomiMemory_Free(s);
 }
 
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
-void UDomiString_Move(void *arg0, void *arg1, int arg2) {
-    UDomiMemory_Move(arg0, arg1, arg2 * 2);
+void UDomiString_Copy(DOMChar *d, const DOMChar *s, unsigned int len) {
+    UDomiMemory_Copy(d, s, len * 2);
+}
+
+void UDomiString_Move(DOMChar *d, const DOMChar *s, unsigned int len) {
+    UDomiMemory_Move(d, s, len * 2);
 }
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", inverseDCT);
@@ -119,9 +148,21 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", esp_psThread);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", ps_sndmsg);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", setParseMassageToDestTask);
+int setParseMassageToDestTask(int dest, int a, int b, int c, int d, int e, int f, int g) {
+    PsMsg m;
 
-void ps_halt(void) {
+    m.type = 2;
+    m.arg[0] = a;
+    m.arg[1] = b;
+    m.arg[2] = c;
+    m.arg[3] = d;
+    m.arg[4] = e;
+    m.arg[5] = f;
+    m.arg[6] = g;
+    return ps_sndmsg(&m, dest);
+}
+
+void ps_halt(char *msg) {
 }
 
 #ifndef NULL
@@ -147,9 +188,16 @@ int ps_dmyskip(void *arg0) {
     return buf_ps_sts;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", ps_dmy1);
+int ps_dmy1(void *p) {
+    ps_save(p, 0);
+    return buf_ps_sts;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", ps_dmy2);
+int ps_dmy2(void *p) {
+    NOTARGET = 0;
+    ps_save(p, 0);
+    return buf_ps_sts;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -297,9 +345,31 @@ INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", D_00135408);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", ps_LocationGetSend);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", ps_rflagclr);
+void ps_rflagclr(void) {
+    int i;
+    void *n;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", ps_save);
+    for (i = 1; i < 7; i++) {
+        while ((n = HST_searchRequestFlagHistoryNode(i)) != NULL) {
+            HST_setRequestFlag(n, 0);
+        }
+    }
+}
+
+void ps_save(PsIpc *msg, int sid) {
+    struct {
+        int x00;
+        PsIpc body;
+    } m;
+
+    m.body = *msg;
+    if (sid != 0) {
+        m.body.x14 = sid;
+    }
+    if (OS_mq_send(mq_ps_su, &m, sizeof(m), 0) < 0) {
+        ps_halt("Parser : cmk_mbox_send(ps_save) failed");
+    }
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", ps_Security);
 
@@ -317,9 +387,23 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", ChkContentType);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", ps_searchRequestFlagHistoryNode);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", ps_ExternalSearchSessionParentHistoryNode);
+void *ps_ExternalSearchSessionParentHistoryNode(void *a, int b) {
+    void *head = HST_getHeadHistoryNode();
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", ps_ExternalSearchSessionHistoryNode);
+    if (b == 1) {
+        return HST_getParentExtHistoryURI(head, a, D_00135598);
+    }
+    return HST_getParentExtHistoryURI(head, a, D_0013559C);
+}
+
+void *ps_ExternalSearchSessionHistoryNode(void *a, int b) {
+    void *head = HST_getHeadHistoryNode();
+
+    if (b == 1) {
+        return HST_getExtHistoryURI(head, a, D_00135598);
+    }
+    return HST_getExtHistoryURI(head, a, D_0013559C);
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -382,19 +466,105 @@ INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", D_0013574C);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", ps_JSMailBoxClean);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", ps_JSMailBoxfree);
+void ps_JSMailBoxfree(void) {
+    PsMqMsg m;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", ps_MailBoxClean);
+    while (GetMQUEUE(mq_js, &m)) {
+        buf_ps_evt = m.evt;
+        if (m.data != NULL) {
+            MEM_free(0, m.data);
+        }
+    }
+}
+
+void ps_MailBoxClean(void) {
+    PsMqMsg m;
+
+    while (GetMQUEUE(mq_ps_su, &m)) {
+        if (OS_mq_send(mq_ps, &m, sizeof(m), 0) < 0) {
+            ps_halt("Parser : cmk_mbox_send(ps_MailBoxClean) failed");
+        }
+    }
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", ps_ParseDomBuildCall);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", ps_FrontParseDomBuild);
+void ps_FrontParseDomBuild(void) {
+    PsDomBuild b;
+    void *r;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", ps_BackParseDomBuild);
+    b.x[0] = 0;
+    b.x[1] = 0;
+    b.x[2] = 0;
+    b.x[3] = 0;
+    b.x[4] = 0;
+    b.x[5] = 0;
+    b.x[6] = 0;
+    b.x[7] = 0;
+    b.x[9] = 0;
+    b.x[11] = 0;
+    b.x[12] = 8;
+    b.x[13] = 0;
+    r = parseDomBuild(&b);
+    if (r != NULL) {
+        MEM_free(0, r);
+    }
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", ps_ParseDomBuildFree);
+void ps_BackParseDomBuild(void) {
+    PsDomBuild b;
+    void *r;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", ps_SendIOMChk);
+    b.x[0] = 0;
+    b.x[1] = 0;
+    b.x[2] = 0;
+    b.x[3] = 0;
+    b.x[4] = 0;
+    b.x[5] = 0;
+    b.x[6] = 0;
+    b.x[7] = 0;
+    b.x[9] = 0;
+    b.x[11] = 0;
+    b.x[12] = 9;
+    b.x[13] = 0;
+    r = parseDomBuild(&b);
+    if (r != NULL) {
+        MEM_free(0, r);
+    }
+}
+
+void ps_ParseDomBuildFree(void) {
+    PsDomBuild b;
+    void *r;
+
+    b.x[0] = 0;
+    b.x[1] = 0;
+    b.x[2] = 0;
+    b.x[3] = 0;
+    b.x[4] = 0;
+    b.x[5] = 0;
+    b.x[6] = 0;
+    b.x[7] = 0;
+    b.x[9] = 0;
+    b.x[11] = 0;
+    b.x[12] = 12;
+    b.x[13] = 0;
+    r = parseDomBuild(&b);
+    if (r != NULL) {
+        MEM_free(0, r);
+    }
+}
+
+int ps_SendIOMChk(int n, char *s) {
+    int i;
+
+    for (i = 0; i < n; i++) {
+        if (icmpstr(s + i, "#", 1) == 1) {
+            return i;
+        }
+    }
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", ps_Terminate);
 
@@ -410,7 +580,20 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", ps_isMoveHistory)
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", ps_fragmentJump);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", ps_isGetRequest);
+int ps_isGetRequest(void *node) {
+    char *uri, *u;
+
+    if (node == NULL || (uri = HST_getCurURI(node)) == NULL) {
+        return 0;
+    }
+    while ((node = HST_getParentHistoryNode(node)) != NULL) {
+        u = HST_getCurURI(node);
+        if (u != NULL && strcmp(uri, u) == 0) {
+            return 0;
+        }
+    }
+    return 1;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", ps_errStringParseDomBuild);
 
@@ -419,32 +602,72 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", ps_errStringParse
 #endif
 
 int ps_initExMsgBoxList(void) {
-    M2C_FIELD(&exMsgBoxList, int *, 0) = 0;
-    M2C_FIELD(&exMsgBoxList, int *, 4) = 0;
-    M2C_FIELD(&exMsgBoxList, int *, 8) = 0;
+    exMsgBoxList.count = 0;
+    exMsgBoxList.first = NULL;
+    exMsgBoxList.last = NULL;
     return 1;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", ps_deleteExMsgBoxList);
+int ps_deleteExMsgBoxList(void) {
+    ExMsgBox *b, *next;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", ps_createExMsgBox);
+    for (b = exMsgBoxList.first; b != NULL; b = next) {
+        next = b->next;
+        ps_deleteExMsgBox(b->id);
+    }
+    ps_initExMsgBoxList();
+    return 1;
+}
+
+int ps_createExMsgBox(void) {
+    ExMsgBox *b = MEM_malloc(0, sizeof(ExMsgBox));
+
+    if (b == NULL) {
+        return -1;
+    }
+    b->id = 0;
+    b->x04 = NULL;
+    b->x08 = NULL;
+    b->x0C = NULL;
+    b->prev = NULL;
+    b->next = NULL;
+    b->id = ++exMsgBoxList.count;
+    if (exMsgBoxList.last != NULL) {
+        exMsgBoxList.last->next = b;
+        b->prev = exMsgBoxList.last;
+    }
+    exMsgBoxList.last = b;
+    if (exMsgBoxList.first == NULL) {
+        exMsgBoxList.first = b;
+    }
+    return b->id;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", ps_deleteExMsgBox);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", ps_getExMsgBox);
+ExMsgBox *ps_getExMsgBox(int id) {
+    ExMsgBox *b;
+
+    for (b = exMsgBoxList.first; b != NULL; b = b->next) {
+        if (b->id == id) {
+            return b;
+        }
+    }
+    return NULL;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
 #endif
 
-int ps_freeExMsgBox(void) {
+int ps_freeExMsgBox(int id) {
     int var_v0;
     void *temp_a1;
     void *temp_s1;
     void *temp_v0;
     void *var_s0;
 
-    temp_v0 = ps_getExMsgBox();
+    temp_v0 = ps_getExMsgBox(id);
     var_v0 = 0;
     if (temp_v0 != NULL) {
         var_s0 = M2C_FIELD(temp_v0, void **, 8);
@@ -476,9 +699,29 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", ps_getExMsg);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", ps_getBottomExMsg);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", ps_moveExMsgToExMsg);
+int ps_moveExMsgToExMsg(int from, int to, int sid) {
+    PsIpc m;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", ps_moveExMsgToTopExMsg);
+    while (ps_getExMsg(from, &m) == 1) {
+        if (sid != 0) {
+            m.x04 = sid;
+        }
+        ps_setExMsg(to, &m);
+    }
+    return 1;
+}
+
+int ps_moveExMsgToTopExMsg(int from, int to, int sid) {
+    PsIpc m;
+
+    while (ps_getBottomExMsg(from, &m) == 1) {
+        if (sid != 0) {
+            m.x04 = sid;
+        }
+        ps_setTopExMsg(to, &m);
+    }
+    return 1;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", ps_sendAbortPageToDiffHistory);
 
@@ -613,9 +856,26 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", initMPU_SIG_EXTDA
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", sendStart);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", sendComplete);
+void sendComplete(PsIpc *m) {
+    initMPU_SIG_LAYOUT_COMPLETE(m);
+    m->x04 = buf_sessionUI;
+    m->x14 = buf_localUI;
+    ps_sndmsg(m, 1);
+    initMPU_SIG_RECV_COMPLETE(m);
+    m->x04 = buf_sessionUI;
+    m->x14 = buf_localUI;
+    ps_sndmsg(m, 1);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", sendMPL_REQ_LOAD_PAGE);
+void sendMPL_REQ_LOAD_PAGE(PsIpc *m, int sid) {
+    initMPL_REQ_LOAD_PAGE(m);
+    m->x04 = sid;
+    ps_sndmsg(m, 4);
+    initMPL_REQ_LOAD_PAGE(m);
+    m->x04 = sid;
+    m->x10 = 1;
+    ps_sndmsg(m, 4);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", initMSGQUEUE);
 

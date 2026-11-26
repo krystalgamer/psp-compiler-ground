@@ -209,7 +209,7 @@ void SDomiDocument_Initialize(SDomiDocument *doc, const SDomiNodeVt *vt, SDomiIm
     }
     SDomiInternalNode_Initialize(&doc->i.n, vt, 0, 9, NULL, name);
     doc->implementation = impl;
-    doc->x30 = NULL;
+    doc->documentElement = NULL;
     doc->changed = 0;
     doc->trash.next = &doc->trash;
 }

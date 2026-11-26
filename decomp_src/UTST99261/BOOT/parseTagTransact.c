@@ -1,6 +1,29 @@
 /* cflags: -O1 */
 #include "common.h"
+#include "parse_tag.h"
 #include "m2c_macros.h"
+typedef struct { const DOMChar *p[2]; } PtrArr2;
+typedef struct { const DOMChar *p[3]; } PtrArr3;
+typedef struct { const DOMChar *p[4]; } PtrArr4;
+extern const DOMChar D_00138BFC[];
+extern const DOMChar D_00138C04[];
+extern const DOMChar D_00138C08[];
+extern const DOMChar D_00138C0C[];
+extern const DOMChar D_00138C10[];
+extern const DOMChar D_00138C48[];
+extern const DOMChar D_00138C64[];
+extern const DOMChar D_00138C68[];
+extern const DOMChar D_00138C6C[];
+extern const DOMChar D_00138C70[];
+extern const DOMChar D_00138C90[];
+extern const DOMChar D_00138CAC[];
+extern const PtrArr2 D_00138C18;
+extern const PtrArr2 D_00138C38;
+extern const PtrArr2 D_00138C94;
+extern const PtrArr2 D_00138CA4;
+extern const PtrArr2 D_00138E00;
+extern const PtrArr3 D_00138C58;
+extern const PtrArr4 D_00138C28;
 M2C_UNK parseSearchDtDdNode(void *);                /* extern */
 M2C_UNK parseSearchListNode(void *);                /* extern */
 M2C_UNK parseSearchOptionNode(void *);              /* extern */
@@ -17,11 +40,29 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parseTagTransact", parseTagComm
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parseTagTransact", parseSearchTdThNode);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parseTagTransact", parseSearchTrNode);
+int parseSearchTrNode(void *ctx) {
+    PtrArr2 tags = D_00138C18;
+    const DOMChar *stop[1];
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parseTagTransact", parseSearchTableNode);
+    stop[0] = D_00138C08;
+    return parseTagCommon(ctx, stop, 1, tags.p, 2);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parseTagTransact", parseSearchRowGroupNode);
+int parseSearchTableNode(void *ctx) {
+    PtrArr4 tags = D_00138C28;
+    const DOMChar *stop[1];
+
+    stop[0] = D_00138C10;
+    return parseTagCommon(ctx, stop, 1, tags.p, 4);
+}
+
+int parseSearchRowGroupNode(void *ctx) {
+    PtrArr2 tags = D_00138C38;
+    PtrArr3 stop = D_00138C58;
+
+
+    return parseTagCommon(ctx, stop.p, 3, tags.p, 2);
+}
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/parseTagTransact", D_00138BF0);
 
@@ -63,7 +104,13 @@ INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/parseTagTransact", D_00138C7
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parseTagTransact", parseSearchListNode);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parseTagTransact", parseSearchDtDdNode);
+int parseSearchDtDdNode(void *ctx) {
+    PtrArr2 tags = D_00138C94;
+    PtrArr2 stop = D_00138CA4;
+
+
+    return parseTagCommon(ctx, stop.p, 2, tags.p, 2);
+}
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/parseTagTransact", D_00138C90);
 
@@ -135,27 +182,100 @@ void parseOmissibleTag(void *arg0) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parseTagTransact", parseEndTagDefault);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parseTagTransact", parseEndTagTD);
+int parseEndTagTD(void *ctx) {
+    PtrArr2 tags = D_00138E00;
+    const DOMChar *stop[1];
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parseTagTransact", parseEndTagTH);
+    stop[0] = D_00138C0C;
+    return parseTagCommon(ctx, stop, 1, tags.p, 2);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parseTagTransact", parseEndTagTR);
+int parseEndTagTH(void *ctx) {
+    PtrArr2 tags = D_00138C38;
+    const DOMChar *stop[1];
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parseTagTransact", parseEndTagTABLE);
+    stop[0] = D_00138C04;
+    return parseTagCommon(ctx, stop, 1, tags.p, 2);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parseTagTransact", parseEndTagTBODY);
+int parseEndTagTR(void *ctx) {
+    PtrArr2 tags = D_00138C38;
+    const DOMChar *stop[1];
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parseTagTransact", parseEndTagOL);
+    stop[0] = D_00138C08;
+    return parseTagCommon(ctx, stop, 1, tags.p, 2);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parseTagTransact", parseEndTagUL);
+int parseEndTagTABLE(void *ctx) {
+    const DOMChar *stop[1];
+    const DOMChar *tags[1];
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parseTagTransact", parseEndTagDIR);
+    tags[0] = D_00138BFC;
+    stop[0] = D_00138C10;
+    return parseTagCommon(ctx, stop, 1, tags, 1);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parseTagTransact", parseEndTagMENU);
+int parseEndTagTBODY(void *ctx) {
+    PtrArr2 tags = D_00138C38;
+    const DOMChar *stop[1];
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parseTagTransact", parseEndTagDL);
+    stop[0] = D_00138C48;
+    return parseTagCommon(ctx, stop, 1, tags.p, 2);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parseTagTransact", parseEndTagSELECT);
+int parseEndTagOL(void *ctx) {
+    const DOMChar *stop[1];
+    const DOMChar *tags[1];
+
+    tags[0] = D_00138BFC;
+    stop[0] = D_00138C68;
+    return parseTagCommon(ctx, stop, 1, tags, 1);
+}
+
+int parseEndTagUL(void *ctx) {
+    const DOMChar *stop[1];
+    const DOMChar *tags[1];
+
+    tags[0] = D_00138BFC;
+    stop[0] = D_00138C64;
+    return parseTagCommon(ctx, stop, 1, tags, 1);
+}
+
+int parseEndTagDIR(void *ctx) {
+    const DOMChar *stop[1];
+    const DOMChar *tags[1];
+
+    tags[0] = D_00138BFC;
+    stop[0] = D_00138C6C;
+    return parseTagCommon(ctx, stop, 1, tags, 1);
+}
+
+int parseEndTagMENU(void *ctx) {
+    const DOMChar *stop[1];
+    const DOMChar *tags[1];
+
+    tags[0] = D_00138BFC;
+    stop[0] = D_00138C70;
+    return parseTagCommon(ctx, stop, 1, tags, 1);
+}
+
+int parseEndTagDL(void *ctx) {
+    const DOMChar *stop[1];
+    const DOMChar *tags[1];
+
+    tags[0] = D_00138BFC;
+    stop[0] = D_00138C90;
+    return parseTagCommon(ctx, stop, 1, tags, 1);
+}
+
+int parseEndTagSELECT(void *ctx) {
+    const DOMChar *stop[1];
+    const DOMChar *tags[1];
+
+    tags[0] = D_00138BFC;
+    stop[0] = D_00138CAC;
+    return parseTagCommon(ctx, stop, 1, tags, 1);
+}
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/parseTagTransact", D_00138E00);
 

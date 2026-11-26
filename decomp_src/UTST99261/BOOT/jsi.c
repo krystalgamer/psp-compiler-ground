@@ -1,26 +1,37 @@
 /* cflags: -O1 */
 #include "common.h"
+#include "dom_esp.h"
 #include "m2c_macros.h"
+#define VESP (*(EspContext *volatile *)&esp_context)
+extern void *jsapi_lock;
+extern char *gESPRIT_LO_GLOBAL_NDA;
+void OS_thread_mutex_lock(void *m);
+void OS_thread_mutex_unlock(void *m);
+void SetIpcmsg(void *m, void *b);
+void *memcpy(void *d, const void *s, unsigned int n);
+char *strcpy(char *d, const char *s);
+int HST_getCurrentIndex(void);
+char *HST_getCurURI(void *node);
+char *HST_getTitle(void *node);
+extern char D_00133A54[];
+int OS_mq_open(const char *name, int mode);
+int OS_mq_send(int q, void *msg, int len, int prio);
+int OS_mq_close(int q);
+int JSPtrListFind(JSPtr *p);
+int JSPtrListFindEmpty(void);
 M2C_UNK HST_attachHistory();                        /* extern */
 int GUI_RadioButton_getState(int);                  /* extern */
 void *Node_getBox();                                /* extern */
 extern void *gPREF_UI;
-M2C_UNK MEM_free(M2C_UNK, void *);                  /* extern */
-void *duplicateDOMString(int);                      /* extern */
-void *MEM_malloc(M2C_UNK, M2C_UNK);                 /* extern */
 extern void *gNDA_NAME_JS_GLOBAL;
-extern void *g_JS_TIMER_;
 M2C_UNK js_delTimerID(int, M2C_UNK, M2C_UNK);       /* extern */
 int OS_thread_self();                               /* extern */
-int *HST_getHeadHistoryNode();                      /* extern */
 int esp_postMsgLoadPage(int, int, int, M2C_UNK, M2C_UNK, int, M2C_UNK); /* extern */
-extern void *esp_context;
 M2C_UNK esp_postMsgSaveURL(int, int, int);          /* extern */
 M2C_UNK esp_postMsgDataAttr(int, M2C_UNK, int, int); /* extern */
 int MEM_addHaltCallback(M2C_UNK, int);              /* extern */
 
 extern int attached;
-M2C_UNK newDOMString_4B5FC();                       /* extern */
 M2C_UNK esp_getMemoNum();                           /* extern */
 M2C_UNK esp_loadMemoList();                         /* extern */
 M2C_UNK HST_getHistoryLength();                     /* extern */
@@ -28,9 +39,48 @@ M2C_UNK HST_getCurrentIndex();                      /* extern */
 M2C_UNK esp_setDialogReply();                       /* extern */
 
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", newDOMString_4B5FC);
+DOMStr *newDOMString_4B5FC(const char *utf8, int len) {
+    DOMStr *s = MEM_malloc(0, sizeof(DOMStr));
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", duplicateDOMString);
+    if (s == NULL) {
+        return NULL;
+    }
+    if (len > 0) {
+        s->str = MEM_malloc(0, len * 2 + 2);
+        if (s->str == NULL) {
+            MEM_free(0, s);
+            return NULL;
+        }
+        s->size = s->len = utf8ToUcs2(s->str, utf8, len);
+    } else {
+        s->size = 0;
+        s->len = 0;
+        s->str = NULL;
+    }
+    return s;
+}
+
+DOMStr *duplicateDOMString(DOMStr *src) {
+    DOMStr *d = MEM_malloc(0, sizeof(DOMStr));
+
+    if (d == NULL) {
+        return NULL;
+    }
+    d->size = 0;
+    d->len = 0;
+    d->str = NULL;
+    if (src->len != 0) {
+        d->str = MEM_malloc(0, src->len * 2);
+        if (d->str == NULL) {
+            MEM_free(0, d);
+            return NULL;
+        }
+        memcpy(d->str, src->str, src->len * 2);
+        d->size = src->len;
+        d->len = src->len;
+    }
+    return d;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -50,13 +100,49 @@ void JSI_free(void) {
     attached = 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSI_getElementPosition);
+int JSI_getElementPosition(void *node, int *x, int *y) {
+    LayoutBox *box;
+
+    if (!attached) {
+        JSI_init();
+    }
+    if (node == NULL || (box = Node_getBox(node)) == NULL) {
+        return 0;
+    }
+    if (x != NULL) {
+        *x = box->x;
+    }
+    if (y != NULL) {
+        *y = box->y;
+    }
+    return 1;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSI_setButtonValue);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSI_getCheckboxState);
+int JSI_getCheckboxState(void *node) {
+    LayoutBox *box;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSI_setCheckboxState);
+    if (node == NULL || (box = Node_getBox(node)) == NULL || box->type != 14 || box->widget == NULL) {
+        return -1;
+    }
+    return GUI_Checkbox_getState(box->widget) == 1;
+}
+
+int JSI_setCheckboxState(void *node, int state) {
+    LayoutBox *box;
+    int on;
+
+    if (node == NULL || (box = Node_getBox(node)) == NULL || box->type != 14 || box->widget == NULL) {
+        return 0;
+    }
+    on = state != 0;
+    GUI_Checkbox_setState(box->widget, on);
+    OS_thread_mutex_lock(*(void **)(gESPRIT_LO_GLOBAL_NDA + 0x3C));
+    ((int *)box->data)[2] = on;
+    OS_thread_mutex_unlock(*(void **)(gESPRIT_LO_GLOBAL_NDA + 0x3C));
+    return 1;
+}
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", D_00133A2C);
 
@@ -66,7 +152,26 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSI_setDocumentCookie);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSI_getDocumentLastModified);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSI_getDocumentReferrer);
+DOMStr *JSI_getDocumentReferrer(void *node) {
+    void *h;
+    char *ref;
+
+    if (node == NULL) {
+        return NULL;
+    }
+    if (attached == 0) {
+        JSI_init();
+    }
+    h = HST_searchSessionIDHistoryNode(Node_getSid(node));
+    if (h == NULL) {
+        return NULL;
+    }
+    ref = HST_getRefURI(h);
+    if (ref == NULL) {
+        return NULL;
+    }
+    return newDOMString_4B5FC(ref, HST_getRefURIlen(h));
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -80,7 +185,14 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSI_getDocumentSize);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSI_getFileUploadValue);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSI_getImageComplete);
+int JSI_getImageComplete(void *node) {
+    LayoutBox *box;
+
+    if (node == NULL || (box = Node_getBox(node)) == NULL) {
+        return 0;
+    }
+    return *(int *)box->data != 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSI_getLinkURL);
 
@@ -121,7 +233,23 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSI_setTextValue);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSI_getWindowRec);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSI_getWindowName);
+DOMStr *JSI_getWindowName(void *doc) {
+    void *h;
+    char *name;
+
+    if (doc == NULL) {
+        return NULL;
+    }
+    h = HST_searchDocumentHistoryNode(doc);
+    if (h == NULL) {
+        return NULL;
+    }
+    name = HST_getTargetName(h);
+    if (name == NULL) {
+        return NULL;
+    }
+    return newDOMString_4B5FC(name, strlen(name));
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSI_setWindowName);
 
@@ -217,11 +345,30 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSI_setURLSearch);
 #define NULL ((void *)0)
 #endif
 
-void JSI_newDOMString(void) {
-    newDOMString_4B5FC();
+DOMStr *JSI_newDOMString(const char *utf8, int len) {
+    return newDOMString_4B5FC(utf8, len);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSSendMail);
+int JSSendMail(JSMsgBody *b, const char *qname) {
+    JSMsg msg;
+    char *nda;
+    int q;
+
+    if (b->cmd == 0x809) {
+        nda = gESPRIT_LO_GLOBAL_NDA;
+        OS_thread_mutex_unlock(jsapi_lock);
+        OS_thread_mutex_lock(*(void **)(nda + 0x40));
+        OS_thread_mutex_lock(jsapi_lock);
+    }
+    q = OS_mq_open(qname, 1);
+    if (q == -1) {
+        return -1;
+    }
+    SetIpcmsg(&msg, b);
+    OS_mq_send(q, &msg, sizeof(msg), 0);
+    OS_mq_close(q);
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSWaitMail);
 
@@ -239,7 +386,9 @@ void SetIpcMember(void *arg0, int arg1, int arg2, int arg3, int arg4, int arg5, 
     M2C_FIELD(arg0, int *, 0x1C) = arg7;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", SetIpcmsg);
+void SetIpcmsg(void *m, void *b) {
+    memcpy((char *)m + 4, b, 0x20);
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -303,7 +452,16 @@ void js_InitTimer(void) {
     g_JS_TIMER_ = temp_v0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", js_getTimerStatus);
+int js_getTimerStatus(int id) {
+    JSTimer *t;
+
+    for (t = g_JS_TIMER_; t != NULL; t = t->next) {
+        if (t->id == id) {
+            return t->status;
+        }
+    }
+    return -1;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -377,7 +535,16 @@ void js_addTimer(int arg0, int arg1, int arg2, int arg3) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", js_delTimerID);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", searchTimerCx);
+int searchTimerCx(void *cx) {
+    JSTimer *t;
+
+    for (t = g_JS_TIMER_; t != NULL; t = t->next) {
+        if (t->cx == cx) {
+            return t->id;
+        }
+    }
+    return -1;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -397,21 +564,149 @@ void js_delTimerCx(int arg0) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSPtrListInit);
+void JSPtrListInit(void) {
+    JSPtr **list = MEM_malloc(0, 10 * sizeof(JSPtr *));
+    int i;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSPtrListDestroy);
+    for (i = 0; i < 10; i++) {
+        list[i] = MEM_malloc(0, sizeof(JSPtr));
+        list[i]->cx = NULL;
+        list[i]->x04 = 0;
+        list[i]->next = NULL;
+    }
+    g_JSPTRLIST_ = list;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSPtrListFindCx);
+void JSPtrListDestroy(void) {
+    JSPtr **list = g_JSPTRLIST_;
+    int i;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSPtrListFind);
+    for (i = 0; i < 10; i++) {
+        MEM_free(0, list[i]);
+    }
+    MEM_free(0, list);
+    g_JSPTRLIST_ = NULL;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSPtrListFindEmpty);
+int JSPtrListFindCx(void *cx) {
+    JSPtr **list;
+    int i;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSPtrListAdd);
+    if (cx == NULL) {
+        return -1;
+    }
+    list = g_JSPTRLIST_;
+    for (i = 0; i < 10; i++) {
+        if (list[i]->cx == cx) {
+            return i;
+        }
+    }
+    return -1;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSPtrListDel);
+int JSPtrListFind(JSPtr *p) {
+    JSPtr **list;
+    int i;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSPtrListDelAll);
+    if (p == NULL) {
+        return -1;
+    }
+    list = g_JSPTRLIST_;
+    for (i = 0; i < 10; i++) {
+        if (list[i]->cx == p->cx) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+int JSPtrListFindEmpty(void) {
+    JSPtr **list = g_JSPTRLIST_;
+    int i;
+
+    for (i = 0; i < 10; i++) {
+        if (list[i]->cx == NULL) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+void JSPtrListAdd(JSPtr *p) {
+    JSPtr **list;
+    JSPtr *q;
+    int i;
+
+    if (p == NULL) {
+        return;
+    }
+    list = g_JSPTRLIST_;
+    p->next = NULL;
+    i = JSPtrListFind(p);
+    if (i != -1) {
+        q = list[i];
+        while (q->next != NULL) {
+            q = q->next;
+            if (q == p) {
+                return;
+            }
+        }
+        q->next = p;
+        return;
+    }
+    i = JSPtrListFindEmpty();
+    if (i == -1) {
+        return;
+    }
+    list[i]->x0C = 0;
+    list[i]->next = p;
+    list[i]->cx = p->cx;
+}
+
+void JSPtrListDel(JSPtr *p) {
+    JSPtr **list;
+    JSPtr *q;
+    int i;
+
+    if (p == NULL) {
+        return;
+    }
+    i = JSPtrListFind(p);
+    if (i == -1) {
+        return;
+    }
+    list = g_JSPTRLIST_;
+    q = list[i];
+    while (q->next != p) {
+        q = q->next;
+        if (q == NULL) {
+            return;
+        }
+    }
+    q->next = p->next;
+    p->next = NULL;
+    if (list[i]->next == NULL) {
+        list[i]->cx = NULL;
+        list[i]->x0C = 0;
+    }
+}
+
+void JSPtrListDelAll(JSPtr *p) {
+    JSPtr **list;
+    int i;
+
+    if (p == NULL) {
+        return;
+    }
+    i = JSPtrListFind(p);
+    if (i == -1) {
+        return;
+    }
+    list = g_JSPTRLIST_;
+    list[i]->next = NULL;
+    list[i]->cx = NULL;
+    list[i]->x0C = 0;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -432,19 +727,109 @@ void JSRunFinish(void *arg0) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSPtrListDumpAll);
+void JSPtrListDumpAll(void) {
+    JSPtr **list = g_JSPTRLIST_;
+    JSPtr *q;
+    int i;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSPtrListDumpOne);
+    for (i = 0; i < 10; i++) {
+        for (q = list[i]->next; q != NULL; q = q->next) {
+        }
+    }
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSFreeJSPtr);
+void JSPtrListDumpOne(JSPtr *p) {
+    JSPtr *q;
+    int i;
+
+    if (p == NULL) {
+        return;
+    }
+    i = JSPtrListFind(p);
+    if (i == -1) {
+        return;
+    }
+    for (q = g_JSPTRLIST_[i]->next; q != NULL; q = q->next) {
+    }
+}
+
+int JSFreeJSPtr(JSPtr *p) {
+    JSPtr **list;
+    JSPtr *q, *next;
+    int i;
+
+    if (p == NULL) {
+        return -1;
+    }
+    js_delTimerCx(p->cx);
+    mes_context_free(p->cx);
+    i = JSPtrListFind(p);
+    if (i == -1) {
+        return -1;
+    }
+    list = g_JSPTRLIST_;
+    q = list[i]->next;
+    list[i]->next = NULL;
+    list[i]->cx = NULL;
+    while (q != NULL) {
+        next = q->next;
+        MEM_free(0, q);
+        q = next;
+    }
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSCreate);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSStart);
+int JSStart(void) {
+    JSMsgBody b;
+    JSMsg msg;
+    int q;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSRun);
+    q = OS_mq_open(D_00133A54, 1);
+    if (q == -1) {
+        return -1;
+    }
+    b.x04 = 0;
+    b.x08 = 0;
+    b.x10 = 0;
+    b.x14 = 0;
+    b.x18 = 0;
+    b.x1C = 0;
+    b.type = 4;
+    b.cmd = 0x401;
+    msg.body = b;
+    OS_mq_send(q, &msg, sizeof(msg), 0);
+    OS_mq_close(q);
+    return 0;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSDestroy);
+int JSRun(JSMsgBody *b) {
+    JSMsg msg;
+    int q;
+
+    q = OS_mq_open(D_00133A54, 1);
+    if (q == -1) {
+        return -1;
+    }
+    msg.body = *b;
+    OS_mq_send(q, &msg, sizeof(msg), 0);
+    OS_mq_close(q);
+    return 0;
+}
+
+int JSDestroy(JSMsg *m) {
+    int q;
+
+    q = OS_mq_open(D_00133A54, 1);
+    if (q == -1) {
+        return -1;
+    }
+    OS_mq_send(q, m, sizeof(JSMsg), 0);
+    OS_mq_close(q);
+    MEM_free(0, m);
+    return 0;
+}
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", D_00133A50);
 
@@ -454,11 +839,22 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSHandleEvent);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_initCore);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_initCookie);
+int ESP_initCookie(int a, int b, int c) {
+    return iom_cookieFile_init(c, a, b);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_startCore);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_terminateCore);
+int ESP_terminateCore(void) {
+    if (esp_context == NULL) {
+        return -1;
+    }
+    if (esp_context->state == 1) {
+        esp_postMsgQuit(esp_context->msg);
+        esp_context->state = 2;
+    }
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_destroyCore);
 
@@ -468,9 +864,33 @@ INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", D_00133BB8);
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", D_00133BC4);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_submitForm);
+int ESP_submitForm(unsigned char *url, char *data, int len) {
+    if (url == NULL || *url == 0 || len < 0 || (len > 0 && data == NULL)) {
+        return -1;
+    }
+    return esp_postMsgSubmitForm(esp_context->msg, url, data, len, 0, 0, "Content-Type: application/x-www-form-urlencoded\r\n\r\n");
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_moveHistory);
+int ESP_moveHistory(int off) {
+    void *head;
+
+    if (esp_context == NULL) {
+        return -1;
+    }
+    if (esp_context->state == 2) {
+        return -1;
+    }
+    head = HST_getHeadHistoryNode();
+    if (off == 0) {
+        return ESP_reloadPage(1);
+    }
+    if (HST_getHistoryWithOffset(off) == NULL) {
+        if (HST_getFragmentIDs(head, off) == 0) {
+            return -1;
+        }
+    }
+    return esp_postMsgLoadPage(esp_context->msg, 0, 0, off, 0, 3, 0);
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -490,7 +910,17 @@ int ESP_reloadPage(int arg0) {
     return var_v0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_abortLoading);
+int ESP_abortLoading(void) {
+    int r;
+
+    if (esp_context == NULL) {
+        return -1;
+    }
+    if (esp_context->state == 2) {
+        return -1;
+    }
+    return esp_postMsgStop(esp_context->msg);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_handleDeviceEvent);
 
@@ -548,7 +978,15 @@ void ESP_downloadURL(int arg0, int arg1) {
     esp_postMsgSaveURL(M2C_FIELD(esp_context, int *, 0xF8), arg0, arg1);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_setFreeScrollEnabled);
+int ESP_setFreeScrollEnabled(int en) {
+    if (esp_context == NULL) {
+        return -1;
+    }
+    if (esp_context->state == 2) {
+        return -1;
+    }
+    return esp_postMsgFreeScroll(esp_context->msg, en);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_findString);
 
@@ -568,7 +1006,28 @@ void ESP_getFocusAttribute(void) {
     esp_postMsgDataAttr(M2C_FIELD(esp_context, int *, 0xF8), 1, 0, 0);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_setTextField);
+int ESP_setTextField(const char *text) {
+    EspDevEvent *ev;
+
+    if (esp_context == NULL) {
+        return -1;
+    }
+    if (esp_context->state == 2) {
+        return -1;
+    }
+    if (text == NULL) {
+        return -1;
+    }
+    ev = MEM_malloc(0, strlen(text) + sizeof(EspDevEvent) + 1);
+    if (ev == NULL) {
+        return -1;
+    }
+    ev->type = 0x19;
+    ev->x04 = 0;
+    ev->str = (char *)(ev + 1);
+    strcpy(ev->str, text);
+    return esp_postMsgDeviceEvent(esp_context->msg, ev);
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -586,13 +1045,69 @@ void ESP_currentHistoryIndex(void) {
     HST_getCurrentIndex();
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_getHistoryURL);
+char *ESP_getHistoryURL(int off) {
+    char *url = NULL;
+    char *r = NULL;
+    int idx;
+    void *node;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_getHistoryTitle);
+    idx = HST_getCurrentIndex();
+    if (idx < 0) {
+        return NULL;
+    }
+    node = HST_getHistoryWithOffset(off - idx);
+    if (node != NULL) {
+        url = HST_getCurURI(node);
+    }
+    if (url == NULL) {
+        return r;
+    }
+    r = (char *)ESP_malloc(strlen(url) + 1);
+    if (r == NULL) {
+        return NULL;
+    }
+    strcpy(r, url);
+    return r;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_hasNextHistory);
+char *ESP_getHistoryTitle(int off) {
+    char *title = NULL;
+    char *r = NULL;
+    int idx;
+    void *node;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_hasPreviousHistory);
+    idx = HST_getCurrentIndex();
+    if (idx < 0) {
+        return NULL;
+    }
+    node = HST_getHistoryWithOffset(off - idx);
+    if (node != NULL) {
+        title = HST_getTitle(node);
+    }
+    if (title == NULL) {
+        return r;
+    }
+    r = (char *)ESP_malloc(strlen(title) + 1);
+    if (r == NULL) {
+        return NULL;
+    }
+    strcpy(r, title);
+    return r;
+}
+
+int ESP_hasNextHistory(void) {
+    if (HST_getHistoryWithOffset(1) != NULL) {
+        return 1;
+    }
+    return HST_getFragmentIDs(HST_getHeadHistoryNode(), 1) != 0;
+}
+
+int ESP_hasPreviousHistory(void) {
+    if (HST_getHistoryWithOffset(-1) != NULL) {
+        return 1;
+    }
+    return HST_getFragmentIDs(HST_getHeadHistoryNode(), -1) != 0;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -601,65 +1116,382 @@ int ESP_deleteCache(void) {
     return -1;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_setCookieEnabled);
+int ESP_setCookieEnabled(int en) {
+    if (esp_context == NULL) {
+        return -1;
+    }
+    if (esp_context->state == 2) {
+        return -1;
+    }
+    if (esp_context->config.cookieEnabled == en) {
+        return 0;
+    }
+    if (ESP_beginConfig() != 0) {
+        return -1;
+    }
+    ESP_setBoolPreference(0, en);
+    if (ESP_endConfig() != 0) {
+        return -1;
+    }
+    return 0;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_deleteAllCookies);
+int ESP_deleteAllCookies(void) {
+    if (esp_context == NULL) {
+        return -1;
+    }
+    if (esp_context->state == 2) {
+        return -1;
+    }
+    return esp_postMsgDeleteCookie(esp_context->msg);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_setMouseTracking);
+int ESP_setMouseTracking(int en) {
+    if (esp_context == NULL) {
+        return -1;
+    }
+    if (esp_context->state == 2) {
+        return -1;
+    }
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_beginConfig);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_endConfig);
+int ESP_endConfig(void) {
+    int r;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_setBoolPreference);
+    if (esp_context == NULL) {
+        return -1;
+    }
+    if (esp_context->state == 2) {
+        return -1;
+    }
+    if (esp_context->prefs == NULL) {
+        return -1;
+    }
+    esp_freeConfig(&esp_context->config);
+    r = esp_copyConfig(&esp_context->config, esp_context->prefs);
+    if (r != 0) {
+        return r;
+    }
+    esp_postMsgConfigChanged(esp_context->msg);
+    esp_freeConfig(esp_context->prefs);
+    MEM_free(0, esp_context->prefs);
+    esp_context->prefs = NULL;
+    return 0;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_getBoolPreference);
+int ESP_setBoolPreference(int key, int value) {
+    if (esp_context == NULL) {
+        return -1;
+    }
+    if (esp_context->state == 2) {
+        return -1;
+    }
+    if (esp_context->prefs == NULL) {
+        return -1;
+    }
+    return esp_setBoolConfig(esp_context->prefs, key, value);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_setIntPreference);
+int ESP_getBoolPreference(int key, void *value) {
+    if (esp_context == NULL) {
+        return -1;
+    }
+    if (esp_context->state == 2) {
+        return -1;
+    }
+    if (value == NULL) {
+        return -1;
+    }
+    return esp_getBoolConfig(&esp_context->config, key, value);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_getIntPreference);
+int ESP_setIntPreference(int key, int value) {
+    if (esp_context == NULL) {
+        return -1;
+    }
+    if (esp_context->state == 2) {
+        return -1;
+    }
+    if (esp_context->prefs == NULL) {
+        return -1;
+    }
+    return esp_setIntConfig(esp_context->prefs, key, value);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_setStringPreference);
+int ESP_getIntPreference(int key, void *value) {
+    if (esp_context == NULL) {
+        return -1;
+    }
+    if (esp_context->state == 2) {
+        return -1;
+    }
+    if (value == NULL) {
+        return -1;
+    }
+    return esp_getIntConfig(&esp_context->config, key, value);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_getStringPreference);
+int ESP_setStringPreference(int key, int value) {
+    if (esp_context == NULL) {
+        return -1;
+    }
+    if (esp_context->state == 2) {
+        return -1;
+    }
+    if (esp_context->prefs == NULL) {
+        return -1;
+    }
+    return esp_setStringConfig(esp_context->prefs, key, value);
+}
+
+int ESP_getStringPreference(int key, void *value) {
+    if (esp_context == NULL) {
+        return -1;
+    }
+    if (esp_context->state == 2) {
+        return -1;
+    }
+    if (value == NULL) {
+        return -1;
+    }
+    return esp_getStringConfig(&esp_context->config, key, value);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_setEncoding);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_getEncoding);
+int ESP_getEncoding(int *value) {
+    if (esp_context == NULL) {
+        return -1;
+    }
+    if (esp_context->state == 2) {
+        return -1;
+    }
+    if (value == NULL) {
+        return -1;
+    }
+    return esp_getIntConfig(&esp_context->config, 0x1001, value);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_setOnlineEnabled);
+int ESP_setOnlineEnabled(int en) {
+    if (esp_context == NULL) {
+        return -1;
+    }
+    if (esp_context->state == 2) {
+        return -1;
+    }
+    return esp_setIntConfig(&esp_context->config, 0x1004, en);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_setFontSize);
+int ESP_setFontSize(int size) {
+    if (esp_context == NULL) {
+        return -1;
+    }
+    if (esp_context->state == 2) {
+        return -1;
+    }
+    if (size < 1 || size > 5) {
+        return -1;
+    }
+    if (esp_setIntConfig(&esp_context->config, 0x1002, size) < 0) {
+        return -1;
+    }
+    return esp_postMsgRepaint(esp_context->msg);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_getFontSize);
+int ESP_getFontSize(void) {
+    int size;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_setInputData);
+    if (esp_context == NULL) {
+        return -1;
+    }
+    if (esp_context->state == 2) {
+        return -1;
+    }
+    if (esp_getIntConfig(&esp_context->config, 0x1002, &size) < 0) {
+        return -1;
+    }
+    return size;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_setEnabledInputDevice);
+int ESP_setInputData(void *data) {
+    if (esp_context == NULL) {
+        return -1;
+    }
+    if (esp_context->state == 2) {
+        return -1;
+    }
+    return esp_postMsgInputData(esp_context->msg, data);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_setUnitId);
+int ESP_setEnabledInputDevice(int dev) {
+    if (esp_context == NULL) {
+        return -1;
+    }
+    if (esp_context->state == 2) {
+        return -1;
+    }
+    esp_context->inputDevice = dev;
+    return 0;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_getUnitId);
+int ESP_setUnitId(void *value) {
+    if (esp_context == NULL) {
+        return -1;
+    }
+    if (esp_context->state == 2) {
+        return -1;
+    }
+    if (esp_setStringConfig(&esp_context->config, 0x2004, value) < 0) {
+        return -1;
+    }
+    return 0;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_setBgColor);
+int ESP_getUnitId(void *value) {
+    if (esp_context == NULL) {
+        return -1;
+    }
+    if (esp_context->state == 2) {
+        return -1;
+    }
+    if (esp_getStringConfig(&esp_context->config, 0x2004, value) < 0) {
+        return -1;
+    }
+    return 0;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_getBgColor);
+int ESP_setBgColor(void *value) {
+    if (esp_context == NULL) {
+        return -1;
+    }
+    if (esp_context->state == 2) {
+        return -1;
+    }
+    if (esp_setStringConfig(&esp_context->config, 0x2005, value) < 0) {
+        return -1;
+    }
+    return 0;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_setThreadPriority);
+int ESP_getBgColor(void *value) {
+    if (esp_context == NULL) {
+        return -1;
+    }
+    if (esp_context->state == 2) {
+        return -1;
+    }
+    if (esp_getStringConfig(&esp_context->config, 0x2005, value) < 0) {
+        return -1;
+    }
+    return 0;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_getThreadPriority);
+int ESP_setThreadPriority(void *value) {
+    if (esp_context == NULL) {
+        return -1;
+    }
+    if (esp_context->state == 2) {
+        return -1;
+    }
+    if (esp_setIntConfig(&esp_context->config, 0x1005, value) < 0) {
+        return -1;
+    }
+    return 0;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_setHomePageURL);
+int ESP_getThreadPriority(void *value) {
+    if (esp_context == NULL) {
+        return -1;
+    }
+    if (esp_context->state == 2) {
+        return -1;
+    }
+    if (esp_getIntConfig(&esp_context->config, 0x1005, value) < 0) {
+        return -1;
+    }
+    return 0;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_getHomePageURL);
+int ESP_setHomePageURL(void *value) {
+    if (esp_context == NULL) {
+        return -1;
+    }
+    if (esp_context->state == 2) {
+        return -1;
+    }
+    if (esp_setStringConfig(&esp_context->config, 0x2000, value) < 0) {
+        return -1;
+    }
+    return 0;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_setUserAgent);
+int ESP_getHomePageURL(void *value) {
+    if (esp_context == NULL) {
+        return -1;
+    }
+    if (esp_context->state == 2) {
+        return -1;
+    }
+    if (esp_getStringConfig(&esp_context->config, 0x2000, value) < 0) {
+        return -1;
+    }
+    return 0;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_getUserAgent);
+int ESP_setUserAgent(void *value) {
+    if (esp_context == NULL) {
+        return -1;
+    }
+    if (esp_context->state == 2) {
+        return -1;
+    }
+    if (esp_setStringConfig(&esp_context->config, 0x2003, value) < 0) {
+        return -1;
+    }
+    return 0;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_setCacheSize);
+int ESP_getUserAgent(void *value) {
+    if (esp_context == NULL) {
+        return -1;
+    }
+    if (esp_context->state == 2) {
+        return -1;
+    }
+    if (esp_getStringConfig(&esp_context->config, 0x2003, value) < 0) {
+        return -1;
+    }
+    return 0;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_getCacheSize);
+int ESP_setCacheSize(void *value) {
+    if (esp_context == NULL) {
+        return -1;
+    }
+    if (esp_context->state == 2) {
+        return -1;
+    }
+    if (esp_setIntConfig(&esp_context->config, 0x1000, value) < 0) {
+        return -1;
+    }
+    return 0;
+}
+
+int ESP_getCacheSize(void *value) {
+    if (esp_context == NULL) {
+        return -1;
+    }
+    if (esp_context->state == 2) {
+        return -1;
+    }
+    if (esp_getIntConfig(&esp_context->config, 0x1000, value) < 0) {
+        return -1;
+    }
+    return 0;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
