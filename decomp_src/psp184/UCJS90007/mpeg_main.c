@@ -311,7 +311,26 @@ static SceInt32 ringbufferCallBack(SceVoid *pBuf, SceInt32 iNum, SceVoid *Callba
 	return iReadSize / iTypeSize;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/mpeg_main", mpeg_exit_func);
+void sceKernelExitGame(void);
+void sceKernelExitGame(void);
+int mpeg_exit_func(int count, int arg1, void *arg2)
+{
+	t_conditionCtrl *pCtrl = *(t_conditionCtrl **)arg2;
+
+	if (pCtrl != NULL)
+		setPlayerEndCondition(pCtrl);
+	strFileUmdReadBreak();
+	if (audioFlag == 1) {
+		if (soundThread > 0)
+			sceKernelWaitThreadEnd(soundThread, 0);
+	}
+	if (dispThread > 0)
+		sceKernelWaitThreadEnd(dispThread, 0);
+	if (readThread > 0)
+		sceKernelWaitThreadEnd(readThread, 0);
+	sceKernelExitGame();
+	return 0;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/mpeg_main", mpeg_term);
 
