@@ -1277,9 +1277,66 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", hit_check_ufo)
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", hit_check_laser);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", inv_gamestart_set);
+typedef struct {
+	int f0, f4, f8, fc, f10, f14, f18, f1c, f20, f24, f28, f2c, f30, f34, f38, f3c;
+	int f40, f44, f48, f4c, f50, f54, f58;
+} INV_STATUS;
+#define IST (*(INV_STATUS *)&inv_status)
+typedef struct {
+	u8 _p0[0xCC];
+	int fcc, fd0;
+	u8 _pd4[0x100 - 0xD4];
+	int f100, f104, f108, f10c, f110, f114, f118;
+} SAVE_DATA;
+extern SAVE_DATA save_data;
+void *memset(void *s, int c, unsigned int n);
+void inv_stagestart_set(void);
+void inv_gamestart_set(int mode)
+{
+	memset(&inv_status, 0, sizeof(INV_STATUS));
+	if (save_data.fd0 == 0)
+		IST.f0 = 3;
+	if (save_data.fd0 == 1)
+		IST.f0 = 5;
+	if (save_data.fd0 == 2)
+		IST.f0 = 7;
+	if (save_data.fd0 == 3)
+		IST.f0 = 9;
+	IST.f4 = 0;
+	IST.f10 = save_data.fcc;
+	IST.fc = mode;
+	if (mode != 1) {
+		IST.f14 = 1;
+		IST.f18 = 1;
+	}
+	if (gmain.f.f1c == 1) {
+		IST.f0 = gmain.f.f1c;
+		IST.f10 = gmain.f.f1c;
+	}
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", inv_gamecontinue_set);
+void inv_gamecontinue_set(void)
+{
+	IST.f10 = save_data.f108;
+	IST.f0 = save_data.f10c;
+	IST.f4 = save_data.f110;
+	IST.fc = save_data.f100;
+	IST.f14 = save_data.f114;
+	IST.f18 = save_data.f118;
+	if (save_data.f108 == -1)
+		IST.f10 = save_data.fcc;
+	if (IST.f0 == -1) {
+		if (save_data.fd0 == 0)
+			IST.f0 = 3;
+		if (save_data.fd0 == 1)
+			IST.f0 = 5;
+		if (save_data.fd0 == 2)
+			IST.f0 = 7;
+		if (save_data.fd0 == 3)
+			IST.f0 = 9;
+	}
+	inv_stagestart_set();
+}
 
 void inv_stagestart_set(void)
 {
