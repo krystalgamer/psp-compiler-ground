@@ -16,6 +16,8 @@ extern int D_00349234;
 #endif
 
 extern int title_main;
+typedef struct { int f0, f4, f8, fc, f10, f14, f18, f1c, f20, f24, f28, f2c, f30, f34, f38, f3c, f40; } TITLE_MAIN;
+#define TMS (*(TITLE_MAIN *)&title_main)
 extern int D_00349230;
 extern int D_00349268;
 
@@ -56,7 +58,32 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_title_menu", inv_logo
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_title_menu", inv_title_init);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_title_menu", inv_title_roop);
+void title_bg_star_disp(int a);
+void game_bg_disp(void);
+void title_control(void);
+void select_control(void);
+void psp_loopstart(void);
+void psp_loopend(void);
+void se_stop(void);
+M2C_UNK inv_title_roop(void)
+{
+	while (TMS.fc) {
+		if (!TMS.f1c) {
+			psp_loopstart();
+			title_main_control();
+			title_bg_star_disp(TMS.f28);
+			game_bg_disp();
+			title_control();
+			select_control();
+			poly_set(0, 0, 480, 272, 0, 0, 0, 0, 255, 0, 0, 0, 255, 0, 0, 0, 255, 0, 0, 0, 255, 20000, 2, 1, TMS.f20);
+			psp_loopend();
+			TMS.f18++;
+		} else {
+			TMS.f1c = 0;
+		}
+	}
+	se_stop();
+}
 
 extern int title_main;
 extern int D_00349230;
@@ -100,7 +127,48 @@ void title_main_control(void)
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_title_menu", title_main_start);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_title_menu", title_main_select);
+int pad_rp(void);
+int pad_sw(void);
+int pad_ret_button(void);
+void se_start(int no);
+void title_main_select(void)
+{
+	if ((pad_rp() & 0x100010) || (pad_rp() & 0x200040)) {
+		if (pad_rp() & 0x100010)
+			TMS.f14--;
+		else if (pad_rp() & 0x200040)
+			TMS.f14++;
+		if (TMS.f14 < 0)
+			TMS.f14 = 5;
+		else if (TMS.f14 >= 6)
+			TMS.f14 = 0;
+		select_set(TMS.f14);
+		if (pad_rp() & 0x100010)
+			se_start(0x13);
+		else if (pad_rp() & 0x200040)
+			se_start(0x13);
+	}
+	if (TMS.f14 < 4)
+		game_bg_start(TMS.f14);
+	else
+		game_bg_end(-1);
+	if (pad_sw() & pad_ret_button()) {
+		se_start(0x14);
+		if (TMS.f14 < 4) {
+			TMS.f0 = 5;
+			TMS.f4 = 0;
+			TMS.f8 = 0;
+		} else if (TMS.f14 == 4) {
+			TMS.f0 = 2;
+			TMS.f4 = 0;
+			TMS.f8 = 0;
+		} else if (TMS.f14 == 5) {
+			TMS.f0 = 3;
+			TMS.f4 = 0;
+			TMS.f8 = 0;
+		}
+	}
+}
 
 INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_title_menu", D_0007EA60);
 
