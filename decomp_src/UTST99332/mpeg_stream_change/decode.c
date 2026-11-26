@@ -144,7 +144,22 @@ INCLUDE_ASM("tmp/asm/UTST99332/mpeg_stream_change/nonmatchings/decode", decode_c
 
 INCLUDE_ASM("tmp/asm/UTST99332/mpeg_stream_change/nonmatchings/decode", decode_reset);
 
-INCLUDE_ASM("tmp/asm/UTST99332/mpeg_stream_change/nonmatchings/decode", decode_delete);
+SceInt32 decode_delete(t_mpegStreamData *pStreamData)
+{
+	SceInt32 ret;
+
+	ret = decode_deleteAu(pStreamData, 0);
+	if (ret != 0) {
+		printf("fatal error : decode_deleteAu() M4AVC 0x%x\n", ret);
+	}
+
+	ret = decode_deleteAu(pStreamData, 1);
+	if (ret != 0) {
+		printf("fatal error : decode_deleteAu() ATRAC 0x%x\n", ret);
+	}
+
+	return ret;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/mpeg_stream_change/nonmatchings/decode", decode_changeAuMode);
 
