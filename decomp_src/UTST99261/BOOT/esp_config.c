@@ -4,6 +4,7 @@
 #include "psptypes.h"
 #include "m2c_macros.h"
 #include "dom_clib.h"
+#define CFS(c, o) (*(char **)((char *)(c) + (o)))
 extern ClibTm D_0025B580;
 extern int D_001F44DC;
 extern char D_0025B17C[];
@@ -47,7 +48,55 @@ INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/esp_config", D_00133E78);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/esp_config", do_string);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/esp_config", esp_defaultConfig);
+int esp_defaultConfig(int *cfg) {
+    memset(cfg, 0, 0x70);
+    cfg[0] = 0x40000;
+    cfg[1] = 1;
+    cfg[3] = 0;
+    cfg[5] = 0;
+    cfg[6] = 1;
+    cfg[9] = 3;
+    cfg[11] = 0x1F90;
+    cfg[22] = 0;
+    CFS(cfg, 0x40) = MEM_malloc(0, 1);
+    if (CFS(cfg, 0x40) == NULL) {
+        return -1;
+    }
+    CFS(cfg, 0x40)[0] = 0;
+    CFS(cfg, 0x44) = MEM_malloc(0, 1);
+    if (CFS(cfg, 0x44) == NULL) {
+        return -1;
+    }
+    CFS(cfg, 0x44)[0] = 0;
+    CFS(cfg, 0x28) = MEM_malloc(0, 1);
+    if (CFS(cfg, 0x28) == NULL) {
+        return -1;
+    }
+    CFS(cfg, 0x28)[0] = 0;
+    CFS(cfg, 0x30) = MEM_malloc(0, 0x15);
+    if (CFS(cfg, 0x30) == NULL) {
+        return -1;
+    }
+    strcpy(CFS(cfg, 0x30), "SCE PSP BROWSER 0100");
+    CFS(cfg, 0x34) = MEM_malloc(0, 1);
+    if (CFS(cfg, 0x34) == NULL) {
+        return -1;
+    }
+    CFS(cfg, 0x34)[0] = 0;
+    CFS(cfg, 0x38) = MEM_malloc(0, 6);
+    if (CFS(cfg, 0x38) == NULL) {
+        return -1;
+    }
+    strcpy(CFS(cfg, 0x38), "white");
+    cfg[15] = 0x40;
+    cfg[7] = 1;
+    cfg[8] = 1;
+    cfg[4] = 3;
+    cfg[18] = 0;
+    cfg[19] = 0;
+    cfg[27] = 0;
+    return 0;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -129,7 +178,6 @@ int esp_copyConfig(char **dst, char **src) {
     return 0;
 }
 
-INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/esp_config", D_00133EB0);
 
 int esp_setBoolConfig(int *cfg, int id, int val) {
     return do_bool(cfg, id, val ? D_00133E78 : "false");
