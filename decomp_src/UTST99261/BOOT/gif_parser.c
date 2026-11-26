@@ -32,11 +32,25 @@ typedef struct {
     s8 gct;                     /* 0x9 */
     u16 gctCount;               /* 0xA */
     u8 *gpal;                   /* 0xC */
-    u8 unk10[2];
+    s8 lct;                     /* 0x10 */
+    u8 unk11;
     u16 gctSize;                /* 0x12 */
     u8 *pal;                    /* 0x14 */
     int loop;                   /* 0x18 */
-    u8 unk1C[0x38];
+    u8 unk1C[0x8];
+    int trans;                  /* 0x24 */
+    u8 tr;                      /* 0x28 */
+    u8 tg;
+    u8 tb;
+    u8 transIdx;                /* 0x2B */
+    u8 unk2C[0x8];
+    int *rows;                  /* 0x34 */
+    int rowIdx;                 /* 0x38 */
+    int offset;                 /* 0x3C */
+    int x;                      /* 0x40 */
+    int line;                   /* 0x44 */
+    int step;                   /* 0x48 */
+    u8 unk4C[8];
     GIFDESC *cur;               /* 0x54 */
     GIFDESC *list;              /* 0x58 */
     u8 unk5C[0x10];
@@ -62,8 +76,104 @@ typedef struct {
     int unk18;
 } GIFBS;
 
+typedef struct {
+    void *next;
+    s16 left;
+    s16 top;
+    u16 width;                  /* 0x8 */
+    u16 height;
+    u8 unkC[0x1C];
+    u8 *buf;                    /* 0x28 */
+} GIFIMG;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gif_parser", setTransparentColor);
+#define CURIMG(c) ((GIFIMG *)(c)->cur)
+
+
+int setTransparentColor(GIFP *ctx) {
+    int found;
+    u8 r;
+    u8 g;
+    u8 b;
+    int tries;
+    int i;
+    u8 *p;
+
+    found = 0;
+    b = 9;
+    g = 9;
+    r = 9;
+    if (ctx->lct != 0) {
+        if (ctx->transIdx >= ctx->gctSize) {
+            return -1;
+        }
+        for (tries = 0; tries < ctx->gctSize * 2; tries++) {
+            found = 0;
+            for (i = 0; i < ctx->gctSize; i++) {
+                p = &ctx->pal[i * 3];
+                if ((p[0] & 0xF8) == (r & 0xF8) && (p[1] & 0xF8) == (g & 0xF8) && (p[2] & 0xF8) == (b & 0xF8)) {
+                    found = 1;
+                    break;
+                }
+            }
+            if (found == 1) {
+                if (r < 0xF9) {
+                    r += 8;
+                } else {
+                    r = 9;
+                    g += 8;
+                }
+            }
+            if (found == 0) {
+                break;
+            }
+        }
+        if (found) {
+            return -1;
+        }
+        ctx->pal[ctx->transIdx * 3] = r;
+        ctx->pal[ctx->transIdx * 3 + 1] = g;
+        ctx->pal[ctx->transIdx * 3 + 2] = b;
+    } else {
+        if (ctx->transIdx >= ctx->gctCount) {
+            return -1;
+        }
+        for (tries = 0; tries < ctx->gctCount * 2; tries++) {
+            found = 0;
+            for (i = 0; i < ctx->gctCount; i++) {
+                p = &ctx->gpal[i * 3];
+                if ((p[0] & 0xF8) == (r & 0xF8) && (p[1] & 0xF8) == (g & 0xF8) && (p[2] & 0xF8) == (b & 0xF8)) {
+                    found = 1;
+                    break;
+                }
+            }
+            if (found == 1) {
+                if (r < 0xF9) {
+                    r += 8;
+                } else {
+                    r = 9;
+                    g += 8;
+                }
+            }
+            if (found == 0) {
+                break;
+            }
+        }
+        if (found) {
+            return -1;
+        }
+        ctx->tr = ctx->gpal[ctx->transIdx * 3];
+        ctx->tg = ctx->gpal[ctx->transIdx * 3 + 1];
+        ctx->tb = ctx->gpal[ctx->transIdx * 3 + 2];
+        ctx->trans = 1;
+        ctx->gpal[ctx->transIdx * 3] = r;
+        ctx->gpal[ctx->transIdx * 3 + 1] = g;
+        ctx->gpal[ctx->transIdx * 3 + 2] = b;
+    }
+    ((u8 *)ctx->cur)[0x14] = r;
+    ((u8 *)ctx->cur)[0x15] = g;
+    ((u8 *)ctx->cur)[0x16] = b;
+    return 1;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gif_parser", storePixel);
 
