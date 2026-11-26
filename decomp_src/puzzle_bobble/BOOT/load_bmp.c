@@ -218,7 +218,71 @@ static void copy_8888(void *dst, const void *src, int width, int height, int alp
 	}
 }
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/load_bmp", copy_rle4);
+void copy_rle4( void *dst, void *src, int width, int height )
+{
+ int pitch2 = ( ( width + 1 ) / 2 + 15 ) & ~15 ;
+ char *sp = (char *)src ;
+ char *dp = (char *)dst + pitch2 * ( height - 1 ) ;
+
+ int x_pos = 0 ;
+ int y_pos = 0 ;
+ char *dp2 = dp ;
+ while ( y_pos < height ) {
+  int count = 255 & *( sp ++ ) ;
+  _Bool run = 1 ;
+  if ( count == 0 ) {
+   count = 255 & *( sp ++ ) ;
+   if ( count < 3 ) {
+    if ( count == 1 ) break ;
+    if ( count == 0 ) {
+     dp2 = ( dp -= pitch2 ) ;
+     y_pos ++ ;
+     x_pos = 0 ;
+    } else {
+
+     sp += 2 ;
+    }
+    continue ;
+   }
+   run = 0 ;
+  }
+  if ( count >= width - x_pos ) count = width - x_pos ;
+  if ( run ) {
+   { int i ; for ( i = 0 ; i < count ; i ++ ) {
+    int col = *sp ;
+    if ( ( 1 & i ) == 0 ) col >>= 4 ;
+    col &= 0x0f ;
+    if ( ( 1 & x_pos ) == 0 ) {
+     *dp2 = col ;
+    } else {
+     *dp2 |= ( col << 4 ) ;
+     dp2 ++ ;
+    }
+    x_pos ++ ;
+   } }
+   sp ++ ;
+  } else {
+   { int i ; for ( i = 0 ; i < count ; i ++ ) {
+    int col = *sp ;
+    if ( ( 1 & i ) == 0 ) {
+     col >>= 4 ;
+    } else {
+     sp ++ ;
+    }
+    col &= 0x0f ;
+    if ( ( 1 & x_pos ) == 0 ) {
+     *dp2 = col ;
+    } else {
+     *dp2 |= ( col << 4 ) ;
+     dp2 ++ ;
+    }
+    x_pos ++ ;
+   } }
+   sp += 1 & count ;
+   sp += 1 & ( ( count + 1 ) / 2 ) ;
+  }
+ }
+}
 
 static void copy_rle8(void *dst, const void *src, int width, int height)
 {
