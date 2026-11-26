@@ -663,7 +663,43 @@ SfIndex *__sceSystemFileNewIndex(SysFile *sf, const char *name, int type, unsign
 	return ix;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/systemfile", sceSystemFileAddIndexW);
+int sceSystemFileAddIndexW(void *handle, const char *name, void *data, unsigned short type, unsigned int len, unsigned int maxlen)
+{
+	SysFile *sf = handle;
+	SfIndex *ix;
+	unsigned int n;
+	register int ret;
+
+	if (handle == NULL)
+		SF_ERROR(ret, 3)
+	else if (sf->flags & 2)
+		SF_ERROR(ret, 3)
+	else {
+		n = sf_strlen(name);
+		if (n >= 0x20 || n == 0)
+			SF_ERROR(ret, 3)
+		else {
+			ix = _searchindex(sf, name);
+			if (ix != NULL)
+				SF_ERROR(ret, 6)
+			else {
+				ix = __sceSystemFileNewIndex(sf, name, 1, 1, 0x100);
+				if (ix == NULL)
+					SF_ERROR(ret, 1)
+				else {
+					((SfKeyEnt *)ix->unk0)->off = 0;
+					((SfKeyEnt *)ix->unk0)->fmt = type;
+					((SfKeyEnt *)ix->unk0)->len = len;
+					((SfKeyEnt *)ix->unk0)->maxlen = (maxlen + 3) / 4 * 4;
+					((SfKeyEnt *)ix->unk0)->dataoff = 0;
+					ix->unk8 = (int)data;
+					ret = 0;
+				}
+			}
+		}
+	}
+	return ret;
+}
 
 int sceSystemFileRemoveIndexW(void *handle, const char *name)
 {
