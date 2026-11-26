@@ -449,7 +449,27 @@ extern SceGimPicture *D_00054EA0;
 
 INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/draw", graphic_init);
 
-INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/draw", load_picture);
+static __inline__ int sceGimImageGetFrameCount(const SceGimImageHeader *image)
+{
+	return image->frame_count;
+}
+
+SceGimPicture *load_picture(int index, int *buff, int size)
+{
+	SceGimPicture *pic = sceGimPictureCreate(0);
+
+	if (pic == NULL) {
+		print_nothing("picture create failed\n");
+		return NULL;
+	}
+	if (!sceGimPictureLoadFile(pic, buff, size, index)) {
+		print_nothing("picture load failed : %d\n", index);
+		sceGimPictureDelete(pic);
+		return NULL;
+	}
+	g_img_loaded++;
+	return pic;
+}
 
 INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/draw", draw_sprite2);
 
@@ -635,11 +655,6 @@ void init_animation(int ani) {
 }
 
 __asm__(".globl init_animation");
-
-static __inline__ int sceGimImageGetFrameCount(const SceGimImageHeader *image)
-{
-	return image->frame_count;
-}
 
 static int draw_animation(int ani, int x, int y, int flag_loop)
 {
