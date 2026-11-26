@@ -510,7 +510,69 @@ void zWindWidgetFrameDraw(void *arg0) {
     zWindLineBox2(M2C_FIELD(arg0, short *, 0x36), M2C_FIELD(arg0, short *, 0x38), M2C_FIELD(arg0, short *, 0x3E), M2C_FIELD(arg0, short *, 0x40), 0, 0x7FFF);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/zWindDraw", zWindWidgetButtonDraw);
+typedef struct {
+    u8 unk0[0x4C];
+    int kind;                   /* 0x4C */
+    char *text;                 /* 0x50 */
+    s16 len;                    /* 0x54 */
+    s16 pressed;                /* 0x56 */
+    struct {
+        s16 unk0;
+        s16 w;
+        s16 h;
+        s16 unk6;
+        int unk8;
+        u16 *data;              /* 0xC */
+    } *image;                   /* 0x58 */
+} ZBUTTON;
+int GUI_Graphics_getStringSize();
+
+void zWindWidgetButtonDraw(ZW *w) {
+    int tw;
+    int th;
+    s16 x;
+    s16 y;
+    s16 wd;
+    s16 h;
+    int off;
+    int c;
+    s16 iw;
+    s16 ih;
+
+    x = w->px;
+    y = w->py;
+    wd = w->w;
+    h = w->h;
+    zWindDrawBox(x, y, wd, h, w->bg15);
+    off = 0;
+    if ((ZW *)s_windsystem_data.focus == w && w->focus15 != 0) {
+        zWindLineBox(x, y, wd - 1, h - 1, w->focus15);
+        if (((ZBUTTON *)w)->pressed != 0) {
+            off = 2;
+        }
+    } else {
+        zWindLineBox2(x, y, wd - 1, h - 1, 0x7FFF, 0);
+    }
+    zWindDrawClipSet(x + 2, y + 2, wd - 3, h - 3);
+    switch (((ZBUTTON *)w)->kind) {
+    case 0:
+        if (((ZBUTTON *)w)->len != 0) {
+            GUI_Graphics_getStringSize(w->font, ((ZBUTTON *)w)->text, ((ZBUTTON *)w)->len, &tw, &th);
+            c = w->fg15;
+            if (w->flags & 0x40000000) {
+                c = 0x318C;
+            }
+            zWindFontDraw(w->font, x + (wd - tw) / 2 + off, y + (h - th) / 2 + off, ((ZBUTTON *)w)->text, c, ((ZBUTTON *)w)->len);
+        }
+        break;
+    case 1:
+        iw = ((ZBUTTON *)w)->image->w;
+        ih = ((ZBUTTON *)w)->image->h;
+        zWindDrawImage((wd - iw) / 2 + x + off, (h - ih) / 2 + y + off, iw, ih, ((ZBUTTON *)w)->image->data, 0);
+        break;
+    }
+    zWindDrawClipSet(0, 0, ((ZINIT *)&s_windsystem_init)->width, ((ZINIT *)&s_windsystem_init)->height);
+}
 
 void zWindWidgetCheckboxDraw(ZW *w) {
     int x;
