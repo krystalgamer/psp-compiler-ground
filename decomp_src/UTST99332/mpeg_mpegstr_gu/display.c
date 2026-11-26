@@ -112,7 +112,37 @@ INCLUDE_ASM("tmp/asm/UTST99332/mpeg_mpegstr_gu/nonmatchings/display", draw_frame
 
 INCLUDE_ASM("tmp/asm/UTST99332/mpeg_mpegstr_gu/nonmatchings/display", dispbuf_create);
 
-INCLUDE_ASM("tmp/asm/UTST99332/mpeg_mpegstr_gu/nonmatchings/display", dispbuf_reset);
+SceInt32 dispbuf_reset(t_displayBuffer *pDisp)
+{
+	frameCount = 0;
+	frameLoss = 0;
+
+	pDisp->write = 0;
+	pDisp->read = 0;
+	pDisp->count = 0;
+	pDisp->scale = 1;
+
+	dispbuf_setMode(pDisp, 1);
+
+	sceKernelClearEventFlag(pDisp->delayFlag, 0);
+
+	switch (pDisp->pixelFormat) {
+	case 3:
+		sceDisplaySetFrameBuf(0, 512, 3, 1);
+		break;
+	case 0:
+		sceDisplaySetFrameBuf(0, 512, 0, 1);
+		break;
+	case 1:
+		sceDisplaySetFrameBuf(0, 512, 1, 1);
+		break;
+	case 2:
+		sceDisplaySetFrameBuf(0, 512, 2, 1);
+		break;
+	}
+
+	return 0;
+}
 
 SceInt32 dispbuf_delete(t_displayBuffer *pDisp)
 {
