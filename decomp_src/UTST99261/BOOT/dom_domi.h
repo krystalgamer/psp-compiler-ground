@@ -89,7 +89,7 @@ typedef struct SDomiInternalNode {
     SDomiNode n;
     SDomiNode *firstChild;            /* 0x20 */
     SDomiNode *lastChild;             /* 0x24 */
-    void *x28;
+    SDomiSLink nodeSets;              /* 0x28 */
 } SDomiInternalNode;
 
 typedef struct SDomiTrunkNode {
