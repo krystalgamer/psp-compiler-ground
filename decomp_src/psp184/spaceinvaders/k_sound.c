@@ -42,7 +42,16 @@ int sceKernelStopModule(int modid, int argsize, void *argp, int *status, void *o
 int sceKernelUnloadModule(int modid);
 int sceAtracSetDataAndGetID(void *buf, int size);
 
-static int load_module(char *path, SceKernelLMOption *opt)
+struct SceKernelLMOption { unsigned int size; int mpidtext; int mpiddata; unsigned int flags; char position; char access; char creserved[2]; };
+extern int playArg;
+extern int bgm_bind_load;
+extern void *bgm_bind_addr;
+typedef struct { int addr; int size; } SE_T;
+int sceAtracGetNextDecodePosition(int id, int *pos);
+int sceAtracGetSoundSample(int id, int *end, int *loopStart, int *loopEnd);
+void psp_free(void *p);
+
+static int load_module(char *path, SceKernelLMOption *opt, int flags)
 {
 	int mid;
 
@@ -80,7 +89,31 @@ int unloadModuleAt3plus(void)
 	return 0;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/k_sound", loadModuleAt3plus);
+int loadModuleAt3plus(void)
+{
+	SceKernelLMOption opt_k;
+	SceKernelLMOption opt_u;
+	int i;
+
+	opt_k.size = 0x14;
+	opt_k.mpidtext = 1;
+	opt_k.mpiddata = 1;
+	opt_k.position = 0;
+	opt_k.access = 1;
+	opt_u.size = 0x14;
+	opt_u.mpidtext = 2;
+	opt_u.mpiddata = 2;
+	opt_u.position = 0;
+	opt_u.access = 1;
+	for (i = 0; i < 2; i++) {
+		module[i].modid = load_module((char *)module[i].f8, module[i].f4 ? &opt_k : &opt_u, 0);
+		if (module[i].modid < 0) {
+			unloadModuleAt3plus();
+			return -1;
+		}
+	}
+	return 0;
+}
 
 int init_atrac3plus(void *buf, int size, int outputChannel, int *p)
 {
@@ -181,7 +214,25 @@ INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/k_sound", D_0007AAC4);
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/k_sound", sound_load);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/k_sound", sound_relece);
+void sound_relece(void)
+{
+	int i;
+
+	if (bgm_bind_load == 0) {
+		for (i = 0; i != sound_block_max; i++) {
+			if (sd[i].f0) {
+				psp_free((void *)sd[i].f0);
+				sd[i].f0 = 0;
+			}
+		}
+	} else {
+		if (bgm_bind_addr) {
+			psp_free(bgm_bind_addr);
+			bgm_bind_addr = 0;
+		}
+	}
+	sound_block_max = 0;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/k_sound", sound_start);
 
@@ -296,7 +347,21 @@ INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/k_sound", D_0007AC48);
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/k_sound", se_load);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/k_sound", se_start);
+int sceAtracGetNextDecodePosition(int id, int *pos);
+int sceAtracGetSoundSample(int id, int *end, int *loopStart, int *loopEnd);
+void psp_free(void *p);
+void se_start(int no)
+{
+	int ch;
+
+	ch = se_play_no;
+	se_play_no = ch + 1;
+	if (se_play_no >= 8)
+		se_play_no = 0;
+	sceWaveStop(ch);
+	if (sceWaveSetVoice(ch, ((SE_T *)&se)[no].addr, ((SE_T *)&se)[no].size, 0) == 0)
+		sceWavePlay(ch, 0x7f, 0x7f);
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/k_sound", se_start_v);
 
@@ -351,7 +416,23 @@ void sound_volume_set1(int vol)
 	sound1_volume = vol;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/k_sound", sound_play_get);
+int sound_play_get(void)
+{
+	int pos;
+	int end;
+	int loopStart;
+	int loopEnd;
+
+	if (playArg == -1)
+		return 0;
+	if (sound_block_no == -1)
+		return 0;
+	if (sceAtracGetNextDecodePosition(playArg, &pos) != 0)
+		return 0;
+	if (sceAtracGetSoundSample(playArg, &end, &loopStart, &loopEnd) != 0)
+		return 0;
+	return (unsigned int)(pos * 1600) / (unsigned int)end;
+}
 
 INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/k_sound", D_0007ACCC);
 
