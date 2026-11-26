@@ -334,7 +334,66 @@ void StainGlassRelease(void)
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_stainglass/nonmatchings/stainglass", StainGlassUpdate);
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_stainglass/nonmatchings/stainglass", StainGlassDraw);
+#define SCEGU_CULL_FACE                    5
+#define SCEGU_BLEND                        4
+#define SCEGU_PRIM_TRIANGLES               3
+#define SCEGU_VERTEX_FLOAT       ( 3 <<  7 )
+#define SCEGU_TEXTURE_USHORT     ( 2 <<  0 )
+#define SCEGU_COLOR_PF8888       ( 7 <<  2 )
+#define SCEGU_NORMAL_NONE        ( 0 <<  5 )
+#define SCEGU_INDEX_NONE         ( 0 << 11 )
+#define SCEGU_LIGHTING                    10
+
+void StainGlassDraw( bool textured  )
+{
+	if ( _ny <= 1 || _nx <= 1 ) return;
+
+	if ( textured )
+	{
+		sceGuTexScale(  1.f, 1.f );
+		sceGuTexOffset( 0.f, 0.f );
+	}
+
+	sceGumPushMatrix();
+	sceGumMultMatrix(&_transform.fm);
+
+	sceGuDisable( SCEGU_CULL_FACE );
+
+	if ( textured )
+	{
+		sceGuTexFlush();
+	}
+
+	sceGuDisable( SCEGU_LIGHTING );
+	sceGuDisable( SCEGU_BLEND );
+
+	if ( textured )
+	{
+		
+
+		UseFrameBufferMipmap();
+	}
+
+	sceGumDrawArray(
+		SCEGU_PRIM_TRIANGLES,
+		SCEGU_VERTEX_FLOAT 
+		| SCEGU_TEXTURE_USHORT
+		| SCEGU_COLOR_PF8888
+		| SCEGU_NORMAL_NONE
+		| SCEGU_INDEX_NONE
+		, _num_vertices, NULL, (void*)_vertices );
+
+	sceGuEnable( SCEGU_LIGHTING );
+
+	if ( textured )
+	{
+		sceGuTexFlush();
+
+		sceGuTexFilter( SCEGU_LINEAR, SCEGU_LINEAR );
+	}
+
+	sceGumPopMatrix();
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_stainglass/nonmatchings/stainglass", StainGlassSetTransform);
 
