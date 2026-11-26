@@ -982,7 +982,19 @@ void sceGuDispBuffer(int width, int height, void *dispbp, int dispbw)
 		sceDisplaySetFrameBuf((char *)vram_top + (unsigned int)FBuf.disp_buffer, dispbw, FBuf.pixel_size, 1);
 }
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", sceGuDisplay);
+int sceGuDisplay(int state)
+{
+	int old;
+	GuDrawBuffer *fb = &FBuf;
+
+	if (!state)
+		sceDisplaySetFrameBuf(0, 0, 0, 1);
+	else
+		sceDisplaySetFrameBuf((char *)vram_top + (unsigned int)fb->disp_buffer, fb->frame_width, fb->pixel_size, 1);
+	old = disp_sw;
+	disp_sw = state;
+	return old;
+}
 
 void *sceGuSwapBuffers(void)
 {
