@@ -1,3 +1,4 @@
+/* cflags: -O2 -fno-merge-constants */
 #include "common.h"
 
 /* declarations recovered from DWARF */
@@ -116,7 +117,31 @@ void sceGumSetMatrixStack(void *stack, int proj, int view, int model, int textur
 int sceDisplayWaitVblankStart(void);
 
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_string/nonmatchings/main", draw_frame);
+void DrawData(void);
+
+static void draw_frame(void)
+{
+	ScePspFVector3 vec;
+
+	sceGuStart(0, disp_list, 0x10000);
+
+	sceGuClear(7);
+
+	sceGumPushMatrix();
+	sceGumLoadIdentity();
+	sceGumTranslate(&pos.trans);
+	vec.x = pos.rot.x * 3.1415927f / 180.0f;
+	vec.y = pos.rot.y * 3.1415927f / 180.0f;
+	vec.z = pos.rot.z * 3.1415927f / 180.0f;
+	sceGumRotateXYZ(&vec);
+
+	DrawData();
+
+	sceGumPopMatrix();
+
+	sceGuFinish();
+	sceGuSync(0, 0);
+}
 
 void init_all(void) {
     sceGuInit();
