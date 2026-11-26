@@ -65,6 +65,14 @@ M2C_UNK MEM_free(M2C_UNK, void *);                  /* extern */
 
 int GUI_createCheckbox();
 int GUI_createList();
+int GUI_createTextField();
+int GUI_createTextArea();
+int GUI_TextField_setText();
+int GUI_TextArea_setText();
+int GUI_TextField_setEchoChar();
+int GUI_TextField_setEditable();
+int GUI_TextArea_setEditable();
+int GUI_TextField_setMaxlength();
 int GUI_createChoice();
 int GUI_createButton();
 int GUI_createRadioboxGroup();
@@ -130,7 +138,41 @@ void rnd_gdrawGetViewClientSize(void) {
     GUI_ScrollPane_getViewportSize();
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_gdraw", rnd_gdrawCreateTextline);
+int rnd_gdrawCreateTextline(int parent, int fgc, int bgc, int fcc, int font, int text, int password, int readonly,
+                            int disabled, int maxlen) {
+    int fg[3];
+    int bg[3];
+    int fc[3];
+    int w;
+    int sp;
+
+    w = GUI_createTextField(parent);
+    if (w == 0) {
+        return 0;
+    }
+    sp = GUI_Component_getParent(parent);
+    color2rgb(fg, fgc);
+    color2rgb(bg, bgc);
+    GUI_Component_setColor(w, fg, bg);
+    color2rgb(fc, fcc);
+    GUI_Component_setFocusColor(w, fc);
+    GUI_TextField_setText(w, text);
+    GUI_Component_setFont(w, font);
+    if (password) {
+        GUI_TextField_setEchoChar(w);
+    }
+    if (disabled) {
+        GUI_Component_setEnabled(w, 0);
+    }
+    if (readonly) {
+        GUI_TextField_setEditable(w, 0);
+    }
+    if (maxlen >= 0) {
+        GUI_TextField_setMaxlength(w, maxlen);
+    }
+    GUI_ScrollPane_add(sp, w);
+    return w;
+}
 
 int rnd_gdrawGetTextlineExtents(int font, int n, int *w, int *h) {
     getStringsExtents(font, D_00133564, 1, w, h);
@@ -170,7 +212,32 @@ int rnd_gdrawGetTextlineSelectionString(int w, char **out) {
     return n;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_gdraw", rnd_gdrawCreateTextbox);
+int rnd_gdrawCreateTextbox(int parent, int fgc, int bgc, int fcc, int font, int text, int readonly, int disabled) {
+    int fg[3];
+    int bg[3];
+    int fc[3];
+    int w;
+
+    w = GUI_createTextArea(parent);
+    if (w == 0) {
+        return 0;
+    }
+    color2rgb(fg, fgc);
+    color2rgb(bg, bgc);
+    GUI_Component_setColor(w, fg, bg);
+    color2rgb(fc, fcc);
+    GUI_Component_setFocusColor(w, fc);
+    GUI_ScrollPane_add(GUI_Component_getParent(parent), w);
+    GUI_TextArea_setText(w, text);
+    GUI_Component_setFont(w, font);
+    if (disabled) {
+        GUI_Component_setEnabled(w, 0);
+    }
+    if (readonly) {
+        GUI_TextArea_setEditable(w, 0);
+    }
+    return w;
+}
 
 int rnd_gdrawGetTextboxExtents(int font, int rows, int cols, int *w, int *h) {
     getStringsExtents(font, D_00133564, 1, w, h);
