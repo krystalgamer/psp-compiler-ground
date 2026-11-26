@@ -541,38 +541,101 @@ int sound_play_get(void)
 	return (unsigned int)(pos * 1600) / (unsigned int)end;
 }
 
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/k_sound", D_0007ACCC);
+int file_load_async(char *name, int mode);
+int file_load_check(int h);
+void *file_load_addr(int h);
+void file_load_end(int h);
+int inv_netgame_loop(void);
+void inv_nowloading_disp(int f);
+int error_code_daialogget(void);
+void psp_loopstart(void);
+void psp_loopend(void);
+int inv_sound_load(int no, int mode)
+{
+	char *name[13] = {
+		"cp%d_intro.at3",
+		"cp%d_level1.at3",
+		"cp%d_level2.at3",
+		"cp%d_level3.at3",
+		"cp%d_level4.at3",
+		"cp%d_level5.at3",
+		"cp%d_level6.at3",
+		"cp%d_level7.at3",
+		"cp%d_level8.at3",
+		"cp%d_ending.at3",
+		"cp%d_charge.at3",
+		"cp%d_release.at3",
+		"gameover.at3",
+	};
+	char *end[2] = {
+		"totalresult3_loop.at3",
+		"totalresult3_ending.at3",
+	};
+	char buf[112];
+	int handle, ret, async, loop, disp, state, i;
+	void *p;
 
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/k_sound", D_0007ACDC);
-
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/k_sound", D_0007ACEC);
-
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/k_sound", D_0007ACFC);
-
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/k_sound", D_0007AD0C);
-
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/k_sound", D_0007AD1C);
-
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/k_sound", D_0007AD2C);
-
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/k_sound", D_0007AD3C);
-
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/k_sound", D_0007AD4C);
-
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/k_sound", D_0007AD5C);
-
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/k_sound", D_0007AD6C);
-
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/k_sound", D_0007AD7C);
-
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/k_sound", D_0007AD90);
-
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/k_sound", D_0007ADA0);
-
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/k_sound", D_0007ADD4);
-
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/k_sound", D_0007ADEC);
-
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/k_sound", D_0007AE04);
-
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/k_sound", inv_sound_load);
+	sprintf(buf, "music/bind_cp%d.dat", no);
+	sound_block_max = 13;
+	if (no == 8)
+		sound_block_max = 2;
+	ret = 1;
+	state = 0;
+	bgm_bind_load = 1;
+	async = mode != 1;
+	loop = 1;
+	disp = 1;
+	handle = -1;
+	while (loop) {
+		switch (state) {
+		case 0:
+			sprintf(buf, "music/bind_cp%d.dat", no);
+			handle = file_load_async(buf, async);
+			state = 1;
+			break;
+		case 1:
+			if (file_load_check(handle) == 1) {
+				bgm_bind_addr = file_load_addr(handle);
+				state = 2;
+			}
+			break;
+		case 2:
+			loop = 0;
+			break;
+		}
+		psp_loopstart();
+		inv_nowloading_disp(disp);
+		if (mode == 1) {
+			sceGuSync(0, 0);
+			if (error_code_daialogget() != 0) {
+				if (!loop)
+					loop = 1;
+				disp = 0;
+			}
+			if (inv_netgame_loop() == 1) {
+				if (handle != -1)
+					file_load_end(handle);
+				ret = 0;
+				break;
+			}
+		}
+		psp_loopend();
+	}
+	if (ret) {
+		for (i = 0; i < sound_block_max; i++) {
+			if (no == 8)
+				sprintf(buf, end[i], no);
+			else if (i < sound_block_max - 1)
+				sprintf(buf, name[i], no);
+			else
+				sprintf(buf, name[i]);
+			p = file_bind_addr(bgm_bind_addr, buf);
+			if (p) {
+				sd[i].f0 = (int)p;
+				sd[i].f4 = file_bind_size(bgm_bind_addr, buf);
+				sd[i].f8 = 0;
+			}
+		}
+	}
+	return ret;
+}
