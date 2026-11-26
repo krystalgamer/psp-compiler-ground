@@ -104,7 +104,14 @@ int geTexSend(int n);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/logo", init_logo);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/logo", proc_logo);
+int proc_logo(void *p) {
+    sceGuDisable(1);
+    geTexSend(7);
+    geColor(0xFF, 0xFF, 0xFF, 0xFF);
+    geDrawArray(&logo_inf);
+    sceGuEnable(1);
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/logo", draw_logo);
 
