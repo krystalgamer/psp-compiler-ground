@@ -1,23 +1,58 @@
+/* cflags: -O1 */
 #include "common.h"
-#include "m2c_macros.h"
+#include "UTST99261/BOOT/nfgui.h"
 
-
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
 int GuigraphicsInit(void) {
     return 1;
 }
 
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
 int GuigraphicsExit(void) {
     return 1;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/guigraphic", GuigraphicsCreate);
+GUIGRAPHICS *GuigraphicsCreate(void) {
+    GUIGRAPHICS *g;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/guigraphic", GuigraphicsClear);
+    g = ESP_guiMemAlloc(sizeof(GUIGRAPHICS));
+    if (g == NULL) {
+        puts("[X1]GuigraphicsCreate");
+        return NULL;
+    }
+    g->type = 2;
+    GuigraphicsClear(g);
+    _i_guigraphicsmalloc++;
+    return g;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/guigraphic", GuigraphicsDelete);
+int GuigraphicsClear(GUIGRAPHICS *g) {
+    if (g == NULL) {
+        puts("[X1]GuigraphicsClear");
+        return 0;
+    }
+    if (g->type != 2) {
+        puts("[X2]GuigraphicsClear");
+        return 0;
+    }
+    g->unk4 = 0;
+    g->unkC = 0;
+    g->unkE = 0;
+    g->unk10 = 0;
+    g->unk12 = 0;
+    g->color = D_00584B68;
+    return 1;
+}
+
+int GuigraphicsDelete(GUIGRAPHICS *g) {
+    if (g == NULL) {
+        puts("[X1]GuigraphicsDelete");
+        return 0;
+    }
+    if (g->type != 2) {
+        puts("[X2]GuigraphicsDelete");
+        return 0;
+    }
+    _i_guigraphicsmalloc--;
+    g->type = 0;
+    ESP_guiMemFree(g);
+    return 1;
+}

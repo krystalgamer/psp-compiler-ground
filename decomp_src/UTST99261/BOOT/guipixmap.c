@@ -1,23 +1,60 @@
+/* cflags: -O1 */
 #include "common.h"
-#include "m2c_macros.h"
+#include "UTST99261/BOOT/nfgui.h"
 
-
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
 int GuipixmapInit(void) {
     return 1;
 }
 
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
 int GuipixmapExit(void) {
     return 1;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/guipixmap", GuipixmapCreate);
+GUIPIXMAP *GuipixmapCreate(void) {
+    GUIPIXMAP *p;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/guipixmap", GuipixmapClear);
+    p = ESP_guiMemAlloc(sizeof(GUIPIXMAP));
+    if (p == NULL) {
+        puts("[X1]GuipixmapCreate");
+        return NULL;
+    }
+    p->type = 3;
+    GuipixmapClear(p);
+    _i_guipixmapmalloc++;
+    return p;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/guipixmap", GuipixmapDelete);
+int GuipixmapClear(GUIPIXMAP *p) {
+    if (p == NULL) {
+        puts("[X1]GuipixmapClear");
+        return 0;
+    }
+    if (p->type != 3) {
+        puts("[X2]GuipixmapClear");
+        return 0;
+    }
+    p->kind = 0;
+    p->data = NULL;
+    return 1;
+}
+
+int GuipixmapDelete(GUIPIXMAP *p) {
+    if (p == NULL) {
+        puts("[X1]GuipixmapDelete");
+        return 0;
+    }
+    if (p->type != 3) {
+        puts("[X2]GuipixmapDelete");
+        return 0;
+    }
+    if (p->kind == 0) {
+        ESP_guiMemFree(p->data);
+    }
+    if (p->kind == 1) {
+        ESP_guiMemFree(p->data);
+    }
+    p->type = 0;
+    ESP_guiMemFree(p);
+    _i_guipixmapmalloc--;
+    return 1;
+}

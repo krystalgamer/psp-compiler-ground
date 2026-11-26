@@ -1,32 +1,59 @@
+/* cflags: -O1 */
 #include "common.h"
-#include "m2c_macros.h"
+#include "UTST99261/BOOT/nfgui.h"
 
-
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
 int GuifontInit(void) {
     return 1;
 }
 
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
 int GuifontExit(void) {
     return 1;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/guifont", GuifontCreate);
+GUIFONT *GuifontCreate(void) {
+    GUIFONT *font;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/guifont", GuifontCreateOne);
+    font = ESP_guiMemAlloc(sizeof(GUIFONT));
+    if (font == NULL) {
+        puts("[X1]GuifontCreate");
+        return NULL;
+    }
+    font->type = 4;
+    GuifontClear(font);
+    _i_guifontmalloc++;
+    return font;
+}
 
-INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/guifont", D_001304E0);
+GUIFONT *GuifontCreateOne(void) {
+    GUIFONT *font;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/guifont", GuifontClear);
+    font = ESP_guiMemAlloc(sizeof(GUIFONT));
+    if (font == NULL) {
+        puts("[X1]GuifontCreate");
+        return NULL;
+    }
+    font->type = 4;
+    font->size = s_windsystemChar.size;
+    font->weight = s_windsystemChar.weight;
+    font->style = s_windsystemChar.style;
+    font->extra = 0;
+    GuifontClear(font);
+    _i_guifontmalloc++;
+    return font;
+}
 
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
+int GuifontClear(GUIFONT *font) {
+    if (font == NULL) {
+        puts("[X1]GuifontClear");
+        return 0;
+    }
+    if (font->type != 4) {
+        puts("[X2]GuifontClear");
+        return 0;
+    }
+    return 1;
+}
+
 int GuifontDelete(void) {
     return 1;
 }
