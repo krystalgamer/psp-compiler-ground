@@ -282,7 +282,40 @@ int FadeState(void) {
     return __fade;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/moonball_main", FadeDraw);
+void sceGuDisable(int state);
+void sceGuColor(unsigned int color);
+void sceGumDrawArray(int prim, int vtype, int count, const void *indices, const void *vertices);
+void sceGuDisable(int state);
+void sceGuColor(unsigned int color);
+void sceGumDrawArray(int prim, int vtype, int count, const void *indices, const void *vertices);
+extern Gu2dV16 D_0007D908[2];
+void FadeDraw(void)
+{
+	u_int32 c;
+	u_int32 a;
+
+	if (__fadestep < 255 && __fade != 0) {
+		if (__fade == 1)
+			a = 255 - __fadestep;
+		else
+			a = __fadestep;
+		sceGuDisable(9);
+		c = (a << 24) | __fadecolor;
+		sceGuColor(c);
+		D_0007D908[0].p[0] = 0;
+		D_0007D908[0].p[1] = 0;
+		D_0007D908[0].p[2] = 0;
+		D_0007D908[1].p[0] = 480;
+		D_0007D908[1].p[1] = 272;
+		D_0007D908[1].p[2] = 0;
+		sceGumDrawArray(6, 0x800100, 2, NULL, D_0007D908);
+		__fadestep += 16;
+		if (__fadestep < 255)
+			return;
+		__fadestep = 255;
+	}
+	__fade = 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/moonball_main", DrawFunc);
 
