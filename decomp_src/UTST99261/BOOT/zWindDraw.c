@@ -36,7 +36,7 @@ extern void *_zWindFontImage;
 extern int _zWindFontWidth;
 extern int _zWindFontHeight;
 int GUI_ScrollPane_getScrollPosition();
-void zWindDrawBox();
+void zWindDrawBox(int x, int y, int w, int h, short color);
 extern int _zWindDrawTexClipHeight;
 extern int _zWindDrawTexClipWidth;
 extern int _zWindDrawTexClipX;
@@ -56,6 +56,8 @@ extern int _zWindDrawTexWidthT;
 extern int _zWindDrawTexdataT;
 extern int _zwindPop;
 void zWindDrawLineW(int x, int y, int len, short color);
+int GUI_ScrollPane_getContentSize(int pane, int *w, int *h);
+int GUI_ScrollPane_setScrollPosition(int pane, int x, int y);
 void zWindDrawLineH(int x, int y, int len, short color);
 extern int _zWindDrawTexClipOffX;
 extern int _zWindDrawTexClipOffY;
@@ -75,7 +77,39 @@ int zWindDraw(void) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/zWindDraw", zWindFontSet);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/zWindDraw", zWindLocateSet);
+int zWindLocateSet(int x, int y) {
+    int w;
+    int h;
+
+    if (s_windsystem_data.flags & 4) {
+        return 0;
+    }
+    if (s_windsystem_data.view == 0) {
+        return 0;
+    }
+    if (GUI_ScrollPane_getContentSize(s_windsystem_data.view, &w, &h) == -1) {
+        return 0;
+    }
+    w -= ((ZINIT *)&s_windsystem_init)->width;
+    h -= ((ZINIT *)&s_windsystem_init)->height;
+    if (x > w) {
+        x = w;
+    }
+    if (y > h) {
+        y = h;
+    }
+    if (x < 0) {
+        x = 0;
+    }
+    if (y < 0) {
+        y = 0;
+    }
+    if (GUI_ScrollPane_setScrollPosition(s_windsystem_data.view, x, y) == -1) {
+        return 0;
+    }
+    zWindDraw();
+    return 0;
+}
 
 int zWindLocateGet(int *x, int *y) {
     *x = 0;
