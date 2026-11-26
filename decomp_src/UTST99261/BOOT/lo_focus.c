@@ -3,6 +3,11 @@
 #include "lo_box.h"
 #include "m2c_macros.h"
 #include "lo_focus.h"
+FOCUSLIST *getNext2DFocusLeft(void *frame, void *a1, FOCUSLIST *l);
+FOCUSLIST *getNext2DFocusRight(void *frame, void *a1, FOCUSLIST *l);
+FOCUSLIST *getNextNaviFocus(void *frame, void *a1, FOCUSLIST *l, void *navi);
+void scrollToCurrent2DFocusPosition(void *frame, FOCUSLIST *l);
+FOCUSLIST *scrollToNextPosition(void *frame, void *a1, FOCUSLIST *l, int dir);
 FOCUSLIST *getNext2DFocusDown(void *frame, void *a1, FOCUSLIST *l, void *obj);
 FOCUSLIST *getNext2DFocusUp(void *frame, void *a1, FOCUSLIST *l, void *obj);
 void *getBodyBox(void *box);
@@ -360,13 +365,161 @@ int isFocusInDisplay(void *frame, FOCUSLIST *l) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_focus", scrollToNextPosition);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_focus", act2DMoveFocusUp);
+FOCUSLIST *act2DMoveFocusUp(void *frame, void *a1, FOCUSLIST *cur) {
+    FOCUSLIST *n;
+    void *navi;
+    if (frame == NULL) {
+        return cur;
+    }
+    navi = NULL;
+    if (cur != NULL) {
+        if ((navi = cur->x18) != NULL) {
+            navi = ((void **)navi)[0];
+        } else {
+            navi = NULL;
+        }
+    }
+    n = getNextNaviFocus(frame, a1, cur, navi);
+    if (n != NULL) {
+        if (n != cur) {
+            scrollToCurrent2DFocusPosition(frame, n);
+        }
+        goto set;
+    }
+    n = getNext2DFocusUp(frame, a1, cur, NULL);
+    if (n == NULL) {
+        n = cur;
+    }
+    if (n == cur) {
+        n = scrollToNextPosition(frame, a1, n, 1);
+        goto set;
+    }
+    scrollToCurrent2DFocusPosition(frame, n);
+    if (n->obj == NULL) {
+        goto end;
+    }
+set:
+    actSetFocusByFocusList(frame, n, 1);
+end:
+    return n;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_focus", act2DMoveFocusDown);
+FOCUSLIST *act2DMoveFocusDown(void *frame, void *a1, FOCUSLIST *cur) {
+    FOCUSLIST *n;
+    void *navi;
+    if (frame == NULL) {
+        return cur;
+    }
+    navi = NULL;
+    if (cur != NULL) {
+        if ((navi = cur->x18) != NULL) {
+            navi = ((void **)navi)[1];
+        } else {
+            navi = NULL;
+        }
+    }
+    n = getNextNaviFocus(frame, a1, cur, navi);
+    if (n != NULL) {
+        if (n != cur) {
+            scrollToCurrent2DFocusPosition(frame, n);
+        }
+        goto set;
+    }
+    n = getNext2DFocusDown(frame, a1, cur, NULL);
+    if (n == NULL) {
+        n = cur;
+    }
+    if (n == cur) {
+        n = scrollToNextPosition(frame, a1, n, 2);
+        goto set;
+    }
+    scrollToCurrent2DFocusPosition(frame, n);
+    if (n->obj == NULL) {
+        goto end;
+    }
+set:
+    actSetFocusByFocusList(frame, n, 1);
+end:
+    return n;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_focus", act2DMoveFocusLeft);
+FOCUSLIST *act2DMoveFocusLeft(void *frame, void *a1, FOCUSLIST *cur) {
+    FOCUSLIST *n;
+    void *navi;
+    if (frame == NULL) {
+        return cur;
+    }
+    navi = NULL;
+    if (cur != NULL) {
+        if ((navi = cur->x18) != NULL) {
+            navi = ((void **)navi)[2];
+        } else {
+            navi = NULL;
+        }
+    }
+    n = getNextNaviFocus(frame, a1, cur, navi);
+    if (n != NULL) {
+        if (n != cur) {
+            scrollToCurrent2DFocusPosition(frame, n);
+        }
+        goto set;
+    }
+    n = getNext2DFocusLeft(frame, a1, cur);
+    if (n == NULL) {
+        n = cur;
+    }
+    if (n == cur) {
+        n = scrollToNextPosition(frame, a1, n, 3);
+        goto set;
+    }
+    scrollToCurrent2DFocusPosition(frame, n);
+    if (n->obj == NULL) {
+        goto end;
+    }
+set:
+    actSetFocusByFocusList(frame, n, 1);
+end:
+    return n;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_focus", act2DMoveFocusRight);
+FOCUSLIST *act2DMoveFocusRight(void *frame, void *a1, FOCUSLIST *cur) {
+    FOCUSLIST *n;
+    void *navi;
+    if (frame == NULL) {
+        return cur;
+    }
+    navi = NULL;
+    if (cur != NULL) {
+        if ((navi = cur->x18) != NULL) {
+            navi = ((void **)navi)[3];
+        } else {
+            navi = NULL;
+        }
+    }
+    n = getNextNaviFocus(frame, a1, cur, navi);
+    if (n != NULL) {
+        if (n != cur) {
+            scrollToCurrent2DFocusPosition(frame, n);
+        }
+        goto set;
+    }
+    n = getNext2DFocusRight(frame, a1, cur);
+    if (n == NULL) {
+        n = cur;
+    }
+    if (n == cur) {
+        n = scrollToNextPosition(frame, a1, n, 4);
+        goto set;
+    }
+    scrollToCurrent2DFocusPosition(frame, n);
+    if (n->obj == NULL) {
+        goto end;
+    }
+set:
+    actSetFocusByFocusList(frame, n, 1);
+end:
+    return n;
+}
 
 FOCUSLIST *getFocusInDisplay(void *frame, FOCUSLIST *def, FOCUSLIST *cur, int dir) {
     FOCUSLIST *l = cur;
