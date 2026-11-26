@@ -240,7 +240,40 @@ INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_shima", D_0007C2B4
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_shima", classic_inv_score);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_shima", classic_inv_movechk);
+extern int enemove_v_1p, enemove_v_2p;
+int classic_inv_movechk(int start, int end)
+{
+	int i, side = 0, sub = 0, ret = 0;
+	SPR_T *s;
+
+	if (start == 1)
+		sub = enemove_v_1p & 15;
+	else if (start == 62) {
+		side = 1;
+		sub = enemove_v_2p & 15;
+	}
+	for (i = start; i < end; i++) {
+		s = spr[i];
+		if (s->f14 != side)
+			continue;
+		if (s->f2c + s->f44 >= 208) {
+			ret = 3;
+			continue;
+		}
+		if (sub == 0) {
+			if (s->f28 + s->f40 >= 216) {
+				if (ret != 3)
+					ret = 1;
+			}
+		} else if (sub == 1) {
+			if (s->f28 < 9) {
+				if (ret != 3)
+					ret = 2;
+			}
+		}
+	}
+	return ret;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_shima", classic_inv_shotsub);
 
