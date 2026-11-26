@@ -3013,7 +3013,8 @@ int PuzzleBody(void)
 	if (st->unk006 < 29 || st->unk006 == 32)
 		DrawMapData(st, StageNum);
 	DoBubCrush();
-	DrawSpriteEx(1, 2.0f, 0, -15.5f, 0, 0, 0, 0, 0, 0, 0, 11.0f, 0, 0, (st->unk454 - 256) * -3.14f * 0.001953125f, D_00038A48, 0);
+	i = st->unk454;
+	DrawSpriteEx(1, 2.0f, 0, -15.5f, 0, 0, 0, 0, 0, 0, 0, 11.0f, 0, 0, (i - 256) * -3.14f * 0.001953125f, D_00038A48, 0);
 	if (st->unk006 != 17 && st->unk006 != 32)
 		DrawBubble(0, st->bx + 72, st->by + st->scroll * 14, st->cur, 0);
 	DrawBubble(0, 292, 222, st->next, 0);
@@ -4609,7 +4610,8 @@ int EndressBody(int pl)
 	if (st->unk006 < 29)
 		DrawMapData(st, StageNum);
 	DoBubCrush();
-	DrawSpriteEx(1, 2.0f, 0, -15.5f, 0, 0, 0, 0, 0, 0, 0, 11.0f, 0, 0, (st->unk454 - 256) * -3.14f * 0.001953125f, D_00038A84, 0);
+	i = st->unk454;
+	DrawSpriteEx(1, 2.0f, 0, -15.5f, 0, 0, 0, 0, 0, 0, 0, 11.0f, 0, 0, (i - 256) * -3.14f * 0.001953125f, D_00038A84, 0);
 	if (st->unk006 != 17)
 		DrawBubble(0, st->bx + 72, st->by + st->scroll * 14, st->cur, 0);
 	DrawBubble(0, 292, 222, st->next, 0);
