@@ -39,7 +39,8 @@ extern int g_sound_loaded;
 void *memset(void *s, int c, unsigned int n);
 int sprintf(char *buf, const char *fmt, ...);
 int rand(void);
-void print_nothing(const char *fmt, ...);
+/* print_nothing() is used without a declaration, as in the original (DWARF has
+   implicit block-scope declarations); the int-returning call changes scheduling */
 int sceKernelGetGPI(void);
 void sceKernelDcacheWritebackAll(void);
 int sceKernelExitDeleteThread(int status);
@@ -71,9 +72,39 @@ INCLUDE_RODATA("tmp/asm/flowars/flowars/nonmatchings/vagutil", D_0002F3C8);
 
 INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/vagutil", vag_file_read);
 
-INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/vagutil", vag_read);
+static void vag_read(void)
+{
+	int iSize;
+	int iVoice;
+	int iRc;
+	char *pVagWork;
 
-INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/vagutil", vag_read_cluster);
+	totSize = 0;
+	pVagWork = mod_wave.vagWork;
+	for (iVoice = 0; iVoice < 91; iVoice++) {
+		iSize = 0;
+		iRc = vag_file_read(vagFile[iVoice], pVagWork + totSize, 0x330360 - totSize, &iSize, 0x30);
+		if (iRc < 0) {
+			print_nothing("vag file read error:%s\n", vagFile[iVoice]);
+			g_sound_loaded++;
+			continue;
+		}
+		mod_wave.vagIndex[iVoice][0] = totSize;
+		mod_wave.vagIndex[iVoice][1] = iSize;
+		totSize += iSize;
+		g_sound_loaded++;
+	}
+	print_nothing("total size:%d\n", totSize);
+}
+
+static void vag_read_cluster(void)
+{
+	int iSize;
+
+	vag_file_read("sound.dat", mod_wave.vagWork, 0x256250, &iSize, 0);
+	g_sound_loaded = 91;
+	print_nothing("## VAG_READ_CLUSTER done\n");
+}
 
 INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/vagutil", load_5330);
 
