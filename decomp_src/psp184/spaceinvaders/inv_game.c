@@ -56,6 +56,20 @@ int bmp_file_load16(char *name);
 void debug_text(int x, int y, char *str);
 void screen_capture(int buf, int mode);
 
+typedef struct { u8 b[0x1467cc]; } GMAIN;
+extern GMAIN gmain;
+extern int D_005A06A8;
+extern int D_004B500C;
+extern int netdata;
+M2C_UNK bmp_file_unload(int);
+void gmo_file_unload(int no);
+void inv_star_dispset(int f);
+void sound_volume_set(int vol);
+void sound_volume_set1(int vol);
+int pos_fast_length_xyz_check(float x, float y, float z, float len);
+void ziki_damage(void *z, float *pos);
+int get_now_sound_block(void);
+
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", maingame_all_init);
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", maingame_init);
@@ -206,7 +220,22 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", bg_init);
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", bg_control);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", bg_free);
+void bg_free(void)
+{
+	int i;
+	u8 *g;
+
+	if (D_005A06A8 == 0)
+		return;
+	inv_star_dispset(0);
+	g = (u8 *)&gmain;
+	for (i = 0; i < 5; i++) {
+		if (((int *)(g + 0xF3C))[i] != -1)
+			bmp_file_unload(((int *)(g + 0xF3C))[i]);
+		if (((int *)(g + 0xF50))[i] != -1)
+			gmo_file_unload(((int *)(g + 0xF50))[i]);
+	}
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", ziki_init);
 
@@ -228,7 +257,21 @@ int ziki_break_errer_check(void) {
     return D_005FB738 < 2;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", ziki_beat_check);
+M2C_UNK ziki_beat_check(void)
+{
+	u8 *b_D_005A06D8 = (u8 *)&D_005A06D8;
+	u8 *b_gmain = gmain.b;
+	int ret;
+
+	ret = 0;
+	if ((*(int *)(b_D_005A06D8 + 0x30)) <= 0) {
+		if ((unsigned)((*(int *)(b_gmain + 0x14676C)) - 45) >= 96) {
+			if ((*(int *)(b_D_005A06D8 + 0x54)) > 0 && (*(int *)(b_D_005A06D8 + 0x58)) > 0 && (*(int *)(b_D_005A06D8 + 0x5C)) > 0)
+				ret = (*(int *)(b_D_005A06D8 + 0x60)) > 0;
+		}
+	}
+	return ret;
+}
 
 M2C_UNK ziki_beat_check2(void)
 {
