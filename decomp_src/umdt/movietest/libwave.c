@@ -59,6 +59,13 @@ int sceKernelDeleteThread(int thid);
 int sceKernelExitThread(int status);
 static int func_00005440(unsigned int args, void *argp);
 extern volatile int D_0000742C;
+extern char D_000074B0[2][0x700];
+extern const signed char D_00007304[2][5];
+static void func_0000551C(char *buf);
+static int func_000056D4(short *dst, unsigned char *src, int *h1, int *h2);
+static void func_00005818(int ch, void *dst);
+static void func_00005AB4(int ch, void *dst);
+static void func_00005FCC(int ch, void *buf, void *src);
 
 static inline int _waveStop(unsigned int ch)
 {
@@ -490,9 +497,57 @@ int sceWaveAudioWriteBlocking(unsigned int ch, unsigned int left, unsigned int r
 	return sceAudioOutputPannedBlocking(D_00008784[ch], left, right, buf);
 }
 
-INCLUDE_ASM("tmp/asm/umdt/movietest/nonmatchings/libwave", func_00005440);
+static int func_00005440(unsigned int args, void *argp)
+{
+	SceWaveMain *m = (SceWaveMain *)argp;
+	int i = 0;
+	int j;
 
-INCLUDE_ASM("tmp/asm/umdt/movietest/nonmatchings/libwave", func_0000551C);
+	while (D_0000742C == 0) {
+		for (j = 0; j < 16; j++)
+			func_0000551C(D_000074B0[i] + j * 0x70);
+		sceAudioOutputBlocking(m->ch, 0x8000, D_000074B0[i]);
+		i = (i + 1) % 2;
+	}
+	sceAudioOutputBlocking(m->ch, 0, NULL);
+	sceKernelExitThread(0);
+	return 0;
+}
+
+typedef int (*SceWaveCallback)(int ch, void *buf, int size, int arg);
+
+static void func_0000551C(char *buf)
+{
+	int ch;
+
+	wclr(buf, 0x70);
+	for (ch = 0; ch < 8; ch++) {
+		if (D_000082B0[ch].stat == 0)
+			continue;
+		if (!(D_000082B0[ch].flags & 0x400)) {
+			if (!(D_000082B0[ch].flags & 0x100)) {
+				if (D_000082B0[ch].data != NULL)
+					func_00005818(ch, D_00008780);
+			} else {
+				if (D_000082B0[ch].data != NULL)
+					func_00005AB4(ch, D_00008780);
+			}
+		} else {
+			if (D_000082B0[ch].unk44 != 0) {
+				wclr(D_00008780, 0x70);
+				if (!(D_000082B0[ch].flags & 0x100)) {
+					if (((SceWaveCallback)D_000082B0[ch].unk44)(ch, D_0000877C, 0x10, D_000082B0[ch].unk48))
+						D_000082B0[ch].stat = 0;
+					func_000056D4(D_00008780, D_0000877C, &D_000082B0[ch].unk30, &D_000082B0[ch].unk34);
+				} else {
+					if (((SceWaveCallback)D_000082B0[ch].unk44)(ch, D_00008780, 0x70, D_000082B0[ch].unk48))
+						D_000082B0[ch].stat = 0;
+				}
+			}
+		}
+		func_00005FCC(ch, buf, D_00008780);
+	}
+}
 
 INCLUDE_ASM("tmp/asm/umdt/movietest/nonmatchings/libwave", func_000056D4);
 
