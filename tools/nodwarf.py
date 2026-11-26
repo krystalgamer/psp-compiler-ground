@@ -127,7 +127,8 @@ def analyse(target, module):
         for x, f in sorted(named.items()):
             if not f:
                 continue
-            prev = [owners[y] for y in anchors if y < x]
+            # previous: any owner so far (names accepted before this one too)
+            prev = [owners[y] for y in sorted(owners) if y < x]
             nxt = [owners[y] for y in anchors if y > x]
             if (not prev or order[prev[-1]] <= order[f]) and (not nxt or order[f] <= order[nxt[0]]):
                 owners[x] = f
