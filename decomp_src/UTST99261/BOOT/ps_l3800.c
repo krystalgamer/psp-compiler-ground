@@ -2,6 +2,14 @@
 #include "common.h"
 #include "parse_ps.h"
 #include "m2c_macros.h"
+extern char D_00137AD8[];
+extern char D_00137B00[];
+extern char D_001379AC[];
+extern char D_001379D4[];
+int *ps_ExternalSearchSessionHistoryNode();
+int *ps_ExternalSearchSessionParentHistoryNode();
+int *HST_getJSURI();
+int *HST_getCSSURI();
 extern char D_0013794C[];
 extern char D_00137CA4[];
 extern int CONTENT_SAVE;
@@ -193,7 +201,76 @@ int ps_i2206(PsIpc *msg) {
     return 7;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/ps_l3800", ps_i2208);
+int ps_i2208(PsIpc *msg) {
+    PsIpc m;
+    PsDomBuild b;
+    int *node;
+    int *r;
+    int i;
+
+    r = NULL;
+    node = HST_searchSessionIDHistoryNode(msg->x04);
+    if (node == NULL) {
+        if (msg->x18 != 0) {
+            MEM_free(0, msg->x1C);
+        }
+        return buf_ps_sts;
+    }
+    if (HST_getDomObject(node) == 0) {
+        b.x[0] = node[1];
+        b.x[1] = node[0];
+        b.x[2] = node[5];
+        b.x[3] = node[4];
+        b.x[4] = node[7];
+        b.x[5] = node[6];
+        b.x[6] = msg->x18;
+        b.x[7] = msg->x1C;
+        b.x[9] = msg->x04;
+        b.x[11] = 0;
+        b.x[12] = 0;
+        b.x[13] = Accession;
+        if (msg->x18 != 0 && *(char *)msg->x1C != 0) {
+            r = parseDomBuild(&b);
+            if (*r != 0) {
+                ps_halt(D_0013794C);
+            }
+        }
+        HST_setCharSet(node, 100);
+        initMPL_REQ_LOAD_PAGE(&m);
+        m.x04 = msg->x04;
+        ps_sndmsg(&m, 4);
+        if (r != NULL) {
+            MEM_free(0, r);
+        }
+    }
+    node[15] = 4;
+    ps_DomTerm(msg->x04);
+    initMPL_REQ_LOAD_PAGE(&m);
+    m.x04 = msg->x04;
+    m.x10 = 1;
+    ps_sndmsg(&m, 4);
+    if (msg->x18 != 0) {
+        MEM_free(0, msg->x1C);
+    }
+    for (i = 1; i < 7; i++) {
+        if (i == 4 || i == 5) {
+            continue;
+        }
+        node = HST_searchRequestFlagHistoryNode(i);
+        if (node != NULL) {
+            return 8;
+        }
+        node = ps_ExternalSearchRequestFlag(i, 1);
+        if (node != NULL) {
+            return 8;
+        }
+        node = ps_ExternalSearchRequestFlag(i, 2);
+        if (node != NULL) {
+            return 8;
+        }
+    }
+    return 7;
+}
 
 int ps_i2209(PsIpc *msg) {
     PsIpc m;
@@ -261,7 +338,62 @@ int ps_i2215(PsIpc *msg) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/ps_l3800", ps_i2219);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/ps_l3800", ps_i221A);
+int ps_i221A(PsIpc *msg) {
+    struct {
+        int x00;
+        PsIpc body;
+    } m;
+    PsIpc lp;
+    int *node;
+    int *parent;
+    int jsLen;
+    int cssLen;
+    int i;
+    int busy;
+    int r;
+
+    busy = 0;
+    if (msg->x14 == 0) {
+        m.body = *msg;
+        if (OS_mq_send(mq_js, &m, sizeof(m), 0) < 0) {
+            ps_halt(D_001379AC);
+        }
+        return buf_ps_sts;
+    }
+    node = ps_ExternalSearchSessionHistoryNode(msg->x04, msg->x14);
+    if (node == NULL) {
+        ps_halt(D_001379D4);
+    }
+    HST_setRequestFlag(node, 4);
+    parent = ps_ExternalSearchSessionParentHistoryNode(msg->x04, msg->x14);
+    jsLen = HST_getJSURIlen(parent);
+    cssLen = HST_getCSSURIlen(parent);
+    for (i = 0; i < jsLen; i++) {
+        node = HST_getJSURI(parent, i + 1);
+        if (node[15] != 4) {
+            busy = 1;
+            break;
+        }
+    }
+    for (i = 0; i < cssLen; i++) {
+        node = HST_getCSSURI(parent, i + 1);
+        if (node[15] != 4) {
+            busy = 1;
+            break;
+        }
+    }
+    if (busy == 0 && parent[15] == 4) {
+        initMPL_REQ_LOAD_PAGE(&lp);
+        lp.x04 = parent[18];
+        lp.x10 = 1;
+        ps_sndmsg(&lp, 4);
+    }
+    r = ps_JSMailBoxClean();
+    if (msg->x18 != 0) {
+        MEM_free(0, msg->x1C);
+    }
+    return r;
+}
 
 int ps_i2306(PsIpc *msg) {
     PsIpc m;
@@ -388,7 +520,58 @@ int ps_i2319(PsIpc *msg) {
     return 6;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/ps_l3800", ps_i231A);
+int ps_i231A(PsIpc *msg) {
+    struct {
+        int x00;
+        PsIpc body;
+    } m;
+    PsIpc lp;
+    int *node;
+    int *parent;
+    int jsLen;
+    int cssLen;
+    int i;
+    int busy;
+
+    busy = 0;
+    if (msg->x14 == 0) {
+        m.body = *msg;
+        if (OS_mq_send(mq_js, &m, sizeof(m), 0) < 0) {
+            ps_halt(D_00137AD8);
+        }
+        return buf_ps_sts;
+    }
+    node = ps_ExternalSearchSessionHistoryNode(msg->x04, msg->x14);
+    if (node == NULL) {
+        ps_halt(D_00137B00);
+    }
+    HST_setRequestFlag(node, 4);
+    parent = ps_ExternalSearchSessionParentHistoryNode(msg->x04, msg->x14);
+    jsLen = HST_getJSURIlen(parent);
+    cssLen = HST_getCSSURIlen(parent);
+    for (i = 0; i < jsLen; i++) {
+        node = HST_getJSURI(parent, i + 1);
+        if (node[15] != 4) {
+            busy = 1;
+            break;
+        }
+    }
+    for (i = 0; i < cssLen; i++) {
+        node = HST_getCSSURI(parent, i + 1);
+        if (node[15] != 4) {
+            busy = 1;
+            break;
+        }
+    }
+    if (busy == 0 && parent[15] == 4) {
+        ps_DomTerm(parent[18]);
+        initMPL_REQ_LOAD_PAGE(&lp);
+        lp.x04 = parent[18];
+        lp.x10 = 1;
+        ps_sndmsg(&lp, 4);
+    }
+    return buf_ps_sts;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/ps_l3800", ps_i2406);
 
@@ -409,7 +592,56 @@ int ps_i2412(PsIpc *msg) {
     return buf_ps_sts;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/ps_l3800", ps_i2414);
+int ps_i2414(PsIpc *msg) {
+    PsIpc m;
+    int r;
+    int *uri;
+    int t;
+    int a;
+    int ty;
+
+    ps_setExMsg(D_00584FB8, msg);
+    if (GET_HEAD_STAT == 0) {
+        GET_HEAD_STAT = 1;
+        if (ContntHeader != NULL) {
+            HST_httpHeaderFree(ContntHeader);
+        }
+        ContntHeader = HST_httpHeaderDisassemble(msg->x1C, msg->x18);
+        ContntType = UTL_guessMIMEType(ContntHeader[3]);
+        if (ContntType == -1) {
+            ContntType = SubmitExtn;
+        }
+        SubmitExtn = -1;
+        r = ps_i2414_auth(msg);
+        if (r != -1) {
+            return r;
+        }
+        if (ContntType != 5 && ContntType != 6 && ContntType != 2 && ContntType != 3 && ContntType != 4) {
+            initMPI_SIG_REQUEST_ABORTED(&m);
+            m.x04 = GET_HEAD_SESSIONID;
+            m.x10 = 0;
+            ps_sndmsg(&m, 5);
+            return 0x14;
+        }
+        if (ContntType == 5 || ContntType == 6) {
+            a = 0;
+            if (GET_HEAD_STOP == 1) {
+                ps_freeExMsgBox(D_00584FB8);
+                GET_HEAD_STOP = 0;
+                return 3;
+            }
+            ty = (UPDATE_TYPE != 0) ? 2 : 1;
+            t = 0;
+            uri = SaveTRAGETURI;
+            if (uri[0] != 0 && NOTARGET == 0) {
+                t = uri[1];
+                a = uri[0];
+            }
+            ps_sendAbortPage(0, 0, ty, t, a);
+        }
+    }
+    return 0x14;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/ps_l3800", ps_i2414_auth);
 
