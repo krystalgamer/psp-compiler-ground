@@ -1,6 +1,32 @@
 /* cflags: -O1 */
 #include "common.h"
+#include "lo_box.h"
+#include "dom_domi.h"
 #include "m2c_macros.h"
+BOX *getTableBox(BOX *box);
+BOX *getTrBox(BOX *box);
+BOX *box_getColBoxAt(BOX *table, int col);
+extern unsigned char _DOMvalign;
+extern unsigned char _DOMtop;
+extern unsigned char _DOMbottom;
+extern unsigned char _DOMbaseline;
+BOX *getBoxByHTML(BOX *box, int html);
+extern unsigned char _DOMwidth;
+extern unsigned char _DOMheight;
+extern unsigned char _DOMmiddle;
+int atoi(const char *s);
+char *strchr(const char *s, int c);
+extern unsigned char _DOMcolspan;
+extern unsigned char _DOMrowspan;
+extern unsigned char _DOMalign;
+extern unsigned char _DOMleft;
+extern unsigned char _DOMright;
+extern unsigned char _DOMcenter;
+extern unsigned char _DOMborder;
+char *getDOMAttributeValue(void *node, void *name);
+long strtol(const char *s, char **end, int base);
+void Element_getAttribute(DOMString *s, void *node, void *name);
+int DOMStringcasecmpFast(DOMString *s, void *str);
 void *createBox(void *ctx, int type);
 void linkBox(void *box, void *parent, void *prev);
 void initNoneContent(void *box, void *ctx);
@@ -76,9 +102,33 @@ int equalsChar(char a, char b, int cs) {
     return a == b;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/act_selection", attr_ALIGN_text_block);
+void attr_ALIGN_text_block(void *node, void *box) {
+    DOMString str;
+    Element_getAttribute(&str, node, &_DOMalign);
+    if (str.len != 0) {
+        if (DOMStringcasecmpFast(&str, &_DOMcenter) == 0) {
+            M2C_FIELD(M2C_FIELD(box, void **, 0x24), u8 *, 0x6F) = 2;
+        } else if (DOMStringcasecmpFast(&str, &_DOMright) == 0) {
+            M2C_FIELD(M2C_FIELD(box, void **, 0x24), u8 *, 0x6F) = 3;
+        } else {
+            M2C_FIELD(M2C_FIELD(box, void **, 0x24), u8 *, 0x6F) = 1;
+        }
+    }
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/act_selection", attr_ALIGN_hr);
+void attr_ALIGN_hr(void *node, void *box) {
+    DOMString str;
+    Element_getAttribute(&str, node, &_DOMalign);
+    if (str.len != 0) {
+        if (DOMStringcasecmpFast(&str, &_DOMleft) == 0) {
+            M2C_FIELD(M2C_FIELD(box, void **, 0x24), u8 *, 0x6F) = 1;
+        } else if (DOMStringcasecmpFast(&str, &_DOMright) == 0) {
+            M2C_FIELD(M2C_FIELD(box, void **, 0x24), u8 *, 0x6F) = 3;
+        } else {
+            M2C_FIELD(M2C_FIELD(box, void **, 0x24), u8 *, 0x6F) = 2;
+        }
+    }
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/act_selection", attr_ALIGN_image);
 
@@ -121,11 +171,63 @@ void attr_BGCOLOR(void *arg0, void *arg1) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/act_selection", attr_BORDER_image);
+void attr_BORDER_image(void *node, void *box) {
+    int n = getDOMAttributeValue_PositiveNum(node, &_DOMborder);
+    if (n >= 0) {
+        M2C_FIELD(M2C_FIELD(box, void **, 0x24), s16 *, 0x30) = n;
+        M2C_FIELD(M2C_FIELD(box, void **, 0x24), s16 *, 0x32) = n;
+        M2C_FIELD(M2C_FIELD(box, void **, 0x24), s16 *, 0x34) = n;
+        M2C_FIELD(M2C_FIELD(box, void **, 0x24), s16 *, 0x36) = n;
+        if (n > 0) {
+            M2C_FIELD(M2C_FIELD(box, void **, 0x24), s16 *, 0x48) = 1;
+            M2C_FIELD(M2C_FIELD(box, void **, 0x24), s16 *, 0x4A) = 1;
+            M2C_FIELD(M2C_FIELD(box, void **, 0x24), s16 *, 0x4C) = 1;
+            M2C_FIELD(M2C_FIELD(box, void **, 0x24), s16 *, 0x4E) = 1;
+        }
+    }
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/act_selection", attr_WIDTH_image);
+void attr_WIDTH_image(void *node, BOX *box) {
+    char *s;
+    int n;
+    s = getDOMAttributeValue(node, &_DOMwidth);
+    if (s != NULL) {
+        n = atoi(s);
+        if (n < 0) {
+            n = 0;
+        }
+        if (strchr(s, '%') == NULL) {
+            box->style->flags &= ~0x3;
+            box->style->flags |= 0x1;
+        } else {
+            box->style->flags &= ~0x3;
+            box->style->flags |= 0x2;
+        }
+        box->style->width = n;
+        MEM_free(0, s);
+    }
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/act_selection", attr_HEIGHT_image);
+void attr_HEIGHT_image(void *node, BOX *box) {
+    char *s;
+    int n;
+    s = getDOMAttributeValue(node, &_DOMheight);
+    if (s != NULL) {
+        n = atoi(s);
+        if (n < 0) {
+            n = 0;
+        }
+        if (strchr(s, '%') == NULL) {
+            box->style->flags &= ~0xC;
+            box->style->flags |= 0x4;
+        } else {
+            box->style->flags &= ~0xC;
+            box->style->flags |= 0x8;
+        }
+        box->style->height = n;
+        MEM_free(0, s);
+    }
+}
 
 void attr_HSPACE(void *node, void *box) {
     int v = getDOMAttributeValue_PositiveNum(node, &_DOMhspace);
@@ -207,13 +309,60 @@ void attr_VSPACE(void *node, void *box) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/act_selection", attr_ALIGN_table);
+void attr_ALIGN_table(void *node, BOX *box) {
+    DOMString str;
+    Element_getAttribute(&str, node, &_DOMalign);
+    if (str.len != 0) {
+        if (DOMStringcasecmpFast(&str, &_DOMleft) == 0) {
+            box->parent->style->unk70[1] = 1;
+            box->style->unk70[1] = 1;
+        } else if (DOMStringcasecmpFast(&str, &_DOMright) == 0) {
+            box->parent->style->unk70[1] = 2;
+            box->style->unk70[1] = 2;
+        } else if (DOMStringcasecmpFast(&str, &_DOMcenter) == 0 || DOMStringcasecmpFast(&str, &_DOMmiddle) == 0) {
+            box->style->unk6F = 2;
+        }
+    }
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/act_selection", attr_ALIGN_td);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/act_selection", attr_ALIGN_tr);
+void attr_ALIGN_tr(void *node, BOX *box) {
+    DOMString str;
+    BOX *g;
+    box->style->unk6F = 0;
+    if ((g = getBoxByHTML(box, 0x56)) != NULL || (g = getBoxByHTML(box, 0x5B)) != NULL || (g = getBoxByHTML(box, 0x59)) != NULL) {
+        box->style->unk6F = g->style->unk6F;
+    }
+    Element_getAttribute(&str, node, &_DOMalign);
+    if (str.len != 0) {
+        if (DOMStringcasecmpFast(&str, &_DOMcenter) == 0 || DOMStringcasecmpFast(&str, &_DOMmiddle) == 0) {
+            box->style->unk6F = 2;
+        } else if (DOMStringcasecmpFast(&str, &_DOMright) == 0) {
+            box->style->unk6F = 3;
+        } else {
+            box->style->unk6F = 1;
+        }
+    }
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/act_selection", attr_ALIGN_trgroup);
+void attr_ALIGN_trgroup(void *node, BOX *box) {
+    DOMString str;
+    box->style->unk6F = 0;
+    if (box->html == 0x16 && box->parent->html == 0x17) {
+        box->style->unk6F = box->parent->style->unk6F;
+    }
+    Element_getAttribute(&str, node, &_DOMalign);
+    if (str.len != 0) {
+        if (DOMStringcasecmpFast(&str, &_DOMcenter) == 0 || DOMStringcasecmpFast(&str, &_DOMmiddle) == 0) {
+            box->style->unk6F = 2;
+        } else if (DOMStringcasecmpFast(&str, &_DOMright) == 0) {
+            box->style->unk6F = 3;
+        } else {
+            box->style->unk6F = 1;
+        }
+    }
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/act_selection", attr_BORDER_table);
 
@@ -250,15 +399,87 @@ void attr_CELLSPACING(void *node, void *box) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/act_selection", attr_COLSPAN);
+void attr_COLSPAN(void *node, void *box) {
+    char *str;
+    char *end;
+    int n;
+    str = getDOMAttributeValue(node, &_DOMcolspan);
+    if (str != NULL) {
+        n = strtol(str, &end, 10);
+        if (n < 0 || end == str) {
+            n = 1;
+        }
+        M2C_FIELD(M2C_FIELD(box, void **, 0x20), s16 *, 0x14) = n;
+        MEM_free(0, str);
+    } else {
+        M2C_FIELD(M2C_FIELD(box, void **, 0x20), s16 *, 0x14) = 1;
+    }
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/act_selection", attr_FRAME);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/act_selection", attr_HEIGHT_table);
+void attr_HEIGHT_table(void *node, BOX *box) {
+    char *s;
+    int n;
+    box->style->flags &= ~0xC;
+    s = getDOMAttributeValue(node, &_DOMheight);
+    if (s != NULL) {
+        n = atoi(s);
+        if (n > 0) {
+            if (strchr(s, '%') == NULL) {
+                box->style->flags &= ~0xC;
+                box->style->flags |= 0x4;
+            } else {
+                box->style->flags &= ~0xC;
+                box->style->flags |= 0x8;
+            }
+            box->style->height = n;
+        }
+        MEM_free(0, s);
+    }
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/act_selection", attr_HEIGHT_tr);
+void attr_HEIGHT_tr(void *node, BOX *box) {
+    char *s;
+    int n;
+    box->style->flags &= ~0xC;
+    s = getDOMAttributeValue(node, &_DOMheight);
+    if (s != NULL) {
+        n = atoi(s);
+        if (n > 0) {
+            if (strchr(s, '%') == NULL) {
+                box->style->flags &= ~0xC;
+                box->style->flags |= 0x4;
+            } else {
+                box->style->flags &= ~0xC;
+                box->style->flags |= 0x8;
+            }
+            box->style->height = n;
+        }
+        MEM_free(0, s);
+    }
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/act_selection", attr_HEIGHT_td);
+void attr_HEIGHT_td(void *node, BOX *box) {
+    char *s;
+    int n;
+    box->style->flags &= ~0xC;
+    s = getDOMAttributeValue(node, &_DOMheight);
+    if (s != NULL) {
+        n = atoi(s);
+        if (n > 0) {
+            if (strchr(s, '%') == NULL) {
+                box->style->flags &= ~0xC;
+                box->style->flags |= 0x4;
+            } else {
+                box->style->flags &= ~0xC;
+                box->style->flags |= 0x8;
+            }
+            box->style->height = n;
+        }
+        MEM_free(0, s);
+    }
+}
 
 void attr_NOWRAP_td(void *node, void *box) {
     if (M2C_FIELD(box, s16 *, 0x38) == 6) {
@@ -270,7 +491,22 @@ void attr_NOWRAP_td(void *node, void *box) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/act_selection", attr_ROWSPAN);
+void attr_ROWSPAN(void *node, void *box) {
+    char *str;
+    char *end;
+    int n;
+    str = getDOMAttributeValue(node, &_DOMrowspan);
+    if (str != NULL) {
+        n = strtol(str, &end, 10);
+        if (n < 0 || end == str) {
+            n = 1;
+        }
+        M2C_FIELD(M2C_FIELD(box, void **, 0x20), s16 *, 0x16) = n;
+        MEM_free(0, str);
+    } else {
+        M2C_FIELD(M2C_FIELD(box, void **, 0x20), s16 *, 0x16) = 1;
+    }
+}
 
 void attr_SPAN(void *node, void *box) {
     int v = getDOMAttributeValue_PositiveNum(node, &_DOMspan);
@@ -281,15 +517,88 @@ void attr_SPAN(void *node, void *box) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/act_selection", attr_VALIGN_td);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/act_selection", attr_VALIGN_tr);
+void attr_VALIGN_tr(void *node, BOX *box) {
+    DOMString str;
+    BOX *g;
+    u8 a;
+    if ((g = getBoxByHTML(box, 0x56)) != NULL || (g = getBoxByHTML(box, 0x5B)) != NULL || (g = getBoxByHTML(box, 0x59)) != NULL) {
+        a = g->style->unk70[0];
+        if (a != 0) {
+            box->style->unk70[0] = a;
+        }
+    }
+    Element_getAttribute(&str, node, &_DOMvalign);
+    if (str.len != 0) {
+        if (DOMStringcasecmpFast(&str, &_DOMtop) == 0) {
+            box->style->unk70[0] = 3;
+        } else if (DOMStringcasecmpFast(&str, &_DOMmiddle) == 0 || DOMStringcasecmpFast(&str, &_DOMcenter) == 0) {
+            box->style->unk70[0] = 5;
+        } else if (DOMStringcasecmpFast(&str, &_DOMbottom) == 0 || DOMStringcasecmpFast(&str, &_DOMbaseline) == 0) {
+            box->style->unk70[0] = 6;
+        }
+    }
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/act_selection", attr_VALIGN_trgroup);
+void attr_VALIGN_trgroup(void *node, BOX *box) {
+    DOMString str;
+    if (box->html == 0x16 && box->parent->html == 0x17) {
+        box->style->unk70[0] = box->parent->style->unk70[0];
+    }
+    Element_getAttribute(&str, node, &_DOMvalign);
+    if (str.len != 0) {
+        if (DOMStringcasecmpFast(&str, &_DOMtop) == 0) {
+            box->style->unk70[0] = 3;
+        } else if (DOMStringcasecmpFast(&str, &_DOMmiddle) == 0 || DOMStringcasecmpFast(&str, &_DOMcenter) == 0) {
+            box->style->unk70[0] = 5;
+        } else if (DOMStringcasecmpFast(&str, &_DOMbottom) == 0 || DOMStringcasecmpFast(&str, &_DOMbaseline) == 0) {
+            box->style->unk70[0] = 6;
+        }
+    }
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/act_selection", attr_WIDTH_col);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/act_selection", attr_WIDTH_table);
+void attr_WIDTH_table(void *node, BOX *box) {
+    char *s;
+    int n;
+    box->style->flags &= ~0x3;
+    s = getDOMAttributeValue(node, &_DOMwidth);
+    if (s != NULL) {
+        n = atoi(s);
+        if (n > 0) {
+            if (strchr(s, '%') == NULL) {
+                box->style->flags &= ~0x3;
+                box->style->flags |= 0x1;
+            } else {
+                box->style->flags &= ~0x3;
+                box->style->flags |= 0x2;
+            }
+            box->style->width = n;
+        }
+        MEM_free(0, s);
+    }
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/act_selection", attr_WIDTH_td);
+void attr_WIDTH_td(void *node, BOX *box) {
+    char *s;
+    int n;
+    box->style->flags &= ~0x3;
+    s = getDOMAttributeValue(node, &_DOMwidth);
+    if (s != NULL) {
+        n = atoi(s);
+        if (n > 0) {
+            if (strchr(s, '%') == NULL) {
+                box->style->flags &= ~0x3;
+                box->style->flags |= 0x1;
+            } else {
+                box->style->flags &= ~0x3;
+                box->style->flags |= 0x2;
+            }
+            box->style->width = n;
+        }
+        MEM_free(0, s);
+    }
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
