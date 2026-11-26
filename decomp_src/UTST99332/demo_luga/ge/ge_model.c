@@ -217,7 +217,47 @@ float geModelMotionFrame(int num)
 	return sceGmoMotionGetFrame(sceGmoModelGetMotion(model, sceGmoModelGetCurrentMotion(model)));
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/ge/ge_model", geModelInit);
+void vram_heap__init(int mode);
+void *vram_heap__alloc(unsigned int size);
+void vram_heap__free(void *ptr);
+void my_heap__init(void *addr, unsigned int size);
+void *my_heap__alloc(unsigned int size);
+void my_heap__free(void *ptr);
+void sceGimPictureSetMemoryManager(void *(*alloc)(unsigned int), void (*free)(void *));
+void sceGimPictureSetMemoryManager2(void *(*alloc)(unsigned int), void (*free)(void *));
+void sceGmoModelSetMemoryManager(void *(*alloc)(unsigned int), void (*free)(void *));
+void sceGmoModelSetMemoryManager2(void *(*alloc)(unsigned int), void (*free)(void *));
+void sceGuTexFilter(int min, int mag);
+void sceGuTexFunc(int tfx, int tcc);
+void sceGuTexWrap(int u, int v);
+void sceGuEnable(int state);
+
+void geModelInit(int heap)
+{
+	int i;
+
+	vram_heap__init(heap);
+	sceGimPictureSetMemoryManager(vram_heap__alloc, vram_heap__free);
+	sceGimPictureSetMemoryManager2(vram_heap__alloc, vram_heap__free);
+
+	my_heap__init(ge_heap_buf, sizeof(ge_heap_buf));
+	sceGmoModelSetMemoryManager(my_heap__alloc, my_heap__free);
+	sceGmoModelSetMemoryManager2(my_heap__alloc, my_heap__free);
+
+	for (i = 0; i < 128; i++) {
+		ge_model[i] = NULL;
+	}
+
+	ge_tex_callback = NULL;
+	ge_tex_mode = 0;
+
+	geDrawStart();
+	sceGuEnable(9);
+	sceGuTexFilter(5, 1);
+	sceGuTexFunc(0, 1);
+	sceGuTexWrap(0, 0);
+	geDrawFinWait();
+}
 
 void geModelTerm(void)
 {
