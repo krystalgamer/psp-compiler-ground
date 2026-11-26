@@ -131,7 +131,7 @@ extern unsigned int *clut_4bit;
 extern unsigned int *clut_8bit;
 extern unsigned int *pix_4bit;
 extern unsigned int *pix_8bit;
-extern unsigned int *pix_info;
+extern unsigned int *pix_info[];
 extern DRAWITEM drawitem[11];
 extern ITEMLIST itemlist;
 extern LR lr;
@@ -257,7 +257,21 @@ loop_4:
     }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/menu/nonmatchings/draw", DiceTexture);
+extern const struct ttitle6 { float *v[6]; } D_00017154;
+extern const struct ttex6 { u_short16 *v[6]; } D_0001716C;
+void DiceTexture(void)
+{
+	struct ttitle6 table_title = D_00017154;
+	struct ttex6 table_tex = D_0001716C;
+	int i, n;
+
+	sceGuTexMode(2, 0, 0, 1);
+	for (i = 0; i < 6; i++) {
+		n = table_dice[i];
+		sceGuTexImage(0, 64, 64, 64, table_tex.v[n]);
+		sceGumDrawSpline(0x180, 4, 4, 3, 3, NULL, table_title.v[i]);
+	}
+}
 
 INCLUDE_RODATA("tmp/asm/UTST99332/menu/nonmatchings/draw", table_item);
 
@@ -318,7 +332,24 @@ void DrawBG(void)
 
 INCLUDE_ASM("tmp/asm/UTST99332/menu/nonmatchings/draw", DrawCategoryString);
 
-INCLUDE_ASM("tmp/asm/UTST99332/menu/nonmatchings/draw", DrawInfoString);
+extern Gu2dV16T D_001B5854[];
+extern Gu2dV16 D_001B587C[];
+extern Gu2dV16 D_001B5890[];
+void DrawInfoString(void)
+{
+	int n;
+
+	n = GetItem(menu->cat, menu->num);
+	sceGuEnable(9);
+	sceGuTexMode(2, 0, 0, 1);
+	sceGuTexImage(0, 256, 64, 144, pix_info[n]);
+	sceGuColor(0xFFFFFFFF);
+	sceGumDrawArray(4, 0x800102, 4, NULL, D_001B5854);
+	sceGuDisable(9);
+	sceGuColor(0xFF000000);
+	sceGumDrawArray(2, 0x800100, 3, NULL, D_001B587C);
+	sceGumDrawArray(2, 0x800100, 2, NULL, D_001B5890);
+}
 
 extern Gu2dV16C D_001B589C[];
 extern Gu2dV16 D_001B58E4[];
