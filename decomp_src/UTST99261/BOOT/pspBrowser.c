@@ -382,9 +382,17 @@ void pspBrowserFontClip(void) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/pspBrowser", pspBrowserFontPut);
+void pspBrowserFontPut(int x, int y, char *str, int len, int color) {
+    if (_i_pspBrowserFontState) {
+        zWindFontDraw(0, x, y, str, (s16)color, len);
+    }
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/pspBrowser", pspBrowserFontPutSJ);
+void pspBrowserFontPutSJ(int x, int y, char *str, int len, int color) {
+    if (_i_pspBrowserFontState) {
+        zWindFontDrawSJ(0, x, y, str, (s16)color, len);
+    }
+}
 
 void null_callback(void) {
 }
