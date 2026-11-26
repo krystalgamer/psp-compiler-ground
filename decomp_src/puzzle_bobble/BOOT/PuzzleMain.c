@@ -12,6 +12,10 @@ extern int PauseFlag;
 extern unsigned char PauseOk;
 extern int StageNum;
 extern int gim_bg_endress;
+extern int ColorRndMaxVS;
+extern int frame_anim[];
+int SpriteDrawZoom(int no, int color, float z, float x, float y, float w, float h, float u, float v, float cx, float cy, float sx, float sy);
+extern int ColorTableVS[];
 extern int D_0014E92C;
 int CvtBallPos2MapPos(PZL_STAT *st, int x, int y);
 int CheckBallAround(PZL_STAT *st, int x, int y);
@@ -803,7 +807,29 @@ INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", PuzzleBody);
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", CPUThinking);
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", GetOjamaPat);
+int GetOjamaPat(int mode)
+{
+	int pat = 13;
+
+	switch (mode) {
+	case 0:
+		if (rand() % 70 >= 10) {
+			pat = ColorTableVS[rand() % ColorRndMaxVS];
+		} else {
+			if (!(rand() & 1))
+				pat = 11;
+		}
+		break;
+	case 1:
+		if (rand() % 70 < 25)
+			pat = 11;
+		break;
+	case 2:
+		pat = (rand() % 70 < 20) ? 9 : 11;
+		break;
+	}
+	return pat;
+}
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", VSModeBody);
 
