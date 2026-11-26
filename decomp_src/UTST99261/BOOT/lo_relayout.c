@@ -40,8 +40,9 @@ typedef struct {
     int unk4;
     int unk8;
     int len;                    /* 0xC */
-    u8 unk10[2];
-    u8 space;                   /* 0x12 */
+    u8 unk10;
+    s8 merge;                   /* 0x11 */
+    s8 space;                   /* 0x12 */
 } RTEXT;
 
 typedef struct {
@@ -84,12 +85,19 @@ typedef struct SAVEDATA { /* size 0x1C */
 
 #define SAVELIST ((SAVEDATA *)D_00584CD8)
 typedef struct {
-    u8 unk0[0x68];
+    u8 unk0[0x64];
+    int unk64;
     int unk68;
     int unk6C;
 } RLOGLOBAL;
 
 extern RLOGLOBAL lo_global;
+extern int D_00584CFC;
+void relayoutProc(RLCTX *ctx, RBOX *b);
+void relayoutProcAfter(RLCTX *ctx, RBOX *b);
+void integrateTextBox(RBOX *a, RBOX *b);
+void initTextBoxSize(RBOX *b);
+int restoreSpaceText(RBOX *box);
 extern void *ui_global;
 SAVEDATA *getSessionSaveData(int id);
 void MEM_free(int pool, void *p);
@@ -167,7 +175,30 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_relayout", relayoutBoxTreeLo
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_relayout", relayoutBoxTreeLoopBodyOnly);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_relayout", resizeTextSize);
+void resizeTextSize(RBOX *box) {
+    int changed;
+    RBOX *n;
+    RBOX *next;
+
+    changed = 0;
+    if (TXT(box)->space != 0) {
+        if (restoreSpaceText(box)) {
+            changed = 1;
+        }
+    }
+    n = box->next;
+    while (n != NULL && n->content == 9 && TXT(n)->merge == 1) {
+        changed = 1;
+        next = n->next;
+        integrateTextBox(box, n);
+        box->next = next;
+        n = next;
+    }
+    if (changed || lo_global.unk68 != lo_global.unk6C) {
+        initTextBoxSize(box);
+    }
+    TXT(box)->merge = 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_relayout", resizeImageSize);
 
