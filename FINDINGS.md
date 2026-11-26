@@ -43,6 +43,10 @@ modules (`tools/nltest.py`, `tools/objcmp.py`).
 
 - Neither the 32-bit `HOST_WIDE_INT` nor `abssi2` as `smax` of 1.7.1:
   either one breaks UTST99261's libgcc (19 → 16 or 18 of 26).
+  Firmware confirms it: pspnet_inet's (1.5.1.internal) `sppp_ipcp_close`
+  tests a 64-bit `pp_saved_mtu > 0` the way only 1.5.1/1.3.1-orig compile
+  it; 1.6.1 and 1.7.1-orig differ. Its `pppoe_send_padt` copies a 6-byte
+  address with byte loads/stores, again the `-mno-ulsw` default.
 - With these, 170 of UTST99261's 176 newlib functions are reproduced; the
   other 6 are Sony's newlib changes.
 
