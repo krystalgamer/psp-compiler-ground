@@ -11,7 +11,7 @@
 0x242E0 gui_Component   1.5.1           gui_Component.c
 0x25050 gui_Graphic     1.5.1           gui_Graphic.c
 0x2982C gui_Scroll      1.5.1           gui_Scroll.c
-0x2A088 wsmem           1.5.1           wsmem.c
+0x29C9C wsmem           1.5.1           wsmem.c   # MEM_* call wsmem's static mem_init/mem_alloc/deallocate
 0x2A5B8 url             1.5.1           url.c
 0x2D1D0 gif_parser      1.5.1           gif_parser.c
 0x2F494 gif_util        1.5.1           gif_util.c
@@ -21,6 +21,8 @@
 0x33FC4 png_util        1.5.1           png_util.c
 0x34210 png_chunk       1.5.1           png_chunk.c
 0x356BC wszlib          1.5.1           wszlib.c
+0x3705C wsform          1.5.1           wsform.c  # form-control wrappers: no calls into wszlib's statics
+0x374F0 wscolor         1.5.1           wscolor.c # colorValue/esp_colorNameToValue/isSimilarColor
 0x37A04 rnd_api         1.5.1           rnd_api.c
 0x38DE0 rnd_boxnode     1.5.1           rnd_boxnode.c
 0x39D70 rnd_gdraw       1.5.1           rnd_gdraw.c
@@ -201,3 +203,4 @@
 0xF0470 libgu          1.5.1.internal          libgu.c
 0xFBAE4 libwave        1.5.1.internal          libwave.c
 0xFF57C kernel_bridge  1.5.1.internal          kernel_bridge.c
+rodata 0x1327B8 wszlib   # length_tab: do_fixed addresses it as length_tab-257, outside the table

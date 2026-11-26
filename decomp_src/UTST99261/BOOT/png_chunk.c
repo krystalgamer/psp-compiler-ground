@@ -284,5 +284,3 @@ INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/png_chunk", D_001327AC);
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/png_chunk", D_001327B0);
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/png_chunk", D_001327B4);
-
-INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/png_chunk", length_tab);

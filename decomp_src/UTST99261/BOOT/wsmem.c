@@ -4,6 +4,155 @@
 
 void *allocate(MEMHEAP *h, int flag, unsigned int size);
 
+void MEM_agent(MEMHEAP *pool, int flag);
+
+int MEM_init(MEMHEAP *pool, void *mem, unsigned int size) {
+    if (pool == NULL) {
+        mem_defaultPool = mem;
+    }
+    if (mem_init(mem, size) < 0) {
+        if (pool == NULL) {
+            mem_defaultPool = NULL;
+        }
+        return -1;
+    }
+    return 0;
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void MEM_destroy(MEMHEAP *pool) {
+    MEMHEAP *h;
+    int m;
+
+    h = pool;
+    if (pool == NULL) {
+        h = mem_defaultPool;
+    }
+    if (h != NULL) {
+        m = h->mutex;
+        h->mutex = 0;
+        OS_thread_mutex_destroy(m);
+        if (h->reserve != NULL) {
+            deallocate(h, h->reserve);
+            h->reserve = NULL;
+            h->reserveSize = 0;
+        }
+        MEM_agent(h, 1);
+    }
+    if (pool == NULL) {
+        mem_defaultPool = NULL;
+    }
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+MEMHEAP *MEM_attach(MEMHEAP *pool) {
+    if (pool == NULL) {
+        pool = mem_defaultPool;
+    }
+    return pool;
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void *MEM_malloc(MEMHEAP *pool, unsigned int size) {
+    if (pool == NULL) {
+        pool = mem_defaultPool;
+    }
+    return mem_alloc(pool, 1, size);
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void *MEM_calloc(MEMHEAP *pool, unsigned int size) {
+    void *p;
+
+    if (pool == NULL) {
+        pool = mem_defaultPool;
+    }
+    p = mem_alloc(pool, 1, size);
+    if (p != NULL) {
+        memset(p, 0, size);
+    }
+    return p;
+}
+
+void *MEM_realloc(MEMHEAP *pool, void *p, unsigned int size) {
+    void *n;
+    MEMHEAP *h;
+
+    h = pool ? pool : mem_defaultPool;
+    if (p == NULL) {
+        return mem_alloc(h, 1, size);
+    }
+    if (size == 0) {
+        mem_free(h, p);
+        return NULL;
+    }
+    n = mem_alloc(h, 1, size);
+    if (n == NULL) {
+        return NULL;
+    }
+    memcpy(n, p, size);
+    mem_free(h, p);
+    return n;
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void MEM_free(MEMHEAP *pool, void *p) {
+    if (pool == NULL) {
+        pool = mem_defaultPool;
+    }
+    mem_free(pool, p);
+}
+
+INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/wsmem", MEM_addHaltCallback);
+
+void MEM_agent(MEMHEAP *pool, int flag) {
+    MEMBLOCK *b;
+    unsigned int max;
+    unsigned int min;
+
+    if (pool == NULL) {
+        pool = mem_defaultPool;
+    }
+    if (pool->mutex != 0) {
+        OS_thread_mutex_lock(pool->mutex);
+    }
+    min = 0xFFFFFFFF;
+    max = 0;
+    for (b = pool->freelist; b != NULL; b = b->next) {
+        if (max < b->size) {
+            max = b->size;
+        }
+        if (b->size < min && b->size != 0) {
+            min = b->size;
+        }
+    }
+    if (pool->mutex != 0) {
+        OS_thread_mutex_unlock(pool->mutex);
+    }
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int MEM_checkViolation(void) {
+    return 0;
+}
+
 int mem_init(void *mem, unsigned int size) {
     MEMHEAP *h;
     char *p;

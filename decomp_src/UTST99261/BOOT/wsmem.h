@@ -1,6 +1,6 @@
 #ifndef WSMEM_H
 #define WSMEM_H
-/* browser memory pools (wsmem.c, MEM_* in gui_Scroll.c) */
+/* browser memory pools (wsmem.c) */
 
 typedef struct MEMBLOCK { /* header 0x10 */
     unsigned int size;

@@ -70,6 +70,8 @@ jpg_parser                                   1.5.1           jpg_parser.c
 png_util                                     1.5.1           png_util.c
 png_chunk                                    1.5.1           png_chunk.c
 wszlib                                       1.5.1           wszlib.c
+wsform                                       1.5.1           wsform.c
+wscolor                                      1.5.1           wscolor.c
 rnd_api                                      1.5.1           rnd_api.c
 rnd_boxnode                                  1.5.1           rnd_boxnode.c
 rnd_gdraw                                    1.5.1           rnd_gdraw.c
