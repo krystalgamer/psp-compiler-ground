@@ -5,20 +5,16 @@ typedef struct t_displayBuffer {
 	SceUID start_sema;
 	SceUID lock_sema;
 	SceUID display_wait_sema;
+	SceInt32 *terminate_flag;
 	SceChar8 **buf;
-	SceUInt32 *pts;
 	SceInt32 *write;
 	SceInt32 *read;
 	SceInt32 *count;
 	SceInt32 *size;
-	SceInt32 pixelFormat;
-	SceInt32 *displayMode;
-	SceInt32 *scale;
-	SceInt32 *posx;
-	SceInt32 *posy;
+	SceUID sync_sema;
 } t_displayBuffer;
 
-SceInt32 dispbuf_create(t_displayBuffer *pDisp, SceInt32 disp_size, SceInt32 disp_num, SceInt32 pixelFormat);
+SceInt32 dispbuf_create(t_displayBuffer *pDisp, SceInt32 disp_size, SceInt32 disp_num, SceUID sync_sema);
 SceInt32 dispbuf_init(t_displayBuffer *pDisp);
 SceInt32 dispbuf_end(t_displayBuffer *pDisp);
 SceInt32 dispbuf_getDrawbuf(t_displayBuffer *pDisp, SceChar8 **buffer);
