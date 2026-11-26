@@ -120,7 +120,29 @@ const char *str2num(const char *s, int *out)
 	return p;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/systemfile", str2alignment);
+const char *str2alignment(const char *s, int *out)
+{
+	const char *p;
+	int n;
+
+	p = str2num(s, &n);
+	if (p == NULL) {
+		*out = 0;
+	} else {
+		switch (n) {
+		case 4:
+		case 8:
+		case 16:
+		case 32:
+			*out = n;
+			break;
+		default:
+			*out = 0;
+			break;
+		}
+	}
+	return p;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/systemfile", __sceSystemFileStr2TypeValue);
 
@@ -263,13 +285,92 @@ int sf_strcmp(const char *a, const char *b)
 	}
 }
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/systemfile", sf_bsearch);
+void *sf_bsearch(const void *key, const void *base0, int nmemb, int size, int (*compar)(const void *, const void *))
+{
+	const char *base;
+	int lim;
+	int cmp;
+	const void *p;
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/systemfile", blockswap);
+	lim = (int)base0;
+	base = (const char *)lim;
+	for (lim = nmemb; lim != 0; lim >>= 1) {
+		p = base + (lim >> 1) * size;
+		cmp = (*compar)(key, p);
+		if (cmp == 0)
+			return (void *)p;
+		if (cmp > 0) {
+			base = (const char *)p + size;
+			lim--;
+		}
+	}
+	return NULL;
+}
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/systemfile", sf_ssort);
+void blockswap(void *a, void *b, unsigned int n)
+{
+	unsigned char *pa = a;
+	unsigned char *pb = b;
+	unsigned int i;
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/systemfile", sf_qsort);
+	for (i = 0; i < n; i++) {
+		pa[i] = pa[i] ^ pb[i];
+		pb[i] = pb[i] ^ pa[i];
+		pa[i] = pa[i] ^ pb[i];
+	}
+}
+
+void sf_ssort(void *base, unsigned int n, unsigned int size, int (*cmp)(const void *, const void *))
+{
+	unsigned int i;
+	int j;
+	int k;
+	unsigned int gap;
+	char *b = base;
+
+	for (gap = n >> 1; gap != 0; gap >>= 1) {
+		for (i = gap; i < n; i++) {
+			for (j = i - gap; j >= 0; j -= gap) {
+				k = j + gap;
+				if ((*cmp)(b + j * size, b + k * size) <= 0)
+					break;
+				blockswap(b + j * size, b + k * size, size);
+			}
+		}
+	}
+}
+
+void sf_qsort(void *base, unsigned int n, unsigned int size, int (*cmp)(const void *, const void *))
+{
+	char *b = base;
+	char *last;
+	char *p = b + size;
+	unsigned int i;
+	unsigned int lo = 0;
+
+	if (n < 2)
+		return;
+	if (n == 2) {
+		if ((*cmp)(b, p) > 0)
+			blockswap(b, p, size);
+		return;
+	}
+	blockswap(b, b + (n >> 1) * size, size);
+	last = b;
+	for (i = 1; i < n; i++) {
+		if ((*cmp)(p, b) < 0) {
+			lo++;
+			last += size;
+			if (p != last)
+				blockswap(p, last, size);
+		}
+		p += size;
+	}
+	if (last != b)
+		blockswap(b, last, size);
+	sf_qsort(b, lo, size, cmp);
+	sf_qsort(last + size, n - lo - 1, size, cmp);
+}
 
 INCLUDE_RODATA("tmp/asm/psp184/UCJS90007/nonmatchings/systemfile", D_0002F31C);
 
