@@ -343,6 +343,14 @@ modules (`tools/nltest.py`, `tools/objcmp.py`).
   - Unresolved: a source detail that rejects the whole-function region, or a
     per-function compiler difference.
 
+- Release 1.6.1's newlib was also built without constant merging: flowars'
+  `dtoa` matches upstream only with `-fno-merge-constants`.
+- Open pattern (flowars `get_mission_grade`, `count_A300`,
+  `update_sp_status`): the original copies a register known to hold 0
+  (`t = i`, `cnt = sum`, `my_cnt = opp_cnt`) where every cc1 (1.3.1-orig
+  to 1.8.4) loads the constant 0. Maybe a source form, maybe a cse/reload
+  difference; not found.
+
 ## psp-gcc 1.7.1 (release build)
 
 htmlviewer is the first module built by release 1.7.1 (plus SDK libraries
