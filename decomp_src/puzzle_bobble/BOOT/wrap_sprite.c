@@ -22,22 +22,28 @@ typedef struct {
 	int u, v, w, h, no, flag;
 } SPRDATA;
 
-int sceGimPictureCreate(int);
-int sceGimPictureLoadFile(int, void *, int, int);
-int sceGimPictureDuplicate(int, int);
-int sceGimPictureDelete(int);
-int sceGimPictureUnload(int);
+void *sceGimPictureCreate(int);
+int sceGimPictureLoadFile(void *, void *, int, int);
+void *sceGimPictureDuplicate(void *, int);
+int sceGimPictureDelete(void *);
+int sceGimPictureUnload(void *);
 void free(void *);
 int printf(const char *, ...);
 int SpriteDraw(int no, int color, float z, float x0, float y0, float u0, float v0, float x1, float y1, float u1, float v1, float x2, float y2, float u2, float v2, float x3, float y3, float u3, float v3);
 int SpriteDrawZoom(int no, int color, float z, float a0, float a1, float a2, float a3, float a4, float a5, float a6, float a7, float a8, float a9, float a10);
 int SpriteDraw3D(int no, int color, int flag, float z, float f0, float f1, float f2, float f3, float f4, float f5, float f6, float f7, float f8, float f9, float f10, float f11, float f12, float f13);
 int SpriteDrawEz(int no, int color, float z, float x, float y, float w, float h, float u, float v);
-void draw_DrawSprite(SPRITE *sp);
-void draw_DrawSpriteEx(SPRITE *sp);
-void draw_DrawSpritePt4(SPRITE *sp);
+int draw_DrawSprite(SPRITE *sp);
+int draw_DrawSpriteEx(SPRITE *sp);
+int draw_DrawSpritePt4(SPRITE *sp);
+void *malloc(unsigned int);
+char *strncpy(char *, const char *, unsigned int);
+int sceGimPictureActivate(void *);
+int sceKernelDcacheWritebackAll(void);
+void sceGuColor(unsigned int);
+void sceGuDrawArray(int, int, int, const void *, const void *);
 
-extern int Gims[128];
+extern void *Gims[128];
 extern unsigned char isSkip;
 extern int global_color;
 extern float global_fader;
@@ -58,7 +64,7 @@ void init_gims(void)
 
 void release_gims(int no)
 {
-	int *p = &Gims[no];
+	void **p = &Gims[no];
 
 	if (*p != 0) {
 		sceGimPictureUnload(*p);
@@ -71,7 +77,7 @@ int load_gims(int no, const char *name)
 {
 	void *buf;
 	int size;
-	int pic;
+	void *pic;
 
 	if (no >= 128)
 		return -1;
@@ -87,7 +93,7 @@ int load_gims(int no, const char *name)
 
 int set_gim(int no, void *buf, int size)
 {
-	int pic;
+	void *pic;
 
 	if (no >= 128)
 		return -1;
@@ -98,7 +104,30 @@ int set_gim(int no, void *buf, int size)
 	return no;
 }
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/wrap_sprite", LoadGimFile);
+int LoadGimFile(int no, int file)
+{
+	char *addr;
+	int size;
+	char *buf;
+	void *pic;
+
+	if (no >= 128)
+		return -1;
+	release_gims(no);
+	GetPakInfo(file, &addr, &size);
+	pic = sceGimPictureCreate(0);
+	if (sceGimPictureLoadFile(pic, addr, size, 0) == 0) {
+		buf = malloc(size);
+		if (buf == 0)
+			return -1;
+		strncpy(buf, addr, size);
+		if (sceGimPictureLoadFile(pic, addr, size, 0) == 0)
+			return -1;
+		free(buf);
+	}
+	Gims[no] = sceGimPictureDuplicate(pic, 0);
+	return no;
+}
 
 void SpriteAllFreeImage(void)
 {
@@ -110,7 +139,7 @@ void SpriteAllFreeImage(void)
 
 int get_gims(int no)
 {
-	return Gims[no];
+	return (int)Gims[no];
 }
 
 void SpriteSetSkipFrame(unsigned char skip)
@@ -317,9 +346,76 @@ void SetSpriteColorRGBA(int arg0, int arg1, int arg2, int arg3) {
     SpriteSetColorRGBA(arg0, arg1, arg2, arg3);
 }
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/wrap_sprite", draw_DrawSpritePt4);
+int draw_DrawSpritePt4(SPRITE *sp)
+{
+	void *pic = Gims[sp->no];
+	int ret = 0;
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/wrap_sprite", draw_DrawSprite);
+	if (pic != 0) {
+		sceGimPictureActivate(pic);
+		sceKernelDcacheWritebackAll();
+		sceGuColor(getFader(sp->color));
+		sceGuDrawArray(4, 0x800102, 4, 0, sp->v);
+		ret = 1;
+	}
+	return ret;
+}
+
+int draw_DrawSprite(SPRITE *sp)
+{
+	void *pic = Gims[sp->no];
+	int italic = sp->f[10];
+
+	if (pic == 0)
+		return 0;
+	sceGimPictureActivate(pic);
+	if (italic == 0) {
+		sp->v[0].x = sp->f[0];
+		sp->v[0].y = sp->f[1];
+		sp->v[0].z = 0;
+		sp->v[0].u = sp->f[4];
+		sp->v[0].v = sp->f[5];
+		sp->v[1].x = sp->f[0] + sp->f[2];
+		sp->v[1].y = sp->f[1];
+		sp->v[1].z = 0;
+		sp->v[1].u = sp->f[4] + sp->f[6];
+		sp->v[1].v = sp->f[5];
+		sp->v[2].x = sp->f[0];
+		sp->v[2].y = sp->f[1] + sp->f[3];
+		sp->v[2].z = 0;
+		sp->v[2].u = sp->f[4];
+		sp->v[2].v = sp->f[5] + sp->f[7];
+		sp->v[3].x = sp->f[0] + sp->f[2];
+		sp->v[3].y = sp->f[1] + sp->f[3];
+		sp->v[3].z = 0;
+		sp->v[3].u = sp->f[4] + sp->f[6];
+		sp->v[3].v = sp->f[5] + sp->f[7];
+	} else {
+		sp->v[0].x = sp->f[0];
+		sp->v[0].y = sp->f[1] + 15.0f;
+		sp->v[0].z = 0;
+		sp->v[0].u = sp->f[4];
+		sp->v[0].v = sp->f[5];
+		sp->v[1].x = sp->f[0] + sp->f[2];
+		sp->v[1].y = sp->f[1];
+		sp->v[1].z = 0;
+		sp->v[1].u = sp->f[4] + sp->f[6];
+		sp->v[1].v = sp->f[5];
+		sp->v[2].x = sp->f[0];
+		sp->v[2].y = sp->f[1] + sp->f[3] + 15.0f;
+		sp->v[2].z = 0;
+		sp->v[2].u = sp->f[4];
+		sp->v[2].v = sp->f[5] + sp->f[7];
+		sp->v[3].x = sp->f[0] + sp->f[2];
+		sp->v[3].y = sp->f[1] + sp->f[3];
+		sp->v[3].z = 0;
+		sp->v[3].u = sp->f[4] + sp->f[6];
+		sp->v[3].v = sp->f[5] + sp->f[7];
+	}
+	sceGuColor(getFader(-1));
+	sceGuDrawArray(4, 0x800102, 4, 0, sp->v);
+	return 1;
+}
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/wrap_sprite", draw_DrawSpriteEx);
 
