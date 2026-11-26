@@ -170,6 +170,28 @@ int dispbuf_getMode(t_displayBuffer *pDisp) {
     return pDisp->displayMode;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/mpeg_ezmpegstr/nonmatchings/display", dispbuf_display);
+SceInt32 dispbuf_display(SceVoid *pAv)
+{
+	SceInt32 currentMode;
+	t_avSyncControl *pAvSync = (t_avSyncControl *)pAv;
+	t_displayBuffer *pDisp = pAvSync->pDisp;
+
+	currentMode = avsync_Compare(pAvSync);
+	dispbuf_setMode(pDisp, currentMode);
+
+	if (dispbuf_getCurrentCount(pDisp) > 0) {
+		if (dispbuf_getMode(pDisp) != 3) {
+			dispbuf_show(pDisp);
+
+			pDisp->count--;
+
+			frameCount++;
+		}
+	} else {
+		frameLoss++;
+	}
+
+	return 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/mpeg_ezmpegstr/nonmatchings/display", dispbuf_show);
