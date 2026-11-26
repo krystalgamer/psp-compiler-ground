@@ -156,9 +156,78 @@ static int get_kind_pan(int kind, int *ps)
 
 __asm__(".globl get_kind_pan");
 
-INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/pan", add_pan);
+static int add_pan(int pae, Point *pt, int *sound)
+{
+	int index, n;
+	int pos;
+	int depth;
+	int ground = 16;
+	int kind = paeManager.get_pae_kind(pae);
 
-INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/pan", add_pan_kind);
+	if (g_pan[kind - 1].count <= 0) {
+		pos = get_empty_pos();
+		depth = 0;
+		g_pan[kind - 1].pos = pos;
+		g_pan[kind - 1].pae[depth] = pae;
+		g_pan[kind - 1].count = 1;
+		ground = 28;
+		n = 1;
+	} else {
+		depth = g_pan[kind - 1].count;
+		g_pan[kind - 1].pae[depth] = pae;
+		g_pan[kind - 1].count++;
+		n = 0;
+		for (index = 0; index < g_pan[kind - 1].count; index++)
+			if (g_pan[kind - 1].pae[index] != 49 && g_pan[kind - 1].pae[index] != 50)
+				n++;
+	}
+	if (pt) {
+		pos = g_pan[kind - 1].pos;
+		pt->x = g_pan_pos[pos][0] + depth * 5;
+		pt->y = g_pan_pos[pos][1];
+	}
+	if (sound && g_stage_status != 6)
+		*sound = ground;
+	return n;
+}
+
+__asm__(".globl add_pan");
+
+static int add_pan_kind(int pae, int kind, Point *pt, int *sound)
+{
+	int index, n;
+	int pos;
+	int depth;
+	int ground = 16;
+
+	if (g_pan[kind - 1].count <= 0) {
+		pos = get_empty_pos();
+		depth = 0;
+		g_pan[kind - 1].pos = pos;
+		g_pan[kind - 1].pae[depth] = pae;
+		g_pan[kind - 1].count = 1;
+		ground = 28;
+		n = 1;
+	} else {
+		depth = g_pan[kind - 1].count;
+		g_pan[kind - 1].pae[depth] = pae;
+		g_pan[kind - 1].count++;
+		n = 0;
+		for (index = 0; index < g_pan[kind - 1].count; index++)
+			if (g_pan[kind - 1].pae[index] != 49 && g_pan[kind - 1].pae[index] != 50)
+				n++;
+	}
+	if (pt) {
+		pos = g_pan[kind - 1].pos;
+		pt->x = g_pan_pos[pos][0] + depth * 5;
+		pt->y = g_pan_pos[pos][1];
+	}
+	if (sound && g_stage_status != 6)
+		*sound = ground;
+	return n;
+}
+
+__asm__(".globl add_pan_kind");
 
 static int remove_pos_pan(int pos)
 {
