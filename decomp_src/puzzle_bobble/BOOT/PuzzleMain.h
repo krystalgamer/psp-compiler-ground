@@ -7,7 +7,9 @@ typedef struct {
 	u8 unk0;		/* +0x0 */
 	u8 pad1;
 	s8 unk2;		/* +0x2 */
-	u8 pad3[0xA - 3];
+	u8 pad3;
+	s16 unk4;	/* +0x4 */
+	u8 pad6[0xA - 6];
 	s16 se;			/* +0xA: sound effect to play this frame */
 } PZL_SND;
 

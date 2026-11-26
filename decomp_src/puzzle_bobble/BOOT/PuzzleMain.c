@@ -1276,7 +1276,126 @@ int GetBallNext(PZL_STAT *st, int flag)
 	return r;
 }
 
+#ifdef NON_MATCHING
+/* Right size, diff 224: logic complete (bomb 9, rainbow 13 and 8 balls); the original
+ * allocates st/flag/i/hit to other saved registers and tests `p < 0` after loading cur. */
+typedef struct { s16 x, y; } BCPOS;
+extern const BCPOS BallCollisionPosition[8];
+int CheckBallTouch(PZL_STAT *st, int flag)
+{
+	int x, y, x1, y1, x2, y2, x3, y3, x4, y4;
+	int i, j, p, a, c, m;
+	int hit = 0;
+
+	st->snd.unk4 = CvtBallPos2MapPos(st, 0, 0);
+	st->unk45C = 0;
+	for (i = 0; i < 8; i++) {
+		p = CvtBallPos2MapPos(st, BallCollisionPosition[i].x, BallCollisionPosition[i].y);
+		if (flag != 0 && p < 0)
+			goto touch;
+		if (st->mp.map[p] == 0)
+			continue;
+	touch:
+		c = st->cur;
+		if (c == 9 && p >= 0 && (u8)(st->mp.map[p] - 11) >= 2) {
+			GetBallCoordinate(st, p, &x, &y);
+			SetBubCrushEz(st, x, y, st->mp.map[p]);
+			if (st->mp.map[p] == 9)
+				st->snd.se = 23;
+			else
+				st->snd.se = 15;
+			st->mp.map[p] = 0;
+			continue;
+		}
+		hit = 1;
+		if (c == 13) {
+			GetBallCoordinate(st, CvtBallPos2MapPos(st, 0, 0), &x1, &y1);
+			st->ndrop = 0;
+			st->drop.d[st->ndrop].y = y1;
+			st->drop.d[st->ndrop].x = x1;
+			st->drop.d[st->ndrop].col = 14;
+			st->drop.d[st->ndrop].flag = 0;
+			st->snd.se = 25;
+			st->ndrop++;
+			for (j = 1; j < 7; j++) {
+				a = GetBallMapAddr(st, x1, y1, j);
+				m = st->mp.map[a];
+				if (m != 0 && m != 12) {
+					GetBallCoordinate(st, a, &x2, &y2);
+					st->drop.d[st->ndrop].x = x2;
+					st->drop.d[st->ndrop].y = y2;
+					st->drop.d[st->ndrop].col = st->mp.map[a];
+					st->drop.d[st->ndrop].flag = 0;
+					st->attr[a] = 1;
+					st->ndrop++;
+					st->mp.map[a] = 0;
+				}
+			}
+			return hit;
+		}
+		if (c == 8) {
+			m = st->mp.map[p];
+			st->snd.se = 23;
+			if (m < 9) {
+				st->snd.unk0 = m;
+				st->unk45C = 1;
+			}
+			st->ndrop = 0;
+			GetBallCoordinate(st, CvtBallPos2MapPos(st, 0, 0), &x3, &y3);
+			st->drop.d[st->ndrop].x = x3;
+			st->drop.d[st->ndrop].y = y3;
+			st->drop.d[st->ndrop].col = 9;
+			st->drop.d[st->ndrop].flag = 0;
+			st->ndrop++;
+			if (st->unk45C)
+				return 1;
+			GetBallCoordinate(st, CvtBallPos2MapPos(st, 0, 0), &x3, &y3);
+			for (j = 1; j < 7; j++) {
+				a = GetBallMapAddr(st, x3, y3, j);
+				m = st->mp.map[a];
+				if ((u8)(m - 1) < 8) {
+					GetBallCoordinate(st, a, &x4, &y4);
+					st->drop.d[st->ndrop].x = x4;
+					st->drop.d[st->ndrop].y = y4;
+					st->drop.d[st->ndrop].col = st->mp.map[a];
+					st->snd.unk0 = st->mp.map[a];
+					st->drop.d[st->ndrop].flag = 0;
+					st->unk45C = 1;
+					st->ndrop++;
+					st->mp.map[a] = 0;
+					return 1;
+				}
+				if ((u8)m == 9) {
+					GetBallCoordinate(st, a, &x4, &y4);
+					st->drop.d[st->ndrop].x = x4;
+					st->drop.d[st->ndrop].y = y4;
+					st->drop.d[st->ndrop].col = st->mp.map[a];
+					st->drop.d[st->ndrop].flag = 0;
+					st->mp.map[a] = 0;
+					st->ndrop++;
+					return 1;
+				}
+			}
+			continue;
+		}
+		m = st->mp.map[p];
+		if (m < 10) {
+			if (m == 9) {
+				st->snd.unk0 = c + 1;
+				st->snd.se = 23;
+				st->unk45C = 1;
+			} else if (p < 0)
+				st->snd.se = 14;
+			else
+				st->snd.se = 13;
+			return hit;
+		}
+	}
+	return hit;
+}
+#else
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", CheckBallTouch);
+#endif
 
 #ifdef NON_MATCHING
 /* Close (diff 21): st and pos get s1/s0 swapped (the original gives st s0) and pos / w lands in
