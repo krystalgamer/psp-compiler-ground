@@ -55,9 +55,160 @@ typedef struct {
 extern CLOUDDAT cloud[10];
 extern int texture_mode;
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_balloon/nonmatchings/cloud", set_texture);
+typedef unsigned int    u_int32;
+typedef unsigned short  u_short16;
+extern u_short16 pix_tex_pf5650[32768];
+extern u_int32 pix_tex_pf8888[32768];
+extern void * vramptr[6];
+extern u_int32 pix_tex_pfidx8[8192];
+extern u_short16 pix_tex_pf4444[32768];
+extern u_short16 pix_fast_pf5551[32768];
+extern u_int32 clut_tex_pfidx8[128];
+extern u_int32 pix_fast_pf8888[32768];
+extern u_short16 pix_tex_pf5551[32768];
+extern u_short16 pix_fast_pf4444[32768];
+extern u_int32 clut_tex_pfidx4[8];
+extern u_int32 pix_tex_pfidx4[4096];
+extern u_short16 pix_fast_pf5650[32768];
+#define SCEGU_PFIDX4                       4
+#define SCEGU_PFIDX8                       5
+#define SCEGU_TEXBUF_NORMAL                0
+#define SCEGU_PF5551                       1
+#define SCEGU_PF5650                       0
+#define SCEGU_PF4444                       2
+#define SCEGU_PF8888                       3
+#define SCEGU_SINGLE_CLUT                  0
+#define SCEGU_TEXBUF_FAST                  1
+#define SCEGU_VRAM_BUFSIZE32  (SCEGU_VRAM_WIDTH*SCEGU_SCR_HEIGHT*4)
+#define SCEGU_VRAM_WIDTH      512
+#define SCEGU_SCR_HEIGHT      272
+#define SCEGU_VRAM_BUFSIZE    (SCEGU_VRAM_WIDTH*SCEGU_SCR_HEIGHT*2)
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_balloon/nonmatchings/cloud", set_vram_texture);
+static void set_texture(int mode)
+{
+	switch (mode) {
+	
+	case TEX_PFIDX4:
+		sceGuClutMode(SCEGU_PF5551, 0, 0xff, 0);
+		sceGuClutLoad(1, (void *)clut_tex_pfidx4);
+		sceGuTexMode(SCEGU_PFIDX4, 0, SCEGU_SINGLE_CLUT, SCEGU_TEXBUF_NORMAL);
+		sceGuTexImage(0, 256, 128, 256, (void *)pix_tex_pfidx4);
+		break;
+	case TEX_PFIDX8:
+		sceGuClutMode(SCEGU_PF5551, 0, 0xff, 0);
+		sceGuClutLoad(16, (void *)clut_tex_pfidx8);
+		sceGuTexMode(SCEGU_PFIDX8, 0, SCEGU_SINGLE_CLUT, SCEGU_TEXBUF_NORMAL);
+		sceGuTexImage(0, 256, 128, 256, (void *)pix_tex_pfidx8);
+		break;
+	case TEX_PF5551:
+		sceGuTexMode(SCEGU_PF5551, 0, SCEGU_SINGLE_CLUT, SCEGU_TEXBUF_NORMAL);
+		sceGuTexImage(0, 256, 128, 256, (void *)pix_tex_pf5551);
+		break;
+	case TEX_PF5650:
+		sceGuTexMode(SCEGU_PF5650, 0, SCEGU_SINGLE_CLUT, SCEGU_TEXBUF_NORMAL);
+		sceGuTexImage(0, 256, 128, 256, (void *)pix_tex_pf5650);
+		break;
+	case TEX_PF4444:
+		sceGuTexMode(SCEGU_PF4444, 0, SCEGU_SINGLE_CLUT, SCEGU_TEXBUF_NORMAL);
+		sceGuTexImage(0, 256, 128, 256, (void *)pix_tex_pf4444);
+		break;
+	case TEX_PF8888:
+		sceGuTexMode(SCEGU_PF8888, 0, SCEGU_SINGLE_CLUT, SCEGU_TEXBUF_NORMAL);
+		sceGuTexImage(0, 256, 128, 256, (void *)pix_tex_pf8888);
+		break;
+	
+	case TEX_PFIDX4_VRAM:
+		sceGuClutMode(SCEGU_PF5551, 0, 0xff, 0);
+		sceGuClutLoad(1, (void *)vramptr[0]);
+		sceGuTexMode(SCEGU_PFIDX4, 0, SCEGU_SINGLE_CLUT, SCEGU_TEXBUF_NORMAL);
+		sceGuTexImage(0, 256, 128, 256, (void *)((u_int32)vramptr[0]+sizeof(clut_tex_pfidx4)));
+		break;
+	case TEX_PFIDX8_VRAM:
+		sceGuClutMode(SCEGU_PF5551, 0, 0xff, 0);
+		sceGuClutLoad(16, (void *)vramptr[1]);
+		sceGuTexMode(SCEGU_PFIDX8, 0, SCEGU_SINGLE_CLUT, SCEGU_TEXBUF_NORMAL);
+		sceGuTexImage(0, 256, 128, 256, (void *)((u_int32)vramptr[1]+sizeof(clut_tex_pfidx8)));
+		break;
+	case TEX_PF5551_VRAM:
+		sceGuTexMode(SCEGU_PF5551, 0, SCEGU_SINGLE_CLUT, SCEGU_TEXBUF_NORMAL);
+		sceGuTexImage(0, 256, 128, 256, (void *)vramptr[2]);
+		break;
+	case TEX_PF5650_VRAM:
+		sceGuTexMode(SCEGU_PF5650, 0, SCEGU_SINGLE_CLUT, SCEGU_TEXBUF_NORMAL);
+		sceGuTexImage(0, 256, 128, 256, (void *)vramptr[3]);
+		break;
+	case TEX_PF4444_VRAM:
+		sceGuTexMode(SCEGU_PF4444, 0, SCEGU_SINGLE_CLUT, SCEGU_TEXBUF_NORMAL);
+		sceGuTexImage(0, 256, 128, 256, (void *)vramptr[4]);
+		break;
+	case TEX_PF8888_VRAM:
+		sceGuTexMode(SCEGU_PF8888, 0, SCEGU_SINGLE_CLUT, SCEGU_TEXBUF_NORMAL);
+		sceGuTexImage(0, 256, 128, 256, (void *)vramptr[5]);
+		break;
+	
+	case TEX_PF5551_FAST:
+		sceGuTexMode(SCEGU_PF5551, 0, SCEGU_SINGLE_CLUT, SCEGU_TEXBUF_FAST);
+		sceGuTexImage(0, 256, 128, 256, (void *)pix_fast_pf5551);
+		break;
+	case TEX_PF5650_FAST:
+		sceGuTexMode(SCEGU_PF5650, 0, SCEGU_SINGLE_CLUT, SCEGU_TEXBUF_FAST);
+		sceGuTexImage(0, 256, 128, 256, (void *)pix_fast_pf5650);
+		break;
+	case TEX_PF4444_FAST:
+		sceGuTexMode(SCEGU_PF4444, 0, SCEGU_SINGLE_CLUT, SCEGU_TEXBUF_FAST);
+		sceGuTexImage(0, 256, 128, 256, (void *)pix_fast_pf4444);
+		break;
+	case TEX_PF8888_FAST:
+		sceGuTexMode(SCEGU_PF8888, 0, SCEGU_SINGLE_CLUT, SCEGU_TEXBUF_FAST);
+		sceGuTexImage(0, 256, 128, 256, (void *)pix_fast_pf8888);
+		break;
+	}
+}
+
+typedef unsigned char   u_char8;
+static void set_vram_texture(void)
+{
+	u_char8 *vramaddr=(u_char8 *)sceGeEdramGetAddr();
+	int		size;
+
+	vramaddr+=SCEGU_VRAM_BUFSIZE32*2+SCEGU_VRAM_BUFSIZE;
+
+	vramptr[0]=vramaddr;
+	size=sizeof(clut_tex_pfidx4);
+	memcpy(vramaddr,clut_tex_pfidx4,size);
+	vramaddr+=size;
+	size=sizeof(pix_tex_pfidx4);
+	memcpy(vramaddr,pix_tex_pfidx4,size);
+	vramaddr+=size;
+
+	vramptr[1]=vramaddr;
+	size=sizeof(clut_tex_pfidx8);
+	memcpy(vramaddr,clut_tex_pfidx8,size);
+	vramaddr+=size;
+	size=sizeof(pix_tex_pfidx8);
+	memcpy(vramaddr,pix_tex_pfidx8,size);
+	vramaddr+=size;
+
+	vramptr[2]=vramaddr;
+	size=sizeof(pix_tex_pf5551);
+	memcpy(vramaddr,pix_tex_pf5551,size);
+	vramaddr+=size;
+
+	vramptr[3]=vramaddr;
+	size=sizeof(pix_tex_pf5650);
+	memcpy(vramaddr,pix_tex_pf5650,size);
+	vramaddr+=size;
+
+	vramptr[4]=vramaddr;
+	size=sizeof(pix_tex_pf4444);
+	memcpy(vramaddr,pix_tex_pf4444,size);
+	vramaddr+=size;
+
+	vramptr[5]=vramaddr;
+	size=sizeof(pix_tex_pf8888);
+	memcpy(vramaddr,pix_tex_pf8888,size);
+	vramaddr+=size;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_balloon/nonmatchings/cloud", init_cloud);
 
