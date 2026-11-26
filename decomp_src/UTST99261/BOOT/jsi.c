@@ -2,6 +2,7 @@
 #include "common.h"
 #include "dom_esp.h"
 #include "m2c_macros.h"
+extern EspContext *esp_context;
 #define VESP (*(EspContext *volatile *)&esp_context)
 extern void *jsapi_lock;
 extern char *gESPRIT_LO_GLOBAL_NDA;
@@ -148,7 +149,23 @@ INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", D_00133A2C);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSI_getDocumentCookie);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSI_setDocumentCookie);
+int JSI_setDocumentCookie(void *doc, DOMStr *s) {
+    void *h;
+    char *buf;
+
+    h = HST_searchDocumentHistoryNode(doc);
+    if (h == NULL) {
+        return 0;
+    }
+    buf = MEM_malloc(0, s->len * 3 + 1);
+    if (buf == NULL) {
+        return 0;
+    }
+    buf[ucs2ToUtf8(buf, s->str, s->len)] = 0;
+    set_cookie(HST_getCurURI(h), buf);
+    MEM_free(0, buf);
+    return 1;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSI_getDocumentLastModified);
 
@@ -335,11 +352,59 @@ void JSI_setURLHost(void *arg0, int arg1) {
     M2C_FIELD(arg0, int *, 8) = temp_s1;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSI_setURLPathname);
+void JSI_setURLPathname(int *obj, DOMStr *s) {
+    DOMStr *d;
+    unsigned short *p;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSI_setURLHash);
+    d = duplicateDOMString(s);
+    if (d->len != 0 && d->str[0] != '/') {
+        p = MEM_malloc(0, d->len * 2 + 2);
+        p[0] = '/';
+        memcpy(p + 1, d->str, d->len * 2);
+        MEM_free(0, d->str);
+        d->size++;
+        d->len++;
+        d->str = p;
+    }
+    JSI_freeDOMString((DOMStr *)obj[3]);
+    obj[3] = (int)d;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSI_setURLSearch);
+void JSI_setURLHash(int *obj, DOMStr *s) {
+    DOMStr *d;
+    unsigned short *p;
+
+    d = duplicateDOMString(s);
+    if (d->len != 0 && d->str[0] != '#') {
+        p = MEM_malloc(0, d->len * 2 + 2);
+        p[0] = '#';
+        memcpy(p + 1, d->str, d->len * 2);
+        MEM_free(0, d->str);
+        d->size++;
+        d->len++;
+        d->str = p;
+    }
+    JSI_freeDOMString((DOMStr *)obj[4]);
+    obj[4] = (int)d;
+}
+
+void JSI_setURLSearch(int *obj, DOMStr *s) {
+    DOMStr *d;
+    unsigned short *p;
+
+    d = duplicateDOMString(s);
+    if (d->len != 0 && d->str[0] != '?') {
+        p = MEM_malloc(0, d->len * 2 + 2);
+        p[0] = '?';
+        memcpy(p + 1, d->str, d->len * 2);
+        MEM_free(0, d->str);
+        d->size++;
+        d->len++;
+        d->str = p;
+    }
+    JSI_freeDOMString((DOMStr *)obj[5]);
+    obj[5] = (int)d;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -988,7 +1053,18 @@ int ESP_setFreeScrollEnabled(int en) {
     return esp_postMsgFreeScroll(esp_context->msg, en);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_findString);
+int ESP_findString(char *s, int a, int b) {
+    if (esp_context == NULL) {
+        return -1;
+    }
+    if (esp_context->state == 2) {
+        return -1;
+    }
+    if (s == NULL || *s == 0) {
+        return -1;
+    }
+    return esp_postMsgFindString(esp_context->msg, a, b, s);
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -1156,7 +1232,31 @@ int ESP_setMouseTracking(int en) {
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_beginConfig);
+int ESP_beginConfig(void) {
+    int r;
+    EspContext *ctx;
+
+    if (esp_context == NULL) {
+        return -1;
+    }
+    if (esp_context->state == 2) {
+        return -1;
+    }
+    if (esp_context->prefs != NULL) {
+        esp_freeConfig(esp_context->prefs);
+        MEM_free(0, esp_context->prefs);
+    }
+    ctx = esp_context;
+    ctx->prefs = MEM_malloc(0, 0x70);
+    if (ctx->prefs == NULL) {
+        return -1;
+    }
+    r = esp_copyConfig(esp_context->prefs, &esp_context->config);
+    if (r != 0) {
+        return r;
+    }
+    return 0;
+}
 
 int ESP_endConfig(void) {
     int r;
