@@ -97,6 +97,41 @@ void getViewPort();
 void drawScroll();
 int make_msg_LP4();
 int make_msg_LP21();
+int make_msg_LP12();
+int make_msg_LP3();
+int make_msg_LJ6();
+int actSearchString();
+PHIST *HST_getChildHistoryNode(PHIST *h);
+int HST_getRequestFlag(PHIST *h);
+typedef struct {
+    u16 unk0;
+    u16 unk2;
+    u16 unk4;
+    u16 unk6;
+    int unk8;
+    char *str;                  /* 0xC */
+} PSRCH;
+int Node_getJSObj();
+void JSRun();
+typedef struct {
+    int node;
+    int len;                    /* 0x4 */
+    u16 *str;                   /* 0x8 */
+} PJSRC;
+typedef struct {
+    int obj;
+    u16 *str;
+} PJSARG;
+typedef struct {
+    int type;
+    int session;
+    int unk8;
+    int unkC;
+    int unk10;
+    int unk14;
+    int size;                   /* 0x18 */
+    void *data;                 /* 0x1C */
+} PJSRUN;
 typedef struct {
     u8 unk0[0x24];
     int unk24;
@@ -199,9 +234,89 @@ void proc_msg_PL7(PMSG *msg) {
     MEM_free(0, d);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_msgBranch_ps", proc_msg_PL8);
+void proc_msg_PL8(PMSG *m) {
+    PHIST *h;
+    PHIST *c;
+    PBOX *body;
+    PSRCH *s;
+    int r;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_msgBranch_ps", proc_msg_PL11);
+    r = 0;
+    s = m->data;
+    h = HST_searchSessionIDHistoryNode(gESPRIT_LO_GLOBAL_NDA->session);
+    if (h == NULL) {
+        h = (PHIST *)HST_getHeadHistoryNode();
+        if (h == NULL) {
+            if (s != NULL) {
+                MEM_free(0, s);
+            }
+            putLLIST(&REQUEST_LLIST, make_msg_LP3(m, 0));
+            return;
+        }
+        while ((c = HST_getChildHistoryNode(h)) != NULL && HST_getRequestFlag(c) >= 0 && c->body != NULL
+               && !checkBoxValidity(c->body)) {
+            h = c;
+        }
+    }
+    body = h->body;
+    if (body != NULL && checkBoxValidity(body) && s->unk8 != 0) {
+        r = actSearchString(body, s->str, s->unk2, s->unk4);
+    }
+    MEM_free(0, s);
+    if (m->unk10 == 1) {
+        putLLIST(&REQUEST_LLIST, make_msg_LJ6(m, r));
+    } else {
+        putLLIST(&REQUEST_LLIST, make_msg_LP3(m, r));
+    }
+}
+
+void proc_msg_PL11(PMSG *m) {
+    PHIST *h;
+    PJSRC *d;
+    PJSARG *a;
+    u16 *buf;
+    PJSRUN run;
+    int *z;
+
+    h = HST_searchSessionIDHistoryNode(m->unk4);
+    if (h == NULL || h->body == NULL) {
+        if (m->data != NULL) {
+            MEM_free(0, m->data);
+        }
+        z = MEM_malloc(0, 0xC);
+        z[0] = 0;
+        z[1] = 0;
+        z[2] = 0;
+        m->data = z;
+        m->len = 0xC;
+        putLLIST(&REQUEST_LLIST, make_msg_LP12(m));
+        return;
+    }
+    d = m->data;
+    a = MEM_malloc(0, sizeof(PJSARG));
+    if (a == NULL) {
+        return;
+    }
+    buf = MEM_malloc(0, d->len * 2 + 2);
+    if (buf == NULL) {
+        MEM_free(0, a);
+        return;
+    }
+    run.type = 4;
+    run.session = m->unk4;
+    run.unk8 = 0;
+    run.unkC = 0x402;
+    run.unk10 = 0;
+    run.unk14 = 0;
+    a->obj = Node_getJSObj(d->node);
+    a->str = buf;
+    memcpy(buf, d->str, d->len * 2);
+    buf[d->len] = 0;
+    run.size = 8;
+    run.data = a;
+    MEM_free(0, d);
+    JSRun(&run);
+}
 
 void proc_msg_PL15(PMSG *m) {
     void *out;
