@@ -214,4 +214,46 @@ SceInt32 read_checkConditionEnd(t_ringBuffer *pRing)
 	return 0;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/mpeg_fileread", read_func);
+extern SceInt32 D_0008D34C;
+int sceKernelExitThread(int status);
+int read_func(SceSize size, void *argp)
+{
+	t_ringBuffer **ppRing;
+	t_ringBuffer *pRing;
+	SceInt32 totalSize;
+	SceInt32 capacitySize;
+	SceInt32 getSize;
+
+	ppRing = argp;
+	pRing = *ppRing;
+	totalSize = 0;
+	for (;;) {
+		read_checkConditionEnd(pRing);
+		if (read_getStatus(pRing) == 3)
+			break;
+		capacitySize = sceMpegRingbufferAvailableSize(pRing->pRingbuf);
+		if (capacitySize < 0) {
+			read_setStatus(pRing, 2);
+			D_0008D34C = capacitySize;
+			read_sendErrCondition(pRing);
+			return 1;
+		}
+		if (read_getStatus(pRing) == 1) {
+			getSize = sceMpegRingbufferPut(pRing->pRingbuf, 32, capacitySize);
+			if (getSize < 0) {
+				read_setStatus(pRing, 2);
+				_info.actual_err_code_thr = getSize;
+				read_sendErrCondition(pRing);
+			}
+			totalSize += getSize * 2048;
+		}
+		if (totalSize == pRing->dataLen && read_getStatus(pRing) == 1) {
+			read_setStatus(pRing, 3);
+			read_sendEndCondition(pRing);
+			break;
+		}
+		wait_vblank();
+	}
+	sceKernelExitThread(0);
+	return 0;
+}
