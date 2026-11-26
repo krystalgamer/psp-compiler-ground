@@ -225,7 +225,52 @@ void sceGumTranslate(const ScePspFVector3 *v);
 int sceKernelDcacheWritebackAll(void);
 int sprintf(char *buf, const char *fmt, ...);
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_network_flow/nonmatchings/main", handler_p2p);
+void handler_p2p(int id, int ev, struct SceNetEtherAddr *peer, int optlen, void *opt)
+{
+	OBJECT *p;
+	int i;
+
+	p = NULL;
+	for (i = 1; i < 8; i++) {
+		if (memcmp(&obj[i].addr, peer, 6) == 0) {
+			p = &obj[i];
+			break;
+		}
+	}
+	if (p == NULL)
+		return;
+	switch (ev) {
+	case 0:
+		break;
+	case 1:
+		p->peer_state = MATCHING_HELLO;
+		break;
+	case 2:
+		p->peer_state = MATCHING_RECV_REQ;
+		break;
+	case 3:
+	case 4:
+		p->peer_state = MATCHING_DENY;
+		break;
+	case 5:
+		printf("received invalid matching packet\n");
+		break;
+	case 6:
+		p->peer_state = MATCHING_ESTABLISHED;
+		break;
+	case 7:
+		p->peer_state = MATCHING_ESTABLISHED;
+		connect_state = DISCONNECT_PRIMARY_IBSS;
+		break;
+	case 8:
+		p->peer_state = MATCHING_DISCONNECTED;
+		break;
+	case 9:
+		p->peer_state = MATCHING_DISCONNECTED;
+		printf("event error had occured.\n");
+		break;
+	}
+}
 
 INCLUDE_RODATA("tmp/asm/UTST99332/net_network_flow/nonmatchings/main", D_00014D68);
 
