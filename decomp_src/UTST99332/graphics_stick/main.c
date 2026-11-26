@@ -140,30 +140,26 @@ void draw_frame(void) {
     sceGuSync(0, 0);
 }
 
-#ifdef NON_MATCHING
-/* Close: the original stores world's zeros from a float register. */
 static void init_param(void)
 {
+	world.pos.x = world.pos.y = 0.0f;
+	world.rot.y = world.rot.z = 0.0f;
+
+	world.pos.z = -10.0f;
+	world.rot.x = 300.0f;
+
 	obj[0].x = 21;
 	obj[0].y = 18;
 	obj[0].c = 0xff0000ff;
 	obj[0].comp = 0;
 	obj[0].high = 2.0f;
+
 	obj[1].x = 9;
 	obj[1].y = 18;
 	obj[1].c = 0xffff0000;
 	obj[1].comp = 0;
 	obj[1].high = 2.0f;
-	world.pos.x = 0.0f;
-	world.pos.y = 0.0f;
-	world.pos.z = -10.0f;
-	world.rot.x = 300.0f;
-	world.rot.y = 0.0f;
-	world.rot.z = 0.0f;
 }
-#else
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_stick/nonmatchings/main", init_param);
-#endif
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_stick/nonmatchings/main", init_all);
 
