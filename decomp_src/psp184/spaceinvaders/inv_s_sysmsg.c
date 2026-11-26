@@ -14,7 +14,31 @@ int ExitFunction_16448(void) {
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_sysmsg", utility_update_msgdialog_16468);
+extern int loop_28E444;
+int sceUtilityMsgDialogGetStatus(void);
+int sceUtilityMsgDialogUpdate(int n);
+int sceUtilityMsgDialogShutdownStart(void);
+int utility_update_msgdialog_16468(void)
+{
+	int ret = 0;
+
+	switch (sceUtilityMsgDialogGetStatus()) {
+	case 1:
+		break;
+	case 2:
+		ret = sceUtilityMsgDialogUpdate(1);
+		break;
+	case 0:
+		loop_28E444 = 0;
+		break;
+	case 3:
+		ret = sceUtilityMsgDialogShutdownStart();
+		break;
+	case 4:
+		break;
+	}
+	return ret;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_sysmsg", sub_thread_164DC);
 

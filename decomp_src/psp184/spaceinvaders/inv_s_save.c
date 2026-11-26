@@ -45,7 +45,30 @@ typedef struct {
 	SaveFileData snd0;
 } SaveParam;
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_save", utility_update_savedata);
+int sceUtilitySavedataGetStatus(void);
+int sceUtilitySavedataUpdate(int n);
+int sceUtilitySavedataShutdownStart(void);
+int utility_update_savedata(void)
+{
+	int ret = 0;
+
+	switch (sceUtilitySavedataGetStatus()) {
+	case 1:
+		break;
+	case 2:
+		ret = sceUtilitySavedataUpdate(1);
+		break;
+	case 0:
+		loop_28E478 = 0;
+		break;
+	case 3:
+		ret = sceUtilitySavedataShutdownStart();
+		break;
+	case 4:
+		break;
+	}
+	return ret;
+}
 
 void UtilityClose(void) {
 }
