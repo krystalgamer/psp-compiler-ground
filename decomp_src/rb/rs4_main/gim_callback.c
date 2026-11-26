@@ -12,11 +12,20 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/gim_callback", sceGimPictureOpenMe
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/gim_callback", sceGimPictureOpenMemoryCluster3);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/gim_callback", sceGimPictureCloseMemoryCluster);
+int sceGimPictureCloseMemoryCluster()
+{
+		return close_cluster( 0 ) ;
+	}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/gim_callback", sceGimPictureCloseMemoryCluster2);
+int sceGimPictureCloseMemoryCluster2()
+{
+		return close_cluster( 1 ) ;
+	}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/gim_callback", sceGimPictureCloseMemoryCluster3);
+int sceGimPictureCloseMemoryCluster3()
+{
+		return close_cluster( 2 ) ;
+	}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/gim_callback", sceGimPictureAllocMemory);
 
@@ -24,11 +33,20 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/gim_callback", sceGimPictureAllocM
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/gim_callback", sceGimPictureAllocMemory3);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/gim_callback", sceGimPictureFreeMemory);
+void sceGimPictureFreeMemory( void *addr )
+{
+		{if ( addr != 0 ) {free_from_cluster( 0, addr ) ;}}
+	}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/gim_callback", sceGimPictureFreeMemory2);
+void sceGimPictureFreeMemory2( void *addr )
+{
+		{if ( addr != 0 ) {free_from_cluster( 1, addr ) ;}}
+	}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/gim_callback", sceGimPictureFreeMemory3);
+void sceGimPictureFreeMemory3( void *addr )
+{
+		{if ( addr != 0 ) {free_from_cluster( 2, addr ) ;}}
+	}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/gim_callback", open_cluster);
 

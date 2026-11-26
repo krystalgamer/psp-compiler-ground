@@ -6,7 +6,16 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/load_bmp", read_header_996A0);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/load_bmp", read_short_9977C);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/load_bmp", read_int);
+void *read_int( void *src, int *val )
+{
+	{if ( 3 & (int)src ) {{
+		unsigned char *cp = (unsigned char *)src ;
+		*val = ( cp[ 3 ] << 24 ) | ( cp[ 2 ] << 16 ) | ( cp[ 1 ] << 8 ) | cp[ 0 ] ;
+	}} else {{
+		*val = *(int *)src ;
+	}}}
+	return (int *)src + 1 ;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/load_bmp", copy_idx4);
 
