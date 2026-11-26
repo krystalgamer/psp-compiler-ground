@@ -6,6 +6,9 @@ short getWord(int, M2C_UNK);                          /* extern */
 M2C_UNK skipByte(int, M2C_UNK);                     /* extern */
 void *ESP_malloc(M2C_UNK);                          /* extern */
 M2C_UNK ESP_free(void *);                           /* extern */
+void *memset(void *p, int c, unsigned int n);
+int memcmp(const void *a, const void *b, unsigned int n);
+int copyByte(int bs, void *dst, int n);
 
 typedef struct GIFDESC { /* size 0x2C */
     struct GIFDESC *next;
@@ -23,7 +26,16 @@ typedef struct GIFDESC { /* size 0x2C */
 
 typedef struct {
     int bs;                     /* 0x0 */
-    u8 unk4[0x50];
+    s16 width;                  /* 0x4 */
+    s16 height;
+    u8 bg;                      /* 0x8 */
+    s8 gct;                     /* 0x9 */
+    s16 gctCount;               /* 0xA */
+    u8 unkC[6];
+    s16 gctSize;                /* 0x12 */
+    u8 unk14[4];
+    int loop;                   /* 0x18 */
+    u8 unk1C[0x38];
     GIFDESC *cur;               /* 0x54 */
     GIFDESC *list;              /* 0x58 */
 } GIFP;
@@ -35,7 +47,28 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gif_parser", storePixel);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gif_parser", readColorTable);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gif_parser", readHeader);
+int readHeader(GIFP *ctx) {
+    char sig[0x100];
+    unsigned int c;
+
+    memset(sig, 0, 0x100);
+    copyByte(ctx->bs, sig, 6);
+    if (memcmp(sig, "GIF87a", 6) != 0 || memcmp(sig, "GIF89a", 6) != 0) {
+    }
+    ctx->width = getWord(ctx->bs, 0);
+    ctx->height = getWord(ctx->bs, 0);
+    c = getByte(ctx->bs);
+    ctx->gct = (c & 0x80) >> 7;
+    ctx->gctSize = 2 << (c & 7);
+    if (ctx->gct) {
+        ctx->gctCount = ctx->gctSize;
+    } else {
+        ctx->gctCount = 0;
+    }
+    ctx->bg = getByte(ctx->bs);
+    skipByte(ctx->bs, 1);
+    return 1;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -84,7 +117,27 @@ int readImageDescriptor(void *arg0) {
     return 1;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gif_parser", readApplicationExtension);
+int readApplicationExtension(GIFP *ctx) {
+    u8 n;
+
+    n = getByte(ctx->bs);
+    skipByte(ctx->bs, n);
+    while ((n = getByte(ctx->bs)) != 0) {
+        switch (n) {
+        case 3:
+            skipByte(ctx->bs, 1);
+            ctx->loop = getWord(ctx->bs, 0);
+            if (ctx->loop == 0) {
+                ctx->loop = -1;
+            }
+            break;
+        case 5:
+            skipByte(ctx->bs, 5);
+            break;
+        }
+    }
+    return 1;
+}
 
 int readOtherExtension(GIFP *ctx) {
     u8 n;
