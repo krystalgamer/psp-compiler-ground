@@ -61,6 +61,12 @@ int sceKernelWaitThreadEnd(int thid, unsigned int *timeout);
 int sceKernelDeleteThread(int thid);
 int sceKernelExitThread(int status);
 static int func_0001EA80(unsigned int args, void *argp);
+extern char D_00561374[2][0x700];
+static void func_0001EB5C(char *buf);
+static int func_0001ED14(short *dst, unsigned char *src, int *h1, int *h2);
+static void func_0001EE58(int ch, void *dst);
+static void func_0001F0F4(int ch, void *dst);
+static void func_0001F60C(int ch, void *buf, void *src);
 
 /* sceWaveStop's body, inlined into sceWaveAllStop too */
 static inline int _waveStop(unsigned int ch)
@@ -490,9 +496,57 @@ int sceWaveAudioWriteBlocking(unsigned int ch, unsigned int left, unsigned int r
 	return sceAudioOutputPannedBlocking(D_00562648[ch], left, right, buf);
 }
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libwave", func_0001EA80);
+static int func_0001EA80(unsigned int args, void *argp)
+{
+	SceWaveMain *m = (SceWaveMain *)argp;
+	int i = 0;
+	int j;
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libwave", func_0001EB5C);
+	while (D_005612F0 == 0) {
+		for (j = 0; j < 16; j++)
+			func_0001EB5C(D_00561374[i] + j * 0x70);
+		sceAudioOutputBlocking(m->ch, 0x8000, D_00561374[i]);
+		i = (i + 1) % 2;
+	}
+	sceAudioOutputBlocking(m->ch, 0, NULL);
+	sceKernelExitThread(0);
+	return 0;
+}
+
+typedef int (*SceWaveCallback)(int ch, void *buf, int size, int arg);
+
+static void func_0001EB5C(char *buf)
+{
+	int ch;
+
+	wclr(buf, 0x70);
+	for (ch = 0; ch < 8; ch++) {
+		if (D_00562174[ch].stat == 0)
+			continue;
+		if (!(D_00562174[ch].flags & 0x400)) {
+			if (!(D_00562174[ch].flags & 0x100)) {
+				if (D_00562174[ch].data != NULL)
+					func_0001EE58(ch, D_00562644);
+			} else {
+				if (D_00562174[ch].data != NULL)
+					func_0001F0F4(ch, D_00562644);
+			}
+		} else {
+			if (D_00562174[ch].unk44 != 0) {
+				wclr(D_00562644, 0x70);
+				if (!(D_00562174[ch].flags & 0x100)) {
+					if (((SceWaveCallback)D_00562174[ch].unk44)(ch, D_00562640, 0x10, D_00562174[ch].unk48))
+						D_00562174[ch].stat = 0;
+					func_0001ED14(D_00562644, D_00562640, &D_00562174[ch].unk30, &D_00562174[ch].unk34);
+				} else {
+					if (((SceWaveCallback)D_00562174[ch].unk44)(ch, D_00562644, 0x70, D_00562174[ch].unk48))
+						D_00562174[ch].stat = 0;
+				}
+			}
+		}
+		func_0001F60C(ch, buf, D_00562644);
+	}
+}
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libwave", func_0001ED14);
 
