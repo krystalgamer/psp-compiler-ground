@@ -5,7 +5,9 @@
 typedef struct {
     u8 unk0[0xC];
     int flags;                  /* 0xC */
-    u8 unk10[0x18];
+    u8 unk10[0x10];
+    int mode;                   /* 0x20 */
+    void *target;               /* 0x24 */
     int view;                   /* 0x28 */
 } ZWINDDATA;
 
@@ -53,7 +55,10 @@ extern int _zWindDrawTexHeightT;
 extern int _zWindDrawTexWidthT;
 extern int _zWindDrawTexdataT;
 extern int _zwindPop;
-M2C_UNK zWindLineBox2(short, short, short, short, M2C_UNK, M2C_UNK); /* extern */
+void zWindDrawLineW(int x, int y, int len, short color);
+void zWindDrawLineH(int x, int y, int len, short color);
+extern int _zWindDrawTexClipOffX;
+extern int _zWindDrawTexClipOffY;
 
 
 
@@ -175,7 +180,14 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/zWindDraw", zWindDrawLineW);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/zWindDraw", zWindDrawLineH);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/zWindDraw", zWindLineBox);
+void zWindLineBox(int x, int y, int w, int h, short color) {
+    x -= _zWindDrawTexClipOffX;
+    y -= _zWindDrawTexClipOffY;
+    zWindDrawLineW(x, y, w, color);
+    zWindDrawLineW(x, y + h, w, color);
+    zWindDrawLineH(x, y, h, color);
+    zWindDrawLineH(x + w, y, h, color);
+}
 
 void zWindLineBoxP(int x1, int y1, int x2, int y2, s16 color) {
     int t;
@@ -193,7 +205,12 @@ void zWindLineBoxP(int x1, int y1, int x2, int y2, s16 color) {
     zWindDrawBox(x1, y1, x2 - x1, y2 - y1, color);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/zWindDraw", zWindLineBox2);
+void zWindLineBox2(int x, int y, int w, int h, short c1, short c2) {
+    zWindDrawLineW(x, y, w, c1);
+    zWindDrawLineH(x, y, h, c1);
+    zWindDrawLineW(x, y + h, w, c2);
+    zWindDrawLineH(x + w, y, h, c2);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/zWindDraw", zWindDrawImage);
 
@@ -248,7 +265,20 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/zWindDraw", zWindFontDrawArea);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/zWindDraw", zWindDrawUpdate);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/zWindDraw", zWindChangeFont);
+void zWindChangeFont(void) {
+    if (_zWindFontWidth == 0 || _zWindFontHeight == 0) {
+        return;
+    }
+    _zWindDrawTexdata = (int)_zWindFontImage;
+    _zWindDrawTexWidth = _zWindFontWidth;
+    _zWindDrawTexHeight = _zWindFontHeight;
+    _zWindDrawTexClipX = 0;
+    _zWindDrawTexClipY = 0;
+    _zWindDrawTexClipWidth = ((ZINIT *)&s_windsystem_init)->width;
+    _zWindDrawTexClipHeight = ((ZINIT *)&s_windsystem_init)->height;
+    _zWindDrawTexClipX2 = ((ZINIT *)&s_windsystem_init)->width;
+    _zWindDrawTexClipY2 = ((ZINIT *)&s_windsystem_init)->height;
+}
 
 void zWindSetFontClip(void *img, int w, int h) {
     _zWindFontImage = img;
@@ -273,7 +303,26 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/zWindDraw", zWindExcEventRadiob
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/zWindDraw", zWindExcEventList);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/zWindDraw", zWindExcEventChoice);
+int zWindExcEventChoice(void *w, int type, ZEVENT *ev) {
+    switch (type) {
+    case 7:
+        if (ev->key == 0x80) {
+            s_windsystem_data.mode = 2;
+            s_windsystem_data.target = w;
+            return 0;
+        }
+        break;
+    case 3:
+        if (D_00584BCC & 0x20000000) {
+            s_windsystem_data.mode = 3;
+            s_windsystem_data.target = w;
+            zWindDraw();
+            return 0;
+        }
+        break;
+    }
+    return -1;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/zWindDraw", zWindChoiceButton);
 
