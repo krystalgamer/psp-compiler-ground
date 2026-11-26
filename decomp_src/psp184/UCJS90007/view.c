@@ -212,7 +212,38 @@ void set_translate(void)
 	g_translate[1].z = 0.0f;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/view", begin_scene);
+extern const ScePspFVector3 begin_scene_eye __asm__("D_0002EF58");
+extern const ScePspFVector3 begin_scene_center __asm__("D_0002EF64");
+extern const ScePspFVector3 begin_scene_up __asm__("D_0002EF70");
+void begin_scene(void)
+{
+	sceGuViewport(2048, 2048, 480, 272);
+	sceGuDepthRange(0xE000, 0x1000);
+	sceGuEnable(2);
+	sceGuScissor(0, 0, 480, 272);
+	sceGuClearDepth(0);
+	sceGuClearStencil(0);
+	sceGuClear(7);
+	sceGumMatrixMode(1);
+	sceGumLoadIdentity();
+	sceGumLookAt((ScePspFVector3 *)&begin_scene_eye, (ScePspFVector3 *)&begin_scene_center, (ScePspFVector3 *)&begin_scene_up);
+	sceGumMatrixMode(0);
+	sceGumLoadIdentity();
+	sceGumPerspective(3.14f / 3.0f, 480.0f / 272.0f, 1.0f, 1000000.0f);
+	sceGumMatrixMode(2);
+	sceGuDisable(7);
+	sceGuDisable(10);
+	sceGuAmbient(0xFF404040);
+	sceGuMaterial(1, 0xFFFFFFFF);
+	sceGuEnable(4);
+	sceGuEnable(6);
+	sceGuEnable(9);
+	sceGuEnable(8);
+	sceGuBlendFunc(0, 2, 3, 0, 0);
+	sceGuTexFilter(7, 1);
+	sceGuTexFunc(0, 1);
+	sceGuTexWrap(1, 1);
+}
 
 INCLUDE_RODATA("tmp/asm/psp184/UCJS90007/nonmatchings/view", D_0002EF38);
 
