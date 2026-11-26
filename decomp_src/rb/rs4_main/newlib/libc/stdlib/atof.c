@@ -1,3 +1,3 @@
-#include "common.h"
-
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/newlib/libc/stdlib/atof", atof);
+/* upstream: newlib-1.12.0/newlib/libc/stdlib/atof.c (unmodified) */
+/* cflags: -O2 -fno-builtin */
+#include "libc/stdlib/atof.c"

@@ -1,11 +1,5 @@
-#include "common.h"
-
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/libgcc/libgcc2/__floatdidf", __floatdidf);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/libgcc/libgcc2/__floatdidf", D_00110E90);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/libgcc/libgcc2/__floatdidf", D_00110E94);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/libgcc/libgcc2/__floatdidf", D_00110E98);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/libgcc/libgcc2/__floatdidf", D_00110E9C);
+/* upstream: libgcc libgcc2.c (_floatdidf.o), tree: 1.6.1 */
+/* cflags: -O2 */
+/* data-align: 8 */
+#define L_floatdidf
+#include "libgcc2.c"

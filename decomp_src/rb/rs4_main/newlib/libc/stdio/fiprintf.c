@@ -1,3 +1,3 @@
-#include "common.h"
-
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/newlib/libc/stdio/fiprintf", fiprintf);
+/* upstream: newlib-1.12.0/newlib/libc/stdio/fiprintf.c (unmodified) */
+/* cflags: -O2 -fno-builtin */
+#include "libc/stdio/fiprintf.c"

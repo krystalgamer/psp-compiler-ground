@@ -1,3 +1,3 @@
-#include "common.h"
-
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/newlib/libc/time/lcltime_r", localtime_r);
+/* upstream: newlib-1.12.0/newlib/libc/time/lcltime_r.c (unmodified) */
+/* cflags: -O2 -fno-builtin */
+#include "libc/time/lcltime_r.c"

@@ -1,7 +1,5 @@
-#include "common.h"
-
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/libgcc/dp-bit/_fpadd_parts", _fpadd_parts);
-
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/libgcc/dp-bit/_fpadd_parts", __adddf3);
-
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/libgcc/dp-bit/_fpadd_parts", __subdf3);
+/* upstream: libgcc dp-bit.c (_addsub_df.o), tree: 1.6.1 */
+/* cflags: -O2 */
+#define FINE_GRAINED_LIBRARIES
+#define L_addsub_df
+#include "dp-bit.c"

@@ -1,3 +1,3 @@
-#include "common.h"
-
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/newlib/libc/time/gmtime_r", gmtime_r);
+/* upstream: newlib-1.12.0/newlib/libc/time/gmtime_r.c (unmodified) */
+/* cflags: -O2 -fno-builtin */
+#include "libc/time/gmtime_r.c"
