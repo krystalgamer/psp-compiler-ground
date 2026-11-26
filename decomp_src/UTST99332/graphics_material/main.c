@@ -1,3 +1,4 @@
+/* data-align: 16 */
 /* cflags: -O2 -fmerge-constants */
 #include "common.h"
 
@@ -24,7 +25,7 @@ struct ScePspIMatrix4 { /* size 0x40 */
     ScePspIVector4 y;
     ScePspIVector4 z;
     ScePspIVector4 w;
-};
+} __attribute__((aligned(16)));
 typedef struct ScePspIMatrix4 ScePspIMatrix4;
 struct SceCtrlData;
 struct SceCtrlData { /* size 0x10 */
@@ -141,7 +142,35 @@ INCLUDE_RODATA("tmp/asm/UTST99332/graphics_material/nonmatchings/main", mat_mod)
 
 INCLUDE_RODATA("tmp/asm/UTST99332/graphics_material/nonmatchings/main", line);
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_material/nonmatchings/main", draw_description);
+const char	mat_names[3][12]={
+	"AMBIENT:",
+	"DIFFUSE:",
+	"SPECULAR:",
+};
+
+const char	mod_names[3][8]={
+	"-",
+	"ON",
+	"COLOR",
+};
+
+#ifndef MAXPRIM /* sample */
+#define MAXPRIM		6
+#endif
+static void draw_description(void)
+{
+	int		i, x, y;
+	for (i=0; i<MAXPRIM; i++) {
+		x=8+(i%3)*160;
+		y=8+(i/3)*136;
+		sceGuDebugPrint(x, y+ 0, 0x00ffffff, mat_names[0]);
+		sceGuDebugPrint(x, y+ 8, 0x00ffffff, mat_names[1]);
+		sceGuDebugPrint(x, y+16, 0x00ffffff, mat_names[2]);
+		sceGuDebugPrint(x+72, y+ 0, 0x00ffffff, mod_names[mat_mod[i][0]]);
+		sceGuDebugPrint(x+72, y+ 8, 0x00ffffff, mod_names[mat_mod[i][1]]);
+		sceGuDebugPrint(x+72, y+16, 0x00ffffff, mod_names[mat_mod[i][2]]);
+	}
+}
 
 void DrawCone(float *array, float r, float h);
 void DrawSphere(ScePspFVector3 *array, float r);
