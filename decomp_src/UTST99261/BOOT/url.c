@@ -35,13 +35,20 @@ typedef struct {
 } URL;
 
 typedef struct {
-    int unk0;
+    u8 *start;
+    int unk4;
+    u8 *end;            /* 0x8 */
+} GIFBS;
+
+typedef struct {
+    GIFBS *bs;
     u16 width;          /* 0x4 */
     u16 height;
     u8 unk8[0x10];
     int unk18;
     int unk1C;
-    u8 unk20[0x38];
+    u8 unk20[0x34];
+    int unk54;
     int unk58;
 } GIFCTX;
 
@@ -70,7 +77,7 @@ int UTL_mfiledelete(MFILE *f);
 void UTL_mfileseek(MFILE *f, int pos);
 MFILE *UTL_mfilecreate(int bsize);
 QUEUE *UTL_peekqueue(QUEUE *q, QUEUE *e);
-int UTL_mfilewrite(void *f, void *buf, unsigned int n);
+int UTL_mfilewrite(MFILE *f, void *buf, int n);
 
 typedef struct {
     int type;
@@ -83,6 +90,8 @@ char *trimspace(char *s);
 char *toAbsoluteURL(char *base, char *rel);
 
 extern char *FILESTRAGE_TABLE[];
+
+int getFrameNumber(u8 *p, int len);
 
 M2C_UNK createGifContext();                         /* extern */
 M2C_UNK deleteGifContext();                         /* extern */
@@ -552,7 +561,43 @@ int UTL_mfileread(MFILE *f, void *buf, int n) {
     return total;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/url", UTL_mfilewrite);
+int UTL_mfilewrite(MFILE *f, void *buf, int n) {
+    int total = 0;
+    int len;
+    MBLOCK *b;
+
+    if (f->first->flag != 1) {
+        return 0;
+    }
+    while (n > 0) {
+        len = f->unk0 - f->first->len;
+        if (len > 0) {
+            if (len > n) {
+                len = n;
+            }
+            memcpy((char *)(f->first + 1) + f->first->len, buf, len);
+            f->first->len += len;
+            f->size += len;
+            n -= len;
+            buf = (char *)buf + len;
+            total += len;
+        } else {
+            b = MEM_malloc(NULL, f->unk0 + 0x10);
+            if (b == NULL) {
+                return -1;
+            }
+            b->len = 0;
+            b->flag = 1;
+            UTL_enqueue(&f->q, &b->q);
+            b = (MBLOCK *)UTL_peekqueue(&f->q, &f->first->q);
+            if (b == NULL) {
+                return total;
+            }
+            f->first = b;
+        }
+    }
+    return total;
+}
 
 int UTL_mfilegetc(void *f) {
     u8 c;
@@ -748,7 +793,29 @@ int IMG_gifGetImageData(GIFCTX *ctx, IMGDATA *info) {
     return r;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/url", IMG_gifReadHeader);
+int IMG_gifReadHeader(GIFCTX *ctx, IMGDATA *info) {
+    int r;
+    int n;
+
+    r = GIFParser(ctx, 0);
+    if (ctx->unk54 == 0) {
+        return -1;
+    }
+    info->width = ctx->width;
+    info->height = ctx->height;
+    if (ctx->bs->end - ctx->bs->start <= 0) {
+        return -1;
+    }
+    n = getFrameNumber(ctx->bs->start, ctx->bs->end - ctx->bs->start - 1);
+    if (n == -1) {
+        return -1;
+    }
+    info->unk8 = n;
+    info->unk4 = 0;
+    info->unkC = 0;
+    info->unk10 = ctx->unk54;
+    return r;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/url", IMG_gifScanLines);
 
