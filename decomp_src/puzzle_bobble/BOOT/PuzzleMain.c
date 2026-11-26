@@ -109,7 +109,48 @@ void SetCharacters(PZL_STAT *st, int chara, int which)
 		st->chara2 = chara;
 }
 
+#ifdef NON_MATCHING
+/* diff 28, registers only: the two chara_anim / 6 quotients land in other scratch
+ * registers (the second one in s0, which the original keeps for the 1/6 constant).
+ * chara_anim goes through an int local: `s8 / 6` is shortened and adds a seb. */
+extern int *CHRTABLES[][8];
+extern SPRDATA D_00038A18;
+void DoCharacters(PZL_STAT *st)
+{
+	int low = GetBallLine(st) < 8;
+	int m = st->mapsub;
+	int *tbl;
+	int c, r, a, v;
+
+	if (!low && st->chara < 3)
+		SetCharacters(st, 6, 0);
+	tbl = CHRTABLES[st->player][st->chara];
+	a = st->chara_anim;
+	c = tbl[a / 6];
+	D_00038A18.u = (c % 8) * 64;
+	D_00038A18.v = (c / 8) * 64;
+	D_00038A18.no = st->player + 16;
+	D_00038A18.flag = m == 2;
+	SpriteDrawC(0.0f, m == 2 ? 0x1AC : 0x33, 0x86, &D_00038A18);
+	a = ++st->chara_anim;
+	c = tbl[a / 6];
+	if (c == -3)
+		st->chara_anim--;
+	if (c == -2)
+		st->chara_anim = 0;
+	if (c == -1) {
+		st->chara = st->chara2;
+		r = rand() % 10;
+		if (low)
+			st->chara2 = r < 6 ? 0 : r < 8 ? 1 : 2;
+		else
+			st->chara2 = 6;
+		st->chara_anim = 0;
+	}
+}
+#else
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", DoCharacters);
+#endif
 
 void SetMonitor(PZL_STAT *st, int mon)
 {
