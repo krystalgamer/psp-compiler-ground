@@ -2,7 +2,7 @@
 #include "common.h"
 #include "UTST99261/BOOT/nfgui.h"
 #include "m2c_macros.h"
-M2C_UNK make_dither_matrix(M2C_UNK *, M2C_UNK);     /* extern */
+int make_dither_matrix(s8 *m, int n);
 extern s8 dither_matrix[8][8];
 
 extern int _iZwindDizF;
@@ -237,7 +237,41 @@ void zWindSetDiz(int arg0) {
     _iZwindDizF = arg0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Component", make_dither_matrix);
+void *malloc(unsigned int n);
+void free(void *p);
+
+int make_dither_matrix(s8 *m, int n) {
+    s8 base[4] = {0, 2, 3, 1};
+    s8 *sub;
+    int i;
+    int j;
+    int v;
+
+    if (n & 1) {
+        return 0;
+    }
+    if (n >= 3) {
+        sub = malloc(n * n / 4);
+        if (make_dither_matrix(sub, n / 2) == 0) {
+            ESP_guiMemFree(sub);
+            return 0;
+        }
+        for (i = 0; i < n / 2; i++) {
+            for (j = 0; j < n / 2; j++) {
+                m[j + i * n] = v = sub[j + i * n / 2] * 4;
+                m[j + n / 2 + i * n] = v + 2;
+                m[j + (i + n / 2) * n] = v + 3;
+                m[j + n / 2 + (i + n / 2) * n] = v + 1;
+            }
+        }
+        free(sub);
+    } else {
+        for (j = 0; j < n * n; j++) {
+            m[j] = base[j];
+        }
+    }
+    return 1;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -273,4 +307,3 @@ s16 dizCg(int x, int y, u8 r, u8 g, u8 b) {
     return (r >> 3) | ((g >> 3) << 5) | ((b >> 3) << 10);
 }
 
-INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Component", D_00130A20);
