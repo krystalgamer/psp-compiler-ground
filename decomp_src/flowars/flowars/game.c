@@ -474,7 +474,26 @@ static void init()
 
 __asm__(".globl init_D330");
 
-INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/game", give_pae);
+static void give_pae(int to_player, int pae, int pos, int kind)
+{
+	int depth;
+	int sx;
+	int sy;
+	int dx;
+	int dy;
+
+	collectManager.add(to_player, pae);
+	depth = panManager.get_max_depth(kind) + 1;
+	sx = g_pan_pos[pos][0] + depth * 5;
+	sy = g_pan_pos[pos][1];
+	collectManager.get_lastcollect_pos(to_player, paeManager.get_pae_value(pae), &dx, &dy);
+	if (to_player == 1)
+		animator.add_pae(pae, sx, sy, dx + 1, dy, 0, -1);
+	else if (to_player == 2)
+		animator.add_pae(pae, sx, sy, dx + 1, dy, 0, -1);
+	else
+		animator.add_pae(pae, sx, sy, dx + 4, dy, 0, -1);
+}
 
 INCLUDE_RODATA("tmp/asm/flowars/flowars/nonmatchings/game", D_0002FA98);
 
