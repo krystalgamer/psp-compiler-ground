@@ -324,9 +324,33 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", zako_shot_coun
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", zako_shot);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", target_root_check);
+float target_root_check(float base, float x, float w)
+{
+	float g = D_004B60A4;
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", target_area_check);
+	if (x < base - g * 0.5f)
+		x += g;
+	else if (base + g * 0.5f < x)
+		x -= g;
+	if (x < base - w)
+		return base - w;
+	if (base + w < x)
+		return base + w;
+	return base;
+}
+
+M2C_UNK target_area_check(float base, float x, float w)
+{
+	float g = D_004B60A4;
+
+	if (x < base - g * 0.5f)
+		x += g;
+	else if (base + g * 0.5f < x)
+		x -= g;
+	if (x < base + w && base - w < x)
+		return 1;
+	return 0;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", zako_in_anime);
 
@@ -376,7 +400,22 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", boss_ufo_init)
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", boss_ufo_control);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", bufo_in_anime);
+void bufo_in_anime(u8 *u)
+{
+	if (*(int *)(u + 0x34) == 0) {
+		*(int *)(u + 0x8) = 1;
+		*(int *)(u + 0x38) = 1;
+		*(int *)(u + 0x34) = 1;
+	} else if (*(int *)(u + 0x34) == 1) {
+		if (*(float *)(u + 0x5C) <= 7000.0f)
+			*(int *)(u + 0x34) = 2;
+	} else {
+		*(int *)(u + 0x30) = 5;
+		*(int *)(u + 0x34) = 0;
+		*(int *)(u + 0x28) = 0;
+		*(int *)(u + 0x8) = 0;
+	}
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", bufo_enemy_start);
 

@@ -46,6 +46,13 @@ int sceGuFinish(void);
 int sceKernelPowerTick(int type);
 int pad_read(void);
 
+extern int game_count;
+extern float game_cursol_alpha;
+void psp_draw_objects(void);
+void psp_swap_buffers(void);
+void file_async_control(void);
+float sinf(float x);
+
 int exit_func(void) {
     UtilityClose();
     sceKernelExitGame();
@@ -215,7 +222,27 @@ void psp_loopstart(void)
 	pad_read();
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_dev", psp_loopend);
+extern int game_count;
+extern float game_cursol_alpha;
+void psp_draw_objects(void);
+void psp_swap_buffers(void);
+void file_async_control(void);
+float sinf(float x);
+void psp_loopend(void)
+{
+	if (double_buffer) {
+		psp_draw_objects();
+	} else {
+		psp_draw_objects();
+		psp_end_scene();
+	}
+	sceGuFinish();
+	psp_swap_buffers();
+	file_async_control();
+	genrand_int32();
+	game_count++;
+	game_cursol_alpha = sinf((float)((game_count % 45) * 4) / 180.0f * 3.1415927f);
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
