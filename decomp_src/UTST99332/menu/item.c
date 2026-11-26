@@ -120,9 +120,115 @@ INCLUDE_RODATA("tmp/asm/UTST99332/menu/nonmatchings/item", D_000170A0);
 
 INCLUDE_RODATA("tmp/asm/UTST99332/menu/nonmatchings/item", D_000170A4);
 
-INCLUDE_ASM("tmp/asm/UTST99332/menu/nonmatchings/item", DrawItem2D);
+void DrawCategoryString(int mode);
+void DrawItemBar(void);
+void DrawItemFrame(int xstep, int ystep);
+int DrawItemListOpen(int cnt);
+void DrawItemSelect(void);
+int DrawItemListAnim(void);
+void DrawItemList(void);
+void DrawLR(void);
+void DrawSelect(void);
+void DrawInfoString(void);
+void DrawStar(void);
+int GetItemTex(void);
+static void DrawItem2D(void)
+{
+	if (item.step == 7)
+		DrawCategoryString(0);
+	else
+		DrawCategoryString(1);
+	DrawItemBar();
+	switch (item.step) {
+	case 0:
+	case 6:
+	case 7:
+		break;
+	case 1:
+	case 2:
+		DrawItemFrame(item.xstep, item.ystep);
+		break;
+	case 3:
+		DrawItemFrame(item.xstep, item.ystep);
+		if (DrawItemListOpen(item.cnt))
+			item.step = 4;
+		break;
+	case 5:
+		DrawItemFrame(0, 0);
+		DrawItemSelect();
+		if (DrawItemListAnim()) {
+			item.step = 4;
+			menu->num = GetItemTex();
+		}
+		DrawLR();
+		DrawSelect();
+		DrawInfoString();
+		InitStar();
+		break;
+	case 4:
+	case 8:
+	case 9:
+		DrawItemFrame(0, 0);
+		DrawItemSelect();
+		DrawItemList();
+		DrawLR();
+		DrawSelect();
+		DrawInfoString();
+		DrawStar();
+		break;
+	}
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/menu/nonmatchings/item", DrawItem);
+extern const ScePspFVector3 D_000170D0;
+extern const float D_0001708C, D_00017090;
+void DrawBG(void);
+void DrawDice(float scale);
+void DiceTexture(void);
+void DrawShadow(float scale);
+void FadeDraw(void);
+int FadeState(void);
+void DrawItem(void)
+{
+	ScePspFVector3 vec;
+	ScePspFVector3 t;
+
+	sceGuDisable(1);
+	sceGuDisable(9);
+	DrawBG();
+	sceGuEnable(1);
+	sceGumLoadIdentity();
+	t = D_000170D0;
+	vec = t;
+	sceGumTranslate(&vec);
+	sceGumPushMatrix();
+	sceGumRotateX(menu->rot.x * D_0001708C / D_00017090);
+	sceGumRotateY(menu->rot.y * D_0001708C / D_00017090);
+	sceGumRotateZ(menu->rot.z * D_0001708C / D_00017090);
+	DrawDice(item.scale);
+	sceGuColor((item.alpha << 24) | 0xFFFFFF);
+	DiceTexture();
+	sceGumPopMatrix();
+	DrawShadow(item.scale);
+	sceGuDisable(1);
+	DrawItem2D();
+	switch (item.step) {
+	case 8:
+		if (FadeState() == 0)
+			_DrawItemFade(0xFF000000);
+		FadeDraw();
+		break;
+	case 9:
+		if (item.crossfade == 1) {
+			if (FadeState() == 0) {
+				FadeSetup(1, 8, 0xFFFFFF);
+				item.crossfade = 0;
+			} else
+				_DrawItemFade(0xFFFFFFFF);
+		}
+		FadeDraw();
+		break;
+	}
+}
 
 INCLUDE_RODATA("tmp/asm/UTST99332/menu/nonmatchings/item", D_000170D0);
 
