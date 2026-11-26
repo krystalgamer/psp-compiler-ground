@@ -369,7 +369,63 @@ int parseWellFormedStyleMB(char *s, int n) {
     return st;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", parseWellFormedTagWC);
+int parseWellFormedTagWC(PCtx *c, PChar *str, int len) {
+    PChar *p;
+    int rem;
+    int nb;
+    int bi;
+    int tl;
+    int k;
+    int j;
+    PChar *name;
+    PBuf *b;
+
+    k = 2;
+    p = c->buf->cur;
+    rem = c->buf->x04 - c->buf->count;
+    nb = c->x1C[1];
+    bi = c->x1C[0];
+    tl = strlen((char *)c->x1C[6]);
+    for (;;) {
+        if (*p == '<' && k < rem && p[1] == '/') {
+            p += k;
+            rem -= k;
+            for (j = 0; j < rem; j++) {
+                if (p[j] == '>') {
+                    break;
+                }
+            }
+            if (j == tl && j > 0 && j < rem) {
+                name = MEM_malloc(0, j * 2 + 2);
+                if (name == NULL) {
+                    return 0;
+                }
+                memcpy(name, p, j * 2);
+                name[j] = 0;
+                p += j;
+                rem -= j;
+                if (parseStrEqualNoCase((char *)c->x1C[6], name)) {
+                    MEM_free(0, name);
+                    return 1;
+                }
+                MEM_free(0, name);
+                continue;
+            }
+        }
+        if (rem <= 0) {
+            if (bi == nb - 1) {
+                return 0;
+            }
+            bi++;
+            b = ((PBuf **)c->x1C[3])[bi];
+            p = b->cur;
+            rem = b->x04;
+        } else {
+            p++;
+            rem--;
+        }
+    }
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", backToTextareaTag);
 
