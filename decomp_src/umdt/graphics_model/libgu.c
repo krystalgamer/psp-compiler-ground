@@ -904,7 +904,42 @@ void sceGuClearDepth(unsigned int depth)
 	_ctx[__aw_list_mode].clear_depth = depth;
 }
 
-INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/libgu", sceGuClear);
+struct Vertex {
+	unsigned int color;
+	unsigned short x, y, z;
+	unsigned short pad;
+};
+
+void sceGuClear(int flags)
+{
+	struct Vertex *vertices = (struct Vertex *)sceGuGetMemory(2 * sizeof(struct Vertex));
+	GuContext *context = &_ctx[__aw_list_mode];
+
+	vertices[0].x = 0;
+	vertices[0].y = 0;
+	vertices[0].z = context->clear_depth;
+	vertices[1].x = FBuf.width;
+	vertices[1].y = FBuf.height;
+	vertices[1].z = context->clear_depth;
+
+	if (FBuf.pixel_size == 3) {
+		vertices[0].color = (context->clear_stencil << 24) | (context->clear_color & 0xffffff);
+		vertices[1].color = (context->clear_stencil << 24) | (context->clear_color & 0xffffff);
+	} else if (FBuf.pixel_size == 1) {
+		vertices[0].color = (context->clear_stencil << 31) | (context->clear_color & 0xffffff);
+		vertices[1].color = (context->clear_stencil << 31) | (context->clear_color & 0xffffff);
+	} else if (FBuf.pixel_size == 2) {
+		vertices[0].color = (context->clear_stencil << 28) | (context->clear_color & 0xffffff);
+		vertices[1].color = (context->clear_stencil << 28) | (context->clear_color & 0xffffff);
+	} else if (FBuf.pixel_size == 0) {
+		vertices[0].color = context->clear_color & 0xffffff;
+		vertices[1].color = context->clear_color & 0xffffff;
+	}
+
+	send_commandi(211, ((flags & 7) << 8) | 1);
+	sceGuDrawArray(6, 0x80011C, 2, 0, vertices);
+	send_commandi(211, 0);
+}
 
 void sceGuDrawBuffer(int psm, void *fbp, int frame_width)
 {
