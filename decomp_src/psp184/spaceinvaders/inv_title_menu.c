@@ -1,7 +1,6 @@
 #include "common.h"
 #include "m2c_macros.h"
 M2C_UNK inv_logo();                                 /* extern */
-M2C_UNK inv_title_free();                           /* extern */
 M2C_UNK inv_title_init();                           /* extern */
 M2C_UNK inv_title_memcheck();                       /* extern */
 M2C_UNK inv_title_roop();                           /* extern */
@@ -14,6 +13,10 @@ extern int D_00349234;
 #ifndef NULL
 #define NULL ((void *)0)
 #endif
+
+extern int title_main;
+extern int D_00349230;
+extern int D_00349268;
 
 int inv_title_main(void) {
     inv_title_memcheck();
@@ -32,7 +35,21 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_title_menu", inv_titl
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_title_menu", inv_title_roop);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_title_menu", inv_title_free);
+extern int title_main;
+extern int D_00349230;
+extern int D_00349268;
+M2C_UNK inv_title_free(void)
+{
+	u8 *t = (u8 *)&title_main;
+
+	bmp_file_unload(*(int *)(t + 0x40));
+	bmp_file_unload(*(int *)(t + 0x3C));
+	bmp_file_unload(*(int *)(t + 0x38));
+	bmp_file_unload(*(int *)(t + 0x34));
+	bmp_file_unload(*(int *)(t + 0x30));
+	bmp_file_unload(*(int *)(t + 0x2C));
+	bmp_file_unload(*(int *)(t + 0x28));
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_title_menu", title_main_control);
 
@@ -73,7 +90,17 @@ void title_start(void) {
     M2C_FIELD(&D_00349218, int *, 4) = 0;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_title_menu", title_start_check);
+M2C_UNK title_start_check(void)
+{
+	int *p = (int *)&D_00349218;
+
+	p[1]++;
+	if (p[1] < 0)
+		p[1] = 0;
+	else if (p[1] > 90)
+		p[1] = 90;
+	return p[1] == 90;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_title_menu", title_control);
 

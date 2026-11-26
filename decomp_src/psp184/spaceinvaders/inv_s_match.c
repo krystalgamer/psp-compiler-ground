@@ -10,6 +10,8 @@ extern int Anm;
 extern int gcnt_28FC04;
 
 
+extern int inv;
+
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_match", inv_matchup_main);
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_match", inv_matchup_init);
@@ -92,7 +94,21 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_match", BoxAtari_k4
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_match", BoxAtari_z4m);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_match", SprMoveEnemyChk);
+extern int inv;
+static int SprMoveEnemyChk(int a, int b)
+{
+	int i;
+	int *p = &inv;
+
+	for (i = 0; i < 48; i++) {
+		if (p[0] != 0 && (unsigned)(*(int *)(p[0] + 0x10) - 5) < 2) {
+			if (p[4] == b && p[3] == a)
+				return 0;
+		}
+		p += 8;
+	}
+	return 1;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_match", SprMoveEnemyNomal);
 
