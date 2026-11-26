@@ -1,52 +1,205 @@
 #include "common.h"
+#include "gmo_motion_sdk.h"
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_motion", sceGmoMotionCreate);
+SceGmoMotion *sceGmoMotionCreate( SceGmoChunk *chunk )
+{
+ SceGmoMotion *motion = (SceGmoMotion *)sceGmoModelAllocMemory( sizeof( SceGmoMotion ) ) ;
+ if ( motion == 0 ) {
+  ;
+  return 0 ;
+ }
+ sceGmoBaseConstruct( &( motion->m_base ) ) ;
+ motion->m_chunk = 0 ;
+ motion->m_reference = 1 ;
+ motion->m_flags = 0 ;
+ motion->m_anims = 0 ;
+ motion->m_fcurves = 0 ;
+ motion->m_n_anims = 0 ;
+ motion->m_n_fcurves = 0 ;
+ motion->m_frame_loop[ 0 ] = -1000000.0f ;
+ motion->m_frame_loop[ 1 ] = 1000000.0f ;
+ motion->m_frame_rate = 60.0f ;
+ motion->m_frame = 0.0f ;
+ motion->m_weight = 0.0f ;
+ if ( chunk != 0 && !sceGmoMotionLoad( motion, chunk ) ) {
+  sceGmoMotionDelete( motion ) ;
+  return 0 ;
+ }
+ return motion ;
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_motion", sceGmoMotionDelete);
+void sceGmoMotionDelete( SceGmoMotion *motion )
+{
+ if ( motion == 0 ) return ;
+ if ( -- motion->m_reference == 0 ) {
+  sceGmoMotionUnload( motion ) ;
+  sceGmoBaseDestruct( &( motion->m_base ) ) ;
+  sceGmoModelFreeMemory( motion ) ;
+ }
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_motion", sceGmoMotionDuplicate);
+SceGmoMotion *sceGmoMotionDuplicate( SceGmoMotion *motion, int flags )
+{
+ if ( motion == 0 ) return 0 ;
+ if ( !( SCEGMO_DUPLICATE_AUTOMATIC & flags )
+   && !( SCEGMO_DUPLICATE_STRUCTURE & flags )
+   && !( SCEGMO_DUPLICATE_MOTION & flags ) ) {
+  motion->m_reference ++ ;
+  return motion ;
+ }
+ SceGmoMotion *motion2 = sceGmoMotionCreate( 0 ) ;
+ if ( motion2 == 0 ) return 0 ;
+ sceGmoBaseCopy( &( motion2->m_base ), &( motion->m_base ) ) ;
+ SceGmoChunk *chunk = motion->m_chunk ;
+ if ( chunk != 0 ) {
+  motion2->m_chunk = chunk ;
+  chunk->type ++ ;
+ }
+ if ( !sceGmoModelCopyPtr( &( motion2->m_anims ), motion->m_anims,
+     motion->m_n_anims * sizeof( void * ) )
+   || !sceGmoModelCopyPtr( &( motion2->m_fcurves ), motion->m_fcurves,
+     motion->m_n_fcurves * sizeof( void * ) ) ) {
+  ;
+  sceGmoMotionDelete( motion2 ) ;
+  return 0 ;
+ }
+ motion2->m_flags = motion->m_flags ;
+ motion2->m_n_anims = motion->m_n_anims ;
+ motion2->m_n_fcurves = motion->m_n_fcurves ;
+ motion2->m_frame_loop[ 0 ] = motion->m_frame_loop[ 0 ] ;
+ motion2->m_frame_loop[ 1 ] = motion->m_frame_loop[ 1 ] ;
+ motion2->m_frame_rate = motion->m_frame_rate ;
+ motion2->m_frame = motion->m_frame ;
+ motion2->m_weight = motion->m_weight ;
+ return motion2 ;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_motion", sceGmoMotionLoad);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_motion", sceGmoMotionUnload);
+void sceGmoMotionUnload( SceGmoMotion *motion )
+{
+ if ( motion == 0 ) return ;
+ SceGmoChunk *chunk = motion->m_chunk ;
+ if ( chunk != 0 ) {
+  if ( -- chunk->type == 0 ) sceGmoModelFreeMemory( chunk ) ;
+  motion->m_chunk = 0 ;
+ }
+ sceGmoModelFreeMemory( motion->m_anims ) ;
+ sceGmoModelFreeMemory( motion->m_fcurves ) ;
+ motion->m_anims = 0 ;
+ motion->m_fcurves = 0 ;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_motion", sceGmoMotionAnimate);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_motion", sceGmoMotionSetParent);
+void sceGmoMotionSetParent( SceGmoMotion *motion, SceGmoModel *parent )
+{
+ if ( motion == 0 ) return ;
+ sceGmoBaseSetParent( &( motion->m_base ), (SceGmoSubject *)parent ) ;
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_motion", sceGmoMotionGetParent);
+SceGmoModel *sceGmoMotionGetParent( SceGmoMotion *motion )
+{
+ if ( motion == 0 ) return 0 ;
+ return (SceGmoModel *)sceGmoBaseGetParent( &( motion->m_base ) ) ;
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_motion", sceGmoMotionSetFrameLoop);
+void sceGmoMotionSetFrameLoop( SceGmoMotion *motion, float start, float end )
+{
+ if ( motion == 0 ) return ;
+ motion->m_frame_loop[ 0 ] = start ;
+ motion->m_frame_loop[ 1 ] = end ;
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_motion", sceGmoMotionGetFrameLoop);
+const float *sceGmoMotionGetFrameLoop( SceGmoMotion *motion )
+{
+ if ( motion == 0 ) return 0 ;
+ return motion->m_frame_loop ;
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_motion", sceGmoMotionSetFrameRate);
+void sceGmoMotionSetFrameRate( SceGmoMotion *motion, float fps )
+{
+ if ( motion == 0 ) return ;
+ motion->m_frame_rate = fps ;
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_motion", sceGmoMotionGetFrameRate);
+float sceGmoMotionGetFrameRate( SceGmoMotion *motion )
+{
+ if ( motion == 0 ) return 0.0f ;
+ return motion->m_frame_rate ;
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_motion", sceGmoMotionSetFrameRepeat);
+void sceGmoMotionSetFrameRepeat( SceGmoMotion *motion, int mode )
+{
+ if ( motion == 0 ) return ;
+ if ( mode == 0 ) {
+  motion->m_flags |= NOREPEAT ;
+ } else {
+  motion->m_flags &= ~NOREPEAT ;
+ }
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_motion", sceGmoMotionGetFrameRepeat);
+int sceGmoMotionGetFrameRepeat( SceGmoMotion *motion )
+{
+ if ( motion == 0 ) return 0 ;
+ return ( motion->m_flags & NOREPEAT ) ? 0 : 1 ;
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_motion", sceGmoMotionSetFrame);
+void sceGmoMotionSetFrame( SceGmoMotion *motion, float frame )
+{
+ if ( motion == 0 ) return ;
+ motion->m_frame = frame ;
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_motion", sceGmoMotionGetFrame);
+float sceGmoMotionGetFrame( SceGmoMotion *motion )
+{
+ if ( motion == 0 ) return 0.0f ;
+ return motion->m_frame ;
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_motion", sceGmoMotionSetWeight);
+void sceGmoMotionSetWeight( SceGmoMotion *motion, float weight )
+{
+ if ( motion == 0 ) return ;
+ if ( weight < 0.0f ) weight = 0.0f ;
+ motion->m_weight = weight ;
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_motion", sceGmoMotionGetWeight);
+float sceGmoMotionGetWeight( SceGmoMotion *motion )
+{
+ if ( motion == 0 ) return 0.0f ;
+ return motion->m_weight ;
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_motion", sceGmoMotionGetAnimationCount);
+int sceGmoMotionGetAnimationCount( SceGmoMotion *motion )
+{
+ if ( motion == 0 ) return 0 ;
+ return motion->m_n_anims ;
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_motion", sceGmoMotionGetFcurveCount);
+int sceGmoMotionGetFcurveCount( SceGmoMotion *motion )
+{
+ if ( motion == 0 ) return 0 ;
+ return motion->m_n_fcurves ;
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_motion", sceGmoMotionGetAnimation);
+SceGmoChunk *sceGmoMotionGetAnimation( SceGmoMotion *motion, int index )
+{
+ if ( motion == 0 ) return 0 ;
+ index = (0x0fff&(index)) ;
+ if ( index >= motion->m_n_anims ) return 0 ;
+ return motion->m_anims[ index ] ;
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_motion", sceGmoMotionGetFcurve);
+SceGmoChunk *sceGmoMotionGetFcurve( SceGmoMotion *motion, int index )
+{
+ if ( motion == 0 ) return 0 ;
+ index = (0x0fff&(index)) ;
+ if ( index >= motion->m_n_fcurves ) return 0 ;
+ return motion->m_fcurves[ index ] ;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_motion", eval_fcurve_5E514);
 
-float sqrtf(float x);
 float find_root( float f0, float f1, float f2, float f3, float f )
 {
  float E = ( f3 - f0 ) * 0.01f ;
@@ -92,9 +245,3 @@ float find_root( float f0, float f1, float f2, float f3, float f )
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_motion", extrap_frame);
 
 INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_motion", D_0007F040);
-
-
-
-
-
-
