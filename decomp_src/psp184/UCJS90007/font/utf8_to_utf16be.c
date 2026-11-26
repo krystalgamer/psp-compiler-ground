@@ -264,7 +264,71 @@ static SceFont_t_libId myInitFontLibrary(void)
 	return libID;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/font/utf8_to_utf16be", myMakeTextTexture);
+SceFont_t_fontIndex sceFontFindOptimumFont(SceFont_t_libId libID, SceFont_t_fontStyleInfo *fontStyle, SceFont_t_error *errorCode);
+SceFont_t_fontId sceFontOpen(SceFont_t_libId libID, SceFont_t_fontIndex index, SceFont_t_u32 mode, SceFont_t_error *errorCode);
+SceFont_t_error sceFontGetFontInfo(SceFont_t_fontId fontID, SceFont_t_fontInfo *fontInfo);
+SceFont_t_error sceFontGetCharInfo(SceFont_t_fontId fontID, SceFont_t_charCode charCode, SceFont_t_charInfo *charInfo);
+SceFont_t_error sceFontGetCharGlyphImage_Clip(SceFont_t_fontId fontID, SceFont_t_charCode charCode, SceFont_t_userImageBufferRec *glyphImage, SceFont_t_s32 clipX, SceFont_t_s32 clipY, SceFont_t_s32 clipWidth, SceFont_t_s32 clipHeight);
+SceFont_t_error sceFontClose(SceFont_t_fontId fontID);
+void myDoneFontLibrary(void *libID);
+void myMakeTextTexture(SceFont_t_charCode *pString, struct TextureImageTable *pTextureImage, SceFont_t_fontStyleInfo *fstyle)
+{
+	SceFont_t_libId libID;
+	SceFont_t_fontId fontID;
+	SceFont_t_fontIndex fontIndex;
+	SceFont_t_error errorCode;
+	SceFont_t_fontStyleInfo fontStyle;
+	SceFont_t_userImageBufferRec glyphImage;
+	SceFont_t_fontInfo fontInfo;
+	SceFont_t_charInfo charInfo;
+	int x, y;
+
+	libID = myInitFontLibrary();
+	memset(&fontStyle, 0, sizeof(fontStyle));
+	fontStyle = *fstyle;
+	fontIndex = sceFontFindOptimumFont(libID, &fontStyle, &errorCode);
+	if (errorCode != 0)
+		return;
+	fontID = sceFontOpen(libID, fontIndex, 0, &errorCode);
+	if (errorCode != 0)
+		return;
+	errorCode = sceFontGetFontInfo(fontID, &fontInfo);
+	if (errorCode != 0)
+		return;
+	glyphImage.pixelFormat = 0;
+	glyphImage.rect.width = 512;
+	glyphImage.rect.height = 128;
+	glyphImage.bytesPerLine = 256;
+	glyphImage.reserved = 0;
+	glyphImage.buffer = (SceFont_t_u8 *)pTextureImage->buffer;
+	y = fontInfo.maxIGlyphMetrics.ascender64 + 128;
+	while (*pString != 0) {
+		x = 0;
+		while (*pString != 0) {
+			errorCode = sceFontGetCharInfo(fontID, *pString, &charInfo);
+			if (errorCode != 0)
+				return;
+			glyphImage.xPos64 = x + (charInfo.bitmapLeft << 6);
+			glyphImage.yPos64 = y - (charInfo.bitmapTop << 6);
+			errorCode = sceFontGetCharGlyphImage_Clip(fontID, *pString++, &glyphImage, 0, 0, 510, 126);
+			if (errorCode != 0)
+				return;
+			x += charInfo.glyphMetrics.horizontalAdvance64;
+			if (pTextureImage->width64 < x)
+				pTextureImage->width64 = x;
+		}
+		pString++;
+		y += fontInfo.maxIGlyphMetrics.ascender64;
+		if (pTextureImage->height64 < y)
+			pTextureImage->height64 = y;
+		y += 0x340;
+	}
+	errorCode = sceFontClose(fontID);
+	if (errorCode != 0)
+		return;
+	sceKernelDcacheWritebackAll();
+	myDoneFontLibrary(libID);
+}
 
 void myDoneFontLibrary(void *libID) {
     sceFontDoneLib();
