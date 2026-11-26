@@ -20,8 +20,8 @@ typedef struct GIFDESC { /* size 0x2C */
     int unk18;
     int unk1C;
     int unk20;
-    int unk24;
-    int unk28;
+    void *unk24;
+    void *unk28;
 } GIFDESC;
 
 typedef struct {
@@ -30,22 +30,78 @@ typedef struct {
     s16 height;
     u8 bg;                      /* 0x8 */
     s8 gct;                     /* 0x9 */
-    s16 gctCount;               /* 0xA */
-    u8 unkC[6];
-    s16 gctSize;                /* 0x12 */
-    u8 unk14[4];
+    u16 gctCount;               /* 0xA */
+    u8 *gpal;                   /* 0xC */
+    u8 unk10[2];
+    u16 gctSize;                /* 0x12 */
+    u8 *pal;                    /* 0x14 */
     int loop;                   /* 0x18 */
     u8 unk1C[0x38];
     GIFDESC *cur;               /* 0x54 */
     GIFDESC *list;              /* 0x58 */
+    u8 unk5C[0x10];
+    int unk6C;
+    int unk70;
+    int unk74;
+    u8 unk78[8];
+    int unk80;
+    int unk84;
+    int unk88;
+    int unk8C;
+    u8 unk90[0x100];
+    int unk190;
 } GIFP;
+
+typedef struct {
+    int unk0;
+    int unk4;
+    int unk8;
+    int unkC;
+    int unk10;
+    int unk14;
+    int unk18;
+} GIFBS;
 
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gif_parser", setTransparentColor);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gif_parser", storePixel);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gif_parser", readColorTable);
+int readColorTable(GIFP *ctx, int flag) {
+    u8 rgb[4];
+    int i;
+
+    if (ctx->pal != NULL) {
+        ESP_free(ctx->pal);
+        ctx->pal = NULL;
+    }
+    if (flag == 1 && ctx->gpal != NULL) {
+        ESP_free(ctx->gpal);
+        ctx->gpal = NULL;
+    }
+    ctx->pal = ESP_malloc(ctx->gctSize * 3);
+    if (ctx->pal == NULL) {
+        return -2;
+    }
+    if (flag == 1) {
+        ctx->gpal = ESP_malloc(ctx->gctCount * 3);
+        if (ctx->gpal == NULL) {
+            return -2;
+        }
+    }
+    for (i = 0; i < ctx->gctSize; i++) {
+        copyByte(ctx->bs, rgb, 3);
+        ctx->pal[i * 3] = rgb[0];
+        ctx->pal[i * 3 + 1] = rgb[1];
+        ctx->pal[i * 3 + 2] = rgb[2];
+        if (flag == 1) {
+            ctx->gpal[i * 3] = rgb[0];
+            ctx->gpal[i * 3 + 1] = rgb[1];
+            ctx->gpal[i * 3 + 2] = rgb[2];
+        }
+    }
+    return 1;
+}
 
 int readHeader(GIFP *ctx) {
     char sig[0x100];
@@ -194,7 +250,52 @@ int createGifContext(void **arg0) {
     return 1;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gif_parser", initializeGifContext);
+int initializeGifContext(GIFP *ctx) {
+    GIFBS *b;
+    GIFDESC *d;
+    GIFDESC *n;
+
+    b = (GIFBS *)ctx->bs;
+    b->unk0 = 0;
+    b->unk4 = 0;
+    b->unk8 = 0;
+    b->unkC = 0;
+    b->unk10 = 0;
+    b->unk14 = 0;
+    b->unk18 = 0;
+    ((GIFBS *)ctx->bs)->unk10 = 7;
+    ((GIFBS *)ctx->bs)->unk14 = 1;
+    ((GIFBS *)ctx->bs)->unk18 = 1;
+    ctx->unk6C = -1;
+    ctx->unk70 = 0;
+    ctx->unk74 = 0;
+    ctx->unk80 = 0;
+    ctx->unk84 = 0;
+    ctx->unk88 = 0;
+    ctx->unk8C = -2;
+    ctx->unk190 = 0;
+    if (ctx->pal != NULL) {
+        ESP_free(ctx->pal);
+        ctx->pal = NULL;
+    }
+    if (ctx->gpal != NULL) {
+        ESP_free(ctx->gpal);
+        ctx->gpal = NULL;
+    }
+    for (d = ctx->list; d != NULL; d = n) {
+        n = d->next;
+        if (d->unk28 != NULL) {
+            ESP_free(d->unk28);
+        }
+        if (d->unk24 != NULL) {
+            ESP_free(d->unk24);
+        }
+        ESP_free(d);
+    }
+    ctx->cur = NULL;
+    ctx->list = NULL;
+    return 1;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
