@@ -3,6 +3,8 @@
 #include "nflayout.h"
 #include "lo_focus.h"
 #include "m2c_macros.h"
+void *Node_getFirstChild(void *);
+void *Node_getNextSibling(void *);
 HISTNODE *HST_getChildHistoryNode(HISTNODE *);
 int HST_getRequestFlag(HISTNODE *);
 void *Node_getJSObj(void *);
@@ -378,7 +380,30 @@ int actDefaultClickActionWithFocus(void *frame, FOCUSLIST *f, void *a2) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_eventHandler", actDefaultClickAction);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_eventHandler", getNextNode);
+void *getNextNode(void *root, void *node) {
+    void *c;
+    c = Node_getFirstChild(node);
+    if (c != NULL) {
+        node = c;
+    } else {
+        c = Node_getNextSibling(node);
+        if (c != NULL) {
+            node = c;
+        } else {
+            for (node = Node_getParentNode(node); node != NULL; node = Node_getParentNode(node)) {
+                if (node == root) {
+                    return NULL;
+                }
+                c = Node_getNextSibling(node);
+                if (c != NULL) {
+                    node = c;
+                    break;
+                }
+            }
+        }
+    }
+    return node;
+}
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/lo_eventHandler", D_00139084);
 

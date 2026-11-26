@@ -1,6 +1,11 @@
 /* cflags: -O1 */
 #include "common.h"
 #include "m2c_macros.h"
+typedef struct { u8 pad[0x28]; int x28; u8 pad2[0x10]; unsigned int x3C; u8 ids[125]; } IOMCID_T;
+extern IOMCID_T iom;
+void *UTL_peekqueue(void *q, void *e);
+int strcasecmp(const char *a, const char *b);
+void iom_freeCache(void *c);
 M2C_UNK UTL_mfiledelete(int);                       /* extern */
 M2C_UNK UTL_relqueue(M2C_UNK *, void *);            /* extern */
 extern unsigned char D_00585130;
@@ -27,7 +32,24 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iom_cache", iom_updateCache);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iom_cache", iom_addCache);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iom_cache", iom_deleteCache);
+void iom_deleteCache(void *c) {
+    void *e;
+    if (c == NULL) {
+        e = UTL_peekqueue(&D_00585130, NULL);
+        if (e == NULL) {
+            return;
+        }
+        c = M2C_FIELD(e, void **, 8);
+    }
+    if (M2C_FIELD(c, void **, 0x1C) != NULL) {
+        UTL_mfiledelete(M2C_FIELD(c, int *, 0x1C));
+        M2C_FIELD(c, void **, 0x1C) = NULL;
+    }
+    iom_deleteCacheId(M2C_FIELD(c, int *, 8));
+    iom.x3C -= M2C_FIELD(c, int *, 0xC) + M2C_FIELD(c, int *, 0x10);
+    iom.x28 = 1;
+    iom_freeCache(c);
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -60,7 +82,15 @@ void iom_deleteDomainCache(void *arg0) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iom_cache", iom_domainCache);
+void *iom_domainCache(char *name) {
+    void *e;
+    for (e = UTL_peekqueue(&D_00585138, NULL); e != NULL; e = UTL_peekqueue(&D_00585138, e)) {
+        if (strcasecmp(M2C_FIELD(e, char **, 8), name) == 0) {
+            return e;
+        }
+    }
+    return NULL;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iom_cache", iom_newCacheId);
 
