@@ -57,13 +57,39 @@ extern SceUtilityNetconfParam netconfParam;
 extern SceUtilityNetconfAdhocParam netconfAdhocParam;
 extern SceUtilityMsgDialogParam msgdialog_param __asm__("msgdialog_param_28DDF4");
 
-int utility_init_netconf(SceUtilityNetconfType type, struct SceNetAdhocctlGroupName *group_name);
 int utility_update_netconf(void);
 int utility_net_connect(struct SceNetAdhocctlGroupName *group_name);
 int utility_update_msgdialog(void);
 int utility_check_msgdialog_completed(int *done_flag);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_utility", utility_init_netconf);
+void *memcpy(void *, const void *, unsigned int);
+int sceUtilityNetconfInitStart(SceUtilityNetconfParam *param);
+
+void *memcpy(void *, const void *, unsigned int);
+int sceUtilityNetconfInitStart(SceUtilityNetconfParam *param);
+int utility_init_netconf(SceUtilityNetconfType type, struct SceNetAdhocctlGroupName *group_name)
+{
+	netconfParam.base.size = sizeof(netconfParam);
+	netconfParam.base.main_thread_priority = 0x11;
+	netconfParam.base.sub_thread_priority = 0x13;
+	netconfParam.base.font_thread_priority = 0x12;
+	netconfParam.base.sound_thread_priority = 0x10;
+	netconfParam.adhoc_param = 0;
+	netconfParam.base.message_lang = 0;
+	netconfParam.base.result = 0;
+	netconfParam.base.reserved1 = 0;
+	netconfParam.base.reserved2 = 0;
+	netconfParam.base.reserved3 = 0;
+	netconfParam.base.reserved4 = 0;
+	netconfParam.base.ctrl_assign = 0;
+	netconfParam.type = type;
+	if (group_name == 0)
+		memset(netconfAdhocParam.group_name, 0, 8);
+	else
+		*(struct SceNetAdhocctlGroupName *)netconfAdhocParam.group_name = *group_name;
+	netconfParam.adhoc_param = &netconfAdhocParam;
+	return sceUtilityNetconfInitStart(&netconfParam);
+}
 
 int utility_update_netconf(void)
 {
