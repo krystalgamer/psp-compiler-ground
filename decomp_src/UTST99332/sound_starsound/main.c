@@ -332,24 +332,37 @@ static int file_read(const char *pFile, void *pBuf, unsigned int uBufSize, unsig
 	return 0;
 }
 
-INCLUDE_RODATA("tmp/asm/UTST99332/sound_starsound/nonmatchings/main", D_00010F00);
+#define VAGFILE_MAX		(8)
 
-INCLUDE_RODATA("tmp/asm/UTST99332/sound_starsound/nonmatchings/main", D_00010F30);
+static void vag_read(void)
+{
+	#define	VAGFILE_HDR		(48)
+	const char *vagFile[] = {
+		"disc0:/PSP_GAME/USRDIR/DATA/sound/wave/se01.vag",
+		"disc0:/PSP_GAME/USRDIR/DATA/sound/wave/se02.vag",
+		"disc0:/PSP_GAME/USRDIR/DATA/sound/wave/se03.vag",
+		"disc0:/PSP_GAME/USRDIR/DATA/sound/wave/se04.vag",
+		"disc0:/PSP_GAME/USRDIR/DATA/sound/wave/se05.vag",
+		"disc0:/PSP_GAME/USRDIR/DATA/sound/wave/se06.vag",
+		"disc0:/PSP_GAME/USRDIR/DATA/sound/wave/se07.vag",
+		"disc0:/PSP_GAME/USRDIR/DATA/sound/wave/se08.vag"
+	};
+	int iSize;
+	int iVoice;
+	int iRc;
 
-INCLUDE_RODATA("tmp/asm/UTST99332/sound_starsound/nonmatchings/main", D_00010F60);
-
-INCLUDE_RODATA("tmp/asm/UTST99332/sound_starsound/nonmatchings/main", D_00010F90);
-
-INCLUDE_RODATA("tmp/asm/UTST99332/sound_starsound/nonmatchings/main", D_00010FC0);
-
-INCLUDE_RODATA("tmp/asm/UTST99332/sound_starsound/nonmatchings/main", D_00010FF0);
-
-INCLUDE_RODATA("tmp/asm/UTST99332/sound_starsound/nonmatchings/main", D_00011020);
-
-INCLUDE_RODATA("tmp/asm/UTST99332/sound_starsound/nonmatchings/main", D_00011050);
-
-INCLUDE_RODATA("tmp/asm/UTST99332/sound_starsound/nonmatchings/main", D_00011080);
-
-INCLUDE_ASM("tmp/asm/UTST99332/sound_starsound/nonmatchings/main", vag_read);
+	for (iVoice=0 ;iVoice<VAGFILE_MAX ;iVoice++){
+		iSize = 0;
+		iRc = file_read(
+			vagFile[iVoice],vagWork[iVoice],sizeof(vagWork[iVoice]),&iSize,VAGFILE_HDR
+		);
+		if (iRc < 0){
+			printf("vag file read error:%s\n",vagFile[iVoice]);
+			continue;
+		}
+		printf("read: %s\n",vagFile[iVoice]);
+		sceWaveSetVoice(iVoice,vagWork[iVoice],iSize,0);
+	}
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/sound_starsound/nonmatchings/main", main);
