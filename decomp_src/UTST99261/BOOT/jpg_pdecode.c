@@ -32,11 +32,18 @@ typedef struct {
     u8 unkBC[0x14];
     u16 mcuw;                   /* 0xD0 */
     u16 mcuh;                   /* 0xD2 */
-    u8 unkD4[6];
+    u8 unkD4[3];
+    u8 ss;                      /* 0xD7 */
+    u8 se;                      /* 0xD8 */
+    u8 unkD9;
     u8 al;                      /* 0xDA */
     u8 unkDB;
     JCOMPINFO ci[4];            /* 0xDC */
+    u8 unk10C[0x590];
+    int eobrun;                 /* 0x69C */
 } JPCTX;
+
+extern const int natural_order[];
 
 typedef struct {
     void *bs;
@@ -50,11 +57,7 @@ int getBits(void *bs, int n);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jpg_pdecode", current_dct);
 
-int decodeHuffmanCode_307A4(ctx, cls, comp)
-    JDCTX *ctx;
-    int cls;
-    int comp;
-{
+int decodeHuffmanCode_307A4(JDCTX *ctx, int cls, int comp) {
     JHTAB *t;
     unsigned int code;
     unsigned int len;
@@ -92,12 +95,12 @@ int decodeHuffmanCode_307A4(ctx, cls, comp)
     return -1;
 }
 
-int decodeHuffmanBlock_DC_first(JPCTX *ctx, int c) {
+int decodeHuffmanBlock_DC_first(JPCTX *ctx, int c, int tbl) {
     s16 v;
     int s;
 
     v = 0;
-    s = decodeHuffmanCode_307A4(ctx, 0);
+    s = decodeHuffmanCode_307A4((JDCTX *)ctx, 0, tbl);
     if (s > 0) {
         v = getBits(ctx->bs, s);
         if (v < 0) {
@@ -151,7 +154,35 @@ int reviseValue_30F54(int arg0) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jpg_pdecode", translateRGB_30F74);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jpg_pdecode", decodeMCU_multi);
+int decodeMCU_multi(JPCTX *ctx) {
+    int (*fn)();
+    int i;
+    int x;
+    int y;
+    u8 h;
+    u8 v;
+
+    if (ctx->unkD9 == 0) {
+        fn = decodeHuffmanBlock_DC_first;
+    } else {
+        fn = decodeHuffmanBlock_DC_subsequent;
+    }
+    for (i = 0; i < ((u8 *)ctx)[0xCA]; i++) {
+        v = ctx->ci[i].v;
+        h = ctx->ci[i].h;
+        for (y = 0; y < v; y++) {
+            for (x = 0; x < h; x++) {
+                ctx->block = (s16 *)*((int **)((u8 *)ctx + 0xB8))[i]++;
+                if (fn(ctx, i, i) == -1) {
+                    return -1;
+                }
+            }
+        }
+    }
+    return 1;
+}
+
+int decodeHuffmanBlock_AC_subsequent();
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jpg_pdecode", decodeMCU_single);
 
