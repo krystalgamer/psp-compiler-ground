@@ -142,6 +142,12 @@ static void init_context(void);
 static void set_mode(int mode, int state);
 
 
+void sceGumTranslate(const ScePspFVector3 *v);
+void sceGumScale(const ScePspFVector3 *v);
+void sceGumRotateX(float angle);
+void sceGumRotateY(float angle);
+void sceGumRotateZ(float angle);
+
 INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/ge/ge_context", geSetLight);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/ge/ge_context", geSetCamera);
@@ -150,7 +156,13 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/ge/ge_context", geSetConte
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/ge/ge_context", geGetContext);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/ge/ge_context", geSetWorld);
+void geSetWorld(geWORLD *world) {
+    sceGumTranslate(&world->trans);
+    sceGumRotateX((world->rotate.x * 3.1415927f) / 180.0f);
+    sceGumRotateY((world->rotate.y * 3.1415927f) / 180.0f);
+    sceGumRotateZ((world->rotate.z * 3.1415927f) / 180.0f);
+    sceGumScale(&world->scale);
+}
 
 void gePush(void) {
     sceGumPushMatrix();
