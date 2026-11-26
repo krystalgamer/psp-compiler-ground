@@ -1303,7 +1303,94 @@ int GUI_List_add(GUIWIDGET *w_, char *text, int pos) {
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Graphic", GUI_List_remove);
+typedef struct {
+    u8 unk0[0x50];
+    GUILISTITEM *head;          /* 0x50 */
+    GUILISTITEM *tail;          /* 0x54 */
+    s16 cur;                    /* 0x58 */
+    s16 count;                  /* 0x5A */
+} GLISTW;
+
+int GUI_List_remove(GUIWIDGET *w_, int idx) {
+    GUIWIDGET *w;
+    GUILISTITEM *p;
+    GUILISTITEM *prev;
+    int i;
+
+    if (w_ == NULL) {
+        puts("[X1]GUI_List_remove");
+        return -1;
+    }
+    if (idx < 0) {
+        puts("[X11]GUI_List_remove");
+        return -1;
+    }
+    w = w_;
+    if (w->type != 1) {
+        puts("[X2]GUI_List_remove");
+        return -1;
+    }
+    if ((w->flags & 0xF) != 8) {
+        puts("[X3]GUI_List_remove");
+        return -1;
+    }
+    if (idx < 0) {
+        puts("[X4]GUI_List_remove");
+        return -1;
+    }
+    if (idx >= ((GLISTW *)w)->count) {
+        puts("[X5]GUI_List_remove");
+        return -1;
+    }
+    s_windsystem_data.flags |= 4;
+    if (idx == 0) {
+        p = ((GLISTW *)w)->head;
+        ((GLISTW *)w)->head = p->next;
+        if (p->next == NULL) {
+            ((GLISTW *)w)->tail = NULL;
+        } else {
+            p->next->unk0 = 0;
+        }
+    } else {
+        p = ((GLISTW *)w)->head;
+        i = 1;
+        if (idx != 0) {
+            do {
+                if (i == ((GLISTW *)w)->count) {
+                    puts("[X6]GUI_List_remove");
+                    s_windsystem_data.flags &= ~4;
+                    return -1;
+                }
+                p = p->next;
+            } while (i++ != idx);
+        }
+        if (p == NULL) {
+            puts("[X7]GUI_List_remove");
+            s_windsystem_data.flags &= ~4;
+            return -1;
+        }
+        prev = (GUILISTITEM *)p->unk0;
+        if (prev != NULL) {
+            prev->next = p->next;
+        } else {
+            ((GLISTW *)w)->head = p->next;
+        }
+        if (p->next != NULL) {
+            p->next->unk0 = p->unk0;
+        } else {
+            ((GLISTW *)w)->tail = (GUILISTITEM *)p->unk0;
+        }
+    }
+    if (idx == ((GLISTW *)w)->cur) {
+        ((GLISTW *)w)->cur = 0;
+    }
+    ESP_guiMemFree(p->text);
+    ESP_guiMemFree(p);
+    _GUI_List_no(w);
+    zWindDraw();
+    s_windsystem_data.flags &= ~4;
+    return 0;
+}
 
 int GUI_List_removeAll(GUIWIDGET *w_) {
     GUIWIDGET *w;
