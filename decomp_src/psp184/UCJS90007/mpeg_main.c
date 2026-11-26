@@ -333,7 +333,100 @@ int mpeg_exit_func(int count, int arg1, void *arg2)
 	return 0;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/mpeg_main", mpeg_term);
+void free(void *p);
+int sceKernelWaitThreadEnd(SceUID thid, unsigned int *timeout);
+int sceKernelDeleteThread(SceUID thid);
+int sceKernelTerminateDeleteThread(SceUID thid);
+int sceKernelDeleteEventFlag(int evid);
+SceInt32 read_delete(t_ringBuffer *pRing);
+SceInt32 avsync_delete(t_avSyncControl *pAvSync);
+SceInt32 soundbuf_delete(t_soundBuffer *pSound);
+SceInt32 dispbuf_delete(t_displayBuffer *pDisp);
+SceInt32 control_delete(t_conditionCtrl *pCtrl);
+SceInt32 strFileClose(StrFile *file);
+SceInt32 strFileUnassign(StrFile *file);
+SceInt32 sceMpegFreeAvcEsBuf(SceMpeg *mpeg, SceMpegHandle buf);
+SceInt32 sceMpegUnRegistStream(SceMpeg *mpeg, SceMpegStream *stream);
+SceInt32 sceMpegDelete(SceMpeg *mpeg);
+SceVoid sceMpegRingbufferDestruct(SceMpegRingbuffer *rb);
+SceVoid sceMpegFinish(SceVoid);
+void free(void *p);
+int mpeg_term(void)
+{
+	int ret = 0;
+
+	if (audioFlag == 1)
+		sceKernelWaitThreadEnd(soundThread, NULL);
+	sceKernelWaitThreadEnd(dispThread, NULL);
+	sceKernelWaitThreadEnd(readThread, NULL);
+	if (audioFlag == 1)
+		sceKernelDeleteThread(soundThread);
+	sceKernelDeleteThread(dispThread);
+	sceKernelDeleteThread(readThread);
+	if (_mpeg_info.pRing != NULL) {
+		read_delete(_mpeg_info.pRing);
+		free(_mpeg_info.pRing);
+		_mpeg_info.pRing = NULL;
+	}
+	if (_mpeg_info.pAvSync != NULL) {
+		avsync_delete(_mpeg_info.pAvSync);
+		free(_mpeg_info.pAvSync);
+		_mpeg_info.pAvSync = NULL;
+	}
+	if (_mpeg_info.pSound != NULL) {
+		soundbuf_delete(_mpeg_info.pSound);
+		free(_mpeg_info.pSound);
+		_mpeg_info.pSound = NULL;
+	}
+	if (_mpeg_info.pDisp != NULL) {
+		dispbuf_delete(_mpeg_info.pDisp);
+		free(_mpeg_info.pDisp);
+		_mpeg_info.pDisp = NULL;
+	}
+	if (_mpeg_info.pCtrl != NULL) {
+		control_delete(_mpeg_info.pCtrl);
+		free(_mpeg_info.pCtrl);
+		_mpeg_info.pCtrl = NULL;
+	}
+	if (_mpeg_info.pStreamData != NULL) {
+		free(_mpeg_info.pStreamData);
+		_mpeg_info.pStreamData = NULL;
+	}
+	if (audioFlag == 1 && _mpeg_info.pAudioBuf != NULL) {
+		free(_mpeg_info.pAudioBuf);
+		_mpeg_info.pAudioBuf = NULL;
+	}
+	if (_mpeg_info.avcEsBuf != NULL) {
+		sceMpegFreeAvcEsBuf(&_mpeg_info.mpeg, _mpeg_info.avcEsBuf);
+		_mpeg_info.avcEsBuf = NULL;
+	}
+	if (_mpeg_info.pStream[0] != NULL) {
+		sceMpegUnRegistStream(&_mpeg_info.mpeg, _mpeg_info.pStream[0]);
+		_mpeg_info.pStream[0] = NULL;
+	}
+	if (audioFlag == 1 && _mpeg_info.pStream[1] != NULL) {
+		sceMpegUnRegistStream(&_mpeg_info.mpeg, _mpeg_info.pStream[1]);
+		_mpeg_info.pStream[1] = NULL;
+	}
+	strFileClose(&_mpeg_info.strFile);
+	sceMpegDelete(&_mpeg_info.mpeg);
+	sceMpegRingbufferDestruct(&_mpeg_info.ringbuf);
+	sceMpegFinish();
+	if (_mpeg_info.pWorkBuf != NULL)
+		free(_mpeg_info.pWorkBuf);
+	if (_mpeg_info.pPSPStream != NULL)
+		free(_mpeg_info.pPSPStream);
+	strFileUnassign(&_mpeg_info.strFile);
+	if (mpeg_tid > 0) {
+		sceKernelTerminateDeleteThread(mpeg_tid);
+		mpeg_tid = -1;
+	}
+	if (_mpeg_info.evf_id > 0) {
+		sceKernelDeleteEventFlag(_mpeg_info.evf_id);
+		_mpeg_info.evf_id = -1;
+	}
+	return ret;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/mpeg_main", mpeg_play_thread);
 
