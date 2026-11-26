@@ -69,7 +69,18 @@ INCLUDE_RODATA("tmp/asm/UTST99332/utility_basic/nonmatchings/netconf", D_000167B
 
 INCLUDE_RODATA("tmp/asm/UTST99332/utility_basic/nonmatchings/netconf", D_000167C0);
 
-INCLUDE_ASM("tmp/asm/UTST99332/utility_basic/nonmatchings/netconf", OnCancel_Netconf_Apnet);
+void OnCancel_Netconf_Apnet(int selection)
+{
+	Menu_WriteLine("OnCancel_Netconf_Apnet", 0xFFFFFF);
+	Menu_LockInput();
+
+	sample_type = 3;
+	sample_status = 1;
+
+	Menu_WriteLine("Disconnect apnet", 0xFFFFFF);
+	disconnected = 0;
+	sceNetApctlDisconnect();
+}
 
 void OnPush_Nectonf_ApnetConnect(int selection) {
     Menu_WriteLine("OnPush_Nectonf_ApnetConnect", 0xFFFFFF);
