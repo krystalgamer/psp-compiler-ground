@@ -261,6 +261,9 @@ SceGmoPart *sceGmoModelGetPart(SceGmoModel *model, int idx);
 const struct ScePspFMatrix4 *sceGmoModelGetVertexOffset(SceGmoModel *model);
 void sceGmoPartDraw(SceGmoPart *part, SceGmoModel *model, SceGmoBone *bone);
 
+/* module functions defined in other units */
+ScePspFMatrix4 *sceGmoModelGetWorldMatrix(SceGmoModel *model);
+
 INCLUDE_RODATA("tmp/asm/UTST99332/demo_luga/nonmatchings/gmo_model/gmo_bone", D_00021798);
 
 INCLUDE_RODATA("tmp/asm/UTST99332/demo_luga/nonmatchings/gmo_model/gmo_bone", D_000217A4);

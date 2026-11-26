@@ -297,6 +297,9 @@ int sceGmoModelCountChunk(const SceGmoChunk *chunk, int type);
 void sceGmoModelFreeMemory2(void *addr);
 SceGmoMaterial *sceGmoModelGetMaterial(SceGmoModel *model, int idx);
 
+/* module functions defined in other units */
+int sceGmoMaterialGetLayerCount(SceGmoMaterial *material);
+
 INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/gmo_model/gmo_part", sceGmoPartCreate);
 
 void sceGmoPartDelete(SceGmoPart *part) {

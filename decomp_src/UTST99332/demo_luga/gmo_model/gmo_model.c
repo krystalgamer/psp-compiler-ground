@@ -276,6 +276,14 @@ SceGmoTexture *sceGmoTextureDuplicate(SceGmoTexture *texture, int flags);
 _Bool sceGmoTextureHasAnimation(SceGmoTexture *texture);
 void sceGmoTextureUpdate(SceGmoTexture *texture, SceGmoModel *model, float step);
 
+/* module functions defined in other units */
+void sceGmoBoneUpdate(SceGmoBone *bone, SceGmoModel *model);
+void sceGmoMaterialUpdate(SceGmoMaterial *material, SceGmoModel *model);
+float sceGmoMotionGetWeight(SceGmoMotion *motion);
+void sceGmoMotionSetFrame(SceGmoMotion *motion, float frame);
+void sceGmoMotionSetWeight(SceGmoMotion *motion, float weight);
+void sceGumSetCurMatrix(void);
+
 INCLUDE_RODATA("tmp/asm/UTST99332/demo_luga/nonmatchings/gmo_model/gmo_model", __psp_libinfo___2171C);
 
 INCLUDE_RODATA("tmp/asm/UTST99332/demo_luga/nonmatchings/gmo_model/gmo_model", D_00021734);

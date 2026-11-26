@@ -287,6 +287,11 @@ int post_ground(void);
 void set_char_pos(void);
 void set_nextgnd(void);
 
+/* module functions defined in other units */
+void geIdentity(void);
+void gePop(void);
+void gePush(void);
+
 int main(void) {
     menuInit();
     geInit();
