@@ -1,6 +1,8 @@
 /* cflags: -O2 */
 #include "common.h"
 #include "m2c_macros.h"
+typedef struct { int used, x, x2, y, y2; float u0, u1, v0, v1; unsigned short pri; } FONT_T;
+void inv_font_set(FONT_T *f, int c, int x, int y, int sx, int sy, unsigned short pri);
 extern int alpha_mode_29C3FC;
 extern int font_max;
 extern unsigned char inv_font;
@@ -56,7 +58,27 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_font", inv_font_ascii
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_font", inv_font_ascii_no);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_font", inv_font_etc);
+void inv_font_etc(int c, int x, int y, int sx, int sy, int r, int g, int b, int a)
+{
+	unsigned int n;
+
+	if (a <= 0)
+		return;
+	if (sx <= 0)
+		return;
+	if (sy <= 0)
+		return;
+	n = c - 0x20;
+	if (font_max >= 512)
+		return;
+	if (n >= 0x70)
+		return;
+	if (c == 0x20)
+		return;
+	inv_font_set(&((FONT_T *)&inv_font)[font_max], n & 0xff, x, y, sx, sy,
+		     ((a >> 4) << 12) | (((b * a / 255) << 4) & 0xF00) | ((g * a / 255) & 0xF0) | ((u8)(r * a / 255) >> 4));
+	font_max++;
+}
 
 extern s8 font_w[];
 int inv_font_ascii_check_w(u8 *s, int size)
@@ -91,8 +113,7 @@ int inv_font_etc_check_w(int c, int size)
 	return ((font_w[(u8)(c - 0x20)] - 1) * size) / 100;
 }
 
-typedef struct { int used, x, x2, y, y2; float u0, u1, v0, v1; short pri; } FONT_T;
-void inv_font_set(FONT_T *f, int c, int x, int y, int sx, int sy, short pri)
+void inv_font_set(FONT_T *f, int c, int x, int y, int sx, int sy, unsigned short pri)
 {
 	float u, v;
 
