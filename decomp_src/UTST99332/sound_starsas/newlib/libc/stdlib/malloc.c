@@ -1,7 +1,9 @@
-#include "common.h"
+/* upstream: newlib-1.12.0/newlib/libc/stdlib/malloc.c (unmodified) */
+/* cflags: -O2 -fno-builtin */
+#include "libc/stdlib/malloc.c"
 
-INCLUDE_ASM("tmp/asm/UTST99332/sound_starsas/nonmatchings/newlib/libc/stdlib/malloc", malloc);
-
-INCLUDE_ASM("tmp/asm/UTST99332/sound_starsas/nonmatchings/newlib/libc/stdlib/malloc", free);
-
+/* objects without code: their rodata */
+__asm__(".include \"include/labels.inc\"");
+#define INCLUDE_RODATA(FOLDER, NAME) \
+    __asm__(".section .rodata\n.include \"" FOLDER "/" #NAME ".s\"\n.section .text")
 INCLUDE_RODATA("tmp/asm/UTST99332/sound_starsas/nonmatchings/newlib/libc/stdlib/malloc", D_00012598);
