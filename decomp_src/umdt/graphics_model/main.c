@@ -26,8 +26,8 @@ extern int g_menu_count;
 extern int g_menu_cache;
 extern Vec3 g_translate;
 extern Vec3 g_rotate;
-extern char g_running;
-extern char g_reload;
+extern unsigned char g_running;
+extern unsigned char g_reload;
 
 typedef struct ScePspFVector3 ScePspFVector3;
 typedef struct ScePspFVector4 ScePspFVector4;
@@ -70,6 +70,15 @@ int sceDisplayWaitVblankStart(void);
 void *sceGuSwapBuffers(void);
 unsigned int sceDisplayGetVcount(void);
 void sceGumMatrixMode(int mode);
+extern const char **g_model_names;
+extern int g_model_size;
+/* end_scene's static VertexModes, TextureModes, PacketModes (.data) */
+extern const char *D_00017AD8[2];
+extern const char *D_00017AE0[2];
+extern const char *D_00017AE8[3];
+void sceGuDebugPrint(int x, int y, unsigned int color, const char *str);
+void sceGuDisable(int state);
+void draw_rect(int x, int y, int w, int h, int color);
 void sceGuViewport(int cx, int cy, int w, int h);
 void sceGuDepthRange(int near, int far);
 void sceGuEnable(int state);
@@ -272,7 +281,37 @@ INCLUDE_RODATA("tmp/asm/umdt/graphics_model/nonmatchings/main", D_00016338);
 
 INCLUDE_RODATA("tmp/asm/umdt/graphics_model/nonmatchings/main", D_00016340);
 
-INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/main", end_scene);
+static void end_scene()
+{
+	char buf[64];
+
+	if (g_frame * g_vbl_step % 30 < 15)
+		sceGuDebugPrint(0, g_menu_select * 10 + 10, 0xffffffff, ">");
+	sprintf(buf, "MODEL   %s %dKB", g_model_names[g_menu_model], (g_model_size + 1023) / 1024);
+	sceGuDebugPrint(10, 10, 0xffffffff, buf);
+	sprintf(buf, "VERTEX  %s", D_00017AD8[g_menu_vertex]);
+	sceGuDebugPrint(10, 20, 0xffffffff, buf);
+	sprintf(buf, "TEXTURE %s", D_00017AE0[g_menu_texture]);
+	sceGuDebugPrint(10, 30, 0xffffffff, buf);
+	sprintf(buf, "PACKET  %s", D_00017AE8[g_menu_packet]);
+	sceGuDebugPrint(10, 40, 0xffffffff, buf);
+	sprintf(buf, "COUNT   %d", g_menu_count);
+	sceGuDebugPrint(10, 50, 0xffffffff, buf);
+	if (g_menu_select == 5) {
+		sprintf(buf, "CACHE   %d / %d KB", g_menu_cache, (g_cache_top - g_cache_buf + 1023) / 1024);
+		sceGuDebugPrint(10, 60, 0xffffffff, buf);
+	}
+	sprintf(buf, "CPU %d%%", g_cpu_load);
+	sceGuDebugPrint(10, 240, 0xffffffff, buf);
+	sprintf(buf, "GPU %d%%", g_gpu_load);
+	sceGuDebugPrint(10, 250, 0xffffffff, buf);
+	if (g_reload)
+		sceGuDebugPrint(400, 10, 0xffffffff, "LOADING");
+	sceGuDisable(9);
+	sceGuDisable(1);
+	draw_rect(82, 241, g_cpu_load, 7, 0x8f00);
+	draw_rect(82, 251, g_gpu_load, 7, 0x800f);
+}
 
 static void swap_buffers()
 {
