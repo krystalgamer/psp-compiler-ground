@@ -17,9 +17,9 @@
 #ifndef INCLUDE_RODATA
 #define INCLUDE_RODATA(FOLDER, NAME) \
     __asm__( \
-        ".section .rodata\n" \
+        ".pushsection .rodata\n" \
         "    .include \"" FOLDER "/" #NAME ".s\"\n" \
-        ".section .text" \
+        ".popsection" \
     )
 #endif
 
