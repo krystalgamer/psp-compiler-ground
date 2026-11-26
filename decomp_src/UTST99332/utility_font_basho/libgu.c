@@ -121,9 +121,9 @@ extern int aw_frame;
 int sceDisplaySetMode(int mode, int width, int height);
 int sceDisplaySetFrameBuf(void *topaddr, int bufferwidth, int pixelformat, int sync);
 
-extern const unsigned int tbpcmd_tbl[8];
-extern const unsigned int tbwcmd_tbl[8];
-extern const unsigned int tsizecmd_tbl[8];
+static const unsigned int tbpcmd_tbl[8];
+static const unsigned int tbwcmd_tbl[8];
+static const unsigned int tsizecmd_tbl[8];
 void sceGuTexFlush(void);
 int get_exp(int val);
 
@@ -254,11 +254,11 @@ INCLUDE_RODATA("tmp/asm/UTST99332/utility_font_basho/nonmatchings/libgu", fontte
 
 INCLUDE_RODATA("tmp/asm/UTST99332/utility_font_basho/nonmatchings/libgu", initList);
 
-INCLUDE_RODATA("tmp/asm/UTST99332/utility_font_basho/nonmatchings/libgu", tbpcmd_tbl);
+static const unsigned int tbpcmd_tbl[8] = { 0xA0, 0xA1, 0xA2, 0xA3, 0xA4, 0xA5, 0xA6, 0xA7 };
 
-INCLUDE_RODATA("tmp/asm/UTST99332/utility_font_basho/nonmatchings/libgu", tbwcmd_tbl);
+static const unsigned int tbwcmd_tbl[8] = { 0xA8, 0xA9, 0xAA, 0xAB, 0xAC, 0xAD, 0xAE, 0xAF };
 
-INCLUDE_RODATA("tmp/asm/UTST99332/utility_font_basho/nonmatchings/libgu", tsizecmd_tbl);
+static const unsigned int tsizecmd_tbl[8] = { 0xB8, 0xB9, 0xBA, 0xBB, 0xBC, 0xBD, 0xBE, 0xBF };
 
 static const GuLightSettings lcmd[4] = {
 	{ 0x18, 0x5F, 0x63, 0x64, 0x65, 0x6F, 0x70, 0x71, 0x8F, 0x90, 0x91, 0x7B, 0x7C, 0x7D, 0x87, 0x8B },
@@ -819,7 +819,19 @@ void sceGuSpriteMode(int a0, int a1, int a2, int a3)
 	context->sprite_mode[3] = a3;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/utility_font_basho/nonmatchings/libgu", sceGuCopyImage);
+void sceGuCopyImage(int psm, int sx, int sy, int width, int height, int srcw, void *src, int dx, int dy, int destw, void *dest)
+{
+	int is32 = (psm ^ 0x03) ? 0 : 1;
+
+	send_commandi(178, ((unsigned int)src) & 0xffffff);
+	send_commandi(179, ((((unsigned int)src) & 0xff000000) >> 8) | srcw);
+	send_commandi(235, (sy << 10) | sx);
+	send_commandi(180, ((unsigned int)dest) & 0xffffff);
+	send_commandi(181, ((((unsigned int)dest) & 0xff000000) >> 8) | destw);
+	send_commandi(236, (dy << 10) | dx);
+	send_commandi(238, ((height - 1) << 10) | (width - 1));
+	send_commandi(234, is32);
+}
 
 void sceGuClearColor(unsigned int color)
 {
@@ -1099,7 +1111,17 @@ void sceGuTexSync(void)
 	send_commandi(204, 0x000000);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/utility_font_basho/nonmatchings/libgu", sceGuTexImage);
+void sceGuTexImage(int mipmap, int width, int height, int tbw, const void *tbp)
+{
+	int w = get_exp(width);
+	int h = get_exp(height);
+	unsigned int hi = (((unsigned int)tbp) >> 8) & 0x0f0000;
+
+	send_commandi((unsigned char)tbpcmd_tbl[mipmap], ((unsigned int)tbp) & 0xffffff);
+	send_commandi((unsigned char)tbwcmd_tbl[mipmap], hi | tbw);
+	send_commandi((unsigned char)tsizecmd_tbl[mipmap], (h << 8) | w);
+	sceGuTexFlush();
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/utility_font_basho/nonmatchings/libgu", sceGuTexScale);
 
