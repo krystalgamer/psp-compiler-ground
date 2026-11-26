@@ -391,7 +391,54 @@ static SceInt32 setPlayerEndCondition(t_conditionCtrl *pCtrl)
 
 INCLUDE_ASM("tmp/asm/psp184/mpegstr/nonmatchings/main", playMovie);
 
-INCLUDE_ASM("tmp/asm/psp184/mpegstr/nonmatchings/main", readHeader);
+long long strFileLseek(StrFile *file, long long offset, SceInt32 whence);
+SceInt32 strFileReadCB(StrFile *file, void *buff, SceSize size);
+extern const char D_0001202C[];
+
+const char D_00012318[] = "fatal error : sceMpegQueryStreamOffset()";
+const char D_00012344[] = "fatal error : sceMpegQueryStreamSize()";
+const char D_0001236C[] = "fatal error : strFileReadRetry() 0x%x\n";
+
+static SceInt32 readHeader(SceMpeg *pMpeg, StrFile *pStrFile, SceInt32 *pFilesize, SceInt32 *strOffset)
+{
+	SceInt32 iReadSize, ret;
+	SceChar8 stream_buf[2048];
+
+	if (strFileLseek(pStrFile, 0, 0) < 0) {
+		ret = -1;
+		goto term;
+	}
+
+	iReadSize = strFileReadCB(pStrFile, stream_buf, 2048);
+	if (iReadSize < 2048) {
+		printf(D_0001236C, iReadSize);
+		ret = -1;
+		goto term;
+	}
+
+	if (sceMpegQueryStreamOffset(pMpeg, stream_buf, strOffset) != 0) {
+		puts(D_00012318);
+		ret = -1;
+		goto term;
+	}
+
+	if (sceMpegQueryStreamSize(stream_buf, pFilesize) != 0) {
+		puts(D_00012344);
+		ret = -1;
+		goto term;
+	}
+
+	if (strFileLseek(pStrFile, 0, 0) < 0) {
+		puts(D_0001202C);
+		ret = -1;
+		goto term;
+	}
+
+	ret = 0;
+
+term:
+	return ret;
+}
 
 extern int D_00013714;
 extern int D_00013718;
