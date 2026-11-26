@@ -14,21 +14,29 @@ typedef struct {
 
 typedef struct {
 	unsigned char status;
-	unsigned char unk1[8];
-	unsigned char hd;
-	unsigned char unkA[6];
+	unsigned char unk1[3];
+	unsigned char *data;
+	signed char unk8;
+	signed char hd;
+	unsigned char unkA[2];
+	unsigned char unkC;
+	unsigned char unkD[3];
 	int tempo;
 	int addTempo;
 	int unk18;
 	unsigned char *ptr;
-	unsigned char unk20[6];
+	int unk20;
+	unsigned char unk24;
+	signed char unk25;
 	unsigned char vel;
 	unsigned char pan;
 	unsigned char sendVel;
 	unsigned char sendPan;
 	unsigned char unk2A[2];
 	unsigned int mute;
-	int unk30[3];
+	int unk30;
+	int unk34;
+	int unk38;
 	int delta;
 	SmfChannel ch[16];
 } SmfData;
@@ -62,7 +70,31 @@ int smf_unbindSmf(unsigned int id)
 
 INCLUDE_ASM("tmp/asm/UTST99332/sound_playsmf/nonmatchings/smf", smf_atick);
 
-INCLUDE_ASM("tmp/asm/UTST99332/sound_playsmf/nonmatchings/smf", smf_play);
+int smf_play(unsigned int id, unsigned int vel, unsigned int pan, unsigned int sendVel, unsigned int sendPan, int count)
+{
+	if (g_smfmax == 0)
+		return 0x80450001;
+	if (id > 128)
+		return 0x80540007;
+	if (g_smf[id] == NULL)
+		return 0x80540007;
+	if (g_smf[id]->status != 0)
+		return 0x80540009;
+	if (count == 0)
+		return 0x80540008;
+	if (vel >= 128 || pan >= 128)
+		return 0x8054000a;
+	if (sendVel >= 128 || sendPan >= 128)
+		return 0x8054000a;
+	g_smf[id]->vel = vel;
+	g_smf[id]->pan = pan;
+	g_smf[id]->sendVel = sendVel;
+	g_smf[id]->sendPan = sendPan;
+	g_smf[id]->unk34 = count;
+	g_smf[id]->unk38 = count;
+	g_smf[id]->status = 1;
+	return 0;
+}
 
 int smf_pause(unsigned int id)
 {
@@ -94,7 +126,28 @@ int smf_resume(unsigned int id)
 	return 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/sound_playsmf/nonmatchings/smf", smf_stop);
+int smf_stop(unsigned int id)
+{
+	unsigned int i;
+
+	if (id > 128)
+		return 0x80540007;
+	if (g_smf[id] == NULL)
+		return 0x80540007;
+	if (g_smf[id]->status != 1 && g_smf[id]->status != 2)
+		return 0x8054000d;
+	for (i = 0; i < 16; i++) {
+		sceSsSetSustainHold(i, 0, g_smf[id]->ch[i].id);
+		sceSsKeyOffByID(g_smf[id]->ch[i].id);
+	}
+	g_smf[id]->ptr = g_smf[id]->data + 0x16;
+	g_smf[id]->unk8 = -1;
+	g_smf[id]->unk30 = 0;
+	g_smf[id]->delta = 0;
+	g_smf[id]->unkC = 1;
+	g_smf[id]->status = 0;
+	return 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/sound_playsmf/nonmatchings/smf", smf_setPlayVelocity);
 
