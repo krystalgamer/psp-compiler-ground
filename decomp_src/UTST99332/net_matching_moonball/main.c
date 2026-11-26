@@ -186,37 +186,310 @@ void gu_init(void) {
     sceGuDisplay(1);
 }
 
-INCLUDE_RODATA("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/main", D_000194B0);
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/main", draw_top);
+int snprintf(char *buf, unsigned int size, const char *fmt, ...);
+void draw_top_for_game(void);
+int get_bssid(char *bssid);
+void draw_net_scan_result_list(int *x_ptr, int *y_ptr);
+void draw_net_hello_list(int *x_ptr, int *y_ptr);
+void draw_net_established_list(int *x_ptr, int *y_ptr);
+void draw_net_member_list(int *x_ptr, int *y_ptr);
+void draw_net_neighbors(int *x_ptr, int *y_ptr);
+int matching_get_established_num(void);
+void draw_game(void);
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/main", draw_scan_result);
+static void draw_top(void)
+{
+	char mess_buff[128];
 
-INCLUDE_RODATA("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/main", D_00019510);
+	snprintf(mess_buff, sizeof(mess_buff), "************ MATCHING ROOM SAMPLE ***********");
 
-INCLUDE_RODATA("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/main", D_0001952C);
+	sceGuDebugPrint((480 - strlen(mess_buff) * 8) / 2 + 1, 11, 0xffffff, mess_buff);
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/main", draw_room_list);
+	draw_top_for_game();
 
-INCLUDE_RODATA("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/main", D_000195DC);
+	snprintf(mess_buff, sizeof(mess_buff), "o: enter network play    t: scan");
+	sceGuDebugPrint((480 - strlen(mess_buff) * 8) / 2 + 1, 262, 0xffffff, mess_buff);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/main", draw_parent_wait);
+static void draw_scan_result(void)
+{
+	char mess_buff[128];
+	int x, y;
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/main", draw_child_wait);
+	snprintf(mess_buff, sizeof(mess_buff), "************ MATCHING ROOM SAMPLE ***********");
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/main", draw_neighbors);
+	x = (480 - strlen(mess_buff) * 8) / 2 + 1;
+	y = 11;
+	sceGuDebugPrint((480 - strlen(mess_buff) * 8) / 2 + 1, 11, 0xffffff, mess_buff);
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/main", draw_scanning);
+	y += 20;
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/main", draw_requesting);
+	snprintf(mess_buff, sizeof(mess_buff), "SCAN RESULT");
+	sceGuDebugPrint(x, y, 0xffffff, mess_buff);
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/main", draw_canceled);
+	y += 10;
 
-INCLUDE_RODATA("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/main", D_000196BC);
+	snprintf(mess_buff, sizeof(mess_buff), "---------------------------");
+	sceGuDebugPrint(x, y, 0xffffff, mess_buff);
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/main", draw_denied);
+	y += 10;
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/main", app_draw_frame);
+	draw_net_scan_result_list(&x, &y);
+
+	snprintf(mess_buff, sizeof(mess_buff), "x: Back");
+	sceGuDebugPrint((480 - strlen(mess_buff) * 8) / 2 + 1, 262, 0xffffff, mess_buff);
+}
+
+static void draw_room_list(void)
+{
+	char mess_buff[128];
+	char bssid[32];
+	int x, y;
+
+	snprintf(mess_buff, sizeof(mess_buff), "************ MATCHING ROOM SAMPLE ***********");
+
+	x = (480 - strlen(mess_buff) * 8) / 2 + 1;
+	y = 11;
+	sceGuDebugPrint(x, y, 0xffffff, mess_buff);
+
+	y += 20;
+
+	get_bssid(bssid);
+
+	snprintf(mess_buff, sizeof(mess_buff), "ROOM LIST (BSSID: %s)", bssid);
+	sceGuDebugPrint(x, y, 0xffffff, mess_buff);
+
+	y += 10;
+
+	snprintf(mess_buff, sizeof(mess_buff), "---------------------------");
+	sceGuDebugPrint(x, y, 0xffffff, mess_buff);
+
+	y += 10;
+
+	draw_net_hello_list(&x, &y);
+
+	if (_mrinfo.hello_opt.game_type == GAME_TYPE_CHILD) {
+		snprintf(mess_buff, sizeof(mess_buff), "o: enter room            s: create room      ");
+	} else {
+		snprintf(mess_buff, sizeof(mess_buff), "o: enter room                                ");
+	}
+	sceGuDebugPrint((480 - strlen(mess_buff) * 8) / 2 + 1, 252, 0xffffff, mess_buff);
+
+	snprintf(mess_buff, sizeof(mess_buff), "x: exit network play     t: display neighbors");
+	sceGuDebugPrint((480 - strlen(mess_buff) * 8) / 2 + 1, 262, 0xffffff, mess_buff);
+}
+
+static void draw_parent_wait(void)
+{
+	int x, y;
+	char mess_buff[128];
+
+	snprintf(mess_buff, sizeof(mess_buff), "************ MATCHING ROOM SAMPLE ***********");
+
+	x = (480 - strlen(mess_buff) * 8) / 2 + 1;
+	y = 11;
+	sceGuDebugPrint(x, y, 0xffffff, mess_buff);
+	y += 20;
+
+	x = (480 - strlen(mess_buff) * 8) / 2 + 1;
+	snprintf(mess_buff, sizeof(mess_buff), "ESTABLISHED MEMBERS");
+	sceGuDebugPrint(x, y, 0xffffff, mess_buff);
+	y += 10;
+
+	snprintf(mess_buff, sizeof(mess_buff), "---------------------------");
+	sceGuDebugPrint(x, y, 0xffffff, mess_buff);
+	y += 10;
+
+	draw_net_established_list(&x, &y);
+
+	if (matching_get_established_num() > 0) {
+		snprintf(mess_buff, sizeof(mess_buff), "o: start game     x: exit network play");
+	} else {
+		snprintf(mess_buff, sizeof(mess_buff), "x: exit network play");
+	}
+	x = (480 - strlen(mess_buff) * 8) / 2 + 1;
+	y = 262;
+	sceGuDebugPrint(x, y, 0xffffff, mess_buff);
+}
+
+static void draw_child_wait(void)
+{
+	int x, y;
+	char mess_buff[128];
+
+	snprintf(mess_buff, sizeof(mess_buff), "************ MATCHING ROOM SAMPLE ***********");
+
+	x = (480 - strlen(mess_buff) * 8) / 2 + 1;
+	y = 11;
+	sceGuDebugPrint(x, y, 0xffffff, mess_buff);
+	y += 20;
+
+	x = (480 - strlen(mess_buff) * 8) / 2 + 1;
+	snprintf(mess_buff, sizeof(mess_buff), "ESTABLISHED MEMBERS");
+	sceGuDebugPrint(x, y, 0xffffff, mess_buff);
+	y += 10;
+
+	snprintf(mess_buff, sizeof(mess_buff), "---------------------------");
+	sceGuDebugPrint(x, y, 0xffffff, mess_buff);
+	y += 10;
+
+	draw_net_member_list(&x, &y);
+
+	snprintf(mess_buff, sizeof(mess_buff), "x: exit this room");
+	x = (480 - strlen(mess_buff) * 8) / 2 + 1;
+	y = 262;
+	sceGuDebugPrint(x, y, 0xffffff, mess_buff);
+}
+
+static void draw_neighbors(void)
+{
+	char mess_buff[128];
+	int x, y;
+
+	snprintf(mess_buff, sizeof(mess_buff), "************ MATCHING ROOM SAMPLE ***********");
+
+	x = (480 - strlen(mess_buff) * 8) / 2 + 1;
+	y = 11;
+	sceGuDebugPrint(x, y, 0xffffff, mess_buff);
+	y += 20;
+
+	x = (480 - strlen(mess_buff) * 8) / 2 + 1;
+	snprintf(mess_buff, sizeof(mess_buff), "NEIGHBOR LIST");
+	sceGuDebugPrint(x, y, 0xffffff, mess_buff);
+	y += 10;
+
+	snprintf(mess_buff, sizeof(mess_buff), "---------------------------");
+	sceGuDebugPrint(x, y, 0xffffff, mess_buff);
+	y += 10;
+
+	draw_net_neighbors(&x, &y);
+
+	snprintf(mess_buff, sizeof(mess_buff), "x: Back");
+	sceGuDebugPrint((480 - strlen(mess_buff) * 8) / 2 + 1, 262, 0xffffff, mess_buff);
+}
+
+static void draw_scanning(void)
+{
+	char mess_buff[128];
+
+	snprintf(mess_buff, sizeof(mess_buff), "************ MATCHING ROOM SAMPLE ***********");
+
+	sceGuDebugPrint((480 - strlen(mess_buff) * 8) / 2 + 1, 11, 0xffffff, mess_buff);
+
+	sceGuColor(0xff800000);
+	sceGuDrawArray(6, 0x800100, 2, NULL, board);
+
+	sprintf(mess_buff, "Now Scanning ...");
+	sceGuDebugPrint(69, 106, 0xffffff, mess_buff);
+}
+
+static void draw_requesting(void)
+{
+	char mess_buff[128];
+
+	snprintf(mess_buff, sizeof(mess_buff), "************ MATCHING ROOM SAMPLE ***********");
+
+	sceGuDebugPrint((480 - strlen(mess_buff) * 8) / 2 + 1, 11, 0xffffff, mess_buff);
+
+	sceGuColor(0xff800000);
+	sceGuDrawArray(6, 0x800100, 2, NULL, board);
+
+	sprintf(mess_buff, "Requesting to");
+	sceGuDebugPrint(69, 106, 0xffffff, mess_buff);
+
+	sprintf(mess_buff, "%s", minfo[_mrinfo.requesting_minfo_id].hello_opt.nickname.data);
+	sceGuDebugPrint(65 + (350 - strlen(mess_buff) * 8) / 2, 121, 0xffffff, mess_buff);
+
+	sprintf(mess_buff, "Waiting Response ...");
+	sceGuDebugPrint(69, 136, 0xffffff, mess_buff);
+
+	sprintf(mess_buff, "x: Cancel");
+	sceGuDebugPrint(65 + (350 - strlen(mess_buff) * 8) / 2, 166, 0xffffff, mess_buff);
+}
+
+static void draw_canceled(void)
+{
+	char mess_buff[128];
+
+	snprintf(mess_buff, sizeof(mess_buff), "************ MATCHING ROOM SAMPLE ***********");
+
+	sceGuDebugPrint((480 - strlen(mess_buff) * 8) / 2 + 1, 11, 0xffffff, mess_buff);
+
+	sceGuColor(0xff800000);
+	sceGuDrawArray(6, 0x800100, 2, NULL, board);
+
+	sprintf(mess_buff, "Request is Canceled by peer");
+	sceGuDebugPrint(69, 106, 0xffffff, mess_buff);
+
+	sprintf(mess_buff, "x: Close");
+	sceGuDebugPrint(65 + (350 - strlen(mess_buff) * 8) / 2, 166, 0xffffff, mess_buff);
+}
+
+static void draw_denied(void)
+{
+	char mess_buff[128];
+
+	snprintf(mess_buff, sizeof(mess_buff), "************ MATCHING ROOM SAMPLE ***********");
+
+	sceGuDebugPrint((480 - strlen(mess_buff) * 8) / 2 + 1, 11, 0xffffff, mess_buff);
+
+	sceGuColor(0xff800000);
+	sceGuDrawArray(6, 0x800100, 2, NULL, board);
+
+	sprintf(mess_buff, "Request is Denied by peer");
+	sceGuDebugPrint(69, 106, 0xffffff, mess_buff);
+
+	sprintf(mess_buff, "x: Close");
+	sceGuDebugPrint(65 + (350 - strlen(mess_buff) * 8) / 2, 166, 0xffffff, mess_buff);
+}
+
+void app_draw_frame(void)
+{
+	sceGuStart(0, disp_list, sizeof(disp_list));
+	sceGuClear(7);
+
+	switch (_mrinfo.state) {
+	case MATCHING_ROOM_TOP:
+		draw_top();
+		break;
+	case MATCHING_ROOM_SCANNING:
+		draw_scanning();
+		break;
+	case MATCHING_ROOM_SCAN_RESULT:
+		draw_scan_result();
+		break;
+	case MATCHING_ROOM_ROOM_LIST:
+		draw_room_list();
+		break;
+	case MATCHING_ROOM_NEIGHBORS:
+		draw_neighbors();
+		break;
+	case MATCHING_ROOM_REQUESTING:
+		draw_requesting();
+		break;
+	case MATCHING_ROOM_CANCELED:
+		draw_canceled();
+		break;
+	case MATCHING_ROOM_DENIED:
+		draw_denied();
+		break;
+	case MATCHING_ROOM_PARENT_WAIT:
+		draw_parent_wait();
+		break;
+	case MATCHING_ROOM_CHILD_WAIT:
+		draw_child_wait();
+		break;
+	case MATCHING_ROOM_GAME:
+		draw_game();
+		break;
+	default:
+		break;
+	}
+
+	sceGuFinish();
+	sceGuSync(0, 0);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/main", draw_frame);
 
