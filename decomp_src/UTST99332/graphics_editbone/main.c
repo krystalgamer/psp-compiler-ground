@@ -132,7 +132,146 @@ INCLUDE_ASM("tmp/asm/UTST99332/graphics_editbone/nonmatchings/main", draw_frame)
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_editbone/nonmatchings/main", init_all);
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_editbone/nonmatchings/main", pad_read);
+#ifndef MAXEFF
+#define MAXEFF		4
+#endif
+#ifndef SCE_CTRL_UP
+#define SCE_CTRL_UP					(1<<4)
+#endif
+#ifndef SCE_CTRL_DOWN
+#define SCE_CTRL_DOWN				(1<<6)
+#endif
+#ifndef SCE_CTRL_LEFT
+#define SCE_CTRL_LEFT				(1<<7)
+#endif
+#ifndef SCE_CTRL_RIGHT
+#define SCE_CTRL_RIGHT				(1<<5)
+#endif
+#ifndef DROT
+#define DROT		1.0f
+#endif
+#ifndef SCE_CTRL_CIRCLE
+#define SCE_CTRL_CIRCLE				(1<<13)
+#endif
+#ifndef SCE_CTRL_SQUARE
+#define SCE_CTRL_SQUARE				(1<<15)
+#endif
+#ifndef SCE_CTRL_CROSS
+#define SCE_CTRL_CROSS				(1<<14)
+#endif
+#ifndef SCE_CTRL_TRIANGLE
+#define SCE_CTRL_TRIANGLE			(1<<12)
+#endif
+#ifndef SCE_CTRL_L
+#define SCE_CTRL_L					(1<<8)
+#endif
+#ifndef SCE_CTRL_L1
+#define SCE_CTRL_L1					SCE_CTRL_L
+#endif
+#ifndef SCE_CTRL_R
+#define SCE_CTRL_R					(1<<9)
+#endif
+#ifndef SCE_CTRL_R1
+#define SCE_CTRL_R1					SCE_CTRL_R
+#endif
+#ifndef DPOS
+#define DPOS		1.0f
+#endif
+#ifndef SCE_CTRL_START
+#define SCE_CTRL_START				(1<<3)
+#endif
+#ifndef MAXMODE
+#define MAXMODE		2
+#endif
+#ifndef SCE_CTRL_SELECT
+#define SCE_CTRL_SELECT				(1<<0)
+#endif
+static int pad_read(void)
+{
+	SceCtrlData	buf;
+	u_int32		prev=cont;
+	u_int32		padd;
+	int			prevanalog=analog;
+	POS			*p;
+
+	sceCtrlReadBufferPositive(&buf, 1);
+	cont = buf.Buttons;
+	padd=cont&(cont^prev);
+
+	if (!mode) {
+		
+		p=&effector[select];
+
+		if (buf.Lx<0x40)
+			analog=-1;
+		else if (buf.Lx>0xc0)
+			analog= 1;
+		else
+			analog= 0;
+
+		if (!analog) {
+			if (prevanalog==-1)
+				select=select+1>=MAXEFF?1:select+1;
+			else if (prevanalog==1)
+				select=select-1<1?MAXEFF-1:select-1;
+		}
+	}
+	else {
+		
+		p=&world;
+
+		if ((cont & SCE_CTRL_L1) && (cont & SCE_CTRL_R1))
+			init_effector();
+	}
+
+	
+	if (cont & SCE_CTRL_UP) {
+		p->rot.z-=DROT;
+		if (p->rot.z<0.0f)
+			p->rot.z=360.0f+p->rot.z;
+	}
+	if (cont & SCE_CTRL_DOWN) {
+		p->rot.z+=DROT;
+		if (p->rot.z>=360.0f)
+			p->rot.z=p->rot.z-360.0f;
+	}
+	if (cont & SCE_CTRL_LEFT) {
+		p->rot.y-=DROT;
+		if (p->rot.y<0.0f)
+			p->rot.y=360.0f+p->rot.y;
+	}
+	if (cont & SCE_CTRL_RIGHT) {
+		p->rot.y+=DROT;
+		if (p->rot.y>=360.0f)
+			p->rot.y=p->rot.y-360.0f;
+	}
+
+	
+	if (cont & SCE_CTRL_CIRCLE)
+		p->pos.x+=DPOS;
+	if (cont & SCE_CTRL_SQUARE)
+		p->pos.x-=DPOS;
+
+	if (cont & SCE_CTRL_CROSS)
+		p->pos.y-=DPOS;
+	if (cont & SCE_CTRL_TRIANGLE)
+		p->pos.y+=DPOS;
+
+	if (cont & SCE_CTRL_L1)
+		p->pos.z-=DPOS;
+	if (cont & SCE_CTRL_R1)
+		p->pos.z+=DPOS;
+
+	
+	if (padd & SCE_CTRL_START)
+		mode=(mode+1>=MAXMODE?0:mode+1);
+
+	
+	if (padd & SCE_CTRL_SELECT)
+		return 0;
+
+	return 1;
+}
 
 int main(void) {
     menuInit();
