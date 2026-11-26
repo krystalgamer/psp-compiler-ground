@@ -177,7 +177,40 @@ int set_savedata_param(const int type, SceUtilitySavedataParam *pParam)
 void show_results(SceUtilitySavedataParam *pParam) {
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/utility_basic/nonmatchings/savedata", set_param_load);
+extern const char D_00016714[]; /* "SLPS10000" (shared rodata) */
+extern const char D_00016720[]; /* "0000" */
+extern const char D_00016728[]; /* "%s" */
+extern const char D_0001672C[]; /* "DATA.BIN" */
+void *memcpy(void *dst, const void *src, unsigned long n); /* SDK size_t is unsigned long: not the builtin */
+void *memset(void *s, int c, unsigned int n);
+int sprintf(char *buf, const char *fmt, ...);
+
+void set_param_load(SceUtilitySavedataParam *pParam)
+{
+	int len;
+
+	memcpy(pParam->titleId, D_00016714, 9);
+	pParam->titleId[9] = 0;
+
+	memcpy(pParam->userId, D_00016720, 4);
+	pParam->userId[4] = 0;
+
+	sprintf(pParam->fileName, D_00016728, D_0001672C);
+
+	pParam->pDataBuf = _dataBuf;
+	pParam->dataBufSize = 0x100000;
+
+	memset(&pParam->systemFile, 0, sizeof(pParam->systemFile));
+
+	pParam->icon0.pDataBuf = _readIcon0;
+	pParam->icon0.dataBufSize = 0x100000;
+
+	pParam->icon1.pDataBuf = _readIcon1;
+	pParam->icon1.dataBufSize = 0x100000;
+
+	pParam->pic1.pDataBuf = _readPic1;
+	pParam->pic1.dataBufSize = 0x100000;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/utility_basic/nonmatchings/savedata", set_param_save);
 
