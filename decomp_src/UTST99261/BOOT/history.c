@@ -1143,9 +1143,79 @@ HstNode *searchExtFileHistoryURI(HstNode *node, int sid, char *type) {
     return NULL;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/history", HST_getParentExtSessionID);
+int HST_getParentExtSessionID(HstNode *top, int sid, char *type) {
+    HstNode *node;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/history", HST_getParentExtHistoryURI);
+    node = top;
+    if (searchExtFileSessionID(node, sid, type) == 1) {
+        return node->x48;
+    }
+    while (node != NULL) {
+        if (node->child != NULL) {
+            node = node->child;
+        } else if (node->next != NULL) {
+            node = node->next;
+        } else {
+            goto climb;
+        }
+        if (searchExtFileSessionID(node, sid, type) == 1) {
+            return node->x48;
+        }
+        continue;
+    climb:
+        node = node->parent;
+        while (node != NULL) {
+            if (node->next != NULL) {
+                node = node->next;
+                if (searchExtFileSessionID(node, sid, type) == 1) {
+                    return node->x48;
+                }
+                goto cont;
+            }
+            node = node->parent;
+        }
+        return -1;
+    cont:;
+    }
+    return -1;
+}
+
+HstNode *HST_getParentExtHistoryURI(HstNode *top, int sid, char *type) {
+    HstNode *node;
+
+    node = top;
+    if (searchExtFileSessionID(node, sid, type) == 1) {
+        return node;
+    }
+    while (node != NULL) {
+        if (node->child != NULL) {
+            node = node->child;
+        } else if (node->next != NULL) {
+            node = node->next;
+        } else {
+            goto climb;
+        }
+        if (searchExtFileSessionID(node, sid, type) == 1) {
+            return node;
+        }
+        continue;
+    climb:
+        node = node->parent;
+        while (node != NULL) {
+            if (node->next != NULL) {
+                node = node->next;
+                if (searchExtFileSessionID(node, sid, type) == 1) {
+                    return node;
+                }
+                goto cont;
+            }
+            node = node->parent;
+        }
+        return NULL;
+    cont:;
+    }
+    return NULL;
+}
 
 void *HST_getExtHistoryURI(HstNode *top, int sid, char *type) {
     HstNode *node;
