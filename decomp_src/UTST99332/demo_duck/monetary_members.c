@@ -12,27 +12,20 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/monetary_members", _ZNSt10
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/monetary_members", _ZNSt10moneypunctIcLb0EE24_M_initialize_moneypunctEPiPKc);
 
-#ifndef NULL
 #define NULL ((void *)0)
-#endif
+
 
 void _ZNSt10moneypunctIcLb1EED2Ev(M2C_UNK **arg0) {
     *arg0 = &D_00179C60;
     _ZNSt6locale5facetD2Ev();
 }
 
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
 
 void _ZNSt10moneypunctIcLb1EED1Ev(M2C_UNK **arg0) {
     *arg0 = &D_00179C60;
     _ZNSt6locale5facetD2Ev();
 }
 
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
 
 void _ZNSt10moneypunctIcLb1EED0Ev(M2C_UNK **arg0) {
     *arg0 = &D_00179C60;
@@ -40,27 +33,18 @@ void _ZNSt10moneypunctIcLb1EED0Ev(M2C_UNK **arg0) {
     _ZdlPv(arg0);
 }
 
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
 
 void _ZNSt10moneypunctIcLb0EED2Ev(M2C_UNK **arg0) {
     *arg0 = &D_00179C28;
     _ZNSt6locale5facetD2Ev();
 }
 
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
 
 void _ZNSt10moneypunctIcLb0EED1Ev(M2C_UNK **arg0) {
     *arg0 = &D_00179C28;
     _ZNSt6locale5facetD2Ev();
 }
 
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
 
 void _ZNSt10moneypunctIcLb0EED0Ev(M2C_UNK **arg0) {
     *arg0 = &D_00179C28;
