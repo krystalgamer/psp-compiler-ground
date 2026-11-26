@@ -27,7 +27,9 @@ newlib/libm/math/e_pow                       1.6.1           ../../../../../newl
 newlib/libm/math/e_sqrt                      1.6.1           ../../../../../newlib-1.12.0/newlib/libm/math/e_sqrt.c
 newlib/libm/math/s_fabs                      1.6.1           ../../../../../newlib-1.12.0/newlib/libm/math/s_fabs.c
 newlib/libm/common/s_finite                  1.6.1           ../../../../../newlib-1.12.0/newlib/libm/common/s_finite.c
+newlib/libm/math/s_infconst                  1.6.1           ../../../../../newlib-1.12.0/newlib/libm/math/s_infconst.c
 newlib/libm/math/s_isnan                     1.6.1           ../../../../../newlib-1.12.0/newlib/libm/math/s_isnan.c
+newlib/libm/common/s_lib_ver                 1.6.1           ../../../../../newlib-1.12.0/newlib/libm/common/s_lib_ver.c
 newlib/libm/common/s_matherr                 1.6.1           ../../../../../newlib-1.12.0/newlib/libm/common/s_matherr.c
 newlib/libm/common/s_rint                    1.6.1           ../../../../../newlib-1.12.0/newlib/libm/common/s_rint.c
 newlib/libm/common/s_scalbn                  1.6.1           ../../../../../newlib-1.12.0/newlib/libm/common/s_scalbn.c
@@ -49,12 +51,14 @@ libgcc/dp-bit/__fixdfsi                      1.6.1           dp-bit.c
 libgcc/dp-bit/__negdf2                       1.6.1           dp-bit.c
 libgcc/dp-bit/__make_dp                      1.6.1           dp-bit.c
 libgcc/dp-bit/__truncdfsf2                   1.6.1           dp-bit.c
+libgcc/dp-bit/__thenan_df                    1.6.1           dp-bit.c
 libgcc/fp-bit/__unpack_f                     1.6.1           fp-bit.c
 libgcc/fp-bit/__make_fp                      1.6.1           fp-bit.c
 libgcc/dp-bit/__pack_d                       1.6.1           dp-bit.c
 libgcc/dp-bit/__unpack_d                     1.6.1           dp-bit.c
 libgcc/dp-bit/__fpcmp_parts_d                1.6.1           dp-bit.c
 libgcc/fp-bit/__pack_f                       1.6.1           fp-bit.c
+libgcc/libgcc2/__clz_tab                     1.6.1           ../../gcc-3.3.3/gcc/libgcc2.c
 kernel_bridge                                1.6.1.internal  kernel_bridge.c
 newlib/libc/stdlib/atexit                    1.6.1           ../../../../../newlib-1.12.0/newlib/libc/stdlib/atexit.c
 newlib/libc/errno/errno                      1.6.1           ../../../../../newlib-1.12.0/newlib/libc/errno/errno.c
