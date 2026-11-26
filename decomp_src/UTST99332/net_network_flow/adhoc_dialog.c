@@ -1,3 +1,4 @@
+/* cflags: -O2 -frename-registers */
 #include "common.h"
 
 /* declarations recovered from DWARF */
@@ -94,12 +95,118 @@ INCLUDE_ASM("tmp/asm/UTST99332/net_network_flow/nonmatchings/adhoc_dialog", sceN
 
 INCLUDE_ASM("tmp/asm/UTST99332/net_network_flow/nonmatchings/adhoc_dialog", sceNetAdhocDialogGetState);
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_network_flow/nonmatchings/adhoc_dialog", sceNetAdhocDialogInit);
+int sceNetAdhocctlAddHandler(void (*handler)(int event, int error, void *arg), void *arg);
+int sceNetAdhocctlDelHandler(int id);
+void _sce_pspnet_adhoc_dialog_adhocctl_handler(int event, int error, void *arg);
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_network_flow/nonmatchings/adhoc_dialog", sceNetAdhocDialogTerm);
+int sceNetAdhocDialogInit(void)
+{
+	int ret;
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_network_flow/nonmatchings/adhoc_dialog", sceNetAdhocDialogJoin);
+	if (inited > 0) {
+		return (int)0x80000020;
+	}
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_network_flow/nonmatchings/adhoc_dialog", sceNetAdhocDialogWlanError);
+	memset(&info, 0, sizeof(info));
+	info.handler_id = -1;
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_network_flow/nonmatchings/adhoc_dialog", sceNetAdhocDialogUpdate);
+	ret = sceNetAdhocctlAddHandler(_sce_pspnet_adhoc_dialog_adhocctl_handler, &info);
+	if (ret < 0) {
+		printf("sceNetAdhocctlAddHandler() failed. ret = 0x%x\n", ret);
+		goto error;
+	}
+
+	info.handler_id = ret;
+	inited = 1;
+
+error:
+	return ret;
+}
+
+int sceNetAdhocDialogTerm(void)
+{
+	int ret;
+
+	if (inited == 0) {
+		return (int)0x80000001;
+	}
+
+	if (info.handler_id >= 0) {
+		ret = sceNetAdhocctlDelHandler(info.handler_id);
+		if (ret < 0) {
+			printf("sceNetAdhocctlDelHandler() failed. ret = 0x%x\n", ret);
+		}
+		info.handler_id = -1;
+	}
+
+	inited = 0;
+
+	return 0;
+}
+
+int sceNetAdhocctlGetState(int *state);
+
+int sceNetAdhocDialogJoin(struct SceNetAdhocctlGroupName *group_name)
+{
+	int ret;
+	int state;
+
+	if (inited == 0) {
+		return (int)0x80000001;
+	}
+
+	if (info.state != SCE_NET_ADHOC_DIALOG_INT_STATE_CLOSED) {
+		return (int)0x80000021;
+	}
+
+	ret = sceNetAdhocctlGetState(&state);
+	if (ret < 0) {
+		info.error_code = ret;
+		goto error;
+	}
+
+	if (state != 0 && state != 2) {
+		return (int)0x80000021;
+	}
+
+	if (group_name == NULL) {
+		memset(&info.group_name, 0, sizeof(info.group_name));
+	} else {
+		info.group_name = *group_name;
+	}
+
+	info.scan_num = 0;
+	info.state = SCE_NET_ADHOC_DIALOG_INT_STATE_START_SCAN;
+
+error:
+	return ret;
+}
+
+int sceNetAdhocDialogWlanError(int error_code)
+{
+	if (inited == 0) {
+		return (int)0x80000001;
+	}
+
+	if (info.state != SCE_NET_ADHOC_DIALOG_INT_STATE_CLOSED) {
+		return (int)0x80000021;
+	}
+
+	info.error_code = error_code;
+	info.state = SCE_NET_ADHOC_DIALOG_INT_STATE_WLAN_ERROR;
+
+	return 0;
+}
+
+int _sce_pspnet_adhoc_dialog_update(struct SceNetAdhocDialogInfo *info);
+
+int sceNetAdhocDialogUpdate(void)
+{
+	if (inited == 0) {
+		return (int)0x80000001;
+	}
+
+	_sce_pspnet_adhoc_dialog_update(&info);
+
+	return 0;
+}
