@@ -209,6 +209,9 @@ void sceGimPictureActivate(SceGimPicture *picture);
 void sceGimPictureSetFrame(SceGimPicture *picture, float frame);
 float sceGimPictureGetFrame(SceGimPicture *picture);
 u_long64 get_tick();
+int evaluated_rand(int range, ...);
+extern int D_0005AEAC;	/* static int animating (draw_face) */
+extern int D_0005AEB0;	/* static int index (draw_face) */
 void sceGimPictureAnimate(SceGimPicture *picture, float time);
 void sceGimPictureDelete(SceGimPicture *picture);
 void sceGuColor(unsigned int color);
@@ -297,7 +300,44 @@ static int draw_character(int char_num, int x, int y, int animate_term)
 
 __asm__(".globl draw_character");
 
-INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/skin", draw_face);
+static int draw_face(int animate_term)
+{
+	skin_ani_param *p;
+
+	p = &g_face_param[D_0005AEB0];
+	if (g_img_face == NULL)
+		return 0;
+	if (g_face_draw_tick == 0) {
+		D_0005AEB0 = 0;
+		g_face_draw_tick = get_tick();
+		sceGimPictureSetFrame(g_img_face[D_0005AEB0], 0);
+	}
+	if ((int)(get_tick() - g_face_draw_tick) / 1000000 >= animate_term) {
+		if (D_0005AEAC) {
+			p = &g_face_param[D_0005AEB0];
+			if (sceGimPictureGetFrame(g_img_face[D_0005AEB0]) < p->totalframes)
+				sceGimPictureAnimate(g_img_face[D_0005AEB0], p->step);
+			else {
+				D_0005AEAC = 0;
+				sceGimPictureSetFrame(g_img_face[D_0005AEB0], 0);
+				g_face_draw_tick = get_tick();
+			}
+		} else {
+			D_0005AEAC = 1;
+			D_0005AEB0 = evaluated_rand(4, 4, 3, 2, 1);
+			p = &g_face_param[D_0005AEB0];
+			sceGimPictureAnimate(g_img_face[D_0005AEB0], p->step);
+		}
+	}
+	sceGimPictureActivate(g_img_face[D_0005AEB0]);
+	sceGuColor(0xFFFFFFFF);
+	graphics.draw_sprite(480 - p->width, 0, p->width, p->height, 0);
+	if (!D_0005AEAC)
+		D_0005AEB0 = 0;
+	return 1;
+}
+
+__asm__(".globl draw_face");
 
 static int draw_stage()
 {
