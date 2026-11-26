@@ -402,7 +402,18 @@ int module_stop(void)
 	return 0;
 }
 
-INCLUDE_ASM("tmp/asm/tony_libs/libatrac3plus/nonmatchings/libatrac3plus", sceAtracSetData);
+int sceAtracSetData(unsigned int id, unsigned char *buf, unsigned int size)
+{
+	int ret;
+	WaveFmt fmt;
+
+	if (id >= 4 || !D_00003930[id].inUse)
+		return 0x80630005;
+	ret = func_000022F8(&D_00003930[id].info, buf, size, size, &fmt);
+	if (ret < 0)
+		return ret;
+	return func_00000D3C(&D_00003930[id], &fmt);
+}
 
 int sceAtracGetRemainFrame(unsigned int id, int *out)
 {
