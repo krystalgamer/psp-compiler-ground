@@ -84,7 +84,26 @@ static SceInt32 loadModuleVideo(void)
 	return 0;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/load_modules", load_module);
+static SceUID load_module(const char *path)
+{
+	SceUID modid;
+	int ret;
+	int mresult;
+
+	modid = sceKernelLoadModule(path, 0, NULL);
+	if (modid < 0) {
+		ret = modid;
+		goto error;
+	}
+	ret = sceKernelStartModule(modid, 0, NULL, &mresult, NULL);
+	if (ret < 0) {
+		ret = sceKernelUnloadModule(modid);
+		goto error;
+	}
+	return modid;
+error:
+	return ret;
+}
 
 int sceKernelStopModule(SceUID modid, SceSize argsize, void *argp, int *status, void *option);
 int sceKernelUnloadModule(SceUID modid);
