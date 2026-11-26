@@ -612,7 +612,26 @@ int ps_i2309(PsIpc *msg) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/ps_l3800", ps_i230A);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/ps_l3800", ps_i230C);
+int ps_i230C(PsIpc *msg) {
+    int *node;
+
+    if (msg->x14 != 0) {
+        node = ps_ExternalSearchSessionHistoryNode(msg->x04, msg->x14);
+    } else {
+        node = HST_searchSessionIDHistoryNode(msg->x04);
+    }
+    if (node == NULL) {
+        if (msg->x18 != 0) {
+            MEM_free(0, msg->x1C);
+        }
+        return buf_ps_sts;
+    }
+    if (node[15] == 8) {
+        return buf_ps_sts;
+    }
+    HST_setRequestFlag(node, 0);
+    return 0xB;
+}
 
 int ps_i2312(PsIpc *msg) {
     struct {
