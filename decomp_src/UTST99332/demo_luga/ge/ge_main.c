@@ -149,7 +149,31 @@ void geSetContext(geCONTEXT *context);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/ge/ge_main", geDrawStart);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/ge/ge_main", geSetModule);
+int geSetModule(int num, geMODULE *module)
+{
+	int id;
+	unsigned int i;
+
+	if (num >= 128) {
+		return -1;
+	}
+
+	if (num == -1) {
+		id = pProg->num_module;
+		if (id >= 128) {
+			return -1;
+		}
+		pProg->num_module = id + 1;
+	} else {
+		id = num;
+	}
+
+	for (i = 0; i < 6; i++) {
+		((u32 *)&geModule[id])[i] = ((u32 *)module)[i];
+	}
+
+	return id;
+}
 
 void geDrawFinWait(void) {
     if (ge_start != 0) {
@@ -168,7 +192,30 @@ void geDrawFinWait(void) {
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/ge/ge_main", geSendProc);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/ge/ge_main", geInit);
+void geInit(void)
+{
+	ge_start = 0;
+	pProg = &geProgram;
+	pCont = &geContext;
+
+	sceCtrlSetSamplingMode(1);
+	sceCtrlSetSamplingCycle(0);
+	sceGuInit();
+
+	geSetContext(&def_context);
+	geSetCamera(-1, &def_camera);
+
+	geCommonInit();
+
+	geModelInit(1);
+
+	sceGuDisplay(1);
+
+	pProg->cont = 0;
+	pProg->mode = 0;
+	pProg->pad_margin = 16;
+	pProg->flag = 0;
+}
 
 void geTerm(void) {
     geModelTerm();
