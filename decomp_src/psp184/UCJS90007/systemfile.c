@@ -272,7 +272,75 @@ end:
 
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/systemfile", sceSystemFileLoadIndex2);
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/systemfile", sceSystemFileLoadIndex);
+int sceSystemFileLoadIndex(int fd, void **phandle)
+{
+	SysFile *sf = NULL;
+	unsigned int n;
+	int err = 0;
+	SfHeader hdr;
+	char pad[4];
+	register int ret;
+
+	if (phandle == NULL)
+		SF_ERROR(ret, 3)
+	else {
+		*phandle = NULL;
+		n = 0x14;
+		if (sceIoRead(fd, &hdr, n) != n) {
+			err = 0x80120002;
+			goto fail;
+		}
+		if (sf_memcmp(&hdr, D_0002F2EC, 4) != 0) {
+			err = 0x80120004;
+			goto fail;
+		}
+		if ((n &= 3) != 0) {
+			n = 4 - n;
+			if (sceIoRead(fd, pad, n) != n) {
+				err = 0x80120002;
+				goto fail;
+			}
+		}
+		if (checkVersion(hdr.version) != 0) {
+			err = 0x80120007;
+			goto fail;
+		}
+		sf = _newSystemFile(0, hdr.count);
+		if (sf == NULL)
+			SF_ERROR(ret, 1)
+		else {
+			if (sf->hdr->dataofs < sf->hdr->keyofs)
+				goto fail;
+			sf_memcpy(sf->hdr, &hdr, 0x14);
+			sf->nindex = sf->hdr->count;
+			sf->ntable = sf->nindex;
+			sf->nkeys = sf->nindex;
+			n = sf->hdr->count << 4;
+			if (sceIoRead(fd, sf->table, n) != n) {
+				err = 0x80120002;
+				goto fail;
+			}
+			n = sf->hdr->dataofs - sf->hdr->keyofs;
+			if (sceIoRead(fd, sf->keys, n) != n) {
+				err = 0x80120002;
+				goto fail;
+			}
+			realignkeys(sf->keys, sf->table, sf->hdr->count);
+			keymapping(sf);
+			sf->fd = fd;
+			sf->flags |= 1;
+			sf->flags |= 4;
+			*phandle = sf;
+			ret = 0;
+			goto end;
+fail:
+			sceSystemFileFree(sf);
+			ret = err;
+		}
+	}
+end:
+	return ret;
+}
 
 int sceIoRead(int fd, void *buf, unsigned int nbyte);
 long long sceIoLseek(int fd, long long offset, int whence);
