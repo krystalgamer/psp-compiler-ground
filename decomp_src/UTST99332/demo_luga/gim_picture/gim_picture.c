@@ -1,3 +1,4 @@
+/* cflags: -O2 -frename-registers */
 #include "common.h"
 
 /* declarations recovered from DWARF */
@@ -124,7 +125,15 @@ INCLUDE_RODATA("tmp/asm/UTST99332/demo_luga/nonmatchings/gim_picture/gim_picture
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/gim_picture/gim_picture", sceGimPictureCreate);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/gim_picture/gim_picture", sceGimPictureDelete);
+void sceGimPictureDelete(SceGimPicture *picture)
+{
+	if (picture != NULL) {
+		if (--picture->m_reference == 0) {
+			sceGimPictureUnload(picture);
+			sceGimPictureFreeMemory(picture);
+		}
+	}
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/gim_picture/gim_picture", sceGimPictureDuplicate);
 
@@ -150,11 +159,24 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/gim_picture/gim_picture", 
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/gim_picture/gim_picture", sceGimPictureReallocPalette);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/gim_picture/gim_picture", sceGimPictureHasAnimation);
+_Bool sceGimPictureHasAnimation(SceGimPicture *picture)
+{
+	if (picture == NULL) {
+		return 0;
+	}
+	return (picture->m_flags & 0x10) != 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/gim_picture/gim_picture", reconfigure_picture);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/gim_picture/gim_picture", sceGimPictureSetEnableBits);
+void sceGimPictureSetEnableBits(SceGimPicture *picture, int bits, int value)
+{
+	if (picture == NULL) {
+		return;
+	}
+	picture->m_enable_bits &= ~bits;
+	picture->m_enable_bits |= bits & value;
+}
 
 int sceGimPictureGetEnableBits(SceGimPicture *picture) {
     int var_v0;
@@ -312,4 +334,13 @@ float sceGimPictureGetDissolve(SceGimPicture *picture) {
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/gim_picture/gim_picture", sceGimPictureSetImageCrop);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/gim_picture/gim_picture", sceGimPictureGetImageCrop);
+const float *sceGimPictureGetImageCrop(SceGimPicture *picture)
+{
+	if (picture == NULL) {
+		return NULL;
+	}
+	if (!(picture->m_flags & 0x20)) {
+		return NULL;
+	}
+	return picture->m_image_crop;
+}
