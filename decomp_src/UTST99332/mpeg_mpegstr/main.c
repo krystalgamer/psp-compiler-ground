@@ -396,4 +396,26 @@ term:
 	return ret;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/mpeg_mpegstr/nonmatchings/main", pad_read);
+extern SceUInt32 D_00010C1C; /* static SceUInt32 oldpadd in pad_read (bss is asm) */
+extern SceUInt32 D_00010C20; /* static SceUInt32 padd in pad_read */
+
+static SceInt32 pad_read(t_displayBuffer *pDisp)
+{
+	SceCtrlData buf;
+
+	D_00010C1C = D_00010C20;
+	sceCtrlReadBufferPositive(&buf, 1);
+	D_00010C20 = buf.Buttons;
+
+	if (D_00010C20 & ~D_00010C1C & 0x1) {
+		playInfo.playMode = 10;
+		return 1;
+	} else if (D_00010C20 & ~D_00010C1C & 0x8) {
+		playInfo.playMode = 1;
+		return 1;
+	} else if (D_00010C20 & ~D_00010C1C & 0x2000) {
+		dispbuf_setDelayMode(pDisp);
+	}
+
+	return 0;
+}
