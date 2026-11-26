@@ -129,6 +129,13 @@ modules (`tools/nltest.py`, `tools/objcmp.py`).
   -16.0) are hoisted in the opposite order and the -16.0 address uses `v1`
   instead of `v0`. ~20 source forms tried.
 
+- Resolved: originals keeping a constant in a callee-saved register across
+  calls (tony_libs, pspnet_inet `sppp_ipcp_scr`, flowars 284/292) are a
+  source form, not a compiler difference: the constant is the argument of a
+  static inline helper whose body makes calls before using it
+  (`auth_reset(50)` keeps 50 in s0). Written directly or via a local, gcc
+  rematerialises it.
+
 ## psp-gcc 1.6.1
 
 - **32-bit `HOST_WIDE_INT`** (psp-gcc 1.7.1, `psp: use a 32-bit
