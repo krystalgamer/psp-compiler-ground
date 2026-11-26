@@ -1,15 +1,34 @@
 #include "common.h"
 #include "m2c_macros.h"
 
-M2C_UNK LoadFileList(M2C_UNK, M2C_UNK *);           /* extern */
-extern unsigned char mode_gim;
+void LoadFileList(int no, int *list);
+typedef struct {
+	int active;
+	int x, y;
+	int tx, ty;
+} SEL_WORK;
+typedef struct {
+	int idx;
+	int x, y;
+	int tx, ty;
+} SEL_INIT;
+extern SEL_WORK SelWork[5];
+extern int chr_list_pl[];
+extern int chr_list_pl2[];
+extern int D_0101C3BC;
+extern int SelectPlayer;
+extern int SelPlAngle;
+extern int OldError;
+extern const SEL_INIT mode_int[3];
+extern int mode_gim[];
+extern int mode_gims2[];
 extern int Round;
 extern int D_0101C3B8;
 extern int RsFlag;
 
 
 void load_title_gim(void) {
-    LoadFileList(0, &mode_gim);
+    LoadFileList(0, mode_gim);
 }
 
 INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/plsel", mode_gim);
@@ -46,11 +65,48 @@ INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/plsel", D_0002F428);
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/plsel", disp_title_bg);
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/plsel", sel_obj_move);
+void sel_obj_move(void)
+{
+	int i;
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/plsel", sel_obj_move2);
+	for (i = 0; i < 5; i++) {
+		if (SelWork[i].active > 0) {
+			if (SelWork[i].x > SelWork[i].tx)
+				SelWork[i].x--;
+			if (SelWork[i].x < SelWork[i].tx)
+				SelWork[i].x++;
+			if (SelWork[i].y > SelWork[i].ty)
+				SelWork[i].y--;
+			if (SelWork[i].y < SelWork[i].ty)
+				SelWork[i].y++;
+		}
+	}
+}
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/plsel", PlSelInit);
+void sel_obj_move2(int i)
+{
+	if (SelWork[i].active > 0) {
+		if (SelWork[i].x > SelWork[i].tx)
+			SelWork[i].x--;
+		if (SelWork[i].x < SelWork[i].tx)
+			SelWork[i].x++;
+		if (SelWork[i].y > SelWork[i].ty)
+			SelWork[i].y--;
+		if (SelWork[i].y < SelWork[i].ty)
+			SelWork[i].y++;
+	}
+}
+
+int PlSelInit(void)
+{
+	if (D_0101C3BC == 0)
+		LoadFileList(12, chr_list_pl);
+	else
+		LoadFileList(12, chr_list_pl2);
+	SelectPlayer = 0;
+	SelPlAngle = 0;
+	return 0;
+}
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/plsel", PlayerSelect);
 
