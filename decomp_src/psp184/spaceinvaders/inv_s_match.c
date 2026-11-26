@@ -140,7 +140,20 @@ static int SprMoveEnemyChk(int a, int b)
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_match", SprMoveEnemyNomal);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_match", SprMoveEnemySub);
+void SprMoveEnemySub(void)
+{
+	int i;
+	int *s;
+
+	for (i = 0; i < 48; i++) {
+		s = invt[i].p;
+		if (s && (s[3] & 2) && (s[4] == 5 || s[4] == 6)) {
+			s[10] = hato(s[10], invt[i].f4[2] * 8, 2);
+			s = invt[i].p;
+			s[11] = hato(s[11], invt[i].f4[3] * 2, 2);
+		}
+	}
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_match", SprMoveEnemy);
 
