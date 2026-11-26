@@ -412,7 +412,51 @@ static __inline__ int sceMScmIsMediumInserted(void)
 	return status == 1;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/main", gu_init);
+void sceGuInit(void);
+void sceGuStart(int type, void *list, int size);
+int sceGuFinish(void);
+int sceGuSync(int mode, int what);
+int sceGuDisplay(int state);
+void sceGuDrawBuffer(int psm, void *fbp, int frame_width);
+void sceGuDispBuffer(int width, int height, void *dbp, int frame_width);
+void sceGuDepthBuffer(void *zbp, int frame_width);
+void sceGuOffset(unsigned int x, unsigned int y);
+void sceGuScissor(int x, int y, int w, int h);
+void sceGuClearColor(unsigned int color);
+void sceGuClearDepth(unsigned int depth);
+void sceGuClearStencil(unsigned int stencil);
+void sceGuBlendFunc(int op, int src, int dest, unsigned int srcfix, unsigned int destfix);
+void sceGumSetMatrixStack(void *stack, int proj, int view, int model, int texture);
+int sceDisplayWaitVblankStart(void);
+void *malloc(unsigned int size);
+void *malloc(unsigned int size);
+void free(void *p);
+static void gu_init(void)
+{
+	sceGuInit();
+	sceGuStart(0, disp_list, 0x50000);
+	sceGuDrawBuffer(3, (void *)0, 512);
+	sceGuDispBuffer(480, 272, (void *)0x88000, 512);
+	sceGuDepthBuffer((void *)0x110000, 512);
+	sceGuOffset(2048 - 480 / 2, 2048 - 272 / 2);
+	sceGuScissor(0, 0, 480, 272);
+	sceGuEnable(2);
+	sceGuBlendFunc(0, 2, 3, 0, 0);
+	sceGuEnable(4);
+	sceGuTexFunc(0, 1);
+	sceGuTexFilter(7, 0);
+	sceGuTexWrap(0, 0);
+	sceGuClearColor(0);
+	sceGuClearDepth(0);
+	sceGuClearStencil(0);
+	sceGumSetMatrixStack(matrix_stack, 8, 8, 32, 0);
+	sceGuFinish();
+	sceGuSync(0, 0);
+	sceDisplayWaitVblankStart();
+	sceGimPictureSetMemoryManager(malloc, free);
+	sceGimPictureSetMemoryManager2(malloc64, free64);
+	sceGuDisplay(1);
+}
 
 void *memset(void *s, int c, unsigned int n);
 void init_pss_text_texture(void);
