@@ -11,7 +11,21 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parseIO", parseContentContinue)
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parseIO", parseContentContinueJS);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parseIO", parseJSDocumentEncode);
+int *parseJSDocumentEncode(int *enc, int *src) {
+    void *buf;
+    int n;
+    int *d;
+
+    buf = MEM_malloc(0, src[6] * 4);
+    n = parseConvertEncode(buf, src[7], src[6], enc[2]);
+    d = MEM_malloc(0, 0x14);
+    d[3] = 0;
+    d[4] = 0;
+    d[0] = 1;
+    d[2] = (int)buf;
+    d[1] = n;
+    return d;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parseIO", parseContentEnd);
 

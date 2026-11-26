@@ -2,6 +2,7 @@
 #include "common.h"
 #include "parse_str.h"
 #include "m2c_macros.h"
+PDStr Attr_getName(void *attr);
 extern char D_00137EB4[];
 extern char D_00137EE4[];
 PDStr Node_getNodeName(int node);
@@ -115,7 +116,41 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", ps_prepareText);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", parseTitle);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", parseWellFormedCommentWC);
+int parseWellFormedCommentWC(PCtx *c) {
+    int found;
+    PChar *cur;
+    int i;
+    int n;
+    int idx;
+    int last;
+
+    found = 0;
+    cur = c->buf->cur;
+    i = 0;
+    n = c->buf->x04 - c->buf->count - 3;
+    last = c->x1C[1];
+    idx = c->x1C[0];
+    for (;;) {
+            again:
+        if (cur[i] == '-' && cur[i + 1] == '-' && cur[i + 2] == '>') {
+            found = 1;
+        }
+        if (i == n || n < 0) {
+            goto out;
+        }
+        i++;
+        goto again;
+    out:
+        if (idx == last - 1) {
+            break;
+        }
+        idx++;
+        i = 0;
+        n = ((PBuf **)c->x1C[3])[idx]->x04 - 8;
+        cur = ((PBuf **)c->x1C[3])[idx]->cur;
+    }
+    return found;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", parseWellFormedScriptWC);
 
@@ -347,9 +382,45 @@ void parseJSTextareaSet(PCtx *c) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", parseInvalidTag);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", parseIsSetAttribute);
+int parseIsSetAttribute(int node, PDStr *name) {
+    int map;
+    int n;
+    int i;
+    void *attr;
+    PDStr an;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", parseElementSetAttribute);
+    if (node == 0 || name == NULL) {
+        return 0;
+    }
+    i = 0;
+    map = Node_getAttributes(node);
+    n = NamedNodeMap_getLength(map);
+    for (; i < n; i++) {
+        attr = NamedNodeMap_item(map, i);
+        an = Attr_getName(attr);
+        if (an.len == name->len && UCS_strncasecmp(an.data, name->data, an.len) == 0 && Attr_getSpecified(attr) != 0) {
+            return 0;
+        }
+    }
+    return 1;
+}
+
+void parseElementSetAttribute(int elem, PDStr *name, void *val) {
+    unsigned int i;
+
+    if (elem == 0 || name == NULL) {
+        return;
+    }
+    if (parseIsSetAttribute(elem, name) == 0) {
+        return;
+    }
+    if (name != NULL && name->len != 0) {
+        for (i = 0; i < name->len; i++) {
+            name->data[i] = (name->data[i] >= 'a' && name->data[i] <= 'z') ? name->data[i] - 0x20 : name->data[i];
+        }
+    }
+    Element_setAttribute(elem, name, val);
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -409,7 +480,30 @@ void *parseNewCtxt(void) {
     return temp_v0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", parseFreeCtxt);
+void parseFreeCtxt(PCtx *c) {
+    int i;
+
+    if (c == NULL) {
+        return;
+    }
+    for (i = 0; i < c->x1C[1]; i++) {
+        MEM_free(0, M2C_FIELD(((PBuf **)c->x1C[3])[i], void **, 0x10));
+        MEM_free(0, ((PBuf **)c->x1C[3])[i]);
+    }
+    if (c->x1C[3] != 0) {
+        MEM_free(0, c->x1C[3]);
+    }
+    if (c->x00[1] != 0) {
+        MEM_free(0, c->x00[1]);
+    }
+    if (c->x1C[4] != 0) {
+        MEM_free(0, c->x1C[4]);
+    }
+    if (M2C_FIELD(c, int *, 0x144) != 0) {
+        MEM_free(0, M2C_FIELD(c, int *, 0x144));
+    }
+    MEM_free(0, c);
+}
 
 void parseInitCtxt(PCtx *c) {
     c->x00[0] = 0;

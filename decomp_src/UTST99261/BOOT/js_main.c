@@ -1,6 +1,7 @@
 /* cflags: -O1 */
 #include "common.h"
 #include "m2c_macros.h"
+extern char D_001339E0[];
 M2C_UNK JSDestroyInternal(int);                     /* extern */
 int JSEventLoop();                                  /* extern */
 M2C_UNK JSInitInternal();                           /* extern */
@@ -9,7 +10,12 @@ M2C_UNK OS_thread_exit(M2C_UNK);                    /* extern */
 extern int js_err_msg;
 
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/js_main", JSStartInternal);
+void JSStartInternal(int x) {
+    int m[8];
+
+    SetIpcMember(m, 8, x, 1, 0x801, 0, 0, 0);
+    JSSendMail(m, D_001339E0);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/js_main", JSRunInternal);
 
