@@ -528,3 +528,8 @@ UCJS90007 (built against SDK 2.5.0, "release_250") is all
 - Like 1.6.1.internal, units that still mix C and asm need
   `-fno-merge-constants` to keep their float constants in emission order
   with the asm's (`mixed:` in `config/compilers.txt`; libgum).
+
+- UCJS90007's `mpeg_display.c` (SDK mpeg sample code) matches only with
+  `-fmove-all-movables` (loop-invariant hoisting of everything movable); the
+  module's other units break with it, so it's that object's own build flag,
+  not a 1.8.x default. mpegon's `DvdUmdRetryRead` gets close with it too.
