@@ -36,7 +36,63 @@ void *memset(void *s, int c, unsigned int n);
 int sceIoOpen(const char *name, int flag, int mode);
 int sceIoRead(int fd, void *buf, unsigned int nbyte);
 
-INCLUDE_ASM("tmp/asm/UTST99332/sound_starmix/nonmatchings/at3plus", init_atrac3plus);
+int sceAtracSetDataAndGetID(void *buf, SceUInt32 bufsize);
+int sceAtracGetSecondBufferInfo(SceInt32 atracID, SceUInt32 *puiPosition, SceUInt32 *puiDataByte);
+int sceAtracSetSecondBuffer(SceInt32 atracID, SceUChar8 *pucSecondBufferAddr, SceUInt32 uiSecondBufferByte);
+int sceAtracGetSoundSample(SceInt32 atracID, SceInt32 *piEndSample, SceInt32 *piLoopStartSample, SceInt32 *piLoopEndSample);
+int sceAtracSetLoopNum(SceInt32 atracID, SceInt32 iLoopNum);
+SceUID sceKernelCreateEventFlag(const char *name, SceUInt32 attr, SceUInt32 initPattern, void *opt);
+long long sceIoLseek(int fd, long long offset, int whence);
+void release_arg(SceAtracArg *pPlayArg);
+SceInt32 init_atrac3plus(SceUChar8 *filename, SceUChar8 *pucReadBuf, SceInt32 iInputBufferSize, SceInt32 iOutputChannel, SceAtracArg *pPlayArg)
+{
+	SceSSize filesize;
+	SceInt32 status;
+	SceInt32 iLoopStartSample, iLoopEndSample;
+
+	pPlayArg->fd = -1;
+	pPlayArg->atracID = -1;
+	pPlayArg->finishflag = -1;
+	pPlayArg->outputChannel = iOutputChannel;
+
+	pPlayArg->fd = sceIoOpen((const char *)filename, 1, 0);
+	if (pPlayArg->fd < 0) {
+		status = pPlayArg->fd;
+		printf("status = 0x%x(in sceIoOpen)\n", status);
+		goto RELEASE_ARG;
+	}
+	filesize = sceIoRead(pPlayArg->fd, pucReadBuf, iInputBufferSize);
+	if (filesize < 0) {
+		status = filesize;
+		printf("status = 0x%x(in sceIoRead)\n", status);
+		goto RELEASE_ARG;
+	}
+	pPlayArg->atracID = sceAtracSetDataAndGetID(pucReadBuf, filesize);
+	if (pPlayArg->atracID < 0) {
+		status = pPlayArg->atracID;
+		printf("status = 0x%x(in sceAtracSetDataAndGetID)\n", status);
+		goto RELEASE_ARG;
+	}
+	pPlayArg->finishflag = sceKernelCreateEventFlag("finishflag", 0, 0, 0);
+	if (pPlayArg->finishflag < 0) {
+		status = pPlayArg->finishflag;
+		printf("status = 0x%x(in sceKernelCreateEventflag)\n", status);
+		goto RELEASE_ARG;
+	}
+	status = sceAtracGetSoundSample(pPlayArg->atracID, &pPlayArg->iEndSample, &iLoopStartSample, &iLoopEndSample);
+	if (status < 0) {
+		printf("status = 0x%x(in sceAtracGetSoundSample)\n", status);
+		goto RELEASE_ARG;
+	}
+	status = sceAtracSetLoopNum(pPlayArg->atracID, -1);
+	if (status < 0)
+		printf("status = 0x%x(in sceAtracSetLoopNum)\n", status);
+	return 0;
+
+RELEASE_ARG:
+	release_arg(pPlayArg);
+	return status;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/sound_starmix/nonmatchings/at3plus", play_atrac3plus);
 
