@@ -24,6 +24,15 @@ extern int malloc_max_size;
 typedef struct { int f0; int f4; int f8; int fC; } BG_T;
 typedef struct { int f0; int f4; int f8[6]; int f20[6]; } SEL_T;
 
+extern int title_main;
+void title_main_start(void);
+void title_main_select(void);
+void game_cnt_option_555B8(void);
+void game_cnt_hiscore_5710C(void);
+void game_cnt_help(void);
+void title_main_return(void);
+typedef struct { int f0; int f4; int f8[6]; int f20[6]; } SELC_T;
+
 int inv_title_main(void) {
     inv_title_memcheck();
     inv_logo();
@@ -57,7 +66,29 @@ M2C_UNK inv_title_free(void)
 	bmp_file_unload(*(int *)(t + 0x28));
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_title_menu", title_main_control);
+void title_main_control(void)
+{
+	switch (title_main) {
+	case 0:
+		title_main_start();
+		break;
+	case 1:
+		title_main_select();
+		break;
+	case 2:
+		game_cnt_option_555B8();
+		break;
+	case 3:
+		game_cnt_hiscore_5710C();
+		break;
+	case 4:
+		game_cnt_help();
+		break;
+	case 5:
+		title_main_return();
+		break;
+	}
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_title_menu", title_main_start);
 
@@ -141,7 +172,25 @@ void select_start(void)
 	}
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_title_menu", select_start_check);
+int select_start_check(void)
+{
+	int i;
+	SELC_T *s = (SELC_T *)&D_00349230;
+
+	for (i = 0; i < 6; i++) {
+		if (i == 0) {
+			s->f8[i] += 8;
+		} else {
+			if (s->f8[i - 1] >= 0x40)
+				s->f8[i] += 8;
+		}
+		if (s->f8[i] > 0xFF)
+			s->f8[i] = 0xFF;
+	}
+	if (s->f8[5] >= 0xFF)
+		return 1;
+	return 0;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
