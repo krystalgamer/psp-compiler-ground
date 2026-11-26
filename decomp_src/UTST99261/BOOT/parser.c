@@ -1,3 +1,4 @@
+/* cflags: -O1 */
 #include "common.h"
 #include "m2c_macros.h"
 M2C_UNK parseDeleteMultiBuffer();                   /* extern */
