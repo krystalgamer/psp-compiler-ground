@@ -83,6 +83,13 @@ void inv_ring_texno(int no);
 typedef struct { int f0; u8 pad[0x98]; } LZ_T;
 typedef struct { u8 f0; u8 pad[0x7F]; } RG_T;
 
+extern int game_model_load;
+extern u8 gmo[];
+extern int PD_TBL[6] __asm__("D_005A06A8");
+typedef struct { int f0; int f4; u8 pad[0x60]; } GMO_T;
+typedef struct { u8 p0[0x10]; int f10; int f14; int f18; int f1C; u8 p1[0xD8 - 0x20]; } EUNIT_T;
+typedef struct { int alive; u8 pad[0x40]; EUNIT_T u[4][11]; } ENEMY_T;
+
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", maingame_all_init);
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", maingame_init);
@@ -225,7 +232,22 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", game_cnt_hisco
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", inv_polydisp_clear);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", inv_polydisp_clear_off);
+void inv_polydisp_clear_off(void)
+{
+	int i;
+	int *p;
+
+	if (game_model_load == 0)
+		return;
+	p = PD_TBL;
+	if (p[0] != 1)
+		return;
+	for (i = 0; i < 5; i++) {
+		if (p[1 + i] >= 0)
+			((GMO_T *)gmo)[p[1 + i]].f4 = 1;
+	}
+	inv_star_dispset(1);
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", inv_polydisp_clear2);
 
