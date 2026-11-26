@@ -13,9 +13,8 @@ INCLUDE_ASM("tmp/asm/UTST99332/graphics_skin/nonmatchings/libgum", sceGumSetMatr
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_skin/nonmatchings/libgum", sceGumSetCurMatrix);
 
-#ifndef NULL
 #define NULL ((void *)0)
-#endif
+
 void sceGumUpdateMatrix(void);
 
 void sceGumUpdateMatrix(void) {
