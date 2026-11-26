@@ -723,7 +723,19 @@ void parseExtStyleSheet(int sid, void *text) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", backToStyleTag);
+void backToStyleTag(PCtx *c) {
+    unsigned int k;
+    unsigned int cnt;
+
+    cnt = c->buf->count;
+    for (k = 5; k <= cnt; k++) {
+        if (c->buf->cur[-k] == '<' && CI(c->buf->cur[1 - k], 'S') && CI(c->buf->cur[2 - k], 'T') && CI(c->buf->cur[3 - k], 'Y') && CI(c->buf->cur[4 - k], 'L') && CI(c->buf->cur[5 - k], 'E')) {
+            c->buf->count -= k;
+            c->buf->cur -= k;
+            return;
+        }
+    }
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", parseStyle);
 
@@ -996,7 +1008,46 @@ void parseJSTextareaSet(PCtx *c) {
     Node_setJSObj(M2C_FIELD(c, int *, 0x11C), obj);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", parseInvalidTag);
+void parseInvalidTag(PCtx *c, PChar *name, int len) {
+    int depth;
+    int cm;
+
+    depth = 1;
+    cm = 0;
+    if (*c->buf->cur == '>') {
+        if (parseNextChar(c) == 1) {
+            return;
+        }
+    }
+    for (;;) {
+        if (c->buf->cur[0] == '<' && c->buf->cur[1] == '!' && c->buf->cur[2] == '-' && c->buf->cur[3] == '-') {
+            cm = 1;
+        }
+        if (c->buf->cur[0] == '-' && c->buf->cur[1] == '-' && c->buf->cur[2] == '>' && cm > 0) {
+            cm = 0;
+        }
+        if (cm == 0) {
+            if (c->buf->cur[0] == '<') {
+                depth += UCS_strncasecmp(name, c->buf->cur + 1, len) == 0;
+            }
+            if (c->buf->cur[0] == '<' && c->buf->cur[1] == '/' && UCS_strncasecmp(name, c->buf->cur + 2, len) == 0) {
+                depth--;
+                if (depth <= 0) {
+                    break;
+                }
+            }
+        }
+        if (parseNextChar(c) == 1) {
+            return;
+        }
+    }
+    parseSkipChar(c, len + 2);
+    while (*c->buf->cur == ' ' || *c->buf->cur == '\t' || *c->buf->cur == '\n' || *c->buf->cur == '\r') {
+        if (parseNextChar(c) == 1) {
+            break;
+        }
+    }
+}
 
 int parseIsSetAttribute(int node, PDStr *name) {
     int map;
