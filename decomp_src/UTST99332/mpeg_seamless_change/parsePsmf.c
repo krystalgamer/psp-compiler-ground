@@ -65,7 +65,25 @@ int sInfo_setPsmf(t_streamInfo *pStreamInfo, ScePsmf *pVideoPsmf, ScePsmf *pAudi
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/mpeg_seamless_change/nonmatchings/parsePsmf", sInfo_reset);
+SceInt32 sInfo_reset(t_streamInfo *pStreamInfo, SceInt32 videoId, SceInt32 audioId)
+{
+	SceInt32 ret;
+
+	ret = sInfo_setCurrentStream(pStreamInfo, 0, videoId);
+	if (ret != 0) {
+		printf("fatal error : sInfo_setCurrentStream() 0x%x\n", ret);
+		goto term;
+	}
+
+	ret = sInfo_setCurrentStream(pStreamInfo, 1, audioId);
+	if (ret != 0) {
+		printf("fatal error : sInfo_setCurrentStream()0x%x\n", ret);
+		goto term;
+	}
+
+term:
+	return ret;
+}
 
 SceInt32 sInfo_getNumberOfStreams(t_streamInfo *pStreamInfo, SceInt32 streamType)
 {
