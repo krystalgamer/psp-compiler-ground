@@ -14,6 +14,7 @@ module_load                                  1.7.1           module_load.c
 setting                                      1.7.1           setting.c
 at3main                                      1.7.1           at3main.c
 at3plus                                      1.7.1           at3plus.c
+libwave                                      1.8.4.internal  libwave.c
 libgum                                       1.8.4.internal  libgum.c
 libgu                                        1.8.4.internal  libgu.c
 font                                         1.8.4.internal  font.c

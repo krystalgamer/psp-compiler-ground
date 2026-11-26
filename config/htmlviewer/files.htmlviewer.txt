@@ -1,0 +1,4 @@
+# Objects without DWARF: start address (vram), unit, compiler, source.
+# SDK 2.5.0 libwave (no DWARF; its encoded version string precedes its rodata), the same object as UCJS90007's.
+0x5510 libwave         1.8.4.internal  libwave.c
+rodata 0xF362C libwave
