@@ -2,6 +2,22 @@
 #include "common.h"
 #include "m2c_macros.h"
 #include "UTST99261/BOOT/nfgui.h"
+
+typedef struct GUIFRAME {
+    struct GUIFRAME *next;
+    u8 unk4[0xC];
+    GUIPIXMAP *pixmap;          /* 0x10 */
+} GUIFRAME;
+
+typedef struct {
+    s8 type;                    /* 5 */
+    GUIFRAME *frames;           /* 0x4 */
+} GUIANIM;
+
+void _GUI_Graphics_Push(GUIGRAPHICS *g);
+void _GUI_Graphics_Pop(void);
+void zWindDrawBox();
+void zWindFontDraw();
 extern int _zWindDrawTexClipOffX;
 extern int _zWindDrawTexClipOffY;
 
@@ -87,7 +103,23 @@ int GUI_Graphics_setFont(GUIGRAPHICS *g, GUIFONT *font) {
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Graphic", GUI_Graphics_drawString);
+int GUI_Graphics_drawString(GUIGRAPHICS *g_, char *str, int len, int x, int y) {
+    GUIGRAPHICS *g;
+
+    if (g_ == NULL) {
+        puts("[X1]GUI_Graphics_drawString");
+        return -1;
+    }
+    g = g_;
+    if (g->type != 2) {
+        puts("[X2]GUI_Graphics_drawString");
+        return -1;
+    }
+    _GUI_Graphics_Push(g);
+    zWindFontDraw(g->font, x, y, str, *(s16 *)&g->color, len);
+    _GUI_Graphics_Pop();
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Graphic", GUI_Graphics_getStringSize);
 
@@ -117,7 +149,23 @@ int GUI_Graphics_drawRect(GUIGRAPHICS *g) {
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Graphic", GUI_Graphics_fillRect);
+int GUI_Graphics_fillRect(GUIGRAPHICS *g_, int x, int y, int w, int h) {
+    GUIGRAPHICS *g;
+
+    if (g_ == NULL) {
+        puts("[X1]GUI_Graphics_fillRect");
+        return -1;
+    }
+    g = g_;
+    if (g->type != 2) {
+        puts("[X2]GUI_Graphics_fillRect");
+        return -1;
+    }
+    _GUI_Graphics_Push(g);
+    zWindDrawBox(x, y, w, h, *(s16 *)&g->color);
+    _GUI_Graphics_Pop();
+    return 0;
+}
 
 int GUI_Graphics_setClip(GUIGRAPHICS *g, int x, int y, int w, int h) {
     if (g == NULL) {
@@ -177,7 +225,32 @@ void GUI_Graphics_startAnimationGIF(void) {
 void GUI_Graphics_getAnimationGIFSize(void) {
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Graphic", GUI_Graphics_freeAnimationGIF);
+void GUI_Graphics_freeAnimationGIF(GUIANIM *a_) {
+    GUIFRAME *f;
+    GUIFRAME *n;
+    GUIANIM *a;
+
+    if (a_ == NULL) {
+        puts("[X1]GUI_Graphics_freeAnimationGIF");
+        return;
+    }
+    a = a_;
+    if (a->type != 5) {
+        puts("[X2]GUI_Graphics_freeAnimationGIF");
+        return;
+    }
+    a->type = 0;
+    f = a->frames;
+    while (f != NULL) {
+        if (f->pixmap != NULL) {
+            GuipixmapDelete(f->pixmap);
+        }
+        n = f;
+        f = f->next;
+        ESP_guiMemFree(n);
+    }
+    ESP_guiMemFree(a);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Graphic", GUI_Graphics_getMaskPattern);
 
