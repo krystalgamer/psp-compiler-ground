@@ -208,9 +208,29 @@ void geSetCamera(int param, geCAMERA *camera)
 	geDrawFinWait();
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/ge/ge_context", geSetContext);
+void geSetContext(geCONTEXT *context)
+{
+	int i;
+	u32 *src = (u32 *)context;
+	u32 *dst = (u32 *)pCont;
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/ge/ge_context", geGetContext);
+	for (i = 0; i < sizeof(geCONTEXT) / 4; i++) {
+		dst[i] = src[i];
+	}
+
+	init_context();
+}
+
+void geGetContext(geCONTEXT *context)
+{
+	int i;
+	u32 *src = (u32 *)pCont;
+	u32 *dst = (u32 *)context;
+
+	for (i = 0; i < sizeof(geCONTEXT) / 4; i++) {
+		dst[i] = src[i];
+	}
+}
 
 void geSetWorld(geWORLD *world) {
     sceGumTranslate(&world->trans);
