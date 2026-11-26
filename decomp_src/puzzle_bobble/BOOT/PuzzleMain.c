@@ -521,8 +521,6 @@ extern int OjamaCnt[3];
 extern int OjamaPos[3][8];
 extern int OjamaCol[3][8];
 
-#ifdef NON_MATCHING
-/* Close: the sb of unk027 (8) is scheduled ahead of the unk454/unk023 stores. */
 void VSValueInit(int pl, int a1, int flag)
 {
 	PZL_STAT *st;
@@ -541,10 +539,10 @@ void VSValueInit(int pl, int a1, int flag)
 	st->bx = BallXPos[pl];
 	st->by = 0x116;
 	st->unk00E = 600;
-	st->unk027 = 8;
-	st->unk026 = 8;
 	st->unk454 = 0;
 	st->unk023 = 0;
+	st->unk027 = 8;
+	st->unk026 = 8;
 	st->unk430 = 0;
 	if (flag < 0)
 		st->unk428 = save428;
@@ -562,9 +560,6 @@ void VSValueInit(int pl, int a1, int flag)
 		}
 	}
 }
-#else
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", VSValueInit);
-#endif
 
 void SurvValueInit(void)
 {
