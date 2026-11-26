@@ -308,7 +308,80 @@ void proc_msg_PL2(PMSG *msg) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_msgBranch_ps", proc_msg_PL3);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_msgBranch_ps", proc_msg_PL4);
+typedef struct PFORM {
+    struct PFORM *next;
+    int unk4;
+    struct PFORM *link;         /* 0x8 */
+    u8 unkC[0x8];
+    int done;                   /* 0x14 */
+    PBOX *box;                  /* 0x18 */
+} PFORM;
+
+extern PFORM *D_00584D34;
+int make_msg_LP13();
+int make_msg_LP23();
+int make_msg_LJ9();
+int checkRecieveLLIST();
+void freeFormList();
+void freeCurPageFormList();
+
+void proc_msg_PL4(PMSG *m) {
+    PFORM *p;
+    PFORM *q;
+    PHIST *h;
+    PHIST *head;
+    PBOX *body;
+    PJSEVENT ev;
+
+    lo_global.flags |= 8;
+    if (m->unk10 == 0) {
+        for (p = D_00584D34; p != NULL; p = p->next) {
+            if (p->done != 0) {
+                continue;
+            }
+            for (q = p; q != NULL; q = q->link) {
+                if (q->box != NULL && q->box->node != 0) {
+                    initJSEvent(&ev, 1, q->box->node, 0, 0);
+                    sendJSEvent(Node_getJSObj(q->box->node), &ev);
+                }
+            }
+        }
+        putLLIST(&REQUEST_LLIST, make_msg_LI2(0));
+        setPageLoadedState();
+        putLLIST(&REQUEST_LLIST, make_msg_LP13(m));
+    } else {
+        if (m->unk4 != 0) {
+            h = HST_searchSessionIDHistoryNode(m->unk4);
+        } else {
+            h = (PHIST *)HST_getHeadHistoryNode();
+        }
+        if (h == NULL || h->body == NULL) {
+            putLLIST(&REQUEST_LLIST, make_msg_LP13(m));
+            return;
+        }
+        body = h->body;
+        body->geom->unk40 = 4;
+        if (m->unk4 == 0) {
+            if (checkRecieveLLIST(&REQUEST_LLIST) == 1) {
+                putLLIST(&REQUEST_LLIST, make_msg_LI2(0));
+            }
+        } else {
+            abortResourceLoading(h, 2);
+        }
+        putLLIST(&REQUEST_LLIST, make_msg_LP23(0));
+        sendJSUnloadEvent(h);
+        if (m->unk10 == 2) {
+            if (m->unk4 != 0) {
+                freeFormList(body);
+            } else if ((head = (PHIST *)HST_getHeadHistoryNode()) != NULL) {
+                freeCurPageFormList(head);
+            }
+        }
+        putLLIST(&REQUEST_LLIST, make_msg_LJ9(m, h));
+        lo_global.flags |= 0x20;
+    }
+    OS_thread_mutex_unlock(getJSSEM());
+}
 
 void proc_msg_PL5(PMSG *m) {
     PHIST *h;
