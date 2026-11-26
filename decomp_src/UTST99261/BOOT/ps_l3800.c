@@ -2,6 +2,21 @@
 #include "common.h"
 #include "parse_ps.h"
 #include "m2c_macros.h"
+extern char D_0013794C[];
+extern char D_00137CA4[];
+extern int CONTENT_SAVE;
+extern int CONTENT_GETCNT;
+extern int CONTENT_GETTMEP;
+extern int GET_HEAD_STAT;
+extern int GET_HEAD_STOP;
+extern int GET_HEAD_SESSIONID;
+extern int *ContntHeader;
+extern int ContntType;
+extern int SubmitExtn;
+extern int UPDATE_TYPE;
+extern int *SaveTRAGETURI;
+extern int NOTARGET;
+int *HST_httpHeaderDisassemble();
 extern int SSLFlg;
 extern int SSL_Next_STS;
 extern int Accession;
@@ -126,7 +141,57 @@ int ps_i2104(PsIpc *msg) {
     return 5;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/ps_l3800", ps_i2206);
+int ps_i2206(PsIpc *msg) {
+    PsIpc m;
+    PsDomBuild b;
+    int *node;
+    int *r;
+
+    r = NULL;
+    node = HST_searchSessionIDHistoryNode(msg->x04);
+    if (node == NULL) {
+        if (msg->x18 != 0) {
+            MEM_free(0, msg->x1C);
+        }
+        return buf_ps_sts;
+    }
+    b.x[0] = node[1];
+    b.x[1] = node[0];
+    b.x[2] = node[5];
+    b.x[3] = node[4];
+    b.x[4] = node[7];
+    b.x[5] = node[6];
+    b.x[6] = msg->x18;
+    b.x[7] = msg->x1C;
+    b.x[9] = msg->x04;
+    b.x[11] = 0;
+    b.x[12] = 0;
+    b.x[13] = Accession;
+    node[15] = 4;
+    if (msg->x18 != 0 && *(char *)msg->x1C != 0) {
+        r = parseDomBuild(&b);
+        if (*r != 0) {
+            ps_halt(D_0013794C);
+        }
+    }
+    HST_setCharSet(node, 100);
+    HST_setRequestResult(node, 1);
+    initMPL_REQ_LOAD_PAGE(&m);
+    m.x04 = msg->x04;
+    ps_sndmsg(&m, 4);
+    ps_DomTerm(msg->x04);
+    initMPL_REQ_LOAD_PAGE(&m);
+    m.x04 = msg->x04;
+    m.x10 = 1;
+    ps_sndmsg(&m, 4);
+    if (msg->x18 != 0) {
+        MEM_free(0, msg->x1C);
+    }
+    if (r != NULL) {
+        MEM_free(0, r);
+    }
+    return 7;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/ps_l3800", ps_i2208);
 
@@ -392,7 +457,55 @@ void ps_i2608(PsIpc *msg) {
     ps_i2606(msg);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/ps_l3800", ps_i2609);
+int ps_i2609(PsIpc *msg) {
+    PsIpc m;
+    int *d;
+    int *info;
+    int rate;
+
+    if (SAVE_STOP == 0) {
+        d = (int *)msg->x1C;
+        if (CONTENT_SAVE == 0) {
+            if (d[1] == 0) {
+                rate = 0;
+            } else {
+                rate = d[0] * 100 / d[1];
+            }
+        } else {
+            if (CONTENT_GETCNT != d[3]) {
+                CONTENT_GETTMEP++;
+                CONTENT_GETCNT = d[3];
+            }
+            rate = 0;
+            if (d[2] != 0 && d[1] != 0) {
+                rate = d[0] * 100 / (d[1] * d[2]) + (CONTENT_GETTMEP * 100 - 100) / d[2];
+            }
+        }
+        info = MEM_malloc(0, 0xC);
+        if (info == NULL) {
+            ps_halt(D_00137CA4);
+        }
+        if (rate > 100) {
+            rate = 100;
+        }
+        info[0] = rate;
+        info[1] = d[0];
+        info[2] = d[1];
+        m.type = 2;
+        m.x04 = buf_sessionUI;
+        m.x08 = 0;
+        m.cmd = 4;
+        m.x10 = 0;
+        m.x14 = buf_localUI;
+        m.x18 = 0xC;
+        m.x1C = (int)info;
+        ps_sndmsg(&m, 1);
+    }
+    if (msg->x18 != 0) {
+        MEM_free(0, msg->x1C);
+    }
+    return buf_ps_sts;
+}
 
 int ps_i2612(PsIpc *msg) {
     struct {
@@ -481,7 +594,61 @@ void ps_setRecvInfo(int id, int *data) {
     p->d[3] = data[3];
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/ps_l3800", ps_getRecvRate);
+int ps_getRecvRate(int *total, int *size) {
+    RecvInfo *p;
+    int localGot;
+    int localSize;
+    int maxv;
+    int count;
+    int rate1;
+    int rate2;
+    int sum;
+    int r;
+
+    localGot = 0;
+    localSize = 0;
+    maxv = 0;
+    count = 0;
+    rate1 = 0;
+    rate2 = 0;
+    sum = 0;
+    for (p = rcvInfo; p != NULL; p = p->next) {
+        if (p->id <= 0x08000000) {
+            localGot += p->d[0];
+            if (p->d[1] == 0) {
+                localSize += p->d[0];
+            } else {
+                localSize += p->d[1];
+            }
+        } else {
+            count++;
+            if (p->d[0] >= p->d[1]) {
+                sum += 100;
+            } else if (p->d[1] != 0) {
+                sum += p->d[0] * 100 / p->d[1];
+            }
+            if (p->d[2] > maxv) {
+                maxv = p->d[2];
+            }
+        }
+        *total += p->d[0];
+        *size += p->d[1];
+    }
+    if (count > maxv) {
+        maxv = count;
+    }
+    if (localSize != 0) {
+        rate1 = localGot * 100 / localSize * 30 / 100;
+    }
+    if (maxv != 0) {
+        rate2 = sum / maxv * 70 / 100;
+    }
+    r = rate1 + rate2;
+    if (r > 100) {
+        r = 99;
+    }
+    return r;
+}
 
 int ps_i2906(PsIpc *msg) {
     PsIpc m;
