@@ -209,7 +209,34 @@ static void init_grain(int i)
 	p->w=rand()%100;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_fountain/nonmatchings/main", move_grain);
+#define GRAV		0.0025f
+
+static void move_grain(void)
+{
+	GRAIN_DAT	*p;
+	int			i;
+
+	for (i=0; i<num_of_grain; i++) {
+		p=&grain[i];
+
+		if (p->w) {
+			p->w--;
+			continue;
+		}
+
+		p->t++;
+		p->pos.x+=p->dpos.x;
+		p->pos.y =p->dpos.y*p->t-GRAV*p->t*p->t;
+		p->pos.z+=p->dpos.z;
+		p->rot+=0.5f;
+		p->scale+=0.001f;
+		p->a-=p->d;
+
+		if (p->pos.y<=-0.001f || p->a<=0) {
+			init_grain(i);
+		}
+	}
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_fountain/nonmatchings/main", draw_grain);
 
