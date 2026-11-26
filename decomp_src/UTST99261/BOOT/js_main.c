@@ -3,6 +3,7 @@
 #include "m2c_macros.h"
 #define JSTimer JSTimer_t
 #include "dom_esp.h"
+void JS_halt();
 #undef JSTimer
 extern char D_001339EC[];
 extern int *g_JS_MSG_SID_;
@@ -72,7 +73,52 @@ void JSRunInternal(int *msg) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/js_main", JSFreeJSPtrInternal);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/js_main", JSHandleEventInternal);
+void JSHandleEventInternal(int *msg) {
+    int flags;
+    int *g;
+    int code;
+    int *ev;
+    int *ctx;
+    int cx;
+    int obj;
+    int m[8];
+    int *sidp;
+    int *pcp;
+    int *nrp;
+
+    flags = 2;
+    g = get_global_ptr();
+    sidp = g_JS_MSG_SID_;
+    *sidp = msg[1];
+    code = msg[4];
+    ev = (int *)msg[7];
+    ctx = (int *)ev[0];
+    cx = ctx[0];
+    obj = ctx[1];
+    *(JSEvRec *)g_JS_EVENT_REC_ = *(JSEvRec *)(ev + 1);
+    JSRunStart(ctx);
+    pcp = g_JS_PAGECHANGED_;
+    *pcp = 0;
+    nrp = g_JS_NEEDREDRAW_;
+    *nrp = 0;
+    if (code != 0) {
+        if (js_common_eval(cx, code, 0, obj, 1) == 8) {
+            flags &= ~2;
+        }
+    } else {
+        flags |= 1;
+    }
+    if (*pcp != 1) {
+        if (*nrp == 1) {
+            flags |= 4;
+        }
+        SetIpcMember(m, 8, *sidp, 1, 0x804, flags, 0, msg[7]);
+        JSSendMail(m, D_001339E0);
+        JSRunFinish(ctx);
+    } else {
+        MEM_free(0, msg[7]);
+    }
+}
 
 void JSTimer(int *msg) {
     int *g;
@@ -209,7 +255,60 @@ void JS_halt(void) {
     OS_thread_exit(0);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/js_main", JSInitInternal);
+int JSInitInternal(void) {
+    int *g;
+    int attr[4];
+    int *p;
+
+    jsapi_lock = OS_thread_mutex_create();
+    if (jsapi_lock == NULL) {
+        return -1;
+    }
+    if (OS_thread_mutex_init(jsapi_lock, 0) != 0) {
+        OS_thread_mutex_destroy(jsapi_lock);
+        return -1;
+    }
+    g = init_global_ptr();
+    g[5] = OS_mq_open("/tmp/mq_js", 2);
+    g[7] = OS_mq_open(D_001339E0, 1);
+    g[8] = OS_mq_open("/tmp/mq_ui", 1);
+    attr[0] = 0;
+    attr[1] = 0x14;
+    attr[2] = 0x24;
+    attr[3] = 0;
+    OS_mq_unlink(D_001339EC);
+    g[6] = OS_mq_open(D_001339EC, 0x4202, 0x1C0, attr);
+    if (g[6] == -1) {
+        return 0;
+    }
+    JSPtrListInit();
+    js_InitTimer();
+    HST_attachHistory();
+    DOMAPI_Initialize();
+    g[1] = (int)MEM_malloc(0, 0x24);
+    memset((void *)g[1], 0, 0x24);
+    g[0] = (int)MEM_malloc(0, 0x24);
+    memset((void *)g[0], 0, 0x24);
+    MEM_addHaltCallback(0, JS_halt);
+    if (js_err_msg == NULL) {
+        js_err_msg = MEM_malloc(0, 8);
+    }
+    p = MEM_malloc(0, 0x24);
+    p[0] = 0;
+    p[1] = 0;
+    p[2] = 0;
+    p[3] = 0;
+    p[4] = 0;
+    p[5] = 0;
+    p[6] = 0;
+    p[7] = 0;
+    p[8] = 0;
+    g_JS_EVENT_REC_ = p;
+    g_JS_MSG_SID_ = MEM_malloc(0, 4);
+    g_JS_PAGECHANGED_ = MEM_malloc(0, 4);
+    g_JS_NEEDREDRAW_ = MEM_malloc(0, 4);
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/js_main", JSEventLoop);
 
