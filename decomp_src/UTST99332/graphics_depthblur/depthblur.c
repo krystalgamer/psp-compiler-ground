@@ -55,33 +55,16 @@ INCLUDE_ASM("tmp/asm/UTST99332/graphics_depthblur/nonmatchings/depthblur", MakeR
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_depthblur/nonmatchings/depthblur", GenFrameBufferBlurmap);
 
-#ifndef SCEGU_TEXTURE /* sample */
 #define SCEGU_TEXTURE                      9
-#endif
-#ifndef SCEGU_LINEAR_MIPMAP_LINEAR /* sample */
 #define SCEGU_LINEAR_MIPMAP_LINEAR         7
-#endif
-#ifndef SCEGU_LINEAR /* sample */
 #define SCEGU_LINEAR                       1
-#endif
-#ifndef SCEGU_SINGLE_CLUT /* sample */
 #define SCEGU_SINGLE_CLUT                  0
-#endif
-#ifndef SCEGU_TEXBUF_NORMAL /* sample */
 #define SCEGU_TEXBUF_NORMAL                0
-#endif
-#ifndef SCEGU_LOD_CONSTANT /* sample */
 #define SCEGU_LOD_CONSTANT                 1
-#endif
-#ifndef SCEGU_TEX_MODULATE /* sample */
 #define SCEGU_TEX_MODULATE                 0
-#endif
-#ifndef SCEGU_RGBA /* sample */
 #define SCEGU_RGBA                         1
-#endif
-#ifndef SCEGU_CLAMP /* sample */
 #define SCEGU_CLAMP                        1
-#endif
+
 void UseFrameBufferBlurmap(void)
 {
 	const unsigned int vram_top = (unsigned int)sceGeEdramGetAddr();
