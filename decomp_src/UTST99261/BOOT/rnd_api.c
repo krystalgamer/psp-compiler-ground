@@ -1,8 +1,57 @@
 /* cflags: -O1 */
 #include "common.h"
 #include "m2c_macros.h"
-M2C_UNK drawEachFrame(int);                         /* extern */
-M2C_UNK drawObject(int);                            /* extern */
+
+typedef struct BLIST {
+    struct BLIST *next;
+    int unk4;
+    void *data;
+} BLIST;
+
+typedef struct {
+    u8 unk0[0x1C];
+    s8 unk1C;
+    int unk20;
+    u8 unk24[0x24];
+    BLIST *frames;              /* 0x48 */
+} BSUB;
+
+typedef struct {
+    u8 unk0[0x6D];
+    s8 unk6D;
+    s8 unk6E;
+} BSTYLE;
+
+typedef struct BNODE {
+    struct BNODE *next;
+    u8 unk4[0xC];
+    int x;                      /* 0x10 */
+    int y;
+    int w;
+    int h;
+    BSUB *sub;                  /* 0x20 */
+    BSTYLE *style;              /* 0x24 */
+    int unk28;
+    int widget;                 /* 0x2C */
+    u8 unk30[0x8];
+    s16 type;                   /* 0x38 */
+} BNODE;
+
+typedef struct SELLIST {
+    int unk0;
+    BNODE *node;
+    struct SELLIST *next;
+} SELLIST;
+
+extern SELLIST *sellist;
+int drawObject(BNODE *node);
+void drawEachFrame(BNODE *node);
+int GUI_ScrollPane_remove();
+void rnd_gdrawGetViewClientSize();
+int GUI_Component_requestFocus(int w, int self);
+int GUI_Component_getLocation(int w, int *x, int *y);
+int GUI_Component_setLocation(int w, int x, int y);
+void MEM_free(void *pool, void *p);
 int rnd_relayoutWidgets(int, int);                  /* extern */
 extern void *ui_global;
 M2C_UNK GUI_Component_update(int, int, int, int, int); /* extern */
@@ -11,7 +60,6 @@ M2C_UNK rnd_deleteAnimBoxnode();                    /* extern */
 M2C_UNK GUI_ScrollPane_getScrollPosition(int);      /* extern */
 M2C_UNK GUI_ScrollPane_getContentSize(int);         /* extern */
 M2C_UNK GUI_Component_getParent();                  /* extern */
-extern int sellist;
 
 M2C_UNK rnd_gdrawImageDecode();                     /* extern */
 M2C_UNK rnd_gdrawImageDecodeByGifFile();            /* extern */
@@ -20,7 +68,16 @@ M2C_UNK rnd_gdrawImageDelete();                     /* extern */
 M2C_UNK rnd_updateAnimBoxnode();                    /* extern */
 
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_api", drawEachFrame);
+void drawEachFrame(BNODE *node) {
+    BLIST *l;
+
+    if (node->type == 1) {
+        for (l = node->sub->frames; l != NULL; l = l->next) {
+            drawObject(l->data);
+            drawEachFrame(l->data);
+        }
+    }
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -45,7 +102,20 @@ int drawPaint(int arg0) {
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_api", drawObject);
+int drawObject(BNODE *node) {
+    BNODE *p;
+
+    p = rnd_findParentBoxnode(node, 1);
+    if (p == NULL) {
+        return -100;
+    }
+    if (node == p) {
+        GUI_Component_update(node->widget, 0, 0, 0, 0);
+    } else {
+        GUI_Component_update(p->widget, node->x, node->y, node->w, node->h);
+    }
+    return 0;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -68,7 +138,9 @@ int drawObjectWithArea(int *arg0, int arg1, int arg2, int arg3, int arg4) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_api", drawScroll);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_api", drawRemoveChild);
+void drawRemoveChild(BNODE *parent, BNODE *child) {
+    GUI_ScrollPane_remove(parent->widget, child->widget);
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -100,7 +172,13 @@ int getViewPort(void *arg0) {
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_api", getViewClientSize);
+int getViewClientSize(BNODE *node, int *w, int *h) {
+    if (node == NULL || node->type != 1) {
+        return -100;
+    }
+    rnd_gdrawGetViewClientSize(node->widget, w, h);
+    return 0;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -114,9 +192,40 @@ int getViewVirtualSize(void *arg0) {
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_api", setFocus);
+void setFocus(BNODE *node, BNODE *t, int on) {
+    BSTYLE *style;
+    int w;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_api", setFocusImageMap);
+    style = t->style;
+    if (style->unk6E != 1) {
+        style->unk6D = on;
+    }
+    w = t->widget;
+    if (w == 0 || t->type == 19) {
+        if (on == 0) {
+            return;
+        }
+        w = node->widget;
+    }
+    GUI_Component_requestFocus(w, on);
+}
+
+void setFocusImageMap(BNODE *node, BNODE *t, int id, int area, int on) {
+    BSUB *sub;
+
+    if (on == 1) {
+        t->sub->unk1C = id;
+        t->sub->unk20 = area;
+    } else {
+        sub = t->sub;
+        if (sub->unk1C == id) {
+            sub->unk1C = 0;
+        }
+    }
+    if (on != 0) {
+        GUI_Component_requestFocus(node->widget, 1);
+    }
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -160,7 +269,17 @@ void drawAnimation(void) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_api", startBorder);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_api", moveBorder);
+int moveBorder(int w, int dx, int dy) {
+    int x;
+    int y;
+
+    if (w == 0) {
+        return -100;
+    }
+    GUI_Component_getLocation(w, &x, &y);
+    GUI_Component_setLocation(w, dx + x, dy + y);
+    return 0;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -207,11 +326,32 @@ void addSelectList(int *arg0) {
     M2C_FIELD(var_s1, void **, 8) = temp_v0_2;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_api", destroySelectList);
+void destroySelectList(void) {
+    SELLIST *n;
+    SELLIST *next;
+
+    for (n = sellist; n != NULL; n = next) {
+        next = n->next;
+        MEM_free(NULL, n);
+    }
+    sellist = NULL;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_api", delSelectListBySID);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_api", getSelectListFromGadget);
+BNODE *getSelectListFromGadget(int gadget) {
+    SELLIST *n;
+
+    if (sellist == NULL || gadget == 0) {
+        return NULL;
+    }
+    for (n = sellist->next; n != NULL; n = n->next) {
+        if (n->node->widget == gadget) {
+            return n->node;
+        }
+    }
+    return NULL;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_api", rnd_drawAllBoxnode);
 
