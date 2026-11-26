@@ -189,7 +189,75 @@ int get_exp(int val)
 	return i;
 }
 
+#ifdef NON_MATCHING
+/* Rough (2 instructions short): logic complete (32-bit pixels are written as two
+ * halfwords through the uncached +0x40000000 alias); vram_top lives in a stack slot in the
+ * original and the per-character FBuf loads are allocated differently. */
+typedef struct {
+	int x, y;
+	unsigned int color;
+	char c;
+} GuDebugChar2;
+extern int aw_fontcnt[2];
+extern GuDebugChar2 aw_fontbuf[2][1024];
+extern const unsigned int fonttex[][2];
+void flush_font(void)
+{
+	int n = aw_fontcnt[aw_frame];
+	GuDebugChar2 *c = aw_fontbuf[aw_frame];
+	GuDrawBuffer *fb = &FBuf;
+	unsigned int bits = 0, mask = 0;
+	int i, j, x, y, psm, fw, color;
+	unsigned int height;
+	char *vram, *buf;
+	unsigned int p16, p32;
+	const unsigned int *font;
+
+	if (n == 0)
+		return;
+	vram = vram_top;
+	height = fb->height;
+	for (; n != 0; n--, c++) {
+		y = c->y;
+		x = c->x;
+		if (y + 7 < height && x + 7 < (unsigned int)fb->width && y >= 0 && x >= 0) {
+			font = fonttex[(int)c->c];
+			color = c->color;
+			psm = fb->pixel_size;
+			buf = fb->frame_buffer;
+			fw = fb->frame_width;
+			for (i = 0; i < 8; i++) {
+				if (i == 0) {
+					bits = font[0];
+					mask = 1;
+				} else if (i == 4) {
+					bits = font[1];
+					mask = 1;
+				}
+				p16 = (unsigned int)vram + (unsigned int)buf + ((y + i) * fw + x) * 2;
+				p32 = (unsigned int)vram + (unsigned int)buf + ((y + i) * fw + x) * 4;
+				for (j = 7; j >= 0; j--) {
+					if (psm == 3) {
+						if (bits & mask) {
+							((unsigned short *)(p32 + 0x40000000))[0] = color;
+							((unsigned short *)(p32 + 0x40000000))[1] = color >> 16;
+						}
+					} else {
+						if (bits & mask)
+							*(unsigned short *)(p16 + 0x40000000) = color;
+					}
+					mask <<= 1;
+					p32 += 4;
+					p16 += 2;
+				}
+			}
+		}
+	}
+	aw_fontcnt[aw_frame] = 0;
+}
+#else
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", flush_font);
+#endif
 
 static void reset_static_value(void)
 {
