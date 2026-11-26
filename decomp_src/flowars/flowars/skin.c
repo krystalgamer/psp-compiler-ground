@@ -210,6 +210,9 @@ void sceGimPictureSetFrame(SceGimPicture *picture, float frame);
 float sceGimPictureGetFrame(SceGimPicture *picture);
 u_long64 get_tick();
 int evaluated_rand(int range, ...);
+SceGimPicture *sceGimPictureCreate(void *option);
+int sceGimPictureLoadFile(SceGimPicture *picture, void *data, int size, int flag);
+void print_nothing(const char *fmt, ...);
 extern int D_0005AEAC;	/* static int animating (draw_face) */
 extern int D_0005AEB0;	/* static int index (draw_face) */
 void sceGimPictureAnimate(SceGimPicture *picture, float time);
