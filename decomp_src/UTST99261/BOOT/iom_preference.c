@@ -1,5 +1,9 @@
+/* cflags: -O1 */
 #include "common.h"
 #include "m2c_macros.h"
+M2C_UNK MEM_malloc(M2C_UNK, int);                   /* extern */
+M2C_UNK MEM_free(M2C_UNK, int);                     /* extern */
+
 extern void *esp_context;
 
 
@@ -66,7 +70,26 @@ signed char *iom_preferenceUnitId(void) {
     return var_v1;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iom_preference", iom_preferenceProxy);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+int iom_preferenceProxy(void *arg0) {
+    signed char *temp_v0;
+
+    if ((esp_context == NULL) || (M2C_FIELD(esp_context, int *, 0x90) == 0) || (temp_v0 = M2C_FIELD(esp_context, signed char **, 0xA4), (temp_v0 == NULL)) || (*temp_v0 == 0)) {
+        if (arg0 != NULL) {
+            M2C_FIELD(arg0, signed char **, 0) = NULL;
+            M2C_FIELD(arg0, int *, 4) = 0;
+        }
+        return 0;
+    }
+    if (arg0 != NULL) {
+        M2C_FIELD(arg0, signed char **, 0) = (signed char *) M2C_FIELD(esp_context, signed char **, 0xA4);
+        M2C_FIELD(arg0, int *, 4) = (int) M2C_FIELD(esp_context, int *, 0xA8);
+    }
+    return 1;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -82,9 +105,24 @@ int iom_preferenceDownloadStop(void) {
     return var_v1;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iom_preference", iom_malloc);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iom_preference", iom_mfree);
+void iom_malloc(int arg0) {
+    MEM_malloc(0, arg0);
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+int iom_mfree(int arg0) {
+    if (arg0 != 0) {
+        MEM_free(0, arg0);
+    }
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iom_preference", iom_getheadervalue);
 

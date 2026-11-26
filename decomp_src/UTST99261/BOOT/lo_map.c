@@ -1,8 +1,38 @@
+/* cflags: -O1 */
 #include "common.h"
+#include "dom_domi.h"
+#include "m2c_macros.h"
+void Element_getAttribute(DOMString *s, void *elem, void *name);
+char *DOMStringtoUTF8(DOMString *s);
+int strcmp(const char *a, const char *b);
+void adaptArea(void *a0, void *area, void *a2, s8 n);
+int MEM_malloc(M2C_UNK, M2C_UNK);                   /* extern */
+M2C_UNK MEM_free(M2C_UNK, void *);                  /* extern */
+
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_map", parseCoords);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_map", initAreaBuffer);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void initAreaBuffer(void *arg0) {
+    M2C_FIELD(arg0, int *, 0) = 0;
+    M2C_FIELD(arg0, int *, 0xC) = 0;
+    M2C_FIELD(arg0, int *, 0x10) = 0;
+    M2C_FIELD(arg0, int *, 0x14) = 0;
+    M2C_FIELD(arg0, int *, 0x18) = 0;
+    M2C_FIELD(arg0, int *, 0x1C) = 0;
+    M2C_FIELD(arg0, int *, 0x20) = 0;
+    M2C_FIELD(arg0, int *, 0x24) = 0;
+    M2C_FIELD(arg0, int *, 0x28) = 0;
+    M2C_FIELD(arg0, int *, 0x2C) = 0;
+    M2C_FIELD(arg0, int *, 0x30) = 0;
+    M2C_FIELD(arg0, int *, 0x34) = 0;
+    M2C_FIELD(arg0, int *, 4) = 0;
+    M2C_FIELD(arg0, int *, 8) = 0xA;
+    M2C_FIELD(arg0, int *, 0) = MEM_malloc(0, 0x140);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_map", insertBuffer_90298);
 
@@ -12,15 +42,133 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_map", sortPoint);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_map", checkInterior);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_map", initMapList);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_map", freeMapList);
+void initMapList(void *arg0) {
+    void *temp_v0;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_map", addMapList);
+    temp_v0 = MEM_malloc(0, 0x18);
+    if (temp_v0 != NULL) {
+        M2C_FIELD(temp_v0, int *, 0) = 0;
+        M2C_FIELD(temp_v0, int *, 4) = 0;
+        M2C_FIELD(temp_v0, int *, 8) = 0;
+        M2C_FIELD(temp_v0, int *, 0xC) = 0;
+        M2C_FIELD(temp_v0, int *, 0x10) = 0;
+        M2C_FIELD(temp_v0, int *, 0x14) = 0;
+        M2C_FIELD(M2C_FIELD(arg0, void **, 0x20), void **, 0x74) = temp_v0;
+        M2C_FIELD(M2C_FIELD(arg0, void **, 0x20), void **, 0x78) = temp_v0;
+    }
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_map", addMapUserList);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_map", getMapList);
+void freeMapList(void *arg0) {
+    void *temp_s0;
+    void *temp_s1;
+    void *temp_s4;
+    void *var_a1;
+    void *var_s0;
+    void *var_s2;
+
+    var_s2 = M2C_FIELD(M2C_FIELD(arg0, void **, 0x20), void **, 0x74);
+    if (var_s2 != NULL) {
+        do {
+            var_s0 = M2C_FIELD(var_s2, void **, 0xC);
+            temp_s4 = M2C_FIELD(var_s2, void **, 0x14);
+            if (var_s0 != NULL) {
+                do {
+                    temp_s1 = M2C_FIELD(var_s0, void **, 0xC);
+                    if (M2C_FIELD(var_s0, short *, 0) == 4) {
+                        MEM_free(0, M2C_FIELD(var_s0, void **, 0x10));
+                    }
+                    MEM_free(0, var_s0);
+                    var_s0 = temp_s1;
+                } while (temp_s1 != NULL);
+            }
+            var_a1 = M2C_FIELD(var_s2, void **, 4);
+            if (var_a1 != NULL) {
+                do {
+                    temp_s0 = M2C_FIELD(var_a1, void **, 8);
+                    MEM_free(0, var_a1);
+                    var_a1 = temp_s0;
+                } while (temp_s0 != NULL);
+            }
+            MEM_free(0, var_s2);
+            var_s2 = temp_s4;
+        } while (temp_s4 != NULL);
+    }
+    M2C_FIELD(M2C_FIELD(arg0, void **, 0x20), int *, 0x74) = 0;
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+void *memset(void *s, int c, unsigned int n);
+unsigned int strlen(const char *s);
+char *strcpy(char *d, const char *s);
+
+void *addMapList(void *arg0, signed char *arg1) {
+    signed char *temp_a0;
+    void *temp_v0;
+    void *temp_v0_2;
+    void *temp_v0_3;
+    void *temp_v0_4;
+    void *var_s1;
+
+    temp_v0 = getMapList();
+    var_s1 = temp_v0;
+    if (temp_v0 == NULL) {
+        temp_v0_2 = MEM_malloc(0, strlen(arg1) + 0x19);
+        var_s1 = temp_v0_2;
+        temp_a0 = temp_v0_2 + 0x18;
+        M2C_FIELD(temp_v0_2, signed char **, 0) = temp_a0;
+        strcpy(temp_a0, arg1);
+        temp_v0_3 = MEM_malloc(0, 0x48);
+        memset(temp_v0_3, 0, 0x48U);
+        M2C_FIELD(var_s1, void **, 0x10) = temp_v0_3;
+        M2C_FIELD(var_s1, void **, 0xC) = temp_v0_3;
+        temp_v0_4 = MEM_malloc(0, 0xC);
+        M2C_FIELD(temp_v0_4, int *, 0) = 0;
+        M2C_FIELD(temp_v0_4, int *, 4) = 0;
+        M2C_FIELD(temp_v0_4, int *, 8) = 0;
+        M2C_FIELD(var_s1, void **, 8) = temp_v0_4;
+        M2C_FIELD(var_s1, void **, 4) = temp_v0_4;
+        M2C_FIELD(var_s1, int *, 0x14) = 0;
+        M2C_FIELD(M2C_FIELD(M2C_FIELD(arg0, void **, 0x20), void **, 0x78), void **, 0x14) = var_s1;
+        M2C_FIELD(M2C_FIELD(arg0, void **, 0x20), void **, 0x78) = var_s1;
+    }
+    return var_s1;
+}
+
+void *addMapUserList(void *a0, void *a1, void *name, void *data) {
+    void *map;
+    void *u;
+    if (name == NULL) {
+        return NULL;
+    }
+    map = addMapList(a0, a1);
+    u = (void *)MEM_malloc(0, 0xC);
+    M2C_FIELD(u, void **, 0) = name;
+    M2C_FIELD(u, void **, 4) = data;
+    M2C_FIELD(u, void **, 8) = NULL;
+    M2C_FIELD(M2C_FIELD(map, void **, 8), void **, 8) = u;
+    M2C_FIELD(map, void **, 8) = u;
+    return u;
+}
+
+void *getMapList(void *box, char *name) {
+    void *m;
+    for (m = M2C_FIELD(M2C_FIELD(M2C_FIELD(box, void **, 0x20), void **, 0x74), void **, 0x14); m != NULL; m = M2C_FIELD(m, void **, 0x14)) {
+        if (strcmp(M2C_FIELD(m, char **, 0), name) == 0) {
+            break;
+        }
+    }
+    return m;
+}
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/lo_map", D_001392D8);
 
@@ -48,13 +196,41 @@ INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/lo_map", D_00139304);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_map", addAreaList);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_map", getAreaIndex);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+signed char getAreaIndex(void *arg0, int arg1) {
+    int var_a0;
+    signed char var_a2;
+    signed char var_v0;
+
+    var_a0 = M2C_FIELD(M2C_FIELD(arg0, void **, 0xC), int *, 0xC);
+    var_a2 = 1;
+    if ((var_a0 != 0) & (var_a0 != arg1)) {
+        do {
+            var_a0 = M2C_FIELD(var_a0, int *, 0xC);
+            var_a2 += 1;
+        } while ((var_a0 != 0) & (var_a0 != arg1));
+    }
+    var_v0 = var_a2;
+    if (var_a0 == 0) {
+        var_v0 = 0;
+    }
+    return var_v0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_map", getAreaList);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_map", adaptArea);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_map", adaptAreaList);
+void adaptAreaList(void *a0, void *map, void *a2) {
+    void *a;
+    int i = 1;
+    for (a = M2C_FIELD(M2C_FIELD(map, void **, 0xC), void **, 0xC); a != NULL; a = M2C_FIELD(a, void **, 0xC)) {
+        adaptArea(a0, a, a2, i);
+        i++;
+    }
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_map", createAreaInfo);
 
@@ -66,11 +242,45 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_map", htmlTagBranchAfter);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_map", newDOMString);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_map", freeDOMString);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_map", getDOMAttributeValue);
+void freeDOMString(void *arg0) {
+    MEM_free(0, M2C_FIELD(arg0, void **, 8));
+    MEM_free(0, arg0);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_map", getDOMAttributeValue_PositiveNum);
+char *getDOMAttributeValue(void *elem, void *name) {
+    DOMString s;
+    char *r;
+    Element_getAttribute(&s, elem, name);
+    r = NULL;
+    if (s.len != 0) {
+        r = DOMStringtoUTF8(&s);
+    }
+    return r;
+}
+
+int getDOMAttributeValue_PositiveNum(void *elem, void *name) {
+    DOMString s;
+    char *str;
+    int n;
+    Element_getAttribute(&s, elem, name);
+    if (s.len == 0) {
+        return -1;
+    }
+    str = DOMStringtoUTF8(&s);
+    if (str == NULL) {
+        return -1;
+    }
+    n = atoi(str);
+    if (n < 0) {
+        n = 0;
+    }
+    MEM_free(0, str);
+    return n;
+}
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/lo_map", D_00139348);
 

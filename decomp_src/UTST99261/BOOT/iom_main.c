@@ -1,10 +1,89 @@
+/* cflags: -O1 */
 #include "common.h"
+#include "iom_types.h"
+#include "m2c_macros.h"
+extern int D_00139D90[];
+extern int D_00139DC4[];
+void iom_detachCache(void);
+void iom_detachCookie(void);
+void iom_detachHttpCtx(void);
+M2C_UNK MEM_free(M2C_UNK, void *);                  /* extern */
+extern void *D_005850D4;
+extern void *D_005850D8;
+extern void *D_005850DC;
+extern void *D_005850E0;
+extern void *D_005850E4;
+extern void *D_005850E8;
+extern void *D_005850EC;
+extern void *D_005850F0;
+extern void *D_005850F4;
+extern void *D_005850F8;
+extern void *D_005850FC;
+extern void *IOM_CONFIG;
+extern void *fatalErrMsg;
+extern void *fatalErrRepMsg;
+void *MEM_malloc(M2C_UNK, M2C_UNK);                 /* extern */
+M2C_UNK iom_mfree(int);                             /* extern */
+
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/iom_main", D_00139D0C);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iom_main", iom_initializeEnvironment);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iom_main", iom_finalizeEnvironment);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void iom_finalizeEnvironment(void) {
+    void *temp_a1;
+
+    if (IOM_CONFIG != NULL) {
+        MEM_free(0, IOM_CONFIG);
+    }
+    if (D_005850D4 != NULL) {
+        MEM_free(0, D_005850D4);
+    }
+    if (D_005850D8 != NULL) {
+        MEM_free(0, D_005850D8);
+    }
+    if (D_005850DC != NULL) {
+        MEM_free(0, D_005850DC);
+    }
+    if (D_005850E0 != NULL) {
+        MEM_free(0, D_005850E0);
+    }
+    if (D_005850E4 != NULL) {
+        MEM_free(0, D_005850E4);
+    }
+    if (D_005850E8 != NULL) {
+        MEM_free(0, D_005850E8);
+    }
+    if (D_005850EC != NULL) {
+        MEM_free(0, D_005850EC);
+    }
+    if (D_005850F0 != NULL) {
+        MEM_free(0, D_005850F0);
+    }
+    if (D_005850F4 != NULL) {
+        MEM_free(0, D_005850F4);
+    }
+    if (D_005850F8 != NULL) {
+        MEM_free(0, D_005850F8);
+    }
+    if (D_005850FC != NULL) {
+        MEM_free(0, D_005850FC);
+    }
+    if (fatalErrMsg != NULL) {
+        temp_a1 = M2C_FIELD(fatalErrMsg, void **, 0x20);
+        if (temp_a1 != NULL) {
+            MEM_free(0, temp_a1);
+        }
+        MEM_free(0, fatalErrMsg);
+    }
+    if (fatalErrRepMsg != NULL) {
+        MEM_free(0, fatalErrRepMsg);
+    }
+}
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/iom_main", D_00139D30);
 
@@ -22,19 +101,110 @@ INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/iom_main", D_00139D68);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iom_main", iom_halt);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iom_main", iom_end);
+void iom_end(void) {
+    IOMMSG *m;
+    iom_detachCache();
+    iom_detachCookie();
+    iom_detachHttpCtx();
+    iom.x100 = 0;
+    m = fatalErrRepMsg;
+    fatalErrRepMsg = NULL;
+    m->b.code = 0x21;
+    iom_sendMsg(m, iom.mqReply);
+    OS_mq_close(iom.mqReply);
+    OS_mq_close(iom.mq8);
+    OS_mq_close(iom.mq);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iom_main", iom_translateMsg);
+int iom_translateMsg(IOMMSG *msg) {
+    if (msg->b.x4 == 2 && (unsigned int)msg->b.code < 0xD) {
+        return D_00139D90[msg->b.code];
+    }
+    if (msg->b.x4 == 4 && (unsigned int)(msg->b.code - 0x10) < 3) {
+        return D_00139DC4[msg->b.code - 0x10];
+    }
+    if (msg->b.x4 == 5 && (unsigned int)msg->b.code < 0x13) {
+        return msg->b.code;
+    }
+    return -1;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iom_main", iom_newMsg);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iom_main", iom_freeMsg);
+void *iom_newMsg(void *arg0) {
+    void *temp_v0;
+    void *var_v0;
+
+    temp_v0 = MEM_malloc(0, 0x24);
+    var_v0 = NULL;
+    if (temp_v0 != NULL) {
+        M2C_FIELD(temp_v0, int *, 0) = 0;
+        M2C_FIELD(temp_v0, int *, 8) = 0;
+        M2C_FIELD(temp_v0, int *, 0xC) = 0;
+        M2C_FIELD(temp_v0, int *, 0x10) = 0;
+        M2C_FIELD(temp_v0, int *, 0x14) = 0;
+        M2C_FIELD(temp_v0, int *, 0x18) = 0;
+        M2C_FIELD(temp_v0, int *, 0x1C) = 0;
+        M2C_FIELD(temp_v0, int *, 0x20) = 0;
+        M2C_FIELD(temp_v0, int *, 4) = 5;
+        if (arg0 != NULL) {
+            M2C_FIELD(temp_v0, int *, 8) = (int) M2C_FIELD(arg0, int *, 8);
+            M2C_FIELD(temp_v0, int *, 0xC) = (int) M2C_FIELD(arg0, int *, 0xC);
+            M2C_FIELD(temp_v0, int *, 0x14) = (int) M2C_FIELD(arg0, int *, 0x14);
+            M2C_FIELD(temp_v0, int *, 0x18) = (int) M2C_FIELD(arg0, int *, 0x18);
+        }
+        var_v0 = temp_v0;
+    }
+    return var_v0;
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+int iom_freeMsg(void *arg0) {
+    int temp_a0;
+
+    if (arg0 != NULL) {
+        temp_a0 = M2C_FIELD(arg0, int *, 0x20);
+        if (temp_a0 != 0) {
+            iom_mfree(temp_a0);
+        }
+        MEM_free(0, arg0);
+    }
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iom_main", iom_sendMsg);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iom_main", iom_recvMsg);
+IOMMSG *iom_recvMsg(int mq) {
+    IOMMSG *msg;
+    int attr[4];
+    unsigned int prio;
+    msg = MEM_malloc(0, 0x24);
+    OS_mq_getattr(mq, attr);
+    OS_mq_receive(mq, msg, 0x24, &prio);
+    return msg;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iom_main", iom_waitMsg);
+IOMMSG *iom_waitMsg(int code, int mq) {
+    IOMMSG *msg;
+    IOMBODY *b;
+    unsigned int prio;
+    msg = MEM_malloc(0, 0x24);
+    b = &msg->b;
+    for (;;) {
+        OS_mq_receive(mq, msg, 0x24, &prio);
+        if (b->code == code) {
+            return msg;
+        }
+        if (b->data != NULL) {
+            MEM_free(0, b->data);
+        }
+    }
+}
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/iom_main", D_00139D90);
 

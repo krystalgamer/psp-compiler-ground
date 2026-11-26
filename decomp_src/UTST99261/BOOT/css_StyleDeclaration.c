@@ -1,18 +1,87 @@
+/* cflags: -O1 */
 #include "common.h"
+#include "css_types.h"
 #include "m2c_macros.h"
+int UCS_strcasecmp(u16 *a, void *b);
+void *CSSStyleDeclaration_getPropertyDeclaration(void *d, u16 *name);
+void addCSSNode(void *list, void *node);
+extern void *CSSIdentNames[];
+extern void *CSSPropertyNames[];
+extern u16 CSSSTR_important[];
+void *MEM_calloc();
+int CSSValue_getCssText(int);                       /* extern */
+M2C_UNK CSS_freePoolBuf(void *);                    /* extern */
+int CSS_getPoolBuf(void *);                         /* extern */
+M2C_UNK CSS_putSPoolBuf(void *, M2C_UNK *);         /* extern */
+M2C_UNK CSS_putsPoolBuf(void *, int);               /* extern */
+M2C_UNK MEM_free(M2C_UNK, int);                     /* extern */
+M2C_UNK newCSSRule(M2C_UNK, M2C_UNK, int, int);     /* extern */
+
 M2C_UNK addCSSRule();                               /* extern */
-M2C_UNK addCSSNode();                               /* extern */
 
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_StyleDeclaration", CSSStyleDeclaration_getPropertyDeclaration);
+void *CSSStyleDeclaration_getPropertyDeclaration(void *d, u16 *name) {
+    void *p;
+    for (p = d; p != NULL; p = M2C_FIELD(p, void **, 0x18)) {
+        if (UCS_strcasecmp(name, CSSPropertyNames[M2C_FIELD(p, s16 *, 0x1C) * 2]) == 0) {
+            return p;
+        }
+    }
+    return NULL;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_StyleDeclaration", CSSStyleDeclaration_getPropertyValue);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_StyleDeclaration", CSSStyleDeclaration_getPropertyCSSValue);
+int CSSStyleDeclaration_getPropertyValue(void *d, u16 *name) {
+    void *p;
+    int r;
+    p = CSSStyleDeclaration_getPropertyDeclaration(d, name);
+    r = 0;
+    if (p != NULL) {
+        r = CSSValue_getCssText(M2C_FIELD(p, int *, 0xC));
+    }
+    return r;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_StyleDeclaration", CSSStyleDeclaration_removeProperty);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_StyleDeclaration", CSSStyleDeclaration_getPropertyPriority);
+int CSSStyleDeclaration_getPropertyCSSValue(void *d, u16 *name) {
+    void *p;
+    int r;
+    p = CSSStyleDeclaration_getPropertyDeclaration(d, name);
+    r = 0;
+    if (p != NULL) {
+        r = M2C_FIELD(p, int *, 0xC);
+    }
+    return r;
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+int CSSStyleDeclaration_removeProperty(void *d, u16 *name) {
+    void *p;
+    int r = 0;
+    p = CSSStyleDeclaration_getPropertyDeclaration(d, name);
+    if (p != NULL) {
+        r = CSSValue_getCssText(M2C_FIELD(p, int *, 0xC));
+        freeCSSStyleDeclaration(p);
+    }
+    return r;
+}
+
+u16 *CSSStyleDeclaration_getPropertyPriority(void *a0, void *a1) {
+    CSSVALUE *d = CSSStyleDeclaration_getPropertyDeclaration(a0, a1);
+    if (d == NULL) {
+        return NULL;
+    }
+    return d->unk1E == 1 ? CSSSTR_important : NULL;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -44,7 +113,12 @@ int CSSStyleDeclaration_getParentRule(void *arg0) {
     return var_v0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_StyleDeclaration", CSSStyleDeclaration_getName);
+void *CSSStyleDeclaration_getName(CSSVALUE *d) {
+    if (d == NULL) {
+        return NULL;
+    }
+    return CSSPropertyNames[d->type * 2];
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -56,7 +130,14 @@ int CSSStyleDeclaration_getValue(void *arg0) {
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_StyleDeclaration", CSSStyleDeclaration_getPriority);
+u16 *CSSStyleDeclaration_getPriority(CSSVALUE *d) {
+    if (d != NULL) {
+        if (d->unk1E == 1) {
+            return CSSSTR_important;
+        }
+    }
+    return NULL;
+}
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/css_StyleDeclaration", CSSSTR_Percent);
 
@@ -736,11 +817,63 @@ INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/css_StyleDeclaration", D_001
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/css_StyleDeclaration", D_0013ED58);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_StyleDeclaration", CSSStyleDeclaration_toString);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+int CSSStyleDeclaration_toString(short *arg0) {
+    int temp_s0;
+    int temp_v0_2;
+    int temp_v0_3;
+    int var_v0;
+    void *temp_v0;
+
+    if ((arg0 == NULL) || (*arg0 != 0xA)) {
+        return 0;
+    }
+    temp_v0 = CSS_newPoolBuf();
+    var_v0 = 0;
+    if (temp_v0 != NULL) {
+        CSS_putsPoolBuf(temp_v0, CSSStyleDeclaration_getName(arg0));
+        CSS_putSPoolBuf(temp_v0, " : ");
+        temp_v0_2 = CSSValue_getCssText(CSSStyleDeclaration_getValue(arg0));
+        CSS_putsPoolBuf(temp_v0, temp_v0_2);
+        MEM_free(0, temp_v0_2);
+        temp_v0_3 = CSSStyleDeclaration_getPriority(arg0);
+        if (temp_v0_3 != 0) {
+            CSS_putSPoolBuf(temp_v0, " !");
+            CSS_putsPoolBuf(temp_v0, temp_v0_3);
+        }
+        temp_s0 = CSS_getPoolBuf(temp_v0);
+        CSS_freePoolBuf(temp_v0);
+        var_v0 = temp_s0;
+    }
+    return var_v0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_StyleDeclaration", newCSSStyleRule);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_StyleDeclaration", freeCSSStyleRule);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+void freeCSSStyleRule(void *arg0) {
+    void *temp_s0;
+    void *var_a0;
+
+    if ((arg0 != NULL) && (M2C_FIELD(arg0, short *, 0) == 7)) {
+        var_a0 = M2C_FIELD(arg0, void **, 0xC);
+        if (var_a0 != NULL) {
+            do {
+                temp_s0 = M2C_FIELD(var_a0, void **, 0x18);
+                if (M2C_FIELD(var_a0, short *, 0) == 8) {
+                    freeCSSSelectorList(var_a0);
+                }
+                var_a0 = temp_s0;
+            } while (temp_s0 != NULL);
+        }
+        freeCSSNode((int) arg0);
+    }
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -750,17 +883,48 @@ void addCSSStyleRule(void) {
     addCSSRule();
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_StyleDeclaration", CSSStyleRule_getType);
+int CSSStyleRule_getType(s16 *r) {
+    if (r != NULL) {
+        if (*r == 7) {
+            return *r;
+        }
+    }
+    return -1;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_StyleDeclaration", CSSStyleRule_getCssText);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_StyleDeclaration", CSSStyleRule_setCssText);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_StyleDeclaration", CSSStyleRule_getCssSelectorLists);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int CSSStyleRule_getCssSelectorLists(void *arg0) {
+    if ((arg0 == NULL) || (M2C_FIELD(arg0, short *, 0) != 7)) {
+        return 0;
+    }
+    return M2C_FIELD(arg0, int *, 0xC);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_StyleDeclaration", CSSStyleRule_getParentStyleSheet);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int CSSStyleRule_getParentStyleSheet(void *arg0) {
+    if ((arg0 == NULL) || (M2C_FIELD(arg0, short *, 0) != 7)) {
+        return 0;
+    }
+    return M2C_FIELD(arg0, int *, 0x1C);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_StyleDeclaration", CSSStyleRule_getParentRule);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int CSSStyleRule_getParentRule(void *arg0) {
+    if ((arg0 == NULL) || (M2C_FIELD(arg0, short *, 0) != 7)) {
+        return 0;
+    }
+    return M2C_FIELD(arg0, int *, 0x20);
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -780,21 +944,96 @@ void CSSStyleRule_setParentRule(void *arg0, int arg1) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_StyleDeclaration", newCSSUnknownRule);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_StyleDeclaration", freeCSSUnknownRule);
+void newCSSUnknownRule(int arg0, int arg1) {
+    newCSSRule(1, 0x28, arg0, arg1);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_StyleDeclaration", addCSSUnknownRule);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_StyleDeclaration", CSSUnknownRule_getType);
+void freeCSSUnknownRule(void *arg0) {
+    int temp_a1;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_StyleDeclaration", CSSUnknownRule_getCssText);
+    if (arg0 != NULL) {
+        if (M2C_FIELD(arg0, short *, 0) == 1) {
+            temp_a1 = M2C_FIELD(arg0, int *, 0x24);
+            if (temp_a1 != 0) {
+                MEM_free(0, temp_a1);
+            }
+            freeCSSNode((int) arg0);
+        }
+    }
+}
+
+void addCSSUnknownRule(void *r) {
+    if (r != NULL) {
+        if (M2C_FIELD(r, void **, 0x20) != NULL) {
+            addCSSNode(M2C_FIELD(r, void **, 0x20), r);
+        } else if (r != NULL && M2C_FIELD(r, void **, 0x1C) != NULL) {
+            addCSSNode(M2C_FIELD(r, void **, 0x1C), r);
+        }
+    }
+}
+
+int CSSUnknownRule_getType(s16 *r) {
+    if (r != NULL) {
+        if (*r == 1) {
+            return *r;
+        }
+    }
+    return -1;
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+int CSSUnknownRule_getCssText(void *arg0) {
+    int temp_s0;
+    int var_v0;
+    void *temp_v0;
+
+    if ((arg0 == NULL) || (M2C_FIELD(arg0, short *, 0) != 1)) {
+        return 0;
+    }
+    temp_v0 = CSS_newPoolBuf();
+    var_v0 = 0;
+    if (temp_v0 != NULL) {
+        CSS_putsPoolBuf(temp_v0, M2C_FIELD(arg0, int *, 0x24));
+        CSS_putSPoolBuf(temp_v0, "\n");
+        temp_s0 = CSS_getPoolBuf(temp_v0);
+        CSS_freePoolBuf(temp_v0);
+        var_v0 = temp_s0;
+    }
+    return var_v0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_StyleDeclaration", CSSUnknownRule_setCssText);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_StyleDeclaration", CSSUnknownRule_getParentStyleSheet);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int CSSUnknownRule_getParentStyleSheet(void *arg0) {
+    if ((arg0 == NULL) || (M2C_FIELD(arg0, short *, 0) != 1)) {
+        return 0;
+    }
+    return M2C_FIELD(arg0, int *, 0x1C);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_StyleDeclaration", CSSUnknownRule_getParentRule);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int CSSUnknownRule_getParentRule(void *arg0) {
+    if ((arg0 == NULL) || (M2C_FIELD(arg0, short *, 0) != 1)) {
+        return 0;
+    }
+    return M2C_FIELD(arg0, int *, 0x20);
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -823,7 +1062,9 @@ void CSSUnknownRule_setParentRule(void *arg0, int arg1) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_StyleDeclaration", newCSSValue);
+void *newCSSValue(void) {
+    return newCSSNode(0xB, 0x38);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_StyleDeclaration", freeCSSValue);
 
@@ -833,11 +1074,17 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_StyleDeclaration", duplicat
 #define NULL ((void *)0)
 #endif
 
-void addCSSValue(void) {
-    addCSSNode();
+void addCSSValue(void *decl, void *v) {
+    addCSSNode(decl, v);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_StyleDeclaration", newCSSPrimitiveValue);
+s16 *newCSSPrimitiveValue(int type) {
+    s16 *v = MEM_calloc(0, 0x18);
+    if (v != NULL) {
+        *v = type;
+    }
+    return v;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_StyleDeclaration", freeCSSPrimitiveValue);
 
@@ -861,19 +1108,47 @@ short CSSPrimitiveValue_getPrimitiveType(short *arg0) {
     return *arg0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_StyleDeclaration", CSSPrimitiveValue_setFloatValue);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+void CSSPrimitiveValue_setFloatValue(void *arg0, short arg1, int arg2, int arg3) {
+    if (arg1 < 0x13) {
+        M2C_FIELD(arg0, short *, 0) = arg1;
+        M2C_FIELD(arg0, int *, 8) = arg2;
+        M2C_FIELD(arg0, int *, 0xC) = arg3;
+    }
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_StyleDeclaration", CSSPrimitiveValue_getFloatValue);
+double CSSPrimitiveValue_getFloatValue(s16 *v, s16 type) {
+    return *v == type ? *(double *)(v + 4) : 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_StyleDeclaration", CSSPrimitiveValue_setStringValue);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_StyleDeclaration", CSSPrimitiveValue_getStringValue);
+void *CSSPrimitiveValue_getStringValue(s16 *v) {
+    void *r;
+    s16 t = *v;
+    if (t == 0x13 || t == 0x14 || t == 0x16 || t == 0x1A) {
+        r = M2C_FIELD(v, void **, 8);
+    } else if (*v == 0x15) {
+        r = CSSIdentNames[M2C_FIELD(v, int *, 8)];
+    } else {
+        r = NULL;
+    }
+    return r;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_StyleDeclaration", CSSPrimitiveValue_getCounterValue);
+void *CSSPrimitiveValue_getCounterValue(s16 *v) {
+    return *v == 0x17 ? (void *)(v + 4) : NULL;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_StyleDeclaration", CSSPrimitiveValue_getRectValue);
+void *CSSPrimitiveValue_getRectValue(s16 *v) {
+    return *v == 0x18 ? (void *)(v + 4) : NULL;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_StyleDeclaration", CSSPrimitiveValue_getRGBColorValue);
+void *CSSPrimitiveValue_getRGBColorValue(s16 *v) {
+    return *v == 0x19 ? (void *)(v + 4) : NULL;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -888,7 +1163,16 @@ int CSSValueList_getLength(void *arg0) {
     return var_v0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_StyleDeclaration", CSSValueList_item);
+void *CSSValueList_item(void *list, int idx) {
+    void *r = NULL;
+    int i;
+    if (idx < M2C_FIELD(list, int *, 8)) {
+        for (r = M2C_FIELD(list, void **, 0xC), i = 0; r != NULL && i < idx; i++) {
+            r = M2C_FIELD(r, void **, 0x18);
+        }
+    }
+    return r;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)

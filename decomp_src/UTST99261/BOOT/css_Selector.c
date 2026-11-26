@@ -1,5 +1,7 @@
+/* cflags: -O1 */
 #include "common.h"
 #include "m2c_macros.h"
+
 
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_Selector", _getOneSelectorText);
@@ -8,17 +10,72 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_Selector", _getSelectorText
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_Selector", CSSSelector_getCssText);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_Selector", CSSSelector_getLength);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int CSSSelector_getLength(void *arg0) {
+    void *temp_v0;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_Selector", CSSSelector_item);
+    if ((arg0 == NULL) || (M2C_FIELD(arg0, short *, 0) != 9) || (temp_v0 = M2C_FIELD(arg0, void **, 4), (temp_v0 == NULL))) {
+        return 0;
+    }
+    return M2C_FIELD(temp_v0, int *, 8);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_Selector", CSSSelector_getName);
+void *CSSSelector_item(void *x, int idx) {
+    void *r;
+    int i;
+    if (x == NULL || M2C_FIELD(x, s16 **, 4) == NULL || *M2C_FIELD(x, s16 **, 4) != 8 ||
+        idx >= M2C_FIELD(M2C_FIELD(x, void **, 4), int *, 8)) {
+        return NULL;
+    }
+    for (r = M2C_FIELD(M2C_FIELD(x, void **, 4), void **, 0xC), i = 0; r != NULL && i < idx; i++) {
+        r = M2C_FIELD(r, void **, 0x18);
+    }
+    if (i == idx) {
+        return r;
+    }
+    return NULL;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_Selector", CSSSelector_getType);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int CSSSelector_getName(void *arg0) {
+    if ((arg0 == NULL) || (M2C_FIELD(arg0, short *, 0) != 9)) {
+        return 0;
+    }
+    return M2C_FIELD(arg0, int *, 0x24);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_Selector", CSSSelector_getCombine);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+short CSSSelector_getType(void *arg0) {
+    if ((arg0 == NULL) || (M2C_FIELD(arg0, short *, 0) != 9)) {
+        return -1;
+    }
+    return M2C_FIELD(arg0, short *, 0x1C);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_Selector", CSSSelector_getClass);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int CSSSelector_getCombine(void *arg0) {
+    if ((arg0 == NULL) || (M2C_FIELD(arg0, short *, 0) != 9)) {
+        return 0;
+    }
+    return M2C_FIELD(arg0, int *, 0x20);
+}
+
+void *CSSSelector_getClass(s16 *s) {
+    if (s != NULL) {
+        if (*s == 9) {
+            return (char *)s + 0x28;
+        }
+    }
+    return NULL;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -34,7 +91,14 @@ int CSSSelector_getNextClass(int *arg0) {
     return *arg0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_Selector", CSSSelector_getId);
+void *CSSSelector_getId(s16 *s) {
+    if (s != NULL) {
+        if (*s == 9) {
+            return (char *)s + 0x30;
+        }
+    }
+    return NULL;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -50,7 +114,14 @@ int CSSSelector_getNextId(int *arg0) {
     return *arg0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_Selector", CSSSelector_getPseudo);
+void *CSSSelector_getPseudo(s16 *s) {
+    if (s != NULL) {
+        if (*s == 9) {
+            return (char *)s + 0x38;
+        }
+    }
+    return NULL;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -66,7 +137,14 @@ int CSSSelector_getNextPseudo(int *arg0) {
     return *arg0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_Selector", CSSSelector_getAttribute);
+void *CSSSelector_getAttribute(s16 *s) {
+    if (s != NULL) {
+        if (*s == 9) {
+            return (char *)s + 0x40;
+        }
+    }
+    return NULL;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -82,7 +160,15 @@ int CSSSelector_getNextAttribute(int *arg0) {
     return *arg0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_Selector", CSSSelector_getCssStyleDeclarations);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int CSSSelector_getCssStyleDeclarations(void *arg0) {
+    if ((arg0 == NULL) || (M2C_FIELD(arg0, short *, 0) != 9)) {
+        return 0;
+    }
+    return M2C_FIELD(arg0, int *, 0xC);
+}
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/css_Selector", CSSSTR_CDO);
 

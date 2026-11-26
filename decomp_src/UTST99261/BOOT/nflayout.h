@@ -2,56 +2,7 @@
 #define NFLAYOUT_H
 /* browser layout engine (layoutMain, lo_*): only the fields used so far */
 
-typedef struct {
-    int x;
-    int y;
-    u8 unk8[0x38];
-    int unk40;
-} BOXGEOM;
-
-typedef struct {
-    u8 unk0[0x14];
-    unsigned int flags;         /* 0x14: bits 2-3 height type */
-    u8 unk18[0xA];
-    s16 unk22;
-    s16 unk24;
-    s16 unk26;
-    s16 unk28;
-    s16 unk2A;
-    s16 unk2C;
-    s16 unk2E;
-    s16 unk30;
-    s16 unk32;
-    s16 unk34;
-    s16 unk36;
-} BOXSTYLE;
-
-typedef struct BOX {
-    struct BOX *parent;         /* 0x0 */
-    u8 unk4[0x14];
-    int width;                  /* 0x18 */
-    int unk1C;
-    BOXGEOM *geom;              /* 0x20 */
-    BOXSTYLE *style;            /* 0x24 */
-    u8 unk28[0x8];
-    void *region;               /* 0x30 */
-    u8 unk34[0x4];
-    s16 content;                /* 0x38: 1 body, 2 frameset, 4 table, 5 tr, 6 td, 8 list, 17 ... */
-    s16 html;                   /* 0x3A */
-    s16 display;                /* 0x3C */
-} BOX;
-
-typedef struct LISTNODE {
-    struct LISTNODE *next;
-    struct LISTNODE *prev;
-    void *data;
-} LISTNODE;
-
-typedef struct {
-    LISTNODE *head;
-    LISTNODE *tail;
-    int count;
-} LIST;
+#include "lo_box.h"
 
 typedef struct {
     u8 unk0[0x6C];

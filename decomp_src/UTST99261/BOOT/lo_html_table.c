@@ -1,12 +1,87 @@
+/* cflags: -O1 */
 #include "common.h"
+#include "nflayout.h"
+#include "m2c_macros.h"
+#include "lo_box.h"
+BOX *createBox(void *ctx, int type);
+BOX *getTableBox(BOX *box);
+int getContainingBlockWidth(BOX *box);
+void linkBoxNoTableCheck(BOX *box, BOX *parent, BOX *prev);
+void initNoneContent(BOX *box, void *ctx);
+void initTdContent(BOX *box, void *ctx);
+void initBoxProperty(BOX *box);
+void attr_ALIGN_trgroup(void *node, BOX *box);
+void attr_VALIGN_trgroup(void *node, BOX *box);
+void applyCSSExtStyleSheetToBox(void *node, BOX *box);
+void applyCSSInlinePropertyToBox(void *node, BOX *box);
+void *lfm_createPageRegion(BOX *box, int width);
+BOX *html_TD_inner(void *node, BOX *tr, BOX *last, BOX *box);
+void *Node_getParentNode(void *node);
+BOX *Node_getBox(void *node);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_html_table", getTableBoxFromDOM);
+BOX *getTableBoxFromDOM(void *node) {
+    BOX *box;
+    for (node = Node_getParentNode(node); node != NULL; node = Node_getParentNode(node)) {
+        box = Node_getBox(node);
+        if (box != NULL) {
+            if (box->content == 4) {
+                return box;
+            }
+            if (box->content == 6 || box->content == 1) {
+                return NULL;
+            }
+        }
+    }
+    return NULL;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_html_table", getTrBoxFromDOM);
+BOX *getTrBoxFromDOM(void *node) {
+    BOX *box;
+    for (node = Node_getParentNode(node); node != NULL; node = Node_getParentNode(node)) {
+        box = Node_getBox(node);
+        if (box != NULL) {
+            if (box->content == 5) {
+                return box;
+            }
+            if (box->content == 4 || box->content == 1) {
+                return NULL;
+            }
+        }
+    }
+    return NULL;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_html_table", getTrGroupBoxFromDOM);
+BOX *getTrGroupBoxFromDOM(void *node) {
+    BOX *box;
+    for (node = Node_getParentNode(node); node != NULL; node = Node_getParentNode(node)) {
+        box = Node_getBox(node);
+        if (box != NULL) {
+            if (box->content == 4 || box->html == 0x56 || box->html == 0x5B || box->html == 0x59) {
+                return box;
+            }
+            if (box->content == 6 || box->content == 1) {
+                return NULL;
+            }
+        }
+    }
+    return NULL;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_html_table", getColGroupBoxFromDOM);
+BOX *getColGroupBoxFromDOM(void *node) {
+    BOX *box;
+    for (node = Node_getParentNode(node); node != NULL; node = Node_getParentNode(node)) {
+        box = Node_getBox(node);
+        if (box != NULL) {
+            if (box->content == 4 || box->html == 0x17) {
+                return box;
+            }
+            if (box->content == 6 || box->content == 1) {
+                return NULL;
+            }
+        }
+    }
+    return NULL;
+}
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/lo_html_table", D_001393C4);
 
@@ -176,9 +251,60 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_html_table", html_CAPTION);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_html_table", html_TABLE);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_html_table", html_TD);
+BOX *html_TD(void *node) {
+    BOX *tr;
+    BOX *last;
+    BOX *c;
+    BOX *box;
+    tr = getTrBoxFromDOM(node);
+    if (tr == NULL) {
+        return NULL;
+    }
+    last = NULL;
+    for (c = tr->child; c != NULL; c = c->next) {
+        last = c;
+    }
+    box = createBox(node, 1);
+    if (box == NULL) {
+        return NULL;
+    }
+    linkBoxNoTableCheck(box, tr, last);
+    box->display = 0;
+    box->html = 0x57;
+    initTdContent(box, node);
+    initBoxProperty(box);
+    box->region = lfm_createPageRegion(box, box->width);
+    return html_TD_inner(node, tr, last, box);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_html_table", html_TH);
+BOX *html_TH(void *node) {
+    BOX *tr;
+    BOX *last;
+    BOX *c;
+    BOX *box;
+    tr = getTrBoxFromDOM(node);
+    if (tr == NULL) {
+        return NULL;
+    }
+    last = NULL;
+    for (c = tr->child; c != NULL; c = c->next) {
+        last = c;
+    }
+    box = createBox(node, 1);
+    if (box == NULL) {
+        return NULL;
+    }
+    linkBoxNoTableCheck(box, tr, last);
+    box->display = 0;
+    box->html = 0x5A;
+    initTdContent(box, node);
+    initBoxProperty(box);
+    box->style->unk6A |= 1;
+    box->style->unk64 = ui_global->color[box->style->unk6A][box->style->fontSize];
+    box->region = lfm_createPageRegion(box, box->width);
+    html_TD_inner(node, tr, last, box);
+    return box;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_html_table", html_TR);
 
@@ -186,8 +312,89 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_html_table", html_COL);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_html_table", html_COLGROUP);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_html_table", html_TBODY);
+BOX *html_TBODY(void *node) {
+    BOX *table;
+    BOX *last;
+    BOX *c;
+    BOX *box;
+    table = getTableBoxFromDOM(node);
+    if (table == NULL) {
+        return NULL;
+    }
+    last = NULL;
+    for (c = table->child; c != NULL; c = c->next) {
+        last = c;
+    }
+    box = createBox(node, 1);
+    if (box == NULL) {
+        return NULL;
+    }
+    linkBoxNoTableCheck(box, table, last);
+    box->display = 1;
+    box->html = 0x56;
+    initNoneContent(box, node);
+    initBoxProperty(box);
+    attr_ALIGN_trgroup(node, box);
+    attr_VALIGN_trgroup(node, box);
+    applyCSSExtStyleSheetToBox(node, box);
+    applyCSSInlinePropertyToBox(node, box);
+    return box;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_html_table", html_THEAD);
+BOX *html_THEAD(void *node) {
+    BOX *table;
+    BOX *last;
+    BOX *c;
+    BOX *box;
+    table = getTableBoxFromDOM(node);
+    if (table == NULL) {
+        return NULL;
+    }
+    last = NULL;
+    for (c = table->child; c != NULL; c = c->next) {
+        last = c;
+    }
+    box = createBox(node, 1);
+    if (box == NULL) {
+        return NULL;
+    }
+    linkBoxNoTableCheck(box, table, last);
+    box->display = 1;
+    box->html = 0x5B;
+    initNoneContent(box, node);
+    initBoxProperty(box);
+    attr_ALIGN_trgroup(node, box);
+    attr_VALIGN_trgroup(node, box);
+    applyCSSExtStyleSheetToBox(node, box);
+    applyCSSInlinePropertyToBox(node, box);
+    return box;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_html_table", html_TFOOT);
+BOX *html_TFOOT(void *node) {
+    BOX *table;
+    BOX *last;
+    BOX *c;
+    BOX *box;
+    table = getTableBoxFromDOM(node);
+    if (table == NULL) {
+        return NULL;
+    }
+    last = NULL;
+    for (c = table->child; c != NULL; c = c->next) {
+        last = c;
+    }
+    box = createBox(node, 1);
+    if (box == NULL) {
+        return NULL;
+    }
+    linkBoxNoTableCheck(box, table, last);
+    box->display = 1;
+    box->html = 0x59;
+    initNoneContent(box, node);
+    initBoxProperty(box);
+    attr_ALIGN_trgroup(node, box);
+    attr_VALIGN_trgroup(node, box);
+    applyCSSExtStyleSheetToBox(node, box);
+    applyCSSInlinePropertyToBox(node, box);
+    return box;
+}
