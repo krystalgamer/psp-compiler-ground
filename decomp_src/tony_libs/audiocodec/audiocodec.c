@@ -11,7 +11,46 @@ INCLUDE_ASM("tmp/asm/tony_libs/audiocodec/nonmatchings/audiocodec", sceAudiocode
 
 INCLUDE_ASM("tmp/asm/tony_libs/audiocodec/nonmatchings/audiocodec", sceAudiocodecDecode);
 
-INCLUDE_ASM("tmp/asm/tony_libs/audiocodec/nonmatchings/audiocodec", sceAudiocodecGetInfo);
+int sceAudiocodecGetInfo(AudiocodecCtx *ctx, int codec)
+{
+	int ret;
+	unsigned int oldk1;
+
+	if (ctx == 0)
+		return 0x807F0001;
+	K1_SAVE(oldk1);
+	if (k1StaBufBad((unsigned int)ctx, 0x68)) {
+		ret = 0x80000023;
+		goto end;
+	}
+	if (k1DynBufBad(ctx->edram, ctx->neededMem)) {
+		ret = 0x80000023;
+		goto end;
+	}
+	switch (codec) {
+	case 0x1000:
+		ctx->unk0 = 0x04090701;
+		ret = sceMeAudio_driver_39F06790(codec, 4, ctx);
+		break;
+	case 0x1001:
+	case 0x1003:
+		ret = 0;
+		goto end;
+	case 0x1002:
+	case 0x1004:
+		ctx->unk0 = 0x04090701;
+		ret = sceMeAudio_driver_39F06790(codec, 2, ctx);
+		break;
+	default:
+		ret = 0x80000004;
+		goto end;
+	}
+	if (ret < 0)
+		ret = convErr(ret);
+end:
+	K1_RESTORE(oldk1);
+	return ret;
+}
 
 int sceAudiocodec_6CD2A861(AudiocodecCtx *ctx, int codec, int *out)
 {

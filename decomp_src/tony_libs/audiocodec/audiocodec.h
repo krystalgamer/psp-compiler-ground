@@ -21,6 +21,20 @@ static inline int k1DynBufOk(unsigned int p, unsigned int size)
 	return ((p | size | (p + size)) >> 31) ^ 1;
 }
 
+static inline int k1StaBufBad(unsigned int p, unsigned int size)
+{
+	if (K1_USER() && (int)(p | (p + size)) < 0)
+		return 1;
+	return 0;
+}
+
+static inline int k1DynBufBad(unsigned int p, unsigned int size)
+{
+	if (K1_USER() && (int)(p | size | (p + size)) < 0)
+		return 1;
+	return 0;
+}
+
 typedef struct {
 	unsigned int unk0;
 	unsigned int unk4;
