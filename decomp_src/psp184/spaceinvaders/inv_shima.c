@@ -82,7 +82,39 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_shima", ScoreAdd);
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_shima", BoxAtari_z);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_shima", BoxAtari_e);
+#define ABS(x) ((x) < 0 ? -(x) : (x))
+#define SPR_NEXT(s) (*(SPR_T **)((u8 *)(s) + 0x94))
+SPR_T *SprHeadGet(void);
+void ScoreAdd(SPR_T *s);
+extern int rt;
+int BoxAtari_e(int side, int x, int y, int w, int h)
+{
+	SPR_T *s;
+	int d1, d2, d3, d4;
+
+	for (s = SprHeadGet(); s != NULL; s = SPR_NEXT(s)) {
+		if (s->fc != 0 && s->f14 == side) {
+		if (s->f10 >= 1 && s->f10 <= 6) {
+			d1 = ABS(s->f28 - x);
+			d2 = ABS(s->f2c - y);
+			d3 = ABS(s->f28 + s->f40 - (x + w));
+			d4 = ABS(s->f2c + s->f44 - (y + h));
+			if (d1 < s->f40 && d2 < s->f44 && d3 < s->f40 && d4 < s->f44) {
+				ScoreAdd(s);
+				if (s->f14 == 0) {
+					rt = 24;
+					s->f14 = 4;
+				} else if (s->f14 == 1) {
+					rt = 24;
+					s->f14 = 5;
+				}
+				return 1;
+			}
+		}
+		}
+	}
+	return 0;
+}
 
 int VramAtariSub(s8 *buf, int x, int y, int w)
 {
