@@ -183,7 +183,25 @@ SceInt32 dispbuf_show(t_displayBuffer *pDisp);
 
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/mpeg_display", dispbuf_create);
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/mpeg_display", swap_buffer);
+int sceDisplaySetFrameBuf(void *topaddr, int bufferwidth, int pixelformat, int sync);
+int sceDmacMemcpy(void *dst, const void *src, unsigned int size);
+int sceDisplaySetFrameBuf(void *topaddr, int bufferwidth, int pixelformat, int sync);
+static SceInt32 swap_buffer(SceChar8 *buffer)
+{
+	SceInt32 ret;
+	SceChar8 *tmp;
+
+	ret = sceDmacMemcpy(displayBuf[0], buffer, 0x88000);
+	if (ret < 0)
+		return ret;
+	ret = sceDisplaySetFrameBuf(displayBuf[0], 512, 3, 1);
+	if (ret < 0)
+		return ret;
+	tmp = displayBuf[0];
+	displayBuf[0] = displayBuf[1];
+	displayBuf[1] = tmp;
+	return ret;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/mpeg_display", dispbuf_reset);
 

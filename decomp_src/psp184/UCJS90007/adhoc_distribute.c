@@ -276,7 +276,23 @@ void adhoc_distribute_malloc_term(void) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/adhoc_distribute", adhoc_distribute_malloc);
+int sceKernelTryAllocateVpl(SceUID vplid, unsigned int size, void **data);
+int sceKernelReferVplStatus(SceUID vplid, SceKernelVplInfo *info);
+void *adhoc_distribute_malloc(unsigned int size)
+{
+	SceKernelVplInfo info;
+	void *ptr;
+	int used;
+
+	if (sceKernelTryAllocateVpl(vplid, size, &ptr) < 0)
+		return NULL;
+	info.size = sizeof(info);
+	if (sceKernelReferVplStatus(vplid, &info) == 0) {
+		used = info.poolSize - info.freeSize;
+		maxalloc = (used > maxalloc) ? used : maxalloc;
+	}
+	return ptr;
+}
 
 int sceKernelReferVplStatus(SceUID vplid, SceKernelVplInfo *info);
 int sceNetAdhocDistributeGetPoolStat(struct SceNetMallocStat *poolstat)

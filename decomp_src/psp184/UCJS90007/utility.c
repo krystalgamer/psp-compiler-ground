@@ -416,4 +416,21 @@ int utility_update_osk(void)
 
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/utility", utility_check_osk_completed);
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/utility", utility_get_osk_result);
+int utility_get_osk_result(char *ptr, SceUInt size)
+{
+	SceUInt i = 0;
+
+	if (size != 0) {
+		while (result_string[i] != 0) {
+			ptr[i] = (char)result_string[i];
+			i++;
+			if (i >= size)
+				break;
+		}
+	}
+	if (i == size)
+		ptr[i - 1] = '\0';
+	else
+		ptr[i] = '\0';
+	return 0;
+}

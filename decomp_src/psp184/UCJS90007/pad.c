@@ -303,7 +303,27 @@ static void pad_square(void)
 	}
 }
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/pad", pad_cross);
+static void pad_cross(void)
+{
+	switch (_info.state) {
+	case STATE_FIRST_INIT:
+		break;
+	case STATE_DISPLAY_LOG_MS:
+		change_state(STATE_CONFIG, 0);
+		break;
+	case STATE_BINLIST:
+		free_binlist();
+		change_state(STATE_CONFIG, 0);
+		break;
+	case STATE_DISPLAY_LOG:
+		change_state(STATE_STATUS_SCENE, 0);
+		break;
+	case STATE_MPEGLIST:
+		free_mpeglist();
+		change_state(STATE_CONFIG, 0);
+		break;
+	}
+}
 
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/pad", pad_up);
 

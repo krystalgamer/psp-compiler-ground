@@ -446,7 +446,17 @@ INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/main", draw_bottomline);
 
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/main", draw_frame);
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/main", check_osk_completed);
+static void check_osk_completed(void)
+{
+	int done = 0;
+	int error_code = 0;
+
+	if (utility_check_osk_completed(&done, &error_code) < 0 || done != 0) {
+		if (done > 0 && _info.v_cursor_pos == 1)
+			utility_get_osk_result(_info.bin_filename, 256);
+		change_state(2, 0);
+	}
+}
 
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/main", update_1080);
 

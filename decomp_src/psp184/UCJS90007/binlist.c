@@ -170,7 +170,23 @@ INCLUDE_RODATA("tmp/asm/psp184/UCJS90007/nonmatchings/binlist", D_0002EE88);
 
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/binlist", get_binlist);
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/binlist", free_binlist);
+void free(void *p);
+void free(void *p);
+void free_binlist(void)
+{
+	struct binlist_entry *entry;
+
+	while ((entry = binlist_head.tqh_first) != NULL) {
+		if (entry->link.tqe_next != NULL)
+			entry->link.tqe_next->link.tqe_prev = entry->link.tqe_prev;
+		else
+			binlist_head.tqh_last = entry->link.tqe_prev;
+		*entry->link.tqe_prev = entry->link.tqe_next;
+		free(entry);
+	}
+	binlist_head.tqh_first = NULL;
+	binlist_head.tqh_last = &binlist_head.tqh_first;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/binlist", draw_binlist);
 

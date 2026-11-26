@@ -154,11 +154,36 @@ void set_mpeg_filename(void);
 int get_mpeg_filename(char *mpeg_filename);
 
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/mpeg_list", mpeglist_init);
+void mpeglist_init(void)
+{
+	mpeglist_head.tqh_first = NULL;
+	mpeglist_head.tqh_last = &mpeglist_head.tqh_first;
+	if (get_mpeglist() > 0) {
+		set_mpeg_filename();
+		free_mpeglist();
+	}
+	__builtin_strcpy(_info.movie_filename[0], "GSSVIDEO.PMF");
+}
 
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/mpeg_list", get_mpeglist);
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/mpeg_list", free_mpeglist);
+void free(void *p);
+void free(void *p);
+void free_mpeglist(void)
+{
+	struct mpeglist_entry *entry;
+
+	while ((entry = mpeglist_head.tqh_first) != NULL) {
+		if (entry->link.tqe_next != NULL)
+			entry->link.tqe_next->link.tqe_prev = entry->link.tqe_prev;
+		else
+			mpeglist_head.tqh_last = entry->link.tqe_prev;
+		*entry->link.tqe_prev = entry->link.tqe_next;
+		free(entry);
+	}
+	mpeglist_head.tqh_first = NULL;
+	mpeglist_head.tqh_last = &mpeglist_head.tqh_first;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/mpeg_list", draw_mpeglist);
 
