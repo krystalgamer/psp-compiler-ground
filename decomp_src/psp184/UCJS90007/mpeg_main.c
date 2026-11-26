@@ -430,7 +430,259 @@ int mpeg_term(void)
 
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/mpeg_main", mpeg_play_thread);
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/mpeg_main", mpeg_init_thread);
+void *memset(void *s, int c, unsigned int n);
+char *strcpy(char *d, const char *s);
+void *malloc(unsigned int size);
+void *memalign(unsigned int align, unsigned int size);
+SceInt32 strFileAssign(StrFile *file, const char *filename);
+SceInt32 strFileOpenCB(StrFile *file, const char *filename, SceInt32 mode);
+SceInt32 sceMpegInit(SceVoid);
+SceInt32 sceMpegRingbufferQueryMemSize(SceInt32 iPackNum);
+SceInt32 sceMpegQueryMemSize(SceInt32 iReserved);
+SceInt32 sceMpegRingbufferConstruct(SceMpegRingbuffer *rb, SceInt32 iPackNum, SceVoid *pData, SceInt32 iSize, void *callback, SceVoid *cbdata);
+SceInt32 sceMpegCreate(SceMpeg *mpeg, SceVoid *pData, SceInt32 iSize, SceMpegRingbuffer *rb, SceInt32 iFrameWidth, SceInt32 iReserved1, SceInt32 iReserved2);
+SceMpegStream *sceMpegRegistStream(SceMpeg *mpeg, SceInt32 iStreamID, SceInt32 iStreamNum);
+SceMpegHandle sceMpegMallocAvcEsBuf(SceMpeg *mpeg);
+SceInt32 sceMpegInitAu(SceMpeg *mpeg, SceVoid *pEsBuffer, SceMpegAu *pAu);
+SceInt32 sceMpegQueryAtracEsSize(SceMpeg *mpeg, SceInt32 *iEsSize, SceInt32 *iOutSize);
+void *memalign(unsigned int align, unsigned int size);
+void *malloc(unsigned int size);
+void *memset(void *s, int c, unsigned int n);
+char *strcpy(char *d, const char *s);
+char *strncat(char *d, const char *s, unsigned int n);
+SceInt32 decode_setStreamData(t_mpegStreamData *pStreamData, SceMpegStream *pStreamV, SceMpegAu *pAvcAu, SceMpegStream *pStreamA, SceMpegAu *pAtracAu);
+SceInt32 control_create(t_conditionCtrl *pCtrl);
+SceInt32 dispbuf_create(t_displayBuffer *pDisp, SceInt32 dispSize, SceInt32 dispNum, t_conditionCtrl *pCtrl);
+SceInt32 soundbuf_create(t_soundBuffer *pSound, SceInt32 size, SceInt32 num, t_conditionCtrl *pCtrl);
+SceInt32 read_create(t_ringBuffer *pRing, SceMpegRingbuffer *pRB, t_conditionCtrl *pCtrl);
+SceInt32 avsync_create(t_avSyncControl *pAvSync, t_displayBuffer *pDisp, t_soundBuffer *pSound, SceInt32 videoNum);
+int dispbuf_func(SceSize size, void *argp);
+int read_func(SceSize size, void *argp);
+int soundbuf_func(SceSize size, void *argp);
+int sceKernelCreateEventFlag(const char *name, int attr, int bits, void *opt);
+extern char D_0008D46C[];
+extern int error_code_8341C;
+static int mpeg_init_thread(SceSize argsize, void *arg)
+{
+	int ret;
+
+	memset(&_mpeg_info, 0, sizeof(_mpeg_info));
+	strcpy((char *)_mpeg_info.filename, "ms0:/");
+	strncat((char *)_mpeg_info.filename, D_0008D46C, 256);
+	_mpeg_info.pDisp = NULL;
+	_mpeg_info.pRing = NULL;
+	_mpeg_info.pSound = NULL;
+	_mpeg_info.pAvSync = NULL;
+	_mpeg_info.pCtrl = NULL;
+	_mpeg_info.pStreamData = NULL;
+	_mpeg_info.avcEsBuf = NULL;
+	_mpeg_info.pPSPStream = NULL;
+	_mpeg_info.pWorkBuf = NULL;
+	_mpeg_info.pAudioBuf = NULL;
+	_mpeg_info.pStream[0] = NULL;
+	_mpeg_info.pStream[1] = NULL;
+	audioFlag = 1;
+	ret = strFileAssign(&_mpeg_info.strFile, (char *)_mpeg_info.filename);
+	if (ret < 0)
+		goto term4;
+	ret = sceMpegInit();
+	if (ret != 0)
+		goto term3;
+	ret = sceMpegRingbufferQueryMemSize(960);
+	if (ret < 0)
+		goto term3;
+	_mpeg_info.bufferSize = ret;
+	ret = sceMpegQueryMemSize(0);
+	if (ret < 0)
+		goto term3;
+	_mpeg_info.workSize = ret;
+	_mpeg_info.pPSPStream = malloc(_mpeg_info.bufferSize);
+	if (_mpeg_info.pPSPStream == NULL) {
+		ret = 0x80000022;
+		goto term3;
+	}
+	_mpeg_info.pWorkBuf = malloc(_mpeg_info.workSize);
+	if (_mpeg_info.pWorkBuf == NULL) {
+		ret = 0x80000022;
+		goto term3;
+	}
+	ret = sceMpegRingbufferConstruct(&_mpeg_info.ringbuf, 960, _mpeg_info.pPSPStream, _mpeg_info.bufferSize, ringbufferCallBack, &_mpeg_info.strFile);
+	if (ret != 0)
+		goto term3;
+	ret = sceMpegCreate(&_mpeg_info.mpeg, _mpeg_info.pWorkBuf, _mpeg_info.workSize, &_mpeg_info.ringbuf, 512, 0, 0);
+	if (ret != 0)
+		goto term3;
+	ret = strFileOpenCB(&_mpeg_info.strFile, (char *)_mpeg_info.filename, 1);
+	if (ret < 0)
+		goto term3;
+	ret = readHeader(&_mpeg_info.mpeg, &_mpeg_info.strFile, &_mpeg_info.fileSize, &_mpeg_info.streamOffset);
+	if (ret < 0)
+		goto term3;
+	_mpeg_info.pStream[0] = sceMpegRegistStream(&_mpeg_info.mpeg, 0, 0);
+	if (_mpeg_info.pStream[0] == NULL) {
+		ret = 0x80410C83;
+		goto term3;
+	}
+	if (audioFlag == 1) {
+		_mpeg_info.pStream[1] = sceMpegRegistStream(&_mpeg_info.mpeg, 1, 0);
+		if (_mpeg_info.pStream[1] == NULL) {
+			ret = 0x80410C83;
+			goto term3;
+		}
+	}
+	_mpeg_info.avcEsBuf = sceMpegMallocAvcEsBuf(&_mpeg_info.mpeg);
+	if (_mpeg_info.avcEsBuf == NULL) {
+		ret = 0x80410C83;
+		goto term3;
+	}
+	ret = sceMpegInitAu(&_mpeg_info.mpeg, _mpeg_info.avcEsBuf, &_mpeg_info.avcAu);
+	if (ret != 0)
+		goto term3;
+	if (audioFlag == 1) {
+		ret = sceMpegQueryAtracEsSize(&_mpeg_info.mpeg, &_mpeg_info.audioEsSize, &_mpeg_info.audioOutSize);
+		if (ret != 0)
+			goto term3;
+		_mpeg_info.pAudioBuf = memalign(64, _mpeg_info.audioEsSize);
+		if (_mpeg_info.pAudioBuf == NULL) {
+			ret = 0x80000022;
+			goto term3;
+		}
+		ret = sceMpegInitAu(&_mpeg_info.mpeg, _mpeg_info.pAudioBuf, &_mpeg_info.atracAu);
+		if (ret != 0)
+			goto term3;
+	}
+	_mpeg_info.pStreamData = malloc(sizeof(t_mpegStreamData));
+	if (_mpeg_info.pStreamData == NULL) {
+		ret = 0x80000022;
+		goto term2;
+	}
+	decode_setStreamData(_mpeg_info.pStreamData, _mpeg_info.pStream[0], &_mpeg_info.avcAu, _mpeg_info.pStream[1], &_mpeg_info.atracAu);
+	_mpeg_info.pCtrl = malloc(sizeof(t_conditionCtrl));
+	if (_mpeg_info.pCtrl == NULL) {
+		ret = 0x80000022;
+		goto term2;
+	}
+	ret = control_create(_mpeg_info.pCtrl);
+	if (ret < 0)
+		goto term2;
+	_mpeg_info.pDisp = malloc(sizeof(t_displayBuffer));
+	if (_mpeg_info.pDisp == NULL) {
+		ret = 0x80000022;
+		goto term2;
+	}
+	ret = dispbuf_create(_mpeg_info.pDisp, 0x88000, 4, _mpeg_info.pCtrl);
+	if (ret < 0)
+		goto term2;
+	if (audioFlag == 1) {
+		_mpeg_info.pSound = malloc(sizeof(t_soundBuffer));
+		if (_mpeg_info.pSound == NULL) {
+			ret = 0x80000022;
+			goto term2;
+		}
+		ret = soundbuf_create(_mpeg_info.pSound, _mpeg_info.audioOutSize, 4, _mpeg_info.pCtrl);
+		if (ret < 0)
+			goto term2;
+	}
+	_mpeg_info.pRing = malloc(sizeof(t_ringBuffer));
+	if (_mpeg_info.pRing == NULL) {
+		ret = 0x80000022;
+		goto term2;
+	}
+	ret = read_create(_mpeg_info.pRing, &_mpeg_info.ringbuf, _mpeg_info.pCtrl);
+	if (ret < 0)
+		goto term2;
+	_mpeg_info.pAvSync = malloc(sizeof(t_avSyncControl));
+	if (_mpeg_info.pAvSync == NULL) {
+		ret = 0x80000022;
+		goto term2;
+	}
+	ret = avsync_create(_mpeg_info.pAvSync, _mpeg_info.pDisp, _mpeg_info.pSound, 6);
+	if (ret < 0)
+		goto term2;
+	ret = sceKernelCreateThread("displayThread", dispbuf_func, 0x20, 0x800, 0, NULL);
+	if (ret < 0)
+		goto term2;
+	dispThread = ret;
+	ret = sceKernelCreateThread("readThread", read_func, 0x22, 0x800, 0, NULL);
+	if (ret < 0)
+		goto term2;
+	readThread = ret;
+	if (audioFlag == 1) {
+		ret = sceKernelCreateThread("soundThread", soundbuf_func, 0x14, 0x800, 0, NULL);
+		if (ret < 0)
+			goto term2;
+		soundThread = ret;
+	}
+	ret = sceKernelCreateEventFlag("MpegPlayerEventFlag", 0, 1, NULL);
+	if (ret < 0)
+		goto term2;
+	_mpeg_info.evf_id = ret;
+	playInfo.playMode = 0;
+	return 6;
+term2:
+	if (_mpeg_info.evf_id > 0) {
+		sceKernelDeleteEventFlag(_mpeg_info.evf_id);
+		_mpeg_info.evf_id = -1;
+	}
+	if (_mpeg_info.pRing != NULL) {
+		read_delete(_mpeg_info.pRing);
+		free(_mpeg_info.pRing);
+		_mpeg_info.pRing = NULL;
+	}
+	if (_mpeg_info.pAvSync != NULL) {
+		avsync_delete(_mpeg_info.pAvSync);
+		free(_mpeg_info.pAvSync);
+		_mpeg_info.pAvSync = NULL;
+	}
+	if (_mpeg_info.pSound != NULL) {
+		soundbuf_delete(_mpeg_info.pSound);
+		free(_mpeg_info.pSound);
+		_mpeg_info.pSound = NULL;
+	}
+	if (_mpeg_info.pDisp != NULL) {
+		dispbuf_delete(_mpeg_info.pDisp);
+		free(_mpeg_info.pDisp);
+		_mpeg_info.pDisp = NULL;
+	}
+	if (_mpeg_info.pCtrl != NULL) {
+		control_delete(_mpeg_info.pCtrl);
+		free(_mpeg_info.pCtrl);
+		_mpeg_info.pCtrl = NULL;
+	}
+	if (_mpeg_info.pStreamData != NULL) {
+		free(_mpeg_info.pStreamData);
+		_mpeg_info.pStreamData = NULL;
+	}
+term3:
+	if (audioFlag == 1 && _mpeg_info.pAudioBuf != NULL) {
+		free(_mpeg_info.pAudioBuf);
+		_mpeg_info.pAudioBuf = NULL;
+	}
+	if (_mpeg_info.avcEsBuf != NULL) {
+		sceMpegFreeAvcEsBuf(&_mpeg_info.mpeg, _mpeg_info.avcEsBuf);
+		_mpeg_info.avcEsBuf = NULL;
+	}
+	if (_mpeg_info.pStream[0] != NULL) {
+		sceMpegUnRegistStream(&_mpeg_info.mpeg, _mpeg_info.pStream[0]);
+		_mpeg_info.pStream[0] = NULL;
+	}
+	if (audioFlag == 1 && _mpeg_info.pStream[1] != NULL) {
+		sceMpegUnRegistStream(&_mpeg_info.mpeg, _mpeg_info.pStream[1]);
+		_mpeg_info.pStream[1] = NULL;
+	}
+	strFileClose(&_mpeg_info.strFile);
+	sceMpegDelete(&_mpeg_info.mpeg);
+	sceMpegRingbufferDestruct(&_mpeg_info.ringbuf);
+	sceMpegFinish();
+	if (_mpeg_info.pWorkBuf != NULL)
+		free(_mpeg_info.pWorkBuf);
+	if (_mpeg_info.pPSPStream != NULL)
+		free(_mpeg_info.pPSPStream);
+term4:
+	strFileUnassign(&_mpeg_info.strFile);
+	error_code_8341C = ret;
+	return -1;
+}
 
 int startCheck(t_avSyncControl *pAvSync, t_ringBuffer *pRingCtrl, t_conditionCtrl *pCtrl) {
     int var_a0;
