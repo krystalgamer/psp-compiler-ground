@@ -69,7 +69,25 @@ SceInt32 avsync_video_getPts(t_avSyncControl *pAvSync, SceUInt32 *pPts);
 SceInt32 avsync_Compare(t_avSyncControl *pAvSync);
 
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/mpeg_avsync", avsync_create);
+void *malloc(unsigned int size);
+void *malloc(unsigned int size);
+float sceDisplayGetFramePerSec(void);
+SceInt32 avsync_create(t_avSyncControl *pAvSync, t_displayBuffer *pDisp, t_soundBuffer *pSound, SceInt32 videoNum)
+{
+	SceInt32 ret = 0;
+
+	pAvSync->pDisp = pDisp;
+	pAvSync->pSound = pSound;
+	pAvSync->video.pts = NULL;
+	pAvSync->video.pts = malloc(videoNum * sizeof(SceUInt32));
+	if (pAvSync->video.pts == NULL) {
+		ret = 0x80000022;
+	} else {
+		pAvSync->video.size = videoNum;
+		videoIntervalSize = (SceInt32)(2.0f * (90000.0f / sceDisplayGetFramePerSec()));
+	}
+	return ret;
+}
 
 int avsync_reset(t_avSyncControl *pAvSync) {
     pAvSync->video.videoLatestPts = 0;
