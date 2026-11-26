@@ -91,40 +91,6 @@ static int pad_read(void);
 
 INCLUDE_RODATA("tmp/asm/UTST99332/graphics_balloon/nonmatchings/main", char_mode);
 
-#ifdef NON_MATCHING
-/* block layout around check_clouds/indicator differs */
-static void draw_mode(void)
-{
-	char buf[8] = ">>>>";
-	int size;
-	int i;
-
-	if (change) {
-		if (check_clouds()) {
-			change = 0;
-		} else {
-			size = 0;
-			for (i = 0; i < 12; i++) {
-				if (char_mode[prev_texture][i] == 0)
-					break;
-				size++;
-			}
-			buf[3 - indicator] = ' ';
-			sceGuDebugPrint(8, 256, 0xffffff, char_mode[prev_texture]);
-			sceGuDebugPrint(size * 8 + 16, 256, 0xffffff, buf);
-			sceGuDebugPrint(size * 8 + 56, 256, 0xffffff, char_mode[texture_mode]);
-			if (frame & 1) {
-				if (++indicator >= 4)
-					indicator = 0;
-			}
-		}
-	}
-	if (!change) {
-		sceGuDebugPrint(8, 256, 0xffffff, char_mode[texture_mode]);
-		indicator = 0;
-	}
-}
-#else
 void sceGuDebugPrint(int x, int y, unsigned int color, const char *str);
 #define SCEGU_SCR_HEIGHT      272
 
@@ -160,7 +126,6 @@ static void draw_mode(void)
 	}
 
 }
-#endif
 
 /* Warning: Gap in callee-saved word stack region.
  * Saved: [0x0, 0x4, 0x10, 0x14], gap at: 0x8. */
