@@ -610,7 +610,37 @@ INCLUDE_ASM("tmp/asm/UTST99332/mpeg_seamless_change/nonmatchings/decode", decode
 
 INCLUDE_RODATA("tmp/asm/UTST99332/mpeg_seamless_change/nonmatchings/decode", D_00011C18);
 
-INCLUDE_ASM("tmp/asm/UTST99332/mpeg_seamless_change/nonmatchings/decode", decode_videoDecodeEnd);
+SceInt32 decode_videoDecodeEnd(t_mpegStreamData *pStreamData, t_avSyncControl *pAvSync)
+{
+	SceChar8 *pVideoBuf;
+	SceUInt32 pts;
+	SceInt32 rgbNum;
+	SceInt32 ret;
+
+	ret = 1;
+	if (dispbuf_getCapacity(pAvSync->pDisp) == 0) {
+		goto term;
+	}
+
+	dispbuf_getDrawbuf(pAvSync->pDisp, &pVideoBuf);
+
+	dispbuf[0] = pVideoBuf;
+
+	ret = sceMpegAvcDecodeStop(pStreamData->pMpeg, 512, dispbuf, &rgbNum);
+	if (ret != 0) {
+		printf("fatal error : sceMpegGetAvcDecodeStop() 0x%x\n", ret);
+		goto term;
+	}
+
+	if (rgbNum > 0) {
+		avsync_video_getPts(pAvSync, &pts);
+		dispbuf_setPts(pAvSync->pDisp, pts);
+		dispbuf_dataSet(pAvSync->pDisp);
+	}
+
+term:
+	return ret;
+}
 
 int decode_flushDecoder(t_mpegStreamData *pStreamData) {
     return sceMpegAvcDecodeFlush(pStreamData->pMpeg);
