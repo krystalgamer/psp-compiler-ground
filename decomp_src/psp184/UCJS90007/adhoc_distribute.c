@@ -408,10 +408,82 @@ static void *adhoc_download_maketag(u_int8_t type, void *data, int datalen, void
 
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/adhoc_distribute", adhoc_download_gettag);
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/adhoc_distribute", sceNetAdhocDistributeUpdateServerHelloOpt);
+int sceKernelCpuSuspendIntr(void);
+void sceKernelCpuResumeIntr(int intr);
+int sceNetAdhocMatchingSetHelloOpt(int id, int optlen, void *opt);
+int sceNetAdhocDistributeUpdateServerHelloOpt(void)
+{
+	char *p;
+	int ret;
+	int i;
+	int datalen;
+	int oldstat;
+	int busy = 0;
+	char status[7];
+
+	if (!inited)
+		return 0x80410C12;
+	if (sctx == NULL)
+		return 0x80410C16;
+	if (sctx->state != SCE_NET_ADHOC_DISTRIBUTE_SERVER_STATE_WAIT_FOR_REQUEST)
+		return 0x80410C17;
+	p = adhoc_download_gettag(1, sctx->hello_opt, sctx->hello_optlen, &datalen);
+	if (p == NULL)
+		return 0;
+	oldstat = sceKernelCpuSuspendIntr();
+	for (i = 0; i < sctx->thread_num; i++) {
+		if (wctx[i].state != SCE_NET_ADHOC_DISTRIBUTE_WORKER_STATE_READY)
+			busy++;
+	}
+	sceKernelCpuResumeIntr(oldstat);
+	status[0] = ' ';
+	status[1] = '(';
+	status[2] = '0' + busy;
+	status[3] = '/';
+	status[4] = '0' + sctx->thread_num;
+	status[5] = ')';
+	status[6] = '\0';
+	if (0x80 - sctx->nickname_len < 7)
+		return 0;
+	memcpy(p + sctx->nickname_len, status, sizeof(status));
+	ret = sceNetAdhocMatchingSetHelloOpt(sctx->matching_id, sctx->hello_optlen, sctx->hello_opt);
+	return ret;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/adhoc_distribute", adhoc_distribute_get_reqmsg);
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/adhoc_distribute", adhoc_distribute_worker_thread);
+int sceKernelReceiveMbx(int mbxid, void **pmessage, unsigned int *timeout);
+int sceNetAdhocMatchingCancelTarget(int id, struct SceNetEtherAddr *mac);
+int sceNetFreeThreadinfo(int thid);
+int adhoc_distribute_log_ms(struct SceNetEtherAddr *peer, struct log_info *log_info);
+static int adhoc_distribute_worker_thread(SceSize argsize, void *arg)
+{
+	int id;
+	int ret;
+	int oldstat;
+	SceKernelMsgPacket *msgpkt;
+	struct request_message *reqmsg;
+
+	id = *(int *)arg;
+	do {
+		wctx[id].transferred = 0;
+		wctx[id].state = SCE_NET_ADHOC_DISTRIBUTE_WORKER_STATE_READY;
+		ret = sceKernelReceiveMbx(sctx->mbxid, (void **)&msgpkt, NULL);
+		if (ret < 0)
+			break;
+		reqmsg = (struct request_message *)msgpkt;
+		memcpy(&wctx[id].peer, &reqmsg->peer, sizeof(struct SceNetEtherAddr));
+		oldstat = sceKernelCpuSuspendIntr();
+		reqmsg->flag &= ~1;
+		sceKernelCpuResumeIntr(oldstat);
+		wctx[id].state = SCE_NET_ADHOC_DISTRIBUTE_WORKER_STATE_BUSY;
+		adhoc_distribute_send(id);
+		adhoc_distribute_log_ms(&wctx[id].peer, &wctx[id].log_info);
+		sceNetAdhocMatchingCancelTarget(sctx->matching_id, &wctx[id].peer);
+	} while (sctx->state == SCE_NET_ADHOC_DISTRIBUTE_SERVER_STATE_WAIT_FOR_REQUEST);
+	sceNetFreeThreadinfo(sctx->workertid[id]);
+	wctx[id].state = SCE_NET_ADHOC_DISTRIBUTE_WORKER_STATE_DEAD;
+	return 0;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/adhoc_distribute", adhoc_distribute_send);
