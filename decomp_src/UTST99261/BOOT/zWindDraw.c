@@ -37,12 +37,19 @@ typedef struct {
     u16 button;                 /* 0xC */
 } ZEVENT;
 
+typedef struct ZFONT {
+    s16 unk0;
+    s16 unk2;
+    s16 unk4;
+    s16 height;                 /* 0x6 */
+} ZFONT;
+
 typedef struct ZW {
     s8 type;
     struct ZW *parent;          /* 0x4 */
     struct ZW *child;
     struct ZW *next;
-    void *font;
+    ZFONT *font;                /* 0x10 */
     unsigned int flags;         /* 0x14 */
     int fg[3];
     int bg[3];
@@ -98,6 +105,33 @@ void zWindDrawParts(int x, int y, int n, short color);
 void zWindLineBox(int x, int y, int w, int h, short color);
 void zWindDrawClipSet(int x, int y, int w, int h);
 extern int _iZwindPartsSize;
+extern s8 *zdata_ImageRadioOff;
+extern s8 *zdata_ImageRadioOn;
+extern s8 *zdata_ImageChoiceOff;
+extern s8 *zdata_ImageChoiceOn;
+extern s8 *zdata_ImageScrollV1;
+extern s8 *zdata_ImageScrollV2;
+extern s8 zdata_ImageRadioOff_12[];
+extern s8 zdata_ImageRadioOn_12[];
+extern s8 zdata_ImageChoiceOff_12[];
+extern s8 zdata_ImageChoiceOn_12[];
+extern s8 zdata_ImageScrollV1_12[];
+extern s8 zdata_ImageScrollV2_12[];
+extern s8 zdata_ImageRadioOff_14[];
+extern s8 zdata_ImageRadioOn_14[];
+extern s8 zdata_ImageChoiceOff_14[];
+extern s8 zdata_ImageChoiceOn_14[];
+extern s8 zdata_ImageScrollV1_14[];
+extern s8 zdata_ImageScrollV2_14[];
+extern s8 zdata_ImageRadioOff_16[];
+extern s8 zdata_ImageRadioOn_16[];
+extern s8 zdata_ImageChoiceOff_16[];
+extern s8 zdata_ImageChoiceOn_16[];
+extern s8 zdata_ImageScrollV1_16[];
+extern s8 zdata_ImageScrollV2_16[];
+extern int D_00584BC8;
+void zWindDrawImage(int x, int y, int w, int h, u16 *data, int flag);
+int GUI_Component_update(ZW *w, int x, int y, int width, int height);
 extern int _zWindDrawTexClipOffAX;
 extern int _zWindDrawTexClipOffAY;
 int GUI_Checkbox_getState(ZW *w);
@@ -179,7 +213,33 @@ int zWindSetSetFocusCallback(void) {
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/zWindDraw", zWindPartsSet);
+void zWindPartsSet(int size) {
+    if (size < 14) {
+        zdata_ImageRadioOff = zdata_ImageRadioOff_12;
+        zdata_ImageRadioOn = zdata_ImageRadioOn_12;
+        zdata_ImageChoiceOff = zdata_ImageChoiceOff_12;
+        zdata_ImageChoiceOn = zdata_ImageChoiceOn_12;
+        zdata_ImageScrollV1 = zdata_ImageScrollV1_12;
+        zdata_ImageScrollV2 = zdata_ImageScrollV2_12;
+        _iZwindPartsSize = 12;
+    } else if (size >= 16) {
+        zdata_ImageRadioOff = zdata_ImageRadioOff_16;
+        zdata_ImageRadioOn = zdata_ImageRadioOn_16;
+        zdata_ImageChoiceOff = zdata_ImageChoiceOff_16;
+        zdata_ImageChoiceOn = zdata_ImageChoiceOn_16;
+        zdata_ImageScrollV1 = zdata_ImageScrollV1_16;
+        zdata_ImageScrollV2 = zdata_ImageScrollV2_16;
+        _iZwindPartsSize = 16;
+    } else {
+        zdata_ImageRadioOff = zdata_ImageRadioOff_14;
+        zdata_ImageRadioOn = zdata_ImageRadioOn_14;
+        zdata_ImageChoiceOff = zdata_ImageChoiceOff_14;
+        zdata_ImageChoiceOn = zdata_ImageChoiceOn_14;
+        zdata_ImageScrollV1 = zdata_ImageScrollV1_14;
+        zdata_ImageScrollV2 = zdata_ImageScrollV2_14;
+        _iZwindPartsSize = 14;
+    }
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -373,7 +433,44 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/zWindDraw", zWindDrawImage);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/zWindDraw", zWindDrawImageScl);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/zWindDraw", zWindDrawParts);
+void zWindDrawParts(int x, int y, int n, short color) {
+    u16 buf[0x100];
+    u16 pal[5];
+    s8 *src;
+    int i;
+
+    pal[0] = 0;
+    pal[1] = 0xFFFF;
+    pal[2] = 0xC210;
+    pal[3] = 0x8000;
+    pal[4] = color | 0x8000;
+    switch (n) {
+    case 0:
+        src = zdata_ImageRadioOff;
+        break;
+    case 1:
+        src = zdata_ImageRadioOn;
+        break;
+    case 2:
+        src = zdata_ImageChoiceOff;
+        break;
+    case 3:
+        src = zdata_ImageChoiceOn;
+        break;
+    case 4:
+        src = zdata_ImageScrollV1;
+        break;
+    case 5:
+        src = zdata_ImageScrollV2;
+        break;
+    default:
+        return;
+    }
+    for (i = 0; i < _iZwindPartsSize * _iZwindPartsSize; i++) {
+        buf[i] = pal[*src++];
+    }
+    zWindDrawImage(x, y, _iZwindPartsSize, _iZwindPartsSize, buf, 0);
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -423,7 +520,34 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/zWindDraw", zWindWidgetChoiceDr
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/zWindDraw", zWindWidgetChoiceListDraw);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/zWindDraw", zWindWidgetChoiceListDelete);
+void zWindWidgetChoiceListDelete(ZW *w) {
+    int fh;
+    int x;
+    int y;
+    int wd;
+    int h;
+
+    s_windsystem_data.mode = 0;
+    s_windsystem_data.target = NULL;
+    if (w == NULL) {
+        return;
+    }
+    x = 0;
+    y = 0;
+    if (s_windsystem_data.view != 0) {
+        GUI_ScrollPane_getScrollPosition(s_windsystem_data.view, &x, &y);
+    }
+    fh = w->font->height;
+    x += w->px;
+    wd = w->w;
+    h = fh * 5 + 4;
+    if (w->py < D_00584BC8 / 2) {
+        y += w->py + w->h;
+    } else {
+        y += w->py - h;
+    }
+    GUI_Component_update(w->parent, x, y, wd + 1, h + 1);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/zWindDraw", zWindWidgetTextAreaDraw);
 
