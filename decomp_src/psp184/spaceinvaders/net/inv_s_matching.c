@@ -91,9 +91,7 @@ extern struct minfo minfo[16];
 
 int matching_start_to_enter_room(void);
 int matching_restart_to_create_room(void);
-int matching_start(void);
 int matching_select(int peer_idx);
-int matching_cancel(int peer_idx);
 
 
 extern int minfo_sid;
@@ -102,6 +100,15 @@ int sceNetAdhocMatchingStop(int id);
 int sceNetAdhocMatchingDelete(int id);
 int sceNetAdhocMatchingTerm(void);
 int sceKernelDeleteSema(int id);
+
+int sceKernelCreateSema(const char *name, int attr, int init, int max, void *opt);
+int sceKernelWaitSemaCB(int id, int n, void *timeout);
+int sceKernelSignalSema(int id, int n);
+int sceNetAdhocMatchingInit(int size);
+int sceNetAdhocMatchingCancelTarget(int id, void *addr);
+void *memset(void *, int, unsigned int);
+void change_state(int state);
+extern int D_0039AE60;
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_matching", matching_start_to_enter_room);
 
@@ -124,7 +131,36 @@ void matching_stop(void)
 	}
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_matching", matching_start);
+int sceKernelCreateSema(const char *name, int attr, int init, int max, void *opt);
+int sceKernelWaitSemaCB(int id, int n, void *timeout);
+int sceKernelSignalSema(int id, int n);
+int sceNetAdhocMatchingInit(int size);
+int sceNetAdhocMatchingCancelTarget(int id, void *addr);
+void *memset(void *, int, unsigned int);
+void change_state(int state);
+extern int D_0039AE60;
+int matching_start(void)
+{
+	int ret;
+
+	minfo_num = 0;
+	ret = sceKernelCreateSema("Minfo_Sema", 0, 1, 1, 0);
+	if (ret < 0)
+		goto error;
+	minfo_sid = ret;
+	memset(minfo, 0, 0x260);
+	ret = sceNetAdhocMatchingInit(0x8000);
+	if (ret < 0)
+		goto error;
+	ret = matching_start_to_enter_room();
+	if (ret < 0)
+		goto error;
+	return 0;
+
+error:
+	matching_term();
+	return ret;
+}
 
 void matching_term(void)
 {
@@ -139,7 +175,18 @@ void matching_term(void)
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_matching", matching_select);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_matching", matching_cancel);
+int matching_cancel(int peer_idx)
+{
+	int ret;
+
+	sceKernelWaitSemaCB(minfo_sid, 1, 0);
+	ret = sceNetAdhocMatchingCancelTarget(D_0039AE60, &minfo[peer_idx].addr);
+	if (ret >= 0)
+		minfo[peer_idx].status = 2;
+	sceKernelSignalSema(minfo_sid, 1);
+	change_state(0);
+	return 0;
+}
 
 INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_matching", D_0007AF64);
 
