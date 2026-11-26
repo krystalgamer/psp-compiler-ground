@@ -3487,7 +3487,7 @@ int VSModeBody(int pl)
 			break;
 		}
 		case 6: {
-			int mode, n;
+			int mode;
 			int pos[8];
 			int x, y;
 
@@ -3532,13 +3532,12 @@ int VSModeBody(int pl)
 				st->unk006 = 20;
 				break;
 			}
-			n = st->unk474;
-			if (n <= 0) {
+			if (st->unk474 <= 0) {
 				st->unk006 = 20;
 				break;
 			}
-			D_0014E8EC = n < 7 ? n : 7;
-			st->unk474 = n - D_0014E8EC;
+			D_0014E8EC = st->unk474 > 7 ? 7 : st->unk474;
+			st->unk474 -= D_0014E8EC;
 			st->snd.unk3 = D_0014E8EC;
 			SetMonitor(st, 21);
 			for (i = 0; i < 20; i++) {
@@ -3755,7 +3754,10 @@ int VSModeBody(int pl)
 				break;
 			if (--st->unk42A > 0)
 				break;
-			se_play(st->unk47A == 1 ? 29 : 28);
+			if (st->unk47A == 1)
+				se_play(29);
+			else
+				se_play(28);
 			PollShutter(1);
 			Stat[2].unk42A = 0;
 			st->unk006 = 23;
@@ -3878,9 +3880,9 @@ int VSModeBody(int pl)
 			st->by = -64;
 			st->bx = -64;
 			st->unk006 = 24;
-			op->bx = -64;
-			op->unk006 = 24;
 			op->by = -64;
+			op->unk006 = 24;
+			op->bx = -64;
 			if (st->unk47A)
 				break;
 			st->unk006 = 0;
@@ -3916,7 +3918,6 @@ int VSModeBody(int pl)
 		}
 	}
 	if (st->scroll == -4) {
-
 		st->scroll = -4;
 		st->mp.map[8] = 13;
 		for (i = 0; i < 7; i++)
@@ -4004,7 +4005,7 @@ int VSModeBody(int pl)
 		int n7, r7, x, dx;
 
 		n7 = (st->unk474 + st->unk476) / 7;
-		r7 = (st->unk474 + st->unk476) - n7 * 7;
+		r7 = (st->unk474 + st->unk476) % 7;
 		x = 224;
 		dx = -1;
 		if (st->mapsub != 1) {
