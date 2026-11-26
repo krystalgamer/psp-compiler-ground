@@ -98,70 +98,79 @@ SceInt32 dispbuf_func(SceSize size, SceVoid *argp);
 SceInt32 dispbuf_show(t_displayBuffer *pDisp);
 
 
-#ifdef NON_MATCHING
-/* ret and disp_size swap s6/s7, as in soundbuf_create */
 SceInt32 dispbuf_create(t_displayBuffer *pDisp, SceInt32 disp_size, SceInt32 disp_num, t_conditionCtrl *pCtrl)
 {
-	SceInt32 i;
-	SceInt32 ret;
+	SceInt32 i, ret;
 	SceChar8 *geAddr;
 
 	pDisp->buf = NULL;
 	pDisp->pts = NULL;
 
 	ret = sceDisplaySetMode(0, 480, 272);
-	if (ret < 0)
-		goto ERROR;
+	if (ret < 0) {
+		goto error;
+	}
 
 	pDisp->lockSema = sceKernelCreateSema("display_lockSema", 0, 1, 1, NULL);
+
 	pDisp->delayFlag = sceKernelCreateEventFlag("display_delay_flag", 0x200, 0, 0);
 
 	pDisp->buf = malloc(disp_num * sizeof(SceChar8 *));
 	if (pDisp->buf == NULL) {
 		ret = -1;
-		goto ERROR;
+		goto error;
 	}
-	for (i = 0; i < disp_num; i++)
+
+	for (i = 0; i < disp_num; i++) {
 		pDisp->buf[i] = NULL;
+	}
+
 	for (i = 0; i < disp_num; i++) {
 		pDisp->buf[i] = memalign(16, disp_size);
 		if (pDisp->buf[i] == NULL) {
 			ret = -1;
-			goto ERROR;
+			goto error;
 		}
 	}
+
 	pDisp->pts = malloc(disp_num * sizeof(SceUInt32));
 	if (pDisp->pts == NULL) {
 		ret = -1;
-		goto ERROR;
+		goto error;
 	}
+
 	geAddr = sceGeEdramGetAddr();
+
 	displayBuf[0] = geAddr + 0x88000;
 	displayBuf[1] = geAddr + 0x110000;
-	pDisp->pCtrl = pCtrl;
-	pDisp->size = disp_num;
-	return ret;
 
-ERROR:
-	if (pDisp->buf) {
+	pDisp->size = disp_num;
+
+	pDisp->pCtrl = pCtrl;
+
+	goto term;
+
+error:
+	if (pDisp->buf != NULL) {
 		for (i = 0; i < pDisp->size; i++) {
-			if (pDisp->buf[i]) {
+			if (pDisp->buf[i] != NULL) {
 				free(pDisp->buf[i]);
 				pDisp->buf[i] = NULL;
 			}
 		}
+
 		free(pDisp->buf);
 		pDisp->buf = NULL;
 	}
-	if (pDisp->pts) {
+
+	if (pDisp->pts != NULL) {
 		free(pDisp->pts);
 		pDisp->pts = NULL;
 	}
+
+term:
 	return ret;
 }
-#else
-INCLUDE_ASM("tmp/asm/UTST99332/mpeg_mpegstr/nonmatchings/display", dispbuf_create);
-#endif
 
 static SceInt32 swap_buffer(SceChar8 *buffer)
 {
