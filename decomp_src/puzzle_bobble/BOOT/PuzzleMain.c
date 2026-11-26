@@ -1193,7 +1193,46 @@ void DrawLight(int x, int y, int col, int no)
 		SpriteDrawC(1.0f, x, y, &LIGHT_PARTZ[b]);
 }
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", disp_game_bg);
+extern const SPRDATA PUZZLE_PARTZ[];
+extern const SPRDATA GAMEMODE_PARTZ[];
+extern const int ChNamePos[];
+extern int D_0014E93C;
+extern int D_0014E940;
+void DoCharacters(PZL_STAT *st);
+void DoMonitor(PZL_STAT *st);
+void disp_game_bg(void)
+{
+	PZL_STAT *st = Stat;
+
+	DrawSpriteEz(1.0f, 0.0f, 0.0f, 480.0f, 32.0f, 0.0f, 0.0f, 0);
+	SpriteDrawC(1.0f, 200, 16, GAMEMODE_PARTZ);
+	DrawScore(1, 300, 22, st->unk434);
+	DoCharacters(st);
+	DrawLight(38, 79, 0, 0);
+	DrawLight(65, 52, 0, 1);
+	DrawLight(442, 79, 0, 2);
+	DrawLight(415, 52, 0, 3);
+	DoMonitor(st);
+	DoMonitor(st + 2);
+	D_0014E93C = (D_0014E93C + 1) % 50;
+	SpriteDrawC(2.0f, 52, 216, &PUZZLE_PARTZ[6]);
+	SpriteDrawC(2.0f, 428, 216, &PUZZLE_PARTZ[8]);
+	SpriteDrawC(1.0f, 44, 28, &PUZZLE_PARTZ[2 + D_0014E93C / 25]);
+	SpriteDrawC(1.0f, 436, 28, &PUZZLE_PARTZ[4 + D_0014E93C / 25]);
+	SpriteDrawC(2.0f, 50, 241, &PUZZLE_PARTZ[D_0014E93C / 25]);
+	SpriteDrawC(2.0f, 430, 241, &PUZZLE_PARTZ[D_0014E93C / 25]);
+	SpriteDrawEz(12, 2.0f, -1, 16.0f, 190.0f, 72.0f, 16.0f, 0.0f, ChNamePos[st->player]);
+	SpriteDrawEz(10, 7.0f, -1, 4.0f, 165.0f, 96.0f, 48.0f, 0.0f, 0.0f);
+	SpriteDrawEz(11, 7.0f, -1, 381.0f, 165.0f, 96.0f, 48.0f, 0.0f, 0.0f);
+	DrawAnk(1, 427, 136, 500);
+	SpriteDrawC(6.0f, 240, 261, &PUZZLE_PARTZ[25]);
+	DrawSpriteEz(8.0f, 0.0f, 0.0f, 240.0f, 136.0f, 0.0f, 0.0f, 0);
+	DrawSpriteEz(8.0f, 0.0f, 136.0f, 240.0f, 136.0f, 0.0f, 136.0f, 0);
+	DrawSpriteEz(8.0f, 240.0f, 0.0f, 240.0f, 136.0f, 240.0f, 0.0f, 0);
+	DrawSpriteEz(8.0f, 240.0f, 136.0f, 240.0f, 136.0f, 240.0f, 136.0f, 0);
+	DrawSpriteEz(9.0f, 0.0f, 0.0f, 240.0f, 272.0f, 0.0f, 0.0f, D_0014E940 + 22);
+	DrawSpriteEz(9.0f, 240.0f, 0.0f, 240.0f, 272.0f, 240.0f, 0.0f, D_0014E940 + 22);
+}
 
 INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", D_0002EA00);
 
