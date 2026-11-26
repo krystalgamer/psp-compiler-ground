@@ -20,7 +20,9 @@ typedef struct {
     int flags;                  /* 0x0 */
     u8 unk4[0x44];
     int timer;                  /* 0x48 */
-    u8 unk4C[0x1C];
+    u8 unk4C[0x8];
+    int unk54;
+    u8 unk58[0x10];
     int unk68;
     int unk6C;
     int unk70;
@@ -63,9 +65,13 @@ typedef struct {
     int unk4;
     int unk8;
     int unkC;
-    u8 unk10[0x30];
+    u8 unk10[0x24];
+    char *scrolling;            /* 0x34 */
+    u8 unk38[0x8];
     int unk40;                  /* 0x40 */
-    u8 unk44[0x2C];
+    u8 unk44[0x24];
+    struct PITEM *items;        /* 0x68 */
+    int unk6C;
     void *focus;                /* 0x70 */
 } PGEOM;
 typedef struct {
@@ -73,7 +79,8 @@ typedef struct {
     PGEOM *geom;                /* 0x20 */
     void *unk24;
     int node;                   /* 0x28 */
-    u8 unk2C[0xC];
+    int widget;                 /* 0x2C */
+    u8 unk30[0x8];
     s16 content;                /* 0x38 */
     u8 unk3A[4];
     s16 unk3E;                  /* 0x3E */
@@ -456,7 +463,84 @@ void proc_msg_PL15(PMSG *m) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_msgBranch_ps", proc_msg_PL13);
+typedef struct PITEM {
+    int unk0;
+    struct PITEM *next;         /* 0x4 */
+    int unk8;
+    PBOX *box;                  /* 0xC */
+} PITEM;
+
+extern int D_00584CEC;
+void *Node_getBox(int node);
+PBOX *getNextTerminalFrame(PBOX *b, int n);
+void setFocus(PBOX *b, PBOX *t, int a, int c);
+void GUI_Component_setEnabled(int w, int on);
+void GUI_ScrollPane_setVScrollbarMode(int w, int mode);
+void GUI_ScrollPane_setHScrollbarMode(int w, int mode);
+int strcasecmp(const char *a, const char *b);
+
+void proc_msg_PL13(PMSG *m) {
+    PHIST *h;
+    PBOX *box;
+    PBOX *first;
+    PBOX *f;
+    PITEM *it;
+    PBOX *b;
+    char *s;
+    int mode;
+
+    D_00584CEC = m->unk10;
+    h = (PHIST *)HST_getHeadHistoryNode();
+    if (h == NULL) {
+        return;
+    }
+    if (HST_getDomObject(h) == 0) {
+        return;
+    }
+    box = Node_getBox(HST_getDomObject(h));
+    if (box == NULL) {
+        return;
+    }
+    first = getNextTerminalFrame(box, 0);
+    f = first;
+    relayoutAtBody(first, 0);
+    drawPaint(first);
+    if (first != NULL && first->geom->items->box != NULL) {
+        setFocus(first, first->geom->items->box, 1, 1);
+    }
+    do {
+        for (it = f->geom->items; it != NULL; it = it->next) {
+            b = it->box;
+            if ((b->content >= 13 && b->content <= 16) || b->content == 18) {
+                if (lo_global.unk54 == 1) {
+                    GUI_Component_setEnabled(b->widget, 0);
+                } else {
+                    GUI_Component_setEnabled(it->box->widget, 1);
+                }
+            } else if (b->content == 1) {
+                if (lo_global.unk54 == 1) {
+                    GUI_ScrollPane_setVScrollbarMode(b->widget, 0);
+                    GUI_ScrollPane_setHScrollbarMode(it->box->widget, 0);
+                } else {
+                    s = it->box->geom->scrolling;
+                    if (s != NULL && strcasecmp("no", s) == 0) {
+                        mode = 0;
+                    } else if (s != NULL && strcasecmp("yes", s) == 0) {
+                        mode = 2;
+                    } else {
+                        mode = 1;
+                    }
+                    GUI_ScrollPane_setVScrollbarMode(it->box->widget, mode);
+                    GUI_ScrollPane_setHScrollbarMode(it->box->widget, mode);
+                }
+            }
+        }
+        f = getNextTerminalFrame(f, 0);
+    } while (f != first);
+    if (m->data != NULL) {
+        MEM_free(0, m->data);
+    }
+}
 
 void proc_msg_PL16(PMSG *m) {
     PHIST *h;
@@ -603,6 +687,20 @@ void proc_msg_PL19(PMSG *msg) {
     putLLIST(&REQUEST_LLIST, make_msg_LP11(1, d[1], d[2], &p, 0, d[0]));
     MEM_free(0, msg->data);
 }
+
+typedef struct {
+    u8 unk0[0x10];
+    char *frag;                 /* 0x10 */
+} PURL;
+void drawAnimation();
+char *HST_getCurURI();
+PURL *URL_new();
+int URL_equals();
+void URL_free();
+void lo_clearTimer();
+int HST_getTargetName();
+int make_msg_LP8();
+int strcmp();
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_msgBranch_ps", proc_msg_TM);
 
