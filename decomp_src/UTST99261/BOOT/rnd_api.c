@@ -17,7 +17,9 @@ typedef struct {
 } BSUB;
 
 typedef struct {
-    u8 unk0[0x6D];
+    u8 unk0[0x60];
+    int unk60;                  /* 0x60 */
+    u8 unk64[0x9];
     s8 unk6D;
     s8 unk6E;
     u8 unk6F[4];
@@ -49,9 +51,12 @@ typedef struct SELLIST {
 
 extern SELLIST *sellist;
 int rnd_gdrawCreateBorder();
-void rnd_drawTextBoxnode(void *ctx, BNODE *n);
-void rnd_drawImageBoxnode(void *ctx, BNODE *n);
-void rnd_drawBasicBoxnode(void *ctx, BNODE *n);
+void rnd_drawTextBoxnode(void *ctx, BNODE *n, int ox, int oy);
+void rnd_drawImageBoxnode(void *ctx, BNODE *n, int ox, int oy);
+void rnd_drawBasicBoxnode(void *ctx, BNODE *n, int ox, int oy);
+void rnd_drawBoxnodeBackground(void *ctx, BNODE *n, int ox, int oy);
+void rnd_drawBoxnodeBorder(void *ctx, BNODE *n, int ox, int oy);
+void rnd_gdrawMaskFillrectangle(void *ctx, int c, int x, int y, int w, int h);
 int drawObject(BNODE *node);
 void drawEachFrame(BNODE *node);
 int GUI_ScrollPane_remove();
@@ -393,7 +398,7 @@ BNODE *getSelectListFromGadget(int gadget) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_api", rnd_drawAllBoxnode);
 
-void rnd_drawBoxnode(void *ctx, BNODE *n) {
+void rnd_drawBoxnode(void *ctx, BNODE *n, int ox, int oy) {
     if (n->type == 0 && n->unk3C == 1) {
         return;
     }
@@ -402,13 +407,13 @@ void rnd_drawBoxnode(void *ctx, BNODE *n) {
     }
     switch (n->type) {
     case 9:
-        rnd_drawTextBoxnode(ctx, n);
+        rnd_drawTextBoxnode(ctx, n, ox, oy);
         break;
     case 10:
-        rnd_drawImageBoxnode(ctx, n);
+        rnd_drawImageBoxnode(ctx, n, ox, oy);
         break;
     default:
-        rnd_drawBasicBoxnode(ctx, n);
+        rnd_drawBasicBoxnode(ctx, n, ox, oy);
         break;
     }
 }
@@ -434,6 +439,15 @@ loop_2:
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_api", rnd_prevRadioBoxnode);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_api", rnd_drawBasicBoxnode);
+void rnd_drawBasicBoxnode(void *ctx, BNODE *n, int ox, int oy) {
+    int c;
+
+    rnd_drawBoxnodeBackground(ctx, n, ox, oy);
+    rnd_drawBoxnodeBorder(ctx, n, ox, oy);
+    c = n->style->unk60;
+    if (n->style->unk6D != 0 && n->type == 0x11) {
+        rnd_gdrawMaskFillrectangle(ctx, c, ox + n->x, oy + n->y, n->w, n->h);
+    }
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_api", rnd_drawBoxnodeBackground);
