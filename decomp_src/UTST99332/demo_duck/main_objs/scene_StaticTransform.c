@@ -29,7 +29,13 @@ math::matrix scene::StaticTransform::getMatrix() const
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_StaticTransform", _ZN5scene15StaticTransform11setIdentityEv);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_StaticTransform", _ZN5scene15StaticTransform7flattenERN4math14TransformStackE);
+void scene::StaticTransform::flatten(math::TransformStack &ts)
+{
+    math_TransformStack_push(ts);
+    math_TransformStack_mult(ts, getMatrix());
+    Group::flatten(ts);
+    math_TransformStack_pop(ts);
+}
 
 extern "C" {
 void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_938DC");

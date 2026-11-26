@@ -96,6 +96,10 @@ void sceGumSetCurMatrix(void);
    calls: `this` is the first argument) */
 void sgl_Mesh_calcStencilShadowData(sgl::StencilShadowData &, const sgl::CoreMesh &)
     __asm__("_ZN3sgl4Mesh21calcStencilShadowDataERNS_17StencilShadowDataERKNS_8CoreMeshE");
+void math_TransformStack_push(math::TransformStack &) __asm__("_ZN4math14TransformStack4pushEv");
+void math_TransformStack_pop(math::TransformStack &) __asm__("_ZN4math14TransformStack3popEv");
+void math_TransformStack_mult(math::TransformStack &, const math::matrix &)
+    __asm__("_ZN4math14TransformStack4multERKNS_6matrixE");
 bool sgl_Frustum_intersect(sgl::Frustum *, sgl::BV &) __asm__("_ZN3sgl7Frustum9intersectERNS_2BVE");
 
 class BVdata {

@@ -79,7 +79,13 @@ math::vector_xyzw scene::Transform::getScale() const
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Transform", _ZN5scene9Transform11setIdentityEv);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Transform", _ZN5scene9Transform7flattenERN4math14TransformStackE);
+void scene::Transform::flatten(math::TransformStack &ts)
+{
+    math_TransformStack_push(ts);
+    math_TransformStack_mult(ts, getMatrix());
+    Group::flatten(ts);
+    math_TransformStack_pop(ts);
+}
 
 extern "C" {
 void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_938EC");

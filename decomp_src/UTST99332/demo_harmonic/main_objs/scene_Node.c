@@ -55,9 +55,25 @@ bool scene::Shape::calcbv(math::TransformStack &ts, sgl::BV &bv)
     return true;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Node", _ZN5scene9Transform6calcbvERN4math14TransformStackERN3sgl2BVE);
+bool scene::Transform::calcbv(math::TransformStack &ts, sgl::BV &bv)
+{
+    math_TransformStack_push(ts);
+    if (!_identity)
+        math_TransformStack_mult(ts, getMatrix());
+    traverse_children(ts, bv);
+    math_TransformStack_pop(ts);
+    return true;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Node", _ZN5scene15StaticTransform6calcbvERN4math14TransformStackERN3sgl2BVE);
+bool scene::StaticTransform::calcbv(math::TransformStack &ts, sgl::BV &bv)
+{
+    math_TransformStack_push(ts);
+    if (!_identity)
+        math_TransformStack_mult(ts, getMatrix());
+    traverse_children(ts, bv);
+    math_TransformStack_pop(ts);
+    return true;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Node", _ZN5scene4Mesh6calcbvERN4math14TransformStackERN3sgl2BVE);
 
