@@ -43,6 +43,18 @@ typedef struct PsMqMsg {
     void *data;                       /* 0x20 */
 } PsMqMsg;
 
+/* inter-task message */
+typedef struct PsIpc {
+    int type;
+    int x04;
+    int x08;
+    int cmd;
+    int x10;
+    int x14;
+    int x18;
+    int x1C;
+} PsIpc;
+
 extern PsLocation *PS_LOCATION_HEAD;
 extern PsLocation *D_0025B5CC;
 extern ExMsgBoxList exMsgBoxList;

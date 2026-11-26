@@ -1,6 +1,8 @@
 /* cflags: -O1 */
 #include "common.h"
+#include "parse_ps.h"
 #include "m2c_macros.h"
+extern int NOTARGET;
 void *HST_searchSessionIDHistoryNode(int);          /* extern */
 extern int buf_ps_sts;
 
@@ -11,11 +13,27 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/ps_l1100", ps_cleaning_mq);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/ps_l1100", ps_l1105);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/ps_l1100", ps_l1203);
+int ps_l1203(PsIpc *msg) {
+    PsIpc m;
+
+    m.type = 2;
+    m.x04 = msg->x04;
+    m.x08 = 0;
+    m.cmd = 0xC;
+    m.x10 = msg->x10;
+    m.x14 = msg->x14;
+    m.x18 = 0;
+    m.x1C = 0;
+    ps_sndmsg(&m, 1);
+    return buf_ps_sts;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/ps_l1100", ps_l1211);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/ps_l1100", ps_l1213);
+int ps_l1213(PsIpc *msg) {
+    ps_save(msg, 0);
+    return buf_ps_sts;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/ps_l1100", ps_l1307);
 
@@ -94,12 +112,32 @@ void ps_l1513(void) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/ps_l1100", ps_l1703);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/ps_l1100", ps_l1706);
+int ps_l1706(PsIpc *msg) {
+    PsIpc m;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/ps_l1100", ps_l1707);
+    initMPI_SIG_REQUEST_ABORTED(&m);
+    ps_sendGetStop(&m);
+    NOTARGET = 0;
+    ps_save(msg, 0);
+    return 10;
+}
+
+int ps_l1707(PsIpc *msg) {
+    PsIpc m;
+
+    initMPL_REQ_ABORT_PAGE(&m);
+    ps_sndmsg(&m, 4);
+    NOTARGET = 0;
+    ps_save(msg, 0);
+    return 11;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/ps_l1100", ps_l1708);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/ps_l1100", ps_l1717);
+int ps_l1717(PsIpc *msg) {
+    NOTARGET = 0;
+    ps_save(msg, 0);
+    return 0x17;
+}
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/ps_l1100", D_00135C58);
