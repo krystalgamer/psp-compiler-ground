@@ -171,12 +171,41 @@ def drop_jump_tables(target, module, unit, func, text):
     return re.sub(r'^INCLUDE_RODATA\("[^"]+", (\w+)\);\n?', keep, text, flags=re.M)
 
 
+_mprotos = {}
+
+
+def module_protos(target, module):
+    """name -> prototype of the non-static functions defined in the module's C units"""
+    key = (target, module)
+    if key not in _mprotos:
+        out = {}
+        for f in sorted((ROOT / "decomp_src" / target / module).rglob("*.c")):
+            for line in f.read_text(errors="replace").splitlines():
+                m = re.match(r"^(?!static|extern|typedef|#|\s|return)([\w \*]+?\b(\w+)\s*\((?:[^;{}()]|\([^()]*\))*\))\s*\{?\s*$", line)
+                if m and m[2] not in out and m[2] not in ("if", "while", "for", "switch"):
+                    out[m[2]] = m[1] + ";"
+        _mprotos[key] = out
+    return _mprotos[key]
+
+
 def try_body(target, module, unit, func, body, mod):
+    # with the module's prototypes first; without them if their types are unknown here
+    return try_body1(target, module, unit, func, body, mod, True) or \
+        try_body1(target, module, unit, func, body, mod, False)
+
+
+def try_body1(target, module, unit, func, body, mod, protos):
     path = ROOT / "decomp_src" / target / module / f"{unit}.c"
     text = unit_text(target, module, unit, path)
     pat = re.compile(r'^INCLUDE_ASM\("[^"]+", ' + re.escape(func) + r"\);$", re.M)
     sdk = m2cdraft.sdk_protos(text)
     decl = "\n".join(v for k, v in sdk.items() if re.search(rf"\b{k}\(", body))
+    # the module's own functions the body calls without a declaration in the unit:
+    # implicit int returns and double-promoted float arguments change the code
+    mp = module_protos(target, module) if protos else {}
+    extra = [mp[n] for n in sorted(set(re.findall(r"\b(\w+)\s*\(", body)) - {func})
+             if n in mp and n not in sdk and not re.search(rf"^[^\n;(]*\b{n}\s*\([^;{{]*\)\s*[;{{]", text, re.M)]
+    decl = "\n".join(x for x in [decl] + extra if x)
     new = pat.sub(lambda _: (decl + "\n" if decl else "") + body.rstrip("\n"), text, count=1)
     new = drop_jump_tables(target, module, unit, func, new)
     m = re.search(r"cflags: (-O[0-3s](?: -(?:[fm][\w-]+|std)(?:=[\w.:]+)?)*)", text)
