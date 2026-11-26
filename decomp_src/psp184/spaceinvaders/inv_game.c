@@ -825,7 +825,26 @@ void df_quake_start(int a, int t)
 	*(int *)(b_D_005FB3B0 + 0x8) = 0;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", df_quake_control);
+extern const double D_0007E898;
+double genrand_real3(void);
+M2C_UNK df_quake_control(void)
+{
+	int n;
+
+	if (DE.f8 < DE.fc) {
+		DE.f8++;
+		if (DE.f8 >= DE.fc) {
+			DE.f10 = 0.0f;
+			DE.f14 = 0.0f;
+			DE.f18 = 0.0f;
+		} else {
+			n = DE.f4 * (DE.fc - DE.f8) / DE.fc;
+			DE.f10 = (genrand_real3() - D_0007E898) * n;
+			DE.f14 = (genrand_real3() - D_0007E898) * n;
+			DE.f18 = (genrand_real3() - D_0007E898) * n;
+		}
+	}
+}
 
 void df_quake_disp(void)
 {
