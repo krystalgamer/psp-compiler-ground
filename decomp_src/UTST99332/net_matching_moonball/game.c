@@ -251,30 +251,15 @@ static void DrawBall(void)
 	sceGumPopMatrix();
 }
 
-#ifndef SCEGU_SCR_HEIGHT
 #define SCEGU_SCR_HEIGHT      272
-#endif
-#ifndef LCDH
 #define LCDH			SCEGU_SCR_HEIGHT
-#endif
-#ifndef SCEGU_SCR_WIDTH
 #define SCEGU_SCR_WIDTH       480
-#endif
-#ifndef LCDW
 #define LCDW			SCEGU_SCR_WIDTH
-#endif
-#ifndef SCEGU_PRIM_TRIANGLE_STRIP
 #define SCEGU_PRIM_TRIANGLE_STRIP          4
-#endif
-#ifndef SCEGU_VERTEX_SHORT
 #define SCEGU_VERTEX_SHORT       ( 2 <<  7 )
-#endif
-#ifndef SCEGU_THROUGH
 #define SCEGU_THROUGH            ( 1 << 23 )
-#endif
-#ifndef SCEGU_COLOR_PF8888
 #define SCEGU_COLOR_PF8888       ( 7 <<  2 )
-#endif
+
 static void DrawBG(void)
 {
 	extern Gu2dV16C	D_000CE590[4];
