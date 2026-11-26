@@ -14,41 +14,77 @@ math::quaternion::quaternion(float x_, float y_, float z_, float w_) : x(x_), y(
 {
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_quaternion_quaternion", _ZN4math10quaternionC2ENS_11vector_xyzwE);
+math::quaternion::quaternion(vector_xyzw v) : x(v.x), y(v.y), z(v.z), w(v.w)
+{
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_quaternion_quaternion", _ZN4math10quaternionC1ENS_11vector_xyzwE);
+math::quaternion::quaternion(vector_xyz v, float w_) : x(v.x), y(v.y), z(v.z), w(w_)
+{
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_quaternion_quaternion", _ZN4math10quaternionC2ENS_10vector_xyzEf);
+math::quaternion math::quaternion::operator+(const quaternion &q) const
+{
+    return quaternion(x + q.x, y + q.y, z + q.z, w + q.w);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_quaternion_quaternion", _ZN4math10quaternionC1ENS_10vector_xyzEf);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_quaternion_quaternion", _ZNK4math10quaternionplERKS0_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_quaternion_quaternion", _ZNK4math10quaternionmiERKS0_);
+math::quaternion math::quaternion::operator-(const quaternion &q) const
+{
+    return quaternion(x - q.x, y - q.y, z - q.z, w - q.w);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_quaternion_quaternion", _ZNK4math10quaternionmlERKS0_);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_quaternion_quaternion", _ZNK4math10quaternionmlEf);
+math::quaternion math::quaternion::operator*(float s) const
+{
+    return quaternion(x * s, y * s, z * s, w * s);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_quaternion_quaternion", _ZNK4math10quaterniondvEf);
+math::quaternion math::quaternion::operator/(float s) const
+{
+    return quaternion(x / s, y / s, z / s, w / s);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_quaternion_quaternion", _ZNK4math10quaternioneqERKS0_);
+bool math::quaternion::operator==(const quaternion &q) const
+{
+    return x == q.x && y == q.y && z == q.z && w == q.w;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_quaternion_quaternion", _ZNK4math10quaternionneERKS0_);
+bool math::quaternion::operator!=(const quaternion &q) const
+{
+    return x != q.x || y != q.y || z != q.z || w != q.w;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_quaternion_quaternion", _ZN4math10quaternionmIERKS0_);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_quaternion_quaternion", _ZN4math10quaternionpLERKS0_);
+math::quaternion &math::quaternion::operator+=(const quaternion &q)
+{
+    *this = *this + q;
+    return *this;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_quaternion_quaternion", _ZN4math10quaternionmLERKS0_);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_quaternion_quaternion", _ZN4math10quaternionmLEf);
+math::quaternion &math::quaternion::operator*=(float s)
+{
+    *this = *this * s;
+    return *this;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_quaternion_quaternion", _ZN4math10quaterniondVEf);
+math::quaternion &math::quaternion::operator/=(float s)
+{
+    *this = *this / s;
+    return *this;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_quaternion_quaternion", _ZNK4math10quaternion3dotERKS0_);
+float math::quaternion::dot(const quaternion &q) const
+{
+    return x * q.x + y * q.y + z * q.z + w * q.w;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_quaternion_quaternion", _ZNK4math10quaternion4normEv);
+float math::quaternion::norm() const
+{
+    return x * x + y * y + z * z + w * w;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_quaternion_quaternion", _ZN4math10quaternion15FromEulerAnglesENS_10vector_xyzENS_13RotationOrderE);
 
@@ -62,11 +98,18 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_quatern
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_quaternion_quaternion", _ZNK4math10quaternion3logEv);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_quaternion_quaternion", _ZNK4math10quaternion4conjEv);
+math::quaternion math::quaternion::conj() const
+{
+    return quaternion(-x, -y, -z, w);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_quaternion_quaternion", _ZNK4math10quaternion3expEv);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_quaternion_quaternion", _ZN4math10quaternion8ShortestERS0_S1_);
+void math::quaternion::Shortest(quaternion &a, quaternion &b)
+{
+    if ((a - b).norm() > (b + a).norm())
+        b = quaternion(-b.x, -b.y, -b.z, -b.w);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_quaternion_quaternion", _ZN4math10quaternion5SlerpES0_S0_f);
 

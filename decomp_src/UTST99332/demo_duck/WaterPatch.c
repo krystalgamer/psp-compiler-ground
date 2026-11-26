@@ -215,6 +215,9 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/WaterPatch", _ZN10WaterPat
    which the linker places after the object's .text (after _GLOBAL__I/D):
    include their asm into .text's subsection 1 for the same order. */
 #undef INCLUDE_ASM
+#if defined(M2CTX) || defined(PERMUTER)
+#define INCLUDE_ASM(FOLDER, NAME)
+#else
 #define INCLUDE_ASM(FOLDER, NAME) \
     extern "C" void NAME##__asm(void) __attribute__((section(".discard.asm"))); \
     extern "C" void NAME##__asm(void) \
@@ -230,6 +233,7 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/WaterPatch", _ZN10WaterPat
             ".section .discard.asm\n" \
             ".ent " #NAME "__asm\n"); \
     }
+#endif
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/WaterPatch", _ZSt26__uninitialized_fill_n_auxIPN4math11vector_xyzwEjS1_ET_S3_T0_RKT1_12__false_type);
 

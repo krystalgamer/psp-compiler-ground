@@ -59,6 +59,23 @@ namespace math {
 struct quaternion {
     quaternion(const matrix &);
     quaternion(float x, float y, float z, float w);
+    quaternion(vector_xyzw v);
+    quaternion(vector_xyz v, float w);
+    quaternion operator+(const quaternion &q) const;
+    quaternion operator-(const quaternion &q) const;
+    quaternion operator*(const quaternion &q) const;
+    quaternion operator*(float s) const;
+    quaternion operator/(float s) const;
+    bool operator==(const quaternion &q) const;
+    bool operator!=(const quaternion &q) const;
+    quaternion &operator*=(const quaternion &q);
+    quaternion &operator+=(const quaternion &q);
+    quaternion &operator*=(float s);
+    quaternion &operator/=(float s);
+    float dot(const quaternion &q) const;
+    float norm() const;
+    quaternion conj() const;
+    static void Shortest(quaternion &a, quaternion &b);
     float x, y, z, w;
 };
 float safe_atan2f(float y, float x);
