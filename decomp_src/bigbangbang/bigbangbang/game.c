@@ -147,7 +147,21 @@ int random(void);
 void random_seed(unsigned int seed);
 int Pickup(int scrw, int scrh, int x, int y, ScePspFVector3 *v0, ScePspFVector3 *v1, ScePspFVector3 *v2);
 
-INCLUDE_ASM("tmp/asm/bigbangbang/bigbangbang/nonmatchings/game", InitBall);
+void InitBall(void)
+{
+	ground.pos = 0.0f;
+	ground.e = 8.0f;
+	ground.dt = 3;
+	ground.t = 0;
+	ground.point = random() % 24;
+	ball.pos.x = gndpos[ground.point * 2];
+	ball.state = 1;
+	ball.pos.y = -30.0f;
+	ball.pos.z = gndpos[ground.point * 2 + 1];
+	ball.c = clut[random() % 7];
+	ball.t = 0;
+	ball.d = (float)(random() % 10) * 0.01f + 1.0f;
+}
 
 void InitGame(void)
 {
