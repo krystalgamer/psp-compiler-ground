@@ -105,7 +105,30 @@ int _open(const char *name, int flags, ...)
 	return _sys_open(name, pspflags);
 }
 #else
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_model2/nonmatchings/kernel_bridge", _open);
+int _open(const char *path, int flags, ...)
+{
+	int sflags = 0;
+
+	switch ((unsigned int)flags & 3) {
+	case 0:
+		sflags = 1;
+		break;
+	case 1:
+		sflags = 2;
+		break;
+	case 2:
+		sflags = 3;
+		break;
+	default:
+		break;
+	}
+	if (flags & 0x0008) sflags |= 0x0100;
+	if (flags & 0x0200) sflags |= 0x0200;
+	if (flags & 0x0400) sflags |= 0x0400;
+	if (flags & 0x0800) sflags |= 0x0800;
+	if (flags & 0x4000) sflags |= 0x0004;
+	return _sys_open(path, sflags);
+}
 #endif
 
 int _close(int fd)
