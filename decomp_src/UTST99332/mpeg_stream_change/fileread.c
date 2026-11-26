@@ -1,3 +1,4 @@
+/* cflags: -O2 -fno-rerun-loop-opt */
 #include "common.h"
 
 /* declarations recovered from DWARF */
@@ -137,4 +138,46 @@ SceInt32 read_checkConditionEnd(t_ringBuffer *pRing)
 	return 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/mpeg_stream_change/nonmatchings/fileread", read_func);
+SceInt32 read_func(SceSize size, SceVoid *argp)
+{
+	t_ringBuffer **ppRing;
+	t_ringBuffer *pRing;
+	SceInt32 totalSize;
+	SceInt32 readSize;
+	SceInt32 capacitySize;
+	SceInt32 getSize;
+
+	ppRing = argp;
+	pRing = *ppRing;
+	totalSize = 0;
+	for (;;) {
+		read_checkConditionEnd(pRing);
+		if (read_getStatus(pRing) == 4)
+			break;
+		capacitySize = sceMpegRingbufferAvailableSize(pRing->pRingbuf);
+		if (read_getStatus(pRing) == 1) {
+			readSize = 32;
+			if (capacitySize < 32) {
+				readSize = capacitySize;
+				if (pRing->dataLen - totalSize < readSize)
+					readSize = pRing->dataLen - totalSize;
+			}
+			getSize = sceMpegRingbufferPut(pRing->pRingbuf, readSize, capacitySize);
+			if (getSize < 0) {
+				printf("fatal error: sceMpegRingbufferPut 0x%x total = %d\n", getSize, totalSize);
+				read_setStatus(pRing, 2);
+				read_sendErrCondition(pRing);
+				getSize = 0;
+			}
+			totalSize += getSize * 2048;
+		}
+		if (totalSize == pRing->dataLen && read_getStatus(pRing) == 1) {
+			read_setStatus(pRing, 3);
+			read_sendEndCondition(pRing);
+		}
+		sceKernelDelayThread(100);
+		sceKernelSignalSema(pRing->ringbufSema, 1);
+	}
+	sceKernelExitThread(0);
+	return 0;
+}

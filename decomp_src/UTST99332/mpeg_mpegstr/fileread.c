@@ -1,3 +1,4 @@
+/* cflags: -O2 -fno-rerun-loop-opt */
 #include "common.h"
 
 /* declarations recovered from DWARF */
@@ -137,8 +138,6 @@ SceInt32 read_checkConditionEnd(t_ringBuffer *pRing)
 	return 0;
 }
 
-#ifdef NON_MATCHING
-/* the loop keeps the printf format's lui (the original does not hoist it) */
 SceInt32 read_func(SceSize size, SceVoid *argp)
 {
 	t_ringBuffer **ppRing;
@@ -182,6 +181,3 @@ SceInt32 read_func(SceSize size, SceVoid *argp)
 	sceKernelExitThread(0);
 	return 0;
 }
-#else
-INCLUDE_ASM("tmp/asm/UTST99332/mpeg_mpegstr/nonmatchings/fileread", read_func);
-#endif
