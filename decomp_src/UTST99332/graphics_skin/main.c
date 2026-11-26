@@ -176,7 +176,44 @@ static void boneCalc(void)
 	}
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_skin/nonmatchings/main", draw_frame);
+#define SCEGU_IMMEDIATE                    0
+#define SCEGU_CLEAR_ALL               0x0007
+#define SCEGU_PI                           3.1415926535897932384626433832f
+#define SCEGU_RAD(a)                       ((a)*SCEGU_PI/180.0f)
+#define SCEGU_WEIGHT_4           ( 3 << 14 )
+#define SCEGU_WEIGHT_FLOAT       ( 3 <<  9 )
+#define SCEGU_VERTEX_FLOAT       ( 3 <<  7 )
+#define SCEGU_CLOSE_CLOSE                  0
+#define SCEGU_OPEN_OPEN                    3
+#define SCEGU_SYNC_FINISH                  0
+#define SCEGU_SYNC_WAIT                    0
+
+static void draw_frame(void)
+{
+	sceGuStart(SCEGU_IMMEDIATE, disp_list, sizeof(disp_list));
+	sceGuClear(SCEGU_CLEAR_ALL);
+
+	sceGumPushMatrix();
+	sceGumLoadIdentity();
+	sceGumTranslate(&pos);
+	sceGumRotateX(SCEGU_RAD(rot.x));
+	sceGumRotateY(SCEGU_RAD(rot.y));
+	sceGumRotateZ(SCEGU_RAD(rot.z));
+
+	boneCalc();
+	sceGuBoneMatrix(0, &bone_m[0]);
+	sceGuBoneMatrix(1, &bone_m[1]);
+	sceGuBoneMatrix(2, &bone_m[2]);
+	sceGuBoneMatrix(3, &bone_m[3]);
+
+	sceGumDrawSpline(SCEGU_WEIGHT_4|SCEGU_WEIGHT_FLOAT|SCEGU_VERTEX_FLOAT,
+				7, 5, SCEGU_CLOSE_CLOSE, SCEGU_OPEN_OPEN, 0, parts);
+
+	sceGumPopMatrix();
+
+	sceGuFinish();
+	sceGuSync(SCEGU_SYNC_FINISH, SCEGU_SYNC_WAIT);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_skin/nonmatchings/main", init_all);
 
