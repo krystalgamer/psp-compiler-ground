@@ -45,6 +45,7 @@ typedef struct {
     u8 unk6F;
     u8 unk70[0x3];
     u8 unk73;
+    u8 unk74;
 } BOXSTYLE;
 
 typedef struct BOX {

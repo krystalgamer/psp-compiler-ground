@@ -1,12 +1,16 @@
 /* cflags: -O1 */
 #include "common.h"
+#include "lo_box.h"
 #include "m2c_macros.h"
+BOX *createInlineBox(void *ctx, BOX *parent, BOX *prev);
+BOX *createBlockBox(void *ctx, BOX *parent, BOX *prev);
+BOX *createBox(void *ctx, int type);
+void linkBox(BOX *box, BOX *parent, BOX *prev);
+void initNoneContent(BOX *box, void *ctx);
+void font_attr(void *node, BOX *box);
 M2C_UNK applyCSSExtStyleSheetToBox(int, void *);    /* extern */
 M2C_UNK applyCSSInlinePropertyToBox(int, void *);   /* extern */
-void *createBlockBox();                             /* extern */
 M2C_UNK initBoxProperty(void *);                    /* extern */
-void *createInlineBox();                            /* extern */
-M2C_UNK font_attr(int, void *);                     /* extern */
 
 
 
@@ -18,41 +22,33 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_html_legacy", html_BASEFONT)
 #define NULL ((void *)0)
 #endif
 
-void *html_CENTER(int arg0) {
-    void *temp_v0;
-    void *var_v0;
-
-    temp_v0 = createBlockBox();
-    var_v0 = NULL;
-    if (temp_v0 != NULL) {
-        M2C_FIELD(temp_v0, short *, 0x3A) = 0x13;
-        initBoxProperty(temp_v0);
-        M2C_FIELD(M2C_FIELD(temp_v0, void **, 0x24), signed char *, 0x6F) = 2;
-        applyCSSExtStyleSheetToBox(arg0, temp_v0);
-        applyCSSInlinePropertyToBox(arg0, temp_v0);
-        var_v0 = temp_v0;
+BOX *html_CENTER(void *node, BOX *parent, BOX *prev) {
+    BOX *box = createBlockBox(node, parent, prev);
+    if (box == NULL) {
+        return NULL;
     }
-    return var_v0;
+    box->html = 0x13;
+    initBoxProperty(box);
+    box->style->unk6F = 2;
+    applyCSSExtStyleSheetToBox(node, box);
+    applyCSSInlinePropertyToBox(node, box);
+    return box;
 }
 
 #ifndef NULL
 #define NULL ((void *)0)
 #endif
 
-void *html_FONT(int arg0) {
-    void *temp_v0;
-    void *var_v0;
-
-    temp_v0 = createInlineBox();
-    var_v0 = NULL;
-    if (temp_v0 != NULL) {
-        M2C_FIELD(temp_v0, short *, 0x3A) = 0x22;
-        font_attr(arg0, temp_v0);
-        applyCSSExtStyleSheetToBox(arg0, temp_v0);
-        applyCSSInlinePropertyToBox(arg0, temp_v0);
-        var_v0 = temp_v0;
+BOX *html_FONT(void *node, BOX *parent, BOX *prev) {
+    BOX *box = createInlineBox(node, parent, prev);
+    if (box == NULL) {
+        return NULL;
     }
-    return var_v0;
+    box->html = 0x22;
+    font_attr(node, box);
+    applyCSSExtStyleSheetToBox(node, box);
+    applyCSSInlinePropertyToBox(node, box);
+    return box;
 }
 
 #ifndef NULL
@@ -66,70 +62,80 @@ int html_ISINDEX(void) {
 #define NULL ((void *)0)
 #endif
 
-void *html_S(int arg0) {
-    void *temp_v0;
-    void *temp_v1;
-    void *var_v0;
-
-    temp_v0 = createInlineBox();
-    var_v0 = NULL;
-    if (temp_v0 != NULL) {
-        M2C_FIELD(temp_v0, short *, 0x3A) = 0x50;
-        temp_v1 = M2C_FIELD(temp_v0, void **, 0x24);
-        M2C_FIELD(temp_v1, unsigned char *, 0x6C) = (unsigned char) (M2C_FIELD(temp_v1, unsigned char *, 0x6C) | 4);
-        applyCSSExtStyleSheetToBox(arg0, temp_v0);
-        applyCSSInlinePropertyToBox(arg0, temp_v0);
-        var_v0 = temp_v0;
+BOX *html_S(void *node, BOX *parent, BOX *prev) {
+    BOX *box = createInlineBox(node, parent, prev);
+    if (box == NULL) {
+        return NULL;
     }
-    return var_v0;
+    box->html = 0x50;
+    box->style->unk6C[0] |= 4;
+    applyCSSExtStyleSheetToBox(node, box);
+    applyCSSInlinePropertyToBox(node, box);
+    return box;
 }
 
 #ifndef NULL
 #define NULL ((void *)0)
 #endif
 
-void *html_STRIKE(int arg0) {
-    void *temp_v0;
-    void *temp_v1;
-    void *var_v0;
-
-    temp_v0 = createInlineBox();
-    var_v0 = NULL;
-    if (temp_v0 != NULL) {
-        M2C_FIELD(temp_v0, short *, 0x3A) = 0x50;
-        temp_v1 = M2C_FIELD(temp_v0, void **, 0x24);
-        M2C_FIELD(temp_v1, unsigned char *, 0x6C) = (unsigned char) (M2C_FIELD(temp_v1, unsigned char *, 0x6C) | 4);
-        applyCSSExtStyleSheetToBox(arg0, temp_v0);
-        applyCSSInlinePropertyToBox(arg0, temp_v0);
-        var_v0 = temp_v0;
+BOX *html_STRIKE(void *node, BOX *parent, BOX *prev) {
+    BOX *box = createInlineBox(node, parent, prev);
+    if (box == NULL) {
+        return NULL;
     }
-    return var_v0;
+    box->html = 0x50;
+    box->style->unk6C[0] |= 4;
+    applyCSSExtStyleSheetToBox(node, box);
+    applyCSSInlinePropertyToBox(node, box);
+    return box;
 }
 
 #ifndef NULL
 #define NULL ((void *)0)
 #endif
 
-void *html_U(int arg0) {
-    void *temp_v0;
-    void *temp_v1;
-    void *var_v0;
-
-    temp_v0 = createInlineBox();
-    var_v0 = NULL;
-    if (temp_v0 != NULL) {
-        M2C_FIELD(temp_v0, short *, 0x3A) = 0x5F;
-        temp_v1 = M2C_FIELD(temp_v0, void **, 0x24);
-        M2C_FIELD(temp_v1, unsigned char *, 0x6C) = (unsigned char) (M2C_FIELD(temp_v1, unsigned char *, 0x6C) | 2);
-        applyCSSExtStyleSheetToBox(arg0, temp_v0);
-        applyCSSInlinePropertyToBox(arg0, temp_v0);
-        var_v0 = temp_v0;
+BOX *html_U(void *node, BOX *parent, BOX *prev) {
+    BOX *box = createInlineBox(node, parent, prev);
+    if (box == NULL) {
+        return NULL;
     }
-    return var_v0;
+    box->html = 0x5F;
+    box->style->unk6C[0] |= 2;
+    applyCSSExtStyleSheetToBox(node, box);
+    applyCSSInlinePropertyToBox(node, box);
+    return box;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_html_legacy", html_BLINK);
+BOX *html_BLINK(void *node, BOX *parent, BOX *prev) {
+    BOX *box = createBox(node, 1);
+    if (box == NULL) {
+        return NULL;
+    }
+    linkBox(box, parent, prev);
+    initNoneContent(box, node);
+    box->display = 1;
+    box->html = 0xD;
+    initBoxProperty(box);
+    box->style->unk6C[0] |= 8;
+    applyCSSExtStyleSheetToBox(node, box);
+    applyCSSInlinePropertyToBox(node, box);
+    return box;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_html_legacy", html_MARQUEE);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_html_legacy", html_NOBR);
+BOX *html_NOBR(void *node, BOX *parent, BOX *prev) {
+    BOX *box = createBox(node, 1);
+    if (box == NULL) {
+        return NULL;
+    }
+    linkBox(box, parent, prev);
+    box->display = 1;
+    box->html = 0x3F;
+    initNoneContent(box, node);
+    initBoxProperty(box);
+    box->style->unk74 = 2;
+    applyCSSExtStyleSheetToBox(node, box);
+    applyCSSInlinePropertyToBox(node, box);
+    return box;
+}
