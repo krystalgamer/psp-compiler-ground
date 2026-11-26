@@ -354,9 +354,41 @@ int game_term(void) {
     return game_net_term();
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/moonball_main", draw_top_for_game);
+extern char D_0001A060[];
+extern char D_0001A074[];
+int snprintf(char *buf, unsigned int size, const char *fmt, ...);
+void draw_top_for_game(void)
+{
+	char mess_buff[128];
+	int x, y;
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/moonball_main", draw_p2p_game_parameter);
+	y = 61;
+	snprintf(mess_buff, sizeof(mess_buff), D_0001A060);
+	x = (480 - strlen(mess_buff) * 8) / 2 + 1;
+	sceGuDebugPrint(x, y, 0xffffff, mess_buff);
+	y += 15;
+	x += 24;
+
+	sprintf(mess_buff, D_0001A074, _mrinfo.hello_opt.req_player_num);
+	sceGuDebugPrint(x, y, 0xff, mess_buff);
+}
+
+extern char D_0001A084[];
+void draw_p2p_game_parameter(int index, int color, int x, int *y_ptr)
+{
+	char mess_buff[128];
+	int y;
+
+	y = *y_ptr;
+	if (_mrinfo.hello_opt.game_type != GAME_TYPE_CHILD)
+		return;
+	sprintf(mess_buff, D_0001A084,
+		minfo[index].hello_opt.cur_player_num,
+		minfo[index].hello_opt.req_player_num);
+	sceGuDebugPrint(x, y, color, mess_buff);
+	y += 10;
+	*y_ptr = y;
+}
 
 void draw_game(void) {
     DrawFunc();
