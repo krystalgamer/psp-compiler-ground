@@ -64,7 +64,26 @@ static int unload_module(SceUID mid)
 	return 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/sound_starsas/nonmatchings/sasload", sasload);
+int sasload(void)
+{
+	SceKernelLMOption kMode;
+
+	sasMid = 0;
+
+	kMode.size = sizeof(SceKernelLMOption);
+	kMode.mpidtext = 1;
+	kMode.mpiddata = 1;
+	kMode.position = 0;
+	kMode.access = 1;
+
+	sasMid = load_module("disc0:/PSP_GAME/USRDIR/MODULE/sc_sascore.prx", &kMode, NULL);
+	if (sasMid < 0) {
+		printf("fatal error : cannot load SAS module\n");
+		return -1;
+	}
+
+	return 0;
+}
 
 int sasunload(void)
 {
