@@ -1,29 +1,91 @@
 /* cflags: -O1 */
 #include "common.h"
-#include "m2c_macros.h"
+#include "dom_domi.h"
 extern unsigned char gDomiNodeSetEmpty;
+int UDomiString_CompareBinary(const DOMChar *a, unsigned int alen, const DOMChar *b, unsigned int blen);
+int SBinarySearch_Search(void *arr, unsigned int count, int (*cmp)(), const void *key, unsigned int *idx);
+void SDomiNodeArray_DeleteAll(SDomiPtrArray *a);
 
+static int NodeComparator(SDomiPtrArray *a, unsigned int i, const SDomiString *key) {
+    SDomiStringData *d = ((SDomiNode *)a->items[i])->nodeName.d;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/SDomiNodeArray", NodeComparator);
+    return UDomiString_CompareBinary(d->s.str, d->s.len, key->str, key->len);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/SDomiNodeArray", SDomiNodeArray_Finalize);
+void SDomiNodeArray_Finalize(SDomiPtrArray *a) {
+    SDomiNodeArray_DeleteAll(a);
+    SDomiPtrArray_Finalize(a);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/SDomiNodeArray", SDomiNodeArray_DeleteAll);
+void SDomiNodeArray_DeleteAll(SDomiPtrArray *a) {
+    unsigned int i;
+    SDomiNode *n;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/SDomiNodeArray", SDomiNodeArray_InheritObjInfo);
+    for (i = a->count; i != 0; i = a->count) {
+        i--;
+        n = SDomiPtrArray_GetItem(a, i);
+        SDomiPtrArray_Remove(a, i);
+        n->vt->Finalize(n);
+        UDomiMemory_Free(n);
+    }
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/SDomiNodeArray", SDomiNodeArray_FreeTrash);
+void SDomiNodeArray_InheritObjInfo(SDomiPtrArray *a, int flags) {
+    unsigned int i;
+    SDomiNode *n;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/SDomiNodeArray", SDomiNodeArray_Find);
+    for (i = 0; (n = SDomiPtrArray_GetItem(a, i)) != NULL; i++) {
+        n->vt->InheritObjInfo(n, flags);
+    }
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/SDomiNodeArray", SDomiNodeArray_Remove);
+void SDomiNodeArray_FreeTrash(SDomiPtrArray *a) {
+    unsigned int i;
+    SDomiNode *n;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/SDomiNodeArray", SDomiNodeArray_Put);
+    for (i = 0; (n = SDomiPtrArray_GetItem(a, i)) != NULL; i++) {
+        n->vt->FreeTrash(n);
+    }
+}
 
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
+SDomiNode *SDomiNodeArray_Find(SDomiPtrArray *a, const SDomiString *name) {
+    unsigned int idx;
 
-M2C_UNK *AcsExterngDomiNodeSetEmpty(void) {
+    if (SBinarySearch_Search(a, a->count, NodeComparator, name, &idx)) {
+        return SDomiPtrArray_GetItem(a, idx);
+    }
+    return NULL;
+}
+
+SDomiNode *SDomiNodeArray_Remove(SDomiPtrArray *a, const SDomiString *name, unsigned int *out) {
+    unsigned int idx;
+    SDomiNode *n;
+
+    if (!SBinarySearch_Search(a, a->count, NodeComparator, name, &idx)) {
+        return NULL;
+    }
+    n = a->items[idx];
+    SDomiPtrArray_Remove(a, idx);
+    *out = idx;
+    return n;
+}
+
+int SDomiNodeArray_Put(SDomiPtrArray *a, SDomiNode *n, SDomiNode **old, unsigned int *out) {
+    unsigned int idx;
+
+    *old = NULL;
+    if (SBinarySearch_Search(a, a->count, NodeComparator, &n->nodeName.d->s, &idx)) {
+        if (a->items[idx] != n) {
+            *old = a->items[idx];
+            a->items[idx] = n;
+        }
+        *out = idx;
+        return 1;
+    }
+    *out = idx;
+    return SDomiPtrArray_Insert(a, idx, n);
+}
+
+void *AcsExterngDomiNodeSetEmpty(void) {
     return &gDomiNodeSetEmpty;
 }

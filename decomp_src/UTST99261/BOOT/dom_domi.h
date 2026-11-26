@@ -43,6 +43,16 @@ typedef struct SDomiPtrArray {
 } SDomiPtrArray;
 
 struct SDomiDocument;
+
+/* lazily built node list */
+typedef struct SDomiNodeSet {
+    SDomiSLink link;                  /* 0x00 */
+    SDomiStringH name;                /* 0x04 */
+    struct SDomiNode *root;           /* 0x08 */
+    int (*build)(struct SDomiNodeSet *); /* 0x0C */
+    SDomiPtrArray arr;                /* 0x10 */
+    unsigned char valid;              /* 0x20 */
+} SDomiNodeSet;
 struct SDomiNodeVt;
 
 typedef struct SDomiNode {
