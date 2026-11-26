@@ -23,6 +23,12 @@ void classic_inv_demo2_moji2(int type);
 void classic_inv_expsys_setsub(int a, int b, int c, int d, int e, int f, int g);
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 
+extern int nowplay;
+extern int screen_sw;
+extern int *ptexdis2[];
+extern int wwx, wwy, wwh, www;
+void classic_inv_shotsub(int a, int b, int c, int d, int e, int f, int g, int h, int i, int j);
+
 void psp_xstart(void) {
     psp_loopstart();
 }
@@ -75,7 +81,17 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_shima", SprMove);
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_shima", SprMoveHitWait);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_shima", SprMoveHitWait2);
+static void SprMoveHitWait2(int x)
+{
+	int tex;
+
+	if (nowplay == 0)
+		tex = ptexdis1[screen_sw][7];
+	else
+		tex = ptexdis2[screen_sw][7];
+	if (x == 1)
+		spr_boxfill(tex, wwx, wwy, wwh, www, 0);
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_shima", classic_inv_tamainit);
 
@@ -176,7 +192,15 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_shima", classic_inv_m
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_shima", classic_inv_shotsub);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_shima", classic_inv_shot);
+extern int nowplay;
+extern int screen_sw;
+extern int *ptexdis2[];
+extern int wwx, wwy, wwh, www;
+void classic_inv_shotsub(int a, int b, int c, int d, int e, int f, int g, int h, int i, int j);
+void classic_inv_shot(int a, int b, int d, int e, int f, int g, int h, int i, int j)
+{
+	classic_inv_shotsub(a, b, 9, d, e, f, g, h, i, j);
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_shima", classic_inv_eshot);
 
