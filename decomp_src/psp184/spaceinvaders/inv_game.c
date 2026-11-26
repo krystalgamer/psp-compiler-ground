@@ -383,7 +383,7 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", zako_control_o
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", zako_normal_anime);
 
-typedef struct { int f0, f4, f8, fc; float f10; int f14, f18, f1c, f20; } STAGE_FORMAT;
+typedef struct { int f0; float f4; int f8, fc; float f10; int f14, f18, f1c, f20; } STAGE_FORMAT;
 extern STAGE_FORMAT stage_format[];
 unsigned long genrand_int32(void);
 int zako_shot_count(void)
