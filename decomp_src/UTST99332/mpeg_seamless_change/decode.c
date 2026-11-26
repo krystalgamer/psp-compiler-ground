@@ -255,7 +255,33 @@ SceInt32 decode_unRegistStream(t_mpegStreamData *pStreamData, SceMpegStrType str
 	return ret;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/mpeg_seamless_change/nonmatchings/decode", decode_setReservedMode);
+SceInt32 decode_setReservedMode(t_mpegStreamData *pStreamData, SceMpegStrType type, SceInt32 number)
+{
+	SceInt32 ret;
+
+	switch (type) {
+	case 0:
+		sceMpegChangeGetAuMode(pStreamData->pMpeg, pStreamData->pVideoStream[number], 0);
+
+		pStreamData->reservedVideoStream = number;
+
+		ret = decode_initAu(pStreamData, 0, number, 1);
+		if (ret != 0) {
+			printf("fatal error : decode_initAu () 0x%x\n", ret);
+			goto term;
+		}
+		break;
+	case 1:
+		ret = -1;
+		break;
+	default:
+		ret = -1;
+		break;
+	}
+
+term:
+	return ret;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/mpeg_seamless_change/nonmatchings/decode", decode_getAudioAu);
 
