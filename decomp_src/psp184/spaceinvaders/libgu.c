@@ -1,8 +1,155 @@
 #include "common.h"
 
+typedef struct {
+	unsigned int *start;
+	unsigned int *current;
+	int parent_context;
+	int scissor_enable;
+	int scissor_start[2];
+	int scissor_end[2];
+	int near_plane;
+	int far_plane;
+	int depth_offset;
+	int fragment_2x;
+	int texture_function;
+	int texture_proj_map_mode;
+	int texture_map_mode;
+	int sprite_mode[4];
+	unsigned int clear_color;
+	unsigned int clear_stencil;
+	unsigned int clear_depth;
+	int texture_mode;
+} GuContext;
+
+typedef struct {
+	int pixel_size;
+	int frame_width;
+	void *frame_buffer;
+	void *disp_buffer;
+	void *depth_buffer;
+	int depth_width;
+	int width;
+	int height;
+} GuDrawBuffer;
+
+extern GuDrawBuffer FBuf;
+
+extern GuContext *pList;
+extern GuContext _ctx[3];
+extern int __aw_list_mode;
+extern unsigned int __gu_status;
+
+static __inline__ void send_commandi(int cmd, int argument)
+{
+	*(pList->current++) = (cmd << 24) | (argument & 0xffffff);
+}
+
+static __inline__ void send_commandf(int cmd, float argument)
+{
+	*(pList->current++) = (cmd << 24) | (*((unsigned int *)&argument) >> 8);
+}
+
+static __inline__ unsigned int float_bits(float f)
+{
+	union { float f; unsigned int i; } t;
+
+	t.f = f;
+	return t.i;
+}
+
+static __inline__ void send_commandf_u(int cmd, float argument)
+{
+	*(pList->current++) = (cmd << 24) | (float_bits(argument) >> 8);
+}
+
+typedef struct ScePspFVector4 { float x, y, z, w; } ScePspFVector4;
+typedef struct ScePspFMatrix4 { ScePspFVector4 x, y, z, w; } ScePspFMatrix4;
+
+typedef struct {
+	void (*signal_func)(int);
+	void (*finish_func)(int);
+	unsigned short signals[16];
+	int index;
+	int event;
+} GuCallbackData;
+
+extern GuCallbackData intrParam;
+extern int queid[2];
+extern int intrCode;
+extern int call_mode;
+extern int n_bbox;
+extern int bParam[4];
+
+int sceGeListUpdateStallAddr(int qid, void *stall);
+int sceGeListEnQueue(const void *list, void *stall, int cbid, void *arg);
+int sceGeListEnQueueHead(const void *list, void *stall, int cbid, void *arg);
+int sceGeListSync(int qid, int syncType);
+int sceGeDrawSync(int syncType);
+int sceGeBreak(int mode, void *param);
+int sceKernelSetEventFlag(int evid, unsigned int bits);
+int sceKernelClearEventFlag(int evid, unsigned int bits);
+int sceKernelWaitEventFlag(int evid, unsigned int bits, unsigned int wait, unsigned int *outBits, void *timeout);
+void sceGuEnable(int state);
+void sceGuDisable(int state);
+
+extern void flush_font(void);
+int sceGeUnsetCallback(int cbid);
+int sceKernelDeleteEventFlag(int evid);
+int sceGeContinue(void);
+void sceGuDepthRange(int near, int far);
+void sceGuMaterial(int mode, unsigned int color);
+
+extern unsigned int *p_bbox[32];
+
+typedef struct ScePspFVector3 { float x, y, z; } ScePspFVector3;
+
+typedef struct {
+	unsigned char enable;
+	unsigned char type;
+	unsigned char xpos, ypos, zpos;
+	unsigned char xdir, ydir, zdir;
+	unsigned char ambient, diffuse, specular;
+	unsigned char constant, linear, quadratic;
+	unsigned char exponent, cutoff;
+} GuLightSettings;
+
+static const GuLightSettings lcmd[4];
+extern int disp_sw;
+extern void *vram_top;
+extern int aw_frame;
+
+int sceDisplaySetMode(int mode, int width, int height);
+int sceDisplaySetFrameBuf(void *topaddr, int bufferwidth, int pixelformat, int sync);
+
+extern const unsigned int tbpcmd_tbl[8];
+extern const unsigned int tbwcmd_tbl[8];
+extern const unsigned int tsizecmd_tbl[8];
+void sceGuTexFlush(void);
+int get_exp(int val);
+
+extern int gu_init;
+extern const GuDrawBuffer D_000120E8;
+
+extern const unsigned int initList[221];
+typedef struct { int m[16]; } GuDitherInit;
+extern const GuDitherInit D_00012114;
+int sceGeSetCallback(void *cb);
+void *sceGeEdramGetAddr(void);
+int sceKernelCreateEventFlag(const char *name, int attr, int bits, void *opt);
+void sceGuSetDither(const int *matrix);
+void sceGuPatchDivide(int a0, int a1);
+void sceGuColorMaterial(int a0);
+
+
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", callback_sig);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", callback_fin);
+void callback_fin(int id, void *arg)
+{
+	GuCallbackData *cb = (GuCallbackData *)arg;
+
+	if (cb->finish_func)
+		cb->finish_func(id & 0xffff);
+}
 
 int get_exp(int val)
 {
@@ -21,11 +168,31 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", flush_font);
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", reset_static_value);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", sceGuSendCommandf);
+void sceGuSendCommandf(int cmd, float argument)
+{
+	send_commandf(cmd, argument);
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", sceGuSendCommandi);
+void sceGuSendCommandi(int cmd, int argument)
+{
+	send_commandi(cmd, argument);
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", sceGuGetMemory);
+void *sceGuGetMemory(int size);
+void *sceGuGetMemory(int size)
+{
+	unsigned int *orig_ptr = pList->current;
+	unsigned int *new_ptr = orig_ptr + (size + 3) / 4 + 2;
+	unsigned int lo = (8 << 24) | (((unsigned int)new_ptr) & 0xffffff);
+	unsigned int hi = (16 << 24) | ((((unsigned int)new_ptr) >> 8) & 0xf0000);
+
+	*(orig_ptr++) = hi;
+	*(orig_ptr++) = lo;
+	pList->current = new_ptr;
+	if (!__aw_list_mode)
+		sceGeListUpdateStallAddr(queid[0], new_ptr);
+	return orig_ptr;
+}
 
 INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", fonttex);
 
@@ -37,7 +204,12 @@ INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", tbwcmd_tbl);
 
 INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", tsizecmd_tbl);
 
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", lcmd);
+static const GuLightSettings lcmd[4] = {
+	{ 0x18, 0x5F, 0x63, 0x64, 0x65, 0x6F, 0x70, 0x71, 0x8F, 0x90, 0x91, 0x7B, 0x7C, 0x7D, 0x87, 0x8B },
+	{ 0x19, 0x60, 0x66, 0x67, 0x68, 0x72, 0x73, 0x74, 0x92, 0x93, 0x94, 0x7E, 0x7F, 0x80, 0x88, 0x8C },
+	{ 0x1A, 0x61, 0x69, 0x6A, 0x6B, 0x75, 0x76, 0x77, 0x95, 0x96, 0x97, 0x81, 0x82, 0x83, 0x89, 0x8D },
+	{ 0x1B, 0x62, 0x6C, 0x6D, 0x6E, 0x78, 0x79, 0x7A, 0x98, 0x99, 0x9A, 0x84, 0x85, 0x86, 0x8A, 0x8E },
+};
 
 INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", color_material);
 
@@ -45,7 +217,12 @@ INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", D_0007F9D0);
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", sceGuInit);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", sceGuTerm);
+void sceGuTerm(void);
+void sceGuTerm(void)
+{
+	sceKernelDeleteEventFlag(intrParam.event);
+	sceGeUnsetCallback(intrCode);
+}
 
 INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", D_0007F9FC);
 
@@ -59,17 +236,48 @@ INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", D_0007FB00);
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", sceGuStart);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", sceGuSetDither);
+void sceGuSetDither(const int *matrix)
+{
+	unsigned int dither[4];
+
+	dither[0] = (matrix[0] & 0x0f) | ((matrix[1] & 0x0f) << 4) | ((matrix[2] & 0x0f) << 8) | ((matrix[3] & 0x0f) << 12);
+	dither[1] = (matrix[4] & 0x0f) | ((matrix[5] & 0x0f) << 4) | ((matrix[6] & 0x0f) << 8) | ((matrix[7] & 0x0f) << 12);
+	dither[2] = (matrix[8] & 0x0f) | ((matrix[9] & 0x0f) << 4) | ((matrix[10] & 0x0f) << 8) | ((matrix[11] & 0x0f) << 12);
+	dither[3] = (matrix[12] & 0x0f) | ((matrix[13] & 0x0f) << 4) | ((matrix[14] & 0x0f) << 8) | ((matrix[15] & 0x0f) << 12);
+	send_commandi(226, dither[0]);
+	send_commandi(227, dither[1]);
+	send_commandi(228, dither[2]);
+	send_commandi(229, dither[3]);
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", sceGuFinish);
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", sceGuFinishId);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", sceGuCallMode);
+void sceGuCallMode(int mode);
+void sceGuCallMode(int mode)
+{
+	call_mode = mode;
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", sceGuSignal);
+void sceGuSignal(int signal, int behavior);
+void sceGuSignal(int signal, int behavior)
+{
+	send_commandi(14, (behavior & 0xffff) | ((signal & 0xff) << 16));
+	send_commandi(12, 0);
+	if (signal == 3) {
+		send_commandi(15, 0);
+		send_commandi(12, 0);
+	}
+	send_commandi(0, 0);
+	if (!n_bbox && !__aw_list_mode)
+		sceGeListUpdateStallAddr(queid[0], pList->current);
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", sceGuBreak);
+void sceGuBreak(int mode)
+{
+	sceGeBreak(mode, bParam);
+}
 
 void sceGuContinue(void)
 {
@@ -78,9 +286,29 @@ void sceGuContinue(void)
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", sceGuCallList);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", sceGuSendList);
+void sceGuSendList(int mode, const void *list, void *context);
+void sceGuSendList(int mode, const void *list, void *context)
+{
+	struct {
+		int size;
+		void *context;
+		int reserved[2];
+	} args;
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", sceGuCheckList);
+	intrParam.index = 0;
+	args.size = 8;
+	args.context = context;
+	if (mode == 1)
+		queid[1] = sceGeListEnQueueHead(list, 0, intrCode, &args);
+	else
+		queid[1] = sceGeListEnQueue(list, 0, intrCode, &args);
+}
+
+int sceGuCheckList(void);
+int sceGuCheckList(void)
+{
+	return (int)pList->current - (int)pList->start;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", sceGuSync);
 
@@ -90,9 +318,19 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", sceGuEnable);
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", sceGuDisable);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", sceGuGetStatus);
+int sceGuGetStatus(int state);
+int sceGuGetStatus(int state)
+{
+	if (state < 22)
+		return (__gu_status >> state) & 1;
+	return 0;
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", sceGuGetAllStatus);
+unsigned int sceGuGetAllStatus(void);
+unsigned int sceGuGetAllStatus(void)
+{
+	return __gu_status;
+}
 
 void sceGuEnable(int state);
 void sceGuDisable(int state);
@@ -118,59 +356,238 @@ void sceGuSetAllStatus(unsigned int status)
 	}
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", sceGuSetMatrix);
+void sceGuSetMatrix(int type, const ScePspFMatrix4 *matrix);
+void sceGuSetMatrix(int type, const ScePspFMatrix4 *matrix)
+{
+	const float *fmatrix = (const float *)matrix;
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", sceGuDrawArray);
+	switch (type) {
+	case 0:
+		send_commandi(62, 0);
+		send_commandf(63, fmatrix[0]); send_commandf(63, fmatrix[1]); send_commandf(63, fmatrix[2]); send_commandf(63, fmatrix[3]);
+		send_commandf(63, fmatrix[4]); send_commandf(63, fmatrix[5]); send_commandf(63, fmatrix[6]); send_commandf(63, fmatrix[7]);
+		send_commandf(63, fmatrix[8]); send_commandf(63, fmatrix[9]); send_commandf(63, fmatrix[10]); send_commandf(63, fmatrix[11]);
+		send_commandf(63, fmatrix[12]); send_commandf(63, fmatrix[13]); send_commandf(63, fmatrix[14]); send_commandf(63, fmatrix[15]);
+		break;
+	case 1:
+		send_commandi(60, 0);
+		send_commandf(61, fmatrix[0]); send_commandf(61, fmatrix[1]); send_commandf(61, fmatrix[2]);
+		send_commandf(61, fmatrix[4]); send_commandf(61, fmatrix[5]); send_commandf(61, fmatrix[6]);
+		send_commandf(61, fmatrix[8]); send_commandf(61, fmatrix[9]); send_commandf(61, fmatrix[10]);
+		send_commandf(61, fmatrix[12]); send_commandf(61, fmatrix[13]); send_commandf(61, fmatrix[14]);
+		break;
+	case 2:
+		send_commandi(58, 0);
+		send_commandf(59, fmatrix[0]); send_commandf(59, fmatrix[1]); send_commandf(59, fmatrix[2]);
+		send_commandf(59, fmatrix[4]); send_commandf(59, fmatrix[5]); send_commandf(59, fmatrix[6]);
+		send_commandf(59, fmatrix[8]); send_commandf(59, fmatrix[9]); send_commandf(59, fmatrix[10]);
+		send_commandf(59, fmatrix[12]); send_commandf(59, fmatrix[13]); send_commandf(59, fmatrix[14]);
+		break;
+	case 3:
+		send_commandi(64, 0);
+		send_commandf(65, fmatrix[0]); send_commandf(65, fmatrix[1]); send_commandf(65, fmatrix[2]);
+		send_commandf(65, fmatrix[4]); send_commandf(65, fmatrix[5]); send_commandf(65, fmatrix[6]);
+		send_commandf(65, fmatrix[8]); send_commandf(65, fmatrix[9]); send_commandf(65, fmatrix[10]);
+		send_commandf(65, fmatrix[12]); send_commandf(65, fmatrix[13]); send_commandf(65, fmatrix[14]);
+		break;
+	}
+}
+
+void sceGuDrawArray(int prim, int vtype, int count, const void *indices, const void *vertices);
+void sceGuDrawArray(int prim, int vtype, int count, const void *indices, const void *vertices)
+{
+	if (vtype)
+		send_commandi(18, vtype);
+	if (indices) {
+		send_commandi(16, (((unsigned int)indices) >> 8) & 0xf0000);
+		send_commandi(2, ((unsigned int)indices) & 0xffffff);
+	}
+	if (vertices) {
+		send_commandi(16, (((unsigned int)vertices) >> 8) & 0xf0000);
+		send_commandi(1, ((unsigned int)vertices) & 0xffffff);
+	}
+	send_commandi(4, (prim << 16) | count);
+	if (!n_bbox && !__aw_list_mode)
+		sceGeListUpdateStallAddr(queid[0], pList->current);
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", sceGuDrawArrayN);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", sceGuDrawBezier);
+void sceGuDrawBezier(int vtype, int ucount, int vcount, const void *indices, const void *vertices);
+void sceGuDrawBezier(int vtype, int ucount, int vcount, const void *indices, const void *vertices)
+{
+	if (vtype)
+		send_commandi(18, vtype);
+	if (indices) {
+		send_commandi(16, (((unsigned int)indices) >> 8) & 0xf0000);
+		send_commandi(2, ((unsigned int)indices) & 0xffffff);
+	}
+	if (vertices) {
+		send_commandi(16, (((unsigned int)vertices) >> 8) & 0xf0000);
+		send_commandi(1, ((unsigned int)vertices) & 0xffffff);
+	}
+	send_commandi(5, (vcount << 8) | ucount);
+	if (!n_bbox && !__aw_list_mode)
+		sceGeListUpdateStallAddr(queid[0], pList->current);
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", sceGuDrawSpline);
+void sceGuDrawSpline(int vtype, int ucount, int vcount, int uedge, int vedge, const void *indices, const void *vertices);
+void sceGuDrawSpline(int vtype, int ucount, int vcount, int uedge, int vedge, const void *indices, const void *vertices)
+{
+	if (vtype)
+		send_commandi(18, vtype);
+	if (indices) {
+		send_commandi(16, (((unsigned int)indices) >> 8) & 0xf0000);
+		send_commandi(2, ((unsigned int)indices) & 0xffffff);
+	}
+	if (vertices) {
+		send_commandi(16, (((unsigned int)vertices) >> 8) & 0xf0000);
+		send_commandi(1, ((unsigned int)vertices) & 0xffffff);
+	}
+	send_commandi(6, (vedge << 18) | (uedge << 16) | (vcount << 8) | ucount);
+	if (!n_bbox && !__aw_list_mode)
+		sceGeListUpdateStallAddr(queid[0], pList->current);
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", sceGuBeginObject);
+void sceGuBeginObject(int vtype, int count, const void *indices, const void *vertices)
+{
+	if (vtype)
+		send_commandi(18, vtype);
+	if (indices) {
+		send_commandi(16, (((unsigned int)indices) >> 8) & 0xf0000);
+		send_commandi(2, ((unsigned int)indices) & 0xffffff);
+	}
+	if (vertices) {
+		send_commandi(16, (((unsigned int)vertices) >> 8) & 0xf0000);
+		send_commandi(1, ((unsigned int)vertices) & 0xffffff);
+	}
+	send_commandi(7, count);
+	p_bbox[n_bbox++] = pList->current;
+	send_commandi(16, 0);
+	send_commandi(9, 0);
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", sceGuEndObject);
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", sceGuDrawSprite);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", sceGuSpriteMode);
+void sceGuSpriteMode(int a0, int a1, int a2, int a3);
+void sceGuSpriteMode(int a0, int a1, int a2, int a3)
+{
+	GuContext *context = &_ctx[__aw_list_mode];
+
+	context->sprite_mode[0] = a0;
+	context->sprite_mode[1] = a1;
+	context->sprite_mode[2] = a2;
+	context->sprite_mode[3] = a3;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", sceGuCopyImage);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", sceGuClearColor);
+void sceGuClearColor(unsigned int color);
+void sceGuClearColor(unsigned int color)
+{
+	_ctx[__aw_list_mode].clear_color = color;
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", sceGuClearStencil);
+void sceGuClearStencil(unsigned int stencil);
+void sceGuClearStencil(unsigned int stencil)
+{
+	_ctx[__aw_list_mode].clear_stencil = stencil;
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", sceGuClearDepth);
+void sceGuClearDepth(unsigned int depth);
+void sceGuClearDepth(unsigned int depth)
+{
+	_ctx[__aw_list_mode].clear_depth = depth;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", sceGuClear);
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", sceGuDrawBuffer);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", sceGuDrawBufferList);
+void sceGuDrawBufferList(int psm, void *fbp, int frame_width);
+void sceGuDrawBufferList(int psm, void *fbp, int frame_width)
+{
+	send_commandi(210, psm);
+	send_commandi(156, ((unsigned int)fbp) & 0xffffff);
+	send_commandi(157, ((((unsigned int)fbp) & 0xff000000) >> 8) | frame_width);
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", sceGuDepthBuffer);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", sceGuDispBuffer);
+void sceGuDispBuffer(int width, int height, void *dbp, int frame_width);
+void sceGuDispBuffer(int width, int height, void *dbp, int frame_width)
+{
+	FBuf.width = width;
+	FBuf.height = height;
+	FBuf.disp_buffer = dbp;
+	if (!FBuf.frame_width)
+		FBuf.frame_width = frame_width;
+	if (FBuf.frame_width != frame_width)
+		FBuf.frame_width = frame_width;
+	sceDisplaySetMode(0, FBuf.width, FBuf.height);
+	if (disp_sw == 1)
+		sceDisplaySetFrameBuf((char *)vram_top + (unsigned int)FBuf.disp_buffer, frame_width, FBuf.pixel_size, 1);
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", sceGuDisplay);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", sceGuSwapBuffers);
+void *sceGuSwapBuffers(void);
+void *sceGuSwapBuffers(void)
+{
+	void *temp;
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", sceGuViewport);
+	flush_font();
+	temp = FBuf.frame_buffer;
+	FBuf.frame_buffer = FBuf.disp_buffer;
+	FBuf.disp_buffer = temp;
+	if (disp_sw == 1)
+		sceDisplaySetFrameBuf((char *)vram_top + (unsigned int)temp, FBuf.frame_width, FBuf.pixel_size, 0);
+	aw_frame = aw_frame == 0;
+	return FBuf.frame_buffer;
+}
+
+void sceGuViewport(int cx, int cy, int width, int height);
+void sceGuViewport(int cx, int cy, int width, int height)
+{
+	send_commandf(66, (float)(width / 2));
+	send_commandf(67, (float)((-height) / 2));
+	send_commandf(69, (float)cx);
+	send_commandf(70, (float)cy);
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", sceGuDepthRange);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", sceGuDepthOffset);
+void sceGuDepthOffset(unsigned int offset);
+void sceGuDepthOffset(unsigned int offset)
+{
+	GuContext *context = &_ctx[__aw_list_mode];
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", sceGuOffset);
+	context->depth_offset = offset;
+	sceGuDepthRange(context->near_plane, context->far_plane);
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", sceGuPatchDivide);
+void sceGuOffset(unsigned int x, unsigned int y);
+void sceGuOffset(unsigned int x, unsigned int y)
+{
+	send_commandi(76, x << 4);
+	send_commandi(77, y << 4);
+}
+
+void sceGuPatchDivide(int ulevel, int vlevel)
+{
+	send_commandi(54, ((vlevel << 8) | ulevel));
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", sceGuPatchPrim);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", sceGuAmbient);
+void sceGuAmbient(unsigned int color);
+void sceGuAmbient(unsigned int color)
+{
+	send_commandi(92, color & 0xffffff);
+	send_commandi(93, color >> 24);
+}
 
 void sceGuColor(unsigned int color);
 void sceGuMaterial(int mode, unsigned int color);
@@ -179,49 +596,160 @@ void sceGuColor(unsigned int color)
 	sceGuMaterial(7, color);
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", sceGuColorMaterial);
+void sceGuColorMaterial(int components)
+{
+	send_commandi(83, components);
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", sceGuMaterial);
+void sceGuMaterial(int mode, unsigned int color)
+{
+	if (mode & 0x01) {
+		send_commandi(85, color & 0xffffff);
+		send_commandi(88, color >> 24);
+	}
+	if (mode & 0x02)
+		send_commandi(86, color & 0xffffff);
+	if (mode & 0x04)
+		send_commandi(87, color & 0xffffff);
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", sceGuAmbientColor);
+void sceGuAmbientColor(unsigned int color);
+void sceGuAmbientColor(unsigned int color)
+{
+	send_commandi(85, color & 0xffffff);
+	send_commandi(88, color >> 24);
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", sceGuModelColor);
+void sceGuModelColor(unsigned int emissive, unsigned int ambient, unsigned int diffuse, unsigned int specular);
+void sceGuModelColor(unsigned int emissive, unsigned int ambient, unsigned int diffuse, unsigned int specular)
+{
+	send_commandi(84, emissive & 0xffffff);
+	send_commandi(86, diffuse & 0xffffff);
+	send_commandi(85, ambient & 0xffffff);
+	send_commandi(87, specular & 0xffffff);
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", sceGuSpecular);
+void sceGuSpecular(float power);
+void sceGuSpecular(float power)
+{
+	send_commandf(91, power);
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", sceGuFrontFace);
+void sceGuFrontFace(int order);
+void sceGuFrontFace(int order)
+{
+	if (order)
+		send_commandi(155, 0);
+	else
+		send_commandi(155, 1);
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", sceGuPatchFrontFace);
+void sceGuPatchFrontFace(int arg0)
+{
+	send_commandi(56, arg0);
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", sceGuShadeModel);
+void sceGuShadeModel(int mode);
+void sceGuShadeModel(int mode)
+{
+	switch (mode) {
+	case 1:
+		send_commandi(80, 1);
+		break;
+	default:
+		send_commandi(80, 0);
+		break;
+	}
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", sceGuLight);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", sceGuLightMode);
+void sceGuLightMode(int mode);
+void sceGuLightMode(int mode)
+{
+	send_commandi(94, mode & 1);
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", sceGuLightAtt);
+void sceGuLightAtt(int light, float atten0, float atten1, float atten2);
+void sceGuLightAtt(int light, float atten0, float atten1, float atten2)
+{
+	send_commandf(lcmd[light].constant, atten0);
+	send_commandf(lcmd[light].linear, atten1);
+	send_commandf(lcmd[light].quadratic, atten2);
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", sceGuLightSpot);
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", sceGuLightColor);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", sceGuTexMode);
+void sceGuTexMode(int tpsm, int maxmips, int a2, int swizzle);
+void sceGuTexMode(int tpsm, int maxmips, int a2, int swizzle)
+{
+	_ctx[__aw_list_mode].texture_mode = tpsm;
+	send_commandi(194, (maxmips << 16) | (a2 << 8) | swizzle);
+	send_commandi(195, tpsm);
+	sceGuTexFlush();
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", sceGuTexFilter);
+void sceGuTexFilter(int min, int mag);
+void sceGuTexFilter(int min, int mag)
+{
+	send_commandi(198, ((mag << 8) | min));
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", sceGuTexFunc);
+void sceGuTexFunc(int tfx, int tcc);
+void sceGuTexFunc(int tfx, int tcc)
+{
+	GuContext *context = &_ctx[__aw_list_mode];
+
+	context->texture_function = (tcc << 8) | tfx;
+	send_commandi(201, context->fragment_2x | ((tcc << 8) | tfx));
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", sceGuTexEnvColor);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", sceGuTexWrap);
+void sceGuTexWrap(int u, int v);
+void sceGuTexWrap(int u, int v)
+{
+	send_commandi(199, ((v << 8) | u));
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", sceGuTexLevelMode);
+void sceGuTexLevelMode(unsigned int mode, float bias);
+void sceGuTexLevelMode(unsigned int mode, float bias)
+{
+	int offset = (int)(bias * 16.0f);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", sceGuTexMapMode);
+	if (offset >= 128)
+		offset = 127;
+	else if (offset < -128)
+		offset = -128;
+	send_commandi(200, (((unsigned int)offset) << 16) | mode);
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", sceGuTexProjMapMode);
+void sceGuTexMapMode(int mode, unsigned int a1, unsigned int a2);
+void sceGuTexMapMode(int mode, unsigned int a1, unsigned int a2)
+{
+	GuContext *context = &_ctx[__aw_list_mode];
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", sceGuTexSync);
+	context->texture_map_mode = mode & 0x03;
+	send_commandi(192, context->texture_proj_map_mode | (mode & 0x03));
+	send_commandi(193, ((a2 & 0x03) << 8) | (a1 & 0x03));
+}
+
+void sceGuTexProjMapMode(int mode);
+void sceGuTexProjMapMode(int mode)
+{
+	GuContext *context = &_ctx[__aw_list_mode];
+
+	context->texture_proj_map_mode = ((mode & 0x03) << 8);
+	send_commandi(192, ((mode & 0x03) << 8) | context->texture_map_mode);
+}
+
+void sceGuTexSync(void);
+void sceGuTexSync(void)
+{
+	send_commandi(204, 0x000000);
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", sceGuTexImage);
 
@@ -229,37 +757,125 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", sceGuTexScale);
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", sceGuTexOffset);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", sceGuTexFlush);
+void sceGuTexFlush(void)
+{
+	send_commandi(203, 0x000000);
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", sceGuTexSlope);
+void sceGuTexSlope(float slope);
+void sceGuTexSlope(float slope)
+{
+	send_commandf(208, slope);
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", sceGuClutMode);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", sceGuClutLoad);
+void sceGuClutLoad(int num_blocks, const void *cbp);
+void sceGuClutLoad(int num_blocks, const void *cbp)
+{
+	send_commandi(176, ((unsigned int)cbp) & 0xffffff);
+	send_commandi(177, (((unsigned int)cbp) >> 8) & 0xf0000);
+	send_commandi(196, num_blocks);
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", sceGuFog);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", sceGuColorFunc);
+void sceGuColorFunc(int func, unsigned int color, unsigned int mask)
+{
+	send_commandi(216, func & 0x03);
+	send_commandi(217, color);
+	send_commandi(218, mask);
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", sceGuAlphaFunc);
+void sceGuAlphaFunc(int a0, int a1, int a2);
+void sceGuAlphaFunc(int a0, int a1, int a2)
+{
+	send_commandi(219, (((a2 & 0xFF) << 0x10) | ((a1 & 0xFF) << 8) | a0));
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", sceGuDepthFunc);
+void sceGuDepthFunc(int function);
+void sceGuDepthFunc(int function)
+{
+	send_commandi(222, function);
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", sceGuDepthMask);
+void sceGuDepthMask(int mask);
+void sceGuDepthMask(int mask)
+{
+	send_commandi(231, mask);
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", sceGuPixelMask);
+void sceGuPixelMask(unsigned int mask);
+void sceGuPixelMask(unsigned int mask)
+{
+	send_commandi(232, mask);
+	*(pList->current++) = (233 << 24) | (mask >> 24);
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", sceGuScissor);
+void sceGuScissor(int x, int y, int w, int h);
+void sceGuScissor(int x, int y, int w, int h)
+{
+	GuContext *context = &_ctx[__aw_list_mode];
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", sceGuStencilFunc);
+	int ex = x + w - 1;
+	int ey = y + h - 1;
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", sceGuLogicalOp);
+	context->scissor_start[0] = x;
+	context->scissor_start[1] = y;
+	context->scissor_end[0] = ex;
+	context->scissor_end[1] = ey;
+	if (context->scissor_enable) {
+		send_commandi(212, (y << 10) | x);
+		send_commandi(213, (ey << 10) | ex);
+		send_commandi(21, 0);
+		send_commandi(22, (ey << 10) | ex);
+	}
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", sceGuStencilOp);
+void sceGuStencilFunc(int func, int ref, int mask);
+void sceGuStencilFunc(int func, int ref, int mask)
+{
+	send_commandi(220, (((mask & 0xFF) << 0x10) | ((ref & 0xFF) << 8) | func));
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", sceGuBlendFunc);
+void sceGuLogicalOp(int op);
+void sceGuLogicalOp(int op)
+{
+	send_commandi(230, op & 0x0f);
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", sceGuBoneMatrix);
+void sceGuStencilOp(int fail, int zfail, int zpass);
+void sceGuStencilOp(int fail, int zfail, int zpass)
+{
+	send_commandi(221, ((zpass << 0x10) | (zfail << 8) | fail));
+}
+
+void sceGuBlendFunc(int op, int src, int dest, unsigned int srcfix, unsigned int destfix);
+void sceGuBlendFunc(int op, int src, int dest, unsigned int srcfix, unsigned int destfix)
+{
+	send_commandi(223, (op << 8) | (dest << 4) | src);
+	send_commandi(224, srcfix & 0xffffff);
+	send_commandi(225, destfix & 0xffffff);
+}
+
+void sceGuBoneMatrix(unsigned int index, const ScePspFMatrix4 *matrix);
+void sceGuBoneMatrix(unsigned int index, const ScePspFMatrix4 *matrix)
+{
+	send_commandi(255, 0);
+	send_commandi(42, index * 12);
+	send_commandi(43, float_bits(matrix->x.x) >> 8);
+	send_commandi(43, float_bits(matrix->x.y) >> 8);
+	send_commandi(43, float_bits(matrix->x.z) >> 8);
+	send_commandi(43, float_bits(matrix->y.x) >> 8);
+	send_commandi(43, float_bits(matrix->y.y) >> 8);
+	send_commandi(43, float_bits(matrix->y.z) >> 8);
+	send_commandi(43, float_bits(matrix->z.x) >> 8);
+	send_commandi(43, float_bits(matrix->z.y) >> 8);
+	send_commandi(43, float_bits(matrix->z.z) >> 8);
+	send_commandi(43, float_bits(matrix->w.x) >> 8);
+	send_commandi(43, float_bits(matrix->w.y) >> 8);
+	send_commandi(43, float_bits(matrix->w.z) >> 8);
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", sceGuMorphWeight);
 
