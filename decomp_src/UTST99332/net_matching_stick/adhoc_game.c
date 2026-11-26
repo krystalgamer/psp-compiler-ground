@@ -355,7 +355,59 @@ INCLUDE_ASM("tmp/asm/UTST99332/net_matching_stick/nonmatchings/adhoc_game", game
 
 INCLUDE_ASM("tmp/asm/UTST99332/net_matching_stick/nonmatchings/adhoc_game", game_net_term);
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_matching_stick/nonmatchings/adhoc_game", send_position);
+#ifndef SCE_NET_ETHER_ADDR_LEN
+#define SCE_NET_ETHER_ADDR_LEN 6
+#endif
+#ifndef PAYLOAD_MOVE_TYPE
+#define PAYLOAD_MOVE_TYPE	0x01
+#endif
+#ifndef PORT
+#define PORT		777							
+#endif
+#ifndef PAYLOAD_MOVE_LEN
+#define PAYLOAD_MOVE_LEN	(1+4+4+4+4+4+4)		
+#endif
+#ifndef SCE_NET_ADHOC_F_NONBLOCK
+#define SCE_NET_ADHOC_F_NONBLOCK		0x0001
+#endif
+#ifndef SCE_ERROR_NET_ADHOC_WOULD_BLOCK
+#define SCE_ERROR_NET_ADHOC_WOULD_BLOCK				0x80410709
+#endif
+#ifndef SCE_OK
+#define SCE_OK							0
+#endif
+int
+send_position(OBJECT *obj)
+{
+	int ret;
+	struct SceNetEtherAddr broadcast;
+	char buf[PAYLOAD_MOVE_LEN];
+
+	memset(broadcast.data, 0xff, SCE_NET_ETHER_ADDR_LEN);
+
+	
+	*buf = PAYLOAD_MOVE_TYPE;
+	memcpy(&buf[1], &obj->x, sizeof(int));
+	memcpy(&buf[5], &obj->y, sizeof(int));
+	memcpy(&buf[9], &obj->c, sizeof(int));
+	memcpy(&buf[13], &obj->comp, sizeof(int));
+	memcpy(&buf[17], &obj->vtx_x, sizeof(float));
+	memcpy(&buf[21], &obj->vtx_y, sizeof(float));
+
+	ret = sceNetAdhocPdpSend(
+			socket_id,
+			&broadcast,
+			PORT,
+			buf,
+			PAYLOAD_MOVE_LEN,
+			0,
+			SCE_NET_ADHOC_F_NONBLOCK);
+
+	if (ret == SCE_ERROR_NET_ADHOC_WOULD_BLOCK)
+		ret = SCE_OK;
+
+	return ret;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/net_matching_stick/nonmatchings/adhoc_game", recv_allpacket);
 
