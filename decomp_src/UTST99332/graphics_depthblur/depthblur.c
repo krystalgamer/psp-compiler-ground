@@ -55,7 +55,49 @@ INCLUDE_ASM("tmp/asm/UTST99332/graphics_depthblur/nonmatchings/depthblur", MakeR
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_depthblur/nonmatchings/depthblur", GenFrameBufferBlurmap);
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_depthblur/nonmatchings/depthblur", UseFrameBufferBlurmap);
+#ifndef SCEGU_TEXTURE /* sample */
+#define SCEGU_TEXTURE                      9
+#endif
+#ifndef SCEGU_LINEAR_MIPMAP_LINEAR /* sample */
+#define SCEGU_LINEAR_MIPMAP_LINEAR         7
+#endif
+#ifndef SCEGU_LINEAR /* sample */
+#define SCEGU_LINEAR                       1
+#endif
+#ifndef SCEGU_SINGLE_CLUT /* sample */
+#define SCEGU_SINGLE_CLUT                  0
+#endif
+#ifndef SCEGU_TEXBUF_NORMAL /* sample */
+#define SCEGU_TEXBUF_NORMAL                0
+#endif
+#ifndef SCEGU_LOD_CONSTANT /* sample */
+#define SCEGU_LOD_CONSTANT                 1
+#endif
+#ifndef SCEGU_TEX_MODULATE /* sample */
+#define SCEGU_TEX_MODULATE                 0
+#endif
+#ifndef SCEGU_RGBA /* sample */
+#define SCEGU_RGBA                         1
+#endif
+#ifndef SCEGU_CLAMP /* sample */
+#define SCEGU_CLAMP                        1
+#endif
+void UseFrameBufferBlurmap(void)
+{
+	const unsigned int vram_top = (unsigned int)sceGeEdramGetAddr();
+
+	sceGuEnable( SCEGU_TEXTURE );
+
+	sceGuTexFilter( SCEGU_LINEAR_MIPMAP_LINEAR, SCEGU_LINEAR );
+	sceGuTexImage( 0, 256, 128, 256, (void*)(vram_top+scratch));
+	sceGuTexMode( format, 4, SCEGU_SINGLE_CLUT, SCEGU_TEXBUF_NORMAL );
+	sceGuTexLevelMode( SCEGU_LOD_CONSTANT, 0.0f );
+	sceGuTexFunc( SCEGU_TEX_MODULATE, SCEGU_RGBA );
+	sceGuTexWrap( SCEGU_CLAMP, SCEGU_CLAMP );
+	sceGuTexScale(  1.f, 1.f );
+	sceGuTexOffset( 0.f, 0.f );
+	sceGuTexFlush();
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_depthblur/nonmatchings/depthblur", DepthBlurUpdate);
 
