@@ -45,7 +45,7 @@ typedef struct {
 	s8 scroll;		/* 0x022: map lines pushed down */
 	u8 unk023;		/* 0x023 */
 	u8 pad024[2];
-	u8 unk026;		/* 0x026 */
+	s8 unk026;		/* 0x026 */
 	u8 unk027;		/* 0x027 */
 	u8 pad028[0x428 - 0x28];
 	u8 unk428;		/* 0x428 */
@@ -71,7 +71,9 @@ typedef struct {
 	s8 monitor_anim;	/* 0x45E */
 	u8 unk45F;		/* 0x45F */
 	PZL_SND snd;		/* 0x460 */
-	u8 pad46C[0x47B - 0x46C];
+	u16 unk46C;		/* 0x46C */
+	u16 unk46E;		/* 0x46E */
+	u8 pad470[0x47B - 0x470];
 	s8 chara;		/* 0x47B */
 	s8 chara2;		/* 0x47C */
 	s8 chara_anim;		/* 0x47D */

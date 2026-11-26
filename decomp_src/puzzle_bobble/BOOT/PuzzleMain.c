@@ -903,7 +903,70 @@ int EndressValueInit(int pl, int stage, int flag)
 	}
 }
 
+#ifdef NON_MATCHING
+/* Close: the original runs out of saved registers in the first loop (x, mapno and w each
+ * get one) and so recomputes the /6 constant per iteration; ours hoists it. */
+extern short mframe;
+extern short mtick;
+void DrawBubble(float z, int x, int y, int col, int anim);
+void DrawMapData(PZL_STAT *st)
+{
+	float z = 0.0f;
+	int i, n, w, x, y, c, no;
+
+	mtick = st->unk46E;
+	mframe = st->unk46C;
+	if (st->unk026 == 1) {
+		mframe = (short)(mframe + 1) % 40;
+		mtick = 0;
+	} else if (st->unk026 == 0) {
+		mframe = (short)(mframe + 1) % 18;
+		mtick = 0;
+	} else {
+		mframe = 0;
+		mtick = 0;
+	}
+	if (mframe >= 1 && mframe <= 3)
+		z = 1.2f;
+	if (st->unk006 != 0x18 && mframe == 2)
+		se_play(18);
+	if (st->mapsub < 2) {
+		for (i = 0; i < 16; i++) {
+			if (frame_anim[i] != 0 || i >= 8)
+				frame_anim[i] = (frame_anim[i] + 1) % 30;
+			else if (rand() % 150 == 0)
+				frame_anim[i]++;
+		}
+	}
+	n = GetMapWidth(st->mapno) * 32;
+	for (i = 0; i < n; i++) {
+		no = st->mapno;
+		w = GetMapWidth(no);
+		x = (i % w * 2 + i / w % 2) * 8;
+		if (st->mapsub == 0)
+			x += GetMapLeft(no);
+		else if (st->mapsub == 1)
+			x += 24;
+		else
+			x += 168;
+		c = st->mp.map[i];
+		y = (st->scroll * 7 + i / w * 7) * 2 + 32;
+		if (c)
+			DrawBubble(z, x + 80, y, c - 1, frame_anim[c - 1] / 6);
+	}
+	i = GetMapWidth(st->mapno);
+	for (n = i * 2 - 1; i < n; i++) {
+		w = GetMapWidth(st->mapno);
+		x = (i % w * 2 + i / w % 2) * 8 + GetMapLeft(st->mapno);
+		y = (st->scroll * 7 + i / w * 7) * 2 + 4;
+		DrawBubble(z, x + 80, y, 11, frame_anim[11] / 6);
+	}
+	st->unk46C = mframe;
+	st->unk46E = mtick;
+}
+#else
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", DrawMapData);
+#endif
 
 void SetBallMapReverse(PZL_STAT *dst, PZL_STAT *src)
 {
