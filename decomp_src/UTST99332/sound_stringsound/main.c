@@ -127,7 +127,34 @@ void sceGumPerspective(float fovy, float aspect, float near, float far);
 void sceGumSetMatrixStack(void *stack, int proj, int view, int model, int texture);
 
 
-INCLUDE_ASM("tmp/asm/UTST99332/sound_stringsound/nonmatchings/main", draw_frame);
+void sceGuDebugPrint(int x, int y, unsigned int color, const char *str);
+void DrawData(void);
+
+static void draw_frame(void)
+{
+	ScePspFVector3 vec;
+
+	sceGuStart(0, disp_list, 0x10000);
+
+	sceGuClear(7);
+
+	sceGumPushMatrix();
+	sceGumLoadIdentity();
+	sceGumTranslate(&pos.trans);
+	vec.x = pos.rot.x * 3.1415927f / 180.0f;
+	vec.y = pos.rot.y * 3.1415927f / 180.0f;
+	vec.z = pos.rot.z * 3.1415927f / 180.0f;
+	sceGumRotateXYZ(&vec);
+
+	DrawData();
+
+	sceGumPopMatrix();
+
+	sceGuDebugPrint(0, 0, 0xffffffff, decode_position);
+
+	sceGuFinish();
+	sceGuSync(0, 0);
+}
 
 void init_all(void) {
     sceGuInit();
