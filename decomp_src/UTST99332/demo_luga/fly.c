@@ -27,7 +27,7 @@ struct ScePspFVector4 { /* size 0x10 */
     float y;
     float z;
     float w;
-};
+} __attribute__((aligned(16)));
 struct ScePspFMatrix4 { /* size 0x40 */
     ScePspFVector4 x;
     ScePspFVector4 y;
@@ -99,13 +99,49 @@ void geColor(unsigned char r, unsigned char g, unsigned char b, unsigned char a)
 void gePop(void);
 void gePush(void);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/fly", post_fly);
+void post_fly(void)
+{
+	int i;
+	geOBJECT *obj;
+
+	for (i = 0; i < 6; i++) {
+		obj = &md->obj[6 + i];
+		obj->motion -= 5;
+		if (obj->motion < 0) {
+			obj->motion = 0;
+		}
+
+		switch (md->walkmode) {
+		case 0:
+			obj->t.z += 6.0f;
+			if (obj->t.z > 10.0f) {
+				obj->motion = 255;
+				obj->t.z -= 200.0f;
+			}
+			break;
+		case 1:
+			obj->t.z -= 6.0f;
+			if (obj->t.z < -200.0f) {
+				obj->motion = 255;
+				obj->t.z = 10.0f;
+			}
+			break;
+		}
+	}
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/fly", init_fly);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/fly", proc_fly);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/fly", draw_fly);
+void draw_fly(void)
+{
+	int i;
+
+	for (i = 0; i < 6; i++) {
+		geObjectDraw(&md->obj[6 + i]);
+	}
+}
 
 INCLUDE_RODATA("tmp/asm/UTST99332/demo_luga/nonmatchings/fly", D_00021150);
 
