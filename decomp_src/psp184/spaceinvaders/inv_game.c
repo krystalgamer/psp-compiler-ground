@@ -560,7 +560,26 @@ void enemy_gp_end(void)
 	}
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", enemy_gp_dead);
+void zako_death(ENEMY *e, int a, int b);
+void enemy_gp_dead(void)
+{
+	int i, j, k;
+	EGROUP *g;
+	ENEMY *e;
+
+	if (gmain.f.f1088 == 0)
+		return;
+	for (i = 0; i < gmain.f.febd94; i++) {
+		g = &egroup[i];
+		if (g->active == 0)
+			return;
+		for (j = 0; j < 4; j++) {
+			e = g->e[j];
+			for (k = 0; k < 11; k++, e++)
+				zako_death(e, 0, 0);
+		}
+	}
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", shield_init);
 
