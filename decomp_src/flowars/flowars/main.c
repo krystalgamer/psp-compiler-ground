@@ -449,7 +449,34 @@ int exit_handler(void) {
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/main", image_load);
+static void image_load()
+{
+	skinManager.load_character(0, l_mod_player.player_party, l_mod_player.player_character);
+	strncpy(g_char_name[0], l_mod_player.player_name, 12);
+	if (mod_game.game_type == 1 && l_mod_player.hidden_game_rest > 0) {
+		if (l_mod_player.hidden_character == 1) {
+			skinManager.load_skin(5, 0);
+			skinManager.load_character(1, 5, 0);
+			strncpy(g_char_name[1], D_00032190, 12);
+			mod_player.hidden1_activated[mod_player.active_player] = 1;
+		} else if (l_mod_player.hidden_character == 2) {
+			skinManager.load_skin(5, 1);
+			skinManager.load_character(1, 5, 1);
+			strncpy(g_char_name[1], D_0003219C, 12);
+			mod_player.hidden2_activated[mod_player.active_player] = 1;
+		}
+		g_hidden_skin_on = 1;
+	} else {
+		skinManager.load_skin(g_opp_party[0], g_opp_char[0]);
+		skinManager.load_character(1, g_opp_party[0], g_opp_char[0]);
+		if (mod_game.game_type == 1 || mod_game.game_type == 2)
+			strncpy(g_char_name[1], enemy_name[g_opp_party[0]][g_opp_char[0]], 12);
+		else
+			strncpy(g_char_name[1], mod_game.opp_name, 12);
+		g_hidden_skin_on = 0;
+	}
+	graphics.load();
+}
 
 INCLUDE_RODATA("tmp/asm/flowars/flowars/nonmatchings/main", D_00030550);
 
