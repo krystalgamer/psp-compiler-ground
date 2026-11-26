@@ -68,6 +68,15 @@ typedef struct {
     int h;
 } RFRAME;
 
+#define FG(b) ((int *)(b)->geom)
+int getFramesetBox();
+void getFrameSizeFromFramesetBox();
+RBOX *getMyRowFrameBorder();
+RBOX *getMyColFrameBorder();
+void setFrameSizeToFramesetBox();
+void initFrameSize();
+void reinitFrameSize();
+
 #define TXT(b) ((RTEXT *)(b)->geom)
 #define FRM(b) ((RFRAME *)(b)->geom)
 
@@ -177,18 +186,144 @@ int GUI_Graphics_getStringSize(int font, char *s, int len, int *w, int *h);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_relayout", terminateLiBox);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_relayout", repositionBox_body);
+int GUI_ScrollPane_isVScrollbarVisible();
+int GUI_ScrollPane_getVScrollbarWidth();
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_relayout", repositionBox_body2);
+void repositionBox_body(RBOX *b, int mode) {
+    RBOX *br;
+    int fs;
+    int idx;
+    int x;
+    int y;
+    int fw;
+    int fh;
+    int sb;
 
-#define FG(b) ((int *)(b)->geom)
-int getFramesetBox();
-void getFrameSizeFromFramesetBox();
-RBOX *getMyRowFrameBorder();
-RBOX *getMyColFrameBorder();
-void setFrameSizeToFramesetBox();
-void initFrameSize();
-void reinitFrameSize();
+    if (b->content != 1) {
+        return;
+    }
+    *(int *)b->unk34 = 0;
+    b->flags40 &= ~1;
+    FG(b)[0x8C / 4] = 0;
+    if (GUI_ScrollPane_isVScrollbarVisible(((int *)b)[0xB]) > 0) {
+        sb = GUI_ScrollPane_getVScrollbarWidth(((int *)b)[0xB]);
+    } else {
+        sb = 0;
+    }
+    sb = sb > 0 ? sb : 0;
+    if (b->parent == NULL) {
+        FG(b)[2] = ((int *)ui_global)[0x88 / 4];
+        FG(b)[3] = ((int *)ui_global)[0x8C / 4];
+        FG(b)[4] = FG(b)[2];
+        FG(b)[5] = FG(b)[3];
+        b->unk18 = FG(b)[2];
+    } else {
+        fs = getFramesetBox(b->parent);
+        if (fs == 0) {
+            return;
+        }
+        idx = FG(b)[9];
+        if (mode == 0) {
+            getFrameSizeFromFramesetBox(&x, &y, &fw, &fh, fs, idx);
+            br = getMyRowFrameBorder(b);
+            if (br != NULL) {
+                br->y = fh - br->unk1C;
+            }
+            br = getMyColFrameBorder(b);
+            if (br != NULL) {
+                br->x = fw - br->unk18;
+            }
+            FG(b)[0] = fw;
+            FG(b)[1] = fh;
+            FG(b)[2] = x;
+            FG(b)[3] = y;
+            FG(b)[4] = FG(b)[2] - sb;
+            FG(b)[5] = FG(b)[3];
+            b->unk18 = FG(b)[2] - sb;
+        } else {
+            x = FG(b)[2];
+            y = FG(b)[3];
+            br = getMyRowFrameBorder(b);
+            if (br != NULL) {
+                y += br->unk1C;
+            }
+            br = getMyColFrameBorder(b);
+            if (br != NULL) {
+                x += br->unk18;
+            }
+            setFrameSizeToFramesetBox(x, y, fs, idx);
+        }
+    }
+    if (b->region != NULL) {
+        lfm_resetPageRegion(b->region, b->unk18 - b->style->unk26 - b->style->unk36 - b->style->unk2E - b->style->unk2A - b->style->unk32 - b->style->unk22);
+    }
+    initBoxList(&FG(b)[0x90 / 4]);
+}
+
+void lfm_resetPageRegion();
+void initBoxList();
+
+void repositionBox_body2(RBOX *b, int mode, int w, int h) {
+    RBOX *br;
+    int fs;
+    int idx;
+    int x;
+    int y;
+    int fw;
+    int fh;
+
+    if (b->content != 1) {
+        return;
+    }
+    *(int *)b->unk34 = 0;
+    b->flags40 &= ~1;
+    FG(b)[0x8C / 4] = 0;
+    if (b->parent == NULL) {
+        FG(b)[2] = w;
+        FG(b)[3] = h;
+        FG(b)[4] = w;
+        FG(b)[5] = h;
+        b->unk18 = FG(b)[2];
+    } else {
+        fs = getFramesetBox(b->parent);
+        if (fs == 0) {
+            return;
+        }
+        idx = FG(b)[9];
+        if (mode == 0) {
+            getFrameSizeFromFramesetBox(&x, &y, &fw, &fh, fs, idx);
+            br = getMyRowFrameBorder(b);
+            if (br != NULL) {
+                br->y = fh - br->unk1C;
+            }
+            br = getMyColFrameBorder(b);
+            if (br != NULL) {
+                br->x = fw - br->unk18;
+            }
+            FG(b)[0] = fw;
+            FG(b)[1] = fh;
+            FG(b)[2] = x;
+            FG(b)[3] = y;
+            b->unk18 = FG(b)[2];
+        } else {
+            x = FG(b)[2];
+            y = FG(b)[3];
+            br = getMyRowFrameBorder(b);
+            if (br != NULL) {
+                y += br->unk1C;
+            }
+            br = getMyColFrameBorder(b);
+            if (br != NULL) {
+                x += br->unk18;
+            }
+            setFrameSizeToFramesetBox(x, y, fs, idx);
+        }
+    }
+    if (b->region != NULL) {
+        lfm_resetPageRegion(b->region, FG(b)[2] - b->style->unk26 - b->style->unk36 - b->style->unk2E - b->style->unk2A - b->style->unk32 - b->style->unk22);
+    }
+    initBoxList(&FG(b)[0x90 / 4]);
+}
 
 void repositionBox_frameset(RBOX *b, int mode) {
     RBOX *parent;
