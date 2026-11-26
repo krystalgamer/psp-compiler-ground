@@ -103,7 +103,32 @@ int pad_read(void);
 /* SDK prototypes (tools/sdk_protos.h) */
 int sceCtrlReadBufferPositive(SceCtrlData *data, int count);
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/pad", pad_circle);
+void change_state(enum matching_room_state state);
+int matching_get_established_num(void);
+int matching_select(int index);
+int matching_cancel(int index);
+
+void pad_circle(void)
+{
+	switch (_mrinfo.state) {
+	case MATCHING_ROOM_TOP:
+		change_state(MATCHING_ROOM_CONNECT_ROOM);
+		break;
+	case MATCHING_ROOM_ROOM_LIST:
+		if (minfo[_mrinfo.v_cursor_pos].status != 0) {
+			matching_select(_mrinfo.v_cursor_pos);
+			change_state(MATCHING_ROOM_REQUESTING);
+		}
+		break;
+	case MATCHING_ROOM_PARENT_WAIT:
+		if (matching_get_established_num() > 0) {
+			change_state(MATCHING_ROOM_PARENT_START_INFORM);
+		}
+		break;
+	default:
+		break;
+	}
+}
 
 void pad_triangle(void) {
     int var_a0;
@@ -116,7 +141,29 @@ void pad_triangle(void) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/pad", pad_cross);
+void pad_cross(void)
+{
+	switch (_mrinfo.state) {
+	case MATCHING_ROOM_SCAN_RESULT:
+		change_state(MATCHING_ROOM_TOP);
+		break;
+	case MATCHING_ROOM_ROOM_LIST:
+	case MATCHING_ROOM_PARENT_WAIT:
+		change_state(MATCHING_ROOM_DISCONNECT);
+		break;
+	case MATCHING_ROOM_REQUESTING:
+	case MATCHING_ROOM_CHILD_WAIT:
+		matching_cancel(_mrinfo.requesting_minfo_id);
+		break;
+	case MATCHING_ROOM_NEIGHBORS:
+	case MATCHING_ROOM_CANCELED:
+	case MATCHING_ROOM_DENIED:
+		change_state(MATCHING_ROOM_ROOM_LIST);
+		break;
+	default:
+		break;
+	}
+}
 
 void pad_square(void) {
     if (_mrinfo.state != MATCHING_ROOM_ROOM_LIST) {
@@ -145,4 +192,63 @@ void pad_down(void) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/pad", pad_read);
+extern u_int32 cont_7D8D4;
+#define cont cont_7D8D4
+
+void game_pad_read(void);
+void game_pad_read_top(void);
+
+int pad_read(void)
+{
+	u_int32 prev = cont;
+	u_int32 padd;
+	SceCtrlData buf;
+
+	sceCtrlReadBufferPositive(&buf, 1);
+	cont = buf.Buttons;
+	padd = cont & (cont ^ prev);
+
+	switch (_mrinfo.state) {
+	case MATCHING_ROOM_GAME:
+		game_pad_read();
+		return 1;
+	case MATCHING_ROOM_CONNECTING_ROOM:
+	case MATCHING_ROOM_CONNECTING_GAME:
+	case MATCHING_ROOM_ERROR_DIALOG:
+		return 1;
+	case MATCHING_ROOM_TOP:
+		if (padd & 1) {
+			return 0;
+		}
+		game_pad_read_top();
+		break;
+	default:
+		break;
+	}
+
+	if (_mrinfo.ignore_pad_input == 1) {
+		_mrinfo.ignore_pad_input = 0;
+		return 1;
+	}
+
+	if (padd & 0x2000) {
+		pad_circle();
+	}
+	if (padd & 0x1000) {
+		pad_triangle();
+	}
+	if (padd & 0x4000) {
+		pad_cross();
+	}
+	if (padd & 0x8000) {
+		pad_square();
+	}
+	if (padd & 0x10) {
+		pad_up();
+	}
+	if (padd & 0x40) {
+		pad_down();
+	}
+
+	return 1;
+}
