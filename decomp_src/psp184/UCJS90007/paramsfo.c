@@ -189,4 +189,75 @@ error:
 	return ret;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/paramsfo", get_paramsfo);
+int sceIoOpen(const char *name, int flag, int mode);
+int sceIoClose(int fd);
+int sceIoRead(int fd, void *buf, unsigned int nbyte);
+void *memcpy(void *d, const void *s, unsigned int n);
+char *strcpy(char *d, const char *s);
+char *strcat(char *d, const char *s);
+void *malloc(unsigned int size);
+void free(void *p);
+int sceIoGetstat(const char *name, struct SceIoStat *stat);
+int sceIoOpen(const char *name, int flag, int mode);
+int sceIoRead(int fd, void *data, unsigned int size);
+int sceIoClose(int fd);
+void *malloc(unsigned int size);
+void free(void *p);
+void *memcpy(void *dst, const void *src, unsigned int n);
+char *strcpy(char *dst, const char *src);
+char *strcat(char *dst, const char *src);
+int get_paramsfo(char *bin_filename)
+{
+	int fd = -1;
+	unsigned int paramsfo_len;
+	int ret;
+	struct SceIoStat iostat;
+	ScePSPBootPackageHeader pbp_header;
+	void *paramsfo = NULL;
+	void *databuf = NULL;
+	char filename[300];
+
+	memset(_info.paramsfo_filename, 0, sizeof(_info.paramsfo_filename));
+	strcpy(filename, "ms0:/");
+	strcat(filename, bin_filename);
+	ret = sceIoGetstat(filename, &iostat);
+	if (ret < 0)
+		goto error;
+	databuf = malloc(iostat.st_size);
+	if (databuf == NULL) {
+		ret = 0x80000022;
+		goto error;
+	}
+	ret = sceIoOpen(filename, 1, 0);
+	if (ret < 0)
+		goto error;
+	fd = ret;
+	ret = sceIoRead(fd, databuf, iostat.st_size);
+	if (ret < 0)
+		goto error;
+	sceIoClose(fd);
+	fd = -1;
+	strcpy(_info.paramsfo_filename, bin_filename);
+	memcpy(&pbp_header, databuf, sizeof(pbp_header));
+	if (((char *)&pbp_header)[0] != 0 || ((char *)&pbp_header)[1] != 'P' || ((char *)&pbp_header)[2] != 'B' || ((char *)&pbp_header)[3] != 'P'
+	    || pbp_header.pg_data_offset - pbp_header.boot_pg_offset > 0x800000) {
+		ret = 0x80410C82;
+		goto error;
+	}
+	paramsfo_len = pbp_header.icon0_offset - pbp_header.param_sfo_offset;
+	paramsfo = malloc(paramsfo_len);
+	if (paramsfo == NULL) {
+		ret = 0x80000022;
+		goto error;
+	}
+	memcpy(paramsfo, (char *)databuf + sizeof(pbp_header), paramsfo_len);
+	ret = parse_paramsfo(paramsfo);
+error:
+	if (fd >= 0)
+		sceIoClose(fd);
+	if (paramsfo != NULL)
+		free(paramsfo);
+	if (bin_filename != NULL && databuf != NULL)
+		free(databuf);
+	return ret;
+}
