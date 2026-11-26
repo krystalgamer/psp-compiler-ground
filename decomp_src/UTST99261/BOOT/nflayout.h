@@ -77,13 +77,28 @@ typedef struct {
 } LOGLOBAL;
 
 typedef struct {
-    u8 unk0[0x24];
-    int unk24;
+    u8 unk0[0x10];
+    int unk10;
+    u8 unk14[0x10];
+    int unk24;                  /* 0x24: font index */
+    u8 unk28[0x20];
+    int unk48;
+    int unk4C;
+    int unk50;
+    int unk54;
+    int unk58;
 } PREFUI;
 
 typedef struct {
     int color[4][7];
-    u8 unk70[0x20];
+    int font;                   /* 0x70 */
+    int unk74;
+    int unk78;
+    int unk7C;
+    int unk80;
+    int unk84;
+    int unk88;
+    int unk8C;
     int unk90;
     int unk94;
     int unk98;

@@ -239,7 +239,49 @@ void setUiGlobal_window(void) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/layoutMain", setUiGlobal_browser);
+int GUI_Graphics_getStringSize(int font, char *s, int len, int *w, int *h);
+
+void setUiGlobal_browser(void) {
+    PREFUI *pref;
+    int w;
+    int h;
+    int mode;
+
+    pref = gPREF_UI;
+    if (pref == NULL) {
+        return;
+    }
+    ui_global->font = pref->unk24;
+    if (ui_global->font > 6) {
+        ui_global->font = 6;
+    }
+    if (ui_global->font < 0) {
+        ui_global->font = 0;
+    }
+    GUI_Graphics_getStringSize(ui_global->color[0][ui_global->font], "m", 1, &w, &h);
+    ui_global->unk74 = w;
+    ui_global->unk78 = pref->unk4C;
+    mode = pref->unk10;
+    switch (mode) {
+    case 0:
+        ui_global->unk7C = 25;
+        break;
+    case 1:
+        ui_global->unk7C = 50;
+        break;
+    case 2:
+        ui_global->unk7C = 75;
+        break;
+    default:
+        ui_global->unk7C = 100;
+        break;
+    }
+    ui_global->unk80 = mode;
+    ui_global->unk84 = pref->unk48;
+    ui_global->unk88 = pref->unk50;
+    ui_global->unk8C = pref->unk54;
+    ui_global->unk98 = pref->unk58;
+}
 
 void setLoGlobal(void) {
     PREFUI *pref;
