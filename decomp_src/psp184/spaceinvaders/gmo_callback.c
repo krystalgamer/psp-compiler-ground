@@ -83,7 +83,29 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_callback", open_clust
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_callback", close_cluster);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_callback", alloc_from_cluster);
+extern __typeof__(g_alloc_memory) g_alloc_memory_836CC;
+#define g_alloc_memory g_alloc_memory_836CC
+extern __typeof__(g_cluster_curr) g_cluster_list;
+#define g_cluster_curr g_cluster_list
+void *alloc_from_cluster( int type, size_t size )
+{
+	{if ( size == 0 ) {return 0 ;}}
+	// Cluster *curr = g_cluster_list[ type ] ;	// 1.5.0 and before
+	Cluster *curr = g_cluster_curr[ type ] ;	// 2.0.0
+	{if ( curr != 0 ) {{
+		int mask = curr->m_mask ;
+		size = ( size + mask ) & ~mask ;
+		char *top = curr->m_top ;
+		{if ( curr->m_end >= top + size ) {{
+			curr->m_count ++ ;
+			curr->m_top = top + size ;
+			return top ;
+		}}}
+	}}}
+	return g_alloc_memory[ type ]( size ) ;
+}
+#undef g_alloc_memory
+#undef g_cluster_curr
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_callback", free_from_cluster);
 

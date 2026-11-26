@@ -162,9 +162,17 @@ int sceGimPictureGetPaletteFrame( SceGimPicture *picture )
  return picture->m_palette_frame ;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gim_picture", sceGimPictureSetPaletteFrame2);
+void sceGimPictureSetPaletteFrame2( SceGimPicture *picture, int frame )
+{
+	{if ( picture == 0 ) {return ;}}
+	picture->m_palette_frame = frame ;
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gim_picture", sceGimPictureGetPaletteFrame2);
+int sceGimPictureGetPaletteFrame2( SceGimPicture *picture )
+{
+	{if ( picture == 0 ) {return 0 ;}}
+	return picture->m_palette_frame ;
+}
 
 void sceGimPictureSetDissolve( SceGimPicture *picture, float dissolve )
 {

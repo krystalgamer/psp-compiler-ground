@@ -282,6 +282,25 @@ int readPspStream(SceMpegRingbuffer *pRB) {
     return var_v1;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/mpeg/mpeg_main", startCheck);
+int dispbuf_getCapacity(t_displayBuffer *pDisp);
+int soundbuf_getCapacity(t_soundBuffer *pSound);
+static SceInt32 startCheck(t_avSyncControl *pAvSync, SceMpegRingbuffer *pRB, SceInt32 filesize, SceInt32 demuxsize)
+{
+	SceInt32 ret;
+
+	ret = -1;
+
+	if (audioFlag == 1) {
+		if (dispbuf_getCapacity(pAvSync->pDisp) == 0 && soundbuf_getCapacity(pAvSync->pSound) == 0 && (sceMpegRingbufferAvailableSize(pRB) == 0 || demuxsize == filesize)) {
+			ret = 0;
+		}
+	} else {
+		if (dispbuf_getCapacity(pAvSync->pDisp) == 0 && (sceMpegRingbufferAvailableSize(pRB) == 0 || demuxsize == filesize)) {
+			ret = 0;
+		}
+	}
+
+	return ret;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/mpeg/mpeg_main", playMovie);
