@@ -84,7 +84,7 @@ void sceGuSpecular(float power);
 void sceGuLight(int light, int type, int components, const ScePspFVector3 *position);
 void sceGuLightColor(int light, int component, unsigned int color);
 void sceGuLightAtt(int light, float atten0, float atten1, float atten2);
-void sceGuLightSpot(int light, const ScePspFVector3 *direction, float exponent, float cutoff);
+void sceGuLightSpot(int light, float exponent, float cutoff, const ScePspFVector3 *direction);
 int sceCtrlReadBufferPositive(SceCtrlData *data, int count);
 
 extern LIGHT_INFO spots[3];
@@ -172,8 +172,6 @@ static void light_update(void)
 	}
 }
 
-#ifdef NON_MATCHING
-/* Close: argument setup for mult_matvec and sceGuLightSpot is scheduled differently. */
 static void draw_frame(void)
 {
 	ScePspFVector3 vec;
@@ -215,7 +213,7 @@ static void draw_frame(void)
 		vec2.z = -spots[i].dir.z;
 		vec2.w = 0.0f;
 		mult_matvec(&m, &vec2, &vec);
-		sceGuLightSpot(i, &vec, spots[i].exp, cosf(spots[i].cut * 3.1415927f / 180.0f));
+		sceGuLightSpot(i, spots[i].exp, cosf(spots[i].cut * 3.1415927f / 180.0f), &vec);
 		if (line_flag) {
 			sceGuColor(spots[i].diff);
 			sceGumDrawArray(1, 0x180, 2, NULL, &spots[i].pos);
@@ -226,9 +224,6 @@ static void draw_frame(void)
 	sceGuFinish();
 	sceGuSync(0, 0);
 }
-#else
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_spots/nonmatchings/main", draw_frame);
-#endif
 
 static void init_light(void)
 {
@@ -248,7 +243,7 @@ static void init_light(void)
 		dir.x = -spots[i].dir.x;
 		dir.y = -spots[i].dir.y;
 		dir.z = -spots[i].dir.z;
-		sceGuLightSpot(i, &dir, spots[i].exp, cosf(spots[i].cut * 3.1415927f / 180.0f));
+		sceGuLightSpot(i, spots[i].exp, cosf(spots[i].cut * 3.1415927f / 180.0f), &dir);
 		sceGuLightAtt(i, spots[i].atte[0], spots[i].atte[1], spots[i].atte[2]);
 		sceGuEnable(11 + i);
 	}
