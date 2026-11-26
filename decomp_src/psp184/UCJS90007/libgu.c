@@ -10,6 +10,7 @@
    braces around every if/while/for/do/switch statement and body are the block scopes
    gcc 3.3 adds in C99 mode (c-parse.in c99_block_start), made explicit for a C89 compile. */
 /* cflags: -O3 */
+/* data-align: 16 */
 #include "libgu_sdk.h"
 
 static const unsigned char __psp_libinfo__[24] __attribute__((used)) = "Lib-PSP libgu       ....";
