@@ -385,6 +385,8 @@ static void graphic_init();
 SceGimPicture *load_picture(int index, int *buff, int size);
 void sceGimPictureSetFrame(SceGimPicture *picture, float frame);
 void sceGimPictureActivate(SceGimPicture *picture);
+void printhanln(int ax, int ay, int color, const char *str);
+void printwanln(int ax, int ay, int color, const char *str);
 void sceGimPictureAnimate(SceGimPicture *picture, float time);
 static void draw_sprite2(int x, int y, int w, int h, int ix, int iy, int flip);
 static void draw_black_back(int x, int y, int w, int h, unsigned int col);
@@ -410,7 +412,9 @@ static void draw_opp_collection1(void);
 static void draw_cursor(int cursor_pos);
 static void init_animation(int ani);
 static int draw_animation(int ani, int x, int y, int flag_loop);
-static int sceGimImageGetFrameCount(const SceGimImageHeader *image);
+static __inline__ int sceGimImageGetFrameCount(const SceGimImageHeader *image);
+SceGimImageHeader *sceGimPictureGetImage(SceGimPicture *picture);
+float sceGimPictureGetFrame(SceGimPicture *picture);
 static void draw_loading(int alpha);
 static void graphic_destroy();
 static void draw_dialog_box(int dlgnum, int *p);
@@ -612,7 +616,34 @@ void init_animation(int ani) {
 
 __asm__(".globl init_animation");
 
-INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/draw", draw_animation);
+static __inline__ int sceGimImageGetFrameCount(const SceGimImageHeader *image)
+{
+	return image->frame_count;
+}
+
+static int draw_animation(int ani, int x, int y, int flag_loop)
+{
+	SceGimImageHeader *h;
+	int totalframes;
+	int continued;
+
+	h = sceGimPictureGetImage(g_animation[ani]);
+	totalframes = sceGimImageGetFrameCount(h);
+	if (sceGimPictureGetFrame(g_animation[ani]) < totalframes - 1) {
+		continued = 1;
+		sceGimPictureAnimate(g_animation[ani], g_ani_param[ani].step);
+	} else {
+		continued = 0;
+		if (flag_loop)
+			sceGimPictureAnimate(g_animation[ani], g_ani_param[ani].step);
+	}
+	sceGimPictureActivate(g_animation[ani]);
+	sceGuColor(0xFFFFFFFF);
+	draw_sprite(x, y, g_ani_param[ani].width, g_ani_param[ani].height, 0);
+	return continued;
+}
+
+__asm__(".globl draw_animation");
 
 INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/draw", draw_loading);
 
@@ -680,7 +711,12 @@ void fade_out(unsigned int alpha)
 
 __asm__(".globl fade_out");
 
-INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/draw", draw_char_name);
+static void draw_char_name(int x, int y, const char *cname)
+{
+	printhanln(x, y, 0xFF000000, cname);
+}
+
+__asm__(".globl draw_char_name");
 
 static void draw_all_in(int flagPlayer)
 {
@@ -706,7 +742,19 @@ __asm__(".globl draw_all_in");
 
 INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/draw", draw_save);
 
-INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/draw", show_warning);
+static void show_warning(const char *msg, unsigned int alpha)
+{
+	sceGimPictureActivate(g_img_warning);
+	if (alpha >= 20)
+		alpha = 255;
+	alpha <<= 24;
+	sceGuColor(alpha | 0xFFFFFF);
+	draw_sprite(152, 98, 176, 76, 0);
+	printwanln(165, 130, alpha, msg);
+	sceGuColor(0xFFFFFFFF);
+}
+
+__asm__(".globl show_warning");
 
 void draw_error(signed char *msg) {
     draw_black_back(0, 0, 0x1E0, 0x110, 0x5FFFFFFFU);
