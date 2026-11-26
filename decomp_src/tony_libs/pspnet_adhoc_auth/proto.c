@@ -5,7 +5,63 @@
 #include "adhoc_auth.h"
 /* --- end declarations --- */
 
-INCLUDE_ASM("tmp/asm/tony_libs/pspnet_adhoc_auth/nonmatchings/proto", func_00002224);
+void func_00002224(AuthCtx *ctx, char *buf, int len)
+{
+	struct authhdr *h;
+	unsigned short l;
+	int locked;
+	Peer *peer;
+	int r;
+
+	if (memcmp(ctx->mac.data, buf + 6, 6) == 0)
+		return;
+	h = (struct authhdr *)(buf + 0x10);
+	if (h->ver != 1)
+		return;
+	if (h->type == 0 || h->type > 8)
+		return;
+	memcpy(&l, h->len, 2);
+	l = ntohs16(l);
+	if (l != D_00003E80[h->type])
+		return;
+	if (len < l + 0x14)
+		return;
+	locked = func_00003968();
+	peer = func_000037C0(ctx, (unsigned char *)buf + 6);
+	switch (h->type) {
+	case 2:
+		func_00002458(ctx, peer, buf);
+		break;
+	case 3:
+		func_000026F8(ctx, peer, buf);
+		break;
+	case 4:
+		func_00002C44(ctx, peer, buf);
+		break;
+	case 5:
+		func_00002EE0(ctx, peer, buf);
+		break;
+	case 6:
+		func_00003188(ctx, peer, buf);
+		break;
+	case 7:
+		if (peer == 0)
+			break;
+		if (memcmp(buf, D_00003E78, 6) == 0)
+			r = sceMemab_driver_4DF566D3(&peer->sa, 0, 0, buf + 0x14, 0, 0);
+		else
+			r = sceMemab_driver_B54E1AA7(&peer->sa, 0, 0, buf + 0x14, 0, 0);
+		if (r < 0)
+			break;
+		func_00003818(ctx, peer, 0);
+		func_00003580(ctx, peer);
+		break;
+	case 8:
+		func_00003330(ctx, peer, buf);
+		break;
+	}
+	func_000039C4(locked);
+}
 
 INCLUDE_ASM("tmp/asm/tony_libs/pspnet_adhoc_auth/nonmatchings/proto", func_00002458);
 

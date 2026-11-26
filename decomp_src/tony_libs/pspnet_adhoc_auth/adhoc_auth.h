@@ -93,6 +93,17 @@ struct mbuf {
 
 extern const unsigned short D_00003E80[];
 
+static inline unsigned short ntohs16(unsigned short x)
+{
+	return __builtin_allegrex_wsbh(x);
+}
+
+struct authhdr {
+	unsigned char ver;
+	unsigned char type;
+	unsigned char len[2];
+};
+
 struct authpkt {
 	unsigned char eh[0x14];
 	unsigned char hdr[0x20];
@@ -254,6 +265,13 @@ void func_00001BA4(AuthCtx *ctx, Peer *peer);
 void func_00001DA0(AuthCtx *ctx, Peer *peer);
 void func_00001F2C(AuthCtx *ctx);
 void func_00002224(AuthCtx *ctx, char *buf, int len);
+void func_00002458(AuthCtx *ctx, Peer *peer, char *pkt);
+void func_000026F8(AuthCtx *ctx, Peer *peer, char *pkt);
+void func_00002C44(AuthCtx *ctx, Peer *peer, char *pkt);
+void func_00002EE0(AuthCtx *ctx, Peer *peer, char *pkt);
+void func_00003188(AuthCtx *ctx, Peer *peer, char *pkt);
+void func_00003330(AuthCtx *ctx, Peer *peer, char *pkt);
+Peer *func_000037C0(AuthCtx *ctx, const unsigned char *mac);
 struct mbuf *func_000020B8(AuthCtx *ctx, unsigned char type, const void *data);
 void func_00003580(AuthCtx *ctx, Peer *peer);
 void func_00003818(AuthCtx *ctx, Peer *peer, int state);
