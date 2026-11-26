@@ -31,6 +31,9 @@ void classic_inv_shotsub(int a, int b, int c, int d, int e, int f, int g, int h,
 typedef struct { int f0; int f4; int f8; int fC; int f10; int f14; int f18; int f1C; } SEXP_T;
 typedef struct { int f0, f4, f8, fc, f10, f14, f18, f1c, f20, f24, f28, f2c, f30, f34, f38, f3c, f40, f44; } SPR_T;
 extern SPR_T *spr[];
+#define ABS(x) ((x) < 0 ? -(x) : (x))
+#define SPR_NEXT(s) (*(SPR_T **)((u8 *)(s) + 0x94))
+SPR_T *SprHeadGet(void);
 
 extern int classic_fade_x;
 extern int D_0039AED0;
@@ -82,9 +85,6 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_shima", ScoreAdd);
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_shima", BoxAtari_z);
 
-#define ABS(x) ((x) < 0 ? -(x) : (x))
-#define SPR_NEXT(s) (*(SPR_T **)((u8 *)(s) + 0x94))
-SPR_T *SprHeadGet(void);
 void ScoreAdd(SPR_T *s);
 extern int rt;
 int BoxAtari_e(int side, int x, int y, int w, int h)
