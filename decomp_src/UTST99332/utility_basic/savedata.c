@@ -181,7 +181,7 @@ extern const char D_00016714[]; /* "SLPS10000" (shared rodata) */
 extern const char D_00016720[]; /* "0000" */
 extern const char D_00016728[]; /* "%s" */
 extern const char D_0001672C[]; /* "DATA.BIN" */
-void *memcpy(void *dst, const void *src, unsigned long n); /* SDK size_t is unsigned long: not the builtin */
+void memcpy(void *dst, const void *src, unsigned long n); /* matches only as non-builtin returning void */
 void *memset(void *s, int c, unsigned int n);
 int sprintf(char *buf, const char *fmt, ...);
 
@@ -320,7 +320,18 @@ void set_param_listdelete(SceUtilitySavedataParam *pParam)
 	pParam->pUserIds = _listUserDirName;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/utility_basic/nonmatchings/savedata", set_params);
+unsigned int strlen(const char *s);
+
+static void set_params(SceUtilitySavedataParam *pUtil)
+{
+	SceUtilitySDSystemFileParam *pSysf = &pUtil->systemFile;
+
+	memcpy(pSysf->title, _sd_strings[0], strlen(_sd_strings[0]) + 1);
+	memcpy(pSysf->savedataTitle, _sd_strings[1], strlen(_sd_strings[1]) + 1);
+	memcpy(pSysf->detail, _sd_strings[2], strlen(_sd_strings[2]) + 1);
+
+	pSysf->parentalLev = 1;
+}
 
 void set_icon0(SceUtilitySavedataParam *pParam)
 {
@@ -361,7 +372,28 @@ void set_newdata_item(SceUtilitySavedataParam *pParam)
 	pParam->pNewData = &_newData;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/utility_basic/nonmatchings/savedata", set_param_sizes);
+void set_param_sizes(SceUtilitySavedataParam *pParam)
+{
+	memset(&_msFreeSize, 0, sizeof(_msFreeSize));
+	memset(&_msDataSize, 0, sizeof(_msDataSize));
+	memset(&_utilityDataSize, 0, sizeof(_utilityDataSize));
+
+	pParam->pMs = &_msFreeSize;
+	pParam->pMsData = &_msDataSize;
+	{
+		int len;
+
+		memcpy(pParam->pMsData->titleId, D_00016714, 9);
+		pParam->pMsData->titleId[9] = 0;
+
+		memcpy(pParam->pMsData->userId, D_00016720, 4);
+		pParam->pMsData->userId[4] = 0;
+	}
+
+	pParam->pUtilityData = &_utilityDataSize;
+
+	set_param_save(pParam);
+}
 
 INCLUDE_RODATA("tmp/asm/UTST99332/utility_basic/nonmatchings/savedata", D_00016714);
 
