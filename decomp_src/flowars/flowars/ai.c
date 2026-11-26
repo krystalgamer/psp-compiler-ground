@@ -271,4 +271,123 @@ int get_pae_priority(int pae) {
 
 INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/ai", set_priority);
 
-INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/ai", judge);
+static int judge(int flagPlayer)
+{
+	int index, i, max, retVal = -1;
+	int pae, kind;
+	int *hand = flagPlayer == 0 ? g_my_hand : g_opp_hand[0];
+	int oppPlayer = flagPlayer == 0;
+	int pan_cnt;
+	int ps[4] = { 0 };
+
+
+	set_priority(flagPlayer);
+	int cnt = count_array(hand, 10);
+
+	int min = 1998, pr1, pr2;
+
+	for (i = 0; i < cnt; i++) {
+		pae = hand[i];
+		kind = paeManager.get_pae_kind(pae);
+		if (handManager.is_fixed(flagPlayer, kind) == 1) {
+			pr1 = g_try_priority[pae];
+			pan_cnt = panManager.get_kind(kind, ps);
+			for (index = 0; index < pan_cnt; index++) {
+				pae = ps[index];
+				pr2 = g_try_priority[pae];
+
+				if (pr1 + pr2 < min) {
+					min = pr1 + pr2;
+					retVal = i;
+				}
+			}
+		}
+	}
+
+	if (min < 1998)
+		return retVal;
+
+
+	min = 1998;
+	for (i = 0; i < cnt; i++) {
+		pae = hand[i];
+		kind = paeManager.get_pae_kind(pae);
+		if (handManager.is_fixed(flagPlayer, kind) == 2) {
+			pr1 = g_try_priority[pae];
+			pan_cnt = panManager.get_kind(kind, ps);
+			for (index = 0; index < pan_cnt; index++) {
+				pae = ps[index];
+				pr2 = g_try_priority[pae];
+
+				if (pr1 + pr2 < min) {
+					min = pr1 + pr2;
+					retVal = i;
+				}
+			}
+		}
+	}
+
+	if (min < 1998)
+		return retVal;
+
+
+
+	for (i = 0, max = 0; i < cnt; i++) {
+		pae = hand[i];
+		kind = paeManager.get_pae_kind(pae);
+
+		if (kind == 13)
+			return i;
+
+		if (handManager.count_kind(flagPlayer, kind) == 2) {
+
+			if (collectManager.count_kind(flagPlayer, kind) + collectManager.count_kind(oppPlayer, kind) == 2) {
+				if (max < g_try_priority[pae]) {
+					max = g_try_priority[pae];
+					retVal = i;
+				}
+			}
+		}
+	}
+
+	if (max > 0)
+		return retVal;
+
+
+	for (i = 0, max = 0; i < cnt; i++) {
+		pae = hand[i];
+		kind = paeManager.get_pae_kind(pae);
+
+		if (kind == 14)
+			return i;
+
+		if (collectManager.count_kind(flagPlayer, kind) + collectManager.count_kind(oppPlayer, kind) == 2) {
+			if (max < g_try_priority[pae]) {
+				max = g_try_priority[pae];
+				retVal = i;
+			}
+		}
+	}
+
+	if (max > 0)
+		return retVal;
+
+
+	for (i = 0, max = 0; i < cnt; i++) {
+		int pae = hand[i];
+		if (!handManager.is_fixed(flagPlayer, paeManager.get_pae_kind(pae))) {
+			if (max < g_try_priority[pae]) {
+				max = g_try_priority[pae];
+				retVal = i;
+			}
+		}
+	}
+
+	if (max > 0)
+		return retVal;
+
+	return rand() % cnt;
+}
+
+__asm__(".globl judge");
+
