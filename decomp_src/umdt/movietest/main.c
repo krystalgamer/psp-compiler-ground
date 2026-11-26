@@ -13,6 +13,25 @@ extern int _productMode;
 extern int playInfo;
 extern char D_00006CC4[]; /* "fatal error : sceIoLseek()\n", shared with MovieTest */
 
+extern SceChar8 *dispbuf;
+extern int audioFlag;
+
+typedef struct {
+	SceUInt32 low;
+	SceUInt32 hi;
+} SceKernelSysClock;
+
+typedef struct {
+	SceMpegStream *avcStream;
+	SceMpegAu *avcAu;
+	SceMpegStream *atracStream;
+	SceMpegAu *atracAu;
+} t_streams;
+
+SceUID sceKernelCreateVTimer(const char *name, void *opt);
+int sceKernelStartVTimer(SceUID uid);
+int sceKernelGetVTimerTime(SceUID uid, SceKernelSysClock *clock);
+int sceKernelDeleteVTimer(SceUID uid);
 SceInt32 dispbuf_getCapacity(t_displayBuffer *pDisp);
 SceInt32 dispbuf_setStartFlag(t_displayBuffer *pDisp);
 
@@ -57,7 +76,132 @@ INCLUDE_RODATA("tmp/asm/umdt/movietest/nonmatchings/main", D_00006D24);
 
 INCLUDE_RODATA("tmp/asm/umdt/movietest/nonmatchings/main", D_00006D38);
 
-INCLUDE_ASM("tmp/asm/umdt/movietest/nonmatchings/main", playMovie);
+static SceInt32 playMovie(SceMpeg *mpeg, SceMpegRingbuffer *ringbuf, t_streams *streams, t_displayBuffer *pDisp, void *pRing, t_soundBuffer *pSound)
+{
+	SceInt32 unused0;
+	SceInt32 retAvc;
+	SceInt32 retAtrac;
+	SceInt32 unused1;
+	SceInt32 avcAttr;
+	SceInt32 ret2;
+	SceVoid *atracBody;
+	SceInt32 iNum;
+	SceChar8 *soundBuf;
+	SceChar8 *dispBuf;
+	SceInt32 initFlag;
+	SceInt32 ret;
+	SceInt32 end;
+	SceUID vtimer;
+	SceKernelSysClock clock;
+	char msg[112];
+
+	end = 0;
+	clock.low = 0;
+	clock.hi = 0;
+	unused0 = 0;
+	unused1 = 0;
+	retAvc = -1;
+	retAtrac = -1;
+	initFlag = 1;
+	vtimer = sceKernelCreateVTimer("movie timer", NULL);
+	sceKernelStartVTimer(vtimer);
+	while (!end) {
+		end = pad_read();
+		if (end && playInfo == 10 && _productMode == 1) {
+			sceKernelGetVTimerTime(vtimer, &clock);
+			sprintf(msg, "%08X %08X\n", clock.hi, clock.low);
+			sceIoWrite(0, msg, strlen(msg));
+			if (clock.low < 3000000) {
+				end = 0;
+				playInfo = 0;
+			}
+		}
+		startCheck(pDisp, pSound, pRing);
+		if (read_isEnd(pRing) == 1 && sceMpegRingbufferAvailableSize(ringbuf) == 320) {
+			end = 0;
+			break;
+		}
+		if (audioFlag == 1 && soundbuf_getCapacity(pSound) > 0) {
+			retAtrac = sceMpegGetAtracAu(mpeg, streams->atracStream, streams->atracAu, &atracBody);
+			if (retAtrac == 0) {
+				soundbuf_getDrawbuf(pSound, &soundBuf);
+				ret = sceMpegAtracDecode(mpeg, streams->atracAu, soundBuf, initFlag);
+				if (ret != 0) {
+					sprintf(msg, "fatal error : sceMpegAtracDecode() %x\n", ret);
+					sceIoWrite(0, msg, strlen(msg));
+					end = -1;
+					goto out;
+				}
+				if (initFlag == 0)
+					soundbuf_setBuf(pSound);
+				initFlag = 0;
+				retAtrac = -1;
+			} else {
+				if (!read_isFull(pRing))
+					read_decode_sleep(pRing);
+			}
+		} else {
+			if (!read_isFull(pRing))
+				read_decode_sleep(pRing);
+		}
+		if (dispbuf_getCapacity(pDisp) > 0) {
+			retAvc = sceMpegGetAvcAu(mpeg, streams->avcStream, streams->avcAu, &avcAttr);
+			if (retAvc == 0) {
+				dispbuf_getDrawbuf(pDisp, &dispBuf);
+				dispbuf = dispBuf;
+				ret = sceMpegAvcDecode(mpeg, streams->avcAu, 512, &dispbuf, &iNum);
+				if (ret != 0) {
+					sprintf(msg, "fatal error : sceMpegAvcDecode() %d\n", ret);
+					sceIoWrite(0, msg, strlen(msg));
+					end = -1;
+					goto out;
+				}
+				if (iNum == 1) {
+					dispbuf_dataSet(pDisp);
+					retAvc = -1;
+				}
+			} else if (retAvc != 0x80618001) {
+				sprintf(msg, "fatal error : sceMpegGetAvcAu () %x\n", retAvc);
+				sceIoWrite(0, msg, strlen(msg));
+				end = -1;
+				goto out;
+			} else {
+				if (!read_isFull(pRing))
+					read_decode_sleep(pRing);
+			}
+		} else {
+			if (!read_isFull(pRing))
+				read_decode_sleep(pRing);
+		}
+		if (!read_isFull(pRing))
+			read_decode_sleep(pRing);
+	}
+	dispbuf_setStartFlag(pDisp);
+	read_setDemuxEnd(pRing);
+	if (audioFlag)
+		soundbuf_setDemuxEnd(pSound);
+	while (1) {
+		ret2 = dispbuf_getDrawbuf(pDisp, &dispBuf);
+		if (ret2 > 0) {
+			dispbuf = dispBuf;
+			ret = sceMpegAvcDecodeStop(mpeg, 512, &dispbuf, &iNum);
+			if (ret != 0) {
+				sprintf(msg, "fatal error : sceMpegGetAvcDecodeStop() %x\n", ret);
+				sceIoWrite(0, msg, strlen(msg));
+				end = -1;
+				goto out;
+			}
+			if (iNum > 0)
+				dispbuf_dataSet(pDisp);
+			break;
+		}
+		dispbuf_decode_sleep(pDisp);
+	}
+	dispbuf_setDemuxEnd(pDisp);
+out:
+	sceKernelDeleteVTimer(vtimer);
+	return end;
+}
 
 static SceInt32 readHeader(SceMpeg *mpeg, SceUID fd, SceInt32 *size, SceInt32 *offset)
 {
