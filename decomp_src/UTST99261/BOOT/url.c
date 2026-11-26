@@ -157,7 +157,117 @@ INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/url", D_001322FC);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/url", toAbsoluteURL);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/url", URL_new);
+typedef struct {
+    char *scheme;
+    int schemeLen;
+    char *host;
+    int hostLen;
+    char *port;
+    int portLen;
+    char *path;
+    int pathLen;
+    char *query;
+    int queryLen;
+    char *frag;
+    int fragLen;
+} URLPARTS;
+
+extern char D_001322F4[];
+void *MEM_calloc(void *pool, unsigned int n);
+void URL_splitURL(URLPARTS *p, char *s);
+long strtol(const char *s, char **end, int base);
+char *strcat(char *d, const char *s);
+
+URL *URL_new(char *s) {
+    URL *u;
+    char *t;
+    URLPARTS p;
+    char c;
+
+    if (s == NULL || (u = MEM_malloc(NULL, sizeof(URL))) == NULL) {
+        return NULL;
+    }
+    u->scheme = NULL;
+    u->host = NULL;
+    u->port = 0;
+    u->path = NULL;
+    u->query = NULL;
+    u->frag = NULL;
+    t = trimspace(s);
+    if (t == NULL) {
+        goto fail;
+    }
+    URL_splitURL(&p, t);
+    if (p.scheme != NULL) {
+        u->scheme = MEM_calloc(NULL, p.schemeLen + 2);
+        if (u->scheme == NULL) {
+            goto fail;
+        }
+        memcpy(u->scheme, p.scheme, p.schemeLen);
+        strcat(u->scheme, D_001322F4);
+    }
+    if (p.host != NULL) {
+        u->host = MEM_malloc(NULL, p.hostLen + 1);
+        if (u->host == NULL) {
+            goto fail;
+        }
+        memcpy(u->host, p.host, p.hostLen);
+        u->host[p.hostLen] = 0;
+    }
+    if (p.port != NULL) {
+        c = p.port[p.portLen];
+        p.port[p.portLen] = 0;
+        u->port = strtol(p.port, NULL, 10);
+        p.port[p.portLen] = c;
+    }
+    if (p.path != NULL) {
+        u->path = MEM_malloc(NULL, p.pathLen + 1);
+        if (u->path == NULL) {
+            goto fail;
+        }
+        memcpy(u->path, p.path, p.pathLen);
+        u->path[p.pathLen] = 0;
+    }
+    if (p.query != NULL) {
+        u->query = MEM_malloc(NULL, p.queryLen + 1);
+        if (u->query == NULL) {
+            goto fail;
+        }
+        memcpy(u->query, p.query, p.queryLen);
+        u->query[p.queryLen] = 0;
+    }
+    if (p.frag != NULL) {
+        u->frag = MEM_malloc(NULL, p.fragLen + 1);
+        if (u->frag == NULL) {
+            goto fail;
+        }
+        memcpy(u->frag, p.frag, p.fragLen);
+        u->frag[p.fragLen] = 0;
+    }
+    MEM_free(NULL, t);
+    return u;
+fail:
+    if (u->scheme != NULL) {
+        MEM_free(NULL, u->scheme);
+    }
+    if (u->host != NULL) {
+        MEM_free(NULL, u->host);
+    }
+    if (u->path != NULL) {
+        MEM_free(NULL, u->path);
+    }
+    if (u->query != NULL) {
+        MEM_free(NULL, u->query);
+    }
+    if (u->frag != NULL) {
+        MEM_free(NULL, u->frag);
+    }
+    if (t != NULL) {
+        MEM_free(NULL, t);
+    }
+    MEM_free(NULL, u);
+    return NULL;
+}
 
 void URL_free(URL *u) {
     if (u->scheme != NULL) {
