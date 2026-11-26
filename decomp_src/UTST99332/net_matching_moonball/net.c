@@ -420,8 +420,6 @@ static int check_error_dialog_closed(void)
 	return 0;
 }
 
-#ifdef NON_MATCHING
-/* the closing state check falls through into the call in the original */
 int net_update(void)
 {
 	switch (_mrinfo.state) {
@@ -456,10 +454,9 @@ int net_update(void)
 		net_update_multi_player();
 		break;
 	}
-	if ((unsigned int)_mrinfo.state >= MATCHING_ROOM_ROOM_LIST)
-		check_adhocctl_connected_error();
+	if (_mrinfo.state < MATCHING_ROOM_ROOM_LIST)
+		goto END;
+	check_adhocctl_connected_error();
+END:
 	return 0;
 }
-#else
-INCLUDE_ASM("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/net", net_update);
-#endif
