@@ -1,5 +1,6 @@
 /* cflags: -O1 */
 #include "common.h"
+#include "parse_hist.h"
 #include "m2c_macros.h"
 int HST_getHeadHistoryNode();                       /* extern */
 int HST_getHistoryWithOffset(M2C_UNK);              /* extern */
@@ -8,14 +9,108 @@ M2C_UNK parseRoundHistoryNode(int, int);            /* extern */
 
 M2C_UNK HST_moveBackHistory();                      /* extern */
 M2C_UNK HST_moveFrontHistory();                     /* extern */
-M2C_UNK parseHST_deleteHistoryNode(M2C_UNK, M2C_UNK); /* extern */
 
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parseHistory", parseFreeItem);
+void parseFreeItem(HstNode *n) {
+    void **css;
+    void **nx;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parseHistory", parseDeleteHistoryItem);
+    if (n == NULL) {
+        return;
+    }
+    MEM_free(0, n->s08.p);
+    n->s08.p = NULL;
+    n->s08.len = 0;
+    MEM_free(0, n->s20.p);
+    n->s20.p = NULL;
+    n->s20.len = 0;
+    MEM_free(0, n->s28.p);
+    n->s28.p = NULL;
+    n->s28.len = 0;
+    n->xA4 = 0;
+    for (css = n->css; css != NULL; css = nx) {
+        nx = css[8];
+        CSS2_freeCSSStyleSheet(css);
+    }
+    n->css = NULL;
+    if (n->doc != NULL) {
+        Util_DOMAPI_DeleteHTMLDOMImplementation(Document_getImplementation(n->doc));
+        DOMAPI_Finalize();
+        n->doc = NULL;
+    }
+    if (HST_deleteJSURI(n) == 0) {
+        n->x74 = 0;
+        n->x78 = 0;
+    }
+    if (HST_deleteCSSURI(n) == 0) {
+        n->x7C = 0;
+        n->x80 = 0;
+    }
+    n->x6C = 0;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parseHistory", parseHST_deleteHistoryNode);
+void parseDeleteHistoryItem(HstNode *top) {
+    HstNode *node;
+    HstNode *parent;
+    HstNode *next;
+
+    if (top == NULL) {
+        return;
+    }
+    parent = top->parent;
+    next = top->next;
+    node = top;
+    if (node->flag >= 0) {
+        parseFreeItem(node);
+    }
+    while (node != NULL) {
+        if (node->child != NULL) {
+            node = node->child;
+        } else if (node->next != NULL) {
+            node = node->next;
+            if (node == next) {
+                return;
+            }
+        } else {
+            node = node->parent;
+            if (node == parent || node == top) {
+                return;
+            }
+            if (node == NULL) {
+                return;
+            }
+        climb:
+            if (node->next == NULL) {
+                goto up;
+            }
+            node = node->next;
+        }
+        if (node->flag >= 0) {
+            parseFreeItem(node);
+        }
+        continue;
+    up:
+        node = node->parent;
+        if (node == parent || node == top) {
+            return;
+        }
+        if (node != NULL) {
+            goto climb;
+        }
+        return;
+    }
+}
+
+void parseHST_deleteHistoryNode(int name, int len) {
+    HstNode *node;
+
+    if (name == 0) {
+        node = (HstNode *)HST_getHeadHistoryNode();
+    } else {
+        node = HST_searchTargetNameHistoryNode(name, len);
+    }
+    parseDeleteHistoryItem(node);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parseHistory", parseRegistURI);
 
@@ -73,11 +168,59 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parseHistory", parseCopyHistory
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parseHistory", parseCopyHistoryNode);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parseHistory", uricmp_722F8);
+int uricmp_722F8(HstStr *a, HstStr *b) {
+    int i;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parseHistory", flushRequestFlag);
+    if (a->len != b->len) {
+        return 0;
+    }
+    for (i = 0; i < a->len; i++) {
+        if (a->p[i] != b->p[i]) {
+            return 0;
+        }
+    }
+    return 1;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parseHistory", fillRequestFlag);
+void flushRequestFlag(HstNode *node) {
+    fillRequestFlag(node, 0);
+}
+
+void fillRequestFlag(HstNode *top, int flag) {
+    HstNode *node;
+
+    node = top;
+    if (node->flag >= 0) {
+        HST_setRequestFlag(node, flag);
+    }
+    while (node != NULL) {
+        if (node->child != NULL) {
+            node = node->child;
+        } else if (node->next != NULL) {
+            node = node->next;
+        } else {
+            node = node->parent;
+            if (node == NULL) {
+                return;
+            }
+        climb:
+            if (node->next == NULL) {
+                goto up;
+            }
+            node = node->next;
+        }
+        if (node->flag >= 0) {
+            HST_setRequestFlag(node, flag);
+        }
+        continue;
+    up:
+        node = node->parent;
+        if (node != NULL) {
+            goto climb;
+        }
+        return;
+    }
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parseHistory", copyEntities);
 
