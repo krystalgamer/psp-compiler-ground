@@ -159,7 +159,15 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/charactor", init_char);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/charactor", set_char_pos);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/charactor", texture_char);
+void texture_char(SceGimPicture *picture)
+{
+	if (md->tex_num == 5) {
+		geTexSend(md->face + 2);
+	} else {
+		geModelNormalTexFunc(picture);
+	}
+	md->tex_num++;
+}
 
 void draw_char(void) {
     geModelTexFunc(1);
