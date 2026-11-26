@@ -221,15 +221,120 @@ void sceGuSpriteMode(int a0, int a1, int a2, int a3);
 void sceGuDrawSprite(int x, int y, int z, int u, int v, int flip, int rotation);
 
 
-INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/skin", load_picture2);
+SceGimPicture *load_picture2(int index, int *buff, int size)
+{
+	SceGimPicture *pic;
 
-INCLUDE_RODATA("tmp/asm/flowars/flowars/nonmatchings/skin", D_00030964);
+	pic = sceGimPictureCreate(0);
+	if (pic == NULL) {
+		print_nothing("picture create failed\n");
+		return NULL;
+	}
+	if (!sceGimPictureLoadFile(pic, buff, size, index)) {
+		print_nothing("picture load failed : %d\n", index);
+		sceGimPictureDelete(pic);
+		return NULL;
+	}
+	return pic;
+}
 
-INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/skin", load_character);
+void *sceGimPictureGetImage(SceGimPicture *picture);
+void sceGimPictureSetFrameRate(SceGimPicture *picture, float fps);
 
-INCLUDE_RODATA("tmp/asm/flowars/flowars/nonmatchings/skin", D_000309A0);
+static __inline__ int sceGimImageGetWidth(const SceGimImageHeader *image, int level)
+{
+	int width = image->width ;
+	if ( level > 0 && image->level_type == 1 ) {
+		while ( -- level >= 0 ) width = ( width + 1 ) / 2 ;
+	}
+	return width;
+}
 
-INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/skin", load_skin);
+static __inline__ int sceGimImageGetHeight(const SceGimImageHeader *image, int level)
+{
+	int height = image->height ;
+	if ( level > 0 && image->level_type == 1 ) {
+		while ( -- level >= 0 ) height = ( height + 1 ) / 2 ;
+	}
+	return height;
+}
+
+static __inline__ int sceGimImageGetFrameCount(const SceGimImageHeader *image)
+{
+	return image->frame_count;
+}
+
+static int load_character(int index, int party, int person)
+{
+	int *buff, size, img_index = 0;
+	char fname[30] = "";
+	skin_ani_param *p;
+	int feel;
+
+	sprintf(fname, "%s/char%d%d.dat", "img/char", party, person);
+	if (load_file(fname, &buff, &size) != 1) {
+		print_nothing("load file error\n");
+	}
+	for (feel = 0; feel < 5; feel++) {
+		g_img_char[index][feel] = load_picture2(img_index++, buff, size);
+		p = &g_char_param[index][feel];
+		p->fps = 5.0f;
+		p->step = 1.0f / 60;
+		sceGimPictureSetFrameRate(g_img_char[index][feel], p->fps);
+		{
+			SceGimImageHeader *h = sceGimPictureGetImage(g_img_char[index][feel]);
+			p->width = sceGimImageGetWidth(h, 0);
+			p->height = sceGimImageGetHeight(h, 0);
+			p->totalframes = sceGimImageGetFrameCount(h);
+		}
+		g_char_draw_tick[index] = 0;
+		g_char_feel[index] = 0;
+	}
+	free(buff);
+	return 1;
+}
+
+__asm__(".globl load_character");
+
+static int load_skin(int party, int person)
+{
+	int *buff, size, img_index = 0;
+	char fname[30] = "";
+	skin_ani_param *p;
+	int index;
+
+	sprintf(fname, "%s/skin%d%d.dat", "img/skin", party, person);
+	if (load_file(fname, &buff, &size) != 1) {
+		print_nothing("load file error\n");
+	}
+	g_img_stage = load_picture2(img_index++, buff, size);
+	g_img_num_go = load_picture2(img_index++, buff, size);
+	g_img_num_jum = load_picture2(img_index++, buff, size);
+	g_img_title_mission = load_picture2(img_index++, buff, size);
+	g_img_title_bingo = load_picture2(img_index++, buff, size);
+	g_img_num_mission = load_picture2(img_index++, buff, size);
+	g_img_x2_mission = load_picture2(img_index++, buff, size);
+	g_img_level_mission = load_picture2(img_index++, buff, size);
+	g_img_level_mission_num = load_picture2(img_index++, buff, size);
+	for (index = 0; index < 4; index++) {
+		g_img_face[index] = load_picture2(img_index++, buff, size);
+		p = &g_face_param[index];
+		p->fps = 5.0f;
+		p->step = 1.0f / 60;
+		sceGimPictureSetFrameRate(g_img_face[index], p->fps);
+		{
+			SceGimImageHeader *h = sceGimPictureGetImage(g_img_face[index]);
+			p->width = sceGimImageGetWidth(h, 0);
+			p->height = sceGimImageGetHeight(h, 0);
+			p->totalframes = sceGimImageGetFrameCount(h);
+		}
+		g_face_draw_tick = 0;
+	}
+	free(buff);
+	return 1;
+}
+
+__asm__(".globl load_skin");
 
 static void term()
 {
@@ -418,7 +523,57 @@ static void draw_sun(int flagPlayer)
 
 __asm__(".globl draw_sun");
 
-INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/skin", draw_level_mission);
+static void draw_level_mission(int index, int mission, int suc, int total)
+{
+	int x = 0, y = 0, tx = 0;
+	char strNum[10] = "";
+
+	switch (index) {
+	case 0:
+		x = 352;
+		tx = 392;
+		y = 153;
+		break;
+	case 1:
+		x = 415;
+		tx = 455;
+		y = 153;
+		break;
+	case 2:
+		x = 352;
+		tx = 392;
+		y = 167;
+		break;
+	case 3:
+		x = 415;
+		tx = 455;
+		y = 167;
+		break;
+	}
+	sceGimPictureActivate(g_img_level_mission);
+	sceGuSpriteMode(34, 11, 34, 11);
+	sceGuDrawSprite(x, y, 0, 0, mission * 11, 0, 0);
+	sceGimPictureActivate(g_img_level_mission_num);
+	sceGuColor(0xffffffff);
+	sprintf(strNum, "%d/%d", suc, total);
+	{
+		int i, c, cnum;
+
+		for (i = 0; i < (int)strlen(strNum); i++) {
+			c = strNum[i];
+			cnum = c - '0';
+			if (c < '0' || strNum[i] > '9') {
+				if (c != '/')
+					continue;
+				cnum = 10;
+			}
+			sceGuSpriteMode(5, 9, 5, 9);
+			sceGuDrawSprite(tx + i * 5, y, 0, cnum * 5, 0, 0, 0);
+		}
+	}
+}
+
+__asm__(".globl draw_level_mission");
 
 int draw_num_go(int go, int x, int y) {
     int var_v0;
@@ -433,7 +588,32 @@ int draw_num_go(int go, int x, int y) {
     return var_v0;
 }
 
-INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/skin", draw_num_jum);
+int draw_num_jum(int jum, int x, int y)
+{
+	char str[4] = "";
+	int i = 0;
+	int n;
+	int px;
+
+	if (g_img_num_jum != NULL && (unsigned int)jum < 1000) {
+		sprintf(str, "%d", jum);
+		sceGimPictureActivate(g_img_num_jum);
+		sceGuColor(0xffffffff);
+		if (jum < 10)
+			px = x + 14;
+		else
+			px = x;
+		for (; i < (int)strlen(str); i++, px += 14) {
+			n = str[i] - '0';
+			sceGuSpriteMode(14, 21, 14, 21);
+			sceGuDrawSprite(px, y, 0, n * 14, 0, 0, 0);
+		}
+		return 1;
+	}
+	return 0;
+}
+
+__asm__(".globl draw_num_jum");
 
 int draw_x2_mission(int x, int y) {
     int var_v0;
@@ -473,7 +653,31 @@ static int draw_title_bingo(int x, int y)
 
 __asm__(".globl draw_title_bingo");
 
-INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/skin", draw_num_mission);
+int draw_num_mission(int baesu, int x, int y)
+{
+	char str[3] = "";
+	int i = 0;
+	int n;
+	int px;
+
+	if (g_img_num_mission != NULL && (unsigned int)baesu < 20) {
+		sprintf(str, "%d", baesu);
+		sceGimPictureActivate(g_img_num_mission);
+		sceGuColor(0xffffffff);
+		sceGuSpriteMode(16, 23, 16, 23);
+		sceGuDrawSprite(x, y, 0, 192, 0, 0, 0);
+		px = x + 16;
+		for (; i < (int)strlen(str); i++, px += 16) {
+			n = str[i] - '0';
+			sceGuSpriteMode(16, 23, 16, 23);
+			sceGuDrawSprite(px, y, 0, n * 16, 0, 0, 0);
+		}
+		return 1;
+	}
+	return 0;
+}
+
+__asm__(".globl draw_num_mission");
 
 int draw_num_bingo(int linecnt, int x, int y) {
     int var_v0;
@@ -493,17 +697,62 @@ int draw_num_bingo(int linecnt, int x, int y) {
     return var_v0;
 }
 
-INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/skin", draw_status);
+static void draw_status(int x, int y, int bbuck, int p_bak, int shake, int g_bak)
+{
+	if (bbuck > 0) {
+		sceGimPictureActivate(g_img_status_num_on);
+		sceGuSpriteMode(5, 9, 5, 9);
+		sceGuDrawSprite(x, y, 0, bbuck * 5, 0, 0, 0);
+		sceGimPictureActivate(g_img_status_on);
+		sceGuSpriteMode(22, 11, 22, 11);
+		sceGuDrawSprite(x + 7, y, 0, 0, 0, 0, 0);
+	} else {
+		sceGimPictureActivate(g_img_status_num_off);
+		sceGuSpriteMode(5, 9, 5, 9);
+		sceGuDrawSprite(x, y, 0, bbuck * 5, 0, 0, 0);
+		sceGimPictureActivate(g_img_status_off);
+		sceGuSpriteMode(22, 11, 22, 11);
+		sceGuDrawSprite(x + 7, y, 0, 0, 0, 0, 0);
+	}
 
-INCLUDE_RODATA("tmp/asm/flowars/flowars/nonmatchings/skin", D_000309D8);
+	if (p_bak > 0) {
+		sceGimPictureActivate(g_img_status_on);
+		sceGuSpriteMode(22, 11, 22, 11);
+		sceGuDrawSprite(x + 36, y, 0, 0, 22, 0, 0);
+	} else {
+		sceGimPictureActivate(g_img_status_off);
+		sceGuSpriteMode(22, 11, 22, 11);
+		sceGuDrawSprite(x + 36, y, 0, 0, 22, 0, 0);
+	}
 
-INCLUDE_RODATA("tmp/asm/flowars/flowars/nonmatchings/skin", D_000309DC);
+	if (shake > 0) {
+		sceGimPictureActivate(g_img_status_num_on);
+		sceGuSpriteMode(5, 9, 5, 9);
+		sceGuDrawSprite(x, y + 17, 0, shake * 5, 9, 0, 0);
+		sceGimPictureActivate(g_img_status_on);
+		sceGuSpriteMode(22, 11, 22, 11);
+		sceGuDrawSprite(x + 7, y + 17, 0, 0, 11, 0, 0);
+	} else {
+		sceGimPictureActivate(g_img_status_num_off);
+		sceGuSpriteMode(5, 9, 5, 9);
+		sceGuDrawSprite(x, y + 17, 0, shake * 5, 9, 0, 0);
+		sceGimPictureActivate(g_img_status_off);
+		sceGuSpriteMode(22, 11, 22, 11);
+		sceGuDrawSprite(x + 7, y + 17, 0, 0, 11, 0, 0);
+	}
 
-INCLUDE_RODATA("tmp/asm/flowars/flowars/nonmatchings/skin", D_000309E0);
+	if (g_bak > 0) {
+		sceGimPictureActivate(g_img_status_on);
+		sceGuSpriteMode(22, 11, 22, 11);
+		sceGuDrawSprite(x + 36, y + 17, 0, 0, 33, 0, 0);
+	} else {
+		sceGimPictureActivate(g_img_status_off);
+		sceGuSpriteMode(22, 11, 22, 11);
+		sceGuDrawSprite(x + 36, y + 17, 0, 0, 33, 0, 0);
+	}
+}
 
-INCLUDE_RODATA("tmp/asm/flowars/flowars/nonmatchings/skin", D_000309E4);
-
-INCLUDE_RODATA("tmp/asm/flowars/flowars/nonmatchings/skin", D_000309E8);
+__asm__(".globl draw_status");
 
 static void draw_turn(int flagPlayer)
 {
