@@ -143,7 +143,26 @@ int RselInt(void) {
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/plsel", RoundSelect);
 
+#ifdef NON_MATCHING
+/* Close (one insn): the original computes num / 10 into a temporary and copies it to a saved register. */
+void write_op_num(int x, int y, int num)
+{
+	if (num >= 10000)
+		num = 9999;
+	DrawSpriteEz(2.0f, x, y, 24.0f, 24.0f, num % 10 * 24, 0.0f, 13);
+	if (num < 10)
+		return;
+	DrawSpriteEz(2.0f, x - 20, y, 24.0f, 24.0f, num / 10 % 10 * 24, 0.0f, 13);
+	if (num < 100)
+		return;
+	DrawSpriteEz(2.0f, x - 40, y, 24.0f, 24.0f, num / 100 % 10 * 24, 0.0f, 13);
+	if (num < 1000)
+		return;
+	DrawSpriteEz(2.0f, x - 60, y, 24.0f, 24.0f, num / 1000 % 10 * 24, 0.0f, 13);
+}
+#else
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/plsel", write_op_num);
+#endif
 
 int OptionInit(void) {
     return 0;

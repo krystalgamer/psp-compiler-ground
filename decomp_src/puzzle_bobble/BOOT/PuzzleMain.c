@@ -659,7 +659,17 @@ void DrawCharcter(int z, int x, int y, PARTZ *tbl, int idx)
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", DrawCharcterFlip);
 
+#ifdef NON_MATCHING
+/* Close (one extra mov.s): v is converted into a temporary instead of straight into $f16. */
+void DrawCharcter2(int z, int x, int y, PARTZ *tbl, int idx)
+{
+	PARTZ *p = (PARTZ *)(idx * sizeof(PARTZ) + (int)tbl);
+
+	DrawSpritePt4(p->no, z, -1, x, y, p->u, p->v, x + p->w, y, p->u + p->w, p->v, x, y + p->h, p->u, p->v + p->h, x + p->w, y + p->h, p->u + p->w, p->v + p->h);
+}
+#else
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", DrawCharcter2);
+#endif
 
 void DrawAnk(int z, int x, int y, int num)
 {
@@ -1102,7 +1112,35 @@ int CvtBallPos2MapPos(PZL_STAT *st, int x, int y)
 	return CvtBallPos2MapPosLocal(st, lx, ly);
 }
 
+#ifdef NON_MATCHING
+/* Close (diff 19): v0/v1 swapped in the column computations. */
+int CvtBallPos2MapPosLocal(PZL_STAT *st, int x, int y)
+{
+	int line, col, sub, px;
+
+	y += 6;
+	if (y < 0)
+		return -1;
+	line = y / 14;
+	px = x + ((line + 1) & 1) * 8;
+	col = px / 16;
+	sub = y - line * 14;
+	if (sub == 12) {
+		if (px - col * 16 < 3 || px - col * 16 > 12) {
+			line++;
+			col = (x + ((line + 1) & 1) * 8) / 16;
+		}
+	} else if (sub == 13) {
+		if (px - col * 16 < 5 || px - col * 16 > 10) {
+			line++;
+			col = (x + ((line + 1) & 1) * 8) / 16;
+		}
+	}
+	return col + line * GetMapWidth(st->mapno);
+}
+#else
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", CvtBallPos2MapPosLocal);
+#endif
 
 int GetBallMapAddr(PZL_STAT *st, int x, int y, int dir)
 {
@@ -1387,7 +1425,25 @@ void PutTime(int z, int x, int y, int t)
 	SpriteDrawC(z, x - 28, y, D_0002E0F4);
 }
 
+#ifdef NON_MATCHING
+/* Close (diff 18): the original computes b - a up front but x - b only inside the branch. */
+int Get2Dim(int x, int a, int b, int c, int d)
+{
+	int r = 0;
+
+	if (a <= x && x <= b)
+		r = -((x - b) * (x - b)) * 320 / ((b - a) * (b - a));
+	else if (b <= x && x <= c)
+		r = 0;
+	else if (c <= x && x <= d)
+		r = (x - c) * (x - c) * 320 / ((d - c) * (d - c));
+	else
+		r = 960;
+	return r;
+}
+#else
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", Get2Dim);
+#endif
 
 void DoBubStat(PZL_STAT *st, int arg)
 {
