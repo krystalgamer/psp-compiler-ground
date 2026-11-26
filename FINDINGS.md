@@ -416,7 +416,16 @@ modules (`tools/nltest.py`, `tools/objcmp.py`).
   but not `WaterPatch::set_disk` (it uses `movz` for `if (r == 0) r = 1`). 1.6.1's
   `a == b` store-flag (`xor; sltiu`) where 1.5.1 branches makes
   `Date::operator==` 4 bytes shorter: 1.5.1 can't build them.
-  No C++ function so far needs a cc1plus change.
+  No C++ function so far needs a cc1plus change. With ~700 demo functions per
+  module in C++ (math, scene, sgl, support library), 1.5.1 differs only in
+  `set_disk`, the `operator==`s and `std::_Deque_base<math::matrix>::
+  _M_initialize_map` (0x134 vs 0x128). Inlining at -O3 follows GCC 3.3's
+  rules: a function called before its definition is never inlined there,
+  and out-of-class members of class templates (weak instances) are never
+  auto-inlined (the original calls `t_array<T>::addr()`/`handle::release()`).
+  Not explained yet: the original calls `textures::Texture::setFiltering`
+  from `linear()` and `operator=` from the copy constructor, where
+  cc1plus-1.6.1 inlines both.
 
 ## psp-gcc 1.7.1 (release build)
 

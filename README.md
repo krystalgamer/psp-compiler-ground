@@ -43,7 +43,9 @@ g++'s predefines, 1.6.1's `gthr-psp.h`) and built by `cc1plus-VERSION`.
 `#pragma interface` in a unit's header keeps vtables and typeinfo in the
 module's data. With `-O3` cc1plus outputs every function at the end of the
 file, so a C++ unit that still has asm includes `cxx/defer_asm.h`, whose
-`INCLUDE_ASM` defers the asm the same way. `tools/dwarf2cpp.py TARGET MODULE UNIT [--probe FILE]` gives
+`INCLUDE_ASM` defers the asm the same way. A unit's data can be given to it
+with `rodata ADDR UNIT` / `bss ADDR UNIT` lines (and `rodata|bss ADDR -` to
+end the range) in `config/TARGET/files.MODULE.txt`; the rest stays asm. `tools/dwarf2cpp.py TARGET MODULE UNIT [--probe FILE]` gives
 C++ declarations from a C++ compile unit's DWARF (checking every member
 offset with cc1plus), or a class skeleton from the symbol table (vtable
 order, bases from typeinfo) for objects without DWARF.
