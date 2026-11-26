@@ -1798,7 +1798,7 @@ INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", CheckNext);
 #endif
 
 #ifdef NON_MATCHING
-/* Three instructions long, logic complete (groups hanging from the ceiling (12), the
+/* One instruction long, logic complete (groups hanging from the ceiling (12), the
  * falling balls become ent[] entries, chain colours go to CheckChain); register
  * allocation of st and the loop counters differs. */
 void TermChain(PZL_STAT *st);
@@ -1878,9 +1878,9 @@ void CheckBallDrop(PZL_STAT *st)
 			st->ent[st->unk458].vy = -st->unk456;
 			ey[st->mp.map[i]] = y2;
 			ent[st->mp.map[i]] = st->unk458;
-			st->ent[st->unk458].flag = 1;
 			used[st->mp.map[i]] = 1;
 			ex[st->mp.map[i]] = x2;
+			st->ent[st->unk458].flag = 1;
 			st->unk456 += 2;
 			st->unk458 = (st->unk458 + 1) % 192;
 			DrawBubble(0.0f, x2 + MapXBeginPos[st->mapno * 3 + st->mapsub] + 72, y2 + st->ofs_y + st->scroll * 14, st->mp.map[i] - 1, 0);
