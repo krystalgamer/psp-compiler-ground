@@ -77,3 +77,4 @@
 0x6407C gim_private     1.6.1.internal  gim_private.c
 0x675E4 libgu           1.6.1.internal  libgu.c
 0x6B5BC libwave         1.6.1.internal  libwave.c
+rodata 0x7AF20 mpeg_avsync

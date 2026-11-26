@@ -114,4 +114,3 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/mpeg/display", dispbuf_di
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/mpeg/display", dispbuf_show);
 
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/mpeg/display", D_0007AF20);
