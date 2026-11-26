@@ -108,7 +108,8 @@ def file_units(t, name, cus, text_end):
 
 def rodata_overrides(t, name):
     """`rodata ADDR UNIT` lines of files.MODULE.txt: .rodata from ADDR on
-    belongs to UNIT (strings only a .data table points to)."""
+    belongs to UNIT (strings only a .data table points to); UNIT `-`: to
+    none (stays asm)."""
     path = ROOT / "config" / t / f"files.{name}.txt"
     if not path.exists():
         return []
@@ -472,7 +473,8 @@ def main():
                 owners = [(s.addr, None)]
             if owners is not None:
                 for addr, uname in overrides:
-                    ui = next(i for i, u in enumerate(units) if u[2] == uname)
+                    # `rodata ADDR -`: from ADDR on the rodata belongs to no unit (stays asm)
+                    ui = None if uname == "-" else next(i for i, u in enumerate(units) if u[2] == uname)
                     owners = sorted([o for o in owners if o[0] != addr] + [(addr, ui)])
                 owners = [o for i, o in enumerate(owners) if i == 0 or o[1] is None or o[1] != owners[i - 1][1]]
             if owners is None:
