@@ -143,52 +143,6 @@ static void draw_alphabet(void)
 
 char *ParseString(void);
 
-#ifdef NON_MATCHING
-/* the wait countdown stays a branch in the original (we if-convert the cur_stat store) */
-static void update_data(void)
-{
-	char *p;
-	int i;
-
-	switch (cur_stat) {
-	case 0:
-		p = ParseString();
-		cur_len = 0;
-		new_len = 0;
-		for (i = 0; i < 16; i++) {
-			if (p[i] != 0)
-				new_len++;
-			if (p[i] != 0 || cur_word[i] != 0) {
-				cur_len++;
-				init_morph(i, cur_word[i], p[i]);
-			}
-			cur_word[i] = p[i];
-		}
-		wait = 10;
-		cur_stat = 2;
-		frame = 0;
-		if (new_len)
-			stepx = (((float)new_len * 0.5f + 0.5f) * -23.5f - startx) / 15.0f;
-		else
-			stepx = -startx / 15.0f;
-		break;
-	case 1:
-		update_morph(frame);
-		frame++;
-		if (frame >= 15) {
-			cur_stat = 0;
-			startx = ((float)new_len * 0.5f + 0.5f) * -23.5f;
-		} else {
-			startx += stepx;
-		}
-		break;
-	case 2:
-		if (wait-- <= 0)
-			cur_stat = 1;
-		break;
-	}
-}
-#else
 #define MAX_WORDLEN		16
 #define WAIT_CNT		10
 #define STAT_WAIT ((0)+2)
@@ -243,7 +197,6 @@ static void update_data(void)
 		break;
 	}
 }
-#endif
 
 void DrawData(void)
 {
