@@ -4,12 +4,11 @@
 #include "gmain.h"
 
 typedef struct {
-	u8 _p0[0x10];
-	int f10;
-	u8 _p14[0x4];
-	int f18;
-	int f1c;
-	u8 _p20[0xD8 - 0x20];
+	int f0, dead, f8, fc, f10, f14, f18, f1c;
+	int dmg, hp, f28, f2c, item, f34, f38, disp;
+	int f40[(0x6C - 0x40) / 4];
+	float x, y, z;
+	u8 _p78[0xD8 - 0x78];
 } ENEMY;
 
 /* enemy groups at gmain + 0xEBD98 (count at gmain + 0xEBD94) */

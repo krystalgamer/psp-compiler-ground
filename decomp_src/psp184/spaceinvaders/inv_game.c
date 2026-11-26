@@ -489,7 +489,30 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", zako_disp_once
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", zako_death);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", zako_damage);
+void efc_bom2_start(float x, float y, float z);
+void se_play_3d(int no, float *pos, float dist);
+void zako_shot(ENEMY *e);
+void zako_damage(ENEMY *e, int dmg, int a, int b)
+{
+	if (e->dead == 1)
+		return;
+	IST.f20++;
+	if (IST.f20 > 2000000000)
+		IST.f20 = 2000000000;
+	e->f2c = 0;
+	e->dmg += dmg;
+	e->f28 = genrand_int32() & 1;
+	if (e->dmg < e->hp) {
+		if (e->disp == 1) {
+			efc_bom2_start(e->x, e->y, e->z);
+			se_play_3d(16, &e->x, 7000.0f);
+		}
+		if (IST.fc >= 3)
+			zako_shot(e);
+	} else {
+		zako_death(e, a, b);
+	}
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", zako_mov_count);
 
