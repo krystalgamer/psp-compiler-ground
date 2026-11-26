@@ -191,7 +191,41 @@ SceInt32 decode_createAu(t_mpegStreamData *pStreamData, SceMpegStrType type)
 	return ret;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/mpeg_seamless_change/nonmatchings/decode", decode_createAvcAu);
+SceInt32 decode_createAvcAu(t_mpegStreamData *pStreamData)
+{
+	SceInt32 ret;
+
+	ret = -1;
+	pStreamData->avcEsBuf1 = sceMpegMallocAvcEsBuf(pStreamData->pMpeg);
+	if (pStreamData->avcEsBuf1 == 0) {
+		printf("fatal error : sceMpegMallocAvcEsBuf()\n");
+		goto error;
+	}
+
+	ret = 0;
+	pStreamData->avcEsBuf2 = sceMpegMallocAvcEsBuf(pStreamData->pMpeg);
+	if (pStreamData->avcEsBuf2 == 0) {
+		printf("fatal error : sceMpegMallocAvcEsBuf()\n");
+		ret = -1;
+		goto error;
+	}
+
+	goto term;
+
+error:
+	if (pStreamData->avcEsBuf1) {
+		sceMpegFreeAvcEsBuf(pStreamData->pMpeg, pStreamData->avcEsBuf1);
+		pStreamData->avcEsBuf1 = 0;
+	}
+
+	if (pStreamData->avcEsBuf2) {
+		sceMpegFreeAvcEsBuf(pStreamData->pMpeg, pStreamData->avcEsBuf2);
+		pStreamData->avcEsBuf2 = 0;
+	}
+
+term:
+	return ret;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/mpeg_seamless_change/nonmatchings/decode", decode_createAudioAu);
 
