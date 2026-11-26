@@ -574,3 +574,62 @@ UCJS90007 (built against SDK 2.5.0, "release_250") is all
   `-fmove-all-movables` (loop-invariant hoisting of everything movable); the
   module's other units break with it, so it's that object's own build flag,
   not a 1.8.x default. mpegon's `DvdUmdRetryRead` gets close with it too.
+
+## psp-gcc 1.9.2
+
+rb's rs4_main (a retail sampler disc's main.prx) is built by the 1.9.2
+release (app code, SDK gim_picture/libwave/libsas, newlib, libgcc,
+libsupc++), with SDK libraries (libgu, libgum, libfpu, font, libsha1,
+kernel_bridge, userinterrupt) by 1.9.2.internal and one 1.4.0 object.
+Its `.comment`/`DW_AT_producer` say "3.3.6+allegrex-2.2.2-psp-1.9.2": the
+same Allegrex patch level as 1.6.1/1.7.1 on **gcc-3.3.6**, and its
+libgcc/libsupc++ DWARF names `gcc-3.3.6/` paths.
+
+- **`gcc1.9.2_src` is pristine FSF gcc-3.3.6 plus the psp-gcc patch set**
+  (the diff from gcc-3.3.3 to `gcc1.8.4_src`).  Every hunk applies; the one
+  mips.md hunk that doesn't (`can_delay` "no" for asm statements) is
+  already in 3.3.6, so 1.7.1's change was that upstream backport.  The
+  libgcc DWARF confirms the base: every `mips.h` declaration line equals
+  1.8.3's except `enum mips_builtins`, 21 lines up, exactly gcc-3.3.6's
+  shorter `ASM_OUTPUT_ALIGNED_DECL_COMMON` (22 lines become 1).  So
+  1.9.2 adds nothing to mips.h before `mips_builtins` (the VFPU
+  declarations of 1.8.3 are there, the 1.8.4.internal lines are not).
+- No upstream 3.3.4–3.3.6 change shows in any code compared so far:
+  a 1.8.4 tree with the change below (`cc1-184ins`) and the 1.9.2 tree
+  give identical code for every reproduced function (newlib, libgcc,
+  libgum, libgu, libfpu, gim_picture), and the 3.3.3 libgcc2/dp-bit/
+  fp-bit/unwind-dw2 sources still reproduce 1.9.2's libgcc.  The 3.3.6
+  libsupc++ (eh_*.cc, tinfo.cc) built by `cc1plus-1.9.2` reproduces all
+  8 C++ units.
+- **Register ext/ins are on by default** (`-mext` in
+  `config/compilers.txt`): 1.9.2's newlib and libgcc use them, and so does
+  the SDK's libgim_picture although its Makefile (SDK 6.6.0
+  src/gim_picture) passes no `-mext`: gim_metrics, load_bmp, load_tga and
+  load_tm2 match only with it.  The libgu/libgum/libfpu Makefiles pass
+  `-mext` themselves.
+- **An AND that clears one contiguous bit field is `ins rt,$0,pos,size`**,
+  the input tied to the output (`andsi3` keeps such a constant;
+  `*andsi3_allegrex_ins`).  When combine rebuilds the AND
+  (`make_compound_operation` in `simplify_set`) a low mask (2^n-1) still
+  becomes a zero_extract, i.e. `ext`: newlib `fabsf` is `ext` (the AND
+  feeds the copy into a new pseudo), `isnanf` (`ix &= 0x7fffffff`),
+  `finitef` and `copysignf` (`ins` of bit 31 and of bits 0–30) are
+  `ins`.  Evidence, all from unmodified sources that no other cc1
+  reproduces: newlib `isnanf`, `finitef`, `copysignf`, `fabsf`, the libm
+  float kernels (`__ieee754_powf`/`sqrtf`/`rem_pio2f`, `__kernel_*f`,
+  `sinf`/`cosf`/`tanf`, `floorf`), `rint`, `_wctomb_r`, `mprec`,
+  mallocr's `_free_r`/`_calloc_r`, libgcc fp-bit/dp-bit
+  `__pack_*`/`__unpack_*` (24 more newlib/libgcc units from source), the
+  SDK libfpu `sceFpuLog*`/`sceFpuExp` (with the duplicated `mfc1` the
+  tied operand causes), libsupc++'s `read_encoded_value_with_base`
+  (`& ~3`), libgu (12 more functions than without it).  App code has 940
+  `ins`, about a third with `$0`.
+- Everything else that differs is source: SDK 6.6.0 vs the module's SDK
+  (struct layouts in libgu and gim_picture, `sceGumMultQuaternion`
+  missing), Sony's newer newlib (`_REENT` is `__getreent()`, i.e.
+  `__DYNAMIC_REENT__`, as in 1.8.3).
+- No VFPU instruction comes from compiled C as far as checked: the VFPU
+  code (i3dcs_obb, i3d_collision, i3d_packet_util, ... `lv.q`/`sv.q`/
+  `vdot`/`vmmul`) sits in Sony's middleware without DWARF, and the
+  libgum/libgu functions with VFPU variants are the `USE_VFPU 0` C ones.
+  So the 1.8 VFPU builtins remain unrecovered.
