@@ -467,7 +467,32 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", ufo_damage);
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", ufo_all_dead_check);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", ufo_tex_anime);
+void ufo_tex_anime(int *u)
+{
+	int n;
+
+	if (u[2] == 1)
+		return;
+	if (u[1] == 0)
+		return;
+	if (u[9] >= u[10] * 4 / 5)
+		n = 4;
+	else if (u[9] >= u[10] * 3 / 5)
+		n = 3;
+	else if (u[9] >= u[10] * 2 / 5)
+		n = 2;
+	else if (u[9] >= u[10] / 5)
+		n = 1;
+	else
+		n = 0;
+	if (u[8] > 0) {
+		n += u[8] / 8 + 1;
+		u[8]--;
+	}
+	if (n > 4)
+		n = 4;
+	u[7] = n;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", boss_ufo_init);
 
@@ -508,13 +533,59 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", boss_ufo_disp)
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", boss_ufo_damage);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", boss_ufo_tex_anime);
+void boss_ufo_tex_anime(int *u)
+{
+	int n;
+
+	if (u[1] == 1)
+		return;
+	if (u[0] == 0)
+		return;
+	if (u[8] >= u[9] * 4 / 5)
+		n = 4;
+	else if (u[8] >= u[9] * 3 / 5)
+		n = 3;
+	else if (u[8] >= u[9] * 2 / 5)
+		n = 2;
+	else if (u[8] >= u[9] / 5)
+		n = 1;
+	else
+		n = 0;
+	if (u[5] > 0) {
+		n += u[5] / 8 + 1;
+		u[5]--;
+	}
+	if (n > 4)
+		n = 4;
+	u[4] = n;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", enemy_gp_init);
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", enemy_gp_control);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", enemy_gp_disp);
+void zako_disp_once(ENEMY *e);
+void enemy_gp_disp(void)
+{
+	int i, j, k;
+	EGROUP *g;
+	ENEMY *e;
+
+	if (gmain.f.f1088 == 0)
+		return;
+	for (i = 0; i < gmain.f.febd94; i++) {
+		g = &egroup[i];
+		if (g->active == 0)
+			return;
+		if (g->disp == 0)
+			continue;
+		for (j = 0; j < 4; j++) {
+			e = g->e[j];
+			for (k = 0; k < 11; k++, e++)
+				zako_disp_once(e);
+		}
+	}
+}
 
 void enemy_gp_start(int line)
 {

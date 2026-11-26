@@ -15,7 +15,8 @@ typedef struct {
 /* enemy groups at gmain + 0xEBD98 (count at gmain + 0xEBD94) */
 typedef struct {
 	int active;
-	u8 _p4[0x40];
+	int disp;
+	u8 _p8[0x3C];
 	ENEMY e[4][11];
 	u8 _p2564[0x2564 - 0x44 - 0x2520];
 } EGROUP;
