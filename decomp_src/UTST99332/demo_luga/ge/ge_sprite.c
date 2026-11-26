@@ -48,7 +48,42 @@ int geTexSend(int n);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/ge/ge_sprite", geSpriteSet);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/ge/ge_sprite", geSpriteParam);
+int geSpriteParam(int n, int param, geSPRITE *sp)
+{
+	geSPRITE *p;
+	int ret = 0;
+
+	if (n < 1024) {
+		if (n >= 0) {
+			p = &geSprite[n];
+
+			if (param & 1) {
+				p->x = sp->x;
+				p->y = sp->y;
+			}
+			if (param & 2) {
+				p->w = sp->w;
+				p->h = sp->h;
+			}
+			if (param & 4) {
+				p->pri = sp->pri;
+			}
+			if (param & 8) {
+				p->tex = sp->tex;
+				p->tex_uv[0].u = sp->tex_uv[0].u;
+				p->tex_uv[0].v = sp->tex_uv[0].v;
+				p->tex_uv[1].u = sp->tex_uv[1].u;
+				p->tex_uv[1].v = sp->tex_uv[1].v;
+			}
+			if (param & 0x10) {
+				p->col = sp->col;
+			}
+			ret = 1;
+		}
+	}
+
+	return ret;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/ge/ge_sprite", geSpriteGet);
 
