@@ -199,7 +199,36 @@ INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/loader", load_boot_binary_thr
 
 INCLUDE_RODATA("tmp/asm/psp184/UCJS90007/nonmatchings/loader", D_0002DDE8);
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/loader", start_load);
+extern int error_code_8265C;
+const char D_0002DDF0[] = "AdhocDistributeServerFileLoader";
+
+static int start_load(int (*thread_func)(SceSize, void *))
+{
+	int ret;
+
+	ret = sceKernelCreateThread(D_0002DDF0, thread_func, 0x30, 0x2000, 0, NULL);
+	if (ret < 0)
+		goto error;
+	loader_tid = ret;
+	ret = sceKernelStartThread(ret, 0, NULL);
+	if (ret < 0)
+		goto error;
+	change_state(5, 0);
+	return 0;
+
+error:
+	if (loader_tid >= 0) {
+		sceKernelDeleteThread(loader_tid);
+		loader_tid = -1;
+	}
+	error_code_8265C = ret;
+	ret = utility_msgdialog_fileio(ret);
+	if (ret < 0)
+		change_state(1, 0);
+	else
+		change_state(0x17, 0);
+	return ret;
+}
 
 int sceKernelDeleteThread(int thid);
 extern int error_code_8265C;
