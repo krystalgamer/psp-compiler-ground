@@ -151,7 +151,30 @@ void *HST_getHeadHistoryNode(void) {
     return cur != NULL ? M2C_FIELD(cur, void **, 0) : NULL;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/history", HST_getHistoryLength);
+int HST_getHistoryLength(void) {
+    int n;
+    void *p;
+
+    n = 0;
+    OS_thread_mutex_lock(M2C_FIELD(history, int *, 8));
+    if (M2C_FIELD(history, void **, 0) == NULL) {
+        OS_thread_mutex_unlock(M2C_FIELD(history, int *, 8));
+        return 0;
+    }
+    n++;
+    p = M2C_FIELD(history, void **, 0);
+    while (p != NULL && M2C_FIELD(p, void **, 8) != NULL) {
+        p = M2C_FIELD(p, void **, 8);
+        n++;
+    }
+    p = M2C_FIELD(history, void **, 0);
+    while (p != NULL && M2C_FIELD(p, void **, 4) != NULL) {
+        p = M2C_FIELD(p, void **, 4);
+        n++;
+    }
+    OS_thread_mutex_unlock(M2C_FIELD(history, int *, 8));
+    return n;
+}
 
 int HST_getCurrentIndex(void) {
     int n = 0;
