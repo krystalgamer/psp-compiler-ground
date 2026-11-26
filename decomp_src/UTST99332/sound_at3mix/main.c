@@ -125,6 +125,16 @@ int sceIoRead(int fd, void *data, unsigned int size);
 int sceIoClose(int fd);
 void sceKernelDcacheWritebackAll(void);
 
+/* SDK prototypes (tools/sdk_protos.h) */
+int printf(const char *fmt, ...);
+int puts(const char *s);
+int sceCtrlReadBufferPositive(SceCtrlData *data, int count);
+int sceDisplayWaitVblankStart(void);
+void *sceGuSwapBuffers(void);
+void sceGuTerm(void);
+int sceKernelDcacheWritebackInvalidateAll(void);
+int sceKernelDeleteThread(int thid);
+
 static int file_read(const char *pFile, void *pBuf, unsigned int uBufSize, unsigned int *uSize, unsigned int uOffset)
 {
 	SceUID fd;

@@ -34,6 +34,9 @@ int mix_loadModule(void);
 int mix_unloadModule(void);
 
 
+/* SDK prototypes (tools/sdk_protos.h) */
+int puts(const char *s);
+
 int load_module(unsigned char *filename, SceKernelLMOption *lm_opt, SceKernelSMOption *sm_opt) {
     int temp_v0;
 
