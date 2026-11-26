@@ -3,6 +3,7 @@
 #include <ctype.h>
 #include "parse_str.h"
 #include "m2c_macros.h"
+#define CI(c, C) (((c) >= 'a' && (c) <= 'z') ? ((c) == (C) + 0x20) : ((c) == (C)))
 extern char D_00137EF0[];
 void *MEM_malloc();
 extern const PDStr D_00137E3C;
@@ -331,7 +332,54 @@ int parseWellFormedCommentWC(PCtx *c) {
     return found;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", parseWellFormedScriptWC);
+int parseWellFormedScriptWC(PCtx *c) {
+    int st;
+    int cm;
+    PChar *p;
+    int i;
+    int last;
+    int nb;
+    int bi;
+    PBuf *b;
+
+    st = 0;
+    cm = 0;
+    p = c->buf->cur;
+    i = 0;
+    last = c->buf->x04 - c->buf->count - 1;
+    nb = c->x1C[1];
+    bi = c->x1C[0];
+    for (;;) {
+        if (p[i] == '<' && p[i + 1] == '!' && p[i + 2] == '-' && p[i + 3] == '-') {
+            cm = 1;
+        }
+        if (p[i] == '-' && p[i + 1] == '-' && p[i + 2] == '>' && cm > 0) {
+            cm = 0;
+        }
+        if (cm == 0) {
+            if (p[i] == '<' && CI(p[i + 1], '/') && CI(p[i + 2], 'S') && CI(p[i + 3], 'C') && CI(p[i + 4], 'R') && CI(p[i + 5], 'I') && CI(p[i + 6], 'P') && CI(p[i + 7], 'T')) {
+                st = 1;
+            }
+            if (st == 1 && p[i] == '>') {
+                st = 2;
+                break;
+            }
+        }
+        if (i == last || last < 0) {
+            if (bi == nb - 1) {
+                break;
+            }
+            bi++;
+            i = 0;
+            b = ((PBuf **)c->x1C[3])[bi];
+            last = b->x04;
+            p = b->cur;
+        } else {
+            i++;
+        }
+    }
+    return st;
+}
 
 int parseWellFormedScriptMB(char *s, int n) {
     int i;
@@ -350,7 +398,44 @@ int parseWellFormedScriptMB(char *s, int n) {
     return st;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", parseWellFormedStyleWC);
+int parseWellFormedStyleWC(PCtx *c) {
+    int st;
+    PChar *p;
+    int i;
+    int last;
+    int nb;
+    int bi;
+    PBuf *b;
+
+    st = 0;
+    p = c->buf->cur;
+    i = 0;
+    last = c->buf->x04 - c->buf->count - 1;
+    nb = c->x1C[1];
+    bi = c->x1C[0];
+    for (;;) {
+        if (p[i] == '<' && CI(p[i + 1], '/') && CI(p[i + 2], 'S') && CI(p[i + 3], 'T') && CI(p[i + 4], 'Y') && CI(p[i + 5], 'L') && CI(p[i + 6], 'E')) {
+            st = 1;
+        }
+        if (st == 1 && p[i] == '>') {
+            st = 2;
+            break;
+        }
+        if (i == last || last < 0) {
+            if (bi == nb - 1) {
+                break;
+            }
+            bi++;
+            i = 0;
+            b = ((PBuf **)c->x1C[3])[bi];
+            last = b->x04 - 1;
+            p = b->cur;
+        } else {
+            i++;
+        }
+    }
+    return st;
+}
 
 int parseWellFormedStyleMB(char *s, int n) {
     int i;
