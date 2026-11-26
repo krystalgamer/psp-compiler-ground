@@ -1774,7 +1774,27 @@ void beat_help_off(void)
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", beat_help_sync_disp);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", hit_check_shield);
+extern int D_005E6F78;
+#define SHI(p, o) (*(int *)((p) + (o)))
+#define SHF(p, o) (*(float *)((p) + (o)))
+int hit_check_shield(float *pos, float r)
+{
+	u8 *p = (u8 *)&D_005E6F78;
+	u8 *s;
+	int i, n = 0;
+
+	for (i = 0; i < 16; i++, p += 0x30) {
+		s = p + 0x14;
+		if (SHI(p, 0x14) == 0)
+			continue;
+		if (SHI(p, 0x18) != 1 && SHI(p, 0x20) == 0 &&
+		    pos_fast_length_xyz_check(pos[0] - SHF(p, 0x2C), pos[1] - SHF(p, 0x30), pos[2] - SHF(p, 0x34), r) == 1) {
+			n++;
+			shield_damage(s, (int)pos);
+		}
+	}
+	return n ? n : -1;
+}
 
 int hit_check_player(float *pos, float r)
 {
