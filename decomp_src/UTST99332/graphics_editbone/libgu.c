@@ -848,7 +848,17 @@ void sceGuClutLoad(int num_blocks, const void *cbp)
 	send_commandi(196, num_blocks);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_editbone/nonmatchings/libgu", sceGuFog);
+void sceGuFog(float near, float far, unsigned int color)
+{
+	float range = far - near;
+	float distance = 0.0f;
+
+	if (range != 0.0f)
+		distance = 1.0f / range;
+	send_commandi(207, color & 0xffffff);
+	send_commandi(205, (*(unsigned int *)&far) >> 8);
+	send_commandi(206, (*(unsigned int *)&distance) >> 8);
+}
 
 void sceGuColorFunc(int func, unsigned int color, unsigned int mask)
 {
