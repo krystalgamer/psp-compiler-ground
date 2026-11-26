@@ -741,7 +741,27 @@ void sceGuDrawArray(int prim, int vtype, int count, const void *indices, const v
 		sceGeListUpdateStallAddr(queid[0], pList->current);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_mars/nonmatchings/libgu", sceGuDrawArrayN);
+void sceGuDrawArrayN(int prim, int vtype, int count, int n, const void *indices, const void *vertices)
+{
+	if (vtype)
+		send_commandi(18, vtype);
+	if (indices) {
+		send_commandi(16, (((unsigned int)indices) >> 8) & 0xf0000);
+		send_commandi(2, ((unsigned int)indices) & 0xffffff);
+	}
+	if (vertices) {
+		send_commandi(16, (((unsigned int)vertices) >> 8) & 0xf0000);
+		send_commandi(1, ((unsigned int)vertices) & 0xffffff);
+	}
+	prim = (prim << 16) | count;
+	{
+		int i;
+
+		for (i = 0; i < n - 1; i++)
+			send_commandi(4, prim);
+	}
+	send_commandi_stall(4, prim);
+}
 
 void sceGuDrawBezier(int vtype, int ucount, int vcount, const void *indices, const void *vertices)
 {
