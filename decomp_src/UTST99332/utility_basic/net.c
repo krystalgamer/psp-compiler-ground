@@ -19,9 +19,39 @@ int init_adhoc(void);
 int term_adhoc(void);
 
 
-INCLUDE_ASM("tmp/asm/UTST99332/utility_basic/nonmatchings/net", init_net);
+int init_net(void)
+{
+	int ret;
 
-INCLUDE_ASM("tmp/asm/UTST99332/utility_basic/nonmatchings/net", term_net);
+	ret = sceNetInit(0x20000, 42, 0x1000, 42, 0x1000);
+	if (ret != 0) {
+		return ret;
+	}
+
+	ret = sceNetInetInit();
+	if (ret != 0) {
+		return ret;
+	}
+
+	return 0;
+}
+
+int term_net(void)
+{
+	int ret;
+
+	ret = sceNetInetTerm();
+	if (ret != 0) {
+		return ret;
+	}
+
+	ret = sceNetTerm();
+	if (ret != 0) {
+		return ret;
+	}
+
+	return 0;
+}
 
 int init_apnet(void) {
     return sceNetApctlInit(0x8000, 0x30);
