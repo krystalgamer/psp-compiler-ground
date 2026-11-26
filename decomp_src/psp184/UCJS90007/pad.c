@@ -275,6 +275,7 @@ extern struct _info _info;
 extern struct _mpeg_info _mpeg_info;
 extern u_int32 cont;
 
+void change_state(enum connect_state state, int error_code);
 static void pad_circle(void);
 static void pad_triangle(void);
 static void pad_square(void);
@@ -511,9 +512,84 @@ void pad_pss_cmd(void) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/pad", pad_start);
+int sceKernelSetEventFlag(int evid, unsigned int bits);
+static void pad_start(void)
+{
+	switch (_info.state) {
+	case 1:
+		if (_info.binlist_entry_num > 0)
+			change_state(4, 0);
+		else if (utility_msgdialog_fileio(0x80410C81) >= 0)
+			change_state(0x17, 0);
+		else
+			change_state(1, 0);
+		break;
+	case 2:
+		change_state(1, 0);
+		break;
+	case 0xF:
+		change_state(0xE, 0);
+		sceKernelSetEventFlag(_mpeg_info.evf_id, 1);
+		break;
+	}
+}
 
 void pad_select(void) {
 }
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/pad", pad_read);
+int sceCtrlReadBufferPositive(SceCtrlData *data, int count);
+int sceCtrlReadBufferPositive(SceCtrlData *pad_data, int count);
+SceUInt64 sceKernelGetSystemTimeWide(void);
+void pad_pss_cmd(void);
+void pad_down(void);
+void pad_left(void);
+void pad_right(void);
+extern int pad_read_cmd_start_flag1 __asm__("D_00082380");
+extern SceUInt64 pad_read_time_to_cmd1 __asm__("D_00082388");
+void pad_read(void)
+{
+	u_int32 prev, padd;
+	SceCtrlData buf;
+
+	prev = cont;
+	sceCtrlReadBufferPositive(&buf, 1);
+	padd = buf.Buttons & (buf.Buttons ^ prev);
+	cont = buf.Buttons;
+	if (padd & 0x2000)
+		pad_circle();
+	if (padd & 0x1000)
+		pad_triangle();
+	if (padd & 0x8000)
+		pad_square();
+	if (padd & 0x4000)
+		pad_cross();
+	if (padd & 0x10)
+		pad_up();
+	if (padd & 0x20)
+		pad_right();
+	if (padd & 0x40)
+		pad_down();
+	if (padd & 0x80)
+		pad_left();
+	if (padd & 0x200)
+		pad_r1();
+	if (padd & 0x8)
+		pad_start();
+	if (padd & 0x1)
+		pad_select();
+	if (_info.state == 1 || _info.state == 14) {
+		if (pad_read_cmd_start_flag1 == 0 && (cont & 0x4310) == 0x4310) {
+			pad_read_cmd_start_flag1 = 1;
+			pad_read_time_to_cmd1 = sceKernelGetSystemTimeWide() + 3000000;
+		} else if (pad_read_cmd_start_flag1 != 0 && (cont & 0x4310) == 0x4310) {
+			if (pad_read_time_to_cmd1 < sceKernelGetSystemTimeWide()) {
+				pad_read_cmd_start_flag1 = 0;
+				pad_read_time_to_cmd1 = 0;
+				pad_pss_cmd();
+			}
+		} else if (pad_read_cmd_start_flag1 != 0 && (cont & 0x4310) != 0x4310) {
+			pad_read_cmd_start_flag1 = 0;
+			pad_read_time_to_cmd1 = 0;
+		}
+	}
+}
