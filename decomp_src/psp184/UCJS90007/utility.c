@@ -301,7 +301,55 @@ int utility_msgdialog_net(int error_code)
 	return sceUtilityMsgDialogInitStart(&msgdialogParam);
 }
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/utility", utility_msgdialog_fileio);
+int snprintf(char *str, unsigned int size, const char *format, ...);
+extern const char D_0002EE18[];
+extern const char D_0002EE20[];
+extern const char D_0002EE2C[];
+extern const char D_0002EE30[];
+int utility_msgdialog_fileio(int error_code)
+{
+	char buf[512];
+	char *msg;
+	int show_code = 0;
+
+	switch (error_code) {
+	case 0x80020321:
+	case 0x80010013:
+	case 0x80410C8A:
+		msg = no_memory_stick_string[_info.lang];
+		break;
+	case 0x80010002:
+	case 0x80410C81:
+		msg = no_game_file_string[_info.lang];
+		break;
+	case 0x80410C82:
+		msg = invalid_pbp_foramt[_info.lang];
+		break;
+	default:
+		if (_info.lang == 0)
+			snprintf(buf, sizeof(buf), D_0002EE18, internal_error_string[_info.lang], ctrl_assign_string[_info.ctrl_assign], reboot_string2[_info.lang]);
+		else
+			snprintf(buf, sizeof(buf), D_0002EE30, internal_error_string[_info.lang], reboot_string1[_info.lang], ctrl_assign_string[_info.ctrl_assign], reboot_string2[_info.lang]);
+		msg = buf;
+		show_code = 1;
+		break;
+	}
+	memset(&msgdialogParam, 0, sizeof(msgdialogParam));
+	msgdialogParam.base.size = sizeof(msgdialogParam);
+	msgdialogParam.base.message_lang = _info.lang;
+	msgdialogParam.base.ctrl_assign = _info.ctrl_assign;
+	msgdialogParam.base.main_thread_priority = 0x11;
+	msgdialogParam.base.sub_thread_priority = 0x13;
+	msgdialogParam.base.font_thread_priority = 0x12;
+	msgdialogParam.base.sound_thread_priority = 0x10;
+	if (show_code)
+		snprintf(msgdialogParam.msgString, sizeof(msgdialogParam.msgString), D_0002EE20, msg, error_code);
+	else
+		snprintf(msgdialogParam.msgString, sizeof(msgdialogParam.msgString), D_0002EE2C, msg);
+	msgdialogParam.type = 1;
+	msgdialogParam.optionType = 0;
+	return sceUtilityMsgDialogInitStart(&msgdialogParam);
+}
 
 INCLUDE_RODATA("tmp/asm/psp184/UCJS90007/nonmatchings/utility", D_0002DF40);
 
@@ -411,17 +459,142 @@ INCLUDE_RODATA("tmp/asm/psp184/UCJS90007/nonmatchings/utility", D_0002EDC0);
 
 INCLUDE_RODATA("tmp/asm/psp184/UCJS90007/nonmatchings/utility", D_0002EDF0);
 
-INCLUDE_RODATA("tmp/asm/psp184/UCJS90007/nonmatchings/utility", D_0002EE18);
+const char D_0002EE18[] = "%s\n%s%s";
+const char D_0002EE20[] = "%s\n(%08x)";
+const char D_0002EE2C[] = "%s";
+const char D_0002EE30[] = "%s %s%s%s";
+const char D_0002EE3C[] = "%s\n(%08x, %08x)";
+const char D_0002EE4C[] = "%s\n%s%s%s";
 
-INCLUDE_RODATA("tmp/asm/psp184/UCJS90007/nonmatchings/utility", D_0002EE20);
+int snprintf(char *str, unsigned int size, const char *format, ...);
+extern const char D_0002EE18[];
+extern const char D_0002EE20[];
+extern const char D_0002EE2C[];
+extern const char D_0002EE30[];
+extern const char D_0002EE3C[];
+extern const char D_0002EE4C[];
+int utility_msgdialog_mpeg_fileio(int error_code)
+{
+	char buf[512];
+	char *msg;
+	int show_code = 0;
 
-INCLUDE_RODATA("tmp/asm/psp184/UCJS90007/nonmatchings/utility", D_0002EE2C);
+	switch (error_code) {
+	case 0x80020321:
+	case 0x80010013:
+	case 0x80410C8A:
+		if (_info.lang == 0)
+			snprintf(buf, sizeof(buf), D_0002EE18, no_memory_stick_string[_info.lang], ctrl_assign_string[_info.ctrl_assign], reboot_string2[_info.lang]);
+		else
+			snprintf(buf, sizeof(buf), D_0002EE4C, no_memory_stick_string[_info.lang], reboot_string1[_info.lang], ctrl_assign_string[_info.ctrl_assign], reboot_string2[_info.lang]);
+		msg = buf;
+		break;
+	case 0x80010002:
+	case 0x80410C81:
+		msg = no_movie_file_string[_info.lang];
+		break;
+	case 0x80410C84:
+		msg = invalid_psmf_foramt_string[_info.lang];
+		break;
+	case 0x80410C85:
+	case 0x80410C86:
+	case 0x80410C87:
+	case 0x80410C88:
+	case 0x80410C89:
+		if (_info.lang == 0)
+			snprintf(buf, sizeof(buf), D_0002EE18, movie_play_error_string[_info.lang], ctrl_assign_string[_info.ctrl_assign], reboot_string2[_info.lang]);
+		else
+			snprintf(buf, sizeof(buf), D_0002EE30, movie_play_error_string[_info.lang], reboot_string1[_info.lang], ctrl_assign_string[_info.ctrl_assign], reboot_string2[_info.lang]);
+		msg = buf;
+		show_code = 1;
+		break;
+	case 0x80410C83:
+	default:
+		if (_info.lang == 0)
+			snprintf(buf, sizeof(buf), D_0002EE18, internal_error_string[_info.lang], ctrl_assign_string[_info.ctrl_assign], reboot_string2[_info.lang]);
+		else
+			snprintf(buf, sizeof(buf), D_0002EE30, internal_error_string[_info.lang], reboot_string1[_info.lang], ctrl_assign_string[_info.ctrl_assign], reboot_string2[_info.lang]);
+		msg = buf;
+		show_code = 1;
+		break;
+	}
+	memset(&msgdialogParam, 0, sizeof(msgdialogParam));
+	msgdialogParam.base.size = sizeof(msgdialogParam);
+	msgdialogParam.base.message_lang = _info.lang;
+	msgdialogParam.base.ctrl_assign = _info.ctrl_assign;
+	msgdialogParam.base.main_thread_priority = 0x11;
+	msgdialogParam.base.sub_thread_priority = 0x13;
+	msgdialogParam.base.font_thread_priority = 0x12;
+	msgdialogParam.base.sound_thread_priority = 0x10;
+	if (show_code) {
+		if (error_code == 0x80410C85)
+			snprintf(msgdialogParam.msgString, sizeof(msgdialogParam.msgString), D_0002EE20, msg, _info.actual_err_code);
+		else if (error_code >= 0x80410C86 && error_code <= 0x80410C89)
+			snprintf(msgdialogParam.msgString, sizeof(msgdialogParam.msgString), D_0002EE3C, msg, error_code, _info.actual_err_code_thr);
+		else
+			snprintf(msgdialogParam.msgString, sizeof(msgdialogParam.msgString), D_0002EE20, msg, error_code);
+	} else
+		snprintf(msgdialogParam.msgString, sizeof(msgdialogParam.msgString), D_0002EE2C, msg);
+	msgdialogParam.type = 1;
+	msgdialogParam.optionType = 0;
+	return sceUtilityMsgDialogInitStart(&msgdialogParam);
+}
 
-INCLUDE_RODATA("tmp/asm/psp184/UCJS90007/nonmatchings/utility", D_0002EE30);
+const char D_0002EE58[] = "\"%s\"\n\nTITLE: %s\nDISC_ID: %s\nPARENTAL_LEVEL: %d";
+int snprintf(char *str, unsigned int size, const char *format, ...);
+extern const char D_0002EE18[];
+extern const char D_0002EE20[];
+extern const char D_0002EE2C[];
+extern const char D_0002EE30[];
+extern const char D_0002EE58[];
+int utility_msgdialog_paramsfo(int error_code)
+{
+	char buf[512];
+	char *msg = NULL;
+	int show_code = 0;
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/utility", utility_msgdialog_mpeg_fileio);
-
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/utility", utility_msgdialog_paramsfo);
+	if (error_code < 0) {
+		switch (error_code) {
+		case 0x80020321:
+		case 0x80010013:
+		case 0x80410C8A:
+			msg = no_memory_stick_string[_info.lang];
+			break;
+		case 0x80010002:
+		case 0x80410C81:
+			msg = no_game_file_string[_info.lang];
+			break;
+		case 0x80410C82:
+			msg = invalid_pbp_foramt[_info.lang];
+			break;
+		default:
+			if (_info.lang == 0)
+				snprintf(buf, sizeof(buf), D_0002EE18, internal_error_string[_info.lang], ctrl_assign_string[_info.ctrl_assign], reboot_string2[_info.lang]);
+			else
+				snprintf(buf, sizeof(buf), D_0002EE30, internal_error_string[_info.lang], reboot_string1[_info.lang], ctrl_assign_string[_info.ctrl_assign], reboot_string2[_info.lang]);
+			msg = buf;
+			show_code = 1;
+			break;
+		}
+	}
+	memset(&msgdialogParam, 0, sizeof(msgdialogParam));
+	msgdialogParam.base.size = sizeof(msgdialogParam);
+	msgdialogParam.base.message_lang = _info.lang;
+	msgdialogParam.base.ctrl_assign = _info.ctrl_assign;
+	msgdialogParam.base.main_thread_priority = 0x11;
+	msgdialogParam.base.sub_thread_priority = 0x13;
+	msgdialogParam.base.font_thread_priority = 0x12;
+	msgdialogParam.base.sound_thread_priority = 0x10;
+	msgdialogParam.type = 1;
+	msgdialogParam.optionType = 0;
+	if (msg == NULL)
+		snprintf(msgdialogParam.msgString, sizeof(msgdialogParam.msgString), D_0002EE58, _info.paramsfo_filename, _info.paramsfo_title, _info.paramsfo_discid, _info.paramsfo_parental);
+	else if (show_code)
+		snprintf(msgdialogParam.msgString, sizeof(msgdialogParam.msgString), D_0002EE20, msg, error_code);
+	else
+		snprintf(msgdialogParam.msgString, sizeof(msgdialogParam.msgString), D_0002EE2C, msg);
+	return sceUtilityMsgDialogInitStart(&msgdialogParam);
+}
 
 int utility_update_msgdialog(void)
 {
@@ -454,7 +627,43 @@ int utility_check_msgdialog_completed(int *done_flag)
 	return ret;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/utility", utility_osk);
+int sceUtilityOskInitStart(SceUtilityOskParam *param);
+int utility_osk(void)
+{
+	int i;
+	SceWChar16 *message = NULL;
+
+	memset(&osk_param, 0, sizeof(osk_param));
+	osk_param.base.size = sizeof(osk_param);
+	osk_param.base.main_thread_priority = 0x11;
+	osk_param.base.sub_thread_priority = 0x13;
+	osk_param.base.font_thread_priority = 0x12;
+	osk_param.base.sound_thread_priority = 0x10;
+	osk_param.base.reserved1 = 0;
+	osk_param.base.reserved2 = 0;
+	if (_info.v_cursor_pos == 1) {
+		for (i = 0; _info.bin_filename[i] != '\0'; i++)
+			init_string[i] = _info.bin_filename[i];
+		init_string[i] = 0;
+		osk_param.num_input_fields = 1;
+		message = bin_filename_string;
+	}
+	oskInputFieldInfo.input_method_type = 0;
+	oskInputFieldInfo.input_method_attributes = 0;
+	oskInputFieldInfo.writing_language_type = 0;
+	oskInputFieldInfo.hide_mode = 0;
+	oskInputFieldInfo.input_character_type = 0xF;
+	oskInputFieldInfo.num_lines = 1;
+	oskInputFieldInfo.kinsoku = 1;
+	oskInputFieldInfo.message = message;
+	oskInputFieldInfo.init_text = init_string;
+	oskInputFieldInfo.result_text_buffer_size = 0x100;
+	oskInputFieldInfo.result_text_buffer = result_string;
+	oskInputFieldInfo.result = 0;
+	oskInputFieldInfo.limit_length = 0;
+	osk_param.input_field_info = &oskInputFieldInfo;
+	return sceUtilityOskInitStart(&osk_param);
+}
 
 int utility_update_osk(void)
 {
