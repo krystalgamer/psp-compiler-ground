@@ -237,7 +237,41 @@ int playInfo_getAudioOutSize(t_playInfo *pPlayInfo) {
     return decode_getAudioOutSize(&pPlayInfo->streamData);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/mpeg_seamless_change/nonmatchings/playInfo", playInfo_changeAudioStream);
+SceInt32 playInfo_changeAudioStream(t_playInfo *pPlayInfo)
+{
+	SceInt32 ret;
+	SceInt32 audioStreamNum;
+	SceInt32 currentAudioStream;
+	SceInt32 nextAudioStream;
+
+	audioStreamNum = sInfo_getNumberOfStreams(&pPlayInfo->sInfo, 1);
+	if (audioStreamNum == 0) {
+		return 0;
+	}
+
+	currentAudioStream = sInfo_getCurrentStreamTypeNumber(&pPlayInfo->sInfo, 1);
+
+	nextAudioStream = (currentAudioStream + 1) % audioStreamNum;
+
+	sInfo_setCurrentStream(&pPlayInfo->sInfo, 1, nextAudioStream);
+
+	decode_setCurrentStream(&pPlayInfo->streamData, 1, nextAudioStream);
+
+	ret = decode_changeAuMode(&pPlayInfo->streamData, 1, currentAudioStream, 0);
+	if (ret != 0) {
+		printf("fatal error : decode_changeAuMode() 0x%x\n", ret);
+		goto term;
+	}
+
+	ret = decode_changeAuMode(&pPlayInfo->streamData, 1, nextAudioStream, 1);
+	if (ret != 0) {
+		printf("fatal error : decode_changeAuMode() 0x%x\n", ret);
+		goto term;
+	}
+
+term:
+	return ret;
+}
 
 int playInfo_flushDecoder(t_playInfo *pPlayInfo) {
     return decode_flushDecoder(&pPlayInfo->streamData);
