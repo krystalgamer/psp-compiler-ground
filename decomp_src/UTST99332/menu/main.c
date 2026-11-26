@@ -310,7 +310,29 @@ static void DrawFunc(void)
 
 INCLUDE_ASM("tmp/asm/UTST99332/menu/nonmatchings/main", KeyFunc);
 
-INCLUDE_ASM("tmp/asm/UTST99332/menu/nonmatchings/main", ProgramSwitch);
+static int ProgramSwitch(void)
+{
+	int flag = 0;
+
+	if (program.next != -1) {
+		program.mode = program.next;
+		program.next = -1;
+		program.flag = 0;
+	}
+	switch (program.flag) {
+	case 0:
+		flag = 1;
+		if (func[program.mode].init)
+			func[program.mode].init();
+		program.flag = 1;
+		break;
+	case 1:
+		if (func[program.mode].run)
+			func[program.mode].run();
+		break;
+	}
+	return flag;
+}
 
 void ProgramChange(int mode) {
     if (program.next != mode) {
