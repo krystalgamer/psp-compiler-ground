@@ -80,7 +80,24 @@ static SceInt32 swap_buffer(SceChar8 *buffer)
 
 INCLUDE_ASM("tmp/asm/UTST99332/mpeg_ezmpegstr/nonmatchings/display", dispbuf_create);
 
-INCLUDE_ASM("tmp/asm/UTST99332/mpeg_ezmpegstr/nonmatchings/display", dispbuf_reset);
+int sceDisplaySetMode(int mode, int width, int height);
+SceInt32 dispbuf_reset(t_displayBuffer *pDisp)
+{
+	SceInt32 ret;
+
+	frameCount = 0;
+	frameLoss = 0;
+	pDisp->write = 0;
+	pDisp->read = 0;
+	pDisp->count = 0;
+	dispbuf_setMode(pDisp, 1);
+	ret = sceDisplaySetMode(0, 480, 272);
+	if (ret < 0) {
+		return ret;
+	}
+	sceDisplaySetFrameBuf(0, 512, 3, 1);
+	return 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/mpeg_ezmpegstr/nonmatchings/display", dispbuf_delete);
 

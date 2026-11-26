@@ -81,7 +81,17 @@ SceInt32 soundbuf_output(t_soundBuffer *pSound);
 
 INCLUDE_ASM("tmp/asm/UTST99332/mpeg_ezmpegstr/nonmatchings/sound", soundbuf_create);
 
-INCLUDE_ASM("tmp/asm/UTST99332/mpeg_ezmpegstr/nonmatchings/sound", soundbuf_reset);
+SceInt32 soundbuf_reset(t_soundBuffer *pSound)
+{
+	soundframeCount = 0;
+	soundframeDelay = 0;
+	sceKernelClearEventFlag(pSound->status_flag, 0);
+	pSound->write = 0;
+	pSound->read = 0;
+	pSound->count = 0;
+	pSound->soundLatestTimestamp = 0;
+	return 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/mpeg_ezmpegstr/nonmatchings/sound", soundbuf_delete);
 
@@ -114,7 +124,16 @@ int soundbuf_getPts(t_soundBuffer *pSound, unsigned int *pPts) {
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/mpeg_ezmpegstr/nonmatchings/sound", soundbuf_setBuf);
+int sceKernelSignalSema(int semid, int signal);
+int sceKernelWaitSema(int semid, int signal, unsigned int *timeout);
+SceInt32 soundbuf_setBuf(t_soundBuffer *pSound)
+{
+	sceKernelWaitSema(pSound->lock_sema, 1, 0);
+	pSound->count++;
+	sceKernelSignalSema(pSound->lock_sema, 1);
+	pSound->write = (pSound->write + 1) % pSound->size;
+	return 0;
+}
 
 int soundbuf_getCapacity(t_soundBuffer *pSound) {
     return pSound->size - pSound->count;
@@ -129,9 +148,26 @@ int soundbuf_setDemuxEnd(t_soundBuffer *pSound) {
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/mpeg_ezmpegstr/nonmatchings/sound", soundbuf_getStatus);
+static SceInt32 soundbuf_getStatus(t_soundBuffer *pSound, SceUInt32 *pPattern)
+{
+	SceKernelEventFlagInfo info;
 
-INCLUDE_ASM("tmp/asm/UTST99332/mpeg_ezmpegstr/nonmatchings/sound", soundbuf_checkDemuxEnd);
+	info.size = sizeof(info);
+	sceKernelReferEventFlagStatus(pSound->status_flag, &info);
+	*pPattern = info.currentPattern;
+	return 0;
+}
+
+static SceInt32 soundbuf_checkDemuxEnd(t_soundBuffer *pSound)
+{
+	SceUInt32 pattern;
+
+	soundbuf_getStatus(pSound, &pattern);
+	if ((pattern & 3) == 3) {
+		return 0;
+	}
+	return -1;
+}
 
 int soundbuf_setStartFlag(t_soundBuffer *pSound) {
     return sceKernelSetEventFlag(pSound->status_flag, 1);
@@ -139,6 +175,21 @@ int soundbuf_setStartFlag(t_soundBuffer *pSound) {
 
 INCLUDE_ASM("tmp/asm/UTST99332/mpeg_ezmpegstr/nonmatchings/sound", soundbuf_func);
 
-INCLUDE_ASM("tmp/asm/UTST99332/mpeg_ezmpegstr/nonmatchings/sound", soundbuf_swapbuf);
+void *memcpy(void *d, const void *s, unsigned int n);
+extern int D_0001033C;
+static SceInt32 soundbuf_swapbuf(t_soundBuffer *pSound, SceChar8 *buf)
+{
+	memcpy(output_buf[D_0001033C], buf, pSound->buf_size);
+	pSound->read = (pSound->read + 1) % pSound->size;
+	sceWaveAudioWriteBlocking(0, 0x8000, 0x8000, output_buf[D_0001033C]);
+	D_0001033C ^= 1;
+	return 0;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/mpeg_ezmpegstr/nonmatchings/sound", soundbuf_output);
+SceInt32 soundbuf_output(t_soundBuffer *pSound)
+{
+	SceChar8 *buf = pSound->buf[pSound->read];
+
+	soundbuf_swapbuf(pSound, buf);
+	return 0;
+}
