@@ -1,3 +1,4 @@
+/* cflags: -O0 */
 #include "common.h"
 
 /* declarations recovered from DWARF */
@@ -233,15 +234,38 @@ INCLUDE_ASM("tmp/asm/UTST99332/utility_font_basho/nonmatchings/basho", draw_bash
 
 INCLUDE_ASM("tmp/asm/UTST99332/utility_font_basho/nonmatchings/basho", print_basho_pos);
 
-INCLUDE_ASM("tmp/asm/UTST99332/utility_font_basho/nonmatchings/basho", change_basho_texture);
+void change_basho_texture(void)
+{
+	currentTexture = (currentTexture + 1) % numTexture;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/utility_font_basho/nonmatchings/basho", increment_basho_xpos);
+void increment_basho_xpos(float pos_diff)
+{
+	basho.pos.x += pos_diff;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/utility_font_basho/nonmatchings/basho", increment_basho_ypos);
+void increment_basho_ypos(float pos_diff)
+{
+	basho.pos.y += pos_diff;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/utility_font_basho/nonmatchings/basho", increment_basho_scale);
+void increment_basho_scale(float scale_diff)
+{
+	if (scale_diff < 0.0f) {
+		if (basho.scale.x < 3.0f) return;
+	} else if (basho.scale.x > 25.0f) {
+		return;
+	}
+	basho.scale.x += scale_diff;
+	basho.scale.y += scale_diff;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/utility_font_basho/nonmatchings/basho", increment_basho_rot);
+void increment_basho_rot(float rot_x_diff, float rot_y_diff, float rot_z_diff)
+{
+	basho.rot.x += rot_x_diff;
+	basho.rot.y += rot_y_diff;
+	basho.rot.z += rot_z_diff;
+}
 
 INCLUDE_RODATA("tmp/asm/UTST99332/utility_font_basho/nonmatchings/basho", D_00013258);
 
@@ -259,18 +283,97 @@ INCLUDE_ASM("tmp/asm/UTST99332/utility_font_basho/nonmatchings/basho", myMakeTex
 
 INCLUDE_ASM("tmp/asm/UTST99332/utility_font_basho/nonmatchings/basho", myDoneFontLibrary);
 
-INCLUDE_ASM("tmp/asm/UTST99332/utility_font_basho/nonmatchings/basho", myAlloc);
+static void *myAlloc(int size)
+{
+	void *p;
 
-INCLUDE_ASM("tmp/asm/UTST99332/utility_font_basho/nonmatchings/basho", myFree);
+	p = memalign(4, size + 4);
+	if (p == NULL) {
+		return NULL;
+	}
+	*(int *)p = size;
+	TotalAllocatedSize += size;
+	if (TotalAllocatedSizePeak < TotalAllocatedSize) {
+		TotalAllocatedSizePeak = TotalAllocatedSize;
+	}
+	return (char *)p + 4;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/utility_font_basho/nonmatchings/basho", cb_Alloc);
+static void myFree(void *p)
+{
+	int size;
 
-INCLUDE_ASM("tmp/asm/UTST99332/utility_font_basho/nonmatchings/basho", cb_Free);
+	p = (char *)p - 4;
+	size = *(int *)p;
+	TotalAllocatedSize -= size;
+	free(p);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/utility_font_basho/nonmatchings/basho", cb_Open);
+static SceFont_t_pointer cb_Alloc(SceFont_t_pointer pMyData, SceFont_t_u32 size)
+{
+	return myAlloc(size);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/utility_font_basho/nonmatchings/basho", cb_Close);
+static void cb_Free(SceFont_t_pointer pMyData, SceFont_t_pointer p)
+{
+	myFree(p);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/utility_font_basho/nonmatchings/basho", cb_Read);
+static SceFont_t_handle cb_Open(SceFont_t_pointer pMyData, SceFont_t_pointer pFilename, SceFont_t_error *pErrorCode)
+{
+	{
+		SceFont_t_handle FileID;
+		int result;
 
-INCLUDE_ASM("tmp/asm/UTST99332/utility_font_basho/nonmatchings/basho", cb_Seek);
+		result = sceIoOpen((const char *)pFilename, 1, 0);
+		if (result < 0) {
+			FileID = 0;
+			*pErrorCode = 0x80460005;
+		} else {
+			FileID = (SceFont_t_handle)result;
+			*pErrorCode = 0;
+		}
+		return FileID;
+	}
+}
+
+static SceFont_t_error cb_Close(SceFont_t_pointer pMyData, SceFont_t_handle FileID)
+{
+	{
+		SceUID uid = sceIoClose((SceUID)FileID);
+
+		if (uid == (SceUID)0x80020323 || uid < 0) {
+			return 0x80460006;
+		}
+		return 0;
+	}
+}
+
+static SceFont_t_u32 cb_Read(SceFont_t_pointer pMyData, SceFont_t_handle FileID, SceFont_t_pointer pBuffer, SceFont_t_u32 NumByte, SceFont_t_u32 NumUnit, SceFont_t_error *pErrorCode)
+{
+	SceFont_t_u32 readCount;
+
+	{
+		SceFont_t_u32 result;
+
+		result = sceIoRead((SceUID)FileID, pBuffer, NumByte * NumUnit);
+		if (result < NumByte * NumUnit) {
+			readCount = 0;
+			*pErrorCode = 0x80460007;
+		} else {
+			readCount = result / NumByte;
+			*pErrorCode = 0;
+		}
+	}
+	return readCount;
+}
+
+long long sceIoLseek(SceUID fd, long long offset, int whence);
+
+static SceFont_t_error cb_Seek(SceFont_t_pointer pMyData, SceFont_t_handle FileID, SceFont_t_u32 Offset)
+{
+	if (sceIoLseek((SceUID)FileID, Offset, 0) < 0) {
+		return 0x80460008;
+	}
+	return 0;
+}
