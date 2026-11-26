@@ -65,6 +65,18 @@ M2C_UNK MEM_free(M2C_UNK, void *);                  /* extern */
 
 int GUI_createCheckbox();
 int GUI_createList();
+int FIO_fopen();
+int FIO_fseek();
+int FIO_ftell();
+int FIO_fread();
+int FIO_fclose();
+int GUI_Graphics_getImage();
+int OS_clock_gettime();
+void *MEM_malloc();
+typedef struct {
+    int sec;
+    int nsec;
+} RTIME;
 int GUI_createTextField();
 int GUI_createTextArea();
 int GUI_TextField_setText();
@@ -653,7 +665,49 @@ INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_gdraw", D_00133564);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_gdraw", rnd_gdrawImageDecode);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_gdraw", rnd_gdrawImageDecodeByGifFile);
+RGIMAGE *rnd_gdrawImageDecodeByGifFile(char *name) {
+    int fp;
+    int size;
+    void *buf;
+    int img;
+    RGIMAGE *r;
+    RTIME tm;
+
+    fp = FIO_fopen(name, "r");
+    if (fp == 0) {
+        return NULL;
+    }
+    FIO_fseek(fp, 0, 2);
+    size = FIO_ftell(fp);
+    if (size == 0) {
+        goto fail;
+    }
+    FIO_fseek(fp, 0, 0);
+    buf = MEM_malloc(0, size);
+    if (buf == NULL) {
+fail:
+        FIO_fclose(fp);
+        return NULL;
+    }
+    FIO_fread(buf, size, 1, fp);
+    FIO_fclose(fp);
+    img = GUI_Graphics_getImage(buf, size, 1);
+    MEM_free(0, buf);
+    if (img == 0) {
+        return NULL;
+    }
+    r = MEM_malloc(0, sizeof(RGIMAGE));
+    if (r == NULL) {
+        return NULL;
+    }
+    r->type = 1;
+    r->pixmap = img;
+    OS_clock_gettime(0, &tm);
+    r->x = tm.sec;
+    r->y = tm.nsec;
+    r->unk1C = 0;
+    return r;
+}
 
 int rnd_gdrawImageProperty(RGIMAGE *img, int *w, int *h) {
     int a;
