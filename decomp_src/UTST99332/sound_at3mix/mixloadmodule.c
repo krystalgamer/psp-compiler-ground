@@ -68,4 +68,22 @@ static int unload_module(SceUID mid)
 
 INCLUDE_ASM("tmp/asm/UTST99332/sound_at3mix/nonmatchings/mixloadmodule", mix_loadModule);
 
-INCLUDE_ASM("tmp/asm/UTST99332/sound_at3mix/nonmatchings/mixloadmodule", mix_unloadModule);
+int mix_unloadModule(void)
+{
+	if (unload_module(atrac3Mid) < 0) {
+		printf("fatal error : cannot unload atrac3plus module\n");
+		return -1;
+	}
+
+	if (unload_module(audioMid) < 0) {
+		printf("fatal error : cannot unload audiocodec module\n");
+		return -1;
+	}
+
+	if (unload_module(sasMid) < 0) {
+		printf("fatal error : cannot unload SAS module\n");
+		return -1;
+	}
+
+	return 0;
+}
