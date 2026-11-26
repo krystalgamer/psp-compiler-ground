@@ -63,7 +63,19 @@ M2C_UNK GUI_Graphics_freeAnimationGIF(int);         /* extern */
 M2C_UNK GUI_Graphics_freePixmap(int);               /* extern */
 M2C_UNK MEM_free(M2C_UNK, void *);                  /* extern */
 
-M2C_UNK color2rgb();                                /* extern */
+int GUI_createCheckbox();
+int GUI_createList();
+int GUI_createFrameBorder();
+int GUI_Component_setColor();
+int GUI_Component_setFocusColor();
+int GUI_Component_setEnabled();
+int GUI_Component_setFont();
+int GUI_Component_getSize();
+int GUI_Component_setLocation();
+int GUI_Component_setSize();
+int GUI_Component_setVisible();
+int GUI_Graphics_getMaskPattern();
+void rnd_drawFrameCallback();
 M2C_UNK rnd_drawRepaint();                          /* extern */
 M2C_UNK GUI_ScrollPane_getViewportSize();           /* extern */
 M2C_UNK rnd_updateAnimImageBoxnode();               /* extern */
@@ -210,7 +222,27 @@ int rnd_gdrawGetTextboxSelectionString(int w, char **out) {
     return n;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_gdraw", rnd_gdrawCreateCheckbox);
+int rnd_gdrawCreateCheckbox(int parent, int fgc, int bgc, int fcc, int disabled) {
+    int fg[3];
+    int bg[3];
+    int fc[3];
+    int w;
+
+    w = GUI_createCheckbox(parent, 0);
+    if (w == 0) {
+        return 0;
+    }
+    color2rgb(fg, fgc);
+    color2rgb(bg, bgc);
+    GUI_Component_setColor(w, fg, bg);
+    color2rgb(fc, fcc);
+    GUI_Component_setFocusColor(w, fc);
+    GUI_ScrollPane_add(GUI_Component_getParent(parent), w);
+    if (disabled) {
+        GUI_Component_setEnabled(w, 0);
+    }
+    return w;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -257,7 +289,28 @@ int rnd_gdrawGetPulldownExtents(int font, char *s, int n2, int *w, int *h) {
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_gdraw", rnd_gdrawCreateList);
+int rnd_gdrawCreateList(int parent, int fgc, int bgc, int fcc, int font, int multi, int disabled) {
+    int fg[3];
+    int bg[3];
+    int fc[3];
+    int w;
+
+    w = GUI_createList(parent, multi != 0);
+    if (w == 0) {
+        return 0;
+    }
+    color2rgb(fg, fgc);
+    color2rgb(bg, bgc);
+    GUI_Component_setColor(w, fg, bg);
+    color2rgb(fc, fcc);
+    GUI_Component_setFocusColor(w, fc);
+    GUI_ScrollPane_add(GUI_Component_getParent(parent), w);
+    GUI_Component_setFont(w, font);
+    if (disabled) {
+        GUI_Component_setEnabled(w, 0);
+    }
+    return w;
+}
 
 int rnd_gdrawGetListExtents(int font, char *s, int rows, int *w, int *h) {
     int n;
@@ -281,9 +334,37 @@ void rnd_gdrawSetListState(int w, int index, int state) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_gdraw", rnd_drawFrameCallback);
+void rnd_drawFrameCallback(int w, int g, int fgc, int bgc) {
+    int fg[3];
+    int bg[3];
+    int wd;
+    int h;
+    int p;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_gdraw", rnd_gdrawCreateBorder);
+    color2rgb(fg, fgc);
+    color2rgb(bg, bgc);
+    GUI_Component_getSize(w, &wd, &h);
+    p = GUI_Graphics_getMaskPattern(fg, bg);
+    if (p != 0) {
+        GUI_Graphics_drawTiledPixmap(g, p, 0, 0, wd, h, 0, 0);
+        GUI_Graphics_freePixmap(p);
+    }
+}
+
+int rnd_gdrawCreateBorder(int parent, int x, int y, int w, int h, int fgc, int bgc, int visible) {
+    int b;
+
+    b = GUI_createFrameBorder(parent, rnd_drawFrameCallback, fgc, bgc);
+    if (b == 0) {
+        return 0;
+    }
+    GUI_Component_setLocation(b, x, y);
+    GUI_Component_setSize(b, w, h);
+    if (visible == 1) {
+        GUI_Component_setVisible(b);
+    }
+    return b;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
