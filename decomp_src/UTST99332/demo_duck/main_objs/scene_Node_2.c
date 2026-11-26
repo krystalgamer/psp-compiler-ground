@@ -21,9 +21,11 @@ scene::Node::Members::Members(std::string name, bool mapped)
 {
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Node_2", _ZN5scene4NodeC2ESsb);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Node_2", _ZN5scene4NodeC1ESsb);
+scene::Node::Node(std::string name, bool mapped) : _m(name, mapped)
+{
+    bits = false;
+    _m._create_count = constructor_counter++;
+}
 
 bool scene::Node::isMapped() const
 {
