@@ -269,7 +269,76 @@ INCLUDE_RODATA("tmp/asm/UTST99332/net_network_flow/nonmatchings/main", D_00014FC
 
 INCLUDE_RODATA("tmp/asm/UTST99332/net_network_flow/nonmatchings/main", D_00014FD8);
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_network_flow/nonmatchings/main", rot_trans_pers);
+#ifndef SCEGU_MATRIX_PROJECTION
+#define SCEGU_MATRIX_PROJECTION            0
+#endif
+#ifndef SCEGU_MATRIX_WORLD
+#define SCEGU_MATRIX_WORLD                 2
+#endif
+#ifndef SCEGU_SCR_WIDTH
+#define SCEGU_SCR_WIDTH       480
+#endif
+#ifndef SCEGU_SCR_HEIGHT
+#define SCEGU_SCR_HEIGHT      272
+#endif
+#ifndef MAX_U
+#define MAX_U		50
+#endif
+#ifndef MAX_V
+#define MAX_V		50
+#endif
+#ifndef MAXCONTROL
+#define MAXCONTROL	(MAX_U*MAX_V)
+#endif
+#ifndef MIN_OBJ_Z
+#define MIN_OBJ_Z	2.0f
+#endif
+#ifndef GRID
+#define GRID		3
+#endif
+#ifndef DPOS
+#define DPOS		1.0f
+#endif
+#ifndef DROT
+#define DROT		1.0f
+#endif
+#ifndef LOBBY_IBSS_START
+#define LOBBY_IBSS_START	0
+#endif
+#ifndef LOBBY_IBSS
+#define LOBBY_IBSS			1
+#endif
+#ifndef GAME_IBSS
+#define GAME_IBSS			2
+#endif
+#ifndef GAME_IBSS_START
+#define GAME_IBSS_START		3
+#endif
+#ifndef MAX_OBJ
+#define MAX_OBJ		8
+#endif
+static void rot_trans_pers(ScePspFVector3 *in, ScePspIVector2 *out)
+{
+	ScePspFMatrix4  wmat, pmat;
+	ScePspFVector4  tmp1, tmp2;
+
+	sceGumMatrixMode(SCEGU_MATRIX_PROJECTION);
+	sceGumStoreMatrix(&pmat);
+	sceGumMatrixMode(SCEGU_MATRIX_WORLD);
+	sceGumStoreMatrix(&wmat);
+	tmp1.x=wmat.x.x*in->x+wmat.y.x*in->y+wmat.z.x*in->z+wmat.w.x;
+	tmp1.y=wmat.x.y*in->x+wmat.y.y*in->y+wmat.z.y*in->z+wmat.w.y;
+	tmp1.z=wmat.x.z*in->x+wmat.y.z*in->y+wmat.z.z*in->z+wmat.w.z;
+	tmp1.w=wmat.x.w*in->x+wmat.y.w*in->y+wmat.z.w*in->z+wmat.w.z;
+
+	tmp2.x=pmat.x.x*tmp1.x+pmat.y.x*tmp1.y+pmat.z.x*tmp1.z;
+	tmp2.y=pmat.x.y*tmp1.x+pmat.y.y*tmp1.y+pmat.z.y*tmp1.z;
+	tmp2.z=pmat.x.z*tmp1.x+pmat.y.z*tmp1.y+pmat.z.z*tmp1.z;
+	tmp2.w=pmat.x.w*tmp1.x+pmat.y.w*tmp1.y+pmat.z.w*tmp1.z;
+
+	out->x = (int)((SCEGU_SCR_WIDTH/2)*tmp2.x/tmp2.w+SCEGU_SCR_WIDTH/2);
+	out->y = (int)((-SCEGU_SCR_HEIGHT/2)*tmp2.y/tmp2.w+SCEGU_SCR_HEIGHT/2);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/net_network_flow/nonmatchings/main", set_object);
 
