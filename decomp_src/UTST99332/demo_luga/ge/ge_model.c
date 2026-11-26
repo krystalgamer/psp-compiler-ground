@@ -164,7 +164,11 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/ge/ge_model", geObjectDraw
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/ge/ge_model", geModelLoad);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/ge/ge_model", geModelDelete);
+void geModelDelete(int num)
+{
+	sceGmoModelDelete(ge_model[num]);
+	ge_model[num] = NULL;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/ge/ge_model", geModelDraw);
 
