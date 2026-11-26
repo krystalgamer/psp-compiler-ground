@@ -1,5 +1,6 @@
 #include "common.h"
 
+
 /* declarations recovered from DWARF */
 struct _anon1;
 struct _anon1 { /* size 0x44 */
@@ -140,11 +141,37 @@ INCLUDE_RODATA("tmp/asm/flowars/flowars/nonmatchings/ai", D_000308BC);
 
 INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/ai", set_sp_status);
 
-INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/ai", is_bisang);
+static int is_bisang(int flagPlayer, int special_kind)
+{
+	int n;
+	int cnt;
+
+	cnt = g_sp_status[special_kind].num;
+	if (special_kind == 5)
+		n = 5;
+	else
+		n = 3;
+	if (g_sp_status[special_kind].active == flagPlayer && cnt > 0 && cnt < n)
+		return cnt;
+	return 0;
+}
 
 INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/ai", get_rest_pae);
 
-INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/ai", set_pae_priority);
+static void set_pae_priority(int pae, int priority, int group_priority)
+{
+	int i;
+	int start;
+
+	start = (pae - 1) / 4 * 4 + 1;
+	for (i = 0; i < 4; i++) {
+		if (start + i == pae) {
+			if (priority < g_try_priority[start + i])
+				g_try_priority[start + i] = priority;
+		} else if (group_priority > 0 && group_priority < g_try_priority[start + i])
+			g_try_priority[start + i] = group_priority;
+	}
+}
 
 int get_pae_priority(int pae) {
     return g_try_priority[pae];
