@@ -395,13 +395,16 @@ public:
     void flushCache();
     void invalidate_cached_mat();
     const math::matrix &getMatrix() const;
-    math::vector_xyzw getTranslation() const;
-    math::vector_xyzw getScale() const;
+    math::vector_xyz getTranslation() const;
+    math::vector_xyz getScale() const;
+    math::quaternion getRotation() const;
+    void setTranslation(math::vector_xyz);
+    void setScale(math::vector_xyz);
     math::matrix _matrix;           /* 0x30 (cache) */
     bool _dirty;                    /* 0x70 */
     bool _identity;                 /* 0x71 */
-    math::vector_xyzw _translation; /* 0x74 */
-    math::vector_xyzw _scale;       /* 0x84 */
+    math::vector_xyz _translation;  /* 0x74 */
+    math::vector_xyz _scale;        /* 0x84 */
     math::vector_xyz _euler;        /* 0x94 */
 };
 

@@ -31,7 +31,10 @@ const math::matrix &scene::Transform::getMatrix() const
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Transform", _ZN5scene9Transform13setFromMatrixEN4math6matrixE);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Transform", _ZNK5scene9Transform11getRotationEv);
+math::quaternion scene::Transform::getRotation() const
+{
+    return math::quaternion::FromEulerAngles(_euler.x, _euler.y, _euler.z, (math::RotationOrder)0);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Transform", _ZNK5scene9Transform14getEulerAnglesEN4math13RotationOrderE);
 
@@ -61,18 +64,28 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Transf
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Transform", _ZN5scene9Transform9set_angleEf);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Transform", _ZN5scene9Transform14setTranslationEN4math10vector_xyzE);
+void scene::Transform::setTranslation(math::vector_xyz v)
+{
+    _translation = v;
+    _dirty = true;
+    _identity = false;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Transform", _ZN5scene9Transform8setScaleEN4math10vector_xyzE);
+void scene::Transform::setScale(math::vector_xyz v)
+{
+    _scale = v;
+    _dirty = true;
+    _identity = false;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Transform", _ZN5scene9Transform11setRotationEN4math10vector_xyzE);
 
-math::vector_xyzw scene::Transform::getTranslation() const
+math::vector_xyz scene::Transform::getTranslation() const
 {
     return _translation;
 }
 
-math::vector_xyzw scene::Transform::getScale() const
+math::vector_xyz scene::Transform::getScale() const
 {
     return _scale;
 }
