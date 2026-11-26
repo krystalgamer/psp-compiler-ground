@@ -513,7 +513,7 @@ static int func_00006308(unsigned int args, void *argp)
 	return 0;
 }
 
-static void func_000065FC(void *dst, void *src, int *a, int *b);
+static int func_000065FC(short *dst, unsigned char *vag, int *hist1, int *hist2);
 static void func_00006740(int ch, void *buf);
 static void func_000069DC(int ch, void *buf);
 static void func_00006EF4(int ch, char *dst, void *src);
@@ -555,7 +555,45 @@ static int func_00006424(char *buf)
 	return n;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/sound_playsmf/nonmatchings/libwave", func_000065FC);
+extern const signed char D_00017E84[2][5];
+
+static int func_000065FC(short *dst, unsigned char *vag, int *hist1, int *hist2)
+{
+	short *out;
+	int predict, shift, flags;
+	int s1, s2, f0, f1, i, k;
+	int d0, d1;
+
+	k = 2;
+	flags = vag[0];
+	predict = flags >> 4;
+	shift = flags & 0xF;
+	flags = vag[1];
+	s1 = *hist1;
+	s2 = *hist2;
+	f0 = D_00017E84[0][predict];
+	f1 = D_00017E84[1][predict];
+	if (flags == 7)
+		return flags;
+	out = dst;
+	for (i = 0; i < 14; i++) {
+		signed char b = vag[k++];
+
+		d0 = (((b << 28) >> (shift + 10)) + (s1 * f0 + s2 * f1)) >> 6;
+		if (d0 > 32767) d0 = 32767;
+		if (d0 < -32768) d0 = -32768;
+		*out++ = d0;
+		d1 = (((b & ~0xF) << (14 - shift)) + (d0 * f0 + s1 * f1)) >> 6;
+		if (d1 > 32767) d1 = 32767;
+		if (d1 < -32768) d1 = -32768;
+		*out++ = d1;
+		s2 = d0;
+		s1 = d1;
+	}
+	*hist1 = s1;
+	*hist2 = s2;
+	return flags;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/sound_playsmf/nonmatchings/libwave", func_00006740);
 
