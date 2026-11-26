@@ -139,6 +139,8 @@ int sceKernelCreateEventFlag(const char *name, int attr, int bits, void *opt);
 void sceGuSetDither(const int *matrix);
 void sceGuPatchDivide(int a0, int a1);
 void sceGuColorMaterial(int a0);
+void sceGuSpecular(float power);
+void sceGuTexScale(float u, float v);
 
 void callback_sig(int id, void *arg)
 {
@@ -298,7 +300,40 @@ INCLUDE_RODATA("tmp/asm/UTST99332/graphics_cube/nonmatchings/libgu", D_00012608)
 
 INCLUDE_RODATA("tmp/asm/UTST99332/graphics_cube/nonmatchings/libgu", D_00012660);
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_cube/nonmatchings/libgu", sceGuStart);
+void sceGuStart(int type, void *list, int size)
+{
+	GuContext *context = &_ctx[type];
+	GuDrawBuffer *fb = &FBuf;
+	unsigned int *local_list = (unsigned int *)(((unsigned int)list) | 0x40000000);
+
+	context->parent_context = __aw_list_mode;
+	context->start = local_list;
+	context->current = local_list;
+	pList = context;
+	__aw_list_mode = type;
+	if (!type) {
+		intrParam.index = 0;
+		queid[0] = sceGeListEnQueue(local_list, local_list, intrCode, 0);
+	}
+	if (!gu_init) {
+		GuDitherInit dither_matrix = D_0001255C;
+
+		sceGuSetDither(dither_matrix.m);
+		sceGuPatchDivide(16, 16);
+		sceGuColorMaterial(7);
+		sceGuSpecular(1.0f);
+		sceGuTexScale(1.0f, 1.0f);
+		gu_init = 1;
+	}
+	if (!__aw_list_mode) {
+		int width = fb->frame_width;
+
+		if (width) {
+			send_commandi(156, *(unsigned int *)&fb->frame_buffer & 0xffffff);
+			send_commandi(157, ((*(unsigned int *)&fb->frame_buffer & 0xff000000) >> 8) | width);
+		}
+	}
+}
 
 void sceGuSetDither(const int *matrix)
 {
