@@ -509,7 +509,124 @@ int draw_DrawSprite(SPRITE *sp)
 	return 1;
 }
 
+#ifdef NON_MATCHING
+/* Rough (2 instructions short, same structure): the original re-reads the crop scale
+ * through D_000D64C4 after every store to D_00037CF8 and orders the vector copies and the
+ * image size loads differently. */
+typedef struct { float x, y, z; } FVEC3;
+typedef struct { float u, v, su, sv; } GIMCROP;
+typedef struct { int pad0, pad4; unsigned short w, h; } GIMIMAGE;
+extern void *D_000D64C0;
+extern GIMCROP *D_000D64C4;
+extern float D_000D64C8, D_000D64CC, D_000D64D0, D_000D64D4;
+extern float D_000D64D8, D_000D64DC, D_000D64E0, D_000D64E4;
+extern FVEC3 D_000D649C, D_000D64A8, D_000D64B4;
+extern GIMCROP D_00037CE8, D_00037CF8;
+extern const FVEC3 D_0002DC10;
+extern int vformat;
+extern char vbuffer[];
+void sceGumPushMatrix(void);
+void sceGumPopMatrix(void);
+void sceGumTranslate(const FVEC3 *);
+void sceGumScale(const FVEC3 *);
+void sceGumRotateX(float);
+void sceGumRotateY(float);
+void sceGumRotateZ(float);
+GIMIMAGE *sceGimPictureGetImage(void *);
+GIMCROP *sceGimPictureGetImageCrop(void *);
+int sceGimPictureAnimate(void *, float);
+void sceGuTexOffset(float, float);
+void sceGuTexScale(float, float);
+void sceGumDrawBezier(int, int, int, const void *, const void *);
+int draw_DrawSpriteEx(SPRITE *sp)
+{
+	int ret = 0;
+	FVEC3 v;
+	GIMIMAGE *img;
+	float w, h;
+	int flag;
+
+	D_000D64C8 = sp->f[4];
+	D_000D64CC = sp->f[5];
+	D_000D64D0 = sp->f[6];
+	D_000D64D4 = sp->f[7];
+	if (sp->no < 128 && (D_000D64C0 = Gims[sp->no]) != 0) {
+		sceGumPushMatrix();
+		v.x = -(sp->f[8] * 0.125f);
+		v.y = -(sp->f[9] * 0.125f);
+		v.z = 0;
+		D_000D64A8 = v;
+		sceGumTranslate(&D_000D64A8);
+		if (sp->f[2] != 0.0f || sp->f[3] != 0.0f) {
+			D_000D64E0 = sp->f[2];
+			D_000D64E4 = sp->f[3];
+		} else {
+			img = sceGimPictureGetImage(D_000D64C0);
+			if (img) {
+				D_000D64E4 = img->h;
+				D_000D64E0 = img->w;
+			}
+		}
+		v.x = D_000D64D8 = sp->f[0];
+		v.y = D_000D64DC = sp->f[1];
+		v.z = sp->f[13];
+		D_000D649C = v;
+		sceGumTranslate(&D_000D649C);
+		sceGumRotateY(sp->f[11]);
+		sceGumRotateX(sp->f[10]);
+		sceGumRotateZ(sp->f[12]);
+		v.x = sp->f[8] * 0.125f;
+		v.y = sp->f[9] * 0.125f;
+		v.z = 0;
+		D_000D64A8 = v;
+		sceGumTranslate(&D_000D64A8);
+		v = D_0002DC10;
+		v.x = D_000D64E0 * 0.212261036f;
+		v.y = D_000D64E4 * 0.212261036f;
+		D_000D64B4 = v;
+		sceGumScale(&D_000D64B4);
+		sceGimPictureAnimate(D_000D64C0, 1.0f / 60.0f);
+		sceGimPictureActivate(D_000D64C0);
+		img = sceGimPictureGetImage(D_000D64C0);
+		D_000D64C4 = sceGimPictureGetImageCrop(D_000D64C0);
+		if (D_000D64C4 == 0)
+			D_000D64C4 = &D_00037CE8;
+		if (img) {
+			if (D_000D64C8 == 0.0f && D_000D64CC == 0.0f && D_000D64D0 == 0.0f && D_000D64D4 == 0.0f) {
+				D_000D64CC = 0.5f;
+				D_000D64D0 = img->w - 0.5f;
+				D_000D64D4 = img->h - 0.5f;
+				D_000D64C8 = 0.5f;
+			}
+			w = img->w;
+			flag = sp->flag;
+			h = img->h;
+			D_00037CF8.u = D_000D64C8 / w * D_000D64C4->su;
+			D_00037CF8.su = (D_000D64D0 - D_000D64C8) / w * D_000D64C4->su;
+			D_00037CF8.v = D_000D64CC / h * D_000D64C4->sv;
+			D_00037CF8.sv = (D_000D64D4 - D_000D64CC) / h * D_000D64C4->sv;
+			if (flag & 1) {
+				D_00037CF8.su = -D_00037CF8.su;
+				D_00037CF8.u = D_000D64D0 / w * D_000D64C4->su;
+			}
+			if (flag & 2) {
+				D_00037CF8.sv = -D_00037CF8.sv;
+				D_00037CF8.v = D_000D64D4 / h * D_000D64C4->sv;
+			}
+			D_000D64C4 = &D_00037CF8;
+		}
+		sceGuTexOffset(D_000D64C4->u, D_000D64C4->v);
+		sceGuTexScale(D_000D64C4->su, D_000D64C4->sv);
+		sceGuColor(getFader(sp->color));
+		sceGumDrawBezier(vformat, 4, 4, 0, vbuffer);
+		sceGumPopMatrix();
+		ret = 1;
+	}
+	return ret;
+}
+#else
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/wrap_sprite", draw_DrawSpriteEx);
+#endif
 
 int NullFunc(void) {
     return 1;
