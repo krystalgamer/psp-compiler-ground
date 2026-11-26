@@ -127,7 +127,33 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", parseCharEntity);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", parseCheckTag);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", parseElementName);
+void parseElementName(PCtx *c) {
+    PChar name[1024];
+    int n;
+
+    n = 0;
+    if (parseNextChar(c) == 1) {
+        return;
+    }
+    while (*c->buf->cur != ' ' && *c->buf->cur != '\t' && *c->buf->cur != '\n' && *c->buf->cur != '\r' && !(*c->buf->cur == '/' && c->buf->cur[1] == '>') && *c->buf->cur != '>') {
+        if (*c->buf->cur != '\n' && *c->buf->cur != '\r' && n < 1024) {
+            name[n] = (*c->buf->cur >= 'A' && *c->buf->cur <= 'Z') ? *c->buf->cur + 0x20 : *c->buf->cur;
+            n++;
+        }
+        if (parseNextChar(c) == 1) {
+            return;
+        }
+    }
+    name[n] = 0;
+    *(PTag *)((char *)c + 0x34) = parseTagNameCmp(name);
+    parseTagCountPlus(c, *(PTag *)((char *)c + 0x34));
+    parseTagTransact(0, c, name, n, 0, 0);
+    while (*c->buf->cur == ' ' || *c->buf->cur == '\t' || *c->buf->cur == '\n' || *c->buf->cur == '\r') {
+        if (parseNextChar(c) == 1) {
+            break;
+        }
+    }
+}
 
 void parseElement(PCtx *c) {
     int empty;
@@ -151,7 +177,32 @@ void parseElement(PCtx *c) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", parseAttribute);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", parseAttrName);
+PMb parseAttrName(PCtx *c) {
+    PMb r;
+    PChar name[1024];
+    int n;
+
+    r.str = NULL;
+    r.len = 0;
+    n = 0;
+    while (*c->buf->cur != '=' && (*c->buf->cur != ' ' && *c->buf->cur != '\t') && *c->buf->cur != '\n' && *c->buf->cur != '\r' && !(*c->buf->cur == '/' && c->buf->cur[1] == '>') && *c->buf->cur != '>') {
+        if (*c->buf->cur != '\n' && *c->buf->cur != '\r' && n < 1024) {
+            name[n] = (*c->buf->cur >= 'a' && *c->buf->cur <= 'z') ? *c->buf->cur - 0x20 : *c->buf->cur;
+            n++;
+        }
+        if (parseNextChar(c) == 1) {
+            return r;
+        }
+    }
+    r.str = parseStrnCpy(name, n);
+    r.len = n;
+    while (*c->buf->cur == ' ' || *c->buf->cur == '\t' || *c->buf->cur == '\n' || *c->buf->cur == '\r') {
+        if (parseNextChar(c) == 1) {
+            break;
+        }
+    }
+    return r;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", parseAttrValue);
 
