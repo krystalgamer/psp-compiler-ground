@@ -222,7 +222,72 @@ static void draw_cylinder(void)
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_editbone/nonmatchings/main", draw_effector);
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_editbone/nonmatchings/main", draw_frame);
+#ifndef SCEGU_IMMEDIATE /* sample */
+#define SCEGU_IMMEDIATE                    0
+#endif
+#ifndef SCEGU_CLEAR_ALL /* sample */
+#define SCEGU_CLEAR_ALL               0x0007
+#endif
+#ifndef MAXEFF /* sample */
+#define MAXEFF		4
+#endif
+#ifndef SCEGU_PI /* sample */
+#define SCEGU_PI                           3.1415926535897932384626433832f
+#endif
+#ifndef SCEGU_RAD /* sample */
+#define SCEGU_RAD(a)                       ((a)*SCEGU_PI/180.0f)
+#endif
+#ifndef SCEGU_SYNC_FINISH /* sample */
+#define SCEGU_SYNC_FINISH                  0
+#endif
+#ifndef SCEGU_SYNC_WAIT /* sample */
+#define SCEGU_SYNC_WAIT                    0
+#endif
+static void draw_frame(void)
+{
+	ScePspFVector3	vec;
+	int				c;
+	int				i;
+
+	sceGuStart(SCEGU_IMMEDIATE, disp_list, sizeof(disp_list));
+	sceGuClear(SCEGU_CLEAR_ALL);
+
+	sceGuDebugPrint(8, 8, 0x00ffffff, char_mode[mode]);
+
+	calc_bone();
+
+	sceGumPushMatrix();
+	sceGumLoadIdentity();
+
+	sceGumTranslate(&world.pos);
+	sceGumRotateX(SCEGU_RAD(world.rot.x));
+	sceGumRotateY(SCEGU_RAD(world.rot.y));
+	sceGumRotateZ(SCEGU_RAD(world.rot.z));
+
+	draw_cylinder();
+
+	if (!mode) {
+		for (i=0; i<MAXEFF; i++) {
+			vec.x=effector[i].pos.x+(!i?6.0f:-3.0f);
+			vec.y=effector[i].pos.y;
+			vec.z=effector[i].pos.z;
+			sceGumTranslate(&vec);
+			sceGumRotateX(SCEGU_RAD(effector[i].rot.x));
+			sceGumRotateY(SCEGU_RAD(effector[i].rot.y));
+			sceGumRotateZ(SCEGU_RAD(effector[i].rot.z));
+			if (i==select)	c=0xffff80ff;
+			else if (!i)	c=0xffffff80;
+			else			c=0xff80ffff;
+			draw_effector(c);
+		}
+		sceKernelDcacheWritebackAll();
+	}
+
+	sceGumPopMatrix();
+
+	sceGuFinish();
+	sceGuSync(SCEGU_SYNC_FINISH, SCEGU_SYNC_WAIT);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_editbone/nonmatchings/main", init_all);
 
