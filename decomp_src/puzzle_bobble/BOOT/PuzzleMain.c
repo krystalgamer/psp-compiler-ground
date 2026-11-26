@@ -514,7 +514,66 @@ INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", SetBallMapReve
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", SetBallMap);
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", SetPlayStatus);
+void SetBallMapReverse(PZL_STAT *dst, PZL_STAT *src);
+int PzlDataExist(int no);
+u8 *PzlDataExtract(int no);
+u8 *GetMapTable(int no);
+int SetBallMap(u8 *map, u8 *data);
+void SetPlayStatus(PZL_STAT *st, int stage, int pl)
+{
+	int i;
+	u8 *data;
+
+	st->ofs_y = 32;
+	st->unk454 = 256;
+	if (pl == 0) {
+		if (PzlDataExist(stage))
+			data = PzlDataExtract(stage);
+		else
+			data = GetMapTable(stage);
+		st->mapno = SetBallMap(st->mp.map, data);
+		st->mapsub = 0;
+		return;
+	}
+	if (!isSurvival || SurvCont) {
+		if (pl == 1) {
+			st->mapsub = pl;
+			st->mapno = 0;
+			for (i = 0; i < 176; i++)
+				st->mp.map[i] = 0;
+			st->mp.map[16] = 13;
+			for (i = 0; i < 7; i++) {
+				st->mp.map[24 + i] = 12;
+				st->mp.map[40 + i] = ColorTableVS[rand() % ColorRndMaxVS];
+			}
+			for (i = 0; i < 8; i++) {
+				st->mp.map[32 + i] = 12;
+				st->mp.map[48 + i] = ColorTableVS[rand() % ColorRndMaxVS];
+			}
+			st->scroll = -5;
+		} else {
+			SetBallMapReverse(st, &Stat[1]);
+			st->mapsub = 2;
+		}
+	} else if (pl == 1) {
+		st->mapsub = pl;
+	} else {
+		st->mapno = 0;
+		st->mapsub = 2;
+		for (i = 0; i < 176; i++)
+			st->mp.map[i] = 0;
+		st->mp.map[16] = 13;
+		for (i = 0; i < 7; i++) {
+			st->mp.map[24 + i] = 12;
+			st->mp.map[40 + i] = ColorTableVS[rand() % ColorRndMaxVS];
+		}
+		for (i = 0; i < 8; i++) {
+			st->mp.map[32 + i] = 12;
+			st->mp.map[48 + i] = ColorTableVS[rand() % ColorRndMaxVS];
+		}
+		st->scroll = -5;
+	}
+}
 
 void dsGMInit(int mode, int a1)
 {
