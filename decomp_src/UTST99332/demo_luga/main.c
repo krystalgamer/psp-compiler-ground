@@ -287,7 +287,16 @@ int post_ground(void);
 void set_char_pos(void);
 void set_nextgnd(void);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/main", main);
+int main(void) {
+    menuInit();
+    geInit();
+    geSetModule(0, &module);
+    geCommonSetModule(&cmodule);
+    geMainLoop();
+    geTerm();
+    menuTerm(0, 2);
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/main", light_ctrl);
 
