@@ -41,7 +41,117 @@ int exit_func(int arg1, int arg2, void *common)
 		sceKernelDelayThreadCB(10000);
 }
 
+#ifdef NON_MATCHING
+/* diff 9 with every cc1: as in begin_scene, the original loads float literals in source
+ * order (1.0f before -1.0f; fovy before aspect) where ours reverses each pair; plus one
+ * scratch register in the main loop.  The floats are main's rodata D_0002DBD0..DBEC. */
+typedef struct { float x, y, z; } MainVec3;
+extern unsigned char g_running;
+extern int D_000553E8;
+extern char me_mes23[];
+extern char matrix_stack[];
+extern char g_packet_buf[];
+int sceKernelCreateCallback(const char *, int (*)(int, int, void *), void *);
+int sceKernelRegisterExitCallback(int);
+int sceCtrlSetSamplingCycle(int);
+int sceCtrlSetSamplingMode(int);
+void *malloc(unsigned int);
+void sceGumPerspective(float, float, float, float);
+int DrawSpriteEz(float z, float x, float y, float w, float h, float u, float v, int no);
+void SetSpriteColorRGBA(int r, int g, int b, int a);
+void sceGuLight(int, int, int, const MainVec3 *);
+int main(void)
+{
+	MainVec3 pos;
+	int arg;
+
+	arg = 0x100;
+	sceKernelRegisterExitCallback(sceKernelCreateCallback("name", exit_func, &arg));
+	sceCtrlSetSamplingCycle(0);
+	sceCtrlSetSamplingMode(1);
+	sceGuInit();
+	sceGuStart(0, g_packet_buf, 0x80000);
+	sceGuDrawBuffer(3, (void *)0, 512);
+	sceGuDispBuffer(480, 272, (void *)0x88000, 512);
+	sceGuDepthBuffer((void *)0x110000, 512);
+	sceGuOffset(2048 - 480 / 2, 2048 - 272 / 2);
+	sceGuViewport(2048, 2048, 480, 272);
+	sceGuDepthRange(50000, 10000);
+	sceGuScissor(0, 0, 480, 272);
+	sceGuEnable(2);
+	sceGuBlendFunc(0, 2, 3, 0, 0);
+	sceGuEnable(4);
+	sceGuDepthFunc(7);
+	sceGuEnable(1);
+	sceGuFrontFace(0);
+	sceGuShadeModel(1);
+	sceGuEnable(8);
+	pos.x = -1.0f;
+	pos.y = 1.0f;
+	pos.z = 1.0f;
+	sceGuLightColor(0, 2, 0xFFC0C0C0);
+	sceGuLightColor(0, 4, 0xFFFFFFFF);
+	sceGuLight(0, 0, 6, &pos);
+	sceGuEnable(11);
+	sceGuEnable(10);
+	sceGuAmbient(0xFF808080);
+	sceGuColor(0xFFFFFFFF);
+	sceGumSetMatrixStack(matrix_stack, 8, 8, 32, 0);
+	sceGumMatrixMode(0);
+	sceGumLoadIdentity();
+	sceGumPerspective(0.785398185f, 1.76470590f, 1.0f, 100.0f);
+	sceGumMatrixMode(2);
+	sceGuClearColor(0xFF000000);
+	sceGuClearDepth(0);
+	sceGuClearStencil(0);
+	sceGuFinish();
+	sceGuSync(0, 0);
+	sceDisplayWaitVblankStart();
+	sceGuDisplay(1);
+	printf("SetMode: %d\n", sceDisplaySetMode(0, 480, 272));
+	sceGimPictureSetMemoryManager(malloc, free);
+	sceGimPictureSetMemoryManager2(malloc16, free16);
+	game_init();
+	set_gim(0, me_mes23, 0x62E4);
+	begin_scene();
+	SpriteInitExt();
+	SetSpriteColorRGBA(255, 255, 255, 255);
+	DrawSpriteEz(0.0f, 0.0f, 84.0f, 240.0f, 104.0f, 0.0f, 0.0f, 0);
+	DrawSpriteEz(0.0f, 240.0f, 84.0f, 240.0f, 104.0f, 240.0f, 0.0f, 0);
+	SpriteKickExt();
+	end_scene();
+	swap_buffers();
+	puts("file sub init!");
+	file_sub_init();
+	puts("module load");
+	loadModuleAt3plus();
+	load_pak();
+	puts("file sub init ok!");
+	puts("game init!");
+	sound_init();
+	puts("game init Ok!");
+	vsyncCountInit();
+	while (g_running) {
+		if (D_000553E8 == 0) {
+			begin_scene();
+			SpriteInitExt();
+			game_main();
+			next_bgm();
+			disp_ms_dialog();
+			SpriteKickExt();
+			end_scene();
+			utility_update_savedata();
+			swap_buffers();
+		} else
+			KeySync();
+	}
+	myHeapTerm();
+	sceGuTerm();
+	return 0;
+}
+#else
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/main", main);
+#endif
 
 void vsyncCountInit(void) {
     frameCount = sceDisplayGetVcount();
