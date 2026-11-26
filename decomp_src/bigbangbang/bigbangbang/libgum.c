@@ -270,7 +270,40 @@ void sceGumMultMatrix(const ScePspFMatrix4 *m)
 	update[cur_matrix] = 1;
 }
 
-INCLUDE_ASM("tmp/asm/bigbangbang/bigbangbang/nonmatchings/libgum", sceGumPerspective);
+void sceGumPerspective(float fovy, float aspect, float r_near, float r_far)
+{
+	ScePspFMatrix4	m;
+	float	f, asp, nf1, nf2;
+
+	f = fovy * 0.5f;
+	f = (float)cosf(f) / (float)sinf(f);
+
+	asp = 1.0f / aspect;
+
+	nf1 = 1.0f / (r_near - r_far);
+	nf2 = r_near + r_far;
+
+	m.x.x = f * asp;
+	m.x.y = 0.0f;
+	m.x.z = 0.0f;
+	m.x.w = 0.0f;
+	m.y.x = 0.0f;
+	m.y.y = f;
+	m.y.z = 0.0f;
+	m.y.w = 0.0f;
+	m.z.x = 0.0f;
+	m.z.y = 0.0f;
+	m.z.z = nf1 * nf2;
+	m.z.w = -1.0f;
+	m.w.x = 0.0f;
+	m.w.y = 0.0f;
+	m.w.z = 2.0f * r_near * r_far * nf1;
+	m.w.w = 0.0f;
+
+	__mulMatrix(cur_stack, cur_stack, &m);
+	update[cur_matrix] = 1;
+	return;
+}
 
 void sceGumOrtho(float left, float right, float bottom, float top, float near, float far)
 {
