@@ -58,6 +58,13 @@ int sceKernelDelayThread(unsigned int delay);
 int sceKernelWaitThreadEnd(int thid, unsigned int *timeout);
 int sceKernelDeleteThread(int thid);
 int sceKernelExitThread(int status);
+extern char D_000137E4[2][0x700];
+typedef int (*SceWaveCallback)(int ch, void *buf, int size, int arg);
+static int func_00005AEC(char *buf);
+static int func_00005CD4(short *dst, unsigned char *src, int *h1, int *h2);
+static void func_00005E18(int ch, void *dst);
+static void func_000060C4(int ch, void *dst);
+static void func_00006634(int ch, void *buf, void *src);
 static int func_000059D0(unsigned int args, void *argp);
 
 

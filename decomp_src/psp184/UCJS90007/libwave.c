@@ -429,7 +429,26 @@ static int func_00020498(int prio)
 	return 0;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/libwave", func_0002053C);
+static int func_0002053C(unsigned int args, void *argp)
+{
+	SceWaveMain *m = (SceWaveMain *)argp;
+	int i = 0;
+	int j;
+
+	while (D_0008BE68 == 0) {
+		if (func_00020658(D_0008BEEC[i]) == 0) {
+			sceKernelDelayThread(10000);
+			continue;
+		}
+		for (j = 1; j < 16; j++)
+			func_00020658(D_0008BEEC[i] + j * 0x70);
+		sceAudioOutputBlocking(m->ch, 0x8000, D_0008BEEC[i]);
+		i = (i + 1) % 2;
+	}
+	sceAudioOutputBlocking(m->ch, 0, NULL);
+	sceKernelExitThread(0);
+	return 0;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/libwave", func_00020658);
 
