@@ -203,7 +203,22 @@ void draw_dragon_with_camera_transform(void) {
     sceGumPopMatrix();
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_depthblur/nonmatchings/main", InitWall);
+void InitWall(void)
+{
+	float* vert = wall;
+	int i,j;
+	for(i=0;i<4;i++)
+	{
+		for(j=0;j<4;j++)
+		{
+			*(vert++)=i/3.0f;
+			*(vert++)=j/3.0f;
+			*(vert++)=-1+i*2/3.0f;
+			*(vert++)=1;
+			*(vert++)=-1+j*2/3.0f;
+		}
+	}
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_depthblur/nonmatchings/main", DrawTorus);
 
