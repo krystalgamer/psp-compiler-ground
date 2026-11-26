@@ -1,300 +1,27 @@
 #include "common.h"
+#include "gmo_part_sdk.h"
 
-/* declarations recovered from DWARF (UTST99332 graphics_model gmo_part) */
-typedef struct SceGmoChunk SceGmoChunk;
-struct SceGmoChunk;
-struct SceGmoChunk { /* size 0x10 */
-    short unsigned int type;
-    short unsigned int args_offs;
-    unsigned int next_offs;
-    unsigned int child_offs;
-    unsigned int data_offs;
-};
-typedef struct SceGmoPart SceGmoPart;
-struct SceGmoPart;
-typedef struct SceGmoBase SceGmoBase;
-struct SceGmoBase;
-struct SceGmoSubject;
-struct SceGmoObserver;
-struct SceGmoObserver { /* size 0xc */
-    struct SceGmoObserver *m_next;
-    struct SceGmoSubject *m_subject;
-    void *m_reserved;
-};
-struct SceGmoSubject { /* size 0x4 */
-    struct SceGmoObserver *m_observers;
-};
-struct SceGmoBase { /* size 0x10 */
-    struct SceGmoSubject m_subject;
-    struct SceGmoObserver m_parent;
-};
-typedef struct SceGmoMesh SceGmoMesh;
-struct SceGmoMesh;
-struct SceGmoMesh { /* size 0x18 */
-    SceGmoChunk *m_chunk;
-    int m_reference;
-    int m_flags;
-    int m_material;
-    int *m_blend_subset;
-    int m_n_blend_subset;
-};
-struct SceGmoPart { /* size 0x2c */
-    SceGmoBase m_base;
-    SceGmoChunk *m_chunk;
-    int m_reference;
-    int m_flags;
-    SceGmoMesh **m_meshes;
-    SceGmoChunk **m_arrays;
-    int m_n_meshes;
-    int m_n_arrays;
-};
-typedef struct SceGmoModel SceGmoModel;
-struct SceGmoModel;
-typedef struct SceGmoBone SceGmoBone;
-struct SceGmoBone;
-typedef struct ScePspFVector3 ScePspFVector3;
-struct ScePspFVector3;
-struct ScePspFVector3 { /* size 0xc */
-    float x;
-    float y;
-    float z;
-};
-typedef struct ScePspFQuaternion ScePspFQuaternion;
-struct ScePspFQuaternion;
-struct ScePspFQuaternion { /* size 0x10 */
-    float x;
-    float y;
-    float z;
-    float w;
-};
-typedef struct ScePspFMatrix4 ScePspFMatrix4;
-struct ScePspFMatrix4;
-typedef struct ScePspFVector4 ScePspFVector4;
-struct ScePspFVector4;
-struct ScePspFVector4 { /* size 0x10 */
-    float x;
-    float y;
-    float z;
-    float w;
-};
-struct ScePspFMatrix4 { /* size 0x40 */
-    ScePspFVector4 x;
-    ScePspFVector4 y;
-    ScePspFVector4 z;
-    ScePspFVector4 w;
-};
-struct SceGmoBone { /* size 0x170 */
-    SceGmoBase m_base;
-    SceGmoBone *m_initial;
-    int m_reference;
-    int m_flags;
-    int m_parent_bone;
-    int m_visibility;
-    ScePspFVector3 m_pivot;
-    ScePspFVector3 m_translate;
-    ScePspFQuaternion m_rotate;
-    ScePspFVector3 m_scale;
-    ScePspFMatrix4 m_local_matrix;
-    ScePspFMatrix4 m_stack_matrix;
-    ScePspFVector3 m_stack_scale;
-    ScePspFMatrix4 m_world_matrix;
-    int *m_draw_parts;
-    float *m_morph_weights;
-    int *m_blend_bones;
-    ScePspFMatrix4 *m_blend_offsets;
-    int m_n_draw_parts;
-    int m_n_morph_weights;
-    int m_n_blend_bones;
-    int m_n_blend_offsets;
-    int m_anim_flags;
-    float m_anim_weights[5];
-};
-typedef struct SceGmoMaterial SceGmoMaterial;
-struct SceGmoMaterial;
-typedef struct SceGmoLayer SceGmoLayer;
-struct SceGmoLayer;
-typedef struct ScePspFRect ScePspFRect;
-struct ScePspFRect;
-struct ScePspFRect { /* size 0x10 */
-    float x;
-    float y;
-    float w;
-    float h;
-};
-struct SceGmoLayer { /* size 0x50 */
-    SceGmoLayer *m_initial;
-    int m_reference;
-    int m_flags;
-    int m_map_type;
-    float m_map_factor;
-    int m_blend_func[5];
-    int m_texture;
-    ScePspFRect m_tex_crop;
-    int m_enable_mask;
-    int m_enable_bits;
-    int m_diffuse;
-    int m_specular;
-    int m_ambient;
-};
-struct SceGmoMaterial { /* size 0x84 */
-    SceGmoBase m_base;
-    SceGmoMaterial *m_initial;
-    int m_reference;
-    int m_flags;
-    SceGmoLayer *m_layers[8];
-    int m_n_layers;
-    int m_enable_mask;
-    int m_enable_bits;
-    int m_colors[6];
-    float m_shininess;
-    float m_refraction;
-    float m_bump;
-    int m_anim_flags;
-    float m_anim_weights[5];
-};
-typedef struct SceGmoTexture SceGmoTexture;
-struct SceGmoTexture;
-typedef struct SceGimPicture SceGimPicture;
-struct SceGimPicture;
-struct SceGmoTexture { /* size 0x1c */
-    SceGmoBase m_base;
-    SceGimPicture *m_picture;
-    int m_reference;
-    int m_flags;
-};
-typedef struct SceGmoMotion SceGmoMotion;
-struct SceGmoMotion;
-struct SceGmoMotion { /* size 0x40 */
-    SceGmoBase m_base;
-    SceGmoChunk *m_chunk;
-    int m_reference;
-    int m_flags;
-    SceGmoChunk **m_anims;
-    SceGmoChunk **m_fcurves;
-    int m_n_anims;
-    int m_n_fcurves;
-    float m_frame_loop[2];
-    float m_frame_rate;
-    float m_frame;
-    float m_weight;
-};
-struct SceGmoModel { /* size 0x100 */
-    SceGmoBase m_base;
-    int m_reference;
-    int m_flags;
-    SceGmoBone **m_bones;
-    SceGmoPart **m_parts;
-    SceGmoMaterial **m_materials;
-    SceGmoTexture **m_textures;
-    SceGmoMotion **m_motions;
-    int m_n_bones;
-    int m_n_parts;
-    int m_n_materials;
-    int m_n_textures;
-    int m_n_motions;
-    int m_current_motion;
-    float m_change_motion;
-    ScePspFMatrix4 m_world_matrix;
-    int m_enable_bits;
-    int m_enable_mask;
-    ScePspFVector3 m_bounding_box[2];
-    ScePspFMatrix4 m_vertex_offset;
-    ScePspFRect m_texcoord_offset;
-};
-typedef struct SceGmoSubject SceGmoSubject;
-struct _anon1;
-struct _anon1 { /* size 0x4 */
-    int material;
-};
-typedef struct _anon1 SceGmoSetMaterial;
-struct _anon2;
-struct _anon2 { /* size 0x8 */
-    int n_indices;
-    int indices[1];
-};
-typedef struct _anon2 SceGmoBlendSubset;
-struct _anon3;
-struct _anon3 { /* size 0x14 */
-    int arrays;
-    int mode;
-    int n_verts;
-    int n_prims;
-    short int indices[1];
-};
-typedef struct _anon3 SceGmoDrawArrays;
-struct _anon4;
-struct _anon4 { /* size 0x14 */
-    int arrays;
-    int mode;
-    int width;
-    int height;
-    short int indices[1];
-};
-typedef struct _anon4 SceGmoDrawBSpline;
-struct _anon5;
-struct _anon5 { /* size 0x14 */
-    int arrays;
-    int mode;
-    int width;
-    int height;
-    short int indices[1];
-};
-typedef struct _anon5 SceGmoDrawRectMesh;
-struct _anon6;
-struct _anon6 { /* size 0x14 */
-    int arrays;
-    int mode;
-    int width;
-    int height;
-    short int indices[1];
-};
-typedef struct _anon6 SceGmoDrawRectPatch;
-struct _anon7;
-struct _anon7 { /* size 0x10 */
-    int format;
-    int n_verts;
-    int n_morphs;
-    int format2;
-};
-typedef struct _anon7 SceGmoArraysHeader;
-typedef ScePspFRect rect;
-
-extern SceGmoPart *g_current_part;
-extern SceGmoArraysHeader *g_current_arrays;
-extern int g_current_index;
-
-SceGmoPart *sceGmoPartCreate(const SceGmoChunk *chunk);
-void sceGmoPartDelete(SceGmoPart *part);
-SceGmoPart *sceGmoPartDuplicate(SceGmoPart *part, int flags);
-_Bool sceGmoPartLoad(SceGmoPart *part, const SceGmoChunk *load_chunk);
-static int SCEGMO_CHUNK_SIZE(SceGmoChunk *chunk);
-static SceGmoChunk *SCEGMO_CHUNK_NEXT(SceGmoChunk *chunk);
-static SceGmoChunk *SCEGMO_CHUNK_CHILD(SceGmoChunk *chunk);
-void sceGmoPartUnload(SceGmoPart *part);
-void sceGmoPartDraw(SceGmoPart *part, SceGmoModel *model, SceGmoBone *bone);
-static SceGmoSubject *sceGmoBaseGetParent(const SceGmoBase *base);
-void sceGmoPartSetParent(SceGmoPart *part, SceGmoModel *parent);
-SceGmoModel *sceGmoPartGetParent(SceGmoPart *part);
-int sceGmoPartGetMeshCount(SceGmoPart *part);
-int sceGmoPartGetArraysCount(SceGmoPart *part);
-SceGmoMesh *sceGmoPartGetMesh(SceGmoPart *part, int idx);
-SceGmoChunk *sceGmoPartGetArrays(SceGmoPart *part, int idx);
-SceGmoMesh *sceGmoMeshCreate(const SceGmoChunk *chunk);
-void sceGmoMeshDelete(SceGmoMesh *mesh);
-SceGmoMesh *sceGmoMeshDuplicate(SceGmoMesh *mesh, int flags);
-_Bool sceGmoMeshLoad(SceGmoMesh *mesh, const SceGmoChunk *chunk);
-static void *SCEGMO_CHUNK_ARGS(SceGmoChunk *chunk);
-void sceGmoMeshUnload(SceGmoMesh *mesh);
-void sceGmoMeshDraw(SceGmoMesh *mesh, SceGmoModel *model, SceGmoBone *bone, SceGmoPart *part);
-static void draw_mesh(SceGmoMesh *mesh);
-static void reset_arrays(SceGmoPart *part);
-static _Bool set_arrays(int idx);
-static void draw_arrays(SceGmoDrawArrays *cmd);
-static void draw_b_spline(SceGmoDrawBSpline *cmd);
-static void draw_rect_mesh(SceGmoDrawRectMesh *cmd);
-static void draw_rect_patch(SceGmoDrawRectPatch *cmd);
-
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_part", sceGmoPartCreate);
+SceGmoPart *sceGmoPartCreate( SceGmoChunk *chunk )
+{
+ SceGmoPart *part = (SceGmoPart *)sceGmoModelAllocMemory( sizeof( SceGmoPart ) ) ;
+ if ( part == 0 ) {
+  ;
+  return 0 ;
+ }
+ sceGmoBaseConstruct( &( part->m_base ) ) ;
+ part->m_chunk = 0 ;
+ part->m_reference = 1 ;
+ part->m_flags = 0 ;
+ part->m_meshes = 0 ;
+ part->m_arrays = 0 ;
+ part->m_n_meshes = 0 ;
+ part->m_n_arrays = 0 ;
+ if ( chunk != 0 && !sceGmoPartLoad( part, chunk ) ) {
+  sceGmoPartDelete( part ) ;
+  return 0 ;
+ }
+ return part ;
+}
 
 void sceGmoPartDelete( SceGmoPart *part )
 {
@@ -308,18 +35,50 @@ void sceGmoPartDelete( SceGmoPart *part )
 
 SceGmoPart *sceGmoPartDuplicate( SceGmoPart *part, int flags )
 {
-
  if ( part == 0 ) return 0 ;
  part->m_reference ++ ;
  return part ;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_part", sceGmoPartLoad);
+_Bool sceGmoPartLoad( SceGmoPart *part, SceGmoChunk *chunk )
+{
+ if ( part == 0 ) return 0 ;
+ if ( chunk == 0 ) return 0 ;
+ sceGmoPartUnload( part ) ;
+ if ( !sceGmoModelCopyPtr2( &( part->m_chunk ), chunk, SCEGMO_CHUNK_SIZE( chunk ) ) ) {
+  ;
+  return 0 ;
+ }
+ chunk = part->m_chunk ;
+ chunk->type = 1 ;
+ int n_meshes = sceGmoModelCountChunk( chunk, SCEGMO_MESH ) ;
+ int n_arrays = sceGmoModelCountChunk( chunk, SCEGMO_ARRAYS ) ;
+ if ( !sceGmoModelAllocPtr( &( part->m_meshes ), n_meshes * sizeof( void * ) )
+   || !sceGmoModelAllocPtr( &( part->m_arrays ), n_arrays * sizeof( void * ) ) ) {
+  ;
+  return 0 ;
+ }
+ SceGmoChunk *end = SCEGMO_CHUNK_NEXT( chunk ) ;
+ for ( chunk = SCEGMO_CHUNK_CHILD( chunk ) ; chunk < end ; chunk = SCEGMO_CHUNK_NEXT( chunk ) ) {
+  switch ( SCEGMO_CHUNK_TYPE( chunk ) ) {
+      case SCEGMO_MESH : {
+   SceGmoMesh *mesh = sceGmoMeshCreate( chunk ) ;
+   if ( mesh == 0 ) return 0 ;
+   part->m_meshes[ part->m_n_meshes ++ ] = mesh ;
+   break ;
+      }
+      case SCEGMO_ARRAYS : {
+   part->m_arrays[ part->m_n_arrays ++ ] = chunk ;
+   break ;
+      }
+  }
+ }
+ return 1 ;
+}
 
 void sceGmoPartUnload( SceGmoPart *part )
 {
  if ( part == 0 ) return ;
-
  SceGmoChunk *chunk = part->m_chunk ;
  if ( chunk != 0 ) {
   if ( -- chunk->type == 0 ) sceGmoModelFreeMemory2( chunk ) ;
@@ -328,7 +87,6 @@ void sceGmoPartUnload( SceGmoPart *part )
  { int i ; for ( i = 0 ; i < part->m_n_meshes ; i ++ ) {
   sceGmoMeshDelete( part->m_meshes[ i ] ) ;
  } }
-
  sceGmoModelFreeMemory( part->m_meshes ) ;
  sceGmoModelFreeMemory( part->m_arrays ) ;
  part->m_meshes = 0 ;
@@ -341,42 +99,38 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_part", sceGmoPartLoad
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_part", sceGmoPartUnloadCache);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_part", sceGmoPartDraw);
-
-void sceGmoPartSetParent(SceGmoPart *part, SceGmoModel *parent) {
-    if (part != NULL) {
-        sceGmoBaseSetParent();
-    }
+void sceGmoPartDraw( SceGmoPart *part, SceGmoModel *model, SceGmoBone *bone )
+{
+ if ( part == 0 ) return ;
+ SceGmoSubject *parent = sceGmoBaseGetParent( &( part->m_base ) ) ;
+ if ( parent != 0 ) model = (SceGmoModel *)parent ;
+ { int i ; for ( i = 0 ; i < part->m_n_meshes ; i ++ ) {
+  sceGmoMeshDraw( part->m_meshes[ i ], model, bone, part ) ;
+ } }
 }
 
-SceGmoModel *sceGmoPartGetParent(SceGmoPart *part) {
-    SceGmoSubject *var_v0;
-
-    var_v0 = NULL;
-    if (part != NULL) {
-        var_v0 = part->m_base.m_parent.m_subject;
-    }
-    return (SceGmoModel *) var_v0;
+void sceGmoPartSetParent( SceGmoPart *part, SceGmoModel *parent )
+{
+ if ( part == 0 ) return ;
+ sceGmoBaseSetParent( &( part->m_base ), (SceGmoSubject *)parent ) ;
 }
 
-int sceGmoPartGetMeshCount(SceGmoPart *part) {
-    int var_v0;
-
-    var_v0 = 0;
-    if (part != NULL) {
-        var_v0 = part->m_n_meshes;
-    }
-    return var_v0;
+SceGmoModel *sceGmoPartGetParent( SceGmoPart *part )
+{
+ if ( part == 0 ) return 0 ;
+ return (SceGmoModel *)sceGmoBaseGetParent( &( part->m_base ) ) ;
 }
 
-int sceGmoPartGetArraysCount(SceGmoPart *part) {
-    int var_v0;
+int sceGmoPartGetMeshCount( SceGmoPart *part )
+{
+ if ( part == 0 ) return 0 ;
+ return part->m_n_meshes ;
+}
 
-    var_v0 = 0;
-    if (part != NULL) {
-        var_v0 = part->m_n_arrays;
-    }
-    return var_v0;
+int sceGmoPartGetArraysCount( SceGmoPart *part )
+{
+ if ( part == 0 ) return 0 ;
+ return part->m_n_arrays ;
 }
 
 SceGmoMesh *sceGmoPartGetMesh( SceGmoPart *part, int index )
@@ -408,7 +162,6 @@ void sceGmoMeshDelete( SceGmoMesh *mesh )
 
 SceGmoMesh *sceGmoMeshDuplicate( SceGmoMesh *mesh, int flags )
 {
-
  if ( mesh == 0 ) return 0 ;
  mesh->m_reference ++ ;
  return mesh ;
@@ -435,3 +188,4 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_part", draw_rect_mesh
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_part", draw_rect_patch);
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_part", get_packet_size);
+
