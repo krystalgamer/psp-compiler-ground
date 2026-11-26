@@ -36,8 +36,16 @@ typedef struct {
     int flags;                  /* 0x0 */
     u8 unk4[0x40];
     TIMERLIST *timers;          /* 0x44 */
-    u8 unk48[0x38];
+    int unk48;
+    void *unk4C;                /* 0x4C */
+    void *msgbuf;               /* 0x50 */
+    u8 unk54[0x28];
+    int mq7C;                   /* 0x7C */
     int unk80;
+    int mq84;
+    int mq88;
+    int mq8C;
+    int mq90;
 } TLOGLOBAL;
 
 typedef struct {
@@ -568,7 +576,74 @@ void proc_msg_JL2(TMSG *msg) {
     MEM_free(0, d);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_text", proc_msg_JL3);
+typedef struct {
+    int unk0;
+    JMSG m;
+} JL3BUF;
+int OS_thread_join();
+int OS_thread_exit();
+int OS_mq_close();
+int OS_mq_unlink();
+int OS_mq_send();
+int OS_thread_mutex_destroy();
+void actClearSearchString();
+void freeSessionSaveDataList();
+void destroySelectList();
+void deleteDefaultImage();
+void initUrlList();
+void GUI_Toolkit_mutexUnlock();
+extern int D_00584D10;
+extern int D_00584CF0;
+extern int *gESPRIT_LO_GLOBAL_NDA;
+
+void proc_msg_JL3(JMSG *m) {
+    int ret;
+    THIST *h;
+    int *nda;
+    JMSG *q;
+
+    OS_thread_join(D_00584D10, &ret);
+    h = HST_getHeadHistoryNode();
+    if (h != NULL && h->body != NULL) {
+        GUI_Toolkit_mutexLock();
+        delLLISTByDocumentSession(&REQUEST_LLIST, 0);
+        freeBoxTree(h->body, 0);
+        freeBox(h->body, 0);
+        GUI_Toolkit_mutexUnlock();
+    }
+    actClearSearchString();
+    destroyJSEnv();
+    OS_mq_close(lo_global.mq8C);
+    OS_mq_unlink("/tmp/mq_js");
+    if (lo_global.unk4C != NULL) {
+        MEM_free(0, ((void **)lo_global.unk4C)[8]);
+        MEM_free(0, lo_global.unk4C);
+        lo_global.unk4C = NULL;
+    }
+    lo_freeTimer();
+    freeSessionSaveDataList();
+    destroySelectList();
+    deleteDefaultImage();
+    initUrlList(&D_00584CF0);
+    nda = gESPRIT_LO_GLOBAL_NDA;
+    OS_thread_mutex_destroy(nda[0x3C / 4]);
+    OS_thread_mutex_destroy(nda[0x40 / 4]);
+    MEM_free(0, nda);
+    gESPRIT_LO_GLOBAL_NDA = NULL;
+    q = &((JL3BUF *)lo_global.msgbuf)->m;
+    q->unk0 = 4;
+    q->session = m->session;
+    ((int *)q)[3] = 0x11;
+    OS_mq_send(lo_global.mq7C, lo_global.msgbuf, 0x24, 0);
+    lo_global.msgbuf = NULL;
+    OS_mq_close(lo_global.mq84);
+    OS_mq_unlink("/tmp/mq_lo_reserve");
+    OS_mq_close(lo_global.mq7C);
+    OS_mq_close(lo_global.mq88);
+    OS_mq_close(lo_global.unk80);
+    OS_mq_close(lo_global.mq90);
+    OS_thread_exit(ret);
+}
 
 void proc_msg_JL4(JMSG *m) {
     THIST *h;
