@@ -33,7 +33,43 @@ void *memset(void *s, int c, unsigned int n);
 int sceIoOpen(const char *name, int flag, int mode);
 int sceIoRead(int fd, void *buf, unsigned int nbyte);
 
-INCLUDE_ASM("tmp/asm/UTST99332/sound_at3doubleplay/nonmatchings/at3plus", init_atrac3plus);
+int sceAtracSetDataAndGetID(void *buf, SceUInt32 bufsize);
+int sceAtracSetLoopNum(SceInt32 atracID, SceInt32 iLoopNum);
+void release_at3playArgID(ScePlayArg *pPlayArg);
+SceInt32 init_atrac3plus(SceChar8 *filename, SceUChar8 *pucReadBuf, SceInt32 iInputBufferSize, SceInt32 ioutputChannel, ScePlayArg *pPlayArg)
+{
+	SceInt32 status;
+	SceSSize filesize;
+
+	pPlayArg->atracId = -1;
+	pPlayArg->fd = sceIoOpen(filename, 1, 0);
+	if (pPlayArg->fd < 0) {
+		status = pPlayArg->fd;
+		printf("status = 0x%x (in sceIoOpen)\n", status);
+		goto RELEASE_ARG;
+	}
+	filesize = sceIoRead(pPlayArg->fd, pucReadBuf, iInputBufferSize);
+	if (filesize < 0) {
+		status = filesize;
+		printf("status = 0x%x(in sceIoRead)\n", status);
+		goto RELEASE_ARG;
+	}
+	pPlayArg->atracId = sceAtracSetDataAndGetID(pucReadBuf, filesize);
+	if (pPlayArg->atracId < 0) {
+		status = pPlayArg->atracId;
+		printf("status = 0x%x(in sceAtracSetDataAndGetID)\n", status);
+		goto RELEASE_ARG;
+	}
+	pPlayArg->outputChannel = ioutputChannel;
+	status = sceAtracSetLoopNum(pPlayArg->atracId, -1);
+	if (status < 0)
+		printf("status = 0x%x(in sceAtracLoopNum)\n", status);
+	return 0;
+
+RELEASE_ARG:
+	release_at3playArgID(pPlayArg);
+	return status;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/sound_at3doubleplay/nonmatchings/at3plus", play_atrac3plus);
 
