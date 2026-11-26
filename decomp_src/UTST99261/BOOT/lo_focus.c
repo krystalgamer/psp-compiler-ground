@@ -3,6 +3,9 @@
 #include "lo_box.h"
 #include "m2c_macros.h"
 #include "lo_focus.h"
+BOX *lo_getActiveFrameBodybox(void *ctx);
+void *MEM_malloc(int pool, unsigned int size);
+void *lo_getFocusNavi(void *node);
 FOCUSLIST *getNext2DFocusLeft(void *frame, void *a1, FOCUSLIST *l);
 FOCUSLIST *getNext2DFocusRight(void *frame, void *a1, FOCUSLIST *l);
 FOCUSLIST *getNextNaviFocus(void *frame, void *a1, FOCUSLIST *l, void *navi);
@@ -69,7 +72,48 @@ void freeAllList(void *arg0) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_focus", addFocusList);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_focus", appendFocusList);
+FOCUSLIST *appendFocusList(void *frame, s8 type, void *obj, FOCUSLIST *after, FOCUSAREA *area) {
+    FOCUSLIST *f;
+    void *navi;
+    f = MEM_malloc(0, 0x1C);
+    if (f == NULL) {
+        return NULL;
+    }
+    f->type = type;
+    f->obj = obj;
+    *(s16 *)&f->x10 = 0;
+    f->area = area;
+    navi = NULL;
+    if (obj != NULL) {
+        navi = lo_getFocusNavi(M2C_FIELD(obj, void **, 0x28));
+    }
+    f->x18 = navi;
+    if (after == NULL) {
+        if (FFRAME(frame)->head != NULL) {
+            f->prev = NULL;
+            f->next = FFRAME(frame)->head;
+            FFRAME(frame)->head->prev = f;
+            FFRAME(frame)->head = f;
+        } else {
+            f->next = NULL;
+            f->prev = NULL;
+            FFRAME(frame)->head = f;
+            FFRAME(frame)->tail = f;
+            FFRAME(frame)->cur = f;
+        }
+    } else if (after->next != NULL) {
+        f->next = after->next;
+        f->prev = after;
+        after->next->prev = f;
+        after->next = f;
+    } else {
+        f->next = NULL;
+        f->prev = after;
+        after->next = f;
+        FFRAME(frame)->tail = f;
+    }
+    return f;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -165,7 +209,50 @@ void getFocusRegionInfo(FOCUSLIST *f, int *x, int *y, int *w, int *h) {
     *h = bh;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_focus", scrollToFocusPosition);
+int scrollToFocusPosition(void *ctx) {
+    BOX *frame;
+    BOX *b;
+    int vx, vy, vw, vh;
+    int dx, dy;
+    frame = lo_getActiveFrameBodybox(ctx);
+    if (frame == NULL) {
+        return 0;
+    }
+    if (FFRAME(frame)->cur == NULL) {
+        return 0;
+    }
+    b = FFRAME(frame)->cur->obj;
+    if (frame == b) {
+        return 0;
+    }
+    getViewPort(frame, &vx, &vy);
+    getViewClientSize(frame, &vw, &vh);
+    dy = 0;
+    dx = 0;
+    if (b->x < vx) {
+        dx = b->x - vx;
+    } else if (b->x + b->width > vx + vw) {
+        if (b->width >= vw) {
+            dx = b->x - vx;
+        } else {
+            dx = b->x + b->width - (vx + vw);
+        }
+    }
+    if (b->y < vy) {
+        dy = b->y - vy;
+    } else if (b->y + b->height > vy + vh) {
+        if (b->height >= vh) {
+            dy = b->y - vy;
+        } else {
+            dy = b->y + b->height - (vy + vh);
+        }
+    }
+    if (dx | dy) {
+        drawScroll(frame, dx, dy);
+        return 1;
+    }
+    return 0;
+}
 
 void drawFocusObject(void *b) {
     BOX *box = b;
@@ -303,9 +390,69 @@ void initFocusPositionParameter(void *frame, int *x, int *y, int *w, int *h) {
     getViewClientSize(frame, w, h);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_focus", scrollToCurrentFocusPosition);
+void scrollToCurrentFocusPosition(void *frame, FOCUSLIST *l) {
+    int vx, vy, vw, vh;
+    int x, y, w, h;
+    int dx, dy;
+    if (l == NULL) {
+        return;
+    }
+    initFocusPositionParameter(frame, &vx, &vy, &vw, &vh);
+    getFocusRegionInfo(l, &x, &y, &w, &h);
+    dy = 0;
+    dx = 0;
+    if (x < vx) {
+        dx = x - vx;
+    } else if (x + w > vx + vw) {
+        if (w >= vw) {
+            dx = x - vx;
+        } else {
+            dx = x + w - (vx + vw);
+        }
+    }
+    if (y < vy) {
+        dy = y - vy;
+    } else if (y + h > vy + vh) {
+        if (h >= vh) {
+            dy = y - vy;
+        } else {
+            dy = y + h - (vy + vh);
+        }
+    }
+    if (dx | dy) {
+        drawScroll(frame, dx, dy);
+    }
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_focus", scrollToCurrent2DFocusPosition);
+void scrollToCurrent2DFocusPosition(void *frame, FOCUSLIST *l) {
+    int vx, vy, vw, vh;
+    int x, y, w, h;
+    int dx, dy;
+    if (l == NULL) {
+        return;
+    }
+    initFocusPositionParameter(frame, &vx, &vy, &vw, &vh);
+    getFocusRegionInfo(l, &x, &y, &w, &h);
+    dy = 0;
+    dx = 0;
+    if (x < vx) {
+        if (x + w - vx < M2C_FIELD(ui_global, int *, 0x74) * 2) {
+            dx = -(M2C_FIELD(ui_global, int *, 0x74) * 2);
+        }
+    } else if (vx + vw - M2C_FIELD(ui_global, int *, 0x74) * 2 < x) {
+        dx = M2C_FIELD(ui_global, int *, 0x74) * 2;
+    }
+    if (y < vy) {
+        if (y + h - vy < M2C_FIELD(ui_global, int *, 0x74) * 2 + 2) {
+            dy = -(M2C_FIELD(ui_global, int *, 0x74) * 2 + 2);
+        }
+    } else if (vy + vh - M2C_FIELD(ui_global, int *, 0x74) * 2 - 2 < y) {
+        dy = M2C_FIELD(ui_global, int *, 0x74) * 2 + 2;
+    }
+    if (dx | dy) {
+        drawScroll(frame, dx, dy);
+    }
+}
 
 FOCUSLIST *act1DMoveFocusUp(void *frame, FOCUSLIST *def, FOCUSLIST *cur) {
     FOCUSLIST *n;
