@@ -37,7 +37,29 @@ typedef struct {
     MQMSG *tmplUI;              /* 0x74 */
     u8 unk78[0x4];
     int mqJS;                   /* 0x7C */
+    u8 unk80[0x8];
+    int mq88;                   /* 0x88 */
+    int mq8C;                   /* 0x8C */
 } SLOGLOBAL;
+
+typedef struct {
+    int unk0;
+    int unk4;
+    int unk8;
+    int type;                   /* 0xC */
+    int sent;                   /* 0x10 */
+    int unk14;
+    int unk18;
+    int doc;                    /* 0x1C */
+    int unk20;
+    LOBODY body;                /* 0x24 */
+} SNODE;
+
+extern unsigned char REQUEST_LLIST;
+void *getNextLLIST();
+void delLLIST();
+int countRequestedLLIST();
+void msgSendToOtherTask(LOBODY *msg, int mq);
 
 extern SLOGLOBAL lo_global;
 unsigned int strlen(const char *s);
@@ -73,7 +95,50 @@ void msgSendToOtherTask(LOBODY *msg, int mq) {
     OS_mq_send(mq, &m, sizeof(MQMSG), 0);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_sndmsg", msgSend);
+void msgSend(void) {
+    SNODE *n;
+    SNODE *next;
+    LOBODY *b;
+    int *cnt;
+
+    n = getNextLLIST(&REQUEST_LLIST, NULL);
+    while (n != NULL) {
+        if (n->sent == 1) {
+            n = getNextLLIST(&REQUEST_LLIST, n);
+            continue;
+        }
+        b = &n->body;
+        switch (n->type) {
+        case 2:
+            msgSendToOtherTask(b, lo_global.mqJS);
+            next = getNextLLIST(&REQUEST_LLIST, n);
+            delLLIST(&REQUEST_LLIST, n);
+            MEM_free(0, n);
+            n = next;
+            break;
+        case 5:
+            if (b != NULL) {
+                cnt = (int *)b->unk1C;
+                if (cnt != NULL) {
+                    *cnt = countRequestedLLIST(&REQUEST_LLIST, n->doc);
+                }
+            }
+            msgSendToOtherTask(b, lo_global.mq88);
+            n->sent = 1;
+            n = getNextLLIST(&REQUEST_LLIST, n);
+            break;
+        case 8:
+            msgSendToOtherTask(b, lo_global.mq8C);
+            next = getNextLLIST(&REQUEST_LLIST, n);
+            delLLIST(&REQUEST_LLIST, n);
+            MEM_free(0, n);
+            n = next;
+            break;
+        default:
+            return;
+        }
+    }
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
