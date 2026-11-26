@@ -21,6 +21,7 @@ import argparse
 import collections
 import hashlib
 import io
+import os
 import re
 import struct
 import sys
@@ -99,6 +100,7 @@ def file_units(t, name, cus, text_end):
         line = line.split("#")[0].split()
         if line and line[0] != "rodata":
             ents.append((int(line[0], 16), line[3], line[2]))
+            NODWARF_UNITS.update({line[1], os.path.splitext(line[3])[0]})
     bounds = sorted([e[0] for e in ents] + [c[0] for c in cus] + [text_end])
     return [(lo, next(b for b in bounds if b > lo), src, ver) for lo, src, ver in ents]
 
@@ -228,6 +230,9 @@ def dwarf_objects(elf, text_addr, rodata):
     return out
 
 
+NODWARF_UNITS = set()
+
+
 def rodata_owners(elf, data, segs, units, rodata):
     """Split .rodata among the units by the code that references it.
 
@@ -333,7 +338,28 @@ def rodata_owners(elf, data, segs, units, rodata):
         for u in order:
             print(f"  {u:4} {units[u][2]:40} {first[u]:#x}-{last[u]:#x} {sorted(a for a in refs if refs[a]=={u})[:6]}", file=sys.stderr)
     if order != sorted(order):
-        return None
+        # only for modules mixing DWARF and nodwarf units (UTST99261)
+        if not NODWARF_UNITS or all(units[u][2] in NODWARF_UNITS for u in order):
+            return None
+        # keep the heaviest set of units whose first references are in link
+        # order (DWARF units weigh more than nodwarf ones); the others get no
+        # rodata of their own and stay with their neighbours
+        w = [1 if units[u][2] in NODWARF_UNITS else 1000 for u in order]
+        best = [0] * len(order)
+        prev = [-1] * len(order)
+        for i, u in enumerate(order):
+            best[i] = w[i]
+            for j in range(i):
+                if order[j] < u and best[j] + w[i] > best[i]:
+                    best[i], prev[i] = best[j] + w[i], j
+        i = max(range(len(order)), key=best.__getitem__)
+        keep = []
+        while i >= 0:
+            keep.append(order[i])
+            i = prev[i]
+        dropped = [units[u][2] for u in order if u not in keep]
+        print(f"rodata: {len(dropped)} units out of order get no rodata: {' '.join(dropped)}", file=sys.stderr)
+        order = keep[::-1]
     # ranges may overlap: the linker merges equal constants and strings
     # across objects; each unit starts at its first own reference
     out = []
