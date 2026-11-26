@@ -156,7 +156,127 @@ static void draw_primitive(void)
 	}
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_material/nonmatchings/main", draw_frame);
+#define SCEGU_IMMEDIATE                    0
+#define SCEGU_CLEAR_ALL               0x0007
+#define SCEGU_PRIM_LINES                   1
+#define SCEGU_THROUGH            ( 1 << 23 )
+#define SCEGU_VERTEX_SHORT       ( 2 <<  7 )
+#define SCEGU_PI                           3.1415926535897932384626433832f
+#define SCEGU_RAD(a)                       ((a)*SCEGU_PI/180.0f)
+#define ROT			-25.0f
+#define SCEGU_DIFFUSE                      2
+#define SCEGU_SPECULAR                     4
+#define SCEGU_SYNC_FINISH                  0
+#define SCEGU_SYNC_WAIT                    0
+
+static void draw_frame(void)
+{
+	u_int32			no_mat = 0xff000000;
+	u_int32			mat_ambient = 0xffb3b3b3;
+	u_int32			mat_ambient_color = 0xff33cccc;
+	u_int32			mat_diffuse = 0xffcc8019;
+	u_int32			mat_specular = 0xffffffff;
+	ScePspFVector3	vec;
+
+	sceGuStart(SCEGU_IMMEDIATE, disp_list, sizeof(disp_list));
+	sceGuClear(SCEGU_CLEAR_ALL);
+
+	sceGuColor(0xffffffff);
+	sceGumDrawArray(SCEGU_PRIM_LINES,
+					SCEGU_THROUGH|SCEGU_VERTEX_SHORT, 6, 0, (void *)line);
+
+	if (description)
+		draw_description();
+
+	sceGuColor(0xffc0c0c0);
+
+
+
+
+
+	sceGumPushMatrix();
+	vec.x=-4.0f, vec.y= 1.45f, vec.z=0.0f;
+	sceGumTranslate(&vec);
+	sceGumRotateX(SCEGU_RAD(ROT));
+	sceGuAmbient(no_mat);
+	sceGuLightColor(0, SCEGU_DIFFUSE, mat_diffuse);
+	sceGuLightColor(0, SCEGU_SPECULAR, no_mat);
+	draw_primitive();
+	sceGumPopMatrix();
+
+
+
+
+
+	sceGumPushMatrix();
+	vec.x=-4.0f, vec.y=-2.0f, vec.z=0.0f;
+	sceGumTranslate(&vec);
+	sceGumRotateX(SCEGU_RAD(ROT));
+	sceGuAmbient(no_mat);
+	sceGuLightColor(0, SCEGU_DIFFUSE, mat_diffuse);
+	sceGuLightColor(0, SCEGU_SPECULAR, mat_specular);
+	draw_primitive();
+	sceGumPopMatrix();
+
+
+
+
+
+	sceGumPushMatrix();
+	vec.x= 0.0f, vec.y= 1.45f, vec.z=0.0f;
+	sceGumTranslate(&vec);
+	sceGumRotateX(SCEGU_RAD(ROT));
+	sceGuAmbient(mat_ambient);
+	sceGuLightColor(0, SCEGU_DIFFUSE, mat_diffuse);
+	sceGuLightColor(0, SCEGU_SPECULAR, no_mat);
+	draw_primitive();
+	sceGumPopMatrix();
+
+
+
+
+
+	sceGumPushMatrix();
+	vec.x= 0.0f, vec.y=-2.0f, vec.z=0.0f;
+	sceGumTranslate(&vec);
+	sceGumRotateX(SCEGU_RAD(ROT));
+	sceGuAmbient(mat_ambient);
+	sceGuLightColor(0, SCEGU_DIFFUSE, mat_diffuse);
+	sceGuLightColor(0, SCEGU_SPECULAR, mat_specular);
+	draw_primitive();
+	sceGumPopMatrix();
+
+
+
+
+
+	sceGumPushMatrix();
+	vec.x= 4.0f, vec.y= 1.45f, vec.z=0.0f;
+	sceGumTranslate(&vec);
+	sceGumRotateX(SCEGU_RAD(ROT));
+	sceGuAmbient(mat_ambient_color);
+	sceGuLightColor(0, SCEGU_DIFFUSE, mat_diffuse);
+	sceGuLightColor(0, SCEGU_SPECULAR, no_mat);
+	draw_primitive();
+	sceGumPopMatrix();
+
+
+
+
+
+	sceGumPushMatrix();
+	vec.x= 4.0f, vec.y=-2.0f, vec.z=0.0f;
+	sceGumTranslate(&vec);
+	sceGumRotateX(SCEGU_RAD(ROT));
+	sceGuAmbient(mat_ambient_color);
+	sceGuLightColor(0, SCEGU_DIFFUSE, mat_diffuse);
+	sceGuLightColor(0, SCEGU_SPECULAR, mat_specular);
+	draw_primitive();
+	sceGumPopMatrix();
+
+	sceGuFinish();
+	sceGuSync(SCEGU_SYNC_FINISH, SCEGU_SYNC_WAIT);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_material/nonmatchings/main", init_all);
 
