@@ -21,4 +21,18 @@ typedef struct {
 } EGROUP;
 #define egroup ((EGROUP *)&gmain.b[0xEBD98])
 
+typedef struct {
+	int f0, f4, f8, fc, f10, f14, f18, f1c, f20, f24, f28, f2c, f30, f34, f38, f3c;
+	int f40, f44, f48, f4c, f50, f54, f58;
+} INV_STATUS;
+extern int inv_status;
+#define IST (*(INV_STATUS *)&inv_status)
+typedef struct {
+	u8 _p0[0xCC];
+	int fcc, fd0;
+	u8 _pd4[0x100 - 0xD4];
+	int f100, f104, f108, f10c, f110, f114, f118;
+} SAVE_DATA;
+extern SAVE_DATA save_data;
+
 #endif
