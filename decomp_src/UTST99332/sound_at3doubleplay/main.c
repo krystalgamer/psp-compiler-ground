@@ -126,6 +126,16 @@ void sceGumSetMatrixStack(void *stack, int proj, int view, int model, int textur
 
 void DrawData(void);
 
+/* SDK prototypes (tools/sdk_protos.h) */
+int printf(const char *fmt, ...);
+int puts(const char *s);
+int sceDisplayWaitVblankStart(void);
+void *sceGuSwapBuffers(void);
+void sceGuTerm(void);
+int sceKernelCreateThread(const char *name, void *entry, int prio, int stacksize, unsigned int attr, void *option);
+int sceKernelDeleteThread(int thid);
+int sceKernelStartThread(int thid, unsigned int arglen, void *argp);
+
 static void draw_frame(void)
 {
 	ScePspFVector3 vec;
