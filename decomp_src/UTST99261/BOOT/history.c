@@ -1018,7 +1018,15 @@ int HST_getTransStatus(void *arg0) {
     return M2C_FIELD(arg0, int *, 0xA4);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/history", HST_searchSessionIDHistoryNode);
+void *HST_searchSessionIDHistoryNode(int sid) {
+    void *r;
+
+    r = NULL;
+    if (sid != 0) {
+        r = searchHistoryNodeInner(1, &sid, 0);
+    }
+    return r;
+}
 
 void *HST_searchRequestFlagHistoryNode(int flag) {
     int key = flag;
@@ -1344,7 +1352,23 @@ int uricmp_5704C(HstStr *a, HstStr *b) {
     return 1;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/history", freeFragmentIDs);
+void freeFragmentIDs(void *fp) {
+    HstFrag *f;
+    HstFrag *p;
+
+    if (fp == NULL) {
+        return;
+    }
+    f = fp;
+    do {
+        p = f;
+        f = f->next;
+        if (p->name != NULL) {
+            MEM_free(0, p->name);
+        }
+        MEM_free(0, p);
+    } while (f != NULL);
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
