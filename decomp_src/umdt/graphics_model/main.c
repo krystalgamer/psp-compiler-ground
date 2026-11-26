@@ -77,6 +77,11 @@ extern int g_packet;
 extern char g_launch_buf[4096];
 extern char g_packet_buf[2][0x100000];
 extern ScePspFMatrix4 g_matrix_buf[16];
+typedef struct { unsigned int uiMake; unsigned int uiBreak; unsigned int uiPress; unsigned int uiRelease; } SceCtrlLatch;
+typedef struct { unsigned int TimeStamp; unsigned int Buttons; unsigned char Lx; unsigned char Ly; unsigned char Rsrv[6]; } SceCtrlData;
+int sceCtrlReadBufferPositive(SceCtrlData *data, int count);
+int sceCtrlReadLatch(SceCtrlLatch *latch);
+int sceKernelGetVTimerTime(int uid, SceKernelSysClock *clock);
 void LcdDrawSetBackColor(unsigned int color);
 void LcdDrawClr(void);
 void LcdDrawReset(void);
@@ -134,6 +139,7 @@ int UtilityFileAssign(const char *path, int mode);
 int UtilityFileUnassign(const char *path);
 extern const char **g_model_names;
 extern int g_model_size;
+extern int g_model_count;
 /* end_scene's static VertexModes, TextureModes, PacketModes (.data) */
 extern const char *D_00017AD8[2];
 extern const char *D_00017AE0[2];
@@ -479,7 +485,146 @@ static void swap_buffers()
 	g_vbl_count = vbl_count;
 }
 
-INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/main", move_objects);
+static void move_objects()
+{
+	float move = g_vbl_step * 0.5f;
+	float turn = g_vbl_step * (2.0f * 3.14f / 180.0f);
+	SceKernelSysClock clock = { 0, 0 };
+	SceCtrlLatch latch;
+	SceCtrlData buf;
+	char msg1[112];
+	char msg2[112];
+
+	sceCtrlReadBufferPositive(&buf, 1);
+	if (sceCtrlReadLatch(&latch)) {
+		if ((latch.uiBreak & 0x2000) && _productMode == 1) {
+			sceKernelGetVTimerTime(_timerid, &clock);
+			sprintf(msg1, "%08X %08X\n", clock.hi, clock.low);
+			sceIoWrite(0, msg1, strlen(msg1));
+			if (clock.low > 1500000) {
+				g_running = 0;
+				return;
+			}
+		}
+		if (latch.uiBreak & 0x4000) {
+			sprintf(msg1, "g_translate %f,%f,%f\n", g_translate.x, g_translate.y, g_translate.z);
+			sceIoWrite(0, msg1, strlen(msg1));
+			sprintf(msg2, "g_rotate %f,%f,%f\n", g_rotate.x, g_rotate.y, g_rotate.z);
+			sceIoWrite(0, msg2, strlen(msg2));
+			if (_productMode == 0) {
+				g_running = 0;
+				return;
+			}
+		}
+		if (latch.uiPress & 0x80)
+			g_rotate.y -= turn;
+		if (latch.uiPress & 0x20)
+			g_rotate.y += turn;
+		if (latch.uiPress & 0x100)
+			g_translate.z -= move;
+		if (latch.uiPress & 0x200)
+			g_translate.z += move;
+		float dx = (buf.Lx - 128) / 128.0f;
+		float dy = (buf.Ly - 128) / 128.0f;
+		if (dx > -0.75f && dx < 0.75f)
+			dx = 0.0f;
+		if (dy > -0.75f && dy < 0.75f)
+			dy = 0.0f;
+		g_translate.x += move * dx;
+		g_translate.y -= move * dy;
+
+		if (latch.uiBreak & 0x10) {
+			if (g_menu_select > 0)
+				g_menu_select -= 1;
+		}
+		if (latch.uiBreak & 0x40) {
+			if (g_menu_select < 5)
+				g_menu_select += 1;
+		}
+
+		switch (g_menu_select) {
+		case 0: {
+			if (latch.uiBreak & 0x8) {
+				if (g_menu_model < g_model_count - 1) {
+					g_menu_model += 1;
+					g_reload = 1;
+				}
+			}
+			if (latch.uiBreak & 0x1) {
+				if (g_menu_model > 0) {
+					g_menu_model -= 1;
+					g_reload = 1;
+				}
+			}
+			break;
+		}
+		case 1: {
+			if (latch.uiBreak & 0x9) {
+				g_menu_vertex = !g_menu_vertex;
+				g_reload = 1;
+			}
+			break;
+		}
+		case 2: {
+			if (latch.uiBreak & 0x9) {
+				g_menu_texture = !g_menu_texture;
+				int bits = g_menu_texture ? -1 : 0;
+				SceGmoModel *model = g_model;
+				sceGmoModelSetEnableMask(model, 4, ~bits);
+				sceGmoModelSetEnableBits(model, 4, bits);
+				if (g_menu_packet == 2)
+					clear_cache();
+			}
+			break;
+		}
+		case 3: {
+			if (latch.uiBreak & 0x8) {
+				if (g_menu_packet < 2) {
+					g_menu_packet += 1;
+					g_packet = -1;
+					g_frame %= 2;
+					clear_cache();
+				}
+			}
+			if (latch.uiBreak & 0x1) {
+				if (g_menu_packet > 0) {
+					g_menu_packet -= 1;
+					g_packet = -1;
+					g_frame %= 2;
+					clear_cache();
+				}
+			}
+			break;
+		}
+		case 4: {
+			if (latch.uiBreak & 0x8) {
+				if (g_menu_count < 10)
+					g_menu_count += 1;
+			}
+			if (latch.uiBreak & 0x1) {
+				if (g_menu_count > 0)
+					g_menu_count -= 1;
+			}
+			break;
+		}
+		case 5: {
+			if (latch.uiBreak & 0x8) {
+				if (g_menu_cache < 50) {
+					g_menu_cache += 1;
+					clear_cache();
+				}
+			}
+			if (latch.uiBreak & 0x1) {
+				if (g_menu_cache > 1) {
+					g_menu_cache -= 1;
+					clear_cache();
+				}
+			}
+			break;
+		}
+		}
+	}
+}
 
 static void draw_objects()
 {
