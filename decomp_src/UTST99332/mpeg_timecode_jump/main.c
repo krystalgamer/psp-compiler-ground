@@ -242,7 +242,21 @@ int exit_func(int count, int arg1, void *arg2) {
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/mpeg_timecode_jump/nonmatchings/main", loadModule);
+SceInt32 loadModule(SceUID *mid, SceChar8 *filename, SceKernelLMOption *option)
+{
+	SceInt32 res;
+	SceInt32 mresult;
+
+	do {
+		*mid = sceKernelLoadModule(filename, 0, option);
+	} while (*mid < 0);
+
+	do {
+		res = sceKernelStartModule(*mid, 0, NULL, &mresult, NULL);
+	} while (res < 0);
+
+	return 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/mpeg_timecode_jump/nonmatchings/main", unloadModule);
 
