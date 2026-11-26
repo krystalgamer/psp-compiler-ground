@@ -1,6 +1,17 @@
+/* libsystemfile: built -O0 (frame pointer, every variable in memory). */
+/* cflags: -O0 */
 #include "common.h"
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/systemfile", checkVersion);
+int checkVersion(int version)
+{
+	int ret;
+
+	if (version != 0x101)
+		ret = -1;
+	else
+		ret = 0;
+	return ret;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/systemfile", _newSystemFile);
 
@@ -92,9 +103,19 @@ INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/systemfile", __sceSystemFileS
 
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/systemfile", sceSystemFileSetMallocFunc);
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/systemfile", _heapCreate);
+int _heapCreate(int size)
+{
+	int vplid;
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/systemfile", _heapDelete);
+	vplid = sceKernelCreateVpl("sceLibSysfile", 2, 0, size + 0x100, NULL);
+	return vplid;
+}
+
+void _heapDelete(int vplid)
+{
+	if (vplid > 0)
+		sceKernelDeleteVpl(vplid);
+}
 
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/systemfile", sf_malloc);
 
@@ -102,13 +123,27 @@ INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/systemfile", sf_free);
 
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/systemfile", sf_memcpy);
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/systemfile", sf_memset);
+void *sf_memset(void *dst, int c, int n)
+{
+	unsigned char *p = dst;
+
+	while (n--)
+		*p++ = (unsigned char)c;
+	return dst;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/systemfile", sf_memcmp);
 
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/systemfile", sf_strcpy);
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/systemfile", sf_strlen);
+int sf_strlen(const char *s)
+{
+	int n = 0;
+
+	while (*s++)
+		n++;
+	return n;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/systemfile", sf_strcmp);
 
