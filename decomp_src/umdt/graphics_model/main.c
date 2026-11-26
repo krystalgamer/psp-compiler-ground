@@ -70,6 +70,42 @@ int sceDisplayWaitVblankStart(void);
 void *sceGuSwapBuffers(void);
 unsigned int sceDisplayGetVcount(void);
 void sceGumMatrixMode(int mode);
+typedef struct { unsigned int low; unsigned int hi; } SceKernelSysClock;
+extern unsigned char _productMode;
+extern int _timerid;
+extern int g_packet;
+extern char g_launch_buf[4096];
+extern char g_packet_buf[2][0x100000];
+extern ScePspFMatrix4 g_matrix_buf[16];
+void LcdDrawSetBackColor(unsigned int color);
+void LcdDrawClr(void);
+void LcdDrawReset(void);
+int sceCtrlSetSamplingCycle(unsigned int cycle);
+int sceCtrlSetSamplingMode(unsigned int mode);
+int sceKernelCreateVTimer(const char *name, void *opt);
+int sceKernelStartVTimer(int uid);
+int sceKernelSetVTimerTime(int uid, SceKernelSysClock *clock);
+int sceKernelDeleteVTimer(int uid);
+void sceGuInit(void);
+void sceGuTerm(void);
+void sceGuDrawBuffer(int format, void *fbp, int fbw);
+void sceGuDispBuffer(int w, int h, void *dbp, int dbw);
+void sceGuDepthBuffer(void *zbp, int zbw);
+void sceGuOffset(unsigned int x, unsigned int y);
+int sceGuDisplay(int state);
+int sceGumSetMatrixStack(ScePspFMatrix4 *m, int p, int v, int w, int t);
+void myHeapTerm(void);
+static void _GlobalInit(void);
+static void begin_scene();
+static void end_scene();
+static void swap_buffers();
+static void move_objects();
+static void draw_objects();
+static void clear_cache();
+static void update_cache();
+static void draw_cache();
+static unsigned char load_objects();
+static void unload_objects();
 void sceGimPictureSetMemoryManager(void *(*alloc)(unsigned int), void (*free)(void *));
 void sceGimPictureSetMemoryManager2(void *(*alloc)(unsigned int), void (*free)(void *));
 void sceGmoModelSetMemoryManager(void *(*alloc)(unsigned int), void (*free)(void *));
@@ -243,7 +279,86 @@ int GraphicsModelEntry(int a, int b)
 
 
 
-INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/main", GraphicsModelMain);
+int GraphicsModelMain(int mode)
+{
+	int ret = 0;
+	SceKernelSysClock clock = { 0, 0 };
+
+	if (mode)
+		_productMode = 1;
+	else
+		_productMode = 0;
+	LcdDrawSetBackColor(0);
+	LcdDrawClr();
+	_GlobalInit();
+	sceCtrlSetSamplingCycle(0);
+	sceCtrlSetSamplingMode(1);
+	_timerid = sceKernelCreateVTimer("model timer", 0);
+	sceKernelStartVTimer(_timerid);
+	sceGuInit();
+	sceGuStart(0, g_packet_buf[0], 0x100000);
+	sceGuDrawBuffer(1, (void *)0, 512);
+	sceGuDispBuffer(480, 272, (void *)0x44000, 512);
+	sceGuDepthBuffer((void *)0x88000, 512);
+	sceGuOffset(2048 - 480 / 2, 2048 - 272 / 2);
+	sceGuFinish();
+	sceGuSync(0, 0);
+	sceGumSetMatrixStack(g_matrix_buf, 4, 4, 8, 0);
+	sceGimPictureSetMemoryManager(malloc, free);
+	sceGimPictureSetMemoryManager2(malloc, free);
+	sceGmoModelSetMemoryManager(malloc, free);
+	sceGmoModelSetMemoryManager2(malloc, free);
+	sceGuDisplay(1);
+	while (g_running) {
+		if (g_reload) {
+			if (!load_objects()) {
+				ret = -1;
+				break;
+			}
+			sceKernelSetVTimerTime(_timerid, &clock);
+			clear_cache();
+			g_packet = -1;
+			g_vbl_count = -1;
+		}
+		if (g_menu_packet == 0) {
+			sceGuStart(0, g_packet_buf[0], 0x100000);
+			begin_scene();
+			move_objects();
+			draw_objects();
+			end_scene();
+			sceGuFinish();
+		} else if (g_menu_packet == 1) {
+			sceGuStart(0, g_launch_buf, 4096);
+			begin_scene();
+			if (g_packet >= 0)
+				sceGuCallList(g_packet_buf[g_packet]);
+			end_scene();
+			sceGuFinish();
+			g_packet = (g_packet != 0) ? 0 : 1;
+			sceGuStart(1, g_packet_buf[g_packet], 0x100000);
+			move_objects();
+			draw_objects();
+			sceGuFinish();
+		} else {
+			sceGuStart(0, g_packet_buf[0], 0x100000);
+			begin_scene();
+			move_objects();
+			update_cache();
+			draw_cache();
+			end_scene();
+			sceGuFinish();
+		}
+		swap_buffers();
+	}
+	unload_objects();
+	myHeapTerm();
+	sceGuTerm();
+	LcdDrawReset();
+	LcdDrawSetBackColor(0);
+	LcdDrawClr();
+	sceKernelDeleteVTimer(_timerid);
+	return ret;
+}
 
 static void begin_scene()
 {
