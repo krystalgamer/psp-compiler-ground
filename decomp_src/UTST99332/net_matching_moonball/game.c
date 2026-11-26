@@ -749,9 +749,68 @@ void KeyGame(u_int32 padd, u_int32 cont)
 	}
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/game", get_game_data);
+void *memcpy(void *d, const void *s, unsigned int n);
+int get_game_data(void *data)
+{
+	void *ptr;
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/game", update_game_data);
+	ptr = data;
+	if (_info.server_flag > 0) {
+		memcpy(ptr, &ball, sizeof(BALL));
+		ptr = (char *)ptr + sizeof(BALL);
+		memcpy(ptr, &ground, sizeof(GROUND));
+		ptr = (char *)ptr + sizeof(GROUND);
+		memcpy(ptr, &game, sizeof(GAMEDAT));
+		ptr = (char *)ptr + sizeof(GAMEDAT);
+	}
+	sceNetGetLocalEtherAddr(&scope[0].addr);
+	memcpy(ptr, &scope[0], 0x20);
+	ptr = (char *)ptr + 0x20;
+	scope[0].beam_flag = 0;
+	return (char *)ptr - (char *)data;
+}
+
+extern int D_000CEBE0;
+#define ball_break D_000CEBE0
+int update_game_data(struct SceNetEtherAddr *addr, void *data)
+{
+	int i;
+	void *ptr;
+
+	ptr = data;
+	for (i = 1; i < 17; i++) {
+		if (scope[i].state == 1 && memcmp(&scope[i].addr, addr, 6) != 0)
+			continue;
+		if (memcmp(addr, &_info.server, 6) == 0) {
+			memcpy(&ball, ptr, sizeof(BALL));
+			ptr = (char *)ptr + sizeof(BALL);
+			memcpy(&ground, ptr, sizeof(GROUND));
+			ptr = (char *)ptr + sizeof(GROUND);
+			memcpy(&game, ptr, sizeof(GAMEDAT));
+			ptr = (char *)ptr + sizeof(GAMEDAT);
+			if (ball_break == 0 && ball.state == 3) {
+				SetParticle(ball.pos.x, ball.pos.y, ball.pos.z, 50.0f, 56, ball.c);
+				ball_break = 1;
+			} else if (ball.state != 3) {
+				ball_break = 0;
+			}
+			if (game.state > 0)
+				scope[0].state = 1;
+		}
+		if (_info.server_flag > 0)
+			_info.client_ready = 1;
+		memcpy(&scope[i], ptr, 0x20);
+		memcpy(&scope[i].addr, addr, 6);
+		if (_info.server_flag > 0 && scope[i].beam_flag > 0) {
+			CheckShoot(&scope[i], 0);
+			scope[i].beam_flag = 0;
+		}
+		scope[i].last_v = last_v;
+		break;
+	}
+	return 0;
+}
+#undef ball_break
 
 int check_peer_existence(void)
 {
