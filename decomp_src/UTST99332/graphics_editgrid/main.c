@@ -187,7 +187,111 @@ INCLUDE_RODATA("tmp/asm/UTST99332/graphics_editgrid/nonmatchings/main", D_00011E
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_editgrid/nonmatchings/main", init_all);
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_editgrid/nonmatchings/main", pad_read);
+#define DTRANS		0.01f;
+#define SCE_CTRL_CIRCLE				(1<<13)
+#define SCE_CTRL_CROSS				(1<<14)
+#define SCE_CTRL_UP					(1<<4)
+#define SCE_CTRL_DOWN				(1<<6)
+#define SCE_CTRL_LEFT				(1<<7)
+#define SCE_CTRL_RIGHT				(1<<5)
+#define SCE_CTRL_L					(1<<8)
+#define SCE_CTRL_L1					SCE_CTRL_L
+#define SCE_CTRL_R					(1<<9)
+#define SCE_CTRL_R1					SCE_CTRL_R
+#define VTRANS		1.0f;
+#define SCE_CTRL_TRIANGLE			(1<<12)
+#define MAXMODE		2
+#define SCE_CTRL_SQUARE				(1<<15)
+#define MAXPRIM		3
+#define SCE_CTRL_START				(1<<3)
+#define MAXCONTROL	16
+#define SCE_CTRL_SELECT				(1<<0)
+
+static int pad_read(void)
+{
+	u_int32		prev=cont;
+	u_int32		padd;
+	SceCtrlData	buf;
+
+	int			i;
+
+	sceCtrlReadBufferPositive(&buf, 1);
+	cont = buf.Buttons;
+	padd=cont&(cont^prev);
+
+	if (!mode) {
+		ScePspFVector3	*cur_pt=&control[current];
+
+		if (cont & SCE_CTRL_UP) {
+			cur_pt->y+=DTRANS;
+		}
+		if (cont & SCE_CTRL_DOWN) {
+			cur_pt->y-=DTRANS;
+		}
+		if (cont & SCE_CTRL_LEFT) {
+			cur_pt->x-=DTRANS;
+		}
+		if (cont & SCE_CTRL_RIGHT) {
+			cur_pt->x+=DTRANS;
+		}
+		if (cont & SCE_CTRL_L1) {
+			cur_pt->z+=DTRANS;
+		}
+		if (cont & SCE_CTRL_R1) {
+			cur_pt->z-=DTRANS;
+		}
+
+		if (padd & SCE_CTRL_CIRCLE)
+			current=(current+1>=MAXCONTROL?0:current+1);
+		if (padd & SCE_CTRL_CROSS)
+			current=(current-1<0?MAXCONTROL-1:current-1);
+	}
+	else {
+		if (cont & SCE_CTRL_UP) {
+			rot.x+=VTRANS;
+			if (rot.x>=360.0f)
+				rot.x=0.0f;
+		}
+		if (cont & SCE_CTRL_DOWN) {
+			rot.x-=VTRANS;
+			if (rot.x<0.0f)
+				rot.x+=360.0f;
+		}
+		if (cont & SCE_CTRL_LEFT) {
+			rot.y+=VTRANS;
+			if (rot.y>=360.0f)
+				rot.y=0.0f;
+		}
+		if (cont & SCE_CTRL_RIGHT) {
+			rot.y-=VTRANS;
+			if (rot.y<0.0f)
+				rot.y+=360.0f;
+		}
+		if (cont & SCE_CTRL_L1) {
+			pos.z+=VTRANS;
+		}
+		if (cont & SCE_CTRL_R1) {
+			pos.z-=VTRANS;
+		}
+	}
+
+	if (padd & SCE_CTRL_TRIANGLE)
+		mode=(mode+1>=MAXMODE?0:mode+1);
+	if (padd & SCE_CTRL_SQUARE)
+		prim=(prim+1>=MAXPRIM?0:prim+1);
+
+	if (padd & SCE_CTRL_START) {
+		for (i=0; i<MAXCONTROL; i++) {
+			control[i].x=bezier[i*3+0];
+			control[i].y=bezier[i*3+1];
+			control[i].z=bezier[i*3+2];
+		}
+	}
+	if (padd & SCE_CTRL_SELECT)
+		return 0;
+
+	return 1;
+}
 
 int main(void) {
     menuInit();
