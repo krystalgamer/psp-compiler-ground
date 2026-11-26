@@ -60,7 +60,6 @@ extern int buf_ps_evt;
 extern int buf_ps_parcent;
 extern int gpsCntxtTable;
 extern int psCacheMode;
-extern int rcvInfo;
 extern int save_sessionURL;
 extern int save_sessionstop;
 int HST_getHeadHistoryNode();                       /* extern */

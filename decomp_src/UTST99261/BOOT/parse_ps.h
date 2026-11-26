@@ -55,6 +55,13 @@ typedef struct PsIpc {
     int x1C;
 } PsIpc;
 
+typedef struct RecvInfo {
+    int id;
+    int d[4];
+    struct RecvInfo *next;
+} RecvInfo;
+
+extern RecvInfo *rcvInfo;
 extern PsLocation *PS_LOCATION_HEAD;
 extern PsLocation *D_0025B5CC;
 extern ExMsgBoxList exMsgBoxList;

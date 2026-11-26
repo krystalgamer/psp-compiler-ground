@@ -2,6 +2,18 @@
 #include "common.h"
 #include "parse_ps.h"
 #include "m2c_macros.h"
+extern int SSLFlg;
+extern int SSL_Next_STS;
+extern int Accession;
+extern int SaveURI;
+extern int SaveREF;
+extern int Layout_Cont;
+extern int psCacheMode;
+extern char D_00137C10[];
+extern char D_001379EC[];
+extern char D_00137A7C[];
+extern char D_00137AAC[];
+int ps_i241A(PsIpc *msg);
 extern int buf_sessionUI;
 extern int buf_localUI;
 extern int SAVE_STOP;
@@ -21,10 +33,8 @@ extern int buf_ps_sts;
 M2C_UNK ps_setExMsg(int, int);                      /* extern */
 extern int D_00584FB8;
 M2C_UNK MEM_free(M2C_UNK, void *);                  /* extern */
-extern void *rcvInfo;
 
 M2C_UNK ps_i2314();                                 /* extern */
-M2C_UNK ps_i2606();                                 /* extern */
 
 
 void sendMPU_REQ_SHOW_DIALOG(PsIpc *msg) {
@@ -188,7 +198,40 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/ps_l3800", ps_i2219);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/ps_l3800", ps_i221A);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/ps_l3800", ps_i2306);
+int ps_i2306(PsIpc *msg) {
+    PsIpc m;
+    PsDomBuild b;
+    int *node;
+    void *r;
+
+    node = HST_searchSessionIDHistoryNode(msg->x04);
+    if (node == NULL) {
+        if (msg->x18 != 0) {
+            MEM_free(0, msg->x1C);
+        }
+        return buf_ps_sts;
+    }
+    node[15] = 3;
+    b.x[0] = node[1];
+    b.x[1] = node[0];
+    b.x[2] = node[5];
+    b.x[3] = node[4];
+    b.x[4] = node[7];
+    b.x[5] = node[6];
+    b.x[6] = 0x1A;
+    b.x[7] = (int)D_001379EC;
+    b.x[9] = msg->x04;
+    b.x[10] = 0;
+    b.x[11] = 0;
+    b.x[12] = 0;
+    b.x[13] = Accession;
+    r = parseDomBuild(&b);
+    if (r != NULL) {
+        MEM_free(0, r);
+    }
+    sendMPL_REQ_LOAD_PAGE(&m, msg->x04);
+    return 7;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/ps_l3800", ps_i2308);
 
@@ -232,13 +275,74 @@ int ps_i2315(void) {
     return 3;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/ps_l3800", ps_i2319);
+int ps_i2319(PsIpc *msg) {
+    PsIpc c;
+    PsIpc a;
+    PsDomBuild b;
+    void *node;
+    int *buf;
+    int len;
+    void *r;
+
+    MEM_free(0, SaveURI);
+    MEM_free(0, SaveREF);
+    SaveURI = 0;
+    SaveREF = 0;
+    node = HST_getHeadHistoryNode();
+    if (node == NULL) {
+        ps_halt(D_00137A7C);
+    }
+    len = HST_getCurURIlen(node);
+    buf = MEM_malloc(0, len + 4);
+    if (buf == NULL) {
+        ps_halt(D_00137AAC);
+    }
+    buf[0] = len;
+    memcpy(buf + 1, HST_getCurURI(node), buf[0]);
+    b.x[0] = buf[0];
+    b.x[1] = (int)(buf + 1);
+    b.x[2] = 0;
+    b.x[3] = 0;
+    b.x[4] = 0;
+    b.x[5] = 0;
+    b.x[6] = 0;
+    b.x[7] = 0;
+    b.x[8] = 0;
+    b.x[9] = 0;
+    b.x[11] = 0;
+    b.x[12] = 0xB;
+    b.x[13] = 0;
+    r = parseDomBuild(&b);
+    if (r != NULL) {
+        MEM_free(0, r);
+    }
+    ps_getsend(node, psCacheMode, 0, 0);
+    sendStart(&a, &c, buf);
+    Layout_Cont = 0;
+    ps_freeRecvInfo();
+    return 6;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/ps_l3800", ps_i231A);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/ps_l3800", ps_i2406);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/ps_l3800", ps_i2412);
+int ps_i2412(PsIpc *msg) {
+    struct {
+        int x00;
+        PsIpc body;
+    } m;
+
+    if (msg->x14 != 2) {
+        m.body = *msg;
+        if (OS_mq_send(mq_js, &m, sizeof(m), 0) < 0) {
+            ps_halt(D_00137C10);
+        }
+    } else {
+        buf_ps_sts = ps_i241A(msg);
+    }
+    return buf_ps_sts;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/ps_l3800", ps_i2414);
 
@@ -246,22 +350,46 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/ps_l3800", ps_i2414_auth);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/ps_l3800", ps_i241A);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/ps_l3800", ps_i2606);
+int ps_i2606(PsIpc *msg) {
+    PsIpc m;
+    int *info;
+    int d;
 
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
-
-void ps_i2607(void) {
-    ps_i2606();
+    d = msg->x1C;
+    if (d != 0) {
+        info = MEM_calloc(0, 0xC);
+        ps_setRecvInfo(msg->x04, d);
+        info[0] = ps_getRecvRate(&info[1], &info[2]);
+        m.type = 2;
+        m.x04 = buf_sessionUI;
+        m.x08 = 0;
+        m.cmd = 4;
+        m.x10 = 0;
+        m.x14 = buf_localUI;
+        m.x18 = 0xC;
+        m.x1C = (int)info;
+        ps_sndmsg(&m, 1);
+    }
+    if (msg->x18 != 0) {
+        MEM_free(0, msg->x1C);
+    }
+    return buf_ps_sts;
 }
 
 #ifndef NULL
 #define NULL ((void *)0)
 #endif
 
-void ps_i2608(void) {
-    ps_i2606();
+void ps_i2607(PsIpc *msg) {
+    ps_i2606(msg);
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void ps_i2608(PsIpc *msg) {
+    ps_i2606(msg);
 }
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/ps_l3800", ps_i2609);
@@ -306,25 +434,80 @@ int ps_i261A(PsIpc *msg) {
 #endif
 
 void ps_freeRecvInfo(void) {
-    void *temp_s0;
-    void *var_a1;
+    RecvInfo *p;
+    RecvInfo *next;
 
-    var_a1 = rcvInfo;
-    if (var_a1 != NULL) {
-        do {
-            temp_s0 = M2C_FIELD(var_a1, void **, 0x14);
-            MEM_free(0, var_a1);
-            var_a1 = temp_s0;
-        } while (temp_s0 != NULL);
+    p = rcvInfo;
+    while (p != NULL) {
+        next = p->next;
+        MEM_free(0, p);
+        p = next;
     }
     rcvInfo = NULL;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/ps_l3800", ps_setRecvInfo);
+void ps_setRecvInfo(int id, int *data) {
+    RecvInfo *p;
+    RecvInfo *prev;
+
+    prev = NULL;
+    for (p = rcvInfo; p != NULL; p = p->next) {
+        if (p->id == id) {
+            break;
+        }
+        prev = p;
+    }
+    if (p == NULL) {
+        p = MEM_malloc(0, sizeof(RecvInfo));
+        if (p == NULL) {
+            return;
+        }
+        if (prev != NULL) {
+            prev->next = p;
+        }
+        if (rcvInfo == NULL) {
+            rcvInfo = p;
+        }
+        p->d[0] = 0;
+        p->d[1] = 0;
+        p->d[2] = 0;
+        p->d[3] = 0;
+        p->next = NULL;
+        p->id = id;
+    }
+    p->d[0] = data[0];
+    p->d[1] = data[1];
+    p->d[2] = data[2];
+    p->d[3] = data[3];
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/ps_l3800", ps_getRecvRate);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/ps_l3800", ps_i2906);
+int ps_i2906(PsIpc *msg) {
+    PsIpc m;
+
+    if ((msg->x04 > 0x08000000 && msg->x04 <= 0x10000000) || HST_searchSessionIDHistoryNode(msg->x04) == NULL) {
+        MEM_free(0, msg->x1C);
+    } else if (SSLFlg == 0) {
+        SSLFlg = 1;
+        m.x04 = msg->x04;
+        m.x08 = msg->x08;
+        m.x10 = msg->x10;
+        m.x14 = msg->x14;
+        m.x18 = msg->x18;
+        m.x1C = msg->x1C;
+        m.type = 2;
+        m.cmd = 0x11;
+        ps_sndmsg(&m, 1);
+        if (msg->x10 == 1) {
+            SSL_Next_STS = buf_ps_sts;
+            return 0x16;
+        }
+    } else if (msg->x1C != 0) {
+        MEM_free(0, msg->x1C);
+    }
+    return buf_ps_sts;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
