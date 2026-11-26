@@ -182,7 +182,30 @@ int sceAtracGetSecondBufferInfo(unsigned int id, unsigned int *pos, unsigned int
 	return r;
 }
 
-INCLUDE_ASM("tmp/asm/tony_libs/libatrac3plus/nonmatchings/libatrac3plus", sceAtracSetSecondBuffer);
+int sceAtracSetSecondBuffer(unsigned int id, unsigned char *buf, unsigned int size)
+{
+	AtracInfo *info;
+	unsigned int end;
+	int r;
+
+	if (id >= 4 || !D_00003930[id].inUse)
+		return 0x80630005;
+	if (D_00003930[id].info.state == 0)
+		return 0x80630010;
+	info = &D_00003930[id].info;
+	end = func_0000201C(info, info->unk1C);
+	if ((size < info->sampleSize * 3) & (size < info->unk30 - end - 1))
+		return 0x80630011;
+	r = 0;
+	if (info->state != 5) {
+		r = 0x80630022;
+	} else {
+		info->unk4C = buf;
+		info->unk50 = size;
+		info->unk54 = 0;
+	}
+	return r;
+}
 
 int sceAtracGetSoundSample(unsigned int id, int *endSample, int *loopStart, int *loopEnd)
 {
