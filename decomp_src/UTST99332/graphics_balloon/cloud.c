@@ -210,7 +210,28 @@ static void set_vram_texture(void)
 	vramaddr+=size;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_balloon/nonmatchings/cloud", init_cloud);
+#define SIGN ((rand()%2)?-1.0f:1.0f)
+#define RANGERAND(b,u,r) (b+u*(float)(rand()%r))
+static void init_cloud(int n)
+{
+	CLOUDDAT	*p;
+
+	p=&cloud[n];
+	p->mode=texture_mode;
+	p->pos.x=RANGERAND(14.0f, 0.1f, 10)*SIGN;
+	p->pos.y=RANGERAND(0.0f, 0.01f, 200)*SIGN;
+	p->pos.z=(rand()%10)<6?RANGERAND(3.0f, 0.1f, 80):-1.0f;
+
+	if (p->pos.z>0.0f)	{
+		if (p->pos.x<0.0f)	p->pos.x+=2.0f;
+		else				p->pos.x-=2.0f;
+	}
+
+	if (p->pos.x<0.0f)	p->dir= 1.0f;
+	else				p->dir=-1.0f;
+
+	p->d=RANGERAND(0.015f, 0.001f, 50)*p->dir;
+}
 
 void init_cloud(int i);
 void set_vram_texture(void);
