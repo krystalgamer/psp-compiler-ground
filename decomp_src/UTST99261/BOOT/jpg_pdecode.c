@@ -24,12 +24,15 @@ typedef struct {
 
 typedef struct {
     void *bs;                   /* 0x0 */
-    u8 unk4[0x10];
+    u8 *rgb;                    /* 0x4 */
+    s16 *out[3];                /* 0x8 */
     s16 pred[4];                /* 0x14 */
     s16 *block;                 /* 0x1C */
     u8 unk20[0x8C];
     int *coef[4];               /* 0xAC */
-    u8 unkBC[0x14];
+    u8 unkBC[0xA];
+    u16 width;                  /* 0xC6 */
+    u8 unkC8[0x8];
     u16 mcuw;                   /* 0xD0 */
     u16 mcuh;                   /* 0xD2 */
     u8 unkD4[3];
@@ -39,7 +42,10 @@ typedef struct {
     u8 al;                      /* 0xDA */
     u8 unkDB;
     JCOMPINFO ci[4];            /* 0xDC */
-    u8 unk10C[0x590];
+    u8 unk10C[0x582];
+    u8 hmax;                    /* 0x68E */
+    u8 vmax;                    /* 0x68F */
+    u8 unk690[0xC];
     int eobrun;                 /* 0x69C */
 } JPCTX;
 
@@ -152,7 +158,58 @@ int reviseValue_30F54(int arg0) {
     return var_v1;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jpg_pdecode", translateRGB_30F74);
+typedef struct {
+    u8 r;
+    u8 g;
+    u8 b;
+} RGB3;
+
+#define RIGHT_SHIFT(x, n) ((shift_temp = (x)) < 0 ? (shift_temp >> (n)) | (~0 << (32 - (n))) : shift_temp >> (n))
+
+int translateRGB_30F74(JPCTX *ctx, int bx, int by) {
+    s16 *yp;
+    s16 *cb;
+    s16 *cr;
+    RGB3 *base;
+    int w;
+    int h;
+    int x0;
+    int y;
+    int x;
+    int idx;
+    int skip;
+    int shift_temp;
+    u8 c;
+
+    yp = ctx->out[0];
+    cb = ctx->out[1];
+    cr = ctx->out[2];
+    w = ctx->hmax * 8;
+    h = ctx->vmax * 8;
+    base = (RGB3 *)ctx->rgb + (by * h * ctx->width + (x0 = bx * w));
+    for (y = 0; y < h; y++) {
+        for (x = 0; x < w; x++) {
+            if (x + x0 >= ctx->width) {
+                skip = w - x;
+                yp += skip;
+                cb += skip;
+                cr += skip;
+                break;
+            }
+            idx = y * ctx->width + x;
+            c = reviseValue_30F54(*yp + RIGHT_SHIFT(*cr * 0x2CDD - 0x165E80, 13));
+            base[idx].r = c;
+            c = reviseValue_30F54(*yp - RIGHT_SHIFT(*cb * 0xB03 - 0x57180, 13) - RIGHT_SHIFT(*cr * 0x16DA - 0xB6D00, 13));
+            base[idx].g = c;
+            c = reviseValue_30F54(*yp + RIGHT_SHIFT(*cb * 0x38B4 - 0x1C4A00, 13));
+            yp++;
+            base[idx].b = c;
+            cb++;
+            cr++;
+        }
+    }
+    return 1;
+}
 
 int decodeMCU_multi(JPCTX *ctx) {
     int (*fn)();
