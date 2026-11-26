@@ -179,7 +179,41 @@ unsigned short *utf8_to_utf16be(signed char *pUtf8Str, int *nNumOut, int bBigEnd
     return temp_v0;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/font/utf8_to_utf16be", utf8_to_utf16be_sub);
+static int utf8_to_utf16be_sub(SceFont_t_charCode *pUcs2, const char *pUtf8, int nUtf8Num, SceBool bCountOnly, SceBool bBigEndian)
+{
+	int n = 0;
+	int i = 0;
+	unsigned char c;
+
+	while (i < nUtf8Num) {
+		c = pUtf8[i];
+		if ((signed char)c >= 0) {
+			if (!bCountOnly)
+				pUcs2[n] = c & 0x7F;
+			i++;
+		} else if (((signed char)c & 0xE0) == 0xC0) {
+			if (!bCountOnly) {
+				pUcs2[n] = (c & 0x1F) << 6;
+				pUcs2[n] |= pUtf8[i + 1] & 0x3F;
+			}
+			i += 2;
+		} else {
+			if (!bCountOnly) {
+				pUcs2[n] = (c & 0x0F) << 12;
+				pUcs2[n] |= (pUtf8[i + 1] & 0x3F) << 6;
+				pUcs2[n] |= pUtf8[i + 2] & 0x3F;
+			}
+			i += 3;
+		}
+		if (!bCountOnly)
+			if (!bBigEndian)
+			{ char hi = ((char *)&pUcs2[n])[0]; char lo = ((char *)&pUcs2[n])[1]; pUcs2[n] = (hi << 8) | lo; }
+		n++;
+	}
+	if (!bCountOnly)
+		pUcs2[n] = 0;
+	return n;
+}
 
 SceFont_t_libId sceFontNewLib(SceFont_t_initRec *pInitData, SceFont_t_error *pErrorCode);
 int sceIoRead(int fd, void *data, unsigned int size);
@@ -198,7 +232,26 @@ int convert_char_to_SceFont_t_charCode(char *src_buff, SceFont_t_charCode *dst_b
 	return i;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/font/utf8_to_utf16be", init_pss_text_texture);
+int sceKernelDcacheWritebackAll(void);
+void *memset(void *s, int c, unsigned int n);
+void *memalign(unsigned int align, unsigned int size);
+int init_pss_text_texture(void)
+{
+	int i;
+
+	for (i = 0; i < 16; i++) {
+		DialogTextureImageTable[i].width64 = 0;
+		DialogTextureImageTable[i].height64 = 0;
+		if (DialogTextureImageTable[i].buffer != NULL)
+			free(DialogTextureImageTable[i].buffer);
+		DialogTextureImageTable[i].buffer = memalign(16, 0x8000);
+		if (DialogTextureImageTable[i].buffer == NULL)
+			return -1;
+		memset(DialogTextureImageTable[i].buffer, 0, 0x8000);
+	}
+	sceKernelDcacheWritebackAll();
+	return 0;
+}
 
 static SceFont_t_libId myInitFontLibrary(void)
 {
