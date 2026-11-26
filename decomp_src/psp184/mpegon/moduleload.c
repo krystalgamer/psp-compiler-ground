@@ -54,8 +54,39 @@ INCLUDE_RODATA("tmp/asm/psp184/mpegon/nonmatchings/moduleload", moduleInfo);
 
 INCLUDE_ASM("tmp/asm/psp184/mpegon/nonmatchings/moduleload", load_module);
 
-INCLUDE_ASM("tmp/asm/psp184/mpegon/nonmatchings/moduleload", unload_module);
+int printf(const char *fmt, ...);
+int sceKernelStopModule(SceUID modid, SceSize argsize, void *argp, int *status, SceKernelSMOption *option);
+int sceKernelUnloadModule(SceUID modid);
+static SceInt32 unload_module(SceUID mid)
+{
+	SceInt32 ret;
 
-INCLUDE_ASM("tmp/asm/psp184/mpegon/nonmatchings/moduleload", unloadModuleVideo);
+	ret = sceKernelStopModule(mid, 0, NULL, NULL, NULL);
+	if (ret < 0) {
+		printf("fatal error : cannot stop module 0x%08x\n", ret);
+		return ret;
+	}
+	ret = sceKernelUnloadModule(mid);
+	if (ret < 0) {
+		printf("fatal error : cannot unload module 0x%08x\n", ret);
+		return ret;
+	}
+	return 0;
+}
+
+SceInt32 unloadModuleVideo(void)
+{
+	SceInt32 i;
+
+	for (i = 3; i >= 0; i--) {
+		if (moduleIDs[i] >= 0) {
+			if (unload_module(moduleIDs[i]) < 0) {
+				printf("fatal error : cannot unload module %s\n", moduleInfo[i].name);
+				return -1;
+			}
+		}
+	}
+	return 0;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/mpegon/nonmatchings/moduleload", loadModuleVideo);
