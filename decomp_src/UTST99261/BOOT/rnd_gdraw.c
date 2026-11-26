@@ -65,6 +65,9 @@ M2C_UNK MEM_free(M2C_UNK, void *);                  /* extern */
 
 int GUI_createCheckbox();
 int GUI_createList();
+int GUI_Graphics_setFont();
+int GUI_Graphics_getStringSize();
+int GUI_Graphics_drawString();
 int FIO_fopen();
 int FIO_fseek();
 int FIO_ftell();
@@ -674,7 +677,33 @@ void rnd_gdrawDottedVline(int g, int color, int x, int y, int w, int h) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_gdraw", rnd_gdrawStrings);
+int rnd_gdrawStrings(int g, int font, int color, int x, int y, char *str, int len, int deco) {
+    int rgb[3];
+    int w;
+    int h;
+
+    if (len == 0) {
+        return 0;
+    }
+    color2rgb(rgb, color);
+    GUI_Graphics_setColor(g, rgb);
+    GUI_Graphics_setFont(g, font);
+    GUI_Graphics_getStringSize(font, str, len, &w, &h);
+    while (len > 0 && (str[len - 1] == '\n' || str[len - 1] == '\r')) {
+        len--;
+    }
+    GUI_Graphics_drawString(g, str, len, x, y);
+    if (deco & 1) {
+        GUI_Graphics_fillRect(g, x, y, w, 1);
+    }
+    if (deco & 2) {
+        GUI_Graphics_fillRect(g, x, y + h, w, 1);
+    }
+    if (deco & 4) {
+        GUI_Graphics_fillRect(g, x, y + h / 2, w, 1);
+    }
+    return w;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_gdraw", rnd_gdrawGetStringsVisibleLength);
 
