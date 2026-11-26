@@ -31,6 +31,10 @@ int GuifontClear(GUIFONT *font);
 typedef struct GUILISTITEM {
     int unk0;
     struct GUILISTITEM *next;
+    char *text;                 /* 0x8 */
+    s16 len;                    /* 0xC */
+    s16 unkE;
+    int state;                  /* 0x10 */
 } GUILISTITEM;
 
 typedef struct { /* size 0x10 */

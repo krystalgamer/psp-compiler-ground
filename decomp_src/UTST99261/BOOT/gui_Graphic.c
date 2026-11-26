@@ -892,7 +892,49 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Graphic", GUI_List_remove);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Graphic", GUI_List_removeAll);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Graphic", GUI_List_getItem);
+char *GUI_List_getItem(GUIWIDGET *w, int idx) {
+    GUILISTITEM *p;
+    int i;
+    int len;
+    char *s;
+
+    if (w == NULL) {
+        puts("[X1]GUI_List_getItem");
+        return NULL;
+    }
+    if (w->type != 1) {
+        puts("[X2]GUI_List_getItem");
+        return NULL;
+    }
+    if ((w->flags & 0xF) != 8) {
+        puts("[X3]GUI_List_getItem");
+        return NULL;
+    }
+    p = w->unk50.p;
+    i = 0;
+    while (i++ != idx) {
+        if (p == NULL) {
+            puts("[X5]GUI_List_getItem");
+            return NULL;
+        }
+        if (i >= w->u.list.count) {
+            puts("[X4]GUI_List_getItem");
+            return NULL;
+        }
+        p = p->next;
+    }
+    len = p->len;
+    s = ESP_guiMemAlloc(len + 1);
+    if (s == NULL) {
+        puts("[X5]GUI_List_getItem");
+        return NULL;
+    }
+    if (len != 0) {
+        memcpy(s, p->text, len);
+    }
+    s[len] = 0;
+    return s;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Graphic", GUI_List_select);
 
@@ -906,7 +948,45 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Graphic", GUI_Choice_remove
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Graphic", GUI_Choice_removeAll);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Graphic", GUI_Choice_getItem);
+char *GUI_Choice_getItem(GUIWIDGET *w, int idx) {
+    GUILISTITEM *p;
+    int i;
+    int len;
+    char *s;
+
+    if (w == NULL) {
+        puts("[X1]GUI_Choice_getItem");
+        return NULL;
+    }
+    if (w->type != 1) {
+        puts("[X2]GUI_Choice_getItem");
+        return NULL;
+    }
+    if ((w->flags & 0xF) != 9) {
+        puts("[X3]GUI_Choice_getItem");
+        return NULL;
+    }
+    for (p = w->unk4C, i = 0; p != NULL; p = p->next, i++) {
+        if (i == idx) {
+            len = 0;
+            if (p->text != NULL) {
+                len = strlen(p->text);
+            }
+            s = ESP_guiMemAlloc(len + 1);
+            if (s == NULL) {
+                puts("[X4]GUI_Choice_getItem");
+                return NULL;
+            }
+            if (len != 0) {
+                memcpy(s, p->text, len);
+            }
+            s[len] = 0;
+            return s;
+        }
+    }
+    puts("[X5]GUI_Choice_getItem");
+    return NULL;
+}
 
 int GUI_Choice_select(GUIWIDGET *w, int v) {
     if (w == NULL) {
