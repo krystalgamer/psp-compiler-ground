@@ -50,6 +50,8 @@ def driver_flags(target, module, unit):
             fl.append("-g")
         elif not f.startswith(("as:", "objorder")):
             fl.append(f)
+    if "-g" not in fl and unit_marker(target, module, unit, "locfix"):
+        fl.append("-g")
     return " ".join(fl)
 
 
@@ -60,12 +62,18 @@ def object_order(target, module, unit):
     return "objorder" in entry(target, module, unit)[1:] and not unit.startswith(LIBS)
 
 
+def unit_marker(target, module, unit, marker):
+    src = ROOT / "decomp_src" / target / module / f"{unit}.c"
+    return src.exists() and f"/* {marker} */" in src.read_text(errors="replace")
+
+
 def locfix(target, module, unit):
     """True if the unit was built with -g and assembled by a psp-as that
     does not move an instruction into a branch delay slot across a source
-    line change (tools/locfix.py)."""
+    line change (tools/locfix.py).  A unit can ask for it with a
+    `/* locfix */` comment."""
     return any(f == "locfix" or (f == "newlib:locfix" and unit.startswith("newlib/"))
-               for f in entry(target, module, unit)[1:])
+               for f in entry(target, module, unit)[1:]) or unit_marker(target, module, unit, "locfix")
 
 
 def as_flags(target, module, unit):

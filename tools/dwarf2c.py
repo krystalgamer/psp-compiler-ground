@@ -25,6 +25,16 @@ def attr(d, k, default=None):
     return v.decode(errors="replace") if isinstance(v, bytes) else v
 
 
+
+# DWARF 2 has no alignment: Sony's psptypes.h declares these typedefs aligned(16)
+ALIGNED16 = {"ScePspFVector4", "ScePspVector4", "ScePspIMatrix4", "ScePspFMatrix4", "ScePspMatrix4",
+             "ScePspFQuaternion", "ScePspFColor", "ScePspUnion128"}
+
+
+def aligned(t):
+    return " __attribute__((aligned(16)))" if attr(t, "DW_AT_name") in ALIGNED16 else ""
+
+
 class C:
     def __init__(self, cu):
         self.cu = cu
@@ -102,11 +112,11 @@ class C:
             if (inner is not None and inner.tag in ("DW_TAG_structure_type", "DW_TAG_union_type")
                     and attr(inner, "DW_AT_name") and inner.offset not in self.emitted):
                 # typedef first so a self-referencing body can use it
-                self.out.append(f"typedef {self.tag_name(inner)} {attr(t, 'DW_AT_name')};")
+                self.out.append(f"typedef {self.tag_name(inner)} {attr(t, 'DW_AT_name')}{aligned(t)};")
                 self.need(inner)
                 return
             # tag types referenced only through a typedef: define them first
-            line = f"typedef {self.decl(inner, attr(t, 'DW_AT_name'))};"
+            line = f"typedef {self.decl(inner, attr(t, 'DW_AT_name'))}{aligned(t)};"
             if attr(t, "DW_AT_name") == "__gnuc_va_list":
                 # gcc 3.3 describes __builtin_va_list as void *
                 line = "typedef __builtin_va_list __gnuc_va_list;"
