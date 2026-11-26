@@ -1154,7 +1154,20 @@ void sceGuShadeModel(int mode)
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", sceGuShadeModel);
 #endif
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", sceGuLight);
+void sceGuLight(int light, int type, int components, const ScePspFVector3 *position)
+{
+	int kind;
+
+	type &= 3;
+	send_commandf(lcmd[light].xpos, position->x);
+	send_commandf(lcmd[light].ypos, position->y);
+	send_commandf(lcmd[light].zpos, position->z);
+	if (components == 8)
+		kind = 2;
+	else
+		kind = components == 6;
+	send_commandi(lcmd[light].type, (type << 8) | kind);
+}
 
 void sceGuLightMode(int mode)
 {
