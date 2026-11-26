@@ -12,9 +12,12 @@ avsync                                       1.5.1.internal  avsync.c
 bgm                                          1.5.1.internal  bgm.c
 vag                                          1.5.1.internal  vag.c
 at3plus                                      1.5.1.internal  at3plus.c
+libgu                                        1.5.1.internal  libgu.c
+libwave/sceWaveInit                          1.5.1.internal  libwave.c
 libpsmf                                      1.5.0.internal  libpsmf.c
 psmfBase                                     1.5.0.internal  psmfBase.c
 libmpeg_util                                 1.5.0.internal  libmpeg_util.c
+kernel_bridge                                1.5.1.internal  kernel_bridge.c
 newlib/libc/stdlib/atexit                    1.5.1.internal  ../../../../../newlib-1.12.0/newlib/libc/stdlib/atexit.c
 newlib/libc/stdlib/exit                      1.5.1.internal  ../../../../../newlib-1.12.0/newlib/libc/stdlib/exit.c
 newlib/libc/stdlib/malign                    1.5.1.internal  ../../../../../newlib-1.12.0/newlib/libc/stdlib/malign.c
@@ -57,3 +60,5 @@ newlib/libc/reent/closer                     1.5.1.internal  ../../../../../newl
 newlib/libc/reent/fstatr                     1.5.1.internal  ../../../../../newlib-1.12.0/newlib/libc/reent/fstatr.c
 newlib/libc/reent/lseekr                     1.5.1.internal  ../../../../../newlib-1.12.0/newlib/libc/reent/lseekr.c
 newlib/libc/reent/readr                      1.5.1.internal  ../../../../../newlib-1.12.0/newlib/libc/reent/readr.c
+libwave/__udivdi3                            1.5.1.internal  libwave.c
+libgcc/dp-bit                                1.5.1.internal  dp-bit.c

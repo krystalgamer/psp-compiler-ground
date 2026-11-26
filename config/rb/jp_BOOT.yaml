@@ -69,11 +69,12 @@ segments:
       - [0x46E8, c, bgm]
       - [0x48AC, c, vag]
       - [0x4AB0, c, at3plus]
-      - [0x5030, asm, asm/text_4FB0]
+      - [0x5030, c, libgu]
+      - [0x8888, c, libwave/sceWaveInit]
       - [0xA608, c, libpsmf]
       - [0xB098, c, psmfBase]
       - [0xB848, c, libmpeg_util]
-      - [0xBB80, asm, asm/text_BB00]
+      - [0xBB80, c, kernel_bridge]
       - [0xC158, c, newlib/libc/stdlib/atexit]
       - [0xC200, c, newlib/libc/stdlib/exit]
       - [0xC2F0, c, newlib/libc/stdlib/malign]
@@ -117,7 +118,8 @@ segments:
       - [0x13ABC, c, newlib/libc/reent/fstatr]
       - [0x13B20, c, newlib/libc/reent/lseekr]
       - [0x13B88, c, newlib/libc/reent/readr]
-      - [0x13BF0, asm, asm/text_13B70]
+      - [0x13BF0, c, libwave/__udivdi3]
+      - [0x146C8, c, libgcc/dp-bit]
       - { start: 0x15A80, type: asm, name: fini, linker_section: .fini }
       - { start: 0x15A9C, type: asm, name: sceStub, linker_section: .sceStub.text }
       - { start: 0x15E0C, type: prxpad, order: .text }
@@ -145,10 +147,11 @@ segments:
       - [0x16A7C, .rodata, bgm]
       - [0x16B58, .rodata, vag]
       - [0x16BD4, .rodata, at3plus]
-      - [0x16D94, rodata, asm/rodata_16D14]
+      - [0x16D94, .rodata, libgu]
+      - [0x17604, .rodata, libwave/sceWaveInit]
       - [0x1761C, .rodata, libpsmf]
       - [0x1763C, .rodata, libmpeg_util]
-      - [0x176C8, rodata, asm/rodata_17648]
+      - [0x176C8, .rodata, kernel_bridge]
       - [0x176D0, .rodata, newlib/libc/stdlib/malign]
       - [0x176D4, .rodata, newlib/libc/stdio/puts]
       - [0x176D8, .rodata, newlib/libc/stdio/vfprintf]
@@ -156,7 +159,7 @@ segments:
       - [0x178D8, .rodata, newlib/libc/stdlib/dtoa]
       - [0x17958, .rodata, newlib/libc/locale/locale]
       - [0x179A0, .rodata, newlib/libc/stdlib/mprec]
-      - [0x17AD8, rodata, asm/rodata_17A58]
+      - [0x17AD8, .rodata, libgcc/dp-bit]
   - [0x17BF8, bin, seg1_align]
   - name: jp_BOOT_seg1
     type: code

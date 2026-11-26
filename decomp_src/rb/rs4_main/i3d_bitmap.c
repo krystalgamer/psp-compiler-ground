@@ -1,0 +1,37 @@
+#include "common.h"
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_bitmap", RemapOnMemorySub);
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_bitmap", RemapOnMemoryHalf);
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_bitmap", RemapOnMemoryFull);
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_bitmap", RemapOnStack);
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_bitmap", I3dPicture__SetupFromTim2Sub_PSP);
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_bitmap", I3dPicture__SetupFromTim2);
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_bitmap", I3dPicture__SetupFromTim2_WithImageConvertBuffer_PSP);
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_bitmap", I3dClut__SetupFromTim2);
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_bitmap", I3dPicture__Get_wPixel);
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_bitmap", I3dPicture__Get_hPixel);
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_bitmap", I3dClut__Construct);
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_bitmap", I3dClut__Destruct);
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_bitmap", I3dPicture__FlushCache);
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_bitmap", I3dClut__FlushCache);
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_bitmap", I3dLzc);
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_bitmap", I3dFogStatusParam__ClearA);
+
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/i3d_bitmap", D_001090AC);
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_bitmap", I3dRender__CreateFogStatusA);
