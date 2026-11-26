@@ -25,7 +25,7 @@ typedef struct {
 	u8 pad000[2];
 	u8 mapno;		/* 0x002 */
 	u8 mapsub;		/* 0x003 */
-	u8 pad004;
+	u8 cur;			/* 0x004: current ball color */
 	u8 next;		/* 0x005: next ball color */
 	u8 pad006;
 	u8 ndrop;		/* 0x007 */

@@ -1,3 +1,4 @@
+/* cflags: -O2 -fno-merge-constants */
 #include "common.h"
 #include "m2c_macros.h"
 #include "PuzzleMain.h"
@@ -10,6 +11,13 @@ int PollShutter(M2C_UNK);                           /* extern */
 extern int PauseFlag;
 extern unsigned char PauseOk;
 extern int StageNum;
+extern int gim_bg_endress;
+int EndressValueInit(int, int, int);
+void SpriteSetFader(float);
+int LoadGimFile(int no, int file);
+int bgm_play(int no);
+int SpriteDrawEz(int no, float z, int color, float x, float y, float w, float h, float u, float v);
+int GetBallNext(PZL_STAT *st, int flag);
 extern int isSurvival;
 extern int SurvCont;
 extern int SelectPlayer;
@@ -266,7 +274,17 @@ int VSMain(void)
 	return ret;
 }
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", EndressModeInit);
+void EndressModeInit(void)
+{
+	EndressValueInit(1, 0, 0);
+	SpriteSetFader(1.0f);
+	Stat[1].cur = GetBallNext(&Stat[1], 0);
+	Stat[1].next = GetBallNext(&Stat[1], 0);
+	Stat[1].player = SelectPlayer;
+	LoadGimFile(0, gim_bg_endress);
+	bgm_play(4);
+	SetMonitor(&Stat[2], 8);
+}
 
 void EndressInit(void)
 {
@@ -319,7 +337,15 @@ INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", DrawCharcterFl
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", DrawCharcter2);
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", DrawAnk);
+void DrawAnk(int z, int x, int y, int num)
+{
+	int i;
+
+	for (i = 0; i < 4; i++) {
+		SpriteDrawEz(num % 10 + 28, z, -1, x + 19 - i * 19, y - 16, 24.0f, 32.0f, 0, 0);
+		num /= 10;
+	}
+}
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", DrawScore);
 

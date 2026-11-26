@@ -32,7 +32,7 @@ int printf(const char *, ...);
 int SpriteDraw(int no, int color, float z, float x0, float y0, float u0, float v0, float x1, float y1, float u1, float v1, float x2, float y2, float u2, float v2, float x3, float y3, float u3, float v3);
 int SpriteDrawZoom(int no, int color, float z, float a0, float a1, float a2, float a3, float a4, float a5, float a6, float a7, float a8, float a9, float a10);
 int SpriteDraw3D(int no, int color, int flag, float z, float f0, float f1, float f2, float f3, float f4, float f5, float f6, float f7, float f8, float f9, float f10, float f11, float f12, float f13);
-int SpriteDrawEz(int no, int color, float z, float x, float y, float w, float h, float u, float v);
+int SpriteDrawEz(int no, float z, int color, float x, float y, float w, float h, float u, float v);
 int draw_DrawSprite(SPRITE *sp);
 int draw_DrawSpriteEx(SPRITE *sp);
 int draw_DrawSpritePt4(SPRITE *sp);
@@ -288,7 +288,7 @@ int SpriteDraw(int no, int color, float z, float x0, float y0, float u0, float v
 	return 1;
 }
 
-int SpriteDrawEz(int no, int color, float z, float x, float y, float w, float h, float u, float v)
+int SpriteDrawEz(int no, float z, int color, float x, float y, float w, float h, float u, float v)
 {
 	return SpriteDraw(no, color, z, x, y, u, v, x + w, y, u + w, v, x, y + h, u, v + h, x + w, y + h, u + w, v + h);
 }
@@ -315,7 +315,7 @@ INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/wrap_sprite", DrawSprite);
 
 int DrawSpriteEz(float z, int no, float x, float y, float w, float h, float u, float v)
 {
-	return SpriteDrawEz(no, -1, z, x, y, w, h, u, v);
+	return SpriteDrawEz(no, z, -1, x, y, w, h, u, v);
 }
 
 int DrawSpriteZoom(int no, int color, float z, float a0, float a1, float a2, float a3, float a4, float a5, float a6, float a7, float a8, float a9, float a10)
