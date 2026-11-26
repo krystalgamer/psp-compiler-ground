@@ -1,6 +1,18 @@
 /* cflags: -O1 */
 #include "common.h"
 #include "m2c_macros.h"
+extern int timezone;
+extern int dylight;
+typedef struct ClibClock {
+    short year;
+    short month;
+    short day;
+    short hour;
+    short minute;
+    short second;
+    int usec;
+} ClibClock;
+int *CLIB_gmtime(int *t);
 extern char D_00133E78[];
 M2C_UNK MEM_free(M2C_UNK, int);                     /* extern */
 
@@ -237,9 +249,45 @@ INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/esp_config", monthdays);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/esp_config", CLIB_printf);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/esp_config", CLIB_tzset);
+void CLIB_tzset(void) {
+    ClibClock clk;
+    int utc;
+    int local;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/esp_config", CLIB_time);
+    if (sceRtcGetCurrentClock(&clk, 0) < 0) {
+        return;
+    }
+    if (sceRtcGetTime_t(&clk, &utc) < 0) {
+        return;
+    }
+    if (sceRtcGetCurrentClockLocalTime(&clk) < 0) {
+        return;
+    }
+    if (sceRtcGetTime_t(&clk, &local) < 0) {
+        return;
+    }
+    timezone = local - utc;
+    dylight = 0;
+}
+
+int CLIB_time(int *out) {
+    ClibClock clk;
+    int t;
+
+    if (sceRtcGetCurrentClock(&clk, 0) < 0) {
+        return 0;
+    }
+    if (sceRtcGetTime_t(&clk, &t) < 0) {
+        return 0;
+    }
+    if (t < 0) {
+        t = 0;
+    }
+    if (out != NULL) {
+        *out = t;
+    }
+    return t;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -251,7 +299,18 @@ void CLIB_difftime(int arg0, int arg1) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/esp_config", CLIB_gmtime);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/esp_config", CLIB_localtime);
+int *CLIB_localtime(int *t) {
+    int lt;
+    int *tm;
+
+    lt = *t + timezone;
+    if (lt < 0) {
+        lt = 0;
+    }
+    tm = CLIB_gmtime(&lt);
+    tm[8] = dylight;
+    return tm;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/esp_config", CLIB_mktime);
 
@@ -299,7 +358,24 @@ INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/esp_config", D_0013436C);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/esp_config", CLIB_strftime);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/esp_config", CLIB_gettimeofday);
+int CLIB_gettimeofday(int *tv, int *tz) {
+    ClibClock clk;
+    int t;
+
+    if (sceRtcGetCurrentClock(&clk, 0) < 0) {
+        return 0;
+    }
+    if (sceRtcGetTime_t(&clk, &t) < 0) {
+        return 0;
+    }
+    tv[0] = t;
+    tv[1] = clk.usec;
+    if (tz != NULL) {
+        tz[0] = timezone / 60;
+        tz[1] = dylight;
+    }
+    return 0;
+}
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/esp_config", D_001343C4);
 
