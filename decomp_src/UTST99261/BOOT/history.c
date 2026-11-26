@@ -62,7 +62,21 @@ void *HST_getHeadHistoryNode(void) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/history", HST_getHistoryLength);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/history", HST_getCurrentIndex);
+int HST_getCurrentIndex(void) {
+    int n = 0;
+    void *p;
+
+    OS_thread_mutex_lock(M2C_FIELD(history, int *, 8));
+    if (M2C_FIELD(history, void **, 0) == NULL) {
+        OS_thread_mutex_unlock(M2C_FIELD(history, int *, 8));
+        return -1;
+    }
+    for (p = M2C_FIELD(history, void **, 0); p != NULL && M2C_FIELD(p, void **, 8) != NULL; p = M2C_FIELD(p, void **, 8)) {
+        n++;
+    }
+    OS_thread_mutex_unlock(M2C_FIELD(history, int *, 8));
+    return n;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
