@@ -147,7 +147,40 @@ SceInt32 decode_getReservedVideoAuTimestamp(t_mpegStreamData *pStreamData, SceUI
 SceInt32 decode_getCurrentStream(t_mpegStreamData *pStreamData, SceMpegStrType type);
 
 
-INCLUDE_ASM("tmp/asm/UTST99332/mpeg_seamless_change/nonmatchings/decode", decode_create);
+SceInt32 decode_create(t_mpegStreamData *pStreamData, SceMpeg *pMpeg)
+{
+	SceInt32 i;
+	SceInt32 ret;
+
+	pStreamData->pMpeg = pMpeg;
+
+	pStreamData->audioStreamNum = 0;
+	pStreamData->videoStreamNum = 0;
+
+	pStreamData->currentVideoStream = -1;
+	pStreamData->reservedVideoStream = -1;
+	pStreamData->currentAudioStream = -1;
+
+	for (i = 0; i < 16; i++) {
+		pStreamData->videoDemuxFlag[i] = 0;
+		pStreamData->audioDemuxFlag[i] = 0;
+	}
+
+	ret = decode_createAu(pStreamData, 0);
+	if (ret != 0) {
+		printf("fatal error : decode_createAu() M4AVC 0x%x\n", ret);
+		goto term;
+	}
+
+	ret = decode_createAu(pStreamData, 1);
+	if (ret != 0) {
+		printf("fatal error : decode_createAu() ATRAC 0x%x\n", ret);
+		goto term;
+	}
+
+term:
+	return ret;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/mpeg_seamless_change/nonmatchings/decode", decode_reset);
 
