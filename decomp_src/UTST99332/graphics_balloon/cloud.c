@@ -20,7 +20,36 @@ void init_clouds(void)
 	set_vram_texture();
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_balloon/nonmatchings/cloud", check_clouds);
+typedef struct {
+	int mode;
+	struct { float x, y, z; } pos;
+	float dir;
+	float d;
+} CLOUDDAT;
+
+extern CLOUDDAT cloud[10];
+extern int texture_mode;
+
+int check_clouds(void)
+{
+	int i;
+	int mode;
+	CLOUDDAT *p;
+
+	mode = cloud[0].mode;
+	if (mode != texture_mode) {
+		return 0;
+	}
+
+	for (i = 1; i < 10; i++) {
+		p = &cloud[i];
+		if (p->mode != mode) {
+			return 0;
+		}
+	}
+
+	return 1;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_balloon/nonmatchings/cloud", sort_cloud);
 
