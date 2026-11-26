@@ -54,7 +54,7 @@ def main():
     a = ap.parse_args()
     mod = objcmp.module_funcs(a.target, a.module)
     cc1s = a.cc1.split(",") if a.cc1 else ["1.5.1", "1.6.1", "1.3.1-orig", "1.7.1-orig"]
-    m = re.search(r"cflags: (-O[0-3s](?: -[fm][\w-]+(?:=\w+)?)*)", Path(a.file).read_text())
+    m = re.search(r"cflags: (-O[0-3s](?: -(?:[fm][\w-]+|std)(?:=[\w.:]+)?)*)", Path(a.file).read_text())
     flags = a.flags or [m.group(1) if m else "-O2"]
     with tempfile.TemporaryDirectory() as td:
         for c in cc1s:
