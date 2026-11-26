@@ -55,9 +55,34 @@ static SceInt32 _unload_module_video(SceUID mid)
 	return 0;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/load_modules", unloadModuleVideo);
+SceUID sceKernelLoadModule(const char *path, int flags, SceKernelLMOption *option);
+int sceKernelStartModule(SceUID modid, SceSize argsize, void *argp, int *status, SceKernelSMOption *option);
+static SceInt32 unloadModuleVideo(void)
+{
+	SceInt32 i;
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/load_modules", loadModuleVideo);
+	for (i = 3; i >= 0; i--) {
+		if (moduleIDs[i] >= 0) {
+			if (_unload_module_video(moduleIDs[i]) < 0)
+				return -1;
+		}
+	}
+	return 0;
+}
+
+static SceInt32 loadModuleVideo(void)
+{
+	SceInt32 i;
+
+	for (i = 0; i < 4; i++) {
+		moduleIDs[i] = _load_module_video(moduleNames[i], NULL, NULL);
+		if (moduleIDs[i] < 0) {
+			unloadModuleVideo();
+			return -1;
+		}
+	}
+	return 0;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/load_modules", load_module);
 
