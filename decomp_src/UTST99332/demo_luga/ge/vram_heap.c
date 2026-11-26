@@ -72,7 +72,40 @@ void *vram_heap__alloc(size_t size)
 	}
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/ge/vram_heap", vram_heap__free);
+void vram_heap__free(void *addr)
+{
+	block *bp, *p;
+
+	if (addr == NULL) {
+		return;
+	}
+
+	bp = (block *)addr - 1;
+	for (p = g_top; !(bp > p && bp < p->next); p = p->next) {
+		if (p >= p->next && (bp > p || bp < p->next)) {
+			break;
+		}
+	}
+
+	g_total_free += bp->size;
+	g_alloc_count--;
+
+	if (bp + bp->size == p->next && p->next->size != 0) {
+		bp->size += p->next->size;
+		bp->next = p->next->next;
+	} else {
+		bp->next = p->next;
+	}
+
+	if (p + p->size == bp) {
+		p->size += bp->size;
+		p->next = bp->next;
+	} else {
+		p->next = bp;
+	}
+
+	g_top = p;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/ge/vram_heap", vram_heap__draw_status);
 
