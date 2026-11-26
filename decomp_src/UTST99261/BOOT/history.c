@@ -19,7 +19,29 @@ M2C_UNK HST_deleteHistoryNode(int);                 /* extern */
 
 
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/history", HST_initHistory);
+int HST_initHistory(void) {
+    int *p;
+    int *h;
+
+    history = (int)MEM_malloc(0, 0xC);
+    if (history == 0) {
+        return -1;
+    }
+    p = (int *)history;
+    p[0] = 0;
+    p[1] = 0;
+    p[2] = 0;
+    h = (int *)history;
+    h[2] = OS_thread_mutex_create();
+    if (h[2] == 0) {
+        return -1;
+    }
+    if (OS_thread_mutex_init(HL(8), 0) != 0) {
+        return -1;
+    }
+    addHistoryGarbage(-1);
+    return 0;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -306,7 +328,30 @@ int HST_getCurURIlen(void *arg0) {
     return M2C_FIELD(arg0, int *, 4);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/history", HST_setBaseURI);
+int HST_setBaseURI(void *node, char *url, int len) {
+    int u[12];
+    char *p;
+
+    p = MEM_malloc(0, len + 1);
+    if (p == NULL) {
+        return -1;
+    }
+    if (M2C_FIELD(node, char **, 8) != NULL) {
+        MEM_free(0, M2C_FIELD(node, char **, 8));
+    }
+    memcpy(p, url, len);
+    p[len] = 0;
+    URL_splitURL(u, p);
+    if (u[0] == 0 || u[2] == 0) {
+        MEM_free(0, p);
+        M2C_FIELD(node, char **, 8) = NULL;
+        M2C_FIELD(node, int *, 0xC) = 0;
+    } else {
+        M2C_FIELD(node, char **, 8) = p;
+        M2C_FIELD(node, int *, 0xC) = len;
+    }
+    return 0;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -761,7 +806,50 @@ int HST_getHttpHeader(void *arg0) {
     return M2C_FIELD(arg0, int *, 0x60);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/history", HST_setPostData);
+int HST_setPostData(void *node, void *data, int len, void *type, int tlen) {
+    int *pd;
+    void *d;
+    void *t;
+
+    d = NULL;
+    t = NULL;
+    pd = MEM_malloc(0, 0x10);
+    if (pd == NULL) {
+        goto fail;
+    }
+    if (len > 0) {
+        d = MEM_malloc(0, len);
+        if (d == NULL) {
+            goto fail;
+        }
+        memcpy(d, data, len);
+    }
+    if (tlen > 0) {
+        t = MEM_malloc(0, tlen);
+        if (t == NULL) {
+            goto fail;
+        }
+        memcpy(t, type, tlen);
+    }
+    HST_freePostData(node);
+    pd[0] = (int)d;
+    pd[1] = (int)t;
+    pd[2] = len;
+    pd[3] = tlen;
+    M2C_FIELD(node, int **, 0x64) = pd;
+    return 0;
+fail:
+    if (pd != NULL) {
+        MEM_free(0, pd);
+    }
+    if (d != NULL) {
+        MEM_free(0, d);
+    }
+    if (t != NULL) {
+        MEM_free(0, t);
+    }
+    return -1;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
