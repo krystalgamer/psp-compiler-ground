@@ -172,7 +172,18 @@ int FadeState(void) {
 
 INCLUDE_ASM("tmp/asm/bigbangbang/bigbangbang/nonmatchings/main", FadeDraw);
 
-INCLUDE_ASM("tmp/asm/bigbangbang/bigbangbang/nonmatchings/main", DrawFunc);
+void sceGuClear(int flags);
+int sceGuFinish(void);
+int sceGuSync(int mode, int what);
+static void DrawFunc(void)
+{
+	sceGuStart(0, displist, sizeof(displist));
+	sceGuClear(7);
+	if (func[program.mode].draw)
+		func[program.mode].draw();
+	sceGuFinish();
+	sceGuSync(0, 0);
+}
 
 static void KeyFunc(void)
 {

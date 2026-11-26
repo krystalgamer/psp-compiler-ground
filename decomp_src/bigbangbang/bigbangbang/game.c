@@ -149,7 +149,27 @@ int Pickup(int scrw, int scrh, int x, int y, ScePspFVector3 *v0, ScePspFVector3 
 
 INCLUDE_ASM("tmp/asm/bigbangbang/bigbangbang/nonmatchings/game", InitBall);
 
-INCLUDE_ASM("tmp/asm/bigbangbang/bigbangbang/nonmatchings/game", InitGame);
+void InitGame(void)
+{
+	game.state = 0;
+	game.score = 0;
+	game.count = 0;
+	game.key = 0;
+	game.disp = 0;
+	fld.x = 0.0f;
+	fld.y = 0.0f;
+	fld.z = -50.0f;
+	moon = 0.0f;
+	ground.tex[0] = 0.0f;
+	ground.tex[1] = 0.0f;
+	scope.pos[0] = 224;
+	scope.pos[1] = 152;
+	scope.state = 0;
+	scope.beam = 0;
+	scope.beamlevel = 1.0f;
+	InitBall();
+	FadeSetup(1, 0);
+}
 
 INCLUDE_ASM("tmp/asm/bigbangbang/bigbangbang/nonmatchings/game", RunGame);
 
