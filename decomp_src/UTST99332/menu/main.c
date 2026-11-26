@@ -187,7 +187,25 @@ int FadeState(void) {
 
 INCLUDE_ASM("tmp/asm/UTST99332/menu/nonmatchings/main", FadeDraw);
 
-INCLUDE_ASM("tmp/asm/UTST99332/menu/nonmatchings/main", DrawFunc);
+void sceGuStart(int type, void *list, int size);
+int sceGuFinish(void);
+int sceGuSync(int mode, int what);
+void sceGuClear(int flags);
+void sceGuStart(int type, void *list, int size);
+int sceGuFinish(void);
+int sceGuSync(int mode, int what);
+void sceGuClear(int flags);
+int sceGuFinish(void);
+int sceGuSync(int mode, int what);
+static void DrawFunc(void)
+{
+	sceGuStart(0, displist, sizeof(displist));
+	sceGuClear(7);
+	if (func[program.mode].draw)
+		func[program.mode].draw();
+	sceGuFinish();
+	sceGuSync(0, 0);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/menu/nonmatchings/main", KeyFunc);
 
