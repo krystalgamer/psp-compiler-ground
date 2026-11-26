@@ -36,8 +36,6 @@ extern unsigned int maxheap;
 extern unsigned int currentheap;
 
 void free_heap(void);
-/* the string is in the module's shared .rodata here */
-extern char D_000129D4[];
 
 static __inline__ int conv_fd(int fd)
 {
@@ -220,7 +218,7 @@ void *_sbrk(int incr)
 		if (&sce_newlib_heap_kb_size != 0)
 			size = sce_newlib_heap_kb_size << 10;
 		if (size != 0) {
-			mbid = sceKernelAllocPartitionMemory(2, D_000129D4, 0, size, 0);
+			mbid = sceKernelAllocPartitionMemory(2, "UserSbrk", 0, size, 0);
 			if (mbid > 0) {
 				unsigned int head = (unsigned int)sceKernelGetBlockHeadAddr(mbid);
 				maxheap = head + size;

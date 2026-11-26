@@ -157,7 +157,30 @@ segments:
       - { start: 0x11B50, type: rodata, name: jcr, linker_section: .jcr }
       - { start: 0x11B54, type: rodata, name: eh_frame, linker_section: .eh_frame }
       - { start: 0x11BB8, type: prxpad, order: .rodata }
-      - [0x11BC0, rodata, rodata]
+      - [0x11BC0, .rodata, crt0]
+      - [0x11BD0, .rodata, main]
+      - [0x11C50, .rodata, menu]
+      - [0x11CA8, .rodata, libgum]
+      - [0x11CD8, .rodata, libgu]
+      - [0x12548, .rodata, newlib/libm/math/sf_cos]
+      - [0x12550, .rodata, newlib/libm/math/wf_sqrt]
+      - [0x12560, .rodata, newlib/libm/math/ef_rem_pio2]
+      - [0x12944, .rodata, newlib/libm/math/ef_sqrt]
+      - [0x12950, .rodata, newlib/libm/math/kf_cos]
+      - [0x12990, .rodata, newlib/libm/math/kf_rem_pio2]
+      - [0x129F0, .rodata, newlib/libm/math/kf_sin]
+      - [0x12A28, .rodata, newlib/libm/common/s_matherr]
+      - [0x12A2C, .rodata, newlib/libm/math/sf_floor]
+      - [0x12A34, .rodata, newlib/libm/common/sf_scalbn]
+      - [0x12A54, .rodata, kernel_bridge]
+      - [0x12A60, .rodata, newlib/libc/stdlib/malloc]
+      - [0x12A64, .rodata, newlib/libc/stdio/vfprintf]
+      - [0x12C44, .rodata, newlib/libc/stdlib/wctomb_r]
+      - [0x12C68, .rodata, newlib/libc/stdlib/dtoa]
+      - [0x12CE8, .rodata, newlib/libc/locale/locale]
+      - [0x12D30, .rodata, newlib/libc/stdlib/mprec]
+      - [0x12E68, .rodata, libgcc/dp-bit/__floatsidf]
+      - [0x12E70, .rodata, libgcc/dp-bit/__fpcmp_parts_d]
   - [0x12F88, bin, seg1_align]
   - name: graphics_skin_seg1
     type: code

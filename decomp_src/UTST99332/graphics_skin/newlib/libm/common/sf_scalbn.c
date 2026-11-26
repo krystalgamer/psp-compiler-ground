@@ -1,3 +1,3 @@
-#include "common.h"
-
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_skin/nonmatchings/newlib/libm/common/sf_scalbn", scalbnf);
+/* upstream: newlib-1.12.0/newlib/libm/common/sf_scalbn.c (unmodified) */
+/* cflags: -O2 -fno-builtin */
+#include "libm/common/sf_scalbn.c"

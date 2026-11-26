@@ -1,35 +1,8 @@
-#include "common.h"
+/* upstream: newlib-1.12.0/newlib/libc/stdlib/mprec.c (unmodified) */
+/* cflags: -O2 -fno-builtin */
+/* data-align: 8 */
+#include "libc/stdlib/mprec.c"
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_skin/nonmatchings/newlib/libc/stdlib/mprec", _Balloc);
-
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_skin/nonmatchings/newlib/libc/stdlib/mprec", _Bfree);
-
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_skin/nonmatchings/newlib/libc/stdlib/mprec", _multadd);
-
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_skin/nonmatchings/newlib/libc/stdlib/mprec", _s2b);
-
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_skin/nonmatchings/newlib/libc/stdlib/mprec", _hi0bits);
-
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_skin/nonmatchings/newlib/libc/stdlib/mprec", _lo0bits);
-
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_skin/nonmatchings/newlib/libc/stdlib/mprec", _i2b);
-
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_skin/nonmatchings/newlib/libc/stdlib/mprec", _multiply);
-
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_skin/nonmatchings/newlib/libc/stdlib/mprec", _pow5mult);
-
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_skin/nonmatchings/newlib/libc/stdlib/mprec", _lshift);
-
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_skin/nonmatchings/newlib/libc/stdlib/mprec", __mcmp);
-
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_skin/nonmatchings/newlib/libc/stdlib/mprec", __mdiff);
-
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_skin/nonmatchings/newlib/libc/stdlib/mprec", _ulp);
-
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_skin/nonmatchings/newlib/libc/stdlib/mprec", _b2d);
-
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_skin/nonmatchings/newlib/libc/stdlib/mprec", _d2b);
-
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_skin/nonmatchings/newlib/libc/stdlib/mprec", _ratio);
-
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_skin/nonmatchings/newlib/libc/stdlib/mprec", _mprec_log10);
+/* labels the rest of the module's asm uses */
+__asm__(".globl D_00012DA8\nD_00012DA8 = 0x00012DA8");
+__asm__(".globl D_00012DAC\nD_00012DAC = 0x00012DAC");

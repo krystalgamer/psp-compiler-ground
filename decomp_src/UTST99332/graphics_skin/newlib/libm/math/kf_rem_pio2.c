@@ -1,3 +1,3 @@
-#include "common.h"
-
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_skin/nonmatchings/newlib/libm/math/kf_rem_pio2", __kernel_rem_pio2f);
+/* upstream: newlib-1.12.0/newlib/libm/math/kf_rem_pio2.c (unmodified) */
+/* cflags: -O2 -fno-builtin */
+#include "libm/math/kf_rem_pio2.c"

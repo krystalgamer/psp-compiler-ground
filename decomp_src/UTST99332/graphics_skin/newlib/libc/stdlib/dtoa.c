@@ -1,5 +1,4 @@
-#include "common.h"
-
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_skin/nonmatchings/newlib/libc/stdlib/dtoa", quorem);
-
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_skin/nonmatchings/newlib/libc/stdlib/dtoa", _dtoa_r);
+/* upstream: newlib-1.12.0/newlib/libc/stdlib/dtoa.c (unmodified) */
+/* cflags: -O2 -fno-builtin */
+/* data-align: 8 */
+#include "libc/stdlib/dtoa.c"
