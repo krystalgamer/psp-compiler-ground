@@ -155,6 +155,19 @@ INCLUDE_ASM("tmp/asm/UTST99332/graphics_picture/nonmatchings/main", draw_objects
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_picture/nonmatchings/main", load_objects);
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_picture/nonmatchings/main", unload_objects);
+static void unload_objects(void)
+{
+	{
+		int i;
+
+		for (i = 0; i < 3; i++) {
+			sceGimPictureDelete(g_copies[i]);
+			g_copies[i] = 0;
+		}
+	}
+
+	sceGimPictureDelete(g_picture);
+	g_picture = 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_picture/nonmatchings/main", load_file);
