@@ -284,7 +284,49 @@ INCLUDE_RODATA("tmp/asm/UTST99332/mpeg_ezmpegstr/nonmatchings/main", D_0000F2A4)
 
 INCLUDE_RODATA("tmp/asm/UTST99332/mpeg_ezmpegstr/nonmatchings/main", D_0000F2C4);
 
-INCLUDE_ASM("tmp/asm/UTST99332/mpeg_ezmpegstr/nonmatchings/main", readHeader);
+long long strFileLseek(StrFile *file, long long offset, SceInt32 whence);
+extern const char D_0000F12C[];
+
+static SceInt32 readHeader(SceMpeg *pMpeg, StrFile *pStrFile, SceInt32 *pFilesize, SceInt32 *strOffset)
+{
+	SceInt32 iReadSize, ret;
+	SceChar8 stream_buf[2048];
+
+	if (strFileLseek(pStrFile, 0, 0) < 0) {
+		ret = -1;
+		goto term;
+	}
+
+	iReadSize = strFileRead(pStrFile, stream_buf, 2048);
+	if (iReadSize < 2048) {
+		printf("fatal error : strFileRead() %x\n", iReadSize);
+		ret = -1;
+		goto term;
+	}
+
+	if (sceMpegQueryStreamOffset(pMpeg, stream_buf, strOffset) != 0) {
+		printf("fatal error : sceMpegQueryStreamOffset()\n");
+		ret = -1;
+		goto term;
+	}
+
+	if (sceMpegQueryStreamSize(stream_buf, pFilesize) != 0) {
+		printf("fatal error : sceMpegQueryStreamSize()\n");
+		ret = -1;
+		goto term;
+	}
+
+	if (strFileLseek(pStrFile, 0, 0) < 0) {
+		puts(D_0000F12C); /* "fatal error : strFileLseek()", shared with an asm function */
+		ret = -1;
+		goto term;
+	}
+
+	ret = 0;
+
+term:
+	return ret;
+}
 
 extern SceCtrlData D_00010320;
 
