@@ -139,7 +139,41 @@ INCLUDE_RODATA("tmp/asm/flowars/flowars/nonmatchings/ai", D_00030878);
 
 INCLUDE_RODATA("tmp/asm/flowars/flowars/nonmatchings/ai", D_000308BC);
 
-INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/ai", set_sp_status);
+static void set_sp_status(int flagPlayer, int pae, int sp_kind)
+{
+	int index;
+	int oppPlayer;
+
+	switch (sp_kind) {
+	case 5:
+		index = find_array(pae, g_sp_pae.ogwang, 5);
+		if (index >= 0)
+			g_sp_who.ogwang[index] = flagPlayer;
+		break;
+	case 1:
+		index = find_array(pae, g_sp_pae.hongdan, 3);
+		if (index >= 0)
+			g_sp_who.hongdan[index] = flagPlayer;
+		break;
+	case 2:
+		index = find_array(pae, g_sp_pae.chungdan, 3);
+		if (index >= 0)
+			g_sp_who.chungdan[index] = flagPlayer;
+		break;
+	case 3:
+		index = find_array(pae, g_sp_pae.chodan, 3);
+		if (index >= 0)
+			g_sp_who.chodan[index] = flagPlayer;
+		break;
+	case 4:
+		index = find_array(pae, g_sp_pae.godori, 3);
+		if (index >= 0)
+			g_sp_who.godori[index] = flagPlayer;
+		break;
+	}
+}
+
+__asm__(".globl set_sp_status");
 
 static int is_bisang(int flagPlayer, int special_kind)
 {
@@ -156,7 +190,39 @@ static int is_bisang(int flagPlayer, int special_kind)
 	return 0;
 }
 
-INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/ai", get_rest_pae);
+static int get_rest_pae(int special_kind)
+{
+	int index;
+
+	switch (special_kind) {
+	case 5:
+		index = find_array(-1, g_sp_who.ogwang, 5);
+		if (index < 0)
+			return 0;
+		return g_sp_pae.ogwang[index];
+	case 1:
+		index = find_array(-1, g_sp_who.hongdan, 3);
+		if (index < 0)
+			return 0;
+		return g_sp_pae.hongdan[index];
+	case 2:
+		index = find_array(-1, g_sp_who.chungdan, 3);
+		if (index < 0)
+			return 0;
+		return g_sp_pae.chungdan[index];
+	case 3:
+		index = find_array(-1, g_sp_who.chodan, 3);
+		if (index < 0)
+			return 0;
+		return g_sp_pae.chodan[index];
+	case 4:
+		index = find_array(-1, g_sp_who.godori, 3);
+		if (index < 0)
+			return 0;
+		return g_sp_pae.godori[index];
+	}
+	return 0;
+}
 
 static void set_pae_priority(int pae, int priority, int group_priority)
 {
