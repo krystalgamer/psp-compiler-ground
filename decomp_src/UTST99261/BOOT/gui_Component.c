@@ -1,6 +1,9 @@
 /* cflags: -O1 */
 #include "common.h"
 #include "m2c_macros.h"
+M2C_UNK make_dither_matrix(M2C_UNK *, M2C_UNK);     /* extern */
+extern unsigned char dither_matrix;
+
 extern int _iZwindDizF;
 
 
@@ -46,7 +49,13 @@ void zWindSetDiz(int arg0) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Component", make_dither_matrix);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Component", dizInit);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void dizInit(void) {
+    make_dither_matrix(&dither_matrix, 8);
+}
 
 #ifndef NULL
 #define NULL ((void *)0)

@@ -1,6 +1,8 @@
 /* cflags: -O1 */
 #include "common.h"
 #include "m2c_macros.h"
+void *HST_getHeadHistoryNode();                     /* extern */
+
 
 
 #ifndef NULL
@@ -22,19 +24,53 @@ loop_2:
     return var_a0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_box_api_high", getRootBox);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_box_api_high", getBodyBox);
+int getRootBox(void) {
+    int var_v1;
+    void *temp_v0;
+
+    temp_v0 = HST_getHeadHistoryNode();
+    var_v1 = 0;
+    if (temp_v0 != NULL) {
+        var_v1 = M2C_FIELD(temp_v0, int *, 0x6C);
+    }
+    return var_v1;
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+void getBodyBox(int *arg0) {
+    getBoxByContent(arg0, 1);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_box_api_high", getListBox);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_box_api_high", getFramesetBox);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+void getFramesetBox(int *arg0) {
+    getBoxByContent(arg0, 2);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_box_api_high", getTableBox);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+void getTableBox(int *arg0) {
+    getBoxByContent(arg0, 4);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_box_api_high", getTrBox);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_box_api_high", getTdBox);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+void getTdBox(int **arg0) {
+    getBoxByContent(*arg0, 6);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_box_api_high", getParentBlockBox);
 
@@ -63,7 +99,15 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_box_api_high", getBodyAbsolu
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_box_api_high", checkBoxValidity);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_box_api_high", getContainingBlockWidth);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int getContainingBlockWidth(void *arg0) {
+    void *temp_a1;
+
+    temp_a1 = M2C_FIELD(arg0, void **, 0x24);
+    return (((((M2C_FIELD(arg0, int *, 0x18) - M2C_FIELD(temp_a1, short *, 0x26)) - M2C_FIELD(temp_a1, short *, 0x36)) - M2C_FIELD(temp_a1, short *, 0x2E)) - M2C_FIELD(temp_a1, short *, 0x2A)) - M2C_FIELD(temp_a1, short *, 0x32)) - M2C_FIELD(temp_a1, short *, 0x22);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_box_api_high", getPageRegion);
 

@@ -1,6 +1,10 @@
 /* cflags: -O1 */
 #include "common.h"
 #include "m2c_macros.h"
+M2C_UNK addBoxList(int, int);                       /* extern */
+M2C_UNK initBoxList();                              /* extern */
+extern void *gESPRIT_LO_GLOBAL_NDA;
+
 extern int D_00584CD4;
 
 
@@ -24,7 +28,22 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/layoutMain", searchUrlList);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/layoutMain", addUrlList);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/layoutMain", copyBoxList);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void copyBoxList(int arg0, void **arg1) {
+    void *var_s0;
+
+    initBoxList();
+    var_s0 = *arg1;
+    if (var_s0 != NULL) {
+        do {
+            addBoxList(arg0, M2C_FIELD(var_s0, int *, 8));
+            var_s0 = M2C_FIELD(var_s0, void **, 0);
+        } while (var_s0 != NULL);
+    }
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/layoutMain", lo_fullUrl);
 
@@ -46,6 +65,18 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/layoutMain", setUiGlobal_browse
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/layoutMain", setLoGlobal);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/layoutMain", getRNDSEM);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/layoutMain", getJSSEM);
+int getRNDSEM(void) {
+    return M2C_FIELD(gESPRIT_LO_GLOBAL_NDA, int *, 0x3C);
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+int getJSSEM(void) {
+    return M2C_FIELD(gESPRIT_LO_GLOBAL_NDA, int *, 0x40);
+}
