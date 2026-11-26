@@ -73,6 +73,19 @@ void *MEM_malloc(void *pool, unsigned int n);
 void *memcpy(void *d, const void *s, unsigned int n);
 IMGENT *checkImageList(IMGLIST *list, char *name);
 void imageDecodeFailure(IMGENT *e);
+void setImageToBoxBuffer(BOX *b, void *image);
+void *imageDecode(const u8 *data, int size, int a, int b, int c);
+extern const u8 defImage[];
+extern const u8 noImage[];
+extern const u8 discImage[];
+extern const u8 circleImage[];
+extern const u8 squareImage[];
+typedef struct {
+    u8 unk0[0x14];
+    int state;                  /* 0x14 */
+    u8 unk18[0xC];
+    IMGENT *ent;                /* 0x24 */
+} LIMGGEOM;
 
 extern LLIST REQUEST_LLIST;
 void imageDelete(void *image);
@@ -108,9 +121,27 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_image", setImageInBox);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_image", imageDecodeSuccess);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_image", imageDecodeFailure);
+void imageDecodeFailure(IMGENT *e) {
+    LISTNODE *p;
+    BOX *b;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_image", initDefaultImage);
+    for (p = e->boxes.head; p != NULL; p = p->next) {
+        b = p->data;
+        if (b->content == 10 && (((LIMGGEOM *)b->geom)->state != 1 || ((LIMGGEOM *)b->geom)->ent == e)) {
+            setImageToBoxBuffer(p->data, lo_global.img18);
+            ((LIMGGEOM *)((BOX *)p->data)->geom)->state = 2;
+        }
+    }
+    e->type = 2;
+}
+
+void initDefaultImage(void) {
+    lo_global.img14 = imageDecode(defImage, 0xCB, 0, 0, 0);
+    lo_global.img18 = imageDecode(noImage, 0x59, 0, 0, 0);
+    lo_global.img24 = imageDecode(discImage, 0x42, 0, 0, 0);
+    lo_global.img28 = imageDecode(circleImage, 0x47, 0, 0, 0);
+    lo_global.img2C = imageDecode(squareImage, 0x45, 0, 0, 0);
+}
 
 void deleteDefaultImage(void) {
     imageDelete(lo_global.img14);
@@ -215,7 +246,46 @@ void putLLIST(LLIST *list, LNODE *n) {
     list->count++;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_image", delLLIST);
+void delLLIST(LLIST *list, LNODE *n) {
+    LNODE *c;
+    LNODE *next;
+    LNODE *prev;
+    LNODE *nx;
+
+    if (list == NULL || list->head == NULL || n == NULL) {
+        return;
+    }
+    if (n->child != NULL) {
+        c = n->child;
+        while (c != NULL) {
+            nx = c;
+            c = c->next;
+            if (nx->data != NULL) {
+                MEM_free(NULL, nx->data);
+            }
+            MEM_free(NULL, nx);
+        }
+        n->child = NULL;
+    }
+    prev = n->prev;
+    next = n->next;
+    if (prev == NULL) {
+        if (next == NULL) {
+            list->head = NULL;
+            list->tail = NULL;
+        } else {
+            list->head = next;
+            next->prev = NULL;
+        }
+    } else if (next == NULL) {
+        prev->next = NULL;
+        list->tail = prev;
+    } else {
+        prev->next = next;
+        next->prev = prev;
+    }
+    list->count--;
+}
 
 void putChildLLIST(LNODE *parent, LNODE *n) {
     LNODE *c;
