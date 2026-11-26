@@ -135,42 +135,19 @@ static int file_read(const char *pFile, void *pBuf, unsigned int uBufSize, unsig
 	return 0;
 }
 
-#ifndef SCEGU_IMMEDIATE /* sample */
 #define SCEGU_IMMEDIATE                    0
-#endif
-#ifndef SCEGU_CLEAR_ALL /* sample */
 #define SCEGU_CLEAR_ALL               0x0007
-#endif
-#ifndef SCEGU_TEXTURE /* sample */
 #define SCEGU_TEXTURE                      9
-#endif
-#ifndef SCEGU_SCR_WIDTH /* sample */
 #define SCEGU_SCR_WIDTH       480
-#endif
-#ifndef WALL_X /* sample */
 #define WALL_X			(SCEGU_SCR_WIDTH-SIZE)
-#endif
-#ifndef SCEGU_SCR_HEIGHT /* sample */
 #define SCEGU_SCR_HEIGHT      272
-#endif
-#ifndef SIZE /* sample */
 #define SIZE			16
-#endif
-#ifndef WALL_Y /* sample */
 #define WALL_Y			(SCEGU_SCR_HEIGHT-SIZE)
-#endif
-#ifndef MAXOBJ /* sample */
 #define MAXOBJ			8
-#endif
-#ifndef SCEGU_NOFLIP /* sample */
 #define SCEGU_NOFLIP                       0
-#endif
-#ifndef SCEGU_SYNC_FINISH /* sample */
 #define SCEGU_SYNC_FINISH                  0
-#endif
-#ifndef SCEGU_SYNC_WAIT /* sample */
 #define SCEGU_SYNC_WAIT                    0
-#endif
+
 static void draw_frame(void)
 {
 	POS	*p = pos;
