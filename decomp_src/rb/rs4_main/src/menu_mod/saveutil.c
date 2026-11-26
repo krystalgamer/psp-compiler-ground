@@ -1,6 +1,16 @@
 /* cflags: -Os */
 #include "common.h"
 #include "m2c_macros.h"
+extern signed char D_0011AB50;
+M2C_UNK ShowResult();                               /* extern */
+unsigned int sceUtilitySavedataGetStatus();                  /* extern */
+M2C_UNK sceUtilitySavedataShutdownStart();          /* extern */
+M2C_UNK sceUtilitySavedataUpdate(int);              /* extern */
+extern unsigned char _secure_file_id;
+extern int D_0011B078;
+extern int D_0011B628;
+extern int D_0011B054;
+
 extern unsigned char savedata_param;
 extern unsigned int g_utilityType;
 M2C_UNK FreeData_GameBuf();                         /* extern */
@@ -10,7 +20,20 @@ M2C_UNK sceUtilitySavedataInitStart(void *);        /* extern */
 M2C_UNK FreeData_Normal(int, int);                  /* extern */
 
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/saveutil", SetData_Paramsfo_String);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+char *strcpy(char *d, const char *s);
+
+void SetData_Paramsfo_String(int arg0) {
+    signed char *temp_s2;
+
+    temp_s2 = arg0 + 0x80;
+    strcpy(temp_s2, &D_0011AB50);
+    strcpy(arg0 + 0x100, &D_0011AB50 + 0x80);
+    strcpy(arg0 + 0x180, &D_0011AB50 + 0x100);
+    M2C_FIELD(temp_s2, unsigned char *, 0x500) = (unsigned char) M2C_FIELD(localeGetRegionCntx(), unsigned char *, 4);
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/saveutil", D_00103954);
 
@@ -68,11 +91,51 @@ void UtilityNone(void) {
     SetUtilityType(2);
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/saveutil", Savedata_Update);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+int Savedata_Update(void) {
+    unsigned int temp_v0;
+
+    temp_v0 = sceUtilitySavedataGetStatus();
+    switch (temp_v0) {
+    case 2:
+        sceUtilitySavedataUpdate(M2C_FIELD(gameGetCntx(), int *, 0x80) + 1);
+        break;
+    case 3:
+        sceUtilitySavedataShutdownStart();
+        ShowResult();
+        break;
+    case 0:
+        UtilityNone();
+        /* fallthrough */
+    case 1:
+    case 4:
+        break;
+    }
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/saveutil", SetData_InitBase);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/saveutil", Copy_SecureFileId);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void Copy_SecureFileId(int arg0) {
+    int var_a1;
+    unsigned char *temp_v1;
+    unsigned char temp_a0;
+
+    var_a1 = 0;
+    do {
+        temp_a0 = *(var_a1 + &_secure_file_id);
+        temp_v1 = arg0 + var_a1;
+        var_a1 += 1;
+        *temp_v1 = temp_a0;
+    } while (var_a1 < 0x10);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/saveutil", MakeMode);
 
@@ -190,13 +253,37 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/saveutil", SaveStart)
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/saveutil", SaveEnd);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/saveutil", SaveState);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/saveutil", SaveGetResult);
+int SaveState(void) {
+    return g_utilityType == 0;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/saveutil", SaveGetAbortedStatus);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/saveutil", SaveGetSHIFTResult);
+int SaveGetResult(void) {
+    return D_0011B078;
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+int SaveGetAbortedStatus(void) {
+    return D_0011B628;
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+int SaveGetSHIFTResult(void) {
+    return D_0011B054;
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/saveutil", D_00104148);
 

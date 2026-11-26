@@ -1,5 +1,10 @@
 /* cflags: -Os */
 #include "common.h"
+#include "m2c_macros.h"
+M2C_UNK semaLock(int);                              /* extern */
+extern int SemaMod;
+M2C_UNK semaUnlock(int);                            /* extern */
+
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/home", homeProc);
 
@@ -33,9 +38,25 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/dev/home", D_000FA484);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/home", modTerm);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/home", modLock);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/home", modUnlock);
+void modLock(void) {
+    if (SemaMod > 0) {
+        semaLock(SemaMod);
+    }
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void modUnlock(void) {
+    if (SemaMod > 0) {
+        semaUnlock(SemaMod);
+    }
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/home", modLoad);
 

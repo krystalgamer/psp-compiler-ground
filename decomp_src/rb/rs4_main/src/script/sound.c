@@ -1,9 +1,24 @@
 /* cflags: -Os */
 #include "common.h"
+#include "m2c_macros.h"
+M2C_UNK consPrintf(M2C_UNK *, M2C_UNK *, M2C_UNK, M2C_UNK *, M2C_UNK *); /* extern */
+extern unsigned char D_00101B98;
+extern unsigned char D_00101BB8;
+extern unsigned char D_00101BD4;
+
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/script/sound", D_00101B98);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/script/sound", SoundGetNum);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+int SoundGetNum(void *arg0) {
+    if (arg0 == NULL) {
+        consPrintf(&D_00101BB8, &D_00101B98, 0x10, "SoundGetNum", &D_00101BD4);
+    }
+    return M2C_FIELD(arg0, int *, 0x88);
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/script/sound", D_00101BB8);
 

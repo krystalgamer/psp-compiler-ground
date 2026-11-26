@@ -1,6 +1,10 @@
 /* cflags: -Os */
 #include "common.h"
 #include "m2c_macros.h"
+int sceKernelGetGPI();                              /* extern */
+M2C_UNK sgxResClose(int);                           /* extern */
+extern unsigned char D_000FE640;
+
 M2C_UNK consPrintf(M2C_UNK *, M2C_UNK *);           /* extern */
 M2C_UNK sgxResCloseAll();                           /* extern */
 M2C_UNK sgxSndStopAll(M2C_UNK);                     /* extern */
@@ -62,7 +66,17 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/scx", scxUpdate);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/scx", scxAsm);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/scx", scxRelease);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+int scxRelease(void *arg0) {
+    if (sceKernelGetGPI() & 1) {
+        consPrintf(&D_000FE5F4, &D_000FE640);
+    }
+    sgxResClose(*M2C_FIELD(arg0, int **, 0x10));
+    return 1;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/scx", scxPlay);
 

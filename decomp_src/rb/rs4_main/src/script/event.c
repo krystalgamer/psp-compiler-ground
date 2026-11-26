@@ -1,9 +1,24 @@
 /* cflags: -Os */
 #include "common.h"
+#include "m2c_macros.h"
+M2C_UNK consPrintf(M2C_UNK *, M2C_UNK *, M2C_UNK, M2C_UNK *, M2C_UNK *); /* extern */
+extern unsigned char D_000FF3AC;
+extern unsigned char D_000FF3CC;
+extern unsigned char D_000FF3E8;
+
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/script/event", D_000FF3AC);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/script/event", EventGetNum);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+int EventGetNum(void *arg0) {
+    if (arg0 == NULL) {
+        consPrintf(&D_000FF3CC, &D_000FF3AC, 0xF, "EventGetNum", &D_000FF3E8);
+    }
+    return M2C_FIELD(arg0, int *, 0x54);
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/script/event", D_000FF3CC);
 

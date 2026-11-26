@@ -1,6 +1,32 @@
 /* cflags: -Os */
 #include "common.h"
 #include "m2c_macros.h"
+M2C_UNK consPrintf(M2C_UNK *, M2C_UNK *, M2C_UNK, M2C_UNK *, M2C_UNK *); /* extern */
+extern unsigned char D_000FCC8C;
+extern unsigned char D_000FCCA8;
+extern unsigned char D_000FCFE4;
+extern float D_000FD4FC;
+M2C_UNK I3cRoot__SetBothFaceEnable(int, M2C_UNK);   /* extern */
+int i3dMakeHitAssignTbl(int, int);                  /* extern */
+extern unsigned char D_000FCDF4;
+extern unsigned char D_000FD060;
+void *_memAlloc(M2C_UNK, M2C_UNK *, M2C_UNK);       /* extern */
+extern unsigned char D_000FD2FC;
+M2C_UNK _memFree(int, M2C_UNK *, M2C_UNK);          /* extern */
+extern int pI3dRender;
+extern int pI3dStage;
+int I3dRender__SetTexInfo(int, int, int);           /* extern */
+extern unsigned char D_000FCDB0;
+extern unsigned char D_000FD3BC;
+extern int D_001199D0;
+extern int D_001199D4;
+int I3rRoot__GetNodeIndexByName(int, int);          /* extern */
+extern unsigned char D_000FD48C;
+unsigned int I3rRoot__Get_nNode(int);                        /* extern */
+extern unsigned char D_000FD4A4;
+extern unsigned char D_000FD4B8;
+extern unsigned char D_000FD4C4;
+
 M2C_UNK copLetVec(int, int);                        /* extern */
 M2C_UNK copSubVec(int, int, int);                   /* extern */
 M2C_UNK copQuatMat(int, int);                       /* extern */
@@ -104,33 +130,146 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d", i3dMotUpdate);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d", i3dMotSetMotion);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d", i3dMotGetMotion);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d", i3dMotSetTime);
+int i3dMotGetMotion(void *arg0) {
+    if (arg0 == NULL) {
+        consPrintf(&D_000FCC8C, &D_000FCCA8, 0x483, "i3dMotGetMotion", &D_000FCFE4);
+    }
+    return M2C_FIELD(arg0, int *, 0x50);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d", i3dMotGetTime);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+/* Warning: Gap in callee-saved word stack region.
+ * Saved: [0x0, 0x4, 0x10], gap at: 0x8. */
+int i3dMotSetTime(void *arg0, float fparg0) {
+    if (arg0 == NULL) {
+        consPrintf(&D_000FCC8C, &D_000FCCA8, 0x48E, "i3dMotSetTime", &D_000FCFE4);
+    }
+    M2C_FIELD(arg0, float *, 0x54) = fparg0;
+    return 1;
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+float i3dMotGetTime(void *arg0) {
+    if (arg0 == NULL) {
+        consPrintf(&D_000FCC8C, &D_000FCCA8, 0x497, "i3dMotGetTime", &D_000FCFE4);
+    }
+    return M2C_FIELD(arg0, float *, 0x54);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d", i3dMotGetMaxTime);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d", i3dMotSetSpeed);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d", i3dMotGetSpeed);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d", i3dMotSetRate);
+float i3dMotGetSpeed(void *arg0) {
+    if (arg0 == NULL) {
+        consPrintf(&D_000FCC8C, &D_000FCCA8, 0x4BA, "i3dMotGetSpeed", &D_000FCFE4);
+    }
+    return M2C_FIELD(arg0, float *, 0x58);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d", i3dMotGetRate);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+/* Warning: Gap in callee-saved word stack region.
+ * Saved: [0x0, 0x4, 0x10], gap at: 0x8. */
+int i3dMotSetRate(void *arg0, float fparg0) {
+    if (arg0 == NULL) {
+        consPrintf(&D_000FCC8C, &D_000FCCA8, 0x4C5, "i3dMotSetRate", &D_000FCFE4);
+    }
+    if (!(fparg0 >= 0.0f)) {
+        consPrintf(&D_000FCC8C, &D_000FCCA8, 0x4C6, "i3dMotSetRate", "Rate >= 0");
+    }
+    if (!(fparg0 <= D_000FD4FC)) {
+        consPrintf(&D_000FCC8C, &D_000FCCA8, 0x4C7, "i3dMotSetRate", "Rate <= 1");
+    }
+    M2C_FIELD(arg0, float *, 0x5C) = fparg0;
+    return 1;
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+float i3dMotGetRate(void *arg0) {
+    if (arg0 == NULL) {
+        consPrintf(&D_000FCC8C, &D_000FCCA8, 0x4D1, "i3dMotGetRate", &D_000FCFE4);
+    }
+    return M2C_FIELD(arg0, float *, 0x5C);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d", i3dMotSetSmooth);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d", i3dMotGetSmooth);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d", i3dMotSetLoop);
+float i3dMotGetSmooth(void *arg0) {
+    if (arg0 == NULL) {
+        consPrintf(&D_000FCC8C, &D_000FCCA8, 0x4EB, "i3dMotGetSmooth", &D_000FCFE4);
+    }
+    return M2C_FIELD(arg0, float *, 0x60);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d", i3dMotGetLoop);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d", i3dMotSetPause);
+int i3dMotSetLoop(void *arg0, int arg1) {
+    if (arg0 == NULL) {
+        consPrintf(&D_000FCC8C, &D_000FCCA8, 0x4F6, "i3dMotSetLoop", &D_000FCFE4);
+    }
+    M2C_FIELD(arg0, int *, 0x64) = (int) (arg1 != 0);
+    return 1;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d", i3dMotGetPause);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+int i3dMotGetLoop(void *arg0) {
+    if (arg0 == NULL) {
+        consPrintf(&D_000FCC8C, &D_000FCCA8, 0x4FF, "i3dMotGetLoop", &D_000FCFE4);
+    }
+    return M2C_FIELD(arg0, int *, 0x64);
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+int i3dMotSetPause(void *arg0, int arg1) {
+    if (arg0 == NULL) {
+        consPrintf(&D_000FCC8C, &D_000FCCA8, 0x50A, "i3dMotSetPause", &D_000FCFE4);
+    }
+    M2C_FIELD(arg0, int *, 0x68) = (int) (arg1 != 0);
+    return 1;
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+int i3dMotGetPause(void *arg0) {
+    if (arg0 == NULL) {
+        consPrintf(&D_000FCC8C, &D_000FCCA8, 0x513, "i3dMotGetPause", &D_000FCFE4);
+    }
+    return M2C_FIELD(arg0, int *, 0x68);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d", i3dMotAnimate);
 
@@ -152,19 +291,91 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d", i3dAttachProc);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d", i3dMakeHitAssignTbl);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d", i3dCollisionInitModel);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+int i3dCollisionInitModel(void *arg0, void *arg1) {
+    int temp_s0;
+
+    if (arg0 == NULL) {
+        consPrintf(&D_000FCC8C, &D_000FCCA8, 0x642, "i3dCollisionInitModel", &D_000FCFE4);
+    }
+    if (arg1 == NULL) {
+        consPrintf(&D_000FCC8C, &D_000FCCA8, 0x643, "i3dCollisionInitModel", &D_000FD060);
+    }
+    if (M2C_FIELD(arg1, unsigned char *, 0x19) != 2) {
+        consPrintf(&D_000FCC8C, &D_000FCCA8, 0x644, "i3dCollisionInitModel", &D_000FCDF4);
+    }
+    temp_s0 = M2C_FIELD(arg1, int *, 0);
+    M2C_FIELD(arg0, int *, 0x78) = i3dMakeHitAssignTbl(M2C_FIELD(arg0, int *, 0), temp_s0);
+    M2C_FIELD(arg0, int *, 0x74) = temp_s0;
+    I3cRoot__SetBothFaceEnable(temp_s0, 1);
+    return 1;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d", i3dCollisionTermModel);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d", i3dCollisionMakePrim);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void *i3dCollisionMakePrim(float fparg0) {
+    void *temp_v0;
+
+    temp_v0 = _memAlloc(0x20, &D_000FCCA8, 0x66B);
+    if (temp_v0 == NULL) {
+        consPrintf(&D_000FCC8C, &D_000FCCA8, 0x66C, "i3dCollisionMakePrim", &D_000FD2FC);
+    }
+    M2C_FIELD(temp_v0, float *, 0xC) = fparg0;
+    M2C_FIELD(temp_v0, int *, 0) = 0;
+    M2C_FIELD(temp_v0, int *, 4) = 0;
+    M2C_FIELD(temp_v0, int *, 8) = 0;
+    M2C_FIELD(temp_v0, int *, 0x10) = 0;
+    M2C_FIELD(temp_v0, int *, 0x14) = 0;
+    M2C_FIELD(temp_v0, int *, 0x18) = 0;
+    M2C_FIELD(temp_v0, int *, 0x1C) = 0;
+    return temp_v0;
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d", D_000FD2FC);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d", i3dCollisionFreePrim);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d", i3dCollisionSetSize);
+int i3dCollisionFreePrim(int arg0) {
+    if (arg0 == 0) {
+        consPrintf(&D_000FCC8C, &D_000FCCA8, 0x681, "i3dCollisionFreePrim", &D_000FD2FC);
+    }
+    _memFree(arg0, &D_000FCCA8, 0x682);
+    return 1;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d", i3dCollisionGetSize);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+/* Warning: Gap in callee-saved word stack region.
+ * Saved: [0x0, 0x4, 0x10], gap at: 0x8. */
+int i3dCollisionSetSize(void *arg0, float fparg0) {
+    if (arg0 == NULL) {
+        consPrintf(&D_000FCC8C, &D_000FCCA8, 0x68E, "i3dCollisionSetSize", &D_000FD2FC);
+    }
+    M2C_FIELD(arg0, float *, 0xC) = fparg0;
+    return 1;
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+float i3dCollisionGetSize(void *arg0) {
+    if (arg0 == NULL) {
+        consPrintf(&D_000FCC8C, &D_000FCCA8, 0x69A, "i3dCollisionGetSize", &D_000FD2FC);
+    }
+    return M2C_FIELD(arg0, float *, 0xC);
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -259,11 +470,41 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d", i3dMakeStage);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d", i3dMakeView);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d", i3dGetRender);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d", i3dGetStage);
+int i3dGetRender(void) {
+    return pI3dRender;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d", i3dSetTex);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+int i3dGetStage(void) {
+    return pI3dStage;
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+int i3dSetTex(int arg0, int arg1) {
+    if ((arg0 != 0) & (arg1 != 0)) {
+        if ((arg0 != D_001199D0) || (arg1 != D_001199D4)) {
+            if (I3dRender__SetTexInfo(pI3dRender, arg0, arg1) != 0) {
+                consPrintf(&D_000FCC8C, &D_000FCCA8, 0x835, &D_000FD3BC, &D_000FCDB0);
+            }
+            D_001199D0 = arg0;
+            D_001199D4 = arg1;
+        }
+    } else {
+        D_001199D0 = 0;
+        D_001199D4 = 0;
+    }
+    return 1;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d", i3dGetPos2D);
 
@@ -299,9 +540,39 @@ void i3dPosture2Mat(int arg0, int arg1) {
     copLetVec(arg1, arg0 + 0x30);
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d", i3dGetNodeIndexByName);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d", I3dGetNodeMatPtr);
+int i3dGetNodeIndexByName(int *arg0, int arg1) {
+    int var_v0;
+
+    if (arg0 == NULL) {
+        consPrintf(&D_000FCC8C, &D_000FCCA8, 0xB7A, &D_000FD48C, &D_000FCFE4);
+    }
+    var_v0 = -1;
+    if (arg1 != 0) {
+        var_v0 = I3rRoot__GetNodeIndexByName(*arg0, arg1);
+    }
+    return var_v0;
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+int I3dGetNodeMatPtr(void *arg0, int arg1) {
+    if (arg0 == NULL) {
+        consPrintf(&D_000FCC8C, &D_000FCCA8, 0xB86, &D_000FD4A4, &D_000FCFE4);
+    }
+    if (arg1 < 0) {
+        consPrintf(&D_000FCC8C, &D_000FCCA8, 0xB87, &D_000FD4A4, &D_000FD4B8);
+    }
+    if ((unsigned int) arg1 >= I3rRoot__Get_nNode(M2C_FIELD(arg0, int *, 0))) {
+        consPrintf(&D_000FCC8C, &D_000FCCA8, 0xB88, &D_000FD4A4, &D_000FD4C4);
+    }
+    return M2C_FIELD(arg0, int *, 8) + (arg1 << 6);
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d", D_000FD540);
 

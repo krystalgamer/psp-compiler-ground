@@ -1,9 +1,24 @@
 /* cflags: -Os */
 #include "common.h"
+#include "m2c_macros.h"
+M2C_UNK consPrintf(M2C_UNK *, M2C_UNK *, M2C_UNK, M2C_UNK *, M2C_UNK *); /* extern */
+extern unsigned char D_000FF2BC;
+extern unsigned char D_000FF2E0;
+extern unsigned char D_000FF2FC;
+
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/script/effect", D_000FF2BC);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/script/effect", EffectGetNum);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+int EffectGetNum(void *arg0) {
+    if (arg0 == NULL) {
+        consPrintf(&D_000FF2E0, &D_000FF2BC, 0x22, "EffectGetNum", &D_000FF2FC);
+    }
+    return M2C_FIELD(arg0, int *, 0x8C);
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/script/effect", D_000FF2E0);
 

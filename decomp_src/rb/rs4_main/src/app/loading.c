@@ -1,6 +1,11 @@
 /* cflags: -Os */
 #include "common.h"
 #include "m2c_macros.h"
+extern int pNowLocale;
+extern int pRegionCntx;
+M2C_UNK ctrlSetCancel(M2C_UNK);                     /* extern */
+M2C_UNK ctrlSetEnter(M2C_UNK);                      /* extern */
+
 
 
 void loadingInit(void) {
@@ -20,13 +25,41 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/loading", localeChange);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/loading", localeInit);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/loading", localeGetCntx);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/loading", localeGetRegionCntx);
+int localeGetCntx(void) {
+    return pNowLocale;
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+int localeGetRegionCntx(void) {
+    return pRegionCntx;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/loading", localeIsUse);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/loading", localeSetKeyConfig);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+int localeSetKeyConfig(void) {
+    M2C_UNK var_a0;
+
+    if (M2C_FIELD(pNowLocale, int *, 0xC) & 1) {
+        ctrlSetEnter(0x4000);
+        var_a0 = 0x2000;
+    } else {
+        ctrlSetEnter(0x2000);
+        var_a0 = 0x4000;
+    }
+    ctrlSetCancel(var_a0);
+    return 1;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/loading", empty_start);
 

@@ -1,5 +1,10 @@
 /* cflags: -Os */
 #include "common.h"
+#include "m2c_macros.h"
+M2C_UNK _memFree(int, M2C_UNK *, M2C_UNK);          /* extern */
+extern unsigned char D_001025E8;
+extern int l_patAssortDB;
+
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/database", D_001025CC);
 
@@ -33,7 +38,17 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/database", D_00102
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/database", databaseRefresh);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/database", databaseTerm);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+int databaseTerm(void) {
+    if (l_patAssortDB != 0) {
+        _memFree(l_patAssortDB, &D_001025E8, 0xA2);
+    }
+    l_patAssortDB = 0;
+    return 1;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/database", databaseChkRankingBattle);
 

@@ -1,6 +1,9 @@
 /* cflags: -Os */
 #include "common.h"
 #include "m2c_macros.h"
+float cusGetFloat(int, M2C_UNK, M2C_UNK *, float);      /* extern */
+extern float D_000FE260;
+
 M2C_UNK copLetMat(int, int);                        /* extern */
 
 
@@ -30,7 +33,33 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/particle", D_000FDE64);
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/particle", D_000FDE6C);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/particle", _PartCusConvPart_c);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+int _PartCusConvPart_c(void *arg0, int arg1) {
+    float temp_f0;
+
+    temp_f0 = cusGetFloat(arg1, 0, "AgeMax", D_000FE260);
+    M2C_FIELD(arg0, float *, 4) = temp_f0;
+    if (temp_f0 < 0.0f) {
+        return 0;
+    }
+    M2C_FIELD(arg0, float *, 8) = cusGetFloat(arg1, 0, "AgeMin", temp_f0);
+    M2C_FIELD(arg0, float *, 0xC) = cusGetFloat(arg1, 0, "SizeRange", 0.0f);
+    M2C_FIELD(arg0, float *, 0x10) = cusGetFloat(arg1, 0, "SpdLeanX", 0.0f);
+    M2C_FIELD(arg0, float *, 0x14) = cusGetFloat(arg1, 0, "SpdLeanY", 0.0f);
+    M2C_FIELD(arg0, float *, 0x18) = cusGetFloat(arg1, 0, "SpdLeanZ", 0.0f);
+    M2C_FIELD(arg0, float *, 0x1C) = 0.0f;
+    M2C_FIELD(arg0, float *, 0x30) = cusGetFloat(arg1, 0, "SpdRangeL", 0.0f);
+    M2C_FIELD(arg0, float *, 0x20) = cusGetFloat(arg1, 0, "SpdTurbX", 0.0f);
+    M2C_FIELD(arg0, float *, 0x24) = cusGetFloat(arg1, 0, "SpdTurbY", 0.0f);
+    M2C_FIELD(arg0, float *, 0x28) = cusGetFloat(arg1, 0, "SpdTurbZ", 0.0f);
+    M2C_FIELD(arg0, float *, 0x2C) = 0.0f;
+    M2C_FIELD(arg0, float *, 0x34) = cusGetFloat(arg1, 0, "SpdRadiR", 0.0f);
+    M2C_FIELD(arg0, float *, 0x38) = cusGetFloat(arg1, 0, "SpdRangeR", 0.0f);
+    return 1;
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/particle", D_000FDEFC);
 
@@ -167,7 +196,12 @@ float partEmitGetTime(void *arg0) {
     return M2C_FIELD(arg0, float *, 0x70);
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/particle", partEmitGetAfct);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int partEmitGetAfct(void *arg0) {
+    return M2C_FIELD(M2C_FIELD(arg0, void **, 0x7C), int *, 0x18);
+}
 
 #ifndef NULL
 #define NULL ((void *)0)

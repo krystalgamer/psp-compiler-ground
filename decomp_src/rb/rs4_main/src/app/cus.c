@@ -1,6 +1,21 @@
 /* cflags: -Os */
 #include "common.h"
 #include "m2c_macros.h"
+M2C_UNK consPrintf(M2C_UNK *, M2C_UNK *, M2C_UNK, M2C_UNK *, M2C_UNK *); /* extern */
+extern unsigned char D_000FC3F8;
+extern unsigned char D_000FC41C;
+extern unsigned char D_000FC4EC;
+extern int pFontDat;
+extern int pMarkFontDat;
+extern int pMarkTextDat;
+extern unsigned char D_000FC524;
+M2C_UNK _memFree(int *, M2C_UNK *, M2C_UNK);        /* extern */
+extern unsigned char D_000FC544;
+extern unsigned char D_000FC62C;
+M2C_UNK semaLock(int);                              /* extern */
+extern int GameSema;
+M2C_UNK semaUnlock(int);                            /* extern */
+
 int resGetPtrLocal();                               /* extern */
 int resGetSizeLocal(int, int);                      /* extern */
 M2C_UNK seek_top();                                 /* extern */
@@ -158,17 +173,67 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/cus", D_000FC498);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/cus", fontTerm);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/cus", fontSetPgfResource);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+int fontSetPgfResource(int arg0) {
+    if (arg0 == 0) {
+        consPrintf(&D_000FC41C, &D_000FC3F8, 0xDA, "fontSetPgfResource", &D_000FC4EC);
+    }
+    pFontDat = arg0;
+    return 1;
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/cus", D_000FC4EC);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/cus", fontSetPgfResourceExtra);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/cus", fontGetPos);
+int fontSetPgfResourceExtra(int arg0, int arg1) {
+    if (arg0 == 0) {
+        consPrintf(&D_000FC41C, &D_000FC3F8, 0xE4, "fontSetPgfResourceExtra", &D_000FC4EC);
+    }
+    if (arg1 == 0) {
+        consPrintf(&D_000FC41C, &D_000FC3F8, 0xE5, "fontSetPgfResourceExtra", "pTextDat");
+    }
+    pMarkFontDat = arg0;
+    pMarkTextDat = arg1;
+    return 1;
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+int fontGetPos(void *arg0, void *arg1) {
+    if (arg0 == NULL) {
+        consPrintf(&D_000FC41C, &D_000FC3F8, 0xF4, "fontGetPos", &D_000FC524);
+    }
+    M2C_FIELD(arg1, int *, 0) = (int) M2C_FIELD(arg0, int *, 0x10);
+    M2C_FIELD(arg1, int *, 4) = (int) M2C_FIELD(arg0, int *, 0x14);
+    M2C_FIELD(arg1, int *, 8) = (int) M2C_FIELD(arg0, int *, 0x18);
+    M2C_FIELD(arg1, int *, 0xC) = (int) M2C_FIELD(arg0, int *, 0x1C);
+    return 1;
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/cus", D_000FC524);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/cus", fontSetPos);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+int fontSetPos(void *arg0, void *arg1) {
+    if (arg0 == NULL) {
+        consPrintf(&D_000FC41C, &D_000FC3F8, 0x102, "fontSetPos", &D_000FC524);
+    }
+    M2C_FIELD(arg0, int *, 0x10) = (int) M2C_FIELD(arg1, int *, 0);
+    M2C_FIELD(arg0, int *, 0x14) = (int) M2C_FIELD(arg1, int *, 4);
+    M2C_FIELD(arg0, int *, 0x18) = (int) M2C_FIELD(arg1, int *, 8);
+    M2C_FIELD(arg0, int *, 0x1C) = (int) M2C_FIELD(arg1, int *, 0xC);
+    return 1;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/cus", fontOfsPos);
 
@@ -188,17 +253,76 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/cus", fontImgInit);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/cus", fontImgInitEx);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/cus", fontImgTerm);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+int fontImgTerm(int *arg0) {
+    if (arg0 == NULL) {
+        consPrintf(&D_000FC41C, &D_000FC3F8, 0x1E2, "fontImgTerm", &D_000FC524);
+    }
+    if (*arg0 != 0) {
+        consPrintf(&D_000FC41C, &D_000FC3F8, 0x1E3, "fontImgTerm", &D_000FC544);
+    }
+    _memFree(arg0, &D_000FC3F8, 0x1E5);
+    return 1;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/cus", fontImgPut);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/cus", fontImgStr);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/cus", fontImgDat);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+int fontImgDat(void *arg0) {
+    if (arg0 == NULL) {
+        consPrintf(&D_000FC41C, &D_000FC3F8, 0x224, "fontImgDat", &D_000FC524);
+    }
+    if (M2C_FIELD(arg0, int *, 0) != 0) {
+        consPrintf(&D_000FC41C, &D_000FC3F8, 0x225, "fontImgDat", &D_000FC544);
+    }
+    return M2C_FIELD(arg0, int *, 0x50);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/cus", fontStrInit);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/cus", fontStrTerm);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+int fontStrTerm(M2C_UNK *arg0) {
+    M2C_UNK *temp_s0;
+    M2C_UNK *temp_s0_2;
+    M2C_UNK *var_a0;
+    M2C_UNK *var_a0_2;
+
+    if (arg0 == NULL) {
+        consPrintf(&D_000FC41C, &D_000FC3F8, 0x24D, "fontStrTerm", &D_000FC524);
+    }
+    if (M2C_FIELD(arg0, M2C_UNK **, 0) != (M2C_UNK *)1) {
+        consPrintf(&D_000FC41C, &D_000FC3F8, 0x24E, "fontStrTerm", &D_000FC62C);
+    }
+    var_a0 = M2C_FIELD(arg0, M2C_UNK **, 0x6C);
+    if (var_a0 != NULL) {
+        do {
+            temp_s0 = *var_a0;
+            _memFree(var_a0, &D_000FC3F8, 0x254);
+            var_a0 = temp_s0;
+        } while (temp_s0 != NULL);
+    }
+    var_a0_2 = M2C_FIELD(arg0, M2C_UNK **, 0x74);
+    if (var_a0_2 != NULL) {
+        do {
+            temp_s0_2 = *var_a0_2;
+            _memFree(var_a0_2, &D_000FC3F8, 0x25D);
+            var_a0_2 = temp_s0_2;
+        } while (temp_s0_2 != NULL);
+    }
+    _memFree(arg0, &D_000FC3F8, 0x262);
+    return 1;
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/cus", D_000FC62C);
 
@@ -226,9 +350,25 @@ M2C_UNK *gameGetCntx(void) {
     return &GameData;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/cus", gameLock);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/cus", gameUnlock);
+void gameLock(void) {
+    if (GameSema > 0) {
+        semaLock(GameSema);
+    }
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void gameUnlock(void) {
+    if (GameSema > 0) {
+        semaUnlock(GameSema);
+    }
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/cus", gameChkChange);
 

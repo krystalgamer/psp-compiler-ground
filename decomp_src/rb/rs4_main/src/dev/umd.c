@@ -1,6 +1,15 @@
 /* cflags: -Os */
 #include "common.h"
 #include "m2c_macros.h"
+M2C_UNK consPrintf(M2C_UNK *, M2C_UNK *, M2C_UNK, M2C_UNK *, M2C_UNK *); /* extern */
+extern unsigned char D_000FA7FC;
+extern unsigned char D_000FA818;
+extern int D_00119150;
+extern int UmdName_Alias;
+extern signed char UmdVirtual;
+extern int LogIdx;
+extern int pLogBuf;
+
 extern int UmdReady;
 extern int UmdState;
 
@@ -9,7 +18,23 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/umd", umdProc);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/umd", umdPref);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/umd", umdParamToVirtual);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int sprintf(char *buf, const char *fmt, ...);
+void *memset(void *s, int c, unsigned int n);
+
+signed char *umdParamToVirtual(int arg0, int arg1) {
+    if (arg1 == 0) {
+        consPrintf(&D_000FA7FC, &D_000FA818, 0xD9, "umdParamToVirtual", "Size != 0");
+    }
+    memset(&UmdVirtual, 0, 0x400U);
+    sprintf(&UmdVirtual, "%s/sce_lbn0x%x_size0x%lx", UmdName_Alias, D_00119150 + (arg0 * 0x10), arg1);
+    if (M2C_FIELD(&UmdVirtual, signed char *, 0x3FF) != 0) {
+        consPrintf(&D_000FA7FC, &D_000FA818, 0xE6, "umdParamToVirtual", "UmdVirtual[sizeof(UmdVirtual)-1] == 0");
+    }
+    return &UmdVirtual;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/umd", umdNameToVirtual);
 
@@ -49,7 +74,19 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/umd", consTerm);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/umd", consPrintf);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/umd", consLog);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+int consLog(unsigned int arg0) {
+    int var_v1;
+
+    var_v1 = 0;
+    if ((pLogBuf != 0) & (arg0 < 0x10U)) {
+        var_v1 = pLogBuf + (((LogIdx + arg0) & 0xF) << 6);
+    }
+    return var_v1;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/umd", dencEncode);
 

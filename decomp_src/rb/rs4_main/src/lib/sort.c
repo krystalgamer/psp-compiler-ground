@@ -1,6 +1,7 @@
 /* cflags: -Os */
 #include "common.h"
 #include "m2c_macros.h"
+
 M2C_UNK consPrintf(M2C_UNK *, M2C_UNK *);           /* extern */
 M2C_UNK thrDelete(void *);                          /* extern */
 extern unsigned char D_000FB638;
@@ -49,9 +50,65 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/lib/sort", textGetEUC);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/lib/sort", textGetUTF8);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/lib/sort", textGetUTF16LE);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int textGetUTF16LE(void *arg0, void **arg1) {
+    int temp_a0;
+    int temp_v1;
+    int var_a5;
+    void *var_a4;
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/lib/sort", textGetUTF16BE);
+    var_a5 = -1;
+    var_a4 = NULL;
+    if (arg0 != NULL) {
+        temp_a0 = M2C_FIELD(arg0, unsigned char *, 0) | (M2C_FIELD(arg0, unsigned char *, 1) << 8);
+        if ((unsigned int) (temp_a0 + 0xFFFF2800) >= 0x800U) {
+            var_a5 = temp_a0;
+            var_a4 = arg0 + 2;
+        } else if ((unsigned int) (temp_a0 + 0xFFFF27FF) < 0x3FEU) {
+            temp_v1 = M2C_FIELD(arg0, unsigned char *, 2) | (M2C_FIELD(arg0, unsigned char *, 3) << 8);
+            if ((unsigned int) (temp_v1 + 0xFFFF23FF) < 0x3FEU) {
+                var_a5 = (((temp_a0 & 0x3FF) << 0xA) | (temp_v1 & 0x3FF)) + 0x10000;
+                var_a4 = arg0 + 4;
+            }
+        }
+    }
+    if (arg1 != NULL) {
+        *arg1 = var_a4;
+    }
+    return var_a5;
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int textGetUTF16BE(void *arg0, void **arg1) {
+    int temp_a0;
+    int temp_v1;
+    int var_a5;
+    void *var_a4;
+
+    var_a5 = -1;
+    var_a4 = NULL;
+    if (arg0 != NULL) {
+        temp_a0 = M2C_FIELD(arg0, unsigned char *, 1) | (M2C_FIELD(arg0, unsigned char *, 0) << 8);
+        if ((unsigned int) (temp_a0 + 0xFFFF2800) >= 0x800U) {
+            var_a5 = temp_a0;
+            var_a4 = arg0 + 2;
+        } else if ((unsigned int) (temp_a0 + 0xFFFF27FF) < 0x3FEU) {
+            temp_v1 = M2C_FIELD(arg0, unsigned char *, 3) | (M2C_FIELD(arg0, unsigned char *, 2) << 8);
+            if ((unsigned int) (temp_v1 + 0xFFFF23FF) < 0x3FEU) {
+                var_a5 = (((temp_a0 & 0x3FF) << 0xA) | (temp_v1 & 0x3FF)) + 0x10000;
+                var_a4 = arg0 + 4;
+            }
+        }
+    }
+    if (arg1 != NULL) {
+        *arg1 = var_a4;
+    }
+    return var_a5;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/lib/sort", textGetChar);
 
@@ -123,7 +180,14 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/lib/sort", textPrintf);
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/lib/sort", D_000FB638);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/lib/sort", thrInit);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void thrInit(void) {
+    consPrintf(&D_000FB638, "thrInit");
+    pThrEntry = 0;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)

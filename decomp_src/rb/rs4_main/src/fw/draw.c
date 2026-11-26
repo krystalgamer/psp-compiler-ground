@@ -1,6 +1,12 @@
 /* cflags: -Os */
 #include "common.h"
 #include "m2c_macros.h"
+M2C_UNK sceKernelCpuResumeIntr(int);                /* extern */
+int sceKernelCpuSuspendIntr();                      /* extern */
+extern unsigned int DrawPC;
+M2C_UNK resOvlProcInst(int, int, int, int, int, int); /* extern */
+extern int CurrentInst;
+
 extern int Env;
 extern unsigned char InstBuf;
 M2C_UNK consPrintf(M2C_UNK *, M2C_UNK *, int);      /* extern */
@@ -33,7 +39,20 @@ M2C_UNK *drawGetEnv(void) {
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/draw", drawDispCallback);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/draw", drawGuCallback);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+unsigned int sceKernelGetSystemTimeLow(void);
+
+void drawGuCallback(int arg0) {
+    int temp_s0;
+
+    if (arg0 == 0x52) {
+        temp_s0 = sceKernelCpuSuspendIntr();
+        DrawPC = sceKernelGetSystemTimeLow();
+        sceKernelCpuResumeIntr(temp_s0);
+    }
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/draw", drawXchg);
 
@@ -130,7 +149,13 @@ void resSetOvlProcTbl(int arg0) {
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/draw", resOvlProcInst);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/draw", resOvlProcCurrent);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void resOvlProcCurrent(int arg0, int arg1, int arg2, int arg3) {
+    resOvlProcInst(CurrentInst, arg0, arg1, arg2, arg3, arg0);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/draw", resOvlProcAll);
 

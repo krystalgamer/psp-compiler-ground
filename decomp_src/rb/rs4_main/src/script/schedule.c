@@ -1,9 +1,24 @@
 /* cflags: -Os */
 #include "common.h"
+#include "m2c_macros.h"
+M2C_UNK consPrintf(M2C_UNK *, M2C_UNK *, M2C_UNK, M2C_UNK *, M2C_UNK *); /* extern */
+extern unsigned char D_000FF8F0;
+extern unsigned char D_000FF918;
+extern unsigned char D_000FF934;
+
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/script/schedule", D_000FF8F0);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/script/schedule", ScheduleGetNum);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+int ScheduleGetNum(void *arg0) {
+    if (arg0 == NULL) {
+        consPrintf(&D_000FF918, &D_000FF8F0, 0xF, "ScheduleGetNum", &D_000FF934);
+    }
+    return M2C_FIELD(arg0, int *, 0x48);
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/script/schedule", D_000FF918);
 

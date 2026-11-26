@@ -1,5 +1,10 @@
 /* cflags: -Os */
 #include "common.h"
+#include "m2c_macros.h"
+int sceKernelGetGPI();                              /* extern */
+int taskMake(void *, M2C_UNK *, M2C_UNK, M2C_UNK);  /* extern */
+extern unsigned char ProgFrameIn;
+
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/script/script", D_001000E0);
 
@@ -133,7 +138,18 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/script/script", ScriptCompileI
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/script/script", ScriptCompileTerm);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/script/script", _ScriptManual);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void _ScriptManual(void *arg0) {
+    M2C_FIELD(arg0, int *, 0x40) = 2;
+    M2C_FIELD(arg0, int *, 0x44) = 0xA;
+    if (!(sceKernelGetGPI() & 2)) {
+        M2C_FIELD(arg0, int *, 0x40) = 1;
+        M2C_FIELD(arg0, int *, 0x3C) = taskMake(arg0, &ProgFrameIn, 0, 0);
+    }
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/script/script", ScriptTask);
 

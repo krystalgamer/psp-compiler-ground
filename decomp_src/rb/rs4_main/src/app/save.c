@@ -1,6 +1,10 @@
 /* cflags: -Os */
 #include "common.h"
 #include "m2c_macros.h"
+M2C_UNK consPrintf(M2C_UNK *, M2C_UNK *, M2C_UNK, M2C_UNK *, M2C_UNK *); /* extern */
+extern unsigned char D_000FE464;
+extern unsigned char D_000FE474;
+
 M2C_UNK saveDataInit(int, M2C_UNK);                 /* extern */
 
 
@@ -60,7 +64,16 @@ int saveGetPlayerCurrentData(int arg0) {
     return M2C_FIELD(temp_s1, int *, 0xC) + (M2C_FIELD(((arg0 * 4) + gameGetCntx()), int *, 0x8C) * 0x14B0);
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/save", saveGetAccountData);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+int saveGetAccountData(int arg0) {
+    if (arg0 >= 3) {
+        consPrintf(&D_000FE474, &D_000FE464, 0xBE, "saveGetAccountData", "Account < SaveData_Account_Num");
+    }
+    return M2C_FIELD(M2C_FIELD(gameGetCntx(), void **, 0x88), int *, 0xC) + (arg0 * 0x14B0);
+}
 
 #ifndef NULL
 #define NULL ((void *)0)

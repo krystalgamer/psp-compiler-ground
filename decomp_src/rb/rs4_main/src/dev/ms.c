@@ -1,15 +1,35 @@
 /* cflags: -Os */
 #include "common.h"
 #include "m2c_macros.h"
+M2C_UNK semaLock(int);                              /* extern */
+extern int MsSema;
+M2C_UNK semaUnlock(int);                            /* extern */
+
 extern int MsReady;
 extern int MsState;
 
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/ms", msProc);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/ms", msLock);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/ms", msUnlock);
+void msLock(void) {
+    if (MsSema > 0) {
+        semaLock(MsSema);
+    }
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void msUnlock(void) {
+    if (MsSema > 0) {
+        semaUnlock(MsSema);
+    }
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/ms", msPref);
 

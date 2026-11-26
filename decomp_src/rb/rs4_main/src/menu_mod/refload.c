@@ -1,11 +1,25 @@
 /* cflags: -Os */
 #include "common.h"
+#include "m2c_macros.h"
+M2C_UNK consPrintf(M2C_UNK *, M2C_UNK *, M2C_UNK, M2C_UNK *, M2C_UNK *); /* extern */
+extern unsigned char D_00103564;
+extern unsigned char D_0010357C;
+
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/refload", D_00103564);
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/refload", D_0010357C);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/refload", refloadSetRef2CardFunc);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+int refloadSetRef2CardFunc(int arg0) {
+    if (arg0 >= 5) {
+        consPrintf(&D_0010357C, &D_00103564, 0x1B, "refloadSetRef2CardFunc", "Inst < Inst_Num");
+    }
+    return 1;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/refload", refloadGetLocal);
 

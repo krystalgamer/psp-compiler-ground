@@ -1,6 +1,9 @@
 /* cflags: -Os */
 #include "common.h"
 #include "m2c_macros.h"
+int cusGetKeyName(M2C_UNK, M2C_UNK, int, int, M2C_UNK); /* extern */
+extern int D_0011A46C;
+
 extern unsigned char l_tMenuCntx;
 M2C_UNK cusGetKeyIndex(M2C_UNK, M2C_UNK, int);      /* extern */
 extern unsigned char l_szEdition;
@@ -86,7 +89,22 @@ void menuGetFlowID(int arg0) {
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/ez", menuGetNextFlowID);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/ez", menuGetFlowName);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+int menuGetFlowName(int arg0, int arg1) {
+    int var_v1;
+
+    cusSetInst(1);
+    cusSetSection(6, (int) &l_szEdition);
+    var_v1 = 0;
+    if (cusGetKeyName(6, 0, arg0, arg1, 0x20) == 0) {
+        consPrintf("%s : IDOverFlow\n", "menuGetFlowName");
+        var_v1 = -2;
+    }
+    return var_v1;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -147,11 +165,23 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/ez", menuChkCardBattl
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/ez", menuGosubSaruColle);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/ez", menuIsSaruColle);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+int menuIsSaruColle(void) {
+    return ~D_0011A46C == 0;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/ez", menuReturnSaruColle);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/ez", menuChkSaruColle);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+int menuChkSaruColle(void) {
+    return ~D_0011A46C != 0;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)

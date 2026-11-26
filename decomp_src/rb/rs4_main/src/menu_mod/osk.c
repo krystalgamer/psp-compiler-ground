@@ -1,6 +1,11 @@
 /* cflags: -Os */
 #include "common.h"
 #include "m2c_macros.h"
+M2C_UNK consPrintf(M2C_UNK *);                      /* extern */
+M2C_UNK getOskUtilityTextResult();                  /* extern */
+extern void *l_ptCntx;
+extern int sample_type_11A910;
+
 M2C_UNK gameCtrlLock();                             /* extern */
 M2C_UNK gameDisSoftReset();                         /* extern */
 M2C_UNK gameCtrlUnlock();                           /* extern */
@@ -70,9 +75,29 @@ void Unlock(int arg0) {
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/osk", OskStart);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/osk", OskEnd);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/osk", OskState);
+void OskEnd(void) {
+    int temp_s0;
+
+    if (l_ptCntx != NULL) {
+        temp_s0 = M2C_FIELD(l_ptCntx, int *, 8);
+        getOskUtilityTextResult();
+        UtilityUnlink();
+        Unlock(temp_s0 & 1);
+        consPrintf("OskEnd\n");
+    }
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+int OskState(void) {
+    return sample_type_11A910 == 1;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/osk", Sub_ProfileEdit);
 

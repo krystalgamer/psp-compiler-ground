@@ -1,6 +1,19 @@
 /* cflags: -Os */
 #include "common.h"
 #include "m2c_macros.h"
+extern int CurrentInst;
+M2C_UNK consPrintf(M2C_UNK *, M2C_UNK *, M2C_UNK, M2C_UNK *, M2C_UNK *); /* extern */
+M2C_UNK resReadRefer(int, int, int);                /* extern */
+extern unsigned char D_000FB9F8;
+extern unsigned char D_000FBA08;
+void *resGetDatSect(int, int, int);                 /* extern */
+int resGetEntrySect(int, int);                      /* extern */
+extern unsigned char D_000FBD40;
+extern unsigned char D_000FBF14;
+extern unsigned char D_000FBF20;
+extern unsigned char D_000FBF2C;
+void **resGetDatLocal();                            /* extern */
+
 extern int pResTerm;
 extern int pCurrent;
 
@@ -33,7 +46,13 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", D_000FBBCC);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", resReleaseInst);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", resGetCurrentInst);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+int resGetCurrentInst(void) {
+    return CurrentInst;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", resInitInst);
 
@@ -61,7 +80,22 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", D_000FBD5C);
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", D_000FBD68);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", _resReadRefer);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void _resReadRefer(void *arg0) {
+    int temp_s1;
+
+    temp_s1 = M2C_FIELD(arg0, int *, 0xC);
+    if (arg0 == NULL) {
+        consPrintf(&D_000FBA08, &D_000FB9F8, 0x2E3, "_resReadRefer", "pThr");
+    }
+    if (temp_s1 != 3) {
+        consPrintf(&D_000FBA08, &D_000FB9F8, 0x2E4, "_resReadRefer", "Arg == resReadRefer_Args");
+    }
+    resReadRefer(M2C_FIELD(arg0, int *, 0x40), M2C_FIELD(arg0, int *, 0x44), M2C_FIELD(arg0, int *, 0x48));
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", resReadRefer);
 
@@ -103,7 +137,25 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", D_000FBF20);
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", D_000FBF2C);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", resGetSizeSect);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+int resGetSizeSect(int arg0, int arg1, int arg2) {
+    if (arg0 < 0) {
+        consPrintf(&D_000FBA08, &D_000FB9F8, 0x3DF, "resGetSizeSect", &D_000FBD40);
+    }
+    if (arg1 < 0) {
+        consPrintf(&D_000FBA08, &D_000FB9F8, 0x3E0, "resGetSizeSect", &D_000FBF14);
+    }
+    if (arg2 < 0) {
+        consPrintf(&D_000FBA08, &D_000FB9F8, 0x3E1, "resGetSizeSect", &D_000FBF20);
+    }
+    if (arg2 >= resGetEntrySect(arg0, arg1)) {
+        consPrintf(&D_000FBA08, &D_000FB9F8, 0x3E2, "resGetSizeSect", &D_000FBF2C);
+    }
+    return M2C_FIELD(resGetDatSect(arg0, arg1, arg2), int *, 4);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", resGetSizeLocal);
 
@@ -119,7 +171,25 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", resGetPtrTable);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", resGetPtrString);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", resGetExtSect);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+int resGetExtSect(int arg0, int arg1, int arg2) {
+    if (arg0 < 0) {
+        consPrintf(&D_000FBA08, &D_000FB9F8, 0x42F, "resGetExtSect", &D_000FBD40);
+    }
+    if (arg1 < 0) {
+        consPrintf(&D_000FBA08, &D_000FB9F8, 0x430, "resGetExtSect", &D_000FBF14);
+    }
+    if (arg2 < 0) {
+        consPrintf(&D_000FBA08, &D_000FB9F8, 0x431, "resGetExtSect", &D_000FBF20);
+    }
+    if (arg2 >= resGetEntrySect(arg0, arg1)) {
+        consPrintf(&D_000FBA08, &D_000FB9F8, 0x432, "resGetExtSect", &D_000FBF2C);
+    }
+    return M2C_FIELD(resGetDatSect(arg0, arg1, arg2), int *, 0x10);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", resGetExtLocal);
 
@@ -131,7 +201,13 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", resArg);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", resCmpExt);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", resGetTerm);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+int resGetTerm(void) {
+    return pResTerm;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -148,7 +224,12 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", resAsmWord);
 void resReleaseWord(void) {
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", resGetWordNum);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int resGetWordNum(void *arg0) {
+    return *M2C_FIELD(arg0, int **, 0x10);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", resGetWordPtr);
 
@@ -165,7 +246,22 @@ int resInstGetEntrySect(void *arg0, int arg1) {
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", resInstGetDatSect);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", resGetDatPackModel);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+int resGetDatPackModel(void) {
+    void *temp_s0;
+
+    temp_s0 = M2C_FIELD(*resGetDatLocal(), void **, 4);
+    if (M2C_FIELD(temp_s0, int *, 0x2C) != 1) {
+        consPrintf(&D_000FBA08, &D_000FB9F8, 0x543, "resGetDatPackModel", "pTbl[Sect_Table].Entry == 1");
+    }
+    if (M2C_FIELD(M2C_FIELD(temp_s0, void **, 0x28), int *, 4) != 1) {
+        consPrintf(&D_000FBA08, &D_000FB9F8, 0x544, "resGetDatPackModel", "pTbl[Sect_Table].Dat[0].Size == 1");
+    }
+    return M2C_FIELD(temp_s0, int *, 0x10) + (*M2C_FIELD(M2C_FIELD(temp_s0, void **, 0x28), int **, 0) << 5);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", taskInit);
 
