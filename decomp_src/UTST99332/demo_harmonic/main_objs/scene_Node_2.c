@@ -4,51 +4,91 @@
 #include "cxx/defer_asm.h"
 #include "../main.hpp"
 
+/* the strings stay in the module's .rodata (asm) */
+extern const char D_00169B8C[];     /* " *** error " */
+extern const char D_00169B98[];     /* "_m._parent_count == 0" */
+extern const char D_00169BB0[];     /* "../lib/scene/Node.cpp" */
+extern const char D_00169BC8[];     /* " " */
+extern const char incrParentCount_name[] __asm__("_ZZN5scene4Node15incrParentCountEvE19__PRETTY_FUNCTION__");
+
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Node_2", _Z41__static_initialization_and_destruction_0ii_8E44C);
 
 void scene::Node::set_default_name() {
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Node_2", _ZN5scene4Node7MembersC2ESsb);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Node_2", _ZN5scene4Node7MembersC1ESsb);
+scene::Node::Members::Members(std::string name, bool mapped)
+    : _name(name), _mapped(mapped), _parent_count(0), _create_count(0), _magic(0), _f24(0)
+{
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Node_2", _ZN5scene4NodeC2ESsb);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Node_2", _ZN5scene4NodeC1ESsb);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Node_2", _ZNK5scene4Node8isMappedEv);
+bool scene::Node::isMapped() const
+{
+    return _m._mapped;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Node_2", _ZNK5scene4Node7getNameEv);
+const std::string &scene::Node::getName() const
+{
+    return _m._name;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Node_2", _ZNK5scene4Node11getBasenameEv);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Node_2", _ZN5scene4Node7setNameESs);
+void scene::Node::setName(std::string name)
+{
+    _m._name = name;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Node_2", _ZN5scene4NodeD2Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Node_2", _ZN5scene4NodeD1Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Node_2", _ZN5scene4NodeD0Ev);
+scene::Node::~Node()
+{
+}
 
 void scene::Node::flatten(math::TransformStack &) {
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Node_2", _ZN5scene4Node15incrParentCountEv);
+void scene::Node::incrParentCount()
+{
+    SCENE_ASSERT(_m._parent_count == 0, D_00169B8C, D_00169B98, D_00169BB0, incrParentCount_name, 115, D_00169BC8);
+    _m._parent_count++;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Node_2", _ZN5scene4Node15decrParentCountEv);
+void scene::Node::decrParentCount()
+{
+    _m._parent_count--;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Node_2", _ZNK5scene4Node14getParentCountEv);
+int scene::Node::getParentCount() const
+{
+    return _m._parent_count;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Node_2", _ZNK5scene4Node14getCreateCountEv);
+int scene::Node::getCreateCount() const
+{
+    return _m._create_count;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Node_2", _ZN5scene4Node6setTmpEj);
+void scene::Node::setTmp(unsigned int t)
+{
+    _m._tmp = t;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Node_2", _ZNK5scene4Node6getTmpEv);
+unsigned int scene::Node::getTmp() const
+{
+    return _m._tmp;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Node_2", _ZN5scene4Node8setMagicEj);
+void scene::Node::setMagic(unsigned int m)
+{
+    _m._magic = m;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Node_2", _ZNK5scene4Node8getMagicEv);
+unsigned int scene::Node::getMagic() const
+{
+    return _m._magic;
+}
 
 extern "C" {
 void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_8E44C");

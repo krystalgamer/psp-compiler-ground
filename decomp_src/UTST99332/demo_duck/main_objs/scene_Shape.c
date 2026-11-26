@@ -4,6 +4,11 @@
 #include "cxx/defer_asm.h"
 #include "../main.hpp"
 
+/* these template instances are still asm below */
+namespace common {
+extern template class handle<scene::Setup>;
+}
+
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Shape", _Z41__static_initialization_and_destruction_0ii_92780);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Shape", _ZN5scene5ShapeC2ESsb);
@@ -16,9 +21,15 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Shape", _Z
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Shape", _ZN5scene5ShapeD0Ev);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Shape", _ZNK5scene5Shape8getSetupENS_4PassE);
+const common::handle<scene::Setup> &scene::Shape::getSetup(Pass p) const
+{
+    return _setup[p];
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Shape", _ZN5scene5Shape11attachSetupEN6common6handleINS_5SetupEEENS_4PassE);
+void scene::Shape::attachSetup(common::handle<Setup> s, Pass p)
+{
+    _setup[p] = s;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Shape", _ZN5scene5Shape11detachSetupENS_4PassE);
 
@@ -32,7 +43,10 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Shape", _Z
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Shape", _ZN5scene5Shape5leaveENS_4PassE);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Shape", _ZN5scene5Shape7flattenERN4math14TransformStackE);
+void scene::Shape::flatten(math::TransformStack &ts)
+{
+    Group::flatten(ts);
+}
 
 extern "C" {
 void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_92780");

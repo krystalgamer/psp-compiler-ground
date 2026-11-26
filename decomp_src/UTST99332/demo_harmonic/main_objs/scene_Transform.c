@@ -10,17 +10,24 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Transf
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Transform", _ZN5scene9TransformC1ESsb);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Transform", _ZN5scene9TransformD2Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Transform", _ZN5scene9TransformD1Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Transform", _ZN5scene9TransformD0Ev);
+scene::Transform::~Transform()
+{
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Transform", _ZN5scene9Transform10flushCacheEv);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Transform", _ZN5scene9Transform21invalidate_cached_matEv);
+void scene::Transform::invalidate_cached_mat()
+{
+    _dirty = true;
+    _identity = false;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Transform", _ZNK5scene9Transform9getMatrixEv);
+const math::matrix &scene::Transform::getMatrix() const
+{
+    if (_dirty)
+        const_cast<Transform *>(this)->flushCache();
+    return _matrix;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Transform", _ZN5scene9Transform13setFromMatrixEN4math6matrixE);
 
@@ -60,9 +67,15 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Transf
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Transform", _ZN5scene9Transform11setRotationEN4math10vector_xyzE);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Transform", _ZNK5scene9Transform14getTranslationEv);
+math::vector_xyzw scene::Transform::getTranslation() const
+{
+    return _translation;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Transform", _ZNK5scene9Transform8getScaleEv);
+math::vector_xyzw scene::Transform::getScale() const
+{
+    return _scale;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Transform", _ZN5scene9Transform11setIdentityEv);
 
@@ -87,3 +100,4 @@ void _GLOBAL__D__ZN5scene9Transform11angle_rangeE(void)
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Transform", _ZNK5scene9Transform11getTypeNameEv);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Transform", _ZNK5scene9Transform5cloneESs);
+

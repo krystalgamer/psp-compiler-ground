@@ -4,6 +4,19 @@
 #include "cxx/defer_asm.h"
 #include "../main.hpp"
 
+/* these template instances are still asm below */
+namespace std {
+extern template class _Deque_base<scene::TraversalVarStack::StackElement, allocator<scene::TraversalVarStack::StackElement> >;
+extern template class deque<scene::TraversalVarStack::StackElement>;
+}
+
+/* the strings stay in the module's .rodata (asm) */
+extern const char D_0016D290[];     /* "! _stack.empty()" */
+extern const char D_0016D2A4[];     /* "../lib/scene/TraversalVarStack.cpp" */
+extern const char D_0016D2C8[];     /* " *** error " */
+extern const char D_0016D2D4[];     /* " " */
+extern const char internal_pop_name[] __asm__("_ZZN5scene17TraversalVarStack12internal_popEvE19__PRETTY_FUNCTION__");
+
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_TraversalVarStack", _Z41__static_initialization_and_destruction_0ii_9AB00);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_TraversalVarStack", _ZN5scene17TraversalVarStackC2ENS_13TraversalTypeERN3sgl7FrustumEN4math6matrixES6_S6_N2sh9VectorRGBEf);
@@ -16,15 +29,38 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_TraversalV
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_TraversalVarStack", _ZN5scene17TraversalVarStack13internal_pushEv);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_TraversalVarStack", _ZN5scene17TraversalVarStack12internal_popEv);
+void scene::TraversalVarStack::internal_pop()
+{
+    SCENE_ASSERT(! _stack.empty(), D_0016D2C8, D_0016D290, D_0016D2A4, internal_pop_name, 82, D_0016D2D4);
+    _stack.pop_back();
+    if (!_stack.empty()) {
+        glLoadMatrixf((const float *)&_stack.back().m70);
+        sceGumSetCurMatrix();
+    }
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_TraversalVarStack", _ZN5scene17TraversalVarStack4pushEv);
+void scene::TraversalVarStack::push()
+{
+    _depth++;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_TraversalVarStack", _ZN5scene17TraversalVarStack3popEv);
+void scene::TraversalVarStack::pop()
+{
+    if (_depth == 0)
+        internal_pop();
+    else
+        _depth--;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_TraversalVarStack", _ZN5scene17TraversalVarStack4multERKN4math6matrixEbb);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_TraversalVarStack", _ZN5scene17TraversalVarStack6enableENS0_7EnabledEb);
+void scene::TraversalVarStack::enable(Enabled e, bool on)
+{
+    if (on)
+        _enabled |= e;
+    else
+        _enabled &= ~e;
+}
 
 extern "C" {
 void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_9AB00");

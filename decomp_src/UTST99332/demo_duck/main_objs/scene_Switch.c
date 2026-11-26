@@ -6,27 +6,29 @@
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Switch", _Z41__static_initialization_and_destruction_0ii_94488);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Switch", _ZN5scene6SwitchC2ESsb);
+scene::Switch::Switch(std::string name, bool b) : Group(name, b), _selected(-1)
+{
+    set_default_name();
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Switch", _ZN5scene6SwitchC1ESsb);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Switch", _ZN5scene6SwitchD2Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Switch", _ZN5scene6SwitchD1Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Switch", _ZN5scene6SwitchD0Ev);
+scene::Switch::~Switch()
+{
+}
 
 void scene::Switch::select(int v)
 {
-    _f30 = v;
+    _selected = v;
 }
 
 int scene::Switch::getSelected() const
 {
-    return _f30;
+    return _selected;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Switch", _ZN5scene6Switch7flattenERN4math14TransformStackE);
+void scene::Switch::flatten(math::TransformStack &ts)
+{
+    Group::flatten(ts);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Switch", _ZN5scene6Switch8getChildEv);
 

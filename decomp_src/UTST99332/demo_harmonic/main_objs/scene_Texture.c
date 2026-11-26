@@ -3,6 +3,7 @@
 #undef __EXCEPTIONS
 #include "cxx/defer_asm.h"
 #include "../main.hpp"
+#include "UTST99332/demo_duck/gl.hpp"
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Texture", _Z41__static_initialization_and_destruction_0ii_92A4C);
 
@@ -10,9 +11,15 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Textur
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Texture", _ZN5scene7TextureC1ESsb);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Texture", _ZN5scene7Texture7setPathESs);
+void scene::Texture::setPath(std::string path)
+{
+    _path = path;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Texture", _ZNK5scene7Texture7getPathEv);
+const std::string &scene::Texture::getPath() const
+{
+    return _path;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Texture", _ZN5scene7TextureD2Ev);
 
@@ -20,17 +27,31 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Textur
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Texture", _ZN5scene7TextureD0Ev);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Texture", _ZN5scene7Texture10invalidateEv);
+void scene::Texture::invalidate()
+{
+    _invalid = true;
+    _loaded = false;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Texture", _ZN5scene7Texture4loadEv);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Texture", _ZN5scene7Texture5enterEv);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Texture", _ZN5scene7Texture5leaveEv);
+void scene::Texture::leave()
+{
+    glDisable(GL_TEXTURE_2D);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Texture", _ZN5scene7Texture7setHintESs);
+void scene::Texture::setHint(std::string hint)
+{
+    _hint = hint;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Texture", _ZN5scene7Texture16setOverrideAlphaEbh);
+void scene::Texture::setOverrideAlpha(bool b, unsigned char a)
+{
+    _alpha = a;
+    _override_alpha = b;
+}
 
 void scene::Texture::flatten(math::TransformStack &) {
 }

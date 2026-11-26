@@ -6,15 +6,15 @@
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Group", _Z41__static_initialization_and_destruction_0ii_85A08);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Group", _ZN5scene5GroupC2ESsb);
+scene::Group::Group(std::string name, bool b) : Node(name, b)
+{
+    set_default_name();
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Group", _ZN5scene5GroupC1ESsb);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Group", _ZN5scene5GroupD2Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Group", _ZN5scene5GroupD1Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Group", _ZN5scene5GroupD0Ev);
+scene::Group::~Group()
+{
+    clearChildren(true);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Group", _ZN5scene5Group8addChildEN6common6handleINS_4NodeEEE);
 
@@ -28,9 +28,15 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Group", _Z
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Group", _ZN5scene5Group7flattenERN4math14TransformStackE);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Group", _ZN5scene5Group8childrenEv);
+std::list<common::handle<scene::Node> > &scene::Group::children()
+{
+    return _children;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Group", _ZNK5scene5Group8childrenEv);
+const std::list<common::handle<scene::Node> > &scene::Group::children() const
+{
+    return _children;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Group", _ZN5scene5Group8traverseENS_13TraversalTypeERN3sgl7FrustumERKN4math6matrixES8_S8_RKN2sh9VectorRGBEf);
 

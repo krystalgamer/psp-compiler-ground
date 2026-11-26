@@ -2,6 +2,11 @@
 /* cflags: -O3 -fno-exceptions */
 #undef __EXCEPTIONS
 #include "cxx/defer_asm.h"
+extern const char scene_mesh_err[] __asm__("D_00168C10");     /* " *** error " */
+extern const char scene_mesh_expr[] __asm__("D_00168C38");    /* "_mesh" */
+extern const char scene_mesh_file[] __asm__("D_00168C40");    /* "../lib/scene/Mesh.h" */
+extern const char scene_mesh_sp[] __asm__("D_00168C54");      /* " " */
+extern const char scene_mesh_getData_name[] __asm__("_ZZN5scene4Mesh7getDataEvE19__PRETTY_FUNCTION___168B84");
 #include "../main.hpp"
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Mesh", _Z41__static_initialization_and_destruction_0ii_85568);
@@ -16,9 +21,21 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Mesh",
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Mesh", _ZN5scene4MeshD0Ev);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Mesh", _ZN5scene4Mesh17destroy_mesh_dataEv);
+void scene::Mesh::destroy_mesh_data()
+{
+    if (_mesh) {
+        delete _mesh;
+        _mesh = 0;
+    }
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Mesh", _ZN5scene4Mesh4drawERKNS_17TraversalVarStackE);
+void scene::Mesh::draw(const TraversalVarStack &tvs)
+{
+    if (_mesh)
+        _mesh->draw(tvs);
+    else
+        _interleaved.draw(tvs);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Mesh", _ZN5scene4Mesh7flattenERN4math14TransformStackE);
 
@@ -67,3 +84,4 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Mesh",
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Mesh", _ZN6common6handleIN5scene19MeshDataInterleaved10SharedDataEED0Ev);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Mesh", _ZN6common6handleIN5scene19MeshDataInterleaved10VertexDataEED0Ev);
+

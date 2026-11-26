@@ -6,17 +6,19 @@
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Object", _Z41__static_initialization_and_destruction_0ii_915F8);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Object", _ZN5scene6ObjectC2ESsb);
+scene::Object::Object(std::string name, bool b) : Group(name, b)
+{
+    set_default_name();
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Object", _ZN5scene6ObjectC1ESsb);
+scene::Object::~Object()
+{
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Object", _ZN5scene6ObjectD2Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Object", _ZN5scene6ObjectD1Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Object", _ZN5scene6ObjectD0Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Object", _ZN5scene6Object7flattenERN4math14TransformStackE);
+void scene::Object::flatten(math::TransformStack &ts)
+{
+    Group::flatten(ts);
+}
 
 extern "C" {
 void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_915F8");

@@ -23,19 +23,41 @@ void scene::Setup::traverse(TraversalVarStack &) {
 void scene::Texture::traverse(TraversalVarStack &) {
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph_4", _ZN5scene6Object8traverseERNS_17TraversalVarStackE);
+void scene::Object::traverse(TraversalVarStack &tvs)
+{
+    if (frustumTest(*tvs._frustum))
+        traverse_children(tvs);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph_4", _ZN5scene5Shape8traverseERNS_17TraversalVarStackE);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph_4", _ZN5scene9Transform8traverseERNS_17TraversalVarStackE);
+void scene::Transform::traverse(TraversalVarStack &tvs)
+{
+    tvs.push();
+    tvs.mult(getMatrix(), _identity, false);
+    traverse_children(tvs);
+    tvs.pop();
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph_4", _ZN5scene15StaticTransform8traverseERNS_17TraversalVarStackE);
+void scene::StaticTransform::traverse(TraversalVarStack &tvs)
+{
+    tvs.push();
+    tvs.mult(getMatrix(), _identity, false);
+    traverse_children(tvs);
+    tvs.pop();
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph_4", _ZN5scene4Mesh8traverseERNS_17TraversalVarStackE);
+void scene::Mesh::traverse(TraversalVarStack &tvs)
+{
+    draw(tvs);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph_4", _ZN5scene6Switch8traverseERNS_17TraversalVarStackE);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph_4", _ZN5scene5Group8traverseERNS_17TraversalVarStackE);
+void scene::Group::traverse(TraversalVarStack &tvs)
+{
+    traverse_children(tvs);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph_4", _ZN5scene5Group17traverse_childrenERNS_17TraversalVarStackE);
 

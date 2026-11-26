@@ -6,15 +6,15 @@
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Group", _Z41__static_initialization_and_destruction_0ii_835E4);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Group", _ZN5scene5GroupC2ESsb);
+scene::Group::Group(std::string name, bool b) : Node(name, b)
+{
+    set_default_name();
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Group", _ZN5scene5GroupC1ESsb);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Group", _ZN5scene5GroupD2Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Group", _ZN5scene5GroupD1Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Group", _ZN5scene5GroupD0Ev);
+scene::Group::~Group()
+{
+    clearChildren(true);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Group", _ZN5scene5Group8addChildEN6common6handleINS_4NodeEEE);
 
@@ -28,9 +28,15 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Group"
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Group", _ZN5scene5Group7flattenERN4math14TransformStackE);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Group", _ZN5scene5Group8childrenEv);
+std::list<common::handle<scene::Node> > &scene::Group::children()
+{
+    return _children;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Group", _ZNK5scene5Group8childrenEv);
+const std::list<common::handle<scene::Node> > &scene::Group::children() const
+{
+    return _children;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Group", _ZN5scene5Group8traverseENS_13TraversalTypeERN3sgl7FrustumERKN4math6matrixES8_S8_RKN2sh9VectorRGBEf);
 
@@ -61,3 +67,4 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Group"
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Group", _ZNSt4listIN6common6handleIN5scene4NodeEEESaIS4_EEaSERKS6_);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Group", _ZNSt4listIN6common6handleIN5scene4NodeEEESaIS4_EE5eraseESt14_List_iteratorIS4_RS4_PS4_E);
+

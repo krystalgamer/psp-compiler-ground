@@ -6,19 +6,26 @@
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_StaticTransform", _Z41__static_initialization_and_destruction_0ii_938DC);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_StaticTransform", _ZN5scene15StaticTransformC2ESsb);
+scene::StaticTransform::StaticTransform(std::string name, bool b) : Group(name, b)
+{
+    set_default_name();
+    setIdentity();
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_StaticTransform", _ZN5scene15StaticTransformC1ESsb);
+scene::StaticTransform::~StaticTransform()
+{
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_StaticTransform", _ZN5scene15StaticTransformD2Ev);
+void scene::StaticTransform::setMatrix(math::matrix m)
+{
+    _matrix = m;
+    _identity = false;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_StaticTransform", _ZN5scene15StaticTransformD1Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_StaticTransform", _ZN5scene15StaticTransformD0Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_StaticTransform", _ZN5scene15StaticTransform9setMatrixEN4math6matrixE);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_StaticTransform", _ZNK5scene15StaticTransform9getMatrixEv);
+math::matrix scene::StaticTransform::getMatrix() const
+{
+    return _matrix;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_StaticTransform", _ZN5scene15StaticTransform11setIdentityEv);
 

@@ -6,15 +6,14 @@
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Setup", _Z41__static_initialization_and_destruction_0ii_8FAB8);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Setup", _ZN5scene5SetupC2ESsb);
+scene::Setup::Setup(std::string name, bool b) : Node(name, b)
+{
+    set_default_name();
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Setup", _ZN5scene5SetupC1ESsb);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Setup", _ZN5scene5SetupD2Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Setup", _ZN5scene5SetupD1Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Setup", _ZN5scene5SetupD0Ev);
+scene::Setup::~Setup()
+{
+}
 
 void scene::Setup::flatten(math::TransformStack &) {
 }

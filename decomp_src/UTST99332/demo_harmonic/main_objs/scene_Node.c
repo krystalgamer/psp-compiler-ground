@@ -6,27 +6,54 @@
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Node", _Z41__static_initialization_and_destruction_0ii_82A58);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Node", _ZN5scene4Node6calcbvERN4math14TransformStackERN3sgl2BVE);
+bool scene::Node::calcbv(math::TransformStack &, sgl::BV &)
+{
+    return true;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Node", _ZN5scene13DefaultShader6calcbvERN4math14TransformStackERN3sgl2BVE);
+bool scene::DefaultShader::calcbv(math::TransformStack &, sgl::BV &)
+{
+    return true;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Node", _ZN5scene8Material6calcbvERN4math14TransformStackERN3sgl2BVE);
+bool scene::Material::calcbv(math::TransformStack &, sgl::BV &)
+{
+    return true;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Node", _ZN5scene5Setup6calcbvERN4math14TransformStackERN3sgl2BVE);
+bool scene::Setup::calcbv(math::TransformStack &, sgl::BV &)
+{
+    return true;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Node", _ZN5scene7Texture6calcbvERN4math14TransformStackERN3sgl2BVE);
+bool scene::Texture::calcbv(math::TransformStack &, sgl::BV &)
+{
+    return true;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Node", _ZN5scene5Graph6calcbvEv);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Node", _ZN5scene5Group6calcbvEv);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Node", _ZN5scene5Group6calcbvERN4math14TransformStackERN3sgl2BVE);
+bool scene::Group::calcbv(math::TransformStack &ts, sgl::BV &bv)
+{
+    traverse_children(ts, bv);
+    return true;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Node", _ZN5scene5Group17traverse_childrenERN4math14TransformStackERN3sgl2BVE);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Node", _ZN5scene6Object6calcbvERN4math14TransformStackERN3sgl2BVE);
+bool scene::Object::calcbv(math::TransformStack &ts, sgl::BV &bv)
+{
+    traverse_children(ts, bv);
+    return true;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Node", _ZN5scene5Shape6calcbvERN4math14TransformStackERN3sgl2BVE);
+bool scene::Shape::calcbv(math::TransformStack &ts, sgl::BV &bv)
+{
+    traverse_children(ts, bv);
+    return true;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Node", _ZN5scene9Transform6calcbvERN4math14TransformStackERN3sgl2BVE);
 
