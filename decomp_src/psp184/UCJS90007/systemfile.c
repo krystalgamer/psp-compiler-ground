@@ -270,7 +270,112 @@ end:
 	return ret;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/systemfile", sceSystemFileLoadIndex2);
+long long sceIoLseek(int fd, long long offset, int whence);
+int sceSystemFileLoadIndex2(int fd, void **phandle)
+{
+	int r;
+	SysFile *sf = NULL;
+	unsigned int n;
+	unsigned int size;
+	int err = 0;
+	SfHeader hdr;
+	char pad[4];
+	register int ret;
+
+	if (phandle == NULL)
+		SF_ERROR(ret, 3)
+	else {
+		r = sceIoLseek(fd, 0, 2);
+		if (r < 0)
+			SF_ERROR(ret, 2)
+		else {
+			size = r;
+			sceIoLseek(fd, 0, 0);
+			*phandle = NULL;
+			n = 0x14;
+			if (sceIoRead(fd, &hdr, n) != n) {
+				err = 0x80120002;
+				goto fail;
+			}
+			if (sf_memcmp(&hdr, D_0002F2EC, 4) != 0) {
+				err = 0x80120004;
+				goto fail;
+			}
+			if ((n &= 3) != 0) {
+				n = 4 - n;
+				if (sceIoRead(fd, pad, n) != n) {
+					err = 0x80120002;
+					goto fail;
+				}
+			}
+			r = isValidSysFileHeader(&hdr, size);
+			if (r != 0) {
+				register int t = r;
+				ret = t;
+			}
+			else {
+				sf = _newSystemFile(0, hdr.count);
+				if (sf == NULL)
+					SF_ERROR(ret, 1)
+				else {
+					if (sf->hdr->dataofs < sf->hdr->keyofs)
+						goto fail;
+					sf_memcpy(sf->hdr, &hdr, 0x14);
+					sf->nindex = sf->hdr->count;
+					sf->ntable = sf->nindex;
+					sf->nkeys = sf->nindex;
+					n = sf->hdr->count << 4;
+					if (sceIoRead(fd, sf->table, n) != n) {
+						err = 0x80120002;
+						goto fail;
+					}
+					n = sf->hdr->dataofs - sf->hdr->keyofs;
+					if (sceIoRead(fd, sf->keys, n) != n) {
+						err = 0x80120002;
+						goto fail;
+					}
+					realignkeys(sf->keys, sf->table, sf->hdr->count);
+					keymapping(sf);
+					r = isValidSysFileIndexTable((char *)sf->table, 0, sf->hdr, size);
+					if (r != 0) {
+						err = r;
+						goto fail;
+					}
+					{
+						unsigned int cnt = 0;
+						char *p = sf->keys;
+
+						do {
+							if (*p == 0) {
+								cnt++;
+								p++;
+							} else if (*p > 0x20 && *p != 0x7F && *p != '#') {
+								p++;
+							} else {
+								err = 0x80120003;
+								goto fail;
+							}
+						} while (cnt != sf->hdr->count);
+					}
+					sf->fd = fd;
+					sf->flags |= 1;
+					sf->flags |= 4;
+					*phandle = sf;
+					ret = 0;
+					goto end;
+fail:
+					sceSystemFileFree(sf);
+					{
+						register int t = err;
+						ret = t;
+					}
+				}
+			}
+		}
+	}
+end:
+	return ret;
+}
 
 int sceSystemFileLoadIndex(int fd, void **phandle)
 {
