@@ -114,6 +114,9 @@ static void pad_cross(void);
 int pad_read(void);
 
 
+/* SDK prototypes (tools/sdk_protos.h) */
+int sceCtrlReadBufferPositive(SceCtrlData *data, int count);
+
 INCLUDE_ASM("tmp/asm/UTST99332/net_matching_stick/nonmatchings/pad", pad_circle);
 
 void pad_triangle(void) {

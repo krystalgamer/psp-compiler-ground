@@ -141,6 +141,39 @@ int main(int argc, char **argv);
 int printf(const char *fmt, ...);
 
 
+/* SDK prototypes (tools/sdk_protos.h) */
+void *memset(void *s, int c, unsigned int n);
+int sceCtrlSetSamplingMode(int mode);
+int sceDisplayWaitVblankStart(void);
+void sceGuBlendFunc(int op, int src, int dest, unsigned int srcfix, unsigned int destfix);
+void sceGuClear(int flags);
+void sceGuClearColor(unsigned int color);
+void sceGuClearDepth(unsigned int depth);
+void sceGuClearStencil(unsigned int stencil);
+void sceGuColor(unsigned int color);
+void sceGuDebugPrint(int x, int y, unsigned int color, const char *str);
+void sceGuDepthBuffer(void *zbp, int frame_width);
+void sceGuDispBuffer(int width, int height, void *dbp, int frame_width);
+int sceGuDisplay(int state);
+void sceGuDrawArray(int prim, int vtype, int count, const void *indices, const void *vertices);
+void sceGuDrawBuffer(int psm, void *fbp, int frame_width);
+void sceGuEnable(int state);
+int sceGuFinish(void);
+void sceGuInit(void);
+void sceGuOffset(unsigned int x, unsigned int y);
+void sceGuScissor(int x, int y, int w, int h);
+void sceGuStart(int type, void *list, int size);
+void *sceGuSwapBuffers(void);
+int sceGuSync(int mode, int what);
+void sceGuTerm(void);
+void sceGuTexFilter(int min, int mag);
+void sceGuTexFunc(int tfx, int tcc);
+void sceGuTexWrap(int u, int v);
+unsigned int sceKernelGetSystemTimeLow(void);
+int sprintf(char *buf, const char *fmt, ...);
+void srand(unsigned int seed);
+unsigned int strlen(const char *s);
+
 INCLUDE_ASM("tmp/asm/UTST99332/net_matching_stick/nonmatchings/main", gu_init);
 
 INCLUDE_RODATA("tmp/asm/UTST99332/net_matching_stick/nonmatchings/main", D_00018708);

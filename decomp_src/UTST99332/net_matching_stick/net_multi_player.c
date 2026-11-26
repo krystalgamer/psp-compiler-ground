@@ -118,6 +118,12 @@ int net_update_multi_player(void);
 int printf(const char *fmt, ...);
 
 
+/* SDK prototypes (tools/sdk_protos.h) */
+int memcmp(const void *a, const void *b, unsigned int n);
+void *memset(void *s, int c, unsigned int n);
+int sceKernelSignalSema(int semid, int signal);
+int sceKernelWaitSema(int semid, int signal, unsigned int *timeout);
+
 INCLUDE_ASM("tmp/asm/UTST99332/net_matching_stick/nonmatchings/net_multi_player", matching_get_established_members);
 
 INCLUDE_ASM("tmp/asm/UTST99332/net_matching_stick/nonmatchings/net_multi_player", matching_get_members);
