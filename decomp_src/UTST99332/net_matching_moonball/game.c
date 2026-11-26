@@ -651,7 +651,103 @@ static void CheckShoot(SCOPE *sc, int score_1p)
 	}
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/game", KeyGame);
+void KeyGame(u_int32 padd, u_int32 cont)
+{
+	if (game.state == 6) {
+		if (padd & 8) {
+			FadeSetup(2, 0);
+			if (_info.server_flag > 0) {
+				game.state = 7;
+				game.count = 0;
+			}
+			return;
+		}
+	} else if (game.state == 1) {
+		if (padd & 0x2008) {
+			if (_info.server_flag > 0 && _info.client_ready > 0) {
+				game.state = 2;
+				game.key = 1;
+				game.count = 0;
+			}
+			return;
+		}
+	}
+	if (padd & 1)
+		change_state(17);
+	if (!game.key)
+		return;
+	paddpush = (paddpush + 1) & 0xffff;
+	if (cont & 0xf0) {
+		if (paddpush >= 5) {
+			paddval++;
+			if (paddval > 12)
+				paddval = 12;
+		}
+	} else {
+		paddval--;
+		if (paddval < 0) {
+			paddvec = 0;
+			paddval = 0;
+		}
+		paddpush = 0;
+		if (paddval) {
+			if (paddvec & 0x10) {
+				scope[0].pos[1] -= paddval;
+				if (scope[0].pos[1] < 0)
+					scope[0].pos[1] = 0;
+			}
+			if (paddvec & 0x40) {
+				scope[0].pos[1] += paddval;
+				if (scope[0].pos[1] > 240)
+					scope[0].pos[1] = 240;
+			}
+			if (paddvec & 0x80) {
+				scope[0].pos[0] -= paddval;
+				if (scope[0].pos[0] < 0)
+					scope[0].pos[0] = 0;
+			}
+			if (paddvec & 0x20) {
+				scope[0].pos[0] += paddval;
+				if (scope[0].pos[0] > 448)
+					scope[0].pos[0] = 448;
+			}
+		}
+	}
+	if (cont & 0x10) {
+		paddvec = (paddvec | 0x10) & ~0x40;
+		scope[0].pos[1] -= paddval;
+		if (scope[0].pos[1] < 0)
+			scope[0].pos[1] = 0;
+	}
+	if (cont & 0x40) {
+		paddvec = (paddvec | 0x40) & ~0x10;
+		scope[0].pos[1] += paddval;
+		if (scope[0].pos[1] > 240)
+			scope[0].pos[1] = 240;
+	}
+	if (cont & 0x80) {
+		paddvec = (paddvec | 0x80) & ~0x20;
+		scope[0].pos[0] -= paddval;
+		if (scope[0].pos[0] < 0)
+			scope[0].pos[0] = 0;
+	}
+	if (cont & 0x20) {
+		paddvec = (paddvec | 0x20) & ~0x80;
+		scope[0].pos[0] += paddval;
+		if (scope[0].pos[0] > 448)
+			scope[0].pos[0] = 448;
+	}
+	if (padd & 0x2000) {
+		random_seed(vcount);
+		scope[0].bpos[0] = scope[0].pos[0];
+		scope[0].bpos[1] = scope[0].pos[1];
+		scope[0].beam = 1;
+		if (_info.server_flag > 0)
+			CheckShoot(&scope[0], 1);
+		else
+			scope[0].beam_flag = 1;
+	}
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/game", get_game_data);
 
