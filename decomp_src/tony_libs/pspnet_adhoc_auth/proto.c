@@ -90,15 +90,7 @@ void func_00002458(AuthCtx *ctx, Peer *peer, char *pkt)
 	if (m) {
 		int s1;
 
-		eh = m->m_data;
-		memcpy(eh, peer->sa.mac.data, 6);
-		memcpy(eh + 6, ctx->mac.data, 6);
-		memcpy(eh + 12, D_00003E70, 2);
-		memcpy(eh + 14, D_00003E74, 2);
-		s1 = sceKernelCpuSuspendIntr();
-		IF_ENQUEUE(&ctx->ifh->if_snd, m);
-		sceKernelCpuResumeIntr(s1);
-		ctx->ifh->if_start(ctx->ifh);
+		send_pkt(ctx, m, peer->sa.mac.data);
 	}
 	peer->unk4E0 = 0;
 	s = sceKernelCpuSuspendIntr();
@@ -111,7 +103,76 @@ void func_00002458(AuthCtx *ctx, Peer *peer, char *pkt)
 	func_00003818(ctx, peer, 1);
 }
 
-INCLUDE_ASM("tmp/asm/tony_libs/pspnet_adhoc_auth/nonmatchings/proto", func_000026F8);
+void func_000026F8(AuthCtx *ctx, Peer *peer, char *pkt)
+{
+	SaKey key;
+	AuthBuf3 buf;
+	struct mbuf *m;
+	int s;
+	int i;
+
+	if (ctx->unk0 != 1)
+		return;
+	if (ctx->npeers >= ctx->unkA8)
+		return;
+	if (sceMemab_driver_DC598EF3(&key, pkt + 0x14, &buf) < 0)
+		return;
+	if (peer == 0) {
+		peer = sceNetMallocInternal(sizeof(Peer));
+		if (peer == 0)
+			return;
+		func_00003664(ctx, peer, (unsigned char *)pkt + 6, (unsigned char *)pkt + 0xB4);
+	} else {
+		if (peer->state == 3 && memcmp(&peer->unk15C, pkt + 0x14, 0x120) != 0)
+			goto reset;
+		if (peer->state == 1) {
+			for (i = 0; i < 6; i++) {
+				if (ctx->mac.data[i] < peer->sa.mac.data[i])
+					break;
+				if (ctx->mac.data[i] > peer->sa.mac.data[i])
+					goto reset;
+			}
+		}
+		if (peer->state == 2) {
+reset:
+			cancelAlarm(&peer->alarm[0]);
+			func_00003818(ctx, peer, 0);
+		} else if (peer->state == 4) {
+			cancelAlarm(&peer->alarm[2]);
+			cancelAlarm(&peer->alarm[1]);
+			func_00003818(ctx, peer, 0);
+		}
+	}
+	if (peer->state == 0) {
+		peer->sa.key = key;
+		m = func_000020B8(ctx, 4, &buf);
+		if (m)
+			send_pkt(ctx, m, peer->sa.mac.data);
+		peer->unk4E0 = 0;
+		s = sceKernelCpuSuspendIntr();
+		if (peer->alarm[0] > 0) {
+			sceKernelCancelAlarm(peer->alarm[0]);
+			peer->alarm[0] = 0;
+		}
+		peer->alarm[0] = sceKernelSetAlarm(ctx->unkDC, func_00003478, &peer->arg[0]);
+		sceKernelCpuResumeIntr(s);
+		memcpy(&peer->unk15C, pkt + 0x14, 0x120);
+		peer->unk27C = buf;
+		func_00003818(ctx, peer, 3);
+	} else if (peer->state == 3) {
+		m = func_000020B8(ctx, 4, &peer->unk27C);
+		if (m)
+			send_pkt(ctx, m, peer->sa.mac.data);
+		peer->unk4E0 = 0;
+		s = sceKernelCpuSuspendIntr();
+		if (peer->alarm[0] > 0) {
+			sceKernelCancelAlarm(peer->alarm[0]);
+			peer->alarm[0] = 0;
+		}
+		peer->alarm[0] = sceKernelSetAlarm(ctx->unkDC, func_00003478, &peer->arg[0]);
+		sceKernelCpuResumeIntr(s);
+	}
+}
 
 void func_00002C44(AuthCtx *ctx, Peer *peer, char *pkt)
 {
@@ -135,15 +196,7 @@ void func_00002C44(AuthCtx *ctx, Peer *peer, char *pkt)
 	if (m) {
 		int s1;
 
-		eh = m->m_data;
-		memcpy(eh, peer->sa.mac.data, 6);
-		memcpy(eh + 6, ctx->mac.data, 6);
-		memcpy(eh + 12, D_00003E70, 2);
-		memcpy(eh + 14, D_00003E74, 2);
-		s1 = sceKernelCpuSuspendIntr();
-		IF_ENQUEUE(&ctx->ifh->if_snd, m);
-		sceKernelCpuResumeIntr(s1);
-		ctx->ifh->if_start(ctx->ifh);
+		send_pkt(ctx, m, peer->sa.mac.data);
 	}
 	peer->unk4E0 = 0;
 	s = sceKernelCpuSuspendIntr();
@@ -179,15 +232,7 @@ void func_00002EE0(AuthCtx *ctx, Peer *peer, char *pkt)
 	if (m) {
 		int s1;
 
-		eh = m->m_data;
-		memcpy(eh, peer->sa.mac.data, 6);
-		memcpy(eh + 6, ctx->mac.data, 6);
-		memcpy(eh + 12, D_00003E70, 2);
-		memcpy(eh + 14, D_00003E74, 2);
-		s1 = sceKernelCpuSuspendIntr();
-		IF_ENQUEUE(&ctx->ifh->if_snd, m);
-		sceKernelCpuResumeIntr(s1);
-		ctx->ifh->if_start(ctx->ifh);
+		send_pkt(ctx, m, peer->sa.mac.data);
 	}
 	s = sceKernelCpuSuspendIntr();
 	if (peer->alarm[2] > 0) {
