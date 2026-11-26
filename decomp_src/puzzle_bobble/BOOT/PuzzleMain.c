@@ -4,7 +4,7 @@
 #include "PuzzleMain.h"
 
 extern int ssTimes;
-M2C_UNK DrawSpriteEz(int, float, float, float, float, float, float, float); /* extern */
+int DrawSpriteEz(float z, int no, float x, float y, float w, float h, float u, float v);
 int PzlDataGetWidth(int no);
 int GetKeyHit();                                    /* extern */
 int PollShutter(M2C_UNK);                           /* extern */
@@ -32,6 +32,14 @@ typedef struct {
 extern const SPRDATA SCORE_NUMERIC_PARTZ[];
 extern const SPRDATA NUMERIC_PARTZ[];
 extern const SPRDATA D_0002DEB4[];
+extern const SPRDATA D_0002E0F4[];
+extern PARTZ ChrData_ClearMes[];
+void DrawCharcter(int z, int x, int y, PARTZ *tbl, int idx);
+void DrawCharcter2(int z, int x, int y, PARTZ *tbl, int idx);
+void SetSpriteColorRGBA(int r, int g, int b, int a);
+void se_play(int no);
+void PutNumeric(int z, int x, int y, int num, int digits);
+int Get2Dim(int x, int a, int b, int c, int d);
 int SpriteDraw(int no, float z, int color, float x0, float y0, float u0, float v0, float x1, float y1, float u1, float v1, float x2, float y2, float u2, float v2, float x3, float y3, float u3, float v3);
 int DrawSpritePt4(int no, float z, int color, float x0, float y0, float u0, float v0, float x1, float y1, float u1, float v1, float x2, float y2, float u2, float v2, float x3, float y3, float u3, float v3);
 int SpriteDrawC(int x, float z, int y, const SPRDATA *p);
@@ -162,9 +170,56 @@ INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", D_0002E454)
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", DoMonitor);
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", DoReadyGo);
+void DoReadyGo(PZL_STAT *st)
+{
+	int x;
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", DoContinue);
+	if (st->unk430 == 4) {
+		se_play(26);
+		if (st->chara == 5)
+			SetCharacters(st, 0, 0);
+		SetMonitor(st, 0);
+	}
+	if (st->unk430 == 61) {
+		PollShutter(2);
+		se_play(27);
+		ClearSysTime();
+	}
+	if ((unsigned int)st->unk430 < 90) {
+		x = Get2Dim(st->unk430, 5, 25, 45, 65);
+		DrawCharcter(0, x + 72, 116, ChrData_ClearMes, 1);
+	}
+	if ((unsigned int)st->unk430 - 41 < 79) {
+		x = Get2Dim(st->unk430, 50, 62, 85, 100);
+		DrawCharcter(0, x + 152, 112, ChrData_ClearMes, 2);
+	}
+}
+
+int DoContinue(int t, int flag)
+{
+	int r;
+	PARTZ *tbl;
+
+	r = Get2Dim(t, 0, 20, 100, 100);
+	tbl = ChrData_ClearMes;
+	DrawCharcter(0, r + 40, 60, tbl, 4);
+	r = Get2Dim(t, 12, 32, 100, 100);
+	if (flag) {
+		SetSpriteColorRGBA(255, 255, 255, 111);
+		DrawCharcter2(0, r + 112, 120, tbl, 5);
+		SetSpriteColorRGBA(255, 255, 255, 255);
+	} else {
+		SetSpriteColorRGBA(255, 255, 255, 255);
+		DrawCharcter2(0, r + 112, 120, tbl, 5);
+		SetSpriteColorRGBA(255, 255, 255, 111);
+	}
+	t++;
+	DrawCharcter2(0, r + 272, 120, tbl, 6);
+	SetSpriteColorRGBA(255, 255, 255, 255);
+	if (t > 60)
+		t = 60;
+	return t;
+}
 
 void InitBubCrush(void)
 {
@@ -349,11 +404,11 @@ int EndressMain(void)
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", DrawBubble);
 
-void DrawCharcter(int arg0, int arg1, int arg2, int arg3, int arg4) {
-    void *temp_v0;
+void DrawCharcter(int z, int x, int y, PARTZ *tbl, int idx)
+{
+	PARTZ *p = (PARTZ *)(idx * sizeof(PARTZ) + (int)tbl);
 
-    temp_v0 = (arg4 * 0x14) + arg3;
-    DrawSpriteEz(M2C_FIELD(temp_v0, int *, 0x10), (float) arg0, (float) arg1, (float) arg2, (float) M2C_FIELD(temp_v0, int *, 8), (float) M2C_FIELD(temp_v0, int *, 0xC), (float) M2C_FIELD(temp_v0, int *, 0), (float) M2C_FIELD(temp_v0, int *, 4));
+	DrawSpriteEz(z, p->no, x, y, p->w, p->h, p->u, p->v);
 }
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", DrawCharcterFlip);
