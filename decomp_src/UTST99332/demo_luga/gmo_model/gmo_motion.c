@@ -1,293 +1,381 @@
-/* cflags: -O2 -frename-registers */
-#include "common.h"
+/* cflags: -O2 -frename-registers -fmerge-constants */
+#include "gmo_private.h"
+#include "include_asm.h"
+#define quat_slerp quat_slerp_BDD8
+extern char D_0014787C[];
+#define Elements D_0014787C
 
-/* declarations recovered from DWARF */
-typedef struct SceGmoChunk SceGmoChunk;
-struct SceGmoChunk;
-struct SceGmoChunk { /* size 0x10 */
-    short unsigned int type;
-    short unsigned int args_offs;
-    unsigned int next_offs;
-    unsigned int child_offs;
-    unsigned int data_offs;
-};
-typedef struct SceGmoMotion SceGmoMotion;
-struct SceGmoMotion;
-typedef struct SceGmoBase SceGmoBase;
-struct SceGmoBase;
-struct SceGmoSubject;
-struct SceGmoObserver;
-struct SceGmoObserver { /* size 0xc */
-    struct SceGmoObserver *m_next;
-    struct SceGmoSubject *m_subject;
-    void *m_reserved;
-};
-struct SceGmoSubject { /* size 0x4 */
-    struct SceGmoObserver *m_observers;
-};
-struct SceGmoBase { /* size 0x10 */
-    struct SceGmoSubject m_subject;
-    struct SceGmoObserver m_parent;
-};
-struct SceGmoMotion { /* size 0x40 */
-    SceGmoBase m_base;
-    SceGmoChunk *m_chunk;
-    int m_reference;
-    int m_flags;
-    SceGmoChunk **m_anims;
-    SceGmoChunk **m_fcurves;
-    int m_n_anims;
-    int m_n_fcurves;
-    float m_frame_loop[2];
-    float m_frame_rate;
-    float m_frame;
-    float m_weight;
-};
-typedef struct SceGmoModel SceGmoModel;
-struct SceGmoModel;
-typedef struct SceGmoBone SceGmoBone;
-struct SceGmoBone;
-typedef struct ScePspFVector3 ScePspFVector3;
-struct ScePspFVector3;
-struct ScePspFVector3 { /* size 0xc */
-    float x;
-    float y;
-    float z;
-};
-typedef struct ScePspFQuaternion ScePspFQuaternion;
-struct ScePspFQuaternion;
-struct ScePspFQuaternion { /* size 0x10 */
-    float x;
-    float y;
-    float z;
-    float w;
-};
-typedef struct ScePspFMatrix4 ScePspFMatrix4;
-struct ScePspFMatrix4;
-typedef struct ScePspFVector4 ScePspFVector4;
-struct ScePspFVector4;
-struct ScePspFVector4 { /* size 0x10 */
-    float x;
-    float y;
-    float z;
-    float w;
-};
-struct ScePspFMatrix4 { /* size 0x40 */
-    ScePspFVector4 x;
-    ScePspFVector4 y;
-    ScePspFVector4 z;
-    ScePspFVector4 w;
-};
-struct SceGmoBone { /* size 0x170 */
-    SceGmoBase m_base;
-    SceGmoBone *m_initial;
-    int m_reference;
-    int m_flags;
-    int m_parent_bone;
-    int m_visibility;
-    ScePspFVector3 m_pivot;
-    ScePspFVector3 m_translate;
-    ScePspFQuaternion m_rotate;
-    ScePspFVector3 m_scale;
-    ScePspFMatrix4 m_local_matrix;
-    ScePspFMatrix4 m_stack_matrix;
-    ScePspFVector3 m_stack_scale;
-    ScePspFMatrix4 m_world_matrix;
-    int *m_draw_parts;
-    float *m_morph_weights;
-    int *m_blend_bones;
-    ScePspFMatrix4 *m_blend_offsets;
-    int m_n_draw_parts;
-    int m_n_morph_weights;
-    int m_n_blend_bones;
-    int m_n_blend_offsets;
-    int m_anim_flags;
-    float m_anim_weights[5];
-};
-typedef struct SceGmoPart SceGmoPart;
-struct SceGmoPart;
-typedef struct SceGmoMesh SceGmoMesh;
-struct SceGmoMesh;
-struct SceGmoMesh { /* size 0x18 */
-    SceGmoChunk *m_chunk;
-    int m_reference;
-    int m_flags;
-    int m_material;
-    int *m_blend_subset;
-    int m_n_blend_subset;
-};
-struct SceGmoPart { /* size 0x2c */
-    SceGmoBase m_base;
-    SceGmoChunk *m_chunk;
-    int m_reference;
-    int m_flags;
-    SceGmoMesh **m_meshes;
-    SceGmoChunk **m_arrays;
-    int m_n_meshes;
-    int m_n_arrays;
-};
-typedef struct SceGmoMaterial SceGmoMaterial;
-struct SceGmoMaterial;
-typedef struct SceGmoLayer SceGmoLayer;
-struct SceGmoLayer;
-typedef struct ScePspFRect ScePspFRect;
-struct ScePspFRect;
-struct ScePspFRect { /* size 0x10 */
-    float x;
-    float y;
-    float w;
-    float h;
-};
-struct SceGmoLayer { /* size 0x50 */
-    SceGmoLayer *m_initial;
-    int m_reference;
-    int m_flags;
-    int m_map_type;
-    float m_map_factor;
-    int m_blend_func[5];
-    int m_texture;
-    ScePspFRect m_tex_crop;
-    int m_enable_mask;
-    int m_enable_bits;
-    int m_diffuse;
-    int m_specular;
-    int m_ambient;
-};
-struct SceGmoMaterial { /* size 0x84 */
-    SceGmoBase m_base;
-    SceGmoMaterial *m_initial;
-    int m_reference;
-    int m_flags;
-    SceGmoLayer *m_layers[8];
-    int m_n_layers;
-    int m_enable_mask;
-    int m_enable_bits;
-    int m_colors[6];
-    float m_shininess;
-    float m_refraction;
-    float m_bump;
-    int m_anim_flags;
-    float m_anim_weights[5];
-};
-typedef struct SceGmoTexture SceGmoTexture;
-struct SceGmoTexture;
-typedef struct SceGimPicture SceGimPicture;
-struct SceGimPicture;
-struct SceGmoTexture { /* size 0x1c */
-    SceGmoBase m_base;
-    SceGimPicture *m_picture;
-    int m_reference;
-    int m_flags;
-};
-struct SceGmoModel { /* size 0x100 */
-    SceGmoBase m_base;
-    int m_reference;
-    int m_flags;
-    SceGmoBone **m_bones;
-    SceGmoPart **m_parts;
-    SceGmoMaterial **m_materials;
-    SceGmoTexture **m_textures;
-    SceGmoMotion **m_motions;
-    int m_n_bones;
-    int m_n_parts;
-    int m_n_materials;
-    int m_n_textures;
-    int m_n_motions;
-    int m_current_motion;
-    float m_change_motion;
-    ScePspFMatrix4 m_world_matrix;
-    int m_enable_bits;
-    int m_enable_mask;
-    ScePspFVector3 m_bounding_box[2];
-    ScePspFMatrix4 m_vertex_offset;
-    ScePspFRect m_texcoord_offset;
-};
-typedef struct SceGmoSubject SceGmoSubject;
-typedef ScePspFQuaternion quat;
+static int eval_fcurve( SceGmoChunk *chunk, float frame, float *output ) ;
+static float find_root( float f0, float f1, float f2, float f3, float frame ) ;
+static quat *quat_slerp( quat *dst, const quat *src1, const quat *src2, float rate ) ;
 
+enum {
+ NOREPEAT = 0x0001,
+} ;
 
+SceGmoMotion *sceGmoMotionCreate( SceGmoChunk *chunk )
+{
+ SceGmoMotion *motion = (SceGmoMotion *)sceGmoModelAllocMemory( sizeof( SceGmoMotion ) ) ;
+ if ( motion == 0 ) {
+  ;
+  return 0 ;
+ }
+ sceGmoBaseConstruct( &( motion->m_base ) ) ;
+ motion->m_chunk = 0 ;
+ motion->m_reference = 1 ;
+ motion->m_flags = 0 ;
 
-SceGmoMotion *sceGmoMotionCreate(const SceGmoChunk *chunk);
-void sceGmoMotionDelete(SceGmoMotion *motion);
-SceGmoMotion *sceGmoMotionDuplicate(SceGmoMotion *motion, int flags);
-_Bool sceGmoMotionLoad(SceGmoMotion *motion, const SceGmoChunk *load_chunk);
-static int SCEGMO_CHUNK_SIZE(SceGmoChunk *chunk);
-static SceGmoChunk *SCEGMO_CHUNK_NEXT(SceGmoChunk *chunk);
-static SceGmoChunk *SCEGMO_CHUNK_CHILD(SceGmoChunk *chunk);
-static void *SCEGMO_CHUNK_ARGS(SceGmoChunk *chunk);
-static int SCEGMO_CHUNK_TYPE(SceGmoChunk *chunk);
-void sceGmoMotionUnload(SceGmoMotion *motion);
-void sceGmoMotionUpdate(SceGmoMotion *motion, SceGmoModel *model, float step);
-static SceGmoSubject *sceGmoBaseGetParent(const SceGmoBase *base);
-static int eval_fcurve(SceGmoChunk *chunk, float frame, float *output);
-static float find_root(float f0, float f1, float f2, float f3, float f);
-static quat *quat_slerp(quat *dst, const quat *src1, const quat *src2, float rate);
-void sceGmoMotionSetFrameLoop(SceGmoMotion *motion, float start, float end);
-void sceGmoMotionSetFrameRepeat(SceGmoMotion *motion, int mode);
-int sceGmoMotionGetFrameRepeat(SceGmoMotion *motion);
-SceGmoChunk *sceGmoMotionGetAnimation(SceGmoMotion *motion, int idx);
-SceGmoChunk *sceGmoMotionGetFcurve(SceGmoMotion *motion, int idx);
+ motion->m_anims = 0 ;
+ motion->m_fcurves = 0 ;
+ motion->m_n_anims = 0 ;
+ motion->m_n_fcurves = 0 ;
 
+ motion->m_frame_loop[ 0 ] = -1000000.0f ;
+ motion->m_frame_loop[ 1 ] = 1000000.0f ;
+ motion->m_frame_rate = 60.0f ;
+ motion->m_frame = 0.0f ;
+ motion->m_weight = 0.0f ;
 
-/* SDK prototypes (tools/sdk_protos.h) */
-float sinf(float x);
-float sqrtf(float x);
-
-/* module functions defined in other units */
-void sceGmoBaseConstruct(SceGmoBase *base);
-void sceGmoBaseCopy(SceGmoBase *base, const SceGmoBase *src);
-void sceGmoBoneAnimate(SceGmoBone *bone, int type, int idx, const float *val, int cnt, float weight);
-void sceGmoMaterialAnimate(SceGmoMaterial *material, int type, int idx, const float *val, int cnt, float weight);
-void *sceGmoModelAllocMemory(unsigned int size);
-int sceGmoModelCountChunk(const SceGmoChunk *chunk, int type);
-SceGmoBone *sceGmoModelGetBone(SceGmoModel *model, int idx);
-SceGmoMaterial *sceGmoModelGetMaterial(SceGmoModel *model, int idx);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/gmo_model/gmo_motion", sceGmoMotionCreate);
-
-void sceGmoMotionDelete(SceGmoMotion *motion) {
-    int temp_v1;
-
-    if ((motion == NULL) || (temp_v1 = motion->m_reference - 1, motion->m_reference = temp_v1, (temp_v1 != 0))) {
-
-    } else {
-        sceGmoMotionUnload(motion);
-        sceGmoBaseDestruct(motion);
-        sceGmoModelFreeMemory(motion);
-    }
+ if ( chunk != 0 && !sceGmoMotionLoad( motion, chunk ) ) {
+  sceGmoMotionDelete( motion ) ;
+  return 0 ;
+ }
+ return motion ;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/gmo_model/gmo_motion", sceGmoMotionDuplicate);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/gmo_model/gmo_motion", sceGmoMotionLoad);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/gmo_model/gmo_motion", sceGmoMotionUnload);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/gmo_model/gmo_motion", sceGmoMotionUpdate);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/gmo_model/gmo_motion", eval_fcurve);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/gmo_model/gmo_motion", find_root);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/gmo_model/gmo_motion", quat_slerp_BDD8);
-
-void sceGmoMotionSetParent(SceGmoMotion *motion, SceGmoModel *parent) {
-    if (motion != NULL) {
-        sceGmoBaseSetParent();
-    }
+void sceGmoMotionDelete( SceGmoMotion *motion )
+{
+ if ( motion == 0 ) return ;
+ if ( -- motion->m_reference == 0 ) {
+  sceGmoMotionUnload( motion ) ;
+  sceGmoBaseDestruct( &( motion->m_base ) ) ;
+  sceGmoModelFreeMemory( motion ) ;
+ }
 }
-/* Warning: struct SceGimPicture is not defined (only forward-declared) */
 
-SceGmoModel *sceGmoMotionGetParent(SceGmoMotion *motion) {
-    SceGmoSubject *var_v0;
+SceGmoMotion *sceGmoMotionDuplicate( SceGmoMotion *motion, int flags )
+{
 
-    var_v0 = NULL;
-    if (motion != NULL) {
-        var_v0 = motion->m_base.m_parent.m_subject;
-    }
-    return (SceGmoModel *) var_v0;
+ if ( motion == 0 ) return 0 ;
+ if ( !( SCEGMO_DUPLICATE_AUTOMATIC & flags )
+   && !( SCEGMO_DUPLICATE_STRUCTURE & flags )
+   && !( SCEGMO_DUPLICATE_MOTION & flags ) ) {
+  motion->m_reference ++ ;
+  return motion ;
+ }
+
+ SceGmoMotion *motion2 = sceGmoMotionCreate( 0 ) ;
+ if ( motion2 == 0 ) return 0 ;
+ sceGmoBaseCopy( &( motion2->m_base ), &( motion->m_base ) ) ;
+
+ SceGmoChunk *chunk = motion->m_chunk ;
+ if ( chunk != 0 ) {
+  motion2->m_chunk = chunk ;
+  chunk->type ++ ;
+ }
+ if ( !sceGmoModelCopyPtr( &( motion2->m_anims ), motion->m_anims,
+     motion->m_n_anims * sizeof( void * ) )
+   || !sceGmoModelCopyPtr( &( motion2->m_fcurves ), motion->m_fcurves,
+     motion->m_n_fcurves * sizeof( void * ) ) ) {
+  ;
+  sceGmoMotionDelete( motion2 ) ;
+  return 0 ;
+ }
+
+ motion2->m_flags = motion->m_flags ;
+ motion2->m_n_anims = motion->m_n_anims ;
+ motion2->m_n_fcurves = motion->m_n_fcurves ;
+ motion2->m_frame_loop[ 0 ] = motion->m_frame_loop[ 0 ] ;
+ motion2->m_frame_loop[ 1 ] = motion->m_frame_loop[ 1 ] ;
+ motion2->m_frame_rate = motion->m_frame_rate ;
+ motion2->m_frame = motion->m_frame ;
+ motion2->m_weight = motion->m_weight ;
+ return motion2 ;
 }
-/* Warning: struct SceGimPicture is not defined (only forward-declared) */
+
+_Bool sceGmoMotionLoad( SceGmoMotion *motion, const SceGmoChunk *load_chunk )
+{
+ SceGmoChunk *chunk ;
+ if ( motion == 0 ) return 0 ;
+ if ( load_chunk == 0 ) return 0 ;
+
+ sceGmoMotionUnload( motion ) ;
+
+ if ( !sceGmoModelCopyPtr( &( motion->m_chunk ), load_chunk, SCEGMO_CHUNK_SIZE( (SceGmoChunk *)load_chunk ) ) ) {
+  ;
+  return 0 ;
+ }
+ chunk = motion->m_chunk ;
+ chunk->type = 1 ;
+
+ int n_anims = sceGmoModelCountChunk( chunk, SCEGMO_ANIMATE ) ;
+ int n_fcurves = sceGmoModelCountChunk( chunk, SCEGMO_FCURVE ) ;
+ if ( !sceGmoModelAllocPtr( &( motion->m_anims ), n_anims * sizeof( void * ) )
+   || !sceGmoModelAllocPtr( &( motion->m_fcurves ), n_fcurves * sizeof( void * ) ) ) {
+  ;
+ }
+
+ SceGmoChunk *end = SCEGMO_CHUNK_NEXT( chunk ) ;
+ for ( chunk = SCEGMO_CHUNK_CHILD( chunk ) ; chunk < end ; chunk = SCEGMO_CHUNK_NEXT( chunk ) ) {
+  void *args = SCEGMO_CHUNK_ARGS( chunk ) ;
+
+  switch ( SCEGMO_CHUNK_TYPE( chunk ) ) {
+      case SCEGMO_FRAME_RATE : {
+   motion->m_frame_rate = ( (SceGmoFrameRate *)args )->fps ;
+   break ;
+      }
+      case SCEGMO_FRAME_LOOP : {
+   motion->m_frame_loop[ 0 ] = ( (SceGmoFrameLoop *)args )->start ;
+   motion->m_frame_loop[ 1 ] = ( (SceGmoFrameLoop *)args )->end ;
+   break ;
+      }
+      case SCEGMO_ANIMATE : {
+   motion->m_anims[ motion->m_n_anims ++ ] = chunk ;
+   break ;
+      }
+      case SCEGMO_FCURVE : {
+   motion->m_fcurves[ motion->m_n_fcurves ++ ] = chunk ;
+   break ;
+      }
+  }
+ }
+ return 1 ;
+}
+
+void sceGmoMotionUnload( SceGmoMotion *motion )
+{
+ if ( motion == 0 ) return ;
+
+ SceGmoChunk *chunk = motion->m_chunk ;
+ if ( chunk != 0 ) {
+  if ( -- chunk->type == 0 ) sceGmoModelFreeMemory( chunk ) ;
+  motion->m_chunk = 0 ;
+ }
+
+ sceGmoModelFreeMemory( motion->m_anims ) ;
+ sceGmoModelFreeMemory( motion->m_fcurves ) ;
+ motion->m_anims = 0 ;
+ motion->m_fcurves = 0 ;
+}
+
+void sceGmoMotionUpdate( SceGmoMotion *motion, SceGmoModel *model, float step )
+{
+ if ( motion == 0 ) return ;
+
+ float weight = motion->m_weight ;
+ if ( weight == 0.0f ) return ;
+
+ float frame = motion->m_frame + motion->m_frame_rate * step ;
+ float start = motion->m_frame_loop[ 0 ] ;
+ float end = motion->m_frame_loop[ 1 ] ;
+ if ( frame >= end && motion->m_frame < end ) {
+  frame = ( motion->m_flags & NOREPEAT ) ? end : start ;
+ } else if ( frame < start && motion->m_frame >= start ) {
+  frame = ( motion->m_flags & NOREPEAT ) ? start : end ;
+ }
+ motion->m_frame = frame ;
+
+ SceGmoSubject *parent = sceGmoBaseGetParent( &( motion->m_base ) ) ;
+ if ( parent != 0 ) model = (SceGmoModel *)parent ;
+
+ float tmp[ 16 ] ;
+ { int i ; for ( i = 0 ; i < motion->m_n_anims ; i ++ ) {
+  SceGmoAnimate *anim = (SceGmoAnimate *)SCEGMO_CHUNK_ARGS( motion->m_anims[ i ] ) ;
+
+  int index = (0x0fff&(anim->fcurve)) ;
+  if ( index >= motion->m_n_fcurves ) continue ;
+  SceGmoChunk *fcurve = motion->m_fcurves[ index ] ;
+
+  int n_dims = eval_fcurve( fcurve, frame, tmp ) ;
+
+  int block = anim->block ;
+  switch ( (0x7fff&((block)>>16)) ) {
+      case SCEGMO_BONE : {
+   SceGmoBone *bone = sceGmoModelGetBone( model, block ) ;
+   sceGmoBoneAnimate( bone, anim->cmd, anim->index, tmp, n_dims, weight ) ;
+   break ;
+      }
+      case SCEGMO_MATERIAL : {
+   SceGmoMaterial *material = sceGmoModelGetMaterial( model, block ) ;
+   sceGmoMaterialAnimate( material, anim->cmd, anim->index, tmp, n_dims, weight ) ;
+   break ;
+      }
+  }
+ } }
+}
+
+int eval_fcurve( SceGmoChunk *chunk, float frame, float *output )
+{
+  SceGmoFCurveHeader *fcurve = (SceGmoFCurveHeader *)SCEGMO_CHUNK_ARGS( chunk ) ;
+ int format = fcurve->format ;
+ int n_dims = fcurve->n_dims ;
+ int n_elems = Elements[ format ] ;
+ int stride = n_elems * n_dims + 1 ;
+
+ float *data = (float *)( fcurve + 1 ) ;
+ int lower = 0 ;
+ int upper = fcurve->n_keys - 1 ;
+ while ( upper - lower > 1 ) {
+  int index = ( upper + lower ) / 2 ;
+  float frame2 = data[ stride * index ] ;
+  if ( frame < frame2 ) {
+   upper = index ;
+  } else {
+   lower = index ;
+  }
+ }
+
+ float *k1 = data + stride * lower ;
+ float *k2 = data + stride * upper ;
+ float f1 = *( k1 ++ ) ;
+ float f2 = *( k2 ++ ) ;
+ float t = f2 - f1 ;
+ if ( t != 0.0f ) t = ( frame - f1 ) / t ;
+ if ( t <= 0.0f ) {
+  format = SCEGMO_FCURVE_CONSTANT ;
+ } else if ( t >= 1.0f ) {
+  format = SCEGMO_FCURVE_CONSTANT ;
+  k1 = k2 ;
+ }
+
+ switch ( format ) {
+     case SCEGMO_FCURVE_CONSTANT : {
+  { int i ; for ( i = 0 ; i < n_dims ; i ++ ) {
+   *( output ++ ) = *k1 ;
+   k1 += n_elems ;
+  } }
+  break ;
+     }
+     case SCEGMO_FCURVE_LINEAR : {
+  { int i ; for ( i = 0 ; i < n_dims ; i ++ ) {
+   float v1 = *( k1 ++ ) ;
+   float v2 = *( k2 ++ ) ;
+   *( output ++ ) = ( v2 - v1 ) * t + v1 ;
+  } }
+  break ;
+     }
+     case SCEGMO_FCURVE_HERMITE : {
+  float s = 1.0f - t ;
+  float t2 = t * t ;
+  float s2 = s * s ;
+  float b1 = s2 * t * 3.0f ;
+  float b2 = t2 * s * 3.0f ;
+  float b0 = s2 * s + b1 ;
+  float b3 = t2 * t + b2 ;
+  { int i ; for ( i = 0 ; i < n_dims ; i ++ ) {
+   *( output ++ ) = k1[ 0 ] * b0 + k1[ 2 ] * b1 + k2[ 1 ] * b2 + k2[ 0 ] * b3 ;
+   k1 += 3 ;
+   k2 += 3 ;
+  } }
+  break ;
+     }
+     case SCEGMO_FCURVE_CUBIC : {
+  { int i ; for ( i = 0 ; i < n_dims ; i ++ ) {
+   float fa = f1 + k1[ 3 ] ;
+   float fb = f2 + k2[ 1 ] ;
+   float t = find_root( f1, fa, fb, f2, frame ) ;
+   float s = 1.0f - t ;
+   float t2 = t * t ;
+   float s2 = s * s ;
+   float b1 = s2 * t * 3.0f ;
+   float b2 = t2 * s * 3.0f ;
+   float b0 = s2 * s + b1 ;
+   float b3 = t2 * t + b2 ;
+   *( output ++ ) = k1[ 0 ] * b0 + k1[ 4 ] * b1 + k2[ 2 ] * b2 + k2[ 0 ] * b3 ;
+   k1 += 5 ;
+   k2 += 5 ;
+  } }
+  break ;
+     }
+     case SCEGMO_FCURVE_SPHERICAL : {
+  quat_slerp( (quat *)output, (quat *)k1, (quat *)k2, t ) ;
+  break ;
+     }
+ }
+ return n_dims ;
+}
+
+float find_root( float f0, float f1, float f2, float f3, float f )
+{
+ float E = ( f3 - f0 ) * 0.01f ;
+ if ( E < 0.0001f ) E = 0.0001f ;
+ float t0 = 0.0f ;
+ float t3 = 1.0f ;
+ { int i ; for ( i = 0 ; i < 8 ; i ++ ) {
+  float d = f3 - f0 ;
+  if ( d > -E && d < E ) break ;
+  float r = ( f2 - f1 ) / d - ( 1.0f / 3.0f ) ;
+  if ( r > -0.01f && r < 0.01f ) break ;
+  float fc = ( f0 + f1 * 3.0f + f2 * 3.0f + f3 ) / 8.0f ;
+  if ( f < fc ) {
+   f3 = fc ;
+   f2 = ( f1 + f2 ) * 0.5f ;
+   f1 = ( f0 + f1 ) * 0.5f ;
+   f2 = ( f1 + f2 ) * 0.5f ;
+   t3 = ( t0 + t3 ) * 0.5f ;
+  } else {
+   f0 = fc ;
+   f1 = ( f1 + f2 ) * 0.5f ;
+   f2 = ( f2 + f3 ) * 0.5f ;
+   f1 = ( f1 + f2 ) * 0.5f ;
+   t0 = ( t0 + t3 ) * 0.5f ;
+  }
+ } }
+ float c = f0 - f ;
+ float b = 3.0f * ( f1 - f0 ) ;
+ float a = f3 - f0 - b ;
+ float x ;
+ if ( a == 0.0f ) {
+  x = ( b == 0.0f ) ? 0.5f : -c / b ;
+ } else {
+  float D2 = b * b - 4.0f * a * c ;
+  if ( D2 < 0.0f ) D2 = 0.0f ;
+  D2 = sqrtf( D2 ) ;
+  if ( a + b < 0.0f ) D2 = -D2 ;
+  x = ( -b + D2 ) / ( 2.0f * a ) ;
+ }
+ return ( t3 - t0 ) * x + t0 ;
+}
+
+quat *quat_slerp( quat *dst, const quat *src1, const quat *src2, float rate )
+{
+ if ( rate >= 1.0f ) return (quat *)memcpy( dst, src2, sizeof( quat ) ) ;
+ if ( rate <= 0.0f ) return (quat *)memcpy( dst, src1, sizeof( quat ) ) ;
+ float c = src1->x * src2->x + src1->y * src2->y + src1->z * src2->z + src1->w * src2->w ;
+ int reverse = 0 ;
+ if ( c < 0.0f ) {
+  c = - c ;
+  reverse = 1 ;
+ }
+ if ( c < 1.0f ) {
+  float angle = acosf( c ) ;
+  float s = sinf( angle ) ;
+  if ( s != 0.0f ) {
+   float r1 = sinf( ( 1 - rate ) * angle ) / s ;
+   float r2 = sinf( rate * angle ) / s ;
+   if ( reverse ) r2 = - r2 ;
+   dst->x = src1->x * r1 + src2->x * r2 ;
+   dst->y = src1->y * r1 + src2->y * r2 ;
+   dst->z = src1->z * r1 + src2->z * r2 ;
+   dst->w = src1->w * r1 + src2->w * r2 ;
+   return dst ;
+  }
+ }
+ *dst = *src2 ;
+ return dst ;
+}
+
+void sceGmoMotionSetParent( SceGmoMotion *motion, SceGmoModel *parent )
+{
+ if ( motion == 0 ) return ;
+ sceGmoBaseSetParent( &( motion->m_base ), (SceGmoSubject *)parent ) ;
+}
+
+SceGmoModel *sceGmoMotionGetParent( SceGmoMotion *motion )
+{
+ if ( motion == 0 ) return 0 ;
+ return (SceGmoModel *)sceGmoBaseGetParent( &( motion->m_base ) ) ;
+}
 
 void sceGmoMotionSetFrameLoop( SceGmoMotion *motion, float start, float end )
 {
@@ -296,118 +384,89 @@ void sceGmoMotionSetFrameLoop( SceGmoMotion *motion, float start, float end )
  motion->m_frame_loop[ 1 ] = end ;
 }
 
-float *sceGmoMotionGetFrameLoop(SceGmoMotion *motion) {
-    return (motion == NULL) ? NULL : motion->m_frame_loop;
+const float *sceGmoMotionGetFrameLoop( SceGmoMotion *motion )
+{
+ if ( motion == 0 ) return 0 ;
+ return motion->m_frame_loop ;
 }
 
-void sceGmoMotionSetFrameRate(SceGmoMotion *motion, float fps) {
-    if (motion != NULL) {
-        motion->m_frame_rate = fps;
-    }
+void sceGmoMotionSetFrameRate( SceGmoMotion *motion, float fps )
+{
+ if ( motion == 0 ) return ;
+ motion->m_frame_rate = fps ;
 }
 
-float sceGmoMotionGetFrameRate(SceGmoMotion *motion) {
-    float var_f0;
-
-    var_f0 = 0.0f;
-    if (motion != NULL) {
-        var_f0 = motion->m_frame_rate;
-    }
-    return var_f0;
+float sceGmoMotionGetFrameRate( SceGmoMotion *motion )
+{
+ if ( motion == 0 ) return 0.0f ;
+ return motion->m_frame_rate ;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/gmo_model/gmo_motion", sceGmoMotionSetFrameRepeat);
-
-int sceGmoMotionGetFrameRepeat(SceGmoMotion *motion) {
-    int var_v0;
-
-    var_v0 = 0;
-    if (motion != NULL) {
-        var_v0 = (motion->m_flags ^ 1) & 1;
-    }
-    return var_v0;
+void sceGmoMotionSetFrameRepeat( SceGmoMotion *motion, int mode )
+{
+ if ( motion == 0 ) return ;
+ if ( mode == 0 ) {
+  motion->m_flags |= NOREPEAT ;
+ } else {
+  motion->m_flags &= ~NOREPEAT ;
+ }
 }
 
-void sceGmoMotionSetFrame(SceGmoMotion *motion, float frame) {
-    if (motion != NULL) {
-        motion->m_frame = frame;
-    }
+int sceGmoMotionGetFrameRepeat( SceGmoMotion *motion )
+{
+ if ( motion == 0 ) return 0 ;
+ return ( motion->m_flags & NOREPEAT ) ? 0 : 1 ;
 }
 
-float sceGmoMotionGetFrame(SceGmoMotion *motion) {
-    float var_f0;
-
-    var_f0 = 0.0f;
-    if (motion != NULL) {
-        var_f0 = motion->m_frame;
-    }
-    return var_f0;
+void sceGmoMotionSetFrame( SceGmoMotion *motion, float frame )
+{
+ if ( motion == 0 ) return ;
+ motion->m_frame = frame ;
 }
 
-void sceGmoMotionSetWeight(SceGmoMotion *motion, float weight) {
-    float var_f12;
-
-    var_f12 = weight;
-    if (motion != NULL) {
-        if (var_f12 < 0.0f) {
-            var_f12 = 0.0f;
-        }
-        motion->m_weight = var_f12;
-    }
+float sceGmoMotionGetFrame( SceGmoMotion *motion )
+{
+ if ( motion == 0 ) return 0.0f ;
+ return motion->m_frame ;
 }
 
-float sceGmoMotionGetWeight(SceGmoMotion *motion) {
-    float var_f0;
-
-    var_f0 = 0.0f;
-    if (motion != NULL) {
-        var_f0 = motion->m_weight;
-    }
-    return var_f0;
+void sceGmoMotionSetWeight( SceGmoMotion *motion, float weight )
+{
+ if ( motion == 0 ) return ;
+ if ( weight < 0.0f ) weight = 0.0f ;
+ motion->m_weight = weight ;
 }
 
-int sceGmoMotionGetAnimationCount(SceGmoMotion *motion) {
-    int var_v0;
-
-    var_v0 = 0;
-    if (motion != NULL) {
-        var_v0 = motion->m_n_anims;
-    }
-    return var_v0;
+float sceGmoMotionGetWeight( SceGmoMotion *motion )
+{
+ if ( motion == 0 ) return 0.0f ;
+ return motion->m_weight ;
 }
 
-int sceGmoMotionGetFcurveCount(SceGmoMotion *motion) {
-    int var_v0;
-
-    var_v0 = 0;
-    if (motion != NULL) {
-        var_v0 = motion->m_n_fcurves;
-    }
-    return var_v0;
+int sceGmoMotionGetAnimationCount( SceGmoMotion *motion )
+{
+ if ( motion == 0 ) return 0 ;
+ return motion->m_n_anims ;
 }
 
-SceGmoChunk *sceGmoMotionGetAnimation(SceGmoMotion *motion, int idx) {
-    SceGmoChunk *var_a2;
-    int temp_a1;
-
-    temp_a1 = idx & 0xFFF;
-    var_a2 = NULL;
-    if ((motion != NULL) && (temp_a1 < motion->m_n_anims)) {
-        var_a2 = motion->m_anims[temp_a1];
-    }
-    return var_a2;
+int sceGmoMotionGetFcurveCount( SceGmoMotion *motion )
+{
+ if ( motion == 0 ) return 0 ;
+ return motion->m_n_fcurves ;
 }
 
-SceGmoChunk *sceGmoMotionGetFcurve(SceGmoMotion *motion, int idx) {
-    SceGmoChunk *var_a2;
-    int temp_a1;
-
-    temp_a1 = idx & 0xFFF;
-    var_a2 = NULL;
-    if ((motion != NULL) && (temp_a1 < motion->m_n_fcurves)) {
-        var_a2 = motion->m_fcurves[temp_a1];
-    }
-    return var_a2;
+SceGmoChunk *sceGmoMotionGetAnimation( SceGmoMotion *motion, int index )
+{
+ if ( motion == 0 ) return 0 ;
+ index = (0x0fff&(index)) ;
+ if ( index >= motion->m_n_anims ) return 0 ;
+ return motion->m_anims[ index ] ;
 }
 
-INCLUDE_RODATA("tmp/asm/UTST99332/demo_luga/nonmatchings/gmo_model/gmo_motion", D_00021BBC);
+SceGmoChunk *sceGmoMotionGetFcurve( SceGmoMotion *motion, int index )
+{
+ if ( motion == 0 ) return 0 ;
+ index = (0x0fff&(index)) ;
+ if ( index >= motion->m_n_fcurves ) return 0 ;
+ return motion->m_fcurves[ index ] ;
+}

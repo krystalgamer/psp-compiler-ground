@@ -1,339 +1,187 @@
-/* cflags: -O2 -frename-registers */
-#include "common.h"
+/* cflags: -O2 -frename-registers -fmerge-constants */
+/* SDK gmo_model library: devkit 0.6.0's src/gmo_model/gmo_part.c, preprocessed (macros expanded) */
+#include "gmo_private.h"
+#include "include_asm.h"
 
-/* declarations recovered from DWARF */
-typedef struct SceGmoChunk SceGmoChunk;
-struct SceGmoChunk;
-struct SceGmoChunk { /* size 0x10 */
-    short unsigned int type;
-    short unsigned int args_offs;
-    unsigned int next_offs;
-    unsigned int child_offs;
-    unsigned int data_offs;
-};
-typedef struct SceGmoPart SceGmoPart;
-struct SceGmoPart;
-typedef struct SceGmoBase SceGmoBase;
-struct SceGmoBase;
-struct SceGmoSubject;
-struct SceGmoObserver;
-struct SceGmoObserver { /* size 0xc */
-    struct SceGmoObserver *m_next;
-    struct SceGmoSubject *m_subject;
-    void *m_reserved;
-};
-struct SceGmoSubject { /* size 0x4 */
-    struct SceGmoObserver *m_observers;
-};
-struct SceGmoBase { /* size 0x10 */
-    struct SceGmoSubject m_subject;
-    struct SceGmoObserver m_parent;
-};
-typedef struct SceGmoMesh SceGmoMesh;
-struct SceGmoMesh;
-struct SceGmoMesh { /* size 0x18 */
-    SceGmoChunk *m_chunk;
-    int m_reference;
-    int m_flags;
-    int m_material;
-    int *m_blend_subset;
-    int m_n_blend_subset;
-};
-struct SceGmoPart { /* size 0x2c */
-    SceGmoBase m_base;
-    SceGmoChunk *m_chunk;
-    int m_reference;
-    int m_flags;
-    SceGmoMesh **m_meshes;
-    SceGmoChunk **m_arrays;
-    int m_n_meshes;
-    int m_n_arrays;
-};
-typedef struct SceGmoModel SceGmoModel;
-struct SceGmoModel;
-typedef struct SceGmoBone SceGmoBone;
-struct SceGmoBone;
-typedef struct ScePspFVector3 ScePspFVector3;
-struct ScePspFVector3;
-struct ScePspFVector3 { /* size 0xc */
-    float x;
-    float y;
-    float z;
-};
-typedef struct ScePspFQuaternion ScePspFQuaternion;
-struct ScePspFQuaternion;
-struct ScePspFQuaternion { /* size 0x10 */
-    float x;
-    float y;
-    float z;
-    float w;
-};
-typedef struct ScePspFMatrix4 ScePspFMatrix4;
-struct ScePspFMatrix4;
-typedef struct ScePspFVector4 ScePspFVector4;
-struct ScePspFVector4;
-struct ScePspFVector4 { /* size 0x10 */
-    float x;
-    float y;
-    float z;
-    float w;
-};
-struct ScePspFMatrix4 { /* size 0x40 */
-    ScePspFVector4 x;
-    ScePspFVector4 y;
-    ScePspFVector4 z;
-    ScePspFVector4 w;
-};
-struct SceGmoBone { /* size 0x170 */
-    SceGmoBase m_base;
-    SceGmoBone *m_initial;
-    int m_reference;
-    int m_flags;
-    int m_parent_bone;
-    int m_visibility;
-    ScePspFVector3 m_pivot;
-    ScePspFVector3 m_translate;
-    ScePspFQuaternion m_rotate;
-    ScePspFVector3 m_scale;
-    ScePspFMatrix4 m_local_matrix;
-    ScePspFMatrix4 m_stack_matrix;
-    ScePspFVector3 m_stack_scale;
-    ScePspFMatrix4 m_world_matrix;
-    int *m_draw_parts;
-    float *m_morph_weights;
-    int *m_blend_bones;
-    ScePspFMatrix4 *m_blend_offsets;
-    int m_n_draw_parts;
-    int m_n_morph_weights;
-    int m_n_blend_bones;
-    int m_n_blend_offsets;
-    int m_anim_flags;
-    float m_anim_weights[5];
-};
-typedef struct SceGmoMaterial SceGmoMaterial;
-struct SceGmoMaterial;
-typedef struct SceGmoLayer SceGmoLayer;
-struct SceGmoLayer;
-typedef struct ScePspFRect ScePspFRect;
-struct ScePspFRect;
-struct ScePspFRect { /* size 0x10 */
-    float x;
-    float y;
-    float w;
-    float h;
-};
-struct SceGmoLayer { /* size 0x50 */
-    SceGmoLayer *m_initial;
-    int m_reference;
-    int m_flags;
-    int m_map_type;
-    float m_map_factor;
-    int m_blend_func[5];
-    int m_texture;
-    ScePspFRect m_tex_crop;
-    int m_enable_mask;
-    int m_enable_bits;
-    int m_diffuse;
-    int m_specular;
-    int m_ambient;
-};
-struct SceGmoMaterial { /* size 0x84 */
-    SceGmoBase m_base;
-    SceGmoMaterial *m_initial;
-    int m_reference;
-    int m_flags;
-    SceGmoLayer *m_layers[8];
-    int m_n_layers;
-    int m_enable_mask;
-    int m_enable_bits;
-    int m_colors[6];
-    float m_shininess;
-    float m_refraction;
-    float m_bump;
-    int m_anim_flags;
-    float m_anim_weights[5];
-};
-typedef struct SceGmoTexture SceGmoTexture;
-struct SceGmoTexture;
-typedef struct SceGimPicture SceGimPicture;
-struct SceGimPicture;
-struct SceGmoTexture { /* size 0x1c */
-    SceGmoBase m_base;
-    SceGimPicture *m_picture;
-    int m_reference;
-    int m_flags;
-};
-typedef struct SceGmoMotion SceGmoMotion;
-struct SceGmoMotion;
-struct SceGmoMotion { /* size 0x40 */
-    SceGmoBase m_base;
-    SceGmoChunk *m_chunk;
-    int m_reference;
-    int m_flags;
-    SceGmoChunk **m_anims;
-    SceGmoChunk **m_fcurves;
-    int m_n_anims;
-    int m_n_fcurves;
-    float m_frame_loop[2];
-    float m_frame_rate;
-    float m_frame;
-    float m_weight;
-};
-struct SceGmoModel { /* size 0x100 */
-    SceGmoBase m_base;
-    int m_reference;
-    int m_flags;
-    SceGmoBone **m_bones;
-    SceGmoPart **m_parts;
-    SceGmoMaterial **m_materials;
-    SceGmoTexture **m_textures;
-    SceGmoMotion **m_motions;
-    int m_n_bones;
-    int m_n_parts;
-    int m_n_materials;
-    int m_n_textures;
-    int m_n_motions;
-    int m_current_motion;
-    float m_change_motion;
-    ScePspFMatrix4 m_world_matrix;
-    int m_enable_bits;
-    int m_enable_mask;
-    ScePspFVector3 m_bounding_box[2];
-    ScePspFMatrix4 m_vertex_offset;
-    ScePspFRect m_texcoord_offset;
-};
-typedef struct SceGmoSubject SceGmoSubject;
-struct _anon1;
-struct _anon1 { /* size 0x14 */
-    int arrays;
-    int mode;
-    int n_verts;
-    int n_prims;
-    short int indices[1];
-};
-typedef struct _anon1 SceGmoDrawArrays;
-struct _anon2;
-struct _anon2 { /* size 0x14 */
-    int arrays;
-    int mode;
-    int width;
-    int height;
-    short int indices[1];
-};
-typedef struct _anon2 SceGmoDrawBSpline;
-struct _anon3;
-struct _anon3 { /* size 0x14 */
-    int arrays;
-    int mode;
-    int width;
-    int height;
-    short int indices[1];
-};
-typedef struct _anon3 SceGmoDrawRectMesh;
-struct _anon4;
-struct _anon4 { /* size 0x14 */
-    int arrays;
-    int mode;
-    int width;
-    int height;
-    short int indices[1];
-};
-typedef struct _anon4 SceGmoDrawRectPatch;
-struct _anon5;
-struct _anon5 { /* size 0x10 */
-    int format;
-    int n_verts;
-    int n_morphs;
-    int format2;
-};
-typedef struct _anon5 SceGmoArraysHeader;
+static void draw_mesh( SceGmoMesh *mesh ) ;
+static void reset_arrays( SceGmoPart *part ) ;
+static _Bool set_arrays( int index ) ;
+static void draw_arrays( SceGmoDrawArrays *cmd ) ;
+static void draw_b_spline( SceGmoDrawBSpline *cmd ) ;
+static void draw_rect_patch( SceGmoDrawRectPatch *cmd ) ;
+static void draw_rect_mesh( SceGmoDrawRectMesh *cmd ) ;
 
 extern SceGmoPart *g_current_part;
 extern SceGmoArraysHeader *g_current_arrays;
 extern int g_current_index;
 
-SceGmoPart *sceGmoPartCreate(const SceGmoChunk *chunk);
-void sceGmoPartDelete(SceGmoPart *part);
-_Bool sceGmoPartLoad(SceGmoPart *part, const SceGmoChunk *load_chunk);
-static int SCEGMO_CHUNK_SIZE(SceGmoChunk *chunk);
-static SceGmoChunk *SCEGMO_CHUNK_NEXT(SceGmoChunk *chunk);
-static SceGmoChunk *SCEGMO_CHUNK_CHILD(SceGmoChunk *chunk);
-static int SCEGMO_CHUNK_TYPE(SceGmoChunk *chunk);
-void sceGmoPartUnload(SceGmoPart *part);
-void sceGmoPartDraw(SceGmoPart *part, SceGmoModel *model, SceGmoBone *bone);
-static SceGmoSubject *sceGmoBaseGetParent(const SceGmoBase *base);
-SceGmoMesh *sceGmoMeshCreate(const SceGmoChunk *chunk);
-void sceGmoMeshDelete(SceGmoMesh *mesh);
-_Bool sceGmoMeshLoad(SceGmoMesh *mesh, const SceGmoChunk *chunk);
-static void *SCEGMO_CHUNK_ARGS(SceGmoChunk *chunk);
-void sceGmoMeshUnload(SceGmoMesh *mesh);
-void sceGmoMeshDraw(SceGmoMesh *mesh, SceGmoModel *model, SceGmoBone *bone, SceGmoPart *part);
-static void draw_mesh(SceGmoMesh *mesh);
-static void reset_arrays(SceGmoPart *part);
-static _Bool set_arrays(int idx);
-SceGmoChunk *sceGmoPartGetArrays(SceGmoPart *part, int idx);
-static void draw_arrays(SceGmoDrawArrays *cmd);
-static void draw_b_spline(SceGmoDrawBSpline *cmd);
-static void draw_rect_mesh(SceGmoDrawRectMesh *cmd);
-static void draw_rect_patch(SceGmoDrawRectPatch *cmd);
-SceGmoPart *sceGmoPartDuplicate(SceGmoPart *part, int flags);
-SceGmoMesh *sceGmoPartGetMesh(SceGmoPart *part, int idx);
-SceGmoMesh *sceGmoMeshDuplicate(SceGmoMesh *mesh, int flags);
+SceGmoPart *sceGmoPartCreate( SceGmoChunk *chunk )
+{
+ SceGmoPart *part = (SceGmoPart *)sceGmoModelAllocMemory( sizeof( SceGmoPart ) ) ;
+ if ( part == 0 ) {
+  ;
+  return 0 ;
+ }
+ sceGmoBaseConstruct( &( part->m_base ) ) ;
+ part->m_chunk = 0 ;
+ part->m_reference = 1 ;
+ part->m_flags = 0 ;
 
+ part->m_meshes = 0 ;
+ part->m_arrays = 0 ;
+ part->m_n_meshes = 0 ;
+ part->m_n_arrays = 0 ;
 
-/* SDK prototypes (tools/sdk_protos.h) */
-void sceGuDrawArrayN(int prim, int vtype, int count, int a3, const void *indices, const void *vertices);
-void sceGuDrawBezier(int vtype, int ucount, int vcount, const void *indices, const void *vertices);
-void sceGuDrawSpline(int vtype, int ucount, int vcount, int uedge, int vedge, const void *indices, const void *vertices);
-void *sceGuGetMemory(int size);
-int sceKernelDcacheWritebackAll(void);
-
-/* module functions defined in other units */
-void sceGmoBaseConstruct(SceGmoBase *base);
-void sceGmoContextSetBone(SceGmoBone *bone, SceGmoModel *model, const int *indices, int n_indices);
-int sceGmoContextSetMaterial(SceGmoMaterial *material, SceGmoModel *model, int idx);
-void *sceGmoModelAllocMemory(unsigned int size);
-int sceGmoModelCountChunk(const SceGmoChunk *chunk, int type);
-void sceGmoModelFreeMemory2(void *addr);
-SceGmoMaterial *sceGmoModelGetMaterial(SceGmoModel *model, int idx);
-
-/* module functions defined in other units */
-int sceGmoMaterialGetLayerCount(SceGmoMaterial *material);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/gmo_model/gmo_part", sceGmoPartCreate);
-
-void sceGmoPartDelete(SceGmoPart *part) {
-    int temp_v1;
-
-    if ((part == NULL) || (temp_v1 = part->m_reference - 1, part->m_reference = temp_v1, (temp_v1 != 0))) {
-
-    } else {
-        sceGmoPartUnload(part);
-        sceGmoBaseDestruct(part);
-        sceGmoModelFreeMemory(part);
-    }
+ if ( chunk != 0 && !sceGmoPartLoad( part, chunk ) ) {
+  sceGmoPartDelete( part ) ;
+  return 0 ;
+ }
+ return part ;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/gmo_model/gmo_part", sceGmoPartLoad);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/gmo_model/gmo_part", sceGmoPartUnload);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/gmo_model/gmo_part", sceGmoPartDraw);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/gmo_model/gmo_part", sceGmoMeshCreate);
-
-void sceGmoMeshDelete(SceGmoMesh *mesh) {
-    int temp_v1;
-
-    if ((mesh == NULL) || (temp_v1 = mesh->m_reference - 1, mesh->m_reference = temp_v1, (temp_v1 != 0))) {
-
-    } else {
-        sceGmoMeshUnload(mesh);
-        sceGmoModelFreeMemory(mesh);
-    }
+void sceGmoPartDelete( SceGmoPart *part )
+{
+ if ( part == 0 ) return ;
+ if ( -- part->m_reference == 0 ) {
+  sceGmoPartUnload( part ) ;
+  sceGmoBaseDestruct( &( part->m_base ) ) ;
+  sceGmoModelFreeMemory( part ) ;
+ }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/gmo_model/gmo_part", sceGmoMeshLoad);
+_Bool sceGmoPartLoad( SceGmoPart *part, const SceGmoChunk *load_chunk )
+{
+ SceGmoChunk *chunk ;
+ if ( part == 0 ) return 0 ;
+ if ( load_chunk == 0 ) return 0 ;
+
+ sceGmoPartUnload( part ) ;
+
+ if ( !sceGmoModelCopyPtr2( &( part->m_chunk ), load_chunk, SCEGMO_CHUNK_SIZE( (SceGmoChunk *)load_chunk ) ) ) {
+  ;
+  return 0 ;
+ }
+ chunk = part->m_chunk ;
+ chunk->type = 1 ;
+
+ int n_meshes = sceGmoModelCountChunk( chunk, SCEGMO_MESH ) ;
+ int n_arrays = sceGmoModelCountChunk( chunk, SCEGMO_ARRAYS ) ;
+ if ( !sceGmoModelAllocPtr( &( part->m_meshes ), n_meshes * sizeof( void * ) )
+   || !sceGmoModelAllocPtr( &( part->m_arrays ), n_arrays * sizeof( void * ) ) ) {
+  ;
+  return 0 ;
+ }
+
+ SceGmoChunk *end = SCEGMO_CHUNK_NEXT( chunk ) ;
+ for ( chunk = SCEGMO_CHUNK_CHILD( chunk ) ; chunk < end ; chunk = SCEGMO_CHUNK_NEXT( chunk ) ) {
+  switch ( SCEGMO_CHUNK_TYPE( chunk ) ) {
+      case SCEGMO_MESH : {
+   SceGmoMesh *mesh = sceGmoMeshCreate( chunk ) ;
+   if ( mesh == 0 ) return 0 ;
+   part->m_meshes[ part->m_n_meshes ++ ] = mesh ;
+   break ;
+      }
+      case SCEGMO_ARRAYS : {
+   part->m_arrays[ part->m_n_arrays ++ ] = chunk ;
+   break ;
+      }
+  }
+ }
+ return 1 ;
+}
+
+void sceGmoPartUnload( SceGmoPart *part )
+{
+ if ( part == 0 ) return ;
+
+ SceGmoChunk *chunk = part->m_chunk ;
+ if ( chunk != 0 ) {
+  if ( -- chunk->type == 0 ) sceGmoModelFreeMemory2( chunk ) ;
+  part->m_chunk = 0 ;
+ }
+ { int i ; for ( i = 0 ; i < part->m_n_meshes ; i ++ ) {
+  sceGmoMeshDelete( part->m_meshes[ i ] ) ;
+ } }
+
+ sceGmoModelFreeMemory( part->m_meshes ) ;
+ sceGmoModelFreeMemory( part->m_arrays ) ;
+ part->m_meshes = 0 ;
+ part->m_arrays = 0 ;
+ part->m_n_meshes = 0 ;
+ part->m_n_arrays = 0 ;
+}
+
+void sceGmoPartDraw( SceGmoPart *part, SceGmoModel *model, SceGmoBone *bone )
+{
+ if ( part == 0 ) return ;
+
+ SceGmoSubject *parent = sceGmoBaseGetParent( &( part->m_base ) ) ;
+ if ( parent != 0 ) model = (SceGmoModel *)parent ;
+
+ { int i ; for ( i = 0 ; i < part->m_n_meshes ; i ++ ) {
+  sceGmoMeshDraw( part->m_meshes[ i ], model, bone, part ) ;
+ } }
+}
+
+SceGmoMesh *sceGmoMeshCreate( SceGmoChunk *chunk )
+{
+ SceGmoMesh *mesh = (SceGmoMesh *)sceGmoModelAllocMemory( sizeof( SceGmoMesh ) ) ;
+ if ( mesh == 0 ) {
+  ;
+  return 0 ;
+ }
+ mesh->m_chunk = 0 ;
+ mesh->m_reference = 1 ;
+ mesh->m_flags = 0 ;
+ mesh->m_material = -1 ;
+ mesh->m_blend_subset = 0 ;
+ mesh->m_n_blend_subset = 0 ;
+
+ if ( chunk != 0 && !sceGmoMeshLoad( mesh, chunk ) ) {
+  sceGmoMeshDelete( mesh ) ;
+  return 0 ;
+ }
+ return mesh ;
+}
+
+void sceGmoMeshDelete( SceGmoMesh *mesh )
+{
+ if ( mesh == 0 ) return ;
+ if ( -- mesh->m_reference == 0 ) {
+  sceGmoMeshUnload( mesh ) ;
+  sceGmoModelFreeMemory( mesh ) ;
+ }
+}
+
+_Bool sceGmoMeshLoad( SceGmoMesh *mesh, SceGmoChunk *chunk )
+{
+ if ( mesh == 0 ) return 0 ;
+ if ( chunk == 0 ) return 0 ;
+
+ sceGmoMeshUnload( mesh ) ;
+
+ mesh->m_chunk = chunk ;
+
+ SceGmoChunk *end = SCEGMO_CHUNK_NEXT( chunk ) ;
+ for ( chunk = SCEGMO_CHUNK_CHILD( chunk ) ; chunk < end ; chunk = SCEGMO_CHUNK_NEXT( chunk ) ) {
+  void *args = SCEGMO_CHUNK_ARGS( chunk ) ;
+
+  switch ( SCEGMO_CHUNK_TYPE( chunk ) ) {
+      case SCEGMO_SET_MATERIAL : {
+   SceGmoSetMaterial *cmd = (SceGmoSetMaterial *)args ;
+   mesh->m_material = cmd->material ;
+   break ;
+      }
+      case SCEGMO_BLEND_SUBSET : {
+   SceGmoBlendSubset *cmd = (SceGmoBlendSubset *)args ;
+   mesh->m_blend_subset = cmd->indices ;
+   mesh->m_n_blend_subset = cmd->n_indices ;
+   break ;
+      }
+  }
+ }
+ return 1 ;
+}
 
 void sceGmoMeshUnload( SceGmoMesh *mesh )
 {
@@ -344,84 +192,244 @@ void sceGmoMeshUnload( SceGmoMesh *mesh )
  mesh->m_n_blend_subset = 0 ;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/gmo_model/gmo_part", sceGmoMeshDraw);
+void sceGmoMeshDraw( SceGmoMesh *mesh, SceGmoModel *model, SceGmoBone *bone, SceGmoPart *part )
+{
+ if ( mesh == 0 ) return ;
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/gmo_model/gmo_part", draw_mesh);
+ sceGmoContextSetBone( bone, model, mesh->m_blend_subset, mesh->m_n_blend_subset ) ;
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/gmo_model/gmo_part", reset_arrays);
+ SceGmoMaterial *material = sceGmoModelGetMaterial( model, mesh->m_material ) ;
+ if ( material == 0 ) {
+  reset_arrays( part ) ;
+  draw_mesh( mesh ) ;
+  return ;
+ }
+
+ reset_arrays( part ) ;
+ int count = sceGmoMaterialGetLayerCount( material ) ;
+ { int i ; for ( i = 0 ; i < count ; i ++ ) {
+
+  if ( sceGmoContextSetMaterial( material, model, i ) == 0 ) continue ;
+  draw_mesh( mesh ) ;
+ } }
+}
+
+void draw_mesh( SceGmoMesh *mesh )
+{
+
+ SceGmoChunk *chunk = mesh->m_chunk ;
+ SceGmoChunk *end = SCEGMO_CHUNK_NEXT( chunk ) ;
+ for ( chunk = SCEGMO_CHUNK_CHILD( chunk ) ; chunk < end ; chunk = SCEGMO_CHUNK_NEXT( chunk ) ) {
+  void *args = SCEGMO_CHUNK_ARGS( chunk ) ;
+
+  switch ( SCEGMO_CHUNK_TYPE( chunk ) ) {
+      case SCEGMO_KNOT_VECTOR_U : {
+   break ;
+      }
+      case SCEGMO_KNOT_VECTOR_V : {
+   break ;
+      }
+      case SCEGMO_DRAW_ARRAYS : {
+   SceGmoDrawArrays *cmd = (SceGmoDrawArrays *)args ;
+   if ( set_arrays( cmd->arrays ) ) draw_arrays( cmd ) ;
+   break ;
+      }
+      case SCEGMO_DRAW_PARTICLE : {
+   break ;
+      }
+      case SCEGMO_DRAW_B_SPLINE : {
+   SceGmoDrawBSpline *cmd = (SceGmoDrawBSpline *)args ;
+   if ( set_arrays( cmd->arrays ) ) draw_b_spline( cmd ) ;
+   break ;
+      }
+      case SCEGMO_DRAW_RECT_MESH : {
+   SceGmoDrawRectMesh *cmd = (SceGmoDrawRectMesh *)args ;
+   if ( set_arrays( cmd->arrays ) ) draw_rect_mesh( cmd ) ;
+   break ;
+      }
+      case SCEGMO_DRAW_RECT_PATCH : {
+   SceGmoDrawRectPatch *cmd = (SceGmoDrawRectPatch *)args ;
+   if ( set_arrays( cmd->arrays ) ) draw_rect_patch( cmd ) ;
+   break ;
+      }
+  }
+ }
+
+}
+
+void reset_arrays( SceGmoPart *part )
+{
+ g_current_part = part ;
+ g_current_arrays = 0 ;
+ g_current_index = -1 ;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/gmo_model/gmo_part", set_arrays);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/gmo_model/gmo_part", draw_arrays);
+void draw_arrays( SceGmoDrawArrays *cmd )
+{
+ SceGmoArraysHeader *arrays = g_current_arrays ;
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/gmo_model/gmo_part", draw_b_spline);
+ sceGmoContextSetTexOffs( 0 ) ;
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/gmo_model/gmo_part", draw_rect_mesh);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/gmo_model/gmo_part", draw_rect_patch);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/gmo_model/gmo_part", sceGmoPartDuplicate);
-
-void sceGmoPartSetParent(SceGmoPart *part, SceGmoModel *parent) {
-    if (part != NULL) {
-        sceGmoBaseSetParent();
-    }
-}
-/* Warning: struct SceGimPicture is not defined (only forward-declared) */
-
-SceGmoModel *sceGmoPartGetParent(SceGmoPart *part) {
-    SceGmoSubject *var_v0;
-
-    var_v0 = NULL;
-    if (part != NULL) {
-        var_v0 = part->m_base.m_parent.m_subject;
-    }
-    return (SceGmoModel *) var_v0;
-}
-/* Warning: struct SceGimPicture is not defined (only forward-declared) */
-
-int sceGmoPartGetMeshCount(SceGmoPart *part) {
-    int var_v0;
-
-    var_v0 = 0;
-    if (part != NULL) {
-        var_v0 = part->m_n_meshes;
-    }
-    return var_v0;
+ int mode = cmd->mode ;
+ int n_verts = cmd->n_verts ;
+ int n_prims = cmd->n_prims ;
+ unsigned short *indices = cmd->indices ;
+ int format = arrays->format ;
+ void *buffer = arrays + 1 ;
+ if ( SCEGMO_PRIM_SEQUENTIAL & mode ) {
+  int stride = format >> 24 ;
+  stride += ( ( format >> 18 ) & 7 ) * stride ;
+  buffer = (char *)buffer + stride * indices[ 0 ] ;
+  format &= ~( 2 << 11 ) ;
+  indices = 0 ;
+ }
+ sceGuDrawArrayN( mode, format, n_verts, n_prims, indices, buffer ) ;
 }
 
-int sceGmoPartGetArraysCount(SceGmoPart *part) {
-    int var_v0;
+void draw_b_spline( SceGmoDrawBSpline *cmd )
+{
+ SceGmoArraysHeader *arrays = g_current_arrays ;
 
-    var_v0 = 0;
-    if (part != NULL) {
-        var_v0 = part->m_n_arrays;
-    }
-    return var_v0;
+ int width = cmd->width ;
+ int height = cmd->height ;
+ int format = arrays->format ;
+ if ( ( 3 << 0 ) & format ) {
+  sceGmoContextSetTexOffs( 0 ) ;
+ } else {
+  rect tmp = { 0, 0, 1.0f / ( width - 3 ), 1.0f / ( height - 3 ) } ;
+  sceGmoContextSetTexOffs( &tmp ) ;
+ }
+
+ int mode = cmd->mode ;
+ int flags_u = 3 & ( mode >> 12 ) ;
+ int flags_v = 3 & ( mode >> 14 ) ;
+ unsigned short *indices = cmd->indices ;
+ void *buffer = arrays + 1 ;
+ if ( SCEGMO_PRIM_SEQUENTIAL & mode ) {
+  int stride = format >> 24 ;
+  stride += ( ( format >> 18 ) & 7 ) * stride ;
+  buffer = (char *)buffer + stride * indices[ 0 ] ;
+  format &= ~( 2 << 11 ) ;
+  indices = 0 ;
+ }
+ sceGuDrawSpline( format, width, height, flags_u, flags_v, indices, buffer ) ;
 }
 
-SceGmoMesh *sceGmoPartGetMesh(SceGmoPart *part, int idx) {
-    SceGmoMesh *var_a2;
-    int temp_a1;
+void draw_rect_mesh( SceGmoDrawRectMesh *cmd )
+{
+ SceGmoArraysHeader *arrays = g_current_arrays ;
 
-    temp_a1 = idx & 0xFFF;
-    var_a2 = NULL;
-    if ((part != NULL) && (temp_a1 < part->m_n_meshes)) {
-        var_a2 = part->m_meshes[temp_a1];
-    }
-    return var_a2;
+ sceGmoContextSetTexOffs( 0 ) ;
+
+ int mode = cmd->mode ;
+ int width = cmd->width ;
+ int height = cmd->height ;
+ unsigned short *indices = (unsigned short *)sceGuGetMemory( sizeof( short ) * width * 2 * ( height - 1 ) ) ;
+ unsigned short *sp = cmd->indices ;
+ unsigned short *dp = indices ;
+ int index = 0 ;
+ if ( SCEGMO_PRIM_SEQUENTIAL & mode ) {
+  index = sp[ 0 ] ;
+  sp = 0 ;
+ }
+ int index2 = index + width ;
+ { int i ; for ( i = 1 ; i < height ; i ++ ) {
+  { int j ; for ( j = 0 ; j < width ; j ++ ) {
+   dp[ 0 ] = ( sp == 0 ) ? index : sp[ index ] ;
+   dp[ 1 ] = ( sp == 0 ) ? index2 : sp[ index2 ] ;
+   dp += 2 ;
+   index += 1 ;
+   index2 += 1 ;
+  } }
+ } }
+ int n_verts = width * 2 ;
+ int format = arrays->format ;
+ void *buffer = arrays + 1 ;
+ sceKernelDcacheWritebackAll();
+ sceGuDrawArrayN( mode, format, n_verts, height - 1, indices, buffer ) ;
 }
 
-SceGmoChunk *sceGmoPartGetArrays(SceGmoPart *part, int idx) {
-    SceGmoChunk *var_a2;
-    int temp_a1;
+void draw_rect_patch( SceGmoDrawRectPatch *cmd )
+{
+ SceGmoArraysHeader *arrays = g_current_arrays ;
 
-    temp_a1 = idx & 0xFFF;
-    var_a2 = NULL;
-    if ((part != NULL) && (temp_a1 < part->m_n_arrays)) {
-        var_a2 = part->m_arrays[temp_a1];
-    }
-    return var_a2;
+ int width = cmd->width ;
+ int height = cmd->height ;
+ int format = arrays->format ;
+ if ( ( 3 << 0 ) & format ) {
+  sceGmoContextSetTexOffs( 0 ) ;
+ } else {
+  rect tmp = { 0, 0, 1.0f / ( width / 3 ), 1.0f / ( height / 3 ) } ;
+  sceGmoContextSetTexOffs( &tmp ) ;
+ }
+
+ int mode = cmd->mode ;
+ unsigned short *indices = cmd->indices ;
+ void *buffer = arrays + 1 ;
+ if ( SCEGMO_PRIM_SEQUENTIAL & mode ) {
+  int stride = format >> 24 ;
+  stride += ( ( format >> 18 ) & 7 ) * stride ;
+  buffer = (char *)buffer + stride * indices[ 0 ] ;
+  format &= ~( 2 << 11 ) ;
+  indices = 0 ;
+ }
+ sceGuDrawBezier( format, width, height, indices, buffer ) ;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/gmo_model/gmo_part", sceGmoMeshDuplicate);
+SceGmoPart *sceGmoPartDuplicate( SceGmoPart *part, int flags )
+{
+
+ if ( part == 0 ) return 0 ;
+ part->m_reference ++ ;
+ return part ;
+}
+
+void sceGmoPartSetParent( SceGmoPart *part, SceGmoModel *parent )
+{
+ if ( part == 0 ) return ;
+ sceGmoBaseSetParent( &( part->m_base ), (SceGmoSubject *)parent ) ;
+}
+
+SceGmoModel *sceGmoPartGetParent( SceGmoPart *part )
+{
+ if ( part == 0 ) return 0 ;
+ return (SceGmoModel *)sceGmoBaseGetParent( &( part->m_base ) ) ;
+}
+
+int sceGmoPartGetMeshCount( SceGmoPart *part )
+{
+ if ( part == 0 ) return 0 ;
+ return part->m_n_meshes ;
+}
+
+int sceGmoPartGetArraysCount( SceGmoPart *part )
+{
+ if ( part == 0 ) return 0 ;
+ return part->m_n_arrays ;
+}
+
+SceGmoMesh *sceGmoPartGetMesh( SceGmoPart *part, int index )
+{
+ if ( part == 0 ) return 0 ;
+ index = (0x0fff&(index)) ;
+ if ( index >= part->m_n_meshes ) return 0 ;
+ return part->m_meshes[ index ] ;
+}
+
+SceGmoChunk *sceGmoPartGetArrays( SceGmoPart *part, int index )
+{
+ if ( part == 0 ) return 0 ;
+ index = (0x0fff&(index)) ;
+ if ( index >= part->m_n_arrays ) return 0 ;
+ return part->m_arrays[ index ] ;
+}
+
+SceGmoMesh *sceGmoMeshDuplicate( SceGmoMesh *mesh, int flags )
+{
+
+ if ( mesh == 0 ) return 0 ;
+ mesh->m_reference ++ ;
+ return mesh ;
+}
