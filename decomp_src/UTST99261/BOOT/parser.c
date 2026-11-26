@@ -203,7 +203,48 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", parseContents);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", parseContentsNoParse);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", ps_prepareText);
+char *ps_prepareText(unsigned char *s, int n) {
+    unsigned char *buf;
+    int sp;
+    int j;
+    int k;
+    char c;
+    unsigned char *p;
+
+    buf = MEM_malloc(0, n + 1);
+    if (buf == NULL) {
+        return NULL;
+    }
+    p = s;
+    while (*p == ' ' || *p == '\t' || *p == '\r' || *p == '\n') {
+        n--;
+        if (n <= 0) {
+            MEM_free(0, buf);
+            return NULL;
+        }
+        p++;
+    }
+    sp = 0;
+    k = 0;
+    for (j = 0; j < n; j++) {
+        c = p[j];
+        if (c == ' ' || c == '\t' || c == '\r' || c == '\n') {
+            if (sp == 0) {
+                buf[k++] = ' ';
+                sp = 1;
+            }
+        } else {
+            buf[k++] = c;
+            sp = 0;
+        }
+    }
+    if (k > 0 && buf[k - 1] == ' ') {
+        buf[k - 1] = 0;
+    } else {
+        buf[k] = 0;
+    }
+    return (char *)buf;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", parseTitle);
 
@@ -782,7 +823,30 @@ void parseInitCtxt(PCtx *c) {
     c->x44[2] = 1;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", parseDataInputBuf);
+int parseDataInputBuf(PCtx *c, PChar *data, int n) {
+    PBuf *b;
+
+    if (n == 0) {
+        return 0;
+    }
+    if (c->x1C[1] >= c->x1C[2]) {
+        c->x1C[2] += 5;
+        c->x1C[3] = (int)MEM_realloc(0, c->x1C[3], c->x1C[2] * 4);
+    }
+    ((PBuf **)c->x1C[3])[c->x1C[1]] = MEM_malloc(0, 0x14);
+    ((PBuf **)c->x1C[3])[c->x1C[1]]->cur = MEM_malloc(0, n * 2);
+    memcpy(((PBuf **)c->x1C[3])[c->x1C[1]]->cur, data, n * 2);
+    ((PBuf **)c->x1C[3])[c->x1C[1]]->x04 = n;
+    ((PBuf **)c->x1C[3])[c->x1C[1]]->x08 = c->x44[0];
+    ((PBuf **)c->x1C[3])[c->x1C[1]]->count = 0;
+    ((PBuf **)c->x1C[3])[c->x1C[1]]->base = ((PBuf **)c->x1C[3])[c->x1C[1]]->cur;
+    if (c->x1C[1] == 0) {
+        c->buf = ((PBuf **)c->x1C[3])[0];
+    }
+    c->x44[0] += n;
+    c->x1C[1]++;
+    return 0;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
