@@ -120,7 +120,16 @@ SceInt32 decode_videoDecodeEnd(SceMpeg *pMpeg, t_avSyncControl *pAvSync);
 /* SDK functions */
 int printf(const char *fmt, ...);
 
-INCLUDE_ASM("tmp/asm/UTST99332/mpeg_timecode_jump/nonmatchings/decode", decode_setStreamData);
+SceInt32 decode_setStreamData(t_mpegStreamData *pStreamData, SceMpegStream *pStreamV, SceMpegAu *pAvcAu, SceMpegStream *pStreamA, SceMpegAu *pAtracAu, SceUInt32 timestamp)
+{
+	pStreamData->pAvcStream = pStreamV;
+	pStreamData->pAtracStream = pStreamA;
+	pStreamData->pAvcAu = pAvcAu;
+	pStreamData->pAtracAu = pAtracAu;
+	pStreamData->timestamp = timestamp;
+
+	return 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/mpeg_timecode_jump/nonmatchings/decode", decode_audioDecode);
 
