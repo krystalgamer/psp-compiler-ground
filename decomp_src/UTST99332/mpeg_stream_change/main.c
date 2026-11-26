@@ -317,7 +317,28 @@ SceInt32 unloadModule(SceUID *mid)
 
 INCLUDE_ASM("tmp/asm/UTST99332/mpeg_stream_change/nonmatchings/main", main);
 
-INCLUDE_ASM("tmp/asm/UTST99332/mpeg_stream_change/nonmatchings/main", startCheck);
+static SceInt32 startCheck(t_avSyncControl *pAvSync, t_ringBuffer *pRingCtrl, t_conditionCtrl *pCtrl)
+{
+	SceInt32 ret;
+
+	if (audioFlag) {
+		if ((dispbuf_getCapacity(pAvSync->pDisp) == 0 && soundbuf_getCapacity(pAvSync->pSound) == 0 && read_isFull(pRingCtrl)) || checkDecodeEnd(pCtrl) == 1) {
+			control_setCondition(pCtrl, 1);
+			ret = 0;
+		} else {
+			ret = -1;
+		}
+	} else {
+		if ((dispbuf_getCapacity(pAvSync->pDisp) == 0 && read_isFull(pRingCtrl)) || checkDecodeEnd(pCtrl) == 1) {
+			control_setCondition(pCtrl, 1);
+			ret = 0;
+		} else {
+			ret = -1;
+		}
+	}
+
+	return ret;
+}
 
 static SceInt32 checkDecodeEnd(t_conditionCtrl *pCtrl)
 {
