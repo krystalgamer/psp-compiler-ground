@@ -113,7 +113,25 @@ void draw_bezier(void) {
     sceGumPopMatrix();
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_editgrid/nonmatchings/main", draw_dot);
+static void draw_dot(void)
+{
+	int i;
+
+	for (i = 0; i < 16; i++) {
+		if (i == current) {
+			sceGuColor(0xffffff80);
+		} else {
+			sceGuColor(0xff80ffff);
+		}
+
+		sceGumPushMatrix();
+
+		sceGumTranslate(&control[i]);
+		sceGumDrawArray(4, 0x180, 4, 0, dot);
+
+		sceGumPopMatrix();
+	}
+}
 
 INCLUDE_RODATA("tmp/asm/UTST99332/graphics_editgrid/nonmatchings/main", primflag);
 
