@@ -188,7 +188,34 @@ int dispbuf_reset(t_displayBuffer *pDisp) {
     return __builtin_allegrex_min(sceDisplaySetMode(0, 0x1E0, 0x110), 0);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/mpeg_stream_change/nonmatchings/display", dispbuf_delete);
+SceInt32 dispbuf_delete(t_displayBuffer *pDisp)
+{
+	SceInt32 i;
+
+	sceDisplaySetFrameBuf(0, 512, 3, 1);
+
+	if (pDisp->buf != NULL) {
+		for (i = 0; i < pDisp->size; i++) {
+			if (pDisp->buf[i] != NULL) {
+				free(pDisp->buf[i]);
+				pDisp->buf[i] = NULL;
+			}
+		}
+
+		free(pDisp->buf);
+		pDisp->buf = NULL;
+	}
+
+	if (pDisp->pts != NULL) {
+		free(pDisp->pts);
+		pDisp->pts = NULL;
+	}
+
+	sceKernelDeleteSema(pDisp->lockSema);
+	sceKernelDeleteEventFlag(pDisp->delayFlag);
+
+	return 0;
+}
 
 int dispbuf_getDrawbuf(t_displayBuffer *pDisp, signed char **buffer) {
     int temp_v0;
