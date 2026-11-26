@@ -93,7 +93,83 @@ void sceGuSpriteMode(int a0, int a1, int a2, int a3);
 void *sceGuSwapBuffers(void);
 void sceGuTerm(void);
 
-INCLUDE_ASM("tmp/asm/UTST99332/sound_starsound/nonmatchings/main", draw_frame);
+#ifndef SCEGU_IMMEDIATE /* sample */
+#define SCEGU_IMMEDIATE                    0
+#endif
+#ifndef SCEGU_CLEAR_ALL /* sample */
+#define SCEGU_CLEAR_ALL               0x0007
+#endif
+#ifndef SCEGU_TEXTURE /* sample */
+#define SCEGU_TEXTURE                      9
+#endif
+#ifndef SCEGU_SCR_WIDTH /* sample */
+#define SCEGU_SCR_WIDTH       480
+#endif
+#ifndef WALL_X /* sample */
+#define WALL_X			(SCEGU_SCR_WIDTH-SIZE)
+#endif
+#ifndef SCEGU_SCR_HEIGHT /* sample */
+#define SCEGU_SCR_HEIGHT      272
+#endif
+#ifndef SIZE /* sample */
+#define SIZE			16
+#endif
+#ifndef WALL_Y /* sample */
+#define WALL_Y			(SCEGU_SCR_HEIGHT-SIZE)
+#endif
+#ifndef MAXOBJ /* sample */
+#define MAXOBJ			8
+#endif
+#ifndef SCEGU_NOFLIP /* sample */
+#define SCEGU_NOFLIP                       0
+#endif
+#ifndef SCEGU_SYNC_FINISH /* sample */
+#define SCEGU_SYNC_FINISH                  0
+#endif
+#ifndef SCEGU_SYNC_WAIT /* sample */
+#define SCEGU_SYNC_WAIT                    0
+#endif
+static void draw_frame(void)
+{
+	POS	*p = pos;
+	int	x, y, px, py;
+	int	i, j;
+
+	sceGuStart(SCEGU_IMMEDIATE, disp_list, sizeof(disp_list));
+	sceGuClear(SCEGU_CLEAR_ALL);
+
+	sceGuEnable(SCEGU_TEXTURE);
+	sceGuSpriteMode(SIZE, SIZE, SIZE, SIZE);
+	for (j = 0; j < maxnum; j++, p++) {
+		if ((x = ((p->x+=p->dx) % (WALL_X*2))) >= WALL_X) {
+			px = WALL_X*2 - x;
+		} else {
+			px = x;
+		}
+		if ((y = ((p->y+=p->dy) % (WALL_Y*2))) >= WALL_Y) {
+			py = WALL_Y*2 - y;
+		} else {
+			py = y;
+		}
+		for (i = 1; i < MAXOBJ; i++) {
+			if ((x = ((x+p->dx*2) % (WALL_X*2))) >= WALL_X) {
+				px = WALL_X*2 - x;
+			} else {
+				px = x;
+			}
+			if ((y = ((y+p->dy*2) % (WALL_Y*2))) >= WALL_Y) {
+				py = WALL_Y*2 - y;
+			} else {
+				py = y;
+			}
+
+			sceGuColor(p->col + ((0xff/(MAXOBJ-i)) << 24));
+			sceGuDrawSprite(px, py, 0, 0, 0, SCEGU_NOFLIP, 0);
+		}
+	}
+	sceGuFinish();
+	sceGuSync(SCEGU_SYNC_FINISH, SCEGU_SYNC_WAIT);
+}
 
 void init_all(void) {
     sceGuInit();
