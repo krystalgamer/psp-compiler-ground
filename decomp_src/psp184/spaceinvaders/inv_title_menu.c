@@ -33,6 +33,14 @@ void game_cnt_help(void);
 void title_main_return(void);
 typedef struct { int f0; int f4; int f8[6]; int f20[6]; } SELC_T;
 
+extern int game_cpu_disp;
+int bmp_file_load(char *name);
+int bmp_file_load16(char *name);
+void title_bg_star_start(void *star);
+unsigned long genrand_int32(void);
+void *memset(void *, int, unsigned int);
+typedef struct { int f0; int f4; int f8; u8 pad[0x1C - 0xC]; } TSTAR_T;
+
 int inv_title_main(void) {
     inv_title_memcheck();
     inv_logo();
@@ -210,7 +218,21 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_title_menu", game_cnt
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_title_menu", title_bg_star_start);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_title_menu", title_bg_star_init);
+void title_bg_star_init(void)
+{
+	int i;
+	u8 *t = (u8 *)&title_main;
+	TSTAR_T *s;
+
+	*(float *)(t + 0xD4) = 1.0f;
+	*(int *)(t + 0xD8) = 1;
+	s = (TSTAR_T *)(t + 0xDC);
+	for (i = 0; i < 128; i++, s++) {
+		title_bg_star_start(s);
+		s->f4 = genrand_int32() % 120;
+		s->f8 = 0xFF;
+	}
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_title_menu", title_bg_star_disp);
 
