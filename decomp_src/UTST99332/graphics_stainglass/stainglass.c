@@ -264,7 +264,29 @@ void GenFrameBufferMipmap(void)
 	sceGuDepthMask( 0 );
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_stainglass/nonmatchings/stainglass", UseFrameBufferMipmap);
+#define SCEGU_LINEAR_MIPMAP_LINEAR         7
+#define SCEGU_LINEAR                       1
+#define SCEGU_TEXBUF_FAST                  1
+#define SCEGU_LOD_AUTO                     0
+#define SCEGU_CLAMP                        1
+
+void UseFrameBufferMipmap(void)
+{
+	const unsigned int vram_top = (unsigned int)sceGeEdramGetAddr();
+
+	sceGuEnable( SCEGU_TEXTURE );
+
+	sceGuTexFilter( SCEGU_LINEAR_MIPMAP_LINEAR, SCEGU_LINEAR );
+	sceGuTexImage( 0, 256, 256, 256, (void*)( vram_top + mipmap_vram[0] ) );
+	sceGuTexImage( 1, 128, 128, 128, (void*)( vram_top + mipmap_vram[1] ) );
+	sceGuTexImage( 2, 64, 64, 64, (void*)( vram_top + mipmap_vram[2] ) );
+	sceGuTexImage( 3, 32, 32, 32, (void*)( vram_top + mipmap_vram[3] ) );
+	sceGuTexImage( 4, 16, 16, 16, (void*)( vram_top + mipmap_vram[4] ) );
+	sceGuTexMode( SCEGU_PF8888, 4, SCEGU_SINGLE_CLUT, (refraction_texture_fast)?SCEGU_TEXBUF_FAST:SCEGU_TEXBUF_NORMAL );
+	sceGuTexLevelMode( SCEGU_LOD_AUTO, 0.0f );
+	sceGuTexFunc( SCEGU_TEX_MODULATE, SCEGU_RGB );
+	sceGuTexWrap( SCEGU_CLAMP, SCEGU_CLAMP );
+}
 
 void RandSeed( unsigned int val )
 {
