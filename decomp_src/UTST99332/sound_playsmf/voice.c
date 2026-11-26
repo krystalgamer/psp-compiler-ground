@@ -57,6 +57,8 @@ extern SsVoice D_001291C8[];
 #define g_vstate D_000186E4
 #define g_vmax D_0012919C
 #define g_voice D_001291C8
+extern unsigned int D_001291A0;
+extern SsVoice *D_00129EC8[32];
 extern unsigned int D_001291A4;
 extern SsVoice *D_00129F48[32];
 extern unsigned int D_001291A8;
@@ -75,6 +77,8 @@ extern unsigned int D_001291C0;
 extern SsVoice *D_0012A2C8[32];
 extern unsigned int D_001291C4;
 extern SsVoice *D_0012A348[32];
+#define g_cnt0 D_001291A0
+#define g_lst0 D_00129EC8
 #define g_cnt1 D_001291A4
 #define g_lst1 D_00129F48
 #define g_cnt2 D_001291A8
@@ -95,6 +99,14 @@ extern SsVoice *D_0012A348[32];
 #define g_lst9 D_0012A348
 
 static void func_0000C1B0(SsVoice *p);
+int sceSasSetVoice(int voice, void *vag, int size, int loop);
+int sceSasSetNoise(int voice, int freq);
+int sceSasSetPitch(int voice, int pitch);
+int sceSasSetVolume(int voice, int l, int r, int el, int er);
+int sceSasSetSimpleADSR(int voice, int adsr1, int adsr2);
+int sceSasSetKeyOn(int voice);
+unsigned short sceSsNote2Pitch(unsigned short center_note, unsigned short center_fine, unsigned short note, short fine);
+
 SsVoice *func_0000C240(unsigned int *pCount, SsVoice **list, unsigned int *pOutCount, SsVoice **outList, unsigned int no);
 
 
@@ -212,7 +224,63 @@ int voice_setSustain(unsigned int v, unsigned int on)
 	return 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/sound_playsmf/nonmatchings/voice", voice_setReservedVoice);
+int voice_setReservedVoice(unsigned int v, int flag)
+{
+	SsVoice *q;
+
+	if (g_vstate == -1)
+		return 0x80450001;
+	if (v >= g_vmax)
+		return 0x80540011;
+	if (flag == 0) {
+		if (g_voice[v].status != 0)
+			return 0x8054000e;
+		q = func_0000C240(&g_cnt0, g_lst0, &g_cnt1, g_lst1, v);
+		q->status = 1;
+	} else {
+		if (g_voice[v].status == 0)
+			return 0x8054000e;
+		switch (g_voice[v].status) {
+		case 1:
+			q = func_0000C240(&g_cnt1, g_lst1, &g_cnt0, g_lst0, v);
+			q->status = 0;
+			break;
+		case 2:
+			q = func_0000C240(&g_cnt2, g_lst2, &g_cnt0, g_lst0, v);
+			q->status = 0;
+			break;
+		case 3:
+			q = func_0000C240(&g_cnt3, g_lst3, &g_cnt0, g_lst0, v);
+			q->status = 0;
+			break;
+		case 4:
+			q = func_0000C240(&g_cnt4, g_lst4, &g_cnt0, g_lst0, v);
+			q->status = 0;
+			break;
+		case 5:
+			q = func_0000C240(&g_cnt5, g_lst5, &g_cnt0, g_lst0, v);
+			q->status = 0;
+			break;
+		case 6:
+			q = func_0000C240(&g_cnt6, g_lst6, &g_cnt0, g_lst0, v);
+			q->status = 0;
+			break;
+		case 7:
+			q = func_0000C240(&g_cnt7, g_lst7, &g_cnt0, g_lst0, v);
+			q->status = 0;
+			break;
+		case 8:
+			q = func_0000C240(&g_cnt8, g_lst8, &g_cnt0, g_lst0, v);
+			q->status = 0;
+			break;
+		case 9:
+			q = func_0000C240(&g_cnt9, g_lst9, &g_cnt0, g_lst0, v);
+			q->status = 0;
+			break;
+		}
+	}
+	return 0;
+}
 
 unsigned int voice_getVoiceByGroup(unsigned int group)
 {
@@ -451,7 +519,39 @@ SsVoice *func_0000C240(unsigned int *pCount, SsVoice **list, unsigned int *pOutC
 	return found;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/sound_playsmf/nonmatchings/voice", func_0000C2D8);
+int func_0000C2D8(SsVoice *p)
+{
+	SsVoice *v;
+	SsVoiceTone *t;
+	int pitch;
+	int pl, pr, el, er;
+
+	if (p->i1C == 0)
+		sceSasSetVoice(p->no, (void *)p->i20, p->i24, 1);
+	else
+		sceSasSetNoise(p->no, p->b28);
+
+	v = &g_voice[p->no];
+	t = &v->tone;
+	pitch = sceSsNote2Pitch(t->bD, t->bE * 127 / 100, v->b5D, t->bC * 127 / 100);
+	pitch = (unsigned int)(v->i2C * pitch) / 44100 + v->pitch;
+	pitch = (pitch < 0x4000) ? pitch : 0x4000;
+	pitch = (pitch > 1) ? pitch : 1;
+	sceSasSetPitch(p->no, pitch);
+	v->iC = v->pitch;
+
+	func_0000C6F4(p->i34, p->vel, p->b38, p->pan, &pl, &pr);
+	func_0000C6F4(p->i3C, p->sendVel, p->tone.b0, p->sendPan, &el, &er);
+	sceSasSetVolume(p->no, pl, pr, el, er);
+	sceSasSetSimpleADSR(p->no, p->tone.i4, p->tone.i8);
+	p->b8 = p->vel;
+	p->b9 = p->pan;
+	p->bA = p->sendVel;
+	p->bB = p->sendPan;
+	if (sceSasSetKeyOn(p->no) < 0)
+		return -1;
+	return 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/sound_playsmf/nonmatchings/voice", func_0000C488);
 
