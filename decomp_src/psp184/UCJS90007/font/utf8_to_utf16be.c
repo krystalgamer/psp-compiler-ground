@@ -193,9 +193,30 @@ void myDoneFontLibrary(void *libID) {
     sceFontDoneLib();
 }
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/font/utf8_to_utf16be", myAlloc);
+void *memalign(unsigned int align, unsigned int size);
+static void *myAlloc(int size)
+{
+	void *p;
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/font/utf8_to_utf16be", myFree);
+	p = memalign(4, size + 4);
+	if (p == NULL)
+		return NULL;
+	*(int *)p = size;
+	TotalAllocatedSize += size;
+	TotalAllocatedSizePeak = (TotalAllocatedSize > TotalAllocatedSizePeak) ? TotalAllocatedSize : TotalAllocatedSizePeak;
+	return (int *)p + 1;
+}
+
+void free(void *p);
+static void myFree(void *p)
+{
+	int size;
+
+	p = (int *)p - 1;
+	size = *(int *)p;
+	TotalAllocatedSize -= size;
+	free(p);
+}
 
 void *cb_Alloc(void *pMyData, unsigned int size) {
     return myAlloc((int) size);
@@ -205,7 +226,23 @@ void cb_Free(void *pMyData, void *p) {
     myFree(p);
 }
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/font/utf8_to_utf16be", cb_Open);
+int sceIoOpen(const char *name, int flag, int mode);
+static SceFont_t_handle cb_Open(SceFont_t_pointer pMyData, SceFont_t_pointer pFilename, SceFont_t_error *pErrorCode)
+{
+	{
+		SceUID FileID;
+		int result;
+
+		FileID = sceIoOpen((const char *)pFilename, 1, 0);
+		if (FileID < 0) {
+			*pErrorCode = 0x80460005;
+			return 0;
+		}
+		result = FileID;
+		*pErrorCode = 0;
+		return (SceFont_t_handle)result;
+	}
+}
 
 int cb_Close(void *pMyData, void *FileID) {
     return (sceIoClose((int) FileID) >= 0) ? 0 : 0x80460006;
@@ -213,4 +250,13 @@ int cb_Close(void *pMyData, void *FileID) {
 
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/font/utf8_to_utf16be", cb_Read);
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/font/utf8_to_utf16be", cb_Seek);
+long long sceIoLseek(int fd, long long offset, int whence);
+static SceFont_t_error cb_Seek(SceFont_t_pointer pMyData, SceFont_t_handle FileID, SceFont_t_u32 Offset)
+{
+	if (sceIoLseek((SceUID)FileID, Offset, 0) < 0)
+		return 0x80460008;
+	return 0;
+}
+
+/* the module's .data (font library callbacks) points at them */
+__asm__(".globl myAlloc\n.globl myFree\n.globl cb_Open\n.globl cb_Seek");
