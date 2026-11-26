@@ -60,6 +60,26 @@ void *getNextLLIST();
 void delLLIST();
 int countRequestedLLIST();
 void msgSendToOtherTask(LOBODY *msg, int mq);
+char *strchr(const char *s, int c);
+
+typedef struct {
+    int len;
+    char *data;
+} LPDATA;
+
+typedef struct { /* size 0x2C */
+    s16 unk0;
+    int type;
+    int flags;
+    int urllen;
+    char *url;
+    int targetlen;
+    char *target;
+    int methodlen;
+    char *method;
+    int postlen;
+    char *post;
+} LP11DATA;
 
 extern SLOGLOBAL lo_global;
 unsigned int strlen(const char *s);
@@ -221,7 +241,66 @@ void make_msg_LP10(int arg0, int arg1, int arg2) {
     M2C_FIELD(temp_v0, int *, 0x40) = arg1;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_sndmsg", make_msg_LP11);
+void *make_msg_LP11(int type, char *url, char *target, LPDATA *post, char *method, int flags) {
+    char *frag;
+    int fraglen;
+    int urllen;
+    int targetlen;
+    int methodlen;
+    unsigned int size;
+    LP11DATA *d;
+    char *p;
+    void *m;
+
+    frag = NULL;
+    if (type == 0 && (frag = strchr(url, '#')) != NULL) {
+        fraglen = strlen(frag);
+    } else {
+        fraglen = 0;
+    }
+    urllen = strlen(url) + 1;
+    targetlen = 1;
+    if (target != NULL) {
+        targetlen = strlen(target) + 1;
+    }
+    methodlen = 0;
+    if (method != NULL) {
+        methodlen = strlen(method);
+        methodlen += methodlen != 0;
+    }
+    size = urllen + targetlen + methodlen + post->len + fraglen + 0x2D;
+    d = MEM_malloc(0, size);
+    memset(d, 0, size);
+    d->unk0 = 0;
+    d->type = type;
+    d->flags = flags;
+    d->urllen = urllen - 1;
+    d->targetlen = targetlen - 1;
+    d->methodlen = methodlen != 0 ? methodlen - 1 : 0;
+    d->postlen = fraglen + post->len;
+    d->url = (char *)(d + 1);
+    d->target = d->url + urllen;
+    d->method = methodlen != 0 ? d->target + targetlen : NULL;
+    d->post = d->target + targetlen + methodlen;
+    p = (char *)(d + 1);
+    memcpy(p, url, urllen - 1);
+    p += urllen;
+    memcpy(p, target, targetlen - 1);
+    p += targetlen;
+    if (methodlen != 0) {
+        memcpy(p, method, methodlen - 1);
+        p += methodlen;
+    }
+    memcpy(p, post->data, post->len);
+    if (fraglen > 0) {
+        memcpy(p + post->len, frag, fraglen);
+    }
+    m = make_layoutMsg_template(2, 0, 0x1A);
+    M2C_FIELD(m, int *, 0x34) = type;
+    M2C_FIELD(m, int *, 0x3C) = size;
+    M2C_FIELD(m, LP11DATA **, 0x40) = d;
+    return m;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
