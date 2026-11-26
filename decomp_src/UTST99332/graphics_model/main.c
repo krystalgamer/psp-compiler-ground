@@ -147,4 +147,35 @@ static void unload_objects(void)
 	g_model = 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_model/nonmatchings/main", load_file);
+extern const char D_0001D65C[]; /* "host0:%s" (rodata emitted elsewhere) */
+int sprintf(char *buf, const char *fmt, ...);
+int sceIoOpen(const char *file, int flags, int mode);
+long long sceIoLseek(int fd, long long offset, int whence);
+int sceIoRead(int fd, void *data, unsigned int size);
+int sceIoClose(int fd);
+void *malloc(unsigned int size);
+
+static _Bool load_file(const char *filename, int **buf, int *size)
+{
+	char fullpath[256];
+
+	sprintf(fullpath, D_0001D65C, filename);
+
+	SceUID fd = sceIoOpen(fullpath, 1, 0777);
+	if (fd < 0) {
+		return 0;
+	}
+
+	*size = sceIoLseek(fd, 0, 2);
+	if (*size <= 0) {
+		sceIoClose(fd);
+		return 0;
+	}
+
+	sceIoLseek(fd, 0, 0);
+	*buf = malloc(*size);
+	sceIoRead(fd, *buf, *size);
+	sceIoClose(fd);
+
+	return 1;
+}
