@@ -399,9 +399,33 @@ static void DialogUpdate()
     }
 }
 
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/main", MessageDialog);
+static void MessageDialog()
+{
+    int i;
+    char message[512] = "アクセスポイントから切断されました\xe3\x80";
+    SceUtilityMsgDialogParam param;
 
-INCLUDE_RODATA("tmp/asm/htmlviewer/htmlviewer/nonmatchings/main", D_0001B544);
+    memset(&param, 0, sizeof(param));
+    param.base.size = sizeof(param);
+    param.base.ctrl_assign = 0;
+    param.base.main_thread_priority = 17;
+    param.base.sub_thread_priority = 19;
+    param.base.font_thread_priority = 18;
+    param.base.sound_thread_priority = 16;
+    param.type = 1;
+    param.optionType = 1;
+    memcpy(param.msgString, message, sizeof(message));
+    sceUtilityMsgDialogInitStart(&param);
+    for (i = 0; i < 180; i++) {
+        int status;
+        draw_frame();
+        DialogUpdate();
+        sceKernelCheckCallback();
+        vsync_frame();
+        status = sceUtilityMsgDialogGetStatus();
+        if (status == 0) break;
+    }
+}
 
 static void OnPush_LaunchHtmlViewer_B64(int selection)
 {
