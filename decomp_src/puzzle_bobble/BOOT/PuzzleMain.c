@@ -2809,16 +2809,16 @@ int PuzzleBody(void)
 					break;
 				}
 			}
-			if (k) {
-				st->unk006 = 22;
-				st->unk025 = 12;
-				st->unk42A = 0;
-				se_play(9);
-				SetCharacters(st, 7, 0);
-				SetMonitor(st, 4);
-			} else {
+			if (!k) {
 				st->unk006 = 1;
+				break;
 			}
+			st->unk006 = 22;
+			st->unk025 = 12;
+			st->unk42A = 0;
+			se_play(9);
+			SetCharacters(st, 7, 0);
+			SetMonitor(st, 4);
 			break;
 		}
 		case 22:
@@ -2850,27 +2850,28 @@ int PuzzleBody(void)
 				Cont ^= 1;
 				se_play(4);
 			}
-			if (st->unk42A < 31 || !(KeyHit & 0x2000)) {
-				ret = 0;
-				break;
-			}
-			if (Cont) {
-				st->unk006 = 40;
-				ret = 0;
+			if (st->unk42A >= 31 && (KeyHit & 0x2000)) {
+				if (Cont) {
+					st->unk006 = 40;
+					ret = 0;
+					st->unk42A = 0;
+					bgm_stop();
+					se_play(10);
+					break;
+				}
+				se_play(0);
+				SetCharacters(st, 3, 0);
+				SetCharacters(st, 0, 1);
+				SetMonitor(st, 0);
 				st->unk42A = 0;
-				bgm_stop();
-				se_play(10);
+				StageNum--;
+				st->unk006 = 31;
+				st->unk428 = 2;
+				st->unk434 = 0;
+			} else {
+				ret = 0;
 				break;
 			}
-			se_play(0);
-			SetCharacters(st, 3, 0);
-			SetCharacters(st, 0, 1);
-			SetMonitor(st, 0);
-			st->unk42A = 0;
-			StageNum--;
-			st->unk006 = 31;
-			st->unk428 = 2;
-			st->unk434 = 0;
 		case 31:
 			st->scroll = -18;
 			StageNum++;
@@ -2971,8 +2972,8 @@ int PuzzleBody(void)
 			if (st->unk42A >= 346) {
 				ret = 4;
 				SpriteSetFader(0);
-				st->unk42A = 0;
 				st->unk006 = 0;
+				st->unk42A = 0;
 			}
 			break;
 		}
@@ -2984,27 +2985,25 @@ int PuzzleBody(void)
 				for (i = 0; i < 192; i++) {
 					if (st->ent[i].flag) {
 						n = st->ent[i].vy++;
-						x = st->ent[i].x + 80;
-						y = st->ent[i].y - 32;
+						x = st->ent[i].x;
+						y = st->ent[i].y;
+						x += 80;
+						y -= 32;
 						if (st->ent[i].col == 12) {
 							fl = 64 - n;
 							if (fl > 0) {
 								fl *= 0.015625f;
-								c = 11;
-							} else {
+								DrawBubble(fl, x, y, 11, 0);
+							} else
 								st->ent[i].flag = 0;
-								continue;
-							}
 						} else {
 							if (n > 0) {
 								y += n * n / 40;
 								if (y > 320)
 									st->ent[i].flag = 0;
 							}
-							fl = 0;
-							c = st->ent[i].col - 1;
+							DrawBubble(0, x, y, st->ent[i].col - 1, 0);
 						}
-						DrawBubble(fl, x, y, c, 0);
 					}
 				}
 			}
@@ -3720,7 +3719,7 @@ int VSModeBody(int pl)
 			k = 0;
 			w = GetMapWidth(st->mapno);
 			for (i = 0; i < w; i++) {
-				if (st->mp.map[(11 - st->scroll) * w + i]) {
+				if (st->mp.map[i + (11 - st->scroll) * w]) {
 					k = 1;
 					break;
 				}
@@ -3812,29 +3811,29 @@ int VSModeBody(int pl)
 				Cont ^= 1;
 				se_play(4);
 			}
-			if (st->unk42A < 31 || !(st->key_rep & 0x2000)) {
+			if (st->unk42A >= 31 && (st->key_rep & 0x2000)) {
+				if (Cont) {
+					st->unk006 = 40;
+					st->unk42A = 0;
+					ret = 0;
+					bgm_stop();
+					se_play(10);
+				} else {
+					se_play(0);
+					StageNum = 0;
+					st->unk006 = 0;
+					st->unk428 = 0;
+					st->unk42A = 0;
+					SurvCont = 1;
+					VSModeInit(0);
+					SurvCont = 0;
+					SetCharacters(st, 3, 0);
+					SetCharacters(st, 0, 1);
+					SetMonitor(st, 0);
+				}
+			} else {
 				ret = 0;
-				break;
 			}
-			if (Cont) {
-				st->unk006 = 40;
-				st->unk42A = 0;
-				ret = 0;
-				bgm_stop();
-				se_play(10);
-				break;
-			}
-			se_play(0);
-			StageNum = 0;
-			st->unk006 = 0;
-			st->unk428 = 0;
-			st->unk42A = 0;
-			SurvCont = 1;
-			VSModeInit(0);
-			SurvCont = 0;
-			SetCharacters(st, 3, 0);
-			SetCharacters(st, 0, 1);
-			SetMonitor(st, 0);
 			break;
 		case 26:
 			if (pl != 1)
@@ -3978,27 +3977,25 @@ int VSModeBody(int pl)
 			for (i = 0; i < 192; i++) {
 				if (st->ent[i].flag) {
 					n = st->ent[i].vy++;
-					x = st->ent[i].x + 80;
-					y = st->ent[i].y - 32;
+					x = st->ent[i].x;
+					y = st->ent[i].y;
+					x += 80;
+					y -= 32;
 					if (st->ent[i].col == 12) {
 						fl = 64 - n;
 						if (fl > 0) {
 							fl *= 0.015625f;
-							c = 11;
-						} else {
+							DrawBubble(fl, x, y, 11, 0);
+						} else
 							st->ent[i].flag = 0;
-							continue;
-						}
 					} else {
 						if (n > 0) {
 							y += n * n / 40;
 							if (y > 320)
 								st->ent[i].flag = 0;
 						}
-						fl = 0;
-						c = st->ent[i].col - 1;
+						DrawBubble(0, x, y, st->ent[i].col - 1, 0);
 					}
-					DrawBubble(fl, x, y, c, 0);
 				}
 			}
 		}
