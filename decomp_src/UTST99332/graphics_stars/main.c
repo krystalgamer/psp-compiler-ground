@@ -90,39 +90,18 @@ int sceDisplayWaitVblankStart(void);
 
 #ifndef SCEGU_IMMEDIATE
 #define SCEGU_IMMEDIATE                    0
-#ifndef SCEGU_CLEAR_ALL
 #define SCEGU_CLEAR_ALL               0x0007
-#endif
-#ifndef SCEGU_TEXTURE
 #define SCEGU_TEXTURE                      9
-#endif
-#ifndef SCEGU_SCR_WIDTH
 #define SCEGU_SCR_WIDTH       480
-#endif
-#ifndef WALL_X
 #define WALL_X		(SCEGU_SCR_WIDTH-SIZE)
-#endif
-#ifndef SCEGU_SCR_HEIGHT
 #define SCEGU_SCR_HEIGHT      272
-#endif
-#ifndef SIZE
 #define SIZE		16
-#endif
-#ifndef WALL_Y
 #define WALL_Y		(SCEGU_SCR_HEIGHT-SIZE)
-#endif
-#ifndef MAXOBJ
 #define MAXOBJ		8
-#endif
-#ifndef SCEGU_NOFLIP
 #define SCEGU_NOFLIP                       0
-#endif
-#ifndef SCEGU_SYNC_FINISH
 #define SCEGU_SYNC_FINISH                  0
-#endif
-#ifndef SCEGU_SYNC_WAIT
 #define SCEGU_SYNC_WAIT                    0
-#endif
+
 static void draw_frame(void)
 {
 	POS	*p = pos;
