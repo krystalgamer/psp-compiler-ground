@@ -360,6 +360,11 @@ modules (`tools/nltest.py`, `tools/objcmp.py`).
   (`@psp184/spaceinvaders 1.6.1 objorder`). Its libwave/libgum are built
   `-O2 -frename-registers`, UTST99332's plain `-O2`: also per game.
 
+- Sony's `memmove` (in every 1.6.1-era module's newlib) is C built with
+  `-falign-loops=64` (its forward loops are 64-byte aligned); 1.5.1's and
+  1.3.1's psp-as can't assemble the result. UTST99332's SDK `libsas` is
+  `-O2 -frename-registers` like libwave.
+
 ## psp-gcc 1.7.1 (release build)
 
 htmlviewer is the first module built by release 1.7.1 (plus SDK libraries
