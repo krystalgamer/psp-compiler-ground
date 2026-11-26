@@ -523,7 +523,23 @@ int HST_getJSURIlen(void *arg0) {
     return M2C_FIELD(arg0, int *, 0x78);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/history", HST_getJSURI);
+void *HST_getJSURI(void *node, int idx) {
+    char *p;
+    int i;
+
+    p = NULL;
+    if (M2C_FIELD(node, int *, 0x78) == 0) {
+        return (void *)M2C_FIELD(node, int *, 0x74);
+    }
+    if (M2C_FIELD(node, int *, 0x78) > 0) {
+        p = (char *)M2C_FIELD(node, int *, 0x74);
+        for (i = 1; i < idx; i++) {
+            p = (char *)M2C_FIELD(p, int *, 0xB0);
+        }
+        return p;
+    }
+    return p;
+}
 
 int HST_deleteJSURI(void *node) {
     void *p, *next;
@@ -578,7 +594,23 @@ int HST_getCSSURIlen(void *arg0) {
     return M2C_FIELD(arg0, int *, 0x80);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/history", HST_getCSSURI);
+void *HST_getCSSURI(void *node, int idx) {
+    char *p;
+    int i;
+
+    p = NULL;
+    if (M2C_FIELD(node, int *, 0x80) == 0) {
+        return (void *)M2C_FIELD(node, int *, 0x7C);
+    }
+    if (M2C_FIELD(node, int *, 0x80) > 0) {
+        p = (char *)M2C_FIELD(node, int *, 0x7C);
+        for (i = 1; i < idx; i++) {
+            p = (char *)M2C_FIELD(p, int *, 0xB0);
+        }
+        return p;
+    }
+    return p;
+}
 
 int HST_deleteCSSURI(void *node) {
     void *p, *next;
