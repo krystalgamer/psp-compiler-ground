@@ -123,7 +123,143 @@ int PlSelInit(void)
 	return 0;
 }
 
+#ifdef NON_MATCHING
+/* Rough (15 instructions short): logic complete, but the original keeps ret in a stack
+ * slot, tests NowMode as 1, <2, 2, 3 and allocates the face_u/face_v pointers and the
+ * 128.0 double differently.  The double literals are the unit's cst8 rodata. */
+extern int D_00154010;
+extern int D_00154014;
+extern int D_00154018;
+extern int D_000408D4;
+extern int SelectModeFlag;
+extern int NowMode;
+extern const int face_u[];
+extern const int face_v[];
+extern const int sel_chr[];
+extern const int name_u[];
+extern const int name_v[];
+extern const int atk_u[];
+extern const int atk_v[];
+extern const double D_0002F648;
+extern const double D_0002F650;
+extern const double D_0002F658;
+extern const double D_0002F660;
+extern const double D_0002F668;
+double cos(double);
+double sin(double);
+int GetKeyHit(void);
+void SpriteInit(void);
+void SpriteKick(void);
+int se_play(int no);
+void bgm_stop(void);
+int DrawSpriteEx(int no, float z, float f0, float f1, float f2, float f3, float f4, float f5, float f6, float f7, float f8, float f9, float f10, float f11, float f12, float f13, int flag);
+int PlayerSelect(void)
+{
+	int ret;
+	int i, a, x, y, k, o, r;
+	double ang;
+
+	SpriteInit();
+	DrawSpriteEz(4.0f, 0.0f, 0.0f, 240.0f, 272.0f, 0.0f, 0.0f, 0);
+	DrawSpriteEz(4.0f, 240.0f, 0.0f, 240.0f, 272.0f, 240.0f, 0.0f, 0);
+	DrawSpriteEz(2.0f, 0.0f, 112.0f, 240.0f, 160.0f, 0.0f, 0.0f, 1);
+	ret = 0;
+	SpriteDraw(1, -1, 2.0f, 240.0f, 112.0f, 239.0f, 0.0f, 479.0f, 112.0f, 0.0f, 0.0f, 240.0f, 271.0f, 239.0f, 159.0f, 479.0f, 271.0f, 0.0f, 159.0f);
+	DrawSpriteEz(2.0f, 0.0f, 208.0f, 200.0f, 40.0f, 0.0f, 0.0f, 13);
+	DrawSpriteEz(2.0f, 200.0f, 208.0f, 200.0f, 40.0f, 0.0f, 40.0f, 13);
+	DrawSpriteEz(2.0f, 328.0f, 0.0f, 304.0f, 304.0f, 0.0f, 0.0f, 4);
+	D_00154014++;
+	if (D_000408D4 < 30) {
+		D_000408D4++;
+	} else if (D_000408D4 >= 60) {
+		D_000408D4 += 2;
+		if (D_000408D4 >= 180) {
+			D_00154010 = 0;
+			D_000408D4 = 0;
+			SelectModeFlag = NowMode;
+			switch (NowMode) {
+			case 1:
+				ret = 10;
+				break;
+			case 2:
+				ret = 9;
+				break;
+			case 3:
+				ret = 11;
+				break;
+			default:
+				ret = 2;
+				break;
+			}
+		}
+	} else {
+		if (GetKeyHit() & 0x2008) {
+			if (D_0101C3BC == 0 && SelectPlayer == 5)
+				a = 2;
+			else {
+				D_000408D4 = 60;
+				bgm_stop();
+				a = 0;
+			}
+			se_play(a);
+		} else if (GetKeyHit() & 0x4000) {
+			ret = 6 - (NowMode != 0);
+			se_play(3);
+		}
+		if (GetKeyHit() & 0xC0) {
+			se_play(4);
+			D_00154018 = 2;
+			if (++SelectPlayer >= 6)
+				SelectPlayer = 0;
+		}
+		if (GetKeyHit() & 0x30) {
+			se_play(4);
+			D_00154018 = -2;
+			if (--SelectPlayer < 0)
+				SelectPlayer = 5;
+		}
+		if (SelPlAngle != SelectPlayer * 30) {
+			SelPlAngle += D_00154018;
+			if (SelPlAngle < 0)
+				SelPlAngle += 180;
+			if (SelPlAngle >= 180)
+				SelPlAngle -= 180;
+		}
+		for (i = 0; i < 6; i++) {
+			ang = (float)(i * 30 - SelPlAngle + 265) * 3.14f / 90.0f;
+			x = cos(ang) * D_0002F648 + D_0002F650 - D_0002F658;
+			y = sin(ang) * D_0002F648 + D_0002F660 - D_0002F668;
+			DrawSpriteEz(2.0f, x, y, 72.0f, 72.0f, face_u[i], face_v[i], i == SelectPlayer ? 15 : 14);
+		}
+		DrawSpriteEz(2.0f, 10.0f, 50.0f, 232.0f, 232.0f, 0.0f, 0.0f, sel_chr[SelectPlayer]);
+		DrawSpriteEz(2.0f, 216.0f, 200.0f, 128.0f, 48.0f, name_u[SelectPlayer], name_v[SelectPlayer], 21);
+		if (NowMode == 2 || NowMode == 3) {
+			r = SelectPlayer / 3;
+			k = SelectPlayer % 3;
+			if (D_00154014 & 8)
+				k += 3;
+			o = (D_00154014 >> 3) & 7;
+			if (r == 0)
+				o = -o;
+			DrawSpriteEz(2.0f, 232.0f, 240.0f, 120.0f, 32.0f, atk_u[k], atk_v[k], 12);
+			DrawSpriteEz(2.0f, 232.0f, o + 240, 120.0f, 32.0f, 120.0f, r * 32 + 32, 12);
+		}
+		D_00154010 = (D_00154010 + 4) % 180;
+		if (D_00154010 < 0)
+			D_00154010 += 180;
+		SetSpriteColorRGBA(191, 191, 191, 255);
+		DrawSpriteEx(10, 2.0f, 29.0f, -4.0f, 96.0f, 96.0f, 0, 0, 0, 0, 0, 0, 0, 0, (float)D_00154010 * 3.14f / 90.0f, 1.0f, 0);
+	}
+	SetSpriteColorRGBA(255, 255, 255, 255);
+	DrawSpriteEz(2.0f, 40.0f, 8.0f, 400.0f, 48.0f, 0.0f, 192.0f, 7);
+	DrawSpriteEz(2.0f, 208.0f, 52.0f, 272.0f, 32.0f, 0.0f, 64.0f, 5);
+	DrawSpriteEz(2.0f, 280.0f, 80.0f, 184.0f, 24.0f, 0.0f, 0.0f, 8);
+	SpriteKick();
+	return ret;
+}
+#else
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/plsel", PlayerSelect);
+#endif
 
 #ifdef NON_MATCHING
 /* diff 2 with every cc1 (and every order of the five stores): the tx load is scheduled
