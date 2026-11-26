@@ -20,7 +20,6 @@ extern int *ptexdis1[];
 extern int demotype;
 void spr_boxfill(int tex, int x, int y, int w, int h, int col);
 void classic_inv_demo2_moji2(int type);
-void classic_inv_expsys_setsub(int a, int b, int c, int d, int e, int f, int g);
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 
 extern int nowplay;
@@ -28,6 +27,14 @@ extern int screen_sw;
 extern int *ptexdis2[];
 extern int wwx, wwy, wwh, www;
 void classic_inv_shotsub(int a, int b, int c, int d, int e, int f, int g, int h, int i, int j);
+
+typedef struct { int f0; int f4; int f8; int fC; int f10; int f14; int f18; int f1C; } SEXP_T;
+
+extern int classic_fade_x;
+extern int D_0039AED0;
+void poly_set(int a0, int a1, int a2, int a3, int a4, int a5, int a6, int a7,
+	int s0, int s1, int s2, int s3, int s4, int s5, int s6, int s7,
+	int s8, int s9, int s10, int s11, int s12, int s13, int s14, int s15, int s16);
 
 void psp_xstart(void) {
     psp_loopstart();
@@ -348,7 +355,17 @@ void classic_inv_demo2_moji(void)
 		classic_inv_demo2_moji2(1);
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_shima", inv_classic_fade);
+int inv_classic_fade(void)
+{
+	classic_fade_x += 8;
+	if (classic_fade_x > 480) {
+		classic_fade_x = 480;
+		return 1;
+	}
+	poly_set(D_0039AED0, 8, classic_fade_x, 0x100, 0, 0, 0, 0,
+		0x80, 0, 0, 0, 0x80, 0, 0, 0, 0x80, 0, 0, 0, 0x80, 0xFF, 2, 0, 0xFF);
+	return 0;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -390,7 +407,28 @@ void classic_inv_expsys_init(void) {
     memset(&sexp, 0, 0x140U);
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_shima", classic_inv_expsys_setsub);
+void classic_inv_expsys_setsub(int a, int b, int c, int d, int e, int f, int g)
+{
+	int i;
+	SEXP_T *p = (SEXP_T *)&sexp;
+
+	for (i = 0; i < 10; i++, p++) {
+		if (p->f0 == 0) {
+			if (nowplay == 0)
+				p->f4 = ptexdis1[0][7];
+			else
+				p->f4 = ptexdis2[0][7];
+			p->f8 = g;
+			p->f0 = f;
+			p->fC = a;
+			p->f10 = b;
+			p->f14 = c;
+			p->f18 = d;
+			p->f1C = e;
+			return;
+		}
+	}
+}
 
 void classic_inv_expsys_set(int a, int b, int c, int d, int e, int f)
 {
