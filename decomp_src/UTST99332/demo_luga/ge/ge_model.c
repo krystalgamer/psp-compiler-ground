@@ -162,7 +162,22 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/ge/ge_model", geModelNorma
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/ge/ge_model", geObjectDraw);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/ge/ge_model", geModelLoad);
+SceGmoModel *sceGmoModelCreate(void *chunk);
+int sceGmoModelLoadFile(SceGmoModel *model, const void *buf, int size, int index);
+
+int geModelLoad(int num, int *data, int size)
+{
+	SceGmoModel *model;
+
+	ge_model[num] = model = sceGmoModelCreate(NULL);
+	if (!sceGmoModelLoadFile(model, data, size, 0)) {
+		sceGmoModelDelete(model);
+		ge_model[num] = NULL;
+		return -1;
+	}
+	sceGmoModelSetCurrentMotion(model, 0, 0.1f);
+	return num;
+}
 
 void geModelDelete(int num)
 {
@@ -170,15 +185,51 @@ void geModelDelete(int num)
 	ge_model[num] = NULL;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/ge/ge_model", geModelDraw);
+void sceGmoModelSetWorldMatrix(SceGmoModel *model, const ScePspFMatrix4 *matrix);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/ge/ge_model", geModelMotion);
+void geModelDraw(int num, float step)
+{
+	ScePspFMatrix4 m;
+	SceGmoModel *model = ge_model[num];
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/ge/ge_model", geModelMotionFrame);
+	if (model != NULL) {
+		sceGumMatrixMode(2);
+		sceGumStoreMatrix(&m);
+		sceGmoModelSetWorldMatrix(model, &m);
+		sceGmoModelAnimate(model, step);
+		sceGmoModelUpdate(model);
+		sceGmoModelDraw(model);
+	}
+}
+
+void geModelMotion(int num, int motion)
+{
+	sceGmoModelSetCurrentMotion(ge_model[num], motion, 0.1f);
+}
+
+struct SceGmoMotion *sceGmoModelGetMotion(SceGmoModel *model, int idx);
+float sceGmoMotionGetFrame(struct SceGmoMotion *motion);
+
+float geModelMotionFrame(int num)
+{
+	SceGmoModel *model = ge_model[num];
+
+	return sceGmoMotionGetFrame(sceGmoModelGetMotion(model, sceGmoModelGetCurrentMotion(model)));
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/ge/ge_model", geModelInit);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/ge/ge_model", geModelTerm);
+void geModelTerm(void)
+{
+	int i;
+
+	for (i = 0; i < 128; i++) {
+		if (ge_model[i] != NULL) {
+			sceGmoModelDelete(ge_model[i]);
+			ge_model[i] = NULL;
+		}
+	}
+}
 
 void geModelTexFunc(int mode) {
     ge_tex_mode = mode;
