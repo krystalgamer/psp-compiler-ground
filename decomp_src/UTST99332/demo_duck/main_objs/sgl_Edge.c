@@ -6,11 +6,14 @@
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_Edge", _Z41__static_initialization_and_destruction_0ii_D7664);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_Edge", _ZN3sgl4EdgeC2Eiiii);
+sgl::Edge::Edge(int a, int b, int c, int d) : t0(a), t1(b), v0(c), v1(d)
+{
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_Edge", _ZN3sgl4EdgeC1Eiiii);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_Edge", _ZNK3sgl4Edge20numAdjacentTrianglesEv);
+int sgl::Edge::numAdjacentTriangles() const
+{
+    return (t0 >= 0) + (t1 >= 0);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_Edge", _ZN3sgl4Edge5orderEv);
 
@@ -24,64 +27,64 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_Edge", _ZN3s
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_Edge", _ZN3sgl8CoreMeshD0Ev);
 
-const void *sgl::CoreMesh::getPositions() const
+const std::vector<sgl::Position> &sgl::CoreMesh::getPositions() const
 {
-    return &_f4;
+    return _positions;
 }
 
-const void *sgl::CoreMesh::getNormals() const
+const std::vector<sgl::Normal> &sgl::CoreMesh::getNormals() const
 {
-    return &_f10;
+    return _normals;
 }
 
-const void *sgl::CoreMesh::getColors() const
+const std::vector<sgl::Color> &sgl::CoreMesh::getColors() const
 {
-    return &_f1C;
+    return _colors;
 }
 
-const void *sgl::CoreMesh::getTexCoords() const
+const std::vector<sgl::TexCoord> &sgl::CoreMesh::getTexCoords() const
 {
-    return &_f28;
+    return _texcoords;
 }
 
-const void *sgl::CoreMesh::getVertices() const
+const std::vector<sgl::Vertex> &sgl::CoreMesh::getVertices() const
 {
-    return &_f34;
+    return _vertices;
 }
 
-const void *sgl::CoreMesh::getPrims() const
+const sgl::PrimitiveIndex<int> &sgl::CoreMesh::getPrims() const
 {
-    return &_f40;
+    return _prims;
 }
 
-void *sgl::CoreMesh::getPositions()
+std::vector<sgl::Position> &sgl::CoreMesh::getPositions()
 {
-    return &_f4;
+    return _positions;
 }
 
-void *sgl::CoreMesh::getNormals()
+std::vector<sgl::Normal> &sgl::CoreMesh::getNormals()
 {
-    return &_f10;
+    return _normals;
 }
 
-void *sgl::CoreMesh::getColors()
+std::vector<sgl::Color> &sgl::CoreMesh::getColors()
 {
-    return &_f1C;
+    return _colors;
 }
 
-void *sgl::CoreMesh::getTexCoords()
+std::vector<sgl::TexCoord> &sgl::CoreMesh::getTexCoords()
 {
-    return &_f28;
+    return _texcoords;
 }
 
-void *sgl::CoreMesh::getVertices()
+std::vector<sgl::Vertex> &sgl::CoreMesh::getVertices()
 {
-    return &_f34;
+    return _vertices;
 }
 
-void *sgl::CoreMesh::getPrims()
+sgl::PrimitiveIndex<int> &sgl::CoreMesh::getPrims()
 {
-    return &_f40;
+    return _prims;
 }
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_Edge", _ZN3sgl8CoreMesh5clearEv);
@@ -90,7 +93,10 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_Edge", _ZNK3
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_Edge", _ZN3sgl8CoreMesh23setVertexAttributeIndexEiNS_14VertexAttrEnumEi);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_Edge", _ZNK3sgl8CoreMesh22getVertexPositionIndexEi);
+int sgl::CoreMesh::getVertexPositionIndex(int i) const
+{
+    return getVertexAttributeIndex(i, VertexAttrEnum(0));
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_Edge", _ZNK3sgl8CoreMesh17getVertexPositionEi);
 

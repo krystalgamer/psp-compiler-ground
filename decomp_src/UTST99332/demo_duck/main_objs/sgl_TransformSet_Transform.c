@@ -4,6 +4,11 @@
 #include "cxx/defer_asm.h"
 #include "../main.hpp"
 
+namespace std {
+extern template vector<sgl::TransformSet::Transform>::iterator
+vector<sgl::TransformSet::Transform>::erase(iterator, iterator);
+}
+
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_TransformSet_Transform", _Z41__static_initialization_and_destruction_0ii_D2750);
 
 sgl::TransformSet::Transform::Transform() {
@@ -19,9 +24,15 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_TransformSet
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_TransformSet_Transform", _ZN3sgl12TransformSet3addEN4math6matrixE);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_TransformSet_Transform", _ZN3sgl12TransformSet5clearEv);
+void sgl::TransformSet::clear()
+{
+    _transforms.clear();
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_TransformSet_Transform", _ZN3sgl12TransformSet10set_creaseEf);
+void sgl::TransformSet::set_crease(float c)
+{
+    _crease = c;
+}
 
 extern "C" {
 void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_D2750");

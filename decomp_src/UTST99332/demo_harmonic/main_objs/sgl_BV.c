@@ -4,6 +4,9 @@
 #include "cxx/defer_asm.h"
 #include "../main.hpp"
 
+extern const float D_0016A708;      /* 1.0f */
+extern const float D_0016A70C;      /* 1.0f */
+
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_BV", _Z41__static_initialization_and_destruction_0ii_9F58C);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_BV", _ZN3sgl2BVC2Ev);
@@ -12,24 +15,38 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_BV", _ZN
 
 void sgl::BV::setType(sgl::BV::Type v)
 {
-    _f80 = v;
+    _type = v;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_BV", _ZN3sgl2BV5startEv);
+void sgl::BV::start()
+{
+    Box::first(math::vector_xyzw(0, 0, 0, D_0016A708));
+    Box::add(math::vector_xyzw(0, 0, 0, D_0016A708));
+    _started = true;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_BV", _ZN3sgl2BV3addEN4math11vector_xyzwE);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_BV", _ZN3sgl2BV3addERKS0_RKN4math6matrixE);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_BV", _ZN3sgl2BV3addEfff);
+void sgl::BV::add(float x, float y, float z)
+{
+    add(math::vector_xyzw(x, y, z, D_0016A70C));
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_BV", _ZN3sgl2BV3addERKS0_);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_BV", _ZN3sgl2BV6finishEv);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_BV", _ZNK3sgl2BV4drawEv);
+void sgl::BV::draw() const
+{
+    Box::draw();
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_BV", _ZNK3sgl2BV4drawEi);
+void sgl::BV::draw(int n) const
+{
+    Box::draw(n);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_BV", _ZN3sgl2BV8calc_obbEv);
 

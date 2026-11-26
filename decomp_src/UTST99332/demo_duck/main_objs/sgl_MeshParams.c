@@ -14,23 +14,50 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_MeshParams",
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_MeshParams", _ZN3sgl10MeshParams4set0Ef);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_MeshParams", _ZN3sgl10MeshParams3setENS_10ParamsBoolEb);
+void sgl::MeshParams::set(ParamsBool p, bool b)
+{
+    _bools[p] = b;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_MeshParams", _ZNK3sgl10MeshParams3getENS_10ParamsBoolE);
+bool sgl::MeshParams::get(ParamsBool p) const
+{
+    return _bools[p];
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_MeshParams", _ZN3sgl10MeshParams3setENS_9ParamsIntEi);
+void sgl::MeshParams::set(ParamsInt p, int v)
+{
+    _ints[p] = v;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_MeshParams", _ZNK3sgl10MeshParams3getENS_9ParamsIntE);
+int sgl::MeshParams::get(ParamsInt p) const
+{
+    return _ints[p];
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_MeshParams", _ZN3sgl10MeshParams3setENS_11ParamsFloatEf);
+void sgl::MeshParams::set(ParamsFloat p, float v)
+{
+    _floats[p] = v;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_MeshParams", _ZNK3sgl10MeshParams3getENS_11ParamsFloatE);
+float sgl::MeshParams::get(ParamsFloat p) const
+{
+    return _floats[p];
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_MeshParams", _ZN3sgl10MeshParams3setENS_12ParamsFloat4EN4math11vector_xyzwE);
+void sgl::MeshParams::set(ParamsFloat4 p, math::vector_xyzw v)
+{
+    _float4s[p] = v;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_MeshParams", _ZN3sgl10MeshParams3setENS_12ParamsFloat4Effff);
+void sgl::MeshParams::set(ParamsFloat4 p, float x, float y, float z, float w)
+{
+    _float4s[p] = math::vector_xyzw(x, y, z, w);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_MeshParams", _ZNK3sgl10MeshParams3getENS_12ParamsFloat4E);
+math::vector_xyzw sgl::MeshParams::get(ParamsFloat4 p) const
+{
+    return _float4s[p];
+}
 
 extern "C" {
 void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_CE0FC");

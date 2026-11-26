@@ -28,16 +28,19 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_LineSet_Line
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_LineSet_Line_Vertex", _ZN3sgl7LineSet3endEv);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_LineSet_Line_Vertex", _ZNK3sgl7LineSet5readyEv);
+bool sgl::LineSet::ready() const
+{
+    return _state != 3;
+}
 
 void sgl::LineSet::set_negate_normals(bool v)
 {
-    _f75 = v;
+    _negate_normals = v;
 }
 
 void sgl::LineSet::set_crease(float v)
 {
-    _f78 = v;
+    _crease = v;
 }
 
 extern "C" {

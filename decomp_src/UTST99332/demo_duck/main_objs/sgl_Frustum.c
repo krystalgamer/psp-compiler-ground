@@ -22,7 +22,10 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_Frustum", _Z
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_Frustum", _ZN3sgl7Frustum9intersectERNS_2BVE);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_Frustum", _ZN3sgl7Frustum6enableEv);
+void sgl::Frustum::enable()
+{
+    _f8 = true;
+}
 
 void sgl::Frustum::disable()
 {
@@ -86,7 +89,15 @@ float sgl::Frustum::getTop() const
     return _f34;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_Frustum", _ZNK3sgl7Frustum3getERfS1_S1_S1_S1_S1_);
+void sgl::Frustum::get(float &left, float &right, float &bottom, float &top, float &znear, float &zfar) const
+{
+    znear = _fC;
+    zfar = _f10;
+    left = _f28;
+    right = _f2C;
+    bottom = _f30;
+    top = _f34;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_Frustum", _ZN3sgl7Frustum6setFovEf);
 

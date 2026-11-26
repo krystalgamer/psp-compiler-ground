@@ -59,11 +59,14 @@ void *sgl::RT::getMesh()
     return this;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_RT", _ZN3sgl2RT12setTestLightEN4math11vector_xyzwE);
-
-const void *sgl::RT::getTestLight() const
+void sgl::RT::setTestLight(math::vector_xyzw v)
 {
-    return &_fA0;
+    _testLight = v;
+}
+
+const math::vector_xyzw &sgl::RT::getTestLight() const
+{
+    return _testLight;
 }
 
 extern "C" {

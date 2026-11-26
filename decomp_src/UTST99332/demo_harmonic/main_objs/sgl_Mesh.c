@@ -6,9 +6,9 @@
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh", _Z41__static_initialization_and_destruction_0ii_A91B4);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh", _ZN3sgl4Mesh7OffsetsC2Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh", _ZN3sgl4Mesh7OffsetsC1Ev);
+sgl::Mesh::Offsets::Offsets() : position(0), normal(0), color(0), texcoord(0), vertex(0)
+{
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh", _ZN3sgl4MeshD2Ev);
 
@@ -18,25 +18,53 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh", _
 
 void sgl::Mesh::unlock()
 {
-    _f74 = false;
+    _locked = false;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh", _ZN3sgl4Mesh4lockEv);
+void sgl::Mesh::lock()
+{
+    _locked = true;
+}
 
 bool sgl::Mesh::locked() const
 {
-    return _f74;
+    return _locked;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh", _ZNK3sgl4Mesh23internal_position_indexEi);
+int sgl::Mesh::internal_position_index(int i) const
+{
+    if (i >= 0)
+        i += _offsets.position;
+    return i;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh", _ZNK3sgl4Mesh21internal_normal_indexEi);
+int sgl::Mesh::internal_normal_index(int i) const
+{
+    if (i >= 0)
+        i += _offsets.normal;
+    return i;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh", _ZNK3sgl4Mesh20internal_color_indexEi);
+int sgl::Mesh::internal_color_index(int i) const
+{
+    if (i >= 0)
+        i += _offsets.color;
+    return i;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh", _ZNK3sgl4Mesh23internal_texcoord_indexEi);
+int sgl::Mesh::internal_texcoord_index(int i) const
+{
+    if (i >= 0)
+        i += _offsets.texcoord;
+    return i;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh", _ZNK3sgl4Mesh21internal_vertex_indexEi);
+int sgl::Mesh::internal_vertex_index(int i) const
+{
+    if (i >= 0)
+        i += _offsets.vertex;
+    return i;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh", _ZN3sgl4MeshC2Eb);
 
@@ -44,13 +72,25 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh", _
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh", _ZN3sgl4Mesh12snap_offsetsEv);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh", _ZN3sgl4Mesh8normalAtEiNS_6NormalE);
+void sgl::Mesh::normalAt(int i, Normal n)
+{
+    setAt(internal_normal_index(i), _normals, n);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh", _ZN3sgl4Mesh7colorAtEiNS_5ColorE);
+void sgl::Mesh::colorAt(int i, Color c)
+{
+    setAt(internal_color_index(i), _colors, c);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh", _ZN3sgl4Mesh10texcoordAtEiNS_8TexCoordE);
+void sgl::Mesh::texcoordAt(int i, TexCoord t)
+{
+    setAt(internal_texcoord_index(i), _texcoords, t);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh", _ZN3sgl4Mesh10positionAtEiNS_8PositionE);
+void sgl::Mesh::positionAt(int i, Position p)
+{
+    setAt(internal_position_index(i), _positions, p);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh", _ZN3sgl4Mesh8vertexAtEiiiii);
 
@@ -62,19 +102,19 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh", _
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh", _ZN3sgl4Mesh15print_trianglesEv);
 
-const void *sgl::Mesh::getTriangles() const
+const std::vector<sgl::Triangle> &sgl::Mesh::getTriangles() const
 {
-    return &_f78;
+    return _triangles;
 }
 
-const void *sgl::Mesh::getEdges() const
+const std::vector<sgl::Edge> &sgl::Mesh::getEdges() const
 {
-    return &_f84;
+    return _edges;
 }
 
-const void *sgl::Mesh::getTrianglesNormals() const
+const std::vector<sgl::Normal> &sgl::Mesh::getTrianglesNormals() const
 {
-    return &_f90;
+    return _tnormals;
 }
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh", _ZNK3sgl4Mesh12triangleAreaEi);
@@ -117,7 +157,10 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh", _
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh", _ZNK3sgl4Mesh20getEdgeTriangleIndexEii);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh", _ZNK3sgl4Mesh27getEdgeVertexAttributeIndexEiiNS_14VertexAttrEnumE);
+int sgl::Mesh::getEdgeVertexAttributeIndex(int e, int v, VertexAttrEnum a) const
+{
+    return getVertexAttributeIndex(getEdgeVertexIndex(e, v), a);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh", _ZNK3sgl4Mesh21getEdgeVertexPositionEiRNS_8PositionES2_);
 
@@ -210,3 +253,4 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh", _
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh", _ZSt24__uninitialized_copy_auxIN9__gnu_cxx17__normal_iteratorIPN3sgl8TriangleESt6vectorIS3_SaIS3_EEEES4_ET0_T_SA_S9_12__false_type);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh", _ZSt6__copyISt13_Bit_iteratorS0_ET0_T_S2_S1_St26random_access_iterator_tag);
+

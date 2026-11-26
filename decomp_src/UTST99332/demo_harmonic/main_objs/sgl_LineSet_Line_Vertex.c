@@ -28,16 +28,19 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_LineSet_
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_LineSet_Line_Vertex", _ZN3sgl7LineSet3endEv);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_LineSet_Line_Vertex", _ZNK3sgl7LineSet5readyEv);
+bool sgl::LineSet::ready() const
+{
+    return _state != 3;
+}
 
 void sgl::LineSet::set_negate_normals(bool v)
 {
-    _f75 = v;
+    _negate_normals = v;
 }
 
 void sgl::LineSet::set_crease(float v)
 {
-    _f78 = v;
+    _crease = v;
 }
 
 extern "C" {
@@ -73,3 +76,4 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_LineSet_
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_LineSet_Line_Vertex", _ZSt24__uninitialized_copy_auxIN9__gnu_cxx17__normal_iteratorIPN3sgl7LineSet4LineESt6vectorIS4_SaIS4_EEEES5_ET0_T_SB_SA_12__false_type);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_LineSet_Line_Vertex", _ZSt26__uninitialized_fill_n_auxIN9__gnu_cxx17__normal_iteratorIPN3sgl7LineSet4LineESt6vectorIS4_SaIS4_EEEEjS4_ET_SA_T0_RKT1_12__false_type);
+

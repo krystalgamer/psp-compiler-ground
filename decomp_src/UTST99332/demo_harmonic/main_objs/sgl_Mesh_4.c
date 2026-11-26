@@ -10,27 +10,66 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh_4",
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh_4", _ZN3sgl4Mesh5printESs);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh_4", _ZN3sgl4Mesh21removeUsusedPositionsEv);
+void sgl::Mesh::removeUsusedPositions()
+{
+    removeUsusedAttributes<std::vector<Position>, Position>(VertexAttrEnum(0), _positions);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh_4", _ZN3sgl4Mesh19removeUsusedNormalsEv);
+void sgl::Mesh::removeUsusedNormals()
+{
+    removeUsusedAttributes<std::vector<Normal>, Normal>(VertexAttrEnum(1), _normals);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh_4", _ZN3sgl4Mesh18removeUsusedColorsEv);
+void sgl::Mesh::removeUsusedColors()
+{
+    removeUsusedAttributes<std::vector<Color>, Color>(VertexAttrEnum(2), _colors);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh_4", _ZN3sgl4Mesh21removeUsusedTexCoordsEv);
+void sgl::Mesh::removeUsusedTexCoords()
+{
+    removeUsusedAttributes<std::vector<TexCoord>, TexCoord>(VertexAttrEnum(3), _texcoords);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh_4", _ZN3sgl4Mesh17quantizePositionsEbf);
+void sgl::Mesh::quantizePositions(bool b, float eps)
+{
+    quantizeVertexAttribute<std::vector<Position>, Position>(VertexAttrEnum(0), _positions, 3, b, eps);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh_4", _ZN3sgl4Mesh17quantizeTexCoordsEbf);
+void sgl::Mesh::quantizeTexCoords(bool b, float eps)
+{
+    quantizeVertexAttribute<std::vector<TexCoord>, TexCoord>(VertexAttrEnum(3), _texcoords, 2, b, eps);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh_4", _ZN3sgl4Mesh14quantizeColorsEbf);
+void sgl::Mesh::quantizeColors(bool b, float eps)
+{
+    quantizeVertexAttribute<std::vector<Color>, Color>(VertexAttrEnum(2), _colors, 4, b, eps);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh_4", _ZN3sgl4Mesh15quantizeNormalsEbf);
+void sgl::Mesh::quantizeNormals(bool b, float eps)
+{
+    quantizeVertexAttribute<std::vector<Normal>, Normal>(VertexAttrEnum(1), _normals, 3, b, eps);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh_4", _ZN3sgl4Mesh13discardColorsEv);
+void sgl::Mesh::discardColors()
+{
+    _colors.clear();
+    for (std::vector<Vertex>::iterator it = _vertices.begin(); it != _vertices.end(); ++it)
+        it->color = -1;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh_4", _ZN3sgl4Mesh14discardNormalsEv);
+void sgl::Mesh::discardNormals()
+{
+    _normals.clear();
+    for (std::vector<Vertex>::iterator it = _vertices.begin(); it != _vertices.end(); ++it)
+        it->normal = -1;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh_4", _ZN3sgl4Mesh16discardTexCoordsEv);
+void sgl::Mesh::discardTexCoords()
+{
+    _texcoords.clear();
+    for (std::vector<Vertex>::iterator it = _vertices.begin(); it != _vertices.end(); ++it)
+        it->texcoord = -1;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh_4", _ZN3sgl4Mesh15calcHardNormalsERSt6vectorINS_6NormalESaIS2_EE);
 
