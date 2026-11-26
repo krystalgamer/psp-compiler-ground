@@ -80,7 +80,7 @@ typedef struct _anon6 GROUND;
 
 extern u_int32 vcount;
 extern float sphere;
-extern float rsphere;
+extern float rsphere[];
 extern u_int32 clut_scope[];
 extern u_int32 chr_scope[];
 extern u_int32 clut_water[];
@@ -623,7 +623,33 @@ static void DrawMission(int a)
 
 INCLUDE_ASM("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/game", DrawGame);
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/game", CheckShoot);
+static void CheckShoot(SCOPE *sc, int score_1p)
+{
+	ScePspFVector3 v0;
+	ScePspFVector3 v1;
+	ScePspFVector3 v2;
+	int i;
+
+	if (ball.state != 2)
+		return;
+	for (i = 0; i < 2; i++) {
+		v0.x = rsphere[i * 9 + 0] * 1.8f + (ball.pos.x + fld.x);
+		v0.y = rsphere[i * 9 + 1] * 1.8f + (ball.pos.y + fld.y);
+		v0.z = rsphere[i * 9 + 2] * 1.8f + (ball.pos.z + fld.z);
+		v1.x = rsphere[i * 9 + 3] * 1.8f + (ball.pos.x + fld.x);
+		v1.y = rsphere[i * 9 + 4] * 1.8f + (ball.pos.y + fld.y);
+		v1.z = rsphere[i * 9 + 5] * 1.8f + (ball.pos.z + fld.z);
+		v2.x = rsphere[i * 9 + 6] * 1.8f + (ball.pos.x + fld.x);
+		v2.y = rsphere[i * 9 + 7] * 1.8f + (ball.pos.y + fld.y);
+		v2.z = rsphere[i * 9 + 8] * 1.8f + (ball.pos.z + fld.z);
+		if (Pickup(480, 272, sc->pos[0] + 16, sc->pos[1] + 16, &v0, &v1, &v2)) {
+			SetParticle(ball.pos.x, ball.pos.y, ball.pos.z, 50.0f, 56, ball.c);
+			ball.state = 3;
+			game.score++;
+			break;
+		}
+	}
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/game", KeyGame);
 
