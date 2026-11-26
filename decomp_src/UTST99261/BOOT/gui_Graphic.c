@@ -26,6 +26,21 @@ void _GUI_Graphics_Push(GUIGRAPHICS *g);
 void _GUI_Graphics_Pop(void);
 void zWindDrawBox();
 void zWindFontDraw();
+void zWindDrawImage();
+void zWindDrawImageScl();
+int IMG_sortImage();
+int IMG_gifCreateContext();
+int IMG_gifInputData();
+int IMG_gifReadHeader();
+int IMG_gifDestroyContext();
+typedef struct {
+    u16 w;
+    u16 h;
+    int unk4;
+    int anim;                   /* 0x8 */
+    int unkC;
+    int unk10;
+} GIMGINFO;
 extern int _zWindDrawTexClipOffX;
 extern int _zWindDrawTexClipOffY;
 
@@ -280,7 +295,39 @@ int GUI_Graphics_getPixmapSize(GUIPIXMAP *p, int *w, int *h) {
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Graphic", GUI_Graphics_drawPixmap);
+int GUI_Graphics_drawPixmap(GUIGRAPHICS *g, GUIPIXMAP *pm_, int x, int y, int w, int h, int sx, int sy) {
+    GUIPIXMAP *pm;
+
+    if (g == NULL) {
+        puts("[X1]GUI_Graphics_drawPixmap");
+        return -1;
+    }
+    if (g->type != 2) {
+        puts("[X2]GUI_Graphics_drawPixmap");
+        return -1;
+    }
+    if (pm_ == NULL) {
+        puts("[X3]GUI_Graphics_drawPixmap");
+        return -1;
+    }
+    pm = pm_;
+    if (pm->type != 3) {
+        puts("[X4]GUI_Graphics_drawPixmap");
+        return -1;
+    }
+    _GUI_Graphics_Push(g);
+    if (w == 0 || h == 0) {
+        w = pm->w;
+        h = pm->h;
+    }
+    if (w != pm->w || h != pm->h) {
+        zWindDrawImageScl(x - sx, y - sy, pm->w, pm->h, w, h, pm->data, pm->kind == 0);
+    } else {
+        zWindDrawImage(x - sx, y - sy, pm->w, pm->h, pm->data, pm->kind == 0);
+    }
+    _GUI_Graphics_Pop();
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Graphic", GUI_Graphics_drawTiledPixmap);
 
