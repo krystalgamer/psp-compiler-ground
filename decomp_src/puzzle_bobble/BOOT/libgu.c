@@ -1403,7 +1403,58 @@ void sceGuMorphWeight(int index, float weight)
 	send_commandf(44 + index, weight);
 }
 
+#ifdef NON_MATCHING
+/* Close: x/p registers swap and (g >> 4) << 4 folds to andi 0xf0 (the original keeps sra/sll). */
+typedef struct {
+	int x, y;
+	unsigned int color;
+	char c;
+} GuDebugChar;
+
+extern int aw_fontcnt[2];
+extern GuDebugChar aw_fontbuf[2][1024];
+
+void sceGuDebugPrint(int x, int y, unsigned int color, const char *str)
+{
+	int cnt = aw_fontcnt[aw_frame];
+	GuDebugChar *buf = aw_fontbuf[aw_frame];
+	GuDebugChar *p = &buf[cnt];
+	int sx = x;
+	int g, b, r, a;
+	char c;
+
+	if (cnt >= 1024)
+		return;
+	g = (color >> 8) & 0xff;
+	b = (color >> 16) & 0xff;
+	r = color & 0xff;
+	a = color >> 24;
+	if (FBuf.pixel_size == 0)
+		color = ((b >> 3) << 11) | ((g >> 2) << 5) | (r >> 3);
+	else if (FBuf.pixel_size == 1)
+		color = ((a >> 7) << 15) | ((b >> 3) << 10) | ((g >> 3) << 5) | (r >> 3);
+	else if (FBuf.pixel_size == 2)
+		color = ((a >> 4) << 12) | ((b >> 4) << 8) | ((g >> 4) << 4) | (r >> 4);
+	while ((c = *str) != 0) {
+		if (c == '\n') {
+			x = sx;
+			y += 8;
+		} else {
+			p->x = x;
+			p->y = y;
+			p->color = color;
+			p->c = c - 32;
+			p++;
+			cnt++;
+			x += 8;
+		}
+		str++;
+	}
+	aw_fontcnt[aw_frame] = cnt;
+}
+#else
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", sceGuDebugPrint);
+#endif
 
 void sceGuDebugFlush(void)
 {
