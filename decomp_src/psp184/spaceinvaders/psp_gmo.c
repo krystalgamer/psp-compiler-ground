@@ -117,7 +117,21 @@ void gmo_all_unload(void)
 		gmo_unload(i);
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_gmo", gmo_anime_start);
+int gmo_anime_start(int no, int motion, float speed, float f2)
+{
+	GMO_W *g;
+
+	if ((unsigned int)no >= 255)
+		return 0;
+	g = &GMO[no];
+	if (g->used == 0)
+		return 0;
+	g->anime = 1;
+	g->motion = motion;
+	g->speed = speed / 60.0f;
+	sceGmoModelSetCurrentMotion(g->model, motion, f2);
+	return 1;
+}
 
 int gmo_anime_direct(int no, int motion, float speed)
 {
