@@ -38,6 +38,11 @@ typedef struct PDStr {
     PChar *data;                /* 0x08 */
 } PDStr;
 
+typedef struct PMb {
+    PChar *str;
+    int len;
+} PMb;
+
 typedef struct PCtxList {
     void **items;
     int n;

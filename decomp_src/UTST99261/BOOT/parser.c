@@ -2,6 +2,10 @@
 #include "common.h"
 #include "parse_str.h"
 #include "m2c_macros.h"
+PMb parseAttrName(PCtx *c);
+PMb parseAttrValue(PCtx *c);
+PDStr Attr_getValue(void *attr);
+PTag parseTagNameCmp(PChar *name);
 #define CF(c, o) M2C_FIELD(c, int *, o)
 PDStr Attr_getName(void *attr);
 extern char D_00137EB4[];
@@ -358,7 +362,47 @@ void parseJSBodySet(PCtx *c) {
     parseJSDestroyEventArray(ev);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", parseJSButtonSet);
+void parseJSButtonSet(PCtx *c) {
+    PDStr an;
+    void *ev[32];
+    int obj;
+    int type;
+    int map;
+    int n;
+    int i;
+    void *attr;
+
+    obj = 0;
+    type = 0;
+    if (CF(c, 0x15C) == 0) {
+        return;
+    }
+    map = Node_getAttributes(CF(c, 0x11C));
+    parseJSCreateEventArray(map, ev);
+    n = NamedNodeMap_getLength(map);
+    for (i = 0; i < n; i++) {
+        attr = NamedNodeMap_item(map, i);
+        an = Attr_getName(attr);
+        if (parseDStrEqual(D_00137EB4, &an) == 1) {
+            an = Attr_getValue(attr);
+            type = parseJSInputTypeCmp(&an);
+            break;
+        }
+    }
+    switch (type) {
+    case 1:
+        obj = ButtonSet(CF(c, 0x15C), CF(c, 0x11C), ev);
+        break;
+    case 5:
+        obj = ResetSet(CF(c, 0x15C), CF(c, 0x11C), ev);
+        break;
+    default:
+        obj = SubmitSet(CF(c, 0x15C), CF(c, 0x11C), ev);
+        break;
+    }
+    parseJSDestroyEventArray(ev);
+    Node_setJSObj(CF(c, 0x11C), obj);
+}
 
 void parseJSFormSet(PCtx *c) {
     void *ev[32];
