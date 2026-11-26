@@ -1,36 +1,56 @@
+/* SDK gim_picture library (older revision than devkit 0.6.0's src/gim_picture/gim_callback.c) */
 #include "common.h"
-#include "m2c_macros.h"
 
-extern unsigned char free;
-extern M2C_UNK *g_alloc_memory;
-extern M2C_UNK *g_alloc_memory2;
-extern M2C_UNK *g_free_memory;
-extern M2C_UNK *g_free_memory2;
-extern unsigned char malloc;
+typedef unsigned int size_t;
 
+void *malloc(size_t size);
+void free(void *addr);
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/gim_callback", sceGimPictureSetMemoryManager);
+extern void *(*g_alloc_memory)(size_t size);
+extern void (*g_free_memory)(void *addr);
+extern void *(*g_alloc_memory2)(size_t size);
+extern void (*g_free_memory2)(void *addr);
 
-void sceGimPictureSetMemoryManager2(M2C_UNK *arg0, M2C_UNK *arg1) {
-    M2C_UNK *var_a0;
-    M2C_UNK *var_a1;
-
-    var_a0 = arg0;
-    var_a1 = arg1;
-    if (var_a0 == NULL) {
-        var_a0 = &malloc;
-    }
-    if (var_a1 == NULL) {
-        var_a1 = &free;
-    }
-    g_alloc_memory2 = var_a0;
-    g_free_memory2 = var_a1;
+void sceGimPictureSetMemoryManager(void *(*alloc_func)(size_t size), void (*free_func)(void *addr))
+{
+	if (alloc_func == 0)
+		alloc_func = malloc;
+	if (free_func == 0)
+		free_func = free;
+	g_alloc_memory = alloc_func;
+	g_free_memory = free_func;
+	g_alloc_memory2 = alloc_func;
+	g_free_memory2 = free_func;
 }
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/gim_callback", sceGimPictureAllocMemory);
+void sceGimPictureSetMemoryManager2(void *(*alloc_func)(size_t size), void (*free_func)(void *addr))
+{
+	if (alloc_func == 0)
+		alloc_func = malloc;
+	if (free_func == 0)
+		free_func = free;
+	g_alloc_memory2 = alloc_func;
+	g_free_memory2 = free_func;
+}
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/gim_callback", sceGimPictureAllocMemory2);
+void *sceGimPictureAllocMemory(size_t size)
+{
+	return (size == 0) ? 0 : g_alloc_memory(size);
+}
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/gim_callback", sceGimPictureFreeMemory);
+void *sceGimPictureAllocMemory2(size_t size)
+{
+	return (size == 0) ? 0 : g_alloc_memory2(size);
+}
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/gim_callback", sceGimPictureFreeMemory2);
+void sceGimPictureFreeMemory(void *addr)
+{
+	if (addr != 0)
+		g_free_memory(addr);
+}
+
+void sceGimPictureFreeMemory2(void *addr)
+{
+	if (addr != 0)
+		g_free_memory2(addr);
+}
