@@ -68,4 +68,20 @@ void release_arg(SceAtracArg *pPlayArg) {
 
 INCLUDE_ASM("tmp/asm/UTST99332/sound_starmix/nonmatchings/at3plus", at3plus_addData);
 
-INCLUDE_ASM("tmp/asm/UTST99332/sound_starmix/nonmatchings/at3plus", at3plus_DisplayDecodePosition);
+extern char decode_position[]; /* static char decode_position[] in at3plus_DisplayDecodePosition (.data is asm) */
+int sprintf(char *buf, const char *fmt, ...);
+int sceAtracGetNextDecodePosition(SceInt32 atracID, SceUInt32 *puiSamplePosition);
+
+static void at3plus_DisplayDecodePosition(SceAtracArg *pPlayArg)
+{
+	SceUInt32 uiSamplePosition;
+	SceInt32 status;
+
+	status = sceAtracGetNextDecodePosition(pPlayArg->atracID, &uiSamplePosition);
+
+	if (status < 0) {
+		printf("sceAtracGetNextDecodePosition = 0x%x\n", status);
+	}
+
+	sprintf(decode_position, "Decoding Position  %10d/%10d\n", uiSamplePosition, pPlayArg->iEndSample);
+}
