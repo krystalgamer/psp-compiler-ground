@@ -194,7 +194,23 @@ INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/main", unload_objects);
 
 INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/main", load_file);
 
-INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/main", draw_rect);
+void *sceGuGetMemory(int size);
+void sceGuDrawArray(int prim, int vtype, int count, const void *indices, const void *vertices);
+void draw_rect(int x, int y, int w, int h, int color)
+{
+	int format = 0x800118;
+	short *vertex = sceGuGetMemory(16);
+
+	vertex[0] = color;
+	vertex[1] = x;
+	vertex[2] = y;
+	vertex[3] = 0;
+	vertex[4] = color;
+	vertex[5] = x + w;
+	vertex[6] = y + h;
+	vertex[7] = 0;
+	sceGuDrawArray(6, format, 2, 0, vertex);
+}
 
 INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/main", inverse_orthonormal);
 

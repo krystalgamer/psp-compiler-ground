@@ -63,7 +63,28 @@ INCLUDE_ASM("tmp/asm/umdt/movietest/nonmatchings/libwave", sceWaveInit);
 
 INCLUDE_ASM("tmp/asm/umdt/movietest/nonmatchings/libwave", sceWaveSetVoice);
 
-INCLUDE_ASM("tmp/asm/umdt/movietest/nonmatchings/libwave", sceWaveGetVolume);
+int sceWaveGetVolume(unsigned int ch, int *left, int *right)
+{
+	if (ch >= 8)
+		return 0x80440005;
+	if (left == NULL)
+		return 0x8044000A;
+	if (right == NULL)
+		return 0x8044000A;
+	if (D_000082B0[ch].vol_l <= 0)
+		*left = 0;
+	else if (D_000082B0[ch].vol_l >= 128)
+		*left = (D_000082B0[ch].vol_l - 1) / 32;
+	else
+		*left = D_000082B0[ch].vol_l / 32;
+	if (D_000082B0[ch].vol_r <= 0)
+		*right = 0;
+	else if (D_000082B0[ch].vol_r >= 128)
+		*right = (D_000082B0[ch].vol_r - 1) / 32;
+	else
+		*right = D_000082B0[ch].vol_r / 32;
+	return 0;
+}
 
 int sceWaveGetRestByte(unsigned int ch, int *rest)
 {

@@ -235,7 +235,40 @@ void sceGumRotateXYZ(const ScePspFVector3 *v)
 	update[cur_matrix] = 1;
 }
 
-INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/libgum", sceGumRotateZYX);
+void sceGumRotateZYX(const ScePspFVector3 *v);
+void sceGumRotateZYX(const ScePspFVector3 *vec)
+{
+	ScePspFMatrix4	m;
+	float	s[3], c[3];
+
+	s[0] = (float)sinf(vec->x);
+	c[0] = (float)cosf(vec->x);
+	s[1] = (float)sinf(vec->y);
+	c[1] = (float)cosf(vec->y);
+	s[2] = (float)sinf(vec->z);
+	c[2] = (float)cosf(vec->z);
+
+	m.x.x = c[1] * c[2];
+	m.x.y = c[1] * s[2];
+	m.x.z = -1.0f * s[1];
+	m.x.w = 0.0f;
+	m.y.x = (-1.0f * c[0] * s[2]) + (s[0] * s[1] * c[2]);
+	m.y.y = (c[0] * c[2]) + (s[0] * s[1] * s[2]);
+	m.y.z = s[0] * c[1];
+	m.y.w = 0.0f;
+	m.z.x = (s[0] * s[2]) + (c[0] * s[1] * c[2]);
+	m.z.y = (-1.0f * s[0] * c[2]) + (c[0] * s[1] * s[2]);
+	m.z.z = c[0] * c[1];
+	m.z.w = 0.0f;
+	m.w.x = 0.0f;
+	m.w.y = 0.0f;
+	m.w.z = 0.0f;
+	m.w.w = 1.0f;
+
+	__mulMatrix(cur_stack, cur_stack, &m);
+	update[cur_matrix] = 1;
+	return;
+}
 
 void sceGumTranslate(const ScePspFVector3 *v)
 {
@@ -275,7 +308,41 @@ void sceGumMultMatrix(const ScePspFMatrix4 *m)
 	update[cur_matrix] = 1;
 }
 
-INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/libgum", sceGumPerspective);
+void sceGumPerspective(float fovy, float aspect, float near, float far);
+void sceGumPerspective(float fovy, float aspect, float r_near, float r_far)
+{
+	ScePspFMatrix4	m;
+	float	f, asp, nf1, nf2;
+
+	f = fovy * 0.5f;
+	f = (float)cosf(f) / (float)sinf(f);
+
+	asp = 1.0f / aspect;
+
+	nf1 = 1.0f / (r_near - r_far);
+	nf2 = r_near + r_far;
+
+	m.x.x = f * asp;
+	m.x.y = 0.0f;
+	m.x.z = 0.0f;
+	m.x.w = 0.0f;
+	m.y.x = 0.0f;
+	m.y.y = f;
+	m.y.z = 0.0f;
+	m.y.w = 0.0f;
+	m.z.x = 0.0f;
+	m.z.y = 0.0f;
+	m.z.z = nf1 * nf2;
+	m.z.w = -1.0f;
+	m.w.x = 0.0f;
+	m.w.y = 0.0f;
+	m.w.z = 2.0f * r_near * r_far * nf1;
+	m.w.w = 0.0f;
+
+	__mulMatrix(cur_stack, cur_stack, &m);
+	update[cur_matrix] = 1;
+	return;
+}
 
 void sceGumOrtho(float left, float right, float bottom, float top, float near, float far)
 {
@@ -295,7 +362,94 @@ void sceGumOrtho(float left, float right, float bottom, float top, float near, f
 	update[cur_matrix] = 1;
 }
 
-INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/libgum", sceGumLookAt);
+void sceGumLookAt(const ScePspFVector3 *eye, const ScePspFVector3 *center, const ScePspFVector3 *up);
+void sceGumLookAt(const ScePspFVector3 *eye, const ScePspFVector3 *center,
+					const ScePspFVector3 *up)
+{
+	ScePspFMatrix4	m;
+	ScePspFVector3	xvec, yvec, zvec;
+	ScePspFVector3	tmpvec;
+	float			tmpscal;
+
+	zvec.x = eye->x - center->x;
+	zvec.y = eye->y - center->y;
+	zvec.z = eye->z - center->z;
+
+	tmpvec.x = zvec.x * zvec.x;
+	tmpvec.y = zvec.y * zvec.y;
+	tmpvec.z = zvec.z * zvec.z;
+
+	tmpscal = 1.0f / (float)sqrtf(tmpvec.x + tmpvec.y + tmpvec.z);
+
+	if (tmpscal) {
+		zvec.x = zvec.x * tmpscal;
+		zvec.y = zvec.y * tmpscal;
+		zvec.z = zvec.z * tmpscal;
+	}
+
+	yvec.x = up->x;
+	yvec.y = up->y;
+	yvec.z = up->z;
+
+	xvec.x = yvec.y * zvec.z - yvec.z * zvec.y;
+	xvec.y = yvec.z * zvec.x - yvec.x * zvec.z;
+	xvec.z = yvec.x * zvec.y - yvec.y * zvec.x;
+
+	yvec.x = zvec.y * xvec.z - zvec.z * xvec.y;
+	yvec.y = zvec.z * xvec.x - zvec.x * xvec.z;
+	yvec.z = zvec.x * xvec.y - zvec.y * xvec.x;
+
+	tmpvec.x = xvec.x * xvec.x;
+	tmpvec.y = xvec.y * xvec.y;
+	tmpvec.z = xvec.z * xvec.z;
+
+	tmpscal = 1.0f / (float)sqrtf(tmpvec.x + tmpvec.y + tmpvec.z);
+
+	if (tmpscal) {
+		xvec.x = xvec.x * tmpscal;
+		xvec.y = xvec.y * tmpscal;
+		xvec.z = xvec.z * tmpscal;
+	}
+
+	tmpvec.x = yvec.x * yvec.x;
+	tmpvec.y = yvec.y * yvec.y;
+	tmpvec.z = yvec.z * yvec.z;
+
+	tmpscal = 1.0f / (float)sqrtf(tmpvec.x + tmpvec.y + tmpvec.z);
+
+	if (tmpscal) {
+		yvec.x = yvec.x * tmpscal;
+		yvec.y = yvec.y * tmpscal;
+		yvec.z = yvec.z * tmpscal;
+	}
+
+	m.x.x = xvec.x;
+	m.x.y = yvec.x;
+	m.x.z = zvec.x;
+	m.x.w = 0.0f;
+	m.y.x = xvec.y;
+	m.y.y = yvec.y;
+	m.y.z = zvec.y;
+	m.y.w = 0.0f;
+	m.z.x = xvec.z;
+	m.z.y = yvec.z;
+	m.z.z = zvec.z;
+	m.z.w = 0.0f;
+	m.w.x = 0.0f;
+	m.w.y = 0.0f;
+	m.w.z = 0.0f;
+	m.w.w = 1.0f;
+
+	__mulMatrix(cur_stack, cur_stack, &m);
+
+	tmpvec.x = eye->x * ( -1.0f );
+	tmpvec.y = eye->y * ( -1.0f );
+	tmpvec.z = eye->z * ( -1.0f );
+
+	sceGumTranslate(&tmpvec);
+	update[cur_matrix] = 1;
+	return;
+}
 
 void sceGumMatrixMode(int mode)
 {
