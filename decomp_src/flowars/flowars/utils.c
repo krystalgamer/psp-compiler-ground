@@ -41,7 +41,6 @@ void make_num_format(char *strOut, long64 num);
 void activateUmd();
 int evaluated_rand(int range, ...);
 u_long64 get_tick();
-void print_nothing();
 void check_callback(SceUID callback);
 
 #define va_start(v, l)	__builtin_stdarg_start((v), l)

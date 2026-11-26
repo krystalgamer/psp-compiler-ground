@@ -10,7 +10,6 @@ extern SceUID gDvdUmdIoSemaphoreId;
 
 typedef long long SceIores;
 
-void print_nothing(const char *fmt, ...);
 SceUID sceKernelCreateSema(const char *name, unsigned int attr, int initVal, int maxVal, void *option);
 int sceKernelDeleteSema(SceUID semid);
 int sceKernelWaitSema(SceUID semid, int needCount, unsigned int *timeout);

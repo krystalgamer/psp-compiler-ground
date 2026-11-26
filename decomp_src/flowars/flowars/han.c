@@ -25,7 +25,6 @@ char *strcpy(char *dst, const char *src);
 static void draw_han_font(int ax, int ay, int px, int py, int code, int color, float scale_x, float scale_y);
 static int draw_eng_font(int ax, int ay, int px, int py, int code, int color, float scale_x, float scale_y);
 void printhanln_scale(int ax, int ay, int color, char *str, float scale_x, float scale_y);
-void wansung_to_johab(char *dst, char *src);
 int sceGimPictureActivate(SceGimPicture *picture);
 void sceGuColor(unsigned int color);
 void sceGuSpriteMode(int a0, int a1, int a2, int a3);

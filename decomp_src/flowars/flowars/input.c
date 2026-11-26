@@ -183,7 +183,6 @@ int sceCtrlSetSamplingMode(unsigned int uiMode);
 void stop_timer(void);
 /* "input changed confirm to 1\n", shared with pad_read (still asm) */
 extern char D_0002F7A8[];
-void print_nothing(const char *fmt, ...);
 static void init();
 static void init_63EC();
 static void press_circle();
