@@ -1,6 +1,7 @@
 /* cflags: -O2 */
 #include "common.h"
 #include "m2c_macros.h"
+void memcpy(void *d, const void *s, unsigned int n);
 M2C_UNK psp_loopend();                              /* extern */
 M2C_UNK psp_loopstart();                            /* extern */
 M2C_UNK sceKernelCheckCallback();                   /* extern */
@@ -75,9 +76,89 @@ loop_1:
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_save", ms_init);
+typedef struct {
+	int size, language, buttonSwap, graphicsThread, accessThread, fontThread, soundThread;
+	int result;
+} SDBASE;
+extern unsigned char savedata_param;
+int set_savedata_param(int mode, SaveParam *p);
+int sceUtilitySavedataInitStart(void *p);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_save", ms_autoload);
+extern int thread_id_28E474;
+int sceKernelCreateThread(const char *name, void *entry, int prio, int stack, int attr, void *opt);
+int sceKernelStartThread(int thid, int len, void *argp);
+int sceKernelDeleteThread(int thid);
+int sceKernelWaitThreadEnd(int thid, void *timeout);
+
+void savedata_sumcreate(void);
+
+extern void *_readIcon0, *_readIcon1, *_readPic1;
+int LoadRequiredModules(void);
+int sceUtilityGetSystemParamInt(int id, int *value);
+int sceUtilityGetSystemParamString(int id, char *str, int len);
+void *psp_malloc(unsigned int size);
+int file_size(char *name);
+int file_load(char *name, void *buf, int size);
+
+void set_param_load(SaveParam *p);
+void set_param_save(SaveParam *p);
+
+void *memset(void *s, int c, unsigned int n);
+int sprintf(char *s, const char *fmt, ...);
+extern unsigned char save_data_tmp, save_data;
+/* shared with set_param_sizes (still asm) */
+extern const char D_0007BD40[], D_0007BD4C[], D_0007BD54[], D_0007BD58[];
+#define SP_I(p, o) (*(int *)&(p)->_pad[o])
+
+void set_params(int p);
+static void set_icon0(SaveParam *p);
+static void set_icon1(SaveParam *p);
+static void set_pic1(SaveParam *p);
+static void set_snd0(SaveParam *p);
+void ms_init(void)
+{
+	SDBASE *p = (SDBASE *)&savedata_param;
+
+	if (LoadRequiredModules() < 0)
+		sceKernelExitDeleteThread(1);
+	sceUtilityGetSystemParamInt(8, &g_lang);
+	sceUtilityGetSystemParamInt(9, &g_assign);
+	sceUtilityGetSystemParamString(1, (char *)&NickName, 0x3c);
+	memset(p, 0, 0x5dc);
+	p->size = 0x5dc;
+	p->language = GetMessageLang();
+	p->buttonSwap = GetAssign();
+	p->graphicsThread = 0x11;
+	p->accessThread = 0x13;
+	p->fontThread = 0x12;
+	p->soundThread = 0x10;
+	_readIcon0 = psp_malloc(0x20000);
+	_readIcon1 = psp_malloc(0x20000);
+	_readPic1 = psp_malloc(0x20000);
+	_Icon0Size = file_size("ICON0.PNG");
+	_Icon0 = psp_malloc(_Icon0Size);
+	file_load("ICON0.PNG", _Icon0, _Icon0Size);
+	_Pic1Size = file_size("PIC1.PNG");
+	_Pic1 = psp_malloc(_Pic1Size);
+	file_load("PIC1.PNG", _Pic1, _Pic1Size);
+	utility_type = -1;
+	autoloadflg = 1;
+}
+
+int ms_autoload(void)
+{
+	thread_id_28E474 = sceKernelCreateThread("AutoLoad", sub_thread_16D10, 0x10, 0x10000, 0, 0);
+	if (thread_id_28E474 <= 0)
+		return 1;
+	set_savedata_param(0, (SaveParam *)&savedata_param);
+	sceUtilitySavedataInitStart(&savedata_param);
+	if (sceKernelStartThread(thread_id_28E474, 0, 0) != 0) {
+		sceKernelDeleteThread(thread_id_28E474);
+		return 1;
+	}
+	sceKernelWaitThreadEnd(thread_id_28E474, 0);
+	return ((SDBASE *)&savedata_param)->result;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_save", autoload);
 
@@ -88,15 +169,58 @@ void ms_load(void)
 	autoloadflg = 1;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_save", ms_autosave);
+int ms_autosave(void)
+{
+	thread_id_28E474 = sceKernelCreateThread("AutoSave", sub_thread_16D10, 0x10, 0x10000, 0, 0);
+	if (thread_id_28E474 <= 0)
+		return 1;
+	set_savedata_param(1, (SaveParam *)&savedata_param);
+	if (sceUtilitySavedataInitStart(&savedata_param) != 0)
+		return 1;
+	if (sceKernelStartThread(thread_id_28E474, 0, 0) != 0) {
+		sceKernelDeleteThread(thread_id_28E474);
+		return 1;
+	}
+	sceKernelWaitThreadEnd(thread_id_28E474, 0);
+	return ((SDBASE *)&savedata_param)->result;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_save", autosave);
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_save", ms_save);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_save", _ms_load);
+int _ms_load(void)
+{
+	thread_id_28E474 = sceKernelCreateThread("Load", sub_thread_16D10, 0x10, 0x10000, 0, 0);
+	if (thread_id_28E474 <= 0)
+		return 1;
+	set_savedata_param(2, (SaveParam *)&savedata_param);
+	if (sceUtilitySavedataInitStart(&savedata_param) != 0)
+		return 1;
+	if (sceKernelStartThread(thread_id_28E474, 0, 0) != 0) {
+		sceKernelDeleteThread(thread_id_28E474);
+		return 1;
+	}
+	sceKernelWaitThreadEnd(thread_id_28E474, 0);
+	return ((SDBASE *)&savedata_param)->result;
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_save", _ms_save);
+int _ms_save(void)
+{
+	savedata_sumcreate();
+	thread_id_28E474 = sceKernelCreateThread("save", sub_thread_16D10, 0x10, 0x10000, 0, 0);
+	if (thread_id_28E474 <= 0)
+		return 1;
+	set_savedata_param(3, (SaveParam *)&savedata_param);
+	if (sceUtilitySavedataInitStart(&savedata_param) != 0)
+		return 1;
+	if (sceKernelStartThread(thread_id_28E474, 0, 0) != 0) {
+		sceKernelDeleteThread(thread_id_28E474);
+		return 1;
+	}
+	sceKernelWaitThreadEnd(thread_id_28E474, 0);
+	return ((SDBASE *)&savedata_param)->result;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -122,16 +246,67 @@ int GetAssign(void) {
     return g_assign;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_save", set_savedata_param);
+int set_savedata_param(int mode, SaveParam *p)
+{
+	*(int *)&p->_pad[0x38] = 1;
+	*(int *)&p->_pad[0x30] = mode;
+	switch (mode) {
+	case 0:
+	case 2:
+		set_param_load(p);
+		return 0;
+	case 1:
+	case 3:
+		set_param_save(p);
+		return 0;
+	case 4:
+	case 5:
+	case 6:
+		return 1;
+	case 7:
+		return 0;
+	}
+	return 1;
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_save", set_param_load);
+void set_param_load(SaveParam *p)
+{
+	memcpy(&p->_pad[0x3c], D_0007BD40, 9);
+	p->_pad[0x45] = 0;
+	memcpy(&p->_pad[0x4c], D_0007BD4C, 4);
+	p->_pad[0x50] = 0;
+	sprintf(&p->_pad[0x64], D_0007BD54, D_0007BD58);
+	SP_I(p, 0x74) = (int)&save_data_tmp;
+	SP_I(p, 0x78) = 0x460;
+	memset(&p->_pad[0x80], 0, 0x504);
+	p->icon0.buf = _readIcon0;
+	p->icon0.bufSize = 0x20000;
+	p->icon1.buf = _readIcon1;
+	p->icon1.bufSize = 0x20000;
+	p->pic1.buf = _readPic1;
+	p->pic1.bufSize = 0x20000;
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_save", set_param_save);
+void set_param_save(SaveParam *p)
+{
+	memcpy(&p->_pad[0x3c], D_0007BD40, 9);
+	p->_pad[0x45] = 0;
+	memcpy(&p->_pad[0x4c], D_0007BD4C, 4);
+	p->_pad[0x50] = 0;
+	sprintf(&p->_pad[0x64], D_0007BD54, D_0007BD58);
+	SP_I(p, 0x74) = (int)&save_data;
+	SP_I(p, 0x78) = 0x460;
+	SP_I(p, 0x7c) = 0x460;
+	set_params((int)p);
+	set_icon0(p);
+	set_icon1(p);
+	set_pic1(p);
+	set_snd0(p);
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
 #endif
-void *memcpy(void *d, const void *s, unsigned int n);
 unsigned int strlen(const char *s);
 
 void set_params(int arg0) {
@@ -174,7 +349,21 @@ static void set_snd0(SaveParam *p)
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_save", set_param_sizes);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_save", Deletebase);
+void Deletebase(void)
+{
+	SDBASE *p = (SDBASE *)&savedata_param;
+
+	memset(p, 0, 0x5dc);
+	p->size = 0x5dc;
+	p->language = GetMessageLang();
+	p->buttonSwap = GetAssign();
+	p->graphicsThread = 0x11;
+	p->accessThread = 0x13;
+	p->fontThread = 0x12;
+	p->soundThread = 0x10;
+	set_savedata_param(7, (SaveParam *)p);
+	sceUtilitySavedataInitStart(p);
+}
 
 INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_save", D_0007BD40);
 
@@ -184,7 +373,19 @@ INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_save", D_0007BD5
 
 INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_save", D_0007BD58);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_save", ms_delete);
+int ms_delete(void)
+{
+	thread_id_28E474 = sceKernelCreateThread("Delete", sub_thread_16D10, 0x10, 0x10000, 0, 0);
+	if (thread_id_28E474 <= 0)
+		return 1;
+	Deletebase();
+	if (sceKernelStartThread(thread_id_28E474, 0, 0) != 0) {
+		sceKernelDeleteThread(thread_id_28E474);
+		return 1;
+	}
+	sceKernelWaitThreadEnd(thread_id_28E474, 0);
+	return ((SDBASE *)&savedata_param)->result;
+}
 
 extern unsigned char save_data;
 typedef struct { unsigned char b[0x45c]; int sum; } SAVE_SUM;
