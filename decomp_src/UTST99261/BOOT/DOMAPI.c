@@ -147,9 +147,44 @@ DOMString Util_Elament_getCharactorData(Node *e) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/DOMAPI", Util_HTMLDocument_getBody);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/DOMAPI", Util_HTMLFormElement_getLength);
+int Util_HTMLFormElement_getLength(Node *form) {
+    Node *n;
+    DOMString tag;
+    int count;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/DOMAPI", Util_HTMLSelectElement_getLength);
+    count = 0;
+    n = form;
+    while ((n = Util_Node_TraceNode(n, form)) != NULL) {
+        if (Node_getNodeType(n) != 1) {
+            continue;
+        }
+        tag = Element_getTagName(n);
+        if (DOMStringcasecmpFast(&tag, &_DOMbutton) == 0 || DOMStringcasecmpFast(&tag, &_DOMfieldset) == 0 ||
+            DOMStringcasecmpFast(&tag, &_DOMinput) == 0 || DOMStringcasecmpFast(&tag, &_DOMisindex) == 0 ||
+            DOMStringcasecmpFast(&tag, &_DOMlabel) == 0 || DOMStringcasecmpFast(&tag, &_DOMlegend) == 0 ||
+            DOMStringcasecmpFast(&tag, &_DOMobject) == 0 || DOMStringcasecmpFast(&tag, &_DOMselect) == 0 ||
+            DOMStringcasecmpFast(&tag, &_DOMtextarea) == 0) {
+            count++;
+        }
+    }
+    return count;
+}
+
+int Util_HTMLSelectElement_getLength(Node *sel) {
+    Node *n;
+    DOMString tag;
+    int count;
+
+    count = 0;
+    n = sel;
+    while ((n = Util_Node_TraceNode(n, sel)) != NULL) {
+        if (Node_getNodeType(n) == 1) {
+            tag = Element_getTagName(n);
+            count += DOMStringcasecmpFast(&tag, &_DOMoption) == 0;
+        }
+    }
+    return count;
+}
 
 DOMString Util_HTMLSelectElement_getType(Node *sel) {
     if (Element_hasAttribute(sel, &_DOMmultiple)) {
@@ -207,7 +242,20 @@ Node *Util_Node_TraceNode(Node *n, Node *root) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/DOMAPI", Util_getNodeByTagName);
+Node *Util_getNodeByTagName(Node *node, const DOMString *name) {
+    DOMString tag;
+    Node *n;
+
+    for (n = node; n != NULL; n = Node_getParentNode(n)) {
+        if (Node_getNodeType(n) == 1) {
+            tag = Element_getTagName(n);
+            if (DOMStringcasecmpFast(name, &tag) == 0) {
+                return n;
+            }
+        }
+    }
+    return NULL;
+}
 
 void DOMStringfree(DOMString *s) {
     if (s->str != NULL) {
