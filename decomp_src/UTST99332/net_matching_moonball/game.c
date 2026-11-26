@@ -251,7 +251,54 @@ static void DrawBall(void)
 	sceGumPopMatrix();
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/game", DrawBG);
+#ifndef SCEGU_SCR_HEIGHT
+#define SCEGU_SCR_HEIGHT      272
+#endif
+#ifndef LCDH
+#define LCDH			SCEGU_SCR_HEIGHT
+#endif
+#ifndef SCEGU_SCR_WIDTH
+#define SCEGU_SCR_WIDTH       480
+#endif
+#ifndef LCDW
+#define LCDW			SCEGU_SCR_WIDTH
+#endif
+#ifndef SCEGU_PRIM_TRIANGLE_STRIP
+#define SCEGU_PRIM_TRIANGLE_STRIP          4
+#endif
+#ifndef SCEGU_VERTEX_SHORT
+#define SCEGU_VERTEX_SHORT       ( 2 <<  7 )
+#endif
+#ifndef SCEGU_THROUGH
+#define SCEGU_THROUGH            ( 1 << 23 )
+#endif
+#ifndef SCEGU_COLOR_PF8888
+#define SCEGU_COLOR_PF8888       ( 7 <<  2 )
+#endif
+static void DrawBG(void)
+{
+	extern Gu2dV16C	D_000CE590[4];
+
+	D_000CE590[0].p[0]=0;
+	D_000CE590[0].p[1]=LCDH-64;
+	D_000CE590[0].p[2]=0;
+	D_000CE590[0].c=0xffffb090;
+	D_000CE590[1].p[0]=0;
+	D_000CE590[1].p[1]=0;
+	D_000CE590[1].p[2]=0;
+	D_000CE590[1].c=0xff501000;
+	D_000CE590[2].p[0]=LCDW;
+	D_000CE590[2].p[1]=LCDH-64;
+	D_000CE590[2].p[2]=0;
+	D_000CE590[2].c=0xffffb090;
+	D_000CE590[3].p[0]=LCDW;
+	D_000CE590[3].p[1]=0;
+	D_000CE590[3].p[2]=0;
+	D_000CE590[3].c=0xff501000;
+	sceGumDrawArray(SCEGU_PRIM_TRIANGLE_STRIP,
+		SCEGU_VERTEX_SHORT|SCEGU_THROUGH|SCEGU_COLOR_PF8888,
+		4, 0, (void *)D_000CE590);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/game", DrawGround);
 
