@@ -213,6 +213,105 @@ static void init_pos(void)
 	pos.trans.z = -12.0f;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/sound_at3streaming/nonmatchings/main", pad_read);
+#ifndef SCE_CTRL_UP
+#define SCE_CTRL_UP					(1<<4)
+#endif
+#ifndef SCE_CTRL_DOWN
+#define SCE_CTRL_DOWN				(1<<6)
+#endif
+#ifndef SCE_CTRL_LEFT
+#define SCE_CTRL_LEFT				(1<<7)
+#endif
+#ifndef SCE_CTRL_RIGHT
+#define SCE_CTRL_RIGHT				(1<<5)
+#endif
+#ifndef PANG
+#define PANG	10.0f
+#endif
+#ifndef LIMIT_ANG
+#define LIMIT_ANG		60.0f
+#endif
+#ifndef SCE_CTRL_L
+#define SCE_CTRL_L					(1<<8)
+#endif
+#ifndef SCE_CTRL_L1
+#define SCE_CTRL_L1					SCE_CTRL_L
+#endif
+#ifndef LIMIT_FAR
+#define LIMIT_FAR		-25.0f
+#endif
+#ifndef SCE_CTRL_R
+#define SCE_CTRL_R					(1<<9)
+#endif
+#ifndef SCE_CTRL_R1
+#define SCE_CTRL_R1					SCE_CTRL_R
+#endif
+#ifndef PTRANS
+#define PTRANS	1.0f
+#endif
+#ifndef LIMIT_NEAR
+#define LIMIT_NEAR		-6.0f
+#endif
+#ifndef SCE_CTRL_START
+#define SCE_CTRL_START				(1<<3)
+#endif
+#ifndef SCE_CTRL_SELECT
+#define SCE_CTRL_SELECT				(1<<0)
+#endif
+static int pad_read(void)
+{
+	extern u_int32	D_00020EC0;
+	u_int32			padd;
+	SceCtrlData		buf;
+
+	sceCtrlReadBufferPositive(&buf, 1);
+	padd = buf.Buttons;
+
+	if (padd & SCE_CTRL_UP) {
+		pos.rot.x = pos.rot.x - PANG;
+		if (pos.rot.x <= 0.0f) {
+			pos.rot.x = 0.0f;
+		}
+	}
+	if (padd & SCE_CTRL_DOWN) {
+		pos.rot.x = pos.rot.x + PANG;
+		if (pos.rot.x >= LIMIT_ANG) {
+			pos.rot.x = LIMIT_ANG;
+		}
+	}
+	if (padd & SCE_CTRL_LEFT) {
+		pos.rot.y = pos.rot.y - PANG;
+		if (pos.rot.y <= -LIMIT_ANG) {
+			pos.rot.y = -LIMIT_ANG;
+		}
+	}
+	if (padd & SCE_CTRL_RIGHT) {
+		pos.rot.y = pos.rot.y + PANG;
+		if (pos.rot.y >= LIMIT_ANG) {
+			pos.rot.y = LIMIT_ANG;
+		}
+	}
+	if (padd & SCE_CTRL_L1) {
+		pos.trans.z = pos.trans.z - PTRANS;
+		if (pos.trans.z <= LIMIT_FAR) {
+			pos.trans.z = LIMIT_FAR;
+		}
+	}
+	if (padd & SCE_CTRL_R1) {
+		pos.trans.z = pos.trans.z + PTRANS;
+		if (pos.trans.z >= LIMIT_NEAR) {
+			pos.trans.z = LIMIT_NEAR;
+		}
+	}
+	if (padd & SCE_CTRL_START) {
+		init_pos();
+	}
+	if (padd & SCE_CTRL_SELECT) {
+		return 0;
+	}
+	D_00020EC0 = padd;
+
+	return 1;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/sound_at3streaming/nonmatchings/main", main);
