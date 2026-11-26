@@ -93,6 +93,12 @@ extern char *FILESTRAGE_TABLE[];
 
 int getFrameNumber(u8 *p, int len);
 
+typedef struct {
+    char *start;
+    char *end;
+} STRWORD;
+int strcmp(const char *a, const char *b);
+
 M2C_UNK createGifContext();                         /* extern */
 M2C_UNK deleteGifContext();                         /* extern */
 M2C_UNK initializeGifContext();                     /* extern */
@@ -304,7 +310,43 @@ char *URL_toAbsoluteURL(char *base, char *rel) {
     return res;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/url", URL_equals);
+int URL_equals(URL *a, URL *b) {
+    if (a == b) {
+        return 1;
+    }
+    if (a->scheme != NULL && b->scheme != NULL) {
+        if (strcmp(a->scheme, b->scheme) != 0) {
+            return 0;
+        }
+    } else if (a->scheme != b->scheme) {
+        return 0;
+    }
+    if (a->host != NULL && b->host != NULL) {
+        if (strcmp(a->host, b->host) != 0) {
+            return 0;
+        }
+    } else if (a->host != b->host) {
+        return 0;
+    }
+    if (a->port != b->port) {
+        return 0;
+    }
+    if (a->path != NULL && b->path != NULL) {
+        if (strcmp(a->path, b->path) != 0) {
+            return 0;
+        }
+    } else if (a->path != b->path) {
+        return 0;
+    }
+    if (a->query != NULL && b->query != NULL) {
+        if (strcmp(a->query, b->query) != 0) {
+            return 0;
+        }
+    } else if (a->query != b->query) {
+        return 0;
+    }
+    return 1;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/url", URL_splitURL);
 
