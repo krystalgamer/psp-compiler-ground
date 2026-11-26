@@ -91,4 +91,23 @@ int unloadModuleAt3plus(void)
 	return 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/sound_at3streaming/nonmatchings/at3loadmodule", loadModuleAt3plus);
+int loadModuleAt3plus(void)
+{
+	SceKernelLMOption mode;
+	int i;
+
+	mode.size = sizeof(mode);
+	mode.position = 0;
+	mode.access = 1;
+	for (i = 0; i < 2; i++) {
+		mode.mpiddata = moduleInfo[i].partition;
+		mode.mpidtext = moduleInfo[i].partition;
+		moduleIDs[i] = load_module((signed char *)moduleInfo[i].name, &mode, NULL);
+		if (moduleIDs[i] < 0) {
+			printf("fatal error : cannot load Module %s\n", moduleInfo[i].name);
+			unloadModuleAt3plus();
+			return -1;
+		}
+	}
+	return 0;
+}
