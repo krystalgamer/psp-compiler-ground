@@ -465,9 +465,13 @@ static void process_stage_11DF0(void)
 	gameManager.process_stage();
 }
 
-INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/main", show_debug_info);
+void show_debug_info(void)
+{
+	char str[256] = "";
 
-INCLUDE_RODATA("tmp/asm/flowars/flowars/nonmatchings/main", D_00030710);
+	memset(str, 0, sizeof(str));
+}
+
 
 INCLUDE_RODATA("tmp/asm/flowars/flowars/nonmatchings/main", D_00030810);
 
@@ -475,7 +479,15 @@ INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/main", draw_frame);
 
 INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/main", init_all);
 
-INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/main", start_timer);
+void start_timer(int sec)
+{
+	g_timer_switch = 1;
+	g_timer_tick_spend = 0;
+	g_timer_limit_sec = sec;
+	g_timer_pause = 0;
+	sceRtcGetCurrentTick(&g_timer_tick_now);
+	g_timer_tick_old = g_timer_tick_now;
+}
 
 void stop_timer(void) {
     g_timer_switch = 0;
