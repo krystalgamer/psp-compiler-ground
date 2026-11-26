@@ -20,6 +20,12 @@ typedef struct {
 
 #define NDROP 256
 
+typedef struct {
+	u8 pad0[3];
+	u8 flag;
+	int pad4;
+} PZL_ENT;
+
 /* a player's game state (Stat[3]); only the fields seen so far are named */
 typedef struct {
 	u8 pad000[2];
@@ -32,21 +38,33 @@ typedef struct {
 	u8 pad008[2];
 	s16 bx;			/* 0x00A: ball position */
 	s16 by;			/* 0x00C */
-	u8 pad00E[0x20 - 0xE];
+	s16 unk00E;		/* 0x00E */
+	u8 pad010[0x20 - 0x10];
 	s16 ofs_y;		/* 0x020 */
 	s8 scroll;		/* 0x022: map lines pushed down */
-	u8 pad023[0x429 - 0x23];
+	u8 unk023;		/* 0x023 */
+	u8 pad024[2];
+	u8 unk026;		/* 0x026 */
+	u8 unk027;		/* 0x027 */
+	u8 pad028[0x428 - 0x28];
+	u8 unk428;		/* 0x428 */
 	s8 unk429;		/* 0x429 */
 	u8 pad42A[0x42F - 0x42A];
 	u8 color;		/* 0x42F: current ball color */
-	u8 pad430[0x44C - 0x430];
+	int unk430;		/* 0x430 */
+	int unk434;		/* 0x434 */
+	u8 pad438[0x44C - 0x438];
 	s8 bubstat;		/* 0x44C */
 	s8 bubstat_arg;		/* 0x44D */
 	s8 bubline;		/* 0x44E */
-	u8 pad44F[0x45D - 0x44F];
+	u8 pad44F[0x454 - 0x44F];
+	s16 unk454;		/* 0x454 */
+	u8 pad456[2];
+	s16 unk458;		/* 0x458 */
+	u8 pad45A[0x45D - 0x45A];
 	s8 monitor;		/* 0x45D */
 	s8 monitor_anim;	/* 0x45E */
-	u8 pad45F[0x460 - 0x45F];
+	u8 unk45F;		/* 0x45F */
 	PZL_SND snd;		/* 0x460 */
 	u8 pad46C[0x47B - 0x46C];
 	s8 chara;		/* 0x47B */
@@ -55,14 +73,20 @@ typedef struct {
 	s8 player;		/* 0x47E */
 	u8 pad47F;
 	struct {
-		u8 pad0[4];
+		u8 pad0;
+		u8 unk1;	/* 0x481 */
+		u8 pad2[2];
 		PZL_DROP d[NDROP];	/* 0x484 */
 	} drop;			/* 0x480 */
-	u8 pad_drop[0x1AF4 - 0x484 - NDROP * 6];
+	u8 pad_drop[0x13B8 - 0x484 - NDROP * 6];
+	PZL_ENT ent[192];	/* 0x13B8 */
+	u8 pad19B8[0x1AF4 - 0x19B8];
 	u8 map[MAP_SIZE];	/* 0x1AF4 */
 	u8 pad1D34[0x1D58 - 0x1D34];
 	u8 attr[MAP_SIZE];	/* 0x1D58 */
-	u8 pad1F98[0x27C4 - 0x1F98];
+	u8 pad1F98[0x2220 - 0x1F98];
+	u8 rainbow[MAP_SIZE];	/* 0x2220 */
+	u8 pad2460[0x27C4 - 0x2460];
 } PZL_STAT;
 
 extern PZL_STAT Stat[3];

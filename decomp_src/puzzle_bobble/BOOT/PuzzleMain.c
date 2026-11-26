@@ -12,6 +12,12 @@ extern int PauseFlag;
 extern unsigned char PauseOk;
 extern int StageNum;
 extern int gim_bg_endress;
+extern int gim_bg_puzzle[];
+extern int gim_bg_vs[];
+extern const u16 BallXPos[];
+void SetPlayStatus(PZL_STAT *st, int a1, int no);
+int CheckBallAroundRainbow(PZL_STAT *st, int x, int y, int n);
+void CheckBallAroundRainbowTerm(PZL_STAT *st, int n);
 typedef struct {
 	int u, v, w, h, no;
 } PARTZ;
@@ -19,6 +25,7 @@ typedef struct {
 	int u, v, w, h, no, flag;
 } SPRDATA;
 extern const SPRDATA SCORE_NUMERIC_PARTZ[];
+extern const SPRDATA NUMERIC_PARTZ[];
 int SpriteDraw(int no, float z, int color, float x0, float y0, float u0, float v0, float x1, float y1, float u1, float v1, float x2, float y2, float u2, float v2, float x3, float y3, float u3, float v3);
 int DrawSpritePt4(int no, float z, int color, float x0, float y0, float u0, float v0, float x1, float y1, float u1, float v1, float x2, float y2, float u2, float v2, float x3, float y3, float u3, float v3);
 int SpriteDrawC(int x, float z, int y, const SPRDATA *p);
@@ -381,18 +388,12 @@ INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", Sin);
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", Cos);
 
-void ZeroMemory(int arg0, int arg1) {
-    int var_a2;
-    signed char *temp_v1;
+void ZeroMemory(void *p, int size)
+{
+	int i;
 
-    var_a2 = 0;
-    if (arg1 > 0) {
-        do {
-            temp_v1 = arg0 + var_a2;
-            var_a2 += 1;
-            *temp_v1 = 0;
-        } while (var_a2 < arg1);
-    }
+	for (i = 0; i < size; i++)
+		((s8 *)p)[i] = 0;
 }
 
 int GetMapWidth(int no)
@@ -445,7 +446,26 @@ INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", SetBallMap);
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", SetPlayStatus);
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", dsGMInit);
+void dsGMInit(int mode, int a1)
+{
+	PZL_STAT *st;
+	int i;
+
+	if (mode == 0) {
+		st = &Stat[0];
+		SetPlayStatus(st, a1, 0);
+		LoadGimFile(0, gim_bg_puzzle[StageNum / 10]);
+	} else {
+		st = &Stat[1];
+		SetPlayStatus(st, a1, 1);
+		st++;
+		SetPlayStatus(st, a1, 2);
+		LoadGimFile(0, gim_bg_vs[isSurvival * 6 + st->player]);
+	}
+	st->unk458 = 0;
+	for (i = 0; i < 192; i++)
+		st->ent[i].flag = 0;
+}
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", GetBallNext);
 
@@ -495,7 +515,28 @@ INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", CheckBallAroun
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", CheckBallAroundRainbowTerm);
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", CheckBallRainbow);
+int CheckBallRainbow(PZL_STAT *st)
+{
+	int i, j;
+	int n;
+	int x, y;
+
+	st->drop.unk1 = 0;
+	for (j = 0; j < 0x22E; j++)
+		st->attr[j] = 0;
+	n = 0;
+	for (i = 0; i < 0x22E; i++) {
+		if (st->rainbow[i] != 0 && (u8)(st->map[i] - 1) < 8) {
+			GetBallCoordinate(st, i, &x, &y);
+			n = CheckBallAroundRainbow(st, x, y, n);
+		}
+	}
+	if (n >= 3) {
+		CheckBallAroundRainbowTerm(st, n);
+		return n;
+	}
+	return 0;
+}
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", CheckNext);
 
@@ -591,7 +632,17 @@ int GetBallLine(PZL_STAT *st)
 	return st->scroll;
 }
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", PutNumeric);
+void PutNumeric(int z, int x, int y, int num, int digits)
+{
+	int i;
+
+	if (num < 0)
+		num = -num;
+	for (i = 0; i < digits; i++) {
+		SpriteDrawC(x + (digits - 1) * 11 - i * 22, z, y, &NUMERIC_PARTZ[num % 10]);
+		num /= 10;
+	}
+}
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", PutTime);
 
