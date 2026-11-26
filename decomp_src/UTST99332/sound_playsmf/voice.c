@@ -19,7 +19,8 @@ typedef struct {
 typedef struct {
 	unsigned char no;
 	signed char status;
-	unsigned char pad2[6];
+	unsigned char pad2[2];
+	int i4;
 	unsigned char b8;
 	unsigned char b9;
 	unsigned char bA;
@@ -57,7 +58,30 @@ extern SsVoice D_001291C8[];
 #define g_vmax D_0012919C
 #define g_voice D_001291C8
 
-INCLUDE_ASM("tmp/asm/UTST99332/sound_playsmf/nonmatchings/voice", voice_init);
+extern SsVoice *D_00129F48[];
+extern unsigned int D_001291A4;
+
+int voice_init(unsigned int num)
+{
+	unsigned int i;
+
+	if (num - 1 >= 32)
+		return 0x8054000a;
+	g_vmax = num;
+	for (i = 0; i < g_vmax; i++) {
+		SsVoice *p = &g_voice[i];
+
+		p->status = 1;
+		p->i18 = 0;
+		p->i4 = 0;
+		func_0000C1B0(p);
+		p->no = i;
+		D_00129F48[i] = p;
+	}
+	D_001291A4 = g_vmax;
+	g_vstate = 0;
+	return 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/sound_playsmf/nonmatchings/voice", voice_refresh);
 
@@ -288,12 +312,75 @@ static void func_0000C1B0(SsVoice *p)
 	p->pitch = 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/sound_playsmf/nonmatchings/voice", func_0000C240);
+SsVoice *func_0000C240(unsigned int *pCount, SsVoice **list, unsigned int *pOutCount, SsVoice **outList, unsigned int no)
+{
+	SsVoice *found = NULL;
+	unsigned int i, j;
+
+	for (i = 0; i < *pCount; i++) {
+		if (list[i]->no == no) {
+			found = list[i];
+			break;
+		}
+	}
+	if (i != *pCount - 1) {
+		for (j = i; j < *pCount - 1; j++)
+			list[j] = list[j + 1];
+	}
+	(*pCount)--;
+	outList[(*pOutCount)++] = found;
+	return found;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/sound_playsmf/nonmatchings/voice", func_0000C2D8);
 
 INCLUDE_ASM("tmp/asm/UTST99332/sound_playsmf/nonmatchings/voice", func_0000C488);
 
-INCLUDE_ASM("tmp/asm/UTST99332/sound_playsmf/nonmatchings/voice", func_0000C658);
+int func_0000C658(SsVoice **list, unsigned int count, unsigned int prio)
+{
+	SsVoice *cand[32];
+	unsigned int n = 0;
+	unsigned int minv = 0xFFFFFFFF;
+	unsigned int i;
 
-INCLUDE_ASM("tmp/asm/UTST99332/sound_playsmf/nonmatchings/voice", func_0000C6F4);
+	for (i = 0; i < count; i++) {
+		SsVoice *p = list[i];
+
+		if (p->tone.i18 <= prio) {
+			cand[n++] = p;
+			if (p->i4 < minv)
+				minv = p->i4;
+		}
+	}
+	if (n == 0)
+		return -1;
+	for (i = 0; i < n; i++) {
+		if (cand[i]->i4 == minv)
+			return cand[i]->no;
+	}
+	return -1;
+}
+
+void func_0000C6F4(unsigned int vol, unsigned int vel, int pan1, int pan2, unsigned int *pL, unsigned int *pR)
+{
+	int pan = pan1 + pan2 - 64;
+
+	pan = (pan > 0) ? pan : 0;
+	pan = (pan < 127) ? pan : 127;
+
+	if (pan == 0) {
+		*pL = vol;
+		*pR = 0;
+	} else if (pan < 64) {
+		*pL = vol;
+		*pR = (vol * pan) >> 6;
+	} else if (pan > 64) {
+		*pL = (vol * (127 - pan)) >> 6;
+		*pR = vol;
+	} else {
+		*pL = vol;
+		*pR = vol;
+	}
+	*pL = *pL * vel / 127;
+	*pR = *pR * vel / 127;
+}
