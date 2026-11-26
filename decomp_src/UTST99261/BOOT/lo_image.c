@@ -54,9 +54,25 @@ typedef struct {
 typedef struct {
     int unk0;
     int session;                /* 0x4 */
-    u8 unk8[0x14];
+    int unk8;
+    int unkC;
+    int unk10;
+    int unk14;
+    int len;                    /* 0x18 */
     void *data;                 /* 0x1C */
 } LOMSG;
+
+typedef struct {
+    int len;
+    char *str;
+} LURLSTR;
+
+extern LIST D_00584CF0;
+int addUrlList(LIST *list, char *url);
+void *MEM_malloc(void *pool, unsigned int n);
+void *memcpy(void *d, const void *s, unsigned int n);
+IMGENT *checkImageList(IMGLIST *list, char *name);
+void imageDecodeFailure(IMGENT *e);
 
 extern LLIST REQUEST_LLIST;
 void imageDelete(void *image);
@@ -142,7 +158,28 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_image", requestImageData);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_image", setImageData);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_image", setBrokenImageData);
+int setBrokenImageData(LNODE *n, BOX *doc) {
+    char *name;
+    BOX *body;
+    IMGENT *e;
+
+    name = n->data;
+    if (name == NULL) {
+        return -1;
+    }
+    body = getBodyBox(doc);
+    if (body == NULL) {
+        return -1;
+    }
+    e = checkImageList((IMGLIST *)((u8 *)body->geom + 0x54), name);
+    if (e == NULL) {
+        return -1;
+    }
+    e->unk8 = 1;
+    imageDecodeFailure(e);
+    e->image = NULL;
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_image", calcHttpHeaderSize);
 
@@ -313,4 +350,20 @@ void proc_msg_IL3(LOMSG *msg) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_image", proc_msg_IL4);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_image", proc_msg_IL5);
+void proc_msg_IL5(LOMSG *m) {
+    LURLSTR *d;
+    char *s;
+
+    if (m->unk10 == -1) {
+        d = m->data;
+        s = MEM_malloc(NULL, d->len + 1);
+        memcpy(s, d->str, d->len);
+        s[d->len] = 0;
+        if (addUrlList(&D_00584CF0, s) != 1) {
+            MEM_free(NULL, s);
+        }
+    }
+    if (m->len > 0) {
+        MEM_free(NULL, m->data);
+    }
+}
