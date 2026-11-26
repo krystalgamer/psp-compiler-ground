@@ -104,8 +104,14 @@ void zWindDrawLineW(int x, int y, int len, short color);
 void zWindDrawParts(int x, int y, int n, short color);
 void zWindLineBox(int x, int y, int w, int h, short color);
 void zWindLineBox2(int x, int y, int w, int h, short c1, short c2);
+typedef struct {
+    s8 type;
+    s16 w;                      /* 0x2 */
+    s16 unk4;
+    s16 h;                      /* 0x6 */
+} ZGFONT;
 void zWindFontDraw(void *font, int x, int y, char *s, short color, int len);
-void zWindFontDrawPassword(void *font, int x, int y, char *s, short color, int len);
+void zWindFontDrawPassword(ZGFONT *font, int x, int y, char *s, short color, int len);
 typedef struct {
     u8 unk0[0x4C];
     char *text;                 /* 0x4C */
@@ -645,17 +651,118 @@ void zWindWidgetContentviewDraw(void) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/zWindDraw", zWindWidgetDraw);
 
+extern ZGFONT *D_00584B68;
+extern u8 D_00584BB6;
+void zWindFontDrawHF(ZGFONT *f, int x, int y, int c, int color);
+void zWindFontDrawZE(ZGFONT *f, int x, int y, int c, int color);
+int pspBrowserUtf8ToSjis();
+
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/zWindDraw", zWindFontDrawHF);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/zWindDraw", zWindFontDrawZE_K);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/zWindDraw", zWindFontDrawZE);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/zWindDraw", zWindFontDrawPassword);
+void zWindFontDrawPassword(ZGFONT *f, int x, int y, char *s, short color, int len) {
+    int i;
+    int k;
+    s8 c;
+
+    if (f == NULL) {
+        return;
+    }
+    if (f->type != 4) {
+        return;
+    }
+    if (s == NULL) {
+        return;
+    }
+    switch (D_00584BB6) {
+    case 1:
+        i = pspBrowserUtf8ToSjis(0, s, len);
+        break;
+    case 8:
+        k = 0;
+        i = 0;
+        while (k < len) {
+            c = s[i];
+            if (c >= 0) {
+                k += 1;
+            } else if ((c & 0xE0) == 0xC0) {
+                k += 2;
+            } else if ((c & 0xF0) == 0xE0) {
+                k += 3;
+            } else if ((c & 0xF8) == 0xF0) {
+                k += 4;
+            } else if ((c & 0xFC) == 0xF8) {
+                k += 5;
+            } else if ((c & 0xFE) == 0xFC) {
+                k += 6;
+            } else {
+                return;
+            }
+            i++;
+        }
+        break;
+    }
+    len = i < len ? i : len;
+    color |= 0x8000;
+    for (i = 0; i < len; i++) {
+        zWindFontDrawHF(f, x + i * f->w, y, '*', color);
+    }
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/zWindDraw", zWindFontDraw);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/zWindDraw", zWindFontDrawSJ);
+void zWindFontDrawSJ(ZGFONT *f, int x, int y, u8 *s, short color, int len) {
+    int i;
+    s16 cw;
+    int cw2;
+    int c;
+
+    if (f == NULL) {
+        if (D_00584B68 == NULL) {
+            return;
+        }
+        f = D_00584B68;
+    }
+    if (f->type != 4) {
+        return;
+    }
+    if (s == NULL) {
+        return;
+    }
+    if (y > _zWindDrawTexClipY2) {
+        return;
+    }
+    if (y + f->h < _zWindDrawTexClipY) {
+        return;
+    }
+    if (D_00584BB6 != 1) {
+        return;
+    }
+    cw = f->w;
+    cw2 = f->w * 2;
+    color |= 0x8000;
+    for (i = 0; i < len;) {
+        c = s[i];
+        if (c < 0x81 || (c >= 0xA0 && c <= 0xDF)) {
+            if (c == 0) {
+                return;
+            }
+            zWindFontDrawHF(f, x, y, c, color);
+            i++;
+            x += cw;
+        } else {
+            zWindFontDrawZE(f, x, y, (s[i] << 8) + s[i + 1], color);
+            i += 2;
+            x += cw2;
+        }
+        if (x > _zWindDrawTexClipX2) {
+            return;
+        }
+    }
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/zWindDraw", zWindFontDrawArea);
 
