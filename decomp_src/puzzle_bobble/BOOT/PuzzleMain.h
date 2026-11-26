@@ -61,7 +61,8 @@ typedef struct {
 	s8 bubstat;		/* 0x44C */
 	s8 bubstat_arg;		/* 0x44D */
 	s8 bubline;		/* 0x44E */
-	u8 pad44F[0x454 - 0x44F];
+	u8 cpu;			/* 0x44F: CPU player state */
+	u8 pad450[0x454 - 0x450];
 	s16 unk454;		/* 0x454 */
 	u8 pad456[2];
 	s16 unk458;		/* 0x458 */

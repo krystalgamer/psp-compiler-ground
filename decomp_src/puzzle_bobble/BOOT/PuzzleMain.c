@@ -1659,7 +1659,97 @@ void PauseControl(void *arg0) {
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", PuzzleBody);
 
+#ifdef NON_MATCHING
+/* Byte-matches (fntest) but cannot be installed while the unit is mixed: its jump table
+ * must sit at D_0002E5AC, before rodata of functions that precede it in .text. */
+extern int D_0014E8D8;
+extern int D_0014E8DC;
+extern s16 D_0014E8D4;
+extern s16 D_0014E8D6;
+extern int D_00038A50;
+extern u8 CpuCheckBall[];
+int CPUThinking(PZL_STAT *st)
+{
+	int ret = 1;
+	int i, f, c;
+
+	st->key_rep = 0;
+	switch (st->cpu) {
+	case 0:
+	think:
+		D_0014E8D8 = D_00038A50 == -1 ? 0x80 : 0x20;
+		D_0014E8DC = rand() % 20 + 2;
+		st->cpu = 1;
+	case 1:
+		if (--D_0014E8DC == 0) {
+			st->cpu = 3;
+			D_0014E8DC = 0;
+			D_0014E8D8 = 0;
+		}
+		break;
+	case 2:
+		D_0014E8D8 = 0;
+		if (--D_0014E8DC <= 0)
+			st->cpu = 3;
+		break;
+	case 3:
+		D_0014E8D8 = 0;
+		f = 0;
+		for (i = 0; i < 6; i++) {
+			if (CpuCheckBall[i] == st->cur + 1 || CpuCheckBall[i] == 9)
+				f = 1;
+		}
+		if (f) {
+			st->key_rep = 0x2000;
+			st->cpu = 6;
+		} else {
+			st->key_rep = 0;
+			st->cpu = 0;
+			goto think;
+		}
+		break;
+	case 4:
+	case 5:
+		break;
+	case 6:
+		ret = 0;
+		if (st->unk006 != 2)
+			st->cpu = 0;
+		break;
+	}
+	if (D_0014E8D8 & 0x20) {
+		D_0014E8D4++;
+		D_0014E8D6 = 0;
+		st->unk454 += 4;
+		if (D_0014E8D4 >= 5)
+			D_0014E8D4 = 4;
+		if (st->unk454 >= 472) {
+			D_00038A50 = -1;
+			st->unk454 = 464;
+		}
+		st->drop.unk2 = 0;
+	} else if (D_0014E8D8 & 0x80) {
+		D_0014E8D6++;
+		D_0014E8D4 = 0;
+		st->unk454 -= 4;
+		if (D_0014E8D6 >= 5)
+			D_0014E8D6 = 4;
+		if (st->unk454 < 35 || st->unk454 >= 504) {
+			D_00038A50 = 1;
+			st->unk454 = 34;
+		}
+		st->drop.unk2 = 0;
+	} else {
+		D_0014E8D4 = 0;
+		D_0014E8D6 = 0;
+		if (st->drop.unk2 == 0)
+			st->drop.unk2 = 1;
+	}
+	return ret;
+}
+#else
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", CPUThinking);
+#endif
 
 int GetOjamaPat(int mode)
 {
