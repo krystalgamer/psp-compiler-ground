@@ -60,7 +60,14 @@ typedef struct {
 
 typedef struct {
     unsigned int flags;         /* 0x0 */
-    u8 unk4[0x38];
+    u8 unk4[0x10];
+    void *img14;                /* 0x14: default images */
+    void *img18;
+    u8 unk1C[0x8];
+    void *img24;
+    void *img28;
+    void *img2C;
+    u8 unk30[0xC];
     int session;                /* 0x3C */
     u8 unk40[0x14];
     int unk54;
