@@ -300,7 +300,25 @@ void RandSeed( unsigned int val )
 		);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_stainglass/nonmatchings/stainglass", Rand);
+ScePspFVector2 Rand()
+{
+	ScePspFVector2 retval;
+
+	__asm__ volatile (
+		".set			push\n"					
+		".set			noreorder\n"			
+		"vfim.s	s010, 1.5    		\n"
+		"vfim.s	s011, 1.5    		\n"
+		"vrndf1.p c000				\n"
+		"vsub.p	c000, c000, c010	\n"
+		"sv.s	s000, %0			\n"     
+		"sv.s	s001, %1			\n"     
+		".set			pop\n"					
+		: "=m" (retval.x), "=m" (retval.y) :
+	);
+
+	return retval;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_stainglass/nonmatchings/stainglass", ColorAt);
 
