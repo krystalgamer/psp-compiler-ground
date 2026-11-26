@@ -248,7 +248,20 @@ INCLUDE_ASM("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/moonball_main"
 
 INCLUDE_ASM("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/moonball_main", KeyFunc);
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/moonball_main", ProgramSwitch);
+static void ProgramSwitch(void)
+{
+	switch (program.flag) {
+	case 0:
+		if (func[program.mode].init)
+			func[program.mode].init();
+		program.flag = 1;
+		break;
+	case 1:
+		if (func[program.mode].run)
+			func[program.mode].run();
+		break;
+	}
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/moonball_main", game_init);
 
