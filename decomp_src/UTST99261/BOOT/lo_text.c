@@ -198,7 +198,41 @@ typedef struct {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_text", divOverText);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_text", divOverText_pre);
+int divOverText_pre(char **out, JBOX *box, char *s, int len) {
+    int i;
+    int n;
+    char *p;
+    int off;
+
+    if (s == NULL) {
+        return 0;
+    }
+    for (i = 0; i < len; i++) {
+        if (s[i] == 0) {
+            break;
+        }
+        if (s[i] == '\r') {
+            if (s[i + 1] == '\n') {
+                i++;
+            }
+            break;
+        }
+        if (s[i] == '\n') {
+            break;
+        }
+    }
+    n = len - i;
+    n--;
+    if (n <= 0) {
+        return 0;
+    }
+    off = len - n;
+    p = MEM_malloc(0, n + 1);
+    memcpy(p, s + off, n);
+    p[n] = 0;
+    *out = p;
+    return n;
+}
 
 TBOX *createTextBox(void *ctx, TBOX *parent, TBOX *prev, char *str, int len, int w) {
     TBOX *b;
