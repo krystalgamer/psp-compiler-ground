@@ -3,6 +3,7 @@
 #define g_alloc_count g_alloc_count_402A3C
 #define g_total_free g_total_free_402A38
 #define g_total_size g_total_size_402A34
+#define g_end g_end_402A30
 #define g_top g_top_402A2C
 
 /* declarations recovered from DWARF */
@@ -100,7 +101,27 @@ void my_heap__free(void *addr)
 	g_top = p;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/ge/my_heap", my_heap__draw_status);
+void my_heap__draw_status(unsigned char *pixels, int width, int col0, int col1)
+{
+	block *top, *p;
+	int total, i, s, e;
+
+	if (pixels == NULL) {
+		return;
+	}
+	for (i = 0; i < width; i++) {
+		pixels[i] = col1;
+	}
+	top = g_end->next;
+	total = g_end - top;
+	for (p = top; p != g_end; p = p->next) {
+		s = (p - top) * width / total;
+		e = (p + p->size - top) * width / total;
+		for (; s < e; s++) {
+			pixels[s] = col0;
+		}
+	}
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/ge/my_heap", my_heap__init);
 
