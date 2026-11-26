@@ -4,6 +4,8 @@
 
 int puts(const char *s);
 void *ESP_guiMemAlloc(int size);
+int strlen(const char *s);
+void *memcpy(void *d, const void *s, unsigned int n);
 void ESP_guiMemFree(void *p);
 
 typedef struct { /* size 0xC */
@@ -70,9 +72,15 @@ typedef struct GUIWIDGET { /* size 0x64 */
     s16 w;                      /* 0x3E */
     s16 h;                      /* 0x40 */
     s16 dirty[4];               /* 0x42: x, y, w, h */
-    void *unk4C;
-    union { void *p; s16 n; } unk50;
-    u8 unk54[0x10];
+    void *unk4C;                /* text widgets: the text */
+    union {
+        void *p;
+        s16 n;
+        struct { s16 len; s16 max; } t;
+    } unk50;
+    unsigned int unk54;
+    int unk58;
+    u8 unk5C[0x8];
 } GUIWIDGET;
 
 typedef struct {
@@ -119,7 +127,7 @@ void *GUI_Graphics_getGraphics(void *g, void *pixmap);
 void GUI_Graphics_freePixmap(void *pixmap);
 void GUI_Graphics_freeGraphics(void *g);
 void dizInit(void);
-void zWindDraw(GUIWIDGET *w);
+int zWindDraw();
 void GUI_ScrollPane_getScrollPosition(GUIWIDGET *w, int *x, int *y);
 void GUI_ScrollPane_getViewportSize(GUIWIDGET *w, int *width, int *height);
 void zWindExcEvent(GUIWIDGET *w, int type, GUIEVENT *ev, int a, int b);
