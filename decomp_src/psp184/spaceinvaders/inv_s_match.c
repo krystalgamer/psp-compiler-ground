@@ -13,6 +13,13 @@ extern int gcnt_28FC04;
 
 extern int inv;
 
+typedef struct { u8 *spr; int f4; int f8; int fC; int f10; int f14; int f18; int f1C; } INV_W;
+extern int ufocnt_28FBC8;
+extern int ufocntmax;
+extern int ufodisp;
+int hato(int cur, int target, int shift);
+unsigned long genrand_int32(void);
+
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_match", inv_matchup_main);
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_match", inv_matchup_init);
@@ -121,7 +128,19 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_match", matchup_inv
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_match", matchup_inv_winlose_set);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_match", matchup_inv_ufodispjudge);
+static void matchup_inv_ufodispjudge(void)
+{
+	int t;
+
+	ufodisp = 0;
+	ufocnt_28FBC8++;
+	if (ufocnt_28FBC8 > ufocntmax) {
+		t = genrand_int32() % 15 + 25;
+		ufocnt_28FBC8 = 0;
+		ufocntmax = t * 60;
+		ufodisp = 1;
+	}
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_match", matchup_inv_ufodisp);
 
