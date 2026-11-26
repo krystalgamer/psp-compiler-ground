@@ -73,7 +73,58 @@ void sceGuTexOffset(float u, float v);
 void sceGuTexScale(float u, float v);
 void sceGuTexWrap(int u, int v);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/ge/ge_texture", geTexSet);
+int geTexSet(int n, geTEXTURE *tex)
+{
+	geTEXTURE *p;
+	int i;
+	int ret = 0;
+
+	if (n < 128) {
+		if (n >= 0) {
+			p = &geTexture[n];
+
+			p->tpf = tex->tpf;
+			p->mode_lod = tex->mode_lod;
+			p->mode_mc = tex->mode_mc;
+			p->mode_hsm = tex->mode_hsm;
+
+			for (i = 0; i < p->mode_lod + 1; i++) {
+				p->tex[i].tbp = tex->tex[i].tbp;
+				p->tex[i].w = tex->tex[i].w;
+				p->tex[i].h = tex->tex[i].h;
+				p->tex[i].bw = tex->tex[i].bw;
+			}
+
+			p->cpf = tex->cpf;
+			p->clut.cbp = tex->clut.cbp;
+			p->clut.np = tex->clut.np;
+			p->clut.shift = tex->clut.shift;
+			p->clut.mask = tex->clut.mask;
+			p->clut.csa = tex->clut.csa;
+
+			p->fil_min = 1;
+			p->fil_mag = 1;
+			p->func_mode = 0;
+			p->func_comp = 1;
+			p->wrapu = 0;
+			p->wrapv = 0;
+			p->level_mode = 0;
+			p->level_offset = 0.0f;
+			p->map_mode = 0;
+			p->map_lu = 0;
+			p->map_lv = 0;
+			p->su = 1.0f;
+			p->sv = 1.0f;
+			p->tu = 0.0f;
+			p->tv = 0.0f;
+			p->col = 0;
+
+			ret = 1;
+		}
+	}
+
+	return ret;
+}
 
 int geTexOption(int n, int param, geTEXTURE *tex)
 {
@@ -156,7 +207,108 @@ int geTexGet(int n, geTEXTURE *tex)
 	return ret;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/ge/ge_texture", geTexSend);
+struct _ctx4;
+struct _ctx4 { /* size 0xc */
+    float zs;
+    float ze;
+    uint col;
+};
+typedef struct _ctx4 geFOG;
+struct _ctx5;
+struct _ctx5 { /* size 0xc */
+    int func;
+    int aref;
+    int amsk;
+};
+typedef struct _ctx5 geALPHA;
+struct _ctx6;
+struct _ctx6 { /* size 0x14 */
+    int equ;
+    int asel;
+    int bsel;
+    int afix;
+    int bfix;
+};
+typedef struct _ctx6 geBLEND;
+struct _ctx3 { /* size 0x80 */
+    int vramdepth;
+    int offset_x;
+    int offset_y;
+    int depth_min;
+    int depth_max;
+    uint col_clear;
+    uint col_ambient;
+    uint col_model;
+    int depth_test;
+    int shade_mode;
+    int front_face;
+    int clip_plane;
+    int normal_patch;
+    int normal_prim;
+    int cull_face;
+    int dither;
+    int col_material;
+    float specular;
+    int fog;
+    geFOG fog_param;
+    int alpha;
+    geALPHA alpha_param;
+    int blend;
+    geBLEND blend_param;
+};
+typedef struct _ctx3 geCONTEXT;
+void geGetContext(geCONTEXT *context);
+
+int geTexSend(int n)
+{
+	geTEXTURE *p;
+	geCONTEXT ctx;
+	int i;
+	int ret = 0;
+
+	if (n < 128) {
+		if (n >= 0) {
+			p = &geTexture[n];
+
+			sceGuBlendFunc(0, 2, 3, 0, 0);
+
+			sceGuEnable(4);
+			sceGuEnable(9);
+
+			sceGuTexFunc(p->func_mode, p->func_comp);
+			sceGuTexFilter(p->fil_min, p->fil_mag);
+			sceGuTexWrap(p->wrapu, p->wrapv);
+
+			sceGuTexLevelMode(p->level_mode, p->level_offset);
+			sceGuTexMapMode(p->map_mode, p->map_lu, p->map_lv);
+			sceGuTexScale(p->su, p->sv);
+			sceGuTexOffset(p->tu, p->tv);
+			sceGuTexEnvColor(p->col);
+
+			sceGuTexMode(p->tpf, p->mode_lod, p->mode_mc, p->mode_hsm);
+			for (i = 0; i < p->mode_lod + 1; i++) {
+				sceGuTexImage(i, p->tex[i].w, p->tex[i].h, p->tex[i].bw, p->tex[i].tbp);
+			}
+
+			if (p->tpf >= 4) {
+				sceGuClutMode(p->cpf, p->clut.shift, p->clut.mask, p->clut.csa);
+				sceGuClutLoad(p->clut.np, p->clut.cbp);
+			}
+
+			geGetContext(&ctx);
+			if (ctx.blend != -1) {
+				sceGuEnable(4);
+				sceGuBlendFunc(ctx.blend_param.equ, ctx.blend_param.asel, ctx.blend_param.bsel, ctx.blend_param.afix, ctx.blend_param.bfix);
+			} else {
+				sceGuDisable(4);
+			}
+
+			ret = 1;
+		}
+	}
+
+	return ret;
+}
 
 int geTexCombine(int a, int b) {
     return 1;
