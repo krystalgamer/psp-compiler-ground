@@ -125,7 +125,41 @@ static void draw_mode(void)
 	}
 }
 #else
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_balloon/nonmatchings/main", draw_mode);
+void sceGuDebugPrint(int x, int y, unsigned int color, const char *str);
+#define SCEGU_SCR_HEIGHT      272
+
+static void draw_mode(void)
+{
+	char	buf[8]=">>>>";
+	int		size,i;
+	if (change) {
+		if (!check_clouds()) {
+			for(size=0,i=0;i<12;size++,i++) {
+				if(!char_mode[prev_texture][i])
+					break;
+			}
+			size*=8;
+			buf[3-indicator]=' ';
+			sceGuDebugPrint(8   , SCEGU_SCR_HEIGHT-16, 0x00ffffff,
+							char_mode[prev_texture]);
+			sceGuDebugPrint(16+size, SCEGU_SCR_HEIGHT-16, 0x00ffffff,
+							buf);
+			sceGuDebugPrint(16+size+40, SCEGU_SCR_HEIGHT-16, 0x00ffffff,
+							char_mode[texture_mode]);
+			if (frame%2)
+				indicator=indicator+1<4?indicator+1:0;
+		}
+		else
+			change=0;
+	}
+
+	if (!change) {
+		sceGuDebugPrint(8, SCEGU_SCR_HEIGHT-16, 0x00ffffff,
+						char_mode[texture_mode]);
+		indicator=0;
+	}
+
+}
 #endif
 
 /* Warning: Gap in callee-saved word stack region.
