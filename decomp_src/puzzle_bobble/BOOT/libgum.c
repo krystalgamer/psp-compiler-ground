@@ -243,7 +243,37 @@ void sceGumRotateXYZ(const ScePspFVector3 *v)
 	update[cur_matrix] = 1;
 }
 
+#ifdef NON_MATCHING
+/* diff 4 (statement order found with perm.py): the original loads c.x before s.x and
+ * stores m.x.z before m.y.x; the UTST99332 libgum text gives diff 11. */
+void sceGumRotateZYX(const ScePspFVector3 *v)
+{
+	ScePspFMatrix4 m;
+	ScePspFVector3 s, c;
+
+	s.x = sinf(v->x); c.x = cosf(v->x);
+	s.y = sinf(v->y); c.y = cosf(v->y);
+	s.z = sinf(v->z); c.z = cosf(v->z);
+
+	m.x.x = c.y * c.z;
+	m.x.y = c.y * s.z;
+	m.x.w = 0.0f;
+	m.y.x = s.x * s.y * c.z - c.x * s.z;
+	m.x.z = -s.y;
+	m.y.y = c.x * c.z + s.x * s.y * s.z;
+	m.y.z = s.x * c.y;
+	m.y.w = 0.0f;
+	m.z.x = s.x * s.z + c.x * s.y * c.z;
+	m.z.y = c.x * s.y * s.z - s.x * c.z;
+	m.z.z = c.x * c.y;
+	m.z.w = 0.0f;
+	m.w.x = 0.0f; m.w.y = 0.0f; m.w.z = 0.0f; m.w.w = 1.0f;
+	__mulMatrix(cur_stack, cur_stack, &m);
+	update[cur_matrix] = 1;
+}
+#else
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgum", sceGumRotateZYX);
+#endif
 
 void sceGumTranslate(const ScePspFVector3 *v)
 {
