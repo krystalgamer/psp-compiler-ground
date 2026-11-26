@@ -973,6 +973,7 @@ int zWindExcEventRadiobox(ZW *w, int type, ZEVENT *ev) {
     return -1;
 }
 
+int zWindExcEventList(ZW *w, int type, ZEVENT *ev, int x, int y);
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/zWindDraw", zWindExcEventList);
 
 int zWindExcEventChoice(void *w, int type, ZEVENT *ev) {
@@ -1020,6 +1021,63 @@ int zWindExcEventTextField(ZWIDGET *w, int type, ZEVENT *ev) {
     return -1;
 }
 
+int zWindExcEventTextArea(ZW *w, int type, ZEVENT *ev, int x, int y);
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/zWindDraw", zWindExcEventTextArea);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/zWindDraw", zWindExcEvent);
+extern void (*D_00584B60)(ZW *w, ZEVENT *ev);
+
+void zWindExcEvent(ZW *w, int type, ZEVENT *ev, int x, int y) {
+    *(s16 *)ev = type;
+    ev->target = w;
+    while (w != NULL) {
+        if (w->type != 1) {
+            puts("[X]zWindExcEvent");
+            return;
+        }
+        if (w == (ZW *)s_windsystem_data.unk14 && s_windsystem_data.unk10 != 0) {
+            ((void (*)(ZW *, ZEVENT *))s_windsystem_data.unk10)(w, ev);
+            return;
+        }
+        switch (w->flags & 0xF) {
+        case 3:
+            if (zWindExcEventButton(w, type, ev) == 0) {
+                return;
+            }
+            break;
+        case 4:
+            if (zWindExcEventCheckbox(w, type, ev) == 0) {
+                return;
+            }
+            break;
+        case 6:
+            if (zWindExcEventRadiobox(w, type, ev) == 0) {
+                return;
+            }
+            break;
+        case 8:
+            if (zWindExcEventList(w, type, ev, x, y) == 0) {
+                return;
+            }
+            break;
+        case 9:
+            if (zWindExcEventChoice(w, type, ev) == 0) {
+                return;
+            }
+            break;
+        case 10:
+            if (zWindExcEventTextField((ZWIDGET *)w, type, ev) == 0) {
+                return;
+            }
+            break;
+        case 11:
+            if (zWindExcEventTextArea(w, type, ev, x, y) == 0) {
+                return;
+            }
+            break;
+        }
+        w = w->parent;
+    }
+    if (D_00584B60 != NULL) {
+        D_00584B60(w, ev);
+    }
+}
