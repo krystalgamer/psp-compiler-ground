@@ -1,9 +1,12 @@
 /* cflags: -O1 */
 #include "common.h"
+#include <ctype.h>
 #include "parse_hist.h"
 #include "parse_ps.h"
 #include "dom_domi.h"
 #include "m2c_macros.h"
+extern PsLocation *PS_LOCATION_HEAD;
+extern PsLocation *D_0025B5CC;
 extern int mq_layout;
 extern int mq_iom;
 extern int mq_ui;
@@ -88,9 +91,19 @@ int *MEM_malloc(M2C_UNK, M2C_UNK);                  /* extern */
 
 
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", UDomiString_ToLower);
+unsigned short UDomiString_ToLower(unsigned short c) {
+    if (c < 0x80) {
+        return tolower(c);
+    }
+    return c;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", UDomiString_ToUpper);
+unsigned short UDomiString_ToUpper(unsigned short c) {
+    if (c < 0x80) {
+        return toupper(c);
+    }
+    return c;
+}
 
 int UDomiString_CompareNoCase(const DOMChar *s1, unsigned int n1, const DOMChar *s2, unsigned int n2) {
     int d;

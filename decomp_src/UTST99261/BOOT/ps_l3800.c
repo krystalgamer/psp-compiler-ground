@@ -2,6 +2,17 @@
 #include "common.h"
 #include "parse_ps.h"
 #include "m2c_macros.h"
+extern int mq_ps_su;
+extern int mq_ps;
+extern char D_00137A2C[];
+extern char D_00137D10[];
+extern char D_00137D30[];
+extern char D_00137D48[];
+extern char D_00137D64[];
+extern char D_00137D70[];
+extern int Security;
+extern int buf_Message_Show_FLG;
+PsLocation *ps_SetLocation();
 extern char D_001378D0[];
 extern char D_001378F0[];
 extern char D_00137910[];
@@ -610,7 +621,102 @@ int ps_i2309(PsIpc *msg) {
     return 3;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/ps_l3800", ps_i230A);
+static inline int ps_isZeroSession(int id) {
+    if (id == 0) {
+        return 1;
+    }
+    return 0;
+}
+
+static inline int *ps_searchMsgNode(PsIpc *msg) {
+    if (msg->x14 != 0) {
+        return ps_ExternalSearchSessionHistoryNode(msg->x04, msg->x14);
+    }
+    return HST_searchSessionIDHistoryNode(msg->x04);
+}
+
+int ps_i230A(PsIpc *msg) {
+    PsIpc m;
+    struct {
+        int x00;
+        PsIpc body;
+    } q;
+    struct {
+        int x00;
+        PsIpc body;
+    } out;
+    int sent1;
+    int sent2;
+    int *node;
+    int i;
+    int ret;
+
+    sent1 = 0;
+    sent2 = 0;
+    if (ps_isZeroSession(msg->x04)) {
+        goto out;
+    }
+    node = ps_searchMsgNode(msg);
+    if (node == NULL) {
+        if (msg->x18 != 0) {
+            MEM_free(0, msg->x1C);
+        }
+        goto out;
+    }
+    if (node[15] == 8) {
+    out:
+        ret = buf_ps_sts;
+        goto end;
+    }
+    HST_setRequestFlag(node, 0);
+    for (i = 1; i < 7; i++) {
+        if (HST_searchRequestFlagHistoryNode(i) != 0) {
+            ret = 9;
+            goto end;
+        }
+        if (ps_ExternalSearchRequestFlag(i, 1) != 0) {
+            ret = 9;
+            goto end;
+        }
+        if (ps_ExternalSearchRequestFlag(i, 2) != 0) {
+            ret = 9;
+            goto end;
+        }
+    }
+    sendComplete(&m);
+    while (GetMQUEUE(mq_ps_su, &q) != 0) {
+        switch (q.body.cmd) {
+        case 2:
+            if (sent1 == 0) {
+                out.body = q.body;
+                if (OS_mq_send(mq_ps, &q, sizeof(out), 0) < 0) {
+                    ps_halt(D_00137A2C);
+                }
+                sent1 = 1;
+                continue;
+            }
+            break;
+        case 0x17:
+            if (sent2 == 0) {
+                out.body = q.body;
+                if (OS_mq_send(mq_ps, &q, sizeof(out), 0) < 0) {
+                    ps_halt(D_00137A2C);
+                }
+                sent2 = 1;
+                continue;
+            }
+            break;
+        }
+        if (q.body.x1C != 0) {
+            MEM_free(0, q.body.x1C);
+        }
+    }
+    buf_Loding_Stop_FLG = 0;
+    SSLFlg = 0;
+    ret = 3;
+end:
+    return ret;
+}
 
 int ps_i230C(PsIpc *msg) {
     int *node;
@@ -1127,7 +1233,125 @@ int ps_i2914(int arg0) {
     return buf_ps_sts;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/ps_l3800", ps_i2D06);
+static inline int ps_isNotExtSession(int id) {
+    if (id > 0x08000000 && id <= 0x10000000) {
+        return 0;
+    }
+    return 1;
+}
+
+int ps_i2D06(PsIpc *msg) {
+    PsIpc m;
+    PsDomBuild b;
+    PsIpc d;
+    int *head;
+    int *p;
+    int *node;
+    PsLocation *loc;
+    int *r;
+    int sec;
+
+    sec = 0;
+    head = HST_getHeadHistoryNode();
+    if (head == NULL) {
+        ps_halt(D_00137D10);
+    }
+    if (ps_isNotExtSession(msg->x04)) {
+        p = (int *)msg->x1C;
+        if (msg->x14 != 0) {
+            node = ps_ExternalSearchSessionHistoryNode(msg->x04, msg->x14);
+        } else {
+            node = HST_searchSessionIDHistoryNode(msg->x04);
+        }
+        if (node == NULL) {
+            return buf_ps_sts;
+        }
+        if (HST_setCurURI(node, p[1], p[0]) == -1) {
+            ps_halt(D_00137D30);
+        }
+        loc = ps_SetLocation(msg->x04, msg->x08, msg->x14, p[0], p[1]);
+        if (loc->x0C >= 10) {
+            if (msg->x14 == 0 && HST_getDomObject(node) == 0) {
+                memset(&b, 0, 0x40);
+                b.x[0] = node[1];
+                b.x[1] = node[0];
+                b.x[2] = node[5];
+                b.x[3] = node[4];
+                b.x[4] = node[7];
+                b.x[5] = node[6];
+                b.x[6] = 0x1A;
+                b.x[7] = (int)D_00137D48;
+                b.x[9] = msg->x04;
+                b.x[11] = 0;
+                b.x[12] = 0;
+                b.x[13] = Accession;
+                r = parseDomBuild(&b);
+                if (r != NULL) {
+                    MEM_free(0, r);
+                }
+                initMPL_REQ_LOAD_PAGE(&m);
+                m.x04 = msg->x04;
+                m.x08 = 0;
+                ps_sndmsg(&m, 4);
+            }
+            initMPI_SIG_REQUEST_ABORTED(&m);
+            m.x04 = msg->x04;
+            m.x10 = 1;
+            m.x14 = msg->x14;
+            ps_sndmsg(&m, 5);
+        } else {
+            if (icmpstr(p[1], D_00137D64, 8) == 1) {
+                sec = 1;
+            }
+            if (((sec == 1 && Security == 0) || (sec == 0 && Security == 1)) && buf_Message_Show_FLG == 0) {
+                if (Security == 0) {
+                    if (initMPU_REQ_SHOW_DIALOG(&d, 6) == 0) {
+                        ps_halt(D_00137D70);
+                    }
+                    d.x14 = 0x80000004;
+                } else {
+                    if (initMPU_REQ_SHOW_DIALOG(&d, 7) == 0) {
+                        ps_halt(D_00137D70);
+                    }
+                    d.x14 = 0x80000005;
+                }
+                d.x04 = msg->x04;
+                ps_sndmsg(&d, 1);
+                buf_Message_Show_FLG = 1;
+                before_ps_sts = buf_ps_sts;
+                buf_Message_cnt++;
+                if (msg->x1C != 0) {
+                    MEM_free(0, msg->x1C);
+                }
+                return 0x13;
+            }
+            if (msg->x04 == head[18]) {
+                m.type = 2;
+                m.x04 = msg->x04;
+                m.x08 = 0;
+                m.cmd = 0x16;
+                m.x10 = msg->x10;
+                m.x14 = msg->x14;
+                m.x18 = msg->x18;
+                m.x1C = msg->x1C;
+                ps_sndmsg(&m, 1);
+            }
+            if (msg->x14 != 0) {
+                ps_ExternalSearchSessionParentHistoryNode(msg->x04, msg->x14);
+            } else {
+                HST_searchSessionIDHistoryNode(msg->x04);
+            }
+            ps_LocationGetSend(node);
+            if (msg->x04 == head[18]) {
+                return buf_ps_sts;
+            }
+        }
+    }
+    if (msg->x1C != 0) {
+        MEM_free(0, msg->x1C);
+    }
+    return buf_ps_sts;
+}
 
 int ps_i2D12(PsIpc *msg) {
     struct {
@@ -1142,6 +1366,56 @@ int ps_i2D12(PsIpc *msg) {
     return buf_ps_sts;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/ps_l3800", ps_i2D14);
+int ps_i2D14(PsIpc *msg) {
+    PsIpc m;
+    PsIpc d;
+    int *p;
+    PsLocation *loc;
+    int sec;
+
+    sec = 0;
+    if (ps_isNotExtSession(msg->x04)) {
+        p = (int *)msg->x1C;
+        loc = ps_SetLocation(msg->x04, msg->x08, msg->x14, p[0], p[1]);
+        if (loc->x0C >= 10) {
+            initMPI_SIG_REQUEST_ABORTED(&m);
+            m.x04 = msg->x04;
+            m.x10 = 1;
+            m.x14 = msg->x14;
+            ps_sndmsg(&m, 5);
+        } else {
+            if (icmpstr(p[1], D_00137D64, 8) == 1) {
+                sec = 1;
+            }
+            if (((sec == 1 && Security == 0) || (sec == 0 && Security == 1)) && buf_Message_Show_FLG == 0) {
+                if (Security == 0) {
+                    if (initMPU_REQ_SHOW_DIALOG(&d, 6) == 0) {
+                        ps_halt(D_00137D70);
+                    }
+                    d.x14 = 0x80000006;
+                } else {
+                    if (initMPU_REQ_SHOW_DIALOG(&d, 7) == 0) {
+                        ps_halt(D_00137D70);
+                    }
+                    d.x14 = 0x80000007;
+                }
+                d.x04 = msg->x04;
+                ps_sndmsg(&d, 1);
+                buf_Message_Show_FLG = 1;
+                before_ps_sts = 0x14;
+                buf_Message_cnt++;
+                if (msg->x1C != 0) {
+                    MEM_free(0, msg->x1C);
+                }
+                return 0x13;
+            }
+            ps_HeadSend(strlen(loc->buf), loc->buf, ((int *)SaveREF)[0], ((int *)SaveREF)[1], 0, msg->x04, SaveUnitId);
+        }
+    }
+    if (msg->x1C != 0) {
+        MEM_free(0, msg->x1C);
+    }
+    return buf_ps_sts;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/ps_l3800", parseDomBuild);

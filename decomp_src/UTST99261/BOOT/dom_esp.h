@@ -38,6 +38,10 @@ typedef struct JSTimer {
     struct JSTimer *next;             /* 0x14 */
 } JSTimer;
 
+typedef struct JSEvRec {
+    char b[36];
+} JSEvRec;
+
 typedef struct JSPtr {
     void *cx;
     int x04;
