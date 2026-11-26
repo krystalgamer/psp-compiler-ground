@@ -85,6 +85,39 @@ INCLUDE_ASM("tmp/asm/UTST99332/menu/nonmatchings/category", CtrlSpline);
 
 INCLUDE_ASM("tmp/asm/UTST99332/menu/nonmatchings/category", RunCategory);
 
-INCLUDE_ASM("tmp/asm/UTST99332/menu/nonmatchings/category", KeyCategory);
+void PlaySE(int num);
+void ProgramChange(int mode);
+void KeyCategory(u_int32 padd, u_int32 cont, float *axis)
+{
+	if (axis[0] < -80.0f || (padd & 0x80)) {
+		if (cat.flag_rot == 0) {
+			cat.flag_rot = 1;
+			PlaySE(0);
+		}
+	}
+	if (axis[0] > 80.0f || (padd & 0x20)) {
+		if (cat.flag_rot == 0) {
+			cat.flag_rot = 2;
+			PlaySE(0);
+		}
+	}
+	if (axis[1] < -80.0f || (padd & 0x10)) {
+		if (cat.flag_rot == 0) {
+			cat.flag_rot = 4;
+			PlaySE(0);
+		}
+	}
+	if (axis[1] > 80.0f || (padd & 0x40)) {
+		if (cat.flag_rot == 0) {
+			cat.flag_rot = 8;
+			PlaySE(0);
+		}
+	}
+	if ((padd & 0x2000) && cat.flag_rot == 0) {
+		menu->num = 0;
+		ProgramChange(1);
+		PlaySE(1);
+	}
+}
 
 INCLUDE_RODATA("tmp/asm/UTST99332/menu/nonmatchings/category", D_00017078);
