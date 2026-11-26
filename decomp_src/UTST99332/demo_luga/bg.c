@@ -102,6 +102,8 @@ int proc_bg(void *p) {
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/bg", draw_bg);
+void draw_bg(void) {
+    geObjectDraw(&md->obj[1].t.y);
+}
 
 INCLUDE_RODATA("tmp/asm/UTST99332/demo_luga/nonmatchings/bg", D_00021580);
