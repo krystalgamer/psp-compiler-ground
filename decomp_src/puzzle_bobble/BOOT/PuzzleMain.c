@@ -1370,7 +1370,74 @@ void GetBallCoordinate(PZL_STAT *st, int idx, int *x, int *y)
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", CheckBallAround);
 
+#ifdef NON_MATCHING
+/* Right size, diff 122 (register allocation): logic complete; n/ret and the colour swap
+ * saved registers and the drop-entry stores are scheduled differently. */
+int CheckBallAroundRainbow(PZL_STAT *st, int x, int y, int n)
+{
+	int queue[596];
+	int px, py;
+	int i, cnt, a, col, last, ret;
+
+	a = GetBallMapAddr(st, x, y, 0);
+	if (st->attr[a] != 0)
+		return n;
+	col = st->mp.map[a];
+	if ((unsigned int)(col - 1) >= 8)
+		return n;
+	cnt = 0;
+	for (i = 1; i < 7; i++) {
+		a = GetBallMapAddr(st, x, y, i);
+		if (a >= 0 && st->mp.map[a] == col && st->attr[a] == 0) {
+			cnt++;
+			last = i;
+		}
+	}
+	if (cnt == 0)
+		return n;
+	if (cnt == 1) {
+		cnt = 0;
+		for (i = 1; i < 7; i++) {
+			a = GetBallMapAddr(st, x + mx[last], y + my[last], i);
+			if (a >= 0 && st->mp.map[a] == col)
+				cnt += st->attr[a] == 0;
+		}
+		if (cnt < 2)
+			return n;
+	}
+	i = GetBallMapAddr(st, x, y, 0);
+	GetBallCoordinate(st, i, &px, &py);
+	ret = n + 1;
+	st->drop.d[n].flag = 0;
+	st->drop.d[n].col = col;
+	st->drop.d[n].x = px;
+	st->drop.d[n].y = py;
+	st->attr[i] = 1;
+	queue[0] = i;
+	st->ndrop = ret;
+	cnt = 1;
+	do {
+		i = queue[--cnt];
+		GetBallCoordinate(st, i, &px, &py);
+		for (i = 1; i < 7; i++) {
+			a = GetBallMapAddr(st, px, py, i);
+			if (a >= 0 && st->mp.map[a] == col && st->attr[a] == 0) {
+				queue[cnt++] = a;
+				st->attr[a] = 1;
+				st->drop.d[st->ndrop].x = px + mx[i];
+				ret++;
+				st->drop.d[st->ndrop].y = py + my[i];
+				st->drop.d[st->ndrop].col = col;
+				st->drop.d[st->ndrop].flag = 0;
+				st->ndrop++;
+			}
+		}
+	} while (cnt > 0);
+	return ret;
+}
+#else
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", CheckBallAroundRainbow);
+#endif
 
 int CheckBallAroundRainbowTerm(PZL_STAT *st, int n)
 {
