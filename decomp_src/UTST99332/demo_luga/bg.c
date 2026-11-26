@@ -103,7 +103,7 @@ int proc_bg(void *p) {
 }
 
 void draw_bg(void) {
-    geObjectDraw(&md->obj[1].t.y);
+    geObjectDraw(&md->obj[1]);
 }
 
 INCLUDE_RODATA("tmp/asm/UTST99332/demo_luga/nonmatchings/bg", D_00021580);

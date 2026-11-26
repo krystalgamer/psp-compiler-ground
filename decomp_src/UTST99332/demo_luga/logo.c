@@ -114,7 +114,7 @@ int proc_logo(void *p) {
 }
 
 void draw_logo(void) {
-    geObjectDraw(&md->obj[0xF].co[0].z);
+    geObjectDraw(&md->obj[14]);
 }
 
 INCLUDE_RODATA("tmp/asm/UTST99332/demo_luga/nonmatchings/logo", D_00021630);
