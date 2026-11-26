@@ -3,6 +3,8 @@
 #include <libgu.h>
 #include <libgum.h>
 #include <kerneltypes.h>
+#include <ctrlsvc.h>
+#include <displaysvc.h>
 
 /* types and file-scope data from the SDK sample's main.c (data defined in the asm data files) */
 typedef unsigned short u_short;
@@ -162,7 +164,63 @@ static void draw_dragon_with_camera_transform()
 	sceGumPopMatrix();
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_stainglass/nonmatchings/main", draw_frame);
+#define SCEGU_IMMEDIATE                    0
+#define SCEGU_CLEAR_ALL               0x0007
+#define SCEGU_MATRIX_WORLD                 2
+#define SCEGU_SYNC_FINISH                  0
+#define SCEGU_SYNC_WAIT                    0
+
+static void draw_frame(void)
+{
+	extern float D_00017484;
+
+	{
+		ScePspMatrix4 stain_mat;
+		PositioningStoreMatrix( &_stainglass_transform, &stain_mat );
+		StainGlassSetTransform( &stain_mat.fm );
+	}
+
+	D_00017484+=1.f/60.f;
+
+	sceGuStart(SCEGU_IMMEDIATE, disp_list, sizeof(disp_list));
+
+	sceGuClear(SCEGU_CLEAR_ALL);
+
+	sceGumMatrixMode(SCEGU_MATRIX_WORLD);
+
+
+
+	
+	
+	
+
+	
+
+	sceGumLoadIdentity();
+
+	draw_dragon_with_camera_transform();
+
+
+
+	GenFrameBufferMipmap();
+
+
+
+	StainGlassUpdate();
+
+
+
+	StainGlassDraw(true); 
+
+	
+
+	
+	
+	sceKernelDcacheWritebackInvalidateAll();
+
+	sceGuFinish();
+	sceGuSync(SCEGU_SYNC_FINISH, SCEGU_SYNC_WAIT);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_stainglass/nonmatchings/main", init_all);
 
