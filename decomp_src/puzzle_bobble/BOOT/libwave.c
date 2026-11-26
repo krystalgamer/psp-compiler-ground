@@ -61,6 +61,7 @@ int sceKernelWaitThreadEnd(int thid, unsigned int *timeout);
 int sceKernelDeleteThread(int thid);
 int sceKernelExitThread(int status);
 static int func_0001EA80(unsigned int args, void *argp);
+extern const signed char D_00030954[2][5];
 extern char D_00561374[2][0x700];
 static void func_0001EB5C(char *buf);
 static int func_0001ED14(short *dst, unsigned char *src, int *h1, int *h2);
@@ -548,7 +549,47 @@ static void func_0001EB5C(char *buf)
 	}
 }
 
+#ifdef NON_MATCHING
+/* VAG ADPCM block decoder, diff 46 (statement order from perm.py): same instructions,
+ * callee-saved registers differ (original: s0 flag, s1 -16 mask, s2 h1, s3 h2). */
+static int func_0001ED14(short *dst, unsigned char *src, int *h1, int *h2)
+{
+	int p, shift, filter, flag, c0, c1, s1, s2, n, k, d, v, w;
+
+	s1 = *h1;
+	p = src[0];
+	shift = p & 0xF;
+	filter = p >> 4;
+	s2 = *h2;
+	c0 = D_00030954[0][filter];
+	c1 = D_00030954[1][filter];
+	flag = src[1];
+	n = 14;
+	k = 2;
+	if (flag == 7)
+		return 7;
+	while (--n >= 0) {
+		d = (signed char)src[k++];
+		v = (((d << 28) >> (shift + 10)) + s1 * c0 + s2 * c1) >> 6;
+		if (v > 32767) v = 32767;
+		if (v < -32768) v = -32768;
+		s2 = s1;
+		s1 = v;
+		w = (((d & ~0xF) << (14 - shift)) + s1 * c0 + s2 * c1) >> 6;
+		if (w > 32767) w = 32767;
+		if (w < -32768) w = -32768;
+		*dst++ = v;
+		*dst++ = w;
+		s2 = s1;
+		s1 = w;
+	}
+	*h1 = s1;
+	*h2 = s2;
+	return flag;
+}
+#else
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libwave", func_0001ED14);
+#endif
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libwave", func_0001EE58);
 
