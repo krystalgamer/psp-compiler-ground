@@ -182,7 +182,6 @@ static void set_key_enable(int key, int flag);
 int sceCtrlSetSamplingMode(unsigned int uiMode);
 void stop_timer(void);
 /* "input changed confirm to 1\n", shared with pad_read (still asm) */
-extern char D_0002F7A8[];
 static void init();
 static void init_63EC();
 static void press_circle();
@@ -234,7 +233,7 @@ static void press_circle()
 		set_key_enable(3, 0);
 	} else if (g_stage_status == 29) {
 		stop_timer();
-		print_nothing(D_0002F7A8);
+		print_nothing("input changed confirm to 1\n");
 		g_confirm = 2;
 		gameManager.goto_stage(61);
 		set_key_enable(3, 0);
@@ -272,7 +271,8 @@ static void press_circle()
 
 __asm__(".globl press_circle");
 
-INCLUDE_RODATA("tmp/asm/flowars/flowars/nonmatchings/input", D_0002F7A8);
+/* press_circle (C) emits this string first; pad_read (asm) uses it too */
+__asm__(".globl D_0002F7A8\nD_0002F7A8 = 0x0002F7A8");
 
 INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/input", pad_read);
 
