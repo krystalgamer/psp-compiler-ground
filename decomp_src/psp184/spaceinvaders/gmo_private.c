@@ -70,5 +70,21 @@ _Bool sceGmoModelCopyPtr2( void *ptr_ptr, const void *src, int size )
  return 1 ;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_private", sceGmoModelAllocUncachedBuffer);
+void *sceGmoModelAllocUncachedBuffer( void *ptr_ptr, int size )
+{
+	char *ptr ;
+	int align ;
+	size = ( size + 63 ) / 64 * 64 ;
+	if ( !sceGmoModelAllocPtr2( ptr_ptr, size + 60 ) ) return 0 ;
+	ptr = *(char **)ptr_ptr ;
+	align = (int)ptr & 63 ;
+	if ( align != 0 ) {
+		align = 64 - align ;
+		memset( ptr, 0, align ) ;
+		sceKernelDcacheWritebackRange( ptr, align ) ;
+		ptr += align ;
+	}
+	sceKernelDcacheWritebackInvalidateRange( ptr, size ) ;
+	return ptr ;
+}
 
