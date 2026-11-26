@@ -287,23 +287,203 @@ void OnPush_SaveData(int selection)
     CreateMenu_SaveData();
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/utility_basic/nonmatchings/main", OnPush_SaveData_0);
+void OnPush_SaveData_0(int selection)
+{
+	int ret;
 
-INCLUDE_ASM("tmp/asm/UTST99332/utility_basic/nonmatchings/main", OnPush_SaveData_1);
+	Menu_WriteLine("OnPush_SaveData_0", 0xFFFFFF);
+	Menu_LockInput();
 
-INCLUDE_ASM("tmp/asm/UTST99332/utility_basic/nonmatchings/main", OnPush_SaveData_2);
+	sample_type = 1;
+	memset(&savedata_param, 0, sizeof(savedata_param));
+	savedata_param.base.size = sizeof(savedata_param);
+	savedata_param.base.message_lang = GetMessageLang();
+	savedata_param.base.ctrl_assign = GetAssign();
+	savedata_param.base.main_thread_priority = 0x11;
+	savedata_param.base.sub_thread_priority = 0x13;
+	savedata_param.base.font_thread_priority = 0x12;
+	savedata_param.base.sound_thread_priority = 0x10;
 
-INCLUDE_ASM("tmp/asm/UTST99332/utility_basic/nonmatchings/main", OnPush_SaveData_3);
+	set_savedata_param(0, &savedata_param);
 
-INCLUDE_ASM("tmp/asm/UTST99332/utility_basic/nonmatchings/main", OnPush_SaveData_4);
+	ret = sceUtilitySavedataInitStart(&savedata_param);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/utility_basic/nonmatchings/main", OnPush_SaveData_5);
+void OnPush_SaveData_1(int selection)
+{
+	int ret;
 
-INCLUDE_ASM("tmp/asm/UTST99332/utility_basic/nonmatchings/main", OnPush_SaveData_6);
+	Menu_WriteLine("OnPush_SaveData_1", 0xFFFFFF);
+	Menu_LockInput();
 
-INCLUDE_ASM("tmp/asm/UTST99332/utility_basic/nonmatchings/main", OnPush_SaveData_7);
+	sample_type = 1;
+	memset(&savedata_param, 0, sizeof(savedata_param));
+	savedata_param.base.size = sizeof(savedata_param);
+	savedata_param.base.message_lang = GetMessageLang();
+	savedata_param.base.ctrl_assign = GetAssign();
+	savedata_param.base.main_thread_priority = 0x11;
+	savedata_param.base.sub_thread_priority = 0x13;
+	savedata_param.base.font_thread_priority = 0x12;
+	savedata_param.base.sound_thread_priority = 0x10;
 
-INCLUDE_ASM("tmp/asm/UTST99332/utility_basic/nonmatchings/main", OnPush_SaveData_8);
+	set_savedata_param(1, &savedata_param);
+
+	ret = sceUtilitySavedataInitStart(&savedata_param);
+}
+
+void OnPush_SaveData_2(int selection)
+{
+	int ret;
+
+	Menu_WriteLine("OnPush_SaveData_2", 0xFFFFFF);
+	Menu_LockInput();
+
+	sample_type = 1;
+	memset(&savedata_param, 0, sizeof(savedata_param));
+	savedata_param.base.size = sizeof(savedata_param);
+	savedata_param.base.message_lang = GetMessageLang();
+	savedata_param.base.ctrl_assign = GetAssign();
+	savedata_param.base.main_thread_priority = 0x11;
+	savedata_param.base.sub_thread_priority = 0x13;
+	savedata_param.base.font_thread_priority = 0x12;
+	savedata_param.base.sound_thread_priority = 0x10;
+
+	set_savedata_param(2, &savedata_param);
+
+	ret = sceUtilitySavedataInitStart(&savedata_param);
+}
+
+void OnPush_SaveData_3(int selection)
+{
+	int ret;
+
+	Menu_WriteLine("OnPush_SaveData_3", 0xFFFFFF);
+	Menu_LockInput();
+
+	sample_type = 1;
+	memset(&savedata_param, 0, sizeof(savedata_param));
+	savedata_param.base.size = sizeof(savedata_param);
+	savedata_param.base.message_lang = GetMessageLang();
+	savedata_param.base.ctrl_assign = GetAssign();
+	savedata_param.base.main_thread_priority = 0x11;
+	savedata_param.base.sub_thread_priority = 0x13;
+	savedata_param.base.font_thread_priority = 0x12;
+	savedata_param.base.sound_thread_priority = 0x10;
+
+	set_savedata_param(3, &savedata_param);
+
+	ret = sceUtilitySavedataInitStart(&savedata_param);
+}
+
+void OnPush_SaveData_4(int selection)
+{
+	int ret;
+
+	Menu_WriteLine("OnPush_SaveData_4", 0xFFFFFF);
+	Menu_LockInput();
+
+	sample_type = 1;
+	memset(&savedata_param, 0, sizeof(savedata_param));
+	savedata_param.base.size = sizeof(savedata_param);
+	savedata_param.base.message_lang = GetMessageLang();
+	savedata_param.base.ctrl_assign = GetAssign();
+	savedata_param.base.main_thread_priority = 0x11;
+	savedata_param.base.sub_thread_priority = 0x13;
+	savedata_param.base.font_thread_priority = 0x12;
+	savedata_param.base.sound_thread_priority = 0x10;
+
+	set_savedata_param(4, &savedata_param);
+
+	ret = sceUtilitySavedataInitStart(&savedata_param);
+}
+
+void OnPush_SaveData_5(int selection)
+{
+	int ret;
+
+	Menu_WriteLine("OnPush_SaveData_5", 0xFFFFFF);
+	Menu_LockInput();
+
+	sample_type = 1;
+	memset(&savedata_param, 0, sizeof(savedata_param));
+	savedata_param.base.size = sizeof(savedata_param);
+	savedata_param.base.message_lang = GetMessageLang();
+	savedata_param.base.ctrl_assign = GetAssign();
+	savedata_param.base.main_thread_priority = 0x11;
+	savedata_param.base.sub_thread_priority = 0x13;
+	savedata_param.base.font_thread_priority = 0x12;
+	savedata_param.base.sound_thread_priority = 0x10;
+
+	set_savedata_param(5, &savedata_param);
+
+	ret = sceUtilitySavedataInitStart(&savedata_param);
+}
+
+void OnPush_SaveData_6(int selection)
+{
+	int ret;
+
+	Menu_WriteLine("OnPush_SaveData_6", 0xFFFFFF);
+	Menu_LockInput();
+
+	sample_type = 1;
+	memset(&savedata_param, 0, sizeof(savedata_param));
+	savedata_param.base.size = sizeof(savedata_param);
+	savedata_param.base.message_lang = GetMessageLang();
+	savedata_param.base.ctrl_assign = GetAssign();
+	savedata_param.base.main_thread_priority = 0x11;
+	savedata_param.base.sub_thread_priority = 0x13;
+	savedata_param.base.font_thread_priority = 0x12;
+	savedata_param.base.sound_thread_priority = 0x10;
+
+	set_savedata_param(6, &savedata_param);
+
+	ret = sceUtilitySavedataInitStart(&savedata_param);
+}
+
+void OnPush_SaveData_7(int selection)
+{
+	int ret;
+
+	Menu_WriteLine("OnPush_SaveData_7", 0xFFFFFF);
+	Menu_LockInput();
+
+	sample_type = 1;
+	memset(&savedata_param, 0, sizeof(savedata_param));
+	savedata_param.base.size = sizeof(savedata_param);
+	savedata_param.base.message_lang = GetMessageLang();
+	savedata_param.base.ctrl_assign = GetAssign();
+	savedata_param.base.main_thread_priority = 0x11;
+	savedata_param.base.sub_thread_priority = 0x13;
+	savedata_param.base.font_thread_priority = 0x12;
+	savedata_param.base.sound_thread_priority = 0x10;
+
+	set_savedata_param(7, &savedata_param);
+
+	ret = sceUtilitySavedataInitStart(&savedata_param);
+}
+
+void OnPush_SaveData_8(int selection)
+{
+	int ret;
+
+	Menu_WriteLine("OnPush_SaveData_8", 0xFFFFFF);
+	Menu_LockInput();
+
+	sample_type = 1;
+	memset(&savedata_param, 0, sizeof(savedata_param));
+	savedata_param.base.size = sizeof(savedata_param);
+	savedata_param.base.message_lang = GetMessageLang();
+	savedata_param.base.ctrl_assign = GetAssign();
+	savedata_param.base.main_thread_priority = 0x11;
+	savedata_param.base.sub_thread_priority = 0x13;
+	savedata_param.base.font_thread_priority = 0x12;
+	savedata_param.base.sound_thread_priority = 0x10;
+
+	set_savedata_param(8, &savedata_param);
+
+	ret = sceUtilitySavedataInitStart(&savedata_param);
+}
 
 void OnCancel_SaveData(int selection) {
     Menu_WriteLine("OnCancel_SaveData", 0xFFFFFF);
