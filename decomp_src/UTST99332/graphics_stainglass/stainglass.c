@@ -130,7 +130,139 @@ INCLUDE_RODATA("tmp/asm/UTST99332/graphics_stainglass/nonmatchings/stainglass", 
 #define _nx 48
 #define _ny 48
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_stainglass/nonmatchings/stainglass", GenFrameBufferMipmap);
+#define SCEGU_TEXTURE                      9
+#define SCEGU_SINGLE_CLUT                  0
+#define SCEGU_TEXBUF_NORMAL                0
+#define SCEGU_TEX_MODULATE                 0
+#define SCEGU_RGB                          0
+#define SCEGU_VRAM_TOP        0x00000000
+#define SCEGU_VRAM_BUFSIZE32  (SCEGU_VRAM_WIDTH*SCEGU_SCR_HEIGHT*4)
+#define SCEGU_VRAM_BUFSIZE    (SCEGU_VRAM_WIDTH*SCEGU_SCR_HEIGHT*2)
+#define SCEGU_NOFLIP                       0
+#define SCEGU_NOROTATE                     0
+#define SCEGU_DEPTH_TEST                   1
+#define SCEGU_SCR_OFFSETX     ((4096 - SCEGU_SCR_WIDTH) / 2)
+#define SCEGU_SCR_OFFSETY     ((4096 - SCEGU_SCR_HEIGHT) / 2)
+#define SCEGU_PF8888                       3
+#define SCEGU_VRAM_WIDTH      512
+#define SCEGU_SCR_WIDTH       480
+#define SCEGU_SCR_HEIGHT      272
+
+void GenFrameBufferMipmap(void)
+{
+	sceGuTexFlush();
+
+	sceGuOffset(0,0);
+
+	extern int D_00016C3C;
+
+	const unsigned int vram_top = (unsigned int)sceGeEdramGetAddr();
+	const unsigned int disp_addr_rel = SCEGU_VRAM_BUFSIZE32 * D_00016C3C;
+	const unsigned int disp_addr = vram_top + disp_addr_rel;
+	
+    D_00016C3C=1-D_00016C3C;
+
+	sceGuTexScale( 1.f, 1.f );
+	sceGuTexOffset( 0.f, 0.f );
+
+	sceGuDisable( SCEGU_DEPTH_TEST );
+	sceGuDepthMask( 1 );
+
+	sceGuEnable( SCEGU_TEXTURE );
+	sceGuTexMode( SCEGU_PF8888, 0, SCEGU_SINGLE_CLUT, SCEGU_TEXBUF_NORMAL );
+	sceGuTexFunc( SCEGU_TEX_MODULATE, SCEGU_RGB );
+	sceGuColor( 0xffffffff );
+
+
+	
+	mipmap_vram[0]=SCEGU_VRAM_TOP+SCEGU_VRAM_BUFSIZE32*2+SCEGU_VRAM_BUFSIZE;
+
+
+	
+
+	sceGuDrawBuffer(SCEGU_PF8888, (void*)( mipmap_vram[0] ), 256);
+	sceGuViewport(0, 0, 256, 256);
+	sceGuScissor(0, 0, 256, 256);
+	
+	sceGuTexImage( 0, SCEGU_VRAM_WIDTH, 512, SCEGU_VRAM_WIDTH, (void*)(disp_addr));
+	sceGuSpriteMode( 120, 272, 64, 256 );
+	sceGuDrawSprite( 0, 0, 0, 0, 0, SCEGU_NOFLIP, SCEGU_NOROTATE ); 
+	
+	sceGuSpriteMode( 120, 272, 64, 256 );
+	sceGuDrawSprite( 64, 0, 0, 120, 0, SCEGU_NOFLIP, SCEGU_NOROTATE ); 
+	
+	sceGuSpriteMode( 120, 272, 64, 256 );
+	sceGuDrawSprite( 128, 0, 0, 240, 0, SCEGU_NOFLIP, SCEGU_NOROTATE ); 
+	
+	sceGuSpriteMode( 120, 272, 64, 256 );
+	sceGuDrawSprite( 192, 0, 0, 360, 0, SCEGU_NOFLIP, SCEGU_NOROTATE ); 
+	
+
+	sceGuTexFlush();
+
+	
+
+
+	mipmap_vram[1] = mipmap_vram[0] + 256 * 256 * 4; 
+	
+	sceGuTexImage( 0, 256, 256, 256, (void*)( vram_top + mipmap_vram[0] ) );
+	sceGuDrawBuffer(SCEGU_PF8888, (void*)( mipmap_vram[1] ), 128);
+	sceGuViewport(0, 0, 128, 128);
+	sceGuScissor(0, 0, 128, 128);
+	sceGuSpriteMode( 256, 256, 128, 128 );
+	sceGuDrawSprite( 0, 0, 0, 0, 0, SCEGU_NOFLIP, SCEGU_NOROTATE ); 
+
+	sceGuTexFlush();
+
+
+	
+	mipmap_vram[2] = mipmap_vram[1] + 128 * 128 * 4; 
+
+	sceGuTexImage( 0, 128, 128, 128, (void*)( vram_top + mipmap_vram[1] ) );
+	sceGuDrawBuffer(SCEGU_PF8888, (void*)( mipmap_vram[2] ), 64);
+	sceGuSpriteMode( 128, 128, 64, 64 );
+	sceGuViewport(0, 0, 64, 64);
+	sceGuScissor(0, 0, 64, 64);
+	sceGuDrawSprite( 0, 0, 0, 0, 0, SCEGU_NOFLIP, SCEGU_NOROTATE ); 
+
+	sceGuTexFlush();
+
+
+	
+	mipmap_vram[3] = mipmap_vram[2] + 64 * 64 * 4; 
+
+	sceGuTexImage( 0, 64, 64, 64, (void*)( vram_top + mipmap_vram[2] ) );
+	sceGuDrawBuffer(SCEGU_PF8888, (void*)( mipmap_vram[3] ), 32);
+	sceGuSpriteMode( 64, 64, 32, 32 );
+	sceGuViewport(0, 0, 32, 32);
+	sceGuScissor(0, 0, 32, 32);
+	sceGuDrawSprite( 0, 0, 0, 0, 0, SCEGU_NOFLIP, SCEGU_NOROTATE ); 
+
+	sceGuTexFlush();
+
+
+	
+	mipmap_vram[4] = mipmap_vram[3] + 32 * 32 * 4; 
+
+	sceGuTexImage( 0, 32, 32, 32, (void*)( vram_top + mipmap_vram[3] ) );
+	sceGuDrawBuffer(SCEGU_PF8888, (void*)( mipmap_vram[4] ), 16);
+	sceGuViewport(0, 0, 16, 16);
+	sceGuScissor(0, 0, 16, 16);
+	sceGuSpriteMode( 32, 32, 16, 16 );
+	sceGuDrawSprite( 0, 0, 0, 0, 0, SCEGU_NOFLIP, SCEGU_NOROTATE ); 
+
+	sceGuTexFlush();
+	
+
+
+
+	sceGuEnable( SCEGU_DEPTH_TEST );
+	sceGuOffset(SCEGU_SCR_OFFSETX, SCEGU_SCR_OFFSETY);
+	sceGuViewport(2048, 2048, SCEGU_SCR_WIDTH, SCEGU_SCR_HEIGHT);
+	sceGuDrawBuffer(SCEGU_PF8888, (void*)disp_addr_rel,SCEGU_VRAM_WIDTH );
+	sceGuScissor(0, 0, SCEGU_SCR_WIDTH, SCEGU_SCR_HEIGHT);
+	sceGuDepthMask( 0 );
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_stainglass/nonmatchings/stainglass", UseFrameBufferMipmap);
 
