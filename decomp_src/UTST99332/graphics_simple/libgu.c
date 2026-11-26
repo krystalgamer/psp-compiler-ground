@@ -140,6 +140,16 @@ void sceGuSetDither(const int *matrix);
 void sceGuPatchDivide(int a0, int a1);
 void sceGuColorMaterial(int a0);
 
+static __inline__ void send_commandi_stall(int cmd, int argument)
+{
+	send_commandi(cmd, argument);
+	if (!n_bbox && !__aw_list_mode)
+		sceGeListUpdateStallAddr(queid[0], pList->current);
+}
+void sceGuSpecular(float power);
+void sceGuTexScale(float u, float v);
+extern const float D_00011F18;
+
 void callback_sig(int id, void *arg)
 {
 	GuCallbackData *cb = (GuCallbackData *)arg;
@@ -291,15 +301,42 @@ void sceGuTerm(void)
 
 INCLUDE_RODATA("tmp/asm/UTST99332/graphics_simple/nonmatchings/libgu", D_00011DF8);
 
-INCLUDE_RODATA("tmp/asm/UTST99332/graphics_simple/nonmatchings/libgu", D_00011E38);
+void sceGuStart(int type, void *list, int size)
+{
+	GuContext *context = &_ctx[type];
+	GuDrawBuffer *fb = &FBuf;
+	unsigned int *local_list = (unsigned int *)(((unsigned int)list) | 0x40000000);
 
-INCLUDE_RODATA("tmp/asm/UTST99332/graphics_simple/nonmatchings/libgu", D_00011E4C);
+	context->parent_context = __aw_list_mode;
+	context->start = local_list;
+	context->current = local_list;
+	pList = context;
+	__aw_list_mode = type;
+	if (!type) {
+		intrParam.index = 0;
+		queid[0] = sceGeListEnQueue(local_list, local_list, intrCode, 0);
+	}
+	if (!gu_init) {
+		GuDitherInit dither_matrix = D_00011DF8;
+		float one;
 
-INCLUDE_RODATA("tmp/asm/UTST99332/graphics_simple/nonmatchings/libgu", D_00011EA4);
+		sceGuSetDither(dither_matrix.m);
+		sceGuPatchDivide(16, 16);
+		sceGuColorMaterial(7);
+		one = D_00011F18;
+		sceGuSpecular(one);
+		sceGuTexScale(one, one);
+		gu_init = 1;
+	}
+	if (!__aw_list_mode) {
+		int width = fb->frame_width;
 
-INCLUDE_RODATA("tmp/asm/UTST99332/graphics_simple/nonmatchings/libgu", D_00011EFC);
-
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_simple/nonmatchings/libgu", sceGuStart);
+		if (width) {
+			send_commandi(156, *(unsigned int *)&fb->frame_buffer & 0xffffff);
+			send_commandi(157, ((*(unsigned int *)&fb->frame_buffer & 0xff000000) >> 8) | width);
+		}
+	}
+}
 
 void sceGuSetDither(const int *matrix)
 {
@@ -315,9 +352,49 @@ void sceGuSetDither(const int *matrix)
 	send_commandi(229, dither[3]);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_simple/nonmatchings/libgu", sceGuFinish);
+int sceGuFinish(void)
+{
+	GuContext *context;
+	int size;
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_simple/nonmatchings/libgu", sceGuFinishId);
+	if (__aw_list_mode == 0 || __aw_list_mode == 2) {
+		send_commandi(15, 0);
+		send_commandi_stall(12, 0);
+	} else if (call_mode == 1) {
+		send_commandi(14, 0x120000);
+		send_commandi(12, 0);
+		send_commandi_stall(0, 0);
+	} else {
+		send_commandi(11, 0);
+	}
+	context = pList;
+	size = (unsigned int)context->current - (unsigned int)context->start;
+	__aw_list_mode = context->parent_context;
+	pList = &_ctx[__aw_list_mode];
+	return size;
+}
+
+int sceGuFinishId(unsigned int id)
+{
+	GuContext *context;
+	int size;
+
+	if (__aw_list_mode == 0 || __aw_list_mode == 2) {
+		send_commandi(15, id & 0xffff);
+		send_commandi_stall(12, 0);
+	} else if (call_mode == 1) {
+		send_commandi(14, 0x120000);
+		send_commandi(12, 0);
+		send_commandi_stall(0, 0);
+	} else {
+		send_commandi(11, 0);
+	}
+	context = pList;
+	size = (unsigned int)context->current - (unsigned int)context->start;
+	__aw_list_mode = context->parent_context;
+	pList = &_ctx[__aw_list_mode];
+	return size;
+}
 
 void sceGuCallMode(int mode)
 {
@@ -347,7 +424,19 @@ void sceGuContinue(void)
 	sceGeContinue();
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_simple/nonmatchings/libgu", sceGuCallList);
+void sceGuCallList(const void *list)
+{
+	unsigned int list_addr = (unsigned int)list;
+
+	if (call_mode == 1) {
+		send_commandi(14, (list_addr >> 16) | 0x110000);
+		send_commandi(12, list_addr & 0xffff);
+		send_commandi_stall(0, 0);
+	} else {
+		send_commandi(16, (list_addr >> 8) & 0xf0000);
+		send_commandi_stall(10, list_addr & 0xffffff);
+	}
+}
 
 void sceGuSendList(int mode, const void *list, void *context)
 {
@@ -371,7 +460,21 @@ int sceGuCheckList(void)
 	return (int)pList->current - (int)pList->start;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_simple/nonmatchings/libgu", sceGuSync);
+int sceGuSync(int mode, int what)
+{
+	switch (mode) {
+	case 0:
+		return sceGeDrawSync(what);
+	case 1:
+	case 2:
+	default:
+		return 0;
+	case 3:
+		return sceGeListSync(queid[0], what);
+	case 4:
+		return sceGeListSync(queid[1], what);
+	}
+}
 
 void sceGuSignalSync(int signal)
 {
@@ -389,9 +492,169 @@ void sceGuSignalSync(int signal)
 	}
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_simple/nonmatchings/libgu", sceGuEnable);
+void sceGuEnable(int state)
+{
+	switch (state) {
+	case 0:
+		send_commandi(34, 1);
+		break;
+	case 1:
+		send_commandi(35, 1);
+		break;
+	case 2:
+		_ctx[__aw_list_mode].scissor_enable = 1;
+		send_commandi(212, 0xffffff & ((_ctx[__aw_list_mode].scissor_start[1] << 10) | _ctx[__aw_list_mode].scissor_start[0]));
+		send_commandi(213, (_ctx[__aw_list_mode].scissor_end[1] << 10) | _ctx[__aw_list_mode].scissor_end[0]);
+		send_commandi(21, 0);
+		send_commandi(22, (_ctx[__aw_list_mode].scissor_end[1] << 10) | _ctx[__aw_list_mode].scissor_end[0]);
+		break;
+	case 3:
+		send_commandi(36, 1);
+		break;
+	case 4:
+		send_commandi(33, 1);
+		break;
+	case 5:
+		send_commandi(29, 1);
+		break;
+	case 6:
+		send_commandi(32, 1);
+		break;
+	case 7:
+		send_commandi(31, 1);
+		break;
+	case 8:
+		send_commandi(28, 1);
+		break;
+	case 9:
+		send_commandi(30, 1);
+		break;
+	case 10:
+		send_commandi(23, 1);
+		break;
+	case 11:
+		send_commandi(24, 1);
+		break;
+	case 12:
+		send_commandi(25, 1);
+		break;
+	case 13:
+		send_commandi(26, 1);
+		break;
+	case 14:
+		send_commandi(27, 1);
+		break;
+	case 15:
+		send_commandi(37, 1);
+		break;
+	case 16:
+		send_commandi(38, 1);
+		break;
+	case 17:
+		send_commandi(39, 1);
+		break;
+	case 18:
+		send_commandi(40, 1);
+		break;
+	case 19:
+		send_commandi(81, 1);
+		break;
+	case 20:
+		send_commandi(56, 1);
+		break;
+	case 21:
+		_ctx[__aw_list_mode].fragment_2x = 0x10000;
+		send_commandi(201, 0x10000 | _ctx[__aw_list_mode].texture_function);
+		break;
+	}
+	if (state < 22)
+		__gu_status |= (1 << state);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_simple/nonmatchings/libgu", sceGuDisable);
+void sceGuDisable(int state)
+{
+	GuDrawBuffer *fb = &FBuf;
+
+	switch (state) {
+	case 0:
+		send_commandi(34, 0);
+		break;
+	case 1:
+		send_commandi(35, 0);
+		break;
+	case 2:
+		{
+			int w = fb->width - 1;
+			int h = fb->height - 1;
+			_ctx[__aw_list_mode].scissor_enable = 0;
+			send_commandi(212, 0);
+			send_commandi(213, (h << 10) | w);
+			send_commandi(21, 0);
+			send_commandi(22, (h << 10) | w);
+		}
+		break;
+	case 3:
+		send_commandi(36, 0);
+		break;
+	case 4:
+		send_commandi(33, 0);
+		break;
+	case 5:
+		send_commandi(29, 0);
+		break;
+	case 6:
+		send_commandi(32, 0);
+		break;
+	case 7:
+		send_commandi(31, 0);
+		break;
+	case 8:
+		send_commandi(28, 0);
+		break;
+	case 9:
+		send_commandi(30, 0);
+		break;
+	case 10:
+		send_commandi(23, 0);
+		break;
+	case 11:
+		send_commandi(24, 0);
+		break;
+	case 12:
+		send_commandi(25, 0);
+		break;
+	case 13:
+		send_commandi(26, 0);
+		break;
+	case 14:
+		send_commandi(27, 0);
+		break;
+	case 15:
+		send_commandi(37, 0);
+		break;
+	case 16:
+		send_commandi(38, 0);
+		break;
+	case 17:
+		send_commandi(39, 0);
+		break;
+	case 18:
+		send_commandi(40, 0);
+		break;
+	case 19:
+		send_commandi(81, 0);
+		break;
+	case 20:
+		send_commandi(56, 0);
+		break;
+	case 21:
+		_ctx[__aw_list_mode].fragment_2x = 0;
+		send_commandi(201, _ctx[__aw_list_mode].texture_function);
+		break;
+	}
+	if (state < 22)
+		__gu_status &= ~(1 << state);
+}
 
 int sceGuGetStatus(int state)
 {
@@ -610,7 +873,19 @@ void sceGuDispBuffer(int width, int height, void *dbp, int frame_width)
 		sceDisplaySetFrameBuf((char *)vram_top + (unsigned int)FBuf.disp_buffer, frame_width, FBuf.pixel_size, 1);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_simple/nonmatchings/libgu", sceGuDisplay);
+int sceGuDisplay(int state)
+{
+	int old;
+	GuDrawBuffer *fb = &FBuf;
+
+	if (!state)
+		sceDisplaySetFrameBuf(0, 0, 0, 1);
+	else
+		sceDisplaySetFrameBuf((char *)vram_top + (unsigned int)fb->disp_buffer, fb->frame_width, fb->pixel_size, 1);
+	old = disp_sw;
+	disp_sw = state;
+	return old;
+}
 
 void *sceGuSwapBuffers(void)
 {
@@ -754,6 +1029,8 @@ void sceGuLightAtt(int light, float atten0, float atten1, float atten2)
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_simple/nonmatchings/libgu", sceGuLightSpot);
 
+INCLUDE_RODATA("tmp/asm/UTST99332/graphics_simple/nonmatchings/libgu", D_00011EFC);
+
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_simple/nonmatchings/libgu", sceGuLightColor);
 
 void sceGuTexMode(int tpsm, int maxmips, int a2, int swizzle)
@@ -786,6 +1063,8 @@ void sceGuTexWrap(int u, int v)
 {
 	send_commandi(199, ((v << 8) | u));
 }
+
+const float D_00011F18 = 1.0f;
 
 void sceGuTexLevelMode(unsigned int mode, float bias)
 {
