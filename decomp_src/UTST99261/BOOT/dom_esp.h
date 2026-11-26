@@ -87,7 +87,8 @@ typedef struct DOMStr {
 } DOMStr;
 
 typedef struct LayoutBox {
-    char x00[0x10];
+    struct LayoutBox *parent;         /* 0x00 */
+    char x04[0xC];
     int x;                            /* 0x10 */
     int y;                            /* 0x14 */
     int x18;

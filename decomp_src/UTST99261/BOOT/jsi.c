@@ -2,6 +2,7 @@
 #include "common.h"
 #include "dom_esp.h"
 #include "m2c_macros.h"
+extern void *gBEINSI_UI;
 extern EspContext *esp_context;
 #define VESP (*(EspContext *volatile *)&esp_context)
 extern void *jsapi_lock;
@@ -217,11 +218,62 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSI_setLinkURL);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSI_getDocumentURL);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSI_getOptionState);
+int JSI_getOptionState(void *node) {
+    LayoutBox *box;
+    int idx;
+    int *info;
+
+    if (node == NULL || (box = Node_getBox(node)) == NULL) {
+        return -1;
+    }
+    for (; box != NULL; box = box->parent) {
+        if (box->type == 0x12) {
+            break;
+        }
+    }
+    if (box == NULL) {
+        return -1;
+    }
+    idx = Util_HTMLOptionElement_getIndex(node);
+    info = box->data;
+    if (info[1] >= 2 || info[0] == 1) {
+        return GUI_List_isIndexSelected(box->widget, idx) != 0;
+    }
+    return GUI_Choice_getSelectedItem(box->widget) == idx;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSI_setOptionState);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSI_getOptionText);
+DOMStr *JSI_getOptionText(void *node) {
+    LayoutBox *box;
+    LayoutBox *b;
+    int idx;
+    int *info;
+    char *s;
+    DOMStr *r;
+
+    if (node == NULL || (box = Node_getBox(node)) == NULL) {
+        return NULL;
+    }
+    idx = Util_HTMLOptionElement_getIndex(node);
+    for (b = box->parent; b != NULL; b = b->parent) {
+        if (b->type == 0x12) {
+            break;
+        }
+    }
+    if (b == NULL) {
+        return NULL;
+    }
+    info = b->data;
+    if (info[1] >= 2 || info[0] == 1) {
+        s = GUI_List_getItem(b->widget, idx);
+    } else {
+        s = GUI_Choice_getItem(b->widget, idx);
+    }
+    r = newDOMString_4B5FC(s, strlen(s));
+    MEM_free(0, s);
+    return r;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSI_setOptionText);
 
@@ -240,7 +292,25 @@ int JSI_getRadioState(int arg0) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSI_setRadioState);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSI_getSelectedIndex);
+int JSI_getSelectedIndex(void *node) {
+    LayoutBox *box;
+    unsigned int i;
+    int *info;
+
+    if (node == NULL || (box = Node_getBox(node)) == NULL || box->type != 0x12 || box->widget == NULL) {
+        return -1;
+    }
+    info = box->data;
+    if (info[1] >= 2 || info[0] == 1) {
+        for (i = 0; i < Util_HTMLSelectElement_getLength(node); i++) {
+            if (GUI_List_isIndexSelected(box->widget, i)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+    return GUI_Choice_getSelectedItem(box->widget);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSI_setSelectedIndex);
 
@@ -248,7 +318,37 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSI_getTextValue);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSI_setTextValue);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSI_getWindowRec);
+int JSI_getWindowRec(void *node, short *rec) {
+    LayoutBox *box;
+    int w;
+    int h;
+    int sx;
+    int sy;
+    int vw;
+    int vh;
+    void *ui;
+
+    if (node == NULL || (box = Node_getBox(node)) == NULL) {
+        return -1;
+    }
+    rec[0] = 0;
+    rec[1] = 0;
+    rec[2] = 0;
+    ui = gBEINSI_UI;
+    if (ui == NULL) {
+        return -1;
+    }
+    GUI_Component_getSize(M2C_FIELD(ui, void **, 0x74), &w, &h);
+    rec[3] = w;
+    rec[4] = h;
+    GUI_ScrollPane_getScrollPosition(box->widget, &sx, &sy);
+    rec[5] = sx;
+    rec[6] = sy;
+    GUI_ScrollPane_getViewportSize(box->widget, &vw, &vh);
+    rec[7] = vw;
+    rec[8] = vh;
+    return 0;
+}
 
 DOMStr *JSI_getWindowName(void *doc) {
     void *h;
@@ -1360,7 +1460,41 @@ int ESP_getStringPreference(int key, void *value) {
     return esp_getStringConfig(&esp_context->config, key, value);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_setEncoding);
+int ESP_setEncoding(int enc) {
+    int v;
+
+    if (esp_context == NULL) {
+        return -1;
+    }
+    if (esp_context->state == 2) {
+        return -1;
+    }
+    if (enc == 0) {
+        return -1;
+    }
+    v = 0;
+    switch (enc) {
+    case 1:
+        v = 1;
+        break;
+    case 3:
+        v = 3;
+        break;
+    case 2:
+        v = 2;
+        break;
+    case 4:
+        v = 4;
+        break;
+    case 5:
+        v = 5;
+        break;
+    case 0:
+        v = 0;
+        break;
+    }
+    return esp_setIntConfig(&esp_context->config, 0x1001, v);
+}
 
 int ESP_getEncoding(int *value) {
     if (esp_context == NULL) {
