@@ -45,7 +45,7 @@ def module_funcs(target, module):
             ob = (info >> 8) & 0xFF
             if ob < len(segs):
                 relocs[segs[ob]["p_offset"] + ofs] = info & 0xFF
-    funcs = {}
+    funcs = Funcs()
     entries = []
     for line in (ROOT / "config" / target / f"symbol_addrs.{module}.txt").read_text().splitlines():
         m = re.match(r"(\w+) = 0x([0-9A-F]+); // type:func(?: size:0x([0-9A-F]+))?", line)
@@ -74,15 +74,35 @@ def module_funcs(target, module):
                 if nxt:
                     names.add(name)
                     entries.append((name, a, nxt[0] - a))
+    byaddr = {}
+    for m in re.finditer(r"^(\w+) = 0x([0-9A-F]+);", (ROOT / "config" / target / f"symbol_addrs.{module}.txt").read_text(), re.M):
+        byaddr.setdefault(int(m[2], 16), m[1])
     for name, a, n in entries:
         if True:
-            words = []
+            words, calls = [], {}
             for k in range(0, n, 4):
                 o = off0 + a + k
                 w = struct.unpack_from("<I", data, o)[0]
+                if relocs.get(o) == R_MIPS_26 and (w >> 26) in (2, 3):
+                    calls[k // 4] = byaddr.get((w & 0x3FFFFFF) << 2)
                 words.append(mask(w, relocs[o]) if o in relocs else w)
             funcs[name] = words
+            funcs.calls[name] = calls
     return funcs
+
+
+class Funcs(dict):
+    """name -> masked words; .calls: name -> {word index: callee name or None}"""
+    def __init__(self):
+        super().__init__()
+        self.calls = {}
+
+
+def base_name(n):
+    return re.sub(r"_[0-9A-F]{4,8}$", "", n) if n else n
+
+
+OBJCALLS = {}
 
 
 def obj_funcs(data):
@@ -92,12 +112,15 @@ def obj_funcs(data):
         if not (sec["sh_flags"] & 4) or sec["sh_type"] != "SHT_PROGBITS":
             continue
         text = sec.data()
-        rel = {}
+        rel, relsym = {}, {}
+        symtab = elf.get_section_by_name(".symtab")
         for rs in elf.iter_sections():
             if isinstance(rs, RelocationSection) and rs["sh_info"] == elf.get_section_index(sec.name):
                 for r in rs.iter_relocations():
                     rel[r["r_offset"]] = r["r_info_type"]
-        symtab = elf.get_section_by_name(".symtab")
+                    if r["r_info_type"] == R_MIPS_26:
+                        sym = symtab.get_symbol(r["r_info_sym"])
+                        relsym[r["r_offset"]] = sym.name if sym["st_info"]["type"] != "STT_SECTION" else None
         for s in symtab.iter_symbols():
             if s["st_info"]["type"] == "STT_FUNC" and s["st_shndx"] == elf.get_section_index(sec.name):
                 a, n = s["st_value"], s["st_size"]
@@ -106,6 +129,7 @@ def obj_funcs(data):
                     w = struct.unpack_from("<I", text, k)[0]
                     words.append(mask(w, rel[k]) if k in rel else w)
                 out[s.name] = words
+                OBJCALLS[s.name] = {(k - a) // 4: relsym[k] for k in range(a, a + n, 4) if k in relsym}
     return out
 
 
@@ -166,6 +190,11 @@ def compare(mod, objs, verbose=False):
                 else:
                     nd = sum(1 for a, b in zip(words, orig) if a != b)
                     res[fn] = "same" if nd == 0 else f"diff {nd}"
+                    # same bytes but other callees (jal targets are masked above)
+                    oc, mc = OBJCALLS.get(fn, {}), getattr(mod, "calls", {}).get(key, {})
+                    bad = [i for i, t in oc.items() if t and mc.get(i) and base_name(t) != base_name(mc[i])]
+                    if nd == 0 and bad:
+                        res[fn] = "calls " + ",".join(f"{oc[i]}!={mc[i]}" for i in bad[:3])
                 if verbose and res[fn] != "same" and (verbose is True or verbose == fn):
                     print(f"--- {fn}: ours | original")
                     side_by_side(words, orig)
