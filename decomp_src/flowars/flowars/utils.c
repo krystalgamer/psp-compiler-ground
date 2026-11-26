@@ -232,9 +232,41 @@ void ttyprintf2(char *tty, const char *str, ...)
 	sceIoClose(fd);
 }
 
-/* the "" initializer constant load_image (C) emits first; make_num_format (asm) uses it too */
-__asm__(".globl D_0002F57C\nD_0002F57C = 0x0002F57C");
-INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/utils", make_num_format);
+void make_num_format(char *strOut, long64 num)
+{
+	int i;
+	int j;
+	int c;
+	int flagMinus = 0;
+	int inpValLen;
+	int strOutLen;
+	char buf[20] = "";
+	char strTemp[20] = "";
+
+	if (num < 0) {
+		flagMinus = 1;
+		num = num * -1;
+	}
+	sprintf(buf, "%lld", num);
+	inpValLen = strlen(buf);
+	j = 0;
+	for (i = inpValLen; i >= 0; ) {
+		if (j > 0 && j % 4 == 0)
+			strTemp[j++] = ',';
+		else
+			strTemp[j++] = buf[i--];
+	}
+	strOutLen = j;
+	for (i = strOutLen - 1, j = 0; j < i; j++, i--) {
+		c = strTemp[j];
+		strTemp[j] = strTemp[i];
+		strTemp[i] = c;
+	}
+	if (flagMinus)
+		sprintf(strOut, "-%s", strTemp);
+	else
+		strcpy(strOut, strTemp);
+}
 
 void activateUmd()
 {
