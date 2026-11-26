@@ -1,4 +1,12 @@
-#include "common.h"
+/* lang: c++ */
+/* cflags: -O3 -fno-exceptions */
+#undef __EXCEPTIONS
+#include "cxx/defer_asm.h"
+#include "main.hpp"
+
+/* the strings stay in the module's .rodata (asm) */
+extern const char D_00159984[];     /* "load test env\n" */
+extern const char D_00159994[];     /* "apply env change\n" */
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _Z41__static_initialization_and_destruction_0ii_3E8);
 
@@ -16,7 +24,13 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN7CityApp7
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN7CityApp4initEv);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN7CityApp11init_lightsEv);
+void CityApp::init_lights()
+{
+    common::Log() << D_00159984;
+    _env.load();
+    common::Log() << D_00159994;
+    envChange();
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN7CityApp9envChangeEv);
 
@@ -26,7 +40,10 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN7CityApp9
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN7CityApp17light_source_idleEv);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZNK7CityApp13get_anim_timeEv);
+float CityApp::get_anim_time() const
+{
+    return _anim_time;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZNK7CityApp19get_light_transformEv);
 
@@ -36,11 +53,18 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN7CityApp2
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN7CityApp14depthblur_idleEv);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN7CityApp14all_modes_idleEv);
+void CityApp::all_modes_idle()
+{
+    psp::pad();
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN7CityApp11set_controlENS_15ControledObjectE);
+void CityApp::set_control(ControledObject c)
+{
+    _control = c;
+}
 
-void _ZN7CityApp11zrange_idleEv(void) {
+void CityApp::zrange_idle()
+{
 }
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _Z9znearfuncf);
@@ -51,11 +75,28 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN7CityApp4
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _Z8run_cityv);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", main);
+extern "C" int main(void)
+{
+    menuInit();
+    run_city();
+    return 0;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _GLOBAL__I___psp_moduleinfo);
+extern "C" {
+void static_init_3E8(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_3E8");
+void _GLOBAL__I___psp_moduleinfo(void);
+void _GLOBAL__D___psp_moduleinfo(void);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _GLOBAL__D___psp_moduleinfo);
+void _GLOBAL__I___psp_moduleinfo(void)
+{
+    static_init_3E8(1, 0xFFFF);
+}
+
+void _GLOBAL__D___psp_moduleinfo(void)
+{
+    static_init_3E8(0, 0xFFFF);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN6common6handleIN5scene4NodeEE10invalidateEv);
 
@@ -379,7 +420,8 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN6interp20
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN6interp20KeyFrameSequenceBaseIfE12makeAbsoluteEv);
 
-void _ZN6interp16KeyFrameSequenceIfE9typed_fixEv(void) {
+template<> void interp::KeyFrameSequence<float>::typed_fix()
+{
 }
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN6interp20KeyFrameSequenceBaseIfE18makeConsistantWithEPKNS_23VirtualKeyFrameSequenceE);
