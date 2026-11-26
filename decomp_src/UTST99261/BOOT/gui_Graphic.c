@@ -1,6 +1,7 @@
 /* cflags: -O1 */
 #include "common.h"
 #include "m2c_macros.h"
+#include "UTST99261/BOOT/nfgui.h"
 extern int _zWindDrawTexClipOffX;
 extern int _zWindDrawTexClipOffY;
 
@@ -9,33 +10,127 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Graphic", GUI_Graphics_crea
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Graphic", GUI_Graphics_getGraphics);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Graphic", GUI_Graphics_freeGraphics);
+int GUI_Graphics_freeGraphics(GUIGRAPHICS *g) {
+    if (s_windsystem_data.graphics2 != NULL && s_windsystem_data.graphics2 == g) {
+        s_windsystem_data.graphics = g;
+        s_windsystem_data.graphics2 = NULL;
+        return 0;
+    }
+    if (GuigraphicsDelete(g) == 0) {
+        puts("[X1]GUI_Graphics_freeGraphics");
+        return -1;
+    }
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Graphic", GUI_Graphics_createPixmap);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Graphic", GUI_Graphics_freePixmap);
+void GUI_Graphics_freePixmap(GUIPIXMAP *p) {
+    if (p == NULL) {
+        puts("[X1]GUI_Graphics_freePixmap");
+        return;
+    }
+    if (p->type != 3) {
+        puts("[X2]GUI_Graphics_freePixmap");
+        return;
+    }
+    if (s_windsystem_data.pixmap2 != NULL && s_windsystem_data.pixmap2 == p) {
+        s_windsystem_data.pixmap = p;
+        s_windsystem_data.pixmap2 = NULL;
+    } else {
+        GuipixmapDelete(p);
+    }
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Graphic", GUI_Graphics_setColor);
+int GUI_Graphics_setColor(GUIGRAPHICS *g, int *c) {
+    if (g == NULL) {
+        puts("[X1]GUI_Graphics_setColor");
+        return -1;
+    }
+    if (g->type != 2) {
+        puts("[X2]GUI_Graphics_setColor");
+        return -1;
+    }
+    g->color = (c[0] >> 3) | ((c[1] >> 3) << 5) | ((c[2] >> 3) << 10);
+    return 0;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Graphic", GUI_Graphics_setFont);
+int GUI_Graphics_setFont(GUIGRAPHICS *g, GUIFONT *font) {
+    if (g == NULL || g->type != 2) {
+        puts("[X1]GUI_Graphics_setFont");
+        return -1;
+    }
+    g->font = font;
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Graphic", GUI_Graphics_drawString);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Graphic", GUI_Graphics_getStringSize);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Graphic", GUI_Graphics_getStringBound);
+int GUI_Graphics_getStringBound(GUIFONT *font, char *s, int n, int d) {
+    if (font == NULL || font->type != 4) {
+        puts("[X1]GUI_Graphics_getStringBound");
+        return -1;
+    }
+    return n * font->size / d;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Graphic", GUI_Graphics_drawRect);
+int GUI_Graphics_drawRect(GUIGRAPHICS *g) {
+    GUIPIXMAP *pm;
+
+    if (g == NULL) {
+        puts("[X1]GUI_Graphics_drawRect");
+        return -1;
+    }
+    if (g->type != 2 || (pm = g->pixmap) == NULL) {
+        puts("[X2]GUI_Graphics_drawRect");
+        return -1;
+    }
+    if (pm->type != 3) {
+        puts("[X3]GUI_Graphics_drawRect");
+        return -1;
+    }
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Graphic", GUI_Graphics_fillRect);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Graphic", GUI_Graphics_setClip);
+int GUI_Graphics_setClip(GUIGRAPHICS *g, int x, int y, int w, int h) {
+    if (g == NULL) {
+        puts("[X1]GUI_Graphics_setClip");
+        return -1;
+    }
+    if (g->type != 2) {
+        puts("[X2]GUI_Graphics_setClip");
+        return -1;
+    }
+    g->clip[0] = x;
+    g->clip[1] = y;
+    g->clip[2] = w;
+    g->clip[3] = h;
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Graphic", GUI_Graphics_getImageProperty);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Graphic", GUI_Graphics_getImage);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Graphic", GUI_Graphics_getPixmapSize);
+int GUI_Graphics_getPixmapSize(GUIPIXMAP *p, int *w, int *h) {
+    *w = 0;
+    *h = 0;
+    if (p == NULL) {
+        puts("[X1]GUI_Graphics_getPixmapSize");
+        return -1;
+    }
+    if (p->type != 3) {
+        puts("[X2]GUI_Graphics_getPixmapSize");
+        return -1;
+    }
+    *w = p->w;
+    *h = p->h;
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Graphic", GUI_Graphics_drawPixmap);
 
@@ -65,7 +160,18 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Graphic", GUI_Graphics_getM
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Graphic", GUI_Graphics_getBrokenLinePattern);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Graphic", _GUI_Graphics_Push);
+void _GUI_Graphics_Push(GUIGRAPHICS *g) {
+    GUIPIXMAP *pm;
+
+    pm = g->pixmap;
+    if (pm->kind == 0) {
+        zWindDrawClipSetTex(pm->data, g->clip[0], g->clip[1], g->clip[2], g->clip[3], g->ox, g->oy);
+    } else {
+        _zWindDrawTexClipOffX = _zWindDrawTexClipOffAX;
+        _zWindDrawTexClipOffY = _zWindDrawTexClipOffAY;
+        zWindDrawClipSetTex(s_windsystem_init.image, g->x, g->y, g->ox, g->oy, g->ox, g->oy);
+    }
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -123,9 +229,32 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Graphic", GUI_RadioButton_g
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Graphic", GUI_Checkbox_setState);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Graphic", GUI_Checkbox_getState);
+int GUI_Checkbox_getState(GUIWIDGET *w) {
+    if (w == NULL) {
+        puts("[X1]GUI_Checkbox_getState");
+        return -1;
+    }
+    if (w->type != 1) {
+        puts("[X2]GUI_Checkbox_getState");
+        return -1;
+    }
+    if ((w->flags & 0xF) != 4) {
+        puts("[X3]GUI_Checkbox_getState");
+        return -1;
+    }
+    return w->u.list.state;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Graphic", _GUI_List_no);
+void _GUI_List_no(GUIWIDGET *w) {
+    GUILISTITEM *p;
+    int n;
+
+    n = 0;
+    for (p = w->unk50.p; p != NULL; p = p->next) {
+        n++;
+    }
+    w->u.list.count = n;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Graphic", GUI_List_add);
 

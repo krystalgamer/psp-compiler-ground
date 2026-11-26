@@ -10,9 +10,9 @@ void ESP_guiMemFree(void *p);
 
 typedef struct { /* size 0xC */
     s8 type;            /* 4 */
-    u16 size;
-    u16 weight;
-    u16 style;
+    s16 size;
+    s16 weight;
+    s16 style;
     int extra;
 } GUIFONT;
 
@@ -28,29 +28,43 @@ extern int _i_guifontmalloc;
 
 int GuifontClear(GUIFONT *font);
 
-typedef struct { /* size 0x20 */
-    s8 type;            /* 2 */
-    int unk4;
-    GUIFONT *font;      /* 0x8 */
-    s16 unkC;
-    s16 unkE;
-    s16 unk10;
-    s16 unk12;
-    u8 unk14[0xC];
-} GUIGRAPHICS;
+typedef struct GUILISTITEM {
+    int unk0;
+    struct GUILISTITEM *next;
+} GUILISTITEM;
 
 typedef struct { /* size 0x10 */
     s8 type;            /* 3 */
-    int unk4;
+    s16 w;              /* 0x2 */
+    s16 h;              /* 0x4 */
     int kind;           /* 0x8 */
     void *data;         /* 0xC */
 } GUIPIXMAP;
+
+typedef struct { /* size 0x20 */
+    s8 type;            /* 2 */
+    GUIPIXMAP *pixmap;  /* 0x4 */
+    GUIFONT *font;      /* 0x8 */
+    s16 x;              /* 0xC */
+    s16 y;
+    s16 ox;             /* 0x10 */
+    s16 oy;
+    s16 clip[4];        /* 0x14 */
+    int color;          /* 0x1C */
+} GUIGRAPHICS;
 
 extern int _i_guigraphicsmalloc;
 extern int _i_guipixmapmalloc;
 extern GUIFONT *D_00584B68;    /* default font */
 
 int GuigraphicsClear(GUIGRAPHICS *g);
+int GuigraphicsDelete(GUIGRAPHICS *g);
+int GuipixmapDelete(GUIPIXMAP *p);
+void zWindDrawClipSetTex();
+extern int _zWindDrawTexClipOffX;
+extern int _zWindDrawTexClipOffY;
+extern int _zWindDrawTexClipOffAX;
+extern int _zWindDrawTexClipOffAY;
 int GuipixmapClear(GUIPIXMAP *p);
 
 typedef struct GUIWIDGET { /* size 0x64 */
@@ -83,6 +97,11 @@ typedef struct GUIWIDGET { /* size 0x64 */
             unsigned int editable;      /* 0x54 (TextField) */
             int areaEditable;           /* 0x58 (TextArea) */
         } text;
+        struct {
+            int state;                  /* 0x54 */
+            s16 unk58;
+            s16 count;                  /* 0x5A */
+        } list;
         struct {
             s16 x;                      /* 0x54 */
             s16 y;
@@ -132,11 +151,11 @@ typedef struct {
     int data;
 } GUIEVENT;
 
-void *GUI_Graphics_createGraphics(void);
-void *GUI_Graphics_createPixmap(int w, int h);
-void *GUI_Graphics_getGraphics(void *g, void *pixmap);
-void GUI_Graphics_freePixmap(void *pixmap);
-void GUI_Graphics_freeGraphics(void *g);
+GUIGRAPHICS *GUI_Graphics_createGraphics(void);
+GUIPIXMAP *GUI_Graphics_createPixmap(int w, int h);
+GUIGRAPHICS *GUI_Graphics_getGraphics(GUIGRAPHICS *g, GUIPIXMAP *pixmap);
+void GUI_Graphics_freePixmap(GUIPIXMAP *pixmap);
+int GUI_Graphics_freeGraphics(GUIGRAPHICS *g);
 void dizInit(void);
 int zWindDraw();
 int GUI_ScrollPane_getScrollPosition(GUIWIDGET *w, int *x, int *y);

@@ -33,11 +33,11 @@ int GuigraphicsClear(GUIGRAPHICS *g) {
         puts("[X2]GuigraphicsClear");
         return 0;
     }
-    g->unk4 = 0;
-    g->unkC = 0;
-    g->unkE = 0;
-    g->unk10 = 0;
-    g->unk12 = 0;
+    g->pixmap = NULL;
+    g->x = 0;
+    g->y = 0;
+    g->ox = 0;
+    g->oy = 0;
     g->font = D_00584B68;
     return 1;
 }
