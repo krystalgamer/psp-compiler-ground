@@ -82,7 +82,57 @@ next:
 	}
 }
 
-INCLUDE_ASM("tmp/asm/tony_libs/pspnet_adhoc_auth/nonmatchings/thread", func_00001758);
+const unsigned char D_00003E70[2] = { 0x88, 0xC8 };
+const unsigned char D_00003E74[2] = { 0x00, 0x01 };
+const unsigned char D_00003E78[6] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
+const unsigned short D_00003E80[10] = { 0, 0, 0x80, 0x120, 0x110, 0x100, 0x60, 0x20, 0x30, 0 };
+
+void func_00001758(AuthCtx *ctx, Peer *peer)
+{
+	int locked;
+	struct mbuf *m;
+	char *eh;
+	int s;
+
+	locked = func_00003968();
+	if (peer == 0)
+		goto out;
+	if (peer->state < 1 || peer->state > 3)
+		goto out;
+	if (peer->unk4E0 >= ctx->unkE0 || ctx->unk0 == 2) {
+		func_00003818(ctx, peer, 0);
+		func_00003580(ctx, peer);
+		goto out;
+	}
+	switch (peer->state) {
+	case 1:
+		m = func_000020B8(ctx, 3, &peer->unk15C);
+		if (m) {
+			int s1;
+
+			send_pkt(ctx, m, peer->sa.mac.data);
+		}
+		break;
+	case 2:
+		m = func_000020B8(ctx, 5, &peer->unk38C);
+		if (m) {
+			int s1;
+
+			send_pkt(ctx, m, peer->sa.mac.data);
+		}
+		break;
+	}
+	peer->unk4E0++;
+	s = sceKernelCpuSuspendIntr();
+	if (peer->alarm[0] > 0) {
+		sceKernelCancelAlarm(peer->alarm[0]);
+		peer->alarm[0] = 0;
+	}
+	peer->alarm[0] = sceKernelSetAlarm(ctx->unkDC, func_00003478, &peer->arg[0]);
+	sceKernelCpuResumeIntr(s);
+out:
+	func_000039C4(locked);
+}
 
 void func_000019FC(AuthCtx *ctx)
 {
@@ -101,15 +151,7 @@ void func_000019FC(AuthCtx *ctx)
 		int s1;
 
 		m->m_flags |= M_BCAST;
-		eh = m->m_data;
-		memcpy(eh, D_00003E78, 6);
-		memcpy(eh + 6, ctx->mac.data, 6);
-		memcpy(eh + 12, D_00003E70, 2);
-		memcpy(eh + 14, D_00003E74, 2);
-		s1 = sceKernelCpuSuspendIntr();
-		IF_ENQUEUE(&ctx->ifh->if_snd, m);
-		sceKernelCpuResumeIntr(s1);
-		ctx->ifh->if_start(ctx->ifh);
+		send_pkt(ctx, m, D_00003E78);
 	}
 alarm:
 	s = sceKernelCpuSuspendIntr();
@@ -123,18 +165,98 @@ out:
 	func_000039C4(locked);
 }
 
-INCLUDE_ASM("tmp/asm/tony_libs/pspnet_adhoc_auth/nonmatchings/thread", func_00001BA4);
+void func_00001BA4(AuthCtx *ctx, Peer *peer)
+{
+	int locked;
+	struct mbuf *m;
+	char *eh;
+	int s;
+	struct {
+		char hdr[0x20];
+		unsigned int seq;
+		char pad[0xC];
+	} pkt;
 
-INCLUDE_ASM("tmp/asm/tony_libs/pspnet_adhoc_auth/nonmatchings/thread", func_00001DA0);
+	locked = func_00003968();
+	if (peer == 0 || peer->state != 4 || ctx->unk0 == 2)
+		goto out;
+	memset(&pkt, 0, sizeof(pkt));
+	pkt.seq = htonl(++peer->unk4E8);
+	if (sceMemab_driver_E6D3ACE2(&peer->sa, &pkt.seq, 16, pkt.hdr, 1) < 0)
+		goto out;
+	m = func_000020B8(ctx, 8, &pkt);
+	if (m) {
+		int s1;
 
-INCLUDE_ASM("tmp/asm/tony_libs/pspnet_adhoc_auth/nonmatchings/thread", func_00001F2C);
+		send_pkt(ctx, m, peer->sa.mac.data);
+	}
+	s = sceKernelCpuSuspendIntr();
+	if (peer->alarm[1] > 0) {
+		sceKernelCancelAlarm(peer->alarm[1]);
+		peer->alarm[1] = 0;
+	}
+	peer->alarm[1] = sceKernelSetAlarm(ctx->unkE4, func_00003528, &peer->arg[1]);
+	sceKernelCpuResumeIntr(s);
+out:
+	func_000039C4(locked);
+}
+
+void func_00001DA0(AuthCtx *ctx, Peer *peer)
+{
+	int locked;
+	struct mbuf *m;
+	char *eh;
+	struct ifnet *ifp;
+	int s;
+	char hdr[0x20];
+
+	locked = func_00003968();
+	if (peer == 0 || ctx->unk0 == 2)
+		goto out;
+	if (sceMemab_driver_E6D3ACE2(&peer->sa, 0, 0, hdr, 0) < 0)
+		goto out;
+	m = func_000020B8(ctx, 7, hdr);
+	if (m) {
+		eh = m->m_data;
+		memcpy(eh, peer->sa.mac.data, 6);
+		memcpy(eh + 6, ctx->mac.data, 6);
+		memcpy(eh + 12, D_00003E70, 2);
+		memcpy(eh + 14, D_00003E74, 2);
+		s = sceKernelCpuSuspendIntr();
+		ifp = ctx->ifh;
+		IF_ENQUEUE(&ifp->if_snd, m);
+		sceKernelCpuResumeIntr(s);
+		ctx->ifh->if_start(ctx->ifh);
+	}
+	func_00003818(ctx, peer, 0);
+	func_00003580(ctx, peer);
+out:
+	func_000039C4(locked);
+}
+
+void func_00001F2C(AuthCtx *ctx)
+{
+	int locked;
+	struct mbuf *m;
+	char *eh;
+	int s;
+	Peer *p;
+	char hdr[0x20];
+
+	locked = func_00003968();
+	if (sceMemab_driver_F1D2B9B0(0, 0, hdr, 0) < 0)
+		goto out;
+	m = func_000020B8(ctx, 7, hdr);
+	if (m) {
+		m->m_flags |= M_BCAST;
+		send_pkt(ctx, m, D_00003E78);
+	}
+	while ((p = ctx->first) != 0) {
+		func_00003818(ctx, p, 0);
+		func_00003580(ctx, p);
+	}
+out:
+	func_000039C4(locked);
+}
 
 INCLUDE_ASM("tmp/asm/tony_libs/pspnet_adhoc_auth/nonmatchings/thread", func_000020B8);
-
-INCLUDE_RODATA("tmp/asm/tony_libs/pspnet_adhoc_auth/nonmatchings/thread", D_00003E70);
-
-INCLUDE_RODATA("tmp/asm/tony_libs/pspnet_adhoc_auth/nonmatchings/thread", D_00003E74);
-
-INCLUDE_RODATA("tmp/asm/tony_libs/pspnet_adhoc_auth/nonmatchings/thread", D_00003E78);
-
-INCLUDE_RODATA("tmp/asm/tony_libs/pspnet_adhoc_auth/nonmatchings/thread", D_00003E80);

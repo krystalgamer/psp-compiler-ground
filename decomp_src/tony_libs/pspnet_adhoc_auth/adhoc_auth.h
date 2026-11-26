@@ -157,8 +157,8 @@ struct ifnet {
 	struct ifqueue if_snd;
 };
 
-extern const char D_00003E70[];
-extern const char D_00003E74[];
+extern const unsigned char D_00003E70[];
+extern const unsigned char D_00003E74[];
 extern const unsigned char D_00003E78[];
 
 typedef struct {
@@ -355,6 +355,22 @@ static inline struct sa *sa_lookup(const unsigned char *mac)
 		if (memcmp(p->mac.data, mac, 6) == 0)
 			break;
 	return p;
+}
+
+static inline void send_pkt(AuthCtx *ctx, struct mbuf *m, const unsigned char *dst)
+{
+	char *eh;
+	int s;
+
+	eh = m->m_data;
+	memcpy(eh, dst, 6);
+	memcpy(eh + 6, ctx->mac.data, 6);
+	memcpy(eh + 12, D_00003E70, 2);
+	memcpy(eh + 14, D_00003E74, 2);
+	s = sceKernelCpuSuspendIntr();
+	IF_ENQUEUE(&ctx->ifh->if_snd, m);
+	sceKernelCpuResumeIntr(s);
+	ctx->ifh->if_start(ctx->ifh);
 }
 
 #endif
