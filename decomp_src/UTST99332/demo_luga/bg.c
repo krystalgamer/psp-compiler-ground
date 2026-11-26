@@ -1,3 +1,4 @@
+/* cflags: -O2 -frename-registers */
 #include "common.h"
 
 /* declarations recovered from DWARF */
@@ -88,12 +89,18 @@ void sceGuDisable(int state);
 
 /* module functions defined in other units */
 void geDrawArray(gePRIM *p);
+void geColor(unsigned char r, unsigned char g, unsigned char b, unsigned char a);
 void geObjectDraw(geOBJECT *obj);
 void geObjectSetProc(int n, int (*proc)(void *));
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/bg", init_bg);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/bg", proc_bg);
+int proc_bg(void *p) {
+    sceGuDisable(9);
+    geColor(0xFF, 0xFF, 0xFF, 0xFF);
+    geDrawArray(&bg_inf);
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/bg", draw_bg);
 
