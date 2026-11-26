@@ -1,124 +1,5 @@
 #include "common.h"
-
-/* declarations recovered from DWARF (UTST99332 graphics_model gim_picture) */
-struct _anon1;
-struct _anon1 { /* size 0x10 */
-    short unsigned int type;
-    short unsigned int unused;
-    unsigned int next_offs;
-    unsigned int child_offs;
-    unsigned int data_offs;
-};
-typedef struct _anon1 SceGimChunk;
-typedef struct SceGimPicture SceGimPicture;
-struct SceGimPicture;
-struct _anon2;
-struct _anon2 { /* size 0x30 */
-    short unsigned int header_size;
-    short unsigned int reference;
-    short unsigned int format;
-    short unsigned int order;
-    short unsigned int width;
-    short unsigned int height;
-    short unsigned int bpp;
-    short unsigned int pitch_align;
-    short unsigned int height_align;
-    short unsigned int dim_count;
-    short unsigned int reserved;
-    short unsigned int reserved2;
-    unsigned int offsets;
-    unsigned int images;
-    unsigned int total;
-    unsigned int plane_mask;
-    short unsigned int level_type;
-    short unsigned int level_count;
-    short unsigned int frame_type;
-    short unsigned int frame_count;
-};
-typedef struct _anon2 SceGimImageHeader;
-struct _anon3;
-struct _anon3 { /* size 0x20 */
-    short unsigned int header_size;
-    short unsigned int reference;
-    short unsigned int frame_start;
-    short unsigned int frame_end;
-    short unsigned int frame_rate;
-    short unsigned int reserved;
-    short unsigned int n_constants;
-    short unsigned int n_functions;
-    unsigned int constants;
-    unsigned int functions;
-    unsigned int keyframes;
-    unsigned int total;
-};
-typedef struct _anon3 SceGimSequenceHeader;
-struct SceGimPicture { /* size 0x54 */
-    int m_reference;
-    int m_flags;
-    SceGimImageHeader *m_image;
-    SceGimImageHeader *m_palette;
-    SceGimSequenceHeader *m_sequence;
-    int m_buf_width;
-    int m_clut_load;
-    float m_frame_loop[2];
-    float m_frame_rate;
-    float m_frame;
-    int m_enable_bits;
-    int m_image_frame;
-    int m_image_frame2;
-    int m_palette_frame;
-    int m_palette_frame2;
-    float m_dissolve;
-    float m_image_crop[4];
-};
-typedef SceGimImageHeader SceGimPaletteHeader;
-typedef unsigned int size_t;
-
-extern const unsigned char __psp_libinfo__[24];
-
-SceGimPicture *sceGimPictureCreate(SceGimChunk *chunk);
-void sceGimPictureDelete(SceGimPicture *picture);
-SceGimPicture *sceGimPictureDuplicate(SceGimPicture *picture, int flags);
-_Bool sceGimPictureLoadFile(SceGimPicture *picture, const void *buf, int size, int idx);
-_Bool sceGimPictureLoad(SceGimPicture *picture, const SceGimChunk *chunk);
-static SceGimChunk *SCEGIM_CHUNK_NEXT(SceGimChunk *chunk);
-static SceGimChunk *SCEGIM_CHUNK_CHILD(SceGimChunk *chunk);
-static void *SCEGIM_CHUNK_DATA(SceGimChunk *chunk);
-static int SCEGIM_CHUNK_DATA_SIZE(SceGimChunk *chunk);
-void sceGimPictureUnload(SceGimPicture *picture);
-void sceGimPictureAnimate(SceGimPicture *picture, float step);
-void sceGimPictureActivate(SceGimPicture *picture);
-static int pow2(int n);
-void sceGimPictureSetEnableBits(SceGimPicture *picture, int bits, int value);
-int sceGimPictureGetEnableBits(SceGimPicture *picture);
-SceGimImageHeader *sceGimPictureGetImage(SceGimPicture *picture);
-SceGimPaletteHeader *sceGimPictureGetPalette(SceGimPicture *picture);
-void *sceGimPictureGetImagePixels(SceGimPicture *picture, int level, int frame);
-void *sceGimPictureGetPalettePixels(SceGimPicture *picture, int level, int frame);
-void sceGimPictureSetImagePixels(SceGimPicture *picture, int level, int frame, void *pixels);
-void sceGimPictureSetPalettePixels(SceGimPicture *picture, int level, int frame, void *pixels);
-_Bool sceGimPictureReallocImage(SceGimPicture *picture, int format, int w, int h, int level, int frame, void *pixels);
-_Bool sceGimPictureReallocPalette(SceGimPicture *picture, int format, int w, int level, int frame, void *pixels);
-_Bool sceGimPictureHasAnimation(SceGimPicture *picture);
-void sceGimPictureSetFrameLoop(SceGimPicture *picture, float start, float end);
-const float *sceGimPictureGetFrameLoop(SceGimPicture *picture);
-void sceGimPictureSetFrameRate(SceGimPicture *picture, float fps);
-float sceGimPictureGetFrameRate(SceGimPicture *picture);
-void sceGimPictureSetFrame(SceGimPicture *picture, float frame);
-float sceGimPictureGetFrame(SceGimPicture *picture);
-void sceGimPictureSetImageFrame(SceGimPicture *picture, int frame);
-int sceGimPictureGetImageFrame(SceGimPicture *picture);
-void sceGimPictureSetImageFrame2(SceGimPicture *picture, int frame);
-int sceGimPictureGetImageFrame2(SceGimPicture *picture);
-void sceGimPictureSetPaletteFrame(SceGimPicture *picture, int frame);
-int sceGimPictureGetPaletteFrame(SceGimPicture *picture);
-void sceGimPictureSetPaletteFrame2(SceGimPicture *picture, int frame);
-int sceGimPictureGetPaletteFrame2(SceGimPicture *picture);
-void sceGimPictureSetDissolve(SceGimPicture *picture, float dissolve);
-float sceGimPictureGetDissolve(SceGimPicture *picture);
-void sceGimPictureSetImageCrop(SceGimPicture *picture, const float *crop);
-const float *sceGimPictureGetImageCrop(SceGimPicture *picture);
-static void reconfigure_picture(SceGimPicture *picture);
+#include "gim_picture_sdk.h"
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gim_picture", sceGimPictureCreate);
 
@@ -139,13 +20,36 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gim_picture", sceGimPictu
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gim_picture", sceGimPictureUnload);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gim_picture", sceGimPictureSetEnableBits);
+void sceGimPictureSetEnableBits( SceGimPicture *picture, int bits, int value )
+{
+ if ( picture == 0 ) return ;
+ picture->m_enable_bits &= ~bits ;
+ picture->m_enable_bits |= ( bits & value ) ;
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gim_picture", sceGimPictureGetEnableBits);
+int sceGimPictureGetEnableBits( SceGimPicture *picture )
+{
+ if ( picture == 0 ) return 0 ;
+ return picture->m_enable_bits ;
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gim_picture", sceGimPictureSetImageCrop);
+void sceGimPictureSetImageCrop( SceGimPicture *picture, const float *crop )
+{
+ if ( picture == 0 ) return ;
+ if ( crop == 0 ) {
+  picture->m_flags &= ~IS_CROPPED ;
+ } else {
+  memcpy( picture->m_image_crop, crop, sizeof( float ) * 4 ) ;
+  picture->m_flags |= IS_CROPPED ;
+ }
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gim_picture", sceGimPictureGetImageCrop);
+const float *sceGimPictureGetImageCrop( SceGimPicture *picture )
+{
+ if ( picture == 0 ) return 0 ;
+ if ( !( picture->m_flags & IS_CROPPED ) ) return 0 ;
+ return picture->m_image_crop ;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gim_picture", sceGimPictureGetImage);
 
@@ -163,88 +67,227 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gim_picture", sceGimPictu
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gim_picture", sceGimPictureReallocPalette);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gim_picture", sceGimPictureHasAnimation);
+_Bool sceGimPictureHasAnimation( SceGimPicture *picture )
+{
+ if ( picture == 0 ) return 0 ;
+ return ( ( picture->m_flags & IS_ANIMATED ) != 0 ) ;
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gim_picture", sceGimPictureSetFrameLoop);
+void sceGimPictureSetFrameLoop( SceGimPicture *picture, float start, float end )
+{
+ if ( picture == 0 ) return ;
+ picture->m_frame_loop[ 0 ] = start ;
+ picture->m_frame_loop[ 1 ] = end ;
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gim_picture", sceGimPictureGetFrameLoop);
+const float *sceGimPictureGetFrameLoop( SceGimPicture *picture )
+{
+ if ( picture == 0 ) return 0 ;
+ return picture->m_frame_loop ;
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gim_picture", sceGimPictureSetFrameRate);
+void sceGimPictureSetFrameRate( SceGimPicture *picture, float fps )
+{
+ if ( picture == 0 ) return ;
+ picture->m_frame_rate = fps ;
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gim_picture", sceGimPictureGetFrameRate);
+float sceGimPictureGetFrameRate( SceGimPicture *picture )
+{
+ if ( picture == 0 ) return 0.0f ;
+ return picture->m_frame_rate ;
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gim_picture", sceGimPictureSetFrameRepeat);
+void sceGimPictureSetFrameRepeat( SceGimPicture *picture, int mode )
+{
+ if ( picture == 0 ) return ;
+ if ( mode == SCEGIM_REPEAT_HOLD ) {
+  picture->m_flags |= IS_NOREPEAT ;
+ } else {
+  picture->m_flags &= ~IS_NOREPEAT ;
+ }
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gim_picture", sceGimPictureGetFrameRepeat);
+int sceGimPictureGetFrameRepeat( SceGimPicture *picture )
+{
+ if ( picture == 0 ) return SCEGIM_REPEAT_HOLD ;
+ return ( picture->m_flags & IS_NOREPEAT ) ? SCEGIM_REPEAT_HOLD : SCEGIM_REPEAT_CYCLE ;
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gim_picture", sceGimPictureSetFrame);
+void sceGimPictureSetFrame( SceGimPicture *picture, float frame )
+{
+ if ( picture == 0 ) return ;
+ picture->m_frame = frame ;
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gim_picture", sceGimPictureGetFrame);
+float sceGimPictureGetFrame( SceGimPicture *picture )
+{
+ if ( picture == 0 ) return 0.0f ;
+ return picture->m_frame ;
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gim_picture", sceGimPictureSetImageFrame);
+void sceGimPictureSetImageFrame( SceGimPicture *picture, int frame )
+{
+ if ( picture == 0 ) return ;
+ picture->m_image_frame = frame ;
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gim_picture", sceGimPictureGetImageFrame);
+int sceGimPictureGetImageFrame( SceGimPicture *picture )
+{
+ if ( picture == 0 ) return 0 ;
+ return picture->m_image_frame ;
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gim_picture", sceGimPictureSetImageFrame2);
+void sceGimPictureSetImageFrame2( SceGimPicture *picture, int frame )
+{
+ if ( picture == 0 ) return ;
+ picture->m_image_frame2 = frame ;
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gim_picture", sceGimPictureGetImageFrame2);
+int sceGimPictureGetImageFrame2( SceGimPicture *picture )
+{
+ if ( picture == 0 ) return 0 ;
+ return picture->m_image_frame2 ;
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gim_picture", sceGimPictureSetPaletteFrame);
+void sceGimPictureSetPaletteFrame( SceGimPicture *picture, int frame )
+{
+ if ( picture == 0 ) return ;
+ picture->m_palette_frame = frame ;
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gim_picture", sceGimPictureGetPaletteFrame);
+int sceGimPictureGetPaletteFrame( SceGimPicture *picture )
+{
+ if ( picture == 0 ) return 0 ;
+ return picture->m_palette_frame ;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gim_picture", sceGimPictureSetPaletteFrame2);
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gim_picture", sceGimPictureGetPaletteFrame2);
 
-void sceGimPictureSetDissolve(SceGimPicture *picture, float dissolve) {
-    if (picture != NULL) {
-        picture->m_dissolve = dissolve;
-    }
+void sceGimPictureSetDissolve( SceGimPicture *picture, float dissolve )
+{
+ if ( picture == 0 ) return ;
+ picture->m_dissolve = dissolve ;
 }
 
-float sceGimPictureGetDissolve(SceGimPicture *picture) {
-    float var_f0;
-
-    var_f0 = 0.0f;
-    if (picture != NULL) {
-        var_f0 = picture->m_dissolve;
-    }
-    return var_f0;
+float sceGimPictureGetDissolve( SceGimPicture *picture )
+{
+ if ( picture == 0 ) return 0.0f ;
+ return picture->m_dissolve ;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gim_picture", sceGimPictureGetSequenceCount);
+int sceGimPictureGetSequenceCount( SceGimPicture *picture )
+{
+ if ( picture == 0 ) return 0 ;
+ return picture->m_n_sequences ;
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gim_picture", sceGimPictureGetSequence);
+SceGimSequenceHeader *sceGimPictureGetSequence( SceGimPicture *picture, int idx )
+{
+ if ( picture == 0 ) return 0 ;
+ if ( idx < 0 || idx >= picture->m_n_sequences ) return 0 ;
+ return picture->m_sequences[ idx ] ;
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gim_picture", sceGimPictureSetCurrentSequence);
+void sceGimPictureSetCurrentSequence( SceGimPicture *picture, int idx )
+{
+ if ( picture == 0 ) return ;
+ picture->m_current_sequence = idx ;
+ picture->m_frame = 0.0f ;
+ if ( idx < 0 || idx >= picture->m_n_sequences ) return ;
+ SceGimSequenceHeader *sequence = picture->m_sequences[ idx ] ;
+ sceGimPictureSetFrameLoop( picture, sequence->frame_start, sequence->frame_end ) ;
+ sceGimPictureSetFrameRate( picture, sequence->frame_rate ) ;
+ sceGimPictureSetFrameRepeat( picture, sequence->frame_repeat ) ;
+ SceGimConstant *cp = (SceGimConstant *)( (char *)sequence + sequence->constants ) ;
+ { int i ; for ( i = 0 ; i < sequence->n_constants ; i ++ ) {
+  sceGimPictureControl( picture, cp->param, (float)cp->value ) ;
+  cp ++ ;
+ } }
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gim_picture", sceGimPictureGetCurrentSequence);
+int sceGimPictureGetCurrentSequence( SceGimPicture *picture )
+{
+ if ( picture == 0 ) return 0 ;
+ return picture->m_current_sequence ;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gim_picture", sceGimPictureGetImagePlaneCount);
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gim_picture", sceGimPictureSetImagePlane);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gim_picture", sceGimPictureGetImagePlane);
+int sceGimPictureGetImagePlane( SceGimPicture *picture )
+{
+ if ( picture == 0 ) return 0 ;
+ return picture->m_image_plane ;
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gim_picture", sceGimPictureSetPaletteOffset);
+void sceGimPictureSetPaletteOffset( SceGimPicture *picture, int shift, int mask, int offs )
+{
+ if ( picture == 0 ) return ;
+ picture->m_palette_offset[ 0 ] = shift ;
+ picture->m_palette_offset[ 1 ] = mask ;
+ picture->m_palette_offset[ 2 ] = offs ;
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gim_picture", sceGimPictureGetPaletteOffset);
+const int *sceGimPictureGetPaletteOffset( SceGimPicture *picture )
+{
+ if ( picture == 0 ) return 0 ;
+ return picture->m_palette_offset ;
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gim_picture", sceGimPictureSetBlend);
+void sceGimPictureSetBlend( SceGimPicture *picture, int mode )
+{
+ if ( picture == 0 ) return ;
+ picture->m_blend[ 0 ] = mode ;
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gim_picture", sceGimPictureGetBlend);
+const int *sceGimPictureGetBlend( SceGimPicture *picture )
+{
+ if ( picture == 0 ) return 0 ;
+ return picture->m_blend ;
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gim_picture", sceGimPictureSetFunc);
+void sceGimPictureSetFunc( SceGimPicture *picture, int mode, int comp )
+{
+ if ( picture == 0 ) return ;
+ picture->m_func[ 0 ] = mode ;
+ picture->m_func[ 1 ] = comp ;
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gim_picture", sceGimPictureGetFunc);
+const int *sceGimPictureGetFunc( SceGimPicture *picture )
+{
+ if ( picture == 0 ) return 0 ;
+ return picture->m_func ;
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gim_picture", sceGimPictureSetFilter);
+void sceGimPictureSetFilter( SceGimPicture *picture, int mag, int min )
+{
+ if ( picture == 0 ) return ;
+ picture->m_filter[ 0 ] = mag ;
+ picture->m_filter[ 1 ] = min ;
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gim_picture", sceGimPictureGetFilter);
+const int *sceGimPictureGetFilter( SceGimPicture *picture )
+{
+ if ( picture == 0 ) return 0 ;
+ return picture->m_filter ;
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gim_picture", sceGimPictureSetWrap);
+void sceGimPictureSetWrap( SceGimPicture *picture, int u, int v )
+{
+ if ( picture == 0 ) return ;
+ picture->m_wrap[ 0 ] = u ;
+ picture->m_wrap[ 1 ] = v ;
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gim_picture", sceGimPictureGetWrap);
+const int *sceGimPictureGetWrap( SceGimPicture *picture )
+{
+ if ( picture == 0 ) return 0 ;
+ return picture->m_wrap ;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gim_picture", reconfigure_picture);
+
