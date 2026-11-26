@@ -1,7 +1,7 @@
-#include "common.h"
+/* upstream: newlib-1.12.0/newlib/libc/stdlib/malloc.c (unmodified) */
+/* cflags: -O2 -fno-builtin */
+#include "libc/stdlib/malloc.c"
 
-INCLUDE_ASM("tmp/asm/bigbangbang/bigbangbang/nonmatchings/newlib/libc/stdlib/malloc", malloc);
-
-INCLUDE_ASM("tmp/asm/bigbangbang/bigbangbang/nonmatchings/newlib/libc/stdlib/malloc", free);
-
-INCLUDE_RODATA("tmp/asm/bigbangbang/bigbangbang/nonmatchings/newlib/libc/stdlib/malloc", D_0000C54C);
+/* impure.o's "C" (_impure_data's locale name; the struct itself is .data) */
+__asm__(".include \"include/labels.inc\"");
+__asm__(".section .rodata\n.include \"tmp/asm/bigbangbang/bigbangbang/nonmatchings/newlib/libc/stdlib/malloc/D_0000C54C.s\"\n.section .text");
