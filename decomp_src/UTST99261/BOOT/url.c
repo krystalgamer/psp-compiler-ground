@@ -352,7 +352,32 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/url", URL_splitURL);
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/url", D_00132328);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/url", URL_encode);
+char *strchr(const char *s, int c);
+int sprintf(char *buf, const char *fmt, ...);
+
+char *URL_encode(char *s_, int len) {
+    char safe[] = "%$-_.+!*'(),;:@&=/~?[]";
+    char *buf;
+    char *d;
+    int i;
+    char *s;
+
+    buf = MEM_malloc(NULL, len * 3 + 1);
+    if (buf == NULL) {
+        return NULL;
+    }
+    d = buf;
+    s = s_;
+    for (i = 0; i < len; i++) {
+        if (((_ctype_ + 1)[(int)*s] & 7) || strchr(safe, *s) != NULL) {
+            *d++ = *s++;
+        } else {
+            d += sprintf(d, "%%%02X", (u8)*s++);
+        }
+    }
+    *d = 0;
+    return buf;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/url", URL_decode);
 
