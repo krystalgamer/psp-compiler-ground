@@ -30,3 +30,5 @@
 # flowars too (animator: all doubles, then floats, then strings).
 @psp184/spaceinvaders 1.6.1 objorder mixed:-fno-merge-constants
 @flowars/flowars 1.6.1 objorder
+# UCJS90007's SDK objects (gim_animate) link rodata in first-use order too.
+@psp184/UCJS90007 1.8.4.internal objorder
