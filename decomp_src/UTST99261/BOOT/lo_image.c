@@ -207,7 +207,42 @@ char *makeHttpHeader(char *ref, char *user, char *pass) {
     return p;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_image", setRequestMessageBuffer);
+typedef struct {
+    int unk0;
+    int unk4;
+    int unk8;
+    int unkC;
+    int urllen;                 /* 0x10 */
+    char *url;                  /* 0x14 */
+    int hdrlen;                 /* 0x18 */
+    char *hdr;                  /* 0x1C */
+    int unk20;
+    int unk24;
+} LREQ;
+char *makeHttpHeader(char *ref, char *user, char *pass);
+unsigned int strlen(const char *s);
+
+int setRequestMessageBuffer(void **out, char *url, int a, int b, char *ref, char *user, char *pass) {
+    LREQ r = {a, b};
+    char *hdr;
+    int size;
+    char *buf;
+
+    r.urllen = strlen(url);
+    hdr = makeHttpHeader(ref, user, pass);
+    r.hdrlen = hdr != NULL ? strlen(hdr) : 0;
+    size = r.urllen + r.hdrlen + 0x28;
+    buf = *out = MEM_malloc(0, size);
+    r.url = buf + 0x28;
+    r.hdr = r.hdrlen != 0 ? r.url + r.urllen : NULL;
+    memcpy(buf, &r, sizeof(r));
+    buf = (char *)*out + 0x28;
+    memcpy(buf, url, r.urllen);
+    buf += r.urllen;
+    memcpy(buf, hdr, r.hdrlen);
+    MEM_free(0, hdr);
+    return size;
+}
 
 void setImageToBoxBuffer(BOX *b, void *image) {
     int w;
@@ -237,6 +272,10 @@ void setImageToBoxBuffer(BOX *b, void *image) {
 }
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_image", setImageInBox);
+
+void imageProperty(void *img, int *w, int *h);
+int setImageInBox(BOX *b, void *img, int w, int h);
+void relayoutAtBody(BOX *body, int f);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_image", imageDecodeSuccess);
 
