@@ -2,6 +2,9 @@
 #include "common.h"
 #include "parse_hist.h"
 #include "m2c_macros.h"
+HstNode *HST_searchTargetNameHistoryNode();
+HstNode *HST_createHistoryNode();
+HstNode *parseCopyHistoryNode();
 int HST_getHeadHistoryNode();                       /* extern */
 int HST_getHistoryWithOffset(M2C_UNK);              /* extern */
 int parseDeleteMultiBuffer();                       /* extern */
@@ -222,6 +225,22 @@ void fillRequestFlag(HstNode *top, int flag) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parseHistory", copyEntities);
+int copyEntities(HstNode *a, HstNode *b) {
+    if (uricmp_722F8(a, b) == 0 || a->x48 != b->x48) {
+        a->x6C = 0;
+        flushRequestFlag(a);
+        return 0;
+    }
+    if (b->flag >= 0) {
+        HST_setRequestFlag(a, 5);
+    }
+    HST_setDomObject(a, HST_getDomObject(b));
+    HST_setSourceType(a, HST_getSourceType(b));
+    HST_setMethodType(a, HST_getMethodType(b));
+    a->x6C = b->x6C;
+    HST_setDomObject(b, 0);
+    b->x6C = 0;
+    return 1;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parseHistory", parseRoundHistoryNode);
