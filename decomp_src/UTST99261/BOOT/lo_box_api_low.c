@@ -2,6 +2,11 @@
 #include "common.h"
 #include "nflayout.h"
 #include "m2c_macros.h"
+BOX *createBox(void *ctx, int type);
+void initNoneContent(BOX *box, void *ctx);
+void initBoxProperty(BOX *box);
+BOX *getParentBlockBox(BOX *box);
+int getContainingBlockWidth(BOX *box);
 void *getSessionSaveData(int id);
 void getViewPort(BOX *box, int *x, int *y);
 void drawDelete(BOX *box);
@@ -23,13 +28,52 @@ int checkTableHierarchy(BOX *box, BOX **table) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_box_api_low", createBox);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_box_api_low", createBlockBox);
+BOX *createBlockBox(void *ctx, BOX *parent, BOX *prev) {
+    BOX *box = createBox(ctx, 1);
+    BOX *cb;
+    if (box == NULL) {
+        return NULL;
+    }
+    linkBox(box, parent, prev);
+    box->display = 0;
+    initNoneContent(box, ctx);
+    cb = getParentBlockBox(box);
+    if (cb != NULL) {
+        box->width = getContainingBlockWidth(cb);
+    }
+    return box;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_box_api_low", createInlineBox);
+BOX *createInlineBox(void *ctx, BOX *parent, BOX *prev) {
+    BOX *box = createBox(ctx, 1);
+    if (box == NULL) {
+        return NULL;
+    }
+    linkBox(box, parent, prev);
+    box->display = 1;
+    initNoneContent(box, ctx);
+    box->content = 0;
+    initBoxProperty(box);
+    return box;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_box_api_low", createListBox);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_box_api_low", linkBox);
+void linkBox(BOX *box, BOX *parent, BOX *prev) {
+    BOX *t;
+    if (checkTableHierarchy(parent, &t) == 0) {
+        insLinkBox(box, t->parent, t->prev);
+        return;
+    }
+    if (parent != NULL && parent->child == NULL) {
+        parent->child = box;
+    }
+    box->parent = parent;
+    box->prev = prev;
+    if (prev != NULL) {
+        prev->next = box;
+    }
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
