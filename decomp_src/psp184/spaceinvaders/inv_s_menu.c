@@ -9,7 +9,21 @@ extern int ret;
 extern int se_tmp;
 
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_menu", inv_classic_sound_load);
+extern unsigned char save_data;
+extern int music_libtbl[];
+#define SD_MUSIC (*(int *)(&save_data + 0x4c))
+void sound_load(int no);
+
+void inv_classic_musicdisp_init();
+
+extern int kido, classic_tex_28FB7C, sw, music_alpha;
+void inv_classic_sound_load()
+{
+	if (soundflg == 0) {
+		sound_load(music_libtbl[SD_MUSIC]);
+		soundflg = 1;
+	}
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -31,11 +45,23 @@ void inv_classic_soundflg_init(void) {
     soundflg = 0;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_menu", inv_classic_sound_init);
+void inv_classic_sound_init(void)
+{
+	if (SD_MUSIC != 0)
+		inv_classic_sound_load(music_libtbl[SD_MUSIC]);
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_menu", inv_classic_musicdisp_init);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_menu", inv_classic_menu_init);
+void inv_classic_menu_init(int a0)
+{
+	kido = 0x80;
+	classic_tex_28FB7C = a0;
+	ret = 0;
+	sw = 0;
+	music_alpha = 0;
+	inv_classic_musicdisp_init();
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_menu", inv_classic_menu);
 
