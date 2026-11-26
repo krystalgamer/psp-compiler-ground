@@ -1,5 +1,13 @@
 #include "common.h"
 
+/* SDK prototypes (tools/sdk_protos.h) */
+int rand(void);
+void sceGuDisable(int state);
+void sceGuEnable(int state);
+void sceGumDrawArray(int prim, int vtype, int count, const void *indices, const void *vertices);
+void sceGumPopMatrix(void);
+void sceGumPushMatrix(void);
+
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_structure/nonmatchings/data", draw_quad);
 
 typedef struct {
