@@ -198,7 +198,39 @@ void sceGumRotateXYZ(const ScePspFVector3 *v)
 	update[cur_matrix] = 1;
 }
 
-INCLUDE_ASM("tmp/asm/bigbangbang/bigbangbang/nonmatchings/libgum", sceGumRotateZYX);
+void sceGumRotateZYX(const ScePspFVector3 *vec)
+{
+	ScePspFMatrix4	m;
+	float	s[3], c[3];
+
+	s[0] = (float)sinf(vec->x);
+	c[0] = (float)cosf(vec->x);
+	s[1] = (float)sinf(vec->y);
+	c[1] = (float)cosf(vec->y);
+	s[2] = (float)sinf(vec->z);
+	c[2] = (float)cosf(vec->z);
+
+	m.x.x = c[1] * c[2];
+	m.x.y = c[1] * s[2];
+	m.x.z = -1.0f * s[1];
+	m.x.w = 0.0f;
+	m.y.x = (-1.0f * c[0] * s[2]) + (s[0] * s[1] * c[2]);
+	m.y.y = (c[0] * c[2]) + (s[0] * s[1] * s[2]);
+	m.y.z = s[0] * c[1];
+	m.y.w = 0.0f;
+	m.z.x = (s[0] * s[2]) + (c[0] * s[1] * c[2]);
+	m.z.y = (-1.0f * s[0] * c[2]) + (c[0] * s[1] * s[2]);
+	m.z.z = c[0] * c[1];
+	m.z.w = 0.0f;
+	m.w.x = 0.0f;
+	m.w.y = 0.0f;
+	m.w.z = 0.0f;
+	m.w.w = 1.0f;
+
+	__mulMatrix(cur_stack, cur_stack, &m);
+	update[cur_matrix] = 1;
+	return;
+}
 
 void sceGumTranslate(const ScePspFVector3 *v)
 {
