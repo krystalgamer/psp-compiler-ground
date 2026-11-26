@@ -2,6 +2,9 @@
 #include "common.h"
 #include "parse_ps.h"
 #include "m2c_macros.h"
+extern char D_00137D10[];
+extern char D_00137D30[];
+extern char D_00137D48[];
 extern char D_00137D64[];
 extern char D_00137D70[];
 extern int Security;
@@ -1132,7 +1135,125 @@ int ps_i2914(int arg0) {
     return buf_ps_sts;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/ps_l3800", ps_i2D06);
+static inline int ps_isNotExtSession(int id) {
+    if (id > 0x08000000 && id <= 0x10000000) {
+        return 0;
+    }
+    return 1;
+}
+
+int ps_i2D06(PsIpc *msg) {
+    PsIpc m;
+    PsDomBuild b;
+    PsIpc d;
+    int *head;
+    int *p;
+    int *node;
+    PsLocation *loc;
+    int *r;
+    int sec;
+
+    sec = 0;
+    head = HST_getHeadHistoryNode();
+    if (head == NULL) {
+        ps_halt(D_00137D10);
+    }
+    if (ps_isNotExtSession(msg->x04)) {
+        p = (int *)msg->x1C;
+        if (msg->x14 != 0) {
+            node = ps_ExternalSearchSessionHistoryNode(msg->x04, msg->x14);
+        } else {
+            node = HST_searchSessionIDHistoryNode(msg->x04);
+        }
+        if (node == NULL) {
+            return buf_ps_sts;
+        }
+        if (HST_setCurURI(node, p[1], p[0]) == -1) {
+            ps_halt(D_00137D30);
+        }
+        loc = ps_SetLocation(msg->x04, msg->x08, msg->x14, p[0], p[1]);
+        if (loc->x0C >= 10) {
+            if (msg->x14 == 0 && HST_getDomObject(node) == 0) {
+                memset(&b, 0, 0x40);
+                b.x[0] = node[1];
+                b.x[1] = node[0];
+                b.x[2] = node[5];
+                b.x[3] = node[4];
+                b.x[4] = node[7];
+                b.x[5] = node[6];
+                b.x[6] = 0x1A;
+                b.x[7] = (int)D_00137D48;
+                b.x[9] = msg->x04;
+                b.x[11] = 0;
+                b.x[12] = 0;
+                b.x[13] = Accession;
+                r = parseDomBuild(&b);
+                if (r != NULL) {
+                    MEM_free(0, r);
+                }
+                initMPL_REQ_LOAD_PAGE(&m);
+                m.x04 = msg->x04;
+                m.x08 = 0;
+                ps_sndmsg(&m, 4);
+            }
+            initMPI_SIG_REQUEST_ABORTED(&m);
+            m.x04 = msg->x04;
+            m.x10 = 1;
+            m.x14 = msg->x14;
+            ps_sndmsg(&m, 5);
+        } else {
+            if (icmpstr(p[1], D_00137D64, 8) == 1) {
+                sec = 1;
+            }
+            if (((sec == 1 && Security == 0) || (sec == 0 && Security == 1)) && buf_Message_Show_FLG == 0) {
+                if (Security == 0) {
+                    if (initMPU_REQ_SHOW_DIALOG(&d, 6) == 0) {
+                        ps_halt(D_00137D70);
+                    }
+                    d.x14 = 0x80000004;
+                } else {
+                    if (initMPU_REQ_SHOW_DIALOG(&d, 7) == 0) {
+                        ps_halt(D_00137D70);
+                    }
+                    d.x14 = 0x80000005;
+                }
+                d.x04 = msg->x04;
+                ps_sndmsg(&d, 1);
+                buf_Message_Show_FLG = 1;
+                before_ps_sts = buf_ps_sts;
+                buf_Message_cnt++;
+                if (msg->x1C != 0) {
+                    MEM_free(0, msg->x1C);
+                }
+                return 0x13;
+            }
+            if (msg->x04 == head[18]) {
+                m.type = 2;
+                m.x04 = msg->x04;
+                m.x08 = 0;
+                m.cmd = 0x16;
+                m.x10 = msg->x10;
+                m.x14 = msg->x14;
+                m.x18 = msg->x18;
+                m.x1C = msg->x1C;
+                ps_sndmsg(&m, 1);
+            }
+            if (msg->x14 != 0) {
+                ps_ExternalSearchSessionParentHistoryNode(msg->x04, msg->x14);
+            } else {
+                HST_searchSessionIDHistoryNode(msg->x04);
+            }
+            ps_LocationGetSend(node);
+            if (msg->x04 == head[18]) {
+                return buf_ps_sts;
+            }
+        }
+    }
+    if (msg->x1C != 0) {
+        MEM_free(0, msg->x1C);
+    }
+    return buf_ps_sts;
+}
 
 int ps_i2D12(PsIpc *msg) {
     struct {
@@ -1145,13 +1266,6 @@ int ps_i2D12(PsIpc *msg) {
         ps_halt(D_00137D90);
     }
     return buf_ps_sts;
-}
-
-static inline int ps_isNotExtSession(int id) {
-    if (id > 0x08000000 && id <= 0x10000000) {
-        return 0;
-    }
-    return 1;
 }
 
 int ps_i2D14(PsIpc *msg) {
