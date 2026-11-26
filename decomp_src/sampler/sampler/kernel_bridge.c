@@ -74,7 +74,30 @@ int _sys_open(name, flags, mode)
 	return sceIoOpen(name, flags, mode);
 }
 
-INCLUDE_ASM("tmp/asm/sampler/sampler/nonmatchings/kernel_bridge", _open);
+int _open(const char *path, int flags, ...)
+{
+	int sflags = 0;
+
+	switch ((unsigned int)flags & 3) {
+	case 0:
+		sflags = 1;
+		break;
+	case 1:
+		sflags = 2;
+		break;
+	case 2:
+		sflags = 3;
+		break;
+	default:
+		break;
+	}
+	if (flags & 0x0008) sflags |= 0x0100;
+	if (flags & 0x0200) sflags |= 0x0200;
+	if (flags & 0x0400) sflags |= 0x0400;
+	if (flags & 0x0800) sflags |= 0x0800;
+	if (flags & 0x4000) sflags |= 0x0004;
+	return _sys_open(path, sflags);
+}
 
 int _close(int fd)
 {
@@ -124,7 +147,17 @@ int isatty(int fd)
 	return 1;
 }
 
-INCLUDE_ASM("tmp/asm/sampler/sampler/nonmatchings/kernel_bridge", _exit);
+void _exit(int status)
+{
+	if (&sce_newlib_nocreate_thread_in_start != NULL) {
+		if (status == 0)
+			free_heap();
+		sceKernelExitThread(status);
+	} else {
+		free_heap();
+		sceKernelSelfStopUnloadModule(1, 0, NULL);
+	}
+}
 
 int _kill(int pid, int sig)
 {
@@ -136,9 +169,33 @@ int _getpid(void)
 	return -1;
 }
 
-INCLUDE_ASM("tmp/asm/sampler/sampler/nonmatchings/kernel_bridge", free_heap);
+void free_heap(void)
+{
+	sceKernelFreePartitionMemory(mbid);
+}
 
-INCLUDE_ASM("tmp/asm/sampler/sampler/nonmatchings/kernel_bridge", _sbrk);
+void *_sbrk(int incr)
+{
+	unsigned int result;
+	unsigned int realsize;
+
+	if (minheap == 0) {
+		realsize = 64 * 1024;
+		if (&sce_newlib_heap_kb_size != NULL)
+			realsize = sce_newlib_heap_kb_size * 1024;
+		mbid = sceKernelAllocPartitionMemory(2, "block", 0, realsize, NULL);
+		if (mbid > 0) {
+			minheap = currentheap = (unsigned int)sceKernelGetBlockHeadAddr(mbid);
+			maxheap = currentheap + realsize;
+		}
+	}
+	if (minheap != 0 && currentheap + incr >= minheap && currentheap + incr <= maxheap) {
+		result = currentheap;
+		currentheap += incr;
+		return (void *)result;
+	}
+	return (void *)-1;
+}
 
 int _fork(void)
 {
