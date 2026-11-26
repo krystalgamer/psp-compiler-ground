@@ -182,7 +182,8 @@ static int is_level_cleared();
 static void level_initialize();
 static void next_level();
 static void show_level_mission();
-void print_nothing(const char *fmt, ...);
+char *strncpy(char *dst, const char *src, unsigned int n);
+/* print_nothing() is used without a declaration, as in the original (DWARF) */
 
 
 extern int D_00065EAC;
@@ -249,7 +250,21 @@ static void update_level_mission()
 
 __asm__(".globl update_level_mission");
 
-INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/level", is_level_cleared);
+static int is_level_cleared()
+{
+	int i;
+
+	if (l_mod_player.opp_money <= 0)
+		return 1;
+	for (i = 0; i < 11; i++) {
+		print_nothing("player:%d <> mission:%d\n", l_mod_player.success_level_mission[i], g_level_mission[i]);
+		if (l_mod_player.success_level_mission[i] < g_level_mission[i])
+			return 0;
+	}
+	return 1;
+}
+
+__asm__(".globl is_level_cleared");
 
 static void level_initialize()
 {
