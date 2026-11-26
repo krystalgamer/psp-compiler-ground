@@ -174,11 +174,68 @@ int sprintf(char *buf, const char *fmt, ...);
 void srand(unsigned int seed);
 unsigned int strlen(const char *s);
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_matching_stick/nonmatchings/main", gu_init);
-
-
 extern __typeof__(disp_list) disp_list_1B580;
 #define disp_list disp_list_1B580
+
+extern __typeof__(disp_list) disp_list_1B580;
+#define SCEGU_IMMEDIATE                    0
+#define SCEGU_PF8888                       3
+#define SCEGU_VRAM_BP32_0     (void *)(SCEGU_VRAM_TOP)
+#define SCEGU_VRAM_BP32_1     (void *)(SCEGU_VRAM_TOP+SCEGU_VRAM_BUFSIZE32)
+#define SCEGU_VRAM_TOP        0x00000000
+#define SCEGU_VRAM_BUFSIZE32  (SCEGU_VRAM_WIDTH*SCEGU_SCR_HEIGHT*4)
+#define SCEGU_VRAM_BP32_2     (void *)(SCEGU_VRAM_TOP+(SCEGU_VRAM_BUFSIZE32*2))
+#define SCEGU_VRAM_WIDTH      512
+#define SCEGU_SCR_WIDTH       480
+#define SCEGU_SCR_HEIGHT      272
+#define SCEGU_SCISSOR_TEST                 2
+#define SCEGU_ADD                          0
+#define SCEGU_SRC_ALPHA                    2
+#define SCEGU_ONE_MINUS_SRC_ALPHA          3
+#define SCEGU_BLEND                        4
+#define SCEGU_TEX_MODULATE                 0
+#define SCEGU_RGBA                         1
+#define SCEGU_LINEAR_MIPMAP_LINEAR         7
+#define SCEGU_NEAREST                      0
+#define SCEGU_REPEAT                       0
+#define SCEGU_SYNC_FINISH                  0
+#define SCEGU_SYNC_WAIT                    0
+#define SCEGU_DISPLAY_ON		1
+
+void gu_init(void)
+{
+	sceGuInit();
+
+	sceGuStart(SCEGU_IMMEDIATE, disp_list, sizeof(disp_list));
+	sceGuDrawBuffer(SCEGU_PF8888, SCEGU_VRAM_BP32_0, SCEGU_VRAM_WIDTH);
+	sceGuDispBuffer(SCEGU_SCR_WIDTH, SCEGU_SCR_HEIGHT,
+	SCEGU_VRAM_BP32_1, SCEGU_VRAM_WIDTH);
+	sceGuDepthBuffer(SCEGU_VRAM_BP32_2, SCEGU_VRAM_WIDTH);
+
+	sceGuOffset(0, 0);
+
+	sceGuScissor(0, 0, SCEGU_SCR_WIDTH, SCEGU_SCR_HEIGHT);
+	sceGuEnable(SCEGU_SCISSOR_TEST);
+
+	sceGuBlendFunc(SCEGU_ADD, SCEGU_SRC_ALPHA, SCEGU_ONE_MINUS_SRC_ALPHA, 0, 0);
+	sceGuEnable(SCEGU_BLEND);
+
+	sceGuTexFunc(SCEGU_TEX_MODULATE, SCEGU_RGBA);
+	sceGuTexFilter(SCEGU_LINEAR_MIPMAP_LINEAR, SCEGU_NEAREST);
+	sceGuTexWrap(SCEGU_REPEAT, SCEGU_REPEAT);
+
+	sceGuClearColor(0);
+	sceGuClearDepth(0);
+	sceGuClearStencil(0);
+
+	sceGuFinish();
+	sceGuSync(SCEGU_SYNC_FINISH, SCEGU_SYNC_WAIT);
+	sceDisplayWaitVblankStart();
+
+	sceGuDisplay(SCEGU_DISPLAY_ON);
+}
+
+
 extern __typeof__(board) board_1AC98;
 #define board board_1AC98
 
