@@ -491,7 +491,17 @@ INCLUDE_RODATA("tmp/asm/flowars/flowars/nonmatchings/draw", D_0002F270);
 
 INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/draw", run_draw_vs);
 
-INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/draw", draw_vs_menu);
+static void draw_vs_menu()
+{
+	if (g_draw_vs_switch == 0) {
+		g_vs_frame = 0;
+		g_draw_vs_switch = 1;
+		g_timer_pause = 1;
+	}
+	run_draw_vs();
+}
+
+__asm__(".globl draw_vs_menu");
 
 void draw_button(int x, int y, int btn) {
     sceGimPictureActivate(g_img_button);
@@ -592,7 +602,15 @@ void draw_opp_hand(void) {
     draw_opp_hand1();
 }
 
-INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/draw", draw_pae_num);
+static void draw_pae_num(int num, int x, int y)
+{
+	x += 7;
+	y += 19;
+	if (num >= 10)
+		graphics.draw_number(num / 10, x, y, 1, 10, 0);
+	x += 4;
+	graphics.draw_number(num % 10, x, y, 1, 10, 0);
+}
 
 INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/draw", draw_my_collection);
 
