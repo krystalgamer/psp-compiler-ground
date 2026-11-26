@@ -2,6 +2,11 @@
 #include "common.h"
 #include "parse_ps.h"
 #include "m2c_macros.h"
+extern char D_00137D64[];
+extern char D_00137D70[];
+extern int Security;
+extern int buf_Message_Show_FLG;
+PsLocation *ps_SetLocation();
 extern char D_001378D0[];
 extern char D_001378F0[];
 extern char D_00137910[];
@@ -1142,6 +1147,63 @@ int ps_i2D12(PsIpc *msg) {
     return buf_ps_sts;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/ps_l3800", ps_i2D14);
+static inline int ps_isNotExtSession(int id) {
+    if (id > 0x08000000 && id <= 0x10000000) {
+        return 0;
+    }
+    return 1;
+}
+
+int ps_i2D14(PsIpc *msg) {
+    PsIpc m;
+    PsIpc d;
+    int *p;
+    PsLocation *loc;
+    int sec;
+
+    sec = 0;
+    if (ps_isNotExtSession(msg->x04)) {
+        p = (int *)msg->x1C;
+        loc = ps_SetLocation(msg->x04, msg->x08, msg->x14, p[0], p[1]);
+        if (loc->x0C >= 10) {
+            initMPI_SIG_REQUEST_ABORTED(&m);
+            m.x04 = msg->x04;
+            m.x10 = 1;
+            m.x14 = msg->x14;
+            ps_sndmsg(&m, 5);
+        } else {
+            if (icmpstr(p[1], D_00137D64, 8) == 1) {
+                sec = 1;
+            }
+            if (((sec == 1 && Security == 0) || (sec == 0 && Security == 1)) && buf_Message_Show_FLG == 0) {
+                if (Security == 0) {
+                    if (initMPU_REQ_SHOW_DIALOG(&d, 6) == 0) {
+                        ps_halt(D_00137D70);
+                    }
+                    d.x14 = 0x80000006;
+                } else {
+                    if (initMPU_REQ_SHOW_DIALOG(&d, 7) == 0) {
+                        ps_halt(D_00137D70);
+                    }
+                    d.x14 = 0x80000007;
+                }
+                d.x04 = msg->x04;
+                ps_sndmsg(&d, 1);
+                buf_Message_Show_FLG = 1;
+                before_ps_sts = 0x14;
+                buf_Message_cnt++;
+                if (msg->x1C != 0) {
+                    MEM_free(0, msg->x1C);
+                }
+                return 0x13;
+            }
+            ps_HeadSend(strlen(loc->buf), loc->buf, ((int *)SaveREF)[0], ((int *)SaveREF)[1], 0, msg->x04, SaveUnitId);
+        }
+    }
+    if (msg->x1C != 0) {
+        MEM_free(0, msg->x1C);
+    }
+    return buf_ps_sts;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/ps_l3800", parseDomBuild);
