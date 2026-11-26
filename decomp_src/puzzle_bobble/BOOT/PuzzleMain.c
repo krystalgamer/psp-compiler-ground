@@ -2461,7 +2461,7 @@ void PauseControl(void *arg0) {
 }
 
 #ifdef NON_MATCHING
-/* draft: see tmp notes; same length within a few instructions, register allocation differs */
+/* draft, same logic; differs in register allocation and scheduling (see notes) */
 extern int KeyStat;
 extern int KeyHit;
 extern int VKeyHit;
@@ -2523,6 +2523,8 @@ int PuzzleBody(void)
 	int ret = 0;
 	int light;
 	int zen;
+	int i;
+	int k;
 
 	KeyStat = GetKeyStat();
 	KeyHit = GetKeyHit();
@@ -2551,7 +2553,6 @@ int PuzzleBody(void)
 	if (isPause == 0) {
 		switch (st->unk006) {
 		default: {
-			int i, col;
 
 			PollShutter(0);
 			if (PollShutter(5) || st->unk430 < 60) {
@@ -2568,10 +2569,12 @@ int PuzzleBody(void)
 				for (i = 0; i < 32; i++) {
 					if (i < st->guide_n && st->drop.unk2 == 2) {
 						if (st->guide_col == 2 && (D_0014E8B8 / 2) & 1)
-							col = 10;
-						else
-							col = st->cur == 9 ? 7 : st->cur % 8;
-						DrawBubble(0.3f, st->gx[i * 8 + D_0014E8B8] + 72, st->gy[i * 8 + D_0014E8B8], col, 0);
+							k = 10;
+						else {
+							k = st->cur;
+							k = k == 9 ? 7 : k % 8;
+						}
+						DrawBubble(0.3f, st->gx[i * 8 + D_0014E8B8] + 72, st->gy[i * 8 + D_0014E8B8], k, 0);
 					}
 				}
 			}
@@ -2588,14 +2591,14 @@ int PuzzleBody(void)
 			break;
 		}
 		case 2: {
-			int i, flag, left, right;
+			int flag, left, right;
 
 			D_0014E8C0 = st->vy;
 			D_0014E8BC = st->vx;
-			left = (GetMapLeft(st->mapno) + 8) << 16;
-			right = (GetMapRight(st->mapno) - 9) << 16;
-			minY = (32 - st->scroll * 14) << 16;
-			maxY = (280 - st->scroll * 14) << 16;
+			left = (GetMapLeft(st->mapno) << 16) + 0x80000;
+			right = (GetMapRight(st->mapno) << 16) - 0x90000;
+			minY = 0x200000 - (st->scroll * 14 << 16);
+			maxY = 0x1180000 - (st->scroll * 14 << 16);
 			flag = 0;
 			for (i = 0; i < 12; i++) {
 				st->fx += D_0014E8BC;
@@ -2684,14 +2687,14 @@ int PuzzleBody(void)
 			SetCharacters(st, 4, 0);
 			SetMonitor(st, 12);
 		case 9: {
-			int i, t, x, y, color, f;
+			int x, y, color, f;
 			float s;
 
 			light = 1;
-			t = 16 - st->unk024;
+			k = 16 - st->unk024;
 			if (--st->unk024 != 0) {
 				color = ((int)(st->unk024 * 0.0625f * 255.0f) << 24) | 0xFFFFFF;
-				s = t * 0.25f + 1.0f;
+				s = k * 0.25f + 1.0f;
 				for (i = 0; i < st->ndrop; i++) {
 					x = st->drop.d[i].x + MapXBeginPos[st->mapno * 3 + st->mapsub];
 					y = st->drop.d[i].y + st->ofs_y + st->scroll * 14;
@@ -2699,9 +2702,9 @@ int PuzzleBody(void)
 					if (st->drop.d[i].col != 9 && st->drop.d[i].col != 14) {
 						DrawSpriteZoom(45, color, 1.0f, x + 16, y - 56, 128.0f, 128.0f, 0, 0, 64.0f, 64.0f, s * 0.25f, s * 0.25f, 0);
 					} else if (st->drop.d[i].col == 9) {
-						DrawSpriteZoom(46, color, 1.0f, x + 16, y - 56, 128.0f, 128.0f, 0, 0, 64.0f, 64.0f, s, s, t * 0.3f * 3.14f * 0.0625f);
+						DrawSpriteZoom(46, color, 1.0f, x + 16, y - 56, 128.0f, 128.0f, 0, 0, 64.0f, 64.0f, s, s, k * 0.3f * 3.14f * 0.0625f);
 					} else {
-						f = t * 6 / 16;
+						f = k * 6 / 16;
 						SpriteDrawEz(47, 0, -1, x + 16, y - 56, 128.0f, 128.0f, f % 4 * 128, f / 4 * 128);
 					}
 				}
@@ -2783,17 +2786,17 @@ int PuzzleBody(void)
 			}
 			break;
 		case 19: {
-			int i, w, flag;
+			int w;
 
-			flag = 0;
+			k = 0;
 			w = GetMapWidth(st->mapno);
 			for (i = 0; i < w; i++) {
 				if (st->mp.map[(11 - st->scroll) * w + i]) {
-					flag = 1;
+					k = 1;
 					break;
 				}
 			}
-			if (flag) {
+			if (k) {
 				st->unk006 = 22;
 				st->unk025 = 12;
 				st->unk42A = 0;
@@ -2877,8 +2880,10 @@ int PuzzleBody(void)
 				dsGMInit(0, StageNum);
 				DrawMapData(st, StageNum);
 				st->cur = st->next = GetBallNext(st, 1);
-				if (StageNum % 10 == 0)
-					bgm_play(StageNum / 10 % 3 + 1);
+				if (StageNum % 10 == 0) {
+					i = StageNum / 10 % 3;
+					bgm_play(i + 1);
+				}
 				st->unk006 = 32;
 			} else {
 				SetCharacters(st, 0, 0);
@@ -2959,7 +2964,7 @@ int PuzzleBody(void)
 			break;
 		}
 		if (isPause == 0) {
-			int i, j, n, x, y;
+			int j, n, x, y, c;
 			float fl;
 
 			for (j = 0; j < 3; j++) {
@@ -2970,18 +2975,23 @@ int PuzzleBody(void)
 						y = st->ent.e[i].y - 32;
 						if (st->ent.e[i].col == 12) {
 							fl = 64 - n;
-							if (fl > 0)
-								DrawBubble(fl * 0.015625f, x, y, 11, 0);
-							else
+							if (fl > 0) {
+								fl *= 0.015625f;
+								c = 11;
+							} else {
 								st->ent.e[i].flag = 0;
+								continue;
+							}
 						} else {
 							if (n > 0) {
 								y += n * n / 40;
 								if (y > 320)
 									st->ent.e[i].flag = 0;
 							}
-							DrawBubble(0, x, y, st->ent.e[i].col - 1, 0);
+							fl = 0;
+							c = st->ent.e[i].col - 1;
 						}
+						DrawBubble(fl, x, y, c, 0);
 					}
 				}
 			}
@@ -3015,8 +3025,8 @@ int PuzzleBody(void)
 	case 0:
 		zen = 0;
 		if (--D_00038A4C < 0) {
-			D_0014E8C8 = 2;
 			D_00038A4C = rand() % 20 + 10;
+			D_0014E8C8 = 2;
 		}
 		break;
 	case 1:
@@ -3026,15 +3036,16 @@ int PuzzleBody(void)
 	case 2:
 		zen = 1;
 		if (--D_00038A4C < 0) {
-			D_0014E8C8 = 0;
 			D_00038A4C = rand() % 80 + 20;
+			D_0014E8C8 = 0;
 		}
 		break;
 	}
 	if (st->unk00E > 0 && st->unk00E < 330) {
 		zen = 0;
-		if (st->unk00E % 60 < 30) {
-			DrawCharcter(2, 190, 188, ChrData_Count, st->unk00E / 60);
+		i = (short)(st->unk00E / 60);
+		if ((short)(st->unk00E % 60) < 30) {
+			DrawCharcter(2, 190, 188, ChrData_Count, i);
 			zen = 2;
 		}
 	} else if (st->unk47F) {
