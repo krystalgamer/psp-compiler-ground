@@ -194,9 +194,63 @@ int matching_parent_cancel(struct SceNetEtherAddr *addr) {
     return sceNetAdhocMatchingCancelTarget(D_000E4014, addr);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_matching_stick/nonmatchings/net_multi_player", net_create_listen_socket);
+int sceNetAdhocPtpListen(const struct SceNetEtherAddr *saddr, unsigned short sport, unsigned int bufsize, unsigned int rexmt_int, int rexmt_cnt, int backlog, int flag);
+int sceNetAdhocPtpOpen(const struct SceNetEtherAddr *saddr, unsigned short sport, const struct SceNetEtherAddr *daddr, unsigned short dport, unsigned int bufsize, unsigned int rexmt_int, int rexmt_cnt, int flag);
+SceULong64 sceKernelGetSystemTimeWide(void);
+void change_state(enum matching_room_state state);
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_matching_stick/nonmatchings/net_multi_player", net_create_connect_socket);
+void net_create_listen_socket(void)
+{
+	if (ptp_sock_id0 > 0) {
+		return;
+	}
+
+	ptp_sock_id0 = sceNetAdhocPtpListen(&_mrinfo.local_addr, 66, 0x4000, 200000, 200000, 1, 0);
+	if (ptp_sock_id0 < 0) {
+		printf("sceNetAdhocPtpListen() failed. ret = 0x%x\n", ptp_sock_id0);
+		change_state(MATCHING_ROOM_DISCONNECT);
+		return;
+	}
+
+	change_state(MATCHING_ROOM_CHILD_WAIT);
+}
+
+void net_create_connect_socket(void)
+{
+	int i;
+
+	if (ptp_sock_id0 > 0) {
+		return;
+	}
+
+	sceKernelWaitSema(minfo_sid, 1, NULL);
+
+	for (i = 0; i < 16; i++) {
+		if (minfo[i].status == 5) {
+			break;
+		}
+	}
+
+	if (i == 16) {
+		change_state(MATCHING_ROOM_START_GAME);
+		goto error;
+	}
+
+	_mrinfo.informing_minfo_id = i;
+
+	ptp_sock_id0 = sceNetAdhocPtpOpen(&_mrinfo.local_addr, 0, &minfo[i].addr, 66, 0x4000, 200000, 200000, 0);
+	if (ptp_sock_id0 < 0) {
+		printf("sceNetAdhocPtpOpen() failed. ret = 0x%x\n", ptp_sock_id0);
+		change_state(MATCHING_ROOM_DISCONNECT);
+	} else {
+		change_state(MATCHING_ROOM_PARENT_INFORM_CONNECT);
+	}
+
+	_mrinfo.ptp_start_time = sceKernelGetSystemTimeWide();
+
+error:
+	sceKernelSignalSema(minfo_sid, 1);
+}
 
 void net_delete_ptp(void) {
     if (ptp_sock_id > 0) {
