@@ -143,8 +143,98 @@ INCLUDE_RODATA("tmp/asm/UTST99332/net_matching_stick/nonmatchings/stick_main", D
 
 INCLUDE_RODATA("tmp/asm/UTST99332/net_matching_stick/nonmatchings/stick_main", room_speed_str);
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_matching_stick/nonmatchings/stick_main", draw_top_for_game);
+int snprintf(char *buf, unsigned int size, const char *fmt, ...);
+void draw_top_for_game(void)
+{
+	char mess_buff[128];
+	int x, y, color;
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_matching_stick/nonmatchings/stick_main", draw_p2p_game_parameter);
+	y = 61;
+	snprintf(mess_buff, sizeof(mess_buff), "Matching Parameter");
+	x = (480 - strlen(mess_buff) * 8) / 2 + 1;
+	sceGuDebugPrint(x, y, 0xffffff, mess_buff);
+	y += 15;
+	x += 24;
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_matching_stick/nonmatchings/stick_main", game_pad_read_top);
+	color = (_mrinfo.v_cursor_pos == 0) ? 0xff : 0xffffff;
+	sprintf(mess_buff, "Color: %s", room_color_str[_mrinfo.hello_opt.game_param.color]);
+	sceGuDebugPrint(x, y, color, mess_buff);
+	y += 10;
+
+	color = (_mrinfo.v_cursor_pos == 1) ? 0xff : 0xffffff;
+	sprintf(mess_buff, "Speed: %s", room_speed_str[_mrinfo.hello_opt.game_param.speed]);
+	sceGuDebugPrint(x, y, color, mess_buff);
+	y += 10;
+
+	color = (_mrinfo.v_cursor_pos == 2) ? 0xff : 0xffffff;
+	sprintf(mess_buff, "Player num: %d", _mrinfo.hello_opt.req_player_num);
+	sceGuDebugPrint(x, y, color, mess_buff);
+}
+
+void draw_p2p_game_parameter(int index, int color, int x, int *y_ptr)
+{
+	char mess_buff[128];
+	int y;
+
+	y = *y_ptr;
+	if (_mrinfo.hello_opt.game_type != GAME_TYPE_CHILD)
+		return;
+	sprintf(mess_buff, "Color:%s    Speed: %s   PlayerNum: %d/%d",
+		room_color_str[minfo[index].hello_opt.game_param.color],
+		room_speed_str[minfo[index].hello_opt.game_param.speed],
+		minfo[index].hello_opt.cur_player_num,
+		minfo[index].hello_opt.req_player_num);
+	sceGuDebugPrint(x, y, color, mess_buff);
+	y += 10;
+	*y_ptr = y;
+}
+
+extern u_int32 D_0006C2A0;
+#define cont D_0006C2A0
+int game_pad_read_top(void)
+{
+
+	u_int32 prev;
+	u_int32 padd;
+	SceCtrlData buf;
+
+	prev = cont;
+	sceCtrlPeekBufferPositive(&buf, 1);
+	cont = buf.Buttons;
+	padd = cont & (cont ^ prev);
+
+	if (padd & 0x0010) {
+		if (_mrinfo.v_cursor_pos > 0)
+			_mrinfo.v_cursor_pos--;
+	}
+	if (padd & 0x0020) {
+		if (_mrinfo.v_cursor_pos == 0) {
+			if (_mrinfo.hello_opt.game_param.color + 1 < 4)
+				_mrinfo.hello_opt.game_param.color++;
+		} else if (_mrinfo.v_cursor_pos == 1) {
+			if (_mrinfo.hello_opt.game_param.speed + 1 < 3)
+				_mrinfo.hello_opt.game_param.speed++;
+		} else if (_mrinfo.v_cursor_pos == 2) {
+			if (_mrinfo.hello_opt.req_player_num < 16)
+				_mrinfo.hello_opt.req_player_num++;
+		}
+	}
+	if (padd & 0x0040) {
+		if (_mrinfo.v_cursor_pos + 1 < 3)
+			_mrinfo.v_cursor_pos++;
+	}
+	if (padd & 0x0080) {
+		if (_mrinfo.v_cursor_pos == 0) {
+			if (_mrinfo.hello_opt.game_param.color != 0)
+				_mrinfo.hello_opt.game_param.color--;
+		} else if (_mrinfo.v_cursor_pos == 1) {
+			if (_mrinfo.hello_opt.game_param.speed != 0)
+				_mrinfo.hello_opt.game_param.speed--;
+		} else if (_mrinfo.v_cursor_pos == 2) {
+			if (_mrinfo.hello_opt.req_player_num > 2)
+				_mrinfo.hello_opt.req_player_num--;
+		}
+	}
+	return 1;
+}
+#undef cont
