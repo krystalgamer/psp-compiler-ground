@@ -29,7 +29,23 @@ int ExitFunction_364C(void) {
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/utility_basic/nonmatchings/menu/ExitFunction", check_exit);
+int sceKernelCreateCallback(const char *name, void *func, void *arg);
+int sceKernelRegisterExitCallback(int cbid);
+int sceKernelDelayThreadCB(unsigned int delay);
+
+static int check_exit(SceSize arglen, void *arg)
+{
+	SceUID uid;
+
+	uid = sceKernelCreateCallback("exit", ExitFunction_364C, NULL);
+	sceKernelRegisterExitCallback(uid);
+
+	while (1) {
+		sceKernelDelayThreadCB(10000);
+	}
+
+	return 0;
+}
 
 void menuInit(void) {
     int temp_v0;
