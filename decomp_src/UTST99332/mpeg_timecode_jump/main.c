@@ -260,7 +260,18 @@ static SceInt32 checkDecodeEnd(t_conditionCtrl *pCtrl)
 	return -1;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/mpeg_timecode_jump/nonmatchings/main", checkPlayerErrCondition);
+SceInt32 checkPlayerErrCondition(t_conditionCtrl *pCtrl)
+{
+	SceUInt32 pattern;
+
+	control_getCondition(pCtrl, &pattern);
+
+	if (pattern & 0x800) {
+		return -1;
+	}
+
+	return 0;
+}
 
 static SceInt32 setPlayerEndCondition(t_conditionCtrl *pCtrl)
 {
