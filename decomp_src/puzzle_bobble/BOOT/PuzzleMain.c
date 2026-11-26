@@ -2534,6 +2534,7 @@ int PuzzleBody(void)
 	int zen;
 	int i;
 	int k;
+	short ang;
 
 	KeyStat = GetKeyStat();
 	KeyHit = GetKeyHit();
@@ -2589,13 +2590,14 @@ int PuzzleBody(void)
 			}
 			if ((KeyHit & 0x2000) || st->unk00E <= 0) {
 				se_play(12);
+				ang = st->unk454;
 				st->unk00E = 600;
 				st->fx = st->bx << 16;
 				st->fy = st->by << 16;
 				st->unk006 = 2;
 				st->unk008 = 0;
-				st->vx = -Cos(st->unk454);
-				st->vy = -Sin(st->unk454);
+				st->vx = -Cos(ang);
+				st->vy = -Sin(ang);
 			}
 			break;
 		}
@@ -2799,7 +2801,7 @@ int PuzzleBody(void)
 			k = 0;
 			w = GetMapWidth(st->mapno);
 			for (i = 0; i < w; i++) {
-				if (st->mp.map[(11 - st->scroll) * w + i]) {
+				if (st->mp.map[i + (11 - st->scroll) * w]) {
 					k = 1;
 					break;
 				}
@@ -3313,6 +3315,7 @@ int VSModeBody(int pl)
 	int zen;
 	int i;
 	int k;
+	short ang;
 
 	KeyStat = GetKeyStat();
 	KeyHit = GetKeyHit();
@@ -3373,13 +3376,14 @@ int VSModeBody(int pl)
 			}
 			if ((st->key_rep & 0x2000) || st->unk00E <= 0) {
 				se_play(12);
+				ang = st->unk454;
 				st->unk00E = st->mapsub == 1 ? 600 : 300;
 				st->fx = st->bx << 16;
 				st->fy = st->by << 16;
 				st->unk006 = 2;
 				st->unk008 = 0;
-				st->vx = -Cos(st->unk454);
-				st->vy = -Sin(st->unk454);
+				st->vx = -Cos(ang);
+				st->vy = -Sin(ang);
 			}
 			break;
 		case 2: {
@@ -4186,9 +4190,9 @@ int EndressBody(int pl)
 	PZL_STAT *st;
 	int ret = 0;
 	int light;
-	int zen;
 	int i;
 	int k;
+	short ang;
 
 	KeyStat = GetKeyStat();
 	KeyHit = GetKeyHit();
@@ -4244,13 +4248,14 @@ int EndressBody(int pl)
 			}
 			if ((st->key_rep & 0x2000) || st->unk00E <= 0) {
 				se_play(12);
+				ang = st->unk454;
 				st->unk00E = 600;
 				st->fx = st->bx << 16;
 				st->fy = st->by << 16;
 				st->unk006 = 2;
 				st->unk008 = 0;
-				st->vx = -Cos(st->unk454);
-				st->vy = -Sin(st->unk454);
+				st->vx = -Cos(ang);
+				st->vy = -Sin(ang);
 			}
 			break;
 		case 2: {
@@ -4584,7 +4589,8 @@ int EndressBody(int pl)
 									st->ent[i].flag = 0;
 							}
 							fl = 0;
-							c = st->ent[i].col - 1;
+							c = st->ent[i].col;
+							c--;
 						}
 						DrawBubble(fl, x, y, c, 0);
 					}
@@ -4600,49 +4606,52 @@ int EndressBody(int pl)
 		DrawBubble(0, st->bx + 72, st->by + st->scroll * 14, st->cur, 0);
 	DrawBubble(0, 292, 222, st->next, 0);
 	DrawSpriteEz(3.0f, 152.0f, 184.0f, 176.0f, 8.0f, 0, 0, 7);
-	zen = 0;
-	if (GetBallLine(st) >= 8) {
-		if (D_0014E920 != 1) {
+	{
+		int zen;
+
+		if (GetBallLine(st) >= 8) {
+			if (D_0014E920 != 1) {
+				D_0014E91C = 0;
+				D_0014E920 = 1;
+			}
+		} else if (D_0014E920 == 1) {
 			D_0014E91C = 0;
-			D_0014E920 = 1;
-		}
-	} else if (D_0014E920 == 1) {
-		D_0014E91C = 0;
-		D_00038A88 = 0;
-		D_0014E920 = 0;
-	}
-	switch (D_0014E920) {
-	case 0:
-		zen = 0;
-		if (--D_00038A88 < 0) {
-			D_00038A88 = rand() % 20 + 10;
-			D_0014E920 = 2;
-		}
-		break;
-	case 1:
-		D_0014E91C = (D_0014E91C + 1) % 32;
-		zen = D_0014E91C / 8 + 4;
-		break;
-	case 2:
-		zen = 1;
-		if (--D_00038A88 < 0) {
-			D_00038A88 = rand() % 80 + 20;
+			D_00038A88 = 0;
 			D_0014E920 = 0;
 		}
-		break;
-	}
-	if (st->unk00E > 0 && st->unk00E < 330) {
-		zen = 0;
-		i = (short)(st->unk00E / 60);
-		if ((short)(st->unk00E % 60) < 30) {
-			DrawCharcter(2, 190, 188, ChrData_Count, i);
-			zen = 2;
+		switch (D_0014E920) {
+		case 0:
+			zen = 0;
+			if (--D_00038A88 < 0) {
+				D_00038A88 = rand() % 20 + 10;
+				D_0014E920 = 2;
+			}
+			break;
+		case 1:
+			D_0014E91C = (D_0014E91C + 1) % 32;
+			zen = D_0014E91C / 8 + 4;
+			break;
+		case 2:
+			zen = 1;
+			if (--D_00038A88 < 0) {
+				D_00038A88 = rand() % 80 + 20;
+				D_0014E920 = 0;
+			}
+			break;
 		}
-	} else if (st->unk47F) {
-		D_0014E91C = (D_0014E91C + 1) % 20;
-		zen = D_0014E91C / 5 + 8;
+		if (st->unk00E > 0 && st->unk00E < 330) {
+			zen = 0;
+			i = (short)(st->unk00E / 60);
+			if ((short)(st->unk00E % 60) < 30) {
+				DrawCharcter(2, 190, 188, ChrData_Count, i);
+				zen = 2;
+			}
+		} else if (st->unk47F) {
+			D_0014E91C = (D_0014E91C + 1) % 20;
+			zen = D_0014E91C / 5 + 8;
+		}
+		DrawCharcter(2, 160, 204, ChrData_Zen, zen);
 	}
-	DrawCharcter(2, 160, 204, ChrData_Zen, zen);
 	if (pl == 1) {
 		DrawSpriteEz(8.0f, 0.0f, 0.0f, 240.0f, 136.0f, 0.0f, 0.0f, 0);
 		DrawSpriteEz(8.0f, 0.0f, 136.0f, 240.0f, 136.0f, 0.0f, 136.0f, 0);
