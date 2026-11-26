@@ -183,12 +183,14 @@ typedef struct SDomiNodeVt {
 
 /* named node set (attributes) vtable */
 typedef struct SDomiNamedNodeSetVt {
-    void (*Finalize)();               /* 0x00 */
-    SDomiNode *(*getNamedItem)();     /* 0x04 */
-    int (*setNamedItem)();            /* 0x08 */
+    int (*getNamedItem)();            /* 0x00 */
+    int (*setNamedItem)();            /* 0x04 */
+    int (*removeNamedItem)();         /* 0x08 */
     SDomiNode *(*item)();             /* 0x0C */
-    int (*removeNamedItem)();         /* 0x10 */
-    unsigned int (*get_length)();     /* 0x14 */
+    unsigned int (*get_length)();     /* 0x10 */
+    int (*getNamedItemNS)();          /* 0x14 */
+    int (*setNamedItemNS)();          /* 0x18 */
+    int (*removeNamedItemNS)();       /* 0x1C */
 } SDomiNamedNodeSetVt;
 
 typedef struct SDomiNamedNodeSet {
@@ -196,6 +198,30 @@ typedef struct SDomiNamedNodeSet {
     SDomiNode *owner;
     unsigned char x8;
 } SDomiNamedNodeSet;
+
+typedef struct SDomiElement {
+    SDomiTrunkNode t;
+    SDomiPtrArray attrs;              /* 0x38 */
+    SDomiNamedNodeSet attrSet;        /* 0x48 */
+} SDomiElement;
+
+typedef struct SDomiAttr {
+    SDomiInternalNode i;
+    SDomiElement *ownerElement;       /* 0x2C */
+    SDomiStringH value;               /* 0x30 */
+    unsigned char specified;          /* 0x34 */
+} SDomiAttr;
+
+typedef struct SDomiElementVt {
+    void *node[26];                   /* SDomiNodeVt up to hasAttributes */
+    int (*GetAttrNode)();             /* 0x68 */
+    int (*GetDefault)();              /* 0x6C */
+    int (*SetAttrNode)();             /* 0x70 */
+    int (*RemoveAttrNode)();          /* 0x74 */
+    void *(*getElementsByTagName)();  /* 0x78 */
+} SDomiElementVt;
+
+#define ELEMVT(e) ((const SDomiElementVt *)((SDomiNode *)(e))->vt)
 
 extern SDomiStringData gSDnull;
 
