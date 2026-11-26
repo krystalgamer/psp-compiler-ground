@@ -94,8 +94,32 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iconv", ucs2ToUtf8);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iconv", utf8ToUcs2);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iconv", utf8nlen);
+int utf8nlen(const u8 *s, int max) {
+    int n;
+    int k;
 
+    if (s == NULL || max == 0) {
+        return 0;
+    }
+    n = 0;
+    while (*s != 0) {
+        if (!(*s & 0x80)) {
+            k = 1;
+        } else if ((*s & 0x80) && (*s & 0x60) == 0x40) {
+            k = 2;
+        } else if ((*s & 0x80) && (*s & 0x70) == 0x60) {
+            k = 3;
+        } else {
+            k = 1;
+        }
+        if (n + k > max) {
+            break;
+        }
+        s += k;
+        n += k;
+    }
+    return n;
+}
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iconv", tobase64);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iconv", ucs2ToJis);
@@ -271,7 +295,59 @@ int checkShiftJIS(const u8 *s, int len) {
     return ret;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iconv", checkEUC);
+int checkEUC(const u8 *s, int len) {
+    int state;
+    int i;
+    int ret;
+    u8 c;
+
+    state = 0;
+    i = 0;
+    ret = 0;
+    for (; i < len; i++) {
+        c = s[i];
+        if (state == 0) {
+            if (c >= 7 && c <= 13) {
+                continue;
+            }
+            if (c >= 0x20 && c <= 0x7E) {
+                continue;
+            }
+            if (c == 0x8E) {
+                state = 1;
+                ret |= 2;
+            } else if (c >= 0xA1 && c <= 0xFE) {
+                state = 2;
+                ret |= 1;
+                if (c == 0xAD || (c >= 0xF9 && c <= 0xFC)) {
+                    ret |= 4;
+                } else if (c >= 0xA9 && c <= 0xAF) {
+                    ret |= 8;
+                } else if (c >= 0xF5 && c <= 0xFE) {
+                    ret |= 8;
+                }
+            } else {
+                ret = -1;
+                break;
+            }
+        } else if (state == 1) {
+            if (c >= 0xA1 && c <= 0xFE) {
+                state = 0;
+            } else {
+                ret = -1;
+                break;
+            }
+        } else {
+            if (c >= 0xA1 && c <= 0xFE) {
+                state = 0;
+            } else {
+                ret = -1;
+                break;
+            }
+        }
+    }
+    return ret;
+}
 
 int checkUTF8(const u8 *s, int len) {
     int state;
