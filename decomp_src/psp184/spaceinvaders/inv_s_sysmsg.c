@@ -212,4 +212,36 @@ void MsgDialogError_YesNo_No(int arg0) {
 
 INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_sysmsg", D_0007B804);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_sysmsg", sysmsg_string);
+int sysmsg_string(int msg, unsigned int type, int rule)
+{
+	looprule = rule;
+	thread_id_28E440 = sceKernelCreateThread(D_0007B804, sub_thread_164DC, 0x10, 0x10000, 0, 0);
+	if (thread_id_28E440 <= 0)
+		return 1;
+	switch (type) {
+	case 0:
+		MsgDialogNormal(msg);
+		break;
+	case 1:
+		MsgDialogNormal_YesNo_Yes(msg);
+		break;
+	case 2:
+		MsgDialogNormal_YesNo_No(msg);
+		break;
+	case 3:
+		MsgDialogError(msg);
+		break;
+	case 4:
+		MsgDialogError_YesNo_Yes(msg);
+		break;
+	case 5:
+		MsgDialogError_YesNo_No(msg);
+		break;
+	}
+	if (sceKernelStartThread(thread_id_28E440, 0, 0) != 0) {
+		sceKernelDeleteThread(thread_id_28E440);
+		return 1;
+	}
+	sceKernelWaitThreadEnd(thread_id_28E440, 0);
+	return *(int *)(&msgdialog_param_28E1FC + 0x240);
+}
