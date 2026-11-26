@@ -73,7 +73,46 @@ float spline(float t, float pos0, float pos1, float pos2) {
     return ((((2.0f * temp_f15) + (2.0f * temp_f13)) - temp_f1) * t * t) + (((temp_f1 - temp_f15) - (temp_f13 * 3.0f)) * t) + temp_f13;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_balloon/nonmatchings/balloon", ctrl_spline);
+#define SPLINE_X (0x01)
+#define SPLINE_Y (0x02)
+#define SPLINE_Z (0x04)
+#define RING2(p)	(p==0?1:p==1?2:0)
+#define RING3(p)	(p==0?2:p==1?0:1)
+
+static void ctrl_spline(int mode)
+{
+	float	p[3];
+	int		cnt=balloon.scnt;
+
+	if (mode&SPLINE_X) {
+		p[0]=balloon.sbuf[cnt       ].x;
+		p[1]=balloon.sbuf[RING2(cnt)].x;
+		p[2]=balloon.sbuf[RING3(cnt)].x;
+		balloon.pos.x=spline(balloon.t, p[0], p[1], p[2]);
+	}
+	if (mode&SPLINE_Y) {
+		p[0]=balloon.sbuf[cnt       ].y;
+		p[1]=balloon.sbuf[RING2(cnt)].y;
+		p[2]=balloon.sbuf[RING3(cnt)].y;
+		balloon.pos.y=spline(balloon.t, p[0], p[1], p[2]);
+	}
+	if (mode&SPLINE_Z) {
+		p[0]=balloon.sbuf[cnt       ].z;
+		p[1]=balloon.sbuf[RING2(cnt)].z;
+		p[2]=balloon.sbuf[RING3(cnt)].z;
+		balloon.pos.z=spline(balloon.t, p[0], p[1], p[2]);
+	}
+
+	balloon.t+=0.02f;
+	if (balloon.t>=1.0f) {
+		balloon.t=0.0f;
+
+		balloon.sbuf[balloon.scnt].x=RANGERAND(0.0f, 0.02f, 200)*SIGN;
+		balloon.sbuf[balloon.scnt].y=RANGERAND(0.0f, 0.01f, 200)*SIGN;
+		balloon.sbuf[balloon.scnt].z=RANGERAND(0.0f, 0.01f, 20)*SIGN;
+		balloon.scnt=(balloon.scnt+1>=3?0:balloon.scnt+1);
+	}
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_balloon/nonmatchings/balloon", proc_balloon);
 
