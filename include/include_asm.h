@@ -6,12 +6,13 @@
 #ifndef INCLUDE_ASM
 #define INCLUDE_ASM(FOLDER, NAME) \
     __asm__( \
-        ".section .text\n" \
+        ".pushsection .text\n" \
         "    .set noat\n" \
         "    .set noreorder\n" \
         "    .include \"" FOLDER "/" #NAME ".s\"\n" \
         "    .set reorder\n" \
         "    .set at\n" \
+        ".popsection\n" \
     )
 #endif
 #ifndef INCLUDE_RODATA
