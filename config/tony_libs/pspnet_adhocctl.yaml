@@ -83,7 +83,10 @@ segments:
       - { start: 0x64D0, type: rodata, name: module_info, linker_section: .rodata.sceModuleInfo }
       - { start: 0x6504, type: rodata, name: resident, linker_section: .rodata.sceResident }
       - { start: 0x6690, type: rodata, name: nid, linker_section: .rodata.sceNid }
-      - [0x6768, rodata, rodata]
+      - [0x6768, rodata, asm/rodata_66E8]
+      - [0x6860, .rodata, fixunsdfsi]
+      - [0x6870, .rodata, si_to_df]
+      - [0x6878, rodata, asm/rodata_67F8]
   - name: pspnet_adhocctl_seg1
     type: code
     start: 0x6890

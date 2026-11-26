@@ -20,3 +20,6 @@
 0x05CB0 pack_df          1.5.1.internal  pack_df.c
 0x05F4C unpack_df        1.5.1.internal  unpack_df.c
 0x06068 fpcmp_parts_df   1.5.1.internal  fpcmp_parts_df.c
+rodata 0x67E0 fixunsdfsi   # 2^31 constants of __fixunsdfsi
+rodata 0x67F0 si_to_df     # -2^31 of __floatsidf
+rodata 0x67F8 -            # __thenan_df etc. stay asm
