@@ -15,10 +15,15 @@ struct vector_xyzw {
     vector_xyzw(float x_, float y_, float z_, float w_) : x(x_), y(y_), z(z_), w(w_) {}
 };
 struct matrix {
-    vector_xyzw r0, r1, r2, r3;
+    vector_xyzw r[4];
     matrix() {}
-    matrix(const vector_xyzw &a, const vector_xyzw &b, const vector_xyzw &c, const vector_xyzw &d)
-        : r0(a), r1(b), r2(c), r3(d) {}
+    matrix(vector_xyzw a, vector_xyzw b, vector_xyzw c, vector_xyzw d)
+    {
+        r[0] = a;
+        r[1] = b;
+        r[2] = c;
+        r[3] = d;
+    }
     static const matrix &Identity()
     {
         static const matrix IDENTITY(vector_xyzw(1, 0, 0, 0), vector_xyzw(0, 1, 0, 0),
@@ -94,5 +99,62 @@ public:
 };
 }
 }
+
+namespace sgl {
+/* sgl::RED etc. (an array: the static initializer's store order needs it) */
+struct Color {
+    float c[4];
+    Color(float r, float g, float b, float a)
+    {
+        c[0] = r;
+        c[1] = g;
+        c[2] = b;
+        c[3] = a;
+    }
+};
+}
+
+/* The headers' static objects: every object of the demo constructs those of
+   the headers it includes in its static initializer, in this order (math,
+   <iostream>, sgl colours, interp).  A unit whose static initializer is C++
+   selects them before including main.hpp: DEMO_STATICS_MATH (HERMITE_BASIS,
+   BEZIER_BASIS), DEMO_STATICS_IOSTREAM (std::__ioinit), DEMO_STATICS_SGL (RED..
+   CYAN), DEMO_STATICS_INTERP (CUMULATIVE_BERNSTIEN_BASIS); DEMO_HEADER_STATICS
+   selects all four. */
+#ifdef DEMO_HEADER_STATICS
+#define DEMO_STATICS_MATH
+#define DEMO_STATICS_IOSTREAM
+#define DEMO_STATICS_SGL
+#define DEMO_STATICS_INTERP
+#endif
+#ifdef DEMO_STATICS_MATH
+namespace math {
+static const matrix HERMITE_BASIS(vector_xyzw(2, -2, 1, 1), vector_xyzw(-3, 3, -2, -1),
+                                  vector_xyzw(0, 0, 1, 0), vector_xyzw(1, 0, 0, 0));
+static const matrix BEZIER_BASIS(vector_xyzw(-1, 3, -3, 1), vector_xyzw(3, -6, 3, 0),
+                                 vector_xyzw(-3, 3, 0, 0), vector_xyzw(1, 0, 0, 0));
+}
+#endif
+#ifdef DEMO_STATICS_IOSTREAM
+#include <iostream>
+#endif
+#ifdef DEMO_STATICS_SGL
+namespace sgl {
+static const Color RED = Color(1, 0, 0, 0);
+static const Color GREEN = Color(0, 1, 0, 0);
+static const Color BLUE = Color(0, 0, 1, 0);
+static const Color BLACK = Color(0, 0, 0, 0);
+static const Color WHITE = Color(1, 1, 1, 0);
+static const Color YELLOW = Color(1, 1, 0, 0);
+static const Color MAGENTA = Color(1, 0, 1, 0);
+static const Color CYAN = Color(0, 1, 1, 0);
+}
+#endif
+#ifdef DEMO_STATICS_INTERP
+namespace interp {
+static const math::matrix CUMULATIVE_BERNSTIEN_BASIS(math::vector_xyzw(1, -2, 1, 0), math::vector_xyzw(-3, 3, 0, 0),
+                                                     math::vector_xyzw(3, 0, 0, 0), math::vector_xyzw(0, 0, 0, 0));
+}
+#endif
 
 #endif

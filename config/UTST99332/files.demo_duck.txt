@@ -20,8 +20,8 @@ rodata 0x17AA0C gcc-3.3.3/libstdc__-v3/libsupc__/pure
 rodata 0x17AA28 -
 rodata 0x15DAC0 WaterPatch
 rodata 0x15DB14 -
-# WaterPatch.cpp's mipmap_offset[5] and set_disk's seed are its C++ .bss
-bss 0x18D0E0 WaterPatch
+# WaterPatch.cpp's C++ .bss: the header statics (math::HERMITE_BASIS..), mipmap_offset[5], set_disk's seed
+bss 0x18CF9C WaterPatch
 bss 0x18D0F8 -
 0x0DC98 glut_ReshapeFunc         1.6.1.internal  main_objs/glut_ReshapeFunc.cpp
 0x0E548 app3d_Callbacks          1.6.1.internal  main_objs/app3d_Callbacks.cpp

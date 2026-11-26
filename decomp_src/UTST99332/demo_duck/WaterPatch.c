@@ -2,8 +2,13 @@
 /* cflags: -O3 -fno-exceptions */
 #undef __EXCEPTIONS
 #include "cxx/defer_asm.h"
+#define DEMO_HEADER_STATICS
 #include "main.hpp"
 #include "gl.hpp"
+
+/* the module's .ctors/.dtors (asm) refer to the static constructor/destructor */
+__asm__(".globl _GLOBAL__I__ZN10WaterPatchC2Ejjfiff");
+__asm__(".globl _GLOBAL__D__ZN10WaterPatchC2Ejjfiff");
 
 /* these template instances are still asm below */
 namespace std {
@@ -30,8 +35,6 @@ extern const char WaterPatch_ctor_name[] __asm__("_ZZN10WaterPatchC1EjjfiffE19__
         common::common_internal::on_error(); \
         common::common_internal::clash(); \
     }
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/WaterPatch", _Z41__static_initialization_and_destruction_0ii_3E8);
 
 WaterPatch::WaterPatch(unsigned int nx, unsigned int ny, float size, int mode, float damping, float speed)
     : _nx(nx), _ny(ny), _size(size), _pos(nx * ny), _normal(nx * ny), _vtx0(nx * ny), _vtx1(nx * ny),
@@ -99,7 +102,7 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/WaterPatch", _ZN10WaterPat
 void WaterPatch::drawAsPlane(bool big) const
 {
     glPushMatrix();
-    glMultMatrixf(&_transform.r0.x);
+    glMultMatrixf(&_transform.r[0].x);
     if (big)
         glScalef(1000, 1000, 1000);
     glBegin(GL_QUADS);
@@ -116,7 +119,7 @@ void WaterPatch::drawAsPlane(bool big) const
 void WaterPatch::drawW(bool) const
 {
     glPushMatrix();
-    glMultMatrixf(&_transform.r0.x);
+    glMultMatrixf(&_transform.r[0].x);
     glDisable(GL_LIGHTING);
     glBegin(GL_LINE_LOOP);
     glColor3f(0, 0, 1);
@@ -158,29 +161,75 @@ void WaterPatch::prepareRefraction() const
     psp::vram.copyImageEnd();
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/WaterPatch", _ZNK10WaterPatch4drawENS_4PassE);
+void WaterPatch::draw(Pass) const
+{
+    glPushMatrix();
+    glMultMatrixf(&_transform.r[0].x);
+    if (_ny < 2 || _nx < 2)
+        return;
+    sceGuDisable(5);
+    sceGuTexFlush();
+    glPushAttrib(0x2000);
+    if (_fa4) {
+        sceGuDisable(10);
+        glEnable(0x0DE1);
+        glEnable(0x0BE2);
+        glBlendFunc(0x302, 0x303);
+        char *edram = (char *)sceGeEdramGetAddr();
+        sceGuTexFilter(7, 1);
+        if (!_fa5) {
+            sceGuTexImage(0, 0x80, 0x80, 0x80, edram + mipmap_offset[0]);
+            sceGuTexMode(1, 0, 0, 0);
+        } else {
+            sceGuTexImage(0, 0x100, 0x100, 0x100, edram + mipmap_offset[0]);
+            sceGuTexImage(1, 0x80, 0x80, 0x80, edram + mipmap_offset[1]);
+            sceGuTexImage(2, 0x40, 0x40, 0x40, edram + mipmap_offset[2]);
+            sceGuTexImage(3, 0x20, 0x20, 0x20, edram + mipmap_offset[3]);
+            sceGuTexImage(4, 0x10, 0x10, 0x10, edram + mipmap_offset[4]);
+            sceGuTexMode(1, 4, 0, 0);
+            sceGuTexLevelMode(0, 0);
+        }
+        sceGuTexFunc(0, 0);
+        sceGuTexWrap(1, 1);
+    } else {
+        glDisable(0x0DE1);
+    }
+    const vertex_formats::T2UB_V3F *vtx = &_vtx0[0];
+    sceGuColor(0xC0FFFF40);
+    const unsigned short *idx = &_indices[0];
+    unsigned int n = _nx * 2;
+    for (unsigned int j = 0; j != _ny - 1; j++) {
+        sceGumDrawArray(4, 0x1181, n, idx, vtx);
+        idx += n;
+    }
+    sceGuTexFlush();
+    glPopAttrib();
+    sceGuTexFilter(1, 1);
+    sceGuEnable(5);
+    glPopMatrix();
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/WaterPatch", _ZN10WaterPatch6updateEv);
 
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
-
-extern "C" {
-void static_init_3E8(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_3E8");
-void _GLOBAL__I__ZN10WaterPatchC2Ejjfiff(void);
-void _GLOBAL__D__ZN10WaterPatchC2Ejjfiff(void);
-}
-
-void _GLOBAL__I__ZN10WaterPatchC2Ejjfiff(void)
-{
-    static_init_3E8(1, 0xFFFF);
-}
-
-void _GLOBAL__D__ZN10WaterPatchC2Ejjfiff(void)
-{
-    static_init_3E8(0, 0xFFFF);
-}
+/* The weak template instances: cc1plus puts them in .gnu.linkonce sections,
+   which the linker places after the object's .text (after _GLOBAL__I/D):
+   include their asm into .text's subsection 1 for the same order. */
+#undef INCLUDE_ASM
+#define INCLUDE_ASM(FOLDER, NAME) \
+    extern "C" void NAME##__asm(void) __attribute__((section(".discard.asm"))); \
+    extern "C" void NAME##__asm(void) \
+    { \
+        __asm__( \
+            ".end " #NAME "__asm\n" \
+            ".text 1\n" \
+            "    .set noat\n" \
+            "    .set noreorder\n" \
+            "    .include \"" FOLDER "/" #NAME ".s\"\n" \
+            "    .set reorder\n" \
+            "    .set at\n" \
+            ".section .discard.asm\n" \
+            ".ent " #NAME "__asm\n"); \
+    }
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/WaterPatch", _ZSt26__uninitialized_fill_n_auxIPN4math11vector_xyzwEjS1_ET_S3_T0_RKT1_12__false_type);
 

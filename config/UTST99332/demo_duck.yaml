@@ -406,7 +406,7 @@ segments:
     subsegments:
       - [0x17C200, data, data]
       - { start: 0x18CFCC, type: bss, vram: 0x18CF80, name: bss_18CF80 }
-      - { start: 0x18CFCC, type: .bss, vram: 0x18D0E0, name: WaterPatch }
+      - { start: 0x18CFCC, type: .bss, vram: 0x18CF9C, name: WaterPatch }
       - { start: 0x18CFCC, type: bss, vram: 0x18D0F8, name: bss_18D0F8 }
   - [0x18CFCC, bin, elf_trailer]
   - [0x70AD04]
