@@ -52,6 +52,11 @@ int sceKernelWaitSema(int semid, int signal, unsigned int *timeout);
 
 
 int sceKernelCreateSema(const char *name, unsigned int attr, int init, int max, void *option);
+/* SDK prototypes (tools/sdk_protos.h) */
+int printf(const char *fmt, ...);
+int sceKernelDelayThread(unsigned int delay);
+int sceKernelSignalSema(int semid, int signal);
+
 SceInt32 read_create(t_ringBuffer *pRing, SceMpegRingbuffer *pRB, t_conditionCtrl *pCtrl)
 {
 	pRing->pRingbuf = pRB;

@@ -147,6 +147,9 @@ SceInt32 decode_getReservedVideoAuTimestamp(t_mpegStreamData *pStreamData, SceUI
 SceInt32 decode_getCurrentStream(t_mpegStreamData *pStreamData, SceMpegStrType type);
 
 
+/* SDK prototypes (tools/sdk_protos.h) */
+int puts(const char *s);
+
 SceInt32 decode_create(t_mpegStreamData *pStreamData, SceMpeg *pMpeg)
 {
 	SceInt32 i;
