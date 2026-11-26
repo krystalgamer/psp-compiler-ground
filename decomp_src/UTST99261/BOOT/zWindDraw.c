@@ -115,9 +115,63 @@ void zWindDrawCls(void) {
     _zWindDrawTexClipY2 = ((ZINIT *)&s_windsystem_init)->height;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/zWindDraw", zWindDrawClipSet);
+void zWindDrawClipSet(int x, int y, int w, int h) {
+    if (x > _zWindDrawTexWidth || x + w < 0 || y > _zWindDrawTexHeight || y + h < 0) {
+        return;
+    }
+    if (x < 0) {
+        w = x + w;
+        x = 0;
+    }
+    if (x + w > _zWindDrawTexWidth) {
+        w = _zWindDrawTexWidth - x;
+    }
+    if (y < 0) {
+        h = h + y;
+        y = 0;
+    }
+    if (y + h > _zWindDrawTexHeight) {
+        h = _zWindDrawTexHeight - y;
+    }
+    _zWindDrawTexClipX = x;
+    _zWindDrawTexClipY = y;
+    _zWindDrawTexClipWidth = w;
+    _zWindDrawTexClipHeight = h;
+    _zWindDrawTexClipX2 = x + w;
+    _zWindDrawTexClipY2 = y + h;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/zWindDraw", zWindDrawClipSetTex);
+void zWindDrawClipSetTex(int tex, int x, int y, int w, int h, int texw, int texh) {
+    _zWindDrawTexdata = tex;
+    _zWindDrawTexWidth = texw;
+    _zWindDrawTexHeight = texh;
+    if (x > texw || x + w < 0) {
+        return;
+    }
+    if (y > texh || y + h < 0) {
+        return;
+    }
+    if (x < 0) {
+        w = x + w;
+        x = 0;
+    }
+    if (x + w > _zWindDrawTexWidth) {
+        w = _zWindDrawTexWidth - x;
+    }
+    if (y < 0) {
+        h = h + y;
+        y = 0;
+    }
+    if (y + h > _zWindDrawTexHeight) {
+        h = _zWindDrawTexHeight - y;
+    }
+    _zWindDrawTexClipX = x;
+    _zWindDrawTexClipY = y;
+    _zWindDrawTexClipWidth = w;
+    _zWindDrawTexClipHeight = h;
+    _zWindDrawTexClipX2 = x + w;
+    _zWindDrawTexClipY2 = y + h;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -176,7 +230,28 @@ void zWindDrawBoxP(int x1, int y1, int x2, int y2, s16 color) {
     zWindDrawBox(x1, y1, x2 - x1, y2 - y1, color);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/zWindDraw", zWindDrawLineW);
+void zWindDrawLineW(int x, int y, int len, short color) {
+    u16 *p;
+    int x2;
+
+    if (x > _zWindDrawTexClipX2 || x + len <= _zWindDrawTexClipX || y < _zWindDrawTexClipY || y >= _zWindDrawTexClipY2) {
+        return;
+    }
+    if (x < _zWindDrawTexClipX) {
+        len -= _zWindDrawTexClipX - x;
+        x = _zWindDrawTexClipX;
+    }
+    if (x + len >= _zWindDrawTexClipX2) {
+        len = _zWindDrawTexClipX2 - x - 1;
+    }
+    x2 = x + len;
+    p = (u16 *)_zWindDrawTexdata;
+    p += x + y * _zWindDrawTexWidth;
+    color |= 0x8000;
+    for (; x <= x2; x++) {
+        *p++ = color;
+    }
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/zWindDraw", zWindDrawLineH);
 
