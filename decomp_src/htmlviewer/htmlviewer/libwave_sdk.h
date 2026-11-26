@@ -3,7 +3,7 @@
 
 typedef struct {
 	void *data;
-	unsigned int size;
+	int size;
 	int vol_l;
 	int vol_r;
 	int unk10;
@@ -64,7 +64,7 @@ static int func_00006440(char *buf);
 static int func_00006628(short *dst, unsigned char *src, int *h1, int *h2);
 static void func_0000676C(int ch, void *dst);
 static void func_00006A18(int ch, void *dst);
-static void func_00006F88(int ch, void *buf, void *src);
+static void func_00006F88(int ch, short *out, short *src);
 static int func_00006324(unsigned int args, void *argp);
 
 
