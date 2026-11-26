@@ -183,13 +183,72 @@ static void level_initialize();
 static void next_level();
 static void show_level_mission();
 char *strncpy(char *dst, const char *src, unsigned int n);
-/* print_nothing() is used without a declaration, as in the original (DWARF) */
 
 
 extern int D_00065EAC;
 
 
-INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/level", load_data);
+static void load_data()
+{
+	strncpy(l_mod_player.player_name, mod_player.player_name[mod_player.active_player], 12);
+	if (mod_game.game_type == 1) {
+		l_mod_player.level = mod_player.level[mod_player.active_player];
+		l_mod_player.player_party = mod_player.player_party[mod_player.active_player];
+		l_mod_player.player_character = mod_player.player_character[mod_player.active_player];
+		l_mod_player.win = mod_player.win[mod_player.active_player];
+		l_mod_player.lose = mod_player.lose[mod_player.active_player];
+		l_mod_player.hidden_character = mod_player.hidden_character[mod_player.active_player];
+		l_mod_player.hidden_game_rest = mod_player.hidden_game_rest[mod_player.active_player];
+
+		int index, i, c, p;
+		int tmpParty[4] = { 0 };
+
+		for (i = 0, c = 0; i < 5; i++) {
+			p = g_enemy_party[i];
+			if (p != l_mod_player.player_party)
+				tmpParty[c++] = p;
+		}
+		index = (l_mod_player.level - 1) / 3;
+		g_opp_party[0] = tmpParty[index];
+		g_opp_char[0] = 2 - (l_mod_player.level - 1) % 3;
+		l_mod_player.my_money = mod_player.my_money[mod_player.active_player];
+		l_mod_player.opp_money = mod_player.opp_money[mod_player.active_player];
+		memcpy(g_level_mission, g_level_mission_list[mod_player.level[mod_player.active_player] - 1], sizeof(g_level_mission));
+		memcpy(l_mod_player.success_level_mission, mod_player.success_level_mission[mod_player.active_player], sizeof(l_mod_player.success_level_mission));
+		g_bet_money = g_level_bet_money[mod_player.level[mod_player.active_player] - 1];
+	} else if (mod_game.game_type == 2) {
+		l_mod_player.level = mod_player.level[mod_player.active_player];
+		l_mod_player.player_party = mod_player.player_party[mod_player.active_player];
+		l_mod_player.player_character = mod_player.player_character[mod_player.active_player];
+		g_opp_party[0] = mod_game.opp_party;
+		g_opp_char[0] = mod_game.opp_character;
+		if (g_opp_char[0] == 0) {
+			g_bet_money = 50000;
+			l_mod_player.my_money = 20000000;
+			l_mod_player.opp_money = 500000000;
+		} else if (g_opp_char[0] == 1) {
+			g_bet_money = 10000;
+			l_mod_player.my_money = 3000000;
+			l_mod_player.opp_money = 50000000;
+		} else {
+			g_bet_money = 1000;
+			l_mod_player.my_money = 250000;
+			l_mod_player.opp_money = 5000000;
+		}
+	} else if (mod_game.game_type == 3) {
+		l_mod_player.level = mod_player.level[mod_player.active_player];
+		l_mod_player.player_party = mod_player.player_party[mod_player.active_player];
+		l_mod_player.player_character = mod_player.player_character[mod_player.active_player];
+		g_opp_party[0] = mod_game.opp_party;
+		g_opp_char[0] = mod_game.opp_character;
+		g_bet_money = mod_game.bet;
+		g_end_condition = mod_game.play_time;
+		l_mod_player.my_money = mod_game.money;
+		l_mod_player.opp_money = mod_game.opp_money;
+	}
+}
+
+__asm__(".globl load_data");
 
 static void update_data()
 {
