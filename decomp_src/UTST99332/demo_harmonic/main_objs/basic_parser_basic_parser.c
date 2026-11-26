@@ -55,7 +55,11 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/basic_parser
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/basic_parser_basic_parser", _ZN12basic_parser12pop_bookmarkEv);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/basic_parser_basic_parser", _ZN12basic_parser11clear_c_strEv);
+void basic_parser::clear_c_str()
+{
+    _c_str_cleared = true;
+    *_c_str.addr() = 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/basic_parser_basic_parser", _ZNK12basic_parser5c_strEv);
 

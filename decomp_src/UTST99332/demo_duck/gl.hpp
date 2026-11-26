@@ -25,6 +25,7 @@ void glTranslatef(GLfloat, GLfloat, GLfloat);
 void glClearColor(GLfloat, GLfloat, GLfloat, GLfloat);
 void glGenTextures(int, unsigned int *);
 void glDeleteTextures(int, const unsigned int *);
+int glGetError(void);
 }
 #define GL_LINE_LOOP 0x0002
 #define GL_QUADS 0x0007

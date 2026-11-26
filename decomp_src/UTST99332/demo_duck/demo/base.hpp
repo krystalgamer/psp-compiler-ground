@@ -630,8 +630,11 @@ class basic_parser {
 public:
     void watch_tp(unsigned int);
     void expect_eof(bool);
-    char _pad0[0x45];
-    bool _expect_eof;           /* 0x45 */
+    void clear_c_str();
+    char _pad0[0x30];
+    common::t_array<char> _c_str;   /* 0x30 */
+    bool _c_str_cleared;            /* 0x44 */
+    bool _expect_eof;               /* 0x45 */
 };
 
 class CCmpr {
@@ -665,6 +668,7 @@ namespace gl_ext {
 extern bool use_extensions;
 bool Enabled();
 void Toggle();
+void VAIOBugCheck();
 }
 
 /* accessors (generated from the asm; members named by offset) */
