@@ -248,7 +248,63 @@ void PlaySE(int num)
 
 INCLUDE_RODATA("tmp/asm/UTST99332/menu/nonmatchings/main", D_00016F80);
 
-INCLUDE_ASM("tmp/asm/UTST99332/menu/nonmatchings/main", InitFunc);
+extern const ScePspIMatrix4 D_00016F80;
+static void InitFunc(void)
+{
+	const ScePspIMatrix4 dith = D_00016F80;
+	ScePspFVector3 vec;
+
+	InitSE();
+	sceCtrlSetSamplingMode(1);
+	sceGuInit();
+	sceGuStart(0, displist, sizeof(displist));
+	sceGuDrawBuffer(3, (void *)0, 512);
+	sceGuDispBuffer(480, 272, (void *)0x88000, 512);
+	sceGuDepthBuffer((void *)0x110000, 512);
+	sceGuOffset(2048 - 480 / 2, 2048 - 272 / 2);
+	sceGuViewport(2048, 2048, 480, 272);
+	sceGuDepthRange(50000, 10000);
+	sceGuScissor(0, 0, 480, 272);
+	sceGuEnable(2);
+	sceGuDepthFunc(7);
+	sceGuEnable(1);
+	sceGuBlendFunc(0, 2, 3, 0, 0);
+	sceGuEnable(4);
+	sceGuAlphaFunc(6, 0, 0xff);
+	sceGuDisable(0);
+	sceGuFrontFace(0);
+	sceGuDisable(9);
+	sceGuSetDither(&dith);
+	sceGuEnable(6);
+	sceGuEnable(8);
+	sceGuShadeModel(1);
+	vec.x = 0.614497f;
+	vec.y = 0.691714f;
+	vec.z = 0.379372f;
+	sceGuLightColor(2, 2, 0xff808080);
+	sceGuLight(2, 0, 2, &vec);
+	sceGuEnable(13);
+	sceGuEnable(10);
+	sceGuSpecular(30.0f);
+	sceGuDisable(7);
+	sceGuAmbient(0xff808080);
+	sceGuColor(0xffffffff);
+	sceGumSetMatrixStack(matrix_stack, 8, 8, 32, 0);
+	sceGumMatrixMode(0);
+	sceGumLoadIdentity();
+	sceGumPerspective(0.7853982f, 1.7647059f, 1.0f, 1000.0f);
+	sceGumMatrixMode(2);
+	sceGuClearColor(0xffffff);
+	sceGuClearDepth(0);
+	sceGuClearStencil(0);
+	sceGuTexWrap(0, 0);
+	sceGuTexFilter(0, 0);
+	sceGuTexFunc(0, 1);
+	sceGuFinish();
+	sceGuSync(0, 0);
+	sceDisplayWaitVblankStart();
+	sceGuDisplay(1);
+}
 
 void sceKernelDcacheWritebackInvalidateRange(const void *p, unsigned int size);
 void DrawSprite(float x, float y, float w, float h, int u, int v)
