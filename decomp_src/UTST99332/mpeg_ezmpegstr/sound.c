@@ -178,7 +178,36 @@ SceInt32 soundbuf_reset(t_soundBuffer *pSound)
 	return 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/mpeg_ezmpegstr/nonmatchings/sound", soundbuf_delete);
+SceInt32 soundbuf_delete(t_soundBuffer *pSound)
+{
+	SceInt32 i;
+
+	sceWaveExit();
+
+	sceKernelDeleteSema(pSound->lock_sema);
+	sceKernelDeleteEventFlag(pSound->status_flag);
+
+	if (pSound->buf != NULL) {
+		for (i = 0; i < pSound->size; i++) {
+			if (pSound->buf[i] != NULL) {
+				free(pSound->buf[i]);
+			}
+		}
+		free(pSound->buf);
+	}
+
+	if (pSound->pts != NULL) {
+		free(pSound->pts);
+	}
+
+	for (i = 0; i < 2; i++) {
+		if (output_buf[i] != NULL) {
+			free(output_buf[i]);
+		}
+	}
+
+	return 0;
+}
 
 int soundbuf_getDrawbuf(t_soundBuffer *pSound, signed char **buffer) {
     int temp_v0;
