@@ -271,7 +271,66 @@ void setImageToBoxBuffer(BOX *b, void *image) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_image", setImageInBox);
+BOX *getParentBlockBox(BOX *b);
+int getContainingBlockWidth(BOX *b);
+
+int setImageInBox(BOX *b, void *img, int w, int h) {
+    int *g;
+    int *st;
+    int ow;
+    int oh;
+    int nw;
+    int nh;
+    int f;
+    int changed;
+    BOX *p;
+
+    changed = 0;
+    setImageToBoxBuffer(b, img);
+    if (b->content != 10) {
+        return 0;
+    }
+    getContainingBlockWidth(getParentBlockBox(b));
+    g = (int *)b->geom;
+    ow = g[1];
+    oh = g[2];
+    nw = w;
+    st = (int *)b->style;
+    f = st[5];
+    nh = h;
+    if ((f & 3) == 1) {
+        nw = st[6];
+        if ((((u32)f & 0xC) >> 2) == 1) {
+            nh = st[7];
+        } else if (!(st[5] & 0xC)) {
+            nh = h * st[6] / w;
+        }
+    } else if (((((u32 *)b->style)[5] & 0xC) >> 2) == 1) {
+        nh = ((int *)b->style)[7];
+        if (!(((int *)b->style)[5] & 3)) {
+            nw = w * nh / h;
+        }
+    } else if (!(((int *)b->style)[5] & 3)) {
+        if (!(((int *)b->style)[5] & 0xC)) {
+            nw = w;
+            nh = h;
+        }
+    }
+    ((int *)b->geom)[3] = w;
+    ((int *)b->geom)[4] = h;
+    ((int *)b->geom)[1] = nw;
+    ((int *)b->geom)[2] = nh;
+    if (ow != nw || oh != nh) {
+        for (p = b->parent; p != NULL; p = p->parent) {
+            if (p->content == 4 || p->content == 6) {
+                ((u16 *)p)[0x20] |= 1;
+            }
+        }
+        changed = 1;
+        ((u16 *)b)[0x20] |= 4;
+    }
+    return changed;
+}
 
 void imageProperty(void *img, int *w, int *h);
 int setImageInBox(BOX *b, void *img, int w, int h);
