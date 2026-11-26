@@ -259,9 +259,27 @@ INCLUDE_ASM("tmp/asm/UTST99332/utility_basic/nonmatchings/main", CreateMenu_Root
 
 INCLUDE_RODATA("tmp/asm/UTST99332/utility_basic/nonmatchings/main", D_000149B8);
 
-INCLUDE_ASM("tmp/asm/UTST99332/utility_basic/nonmatchings/main", CreateMenu_SaveData);
+void CreateMenu_SaveData(void) {
+    Menu_ClearItems();
+    Menu_AppendItem("0 : Auto Load", OnPush_SaveData_0);
+    Menu_AppendItem("1 : Auto Save", OnPush_SaveData_1);
+    Menu_AppendItem("2 : Load", OnPush_SaveData_2);
+    Menu_AppendItem("3 : Save", OnPush_SaveData_3);
+    Menu_AppendItem("4 : List Load", OnPush_SaveData_4);
+    Menu_AppendItem("5 : List Save", OnPush_SaveData_5);
+    Menu_AppendItem("6 : List Delete", OnPush_SaveData_6);
+    Menu_AppendItem("7 : Delete", OnPush_SaveData_7);
+    Menu_AppendItem("8 : Sizes", OnPush_SaveData_8);
+    Menu_SetCancelCallback(OnCancel_SaveData);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/utility_basic/nonmatchings/main", OnPush_OSK);
+void OnPush_OSK(int selection) {
+    Menu_WriteLine("OnPush_OSK", 0xFFFFFF);
+    Menu_LockInput();
+    sample_type = 2;
+    setOskUtilityPraram(4U, aMessageStringList, aInitStringList, aResultStringList, 0x20U, oskInputFieldInfo, &osk_param);
+    sceUtilityOskInitStart(&osk_param);
+}
 
 void OnPush_SaveData(int selection)
 {
@@ -287,11 +305,17 @@ INCLUDE_ASM("tmp/asm/UTST99332/utility_basic/nonmatchings/main", OnPush_SaveData
 
 INCLUDE_ASM("tmp/asm/UTST99332/utility_basic/nonmatchings/main", OnPush_SaveData_8);
 
-INCLUDE_ASM("tmp/asm/UTST99332/utility_basic/nonmatchings/main", OnCancel_SaveData);
+void OnCancel_SaveData(int selection) {
+    Menu_WriteLine("OnCancel_SaveData", 0xFFFFFF);
+    CreateMenu_Root();
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/utility_basic/nonmatchings/main", OnPush_Exit);
 
-INCLUDE_ASM("tmp/asm/UTST99332/utility_basic/nonmatchings/main", ExitFunction_1068);
+int ExitFunction_1068(void) {
+    sceKernelExitGame();
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/utility_basic/nonmatchings/main", sub_thread);
 

@@ -136,7 +136,16 @@ static void OnPush_MsgDialogNumber(int selection)
     ret = sceUtilityMsgDialogInitStart(&msgdialog_param);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/utility_basic/nonmatchings/msgdialog", OnPush_MsgDialogString);
+void OnPush_MsgDialogString(int selection) {
+    Menu_ClearItems();
+    Menu_AppendItem("0 : DialogType Normal", OnPush_MsgDialogNormal);
+    Menu_AppendItem("1 : DialogType Normal_YesNo_Default_Yes", OnPush_MsgDialogNormal_YesNo_Yes);
+    Menu_AppendItem("2 : DialogType Normal_YesNo_Default_No", OnPush_MsgDialogNormal_YesNo_No);
+    Menu_AppendItem("3 : DialogType Error", OnPush_MsgDialogError);
+    Menu_AppendItem("4 : DialogType Error_YesNo_Default_Yes", OnPush_MsgDialogError_YesNo_Yes);
+    Menu_AppendItem("5 : DialogType Error_YesNo_Default_No", OnPush_MsgDialogError_YesNo_No);
+    Menu_SetCancelCallback(OnCancel_MsgDialog);
+}
 
 static void OnPush_MsgDialogNormal(int selection)
 {

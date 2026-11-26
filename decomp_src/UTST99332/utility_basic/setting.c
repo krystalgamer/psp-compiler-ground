@@ -39,25 +39,64 @@ static void OnCancel_ChangeSetting(int selection)
     CreateMenu_Root();
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/utility_basic/nonmatchings/setting", OnPush_Japanese);
+void OnPush_Japanese(int selection) {
+    g_lang = selection;
+    Menu_WriteLine("OnPush_Japanese", 0xFFFFFF);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/utility_basic/nonmatchings/setting", OnPush_English);
+void OnPush_English(int selection) {
+    g_lang = selection;
+    Menu_WriteLine("OnPush_English", 0xFFFFFF);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/utility_basic/nonmatchings/setting", OnPush_French);
+void OnPush_French(int selection) {
+    g_lang = selection;
+    Menu_WriteLine("OnPush_French", 0xFFFFFF);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/utility_basic/nonmatchings/setting", OnPush_Spanish);
+void OnPush_Spanish(int selection) {
+    g_lang = selection;
+    Menu_WriteLine("OnPush_Spanish", 0xFFFFFF);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/utility_basic/nonmatchings/setting", OnPush_German);
+void OnPush_German(int selection) {
+    g_lang = selection;
+    Menu_WriteLine("OnPush_German", 0xFFFFFF);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/utility_basic/nonmatchings/setting", OnPush_Italian);
+void OnPush_Italian(int selection) {
+    g_lang = selection;
+    Menu_WriteLine("OnPush_Italian", 0xFFFFFF);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/utility_basic/nonmatchings/setting", OnPush_Dutch);
+void OnPush_Dutch(int selection) {
+    g_lang = selection;
+    Menu_WriteLine("OnPush_Dutch", 0xFFFFFF);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/utility_basic/nonmatchings/setting", OnPush_Portuguese);
+void OnPush_Portuguese(int selection) {
+    g_lang = selection;
+    Menu_WriteLine("OnPush_Portuguese", 0xFFFFFF);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/utility_basic/nonmatchings/setting", OnPush_Russian);
+void OnPush_Russian(int selection) {
+    g_lang = selection;
+    Menu_WriteLine("OnPush_Russian", 0xFFFFFF);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/utility_basic/nonmatchings/setting", OnPush_ChangeLang);
+void OnPush_ChangeLang(int selection) {
+    Menu_ClearItems();
+    Menu_AppendItem("japanese", OnPush_Japanese);
+    Menu_AppendItem("english", OnPush_English);
+    Menu_AppendItem("french", OnPush_French);
+    Menu_AppendItem("spanish", OnPush_Spanish);
+    Menu_AppendItem("german", OnPush_German);
+    Menu_AppendItem("italian", OnPush_Italian);
+    Menu_AppendItem("dutch", OnPush_Dutch);
+    Menu_AppendItem("portuguese", OnPush_Portuguese);
+    Menu_AppendItem("russian", OnPush_Russian);
+    Menu_SetCancelCallback(OnPush_ChangeSetting);
+}
 
 int GetMessageLang(void) {
     return g_lang;
@@ -75,4 +114,6 @@ static void OnPush_ChangeAssign(int selection)
     Menu_SetCancelCallback(OnPush_ChangeSetting);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/utility_basic/nonmatchings/setting", GetAssign);
+int GetAssign(void) {
+    return g_assing;
+}
