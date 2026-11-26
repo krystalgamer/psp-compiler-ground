@@ -489,9 +489,71 @@ static int func_00005C5C(int prio)
 	return 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/sound_starsound/nonmatchings/libwave", func_00005D00);
+extern char D_0008BFB4[2][0x700];
+static int func_00005E1C(char *buf);
 
-INCLUDE_ASM("tmp/asm/UTST99332/sound_starsound/nonmatchings/libwave", func_00005E1C);
+static int func_00005D00(unsigned int args, void *argp)
+{
+	SceWaveMain *m = (SceWaveMain *)argp;
+	int i = 0;
+	int j;
+
+	while (D_0008BF30 == 0) {
+		if (func_00005E1C(D_0008BFB4[i]) == 0) {
+			sceKernelDelayThread(10000);
+			continue;
+		}
+		for (j = 1; j < 16; j++)
+			func_00005E1C(D_0008BFB4[i] + j * 0x70);
+		sceAudioOutputBlocking(m->ch, 0x8000, D_0008BFB4[i]);
+		i = (i + 1) % 2;
+	}
+	sceAudioOutputBlocking(m->ch, 0, NULL);
+	sceKernelExitThread(0);
+	return 0;
+}
+
+static void func_00005FF4(void *dst, void *src, int *a, int *b);
+static void func_00006138(int ch, void *buf);
+static void func_000063D4(int ch, void *buf);
+static void func_000068EC(int ch, char *dst, void *src);
+typedef int (*SceWaveCallback)(int ch, void *buf, int size, int arg);
+
+static int func_00005E1C(char *buf)
+{
+	int ch;
+	int n = 0;
+
+	wclr(buf, 0x70);
+	for (ch = 0; ch < 8; ch++) {
+		if (D_0008CDB4[ch].stat == 0)
+			continue;
+		n++;
+		if (!(D_0008CDB4[ch].flags & 0x400)) {
+			if (!(D_0008CDB4[ch].flags & 0x100)) {
+				if (D_0008CDB4[ch].data != NULL)
+					func_00006138(ch, D_0008D284);
+			} else {
+				if (D_0008CDB4[ch].data != NULL)
+					func_000063D4(ch, D_0008D284);
+			}
+		} else {
+			if (D_0008CDB4[ch].unk44 != 0) {
+				wclr(D_0008D284, 0x70);
+				if (!(D_0008CDB4[ch].flags & 0x100)) {
+					if (((SceWaveCallback)D_0008CDB4[ch].unk44)(ch, D_0008D280, 0x10, D_0008CDB4[ch].unk48))
+						D_0008CDB4[ch].stat = 0;
+					func_00005FF4(D_0008D284, D_0008D280, &D_0008CDB4[ch].unk30, &D_0008CDB4[ch].unk34);
+				} else {
+					if (((SceWaveCallback)D_0008CDB4[ch].unk44)(ch, D_0008D284, 0x70, D_0008CDB4[ch].unk48))
+						D_0008CDB4[ch].stat = 0;
+				}
+			}
+		}
+		func_000068EC(ch, buf, D_0008D284);
+	}
+	return n;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/sound_starsound/nonmatchings/libwave", func_00005FF4);
 
