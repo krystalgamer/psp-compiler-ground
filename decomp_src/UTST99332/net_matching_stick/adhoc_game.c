@@ -311,9 +311,95 @@ static void rot_trans_pers(ScePspFVector3 *in, ScePspIVector2 *out)
 	out->y = (int)((-SCEGU_SCR_HEIGHT/2)*tmp2.y/tmp2.w+SCEGU_SCR_HEIGHT/2);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_matching_stick/nonmatchings/adhoc_game", draw_string);
+char *strncpy(char *d, const char *s, unsigned int n);
+static void draw_string(void)
+{
+	ScePspIVector2	vec;
+	MODEL			*p;
+	char			str[128];
+	int				i;
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_matching_stick/nonmatchings/adhoc_game", set_object);
+	for (i=0; i<17; i++) {
+		if (obj[i].detect==0)
+			continue;
+		p = &model[obj[i].y*50+obj[i].x];
+		rot_trans_pers(&p->vtx, &vec);
+		strncpy(str, (char *)nickname[i].data, 128);
+		sceGuDebugPrint(vec.x-16, vec.y-8, obj[i].c, str) ;
+	}
+}
+
+static void set_object(float *analog)
+{
+	MODEL		*p;
+	int			i,j;
+	int			n;
+	float		h;
+	u_int32		c;
+
+	const	int	tbl_m[9]={
+		-50-1,
+		-50,
+		-50+1,
+		-1,
+		 0,
+		 1,
+		 50-1,
+		 50,
+		 50+1,
+	};
+
+	const	int	tbl_c[12]={
+		-50*2-1,
+		-50*2,
+		-50*2+1,
+		-50-2,
+		-50+2,
+		-2,
+		 2,
+		 50-2,
+		 50+2,
+		 50*2+1,
+		 50*2,
+		 50*2-1,
+	};
+
+	for (i=0; i<2500; i++) {
+		p=&model[i];
+		p->vtx.x=((float)-(50/2)+(float)(i%50))*0.3f;
+		p->vtx.y=((float) (50/2)-(float)(i/50))*0.3f;
+		p->vtx.z=0.0f;
+
+		p->c=room_color_val[_mrinfo.agreed_hello_opt->game_param.color];
+	}
+
+	for (i=0; i<17; i++) {
+		if (obj[i].detect==0)
+			continue;
+
+		n=obj[i].y*50+obj[i].x;
+		c=obj[i].c;
+		h=obj[i].high*(!obj[i].comp?1.0f:0.5f);
+		for (j=0; j<9; j++) {
+			p=&model[n+tbl_m[j]];
+			if (i==0) {
+				p->vtx.x+=analog[0];
+				p->vtx.y+=analog[1];
+			} else {
+				p->vtx.x+=obj[i].vtx_x;
+				p->vtx.y+=obj[i].vtx_y;
+			}
+			p->vtx.z=h;
+			p->c=c;
+		}
+		for (j=0; j<12; j++) {
+			p=&model[n+tbl_c[j]];
+			p->c=c;
+		}
+	}
+
+	sceKernelDcacheWritebackAll();
+}
 
 void draw_model(void) {
     sceGumPushMatrix();
@@ -323,37 +409,300 @@ void draw_model(void) {
     sceGumPopMatrix();
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_matching_stick/nonmatchings/adhoc_game", draw_game);
+extern short int board_876C4[2][3];
+void *memcpy(void *d, const void *s, unsigned int n);
+void sceGuDrawArray(int prim, int vtype, int count, const void *indices, const void *vertices);
+void draw_game(void)
+{
+	char buf[9];
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_matching_stick/nonmatchings/adhoc_game", init_param);
+	sceGumPushMatrix();
+	sceGumLoadIdentity();
+	sceGumTranslate(&world.pos);
+	sceGumRotateX(world.rot.x * 3.14159265358979323846f / 180.0f);
+	sceGumRotateY(world.rot.y * 3.14159265358979323846f / 180.0f);
+	sceGumRotateZ(world.rot.z * 3.14159265358979323846f / 180.0f);
+	draw_model();
+	sceGumPopMatrix();
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_matching_stick/nonmatchings/adhoc_game", game_re_init_gu);
+	if (display_menu) {
+		char line_buff[64];
+		int i, j;
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_matching_stick/nonmatchings/adhoc_game", game_pad_read);
+		if (display_menu & 1) {
+			board_876C4[0][0] = 4;
+			board_876C4[0][1] = 4;
+			board_876C4[0][2] = 0;
+			board_876C4[1][0] = 240;
+			board_876C4[1][1] = 60;
+			board_876C4[1][2] = 0;
+			sceGuColor(0x90000000);
+			sceGuDrawArray(6, 0x800100, 2, NULL, board_876C4);
 
-INCLUDE_RODATA("tmp/asm/UTST99332/net_matching_stick/nonmatchings/adhoc_game", D_00019478);
+			sprintf(line_buff, "MAC addr  :%s", etherstr);
+			sceGuDebugPrint(8, 8, 0x00ffffff, line_buff);
 
-INCLUDE_RODATA("tmp/asm/UTST99332/net_matching_stick/nonmatchings/adhoc_game", D_0001947C);
+			memcpy(buf, adhocctl_param.group_name.data, 8);
+			buf[8] = '\0';
+			sprintf(line_buff, "group_name:%s", buf);
+			sceGuDebugPrint(8, 24, 0x00ffffff, line_buff);
+			sprintf(line_buff, "channel   :%d", adhocctl_param.channel);
+			sceGuDebugPrint(8, 32, 0x00ffffff, line_buff);
+			sprintf(line_buff, "BSSID     :%02x:%02x:%02x:%02x:%02x:%02x",
+				adhocctl_param.bssid.data[0],
+				adhocctl_param.bssid.data[1],
+				adhocctl_param.bssid.data[2],
+				adhocctl_param.bssid.data[3],
+				adhocctl_param.bssid.data[4],
+				adhocctl_param.bssid.data[5]);
+			sceGuDebugPrint(8, 40, 0x00ffffff, line_buff);
+			sprintf(line_buff, "nickname  :%s", adhocctl_param.nickname.data);
+			sceGuDebugPrint(8, 48, 0x00ffffff, line_buff);
+		} else {
+			for (i = 0, j = 1; i < peer_num; j++, i++) {
+				sprintf(line_buff, "%02x:%02x:%02x:%02x:%02x:%02x => %2u / 60",
+					peer_addr[i].data[0], peer_addr[i].data[1], peer_addr[i].data[2],
+					peer_addr[i].data[3], peer_addr[i].data[4], peer_addr[i].data[5],
+					rcvpkt[i + 1].last_c);
+				sceGuDebugPrint(8, j * 8, 0x00ffffff, line_buff);
+			}
+			if (j >= 2) {
+				board_876C4[0][0] = 4;
+				board_876C4[0][1] = 4;
+				board_876C4[0][2] = 0;
+				board_876C4[1][0] = 240;
+				board_876C4[1][1] = j * 8 + 8;
+				board_876C4[1][2] = 0;
+				sceGuColor(0x90000000);
+				sceGuDrawArray(6, 0x800100, 2, NULL, board_876C4);
+			}
+		}
+	}
+}
 
-INCLUDE_RODATA("tmp/asm/UTST99332/net_matching_stick/nonmatchings/adhoc_game", D_00019480);
+static void init_param(void)
+{
+	int i;
 
-INCLUDE_RODATA("tmp/asm/UTST99332/net_matching_stick/nonmatchings/adhoc_game", D_000194A4);
+	world.pos.x=world.pos.y=world.pos.z=0.0f;
+	world.rot.x=world.rot.y=world.rot.z=0.0f;
 
-INCLUDE_RODATA("tmp/asm/UTST99332/net_matching_stick/nonmatchings/adhoc_game", D_000194D4);
+	world.pos.z=-10.0f;
+	world.rot.x=300.0f;
+	last_v = 0;
 
-INCLUDE_RODATA("tmp/asm/UTST99332/net_matching_stick/nonmatchings/adhoc_game", D_00019500);
+	obj[0].x=3*7;
+	obj[0].y=3*6;
+	obj[0].c=0xff0000ff;
+	obj[0].comp=0;
+	obj[0].high=2.0f;
+	obj[0].detect = 1;
+	obj[0].last_v = 0;
 
-INCLUDE_RODATA("tmp/asm/UTST99332/net_matching_stick/nonmatchings/adhoc_game", D_00019510);
+	for (i=1; i<17; i++) {
+		obj[i].high = 2.0f;
+		obj[i].vtx_x = 0.0f;
+		obj[i].vtx_y = 0.0f;
+		obj[i].last_v = 0;
+		obj[i].detect = 0;
+		rcvpkt[i].counter = 0;
+		rcvpkt[i].last_c = 0;
+	}
+}
 
-INCLUDE_RODATA("tmp/asm/UTST99332/net_matching_stick/nonmatchings/adhoc_game", D_00019520);
+extern char disp_list_6C300[65536];
+int game_re_init_gu(void)
+{
+	ScePspFVector3	vec;
+	int				ret;
 
-INCLUDE_RODATA("tmp/asm/UTST99332/net_matching_stick/nonmatchings/adhoc_game", D_00019530);
+	sceGuTerm();
+	sceGuInit();
 
-INCLUDE_RODATA("tmp/asm/UTST99332/net_matching_stick/nonmatchings/adhoc_game", D_0001955C);
+	sceGuStart(0, disp_list_6C300, sizeof(disp_list_6C300));
+	sceGuDrawBuffer(1, (void *)0, 512);
+	sceGuDispBuffer(SCEGU_SCR_WIDTH, SCEGU_SCR_HEIGHT,
+					(void *)0x44000, 512);
+	sceGuDepthBuffer((void *)0x88000, 512);
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_matching_stick/nonmatchings/adhoc_game", game_net_init);
+	sceGuOffset(1808, 1912);
+	sceGuViewport(2048, 2048, SCEGU_SCR_WIDTH, SCEGU_SCR_HEIGHT);
+	sceGuDepthRange(50000, 10000);
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_matching_stick/nonmatchings/adhoc_game", game_net_term);
+	sceGuScissor(0, 0, SCEGU_SCR_WIDTH, SCEGU_SCR_HEIGHT);
+	sceGuEnable(2);
+
+	sceGuDepthFunc(7);
+	sceGuEnable(1);
+
+	sceGuEnable(8);
+	sceGuEnable(16);
+	sceGuShadeModel(1);
+
+	sceGuEnable(20);
+	sceGuPatchDivide(16, 16);
+
+	vec.x=0.614497f;
+	vec.y=0.691714f;
+	vec.z=0.379372f;
+	sceGuLightColor(0, 2, 0xffffffff);
+	sceGuLight(0, 0, 2, &vec);
+	sceGuEnable(11);
+	sceGuEnable(10);
+
+	sceGuAmbient(0xffc0c0c0);
+
+	sceGumSetMatrixStack(&matrix_stack[0], 8, 8, 32, 0);
+
+	sceGumMatrixMode(SCEGU_MATRIX_PROJECTION);
+	sceGumLoadIdentity();
+	sceGumPerspective((45.0f*3.14159265358979323846f/180.0f), ((float)480/(float)272),
+					1.000000f, 100.000000f);
+
+	sceGumMatrixMode(SCEGU_MATRIX_WORLD);
+
+	sceGuClearColor(0x00202020);
+	sceGuClearDepth(0);
+	sceGuClearStencil(0);
+
+	sceGuFinish();
+	sceGuSync(0, 0);
+	sceDisplayWaitVblankStart();
+
+	init_param();
+	sceNetAdhocctlGetParameter(&adhocctl_param);
+	sceNetGetLocalEtherAddr(&obj[0].addr);
+	ret = sceUtilityGetSystemParamString(1, (char *)nickname[0].data, 128);
+	sceGuDisplay(1);
+
+	return ret;
+}
+
+extern u_int32 cont_878A4;
+#define cont cont_878A4
+int sceCtrlPeekBufferPositive(SceCtrlData *data, int count);
+int game_pad_read(void)
+{
+	u_int32			prev=cont;
+	u_int32			padd;
+	SceCtrlData		buf;
+	float			axis[2];
+	OBJECT			*o;
+	int				diff;
+
+	o=&obj[0];
+
+	sceCtrlPeekBufferPositive( &buf, 1 );
+	cont = buf.Buttons;
+	axis[0]=(float)((int)buf.Lx-128)* 0.01f;
+	axis[1]=(float)((int)buf.Ly-128)*-0.01f;
+	padd=cont&(cont^prev);
+	o->vtx_x = axis[0];
+	o->vtx_y = axis[1];
+
+	if (cont & 0x0010) {
+		diff = 3 * room_speed_val[_mrinfo.agreed_hello_opt->game_param.speed];
+		o->y-=diff;
+		if (o->y<diff) o->y=diff;
+	}
+	if (cont & 0x0040) {
+		diff = 3 * room_speed_val[_mrinfo.agreed_hello_opt->game_param.speed];
+		o->y+=diff;
+		if (o->y>=(50-diff)) o->y-=diff;
+	}
+	if (cont & 0x0080) {
+		diff = 3 * room_speed_val[_mrinfo.agreed_hello_opt->game_param.speed];
+		o->x-=diff;
+		if (o->x<diff) o->x=diff;
+	}
+	if (cont & 0x0020) {
+		diff = 3 * room_speed_val[_mrinfo.agreed_hello_opt->game_param.speed];
+		o->x+=diff;
+		if (o->x>=(50-diff)) o->x-=diff;
+	}
+	o->comp=0;
+	if (cont & 0x0200)
+		o->comp=1;
+	if (cont & 0x1000)
+		o->c += 0xff;
+	if (cont & 0x4000)
+		o->c += 0xff00;
+	if (padd & 0x2000)
+		display_menu++;
+	if (padd & 0x8000)
+		display_menu = 0;
+
+	set_object(axis);
+
+	if (padd & 0x0008)
+		init_param();
+
+	if (padd & 0x0001)
+		change_state(MATCHING_ROOM_GAME_DISCONNECT);
+
+	return 1;
+}
+#undef cont
+
+
+
+
+
+
+
+
+
+
+
+void sceNetEtherNtostr(const struct SceNetEtherAddr *addr, char *str);
+int matching_get_members(struct SceNetEtherAddr *addrs);
+int game_net_init(void)
+{
+	int ret;
+	int i;
+
+	sceNetGetLocalEtherAddr(&local_addr);
+	memset(etherstr, 0, sizeof(etherstr));
+	sceNetEtherNtostr(&local_addr, etherstr);
+	ret = sceNetAdhocGameModeCreateMaster(&obj[0], sizeof(OBJECT));
+	if (ret < 0) {
+		printf("sceNetAdhocGameModeCreateMaster() failed. ret = 0x%x\n", ret);
+		goto error;
+	}
+	memset(peer_addr, 0, sizeof(peer_addr));
+	for (i = 0; i < 16; i++)
+		peer_id[i] = -1;
+	ret = matching_get_members(peer_addr);
+	if (ret > 0) {
+		peer_num = ret;
+		for (i = 0; i < peer_num; i++) {
+			ret = sceNetAdhocGameModeCreateReplica(&peer_addr[i], &obj[i + 1], sizeof(OBJECT));
+			if (ret < 0) {
+				printf("sceNetAdhocGameModeCreateReplica() failed. ret = 0x%x\n", ret);
+				goto error;
+			}
+			peer_id[i] = ret;
+			sceNetAdhocctlGetNameByAddr(&peer_addr[i], &nickname[i + 1]);
+		}
+	}
+error:
+	return ret;
+}
+
+int game_net_term(void)
+{
+	int ret;
+	int i;
+
+	for (i = 0; i < peer_num; i++) {
+		if (peer_id[i] >= 0) {
+			sceNetAdhocGameModeDeleteReplica(peer_id[i]);
+			peer_id[i] = -1;
+		}
+	}
+	sceNetAdhocGameModeDeleteMaster();
+	return 0;
+}
 
 int
 send_position(OBJECT *obj)
@@ -388,9 +737,126 @@ send_position(OBJECT *obj)
 	return ret;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_matching_stick/nonmatchings/adhoc_game", recv_allpacket);
+int
+recv_allpacket(OBJECT *obj)
+{
+	int i, repeat_i, ret;
+	struct SceNetEtherAddr saddr;
+	struct SceNetAdhocPdpStat stat;
+	u_int16 sport;
+	int buflen;
+	char buf[0x400];
+	int repeat = 0;
+	int stat_buflen;
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_matching_stick/nonmatchings/adhoc_game", send_recv_game_data);
+	obj[0].last_v = last_v;
+	stat_buflen = sizeof(struct SceNetAdhocPdpStat);
+	ret = sceNetAdhocGetPdpStat(&stat_buflen, (void *)&stat);
+	if (ret < 0) {
+		printf("sceNetAdhocGetPdpStat() failed. ret = 0x%x\n", ret);
+		return ret;
+	}
+	if (stat_buflen == 0 || stat.id != socket_id) {
+		printf("sceNetAdhocGetPdpStat() invalid data.\n");
+		return -1;
+	}
+
+	repeat = stat.rcv_sb_cc / PAYLOAD_MOVE_LEN;
+	for (repeat_i=0; repeat_i<repeat; repeat_i++) {
+		buflen = 0x400;
+		ret = sceNetAdhocPdpRecv(
+				socket_id,
+				&saddr,
+				&sport,
+				buf,
+				&buflen,
+				0,
+				SCE_NET_ADHOC_F_NONBLOCK);
+
+		if (ret == SCE_ERROR_NET_ADHOC_WOULD_BLOCK) {
+			ret = SCE_OK;
+			break;
+		}
+		if (memcmp(&local_addr, &saddr, SCE_NET_ETHER_ADDR_LEN) == 0)
+			continue;
+		if (sport != PORT)
+			continue;
+		if (buflen == PAYLOAD_MOVE_LEN && buf[0] == PAYLOAD_MOVE_TYPE) {
+			for (i=1; i<17; i++) {
+				if (obj[i].detect == 0 ||
+					(obj[i].detect==1 &&
+					memcmp(&obj[i].addr.data, &saddr, SCE_NET_ETHER_ADDR_LEN) == 0)) {
+					memcpy(&obj[i].x, &buf[1], sizeof(int));
+					memcpy(&obj[i].y, &buf[5], sizeof(int));
+					memcpy(&obj[i].c, &buf[9], sizeof(int));
+					memcpy(&obj[i].comp, &buf[13], sizeof(int));
+					memcpy(&obj[i].vtx_x, &buf[17], sizeof(float));
+					memcpy(&obj[i].vtx_y, &buf[21], sizeof(float));
+					if (obj[i].detect == 0) {
+						memcpy(&obj[i].addr, &saddr, SCE_NET_ETHER_ADDR_LEN);
+						sceNetAdhocctlGetNameByAddr(&saddr, &nickname[i]);
+					}
+					obj[i].last_v = last_v;
+					obj[i].detect = 1;
+					rcvpkt[i].counter++;
+					break;
+				}
+			}
+		}
+	}
+
+	for (i=1; i<17; i++) {
+		if ((last_v - obj[i].last_v) > 60) {
+			obj[i].high = 2.0f;
+			obj[i].vtx_x = 0.0f;
+			obj[i].vtx_y = 0.0f;
+			obj[i].last_v = 0;
+			obj[i].detect = 0;
+			rcvpkt[i].counter = 0;
+			rcvpkt[i].last_c = 0;
+		}
+	}
+
+	return ret;
+}
+
+int send_recv_game_data(void)
+{
+	int i;
+	struct SceNetAdhocGameModeOptData opt;
+
+	if (_mrinfo.state != MATCHING_ROOM_GAME)
+		return 0;
+	if (++last_v % 60 == 0) {
+		for (i = 0; i < 17; i++) {
+			rcvpkt[i].last_c = rcvpkt[i].counter;
+			rcvpkt[i].counter = 0;
+		}
+	}
+	sceNetAdhocGameModeUpdateMaster();
+	obj[0].last_v = last_v;
+	opt.size = sizeof(opt);
+	for (i = 0; i < peer_num; i++) {
+		sceNetAdhocGameModeUpdateReplica(peer_id[i], &opt);
+		if (opt.flag & 1) {
+			obj[i + 1].detect = 1;
+			obj[i + 1].last_v = last_v;
+			rcvpkt[i + 1].counter++;
+		}
+	}
+	for (i = 1; i < 17; i++) {
+		if ((last_v - obj[i].last_v) > 60) {
+			obj[i].high = 2.0f;
+			obj[i].vtx_x = 0.0f;
+			obj[i].vtx_y = 0.0f;
+			obj[i].last_v = 0;
+			obj[i].detect = 0;
+			rcvpkt[i].counter = 0;
+			rcvpkt[i].last_c = 0;
+		}
+	}
+	return 0;
+}
 
 int game_init(void) {
     int var_v0;
