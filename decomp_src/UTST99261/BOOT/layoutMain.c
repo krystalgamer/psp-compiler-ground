@@ -1,3 +1,4 @@
+/* cflags: -O1 */
 #include "common.h"
 #include "m2c_macros.h"
 extern int D_00584CD4;
