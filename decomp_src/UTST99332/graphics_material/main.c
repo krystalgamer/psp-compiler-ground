@@ -1,3 +1,4 @@
+/* cflags: -O2 -fmerge-constants */
 #include "common.h"
 
 /* declarations recovered from DWARF */
@@ -142,8 +143,6 @@ INCLUDE_RODATA("tmp/asm/UTST99332/graphics_material/nonmatchings/main", line);
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_material/nonmatchings/main", draw_description);
 
-INCLUDE_RODATA("tmp/asm/UTST99332/graphics_material/nonmatchings/main", D_00011E90);
-
 void DrawCone(float *array, float r, float h);
 void DrawSphere(ScePspFVector3 *array, float r);
 
@@ -278,7 +277,116 @@ static void draw_frame(void)
 	sceGuSync(SCEGU_SYNC_FINISH, SCEGU_SYNC_WAIT);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_material/nonmatchings/main", init_all);
+#define SCEGU_PF5551                       1
+#define SCEGU_VRAM_BP_0       (void *)(SCEGU_VRAM_TOP)
+#define SCEGU_VRAM_BP_1       (void *)(SCEGU_VRAM_TOP+SCEGU_VRAM_BUFSIZE)
+#define SCEGU_VRAM_TOP        0x00000000
+#define SCEGU_VRAM_BUFSIZE    (SCEGU_VRAM_WIDTH*SCEGU_SCR_HEIGHT*2)
+#define SCEGU_VRAM_BP_2       (void *)(SCEGU_VRAM_TOP+(SCEGU_VRAM_BUFSIZE*2))
+#define SCEGU_VRAM_WIDTH      512
+#define SCEGU_SCR_OFFSETX     ((4096 - SCEGU_SCR_WIDTH) / 2)
+#define SCEGU_SCR_OFFSETY     ((4096 - SCEGU_SCR_HEIGHT) / 2)
+#define SCEGU_ADD                          0
+#define SCEGU_SRC_ALPHA                    2
+#define SCEGU_ONE_MINUS_SRC_ALPHA          3
+#define SCEGU_BLEND                        4
+#define SCEGU_SCISSOR_TEST                 2
+#define SCEGU_GREATER                      6
+#define SCEGU_ALPHA_TEST                   0
+#define SCEGU_GEQUAL                       7
+#define SCEGU_DEPTH_TEST                   1
+#define SCEGU_CW                           0
+#define SCEGU_TEXTURE                      9
+#define SCEGU_DITHER                       6
+#define SCEGU_CLIP_PLANE                   8
+#define SCEGU_SMOOTH                       1
+#define SCEGU_LIGHT_DIRECTION              0
+#define SCEGU_DIFFUSE_AND_SPECULAR         6
+#define SCEGU_LIGHT0                      11
+#define SCEGU_LIGHTING                    10
+#define SCEGU_FOG                          7
+#define SCEGU_MATRIX_PROJECTION            0
+#define SCEGU_SCR_HEIGHT      272
+#define SCEGU_SCR_WIDTH       480
+#define SCEGU_MATRIX_WORLD                 2
+#define SCEGU_DISPLAY_ON		1
+
+static void init_all(void)
+{
+	ScePspIMatrix4	dith={	{-4,  0, -3,  1},
+							{ 2, -2,  3, -1},
+							{-3,  1, -4,  0},
+							{ 3, -1,  2, -2}};
+	ScePspFVector3	vec;
+
+	sceGuInit();
+
+	sceGuStart(SCEGU_IMMEDIATE, disp_list, sizeof(disp_list));
+	sceGuDrawBuffer(SCEGU_PF5551, SCEGU_VRAM_BP_0, SCEGU_VRAM_WIDTH);
+	sceGuDispBuffer(SCEGU_SCR_WIDTH, SCEGU_SCR_HEIGHT,
+					SCEGU_VRAM_BP_1, SCEGU_VRAM_WIDTH);
+	sceGuDepthBuffer(SCEGU_VRAM_BP_2, SCEGU_VRAM_WIDTH);
+
+	sceGuOffset(SCEGU_SCR_OFFSETX, SCEGU_SCR_OFFSETY);
+	sceGuViewport(2048, 2048, SCEGU_SCR_WIDTH, SCEGU_SCR_HEIGHT);
+	sceGuDepthRange(50000, 10000);
+
+	sceGuBlendFunc(SCEGU_ADD, SCEGU_SRC_ALPHA, SCEGU_ONE_MINUS_SRC_ALPHA, 0, 0);
+	sceGuEnable(SCEGU_BLEND);
+
+	sceGuScissor(0, 0, SCEGU_SCR_WIDTH, SCEGU_SCR_HEIGHT);
+	sceGuEnable(SCEGU_SCISSOR_TEST);
+
+	sceGuAlphaFunc(SCEGU_GREATER, 0x00, 0xff);
+	sceGuEnable(SCEGU_ALPHA_TEST);
+
+	sceGuDepthFunc(SCEGU_GEQUAL);
+	sceGuEnable(SCEGU_DEPTH_TEST);
+
+	sceGuFrontFace(SCEGU_CW);
+
+	sceGuDisable(SCEGU_TEXTURE);
+
+	sceGuSetDither(&dith);
+	sceGuEnable(SCEGU_DITHER);
+	sceGuEnable(SCEGU_CLIP_PLANE);
+	sceGuShadeModel(SCEGU_SMOOTH);
+
+	vec.x=0.0f;
+	vec.y=1.0f;
+	vec.z=1.0f;
+	sceGuLightColor(0, SCEGU_DIFFUSE, 0xffffffff);
+	sceGuLightColor(0, SCEGU_SPECULAR, 0xffffffff);
+	sceGuLight(0, SCEGU_LIGHT_DIRECTION, SCEGU_DIFFUSE_AND_SPECULAR, &vec);
+	sceGuEnable(SCEGU_LIGHT0);
+	sceGuEnable(SCEGU_LIGHTING);
+
+	sceGuSpecular(10.0f);
+	sceGuDisable(SCEGU_FOG);
+
+	sceGumSetMatrixStack(&matrix_stack[0], 8, 8, 32, 0);
+
+	sceGumMatrixMode(SCEGU_MATRIX_PROJECTION);
+	sceGumLoadIdentity();
+	sceGumOrtho(-6.0f, 6.0f,
+		-3.0f*((float)SCEGU_SCR_HEIGHT*2)/(float)SCEGU_SCR_WIDTH,
+		3.0f*((float)SCEGU_SCR_HEIGHT*2)/(float)SCEGU_SCR_WIDTH,
+		-10.0f, 10.0f);
+
+	sceGumMatrixMode(SCEGU_MATRIX_WORLD);
+
+	sceGuClearColor(0x00000000);
+	sceGuClearDepth(0);
+	sceGuClearStencil(0);
+
+	sceGuPatchDivide(32, 32);
+
+	sceGuFinish();
+	sceGuSync(SCEGU_SYNC_FINISH, SCEGU_SYNC_WAIT);
+	sceDisplayWaitVblankStart();
+
+	sceGuDisplay(SCEGU_DISPLAY_ON);
+}
 
 int pad_read(void) {
     SceCtrlData buf;
