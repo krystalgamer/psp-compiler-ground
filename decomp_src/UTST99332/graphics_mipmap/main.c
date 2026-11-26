@@ -359,4 +359,29 @@ static int pad_read(void)
 	return 1;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_mipmap/nonmatchings/main", main);
+void menuInit(void);
+void menuTerm(int cat, int num);
+
+int main(void)
+{
+	menuInit();
+	init_param();
+	init_all();
+
+	while (pad_read()) {
+		if (moving) {
+			frame_update();
+		}
+
+		draw_frame();
+
+		sceDisplayWaitVblankStart();
+		sceGuSwapBuffers();
+	}
+
+	sceGuTerm();
+
+	menuTerm(1, 15);
+
+	return 0;
+}
