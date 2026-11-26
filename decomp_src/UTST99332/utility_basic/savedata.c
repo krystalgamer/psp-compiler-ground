@@ -240,7 +240,38 @@ void set_param_save(SceUtilitySavedataParam *pParam)
 	set_snd0(pParam);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/utility_basic/nonmatchings/savedata", set_param_listload);
+extern const char D_00016754[]; /* "%04d" (shared rodata) */
+
+void set_param_listload(SceUtilitySavedataParam *pParam)
+{
+	int i, len, dirNum;
+
+	memcpy(pParam->titleId, D_00016714, 9);
+	pParam->titleId[9] = 0;
+
+	for (i = 0; i < 20; i++) {
+		sprintf(_listUserDirName[i], D_00016754, i);
+	}
+	_listUserDirName[20][0] = 0;
+
+	pParam->pUserIds = _listUserDirName;
+
+	sprintf(pParam->fileName, D_00016728, D_0001672C);
+
+	pParam->pDataBuf = _dataBuf;
+	pParam->dataBufSize = 0x100000;
+
+	memset(&pParam->systemFile, 0, sizeof(pParam->systemFile));
+
+	pParam->icon0.pDataBuf = _readIcon0;
+	pParam->icon0.dataBufSize = 0x100000;
+
+	pParam->icon1.pDataBuf = _readIcon1;
+	pParam->icon1.dataBufSize = 0x100000;
+
+	pParam->pic1.pDataBuf = _readPic1;
+	pParam->pic1.dataBufSize = 0x100000;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/utility_basic/nonmatchings/savedata", set_param_listsave);
 
