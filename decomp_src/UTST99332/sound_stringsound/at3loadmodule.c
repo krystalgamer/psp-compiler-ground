@@ -56,7 +56,25 @@ INCLUDE_RODATA("tmp/asm/UTST99332/sound_stringsound/nonmatchings/at3loadmodule",
 
 INCLUDE_RODATA("tmp/asm/UTST99332/sound_stringsound/nonmatchings/at3loadmodule", D_0001F9EC);
 
-INCLUDE_ASM("tmp/asm/UTST99332/sound_stringsound/nonmatchings/at3loadmodule", unload_module);
+int printf(const char *fmt, ...);
+int sceKernelStopModule(SceUID modid, SceSize argsize, void *argp, int *status, SceKernelSMOption *option);
+int sceKernelUnloadModule(SceUID modid);
+static SceInt32 unload_module(SceUID mid)
+{
+	SceInt32 ret;
+
+	ret = sceKernelStopModule(mid, 0, NULL, NULL, NULL);
+	if (ret < 0) {
+		printf("fatal error : cannot stop module 0x%08x\n", ret);
+		return ret;
+	}
+	ret = sceKernelUnloadModule(mid);
+	if (ret < 0) {
+		printf("fatal error : cannot unload module 0x%08x\n", ret);
+		return ret;
+	}
+	return 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/sound_stringsound/nonmatchings/at3loadmodule", unloadModuleAt3plus);
 

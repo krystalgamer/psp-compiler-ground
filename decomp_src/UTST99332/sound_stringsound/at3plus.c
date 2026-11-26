@@ -120,4 +120,19 @@ INCLUDE_ASM("tmp/asm/UTST99332/sound_stringsound/nonmatchings/at3plus", reset_po
 
 INCLUDE_ASM("tmp/asm/UTST99332/sound_stringsound/nonmatchings/at3plus", getPlayMode);
 
-INCLUDE_ASM("tmp/asm/UTST99332/sound_stringsound/nonmatchings/at3plus", fadeoutOperation);
+void fadeoutOperation(short *buf, int n, int total)
+{
+	int i;
+	float step = 1.0f / n;
+	float f;
+
+	for (i = 0; i < n; i++) {
+		f = (n - 1 - i) * step;
+		buf[i * 2] = buf[i * 2] * f;
+		buf[i * 2 + 1] = buf[i * 2 + 1] * f;
+	}
+	for (; i < total; i++) {
+		buf[i * 2] = 0;
+		buf[i * 2 + 1] = 0;
+	}
+}
