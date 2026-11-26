@@ -24,29 +24,65 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Edge", _
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Edge", _ZN3sgl8CoreMeshD0Ev);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Edge", _ZNK3sgl8CoreMesh12getPositionsEv);
+const void *sgl::CoreMesh::getPositions() const
+{
+    return &_f4;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Edge", _ZNK3sgl8CoreMesh10getNormalsEv);
+const void *sgl::CoreMesh::getNormals() const
+{
+    return &_f10;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Edge", _ZNK3sgl8CoreMesh9getColorsEv);
+const void *sgl::CoreMesh::getColors() const
+{
+    return &_f1C;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Edge", _ZNK3sgl8CoreMesh12getTexCoordsEv);
+const void *sgl::CoreMesh::getTexCoords() const
+{
+    return &_f28;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Edge", _ZNK3sgl8CoreMesh11getVerticesEv);
+const void *sgl::CoreMesh::getVertices() const
+{
+    return &_f34;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Edge", _ZNK3sgl8CoreMesh8getPrimsEv);
+const void *sgl::CoreMesh::getPrims() const
+{
+    return &_f40;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Edge", _ZN3sgl8CoreMesh12getPositionsEv);
+void *sgl::CoreMesh::getPositions()
+{
+    return &_f4;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Edge", _ZN3sgl8CoreMesh10getNormalsEv);
+void *sgl::CoreMesh::getNormals()
+{
+    return &_f10;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Edge", _ZN3sgl8CoreMesh9getColorsEv);
+void *sgl::CoreMesh::getColors()
+{
+    return &_f1C;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Edge", _ZN3sgl8CoreMesh12getTexCoordsEv);
+void *sgl::CoreMesh::getTexCoords()
+{
+    return &_f28;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Edge", _ZN3sgl8CoreMesh11getVerticesEv);
+void *sgl::CoreMesh::getVertices()
+{
+    return &_f34;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Edge", _ZN3sgl8CoreMesh8getPrimsEv);
+void *sgl::CoreMesh::getPrims()
+{
+    return &_f40;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Edge", _ZN3sgl8CoreMesh5clearEv);
 

@@ -24,31 +24,67 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Frustum"
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Frustum", _ZN3sgl7Frustum6enableEv);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Frustum", _ZN3sgl7Frustum7disableEv);
+void sgl::Frustum::disable()
+{
+    _f8 = false;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Frustum", _ZNK3sgl7Frustum5printEv);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Frustum", _ZNK3sgl7Frustum6getFovEv);
+float sgl::Frustum::getFov() const
+{
+    return _f24;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Frustum", _ZNK3sgl7Frustum8getZnearEv);
+float sgl::Frustum::getZnear() const
+{
+    return _fC;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Frustum", _ZNK3sgl7Frustum7getZfarEv);
+float sgl::Frustum::getZfar() const
+{
+    return _f10;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Frustum", _ZNK3sgl7Frustum7getZminEv);
+float sgl::Frustum::getZmin() const
+{
+    return _f14;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Frustum", _ZNK3sgl7Frustum7getZmaxEv);
+float sgl::Frustum::getZmax() const
+{
+    return _f18;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Frustum", _ZNK3sgl7Frustum8getWidthEv);
+float sgl::Frustum::getWidth() const
+{
+    return _f1C;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Frustum", _ZNK3sgl7Frustum9getHeightEv);
+float sgl::Frustum::getHeight() const
+{
+    return _f20;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Frustum", _ZNK3sgl7Frustum7getLeftEv);
+float sgl::Frustum::getLeft() const
+{
+    return _f28;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Frustum", _ZNK3sgl7Frustum8getRightEv);
+float sgl::Frustum::getRight() const
+{
+    return _f2C;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Frustum", _ZNK3sgl7Frustum9getBottomEv);
+float sgl::Frustum::getBottom() const
+{
+    return _f30;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Frustum", _ZNK3sgl7Frustum6getTopEv);
+float sgl::Frustum::getTop() const
+{
+    return _f34;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Frustum", _ZNK3sgl7Frustum3getERfS1_S1_S1_S1_S1_);
 

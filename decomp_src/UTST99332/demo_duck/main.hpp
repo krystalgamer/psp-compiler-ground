@@ -454,4 +454,6 @@ public:
     ~CCmpr();
 };
 
+#include "main_access.hpp"
+
 #endif

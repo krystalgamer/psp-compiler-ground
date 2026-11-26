@@ -10,7 +10,10 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_BV", _ZN
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_BV", _ZN3sgl2BVC1Ev);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_BV", _ZN3sgl2BV7setTypeENS0_4TypeE);
+void sgl::BV::setType(sgl::BV::Type v)
+{
+    _f80 = v;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_BV", _ZN3sgl2BV5startEv);
 

@@ -16,9 +16,15 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Switch", _
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Switch", _ZN5scene6SwitchD0Ev);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Switch", _ZN5scene6Switch6selectEi);
+void scene::Switch::select(int v)
+{
+    _f30 = v;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Switch", _ZNK5scene6Switch11getSelectedEv);
+int scene::Switch::getSelected() const
+{
+    return _f30;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Switch", _ZN5scene6Switch7flattenERN4math14TransformStackE);
 

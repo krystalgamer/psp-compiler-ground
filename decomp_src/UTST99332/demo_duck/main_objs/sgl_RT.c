@@ -44,15 +44,27 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_RT", _ZN3sgl
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_RT", _ZN3sgl2RT5traceERNS0_3RayE);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_RT", _ZNK3sgl2RT9getBVTreeEv);
+const void *sgl::RT::getBVTree() const
+{
+    return &_fBC;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_RT", _ZNK3sgl2RT7getMeshEv);
+const void *sgl::RT::getMesh() const
+{
+    return this;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_RT", _ZN3sgl2RT7getMeshEv);
+void *sgl::RT::getMesh()
+{
+    return this;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_RT", _ZN3sgl2RT12setTestLightEN4math11vector_xyzwE);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_RT", _ZNK3sgl2RT12getTestLightEv);
+const void *sgl::RT::getTestLight() const
+{
+    return &_fA0;
+}
 
 extern "C" {
 void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_E999C");

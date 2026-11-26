@@ -30,15 +30,27 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/textures_Tex
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/textures_Texture", _ZN8textures7TextureC1ERKS0_);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/textures_Texture", _ZNK8textures7Texture5widthEv);
+int textures::Texture::width() const
+{
+    return _f0;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/textures_Texture", _ZNK8textures7Texture6heightEv);
+int textures::Texture::height() const
+{
+    return _f4;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/textures_Texture", _ZNK8textures7Texture6formatEv);
+int textures::Texture::format() const
+{
+    return _f8;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/textures_Texture", _ZNK8textures7Texture4pathEv);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/textures_Texture", _ZNK8textures7Texture11alpha_flagsEv);
+int textures::Texture::alpha_flags() const
+{
+    return _f14;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/textures_Texture", _ZNK8textures7Texture9imagedataEv);
 
@@ -48,7 +60,10 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/textures_Tex
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/textures_Texture", _ZNK8textures7Texture15getLoadedHeightEv);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/textures_Texture", _ZNK8textures7Texture19getLoadedAlphaflagsEv);
+int textures::Texture::getLoadedAlphaflags() const
+{
+    return _f24;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/textures_Texture", _ZN8textures7Texture13setAlphaFlagsENS_9AlphaMaskE);
 

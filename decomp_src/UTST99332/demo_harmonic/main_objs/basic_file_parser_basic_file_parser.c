@@ -16,7 +16,10 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/basic_file_p
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/basic_file_parser_basic_file_parser", _ZN17basic_file_parserD0Ev);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/basic_file_parser_basic_file_parser", _ZNK17basic_file_parser5readyEv);
+bool basic_file_parser::ready() const
+{
+    return _f50;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/basic_file_parser_basic_file_parser", _ZN17basic_file_parser10preprocessEv);
 

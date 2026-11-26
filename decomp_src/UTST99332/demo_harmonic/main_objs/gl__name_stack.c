@@ -10,9 +10,15 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/gl__name_sta
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/gl__name_stack", _ZN2gl14DeleteTexturesEiPKj);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/gl__name_stack", _ZN2gl12find_textureEj);
+bool gl::find_texture(unsigned int)
+{
+    return true;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/gl__name_stack", _ZN2gl13CheckTexturesEv);
+bool gl::CheckTextures()
+{
+    return true;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/gl__name_stack", _ZN2gl9InitNamesEv);
 

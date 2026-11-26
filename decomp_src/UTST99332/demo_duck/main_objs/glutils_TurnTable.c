@@ -14,9 +14,15 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/glutils_TurnTabl
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/glutils_TurnTable", _ZN7glutils9TurnTable5resetEv);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/glutils_TurnTable", _ZN7glutils9TurnTable8setIsYUpEb);
+void glutils::TurnTable::setIsYUp(bool v)
+{
+    _f1A0 = v;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/glutils_TurnTable", _ZNK7glutils9TurnTable5isYUpEv);
+bool glutils::TurnTable::isYUp() const
+{
+    return _f1A0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/glutils_TurnTable", _ZN7glutils9TurnTable8setPivotEN4math11vector_xyzwE);
 

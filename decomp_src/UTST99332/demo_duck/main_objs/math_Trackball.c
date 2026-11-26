@@ -10,7 +10,10 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/math_Trackball",
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/math_Trackball", _ZN4math9TrackballC1ERKNS_6matrixE);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/math_Trackball", _ZN4math9Trackball4modeENS0_4ModeE);
+void math::Trackball::mode(math::Trackball::Mode v)
+{
+    _f90 = v;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/math_Trackball", _ZN4math9Trackball5trackERNS_6matrixEffbb);
 
@@ -20,9 +23,15 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/math_Trackball",
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/math_Trackball", _ZN4math9Trackball5resetEv);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/math_Trackball", _ZNK4math9Trackball12getTransformEv);
+const void *math::Trackball::getTransform() const
+{
+    return this;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/math_Trackball", _ZNK4math9Trackball11getDeltaRotEv);
+const void *math::Trackball::getDeltaRot() const
+{
+    return &_f50;
+}
 
 extern "C" {
 void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_34F1C");

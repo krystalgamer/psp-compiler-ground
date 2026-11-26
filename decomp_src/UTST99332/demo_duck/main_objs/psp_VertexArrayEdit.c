@@ -83,9 +83,15 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/psp_VertexArrayE
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/psp_VertexArrayEdit", _ZN3psp22ConvertMaskInternal2GuEj);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/psp_VertexArrayEdit", _ZNK3psp15VertexArrayEdit10Descriptor9getFormatEv);
+int psp::VertexArrayEdit::Descriptor::getFormat() const
+{
+    return _f0;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/psp_VertexArrayEdit", _ZNK3psp15VertexArrayEdit10Descriptor11getBytesizeEv);
+int psp::VertexArrayEdit::Descriptor::getBytesize() const
+{
+    return _fD4;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/psp_VertexArrayEdit", _ZNK3psp15VertexArrayEdit10Descriptor11printFormatEv);
 

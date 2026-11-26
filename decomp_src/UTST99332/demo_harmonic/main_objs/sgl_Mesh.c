@@ -16,11 +16,17 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh", _
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh", _ZN3sgl4MeshD0Ev);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh", _ZN3sgl4Mesh6unlockEv);
+void sgl::Mesh::unlock()
+{
+    _f74 = false;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh", _ZN3sgl4Mesh4lockEv);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh", _ZNK3sgl4Mesh6lockedEv);
+bool sgl::Mesh::locked() const
+{
+    return _f74;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh", _ZNK3sgl4Mesh23internal_position_indexEi);
 
@@ -56,11 +62,20 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh", _
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh", _ZN3sgl4Mesh15print_trianglesEv);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh", _ZNK3sgl4Mesh12getTrianglesEv);
+const void *sgl::Mesh::getTriangles() const
+{
+    return &_f78;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh", _ZNK3sgl4Mesh8getEdgesEv);
+const void *sgl::Mesh::getEdges() const
+{
+    return &_f84;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh", _ZNK3sgl4Mesh19getTrianglesNormalsEv);
+const void *sgl::Mesh::getTrianglesNormals() const
+{
+    return &_f90;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh", _ZNK3sgl4Mesh12triangleAreaEi);
 

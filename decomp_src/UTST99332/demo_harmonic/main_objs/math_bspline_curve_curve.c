@@ -14,9 +14,15 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_bspline
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_bspline_curve_curve", _ZN4math7bspline5curve9localEvalERNS_11vector_xyzwEf);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_bspline_curve_curve", _ZN4math7bspline7surface3netEv);
+int math::bspline::surface::net()
+{
+    return _f0;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_bspline_curve_curve", _ZN4math7bspline7surface7ctrlnetEv);
+void *math::bspline::surface::ctrlnet()
+{
+    return &_f4;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_bspline_curve_curve", _ZN4math7bspline7surface7setTypeEi);
 

@@ -16,11 +16,20 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/Icosahedron_
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/Icosahedron_Bin", _ZN11Icosahedron3Bin11setChildrenEPS0_S1_S1_S1_);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/Icosahedron_Bin", _ZN11Icosahedron3Bin11setBinIndexEj);
+void Icosahedron::Bin::setBinIndex(unsigned int v)
+{
+    _f90 = v;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/Icosahedron_Bin", _ZNK11Icosahedron3Bin11getBinIndexEv);
+int Icosahedron::Bin::getBinIndex() const
+{
+    return _f90;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/Icosahedron_Bin", _ZN11Icosahedron3Bin12setLeafIndexEj);
+void Icosahedron::Bin::setLeafIndex(unsigned int v)
+{
+    _f94 = v;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/Icosahedron_Bin", _ZNK11Icosahedron3Bin12getLeafIndexEv);
 
@@ -34,7 +43,10 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/Icosahedron_
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/Icosahedron_Bin", _ZN11Icosahedron4drawEh);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/Icosahedron_Bin", _ZNK11Icosahedron8getDepthEv);
+bool Icosahedron::getDepth() const
+{
+    return _f0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/Icosahedron_Bin", _ZN11IcosahedronC2Eh);
 

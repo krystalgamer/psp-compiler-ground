@@ -10,7 +10,10 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/interp_Vecto
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/interp_VectorRGBAnim", _ZN6interp13VectorRGBAnimC1Ev);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/interp_VectorRGBAnim", _ZNK6interp13VectorRGBAnim11isRecordingEv);
+bool interp::VectorRGBAnim::isRecording() const
+{
+    return _f1B4;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/interp_VectorRGBAnim", _ZN6interp13VectorRGBAnim14startRecordingEv);
 
@@ -28,7 +31,10 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/interp_Vecto
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/interp_VectorRGBAnim", _ZN6interp13VectorRGBAnim4saveESs);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/interp_VectorRGBAnim", _ZNK6interp13VectorRGBAnim4sizeEv);
+int interp::VectorRGBAnim::size() const
+{
+    return _f1B0;
+}
 
 extern "C" {
 void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_F3994");
