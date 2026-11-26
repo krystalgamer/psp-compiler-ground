@@ -31,7 +31,7 @@ struct LineBuf { /* size 0x104 */
     int color;
 };
 
-extern char disp_list[65536];
+extern char disp_list[65536] __asm__("disp_list_17D880");
 extern MenuItem menuitems[100];
 extern Menu_Callback cancel_callback;
 extern int selection;
@@ -93,7 +93,7 @@ int sceCtrlReadBufferPositive(SceCtrlData *, int);
 int sceGuStart(int, void *, int);
 int sceGuFinish(void);
 int sceGuSync(int, int);
-int sceGuDebugPrint(int, int, unsigned int, const char *);
+void sceGuDebugPrint(int, int, unsigned int, const char *);
 void sceGuDebugFlush(void);
 
 /* SDK functions (tools/sdk_protos.h) */
@@ -116,7 +116,8 @@ void Menu_Init(void)
     sceCtrlSetSamplingCycle(0);
 }
 
-void Menu_Shutdown(void) {
+void Menu_Shutdown(void)
+{
 }
 
 void Menu_MenuSelect(void)
@@ -161,7 +162,101 @@ void Menu_SetSelection(int newselection) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/menu", Menu_Update);
+#define LINE "------------------------------------------------------------"
+
+void Menu_Update(void)
+{
+    int i;
+    int j;
+
+    if (lock_count == 0) {
+        u_int32 prev = cont;
+        u_int32 padd;
+        SceCtrlData buf[1];
+        int ret = sceCtrlReadBufferPositive(buf, 1);
+        if (ret != 0) {
+            cont = buf[0].Buttons;
+        } else {
+            cont = 0;
+        }
+        if (prev == cont && cont == SCE_CTRL_UP) {
+            if (frame++ > 40) {
+                if (inframe++ > 5) {
+                    prev = 0;
+                    inframe = 0;
+                }
+            }
+        } else if (prev == cont && cont == SCE_CTRL_DOWN) {
+            if (frame++ > 40) {
+                if (inframe++ > 5) {
+                    prev = 0;
+                    inframe = 0;
+                }
+            }
+        } else {
+            frame = 0;
+            inframe = 0;
+        }
+        if (buf[0].Ly - 128 < -80) Menu_ScrollUp();
+        if (buf[0].Ly - 128 > 80) Menu_ScrollDown();
+        padd = cont & (cont ^ prev);
+
+        if (padd & SCE_CTRL_CIRCLE) {
+            if (IsValidMenuItem(selection)) {
+                (*menuitems[selection].callback)(selection);
+            }
+        } else if (padd & SCE_CTRL_CROSS) {
+            if (cancel_callback) {
+                (*cancel_callback)(selection);
+            }
+        } else if (padd & SCE_CTRL_UP) {
+            if (IsValidMenuItem(selection - 1)) {
+                Menu_MenuUp();
+            }
+        } else if (padd & SCE_CTRL_DOWN) {
+            if (IsValidMenuItem(selection + 1)) {
+                Menu_MenuDown();
+            }
+        }
+    }
+
+    if (show) {
+        j = linebuf_dptr_s;
+        sceGuStart(SCEGU_IMMEDIATE, disp_list, sizeof(disp_list));
+        sceGuDebugPrint(0, 0, 0x00ffffff, LINE);
+        sceGuDebugPrint(0, 9, 0x00ffffff, "Utility Check Tool (V2.00)");
+        sceGuDebugPrint(0, 18, 0x00ffffff, LINE);
+        sceGuDebugFlush();
+        for (i = listtop; i - listtop < 5 && menuitems[i].name; i++) {
+            char buf[128];
+            unsigned int color = 0x00ffffff;
+            if (i == selection) color = 0x000000ff;
+            snprintf(buf, sizeof(buf), "(%.2d)%s", i + 1, menuitems[i].name);
+            sceGuDebugPrint(8, (i - listtop) * 9 + 26, color, buf);
+            sceGuDebugFlush();
+        }
+        if (listtop > 0) sceGuDebugPrint(0, 26, 0x0000ffff, "^");
+        if (IsValidMenuItem(listtop + 5)) sceGuDebugPrint(0, 62, 0x0000ffff, "v");
+        sceGuDebugFlush();
+        sceGuDebugPrint(0, 71, 0x00ffffff, LINE);
+        for (i = 0; i < 19; i++, j++) {
+            sceGuDebugPrint(8, i * 9 + 80, linebuf[j].color, linebuf[j].str);
+            sceGuDebugFlush();
+        }
+        sceGuDebugPrint(0, 251, 0x00ffffff, LINE);
+        if (lock_count) {
+            int color = 0x00ffffff;
+            if (tick % 60 > 30) color = 0x00000000;
+            sceGuDebugPrint(440, 269, color, "BUSY");
+        }
+        sceGuDebugFlush();
+        DrawSetting();
+        sceGuFinish();
+        sceGuSync(SCEGU_SYNC_FINISH, SCEGU_SYNC_WAIT);
+    }
+
+    tick++;
+}
 
 void Menu_ClearItems(void)
 {
