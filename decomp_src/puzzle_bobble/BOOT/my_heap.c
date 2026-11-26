@@ -1,8 +1,8 @@
 #include "common.h"
 #include "m2c_macros.h"
 
-extern int g_addr;
-extern int g_size;
+extern unsigned int g_addr;
+extern unsigned int g_size;
 
 
 void myHeapInit(int arg0, int arg1) {
@@ -20,7 +20,22 @@ INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/my_heap", myHeapAlloc);
 void myHeapFree(void) {
 }
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/my_heap", myHeapAlloc16);
+void *myHeapAlloc16(unsigned int size)
+{
+	void *p = 0;
+	unsigned int pad;
+
+	if (size != 0) {
+		pad = (16 - (g_addr & 15)) & 15;
+		size += pad;
+		if (size <= g_size) {
+			p = (void *)(g_addr + pad);
+			g_addr += size;
+			g_size -= size;
+		}
+	}
+	return p;
+}
 
 void myHeapFree16(void) {
 }
