@@ -1,57 +1,108 @@
 #include "common.h"
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/mt19937ar", init_genrand);
+#define N 624
+#define M 397
+#define MATRIX_A 0x9908b0dfUL
+#define UPPER_MASK 0x80000000UL
+#define LOWER_MASK 0x7fffffffUL
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/mt19937ar", init_by_array);
+extern unsigned long mt[N];
+extern int mti;
+extern unsigned long D_0008071C[2];
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/mt19937ar", genrand_int32);
+void init_genrand(unsigned long s)
+{
+    mt[0]= s & 0xffffffffUL;
+    for (mti=1; mti<N; mti++) {
+        mt[mti] =
+	    (1812433253UL * (mt[mti-1] ^ (mt[mti-1] >> 30)) + mti);
+        mt[mti] &= 0xffffffffUL;
+    }
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/mt19937ar", genrand_int31);
+void init_by_array(unsigned long init_key[], int key_length)
+{
+    int i, j, k;
+    init_genrand(19650218UL);
+    i=1; j=0;
+    k = (N>key_length ? N : key_length);
+    for (; k; k--) {
+        mt[i] = (mt[i] ^ ((mt[i-1] ^ (mt[i-1] >> 30)) * 1664525UL))
+          + init_key[j] + j;
+        mt[i] &= 0xffffffffUL;
+        i++; j++;
+        if (i>=N) { mt[0] = mt[N-1]; i=1; }
+        if (j>=key_length) j=0;
+    }
+    for (k=N-1; k; k--) {
+        mt[i] = (mt[i] ^ ((mt[i-1] ^ (mt[i-1] >> 30)) * 1566083941UL))
+          - i;
+        mt[i] &= 0xffffffffUL;
+        i++;
+        if (i>=N) { mt[0] = mt[N-1]; i=1; }
+    }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/mt19937ar", genrand_real1);
+    mt[0] = 0x80000000UL;
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/mt19937ar", genrand_real2);
+#define mag01 D_0008071C
+unsigned long genrand_int32(void)
+{
+    unsigned long y;
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/mt19937ar", genrand_real3);
+    if (mti >= N) {
+        int kk;
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/mt19937ar", genrand_res53);
+        if (mti == N+1)
+            init_genrand(5489UL);
 
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/mt19937ar", D_0007A600);
+        for (kk=0;kk<N-M;kk++) {
+            y = (mt[kk]&UPPER_MASK)|(mt[kk+1]&LOWER_MASK);
+            mt[kk] = mt[kk+M] ^ (y >> 1) ^ mag01[y & 0x1UL];
+        }
+        for (;kk<N-1;kk++) {
+            y = (mt[kk]&UPPER_MASK)|(mt[kk+1]&LOWER_MASK);
+            mt[kk] = mt[kk+(M-N)] ^ (y >> 1) ^ mag01[y & 0x1UL];
+        }
+        y = (mt[N-1]&UPPER_MASK)|(mt[0]&LOWER_MASK);
+        mt[N-1] = mt[M-1] ^ (y >> 1) ^ mag01[y & 0x1UL];
 
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/mt19937ar", D_0007A604);
+        mti = 0;
+    }
 
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/mt19937ar", D_0007A608);
+    y = mt[mti++];
 
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/mt19937ar", D_0007A60C);
+    y ^= (y >> 11);
+    y ^= (y << 7) & 0x9d2c5680UL;
+    y ^= (y << 15) & 0xefc60000UL;
+    y ^= (y >> 18);
 
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/mt19937ar", D_0007A610);
+    return y;
+}
+#undef mag01
 
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/mt19937ar", D_0007A614);
+long genrand_int31(void)
+{
+    return (long)(genrand_int32()>>1);
+}
 
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/mt19937ar", D_0007A618);
+double genrand_real1(void)
+{
+    return genrand_int32()*(1.0/4294967295.0);
+}
 
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/mt19937ar", D_0007A61C);
+double genrand_real2(void)
+{
+    return genrand_int32()*(1.0/4294967296.0);
+}
 
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/mt19937ar", D_0007A620);
+double genrand_real3(void)
+{
+    return (((double)genrand_int32()) + 0.5)*(1.0/4294967296.0);
+}
 
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/mt19937ar", D_0007A624);
-
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/mt19937ar", D_0007A628);
-
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/mt19937ar", D_0007A62C);
-
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/mt19937ar", D_0007A630);
-
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/mt19937ar", D_0007A634);
-
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/mt19937ar", D_0007A638);
-
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/mt19937ar", D_0007A63C);
-
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/mt19937ar", D_0007A640);
-
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/mt19937ar", D_0007A644);
-
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/mt19937ar", D_0007A648);
-
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/mt19937ar", D_0007A64C);
+double genrand_res53(void)
+{
+    unsigned long a=genrand_int32()>>5, b=genrand_int32()>>6;
+    return(a*67108864.0+b)*(1.0/9007199254740992.0);
+}
