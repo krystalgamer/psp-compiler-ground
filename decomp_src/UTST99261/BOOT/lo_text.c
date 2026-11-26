@@ -722,6 +722,12 @@ void proc_msg_JL10(void *arg0) {
     }
 }
 
+void actSubmitForm();
+void actResetForm();
+void actFormInput();
+int getAncestorForm();
+int getInputType();
+
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_text", proc_msg_JL11);
 
 void proc_msg_JL12(JMSG *m) {
@@ -752,7 +758,76 @@ void proc_msg_JL13(TMSG *msg) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_text", proc_msg_JL14);
+typedef struct {
+    int kind;
+    int node;
+    int len;                    /* 0x8 */
+    u16 *str;                   /* 0xC */
+} JIMGREQ;
+typedef struct {
+    int unk0;
+    int user;
+    int pass;
+} JAUTH;
+char *URL_toAbsoluteURL();
+int requestImageData();
+JAUTH *HST_searchAuthorizationDB();
+void reserveGetRequest();
+void relayoutAtBody();
+void drawObject();
+extern void *ui_global;
+
+void proc_msg_JL14(JMSG *m) {
+    THIST *h;
+    JIMGREQ *r;
+    void *body;
+    void *box;
+    char *buf;
+    char *url;
+    int ret;
+    JAUTH *a;
+
+    url = NULL;
+    h = HST_searchSessionIDHistoryNode(m->session);
+    if (h != NULL && h->body != NULL && checkBoxValidity(h->body) != 0) {
+        r = m->data;
+        body = h->body;
+        box = NULL;
+        if (r->kind == 1) {
+            box = Node_getBox(r->node);
+        }
+        buf = MEM_malloc(0, r->len * 3 + 1);
+        if (buf != NULL) {
+            if (((int *)ui_global)[0x98 / 4] == 0) {
+                buf[ucs2ToUtf8(buf, r->str, r->len)] = 0;
+                url = URL_toAbsoluteURL(((int **)body)[8][0x28 / 4], buf);
+                if (url != NULL) {
+                    if (r->kind == 1) {
+                        ret = requestImageData(box, url, ((int **)body)[8][0x38 / 4]);
+                        if (ret == 1) {
+                            drawObject(box);
+                        } else if (ret == 2) {
+                            relayoutAtBody(body, 0);
+                            drawObject(body);
+                        }
+                    } else {
+                        a = HST_searchAuthorizationDB(url);
+                        if (a == NULL) {
+                            reserveGetRequest(0, url, m->session, ((int *)h)[0x30 / 4], ((int *)h)[0xA4 / 4], 0, 0, 0);
+                        } else {
+                            reserveGetRequest(0, url, m->session, ((int *)h)[0x30 / 4], ((int *)h)[0xA4 / 4], 0, a->user, a->pass);
+                        }
+                    }
+                }
+            }
+            if (url != NULL) {
+                MEM_free(0, url);
+            }
+            MEM_free(0, buf);
+        }
+    }
+    MEM_free(0, m->data);
+}
 
 void proc_msg_JL15(JMSG *m) {
     THIST *h;
