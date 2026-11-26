@@ -1,69 +1,82 @@
 #include "common.h"
+#include "gmo_callback_sdk.h"
 
-/* declarations recovered from DWARF (UTST99332 graphics_model gmo_callback) */
-typedef unsigned int size_t;
-typedef struct SceGimPicture SceGimPicture;
-struct SceGimPicture;
-
-extern void *(*g_alloc_memory)(size_t);
-extern void (*g_free_memory)(void *);
-extern void *(*g_alloc_memory2)(size_t);
-extern void (*g_free_memory2)(void *);
-extern SceGimPicture *(*g_get_picture)(const char *);
-extern void (*g_set_picture)(const char *, SceGimPicture *);
-
-void sceGmoModelSetMemoryManager(void *(*alloc_func)(size_t), void (*free_func)(void *));
-void sceGmoModelSetMemoryManager2(void *(*alloc_func)(size_t), void (*free_func)(void *));
-void sceGmoModelSetPictureManager(SceGimPicture *(*get_func)(const char *), void (*set_func)(const char *, SceGimPicture *));
-void *sceGmoModelAllocMemory(size_t size);
-void *sceGmoModelAllocMemory2(size_t size);
-void sceGmoModelFreeMemory(void *addr);
-void sceGmoModelFreeMemory2(void *addr);
-SceGimPicture *sceGmoModelImportPicture(const char *filename);
-void sceGmoModelExportPicture(const char *filename, SceGimPicture *picture);
-
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_callback", sceGmoModelSetMemoryManager);
-
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_callback", sceGmoModelSetMemoryManager2);
-
-void sceGmoModelSetPictureManager(SceGimPicture *(*get_func)(const char *), void (*set_func)(const char *, SceGimPicture *))
+void sceGmoModelSetMemoryManager( void *(*alloc_func)( size_t size ), void (*free_func)( void *addr ) )
 {
-	g_get_picture = get_func;
-	g_set_picture = set_func;
+ if ( alloc_func == 0 ) alloc_func = malloc ;
+ if ( free_func == 0 ) free_func = free ;
+ g_alloc_memory[ 0 ] = alloc_func ;
+ g_free_memory[ 0 ] = free_func ;
+ g_alloc_memory[ 1 ] = alloc_func ;
+ g_free_memory[ 1 ] = free_func ;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_callback", sceGmoModelOpenMemoryCluster);
-
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_callback", sceGmoModelOpenMemoryCluster2);
-
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_callback", sceGmoModelCloseMemoryCluster);
-
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_callback", sceGmoModelCloseMemoryCluster2);
-
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_callback", sceGmoModelAllocMemory);
-
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_callback", sceGmoModelAllocMemory2);
-
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_callback", sceGmoModelFreeMemory);
-
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_callback", sceGmoModelFreeMemory2);
-
-SceGimPicture *sceGmoModelImportPicture(const char *filename)
+void sceGmoModelSetMemoryManager2( void *(*alloc_func)( size_t size ), void (*free_func)( void *addr ) )
 {
-	if (g_get_picture == NULL)
-		return NULL;
-	if (filename == NULL)
-		filename = "";
-	return g_get_picture(filename);
+ if ( alloc_func == 0 ) alloc_func = malloc ;
+ if ( free_func == 0 ) free_func = free ;
+ g_alloc_memory[ 1 ] = alloc_func ;
+ g_free_memory[ 1 ] = free_func ;
 }
 
-void sceGmoModelExportPicture(const char *filename, SceGimPicture *picture)
+void sceGmoModelSetPictureManager( SceGimPicture *(*get_func)( const char *filename ), void (*set_func)( const char *filename, SceGimPicture *picture ) )
 {
-	if (g_set_picture == NULL)
-		return;
-	if (filename == NULL)
-		filename = "";
-	g_set_picture(filename, picture);
+ g_get_picture = get_func ;
+ g_set_picture = set_func ;
+}
+
+void *sceGmoModelOpenMemoryCluster( size_t size, size_t align )
+{
+ return open_cluster( 0, size, align ) ;
+}
+
+void *sceGmoModelOpenMemoryCluster2( size_t size, size_t align )
+{
+ return open_cluster( 1, size, align ) ;
+}
+
+int sceGmoModelCloseMemoryCluster()
+{
+ return close_cluster( 0 ) ;
+}
+
+int sceGmoModelCloseMemoryCluster2()
+{
+ return close_cluster( 1 ) ;
+}
+
+void *sceGmoModelAllocMemory( size_t size )
+{
+ return ( size == 0 ) ? 0 : alloc_from_cluster( 0, size ) ;
+}
+
+void *sceGmoModelAllocMemory2( size_t size )
+{
+ return ( size == 0 ) ? 0 : alloc_from_cluster( 1, size ) ;
+}
+
+void sceGmoModelFreeMemory( void *addr )
+{
+ if ( addr != 0 ) free_from_cluster( 0, addr ) ;
+}
+
+void sceGmoModelFreeMemory2( void *addr )
+{
+ if ( addr != 0 ) free_from_cluster( 1, addr ) ;
+}
+
+SceGimPicture *sceGmoModelImportPicture( const char *filename )
+{
+ if ( g_get_picture == 0 ) return 0 ;
+ if ( filename == 0 ) filename = "" ;
+ return g_get_picture( filename ) ;
+}
+
+void sceGmoModelExportPicture( const char *filename, SceGimPicture *picture )
+{
+ if ( g_set_picture == 0 ) return ;
+ if ( filename == 0 ) filename = "" ;
+ g_set_picture( filename, picture ) ;
 }
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_callback", open_cluster);
@@ -73,6 +86,5 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_callback", close_clus
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_callback", alloc_from_cluster);
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_callback", free_from_cluster);
-
 
 INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_callback", __psp_libinfo___7EC2C);
