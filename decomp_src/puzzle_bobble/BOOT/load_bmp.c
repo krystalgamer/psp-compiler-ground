@@ -1,221 +1,284 @@
-#include "common.h"
+/* SDK gim_picture library: devkit 0.6.0's src/gim_picture/load_bmp.c, preprocessed (macros expanded) */
+#include "umdt/graphics_model/gim_private.h"
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/load_bmp", sceGimPictureLoadBmp);
+typedef struct {
+ short type ;
+ int size ;
+ short res1 ;
+ short res2 ;
+ int bits ;
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/load_bmp", read_header_17940);
+ int size2 ;
+ int width ;
+ int height ;
+ short plane_count ;
+ short bit_count ;
+ int compress ;
+ int image_size ;
+ int xppm ;
+ int yppm ;
+ int used_cols ;
+ int important ;
+} BmpHeader ;
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/load_bmp", read_short_17A1C);
+static void *read_header( void *src, BmpHeader *header ) ;
+static void *read_short( void *src, short *val ) ;
+static void *read_int( void *src, int *val ) ;
 
-static const void *read_int(const void *src, int *val)
+static void copy_idx4( void *dst, void *src, int width, int height ) ;
+static void copy_idx8( void *dst, void *src, int width, int height ) ;
+static void copy_5551( void *dst, void *src, int width, int height ) ;
+static void copy_5650( void *dst, void *src, int width, int height ) ;
+static void copy_8880( void *dst, void *src, int width, int height ) ;
+static void copy_8888( void *dst, void *src, int width, int height, int alpha ) ;
+static void copy_rle4( void *dst, void *src, int width, int height ) ;
+static void copy_rle8( void *dst, void *src, int width, int height ) ;
+
+_Bool sceGimPictureLoadBmp( SceGimPicture *picture, const void *buf, int size )
 {
-	if ((int)src & 3) {
-		const unsigned char *cp = src;
+ if ( picture == 0 ) return 0 ;
+ sceGimPictureUnload( picture ) ;
 
-		*val = (cp[3] << 24) | (cp[2] << 16) | (cp[1] << 8) | cp[0];
-	} else {
-		*val = *(const int *)src;
-	}
-	return (const char *)src + 4;
+ BmpHeader header ;
+ read_header( (void *)buf, &header ) ;
+
+ int clut_size = ( header.bits - 54 ) / 4 ;
+ if ( clut_size > 0 && header.bit_count < 16 ) {
+  int width = ( clut_size <= 16 ) ? 16 : 256 ;
+  sceGimPictureReallocPalette( picture, 3, width, 1, 1, 0 ) ;
+  void *dst = sceGimPictureGetPalettePixels( picture, 0, 0 ) ;
+  if ( dst == 0 ) return 0 ;
+  void *src = (char *)buf + 54 ;
+  copy_8888( dst, src, clut_size, 1, 255 ) ;
+ }
+
+ void *src = (char *)buf + header.bits ;
+ int width = header.width ;
+ int height = header.height ;
+ switch ( header.bit_count ) {
+     case 4 : {
+  sceGimPictureReallocImage( picture, 4, width, height, 1, 1, 0 ) ;
+  void *dst = sceGimPictureGetImagePixels( picture, 0, 0 ) ;
+  if ( dst == 0 ) return 0 ;
+  if ( header.compress == 0 ) {
+   copy_idx4( dst, src, width, height ) ;
+  } else {
+   copy_rle4( dst, src, width, height ) ;
+  }
+  break ;
+     }
+     case 8 : {
+  sceGimPictureReallocImage( picture, 5, width, height, 1, 1, 0 ) ;
+  void *dst = sceGimPictureGetImagePixels( picture, 0, 0 ) ;
+  if ( dst == 0 ) return 0 ;
+  if ( header.compress == 0 ) {
+   copy_idx8( dst, src, width, height ) ;
+  } else {
+   copy_rle8( dst, src, width, height ) ;
+  }
+  break ;
+     }
+     case 16 : {
+  sceGimPictureReallocImage( picture, 1, width, height, 1, 1, 0 ) ;
+  void *dst = sceGimPictureGetImagePixels( picture, 0, 0 ) ;
+  if ( dst == 0 ) return 0 ;
+  if ( header.compress == 0 ) {
+   copy_5551( dst, src, width, height ) ;
+  } else {
+   picture->m_image->format = 0 ;
+   copy_5650( dst, src, width, height ) ;
+  }
+  break ;
+     }
+     case 24 : {
+  sceGimPictureReallocImage( picture, 3, width, height, 1, 1, 0 ) ;
+  void *dst = sceGimPictureGetImagePixels( picture, 0, 0 ) ;
+  if ( dst == 0 ) return 0 ;
+  copy_8880( dst, src, width, height ) ;
+  break ;
+     }
+     case 32 : {
+  sceGimPictureReallocImage( picture, 3, width, height, 1, 1, 0 ) ;
+  void *dst = sceGimPictureGetImagePixels( picture, 0, 0 ) ;
+  if ( dst == 0 ) return 0 ;
+  copy_8888( dst, src, width, height, 0 ) ;
+  break ;
+     }
+     default : {
+  ;
+  return 0 ;
+     }
+ }
+ sceKernelDcacheWritebackAll();
+ return 1 ;
 }
 
-static void copy_idx4(void *dst, const void *src, int width, int height)
+void *read_header( void *src, BmpHeader *header )
 {
-	int pitch;
-	int pitch2;
-	const char *sp;
-	char *dp;
+ src = read_short( src, &header->type ) ;
+ src = read_int( src, &header->size ) ;
+ src = read_short( src, &header->res1 ) ;
+ src = read_short( src, &header->res2 ) ;
+ src = read_int( src, &header->bits ) ;
 
-	width = (width + 1) / 2;
-	pitch = (width + 15) & ~15;
-	pitch2 = (width + 3) & ~3;
-	sp = src;
-	dp = (char *)dst + pitch * (height - 1);
-	{
-		int i;
-
-		for (i = 0; i < height; i++) {
-			const char *sp2 = sp;
-			char *dp2 = dp;
-			{
-				int j;
-
-				for (j = 0; j < width; j++) {
-					int s = *(const unsigned char *)sp2++;
-
-					*dp2++ = (s << 4) | (s >> 4);
-				}
-			}
-			sp += pitch2;
-			dp -= pitch;
-		}
-	}
+ src = read_int( src, &header->size2 ) ;
+ src = read_int( src, &header->width ) ;
+ src = read_int( src, &header->height ) ;
+ src = read_short( src, &header->plane_count ) ;
+ src = read_short( src, &header->bit_count ) ;
+ src = read_int( src, &header->compress ) ;
+ src = read_int( src, &header->image_size ) ;
+ src = read_int( src, &header->xppm ) ;
+ src = read_int( src, &header->yppm ) ;
+ src = read_int( src, &header->used_cols ) ;
+ src = read_int( src, &header->important ) ;
+ return src ;
 }
 
-static void copy_idx8(void *dst, const void *src, int width, int height)
+void *read_short( void *src, short *val )
 {
-	int pitch;
-	int pitch2;
-	const char *sp;
-	char *dp;
-
-	pitch = (width + 15) & ~15;
-	pitch2 = (width + 3) & ~3;
-	sp = src;
-	dp = (char *)dst + pitch * (height - 1);
-	{
-		int i;
-
-		for (i = 0; i < height; i++) {
-			const char *sp2 = sp;
-			char *dp2 = dp;
-			{
-				int j;
-
-				for (j = 0; j < width; j++)
-					*dp2++ = *sp2++;
-			}
-			sp += pitch2;
-			dp -= pitch;
-		}
-	}
+ if ( 1 & (int)src ) {
+  unsigned char *cp = (unsigned char *)src ;
+  *val = ( cp[ 1 ] << 8 ) | cp[ 0 ] ;
+ } else {
+  *val = *(short *)src ;
+ }
+ return (short *)src + 1 ;
 }
 
-static void copy_5551(void *dst, const void *src, int width, int height)
+void *read_int( void *src, int *val )
 {
-	int pitch;
-	int pitch2;
-	const short int *sp;
-	short int *dp;
-
-	pitch = (width + 7) & ~7;
-	pitch2 = (width + 1) & ~1;
-	sp = src;
-	dp = (short int *)dst + pitch * (height - 1);
-	{
-		int i;
-
-		for (i = 0; i < height; i++) {
-			const short int *sp2 = sp;
-			short int *dp2 = dp;
-			{
-				int j;
-
-				for (j = 0; j < width; j++) {
-					int s = *sp2++;
-					int r = (s & 0x7c00) >> 10;
-					int b = s & 0x001f;
-
-					*dp2++ = (s & 0x03e0) | r | (b << 10) | 0x8000;
-				}
-			}
-			sp += pitch2;
-			dp -= pitch;
-		}
-	}
+ if ( 3 & (int)src ) {
+  unsigned char *cp = (unsigned char *)src ;
+  *val = ( cp[ 3 ] << 24 ) | ( cp[ 2 ] << 16 ) | ( cp[ 1 ] << 8 ) | cp[ 0 ] ;
+ } else {
+  *val = *(int *)src ;
+ }
+ return (int *)src + 1 ;
 }
 
-static void copy_5650(void *dst, const void *src, int width, int height)
+void copy_idx4( void *dst, void *src, int width, int height )
 {
-	int pitch;
-	int pitch2;
-	const short int *sp;
-	short int *dp;
-
-	pitch = (width + 7) & ~7;
-	pitch2 = (width + 1) & ~1;
-	sp = src;
-	dp = (short int *)dst + pitch * (height - 1);
-	{
-		int i;
-
-		for (i = 0; i < height; i++) {
-			const short int *sp2 = sp;
-			short int *dp2 = dp;
-			{
-				int j;
-
-				for (j = 0; j < width; j++) {
-					int s = *sp2++;
-					int r = (s & 0xf800) >> 11;
-					int b = s & 0x001f;
-
-					*dp2++ = r | (s & 0x07e0) | (b << 11);
-				}
-			}
-			sp += pitch2;
-			dp -= pitch;
-		}
-	}
+ width = ( width + 1 ) / 2 ;
+ int pitch = ( width + 3 ) & ~3 ;
+ int pitch2 = ( width + 15 ) & ~15 ;
+ char *sp = (char *)src ;
+ char *dp = (char *)dst + pitch2 * ( height - 1 ) ;
+ { int i ; for ( i = 0 ; i < height ; i ++ ) {
+  char *sp2 = sp ;
+  char *dp2 = dp ;
+  { int j ; for ( j = 0 ; j < width ; j ++ ) {
+   int src = 0xff & sp2[ 0 ] ;
+   dp2[ 0 ] = ( src << 4 ) | ( src >> 4 ) ;
+   dp2 ++ ;
+   sp2 ++ ;
+  } }
+  sp += pitch ;
+  dp -= pitch2 ;
+ } }
 }
 
-static void copy_8880(void *dst, const void *src, int width, int height)
+void copy_idx8( void *dst, void *src, int width, int height )
 {
-	int pitch;
-	int pitch2;
-	const char *sp;
-	char *dp;
-
-	pitch = (width * 4 + 15) & ~15;
-	pitch2 = (width * 3 + 3) & ~3;
-	sp = src;
-	dp = (char *)dst + pitch * (height - 1);
-	{
-		int i;
-
-		for (i = 0; i < height; i++) {
-			const char *sp2 = sp;
-			char *dp2 = dp;
-			{
-				int j;
-
-				for (j = 0; j < width; j++) {
-					dp2[0] = sp2[2];
-					dp2[1] = sp2[1];
-					dp2[2] = sp2[0];
-					dp2[3] = 0xff;
-					sp2 += 3;
-					dp2 += 4;
-				}
-			}
-			sp += pitch2;
-			dp -= pitch;
-		}
-	}
+ int pitch = ( width + 3 ) & ~3 ;
+ int pitch2 = ( width + 15 ) & ~15 ;
+ char *sp = (char *)src ;
+ char *dp = (char *)dst + pitch2 * ( height - 1 ) ;
+ { int i ; for ( i = 0 ; i < height ; i ++ ) {
+  char *sp2 = sp ;
+  char *dp2 = dp ;
+  { int j ; for ( j = 0 ; j < width ; j ++ ) {
+   dp2[ 0 ] = sp2[ 0 ] ;
+   dp2 ++ ;
+   sp2 ++ ;
+  } }
+  sp += pitch ;
+  dp -= pitch2 ;
+ } }
 }
 
-static void copy_8888(void *dst, const void *src, int width, int height, int alpha)
+void copy_5551( void *dst, void *src, int width, int height )
 {
-	int pitch;
-	int pitch2;
-	const char *sp;
-	char *dp;
+ int pitch = ( width + 1 ) & ~1 ;
+ int pitch2 = ( width + 7 ) & ~7 ;
+ short *sp = (short *)src ;
+ short *dp = (short *)dst + pitch2 * ( height - 1 ) ;
+ { int i ; for ( i = 0 ; i < height ; i ++ ) {
+  short *sp2 = sp ;
+  short *dp2 = dp ;
+  { int j ; for ( j = 0 ; j < width ; j ++ ) {
+   int src = *( sp2 ++ ) ;
+   int r = ( 0x7c00 & src ) >> 10 ;
+   int b = ( 0x001f & src ) << 10 ;
+   *( dp2 ++ ) = 0x8000 | ( 0x03e0 & src ) | r | b ;
+  } }
+  sp += pitch ;
+  dp -= pitch2 ;
+ } }
+}
 
-	pitch = (width * 4 + 15) & ~15;
-	pitch2 = width * 4;
-	sp = src;
-	dp = (char *)dst + pitch * (height - 1);
-	{
-		int i;
+void copy_5650( void *dst, void *src, int width, int height )
+{
+ int pitch = ( width + 1 ) & ~1 ;
+ int pitch2 = ( width + 7 ) & ~7 ;
+ short *sp = (short *)src ;
+ short *dp = (short *)dst + pitch2 * ( height - 1 ) ;
+ { int i ; for ( i = 0 ; i < height ; i ++ ) {
+  short *sp2 = sp ;
+  short *dp2 = dp ;
+  { int j ; for ( j = 0 ; j < width ; j ++ ) {
+   int src = *( sp2 ++ ) ;
+   int r = ( 0xf800 & src ) >> 11 ;
+   int b = ( 0x001f & src ) << 11 ;
+   *( dp2 ++ ) = r | ( 0x07e0 & src ) | b ;
+  } }
+  sp += pitch ;
+  dp -= pitch2 ;
+ } }
+}
 
-		for (i = 0; i < height; i++) {
-			const char *sp2 = sp;
-			char *dp2 = dp;
-			{
-				int j;
+void copy_8880( void *dst, void *src, int width, int height )
+{
+ int pitch = ( width * 3 + 3 ) & ~3 ;
+ int pitch2 = ( width * 4 + 15 ) & ~15 ;
+ char *sp = (char *)src ;
+ char *dp = (char *)dst + pitch2 * ( height - 1 ) ;
+ { int i ; for ( i = 0 ; i < height ; i ++ ) {
+  char *sp2 = sp ;
+  char *dp2 = dp ;
+  { int j ; for ( j = 0 ; j < width ; j ++ ) {
+   dp2[ 0 ] = sp2[ 2 ] ;
+   dp2[ 1 ] = sp2[ 1 ] ;
+   dp2[ 2 ] = sp2[ 0 ] ;
+   dp2[ 3 ] = (char)0xff ;
+   dp2 += 4 ;
+   sp2 += 3 ;
+  } }
+  sp += pitch ;
+  dp -= pitch2 ;
+ } }
+}
 
-				for (j = 0; j < width; j++) {
-					dp2[0] = sp2[2];
-					dp2[1] = sp2[1];
-					dp2[2] = sp2[0];
-					dp2[3] = sp2[3] | alpha;
-					sp2 += 4;
-					dp2 += 4;
-				}
-			}
-			sp += pitch2;
-			dp -= pitch;
-		}
-	}
+void copy_8888( void *dst, void *src, int width, int height, int alpha )
+{
+ int pitch = width * 4 ;
+ int pitch2 = ( width * 4 + 15 ) & ~15 ;
+ char *sp = (char *)src ;
+ char *dp = (char *)dst + pitch2 * ( height - 1 ) ;
+ { int i ; for ( i = 0 ; i < height ; i ++ ) {
+  char *sp2 = sp ;
+  char *dp2 = dp ;
+  { int j ; for ( j = 0 ; j < width ; j ++ ) {
+   dp2[ 0 ] = sp2[ 2 ] ;
+   dp2[ 1 ] = sp2[ 1 ] ;
+   dp2[ 2 ] = sp2[ 0 ] ;
+   dp2[ 3 ] = sp2[ 3 ] | alpha ;
+   dp2 += 4 ;
+   sp2 += 4 ;
+  } }
+  sp += pitch ;
+  dp -= pitch2 ;
+ } }
 }
 
 void copy_rle4( void *dst, void *src, int width, int height )
@@ -284,59 +347,46 @@ void copy_rle4( void *dst, void *src, int width, int height )
  }
 }
 
-static void copy_rle8(void *dst, const void *src, int width, int height)
+void copy_rle8( void *dst, void *src, int width, int height )
 {
-	int pitch2;
-	const char *sp;
-	char *dp;
-	int x_pos;
-	int y_pos;
-	char *dp2;
+ int pitch2 = ( width + 15 ) & ~15 ;
+ char *sp = (char *)src ;
+ char *dp = (char *)dst + pitch2 * ( height - 1 ) ;
 
-	pitch2 = (width + 15) & ~15;
-	sp = src;
-	dp = (char *)dst + pitch2 * (height - 1);
-	x_pos = 0;
-	y_pos = 0;
-	dp2 = dp;
-	while (y_pos < height) {
-		int count;
-		_Bool run;
+ int x_pos = 0 ;
+ int y_pos = 0 ;
+ char *dp2 = dp ;
+ while ( y_pos < height ) {
+  int count = 255 & *( sp ++ ) ;
+  _Bool run = 1 ;
+  if ( count == 0 ) {
+   count = 255 & *( sp ++ ) ;
+   if ( count < 3 ) {
+    if ( count == 1 ) break ;
+    if ( count == 0 ) {
+     dp2 = ( dp -= pitch2 ) ;
+     y_pos ++ ;
+     x_pos = 0 ;
+    } else {
 
-		count = *(const unsigned char *)sp++;
-		run = 1;
-		if (count == 0) {
-			count = *(const unsigned char *)sp++;
-			if (count < 3) {
-				if (count == 1)
-					break;
-				if (count == 0) {
-					dp -= pitch2;
-					dp2 = dp;
-					y_pos++;
-					x_pos = 0;
-				} else {
-					sp += 2;
-				}
-				continue;
-			}
-			run = 0;
-		}
-		if (count > width - x_pos)
-			count = width - x_pos;
-		if (run) {
-			int i;
-
-			for (i = 0; i < count; i++)
-				*dp2++ = *sp;
-			sp++;
-		} else {
-			int i;
-
-			for (i = 0; i < count; i++)
-				*dp2++ = *sp++;
-			sp += count & 1;
-		}
-		x_pos += count;
-	}
+     sp += 2 ;
+    }
+    continue ;
+   }
+   run = 0 ;
+  }
+  if ( count >= width - x_pos ) count = width - x_pos ;
+  if ( run ) {
+   { int i ; for ( i = 0 ; i < count ; i ++ ) {
+    *( dp2 ++ ) = *sp ;
+   } }
+   sp ++ ;
+  } else {
+   { int i ; for ( i = 0 ; i < count ; i ++ ) {
+    *( dp2 ++ ) = *( sp ++ ) ;
+   } }
+   sp += ( 1 & count ) ;
+  }
+  x_pos += count ;
+ }
 }
