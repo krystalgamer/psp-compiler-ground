@@ -5,7 +5,7 @@ M2C_UNK MEM_free(M2C_UNK, void *);                  /* extern */
 M2C_UNK OS_timer_clear(int);                        /* extern */
 M2C_UNK OS_timer_stop(int);                         /* extern */
 extern void *D_00584CDC;
-void *MEM_malloc(M2C_UNK, M2C_UNK);                 /* extern */
+void *MEM_malloc();
 int OS_timer_set(int, int, int, int, int, int, int); /* extern */
 M2C_UNK OS_timer_start(int);                        /* extern */
 void *HST_searchSessionIDHistoryNode(int);          /* extern */
@@ -63,6 +63,54 @@ void *getViewClientSize();
 void getBodyAbsolutePos();
 void actDefaultClickAction();
 void actFormInput();
+void *HST_getHeadHistoryNode(void);
+void GUI_Toolkit_mutexLock(void);
+void GUI_Toolkit_mutexUnlock(void);
+void delLLISTByHistoryTree();
+void delLLISTByDocumentSession();
+void freeBoxTree();
+void reinitBodyBox();
+void freeBox();
+void delSelectListBySID();
+int make_msg_LP13();
+typedef struct {
+    u8 unk0[0x22];
+    s16 pad22;                  /* 0x22 */
+    s16 unk24;
+    s16 pad26;                  /* 0x26 */
+    s16 unk28;
+    s16 pad2A;                  /* 0x2A */
+    s16 unk2C;
+    s16 pad2E;                  /* 0x2E */
+    s16 marginTop;              /* 0x30 */
+    s16 pad32;                  /* 0x32 */
+    s16 unk34;
+    s16 pad36;                  /* 0x36 */
+    u8 unk38[0x30];
+    u8 unk68;                   /* 0x68 */
+} TSTYLE;
+typedef struct {
+    char *str;
+    int unk4;
+    int unk8;
+    int len;                    /* 0xC */
+    u8 unk10;
+} TTEXT;
+typedef struct {
+    u8 unk0[0x10];
+    int x;                      /* 0x10 */
+    int y;
+    int w;
+    int h;
+    TTEXT *geom;                /* 0x20 */
+    TSTYLE *style;              /* 0x24 */
+    u8 unk28[0x10];
+    s16 content;                /* 0x38 */
+    s16 unk3A;
+    s16 html;                   /* 0x3C */
+} TBOX;
+TBOX *createBox();
+void insLinkBox();
 typedef struct {
     int unk0;
     JSEVENT ev;                 /* 0x4 */
@@ -142,7 +190,37 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_text", divOverText);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_text", divOverText_pre);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_text", createTextBox);
+TBOX *createTextBox(void *ctx, TBOX *parent, TBOX *prev, char *str, int len, int w) {
+    TBOX *b;
+    TTEXT *g;
+
+    if (str == NULL) {
+        return NULL;
+    }
+    b = createBox(ctx, 0);
+    if (b == NULL) {
+        return NULL;
+    }
+    insLinkBox(b, parent, prev);
+    g = MEM_malloc(0, 0x14);
+    g->str = NULL;
+    g->unk4 = 0;
+    g->unk8 = 0;
+    g->len = 0;
+    *(int *)&g->unk10 = 0;
+    b->geom = g;
+    b->content = 9;
+    b->html = 1;
+    b->style = prev->style;
+    b->geom->str = str;
+    b->geom->len = len;
+    b->geom->unk10 = b->style->unk68;
+    b->w = w + b->style->pad26 + b->style->pad36 + b->style->pad2E + b->style->pad2A + b->style->pad32 + b->style->pad22;
+    b->h = prev->h;
+    b->x += parent->style->pad36;
+    b->y += parent->style->marginTop;
+    return b;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_text", divTextBox);
 
@@ -449,4 +527,46 @@ void proc_msg_JL13(TMSG *msg) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_text", proc_msg_JL14);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_text", proc_msg_JL15);
+void proc_msg_JL15(JMSG *m) {
+    THIST *h;
+    THIST *head;
+    void *body;
+
+    h = HST_searchSessionIDHistoryNode(m->session);
+    head = HST_getHeadHistoryNode();
+    if (head == NULL) {
+        return;
+    }
+    if (h == NULL) {
+        body = head->body;
+    } else {
+        body = h->body;
+    }
+    if (body == NULL) {
+        return;
+    }
+    GUI_Toolkit_mutexLock();
+    if (m->session != 0) {
+        if (head != h) {
+            delLLISTByHistoryTree(&REQUEST_LLIST, h);
+            delLLISTByDocumentSession(&REQUEST_LLIST, m->session);
+            freeBoxTree(body, 0);
+            reinitBodyBox(body, 0);
+        } else {
+            delLLISTByDocumentSession(&REQUEST_LLIST, 0);
+            freeBoxTree(body, 0);
+            freeBox(body, 0);
+            h->body = NULL;
+        }
+    } else {
+        delLLISTByDocumentSession(&REQUEST_LLIST, 0);
+        freeBoxTree(body, 0);
+        freeBox(body, 0);
+        head->body = NULL;
+    }
+    GUI_Toolkit_mutexUnlock();
+    delSelectListBySID(m->session);
+    lo_global.flags &= ~8;
+    lo_global.flags &= ~0x20;
+    putLLIST((M2C_UNK *)&REQUEST_LLIST, make_msg_LP13(m));
+}
