@@ -35,7 +35,54 @@ void parseReleaseResource(void) {
     parseHST_deleteHistoryNode(0, 0);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", parseDocument);
+int parseDocument(PCtx *c) {
+    if (c->buf == NULL) {
+        return 0;
+    }
+    while ((c->buf->count != c->buf->x04 - 1 || c->x1C[0] != c->x1C[1] - 1) && c->x44[2] != 2 && c->state != 15 && c->x11C[1] != 1) {
+        switch (parseCheckTag(c)) {
+        case 1:
+            c->x44[1] = 1;
+            parseElement(c);
+            break;
+        case 2:
+            parseEndTag(c, 2);
+            break;
+        case 3:
+            parseEndTag(c, 1);
+            break;
+        case 4:
+            parseComment(c);
+            break;
+        case 5:
+            parseDocType(c);
+            break;
+        case 6:
+            parseMarkedSection(c);
+            break;
+        case 7:
+            parseProcessingInstruction(c);
+            break;
+        case 8:
+            parseSkipChar(c, 2);
+            break;
+        case 9:
+            parseInvalidComment(c);
+            break;
+        case 0:
+        default:
+            parseSkipChar(c, 1);
+            break;
+        case -1:
+            break;
+        }
+        if (c->x44[2] != 2 && c->state != 15 && c->x11C[1] != 1) {
+            c->x44[1] = 0;
+            parseContents(c);
+        }
+    }
+    return 0;
+}
 
 int parseDocumentTEXT(PCtx *c) {
     PStrBuf *b;
