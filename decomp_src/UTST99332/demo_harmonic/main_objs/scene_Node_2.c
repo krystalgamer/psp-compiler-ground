@@ -1,0 +1,55 @@
+#include "common.h"
+
+INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Node_2", _Z41__static_initialization_and_destruction_0ii_8E44C);
+
+void _ZN5scene4Node16set_default_nameEv(void) {
+}
+
+INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Node_2", _ZN5scene4Node7MembersC2ESsb);
+
+INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Node_2", _ZN5scene4Node7MembersC1ESsb);
+
+INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Node_2", _ZN5scene4NodeC2ESsb);
+
+INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Node_2", _ZN5scene4NodeC1ESsb);
+
+INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Node_2", _ZNK5scene4Node8isMappedEv);
+
+INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Node_2", _ZNK5scene4Node7getNameEv);
+
+INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Node_2", _ZNK5scene4Node11getBasenameEv);
+
+INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Node_2", _ZN5scene4Node7setNameESs);
+
+INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Node_2", _ZN5scene4NodeD2Ev);
+
+INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Node_2", _ZN5scene4NodeD1Ev);
+
+INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Node_2", _ZN5scene4NodeD0Ev);
+
+void _ZN5scene4Node7flattenERN4math14TransformStackE(void) {
+}
+
+INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Node_2", _ZN5scene4Node15incrParentCountEv);
+
+INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Node_2", _ZN5scene4Node15decrParentCountEv);
+
+INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Node_2", _ZNK5scene4Node14getParentCountEv);
+
+INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Node_2", _ZNK5scene4Node14getCreateCountEv);
+
+INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Node_2", _ZN5scene4Node6setTmpEj);
+
+INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Node_2", _ZNK5scene4Node6getTmpEv);
+
+INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Node_2", _ZN5scene4Node8setMagicEj);
+
+INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Node_2", _ZNK5scene4Node8getMagicEv);
+
+INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Node_2", _GLOBAL__I__ZN5scene4Node19constructor_counterE);
+
+INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Node_2", _GLOBAL__D__ZN5scene4Node19constructor_counterE);
+
+INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Node_2", _ZNK5scene4Node11getTypeNameEv);
+
+INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Node_2", _ZNK5scene4Node5cloneESs);

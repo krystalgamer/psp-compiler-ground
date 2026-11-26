@@ -1,0 +1,197 @@
+#include "common.h"
+
+INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_GraphParser", _Z41__static_initialization_and_destruction_0ii_731E4);
+
+INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_GraphParser", _ZN5scene11GraphParserC2ERNS_5GraphESsj);
+
+INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_GraphParser", _ZN5scene11GraphParserC1ERNS_5GraphESsj);
+
+INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_GraphParser", _ZN5scene11GraphParser17parse_new_textureERN11FieldParser5FieldERKSsb);
+
+INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_GraphParser", _ZN5scene11GraphParser16parse_new_switchERN11FieldParser5FieldERKSsb);
+
+INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_GraphParser", _ZN5scene11GraphParser15parse_new_groupERN11FieldParser5FieldERKSsb);
+
+INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_GraphParser", _ZN5scene11GraphParser16parse_new_objectERN11FieldParser5FieldERKSsb);
+
+INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_GraphParser", _ZN5scene11GraphParser15parse_new_shapeERN11FieldParser5FieldERKSsb);
+
+INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_GraphParser", _ZN5scene11GraphParser24parse_new_default_shaderERN11FieldParser5FieldERKSsb);
+
+INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_GraphParser", _ZN5scene11GraphParser19parse_new_transformERN11FieldParser5FieldERKSsb);
+
+INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_GraphParser", _ZN5scene11GraphParser26parse_new_static_transformERN11FieldParser5FieldERKSsb);
+
+INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_GraphParser", _ZN5scene11GraphParser14parse_new_meshERN11FieldParser5FieldERKSsb);
+
+INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_GraphParser", _ZN5scene11GraphParser18parse_new_materialERN11FieldParser5FieldERKSsb);
+
+INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_GraphParser", _ZN5scene11GraphParser17parse_new_unknownERN11FieldParser5FieldERKSsbS5_);
+
+INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_GraphParser", _ZN5scene11GraphParser9parse_newERN11FieldParser5FieldE);
+
+INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_GraphParser", _ZN5scene11GraphParser20parse_push_child_cmdEv);
+
+INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_GraphParser", _ZN5scene11GraphParser24parse_attach_texture_cmdEv);
+
+INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_GraphParser", _ZN5scene11GraphParser25parse_attach_material_cmdEv);
+
+INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_GraphParser", _ZN5scene11GraphParser22parse_attach_setup_cmdEv);
+
+INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_GraphParser", _ZN5scene11GraphParser5parseERN11FieldParser5FieldE);
+
+INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_GraphParser", _ZN5scene5Graph4loadESsjSs);
+
+INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_GraphParser", _GLOBAL__I__ZN5scene11GraphParserC2ERNS_5GraphESsj);
+
+INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_GraphParser", _GLOBAL__D__ZN5scene11GraphParserC2ERNS_5GraphESsj);
+
+INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_GraphParser", _ZN5scene5Graph7newNodeINS_6SwitchEEEN6common6handleIT_EESsb);
+
+INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_GraphParser", _ZN5scene5Graph7newNodeINS_5GroupEEEN6common6handleIT_EESsb);
+
+INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_GraphParser", _ZN6common6handleIN5scene6ObjectEEaSERKS3_);
+
+INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_GraphParser", _ZN5scene5Graph7newNodeINS_5ShapeEEEN6common6handleIT_EESsb);
+
+INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_GraphParser", _ZN5scene5Graph7newNodeINS_15StaticTransformEEEN6common6handleIT_EESsb);
+
+INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_GraphParser", _ZN11FieldParser16step_xxxx_vectorIN3sgl8PositionEEEvRSt6vectorIT_SaIS4_EEjRKNS_5FieldE);
+
+INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_GraphParser", _ZN11FieldParser16step_xxxx_vectorIN3sgl6NormalEEEvRSt6vectorIT_SaIS4_EEjRKNS_5FieldE);
+
+INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_GraphParser", _ZN11FieldParser16step_xxxx_vectorIN3sgl8TexCoordEEEvRSt6vectorIT_SaIS4_EEjRKNS_5FieldE);
+
+INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_GraphParser", _ZN11FieldParser16step_xxxx_vectorIN3sgl5ColorEEEvRSt6vectorIT_SaIS4_EEjRKNS_5FieldE);
+
+INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_GraphParser", _ZN3sgl14PrimitiveIndexIiE3triEv);
+
+INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_GraphParser", _ZN3sgl14PrimitiveIndexIiE6stripsEv);
+
+INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_GraphParser", _ZN5scene5Graph7newNodeINS_8MaterialEEEN6common6handleIT_EESsb);
+
+INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_GraphParser", _ZN5scene5Graph13getMappedNodeINS_4NodeEEEN6common6handleIT_EERKSs);
+
+INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_GraphParser", _ZN5scene5Graph13getMappedNodeINS_8MaterialEEEN6common6handleIT_EERKSs);
+
+INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_GraphParser", _ZN5scene5Graph13getMappedNodeINS_5ShapeEEEN6common6handleIT_EERKSs);
+
+INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_GraphParser", _ZN5scene5Graph13getMappedNodeINS_5SetupEEEN6common6handleIT_EERKSs);
+
+INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_GraphParser", _ZN5scene5Group4findINS_5ShapeEEEvRN6common14handles_vectorINS_4NodeEEEb);
+
+INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_GraphParser", _ZN5scene5Group4findINS_4MeshEEEvRN6common14handles_vectorINS_4NodeEEEb);
+
+INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_GraphParser", _ZNSt6vectorIiSaIiEE5eraseEN9__gnu_cxx17__normal_iteratorIPiS1_EES5_);
+
+INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_GraphParser", _ZN5scene5Graph13getMappedNodeINS_6SwitchEEEN6common6handleIT_EERKSs);
+
+INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_GraphParser", _ZN5scene5Graph13getMappedNodeINS_15StaticTransformEEEN6common6handleIT_EERKSs);
+
+INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_GraphParser", _ZNSt6vectorIN3sgl6VertexESaIS1_EE5eraseEN9__gnu_cxx17__normal_iteratorIPS1_S3_EES7_);
+
+INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_GraphParser", _ZNSt6vectorIN2sh9VectorRGBESaIS1_EE5eraseEN9__gnu_cxx17__normal_iteratorIPS1_S3_EES7_);
+
+INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_GraphParser", _ZNSt6vectorIiSaIiEE14_M_fill_insertEN9__gnu_cxx17__normal_iteratorIPiS1_EEjRKi);
+
+INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_GraphParser", _ZNSt6vectorIN3sgl8PositionESaIS1_EE5eraseEN9__gnu_cxx17__normal_iteratorIPS1_S3_EES7_);
+
+INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_GraphParser", _ZNSt6vectorIN3sgl6NormalESaIS1_EE5eraseEN9__gnu_cxx17__normal_iteratorIPS1_S3_EES7_);
+
+INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_GraphParser", _ZNSt6vectorIN3sgl8TexCoordESaIS1_EE5eraseEN9__gnu_cxx17__normal_iteratorIPS1_S3_EES7_);
+
+INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_GraphParser", _ZNSt6vectorIN3sgl6VertexESaIS1_EE14_M_fill_insertEN9__gnu_cxx17__normal_iteratorIPS1_S3_EEjRKS1_);
+
+INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_GraphParser", _ZNSt6vectorIN2sh9VectorRGBESaIS1_EE14_M_fill_insertEN9__gnu_cxx17__normal_iteratorIPS1_S3_EEjRKS1_);
+
+INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_GraphParser", _ZSt4fillIN9__gnu_cxx17__normal_iteratorIPiSt6vectorIiSaIiEEEEiEvT_S7_RKT0_);
+
+INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_GraphParser", _ZNSt6vectorIN3sgl8PositionESaIS1_EE14_M_fill_insertEN9__gnu_cxx17__normal_iteratorIPS1_S3_EEjRKS1_);
+
+INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_GraphParser", _ZNSt6vectorIN3sgl6NormalESaIS1_EE14_M_fill_insertEN9__gnu_cxx17__normal_iteratorIPS1_S3_EEjRKS1_);
+
+INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_GraphParser", _ZNSt6vectorIN3sgl8TexCoordESaIS1_EE14_M_fill_insertEN9__gnu_cxx17__normal_iteratorIPS1_S3_EEjRKS1_);
+
+INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_GraphParser", _ZSt4fillIN9__gnu_cxx17__normal_iteratorIPN3sgl6VertexESt6vectorIS3_SaIS3_EEEES3_EvT_S9_RKT0_);
+
+INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_GraphParser", _ZSt4fillIN9__gnu_cxx17__normal_iteratorIPN2sh9VectorRGBESt6vectorIS3_SaIS3_EEEES3_EvT_S9_RKT0_);
+
+INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_GraphParser", _ZSt4fillIN9__gnu_cxx17__normal_iteratorIPN3sgl8PositionESt6vectorIS3_SaIS3_EEEES3_EvT_S9_RKT0_);
+
+INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_GraphParser", _ZSt4fillIN9__gnu_cxx17__normal_iteratorIPN3sgl6NormalESt6vectorIS3_SaIS3_EEEES3_EvT_S9_RKT0_);
+
+INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_GraphParser", _ZSt4fillIN9__gnu_cxx17__normal_iteratorIPN3sgl8TexCoordESt6vectorIS3_SaIS3_EEEES3_EvT_S9_RKT0_);
+
+INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_GraphParser", _ZSt24__uninitialized_copy_auxIPN3sgl6VertexES2_ET0_T_S4_S3_12__false_type);
+
+INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_GraphParser", _ZSt26__uninitialized_fill_n_auxIPN3sgl6VertexEjS1_ET_S3_T0_RKT1_12__false_type);
+
+INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_GraphParser", _ZSt24__uninitialized_copy_auxIN9__gnu_cxx17__normal_iteratorIPN3sgl6VertexESt6vectorIS3_SaIS3_EEEES4_ET0_T_SA_S9_12__false_type);
+
+INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_GraphParser", _ZSt24__uninitialized_copy_auxIN9__gnu_cxx17__normal_iteratorIPN3sgl6VertexESt6vectorIS3_SaIS3_EEEES8_ET0_T_SA_S9_12__false_type);
+
+INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_GraphParser", _ZSt26__uninitialized_fill_n_auxIN9__gnu_cxx17__normal_iteratorIPN3sgl6VertexESt6vectorIS3_SaIS3_EEEEjS3_ET_S9_T0_RKT1_12__false_type);
+
+INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_GraphParser", _ZSt24__uninitialized_copy_auxIPN2sh9VectorRGBES2_ET0_T_S4_S3_12__false_type);
+
+INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_GraphParser", _ZSt26__uninitialized_fill_n_auxIPN2sh9VectorRGBEjS1_ET_S3_T0_RKT1_12__false_type);
+
+INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_GraphParser", _ZSt24__uninitialized_copy_auxIN9__gnu_cxx17__normal_iteratorIPN2sh9VectorRGBESt6vectorIS3_SaIS3_EEEES4_ET0_T_SA_S9_12__false_type);
+
+INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_GraphParser", _ZSt24__uninitialized_copy_auxIN9__gnu_cxx17__normal_iteratorIPN2sh9VectorRGBESt6vectorIS3_SaIS3_EEEES8_ET0_T_SA_S9_12__false_type);
+
+INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_GraphParser", _ZSt26__uninitialized_fill_n_auxIN9__gnu_cxx17__normal_iteratorIPN2sh9VectorRGBESt6vectorIS3_SaIS3_EEEEjS3_ET_S9_T0_RKT1_12__false_type);
+
+INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_GraphParser", _ZSt6fill_nIPijiET_S1_T0_RKT1_);
+
+INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_GraphParser", _ZSt6fill_nIN9__gnu_cxx17__normal_iteratorIPiSt6vectorIiSaIiEEEEjiET_S7_T0_RKT1_);
+
+INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_GraphParser", _ZSt24__uninitialized_copy_auxIPN3sgl8PositionES2_ET0_T_S4_S3_12__false_type);
+
+INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_GraphParser", _ZSt26__uninitialized_fill_n_auxIPN3sgl8PositionEjS1_ET_S3_T0_RKT1_12__false_type);
+
+INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_GraphParser", _ZSt24__uninitialized_copy_auxIN9__gnu_cxx17__normal_iteratorIPN3sgl8PositionESt6vectorIS3_SaIS3_EEEES4_ET0_T_SA_S9_12__false_type);
+
+INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_GraphParser", _ZSt24__uninitialized_copy_auxIN9__gnu_cxx17__normal_iteratorIPN3sgl8PositionESt6vectorIS3_SaIS3_EEEES8_ET0_T_SA_S9_12__false_type);
+
+INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_GraphParser", _ZSt26__uninitialized_fill_n_auxIN9__gnu_cxx17__normal_iteratorIPN3sgl8PositionESt6vectorIS3_SaIS3_EEEEjS3_ET_S9_T0_RKT1_12__false_type);
+
+INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_GraphParser", _ZSt24__uninitialized_copy_auxIPN3sgl6NormalES2_ET0_T_S4_S3_12__false_type);
+
+INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_GraphParser", _ZSt26__uninitialized_fill_n_auxIPN3sgl6NormalEjS1_ET_S3_T0_RKT1_12__false_type);
+
+INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_GraphParser", _ZSt24__uninitialized_copy_auxIN9__gnu_cxx17__normal_iteratorIPN3sgl6NormalESt6vectorIS3_SaIS3_EEEES4_ET0_T_SA_S9_12__false_type);
+
+INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_GraphParser", _ZSt24__uninitialized_copy_auxIN9__gnu_cxx17__normal_iteratorIPN3sgl6NormalESt6vectorIS3_SaIS3_EEEES8_ET0_T_SA_S9_12__false_type);
+
+INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_GraphParser", _ZSt26__uninitialized_fill_n_auxIN9__gnu_cxx17__normal_iteratorIPN3sgl6NormalESt6vectorIS3_SaIS3_EEEEjS3_ET_S9_T0_RKT1_12__false_type);
+
+INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_GraphParser", _ZSt24__uninitialized_copy_auxIPN3sgl8TexCoordES2_ET0_T_S4_S3_12__false_type);
+
+INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_GraphParser", _ZSt26__uninitialized_fill_n_auxIPN3sgl8TexCoordEjS1_ET_S3_T0_RKT1_12__false_type);
+
+INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_GraphParser", _ZSt24__uninitialized_copy_auxIN9__gnu_cxx17__normal_iteratorIPN3sgl8TexCoordESt6vectorIS3_SaIS3_EEEES4_ET0_T_SA_S9_12__false_type);
+
+INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_GraphParser", _ZSt24__uninitialized_copy_auxIN9__gnu_cxx17__normal_iteratorIPN3sgl8TexCoordESt6vectorIS3_SaIS3_EEEES8_ET0_T_SA_S9_12__false_type);
+
+INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_GraphParser", _ZSt26__uninitialized_fill_n_auxIN9__gnu_cxx17__normal_iteratorIPN3sgl8TexCoordESt6vectorIS3_SaIS3_EEEEjS3_ET_S9_T0_RKT1_12__false_type);
+
+INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_GraphParser", _ZN6common6handleIN5scene4NodeEEC1INS1_5ShapeEEERKNS0_IT_EE);
+
+INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_GraphParser", _ZN6common6handleIN5scene4NodeEEC1INS1_15StaticTransformEEERKNS0_IT_EE);
+
+INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_GraphParser", _ZN11FieldParserD0Ev);
+
+INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_GraphParser", _ZN11FieldParserD1Ev);
+
+INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_GraphParser", _ZN5scene11GraphParserD0Ev);
+
+INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_GraphParser", _ZN5scene11GraphParserD1Ev);
+
+INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_GraphParser", _ZN5scene11GraphParser11step_matrixERN4math6matrixE);
+
+INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_GraphParser", _ZN6common6handleIN5scene5SetupEEC1INS1_4NodeEEERKNS0_IT_EE);
+
+INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_GraphParser", _ZN6common6handleIN5scene5ShapeEEC1INS1_5GroupEEERKNS0_IT_EE);
+
+INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_GraphParser", _ZN6common6handleIN5scene4MeshEEC1INS1_5GroupEEERKNS0_IT_EE);
