@@ -56,6 +56,7 @@ void debug_text(int x, int y, char *str);
 void screen_capture(int buf, int mode);
 
 #include "gmain.h"
+#include "inv_game.h"
 extern int D_005A06A8;
 extern int D_004B500C;
 extern int netdata;
@@ -486,9 +487,49 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", enemy_gp_contr
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", enemy_gp_disp);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", enemy_gp_start);
+void enemy_gp_start(int line)
+{
+	int i, k;
+	EGROUP *g;
+	ENEMY *e;
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", enemy_gp_end);
+	if (gmain.f.f1088 == 0)
+		return;
+	for (i = 0; i < gmain.f.febd94; i++) {
+		g = &egroup[i];
+		if (g->active == 0)
+			return;
+		e = (ENEMY *)(line * sizeof(g->e[0]) + (int)g->e);
+		for (k = 0; k < 11; k++, e++) {
+			e->f18 = 2;
+			e->f1c = 0;
+			e->f10 = 0;
+		}
+	}
+}
+
+void enemy_gp_end(void)
+{
+	int i, j, k;
+	EGROUP *g;
+	ENEMY *e;
+
+	if (gmain.f.f1088 == 0)
+		return;
+	for (i = 0; i < gmain.f.febd94; i++) {
+		g = &egroup[i];
+		if (g->active == 0)
+			return;
+		for (j = 0; j < 4; j++) {
+			e = g->e[j];
+			for (k = 0; k < 11; k++, e++) {
+				e->f18 = 3;
+				e->f1c = 0;
+				e->f10 = 0;
+			}
+		}
+	}
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", enemy_gp_dead);
 
@@ -1245,7 +1286,24 @@ void inv_score_add(int n)
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", inv_stageend_set);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", inv_netgame_init);
+typedef struct { int f0, f4; int d[250]; } NETDATA;
+typedef struct { int f0, f4, f8, fc; u8 _p[0x3A0 - 0x10]; } NETPL;
+#define netpl ((NETPL *)&D_004B500C)
+void inv_netgame_init(void)
+{
+	int i, j, k;
+	NETDATA *n;
+
+	for (i = 0; i < 4; i++) {
+		n = &((NETDATA *)&netdata)[i];
+		netpl[i].fc = 0;
+		for (j = 0; j < 250; j++)
+			n->d[j] = 0;
+	}
+	gmain.f.fea4 = 0;
+	for (k = 0; k < 32; k++)
+		GM_INT(0xEA8 + k * 4) = 0;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", inv_netgame_loop);
 

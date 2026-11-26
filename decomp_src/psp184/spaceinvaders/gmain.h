@@ -607,4 +607,8 @@ typedef struct GMAIN_FIELDS {
 
 typedef union { u8 b[0x1467cc]; GMAIN_FIELDS f; } GMAIN;
 extern GMAIN gmain;
+/* field at byte offset OFF; with a variable index this is the array-member
+   form (address = gmain + OFF + i * size, not a folded symbol+OFF) */
+#define GM_INT(off) (*(int *)&gmain.b[off])
+#define GM_FLT(off) (*(float *)&gmain.b[off])
 #endif
