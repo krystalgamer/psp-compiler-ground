@@ -2461,12 +2461,7 @@ void PauseControl(void *arg0) {
 }
 
 #ifdef NON_MATCHING
-/* Draft, logic complete: 1952/1957 insns, ~210 differing lines (134 ignoring register names).
- * Known: function-scope temporaries i (s1) and k (s0) are shared between cases, as the
- * original's register use shows; ent/drop arrays are indexed directly (st->ent[i].x),
- * which gives gcc's DECL_FIELD_OFFSET split (st + 0x13B0 + 8i, offset 4).  Open: the
- * case 9 loop hoists all of k * 6 / 16 % 4 and / 4 (original: only f and f + rounding,
- * spilled to the stack), the ent loop's x/col registers, f27/f28 and s4/s6 swaps. */
+/* Draft, logic complete; see tmp/pbbody/NOTES.md for the remaining differences. */
 extern int KeyStat;
 extern int KeyHit;
 extern int VKeyHit;
@@ -2522,6 +2517,15 @@ void DrawLight(int x, int y, int col, int no);
 void DoBubCrush(void);
 int DrawSpriteEx(int no, float z, float f0, float f1, float f2, float f3, float f4, float f5, float f6, float f7, float f8, float f9, float f10, float f11, float f12, float f13, int flag);
 int DrawSpriteZoom(int no, int color, float z, float x, float y, float w, float h, float u, float v, float cx, float cy, float sx, float sy, float rot);
+static inline void DrawPat47(int x, int y, int t)
+{
+	int f = t * 6 / 16;
+	int u = f % 4;
+	int v = f / 4;
+
+	SpriteDrawEz(47, 0, -1, x, y, 128.0f, 128.0f, u * 128, v * 128);
+}
+
 int PuzzleBody(void)
 {
 	PZL_STAT *st;
@@ -2598,8 +2602,8 @@ int PuzzleBody(void)
 		case 2: {
 			int flag, left, right;
 
-			D_0014E8C0 = st->vy;
 			D_0014E8BC = st->vx;
+			D_0014E8C0 = st->vy;
 			left = (GetMapLeft(st->mapno) << 16) + 0x80000;
 			right = (GetMapRight(st->mapno) << 16) - 0x90000;
 			minY = 0x200000 - (st->scroll * 14 << 16);
@@ -2636,8 +2640,8 @@ int PuzzleBody(void)
 				st->by = st->fy >> 16;
 				if (CheckBallTouch(st, 0)) {
 					if (st->cur == 9) {
-						st->by = -64;
 						st->bx = -64;
+						st->by = -64;
 					}
 					flag = 1;
 					break;
@@ -2701,7 +2705,6 @@ int PuzzleBody(void)
 				color = ((int)(st->unk024 * 0.0625f * 255.0f) << 24) | 0xFFFFFF;
 				s = k * 0.25f + 1.0f;
 				for (i = 0; i < st->ndrop; i++) {
-					f = k * 6 / 16;
 					x = st->drop.d[i].x + MapXBeginPos[st->mapno * 3 + st->mapsub];
 					y = st->drop.d[i].y + st->ofs_y + st->scroll * 14;
 					DrawSpriteZoom(st->drop.d[i].col + 49, color, 0, x + 72, y, 16.0f, 16.0f, 0, 0, 8.0f, 8.0f, s, s, 0);
@@ -2710,7 +2713,7 @@ int PuzzleBody(void)
 					} else if (st->drop.d[i].col == 9) {
 						DrawSpriteZoom(46, color, 1.0f, x + 16, y - 56, 128.0f, 128.0f, 0, 0, 64.0f, 64.0f, s, s, k * 0.3f * 3.14f * 0.0625f);
 					} else {
-						SpriteDrawEz(47, 0, -1, x + 16, y - 56, 128.0f, 128.0f, f % 4 * 128, f / 4 * 128);
+						DrawPat47(x + 16, y - 56, k);
 					}
 				}
 			}
@@ -2738,8 +2741,8 @@ int PuzzleBody(void)
 				if (CheckBallRainbow(st) > 0) {
 					st->unk006 = 8;
 					st->unk024 = 16;
-					st->by = -64;
 					st->bx = -64;
+					st->by = -64;
 					break;
 				}
 			}
@@ -2764,8 +2767,8 @@ int PuzzleBody(void)
 			bx += MapXBeginPos[st->mapno * 3 + st->mapsub];
 			by += st->ofs_y;
 			n = st->snd.unk1;
-			st->by = by * n / 2 + st->snd.unk8 * (2 - n) / 2;
 			st->bx = bx * n / 2 + st->snd.unk6 * (2 - n) / 2;
+			st->by = by * n / 2 + st->snd.unk8 * (2 - n) / 2;
 			if (++st->snd.unk1 >= 2) {
 				st->unk006 = 16;
 				st->snd.unk1 = 0;
@@ -2785,8 +2788,8 @@ int PuzzleBody(void)
 			} else {
 				st->unk006 = 8;
 				st->unk024 = 16;
-				st->by = -64;
 				st->bx = -64;
+				st->by = -64;
 				DoBubStat(st, 3);
 			}
 			break;
@@ -2872,8 +2875,8 @@ int PuzzleBody(void)
 				SaveDataBuf[8] = StageNum + 1;
 				MsSave();
 			}
-			st->unk00E = 600;
 			st->unk026 = st->unk027;
+			st->unk00E = 600;
 			st->by = 208 - st->scroll * 14;
 			st->unk025 = 0;
 			if (st->unk428 == 2)
@@ -2963,8 +2966,8 @@ int PuzzleBody(void)
 			if (st->unk42A >= 346) {
 				ret = 4;
 				SpriteSetFader(0);
-				st->unk006 = 0;
 				st->unk42A = 0;
+				st->unk006 = 0;
 			}
 			break;
 		}
@@ -3221,8 +3224,7 @@ int GetOjamaPat(int mode)
 }
 
 #ifdef NON_MATCHING
-/* Draft, logic complete: 2530/2536 insns, ~480 differing lines (245 ignoring register
- * names); same open points as PuzzleBody (case 9 hoisting), register allocation. */
+/* Draft, logic complete; see tmp/pbbody/NOTES.md for the remaining differences. */
 extern int KeyStat;
 extern int KeyHit;
 extern int VKeyHit;
@@ -3294,6 +3296,15 @@ void DrawLight(int x, int y, int col, int no);
 void DoBubCrush(void);
 int DrawSpriteEx(int no, float z, float f0, float f1, float f2, float f3, float f4, float f5, float f6, float f7, float f8, float f9, float f10, float f11, float f12, float f13, int flag);
 int DrawSpriteZoom(int no, int color, float z, float x, float y, float w, float h, float u, float v, float cx, float cy, float sx, float sy, float rot);
+static inline void DrawPat47(int x, int y, int t)
+{
+	int f = t * 6 / 16;
+	int u = f % 4;
+	int v = f / 4;
+
+	SpriteDrawEz(47, 0, -1, x, y, 128.0f, 128.0f, u * 128, v * 128);
+}
+
 int VSModeBody(int pl)
 {
 	PZL_STAT *st;
@@ -3405,8 +3416,8 @@ int VSModeBody(int pl)
 				st->by = st->fy >> 16;
 				if (CheckBallTouch(st, 1)) {
 					if (st->cur == 9) {
-						st->by = -64;
 						st->bx = -64;
+						st->by = -64;
 					}
 					flag = 1;
 					break;
@@ -3568,26 +3579,25 @@ int VSModeBody(int pl)
 			SetCharacters(st, 4, 0);
 			SetMonitor(st, 12);
 		case 9: {
-			int x, y, color, f;
+			int x, y, color;
 			float s;
 
 			light = 1;
 			k = 16 - st->unk024--;
 			if (st->unk024 != 0) {
-				color = ((int)(st->unk024 * 0.0625f * 255.0f) << 24) | 0xFFFFFF;
 				s = k * 0.25f + 1.0f;
+				color = ((int)(st->unk024 * 0.0625f * 255.0f) << 24) | 0xFFFFFF;
 				for (i = 0; i < st->ndrop; i++) {
-					f = k * 6 / 16;
 					if ((u8)(st->drop.d[i].col - 1) < 9 || st->drop.d[i].col == 14) {
-						x = st->drop.d[i].x + MapXBeginPos[st->mapno * 3 + st->mapsub];
 						y = st->drop.d[i].y + st->ofs_y + st->scroll * 14;
+						x = st->drop.d[i].x + MapXBeginPos[st->mapno * 3 + st->mapsub];
 						DrawSpriteZoom(st->drop.d[i].col + 49, color, 0, x + 72, y, 16.0f, 16.0f, 0, 0, 8.0f, 8.0f, s, s, 0);
 						if (st->drop.d[i].col != 9 && st->drop.d[i].col != 14) {
 							DrawSpriteZoom(45, color, 1.0f, x + 16, y - 56, 128.0f, 128.0f, 0, 0, 64.0f, 64.0f, s * 0.25f, s * 0.25f, 0);
 						} else if (st->drop.d[i].col == 9) {
 							DrawSpriteZoom(46, color, 1.0f, x + 16, y - 56, 128.0f, 128.0f, 0, 0, 64.0f, 64.0f, s, s, k * 0.3f * 3.14f * 0.0625f);
 						} else {
-							SpriteDrawEz(47, 0, -1, x + 16, y - 56, 128.0f, 128.0f, f % 4 * 128, f / 4 * 128);
+							DrawPat47(x + 16, y - 56, k);
 						}
 					}
 				}
@@ -3617,8 +3627,8 @@ int VSModeBody(int pl)
 				if (CheckBallRainbow(st) > 0 && st->ndrop) {
 					st->unk006 = 8;
 					st->unk024 = 16;
-					st->by = -64;
 					st->bx = -64;
+					st->by = -64;
 					break;
 				}
 			}
@@ -3633,8 +3643,8 @@ int VSModeBody(int pl)
 			bx += MapXBeginPos[st->mapno * 3 + st->mapsub];
 			by += st->ofs_y;
 			n = st->snd.unk1;
-			st->by = by * n / 2 + st->snd.unk8 * (2 - n) / 2;
 			st->bx = bx * n / 2 + st->snd.unk6 * (2 - n) / 2;
+			st->by = by * n / 2 + st->snd.unk8 * (2 - n) / 2;
 			if (++st->snd.unk1 >= 2) {
 				st->unk006 = 16;
 				st->snd.unk1 = 0;
@@ -3643,8 +3653,8 @@ int VSModeBody(int pl)
 			break;
 		}
 		case 16:
-			st->bx = -64;
 			st->by = -64;
+			st->bx = -64;
 			if (st->ndrop) {
 				st->unk006 = 8;
 				st->unk024 = 16;
@@ -3750,8 +3760,8 @@ int VSModeBody(int pl)
 				st->unk025 = 0;
 				st->unk026 = 8;
 				op->unk006 = 28;
-				op->unk026 = 8;
 				op->unk025 = 0;
+				op->unk026 = 8;
 				st->unk42A = 0;
 			}
 			break;
@@ -3895,8 +3905,8 @@ int VSModeBody(int pl)
 	if (st->scroll == -4) {
 		int j;
 
-		st->mp.map[8] = 13;
 		st->scroll = -4;
+		st->mp.map[8] = 13;
 		for (i = 0; i < 7; i++)
 			st->mp.map[24 + i] = 12;
 		for (i = 0; i < 8; i++)
@@ -4100,8 +4110,7 @@ INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", VSModeBody);
 #endif
 
 #ifdef NON_MATCHING
-/* Draft, logic complete: 1637/1640 insns, ~220 differing lines (160 ignoring register
- * names); same open points as PuzzleBody, plus zen/light spilled to the stack. */
+/* Draft, logic complete; see tmp/pbbody/NOTES.md for the remaining differences. */
 extern int KeyStat;
 extern int KeyHit;
 extern int VKeyHit;
@@ -4163,6 +4172,15 @@ void DrawLight(int x, int y, int col, int no);
 void DoBubCrush(void);
 int DrawSpriteEx(int no, float z, float f0, float f1, float f2, float f3, float f4, float f5, float f6, float f7, float f8, float f9, float f10, float f11, float f12, float f13, int flag);
 int DrawSpriteZoom(int no, int color, float z, float x, float y, float w, float h, float u, float v, float cx, float cy, float sx, float sy, float rot);
+static inline void DrawPat47(int x, int y, int t)
+{
+	int f = t * 6 / 16;
+	int u = f % 4;
+	int v = f / 4;
+
+	SpriteDrawEz(47, 0, -1, x, y, 128.0f, 128.0f, u * 128, v * 128);
+}
+
 int EndressBody(int pl)
 {
 	PZL_STAT *st;
@@ -4238,8 +4256,8 @@ int EndressBody(int pl)
 		case 2: {
 			int flag, left, right;
 
-			D_0014E918 = st->vy;
 			D_0014E914 = st->vx;
+			D_0014E918 = st->vy;
 			left = (GetMapLeft(st->mapno) << 16) + 0x80000;
 			right = (GetMapRight(st->mapno) << 16) - 0x90000;
 			minY = 0x200000 - (st->scroll * 14 << 16);
@@ -4264,8 +4282,8 @@ int EndressBody(int pl)
 				st->by = st->fy >> 16;
 				if (CheckBallTouch(st, 1)) {
 					if (st->cur == 9) {
-						st->by = -64;
 						st->bx = -64;
+						st->by = -64;
 					}
 					flag = 1;
 					break;
@@ -4314,7 +4332,7 @@ int EndressBody(int pl)
 			SetCharacters(st, 4, 0);
 			SetMonitor(st, 12);
 		case 9: {
-			int x, y, color, f;
+			int x, y, color;
 			float s;
 
 			light = 1;
@@ -4323,16 +4341,15 @@ int EndressBody(int pl)
 				color = ((int)(st->unk024 * 0.0625f * 255.0f) << 24) | 0xFFFFFF;
 				s = k * 0.25f + 1.0f;
 				for (i = 0; i < st->ndrop; i++) {
-					f = k * 6 / 16;
-					x = st->drop.d[i].x + MapXBeginPos[st->mapno * 3 + st->mapsub];
 					y = st->drop.d[i].y + st->ofs_y + st->scroll * 14;
+					x = st->drop.d[i].x + MapXBeginPos[st->mapno * 3 + st->mapsub];
 					DrawSpriteZoom(st->drop.d[i].col + 49, color, 0, x + 72, y, 16.0f, 16.0f, 0, 0, 8.0f, 8.0f, s, s, 0);
 					if (st->drop.d[i].col != 9 && st->drop.d[i].col != 14) {
 						DrawSpriteZoom(45, color, 1.0f, x + 16, y - 56, 128.0f, 128.0f, 0, 0, 64.0f, 64.0f, s * 0.25f, s * 0.25f, 0);
 					} else if (st->drop.d[i].col == 9) {
 						DrawSpriteZoom(46, color, 1.0f, x + 16, y - 56, 128.0f, 128.0f, 0, 0, 64.0f, 64.0f, s, s, k * 0.3f * 3.14f * 0.0625f);
 					} else {
-						SpriteDrawEz(47, 0, -1, x + 16, y - 56, 128.0f, 128.0f, f % 4 * 128, f / 4 * 128);
+						DrawPat47(x + 16, y - 56, k);
 					}
 				}
 			}
@@ -4360,8 +4377,8 @@ int EndressBody(int pl)
 				if (CheckBallRainbow(st) > 0 && st->ndrop) {
 					st->unk006 = 8;
 					st->unk024 = 16;
-					st->by = -64;
 					st->bx = -64;
+					st->by = -64;
 					break;
 				}
 			}
@@ -4376,8 +4393,8 @@ int EndressBody(int pl)
 			bx += MapXBeginPos[st->mapno * 3 + st->mapsub];
 			by += st->ofs_y;
 			n = st->snd.unk1;
-			st->by = by * n / 2 + st->snd.unk8 * (2 - n) / 2;
 			st->bx = bx * n / 2 + st->snd.unk6 * (2 - n) / 2;
+			st->by = by * n / 2 + st->snd.unk8 * (2 - n) / 2;
 			if (++st->snd.unk1 >= 2) {
 				st->unk006 = 16;
 				st->snd.unk1 = 0;
@@ -4395,8 +4412,8 @@ int EndressBody(int pl)
 			} else if (st->ndrop) {
 				st->unk006 = 8;
 				st->unk024 = 16;
-				st->by = -64;
 				st->bx = -64;
+				st->by = -64;
 				DoBubStat(st, 3);
 			} else {
 				st->unk006 = 3;
@@ -4481,7 +4498,6 @@ int EndressBody(int pl)
 				se_play(4);
 			}
 			if (st->unk42A < 31 || !(st->key_rep & 0x2000)) {
-				ret = 0;
 				break;
 			}
 			if (Cont) {
@@ -4496,8 +4512,8 @@ int EndressBody(int pl)
 			st->unk006 = 0;
 			ret = 0;
 			st->unk42A = 0;
-			st->unk428 = 0;
 			EndressModeInit();
+			st->unk428 = 0;
 			SetCharacters(st, 3, 0);
 			SetCharacters(st, 0, 1);
 			SetMonitor(st, 0);
