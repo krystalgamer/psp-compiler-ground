@@ -99,7 +99,25 @@ SceInt32 dispbuf_reset(t_displayBuffer *pDisp)
 	return 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/mpeg_ezmpegstr/nonmatchings/display", dispbuf_delete);
+SceInt32 dispbuf_delete(t_displayBuffer *pDisp)
+{
+	SceInt32 i;
+
+	if (pDisp->buf != NULL) {
+		for (i = 0; i < pDisp->size; i++) {
+			if (pDisp->buf[i] != NULL) {
+				free(pDisp->buf[i]);
+			}
+		}
+		free(pDisp->buf);
+	}
+
+	if (pDisp->pts != NULL) {
+		free(pDisp->pts);
+	}
+
+	return 0;
+}
 
 int dispbuf_getDrawbuf(t_displayBuffer *pDisp, signed char **buffer) {
     int temp_v0;
