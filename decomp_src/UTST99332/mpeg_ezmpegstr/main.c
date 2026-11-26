@@ -218,7 +218,22 @@ SceInt32 loadModule(SceUID *mid, SceChar8 *filename, SceKernelLMOption *option)
 	return 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/mpeg_ezmpegstr/nonmatchings/main", unloadModule);
+SceInt32 unloadModule(SceUID *mid)
+{
+	SceInt32 mresult;
+
+	if (sceKernelStopModule(*mid, 0, NULL, &mresult, NULL) < 0) {
+		printf("fatal error : sceKernelStopModule\n");
+		return -1;
+	}
+
+	if (sceKernelUnloadModule(*mid) < 0) {
+		printf("fatal error : sceKernelUnloadModule\n");
+		return -1;
+	}
+
+	return 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/mpeg_ezmpegstr/nonmatchings/main", ringbufferCallBack);
 
