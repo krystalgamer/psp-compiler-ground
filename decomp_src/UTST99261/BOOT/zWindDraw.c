@@ -111,6 +111,12 @@ typedef struct {
     char *text;                 /* 0x4C */
     s16 len;                    /* 0x50 */
 } ZTEXTW;
+typedef struct ZITEM {
+    int unk0;
+    struct ZITEM *next;         /* 0x4 */
+    char *text;                 /* 0x8 */
+    s16 len;                    /* 0xC */
+} ZITEM;
 void zWindDrawClipSet(int x, int y, int w, int h);
 extern int _iZwindPartsSize;
 typedef struct {
@@ -534,7 +540,39 @@ void zWindWidgetRadioboxDraw(ZW *w) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/zWindDraw", zWindWidgetListDraw);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/zWindDraw", zWindWidgetChoiceDraw);
+void zWindWidgetChoiceDraw(ZW *w) {
+    int x;
+    int y;
+    int wd;
+    int h;
+    ZITEM *it;
+    int i;
+    int ps;
+    int sel;
+
+    x = w->px;
+    y = w->py;
+    wd = w->w;
+    ps = _iZwindPartsSize;
+    h = ps + 4;
+    zWindDrawBox(x, y, wd, h, w->bg15);
+    if (s_windsystem_data.focus == w && w->focus15 != 0) {
+        zWindLineBox(x, y, wd - 1, ps + 3, w->focus15);
+    } else {
+        zWindLineBox2(x, y, wd - 1, h - 1, 0, 0x7FFF);
+    }
+    zWindLineBox(x + 1, y + 1, wd - 3, h - 3, 0x294A);
+    zWindDrawParts(x + wd - _iZwindPartsSize - 2, y + 2, 5, -1);
+    zWindDrawClipSet(x + 2, y + 2, wd - _iZwindPartsSize - 2, h - 4);
+    sel = w->u.b.unk54;
+    for (i = 0, it = (ZITEM *)((ZTEXTW *)w)->text; it != NULL; i++, it = it->next) {
+        if (i == sel) {
+            zWindFontDraw(w->font, x + 2, y + 2, it->text, w->fg15, it->len);
+            break;
+        }
+    }
+    zWindDrawClipSet(0, 0, ((ZINIT *)&s_windsystem_init)->width, ((ZINIT *)&s_windsystem_init)->height);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/zWindDraw", zWindWidgetChoiceListDraw);
 
