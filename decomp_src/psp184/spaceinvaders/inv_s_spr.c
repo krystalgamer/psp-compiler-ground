@@ -83,7 +83,44 @@ void SprFree(void *arg0) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_spr", SprAlloc);
+typedef struct {
+	int id, f4, f8, used, type;
+	int f14[7];
+	int f30, f34;
+	int f38[14];
+	int f70, f74, f78, f7c, f80, f84, f88, f8c;
+	int linked, next, prev, f9c;
+} SPRA;
+void SprLinkAdd();
+SPRA *SprAlloc(int type)
+{
+	SPRA *s;
+	int i, n;
+
+	if (SprNum == 256)
+		return 0;
+	s = (SPRA *)sprbuf;
+	i = 0;
+	for (n = 256; n > 0; n--, i++, s++) {
+		if (s->used == 0) {
+			s->f30 = 0xffff;
+			s->used = 1;
+			s->id = i;
+			s->f34 = 0xffff;
+			s->type = type;
+			s->f70 = 100;
+			s->f88 = 255;
+			s->f84 = 255;
+			s->f80 = 255;
+			s->f7c = 255;
+			s->f74 = 255;
+			SprNum++;
+			SprLinkAdd(s);
+			return s;
+		}
+	}
+	return 0;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
