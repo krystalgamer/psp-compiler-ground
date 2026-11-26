@@ -439,7 +439,28 @@ INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", D_0002E750)
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", DoBubCrush);
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", PuzzleInit);
+int PuzzleInit(void)
+{
+	int r;
+
+	SpriteAllFreeImage();
+	LoadFileList(1, gimfile_main);
+	LoadFileList(50, gimfile_bubble);
+	GameValueInit(2, GetRound() - 1, 1);
+	dsGMInit(2, GetRound() - 1);
+	GameValueInit(0, GetRound() - 1, 1);
+	dsGMInit(0, GetRound() - 1);
+	SpriteSetFader(1.0f);
+	Stat[0].cur = GetBallNext(&Stat[0], 0);
+	Stat[0].next = GetBallNext(&Stat[0], 0);
+	r = (GetRound() - 1) / 10 % 3;
+	bgm_play(r + 1);
+	PollShutter(3);
+	SetMonitor(&Stat[2], 8);
+	LoadGimFile(0, gim_bg_puzzle[StageNum / 10]);
+	InitBubCrush();
+	return 0;
+}
 
 int PuzzleMain(void)
 {
