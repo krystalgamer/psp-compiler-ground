@@ -78,9 +78,20 @@ typedef struct GUIWIDGET { /* size 0x64 */
         s16 n;
         struct { s16 len; s16 max; } t;
     } unk50;
-    unsigned int unk54;
-    int unk58;
-    u8 unk5C[0x8];
+    union {
+        struct {
+            unsigned int editable;      /* 0x54 (TextField) */
+            int areaEditable;           /* 0x58 (TextArea) */
+        } text;
+        struct {
+            s16 x;                      /* 0x54 */
+            s16 y;
+            s16 cw;                     /* 0x58: content size */
+            s16 ch;
+            int hmode;                  /* 0x5C */
+            int vmode;                  /* 0x60 */
+        } scroll;
+    } u;
 } GUIWIDGET;
 
 typedef struct {
@@ -128,8 +139,8 @@ void GUI_Graphics_freePixmap(void *pixmap);
 void GUI_Graphics_freeGraphics(void *g);
 void dizInit(void);
 int zWindDraw();
-void GUI_ScrollPane_getScrollPosition(GUIWIDGET *w, int *x, int *y);
-void GUI_ScrollPane_getViewportSize(GUIWIDGET *w, int *width, int *height);
+int GUI_ScrollPane_getScrollPosition(GUIWIDGET *w, int *x, int *y);
+int GUI_ScrollPane_getViewportSize(GUIWIDGET *w, int *width, int *height);
 void zWindExcEvent(GUIWIDGET *w, int type, GUIEVENT *ev, int a, int b);
 GUIFONT *GuifontCreate(void);
 int GuifontDelete(GUIFONT *font);

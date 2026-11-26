@@ -150,7 +150,7 @@ int GUI_TextField_setEditable(GUIWIDGET *w, int editable) {
         return -1;
     }
     s_windsystem_data.flags |= 4;
-    t->unk54 = editable | (t->unk54 & 0xFFFF0000);
+    t->u.text.editable = editable | (t->u.text.editable & 0xFFFF0000);
     s_windsystem_data.flags &= ~4;
     return 0;
 }
@@ -172,7 +172,7 @@ int GUI_TextField_setEchoChar(GUIWIDGET *w, int c) {
         return -1;
     }
     s_windsystem_data.flags |= 4;
-    t->unk54 |= 0x10000;
+    t->u.text.editable |= 0x10000;
     s_windsystem_data.flags &= ~4;
     return 0;
 }
@@ -376,7 +376,7 @@ int GUI_TextArea_setEditable(GUIWIDGET *w, int editable) {
         return -1;
     }
     s_windsystem_data.flags |= 4;
-    t->unk58 = editable;
+    t->u.text.areaEditable = editable;
     s_windsystem_data.flags &= ~4;
     return 0;
 }
