@@ -434,4 +434,33 @@ term:
 	return ret;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/mpeg_seamless_change/nonmatchings/main", pad_read);
+extern SceUInt32 D_00012BDC; /* static SceUInt32 oldpadd in pad_read (bss is asm) */
+extern SceUInt32 D_00012BE0; /* static SceUInt32 padd in pad_read */
+
+static SceInt32 pad_read(t_displayBuffer *pDisp, t_playInfo *pPlayInfo)
+{
+	SceCtrlData buf;
+	SceInt32 ret;
+
+	ret = 0;
+
+	D_00012BDC = D_00012BE0;
+	sceCtrlReadBufferPositive(&buf, 1);
+	D_00012BE0 = buf.Buttons;
+
+	if (D_00012BE0 & 0x1) {
+		playInfo_setPlayerMode(pPlayInfo, 0xFF);
+		ret = 2;
+	} else if (D_00012BE0 & 0x8) {
+		playInfo_setPlayerMode(pPlayInfo, 1);
+		ret = 1;
+	} else if (D_00012BE0 & ~D_00012BDC & 0x2000) {
+		dispbuf_setDelayMode(pDisp);
+	} else if (D_00012BE0 & ~D_00012BDC & 0x200) {
+		ret = 4;
+	} else if (D_00012BE0 & ~D_00012BDC & 0x100) {
+		ret = 3;
+	}
+
+	return ret;
+}
