@@ -54,7 +54,18 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_shima", main_classici
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_shima", HiScoreSort);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_shima", ScoreAddInit);
+void ScoreAddInit(int a, int b, int c, int d)
+{
+	u8 *s = (u8 *)&scoredisp;
+
+
+	*(int *)(s + 0x0) = 1;
+	*(int *)(s + 0x4) = d;
+	*(int *)(s + 0x10) = c;
+	*(int *)(s + 0x8) = a;
+	*(int *)(s + 0xC) = b;
+	
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_shima", ScoreAddDisp);
 
@@ -64,7 +75,14 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_shima", BoxAtari_z);
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_shima", BoxAtari_e);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_shima", VramAtariSub);
+int VramAtariSub(s8 *buf, int x, int y, int w)
+{
+	if (x < 0)
+		x = 0;
+	if (y < 0)
+		y = 0;
+	return *(buf + x + y * w);
+}
 
 int VramAtari(signed char *vram, int x, int y)
 {
