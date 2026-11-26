@@ -3,6 +3,8 @@
 #include <ctype.h>
 #include "parse_str.h"
 #include "m2c_macros.h"
+extern char D_00137EF0[];
+void *MEM_malloc();
 extern const PDStr D_00137E3C;
 PMb parseAttrName(PCtx *c);
 PMb parseAttrValue(PCtx *c);
@@ -379,7 +381,48 @@ INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/parser", D_00137EF8);
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/parser", D_00137F04);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", parseBase);
+void parseBase(PCtx *c) {
+    void *map;
+    int n;
+    int i;
+    void *attr;
+    PDStr name;
+    PDStr val;
+    char *u;
+    void *h;
+
+    map = Node_getAttributes(CF(c, 0x11C));
+    n = NamedNodeMap_getLength(map);
+    for (i = 0; i < n; i++) {
+        attr = NamedNodeMap_item(map, i);
+        name = Attr_getName(attr);
+        if (parseDStrEqual(D_00137EF0, &name)) {
+            val = Attr_getValue(attr);
+            if (val.len == 0) {
+                continue;
+            }
+            u = DOMStringtoUTF8(&val);
+            if (u == NULL) {
+                continue;
+            }
+            h = HST_searchSessionIDHistoryNode(c->x00[4]);
+            HST_setBaseURI(h, u, strlen(u));
+            MEM_free(0, u);
+        } else if (parseDStrEqual("target", &name)) {
+            val = Attr_getValue(attr);
+            if (val.len == 0) {
+                continue;
+            }
+            u = DOMStringtoUTF8(&val);
+            if (u == NULL) {
+                continue;
+            }
+            h = HST_searchSessionIDHistoryNode(c->x00[4]);
+            HST_setDefaultTarget(h, u, strlen(u));
+            MEM_free(0, u);
+        }
+    }
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", parseForm);
 
@@ -521,7 +564,39 @@ void parseJSImgSet(PCtx *c) {
     Node_setJSObj(M2C_FIELD(c, int *, 0x11C), obj);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", parseJSInputTypeCmp);
+int parseJSInputTypeCmp(PDStr *s) {
+    if (parseDStrEqual("button", s)) {
+        return 1;
+    }
+    if (parseDStrEqual("checkbox", s)) {
+        return 2;
+    }
+    if (parseDStrEqual("text", s)) {
+        return 3;
+    }
+    if (parseDStrEqual("submit", s)) {
+        return 4;
+    }
+    if (parseDStrEqual("reset", s)) {
+        return 5;
+    }
+    if (parseDStrEqual("radio", s)) {
+        return 6;
+    }
+    if (parseDStrEqual("password", s)) {
+        return 7;
+    }
+    if (parseDStrEqual("hidden", s)) {
+        return 8;
+    }
+    if (parseDStrEqual("image", s)) {
+        return 4;
+    }
+    if (parseDStrEqual("file", s)) {
+        return 9;
+    }
+    return 3;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", parseJSInputSet);
 

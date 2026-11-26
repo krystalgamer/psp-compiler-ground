@@ -54,6 +54,11 @@ typedef struct PCtxList {
     int cap;
 } PCtxList;
 
+typedef struct PJSEvent {
+    PChar *name;
+    PChar *value;
+} PJSEvent;
+
 typedef struct PStrBuf {
     PChar *data;
     int cap;
