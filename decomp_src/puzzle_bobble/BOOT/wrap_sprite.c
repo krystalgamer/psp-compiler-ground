@@ -297,7 +297,7 @@ INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/wrap_sprite", SpriteDrawZoo
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/wrap_sprite", SpriteDraw3D);
 
-int SpriteDrawC(int x, int y, SPRDATA *p, float z)
+int SpriteDrawC(int x, float z, int y, SPRDATA *p)
 {
 	int w = p->w / 2;
 	int h = p->h / 2;
