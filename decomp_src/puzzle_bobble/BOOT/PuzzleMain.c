@@ -3542,10 +3542,10 @@ int VSModeBody(int pl)
 			for (i = 0; i < 20; i++) {
 				int a = rand() % 7;
 				int b = rand() % 7;
-				int t = D_00038A54[a];
 
+				k = D_00038A54[a];
 				D_00038A54[a] = D_00038A54[b];
-				D_00038A54[b] = t;
+				D_00038A54[b] = k;
 			}
 			for (i = 0; i < D_0014E8EC; i++) {
 				for (k = 31; k >= 0; k--) {
@@ -3564,25 +3564,26 @@ int VSModeBody(int pl)
 			}
 			st->unk006 = 7;
 		}
-		case 7:
-			k = 0;
-			for (i = 0; i < st->snd.unk3; i++) {
-				int t;
+		case 7: {
+			int cnt;
 
+			cnt = 0;
+			for (i = 0; i < st->snd.unk3; i++) {
 				if (--st->oj[i].t < 0) {
 					st->oj[i].t = 0;
-					k++;
+					cnt++;
 				}
-				t = st->oj[i].t;
-				DrawBubble(0, st->oj[i].x + MapXBeginPos[st->mapno * 3 + st->mapsub] + 72, st->oj[i].y + st->ofs_y + st->scroll * 14 + t * t / 5, st->oj[i].col - 1, 0);
+				k = st->oj[i].t;
+				DrawBubble(0, st->oj[i].x + MapXBeginPos[st->mapno * 3 + st->mapsub] + 72, st->oj[i].y + st->ofs_y + st->scroll * 14 + k * k / 5, st->oj[i].col - 1, 0);
 			}
-			if (st->snd.unk3 == k) {
+			if (st->snd.unk3 == cnt) {
 				for (i = 0; i < st->snd.unk3; i++)
 					st->mp.map[st->oj[i].pos] = st->oj[i].col;
 				st->unk006 = 20;
 				st->snd.unk3 = 0;
 			}
 			break;
+		}
 		case 8:
 			k = 0;
 			for (i = 0; i < st->ndrop; i++) {
