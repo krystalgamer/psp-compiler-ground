@@ -198,13 +198,92 @@ void sprite_3d_nearest(unsigned int no)
 		billbord[no].nearest = 1;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_tex", sprite_bg_disp);
+extern int spr_co[];
+extern int sprite_max;
+void set_packet_scr(int no);
+void sceGuDisable(int state);
+void sceGuEnable(int state);
+void sceGuTexFunc(int tfx, int tcc);
+void sceGuTexMapMode(int mode, unsigned int a1, unsigned int a2);
+void sceGuTexWrap(int u, int v);
+void sceGuTexFilter(int min, int mag);
+void sprite_bg_disp(void)
+{
+	int i, cur;
+	int *s;
+
+	if (sprite_max == 0)
+		return;
+	sceGuDisable(1);
+	sceGuEnable(9);
+	sceGuTexFunc(0, 1);
+	sceGuTexMapMode(0, 0, 0);
+	sceGuTexWrap(0, 0);
+	sceGuTexFilter(1, 1);
+	cur = -1;
+	for (i = 0; i < sprite_max; i++) {
+		s = (int *)&sprite[spr_co[i]];
+		if (s[0] == 0)
+			continue;
+		if (s[4] != 0)
+			continue;
+		if (cur != s[2]) {
+			cur = s[2];
+			if (cur != -1)
+				set_texture(cur);
+		}
+		set_packet_scr(spr_co[i]);
+	}
+	sceGuTexFilter(1, 1);
+	sceGuEnable(1);
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_tex", sprite_scr_disp);
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_tex", sprite_3d_disp);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_tex", set_texture);
+void sceGuClutMode(unsigned int cpsm, unsigned int shift, unsigned int mask, unsigned int a3);
+void sceGuClutLoad(int num_blocks, const void *cbp);
+void sceGuTexMode(int tpsm, int maxmips, int a2, int swizzle);
+void sceGuTexImage(int mipmap, int width, int height, int tbw, const void *tbp);
+void set_texture(int no)
+{
+	TEX_FILE *t = &tex_file[no];
+
+	if (t->type == 2) {
+		sceGuTexMode(3, 0, 0, t->f14);
+		sceGuTexImage(0, t->f4, t->f8, t->f4, t->p1c);
+	} else if (t->type == 3) {
+		sceGuTexMode(2, 0, 0, t->f14);
+		sceGuTexImage(0, t->f4, t->f8, t->f4, t->p1c);
+	} else if (t->type == 4) {
+		sceGuTexMode(1, 0, 0, t->f14);
+		sceGuTexImage(0, t->f4, t->f8, t->f4, t->p1c);
+	} else if (t->type == 5) {
+		sceGuTexMode(0, 0, 0, t->f14);
+		sceGuTexImage(0, t->f4, t->f8, t->f4, t->p1c);
+	} else if (t->type == 1) {
+		if (t->f10 == 2) {
+			sceGuClutMode(3, 0, 0xFF, 0);
+			sceGuClutLoad(32, t->p18);
+		} else {
+			sceGuClutMode(1, 0, 0xFF, 0);
+			sceGuClutLoad(16, t->p18);
+		}
+		sceGuTexMode(5, 0, 0, t->f14);
+		sceGuTexImage(0, t->f4, t->f8, t->f4, t->p1c);
+	} else if (t->type == 0) {
+		if (t->f10 == 2) {
+			sceGuClutMode(3, 0, 0xFF, 0);
+			sceGuClutLoad(2, t->p18);
+		} else {
+			sceGuClutMode(1, 0, 0xFF, 0);
+			sceGuClutLoad(1, t->p18);
+		}
+		sceGuTexMode(4, 0, 0, t->f14);
+		sceGuTexImage(0, t->f4, t->f8, t->f4, t->p1c);
+	}
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_tex", set_packet_scr);
 
