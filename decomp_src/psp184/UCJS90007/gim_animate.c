@@ -1,11 +1,11 @@
 /* SDK 2.5.0 libgim_picture gim_animate.o, built -O2 by 1.8.4.internal from the SDK 6.6.0
-   src/gim_picture/gim_animate.c.  Sony compiled it with -std=gnu9x, which the cflags line
-   cannot carry: the extra braces are gcc 3.3's C99 block scopes made explicit.
-   sceGimPictureControl and eval_fcurve stay asm: fully in C the object's .rodata.cst4 (the
-   three 8388608.0f) must link before its .rodata (Control's jump table), i.e. in object order,
-   which 1.8.4.internal units don't get (config/compilers.txt objorder). */
+   src/gim_picture/gim_animate.c.
+   Sony compiled it with -std=gnu9x; the extra
+   braces around every if/while/for/do/switch statement and body are the block scopes
+   gcc 3.3 adds in C99 mode (c-parse.in c99_block_start), made explicit for a C89 compile.
+   Fully C since the module links rodata in object order (.rodata.cst4 floats before
+   sceGimPictureControl's jump table). */
 /* cflags: -O2 */
-#include "common.h"
 #include "gim_sdk.h"
 
 
@@ -82,14 +82,158 @@ void sceGimPictureAnimateEx( SceGimPicture *picture, float step, int flags )
 //  control
 //----------------------------------------------------------------
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/gim_animate", sceGimPictureControl);
+void sceGimPictureControl( SceGimPicture *picture, int param, float value )
+{
+		SceGimImageHeader *image = picture->m_image ;
+	int ival = FLOORF( value ) ;
+
+	{switch ( param ) {{
+	//  case SCEGIM_PARAM_IMAGE_INDEX :	// not supported
+	//  case SCEGIM_PARAM_IMAGE_LEVEL :	// not supported
+	//  case SCEGIM_PARAM_PALETTE_INDEX :	// not supported
+	//  case SCEGIM_PARAM_PALETTE_LEVEL :	// not supported
+	//	break ;
+	    case SCEGIM_PARAM_CROP_U :
+		{if ( image != 0 ) {{
+			int pow2 = sceGimPicturePow2( image->width ) ;
+			picture->m_image_crop[ 0 ] = value / (float)pow2 ;
+			picture->m_flags |= SCEGIM_PICTURE_IS_CROPPED ;
+		}}}
+		break ;
+	    case SCEGIM_PARAM_CROP_V :
+		{if ( image != 0 ) {{
+			int pow2 = sceGimPicturePow2( image->height ) ;
+			picture->m_image_crop[ 1 ] = value / (float)pow2 ;
+			picture->m_flags |= SCEGIM_PICTURE_IS_CROPPED ;
+		}}}
+		break ;
+	    case SCEGIM_PARAM_CROP_W :
+		{if ( image != 0 ) {{
+			int pow2 = sceGimPicturePow2( image->width ) ;
+			picture->m_image_crop[ 2 ] = value / (float)pow2 ;
+			picture->m_flags |= SCEGIM_PICTURE_IS_CROPPED ;
+		}}}
+		break ;
+	    case SCEGIM_PARAM_CROP_H :
+		{if ( image != 0 ) {{
+			int pow2 = sceGimPicturePow2( image->height ) ;
+			picture->m_image_crop[ 3 ] = value / (float)pow2 ;
+			picture->m_flags |= SCEGIM_PICTURE_IS_CROPPED ;
+		}}}
+		break ;
+
+	    	    case SCEGIM_PARAM_IMAGE_FRAME :
+		picture->m_image_frame = picture->m_image_frame2 = ival ;
+		break ;
+	    case SCEGIM_PARAM_PALETTE_FRAME :
+		picture->m_palette_frame = picture->m_palette_frame2 = ival ;
+		break ;
+	    
+	    	    case SCEGIM_PARAM_IMAGE_PLANE :
+		sceGimPictureSetImagePlane( picture, ival ) ;
+		break ;
+	    
+	    	    case SCEGIM_PARAM_BLEND_MODE :
+		picture->m_blend[ 0 ] = ival ;
+		break ;
+	    case SCEGIM_PARAM_FUNC_MODE :
+		picture->m_func[ 0 ] = ival ;
+		break ;
+	    case SCEGIM_PARAM_FUNC_COMP :
+		picture->m_func[ 1 ] = ival ;
+		break ;
+	    case SCEGIM_PARAM_FILTER_MAG :
+		picture->m_filter[ 0 ] = ival ;
+		break ;
+	    case SCEGIM_PARAM_FILTER_MIN :
+		picture->m_filter[ 1 ] = ival ;
+		break ;
+	    case SCEGIM_PARAM_WRAP_U :
+		picture->m_wrap[ 0 ] = ival ;
+		break ;
+	    case SCEGIM_PARAM_WRAP_V :
+		picture->m_wrap[ 1 ] = ival ;
+		break ;
+	    	}}}
+	}
 
 //----------------------------------------------------------------
 //  subroutines
 //----------------------------------------------------------------
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/gim_animate", eval_fcurve);
+void eval_fcurve( SceGimPicture *picture, SceGimFunction *function, short *keyframes, float frame )
+{
+	float f = 0.0f ;
+	int value1 = 0 ;
+	int value2 = 0 ;
 
+	{if ( frame < 0.0f ) {frame = 0.0f ;}}
+	int left = (int)frame ;
+	{for ( ; ; ) {{
+		int count = *( keyframes ++ ) ;
+		{if ( count == 0 ) {{
+			value1 = value2 = keyframes[ 0 ] ;
+			break ;
+		}}}
+		{if ( count > 0 ) {{
+			{if ( count > left ) {{
+				f = frame / (float)count ;
+				value1 = keyframes[ 0 ] ;
+				value2 = keyframes[ 2 ] ;
+				break ;
+			}}}
+			keyframes ++ ;
+		}} else {{
+			count = -count ;
+			{if ( count > left ) {{
+				f = frame - (float)left ;
+				value1 = keyframes[ left ] ;
+				{if ( ++ left == count ) {++ left ;}}
+				value2 = keyframes[ left ] ;
+				break ;
+			}}}
+			keyframes += count ;
+		}}}
+		left -= count ;
+		frame -= (float)count ;
+	}}}
 
+	int param = function->param ;
+	int interp = function->interp ;
+	int flags = interp ;
+	interp &= SCEGIM_INTERP_TYPEMASK ;
 
-INCLUDE_RODATA("tmp/asm/psp184/UCJS90007/nonmatchings/gim_animate", D_0002F358);
+	{if ( flags & SCEGIM_INTERP_DISSOLVE ) {{
+		{if ( param == SCEGIM_PARAM_IMAGE_FRAME || param == SCEGIM_PARAM_PALETTE_FRAME ) {{
+			{if ( interp == SCEGIM_INTERP_LINEAR && value1 != value2 ) {{
+				float value = (float)( value2 - value1 ) * f + (float)value1 ;
+				int ival = FLOORF( value ) ;
+				{if ( value2 > value1 ) {{
+					value1 = ival ;
+					value2 = ival + 1 ;
+					f = value - (float)value1 ;
+				}} else {{
+					value1 = ival + 1 ;
+					value2 = ival ;
+					f = (float)value1 - value ;
+				}}}
+			}}}
+			picture->m_dissolve = f ;
+			{if ( param == SCEGIM_PARAM_IMAGE_FRAME ) {{
+				picture->m_image_frame = value1 ;
+				picture->m_image_frame2 = value2 ;
+			}} else {{
+				picture->m_palette_frame = value1 ;
+				picture->m_palette_frame2 = value2 ;
+			}}}
+			return ;
+		}}}
+	}}}
+
+	float value = (float)value1 ;
+	{if ( interp == SCEGIM_INTERP_LINEAR ) {{
+		value += (float)( value2 - value1 ) * f ;
+	}}}
+	sceGimPictureControl( picture, param, value ) ;
+}
+
