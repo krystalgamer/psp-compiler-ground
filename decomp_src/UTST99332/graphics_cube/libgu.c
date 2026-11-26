@@ -141,6 +141,7 @@ void sceGuPatchDivide(int a0, int a1);
 void sceGuColorMaterial(int a0);
 void sceGuSpecular(float power);
 void sceGuTexScale(float u, float v);
+extern const float D_0001267C;
 
 void callback_sig(int id, void *arg)
 {
@@ -292,14 +293,6 @@ void sceGuTerm(void)
 
 INCLUDE_RODATA("tmp/asm/UTST99332/graphics_cube/nonmatchings/libgu", D_0001255C);
 
-INCLUDE_RODATA("tmp/asm/UTST99332/graphics_cube/nonmatchings/libgu", D_0001259C);
-
-INCLUDE_RODATA("tmp/asm/UTST99332/graphics_cube/nonmatchings/libgu", D_000125B0);
-
-INCLUDE_RODATA("tmp/asm/UTST99332/graphics_cube/nonmatchings/libgu", D_00012608);
-
-INCLUDE_RODATA("tmp/asm/UTST99332/graphics_cube/nonmatchings/libgu", D_00012660);
-
 void sceGuStart(int type, void *list, int size)
 {
 	GuContext *context = &_ctx[type];
@@ -317,12 +310,14 @@ void sceGuStart(int type, void *list, int size)
 	}
 	if (!gu_init) {
 		GuDitherInit dither_matrix = D_0001255C;
+		float one;
 
 		sceGuSetDither(dither_matrix.m);
 		sceGuPatchDivide(16, 16);
 		sceGuColorMaterial(7);
-		sceGuSpecular(1.0f);
-		sceGuTexScale(1.0f, 1.0f);
+		one = D_0001267C;
+		sceGuSpecular(one);
+		sceGuTexScale(one, one);
 		gu_init = 1;
 	}
 	if (!__aw_list_mode) {
@@ -405,7 +400,21 @@ int sceGuCheckList(void)
 	return (int)pList->current - (int)pList->start;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_cube/nonmatchings/libgu", sceGuSync);
+int sceGuSync(int mode, int what)
+{
+	switch (mode) {
+	case 0:
+		return sceGeDrawSync(what);
+	case 1:
+	case 2:
+	default:
+		return 0;
+	case 3:
+		return sceGeListSync(queid[0], what);
+	case 4:
+		return sceGeListSync(queid[1], what);
+	}
+}
 
 void sceGuSignalSync(int signal)
 {
@@ -423,7 +432,11 @@ void sceGuSignalSync(int signal)
 	}
 }
 
+INCLUDE_RODATA("tmp/asm/UTST99332/graphics_cube/nonmatchings/libgu", D_000125B0);
+
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_cube/nonmatchings/libgu", sceGuEnable);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/graphics_cube/nonmatchings/libgu", D_00012608);
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_cube/nonmatchings/libgu", sceGuDisable);
 
@@ -786,6 +799,8 @@ void sceGuLightAtt(int light, float atten0, float atten1, float atten2)
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_cube/nonmatchings/libgu", sceGuLightSpot);
 
+INCLUDE_RODATA("tmp/asm/UTST99332/graphics_cube/nonmatchings/libgu", D_00012660);
+
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_cube/nonmatchings/libgu", sceGuLightColor);
 
 void sceGuTexMode(int tpsm, int maxmips, int a2, int swizzle)
@@ -818,6 +833,8 @@ void sceGuTexWrap(int u, int v)
 {
 	send_commandi(199, ((v << 8) | u));
 }
+
+const float D_0001267C = 1.0f;
 
 void sceGuTexLevelMode(unsigned int mode, float bias)
 {
