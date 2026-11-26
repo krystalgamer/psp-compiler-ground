@@ -670,7 +670,50 @@ void dispeffect_all_free(void) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", dispeffect_init);
+void dispeffect_init(void)
+{
+	u8 *d = (u8 *)&D_005FB3B0;
+
+	screen_blur = 0;
+	*(int *)(d + 0x10) = 0;
+	*(int *)(d + 0x4) = 0;
+	*(int *)(d + 0x8) = 0;
+	*(int *)(d + 0xC) = 0;
+	*(int *)(d + 0x14) = 0;
+	*(int *)(d + 0x18) = 0;
+	*(int *)(d + 0x1C) = 0;
+	*(int *)(d + 0x20) = 0;
+	*(int *)(d + 0x24) = 0;
+	*(int *)(d + 0x28) = 0;
+	*(int *)(d + 0x2C) = 0;
+	*(int *)(d + 0x30) = 0;
+	*(int *)(d + 0x34) = 0;
+	*(int *)(d + 0x38) = 0;
+	*(int *)(d + 0x3C) = 0;
+	*(int *)(d + 0x40) = 0;
+	*(int *)(d + 0x44) = 0;
+	*(int *)(d + 0x48) = 0;
+	*(int *)(d + 0x4C) = 0;
+	*(int *)(d + 0x50) = 0;
+	*(int *)(d + 0x54) = 0;
+	*(int *)(d + 0x58) = 0;
+	*(int *)(d + 0x5C) = 0;
+	*(int *)(d + 0x60) = 0;
+	*(int *)(d + 0x64) = 0;
+	*(int *)(d + 0x68) = 0;
+	*(int *)(d + 0x6C) = 0;
+	*(int *)(d + 0x70) = 0;
+	*(int *)(d + 0x74) = 0;
+	*(int *)(d + 0x78) = 0;
+	*(int *)(d + 0x7C) = 0;
+	*(int *)(d + 0x80) = 0;
+	*(int *)(d + 0x84) = 0;
+	*(int *)(d + 0x88) = 0;
+	*(int *)(d + 0x8C) = 0;
+	*(int *)(d + 0x90) = 0;
+	*(int *)(d + 0x94) = 0;
+	*(int *)(d + 0x98) = 0;
+}
 
 void df_quake_start(int a, int t)
 {
@@ -1108,7 +1151,17 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", beat_help_sync
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", hit_check_shield);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", hit_check_player);
+int hit_check_player(float *pos, float r)
+{
+	u8 *z = (u8 *)&D_005A06D8;
+
+	if (*(int *)(z + 0x14) != 0)
+		return -1;
+	if (pos_fast_length_xyz_check(pos[0] - *(float *)(z + 0x6C), pos[1] - *(float *)(z + 0x70), pos[2] - *(float *)(z + 0x74), r) != 1)
+		return -1;
+	ziki_damage(z, pos);
+	return 0;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", hit_check_enemy);
 
