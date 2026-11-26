@@ -27,6 +27,8 @@ void _GUI_Graphics_Pop(void);
 void zWindDrawBox();
 void zWindFontDraw();
 void zWindDrawImage();
+int pspBrowserUtf8ToSjis();
+extern u8 D_00584BB6;
 void zWindDrawImageScl();
 int IMG_sortImage();
 int IMG_gifCreateContext();
@@ -1387,7 +1389,64 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Graphic", GUI_List_isIndexS
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Graphic", GUI_Choice_insert);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Graphic", GUI_Choice_remove);
+int GUI_Choice_remove(GUIWIDGET *w_, int id) {
+    GUIWIDGET *w;
+    GUILISTITEM *p;
+    int found;
+
+    if (w_ == NULL) {
+        puts("[X1]GUI_Choice_remove");
+        return -1;
+    }
+    w = w_;
+    if (w->type != 1) {
+        puts("[X2]GUI_Choice_remove");
+        return -1;
+    }
+    if ((w->flags & 0xF) != 9) {
+        puts("[X3]GUI_Choice_remove");
+        return -1;
+    }
+    s_windsystem_data.flags |= 4;
+    p = w->unk4C;
+    found = 0;
+    while (!found) {
+        if (p == NULL) {
+            puts("[X4]GUI_Choice_remove");
+            s_windsystem_data.flags &= ~4;
+            return -1;
+        }
+        if (p->unkE == id) {
+            found = 1;
+        } else {
+            p = p->next;
+        }
+    }
+    if (p == w->unk4C) {
+        w->unk4C = p->next;
+        if (p->next == NULL) {
+            w->unk50.p = NULL;
+        } else {
+            p->next->unk0 = 0;
+        }
+    } else {
+        ((GUILISTITEM *)p->unk0)->next = p->next;
+        if (p == w->unk50.p) {
+            w->unk50.p = (void *)p->unk0;
+        } else {
+            p->next->unk0 = p->unk0;
+        }
+    }
+    if (p->unkE == w->u.choice.sel) {
+        w->u.choice.sel = 0;
+    }
+    ESP_guiMemFree(p->text);
+    ESP_guiMemFree(p);
+    w->u.choice.unk56--;
+    zWindDraw();
+    s_windsystem_data.flags &= ~4;
+    return 0;
+}
 
 int GUI_Choice_removeAll(GUIWIDGET *w_) {
     GUIWIDGET *w;
