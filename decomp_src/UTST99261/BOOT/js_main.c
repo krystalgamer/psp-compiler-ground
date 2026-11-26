@@ -2,10 +2,15 @@
 #include "common.h"
 #include "m2c_macros.h"
 #include "dom_esp.h"
+extern char D_001339EC[];
+extern int *g_JS_MSG_SID_;
+extern int *g_JS_PAGECHANGED_;
+extern void *g_JS_EVENT_REC_;
+extern void *g_JS_NEEDREDRAW_;
+extern int g_JSRUNTIME_;
 extern int *js_err_msg;
 extern void *jsapi_lock;
 extern char D_001339E0[];
-M2C_UNK JSDestroyInternal(int);                     /* extern */
 int JSEventLoop();                                  /* extern */
 M2C_UNK JSInitInternal();                           /* extern */
 M2C_UNK OS_thread_exit(M2C_UNK);                    /* extern */
@@ -26,7 +31,49 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/js_main", JSHandleEventInternal
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/js_main", JSTimer);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/js_main", JSDestroyInternal);
+void JSDestroyInternal(int sid) {
+    int *g;
+    void *msgbuf;
+    int q1;
+    int q2;
+    int q3;
+    int q4;
+    int m[8];
+
+    g = get_global_ptr();
+    if (g[0] != 0) {
+        MEM_free(0, g[0]);
+    }
+    msgbuf = (void *)g[1];
+    q1 = g[5];
+    q2 = g[6];
+    q3 = g[7];
+    q4 = g[8];
+    JSI_free();
+    DOMAPI_Finalize();
+    js_DestroyTimer();
+    JSPtrListDestroy();
+    delete_global_ptr();
+    MEM_free(0, g_JS_EVENT_REC_);
+    g_JS_EVENT_REC_ = NULL;
+    MEM_free(0, g_JS_MSG_SID_);
+    g_JS_MSG_SID_ = NULL;
+    MEM_free(0, g_JS_NEEDREDRAW_);
+    g_JS_NEEDREDRAW_ = NULL;
+    MEM_free(0, g_JS_PAGECHANGED_);
+    g_JS_PAGECHANGED_ = NULL;
+    g_JSRUNTIME_ = 0;
+    SetIpcMember(m, 8, sid, 1, 0x803, 0, 0, 0);
+    SetIpcmsg(msgbuf, m);
+    OS_mq_send(q3, msgbuf, 0x24, 0);
+    OS_mq_close(q1);
+    OS_mq_close(q4);
+    OS_mq_close(q3);
+    OS_mq_close(q2);
+    OS_mq_unlink(D_001339EC);
+    OS_thread_mutex_destroy(jsapi_lock);
+    MEM_free(0, msgbuf);
+}
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/js_main", D_001339E0);
 
