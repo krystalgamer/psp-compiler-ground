@@ -1,3 +1,4 @@
+/* cflags: -O2 -fmerge-constants */
 #include "common.h"
 
 /* declarations recovered from DWARF */
@@ -127,48 +128,21 @@ static void init_pos(void)
 	}
 }
 
-#ifndef SCE_CTRL_LEFT
 #define SCE_CTRL_LEFT				(1<<7)
-#endif
-#ifndef SCE_CTRL_RIGHT
 #define SCE_CTRL_RIGHT				(1<<5)
-#endif
-#ifndef MAXNUM
 #define MAXNUM			256
-#endif
-#ifndef SCE_CTRL_SELECT
 #define SCE_CTRL_SELECT				(1<<0)
-#endif
-#ifndef SCE_CTRL_UP
 #define SCE_CTRL_UP					(1<<4)
-#endif
-#ifndef SCE_CTRL_DOWN
 #define SCE_CTRL_DOWN				(1<<6)
-#endif
-#ifndef SCE_CTRL_L
 #define SCE_CTRL_L					(1<<8)
-#endif
-#ifndef SCE_CTRL_L1
 #define SCE_CTRL_L1					SCE_CTRL_L
-#endif
-#ifndef SCE_CTRL_R
 #define SCE_CTRL_R					(1<<9)
-#endif
-#ifndef SCE_CTRL_R1
 #define SCE_CTRL_R1					SCE_CTRL_R
-#endif
-#ifndef SCE_CTRL_CROSS
 #define SCE_CTRL_CROSS				(1<<14)
-#endif
-#ifndef SCE_CTRL_SQUARE
 #define SCE_CTRL_SQUARE				(1<<15)
-#endif
-#ifndef SCE_CTRL_CIRCLE
 #define SCE_CTRL_CIRCLE				(1<<13)
-#endif
-#ifndef SCE_CTRL_TRIANGLE
 #define SCE_CTRL_TRIANGLE			(1<<12)
-#endif
+
 static int pad_read(void)
 {
 	extern u_int32 D_000128C0;
