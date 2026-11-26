@@ -161,7 +161,14 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/charactor", set_char_pos);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/charactor", texture_char);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/charactor", draw_char);
+void draw_char(void) {
+    geModelTexFunc(1);
+    geModelSetTexFunc(texture_char);
+    md->tex_num = 0;
+    geObjectDraw(md->obj);
+    geModelTexFunc(0);
+    geModelSetTexFunc(NULL);
+}
 
 void term_char(void) {
     geModelDelete(0);
