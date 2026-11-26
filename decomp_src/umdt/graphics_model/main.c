@@ -70,6 +70,38 @@ int sceDisplayWaitVblankStart(void);
 void *sceGuSwapBuffers(void);
 unsigned int sceDisplayGetVcount(void);
 void sceGumMatrixMode(int mode);
+void sceGuViewport(int cx, int cy, int w, int h);
+void sceGuDepthRange(int near, int far);
+void sceGuEnable(int state);
+void sceGuScissor(int x, int y, int w, int h);
+void sceGuClearColor(unsigned int color);
+void sceGuClearDepth(unsigned int depth);
+void sceGuClearStencil(unsigned int stencil);
+void sceGuClear(int flags);
+void sceGumLookAt(const ScePspFVector3 *eye, const ScePspFVector3 *center, const ScePspFVector3 *up);
+void sceGumPerspective(float fovy, float aspect, float near, float far);
+void sceGuFog(float near, float far, unsigned int color);
+void sceGuAmbient(unsigned int color);
+void sceGuLight(int light, int type, int comp, const ScePspFVector3 *pos);
+void sceGuLightColor(int light, int comp, unsigned int color);
+void sceGuColorMaterial(int comp);
+void sceGuFrontFace(int order);
+void sceGuShadeModel(int mode);
+void sceGuAlphaFunc(int func, int ref, int mask);
+void sceGuBlendFunc(int op, int src, int dst, unsigned int srcfix, unsigned int dstfix);
+void sceGuDepthFunc(int func);
+void sceGuTexFilter(int min, int mag);
+void sceGuTexFunc(int func, int comp);
+void sceGuTexWrap(int u, int v);
+void sceGuPatchDivide(int s, int t);
+void sceGumMultMatrix(const ScePspFMatrix4 *m);
+void sceGuCallList(const void *list);
+static ScePspFMatrix4 *inverse_orthonormal(ScePspFMatrix4 *m0, const ScePspFMatrix4 *m1);
+static ScePspFVector3 *rotate_vector3(ScePspFVector3 *v0, const ScePspFMatrix4 *m1, const ScePspFVector3 *v2);
+void sceGuStart(int type, void *list, int size);
+int sceGuFinish(void);
+void sceGumUpdateMatrix(void);
+void sceGmoMotionSetFrame(SceGmoMotion *motion, float frame);
 void sceGumLoadIdentity(void);
 void sceGumTranslate(const ScePspFVector3 *v);
 void sceGumRotateY(float a);
@@ -178,31 +210,53 @@ int GraphicsModelEntry(int a, int b)
 
 INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/main", GraphicsModelMain);
 
-INCLUDE_RODATA("tmp/asm/umdt/graphics_model/nonmatchings/main", D_000162D4);
-
-INCLUDE_RODATA("tmp/asm/umdt/graphics_model/nonmatchings/main", D_000162D8);
-
-INCLUDE_RODATA("tmp/asm/umdt/graphics_model/nonmatchings/main", D_000162DC);
-
-INCLUDE_RODATA("tmp/asm/umdt/graphics_model/nonmatchings/main", D_000162E0);
-
-INCLUDE_RODATA("tmp/asm/umdt/graphics_model/nonmatchings/main", D_000162E4);
-
-INCLUDE_RODATA("tmp/asm/umdt/graphics_model/nonmatchings/main", D_000162E8);
-
-INCLUDE_RODATA("tmp/asm/umdt/graphics_model/nonmatchings/main", D_000162EC);
-
-INCLUDE_RODATA("tmp/asm/umdt/graphics_model/nonmatchings/main", D_000162F0);
-
-INCLUDE_RODATA("tmp/asm/umdt/graphics_model/nonmatchings/main", D_000162F4);
-
-INCLUDE_RODATA("tmp/asm/umdt/graphics_model/nonmatchings/main", D_000162F8);
-
-INCLUDE_RODATA("tmp/asm/umdt/graphics_model/nonmatchings/main", D_000162FC);
-
-INCLUDE_RODATA("tmp/asm/umdt/graphics_model/nonmatchings/main", D_00016300);
-
-INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/main", begin_scene);
+static void begin_scene()
+{
+	sceGuViewport(2048, 2048, 480, 272);
+	sceGuDepthRange(0xe000, 0x1000);
+	sceGuEnable(2);
+	sceGuScissor(0, 0, 480, 272);
+	sceGuClearColor(0xff800000);
+	sceGuClearDepth(0);
+	sceGuClearStencil(0);
+	sceGuClear(7);
+	sceGumMatrixMode(1);
+	sceGumLoadIdentity();
+	sceGumLookAt(&(ScePspFVector3){ 0, 0, 50 }, &(ScePspFVector3){ 0, 0, 0 }, &(ScePspFVector3){ 0, 1, 0 });
+	sceGumMatrixMode(0);
+	sceGumLoadIdentity();
+	sceGumPerspective(30.0f * 3.14f / 180.0f, 480.0f / 272.0f, 10.0f, 1000000.0f);
+	sceGumMatrixMode(2);
+	sceGuEnable(7);
+	sceGuFog(40, 100, 0xff800000);
+	sceGuEnable(10);
+	sceGuAmbient(0xff404040);
+	sceGuEnable(11);
+	sceGuLight(0, 0, 6, &(ScePspFVector3){ -5, 10, 5 });
+	sceGuLightColor(0, 2, 0xffffffff);
+	sceGuLightColor(0, 4, 0xffffffff);
+	sceGuLight(2, 0, 2, &(ScePspFVector3){ 1, 0, 0 });
+	sceGuLight(3, 0, 2, &(ScePspFVector3){ 0, 1, 0 });
+	sceGuColorMaterial(3);
+	sceGuEnable(0);
+	sceGuEnable(1);
+	sceGuEnable(4);
+	sceGuEnable(6);
+	sceGuEnable(9);
+	sceGuEnable(5);
+	sceGuEnable(8);
+	sceGuEnable(16);
+	sceGuEnable(20);
+	sceGuFrontFace(1);
+	sceGuShadeModel(1);
+	sceGuAlphaFunc(7, 0, 255);
+	sceGuBlendFunc(0, 2, 3, 0, 0);
+	sceGuDepthFunc(7);
+	sceGuTexFilter(7, 1);
+	sceGuTexFunc(0, 1);
+	sceGuTexWrap(0, 0);
+	sceGuPatchDivide(4, 4);
+}
 
 INCLUDE_RODATA("tmp/asm/umdt/graphics_model/nonmatchings/main", D_0001631C);
 
@@ -292,9 +346,99 @@ static void clear_cache()
 	g_cache_packet = 0;
 }
 
-INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/main", update_cache);
+static void update_cache()
+{
+	float step;
+	float f;
+	float f0;
+	float f1;
+	int index;
 
-INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/main", draw_cache);
+	if (g_menu_cache == 0)
+		return;
+	step = g_vbl_step * (1.0f / 60.0f);
+	f = g_cache_frame + g_cache_fps * step;
+	f0 = g_cache_loop[0];
+	f1 = g_cache_loop[1];
+	if (f >= f1)
+		f = f0;
+	if (f < f0)
+		f = f1;
+	g_cache_frame = f;
+	f = (f0 == f1) ? 0.0f : (f - f0) / (f1 - f0);
+	index = (int)((g_menu_cache - 1) * f + 0.5f);
+	g_cache_packet = g_cache_packets[index];
+	if (g_cache_packet == 0) {
+		int size = (char *)g_cache_packets - g_cache_top;
+		SceGmoModel *model;
+		int current;
+		SceGmoMotion *motion;
+
+		sceGuStart(1, g_cache_top, size);
+		sceGumUpdateMatrix();
+		sceGuFinish();
+		sceGuStart(1, g_cache_top, size);
+		model = g_model;
+		current = sceGmoModelGetCurrentMotion(model);
+		motion = sceGmoModelGetMotion(model, current);
+		sceGmoMotionSetFrame(motion, g_cache_frame);
+		sceGmoModelSetWorldMatrix(model, 0);
+		sceGmoModelAnimate(model, 0.0f);
+		sceGmoModelUpdate(model);
+		sceGmoModelDraw(model);
+		size = sceGuFinish();
+		size = (size + 63) / 64 * 64;
+		g_cache_packets[index] = g_cache_top;
+		g_cache_packet = g_cache_top;
+		g_cache_top += size;
+	}
+}
+
+static void draw_cache()
+{
+	int i;
+	float step = g_vbl_step * (1.0f / 60.0f);
+	ScePspFMatrix4 m;
+
+	sceGumMatrixMode(2);
+	sceGumLoadIdentity();
+	sceGumTranslate((ScePspFVector3 *)&g_translate);
+	sceGumRotateY(g_rotate.y);
+	sceGumRotateX(g_rotate.x);
+	for (i = 0; i < g_menu_count; i++) {
+		ScePspFVector3 move = { ((i % 2 == 0) ? i : -i) * 6, 0, 0 };
+		ScePspFMatrix4 m2;
+		ScePspFVector3 v2;
+
+		sceGumTranslate(&move);
+		sceGumPushMatrix();
+		sceGumScale(&g_scale);
+		sceGumStoreMatrix(&m);
+		sceGumPopMatrix();
+		sceGumMatrixMode(1);
+		sceGumPushMatrix();
+		sceGumMultMatrix(&m);
+		sceGumMatrixMode(2);
+		inverse_orthonormal(&m2, &m);
+		rotate_vector3(&v2, &m2, &(ScePspFVector3){ -5, 10, 5 });
+		sceGuLight(0, 0, 6, &v2);
+		if (g_cache_packet != 0) {
+			sceGumUpdateMatrix();
+			sceGuCallList(g_cache_packet);
+		} else {
+			SceGmoModel *model = g_model;
+
+			sceGmoModelSetWorldMatrix(model, 0);
+			sceGmoModelAnimate(model, step);
+			sceGmoModelUpdate(model);
+			sceGmoModelDraw(model);
+		}
+		sceGumMatrixMode(1);
+		sceGumPopMatrix();
+		sceGumMatrixMode(2);
+		step = 0.0f;
+	}
+}
 
 INCLUDE_RODATA("tmp/asm/umdt/graphics_model/nonmatchings/main", D_00016434);
 
