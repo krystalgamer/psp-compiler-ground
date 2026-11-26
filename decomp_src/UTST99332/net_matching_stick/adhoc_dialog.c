@@ -85,13 +85,186 @@ void *memcpy(void *d, const void *s, unsigned int n);
 void *memset(void *s, int c, unsigned int n);
 int printf(const char *fmt, ...);
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_matching_stick/nonmatchings/adhoc_dialog", sceNetAdhocDialogConnect);
+int sceNetAdhocctlConnect(const struct SceNetAdhocctlGroupName *group_name);
+int sceNetAdhocctlGetState(int *state);
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_matching_stick/nonmatchings/adhoc_dialog", sceNetAdhocDialogCreate);
+int sceNetAdhocDialogConnect(struct SceNetAdhocctlGroupName *group_name)
+{
+	int ret;
+	int state;
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_matching_stick/nonmatchings/adhoc_dialog", sceNetAdhocDialogCreateEnterGameMode);
+	if (inited == 0) {
+		return (int)0x80000001;
+	}
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_matching_stick/nonmatchings/adhoc_dialog", sceNetAdhocDialogJoinEnterGameMode);
+	if (info.state != SCE_NET_ADHOC_DIALOG_INT_STATE_CLOSED) {
+		return (int)0x80000021;
+	}
+
+	ret = sceNetAdhocctlGetState(&state);
+	if (ret < 0) {
+		info.error_code = ret;
+		goto error;
+	}
+
+	if (state != 0 && state != 2) {
+		return (int)0x80000021;
+	}
+
+	if (group_name == NULL) {
+		memset(&info.group_name, 0, sizeof(info.group_name));
+	} else {
+		info.group_name = *group_name;
+	}
+
+	ret = sceNetAdhocctlConnect(&info.group_name);
+	if (ret < 0) {
+		info.error_code = ret;
+		goto error;
+	}
+
+	info.state = SCE_NET_ADHOC_DIALOG_INT_STATE_CONNECTING;
+
+error:
+	return ret;
+}
+
+int sceNetAdhocctlCreate(const struct SceNetAdhocctlGroupName *group_name);
+
+int sceNetAdhocDialogCreate(struct SceNetAdhocctlGroupName *group_name)
+{
+	int ret;
+	int state;
+
+	if (inited == 0) {
+		return (int)0x80000001;
+	}
+
+	if (info.state != SCE_NET_ADHOC_DIALOG_INT_STATE_CLOSED) {
+		return (int)0x80000021;
+	}
+
+	ret = sceNetAdhocctlGetState(&state);
+	if (ret < 0) {
+		info.error_code = ret;
+		goto error;
+	}
+
+	if (state != 0 && state != 2) {
+		return (int)0x80000021;
+	}
+
+	if (group_name == NULL) {
+		memset(&info.group_name, 0, sizeof(info.group_name));
+	} else {
+		info.group_name = *group_name;
+	}
+
+	ret = sceNetAdhocctlCreate(&info.group_name);
+	if (ret < 0) {
+		info.error_code = ret;
+		goto error;
+	}
+
+	info.state = SCE_NET_ADHOC_DIALOG_INT_STATE_CREATING;
+
+error:
+	return ret;
+}
+
+int sceNetAdhocctlCreateEnterGameMode(const struct SceNetAdhocctlGroupName *group_name, int game_type, int num, const struct SceNetEtherAddr *members, SceUInt timeout, int flag);
+
+int sceNetAdhocDialogCreateEnterGameMode(struct SceNetAdhocctlGroupName *group_name, int game_type, int num, struct SceNetEtherAddr *members, SceUInt timeout)
+{
+	int ret;
+	int state;
+
+	if (inited == 0) {
+		return (int)0x80000001;
+	}
+
+	if (info.state != SCE_NET_ADHOC_DIALOG_INT_STATE_CLOSED) {
+		return (int)0x80000021;
+	}
+
+	ret = sceNetAdhocctlGetState(&state);
+	if (ret < 0) {
+		info.error_code = ret;
+		goto error;
+	}
+
+	if (state != 0) {
+		return (int)0x80000021;
+	}
+
+	if (group_name == NULL) {
+		memset(&info.group_name, 0, sizeof(info.group_name));
+	} else {
+		info.group_name = *group_name;
+	}
+
+	info.game_type = game_type;
+	info.num = num;
+	memcpy(info.members, members, sizeof(struct SceNetEtherAddr) * num);
+	info.timeout = timeout;
+
+	ret = sceNetAdhocctlCreateEnterGameMode(group_name, game_type, num, members, timeout, 0);
+	if (ret < 0) {
+		info.error_code = ret;
+		goto error;
+	}
+
+	info.state = SCE_NET_ADHOC_DIALOG_INT_STATE_CONNECTING_GAMEMODE_CREATE;
+
+error:
+	return ret;
+}
+
+int sceNetAdhocctlJoinEnterGameMode(const struct SceNetAdhocctlGroupName *group_name, const struct SceNetEtherAddr *gc, SceUInt timeout, int flag);
+
+int sceNetAdhocDialogJoinEnterGameMode(struct SceNetAdhocctlGroupName *group_name, struct SceNetEtherAddr *gc, SceUInt timeout)
+{
+	int ret;
+	int state;
+
+	if (inited == 0) {
+		return (int)0x80000001;
+	}
+
+	if (info.state != SCE_NET_ADHOC_DIALOG_INT_STATE_CLOSED) {
+		return (int)0x80000021;
+	}
+
+	ret = sceNetAdhocctlGetState(&state);
+	if (ret < 0) {
+		info.error_code = ret;
+		goto error;
+	}
+
+	if (state != 0) {
+		return (int)0x80000021;
+	}
+
+	if (group_name == NULL) {
+		memset(&info.group_name, 0, sizeof(info.group_name));
+	} else {
+		info.group_name = *group_name;
+	}
+
+	memcpy(&info.members[0], gc, sizeof(struct SceNetEtherAddr));
+	info.timeout = timeout;
+
+	ret = sceNetAdhocctlJoinEnterGameMode(group_name, gc, timeout, 0);
+	if (ret < 0) {
+		info.error_code = ret;
+		goto error;
+	}
+
+	info.state = SCE_NET_ADHOC_DIALOG_INT_STATE_CONNECTING_GAMEMODE_JOIN;
+
+error:
+	return ret;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/net_matching_stick/nonmatchings/adhoc_dialog", sceNetAdhocDialogGetState);
 
