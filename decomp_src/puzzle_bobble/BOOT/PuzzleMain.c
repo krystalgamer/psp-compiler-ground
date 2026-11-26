@@ -175,9 +175,162 @@ INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", LIGHT_PARTZ
 
 INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", D_0002E334);
 
-INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", D_0002E454);
+extern SPRDATA D_00038A30;
+void DoMonitor(PZL_STAT *st)
+{
+	int tbl[6] = { 0, 3, 4, 1, 2, 5 };
+	int pat = 3;
+	int next = GetBallLine(st) < 8 ? 0 : 18;
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", DoMonitor);
+	switch (st->monitor) {
+	case 0:
+		pat = 0;
+		if (++st->monitor_anim >= 7) {
+			st->monitor_anim = 0;
+			if (rand() % 30 == 0)
+				st->monitor = 3;
+			else
+				st->monitor = 1;
+		}
+		break;
+	case 1:
+		pat = 1;
+		if (++st->monitor_anim >= 7) {
+			st->monitor = 2;
+			st->monitor_anim = 0;
+		}
+		break;
+	case 2:
+		pat = 2;
+		if (++st->monitor_anim >= 7) {
+			st->monitor = next;
+			st->monitor_anim = 0;
+		}
+		break;
+	case 3:
+		pat = tbl[st->player] * 5 + 4;
+		if (++st->monitor_anim >= 26) {
+			st->monitor = next;
+			st->monitor_anim = 0;
+		}
+		break;
+	case 4:
+		if (++st->monitor_anim >= 31) {
+			st->monitor++;
+			st->monitor_anim = 0;
+		}
+	case 5:
+	case 6:
+		pat = st->monitor + 1;
+		if (++st->monitor_anim >= 5) {
+			st->monitor++;
+			st->monitor_anim = 0;
+		}
+		break;
+	case 7:
+		pat = 8;
+		break;
+	case 8:
+		pat = 13;
+		if (--st->monitor_anim < 0) {
+			int r = rand();
+
+			st->monitor_anim = 4;
+			st->monitor = r % 3 + 9;
+		}
+		break;
+	case 9:
+	case 10:
+		pat = st->monitor + 1;
+		if (--st->monitor_anim < 0) {
+			st->monitor++;
+			st->monitor_anim = 4;
+		}
+		break;
+	case 11:
+		pat = st->monitor + 1;
+		if (--st->monitor_anim < 0) {
+			st->monitor = 8;
+			st->monitor_anim = rand() % 60 + 30;
+		}
+		break;
+	case 12:
+	case 13:
+		pat = st->monitor + 3;
+		if (++st->monitor_anim >= 5) {
+			st->monitor++;
+			st->monitor_anim = 0;
+		}
+		break;
+	case 14:
+		pat = 17;
+		if (++st->monitor_anim >= 46) {
+			st->monitor = next;
+			st->monitor_anim = 0;
+		}
+		break;
+	case 15:
+	case 16:
+		pat = st->monitor + 5;
+		if (++st->monitor_anim >= 5) {
+			st->monitor++;
+			st->monitor_anim = 0;
+		}
+		break;
+	case 17:
+		pat = 22;
+		if (++st->monitor_anim >= 46) {
+			st->monitor = next;
+			st->monitor_anim = 0;
+		}
+		break;
+	case 18:
+		pat = 25;
+		if (++st->monitor_anim >= 5) {
+			st->monitor = 19;
+			st->monitor_anim = 0;
+		}
+		break;
+	case 19:
+		pat = 26;
+		if (++st->monitor_anim >= 5) {
+			st->monitor = 20;
+			st->monitor_anim = 0;
+		}
+		break;
+	case 20:
+		pat = 27;
+		if (++st->monitor_anim >= 5) {
+			st->monitor = next;
+			st->monitor_anim = 0;
+		}
+		break;
+	case 21:
+	case 22:
+		pat = st->monitor + 9;
+		if (++st->monitor_anim >= 7) {
+			st->monitor++;
+			st->monitor_anim = 0;
+		}
+		break;
+	case 23:
+		pat = 32;
+		if (++st->monitor_anim >= 31) {
+			st->monitor = next;
+			st->monitor_anim = 0;
+		}
+		break;
+	case 24:
+		pat = tbl[st->player] * 5 + 4;
+		break;
+	}
+	D_00038A30.u = (pat % 5) * 88;
+	D_00038A30.v = (pat / 5) * 64;
+	if (st->mapsub < 2)
+		SpriteDrawC(0.0f, 50, 241, &D_00038A30);
+	else
+		SpriteDrawC(0.0f, 430, 241, &D_00038A30);
+}
 
 void DoReadyGo(PZL_STAT *st)
 {
