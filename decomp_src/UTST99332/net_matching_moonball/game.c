@@ -229,7 +229,35 @@ void InitBall(void)
 	ball.d = (float)(random() % 10) * 0.01f + 1.0f;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/game", InitGame);
+void InitGame(void)
+{
+	int i;
+
+	memset(&game, 0, sizeof(game));
+	last_v = 0;
+	memset(&ground, 0, sizeof(ground));
+	memset(scope, 0, sizeof(scope));
+	game.state = 0;
+	game.score = 0;
+	game.count = 0;
+	game.key = 0;
+	game.disp = 0;
+	fld.x = 0.0f;
+	fld.y = 0.0f;
+	fld.z = -50.0f;
+	moon = 0.0f;
+	ground.tex[0] = 0.0f;
+	ground.tex[1] = 0.0f;
+	for (i = 0; i < 17; i++) {
+		scope[i].pos[0] = 224;
+		scope[i].pos[1] = 152;
+		scope[i].state = 0;
+		scope[i].beam = 0;
+		scope[i].beamlevel = 1.0f;
+	}
+	InitBall();
+	FadeSetup(1, 0);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/game", RunGame);
 
@@ -510,6 +538,19 @@ INCLUDE_ASM("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/game", get_gam
 
 INCLUDE_ASM("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/game", update_game_data);
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/game", check_peer_existence);
+int check_peer_existence(void)
+{
+	int i;
+
+	last_v++;
+	scope[0].last_v = last_v;
+	for (i = 1; i < 17; i++) {
+		if (last_v - scope[i].last_v <= 60)
+			continue;
+		scope[i].last_v = 0;
+		scope[i].state = 0;
+	}
+	return 0;
+}
 
 INCLUDE_RODATA("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/game", D_0001A184);
