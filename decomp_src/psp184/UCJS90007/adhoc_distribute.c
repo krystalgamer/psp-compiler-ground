@@ -303,7 +303,37 @@ int sceNetAdhocDistributeTermServer(void)
 	return 0;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/adhoc_distribute", adhoc_distribute_server_matching_cb_func);
+int sceNetAdhocMatchingSelectTarget(int id, unsigned char *mac, int optlen, void *opt);
+int sceKernelSendMbx(int mbxid, void *msg);
+static void adhoc_distribute_server_matching_cb_func(int id, int ev, struct SceNetEtherAddr *peer, int optlen, void *opt)
+{
+	struct request_message *msg;
+
+	if (sctx->matching_id != id)
+		return;
+	switch (ev) {
+	case 1:
+		break;
+	case 2:
+		sceNetAdhocMatchingSelectTarget(sctx->matching_id, (unsigned char *)peer, 0, NULL);
+		break;
+	case 7:
+		msg = adhoc_distribute_get_reqmsg();
+		if (msg == NULL)
+			break;
+		msg->peer = *peer;
+		sceKernelSendMbx(sctx->mbxid, msg);
+		break;
+	case 3:
+	case 4:
+	case 5:
+	case 6:
+	case 8:
+	case 9:
+	case 10:
+		break;
+	}
+}
 
 int adhoc_distribute_malloc_init(unsigned int poolsize) {
     int temp_v0;
