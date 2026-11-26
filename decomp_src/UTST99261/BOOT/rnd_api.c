@@ -70,8 +70,9 @@ extern void *ui_global;
 M2C_UNK GUI_Component_update(int, int, int, int, int); /* extern */
 M2C_UNK GUI_Component_remove(int);                  /* extern */
 M2C_UNK rnd_deleteAnimBoxnode();                    /* extern */
-M2C_UNK GUI_ScrollPane_getScrollPosition(int);      /* extern */
-M2C_UNK GUI_ScrollPane_getContentSize(int);         /* extern */
+M2C_UNK GUI_ScrollPane_getScrollPosition();
+M2C_UNK GUI_ScrollPane_getContentSize();
+int GUI_ScrollPane_setScrollPosition();
 M2C_UNK GUI_Component_getParent();                  /* extern */
 
 M2C_UNK rnd_gdrawImageDecode();                     /* extern */
@@ -149,7 +150,43 @@ int drawObjectWithArea(int *arg0, int arg1, int arg2, int arg3, int arg4) {
     return var_v0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_api", drawScroll);
+int drawScroll(BNODE *node, int x, int y) {
+    int sx;
+    int sy;
+    int cw;
+    int ch;
+    int vw;
+    int vh;
+
+    if (node == NULL || node->type != 1) {
+        return -100;
+    }
+    GUI_ScrollPane_getScrollPosition(node->widget, &sx, &sy);
+    GUI_ScrollPane_getContentSize(node->widget, &cw, &ch);
+    rnd_gdrawGetViewClientSize(node->widget, &vw, &vh);
+    x += sx;
+    if (x < 0) {
+        x = 0;
+    } else if (cw < x + vw) {
+        x = cw - vw;
+    }
+    y += sy;
+    if (y < 0) {
+        y = 0;
+    } else if (ch < y + vh) {
+        y = ch - vh;
+    }
+    if (x < 0) {
+        x = 0;
+    }
+    if (y < 0) {
+        y = 0;
+    }
+    if (x != sx || y != sy) {
+        GUI_ScrollPane_setScrollPosition(node->widget, x, y);
+    }
+    return 0;
+}
 
 void drawRemoveChild(BNODE *parent, BNODE *child) {
     GUI_ScrollPane_remove(parent->widget, child->widget);
