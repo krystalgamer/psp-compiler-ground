@@ -170,7 +170,25 @@ term:
 	return ret;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/mpeg_stream_change/nonmatchings/parsePsmf", sInfo_getEPOffset);
+SceInt32 sInfo_getEPOffset(t_streamInfo *pStreamInfo, SceInt32 timestamp, SceInt32 *offset)
+{
+	SceInt32 ret;
+	ScePsmfEntryPoint ep;
+	ScePsmf *pPsmf;
+
+	pPsmf = pStreamInfo->pVideoPsmf;
+
+	ret = scePsmfGetEPWithTimestamp(pPsmf, timestamp, &ep);
+	if (ret != 0) {
+		printf("fatal error : scePsmfGetEPWithTimestamp() 0x%x\n", ret);
+		goto term;
+	}
+
+	*offset = ep.offset;
+
+term:
+	return ret;
+}
 
 int sInfo_getStartTimestamp(t_streamInfo *pStreamInfo, unsigned int *pTimestamp) {
     return scePsmfGetPresentationStartTime(pStreamInfo->pVideoPsmf);
