@@ -657,7 +657,19 @@ void DrawCharcter(int z, int x, int y, PARTZ *tbl, int idx)
 	DrawSpriteEz(z, x, y, p->w, p->h, p->u, p->v, p->no);
 }
 
+#ifdef NON_MATCHING
+/* One instruction too long with every cc1 (same as DrawCharcter2): (float)p->v, passed
+ * both in $f16 and on the stack, is converted into a temp and copied with mov.s where
+ * the original converts it straight into $f16.  No source variant changes this. */
+void DrawCharcterFlip(int z, int x, int y, PARTZ *tbl, int idx)
+{
+	PARTZ *p = (PARTZ *)(idx * sizeof(PARTZ) + (int)tbl);
+
+	SpriteDraw(p->no, z, -1, x, y, p->u + p->w, p->v, x + p->w, y, p->u, p->v, x, y + p->h, p->u + p->w, p->v + p->h, x + p->w, y + p->h, p->u, p->v + p->h);
+}
+#else
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", DrawCharcterFlip);
+#endif
 
 #ifdef NON_MATCHING
 /* Close (one extra mov.s): v is converted into a temporary instead of straight into $f16. */
