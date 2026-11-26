@@ -400,6 +400,18 @@ void free64(void *addr) {
     free(addr);
 }
 
+int sceIoDevctl(const char *dev, unsigned int cmd, void *indata, int inlen, void *outdata, int outlen);
+static __inline__ int sceMScmIsMediumInserted(void)
+{
+	int status;
+	int ret;
+
+	ret = sceIoDevctl("mscmhc0:", 0x02025806, NULL, 0, &status, 4);
+	if (ret < 0)
+		return ret;
+	return status == 1;
+}
+
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/main", gu_init);
 
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/main", font_init);
@@ -422,7 +434,21 @@ static int sysparam_init(void)
 	}
 }
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/main", ms_data_init);
+static int ms_data_init(void)
+{
+	int ret = 0;
+
+	if (sceMScmIsMediumInserted() == 0) {
+		ret = utility_msgdialog_fileio(0x80410C8A);
+		if (ret >= 0)
+			change_state(0x17, 0);
+	} else {
+		binlist_init();
+		mpeglist_init();
+		change_state(1, 0);
+	}
+	return ret;
+}
 
 void sceGuDebugPrint(int x, int y, unsigned int color, const char *str);
 unsigned int strlen(const char *s);
