@@ -60,6 +60,29 @@ int sceKernelDeleteThread(int thid);
 int sceKernelExitThread(int status);
 static int func_00009720(unsigned int args, void *argp);
 
+/* sceWaveStop's body, inlined into sceWaveAllStop too (older SDK revision) */
+static inline int _waveStop(unsigned int ch)
+{
+	if (ch >= 8)
+		return 0x80440005;
+	if (D_002F29A8[ch].stat != 0) {
+		D_002F29A8[ch].flags |= 0x120000;
+		D_002F2C08[ch].stat = 0;
+		D_002F2C08[ch].pos = 0;
+		D_002F2C08[ch].unk30 = 0;
+		D_002F2C08[ch].unk34 = 0;
+		D_002F2C08[ch].unk28 = 0;
+		D_002F2C08[ch].unk2C = 0;
+	} else {
+		D_002F29A8[ch].pos = 0;
+		D_002F29A8[ch].unk30 = 0;
+		D_002F29A8[ch].unk34 = 0;
+		D_002F29A8[ch].unk28 = 0;
+		D_002F29A8[ch].unk2C = 0;
+	}
+	return 0;
+}
+
 INCLUDE_ASM("tmp/asm/sampler/sampler/nonmatchings/libwave", sceWaveInit);
 
 INCLUDE_ASM("tmp/asm/sampler/sampler/nonmatchings/libwave", sceWaveSetVoice);
@@ -161,7 +184,10 @@ int sceWaveSetLoopMode(unsigned int ch, int mode)
 	return 0;
 }
 
-INCLUDE_ASM("tmp/asm/sampler/sampler/nonmatchings/libwave", sceWaveStop);
+int sceWaveStop(unsigned int ch)
+{
+	return _waveStop(ch);
+}
 
 int sceWavePause(unsigned int ch)
 {
@@ -183,7 +209,13 @@ int sceWaveReplay(unsigned int ch)
 	return 0;
 }
 
-INCLUDE_ASM("tmp/asm/sampler/sampler/nonmatchings/libwave", sceWaveAllStop);
+void sceWaveAllStop(void)
+{
+	int i;
+
+	for (i = 0; i < 8; i++)
+		_waveStop(i);
+}
 
 int sceWaveAudioSetSample(unsigned int ch, int samplecount)
 {
