@@ -545,7 +545,33 @@ term:
 	return ret;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/mpeg_seamless_change/nonmatchings/decode", decode_getAudioAu);
+SceInt32 decode_getAudioAu(t_mpegStreamData *pStreamData, t_avSyncControl *pAvSync)
+{
+	SceInt32 ret;
+	SceInt32 i;
+	SceVoid *atracBody;
+
+	if (soundbuf_getCapacity(pAvSync->pSound) == 0) {
+		ret = 1;
+		goto term;
+	}
+
+	for (i = 0; i < pStreamData->audioStreamNum; i++) {
+		ret = sceMpegGetAtracAu(pStreamData->pMpeg, pStreamData->pAudioStream[i], &pStreamData->pAudioAu[i], &atracBody);
+		if (ret == 0) {
+			pStreamData->audioDemuxFlag[i] = 1;
+		} else if (ret == (SceInt32)0x80618001) {
+			pStreamData->audioDemuxFlag[i] = 0;
+		} else {
+			goto term;
+		}
+	}
+
+	ret = 0;
+
+term:
+	return ret;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/mpeg_seamless_change/nonmatchings/decode", decode_audioDecode);
 
