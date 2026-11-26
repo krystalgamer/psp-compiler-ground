@@ -2,6 +2,7 @@
 #include "common.h"
 #include "parse_hist.h"
 #include "m2c_macros.h"
+#define HL(o) M2C_FIELD(history, int *, o)
 extern char D_00134D78[];
 extern char D_00134D7C[];
 void *getReqFlagCSSHistURI(void *arg0, int arg1);
@@ -34,7 +35,36 @@ int HST_attachHistory(void) {
     return var_v1;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/history", HST_freeHistory);
+int HST_freeHistory(void) {
+    int *top;
+    int *p;
+    int *next;
+
+    if (history == 0) {
+        return -1;
+    }
+    OS_thread_mutex_lock(HL(8));
+    top = (int *)HL(0);
+    if (top != NULL) {
+        while (top[1] != 0) {
+            deleteHistory(top[1]);
+        }
+        while (top[2] != 0) {
+            deleteHistory(top[2]);
+        }
+        deleteHistory(top);
+        HL(0) = 0;
+    }
+    for (p = (int *)HL(4); p != NULL; p = next) {
+        next = (int *)p[1];
+        MEM_free(0, p);
+    }
+    OS_thread_mutex_unlock(HL(8));
+    OS_thread_mutex_destroy(HL(8));
+    MEM_free(0, history);
+    history = 0;
+    return 0;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -56,7 +86,42 @@ void *HST_createHistoryNode(void) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/history", HST_deleteHistoryNode);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/history", HST_registHistoryNode);
+int HST_registHistoryNode(void *node) {
+    int *e;
+    int *cur;
+    int *p;
+    int i;
+
+    e = MEM_malloc(0, 0xC);
+    if (e == NULL) {
+        return -1;
+    }
+    OS_thread_mutex_lock(HL(8));
+    cur = (int *)HL(0);
+    if (cur != NULL) {
+        while (cur[1] != 0) {
+            deleteHistory(cur[1]);
+        }
+        i = 2;
+        p = cur;
+        if (cur[2] != 0) {
+            do {
+                p = (int *)p[2];
+                i++;
+            } while (p[2] != 0 && i < 16);
+        }
+        while (p[2] != 0) {
+            deleteHistory(p[2]);
+        }
+        cur[1] = (int)e;
+    }
+    e[0] = (int)node;
+    e[1] = 0;
+    e[2] = (int)cur;
+    HL(0) = (int)e;
+    OS_thread_mutex_unlock(HL(8));
+    return 0;
+}
 
 void *HST_getHeadHistoryNode(void) {
     void *cur = M2C_FIELD(history, void **, 0);
