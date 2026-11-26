@@ -255,7 +255,47 @@ SceInt32 decode_delete(t_mpegStreamData *pStreamData)
 	return ret;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/mpeg_seamless_change/nonmatchings/decode", decode_changeAuMode);
+SceInt32 decode_changeAuMode(t_mpegStreamData *pStreamData, SceMpegStrType type, SceInt32 number, SceInt32 flag)
+{
+	SceInt32 ret;
+
+	switch (type) {
+	case 0:
+		if (flag == 1) {
+			ret = sceMpegChangeGetAuMode(pStreamData->pMpeg, pStreamData->pVideoStream[number], 0);
+			if (ret != 0) {
+				goto term;
+			}
+		} else {
+			ret = sceMpegChangeGetAuMode(pStreamData->pMpeg, pStreamData->pVideoStream[number], 1);
+			if (ret != 0) {
+				goto term;
+			}
+		}
+		break;
+	case 1:
+		if (flag == 1) {
+			ret = sceMpegChangeGetAuMode(pStreamData->pMpeg, pStreamData->pAudioStream[number], 0);
+			if (ret != 0) {
+				goto term;
+			}
+		} else {
+			ret = sceMpegChangeGetAuMode(pStreamData->pMpeg, pStreamData->pAudioStream[number], 1);
+			if (ret != 0) {
+				goto term;
+			}
+		}
+		break;
+	default:
+		ret = 0;
+		goto term;
+	}
+
+	ret = 0;
+
+term:
+	return ret;
+}
 
 SceInt32 decode_initAu(t_mpegStreamData *pStreamData, SceMpegStrType type, SceInt32 number, SceInt32 flag)
 {
