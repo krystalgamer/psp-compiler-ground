@@ -2,6 +2,9 @@
 #include "common.h"
 #include "parse_ps.h"
 #include "m2c_macros.h"
+extern int mq_ps_su;
+extern int mq_ps;
+extern char D_00137A2C[];
 extern char D_00137D10[];
 extern char D_00137D30[];
 extern char D_00137D48[];
@@ -618,7 +621,102 @@ int ps_i2309(PsIpc *msg) {
     return 3;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/ps_l3800", ps_i230A);
+static inline int ps_isZeroSession(int id) {
+    if (id == 0) {
+        return 1;
+    }
+    return 0;
+}
+
+static inline int *ps_searchMsgNode(PsIpc *msg) {
+    if (msg->x14 != 0) {
+        return ps_ExternalSearchSessionHistoryNode(msg->x04, msg->x14);
+    }
+    return HST_searchSessionIDHistoryNode(msg->x04);
+}
+
+int ps_i230A(PsIpc *msg) {
+    PsIpc m;
+    struct {
+        int x00;
+        PsIpc body;
+    } q;
+    struct {
+        int x00;
+        PsIpc body;
+    } out;
+    int sent1;
+    int sent2;
+    int *node;
+    int i;
+    int ret;
+
+    sent1 = 0;
+    sent2 = 0;
+    if (ps_isZeroSession(msg->x04)) {
+        goto out;
+    }
+    node = ps_searchMsgNode(msg);
+    if (node == NULL) {
+        if (msg->x18 != 0) {
+            MEM_free(0, msg->x1C);
+        }
+        goto out;
+    }
+    if (node[15] == 8) {
+    out:
+        ret = buf_ps_sts;
+        goto end;
+    }
+    HST_setRequestFlag(node, 0);
+    for (i = 1; i < 7; i++) {
+        if (HST_searchRequestFlagHistoryNode(i) != 0) {
+            ret = 9;
+            goto end;
+        }
+        if (ps_ExternalSearchRequestFlag(i, 1) != 0) {
+            ret = 9;
+            goto end;
+        }
+        if (ps_ExternalSearchRequestFlag(i, 2) != 0) {
+            ret = 9;
+            goto end;
+        }
+    }
+    sendComplete(&m);
+    while (GetMQUEUE(mq_ps_su, &q) != 0) {
+        switch (q.body.cmd) {
+        case 2:
+            if (sent1 == 0) {
+                out.body = q.body;
+                if (OS_mq_send(mq_ps, &q, sizeof(out), 0) < 0) {
+                    ps_halt(D_00137A2C);
+                }
+                sent1 = 1;
+                continue;
+            }
+            break;
+        case 0x17:
+            if (sent2 == 0) {
+                out.body = q.body;
+                if (OS_mq_send(mq_ps, &q, sizeof(out), 0) < 0) {
+                    ps_halt(D_00137A2C);
+                }
+                sent2 = 1;
+                continue;
+            }
+            break;
+        }
+        if (q.body.x1C != 0) {
+            MEM_free(0, q.body.x1C);
+        }
+    }
+    buf_Loding_Stop_FLG = 0;
+    SSLFlg = 0;
+    ret = 3;
+end:
+    return ret;
+}
 
 int ps_i230C(PsIpc *msg) {
     int *node;
