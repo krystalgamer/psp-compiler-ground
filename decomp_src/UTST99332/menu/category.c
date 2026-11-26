@@ -143,7 +143,62 @@ static void CtrlSpline(void)
 	}
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/menu/nonmatchings/category", RunCategory);
+void SwapDice(int dir);
+int GetDice(void);
+void RunCategory(void)
+{
+	if (cat.flag_rot & 1) {
+		menu->rot.y -= 4.5f;
+		if (++cat.cnt_rot >= 20) {
+			menu->rot.y = 0.0f;
+			cat.flag_rot &= ~1;
+			cat.cnt_rot = 0;
+			SwapDice(1);
+			menu->cat = GetDice();
+		}
+	}
+	if (cat.flag_rot & 2) {
+		menu->rot.y += 4.5f;
+		if (++cat.cnt_rot >= 20) {
+			menu->rot.y = 0.0f;
+			cat.flag_rot &= ~2;
+			cat.cnt_rot = 0;
+			SwapDice(2);
+			menu->cat = GetDice();
+		}
+	}
+	if (cat.flag_rot & 4) {
+		menu->rot.x -= 4.5f;
+		if (++cat.cnt_rot < 10)
+			cat.scale += 0.02f;
+		else if (cat.cnt_rot < 20)
+			cat.scale -= 0.02f;
+		if (cat.cnt_rot >= 20) {
+			cat.scale = 1.0f;
+			cat.flag_rot &= ~4;
+			menu->rot.x = 0.0f;
+			cat.cnt_rot = 0;
+			SwapDice(8);
+			menu->cat = GetDice();
+		}
+	}
+	if (cat.flag_rot & 8) {
+		menu->rot.x += 4.5f;
+		if (++cat.cnt_rot < 10)
+			cat.scale += 0.02f;
+		else if (cat.cnt_rot < 20)
+			cat.scale -= 0.02f;
+		if (cat.cnt_rot >= 20) {
+			cat.scale = 1.0f;
+			cat.flag_rot &= ~8;
+			menu->rot.x = 0.0f;
+			cat.cnt_rot = 0;
+			SwapDice(4);
+			menu->cat = GetDice();
+		}
+	}
+	CtrlSpline();
+}
 
 void PlaySE(int num);
 void ProgramChange(int mode);
