@@ -11,6 +11,8 @@ extern int laser_tex_no;
 #endif
 void *memset(void *s, int c, unsigned int n);
 
+
+
 void inv_laser_all_init(void) {
     memset(&inv_laser, 0, 0x1D00U);
 }
@@ -48,7 +50,13 @@ void inv_laser_anime(unsigned int arg0, int arg1) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_laser", inv_laser_end);
+int inv_laser_end(unsigned int no)
+{
+	if (no >= 32)
+		return 0;
+	*(int *)((u8 *)&inv_laser + no * 0xE8) = 0;
+	return 1;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_laser", inv_laser_fadeout);
 

@@ -101,6 +101,9 @@ static void pad_up(void);
 static void pad_down(void);
 int pad_read(void);
 
+
+extern int minfo_num;
+
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_netpad", pad_circle);
 
 void pad_triangle(void) {
@@ -116,8 +119,25 @@ void pad_square(void) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_netpad", pad_up);
+extern int minfo_num;
+static void pad_up(void)
+{
+	u8 *m = (u8 *)&_mrinfo;
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_netpad", pad_down);
+	if (*(int *)m == 11) {
+		if (*(int *)(m + 0x98) + 1 < minfo_num)
+			*(int *)(m + 0x98) += 1;
+	}
+}
+
+static void pad_down(void)
+{
+	u8 *m = (u8 *)&_mrinfo;
+
+	if (*(int *)m == 11) {
+		if (*(int *)(m + 0x98) > 0)
+			*(int *)(m + 0x98) -= 1;
+	}
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_netpad", Lobby_pad_read);

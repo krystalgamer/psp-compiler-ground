@@ -20,13 +20,33 @@ extern unsigned char deb_print;
 #define NULL ((void *)0)
 #endif
 void sceKernelExitGame(void);
+extern int power_callback_flag;
+unsigned long genrand_int32(void);
+int utility_update_shutdown(void);
+int sceGeEdramGetSize(void);
+void *sceGeEdramGetAddr(void);
+void myHeapInit(int addr, int size);
+
 int exit_func(void) {
     UtilityClose();
     sceKernelExitGame();
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_dev", powercallback);
+extern int power_callback_flag;
+unsigned long genrand_int32(void);
+int utility_update_shutdown(void);
+int sceGeEdramGetSize(void);
+void *sceGeEdramGetAddr(void);
+void myHeapInit(int addr, int size);
+static int powercallback(int unknown, int pwrflags, void *common)
+{
+	genrand_int32();
+	if (pwrflags < 0)
+		utility_update_shutdown();
+	power_callback_flag = pwrflags;
+	return 0;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_dev", psp_sxit_callback);
 

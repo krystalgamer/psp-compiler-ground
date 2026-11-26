@@ -9,6 +9,9 @@ extern int D_004B47CC;
 #define NULL ((void *)0)
 #endif
 
+extern int inv_movie_resut;
+void psp_free(void *p);
+
 void inv_movie_result_tex_addr(int arg0) {
     D_004B47E0 = arg0;
 }
@@ -25,7 +28,13 @@ void inv_movie_result_disp_counter_set(int arg0) {
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_result", inv_movie_result_memset);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_result", inv_movie_result_addr);
+void *inv_movie_result_addr(void)
+{
+	u8 *p = (u8 *)&inv_movie_resut;
+
+	*(int *)(p + 0x10) ^= 1;
+	return ((void **)(p + 0x14))[*(int *)(p + 0x10)];
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_result", inv_movie_result_free);
 

@@ -9,6 +9,8 @@ extern int inv_particle_max;
 #endif
 void *memset(void *s, int c, unsigned int n);
 
+
+
 void inv_particle_all_init(void) {
     memset(&inv_particle, 0, 0xFDC00U);
     inv_particle_max = 0;
@@ -24,7 +26,12 @@ INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_particle", D_0007C
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_particle", inv_particle_start);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_particle", inv_particle_check);
+int inv_particle_check(unsigned int no)
+{
+	if (no >= 256)
+		return 1;
+	return *(int *)((u8 *)&inv_particle + no * 0xFDC) != 1;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_particle", inv_particle_control);
 

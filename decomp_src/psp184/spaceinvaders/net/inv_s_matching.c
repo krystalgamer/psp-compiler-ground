@@ -90,21 +90,51 @@ extern struct minfo minfo[16];
 
 int matching_start_to_enter_room(void);
 int matching_restart_to_create_room(void);
-void matching_stop(void);
 int matching_start(void);
-void matching_term(void);
 int matching_select(int peer_idx);
 int matching_cancel(int peer_idx);
+
+
+extern int minfo_sid;
+extern int minfo_num;
+int sceNetAdhocMatchingStop(int id);
+int sceNetAdhocMatchingDelete(int id);
+int sceNetAdhocMatchingTerm(void);
+int sceKernelDeleteSema(int id);
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_matching", matching_start_to_enter_room);
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_matching", matching_restart_to_create_room);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_matching", matching_stop);
+extern int minfo_sid;
+extern int minfo_num;
+int sceNetAdhocMatchingStop(int id);
+int sceNetAdhocMatchingDelete(int id);
+int sceNetAdhocMatchingTerm(void);
+int sceKernelDeleteSema(int id);
+void matching_stop(void)
+{
+	u8 *m = (u8 *)&_mrinfo;
+
+	if (*(int *)(m + 0xA8) > 0) {
+		sceNetAdhocMatchingStop(*(int *)(m + 0xA8));
+		sceNetAdhocMatchingDelete(*(int *)(m + 0xA8));
+		*(int *)(m + 0xA8) = 0;
+	}
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_matching", matching_start);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_matching", matching_term);
+void matching_term(void)
+{
+	matching_stop();
+	sceNetAdhocMatchingTerm();
+	if (minfo_sid > 0) {
+		sceKernelDeleteSema(minfo_sid);
+		minfo_sid = 0;
+	}
+	minfo_num = 0;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_matching", matching_select);
 

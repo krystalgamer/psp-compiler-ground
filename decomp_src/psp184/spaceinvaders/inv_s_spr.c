@@ -11,11 +11,17 @@ M2C_UNK SprLinkDelete();                            /* extern */
 #define NULL ((void *)0)
 #endif
 
+
+
 void SprInit_Psp(void) {
     sprbuf = psp_malloc(0xA000U);
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_spr", SprInit_PspFree);
+void psp_free(void *p);
+void SprInit_PspFree(void)
+{
+	psp_free((void *)sprbuf);
+}
 
 #ifndef NULL
 #define NULL ((void *)0)

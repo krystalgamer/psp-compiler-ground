@@ -1,5 +1,8 @@
 #include "common.h"
 
+extern int _info;
+int game_net_init(void);
+
 void SpriteScale(void) {
 }
 
@@ -9,7 +12,12 @@ void DrawSprite(void) {
 void FadeSetup(void) {
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_moonball_main", FadeState);
+extern int _info;
+int game_net_init(void);
+int FadeState(void)
+{
+	return 0;
+}
 
 void FadeDraw(void) {
 }
@@ -26,6 +34,12 @@ void draw_top_for_game(void) {
 void draw_game(void) {
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_moonball_main", game_pad_read_top);
+int game_pad_read_top(void)
+{
+	return 1;
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_moonball_main", game_pad_read);
+int game_pad_read(void)
+{
+	return 0;
+}
