@@ -432,13 +432,169 @@ void sceGuSignalSync(int signal)
 	}
 }
 
-INCLUDE_RODATA("tmp/asm/UTST99332/graphics_cube/nonmatchings/libgu", D_000125B0);
+void sceGuEnable(int state)
+{
+	switch (state) {
+	case 0:
+		send_commandi(34, 1);
+		break;
+	case 1:
+		send_commandi(35, 1);
+		break;
+	case 2:
+		_ctx[__aw_list_mode].scissor_enable = 1;
+		send_commandi(212, 0xffffff & ((_ctx[__aw_list_mode].scissor_start[1] << 10) | _ctx[__aw_list_mode].scissor_start[0]));
+		send_commandi(213, (_ctx[__aw_list_mode].scissor_end[1] << 10) | _ctx[__aw_list_mode].scissor_end[0]);
+		send_commandi(21, 0);
+		send_commandi(22, (_ctx[__aw_list_mode].scissor_end[1] << 10) | _ctx[__aw_list_mode].scissor_end[0]);
+		break;
+	case 3:
+		send_commandi(36, 1);
+		break;
+	case 4:
+		send_commandi(33, 1);
+		break;
+	case 5:
+		send_commandi(29, 1);
+		break;
+	case 6:
+		send_commandi(32, 1);
+		break;
+	case 7:
+		send_commandi(31, 1);
+		break;
+	case 8:
+		send_commandi(28, 1);
+		break;
+	case 9:
+		send_commandi(30, 1);
+		break;
+	case 10:
+		send_commandi(23, 1);
+		break;
+	case 11:
+		send_commandi(24, 1);
+		break;
+	case 12:
+		send_commandi(25, 1);
+		break;
+	case 13:
+		send_commandi(26, 1);
+		break;
+	case 14:
+		send_commandi(27, 1);
+		break;
+	case 15:
+		send_commandi(37, 1);
+		break;
+	case 16:
+		send_commandi(38, 1);
+		break;
+	case 17:
+		send_commandi(39, 1);
+		break;
+	case 18:
+		send_commandi(40, 1);
+		break;
+	case 19:
+		send_commandi(81, 1);
+		break;
+	case 20:
+		send_commandi(56, 1);
+		break;
+	case 21:
+		_ctx[__aw_list_mode].fragment_2x = 0x10000;
+		send_commandi(201, 0x10000 | _ctx[__aw_list_mode].texture_function);
+		break;
+	}
+	if (state < 22)
+		__gu_status |= (1 << state);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_cube/nonmatchings/libgu", sceGuEnable);
+void sceGuDisable(int state)
+{
+	GuDrawBuffer *fb = &FBuf;
 
-INCLUDE_RODATA("tmp/asm/UTST99332/graphics_cube/nonmatchings/libgu", D_00012608);
-
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_cube/nonmatchings/libgu", sceGuDisable);
+	switch (state) {
+	case 0:
+		send_commandi(34, 0);
+		break;
+	case 1:
+		send_commandi(35, 0);
+		break;
+	case 2:
+		{
+			int w = fb->width - 1;
+			int h = fb->height - 1;
+			_ctx[__aw_list_mode].scissor_enable = 0;
+			send_commandi(212, 0);
+			send_commandi(213, (h << 10) | w);
+			send_commandi(21, 0);
+			send_commandi(22, (h << 10) | w);
+		}
+		break;
+	case 3:
+		send_commandi(36, 0);
+		break;
+	case 4:
+		send_commandi(33, 0);
+		break;
+	case 5:
+		send_commandi(29, 0);
+		break;
+	case 6:
+		send_commandi(32, 0);
+		break;
+	case 7:
+		send_commandi(31, 0);
+		break;
+	case 8:
+		send_commandi(28, 0);
+		break;
+	case 9:
+		send_commandi(30, 0);
+		break;
+	case 10:
+		send_commandi(23, 0);
+		break;
+	case 11:
+		send_commandi(24, 0);
+		break;
+	case 12:
+		send_commandi(25, 0);
+		break;
+	case 13:
+		send_commandi(26, 0);
+		break;
+	case 14:
+		send_commandi(27, 0);
+		break;
+	case 15:
+		send_commandi(37, 0);
+		break;
+	case 16:
+		send_commandi(38, 0);
+		break;
+	case 17:
+		send_commandi(39, 0);
+		break;
+	case 18:
+		send_commandi(40, 0);
+		break;
+	case 19:
+		send_commandi(81, 0);
+		break;
+	case 20:
+		send_commandi(56, 0);
+		break;
+	case 21:
+		_ctx[__aw_list_mode].fragment_2x = 0;
+		send_commandi(201, _ctx[__aw_list_mode].texture_function);
+		break;
+	}
+	if (state < 22)
+		__gu_status &= ~(1 << state);
+}
 
 int sceGuGetStatus(int state)
 {
