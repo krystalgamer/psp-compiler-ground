@@ -1,4 +1,8 @@
 #include "common.h"
+#include "m2c_macros.h"
+M2C_UNK consPrintf(M2C_UNK *, M2C_UNK *);           /* extern */
+extern unsigned char DefView;
+
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/task", taskProc_Move);
 
@@ -22,9 +26,22 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/task", taskGetRefer);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/task", viewInit);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/task", viewTerm);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/task", viewGetDefault);
+int viewTerm(void) {
+    consPrintf("%s\n", "viewTerm");
+    return 1;
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+M2C_UNK *viewGetDefault(void) {
+    return &DefView;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/task", viewMount);
 

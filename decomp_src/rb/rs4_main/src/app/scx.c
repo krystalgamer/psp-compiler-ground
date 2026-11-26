@@ -1,4 +1,11 @@
 #include "common.h"
+#include "m2c_macros.h"
+M2C_UNK consPrintf(M2C_UNK *, M2C_UNK *);           /* extern */
+M2C_UNK sgxResCloseAll();                           /* extern */
+M2C_UNK sgxSndStopAll(M2C_UNK);                     /* extern */
+M2C_UNK sgxTerm();                                  /* extern */
+extern unsigned char D_000FE5F4;
+
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/scx", scxMalloc);
 
@@ -16,7 +23,17 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/scx", D_000FE604);
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/scx", D_000FE620);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/scx", scxTerm);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+int scxTerm(void) {
+    consPrintf(&D_000FE5F4, "scxTerm");
+    sgxSndStopAll(0);
+    sgxResCloseAll();
+    sgxTerm();
+    return 1;
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/scx", D_000FE62C);
 
@@ -56,7 +73,13 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/scx", scxPause);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/scx", scxState);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/scx", scxStopAll);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void scxStopAll(void) {
+    sgxSndStopAll(0);
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/scx", D_000FE6D4);
 

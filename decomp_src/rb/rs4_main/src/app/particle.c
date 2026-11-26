@@ -1,4 +1,7 @@
 #include "common.h"
+#include "m2c_macros.h"
+M2C_UNK copLetMat(int, int);                        /* extern */
+
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/particle", _PartCusConvEnv);
 
@@ -142,62 +145,208 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/particle", partPart3DAnima
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/particle", partDrawPart3D);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/particle", partEmitGetOps);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+float partEmitGetOps(void *arg0) {
+    return M2C_FIELD(arg0, float *, 0x74);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/particle", partEmitGetSpd);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+float partEmitGetSpd(void *arg0) {
+    return M2C_FIELD(arg0, float *, 0x78);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/particle", partEmitGetTime);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+float partEmitGetTime(void *arg0) {
+    return M2C_FIELD(arg0, float *, 0x70);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/particle", partEmitGetAfct);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/particle", partEmitSetOps);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+void partEmitSetOps(void *arg0, float fparg0) {
+    M2C_FIELD(arg0, float *, 0x74) = fparg0;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/particle", partEmitSetSpd);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+void partEmitSetSpd(void *arg0, float fparg0) {
+    M2C_FIELD(arg0, float *, 0x78) = fparg0;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/particle", partEmitSetMaster);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/particle", partPart2DGetAge);
+void partEmitSetMaster(int arg0, int arg1) {
+    copLetMat(arg1, arg0);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/particle", partPart2DGetWidth);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+float partPart2DGetAge(void *arg0) {
+    return M2C_FIELD(arg0, float *, 0x20);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/particle", partPart2DGetHeight);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+float partPart2DGetWidth(void *arg0) {
+    return M2C_FIELD(arg0, float *, 0x40);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/particle", partPart2DGetRot);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+float partPart2DGetHeight(void *arg0) {
+    return M2C_FIELD(arg0, float *, 0x44);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/particle", partPart2DGetRotSpd);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+float partPart2DGetRot(void *arg0) {
+    return M2C_FIELD(arg0, float *, 0x74);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/particle", partPart2DGetScale);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+float partPart2DGetRotSpd(void *arg0) {
+    return M2C_FIELD(arg0, float *, 0x78);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/particle", partPart2DGetTime);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+float partPart2DGetScale(void *arg0) {
+    return M2C_FIELD(arg0, float *, 0x48);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/particle", partPart3DGetAge);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+float partPart2DGetTime(void *arg0) {
+    return M2C_FIELD(arg0, float *, 0x24);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/particle", partPart3DGetWidth);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+float partPart3DGetAge(void *arg0) {
+    return M2C_FIELD(arg0, float *, 0x20);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/particle", partPart3DGetHeight);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+float partPart3DGetWidth(void *arg0) {
+    return M2C_FIELD(arg0, float *, 0x40);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/particle", partPart3DGetScale);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+float partPart3DGetHeight(void *arg0) {
+    return M2C_FIELD(arg0, float *, 0x44);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/particle", partPart3DGetTime);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+float partPart3DGetScale(void *arg0) {
+    return M2C_FIELD(arg0, float *, 0x48);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/particle", partPart2DSetRot);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+float partPart3DGetTime(void *arg0) {
+    return M2C_FIELD(arg0, float *, 0x24);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/particle", partPart2DSetRotSpd);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+void partPart2DSetRot(void *arg0, float fparg0) {
+    M2C_FIELD(arg0, float *, 0x74) = fparg0;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/particle", partPart2DSetScale);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+void partPart2DSetRotSpd(void *arg0, float fparg0) {
+    M2C_FIELD(arg0, float *, 0x78) = fparg0;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/particle", partPart3DSetScale);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+void partPart2DSetScale(void *arg0, float fparg0) {
+    M2C_FIELD(arg0, float *, 0x48) = fparg0;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/particle", partPart2DGetPtPos);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+void partPart3DSetScale(void *arg0, float fparg0) {
+    M2C_FIELD(arg0, float *, 0x48) = fparg0;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/particle", partPart2DGetPtTexCut);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int partPart2DGetPtPos(int arg0) {
+    return arg0;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/particle", partPart2DGetPtCol);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int partPart2DGetPtTexCut(int arg0) {
+    return arg0 + 0x60;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/particle", partPart3DGetPtPos);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int partPart2DGetPtCol(int arg0) {
+    return arg0 + 0x50;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/particle", partPart3DGetPtTexCut);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int partPart3DGetPtPos(int arg0) {
+    return arg0;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/particle", partPart3DGetPtCol);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int partPart3DGetPtTexCut(int arg0) {
+    return arg0 + 0x60;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/particle", partPart3DGetPtMat);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int partPart3DGetPtCol(int arg0) {
+    return arg0 + 0x50;
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int partPart3DGetPtMat(int arg0) {
+    return arg0 + 0xA0;
+}

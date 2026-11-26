@@ -1,6 +1,15 @@
 #include "common.h"
+#include "m2c_macros.h"
+M2C_UNK consPrintf(M2C_UNK *, M2C_UNK *);           /* extern */
+extern unsigned char D_000FB370;
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/lib/rsv", rsvDummy);
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int rsvDummy(void) {
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/lib/rsv", rsvMove);
 
@@ -36,4 +45,11 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/lib/rsv", D_000FB390);
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/lib/rsv", D_000FB3A0);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/lib/rsv", sortTerm);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+int sortTerm(void) {
+    consPrintf(&D_000FB370, "sortTerm");
+    return 1;
+}

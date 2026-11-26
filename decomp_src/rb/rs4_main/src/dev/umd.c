@@ -1,4 +1,8 @@
 #include "common.h"
+#include "m2c_macros.h"
+extern int UmdReady;
+extern int UmdState;
+
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/umd", umdProc);
 
@@ -8,7 +12,17 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/umd", umdParamToVirtual);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/umd", umdNameToVirtual);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/umd", umdReady);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+int umdReady(void) {
+    int temp_v0;
+
+    temp_v0 = UmdReady;
+    UmdReady = UmdState;
+    return temp_v0;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/umd", umdDump);
 
@@ -80,7 +94,12 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/umd", hdlPtr);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/umd", listInit);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/umd", listTerm);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int listTerm(void) {
+    return 1;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/umd", listAddHead);
 

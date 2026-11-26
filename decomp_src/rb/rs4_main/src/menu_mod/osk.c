@@ -1,4 +1,9 @@
 #include "common.h"
+#include "m2c_macros.h"
+M2C_UNK gameCtrlLock();                             /* extern */
+M2C_UNK gameDisSoftReset();                         /* extern */
+M2C_UNK gameCtrlUnlock();                           /* extern */
+
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/osk", setOskUtilityPraram);
 
@@ -36,9 +41,31 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/osk", utility_update_
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/osk", OnPush_OSK);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/osk", Lock);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/osk", Unlock);
+void Lock(int arg0) {
+    int *temp_v0;
+
+    gameDisSoftReset();
+    gameCtrlLock();
+    temp_v0 = gameGetCntx();
+    M2C_FIELD(temp_v0, int *, 4) = (int) (M2C_FIELD(temp_v0, int *, 4) | (arg0 != 0));
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void Unlock(int arg0) {
+    int *temp_v0;
+
+    temp_v0 = gameGetCntx();
+    M2C_FIELD(temp_v0, int *, 8) = (int) (M2C_FIELD(temp_v0, int *, 8) | (arg0 != 0));
+    gameCtrlUnlock();
+    gameEnSoftReset();
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/osk", OskStart);
 

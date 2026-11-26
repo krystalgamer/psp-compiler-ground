@@ -1,4 +1,8 @@
 #include "common.h"
+#include "m2c_macros.h"
+extern int pResTerm;
+extern int pCurrent;
+
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", _resReadInst);
 
@@ -128,7 +132,13 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", resCmpExt);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", resGetTerm);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", resSetTerm);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void resSetTerm(int arg0) {
+    pResTerm = arg0;
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", D_000FBF80);
 
@@ -145,7 +155,12 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", resAsmRes);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", resReleaseRes);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", resInstGetEntrySect);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int resInstGetEntrySect(void *arg0, int arg1) {
+    return M2C_FIELD(((arg1 * 8) + M2C_FIELD(arg0, int *, 4)), int *, 4);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", resInstGetDatSect);
 
@@ -169,7 +184,17 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", D_000FC0A8);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", taskTerm);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", taskSwitchCntx);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+int taskSwitchCntx(int arg0) {
+    int temp_v0;
+
+    temp_v0 = pCurrent;
+    pCurrent = arg0;
+    return temp_v0;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", taskRest);
 
@@ -177,7 +202,12 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", taskHead);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", taskHeadAlive);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", taskProc);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+void taskProc(void *arg0) {
+    M2C_FIELD(arg0, M2C_UNK (**)(), 8)();
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", taskMake);
 

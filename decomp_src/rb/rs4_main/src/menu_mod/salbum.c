@@ -1,4 +1,7 @@
 #include "common.h"
+#include "m2c_macros.h"
+M2C_UNK taskDefaultMsg();                           /* extern */
+
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/salbum", salbumCalcKinds);
 
@@ -30,4 +33,10 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/salbum", salbumTouchC
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/salbum", salbumGetAll);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/salbum", menuSaveTask);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void menuSaveTask(void) {
+    taskDefaultMsg();
+}

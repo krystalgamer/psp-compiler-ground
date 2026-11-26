@@ -1,4 +1,10 @@
 #include "common.h"
+#include "m2c_macros.h"
+M2C_UNK consPrintf(M2C_UNK *, M2C_UNK *);           /* extern */
+M2C_UNK thrDelete(void *);                          /* extern */
+extern unsigned char D_000FB638;
+extern void *pThrEntry;
+
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/lib/sort", sortTag);
 
@@ -118,7 +124,23 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/lib/sort", D_000FB638);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/lib/sort", thrInit);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/lib/sort", thrTerm);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void thrTerm(void) {
+    void *var_s0;
+
+    consPrintf(&D_000FB638, "thrTerm");
+    var_s0 = pThrEntry;
+    if (var_s0 != NULL) {
+        do {
+            thrDelete(var_s0);
+            var_s0 = M2C_FIELD(var_s0, void **, 0x14);
+        } while (var_s0 != NULL);
+    }
+    pThrEntry = NULL;
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/lib/sort", D_000FB64C);
 

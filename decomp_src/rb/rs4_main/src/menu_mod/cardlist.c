@@ -1,4 +1,7 @@
 #include "common.h"
+#include "m2c_macros.h"
+int cardlistCpyTtr2Int32();                         /* extern */
+
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/cardlist", cardlistGetCardID);
 
@@ -14,7 +17,13 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/cardlist", cardlistCp
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/cardlist", cardlistCpyTtr2Bool);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/cardlist", cardlistCpyTtr2Enum);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+int cardlistCpyTtr2Enum(void) {
+    return cardlistCpyTtr2Int32() - 1;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/cardlist", cardlistInit);
 

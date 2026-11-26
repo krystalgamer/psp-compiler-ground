@@ -1,4 +1,6 @@
 #include "common.h"
+#include "m2c_macros.h"
+
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/power", powerInit);
 
@@ -34,7 +36,12 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/power", sprCall);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/power", sprFree);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/power", sprGetSize);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int sprGetSize(void) {
+    return 0x800;
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/dev/power", D_000FA7B8);
 

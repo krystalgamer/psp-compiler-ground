@@ -1,12 +1,26 @@
 #include "common.h"
+#include "m2c_macros.h"
+void *_memAlloc();                                  /* extern */
+extern int MemBreak;
+
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/lib/mem", memLock);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/lib/mem", memUnlock);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/lib/mem", memGetCntxSize);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int memGetCntxSize(void) {
+    return 0x40;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/lib/mem", memGetAlignSize);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int memGetAlignSize(void) {
+    return 0x40;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/lib/mem", _memLog);
 
@@ -28,11 +42,38 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/lib/mem", _memRealloc);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/lib/mem", _memReallocMBL);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/lib/mem", _memAllocZero);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+void *memset(void *s, int c, unsigned int n);
+
+void *_memAllocZero(unsigned int arg0) {
+    void *temp_v0;
+
+    temp_v0 = _memAlloc();
+    if (temp_v0 != NULL) {
+        memset(temp_v0, 0, arg0);
+    }
+    return temp_v0;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/lib/mem", _memAllocMBL);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/lib/mem", _memAllocZeroMBL);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+void *memset(void *s, int c, unsigned int n);
+
+void *_memAllocZeroMBL(unsigned int arg0) {
+    void *temp_v0;
+
+    temp_v0 = _memAlloc();
+    if (temp_v0 != NULL) {
+        M2C_FIELD(temp_v0, signed char *, -0x2F) = 1;
+        memset(temp_v0, 0, arg0);
+    }
+    return temp_v0;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/lib/mem", _memDiag);
 
@@ -46,7 +87,13 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/lib/mem", D_000FB0F0);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/lib/mem", memClean);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/lib/mem", memBreak);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void memBreak(int arg0) {
+    MemBreak = arg0;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/lib/mem", memList);
 

@@ -1,12 +1,49 @@
 #include "common.h"
+#include "m2c_macros.h"
+int resGetPtrLocal();                               /* extern */
+int resGetSizeLocal(int, int);                      /* extern */
+M2C_UNK seek_top();                                 /* extern */
+extern int cus_buf;
+extern int cus_size;
+M2C_UNK find_section(int);                          /* extern */
+extern int cus_inst;
+M2C_UNK get_key_count(int);                         /* extern */
+extern unsigned char GameData;
+M2C_UNK gameOvlProcInst(int, int, int, int, int);   /* extern */
+int resGetCurrentInst();                            /* extern */
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/cus", iskanji1);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/cus", iskanji2);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int iskanji1(int arg0) {
+    int temp_v0;
+
+    temp_v0 = arg0 & 0xFF;
+    return ((unsigned int) ((temp_v0 + 0x7F) & 0xFF) < 0x1FU) | ((unsigned int) ((temp_v0 + 0x20) & 0xFF) < 0x1DU);
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int iskanji2(int arg0) {
+    int temp_a0;
+
+    temp_a0 = arg0 & 0xFF;
+    return ((unsigned int) ((temp_a0 - 0x40) & 0xFF) < 0xBDU) & (temp_a0 != 0x7F);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/cus", seek_top);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/cus", load_cus);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void load_cus(int arg0, int arg1) {
+    cus_buf = resGetPtrLocal();
+    cus_size = resGetSizeLocal(arg0, arg1);
+    seek_top();
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/cus", D_000FC368);
 
@@ -58,9 +95,22 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/cus", cusGetIntIndex);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/cus", cusGetFloatIndex);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/cus", cusSetSection);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/cus", cusSetInst);
+void cusSetSection(int arg0, int arg1) {
+    load_cus(cus_inst, arg0);
+    find_section(arg1);
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void cusSetInst(int arg0) {
+    cus_inst = arg0;
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/cus", D_000FC3D8);
 
@@ -68,7 +118,14 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/cus", D_000FC3DC);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/cus", cusGetIndexNum);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/cus", cusGetKeyNum);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void cusGetKeyNum(int arg0, int arg1) {
+    load_cus(cus_inst, arg0);
+    get_key_count(arg1);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/cus", cusGetKeyName);
 
@@ -160,7 +217,13 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/cus", D_000FC678);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/cus", fontStrDraw);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/cus", gameGetCntx);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+M2C_UNK *gameGetCntx(void) {
+    return &GameData;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/cus", gameLock);
 
@@ -176,7 +239,13 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/cus", gameProc);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/cus", gameOvlProcInst);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/cus", gameOvlProcCurrent);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void gameOvlProcCurrent(int arg0, int arg1, int arg2, int arg3) {
+    gameOvlProcInst(resGetCurrentInst(), arg0, arg1, arg2, arg3);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/cus", gameOvlProcAll);
 

@@ -1,4 +1,7 @@
 #include "common.h"
+#include "m2c_macros.h"
+extern int l_pfnUtil;
+
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/ttrfont", D_000FE7C4);
 
@@ -46,9 +49,28 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/ttrfont", ttrFontDraw);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/ttrfont", ttrFontClear);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/ttrfont", UtilityLink);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/ttrfont", UtilityUnlink);
+int UtilityLink(int arg0) {
+    int var_v1;
+
+    var_v1 = 0;
+    if (l_pfnUtil == 0) {
+        l_pfnUtil = arg0;
+        var_v1 = 1;
+    }
+    return var_v1;
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void UtilityUnlink(void) {
+    l_pfnUtil = 0;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/ttrfont", UtilityUpdate);
 

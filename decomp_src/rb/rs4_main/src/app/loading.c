@@ -1,4 +1,6 @@
 #include "common.h"
+#include "m2c_macros.h"
+
 
 void loadingInit(void) {
 }
@@ -27,7 +29,12 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/loading", localeSetKeyConf
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/loading", empty_start);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/loading", empty_stop);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int empty_stop(void) {
+    return 0;
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/loading", D_000FDB38);
 
