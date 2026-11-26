@@ -80,7 +80,25 @@ INCLUDE_ASM("tmp/asm/UTST99332/mpeg_stream_change/nonmatchings/parsePsmf", setNu
 
 INCLUDE_ASM("tmp/asm/UTST99332/mpeg_stream_change/nonmatchings/parsePsmf", sInfo_setCurrentStream);
 
-INCLUDE_ASM("tmp/asm/UTST99332/mpeg_stream_change/nonmatchings/parsePsmf", sInfo_getCurrentStreamCh);
+SceInt32 sInfo_getCurrentStreamCh(t_streamInfo *pStreamInfo, SceInt32 *ch, SceMpegStrType streamType)
+{
+	SceInt32 ret;
+	SceInt32 type;
+
+	switch (streamType) {
+	case 0:
+		ret = scePsmfGetCurrentStreamType(pStreamInfo->pVideoPsmf, &type, ch);
+		break;
+	case 1:
+		ret = scePsmfGetCurrentStreamType(pStreamInfo->pAudioPsmf, &type, ch);
+		break;
+	default:
+		ret = -1;
+		break;
+	}
+
+	return ret;
+}
 
 SceInt32 sInfo_getCurrentStreamTypeNumber(t_streamInfo *pStreamInfo, SceMpegStrType type)
 {
