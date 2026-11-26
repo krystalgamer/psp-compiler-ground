@@ -1,6 +1,30 @@
 /* cflags: -O1 */
 #include "common.h"
 #include "m2c_macros.h"
+
+typedef struct {
+    u8 unk0[0x38];
+    int unk38;
+} RGGEOM;
+
+typedef struct {
+    u8 unk0[0x20];
+    RGGEOM *geom;
+} RGBOX;
+
+int GUI_createContentView();
+int GUI_ScrollPane_setVScrollbarMode();
+int GUI_ScrollPane_setHScrollbarMode();
+int GUI_TextField_getSelectedText();
+int GUI_TextArea_getSelectedText();
+int GUI_TextArea_setSelection();
+int GUI_TextArea_insert();
+int GUI_TextArea_selectAll();
+int GUI_List_select();
+int GUI_List_deselect();
+int getStringsExtents();
+int strlen();
+void rnd_drawRepaintCallback(void);
 int GUI_Component_getParent(int);                   /* extern */
 M2C_UNK GUI_ScrollPane_add(int, int);               /* extern */
 int GUI_createPanel();                              /* extern */
@@ -15,14 +39,18 @@ M2C_UNK rnd_updateAnimImageBoxnode();               /* extern */
 M2C_UNK rnd_updateAnimTextBoxnode();                /* extern */
 
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_gdraw", color2rgb);
+int color2rgb(int *rgb, int c) {
+    rgb[0] = ((unsigned int)c >> 16) & 0xFF;
+    rgb[1] = (c & 0xFF00) >> 8;
+    rgb[2] = c & 0xFF;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
 #endif
 
-void esp_colorValueToRGB(void) {
-    color2rgb();
+void esp_colorValueToRGB(int *rgb, int c) {
+    color2rgb(rgb, c);
 }
 
 #ifndef NULL
@@ -33,7 +61,17 @@ void rnd_drawRepaintCallback(void) {
     rnd_drawRepaint();
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_gdraw", rnd_gdrawCreateView);
+int rnd_gdrawCreateView(int parent, RGBOX *box) {
+    int w;
+
+    w = GUI_createContentView(parent, rnd_drawRepaintCallback, box->geom->unk38);
+    if (w == 0) {
+        return 0;
+    }
+    GUI_ScrollPane_setVScrollbarMode(w, 1);
+    GUI_ScrollPane_setHScrollbarMode(w, 1);
+    return w;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -49,19 +87,52 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_gdraw", rnd_gdrawGetTextlin
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_gdraw", rnd_gdrawGetTextlineString);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_gdraw", rnd_gdrawGetTextlineSelectionString);
+int rnd_gdrawGetTextlineSelectionString(int w, char **out) {
+    char *s;
+    int n;
+
+    s = (char *)GUI_TextField_getSelectedText(w);
+    if (s == NULL) {
+        return 0;
+    }
+    n = strlen(s);
+    *out = s;
+    return n;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_gdraw", rnd_gdrawCreateTextbox);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_gdraw", rnd_gdrawGetTextboxExtents);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_gdraw", rnd_gdrawReplaceTextboxString);
+int rnd_gdrawReplaceTextboxString(int w, char *s, int start, int end) {
+    GUI_TextArea_setSelection(w, start, end);
+    GUI_TextArea_insert(w, s);
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_gdraw", rnd_gdrawGetTextboxString);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_gdraw", rnd_gdrawSelectTextbox);
+void rnd_gdrawSelectTextbox(int w, int on) {
+    if (on == 1) {
+        GUI_TextArea_selectAll(w);
+    } else {
+        GUI_TextArea_setSelection(w, 0, 0);
+    }
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_gdraw", rnd_gdrawGetTextboxSelectionString);
+int rnd_gdrawGetTextboxSelectionString(int w, char **out) {
+    char *s;
+    int n;
+
+    s = (char *)GUI_TextArea_getSelectedText(w);
+    if (s == NULL) {
+        *out = NULL;
+        return 0;
+    }
+    n = strlen(s);
+    *out = s;
+    return n;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_gdraw", rnd_gdrawCreateCheckbox);
 
@@ -87,7 +158,12 @@ int rnd_gdrawGetRadiobuttonExtents(int *arg0, int *arg1) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_gdraw", rnd_gdrawCreateButton);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_gdraw", rnd_gdrawGetButtonExtents);
+int rnd_gdrawGetButtonExtents(int a, int b, int c, int *w, int *h) {
+    getStringsExtents(a, b, c, w, h);
+    *w += 4;
+    *h += 4;
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_gdraw", rnd_gdrawCreatePulldown);
 
@@ -97,7 +173,13 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_gdraw", rnd_gdrawCreateList
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_gdraw", rnd_gdrawGetListExtents);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_gdraw", rnd_gdrawSetListState);
+void rnd_gdrawSetListState(int w, int index, int state) {
+    if (state == 1) {
+        GUI_List_select(w, index);
+    } else {
+        GUI_List_deselect(w, index);
+    }
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_gdraw", rnd_drawFrameCallback);
 
