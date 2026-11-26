@@ -2535,6 +2535,7 @@ int PuzzleBody(void)
 	int i;
 	int k;
 	short ang;
+	float z;
 
 	KeyStat = GetKeyStat();
 	KeyHit = GetKeyHit();
@@ -3075,8 +3076,9 @@ int PuzzleBody(void)
 	DrawSpriteEz(9.0f, 0.0f, 0.0f, 240.0f, 272.0f, 0.0f, 0.0f, D_0014E8CC + 22);
 	DrawSpriteEz(9.0f, 240.0f, 0.0f, 240.0f, 272.0f, 240.0f, 0.0f, D_0014E8CC + 22);
 	SpriteDrawC(6.0f, 240, 222, &PUZZLE_PARTZ[12]);
-	SpriteDrawEz(10, 7.0f, -1, 4.0f, 165.0f, 96.0f, 48.0f, 0.0f, 0.0f);
-	SpriteDrawEz(11, 7.0f, -1, 381.0f, 165.0f, 96.0f, 48.0f, 0.0f, 0.0f);
+	z = 7.0f;
+	SpriteDrawEz(10, z, -1, 4.0f, 165.0f, 96.0f, 48.0f, 0.0f, 0.0f);
+	SpriteDrawEz(11, z, -1, 381.0f, 165.0f, 96.0f, 48.0f, 0.0f, 0.0f);
 	DrawAnk(1, 427, 136, StageNum + 1);
 	SpriteDrawC(6.0f, 240, 261, &PUZZLE_PARTZ[25]);
 	D_0014E8D0 = (D_0014E8D0 + 1) % 50;
@@ -3094,14 +3096,14 @@ int PuzzleBody(void)
 	DoMonitor(st);
 	DoMonitor(st + 2);
 	if (st->mapno == 0) {
-		DrawSpriteEz(7.0f, 104.0f, 32.0f, 136.0f, 224.0f, 0.0f, 0.0f, 5);
-		DrawSpriteEz(7.0f, 240.0f, 32.0f, 136.0f, 224.0f, 136.0f, 0.0f, 5);
-		DrawSpriteEz(7.0f, 128.0f, 32.0f, 136.0f, 224.0f, 0.0f, 0.0f, 5);
-		DrawSpriteEz(7.0f, 216.0f, 32.0f, 136.0f, 224.0f, 136.0f, 0.0f, 5);
+		DrawSpriteEz(z, 104.0f, 32.0f, 136.0f, 224.0f, 0.0f, 0.0f, 5);
+		DrawSpriteEz(z, 240.0f, 32.0f, 136.0f, 224.0f, 136.0f, 0.0f, 5);
+		DrawSpriteEz(z, 128.0f, 32.0f, 136.0f, 224.0f, 0.0f, 0.0f, 5);
+		DrawSpriteEz(z, 216.0f, 32.0f, 136.0f, 224.0f, 136.0f, 0.0f, 5);
 	}
 	if (st->mapno == 2) {
-		DrawSpriteEz(7.0f, 104.0f, 32.0f, 136.0f, 224.0f, 0.0f, 0.0f, 5);
-		DrawSpriteEz(7.0f, 240.0f, 32.0f, 136.0f, 224.0f, 136.0f, 0.0f, 5);
+		DrawSpriteEz(z, 104.0f, 32.0f, 136.0f, 224.0f, 0.0f, 0.0f, 5);
+		DrawSpriteEz(z, 240.0f, 32.0f, 136.0f, 224.0f, 136.0f, 0.0f, 5);
 	}
 	if (PauseFlag)
 		SpriteDrawC(0, 240, 136, PAUSE_PARTZ);
