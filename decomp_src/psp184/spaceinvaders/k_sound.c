@@ -363,7 +363,18 @@ void se_start(int no)
 		sceWavePlay(ch, 0x7f, 0x7f);
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/k_sound", se_start_v);
+void se_start_v(int no, int vl, int vr)
+{
+	int ch;
+
+	ch = se_play_no;
+	se_play_no = ch + 1;
+	if (se_play_no >= 7)
+		se_play_no = 0;
+	sceWaveStop(ch);
+	if (sceWaveSetVoice(ch, ((SE_T *)&se)[no].addr, ((SE_T *)&se)[no].size, 0) == 0)
+		sceWavePlay(ch, vl, vr);
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
