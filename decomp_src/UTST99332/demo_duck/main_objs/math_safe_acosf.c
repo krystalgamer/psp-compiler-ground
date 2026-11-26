@@ -15,17 +15,28 @@ float math::safe_atan2f(float y, float x)
     return atan2f(y, x);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/math_safe_acosf", _ZN4math10safe_sqrtfEf);
+float math::safe_sqrtf(float x)
+{
+    if (x < 0)
+        return 0;
+    return sqrtf(x);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/math_safe_acosf", _ZN4math9FastNoiseEj);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/math_safe_acosf", _ZN4math5angle17BetweenTwoVectorsERKNS_9vector_xyES3_);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/math_safe_acosf", _ZN4math5angle18BetweenTwoVectors2ERKNS_11vector_xyzwES3_);
+float math::angle::BetweenTwoVectors2(const vector_xyzw &a, const vector_xyzw &b)
+{
+    return BetweenTwoVectors(vector_xy(a.x, a.y), vector_xy(b.x, b.y));
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/math_safe_acosf", _ZN4math5angle17BetweenTwoVectorsENS_11vector_xyzwERKS1_);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/math_safe_acosf", _ZN4math5angle11SmartUpdateEff);
+float math::angle::SmartUpdate(float a, float b)
+{
+    return a + Relative(a, b);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/math_safe_acosf", _ZN4math5angle8RelativeEff);
 

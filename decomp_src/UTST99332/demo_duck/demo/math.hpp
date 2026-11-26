@@ -20,9 +20,25 @@ struct vector_xyzw {
     vector_xyzw() {}
     vector_xyzw(float x_, float y_, float z_, float w_) : x(x_), y(y_), z(z_), w(w_) {}
 };
+struct vector_xy {
+    float x, y;
+    vector_xy() {}
+    vector_xy(float x_, float y_) : x(x_), y(y_) {}
+};
+struct quaternion;
 struct matrix {
     vector_xyzw r[4];
     matrix() {}
+    matrix(const quaternion &q);
+    static matrix Translation(float x, float y, float z);
+    static matrix Translation(const vector_xyz &v);
+    static matrix Translation(const vector_xyzw &v);
+    static matrix Scale(float x, float y, float z);
+    static matrix Scale(const vector_xyz &v);
+    static matrix Rotation(float a, float x, float y, float z);
+    static matrix Rotation(float a, const vector_xyzw &v);
+    static matrix Rotation(float a, const vector_xyz &v);
+    float determinant3() const;
     matrix(vector_xyzw a, vector_xyzw b, vector_xyzw c, vector_xyzw d)
     {
         r[0] = a;
@@ -75,10 +91,20 @@ struct quaternion {
     float dot(const quaternion &q) const;
     float norm() const;
     quaternion conj() const;
+    matrix toMatrix() const;
     static void Shortest(quaternion &a, quaternion &b);
     float x, y, z, w;
 };
 float safe_atan2f(float y, float x);
+float safe_sqrtf(float x);
+namespace angle {
+float BetweenTwoVectors(const vector_xy &a, const vector_xy &b);
+float BetweenTwoVectors2(const vector_xyzw &a, const vector_xyzw &b);
+float SmartUpdate(float a, float b);
+float Relative(float a, float b);
+}
+int factorial(int n);
+int double_factorial(int n);
 /* spherical harmonics helpers */
 struct SH {
     static int N(unsigned int l);

@@ -6,9 +6,25 @@
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/math_factorial", _Z41__static_initialization_and_destruction_0ii_EEA98);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/math_factorial", _ZN4math9factorialEi);
+int math::factorial(int n)
+{
+    if (n == 0)
+        return 1;
+    int r = 1;
+    for (; n > 1; n--)
+        r *= n;
+    return r;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/math_factorial", _ZN4math16double_factorialEi);
+int math::double_factorial(int n)
+{
+    if (n == 0 || n == -1)
+        return 1;
+    int r = 1;
+    for (; n > 1; n -= 2)
+        r *= n;
+    return r;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/math_factorial", _ZN4math2SH1PEiif);
 

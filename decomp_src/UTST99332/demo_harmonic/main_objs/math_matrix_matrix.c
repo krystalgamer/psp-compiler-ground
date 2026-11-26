@@ -6,19 +6,29 @@
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_matrix_matrix", _Z41__static_initialization_and_destruction_0ii_52CEC);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_matrix_matrix", _ZN4math6matrixC2ERKNS_10quaternionE);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_matrix_matrix", _ZN4math6matrixC1ERKNS_10quaternionE);
+math::matrix::matrix(const quaternion &q)
+{
+    *this = q.toMatrix();
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_matrix_matrix", _ZN4math6matrix11TranslationEfff);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_matrix_matrix", _ZN4math6matrix11TranslationERKNS_10vector_xyzE);
+math::matrix math::matrix::Translation(const vector_xyz &v)
+{
+    return Translation(v.x, v.y, v.z);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_matrix_matrix", _ZN4math6matrix11TranslationERKNS_11vector_xyzwE);
+math::matrix math::matrix::Translation(const vector_xyzw &v)
+{
+    return Translation(v.x, v.y, v.z);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_matrix_matrix", _ZN4math6matrix5ScaleEfff);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_matrix_matrix", _ZN4math6matrix5ScaleERKNS_10vector_xyzE);
+math::matrix math::matrix::Scale(const vector_xyz &v)
+{
+    return Scale(v.x, v.y, v.z);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_matrix_matrix", _ZN4math6matrix8RotationEffff);
 
@@ -28,9 +38,15 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_matrix_
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_matrix_matrix", _ZN4math6matrix9RotationZEf);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_matrix_matrix", _ZN4math6matrix8RotationEfRKNS_11vector_xyzwE);
+math::matrix math::matrix::Rotation(float a, const vector_xyzw &v)
+{
+    return Rotation(a, v.x, v.y, v.z);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_matrix_matrix", _ZN4math6matrix8RotationEfRKNS_10vector_xyzE);
+math::matrix math::matrix::Rotation(float a, const vector_xyz &v)
+{
+    return Rotation(a, v.x, v.y, v.z);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_matrix_matrix", _ZN4math6matrix11PointNormalENS_11vector_xyzwES1_);
 
