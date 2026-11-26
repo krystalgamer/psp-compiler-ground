@@ -119,6 +119,8 @@ extern const GuDrawBuffer D_000307FC;
 extern const unsigned int initList[221];
 typedef struct { int m[16]; } GuDitherInit;
 extern const GuDitherInit D_00030828;
+/* sceGuStart's 1.0f, laid out after the switch tables */
+extern const float D_00030948;
 int sceGeSetCallback(void *cb);
 void *sceGeEdramGetAddr(void);
 int sceKernelCreateEventFlag(const char *name, int attr, int bits, void *opt);
@@ -153,7 +155,12 @@ void sceGuTexScale(float u, float v);
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", send_commandi);
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", send_commandi_stall);
+static void send_commandi_stall(int cmd, int argument)
+{
+	send_commandi(cmd, argument);
+	if (!n_bbox && !__aw_list_mode)
+		sceGeListUpdateStallAddr(queid[0], pList->current);
+}
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", send_commandf);
 
@@ -260,7 +267,26 @@ INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", color_material);
 
 INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", D_000307FC);
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", sceGuInit);
+void sceGuInit(void)
+{
+	struct {
+		void (*signal_func)(int, void *);
+		void *signal_arg;
+		void (*finish_func)(int, void *);
+		void *finish_arg;
+	} callback;
+
+	callback.signal_func = callback_sig;
+	callback.signal_arg = &intrParam;
+	callback.finish_func = callback_fin;
+	callback.finish_arg = &intrParam;
+	intrCode = sceGeSetCallback(&callback);
+	vram_top = sceGeEdramGetAddr();
+	queid[0] = sceGeListEnQueue((void *)((unsigned int)initList & 0x1fffffff), 0, intrCode, 0);
+	reset_static_value();
+	intrParam.event = sceKernelCreateEventFlag("SceGuSignal", 0x200, 3, 0);
+	sceGeListSync(queid[0], 0);
+}
 
 void sceGuTerm(void)
 {
@@ -270,15 +296,42 @@ void sceGuTerm(void)
 
 INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", D_00030828);
 
-INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", D_00030868);
+void sceGuStart(int type, void *list, int size)
+{
+	GuContext *context = &_ctx[type];
+	GuDrawBuffer *fb = &FBuf;
+	unsigned int *local_list = (unsigned int *)(((unsigned int)list) | 0x40000000);
 
-INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", D_0003087C);
+	context->parent_context = __aw_list_mode;
+	pList = context;
+	context->current = local_list;
+	context->start = local_list;
+	__aw_list_mode = type;
+	if (!type) {
+		intrParam.index = 0;
+		queid[0] = sceGeListEnQueue(local_list, local_list, intrCode, 0);
+	}
+	if (!gu_init) {
+		GuDitherInit dither_matrix = D_00030828;
+		float one;
 
-INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", D_000308D4);
+		sceGuSetDither(dither_matrix.m);
+		sceGuPatchDivide(16, 16);
+		sceGuColorMaterial(7);
+		one = D_00030948;
+		sceGuSpecular(one);
+		sceGuTexScale(one, one);
+		gu_init = 1;
+	}
+	if (!__aw_list_mode) {
+		int width = fb->frame_width;
 
-INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", D_0003092C);
-
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", sceGuStart);
+		if (width) {
+			send_commandi(156, ((unsigned int)fb->frame_buffer) & 0xffffff);
+			send_commandi(157, ((((unsigned int)fb->frame_buffer) & 0xff000000) >> 8) | width);
+		}
+	}
+}
 
 void sceGuSetDither(const int *matrix)
 {
@@ -348,11 +401,102 @@ int sceGuCheckList(void)
 	return (int)pList->current - (int)pList->start;
 }
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", sceGuSync);
+int sceGuSync(int mode, int what)
+{
+	switch (mode) {
+	case 0:
+		return sceGeDrawSync(what);
+	case 1:
+	case 2:
+	default:
+		return 0;
+	case 3:
+		return sceGeListSync(queid[0], what);
+	case 4:
+		return sceGeListSync(queid[1], what);
+	}
+}
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", sceGuSignalSync);
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", sceGuEnable);
+void sceGuEnable(int state)
+{
+	switch (state) {
+	case 0:
+		send_commandi(34, 1);
+		break;
+	case 1:
+		send_commandi(35, 1);
+		break;
+	case 2:
+		_ctx[__aw_list_mode].scissor_enable = 1;
+		send_commandi(212, (_ctx[__aw_list_mode].scissor_start[1] << 10) | _ctx[__aw_list_mode].scissor_start[0]);
+		send_commandi(213, (_ctx[__aw_list_mode].scissor_end[1] << 10) | _ctx[__aw_list_mode].scissor_end[0]);
+		break;
+	case 3:
+		send_commandi(36, 1);
+		break;
+	case 4:
+		send_commandi(33, 1);
+		break;
+	case 5:
+		send_commandi(29, 1);
+		break;
+	case 6:
+		send_commandi(32, 1);
+		break;
+	case 7:
+		send_commandi(31, 1);
+		break;
+	case 8:
+		send_commandi(28, 1);
+		break;
+	case 9:
+		send_commandi(30, 1);
+		break;
+	case 10:
+		send_commandi(23, 1);
+		break;
+	case 11:
+		send_commandi(24, 1);
+		break;
+	case 12:
+		send_commandi(25, 1);
+		break;
+	case 13:
+		send_commandi(26, 1);
+		break;
+	case 14:
+		send_commandi(27, 1);
+		break;
+	case 15:
+		send_commandi(37, 1);
+		break;
+	case 16:
+		send_commandi(38, 1);
+		break;
+	case 17:
+		send_commandi(39, 1);
+		break;
+	case 18:
+		send_commandi(40, 1);
+		break;
+	case 19:
+		send_commandi(81, 1);
+		break;
+	case 20:
+		send_commandi(56, 1);
+		break;
+	case 21:
+		_ctx[__aw_list_mode].fragment_2x = 0x10000;
+		send_commandi(201, 0x10000 | _ctx[__aw_list_mode].texture_function);
+		break;
+	}
+	if (state < 22)
+		__gu_status |= (1 << state);
+}
+
+INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", D_000308D4);
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", sceGuDisable);
 
@@ -390,13 +534,52 @@ void sceGuSetAllStatus(unsigned int status)
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", sceGuSetMatrix);
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", sceGuDrawArray);
+void sceGuDrawArray(int prim, int vtype, int count, const void *indices, const void *vertices)
+{
+	if (vtype)
+		send_commandi(18, vtype);
+	if (indices) {
+		send_commandi(16, (((unsigned int)indices) >> 8) & 0xf0000);
+		send_commandi(2, ((unsigned int)indices) & 0xffffff);
+	}
+	if (vertices) {
+		send_commandi(16, (((unsigned int)vertices) >> 8) & 0xf0000);
+		send_commandi(1, ((unsigned int)vertices) & 0xffffff);
+	}
+	send_commandi_stall(4, (prim << 16) | count);
+}
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", sceGuDrawArrayN);
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", sceGuDrawBezier);
+void sceGuDrawBezier(int vtype, int ucount, int vcount, const void *indices, const void *vertices)
+{
+	if (vtype)
+		send_commandi(18, vtype);
+	if (indices) {
+		send_commandi(16, (((unsigned int)indices) >> 8) & 0xf0000);
+		send_commandi(2, ((unsigned int)indices) & 0xffffff);
+	}
+	if (vertices) {
+		send_commandi(16, (((unsigned int)vertices) >> 8) & 0xf0000);
+		send_commandi(1, ((unsigned int)vertices) & 0xffffff);
+	}
+	send_commandi_stall(5, (vcount << 8) | ucount);
+}
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", sceGuDrawSpline);
+void sceGuDrawSpline(int vtype, int ucount, int vcount, int uedge, int vedge, const void *indices, const void *vertices)
+{
+	if (vtype)
+		send_commandi(18, vtype);
+	if (indices) {
+		send_commandi(16, (((unsigned int)indices) >> 8) & 0xf0000);
+		send_commandi(2, ((unsigned int)indices) & 0xffffff);
+	}
+	if (vertices) {
+		send_commandi(16, (((unsigned int)vertices) >> 8) & 0xf0000);
+		send_commandi(1, ((unsigned int)vertices) & 0xffffff);
+	}
+	send_commandi_stall(6, (vedge << 18) | (uedge << 16) | (vcount << 8) | ucount);
+}
 
 void sceGuBeginObject(int vtype, int count, const void *indices, const void *vertices)
 {
@@ -459,7 +642,21 @@ void sceGuClearDepth(unsigned int depth)
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", sceGuClear);
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", sceGuDrawBuffer);
+void sceGuDrawBuffer(int psm, void *fbp, int frame_width)
+{
+	FBuf.pixel_size = psm;
+	FBuf.frame_buffer = fbp;
+	FBuf.frame_width = frame_width;
+	if (!FBuf.depth_buffer && FBuf.height)
+		FBuf.depth_buffer = (char *)fbp + FBuf.height * frame_width * 4;
+	if (!FBuf.depth_width)
+		FBuf.depth_width = frame_width;
+	send_commandi(210, psm);
+	send_commandi(156, ((unsigned int)FBuf.frame_buffer) & 0xffffff);
+	send_commandi(157, ((((unsigned int)FBuf.frame_buffer) & 0xff000000) >> 8) | frame_width);
+	send_commandi(158, ((unsigned int)FBuf.depth_buffer) & 0xffffff);
+	send_commandi(159, ((((unsigned int)FBuf.depth_buffer) & 0xff000000) >> 8) | FBuf.depth_width);
+}
 
 void sceGuDrawBufferList(int psm, void *fbp, int frame_width)
 {
@@ -643,7 +840,31 @@ void sceGuLightSpot(int light, const ScePspFVector3 *direction, float exponent, 
 	send_commandf(settings->zdir, direction->z);
 }
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", sceGuLightColor);
+void sceGuLightColor(int light, int component, unsigned int color)
+{
+	color &= 0xffffff;
+	switch (component) {
+	case 1:
+		send_commandi(lcmd[light].ambient, color);
+		break;
+	case 2:
+		send_commandi(lcmd[light].diffuse, color);
+		break;
+	case 3:
+		send_commandi(lcmd[light].ambient, color);
+		send_commandi(lcmd[light].diffuse, color);
+		break;
+	case 4:
+		send_commandi(lcmd[light].specular, color);
+		break;
+	case 6:
+		send_commandi(lcmd[light].diffuse, color);
+		send_commandi(lcmd[light].specular, color);
+		break;
+	}
+}
+
+const float D_00030948 = 1.0f;
 
 void sceGuTexMode(int tpsm, int maxmips, int a2, int swizzle)
 {
