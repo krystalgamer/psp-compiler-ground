@@ -61,6 +61,19 @@ void delLLIST();
 int countRequestedLLIST();
 void msgSendToOtherTask(LOBODY *msg, int mq);
 char *strchr(const char *s, int c);
+
+typedef struct { /* size 0x20 */
+    s16 a;
+    s16 b;
+    s16 unk4;
+    s16 c;
+    unsigned int urllen;
+    char *url;
+    unsigned int targetlen;
+    char *target;
+    unsigned int reflen;
+    char *referer;
+} LP8DATA;
 char *strcpy(char *d, const char *s);
 
 typedef struct {
@@ -272,7 +285,68 @@ void *make_msg_LP7(void *msg, char *url) {
     return m;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_sndmsg", make_msg_LP8);
+void *make_msg_LP8(void *msg, char *url, char *target, char *referer, int a, int b, int c) {
+    LP8DATA *d;
+    unsigned int size;
+    unsigned int urllen;
+    unsigned int targetlen;
+    unsigned int reflen;
+    void *m;
+    char *p;
+
+    d = NULL;
+    size = 0;
+    targetlen = 0;
+    reflen = 0;
+    m = make_layoutMsg_template(2, M2C_FIELD(msg, int *, 4), 0x17);
+    if (M2C_FIELD(msg, int *, 0x10) == 0) {
+        urllen = strlen(url);
+        size = urllen + 0x21;
+        if (target != NULL) {
+            targetlen = strlen(target);
+            size = size + targetlen + 1;
+        }
+        if (referer != NULL) {
+            reflen = strlen(referer);
+            size = size + reflen + 1;
+        }
+        d = MEM_malloc(0, size);
+        if (d == NULL) {
+            MEM_free(0, m);
+            return NULL;
+        }
+        memset(d, 0, size);
+        p = (char *)(d + 1);
+        memcpy(p, url, urllen + 1);
+        d->urllen = urllen;
+        d->url = p;
+        p = p + urllen + 1;
+        if (target != NULL) {
+            memcpy(p, target, targetlen + 1);
+            d->targetlen = targetlen;
+            d->target = p;
+            p = p + targetlen + 1;
+        } else {
+            d->targetlen = 0;
+            d->target = NULL;
+        }
+        if (referer != NULL) {
+            memcpy(p, referer, reflen + 1);
+            d->reflen = reflen;
+            d->referer = p;
+        } else {
+            d->reflen = 0;
+            d->referer = NULL;
+        }
+        d->a = a;
+        d->b = b;
+        d->c = c;
+    }
+    M2C_FIELD(m, int *, 0x34) = M2C_FIELD(msg, int *, 0x10);
+    M2C_FIELD(m, int *, 0x3C) = size;
+    M2C_FIELD(m, LP8DATA **, 0x40) = d;
+    return m;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
