@@ -128,7 +128,17 @@ void ResetAllPositioning()
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_stainglass/nonmatchings/main", PositioningMultMatrix);
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_stainglass/nonmatchings/main", PositioningStoreMatrix);
+static void PositioningStoreMatrix( Positioning* _Positioning
+	, ScePspMatrix4* _Mat )
+{
+	sceGumPushMatrix();
+	sceGumLoadIdentity();
+
+	PositioningMultMatrix( _Positioning );
+
+	sceGumStoreMatrix( &_Mat->fm );
+	sceGumPopMatrix();
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_stainglass/nonmatchings/main", draw_dragon_with_camera_transform);
 
