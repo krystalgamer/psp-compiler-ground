@@ -224,51 +224,22 @@ static void init_pos(void)
 	pos.trans.z = -12.0f;
 }
 
-#ifndef SCE_CTRL_UP
 #define SCE_CTRL_UP					(1<<4)
-#endif
-#ifndef SCE_CTRL_DOWN
 #define SCE_CTRL_DOWN				(1<<6)
-#endif
-#ifndef SCE_CTRL_LEFT
 #define SCE_CTRL_LEFT				(1<<7)
-#endif
-#ifndef SCE_CTRL_RIGHT
 #define SCE_CTRL_RIGHT				(1<<5)
-#endif
-#ifndef PANG
 #define PANG	10.0f
-#endif
-#ifndef LIMIT_ANG
 #define LIMIT_ANG		60.0f
-#endif
-#ifndef SCE_CTRL_L
 #define SCE_CTRL_L					(1<<8)
-#endif
-#ifndef SCE_CTRL_L1
 #define SCE_CTRL_L1					SCE_CTRL_L
-#endif
-#ifndef LIMIT_FAR
 #define LIMIT_FAR		-25.0f
-#endif
-#ifndef SCE_CTRL_R
 #define SCE_CTRL_R					(1<<9)
-#endif
-#ifndef SCE_CTRL_R1
 #define SCE_CTRL_R1					SCE_CTRL_R
-#endif
-#ifndef PTRANS
 #define PTRANS	1.0f
-#endif
-#ifndef LIMIT_NEAR
 #define LIMIT_NEAR		-6.0f
-#endif
-#ifndef SCE_CTRL_START
 #define SCE_CTRL_START				(1<<3)
-#endif
-#ifndef SCE_CTRL_SELECT
 #define SCE_CTRL_SELECT				(1<<0)
-#endif
+
 static int pad_read(void)
 {
 	extern u_int32	D_00021080;
