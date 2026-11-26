@@ -10,7 +10,10 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/math_safe_acosf"
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/math_safe_acosf", _ZN4math10safe_asinfEf);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/math_safe_acosf", _ZN4math11safe_atan2fEff);
+float math::safe_atan2f(float y, float x)
+{
+    return atan2f(y, x);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/math_safe_acosf", _ZN4math10safe_sqrtfEf);
 

@@ -10,9 +10,9 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_quatern
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_quaternion_quaternion", _ZN4math10quaternionC1ERKNS_6matrixE);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_quaternion_quaternion", _ZN4math10quaternionC2Effff);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_quaternion_quaternion", _ZN4math10quaternionC1Effff);
+math::quaternion::quaternion(float x_, float y_, float z_, float w_) : x(x_), y(y_), z(z_), w(w_)
+{
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_quaternion_quaternion", _ZN4math10quaternionC2ENS_11vector_xyzwE);
 
@@ -79,3 +79,4 @@ void _GLOBAL__I__ZN4math10quaternionC2ERKNS_6matrixE(void)
 {
     static_init(1, 0xFFFF);
 }
+

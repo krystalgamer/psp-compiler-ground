@@ -10,7 +10,10 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_safe_ac
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_safe_acosf", _ZN4math10safe_asinfEf);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_safe_acosf", _ZN4math11safe_atan2fEff);
+float math::safe_atan2f(float y, float x)
+{
+    return atan2f(y, x);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_safe_acosf", _ZN4math10safe_sqrtfEf);
 
@@ -53,3 +56,4 @@ void _GLOBAL__D__ZN4math10safe_acosfEf(void)
 {
     static_init(0, 0xFFFF);
 }
+

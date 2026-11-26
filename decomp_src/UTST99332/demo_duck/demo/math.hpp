@@ -2,6 +2,12 @@
 #ifndef DEMO_DUCK_DEMO_MATH_HPP
 #define DEMO_DUCK_DEMO_MATH_HPP
 
+#include <stack>
+
+namespace common {
+template<class T> class t_array2d;
+}
+
 namespace math {
 struct TransformStack;
 struct vector_xyz {
@@ -50,7 +56,16 @@ public:
 }
 
 namespace math {
-struct quaternion;
+struct quaternion {
+    quaternion(const matrix &);
+    quaternion(float x, float y, float z, float w);
+    float x, y, z, w;
+};
+float safe_atan2f(float y, float x);
+/* spherical harmonics helpers */
+struct SH {
+    static int N(unsigned int l);
+};
 }
 
 /* accessors (generated from the asm; members named by offset) */
@@ -95,7 +110,6 @@ public:
 }
 
 namespace math {
-/* layout not known yet (only what decompiled code needs) */
 struct TransformStack {
     TransformStack();
     virtual ~TransformStack();
@@ -115,6 +129,9 @@ struct TransformStack {
     matrix &top();
     const matrix &top_inv() const;
     matrix &top_inv();
+    std::stack<matrix> _stack;                          /* 0x4 */
+    matrix _inv;                                        /* 0x2C */
+    bool _dirty;                                        /* 0x6C */
 };
 /* a non-polymorphic base of sgl::MeshBuilder (typeinfo without bases) */
 class TransformStackFunc {
@@ -154,12 +171,21 @@ public:
     int _f90;
 };
 namespace bspline {
+class curve {
+public:
+    curve();
+    void setCtrl(vector_xyzw *ctrl, int n);
+    void localEval(vector_xyzw &, float);
+    int _Num;                                           /* 0x0 */
+    vector_xyzw *_Ctrl;                                 /* 0x4 */
+};
 class surface {
 public:
-    int net();
+    common::t_array2d<vector_xyzw> *net();
     void *ctrlnet();
+    void setNet(common::t_array2d<vector_xyzw> *);
     /* data */
-    int _f0;
+    common::t_array2d<vector_xyzw> *_f0;
     char _f4;
 };
 }

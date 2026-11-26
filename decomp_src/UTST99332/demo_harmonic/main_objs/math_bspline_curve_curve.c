@@ -4,17 +4,35 @@
 #include "cxx/defer_asm.h"
 #include "../main.hpp"
 
+/* the strings stay in the module's .rodata (asm) */
+extern const char D_0016583C[];     /* "can't have cubic bsplines with less than 4 control points" */
+extern const char D_00165878[];     /* "../lib/maths/bspline.cpp" */
+extern const char D_00165894[];     /* " *** error " */
+extern const char D_001658A0[];     /* "_Num >= 4" */
+extern const char curve_setCtrl_name[] __asm__("_ZZN4math7bspline5curve7setCtrlEPNS_11vector_xyzwEiE19__PRETTY_FUNCTION__");
+#define BS_ASSERT(c, s, name, line, msg) \
+    if (!(c)) { \
+        common::common_internal::assert_display(D_00165894, s, D_00165878, name, line, msg); \
+        common::common_internal::on_error(); \
+        common::common_internal::clash(); \
+    }
+
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_bspline_curve_curve", _Z41__static_initialization_and_destruction_0ii_4E7B0);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_bspline_curve_curve", _ZN4math7bspline5curveC2Ev);
+math::bspline::curve::curve() : _Num(0), _Ctrl(0)
+{
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_bspline_curve_curve", _ZN4math7bspline5curveC1Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_bspline_curve_curve", _ZN4math7bspline5curve7setCtrlEPNS_11vector_xyzwEi);
+void math::bspline::curve::setCtrl(vector_xyzw *ctrl, int n)
+{
+    BS_ASSERT(n >= 4, D_001658A0, curve_setCtrl_name, 33, D_0016583C);
+    _Ctrl = ctrl;
+    _Num = n;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_bspline_curve_curve", _ZN4math7bspline5curve9localEvalERNS_11vector_xyzwEf);
 
-int math::bspline::surface::net()
+common::t_array2d<math::vector_xyzw> *math::bspline::surface::net()
 {
     return _f0;
 }
@@ -30,7 +48,10 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_bspline
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_bspline_curve_curve", _ZN4math7bspline7surfaceC1Eiii);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_bspline_curve_curve", _ZN4math7bspline7surface6setNetEPN6common9t_array2dINS_11vector_xyzwEEE);
+void math::bspline::surface::setNet(common::t_array2d<vector_xyzw> *net)
+{
+    _f0 = net;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_bspline_curve_curve", _ZN4math7bspline7surface10globalEvalEv);
 
@@ -49,3 +70,4 @@ void _GLOBAL__I__ZN4math7bspline5curveC2Ev(void)
 }
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_bspline_curve_curve", _ZN6common9t_array2dIN4math11vector_xyzwEEC1Ejj);
+
