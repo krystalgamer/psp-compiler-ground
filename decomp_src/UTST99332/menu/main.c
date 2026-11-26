@@ -340,4 +340,38 @@ void ProgramChange(int mode) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/menu/nonmatchings/main", main);
+int main(int argc, char **argv)
+{
+	menu->pos = (ScePspFVector3){0.0f, 0.0f, 0.0f};
+	menu->rot = (ScePspFVector3){0.0f, 0.0f, 0.0f};
+	if (argc < 2) {
+		menu->cat = 0;
+		menu->num = 0;
+		menu->ret = 0;
+		program.next = -1;
+		program.flag = 0;
+		program.mode = 0;
+	} else {
+		char *stop;
+
+		menu->cat = strtoul(argv[0], &stop, 10);
+		menu->num = strtoul(argv[1], &stop, 10);
+		menu->ret = 1;
+		program.flag = 0;
+		program.mode = 1;
+		program.next = -1;
+	}
+	menuInit();
+	InitFunc();
+	while (!exitflag) {
+		if (ProgramSwitch() == 0) {
+			KeyFunc();
+			DrawFunc();
+			sceDisplayWaitVblankStart();
+			sceGuSwapBuffers();
+			vcount = (vcount + 1) & 0xffff;
+		}
+	}
+	sceGuTerm();
+	return 0;
+}
