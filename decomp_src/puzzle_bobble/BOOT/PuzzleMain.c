@@ -1055,7 +1055,49 @@ void SetBallMapReverse(PZL_STAT *dst, PZL_STAT *src)
 	}
 }
 
+#ifdef NON_MATCHING
+/* diff 17 (1.5.1 only; other cc1s differ in size): the original tests w > 0 before
+ * computing the row's src/dst pointers (ours hoists them above the test), and the
+ * y * w induction variable / the constant 16 swap s7 and s8. */
+int SetBallMap(u8 *map, u8 *data)
+{
+	int i, y, n, w, type;
+	u8 c;
+	u8 *src, *dst;
+
+	n = 8;
+	for (i = 0; i < 8; i++)
+		ColorTable[i] = i + 1;
+	i = data[1];
+	type = data[0];
+	data += 2;
+	if (i) {
+		n = i;
+		for (i = 0; i < n; i++)
+			ColorTable[i] = data[i];
+		data += n;
+	}
+	ColorRndMax = n;
+	for (i = 0; i < 0x240; i++)
+		map[i] = 0;
+	w = GetMapWidth(type);
+	for (y = 1; y < 13; y++) {
+		src = data + (y * w - y / 2);
+		dst = map + (y + 16) * w;
+		for (i = 0; i < w; i++) {
+			c = *src++;
+			if (c == 16)
+				c = ColorTable[rand() % n];
+			if (i == w - 1 && y % 2 == 1)
+				c = 0;
+			*dst++ = c;
+		}
+	}
+	return type;
+}
+#else
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", SetBallMap);
+#endif
 
 void SetBallMapReverse(PZL_STAT *dst, PZL_STAT *src);
 int PzlDataExist(int no);
