@@ -293,7 +293,45 @@ int SpriteDrawEz(int no, float z, int color, float x, float y, float w, float h,
 	return SpriteDraw(no, color, z, x, y, u, v, x + w, y, u + w, v, x, y + h, u, v + h, x + w, y + h, u + w, v + h);
 }
 
+#ifdef NON_MATCHING
+/* diff 5 with every cc1: only no/color swap (the original keeps color in s8 and spills
+ * no).  Like DrawSprite's f0/f1, an equal-priority tie between two parameters goes to
+ * the later parameter in the original and to the earlier one in our compilers. */
+double cos(double);
+double sin(double);
+int SpriteDrawZoom(int no, int color, float z, float x, float y, float w, float h, float u, float v, float cx, float cy, float sx, float sy, float rot)
+{
+	float vx[4], vy[4], dx[4], dy[4];
+	float px, py;
+	int i;
+
+	if (rot == 0.0f) {
+		float qx = x + cx;
+		float qy = y + cy;
+
+		vx[0] = vx[2] = qx - cx * sx;
+		vy[0] = vy[1] = qy - cy * sy;
+		vx[1] = vx[3] = qx + (w - cx) * sx;
+		vy[2] = vy[3] = qy + (h - cy) * sy;
+	} else {
+		px = x + cx;
+		py = y + cy;
+		dx[0] = dx[2] = (px - cx * sx) - px;
+		dy[0] = dy[1] = (py - cy * sy) - py;
+		dx[1] = dx[3] = (px + (w - cx) * sx) - px;
+		dy[2] = dy[3] = (py + (h - cy) * sy) - py;
+		for (i = 0; i < 4; i++) {
+			vx[i] = cos(rot) * dx[i] + sin(rot) * dy[i];
+			vy[i] = -sin(rot) * dx[i] + cos(rot) * dy[i];
+			vy[i] += py;
+			vx[i] += px;
+		}
+	}
+	SpriteDraw(no, color, z, vx[0], vy[0], u, v, vx[1], vy[1], u + w, v, vx[2], vy[2], u, v + h, vx[3], vy[3], u + w, v + h);
+}
+#else
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/wrap_sprite", SpriteDrawZoom);
+#endif
 
 #ifdef NON_MATCHING
 /* Close: right register allocation, but f[0]/f[1] stores come out swapped. */
