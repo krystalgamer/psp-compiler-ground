@@ -76,7 +76,18 @@ SceInt32 soundbuf_output(t_soundBuffer *pSound);
 
 INCLUDE_ASM("tmp/asm/UTST99332/mpeg_mpegstr_pcm/nonmatchings/sound", soundbuf_create);
 
-INCLUDE_ASM("tmp/asm/UTST99332/mpeg_mpegstr_pcm/nonmatchings/sound", soundbuf_reset);
+SceInt32 soundbuf_reset(t_soundBuffer *pSound)
+{
+	soundframeCount = 0;
+	soundframeDelay = 0;
+
+	pSound->write = 0;
+	pSound->write2 = 0;
+	pSound->read = 0;
+	pSound->count = 0;
+
+	return 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/mpeg_mpegstr_pcm/nonmatchings/sound", soundbuf_delete);
 
