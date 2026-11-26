@@ -140,7 +140,12 @@ SceInt32 read_checkConditionEnd(t_ringBuffer *pRing);
 int read_func(SceSize size, void *argp);
 
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/mpeg_fileread", read_create);
+SceInt32 read_create(t_ringBuffer *pRing, SceMpegRingbuffer *pRB, t_conditionCtrl *pCtrl)
+{
+	pRing->pRingbuf = pRB;
+	pRing->pCtrl = pCtrl;
+	return 0;
+}
 
 SceInt32 read_reset(t_ringBuffer *pRing, SceInt32 fileSize)
 {

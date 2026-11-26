@@ -119,7 +119,17 @@ SceInt32 decode_videoDecode(SceMpeg *pMpeg, t_mpegStreamData *pStreamData, t_avS
 SceInt32 decode_videoDecodeEnd(SceMpeg *pMpeg, t_avSyncControl *pAvSync);
 
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/mpeg_decode", decode_setStreamData);
+int printf(const char *fmt, ...);
+int printf(const char *fmt, ...);
+int printf(const char *fmt, ...);
+SceInt32 decode_setStreamData(t_mpegStreamData *pStreamData, SceMpegStream *pStreamV, SceMpegAu *pAvcAu, SceMpegStream *pStreamA, SceMpegAu *pAtracAu)
+{
+	pStreamData->pAvcStream = pStreamV;
+	pStreamData->pAtracStream = pStreamA;
+	pStreamData->pAvcAu = pAvcAu;
+	pStreamData->pAtracAu = pAtracAu;
+	return 0;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/mpeg_decode", decode_audioDecode);
 
