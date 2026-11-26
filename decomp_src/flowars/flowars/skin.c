@@ -1,5 +1,6 @@
 #include "common.h"
 
+
 /* declarations recovered from DWARF */
 typedef struct SceGimPicture SceGimPicture;
 struct SceGimPicture;
@@ -204,6 +205,9 @@ static void draw_status(int x, int y, int bbuck, int p_bak, int shake, int g_bak
 static void draw_turn(int flagPlayer);
 
 /* SDK functions (tools/sdk_protos.h) */
+void sceGimPictureActivate(SceGimPicture *picture);
+void sceGimPictureAnimate(SceGimPicture *picture, float time);
+void sceGimPictureDelete(SceGimPicture *picture);
 void sceGuColor(unsigned int color);
 void sceGuSpriteMode(int a0, int a1, int a2, int a3);
 void sceGuDrawSprite(int x, int y, int z, int u, int v, int flip, int rotation);
@@ -219,7 +223,28 @@ INCLUDE_RODATA("tmp/asm/flowars/flowars/nonmatchings/skin", D_000309A0);
 
 INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/skin", load_skin);
 
-INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/skin", term);
+static void term()
+{
+	int i;
+	int j;
+
+	for (i = 0; i < 2; i++)
+		for (j = 0; j < 5; j++)
+			sceGimPictureDelete(g_img_char[i][j]);
+	for (i = 0; i < 4; i++)
+		sceGimPictureDelete(g_img_face[i]);
+	sceGimPictureDelete(g_img_stage);
+	sceGimPictureDelete(g_img_num_jum);
+	sceGimPictureDelete(g_img_num_go);
+	sceGimPictureDelete(g_img_num_mission);
+	sceGimPictureDelete(g_img_x2_mission);
+	sceGimPictureDelete(g_img_title_mission);
+	sceGimPictureDelete(g_img_title_bingo);
+	sceGimPictureDelete(g_img_level_mission);
+	sceGimPictureDelete(g_img_level_mission_num);
+}
+
+__asm__(".globl term");
 
 void change_skin(int party, int person) {
     skinManager.term();
@@ -243,7 +268,28 @@ INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/skin", draw_face);
 
 INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/skin", draw_stage);
 
-INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/skin", draw_sun);
+static void draw_sun(int flagPlayer)
+{
+	int x;
+	int y;
+
+	if (flagPlayer == 0) {
+		x = 1;
+		y = 207;
+	} else if (flagPlayer == 1) {
+		x = 1;
+		y = 1;
+	} else {
+		x = 423;
+		y = 1;
+	}
+	sceGimPictureActivate(g_img_sun);
+	sceGuColor(0xFFFFFFFF);
+	sceGuSpriteMode(15, 15, 15, 15);
+	sceGuDrawSprite(x, y, 0, 0, 0, 0, 0);
+}
+
+__asm__(".globl draw_sun");
 
 INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/skin", draw_level_mission);
 
@@ -259,7 +305,6 @@ int draw_num_go(int go, int x, int y) {
     }
     return var_v0;
 }
-/* Warning: struct SceGimPicture is not defined (only forward-declared) */
 
 INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/skin", draw_num_jum);
 
@@ -276,11 +321,30 @@ int draw_x2_mission(int x, int y) {
     }
     return var_v0;
 }
-/* Warning: struct SceGimPicture is not defined (only forward-declared) */
 
-INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/skin", draw_title_mission);
+static int draw_title_mission(int x, int y)
+{
+	if (g_img_title_mission == NULL)
+		return 0;
+	sceGimPictureActivate(g_img_title_mission);
+	sceGuColor(0xFFFFFFFF);
+	graphics.draw_sprite(x, y, 102, 18, 0);
+	return 1;
+}
 
-INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/skin", draw_title_bingo);
+__asm__(".globl draw_title_mission");
+
+static int draw_title_bingo(int x, int y)
+{
+	if (g_img_title_bingo == NULL)
+		return 0;
+	sceGimPictureActivate(g_img_title_bingo);
+	sceGuColor(0xFFFFFFFF);
+	graphics.draw_sprite(x, y, 48, 27, 0);
+	return 1;
+}
+
+__asm__(".globl draw_title_bingo");
 
 INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/skin", draw_num_mission);
 
@@ -301,7 +365,6 @@ int draw_num_bingo(int linecnt, int x, int y) {
     }
     return var_v0;
 }
-/* Warning: struct SceGimPicture is not defined (only forward-declared) */
 
 INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/skin", draw_status);
 
@@ -315,4 +378,24 @@ INCLUDE_RODATA("tmp/asm/flowars/flowars/nonmatchings/skin", D_000309E4);
 
 INCLUDE_RODATA("tmp/asm/flowars/flowars/nonmatchings/skin", D_000309E8);
 
-INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/skin", draw_turn);
+static void draw_turn(int flagPlayer)
+{
+	int x;
+	int y;
+
+	if (flagPlayer == 0) {
+		x = 1;
+		y = 207;
+	} else if (flagPlayer == 1) {
+		x = 1;
+		y = 1;
+	} else {
+		x = 423;
+		y = 1;
+	}
+	sceGimPictureActivate(g_img_turn);
+	sceGimPictureAnimate(g_img_turn, 1.0f / 60.0f);
+	graphics.draw_sprite(x, y, 56, 63, 0);
+}
+
+__asm__(".globl draw_turn");
