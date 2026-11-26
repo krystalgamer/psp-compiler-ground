@@ -257,7 +257,34 @@ void initImageList(IMGLIST *list) {
     list->unk0 = 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_image", reserveGetRequest);
+LNODE *make_msg_LI1();
+int getSessionNumber();
+int setRequestMessageBuffer();
+
+void reserveGetRequest(int a0, char *url, int doc, int a3, int a4, int a5, int a6, int a7) {
+    LNODE *n;
+    LOMSG *m;
+    void *buf;
+    int cnt;
+
+    n = make_msg_LI1();
+    n->doc = doc;
+    n->unk18 = a0;
+    m = (LOMSG *)&n->unk24;
+    m->session = getSessionNumber();
+    m->unk8 = 0;
+    if (a3 == 1) {
+        m->unk10 = 2;
+    } else {
+        m->unk10 = a4 ? 3 : 0;
+    }
+    cnt = countRequestedLLIST(&REQUEST_LLIST, doc) + 1;
+    m->len = setRequestMessageBuffer(&buf, url, cnt, cnt, a5, a6, a7);
+    m->data = buf;
+    n->data = MEM_malloc(0, strlen(url) + 1);
+    strcpy(n->data, url);
+    putLLIST(&REQUEST_LLIST, n);
+}
 
 IMGENT *checkImageList(IMGLIST *list, char *name) {
     IMGENT *e;
