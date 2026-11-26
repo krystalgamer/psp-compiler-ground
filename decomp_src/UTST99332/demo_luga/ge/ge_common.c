@@ -29,7 +29,14 @@ void geCommonSetProc(int num, geCOMMON *common);
 int geCommonProc(int num);
 
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/ge/ge_common", geCommonInit);
+void geCommonInit(void)
+{
+	unsigned int i;
+
+	for (i = 0; i < 6; i++) {
+		((void **)&geModuleCommon)[i] = NULL;
+	}
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/ge/ge_common", geCommonSetModule);
 
