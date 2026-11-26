@@ -14,7 +14,7 @@ public:
     void idle(float);
     void drawAsPlane(bool) const;
     void drawW(bool) const;
-    void reflect();
+    math::matrix reflect();
     void prepareRefraction() const;
     void draw(Pass) const;
     void update();

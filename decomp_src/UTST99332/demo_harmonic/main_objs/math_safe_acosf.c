@@ -22,7 +22,14 @@ float math::safe_sqrtf(float x)
     return sqrtf(x);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_safe_acosf", _ZN4math9FastNoiseEj);
+extern const float D_00165B0C;  /* 1 / 2^30 */
+extern const float D_00165B10;  /* 1.0f */
+
+float math::FastNoise(unsigned int n)
+{
+    n = (n << 13) ^ n;
+    return D_00165B10 - ((n * (n * n * 15731 + 789221) + 1376312589) & 0x7FFFFFFF) * D_00165B0C;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_safe_acosf", _ZN4math5angle17BetweenTwoVectorsERKNS_9vector_xyES3_);
 

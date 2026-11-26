@@ -23,14 +23,14 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/math_Trackball",
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/math_Trackball", _ZN4math9Trackball5resetEv);
 
-const void *math::Trackball::getTransform() const
+const math::matrix &math::Trackball::getTransform() const
 {
-    return this;
+    return _transform;
 }
 
-const void *math::Trackball::getDeltaRot() const
+const math::matrix &math::Trackball::getDeltaRot() const
 {
-    return &_f50;
+    return _deltaRot;
 }
 
 extern "C" {

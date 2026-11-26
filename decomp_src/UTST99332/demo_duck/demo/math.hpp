@@ -8,18 +8,33 @@ namespace common {
 template<class T> class t_array2d;
 }
 
+/* Identity()'s 1.0f: a unit whose .rodata stays asm defines it as its D_ label before main.hpp */
+#ifndef MATH_IDENTITY_ONE
+#define MATH_IDENTITY_ONE 1
+#endif
+
 namespace math {
 struct TransformStack;
+/* 16 bytes (by-value copies move 4 words) */
 struct vector_xyz {
-    float x, y, z;
+    float x, y, z, _pad;
     vector_xyz() {}
     vector_xyz(float x_, float y_, float z_) : x(x_), y(y_), z(z_) {}
+    vector_xyz operator*(float s) const { return vector_xyz(x * s, y * s, z * s); }
 };
 struct vector_xyzw {
     float x, y, z, w;
     vector_xyzw() {}
     vector_xyzw(float x_, float y_, float z_, float w_) : x(x_), y(y_), z(z_), w(w_) {}
+    vector_xyzw operator+(const vector_xyzw &b) const { return vector_xyzw(x + b.x, y + b.y, z + b.z, w + b.w); }
+    vector_xyzw operator-(vector_xyzw b) const { return vector_xyzw(x - b.x, y - b.y, z - b.z, w - b.w); }
+    vector_xyzw operator-() const { return vector_xyzw(-x, -y, -z, -w); }
+    vector_xyzw operator*(float s) const { return vector_xyzw(x * s, y * s, z * s, w * s); }
 };
+inline float dot(const vector_xyzw &a, const vector_xyzw &b)
+{
+    return a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w;
+}
 struct vector_xy {
     float x, y;
     vector_xy() {}
@@ -48,17 +63,21 @@ struct matrix {
     }
     static const matrix &Identity()
     {
-        static const matrix IDENTITY(vector_xyzw(1, 0, 0, 0), vector_xyzw(0, 1, 0, 0),
-                                     vector_xyzw(0, 0, 1, 0), vector_xyzw(0, 0, 0, 1));
+        static const matrix IDENTITY(vector_xyzw(MATH_IDENTITY_ONE, 0, 0, 0), vector_xyzw(0, MATH_IDENTITY_ONE, 0, 0),
+                                     vector_xyzw(0, 0, MATH_IDENTITY_ONE, 0), vector_xyzw(0, 0, 0, MATH_IDENTITY_ONE));
         return IDENTITY;
     }
 };
 }
 
 namespace vertex_formats {
+struct V3F {
+    float x, y, z;
+    V3F(float x_, float y_, float z_) : x(x_), y(y_), z(z_) {}
+};
 struct T2UB_V3F {
     unsigned char u, v;
-    math::vector_xyz p;
+    V3F p;
     T2UB_V3F() : u(0), v(0), p(0, 0, 1) {}
 };
 }
@@ -72,7 +91,9 @@ public:
 }
 
 namespace math {
+enum RotationOrder { };
 struct quaternion {
+    quaternion() : x(0), y(0), z(0), w(1) {}
     quaternion(const matrix &);
     quaternion(float x, float y, float z, float w);
     quaternion(vector_xyzw v);
@@ -84,6 +105,7 @@ struct quaternion {
     quaternion operator/(float s) const;
     bool operator==(const quaternion &q) const;
     bool operator!=(const quaternion &q) const;
+    quaternion &operator-=(const quaternion &q);
     quaternion &operator*=(const quaternion &q);
     quaternion &operator+=(const quaternion &q);
     quaternion &operator*=(float s);
@@ -93,10 +115,19 @@ struct quaternion {
     quaternion conj() const;
     matrix toMatrix() const;
     static void Shortest(quaternion &a, quaternion &b);
+    static quaternion FromEulerAngles(vector_xyz v, RotationOrder o);
+    static quaternion FromEulerAngles(float a, float b, float c, RotationOrder o);
+    static quaternion FromAxisAngle(vector_xyz axis, float angle);
+    void toAxisAngle(vector_xyz &axis, float &angle);
+    quaternion log() const;
+    quaternion exp() const;
+    static quaternion Slerp(quaternion a, quaternion b, float t);
     float x, y, z, w;
 };
 float safe_atan2f(float y, float x);
 float safe_sqrtf(float x);
+float safe_acosf(float x);
+float safe_asinf(float x);
 namespace angle {
 float BetweenTwoVectors(const vector_xy &a, const vector_xy &b);
 float BetweenTwoVectors2(const vector_xyzw &a, const vector_xyzw &b);
@@ -104,10 +135,13 @@ float SmartUpdate(float a, float b);
 float Relative(float a, float b);
 }
 int factorial(int n);
+float wrap(float x, float lo, float range);
+float FastNoise(unsigned int n);
 int double_factorial(int n);
 /* spherical harmonics helpers */
 struct SH {
     static int N(unsigned int l);
+    static float Eval(int l, int m, float theta, float phi);
 };
 }
 
@@ -205,12 +239,12 @@ class Trackball {
 public:
     enum Mode { };
     void mode(math::Trackball::Mode);
-    const void *getTransform() const;
-    const void *getDeltaRot() const;
+    const matrix &getTransform() const;
+    const matrix &getDeltaRot() const;
     /* data */
-    char _p0[0x50];
-    char _f50;
-    char _p51[0x3F];
+    matrix _transform;                                  /* 0x0 */
+    char _p40[0x10];
+    matrix _deltaRot;                                   /* 0x50 */
     int _f90;
 };
 namespace bspline {

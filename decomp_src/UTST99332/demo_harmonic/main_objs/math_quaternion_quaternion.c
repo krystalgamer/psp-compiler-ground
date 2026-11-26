@@ -86,11 +86,20 @@ float math::quaternion::norm() const
     return x * x + y * y + z * z + w * w;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_quaternion_quaternion", _ZN4math10quaternion15FromEulerAnglesENS_10vector_xyzENS_13RotationOrderE);
+math::quaternion math::quaternion::FromEulerAngles(vector_xyz v, RotationOrder o)
+{
+    return FromEulerAngles(v.x, v.y, v.z, o);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_quaternion_quaternion", _ZN4math10quaternion15FromEulerAnglesEfffNS_13RotationOrderE);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_quaternion_quaternion", _ZN4math10quaternion13FromAxisAngleENS_10vector_xyzEf);
+extern const float D_00165ED4;  /* 0.5f */
+
+math::quaternion math::quaternion::FromAxisAngle(vector_xyz axis, float angle)
+{
+    float h = angle * D_00165ED4;
+    return quaternion(axis * sinf(h), cosf(h));
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_quaternion_quaternion", _ZN4math10quaternion11toAxisAngleERNS_10vector_xyzERf);
 
