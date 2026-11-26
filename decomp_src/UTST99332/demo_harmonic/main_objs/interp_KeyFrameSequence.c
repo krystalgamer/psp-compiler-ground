@@ -1,8 +1,9 @@
-#include "common.h"
+/* lang: c++ */
+#include "../main.hpp"
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/interp_KeyFrameSequence", _Z41__static_initialization_and_destruction_0ii_4B370);
 
-void _ZNK6interp16KeyFrameSequenceIN4math10quaternionEE4dumpEPKc(void) {
+template<> void interp::KeyFrameSequence<math::quaternion>::dump(const char *) const {
 }
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/interp_KeyFrameSequence", _ZNK6interp16KeyFrameSequenceIN4math10quaternionEE13calc_gradientES2_S2_f);
@@ -26,3 +27,4 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/interp_KeyFr
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/interp_KeyFrameSequence", _ZN6interp16KeyFrameSequenceIN4math10quaternionEED1Ev);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/interp_KeyFrameSequence", _ZN6interp16KeyFrameSequenceIN4math10quaternionEED0Ev);
+

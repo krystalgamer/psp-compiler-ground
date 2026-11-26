@@ -1,4 +1,5 @@
-#include "common.h"
+/* lang: c++ */
+#include "../main.hpp"
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Texture", _Z41__static_initialization_and_destruction_0ii_92A4C);
 
@@ -28,7 +29,7 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Textur
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Texture", _ZN5scene7Texture16setOverrideAlphaEbh);
 
-void _ZN5scene7Texture7flattenERN4math14TransformStackE(void) {
+void scene::Texture::flatten(math::TransformStack &) {
 }
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Texture", _GLOBAL__I__ZN5scene7Texture12debug_outputE);
@@ -38,3 +39,4 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Textur
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Texture", _ZNK5scene7Texture11getTypeNameEv);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Texture", _ZNK5scene7Texture5cloneESs);
+

@@ -1,4 +1,5 @@
-#include "common.h"
+/* lang: c++ */
+#include "../main.hpp"
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/basic_parser_basic_parser", _Z41__static_initialization_and_destruction_0ii_F7670);
 
@@ -54,7 +55,7 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/basic_parser
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/basic_parser_basic_parser", _ZN12basic_parser5c_strEv);
 
-void _ZN12basic_parser8watch_tpEj(void) {
+void basic_parser::watch_tp(unsigned int) {
 }
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/basic_parser_basic_parser", _GLOBAL__I__ZN12basic_parserC2EPKcjS1_);

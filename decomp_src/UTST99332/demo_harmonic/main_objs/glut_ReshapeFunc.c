@@ -1,4 +1,6 @@
-#include "common.h"
+/* lang: c++ */
+/* cflags: -O2 -frename-registers */
+#include "../main.hpp"
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/glut_ReshapeFunc", _Z41__static_initialization_and_destruction_0ii_135B4);
 
@@ -14,42 +16,55 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/glut_Reshape
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/glut_ReshapeFunc", _ZN3psp15StartMainThreadEv);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/glut_ReshapeFunc", _ZN3app5widthEv);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/glut_ReshapeFunc", _ZN3app6heightEv);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/glut_ReshapeFunc", _ZN3app5ratioEv);
-
-void _ZN3app15set_initial_resEii(void) {
+int app::width()
+{
+    return glut::screen_width;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/glut_ReshapeFunc", _ZN3app9CallbacksC2Ev);
+int app::height()
+{
+    return glut::screen_height;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/glut_ReshapeFunc", _ZN3app9CallbacksC1Ev);
+float app::ratio()
+{
+    return (float)glut::screen_width / (float)glut::screen_height;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/glut_ReshapeFunc", _ZN3app9CallbacksD2Ev);
+void app::set_initial_res(int, int) {
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/glut_ReshapeFunc", _ZN3app9CallbacksD1Ev);
+app::Callbacks::Callbacks() : exit_requested(false)
+{
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/glut_ReshapeFunc", _ZN3app9CallbacksD0Ev);
+app::Callbacks::~Callbacks()
+{
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/glut_ReshapeFunc", _ZN3app9Callbacks3runEv);
 
-void _ZN3app9Callbacks4initEv(void) {
+void app::Callbacks::init() {
 }
 
-void _ZN3app9Callbacks4idleEv(void) {
+void app::Callbacks::idle() {
 }
 
-void _ZN3app9Callbacks7reshapeEii(void) {
+void app::Callbacks::reshape(int, int) {
 }
 
-void _ZN3app9Callbacks7displayEv(void) {
+void app::Callbacks::display() {
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/glut_ReshapeFunc", _ZNK3app9Callbacks13exitRequestedEv);
+bool app::Callbacks::exitRequested() const
+{
+    return exit_requested;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/glut_ReshapeFunc", _ZN3app9Callbacks4exitEv);
+void app::Callbacks::exit()
+{
+    exit_requested = true;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/glut_ReshapeFunc", _ZN3app11CheckMemoryEv);
 

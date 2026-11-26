@@ -1,4 +1,5 @@
-#include "common.h"
+/* lang: c++ */
+#include "../main.hpp"
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Setup", _Z41__static_initialization_and_destruction_0ii_8FAB8);
 
@@ -12,7 +13,7 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Setup"
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Setup", _ZN5scene5SetupD0Ev);
 
-void _ZN5scene5Setup7flattenERN4math14TransformStackE(void) {
+void scene::Setup::flatten(math::TransformStack &) {
 }
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Setup", _GLOBAL__I__ZN5scene5SetupC2ESsb);
@@ -23,10 +24,11 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Setup"
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Setup", _ZNK5scene5Setup5cloneESs);
 
-void _ZN5scene5Setup5enterEv(void) {
+void scene::Setup::enter() {
 }
 
-void _ZN5scene5Setup5leaveEv(void) {
+void scene::Setup::leave() {
 }
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Setup", _ZN6common6handleIN5scene4NodeEEC1INS1_5SetupEEERKNS0_IT_EE);
+

@@ -1,4 +1,5 @@
-#include "common.h"
+/* lang: c++ */
+#include "../main.hpp"
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Heap", _Z41__static_initialization_and_destruction_0ii_A5F08);
 
@@ -38,7 +39,7 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Heap", _
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Heap", _ZN3sgl4Heap13check_heapifyEv);
 
-void _ZN3sgl4Heap4dumpEv(void) {
+void sgl::Heap::dump() {
 }
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Heap", _ZN3sgl4Heap10check_sortEv);

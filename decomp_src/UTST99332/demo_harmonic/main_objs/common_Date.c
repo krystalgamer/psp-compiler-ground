@@ -1,42 +1,85 @@
-#include "common.h"
+/* lang: c++ */
+/* cflags: -O3 */
+#include "../main.hpp"
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/common_Date", _ZN6common4Date15CopiableMembersC2Ev);
+/* the strings stay in the module's .rodata (asm) */
+extern const char D_0015C830[];     /* "/" */
+extern const char D_0015C834[];     /* " " */
+extern const char D_0015C838[];     /* ":" */
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/common_Date", _ZN6common4Date15CopiableMembersC1Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/common_Date", _ZNK6common4Date15CopiableMemberseqERKS1_);
-
-void _ZN6common4Date15set_from_time_tEPl(void) {
+common::Date::CopiableMembers::CopiableMembers()
+    : year(2003), month(4), day(7), hour(0), minute(0), second(0)
+{
 }
 
-void _ZN6common4Date8get_dateEv(void) {
+bool common::Date::CopiableMembers::operator==(const CopiableMembers &o) const
+{
+    return year == o.year && month == o.month && day == o.day
+        && hour == o.hour && minute == o.minute && second == o.second;
 }
 
-void _ZN6common4Date13get_file_dateEPKc(void) {
+void common::Date::set_from_time_t(long *)
+{
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/common_Date", _ZNK6common4DateeqERKS0_);
+void common::Date::get_date()
+{
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/common_Date", _ZNK6common4DateneERKS0_);
+void common::Date::get_file_date(const char *)
+{
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/common_Date", _ZNK6common4Date7getYearEv);
+bool common::Date::operator==(const Date &o) const
+{
+    return m == o.m;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/common_Date", _ZNK6common4Date8getMonthEv);
+bool common::Date::operator!=(const Date &o) const
+{
+    return !(*this == o);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/common_Date", _ZNK6common4Date6getDayEv);
+int common::Date::getYear() const
+{
+    return m.year;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/common_Date", _ZNK6common4Date7getHourEv);
+int common::Date::getMonth() const
+{
+    return m.month;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/common_Date", _ZNK6common4Date9getMinuteEv);
+int common::Date::getDay() const
+{
+    return m.day;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/common_Date", _ZNK6common4Date9getSecondEv);
+int common::Date::getHour() const
+{
+    return m.hour;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/common_Date", _ZN6common4DateC2EPKc);
+int common::Date::getMinute() const
+{
+    return m.minute;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/common_Date", _ZN6common4DateC1EPKc);
+int common::Date::getSecond() const
+{
+    return m.second;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/common_Date", _ZN6common4DateC2Ev);
+common::Date::Date(const char *)
+{
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/common_Date", _ZN6common4DateC1Ev);
+common::Date::Date()
+{
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/common_Date", _ZNK6common4Date6outputERSo);
+void common::Date::output(std::ostream &os) const
+{
+    os << m.year << D_0015C830 << m.month << D_0015C830 << m.day << D_0015C834
+       << m.hour << D_0015C838 << m.minute << D_0015C838 << m.second << std::endl;
+}

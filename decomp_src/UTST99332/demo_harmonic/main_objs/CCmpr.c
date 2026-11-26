@@ -1,15 +1,10 @@
-#include "common.h"
+/* lang: c++ */
+#include "../main.hpp"
 
-void _ZN5CCmprC2Ev(void) {
+CCmpr::CCmpr() {
 }
 
-void _ZN5CCmprC1Ev(void) {
-}
-
-void _ZN5CCmprD2Ev(void) {
-}
-
-void _ZN5CCmprD1Ev(void) {
+CCmpr::~CCmpr() {
 }
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/CCmpr", _ZN5CCmpr12SetInputDataEPKvi);

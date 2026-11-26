@@ -1,4 +1,6 @@
-#include "common.h"
+/* lang: c++ */
+/* cflags: -O2 -frename-registers */
+#include "../main.hpp"
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/MakeRGBA8888", _Z12MakeRGBA8888ffff);
 
@@ -6,36 +8,82 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/MakeRGBA8888
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/MakeRGBA8888", _Z21UseFrameBufferBlurmapv);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/MakeRGBA8888", _Z17DepthBlurSetRangei);
+void DepthBlurSetRange(int r)
+{
+    _depthrange = r;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/MakeRGBA8888", _Z18DepthBlurIncrRangev);
+void DepthBlurIncrRange()
+{
+    _depthrange++;
+    if (_depthrange > 255)
+        _depthrange = 255;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/MakeRGBA8888", _Z18DepthBlurDecrRangev);
+void DepthBlurDecrRange()
+{
+    _depthrange--;
+    if (_depthrange < 8)
+        _depthrange = 8;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/MakeRGBA8888", _Z17DepthBlurGetRangev);
+int DepthBlurGetRange()
+{
+    return _depthrange;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/MakeRGBA8888", _Z17DepthBlurSetFocusf);
+void DepthBlurSetFocus(float f)
+{
+    _focus = f;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/MakeRGBA8888", _Z18DepthBlurIncrFocusv);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/MakeRGBA8888", _Z18DepthBlurDecrFocusv);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/MakeRGBA8888", _Z17DepthBlurGetFocusv);
+float DepthBlurGetFocus()
+{
+    return _focus;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/MakeRGBA8888", _Z23DepthBlurCycleDebugModev);
+void DepthBlurCycleDebugMode()
+{
+    _depthblur_debug++;
+    if (_depthblur_debug >= 3)
+        _depthblur_debug = 0;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/MakeRGBA8888", _Z21DepthBlurGetDebugModev);
+int DepthBlurGetDebugMode()
+{
+    return _depthblur_debug;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/MakeRGBA8888", _Z15DepthBlurUpdatev);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/MakeRGBA8888", _Z13DepthBlurDrawv);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/MakeRGBA8888", _Z17DepthBlurNextModev);
+void DepthBlurNextMode()
+{
+    depthblur_mode++;
+    if (depthblur_mode >= 5)
+        depthblur_mode = 0;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/MakeRGBA8888", _Z16DepthBlurSetModei);
+void DepthBlurSetMode(int m)
+{
+    if (m >= 5)
+        return;
+    if (m < 0)
+        return;
+    depthblur_mode = m;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/MakeRGBA8888", _Z21DepthBlurToggleSpreadv);
+void DepthBlurToggleSpread()
+{
+    depthspread = !depthspread;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/MakeRGBA8888", _Z14DepthBlurPrintv);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/MakeRGBA8888", _Z13DepthBlurIdlev);
+

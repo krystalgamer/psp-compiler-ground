@@ -1,4 +1,6 @@
-#include "common.h"
+/* lang: c++ */
+/* cflags: -O2 -frename-registers */
+#include "../main.hpp"
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/psp_GetKernelErrName", _Z41__static_initialization_and_destruction_0ii_17488);
 
@@ -12,7 +14,10 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/psp_GetKerne
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/psp_GetKernelErrName", _ZN6common4FileD1Ev);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/psp_GetKernelErrName", _ZNK6common4File7is_openEv);
+bool common::File::is_open() const
+{
+    return handle->fd >= 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/psp_GetKernelErrName", _ZN6common4File5writeEPKvjj);
 
@@ -20,7 +25,10 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/psp_GetKerne
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/psp_GetKernelErrName", _ZN6common4File4openEPKcS2_);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/psp_GetKernelErrName", _ZN6common4File5flushEv);
+int common::File::flush()
+{
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/psp_GetKernelErrName", _ZN6common4File5closeEv);
 
@@ -37,3 +45,4 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/psp_GetKerne
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/psp_GetKernelErrName", _GLOBAL__I__ZN3psp16GetKernelErrNameEj);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/psp_GetKernelErrName", _GLOBAL__D__ZN3psp16GetKernelErrNameEj);
+

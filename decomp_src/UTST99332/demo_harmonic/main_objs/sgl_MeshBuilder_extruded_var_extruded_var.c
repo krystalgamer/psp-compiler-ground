@@ -1,4 +1,5 @@
-#include "common.h"
+/* lang: c++ */
+#include "../main.hpp"
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_MeshBuilder_extruded_var_extruded_var", _Z41__static_initialization_and_destruction_0ii_C17C4);
 
@@ -98,7 +99,7 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_MeshBuil
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_MeshBuilder_extruded_var_extruded_var", _ZN3sgl11MeshBuilder17transformListSnapEv);
 
-void _ZN3sgl11MeshBuilder16transformListEndEv(void) {
+void sgl::MeshBuilder::transformListEnd() {
 }
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_MeshBuilder_extruded_var_extruded_var", _ZN3sgl11MeshBuilder18transformListCloseEb);
@@ -268,3 +269,4 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_MeshBuil
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_MeshBuilder_extruded_var_extruded_var", _ZNK6common9t_array2dIN3sgl8PositionEE2atEii);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_MeshBuilder_extruded_var_extruded_var", _ZNK6common7t_arrayIN3sgl8PositionEE4addrEv);
+

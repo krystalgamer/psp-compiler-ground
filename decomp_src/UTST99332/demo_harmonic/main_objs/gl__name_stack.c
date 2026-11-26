@@ -1,4 +1,5 @@
-#include "common.h"
+/* lang: c++ */
+#include "../main.hpp"
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/gl__name_stack", _Z41__static_initialization_and_destruction_0ii_4615C);
 
@@ -46,7 +47,7 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/gl__name_sta
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/gl__name_stack", _ZN2gl5OrthoEffffff);
 
-void _ZN2gl10PickMatrixEffffPi(void) {
+void gl::PickMatrix(float, float, float, float, int *) {
 }
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/gl__name_stack", _ZN2gl11TranslatefvEPKf);
@@ -61,7 +62,7 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/gl__name_sta
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/gl__name_stack", _ZN2gl7VertexvERKN4math11vector_xyzwE);
 
-void _ZN2gl10ErrorCheckEPKci(void) {
+void gl::ErrorCheck(const char *, int) {
 }
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/gl__name_stack", _GLOBAL__I__ZN2gl11_name_stackE);

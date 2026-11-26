@@ -1,8 +1,9 @@
-#include "common.h"
+/* lang: c++ */
+#include "../main.hpp"
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Node_2", _Z41__static_initialization_and_destruction_0ii_8E44C);
 
-void _ZN5scene4Node16set_default_nameEv(void) {
+void scene::Node::set_default_name() {
 }
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Node_2", _ZN5scene4Node7MembersC2ESsb);
@@ -27,7 +28,7 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Node_2
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Node_2", _ZN5scene4NodeD0Ev);
 
-void _ZN5scene4Node7flattenERN4math14TransformStackE(void) {
+void scene::Node::flatten(math::TransformStack &) {
 }
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Node_2", _ZN5scene4Node15incrParentCountEv);
@@ -53,3 +54,4 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Node_2
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Node_2", _ZNK5scene4Node11getTypeNameEv);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Node_2", _ZNK5scene4Node5cloneESs);
+

@@ -1,4 +1,5 @@
-#include "common.h"
+/* lang: c++ */
+#include "../main.hpp"
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sh_Vector", _Z41__static_initialization_and_destruction_0ii_F2CD0);
 
@@ -10,7 +11,7 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sh_Vector", 
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sh_Vector", _ZN2sh9VectorRGB4loadEPKc);
 
-void _ZNK2sh9VectorRGB5printEPKc(void) {
+void sh::VectorRGB::print(const char *) const {
 }
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sh_Vector", _GLOBAL__I__ZNK2sh6Vector5printEPKc);

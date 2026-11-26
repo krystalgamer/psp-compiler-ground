@@ -1,11 +1,9 @@
-#include "common.h"
+/* lang: c++ */
+#include "../main.hpp"
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_TransformSet_Transform", _Z41__static_initialization_and_destruction_0ii_D036C);
 
-void _ZN3sgl12TransformSet9TransformC2Ev(void) {
-}
-
-void _ZN3sgl12TransformSet9TransformC1Ev(void) {
+sgl::TransformSet::Transform::Transform() {
 }
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_TransformSet_Transform", _ZN3sgl12TransformSet9TransformC2EN4math6matrixE);
@@ -29,3 +27,4 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Transfor
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_TransformSet_Transform", _ZNSt6vectorIN3sgl12TransformSet9TransformESaIS2_EE5eraseEN9__gnu_cxx17__normal_iteratorIPS2_S4_EES8_);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_TransformSet_Transform", _ZSt24__uninitialized_copy_auxIN9__gnu_cxx17__normal_iteratorIPN3sgl12TransformSet9TransformESt6vectorIS4_SaIS4_EEEES9_ET0_T_SB_SA_12__false_type);
+

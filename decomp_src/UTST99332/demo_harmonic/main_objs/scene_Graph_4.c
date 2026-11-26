@@ -1,22 +1,23 @@
-#include "common.h"
+/* lang: c++ */
+#include "../main.hpp"
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Graph_4", _Z41__static_initialization_and_destruction_0ii_81D3C);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Graph_4", _ZN5scene5Graph8traverseENS_13TraversalTypeERN3sgl7FrustumERKN4math6matrixES8_S8_f);
 
-void _ZN5scene4Node8traverseERNS_17TraversalVarStackE(void) {
+void scene::Node::traverse(TraversalVarStack &) {
 }
 
-void _ZN5scene13DefaultShader8traverseERNS_17TraversalVarStackE(void) {
+void scene::DefaultShader::traverse(TraversalVarStack &) {
 }
 
-void _ZN5scene8Material8traverseERNS_17TraversalVarStackE(void) {
+void scene::Material::traverse(TraversalVarStack &) {
 }
 
-void _ZN5scene5Setup8traverseERNS_17TraversalVarStackE(void) {
+void scene::Setup::traverse(TraversalVarStack &) {
 }
 
-void _ZN5scene7Texture8traverseERNS_17TraversalVarStackE(void) {
+void scene::Texture::traverse(TraversalVarStack &) {
 }
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Graph_4", _ZN5scene6Object8traverseERNS_17TraversalVarStackE);

@@ -1,4 +1,6 @@
-#include "common.h"
+/* lang: c++ */
+/* cflags: -O2 -frename-registers */
+#include "../main.hpp"
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/psp_VertexArrayEdit", _Z41__static_initialization_and_destruction_0ii_1ACC4);
 
@@ -6,9 +8,15 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/psp_VertexAr
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/psp_VertexArrayEdit", _ZN3psp29GetPixelFormatBitMaskNameFillENS_18PixelFormatBitMaskEb);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/psp_VertexArrayEdit", _ZN3psp7convertIffEET_RKT0_);
+template<> float psp::convert<float, float>(const float &x)
+{
+    return x;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/psp_VertexArrayEdit", _ZN3psp7convertIjjEET_RKT0_);
+template<> unsigned int psp::convert<unsigned int, unsigned int>(const unsigned int &x)
+{
+    return x;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/psp_VertexArrayEdit", _ZN3psp7convertIttEET_RKT0_);
 
@@ -18,9 +26,15 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/psp_VertexAr
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/psp_VertexArrayEdit", _ZN3psp7convertIccEET_RKT0_);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/psp_VertexArrayEdit", _ZN3psp7convertIhtEET_RKT0_);
+template<> unsigned char psp::convert<unsigned char, unsigned short>(const unsigned short &x)
+{
+    return x >> 8;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/psp_VertexArrayEdit", _ZN3psp7convertIthEET_RKT0_);
+template<> unsigned short psp::convert<unsigned short, unsigned char>(const unsigned char &x)
+{
+    return x << 8;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/psp_VertexArrayEdit", _ZN3psp7convertIhfEET_RKT0_);
 
@@ -32,7 +46,10 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/psp_VertexAr
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/psp_VertexArrayEdit", _ZN3psp7convertIcsEET_RKT0_);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/psp_VertexArrayEdit", _ZN3psp7convertIscEET_RKT0_);
+template<> short psp::convert<short, char>(const char &x)
+{
+    return x << 8;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/psp_VertexArrayEdit", _ZN3psp7convertIcfEET_RKT0_);
 
@@ -189,3 +206,4 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/psp_VertexAr
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/psp_VertexArrayEdit", _ZSt3decRSt8ios_base);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/psp_VertexArrayEdit", _ZSt3hexRSt8ios_base);
+

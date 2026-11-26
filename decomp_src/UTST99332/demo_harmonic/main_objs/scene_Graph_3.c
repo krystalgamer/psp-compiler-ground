@@ -1,4 +1,5 @@
-#include "common.h"
+/* lang: c++ */
+#include "../main.hpp"
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Graph_3", _Z41__static_initialization_and_destruction_0ii_7D97C);
 
@@ -6,21 +7,21 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Graph_
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Graph_3", _ZN5scene8Material4saveERSo);
 
-void _ZN5scene5Group4saveERSo(void) {
+void scene::Group::save(std::ostream &) {
 }
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Graph_3", _ZN5scene4Mesh4saveERSo);
 
-void _ZN5scene4Node4saveERSo(void) {
+void scene::Node::save(std::ostream &) {
 }
 
-void _ZN5scene6Object4saveERSo(void) {
+void scene::Object::save(std::ostream &) {
 }
 
-void _ZN5scene5Setup4saveERSo(void) {
+void scene::Setup::save(std::ostream &) {
 }
 
-void _ZN5scene5Shape4saveERSo(void) {
+void scene::Shape::save(std::ostream &) {
 }
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Graph_3", _ZN5scene15StaticTransform4saveERSo);
@@ -56,3 +57,4 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Graph_
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Graph_3", _ZNSt10_List_baseIN6common6handleIN5scene4MeshEEESaIS4_EE7__clearEv);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Graph_3", _ZNSt4listIN6common6handleIN5scene4MeshEEESaIS4_EE6insertESt14_List_iteratorIS4_RS4_PS4_ERKS4_);
+
