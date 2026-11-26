@@ -14,11 +14,11 @@ extern const char D_00176504[];     /* "value == GetBitField( reg, start_bit, bi
 extern const char SetBitField_name[] __asm__("_ZZN8textures11SetBitFieldERjiiiE19__PRETTY_FUNCTION__");
 extern const char setAlphaFlags_name[] __asm__("_ZZN8textures7Texture13setAlphaFlagsENS_9AlphaMaskEE19__PRETTY_FUNCTION__");
 #define TEX_ASSERT(c, s, fn, line) \
-    if (!(c)) { \
+    do if (!(c)) { \
         common::common_internal::assert_display(D_0017645C, s, D_001764A8, fn, line, D_001764C4); \
         common::common_internal::on_error(); \
         common::common_internal::clash(); \
-    }
+    } while (0)
 
 namespace textures {
 inline int GetBitField(unsigned int reg, int start_bit, int bit_size)
@@ -29,7 +29,9 @@ inline int GetBitField(unsigned int reg, int start_bit, int bit_size)
 inline void SetBitField(unsigned int &reg, int value, int start_bit, int bit_size)
 {
     unsigned int mask = (1 << bit_size) - 1;
-    reg = (reg & ~(mask << start_bit)) | ((value & mask) << start_bit);
+    unsigned int v = value & mask;
+    reg &= ~(mask << start_bit);
+    reg |= v << start_bit;
     TEX_ASSERT(value == GetBitField(reg, start_bit, bit_size), D_00176504, SetBitField_name, 229);
 }
 }
@@ -159,9 +161,15 @@ textures::Wrapping textures::Texture::getWrapT() const
     return (Wrapping)GetBitField(m.info.flags, 4, 1);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/textures_Texture", _ZN8textures7Texture6linearEv);
+void textures::Texture::linear()
+{
+    setFiltering((Filtering)0);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/textures_Texture", _ZN8textures7Texture7nearestEv);
+void textures::Texture::nearest()
+{
+    setFiltering((Filtering)1);
+}
 
 bool textures::Texture::valid() const
 {
