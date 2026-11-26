@@ -1,14 +1,43 @@
 /* cflags: -O1 */
 #include "common.h"
+#include "dom_domi.h"
+extern const SDomiNodeVt gDomiNotationVt;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/SDomiNotation", SDomiNotation_Initialize);
+void SDomiNotation_Initialize(SDomiNode *n, struct SDomiDocument *doc, const SDomiStringH *name) {
+    SDomiNotation *no = (SDomiNotation *)n;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/SDomiNotation", cmDomiProcessingInstruction_Finalize);
+    SDomiNode_Initialize(n, &gDomiNotationVt, 1, 12, doc, name);
+    no->x20 = NULL;
+    SDomiStringH_Init(&no->publicId);
+    SDomiStringH_Init(&no->systemId);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/SDomiNotation", cmDomiProcessingInstruction_get_nodeValue);
+void cmDomiProcessingInstruction_Finalize(SDomiNode *n) {
+    SDomiStringH_Finalize(&((SDomiProcessingInstruction *)n)->data);
+    cmDomiNode_Finalize(n);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/SDomiNotation", cmDomiProcessingInstruction_set_nodeValue);
+int cmDomiProcessingInstruction_get_nodeValue(SDomiNode *n, SDomiString *out) {
+    *out = ((SDomiProcessingInstruction *)n)->data.d->s;
+    return 0;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/SDomiNotation", cmDomiProcessingInstruction_cloneNode);
+int cmDomiProcessingInstruction_set_nodeValue(SDomiNode *n, const SDomiString *s) {
+    return SDomiStringH_Set(&((SDomiProcessingInstruction *)n)->data, s) ? 0 : -1;
+}
+
+int cmDomiProcessingInstruction_cloneNode(SDomiNode *n, int deep, SDomiNode **out) {
+    SDomiNode *clone;
+    struct SDomiDocument *doc;
+    int r;
+
+    *out = NULL;
+    doc = n->ownerDocument;
+    r = ((SDomiNode *)doc)->vt->createProcessingInstruction(doc, &n->nodeName, &((SDomiProcessingInstruction *)n)->data, &clone);
+    if (r == 0) {
+        *out = clone;
+    }
+    return r;
+}
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/SDomiNotation", D_0013517C);

@@ -89,6 +89,14 @@ typedef struct SDomiTrunkNode {
     SDomiNode *nextSibling;           /* 0x34 */
 } SDomiTrunkNode;
 
+typedef struct SDomiDocument {
+    SDomiInternalNode i;
+    void *implementation;             /* 0x2C */
+    void *x30;
+    int changed;                      /* 0x34 */
+    SDomiSLink trash;                 /* 0x38 */
+} SDomiDocument;
+
 typedef struct SDomiNotation {
     SDomiNode n;
     void *x20;
@@ -214,7 +222,7 @@ void SDomiInternalNode_Initialize(SDomiNode *n, const SDomiNodeVt *vt, int flags
 void cmDomiNode_Finalize(SDomiNode *n);
 void cmDomiInternalNode_Changed(SDomiNode *n);
 
-void SDomiCharacterData_set_data(SDomiNode *n, const SDomiString *s);
-int SDomiCharacterData_deleteData(SDomiNode *n, unsigned int off, unsigned int count);
+int SDomiCharacterData_set_data(SDomiCharacterData *n, const SDomiString *s);
+int SDomiCharacterData_deleteData(SDomiCharacterData *n, unsigned int off, unsigned int count);
 
 #endif
