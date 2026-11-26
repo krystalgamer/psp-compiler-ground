@@ -97,27 +97,27 @@ void bgm_stop(void)
 }
 
 #ifdef NON_MATCHING
-/* Close: the original returns no from its own register (no copy). */
+/* Close (diff 9): the PlayFlag/iFadeOutFlag stores and the NowBgm load get other scratch registers. */
 int bgm_play(int no)
 {
 	char path[256];
 
 	if (NowBgm == no)
 		return no;
-	if (PlayFlag) {
-		NextBgm = no;
-		iFadeOutFlag = 1;
-		at3_bgm_play_end(1);
-		return -1;
+	if (PlayFlag == 0) {
+		NextBgm = -1;
+		NowBgm = no;
+		sprintf(path, "disc0:/PSP_GAME/USRDIR/wave/%s", bgm_name[no]);
+		while (at3_bgm_play(path) < 0)
+			wait_umd();
+		PlayFlag = 1;
+		iFadeOutFlag = 0;
+		return 0;
 	}
-	NextBgm = -1;
-	NowBgm = no;
-	sprintf(path, "disc0:/PSP_GAME/USRDIR/wave/%s", bgm_name[no]);
-	while (at3_bgm_play(path) < 0)
-		wait_umd();
-	PlayFlag = 1;
-	iFadeOutFlag = 0;
-	return 0;
+	NextBgm = no;
+	iFadeOutFlag = 1;
+	at3_bgm_play_end(1);
+	return -1;
 }
 #else
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/sound", bgm_play);
