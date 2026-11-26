@@ -366,7 +366,16 @@ void removeSessionSaveData(int id) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_relayout", getSessionSaveData);
+SAVEDATA *getSessionSaveData(int id) {
+    SAVEDATA *p;
+
+    for (p = SAVELIST->next; p != NULL; p = p->next) {
+        if (p->id == id) {
+            return p;
+        }
+    }
+    return NULL;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
