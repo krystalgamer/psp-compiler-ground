@@ -104,7 +104,11 @@ void sceGmoTextureUnload( SceGmoTexture *texture )
  texture->m_picture = 0 ;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_texture", sceGmoTextureAnimate);
+void sceGmoTextureAnimate( SceGmoTexture *texture, float step )
+{
+	if ( texture == 0 ) return ;
+	sceGimPictureAnimate( texture->m_picture, step ) ;
+}
 
 void sceGmoTextureActivate( SceGmoTexture *texture, SceGmoModel *model )
 {

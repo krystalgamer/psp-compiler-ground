@@ -5,7 +5,6 @@ extern int sprbuf;
 extern int SprNum;
 extern int spr_head;
 extern int spr_root;
-M2C_UNK SprLinkDelete();                            /* extern */
 
 
 #ifndef NULL
@@ -13,6 +12,8 @@ M2C_UNK SprLinkDelete();                            /* extern */
 #endif
 
 
+
+typedef struct { u8 pad[0x90]; int linked; int next; int prev; } SPRL;
 
 void SprInit_Psp(void) {
     sprbuf = psp_malloc(0xA000U);
@@ -54,7 +55,20 @@ int SprHeadGet(void) {
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_spr", SprLinkAdd);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_spr", SprLinkDelete);
+void SprLinkDelete(SPRL *s)
+{
+	if (s && s->linked) {
+		if (s->next)
+			((SPRL *)s->next)->prev = s->prev;
+		if (s->prev)
+			((SPRL *)s->prev)->next = s->next;
+		else
+			spr_head = s->next;
+		s->prev = 0;
+		s->next = 0;
+		s->linked = 0;
+	}
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -63,7 +77,7 @@ void *memset(void *s, int c, unsigned int n);
 
 void SprFree(void *arg0) {
     if (arg0 != NULL) {
-        SprLinkDelete();
+        SprLinkDelete(arg0);
         memset(arg0, 0, 0xA0U);
         SprNum -= 1;
     }

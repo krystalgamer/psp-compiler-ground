@@ -7,7 +7,22 @@ extern int numAscBuf;
 extern M2C_UNK *ptrAscBuf;
 
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_font", ASC_Init);
+extern int ptexsrc_28FB64;
+extern int tex;
+void ASC_Reset(void);
+void *memset(void *, int, unsigned int);
+
+extern int ptexsrc_28FB64;
+extern int tex;
+void ASC_Reset(void);
+void *memset(void *, int, unsigned int);
+void ASC_Init(int src, int t)
+{
+	memset(&AscBuff, 0, 0x780);
+	ASC_Reset();
+	ptexsrc_28FB64 = src;
+	tex = t;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)

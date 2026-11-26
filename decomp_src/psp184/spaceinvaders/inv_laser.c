@@ -14,6 +14,8 @@ void *memset(void *s, int c, unsigned int n);
 
 
 
+typedef struct { int f0; int f4; int f8; int fC; int f10; u8 pad[0xE8 - 0x14]; } LZ_W;
+
 void inv_laser_all_init(void) {
     memset(&inv_laser, 0, 0x1D00U);
 }
@@ -59,7 +61,14 @@ int inv_laser_end(unsigned int no)
 	return 1;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_laser", inv_laser_fadeout);
+int inv_laser_fadeout(unsigned int no)
+{
+	if (no < 32) {
+		((LZ_W *)&inv_laser)[no].f10 = 8;
+		return 1;
+	}
+	return 0;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)

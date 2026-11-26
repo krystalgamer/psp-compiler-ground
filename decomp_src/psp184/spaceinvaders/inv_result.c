@@ -16,6 +16,8 @@ void psp_free(void *p);
 extern int inv_movie_resut;
 void psp_free(void *p);
 
+void psp_free(void *p);
+
 void inv_movie_result_tex_addr(int arg0) {
     D_004B47E0 = arg0;
 }
@@ -52,7 +54,16 @@ void *inv_movie_result_addr(void)
 	return ((void **)(p + 0x14))[*(int *)(p + 0x10)];
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_result", inv_movie_result_free);
+void psp_free(void *p);
+void inv_movie_result_free(void)
+{
+	u8 *r = (u8 *)&inv_movie_resut;
+
+	psp_free(*(void **)(r + 0x18));
+	psp_free(*(void **)(r + 0x14));
+	*(int *)(r + 0x18) = 0;
+	*(int *)(r + 0x14) = 0;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
