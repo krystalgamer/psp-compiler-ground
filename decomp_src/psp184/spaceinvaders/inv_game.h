@@ -6,7 +6,8 @@
 typedef struct {
 	int f0, dead, f8, fc, f10, f14, f18, f1c;
 	int dmg, hp, f28, f2c, item, f34, f38, disp;
-	int f40[(0x6C - 0x40) / 4];
+	float scale;
+	int f44[(0x6C - 0x44) / 4];
 	float x, y, z;
 	u8 _p78[0xD8 - 0x78];
 } ENEMY;
