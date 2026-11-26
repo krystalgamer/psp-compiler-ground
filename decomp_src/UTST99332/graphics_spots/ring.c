@@ -80,6 +80,22 @@ void sceGuTexMapMode(int mode, unsigned int a1, unsigned int a2);
 void sceGuClutMode(unsigned int cpsm, unsigned int shift, unsigned int mask, unsigned int a3);
 
 
+/* SDK prototypes (tools/sdk_protos.h) */
+void sceGuClutLoad(int num_blocks, const void *cbp);
+void sceGuColor(unsigned int color);
+void sceGuDisable(int state);
+void sceGuEnable(int state);
+void sceGuPatchDivide(unsigned int ulevel, unsigned int vlevel);
+void sceGuTexImage(int mipmap, int width, int height, int tbw, const void *tbp);
+void sceGuTexScale(float u, float v);
+void sceGumDrawSpline(int vtype, int ucount, int vcount, int uedge, int vedge, const void *indices, const void *vertices);
+void sceGumPopMatrix(void);
+void sceGumPushMatrix(void);
+void sceGumRotateXYZ(const ScePspFVector3 *v);
+void sceGumRotateY(float angle);
+void sceGumRotateZYX(const ScePspFVector3 *v);
+void sceGumTranslate(const ScePspFVector3 *v);
+
 void InitRing(void) {
     sceGuTexMode(4, 0, 0, 0);
     sceGuTexFilter(7, 1);
