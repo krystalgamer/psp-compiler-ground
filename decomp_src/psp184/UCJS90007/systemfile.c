@@ -2,6 +2,15 @@
 /* cflags: -O0 */
 #include "common.h"
 
+typedef struct {
+	char magic[4];
+	int vplid;
+} SfMemHeader;
+
+extern char D_0002F31C[];
+extern void *sf_mallocp;
+extern void *sf_freep;
+
 int checkVersion(int version)
 {
 	int ret;
@@ -95,13 +104,40 @@ INCLUDE_RODATA("tmp/asm/psp184/UCJS90007/nonmatchings/systemfile", D_0002F2F4);
 
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/systemfile", __sceSystemFileTypeValue2Str);
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/systemfile", str2num);
+const char *str2num(const char *s, int *out)
+{
+	const char *p = s;
+	int n = 0;
+
+	while (*p >= '0' && *p <= '9') {
+		n = n * 10;
+		n = *p + n - '0';
+		p++;
+	}
+	if (s == p)
+		return NULL;
+	*out = n;
+	return p;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/systemfile", str2alignment);
 
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/systemfile", __sceSystemFileStr2TypeValue);
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/systemfile", sceSystemFileSetMallocFunc);
+int sceSystemFileSetMallocFunc(void *m, void *f)
+{
+	int ret;
+
+	if (m == NULL || f == NULL) {
+		ret = 0x80120000;
+		ret |= 3;
+	} else {
+		sf_mallocp = m;
+		sf_freep = f;
+		ret = 0;
+	}
+	return ret;
+}
 
 int _heapCreate(int size)
 {
@@ -117,11 +153,55 @@ void _heapDelete(int vplid)
 		sceKernelDeleteVpl(vplid);
 }
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/systemfile", sf_malloc);
+void *sf_malloc(int size)
+{
+	int vplid;
+	int ret;
+	int sz;
+	void *p;
+	SfMemHeader *hdr;
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/systemfile", sf_free);
+	sz = size + 0x20;
+	vplid = _heapCreate(sz);
+	if (vplid < 0)
+		return NULL;
+	ret = sceKernelTryAllocateVpl(vplid, sz, &p);
+	if (ret < 0) {
+		p = NULL;
+	} else {
+		hdr = p;
+		sf_strcpy(hdr->magic, D_0002F31C);
+		hdr->vplid = vplid;
+		p = (char *)p + 0x20;
+	}
+	return p;
+}
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/systemfile", sf_memcpy);
+int sf_free(void *ptr)
+{
+	int vplid;
+	int ret;
+	SfMemHeader *hdr;
+
+	hdr = (SfMemHeader *)((char *)ptr - 0x20);
+	if (sf_strcmp(hdr->magic, D_0002F31C) != 0)
+		return -1;
+	vplid = hdr->vplid;
+	ptr = (char *)ptr - 0x20;
+	ret = sceKernelFreeVpl(vplid, ptr);
+	_heapDelete(vplid);
+	return ret;
+}
+
+void *sf_memcpy(void *dst, const void *src, int n)
+{
+	unsigned char *d = dst;
+	const unsigned char *s = src;
+
+	while (n--)
+		*d++ = *s++;
+	return dst;
+}
 
 void *sf_memset(void *dst, int c, int n)
 {
@@ -132,9 +212,30 @@ void *sf_memset(void *dst, int c, int n)
 	return dst;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/systemfile", sf_memcmp);
+int sf_memcmp(const void *a, const void *b, int n)
+{
+	const signed char *p1 = a;
+	const signed char *p2 = b;
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/systemfile", sf_strcpy);
+	while (n--) {
+		if (*p1 > *p2)
+			return 1;
+		if (*p1 < *p2)
+			return -1;
+		p1++;
+		p2++;
+	}
+	return 0;
+}
+
+char *sf_strcpy(char *dst, const char *src)
+{
+	char *d = dst;
+
+	while ((*d++ = *src++))
+		;
+	return dst;
+}
 
 int sf_strlen(const char *s)
 {
@@ -145,7 +246,22 @@ int sf_strlen(const char *s)
 	return n;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/systemfile", sf_strcmp);
+int sf_strcmp(const char *a, const char *b)
+{
+	const unsigned char *p1 = (const unsigned char *)a;
+	const unsigned char *p2 = (const unsigned char *)b;
+	int d;
+
+	for (;;) {
+		d = *p1 - *p2;
+		if (d != 0)
+			return d;
+		if (*p1 == 0)
+			return 0;
+		p1++;
+		p2++;
+	}
+}
 
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/systemfile", sf_bsearch);
 
