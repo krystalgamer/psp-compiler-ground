@@ -42,9 +42,58 @@ int ASC_StringRen(signed char *arg0) {
     return strlen(arg0) * 8;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_font", ASC_SetStringRGBALEN);
+typedef struct { char str[32]; int x, y, r, g, b, a, mode; } ASCBUF;
+void *memcpy(void *d, const void *s, unsigned int n);
+unsigned int strlen(const char *s);
+void ASC_SetStringRGBALEN(int mode, char *s, int x, int y, int r, int g, int b, int a, int len)
+{
+	int l;
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_font", ASC_SetStringRGBA);
+	if (numAscBuf >= 32)
+		return;
+	if (len == 0)
+		return;
+	l = strlen(s);
+	if (l < len)
+		return;
+	if (len > 31)
+		len = 31;
+	((ASCBUF *)ptrAscBuf)->x = x;
+	((ASCBUF *)ptrAscBuf)->y = y;
+	((ASCBUF *)ptrAscBuf)->mode = mode;
+	((ASCBUF *)ptrAscBuf)->r = r;
+	((ASCBUF *)ptrAscBuf)->g = g;
+	((ASCBUF *)ptrAscBuf)->b = b;
+	((ASCBUF *)ptrAscBuf)->a = a;
+	memcpy(ptrAscBuf, s, len);
+	((char *)ptrAscBuf)[l] = 0;
+	fntCnt += strlen((char *)ptrAscBuf);
+	ptrAscBuf = (M2C_UNK *)((char *)ptrAscBuf + sizeof(ASCBUF));
+	numAscBuf++;
+}
+
+void ASC_SetStringRGBA(int mode, char *s, int x, int y, int r, int g, int b, int a)
+{
+	int n;
+
+	if (numAscBuf >= 32)
+		return;
+	((ASCBUF *)ptrAscBuf)->mode = mode;
+	((ASCBUF *)ptrAscBuf)->a = a;
+	((ASCBUF *)ptrAscBuf)->y = y;
+	((ASCBUF *)ptrAscBuf)->r = r;
+	((ASCBUF *)ptrAscBuf)->g = g;
+	((ASCBUF *)ptrAscBuf)->b = b;
+	((ASCBUF *)ptrAscBuf)->x = x;
+	n = strlen(s);
+	if (n > 31)
+		n = 31;
+	memcpy(ptrAscBuf, s, n);
+	((char *)ptrAscBuf)[n] = 0;
+	fntCnt += strlen((char *)ptrAscBuf);
+	ptrAscBuf = (M2C_UNK *)((char *)ptrAscBuf + sizeof(ASCBUF));
+	numAscBuf++;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
