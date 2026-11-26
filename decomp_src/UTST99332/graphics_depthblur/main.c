@@ -280,7 +280,130 @@ void InitWall(void)
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_depthblur/nonmatchings/main", DrawTorus);
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_depthblur/nonmatchings/main", DrawRoom);
+#ifndef SCEGU_PFIDX4 /* sample */
+#define SCEGU_PFIDX4                       4
+#endif
+#ifndef SCEGU_SINGLE_CLUT /* sample */
+#define SCEGU_SINGLE_CLUT                  0
+#endif
+#ifndef SCEGU_TEXBUF_NORMAL /* sample */
+#define SCEGU_TEXBUF_NORMAL                0
+#endif
+#ifndef SCEGU_LINEAR_MIPMAP_LINEAR /* sample */
+#define SCEGU_LINEAR_MIPMAP_LINEAR         7
+#endif
+#ifndef SCEGU_NEAREST /* sample */
+#define SCEGU_NEAREST                      0
+#endif
+#ifndef SCEGU_TEX_MODULATE /* sample */
+#define SCEGU_TEX_MODULATE                 0
+#endif
+#ifndef SCEGU_RGB /* sample */
+#define SCEGU_RGB                          0
+#endif
+#ifndef SCEGU_REPEAT /* sample */
+#define SCEGU_REPEAT                       0
+#endif
+#ifndef SCEGU_PF5551 /* sample */
+#define SCEGU_PF5551                       1
+#endif
+#ifndef SCEGU_TEXTURE /* sample */
+#define SCEGU_TEXTURE                      9
+#endif
+#ifndef SCEGU_TEXTURE_FLOAT /* sample */
+#define SCEGU_TEXTURE_FLOAT      ( 3 <<  0 )
+#endif
+#ifndef SCEGU_VERTEX_FLOAT /* sample */
+#define SCEGU_VERTEX_FLOAT       ( 3 <<  7 )
+#endif
+#ifndef SCEGU_CULL_FACE /* sample */
+#define SCEGU_CULL_FACE                    5
+#endif
+#ifndef SCEGU_PI /* sample */
+#define SCEGU_PI                           3.1415926535897932384626433832f
+#endif
+#ifndef SCEGU_RAD /* sample */
+#define SCEGU_RAD(a)                       ((a)*SCEGU_PI/180.0f)
+#endif
+void DrawRoom(void)
+{
+	ScePspFVector3	vec;
+	float			*vp;
+	extern float D_00019988;
+	
+	sceGuTexMode(SCEGU_PFIDX4, 3, SCEGU_SINGLE_CLUT, SCEGU_TEXBUF_NORMAL);
+	sceGuTexImage(0, 32, 32, 32, check32x32);
+	sceGuTexImage(1, 16, 16, 32, check16x16);
+	sceGuTexImage(2,  8,  8, 32, check8x8);
+	sceGuTexImage(3,  4,  4, 32, check4x4);
+	sceGuTexFilter(SCEGU_LINEAR_MIPMAP_LINEAR, SCEGU_NEAREST);
+	sceGuTexFunc(SCEGU_TEX_MODULATE, SCEGU_RGB);
+	sceGuTexWrap(SCEGU_REPEAT, SCEGU_REPEAT);
+	sceGuTexOffset(0.0f, 0.0f);
+	sceGuTexScale(2.0f, 2.0f);
+	sceGuClutMode(SCEGU_PF5551, 0, 0xff, 0);
+	sceGuClutLoad(1, checkcolor);
+	sceGuEnable(SCEGU_TEXTURE);
+	
+	sceGumPushMatrix();
+	sceGumLoadIdentity();
+	vec.x=0;
+	vec.y=7;
+	vec.z=-130;
+	sceGumTranslate(&vec);
+	vec.x = 40;
+	vec.y = 20;
+	vec.z = 100;
+	sceGumScale(&vec);
+	
+	vp = (float*)sceGuGetMemory(5*4*4*4);
+	memcpy((void *)vp, wall,5*4*4*4);
+	
+	sceGuDisable(SCEGU_CULL_FACE);
+	sceGumDrawBezier(SCEGU_TEXTURE_FLOAT|SCEGU_VERTEX_FLOAT, 4, 4, 0, vp);
+	sceGumRotateX(SCEGU_RAD(-90));
+	sceGumDrawBezier(SCEGU_TEXTURE_FLOAT|SCEGU_VERTEX_FLOAT, 4, 4, 0, vp);
+	sceGumRotateX(SCEGU_RAD(-90));
+	sceGumDrawBezier(SCEGU_TEXTURE_FLOAT|SCEGU_VERTEX_FLOAT, 4, 4, 0, vp);
+	sceGumRotateZ(SCEGU_RAD(90));
+	sceGumDrawBezier(SCEGU_TEXTURE_FLOAT|SCEGU_VERTEX_FLOAT, 4, 4, 0, vp);
+	sceGumRotateZ(SCEGU_RAD(180));
+	sceGumDrawBezier(SCEGU_TEXTURE_FLOAT|SCEGU_VERTEX_FLOAT, 4, 4, 0, vp);
+	sceGuEnable(SCEGU_CULL_FACE);
+	
+	sceGumPopMatrix();
+	
+	D_00019988 += 1;
+	if(D_00019988>360)
+		D_00019988-=360;
+	
+	sceGuTexScale(1.0f, 1.0f);
+	
+	sceGumPushMatrix();
+	sceGumLoadIdentity();
+	
+	sceGumPushMatrix();
+	vec.x=-12;
+	vec.y=0;
+	vec.z=-50;
+	sceGumTranslate(&vec);
+	sceGumRotateY(SCEGU_RAD(D_00019988));
+	sceGuColor(0xff7f7f);
+	DrawTorus(2,4);
+	sceGumPopMatrix();
+	
+	sceGumPushMatrix();
+	vec.x=6;
+	vec.y=0;
+	vec.z=-14;
+	sceGumTranslate(&vec);
+	sceGumRotateY(SCEGU_RAD(-D_00019988+46));
+	sceGuColor(0x7f7fff);
+	DrawTorus(2,4);
+	sceGumPopMatrix();
+	
+	sceGumPopMatrix();
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_depthblur/nonmatchings/main", draw_frame);
 
