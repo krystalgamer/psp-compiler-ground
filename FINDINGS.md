@@ -351,6 +351,14 @@ modules (`tools/nltest.py`, `tools/objcmp.py`).
   to 1.8.4) loads the constant 0. Maybe a source form, maybe a cse/reload
   difference; not found.
 
+- Rodata order is a property of the game's build, not of 1.6.1: spaceinvaders'
+  release 1.6.1 objects link `.rodata`, `.rodata.cst4`, `.rodata.cst8` in
+  first-use order (all units fit; `-fno-merge-constants` contradicts 5 of
+  them, e.g. `psp_dev`, `inv_game`), while UTST99261's 1.6.1 mp3 units break
+  with that order. `config/compilers.txt` now takes per-module additions
+  (`@psp184/spaceinvaders 1.6.1 objorder`). Its libwave/libgum are built
+  `-O2 -frename-registers`, UTST99332's plain `-O2`: also per game.
+
 ## psp-gcc 1.7.1 (release build)
 
 htmlviewer is the first module built by release 1.7.1 (plus SDK libraries
