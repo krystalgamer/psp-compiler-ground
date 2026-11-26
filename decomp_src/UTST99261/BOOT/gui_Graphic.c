@@ -1,5 +1,9 @@
 /* cflags: -O1 */
 #include "common.h"
+#include "m2c_macros.h"
+extern int _zWindDrawTexClipOffX;
+extern int _zWindDrawTexClipOffY;
+
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Graphic", GUI_Graphics_createGraphics);
 
@@ -37,7 +41,15 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Graphic", GUI_Graphics_draw
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Graphic", GUI_Graphics_drawTiledPixmap);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Graphic", GUI_Graphics_flush);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int puts(const char *s);
+void GUI_Graphics_flush(signed char *arg0) {
+    if ((arg0 == NULL) || (*arg0 != 2)) {
+        puts("[X1]GUI_Graphics_flush");
+    }
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Graphic", GUI_Graphics_createAnimationGIF);
 
@@ -55,7 +67,14 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Graphic", GUI_Graphics_getB
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Graphic", _GUI_Graphics_Push);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Graphic", _GUI_Graphics_Pop);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void _GUI_Graphics_Pop(void) {
+    _zWindDrawTexClipOffX = 0;
+    _zWindDrawTexClipOffY = 0;
+}
 
 void GUI_Graphics_getAnimationGIFGlobalProperty(void) {
 }
