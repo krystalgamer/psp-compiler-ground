@@ -249,7 +249,13 @@ INCLUDE_ASM("tmp/asm/UTST99332/menu/nonmatchings/draw", DrawDice);
 
 INCLUDE_ASM("tmp/asm/UTST99332/menu/nonmatchings/draw", DrawShadow);
 
-INCLUDE_ASM("tmp/asm/UTST99332/menu/nonmatchings/draw", DrawBG);
+extern Gu2dV16C D_001B57E8[];
+void DrawBG(void)
+{
+	sceGuColor(0xFFFFFFFF);
+	sceGuDisable(9);
+	sceGumDrawArray(4, 0x80011C, 4, NULL, D_001B57E8);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/menu/nonmatchings/draw", DrawCategoryString);
 
@@ -279,9 +285,27 @@ INCLUDE_ASM("tmp/asm/UTST99332/menu/nonmatchings/draw", _UpdateItemPos);
 
 INCLUDE_ASM("tmp/asm/UTST99332/menu/nonmatchings/draw", InitItemList);
 
-INCLUDE_ASM("tmp/asm/UTST99332/menu/nonmatchings/draw", GetItemTex);
+int GetItemTex(void)
+{
+	int i;
 
-INCLUDE_ASM("tmp/asm/UTST99332/menu/nonmatchings/draw", GetItemSelect);
+	for (i = 0; i < 13; i++) {
+		if (drawitem[i].pos == 4)
+			return drawitem[i].tex;
+	}
+	return -1;
+}
+
+int GetItemSelect(void)
+{
+	int i;
+
+	for (i = 0; i < 13; i++) {
+		if (drawitem[i].pos == 4)
+			return i;
+	}
+	return -1;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/menu/nonmatchings/draw", SetItemListAnim);
 
@@ -305,7 +329,13 @@ void SetLRAnim(int flag) {
 
 INCLUDE_ASM("tmp/asm/UTST99332/menu/nonmatchings/draw", DrawLR);
 
-INCLUDE_ASM("tmp/asm/UTST99332/menu/nonmatchings/draw", DrawSelect);
+extern Gu2dV16 D_001B59A4[];
+void DrawSelect(void)
+{
+	sceGuDisable(9);
+	sceGuColor(0xFF00FFFF);
+	sceGumDrawArray(2, 0x800100, 5, NULL, D_001B59A4);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/menu/nonmatchings/draw", DrawStar);
 
