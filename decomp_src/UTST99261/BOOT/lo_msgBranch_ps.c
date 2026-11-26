@@ -33,7 +33,8 @@ typedef struct {
     int unk8;
     int unkC;
     int unk10;
-    u8 unk14[0x8];
+    int unk14;
+    int len;                    /* 0x18 */
     void *data;                 /* 0x1C */
 } PMSG;
 
@@ -58,13 +59,19 @@ void getDataAttribute();
 int make_msg_LP11();
 void putLLIST();
 typedef struct {
-    u8 unk0[0x70];
+    int unk0;
+    int unk4;
+    int unk8;
+    int unkC;
+    u8 unk10[0x60];
     void *focus;                /* 0x70 */
 } PGEOM;
 typedef struct {
     u8 unk0[0x20];
     PGEOM *geom;                /* 0x20 */
-    u8 unk24[0x1A];
+    u8 unk24[0x14];
+    s16 content;                /* 0x38 */
+    u8 unk3A[4];
     s16 unk3E;                  /* 0x3E */
 } PBOX;
 typedef struct {
@@ -72,9 +79,24 @@ typedef struct {
     PBOX *box;                  /* 0xC */
 } PFOCUS;
 typedef struct {
-    u8 unk0[0x6C];
+    u8 unk0[0x48];
+    int unk48;
+    u8 unk4C[0x20];
     PBOX *body;                 /* 0x6C */
 } PHIST;
+typedef struct {
+    int unk0;
+    int unk4;
+    int id;                     /* 0x8 */
+    int x;
+    int y;
+} PFRAG;
+PFRAG *HST_getFragmentIDs();
+void HST_moveFragmentIDs();
+void getViewPort();
+void drawScroll();
+int make_msg_LP4();
+int make_msg_LP21();
 typedef struct {
     u8 unk0[0x24];
     int unk24;
@@ -96,6 +118,9 @@ void setFocusFocusItem(PBOX *b, void *f, int n);
 void drawFocusItem(void *f);
 int make_msg_LJ7();
 int setTextStrings(PBOX *b, char *s);
+int getTextSelectionRange(PBOX *b, int *s, int *e);
+int replaceTextStrings(PBOX *b, char *s, int st, int en);
+extern char D_001338FC[];
 
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_msgBranch_ps", sendJSUnloadEvent);
@@ -203,9 +228,84 @@ void proc_msg_PL15(PMSG *m) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_msgBranch_ps", proc_msg_PL13);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_msgBranch_ps", proc_msg_PL16);
+void proc_msg_PL16(PMSG *m) {
+    PHIST *h;
+    PBOX *body;
+    PFOCUS *f;
+    PBOX *t;
+    int sel[2];
+    char *s;
+    PNDA *nda;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_msgBranch_ps", proc_msg_PL17);
+    nda = gESPRIT_LO_GLOBAL_NDA;
+    if (m->unk10 == 0 && (h = HST_searchSessionIDHistoryNode(nda->session)) != NULL
+        && (body = h->body) != NULL && checkBoxValidity(body)) {
+        f = body->geom->focus;
+        t = NULL;
+        if (f != NULL) {
+            t = f->box;
+        }
+        if (t != NULL && t->content == 13) {
+            getTextSelectionRange(t, &sel[0], &sel[1]);
+            if (m->data != NULL) {
+                s = MEM_malloc(0, m->len + 1);
+                memcpy(s, m->data, m->len);
+                s[m->len] = 0;
+                replaceTextStrings(t, s, sel[0], sel[1]);
+                MEM_free(0, s);
+            } else {
+                replaceTextStrings(t, D_001338FC, sel[0], sel[1]);
+            }
+        }
+    }
+    if (m->data != NULL) {
+        MEM_free(0, m->data);
+    }
+}
+
+void proc_msg_PL17(PMSG *m) {
+    PHIST *head;
+    PHIST *h;
+    PFRAG *cur;
+    PFRAG *dst;
+    PBOX *body;
+    int vp[2];
+    void *r;
+
+    head = (PHIST *)HST_getHeadHistoryNode();
+    if (head == NULL) {
+        return;
+    }
+    cur = HST_getFragmentIDs(head, 0);
+    dst = HST_getFragmentIDs(head, m->unk10);
+    if (cur == NULL || dst == NULL) {
+        return;
+    }
+    h = HST_searchSessionIDHistoryNode(dst->id);
+    if (h == NULL) {
+        return;
+    }
+    body = h->body;
+    if (body == NULL) {
+        return;
+    }
+    if (!checkBoxValidity(body)) {
+        return;
+    }
+    HST_moveFragmentIDs(head, m->unk10);
+    getViewPort(body, &vp[0], &vp[1]);
+    cur->id = dst->id;
+    cur->x = vp[0];
+    cur->y = vp[1];
+    drawScroll(body, dst->x - vp[0], dst->y - vp[1]);
+    lo_global.flags &= ~8;
+    r = (void *)make_msg_LP4(h->unk48, body->geom->unk8, body->geom->unkC);
+    if (r == NULL) {
+        return;
+    }
+    putLLIST(&REQUEST_LLIST, r);
+    putLLIST(&REQUEST_LLIST, make_msg_LP21(h->unk48, body));
+}
 
 char *getInputDataFromMsg(PMSG *msg) {
     unsigned int *d;
