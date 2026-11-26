@@ -103,7 +103,28 @@ int module_file_start(int *mid, char *name)
 	return sceKernelStartModule(ret, 0, 0, &status, 0);
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_fileio", file_load_async);
+typedef struct { int state, fd, f8, fc, f10, mode; void *buf; char name[0x100]; } PFS;
+#define pfs ((PFS *)&psp_file_system)
+extern char D_0007A660[];
+int sprintf(char *buf, const char *fmt, ...);
+int file_load_async(char *name, int mode)
+{
+	int i;
+
+	for (i = 0; i < 1; i++) {
+		if (pfs[i].state == 0)
+			break;
+	}
+	if (i >= 1)
+		return -1;
+	pfs[i].mode = mode;
+	pfs[i].state = 1;
+	pfs[i].f8 = -1;
+	pfs[i].fc = 0;
+	pfs[i].buf = 0;
+	sprintf(pfs[i].name, D_0007A660, name);
+	return i;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_fileio", file_load_async_buf);
 
@@ -121,7 +142,23 @@ int file_load_check(int arg0) {
     return var_v0;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_fileio", file_load_end);
+void file_load_end(int no)
+{
+	PFS *f;
+
+	if (no == 0) {
+		f = &pfs[no];
+		if (f->state != 0) {
+			if (f->state >= 4)
+				sceIoClose(f->fd);
+			if (f->state >= 9 && f->buf != NULL) {
+				psp_free(f->buf);
+				f->buf = NULL;
+			}
+			f->state = 0;
+		}
+	}
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
