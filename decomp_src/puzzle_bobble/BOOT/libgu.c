@@ -416,7 +416,17 @@ void sceGuBeginObject(int vtype, int count, const void *indices, const void *ver
 	send_commandi(9, 0);
 }
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", sceGuEndObject);
+void sceGuEndObject(void)
+{
+	unsigned int *current = pList->current;
+
+	pList->current = p_bbox[n_bbox - 1];
+	send_commandi(16, (((unsigned int)current) >> 8) & 0xf0000);
+	send_commandi(9, ((unsigned int)current) & 0xffffff);
+	pList->current = current;
+	sceGeListUpdateStallAddr(queid[0], current);
+	n_bbox--;
+}
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", sceGuDrawSprite);
 
@@ -469,7 +479,20 @@ void sceGuDepthBuffer(void *zbp, int zbw)
 	send_commandi(159, ((((unsigned int)FBuf.depth_buffer) & 0xff000000) >> 8) | FBuf.depth_width);
 }
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", sceGuDispBuffer);
+void sceGuDispBuffer(int width, int height, void *dispbp, int dispbw)
+{
+	FBuf.width = width;
+	FBuf.height = height;
+	FBuf.disp_buffer = dispbp;
+	if (!FBuf.frame_width)
+		FBuf.frame_width = dispbw;
+	if (FBuf.frame_width != dispbw)
+		FBuf.frame_width = dispbw;
+	draw_region(0, 0, FBuf.width, FBuf.height);
+	sceDisplaySetMode(0, FBuf.width, FBuf.height);
+	if (disp_sw == 1)
+		sceDisplaySetFrameBuf((char *)vram_top + (unsigned int)FBuf.disp_buffer, dispbw, FBuf.pixel_size, 1);
+}
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", sceGuDisplay);
 
@@ -598,7 +621,16 @@ void sceGuLightAtt(int light, float atten0, float atten1, float atten2)
 	send_commandf(lcmd[light].quadratic, atten2);
 }
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", sceGuLightSpot);
+void sceGuLightSpot(int light, const ScePspFVector3 *direction, float exponent, float cutoff)
+{
+	const GuLightSettings *settings = &lcmd[light];
+
+	send_commandf(settings->exponent, exponent);
+	send_commandf(settings->cutoff, cutoff);
+	send_commandf(settings->xdir, direction->x);
+	send_commandf(settings->ydir, direction->y);
+	send_commandf(settings->zdir, direction->z);
+}
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", sceGuLightColor);
 
