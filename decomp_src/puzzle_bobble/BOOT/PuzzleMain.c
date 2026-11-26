@@ -46,7 +46,7 @@ extern PARTZ ChrData_ClearMes[];
 void DrawCharcter(int z, int x, int y, PARTZ *tbl, int idx);
 void DrawCharcter2(int z, int x, int y, PARTZ *tbl, int idx);
 void SetSpriteColorRGBA(int r, int g, int b, int a);
-void se_play(int no);
+int se_play(int no);
 void PutNumeric(int z, int x, int y, int num, int digits);
 int Get2Dim(int x, int a, int b, int c, int d);
 int SpriteDraw(int no, float z, int color, float x0, float y0, float u0, float v0, float x1, float y1, float u1, float v1, float x2, float y2, float u2, float v2, float x3, float y3, float u3, float v3);
@@ -710,7 +710,87 @@ INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", CheckBallGuide
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", CheckBallGuideVS);
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", CheckGuideLine);
+extern int D_0014E8B4;
+int CheckGuideLine(PZL_STAT *st)
+{
+	int key;
+	int ret;
+	int done = 0;
+	s16 a;
+
+	if (st->unk006 != 0x18) {
+		key = st->key;
+		if (key & 0x40) {
+			if (st->unk454 < 256)
+				key |= 0x80;
+			else
+				key |= 0x20;
+		}
+		if (key & 0x10) {
+			if (st->unk454 >= 252 && st->unk454 <= 260) {
+				st->unk454 = 256;
+				st->unk47F = 1;
+				st->drop.unk2 = 0;
+			} else if (st->unk454 < 252) {
+				st->unk454 += 4;
+				st->unk47F = 1;
+				st->drop.unk2 = 0;
+			} else if (st->unk454 > 260) {
+				st->unk454 -= 4;
+				st->unk47F = 1;
+				st->drop.unk2 = 0;
+			}
+			done = 1;
+		} else if (key & 0x20) {
+			st->unk454 += 4;
+			if (st->unk454 >= 500)
+				st->unk454 = 500;
+			else
+				st->unk47F = 1;
+			st->drop.unk2 = 0;
+			done = 1;
+		} else if (key & 0x80) {
+			st->unk454 -= 4;
+			if (st->unk454 < 13)
+				st->unk454 = 12;
+			else
+				st->unk47F = 1;
+			st->drop.unk2 = 0;
+			done = 1;
+		}
+	}
+	if (!done) {
+		key = st->key_rep;
+		if (key & 0x200) {
+			st->unk454 += 1;
+			if (st->unk454 >= 500)
+				st->unk454 = 500;
+			else
+				st->unk47F = 1;
+			st->drop.unk2 = 0;
+		} else if (key & 0x100) {
+			st->unk454 -= 1;
+			if (st->unk454 < 13)
+				st->unk454 = 12;
+			else
+				st->unk47F = 1;
+			st->drop.unk2 = 0;
+		} else if (st->drop.unk2 == 0) {
+			st->drop.unk2 = 1;
+		}
+	}
+	ret = 0;
+	if (st->unk47F) {
+		ret = 1;
+		if (st->unk006 < 0x18 && D_0014E8B4 == 0) {
+			se_play(21);
+			D_0014E8B4 = 5;
+		}
+	}
+	if (D_0014E8B4 > 0)
+		D_0014E8B4--;
+	return ret;
+}
 
 void DriveBub(void) {
 }

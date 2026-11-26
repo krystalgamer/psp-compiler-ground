@@ -34,7 +34,7 @@ typedef struct {
 	u8 mapsub;		/* 0x003 */
 	u8 cur;			/* 0x004: current ball color */
 	u8 next;		/* 0x005: next ball color */
-	u8 pad006;
+	u8 unk006;		/* 0x006 */
 	u8 ndrop;		/* 0x007 */
 	u8 pad008[2];
 	s16 bx;			/* 0x00A: ball position */
@@ -54,7 +54,10 @@ typedef struct {
 	u8 color;		/* 0x42F: current ball color */
 	int unk430;		/* 0x430 */
 	int unk434;		/* 0x434 */
-	u8 pad438[0x44C - 0x438];
+	u8 pad438[0x43C - 0x438];
+	int key;		/* 0x43C: held buttons */
+	int key_rep;		/* 0x440: repeated buttons */
+	u8 pad444[0x44C - 0x444];
 	s8 bubstat;		/* 0x44C */
 	s8 bubstat_arg;		/* 0x44D */
 	s8 bubline;		/* 0x44E */
@@ -73,11 +76,12 @@ typedef struct {
 	s8 chara2;		/* 0x47C */
 	s8 chara_anim;		/* 0x47D */
 	s8 player;		/* 0x47E */
-	u8 pad47F;
+	s8 unk47F;		/* 0x47F */
 	struct {
 		u8 pad0;
 		u8 unk1;	/* 0x481 */
-		u8 pad2[2];
+		u8 unk2;	/* 0x482 */
+		u8 pad3;
 		PZL_DROP d[NDROP];	/* 0x484 */
 	} drop;			/* 0x480 */
 	u8 pad_drop[0x13B8 - 0x484 - NDROP * 6];
