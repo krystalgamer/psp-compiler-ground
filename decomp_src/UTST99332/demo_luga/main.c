@@ -250,7 +250,7 @@ void light_ctrl(uint c);
 static void init(void);
 static int pad(uint padd, uint cont, uchar *axis);
 static void fade_start(void);
-static void draw(void);
+void draw(void); /* static in the original; global here because asm .data refers to it */
 static void pre(void);
 static void post(void);
 static void drawinit(void);
@@ -314,7 +314,18 @@ void term(void) {
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/main", pad);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/main", draw);
+void draw(void) {
+    geSetLight(0, 1, light);
+    geSetLight(1, 1, &light[1]);
+    gePush();
+    geIdentity();
+    geSetWorld(&md->world);
+    draw_bg();
+    draw_ground();
+    draw_char();
+    draw_fly();
+    gePop();
+}
 
 void cdraw(void) {
     draw_logo();
