@@ -1,3 +1,4 @@
+/* cflags: -O2 -frename-registers */
 #include "common.h"
 
 /* declarations recovered from DWARF */
@@ -72,9 +73,79 @@ int sceGuSync(int mode, int what);
 int sprintf(char *buf, const char *fmt, ...);
 unsigned int strlen(const char *s);
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_matching_stick/nonmatchings/adhoc_dialog_int", _sce_pspnet_adhoc_dialog_adhocctl_handler);
+extern __typeof__(evf) evf_8BC00;
+#define evf evf_8BC00
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_matching_stick/nonmatchings/adhoc_dialog_int", _sce_pspnet_adhoc_dialog_set_error_state);
+void _sce_pspnet_adhoc_dialog_adhocctl_handler(int event, int error, void *arg)
+{
+	struct SceNetAdhocDialogInfo *info = (struct SceNetAdhocDialogInfo *)arg;
+
+	if (info->state == SCE_NET_ADHOC_DIALOG_INT_STATE_CLOSED || info->state == SCE_NET_ADHOC_DIALOG_INT_STATE_WLAN_ERROR) {
+		return;
+	}
+
+	if (event == 0) {
+		info->error_code = error;
+		_sce_pspnet_adhoc_dialog_set_error_state(info, error);
+		evf |= 1;
+	} else if (event == 1) {
+		info->error_code = 0;
+		if (info->state == SCE_NET_ADHOC_DIALOG_INT_STATE_CONNECTING || info->state == SCE_NET_ADHOC_DIALOG_INT_STATE_CREATING
+		    || info->state == SCE_NET_ADHOC_DIALOG_INT_STATE_JOINING) {
+			info->state = SCE_NET_ADHOC_DIALOG_INT_STATE_CLOSED;
+		}
+		evf |= 2;
+	} else if (event == 2) {
+		info->error_code = 0;
+		evf |= 4;
+	} else if (event == 3) {
+		info->error_code = 0;
+		evf |= 8;
+	} else if (event == 4) {
+		info->error_code = 0;
+		if (info->state == SCE_NET_ADHOC_DIALOG_INT_STATE_CONNECTING_GAMEMODE_CREATE || info->state == SCE_NET_ADHOC_DIALOG_INT_STATE_CONNECTING_GAMEMODE_JOIN) {
+			info->state = SCE_NET_ADHOC_DIALOG_INT_STATE_CLOSED;
+		}
+		evf |= 0x10;
+	}
+}
+
+int _sce_pspnet_adhoc_dialog_set_error_state(struct SceNetAdhocDialogInfo *info, int error_code)
+{
+	switch (error_code) {
+	case (int)0x80410B03:
+	case (int)0x80410D0C:
+		info->state = SCE_NET_ADHOC_DIALOG_INT_STATE_WLAN_SWITCH_OFF;
+		break;
+	default:
+		switch (info->state) {
+		case SCE_NET_ADHOC_DIALOG_INT_STATE_CONNECTING:
+			info->state = SCE_NET_ADHOC_DIALOG_INT_STATE_FAILURE;
+			break;
+		case SCE_NET_ADHOC_DIALOG_INT_STATE_CREATING:
+			info->state = SCE_NET_ADHOC_DIALOG_INT_STATE_FAILURE_CREATE;
+			break;
+		case SCE_NET_ADHOC_DIALOG_INT_STATE_START_SCAN:
+		case SCE_NET_ADHOC_DIALOG_INT_STATE_SCANNING:
+			info->state = SCE_NET_ADHOC_DIALOG_INT_STATE_FAILURE_SCAN;
+			break;
+		case SCE_NET_ADHOC_DIALOG_INT_STATE_JOINING:
+			info->state = SCE_NET_ADHOC_DIALOG_INT_STATE_FAILURE_JOIN;
+			break;
+		case SCE_NET_ADHOC_DIALOG_INT_STATE_CONNECTING_GAMEMODE_CREATE:
+			info->state = SCE_NET_ADHOC_DIALOG_INT_STATE_FAILURE_GAMEMODE_CREATE;
+			break;
+		case SCE_NET_ADHOC_DIALOG_INT_STATE_CONNECTING_GAMEMODE_JOIN:
+			info->state = SCE_NET_ADHOC_DIALOG_INT_STATE_FAILURE_GAMEMODE_JOIN;
+			break;
+		default:
+			break;
+		}
+		break;
+	}
+
+	return 0;
+}
 
 int _sce_pspnet_adhoc_dialog_update(struct SceNetAdhocDialogInfo *info) {
     pad_read_6DBC();
@@ -82,9 +153,18 @@ int _sce_pspnet_adhoc_dialog_update(struct SceNetAdhocDialogInfo *info) {
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_matching_stick/nonmatchings/adhoc_dialog_int", _sce_pspnet_adhoc_dialog_clear_evf);
+void _sce_pspnet_adhoc_dialog_clear_evf(struct SceNetAdhocDialogInfo *info)
+{
+	evf = 0;
+	info->error_code = 0;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_matching_stick/nonmatchings/adhoc_dialog_int", _sce_pspnet_adhoc_dialog_get_evf);
+int _sce_pspnet_adhoc_dialog_get_evf(struct SceNetAdhocDialogInfo *info, int *evf_ptr)
+{
+	*evf_ptr = evf;
+
+	return 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/net_matching_stick/nonmatchings/adhoc_dialog_int", draw_frame_6AF0);
 
