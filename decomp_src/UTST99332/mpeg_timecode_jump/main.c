@@ -227,7 +227,28 @@ static SceInt32 pad_read(t_displayBuffer *pDisp);
 void sceKernelExitGame(void);
 
 
-INCLUDE_ASM("tmp/asm/UTST99332/mpeg_timecode_jump/nonmatchings/main", ringbufferCallBack);
+static SceInt32 ringbufferCallBack(SceVoid *pBuf, SceInt32 iNum, SceVoid *CallbackData)
+{
+	SceInt32 iTypeSize = 0x800;
+	SceInt32 iReadSize;
+	StrFile *pStrFile = (StrFile *)CallbackData;
+
+	iReadSize = strFileRead(pStrFile, pBuf, iNum * iTypeSize);
+
+	if (iReadSize == (SceInt32)0x80210003 || iReadSize == (SceInt32)0x80210001) {
+		return 0;
+	}
+
+	if (iReadSize < 0) {
+		printf("iReadSize = 0x%x\n", iReadSize);
+	}
+
+	if (iReadSize % iTypeSize != 0) {
+		return -1;
+	}
+
+	return iReadSize / iTypeSize;
+}
 
 int exit_func(int count, int arg1, void *arg2) {
     setPlayerEndCondition((t_conditionCtrl *) arg2);
