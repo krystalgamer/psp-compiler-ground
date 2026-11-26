@@ -19,7 +19,28 @@ int sceWaveSetVolume(unsigned int ch, unsigned int left, unsigned int right)
 	return 0;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/mpegon/nonmatchings/libwave", sceWaveGetVolume);
+int sceWaveGetVolume(unsigned int ch, int *left, int *right)
+{
+	if (ch >= 8)
+		return 0x80440005;
+	if (left == NULL)
+		return 0x8044000A;
+	if (right == NULL)
+		return 0x8044000A;
+	if (D_00014614[ch].vol_l <= 0)
+		*left = 0;
+	else if (D_00014614[ch].vol_l >= 128)
+		*left = (D_00014614[ch].vol_l - 1) / 32;
+	else
+		*left = D_00014614[ch].vol_l / 32;
+	if (D_00014614[ch].vol_r <= 0)
+		*right = 0;
+	else if (D_00014614[ch].vol_r >= 128)
+		*right = (D_00014614[ch].vol_r - 1) / 32;
+	else
+		*right = D_00014614[ch].vol_r / 32;
+	return 0;
+}
 
 int sceWaveSetVolumeEx(unsigned int ch, unsigned int left, unsigned int right)
 {
@@ -73,7 +94,30 @@ INCLUDE_ASM("tmp/asm/psp184/mpegon/nonmatchings/libwave", sceWavePlay);
 
 INCLUDE_ASM("tmp/asm/psp184/mpegon/nonmatchings/libwave", sceWavePlayEx);
 
-INCLUDE_ASM("tmp/asm/psp184/mpegon/nonmatchings/libwave", sceWaveStop);
+int sceWaveStop(unsigned int ch)
+{
+	int ret = 0x80440005;
+
+	if (ch < 8) {
+		if (D_00014614[ch].stat != 0) {
+			D_00014614[ch].flags |= 0x120000;
+			D_00014874[ch].stat = 0;
+			D_00014874[ch].pos = 0;
+			D_00014874[ch].unk30 = 0;
+			D_00014874[ch].unk34 = 0;
+			D_00014874[ch].unk28 = 0;
+			D_00014874[ch].unk2C = 0;
+		} else {
+			D_00014614[ch].pos = 0;
+			D_00014614[ch].unk30 = 0;
+			D_00014614[ch].unk34 = 0;
+			D_00014614[ch].unk28 = 0;
+			D_00014614[ch].unk2C = 0;
+		}
+		ret = 0;
+	}
+	return ret;
+}
 
 int sceWaveAudioSetSample(unsigned int ch, int samplecount)
 {
