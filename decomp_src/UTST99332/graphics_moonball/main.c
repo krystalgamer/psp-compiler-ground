@@ -26,7 +26,7 @@ struct ScePspFVector3 { /* size 0xc */
 typedef struct ScePspFVector3 ScePspFVector3;
 struct _anon1;
 typedef short unsigned int u_short16;
-struct _anon1 { /* size 0xa */
+struct __attribute__((packed)) _anon1 { /* size 0xa */
     u_short16 u;
     u_short16 v;
     short int p[3];
@@ -315,7 +315,35 @@ void SpriteScale(int x, int y) {
     __sscale_y = y;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_moonball/nonmatchings/main", DrawSprite);
+void sceGumDrawArray(int prim, int vtype, int count, const void *indices, const void *vertices);
+void DrawSprite(int x, int y, int w, int h, int u, int v, Gu2dV16T *model)
+{
+	sceGuEnable(9);
+
+	model[0].u=u, model[0].v=v+h;
+	model[0].p[0]=(short)x;
+	model[0].p[1]=(short)y+(h*__sscale_y);
+	model[0].p[2]=0;
+
+	model[1].u=u, model[1].v=v;
+	model[1].p[0]=(short)x;
+	model[1].p[1]=(short)y;
+	model[1].p[2]=0;
+
+	model[2].u=u+w, model[2].v=v+h;
+	model[2].p[0]=(short)x+(w*__sscale_x);
+	model[2].p[1]=(short)y+(h*__sscale_y);
+	model[2].p[2]=0;
+
+	model[3].u=u+w, model[3].v=v;
+	model[3].p[0]=(short)x+(w*__sscale_x);
+	model[3].p[1]=(short)y;
+	model[3].p[2]=0;
+
+	sceGumDrawArray(4,
+		0x800102,
+		4, 0, (void *)model);
+}
 
 void FadeSetup(int mode, int c) {
     __fade = mode;
