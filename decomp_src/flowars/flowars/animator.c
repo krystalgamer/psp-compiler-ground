@@ -196,83 +196,109 @@ float getCurrentPoint(Point *pt, PaeMoveParam *pp, float speed, int skipFrames)
 	return cdist;
 }
 
-INCLUDE_RODATA("tmp/asm/flowars/flowars/nonmatchings/animator", D_0002F858);
+/* rodata of the asm functions, in the sections C puts them in: doubles .rodata.cst8, floats
+   .rodata.cst4 (asm_cst4/ copies), start_ani's strings after them (this object's section order) */
+__asm__(".pushsection .rodata.cst8,\"aM\",@progbits,8\n"
+	"\t.align 3\n"
+	".globl D_0002F858\nD_0002F858:\n\t.word 0x00000000\n"
+	".globl D_0002F85C\nD_0002F85C:\n\t.word 0x3FF00000\n"
+	".globl D_0002F860\nD_0002F860:\n\t.word 0x00000000\n"
+	".globl D_0002F864\nD_0002F864:\n\t.word 0x3FE00000\n"
+	".globl D_0002F868\nD_0002F868:\n\t.word 0x00000000\n"
+	".globl D_0002F86C\nD_0002F86C:\n\t.word 0x3FF80000\n"
+	".globl D_0002F870\nD_0002F870:\n\t.word 0x00000000\n"
+	".globl D_0002F874\nD_0002F874:\n\t.word 0x3FD00000\n"
+	".globl D_0002F878\nD_0002F878:\n\t.word 0x9999999A\n"
+	".globl D_0002F87C\nD_0002F87C:\n\t.word 0x3FB99999\n"
+	".globl D_0002F880\nD_0002F880:\n\t.word 0x00000000\n"
+	".globl D_0002F884\nD_0002F884:\n\t.word 0x3FF00000\n"
+	".globl D_0002F888\nD_0002F888:\n\t.word 0x9999999A\n"
+	".globl D_0002F88C\nD_0002F88C:\n\t.word 0x3FB99999\n"
+	".globl D_0002F890\nD_0002F890:\n\t.word 0x00000000\n"
+	".globl D_0002F894\nD_0002F894:\n\t.word 0x3FF80000\n"
+	".globl D_0002F898\nD_0002F898:\n\t.word 0x00000000\n"
+	".globl D_0002F89C\nD_0002F89C:\n\t.word 0x3FF00000\n"
+	".globl D_0002F8A0\nD_0002F8A0:\n\t.word 0x00000000\n"
+	".globl D_0002F8A4\nD_0002F8A4:\n\t.word 0x3FF80000\n"
+	".globl D_0002F8A8\nD_0002F8A8:\n\t.word 0x00000000\n"
+	".globl D_0002F8AC\nD_0002F8AC:\n\t.word 0x3FD00000\n"
+	".globl D_0002F8B0\nD_0002F8B0:\n\t.word 0x9999999A\n"
+	".globl D_0002F8B4\nD_0002F8B4:\n\t.word 0x3FB99999\n"
+	".globl D_0002F8B8\nD_0002F8B8:\n\t.word 0x00000000\n"
+	".globl D_0002F8BC\nD_0002F8BC:\n\t.word 0x3FF00000\n"
+	"\t.popsection");
 
-INCLUDE_RODATA("tmp/asm/flowars/flowars/nonmatchings/animator", D_0002F85C);
+INCLUDE_ASM("decomp_src/flowars/flowars/asm_cst4", getResizedPostion);
 
-INCLUDE_RODATA("tmp/asm/flowars/flowars/nonmatchings/animator", D_0002F860);
+INCLUDE_ASM("decomp_src/flowars/flowars/asm_cst4", me_to_pan);
 
-INCLUDE_RODATA("tmp/asm/flowars/flowars/nonmatchings/animator", D_0002F864);
+INCLUDE_ASM("decomp_src/flowars/flowars/asm_cst4", me_to_bomb);
 
-INCLUDE_RODATA("tmp/asm/flowars/flowars/nonmatchings/animator", D_0002F868);
+INCLUDE_ASM("decomp_src/flowars/flowars/asm_cst4", pan_to_collect);
 
-INCLUDE_RODATA("tmp/asm/flowars/flowars/nonmatchings/animator", D_0002F86C);
+INCLUDE_ASM("decomp_src/flowars/flowars/asm_cst4", collect_to_collect);
 
-INCLUDE_RODATA("tmp/asm/flowars/flowars/nonmatchings/animator", D_0002F870);
+INCLUDE_ASM("decomp_src/flowars/flowars/asm_cst4", pan_to_hand);
 
-INCLUDE_RODATA("tmp/asm/flowars/flowars/nonmatchings/animator", D_0002F874);
+INCLUDE_ASM("decomp_src/flowars/flowars/asm_cst4", play_bonus_pae);
 
-INCLUDE_RODATA("tmp/asm/flowars/flowars/nonmatchings/animator", D_0002F878);
+static void add_pae(int pae, int sx, int sy, int dx, int dy, int delay, int sound)
+{
+	PaeMoveParam *p;
 
-INCLUDE_RODATA("tmp/asm/flowars/flowars/nonmatchings/animator", D_0002F87C);
+	p = &paeParam[anipae_cnt];
+	p->pae = pae;
+	p->status = 1;
+	p->frame = 0;
+	p->delay = delay;
+	p->src.x = sx;
+	p->src.y = sy;
+	p->dst.x = dx;
+	p->dst.y = dy;
+	p->move.x = dx - sx;
+	p->move.y = dy - sy;
+	if (p->move.x > 480)
+		p->move.x = 480;
+	if (p->move.y > 272)
+		p->move.y = 272;
+	p->distance = sqrt(pow(p->move.x, 2) + pow(p->move.y, 2));
+	p->sound = sound;
+	anipae_cnt++;
+	moving_pae++;
+}
 
-INCLUDE_RODATA("tmp/asm/flowars/flowars/nonmatchings/animator", D_0002F880);
+__asm__(".globl add_pae");
 
-INCLUDE_RODATA("tmp/asm/flowars/flowars/nonmatchings/animator", D_0002F884);
+static void add_pae_bomb(int pae, int sx, int sy, int dx, int dy, int delay, int sound)
+{
+	PaeMoveParam *p;
 
-INCLUDE_RODATA("tmp/asm/flowars/flowars/nonmatchings/animator", D_0002F888);
+	p = &paeParam[anipae_cnt];
+	p->pae = pae;
+	p->status = 1;
+	p->frame = 0;
+	if (anipae_cnt > 0) {
+		sx = paeParam[anipae_cnt - 1].src.x + 10;
+		sy = paeParam[anipae_cnt - 1].src.y;
+	}
+	p->delay = delay;
+	p->src.x = sx;
+	p->src.y = sy;
+	p->dst.x = dx;
+	p->dst.y = dy;
+	p->move.x = dx - sx;
+	p->move.y = dy - sy;
+	if (p->move.x > 480)
+		p->move.x = 480;
+	if (p->move.y > 272)
+		p->move.y = 272;
+	p->distance = sqrt(pow(p->move.x, 2) + pow(p->move.y, 2));
+	p->sound = sound;
+	anipae_cnt++;
+	moving_pae++;
+}
 
-INCLUDE_RODATA("tmp/asm/flowars/flowars/nonmatchings/animator", D_0002F88C);
-
-INCLUDE_RODATA("tmp/asm/flowars/flowars/nonmatchings/animator", D_0002F890);
-
-INCLUDE_RODATA("tmp/asm/flowars/flowars/nonmatchings/animator", D_0002F894);
-
-INCLUDE_RODATA("tmp/asm/flowars/flowars/nonmatchings/animator", D_0002F898);
-
-INCLUDE_RODATA("tmp/asm/flowars/flowars/nonmatchings/animator", D_0002F89C);
-
-INCLUDE_RODATA("tmp/asm/flowars/flowars/nonmatchings/animator", D_0002F8A0);
-
-INCLUDE_RODATA("tmp/asm/flowars/flowars/nonmatchings/animator", D_0002F8A4);
-
-INCLUDE_RODATA("tmp/asm/flowars/flowars/nonmatchings/animator", D_0002F8A8);
-
-INCLUDE_RODATA("tmp/asm/flowars/flowars/nonmatchings/animator", D_0002F8AC);
-
-INCLUDE_RODATA("tmp/asm/flowars/flowars/nonmatchings/animator", D_0002F8B0);
-
-INCLUDE_RODATA("tmp/asm/flowars/flowars/nonmatchings/animator", D_0002F8B4);
-
-INCLUDE_RODATA("tmp/asm/flowars/flowars/nonmatchings/animator", D_0002F8B8);
-
-INCLUDE_RODATA("tmp/asm/flowars/flowars/nonmatchings/animator", D_0002F8BC);
-
-INCLUDE_RODATA("tmp/asm/flowars/flowars/nonmatchings/animator", D_0002F8C0);
-
-INCLUDE_RODATA("tmp/asm/flowars/flowars/nonmatchings/animator", D_0002F8C4);
-
-INCLUDE_RODATA("tmp/asm/flowars/flowars/nonmatchings/animator", D_0002F8C8);
-
-INCLUDE_RODATA("tmp/asm/flowars/flowars/nonmatchings/animator", D_0002F8CC);
-
-INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/animator", getResizedPostion);
-
-INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/animator", me_to_pan);
-
-INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/animator", me_to_bomb);
-
-INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/animator", pan_to_collect);
-
-INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/animator", collect_to_collect);
-
-INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/animator", pan_to_hand);
-
-INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/animator", play_bonus_pae);
-
-INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/animator", add_pae);
-
-INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/animator", add_pae_bomb);
+__asm__(".globl add_pae_bomb");
 
 static void add_ani(int ani, int x, int y, int flag_loop, int extand_frame, int sound)
 {
@@ -292,9 +318,8 @@ static void add_ani(int ani, int x, int y, int flag_loop, int extand_frame, int 
 
 __asm__(".globl add_ani");
 
-INCLUDE_RODATA("tmp/asm/flowars/flowars/nonmatchings/animator", D_0002F918);
-
-INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/animator", start_ani);
+__asm__(".pushsection .rodata.str,\"a\",@progbits\n\t.align 2\n.globl D_0002F918\nD_0002F918:\n\t.space 12\n\t.popsection");
+INCLUDE_ASM("decomp_src/flowars/flowars/asm_cst4", start_ani);
 
 int count_ani(void) {
     return ani_cnt;
