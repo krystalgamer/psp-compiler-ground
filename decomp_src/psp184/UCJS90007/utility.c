@@ -233,7 +233,14 @@ int utility_get_osk_result(char *ptr, SceUInt size);
 
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/utility", utility_init_netconf);
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/utility", utility_update_netconf);
+int utility_update_netconf(void)
+{
+	int ret = 0;
+
+	if (sceUtilityNetconfGetStatus() == 2)
+		ret = sceUtilityNetconfUpdate(1);
+	return ret;
+}
 
 int utility_net_connect(void) {
     return utility_init_netconf(SCE_UTILITY_NETCONF_TYPE_CONNECT_ADHOC);
@@ -365,13 +372,27 @@ INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/utility", utility_msgdialog_m
 
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/utility", utility_msgdialog_paramsfo);
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/utility", utility_update_msgdialog);
+int utility_update_msgdialog(void)
+{
+	int ret = 0;
+
+	if (sceUtilityMsgDialogGetStatus() == 2)
+		ret = sceUtilityMsgDialogUpdate(1);
+	return ret;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/utility", utility_check_msgdialog_completed);
 
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/utility", utility_osk);
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/utility", utility_update_osk);
+int utility_update_osk(void)
+{
+	int ret = 0;
+
+	if (sceUtilityOskGetStatus() == 2)
+		ret = sceUtilityOskUpdate(1);
+	return ret;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/utility", utility_check_osk_completed);
 

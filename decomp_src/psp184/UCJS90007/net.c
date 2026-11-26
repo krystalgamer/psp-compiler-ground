@@ -167,7 +167,17 @@ int net_term(void) {
 
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/net", net_init);
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/net", net_connect);
+static int net_connect(void)
+{
+	int ret;
+
+	ret = utility_net_connect();
+	if (ret < 0)
+		change_state(7, 0);
+	else
+		change_state(9, 0);
+	return ret;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/net", check_connect_completed);
 
@@ -183,7 +193,14 @@ int net_disconnect(void) {
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/net", check_disconnect_completed);
+static int check_disconnect_completed(void)
+{
+	if (evf & 4) {
+		evf &= ~4;
+		change_state(7, 0);
+	}
+	return 0;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/net", net_connected);
 

@@ -290,7 +290,18 @@ INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/pad", pad_circle);
 
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/pad", pad_triangle);
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/pad", pad_square);
+extern int D_0008D33C;
+static void pad_square(void)
+{
+	switch (D_0008D33C) {
+	case 2:
+		change_state(3, 0);
+		break;
+	case 15:
+		change_state(0x15, 0);
+		break;
+	}
+}
 
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/pad", pad_cross);
 

@@ -404,7 +404,13 @@ INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/main", gu_init);
 
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/main", font_init);
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/main", fade_init);
+static void fade_init(void)
+{
+	_fade_info.fade_type = 0;
+	_fade_info.time_to_change = 0;
+	_fade_info.color = 0;
+	_fade_info.alpha = 0;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/main", sysparam_init);
 
@@ -426,7 +432,16 @@ INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/main", check_osk_completed);
 
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/main", update_1080);
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/main", disp_printf);
+int vsprintf(char *buf, const char *fmt, va_list ap);
+void disp_printf(int color, const char *fmt, ...)
+{
+	va_list ap;
+
+	disp_line_color = color;
+	__builtin_va_start(ap, fmt);
+	vsprintf(disp_line, fmt, ap);
+	__builtin_va_end(ap);
+}
 
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/main", change_state);
 
@@ -436,7 +451,18 @@ int ExitFunction(int count, int arg_impose, void *arg_self) {
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/main", CBInit);
+int sceKernelCreateCallback(const char *name, void *func, void *arg);
+int sceKernelRegisterExitCallback(int cbid);
+extern int D_0008DB8C;
+int sceKernelCreateCallback(const char *name, void *func, void *arg);
+int sceKernelRegisterExitCallback(int cbid);
+static void CBInit(void)
+{
+	int cbid;
+
+	cbid = sceKernelCreateCallback("exit", ExitFunction, &D_0008DB8C);
+	sceKernelRegisterExitCallback(cbid);
+}
 
 void wait_vblank(void) {
     sceDisplayWaitVblankStartCB();

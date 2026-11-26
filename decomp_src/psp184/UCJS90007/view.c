@@ -205,7 +205,12 @@ void sceGumPerspective(float fovy, float aspect, float near, float far);
 void sceGumLookAt(const ScePspFVector3 *eye, const ScePspFVector3 *center, const ScePspFVector3 *up);
 
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/view", set_translate);
+void set_translate(void)
+{
+	g_translate[1].x = 32.0f;
+	g_translate[1].y = -26.4f;
+	g_translate[1].z = 0.0f;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/view", begin_scene);
 

@@ -48,7 +48,17 @@ INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/load_modules", loadModuleVide
 
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/load_modules", load_module);
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/load_modules", unload_module);
+int sceKernelStopModule(SceUID modid, SceSize argsize, void *argp, int *status, void *option);
+int sceKernelUnloadModule(SceUID modid);
+static int unload_module(SceUID modid)
+{
+	int ret;
+
+	ret = sceKernelStopModule(modid, 0, NULL, NULL, NULL);
+	if (ret >= 0)
+		ret = sceKernelUnloadModule(modid);
+	return ret;
+}
 
 INCLUDE_RODATA("tmp/asm/psp184/UCJS90007/nonmatchings/load_modules", D_0002DB0C);
 

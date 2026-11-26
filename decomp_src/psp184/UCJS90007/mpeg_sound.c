@@ -172,7 +172,16 @@ SceInt32 soundbuf_output(t_soundBuffer *pSound);
 
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/mpeg_sound", soundbuf_create);
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/mpeg_sound", soundbuf_reset);
+SceInt32 soundbuf_reset(t_soundBuffer *pSound)
+{
+	soundframeCount = 0;
+	soundframeDelay = 0;
+	pSound->statusFlag = 1;
+	pSound->read = 0;
+	pSound->count = 0;
+	pSound->write = 0;
+	return 0;
+}
 
 int sceKernelDeleteSema(int semid);
 void free(void *p);
@@ -292,4 +301,9 @@ INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/mpeg_sound", soundbuf_func);
 
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/mpeg_sound", soundbuf_swapbuf);
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/mpeg_sound", soundbuf_output);
+SceInt32 soundbuf_output(t_soundBuffer *pSound)
+{
+	SceChar8 *buf = pSound->buf[pSound->read];
+
+	return soundbuf_swapbuf(pSound, buf);
+}
