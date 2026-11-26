@@ -125,7 +125,29 @@ int PlSelInit(void)
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/plsel", PlayerSelect);
 
+#ifdef NON_MATCHING
+/* diff 2 with every cc1 (and every order of the five stores): the tx load is scheduled
+ * one slot before the SelWork index add instead of after it. */
+int ModeSelInt(void)
+{
+	int i;
+
+	LoadFileList(3, mode_gims2);
+	for (i = 0; i < 5; i++)
+		SelWork[i].active = 0;
+	for (i = 0; i < 3; i++) {
+		SelWork[mode_int[i].idx].active = 1;
+		SelWork[mode_int[i].idx].x = mode_int[i].x;
+		SelWork[mode_int[i].idx].y = mode_int[i].y;
+		SelWork[mode_int[i].idx].tx = mode_int[i].tx;
+		SelWork[mode_int[i].idx].ty = mode_int[i].ty;
+	}
+	OldError = 0;
+	return 0;
+}
+#else
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/plsel", ModeSelInt);
+#endif
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/plsel", ModeSelect);
 
