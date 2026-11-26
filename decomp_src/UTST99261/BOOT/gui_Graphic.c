@@ -331,7 +331,60 @@ int GUI_Graphics_drawPixmap(GUIGRAPHICS *g, GUIPIXMAP *pm_, int x, int y, int w,
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Graphic", GUI_Graphics_drawTiledPixmap);
+int GUI_Graphics_drawTiledPixmap(GUIGRAPHICS *g, GUIPIXMAP *pm_, int x, int y, int w, int h, int ox, int oy) {
+    GUIPIXMAP *pm;
+    int sx;
+    int sy;
+    int cx;
+    int cy;
+    int x2;
+    int y2;
+    int trans;
+
+    if (g == NULL) {
+        puts("[X1]GUI_Graphics_drawTiledPixmap");
+        return -1;
+    }
+    if (g->type != 2) {
+        puts("[X2]GUI_Graphics_drawTiledPixmap");
+        return -1;
+    }
+    if (pm_ == NULL) {
+        puts("[X3]GUI_Graphics_drawTiledPixmap");
+        return -1;
+    }
+    pm = pm_;
+    if (pm->type != 3) {
+        puts("[X4]GUI_Graphics_drawTiledPixmap");
+        return -1;
+    }
+    if (x + w < 0) {
+        return 0;
+    }
+    if (y + h < 0) {
+        return 0;
+    }
+    _GUI_Graphics_Push(g);
+    sx = x - ox;
+    zWindDrawClipSet(x, y, w, h);
+    if (x >= sx + pm->w) {
+        sx += (x - sx) / pm->w * pm->w;
+    }
+    sy = y - oy;
+    if (y >= sy + pm->h) {
+        sy += (y - sy) / pm->h * pm->h;
+    }
+    trans = pm->kind == 0;
+    x2 = w + x;
+    y2 = h + y;
+    for (cy = sy; cy <= y2; cy += pm->h) {
+        for (cx = sx; cx <= x2; cx += pm->w) {
+            zWindDrawImage(cx, cy, pm->w, pm->h, pm->data, trans);
+        }
+    }
+    _GUI_Graphics_Pop();
+    return 0;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
