@@ -293,7 +293,35 @@ int init_basho_pos_and_scale(void)
 	return 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/utility_font_basho/nonmatchings/basho", draw_basho);
+void draw_basho(void)
+{
+	sceGuEnable(9);
+	sceGuTexFunc(0, 1);
+	sceGuTexMapMode(0, 0, 0);
+	sceGuTexWrap(0, 0);
+	sceGuTexFilter(1, 1);
+	sceGumPushMatrix();
+	sceGumTranslate(&basho.pos);
+	sceGumPushMatrix();
+	sceGumScale(&basho.scale);
+	sceGumRotateX(basho.rot.x * 3.14159265f / 180.0f);
+	sceGumRotateY(basho.rot.y * 3.14159265f / 180.0f);
+	sceGumRotateZ(basho.rot.z * 3.14159265f / 180.0f);
+	sceGuClutMode(2, 0, 0xff, 0);
+	sceGuClutLoad(1, clut);
+	sceGuTexMode(4, 0, 0, 0);
+	sceGuTexImage(0, 512, 256, 512, pTextureImageTable[currentTexture]);
+
+
+
+	sceGuColor(0xffffffff);
+	sceGumDrawArray(4, 0x1e3, 4, NULL, basho_model);
+
+
+
+	sceGumPopMatrix();
+	sceGumPopMatrix();
+}
 
 void print_basho_pos(void)
 {
