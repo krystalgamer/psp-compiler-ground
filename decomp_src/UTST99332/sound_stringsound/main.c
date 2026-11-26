@@ -241,6 +241,164 @@ static void init_pos(void)
 	pos.trans.z = -12.0f;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/sound_stringsound/nonmatchings/main", pad_read);
+void restart_atrac3plus(SceAtracArg *pPlayArg);
+#ifndef __SYSTEM_H__
+#define __SYSTEM_H__
+#endif
+#ifndef USE_REFLECT
+#define USE_REFLECT		1
+#endif
+#ifndef USE_SHADOW
+#define USE_SHADOW		1
+#endif
+#ifndef USE_FOG
+#define USE_FOG			1
+#endif
+#ifndef TEXT_FILE
+#define TEXT_FILE		"host0:sample.txt"
+#endif
+#ifndef MAX_STRING
+#define MAX_STRING		1024
+#endif
+#ifndef MAX_WORDLEN
+#define MAX_WORDLEN		16
+#endif
+#ifndef MAX_ALPHABET
+#define MAX_ALPHABET	26
+#endif
+#ifndef A_SIZEW
+#define A_SIZEW			23.5f
+#endif
+#ifndef A_SIZEH
+#define A_SIZEH			20.0f
+#endif
+#ifndef A_SCALE
+#define A_SCALE			(0.1f/G_SCALE)
+#endif
+#ifndef A_PLEVEL
+#define A_PLEVEL		4
+#endif
+#ifndef A_PLEVEL_R
+#define A_PLEVEL_R		2
+#endif
+#ifndef A_COLOR
+#define A_COLOR			0xffffffff
+#endif
+#ifndef G_SCALE
+#define G_SCALE			15.0f
+#endif
+#ifndef G_PLEVEL
+#define G_PLEVEL		16
+#endif
+#ifndef G_COLOR
+#define G_COLOR			0xe0ffffff
+#endif
+#ifndef S_PLEVEL
+#define S_PLEVEL		1
+#endif
+#ifndef S_COLOR
+#define S_COLOR			0xc0404040
+#endif
+#ifndef FRAME_CNT
+#define FRAME_CNT		15
+#endif
+#ifndef WAIT_CNT
+#define WAIT_CNT		10
+#endif
+#ifndef FOG_NEAR
+#define FOG_NEAR		20.0f
+#endif
+#ifndef FOG_FAR
+#define FOG_FAR			30.0f
+#endif
+#ifndef BG_COL
+#define BG_COL			0x00000000
+#endif
+#ifndef AMB_COL
+#define AMB_COL			0xff7f7f7f
+#endif
+#ifndef TEX_SCALE
+#define TEX_SCALE		10.0f
+#endif
+#ifndef LIMIT_NEAR
+#define LIMIT_NEAR		-6.0f
+#endif
+#ifndef LIMIT_FAR
+#define LIMIT_FAR		-25.0f
+#endif
+#ifndef LIMIT_ANG
+#define LIMIT_ANG		60.0f
+#endif
+#define SCE_CTRL_UP					(1<<4)
+#define SCE_CTRL_DOWN				(1<<6)
+#define SCE_CTRL_LEFT				(1<<7)
+#define SCE_CTRL_RIGHT				(1<<5)
+#define PANG	10.0f
+#define SCE_CTRL_L					(1<<8)
+#define SCE_CTRL_L1					SCE_CTRL_L
+#define SCE_CTRL_R					(1<<9)
+#define SCE_CTRL_R1					SCE_CTRL_R
+#define PTRANS	1.0f
+#define SCE_CTRL_START				(1<<3)
+#define SCE_CTRL_SELECT				(1<<0)
+
+static int pad_read(void)
+{
+	extern u_int32	D_00021800;
+	u_int32			padd;
+	SceCtrlData		buf;
+
+	sceCtrlReadBufferPositive(&buf, 1);
+	padd = buf.Buttons;
+
+	if (padd & SCE_CTRL_UP) {
+		pos.rot.x = pos.rot.x - PANG;
+		if (pos.rot.x <= 0.0f) {
+			pos.rot.x = 0.0f;
+		}
+	}
+	if (padd & SCE_CTRL_DOWN) {
+		pos.rot.x = pos.rot.x + PANG;
+		if (pos.rot.x >= LIMIT_ANG) {
+			pos.rot.x = LIMIT_ANG;
+		}
+	}
+	if (padd & SCE_CTRL_LEFT) {
+		pos.rot.y = pos.rot.y - PANG;
+		if (pos.rot.y <= -LIMIT_ANG) {
+			pos.rot.y = -LIMIT_ANG;
+		}
+	}
+	if (padd & SCE_CTRL_RIGHT) {
+		pos.rot.y = pos.rot.y + PANG;
+		if (pos.rot.y >= LIMIT_ANG) {
+			pos.rot.y = LIMIT_ANG;
+		}
+	}
+	if ((padd & ~D_00021800) & 0x2000) {
+		restart_atrac3plus(&playArg);
+	}
+	if (padd & SCE_CTRL_L1) {
+		pos.trans.z = pos.trans.z - PTRANS;
+		if (pos.trans.z <= LIMIT_FAR) {
+			pos.trans.z = LIMIT_FAR;
+		}
+	}
+	if (padd & SCE_CTRL_R1) {
+		pos.trans.z = pos.trans.z + PTRANS;
+		if (pos.trans.z >= LIMIT_NEAR) {
+			pos.trans.z = LIMIT_NEAR;
+		}
+	}
+	if (padd & SCE_CTRL_START) {
+		init_pos();
+	}
+	if (padd & SCE_CTRL_SELECT) {
+		return 0;
+	}
+	D_00021800 = padd;
+
+	return 1;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/sound_stringsound/nonmatchings/main", main);
