@@ -9,7 +9,9 @@
 typedef struct EspConfig {
     int x00;
     int cookieEnabled;                /* 0x04 */
-    char rest[0x68];
+    char x08[0x38];
+    char *homeURL;                    /* 0x40 */
+    char rest[0x2C];
 } EspConfig;
 
 typedef struct EspContext {
@@ -42,6 +44,28 @@ typedef struct JSPtr {
     struct JSPtr *next;               /* 0x08 */
     int x0C;
 } JSPtr;
+
+typedef struct JSMsgBody {
+    int type;
+    int x04;
+    int x08;
+    int cmd;
+    int x10;
+    int x14;
+    int x18;
+    int x1C;
+} JSMsgBody;
+typedef struct JSMsg {
+    int x00;
+    JSMsgBody body;
+} JSMsg;
+typedef struct EspDevEvent {
+    unsigned short type;
+    int x04;
+    char *str;
+    int x0C;
+    int x10;
+} EspDevEvent;
 
 extern JSTimer *g_JS_TIMER_;
 extern JSPtr **g_JSPTRLIST_;

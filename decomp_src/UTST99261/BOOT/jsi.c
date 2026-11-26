@@ -2,6 +2,20 @@
 #include "common.h"
 #include "dom_esp.h"
 #include "m2c_macros.h"
+extern void *jsapi_lock;
+extern char *gESPRIT_LO_GLOBAL_NDA;
+void OS_thread_mutex_lock(void *m);
+void OS_thread_mutex_unlock(void *m);
+void SetIpcmsg(void *m, void *b);
+void *memcpy(void *d, const void *s, unsigned int n);
+char *strcpy(char *d, const char *s);
+int HST_getCurrentIndex(void);
+char *HST_getCurURI(void *node);
+char *HST_getTitle(void *node);
+extern char D_00133A54[];
+int OS_mq_open(const char *name, int mode);
+int OS_mq_send(int q, void *msg, int len, int prio);
+int OS_mq_close(int q);
 int JSPtrListFind(JSPtr *p);
 int JSPtrListFindEmpty(void);
 M2C_UNK HST_attachHistory();                        /* extern */
@@ -219,7 +233,26 @@ void JSI_newDOMString(void) {
     newDOMString_4B5FC();
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSSendMail);
+int JSSendMail(JSMsgBody *b, const char *qname) {
+    JSMsg msg;
+    char *nda;
+    int q;
+
+    if (b->cmd == 0x809) {
+        nda = gESPRIT_LO_GLOBAL_NDA;
+        OS_thread_mutex_unlock(jsapi_lock);
+        OS_thread_mutex_lock(*(void **)(nda + 0x40));
+        OS_thread_mutex_lock(jsapi_lock);
+    }
+    q = OS_mq_open(qname, 1);
+    if (q == -1) {
+        return -1;
+    }
+    SetIpcmsg(&msg, b);
+    OS_mq_send(q, &msg, sizeof(msg), 0);
+    OS_mq_close(q);
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSWaitMail);
 
@@ -237,7 +270,9 @@ void SetIpcMember(void *arg0, int arg1, int arg2, int arg3, int arg4, int arg5, 
     M2C_FIELD(arg0, int *, 0x1C) = arg7;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", SetIpcmsg);
+void SetIpcmsg(void *m, void *b) {
+    memcpy((char *)m + 4, b, 0x20);
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -630,11 +665,55 @@ int JSFreeJSPtr(JSPtr *p) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSCreate);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSStart);
+int JSStart(void) {
+    JSMsgBody b;
+    JSMsg msg;
+    int q;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSRun);
+    q = OS_mq_open(D_00133A54, 1);
+    if (q == -1) {
+        return -1;
+    }
+    b.x04 = 0;
+    b.x08 = 0;
+    b.x10 = 0;
+    b.x14 = 0;
+    b.x18 = 0;
+    b.x1C = 0;
+    b.type = 4;
+    b.cmd = 0x401;
+    msg.body = b;
+    OS_mq_send(q, &msg, sizeof(msg), 0);
+    OS_mq_close(q);
+    return 0;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSDestroy);
+int JSRun(JSMsgBody *b) {
+    JSMsg msg;
+    int q;
+
+    q = OS_mq_open(D_00133A54, 1);
+    if (q == -1) {
+        return -1;
+    }
+    msg.body = *b;
+    OS_mq_send(q, &msg, sizeof(msg), 0);
+    OS_mq_close(q);
+    return 0;
+}
+
+int JSDestroy(JSMsg *m) {
+    int q;
+
+    q = OS_mq_open(D_00133A54, 1);
+    if (q == -1) {
+        return -1;
+    }
+    OS_mq_send(q, m, sizeof(JSMsg), 0);
+    OS_mq_close(q);
+    MEM_free(0, m);
+    return 0;
+}
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", D_00133A50);
 
@@ -644,7 +723,9 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSHandleEvent);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_initCore);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_initCookie);
+int ESP_initCookie(int a, int b, int c) {
+    return iom_cookieFile_init(c, a, b);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_startCore);
 
@@ -660,7 +741,26 @@ INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", D_00133BC4);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_submitForm);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_moveHistory);
+int ESP_moveHistory(int off) {
+    void *head;
+
+    if (esp_context == NULL) {
+        return -1;
+    }
+    if (esp_context->state == 2) {
+        return -1;
+    }
+    head = HST_getHeadHistoryNode();
+    if (off == 0) {
+        return ESP_reloadPage(1);
+    }
+    if (HST_getHistoryWithOffset(off) == NULL) {
+        if (HST_getFragmentIDs(head, off) == 0) {
+            return -1;
+        }
+    }
+    return esp_postMsgLoadPage(esp_context->msg, 0, 0, off, 0, 3, 0);
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -766,7 +866,28 @@ void ESP_getFocusAttribute(void) {
     esp_postMsgDataAttr(M2C_FIELD(esp_context, int *, 0xF8), 1, 0, 0);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_setTextField);
+int ESP_setTextField(const char *text) {
+    EspDevEvent *ev;
+
+    if (esp_context == NULL) {
+        return -1;
+    }
+    if (esp_context->state == 2) {
+        return -1;
+    }
+    if (text == NULL) {
+        return -1;
+    }
+    ev = MEM_malloc(0, strlen(text) + sizeof(EspDevEvent) + 1);
+    if (ev == NULL) {
+        return -1;
+    }
+    ev->type = 0x19;
+    ev->x04 = 0;
+    ev->str = (char *)(ev + 1);
+    strcpy(ev->str, text);
+    return esp_postMsgDeviceEvent(esp_context->msg, ev);
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -784,9 +905,55 @@ void ESP_currentHistoryIndex(void) {
     HST_getCurrentIndex();
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_getHistoryURL);
+char *ESP_getHistoryURL(int off) {
+    char *url = NULL;
+    char *r = NULL;
+    int idx;
+    void *node;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_getHistoryTitle);
+    idx = HST_getCurrentIndex();
+    if (idx < 0) {
+        return NULL;
+    }
+    node = HST_getHistoryWithOffset(off - idx);
+    if (node != NULL) {
+        url = HST_getCurURI(node);
+    }
+    if (url == NULL) {
+        return r;
+    }
+    r = (char *)ESP_malloc(strlen(url) + 1);
+    if (r == NULL) {
+        return NULL;
+    }
+    strcpy(r, url);
+    return r;
+}
+
+char *ESP_getHistoryTitle(int off) {
+    char *title = NULL;
+    char *r = NULL;
+    int idx;
+    void *node;
+
+    idx = HST_getCurrentIndex();
+    if (idx < 0) {
+        return NULL;
+    }
+    node = HST_getHistoryWithOffset(off - idx);
+    if (node != NULL) {
+        title = HST_getTitle(node);
+    }
+    if (title == NULL) {
+        return r;
+    }
+    r = (char *)ESP_malloc(strlen(title) + 1);
+    if (r == NULL) {
+        return NULL;
+    }
+    strcpy(r, title);
+    return r;
+}
 
 int ESP_hasNextHistory(void) {
     if (HST_getHistoryWithOffset(1) != NULL) {
