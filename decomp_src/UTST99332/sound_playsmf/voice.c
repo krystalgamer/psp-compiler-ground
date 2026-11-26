@@ -71,15 +71,105 @@ INCLUDE_ASM("tmp/asm/UTST99332/sound_playsmf/nonmatchings/voice", voice_setSusta
 
 INCLUDE_ASM("tmp/asm/UTST99332/sound_playsmf/nonmatchings/voice", voice_setReservedVoice);
 
-INCLUDE_ASM("tmp/asm/UTST99332/sound_playsmf/nonmatchings/voice", voice_getVoiceByGroup);
+unsigned int voice_getVoiceByGroup(unsigned int group)
+{
+	unsigned int mask = 0;
+	unsigned int i;
 
-INCLUDE_ASM("tmp/asm/UTST99332/sound_playsmf/nonmatchings/voice", voice_getVoiceByMidi);
+	if (g_vstate == -1)
+		return 0;
+	if (group == 0)
+		return 0;
+	if (group >= 128)
+		return 0;
+	for (i = 0; i < g_vmax; i++) {
+		SsVoice *p = &g_voice[i];
 
-INCLUDE_ASM("tmp/asm/UTST99332/sound_playsmf/nonmatchings/voice", voice_getVoiceByID);
+		if (p->status == 2 || p->status == 3 || p->status == 6 || p->status == 7 || p->status == 8 || p->status == 9) {
+			if (p->tone.i14 == group)
+				mask |= 1 << p->no;
+		}
+	}
+	return mask;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/sound_playsmf/nonmatchings/voice", voice_getVoiceByChannel);
+unsigned int voice_getVoiceByMidi(unsigned char *midi, int id)
+{
+	unsigned int mask = 0;
+	unsigned int i;
 
-INCLUDE_ASM("tmp/asm/UTST99332/sound_playsmf/nonmatchings/voice", voice_getVoiceByChannel2);
+	if (g_vstate == -1)
+		return 0;
+	if (midi == NULL)
+		return 0;
+	for (i = 0; i < g_vmax; i++) {
+		SsVoice *p = &g_voice[i];
+
+		if (p->status == 2 || p->status == 3 || p->status == 6 || p->status == 7 || p->status == 8 || p->status == 9) {
+			if ((unsigned char)p->ch == midi[0] && p->b5D == midi[1] && p->id == id)
+				mask |= 1 << p->no;
+		}
+	}
+	return mask;
+}
+
+unsigned int voice_getVoiceByID(int id)
+{
+	unsigned int mask = 0;
+	unsigned int i;
+
+	if (g_vstate == -1)
+		return 0;
+	for (i = 0; i < g_vmax; i++) {
+		SsVoice *p = &g_voice[i];
+
+		if (p->status == 2 || p->status == 3 || p->status == 6 || p->status == 7 || p->status == 8 || p->status == 9) {
+			if (p->id == id)
+				mask |= 1 << p->no;
+		}
+	}
+	return mask;
+}
+
+unsigned int voice_getVoiceByChannel(unsigned int ch, int id)
+{
+	unsigned int mask = 0;
+	unsigned int i;
+
+	if (g_vstate == -1)
+		return 0;
+	if (ch >= 16)
+		return 0;
+	for (i = 0; i < g_vmax; i++) {
+		SsVoice *p = &g_voice[i];
+
+		if (p->status == 2 || p->status == 3 || p->status == 6 || p->status == 7 || p->status == 8 || p->status == 9) {
+			if ((unsigned char)p->ch == ch && p->id == id)
+				mask |= 1 << p->no;
+		}
+	}
+	return mask;
+}
+
+unsigned int voice_getVoiceByChannel2(unsigned int ch, int id)
+{
+	unsigned int mask = 0;
+	unsigned int i;
+
+	if (g_vstate == -1)
+		return 0;
+	if (ch >= 16)
+		return 0;
+	for (i = 0; i < g_vmax; i++) {
+		SsVoice *p = &g_voice[i];
+
+		if (p->status == 2 || p->status == 3 || p->status == 6 || p->status == 7 || p->status == 8 || p->status == 9 || p->status == 5) {
+			if ((unsigned char)p->ch == ch && p->id == id)
+				mask |= 1 << p->no;
+		}
+	}
+	return mask;
+}
 
 int voice_setVelocity(unsigned int v, unsigned int val)
 {
