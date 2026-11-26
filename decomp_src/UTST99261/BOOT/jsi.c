@@ -2,6 +2,7 @@
 #include "common.h"
 #include "dom_esp.h"
 #include "m2c_macros.h"
+extern int destroyFlag;
 extern void *gBEINSI_UI;
 extern EspContext *esp_context;
 #define VESP (*(EspContext *volatile *)&esp_context)
@@ -26,7 +27,6 @@ int GUI_RadioButton_getState(int);                  /* extern */
 void *Node_getBox();                                /* extern */
 extern void *gPREF_UI;
 extern void *gNDA_NAME_JS_GLOBAL;
-M2C_UNK js_delTimerID(int, M2C_UNK, M2C_UNK);       /* extern */
 int OS_thread_self();                               /* extern */
 int esp_postMsgLoadPage(int, int, int, M2C_UNK, M2C_UNK, int, M2C_UNK); /* extern */
 M2C_UNK esp_postMsgSaveURL(int, int, int);          /* extern */
@@ -347,7 +347,27 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSI_setSelectedIndex);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSI_getTextValue);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSI_setTextValue);
+int JSI_setTextValue(void *node, DOMStr *s) {
+    LayoutBox *box;
+    char *buf;
+
+    if (node == NULL || s == NULL || (box = Node_getBox(node)) == NULL || s->str == NULL || box->type != 0xD || box->widget == NULL) {
+        return 0;
+    }
+    buf = MEM_malloc(0, s->len * 3 + 1);
+    if (buf == NULL) {
+        return 0;
+    }
+    buf[ucs2ToUtf8(buf, s->str, s->len)] = 0;
+    if (*(int *)box->data == 1) {
+        GUI_TextArea_setText(box->widget, buf);
+    } else {
+        GUI_TextField_setText(box->widget, buf);
+    }
+    GUI_Component_update(box->widget, 0, 0, 0, 0);
+    MEM_free(0, buf);
+    return 1;
+}
 
 int JSI_getWindowRec(void *node, short *rec) {
     LayoutBox *box;
@@ -399,7 +419,33 @@ DOMStr *JSI_getWindowName(void *doc) {
     return newDOMString_4B5FC(name, strlen(name));
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSI_setWindowName);
+int JSI_setWindowName(void *doc, DOMStr *s) {
+    void *h;
+    char *buf;
+    LayoutBox *box;
+
+    if (doc == NULL || s == NULL || s->str == NULL) {
+        return 0;
+    }
+    h = HST_searchDocumentHistoryNode(doc);
+    if (h == NULL) {
+        return 0;
+    }
+    buf = MEM_malloc(0, s->len * 3 + 1);
+    if (buf == NULL) {
+        return 0;
+    }
+    buf[ucs2ToUtf8(buf, s->str, s->len)] = 0;
+    HST_setTargetName(h, buf, strlen(buf));
+    box = Node_getBox(doc);
+    OS_thread_mutex_lock(M2C_FIELD(gESPRIT_LO_GLOBAL_NDA, void **, 0x3C));
+    if (M2C_FIELD(box->data, char **, 0x2C) != NULL) {
+        MEM_free(0, M2C_FIELD(box->data, char **, 0x2C));
+    }
+    M2C_FIELD(box->data, char **, 0x2C) = buf;
+    OS_thread_mutex_unlock(M2C_FIELD(gESPRIT_LO_GLOBAL_NDA, void **, 0x3C));
+    return 1;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -729,7 +775,44 @@ void js_addTimer(int arg0, int arg1, int arg2, int arg3) {
     M2C_FIELD(var_s4, void **, 0x14) = temp_v0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", js_delTimerID);
+void js_delTimerID(int id, int type, int flag) {
+    JSTimer *prev;
+    JSTimer *t;
+    JSMsgBody *b;
+    int *m;
+    int *x;
+
+    prev = g_JS_TIMER_;
+    for (t = prev->next; t != NULL; t = t->next) {
+        if (t->id == id) {
+            break;
+        }
+        prev = t;
+    }
+    if (t == NULL) {
+        return;
+    }
+    if (t->x00 != type && type != 3) {
+        return;
+    }
+    if (flag == 1) {
+        t->status = flag;
+        return;
+    }
+    prev->next = t->next;
+    OS_timer_clear(t->id);
+    b = &((JSMsg *)t->x0C)->body;
+    m = (int *)b->x1C;
+    if (b->x10 == 1) {
+        x = (int *)m[4];
+        MEM_free(0, (void *)x[2]);
+        MEM_free(0, x);
+    }
+    MEM_free(0, (void *)m[2]);
+    MEM_free(0, m);
+    MEM_free(0, t->x0C);
+    MEM_free(0, t);
+}
 
 int searchTimerCx(void *cx) {
     JSTimer *t;
@@ -1033,7 +1116,36 @@ INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", D_00133A54);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSHandleEvent);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_initCore);
+int ESP_initCore(int size, int x) {
+    int r;
+
+    if (esp_context != NULL) {
+        return -1;
+    }
+    r = MEM_init(0, size, x);
+    if (r < 0) {
+        return r;
+    }
+    r = FIO_init();
+    if (r < 0) {
+        goto fail;
+    }
+    esp_context = MEM_calloc(0, 0x10C);
+    esp_context->state = 0;
+    M2C_FIELD(esp_context, short *, 0xF2) = 1;
+    r = esp_defaultConfig(&esp_context->config);
+    if (r != 0) {
+        FIO_destroy();
+    fail:
+        MEM_destroy(0);
+        return r;
+    }
+    esp_loadConfig(&esp_context->config);
+    gBEINSI_UI = (char *)esp_context + 4;
+    gPREF_UI = &esp_context->config;
+    destroyFlag = 0;
+    return 0;
+}
 
 int ESP_initCookie(int a, int b, int c) {
     return iom_cookieFile_init(c, a, b);
