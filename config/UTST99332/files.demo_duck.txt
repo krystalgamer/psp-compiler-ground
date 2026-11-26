@@ -23,6 +23,13 @@ rodata 0x15DB14 -
 # WaterPatch.cpp's C++ .bss: the header statics (math::HERMITE_BASIS..), mipmap_offset[5], set_disk's seed
 bss 0x18CF9C WaterPatch
 bss 0x18D0F8 -
+# math_* objects whose static initializer (the header statics) is C++: their .rodata and .bss
+rodata 0x168518 main_objs/math_SphericalCoord
+rodata 0x168548 main_objs/math_ZYZ
+rodata 0x168568 -
+bss 0x18EB6C main_objs/math_SphericalCoord
+bss 0x18EBEC main_objs/math_ZYZ
+bss 0x18EC6C -
 0x0DC98 glut_ReshapeFunc         1.6.1.internal  main_objs/glut_ReshapeFunc.cpp
 0x0E548 app3d_Callbacks          1.6.1.internal  main_objs/app3d_Callbacks.cpp
 0x10CDC common_Date              1.6.1.internal  main_objs/common_Date.cpp   # no static init

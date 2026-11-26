@@ -16,6 +16,13 @@ rodata 0x177670 gcc-3.3.3/libstdc__-v3/libsupc__/eh_personality
 rodata 0x1776A4 -
 rodata 0x1776DC gcc-3.3.3/libstdc__-v3/libsupc__/pure
 rodata 0x1776F8 -
+# math_* objects whose static initializer (the header statics) is C++: their .rodata and .bss
+rodata 0x1655F8 main_objs/math_SphericalCoord
+rodata 0x165628 main_objs/math_ZYZ
+rodata 0x165648 -
+bss 0x18B6EC main_objs/math_SphericalCoord
+bss 0x18B76C main_objs/math_ZYZ
+bss 0x18B7EC -
 0x135B4 glut_ReshapeFunc         1.6.1.internal  main_objs/glut_ReshapeFunc.cpp
 0x13E64 app3d_Callbacks          1.6.1.internal  main_objs/app3d_Callbacks.cpp
 0x163B4 common_Date              1.6.1.internal  main_objs/common_Date.cpp   # no static init

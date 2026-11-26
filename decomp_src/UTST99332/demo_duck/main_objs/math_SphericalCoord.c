@@ -2,9 +2,12 @@
 /* cflags: -O3 -fno-exceptions */
 #undef __EXCEPTIONS
 #include "cxx/defer_asm.h"
+#define DEMO_STATICS_MATH
 #include "../main.hpp"
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/math_SphericalCoord", _Z41__static_initialization_and_destruction_0ii_4E530);
+/* the module's .ctors/.dtors (asm) refer to the static constructor/destructor,
+   keyed to the first function (still asm: its wrapper's name + __asm) */
+__asm__(".globl _GLOBAL__I__ZN4math14SphericalCoordC2Ev\n_GLOBAL__I__ZN4math14SphericalCoordC2Ev = _GLOBAL__I__ZN4math14SphericalCoordC2Ev__asm");
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/math_SphericalCoord", _ZN4math14SphericalCoordC2Ev);
 
@@ -34,12 +37,3 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/math_SphericalCo
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/math_SphericalCoord", _ZN4math14SphericalCoord14sync_directionEv);
 
-extern "C" {
-void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_4E530");
-void _GLOBAL__I__ZN4math14SphericalCoordC2Ev(void);
-}
-
-void _GLOBAL__I__ZN4math14SphericalCoordC2Ev(void)
-{
-    static_init(1, 0xFFFF);
-}
