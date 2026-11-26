@@ -378,9 +378,21 @@ public:
         v[2] = 0;
         v[3] = 0;
     }
+    float &operator[](int i) { return v[i]; }
+    const float &operator[](int i) const { return v[i]; }
     void print(const char *) const;
     float eval(float, float, int) const;
     float v[COEFFS];
+};
+class VectorRGB {
+public:
+    VectorRGB() {}
+    VectorRGB(const Vector &r_, const Vector &g_, const Vector &b_) : r(r_), g(g_), b(b_) {}
+    void print(const char *) const;
+    void eval(float, float, float &, float &, float &) const;
+    void save(const char *);
+    void load(const char *);
+    Vector r, g, b;
 };
 class Matrix {
 public:
@@ -392,6 +404,28 @@ public:
     void print(bool) const;
     float m[COEFFS][COEFFS];
 };
+class RotMatrix : public Matrix {
+public:
+    RotMatrix();
+    RotMatrix(math::matrix);
+    static RotMatrix TwoBands(math::matrix);
+    float at(int l, int m, int n) const __attribute__((noinline));
+    RotMatrix &operator=(const Matrix &);
+    Vector operator*(const Vector &) const;
+    VectorRGB operator*(const VectorRGB &) const;
+    int _f40, _f44, _f48;
+};
+namespace sh_rot {
+extern float Rmn[3][3];
+void setRmn(math::matrix);
+float R(int, int);
+float P(int, int, int, int, RotMatrix &);
+float U(int, int, int, RotMatrix &);
+float V(int, int, int, RotMatrix &);
+float W(int, int, int, RotMatrix &);
+void uvw(float &, float &, float &, int, int, int);
+float M(int, int, int, RotMatrix &);
+}
 class SphericalRGBFn {
 public:
     virtual void eval(float theta, float phi, float &r, float &g, float &b) const = 0;
@@ -420,14 +454,6 @@ public:
 class PRT {
 public:
     void import_model();
-};
-class VectorRGB {
-public:
-    void print(const char *) const;
-    void eval(float, float, float &, float &, float &) const;
-    void save(const char *);
-    void load(const char *);
-    Vector r, g, b;
 };
 }
 
