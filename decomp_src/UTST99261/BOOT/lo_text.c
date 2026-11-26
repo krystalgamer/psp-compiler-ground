@@ -72,6 +72,25 @@ int make_msg_LJ6();
 int HST_getDomObject();
 int actSearchString();
 int getJSSEM();
+int getViewPort();
+int drawScroll();
+int getStringsVisibleLength();
+void *memcpy(void *d, const void *s, unsigned int n);
+typedef struct {
+    int node;
+    int unk4;
+    int x;                      /* 0x8 */
+    int y;
+} JSCROLL;
+typedef struct {
+    u8 unk0[0x64];
+    int font;                   /* 0x64 */
+} JDOC;
+typedef struct {
+    u8 unk0[0x24];
+    JDOC *doc;                  /* 0x24 */
+} JBOX;
+
 int OS_thread_mutex_unlock();
 typedef struct {
     u16 unk0;
@@ -333,7 +352,25 @@ void proc_msg_JL10(void *arg0) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_text", proc_msg_JL11);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_text", proc_msg_JL12);
+void proc_msg_JL12(JMSG *m) {
+    JSCROLL *d;
+    void *box;
+    int vx;
+    int vy;
+
+    if (m->data == NULL) {
+        return;
+    }
+    d = m->data;
+    box = Node_getBox(d->node);
+    if (d->unk4 == 0) {
+        getViewPort(box, &vx, &vy);
+        drawScroll(box, d->x - vx, d->y - vy);
+    } else {
+        drawScroll(box, d->x, d->y);
+    }
+    MEM_free(0, m->data);
+}
 
 void proc_msg_JL13(TMSG *msg) {
     if (msg->data != NULL) {
