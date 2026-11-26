@@ -3317,7 +3317,6 @@ int VSModeBody(int pl)
 	int zen;
 	int i;
 	int k;
-	int j;
 	short ang;
 
 	KeyStat = GetKeyStat();
@@ -3384,9 +3383,9 @@ int VSModeBody(int pl)
 				else
 					st->unk00E = 300;
 				ang = st->unk454;
+				st->unk006 = 2;
 				st->fx = st->bx << 16;
 				st->fy = st->by << 16;
-				st->unk006 = 2;
 				st->unk008 = 0;
 				st->vx = -Cos(ang);
 				st->vy = -Sin(ang);
@@ -3549,13 +3548,13 @@ int VSModeBody(int pl)
 				D_00038A54[b] = t;
 			}
 			for (i = 0; i < D_0014E8EC; i++) {
-				for (j = 31; j >= 0; j--) {
-					if (st->mp.map[j * 8 + D_00038A54[i]]) {
-						j++;
-						pos[i] = j;
-						GetBallCoordinate(st, j * 8 + D_00038A54[i], &x, &y);
+				for (k = 31; k >= 0; k--) {
+					if (st->mp.map[k * 8 + D_00038A54[i]]) {
+						k++;
+						pos[i] = k;
+						GetBallCoordinate(st, k * 8 + D_00038A54[i], &x, &y);
 						st->oj[i].y = y;
-						st->oj[i].pos = D_00038A54[i] + j * 8;
+						st->oj[i].pos = D_00038A54[i] + k * 8;
 						st->oj[i].x = x;
 						st->oj[i].t = 32 + i * 2;
 						st->oj[i].col = GetOjamaPat(mode % 3);
@@ -3924,11 +3923,11 @@ int VSModeBody(int pl)
 			st->mp.map[24 + i] = 12;
 		for (i = 0; i < 8; i++)
 			st->mp.map[16 + i] = 12;
-		for (j = 0; j < 11; j++) {
+		for (k = 0; k < 11; k++) {
 			for (i = 0; i < 8; i++) {
-				if (st->mp.map[32 + j * 8 + i] == 12) {
-					st->mp.map[32 + j * 8 + i] = 0;
-					printf(D_0002E5DC, j * 8 + 32 + i);
+				if (st->mp.map[32 + k * 8 + i] == 12) {
+					st->mp.map[32 + k * 8 + i] = 0;
+					printf(D_0002E5DC, k * 8 + 32 + i);
 				}
 			}
 		}
@@ -3939,11 +3938,11 @@ int VSModeBody(int pl)
 			st->mp.map[24 + i] = 12;
 		for (i = 0; i < 8; i++)
 			st->mp.map[32 + i] = 12;
-		for (j = 0; j < 11; j++) {
+		for (k = 0; k < 11; k++) {
 			for (i = 0; i < 8; i++) {
-				if (st->mp.map[40 + j * 8 + i] == 12) {
-					st->mp.map[40 + j * 8 + i] = 0;
-					printf(D_0002E5C8, j * 8 + 40 + i);
+				if (st->mp.map[40 + k * 8 + i] == 12) {
+					st->mp.map[40 + k * 8 + i] = 0;
+					printf(D_0002E5C8, k * 8 + 40 + i);
 				}
 			}
 		}
@@ -3953,8 +3952,8 @@ int VSModeBody(int pl)
 		int x, y;
 
 		for (i = 0; i < st->nchain; i++) {
-			x = st->chain[i].x * t / 60 + st->chain[i].a * (60 - t) / 60;
 			y = st->chain[i].y * t / 60 + st->chain[i].b * (60 - t) / 60 - ((t - 30) * (t - 30) - 900) / 8;
+			x = st->chain[i].x * t / 60 + st->chain[i].a * (60 - t) / 60;
 			y += st->ofs_y + st->scroll * 14;
 			x += MapXBeginPos[st->mapno * 3 + st->mapsub] + 72;
 			DrawBubble(0, x, y, st->chain[i].col - 1, 0);
@@ -3971,7 +3970,7 @@ int VSModeBody(int pl)
 		}
 	}
 	if (isPause == 0) {
-		int n, x, y, c;
+		int j, n, x, y, c;
 		float fl;
 
 		for (j = 0; j < 3; j++) {
