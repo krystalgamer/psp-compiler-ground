@@ -273,11 +273,23 @@ INCLUDE_ASM("tmp/asm/UTST99332/mpeg_seamless_change/nonmatchings/main", main);
 
 INCLUDE_ASM("tmp/asm/UTST99332/mpeg_seamless_change/nonmatchings/main", startCheck);
 
-INCLUDE_ASM("tmp/asm/UTST99332/mpeg_seamless_change/nonmatchings/main", checkDecodeEnd);
+static SceInt32 checkDecodeEnd(t_conditionCtrl *pCtrl)
+{
+	SceUInt32 cond;
+
+	control_getCondition(pCtrl, &cond);
+	if (cond & 8)
+		return 1;
+	return -1;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/mpeg_seamless_change/nonmatchings/main", checkPlayerErrCondition);
 
-INCLUDE_ASM("tmp/asm/UTST99332/mpeg_seamless_change/nonmatchings/main", setPlayerEndCondition);
+static SceInt32 setPlayerEndCondition(t_conditionCtrl *pCtrl)
+{
+	control_setCondition(pCtrl, 0xFF);
+	return 0;
+}
 
 INCLUDE_RODATA("tmp/asm/UTST99332/mpeg_seamless_change/nonmatchings/main", D_0001140C);
 
