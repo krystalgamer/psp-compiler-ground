@@ -65,7 +65,28 @@ term:
 	return ret;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/mpeg_timecode_jump/nonmatchings/parsePsmf", getPlayTime);
+SceInt32 getPlayTime(ScePsmf *pPsmf, SceUInt32 *totalTime)
+{
+	SceUInt32 startTime, endTime;
+	SceInt32 ret;
+
+	ret = scePsmfGetPresentationStartTime(pPsmf, &startTime);
+	if (ret != 0) {
+		printf(D_00010790, ret);
+		goto term;
+	}
+
+	ret = scePsmfGetPresentationEndTime(pPsmf, &endTime);
+	if (ret != 0) {
+		printf(D_000107C8, ret);
+		goto term;
+	}
+
+	*totalTime = endTime - startTime;
+
+term:
+	return ret;
+}
 
 extern const char D_000107FC[]; /* "fatal error : scePsmfGetEPWithTimestamp() 0x%x\n", shared with an asm function */
 
