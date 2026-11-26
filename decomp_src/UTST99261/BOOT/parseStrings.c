@@ -1,7 +1,13 @@
 /* cflags: -O1 */
 #include "common.h"
+#include "parse_rnd.h"
 #include "parse_str.h"
 #include "m2c_macros.h"
+void *MEM_malloc();
+void MEM_free();
+int OS_clock_gettime();
+int rnd_newMarquee();
+void rnd_gdrawImageReset();
 extern PTag htmlElementTable[];
 
 
@@ -379,9 +385,155 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parseStrings", parseWellFormedT
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parseStrings", parseAlertMessage);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parseStrings", rnd_addAnimBoxnode);
+int rnd_addAnimBoxnode(RndBox *box, void *arg) {
+    RndAnimNode *n;
+    RndAnimGroup *g;
+    RndAnimImage *img;
+    RndTime t;
+    RndTime ts;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parseStrings", rnd_removeAnimBoxnode);
+    if (box->type == 0x13) {
+        for (n = rnd_global.x14; n != NULL; n = n->next) {
+            if (n->box == box) {
+                return 0;
+            }
+        }
+        n = MEM_malloc(0, 0x10);
+        if (n == NULL) {
+            return -100;
+        }
+        if (rnd_newMarquee(box, n) < 0) {
+            MEM_free(0, n);
+            return -100;
+        }
+        n->next = rnd_global.x14;
+        n->box = box;
+        n->arg = arg;
+        rnd_global.x14 = n;
+    } else if (box->type == 10) {
+        for (g = rnd_global.x10; g != NULL; g = g->next) {
+            for (n = g->list; n != NULL; n = n->next) {
+                if (n->box == box) {
+                    return 0;
+                }
+            }
+        }
+        img = *box->x20;
+        for (g = rnd_global.x10; g != NULL; g = g->next) {
+            if (g->image == img) {
+                break;
+            }
+        }
+        if (g == NULL) {
+            g = MEM_malloc(0, 0xC);
+            if (g == NULL) {
+                return -100;
+            }
+            g->next = rnd_global.x10;
+            g->image = img;
+            g->list = NULL;
+            rnd_global.x10 = g;
+            OS_clock_gettime(0, &ts);
+            t = ts;
+            g->image->x1C = 0;
+            rnd_gdrawImageReset(g->image, &t);
+        }
+        n = MEM_malloc(0, 0x10);
+        if (n == NULL) {
+            return -100;
+        }
+        n->next = g->list;
+        n->box = box;
+        n->arg = arg;
+        g->list = n;
+    } else if (box->type == 9) {
+        for (n = rnd_global.x0C; n != NULL; n = n->next) {
+            if (n->box == box) {
+                return 0;
+            }
+        }
+        n = MEM_malloc(0, 0x10);
+        if (n == NULL) {
+            return -100;
+        }
+        n->next = rnd_global.x0C;
+        n->box = box;
+        n->arg = arg;
+        rnd_global.x0C = n;
+    }
+    return 0;
+}
+
+void rnd_removeAnimBoxnode(RndBox *box) {
+    RndAnimNode *n;
+    RndAnimNode *next;
+    RndAnimNode *prev;
+    RndAnimGroup *g;
+    RndAnimGroup *gnext;
+    RndAnimGroup *gprev;
+
+    if (box->type == 9) {
+        prev = NULL;
+        for (n = rnd_global.x0C; n != NULL; n = next) {
+            next = n->next;
+            if (n->box == box) {
+                MEM_free(0, n);
+                if (prev != NULL) {
+                    prev->next = next;
+                } else {
+                    rnd_global.x0C = next;
+                }
+            } else {
+                prev = n;
+            }
+        }
+    } else if (box->type == 10) {
+        gprev = NULL;
+        for (g = rnd_global.x10; g != NULL; g = gnext) {
+            gnext = g->next;
+            prev = NULL;
+            for (n = g->list; n != NULL; n = next) {
+                next = n->next;
+                if (n->box == box) {
+                    MEM_free(0, n);
+                    if (prev != NULL) {
+                        prev->next = next;
+                    } else {
+                        g->list = next;
+                    }
+                } else {
+                    prev = n;
+                }
+            }
+            if (g->list == NULL) {
+                MEM_free(0, g);
+                if (gprev != NULL) {
+                    gprev->next = gnext;
+                } else {
+                    rnd_global.x10 = gnext;
+                }
+            } else {
+                gprev = g;
+            }
+        }
+    } else if (box->type == 0x13) {
+        prev = NULL;
+        for (n = rnd_global.x14; n != NULL; n = next) {
+            next = n->next;
+            if (n->box == box) {
+                MEM_free(0, n->x0C);
+                MEM_free(0, n);
+                if (prev != NULL) {
+                    prev->next = next;
+                } else {
+                    rnd_global.x14 = next;
+                }
+            } else {
+                prev = n;
+            }
+        }
+    }
+}
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/parseStrings", D_00138FEC);
 
