@@ -165,4 +165,50 @@ int at3_bgm_play_end(void) {
     return 0;
 }
 
+#ifdef NON_MATCHING
+/* Close: on success the original stores BgmThread before setting v0 (ours fills the delay slot with the store). */
+extern char D_0002EEE0[], D_0002EF00[], D_0002EF0C[], D_0002EF2C[], D_0002EF40[], D_0002EF50[];
+extern unsigned char aucFirstBuf[], aucSecondBuf[];
+extern int BgmThread;
+int init_atrac3plus(char *path, void *buf1, int size1, void *buf2, int size2, int a5, void *arg);
+int play_atrac3plus(unsigned int args, void *argp);
+int sceKernelCreateThread(const char *name, void *entry, int initPriority, int stackSize, unsigned int attr, void *option);
+int sceKernelStartThread(int thid, unsigned int arglen, void *argp);
+int sceKernelDeleteThread(int thid);
+int sceWaveExit(void);
+int puts(const char *);
+int at3_bgm_play(char *path)
+{
+	int ret;
+	int thid;
+
+	ret = init_atrac3plus(path, aucFirstBuf, 0x11A800, aucSecondBuf, 0x11A800, 0, &playArg);
+	if (ret < 0) {
+		printf(D_0002EEE0, ret);
+	} else {
+		if (BgmThread > 0)
+			sceKernelDeleteThread(BgmThread);
+		thid = sceKernelCreateThread(D_0002EF00, play_atrac3plus, 0x12, 0x10000, 0, 0);
+		if (thid >= 0) {
+			ret = sceKernelStartThread(thid, 0x14, &playArg);
+			if (ret != 0) {
+				printf(D_0002EF0C, ret);
+			} else {
+				printf(D_0002EF40, path);
+				BgmThread = thid;
+				return thid;
+			}
+		} else {
+			printf(D_0002EF50, thid);
+			ret = thid;
+		}
+	}
+	if (sceWaveExit() != 0) {
+		puts(D_0002EF2C);
+		ret = -1;
+	}
+	return ret;
+}
+#else
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/at3plus", at3_bgm_play);
+#endif
