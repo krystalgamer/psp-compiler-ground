@@ -230,7 +230,41 @@ INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_match", D_0007CD
 
 INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_match", D_0007CD98);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_match", matchup_inv_rankjudge);
+extern int ranktbl[];
+int sprintf(char *s, const char *fmt, ...);
+void debug_text(int x, int y, char *s);
+int matchup_inv_rankjudge(int lose)
+{
+	char buf[64];
+	int i, hit;
+
+	sprintf(buf, "lose=%d\n", lose);
+	debug_text(10, 20, buf);
+	hit = 0;
+	if (lose == 1) {
+		for (i = 0; i < 48; i++) {
+			if (invt[i].p && invt[i].f4[2] < 31)
+				if (invt[i].p[3] & 2)
+					hit++;
+		}
+	} else if (lose == 0) {
+		for (i = 0; i < 48; i++) {
+			if (invt[i].p && invt[i].f4[2] >= 30)
+				if (invt[i].p[3] & 2)
+					hit++;
+		}
+	}
+	sprintf(buf, "hit=%d\n", hit);
+	debug_text(10, 28, buf);
+	for (i = 0; i < 5; i++) {
+		if (hit >= ranktbl[i]) {
+			sprintf(buf, "rank=%d ranktbl[%d]=%d\n", i, i, ranktbl[i]);
+			debug_text(10, 36, buf);
+			return i;
+		}
+	}
+	return 4;
+}
 
 int matchup_inv_reinforce(int pl)
 {
