@@ -155,6 +155,22 @@ def unit_text(target, module, unit, path):
     return "".join(lines[:i]) + "\n/* declarations recovered from DWARF */\n" + ctx + "\n" + "".join(lines[i:])
 
 
+def drop_jump_tables(target, module, unit, func, text):
+    """The C now emits FUNC's jump tables itself: drop their INCLUDE_RODATA."""
+    d = ROOT / "tmp" / "asm" / target / module / "nonmatchings" / unit
+    f = d / f"{func}.s"
+    if not f.exists():
+        return text
+    labels = set(re.findall(r"jlabel (\.L\w+)", f.read_text()))
+    if not labels:
+        return text
+
+    def keep(m):
+        r = d / f"{m.group(1)}.s"
+        return "" if r.exists() and any(l in r.read_text() for l in labels) else m.group(0)
+    return re.sub(r'^INCLUDE_RODATA\("[^"]+", (\w+)\);\n?', keep, text, flags=re.M)
+
+
 def try_body(target, module, unit, func, body, mod):
     path = ROOT / "decomp_src" / target / module / f"{unit}.c"
     text = unit_text(target, module, unit, path)
@@ -162,6 +178,7 @@ def try_body(target, module, unit, func, body, mod):
     sdk = m2cdraft.sdk_protos(text)
     decl = "\n".join(v for k, v in sdk.items() if re.search(rf"\b{k}\(", body))
     new = pat.sub(lambda _: (decl + "\n" if decl else "") + body.rstrip("\n"), text, count=1)
+    new = drop_jump_tables(target, module, unit, func, new)
     m = re.search(r"cflags: (-O[0-3s](?: -[fm][\w-]+(?:=\w+)?)*)", text)
     flags = (m.group(1) if m else "-O2") + " " + compiler.driver_flags(target, module, unit)
     with tempfile.TemporaryDirectory() as td:
