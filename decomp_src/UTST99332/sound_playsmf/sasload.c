@@ -48,4 +48,12 @@ INCLUDE_ASM("tmp/asm/UTST99332/sound_playsmf/nonmatchings/sasload", unload_modul
 
 INCLUDE_ASM("tmp/asm/UTST99332/sound_playsmf/nonmatchings/sasload", sasload);
 
-INCLUDE_ASM("tmp/asm/UTST99332/sound_playsmf/nonmatchings/sasload", sasunload);
+int sasunload(void)
+{
+	if (unload_module(sasMid) < 0) {
+		printf("fatal error : cannot unload SAS module\n");
+		return -1;
+	}
+
+	return 0;
+}
