@@ -118,7 +118,7 @@ static void DrawBG(void);
 static void DrawGround(void);
 static void DrawScore(void);
 static void DrawMoon(void);
-static void DrawBeam(SCOPE *sc);
+void DrawBeam(SCOPE *sc);
 static void DrawReady(int mode, int a, int s);
 static void DrawMission(int a);
 void DrawGame(void);
@@ -525,7 +525,46 @@ void DrawScope(SCOPE *sc) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/game", DrawBeam);
+#define SETVC(m, x, y, z, col) ((m).c = (col), (m).p[0] = (x), (m).p[1] = (y), (m).p[2] = (z))
+extern Gu2dV16C D_000CEB30[2][4];
+void DrawBeam(SCOPE *sc)
+{
+	int px;
+	int py;
+	int pwl;
+	int pwr;
+	int ph;
+
+	if (!sc->beam)
+		return;
+	px = sc->bpos[0] + 16;
+	py = sc->bpos[1] + 16;
+	if (px < 64)
+		pwl = px - (int)((float)(px + 28) * sc->beamlevel);
+	else
+		pwl = px - (int)((float)px * sc->beamlevel);
+	if (480 - px < 64)
+		pwr = px + (int)((float)(508 - px) * sc->beamlevel);
+	else
+		pwr = px + (int)((float)(480 - px) * sc->beamlevel);
+	ph = py + (int)((float)(272 - py) * sc->beamlevel);
+	SETVC(D_000CEB30[0][0], pwl, ph, 0, 0x1000ffff);
+	SETVC(D_000CEB30[0][1], px, py, 0, 0xc00080ff);
+	SETVC(D_000CEB30[0][2], pwl, ph + 5, 0, 0x1000ffff);
+	SETVC(D_000CEB30[0][3], px, py + 5, 0, 0xc00080ff);
+	sceGumDrawArray(4, 0x80011c, 4, NULL, D_000CEB30[0]);
+	SETVC(D_000CEB30[1][0], pwr, ph + 5, 0, 0x1000ffff);
+	SETVC(D_000CEB30[1][1], px, py + 5, 0, 0xc00080ff);
+	SETVC(D_000CEB30[1][2], pwr, ph, 0, 0x1000ffff);
+	SETVC(D_000CEB30[1][3], px, py, 0, 0xc00080ff);
+	sceGumDrawArray(4, 0x80011c, 4, NULL, D_000CEB30[1]);
+	sc->beamlevel -= 0.1f;
+	if (sc->beamlevel <= 0.0f) {
+		sc->beam = 0;
+		sc->beamlevel = 1.0f;
+	}
+}
+
 
 #define ALPHA(a,c) (u_int32)(((u_int32)a<<24)|((u_int32)c))
 #define SCEGU_PFIDX8                       5
