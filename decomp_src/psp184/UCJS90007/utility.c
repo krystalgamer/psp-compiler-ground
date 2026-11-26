@@ -246,7 +246,30 @@ int utility_net_connect(void) {
     return utility_init_netconf(SCE_UTILITY_NETCONF_TYPE_CONNECT_ADHOC);
 }
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/utility", utility_check_net_completed);
+int utility_check_net_completed(int *done_flag, int *error_code)
+{
+	int ret;
+
+	ret = sceUtilityNetconfGetStatus();
+	if (ret < 0)
+		goto error;
+	switch (ret) {
+	case 0:
+		if (netconfParam.base.result == 0) {
+			*done_flag = 1;
+		} else {
+			*done_flag = -1;
+			if (netconfParam.base.result < 0)
+				*error_code = netconfParam.base.result;
+		}
+		break;
+	case 3:
+		ret = sceUtilityNetconfShutdownStart();
+		break;
+	}
+error:
+	return ret;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/utility", utility_msgdialog_net);
 

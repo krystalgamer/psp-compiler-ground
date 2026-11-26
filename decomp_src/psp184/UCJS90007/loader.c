@@ -201,7 +201,27 @@ INCLUDE_RODATA("tmp/asm/psp184/UCJS90007/nonmatchings/loader", D_0002DDE8);
 
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/loader", start_load);
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/loader", check_load_completed);
+int sceKernelDeleteThread(int thid);
+extern int error_code_8265C;
+static int check_load_completed(void)
+{
+	int ret;
+
+	ret = sceKernelGetThreadExitStatus(loader_tid);
+	if (ret == (int)0x800201A4)
+		return 0;
+	if (ret < 0) {
+		if (utility_msgdialog_fileio(error_code_8265C) < 0)
+			change_state(1, 0);
+		else
+			change_state(0x17, 0);
+	} else {
+		change_state(ret, 0);
+	}
+	sceKernelDeleteThread(loader_tid);
+	loader_tid = -1;
+	return 0;
+}
 
 extern int D_0008D338;
 static int check_loader_dialog_completed(void)
@@ -219,4 +239,22 @@ static int check_loader_dialog_completed(void)
 	return ret;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/loader", loader_update);
+extern unsigned int D_0008D33C;
+int loader_update(void)
+{
+	switch (D_0008D33C) {
+	case 3:
+		start_load(load_logfile_thread);
+		break;
+	case 4:
+		start_load(load_boot_binary_thread);
+		break;
+	case 5:
+		check_load_completed();
+		break;
+	case 0x17:
+		check_loader_dialog_completed();
+		break;
+	}
+	return 0;
+}
