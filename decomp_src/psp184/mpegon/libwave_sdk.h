@@ -64,7 +64,7 @@ static int func_00005AF4(char *buf);
 static int func_00005CDC(short *dst, unsigned char *src, int *h1, int *h2);
 static void func_00005E20(int ch, void *dst);
 static void func_000060CC(int ch, void *dst);
-static void func_0000663C(int ch, void *buf, void *src);
+static void func_0000663C(int ch, short *out, short *src);
 static int func_000059D8(unsigned int args, void *argp);
 
 

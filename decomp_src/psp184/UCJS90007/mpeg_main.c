@@ -293,6 +293,7 @@ static int start_mpeg_init_thread(int (*thread_func)(SceSize, void *));
 static int check_mpeg_init_completed(void);
 static int check_mpeg_dialog_completed(void);
 static void monitor_mpeg_play_thread(void);
+void change_state(enum connect_state state, int error_code);
 
 
 SceInt32 control_getCondition(t_conditionCtrl *pCtrl, SceUInt32 *pattern);
