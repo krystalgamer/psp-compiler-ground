@@ -97,14 +97,51 @@ void parent_handler(int id, int ev, struct SceNetEtherAddr *peer, int optlen, vo
 
 /* SDK prototypes (tools/sdk_protos.h) */
 int memcmp(const void *a, const void *b, unsigned int n);
+void *memcpy(void *d, const void *s, unsigned int n);
 void *memset(void *s, int c, unsigned int n);
 int printf(const char *fmt, ...);
 int sceKernelSignalSema(int semid, int signal);
 int sceKernelWaitSema(int semid, int signal, unsigned int *timeout);
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/matching_handler", get_minfo_id);
+int sceNetAdhocctlGetNameByAddr(const struct SceNetEtherAddr *addr, struct SceNetAdhocctlNickname *nickname);
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/matching_handler", clear_minfo);
+static int get_minfo_id(struct SceNetEtherAddr *addr)
+{
+	int i;
+
+	for (i = 0; i < 16; i++) {
+		if (memcmp(&minfo[i].addr, addr, sizeof(struct SceNetEtherAddr)) == 0) {
+			return i;
+		}
+		if (minfo[i].status == 0) {
+			minfo[i].status = 1;
+			memcpy(&minfo[i].addr, addr, sizeof(struct SceNetEtherAddr));
+			sceNetAdhocctlGetNameByAddr(addr, &minfo[i].hello_opt.nickname);
+			minfo_num++;
+			return i;
+		}
+	}
+
+	return -1;
+}
+
+int clear_minfo(int index)
+{
+	int i;
+
+	memset(&minfo[index], 0, sizeof(struct minfo));
+	minfo[index].status = 0;
+
+	for (i = index; i < 15; i++) {
+		memcpy(&minfo[i], &minfo[i + 1], sizeof(struct minfo));
+	}
+
+	memset(&minfo[15], 0, sizeof(struct minfo));
+	minfo[15].status = 0;
+	minfo_num--;
+
+	return 0;
+}
 
 INCLUDE_RODATA("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/matching_handler", D_00019D1C);
 
