@@ -1,5 +1,6 @@
 #include "common.h"
 
+
 /* declarations recovered from DWARF */
 struct _anon1;
 struct _anon1 { /* size 0x8 */
@@ -147,9 +148,27 @@ static void start_ani();
 void *memset(void *s, int c, unsigned int n);
 
 
-INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/animator", is_flying);
+static int is_flying(int pae)
+{
+	int i;
 
-INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/animator", init_animator);
+	for (i = 0; i < anipae_cnt; i++)
+		if (paeParam[i].pae == pae && paeParam[i].status == 1)
+			return 1;
+	return 0;
+}
+
+__asm__(".globl is_flying");
+
+void init_animator(void) {
+    memset(paeParam, 0, 0x180U);
+    moving_pae = 0;
+    anipae_cnt = 0;
+    memset(aniParam, 0, 0x118U);
+    ani_cnt = 0;
+    ani_rest = 0;
+    ani_frame = 0;
+}
 
 void clear_animation(void) {
     g_delay = 0;
@@ -236,7 +255,23 @@ INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/animator", add_pae);
 
 INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/animator", add_pae_bomb);
 
-INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/animator", add_ani);
+static void add_ani(int ani, int x, int y, int flag_loop, int extand_frame, int sound)
+{
+	AniParam *p;
+
+	p = &aniParam[ani_cnt];
+	p->ani = ani;
+	p->x = x;
+	p->y = y;
+	p->status = 1;
+	p->sound = sound;
+	p->flag_loop = flag_loop;
+	p->extand_frame = extand_frame;
+	ani_cnt++;
+	ani_rest++;
+}
+
+__asm__(".globl add_ani");
 
 INCLUDE_RODATA("tmp/asm/flowars/flowars/nonmatchings/animator", D_0002F918);
 
