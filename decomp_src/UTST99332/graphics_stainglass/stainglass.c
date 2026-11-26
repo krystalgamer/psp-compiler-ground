@@ -372,7 +372,137 @@ void StainGlassRelease(void)
 	free(_offsets);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_stainglass/nonmatchings/stainglass", StainGlassUpdate);
+void sceGumStoreMatrix(ScePspFMatrix4 *m);
+#define SCEGU_MATRIX_PROJECTION            0
+#define SCEGU_MATRIX_VIEW                  1
+#define SCEGU_MATRIX_WORLD                 2
+
+void StainGlassUpdate(void)
+{
+	ScePspMatrix4 all; 
+
+	
+	
+	{
+		ScePspMatrix4 projection,view,world;
+
+		sceGumMatrixMode( SCEGU_MATRIX_PROJECTION );
+		sceGumStoreMatrix( &projection.fm );
+
+		sceGumMatrixMode( SCEGU_MATRIX_VIEW );
+		sceGumStoreMatrix( &view.fm );
+
+		sceGumMatrixMode( SCEGU_MATRIX_WORLD );
+		sceGumStoreMatrix( &world.fm );
+
+		ScePspMatrix4 transform_cpy;
+		transform_cpy.fm = _transform.fm;		
+										
+		__asm__ volatile
+			(
+			".set push				\n"
+			".set noreorder		\n"
+			"lv.q	c000, 0+%1	\n"	 
+			"lv.q	c010, 16+%1	\n" 
+			"lv.q	c020, 32+%1	\n" 
+			"lv.q	c030, 48+%1	\n" 
+			"lv.q	c100, 0+%2	\n"	 
+			"lv.q	c110, 16+%2	\n" 
+			"lv.q	c120, 32+%2	\n" 
+			"lv.q	c130, 48+%2	\n" 
+			"vmmul.q	m200, m000, m100 \n" 
+
+			"lv.q	c000, 0+%3	\n"	 
+			"lv.q	c010, 16+%3	\n" 
+			"lv.q	c020, 32+%3	\n" 
+			"lv.q	c030, 48+%3	\n" 
+			"vmmul.q	m100, m200, m000 \n" 
+
+			"lv.q	c200, 0+%4	\n"	 
+			"lv.q	c210, 16+%4	\n" 
+			"lv.q	c220, 32+%4	\n" 
+			"lv.q	c230, 48+%4	\n" 
+			"vmmul.q	m000, m100, m200 \n" 
+
+			"sv.q	c000, 0+%0	\n"	 
+			"sv.q	c010, 16+%0	\n"
+			"sv.q	c020, 32+%0	\n"
+			"sv.q	c030, 48+%0	\n"
+			".set pop				\n"
+
+			: "=m" (all.fm)
+			: "m" (projection.fm)
+			, "m" (view.fm)
+			, "m" (world.fm)
+			, "m" (transform_cpy.fm)
+			);
+	}
+
+	
+
+	{
+		VTypeT16C32V32* v = _vertices;
+		ScePspFVector2 *r=_offsets;
+		int j;
+
+		__asm__
+			(
+			".set push		\n"
+			".set noreorder	\n"
+			".set pop			\n"
+			"lv.q c200, 0+%0	\n"
+			"lv.q c210, 16+%0	\n"
+			"lv.q c220, 32+%0	\n"
+			"lv.q c230, 48+%0	\n"
+			"vone.p	c300		\n" 
+			"lv.s     s302, %1	\n"
+			"lv.s     s303, %2	\n"
+			: 
+		: "m" (all.fm), "m" (_sx), "m" (_sy)
+			);
+
+		for ( j=0; j < _num_vertices; ++j, ++v, ++r )
+		{
+			__asm__
+				(
+				".set push				\n"
+				".set noreorder			\n"
+
+				"lv.s	s100, 8+%1		\n" 
+				"lv.s	s101, 12+%1		\n" 
+				"lv.s	s102, 16+%1		\n" 
+				"vone.s	s103				\n" 
+				"vtfm4.q	c000, e200, c100	\n" 
+
+				"vrcp.s	s003, s003		\n" 
+				"vscl.p	c000, c000, s003	\n" 
+				"vneg.s	s001, s001		\n" 
+
+				"vadd.p	c000, c000, c300	\n" 
+
+				"vfim.s	s030, 0.5    		\n" 
+				"vscl.p	c000, c000, s030	\n" 
+
+				"lv.s	s100, 0+%2		\n" 
+				"lv.s	s101, 4+%2		\n" 
+
+				"vmul.p	c100, c100, c302	\n"
+
+				"vadd.p	c000, c000, c100	\n" 
+				"vsat0.p	c000, c000	     \n"
+				"vf2iz.p	c000, c000,31		\n"
+				"vi2s.p	s010, c000		\n"	
+				"sv.s	s010, 0+%0		\n"
+
+				".set pop					\n"
+				: "=m" (*v)
+				: "m" (*v), "m" (*r) 
+				);     
+
+
+		}
+	}
+}
 
 #define SCEGU_CULL_FACE                    5
 #define SCEGU_BLEND                        4
