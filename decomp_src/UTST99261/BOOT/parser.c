@@ -650,7 +650,19 @@ int parseWellFormedTagWC(PCtx *c, PChar *str, int len) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", backToTextareaTag);
+void backToTextareaTag(PCtx *c) {
+    unsigned int k;
+    unsigned int cnt;
+
+    cnt = c->buf->count;
+    for (k = 8; k <= cnt; k++) {
+        if (c->buf->cur[-k] == '<' && CI(c->buf->cur[1 - k], 'T') && CI(c->buf->cur[2 - k], 'E') && CI(c->buf->cur[3 - k], 'X') && CI(c->buf->cur[4 - k], 'T') && CI(c->buf->cur[5 - k], 'A') && CI(c->buf->cur[6 - k], 'R') && CI(c->buf->cur[7 - k], 'E') && CI(c->buf->cur[8 - k], 'A')) {
+            c->buf->count -= k;
+            c->buf->cur -= k;
+            return;
+        }
+    }
+}
 
 void parseTextarea(PCtx *c, PChar *str, int len) {
     PDStr *d;
