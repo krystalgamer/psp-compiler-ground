@@ -448,7 +448,68 @@ void relayoutProc(RLCTX *ctx, RBOX *b) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_relayout", relayoutProcAfter);
+void *getPageRegion(RBOX *b);
+RBOX *getParentBlockBox(RBOX *b);
+void *getCurrentLineBox(RBOX *b);
+void *getCurrentLineCB(RBOX *b);
+void calcBoxSize(RLCTX *ctx, RBOX *b);
+
+void relayoutProcAfter(RLCTX *ctx, RBOX *b) {
+    RBOX *body;
+    RBOX *p;
+    RBOX *q;
+
+    if (b->content != 1 && b->region != NULL) {
+        ctx->e = getPageRegion(b->parent);
+    }
+    if (b->display == 0 || b->display == 3) {
+        *(int *)b->unk34 += terminateBlockBox((LOCTX *)ctx, b);
+    }
+    if (b->content == 0x15) {
+        terminateLiBox(b);
+    }
+    if (b->display == 0 || b->display == 3) {
+        ctx->b = getParentBlockBox(b);
+    }
+    switch (b->content) {
+    case 1:
+        body = (RBOX *)getBodyBox(b->parent);
+        ctx->a = body;
+        if (body != NULL) {
+            ctx->b = body;
+            ctx->c = body;
+            ctx->d = (char *)body->geom + 0x90;
+            ctx->e = body->region;
+        }
+        if (b->unk18 < FG(b)[4]) {
+            b->unk18 = FG(b)[4];
+        }
+        if (b->unk1C < FG(b)[5]) {
+            b->unk1C = FG(b)[5];
+        }
+        break;
+    case 0x11:
+        ctx->c = getCurrentLineBox(b->parent);
+        ctx->d = getCurrentLineCB(b->parent);
+        break;
+    }
+    calcBoxSize(ctx, b);
+    if (b->content == 1) {
+        return;
+    }
+    if (b->content == 0 && b->display == 1) {
+        return;
+    }
+    if (b->x + b->unk18 > FG(ctx->a)[4]) {
+        for (q = b->parent; q != NULL && q->content != 1; q = q->parent) {
+            if (q->html == 0x11 || q->html == 0x3C) {
+                return;
+            }
+        }
+        p = ctx->a;
+        FG(p)[4] = b->x + b->unk18 + p->style->unk2A + p->style->unk32 + p->style->unk22;
+    }
+}
 
 void relayoutProcBodyOnly(RBOX *box, int flag) {
     switch (box->content) {
