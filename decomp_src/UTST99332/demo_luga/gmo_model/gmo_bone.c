@@ -1,3 +1,4 @@
+/* cflags: -O2 -frename-registers */
 #include "common.h"
 
 /* declarations recovered from DWARF */
@@ -247,7 +248,17 @@ INCLUDE_RODATA("tmp/asm/UTST99332/demo_luga/nonmatchings/gmo_model/gmo_bone", D_
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/gmo_model/gmo_bone", sceGmoBoneCreate);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/gmo_model/gmo_bone", sceGmoBoneDelete);
+void sceGmoBoneDelete(SceGmoBone *bone) {
+    int temp_v1;
+
+    if ((bone == NULL) || (temp_v1 = bone->m_reference - 1, bone->m_reference = temp_v1, (temp_v1 != 0))) {
+
+    } else {
+        sceGmoBoneUnload(bone);
+        sceGmoBaseDestruct(bone);
+        sceGmoModelFreeMemory(bone);
+    }
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/gmo_model/gmo_bone", sceGmoBoneDuplicate);
 

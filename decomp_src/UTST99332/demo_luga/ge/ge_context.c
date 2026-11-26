@@ -1,3 +1,4 @@
+/* cflags: -O2 -frename-registers */
 #include "common.h"
 
 /* declarations recovered from DWARF */
@@ -163,6 +164,8 @@ void geIdentity(void) {
     sceGumLoadIdentity();
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/ge/ge_context", geColor);
+void geColor(unsigned char r, unsigned char g, unsigned char b, unsigned char a) {
+    sceGuColor((a << 0x18) + ((b & 0xFF) << 0x10) + ((g & 0xFF) << 8) + (r & 0xFF));
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/ge/ge_context", init_context);

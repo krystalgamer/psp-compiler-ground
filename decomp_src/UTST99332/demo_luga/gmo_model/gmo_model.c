@@ -1,3 +1,4 @@
+/* cflags: -O2 -frename-registers */
 #include "common.h"
 
 /* declarations recovered from DWARF */
@@ -249,7 +250,18 @@ INCLUDE_RODATA("tmp/asm/UTST99332/demo_luga/nonmatchings/gmo_model/gmo_model", D
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/gmo_model/gmo_model", sceGmoModelCreate);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/gmo_model/gmo_model", sceGmoModelDelete);
+void sceGmoModelDelete(SceGmoModel *model) {
+    int temp_v1;
+
+    if ((model == NULL) || (temp_v1 = model->m_reference - 1, model->m_reference = temp_v1, (temp_v1 != 0))) {
+
+    } else {
+        sceGmoModelUnload(model);
+        sceGmoBaseDestruct(model);
+        sceGmoModelFreeMemory(model);
+    }
+}
+/* Warning: struct SceGimPicture is not defined (only forward-declared) */
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/gmo_model/gmo_model", sceGmoModelDuplicate);
 
@@ -380,12 +392,67 @@ int sceGmoModelGetMotionCount(SceGmoModel *model) {
 }
 /* Warning: struct SceGimPicture is not defined (only forward-declared) */
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/gmo_model/gmo_model", sceGmoModelGetBone);
+SceGmoBone *sceGmoModelGetBone(SceGmoModel *model, int idx) {
+    SceGmoBone *var_a2;
+    int temp_a1;
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/gmo_model/gmo_model", sceGmoModelGetPart);
+    temp_a1 = idx & 0xFFF;
+    var_a2 = NULL;
+    if ((model != NULL) && (temp_a1 < model->m_n_bones)) {
+        var_a2 = model->m_bones[temp_a1];
+    }
+    return var_a2;
+}
+/* Warning: struct SceGimPicture is not defined (only forward-declared) */
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/gmo_model/gmo_model", sceGmoModelGetMaterial);
+SceGmoPart *sceGmoModelGetPart(SceGmoModel *model, int idx) {
+    SceGmoPart *var_a2;
+    int temp_a1;
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/gmo_model/gmo_model", sceGmoModelGetTexture);
+    temp_a1 = idx & 0xFFF;
+    var_a2 = NULL;
+    if ((model != NULL) && (temp_a1 < model->m_n_parts)) {
+        var_a2 = model->m_parts[temp_a1];
+    }
+    return var_a2;
+}
+/* Warning: struct SceGimPicture is not defined (only forward-declared) */
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/gmo_model/gmo_model", sceGmoModelGetMotion);
+SceGmoMaterial *sceGmoModelGetMaterial(SceGmoModel *model, int idx) {
+    SceGmoMaterial *var_a2;
+    int temp_a1;
+
+    temp_a1 = idx & 0xFFF;
+    var_a2 = NULL;
+    if ((model != NULL) && (temp_a1 < model->m_n_materials)) {
+        var_a2 = model->m_materials[temp_a1];
+    }
+    return var_a2;
+}
+/* Warning: struct SceGimPicture is not defined (only forward-declared) */
+
+SceGmoTexture *sceGmoModelGetTexture(SceGmoModel *model, int idx) {
+    SceGmoTexture *var_a2;
+    int temp_a1;
+
+    temp_a1 = idx & 0xFFF;
+    var_a2 = NULL;
+    if ((model != NULL) && (temp_a1 < model->m_n_textures)) {
+        var_a2 = model->m_textures[temp_a1];
+    }
+    return var_a2;
+}
+/* Warning: struct SceGimPicture is not defined (only forward-declared) */
+
+SceGmoMotion *sceGmoModelGetMotion(SceGmoModel *model, int idx) {
+    SceGmoMotion *var_a2;
+    int temp_a1;
+
+    temp_a1 = idx & 0xFFF;
+    var_a2 = NULL;
+    if ((model != NULL) && (temp_a1 < model->m_n_motions)) {
+        var_a2 = model->m_motions[temp_a1];
+    }
+    return var_a2;
+}
+/* Warning: struct SceGimPicture is not defined (only forward-declared) */

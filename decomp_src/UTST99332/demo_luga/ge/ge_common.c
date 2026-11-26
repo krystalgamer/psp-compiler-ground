@@ -1,9 +1,44 @@
+/* cflags: -O2 -frename-registers */
 #include "common.h"
+
+/* declarations recovered from DWARF */
+struct _anon1;
+typedef unsigned int uint;
+typedef unsigned char uchar;
+struct _anon1 { /* size 0x18 */
+    void (*init)(void);
+    void (*pre)(void);
+    int (*pad)(uint, uint, uchar *);
+    void (*draw)(void);
+    void (*post)(void);
+    void (*deinit)(void);
+};
+typedef struct _anon1 geMODULE;
+struct _anon2;
+struct _anon2 { /* size 0x4 */
+    int (*func)(void);
+};
+typedef struct _anon2 geCOMMON;
+
+extern geMODULE geModuleCommon;
+extern geCOMMON geCommon[32];
+
+void geCommonInit(void);
+void geCommonSetModule(geMODULE *module);
+void geCommonSetProc(int num, geCOMMON *common);
+int geCommonProc(int num);
+
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/ge/ge_common", geCommonInit);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/ge/ge_common", geCommonSetModule);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/ge/ge_common", geCommonSetProc);
+void geCommonSetProc(int num, geCOMMON *common) {
+    if (num < 0x20) {
+        geCommon[num].func = common->func;
+    }
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/ge/ge_common", geCommonProc);
+int geCommonProc(int num) {
+    return geCommon[num].func();
+}

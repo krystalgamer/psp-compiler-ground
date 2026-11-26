@@ -1,3 +1,4 @@
+/* cflags: -O2 -frename-registers */
 #include "common.h"
 
 /* declarations recovered from DWARF */
@@ -230,7 +231,17 @@ SceGmoChunk *sceGmoMotionGetFcurve(SceGmoMotion *motion, int idx);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/gmo_model/gmo_motion", sceGmoMotionCreate);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/gmo_model/gmo_motion", sceGmoMotionDelete);
+void sceGmoMotionDelete(SceGmoMotion *motion) {
+    int temp_v1;
+
+    if ((motion == NULL) || (temp_v1 = motion->m_reference - 1, motion->m_reference = temp_v1, (temp_v1 != 0))) {
+
+    } else {
+        sceGmoMotionUnload(motion);
+        sceGmoBaseDestruct(motion);
+        sceGmoModelFreeMemory(motion);
+    }
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/gmo_model/gmo_motion", sceGmoMotionDuplicate);
 
@@ -293,7 +304,15 @@ float sceGmoMotionGetFrameRate(SceGmoMotion *motion) {
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/gmo_model/gmo_motion", sceGmoMotionSetFrameRepeat);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/gmo_model/gmo_motion", sceGmoMotionGetFrameRepeat);
+int sceGmoMotionGetFrameRepeat(SceGmoMotion *motion) {
+    int var_v0;
+
+    var_v0 = 0;
+    if (motion != NULL) {
+        var_v0 = (motion->m_flags ^ 1) & 1;
+    }
+    return var_v0;
+}
 
 void sceGmoMotionSetFrame(SceGmoMotion *motion, float frame) {
     if (motion != NULL) {
@@ -353,8 +372,28 @@ int sceGmoMotionGetFcurveCount(SceGmoMotion *motion) {
     return var_v0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/gmo_model/gmo_motion", sceGmoMotionGetAnimation);
+SceGmoChunk *sceGmoMotionGetAnimation(SceGmoMotion *motion, int idx) {
+    SceGmoChunk *var_a2;
+    int temp_a1;
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/gmo_model/gmo_motion", sceGmoMotionGetFcurve);
+    temp_a1 = idx & 0xFFF;
+    var_a2 = NULL;
+    if ((motion != NULL) && (temp_a1 < motion->m_n_anims)) {
+        var_a2 = motion->m_anims[temp_a1];
+    }
+    return var_a2;
+}
+
+SceGmoChunk *sceGmoMotionGetFcurve(SceGmoMotion *motion, int idx) {
+    SceGmoChunk *var_a2;
+    int temp_a1;
+
+    temp_a1 = idx & 0xFFF;
+    var_a2 = NULL;
+    if ((motion != NULL) && (temp_a1 < motion->m_n_fcurves)) {
+        var_a2 = motion->m_fcurves[temp_a1];
+    }
+    return var_a2;
+}
 
 INCLUDE_RODATA("tmp/asm/UTST99332/demo_luga/nonmatchings/gmo_model/gmo_motion", D_00021BBC);

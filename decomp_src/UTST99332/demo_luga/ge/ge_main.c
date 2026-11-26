@@ -1,3 +1,4 @@
+/* cflags: -O2 -frename-registers */
 #include "common.h"
 
 /* declarations recovered from DWARF */
@@ -142,11 +143,21 @@ void geTerm(void) {
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/ge/ge_main", geMainLoop);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/ge/ge_main", geExit);
+void geExit(void) {
+    pProg->exitflag = 1;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/ge/ge_main", geRandomSeed);
+void geRandomSeed(unsigned int seed) {
+    pProg->rand_data = seed;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/ge/ge_main", geRandom);
+int geRandom(void) {
+    unsigned int temp_a0;
+
+    temp_a0 = (pProg->rand_data * 0x4E6D) + 0x3039;
+    pProg->rand_data = temp_a0;
+    return (int) (temp_a0 >> 4);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/ge/ge_main", draw_func);
 

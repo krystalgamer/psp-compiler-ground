@@ -1,3 +1,4 @@
+/* cflags: -O2 -frename-registers */
 #include "common.h"
 
 /* declarations recovered from DWARF */
@@ -282,7 +283,17 @@ SceGmoMesh *sceGmoMeshDuplicate(SceGmoMesh *mesh, int flags);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/gmo_model/gmo_part", sceGmoPartCreate);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/gmo_model/gmo_part", sceGmoPartDelete);
+void sceGmoPartDelete(SceGmoPart *part) {
+    int temp_v1;
+
+    if ((part == NULL) || (temp_v1 = part->m_reference - 1, part->m_reference = temp_v1, (temp_v1 != 0))) {
+
+    } else {
+        sceGmoPartUnload(part);
+        sceGmoBaseDestruct(part);
+        sceGmoModelFreeMemory(part);
+    }
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/gmo_model/gmo_part", sceGmoPartLoad);
 
@@ -292,7 +303,16 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/gmo_model/gmo_part", sceGm
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/gmo_model/gmo_part", sceGmoMeshCreate);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/gmo_model/gmo_part", sceGmoMeshDelete);
+void sceGmoMeshDelete(SceGmoMesh *mesh) {
+    int temp_v1;
+
+    if ((mesh == NULL) || (temp_v1 = mesh->m_reference - 1, mesh->m_reference = temp_v1, (temp_v1 != 0))) {
+
+    } else {
+        sceGmoMeshUnload(mesh);
+        sceGmoModelFreeMemory(mesh);
+    }
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/gmo_model/gmo_part", sceGmoMeshLoad);
 
@@ -361,8 +381,28 @@ int sceGmoPartGetArraysCount(SceGmoPart *part) {
     return var_v0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/gmo_model/gmo_part", sceGmoPartGetMesh);
+SceGmoMesh *sceGmoPartGetMesh(SceGmoPart *part, int idx) {
+    SceGmoMesh *var_a2;
+    int temp_a1;
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/gmo_model/gmo_part", sceGmoPartGetArrays);
+    temp_a1 = idx & 0xFFF;
+    var_a2 = NULL;
+    if ((part != NULL) && (temp_a1 < part->m_n_meshes)) {
+        var_a2 = part->m_meshes[temp_a1];
+    }
+    return var_a2;
+}
+
+SceGmoChunk *sceGmoPartGetArrays(SceGmoPart *part, int idx) {
+    SceGmoChunk *var_a2;
+    int temp_a1;
+
+    temp_a1 = idx & 0xFFF;
+    var_a2 = NULL;
+    if ((part != NULL) && (temp_a1 < part->m_n_arrays)) {
+        var_a2 = part->m_arrays[temp_a1];
+    }
+    return var_a2;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/gmo_model/gmo_part", sceGmoMeshDuplicate);

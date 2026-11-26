@@ -1,3 +1,4 @@
+/* cflags: -O2 -frename-registers */
 #include "common.h"
 
 /* declarations recovered from DWARF */
@@ -238,7 +239,17 @@ static void complement_animation(SceGmoMaterial *material);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/gmo_model/gmo_material", sceGmoMaterialCreate);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/gmo_model/gmo_material", sceGmoMaterialDelete);
+void sceGmoMaterialDelete(SceGmoMaterial *material) {
+    int temp_v1;
+
+    if ((material == NULL) || (temp_v1 = material->m_reference - 1, material->m_reference = temp_v1, (temp_v1 != 0))) {
+
+    } else {
+        sceGmoMaterialUnload(material);
+        sceGmoBaseDestruct(material);
+        sceGmoModelFreeMemory(material);
+    }
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/gmo_model/gmo_material", sceGmoMaterialDuplicate);
 
@@ -252,7 +263,16 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/gmo_model/gmo_material", r
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/gmo_model/gmo_material", sceGmoLayerCreate);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/gmo_model/gmo_material", sceGmoLayerDelete);
+void sceGmoLayerDelete(SceGmoLayer *layer) {
+    int temp_v1;
+
+    if ((layer == NULL) || (temp_v1 = layer->m_reference - 1, layer->m_reference = temp_v1, (temp_v1 != 0))) {
+
+    } else {
+        sceGmoLayerUnload(layer);
+        sceGmoModelFreeMemory(layer);
+    }
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/gmo_model/gmo_material", sceGmoLayerDuplicate);
 
@@ -331,7 +351,18 @@ void sceGmoMaterialUpdate(SceGmoMaterial *material, SceGmoModel *model) {
 }
 /* Warning: struct SceGimPicture is not defined (only forward-declared) */
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/gmo_model/gmo_material", sceGmoMaterialActivate);
+int sceGmoMaterialActivate(SceGmoMaterial *material, SceGmoModel *model, int idx) {
+    SceGmoSubject *temp_a3;
+    int var_a4;
+
+    var_a4 = 0;
+    if ((material != NULL) && (idx < material->m_n_layers)) {
+        temp_a3 = material->m_base.m_parent.m_subject;
+        var_a4 = sceGmoLayerActivate(material->m_layers[idx], (SceGmoModel *) ((temp_a3 != NULL) ? temp_a3 : (SceGmoSubject *) model), material);
+    }
+    return var_a4;
+}
+/* Warning: struct SceGimPicture is not defined (only forward-declared) */
 
 void sceGmoMaterialSetParent(SceGmoMaterial *material, SceGmoModel *parent) {
     if (material != NULL) {
