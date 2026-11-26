@@ -128,4 +128,61 @@ INCLUDE_RODATA("tmp/asm/UTST99332/menu/nonmatchings/item", D_000170D0);
 
 INCLUDE_ASM("tmp/asm/UTST99332/menu/nonmatchings/item", RunItem);
 
-INCLUDE_ASM("tmp/asm/UTST99332/menu/nonmatchings/item", KeyItem);
+extern const float D_000170A0, D_000170A4;
+int SetItemListAnim(int dir);
+void PlaySE(int num);
+void KeyItem(u_int32 padd, u_int32 cont, float *axis)
+{
+	if (axis[0] < D_000170A0) {
+		padd |= 0x100;
+		cont |= 0x100;
+	}
+	if (axis[0] > D_000170A4) {
+		padd |= 0x200;
+		cont |= 0x200;
+	}
+	if (cont & 0x80)
+		cont |= 0x100;
+	if (padd & 0x80)
+		padd |= 0x100;
+	if (cont & 0x20)
+		cont |= 0x200;
+	if (padd & 0x20)
+		padd |= 0x200;
+	if (!(cont & 0x300))
+		item.repeat = 0;
+	if (item.step == 4) {
+		if (cont & 0x100) {
+			if (++item.repeat >= 11)
+				padd |= 0x100;
+		}
+		if (cont & 0x200) {
+			if (++item.repeat >= 11)
+				padd |= 0x200;
+		}
+		if (padd & 0x100) {
+			if (SetItemListAnim(1) == 0) {
+				item.step = 5;
+				SetLRAnim(2);
+				PlaySE(2);
+			}
+		}
+		if (padd & 0x200) {
+			if (SetItemListAnim(0) == 0) {
+				item.step = 5;
+				SetLRAnim(3);
+				PlaySE(2);
+			}
+		}
+	}
+	if (padd & 0x2000) {
+		PlaySE(3);
+		FadeSetup(2, 6, 0);
+		item.step = 8;
+		item.cnt = 0;
+	}
+	if (padd & 0x4000) {
+		menu->num = 0;
+		item.step = 7;
+	}
+}
