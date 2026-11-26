@@ -55,8 +55,7 @@ int bmp_file_load16(char *name);
 void debug_text(int x, int y, char *str);
 void screen_capture(int buf, int mode);
 
-typedef struct { u8 b[0x1467cc]; } GMAIN;
-extern GMAIN gmain;
+#include "gmain.h"
 extern int D_005A06A8;
 extern int D_004B500C;
 extern int netdata;
