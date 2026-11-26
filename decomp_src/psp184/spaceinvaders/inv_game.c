@@ -447,7 +447,33 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", ufo_init);
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", ufo_init_once);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", ufo_control);
+extern int game_count;
+void netgame_ufo_pos_set(int no, float x);
+void netgame_ufo_life_set(int no, int life, int n);
+void ufo_control(void)
+{
+	int i;
+	int *u;
+
+	if (gmain.f.feb9d0 == 0)
+		return;
+	if (gmain.f.f1088 == 0)
+		return;
+	for (i = 0; i < gmain.f.feb9d0; i++) {
+		u = UFO_W(i);
+		ufo_control_once(u);
+		if (game_count % 5 == 0)
+			netgame_ufo_pos_set(i, ((float *)u)[17]);
+		else if (game_count % 5 == 1)
+			netgame_ufo_life_set(i, u[9], 0);
+		else if (game_count % 5 == 2)
+			netgame_ufo_life_set(i, u[9], 1);
+		else if (game_count % 5 == 3)
+			netgame_ufo_life_set(i, u[9], 2);
+		else if (game_count % 5 == 4)
+			netgame_ufo_life_set(i, u[9], 3);
+	}
+}
 
 void ufo_normal_anime(int *u);
 void ufo_dead_anime(int *u);
