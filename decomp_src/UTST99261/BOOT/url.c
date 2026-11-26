@@ -41,15 +41,36 @@ typedef struct {
 } GIFBS;
 
 typedef struct {
+    void *next;
+    s16 left;
+    s16 top;
+    u16 width;          /* 0x8 */
+    u16 height;
+    u8 unkC[0x1C];
+    u8 *buf;            /* 0x28 */
+} GIFFRAME;
+
+typedef struct {
     GIFBS *bs;
     u16 width;          /* 0x4 */
     u16 height;
     u8 unk8[0x10];
     int unk18;
     int unk1C;
-    u8 unk20[0x34];
-    int unk54;
+    u8 unk20[0x12];
+    s8 interlace;       /* 0x32 */
+    int *rows;          /* 0x34 */
+    int unk38;
+    int offset;         /* 0x3C */
+    int x;              /* 0x40 */
+    int line;           /* 0x44 */
+    int step;           /* 0x48 */
+    int unk4C;
+    int unk50;
+    GIFFRAME *unk54;
     int unk58;
+    u8 unk5C[0xC13C];
+    int lines;          /* 0xC198 */
 } GIFCTX;
 
 typedef struct {
@@ -1000,11 +1021,69 @@ int IMG_gifReadHeader(GIFCTX *ctx, IMGDATA *info) {
     info->unk8 = n;
     info->unk4 = 0;
     info->unkC = 0;
-    info->unk10 = ctx->unk54;
+    info->unk10 = (int)ctx->unk54;
     return r;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/url", IMG_gifScanLines);
+void ESP_free(void *p);
+void *ESP_malloc(int n);
+void *memset(void *d, int c, unsigned int n);
+void createInterlaceOrder(GIFCTX *ctx, int n);
+void deleteInterlaceOrder(GIFCTX *ctx);
+int getGifScanLines(GIFCTX *ctx, int n);
+int getGifScanLinesInterlace(GIFCTX *ctx, int n);
+
+int IMG_gifScanLines(GIFCTX *ctx, IMGDATA *info, int n) {
+    int r;
+    GIFFRAME *f;
+    int *rows;
+
+    if (ctx->unk54->height < n + ctx->lines) {
+        n = ctx->unk54->height - ctx->lines;
+    }
+    if (n == 0) {
+        goto fail;
+    }
+    if (ctx->unk54->buf != NULL) {
+        ESP_free(ctx->unk54->buf);
+    }
+    f = ctx->unk54;
+    if ((f->buf = ESP_malloc(f->width * n * 3)) == NULL) {
+        return -2;
+    }
+    memset(ctx->unk54->buf, 0, ctx->unk54->width * n * 3);
+    if (ctx->interlace == 1) {
+        createInterlaceOrder(ctx, n);
+        rows = ctx->rows;
+        ctx->offset = ctx->unk54->width * rows[0] * 3;
+        ctx->x = 0;
+        ctx->line = 0;
+        ctx->step = 1;
+        ctx->unk4C = 3;
+        r = getGifScanLinesInterlace(ctx, n);
+        deleteInterlaceOrder(ctx);
+    } else {
+        ctx->offset = 0;
+        ctx->x = 0;
+        ctx->line = 0;
+        ctx->step = ctx->interlace ? 8 : 1;
+        ctx->unk4C = ctx->interlace ? 0 : 3;
+        r = getGifScanLines(ctx, n);
+    }
+    if (r < 0) {
+        goto fail;
+    }
+    ctx->lines += n;
+    info->width = ctx->width;
+    info->height = ctx->height;
+    info->unk8 = 1;
+    info->unk4 = 0;
+    info->unkC = ctx->lines;
+    info->unk10 = (int)ctx->unk54;
+    return n;
+fail:
+    return -1;
+}
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/url", D_0013234C);
 
