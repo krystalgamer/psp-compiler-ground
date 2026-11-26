@@ -20,6 +20,11 @@ extern int ufodisp;
 int hato(int cur, int target, int shift);
 unsigned long genrand_int32(void);
 
+extern int *screensrc;
+extern u8 D_00080F88[];
+int VramAtariSub(s8 *buf, int x, int y, int w);
+void spr_boxmask(void *mask, int tex, int x, int y, int w, int h, int mw, int mh);
+
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_match", inv_matchup_main);
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_match", inv_matchup_init);
@@ -98,7 +103,17 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_match", BoxAtari_e4
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_match", BoxAtari_ez4m);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_match", BoxAtari_k4m);
+extern int *screensrc;
+extern u8 D_00080F88[];
+int VramAtariSub(s8 *buf, int x, int y, int w);
+void spr_boxmask(void *mask, int tex, int x, int y, int w, int h, int mw, int mh);
+int BoxAtari_k4m(int a0, int a1, int x, int y)
+{
+	if (VramAtariSub((s8 *)screensrc[7], x + 4, y + 4, 0x200) == 0)
+		return 0;
+	spr_boxmask(D_00080F88, screensrc[7], x, y, 8, 8, 0x200, 0x200);
+	return 1;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_match", BoxAtari_z4m);
 
