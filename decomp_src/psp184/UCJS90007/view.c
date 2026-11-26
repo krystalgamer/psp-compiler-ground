@@ -267,7 +267,70 @@ INCLUDE_RODATA("tmp/asm/psp184/UCJS90007/nonmatchings/view", D_0002EF64);
 
 INCLUDE_RODATA("tmp/asm/psp184/UCJS90007/nonmatchings/view", D_0002EF70);
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/view", process_fade);
+int sceIoDevctl(const char *dev, unsigned int cmd, void *indata, int inlen, void *outdata, int outlen);
+SceUInt64 sceKernelGetSystemTimeWide(void);
+void change_state(int state, int error_code);
+int utility_msgdialog_fileio(int error_code);
+static __inline__ int sceMScmIsMediumInserted(void)
+{
+	int status;
+	int ret;
+
+	ret = sceIoDevctl("mscmhc0:", 0x02025806, NULL, 0, &status, 4);
+	if (ret < 0)
+		return ret;
+	return status == 1;
+}
+
+void sceGuColor(unsigned int color);
+void process_fade(void)
+{
+	int ret;
+
+	_fade_info.color = (_fade_info.alpha << 24) | 0xF0F0F0;
+	sceGuColor(_fade_info.color);
+	switch (_fade_info.fade_type) {
+	case 0:
+		if (_fade_info.alpha < 0xFF)
+			_fade_info.alpha += 3;
+		if (_fade_info.alpha >= 0x100)
+			_fade_info.alpha = 0xFF;
+		if (_fade_info.alpha == 0xFF)
+			_fade_info.fade_type = 1;
+		break;
+	case 1:
+		if (_info.state == 1) {
+			if (_fade_info.time_to_change == 0) {
+				_fade_info.time_to_change = sceKernelGetSystemTimeWide() + 8000000;
+			} else if (_fade_info.time_to_change < sceKernelGetSystemTimeWide()) {
+				_fade_info.fade_type = 2;
+				_fade_info.time_to_change = 0;
+			}
+		}
+		break;
+	case 2:
+		if (_fade_info.alpha > 0)
+			_fade_info.alpha -= 4;
+		if (_fade_info.alpha < 0)
+			_fade_info.alpha = 0;
+		if (_fade_info.alpha == 0) {
+			_fade_info.fade_type = 0;
+			ret = sceMScmIsMediumInserted();
+			if (ret < 0)
+				change_state(1, 0);
+			else if (ret == 1)
+				change_state(4, 0);
+			else if (ret == 0) {
+				ret = utility_msgdialog_fileio(0x80410C8A);
+				if (ret < 0)
+					change_state(1, 0);
+				else
+					change_state(0x17, 0);
+			}
+		}
+		break;
+	}
+}
 
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/view", draw_objects);
 
