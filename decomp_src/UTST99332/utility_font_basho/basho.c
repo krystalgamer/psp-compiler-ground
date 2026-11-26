@@ -228,7 +228,20 @@ int sceKernelDcacheWritebackAll(void);
 
 INCLUDE_ASM("tmp/asm/UTST99332/utility_font_basho/nonmatchings/basho", init_basho_text_texture);
 
-INCLUDE_ASM("tmp/asm/UTST99332/utility_font_basho/nonmatchings/basho", init_basho_pos_and_scale);
+int init_basho_pos_and_scale(void)
+{
+	basho.pos.x = 0.6f;
+	basho.pos.y = 0.4f;
+	basho.pos.z = 0.0f;
+	basho.scale.x = 5.7f;
+	basho.scale.y = 5.7f;
+	basho.scale.z = 1.0f;
+	basho.rot.x = 0.0f;
+	basho.rot.y = 0.0f;
+	basho.rot.z = 0.0f;
+
+	return 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/utility_font_basho/nonmatchings/basho", draw_basho);
 
@@ -267,13 +280,61 @@ void increment_basho_rot(float rot_x_diff, float rot_y_diff, float rot_z_diff)
 	basho.rot.z += rot_z_diff;
 }
 
-INCLUDE_RODATA("tmp/asm/UTST99332/utility_font_basho/nonmatchings/basho", D_00013258);
+SceFont_t_libId sceFontNewLib(SceFont_t_initRec *pInitData, SceFont_t_error *errorCode);
+int sceFontGetNumFontList(SceFont_t_libId libID, SceFont_t_error *errorCode);
+SceFont_t_error sceFontGetFontList(SceFont_t_libId libID, SceFont_t_fontStyleInfo *fontStyle, int numFonts);
+SceFont_t_error sceFontDoneLib(SceFont_t_libId libID);
 
-INCLUDE_ASM("tmp/asm/UTST99332/utility_font_basho/nonmatchings/basho", myInitFontLibrary);
+static SceFont_t_libId myInitFontLibrary(void)
+{
+	SceFont_t_error errorCode;
+	SceFont_t_libId libID;
+	SceFont_t_initRec initParams = {
+		NULL,
+		4,
+		NULL,
+		cb_Alloc,
+		cb_Free,
+		cb_Open,
+		cb_Close,
+		cb_Read,
+		cb_Seek,
+		NULL,
+		NULL,
+	};
 
-INCLUDE_ASM("tmp/asm/UTST99332/utility_font_basho/nonmatchings/basho", myGetNumFontList);
+	libID = sceFontNewLib(&initParams, &errorCode);
+	if (errorCode != 0) {
+		printf("Error (sceFontNewLib): 0x%8.8x\n", errorCode);
+		return 0;
+	}
 
-INCLUDE_ASM("tmp/asm/UTST99332/utility_font_basho/nonmatchings/basho", myGetFontStyleInfoList);
+	return libID;
+}
+
+static int myGetNumFontList(SceFont_t_libId libId)
+{
+	SceFont_t_error errorCode;
+	int numFontList;
+
+	numFontList = sceFontGetNumFontList(libId, &errorCode) + 2;
+	if (errorCode != 0) {
+		printf("Error (sceFontGetNumFontList): 0x%8.8x\n", errorCode);
+		return 0;
+	}
+
+	return numFontList;
+}
+
+static void myGetFontStyleInfoList(SceFont_t_libId libID, SceFont_t_fontStyleInfo *pFontStyleInfoList, int numFontlist)
+{
+	SceFont_t_error errorCode;
+
+	errorCode = sceFontGetFontList(libID, pFontStyleInfoList, numFontlist);
+	if (errorCode != 0) {
+		printf("Error (sceFontGetFontList): 0x%8.8x\n", errorCode);
+	}
+}
 
 INCLUDE_RODATA("tmp/asm/UTST99332/utility_font_basho/nonmatchings/basho", D_000132F4);
 
@@ -281,7 +342,15 @@ INCLUDE_RODATA("tmp/asm/UTST99332/utility_font_basho/nonmatchings/basho", D_0001
 
 INCLUDE_ASM("tmp/asm/UTST99332/utility_font_basho/nonmatchings/basho", myMakeTextTexture);
 
-INCLUDE_ASM("tmp/asm/UTST99332/utility_font_basho/nonmatchings/basho", myDoneFontLibrary);
+static void myDoneFontLibrary(SceFont_t_libId libID)
+{
+	SceFont_t_error errorCode;
+
+	errorCode = sceFontDoneLib(libID);
+	if (errorCode != 0) {
+		printf("Error (sceFontDoneLib): 0x%8.8x\n", errorCode);
+	}
+}
 
 static void *myAlloc(int size)
 {
