@@ -353,7 +353,16 @@ static u_int ColorAt( ScePspFVector2 st )
 		st.y>0.f?b:g, b, 0.f);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_stainglass/nonmatchings/stainglass", OffsetAt);
+static ScePspFVector2 OffsetAt( ScePspFVector2 st, int index )
+{
+	ScePspFVector2 retval;
+
+
+	RandSeed( index );
+	retval = Rand();
+
+	return retval;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_stainglass/nonmatchings/stainglass", StainGlassInit);
 
