@@ -421,4 +421,9 @@ static inline int get_timeout(struct gm_request *gm, SceUInt64 start, unsigned i
 	return 0x80410B05;
 }
 
+static inline unsigned short ntohs16(unsigned short x)
+{
+	return __builtin_allegrex_wsbh(x);
+}
+
 #endif
