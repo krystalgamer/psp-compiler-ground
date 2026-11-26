@@ -56,6 +56,15 @@ int net_pauseget(void);
 void send_recv_game_data(void);
 void net_update_multi_player(void);
 
+extern u8 adhoc_id[];
+extern u8 D_0039ADBC[];
+int sceNetInit(int a, int b, int c, int d, int e);
+int sceNetAdhocInit(void);
+int sceNetAdhocctlInit(int stack, int prio, void *id);
+int sceNetAdhocctlAddHandler(void *h, void *arg);
+void *memset(void *, int, unsigned int);
+int _net_term(void);
+
 char mac2a(int n)
 {
 	return *nametbl[n % 62];
@@ -95,7 +104,27 @@ int get_bssid(char *str)
 	return ret;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_net", randomize_group_name);
+extern u8 adhoc_id[];
+extern u8 D_0039ADBC[];
+int sceNetInit(int a, int b, int c, int d, int e);
+int sceNetAdhocInit(void);
+int sceNetAdhocctlInit(int stack, int prio, void *id);
+int sceNetAdhocctlAddHandler(void *h, void *arg);
+void *memset(void *, int, unsigned int);
+int _net_term(void);
+int randomize_group_name(char *group_name)
+{
+	unsigned int len;
+	unsigned int i;
+	char *ptr;
+
+	len = get_random_num(1, 8);
+	memset(group_name, 0, 8);
+	ptr = group_name;
+	for (i = 0; i < len; i++)
+		ptr[i] = get_random_num('A', 'Z');
+	return 0;
+}
 
 int sceNetAdhocMatchingSelectTarget(int id, struct SceNetEtherAddr *addr, int optlen, void *opt);
 static int check_error_dialog_closed(void);
@@ -111,7 +140,30 @@ int error_code_daialogget(void)
 	return error_code_daialog;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_net", adhocctl_handler);
+static void adhocctl_handler(int event, int error, void *arg)
+{
+	if (event == 0) {
+		error_code = error;
+		error_code_daialog = 1;
+		evf |= 0x01;
+	} else if (event == 1) {
+		error_code_daialog = 0;
+		evf |= 0x02;
+		error_code = 0;
+	} else if (event == 2) {
+		error_code_daialog = 0;
+		evf |= 0x04;
+		error_code = 0;
+	} else if (event == 3) {
+		error_code_daialog = 0;
+		evf |= 0x08;
+		error_code = 0;
+	} else if (event == 4) {
+		error_code_daialog = 0;
+		evf |= 0x10;
+		error_code = 0;
+	}
+}
 
 static int polling_error(void)
 {
@@ -125,7 +177,33 @@ static int polling_error(void)
 	return ret;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_net", _net_init);
+int _net_init(void)
+{
+	int ret;
+
+	ret = sceNetInit(0x20000, 0x20, 0x1000, 0x20, 0x1000);
+	if (ret < 0)
+		goto error;
+	ret = sceNetAdhocInit();
+	if (ret < 0)
+		goto error;
+	ret = sceNetAdhocctlInit(0x2000, 0x30, adhoc_id);
+	if (ret < 0)
+		goto error;
+	clear_evf();
+	ret = sceNetAdhocctlAddHandler(adhocctl_handler, 0);
+	if (ret < 0)
+		goto error;
+	handlerId = ret;
+	memset(D_0039ADBC, 0, 0x8c);
+	*(int *)(D_0039ADBC + 0x88) = 4;
+	change_state(-1);
+	return 0;
+
+error:
+	_net_term();
+	return -1;
+}
 
 int _net_term(void)
 {
