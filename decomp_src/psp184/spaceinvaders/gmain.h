@@ -581,7 +581,8 @@ typedef struct GMAIN_FIELDS {
 	int f146764; /* timer_play */
 	int f146768; /* timer_play */
 	float f14676c; /* status_disp_cnt */
-	u8 _pad146770[0x8];
+	int f146770; /* bufo_*_move_anime */
+	u8 _pad146774[0x4];
 	int f146778; /* deb_status_disp, status_disp_cnt */
 	u8 _pad14677c[0x8];
 	int f146784; /* bgm_control, bgm_init, bgm_rank_max_check */

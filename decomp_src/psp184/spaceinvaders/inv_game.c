@@ -1710,7 +1710,26 @@ void inv_nowloading_disp2(void) {
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", inv_nowloading_disp);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", root_init);
+extern char text_buf[];
+extern char D_0007DF88[];
+extern u8 D_004B60A8[];
+int sprintf(char *s, const char *fmt, ...);
+void *memcpy(void *d, const void *s, unsigned int n);
+void *file_bind_addr(int bind, char *name);
+unsigned int file_bind_size(int bind, char *name);
+void root_init(int no, int bind)
+{
+	void *p;
+	unsigned int size;
+
+	sprintf(text_buf, D_0007DF88, no);
+	p = file_bind_addr(bind, text_buf);
+	if (p == 0)
+		return;
+	size = file_bind_size(bind, text_buf);
+	gmain.f.f10bc = size / 24 + stage_format[no].f0 - 1;
+	memcpy(D_004B60A8, p, size);
+}
 
 typedef struct { int f0, f4; float f8, fc; int f10, f14, f18; } RISARJU;
 #define risarju (*(RISARJU *)&D_005FB78C)
