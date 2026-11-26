@@ -35,11 +35,14 @@ def is_cxx(target, module, unit):
 def cxx_cppflags():
     """Preprocessor options of C++ units, ahead of the C ones: the original
     psp-gcc 1.3.1 release's installed libstdc++ headers, gcc and newlib
-    headers (fetched by tools/setup_toolchain.sh), and g++'s predefines."""
+    headers (fetched by tools/setup_toolchain.sh), and g++'s predefines.
+    include/cxx comes first: its bits/gthr-default.h is 1.6.1's gthr-psp.h
+    (the 1.3.1 release's has semaphore mutexes); the other libstdc++
+    headers are the same in the 1.6.1 tree."""
     t = ROOT / "tmp" / "toolchains" / "psp-gcc-1.3.1"
     cxx = next((t / "include" / "c++").glob("3.3.3*"), t / "include" / "c++" / "3.3.3")
     gcc = next((t / "lib" / "gcc-lib" / "psp").glob("3.3.3*"), t / "lib")
-    dirs = [cxx, cxx / "psp", cxx / "backward", gcc / "include", t / "psp" / "include", ROOT / "include" / "cxx"]
+    dirs = [ROOT / "include" / "cxx", cxx, cxx / "psp", cxx / "backward", gcc / "include", t / "psp" / "include"]
     return ["-x", "c++", "-D__cplusplus", "-include", str(ROOT / "include" / "cxx" / "predef.h"),
             *[f"-I{d}" for d in dirs]]
 
