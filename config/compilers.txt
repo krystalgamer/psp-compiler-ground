@@ -27,4 +27,4 @@
 # Per-module additions (the game's own build, not the compiler's):
 # spaceinvaders' release 1.6.1 objects link their .rodata/.rodata.cst4/.rodata.cst8 in
 # first-use order (5 units contradict -fno-merge-constants); UTST99261's 1.6.1 units don't.
-@psp184/spaceinvaders 1.6.1 objorder
+@psp184/spaceinvaders 1.6.1 objorder mixed:-fno-merge-constants
