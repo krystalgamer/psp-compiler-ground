@@ -1,4 +1,5 @@
 #include "common.h"
+/* cflags: -O2 -frename-registers */
 
 /* declarations recovered from DWARF */
 typedef long int off_t;
@@ -83,7 +84,11 @@ INCLUDE_ASM("tmp/asm/psp184/mpegon/nonmatchings/kernel_bridge", _write);
 
 INCLUDE_ASM("tmp/asm/psp184/mpegon/nonmatchings/kernel_bridge", _close);
 
-INCLUDE_ASM("tmp/asm/psp184/mpegon/nonmatchings/kernel_bridge", _fstat);
+int _fstat(int file, struct stat *st)
+{
+	st->st_mode = 0x2000;
+	return 0;
+}
 
 int isatty(int file) {
     return 1;
@@ -129,7 +134,12 @@ int _execve(signed char *filename, signed char **argv, signed char **envp) {
     return -1;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/mpegon/nonmatchings/kernel_bridge", __free_heap);
+void __free_heap(void) {
+    if (mbid != 0) {
+        sceKernelFreePartitionMemory(mbid);
+        mbid = 0;
+    }
+}
 
 unsigned int clock(void) {
     return sceKernelLibcClock();
@@ -148,7 +158,10 @@ unsigned int _times(struct tms *buf) {
 }
 /* Warning: struct tms is not defined (only forward-declared) */
 
-INCLUDE_ASM("tmp/asm/psp184/mpegon/nonmatchings/kernel_bridge", sigfillset);
+int sigfillset(sigset_t *set) {
+    *set = -1;
+    return 0;
+}
 
 int sigprocmask(int how, int *set, int *oldset) {
     return -1;
