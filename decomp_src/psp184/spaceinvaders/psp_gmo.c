@@ -155,6 +155,23 @@ int gmo_anime_stop(int no)
 	return ret;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_gmo", gmo_effect);
+int gmo_effect(int no, int eff)
+{
+	GMO_W *g;
+	int i;
+
+	if ((unsigned int)no >= 255)
+		return 0;
+	g = &GMO[no];
+	if (g->used == 0)
+		return 0;
+	for (i = 0; i < 4; i++) {
+		if (g->effect[i] == -1) {
+			g->effect[i] = eff;
+			return 1;
+		}
+	}
+	return 0;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_gmo", gmo_disp);
