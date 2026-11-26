@@ -823,7 +823,48 @@ void particle_init(void)
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", particle_set);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", particle_control);
+typedef struct {
+	int f0, f4, f8, fc, f10, f14;
+	u8 _p18[0x2C - 0x18];
+	float f2c, f30;
+	u8 _p34[0x44 - 0x34];
+	float f44, f48, f4c, f50, f54, f58, f5c, f60, f64, f68, f6c, f70, f74, f78, f7c, f80;
+} PARTICLE;
+#define PTC ((PARTICLE *)&D_005EAB30)
+void particle_control(void)
+{
+	int i;
+	PARTICLE *p;
+
+	for (i = 0; i < 512; i++) {
+		p = &PTC[i];
+		if (p->f0 == 0)
+			continue;
+		if (p->f14) {
+			p->f14--;
+			continue;
+		}
+		p->f2c += p->f30;
+		if (p->f2c <= 0.0f) {
+			p->f0 = 0;
+			continue;
+		}
+		p->f5c += p->f64;
+		p->f60 += p->f68;
+		if (p->f5c < 0.0f || p->f60 < 0.0f) {
+			p->f0 = 0;
+			continue;
+		}
+		p->f44 += p->f50;
+		p->f48 += p->f54;
+		p->f4c += p->f58;
+		if (p->f4) {
+			p->f6c += p->f78;
+			p->f70 += p->f7c;
+			p->f74 += p->f80;
+		}
+	}
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", particle_disp);
 
