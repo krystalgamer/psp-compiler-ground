@@ -575,7 +575,34 @@ term:
 
 INCLUDE_ASM("tmp/asm/UTST99332/mpeg_seamless_change/nonmatchings/decode", decode_audioDecode);
 
-INCLUDE_ASM("tmp/asm/UTST99332/mpeg_seamless_change/nonmatchings/decode", decode_getVideoAu);
+SceInt32 decode_getVideoAu(t_mpegStreamData *pStreamData, t_avSyncControl *pAvSync)
+{
+	SceInt32 ret;
+	SceInt32 avcAttr;
+	SceInt32 i;
+
+	ret = 1;
+	if (dispbuf_getCapacity(pAvSync->pDisp) == 0) {
+		goto term;
+	}
+
+	for (i = 0; i < pStreamData->videoStreamNum; i++) {
+		ret = sceMpegGetAvcAu(pStreamData->pMpeg, pStreamData->pVideoStream[i], &pStreamData->pAvcAu[i], &avcAttr);
+		if (ret == 0) {
+			pStreamData->videoDemuxFlag[i] = 1;
+		} else if (ret == (SceInt32)0x80618001) {
+			pStreamData->videoDemuxFlag[i] = 0;
+		} else {
+			printf("fatal error : sceMpegGetAvcAu() 0x%x\n", ret);
+			goto term;
+		}
+	}
+
+	ret = 0;
+
+term:
+	return ret;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/mpeg_seamless_change/nonmatchings/decode", decode_videoDecode);
 
