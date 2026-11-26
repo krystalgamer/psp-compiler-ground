@@ -161,13 +161,86 @@ int FadeState(void) {
     return __fade;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_moonball/nonmatchings/main", FadeDraw);
+void sceGuDisable(int state);
+void sceGuColor(unsigned int color);
+void sceGumDrawArray(int prim, int vtype, int count, const void *indices, const void *vertices);
+void sceGuDisable(int state);
+void sceGuColor(unsigned int color);
+void sceGumDrawArray(int prim, int vtype, int count, const void *indices, const void *vertices);
+extern Gu2dV16 D_00026848[2];
+void FadeDraw(void)
+{
+	u_int32 c;
+	u_int32 a;
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_moonball/nonmatchings/main", DrawFunc);
+	if (__fadestep < 255 && __fade != 0) {
+		if (__fade == 1)
+			a = 255 - __fadestep;
+		else
+			a = __fadestep;
+		sceGuDisable(9);
+		c = (a << 24) | __fadecolor;
+		sceGuColor(c);
+		D_00026848[0].p[0] = 0;
+		D_00026848[0].p[1] = 0;
+		D_00026848[0].p[2] = 0;
+		D_00026848[1].p[0] = 480;
+		D_00026848[1].p[1] = 272;
+		D_00026848[1].p[2] = 0;
+		sceGumDrawArray(6, 0x800100, 2, NULL, D_00026848);
+		__fadestep += 16;
+		if (__fadestep < 255)
+			return;
+		__fadestep = 255;
+	}
+	__fade = 0;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_moonball/nonmatchings/main", KeyFunc);
+void sceGuStart(int type, void *list, int size);
+int sceGuFinish(void);
+int sceGuSync(int mode, int what);
+void sceGuClear(int flags);
+int sceGuFinish(void);
+int sceGuSync(int mode, int what);
+static void DrawFunc(void)
+{
+	sceGuStart(0, displist, sizeof(displist));
+	sceGuClear(7);
+	if (func[program.mode].draw)
+		func[program.mode].draw();
+	sceGuFinish();
+	sceGuSync(0, 0);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_moonball/nonmatchings/main", ProgramSwitch);
+int sceCtrlReadBufferPositive(SceCtrlData *data, int count);
+static void KeyFunc(void)
+{
+	u_int32 prev;
+	u_int32 padd;
+	SceCtrlData buf;
+
+	prev = cont;
+	sceCtrlReadBufferPositive(&buf, 1);
+	cont = buf.Buttons;
+	padd = cont & (cont ^ prev);
+	if (func[program.mode].key)
+		func[program.mode].key(padd, cont);
+}
+
+static void ProgramSwitch(void)
+{
+	switch (program.flag) {
+	case 0:
+		if (func[program.mode].init)
+			func[program.mode].init();
+		program.flag = 1;
+		break;
+	case 1:
+		if (func[program.mode].run)
+			func[program.mode].run();
+		break;
+	}
+}
 
 int main(void) {
     menuInit();
