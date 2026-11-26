@@ -193,7 +193,30 @@ INCLUDE_ASM("tmp/asm/UTST99332/graphics_model2/nonmatchings/main", begin_scene);
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_model2/nonmatchings/main", end_scene);
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_model2/nonmatchings/main", swap_buffers);
+static void swap_buffers()
+{
+	int cpu_time = sceKernelGetSystemTimeLow();
+	int gpu_time;
+	int vbl_time;
+	int vbl_count;
+
+	sceGuSync(0, 0);
+	gpu_time = sceKernelGetSystemTimeLow();
+	sceDisplayWaitVblankStart();
+	sceGuSwapBuffers();
+	g_frame++;
+	vbl_time = sceKernelGetSystemTimeLow();
+	vbl_count = sceDisplayGetVcount();
+	if (g_vbl_count >= 0) {
+		g_vbl_step = vbl_count - g_vbl_count;
+		if (g_frame % 6 == 0) {
+			g_cpu_load = (cpu_time - g_vbl_time) * 100 / 16667;
+			g_gpu_load = (gpu_time - g_vbl_time) * 100 / 16667;
+		}
+	}
+	g_vbl_time = vbl_time;
+	g_vbl_count = vbl_count;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_model2/nonmatchings/main", move_objects);
 
@@ -233,7 +256,20 @@ void draw_rect(int x, int y, int w, int h, int color)
 	sceGuDrawArray(6, format, 2, 0, vertex);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_model2/nonmatchings/main", inverse_orthonormal);
+static ScePspFMatrix4 *inverse_orthonormal(ScePspFMatrix4 *m0, const ScePspFMatrix4 *m1)
+{
+	float x = -m1->w.x;
+	float y = -m1->w.y;
+	float z = -m1->w.z;
+
+	m0->x = (ScePspFVector4){ m1->x.x, m1->y.x, m1->z.x, 0 };
+	m0->y = (ScePspFVector4){ m1->x.y, m1->y.y, m1->z.y, 0 };
+	m0->z = (ScePspFVector4){ m1->x.z, m1->y.z, m1->z.z, 0 };
+	m0->w = (ScePspFVector4){ m1->x.x * x + m1->x.y * y + m1->x.z * z,
+	                          m1->y.x * x + m1->y.y * y + m1->y.z * z,
+	                          m1->z.x * x + m1->z.y * y + m1->z.z * z, 1 };
+	return m0;
+}
 
 ScePspFVector3 *rotate_vector3(ScePspFVector3 *v0, ScePspFMatrix4 *m1, ScePspFVector3 *v2) {
     float temp_f3;
