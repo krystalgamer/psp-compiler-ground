@@ -319,7 +319,7 @@ extern UserManager userManager;
 extern int g_win_player;
 extern int g_player_index;
 extern int g_turn;
-extern ModGame mod_game;
+extern ModGame mod_game __asm__("PRX_ZERO");
 extern int g_opp_party[1];
 extern int g_opp_char[1];
 extern int g_level_mission[11];
@@ -385,6 +385,8 @@ static void graphic_init();
 SceGimPicture *load_picture(int index, int *buff, int size);
 void sceGimPictureSetFrame(SceGimPicture *picture, float frame);
 void sceGimPictureActivate(SceGimPicture *picture);
+void sceGimPictureDelete(SceGimPicture *picture);
+void sceGuTerm(void);
 void printhanln(int ax, int ay, int color, const char *str);
 void printwanln(int ax, int ay, int color, const char *str);
 void sceGimPictureAnimate(SceGimPicture *picture, float time);
@@ -662,7 +664,60 @@ void sync_sprite(void) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/draw", graphic_destroy);
+static void graphic_destroy()
+{
+	int i;
+
+	sceGimPictureDelete(pic_pae_l1);
+	sceGimPictureDelete(pic_pae_l2);
+	sceGimPictureDelete(pic_pae_m);
+	sceGimPictureDelete(pic_pae_s);
+	sceGimPictureDelete(g_icon_ox);
+	sceGimPictureDelete(g_img_win_lose);
+	sceGimPictureDelete(g_cursor_hand);
+	sceGimPictureDelete(g_timer);
+	sceGimPictureDelete(g_img_all_in);
+	sceGimPictureDelete(g_img_button);
+	for (i = 0; i < 4; i++)
+		sceGimPictureDelete(g_icons[i]);
+	for (i = 0; i < 21; i++)
+		if (i != 0 && i != 11)
+			sceGimPictureDelete(g_animation[i]);
+	for (i = 0; i < 12; i++)
+		sceGimPictureDelete(g_font[i]);
+	sceGimPictureDelete(g_font_han);
+	sceGimPictureDelete(g_font_eng);
+	for (i = 0; i < 2; i++)
+		sceGimPictureDelete(g_icon_result[i]);
+	sceGimPictureDelete(g_img_turn);
+	sceGimPictureDelete(g_img_sun);
+	sceGimPictureDelete(g_img_bet_money);
+	sceGimPictureDelete(g_img_nagari_num);
+	sceGimPictureDelete(g_img_status_on);
+	sceGimPictureDelete(g_img_status_off);
+	sceGimPictureDelete(g_img_status_num_on);
+	sceGimPictureDelete(g_img_status_num_off);
+	sceGimPictureDelete(g_img_black_back);
+	sceGimPictureDelete(g_img_warning);
+	sceGimPictureDelete(g_img_warning2);
+	if (mod_game.game_type == 1) {
+		sceGimPictureDelete(g_vs_back);
+		sceGimPictureDelete(g_vs_light);
+		sceGimPictureDelete(g_vs_char[0]);
+		sceGimPictureDelete(g_vs_char[1]);
+		sceGimPictureDelete(g_vs_char_report);
+		sceGimPictureDelete(g_vs_mission_board);
+		sceGimPictureDelete(g_vs_mission_item);
+		sceGimPictureDelete(g_vs_level_num);
+		sceGimPictureDelete(g_vs_text_v);
+		sceGimPictureDelete(g_vs_text_s);
+		sceGimPictureDelete(g_vs_text_vs);
+	} else
+		sceGimPictureDelete(g_img_mission_cover);
+	sceGuTerm();
+}
+
+__asm__(".globl graphic_destroy");
 
 void swap_buffers(void) {
     sceGuSwapBuffers();
