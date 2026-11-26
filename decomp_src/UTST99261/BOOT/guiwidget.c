@@ -1,27 +1,181 @@
+/* cflags: -O1 */
 #include "common.h"
-#include "m2c_macros.h"
-M2C_UNK GuiwidgetAllOpening();                      /* extern */
+#include "UTST99261/BOOT/nfgui.h"
 
-
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/guiwidget", GuiwidgetInit);
-
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
+int GuiwidgetInit(void) {
+    s_windsystem_data.root = NULL;
+    s_windsystem_data.unk4 = NULL;
+    s_windsystem_data.unk8 = 0;
+    return 1;
+}
 
 int GuiwidgetExit(void) {
     GuiwidgetAllOpening();
     return 1;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/guiwidget", GuiwidgetCreate);
+GUIWIDGET *GuiwidgetCreate(GUIWIDGET *parent) {
+    GUIWIDGET *w;
+    GUIWIDGET *p;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/guiwidget", GuiwidgetClear);
+    if (parent == NULL) {
+        GuiwidgetAllOpening();
+        if (s_windsystem_data.font == NULL) {
+            s_windsystem_data.font = GuifontCreateOne();
+        }
+    } else if (parent->type != 1) {
+        puts("[X1]GuiwidgetCreate");
+        return NULL;
+    }
+    w = ESP_guiMemAlloc(sizeof(GUIWIDGET));
+    if (w == NULL) {
+        puts("[X2]GuiwidgetCreate");
+        return NULL;
+    }
+    GuiwidgetClear(w);
+    w->parent = parent;
+    if (parent == NULL) {
+        s_windsystem_data.root = w;
+    } else {
+        p = parent->child;
+        if (p == NULL) {
+            parent->child = w;
+        } else {
+            while (p->next != NULL) {
+                p = p->next;
+            }
+            p->next = w;
+        }
+    }
+    w->unk3A = 0;
+    w->unk3C = 0;
+    w->unk3E = 16;
+    w->unk40 = 16;
+    w->flags = 0;
+    _i_guiwidgetmalloc++;
+    w->unk34 = 25;
+    w->type = 1;
+    return w;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/guiwidget", _guiwidgetPurge);
+int GuiwidgetClear(GUIWIDGET *w) {
+    w->parent = NULL;
+    w->child = NULL;
+    w->next = NULL;
+    w->unk18 = 0x88;
+    w->unk1C = 0x88;
+    w->unk20 = 0x88;
+    w->unk24 = 0xFF;
+    w->unk28 = 0xFF;
+    w->unk2C = 0xFF;
+    w->unk3A = 0;
+    w->unk3C = 0;
+    w->unk3E = s_windsystemChar.weight;
+    w->unk40 = s_windsystemChar.style;
+    w->flags = 0x40000000;
+    w->color = D_00584B68;
+    return 1;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/guiwidget", _GuiwidgetDelete);
+void _guiwidgetPurge(GUIWIDGET *w) {
+    switch (w->flags & 0xF) {
+    case 8:
+        GUI_List_removeAll();
+        if (s_windsystem_data.mode == 1 && s_windsystem_data.cur == w) {
+            s_windsystem_data.mode = 0;
+            s_windsystem_data.cur = NULL;
+        }
+        break;
+    case 9:
+        GUI_Choice_removeAll();
+        if (s_windsystem_data.mode == 2 && s_windsystem_data.cur == w) {
+            s_windsystem_data.mode = 0;
+            s_windsystem_data.cur = NULL;
+        }
+        if (s_windsystem_data.mode == 3 && s_windsystem_data.cur == w) {
+            s_windsystem_data.mode = 0;
+            s_windsystem_data.cur = NULL;
+        }
+        break;
+    case 11:
+        if (s_windsystem_data.mode == 4 && s_windsystem_data.cur == w) {
+            s_windsystem_data.mode = 0;
+            s_windsystem_data.cur = NULL;
+        }
+    case 10:
+        if (w->unk50.n != 0) {
+            ESP_guiMemFree(w->unk4C);
+        }
+        break;
+    case 3:
+        if (w->unk50.p != NULL) {
+            ESP_guiMemFree(w->unk50.p);
+        }
+        break;
+    case 1:
+    case 4:
+    case 6:
+    case 7:
+        if (w->unk4C != NULL) {
+            ESP_guiMemFree(w->unk4C);
+        }
+        break;
+    case 12:
+        if (s_windsystem_data.unk28 == w) {
+            s_windsystem_data.unk28 = NULL;
+        }
+        break;
+    }
+    _i_guiwidgetmalloc--;
+    w->type = 0;
+    w->parent = NULL;
+    if (s_windsystem_data.unk4 == w) {
+        s_windsystem_data.unk4 = NULL;
+    }
+    ESP_guiMemFree(w);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/guiwidget", GuiwidgetDelete);
+void _GuiwidgetDelete(GUIWIDGET *w) {
+    if (w != NULL && w->type == 1) {
+        _GuiwidgetDelete(w->child);
+        _GuiwidgetDelete(w->next);
+        _guiwidgetPurge(w);
+    }
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/guiwidget", GuiwidgetAllOpening);
+int GuiwidgetDelete(GUIWIDGET *w) {
+    GUIWIDGET *parent;
+    GUIWIDGET *p;
+
+    if (w == NULL) {
+        puts("[X1]GuiwidgetDelete");
+        return 0;
+    }
+    if (w->type != 1) {
+        puts("[X2]GuiwidgetDelete");
+        return 0;
+    }
+    s_windsystem_data.flags |= 4;
+    parent = w->parent;
+    if (parent != NULL) {
+        p = parent->child;
+        if (p == w) {
+            parent->child = w->next;
+        } else {
+            for (; p->next != w; p = p->next)
+                ;
+            p->next = w->next;
+        }
+    }
+    _GuiwidgetDelete(w->child);
+    _guiwidgetPurge(w);
+    s_windsystem_data.flags &= ~4;
+    return 1;
+}
+
+void GuiwidgetAllOpening(void) {
+    if (s_windsystem_data.root != NULL) {
+        GuiwidgetDelete(s_windsystem_data.root);
+    }
+    GuiwidgetInit();
+}
