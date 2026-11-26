@@ -87,7 +87,20 @@ static int pad_read(void);
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_editspline/nonmatchings/main", resize_model);
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_editspline/nonmatchings/main", get_knotflag);
+static int get_knotflag(int s, int e)
+{
+	int ret;
+
+	ret = 0;
+	if (s) {
+		ret = 1;
+	}
+	if (e) {
+		ret += 2;
+	}
+
+	return ret;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_editspline/nonmatchings/main", draw_spline);
 
