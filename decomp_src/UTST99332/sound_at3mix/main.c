@@ -238,20 +238,6 @@ static int sound_init_all(void)
 	return 0;
 }
 
-INCLUDE_RODATA("tmp/asm/UTST99332/sound_at3mix/nonmatchings/main", D_0001594C);
-
-INCLUDE_RODATA("tmp/asm/UTST99332/sound_at3mix/nonmatchings/main", D_00015964);
-
-INCLUDE_RODATA("tmp/asm/UTST99332/sound_at3mix/nonmatchings/main", D_00015970);
-
-INCLUDE_RODATA("tmp/asm/UTST99332/sound_at3mix/nonmatchings/main", D_000159AC);
-
-INCLUDE_RODATA("tmp/asm/UTST99332/sound_at3mix/nonmatchings/main", D_000159C4);
-
-INCLUDE_RODATA("tmp/asm/UTST99332/sound_at3mix/nonmatchings/main", D_000159E0);
-
-INCLUDE_RODATA("tmp/asm/UTST99332/sound_at3mix/nonmatchings/main", D_00015A00);
-
 void DrawData(void);
 
 static void draw_frame(void)
@@ -352,6 +338,136 @@ static void init_pos(void)
 	pos.trans.z = -12.0f;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/sound_at3mix/nonmatchings/main", pad_read);
+static int pad_read(void)
+{
+	extern u_int32 D_00021D40;
+	u_int32 padd;
+	SceCtrlData buf;
 
-INCLUDE_ASM("tmp/asm/UTST99332/sound_at3mix/nonmatchings/main", main);
+	sceCtrlReadBufferPositive(&buf, 1);
+	padd = buf.Buttons;
+
+	if (padd & 0x10) {
+		pos.rot.x -= 10.0f;
+		if (pos.rot.x <= 0.0f) pos.rot.x = 0.0f;
+	}
+	if (padd & 0x40) {
+		pos.rot.x += 10.0f;
+		if (pos.rot.x >= 60.0f) pos.rot.x = 60.0f;
+	}
+	if (padd & 0x80) {
+		pos.rot.y -= 10.0f;
+		if (pos.rot.y <= -60.0f) pos.rot.y = -60.0f;
+	}
+	if (padd & 0x20) {
+		pos.rot.y += 10.0f;
+		if (pos.rot.y >= 60.0f) pos.rot.y = 60.0f;
+	}
+	if (padd & 0x100) {
+		pos.trans.z -= 1.0f;
+		if (pos.trans.z <= -25.0f) pos.trans.z = -25.0f;
+	}
+	if (padd & 0x200) {
+		pos.trans.z += 1.0f;
+		if (pos.trans.z >= -6.0f) pos.trans.z = -6.0f;
+	}
+
+	if (padd & 0x1000) {
+		if (ipitch < 0x80) {
+			sceSasSetKeyOn(2);
+		}
+		if (ipitch < 0x4000) {
+			ipitch += 30;
+			if (ipitch > 0x4000) ipitch = 0x4000;
+			sceSasSetPitch(2, ipitch);
+		}
+	} else {
+		if (ipitch > 0x80) {
+			ipitch -= 30;
+			if (ipitch < 0x80) ipitch = 0x80;
+			sceSasSetPitch(2, ipitch);
+		} else {
+			ipitch = 0x7f;
+			sceSasSetKeyOff(2);
+		}
+	}
+
+	if (((padd & 0x2000) != 0) && ((D_00021D40 & 0x2000) == 0)) {
+		sceSasSetKeyOff(1);
+		sceSasSetKeyOn(1);
+	}
+	if (((padd & 0x8000) != 0) && ((D_00021D40 & 0x8000) == 0)) {
+		sceSasSetKeyOff(0);
+		sceSasSetKeyOn(0);
+	}
+	if ((padd & 0x4000) != 0) {
+		if ((D_00021D40 & 0x4000) == 0) {
+			sceSasSetKeyOn(3);
+		}
+	} else {
+		if ((D_00021D40 & 0x4000) != 0) {
+			sceSasSetKeyOff(3);
+		}
+	}
+	if (padd & 0x8) {
+		init_pos();
+	}
+	if (padd & 0x1) {
+		return 0;
+	}
+	D_00021D40 = padd;
+	return 1;
+}
+
+SceUID at3_bgm_play(const char *filename);
+int at3_bgm_play_end(int fadeout_mode);
+void InitString(void);
+int main(void)
+{
+	SceUID thid;
+	SceInt32 status;
+
+	menuInit();
+	if (mix_loadModule() < 0)
+		return -1;
+	status = sceWaveInit();
+	if (status != 0) {
+		printf("sceWaveInit error:%08X\n", status);
+		goto error_exit;
+	}
+	if (sound_init_all() < 0) {
+		printf("init failed\n");
+		goto error_exit;
+	}
+	thid = at3_bgm_play("disc0:/PSP_GAME/USRDIR/DATA/sound/wave/overload_loop.at3");
+	if (thid < 0) {
+		printf("something failed...:%x\n", thid);
+		goto error_exit;
+	}
+	init_all();
+	init_pos();
+	InitString();
+	while (pad_read()) {
+		draw_frame();
+		sceDisplayWaitVblankStart();
+		sceGuSwapBuffers();
+	}
+	sceGuTerm();
+	at3_bgm_play_end(1);
+	status = sceKernelWaitThreadEnd(thid, NULL);
+	if (status != 0) {
+		printf("sceKernelWaitThread: %08X\n", status);
+	}
+	status = sceKernelDeleteThread(thid);
+	if (status != 0) {
+		printf("sceKernelDeleteThread: %08X\n", status);
+	}
+error_exit:
+	status = sceWaveExit();
+	if (status != 0) {
+		printf("sceWaveExit error:%08X\n", status);
+	}
+	mix_unloadModule();
+	menuTerm(4, 1);
+	return 1;
+}
