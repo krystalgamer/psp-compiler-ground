@@ -3,6 +3,17 @@
 #include <ctype.h>
 #include "parse_str.h"
 #include "m2c_macros.h"
+extern char D_00137E60[];
+extern char D_00137E64[];
+extern char D_00137E70[];
+extern char D_00137E80[];
+extern char D_00137E8C[];
+extern char D_00137E94[];
+extern char D_00137E9C[];
+extern char D_00137EA8[];
+extern char D_00137EBC[];
+extern char D_00137EC8[];
+extern char D_00137ED0[];
 #define NOTAG(c) ((c->buf->cur[1] < 'A' || c->buf->cur[1] > 'Z') && (c->buf->cur[1] < 'a' || c->buf->cur[1] > 'z') && c->buf->cur[1] != '!' && c->buf->cur[1] != '/' && c->buf->cur[1] != '?')
 #define CI(c, C) (((c) >= 'a' && (c) <= 'z') ? ((c) == (C) + 0x20) : ((c) == (C)))
 extern char D_00137EF0[];
@@ -675,7 +686,48 @@ INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/parser", D_00137E3C);
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/parser", D_00137E48);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", parseScriptAttribute);
+void parseScriptAttribute(PCtx *c, PDStr *name, PDStr *val) {
+    char *s;
+    int i;
+
+    if (parseDStrEqual("charset", name) && val != NULL) {
+        if (parseDStrEqual(D_00137E64, val)) {
+            CF(c, 0x134) = 1;
+        } else if (parseDStrEqual(D_00137E70, val)) {
+            CF(c, 0x134) = 1;
+        } else if (parseDStrEqual(D_00137E80, val)) {
+            CF(c, 0x134) = 2;
+        } else if (parseDStrEqual(D_00137E8C, val)) {
+            CF(c, 0x134) = 3;
+        } else if (parseDStrEqual(D_00137E94, val)) {
+            CF(c, 0x134) = 2;
+        } else if (parseDStrEqual(D_00137E9C, val)) {
+            CF(c, 0x134) = 3;
+        } else {
+            CF(c, 0x134) = 2;
+        }
+    }
+    if (parseDStrEqual(D_00137E60, name) && CF(c, 0x13C) == 0 && val != NULL) {
+        s = MEM_malloc(0, val->len + 1);
+        for (i = 0; i < val->len; i++) {
+            s[i] = val->data[i];
+        }
+        s[val->len] = 0;
+        CF(c, 0x13C) = (int)s;
+    }
+    if (parseDStrEqual(D_00137EA8, name) && CF(c, 0x14C) == 0 && val != NULL) {
+        CF(c, 0x14C) = 2;
+        if (parseDStrnEqual(D_00137EBC, val, 10) || parseDStrnEqual(D_00137EC8, val, 7)) {
+            CF(c, 0x14C) = 1;
+        }
+    }
+    if (parseDStrEqual(D_00137EB4, name) && val != NULL) {
+        CF(c, 0x14C) = 2;
+        if (parseDStrEqual(D_00137ED0, val)) {
+            CF(c, 0x14C) = 1;
+        }
+    }
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", checkFileStrage);
 
