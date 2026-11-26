@@ -400,4 +400,8 @@ void StainGlassSetTransform( const ScePspFMatrix4 *m )
 	_transform.fm = *m;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_stainglass/nonmatchings/stainglass", StainGlassSetDistorsion);
+void StainGlassSetDistorsion( const float _Distort )
+{
+	_sx = _Distort;
+	_sy = _Distort;
+}
