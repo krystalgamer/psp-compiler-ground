@@ -193,7 +193,18 @@ int decode_flushDecoder(t_mpegStreamData *pStreamData) {
     return sceMpegAvcDecodeFlush(pStreamData->pMpeg);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/mpeg_seamless_change/nonmatchings/decode", decode_checkReservedVideoGetAu);
+SceInt32 decode_checkReservedVideoGetAu(t_mpegStreamData *pStreamData)
+{
+	SceInt32 ret;
+
+	if (pStreamData->videoDemuxFlag[pStreamData->reservedVideoStream] == 1) {
+		ret = 0;
+	} else {
+		ret = -1;
+	}
+
+	return ret;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/mpeg_seamless_change/nonmatchings/decode", decode_getReservedVideoAuTimestamp);
 
