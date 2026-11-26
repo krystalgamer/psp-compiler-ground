@@ -124,9 +124,49 @@ void *memset(void *s, int c, unsigned int n);
 int sceKernelSignalSema(int semid, int signal);
 int sceKernelWaitSema(int semid, int signal, unsigned int *timeout);
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_matching_stick/nonmatchings/net_multi_player", matching_get_established_members);
+void *memcpy(void *d, const void *s, unsigned int n);
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_matching_stick/nonmatchings/net_multi_player", matching_get_members);
+int matching_get_established_members(struct SceNetEtherAddr *addrs)
+{
+	int i, j;
+
+	sceKernelWaitSema(minfo_sid, 1, NULL);
+
+	memcpy(&addrs[0], &_mrinfo.local_addr, sizeof(struct SceNetEtherAddr));
+	j = 1;
+	for (i = 0; i < 16; i++) {
+		if (minfo[i].status == 5 || minfo[i].status == 6) {
+			memcpy(&addrs[j], &minfo[i].addr, sizeof(struct SceNetEtherAddr));
+			j++;
+		}
+	}
+
+	sceKernelSignalSema(minfo_sid, 1);
+
+	return j;
+}
+
+int matching_get_members(struct SceNetEtherAddr *addrs)
+{
+	int i, j;
+	struct SceNetEtherAddr zero_addr;
+
+	sceKernelWaitSema(minfo_sid, 1, NULL);
+	memset(&zero_addr, 0, sizeof(zero_addr));
+	for (i = 0, j = 0; i < 16; i++) {
+		if (memcmp(&_mrinfo.members[i], &_mrinfo.local_addr, sizeof(struct SceNetEtherAddr)) == 0) {
+			continue;
+		}
+		if (memcmp(&_mrinfo.members[i], &zero_addr, sizeof(struct SceNetEtherAddr)) == 0) {
+			break;
+		}
+		addrs[j] = _mrinfo.members[i];
+		j++;
+	}
+	sceKernelSignalSema(minfo_sid, 1);
+
+	return j;
+}
 
 extern int D_000E3FF4;
 
