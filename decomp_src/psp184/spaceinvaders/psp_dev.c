@@ -1,6 +1,30 @@
 #include "common.h"
+#include "m2c_macros.h"
+extern unsigned char g_matrix_buf;
+extern int g_packet;
+extern unsigned char g_packet_buf;
+M2C_UNK camera_control();                           /* extern */
+M2C_UNK gmo_disp();                                 /* extern */
+M2C_UNK inv_particle_disp();                        /* extern */
+M2C_UNK inv_star_disp();                            /* extern */
+M2C_UNK light_cnt();                                /* extern */
+M2C_UNK light_debug_disp();                         /* extern */
+M2C_UNK sprite_3d_disp();                           /* extern */
+M2C_UNK sprite_bg_disp();                           /* extern */
+M2C_UNK sprite_scr_disp();                          /* extern */
+M2C_UNK sprite_syncsort();                          /* extern */
+extern unsigned char deb_print;
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_dev", exit_func);
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+void sceKernelExitGame(void);
+int exit_func(void) {
+    UtilityClose();
+    sceKernelExitGame();
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_dev", powercallback);
 
@@ -10,7 +34,35 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_dev", psp_edram_init)
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_dev", psp_init);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_dev", psp_init2);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+void sceGuInit(void);
+void sceGuTerm(void);
+void sceGuStart(int type, void *list, int size);
+int sceGuFinish(void);
+int sceGuSync(int mode, int what);
+int sceGuDisplay(int state);
+void sceGuDrawBuffer(int psm, void *fbp, int frame_width);
+void sceGuDispBuffer(int width, int height, void *dbp, int frame_width);
+void sceGuDepthBuffer(void *zbp, int frame_width);
+void sceGuOffset(unsigned int x, unsigned int y);
+void sceGumSetMatrixStack(void *stack, int proj, int view, int model, int texture);
+
+void psp_init2(void) {
+    sceGuTerm();
+    sceGuInit();
+    sceGuStart(0, &g_packet_buf, 0x100000);
+    sceGuDrawBuffer(0, NULL, 0x200);
+    sceGuDispBuffer(0x1E0, 0x110, (void *)0x44000, 0x200);
+    sceGuDepthBuffer((void *)0x88000, 0x200);
+    sceGuOffset(0x710U, 0x778U);
+    sceGuFinish();
+    sceGuSync(0, 0);
+    sceGumSetMatrixStack(&g_matrix_buf, 4, 4, 8, 0);
+    sceGuDisplay(1);
+    g_packet = 0;
+}
 
 INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_dev", D_0007A6C0);
 
@@ -54,13 +106,35 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_dev", psp_end_scene);
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_dev", psp_swap_buffers);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_dev", psp_draw_objects);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void psp_draw_objects(void) {
+    sprite_syncsort();
+    sprite_bg_disp();
+    camera_control();
+    light_cnt();
+    light_debug_disp();
+    inv_star_disp();
+    gmo_disp();
+    inv_particle_disp();
+    sprite_3d_disp();
+    sprite_scr_disp();
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_dev", psp_loopstart);
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_dev", psp_loopend);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_dev", psp_debug_init);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+void *memset(void *s, int c, unsigned int n);
+
+void psp_debug_init(void) {
+    memset(&deb_print, 0, 0x1388U);
+}
 
 void debug_text(void) {
 }
@@ -98,4 +172,20 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_dev", vec_one);
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_dev", vec_axis_rot);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_dev", time_wait);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+unsigned int sceKernelGetSystemTimeLow(void);
+void time_wait(unsigned int arg0) {
+    unsigned int temp_s0;
+    unsigned int temp_v0;
+
+    temp_s0 = sceKernelGetSystemTimeLow();
+loop_1:
+    temp_v0 = sceKernelGetSystemTimeLow();
+    if (temp_v0 >= temp_s0) {
+        if (arg0 >= (unsigned int) (temp_v0 - temp_s0)) {
+            goto loop_1;
+        }
+    }
+}

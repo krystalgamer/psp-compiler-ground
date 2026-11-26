@@ -1,4 +1,7 @@
 #include "common.h"
+#include "m2c_macros.h"
+extern int D_0035AE84;
+
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_tex", tex_init);
 
@@ -74,9 +77,21 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_tex", set_packet_3d);
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_tex", sprite_screencopy_disp);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_tex", sprite_screencopy_pri_set);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_tex", sprite_screencopy_pri_get);
+void sprite_screencopy_pri_set(int arg0) {
+    D_0035AE84 = arg0;
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+int sprite_screencopy_pri_get(void) {
+    return D_0035AE84;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_tex", sprite_syncsort);
 

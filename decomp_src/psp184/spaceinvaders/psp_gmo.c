@@ -1,6 +1,22 @@
 #include "common.h"
+#include "m2c_macros.h"
+extern unsigned char gmo;
+extern unsigned char gmo_file;
+extern int gmo_file_max;
+extern int gmo_max;
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_gmo", gmo_init);
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+void *memset(void *s, int c, unsigned int n);
+
+void gmo_init(void) {
+    memset(&gmo_file, 0, 0x190U);
+    memset(&gmo, 0, 0x6798U);
+    gmo_file_max = 0;
+    gmo_max = 0;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_gmo", gmo_file_load);
 

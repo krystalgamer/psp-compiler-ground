@@ -1,4 +1,6 @@
 #include "common.h"
+#include "m2c_macros.h"
+
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/nagata", rot2pos_x);
 
@@ -22,11 +24,21 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/nagata", math_truncated);
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/nagata", vec_length);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/nagata", vec_length_fast);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int vec_length_fast(int arg0, int arg1) {
+    return (arg0 * arg0) + (arg1 * arg1);
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/nagata", num2str);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/nagata", sjis_check);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int sjis_check(void *arg0) {
+    return (unsigned int) ((M2C_FIELD(arg0, signed char *, 1) + (M2C_FIELD(arg0, signed char *, 0) << 8)) & 0xFFFF) > 0x813FU;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/nagata", num_digit_get0);
 

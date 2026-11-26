@@ -1,4 +1,14 @@
 #include "common.h"
+#include "m2c_macros.h"
+M2C_UNK sceAtracReleaseAtracID(int);                /* extern */
+extern int next_sound_block_no;
+extern int sound_block_no;
+extern int sound_block_max;
+M2C_UNK sceWavePlay(M2C_UNK, int, int);             /* extern */
+int sceWaveSetVoice(M2C_UNK, int, int, M2C_UNK);    /* extern */
+M2C_UNK sceWaveStop(M2C_UNK);                       /* extern */
+extern unsigned char se;
+
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/k_sound", load_module);
 
@@ -12,7 +22,18 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/k_sound", init_atrac3plus
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/k_sound", play_atrac3plus);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/k_sound", release_at3playArgID);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void release_at3playArgID(int *arg0) {
+    int temp_v0;
+
+    temp_v0 = *arg0;
+    if (temp_v0 >= 0) {
+        sceAtracReleaseAtracID(temp_v0);
+    }
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/k_sound", sound_init);
 
@@ -69,11 +90,30 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/k_sound", sound_start);
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/k_sound", sound_stop);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/k_sound", sound_next_block_set);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/k_sound", get_now_sound_block);
+int sound_next_block_set(int arg0) {
+    next_sound_block_no = arg0;
+    return sound_block_no;
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/k_sound", get_max_sound_block);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+int get_now_sound_block(void) {
+    return sound_block_no;
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+int get_max_sound_block(void) {
+    return sound_block_max;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/k_sound", next_sound_block_plus);
 
@@ -145,9 +185,36 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/k_sound", se_start);
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/k_sound", se_start_v);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/k_sound", se_start_once);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/k_sound", se_stop);
+void se_start_once(int arg0, int arg1, int arg2) {
+    void *temp_s0;
+
+    sceWaveStop(7);
+    temp_s0 = (arg0 * 8) + &se;
+    if (sceWaveSetVoice(7, M2C_FIELD(temp_s0, int *, 0), M2C_FIELD(temp_s0, int *, 4), 0) != 0) {
+
+    } else {
+        sceWavePlay(7, arg1, arg2);
+    }
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void se_stop(void) {
+    sceWaveStop(0);
+    sceWaveStop(1);
+    sceWaveStop(2);
+    sceWaveStop(3);
+    sceWaveStop(4);
+    sceWaveStop(5);
+    sceWaveStop(6);
+    sceWaveStop(7);
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/k_sound", play_atrac3plus1);
 
