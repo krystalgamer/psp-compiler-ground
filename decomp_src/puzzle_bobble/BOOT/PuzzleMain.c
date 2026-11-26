@@ -2704,8 +2704,11 @@ int PuzzleBody(void)
 			light = 1;
 			k = 16 - st->unk024--;
 			if (st->unk024 != 0) {
-				color = ((int)(st->unk024 * 0.0625f * 255.0f) << 24) | 0xFFFFFF;
-				s = k * 0.25f + 1.0f;
+				color = st->unk024 * 0.0625f * 255.0f;
+				color <<= 24;
+				color |= 0xFFFFFF;
+				s = 1.0f;
+				s += k * 0.25f;
 				for (i = 0; i < st->ndrop; i++) {
 					x = st->drop.d[i].x + MapXBeginPos[st->mapno * 3 + st->mapsub];
 					y = st->drop.d[i].y + st->ofs_y + st->scroll * 14;
@@ -3602,18 +3605,21 @@ int VSModeBody(int pl)
 			SetCharacters(st, 4, 0);
 			SetMonitor(st, 12);
 		case 9: {
-			int x, y, color;
+			int color, x, y;
 			float s;
 
 			light = 1;
 			k = 16 - st->unk024--;
 			if (st->unk024 != 0) {
-				s = k * 0.25f + 1.0f;
-				color = ((int)(st->unk024 * 0.0625f * 255.0f) << 24) | 0xFFFFFF;
+				color = st->unk024 * 0.0625f * 255.0f;
+				color <<= 24;
+				color |= 0xFFFFFF;
+				s = 1.0f;
+				s += k * 0.25f;
 				for (i = 0; i < st->ndrop; i++) {
 					if ((u8)(st->drop.d[i].col - 1) < 9 || st->drop.d[i].col == 14) {
-						y = st->drop.d[i].y + st->ofs_y + st->scroll * 14;
 						x = st->drop.d[i].x + MapXBeginPos[st->mapno * 3 + st->mapsub];
+						y = st->drop.d[i].y + st->ofs_y + st->scroll * 14;
 						DrawSpriteZoom(st->drop.d[i].col + 49, color, 0, x + 72, y, 16.0f, 16.0f, 0, 0, 8.0f, 8.0f, s, s, 0);
 						if (st->drop.d[i].col != 9 && st->drop.d[i].col != 14) {
 							DrawSpriteZoom(45, color, 1.0f, x + 16, y - 56, 128.0f, 128.0f, 0, 0, 64.0f, 64.0f, s * 0.25f, s * 0.25f, 0);
@@ -4338,17 +4344,20 @@ int EndressBody(int pl)
 			SetCharacters(st, 4, 0);
 			SetMonitor(st, 12);
 		case 9: {
-			int x, y, color;
+			int color, x, y;
 			float s;
 
 			light = 1;
 			k = 16 - st->unk024--;
 			if (st->unk024 != 0) {
-				color = ((int)(st->unk024 * 0.0625f * 255.0f) << 24) | 0xFFFFFF;
-				s = k * 0.25f + 1.0f;
+				color = st->unk024 * 0.0625f * 255.0f;
+				color <<= 24;
+				color |= 0xFFFFFF;
+				s = 1.0f;
+				s += k * 0.25f;
 				for (i = 0; i < st->ndrop; i++) {
-					y = st->drop.d[i].y + st->ofs_y + st->scroll * 14;
 					x = st->drop.d[i].x + MapXBeginPos[st->mapno * 3 + st->mapsub];
+					y = st->drop.d[i].y + st->ofs_y + st->scroll * 14;
 					DrawSpriteZoom(st->drop.d[i].col + 49, color, 0, x + 72, y, 16.0f, 16.0f, 0, 0, 8.0f, 8.0f, s, s, 0);
 					if (st->drop.d[i].col != 9 && st->drop.d[i].col != 14) {
 						DrawSpriteZoom(45, color, 1.0f, x + 16, y - 56, 128.0f, 128.0f, 0, 0, 64.0f, 64.0f, s * 0.25f, s * 0.25f, 0);
@@ -4504,6 +4513,7 @@ int EndressBody(int pl)
 				se_play(4);
 			}
 			if (st->unk42A < 31 || !(st->key_rep & 0x2000)) {
+				ret = 0;
 				break;
 			}
 			if (Cont) {
