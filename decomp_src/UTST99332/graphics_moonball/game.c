@@ -271,30 +271,27 @@ static void DrawBall(void)
 	sceGumPopMatrix();
 }
 
-#ifndef SCEGU_SCR_HEIGHT
 #define SCEGU_SCR_HEIGHT      272
-#endif
-#ifndef LCDH
 #define LCDH			SCEGU_SCR_HEIGHT
-#endif
-#ifndef SCEGU_SCR_WIDTH
 #define SCEGU_SCR_WIDTH       480
-#endif
-#ifndef LCDW
 #define LCDW			SCEGU_SCR_WIDTH
-#endif
-#ifndef SCEGU_PRIM_TRIANGLE_STRIP
 #define SCEGU_PRIM_TRIANGLE_STRIP          4
-#endif
-#ifndef SCEGU_VERTEX_SHORT
 #define SCEGU_VERTEX_SHORT       ( 2 <<  7 )
-#endif
-#ifndef SCEGU_THROUGH
 #define SCEGU_THROUGH            ( 1 << 23 )
-#endif
-#ifndef SCEGU_COLOR_PF8888
 #define SCEGU_COLOR_PF8888       ( 7 <<  2 )
-#endif
+#define SCEGU_REPEAT                       0
+#define SCEGU_NEAREST                      0
+#define SCEGU_TEX_MODULATE                 0
+#define SCEGU_RGBA                         1
+#define SCEGU_PFIDX4                       4
+#define SCEGU_SINGLE_CLUT                  0
+#define SCEGU_TEXBUF_NORMAL                0
+#define SCEGU_PF5551                       1
+#define MAXBALLS	30
+#define SCEGU_TEXTURE                      9
+#define SCEGU_PFIDX8                       5
+#define ALPHA(a,c)		(u_int32)(((u_int32)a<<24)|((u_int32)c))
+
 static void DrawBG(void)
 {
 	extern Gu2dV16C	D_000774C0[4];
@@ -322,36 +319,6 @@ static void DrawBG(void)
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_moonball/nonmatchings/game", DrawGround);
 
-#ifndef SCEGU_REPEAT
-#define SCEGU_REPEAT                       0
-#endif
-#ifndef SCEGU_NEAREST
-#define SCEGU_NEAREST                      0
-#endif
-#ifndef SCEGU_TEX_MODULATE
-#define SCEGU_TEX_MODULATE                 0
-#endif
-#ifndef SCEGU_RGBA
-#define SCEGU_RGBA                         1
-#endif
-#ifndef SCEGU_PFIDX4
-#define SCEGU_PFIDX4                       4
-#endif
-#ifndef SCEGU_SINGLE_CLUT
-#define SCEGU_SINGLE_CLUT                  0
-#endif
-#ifndef SCEGU_TEXBUF_NORMAL
-#define SCEGU_TEXBUF_NORMAL                0
-#endif
-#ifndef SCEGU_PF5551
-#define SCEGU_PF5551                       1
-#endif
-#ifndef MAXBALLS
-#define MAXBALLS	30
-#endif
-#ifndef SCEGU_TEXTURE
-#define SCEGU_TEXTURE                      9
-#endif
 static void DrawScore(void)
 {
 	extern Gu2dV16T	D_000775B0[MAXBALLS][4];
@@ -456,12 +423,6 @@ static void DrawBeam(void)
 	}
 }
 
-#ifndef SCEGU_PFIDX8
-#define SCEGU_PFIDX8                       5
-#endif
-#ifndef ALPHA
-#define ALPHA(a,c)		(u_int32)(((u_int32)a<<24)|((u_int32)c))
-#endif
 static void DrawReady(int mode, int a, int s)
 {
 	extern Gu2dV16T	D_00077AE8[4];
