@@ -390,7 +390,39 @@ int sceSystemFileOverWriteToFile(void *handle, void *index, void *data, unsigned
 	return ret;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/systemfile", sceSystemFileSave);
+int sceSystemFileSave(void *handle)
+{
+	unsigned int i;
+	SysFile *sf = handle;
+	SfIndex *ix;
+	register int ret;
+
+	if (handle == NULL)
+		SF_ERROR(ret, 3)
+	else if (sf->flags & 0x40)
+		SF_ERROR(ret, 3)
+	else if (!(sf->flags & 1))
+		SF_ERROR(ret, 3)
+	else {
+		for (i = 0; i < sf->hdr->count; i++) {
+			ix = &sf->index[i];
+			if (ix->unkC & 1) {
+				if (sceIoLseek(sf->fd, i * 16 + 0x18, 0) == -1) {
+					SF_ERROR(ret, 2)
+					goto end;
+				}
+				if ((unsigned int)sceIoWrite(sf->fd, (char *)ix->unk0 + 4, 4) < 4) {
+					SF_ERROR(ret, 2)
+					goto end;
+				}
+				ix->unkC ^= 1;
+			}
+		}
+		ret = 0;
+	}
+end:
+	return ret;
+}
 
 int sceSystemFileLoadAll(void *buf, void **phandle)
 {
