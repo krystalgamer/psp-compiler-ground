@@ -6,10 +6,7 @@ extern signed char D_0035393C;
 int tex_make(M2C_UNK, M2C_UNK, M2C_UNK, M2C_UNK);   /* extern */
 extern int D_005FB3B0;
 M2C_UNK bmp_file_unload(int);                       /* extern */
-M2C_UNK df_blur_control();                          /* extern */
-M2C_UNK df_cap_control();                           /* extern */
 M2C_UNK df_fade_control();                          /* extern */
-M2C_UNK df_flash_control();                         /* extern */
 M2C_UNK df_quake_control();                         /* extern */
 M2C_UNK df_blur_disp();                             /* extern */
 M2C_UNK df_cap_disp();                              /* extern */
@@ -24,6 +21,16 @@ M2C_UNK sprite_set(int, M2C_UNK, M2C_UNK, M2C_UNK, M2C_UNK, M2C_UNK, M2C_UNK, M2
 extern int D_004B4D04;
 extern unsigned char D_005FB7A8;
 
+
+extern int D_005A06D8;
+extern int D_005E86B0;
+extern int D_005E8F30;
+extern int D_005EAB30;
+extern int D_005FB714;
+extern int D_005FB770;
+extern int D_004B5010;
+extern int game_cpu_disp;
+extern int screen_blur;
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", maingame_all_init);
 
@@ -199,7 +206,17 @@ int ziki_break_errer_check(void) {
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", ziki_beat_check);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", ziki_beat_check2);
+M2C_UNK ziki_beat_check2(void)
+{
+	u8 *b_D_005A06D8 = (u8 *)&D_005A06D8;
+	int ret;
+
+	ret = 0;
+	if (*(int *)(b_D_005A06D8 + 0x54) > 0 && *(int *)(b_D_005A06D8 + 0x58) > 0 && *(int *)(b_D_005A06D8 + 0x5C) > 0) {
+		ret = *(int *)(b_D_005A06D8 + 0x60) > 0;
+	}
+	return ret;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", ziki_beat_miss_check);
 
@@ -333,7 +350,12 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", laser2_start);
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", laser2_c_set);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", laser2_start2);
+void laser2_start2(void)
+{
+	u8 *b_D_005E860C = (u8 *)&D_005E860C;
+	*(int *)(b_D_005E860C + 0xC) = 1;
+	*(int *)(b_D_005E860C + 0x10) = 0;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -352,19 +374,47 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", laser2_hit_che
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", laser2_hit_check_ufo);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", boss_laser_init);
+void boss_laser_init(void)
+{
+	int i;
+	int *p = &D_005E86B0;
+
+	for (i = 0; i < 32; i++) {
+		*p = 0;
+		p += 0x11;
+	}
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", boss_laser_start);
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", boss_laser_control);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", item_init);
+void item_init(void)
+{
+	int i;
+	int *p = &D_005E8F30;
+
+	for (i = 0; i < 128; i++) {
+		*p = 0;
+		p += 0xE;
+	}
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", item_start);
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", item_control);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", particle_init);
+void particle_init(void)
+{
+	int i;
+	int *p = &D_005EAB30;
+
+	for (i = 0; i < 512; i++) {
+		p[4] = i;
+		p[0] = 0;
+		p += 0x21;
+	}
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", particle_set);
 
@@ -372,7 +422,12 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", particle_contr
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", particle_disp);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", particle_check);
+M2C_UNK particle_check(int no)
+{
+	if ((unsigned)no >= 512)
+		return 1;
+	return (&D_005EAB30)[no * 0x21] == 0;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", efc_bom_start);
 
@@ -408,7 +463,15 @@ void dispeffect_all_free(void) {
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", dispeffect_init);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", df_quake_start);
+void df_quake_start(int a, int t)
+{
+	u8 *b_D_005FB3B0 = (u8 *)&D_005FB3B0;
+	if (t < *(int *)(b_D_005FB3B0 + 0xC) - *(int *)(b_D_005FB3B0 + 0x8))
+		return;
+	*(int *)(b_D_005FB3B0 + 0xC) = t;
+	*(int *)(b_D_005FB3B0 + 0x4) = a;
+	*(int *)(b_D_005FB3B0 + 0x8) = 0;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", df_quake_control);
 
@@ -416,29 +479,75 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", df_quake_disp)
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", df_blur_start);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", df_blur_end);
+void df_blur_end(void)
+{
+	u8 *b_D_005FB3B0 = (u8 *)&D_005FB3B0;
+	screen_blur = 0;
+	*(int *)(b_D_005FB3B0 + 0x40) = *(int *)(b_D_005FB3B0 + 0x44);
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", df_blur_scrpos_set);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", df_blur_control);
+void df_blur_control(void)
+{
+	u8 *b_D_005FB3B0 = (u8 *)&D_005FB3B0;
+	if (*(int *)(b_D_005FB3B0 + 0x40) < *(int *)(b_D_005FB3B0 + 0x44))
+		(*(int *)(b_D_005FB3B0 + 0x40))++;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", df_blur_disp);
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", df_cap_start);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", df_cap_control);
+void df_cap_control(void)
+{
+	u8 *b_D_005FB3B0 = (u8 *)&D_005FB3B0;
+	if (*(int *)(b_D_005FB3B0 + 0x5C) < *(int *)(b_D_005FB3B0 + 0x60))
+		(*(int *)(b_D_005FB3B0 + 0x5C))++;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", df_cap_disp);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", df_flash_start);
+void df_flash_start(int a, int b, int c, int d, int e, int t)
+{
+	u8 *b_D_005FB3B0 = (u8 *)&D_005FB3B0;
+	*(int *)(b_D_005FB3B0 + 0x64) = a;
+	*(int *)(b_D_005FB3B0 + 0x68) = b;
+	*(int *)(b_D_005FB3B0 + 0x6C) = c;
+	*(int *)(b_D_005FB3B0 + 0x70) = d;
+	*(int *)(b_D_005FB3B0 + 0x74) = e;
+	*(int *)(b_D_005FB3B0 + 0x78) = 0;
+	*(int *)(b_D_005FB3B0 + 0x7C) = t;
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", df_flash_control);
+void df_flash_control(void)
+{
+	u8 *b_D_005FB3B0 = (u8 *)&D_005FB3B0;
+	if (*(int *)(b_D_005FB3B0 + 0x78) < *(int *)(b_D_005FB3B0 + 0x7C))
+		(*(int *)(b_D_005FB3B0 + 0x78))++;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", df_flash_disp);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", df_fade_start);
+void df_fade_start(int a, int b, int c, int d, int t)
+{
+	u8 *b_D_005FB3B0 = (u8 *)&D_005FB3B0;
+	*(int *)(b_D_005FB3B0 + 0x80) = a;
+	*(int *)(b_D_005FB3B0 + 0x84) = b;
+	*(int *)(b_D_005FB3B0 + 0x88) = c;
+	*(int *)(b_D_005FB3B0 + 0x8C) = 0xFF;
+	*(int *)(b_D_005FB3B0 + 0x90) = d;
+	*(int *)(b_D_005FB3B0 + 0x94) = 0;
+	*(int *)(b_D_005FB3B0 + 0x98) = t;
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", df_fade_check);
+M2C_UNK df_fade_check(void)
+{
+	u8 *b_D_005FB3B0 = (u8 *)&D_005FB3B0;
+	if (*(int *)(b_D_005FB3B0 + 0x94) < *(int *)(b_D_005FB3B0 + 0x98))
+		return 0;
+	return 1;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", df_fade_control);
 
@@ -472,7 +581,12 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", timer_init);
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", timer_play);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", timer_stop);
+void timer_stop(int a)
+{
+	u8 *b_D_005FB714 = (u8 *)&D_005FB714;
+	*(int *)(b_D_005FB714 + 0x4) = a;
+	*(int *)(b_D_005FB714 + 0x30) = -1;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", timer_control);
 
@@ -515,7 +629,13 @@ void bgm_rankup(void) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", bgm_rank_start);
+void bgm_rank_start(void)
+{
+	u8 *b_D_005FB76C = (u8 *)&D_005FB76C;
+	*(int *)(b_D_005FB76C + 0x8) = 0;
+	*(int *)(b_D_005FB76C + 0xC) = 0;
+	sound_next_block_set(1);
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -533,9 +653,21 @@ int bgm_clear_play_check(void) {
     return get_now_sound_block() == 9;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", bgm_rank_max_check);
+M2C_UNK bgm_rank_max_check(void)
+{
+	u8 *b_D_005FB76C = (u8 *)&D_005FB76C;
+	int ret;
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", bgm_rank_max);
+	ret = 0;
+	if (*(int *)(b_D_005FB76C + 0) != -1)
+		ret = *(int *)(b_D_005FB76C + 0x10) == *(int *)(b_D_005FB76C + 0x4) - 1;
+	return ret;
+}
+
+M2C_UNK bgm_rank_max(void)
+{
+	return (D_005FB770 == 1) ? 1 : D_005FB770 - 1;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -611,7 +743,13 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", risarju_init);
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", risarju_control);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", beat_help_init);
+void beat_help_init(void)
+{
+	u8 *b_D_005FB7A8 = (u8 *)&D_005FB7A8;
+	*(int *)(b_D_005FB7A8 + 0) = 0;
+	*(int *)(b_D_005FB7A8 + 0x4) = 0;
+	*(int *)(b_D_005FB7A8 + 0x8) = 0;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -625,7 +763,11 @@ void beat_help_set(int arg0) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", beat_help_off);
+void beat_help_off(void)
+{
+	u8 *b_D_005FB7A8 = (u8 *)&D_005FB7A8;
+	*(int *)(b_D_005FB7A8 + 0) = 0;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", beat_help_sync_disp);
 
@@ -653,7 +795,13 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", inv_netgame_in
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", inv_netgame_loop);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", inv_netgame_member_max);
+M2C_UNK inv_netgame_member_max(void)
+{
+	int n = 4;
+	if (D_004B5010 != 0)
+		n = D_004B5010;
+	return n;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", inv_netgame_linkcheck);
 
