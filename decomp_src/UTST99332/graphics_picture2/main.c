@@ -138,6 +138,58 @@ void *memalign(unsigned int align, unsigned int size);
 void free(void *p);
 
 
+/* SDK prototypes (tools/sdk_protos.h) */
+int sceCtrlReadBufferPositive(SceCtrlData *data, int count);
+int sceCtrlSetSamplingMode(int mode);
+int sceDisplayGetVcount(void);
+int sceDisplayWaitVblankStart(void);
+void sceGuAmbient(unsigned int color);
+void sceGuBlendFunc(int op, int src, int dest, unsigned int srcfix, unsigned int destfix);
+void sceGuClear(int flags);
+void sceGuClearColor(unsigned int color);
+void sceGuClearDepth(unsigned int depth);
+void sceGuClearStencil(unsigned int stencil);
+void sceGuCopyImage(int psm, int sx, int sy, int width, int height, int srcw, void *src, int dx, int dy, int destw, void *dest);
+void sceGuDebugFlush(void);
+void sceGuDebugPrint(int x, int y, unsigned int color, const char *str);
+void sceGuDepthBuffer(void *zbp, int frame_width);
+void sceGuDepthRange(int near, int far);
+void sceGuDisable(int state);
+void sceGuDispBuffer(int width, int height, void *dbp, int frame_width);
+int sceGuDisplay(int state);
+void sceGuDrawBuffer(int psm, void *fbp, int frame_width);
+void sceGuEnable(int state);
+int sceGuFinish(void);
+void sceGuInit(void);
+void sceGuLogicalOp(int op);
+void sceGuMaterial(int mode, unsigned int color);
+void sceGuOffset(unsigned int x, unsigned int y);
+void sceGuPatchDivide(unsigned int ulevel, unsigned int vlevel);
+void sceGuPatchPrim(int prim);
+void sceGuScissor(int x, int y, int w, int h);
+void sceGuStart(int type, void *list, int size);
+int sceGuSync(int mode, int what);
+void sceGuTerm(void);
+void sceGuTexFilter(int min, int mag);
+void sceGuTexFunc(int tfx, int tcc);
+void sceGuTexLevelMode(unsigned int mode, float bias);
+void sceGuTexOffset(float u, float v);
+void sceGuTexScale(float u, float v);
+void sceGuTexWrap(int u, int v);
+void sceGuViewport(int cx, int cy, int width, int height);
+void sceGumDrawBezier(int vtype, int ucount, int vcount, const void *indices, const void *vertices);
+void sceGumLoadIdentity(void);
+void sceGumLookAt(const ScePspFVector3 *eye, const ScePspFVector3 *center, const ScePspFVector3 *up);
+void sceGumMatrixMode(int mode);
+void sceGumPerspective(float fovy, float aspect, float near, float far);
+void sceGumRotateX(float angle);
+void sceGumRotateY(float angle);
+void sceGumRotateZ(float angle);
+void sceGumScale(const ScePspFVector3 *v);
+void sceGumSetMatrixStack(void *stack, int proj, int view, int model, int texture);
+void sceGumTranslate(const ScePspFVector3 *v);
+unsigned int sceKernelGetSystemTimeLow(void);
+
 void *malloc16(unsigned int size) {
     return memalign(0x10U, size);
 }
