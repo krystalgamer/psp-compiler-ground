@@ -13,6 +13,13 @@ M2C_UNK LoadGimFile(M2C_UNK, M2C_UNK);              /* extern */
 M2C_UNK MsLoad();                                   /* extern */
 extern int D_00152968;
 M2C_UNK se_play(M2C_UNK);                           /* extern */
+extern int MsAccessFlag;
+extern int D_0015296C;
+extern int D_00152970;
+extern int D_00152974;
+int GetKeyHit(void);
+void SpriteSetColorRGBA(int r, int g, int b, int a);
+int DrawSpriteEz(float z, float x, float y, float w, float h, float u, float v, int no);
 
 /* cflags: -O2 -fno-merge-constants */
 /* (while TitleDisp is asm: its constants are in .rodata, so the C ones go there too) */
@@ -48,7 +55,41 @@ int SigInit(void) {
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/Title", SigMain);
+int SigMain(void)
+{
+	int ret = 0;
+	int c;
+
+	if (MsAccessFlag) {
+		SpriteInit();
+		SpriteSetColorRGBA(0, 0, 0, 255);
+		DrawSpriteEz(2.0f, 0, 0, 240, 272, 0, 0, 0);
+		DrawSpriteEz(2.0f, 240, 0, 240, 272, 240, 0, 0);
+		SpriteKick();
+		return 0;
+	}
+	SpriteInit();
+	D_0015296C++;
+	if (D_0015296C < 60)
+		c = D_0015296C * 255 / 60;
+	else if (D_0015296C < 241)
+		c = 255;
+	else
+		c = (300 - D_0015296C) * 255 / 60;
+	if (D_0015296C >= 300) {
+		D_0015296C = 0;
+		ret = 1;
+	}
+	if (GetKeyHit() & 0x2008) {
+		D_0015296C = 0;
+		ret = 1;
+	}
+	SpriteSetColorRGBA(c, c, c, 255);
+	DrawSpriteEz(2.0f, 0, 0, 240, 272, 0, 0, 0);
+	DrawSpriteEz(2.0f, 240, 0, 240, 272, 240, 0, 0);
+	SpriteKick();
+	return ret;
+}
 
 int EndCreditInit(void) {
     SpriteAllFreeImage();
@@ -56,4 +97,37 @@ int EndCreditInit(void) {
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/Title", EndCreditMain);
+int EndCreditMain(void)
+{
+	int ret = 0;
+	int c;
+
+	SpriteInit();
+	if (D_00152970 < 60) {
+		D_00152970++;
+		c = D_00152970 * 255 / 60;
+		D_00152974 = 0;
+	} else if (D_00152970 >= 120) {
+		D_00152970++;
+		c = (180 - D_00152970) * 255 / 60;
+		if (D_00152970 >= 180)
+			c = 0;
+		if (D_00152970 >= 200) {
+			ret = 4;
+			D_00152970 = 0;
+			D_00152974 = 0;
+		}
+	} else {
+		D_00152974++;
+		if (D_00152974 > 1800)
+			D_00152970 = 120;
+		if (GetKeyHit() & 0x2008)
+			D_00152970 = 120;
+		c = 255;
+	}
+	SpriteSetColorRGBA(c, c, c, 255);
+	DrawSpriteEz(2.0f, 0, 0, 240, 272, 0, 0, 0);
+	DrawSpriteEz(2.0f, 240, 0, 240, 272, 240, 0, 0);
+	SpriteKick();
+	return ret;
+}

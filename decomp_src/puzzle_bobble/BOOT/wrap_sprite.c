@@ -313,7 +313,7 @@ int SpriteDrawC(int x, float z, int y, SPRDATA *p)
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/wrap_sprite", DrawSprite);
 
-int DrawSpriteEz(float z, int no, float x, float y, float w, float h, float u, float v)
+int DrawSpriteEz(float z, float x, float y, float w, float h, float u, float v, int no)
 {
 	return SpriteDrawEz(no, z, -1, x, y, w, h, u, v);
 }

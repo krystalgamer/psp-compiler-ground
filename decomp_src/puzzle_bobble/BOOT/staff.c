@@ -107,7 +107,7 @@ int staff_roll(void)
 				l = &StaffList[idx];
 				d = &StaffData[l->data];
 				x = 240 - (d->w >> 1);
-				DrawSpriteEz(2.0f, StaffGim, x, l->y, d->w, d->h, d->u, d->v);
+				DrawSpriteEz(2.0f, x, l->y, d->w, d->h, d->u, d->v, StaffGim);
 			}
 		}
 		if (MsAccessFlag == 0) {

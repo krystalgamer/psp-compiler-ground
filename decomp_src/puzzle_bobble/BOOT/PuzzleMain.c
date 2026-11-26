@@ -4,7 +4,7 @@
 #include "PuzzleMain.h"
 
 extern int ssTimes;
-int DrawSpriteEz(float z, int no, float x, float y, float w, float h, float u, float v);
+int DrawSpriteEz(float z, float x, float y, float w, float h, float u, float v, int no);
 int PzlDataGetWidth(int no);
 int GetKeyHit();                                    /* extern */
 int PollShutter(M2C_UNK);                           /* extern */
@@ -408,7 +408,7 @@ void DrawCharcter(int z, int x, int y, PARTZ *tbl, int idx)
 {
 	PARTZ *p = (PARTZ *)(idx * sizeof(PARTZ) + (int)tbl);
 
-	DrawSpriteEz(z, p->no, x, y, p->w, p->h, p->u, p->v);
+	DrawSpriteEz(z, x, y, p->w, p->h, p->u, p->v, p->no);
 }
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", DrawCharcterFlip);
