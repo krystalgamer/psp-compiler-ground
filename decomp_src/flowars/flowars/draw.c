@@ -1,4 +1,5 @@
 #include "common.h"
+#define load load_8F0
 
 
 /* declarations recovered from DWARF */
@@ -393,6 +394,7 @@ void sceGimPictureAnimate(SceGimPicture *picture, float time);
 static void draw_sprite2(int x, int y, int w, int h, int ix, int iy, int flip);
 static void draw_black_back(int x, int y, int w, int h, unsigned int col);
 static void load();
+int sceKernelExitDeleteThread(int status);
 static int sceGimImageGetWidth(const SceGimImageHeader *image, int level);
 static int sceGimImageGetHeight(const SceGimImageHeader *image, int level);
 static void run_draw_vs();
@@ -537,7 +539,51 @@ SceGimPicture *load_picture(int index, int *buff, int size)
 	return pic;
 }
 
-INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/draw", draw_sprite2);
+static void draw_sprite2(int x, int y, int w, int h, int ix, int iy, int flip)
+{
+
+
+	int col_depth = 16;
+	int split_width = 512 / col_depth;
+
+	if (w > col_depth) {
+		int spr_cnt = w / split_width;
+		int extr = w % split_width;
+		int i = 0, x_pos;
+
+		if (flip == 1) {
+			for (i = 0; i < spr_cnt; i++) {
+				x_pos = i * split_width;
+				sceGuSpriteMode(split_width, h, split_width, h);
+				sceGuDrawSprite(x + x_pos, y, 0, (ix + w) - (x_pos + split_width), iy, flip, 0);
+			}
+
+			if (extr > 0) {
+				sceGuSpriteMode(extr, h, extr, h);
+				sceGuDrawSprite(x + spr_cnt * split_width, y, 0, ix, iy, flip, 0);
+			}
+		} else {
+			for (i = 0; i < spr_cnt; i++) {
+				x_pos = i * split_width;
+				sceGuSpriteMode(split_width, h, split_width, h);
+				sceGuDrawSprite(x + x_pos, y, 0, ix + x_pos, iy, flip, 0);
+			}
+
+			if (extr > 0) {
+				sceGuSpriteMode(extr, h, extr, h);
+				sceGuDrawSprite(x + spr_cnt * split_width, y, 0, ix + spr_cnt * split_width, iy, flip, 0);
+			}
+		}
+	} else {
+		sceGuSpriteMode(w, h, w, h);
+		sceGuDrawSprite(x, y, 0, ix, iy, flip, 0);
+	}
+}
+
+__asm__(".globl draw_sprite2");
+
+
+
 
 void draw_sprite(int x, int y, int w, int h, int flip) {
     draw_sprite2(x, y, w, h, 0, 0, flip);
@@ -555,34 +601,186 @@ static void draw_black_back(int x, int y, int w, int h, unsigned int col)
 	}
 }
 
-INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/draw", load_8F0);
+static __inline__ int sceGimImageGetWidth(const SceGimImageHeader *image, int level)
+{
+	int width = image->width ;
+	if ( level > 0 && image->level_type == 1 ) {
+		while ( -- level >= 0 ) width = ( width + 1 ) / 2 ;
+	}
+	return width ;
+}
 
-/* load_8F0's float constants (asm until load_8F0 is C): .rodata.cst4, like C floats */
-__asm__(".pushsection .rodata.cst4,\"aM\",@progbits,4\n"
-	"\t.align 2\n"
-	".globl D_0002F30C\nD_0002F30C:\n\t.word 0x40A00000\n"
-	".globl D_0002F310\nD_0002F310:\n\t.word 0x3C888889\n"
-	".globl D_0002F314\nD_0002F314:\n\t.word 0x41200000\n"
-	"\t.popsection");
+static __inline__ int sceGimImageGetHeight(const SceGimImageHeader *image, int level)
+{
+	int height = image->height ;
+	if ( level > 0 && image->level_type == 1 ) {
+		while ( -- level >= 0 ) height = ( height + 1 ) / 2 ;
+	}
+	return height ;
+}
+
+static void load()
+{
+	int *buff, size;
+	int i;
+
+	if (load_file("img/img00.dat", &buff, &size) != 1)
+		print_nothing("load file error\n");
+
+	g_img_index = 0;
+
+	{
+		ani_param *p_ani;
+
+		for (i = 1; i < 22; i++) {
+			g_animation[i] = load_picture(g_img_index++, buff, size);
+			p_ani = &g_ani_param[i];
+
+			p_ani->fps = 5.0f;
+			p_ani->step = 1.0f / 60;
+
+			sceGimPictureSetFrameRate(g_animation[i], p_ani->fps);
+			{
+				SceGimImageHeader *h = sceGimPictureGetImage(g_animation[i]);
+				p_ani->width = sceGimImageGetWidth(h, 0);
+				p_ani->height = sceGimImageGetHeight(h, 0);
+			}
+			print_nothing("load_ani_success : %d\n", i);
+		}
+	}
+	print_nothing("animation load end\n");
+	print_nothing("free buff -> animation data\n");
+	free(buff);
+
+	{
+		int *buff2;
+		Dlg_param *p_dlg;
+
+		if (load_file("img/img01.dat", &buff2, &size) != 1)
+			print_nothing("load file error\n");
+
+		print_nothing("load file : img01.dat\n");
+
+		g_img_index = 0;
+		pic_pae_l1 = load_picture(g_img_index++, buff2, size);
+		pic_pae_l2 = load_picture(g_img_index++, buff2, size);
+		pic_pae_m = load_picture(g_img_index++, buff2, size);
+		pic_pae_s = load_picture(g_img_index++, buff2, size);
+		g_img_black_back = load_picture(g_img_index++, buff2, size);
+		g_img_warning = load_picture(g_img_index++, buff2, size);
+		g_img_warning2 = load_picture(g_img_index++, buff2, size);
+		g_cursor_hand = load_picture(g_img_index++, buff2, size);
+		sceGimPictureSetFrameRate(g_cursor_hand, 10.0f);
+		print_nothing("\xc6\xd0, \xc4\xbf\xbc\xad, \xbf\xf6\xb4\xd7\xc3\xa2 \xb7\xce\xb5\xe5 \xbf\xcf\xb7\xe1\n");
+
+		for (i = 0; i < 12; i++) {
+			p_dlg = &dlg_param[i];
+			pic_dlg[i] = load_picture(g_img_index++, buff2, size);
+			{
+				SceGimImageHeader *h = sceGimPictureGetImage(pic_dlg[i]);
+				p_dlg->width = sceGimImageGetWidth(h, 0);
+				p_dlg->height = sceGimImageGetHeight(h, 0);
+			}
+		}
+		print_nothing("\xb4\xd9\xc0\xcc\xbe\xf3\xb7\xce\xb1\xd7 \xb7\xce\xb5\xe5 \xbf\xcf\xb7\xe1\n");
+
+		for (i = 1; i < 4; i++)
+			g_icons[i] = load_picture(g_img_index++, buff2, size);
+
+		g_icon_ox = load_picture(g_img_index++, buff2, size);
+		g_icon_result[0] = load_picture(g_img_index++, buff2, size);
+		g_icon_result[1] = load_picture(g_img_index++, buff2, size);
+
+		g_timer = load_picture(g_img_index++, buff2, size);
+		g_img_win_lose = load_picture(g_img_index++, buff2, size);
+		g_img_all_in = load_picture(g_img_index++, buff2, size);
+		g_img_button = load_picture(g_img_index++, buff2, size);
+
+		for (i = 0; i < 12; i++)
+			g_font[i] = load_picture(g_img_index++, buff2, size);
+
+		g_font_han = load_picture(g_img_index++, buff2, size);
+		g_font_eng = load_picture(g_img_index++, buff2, size);
+
+		g_img_turn = load_picture(g_img_index++, buff2, size);
+		sceGimPictureSetFrameRate(g_img_turn, 10.0f);
+		g_img_sun = load_picture(g_img_index++, buff2, size);
+		g_img_bet_money = load_picture(g_img_index++, buff2, size);
+		g_img_nagari_num = load_picture(g_img_index++, buff2, size);
+		g_img_status_on = load_picture(g_img_index++, buff2, size);
+		g_img_status_off = load_picture(g_img_index++, buff2, size);
+		g_img_status_num_on = load_picture(g_img_index++, buff2, size);
+		g_img_status_num_off = load_picture(g_img_index++, buff2, size);
+
+		if (mod_game.game_type == 1) {
+			g_img_index += 2;
+		} else if (mod_game.game_type == 2) {
+			g_img_mission_cover = load_picture(g_img_index++, buff2, size);
+			g_img_index++;
+		} else {
+			g_img_index++;
+			g_img_mission_cover = load_picture(g_img_index++, buff2, size);
+		}
+		print_nothing("\xbe\xc6\xc0\xcc\xc4\xdc, \xc6\xf9\xc6\xae \xb7\xce\xb5\xe5 \xbf\xcf\xb7\xe1\n");
+
+		if (mod_game.game_type == 1) {
+			int my_party = l_mod_player.player_party;
+			int my_char = l_mod_player.player_character;
+			int opp_party = g_opp_party[0];
+			int opp_char = g_opp_char[0];
+
+			int i;
+
+			print_nothing("vs \xb7\xce\xb5\xe5 \xbd\xc3\xc0\xdb - me = %d%d, opp = %d%d\n", my_party, my_char, opp_party, opp_char);
+			g_vs_back = load_picture(g_img_index++, buff2, size);
+			g_vs_light = load_picture(g_img_index++, buff2, size);
+			g_vs_mission_board = load_picture(g_img_index++, buff2, size);
+			g_vs_mission_item = load_picture(g_img_index++, buff2, size);
+			g_vs_level_num = load_picture(g_img_index++, buff2, size);
+			g_vs_text_v = load_picture(g_img_index++, buff2, size);
+			g_vs_text_s = load_picture(g_img_index++, buff2, size);
+			g_vs_text_vs = load_picture(g_img_index++, buff2, size);
+
+			for (i = 0; i < opp_party; i++)
+				g_img_index++;
+			g_vs_char_report = load_picture(g_img_index++, buff2, size);
+
+			print_nothing("vs_char_report \xbf\xcf\xb7\xe1\n");
+			free(buff2);
+
+			if ((my_party == 0 || my_party == 2 || my_party == 3 || my_party == 4) && my_char == 0) {
+				g_vs_char[0] = load_image("img/c_character_%d%d_L.gim", my_party + 1, 1);
+				g_img_loaded++;
+			} else {
+				g_vs_char[0] = load_image("img/c_character_%d%d.gim", my_party + 1, my_char + 1);
+				g_img_loaded++;
+			}
+			g_vs_char[1] = load_image("img/c_character_%d%d.gim", opp_party + 1, opp_char + 1);
+			g_img_loaded++;
+			print_nothing("vs_char \xb7\xce\xb5\xe5 \xbf\xcf\xb7\xe1\n");
+		} else {
+			free(buff2);
+		}
+	}
+
+	g_img_loaded_done = 1;
+	sceKernelExitDeleteThread(1);
+}
+
+__asm__(".globl load_8F0");
+
+
+
 
 /* the "" initializer constant that C emits first in run_draw_vs; show_result_dialog (asm) uses it */
-__asm__(".globl D_0002F270\nD_0002F270 = 0x0002F270");
 
-INCLUDE_RODATA("tmp/asm/flowars/flowars/nonmatchings/draw", D_0002F198);
 
-INCLUDE_RODATA("tmp/asm/flowars/flowars/nonmatchings/draw", D_0002F1B4);
 
-INCLUDE_RODATA("tmp/asm/flowars/flowars/nonmatchings/draw", D_0002F1CC);
 
-INCLUDE_RODATA("tmp/asm/flowars/flowars/nonmatchings/draw", D_0002F1E4);
 
-INCLUDE_RODATA("tmp/asm/flowars/flowars/nonmatchings/draw", D_0002F20C);
 
-INCLUDE_RODATA("tmp/asm/flowars/flowars/nonmatchings/draw", D_0002F224);
 
-INCLUDE_RODATA("tmp/asm/flowars/flowars/nonmatchings/draw", D_0002F240);
 
-INCLUDE_RODATA("tmp/asm/flowars/flowars/nonmatchings/draw", D_0002F25C);
 
 static void run_draw_vs()
 {
@@ -939,10 +1137,14 @@ static void draw_pae_num(int num, int x, int y)
 }
 
 /* float rodata in .rodata.cst4, as C emits it */
+/* float rodata in .rodata.cst4, as C emits it */
 INCLUDE_ASM("decomp_src/flowars/flowars/asm_cst4", draw_my_collection);
 
+
+/* float rodata in .rodata.cst4, as C emits it */
 /* float rodata in .rodata.cst4, as C emits it */
 INCLUDE_ASM("decomp_src/flowars/flowars/asm_cst4", draw_opp_collection1);
+
 
 void draw_opp_collection(void) {
     draw_opp_collection1();
@@ -1180,13 +1382,116 @@ static void show_gostop_info()
 
 __asm__(".globl show_gostop_info");
 
-INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/draw", show_result_dialog);
+static void show_result_dialog()
+{
 
-INCLUDE_RODATA("tmp/asm/flowars/flowars/nonmatchings/draw", D_0002F2F0);
+	if (g_win_player != -1) {
 
-INCLUDE_RODATA("tmp/asm/flowars/flowars/nonmatchings/draw", D_0002F2F4);
 
-INCLUDE_RODATA("tmp/asm/flowars/flowars/nonmatchings/draw", D_0002F2F8);
+
+		int flagWin = g_win_player == 0;
+		int base_x = (225 - dlg_param[7].width) / 2 + 117;
+		int base_y = (151 - dlg_param[7].height) / 2 + 55;
+
+		char strTemp[20] = "";
+
+		int base_score = g_result_score.score.gwang + g_result_score.score.mung + g_result_score.score.dan + g_result_score.score.pi + g_result_score.go_add;
+
+		UserStat winner_stat;
+		userManager.get_stat(g_win_player, &winner_stat);
+
+		if (winner_stat.sp_success[7] || winner_stat.sp_success[8])
+			base_score = 7;
+
+		{
+			char m1[5] = "", m2[5] = "", m3[5] = "", m4[5] = "";
+
+			long money = g_result_score.money_sum;
+
+			sprintf(m1, "%ld", money / 1000000000);
+			sprintf(m2, "%ld", money % 1000000000 / 100000000);
+			sprintf(m3, "%ld", money % 100000000 / 10000);
+			sprintf(m4, "%ld", money % 10000);
+
+			graphics.draw_number2(m1, base_x + 22, base_y + 52, 3, 3, 1);
+			graphics.draw_number2(m2, base_x + 62, base_y + 52, 4, 3, 1);
+			graphics.draw_number2(m3, base_x + 111, base_y + 52, 4, 3, 1);
+			graphics.draw_number2(m4, base_x + 161, base_y + 52, 4, 3, 1);
+		}
+
+		if (flagWin)
+			graphics.draw_number(base_score, base_x + 93, base_y + 20, 3, 4, 1);
+		else
+			graphics.draw_number(base_score, base_x + 93, base_y + 20, 3, 7, 1);
+
+		if (winner_stat.sp_success[7]) {
+			draw_result_icon(flagWin, 7, base_x + 146, base_y + 92);
+		} else if (winner_stat.sp_success[8]) {
+			draw_result_icon(flagWin, 8, base_x + 176, base_y + 92);
+		} else {
+			if (g_result_score.total_baesu >= 2) {
+				sprintf(strTemp, "x%d", g_result_score.total_baesu);
+				if (flagWin)
+					graphics.draw_number2(strTemp, base_x + 152, base_y + 20, 4, 5, 0);
+				else
+					graphics.draw_number2(strTemp, base_x + 152, base_y + 20, 4, 8, 0);
+			}
+
+			if (g_result_score.go_baesu >= 2) {
+				draw_result_icon(flagWin, 0, base_x + 14, base_y + 71);
+				sprintf(strTemp, "x%d", g_result_score.go_baesu);
+				if (flagWin)
+					graphics.draw_number2(strTemp, base_x + 50, base_y + 71, 3, 6, 0);
+				else
+					graphics.draw_number2(strTemp, base_x + 50, base_y + 71, 3, 9, 0);
+			}
+
+			if (g_result_score.shake_baesu > 0) {
+				draw_result_icon(flagWin, 1, base_x + 14, base_y + 90);
+				sprintf(strTemp, "x%d", g_result_score.shake_baesu);
+				if (flagWin)
+					graphics.draw_number2(strTemp, base_x + 50, base_y + 90, 3, 6, 0);
+				else
+					graphics.draw_number2(strTemp, base_x + 50, base_y + 90, 3, 9, 0);
+			}
+
+			if (g_result_score.mission_baesu > 0) {
+				sprintf(strTemp, "X%d", g_result_score.mission_baesu);
+				draw_result_icon(flagWin, 2, base_x + 14, base_y + 111);
+				if (flagWin)
+					graphics.draw_number2(strTemp, base_x + 50, base_y + 111, 3, 6, 0);
+				else
+					graphics.draw_number2(strTemp, base_x + 50, base_y + 111, 3, 9, 0);
+			}
+
+			if (g_result_score.g_bak > 0)
+				draw_result_icon(flagWin, 3, base_x + 109, base_y + 71);
+
+			if (g_result_score.go_bak > 0)
+				draw_result_icon(flagWin, 4, base_x + 142, base_y + 71);
+
+			if (g_result_score.p_bak > 0)
+				draw_result_icon(flagWin, 5, base_x + 177, base_y + 71);
+
+			if (g_result_score.m_bak > 0)
+				draw_result_icon(flagWin, 6, base_x + 110, base_y + 92);
+
+			if (g_result_score.nagari_baesu >= 2)
+				draw_result_icon(flagWin, 9, base_x + 110, base_y + 113);
+		}
+
+		if (l_mod_player.my_money <= 0)
+			graphics.draw_all_in(0);
+		else if (l_mod_player.opp_money <= 0)
+			graphics.draw_all_in(1);
+	}
+}
+
+__asm__(".globl show_result_dialog");
+
+
+
+
 
 
 static void draw_number(long64 num, int x, int y, int space, int font_size, int align)
