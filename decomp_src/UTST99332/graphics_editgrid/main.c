@@ -1,3 +1,5 @@
+/* cflags: -O2 -fmerge-constants */
+/* data-align: 16 */
 #include "common.h"
 
 /* declarations recovered from DWARF */
@@ -15,7 +17,7 @@ struct ScePspIMatrix4 { /* size 0x40 */
     ScePspIVector4 y;
     ScePspIVector4 z;
     ScePspIVector4 w;
-};
+} __attribute__((aligned(16)));
 typedef struct ScePspIMatrix4 ScePspIMatrix4;
 struct ScePspFVector3;
 struct ScePspFVector3 { /* size 0xc */
@@ -173,19 +175,276 @@ static void draw_dot(void)
 
 INCLUDE_RODATA("tmp/asm/UTST99332/graphics_editgrid/nonmatchings/main", primflag);
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_editgrid/nonmatchings/main", draw_frame);
+const char char_prim[3][16] = {
+	"TRIANGLE_STRIP",
+	"LINE_STRIP",
+	"POINTS"
+};
+
+const char char_mode[2][8] = {
+	"[EDIT]",
+	"[VIEW]"
+};
+
+#ifndef SCEGU_IMMEDIATE /* sample */
+#define SCEGU_IMMEDIATE                    0
+#endif
+#ifndef SCEGU_CLEAR_ALL /* sample */
+#define SCEGU_CLEAR_ALL               0x0007
+#endif
+#ifndef SCEGU_PI /* sample */
+#define SCEGU_PI                           3.1415926535897932384626433832f
+#endif
+#ifndef SCEGU_RAD /* sample */
+#define SCEGU_RAD(a)                       ((a)*SCEGU_PI/180.0f)
+#endif
+#ifndef SCEGU_SYNC_FINISH /* sample */
+#define SCEGU_SYNC_FINISH                  0
+#endif
+#ifndef SCEGU_SYNC_WAIT /* sample */
+#define SCEGU_SYNC_WAIT                    0
+#endif
+static void draw_frame(void)
+{
+	sceGuStart(SCEGU_IMMEDIATE, disp_list, sizeof(disp_list));
+	sceGuClear(SCEGU_CLEAR_ALL);
+
+	sceGuDebugPrint( 8, 8, 0x00ffffff, char_mode[mode]);
+	sceGuDebugPrint(80, 8, 0x00ffffff, char_prim[prim]);
+
+	sceGumPushMatrix();
+	{
+		sceGumLoadIdentity();
+
+		sceGumTranslate(&pos);
+		sceGumRotateX(SCEGU_RAD(rot.x));
+		sceGumRotateY(SCEGU_RAD(rot.y));
+		sceGumRotateZ(SCEGU_RAD(rot.z));
+
+		draw_bezier();
+		if (!mode)
+			draw_dot();
+	}
+	sceGumPopMatrix();
+
+	sceGuFinish();
+	sceGuSync(SCEGU_SYNC_FINISH, SCEGU_SYNC_WAIT);
+}
 
 INCLUDE_RODATA("tmp/asm/UTST99332/graphics_editgrid/nonmatchings/main", bezier);
 
 INCLUDE_RODATA("tmp/asm/UTST99332/graphics_editgrid/nonmatchings/main", dot);
 
-INCLUDE_RODATA("tmp/asm/UTST99332/graphics_editgrid/nonmatchings/main", D_00011E20);
 
-INCLUDE_RODATA("tmp/asm/UTST99332/graphics_editgrid/nonmatchings/main", D_00011E60);
 
-INCLUDE_RODATA("tmp/asm/UTST99332/graphics_editgrid/nonmatchings/main", D_00011E64);
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_editgrid/nonmatchings/main", init_all);
+#ifndef SCEGU_IMMEDIATE /* sample */
+#define SCEGU_IMMEDIATE                    0
+#endif
+#ifndef SCEGU_PF5551 /* sample */
+#define SCEGU_PF5551                       1
+#endif
+#ifndef SCEGU_VRAM_BP_0 /* sample */
+#define SCEGU_VRAM_BP_0       (void *)(SCEGU_VRAM_TOP)
+#endif
+#ifndef SCEGU_VRAM_BP_1 /* sample */
+#define SCEGU_VRAM_BP_1       (void *)(SCEGU_VRAM_TOP+SCEGU_VRAM_BUFSIZE)
+#endif
+#ifndef SCEGU_VRAM_TOP /* sample */
+#define SCEGU_VRAM_TOP        0x00000000
+#endif
+#ifndef SCEGU_VRAM_BUFSIZE /* sample */
+#define SCEGU_VRAM_BUFSIZE    (SCEGU_VRAM_WIDTH*SCEGU_SCR_HEIGHT*2)
+#endif
+#ifndef SCEGU_VRAM_BP_2 /* sample */
+#define SCEGU_VRAM_BP_2       (void *)(SCEGU_VRAM_TOP+(SCEGU_VRAM_BUFSIZE*2))
+#endif
+#ifndef SCEGU_VRAM_WIDTH /* sample */
+#define SCEGU_VRAM_WIDTH      512
+#endif
+#ifndef SCEGU_SCR_OFFSETX /* sample */
+#define SCEGU_SCR_OFFSETX     ((4096 - SCEGU_SCR_WIDTH) / 2)
+#endif
+#ifndef SCEGU_SCR_OFFSETY /* sample */
+#define SCEGU_SCR_OFFSETY     ((4096 - SCEGU_SCR_HEIGHT) / 2)
+#endif
+#ifndef SCEGU_ADD /* sample */
+#define SCEGU_ADD                          0
+#endif
+#ifndef SCEGU_SRC_ALPHA /* sample */
+#define SCEGU_SRC_ALPHA                    2
+#endif
+#ifndef SCEGU_ONE_MINUS_SRC_ALPHA /* sample */
+#define SCEGU_ONE_MINUS_SRC_ALPHA          3
+#endif
+#ifndef SCEGU_BLEND /* sample */
+#define SCEGU_BLEND                        4
+#endif
+#ifndef SCEGU_SCISSOR_TEST /* sample */
+#define SCEGU_SCISSOR_TEST                 2
+#endif
+#ifndef SCEGU_GREATER /* sample */
+#define SCEGU_GREATER                      6
+#endif
+#ifndef SCEGU_ALPHA_TEST /* sample */
+#define SCEGU_ALPHA_TEST                   0
+#endif
+#ifndef SCEGU_GEQUAL /* sample */
+#define SCEGU_GEQUAL                       7
+#endif
+#ifndef SCEGU_DEPTH_TEST /* sample */
+#define SCEGU_DEPTH_TEST                   1
+#endif
+#ifndef SCEGU_CW /* sample */
+#define SCEGU_CW                           0
+#endif
+#ifndef SCEGU_NORMAL_REVERSE_PATCH /* sample */
+#define SCEGU_NORMAL_REVERSE_PATCH        20
+#endif
+#ifndef SCEGU_TEXTURE /* sample */
+#define SCEGU_TEXTURE                      9
+#endif
+#ifndef SCEGU_DITHER /* sample */
+#define SCEGU_DITHER                       6
+#endif
+#ifndef SCEGU_CLIP_PLANE /* sample */
+#define SCEGU_CLIP_PLANE                   8
+#endif
+#ifndef SCEGU_SMOOTH /* sample */
+#define SCEGU_SMOOTH                       1
+#endif
+#ifndef SCEGU_LIGHT_DIRECTION /* sample */
+#define SCEGU_LIGHT_DIRECTION              0
+#endif
+#ifndef SCEGU_DIFFUSE /* sample */
+#define SCEGU_DIFFUSE                      2
+#endif
+#ifndef SCEGU_LIGHT0 /* sample */
+#define SCEGU_LIGHT0                      11
+#endif
+#ifndef SCEGU_LIGHTING /* sample */
+#define SCEGU_LIGHTING                    10
+#endif
+#ifndef SCEGU_FOG /* sample */
+#define SCEGU_FOG                          7
+#endif
+#ifndef SCEGU_MATRIX_PROJECTION /* sample */
+#define SCEGU_MATRIX_PROJECTION            0
+#endif
+#ifndef SCEGU_PI /* sample */
+#define SCEGU_PI                           3.1415926535897932384626433832f
+#endif
+#ifndef SCEGU_RAD /* sample */
+#define SCEGU_RAD(a)                       ((a)*SCEGU_PI/180.0f)
+#endif
+#ifndef SCEGU_SCR_WIDTH /* sample */
+#define SCEGU_SCR_WIDTH       480
+#endif
+#ifndef SCEGU_SCR_HEIGHT /* sample */
+#define SCEGU_SCR_HEIGHT      272
+#endif
+#ifndef SCEGU_SCR_ASPECT /* sample */
+#define SCEGU_SCR_ASPECT      ((float)SCEGU_SCR_WIDTH / (float)SCEGU_SCR_HEIGHT)
+#endif
+#ifndef SCEGU_MATRIX_WORLD /* sample */
+#define SCEGU_MATRIX_WORLD                 2
+#endif
+#ifndef SCEGU_SYNC_FINISH /* sample */
+#define SCEGU_SYNC_FINISH                  0
+#endif
+#ifndef SCEGU_SYNC_WAIT /* sample */
+#define SCEGU_SYNC_WAIT                    0
+#endif
+#ifndef MAXCONTROL /* sample */
+#define MAXCONTROL	16
+#endif
+#ifndef SCEGU_DISPLAY_ON /* sample */
+#define SCEGU_DISPLAY_ON		1
+#endif
+static void init_all(void)
+{
+	ScePspIMatrix4	dith={	{-4,  0, -3,  1},
+							{ 2, -2,  3, -1},
+							{-3,  1, -4,  0},
+							{ 3, -1,  2, -2}};
+	ScePspFVector3	vec;
+	int				i;
+
+	sceGuInit();
+
+	sceGuStart(SCEGU_IMMEDIATE, disp_list, sizeof(disp_list));
+	sceGuDrawBuffer(SCEGU_PF5551, SCEGU_VRAM_BP_0, SCEGU_VRAM_WIDTH);
+	sceGuDispBuffer(SCEGU_SCR_WIDTH, SCEGU_SCR_HEIGHT,
+					SCEGU_VRAM_BP_1, SCEGU_VRAM_WIDTH);
+	sceGuDepthBuffer(SCEGU_VRAM_BP_2, SCEGU_VRAM_WIDTH);
+
+	sceGuOffset(SCEGU_SCR_OFFSETX, SCEGU_SCR_OFFSETY);
+	sceGuViewport(2048, 2048, SCEGU_SCR_WIDTH, SCEGU_SCR_HEIGHT);
+	sceGuDepthRange(50000, 10000);
+
+	sceGuBlendFunc(SCEGU_ADD, SCEGU_SRC_ALPHA, SCEGU_ONE_MINUS_SRC_ALPHA, 0, 0);
+	sceGuEnable(SCEGU_BLEND);
+
+	sceGuScissor(0, 0, SCEGU_SCR_WIDTH, SCEGU_SCR_HEIGHT);
+	sceGuEnable(SCEGU_SCISSOR_TEST);
+
+	sceGuAlphaFunc(SCEGU_GREATER, 0x00, 0xff);
+	sceGuEnable(SCEGU_ALPHA_TEST);
+
+	sceGuDepthFunc(SCEGU_GEQUAL);
+	sceGuEnable(SCEGU_DEPTH_TEST);
+
+	sceGuFrontFace(SCEGU_CW);
+	sceGuEnable(SCEGU_NORMAL_REVERSE_PATCH);
+
+	sceGuDisable(SCEGU_TEXTURE);
+
+	sceGuSetDither(&dith);
+	sceGuEnable(SCEGU_DITHER);
+	sceGuEnable(SCEGU_CLIP_PLANE);
+	sceGuShadeModel(SCEGU_SMOOTH);
+
+	vec.x=0.614497f;
+	vec.y=0.691714f;
+	vec.z=0.379372f;
+	sceGuLightColor(0, SCEGU_DIFFUSE, 0xffffffff);
+	sceGuLight(0, SCEGU_LIGHT_DIRECTION, SCEGU_DIFFUSE, &vec);
+	sceGuEnable(SCEGU_LIGHT0);
+	sceGuEnable(SCEGU_LIGHTING);
+
+	sceGuDisable(SCEGU_FOG);
+	sceGuAmbient(0xffdddddd);
+
+	sceGumSetMatrixStack(&matrix_stack[0], 8, 8, 32, 0);
+
+	sceGumMatrixMode(SCEGU_MATRIX_PROJECTION);
+	sceGumLoadIdentity();
+	sceGumPerspective(SCEGU_RAD(45.0f), SCEGU_SCR_ASPECT,
+					1.000000f, 100.000000f);
+
+	sceGumMatrixMode(SCEGU_MATRIX_WORLD);
+
+	sceGuClearColor(0x00800000);
+	sceGuClearDepth(0);
+	sceGuClearStencil(0);
+
+	sceGuFinish();
+	sceGuSync(SCEGU_SYNC_FINISH, SCEGU_SYNC_WAIT);
+	sceDisplayWaitVblankStart();
+
+	pos.x=pos.y=pos.z=0.0f;
+	rot.x=rot.y=rot.z=0.0f;
+
+	pos.z=-10.0f;
+
+	for (i=0; i<MAXCONTROL; i++) {
+		control[i].x=bezier[i*3+0];
+		control[i].y=bezier[i*3+1];
+		control[i].z=bezier[i*3+2];
+	}
+
+	sceGuDisplay(SCEGU_DISPLAY_ON);
+}
 
 #define DTRANS		0.01f;
 #define SCE_CTRL_CIRCLE				(1<<13)
