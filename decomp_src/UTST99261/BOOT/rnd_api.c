@@ -474,7 +474,45 @@ loop_2:
     return var_a0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_api", rnd_prevRadioBoxnode);
+typedef struct RITEM {
+    struct RITEM *prev;
+    struct RITEM *next;
+    BNODE *node;
+} RITEM;
+
+typedef struct RGROUP {
+    int unk0;
+    struct RGROUP *next;
+    RITEM *items;
+    char *name;
+} RGROUP;
+
+BNODE *rnd_prevRadioBoxnode(BNODE *node) {
+    char *name;
+    RGROUP *g;
+    RITEM *p;
+
+    name = *(char **)node->sub;
+    if (name == NULL) {
+        return NULL;
+    }
+    g = *(RGROUP **)((u8 *)((BNODE *)getBodyBox())->sub + 0x80);
+    for (; g != NULL; g = g->next) {
+        if (strcmp(g->name, name) == 0) {
+            p = g->items;
+            while (p != NULL && p->node != node) {
+                p = p->next;
+            }
+            if (p != NULL && p->prev != NULL) {
+                return p->prev->node;
+            }
+            if (p != NULL && p->prev == NULL) {
+                return NULL;
+            }
+        }
+    }
+    return NULL;
+}
 
 void rnd_drawBasicBoxnode(void *ctx, BNODE *n, int ox, int oy) {
     int c;
