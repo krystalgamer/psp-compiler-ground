@@ -185,7 +185,43 @@ void free_mpeglist(void)
 	mpeglist_head.tqh_last = &mpeglist_head.tqh_first;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/mpeg_list", draw_mpeglist);
+void sceGuDebugPrint(int x, int y, unsigned int color, const char *str);
+int snprintf(char *buf, unsigned int size, const char *fmt, ...);
+void sceGuDebugPrint(int x, int y, unsigned int color, const char *str);
+void draw_mpeglist(void)
+{
+	char buf[300];
+	struct mpeglist_entry *entry;
+	int i;
+	int y;
+	unsigned int color;
+
+	snprintf(buf, sizeof(buf), "[Video Data List] (total: %d files)", _info.mpeglist_entry_num);
+	sceGuDebugPrint(0x31, 0x1F, 0xFFFFFF, buf);
+	if (_info.mpeglist_top_entry > 0) {
+		snprintf(buf, sizeof(buf), "^ (more ...)");
+		sceGuDebugPrint(0x31, 0x33, 0xFFFFFF, buf);
+	}
+	y = 0x3D;
+	i = 0;
+	for (entry = mpeglist_head.tqh_first; entry != NULL; entry = entry->link.tqe_next, i++) {
+		if (i < _info.mpeglist_top_entry)
+			continue;
+		if (i == _info.mpeglist_top_entry + 16)
+			break;
+		if (i == _info.mpeglist_v_cursor_pos)
+			color = 0xFFFF;
+		else
+			color = 0xFFFFFF;
+		snprintf(buf, sizeof(buf), "%-32s  %8lld", entry->name, entry->size);
+		sceGuDebugPrint(0x39, y, color, buf);
+		y += 10;
+	}
+	if (_info.mpeglist_top_entry + 16 < _info.mpeglist_entry_num) {
+		snprintf(buf, sizeof(buf), "v (more ...)");
+		sceGuDebugPrint(0x31, y, 0xFFFFFF, buf);
+	}
+}
 
 char *strcpy(char *d, const char *s);
 char *strcpy(char *d, const char *s);
