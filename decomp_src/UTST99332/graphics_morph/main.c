@@ -296,54 +296,23 @@ void draw_frame(void) {
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_morph/nonmatchings/main", init_all);
 
-#ifndef SCE_CTRL_UP /* sample */
 #define SCE_CTRL_UP					(1<<4)
-#endif
-#ifndef SCE_CTRL_DOWN /* sample */
 #define SCE_CTRL_DOWN				(1<<6)
-#endif
-#ifndef SCE_CTRL_LEFT /* sample */
 #define SCE_CTRL_LEFT				(1<<7)
-#endif
-#ifndef SCE_CTRL_RIGHT /* sample */
 #define SCE_CTRL_RIGHT				(1<<5)
-#endif
-#ifndef DROT /* sample */
 #define DROT		2.5f
-#endif
-#ifndef SCE_CTRL_L /* sample */
 #define SCE_CTRL_L					(1<<8)
-#endif
-#ifndef SCE_CTRL_L1 /* sample */
 #define SCE_CTRL_L1					SCE_CTRL_L
-#endif
-#ifndef SCE_CTRL_R /* sample */
 #define SCE_CTRL_R					(1<<9)
-#endif
-#ifndef SCE_CTRL_R1 /* sample */
 #define SCE_CTRL_R1					SCE_CTRL_R
-#endif
-#ifndef DPOS /* sample */
 #define DPOS		2.0f
-#endif
-#ifndef SCE_CTRL_CIRCLE /* sample */
 #define SCE_CTRL_CIRCLE				(1<<13)
-#endif
-#ifndef SCE_CTRL_TRIANGLE /* sample */
 #define SCE_CTRL_TRIANGLE			(1<<12)
-#endif
-#ifndef SCE_CTRL_SQUARE /* sample */
 #define SCE_CTRL_SQUARE				(1<<15)
-#endif
-#ifndef SCE_CTRL_START /* sample */
 #define SCE_CTRL_START				(1<<3)
-#endif
-#ifndef STEP /* sample */
 #define STEP		0.05f
-#endif
-#ifndef SCE_CTRL_SELECT /* sample */
 #define SCE_CTRL_SELECT				(1<<0)
-#endif
+
 static int pad_read(void)
 {
 	unsigned int	prev=cont;
