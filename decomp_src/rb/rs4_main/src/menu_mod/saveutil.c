@@ -1,4 +1,13 @@
 #include "common.h"
+#include "m2c_macros.h"
+extern unsigned char savedata_param;
+extern unsigned int g_utilityType;
+M2C_UNK FreeData_GameBuf();                         /* extern */
+M2C_UNK SetData_InitBase(void *, M2C_UNK);          /* extern */
+M2C_UNK SetData_Normal(int, void *);                /* extern */
+M2C_UNK sceUtilitySavedataInitStart(void *);        /* extern */
+M2C_UNK FreeData_Normal(int, int);                  /* extern */
+
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/saveutil", SetData_Paramsfo_String);
 
@@ -32,11 +41,31 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/saveutil", SetData_Ic
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/saveutil", SetData_Snd0);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/saveutil", Get_Savedata);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/saveutil", SetUtilityType);
+M2C_UNK *Get_Savedata(void) {
+    return &savedata_param;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/saveutil", UtilityNone);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void SetUtilityType(unsigned int arg0) {
+    if (arg0 < 3U) {
+        g_utilityType = arg0;
+    }
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void UtilityNone(void) {
+    SetUtilityType(2);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/saveutil", Savedata_Update);
 
@@ -104,7 +133,13 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/saveutil", ShowResult
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/saveutil", SetData_Load);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/saveutil", FreeData_Load);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void FreeData_Load(void) {
+    FreeData_GameBuf();
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/saveutil", SetData_Save);
 
@@ -112,9 +147,29 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/saveutil", FreeData_S
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/saveutil", SetData_Delete);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/saveutil", CB_SaveData_Normal);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+void *memset(void *s, int c, unsigned int n);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/saveutil", Free_SaveData_Normal);
+void CB_SaveData_Normal(int arg0) {
+    void *temp_s0;
+
+    temp_s0 = Get_Savedata();
+    SetUtilityType(0);
+    memset(temp_s0, 0, 0x600U);
+    SetData_InitBase(temp_s0, 0x600);
+    SetData_Normal(arg0, temp_s0);
+    sceUtilitySavedataInitStart(temp_s0);
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void Free_SaveData_Normal(int arg0) {
+    FreeData_Normal(arg0, Get_Savedata());
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/saveutil", D_00104098);
 
