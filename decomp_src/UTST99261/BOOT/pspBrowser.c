@@ -118,7 +118,106 @@ int pspBrowserStrcpyTo(void *arg0, int arg1, void *arg2, int arg3) {
     return arg3;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/pspBrowser", pspBrowserReportValue);
+typedef struct {
+    unsigned int state : 16;
+    unsigned int pad : 8;
+    unsigned int b24 : 1;
+    unsigned int b25 : 1;
+    unsigned int b26 : 1;
+    unsigned int b27 : 1;
+    unsigned int b28 : 1;
+    unsigned int b29 : 1;
+    unsigned int b30 : 1;
+    unsigned int b31 : 1;
+} REPORTBITS;
+
+typedef union {
+    int v;
+    REPORTBITS b;
+} REPORT;
+
+extern int D_0025B030;
+
+int pspBrowserReportValue(void) {
+    unsigned int r;
+    int st;
+
+    r = 0;
+    st = 0;
+    if (D_0025B030 & 2) {
+        r |= 0x80000000;
+    } else {
+        r &= ~0x80000000;
+    }
+    if (D_0025B030 & 4) {
+        r |= 0x40000000;
+    } else {
+        r &= ~0x40000000;
+    }
+    if (D_0025B030 & 0x10) {
+        r |= 0x20000000;
+    } else {
+        r &= ~0x20000000;
+    }
+    if (D_0025B030 & 1) {
+        r &= ~0x8000000;
+    } else {
+        r |= 0x8000000;
+    }
+    if (D_0025B030 & 0x20) {
+        r |= 0x2000000;
+    } else {
+        r &= ~0x2000000;
+    }
+    if (D_0025B030 & 0x40) {
+        r |= 0x4000000;
+    } else {
+        r &= ~0x4000000;
+    }
+    if (D_0025B030 & 0x80) {
+        r |= 0x1000000;
+    } else {
+        r &= ~0x1000000;
+    }
+    if (D_0025B030 & 0x04000000) {
+        st = 0x19;
+    } else if (D_0025B030 & 8) {
+        st = 0x18;
+    } else if (D_0025B030 & 0x400) {
+        st = 0x11;
+    } else if (D_0025B030 & 0x800) {
+        st = 0x12;
+    } else if (D_0025B030 & 0x1000) {
+        st = 0x13;
+    } else if (D_0025B030 & 0x2000) {
+        st = 0x14;
+    } else if (D_0025B030 & 0x4000) {
+        st = 0x15;
+    } else if (D_0025B030 & 0x8000) {
+        st = 0x16;
+    } else if (D_0025B030 & 0x100) {
+        st = 0x10;
+    } else if (D_0025B030 & 0x10000) {
+        st = 0x20;
+    } else if (D_0025B030 & 0x20000) {
+        st = 0x21;
+    } else if (D_0025B030 & 0xC0000) {
+        st = 0x22;
+    } else if (D_0025B030 & 0x100000) {
+        st = 0x23;
+    } else if (D_0025B030 & 0x200000) {
+        st = 0x24;
+    } else if (D_0025B030 & 0x01C00000) {
+        st = 0x1E;
+    } else if (D_0025B030 & 0x02000000) {
+        st = 0x1F;
+    }
+    if ((pspBrowserInstance.flags & 0x200)
+        && (st == 0 || ((REPORT *)&pspBrowserInstance.unk8)->b.state != st)) {
+        st = 0x17;
+    }
+    return st | (r & 0xFFFF0000);
+}
 
 EXTCB *pspBrowserGetExtensionCallback(void *q, char *name) {
     EXTCB *e;
