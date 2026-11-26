@@ -1,4 +1,5 @@
 /* cflags: -O0 */
+/* locfix */
 #include "common.h"
 
 /* declarations recovered from DWARF */
@@ -273,7 +274,35 @@ void sceGumRotateZ(float angle);
 void sceGumSetMatrixStack(void *stack, int proj, int view, int model, int texture);
 void sceGumTranslate(const ScePspFVector3 *v);
 
-INCLUDE_ASM("tmp/asm/UTST99332/utility_font_basho/nonmatchings/main", main);
+int menuInit(void);
+int menuTerm(int a, int b);
+int init_basho_text_texture(void);
+int init_basho_pos_and_scale(void);
+
+int main(void)
+{
+	menuInit();
+
+	if (myLoadModule() < 0) return 0;
+
+	init_all();
+
+	if (init_basho_text_texture() < 0) return 0;
+	if (init_basho_pos_and_scale() < 0) return 0;
+
+	while (pad_read()) {
+		draw_frame();
+		sceDisplayWaitVblankStart();
+		sceGuSwapBuffers();
+	}
+
+	sceGuTerm();
+
+	myUnloadModule();
+
+	menuTerm(5, 0);
+	return 0;
+}
 
 void draw_basho(void);
 
@@ -357,7 +386,74 @@ static int myUnloadModule(void)
 	return unloadModule(&fontModukeID);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/utility_font_basho/nonmatchings/main", init_all);
+static void init_all(void)
+{
+	ScePspFVector3 vec;
+
+	sceGuInit();
+
+	sceGuStart(0, disp_list, sizeof(disp_list));
+	sceGuDrawBuffer(3, (void *)0, 512);
+	sceGuDispBuffer(480, 272, (void *)0x88000, 512);
+
+	sceGuDepthBuffer((void *)0x110000, 512);
+
+	sceGuOffset(2048 - 480 / 2, 2048 - 272 / 2);
+	sceGuViewport(2048, 2048, 480, 272);
+	sceGuDepthRange(50000, 10000);
+
+	sceGuScissor(0, 0, 480, 272);
+	sceGuEnable(2);
+
+	sceGuBlendFunc(0, 2, 3, 0, 0);
+
+	sceGuEnable(4);
+
+	sceGuDepthFunc(7);
+	sceGuEnable(1);
+
+	sceGuFrontFace(0);
+
+	sceGuShadeModel(1);
+	sceGuEnable(8);
+
+	vec.x = -1.0f;
+	vec.y = 1.0f;
+	vec.z = 1.0f;
+	sceGuLightColor(0, 2, 0xffc0c0c0);
+	sceGuLightColor(0, 4, 0xffffffff);
+	sceGuLight(0, 0, 6, &vec);
+	sceGuEnable(11);
+	sceGuEnable(10);
+
+	sceGuAmbient(0xff808080);
+	sceGuColor(0xffffffff);
+
+	sceGumSetMatrixStack(matrix_stack, 8, 8, 32, 0);
+
+	sceGumMatrixMode(0);
+	sceGumLoadIdentity();
+	sceGumPerspective(0.78539818f, 480.0f / 272.0f, 1.0f, 100.0f);
+
+	sceGumMatrixMode(2);
+
+	sceGuClearColor(0);
+	sceGuClearDepth(0);
+	sceGuClearStencil(0);
+
+	sceGuFinish();
+	sceGuSync(0, 0);
+	sceDisplayWaitVblankStart();
+
+	pos.x = 0.0f;
+	pos.y = 0.0f;
+	pos.z = -15.0f;
+	rot.x = 0.0f;
+	rot.y = 0.0f;
+	rot.z = 0.0f;
+
+	sceGuDisplay(1);
+}
 
 void change_basho_texture(void);
 void increment_basho_xpos(float pos_diff);
