@@ -1,3 +1,4 @@
+/* cflags: -O2 -fno-if-conversion2 */
 #include "common.h"
 
 /* declarations recovered from DWARF */
@@ -365,7 +366,91 @@ INCLUDE_RODATA("tmp/asm/UTST99332/mpeg_mpegstr_pcm/nonmatchings/main", D_0000FAB
 
 INCLUDE_RODATA("tmp/asm/UTST99332/mpeg_mpegstr_pcm/nonmatchings/main", D_0000FAD8);
 
-INCLUDE_ASM("tmp/asm/UTST99332/mpeg_mpegstr_pcm/nonmatchings/main", playMovie);
+SceInt32 decode_pcmDemux(SceMpeg *pMpeg, t_mpegStreamData *pStreamData, t_avSyncControl *pAvSync);
+SceInt32 decode_videoDecode(SceMpeg *pMpeg, t_mpegStreamData *pStreamData, t_avSyncControl *pAvSync);
+SceInt32 decode_videoDecodeEnd(SceMpeg *pMpeg, t_avSyncControl *pAvSync);
+SceInt32 read_isEnd(t_ringBuffer *pRing);
+SceInt32 read_isFull(t_ringBuffer *pRing);
+SceInt32 read_decode_sleep(t_ringBuffer *pRing);
+SceInt32 control_setCondition(t_conditionCtrl *pCtrl, SceUInt32 pattern);
+SceInt32 startCheck(t_avSyncControl *pAvSync, t_ringBuffer *pRingCtrl, t_conditionCtrl *pCtrl);
+SceInt32 sceMpegAvcDecodeFlush(SceMpeg *pMpeg);
+SceInt32 sceMpegRingbufferAvailableSize(SceMpegRingbuffer *pRingbuffer);
+int sceKernelCheckCallback(void);
+int printf(const char *fmt, ...);
+
+static SceInt32 playMovie(SceMpeg *pMpeg, SceMpegRingbuffer *pRB, t_mpegStreamData *pStreamData, t_ringBuffer *pRingCtrl, t_avSyncControl *pAvSync, t_conditionCtrl *pCtrl)
+{
+	SceInt32 demuxsize;
+	SceInt32 readsize;
+	SceInt32 ret;
+	SceInt32 startFlag;
+
+	startFlag = -1;
+
+	while (1) {
+		if (startFlag != 0) {
+			startFlag = startCheck(pAvSync, pRingCtrl, pCtrl);
+		} else {
+			ret = pad_read(pAvSync->pDisp);
+			if (ret != 0) {
+				sceMpegAvcDecodeFlush(pMpeg);
+				goto error;
+			}
+		}
+
+		if (read_isEnd(pRingCtrl) == 1 && sceMpegRingbufferAvailableSize(pRB) == 0x12C0)
+			break;
+
+		ret = checkPlayerErrCondition(pCtrl);
+		if (ret != 0) {
+			printf("fatal error : checkPlayerErrCondition()\n");
+			goto error;
+		}
+
+		if (audioFlag == 1) {
+			ret = decode_pcmDemux(pMpeg, pStreamData, pAvSync);
+			if (ret < 0) {
+				if (ret == (SceInt32)0x80618001) {
+					if (read_isFull(pRingCtrl) == 0)
+						read_decode_sleep(pRingCtrl);
+				} else {
+					printf("fatal error : decode_audioDecode() 0x%x\n", ret);
+					goto error;
+				}
+			}
+		}
+
+		ret = decode_videoDecode(pMpeg, pStreamData, pAvSync);
+		if (ret == (SceInt32)0x80618001) {
+			if (read_isFull(pRingCtrl) == 0)
+				read_decode_sleep(pRingCtrl);
+		} else if (ret < 0) {
+			printf("fatal error : sceMpegGetAvcAu () 0x%x\n", ret);
+			goto error;
+		}
+
+		if (read_isFull(pRingCtrl) == 0)
+			read_decode_sleep(pRingCtrl);
+
+		sceKernelCheckCallback();
+	}
+
+	control_setCondition(pCtrl, 8);
+
+	do {
+		ret = decode_videoDecodeEnd(pMpeg, pAvSync);
+		if (ret < 0) {
+			printf("fatal error : decode_videoDecodeEnd() 0x%x\n", ret);
+			goto error;
+		}
+	} while (ret != 0);
+
+error:
+	setPlayerEndCondition(pCtrl);
+term:
+	return ret;
+}
 
 long long strFileLseek(StrFile *file, long long offset, SceInt32 whence);
 extern const char D_0000F9A8[];
