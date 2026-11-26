@@ -70,6 +70,24 @@ int sceDisplayWaitVblankStart(void);
 void *sceGuSwapBuffers(void);
 unsigned int sceDisplayGetVcount(void);
 void sceGumMatrixMode(int mode);
+void sceGimPictureSetMemoryManager(void *(*alloc)(unsigned int), void (*free)(void *));
+void sceGimPictureSetMemoryManager2(void *(*alloc)(unsigned int), void (*free)(void *));
+void sceGmoModelSetMemoryManager(void *(*alloc)(unsigned int), void (*free)(void *));
+void sceGmoModelSetMemoryManager2(void *(*alloc)(unsigned int), void (*free)(void *));
+int sceGeEdramGetSize(void);
+void *sceGeEdramGetAddr(void);
+void myHeapInit(void *addr, int size);
+void *myHeapAlloc(unsigned int size);
+void myHeapFree(void *addr);
+SceGmoModel *sceGmoModelCreate(int type);
+int sceGmoModelLoadFile(SceGmoModel *model, const void *buf, int size, int flags);
+void sceGmoModelSetCurrentMotion(SceGmoModel *model, int index, float frame);
+void sceGmoModelSetEnableBits(SceGmoModel *model, int mask, int bits);
+void sceGmoModelSetEnableMask(SceGmoModel *model, int mask, int bits);
+const ScePspFVector3 *sceGmoModelGetBoundingBox(SceGmoModel *model);
+static unsigned char load_file(const char *filename, int **buf, int *size, int *fpl);
+void free(void *addr);
+void *malloc(unsigned int size);
 unsigned int strlen(const char *s);
 int sceIoWrite(int fd, const void *buf, unsigned int size);
 int sceIoOpen(const char *path, int flags, int mode);
@@ -487,13 +505,60 @@ static void draw_cache()
 	}
 }
 
-INCLUDE_RODATA("tmp/asm/umdt/graphics_model/nonmatchings/main", D_00016434);
+static unsigned char load_objects()
+{
+	int fpl = 0;
 
-INCLUDE_RODATA("tmp/asm/umdt/graphics_model/nonmatchings/main", D_00016438);
-
-INCLUDE_RODATA("tmp/asm/umdt/graphics_model/nonmatchings/main", D_0001643C);
-
-INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/main", load_objects);
+	unload_objects();
+	if (g_menu_vertex == 0) {
+		sceGimPictureSetMemoryManager(malloc, free);
+		sceGimPictureSetMemoryManager2(malloc, free);
+		sceGmoModelSetMemoryManager(malloc, free);
+		sceGmoModelSetMemoryManager2(malloc, free);
+	} else {
+		int usage = 0x154000;
+		int size = sceGeEdramGetSize();
+		char *base = (char *)sceGeEdramGetAddr();
+		myHeapInit(base + usage, size - usage);
+		sceGimPictureSetMemoryManager(malloc, free);
+		sceGimPictureSetMemoryManager2(malloc, free);
+		sceGmoModelSetMemoryManager(malloc, free);
+		sceGmoModelSetMemoryManager2(myHeapAlloc, myHeapFree);
+	}
+	g_model_size = 0;
+	int *data, size;
+	const char *filename = g_model_names[g_menu_model];
+	if (!load_file(filename, &data, &size, &fpl))
+		return 0;
+	g_model_size = size;
+	SceGmoModel *model = g_model = sceGmoModelCreate(0);
+	sceGmoModelLoadFile(model, data, size, 0);
+	sceGmoModelSetCurrentMotion(model, 0, 0.0f);
+	sceGmoModelSetEnableBits(model, 2, 0);
+	if (!g_menu_texture) {
+		sceGmoModelSetEnableMask(model, 4, -1);
+		sceGmoModelSetEnableBits(model, 4, 0);
+	}
+	g_scale = (ScePspFVector3){ 1, 1, 1 };
+	const ScePspFVector3 *box = sceGmoModelGetBoundingBox(model);
+	if (box != 0) {
+		float s = box[1].x - box[0].x;
+		float s2 = box[1].y - box[0].y;
+		if (s2 > s)
+			s = s2;
+		s2 = box[1].z - box[0].z;
+		if (s2 > s)
+			s = s2;
+		if (s > 0.0f) {
+			s = 10.0f / s;
+			g_scale = (ScePspFVector3){ s, s, s };
+		}
+	}
+	if (fpl)
+		sceKernelDeleteFpl(fpl);
+	g_reload = 0;
+	return (model != 0);
+}
 
 static void unload_objects()
 {
