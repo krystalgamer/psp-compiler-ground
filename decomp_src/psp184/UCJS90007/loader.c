@@ -165,7 +165,25 @@ static int check_loader_dialog_completed(void);
 int loader_update(void);
 
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/loader", fdgets_local);
+int sceIoRead(int fd, void *buf, unsigned int nbyte);
+static char *fdgets_local(char *buffer, int fd)
+{
+	char *p = buffer;
+	char c;
+
+	while (sceIoRead(fd, &c, 1) == 1) {
+		if (c >= 0x20 && c != 0x7F) {
+			*p++ = c;
+		} else if (c == 8 || c == 0x7F) {
+			if (p > buffer)
+				p--;
+		} else if (c == '\n' || c == '\r') {
+			*p = '\0';
+			return buffer;
+		}
+	}
+	return NULL;
+}
 
 signed char *skipsp(signed char *cp) {
     signed char *var_a0;
@@ -191,7 +209,21 @@ static char *skipnonsp(char *cp)
 	return cp;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/loader", split);
+static void split(char *line, int *count, char **column, int maxcount)
+{
+	int i = 0;
+
+	line = (char *)skipsp((signed char *)line);
+	while (*line != '\0' && i < maxcount) {
+		column[i++] = line;
+		line = skipnonsp(line);
+		if (*line == '\0')
+			break;
+		*line = '\0';
+		line = (char *)skipsp((signed char *)line + 1);
+	}
+	*count = i;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/loader", load_logfile_thread);
 
