@@ -1,5 +1,6 @@
 #include "common.h"
 
+
 /* declarations recovered from DWARF */
 typedef struct SceGimPicture SceGimPicture;
 struct SceGimPicture;
@@ -382,6 +383,9 @@ extern unsigned int g_vs_frame;
 
 static void graphic_init();
 SceGimPicture *load_picture(int index, int *buff, int size);
+void sceGimPictureSetFrame(SceGimPicture *picture, float frame);
+void sceGimPictureActivate(SceGimPicture *picture);
+void sceGimPictureAnimate(SceGimPicture *picture, float time);
 static void draw_sprite2(int x, int y, int w, int h, int ix, int iy, int flip);
 static void draw_black_back(int x, int y, int w, int h, unsigned int col);
 static void load();
@@ -434,6 +438,9 @@ void sceGuDrawSprite(int x, int y, int z, int u, int v, int flip, int rotation);
 void sceGuDebugPrint(int x, int y, unsigned int color, const char *str);
 
 
+extern SceGimPicture *D_00054EA0;
+
+
 INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/draw", graphic_init);
 
 INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/draw", load_picture);
@@ -444,7 +451,17 @@ void draw_sprite(int x, int y, int w, int h, int flip) {
     draw_sprite2(x, y, w, h, 0, 0, flip);
 }
 
-INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/draw", draw_black_back);
+static void draw_black_back(int x, int y, int w, int h, unsigned int col)
+{
+	int i;
+
+	sceGimPictureActivate(g_img_black_back);
+	sceGuColor(col);
+	for (i = 0; i < w; i += 32) {
+		sceGuSpriteMode(5, 5, 32, h);
+		sceGuDrawSprite(x + i, y, 0, 0, 0, 0, 0);
+	}
+}
 
 INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/draw", load_8F0);
 
@@ -470,7 +487,13 @@ INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/draw", run_draw_vs);
 
 INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/draw", draw_vs_menu);
 
-INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/draw", draw_button);
+void draw_button(int x, int y, int btn) {
+    sceGimPictureActivate(g_img_button);
+    sceGuColor(-1U);
+    draw_sprite2(x, y, 0x48, 0x12, 0, btn * 0x12, 0);
+}
+
+__asm__(".globl draw_button");
 
 INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/draw", draw_pause);
 
@@ -489,9 +512,15 @@ void draw_pae_mark(int n, int x, int y) {
     sceGuColor(-1U);
     sceGuDrawSprite(x, y, 0, 0, 0, 0, 0);
 }
-/* Warning: struct SceGimPicture is not defined (only forward-declared) */
 
-INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/draw", draw_ox);
+void draw_ox(int ox, int x, int y) {
+    sceGimPictureActivate(g_icon_ox);
+    sceGuSpriteMode(0x10, 0x1A, 0x10, 0x1A);
+    sceGuColor(-1U);
+    sceGuDrawSprite(x, y, 0, ox * 0x10, 0, 0, 0);
+}
+
+__asm__(".globl draw_ox");
 
 INCLUDE_RODATA("tmp/asm/flowars/flowars/nonmatchings/draw", D_0002F280);
 
@@ -535,7 +564,19 @@ INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/draw", draw_flying_pae);
 
 INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/draw", draw_flying_pae2);
 
-INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/draw", draw_checked_pae);
+static void draw_checked_pae(int pae, int x, int y, float scale)
+{
+	int fixed;
+
+	if (animator.is_flying(pae))
+		return;
+	draw_pae(pae, x, y, scale, 2);
+	fixed = handManager.is_fixed(0, paeManager.get_pae_kind(pae));
+	if (fixed)
+		draw_pae_mark(fixed == 2 ? 2 : 1, x, y);
+}
+
+__asm__(".globl draw_checked_pae");
 
 INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/draw", draw_my_hand);
 
@@ -565,7 +606,11 @@ void printDebugMsg2(int x, int y, int color, signed char *str) {
 
 INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/draw", draw_cursor);
 
-INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/draw", init_animation);
+void init_animation(int ani) {
+    sceGimPictureSetFrame(g_animation[ani], 0);
+}
+
+__asm__(".globl init_animation");
 
 INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/draw", draw_animation);
 
@@ -594,8 +639,6 @@ void swap_buffers(void) {
 
 INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/draw", draw_dialog_box);
 
-extern SceGimPicture *D_00054EA0;
-
 void draw_result_icon(int flagWin, int index, int x, int y) {
     SceGimPicture *var_a0;
 
@@ -609,7 +652,6 @@ void draw_result_icon(int flagWin, int index, int x, int y) {
     sceGuColor(-1U);
     sceGuDrawSprite(x, y, 0, 0, index * 0x11, 0, 0);
 }
-/* Warning: struct SceGimPicture is not defined (only forward-declared) */
 
 INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/draw", show_gostop_info);
 
@@ -624,17 +666,43 @@ void draw_timer(int sec) {
     sceGuColor(-1U);
     draw_sprite2(0x172, 0x64, 0x66, 0x50, (5 - sec) * 0x66, 0, 0);
 }
-/* Warning: struct SceGimPicture is not defined (only forward-declared) */
 
 INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/draw", draw_win_lose);
 
 INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/draw", draw_collect_paes);
 
-INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/draw", fade_out);
+void fade_out(unsigned int alpha)
+{
+	if (alpha >= 255)
+		alpha = 255;
+	draw_black_back(0, 0, 480, 272, (alpha << 24) | 0xFFFFFF);
+}
+
+__asm__(".globl fade_out");
 
 INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/draw", draw_char_name);
 
-INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/draw", draw_all_in);
+static void draw_all_in(int flagPlayer)
+{
+	int x;
+	int y;
+
+	if (flagPlayer == 0) {
+		x = -1;
+		y = 214;
+	} else if (flagPlayer == 1) {
+		x = -1;
+		y = 8;
+	} else {
+		x = 409;
+		y = 8;
+	}
+	sceGimPictureActivate(g_img_all_in);
+	sceGuColor(0xFFFFFFFF);
+	draw_sprite(x, y, 64, 41, 0);
+}
+
+__asm__(".globl draw_all_in");
 
 INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/draw", draw_save);
 
@@ -649,7 +717,6 @@ void draw_error(signed char *msg) {
     draw_button(0xCD, 0xAE, 0);
     draw_button(0x109, 0xAE, 2);
 }
-/* Warning: struct SceGimPicture is not defined (only forward-declared) */
 
 int get_img_loaded(void) {
     return g_img_loaded;
