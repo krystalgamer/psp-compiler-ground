@@ -104,9 +104,17 @@ int GetMessageLang(void) {
     return g_lang;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/utility_basic/nonmatchings/setting", OnPush_Circle);
+void OnPush_Circle(int selection)
+{
+	g_assing = 0;
+	Menu_WriteLine("OnPush_Circle", 0xFFFFFF);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/utility_basic/nonmatchings/setting", OnPush_Cross);
+void OnPush_Cross(int selection)
+{
+	g_assing = 1;
+	Menu_WriteLine("OnPush_Cross", 0xFFFFFF);
+}
 
 static void OnPush_ChangeAssign(int selection)
 {

@@ -1,5 +1,134 @@
 #include "common.h"
 
+/* declarations recovered from DWARF */
+struct _anon1;
+struct _anon2;
+struct _anon2 { /* size 0x30 */
+    unsigned int size;
+    int message_lang;
+    int ctrl_assign;
+    int main_thread_priority;
+    int sub_thread_priority;
+    int font_thread_priority;
+    int sound_thread_priority;
+    int result;
+    int reserved1;
+    int reserved2;
+    int reserved3;
+    int reserved4;
+};
+typedef struct _anon2 SceUtilityParamBase;
+struct _anon3;
+struct _anon3 { /* size 0x504 */
+    char title[128];
+    char savedataTitle[128];
+    char detail[1024];
+    unsigned char parentalLev;
+    unsigned char reserved[3];
+};
+typedef struct _anon3 SceUtilitySDSystemFileParam;
+struct _anon4;
+struct _anon4 { /* size 0x10 */
+    void *pDataBuf;
+    unsigned int dataBufSize;
+    unsigned int dataFileSize;
+    char *pFilePath;
+};
+typedef struct _anon4 SceUtilitySDExtFile;
+struct _anon5;
+struct _anon5 { /* size 0x14 */
+    SceUtilitySDExtFile icon0;
+    char *pTitle;
+};
+typedef struct _anon5 SceUtilitySavedataListSaveNewData;
+struct _anon6;
+struct _anon6 { /* size 0x14 */
+    unsigned int msClusterSizeByte;
+    unsigned int msFreeCluster;
+    unsigned int msFreeSizeKB;
+    char msFreeSizeStr[8];
+};
+typedef struct _anon6 SceUtilitySavedataMsFreeSize;
+struct _anon7;
+struct _anon7 { /* size 0x40 */
+    char titleId[13];
+    char reserved[3];
+    char userId[20];
+    unsigned int cluster;
+    unsigned int sizeKB;
+    char sizeStr[8];
+    unsigned int size32KB;
+    char size32Str[8];
+};
+typedef struct _anon7 SceUtilitySavedataMsDataSize;
+struct _anon8;
+struct _anon8 { /* size 0x1c */
+    unsigned int cluster;
+    unsigned int sizeKB;
+    char sizeStr[8];
+    unsigned int size32KB;
+    char size32Str[8];
+};
+typedef struct _anon8 SceUtilitySavedataUtilityDataSize;
+struct _anon1 { /* size 0x5dc */
+    SceUtilityParamBase base;
+    int type;
+    unsigned int bind;
+    unsigned int overWriteMode;
+    char titleId[13];
+    char reserved[3];
+    char userId[20];
+    char (*pUserIds)[20];
+    char fileName[13];
+    char reserved1[3];
+    void *pDataBuf;
+    unsigned int dataBufSize;
+    unsigned int dataFileSize;
+    SceUtilitySDSystemFileParam systemFile;
+    SceUtilitySDExtFile icon0;
+    SceUtilitySDExtFile icon1;
+    SceUtilitySDExtFile pic1;
+    SceUtilitySDExtFile snd0;
+    SceUtilitySavedataListSaveNewData *pNewData;
+    unsigned int initFocus;
+    int abortedStatus;
+    SceUtilitySavedataMsFreeSize *pMs;
+    SceUtilitySavedataMsDataSize *pMsData;
+    SceUtilitySavedataUtilityDataSize *pUtilityData;
+};
+typedef struct _anon1 SceUtilitySavedataParam;
+
+extern char *_sd_strings[3];
+extern char *_sd_emptyTitle;
+extern char _emptyIconData[14157];
+extern char _iconData[21438];
+extern char _bgData[75906];
+extern char _dataBuf[1048576];
+extern char _listUserDirName[1024][20];
+extern char _readIcon0[1048576];
+extern char _readIcon1[1048576];
+extern char _readPic1[1048576];
+extern SceUtilitySavedataListSaveNewData _newData;
+extern SceUtilitySavedataMsFreeSize _msFreeSize;
+extern SceUtilitySavedataMsDataSize _msDataSize;
+extern SceUtilitySavedataUtilityDataSize _utilityDataSize;
+
+int set_savedata_param(const int type, SceUtilitySavedataParam *pParam);
+void show_results(SceUtilitySavedataParam *pParam);
+static void set_param_load(SceUtilitySavedataParam *pParam);
+static void set_param_save(SceUtilitySavedataParam *pParam);
+static void set_param_listload(SceUtilitySavedataParam *pParam);
+static void set_param_listsave(SceUtilitySavedataParam *pParam);
+static void set_param_listdelete(SceUtilitySavedataParam *pParam);
+static void set_params(SceUtilitySavedataParam *pUtil);
+static void set_icon0(SceUtilitySavedataParam *pParam);
+static void set_pic1(SceUtilitySavedataParam *pParam);
+static void set_icon1(SceUtilitySavedataParam *pParam);
+static void set_snd0(SceUtilitySavedataParam *pParam);
+static void set_newdata_item(SceUtilitySavedataParam *pParam);
+static void set_param_sizes(SceUtilitySavedataParam *pParam);
+
+
 void Menu_WriteLine(const char *line, int color);
 
 INCLUDE_RODATA("tmp/asm/UTST99332/utility_basic/nonmatchings/savedata", D_00016548);
@@ -12,7 +141,7 @@ INCLUDE_RODATA("tmp/asm/UTST99332/utility_basic/nonmatchings/savedata", D_000166
 
 INCLUDE_ASM("tmp/asm/UTST99332/utility_basic/nonmatchings/savedata", set_savedata_param);
 
-void show_results(void) {
+void show_results(SceUtilitySavedataParam *pParam) {
 }
 
 INCLUDE_ASM("tmp/asm/UTST99332/utility_basic/nonmatchings/savedata", set_param_load);
@@ -27,15 +156,44 @@ INCLUDE_ASM("tmp/asm/UTST99332/utility_basic/nonmatchings/savedata", set_param_l
 
 INCLUDE_ASM("tmp/asm/UTST99332/utility_basic/nonmatchings/savedata", set_params);
 
-INCLUDE_ASM("tmp/asm/UTST99332/utility_basic/nonmatchings/savedata", set_icon0);
+void set_icon0(SceUtilitySavedataParam *pParam)
+{
+	pParam->icon0.pDataBuf = _iconData;
+	pParam->icon0.dataBufSize = 0x53BE;
+	pParam->icon0.dataFileSize = 0x53BE;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/utility_basic/nonmatchings/savedata", set_pic1);
+void set_pic1(SceUtilitySavedataParam *pParam)
+{
+	pParam->pic1.pDataBuf = _bgData;
+	pParam->pic1.dataBufSize = 0x12882;
+	pParam->pic1.dataFileSize = 0x12882;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/utility_basic/nonmatchings/savedata", set_icon1);
+void set_icon1(SceUtilitySavedataParam *pParam)
+{
+	pParam->icon1.pDataBuf = NULL;
+	pParam->icon1.dataBufSize = 0;
+	pParam->icon1.dataFileSize = 0;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/utility_basic/nonmatchings/savedata", set_snd0);
+void set_snd0(SceUtilitySavedataParam *pParam)
+{
+	pParam->snd0.pDataBuf = NULL;
+	pParam->snd0.dataBufSize = 0;
+	pParam->snd0.dataFileSize = 0;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/utility_basic/nonmatchings/savedata", set_newdata_item);
+void set_newdata_item(SceUtilitySavedataParam *pParam)
+{
+	_newData.icon0.pDataBuf = _emptyIconData;
+	_newData.icon0.dataBufSize = 0x374D;
+	_newData.icon0.dataFileSize = 0x374D;
+
+	_newData.pTitle = _sd_emptyTitle;
+
+	pParam->pNewData = &_newData;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/utility_basic/nonmatchings/savedata", set_param_sizes);
 
