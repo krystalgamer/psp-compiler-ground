@@ -11,7 +11,8 @@ typedef struct { /* size 0xD8 */
     int widget;                                 /* 0xC */
     void *unk10;
     void *unk14;
-    u8 unk18[0x7C];
+    PSPBROWSER_INI ini;                         /* 0x18 */
+    u8 unk7C[0x18];
     void *unk94;
     void *unk98;
     PSPBROWSER_FOCUS_CALLBACK focusCallback;    /* 0x9C */
@@ -333,7 +334,80 @@ int pspBrowserExit(void) {
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/pspBrowser", pspBrowserExec);
+typedef struct {
+    char *a;
+    char *b;
+} FOCUSREQ;
+
+extern u16 D_0025B034;
+int pspBrowserInit(PSPBROWSER_INI *ini);
+int pspBrowserSetState(int state, void *arg);
+int zWindExec(PSPBROWSER_INPUT *in);
+int sceNetApDialogDummyGetState(int *state);
+int pspBrowserReportValue(void);
+void pspBrowserExecuteAnchorExtensionCallback(void);
+void pspBrowserExecuteImageExtensionCallback(void);
+
+int pspBrowserExec(PSPBROWSER_INPUT *in) {
+    PSPBROWSER_INPUT buf;
+    PSPBROWSER_INPUT *p;
+    void *url;
+    int r;
+    FOCUSREQ *f;
+    int st;
+
+    p = NULL;
+    if (pspBrowserInstance.unk0 == 0) {
+        return 0x08000000;
+    }
+    if (pspBrowserInstance.unk0 == 4) {
+        url = pspBrowserInstance.unk14;
+        if (url == NULL) {
+            url = pspBrowserInstance.ini.homeURL;
+        }
+        pspBrowserInstance.ini.mode |= 1;
+        pspBrowserExit();
+        pspBrowserInit(&pspBrowserInstance.ini);
+        pspBrowserSetState(0x18, url);
+    }
+    if (in != NULL && D_0025B034 == 0) {
+        buf = *in;
+        p = &buf;
+    }
+    r = zWindExec(p);
+    if (r == 1) {
+        pspBrowserInstance.flags |= 0x200;
+    } else if (r != 0) {
+        pspBrowserInstance.flags |= 0x04000000;
+    }
+    pspBrowserExecuteAnchorExtensionCallback();
+    pspBrowserExecuteImageExtensionCallback();
+    OS_thread_mutex_lock(pspBrowserInstance.mutex);
+    f = pspBrowserInstance.unk98;
+    if (f != NULL) {
+        pspBrowserInstance.unk98 = NULL;
+    }
+    OS_thread_mutex_unlock(pspBrowserInstance.mutex);
+    if (f != NULL) {
+        if (pspBrowserInstance.focusCallback != NULL) {
+            pspBrowserInstance.focusCallback(f->a, f->b);
+        }
+        ESP_free((signed char *)f);
+    }
+    if (pspBrowserInstance.unkA0 != 0) {
+        pspBrowserInstance.unkA0 = 0;
+        if (pspBrowserInstance.unloadCallback != NULL) {
+            pspBrowserInstance.unloadCallback();
+        }
+    }
+    if (sceNetApDialogDummyGetState(&st) == 0 && st == 2) {
+        pspBrowserInstance.flags |= 2;
+    } else {
+        pspBrowserInstance.flags &= ~2;
+    }
+    pspBrowserInstance.unk8 = pspBrowserReportValue();
+    return pspBrowserInstance.unk8;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/pspBrowser", pspBrowserSetState);
 
