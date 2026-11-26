@@ -16,6 +16,8 @@ typedef struct {
     JBS *bs;                    /* 0x0 */
     u8 unk4[0xC4];
     u16 lines;                  /* 0xC8 */
+    u8 unkCA[0xA];
+    u8 jfif;                    /* 0xD4 */
 } JCTX;
 
 extern int (*markerTable[])(JCTX *ctx);
@@ -287,7 +289,34 @@ int mrkEXP(void) {
     return 1;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jpg_parser", mrkAPP0);
+int copyByte(JBS *bs, void *dst, int n);
+int strncmp(const char *a, const char *b, unsigned int n);
+
+int mrkAPP0(JCTX *ctx) {
+    char buf[5];
+    u16 len;
+
+    len = getWord(ctx->bs, 1);
+    if (len < 2) {
+        return -1;
+    }
+    copyByte(ctx->bs, buf, 5);
+    if (strncmp("JFIF", buf, 4) == 0) {
+        ctx->jfif = 1;
+        goto ok;
+    }
+    if (strncmp("JFXX", buf, 4) == 0) {
+        ctx->jfif = 2;
+        goto ok;
+    }
+    ctx->jfif = 0;
+    return -1;
+ok:
+    skipByte(ctx->bs, len - 7);
+    return 1;
+}
+
+const char D_001326CC[] = "";
 
 #ifndef NULL
 #define NULL ((void *)0)
