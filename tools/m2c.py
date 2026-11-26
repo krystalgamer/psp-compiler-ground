@@ -57,6 +57,38 @@ def c_prototypes(target, module):
     return "\n".join(out) + "\n"
 
 
+def fix_delay_labels(text):
+    """m2c fails on a branch whose delay slot is a jump target: duplicate the
+    delay instruction behind the label."""
+    lines = text.split('\n')
+    out = []
+    n = 0
+    BR = re.compile(r'^\s*(?:/\*.*?\*/)?\s*(b\w*|j|jal|jr|jalr)\s')
+    i = 0
+    while i < len(lines):
+        l = lines[i]
+        out.append(l)
+        if BR.match(l) and not l.strip().startswith('.'):
+            # collect labels before the delay instruction
+            j = i + 1
+            labs = []
+            while j < len(lines) and re.match(r'^\s*\.L\w+:\s*$', lines[j]):
+                labs.append(lines[j]); j += 1
+            if labs and j < len(lines):
+                d = lines[j]
+                n += 1
+                out.append(d)
+                out.append('    j .Lfixd%d' % n)
+                out.append('    nop')
+                out.extend(labs)
+                out.append(d)
+                out.append('.Lfixd%d:' % n)
+                i = j + 1
+                continue
+        i += 1
+    return '\n'.join(out)
+
+
 def draft(target, module, unit, func, extra=()):
     asm = ROOT / "tmp/asm" / target / module / "nonmatchings" / unit / f"{func}.s"
     src = asm.read_text()
@@ -70,6 +102,9 @@ def draft(target, module, unit, func, extra=()):
         if ".word .L" in tt:
             src += "\n.section .rodata\n" + tt
     text = re.sub(r"\$(\d+)\b", lambda m: "$" + ABI[int(m[1])] if int(m[1]) < 32 else m[0], src)
+    # gcc's divide-by-zero checks (branch over `break 7`, emitted as .word 0x1CD) confuse m2c
+    text = re.sub(r"\n[^\n]*\bb(?:eq|ne)l?\s+\$\w+, \$zero, \.L\w+\n[^\n]*\.word\s+0x000001CD[^\n]*", "", text)
+    text = fix_delay_labels(text)
     # m2c finds jump tables by name
     for tbl in re.findall(r"dlabel (\w+)\n\s*(?:/\*.*?\*/)?\s*\.word\s+\.L", text):
         if not tbl.startswith("jtbl"):
