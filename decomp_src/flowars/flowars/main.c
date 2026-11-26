@@ -1,5 +1,6 @@
 #include "common.h"
 
+
 /* declarations recovered from DWARF */
 typedef struct SceRtcTick SceRtcTick;
 struct SceRtcTick;
@@ -421,6 +422,7 @@ extern char *g_save_error_msg[9];
 static void image_load();
 int main(void);
 static void process_stage(void);
+static void process_stage_11DF0(void);
 void show_debug_info(void);
 static void draw_frame(void);
 void init_all(void);
@@ -458,7 +460,10 @@ INCLUDE_RODATA("tmp/asm/flowars/flowars/nonmatchings/main", D_000306C8);
 
 INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/main", main);
 
-INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/main", process_stage_11DF0);
+static void process_stage_11DF0(void)
+{
+	gameManager.process_stage();
+}
 
 INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/main", show_debug_info);
 

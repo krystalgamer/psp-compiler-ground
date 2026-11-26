@@ -1,5 +1,6 @@
 #include "common.h"
 
+
 /* declarations recovered from DWARF */
 typedef unsigned int u_int32;
 typedef struct SceCtrlData SceCtrlData;
@@ -183,7 +184,18 @@ static void press_circle();
 static int pad_read();
 
 
-INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/input", set_key_enable);
+static void set_key_enable(int key, int flag)
+{
+	int i;
+
+	if (key == -1) {
+		for (i = 1; i < 8; i++)
+			key_enable[i] = flag;
+	} else
+		key_enable[key] = flag;
+}
+
+__asm__(".globl set_key_enable");
 
 int get_key_enable(int key) {
     return key_enable[key];
