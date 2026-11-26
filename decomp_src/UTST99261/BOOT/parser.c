@@ -3,6 +3,7 @@
 #include <ctype.h>
 #include "parse_str.h"
 #include "m2c_macros.h"
+#define NOTAG(c) ((c->buf->cur[1] < 'A' || c->buf->cur[1] > 'Z') && (c->buf->cur[1] < 'a' || c->buf->cur[1] > 'z') && c->buf->cur[1] != '!' && c->buf->cur[1] != '/' && c->buf->cur[1] != '?')
 #define CI(c, C) (((c) >= 'a' && (c) <= 'z') ? ((c) == (C) + 0x20) : ((c) == (C)))
 extern char D_00137EF0[];
 void *MEM_malloc();
@@ -339,7 +340,41 @@ void parseEndTag(PCtx *c, int skip) {
     parseTagTransact(4, c, 0, 0, 0, 0);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", parseContents);
+void parseContents(PCtx *c) {
+    PStrBuf *b;
+    PDStr *d;
+    void *t;
+
+    if (*c->buf->cur == '>') {
+        if (parseNextChar(c) == 1) {
+            return;
+        }
+    }
+    if (c->buf->cur[0] != '<' || NOTAG(c)) {
+        b = parseCreateBuffer();
+        while (c->buf->cur[0] != '<' || NOTAG(c)) {
+            if (*c->buf->cur == '&') {
+                parseSetBuffer(b, parseCharEntity(c, 0));
+            } else {
+                parseSetBuffer(b, *c->buf->cur);
+            }
+            if (parseNextChar(c) == 1) {
+                break;
+            }
+        }
+        if (b->len != 0) {
+            parseAdjustBuffer(b);
+        }
+        d = parseMBtoDScopy(b->data, b->len);
+        t = Document_createTextNode(c->doc, 0);
+        CharacterData_setData(t, d);
+        Node_appendChild(CF(c, 0x11C), t);
+        parseAlertMessage(c);
+        MEM_free(0, d->data);
+        MEM_free(0, d);
+        parseDeleteBuffer(b);
+    }
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", parseContentsNoParse);
 
