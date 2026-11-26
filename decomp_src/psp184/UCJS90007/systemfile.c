@@ -229,7 +229,46 @@ end:
 	return ret;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/systemfile", isValidSysFileIndexTable);
+int isValidSysFileIndexTable(char *base, unsigned int off, SfHeader *hdr, unsigned int size)
+{
+	unsigned int i;
+	SfKeyEnt *ent;
+	register int ret;
+
+	ent = (SfKeyEnt *)(base + off);
+	for (i = 0; i < hdr->count; i++, ent++) {
+		if (hdr->dataofs <= hdr->keyofs + ent->off) {
+			SF_ERROR(ret, 3)
+			goto end;
+		}
+		if (isValidType(ent->fmt) != 0) {
+			SF_ERROR(ret, 3)
+			goto end;
+		}
+		if (ent->maxlen < ent->len) {
+			SF_ERROR(ret, 3)
+			goto end;
+		}
+		if (size < ent->dataoff + ent->maxlen) {
+			SF_ERROR(ret, 3)
+			goto end;
+		}
+		if (i == hdr->count - 1) {
+			if (hdr->dataofs + ent->dataoff + ent->maxlen != size) {
+				SF_ERROR(ret, 3)
+				goto end;
+			}
+		} else {
+			if (ent->dataoff + ent->maxlen != ent[1].dataoff) {
+				SF_ERROR(ret, 3)
+				goto end;
+			}
+		}
+	}
+	ret = 0;
+end:
+	return ret;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/systemfile", sceSystemFileLoadIndex2);
 
