@@ -33,6 +33,11 @@ extern const SPRDATA SCORE_NUMERIC_PARTZ[];
 extern const SPRDATA NUMERIC_PARTZ[];
 extern const SPRDATA D_0002DEB4[];
 extern const SPRDATA D_0002E0F4[];
+extern const SPRDATA LIGHT_PARTZ[];
+extern int D_00038A8C[];
+int GetRound(void);
+void GameValueInit(int pl, int stage, int flag);
+void dsGMInit(int mode, int a1);
 extern PARTZ ChrData_ClearMes[];
 void DrawCharcter(int z, int x, int y, PARTZ *tbl, int idx);
 void DrawCharcter2(int z, int x, int y, PARTZ *tbl, int idx);
@@ -42,7 +47,7 @@ void PutNumeric(int z, int x, int y, int num, int digits);
 int Get2Dim(int x, int a, int b, int c, int d);
 int SpriteDraw(int no, float z, int color, float x0, float y0, float u0, float v0, float x1, float y1, float u1, float v1, float x2, float y2, float u2, float v2, float x3, float y3, float u3, float v3);
 int DrawSpritePt4(int no, float z, int color, float x0, float y0, float u0, float v0, float x1, float y1, float u1, float v1, float x2, float y2, float u2, float v2, float x3, float y3, float u3, float v3);
-int SpriteDrawC(int x, float z, int y, const SPRDATA *p);
+int SpriteDrawC(float z, int x, int y, const SPRDATA *p);
 int EndressValueInit(int, int, int);
 void SpriteSetFader(float);
 int LoadGimFile(int no, int file);
@@ -430,7 +435,7 @@ void DrawScore(int z, int x, int y, int num)
 	int i;
 
 	for (i = 0; i < 9; i++) {
-		SpriteDrawC(x + 35 - i * 10, z, y - 6, &SCORE_NUMERIC_PARTZ[num % 10]);
+		SpriteDrawC(z, x + 35 - i * 10, y - 6, &SCORE_NUMERIC_PARTZ[num % 10]);
 		num /= 10;
 	}
 }
@@ -440,7 +445,7 @@ void DrawCount(int z, int x, int y, int num)
 	int i;
 
 	for (i = 0; i < 3; i++) {
-		SpriteDrawC(x + 5 - i * 10, z, y - 6, &SCORE_NUMERIC_PARTZ[num % 10]);
+		SpriteDrawC(z, x + 5 - i * 10, y - 6, &SCORE_NUMERIC_PARTZ[num % 10]);
 		num /= 10;
 	}
 }
@@ -730,12 +735,21 @@ void PutNumeric(int z, int x, int y, int num, int digits)
 	if (num < 0)
 		num = -num;
 	for (i = 0; i < digits; i++) {
-		SpriteDrawC(x + (digits - 1) * 11 - i * 22, z, y, &NUMERIC_PARTZ[num % 10]);
+		SpriteDrawC(z, x + (digits - 1) * 11 - i * 22, y, &NUMERIC_PARTZ[num % 10]);
 		num /= 10;
 	}
 }
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", PutTime);
+void PutTime(int z, int x, int y, int t)
+{
+	PutNumeric(z, x + 54, y, t % 60, 2);
+	t /= 60;
+	PutNumeric(z, x, y, t % 60, 2);
+	t /= 60;
+	PutNumeric(z, x - 54, y, t % 60, 2);
+	SpriteDrawC(z, x + 28, y, D_0002E0F4);
+	SpriteDrawC(z, x - 28, y, D_0002E0F4);
+}
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", Get2Dim);
 
@@ -799,14 +813,24 @@ void MonitorPut(PZL_STAT *st)
 {
 	if (st->mapsub < 2) {
 		D_0014E92C = (D_0014E92C + 3) % 60;
-		SpriteDrawC(50, 1.0f, 241, &D_0002DEB4[D_0014E92C / 20]);
-		SpriteDrawC(430, 1.0f, 241, &D_0002DEB4[4 + D_0014E92C / 15]);
+		SpriteDrawC(1.0f, 50, 241, &D_0002DEB4[D_0014E92C / 20]);
+		SpriteDrawC(1.0f, 430, 241, &D_0002DEB4[4 + D_0014E92C / 15]);
 	}
 }
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", PollShutter);
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", DrawLight);
+void DrawLight(int x, int y, int col, int no)
+{
+	int a, b;
+
+	D_00038A8C[no] = (D_00038A8C[no] + 1) % 48;
+	a = D_00038A8C[no] / 3 % 4;
+	b = D_00038A8C[no] / 6 % 4;
+	SpriteDrawC(1.0f, x, y, &LIGHT_PARTZ[a + (col + 1) * 4]);
+	if (!(no & 1))
+		SpriteDrawC(1.0f, x, y, &LIGHT_PARTZ[b]);
+}
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", disp_game_bg);
 
