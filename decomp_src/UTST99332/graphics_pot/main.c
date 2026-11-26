@@ -152,7 +152,14 @@ void init_all(void) {
     sceGuDisplay(1);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_pot/nonmatchings/main", init_pos);
+static void init_pos(void)
+{
+	pos.rot.x = 30.0f;
+	pos.rot.y = pos.rot.z = 0.0f;
+	pos.trans.x = 0.0f;
+	pos.trans.y = 0.0f;
+	pos.trans.z = -10.0f;
+}
 
 extern u_int32 D_000153C8; /* static u_int32 opadd in pad_read (bss is asm) */
 
