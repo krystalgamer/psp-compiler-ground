@@ -151,7 +151,30 @@ void *HST_getHeadHistoryNode(void) {
     return cur != NULL ? M2C_FIELD(cur, void **, 0) : NULL;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/history", HST_getHistoryLength);
+int HST_getHistoryLength(void) {
+    int n;
+    void *p;
+
+    n = 0;
+    OS_thread_mutex_lock(M2C_FIELD(history, int *, 8));
+    if (M2C_FIELD(history, void **, 0) == NULL) {
+        OS_thread_mutex_unlock(M2C_FIELD(history, int *, 8));
+        return 0;
+    }
+    n++;
+    p = M2C_FIELD(history, void **, 0);
+    while (p != NULL && M2C_FIELD(p, void **, 8) != NULL) {
+        p = M2C_FIELD(p, void **, 8);
+        n++;
+    }
+    p = M2C_FIELD(history, void **, 0);
+    while (p != NULL && M2C_FIELD(p, void **, 4) != NULL) {
+        p = M2C_FIELD(p, void **, 4);
+        n++;
+    }
+    OS_thread_mutex_unlock(M2C_FIELD(history, int *, 8));
+    return n;
+}
 
 int HST_getCurrentIndex(void) {
     int n = 0;
@@ -523,7 +546,23 @@ int HST_getJSURIlen(void *arg0) {
     return M2C_FIELD(arg0, int *, 0x78);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/history", HST_getJSURI);
+void *HST_getJSURI(void *node, int idx) {
+    char *p;
+    int i;
+
+    p = NULL;
+    if (M2C_FIELD(node, int *, 0x78) == 0) {
+        return (void *)M2C_FIELD(node, int *, 0x74);
+    }
+    if (M2C_FIELD(node, int *, 0x78) > 0) {
+        p = (char *)M2C_FIELD(node, int *, 0x74);
+        for (i = 1; i < idx; i++) {
+            p = (char *)M2C_FIELD(p, int *, 0xB0);
+        }
+        return p;
+    }
+    return p;
+}
 
 int HST_deleteJSURI(void *node) {
     void *p, *next;
@@ -578,7 +617,23 @@ int HST_getCSSURIlen(void *arg0) {
     return M2C_FIELD(arg0, int *, 0x80);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/history", HST_getCSSURI);
+void *HST_getCSSURI(void *node, int idx) {
+    char *p;
+    int i;
+
+    p = NULL;
+    if (M2C_FIELD(node, int *, 0x80) == 0) {
+        return (void *)M2C_FIELD(node, int *, 0x7C);
+    }
+    if (M2C_FIELD(node, int *, 0x80) > 0) {
+        p = (char *)M2C_FIELD(node, int *, 0x7C);
+        for (i = 1; i < idx; i++) {
+            p = (char *)M2C_FIELD(p, int *, 0xB0);
+        }
+        return p;
+    }
+    return p;
+}
 
 int HST_deleteCSSURI(void *node) {
     void *p, *next;
@@ -1018,7 +1073,15 @@ int HST_getTransStatus(void *arg0) {
     return M2C_FIELD(arg0, int *, 0xA4);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/history", HST_searchSessionIDHistoryNode);
+void *HST_searchSessionIDHistoryNode(int sid) {
+    void *r;
+
+    r = NULL;
+    if (sid != 0) {
+        r = searchHistoryNodeInner(1, &sid, 0);
+    }
+    return r;
+}
 
 void *HST_searchRequestFlagHistoryNode(int flag) {
     int key = flag;
@@ -1103,9 +1166,79 @@ HstNode *searchExtFileHistoryURI(HstNode *node, int sid, char *type) {
     return NULL;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/history", HST_getParentExtSessionID);
+int HST_getParentExtSessionID(HstNode *top, int sid, char *type) {
+    HstNode *node;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/history", HST_getParentExtHistoryURI);
+    node = top;
+    if (searchExtFileSessionID(node, sid, type) == 1) {
+        return node->x48;
+    }
+    while (node != NULL) {
+        if (node->child != NULL) {
+            node = node->child;
+        } else if (node->next != NULL) {
+            node = node->next;
+        } else {
+            goto climb;
+        }
+        if (searchExtFileSessionID(node, sid, type) == 1) {
+            return node->x48;
+        }
+        continue;
+    climb:
+        node = node->parent;
+        while (node != NULL) {
+            if (node->next != NULL) {
+                node = node->next;
+                if (searchExtFileSessionID(node, sid, type) == 1) {
+                    return node->x48;
+                }
+                goto cont;
+            }
+            node = node->parent;
+        }
+        return -1;
+    cont:;
+    }
+    return -1;
+}
+
+HstNode *HST_getParentExtHistoryURI(HstNode *top, int sid, char *type) {
+    HstNode *node;
+
+    node = top;
+    if (searchExtFileSessionID(node, sid, type) == 1) {
+        return node;
+    }
+    while (node != NULL) {
+        if (node->child != NULL) {
+            node = node->child;
+        } else if (node->next != NULL) {
+            node = node->next;
+        } else {
+            goto climb;
+        }
+        if (searchExtFileSessionID(node, sid, type) == 1) {
+            return node;
+        }
+        continue;
+    climb:
+        node = node->parent;
+        while (node != NULL) {
+            if (node->next != NULL) {
+                node = node->next;
+                if (searchExtFileSessionID(node, sid, type) == 1) {
+                    return node;
+                }
+                goto cont;
+            }
+            node = node->parent;
+        }
+        return NULL;
+    cont:;
+    }
+    return NULL;
+}
 
 void *HST_getExtHistoryURI(HstNode *top, int sid, char *type) {
     HstNode *node;
@@ -1344,7 +1477,23 @@ int uricmp_5704C(HstStr *a, HstStr *b) {
     return 1;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/history", freeFragmentIDs);
+void freeFragmentIDs(void *fp) {
+    HstFrag *f;
+    HstFrag *p;
+
+    if (fp == NULL) {
+        return;
+    }
+    f = fp;
+    do {
+        p = f;
+        f = f->next;
+        if (p->name != NULL) {
+            MEM_free(0, p->name);
+        }
+        MEM_free(0, p);
+    } while (f != NULL);
+}
 
 #ifndef NULL
 #define NULL ((void *)0)

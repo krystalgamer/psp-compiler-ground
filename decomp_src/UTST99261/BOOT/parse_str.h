@@ -23,6 +23,11 @@ typedef struct PCtx {
     int pos;                    /* 0x40 */
     int x44[4];
     PTagCounts tags;            /* 0x54 */
+    int x114;
+    void *doc;                  /* 0x118 */
+    int x11C[18];
+    int alertCount;             /* 0x164 */
+    int state;                  /* 0x168 */
 } PCtx;
 
 typedef struct PTag {
@@ -48,6 +53,11 @@ typedef struct PCtxList {
     int n;
     int cap;
 } PCtxList;
+
+typedef struct PJSEvent {
+    PChar *name;
+    PChar *value;
+} PJSEvent;
 
 typedef struct PStrBuf {
     PChar *data;
