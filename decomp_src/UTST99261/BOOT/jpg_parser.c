@@ -694,7 +694,36 @@ int getWord(JBS *bs, int be) {
     return v;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jpg_parser", getLong);
+int getLong(JBS *bs, int be) {
+    int v;
+
+    if (!bs->valid) {
+        return 0;
+    }
+    if (bs->bit != 7) {
+        nextByte(bs);
+        bs->bit = 7;
+    }
+    if (be) {
+        v = *bs->cur << 24;
+        nextByte(bs);
+        v |= *bs->cur << 16;
+        nextByte(bs);
+        v |= *bs->cur << 8;
+        nextByte(bs);
+        v |= *bs->cur;
+    } else {
+        v = *bs->cur;
+        nextByte(bs);
+        v |= *bs->cur << 8;
+        nextByte(bs);
+        v |= *bs->cur << 16;
+        nextByte(bs);
+        v |= *bs->cur << 24;
+    }
+    nextByte(bs);
+    return v;
+}
 
 int copyByte(JBS *bs, void *dst, int n) {
     if (bs->bit != 7) {
