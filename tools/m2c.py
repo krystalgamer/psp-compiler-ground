@@ -59,7 +59,17 @@ def c_prototypes(target, module):
 
 def draft(target, module, unit, func, extra=()):
     asm = ROOT / "tmp/asm" / target / module / "nonmatchings" / unit / f"{func}.s"
-    text = re.sub(r"\$(\d+)\b", lambda m: "$" + ABI[int(m[1])] if int(m[1]) < 32 else m[0], asm.read_text())
+    src = asm.read_text()
+    # jump tables live in their own rodata files: append the ones this function references
+    for ref in sorted(set(re.findall(r"%(?:hi|lo)\((\w+)\)", src))):
+        t = asm.parent / f"{ref}.s"
+        if not t.exists() or f"dlabel {ref}" in src:
+            continue
+        # entries are numbers with the label in a comment (.word 0x0000AE00 # .L0000AE00)
+        tt = re.sub(r"\.word\s+0x[0-9A-Fa-f]+\s*#\s*(\.L\w+)", r".word \1", t.read_text())
+        if ".word .L" in tt:
+            src += "\n.section .rodata\n" + tt
+    text = re.sub(r"\$(\d+)\b", lambda m: "$" + ABI[int(m[1])] if int(m[1]) < 32 else m[0], src)
     # m2c finds jump tables by name
     for tbl in re.findall(r"dlabel (\w+)\n\s*(?:/\*.*?\*/)?\s*\.word\s+\.L", text):
         if not tbl.startswith("jtbl"):
@@ -75,10 +85,11 @@ def draft(target, module, unit, func, extra=()):
         r = subprocess.run([sys.executable, str(ROOT / "tools/m2c_allegrex.py"), "-t", "mipsee-gcc-c",
                             "--context", str(Path(td) / "ctx.c"), *extra, str(Path(td) / "f.s")],
                            capture_output=True, text=True)
-    return r.stdout if r.returncode == 0 else None, r.stderr
+    return (r.stdout if r.returncode == 0 else None), (r.stderr if r.returncode == 0 else r.stdout + r.stderr)
 
 
 if __name__ == "__main__":
     out, err = draft(*sys.argv[1:5], sys.argv[5:])
     sys.stdout.write(out or "")
     sys.stderr.write(err)
+    sys.exit(0 if out else 1)
