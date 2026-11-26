@@ -386,6 +386,30 @@ modules (`tools/nltest.py`, `tools/objcmp.py`).
   1.3.1's psp-as can't assemble the result. UTST99332's SDK `libsas` is
   `-O2 -frename-registers` like libwave.
 
+- **C++ (cc1plus-1.6.1, the 1.6.1 tree's cp/ front end).** UTST99332's
+  libsupc++ (1.6.1.internal, `-O2`) is the 1.6.1 tree's own source: every
+  function of `new_op`, `new_opv`, `del_op`, `del_opv`, `eh_catch`,
+  `eh_throw`, `eh_alloc`, `eh_globals`, `eh_terminate`, `eh_exception`,
+  `eh_personality` and `tinfo` (76) compiles byte-identically from
+  `gcc1.6.1_src/libstdc++-v3/libsupc++/*.cc`. cc1plus-1.5.1 misses 13 of
+  them (`operator new`'s `sz == 0 ? 1 : sz` is `movz` only with 1.6.1:
+  1.5.1 needs `-mext` and still differs; `__cxa_throw`,
+  `read_encoded_value_with_base`, `__gxx_personality_v0`, 5 `tinfo`
+  functions, `get_globals_init_once`). The installed libstdc++ headers of
+  the 1.3.1 release are the 1.6.1 tree's except `bits/gthr-default.h`:
+  1.6.1.internal's `eh_alloc` locks with `*mutex = sceKernelCpuSuspendIntr()`
+  (the 1.6.1/1.7.1 `gcc/gthr-psp.h`), 1.3.1's had semaphore mutexes; C++
+  units now get 1.6.1's (`include/cxx/bits/gthr-default.h`).
+- UTST99332's demo C++ (demo_duck's `main.cpp`, demo_harmonic's
+  `CityApp.cpp` ranges: ~117 objects each, the same library objects) is
+  per object `-O2 -frename-registers` (e.g. `common::File::is_open` is
+  called, not inlined) or `-O3` (`common::Date` inlines its
+  `CopiableMembers` constructor, which is still emitted as a global), with
+  exceptions and RTTI (`.gcc_except_table`, typeinfo). 1.6.1's
+  `a == b` store-flag (`xor; sltiu`) where 1.5.1 branches makes
+  `Date::operator==` 4 bytes shorter: 1.5.1 can't build them.
+  No C++ function so far needs a cc1plus change.
+
 ## psp-gcc 1.7.1 (release build)
 
 htmlviewer is the first module built by release 1.7.1 (plus SDK libraries

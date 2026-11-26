@@ -36,3 +36,12 @@ names from their NIDs: `tools/nids.py` accepts a name only if the first four
 bytes of its SHA-1 are the NID, and keeps the resolved ones in
 `config/nids.txt`. Their object boundaries are guessed and documented in
 `config/TARGET/files.MODULE.txt`.
+
+A unit with a `/* lang: c++ */` comment is C++: it is preprocessed with the
+psp-gcc 1.3.1 release's libstdc++ and newlib headers (`include/cxx` first:
+g++'s predefines, 1.6.1's `gthr-psp.h`) and built by `cc1plus-VERSION`.
+`#pragma interface` in a unit's header keeps vtables and typeinfo in the
+module's data. `tools/dwarf2cpp.py TARGET MODULE UNIT [--probe FILE]` gives
+C++ declarations from a C++ compile unit's DWARF (checking every member
+offset with cc1plus), or a class skeleton from the symbol table (vtable
+order, bases from typeinfo) for objects without DWARF.
