@@ -177,6 +177,7 @@ public:
     std::vector<float> _floats;             /* 0x20 */
     std::vector<math::vector_xyzw> _float4s; /* 0x2C */
 };
+struct StencilShadowData;
 class Mesh : public CoreMesh {
 public:
     struct Offsets {
@@ -222,6 +223,7 @@ public:
     void discardNormals();
     void discardTexCoords();
     void reverseTrianglesVertices();
+    static void calcStencilShadowData(StencilShadowData &, const CoreMesh &);
     Offsets _offsets;                   /* 0x5C */
     bool _locked;                       /* 0x74 */
     std::vector<Triangle> _triangles;   /* 0x78 */
@@ -470,10 +472,30 @@ public:
         int _f90;
         int _f94;
     };
+    Icosahedron(unsigned char);
+    ~Icosahedron();
     bool getDepth() const;
     /* data */
     bool _f0;
+    char _p1[0x2C - 1];
 };
+
+namespace sh {
+common::common_internal::Log &Log_uint(common::common_internal::Log &, unsigned int) __asm__("_ZN6common15common_internal3LoglsEj");
+class SphereSampling : public Icosahedron {
+public:
+    struct Sample : public math::SphericalCoord {
+        Sample();
+        Vector sh;                      /* 0x18 */
+    };
+    SphereSampling(unsigned int);
+    void swap(SphereSampling &);
+    void create_samples(int);
+    void partition();
+    void precalc_sh_coeffs();
+    std::vector<Sample> _samples;       /* 0x2C */
+};
+}
 
 /* accessors (generated from the asm; members named by offset) */
 namespace sgl {
@@ -505,9 +527,12 @@ public:
     int _type;              /* 0x80 */
     char _p84[0xE4 - 0x84];
     bool _started;          /* 0xE4 */
+    char _pE5[0x14C - 0xE5];
 };
+class BV;
 class Frustum {
 public:
+    bool intersect(BV &);
     void enable();
     void disable();
     void get(float &, float &, float &, float &, float &, float &) const;

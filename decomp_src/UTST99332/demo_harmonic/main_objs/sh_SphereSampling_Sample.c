@@ -4,17 +4,37 @@
 #include "cxx/defer_asm.h"
 #include "../main.hpp"
 
+extern const char D_00170CB4[];     /* "sphere sampling constructed, n=" */
+extern const char D_00170CD4[];     /* "\n" */
+namespace std {
+extern template vector<sh::SphereSampling::Sample>::iterator vector<sh::SphereSampling::Sample>::erase(iterator, iterator);
+}
+
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sh_SphereSampling_Sample", _Z41__static_initialization_and_destruction_0ii_ECFD0);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sh_SphereSampling_Sample", _ZN2sh14SphereSampling6SampleC2Ev);
+sh::SphereSampling::Sample::Sample()
+{
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sh_SphereSampling_Sample", _ZN2sh14SphereSampling6SampleC1Ev);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sh_SphereSampling_Sample", _ZN2sh14SphereSampling4swapERS0_);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sh_SphereSampling_Sample", _ZN2sh14SphereSamplingC2Ej);
+void sh::SphereSampling::swap(SphereSampling &o)
+{
+    _samples.swap(o._samples);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sh_SphereSampling_Sample", _ZN2sh14SphereSamplingC1Ej);
+sh::SphereSampling::SphereSampling(unsigned int n) : Icosahedron(2)
+{
+    _samples.clear();
+    if (n) {
+        create_samples(n);
+        partition();
+        precalc_sh_coeffs();
+        Log_uint(common::Log() << D_00170CB4, n) << D_00170CD4;
+    }
+}
+
+
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sh_SphereSampling_Sample", _ZN2sh14SphereSampling20canonical_random_varEj);
 
