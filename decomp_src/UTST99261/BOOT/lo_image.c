@@ -15,7 +15,17 @@ typedef struct LNODE {
     void *data;                 /* 0x20 */
     int unk24;
     int session;                /* 0x28 */
+    int unk2C[5];
+    struct LURL *url;           /* 0x40 */
 } LNODE;
+
+typedef struct LURL {
+    u8 unk0[0x10];
+    int len;                    /* 0x10 */
+    char *str;                  /* 0x14 */
+} LURL;
+
+int memcmp(const void *a, const void *b, unsigned int n);
 
 typedef struct {
     int count;
@@ -215,9 +225,47 @@ LNODE *searchLLISTBySESSION(LLIST *list, int session) {
     return NULL;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_image", checkRecieveLLIST);
+int checkRecieveLLIST(LLIST *list) {
+    LNODE *n;
+    int i;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_image", checkNoReceiveLLIST);
+    if (list == NULL) {
+        return 0;
+    }
+    n = list->head;
+    if (n == NULL) {
+        return 0;
+    }
+    for (i = 0; i < list->count; i++) {
+        if (n->state == 5) {
+            n = n->next;
+            continue;
+        }
+        if (n->unk14 == 0) {
+            return 1;
+        }
+        n = n->next;
+        if (n == NULL) {
+            break;
+        }
+    }
+    return 0;
+}
+
+int checkNoReceiveLLIST(LLIST *list, int doc) {
+    LNODE *n;
+    int i;
+
+    if (list == NULL) {
+        return 0;
+    }
+    for (n = list->head, i = 0; i < list->count && n != NULL; n = n->next, i++) {
+        if (n->unk18 != 0 && n->unk14 == 0 && n->doc == doc) {
+            return 1;
+        }
+    }
+    return 0;
+}
 
 void delLLISTByDocumentSession(LLIST *list, int doc) {
     LNODE *n;
