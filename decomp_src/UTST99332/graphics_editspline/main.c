@@ -106,7 +106,19 @@ INCLUDE_ASM("tmp/asm/UTST99332/graphics_editspline/nonmatchings/main", draw_spli
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_editspline/nonmatchings/main", draw_dot);
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_editspline/nonmatchings/main", num2str);
+static void num2str(int num, char *str)
+{
+	const int columns = 2;
+	int i;
+	int a;
+
+	a = num;
+	for (i = columns - 1; i >= 0; i--) {
+		str[i] = a % 10 + '0';
+		a /= 10;
+	}
+	str[columns] = 0;
+}
 
 INCLUDE_RODATA("tmp/asm/UTST99332/graphics_editspline/nonmatchings/main", primflag);
 
