@@ -6,6 +6,56 @@ void sceGumPopMatrix(void);
 void sceGumPushMatrix(void);
 int sceKernelDcacheWritebackAll(void);
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_material/nonmatchings/sphere", DrawSphere);
+typedef struct ScePspFVector3 { float x, y, z; } ScePspFVector3;
+void sceGumScale(const ScePspFVector3 *v);
+void DrawSphere(ScePspFVector3 *array,float r)
+{
+	ScePspFVector3	scal;
+	ScePspFVector3	sphere[28] = {
+	{ 0.000000f,  1.000000f,  0.000000f, },
+	{ 1.333333f,  1.000000f,  0.000000f, },
+	{ 1.333333f, -1.000000f,  0.000000f, },
+	{ 0.000000f, -1.000000f,  0.000000f, },
+	{ 0.000000f,  1.000000f,  0.000000f, },
+	{ 1.333333f,  1.000000f, -1.777777f, },
+	{ 1.333333f, -1.000000f, -1.777777f, },
+	{ 0.000000f, -1.000000f,  0.000000f, },
+	{ 0.000000f,  1.000000f,  0.000000f, },
+	{-1.333333f,  1.000000f, -1.777777f, },
+	{-1.333333f, -1.000000f, -1.777777f, },
+	{ 0.000000f, -1.000000f,  0.000000f, },
+	{ 0.000000f,  1.000000f,  0.000000f, },
+	{-1.333333f,  1.000000f,  0.000000f, },
+	{-1.333333f, -1.000000f,  0.000000f, },
+	{ 0.000000f, -1.000000f,  0.000000f, },
+	{ 0.000000f,  1.000000f,  0.000000f, },
+	{-1.333333f,  1.000000f,  1.777777f, },
+	{-1.333333f, -1.000000f,  1.777777f, },
+	{ 0.000000f, -1.000000f,  0.000000f, },
+	{ 0.000000f,  1.000000f,  0.000000f, },
+	{ 1.333333f,  1.000000f,  1.777777f, },
+	{ 1.333333f, -1.000000f,  1.777777f, },
+	{ 0.000000f, -1.000000f,  0.000000f, },
+	{ 0.000000f,  1.000000f,  0.000000f, },
+	{ 1.333333f,  1.000000f,  0.000000f, },
+	{ 1.333333f, -1.000000f,  0.000000f, },
+	{ 0.000000f, -1.000000f,  0.000000f, },
+	};
+	int	i;
 
-INCLUDE_RODATA("tmp/asm/UTST99332/graphics_material/nonmatchings/sphere", D_00011F08);
+	for(i=0;i<(int)(sizeof(sphere)/sizeof(ScePspFVector3));i++) {
+		array[i].x=sphere[i].x;
+		array[i].y=sphere[i].y;
+		array[i].z=sphere[i].z;
+	}
+	sceKernelDcacheWritebackAll();
+
+	sceGumPushMatrix();
+	scal.x=scal.y=scal.z=r;
+	sceGumScale(&scal);
+
+	sceGumDrawBezier((3 << 7), 4, 7, 0, sphere);
+
+	sceGumPopMatrix();
+}
+
