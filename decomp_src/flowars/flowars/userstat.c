@@ -1,5 +1,6 @@
 #include "common.h"
 
+
 /* declarations recovered from DWARF */
 struct _anon1;
 struct _anon1 { /* size 0x6c */
@@ -168,11 +169,20 @@ static void get_user_stat(int flagPlayer, UserStat *userStat);
 static void set_result_score(int win_user, int flag_think_gukjin);
 
 
-INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/userstat", set_turn_event);
-
 extern int D_000656C8;
 extern int D_00065750;
 extern int D_00065818;
+extern int D_00065668;
+extern int D_000656F0;
+extern int D_000657B8;
+extern int D_0006566C;
+extern int D_000656F4;
+extern int D_000657BC;
+extern int D_00065670;
+extern int D_000656F8;
+extern int D_000657C0;
+
+INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/userstat", set_turn_event);
 
 void set_game_money(int flagPlayer, int money) {
     if (flagPlayer != 1) {
@@ -200,10 +210,6 @@ void add_game_money(int flagPlayer, int money) {
     var_v1->game_money += money;
 }
 
-extern int D_000656C8;
-extern int D_00065750;
-extern int D_00065818;
-
 int get_game_money(int flagPlayer) {
     switch (flagPlayer) {                           /* irregular */
     case 2:
@@ -215,25 +221,111 @@ int get_game_money(int flagPlayer) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/userstat", set_sp_success);
+static void set_sp_success(int flagPlayer, int Event)
+{
+	if (flagPlayer == 1)
+		g_opp_stat.sp_success[Event] = 1;
+	else if (flagPlayer == 2)
+		g_opp2_stat.sp_success[Event] = 1;
+	else
+		g_my_stat.sp_success[Event] = 1;
+}
+
+__asm__(".globl set_sp_success");
 
 INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/userstat", update_user_stat);
 
-INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/userstat", init_stat);
+static void init_stat(void)
+{
+	int money;
 
-INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/userstat", update_stat);
+	money = g_my_stat.game_money;
+	memset(&g_my_stat, 0, sizeof(UserStat));
+	g_my_stat.game_money = money;
+	money = g_opp_stat.game_money;
+	memset(&g_opp_stat, 0, sizeof(UserStat));
+	g_opp_stat.game_money = money;
+	memset(&g_my_score, 0, sizeof(UserScore));
+	memset(&g_opp_score, 0, sizeof(UserScore));
+}
 
-INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/userstat", is_jabbuck);
+__asm__(".globl init_stat");
 
-INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/userstat", check_event);
+static void update_stat(void)
+{
+	update_user_stat(0);
+	update_user_stat(1);
+	aiManager.update_sp_status();
+}
 
-INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/userstat", get_event);
+__asm__(".globl update_stat");
 
-INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/userstat", bbuck);
+static int is_jabbuck(int flagPlayer, int kind)
+{
+	UserStat *stat;
+	int ret = 0;
 
-extern int D_00065668;
-extern int D_000656F0;
-extern int D_000657B8;
+	if (flagPlayer == 1)
+		stat = &g_opp_stat;
+	else if (flagPlayer == 2)
+		stat = &g_opp2_stat;
+	else
+		stat = &g_my_stat;
+	if (stat->jabbuck_kind[0] == kind || stat->jabbuck_kind[1] == kind)
+		ret = 1;
+	return ret;
+}
+
+__asm__(".globl is_jabbuck");
+
+static int check_event(int flagPlayer, int flagEvent)
+{
+	UserStat *stat;
+
+	if (flagPlayer == 1)
+		stat = &g_opp_stat;
+	else if (flagPlayer == 2)
+		stat = &g_opp2_stat;
+	else
+		stat = &g_my_stat;
+	return (stat->turn_event & flagEvent) != 0;
+}
+
+__asm__(".globl check_event");
+
+static unsigned char get_event(int flagPlayer)
+{
+	UserStat *stat;
+
+	if (flagPlayer == 1)
+		stat = &g_opp_stat;
+	else if (flagPlayer == 2)
+		stat = &g_opp2_stat;
+	else
+		stat = &g_my_stat;
+	return stat->turn_event;
+}
+
+__asm__(".globl get_event");
+
+static int bbuck(int flagPlayer, int kind)
+{
+	UserStat *stat;
+
+	if (flagPlayer == 1)
+		stat = &g_opp_stat;
+	else if (flagPlayer == 2)
+		stat = &g_opp2_stat;
+	else
+		stat = &g_my_stat;
+	if (stat->jabbuck_kind[0] == 0)
+		stat->jabbuck_kind[0] = kind;
+	else
+		stat->jabbuck_kind[1] = kind;
+	return ++stat->bbuck;
+}
+
+__asm__(".globl bbuck");
 
 int get_bbuck_count(int flagPlayer) {
     switch (flagPlayer) {                           /* irregular */
@@ -246,11 +338,20 @@ int get_bbuck_count(int flagPlayer) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/userstat", shake);
+static int shake(int flagPlayer)
+{
+	int ret;
 
-extern int D_0006566C;
-extern int D_000656F4;
-extern int D_000657BC;
+	if (flagPlayer == 1)
+		ret = ++g_opp_stat.shake;
+	else if (flagPlayer == 2)
+		ret = ++g_opp2_stat.shake;
+	else
+		ret = ++g_my_stat.shake;
+	return ret;
+}
+
+__asm__(".globl shake");
 
 int get_shake_count(int flagPlayer) {
     switch (flagPlayer) {                           /* irregular */
@@ -263,11 +364,24 @@ int get_shake_count(int flagPlayer) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/userstat", go);
+static int go(int flagPlayer)
+{
+	int ret;
 
-extern int D_00065670;
-extern int D_000656F8;
-extern int D_000657C0;
+	if (flagPlayer == 1) {
+		ret = ++g_opp_stat.go;
+		g_opp_score.last_go = g_opp_score.total;
+	} else if (flagPlayer == 2) {
+		ret = ++g_opp2_stat.go;
+		g_opp2_score.last_go = g_opp2_score.total;
+	} else {
+		ret = ++g_my_stat.go;
+		g_my_score.last_go = g_my_score.total;
+	}
+	return ret;
+}
+
+__asm__(".globl go");
 
 int get_go_count(int flagPlayer) {
     switch (flagPlayer) {                           /* irregular */
@@ -280,9 +394,29 @@ int get_go_count(int flagPlayer) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/userstat", get_user_score);
+static void get_user_score(int flagPlayer, UserScore *userScore)
+{
+	if (flagPlayer == 1)
+		*userScore = g_opp_score;
+	else if (flagPlayer == 2)
+		*userScore = g_opp2_score;
+	else
+		*userScore = g_my_score;
+}
 
-INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/userstat", get_user_stat);
+__asm__(".globl get_user_score");
+
+static void get_user_stat(int flagPlayer, UserStat *userStat)
+{
+	if (flagPlayer == 1)
+		*userStat = g_opp_stat;
+	else if (flagPlayer == 2)
+		*userStat = g_opp2_stat;
+	else
+		*userStat = g_my_stat;
+}
+
+__asm__(".globl get_user_stat");
 
 INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/userstat", set_result_score);
 
