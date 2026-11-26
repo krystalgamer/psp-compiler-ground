@@ -567,7 +567,89 @@ void SetLRAnim(int flag) {
     lr.cnt = 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/menu/nonmatchings/draw", DrawLR);
+extern Gu2dV16T D_001B5954[];
+extern Gu2dV16T D_001B597C[];
+void DrawLR(void)
+{
+	switch (lr.flag) {
+	case 1:
+		if (lr.cnt == 0) {
+			D_001B5954[0].p[0] = -32;
+			D_001B5954[1].p[0] = -32;
+			D_001B5954[2].p[0] = 0;
+			D_001B5954[3].p[0] = 0;
+			D_001B597C[0].p[0] = 480;
+			D_001B597C[1].p[0] = 480;
+			D_001B597C[2].p[0] = 512;
+			D_001B597C[3].p[0] = 512;
+		} else {
+			D_001B5954[0].p[0] = lr.cnt * 4 - 32;
+			D_001B5954[1].p[0] = lr.cnt * 4 - 32;
+			D_001B5954[2].p[0] = lr.cnt * 4;
+			D_001B5954[3].p[0] = lr.cnt * 4;
+			D_001B597C[0].p[0] = 480 - lr.cnt * 4;
+			D_001B597C[1].p[0] = 480 - lr.cnt * 4;
+			D_001B597C[2].p[0] = 512 - lr.cnt * 4;
+			D_001B597C[3].p[0] = 512 - lr.cnt * 4;
+		}
+		sceKernelDcacheWritebackInvalidateRange(D_001B5954, sizeof(Gu2dV16T) * 4);
+		sceKernelDcacheWritebackInvalidateRange(D_001B597C, sizeof(Gu2dV16T) * 4);
+		if (++lr.cnt >= 9)
+			lr.flag = 0;
+		break;
+	case 2:
+		if (lr.cnt == 0) {
+			D_001B5954[0].p[0] = 0;
+			D_001B5954[1].p[0] = 0;
+			D_001B5954[2].p[0] = 32;
+			D_001B5954[3].p[0] = 32;
+		} else {
+			D_001B5954[0].p[0] = lr.cnt * 2;
+			D_001B5954[1].p[0] = lr.cnt * 2;
+			D_001B5954[2].p[0] = lr.cnt * 2 + 32;
+			D_001B5954[3].p[0] = lr.cnt * 2 + 32;
+		}
+		if (++lr.cnt >= 5) {
+			lr.flag = 0;
+			D_001B5954[0].p[0] = 0;
+			D_001B5954[1].p[0] = 0;
+			D_001B5954[2].p[0] = 32;
+			D_001B5954[3].p[0] = 32;
+		}
+		sceKernelDcacheWritebackInvalidateRange(D_001B5954, sizeof(Gu2dV16T) * 4);
+		break;
+	case 3:
+		if (lr.cnt == 0) {
+			D_001B597C[0].p[0] = 448;
+			D_001B597C[1].p[0] = 448;
+			D_001B597C[2].p[0] = 480;
+			D_001B597C[3].p[0] = 480;
+		} else {
+			D_001B597C[0].p[0] = 448 - lr.cnt * 2;
+			D_001B597C[1].p[0] = 448 - lr.cnt * 2;
+			D_001B597C[2].p[0] = 480 - lr.cnt * 2;
+			D_001B597C[3].p[0] = 480 - lr.cnt * 2;
+		}
+		if (++lr.cnt >= 5) {
+			D_001B597C[0].p[0] = 448;
+			D_001B597C[1].p[0] = 448;
+			lr.flag = 0;
+			D_001B597C[2].p[0] = 480;
+			D_001B597C[3].p[0] = 480;
+		}
+		sceKernelDcacheWritebackInvalidateRange(D_001B597C, sizeof(Gu2dV16T) * 4);
+		break;
+	}
+	sceGuEnable(9);
+	sceGuTexMode(2, 0, 0, 1);
+	sceGuTexImage(0, 32, 32, 32, pix_l);
+	sceGuColor(0xffffffff);
+	sceGumDrawArray(4, 0x800102, 4, NULL, D_001B5954);
+	sceGuTexMode(2, 0, 0, 1);
+	sceGuTexImage(0, 32, 32, 32, pix_r);
+	sceGuColor(0xffffffff);
+	sceGumDrawArray(4, 0x800102, 4, NULL, D_001B597C);
+}
 
 extern Gu2dV16 D_001B59A4[];
 void DrawSelect(void)
