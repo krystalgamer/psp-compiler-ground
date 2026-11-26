@@ -1698,7 +1698,116 @@ void MonitorPut(PZL_STAT *st)
 	}
 }
 
+#ifdef NON_MATCHING
+/* Byte-matches (fntest, every cc1) but cannot be installed while the unit is mixed: the
+ * switch's jump table must sit at D_0002E750, far before this function's own rodata
+ * (the 1.0f at D_0002E9AC).  Needs: the case order below (found by search), and the
+ * frame counter re-read before `% 2` (only a volatile read reproduces the reload). */
+extern int D_0014E930;
+extern int D_0014E934;
+extern int D_0014E938;
+extern const float D_0002E9AC;
+extern SPRDATA SHUTTER_PARTZ;
+int PollShutter(int req)
+{
+	int ret = 0;
+	int i;
+
+	if (req == 5)
+		return D_0014E930;
+	switch (req) {
+	case 1:
+		D_0014E938 = 1;
+		D_0014E930 = 0;
+		break;
+	case 6:
+		D_0014E938 = 6;
+		D_0014E930 = 0;
+		break;
+	case 3:
+		D_0014E938 = 0;
+		D_0014E930 = 19;
+		ret = 1;
+		break;
+	case 0:
+		break;
+	case 2:
+		D_0014E938 = 2;
+		D_0014E930 = 19;
+		break;
+	case 7:
+		D_0014E938 = 7;
+		D_0014E930 = 19;
+		break;
+	case 4:
+		D_0014E938 = 0;
+		D_0014E930 = 0;
+		ret = 2;
+		break;
+	}
+	D_0014E934++;
+	switch (D_0014E938) {
+	case 1:
+		D_0014E934 = *(volatile int *)&D_0014E934 % 2;
+		break;
+	case 2:
+		D_0014E934 = *(volatile int *)&D_0014E934 % 2;
+		break;
+	case 6:
+		D_0014E934 = *(volatile int *)&D_0014E934 % 2;
+		break;
+	case 7:
+		D_0014E934 = *(volatile int *)&D_0014E934 % 2;
+		break;
+	default:
+		D_0014E934 = 1;
+		break;
+	}
+	if (D_0014E934 == 0) {
+		switch (D_0014E938) {
+		case 1:
+			D_0014E930++;
+			if (D_0014E930 >= 20) {
+				D_0014E930 = 19;
+				ret = 1;
+				D_0014E938 = 0;
+				se_play(7);
+			}
+			break;
+		case 2:
+			D_0014E930--;
+			if (D_0014E930 < 0) {
+				D_0014E938 = 0;
+				ret = 2;
+				D_0014E930 = 0;
+				se_play(7);
+			}
+			break;
+		case 6:
+			D_0014E930++;
+			if (D_0014E930 >= 20) {
+				D_0014E930 = 19;
+				ret = 1;
+				D_0014E938 = 0;
+			}
+			break;
+		case 7:
+			D_0014E930--;
+			if (D_0014E930 < 0) {
+				D_0014E938 = 0;
+				ret = 2;
+				D_0014E930 = 0;
+			}
+			break;
+		}
+	}
+	for (i = 0; i < D_0014E930; i++)
+		SpriteDrawC(D_0002E9AC, 240, 28 + i * 12, &SHUTTER_PARTZ);
+	return ret;
+}
+#else
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", PollShutter);
+#endif
 
 void DrawLight(int x, int y, int col, int no)
 {
