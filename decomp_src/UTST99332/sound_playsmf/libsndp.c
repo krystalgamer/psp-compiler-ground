@@ -3,8 +3,10 @@
 
 extern int D_000185C8;
 #define g_state D_000185C8
-extern int D_00128E94[];
-extern int D_00128F14;
+typedef struct { int hd; int bd; } SsSoundData;
+typedef struct { int flag; int type; int delay; int feedback; int left; int right; int dry; int wet; } SsEffectParam;
+extern SsSoundData *D_00128E94[];
+extern unsigned int D_00128F14;
 extern int D_00128F18[];
 #define g_hd D_00128E94
 #define g_maxvoice D_00128F14
@@ -22,6 +24,11 @@ int smf_setHdId(int id, int hd);
 int sceSasInit();
 int smf_init(int n);
 int voice_init(int n);
+int sceSasSetEffectType(int type);
+int sceSasSetEffectParam(int delay, int feedback);
+int sceSasSetEffectVolume(int left, int right);
+int sceSasSetEffect(int dry, int wet);
+unsigned int voice_getVoiceByID(int id);
 
 int voice_setSustain(int a0, int a1);
 int voice_noteOff(int a0);
@@ -96,7 +103,25 @@ INCLUDE_ASM("tmp/asm/UTST99332/sound_playsmf/nonmatchings/libsndp", sceSsNoteOff
 
 INCLUDE_ASM("tmp/asm/UTST99332/sound_playsmf/nonmatchings/libsndp", sceSsSetSustainHold);
 
-INCLUDE_ASM("tmp/asm/UTST99332/sound_playsmf/nonmatchings/libsndp", sceSsKeyOffByID);
+int sceSsKeyOffByID(int id)
+{
+	unsigned int ret = 0;
+	unsigned int mask;
+	unsigned int i;
+
+	if (g_state == -1)
+		return 0;
+	mask = voice_getVoiceByID(id);
+	if (mask != 0) {
+		for (i = 0; i < g_maxvoice; i++) {
+			if ((mask >> i) & 1) {
+				if (voice_noteOff(i) == 0)
+					ret |= 1 << i;
+			}
+		}
+	}
+	return ret;
+}
 
 int sceSsVoiceSetSustainHold(int a0, int a1)
 {
@@ -105,7 +130,34 @@ int sceSsVoiceSetSustainHold(int a0, int a1)
 	return voice_setSustain(a0, a1);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/sound_playsmf/nonmatchings/libsndp", sceSsSetEffectParam);
+int sceSsSetEffectParam(SsEffectParam *p)
+{
+	int ret;
+
+	if (g_state == -1)
+		return 0x80450001;
+	if (p->flag & 1) {
+		ret = sceSasSetEffectType(p->type);
+		if (ret != 0)
+			return ret;
+	}
+	if (p->flag & 2) {
+		ret = sceSasSetEffectParam(p->delay, p->feedback);
+		if (ret != 0)
+			return ret;
+	}
+	if (p->flag & 4) {
+		ret = sceSasSetEffectVolume(p->left, p->right);
+		if (ret != 0)
+			return ret;
+	}
+	if (p->flag & 8) {
+		ret = sceSasSetEffect(p->dry, p->wet);
+		if (ret != 0)
+			return ret;
+	}
+	return 0;
+}
 
 int sceSsSMFBind(void *smf, int size, unsigned int hd)
 {
