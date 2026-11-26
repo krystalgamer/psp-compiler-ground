@@ -112,11 +112,53 @@ void sceGimPictureUnload(SceGimPicture *picture);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/gim_picture/load_bmp", sceGimPictureLoadBmp);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/gim_picture/load_bmp", read_header_E464);
+#define read_header read_header_E464
+#define read_short read_short_E540
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/gim_picture/load_bmp", read_short_E540);
+static const void *read_header(const void *src, BmpHeader *header)
+{
+	src = read_short(src, &header->type);
+	src = read_int(src, &header->size);
+	src = read_short(src, &header->res1);
+	src = read_short(src, &header->res2);
+	src = read_int(src, &header->bits);
+	src = read_int(src, &header->size2);
+	src = read_int(src, &header->width);
+	src = read_int(src, &header->height);
+	src = read_short(src, &header->plane_count);
+	src = read_short(src, &header->bit_count);
+	src = read_int(src, &header->compress);
+	src = read_int(src, &header->image_size);
+	src = read_int(src, &header->xppm);
+	src = read_int(src, &header->yppm);
+	src = read_int(src, &header->used_cols);
+	src = read_int(src, &header->important);
+	return src;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/gim_picture/load_bmp", read_int);
+static const void *read_short(const void *src, short int *val)
+{
+	const unsigned char *p = (const unsigned char *)src;
+
+	if ((int)p & 1) {
+		*val = p[0] | (p[1] << 8);
+	} else {
+		*val = *(const short int *)p;
+	}
+	return p + 2;
+}
+
+static const void *read_int(const void *src, int *val)
+{
+	const unsigned char *p = (const unsigned char *)src;
+
+	if ((int)p & 3) {
+		*val = (p[3] << 24) | (p[2] << 16) | (p[1] << 8) | p[0];
+	} else {
+		*val = *(const int *)p;
+	}
+	return p + 4;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/gim_picture/load_bmp", copy_idx4);
 
