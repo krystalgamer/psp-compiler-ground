@@ -691,9 +691,20 @@ void DrawCount(int z, int x, int y, int num)
 	}
 }
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", Sin);
+double sin(double);
+double cos(double);
+/* the doubles are the module's .rodata.cst8 entries at the end of this unit's rodata */
+extern const double D_0002EA00, D_0002EA08, D_0002EA10, D_0002EA18;
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", Cos);
+short Sin(short a)
+{
+	return (float)sin(a * D_0002EA00 / D_0002EA08) * 32767.0f;
+}
+
+short Cos(short a)
+{
+	return (float)cos(a * D_0002EA10 / D_0002EA18) * 32767.0f;
+}
 
 void ZeroMemory(void *p, int size)
 {
