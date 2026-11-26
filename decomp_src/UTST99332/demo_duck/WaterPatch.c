@@ -13,6 +13,9 @@ extern template vertex_formats::T2UB_V3F *__uninitialized_fill_n_aux(vertex_form
 extern template unsigned short *fill_n(unsigned short *, unsigned int, const unsigned short &);
 }
 
+/* static in WaterPatch.cpp; stays in the module's .bss (asm) */
+extern unsigned int mipmap_offset[5];
+
 /* the strings stay in the module's .rodata (asm) */
 extern const char D_0015DB64[];     /* " *** error " */
 extern const char D_0015DB70[];     /* " " */
@@ -29,9 +32,11 @@ extern const char WaterPatch_ctor_name[] __asm__("_ZZN10WaterPatchC1EjjfiffE19__
     }
 
 /* emitted first, like the static constructors -O3 puts before the deferred functions */
+#ifndef M2CTX
 __asm__(".set noat\n.set noreorder\n"
         ".include \"tmp/asm/UTST99332/demo_duck/nonmatchings/WaterPatch/_Z41__static_initialization_and_destruction_0ii_3E8.s\"\n"
         ".set reorder\n.set at\n");
+#endif
 
 WaterPatch::WaterPatch(unsigned int nx, unsigned int ny, float size, int mode, float damping, float speed)
     : _nx(nx), _ny(ny), _size(size), _pos(nx * ny), _normal(nx * ny), _vtx0(nx * ny), _vtx1(nx * ny),
@@ -52,9 +57,12 @@ WaterPatch::WaterPatch(unsigned int nx, unsigned int ny, float size, int mode, f
     reset();
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/WaterPatch", _ZN10WaterPatchD2Ev);
+WaterPatch::~WaterPatch()
+{
+    delete[] _h0;
+    delete[] _h1;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/WaterPatch", _ZN10WaterPatchD1Ev);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/WaterPatch", _ZN10WaterPatch5resetEv);
 
@@ -112,7 +120,32 @@ void WaterPatch::drawW(bool) const
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/WaterPatch", _ZN10WaterPatch7reflectEv);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/WaterPatch", _ZNK10WaterPatch17prepareRefractionEv);
+void WaterPatch::prepareRefraction() const
+{
+    unsigned int base = psp::vram.f68;
+    mipmap_offset[0] = base;
+    mipmap_offset[1] = base + 0x20000;
+    mipmap_offset[2] = mipmap_offset[1] + 0x8000;
+    mipmap_offset[3] = mipmap_offset[2] + 0x2000;
+    mipmap_offset[4] = mipmap_offset[2] + 0x2800;
+    if (!_fa4)
+        return;
+    psp::vram.copyImageBegin(_fa6);
+    psp::vram.copyImageSrcPf((psp::PixelFormat)3);
+    psp::vram.copyImageDstPf((psp::PixelFormat)1);
+    if (!_fa5) {
+        psp::vram.copyImage(0x1E0, 0x110, 0x80, 0x80, psp::vram.displayBuffer(), (void *)mipmap_offset[0]);
+    } else {
+        char *edram = (char *)sceGeEdramGetAddr();
+        psp::vram.copyImage(0x1E0, 0x110, 0x100, 0x100, psp::vram.displayBuffer(), (void *)mipmap_offset[0]);
+        psp::vram.copyImageSrcPf((psp::PixelFormat)1);
+        psp::vram.copyImage(0x100, 0x100, 0x80, 0x80, edram + mipmap_offset[0], (void *)mipmap_offset[1]);
+        psp::vram.copyImage(0x80, 0x80, 0x40, 0x40, edram + mipmap_offset[1], (void *)mipmap_offset[2]);
+        psp::vram.copyImage(0x40, 0x40, 0x20, 0x20, edram + mipmap_offset[2], (void *)mipmap_offset[3]);
+        psp::vram.copyImage(0x20, 0x20, 0x10, 0x10, edram + mipmap_offset[3], (void *)mipmap_offset[4]);
+    }
+    psp::vram.copyImageEnd();
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/WaterPatch", _ZNK10WaterPatch4drawENS_4PassE);
 

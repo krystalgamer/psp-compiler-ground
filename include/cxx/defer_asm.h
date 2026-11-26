@@ -9,6 +9,9 @@
 #ifndef DEFER_ASM_H
 #define DEFER_ASM_H
 
+#if defined(M2CTX) || defined(PERMUTER)
+#define INCLUDE_ASM(FOLDER, NAME)
+#else
 #define INCLUDE_ASM(FOLDER, NAME) \
     extern "C" void NAME##__asm(void) __attribute__((section(".discard.asm"))); \
     extern "C" void NAME##__asm(void) \
@@ -24,5 +27,6 @@
             ".section .discard.asm\n" \
             ".ent " #NAME "__asm\n"); \
     }
+#endif
 
 #endif
