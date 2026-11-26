@@ -31,7 +31,105 @@ INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/at3plus", D_0002EC98);
 
 INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/at3plus", D_0002ECC4);
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/at3plus", play_atrac3plus);
+typedef struct {
+	int atracId;
+	int fd;
+	int evf;
+	int ch;
+} AT3ARG;
+extern int NowBgm;
+extern int PlayFlag;
+int sceAtracGetRemainFrame(int atracId, int *remain);
+int sceAtracDecodeData(int atracId, void *buf, int *samples, int *end, int *remain);
+int sceAtracGetInternalErrorInfo(int atracId, int *err);
+int sceWaveAudioSetSample(int ch, int samples);
+int sceWaveAudioWriteBlocking(int ch, int l, int r, void *buf);
+int sceKernelExitThread(int status);
+void *memcpy(void *, const void *, unsigned int);
+void *memset(void *, int, unsigned int);
+int puts(const char *);
+void at3plus_addData(int atracId, int fd);
+void at3plus_DisplayDecodePosition(int *arg);
+void reset_position(AT3ARG *arg);
+int getPlayMode(int evf, int mode);
+void fadeoutOperation(short *buf, int n, int total);
+void release_arg(void *arg);
+
+int play_atrac3plus(unsigned int args, void *argp)
+{
+	unsigned char aucBuf[0x8000 + 0x40];
+	int remain;
+	int samples;
+	int end;
+	int err;
+	int mode;
+	AT3ARG *arg = argp;
+	unsigned int *buf = (unsigned int *)(((unsigned int)aucBuf + 0x3c) & ~0x3f);
+	int vol = 0x8000;
+	unsigned int pos = 0;
+	unsigned int done = 0;
+	int border;
+	int ret;
+	unsigned int n, raw;
+
+	ret = sceAtracGetRemainFrame(arg->atracId, &remain);
+	mode = 0;
+	if (ret < 0)
+		printf("sceAtracGetRemainFrame err 0x%x\n", ret);
+	border = remain / 2;
+	if (border < 1)
+		border = 1;
+	do {
+		at3plus_DisplayDecodePosition((int *)arg);
+		ret = sceAtracDecodeData(arg->atracId, buf + pos, &samples, &end, &remain);
+		if (ret < 0) {
+			sceAtracGetInternalErrorInfo(arg->atracId, &err);
+			printf("sceAtracDecodeData err 0x%x (%d)\n", ret, err);
+			break;
+		}
+		pos += samples;
+		raw = pos - done;
+		if (raw >= 0x800) {
+			n = raw & ~0x3f;
+			if (mode == 1)
+				fadeoutOperation((short *)(buf + done), n, raw);
+			sceWaveAudioSetSample(arg->ch, n);
+			sceWaveAudioWriteBlocking(arg->ch, vol, vol, buf + done);
+			done += n;
+			if (mode == 1) {
+				reset_position(arg);
+				mode = 0;
+			}
+		}
+		if (pos >= 0x1800) {
+			pos -= done;
+			memcpy(buf, buf + done, pos * 4);
+			done = 0;
+		}
+		if (remain <= border && remain != -1)
+			at3plus_addData(arg->atracId, arg->fd);
+		mode = getPlayMode(arg->evf, mode);
+		if (mode == 2) {
+			vol -= 0x400;
+			if (vol < 0) {
+				end = 1;
+				vol = 0;
+				puts("Fade out end....");
+			}
+		}
+	} while (end == 0);
+	if (vol != 0 && done < pos) {
+		memset(buf + pos, 0, (0x800 - (pos - done)) * 4);
+		sceWaveAudioSetSample(arg->ch, 0x800);
+		sceWaveAudioWriteBlocking(arg->ch, vol, vol, buf + done);
+	}
+	sceWaveAudioWriteBlocking(arg->ch, vol, vol, 0);
+	release_arg(arg);
+	NowBgm = -1;
+	PlayFlag = 0;
+	sceKernelExitThread(0);
+	return 0;
+}
 
 void finish_atrac3plus(void *arg0) {
     int temp_v0;
