@@ -963,7 +963,40 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Graphic", GUI_List_add);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Graphic", GUI_List_remove);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Graphic", GUI_List_removeAll);
+int GUI_List_removeAll(GUIWIDGET *w_) {
+    GUIWIDGET *w;
+    GUILISTITEM *p;
+    GUILISTITEM *n;
+
+    if (w_ == NULL) {
+        puts("[X1]GUI_List_removeAll");
+        return -1;
+    }
+    w = w_;
+    if (w->type != 1) {
+        puts("[X2]GUI_List_removeAll");
+        return -1;
+    }
+    if ((w->flags & 0xF) != 8) {
+        puts("[X3]GUI_List_removeAll");
+        return -1;
+    }
+    s_windsystem_data.flags |= 4;
+    p = w->unk50.p;
+    while (p != NULL) {
+        n = p->next;
+        ESP_guiMemFree(p->text);
+        ESP_guiMemFree(p);
+        p = n;
+    }
+    w->unk50.p = NULL;
+    w->u.list.state = 0;
+    w->u.list.unk58 = 0;
+    _GUI_List_no(w);
+    zWindDraw();
+    s_windsystem_data.flags &= ~4;
+    return 0;
+}
 
 char *GUI_List_getItem(GUIWIDGET *w, int idx) {
     GUILISTITEM *p;
@@ -1019,7 +1052,40 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Graphic", GUI_Choice_insert
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Graphic", GUI_Choice_remove);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Graphic", GUI_Choice_removeAll);
+int GUI_Choice_removeAll(GUIWIDGET *w_) {
+    GUIWIDGET *w;
+    GUILISTITEM *p;
+    GUILISTITEM *n;
+
+    if (w_ == NULL) {
+        puts("[X1]GUI_Choice_removeAll");
+        return -1;
+    }
+    w = w_;
+    if (w->type != 1) {
+        puts("[X2]GUI_Choice_removeAll");
+        return -1;
+    }
+    if ((w->flags & 0xF) != 9) {
+        puts("[X3]GUI_Choice_removeAll");
+        return -1;
+    }
+    s_windsystem_data.flags |= 4;
+    p = w->unk4C;
+    while (p != NULL) {
+        n = p->next;
+        ESP_guiMemFree(p->text);
+        ESP_guiMemFree(p);
+        p = n;
+    }
+    w->u.choice.sel = -1;
+    w->unk4C = NULL;
+    w->unk50.p = NULL;
+    w->u.choice.unk56 = 0;
+    zWindDraw();
+    s_windsystem_data.flags &= ~4;
+    return 0;
+}
 
 char *GUI_Choice_getItem(GUIWIDGET *w, int idx) {
     GUILISTITEM *p;

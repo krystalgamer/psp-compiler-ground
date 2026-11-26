@@ -191,7 +191,7 @@ int GUI_Graphics_getStringSize(GUIFONT *font, char *s, int len, int *w, int *h);
 int GuiwidgetClear(GUIWIDGET *w);
 int GuiwidgetDelete(GUIWIDGET *w);
 void GuiwidgetAllOpening(void);
-void GUI_List_removeAll(void);
-void GUI_Choice_removeAll(void);
+int GUI_List_removeAll();
+int GUI_Choice_removeAll();
 
 #endif
