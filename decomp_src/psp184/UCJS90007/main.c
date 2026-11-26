@@ -556,7 +556,30 @@ static void draw_top(void)
 	DrawSprite(0x65, 0x79, 0x200, 0x40, 0, 0, D_00031700);
 }
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/main", draw_title_mini);
+void sceGuDisable(int state);
+void sceGuDisable(int state);
+void DrawTitleLine(void);
+extern SceGeVertexT16V16_UV_NORMAL D_00031728[];
+static void draw_title_mini(void)
+{
+	begin_scene();
+	process_fade();
+	sceGuEnable(9);
+	sceGuTexWrap(0, 0);
+	sceGuTexFilter(0, 0);
+	sceGuTexFunc(0, 1);
+	sceGuTexMode(4, 0, 0, 0);
+	sceGuClutMode(2, 0, 0xFF, 0);
+	sceGuClutLoad(1, clut_dialog);
+	sceGuTexImage(0, 512, 64, 512, DialogTextureImageTable[1].buffer);
+	SpriteScale(1, 1);
+	if (_info.state == 9)
+		DrawSprite(0x10E, 0xFC, 0x200, 0x40, 0, 0, D_00031728);
+	else
+		DrawSprite(6, 4, 0x200, 0x40, 0, 0, D_00031728);
+	sceGuDisable(9);
+	DrawTitleLine();
+}
 
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/main", draw_config);
 
@@ -694,4 +717,54 @@ void wait_vblank(void) {
     sceDisplayWaitVblankStartCB();
 }
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/main", main);
+void sceGuTerm(void);
+void *sceGuSwapBuffers(void);
+int sceCtrlSetSamplingCycle(int cycle);
+int sceCtrlSetSamplingMode(int mode);
+unsigned int sceKernelGetSystemTimeLow(void);
+void srand(unsigned int seed);
+int sceUmdActivate(int mode, const char *drive);
+int load_required_modules(void);
+unsigned int sceKernelGetSystemTimeLow(void);
+void srand(unsigned int seed);
+int sceCtrlSetSamplingMode(int mode);
+int sceCtrlSetSamplingCycle(int cycle);
+int log_init(void);
+void pad_read(void);
+void *sceGuSwapBuffers(void);
+int sceKernelPowerTick(int type);
+void sceGuTerm(void);
+int main(int argc, char **argv)
+{
+	if (sceUmdActivate(1, "disc0:") < 0)
+		return 1;
+	CBInit();
+	if (load_required_modules() < 0)
+		return 1;
+	srand(sceKernelGetSystemTimeLow());
+	memset(&_info, 0, sizeof(_info));
+	change_state(0, 0);
+	_info.thread_num = 1;
+	sceCtrlSetSamplingMode(1);
+	sceCtrlSetSamplingCycle(0);
+	gu_init();
+	if (sysparam_init() >= 0) {
+		log_init();
+		font_init();
+		fade_init();
+		for (;;) {
+			if (_info.state == 0 && ms_data_init() < 0)
+				break;
+			pad_read();
+			draw_frame();
+			update_1080();
+			wait_vblank();
+			if (_info.state != 14)
+				sceGuSwapBuffers();
+			sceKernelPowerTick(0);
+		}
+	}
+	sceGuTerm();
+	sceKernelExitGame();
+	return 1;
+}
