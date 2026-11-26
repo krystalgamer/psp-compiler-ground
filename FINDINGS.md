@@ -308,14 +308,27 @@ modules (`tools/nltest.py`, `tools/objcmp.py`).
   mix C with asm (`mixed:`, so C and asm floats stay in one section in
   emission order) until they are all C.
 
-- flowars (release 1.6.1, DWARF, `-O2`): 111/324 app functions and 68/82
+- flowars (release 1.6.1, DWARF, `-O2`): 226/305 app functions and 68/82
   newlib/libgcc units in C. None matches only with 1.6.1; all also match with
   1.3.1-orig, 1.7.1-orig and 1.8.4, while 1.5.1 fails only at condmove sites
-  (`_open`, `strFileReadCB`, `DvdUmdRetryReadCB`, `debugMsg`, `printMsg`).
-  Open candidates: `load_file` and `vag_file_read`. No cc1 keeps the
-  `strFileLseek` argument setup below the branch after `strFileOpen` as the
-  original does. `-fno-sched-spec` comes within one register swap; but
-  `DvdUmdRetryOpen` gets that motion and matches, so most likely a source detail.
+  (`_open`, `strFileReadCB`, `DvdUmdRetryReadCB`, `debugMsg`, `printMsg`,
+  `wait_stage`, `is_bisang`, `fade_out`, `draw_checked_pae`, `show_warning`,
+  `draw_face`).
+  Open candidate: `load_file` and `vag_file_read`.
+  - **What the original looks like:** what our cc1 gives with interblock
+    scheduling off for just that function. `vag_file_read` is
+    byte-identical with `-fno-sched-interblock`. `load_file` then differs
+    only by an s1/s2 swap, which also stays with scheduling off entirely.
+  - **Not a size limit:** the scheduler's region limits (10 blocks/100
+    insns) don't apply: `load_file` has 8 blocks and 63 insns. Padding it
+    with 38 empty `asm()`s gives the original exactly.
+  - **Same-size functions get the motion:** `load_image` (8 blocks/73
+    insns), `draw_character` (10/89), `give_pae` (6/76) and
+    `assign_mission` all do. So it isn't a uniform threshold.
+  - **Source variants:** none changed it (volatile, goto/else structure,
+    inline helper, long long temporaries, `-fno-gcse`, ...).
+  - Unresolved: a source detail that rejects the whole-function region, or a
+    per-function compiler difference.
 
 ## psp-gcc 1.7.1 (release build)
 
