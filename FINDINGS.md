@@ -136,6 +136,11 @@ modules (`tools/nltest.py`, `tools/objcmp.py`).
   (`auth_reset(50)` keeps 50 in s0). Written directly or via a local, gcc
   rematerialises it.
 
+- Open candidate (puzzle_bobble `DrawCharcter2`, `DrawCharcterFlip`): a
+  float passed both in `$f16` and on the stack is converted into a temporary
+  and copied with `mov.s` by every cc1; the original converts straight into
+  `$f16`. Several call/temporary forms tried.
+
 ## psp-gcc 1.6.1
 
 - **32-bit `HOST_WIDE_INT`** (psp-gcc 1.7.1, `psp: use a 32-bit
