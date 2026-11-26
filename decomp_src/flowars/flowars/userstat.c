@@ -182,7 +182,37 @@ extern int D_00065670;
 extern int D_000656F8;
 extern int D_000657C0;
 
-INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/userstat", set_turn_event);
+static void set_turn_event(int flagPlayer, int flagEvent)
+{
+	UserStat *stat;
+
+	if (flagPlayer == 1)
+		stat = &g_opp_stat;
+	else if (flagPlayer == 2)
+		stat = &g_opp2_stat;
+	else
+		stat = &g_my_stat;
+	switch (flagEvent) {
+	case 1:
+		stat->turn_event |= 0x40;
+		break;
+	case 2:
+		stat->turn_event |= 0x20;
+		break;
+	case 3:
+		stat->turn_event |= 0x10;
+		break;
+	case 4:
+		stat->turn_event |= 0x08;
+		break;
+	case 5:
+		stat->turn_event |= 0x04;
+		break;
+	case 6:
+		stat->turn_event |= 0x02;
+		break;
+	}
+}
 
 void set_game_money(int flagPlayer, int money) {
     if (flagPlayer != 1) {
@@ -420,6 +450,5 @@ __asm__(".globl get_user_stat");
 
 INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/userstat", set_result_score);
 
-INCLUDE_RODATA("tmp/asm/flowars/flowars/nonmatchings/userstat", D_0002F850);
-
-INCLUDE_RODATA("tmp/asm/flowars/flowars/nonmatchings/userstat", D_0002F854);
+/* set_result_score's double 2.0 (asm until set_result_score is C), in .rodata.cst8 like C */
+__asm__(".pushsection .rodata.cst8,\"aM\",@progbits,8\n\t.align 3\n.globl D_0002F850\nD_0002F850:\n\t.word 0x00000000\n.globl D_0002F854\nD_0002F854:\n\t.word 0x40000000\n\t.popsection");
