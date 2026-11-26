@@ -162,9 +162,19 @@ static void send_commandi_stall(int cmd, int argument)
 		sceGeListUpdateStallAddr(queid[0], pList->current);
 }
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", send_commandf);
+static void send_commandf(int cmd, float argument)
+{
+	send_commandi(cmd, (*(unsigned int *)&argument) >> 8);
+}
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", draw_region);
+static void draw_region(int x, int y, int w, int h)
+{
+	int ex = x + w - 1;
+	int ey = y + h - 1;
+
+	send_commandi(21, (y << 10) | x);
+	send_commandi(22, (ey << 10) | ex);
+}
 
 int get_exp(int val)
 {
@@ -377,7 +387,19 @@ void sceGuContinue(void)
 	sceGeContinue();
 }
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", sceGuCallList);
+void sceGuCallList(const void *list)
+{
+	unsigned int list_addr = (unsigned int)list;
+
+	if (call_mode == 1) {
+		send_commandi(14, (list_addr >> 16) | 0x110000);
+		send_commandi(12, list_addr & 0xffff);
+		send_commandi_stall(0, 0);
+	} else {
+		send_commandi(16, (list_addr >> 8) & 0xf0000);
+		send_commandi_stall(10, list_addr & 0xffffff);
+	}
+}
 
 void sceGuSendList(int mode, const void *list, void *context)
 {
