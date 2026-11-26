@@ -41,7 +41,9 @@ A unit with a `/* lang: c++ */` comment is C++: it is preprocessed with the
 psp-gcc 1.3.1 release's libstdc++ and newlib headers (`include/cxx` first:
 g++'s predefines, 1.6.1's `gthr-psp.h`) and built by `cc1plus-VERSION`.
 `#pragma interface` in a unit's header keeps vtables and typeinfo in the
-module's data. `tools/dwarf2cpp.py TARGET MODULE UNIT [--probe FILE]` gives
+module's data. With `-O3` cc1plus outputs every function at the end of the
+file, so a C++ unit that still has asm includes `cxx/defer_asm.h`, whose
+`INCLUDE_ASM` defers the asm the same way. `tools/dwarf2cpp.py TARGET MODULE UNIT [--probe FILE]` gives
 C++ declarations from a C++ compile unit's DWARF (checking every member
 offset with cc1plus), or a class skeleton from the symbol table (vtable
 order, bases from typeinfo) for objects without DWARF.

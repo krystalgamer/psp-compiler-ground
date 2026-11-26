@@ -391,7 +391,9 @@ modules (`tools/nltest.py`, `tools/objcmp.py`).
   function of `new_op`, `new_opv`, `del_op`, `del_opv`, `eh_catch`,
   `eh_throw`, `eh_alloc`, `eh_globals`, `eh_terminate`, `eh_exception`,
   `eh_personality` and `tinfo` (76) compiles byte-identically from
-  `gcc1.6.1_src/libstdc++-v3/libsupc++/*.cc`. cc1plus-1.5.1 misses 13 of
+  `gcc1.6.1_src/libstdc++-v3/libsupc++/*.cc` (all 14 libsupc++ units of
+  demo_duck and demo_harmonic are now these sources; their variables stay
+  in the module's data as externs). cc1plus-1.5.1 misses 13 of
   them (`operator new`'s `sz == 0 ? 1 : sz` is `movz` only with 1.6.1:
   1.5.1 needs `-mext` and still differs; `__cxa_throw`,
   `read_encoded_value_with_base`, `__gxx_personality_v0`, 5 `tinfo`
@@ -402,10 +404,16 @@ modules (`tools/nltest.py`, `tools/objcmp.py`).
   units now get 1.6.1's (`include/cxx/bits/gthr-default.h`).
 - UTST99332's demo C++ (demo_duck's `main.cpp`, demo_harmonic's
   `CityApp.cpp` ranges: ~117 objects each, the same library objects) is
-  per object `-O2 -frename-registers` (e.g. `common::File::is_open` is
-  called, not inlined) or `-O3` (`common::Date` inlines its
-  `CopiableMembers` constructor, which is still emitted as a global), with
-  exceptions and RTTI (`.gcc_except_table`, typeinfo). 1.6.1's
+  `-O3 -fno-exceptions` with RTTI: every object's
+  `__static_initialization_and_destruction_0` comes first in its .text,
+  which cc1plus only does with `-finline-functions` (it then defers every
+  function to the end of the file), and constructors that build
+  `std::vector`s have no landing pads (WaterPatch's matches only so;
+  `-O2 -frename-registers` reproduces small functions but not
+  `std::vector`'s inlining in WaterPatch's constructor clones). A unit that
+  still has asm functions needs its asm deferred the same way
+  (`include/cxx/defer_asm.h`). 1.5.1 builds WaterPatch's constructor too,
+  but not `WaterPatch::set_disk` (it uses `movz` for `if (r == 0) r = 1`). 1.6.1's
   `a == b` store-flag (`xor; sltiu`) where 1.5.1 branches makes
   `Date::operator==` 4 bytes shorter: 1.5.1 can't build them.
   No C++ function so far needs a cc1plus change.
