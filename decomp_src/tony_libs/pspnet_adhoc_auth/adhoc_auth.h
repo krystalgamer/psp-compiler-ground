@@ -261,6 +261,13 @@ void *memset(void *, int, unsigned int);
 int memcmp(const void *, const void *, unsigned int);
 int sceKernelCpuSuspendIntr(void);
 int sceKernelCpuResumeIntr(int s);
+int sceKernelCreateMbx(const char *name, unsigned int attr, void *opt);
+int sceKernelCreateThread(const char *name, int (*entry)(unsigned int, void *), int prio, int stack, unsigned int attr, void *opt);
+int sceKernelStartThread(int thid, unsigned int len, void *argp);
+struct ifnet *sceNetIfhandle_driver_9CBA24D4(const char *name);
+int sceNetIfhandle_driver_C5623112(struct ifnet *ifp, unsigned char *mac);
+int func_000038D8(void);
+int func_000014F0(unsigned int args, void *argp);
 int sceKernelCreateSema(const char *name, unsigned int attr, int init, int max, void *opt);
 int sceKernelDeleteSema(int id);
 int sceKernelSignalSema(int id, int n);
@@ -376,6 +383,21 @@ static inline void send_pkt(AuthCtx *ctx, struct mbuf *m, const unsigned char *d
 	IF_ENQUEUE(&ctx->ifh->if_snd, m);
 	sceKernelCpuResumeIntr(s);
 	ctx->ifh->if_start(ctx->ifh);
+}
+
+static inline void auth_reset(int maxlen)
+{
+	int s;
+
+	s = sceKernelCpuSuspendIntr();
+	D_00003EE4 = &D_00003EE8;
+	memset(&D_00003EE8, 0, sizeof(AuthCtx));
+	D_00004058.ifq_head = 0;
+	D_00004058.ifq_tail = 0;
+	D_00004058.ifq_len = 0;
+	D_00004058.ifq_drops = 0;
+	D_00004058.ifq_maxlen = maxlen;
+	sceKernelCpuResumeIntr(s);
 }
 
 #endif
