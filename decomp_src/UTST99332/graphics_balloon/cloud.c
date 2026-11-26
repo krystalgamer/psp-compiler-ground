@@ -119,7 +119,48 @@ static void sort_cloud(void)
 	}
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_balloon/nonmatchings/cloud", draw_clouds);
+extern float model[];
+extern int index_cloud[];
+typedef struct ScePspFVector3 { float x, y, z; } ScePspFVector3;
+void sceGumTranslate(const ScePspFVector3 *v);
+#define SCEGU_TEXTURE                      9
+#define SCEGU_TEX_MODULATE                 0
+#define SCEGU_RGBA                         1
+#define SCEGU_UV_MAP                       0
+#define SCEGU_REPEAT                       0
+#define SCEGU_LINEAR                       1
+#define SCEGU_PRIM_TRIANGLE_STRIP          4
+#define SCEGU_TEXTURE_FLOAT      ( 3 <<  0 )
+#define SCEGU_NORMAL_FLOAT       ( 3 <<  5 )
+#define SCEGU_VERTEX_FLOAT       ( 3 <<  7 )
+
+void draw_clouds(void)
+{
+	CLOUDDAT	*p;
+	int			i;
+
+	sceGuEnable(SCEGU_TEXTURE);
+	sceGuTexFunc(SCEGU_TEX_MODULATE, SCEGU_RGBA);
+	sceGuTexMapMode(SCEGU_UV_MAP, 0, 0);
+	sceGuTexWrap(SCEGU_REPEAT, SCEGU_REPEAT);
+	sceGuTexFilter(SCEGU_LINEAR, SCEGU_LINEAR);
+
+	sort_cloud();
+	for (i=0; i<MAX_CLOUD; i++) {
+		p=&cloud[index_cloud[i]];
+		sceGumPushMatrix();
+		sceGumTranslate(&p->pos);
+
+		set_texture(p->mode);
+
+		sceGuColor(0xffffffff);
+		sceGumDrawArray(SCEGU_PRIM_TRIANGLE_STRIP,
+					SCEGU_TEXTURE_FLOAT|SCEGU_NORMAL_FLOAT|SCEGU_VERTEX_FLOAT,
+					4, 0, (void *)model);
+
+		sceGumPopMatrix();
+	}
+}
 
 void proc_clouds(void)
 {
