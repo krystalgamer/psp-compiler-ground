@@ -126,7 +126,24 @@ int file_load_async(char *name, int mode)
 	return i;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_fileio", file_load_async_buf);
+int file_load_async_buf(char *name, void *buf, int mode)
+{
+	int i;
+
+	for (i = 0; i < 1; i++) {
+		if (pfs[i].state == 0)
+			break;
+	}
+	if (i >= 1)
+		return -1;
+	pfs[i].state = 1;
+	pfs[i].mode = mode;
+	pfs[i].buf = buf;
+	pfs[i].f8 = -1;
+	pfs[i].fc = 0;
+	sprintf(pfs[i].name, D_0007A660, name);
+	return i;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
