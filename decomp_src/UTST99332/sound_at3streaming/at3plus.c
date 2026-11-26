@@ -13,6 +13,15 @@ int sceIoClose(int fd);
 int sceAtracReleaseAtracID(int atracID);
 int printf(const char *fmt, ...);
 
+/* SDK prototypes (tools/sdk_protos.h) */
+void *memcpy(void *d, const void *s, unsigned int n);
+void *memset(void *s, int c, unsigned int n);
+int puts(const char *s);
+int sceIoOpen(const char *name, int flag, int mode);
+int sceIoRead(int fd, void *buf, unsigned int nbyte);
+int sceKernelCreateThread(const char *name, void *entry, int prio, int stacksize, unsigned int attr, void *option);
+int sceKernelStartThread(int thid, unsigned int arglen, void *argp);
+
 void release_arg(void)
 {
 	int status;
