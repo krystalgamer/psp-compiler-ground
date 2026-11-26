@@ -51,7 +51,7 @@ typedef int SceUID;
 extern char *currentheap;
 extern char *minheap;
 extern char *maxheap;
-extern int sce_newlib_heap_kb_size;
+extern int sce_newlib_heap_kb_size __attribute__((weak));
 extern SceUID mbid;
 extern void (*sce_newlib_stop_func)(void);
 
@@ -176,7 +176,38 @@ void _exit(int status)
 	sceKernelSelfStopUnloadModule(1, 0, NULL);
 }
 
-INCLUDE_ASM("tmp/asm/psp184/mpegstr/nonmatchings/kernel_bridge", _sbrk);
+void *_sbrk(ptrdiff_t incr)
+{
+	char *newheap;
+	char *oldheap;
+
+	if (minheap == 0) {
+		int size;
+
+		if (&sce_newlib_heap_kb_size == 0 || sce_newlib_heap_kb_size == 0)
+			size = 0x10000;
+		else
+			size = sce_newlib_heap_kb_size << 10;
+		if (size != 0) {
+			mbid = sceKernelAllocPartitionMemory(2, "UserSbrk", 0, size, 0);
+			if (mbid > 0) {
+				char *head = sceKernelGetBlockHeadAddr(mbid);
+				maxheap = head + size;
+				currentheap = head;
+				minheap = head;
+			}
+		}
+	}
+	if (minheap != 0) {
+		newheap = currentheap + incr;
+		if (newheap >= minheap && newheap <= maxheap) {
+			oldheap = currentheap;
+			currentheap = newheap;
+			return oldheap;
+		}
+	}
+	return (void *)-1;
+}
 
 int sceIoRead(int fd, void *buf, unsigned int nbyte);
 int _read(int file, void *ptr, size_t len)
