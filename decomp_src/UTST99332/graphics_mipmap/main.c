@@ -1,3 +1,4 @@
+/* cflags: -O2 -fmerge-constants */
 #include "common.h"
 
 /* declarations recovered from DWARF */
@@ -244,8 +245,6 @@ INCLUDE_RODATA("tmp/asm/UTST99332/graphics_mipmap/nonmatchings/main", road_poly)
 
 INCLUDE_RODATA("tmp/asm/UTST99332/graphics_mipmap/nonmatchings/main", mipmap);
 
-INCLUDE_RODATA("tmp/asm/UTST99332/graphics_mipmap/nonmatchings/main", D_0001A248);
-
 extern int D_0001BE04;
 
 void frame_update(void) {
@@ -260,7 +259,95 @@ void frame_update(void) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_mipmap/nonmatchings/main", draw_frame);
+#define SCEGU_IMMEDIATE                    0
+#define SCEGU_SCR_OFFSETX     ((4096 - SCEGU_SCR_WIDTH) / 2)
+#define SCEGU_SCR_OFFSETY     ((4096 - SCEGU_SCR_HEIGHT) / 2)
+#define SCEGU_CLEAR_ALL               0x0007
+#define SCEGU_PI                           3.1415926535897932384626433832f
+#define SCEGU_RAD(a)                       ((a)*SCEGU_PI/180.0f)
+#define MAXLOD			(8)
+#define SCEGU_SCR_WIDTH       480
+#define SCEGU_SCR_HEIGHT      272
+#define SCEGU_LOD_AUTO                     0
+#define SCEGU_LOD_CONSTANT                 1
+#define SCEGU_LOD_SLOPE                    2
+#define SCEGU_TEXBUF_NORMAL                0
+#define SCEGU_PRIM_TRIANGLE_STRIP          4
+#define SCEGU_VERTEX_FLOAT       ( 3 <<  7 )
+#define SCEGU_TEXTURE_FLOAT      ( 3 <<  0 )
+#define SCEGU_SYNC_FINISH                  0
+#define SCEGU_SYNC_WAIT                    0
+
+static void draw_frame(void)
+{
+	ScePspFVector3	vec;
+	int				i, n;
+	char			str[16];
+
+	sceGuStart(SCEGU_IMMEDIATE, (void *)disp_list, sizeof(disp_list));
+
+	sceGuOffset(SCEGU_SCR_OFFSETX, SCEGU_SCR_OFFSETY);
+	sceGuScissor(0, 0, SCEGU_SCR_WIDTH, SCEGU_SCR_HEIGHT);
+	sceGuClearColor(bg_col[mode]);
+	sceGuClear(SCEGU_CLEAR_ALL);
+
+	sceGuTexOffset(toffset.u, toffset.v);
+
+	sceGumPushMatrix();
+	sceGumLoadIdentity();
+
+	sceGumTranslate(&pos.trans);
+	vec.x = SCEGU_RAD(pos.rot.x);
+	vec.y = SCEGU_RAD(pos.rot.y);
+	vec.z = SCEGU_RAD(pos.rot.z);
+	sceGumRotateXYZ(&vec);
+	sceGumScale(&pos.scale);
+
+	for (i = 0; i < MAXLOD; i++) {
+		sceGuTexImage(i, tinfo[mode][i].tw, tinfo[mode][i].th,
+				tinfo[mode][i].w, (void *)tinfo[mode][i].tex);
+	}
+	sceGuClutLoad(cinfo[mode].num, (void *)cinfo[mode].clut);
+
+	for (i = 0; i < 4; i++) {
+		sceGuOffset(mipmap[i].ofx, mipmap[i].ofy);
+		sceGuScissor(mipmap[i].sx, mipmap[i].sy,
+				SCEGU_SCR_WIDTH/2, SCEGU_SCR_HEIGHT/2);
+		sceGumPushMatrix();
+		switch (i) {
+		case 1:
+			n = maxlod-1;
+			sceGuTexLevelMode(SCEGU_LOD_AUTO, 0.0f);
+			break;
+		case 2:
+			n = maxlod-1;
+			sceGuTexLevelMode(SCEGU_LOD_CONSTANT, 2.0f);
+			break;
+		case 3:
+			n = maxlod-1;
+			sceGuTexLevelMode(SCEGU_LOD_SLOPE, 0.0f);
+			sceGuTexSlope(0.3f);
+			break;
+		case 0:
+		default:
+			n = 0;
+			break;
+		}
+		sceGuTexMode(tmode[mode].tmode, n, tmode[mode].cmode,
+				SCEGU_TEXBUF_NORMAL);
+		sceGumDrawArray(SCEGU_PRIM_TRIANGLE_STRIP,
+			SCEGU_VERTEX_FLOAT|SCEGU_TEXTURE_FLOAT, 4, 0, road_poly);
+		sceGumPopMatrix();
+		sceGuDebugPrint(mipmap[i].sx, mipmap[i].sy, 0x00ffffff, mipmap[i].str);
+	}
+	sceGumPopMatrix();
+
+	sprintf(str, "LOD:%d\n", maxlod);
+	sceGuDebugPrint(420, 260, 0x00ffffff, str);
+
+	sceGuFinish();
+	sceGuSync(SCEGU_SYNC_FINISH, SCEGU_SYNC_WAIT);
+}
 
 /* Warning: Gap in callee-saved word stack region.
  * Saved: [0x0, 0x10], gap at: 0x4. */
