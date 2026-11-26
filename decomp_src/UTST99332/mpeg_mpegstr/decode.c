@@ -127,35 +127,39 @@ SceInt32 decode_setStreamData(t_mpegStreamData *pStreamData, SceMpegStream *pStr
 	return 0;
 }
 
-#ifdef NON_MATCHING
-/* ret and pStreamData swap s0/s1 */
 SceInt32 decode_audioDecode(SceMpeg *pMpeg, t_mpegStreamData *pStreamData, t_avSyncControl *pAvSync, SceInt32 audio_init_flag)
 {
 	SceInt32 ret;
 	SceVoid *atracBody;
 	SceChar8 *pSoundBuf;
 
-	ret = 1;
-	if (soundbuf_getCapacity(pAvSync->pSound) == 0)
-		goto END;
+	if (soundbuf_getCapacity(pAvSync->pSound) == 0) {
+		ret = 1;
+		goto term;
+	}
+
 	ret = sceMpegGetAtracAu(pMpeg, pStreamData->pAtracStream, pStreamData->pAtracAu, &atracBody);
-	if (ret != 0)
-		goto END;
+	if (ret != 0) {
+		goto term;
+	}
+
 	soundbuf_getDrawbuf(pAvSync->pSound, &pSoundBuf);
+
 	ret = sceMpegAtracDecode(pMpeg, pStreamData->pAtracAu, pSoundBuf, audio_init_flag);
 	if (ret != 0) {
 		printf("fatal error : sceMpegAtracDecode() 0x%x\n", ret);
-		goto END;
+		goto term;
 	}
+
 	soundbuf_setPts(pAvSync->pSound, pStreamData->pAtracAu->pts.ts);
-	if (audio_init_flag == 0)
+
+	if (audio_init_flag == 0) {
 		soundbuf_setBuf(pAvSync->pSound);
-END:
+	}
+
+term:
 	return ret;
 }
-#else
-INCLUDE_ASM("tmp/asm/UTST99332/mpeg_mpegstr/nonmatchings/decode", decode_audioDecode);
-#endif
 
 SceInt32 decode_videoDecode(SceMpeg *pMpeg, t_mpegStreamData *pStreamData, t_avSyncControl *pAvSync)
 {
