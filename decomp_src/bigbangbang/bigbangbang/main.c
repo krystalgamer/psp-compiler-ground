@@ -144,14 +144,120 @@ int sceKernelRegisterExitCallback(int cbid);
 void sceKernelExitGame(void);
 
 
-INCLUDE_RODATA("tmp/asm/bigbangbang/bigbangbang/nonmatchings/main", D_0000B640);
-
-INCLUDE_RODATA("tmp/asm/bigbangbang/bigbangbang/nonmatchings/main", D_0000B680);
 
 void sceGuSpecular(float power);
 void sceGumPerspective(float fovy, float aspect, float near, float far);
 
-INCLUDE_ASM("tmp/asm/bigbangbang/bigbangbang/nonmatchings/main", InitFunc);
+int sceCtrlSetSamplingCycle(int cycle);
+void sceGuInit(void);
+void sceGuStart(int cid, void *list, int size);
+void sceGuDrawBuffer(int psm, void *fbp, int frame_width);
+void sceGuDispBuffer(int width, int height, void *dbp, int frame_width);
+void sceGuDepthBuffer(void *zbp, int frame_width);
+void sceGuOffset(unsigned int x, unsigned int y);
+void sceGuViewport(int cx, int cy, int width, int height);
+void sceGuDepthRange(int near, int far);
+void sceGuScissor(int x, int y, int w, int h);
+void sceGuEnable(int state);
+void sceGuDisable(int state);
+void sceGuDepthFunc(int func);
+void sceGuBlendFunc(int op, int src, int dest, unsigned int srcfix, unsigned int destfix);
+void sceGuAlphaFunc(int func, int value, int mask);
+void sceGuFrontFace(int order);
+void sceGuSetDither(const ScePspIMatrix4 *matrix);
+void sceGuShadeModel(int mode);
+void sceGuLightColor(int light, int component, unsigned int color);
+void sceGuLight(int light, int type, int components, const ScePspFVector3 *position);
+void sceGuSpecular(float power);
+void sceGuAmbient(unsigned int color);
+void sceGuColor(unsigned int color);
+void sceGumSetMatrixStack(ScePspFMatrix4 *m, int proj, int view, int world, int tex);
+void sceGumMatrixMode(int mode);
+void sceGumLoadIdentity(void);
+void sceGumPerspective(float fovy, float aspect, float near, float far);
+void sceGuClearColor(unsigned int color);
+void sceGuClearDepth(unsigned int depth);
+void sceGuClearStencil(unsigned int stencil);
+int sceGuFinish(void);
+int sceGuSync(int mode, int what);
+int sceDisplayWaitVblankStart(void);
+void InitParticle(void);
+int sceGuDisplay(int state);
+static void InitFunc(void)
+{
+	const ScePspIMatrix4 dith = {
+		{-4, 0, -3, 1},
+		{2, -2, 3, -1},
+		{-3, 1, -4, 0},
+		{3, -1, 2, -2}
+	};
+	ScePspFVector3 vec;
+
+	sceCtrlSetSamplingCycle(0);
+	sceGuInit();
+	sceGuStart(0, displist, sizeof(displist));
+	sceGuDrawBuffer(1, (void *)0, 512);
+	sceGuDispBuffer(480, 272, (void *)0x44000, 512);
+	sceGuDepthBuffer((void *)0x88000, 512);
+	sceGuOffset(2048 - (480 / 2), 2048 - (272 / 2));
+	sceGuViewport(2048, 2048, 480, 272);
+	sceGuDepthRange(50000, 10000);
+	sceGuScissor(0, 0, 480, 272);
+	sceGuEnable(2);
+	sceGuDepthFunc(7);
+	sceGuEnable(1);
+	sceGuBlendFunc(0, 2, 3, 0, 0);
+	sceGuEnable(4);
+	sceGuAlphaFunc(6, 0, 0xff);
+	sceGuDisable(0);
+	sceGuFrontFace(0);
+	sceGuDisable(9);
+	sceGuSetDither(&dith);
+	sceGuEnable(6);
+	sceGuEnable(8);
+	sceGuShadeModel(1);
+	vec.x = 0.614497f;
+	vec.y = 0.691714f;
+	vec.z = 0.379372f;
+	sceGuLightColor(0, 2, 0xff808080);
+	sceGuLight(0, 0, 2, &vec);
+	sceGuEnable(11);
+	vec.x = 0.614497f;
+	vec.y = 0.691714f;
+	vec.z = 0.379372f;
+	sceGuLightColor(1, 2, 0x00000000);
+	sceGuLightColor(1, 4, 0xffffffff);
+	sceGuLight(1, 0, 6, &vec);
+	sceGuEnable(12);
+	vec.x = -0.614497f;
+	vec.y = -0.391714f;
+	vec.z = -0.379372f;
+	sceGuLightColor(2, 2, 0xffc0c0c0);
+	sceGuLight(2, 0, 2, &vec);
+	sceGuDisable(13);
+	sceGuEnable(10);
+	sceGuSpecular(20.0f);
+	sceGuDisable(7);
+	sceGuAmbient(0xff808080);
+	sceGuColor(0xffffffff);
+	sceGumSetMatrixStack(matrix_stack, 8, 8, 32, 0);
+	sceGumMatrixMode(0);
+	sceGumLoadIdentity();
+	sceGumPerspective(3.1415927f / 4.0f, 480.0f / 272.0f, 1.0f, 1000.0f);
+	sceGumMatrixMode(2);
+	sceGuClearColor(0);
+	sceGuClearDepth(0);
+	sceGuClearStencil(0);
+	sceGuFinish();
+	sceGuSync(0, 0);
+	sceDisplayWaitVblankStart();
+	InitParticle();
+	program.flag = 0;
+	program.mode = 0;
+	sceGuDisplay(1);
+}
+
+INCLUDE_RODATA("tmp/asm/bigbangbang/bigbangbang/nonmatchings/main", D_0000B680);
 
 void SpriteScale(int x, int y) {
     __sscale_x = x;
