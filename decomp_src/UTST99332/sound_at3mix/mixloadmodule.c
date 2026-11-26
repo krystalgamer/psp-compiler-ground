@@ -69,7 +69,47 @@ static int unload_module(SceUID mid)
 	return 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/sound_at3mix/nonmatchings/mixloadmodule", mix_loadModule);
+int mix_loadModule(void)
+{
+	SceKernelLMOption kMode;
+	SceKernelLMOption uMode;
+
+	sasMid = 0;
+	audioMid = 0;
+	atrac3Mid = 0;
+
+	kMode.size = sizeof(kMode);
+	kMode.mpidtext = 1;
+	kMode.mpiddata = 1;
+	kMode.position = 0;
+	kMode.access = 1;
+
+	uMode.size = sizeof(uMode);
+	uMode.mpidtext = 2;
+	uMode.mpiddata = 2;
+	uMode.position = 0;
+	uMode.access = 1;
+
+	sasMid = load_module("disc0:/PSP_GAME/USRDIR/MODULE/sc_sascore.prx", &kMode, NULL);
+	if (sasMid < 0) {
+		printf("fatal error : load SAS module\n");
+		return -1;
+	}
+	audioMid = load_module("disc0:/PSP_GAME/USRDIR/MODULE/audiocodec.prx", &kMode, NULL);
+	if (audioMid < 0) {
+		printf("fatal error : load audiocodec Module\n");
+		unload_module(sasMid);
+		return -1;
+	}
+	atrac3Mid = load_module("disc0:/PSP_GAME/USRDIR/MODULE/libatrac3plus.prx", &uMode, NULL);
+	if (atrac3Mid < 0) {
+		printf("fatal error : load atrac3plus Module\n");
+		unload_module(sasMid);
+		unload_module(audioMid);
+		return -1;
+	}
+	return 0;
+}
 
 int mix_unloadModule(void)
 {
