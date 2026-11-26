@@ -203,7 +203,33 @@ int decode_getAudioOutSize(t_mpegStreamData *pStreamData) {
 
 INCLUDE_ASM("tmp/asm/UTST99332/mpeg_seamless_change/nonmatchings/decode", decode_setRegistStream);
 
-INCLUDE_ASM("tmp/asm/UTST99332/mpeg_seamless_change/nonmatchings/decode", decode_unRegistStream);
+SceInt32 decode_unRegistStream(t_mpegStreamData *pStreamData, SceMpegStrType streamType)
+{
+	SceInt32 i;
+	SceInt32 ret;
+
+	ret = 0;
+
+	switch (streamType) {
+	case 0:
+		for (i = 0; i < pStreamData->videoStreamNum; i++) {
+			sceMpegUnRegistStream(pStreamData->pMpeg, pStreamData->pVideoStream[i]);
+		}
+		pStreamData->videoStreamNum = 0;
+		break;
+	case 1:
+		for (i = 0; i < pStreamData->audioStreamNum; i++) {
+			sceMpegUnRegistStream(pStreamData->pMpeg, pStreamData->pAudioStream[i]);
+		}
+		pStreamData->audioStreamNum = 0;
+		break;
+	default:
+		ret = -1;
+		break;
+	}
+
+	return ret;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/mpeg_seamless_change/nonmatchings/decode", decode_setReservedMode);
 
