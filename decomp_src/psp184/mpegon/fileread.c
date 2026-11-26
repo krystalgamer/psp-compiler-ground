@@ -120,4 +120,45 @@ SceInt32 read_checkConditionEnd(t_ringBuffer *pRing)
 	return 0;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/mpegon/nonmatchings/fileread", read_func);
+int printf(const char *fmt, ...);
+int sceKernelExitThread(int status);
+int sceKernelDelayThread(unsigned int delay);
+
+const char D_00012414[] = "fatal error: sceMpegRingbufferPut 0x%x total = %d\n";
+
+int read_func(SceSize size, void *argp)
+{
+	t_ringBuffer **ppRing;
+	t_ringBuffer *pRing;
+	SceInt32 totalSize;
+	SceInt32 capacitySize;
+	SceInt32 getSize;
+
+	ppRing = argp;
+	pRing = *ppRing;
+	totalSize = 0;
+	for (;;) {
+		read_checkConditionEnd(pRing);
+		if (read_getStatus(pRing) == 3)
+			break;
+		capacitySize = sceMpegRingbufferAvailableSize(pRing->pRingbuf);
+		if (read_getStatus(pRing) == 1) {
+			getSize = sceMpegRingbufferPut(pRing->pRingbuf, 32, capacitySize);
+			if (getSize < 0) {
+				printf(D_00012414, getSize, totalSize);
+				read_setStatus(pRing, 2);
+				read_sendErrCondition(pRing);
+				getSize = 0;
+			}
+			totalSize += getSize * 2048;
+		}
+		if (totalSize == pRing->dataLen && read_getStatus(pRing) == 1) {
+			read_setStatus(pRing, 3);
+			read_sendEndCondition(pRing);
+			break;
+		}
+		sceKernelDelayThread(100);
+	}
+	sceKernelExitThread(0);
+	return 0;
+}
