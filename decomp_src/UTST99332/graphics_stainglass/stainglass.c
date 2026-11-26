@@ -101,7 +101,24 @@ u_short float2ushort( float val )
 	return retval;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_stainglass/nonmatchings/stainglass", MatrixVectorMultiply);
+void MatrixVectorMultiply(
+	ScePspFVector4 *retval, const ScePspFMatrix4 *m, const ScePspFVector4 *v)
+{
+	__asm__ volatile (
+		".set			push\n"					
+		".set			noreorder\n"			
+		"lv.q			c100,  0+%1\n"
+		"lv.q			c110, 16+%1\n"
+		"lv.q			c120, 32+%1\n"
+		"lv.q			c130, 48+%1\n"
+		"lv.q			c200,  %2\n"
+		"vtfm4.q		c000, e100, c200\n"
+		"sv.q			c000,  %0\n"
+		".set			pop\n"					
+		: "=m" (*retval)
+		: "m"(*m), "m" (*v)
+		);
+}
 
 void MatrixMatrixMultiply(void) {
 }
