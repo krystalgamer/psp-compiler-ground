@@ -65,7 +65,29 @@ int printf(const char *fmt, ...);
 void *memset(void *s, int c, unsigned int n);
 
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/utility", utility_init_netconf);
+void *memcpy(void *d, const void *s, unsigned int n);
+int utility_init_netconf(SceUtilityNetconfType type, struct SceNetAdhocctlGroupName *group_name)
+{
+	int ret;
+
+	memset(&netconfParam, 0, sizeof(netconfParam));
+	netconfParam.base.size = sizeof(netconfParam);
+	netconfParam.base.ctrl_assign = 0;
+	netconfParam.base.main_thread_priority = 0x11;
+	netconfParam.base.sub_thread_priority = 0x13;
+	netconfParam.base.font_thread_priority = 0x12;
+	netconfParam.base.sound_thread_priority = 0x10;
+	netconfParam.type = type;
+	if (group_name == NULL)
+		memset(&netconfAdhocParam, 0, sizeof(netconfAdhocParam));
+	else
+		memcpy(&netconfAdhocParam, group_name, sizeof(netconfAdhocParam));
+	netconfParam.adhoc_param = &netconfAdhocParam;
+	ret = sceUtilityNetconfInitStart(&netconfParam);
+	if (ret != 0)
+		printf("sceUtilityNetconfInitStart failed - 0x%x\n", ret);
+	return ret;
+}
 
 int utility_update_netconf(void) {
     int temp_v0;
@@ -92,7 +114,31 @@ int utility_net_connect(struct SceNetAdhocctlGroupName *group_name) {
     return utility_init_netconf(SCE_UTILITY_NETCONF_TYPE_CONNECT_ADHOC, group_name);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/utility", utility_check_connect_completed);
+extern char D_0001A270[];
+int utility_check_connect_completed(int *done_flag)
+{
+	int ret;
+
+	ret = sceUtilityNetconfGetStatus();
+	if (ret < 0)
+		return ret;
+	switch (ret) {
+	case 0:
+		if (netconfParam.base.result != 0) {
+			printf(D_0001A270, netconfParam.base.result);
+			*done_flag = -1;
+		} else {
+			*done_flag = 1;
+		}
+		break;
+	case 3:
+		ret = sceUtilityNetconfShutdownStart();
+		if (ret < 0)
+			printf("sceUtilityNetconfShutdownStart() failed. ret = 0x%x\n", ret);
+		break;
+	}
+	return ret;
+}
 
 INCLUDE_RODATA("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/utility", D_0001A270);
 
@@ -138,4 +184,29 @@ block_1:
     return var_v0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/utility", utility_check_msgdialog_completed);
+extern char D_0001A270[];
+
+int utility_check_msgdialog_completed(int *done_flag)
+{
+	int ret;
+
+	ret = sceUtilityMsgDialogGetStatus();
+	if (ret < 0)
+		return ret;
+	switch (ret) {
+	case 0:
+		if (msgdialog_param.base.result != 0) {
+			printf(D_0001A270, msgdialog_param.base.result);
+			*done_flag = -1;
+		} else {
+			*done_flag = 1;
+		}
+		break;
+	case 3:
+		ret = sceUtilityMsgDialogShutdownStart();
+		if (ret < 0)
+			printf("sceUtilityMsgDialogShutdownStart() failed. ret = 0x%x\n", ret);
+		break;
+	}
+	return ret;
+}
