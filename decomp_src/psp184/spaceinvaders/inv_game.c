@@ -449,7 +449,32 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", ufo_init_once)
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", ufo_control);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", ufo_control_once);
+void ufo_normal_anime(int *u);
+void ufo_dead_anime(int *u);
+void ufo_warpin_anime(int *u);
+void ufo_warpout_anime(int *u);
+void ufo_control_once(int *u)
+{
+	if (u[2] == 1)
+		return;
+	if (u[11] > 0)
+		u[11]--;
+	if (u[13] == 0) {
+		ufo_normal_anime(u);
+	} else if (u[13] == 2) {
+		ufo_warpin_anime(u);
+	} else if (u[13] == 3) {
+		ufo_warpout_anime(u);
+	} else if (u[13] == 1) {
+		ufo_dead_anime(u);
+	} else if (u[5] == 1 && genrand_int32() % 300 == 0) {
+		u[13] = 2;
+		((float *)u)[17] = ((float *)u)[21];
+		u[14] = 0;
+		u[12] = 0;
+	}
+	ufo_tex_anime(u);
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", ufo_normal_anime);
 
@@ -1399,7 +1424,20 @@ void inv_nowloading_starge_set(int no)
 	*(int *)(d + 0x20) = no;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", inv_nowloading_reset);
+typedef struct { int f0, f4; u8 _p8[0x1C]; s16 x[128]; s16 y[128]; u8 a[128]; } LOAD_DISP;
+#define LD (*(LOAD_DISP *)&load_disp)
+unsigned long genrand_int32(void);
+void inv_nowloading_reset(void)
+{
+	int i;
+
+	LD.f4 = 0;
+	for (i = 0; i < 128; i++) {
+		LD.x[i] = genrand_int32() % 459;
+		LD.y[i] = genrand_int32() % 271;
+		LD.a[i] = genrand_int32() % 191 + 64;
+	}
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
