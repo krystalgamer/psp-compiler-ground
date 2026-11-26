@@ -128,13 +128,14 @@ private:
     std::vector<vertex_formats::T2UB_V3F> _vtx1;        /* 0x30 */
     std::vector<unsigned short> _indices;               /* 0x3C */
     vertex_formats::T2UB_V3F _min, _max;                /* 0x48 */
-    float *_h0, *_h1, *_h;                              /* 0x68 */
-    float _f74;                                         /* 0x74 */
+    float *_h0, *_h1;                                   /* 0x68 */
+    float *_h, *_hprev;                                 /* 0x70 */
     float _damping;                                     /* 0x78 */
     int _mode;                                          /* 0x7C */
-    int _f80, _f84;                                     /* 0x80 */
+    int _count;                                         /* 0x80 */
+    float _last;                                        /* 0x84 */
     float _speed;                                       /* 0x88 */
-    int _f8c;                                           /* 0x8C */
+    float _accum;                                       /* 0x8C */
     math::vector_xyzw _f90;                             /* 0x90 */
     float _fa0;                                         /* 0xA0 */
     bool _fa4, _fa5, _fa6;                              /* 0xA4 */

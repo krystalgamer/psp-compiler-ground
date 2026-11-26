@@ -42,7 +42,7 @@ __asm__(".set noat\n.set noreorder\n"
 
 WaterPatch::WaterPatch(unsigned int nx, unsigned int ny, float size, int mode, float damping, float speed)
     : _nx(nx), _ny(ny), _size(size), _pos(nx * ny), _normal(nx * ny), _vtx0(nx * ny), _vtx1(nx * ny),
-      _indices((ny * 2 - 2) * nx), _damping(damping), _mode(mode), _f80(0), _f84(0), _speed(speed), _f8c(0),
+      _indices((ny * 2 - 2) * nx), _damping(damping), _mode(mode), _count(0), _last(0), _speed(speed), _accum(0),
       _fa4(true), _fa5(false), _fa6(true), _transform(math::matrix::Identity())
 {
     WP_ASSERT(_nx != 0, D_0015DBA4, 54);
