@@ -74,6 +74,17 @@ void *memcpy(void *d, const void *s, unsigned int n);
 IMGENT *checkImageList(IMGLIST *list, char *name);
 void imageDecodeFailure(IMGENT *e);
 void setImageToBoxBuffer(BOX *b, void *image);
+void rnd_removeAnimBoxnode(BOX *b);
+int rnd_gdrawImageProperty(void *img, int *w, int *h);
+void rnd_addAnimBoxnode(BOX *b, BOX *body);
+void delLLISTByDocumentSession(LLIST *list, int doc);
+typedef struct {
+    u8 unk0[0x48];
+    int sid;                    /* 0x48 */
+} LHIST;
+LHIST *HST_getChildHistoryNode(LHIST *h);
+LHIST *HST_getSiblingHistoryNode(LHIST *h);
+LHIST *HST_getParentHistoryNode(LHIST *h);
 void *imageDecode(const u8 *data, int size, int a, int b, int c);
 extern const u8 defImage[];
 extern const u8 noImage[];
@@ -115,7 +126,32 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_image", makeHttpHeader);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_image", setRequestMessageBuffer);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_image", setImageToBoxBuffer);
+void setImageToBoxBuffer(BOX *b, void *image) {
+    int w;
+    int h;
+
+    if (b == NULL) {
+        return;
+    }
+    switch (b->content) {
+    case 0:
+        if (b->display != 0) {
+            break;
+        }
+    case 1:
+    case 4:
+    case 6:
+        ((void **)b->style)[1] = image;
+        break;
+    case 10:
+        ((void **)b->geom)[0] = image;
+        rnd_removeAnimBoxnode(b);
+        if (rnd_gdrawImageProperty(image, &w, &h) == 1) {
+            rnd_addAnimBoxnode(b, getBodyBox(b));
+        }
+        break;
+    }
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_image", setImageInBox);
 
@@ -393,7 +429,38 @@ void delLLISTByDocumentSession(LLIST *list, int doc) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_image", delLLISTByHistoryTree);
+void delLLISTByHistoryTree(LLIST *list, LHIST *root) {
+    LHIST *h;
+    LHIST *n;
+
+    h = HST_getChildHistoryNode(root);
+    while (h != NULL) {
+        if (h->sid != 0) {
+            delLLISTByDocumentSession(list, h->sid);
+        }
+        n = HST_getChildHistoryNode(h);
+        if (n == NULL) {
+            n = HST_getSiblingHistoryNode(h);
+            if (n == NULL) {
+                h = HST_getParentHistoryNode(h);
+                if (h == root) {
+                    return;
+                }
+                do {
+                    n = HST_getSiblingHistoryNode(h);
+                    if (n != NULL) {
+                        break;
+                    }
+                    h = HST_getParentHistoryNode(h);
+                } while (h != root);
+                if (h == root) {
+                    return;
+                }
+            }
+        }
+        h = n;
+    }
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_image", countRequestedLLIST);
 
