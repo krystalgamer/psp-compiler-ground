@@ -62,11 +62,100 @@ void apctl_handler(int prev_state, int new_state, int event, int error_code, voi
     }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/utility_basic/nonmatchings/netconf", utility_init_netconf);
+int utility_init_netconf(SceUtilityNetconfType type)
+{
+	memset(&netconfParam, 0, sizeof(netconfParam));
+	netconfParam.base.size = sizeof(netconfParam);
+	netconfParam.base.message_lang = GetMessageLang();
+	netconfParam.base.ctrl_assign = GetAssign();
+	netconfParam.base.main_thread_priority = 0x11;
+	netconfParam.base.sub_thread_priority = 0x13;
+	netconfParam.base.font_thread_priority = 0x12;
+	netconfParam.base.sound_thread_priority = 0x10;
+	netconfParam.type = type;
+	memset(&netconfAdhocParam, 0, sizeof(netconfAdhocParam));
+	netconfParam.adhoc_param = &netconfAdhocParam;
+	return sceUtilityNetconfInitStart(&netconfParam);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/utility_basic/nonmatchings/netconf", utility_update_netconf);
+void CreateMenu_Root(void);
+void Menu_Show(void);
+int utility_update_netconf(void)
+{
+	int ret;
+	int state;
+	int status;
 
-INCLUDE_ASM("tmp/asm/UTST99332/utility_basic/nonmatchings/netconf", OnPush_Netconf_Apnet);
+	ret = 0;
+	status = sceUtilityNetconfGetStatus();
+	switch (sample_status) {
+	case 0:
+		switch (status) {
+		case 1:
+			break;
+		case 2:
+			Menu_Hide();
+			ret = sceUtilityNetconfUpdate(1);
+			break;
+		case 3:
+			ret = sceUtilityNetconfShutdownStart();
+			break;
+		case 4:
+			break;
+		case 0:
+			Menu_UnlockInput();
+			Menu_Show();
+			sample_type = 0;
+			break;
+		}
+		break;
+	case 1:
+		if (disconnected > 0) {
+			if (handler_id >= 0)
+				sceNetApctlDelHandler(handler_id);
+			handler_id = -1;
+			term_apnet();
+			Menu_UnlockInput();
+			CreateMenu_Root();
+			sample_type = 0;
+		}
+		break;
+	case 2:
+		sceNetAdhocctlGetState(&state);
+		if (state == 0) {
+			term_adhoc();
+			Menu_UnlockInput();
+			CreateMenu_Root();
+			sample_type = 0;
+		}
+		break;
+	}
+	return ret;
+}
+
+extern char D_000167B4[];
+extern char D_000167C0[];
+void OnPush_Nectonf_ApnetConnect(int selection);
+void OnPush_Nectonf_ApnetStatus(int selection);
+void Menu_AppendItem(const char *name, void (*cb)(int));
+void Menu_SetCancelCallback(void (*cb)(int));
+void OnPush_Netconf_Apnet(int selection)
+{
+	int ret;
+
+	Menu_WriteLine("OnPush_Netconf_Apnet", 0xFFFFFF);
+	init_apnet();
+	ret = sceNetApctlAddHandler(apctl_handler, NULL);
+	if (ret < 0) {
+		printf("sceNetApctlAddHandler() failed. ret = 0x%x\n", ret);
+		return;
+	}
+	handler_id = ret;
+	Menu_ClearItems();
+	Menu_AppendItem(D_000167B4, OnPush_Nectonf_ApnetConnect);
+	Menu_AppendItem(D_000167C0, OnPush_Nectonf_ApnetStatus);
+	Menu_SetCancelCallback(OnCancel_Netconf_Apnet);
+}
 
 INCLUDE_RODATA("tmp/asm/UTST99332/utility_basic/nonmatchings/netconf", D_000167B4);
 
@@ -101,7 +190,18 @@ void OnPush_Nectonf_ApnetStatus(int selection) {
     utility_init_netconf(SCE_UTILITY_NETCONF_TYPE_STATUS_APNET);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/utility_basic/nonmatchings/netconf", OnPush_Netconf_Adhoc);
+void OnPush_Nectonf_AdhocConnect(int selection);
+void Menu_AppendItem(const char *name, void (*cb)(int));
+void Menu_SetCancelCallback(void (*cb)(int));
+extern char D_000167B4[];
+void OnPush_Netconf_Adhoc(int selection)
+{
+	Menu_WriteLine("OnPush_Netconf_Adhoc", 0xFFFFFF);
+	init_adhoc();
+	Menu_ClearItems();
+	Menu_AppendItem(D_000167B4, OnPush_Nectonf_AdhocConnect);
+	Menu_SetCancelCallback(OnCancel_Netconf_Adhoc);
+}
 
 static void OnCancel_Netconf_Adhoc(int selection)
 {
