@@ -1,3 +1,4 @@
+/* cflags: -Os */
 #include "common.h"
 #include "m2c_macros.h"
 int cardlistCpyTtr2Int32();                         /* extern */

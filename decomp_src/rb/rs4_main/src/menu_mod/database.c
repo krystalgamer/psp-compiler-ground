@@ -1,3 +1,4 @@
+/* cflags: -Os */
 #include "common.h"
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/database", D_001025CC);

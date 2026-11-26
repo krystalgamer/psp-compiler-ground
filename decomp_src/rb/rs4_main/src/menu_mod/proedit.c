@@ -1,3 +1,4 @@
+/* cflags: -Os */
 #include "common.h"
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/proedit", _AniSet_37FFC);

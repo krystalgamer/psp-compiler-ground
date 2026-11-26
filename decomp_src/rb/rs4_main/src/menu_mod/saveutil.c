@@ -1,3 +1,4 @@
+/* cflags: -Os */
 #include "common.h"
 #include "m2c_macros.h"
 extern unsigned char savedata_param;

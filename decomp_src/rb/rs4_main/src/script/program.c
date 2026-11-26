@@ -1,3 +1,4 @@
+/* cflags: -Os */
 #include "common.h"
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/script/program", D_000FF7F4);
