@@ -1,5 +1,14 @@
+/* cflags: -O1 */
 #include "common.h"
 #include "m2c_macros.h"
+void *getBodyBox(void *);
+M2C_UNK *MEM_malloc(M2C_UNK, M2C_UNK);              /* extern */
+extern M2C_UNK *head;
+M2C_UNK MEM_free(M2C_UNK, void *);                  /* extern */
+int Node_getBox(int);                               /* extern */
+M2C_UNK drawScroll(int, int, int);                  /* extern */
+extern void *gESPRIT_LO_GLOBAL_NDA;
+
 M2C_UNK clearSearchStrings();                       /* extern */
 M2C_UNK searchStrings();                            /* extern */
 
@@ -33,9 +42,62 @@ loop_2:
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_anim", rnd_deleteAnimBoxnode);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_anim", rnd_addUpdateWidgetList);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_anim", rnd_clearUpdateWidgetList);
+void rnd_addUpdateWidgetList(int arg0, int arg1) {
+    M2C_UNK *temp_v0;
+    M2C_UNK *temp_v0_2;
+    M2C_UNK *var_s0;
+    M2C_UNK *var_v0;
+
+    var_s0 = NULL;
+    if (head == NULL) {
+        temp_v0 = MEM_malloc(0, 0xC);
+        head = temp_v0;
+        *temp_v0 = NULL;
+        M2C_FIELD(head, int *, 4) = 0;
+        M2C_FIELD(head, int *, 8) = 0;
+        var_s0 = head;
+    }
+    var_v0 = M2C_FIELD(head, M2C_UNK **, 0);
+    if (var_v0 != NULL) {
+        do {
+            var_s0 = var_v0;
+            var_v0 = *var_v0;
+        } while (var_v0 != NULL);
+    }
+    temp_v0_2 = MEM_malloc(0, 0xC);
+    M2C_FIELD(temp_v0_2, M2C_UNK **, 0) = NULL;
+    M2C_FIELD(temp_v0_2, int *, 4) = arg0;
+    M2C_FIELD(temp_v0_2, int *, 8) = arg1;
+    *var_s0 = temp_v0_2;
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void rnd_clearUpdateWidgetList(void) {
+    void *temp_a1;
+    void *temp_s1;
+    void *var_s0;
+
+    var_s0 = head;
+    if (var_s0 != NULL) {
+        do {
+            temp_a1 = M2C_FIELD(var_s0, void **, 8);
+            temp_s1 = M2C_FIELD(var_s0, void **, 0);
+            if (temp_a1 != NULL) {
+                MEM_free(0, temp_a1);
+            }
+            MEM_free(0, var_s0);
+            var_s0 = temp_s1;
+        } while (temp_s1 != NULL);
+    }
+    head = NULL;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_anim", rnd_updateUpdateWidgetList);
 
@@ -65,9 +127,34 @@ void actSearchString(void) {
     searchStrings();
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_anim", freeScrollStart);
+void freeScrollStart(void *box, int x, int y) {
+    void *body = getBodyBox(box);
+    int *g = gESPRIT_LO_GLOBAL_NDA;
+    g[1] = M2C_FIELD(body, int *, 0x28);
+    g[2] = x;
+    g[3] = y;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_anim", freeScroll);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void freeScroll(int arg0, int arg1) {
+    int temp_a0;
+    int temp_s1;
+    int temp_s2;
+    void *temp_s0;
+
+    temp_s0 = gESPRIT_LO_GLOBAL_NDA;
+    temp_s2 = arg0 - M2C_FIELD(temp_s0, int *, 8);
+    temp_s1 = arg1 - M2C_FIELD(temp_s0, int *, 0xC);
+    temp_a0 = Node_getBox(M2C_FIELD(temp_s0, int *, 4));
+    if ((temp_s2 | temp_s1) != 0) {
+        drawScroll(temp_a0, -temp_s2, -temp_s1);
+        M2C_FIELD(temp_s0, int *, 8) = arg0;
+        M2C_FIELD(temp_s0, int *, 0xC) = arg1;
+    }
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_anim", searchDestinationAnchor);
 

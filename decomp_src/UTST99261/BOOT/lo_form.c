@@ -1,5 +1,8 @@
+/* cflags: -O1 */
 #include "common.h"
 #include "m2c_macros.h"
+M2C_UNK MEM_free(M2C_UNK, void *);                  /* extern */
+
 int Node_getBox(int);                               /* extern */
 M2C_UNK resetFormData(int, M2C_UNK);                /* extern */
 M2C_UNK clearSaveFormData();                        /* extern */
@@ -21,7 +24,34 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_form", addFormList);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_form", addFormElementList);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_form", freeFormList);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void freeFormList(void *arg0) {
+    void *temp_s0;
+    void *temp_s0_2;
+    void *var_a1;
+    void *var_s1;
+
+    var_s1 = M2C_FIELD(M2C_FIELD(arg0, void **, 0x20), void **, 0x7C);
+    if (var_s1 != NULL) {
+        do {
+            var_a1 = M2C_FIELD(var_s1, void **, 4);
+            if (var_a1 != NULL) {
+                do {
+                    temp_s0_2 = M2C_FIELD(var_a1, void **, 4);
+                    MEM_free(0, var_a1);
+                    var_a1 = temp_s0_2;
+                } while (temp_s0_2 != NULL);
+            }
+            temp_s0 = M2C_FIELD(var_s1, void **, 8);
+            MEM_free(0, var_s1);
+            var_s1 = temp_s0;
+        } while (temp_s0 != NULL);
+    }
+    M2C_FIELD(M2C_FIELD(arg0, void **, 0x20), int *, 0x7C) = 0;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -88,7 +118,9 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_form", actFormInput);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_form", actSubmitForm);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_form", actResetForm);
+void actResetForm(int form, M2C_UNK x) {
+    resetFormData(form, x);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_form", actSaveForm);
 
@@ -104,6 +136,33 @@ void actClearForm(void) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_form", addRadioList);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_form", freeRadioList);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void freeRadioList(void *arg0) {
+    void *temp_s0;
+    void *temp_s2;
+    void *var_a1;
+    void *var_s1;
+
+    var_s1 = M2C_FIELD(M2C_FIELD(arg0, void **, 0x20), void **, 0x80);
+    if (var_s1 != NULL) {
+        do {
+            var_a1 = M2C_FIELD(var_s1, void **, 8);
+            temp_s2 = M2C_FIELD(var_s1, void **, 4);
+            if (var_a1 != NULL) {
+                do {
+                    temp_s0 = M2C_FIELD(var_a1, void **, 4);
+                    MEM_free(0, var_a1);
+                    var_a1 = temp_s0;
+                } while (temp_s0 != NULL);
+            }
+            MEM_free(0, var_s1);
+            var_s1 = temp_s2;
+        } while (temp_s2 != NULL);
+    }
+    M2C_FIELD(M2C_FIELD(arg0, void **, 0x20), int *, 0x80) = 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_form", layoutWaitMail);

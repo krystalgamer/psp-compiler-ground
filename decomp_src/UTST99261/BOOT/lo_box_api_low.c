@@ -1,8 +1,25 @@
+/* cflags: -O1 */
 #include "common.h"
+#include "nflayout.h"
 #include "m2c_macros.h"
+void *getSessionSaveData(int id);
+void getViewPort(BOX *box, int *x, int *y);
+void drawDelete(BOX *box);
 
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_box_api_low", checkTableHierarchy);
+int checkTableHierarchy(BOX *box, BOX **table) {
+    while (box != NULL) {
+        if (box->content == 6) {
+            return 1;
+        }
+        if (box->content == 4) {
+            *table = box->parent;
+            return 0;
+        }
+        box = box->parent;
+    }
+    return 1;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_box_api_low", createBox);
 
@@ -28,7 +45,32 @@ void linkBoxNoTableCheck(void *arg0, void *arg1, void *arg2) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_box_api_low", insLinkBox);
+void insLinkBox(BOX *box, BOX *parent, BOX *prev) {
+    BOX *next;
+    if (parent == NULL) {
+        return;
+    }
+    if (parent->child == NULL) {
+        parent->child = box;
+        box->parent = parent;
+    } else if (prev == NULL) {
+        box->next = parent->child;
+        parent->child = box;
+        box->parent = parent;
+    } else {
+        next = prev->next;
+        prev->next = box;
+        if (next == NULL) {
+            box->prev = prev;
+            box->parent = parent;
+        } else {
+            next->prev = box;
+            box->prev = prev;
+            box->next = next;
+            box->parent = parent;
+        }
+    }
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -77,6 +119,16 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_box_api_low", freeBox);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_box_api_low", reinitBodyBox);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_box_api_low", freeDrawObject);
+void freeDrawObject(BOX *box) {
+    int *sd;
+    if (box->content == 1) {
+        sd = getSessionSaveData(*(int *)((char *)box->geom + 0x38));
+        if (sd != NULL) {
+            getViewPort(box, sd + 1, sd + 2);
+        }
+        drawDelete(box);
+        *(int *)((char *)box + 0x2C) = 0;
+    }
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_box_api_low", freeBoxTree);

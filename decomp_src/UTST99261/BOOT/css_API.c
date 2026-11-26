@@ -1,5 +1,13 @@
+/* cflags: -O1 */
 #include "common.h"
 #include "m2c_macros.h"
+M2C_UNK MEM_free(M2C_UNK, void *);                  /* extern */
+int CSS_getMediaTypeString(short);                    /* extern */
+M2C_UNK newCSSRule(M2C_UNK, M2C_UNK, int, int);     /* extern */
+M2C_UNK freeCSSRule(void *);                        /* extern */
+void *MEM_calloc(M2C_UNK, M2C_UNK);                 /* extern */
+M2C_UNK popCSSNode();                               /* extern */
+
 M2C_UNK CSS_ParseStyleSheet(short);                   /* extern */
 M2C_UNK freeCSSStyleSheet();                        /* extern */
 M2C_UNK freeCSSStyleDeclaration(void *);            /* extern */
@@ -51,9 +59,33 @@ void CSS2_freeCSSAttribute(void *arg0) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_API", CSS2_freeCSSProperty);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_API", CSS2_freeCSSImportRuleList);
+void CSS2_freeCSSProperty(void *arg0) {
+    void *temp_s0;
+    void *var_a1;
+
+    var_a1 = arg0;
+    if (arg0 != NULL) {
+        do {
+            temp_s0 = M2C_FIELD(var_a1, void **, 0x18);
+            MEM_free(0, var_a1);
+            var_a1 = temp_s0;
+        } while (temp_s0 != NULL);
+    }
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void CSS2_freeCSSImportRuleList(int arg0) {
+    if (arg0 != 0) {
+        MEM_free(0, arg0);
+    }
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_API", newCSSStyleSheet);
 
@@ -69,21 +101,78 @@ void addCSSStyleSheet(void) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_API", StyleSheet_getType);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_API", StyleSheet_getStyleType);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+short StyleSheet_getStyleType(void *arg0) {
+    if ((arg0 == NULL) || (M2C_FIELD(arg0, short *, 0) != 0)) {
+        return -1;
+    }
+    return M2C_FIELD(arg0, short *, 0x1C);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_API", StyleSheet_getDisable);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+short StyleSheet_getDisable(void *arg0) {
+    if ((arg0 == NULL) || (M2C_FIELD(arg0, short *, 0) != 0)) {
+        return -1;
+    }
+    return M2C_FIELD(arg0, short *, 0x34);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_API", StyleSheet_setDisable);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_API", StyleSheet_getOwnerNode);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int StyleSheet_getOwnerNode(void *arg0) {
+    if ((arg0 == NULL) || (M2C_FIELD(arg0, short *, 0) != 0)) {
+        return 0;
+    }
+    return M2C_FIELD(arg0, int *, 0x24);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_API", StyleSheet_getParentStyleSheet);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int StyleSheet_getParentStyleSheet(void *arg0) {
+    if ((arg0 == NULL) || (M2C_FIELD(arg0, short *, 0) != 0)) {
+        return 0;
+    }
+    return M2C_FIELD(arg0, int *, 0x20);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_API", StyleSheet_getHref);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int StyleSheet_getHref(void *arg0) {
+    if ((arg0 == NULL) || (M2C_FIELD(arg0, short *, 0) != 0)) {
+        return 0;
+    }
+    return M2C_FIELD(arg0, int *, 0x2C);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_API", StyleSheet_getTitle);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int StyleSheet_getTitle(void *arg0) {
+    if ((arg0 == NULL) || (M2C_FIELD(arg0, short *, 0) != 0)) {
+        return 0;
+    }
+    return M2C_FIELD(arg0, int *, 0x30);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_API", StyleSheet_getMedia);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+int StyleSheet_getMedia(void *arg0) {
+    if ((arg0 == NULL) || (M2C_FIELD(arg0, short *, 0) != 0)) {
+        return 0;
+    }
+    return CSS_getMediaTypeString(M2C_FIELD(arg0, short *, 0x28));
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -123,15 +212,39 @@ void StyleSheet_setTitle(void *arg0, int arg1) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_API", StyleSheet_setMedia);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_API", CSSStyleSheet_getOwnerRule);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int CSSStyleSheet_getOwnerRule(void *arg0) {
+    if ((arg0 == NULL) || (M2C_FIELD(arg0, short *, 0) != 0)) {
+        return 0;
+    }
+    return M2C_FIELD(arg0, int *, 0x38);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_API", CSSStyleSheet_getCssRules);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int CSSStyleSheet_getCssRules(void *arg0) {
+    if ((arg0 == NULL) || (M2C_FIELD(arg0, short *, 0) != 0)) {
+        return 0;
+    }
+    return M2C_FIELD(arg0, int *, 0xC);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_API", CSSStyleSheet_insertRule);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_API", CSSStyleSheet_deleteRule);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_API", CSSStyleSheet_isReadOnly);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+short CSSStyleSheet_isReadOnly(void *arg0) {
+    if ((arg0 == NULL) || (M2C_FIELD(arg0, short *, 0) != 0)) {
+        return -1;
+    }
+    return M2C_FIELD(arg0, short *, 0x36);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_API", CSSStyleSheet_setReadOnly);
 
@@ -144,9 +257,36 @@ void CSSStyleSheet_setOwnerRule(void *arg0, int arg1) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_API", newCSSMediaRule);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_API", freeCSSMediaRule);
+void newCSSMediaRule(int arg0, int arg1) {
+    newCSSRule(4, 0x28, arg0, arg1);
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void freeCSSMediaRule(void *arg0) {
+    void *temp_s0;
+    void *var_a0;
+
+    if (arg0 != NULL) {
+        if (M2C_FIELD(arg0, short *, 0) == 4) {
+            var_a0 = M2C_FIELD(arg0, void **, 0xC);
+            if (var_a0 != NULL) {
+                do {
+                    temp_s0 = M2C_FIELD(var_a0, void **, 0x18);
+                    freeCSSRule(var_a0);
+                    var_a0 = temp_s0;
+                } while (temp_s0 != NULL);
+            }
+            freeCSSNode(arg0);
+        }
+    }
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -162,15 +302,56 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_API", CSSMediaRule_getCssTe
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_API", CSSMediaRule_setCssText);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_API", CSSMediaRule_getParentStyleSheet);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int CSSMediaRule_getParentStyleSheet(void *arg0) {
+    if ((arg0 == NULL) || (M2C_FIELD(arg0, short *, 0) != 4)) {
+        return 0;
+    }
+    return M2C_FIELD(arg0, int *, 0x1C);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_API", CSSMediaRule_getParentRule);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int CSSMediaRule_getParentRule(void *arg0) {
+    if ((arg0 == NULL) || (M2C_FIELD(arg0, short *, 0) != 4)) {
+        return 0;
+    }
+    return M2C_FIELD(arg0, int *, 0x20);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_API", CSSMediaRule_getMedia);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_API", CSSMediaRule_getMediaType);
+int CSSMediaRule_getMedia(void *arg0) {
+    if ((arg0 == NULL) || (M2C_FIELD(arg0, short *, 0) != 4)) {
+        return 0;
+    }
+    return CSS_getMediaTypeString(M2C_FIELD(arg0, short *, 0x24));
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_API", CSSMediaRule_getCssRules);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+short CSSMediaRule_getMediaType(void *arg0) {
+    if ((arg0 == NULL) || (M2C_FIELD(arg0, short *, 0) != 4)) {
+        return -1;
+    }
+    return M2C_FIELD(arg0, short *, 0x24);
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int CSSMediaRule_getCssRules(void *arg0) {
+    if ((arg0 == NULL) || (M2C_FIELD(arg0, short *, 0) != 4)) {
+        return 0;
+    }
+    return M2C_FIELD(arg0, int *, 0xC);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_API", CSSMediaRule_insertRule);
 
@@ -222,7 +403,32 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_API", CSS_nstring);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_API", CToc);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_API", CSS_newPoolBuf);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void *CSS_newPoolBuf(void) {
+    void *temp_v0;
+    void *temp_v0_2;
+    void *var_v0;
+
+    temp_v0 = MEM_calloc(0, 0xC);
+    var_v0 = NULL;
+    if (temp_v0 != NULL) {
+        temp_v0_2 = MEM_calloc(0, 0x208);
+        if (temp_v0_2 == NULL) {
+            MEM_free(0, temp_v0);
+            return NULL;
+        }
+        M2C_FIELD(temp_v0, short *, 0) = 1;
+        M2C_FIELD(temp_v0, void **, 4) = temp_v0_2;
+        M2C_FIELD(temp_v0, void **, 8) = temp_v0_2;
+        var_v0 = temp_v0;
+        /* Duplicate return node #4. Try simplifying control flow for better match */
+        return var_v0;
+    }
+    return var_v0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_API", CSS_freePoolBuf);
 
@@ -238,15 +444,72 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_API", CSS_getPoolBuf);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_API", newCSSNode);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_API", freeCSSNode);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void freeCSSNode(int arg0) {
+    if (arg0 != 0) {
+        popCSSNode();
+        MEM_free(0, arg0);
+    }
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_API", addCSSNode);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_API", pushCSSNode);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+void pushCSSNode(void *arg0, void *arg1) {
+    void *temp_v0;
+
+    if (arg0 != NULL) {
+        temp_v0 = M2C_FIELD(arg0, void **, 0xC);
+        if (temp_v0 != NULL) {
+            M2C_FIELD(temp_v0, void **, 0x14) = arg1;
+            M2C_FIELD(arg1, void **, 0x18) = temp_v0;
+            M2C_FIELD(arg0, void **, 0xC) = arg1;
+        } else {
+            M2C_FIELD(arg0, void **, 0xC) = arg1;
+            M2C_FIELD(arg0, void **, 0x10) = arg1;
+            M2C_FIELD(arg0, int *, 8) = 0;
+        }
+        M2C_FIELD(arg1, void **, 4) = arg0;
+        M2C_FIELD(arg0, int *, 8) = (int) (M2C_FIELD(arg0, int *, 8) + 1);
+    }
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_API", popCSSNode);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_API", insCSSNode);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+void insCSSNode(void *arg0, void *arg1) {
+    void *temp_a0;
+    void *temp_v0;
+    void *temp_v0_2;
+
+    if (((arg0 == NULL) | (arg1 == NULL)) == 0) {
+        M2C_FIELD(arg1, void **, 4) = (void *) M2C_FIELD(arg0, void **, 4);
+        temp_v0 = M2C_FIELD(arg0, void **, 0x14);
+        M2C_FIELD(arg0, void **, 0x14) = arg1;
+        if (temp_v0 != NULL) {
+            M2C_FIELD(arg1, void **, 0x18) = arg0;
+            M2C_FIELD(arg1, void **, 0x14) = temp_v0;
+            M2C_FIELD(temp_v0, void **, 0x18) = arg1;
+        } else {
+            M2C_FIELD(arg1, void **, 0x18) = arg0;
+            temp_v0_2 = M2C_FIELD(arg0, void **, 4);
+            if (temp_v0_2 != NULL) {
+                M2C_FIELD(temp_v0_2, void **, 0xC) = arg1;
+            }
+        }
+        temp_a0 = M2C_FIELD(arg0, void **, 4);
+        if (temp_a0 != NULL) {
+            M2C_FIELD(temp_a0, int *, 8) = (int) (M2C_FIELD(temp_a0, int *, 8) + 1);
+        }
+    }
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
