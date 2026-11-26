@@ -490,7 +490,21 @@ void app_draw_frame(void)
 	sceGuSync(0, 0);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_matching_stick/nonmatchings/main", draw_frame_11E8);
+int sceNetAdhocDialogUpdate(void);
+
+static void draw_frame_11E8(void)
+{
+	switch (_mrinfo.state) {
+	case MATCHING_ROOM_CONNECTING_ROOM:
+	case MATCHING_ROOM_CONNECTING_GAME:
+	case MATCHING_ROOM_ERROR_DIALOG:
+		sceNetAdhocDialogUpdate();
+		break;
+	default:
+		app_draw_frame();
+		break;
+	}
+}
 
 void change_state(enum matching_room_state state) {
     if (state != MATCHING_ROOM_ROOM_LIST) {
