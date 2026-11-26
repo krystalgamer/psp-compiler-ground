@@ -3376,8 +3376,11 @@ int VSModeBody(int pl)
 			}
 			if ((st->key_rep & 0x2000) || st->unk00E <= 0) {
 				se_play(12);
+				if (st->mapsub == 1)
+					st->unk00E = 600;
+				else
+					st->unk00E = 300;
 				ang = st->unk454;
-				st->unk00E = st->mapsub == 1 ? 600 : 300;
 				st->fx = st->bx << 16;
 				st->fy = st->by << 16;
 				st->unk006 = 2;
@@ -3464,6 +3467,22 @@ int VSModeBody(int pl)
 			st->next = GetBallNext(st, 0);
 			st->unk026--;
 			break;
+		case 15: {
+			int bx, by, n;
+
+			GetBallCoordinate(st, st->snd.unk4, &bx, &by);
+			bx += MapXBeginPos[st->mapno * 3 + st->mapsub];
+			by += st->ofs_y;
+			n = st->snd.unk1;
+			st->bx = bx * n / 2 + st->snd.unk6 * (2 - n) / 2;
+			st->by = by * n / 2 + st->snd.unk8 * (2 - n) / 2;
+			if (++st->snd.unk1 >= 2) {
+				st->unk006 = 16;
+				st->snd.unk1 = 0;
+				CheckBallCollision(st);
+			}
+			break;
+		}
 		case 6: {
 			int mode, n, j;
 			int pos[8];
@@ -3640,22 +3659,6 @@ int VSModeBody(int pl)
 			st->unk024 = 0;
 			st->ndrop = 0;
 			break;
-		case 15: {
-			int bx, by, n;
-
-			GetBallCoordinate(st, st->snd.unk4, &bx, &by);
-			bx += MapXBeginPos[st->mapno * 3 + st->mapsub];
-			by += st->ofs_y;
-			n = st->snd.unk1;
-			st->bx = bx * n / 2 + st->snd.unk6 * (2 - n) / 2;
-			st->by = by * n / 2 + st->snd.unk8 * (2 - n) / 2;
-			if (++st->snd.unk1 >= 2) {
-				st->unk006 = 16;
-				st->snd.unk1 = 0;
-				CheckBallCollision(st);
-			}
-			break;
-		}
 		case 16:
 			st->by = -64;
 			st->bx = -64;
@@ -3943,14 +3946,12 @@ int VSModeBody(int pl)
 	}
 	if (isPause == 0 && st->nchain) {
 		int t = st->unk470;
-		int a, b;
+		int x, y;
 
-		if (st->nchain > 0) {
-			a = 60 - t;
-			b = ((t - 30) * (t - 30) - 900) / 8;
-			for (i = 0; i < st->nchain; i++)
-				DrawBubble(0, st->chain[i].x * t / 60 + st->chain[i].a * a / 60 + MapXBeginPos[st->mapno * 3 + st->mapsub] + 72,
-					st->chain[i].y * t / 60 + st->chain[i].b * a / 60 - b + st->ofs_y + st->scroll * 14, st->chain[i].col - 1, 0);
+		for (i = 0; i < st->nchain; i++) {
+			x = st->chain[i].x * t / 60 + st->chain[i].a * (60 - t) / 60;
+			y = st->chain[i].y * t / 60 + st->chain[i].b * (60 - t) / 60 - ((t - 30) * (t - 30) - 900) / 8;
+			DrawBubble(0, x + MapXBeginPos[st->mapno * 3 + st->mapsub] + 72, y + st->ofs_y + st->scroll * 14, st->chain[i].col - 1, 0);
 		}
 		if (++st->unk470 >= 60) {
 			for (i = 0; i < st->nchain; i++) {
