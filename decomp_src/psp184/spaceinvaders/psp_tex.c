@@ -240,7 +240,42 @@ void sprite_bg_disp(void)
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_tex", sprite_scr_disp);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_tex", sprite_3d_disp);
+extern int bill_co[];
+extern int billbord_max, billbord_disp_max, billbord_disp_time;
+unsigned int sceKernelGetSystemTimeLow(void);
+void set_packet_3d(int no);
+void sprite_3d_disp(void)
+{
+	int i, cur;
+	unsigned int t;
+	int *b;
+
+	billbord_disp_time = 0;
+	if (billbord_max == 0)
+		return;
+	cur = -1;
+	t = sceKernelGetSystemTimeLow();
+	sceGuEnable(9);
+	sceGuTexFunc(0, 1);
+	sceGuTexMapMode(0, 0, 0);
+	sceGuTexWrap(0, 0);
+	sceGuTexFilter(1, 1);
+	for (i = 0; i < billbord_max; i++) {
+		b = (int *)&billbord[bill_co[i]];
+		if (b[0] == 0)
+			continue;
+		if (cur != b[2]) {
+			cur = b[2];
+			if (cur != -1)
+				set_texture(cur);
+		}
+		set_packet_3d(bill_co[i]);
+		billbord_disp_max++;
+	}
+	billbord_max = 0;
+	sceGuTexFilter(1, 1);
+	billbord_disp_time = sceKernelGetSystemTimeLow() - t;
+}
 
 void sceGuClutMode(unsigned int cpsm, unsigned int shift, unsigned int mask, unsigned int a3);
 void sceGuClutLoad(int num_blocks, const void *cbp);
