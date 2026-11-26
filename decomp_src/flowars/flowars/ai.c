@@ -131,13 +131,39 @@ static void set_priority(int flagPlayer);
 static int judge(int flagPlayer);
 
 
-INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/ai", init_ai);
+static void init_ai()
+{
+	int i;
+	SpecialPae definePae = {
+		{ 1, 9, 29, 41, 45 },
+		{ 5, 13, 30 },
+		{ 2, 6, 10 },
+		{ 22, 34, 38 },
+		{ 14, 18, 26 }
+	};
+	SpecialPae defineWho = {
+		{ -1, -1, -1, -1, -1 },
+		{ -1, -1, -1 },
+		{ -1, -1, -1 },
+		{ -1, -1, -1 },
+		{ -1, -1, -1 }
+	};
+
+	g_sp_pae = definePae;
+	g_sp_who = defineWho;
+	for (i = 0; i < 6; i++) {
+		g_sp_status[i].active = -2;
+		g_sp_status[i].num = 0;
+	}
+	for (i = 0; i < 52; i++)
+		g_try_priority[i] = 999;
+}
+
+__asm__(".globl init_ai");
 
 INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/ai", update_sp_status);
 
-INCLUDE_RODATA("tmp/asm/flowars/flowars/nonmatchings/ai", D_00030878);
 
-INCLUDE_RODATA("tmp/asm/flowars/flowars/nonmatchings/ai", D_000308BC);
 
 static void set_sp_status(int flagPlayer, int pae, int sp_kind)
 {
