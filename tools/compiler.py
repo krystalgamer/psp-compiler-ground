@@ -20,7 +20,10 @@ def entry(target, module, unit):
     units = table(ROOT / "config" / target / f"units.{module}.txt")
     comp = table(ROOT / "config" / "compilers.txt")
     ver = units[unit][0] if unit in units else "1.6.1"
-    return comp[ver]
+    # per-module additions for one version: `@TARGET/MODULE VERSION OPT...`
+    # (a game's own build, e.g. its link order)
+    extra = comp.get(f"@{target}/{module}", [])
+    return comp[ver] + (extra[1:] if extra[:1] == [ver] else [])
 
 
 def compiler(target, module, unit):
