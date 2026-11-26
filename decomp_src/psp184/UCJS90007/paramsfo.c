@@ -141,6 +141,52 @@ int parse_paramsfo(void *paramsfo);
 int get_paramsfo(char *bin_filename);
 
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/paramsfo", parse_paramsfo);
+void *memset(void *s, int c, unsigned int n);
+int sceSystemFileLoadAll(void *buf, void **phandle);
+int sceSystemFileGetIndex(void *handle, const char *name, void **pindex);
+int sceSystemFileGetValue(void *handle, void *index, void *buf);
+int sceSystemFileGetIndexInfo(void *handle, void *index, char **pname, unsigned int *plen, unsigned int *pmaxlen);
+int sceSystemFileFree(void *handle);
+void *memset(void *s, int c, unsigned int n);
+int parse_paramsfo(void *paramsfo)
+{
+	int ret;
+	SceSystemFileFormat sysformat = NULL;
+	SceSystemFileIndex index;
+	char *tmp_char;
+	unsigned int tmp_uint;
+
+	ret = sceSystemFileLoadAll(paramsfo, &sysformat);
+	if (ret < 0)
+		goto error;
+	ret = sceSystemFileGetIndex(sysformat, "TITLE", &index);
+	if (ret < 0)
+		goto error;
+	memset(_info.paramsfo_title, 0, sizeof(_info.paramsfo_title));
+	ret = sceSystemFileGetValue(sysformat, index, _info.paramsfo_title);
+	if (ret < 0)
+		goto error;
+	ret = sceSystemFileGetIndexInfo(sysformat, index, &tmp_char, &_info.paramsfo_title_len, &tmp_uint);
+	if (ret < 0)
+		goto error;
+	ret = sceSystemFileGetIndex(sysformat, "DISC_ID", &index);
+	if (ret < 0)
+		goto error;
+	memset(_info.paramsfo_discid, 0, sizeof(_info.paramsfo_discid));
+	ret = sceSystemFileGetValue(sysformat, index, _info.paramsfo_discid);
+	if (ret < 0)
+		goto error;
+	ret = sceSystemFileGetIndexInfo(sysformat, index, &tmp_char, &_info.paramsfo_discid_len, &tmp_uint);
+	if (ret < 0)
+		goto error;
+	ret = sceSystemFileGetIndex(sysformat, "PARENTAL_LEVEL", &index);
+	if (ret < 0)
+		goto error;
+	ret = sceSystemFileGetValue(sysformat, index, &_info.paramsfo_parental);
+error:
+	if (sysformat != NULL)
+		sceSystemFileFree(sysformat);
+	return ret;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/paramsfo", get_paramsfo);
