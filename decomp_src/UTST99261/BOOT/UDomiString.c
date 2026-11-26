@@ -4,6 +4,13 @@
 #include "parse_ps.h"
 #include "dom_domi.h"
 #include "m2c_macros.h"
+typedef struct PsTbl {
+    int cmd;
+    int x04;
+    int dest;
+    int sts;
+} PsTbl;
+extern PsTbl D_00135260[];
 extern int mq_ps;
 extern int mq_ps_su;
 extern int buf_sessionUI;
@@ -574,9 +581,62 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", ps_GetLocation);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", ps_FreeLocation);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", ps_DomTerm);
+void ps_DomTerm(int sid) {
+    PsDomBuild b;
+    PsIpc m;
+    int *node;
+    void *r;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", ps_isMoveHistory);
+    node = HST_searchSessionIDHistoryNode(sid);
+    b.x[0] = node[1];
+    b.x[1] = node[0];
+    b.x[2] = node[5];
+    b.x[3] = node[4];
+    b.x[4] = node[7];
+    b.x[5] = node[6];
+    b.x[6] = 0;
+    b.x[7] = 0;
+    b.x[9] = sid;
+    b.x[10] = 0;
+    b.x[11] = 2;
+    b.x[12] = 0;
+    b.x[13] = Accession;
+    r = parseDomBuild(&b);
+    if (r != NULL) {
+        MEM_free(0, r);
+    }
+    initMPL_REQ_LOAD_PAGE(&m);
+    m.x04 = sid;
+    ps_sndmsg(&m, 4);
+}
+
+int ps_isMoveHistory(int off, int sid, int local) {
+    PsIpc m;
+
+    if (off == 0) {
+        return 1;
+    }
+    if (HST_getFragmentIDs(HST_getHeadHistoryNode(), off) != 0) {
+        return 1;
+    }
+    if (off != 0 && HST_getHistoryWithOffset(off) != 0) {
+        return 1;
+    }
+    m.type = 0;
+    m.x04 = 0;
+    m.x08 = 0;
+    m.cmd = 0;
+    m.x10 = 0;
+    m.x14 = 0;
+    m.x18 = 0;
+    m.x1C = 0;
+    initMPU_SIG_RECV_COMPLETE(&m);
+    m.x04 = sid;
+    m.x10 = -1;
+    m.x14 = local;
+    ps_sndmsg(&m, 1);
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", ps_fragmentJump);
 
@@ -924,9 +984,39 @@ void sendMPL_REQ_LOAD_PAGE(PsIpc *m, int sid) {
     ps_sndmsg(m, 4);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", initMSGQUEUE);
+void initMSGQUEUE(int q) {
+    PsMqMsg m;
+    int attr[4];
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", GetMQUEUE);
+    for (;;) {
+        OS_mq_getattr(q, attr);
+        attr[0] |= 0x4000;
+        OS_mq_setattr(q, attr, 0);
+        if (OS_mq_receive(q, &m, 0x24, 0) < 0) {
+            attr[0] &= ~0x4000;
+            OS_mq_setattr(q, attr, 0);
+            return;
+        }
+        attr[0] &= ~0x4000;
+        OS_mq_setattr(q, attr, 0);
+    }
+}
+
+void *GetMQUEUE(int q, void *buf) {
+    int attr[4];
+
+    OS_mq_getattr(q, attr);
+    attr[0] |= 0x4000;
+    OS_mq_setattr(q, attr, 0);
+    if (OS_mq_receive(q, buf, 0x24, 0) < 0) {
+        attr[0] &= ~0x4000;
+        OS_mq_setattr(q, attr, 0);
+        return NULL;
+    }
+    attr[0] &= ~0x4000;
+    OS_mq_setattr(q, attr, 0);
+    return buf;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", CharEncode);
 
