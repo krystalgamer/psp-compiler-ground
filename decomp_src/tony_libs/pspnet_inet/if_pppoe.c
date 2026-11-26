@@ -302,7 +302,8 @@ pppoe_output(struct pppoe_softc *sc, struct mbuf *m)
 
 	m->m_flags &= ~(M_BCAST|M_MCAST);
 	sc->sc_sppp.pp_if.if_opackets++;
-	return sc->sc_eth_if->if_output(sc->sc_eth_if, m, &dst, NULL);
+	sc->sc_eth_if->if_output(sc->sc_eth_if, m, &dst, NULL);
+	return 0;
 }
 
 INCLUDE_ASM("tmp/asm/tony_libs/pspnet_inet/nonmatchings/if_pppoe", func_0002AC08);
@@ -388,7 +389,48 @@ pppoe_disconnect(struct pppoe_softc *sc)
 }
 
 /* Send a PADR packet */
-INCLUDE_ASM("tmp/asm/tony_libs/pspnet_inet/nonmatchings/if_pppoe", func_0002AF88);
+static int
+pppoe_send_padr(struct pppoe_softc *sc)
+{
+	struct mbuf *m0;
+	u_int8_t *p;
+	size_t len, l1 = 0;
+
+	if (sc->sc_state != PPPOE_STATE_PADR_SENT)
+		return EIO;
+
+	len = 2 + 2 + 2 + 2 + sizeof(sc);		/* service name, host unique */
+	if (sc->sc_service_name != NULL) {		/* service name tag maybe empty */
+		l1 = strlen(sc->sc_service_name);
+		len += l1;
+	}
+	if (sc->sc_ac_cookie_len > 0)
+		len += 2 + 2 + sc->sc_ac_cookie_len;	/* AC cookie */
+	m0 = pppoe_get_mbuf(len + PPPOE_HEADERLEN);
+	if (!m0)
+		return ENOBUFS;
+	p = mtod(m0, u_int8_t *);
+	PPPOE_ADD_HEADER(p, PPPOE_CODE_PADR, 0, len);
+	PPPOE_ADD_16(p, PPPOE_TAG_SNAME);
+	if (sc->sc_service_name != NULL) {
+		PPPOE_ADD_16(p, l1);
+		memcpy(p, sc->sc_service_name, l1);
+		p += l1;
+	} else {
+		PPPOE_ADD_16(p, 0);
+	}
+	if (sc->sc_ac_cookie_len > 0) {
+		PPPOE_ADD_16(p, PPPOE_TAG_ACCOOKIE);
+		PPPOE_ADD_16(p, sc->sc_ac_cookie_len);
+		memcpy(p, sc->sc_ac_cookie, sc->sc_ac_cookie_len);
+		p += sc->sc_ac_cookie_len;
+	}
+	PPPOE_ADD_16(p, PPPOE_TAG_HUNIQUE);
+	PPPOE_ADD_16(p, sizeof(sc));
+	memcpy(p, &sc, sizeof sc);
+
+	return pppoe_output(sc, m0);
+}
 
 /* send a PADT packet */
 static int
@@ -472,7 +514,46 @@ pppoe_ether_input(struct mbuf *m, u_short etype, int *handled)
 	}
 }
 
-INCLUDE_ASM("tmp/asm/tony_libs/pspnet_inet/nonmatchings/if_pppoe", func_0002B640);
+__attribute__((noinline)) int
+pppoe_attach(const char *ifname)
+{
+	struct pppoe_softc *sc = &pppoe_softc0;
+
+	memset(&ppoediscinq, 0, sizeof(ppoediscinq));
+	ppoediscinq.ifq_maxlen = IFQ_MAXLEN;
+	memset(&ppoeinq, 0, sizeof(ppoeinq));
+	ppoeinq.ifq_maxlen = IFQ_MAXLEN;
+	memset(sc, 0, sizeof(struct pppoe_softc));
+
+	sc->sc_eth_if = ifunit(ifname);
+	if (sc->sc_eth_if == NULL)
+		return -1;
+
+	memcpy(sc->sc_sppp.pp_if.if_xname, "pppoe0", 6);
+	sc->sc_sppp.pp_if.if_softc = sc;
+	sc->sc_sppp.pp_if.if_mtu = PPPOE_MAXMTU;
+	sc->sc_sppp.pp_if.if_flags = IFF_SIMPLEX|IFF_POINTOPOINT|IFF_MULTICAST;
+	sc->sc_sppp.pp_if.if_type = IFT_PPP;
+	sc->sc_sppp.pp_if.if_hdrlen = sizeof(struct ether_header) + PPPOE_HEADERLEN;
+	sc->sc_sppp.pp_flags |= PP_KEEPALIVE |	/* use LCP keepalive */
+				PP_NOFRAMING;	/* no serial encapsulation */
+	sc->sc_sppp.pp_if.if_ioctl = pppoe_ioctl;
+	sc->sc_sppp.pp_if.if_snd.ifq_maxlen = IFQ_MAXLEN;
+
+	/* changed to real address later */
+	memset(&sc->sc_dest, 0xff, sizeof(sc->sc_dest));
+
+	callout_init(&sc->sc_timeout);
+
+	sc->sc_sppp.pp_if.if_start = pppoe_start;
+	sc->sc_sppp.pp_tls = pppoe_tls;
+	sc->sc_sppp.pp_tlf = pppoe_tlf;
+	sc->sc_sppp.pp_framebytes = PPPOE_HEADERLEN;	/* framing added to ppp packets */
+
+	if_attach(&sc->sc_sppp.pp_if);
+	sppp_attach(&sc->sc_sppp.pp_if);
+	return 0;
+}
 
 /* analyze and handle a single received packet while not in session state */
 INCLUDE_ASM("tmp/asm/tony_libs/pspnet_inet/nonmatchings/if_pppoe", func_0002B79C);
@@ -514,7 +595,56 @@ pppoe_tlf(struct sppp *sp)
 	callout_reset(&sc->sc_timeout, hz/50, pppoe_timeout, sc);
 }
 
-INCLUDE_ASM("tmp/asm/tony_libs/pspnet_inet/nonmatchings/if_pppoe", func_0002BE00);
+static int
+pppoe_send_padi(struct pppoe_softc *sc)
+{
+	struct mbuf *m0;
+	int len, l1 = 0, l2 = 0;
+	u_int8_t *p;
+
+	if (sc->sc_state > PPPOE_STATE_PADI_SENT)
+		return 0;
+
+	/* calculate length of frame (excluding ethernet header + pppoe header) */
+	len = 2 + 2 + 2 + 2 + sizeof sc;	/* service name tag is required, host unique is send too */
+	if (sc->sc_service_name != NULL) {
+		l1 = strlen(sc->sc_service_name);
+		len += l1;
+	}
+	if (sc->sc_concentrator_name != NULL) {
+		l2 = strlen(sc->sc_concentrator_name);
+		len += 2 + 2 + l2;
+	}
+
+	/* allocate a buffer */
+	m0 = pppoe_get_mbuf(len + PPPOE_HEADERLEN);	/* header len + payload len */
+	if (!m0)
+		return ENOBUFS;
+
+	/* fill in pkt */
+	p = mtod(m0, u_int8_t *);
+	PPPOE_ADD_HEADER(p, PPPOE_CODE_PADI, 0, len);
+	PPPOE_ADD_16(p, PPPOE_TAG_SNAME);
+	if (sc->sc_service_name != NULL) {
+		PPPOE_ADD_16(p, l1);
+		memcpy(p, sc->sc_service_name, l1);
+		p += l1;
+	} else {
+		PPPOE_ADD_16(p, 0);
+	}
+	if (sc->sc_concentrator_name != NULL) {
+		PPPOE_ADD_16(p, PPPOE_TAG_ACNAME);
+		PPPOE_ADD_16(p, l2);
+		memcpy(p, sc->sc_concentrator_name, l2);
+		p += l2;
+	}
+	PPPOE_ADD_16(p, PPPOE_TAG_HUNIQUE);
+	PPPOE_ADD_16(p, sizeof(sc));
+	memcpy(p, &sc, sizeof sc);
+
+	/* send pkt */
+	return pppoe_output(sc, m0);
+}
 
 static struct mbuf *
 pppoe_get_mbuf(size_t len)
