@@ -5,11 +5,6 @@
 extern char D_00137EB4[];
 extern char D_00137EE4[];
 PDStr Node_getNodeName(int node);
-typedef struct PStrBuf {
-    PChar *data;
-    int cap;
-    int len;
-} PStrBuf;
 int DocumentSet(int, void *, M2C_UNK);              /* extern */
 void *HST_searchSessionIDHistoryNode(int);          /* extern */
 int Node_getJSObj(int);                             /* extern */
@@ -18,7 +13,6 @@ void *MEM_malloc(M2C_UNK, M2C_UNK);                 /* extern */
 M2C_UNK MEM_free(M2C_UNK, M2C_UNK *);               /* extern */
 int MEM_realloc(M2C_UNK, int, int);                 /* extern */
 
-M2C_UNK parseDeleteMultiBuffer();                   /* extern */
 M2C_UNK parseHST_deleteHistoryNode(M2C_UNK, M2C_UNK); /* extern */
 
 
@@ -51,7 +45,21 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", parseAttrName);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", parseAttrValue);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", parseComment);
+void parseComment(PCtx *c) {
+    if (parseWellFormedCommentWC(c) != 1) {
+        c->x44[2] = 2;
+        return;
+    }
+    for (;;) {
+        if (c->buf->cur[0] == '-' && c->buf->cur[1] == '-' && c->buf->cur[2] == '>') {
+            break;
+        }
+        if (parseNextChar(c) == 1) {
+            return;
+        }
+    }
+    parseSkipChar(c, 2);
+}
 
 void parseInvalidComment(PCtx *c) {
     for (;;) {
@@ -65,7 +73,17 @@ void parseInvalidComment(PCtx *c) {
     parseSkipChar(c, 1);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", parseMarkedSection);
+void parseMarkedSection(PCtx *c) {
+    for (;;) {
+        if (c->buf->cur[0] == ']' && c->buf->cur[1] == '>') {
+            break;
+        }
+        if (parseNextChar(c) == 1) {
+            return;
+        }
+    }
+    parseSkipChar(c, 1);
+}
 
 void parseDocType(PCtx *c) {
     do {
@@ -75,7 +93,17 @@ void parseDocType(PCtx *c) {
     } while (parseNextChar(c) != 1);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", parseProcessingInstruction);
+void parseProcessingInstruction(PCtx *c) {
+    for (;;) {
+        if (*c->buf->cur == '>') {
+            break;
+        }
+        if (parseNextChar(c) == 1) {
+            return;
+        }
+    }
+    parseSkipChar(c, 1);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", parseEndTag);
 
@@ -143,7 +171,19 @@ INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/parser", D_00137ED0);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", parseLink);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", parseExtStyleSheet);
+void parseExtStyleSheet(int sid, void *text) {
+    void *node;
+    void *ss;
+    void *r;
+
+    node = HST_searchSessionIDHistoryNode(sid);
+    ss = HST_getStyleSheet(node);
+        if (ss == NULL) {
+        HST_setStyleSheet(node, CSS2_Parse(2, text, 0, 0, 0, 0, 0, 0));
+    } else {
+        HST_setStyleSheet(node, CSS2_Parse(2, text, 0, ss, 0, 0, 0, 0));
+    }
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", backToStyleTag);
 
@@ -404,7 +444,16 @@ void *parseNewMultiCtxt(void) {
     return temp_v0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", parseRegistBuffer);
+int parseRegistBuffer(int sid, void *ctx, PCtxList *l) {
+    if (l->n >= l->cap) {
+        l->cap += 5;
+        l->items = (void **)MEM_realloc(0, (int)l->items, l->cap * 4);
+    }
+    l->items[l->n] = ctx;
+    M2C_FIELD(l->items[l->n], int *, 0x10) = sid;
+    l->n++;
+    return 0;
+}
 
 void *parseSearchSessionID(int sid, void ***list) {
     void *found;
@@ -419,7 +468,22 @@ void *parseSearchSessionID(int sid, void ***list) {
     return found;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", parseDeleteMultiBuffer);
+int parseDeleteMultiBuffer(PCtxList *l) {
+    int i;
+
+    if (l == NULL) {
+        return 0;
+    }
+    for (i = 0; i < l->n; i++) {
+        parseFreeCtxt(l->items[i]);
+        l->items[i] = NULL;
+    }
+    MEM_free(0, l->items);
+    l->items = NULL;
+    l->n = 0;
+    MEM_free(0, l);
+    return 0;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)

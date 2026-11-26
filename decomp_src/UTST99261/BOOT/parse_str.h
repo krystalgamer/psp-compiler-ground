@@ -33,4 +33,16 @@ typedef struct PDStr {
     PChar *data;                /* 0x08 */
 } PDStr;
 
+typedef struct PCtxList {
+    void **items;
+    int n;
+    int cap;
+} PCtxList;
+
+typedef struct PStrBuf {
+    PChar *data;
+    int cap;
+    int len;
+} PStrBuf;
+
 #endif
