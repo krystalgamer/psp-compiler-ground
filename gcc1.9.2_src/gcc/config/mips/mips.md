@@ -47,7 +47,22 @@
    (UNSPEC_CONSTTABLE_DF	17)
    (UNSPEC_ALIGN_2		18)
    (UNSPEC_ALIGN_4		19)
-   (UNSPEC_ALIGN_8		20)])
+   (UNSPEC_ALIGN_8		20)
+
+   ;; Allegrex
+   (UNSPEC_CLZ			31)
+   (UNSPEC_CLO			32)
+   (UNSPEC_BITREV		35)
+   (UNSPEC_WSBH			36)
+   (UNSPEC_WSBW			37)
+   (UNSPEC_EXT			38)
+   (UNSPEC_INS			39)
+   (UNSPEC_CACHE		40)
+   (UNSPEC_SYNC			41)
+   (UNSPEC_CEIL_W_S		51)
+   (UNSPEC_FLOOR_W_S		52)
+   (UNSPEC_ROUND_W_S		53)
+   (UNSPEC_TRUNC_W_S		54)])
 
 
 ;; ....................
@@ -125,7 +140,7 @@
 
 ;; ??? Fix everything that tests this attribute.
 (define_attr "cpu"
-  "default,r3000,r3900,r6000,r4000,r4100,r4111,r4120,r4300,r4600,r4650,r5000,r5400,r5500,r8000,sr71000,r4kc,r5kc,r20kc"
+  "default,r3000,r3900,r6000,allegrex2,allegrex3,allegrex31,r4000,r4100,r4111,r4120,r4300,r4600,r4650,r5000,r5400,r5500,r8000,sr71000,r4kc,r5kc,r20kc"
   (const (symbol_ref "mips_cpu_attr")))
 
 ;; Does the instruction have a mandatory delay slot?
@@ -211,7 +226,7 @@
 
 (define_function_unit "memory" 1 0
   (and (eq_attr "type" "load")
-       (eq_attr "cpu" "!r3000,r3900,r4600,r4650,r4100,r4120,r4300,r5000"))
+       (eq_attr "cpu" "!r3000,r3900,allegrex2,allegrex3,allegrex31,r4600,r4650,r4100,r4120,r4300,r5000"))
   3 0)
 
 (define_function_unit "memory" 1 0
@@ -219,17 +234,53 @@
        (eq_attr "cpu" "r3000,r3900,r4600,r4650,r4100,r4120,r4300,r5000"))
   2 0)
 
-(define_function_unit "memory"   1 0 (eq_attr "type" "store") 1 0)
+(define_function_unit "memory" 1 0
+  (and (eq_attr "type" "load") (eq_attr "cpu" "allegrex2"))
+  2 0)
 
-(define_function_unit "memory"   1 0 (eq_attr "type" "xfer") 2 0)
+(define_function_unit "memory" 1 0
+  (and (eq_attr "type" "load") (eq_attr "cpu" "allegrex3,allegrex31"))
+  3 0)
+
+(define_function_unit "memory"   1 0
+  (and (eq_attr "type" "store") (eq_attr "cpu" "!allegrex2,allegrex3,allegrex31"))
+  1 0)
+
+(define_function_unit "memory" 1 0
+  (and (eq_attr "type" "store") (eq_attr "cpu" "allegrex2"))
+  2 2 [(eq_attr "type" "load,store")])
+
+(define_function_unit "memory" 1 0
+  (and (eq_attr "type" "store") (eq_attr "cpu" "allegrex3,allegrex31"))
+  3 3 [(eq_attr "type" "load,store")])
+
+(define_function_unit "memory"   1 0
+  (and (eq_attr "type" "xfer") (eq_attr "cpu" "!allegrex2,allegrex3,allegrex31"))
+  2 0)
+
+(define_function_unit "memory" 1 0
+  (and (eq_attr "type" "xfer") (eq_attr "cpu" "allegrex2"))
+  2 0)
+
+(define_function_unit "memory" 1 0
+  (and (eq_attr "type" "xfer") (eq_attr "cpu" "allegrex3,allegrex31"))
+  3 0)
 
 (define_function_unit "imuldiv"  1 0
-  (eq_attr "type" "hilo")
+  (and (eq_attr "type" "hilo") (eq_attr "cpu" "!allegrex2,allegrex3,allegrex31"))
   1 3)
+
+(define_function_unit "imuldiv" 1 0
+  (and (eq_attr "type" "hilo") (eq_attr "cpu" "allegrex2"))
+  1 1)
+
+(define_function_unit "imuldiv" 1 0
+  (and (eq_attr "type" "hilo") (eq_attr "cpu" "allegrex3,allegrex31"))
+  1 1)
 
 (define_function_unit "imuldiv"  1 0
   (and (eq_attr "type" "imul,imadd")
-       (eq_attr "cpu" "!r3000,r3900,r4000,r4600,r4650,r4100,r4120,r4300,r5000"))
+       (eq_attr "cpu" "!r3000,r3900,allegrex2,allegrex3,allegrex31,r4000,r4600,r4650,r4100,r4120,r4300,r5000"))
   17 17)
 
 ;; On them mips16, we want to stronly discourage a mult from appearing
@@ -245,6 +296,14 @@
 (define_function_unit "imuldiv"  1 0
   (and (eq_attr "type" "imul,imadd") (eq_attr "cpu" "r3000,r3900"))
   12 12)
+
+(define_function_unit "imuldiv" 1 0
+  (and (eq_attr "type" "imul,imadd") (eq_attr "cpu" "allegrex2"))
+  4 4)
+
+(define_function_unit "imuldiv" 1 0
+  (and (eq_attr "type" "imul,imadd") (eq_attr "cpu" "allegrex3,allegrex31"))
+  5 5)
 
 (define_function_unit "imuldiv"  1 0
   (and (eq_attr "type" "imul,imadd") (eq_attr "cpu" "r4000,r4600"))
@@ -281,12 +340,20 @@
 
 (define_function_unit "imuldiv"  1 0
   (and (eq_attr "type" "idiv")
-       (eq_attr "cpu" "!r3000,r3900,r4000,r4600,r4650,r4100,r4120,r4300,r5000"))
+       (eq_attr "cpu" "!r3000,r3900,allegrex2,allegrex3,allegrex31,r4000,r4600,r4650,r4100,r4120,r4300,r5000"))
   38 38)
 
 (define_function_unit "imuldiv"  1 0
   (and (eq_attr "type" "idiv") (eq_attr "cpu" "r3000,r3900"))
   35 35)
+
+(define_function_unit "imuldiv" 1 0
+  (and (eq_attr "type" "idiv") (eq_attr "cpu" "allegrex2"))
+  35 35)
+
+(define_function_unit "imuldiv" 1 0
+  (and (eq_attr "type" "idiv") (eq_attr "cpu" "allegrex3,allegrex31"))
+  36 36)
 
 (define_function_unit "imuldiv"  1 0
   (and (eq_attr "type" "idiv") (eq_attr "cpu" "r4600"))
@@ -338,7 +405,7 @@
 ;; instructions to be processed in the "imuldiv" unit.
 
 (define_function_unit "adder" 1 1
-  (and (eq_attr "type" "fcmp") (eq_attr "cpu" "!r3000,r3900,r6000,r4300,r5000"))
+  (and (eq_attr "type" "fcmp") (eq_attr "cpu" "!r3000,r3900,r6000,allegrex2,allegrex3,allegrex31,r4300,r5000"))
   3 0)
 
 (define_function_unit "adder" 1 1
@@ -350,7 +417,7 @@
   1 0)
 
 (define_function_unit "adder" 1 1
-  (and (eq_attr "type" "fadd") (eq_attr "cpu" "!r3000,r3900,r6000,r4300"))
+  (and (eq_attr "type" "fadd") (eq_attr "cpu" "!r3000,r3900,r6000,allegrex2,allegrex3,allegrex31,r4300"))
   4 0)
 
 (define_function_unit "adder" 1 1
@@ -363,7 +430,7 @@
 
 (define_function_unit "adder" 1 1
   (and (eq_attr "type" "fabs,fneg")
-       (eq_attr "cpu" "!r3000,r3900,r4600,r4650,r4300,r5000"))
+       (eq_attr "cpu" "!r3000,r3900,allegrex2,allegrex3,allegrex31,r4600,r4650,r4300,r5000"))
   2 0)
 
 (define_function_unit "adder" 1 1
@@ -373,7 +440,7 @@
 (define_function_unit "mult" 1 1
   (and (eq_attr "type" "fmul")
        (and (eq_attr "mode" "SF")
-	    (eq_attr "cpu" "!r3000,r3900,r6000,r4600,r4650,r4300,r5000")))
+	    (eq_attr "cpu" "!r3000,r3900,r6000,allegrex2,allegrex3,allegrex31,r4600,r4650,r4300,r5000")))
   7 0)
 
 (define_function_unit "mult" 1 1
@@ -393,7 +460,7 @@
 
 (define_function_unit "mult" 1 1
   (and (eq_attr "type" "fmul")
-       (and (eq_attr "mode" "DF") (eq_attr "cpu" "!r3000,r3900,r6000,r4300,r5000")))
+       (and (eq_attr "mode" "DF") (eq_attr "cpu" "!r3000,r3900,r6000,allegrex2,allegrex3,allegrex31,r4300,r5000")))
   8 0)
 
 (define_function_unit "mult" 1 1
@@ -409,7 +476,7 @@
 (define_function_unit "divide" 1 1
   (and (eq_attr "type" "fdiv")
        (and (eq_attr "mode" "SF")
-	    (eq_attr "cpu" "!r3000,r3900,r6000,r4600,r4650,r4300,r5000")))
+	    (eq_attr "cpu" "!r3000,r3900,r6000,allegrex2,allegrex3,allegrex31,r4600,r4650,r4300,r5000")))
   23 0)
 
 (define_function_unit "divide" 1 1
@@ -435,7 +502,7 @@
 (define_function_unit "divide" 1 1
   (and (eq_attr "type" "fdiv")
        (and (eq_attr "mode" "DF")
-	    (eq_attr "cpu" "!r3000,r3900,r6000,r4600,r4650,r4300")))
+	    (eq_attr "cpu" "!r3000,r3900,r6000,allegrex2,allegrex3,allegrex31,r4600,r4650,r4300")))
   36 0)
 
 (define_function_unit "divide" 1 1
@@ -456,7 +523,7 @@
 ;;; ??? Is this number right?
 (define_function_unit "divide" 1 1
   (and (eq_attr "type" "fsqrt,frsqrt")
-       (and (eq_attr "mode" "SF") (eq_attr "cpu" "!r4600,r4650,r4300,r5000")))
+       (and (eq_attr "mode" "SF") (eq_attr "cpu" "!allegrex2,allegrex3,allegrex31,r4600,r4650,r4300,r5000")))
   54 0)
 
 (define_function_unit "divide" 1 1
@@ -472,7 +539,7 @@
 ;;; ??? Is this number right?
 (define_function_unit "divide" 1 1
   (and (eq_attr "type" "fsqrt,frsqrt")
-       (and (eq_attr "mode" "DF") (eq_attr "cpu" "!r4600,r4650,r4300,r5000")))
+       (and (eq_attr "mode" "DF") (eq_attr "cpu" "!allegrex2,allegrex3,allegrex31,r4600,r4650,r4300,r5000")))
   112 0)
 
 (define_function_unit "divide" 1 1
@@ -484,6 +551,59 @@
   (and (eq_attr "type" "fsqrt,frsqrt")
        (and (eq_attr "mode" "DF") (eq_attr "cpu" "r5000")))
   36 0)
+
+;; Allegrex function units.  allegrex2 and allegrex3/allegrex31 differ
+;; in their latencies.  The memory and imuldiv rules are listed above,
+;; after the corresponding rules for the other processors.  The Allegrex
+;; has a single floating point unit for all operations.
+
+(define_function_unit "faddmul" 1 0
+  (and (eq_attr "type" "fcmp") (eq_attr "cpu" "allegrex2"))
+  3 1)
+
+(define_function_unit "faddmul" 1 0
+  (and (eq_attr "type" "fcmp") (eq_attr "cpu" "allegrex3,allegrex31"))
+  4 1)
+
+(define_function_unit "faddmul" 1 0
+  (and (eq_attr "type" "fadd,fmul") (eq_attr "cpu" "allegrex2"))
+  4 1)
+
+(define_function_unit "faddmul" 1 0
+  (and (eq_attr "type" "fadd,fmul") (eq_attr "cpu" "allegrex3,allegrex31"))
+  4 1)
+
+(define_function_unit "faddmul" 1 0
+  (and (eq_attr "type" "fabs,fneg") (eq_attr "cpu" "allegrex2"))
+  4 1)
+
+(define_function_unit "faddmul" 1 0
+  (and (eq_attr "type" "fabs,fneg") (eq_attr "cpu" "allegrex3,allegrex31"))
+  4 1)
+
+(define_function_unit "faddmul" 1 0
+  (and (eq_attr "type" "fdiv") (eq_attr "cpu" "allegrex2"))
+  30 28)
+
+(define_function_unit "faddmul" 1 0
+  (and (eq_attr "type" "fdiv") (eq_attr "cpu" "allegrex3,allegrex31"))
+  30 28)
+
+(define_function_unit "faddmul" 1 0
+  (and (eq_attr "type" "fsqrt") (eq_attr "cpu" "allegrex2"))
+  30 28)
+
+(define_function_unit "faddmul" 1 0
+  (and (eq_attr "type" "fsqrt") (eq_attr "cpu" "allegrex3,allegrex31"))
+  30 28)
+
+(define_function_unit "faddmul" 1 0
+  (and (eq_attr "type" "fcvt") (eq_attr "cpu" "allegrex2"))
+  4 1)
+
+(define_function_unit "faddmul" 1 0
+  (and (eq_attr "type" "fcvt") (eq_attr "cpu" "allegrex3,allegrex31"))
+  4 1)
 
 ;; R4300 FP instruction classes treated as part of the "imuldiv"
 ;; functional unit:
@@ -850,7 +970,7 @@
   [(set (match_operand:DI 0 "register_operand" "=d,&d")
 	(plus:DI (match_operand:DI 1 "register_operand" "0,d")
 		 (match_operand:DI 2 "register_operand" "d,d")))
-   (clobber (match_operand:SI 3 "register_operand" "=d,d"))]
+   (clobber (match_operand:SI 3 "register_operand" "=&d,&d"))]
   "!TARGET_64BIT && !TARGET_DEBUG_G_MODE && !TARGET_MIPS16"
   "*
 {
@@ -1375,7 +1495,7 @@
   [(set (match_operand:DI 0 "register_operand" "=d")
 	(minus:DI (match_operand:DI 1 "register_operand" "d")
 		  (match_operand:DI 2 "register_operand" "d")))
-   (clobber (match_operand:SI 3 "register_operand" "=d"))]
+   (clobber (match_operand:SI 3 "register_operand" "=&d"))]
   "!TARGET_64BIT && !TARGET_DEBUG_G_MODE && !TARGET_MIPS16"
   "sltu\\t%3,%L1,%L2\;subu\\t%L0,%L1,%L2\;subu\\t%M0,%M1,%M2\;subu\\t%M0,%M0,%3"
   [(set_attr "type"	"darith")
@@ -3249,7 +3369,20 @@
 ;; Do not use the integer abs macro instruction, since that signals an
 ;; exception on -2147483648 (sigh).
 
-(define_insn "abssi2"
+(define_expand "abssi2"
+  [(set (match_operand:SI 0 "register_operand" "=d")
+	(abs:SI (match_operand:SI 1 "register_operand" "d")))]
+  "!TARGET_MIPS16"
+  "
+{
+  if (TARGET_ALLEGREX31)
+    emit_insn (gen_abssi2_allegrex (operands[0], operands[1]));
+  else
+    emit_insn (gen_abssi2_internal (operands[0], operands[1]));
+  DONE;
+}")
+
+(define_insn "abssi2_internal"
   [(set (match_operand:SI 0 "register_operand" "=d")
 	(abs:SI (match_operand:SI 1 "register_operand" "d")))]
   "!TARGET_MIPS16"
@@ -3323,7 +3456,20 @@
 ;;  ....................
 ;;
 
-(define_insn "ffssi2"
+(define_expand "ffssi2"
+  [(set (match_operand:SI 0 "register_operand" "=d")
+	(ffs:SI (match_operand:SI 1 "register_operand" "d")))]
+  "!TARGET_MIPS16"
+  "
+{
+  if (TARGET_ALLEGREX)
+    emit_insn (gen_ffssi2_allegrex (operands[0], operands[1]));
+  else
+    emit_insn (gen_ffssi2_internal (operands[0], operands[1]));
+  DONE;
+}")
+
+(define_insn "ffssi2_internal"
   [(set (match_operand:SI 0 "register_operand" "=&d")
 	(ffs:SI (match_operand:SI 1 "register_operand" "d")))
    (clobber (match_scratch:SI 2 "=&d"))
@@ -4386,12 +4532,19 @@ move\\t%0,%z4\\n\\
 
   if (GET_CODE (operands[1]) != MEM)
     {
-      rtx op1   = gen_lowpart (SImode, operands[1]);
-      rtx temp  = gen_reg_rtx (SImode);
-      rtx shift = GEN_INT (16);
+      /* The Allegrex 3.1 has seh.  Without optimization, use the shift
+	 sequence like the other MIPS targets.  */
+      if (TARGET_ALLEGREX31 && optimize)
+	emit_insn (gen_extendhisi2_allegrex (operands[0], operands[1]));
+      else
+	{
+	  rtx op1   = gen_lowpart (SImode, operands[1]);
+	  rtx temp  = gen_reg_rtx (SImode);
+	  rtx shift = GEN_INT (16);
 
-      emit_insn (gen_ashlsi3 (temp, op1, shift));
-      emit_insn (gen_ashrsi3 (operands[0], temp, shift));
+	  emit_insn (gen_ashlsi3 (temp, op1, shift));
+	  emit_insn (gen_ashrsi3 (operands[0], temp, shift));
+	}
       DONE;
     }
 }")
@@ -4448,12 +4601,19 @@ move\\t%0,%z4\\n\\
 
   if (GET_CODE (operands[1]) != MEM)
     {
-      rtx op1   = gen_lowpart (SImode, operands[1]);
-      rtx temp  = gen_reg_rtx (SImode);
-      rtx shift = GEN_INT (24);
+      /* The Allegrex 3.1 has seb.  Without optimization, use the shift
+	 sequence like the other MIPS targets.  */
+      if (TARGET_ALLEGREX31 && optimize)
+	emit_insn (gen_extendqisi2_allegrex (operands[0], operands[1]));
+      else
+	{
+	  rtx op1   = gen_lowpart (SImode, operands[1]);
+	  rtx temp  = gen_reg_rtx (SImode);
+	  rtx shift = GEN_INT (24);
 
-      emit_insn (gen_ashlsi3 (temp, op1, shift));
-      emit_insn (gen_ashrsi3 (operands[0], temp, shift));
+	  emit_insn (gen_ashlsi3 (temp, op1, shift));
+	  emit_insn (gen_ashrsi3 (operands[0], temp, shift));
+	}
       DONE;
     }
 }")
@@ -4854,6 +5014,9 @@ move\\t%0,%z4\\n\\
   "!TARGET_MIPS16"
   "
 {
+  if (TARGET_NO_ULSW)
+    FAIL;
+
   /* If the field does not start on a byte boundary, then fail.  */
   if (INTVAL (operands[3]) % 8 != 0)
     FAIL;
@@ -4897,12 +5060,53 @@ move\\t%0,%z4\\n\\
 ;; Only specify the mode operand 1, the rest are assumed to be word_mode.
 (define_expand "extzv"
   [(set (match_operand 0 "register_operand" "")
+	(zero_extract (match_operand 1 "nonimmediate_operand" "")
+		      (match_operand 2 "immediate_operand" "")
+		      (match_operand 3 "immediate_operand" "")))]
+  "!TARGET_MIPS16"
+  "
+{
+  /* On the Allegrex 3.1 with -mext, fields in registers use ext.
+     Fields in memory use unaligned word loads, which extzv_ulw
+     refuses under -mno-ulsw.  */
+  if (TARGET_ALLEGREX31 && TARGET_EXT)
+    {
+      if (memory_operand (operands[1], QImode))
+	{
+	  emit_insn (gen_extzv_ulw (operands[0], operands[1],
+				    operands[2], operands[3]));
+	  DONE;
+	}
+      else if (register_operand (operands[1], SImode))
+	{
+	  emit_insn (gen_extzv_allegrex_insn (operands[0], operands[1],
+					      operands[2], operands[3]));
+	  DONE;
+	}
+      else
+	FAIL;
+    }
+  else if (memory_operand (operands[1], QImode))
+    {
+      emit_insn (gen_extzv_ulw (operands[0], operands[1],
+				operands[2], operands[3]));
+      DONE;
+    }
+  else
+    FAIL;
+}")
+
+(define_expand "extzv_ulw"
+  [(set (match_operand 0 "register_operand" "")
 	(zero_extract (match_operand:QI 1 "memory_operand" "")
 		      (match_operand 2 "immediate_operand" "")
 		      (match_operand 3 "immediate_operand" "")))]
   "!TARGET_MIPS16"
   "
 {
+  if (TARGET_NO_ULSW)
+    FAIL;
+
   /* If the field does not start on a byte boundary, then fail.  */
   if (INTVAL (operands[3]) % 8 != 0)
     FAIL;
@@ -4945,6 +5149,44 @@ move\\t%0,%z4\\n\\
 
 ;; Only specify the mode operands 0, the rest are assumed to be word_mode.
 (define_expand "insv"
+  [(set (zero_extract (match_operand 0 "register_operand" "")
+		      (match_operand 1 "immediate_operand" "")
+		      (match_operand 2 "immediate_operand" ""))
+	(match_operand 3 "register_operand" ""))]
+  "!TARGET_MIPS16"
+  "
+{
+  /* On the Allegrex 3.1 with -mext, fields in registers use ins.
+     Fields in memory use unaligned word stores, which insv_usw
+     refuses under -mno-ulsw.  */
+  if (TARGET_ALLEGREX31 && TARGET_EXT)
+    {
+      if (memory_operand (operands[0], QImode))
+	{
+	  emit_insn (gen_insv_usw (operands[0], operands[1],
+				   operands[2], operands[3]));
+	  DONE;
+	}
+      else if (register_operand (operands[0], SImode))
+	{
+	  emit_insn (gen_insv_allegrex_insn (operands[0], operands[1],
+					     operands[2], operands[3]));
+	  DONE;
+	}
+      else
+	FAIL;
+    }
+  else if (memory_operand (operands[0], QImode))
+    {
+      emit_insn (gen_insv_usw (operands[0], operands[1],
+			       operands[2], operands[3]));
+      DONE;
+    }
+  else
+    FAIL;
+}")
+
+(define_expand "insv_usw"
   [(set (zero_extract (match_operand:QI 0 "memory_operand" "")
 		      (match_operand 1 "immediate_operand" "")
 		      (match_operand 2 "immediate_operand" ""))
@@ -4952,6 +5194,9 @@ move\\t%0,%z4\\n\\
   "!TARGET_MIPS16"
   "
 {
+  if (TARGET_NO_ULSW)
+    FAIL;
+
   /* If the field does not start on a byte boundary, then fail.  */
   if (INTVAL (operands[2]) % 8 != 0)
     FAIL;
@@ -6486,6 +6731,16 @@ move\\t%0,%z4\\n\\
   [(set_attr "type"	"move")
    (set_attr "mode"	"DI")
    (set_attr "length"	"12")])
+
+;; Load $gp with the address of _gp, for functions that do not trust
+;; the incoming value.
+(define_insn "loadgpsym"
+  [(set (reg:SI 28)
+	(unspec_volatile:SI [(match_operand:SI 0 "" "")] 0))]
+  ""
+  "la\\t$28,_gp"
+  [(set_attr "type"	"move")
+   (set_attr "mode"	"SI")])
 
 ;; Block moves, see mips.c for more details.
 ;; Argument 0 is the destination
@@ -6784,7 +7039,7 @@ move\\t%0,%z4\\n\\
   [(set (match_operand:DI 0 "register_operand" "=&d")
 	(ashift:DI (match_operand:DI 1 "register_operand" "d")
 		   (match_operand:SI 2 "register_operand" "d")))
-   (clobber (match_operand:SI 3 "register_operand" "=d"))]
+   (clobber (match_operand:SI 3 "register_operand" "=&d"))]
   "!TARGET_64BIT && !TARGET_DEBUG_G_MODE && !TARGET_MIPS16"
   "*
 {
@@ -7141,7 +7396,7 @@ move\\t%0,%z4\\n\\
   [(set (match_operand:DI 0 "register_operand" "=&d")
 	(ashiftrt:DI (match_operand:DI 1 "register_operand" "d")
 		     (match_operand:SI 2 "register_operand" "d")))
-   (clobber (match_operand:SI 3 "register_operand" "=d"))]
+   (clobber (match_operand:SI 3 "register_operand" "=&d"))]
   "!TARGET_64BIT && !TARGET_DEBUG_G_MODE && !TARGET_MIPS16"
   "*
 {
@@ -7523,7 +7778,7 @@ move\\t%0,%z4\\n\\
   [(set (match_operand:DI 0 "register_operand" "=&d")
 	(lshiftrt:DI (match_operand:DI 1 "register_operand" "d")
 		     (match_operand:SI 2 "register_operand" "d")))
-   (clobber (match_operand:SI 3 "register_operand" "=d"))]
+   (clobber (match_operand:SI 3 "register_operand" "=&d"))]
   "!TARGET_64BIT && !TARGET_DEBUG_G_MODE && !TARGET_MIPS16"
   "*
 {
@@ -7609,7 +7864,7 @@ move\\t%0,%z4\\n\\
   [(set (match_operand:DI 0 "register_operand" "=d")
 	(lshiftrt:DI (match_operand:DI 1 "register_operand" "d")
 		   (match_operand:SI 2 "small_int" "IJK")))
-   (clobber (match_operand:SI 3 "register_operand" "=d"))]
+   (clobber (match_operand:SI 3 "register_operand" "=&d"))]
   "!TARGET_64BIT && !TARGET_DEBUG_G_MODE && !TARGET_MIPS16
    && (INTVAL (operands[2]) & 63) < 32
    && (INTVAL (operands[2]) & 63) != 0"
@@ -7732,6 +7987,29 @@ move\\t%0,%z4\\n\\
 			       (const_int 4)
 			       (const_int 8))])])
 
+(define_expand "rotlsi3"
+  [(set (match_operand:SI              0 "register_operand" "=d")
+        (rotate:SI (match_operand:SI   1 "register_operand" "d")
+                   (match_operand:SI   2 "arith_operand"    "dn")))]
+  "ISA_HAS_ROTR_SI"
+  "
+{
+  rtx amount;
+
+  /* There is no rotate left instruction; rotate right instead.  */
+  if (GET_CODE (operands[2]) == CONST_INT)
+    amount = GEN_INT ((32 - INTVAL (operands[2])) & 31);
+  else
+    {
+      /* Only the low five bits of the negated amount matter.  */
+      amount = gen_reg_rtx (SImode);
+      emit_insn (gen_negsi2 (amount, operands[2]));
+    }
+
+  emit_insn (gen_rotrsi3 (operands[0], operands[1], amount));
+  DONE;
+}")
+
 (define_insn "rotrsi3"
   [(set (match_operand:SI              0 "register_operand" "=d")
         (rotatert:SI (match_operand:SI 1 "register_operand" "d")
@@ -7739,12 +8017,12 @@ move\\t%0,%z4\\n\\
   "ISA_HAS_ROTR_SI"
   "*
 {
-  if (TARGET_SR71K && GET_CODE (operands[2]) != CONST_INT)
+  if ((TARGET_SR71K || TARGET_ALLEGREX31) && GET_CODE (operands[2]) != CONST_INT)
     return \"rorv\\t%0,%1,%2\";
 
   if ((GET_CODE (operands[2]) == CONST_INT)
       && (INTVAL (operands[2]) < 0 || INTVAL (operands[2]) >= 32))
-    abort ();
+    operands[2] = GEN_INT (INTVAL (operands[2]) & 31);
 
   return \"ror\\t%0,%1,%2\";
 }"
@@ -10679,6 +10957,462 @@ ld\\t%2,%1-%S1(%2)\;daddu\\t%2,%2,$31\\n\\t%*j\\t%2"
   [(set_attr "type"	"nop")
    (set_attr "mode"	"none")])
 
+;;
+;;  ....................
+;;
+;;	ALLEGREX INSTRUCTIONS
+;;
+;;  ....................
+;;
+;; Availability:
+;;
+;;   all Allegrex CPUs	clz, clo, the ceil/floor/round/trunc.w.s
+;;			conversions and ffs; madd/msub need -mmadd
+;;
+;;   Allegrex 3.1 only	min, max, seb, seh (when optimizing), wsbw,
+;;			wsbh, bitrev, ext, ins (register forms need
+;;			-mext), cache, sync, ctz and cto
+;;
+;; Most of these are also reachable through the __builtin_allegrex_*
+;; functions, see mips_expand_builtin in mips.c.  The madd/msub
+;; patterns clobber HI and the HI/LO pair, so that the scheduler sees
+;; the dependence on the multiply unit.  The ffs, ctz, cto, sminsi3
+;; and smaxsi3 expanders at the end of this section are built from
+;; the instructions above.
+;;
+
+;; Multiply-accumulate into HI/LO.  The accumulator is an input operand
+;; tied to the output.
+
+(define_insn "maddsi_allegrex"
+  [(set (match_operand:SI 0 "register_operand" "=l")
+	(plus:SI (mult:SI (match_operand:SI 1 "register_operand" "d")
+			  (match_operand:SI 2 "register_operand" "d"))
+		 (match_operand:SI 3 "register_operand" "0")))
+   (clobber (match_scratch:SI 4 "=h"))
+   (clobber (match_scratch:SI 5 "=a"))]
+  "TARGET_ALLEGREX && TARGET_MADD"
+  "madd\\t%1,%2"
+  [(set_attr "type"	"imadd")
+   (set_attr "mode"	"SI")])
+
+(define_insn "madddi_allegrex"
+  [(set (match_operand:DI 0 "register_operand" "=x")
+	(plus:DI (mult:DI (match_operator:DI 3 "extend_operator"
+			   [(match_operand:SI 1 "register_operand" "d")])
+			  (match_operator:DI 4 "extend_operator"
+			   [(match_operand:SI 2 "register_operand" "d")]))
+		 (match_operand:DI 5 "register_operand" "0")))]
+  "TARGET_ALLEGREX && TARGET_MADD"
+  "*
+{
+  if (GET_CODE (operands[3]) == SIGN_EXTEND)
+    return \"madd\\t%1,%2\";
+  else
+    return \"maddu\\t%1,%2\";
+}"
+  [(set_attr "type"	"imadd")
+   (set_attr "mode"	"DI")])
+
+(define_insn "msubsi_allegrex"
+  [(set (match_operand:SI 0 "register_operand" "=l")
+	(minus:SI (match_operand:SI 1 "register_operand" "0")
+		  (mult:SI (match_operand:SI 2 "register_operand" "d")
+			   (match_operand:SI 3 "register_operand" "d"))))
+   (clobber (match_scratch:SI 4 "=h"))
+   (clobber (match_scratch:SI 5 "=a"))]
+  "TARGET_ALLEGREX && TARGET_MADD"
+  "msub\\t%2,%3"
+  [(set_attr "type"	"imadd")
+   (set_attr "mode"	"SI")])
+
+(define_insn "msubdi_allegrex"
+  [(set (match_operand:DI 0 "register_operand" "=x")
+	(minus:DI (match_operand:DI 1 "register_operand" "0")
+		  (mult:DI (match_operator:DI 4 "extend_operator"
+			    [(match_operand:SI 2 "register_operand" "d")])
+			   (match_operator:DI 5 "extend_operator"
+			    [(match_operand:SI 3 "register_operand" "d")]))))]
+  "TARGET_ALLEGREX && TARGET_MADD"
+  "*
+{
+  if (GET_CODE (operands[3]) == SIGN_EXTEND)
+    return \"msub\\t%1,%2\";
+  else
+    return \"msubu\\t%1,%2\";
+}"
+  [(set_attr "type"	"imadd")
+   (set_attr "mode"	"SI")])
+
+;; Count leading zeros/ones.
+
+(define_insn "clzsi2_allegrex"
+  [(set (match_operand:SI 0 "register_operand" "=d")
+	(unspec:SI [(match_operand:SI 1 "register_operand" "d")]
+		   UNSPEC_CLZ))]
+  "TARGET_ALLEGREX"
+  "clz\\t%0,%1"
+  [(set_attr "type"	"arith")
+   (set_attr "mode"	"SI")])
+
+(define_insn "closi2_allegrex"
+  [(set (match_operand:SI 0 "register_operand" "=d")
+	(unspec:SI [(match_operand:SI 1 "register_operand" "d")]
+		   UNSPEC_CLO))]
+  "TARGET_ALLEGREX"
+  "clo\\t%0,%1"
+  [(set_attr "type"	"arith")
+   (set_attr "mode"	"SI")])
+
+;; Minimum/maximum.
+
+(define_insn "sminsi3_allegrex"
+  [(set (match_operand:SI 0 "register_operand" "=d")
+	(smin:SI (match_operand:SI 1 "register_operand" "d")
+		 (match_operand:SI 2 "register_operand" "d")))]
+  "TARGET_ALLEGREX31"
+  "min\\t%0,%1,%2"
+  [(set_attr "type"	"move")
+   (set_attr "mode"	"SI")])
+
+(define_insn "smaxsi3_allegrex"
+  [(set (match_operand:SI 0 "register_operand" "=d")
+	(smax:SI (match_operand:SI 1 "register_operand" "d")
+		 (match_operand:SI 2 "register_operand" "d")))]
+  "TARGET_ALLEGREX31"
+  "max\\t%0,%1,%2"
+  [(set_attr "type"	"move")
+   (set_attr "mode"	"SI")])
+
+;; Sign extension.
+
+(define_insn "extendhisi2_allegrex"
+  [(set (match_operand:SI 0 "register_operand" "=d")
+	(sign_extend:SI (match_operand:HI 1 "register_operand" "d")))]
+  "TARGET_ALLEGREX31 && optimize"
+  "seh\\t%0,%1"
+  [(set_attr "type"	"arith")
+   (set_attr "mode"	"SI")])
+
+(define_insn "extendqisi2_allegrex"
+  [(set (match_operand:SI 0 "register_operand" "=d")
+	(sign_extend:SI (match_operand:QI 1 "register_operand" "d")))]
+  "TARGET_ALLEGREX31 && optimize"
+  "seb\\t%0,%1"
+  [(set_attr "type"	"arith")
+   (set_attr "mode"	"SI")])
+
+;; Byte/bit reordering.
+
+(define_insn "wsbwsi2_allegrex"
+  [(set (match_operand:SI 0 "register_operand" "=d")
+	(unspec:SI [(match_operand:SI 1 "register_operand" "d")]
+		   UNSPEC_WSBW))]
+  "TARGET_ALLEGREX31"
+  "wsbw\\t%0,%1"
+  [(set_attr "type"	"arith")
+   (set_attr "mode"	"SI")])
+
+(define_insn "wsbhsi2_allegrex"
+  [(set (match_operand:SI 0 "register_operand" "=d")
+	(unspec:SI [(match_operand:SI 1 "register_operand" "d")]
+		   UNSPEC_WSBH))]
+  "TARGET_ALLEGREX31"
+  "wsbh\\t%0,%1"
+  [(set_attr "type"	"arith")
+   (set_attr "mode"	"SI")])
+
+(define_insn "bitrevsi2_allegrex"
+  [(set (match_operand:SI 0 "register_operand" "=d")
+	(unspec:SI [(match_operand:SI 1 "register_operand" "d")]
+		   UNSPEC_BITREV))]
+  "TARGET_ALLEGREX31"
+  "bitrev\\t%0,%1"
+  [(set_attr "type"	"arith")
+   (set_attr "mode"	"SI")])
+
+;; Bit field extract/insert.
+
+(define_insn "extzv_allegrex"
+  [(set (match_operand:SI 0 "register_operand" "=d")
+	(unspec:SI [(match_operand:SI 1 "register_operand" "d")
+		    (match_operand:SI 2 "const_int_operand" "")
+		    (match_operand:SI 3 "const_int_operand" "")]
+		   UNSPEC_EXT))]
+  "TARGET_ALLEGREX31"
+  "*
+{
+  /* ext rt,rs,pos,size: the field must lie within the register.  */
+  if (GET_CODE (operands[2]) != CONST_INT || GET_CODE (operands[3]) != CONST_INT)
+    abort ();
+  if ((unsigned HOST_WIDE_INT) (INTVAL (operands[3]) - 1) > 31)
+    abort ();
+  if ((unsigned HOST_WIDE_INT) INTVAL (operands[2]) > 31)
+    abort ();
+  if ((unsigned HOST_WIDE_INT) (INTVAL (operands[2]) + INTVAL (operands[3]) - 1)
+      > 31)
+    abort ();
+  return \"ext\\t%0,%1,%2,%3\";
+}"
+  [(set_attr "type"	"arith")
+   (set_attr "mode"	"SI")])
+
+(define_insn "extzv_allegrex_insn"
+  [(set (match_operand:SI 0 "register_operand" "=d")
+	(zero_extract:SI (match_operand:SI 1 "register_operand" "d")
+			 (match_operand:SI 2 "const_int_operand" "")
+			 (match_operand:SI 3 "const_int_operand" "")))]
+  "TARGET_ALLEGREX31 && TARGET_EXT"
+  "*
+{
+  /* As extzv_allegrex; zero_extract has the size before the
+     position.  */
+  if (GET_CODE (operands[2]) != CONST_INT || GET_CODE (operands[3]) != CONST_INT)
+    abort ();
+  if ((unsigned HOST_WIDE_INT) (INTVAL (operands[2]) - 1) > 31)
+    abort ();
+  if ((unsigned HOST_WIDE_INT) INTVAL (operands[3]) > 31)
+    abort ();
+  if ((unsigned HOST_WIDE_INT) (INTVAL (operands[2]) + INTVAL (operands[3]) - 1)
+      > 31)
+    abort ();
+  return \"ext\\t%0,%1,%3,%2\";
+}"
+  [(set_attr "type"	"arith")
+   (set_attr "mode"	"SI")])
+
+(define_insn "insv_allegrex"
+  [(set (match_operand:SI 0 "register_operand" "+d,d,d")
+	(unspec:SI [(match_operand:SI 1 "register_operand" "0,d,d")
+		    (match_operand:SI 2 "arith_operand" "d,dJ,0")
+		    (match_operand:SI 3 "const_int_operand" "")
+		    (match_operand:SI 4 "const_int_operand" "")]
+		   UNSPEC_INS))
+   (clobber (match_scratch:SI 5 "=&d,d,d"))]
+  "TARGET_ALLEGREX31"
+  "*
+{
+  /* ins rt,rs,pos,size inserts the low SIZE bits of rs at POS.
+     Operand 1 is the value the field is inserted into.  */
+  if (GET_CODE (operands[3]) != CONST_INT || GET_CODE (operands[4]) != CONST_INT)
+    abort ();
+  if ((unsigned HOST_WIDE_INT) (INTVAL (operands[4]) - 1) > 31)
+    abort ();
+  if ((unsigned HOST_WIDE_INT) INTVAL (operands[3]) > 31)
+    abort ();
+  if ((unsigned HOST_WIDE_INT) (INTVAL (operands[3]) + INTVAL (operands[4]) - 1)
+      > 31)
+    abort ();
+  if (GET_CODE (operands[2]) == CONST_INT)
+    {
+      /* Operand 2 can only be zero (constraint J).  */
+      if (INTVAL (operands[2]) != 0)
+	abort ();
+      output_asm_insn (\"ins\\t%0,$0,%3,%4\", operands);
+    }
+  else if (REGNO (operands[0]) == REGNO (operands[1]))
+    output_asm_insn (\"ins\\t%0,%2,%3,%4\", operands);
+  else if (REGNO (operands[0]) != REGNO (operands[2]))
+    {
+      output_asm_insn (\"move\\t%0,%1\", operands);
+      output_asm_insn (\"ins\\t%0,%2,%3,%4\", operands);
+    }
+  else
+    {
+      output_asm_insn (\"move\\t%5,%0\", operands);
+      output_asm_insn (\"move\\t%0,%1\", operands);
+      output_asm_insn (\"ins\\t%0,%5,%3,%4\", operands);
+    }
+  return \"\";
+}"
+  [(set_attr "type"	"move")
+   (set_attr "mode"	"SI")
+   (set_attr "length"	"4,8,12")])
+
+(define_insn "insv_allegrex_insn"
+  [(set (zero_extract:SI (match_operand:SI 0 "register_operand" "+d")
+			 (match_operand:SI 1 "const_int_operand" "")
+			 (match_operand:SI 2 "const_int_operand" ""))
+	(match_operand:SI 3 "register_operand" "d"))]
+  "TARGET_ALLEGREX31 && TARGET_EXT"
+  "*
+{
+  /* As insv_allegrex, for the canonical zero_extract form: operand 1
+     is the size, operand 2 the position and operand 3 the value.  The
+     register is updated in place, so no copies are needed.  */
+  if (GET_CODE (operands[1]) != CONST_INT || GET_CODE (operands[2]) != CONST_INT)
+    abort ();
+  if ((unsigned HOST_WIDE_INT) (INTVAL (operands[1]) - 1) > 31)
+    abort ();
+  if ((unsigned HOST_WIDE_INT) INTVAL (operands[2]) > 31)
+    abort ();
+  if ((unsigned HOST_WIDE_INT) (INTVAL (operands[1]) + INTVAL (operands[2]) - 1)
+      > 31)
+    abort ();
+  return \"ins\\t%0,%3,%2,%1\";
+}"
+  [(set_attr "type"	"move")
+   (set_attr "mode"	"SI")])
+
+;; Cache control and synchronization.
+
+(define_insn "cache_allegrex"
+  [(unspec_volatile [(match_operand:SI 0 "const_int_operand" "")
+		     (match_operand:SI 1 "register_operand" "d")]
+		    UNSPEC_CACHE)]
+  "TARGET_ALLEGREX31"
+  "*
+{
+  /* The cache operation is a five bit field of the instruction.  */
+  if (GET_CODE (operands[0]) == CONST_INT
+      && (unsigned HOST_WIDE_INT) INTVAL (operands[0]) > 31)
+    abort ();
+  return \"cache\\t%0,0(%1)\";
+}"
+  [(set_attr "type"	"arith")
+   (set_attr "mode"	"SI")])
+
+(define_insn "sync_allegrex"
+  [(unspec_volatile [(const_int 0)] UNSPEC_SYNC)]
+  "TARGET_ALLEGREX31"
+  "sync"
+  [(set_attr "type"	"arith")
+   (set_attr "mode"	"SI")])
+
+;; Single precision float to integer conversions with explicit rounding.
+
+(define_insn "ceilsfsi2_allegrex"
+  [(set (match_operand:SI 0 "register_operand" "=f")
+	(unspec:SI [(match_operand:SF 1 "register_operand" "f")]
+		   UNSPEC_CEIL_W_S))]
+  "TARGET_HARD_FLOAT && TARGET_ALLEGREX"
+  "ceil.w.s\\t%0,%1"
+  [(set_attr "type"	"fcvt")
+   (set_attr "mode"	"SF")])
+
+(define_insn "floorsfsi2_allegrex"
+  [(set (match_operand:SI 0 "register_operand" "=f")
+	(unspec:SI [(match_operand:SF 1 "register_operand" "f")]
+		   UNSPEC_FLOOR_W_S))]
+  "TARGET_HARD_FLOAT && TARGET_ALLEGREX"
+  "floor.w.s\\t%0,%1"
+  [(set_attr "type"	"fcvt")
+   (set_attr "mode"	"SF")])
+
+(define_insn "roundsfsi2_allegrex"
+  [(set (match_operand:SI 0 "register_operand" "=f")
+	(unspec:SI [(match_operand:SF 1 "register_operand" "f")]
+		   UNSPEC_ROUND_W_S))]
+  "TARGET_HARD_FLOAT && TARGET_ALLEGREX"
+  "round.w.s\\t%0,%1"
+  [(set_attr "type"	"fcvt")
+   (set_attr "mode"	"SF")])
+
+(define_insn "truncsfsi2_allegrex"
+  [(set (match_operand:SI 0 "register_operand" "=f")
+	(unspec:SI [(match_operand:SF 1 "register_operand" "f")]
+		   UNSPEC_TRUNC_W_S))]
+  "TARGET_HARD_FLOAT && TARGET_ALLEGREX"
+  "trunc.w.s\\t%0,%1"
+  [(set_attr "type"	"fcvt")
+   (set_attr "mode"	"SF")])
+
+;; Expanders built from the instructions above.
+
+(define_expand "ffssi2_allegrex"
+  [(set (match_operand:SI 0 "register_operand" "=d")
+	(ffs:SI (match_operand:SI 1 "register_operand" "d")))]
+  "TARGET_ALLEGREX"
+  "
+{
+  rtx neg  = gen_reg_rtx (SImode);
+  rtx bit  = gen_reg_rtx (SImode);
+  rtx clz  = gen_reg_rtx (SImode);
+  rtx nclz = gen_reg_rtx (SImode);
+  /* ffs (x) = 32 - clz (x & -x) */
+  emit_insn (gen_negsi2 (neg, operands[1]));
+  emit_insn (gen_andsi3 (bit, operands[1], neg));
+  emit_insn (gen_clzsi2_allegrex (clz, bit));
+  emit_insn (gen_negsi2 (nclz, clz));
+  emit_insn (gen_addsi3 (operands[0], nclz, GEN_INT (32)));
+  DONE;
+}")
+
+(define_expand "ctzsi2_allegrex"
+  [(set (match_operand:SI 0 "register_operand" "=d")
+	(unspec:SI [(match_operand:SI 1 "register_operand" "d")]
+		   UNSPEC_CLZ))]
+  "TARGET_ALLEGREX31"
+  "
+{
+  rtx rev = gen_reg_rtx (SImode);
+
+  emit_insn (gen_bitrevsi2_allegrex (rev, operands[1]));
+  emit_insn (gen_clzsi2_allegrex (operands[0], rev));
+  DONE;
+}")
+
+(define_expand "ctosi2_allegrex"
+  [(set (match_operand:SI 0 "register_operand" "=d")
+	(unspec:SI [(match_operand:SI 1 "register_operand" "d")]
+		   UNSPEC_CLO))]
+  "TARGET_ALLEGREX31"
+  "
+{
+  rtx rev = gen_reg_rtx (SImode);
+
+  emit_insn (gen_bitrevsi2_allegrex (rev, operands[1]));
+  emit_insn (gen_closi2_allegrex (operands[0], rev));
+  DONE;
+}")
+
+(define_expand "sminsi3"
+  [(set (match_operand:SI 0 "register_operand" "=d")
+	(smin:SI (match_operand:SI 1 "register_operand" "d")
+		 (match_operand:SI 2 "register_operand" "d")))]
+  ""
+  "
+{
+  if (!TARGET_ALLEGREX31)
+    FAIL;
+
+  emit_insn (gen_sminsi3_allegrex (operands[0], operands[1], operands[2]));
+  DONE;
+}")
+
+(define_expand "smaxsi3"
+  [(set (match_operand:SI 0 "register_operand" "=d")
+	(smax:SI (match_operand:SI 1 "register_operand" "d")
+		 (match_operand:SI 2 "register_operand" "d")))]
+  ""
+  "
+{
+  if (!TARGET_ALLEGREX31)
+    FAIL;
+
+  emit_insn (gen_smaxsi3_allegrex (operands[0], operands[1], operands[2]));
+  DONE;
+}")
+
+;; Absolute value as the maximum of the value and its negation.  This
+;; avoids the branch of abssi2_internal, and the integer abs macro
+;; instruction, which signals an exception on -2147483648 (see
+;; above).  The result for -2147483648 is -2147483648, as with
+;; abssi2_internal.
+
+(define_expand "abssi2_allegrex"
+  [(set (match_operand:SI 0 "register_operand" "=d")
+	(abs:SI (match_operand:SI 1 "register_operand" "d")))]
+  "TARGET_ALLEGREX31"
+  "
+{
+  rtx neg = gen_reg_rtx (SImode);
+
+  emit_insn (gen_negsi2 (neg, operands[1]));
+  emit_insn (gen_smaxsi3_allegrex (operands[0], operands[1], neg));
+  DONE;
+}")
+
 ;; The MIPS chip does not seem to require stack probes.
 ;;
 ;; (define_expand "probe"
@@ -10893,6 +11627,10 @@ ld\\t%2,%1-%S1(%2)\;daddu\\t%2,%2,$31\\n\\t%*j\\t%2"
   "ISA_HAS_CONDMOVE || ISA_HAS_INT_CONDMOVE"
   "
 {
+  /* The Allegrex only has integer conditional moves.  */
+  if (TARGET_ALLEGREX31 && GET_MODE (branch_cmp[0]) != SImode)
+    FAIL;
+
   gen_conditional_move (operands);
   DONE;
 }")

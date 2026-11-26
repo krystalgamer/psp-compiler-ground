@@ -43,6 +43,7 @@ Boston, MA 02111-1307, USA.  */
 #include "tree.h"
 #include "function.h"
 #include "expr.h"
+#include "optabs.h"
 #include "flags.h"
 #include "reload.h"
 #include "output.h"
@@ -90,6 +91,10 @@ static int mips16_simple_memory_operand		PARAMS ((rtx, rtx,
 							enum machine_mode));
 static int m16_check_op				PARAMS ((rtx, int, int, int));
 static void block_move_loop			PARAMS ((rtx, rtx,
+							 unsigned int,
+							 int,
+							 rtx, rtx));
+static void block_move_loop_allegrex		PARAMS ((rtx, rtx,
 							 unsigned int,
 							 int,
 							 rtx, rtx));
@@ -153,6 +158,8 @@ static void mips_select_rtx_section PARAMS ((enum machine_mode, rtx,
 					     unsigned HOST_WIDE_INT));
 static int mips_use_dfa_pipeline_interface      PARAMS ((void));
 static void mips_encode_section_info		PARAMS ((tree, int));
+static tree mips_handle_gp_safe_attribute	PARAMS ((tree *, tree, tree,
+							 int, bool *));
 
 /* Structure to be filled in by compute_frame_size with register
    save masks, and offsets for the current function.  */
@@ -591,6 +598,10 @@ const struct mips_cpu_info mips_cpu_info_table[] = {
 
   /* MIPS II */
   { "r6000", PROCESSOR_R6000, 2 },
+  { "allegrex", PROCESSOR_ALLEGREX31, 2 },
+  { "allegrex2", PROCESSOR_ALLEGREX2, 2 },
+  { "allegrex3", PROCESSOR_ALLEGREX3, 2 },
+  { "allegrex31", PROCESSOR_ALLEGREX31, 2 }, /* = allegrex */
 
   /* MIPS III */
   { "r4000", PROCESSOR_R4000, 3 },
@@ -666,6 +677,14 @@ const struct mips_cpu_info mips_cpu_info_table[] = {
 
 #undef TARGET_ENCODE_SECTION_INFO
 #define TARGET_ENCODE_SECTION_INFO mips_encode_section_info
+
+#undef TARGET_INIT_BUILTINS
+#define TARGET_INIT_BUILTINS mips_init_builtins
+#undef TARGET_EXPAND_BUILTIN
+#define TARGET_EXPAND_BUILTIN mips_expand_builtin
+
+#undef TARGET_ATTRIBUTE_TABLE
+#define TARGET_ATTRIBUTE_TABLE mips_attribute_table
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -3506,8 +3525,11 @@ gen_conditional_move (operands)
     abort ();
 
   cmp_reg = gen_reg_rtx (cmp_mode);
-  emit_insn (gen_rtx_SET (cmp_mode, cmp_reg,
-			  gen_rtx (cmp_code, cmp_mode, op0, op1)));
+  if (cmp_code == XOR && GET_CODE (op1) == CONST_INT && INTVAL (op1) == 0)
+    emit_insn (gen_rtx_SET (cmp_mode, cmp_reg, op0));
+  else
+    emit_insn (gen_rtx_SET (cmp_mode, cmp_reg,
+			    gen_rtx (cmp_code, cmp_mode, op0, op1)));
 
   emit_insn (gen_rtx_SET (op_mode, operands[0],
 			  gen_rtx_IF_THEN_ELSE (op_mode,
@@ -3656,7 +3678,12 @@ mips_set_return_address (address, scratch)
    (4*MAX_MOVE_REGS)+3 cycles, assuming no cache misses.  */
 
 #define MAX_MOVE_REGS 4
-#define MAX_MOVE_BYTES (MAX_MOVE_REGS * UNITS_PER_WORD)
+
+/* Without unaligned word accesses, move in units of the alignment.  */
+#define MAX_MOVE_BYTES							\
+  ((align == 1 && !TARGET_NO_ULSW) ? MAX_MOVE_REGS * UNITS_PER_WORD	\
+   : align < UNITS_PER_WORD ? MAX_MOVE_REGS * align			\
+   : MAX_MOVE_REGS * UNITS_PER_WORD)
 
 static void
 block_move_loop (dest_reg, src_reg, bytes, align, orig_dest, orig_src)
@@ -3675,8 +3702,12 @@ block_move_loop (dest_reg, src_reg, bytes, align, orig_dest, orig_src)
   rtx bytes_rtx;
   int leftover;
 
-  if (bytes < (unsigned)2 * MAX_MOVE_BYTES)
-    abort ();
+  if (TUNE_ALLEGREX && MAX_MOVE_BYTES == MAX_MOVE_REGS * align)
+    {
+      block_move_loop_allegrex (dest_reg, src_reg, bytes, align,
+				orig_dest, orig_src);
+      return;
+    }
 
   leftover = bytes % MAX_MOVE_BYTES;
   bytes -= leftover;
@@ -3685,52 +3716,158 @@ block_move_loop (dest_reg, src_reg, bytes, align, orig_dest, orig_src)
   final_src = gen_reg_rtx (Pmode);
   bytes_rtx = GEN_INT (bytes);
 
-  if (bytes > 0x7fff)
+  if (bytes != 0)
     {
-      if (Pmode == DImode)
+      if (bytes > 0x7fff)
 	{
-	  emit_insn (gen_movdi (final_src, bytes_rtx));
-	  emit_insn (gen_adddi3 (final_src, final_src, src_reg));
+	  if (Pmode == DImode)
+	    {
+	      emit_insn (gen_movdi (final_src, bytes_rtx));
+	      emit_insn (gen_adddi3 (final_src, final_src, src_reg));
+	    }
+	  else
+	    {
+	      emit_insn (gen_movsi (final_src, bytes_rtx));
+	      emit_insn (gen_addsi3 (final_src, final_src, src_reg));
+	    }
 	}
       else
 	{
-	  emit_insn (gen_movsi (final_src, bytes_rtx));
-	  emit_insn (gen_addsi3 (final_src, final_src, src_reg));
+	  if (Pmode == DImode)
+	    emit_insn (gen_adddi3 (final_src, src_reg, bytes_rtx));
+	  else
+	    emit_insn (gen_addsi3 (final_src, src_reg, bytes_rtx));
 	}
-    }
-  else
-    {
+
+      emit_label (label);
+
+      bytes_rtx = GEN_INT (MAX_MOVE_BYTES);
+      emit_insn (gen_movstrsi_internal (dest_mem, src_mem, bytes_rtx,
+					align_rtx));
+
       if (Pmode == DImode)
-	emit_insn (gen_adddi3 (final_src, src_reg, bytes_rtx));
+	{
+	  emit_insn (gen_adddi3 (src_reg, src_reg, bytes_rtx));
+	  emit_insn (gen_adddi3 (dest_reg, dest_reg, bytes_rtx));
+	  emit_insn (gen_cmpdi (src_reg, final_src));
+	}
       else
-	emit_insn (gen_addsi3 (final_src, src_reg, bytes_rtx));
+	{
+	  emit_insn (gen_addsi3 (src_reg, src_reg, bytes_rtx));
+	  emit_insn (gen_addsi3 (dest_reg, dest_reg, bytes_rtx));
+	  emit_insn (gen_cmpsi (src_reg, final_src));
+	}
+
+      emit_jump_insn (gen_bne (label));
     }
-
-  emit_label (label);
-
-  bytes_rtx = GEN_INT (MAX_MOVE_BYTES);
-  emit_insn (gen_movstrsi_internal (dest_mem, src_mem, bytes_rtx, align_rtx));
-
-  if (Pmode == DImode)
-    {
-      emit_insn (gen_adddi3 (src_reg, src_reg, bytes_rtx));
-      emit_insn (gen_adddi3 (dest_reg, dest_reg, bytes_rtx));
-      emit_insn (gen_cmpdi (src_reg, final_src));
-    }
-  else
-    {
-      emit_insn (gen_addsi3 (src_reg, src_reg, bytes_rtx));
-      emit_insn (gen_addsi3 (dest_reg, dest_reg, bytes_rtx));
-      emit_insn (gen_cmpsi (src_reg, final_src));
-    }
-
-  emit_jump_insn (gen_bne (label));
 
   if (leftover)
     emit_insn (gen_movstrsi_internal (dest_mem, src_mem, GEN_INT (leftover),
 				      align_rtx));
 }
-
+
+/* Allegrex version of block_move_loop; hides the load delays.  */
+static void
+block_move_loop_allegrex (dest_reg, src_reg, bytes, align, orig_dest,
+			  orig_src)
+     rtx dest_reg;		/* register holding destination address */
+     rtx src_reg;		/* register holding source address */
+     unsigned int bytes;	/* # bytes to move */
+     int align;			/* alignment */
+     rtx orig_dest;		/* original dest */
+     rtx orig_src;		/* original source for making a reg note */
+{
+  rtx dest_mem = replace_equiv_address (orig_dest, dest_reg);
+  rtx src_mem = replace_equiv_address (orig_src, src_reg);
+  rtx align_rtx = GEN_INT (align);
+  rtx label, final_src;
+  rtx bytes_rtx;
+  rtx regs[MAX_MOVE_REGS];
+  enum machine_mode mode;
+  int leftover;
+
+  leftover = bytes % MAX_MOVE_BYTES;
+  bytes -= leftover;
+
+  if (Pmode == DImode)
+    abort ();
+
+  if (bytes != 0)
+    {
+      label = gen_label_rtx ();
+      final_src = gen_reg_rtx (Pmode);
+      bytes_rtx = GEN_INT (bytes);
+
+      if (bytes > 0x7fff)
+	{
+	  emit_insn (gen_movsi (final_src, bytes_rtx));
+	  emit_insn (gen_addsi3 (final_src, final_src, src_reg));
+	}
+      else
+	emit_insn (gen_addsi3 (final_src, src_reg, bytes_rtx));
+
+      if (align == 4)
+	mode = SImode;
+      else if (align == 2)
+	mode = HImode;
+      else if (align == 1)
+	mode = QImode;
+      else
+	abort ();
+
+      regs[0] = gen_reg_rtx (mode);
+      regs[1] = gen_reg_rtx (mode);
+      regs[2] = gen_reg_rtx (mode);
+      regs[3] = gen_reg_rtx (mode);
+      bytes_rtx = GEN_INT (MAX_MOVE_REGS * align);
+
+      emit_label (label);
+
+      emit_move_insn (regs[0],
+		      gen_rtx_MEM (mode, plus_constant (src_reg, 0)));
+      emit_move_insn (regs[1],
+		      gen_rtx_MEM (mode, plus_constant (src_reg, align)));
+      emit_move_insn (regs[2],
+		      gen_rtx_MEM (mode, plus_constant (src_reg, 2 * align)));
+      emit_move_insn (regs[3],
+		      gen_rtx_MEM (mode, plus_constant (src_reg, 3 * align)));
+      if (TUNE_ALLEGREX2)
+	{
+	  emit_move_insn (gen_rtx_MEM (mode, plus_constant (dest_reg, 0)),
+			  regs[0]);
+	  emit_insn (gen_addsi3 (src_reg, src_reg, bytes_rtx));
+	  emit_move_insn (gen_rtx_MEM (mode, plus_constant (dest_reg, align)),
+			  regs[1]);
+	  emit_insn (gen_addsi3 (dest_reg, dest_reg, bytes_rtx));
+	  emit_move_insn (gen_rtx_MEM (mode,
+				       plus_constant (dest_reg, -2 * align)),
+			  regs[2]);
+	  emit_move_insn (gen_rtx_MEM (mode, plus_constant (dest_reg, -align)),
+			  regs[3]);
+	}
+      else
+	{
+	  emit_move_insn (gen_rtx_MEM (mode, plus_constant (dest_reg, 0)),
+			  regs[0]);
+	  emit_insn (gen_addsi3 (src_reg, src_reg, bytes_rtx));
+	  emit_insn (gen_addsi3 (dest_reg, dest_reg, bytes_rtx));
+	  emit_move_insn (gen_rtx_MEM (mode,
+				       plus_constant (dest_reg, -3 * align)),
+			  regs[1]);
+	  emit_move_insn (gen_rtx_MEM (mode,
+				       plus_constant (dest_reg, -2 * align)),
+			  regs[2]);
+	  emit_move_insn (gen_rtx_MEM (mode, plus_constant (dest_reg, -align)),
+			  regs[3]);
+	}
+      emit_insn (gen_cmpsi (src_reg, final_src));
+      emit_jump_insn (gen_bne (label));
+    }
+  if (leftover)
+    emit_insn (gen_movstrsi_internal (dest_mem, src_mem, GEN_INT (leftover),
+				      align_rtx));
+}
+
 /* Use a library function to move some bytes.  */
 
 static void
@@ -3784,31 +3921,43 @@ expand_block_move (operands)
   if (constp && bytes == 0)
     return;
 
-  if (align > (unsigned) UNITS_PER_WORD)
-    align = UNITS_PER_WORD;
-
   /* Move the address into scratch registers.  */
   dest_reg = copy_addr_to_reg (XEXP (orig_dest, 0));
   src_reg  = copy_addr_to_reg (XEXP (orig_src, 0));
 
-  if (TARGET_MEMCPY)
-    block_move_call (dest_reg, src_reg, bytes_rtx);
+  if (TARGET_MEMCPY || ! constp)
+    {
+      block_move_call (dest_reg, src_reg, bytes_rtx);
+      return;
+    }
 
-  else if (constp && bytes <= (unsigned)2 * MAX_MOVE_BYTES
-	   && align == (unsigned) UNITS_PER_WORD)
-    move_by_pieces (orig_dest, orig_src, bytes, align * BITS_PER_WORD);
+  /* Only constant sizes are expanded inline from here on.  Clamp the
+     alignment first: MAX_MOVE_BYTES depends on it, and so does the
+     choice between move_by_pieces and the loops below.  */
+  if (align > (unsigned) UNITS_PER_WORD)
+    align = UNITS_PER_WORD;
 
-  else if (constp && bytes <= (unsigned)2 * MAX_MOVE_BYTES)
+  if (bytes <= (unsigned)2 * MAX_MOVE_BYTES
+      && align == (unsigned) UNITS_PER_WORD)
+    {
+      move_by_pieces (orig_dest, orig_src, bytes, align * BITS_PER_WORD);
+      return;
+    }
+
+  else if (bytes <= (unsigned)2 * MAX_MOVE_BYTES)
     emit_insn (gen_movstrsi_internal (replace_equiv_address (orig_dest,
 							     dest_reg),
 				      replace_equiv_address (orig_src,
 							     src_reg),
 				      bytes_rtx, align_rtx));
 
-  else if (constp && align >= (unsigned) UNITS_PER_WORD && optimize)
-    block_move_loop (dest_reg, src_reg, bytes, align, orig_dest, orig_src);
+  else if (align >= (unsigned) UNITS_PER_WORD && optimize)
+    {
+      block_move_loop (dest_reg, src_reg, bytes, align, orig_dest, orig_src);
+      return;
+    }
 
-  else if (constp && optimize)
+  else if (optimize)
     {
       /* If the alignment is not word aligned, generate a test at
 	 runtime, to see whether things wound up aligned, and we
@@ -3817,9 +3966,6 @@ expand_block_move (operands)
       rtx temp = gen_reg_rtx (Pmode);
       rtx aligned_label = gen_label_rtx ();
       rtx join_label = gen_label_rtx ();
-      int leftover = bytes % MAX_MOVE_BYTES;
-
-      bytes -= leftover;
 
       if (Pmode == DImode)
 	{
@@ -3847,14 +3993,8 @@ expand_block_move (operands)
 		       orig_src);
       emit_label (join_label);
 
-      /* Bytes at the end of the loop.  */
-      if (leftover)
-	emit_insn (gen_movstrsi_internal (replace_equiv_address (orig_dest,
-								 dest_reg),
-					  replace_equiv_address (orig_src,
-								 src_reg),
-					  GEN_INT (leftover),
-					  GEN_INT (align)));
+      /* Each loop moves its own trailing bytes, since the number of
+	 bytes moved per iteration depends on the alignment.  */
     }
 
   else
@@ -4071,7 +4211,8 @@ output_block_move (insn, operands, num_regs, move_type)
 
       else if (bytes >= 4
 	       && ! TARGET_SR71K
-	       && ! TARGET_MIPS16)
+	       && ! TARGET_MIPS16
+	       && ! TARGET_NO_ULSW)
 	{
 	  if (BYTES_BIG_ENDIAN)
 	    {
@@ -6718,6 +6859,8 @@ compute_frame_size (size)
   extra_size = MIPS_STACK_ALIGN (((TARGET_ABICALLS) ? UNITS_PER_WORD : 0));
   var_size = MIPS_STACK_ALIGN (size);
   args_size = MIPS_STACK_ALIGN (current_function_outgoing_args_size);
+  if (TARGET_CALLEE_SAVED_GP || mips_cfun_gp_safe_p ())
+    mask = 1L << (PIC_OFFSET_TABLE_REGNUM - GP_REG_FIRST);
 
   /* The MIPS 3.0 linker does not like functions that dynamically
      allocate the stack and have 0 for STACK_DYNAMIC_OFFSET, since it
@@ -6733,6 +6876,12 @@ compute_frame_size (size)
   /* Calculate space needed for gp registers.  */
   for (regno = GP_REG_FIRST; regno <= GP_REG_LAST; regno++)
     {
+      if ((TARGET_CALLEE_SAVED_GP || mips_cfun_gp_safe_p ())
+	  && regno == PIC_OFFSET_TABLE_REGNUM)
+	{
+	  gp_reg_size += UNITS_PER_WORD;
+	  mask |= 1L << (regno - GP_REG_FIRST);
+	}
       /* $18 is a special case on the mips16.  It may be used to call
          a function which returns a floating point value, but it is
          marked in call_used_regs.  $31 is also a special case.  When
@@ -6803,6 +6952,7 @@ compute_frame_size (size)
      call to mcount.  */
   if (total_size == extra_size
       && (mips_abi == ABI_32 || mips_abi == ABI_O64 || mips_abi == ABI_EABI)
+      && ! TARGET_CALLEE_SAVED_GP && ! mips_cfun_gp_safe_p ()
       && ! current_function_profile)
     total_size = extra_size = 0;
   else if (TARGET_ABICALLS)
@@ -7140,6 +7290,9 @@ save_restore_insns (store_p, large_reg, large_offset)
 		mips_emit_frame_related_store (mem_rtx, reg_rtx, gp_offset);
 	      else
 		{
+		  if ((TARGET_CALLEE_SAVED_GP || mips_cfun_gp_safe_p ())
+		      && regno == PIC_OFFSET_TABLE_REGNUM)
+		    emit_insn (gen_blockage ());
 		  emit_move_insn (reg_rtx, mem_rtx);
 		  if (TARGET_MIPS16
 		      && regno != GP_REG_FIRST + 31
@@ -7156,6 +7309,9 @@ save_restore_insns (store_p, large_reg, large_offset)
     }
   else
     base_reg_rtx = 0, base_offset  = 0;
+  if ((TARGET_CALLEE_SAVED_GP || mips_cfun_gp_safe_p ())
+      && store_p && BITSET_P (mask, PIC_OFFSET_TABLE_REGNUM - GP_REG_FIRST))
+    emit_insn (gen_loadgpsym (gen_rtx (SYMBOL_REF, Pmode, "_gp")));
 
   /* Save floating point registers if needed.  */
   if (fmask)
@@ -10748,6 +10904,618 @@ mips_emit_prefetch (operands)
     };
 
     return alt[write][locality];
+}
+
+/* Allegrex built-in functions.  */
+
+struct builtin_description
+{
+  const enum insn_code icode;
+  const char *const name;
+  const enum mips_builtins code;
+};
+
+static const struct builtin_description bdesc[] =
+{
+  { CODE_FOR_clzsi2_allegrex, "__builtin_allegrex_clz", MIPS_BUILTIN_CLZ },
+  { CODE_FOR_closi2_allegrex, "__builtin_allegrex_clo", MIPS_BUILTIN_CLO },
+  { CODE_FOR_ctzsi2_allegrex, "__builtin_allegrex_ctz", MIPS_BUILTIN_CTZ },
+  { CODE_FOR_ctosi2_allegrex, "__builtin_allegrex_cto", MIPS_BUILTIN_CTO },
+  { CODE_FOR_smaxsi3_allegrex, "__builtin_allegrex_max", MIPS_BUILTIN_MAX },
+  { CODE_FOR_sminsi3_allegrex, "__builtin_allegrex_min", MIPS_BUILTIN_MIN },
+  { CODE_FOR_extendqisi2_allegrex, "__builtin_allegrex_seb", MIPS_BUILTIN_SEB },
+  { CODE_FOR_extendhisi2_allegrex, "__builtin_allegrex_seh", MIPS_BUILTIN_SEH },
+  { CODE_FOR_wsbwsi2_allegrex, "__builtin_allegrex_wsbw", MIPS_BUILTIN_WSBW },
+  { CODE_FOR_wsbhsi2_allegrex, "__builtin_allegrex_wsbh", MIPS_BUILTIN_WSBH },
+  { CODE_FOR_bitrevsi2_allegrex, "__builtin_allegrex_bitrev", MIPS_BUILTIN_BITREV },
+  { CODE_FOR_rotrsi3, "__builtin_allegrex_rotr", MIPS_BUILTIN_ROTR },
+  { CODE_FOR_rotlsi3, "__builtin_allegrex_rotl", MIPS_BUILTIN_ROTL },
+  { CODE_FOR_extzv_allegrex, "__builtin_allegrex_ext", MIPS_BUILTIN_EXT },
+  { CODE_FOR_insv_allegrex, "__builtin_allegrex_ins", MIPS_BUILTIN_INS },
+  { CODE_FOR_cache_allegrex, "__builtin_allegrex_cache", MIPS_BUILTIN_CACHE },
+  { CODE_FOR_sync_allegrex, "__builtin_allegrex_sync", MIPS_BUILTIN_SYNC },
+  { CODE_FOR_ceilsfsi2_allegrex, "__builtin_allegrex_ceil_w_s", MIPS_BUILTIN_CEIL_W_S },
+  { CODE_FOR_floorsfsi2_allegrex, "__builtin_allegrex_floor_w_s", MIPS_BUILTIN_FLOOR_W_S },
+  { CODE_FOR_roundsfsi2_allegrex, "__builtin_allegrex_round_w_s", MIPS_BUILTIN_ROUND_W_S },
+  { CODE_FOR_truncsfsi2_allegrex, "__builtin_allegrex_trunc_w_s", MIPS_BUILTIN_TRUNC_W_S },
+  { CODE_FOR_sqrtsf2, "__builtin_allegrex_sqrt_s", MIPS_BUILTIN_SQRT_S }
+};
+
+/* Subroutine of mips_expand_builtin to take care of unop insns.  */
+
+static rtx
+mips_expand_1op_builtin (icode, arglist, target)
+     enum insn_code icode;
+     tree arglist;
+     rtx target;
+{
+  rtx pat;
+  tree arg0 = TREE_VALUE (arglist);
+  rtx op0 = expand_expr (arg0, NULL_RTX, VOIDmode, 0);
+  enum machine_mode tmode = insn_data[icode].operand[0].mode;
+  enum machine_mode mode0 = insn_data[icode].operand[1].mode;
+
+  if (icode == CODE_FOR_nothing)
+    /* Builtin not supported on this processor.  */
+    return 0;
+
+  /* If we got invalid arguments bail out before generating bad rtl.  */
+  if (arg0 == error_mark_node)
+    return const0_rtx;
+
+  if (! target
+      || GET_MODE (target) != tmode
+      || ! (*insn_data[icode].operand[0].predicate) (target, tmode))
+    target = gen_reg_rtx (tmode);
+
+  /* The sign extension builtins take an int argument.  */
+  if (icode == CODE_FOR_extendhisi2_allegrex
+      || icode == CODE_FOR_extendqisi2_allegrex)
+    mode0 = SImode;
+
+  if (! (*insn_data[icode].operand[1].predicate) (op0, mode0))
+    op0 = copy_to_mode_reg (mode0, op0);
+
+  pat = GEN_FCN (icode) (target, op0);
+  if (! pat)
+    return 0;
+  emit_insn (pat);
+  return target;
+}
+
+/* Subroutine of mips_expand_builtin to take care of binop insns.  */
+
+static rtx
+mips_expand_2op_builtin (icode, arglist, target)
+     enum insn_code icode;
+     tree arglist;
+     rtx target;
+{
+  rtx pat;
+  tree arg0 = TREE_VALUE (arglist);
+  tree arg1 = TREE_VALUE (TREE_CHAIN (arglist));
+  rtx op0 = expand_expr (arg0, NULL_RTX, VOIDmode, 0);
+  rtx op1 = expand_expr (arg1, NULL_RTX, VOIDmode, 0);
+  enum machine_mode tmode = insn_data[icode].operand[0].mode;
+  enum machine_mode mode0 = insn_data[icode].operand[1].mode;
+  enum machine_mode mode1 = insn_data[icode].operand[2].mode;
+
+  if (icode == CODE_FOR_nothing)
+    /* Builtin not supported on this processor.  */
+    return 0;
+
+  /* If we got invalid arguments bail out before generating bad rtl.  */
+  if (arg0 == error_mark_node || arg1 == error_mark_node)
+    return const0_rtx;
+
+  if (! target
+      || GET_MODE (target) != tmode
+      || ! (*insn_data[icode].operand[0].predicate) (target, tmode))
+    target = gen_reg_rtx (tmode);
+
+  if (! (*insn_data[icode].operand[1].predicate) (op0, mode0))
+    op0 = copy_to_mode_reg (mode0, op0);
+  if (! (*insn_data[icode].operand[2].predicate) (op1, mode1))
+    op1 = copy_to_mode_reg (mode1, op1);
+
+  pat = GEN_FCN (icode) (target, op0, op1);
+  if (! pat)
+    return 0;
+  emit_insn (pat);
+  return target;
+}
+
+/* Subroutine of mips_expand_builtin to take care of insns with three
+   operands.  */
+
+static rtx
+mips_expand_3op_builtin (icode, arglist, target)
+     enum insn_code icode;
+     tree arglist;
+     rtx target;
+{
+  rtx pat;
+  tree arg0 = TREE_VALUE (arglist);
+  tree arg1 = TREE_VALUE (TREE_CHAIN (arglist));
+  tree arg2 = TREE_VALUE (TREE_CHAIN (TREE_CHAIN (arglist)));
+  rtx op0 = expand_expr (arg0, NULL_RTX, VOIDmode, 0);
+  rtx op1 = expand_expr (arg1, NULL_RTX, VOIDmode, 0);
+  rtx op2 = expand_expr (arg2, NULL_RTX, VOIDmode, 0);
+  enum machine_mode tmode = insn_data[icode].operand[0].mode;
+  enum machine_mode mode0 = insn_data[icode].operand[1].mode;
+  enum machine_mode mode1 = insn_data[icode].operand[2].mode;
+  enum machine_mode mode2 = insn_data[icode].operand[3].mode;
+
+  if (icode == CODE_FOR_nothing)
+    /* Builtin not supported on this processor.  */
+    return 0;
+
+  /* If we got invalid arguments bail out before generating bad rtl.  */
+  if (arg0 == error_mark_node
+      || arg1 == error_mark_node
+      || arg2 == error_mark_node)
+    return const0_rtx;
+
+  if (icode == CODE_FOR_extzv_allegrex)
+    {
+      if (GET_CODE (op1) != CONST_INT)
+	{
+	  error ("argument 2(position) must be a constant");
+	  return const0_rtx;
+	}
+      if (INTVAL (op1) < 0 || INTVAL (op1) > 31)
+	{
+	  error ("bad value (%d) for position", INTVAL (op1));
+	  return const0_rtx;
+	}
+      if (GET_CODE (op2) != CONST_INT)
+	{
+	  error ("argument 3(size) must be a constant");
+	  return const0_rtx;
+	}
+      if (INTVAL (op2) < 1 || INTVAL (op2) > 32
+	  || INTVAL (op1) + INTVAL (op2) > 32)
+	{
+	  error ("bad value (%d) for size", INTVAL (op2));
+	  return const0_rtx;
+	}
+    }
+
+  if (! target
+      || GET_MODE (target) != tmode
+      || ! (*insn_data[icode].operand[0].predicate) (target, tmode))
+    target = gen_reg_rtx (tmode);
+
+  if (! (*insn_data[icode].operand[1].predicate) (op0, mode0))
+    op0 = copy_to_mode_reg (mode0, op0);
+  if (! (*insn_data[icode].operand[2].predicate) (op1, mode1))
+    op1 = copy_to_mode_reg (mode1, op1);
+  if (! (*insn_data[icode].operand[3].predicate) (op2, mode2))
+    op2 = copy_to_mode_reg (mode2, op2);
+
+  pat = GEN_FCN (icode) (target, op0, op1, op2);
+  if (! pat)
+    return 0;
+  emit_insn (pat);
+  return target;
+}
+
+/* Subroutine of mips_expand_builtin to take care of insns with four
+   operands.  */
+
+static rtx
+mips_expand_4op_builtin (icode, arglist, target)
+     enum insn_code icode;
+     tree arglist;
+     rtx target;
+{
+  rtx pat;
+  tree arg0 = TREE_VALUE (arglist);
+  tree arg1 = TREE_VALUE (TREE_CHAIN (arglist));
+  tree arg2 = TREE_VALUE (TREE_CHAIN (TREE_CHAIN (arglist)));
+  tree arg3 = TREE_VALUE (TREE_CHAIN (TREE_CHAIN (TREE_CHAIN (arglist))));
+  rtx op0 = expand_expr (arg0, NULL_RTX, VOIDmode, 0);
+  rtx op1 = expand_expr (arg1, NULL_RTX, VOIDmode, 0);
+  rtx op2 = expand_expr (arg2, NULL_RTX, VOIDmode, 0);
+  rtx op3 = expand_expr (arg3, NULL_RTX, VOIDmode, 0);
+  enum machine_mode tmode = insn_data[icode].operand[0].mode;
+  enum machine_mode mode0 = insn_data[icode].operand[1].mode;
+  enum machine_mode mode1 = insn_data[icode].operand[2].mode;
+  enum machine_mode mode2 = insn_data[icode].operand[3].mode;
+  enum machine_mode mode3 = insn_data[icode].operand[4].mode;
+
+  if (icode == CODE_FOR_nothing)
+    /* Builtin not supported on this processor.  */
+    return 0;
+
+  /* If we got invalid arguments bail out before generating bad rtl.  */
+  if (arg0 == error_mark_node
+      || arg1 == error_mark_node
+      || arg2 == error_mark_node
+      || arg3 == error_mark_node)
+    return const0_rtx;
+
+  if (icode == CODE_FOR_insv_allegrex)
+    {
+      if (GET_CODE (op2) != CONST_INT)
+	{
+	  error ("argument 3(position) must be a constant");
+	  return const0_rtx;
+	}
+      if (INTVAL (op2) < 0 || INTVAL (op2) > 31)
+	{
+	  error ("bad value (%d) for position", INTVAL (op2));
+	  return const0_rtx;
+	}
+      if (GET_CODE (op3) != CONST_INT)
+	{
+	  error ("argument 4(size) must be a constant");
+	  return const0_rtx;
+	}
+      if (INTVAL (op3) < 1 || INTVAL (op3) > 32
+	  || INTVAL (op2) + INTVAL (op3) > 32)
+	{
+	  error ("bad value (%d) for size", INTVAL (op3));
+	  return const0_rtx;
+	}
+    }
+
+  if (! target
+      || GET_MODE (target) != tmode
+      || ! (*insn_data[icode].operand[0].predicate) (target, tmode))
+    target = gen_reg_rtx (tmode);
+
+  if (! (*insn_data[icode].operand[1].predicate) (op0, mode0))
+    op0 = copy_to_mode_reg (mode0, op0);
+  if (! (*insn_data[icode].operand[2].predicate) (op1, mode1))
+    op1 = copy_to_mode_reg (mode1, op1);
+  if (! (*insn_data[icode].operand[3].predicate) (op2, mode2))
+    op2 = copy_to_mode_reg (mode2, op2);
+  if (! (*insn_data[icode].operand[4].predicate) (op3, mode3))
+    op3 = copy_to_mode_reg (mode3, op3);
+
+  pat = GEN_FCN (icode) (target, op0, op1, op2, op3);
+  if (! pat)
+    return 0;
+  emit_insn (pat);
+  return target;
+}
+
+/* Subroutine of mips_expand_builtin to take care of insns with no
+   operands and no result.  */
+
+static rtx
+mips_expand_v0op_builtin (icode, arglist, target)
+     enum insn_code icode;
+     tree arglist ATTRIBUTE_UNUSED;
+     rtx target;
+{
+  rtx pat;
+
+  if (icode == CODE_FOR_nothing)
+    /* Builtin not supported on this processor.  */
+    return 0;
+
+  pat = GEN_FCN (icode) (NULL_RTX);
+  if (! pat)
+    return 0;
+  emit_insn (pat);
+  return target;
+}
+
+/* Subroutine of mips_expand_builtin to take care of insns with two
+   operands and no result.  */
+
+static rtx
+mips_expand_v2op_builtin (icode, arglist, target)
+     enum insn_code icode;
+     tree arglist;
+     rtx target;
+{
+  rtx pat;
+  tree arg0 = TREE_VALUE (arglist);
+  tree arg1 = TREE_VALUE (TREE_CHAIN (arglist));
+  rtx op0 = expand_expr (arg0, NULL_RTX, VOIDmode, 0);
+  rtx op1 = expand_expr (arg1, NULL_RTX, VOIDmode, 0);
+  enum machine_mode mode0 = insn_data[icode].operand[0].mode;
+  enum machine_mode mode1 = insn_data[icode].operand[1].mode;
+
+  if (icode == CODE_FOR_nothing)
+    /* Builtin not supported on this processor.  */
+    return 0;
+
+  /* If we got invalid arguments bail out before generating bad rtl.  */
+  if (arg0 == error_mark_node || arg1 == error_mark_node)
+    return const0_rtx;
+
+  if (icode == CODE_FOR_cache_allegrex)
+    {
+      if (GET_CODE (op0) != CONST_INT
+	  || INTVAL (op0) < 0 || INTVAL (op0) > 31)
+	{
+	  error ("argument 1(code) must be a constant");
+	  return const0_rtx;
+	}
+    }
+
+  if (! (*insn_data[icode].operand[0].predicate) (op0, mode0))
+    op0 = copy_to_mode_reg (mode0, op0);
+  if (! (*insn_data[icode].operand[1].predicate) (op1, mode1))
+    op1 = copy_to_mode_reg (mode1, op1);
+
+  pat = GEN_FCN (icode) (op0, op1);
+  if (! pat)
+    return 0;
+  emit_insn (pat);
+  return target;
+}
+
+/* Set up the Allegrex built-in functions.  */
+
+void
+mips_init_builtins ()
+{
+  const struct builtin_description *d;
+  size_t i;
+  tree endlink = void_list_node;
+
+  tree int_ftype_int
+    = build_function_type (integer_type_node,
+			   tree_cons (NULL_TREE, integer_type_node, endlink));
+  tree int_ftype_short
+    = build_function_type (integer_type_node,
+			   tree_cons (NULL_TREE, short_integer_type_node,
+				      endlink));
+  tree int_ftype_char
+    = build_function_type (integer_type_node,
+			   tree_cons (NULL_TREE, char_type_node, endlink));
+  tree int_ftype_int_int
+    = build_function_type (integer_type_node,
+			   tree_cons (NULL_TREE, integer_type_node,
+				      tree_cons (NULL_TREE, integer_type_node,
+						 endlink)));
+  tree unsigned_ftype_unsigned
+    = build_function_type (unsigned_type_node,
+			   tree_cons (NULL_TREE, unsigned_type_node, endlink));
+  tree unsigned_ftype_unsigned_int
+    = build_function_type (unsigned_type_node,
+			   tree_cons (NULL_TREE, unsigned_type_node,
+				      tree_cons (NULL_TREE, integer_type_node,
+						 endlink)));
+  tree unsigned_ftype_unsigned_int_int
+    = build_function_type (unsigned_type_node,
+			   tree_cons (NULL_TREE, unsigned_type_node,
+				      tree_cons (NULL_TREE, integer_type_node,
+						 tree_cons (NULL_TREE,
+							    integer_type_node,
+							    endlink))));
+  tree unsigned_ftype_unsigned_unsigned_int_int
+    = build_function_type (unsigned_type_node,
+			   tree_cons (NULL_TREE, unsigned_type_node,
+				      tree_cons (NULL_TREE, unsigned_type_node,
+						 tree_cons (NULL_TREE,
+							    integer_type_node,
+							    tree_cons (NULL_TREE,
+								       integer_type_node,
+								       endlink)))));
+  tree void_ftype_int_ptr
+    = build_function_type (void_type_node,
+			   tree_cons (NULL_TREE, integer_type_node,
+				      tree_cons (NULL_TREE, ptr_type_node,
+						 endlink)));
+  tree void_ftype_void
+    = build_function_type (void_type_node, endlink);
+  tree int_ftype_float
+    = build_function_type (integer_type_node,
+			   tree_cons (NULL_TREE, float_type_node, endlink));
+  tree float_ftype_float
+    = build_function_type (float_type_node,
+			   tree_cons (NULL_TREE, float_type_node, endlink));
+
+  for (d = bdesc, i = 0; i < ARRAY_SIZE (bdesc); i++, d++)
+    {
+      switch (d->code)
+	{
+	case MIPS_BUILTIN_CLZ:
+	case MIPS_BUILTIN_CLO:
+	  if (TARGET_ALLEGREX)
+	    builtin_function (d->name, int_ftype_int, d->code,
+			      BUILT_IN_MD, NULL, NULL_TREE);
+	  break;
+
+	case MIPS_BUILTIN_CTZ:
+	case MIPS_BUILTIN_CTO:
+	  if (TARGET_ALLEGREX31)
+	    builtin_function (d->name, int_ftype_int, d->code,
+			      BUILT_IN_MD, NULL, NULL_TREE);
+	  break;
+
+	case MIPS_BUILTIN_MAX:
+	case MIPS_BUILTIN_MIN:
+	  if (TARGET_ALLEGREX31)
+	    builtin_function (d->name, int_ftype_int_int, d->code,
+			      BUILT_IN_MD, NULL, NULL_TREE);
+	  break;
+
+	case MIPS_BUILTIN_SEB:
+	  if (TARGET_ALLEGREX31 && optimize)
+	    builtin_function (d->name, int_ftype_char, d->code,
+			      BUILT_IN_MD, NULL, NULL_TREE);
+	  break;
+
+	case MIPS_BUILTIN_SEH:
+	  if (TARGET_ALLEGREX31 && optimize)
+	    builtin_function (d->name, int_ftype_short, d->code,
+			      BUILT_IN_MD, NULL, NULL_TREE);
+	  break;
+
+	case MIPS_BUILTIN_WSBW:
+	case MIPS_BUILTIN_WSBH:
+	case MIPS_BUILTIN_BITREV:
+	  if (TARGET_ALLEGREX31)
+	    builtin_function (d->name, unsigned_ftype_unsigned, d->code,
+			      BUILT_IN_MD, NULL, NULL_TREE);
+	  break;
+
+	case MIPS_BUILTIN_ROTR:
+	case MIPS_BUILTIN_ROTL:
+	  if (TARGET_ALLEGREX31)
+	    builtin_function (d->name, unsigned_ftype_unsigned_int, d->code,
+			      BUILT_IN_MD, NULL, NULL_TREE);
+	  break;
+
+	case MIPS_BUILTIN_EXT:
+	  if (TARGET_ALLEGREX31)
+	    builtin_function (d->name, unsigned_ftype_unsigned_int_int,
+			      d->code, BUILT_IN_MD, NULL, NULL_TREE);
+	  break;
+
+	case MIPS_BUILTIN_INS:
+	  if (TARGET_ALLEGREX31)
+	    builtin_function (d->name,
+			      unsigned_ftype_unsigned_unsigned_int_int,
+			      d->code, BUILT_IN_MD, NULL, NULL_TREE);
+	  break;
+
+	case MIPS_BUILTIN_CACHE:
+	  if (TARGET_ALLEGREX)
+	    builtin_function (d->name, void_ftype_int_ptr, d->code,
+			      BUILT_IN_MD, NULL, NULL_TREE);
+	  break;
+
+	case MIPS_BUILTIN_SYNC:
+	  if (TARGET_ALLEGREX31)
+	    builtin_function (d->name, void_ftype_void, d->code,
+			      BUILT_IN_MD, NULL, NULL_TREE);
+	  break;
+
+	case MIPS_BUILTIN_CEIL_W_S:
+	case MIPS_BUILTIN_FLOOR_W_S:
+	case MIPS_BUILTIN_ROUND_W_S:
+	case MIPS_BUILTIN_TRUNC_W_S:
+	  if (TARGET_ALLEGREX)
+	    builtin_function (d->name, int_ftype_float, d->code,
+			      BUILT_IN_MD, NULL, NULL_TREE);
+	  break;
+
+	case MIPS_BUILTIN_SQRT_S:
+	  if (TARGET_ALLEGREX)
+	    builtin_function (d->name, float_ftype_float, d->code,
+			      BUILT_IN_MD, NULL, NULL_TREE);
+	  break;
+
+	default:
+	  break;
+	}
+    }
+}
+
+/* Expand an expression EXP that calls a built-in function,
+   with result going to TARGET if that's convenient
+   (and in mode MODE if that's convenient).
+   SUBTARGET may be used as the target for computing one of EXP's operands.
+   IGNORE is nonzero if the value is to be ignored.  */
+
+rtx
+mips_expand_builtin (exp, target, subtarget, mode, ignore)
+     tree exp;
+     rtx target;
+     rtx subtarget ATTRIBUTE_UNUSED;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
+     int ignore ATTRIBUTE_UNUSED;
+{
+  const struct builtin_description *d;
+  size_t i;
+  tree fndecl = TREE_OPERAND (TREE_OPERAND (exp, 0), 0);
+  tree arglist = TREE_OPERAND (exp, 1);
+  unsigned int fcode = DECL_FUNCTION_CODE (fndecl);
+
+  for (d = bdesc, i = 0; i < ARRAY_SIZE (bdesc); i++, d++)
+    if (d->code == fcode)
+      switch (d->code)
+	{
+	case MIPS_BUILTIN_SYNC:
+	  return mips_expand_v0op_builtin (d->icode, arglist, target);
+
+	case MIPS_BUILTIN_MAX:
+	case MIPS_BUILTIN_MIN:
+	case MIPS_BUILTIN_ROTR:
+	case MIPS_BUILTIN_ROTL:
+	  return mips_expand_2op_builtin (d->icode, arglist, target);
+
+	case MIPS_BUILTIN_EXT:
+	  return mips_expand_3op_builtin (d->icode, arglist, target);
+
+	case MIPS_BUILTIN_INS:
+	  return mips_expand_4op_builtin (d->icode, arglist, target);
+
+	case MIPS_BUILTIN_CACHE:
+	  return mips_expand_v2op_builtin (d->icode, arglist, target);
+
+	case MIPS_BUILTIN_CLZ:
+	case MIPS_BUILTIN_CLO:
+	case MIPS_BUILTIN_CTZ:
+	case MIPS_BUILTIN_CTO:
+	case MIPS_BUILTIN_SEB:
+	case MIPS_BUILTIN_SEH:
+	case MIPS_BUILTIN_WSBW:
+	case MIPS_BUILTIN_WSBH:
+	case MIPS_BUILTIN_BITREV:
+	case MIPS_BUILTIN_CEIL_W_S:
+	case MIPS_BUILTIN_FLOOR_W_S:
+	case MIPS_BUILTIN_ROUND_W_S:
+	case MIPS_BUILTIN_TRUNC_W_S:
+	case MIPS_BUILTIN_SQRT_S:
+	  return mips_expand_1op_builtin (d->icode, arglist, target);
+
+	default:
+	  if (! DECL_ASSEMBLER_NAME_SET_P (fndecl))
+	    error ("built-in function `%s' not currently supported",
+		   IDENTIFIER_POINTER (DECL_NAME (fndecl)));
+	  break;
+	}
+
+  return 0;
+}
+
+/* Table of machine attributes.  gp_safe functions save $gp, load it
+   with the address of _gp on entry and restore it on exit.  */
+
+const struct attribute_spec mips_attribute_table[] =
+{
+  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler } */
+  { "gp_safe",   0, 0, true,  false, false, mips_handle_gp_safe_attribute },
+  { NULL,        0, 0, false, false, false, NULL }
+};
+
+/* Handle a "gp_safe" attribute; arguments as in
+   struct attribute_spec.handler.  */
+
+static tree
+mips_handle_gp_safe_attribute (node, name, args, flags, no_add_attrs)
+     tree *node;
+     tree name;
+     tree args ATTRIBUTE_UNUSED;
+     int flags ATTRIBUTE_UNUSED;
+     bool *no_add_attrs;
+{
+  if (TREE_CODE (*node) != FUNCTION_DECL)
+    {
+      warning ("`%s' attribute only applies to functions",
+	       IDENTIFIER_POINTER (name));
+      *no_add_attrs = true;
+    }
+
+  return NULL_TREE;
+}
+
+/* Return true if the current function has the gp_safe attribute.  */
+
+int
+mips_cfun_gp_safe_p ()
+{
+  return lookup_attribute ("gp_safe",
+			   DECL_ATTRIBUTES (current_function_decl)) != NULL_TREE;
 }
 
 

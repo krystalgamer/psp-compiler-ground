@@ -61,6 +61,9 @@ enum processor_type {
   PROCESSOR_R3000,
   PROCESSOR_R3900,
   PROCESSOR_R6000,
+  PROCESSOR_ALLEGREX2,
+  PROCESSOR_ALLEGREX3,
+  PROCESSOR_ALLEGREX31,
   PROCESSOR_R4000,
   PROCESSOR_R4100,
   PROCESSOR_R4111,
@@ -239,6 +242,13 @@ extern void		sbss_section PARAMS ((void));
 					   multiply-add operations.  */
 #define MASK_BRANCHLIKELY  0x02000000   /* Generate Branch Likely
 					   instructions.  */
+#define MASK_CALLEE_SAVED_GP 0x04000000 /* Save and restore $gp like a
+					   callee-saved register.  */
+#define MASK_NO_ULSW	   0x10000000	/* Don't use unaligned load/store
+					   word instructions.  */
+#define MASK_EXT	   0x20000000	/* Use insert/extract instructions.  */
+#define MASK_MADD	   0x40000000	/* Use multiply/add multiply/sub
+					   instructions.  */
 
 					/* Debug switches, not documented */
 #define MASK_DEBUG	0		/* unused */
@@ -331,6 +341,11 @@ extern void		sbss_section PARAMS ((void));
 
 #define TARGET_BRANCHLIKELY	(target_flags & MASK_BRANCHLIKELY)
 
+#define TARGET_NO_ULSW		(target_flags & MASK_NO_ULSW)
+#define TARGET_EXT		(target_flags & MASK_EXT)
+#define TARGET_MADD		(target_flags & MASK_MADD)
+#define TARGET_CALLEE_SAVED_GP	(target_flags & MASK_CALLEE_SAVED_GP)
+
 /* This is true if we must enable the assembly language file switching
    code.  */
 
@@ -365,6 +380,10 @@ extern void		sbss_section PARAMS ((void));
 #define TARGET_MIPS5500             (mips_arch == PROCESSOR_R5500)
 #define TARGET_SB1                  (mips_arch == PROCESSOR_SB1)
 #define TARGET_SR71K                (mips_arch == PROCESSOR_SR71000)
+#define TARGET_ALLEGREX             (mips_arch == PROCESSOR_ALLEGREX2	\
+				     || mips_arch == PROCESSOR_ALLEGREX3 \
+				     || mips_arch == PROCESSOR_ALLEGREX31)
+#define TARGET_ALLEGREX31           (mips_arch == PROCESSOR_ALLEGREX31)
 
 /* Scheduling target defines.  */
 #define TUNE_MIPS3000               (mips_tune == PROCESSOR_R3000)
@@ -376,6 +395,12 @@ extern void		sbss_section PARAMS ((void));
 #define TUNE_MIPS6000               (mips_tune == PROCESSOR_R6000)
 #define TUNE_SB1                    (mips_tune == PROCESSOR_SB1)
 #define TUNE_SR71K                  (mips_tune == PROCESSOR_SR71000)
+#define TUNE_ALLEGREX2              (mips_tune == PROCESSOR_ALLEGREX2)
+#define TUNE_ALLEGREX3              (mips_tune == PROCESSOR_ALLEGREX3)
+#define TUNE_ALLEGREX31             (mips_tune == PROCESSOR_ALLEGREX31)
+#define TUNE_ALLEGREX               (TUNE_ALLEGREX2			\
+				     || TUNE_ALLEGREX3			\
+				     || TUNE_ALLEGREX31)
 
 /* Define preprocessor macros for the -march and -mtune options.
    PREFIX is either _MIPS_ARCH or _MIPS_TUNE, INFO is the selected
@@ -471,6 +496,9 @@ extern void		sbss_section PARAMS ((void));
 								\
       if (TARGET_SINGLE_FLOAT)					\
 	  builtin_define ("__mips_single_float");		\
+								\
+      if (flag_short_double)					\
+	  builtin_define ("__mips_short_double");		\
 								\
       if (TARGET_BIG_ENDIAN)					\
 	{							\
@@ -608,6 +636,18 @@ extern void		sbss_section PARAMS ((void));
      N_("Use multiply accumulate")},					\
   {"no-mad",		 -MASK_MAD,					\
      N_("Don't use multiply accumulate")},				\
+  {"no-ulsw",		  MASK_NO_ULSW,					\
+     N_("Don't use unaligned load/store word instructions")},		\
+  {"ulsw",		 -MASK_NO_ULSW,					\
+     N_("Use unaligned load/store word instructions")},		\
+  {"ext",		  MASK_EXT,					\
+     N_("Use insert extract instructions")},				\
+  {"no-ext",		 -MASK_EXT,					\
+     N_("Don't use insert extract instructions")},			\
+  {"madd",		  MASK_MADD,					\
+     N_("Use multiply/add multiply/sub instructions")},		\
+  {"no-madd",		 -MASK_MADD,					\
+     N_("Don't use multiply/add multiply/sub instructions")},		\
   {"no-fused-madd",       MASK_NO_FUSED_MADD,                           \
      N_("Don't generate fused multiply/add instructions")},		\
   {"fused-madd",         -MASK_NO_FUSED_MADD,                           \
@@ -628,6 +668,10 @@ extern void		sbss_section PARAMS ((void));
       N_("Use Branch Likely instructions, overriding default for arch")}, \
   { "no-branch-likely",  -MASK_BRANCHLIKELY,				\
       N_("Don't use Branch Likely instructions, overriding default for arch")}, \
+  { "callee-saved-gp",    MASK_CALLEE_SAVED_GP,				\
+      N_("Make gp register callee-saved")},				\
+  { "no-callee-saved-gp", -MASK_CALLEE_SAVED_GP,			\
+      N_("Don't make gp register callee-saved")},			\
   {"debug",		  MASK_DEBUG,					\
      NULL},								\
   {"debuga",		  MASK_DEBUG_A,					\
@@ -811,7 +855,7 @@ extern void		sbss_section PARAMS ((void));
 				 && !TARGET_MIPS16)
 
 /* ISA has just the integer condition move instructions (movn,movz) */
-#define ISA_HAS_INT_CONDMOVE     0
+#define ISA_HAS_INT_CONDMOVE     (TARGET_ALLEGREX31)
 
 /* ISA has the mips4 FP condition code instructions: FP-compare to CC,
    branch on CC, and move (both FP and non-FP) on CC.  */
@@ -828,6 +872,7 @@ extern void		sbss_section PARAMS ((void));
 
 /* ISA has conditional trap instructions.  */
 #define ISA_HAS_COND_TRAP	(!ISA_MIPS1				\
+				 && !TARGET_ALLEGREX			\
 				 && !TARGET_MIPS16)
 
 /* ISA has integer multiply-accumulate instructions, madd and msub.  */
@@ -882,6 +927,7 @@ extern void		sbss_section PARAMS ((void));
 #define ISA_HAS_ROTR_SI         (TARGET_MIPS5400                        \
                                  || TARGET_MIPS5500                     \
                                  || TARGET_SR71K                        \
+                                 || TARGET_ALLEGREX31                   \
                                  )
 
 /* ISA has 32-bit rotate right instruction.  */
@@ -1082,7 +1128,7 @@ extern int mips_abi;
 %{membedded-pic} \
 %{mabi=32:-32}%{mabi=n32:-n32}%{mabi=64:-64}%{mabi=n64:-64} \
 %{mabi=eabi} %{mabi=o64} %{!mabi*: %(asm_abi_default_spec)} \
-%{mgp32} %{mgp64} %{march=*} \
+%{mgp32} %{mgp64} %{march=*} %{mulsw} %{mno-ulsw} \
 %(target_asm_spec) \
 %(subtarget_asm_spec)"
 
@@ -1504,7 +1550,9 @@ do {							\
 /* The largest size of value that can be held in floating-point
    registers.  */
 #define UNITS_PER_FPVALUE \
-  (TARGET_SOFT_FLOAT ? 0 : (LONG_DOUBLE_TYPE_SIZE / BITS_PER_UNIT))
+  (TARGET_SOFT_FLOAT ? 0						\
+   : TARGET_ALLEGREX ? 4						\
+   : (LONG_DOUBLE_TYPE_SIZE / BITS_PER_UNIT))
 
 /* The number of bytes in a double.  */
 #define UNITS_PER_DOUBLE (TYPE_PRECISION (double_type_node) / BITS_PER_UNIT)
@@ -1531,7 +1579,9 @@ do {							\
    target machine.  If you don't define this, the default is one
    word.  */
 #define LONG_TYPE_SIZE (TARGET_LONG64 ? 64 : 32)
+#ifndef MAX_LONG_TYPE_SIZE
 #define MAX_LONG_TYPE_SIZE 64
+#endif
 
 /* A C expression for the size in bits of the type `long long' on the
    target machine.  If you don't define this, the default is two
@@ -2004,6 +2054,17 @@ extern char mips_hard_regno_mode_ok[][FIRST_PSEUDO_REGISTER];
 
 #define PIC_FUNCTION_ADDR_REGNUM (GP_REG_FIRST + 25)
 
+/* psp-gcc 1.7.1's mips.h has eleven more lines than this file has
+   without this comment, somewhere between struct mips_cpu_info and
+   enum reg_class.  What they contain is unknown: the only evidence is
+   the DW_AT_decl_line values of the mips.h types (reg_class, mips_args,
+   mips_builtins) in the debug information of the released libgcc.a.
+   This comment and the blank line after it stand in for those lines so
+   that the line numbers, and so libgcc.a, stay identical.  Nothing in
+   the released compilers depends on them; the line numbers of the
+   types above this point already match.  Keep this comment exactly ten
+   lines long.  */
+
 /* Define the classes of registers for register constraints in the
    machine description.  Also define ranges of constants.
 
@@ -2571,7 +2632,8 @@ extern enum reg_class mips_char_to_class[256];
 #define OUTGOING_REG_PARM_STACK_SPACE
 
 #define STACK_BOUNDARY \
-  ((mips_abi == ABI_32 || mips_abi == ABI_O64 || mips_abi == ABI_EABI) \
+  (((mips_abi == ABI_32 || mips_abi == ABI_O64 || mips_abi == ABI_EABI) \
+    && !TARGET_ALLEGREX31)						\
    ? 64 : 128)
 
 /* Make sure 4 words are always allocated on the stack.  */
@@ -2874,7 +2936,8 @@ typedef struct mips_args {
 /* Treat LOC as a byte offset from the stack pointer and round it up
    to the next fully-aligned offset.  */
 #define MIPS_STACK_ALIGN(LOC)						\
-  ((mips_abi == ABI_32 || mips_abi == ABI_O64 || mips_abi == ABI_EABI)	\
+  (((mips_abi == ABI_32 || mips_abi == ABI_O64 || mips_abi == ABI_EABI) \
+    && !TARGET_ALLEGREX31)						\
    ? ((LOC) + 7) & ~7							\
    : ((LOC) + 15) & ~15)
 
@@ -3555,6 +3618,10 @@ typedef struct mips_args {
 	    return COSTS_N_INSNS (2);					\
 	  else if (TUNE_MIPS6000)       				\
 	    return COSTS_N_INSNS (3);					\
+	  else if (TUNE_ALLEGREX2)					\
+	    return COSTS_N_INSNS (4);					\
+	  else if (TUNE_ALLEGREX3 || TUNE_ALLEGREX31)			\
+	    return COSTS_N_INSNS (4);					\
 	  else								\
 	    return COSTS_N_INSNS (6);					\
 	}								\
@@ -3579,6 +3646,10 @@ typedef struct mips_args {
 	  if (TUNE_MIPS3000						\
 	      || TUNE_MIPS3900						\
 	      || TUNE_MIPS5000)						\
+	    return COSTS_N_INSNS (4);					\
+	  else if (TUNE_ALLEGREX2)					\
+	    return COSTS_N_INSNS (4);					\
+	  else if (TUNE_ALLEGREX3 || TUNE_ALLEGREX31)			\
 	    return COSTS_N_INSNS (4);					\
 	  else if (TUNE_MIPS6000                                        \
 		   || TUNE_MIPS5400                                     \
@@ -3606,6 +3677,10 @@ typedef struct mips_args {
 	return COSTS_N_INSNS (12);					\
       else if (TUNE_MIPS3900)						\
 	return COSTS_N_INSNS (2);					\
+      else if (TUNE_ALLEGREX2)						\
+	return COSTS_N_INSNS (4);					\
+      else if (TUNE_ALLEGREX3 || TUNE_ALLEGREX31)			\
+	return COSTS_N_INSNS (5);					\
      else if (TUNE_MIPS5400 || TUNE_MIPS5500)                           \
         return COSTS_N_INSNS ((xmode == DImode) ? 4 : 3);               \
       else if (TUNE_MIPS6000)						\
@@ -3627,6 +3702,10 @@ typedef struct mips_args {
 	    return COSTS_N_INSNS (12);					\
 	  else if (TUNE_MIPS6000)					\
 	    return COSTS_N_INSNS (15);					\
+	  else if (TUNE_ALLEGREX2)					\
+	    return COSTS_N_INSNS (31);					\
+	  else if (TUNE_ALLEGREX3 || TUNE_ALLEGREX31)			\
+	    return COSTS_N_INSNS (16);					\
          else if (TUNE_MIPS5400 || TUNE_MIPS5500)                       \
             return COSTS_N_INSNS (30);                                  \
 	  else								\
@@ -3653,6 +3732,10 @@ typedef struct mips_args {
     if (TUNE_MIPS3000							\
         || TUNE_MIPS3900)						\
       return COSTS_N_INSNS (35);					\
+    else if (TUNE_ALLEGREX2)						\
+      return COSTS_N_INSNS (35);					\
+    else if (TUNE_ALLEGREX3 || TUNE_ALLEGREX31)				\
+      return COSTS_N_INSNS (36);					\
     else if (TUNE_MIPS6000)						\
       return COSTS_N_INSNS (38);					\
     else if (TUNE_MIPS5000)						\
@@ -3761,7 +3844,10 @@ typedef struct mips_args {
 /* ??? Fix this to be right for the R8000.  */
 #define BRANCH_COST							\
   ((! TARGET_MIPS16							\
-    && (TUNE_MIPS4000 || TUNE_MIPS6000))	\
+    && (TUNE_ALLEGREX3 || TUNE_ALLEGREX31))				\
+   ? 3									\
+   : (! TARGET_MIPS16							\
+      && (TUNE_MIPS4000 || TUNE_MIPS6000 || TUNE_ALLEGREX2))		\
    ? 2 : 1)
 
 /* If defined, modifies the length assigned to instruction INSN as a
@@ -4703,3 +4789,27 @@ while (0)
 	" TEXT_SECTION_ASM_OP);
 #endif
 #endif
+enum mips_builtins {
+  MIPS_BUILTIN_CLZ,
+  MIPS_BUILTIN_CLO,
+  MIPS_BUILTIN_CTZ,
+  MIPS_BUILTIN_CTO,
+  MIPS_BUILTIN_MAX,
+  MIPS_BUILTIN_MIN,
+  MIPS_BUILTIN_SEB,
+  MIPS_BUILTIN_SEH,
+  MIPS_BUILTIN_WSBW,
+  MIPS_BUILTIN_WSBH,
+  MIPS_BUILTIN_BITREV,
+  MIPS_BUILTIN_ROTR,
+  MIPS_BUILTIN_ROTL,
+  MIPS_BUILTIN_EXT,
+  MIPS_BUILTIN_INS,
+  MIPS_BUILTIN_CACHE,
+  MIPS_BUILTIN_SYNC,
+  MIPS_BUILTIN_CEIL_W_S,
+  MIPS_BUILTIN_FLOOR_W_S,
+  MIPS_BUILTIN_ROUND_W_S,
+  MIPS_BUILTIN_TRUNC_W_S,
+  MIPS_BUILTIN_SQRT_S
+};

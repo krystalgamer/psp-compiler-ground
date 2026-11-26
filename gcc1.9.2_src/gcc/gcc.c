@@ -3182,6 +3182,37 @@ process_command (argc, argv)
 		  PREFIX_PRIORITY_LAST, 0, NULL, 0);
     }
 
+#ifdef PSP_SDK_HOME_ENV
+  /* Search the PSP SDK directories.  */
+  temp = getenv (PSP_SDK_HOME_ENV);
+  if (temp == NULL)
+    {
+      add_prefix (&include_prefixes, PSP_SDK_HOME_DEFAULT "/include", NULL,
+		  PREFIX_PRIORITY_LAST, 0, NULL, 0);
+      add_prefix (&exec_prefixes, PSP_SDK_HOME_DEFAULT "/bin/", NULL,
+		  PREFIX_PRIORITY_LAST, 0, NULL, 0);
+      add_prefix (&startfile_prefixes, PSP_SDK_HOME_DEFAULT "/lib/", NULL,
+		  PREFIX_PRIORITY_LAST, 0, NULL, 0);
+    }
+  else
+    {
+      char *sdk_dir = (char *) alloca (strlen (temp) + 12);
+
+      strcpy (sdk_dir, temp);
+      strcat (sdk_dir, "/include");
+      add_prefix (&include_prefixes, sdk_dir, NULL,
+		  PREFIX_PRIORITY_LAST, 0, NULL, 0);
+      strcpy (sdk_dir, temp);
+      strcat (sdk_dir, "/bin/");
+      add_prefix (&exec_prefixes, sdk_dir, NULL,
+		  PREFIX_PRIORITY_LAST, 0, NULL, 0);
+      strcpy (sdk_dir, temp);
+      strcat (sdk_dir, "/lib/");
+      add_prefix (&startfile_prefixes, sdk_dir, NULL,
+		  PREFIX_PRIORITY_LAST, 0, NULL, 0);
+    }
+#endif
+
   /* COMPILER_PATH and LIBRARY_PATH have values
      that are lists of directory names with colons.  */
 
@@ -5171,7 +5202,8 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 		  /* Set V after the second period.  */
 		  while (ISDIGIT (*v))
 		    v++;
-		  if ((*v != 0) && (*v != ' ') && (*v != '.') && (*v != '-'))
+		  if ((*v != 0) && (*v != ' ') && (*v != '.') && (*v != '-')
+		      && (*v != '+'))
 		    abort ();
 		  if (*v != 0)
 		    v++;
@@ -5181,7 +5213,8 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 	      q = v;
 	      while (ISDIGIT (*q))
 		q++;
-	      if (*q != 0 && q > v && *q != ' ' && *q != '.' && *q != '-')
+	      if (*q != 0 && q > v && *q != ' ' && *q != '.' && *q != '-'
+		  && *q != '+')
 		abort ();
 
 	      if (q > v)
@@ -6075,6 +6108,46 @@ main (argc, argv)
   strcat (specs_file, "specs");
   if (access (specs_file, R_OK) == 0)
     read_specs (specs_file, TRUE);
+
+#ifdef PSP_SDK_HOME_ENV
+  /* Read the PSP SDK specs file, dropping "_N" suffixes until found.  */
+  {
+    char *sdk_home;
+
+    specs_file = getenv (PSP_SDK_HOME_ENV);
+    if (specs_file == NULL)
+      {
+	specs_file = (char *) alloca (sizeof (PSP_SDK_HOME_DEFAULT));
+	strcpy (specs_file, PSP_SDK_HOME_DEFAULT);
+      }
+    sdk_home = specs_file;
+    specs_file = (char *) alloca (strlen (sdk_home)
+				  + sizeof (PSP_SDK_SPECS_FILE) + 2);
+    strcpy (specs_file, sdk_home);
+    strcat (specs_file, PSP_SDK_SPECS_FILE);
+    for (;;)
+      {
+	char *q;
+
+	if (access (specs_file, R_OK) == 0)
+	  {
+	    read_specs (specs_file, TRUE);
+	    break;
+	  }
+	q = strrchr (specs_file, '_');
+	if (q == NULL)
+	  {
+	    if (getenv (PSP_SDK_HOME_ENV) == NULL)
+	      {
+		error ("warning: 'pspspecs' not found in '" PSP_SDK_HOME_DEFAULT "/lib/'");
+		error ("         Please install 'pspspecs','pspfixup','psplibgen' into '" PSP_SDK_HOME_DEFAULT "/lib/'\n");
+	      }
+	    break;
+	  }
+	*q = '\0';
+      }
+  }
+#endif
 
   /* If not cross-compiling, look for executables in the standard
      places.  */
