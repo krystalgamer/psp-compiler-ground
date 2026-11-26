@@ -181,11 +181,35 @@ unsigned short *utf8_to_utf16be(signed char *pUtf8Str, int *nNumOut, int bBigEnd
 
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/font/utf8_to_utf16be", utf8_to_utf16be_sub);
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/font/utf8_to_utf16be", convert_char_to_SceFont_t_charCode);
+SceFont_t_libId sceFontNewLib(SceFont_t_initRec *pInitData, SceFont_t_error *pErrorCode);
+int sceIoRead(int fd, void *data, unsigned int size);
+extern SceFont_t_initRec D_00030DC0;
+int convert_char_to_SceFont_t_charCode(char *src_buff, SceFont_t_charCode *dst_buff)
+{
+	int i = 0;
+
+	while (src_buff[i] != 0) {
+		dst_buff[i] = src_buff[i];
+		i++;
+	}
+	dst_buff[i] = 0;
+	i++;
+	dst_buff[i] = 0;
+	return i;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/font/utf8_to_utf16be", init_pss_text_texture);
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/font/utf8_to_utf16be", myInitFontLibrary);
+static SceFont_t_libId myInitFontLibrary(void)
+{
+	SceFont_t_error errorCode;
+	SceFont_t_libId libID;
+
+	libID = sceFontNewLib(&D_00030DC0, &errorCode);
+	if (errorCode != 0)
+		return NULL;
+	return libID;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/font/utf8_to_utf16be", myMakeTextTexture);
 
@@ -248,7 +272,21 @@ int cb_Close(void *pMyData, void *FileID) {
     return (sceIoClose((int) FileID) >= 0) ? 0 : 0x80460006;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/font/utf8_to_utf16be", cb_Read);
+static SceFont_t_u32 cb_Read(SceFont_t_pointer pMyData, SceFont_t_handle FileID, SceFont_t_pointer pBuffer, SceFont_t_u32 NumByte, SceFont_t_u32 NumUnit, SceFont_t_error *pErrorCode)
+{
+	SceFont_t_u32 readCount;
+	SceFont_t_u32 result;
+
+	readCount = sceIoRead((int)FileID, pBuffer, NumByte * NumUnit);
+	if (readCount < NumByte * NumUnit) {
+		*pErrorCode = 0x80460007;
+		result = 0;
+	} else {
+		result = readCount / NumByte;
+		*pErrorCode = 0;
+	}
+	return result;
+}
 
 long long sceIoLseek(int fd, long long offset, int whence);
 static SceFont_t_error cb_Seek(SceFont_t_pointer pMyData, SceFont_t_handle FileID, SceFont_t_u32 Offset)
@@ -259,4 +297,4 @@ static SceFont_t_error cb_Seek(SceFont_t_pointer pMyData, SceFont_t_handle FileI
 }
 
 /* the module's .data (font library callbacks) points at them */
-__asm__(".globl myAlloc\n.globl myFree\n.globl cb_Open\n.globl cb_Seek");
+__asm__(".globl myAlloc\n.globl myFree\n.globl cb_Open\n.globl cb_Read\n.globl cb_Seek");
