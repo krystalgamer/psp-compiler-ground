@@ -2,6 +2,8 @@
 #include "common.h"
 #include "m2c_macros.h"
 void memcpy(void *d, const void *s, unsigned int n);
+extern char *AutoSaveLoadMsgTbl_809CC[];
+int sysmsg_string(char *msg, unsigned int type, int rule);
 M2C_UNK psp_loopend();                              /* extern */
 M2C_UNK psp_loopstart();                            /* extern */
 M2C_UNK sceKernelCheckCallback();                   /* extern */
@@ -183,7 +185,53 @@ int ms_autoload(void)
 	return ((SDBASE *)&savedata_param)->result;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_save", autoload);
+typedef struct { int w[0x460 / 4]; } SAVE460;
+int _ms_load(void);
+int savedata_sumchk(void);
+int sysmsg_errornum(int err, int rule);
+void autoload(void)
+{
+	int loop = 1;
+	int ret;
+
+	do {
+		psp_loopstart();
+		ret = _ms_load();
+		switch (ret) {
+		case 0:
+			if (savedata_sumchk() == 0) {
+				sysmsg_errornum(0x80110306, 1);
+				sysmsg_string(AutoSaveLoadMsgTbl_809CC[9], 3, 1);
+			} else {
+				*(SAVE460 *)&save_data = *(SAVE460 *)&save_data_tmp;
+			}
+			break;
+		case 1:
+			break;
+		case 2:
+			if (autoloadflg) {
+				int r = sysmsg_string(AutoSaveLoadMsgTbl_809CC[10], 2, 1);
+				if (r == 2 || r == 0)
+					continue;
+			} else {
+				sysmsg_string(AutoSaveLoadMsgTbl_809CC[11], 3, 1);
+			}
+			break;
+		case 0x80110301:
+		case 0x80110302:
+		case 0x80110305:
+		case 0x80110306:
+		case 0x80110307:
+		case 0x80110308:
+		case 0x8011030b:
+			if (ret != 0x80110306)
+				sysmsg_string(AutoSaveLoadMsgTbl_809CC[9], 3, 1);
+			break;
+		}
+		loop = 0;
+		psp_loopend();
+	} while (loop);
+}
 
 void ms_load(void)
 {
@@ -208,8 +256,6 @@ int ms_autosave(void)
 	return ((SDBASE *)&savedata_param)->result;
 }
 
-extern char *AutoSaveLoadMsgTbl_809CC[];
-int sysmsg_string(char *msg, unsigned int type, int rule);
 int ms_delete(void);
 int _ms_save(void);
 #define SD_AUTO (*(int *)&save_data)
