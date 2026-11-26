@@ -23,7 +23,87 @@ int sceIoRead(int fd, void *data, unsigned int size);
 int sceKernelPollEventFlag(int evid, unsigned int bits, unsigned int wait, unsigned int *outBits);
 
 
+#ifdef NON_MATCHING
+/* Close (2 insns): the original's sceIoLseek error path enters the shared printf after the
+ * a1 = status move, so that move cannot fill the delay slot; the four -1/ch stores and
+ * buf/arg registers also differ. */
+int sceIoOpen(const char *path, int flags, int mode);
+int sceAtracSetDataAndGetID(void *buf, int size);
+int sceAtracGetSecondBufferInfo(int atracId, unsigned int *pos, unsigned int *size);
+int sceAtracSetSecondBuffer(int atracId, void *buf, unsigned int size);
+int sceKernelCreateEventFlag(const char *name, int attr, int bits, void *opt);
+int sceAtracGetSoundSample(int atracId, int *end, int *loopStart, int *loopEnd);
+int sceAtracSetLoopNum(int atracId, int num);
+extern char D_0002EBF8[], D_0002EC18[], D_0002EC44[], D_0002EC70[], D_0002EC98[], D_0002ECC4[];
+void release_arg(void *arg);
+int init_atrac3plus(const char *path, void *buf, int size, void *buf2, int size2, int ch, AT3ARG *arg)
+{
+	unsigned int pos, len;
+	int ls, le;
+
+	arg->evf = -1;
+	arg->ch = ch;
+	arg->fd = -1;
+	arg->atracId = -1;
+	arg->fd = sceIoOpen(path, 1, 0);
+	if (arg->fd < 0) {
+		size = arg->fd;
+		printf(D_0002ECC4, size);
+		release_arg(arg);
+		return size;
+	}
+	size = sceIoRead(arg->fd, buf, size);
+	if (size < 0) {
+		printf("status = 0x%x(in sceIoRead)\n", size);
+		release_arg(arg);
+		return size;
+	}
+	size = arg->atracId = sceAtracSetDataAndGetID(buf, size);
+	if (size < 0) {
+		printf("status = 0x%x(in sceAtracSetDataAndGetID)\n", size);
+		release_arg(arg);
+		return size;
+	}
+	size = sceAtracGetSecondBufferInfo(arg->atracId, &pos, &len);
+	if (size != (int)0x80630022) {
+		if (size < 0) {
+			printf("status = 0x%x(in sceAtracGetSecondBuffer)\n", size);
+			release_arg(arg);
+			return size;
+		}
+		size = sceIoLseek(arg->fd, pos, 0);
+		if (size < 0) {
+			printf(D_0002EBF8, size);
+			release_arg(arg);
+			return size;
+		}
+		size = sceAtracSetSecondBuffer(arg->atracId, buf2, sceIoRead(arg->fd, buf2, size2));
+		if (size < 0) {
+			printf(D_0002EC18, size);
+			release_arg(arg);
+			return size;
+		}
+	}
+	size = arg->evf = sceKernelCreateEventFlag("statusflag", 0, 0, 0);
+	if (size < 0) {
+		printf(D_0002EC44, size);
+		release_arg(arg);
+		return size;
+	}
+	size = sceAtracGetSoundSample(arg->atracId, (int *)(arg + 1), &ls, &le);
+	if (size < 0) {
+		printf(D_0002EC98, size);
+		release_arg(arg);
+		return size;
+	}
+	size = sceAtracSetLoopNum(arg->atracId, -1);
+	if (size < 0)
+		printf(D_0002EC70, size);
+	return 0;
+}
+#else
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/at3plus", init_atrac3plus);
+#endif
 
 INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/at3plus", D_0002EBF8);
 
