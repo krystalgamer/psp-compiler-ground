@@ -198,7 +198,29 @@ int decode_createAvcAu(t_mpegStreamData *pStreamData) {
     return var_v1;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/mpeg_stream_change/nonmatchings/decode", decode_createAudioAu);
+SceInt32 decode_createAudioAu(t_mpegStreamData *pStreamData)
+{
+	SceInt32 ret;
+	SceInt32 audioEsSize, audioOutSize;
+
+	ret = sceMpegQueryAtracEsSize(pStreamData->pMpeg, &audioEsSize, &audioOutSize);
+	if (ret != 0) {
+		printf("fatal error : sceQueryAtracEsSize() 0x%x\n", ret);
+		goto term;
+	}
+
+	pStreamData->audioOutSize = audioOutSize;
+
+	pStreamData->pAudioEsBuf = memalign(64, audioEsSize);
+	if (pStreamData->pAudioEsBuf == NULL) {
+		printf("fatal error : memalign audioEsSize\n");
+		ret = -1;
+		goto term;
+	}
+
+term:
+	return ret;
+}
 
 int decode_deleteAu(t_mpegStreamData *pStreamData, int type) {
     signed char *temp_v0;
