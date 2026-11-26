@@ -3,9 +3,14 @@
 #include "m2c_macros.h"
 
 typedef struct {
-    u8 unk0[0xC];
+    int unk0;
+    void *focus;                /* 0x4 */
+    int unk8;
     int flags;                  /* 0xC */
-    u8 unk10[0x10];
+    int unk10;
+    int unk14;
+    int unk18;
+    int unk1C;
     int mode;                   /* 0x20 */
     void *target;               /* 0x24 */
     int view;                   /* 0x28 */
@@ -25,9 +30,36 @@ typedef struct {
 } ZWIDGET;
 
 typedef struct {
-    u8 unk0[0x8];
+    int unk0;
+    void *target;               /* 0x4 */
     u16 key;                    /* 0x8 */
+    u16 unkA;
+    u16 button;                 /* 0xC */
 } ZEVENT;
+
+typedef struct ZW {
+    s8 type;
+    struct ZW *parent;          /* 0x4 */
+    struct ZW *child;
+    struct ZW *next;
+    void *font;
+    unsigned int flags;         /* 0x14 */
+    int fg[3];
+    int bg[3];
+    s16 fg15;                   /* 0x30 */
+    s16 bg15;                   /* 0x32 */
+    s16 focus15;                /* 0x34 */
+    s16 px;                     /* 0x36 */
+    s16 py;                     /* 0x38 */
+    s16 x;
+    s16 y;
+    s16 w;
+    s16 h;
+    s16 dirty[4];
+    void (*draw)();             /* 0x4C */
+    void *arg;                  /* 0x50 */
+    int state;                  /* 0x54 */
+} ZW;
 
 extern ZWINDDATA s_windsystem_data;
 extern int _i_windsystemOn;
@@ -56,6 +88,16 @@ extern int _zWindDrawTexWidthT;
 extern int _zWindDrawTexdataT;
 extern int _zwindPop;
 void zWindDrawLineW(int x, int y, int len, short color);
+void zWindDrawParts(int x, int y, int n, short color);
+void zWindLineBox(int x, int y, int w, int h, short color);
+void zWindDrawClipSet(int x, int y, int w, int h);
+extern int _iZwindPartsSize;
+extern int _zWindDrawTexClipOffAX;
+extern int _zWindDrawTexClipOffAY;
+int GUI_Checkbox_getState(ZW *w);
+int GUI_Checkbox_setState(ZW *w, int s);
+ZW *GUI_RadioButton_getGroup(ZW *w);
+int GUI_RadioButton_setState(void *w, int s);
 int GUI_ScrollPane_getContentSize(int pane, int *w, int *h);
 int GUI_ScrollPane_setScrollPosition(int pane, int x, int y);
 void zWindDrawLineH(int x, int y, int len, short color);
@@ -337,7 +379,21 @@ void zWindWidgetFrameDraw(void *arg0) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/zWindDraw", zWindWidgetButtonDraw);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/zWindDraw", zWindWidgetCheckboxDraw);
+void zWindWidgetCheckboxDraw(ZW *w) {
+    int x;
+    int y;
+
+    x = w->px;
+    y = w->py;
+    if (w->state == 1) {
+        zWindDrawParts(x, y, 1, w->bg15);
+    } else {
+        zWindDrawParts(x, y, 0, w->bg15);
+    }
+    if (s_windsystem_data.focus == w && w->focus15 != 0) {
+        zWindLineBox(x, y, _iZwindPartsSize - 1, _iZwindPartsSize - 1, w->focus15);
+    }
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/zWindDraw", zWindWidgetRadioboxDraw);
 
@@ -372,7 +428,19 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/zWindDraw", zWindFontDrawSJ);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/zWindDraw", zWindFontDrawArea);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/zWindDraw", zWindDrawUpdate);
+void zWindDrawUpdate(ZW *w, int x, int y, int wd, int h) {
+    ZW *p;
+
+    for (p = w; p != NULL; p = p->parent) {
+        if ((p->flags & 0xF) == 12) {
+            GUI_ScrollPane_getScrollPosition(p, &_zWindDrawTexClipOffAX, &_zWindDrawTexClipOffAY);
+            zWindDrawClipSet(x, y, wd, h);
+            p->draw(w, s_windsystem_data.unk1C, p->arg, x, y, wd, h);
+            zWindDrawClipSet(0, 0, ((ZINIT *)&s_windsystem_init)->width, ((ZINIT *)&s_windsystem_init)->height);
+            return;
+        }
+    }
+}
 
 void zWindChangeFont(void) {
     if (_zWindFontWidth == 0 || _zWindFontHeight == 0) {
@@ -406,9 +474,69 @@ void zWindSetFontClip(void *img, int w, int h) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/zWindDraw", zWindExcEventButton);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/zWindDraw", zWindExcEventCheckbox);
+int zWindExcEventCheckbox(ZW *w, int type, ZEVENT *ev) {
+    switch (type) {
+    case 7:
+        if (ev->key != 0x80) {
+            break;
+        }
+        if (GUI_Checkbox_getState(w) == 1) {
+            GUI_Checkbox_setState(w, 0);
+        } else {
+            GUI_Checkbox_setState(w, 1);
+        }
+        zWindDraw();
+        ev->target = w;
+        break;
+    case 3:
+        if (ev->button != 1) {
+            break;
+        }
+        if (GUI_Checkbox_getState(w) == 1) {
+            GUI_Checkbox_setState(w, 0);
+        } else {
+            GUI_Checkbox_setState(w, 1);
+        }
+        zWindDraw();
+        ev->target = w;
+        break;
+    }
+    return -1;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/zWindDraw", zWindExcEventRadiobox);
+int zWindExcEventRadiobox(ZW *w, int type, ZEVENT *ev) {
+    ZW *g;
+
+    switch (type) {
+    case 7:
+        if (ev->key != 0x80) {
+            break;
+        }
+        g = GUI_RadioButton_getGroup(w);
+        if (g->arg != w) {
+            GUI_RadioButton_setState(g->arg, 0);
+            GUI_RadioButton_setState(w, 1);
+            g->arg = w;
+            zWindDraw();
+        }
+        ev->target = w;
+        break;
+    case 3:
+        if (ev->button != 1) {
+            break;
+        }
+        g = GUI_RadioButton_getGroup(w);
+        if (g->arg != w) {
+            GUI_RadioButton_setState(g->arg, 0);
+            GUI_RadioButton_setState(w, 1);
+            g->arg = w;
+            zWindDraw();
+        }
+        ev->target = w;
+        break;
+    }
+    return -1;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/zWindDraw", zWindExcEventList);
 
