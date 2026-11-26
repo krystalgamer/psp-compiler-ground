@@ -401,7 +401,7 @@ int at3_bgm_play_end(void) {
 extern char D_0002EEE0[], D_0002EF00[], D_0002EF0C[], D_0002EF2C[], D_0002EF40[], D_0002EF50[];
 extern unsigned char aucFirstBuf[], aucSecondBuf[];
 extern int BgmThread;
-int init_atrac3plus(char *path, void *buf1, int size1, void *buf2, int size2, int a5, void *arg);
+int init_atrac3plus(const char *path, void *buf, int size, void *buf2, int size2, int ch, AT3ARG *arg);
 int play_atrac3plus(unsigned int args, void *argp);
 int sceKernelCreateThread(const char *name, void *entry, int initPriority, int stackSize, unsigned int attr, void *option);
 int sceKernelStartThread(int thid, unsigned int arglen, void *argp);
