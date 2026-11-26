@@ -128,7 +128,14 @@ void ResetAllPositioning()
 	StainGlassSetDistorsion( distort );
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_stainglass/nonmatchings/main", PositioningMultMatrix);
+void sceGumTranslate(const ScePspFVector3 *v);
+static void PositioningMultMatrix( Positioning* _Positioning )
+{
+	sceGumTranslate( &_Positioning->_pos );
+	sceGumRotateX( (_Positioning->_rot.x * 3.1415927f / 180.0f) );
+	sceGumRotateY( (_Positioning->_rot.y * 3.1415927f / 180.0f) );
+	sceGumRotateZ( (_Positioning->_rot.z * 3.1415927f / 180.0f) );
+}
 
 static void PositioningStoreMatrix( Positioning* _Positioning
 	, ScePspMatrix4* _Mat )
