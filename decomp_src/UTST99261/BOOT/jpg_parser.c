@@ -24,6 +24,32 @@ int skipByte(JBS *bs, int n);
 void nextByte(JBS *bs);
 int getByte(JBS *bs);
 int getMarker(JCTX *ctx);
+int readMarker(JCTX *ctx);
+extern const u8 kBitMaskTLSB[];
+extern const u8 kBitMaskTMSB[];
+
+typedef struct {
+    u8 unk0[0x10];
+    int width;
+    int height;
+    u8 unk18[0x20];
+    int hasTrans;               /* 0x38 */
+    u8 unk3C[0xC];
+    void *image;                /* 0x48 */
+    void *unk4C;
+} JPNGCTX;
+
+typedef struct {
+    int width;
+    int height;
+    int alpha;
+    int unkC;
+    void *image;
+    void *unk14;
+} JIMGINFO;
+
+int png_decode(JPNGCTX *ctx);
+int png_readHeader(JPNGCTX *ctx);
 M2C_UNK *ESP_malloc(M2C_UNK);                       /* extern */
 
 M2C_UNK sortImage();                                /* extern */
@@ -598,15 +624,65 @@ int getByte(JBS *bs) {
     return c;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jpg_parser", getWord);
+int getWord(JBS *bs, int be) {
+    int v;
+
+    if (!bs->valid) {
+        return 0;
+    }
+    if (bs->bit != 7) {
+        nextByte(bs);
+        bs->bit = 7;
+    }
+    if (be) {
+        v = *bs->cur << 8;
+        nextByte(bs);
+        v |= *bs->cur;
+    } else {
+        v = *bs->cur;
+        nextByte(bs);
+        v |= *bs->cur << 8;
+    }
+    nextByte(bs);
+    return v;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jpg_parser", getLong);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jpg_parser", copyByte);
+int copyByte(JBS *bs, void *dst, int n) {
+    if (bs->bit != 7) {
+        nextByte(bs);
+        bs->bit = 7;
+    }
+    if (bs->end < bs->cur + n) {
+        return -1;
+    }
+    memcpy(dst, bs->cur, n);
+    bs->cur += n;
+    if (bs->cur >= bs->end) {
+        bs->valid = 0;
+    }
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jpg_parser", getBits);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jpg_parser", getOneBit);
+int getOneBit(JBS *bs, int lsb) {
+    int v;
+
+    v = 0;
+    if (bs->bit < 0) {
+        bs->bit = 7;
+        nextByte(bs);
+    }
+    v <<= 1;
+    if (lsb <= 0) {
+        v |= (*bs->cur & kBitMaskTMSB[bs->bit--]) != 0;
+    } else {
+        v |= (*bs->cur & kBitMaskTLSB[bs->bit--]) != 0;
+    }
+    return v;
+}
 
 int skipByte(JBS *bs, int n) {
     if (bs->end < bs->cur + n) {
@@ -695,9 +771,31 @@ int IMG_pngInputData(void) {
     return png_setBuffer() == 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jpg_parser", IMG_pngGetImageData);
+int IMG_pngGetImageData(JPNGCTX *ctx, JIMGINFO *info) {
+    if (png_decode(ctx) != 0) {
+        return 0;
+    }
+    info->width = ctx->width;
+    info->height = ctx->height;
+    info->alpha = ctx->hasTrans;
+    info->unkC = ctx->height;
+    info->image = ctx->image;
+    info->unk14 = ctx->unk4C;
+    return 1;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jpg_parser", IMG_pngReadHeader);
+int IMG_pngReadHeader(JPNGCTX *ctx, JIMGINFO *info) {
+    if (png_readHeader(ctx) != 0) {
+        return 0;
+    }
+    info->width = ctx->width;
+    info->height = ctx->height;
+    info->alpha = ctx->hasTrans;
+    info->unkC = 0;
+    info->image = NULL;
+    info->unk14 = NULL;
+    return 1;
+}
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/jpg_parser", D_001326D0);
 
