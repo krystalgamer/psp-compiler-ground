@@ -287,4 +287,89 @@ void geColor(unsigned char r, unsigned char g, unsigned char b, unsigned char a)
     sceGuColor((a << 0x18) + ((b & 0xFF) << 0x10) + ((g & 0xFF) << 8) + (r & 0xFF));
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/ge/ge_context", init_context);
+static inline void set_state(int flag, int state)
+{
+	if (flag == 1) {
+		sceGuEnable(state);
+	} else {
+		sceGuDisable(state);
+	}
+}
+
+static void init_context(void)
+{
+	geDrawStart();
+
+	if (pCont->vramdepth == 1) {
+		sceGuDrawBuffer(1, (void *)0, 512);
+		sceGuDispBuffer(480, 272, (void *)0x44000, 512);
+		sceGuDepthBuffer((void *)0x88000, 512);
+	} else if (pCont->vramdepth == 3) {
+		sceGuDrawBuffer(3, (void *)0, 512);
+		sceGuDispBuffer(480, 272, (void *)0x88000, 512);
+		sceGuDepthBuffer((void *)0x110000, 512);
+	}
+
+	sceGumSetMatrixStack(ge_matrix_stack, 8, 8, 16, 0);
+	sceGuOffset(pCont->offset_x, pCont->offset_y);
+	sceGuViewport(2048, 2048, 480, 272);
+	sceGuDepthRange(pCont->depth_max, pCont->depth_min);
+
+	sceGuScissor(0, 0, 480, 272);
+	sceGuEnable(2);
+
+	if (pCont->depth_test != -1) {
+		sceGuEnable(1);
+		sceGuDepthFunc(pCont->depth_test);
+	} else {
+		sceGuDisable(1);
+	}
+
+	sceGuShadeModel(pCont->shade_mode);
+	sceGuFrontFace(pCont->front_face);
+	set_state(pCont->clip_plane, 8);
+	set_state(pCont->normal_patch, 20);
+	set_state(pCont->normal_prim, 19);
+	set_state(pCont->cull_face, 5);
+	set_state(pCont->dither, 6);
+
+	if (pCont->dither != -1) {
+		sceGuSetDither(&ge_dith);
+	}
+
+	sceGuColorMaterial(pCont->col_material);
+	sceGuSpecular(pCont->specular);
+
+	if (pCont->fog != -1) {
+		sceGuEnable(7);
+		sceGuFog(pCont->fog_param.zs, pCont->fog_param.ze, pCont->fog_param.col);
+	} else {
+		sceGuDisable(7);
+	}
+
+	if (pCont->alpha != -1) {
+		sceGuEnable(0);
+		sceGuAlphaFunc(pCont->alpha_param.func, pCont->alpha_param.aref, pCont->alpha_param.amsk);
+	} else {
+		sceGuDisable(0);
+	}
+
+	if (pCont->blend != -1) {
+		sceGuEnable(4);
+		sceGuBlendFunc(pCont->blend_param.equ, pCont->blend_param.asel, pCont->blend_param.bsel, pCont->blend_param.afix, pCont->blend_param.bfix);
+	} else {
+		sceGuDisable(4);
+	}
+
+	sceGumMatrixMode(2);
+
+	sceGuColor(pCont->col_model);
+	sceGuAmbient(pCont->col_ambient);
+	sceGuClearColor(pCont->col_clear);
+	sceGuClearDepth(0);
+	sceGuClearStencil(0);
+
+	sceGuPatchDivide(4, 4);
+
+	geDrawFinWait();
+}
