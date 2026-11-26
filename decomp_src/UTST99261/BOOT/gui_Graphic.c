@@ -242,21 +242,216 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Graphic", GUI_createButton)
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Graphic", GUI_createCheckbox);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Graphic", GUI_createRadioboxGroup);
+GUIWIDGET *GUI_createRadioboxGroup(GUIWIDGET *parent) {
+    GUIWIDGET *w;
+
+    if (parent != NULL && parent->type != 1) {
+        puts("[X1]GUI_createRadioboxGroup");
+        return NULL;
+    }
+    s_windsystem_data.flags |= 4;
+    w = GuiwidgetCreate(parent);
+    if (w == NULL) {
+        puts("[X2]GUI_createRadioboxGroup");
+        s_windsystem_data.flags &= ~4;
+        return NULL;
+    }
+    w->flags = (w->flags & ~0xF) | 5;
+    w->x = 0;
+    w->y = 0;
+    w->w = 0;
+    w->h = 0;
+    w->unk50.p = NULL;
+    zWindDraw();
+    s_windsystem_data.flags &= ~4;
+    return w;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Graphic", GUI_createRadiobox);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Graphic", GUI_createLabel);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Graphic", GUI_createList);
+GUIWIDGET *GUI_createList(GUIWIDGET *parent, void *a) {
+    GUIWIDGET *w;
+    int fg[3];
+    int bg[3];
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Graphic", GUI_createChoice);
+    if (parent != NULL && parent->type != 1) {
+        puts("[X1]GUI_createList");
+        return NULL;
+    }
+    s_windsystem_data.flags |= 4;
+    w = GuiwidgetCreate(parent);
+    if (w == NULL) {
+        puts("[X2]GUI_createList");
+        s_windsystem_data.flags &= ~4;
+        return NULL;
+    }
+    w->flags = (w->flags & ~0xF) | 8;
+    w->unk4C = a;
+    w->unk50.p = NULL;
+    w->u.list.state = 0;
+    w->u.list.unk58 = 0;
+    w->u.list.count = 0;
+    w->u.list.unk5C = 0;
+    w->x = 0;
+    w->y = 0;
+    w->w = 64;
+    w->h = 20;
+    fg[0] = 0;
+    fg[1] = 0;
+    fg[2] = 0;
+    bg[0] = 0xdc;
+    bg[1] = 0xdc;
+    bg[2] = 0xdc;
+    GUI_Component_setColor(w, fg, bg);
+    zWindDraw();
+    s_windsystem_data.flags &= ~4;
+    return w;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Graphic", GUI_createTextField);
+GUIWIDGET *GUI_createChoice(GUIWIDGET *parent) {
+    GUIWIDGET *w;
+    int fg[3];
+    int bg[3];
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Graphic", GUI_createTextArea);
+    if (parent != NULL && parent->type != 1) {
+        puts("[X1]GUI_createChoice");
+        return NULL;
+    }
+    s_windsystem_data.flags |= 4;
+    w = GuiwidgetCreate(parent);
+    if (w == NULL) {
+        puts("[X2]GUI_createChoice");
+        s_windsystem_data.flags &= ~4;
+        return NULL;
+    }
+    w->flags = (w->flags & ~0xF) | 9;
+    w->unk4C = NULL;
+    w->unk50.p = NULL;
+    w->u.choice.sel = -1;
+    w->u.choice.unk56 = 0;
+    w->u.choice.unk58 = 0;
+    w->x = 0;
+    w->y = 0;
+    w->w = 64;
+    w->h = 20;
+    fg[0] = 0;
+    fg[1] = 0;
+    fg[2] = 0;
+    bg[0] = 0xdc;
+    bg[1] = 0xdc;
+    bg[2] = 0xdc;
+    GUI_Component_setColor(w, fg, bg);
+    zWindDraw();
+    s_windsystem_data.flags &= ~4;
+    return w;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Graphic", GUI_createContentView);
+GUIWIDGET *GUI_createTextField(GUIWIDGET *parent) {
+    GUIWIDGET *w;
+    int fg[3];
+    int bg[3];
+
+    if (parent != NULL && parent->type != 1) {
+        puts("[X1]GUI_createTextField");
+        return NULL;
+    }
+    s_windsystem_data.flags |= 4;
+    w = GuiwidgetCreate(parent);
+    if (w == NULL) {
+        puts("[X2]GUI_createTextField");
+        s_windsystem_data.flags &= ~4;
+        return NULL;
+    }
+    w->flags = (w->flags & ~0xF) | 10;
+    w->unk4C = NULL;
+    w->unk50.t.len = 0;
+    w->unk50.t.max = -1;
+    w->u.text.editable = 1;
+    w->x = 0;
+    w->y = 0;
+    w->w = 64;
+    w->h = 20;
+    fg[0] = 0;
+    fg[1] = 0;
+    fg[2] = 0;
+    bg[0] = 0x80;
+    bg[1] = 0x80;
+    bg[2] = 0x80;
+    GUI_Component_setColor(w, fg, bg);
+    zWindDraw();
+    s_windsystem_data.flags &= ~4;
+    return w;
+}
+
+GUIWIDGET *GUI_createTextArea(GUIWIDGET *parent) {
+    GUIWIDGET *w;
+    int fg[3];
+    int bg[3];
+
+    if (parent != NULL && parent->type != 1) {
+        puts("[X1]GUI_createTextArea");
+        return NULL;
+    }
+    s_windsystem_data.flags |= 4;
+    w = GuiwidgetCreate(parent);
+    if (w == NULL) {
+        puts("[X2]GUI_createTextArea");
+        s_windsystem_data.flags &= ~4;
+        return NULL;
+    }
+    w->flags = (w->flags & ~0xF) | 11;
+    w->unk4C = NULL;
+    w->unk50.t.len = 0;
+    w->unk50.t.max = 0;
+    w->u.text.areaEditable = -1;
+    w->x = 0;
+    w->y = 0;
+    w->w = 64;
+    w->h = 20;
+    fg[0] = 0;
+    fg[1] = 0;
+    fg[2] = 0;
+    bg[0] = 0x80;
+    bg[1] = 0x80;
+    bg[2] = 0x80;
+    GUI_Component_setColor(w, fg, bg);
+    zWindDraw();
+    s_windsystem_data.flags &= ~4;
+    return w;
+}
+
+GUIWIDGET *GUI_createContentView(GUIWIDGET *parent, void *a, void *b) {
+    GUIWIDGET *w;
+
+    if (parent != NULL && parent->type != 1) {
+        puts("[X1]GUI_createContentView");
+        return NULL;
+    }
+    s_windsystem_data.flags |= 4;
+    w = GuiwidgetCreate(parent);
+    if (w == NULL) {
+        puts("[X2]GUI_createContentView");
+        s_windsystem_data.flags &= ~4;
+        return NULL;
+    }
+    w->flags = (w->flags & ~0xF) | 12;
+    w->unk4C = a;
+    w->unk50.p = b;
+    w->w = 64;
+    w->h = 20;
+    w->x = 0;
+    w->y = 0;
+    w->u.scroll.x = 0;
+    w->u.scroll.y = 0;
+    w->u.scroll.cw = 64;
+    w->u.scroll.ch = 20;
+    s_windsystem_data.unk28 = w;
+    zWindDraw();
+    s_windsystem_data.flags &= ~4;
+    return w;
+}
 
 void GUI_ContentView_setArgument(GUIWIDGET *w, void * v) {
     if (w == NULL) {
@@ -277,7 +472,32 @@ void GUI_ContentView_setArgument(GUIWIDGET *w, void * v) {
     s_windsystem_data.flags &= ~4;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Graphic", GUI_createFrameBorder);
+GUIWIDGET *GUI_createFrameBorder(GUIWIDGET *parent, void *a, void *b, int c) {
+    GUIWIDGET *w;
+
+    if (parent != NULL && parent->type != 1) {
+        puts("[X1]GUI_createFrameBorder");
+        return NULL;
+    }
+    s_windsystem_data.flags |= 4;
+    w = GuiwidgetCreate(parent);
+    if (w == NULL) {
+        puts("[X2]GUI_createFrameBorder");
+        s_windsystem_data.flags &= ~4;
+        return NULL;
+    }
+    w->flags = (w->flags & ~0xF) | 13;
+    w->unk4C = a;
+    w->unk50.p = b;
+    w->u.list.state = c;
+    w->x = 0;
+    w->y = 0;
+    w->w = 64;
+    w->h = 20;
+    zWindDraw();
+    s_windsystem_data.flags &= ~4;
+    return w;
+}
 
 int GUI_Button_setImage(GUIWIDGET *w, void * v) {
     if (w == NULL) {

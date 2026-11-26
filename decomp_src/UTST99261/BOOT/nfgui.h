@@ -99,6 +99,8 @@ typedef struct GUIWIDGET { /* size 0x64 */
         } text;
         struct {
             s16 sel;                    /* 0x54 */
+            s16 unk56;
+            s16 unk58;
         } choice;
         struct {
             int unk54;
@@ -108,6 +110,7 @@ typedef struct GUIWIDGET { /* size 0x64 */
             int state;                  /* 0x54 */
             s16 unk58;
             s16 count;                  /* 0x5A */
+            s16 unk5C;
         } list;
         struct {
             s16 x;                      /* 0x54 */
@@ -179,6 +182,7 @@ extern int _i_guiwidgetmalloc;
 
 GUIFONT *GuifontCreateOne(void);
 int GuiwidgetInit(void);
+int GUI_Component_setColor(GUIWIDGET *w, int *fg, int *bg);
 int GuiwidgetClear(GUIWIDGET *w);
 int GuiwidgetDelete(GUIWIDGET *w);
 void GuiwidgetAllOpening(void);
