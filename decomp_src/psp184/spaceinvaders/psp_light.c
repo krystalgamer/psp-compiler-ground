@@ -16,7 +16,23 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_light", light_cnt);
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_light", light_debug_disp);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_light", light_timer_start);
+int light_timer_start(int t)
+{
+	int i;
+	u8 *p = (u8 *)&D_003538BC;
+
+	for (i = 0; i < 4; i++) {
+		if (*(signed char *)p == 0) {
+			*(int *)(p + 0x38) = t;
+			*(signed char *)p = 1;
+			*(int *)(p + 0x30) = 1;
+			*(int *)(p + 0x34) = 0;
+			return i;
+		}
+		p += 0x80;
+	}
+	return -1;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)

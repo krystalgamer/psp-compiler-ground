@@ -21,6 +21,16 @@ int module_file_start(int *mid, char *path, SceKernelLMOption *opt);
 int module_file_start(int *mid, char *path, SceKernelLMOption *opt);
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
+extern int sound_start_flag;
+extern int sound_start_flag1;
+extern int thid;
+extern int thid2;
+extern int iFadeOutFlag;
+extern int iFadeOutFlag1;
+extern int sound_block_max;
+int sceKernelWaitThreadEnd(int thid, void *timeout);
+int sceKernelDeleteThread(int thid);
+
 static int load_module(char *path, SceKernelLMOption *opt)
 {
 	int mid;
@@ -132,7 +142,16 @@ int get_max_sound_block(void) {
     return sound_block_max;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/k_sound", next_sound_block_plus);
+int next_sound_block_plus(void)
+{
+	if (next_sound_block_no == -1)
+		next_sound_block_no = sound_block_no + 1;
+	else
+		next_sound_block_no = next_sound_block_no + 1;
+	if (next_sound_block_no >= sound_block_max)
+		next_sound_block_no = sound_block_max - 1;
+	return next_sound_block_no;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/k_sound", next_sound_block_minus);
 

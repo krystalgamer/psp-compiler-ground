@@ -18,6 +18,13 @@ extern int D_000849FC;
 #define NULL ((void *)0)
 #endif
 
+extern int file_load_size_max;
+int module_file_load(char *name, int flag);
+int sceKernelStartModule(int modid, int argsize, void *argp, int *status, void *option);
+int sceUmdCheckMedium(void);
+int sceUmdGetErrorStat(void);
+#define MAX(a, b) ((a) > (b) ? (a) : (b))
+
 int LoadFile(int arg0, int *arg1) {
     int temp_v0;
     int temp_v0_2;
@@ -35,7 +42,23 @@ int LoadFile(int arg0, int *arg1) {
     return var_v0;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_fileio", LoadFile_Buffer);
+extern int file_load_size_max;
+int module_file_load(char *name, int flag);
+int sceKernelStartModule(int modid, int argsize, void *argp, int *status, void *option);
+int sceUmdCheckMedium(void);
+int sceUmdGetErrorStat(void);
+#define MAX(a, b) ((a) > (b) ? (a) : (b))
+int LoadFile_Buffer(char *name, int *size, void *buf)
+{
+	int sz;
+
+	sz = file_size((int)name);
+	if (sz <= 0)
+		return 0;
+	*size = sz;
+	file_load_size_max = MAX(sz, file_load_size_max);
+	return file_load((int)name, (int)buf, sz);
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -68,7 +91,17 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_fileio", file_size);
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_fileio", module_file_load);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_fileio", module_file_start);
+int module_file_start(int *mid, char *name)
+{
+	int status;
+	int ret;
+
+	ret = module_file_load(name, 0);
+	*mid = ret;
+	if (ret < 0)
+		return ret;
+	return sceKernelStartModule(ret, 0, 0, &status, 0);
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_fileio", file_load_async);
 
