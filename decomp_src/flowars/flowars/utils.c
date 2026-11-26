@@ -100,9 +100,40 @@ int get_file_pointer(void)
 
 INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/utils", load_file);
 
-INCLUDE_RODATA("tmp/asm/flowars/flowars/nonmatchings/utils", D_0002F57C);
 
-INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/utils", load_image);
+SceGimPicture *load_image(const char *filename, ...)
+{
+	int *data;
+	int size;
+	va_list argptr;
+	char fname[100] = "";
+	SceGimPicture *picture;
+	int ret;
+
+	va_start(argptr, filename);
+	vsprintf(fname, filename, argptr);
+	va_end(argptr);
+	picture = sceGimPictureCreate(0);
+	if (picture != 0) {
+		ret = load_file(fname, &data, &size);
+		print_nothing("load_image:%s\n", fname);
+		if (ret != 1) {
+			print_nothing("gim image creation failed\n");
+			sceGimPictureDelete(picture);
+			free(data);
+			return 0;
+		}
+		ret = sceGimPictureLoadFile(picture, data, size, 0);
+		if (ret == 0) {
+			print_nothing("picture load failed :%s(0x%X)\n", fname, ret);
+			return 0;
+		}
+		free(data);
+		return picture;
+	}
+	print_nothing("picture create failed\n");
+	return 0;
+}
 
 void delete_image(SceGimPicture *picture)
 {
@@ -201,6 +232,8 @@ void ttyprintf2(char *tty, const char *str, ...)
 	sceIoClose(fd);
 }
 
+/* the "" initializer constant load_image (C) emits first; make_num_format (asm) uses it too */
+__asm__(".globl D_0002F57C\nD_0002F57C = 0x0002F57C");
 INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/utils", make_num_format);
 
 void activateUmd()
