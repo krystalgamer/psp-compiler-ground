@@ -612,7 +612,41 @@ void sceGuSetAllStatus(unsigned int status)
 	}
 }
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", sceGuSetMatrix);
+void sceGuSetMatrix(int type, const ScePspFMatrix4 *matrix)
+{
+	const float *fmatrix = (const float *)matrix;
+
+	switch (type) {
+	case 0:
+		send_commandf(62, 0);
+		send_commandf(63, fmatrix[0]); send_commandf(63, fmatrix[1]); send_commandf(63, fmatrix[2]); send_commandf(63, fmatrix[3]);
+		send_commandf(63, fmatrix[4]); send_commandf(63, fmatrix[5]); send_commandf(63, fmatrix[6]); send_commandf(63, fmatrix[7]);
+		send_commandf(63, fmatrix[8]); send_commandf(63, fmatrix[9]); send_commandf(63, fmatrix[10]); send_commandf(63, fmatrix[11]);
+		send_commandf(63, fmatrix[12]); send_commandf(63, fmatrix[13]); send_commandf(63, fmatrix[14]); send_commandf(63, fmatrix[15]);
+		break;
+	case 1:
+		send_commandf(60, 0);
+		send_commandf(61, fmatrix[0]); send_commandf(61, fmatrix[1]); send_commandf(61, fmatrix[2]);
+		send_commandf(61, fmatrix[4]); send_commandf(61, fmatrix[5]); send_commandf(61, fmatrix[6]);
+		send_commandf(61, fmatrix[8]); send_commandf(61, fmatrix[9]); send_commandf(61, fmatrix[10]);
+		send_commandf(61, fmatrix[12]); send_commandf(61, fmatrix[13]); send_commandf(61, fmatrix[14]);
+		break;
+	case 2:
+		send_commandf(58, 0);
+		send_commandf(59, fmatrix[0]); send_commandf(59, fmatrix[1]); send_commandf(59, fmatrix[2]);
+		send_commandf(59, fmatrix[4]); send_commandf(59, fmatrix[5]); send_commandf(59, fmatrix[6]);
+		send_commandf(59, fmatrix[8]); send_commandf(59, fmatrix[9]); send_commandf(59, fmatrix[10]);
+		send_commandf(59, fmatrix[12]); send_commandf(59, fmatrix[13]); send_commandf(59, fmatrix[14]);
+		break;
+	case 3:
+		send_commandf(64, 0);
+		send_commandf(65, fmatrix[0]); send_commandf(65, fmatrix[1]); send_commandf(65, fmatrix[2]);
+		send_commandf(65, fmatrix[4]); send_commandf(65, fmatrix[5]); send_commandf(65, fmatrix[6]);
+		send_commandf(65, fmatrix[8]); send_commandf(65, fmatrix[9]); send_commandf(65, fmatrix[10]);
+		send_commandf(65, fmatrix[12]); send_commandf(65, fmatrix[13]); send_commandf(65, fmatrix[14]);
+		break;
+	}
+}
 
 void sceGuDrawArray(int prim, int vtype, int count, const void *indices, const void *vertices)
 {
@@ -1124,7 +1158,22 @@ void sceGuBlendFunc(int op, int src, int dest, unsigned int srcfix, unsigned int
 	send_commandi(225, destfix & 0xffffff);
 }
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", sceGuBoneMatrix);
+void sceGuBoneMatrix(unsigned int index, const ScePspFMatrix4 *matrix)
+{
+	send_commandi(42, index * 12);
+	send_commandf(43, matrix->x.x);
+	send_commandf(43, matrix->x.y);
+	send_commandf(43, matrix->x.z);
+	send_commandf(43, matrix->y.x);
+	send_commandf(43, matrix->y.y);
+	send_commandf(43, matrix->y.z);
+	send_commandf(43, matrix->z.x);
+	send_commandf(43, matrix->z.y);
+	send_commandf(43, matrix->z.z);
+	send_commandf(43, matrix->w.x);
+	send_commandf(43, matrix->w.y);
+	send_commandf(43, matrix->w.z);
+}
 
 void sceGuMorphWeight(int index, float weight)
 {
