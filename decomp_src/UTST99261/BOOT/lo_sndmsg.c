@@ -12,6 +12,34 @@ void *memset(void *s, int c, unsigned int n);
 void *memcpy(void *d, const void *s, unsigned int n);
 void MEM_free();
 int utf8ToUcs2();
+int OS_mq_send();
+
+typedef struct {
+    int unk0;
+    int unk4;
+    int unk8;
+    int type;                   /* 0xC */
+    int unk10;
+    int unk14;
+    int unk18;
+    int unk1C;
+} LOBODY;
+
+typedef struct {
+    int hdr;
+    LOBODY body;
+} MQMSG;
+
+typedef struct {
+    u8 unk0[0x50];
+    MQMSG *tmplJS;              /* 0x50 */
+    u8 unk54[0x20];
+    MQMSG *tmplUI;              /* 0x74 */
+    u8 unk78[0x4];
+    int mqJS;                   /* 0x7C */
+} SLOGLOBAL;
+
+extern SLOGLOBAL lo_global;
 unsigned int strlen(const char *s);
 
 void *make_layoutMsg_template(int arg0, int arg1, int arg2) {
@@ -31,7 +59,19 @@ void *make_layoutMsg_template(int arg0, int arg1, int arg2) {
     return var_v0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_sndmsg", msgSendToOtherTask);
+void msgSendToOtherTask(LOBODY *msg, int mq) {
+    MQMSG m;
+
+    if (mq == lo_global.mqJS) {
+        if (msg->type == 0x11) {
+            m = *lo_global.tmplJS;
+        }
+    } else if (msg->type == 0x403) {
+        m = *lo_global.tmplUI;
+    }
+    m.body = *msg;
+    OS_mq_send(mq, &m, sizeof(MQMSG), 0);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_sndmsg", msgSend);
 
