@@ -1,6 +1,13 @@
 /* cflags: -O1 */
 #include "common.h"
 #include "m2c_macros.h"
+int GUI_Component_getParent(int);                   /* extern */
+M2C_UNK GUI_ScrollPane_add(int, int);               /* extern */
+int GUI_createPanel();                              /* extern */
+M2C_UNK GUI_Graphics_freeAnimationGIF(int);         /* extern */
+M2C_UNK GUI_Graphics_freePixmap(int);               /* extern */
+M2C_UNK MEM_free(M2C_UNK, void *);                  /* extern */
+
 M2C_UNK color2rgb();                                /* extern */
 M2C_UNK rnd_drawRepaint();                          /* extern */
 M2C_UNK GUI_ScrollPane_getViewportSize();           /* extern */
@@ -58,11 +65,25 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_gdraw", rnd_gdrawGetTextbox
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_gdraw", rnd_gdrawCreateCheckbox);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_gdraw", rnd_gdrawGetCheckboxExtents);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int rnd_gdrawGetCheckboxExtents(int *arg0, int *arg1) {
+    *arg0 = 4;
+    *arg1 = 4;
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_gdraw", rnd_gdrawCreateRadiobutton);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_gdraw", rnd_gdrawGetRadiobuttonExtents);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int rnd_gdrawGetRadiobuttonExtents(int *arg0, int *arg1) {
+    *arg0 = 4;
+    *arg1 = 4;
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_gdraw", rnd_gdrawCreateButton);
 
@@ -82,7 +103,22 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_gdraw", rnd_drawFrameCallba
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_gdraw", rnd_gdrawCreateBorder);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_gdraw", rnd_gdrawCreatePanel);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+int rnd_gdrawCreatePanel(int arg0) {
+    int temp_v0;
+    int var_v0;
+
+    temp_v0 = GUI_createPanel();
+    var_v0 = 0;
+    if (temp_v0 != 0) {
+        GUI_ScrollPane_add(GUI_Component_getParent(arg0), temp_v0);
+        var_v0 = temp_v0;
+    }
+    return var_v0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_gdraw", rnd_gdrawRectangle);
 
@@ -112,7 +148,26 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_gdraw", rnd_gdrawImageDecod
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_gdraw", rnd_gdrawImageProperty);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_gdraw", rnd_gdrawImageDelete);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void rnd_gdrawImageDelete(void *arg0) {
+    int temp_a0;
+
+    if (arg0 != NULL) {
+        if (M2C_FIELD(arg0, int *, 0) == 2) {
+            GUI_Graphics_freeAnimationGIF(M2C_FIELD(arg0, int *, 8));
+            M2C_FIELD(arg0, int *, 4) = 0;
+        }
+        temp_a0 = M2C_FIELD(arg0, int *, 4);
+        if (temp_a0 != 0) {
+            GUI_Graphics_freePixmap(temp_a0);
+            M2C_FIELD(arg0, int *, 4) = 0;
+        }
+        MEM_free(0, arg0);
+    }
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_gdraw", rnd_gdrawImageUpdate);
 

@@ -1,6 +1,10 @@
 /* cflags: -O1 */
 #include "common.h"
 #include "m2c_macros.h"
+int getWord(int, M2C_UNK);                          /* extern */
+M2C_UNK skipByte(int, M2C_UNK);                     /* extern */
+M2C_UNK *ESP_malloc(M2C_UNK);                       /* extern */
+
 M2C_UNK sortImage();                                /* extern */
 int png_createContext();                            /* extern */
 int png_destroyContext();                           /* extern */
@@ -202,7 +206,15 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jpg_parser", mrkSOS);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jpg_parser", mrkDQT);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jpg_parser", mrkDRI);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+int mrkDRI(void *arg0) {
+    skipByte(M2C_FIELD(arg0, int *, 0), 2);
+    M2C_FIELD(arg0, int *, 0x690) = getWord(M2C_FIELD(arg0, int *, 0), 1);
+    return 1;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -220,33 +232,131 @@ int mrkEXP(void) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jpg_parser", mrkAPP0);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jpg_parser", mrkAPP1);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jpg_parser", mrkAPP2);
+int mrkAPP1(int *arg0) {
+    skipByte(*arg0, getWord(*arg0, 1) - 2);
+    return 1;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jpg_parser", mrkAPP3);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jpg_parser", mrkAPP4);
+int mrkAPP2(int *arg0) {
+    skipByte(*arg0, getWord(*arg0, 1) - 2);
+    return 1;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jpg_parser", mrkAPP5);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jpg_parser", mrkAPP6);
+int mrkAPP3(int *arg0) {
+    skipByte(*arg0, getWord(*arg0, 1) - 2);
+    return 1;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jpg_parser", mrkAPP7);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jpg_parser", mrkAPP8);
+int mrkAPP4(int *arg0) {
+    skipByte(*arg0, getWord(*arg0, 1) - 2);
+    return 1;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jpg_parser", mrkAPP9);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jpg_parser", mrkAPP10);
+int mrkAPP5(int *arg0) {
+    skipByte(*arg0, getWord(*arg0, 1) - 2);
+    return 1;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jpg_parser", mrkAPP11);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jpg_parser", mrkAPP12);
+int mrkAPP6(int *arg0) {
+    skipByte(*arg0, getWord(*arg0, 1) - 2);
+    return 1;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jpg_parser", mrkAPP13);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jpg_parser", mrkAPP14);
+int mrkAPP7(int *arg0) {
+    skipByte(*arg0, getWord(*arg0, 1) - 2);
+    return 1;
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+int mrkAPP8(int *arg0) {
+    skipByte(*arg0, getWord(*arg0, 1) - 2);
+    return 1;
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+int mrkAPP9(int *arg0) {
+    skipByte(*arg0, getWord(*arg0, 1) - 2);
+    return 1;
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+int mrkAPP10(int *arg0) {
+    skipByte(*arg0, getWord(*arg0, 1) - 2);
+    return 1;
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+int mrkAPP11(int *arg0) {
+    skipByte(*arg0, getWord(*arg0, 1) - 2);
+    return 1;
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+int mrkAPP12(int *arg0) {
+    skipByte(*arg0, getWord(*arg0, 1) - 2);
+    return 1;
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+int mrkAPP13(int *arg0) {
+    skipByte(*arg0, getWord(*arg0, 1) - 2);
+    return 1;
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+int mrkAPP14(int *arg0) {
+    skipByte(*arg0, getWord(*arg0, 1) - 2);
+    return 1;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -353,7 +463,14 @@ int mrkJPG13(void) {
     return 1;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jpg_parser", mrkCOM);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+int mrkCOM(int *arg0) {
+    skipByte(*arg0, getWord(*arg0, 1) - 2);
+    return 1;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jpg_parser", readMarker);
 
@@ -363,13 +480,60 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jpg_parser", analysisMarker);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jpg_parser", analysisScans);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jpg_parser", createJpgContext);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+void *memset(void *s, int c, unsigned int n);
+
+int createJpgContext(M2C_UNK **arg0) {
+    M2C_UNK *temp_v0;
+    M2C_UNK *temp_v0_2;
+
+    temp_v0 = ESP_malloc(0x6A4);
+    if ((temp_v0 == NULL) || (memset(temp_v0, 0, 0x6A4U), temp_v0_2 = ESP_malloc(0x1C), (temp_v0_2 == NULL))) {
+        *arg0 = NULL;
+        return -2;
+    }
+    M2C_FIELD(temp_v0_2, M2C_UNK **, 0) = NULL;
+    M2C_FIELD(temp_v0_2, int *, 4) = 0;
+    M2C_FIELD(temp_v0_2, int *, 8) = 0;
+    M2C_FIELD(temp_v0_2, int *, 0xC) = 0;
+    M2C_FIELD(temp_v0_2, int *, 0x14) = 0;
+    M2C_FIELD(temp_v0_2, int *, 0x18) = 0;
+    *temp_v0 = temp_v0_2;
+    M2C_FIELD(temp_v0_2, int *, 0x10) = 7;
+    M2C_FIELD(*temp_v0, int *, 0x14) = 1;
+    M2C_FIELD(*temp_v0, int *, 0x18) = 1;
+    *arg0 = temp_v0;
+    return 1;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jpg_parser", initializeJpgContext);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jpg_parser", deleteJpgContext);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jpg_parser", setJpgBuffer);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int setJpgBuffer(void **arg0, int arg1, int arg2) {
+    void *temp_v0;
+    void *temp_v1;
+    void *temp_v1_2;
+
+    if (arg0 != NULL) {
+        temp_v0 = *arg0;
+        if (temp_v0 != NULL) {
+            M2C_FIELD(temp_v0, int *, 0) = arg1;
+            M2C_FIELD(*arg0, int *, 0xC) = arg2;
+            temp_v1 = *arg0;
+            M2C_FIELD(temp_v1, int *, 8) = (int) (M2C_FIELD(temp_v1, int *, 0) + M2C_FIELD(temp_v1, int *, 0xC));
+            temp_v1_2 = *arg0;
+            M2C_FIELD(temp_v1_2, int *, 4) = (int) M2C_FIELD(temp_v1_2, int *, 0);
+            return 1;
+        }
+    }
+    return -1;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jpg_parser", nextByte);
 
@@ -389,7 +553,12 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jpg_parser", skipByte);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jpg_parser", getNextAddress);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jpg_parser", getCurrentOffset);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int getCurrentOffset(void *arg0) {
+    return M2C_FIELD(arg0, int *, 0) - M2C_FIELD(arg0, int *, 4);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jpg_parser", goNextOffset);
 

@@ -1,6 +1,8 @@
 /* cflags: -O1 */
 #include "common.h"
 #include "m2c_macros.h"
+M2C_UNK UTL_mfilewrite(int, signed char *, unsigned int);             /* extern */
+
 M2C_UNK createGifContext();                         /* extern */
 M2C_UNK deleteGifContext();                         /* extern */
 M2C_UNK initializeGifContext();                     /* extern */
@@ -68,11 +70,47 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/url", UTL_guessMIMEType);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/url", UTL_isNumber);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/url", UTL_initqueue);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+void UTL_initqueue(void *arg0) {
+    M2C_FIELD(arg0, void **, 0) = arg0;
+    M2C_FIELD(arg0, void **, 4) = arg0;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/url", UTL_enqueue);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+void UTL_enqueue(M2C_UNK *arg0, M2C_UNK *arg1) {
+    M2C_UNK *temp_v0;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/url", UTL_dequeue);
+    temp_v0 = M2C_FIELD(arg0, M2C_UNK **, 4);
+    M2C_FIELD(arg0, M2C_UNK **, 4) = arg1;
+    *temp_v0 = arg1;
+    M2C_FIELD(arg1, M2C_UNK **, 0) = arg0;
+    M2C_FIELD(arg1, M2C_UNK **, 4) = temp_v0;
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+void *UTL_dequeue(void **arg0) {
+    void *temp_v0;
+    void *temp_v1;
+    void *var_v0;
+
+    temp_v1 = *arg0;
+    var_v0 = NULL;
+    if (arg0 != temp_v1) {
+        temp_v0 = M2C_FIELD(temp_v1, void **, 0);
+        *arg0 = temp_v0;
+        M2C_FIELD(temp_v0, void ***, 4) = arg0;
+        M2C_FIELD(temp_v1, void **, 0) = NULL;
+        M2C_FIELD(temp_v1, int *, 4) = 0;
+        var_v0 = temp_v1;
+    }
+    return var_v0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/url", UTL_relqueue);
 
@@ -98,7 +136,14 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/url", UTL_mfileclean);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/url", UTL_mfileputc);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/url", UTL_mfileputs);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+unsigned int strlen(const char *s);
+
+void UTL_mfileputs(int arg0, signed char *arg1) {
+    UTL_mfilewrite(arg0, arg1, strlen(arg1));
+}
 
 #ifndef NULL
 #define NULL ((void *)0)

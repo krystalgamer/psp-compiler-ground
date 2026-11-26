@@ -3,6 +3,7 @@
 #include "m2c_macros.h"
 
 
+
 #ifndef NULL
 #define NULL ((void *)0)
 #endif
@@ -51,7 +52,16 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_image", setBrokenImageData);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_image", calcHttpHeaderSize);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_image", initLLIST);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+void initLLIST(void *arg0) {
+    if (arg0 != NULL) {
+        M2C_FIELD(arg0, int *, 0) = 0;
+        M2C_FIELD(arg0, int *, 4) = 0;
+        M2C_FIELD(arg0, int *, 8) = 0;
+    }
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_image", putLLIST);
 
