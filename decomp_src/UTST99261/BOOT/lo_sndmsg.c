@@ -9,6 +9,9 @@ extern signed char D_00133950;
 #define NULL ((void *)0)
 #endif
 void *memset(void *s, int c, unsigned int n);
+void *memcpy(void *d, const void *s, unsigned int n);
+void MEM_free();
+unsigned int strlen(const char *s);
 
 void *make_layoutMsg_template(int arg0, int arg1, int arg2) {
     void *temp_v0;
@@ -71,7 +74,31 @@ int make_msg_LP4(int arg0) {
     return var_v1;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_sndmsg", make_msg_LP7);
+void *make_msg_LP7(void *msg, char *url) {
+    int size;
+    int *d;
+    int n;
+    void *m;
+
+    if (msg == NULL || url == NULL) {
+        return NULL;
+    }
+    size = strlen(url) + 9;
+    d = MEM_malloc(0, size);
+    if (d == NULL) {
+        return NULL;
+    }
+    memset(d, 0, size);
+    n = strlen(url);
+    d[0] = n;
+    d[1] = (int)(d + 2);
+    memcpy(d + 2, url, n);
+    m = make_layoutMsg_template(2, M2C_FIELD(msg, int *, 4), 0x16);
+    M2C_FIELD(m, int *, 0x38) = M2C_FIELD(msg, int *, 0x14);
+    M2C_FIELD(m, int *, 0x3C) = size;
+    M2C_FIELD(m, int **, 0x40) = d;
+    return m;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_sndmsg", make_msg_LP8);
 
@@ -121,7 +148,20 @@ void make_msg_LP16(void *arg0) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_sndmsg", make_msg_LP17);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_sndmsg", make_msg_LP18);
+void *make_msg_LP18(void *msg) {
+    void *m;
+    int *d;
+    void *buf;
+
+    m = make_layoutMsg_template(2, M2C_FIELD(msg, int *, 4), 0x39);
+    d = M2C_FIELD(msg, int **, 0x1C);
+    M2C_FIELD(m, int *, 0x3C) = *d * 2;
+    buf = MEM_malloc(0, *d * 2);
+    memcpy(buf, d + 1, *d * 2);
+    M2C_FIELD(m, void **, 0x40) = buf;
+    MEM_free(0, M2C_FIELD(msg, void **, 0x1C));
+    return m;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -152,7 +192,6 @@ void *make_msg_LP19(int arg0, int arg1, int arg2, int arg3, int arg4, int arg5, 
 #ifndef NULL
 #define NULL ((void *)0)
 #endif
-unsigned int strlen(const char *s);
 char *strcpy(char *d, const char *s);
 
 void *make_msg_LP20(int arg0, int arg1, int arg2, int arg3, signed char *arg4) {
