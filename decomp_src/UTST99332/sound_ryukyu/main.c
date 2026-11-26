@@ -92,6 +92,20 @@ void sceGuClutLoad(int num_blocks, const void *cbp);
 int sceCtrlReadBufferPositive(SceCtrlData *data, int count);
 
 
+/* SDK prototypes (tools/sdk_protos.h) */
+int printf(const char *fmt, ...);
+int puts(const char *s);
+int sceDisplayWaitVblankStart(void);
+void sceGuClear(int flags);
+void sceGuColor(unsigned int color);
+void sceGuDrawSprite(int x, int y, int z, int u, int v, int flip, int rotation);
+void sceGuSpriteMode(int a0, int a1, int a2, int a3);
+void *sceGuSwapBuffers(void);
+void sceGuTerm(void);
+int sceKernelCreateThread(const char *name, void *entry, int prio, int stacksize, unsigned int attr, void *option);
+int sceKernelDeleteThread(int thid);
+int sceKernelStartThread(int thid, unsigned int arglen, void *argp);
+
 INCLUDE_ASM("tmp/asm/UTST99332/sound_ryukyu/nonmatchings/main", draw_frame);
 
 void init_all(void) {
