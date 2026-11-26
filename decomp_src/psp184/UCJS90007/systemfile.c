@@ -26,7 +26,10 @@ typedef struct __attribute__((packed)) {
 
 typedef struct __attribute__((packed)) {
 	unsigned short off;
-	char unk2[14];
+	unsigned short fmt;
+	unsigned int len;
+	unsigned int maxlen;
+	unsigned int dataoff;
 } SfKeyEnt;
 
 typedef struct __attribute__((packed)) {
@@ -48,6 +51,7 @@ typedef struct __attribute__((packed)) {
 	SfHeader *hdr;
 	void *table;
 	char *strtab;
+	char *data;
 } SfKeyFile;
 
 typedef struct {
@@ -332,7 +336,32 @@ char *_findblankkey(SysFile *sf)
 
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/systemfile", sceSystemFileSetValueSize);
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/systemfile", sceSystemFileGetValuePtr);
+int sceSystemFileGetValuePtr(void *handle, void *index, void **pp)
+{
+	SfIndex *ix;
+	register int ret;
+
+	if (handle == NULL)
+		SF_ERROR(ret, 3)
+	else if (index == NULL)
+		SF_ERROR(ret, 3)
+	else {
+		*pp = NULL;
+		if (((SysFile *)handle)->flags & 2) {
+			*pp = ((SfKeyFile *)handle)->data + ((SfKeyEnt *)index)->dataoff;
+		} else {
+			ix = index;
+			if (ix->unk8 == 0) {
+				SF_ERROR(ret, 3)
+				goto end;
+			}
+			*pp = (void *)ix->unk8;
+		}
+		ret = 0;
+	}
+end:
+	return ret;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/systemfile", sceSystemFileGetIndex);
 
@@ -392,7 +421,21 @@ void __sceSystemFileRemoveIndex(SysFile *sf, SfIndex *ix)
 	sf->flags |= 0x40;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/systemfile", sceSystemFileGetFD);
+int sceSystemFileGetFD(void *handle)
+{
+	SysFile *sf = handle;
+	register int ret;
+
+	if (handle == NULL)
+		SF_ERROR(ret, 3)
+	else if (sf->flags & 2)
+		SF_ERROR(ret, 3)
+	else if (sf->fd < 0)
+		SF_ERROR(ret, 3)
+	else
+		{ register int t = sf->fd; ret = t; }
+	return ret;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/systemfile", sceSystemFileGetIndexInfo);
 
