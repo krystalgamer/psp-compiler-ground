@@ -128,7 +128,17 @@ int dispbuf_getDrawbuf(t_displayBuffer *pDisp, signed char **buffer) {
     return temp_v0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/mpeg_mpegstr_gu/nonmatchings/display", dispbuf_dataSet);
+SceInt32 dispbuf_dataSet(t_displayBuffer *pDisp)
+{
+	sceKernelWaitSema(pDisp->lock_sema, 1, NULL);
+
+	pDisp->count++;
+	pDisp->write = (pDisp->write + 1) % pDisp->size;
+
+	sceKernelSignalSema(pDisp->lock_sema, 1);
+
+	return 0;
+}
 
 int dispbuf_getCapacity(t_displayBuffer *pDisp) {
     return pDisp->size - pDisp->count;
