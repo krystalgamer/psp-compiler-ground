@@ -51,6 +51,7 @@ OPTIONS = """  find_file_boundaries: false
   section_order: [".text", ".data", ".rodata", ".bss"]
   migrate_rodata_to_functions: true
   use_legacy_include_asm: false
+  generate_asm_macros_files: false
   asm_function_macro: glabel
   asm_jtbl_label_macro: jlabel
   asm_data_macro: dlabel
