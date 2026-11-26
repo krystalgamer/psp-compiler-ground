@@ -1,4 +1,5 @@
-#include "common.h"
+/* lang: c++ */
+#include "main.hpp"
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _Z41__static_initialization_and_destruction_0ii_2D3C);
 
@@ -14,10 +15,10 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZN7TestApp12draw_o
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZN7TestApp16draw_environmentEv);
 
-void _ZN7TestApp10print_helpEv(void) {
+void TestApp::print_help() {
 }
 
-void _ZN7TestApp7controlEv(void) {
+void TestApp::control() {
 }
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZN7TestApp9envChangeEv);
@@ -204,7 +205,7 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZN3app6heightEv);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZN3app5ratioEv);
 
-void _ZN3app15set_initial_resEii(void) {
+void app::set_initial_res(int, int) {
 }
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZN3app9CallbacksC2Ev);
@@ -219,16 +220,16 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZN3app9CallbacksD0
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZN3app9Callbacks3runEv);
 
-void _ZN3app9Callbacks4initEv(void) {
+void app::Callbacks::init() {
 }
 
-void _ZN3app9Callbacks4idleEv(void) {
+void app::Callbacks::idle() {
 }
 
-void _ZN3app9Callbacks7reshapeEii(void) {
+void app::Callbacks::reshape(int, int) {
 }
 
-void _ZN3app9Callbacks7displayEv(void) {
+void app::Callbacks::display() {
 }
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZNK3app9Callbacks13exitRequestedEv);
@@ -273,10 +274,10 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZN5app3d9Callbacks
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZN5app3d9Callbacks4idleEv);
 
-void _ZN5app3d9Callbacks4drawEv(void) {
+void app3d::Callbacks::draw() {
 }
 
-void _ZN5app3d9Callbacks12before_vsyncEv(void) {
+void app3d::Callbacks::before_vsync() {
 }
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZN5app3d9Callbacks10toggleGridEv);
@@ -315,13 +316,13 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZN6common4Date15Co
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZNK6common4Date15CopiableMemberseqERKS1_);
 
-void _ZN6common4Date15set_from_time_tEPl(void) {
+void common::Date::set_from_time_t(long *) {
 }
 
-void _ZN6common4Date8get_dateEv(void) {
+void common::Date::get_date() {
 }
 
-void _ZN6common4Date13get_file_dateEPKc(void) {
+void common::Date::get_file_date(const char *) {
 }
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZNK6common4DateeqERKS0_);
@@ -462,10 +463,7 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZN6common15common_
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZN6common15common_internal3LogC1EPKcbbbb);
 
-void _ZN6common15common_internal3LogD2Ev(void) {
-}
-
-void _ZN6common15common_internal3LogD1Ev(void) {
+common::common_internal::Log::~Log() {
 }
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZN6common15common_internal3Log3putEPKc);
@@ -476,10 +474,10 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZN6common3LogEPKc)
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZN6common15common_internal14assert_displayEPKcS2_S2_S2_iS2_z);
 
-void _ZN6common15common_internal8on_errorEv(void) {
+void common::common_internal::on_error() {
 }
 
-void _ZN6common15common_internal10on_warningEv(void) {
+void common::common_internal::on_warning() {
 }
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZN6common15common_internal5clashEv);
@@ -792,71 +790,71 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _Z41__static_initia
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _Z16PspLogEnableBitsPKc);
 
-void glClearIndex(void) {
+extern "C" void glClearIndex(void) {
 }
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", glClearColor);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", glClear);
 
-void glIndexMask(void) {
+extern "C" void glIndexMask(void) {
 }
 
-void glColorMask(void) {
+extern "C" void glColorMask(void) {
 }
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", glAlphaFunc);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", glBlendFunc);
 
-void glLogicOp(void) {
+extern "C" void glLogicOp(void) {
 }
 
-void glCullFace(void) {
+extern "C" void glCullFace(void) {
 }
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", glFrontFace);
 
-void glPointSize(void) {
+extern "C" void glPointSize(void) {
 }
 
-void glLineWidth(void) {
+extern "C" void glLineWidth(void) {
 }
 
-void glLineStipple(void) {
+extern "C" void glLineStipple(void) {
 }
 
-void glPolygonMode(void) {
+extern "C" void glPolygonMode(void) {
 }
 
-void glPolygonOffset(void) {
+extern "C" void glPolygonOffset(void) {
 }
 
-void glPolygonStipple(void) {
+extern "C" void glPolygonStipple(void) {
 }
 
-void glGetPolygonStipple(void) {
+extern "C" void glGetPolygonStipple(void) {
 }
 
-void glEdgeFlag(void) {
+extern "C" void glEdgeFlag(void) {
 }
 
-void glEdgeFlagv(void) {
+extern "C" void glEdgeFlagv(void) {
 }
 
-void glScissor(void) {
+extern "C" void glScissor(void) {
 }
 
-void glClipPlane(void) {
+extern "C" void glClipPlane(void) {
 }
 
-void glGetClipPlane(void) {
+extern "C" void glGetClipPlane(void) {
 }
 
-void glDrawBuffer(void) {
+extern "C" void glDrawBuffer(void) {
 }
 
-void glReadBuffer(void) {
+extern "C" void glReadBuffer(void) {
 }
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", glEnable);
@@ -865,32 +863,32 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", glDisable);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", glIsEnabled);
 
-void glEnableClientState(void) {
+extern "C" void glEnableClientState(void) {
 }
 
-void glDisableClientState(void) {
+extern "C" void glDisableClientState(void) {
 }
 
-void glGetBooleanv(void) {
+extern "C" void glGetBooleanv(void) {
 }
 
-void glGetDoublev(void) {
+extern "C" void glGetDoublev(void) {
 }
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", glGetFloatv);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", glGetIntegerv);
 
-void glPushAttrib(void) {
+extern "C" void glPushAttrib(void) {
 }
 
-void glPopAttrib(void) {
+extern "C" void glPopAttrib(void) {
 }
 
-void glPushClientAttrib(void) {
+extern "C" void glPushClientAttrib(void) {
 }
 
-void glPopClientAttrib(void) {
+extern "C" void glPopClientAttrib(void) {
 }
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", glRenderMode);
@@ -899,13 +897,13 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", glGetError);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", glGetString);
 
-void glFinish(void) {
+extern "C" void glFinish(void) {
 }
 
-void glFlush(void) {
+extern "C" void glFlush(void) {
 }
 
-void glHint(void) {
+extern "C" void glHint(void) {
 }
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", glClearDepth);
@@ -916,10 +914,10 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", glDepthMask);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", glDepthRange);
 
-void glClearAccum(void) {
+extern "C" void glClearAccum(void) {
 }
 
-void glAccum(void) {
+extern "C" void glAccum(void) {
 }
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", glMatrixMode);
@@ -958,737 +956,737 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", glTranslatef);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", glIsList);
 
-void glDeleteLists(void) {
+extern "C" void glDeleteLists(void) {
 }
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", glGenLists);
 
-void glNewList(void) {
+extern "C" void glNewList(void) {
 }
 
-void glEndList(void) {
+extern "C" void glEndList(void) {
 }
 
-void glCallList(void) {
+extern "C" void glCallList(void) {
 }
 
-void glCallLists(void) {
+extern "C" void glCallLists(void) {
 }
 
-void glListBase(void) {
+extern "C" void glListBase(void) {
 }
 
-void glBegin(void) {
+extern "C" void glBegin(void) {
 }
 
-void glEnd(void) {
+extern "C" void glEnd(void) {
 }
 
-void glVertex2d(void) {
+extern "C" void glVertex2d(void) {
 }
 
-void glVertex2f(void) {
+extern "C" void glVertex2f(void) {
 }
 
-void glVertex2i(void) {
+extern "C" void glVertex2i(void) {
 }
 
-void glVertex2s(void) {
+extern "C" void glVertex2s(void) {
 }
 
-void glVertex3d(void) {
+extern "C" void glVertex3d(void) {
 }
 
-void glVertex3f(void) {
+extern "C" void glVertex3f(void) {
 }
 
-void glVertex3i(void) {
+extern "C" void glVertex3i(void) {
 }
 
-void glVertex3s(void) {
+extern "C" void glVertex3s(void) {
 }
 
-void glVertex4d(void) {
+extern "C" void glVertex4d(void) {
 }
 
-void glVertex4f(void) {
+extern "C" void glVertex4f(void) {
 }
 
-void glVertex4i(void) {
+extern "C" void glVertex4i(void) {
 }
 
-void glVertex4s(void) {
+extern "C" void glVertex4s(void) {
 }
 
-void glVertex2dv(void) {
+extern "C" void glVertex2dv(void) {
 }
 
-void glVertex2fv(void) {
+extern "C" void glVertex2fv(void) {
 }
 
-void glVertex2iv(void) {
+extern "C" void glVertex2iv(void) {
 }
 
-void glVertex2sv(void) {
+extern "C" void glVertex2sv(void) {
 }
 
-void glVertex3dv(void) {
+extern "C" void glVertex3dv(void) {
 }
 
-void glVertex3fv(void) {
+extern "C" void glVertex3fv(void) {
 }
 
-void glVertex3iv(void) {
+extern "C" void glVertex3iv(void) {
 }
 
-void glVertex3sv(void) {
+extern "C" void glVertex3sv(void) {
 }
 
-void glVertex4dv(void) {
+extern "C" void glVertex4dv(void) {
 }
 
-void glVertex4fv(void) {
+extern "C" void glVertex4fv(void) {
 }
 
-void glVertex4iv(void) {
+extern "C" void glVertex4iv(void) {
 }
 
-void glVertex4sv(void) {
+extern "C" void glVertex4sv(void) {
 }
 
-void glNormal3b(void) {
+extern "C" void glNormal3b(void) {
 }
 
-void glNormal3d(void) {
+extern "C" void glNormal3d(void) {
 }
 
-void glNormal3f(void) {
+extern "C" void glNormal3f(void) {
 }
 
-void glNormal3i(void) {
+extern "C" void glNormal3i(void) {
 }
 
-void glNormal3s(void) {
+extern "C" void glNormal3s(void) {
 }
 
-void glNormal3bv(void) {
+extern "C" void glNormal3bv(void) {
 }
 
-void glNormal3dv(void) {
+extern "C" void glNormal3dv(void) {
 }
 
-void glNormal3fv(void) {
+extern "C" void glNormal3fv(void) {
 }
 
-void glNormal3iv(void) {
+extern "C" void glNormal3iv(void) {
 }
 
-void glNormal3sv(void) {
+extern "C" void glNormal3sv(void) {
 }
 
-void glIndexd(void) {
+extern "C" void glIndexd(void) {
 }
 
-void glIndexf(void) {
+extern "C" void glIndexf(void) {
 }
 
-void glIndexi(void) {
+extern "C" void glIndexi(void) {
 }
 
-void glIndexs(void) {
+extern "C" void glIndexs(void) {
 }
 
-void glIndexub(void) {
+extern "C" void glIndexub(void) {
 }
 
-void glIndexdv(void) {
+extern "C" void glIndexdv(void) {
 }
 
-void glIndexfv(void) {
+extern "C" void glIndexfv(void) {
 }
 
-void glIndexiv(void) {
+extern "C" void glIndexiv(void) {
 }
 
-void glIndexsv(void) {
+extern "C" void glIndexsv(void) {
 }
 
-void glIndexubv(void) {
+extern "C" void glIndexubv(void) {
 }
 
-void glColor3b(void) {
+extern "C" void glColor3b(void) {
 }
 
-void glColor3d(void) {
+extern "C" void glColor3d(void) {
 }
 
-void glColor3f(void) {
+extern "C" void glColor3f(void) {
 }
 
-void glColor3i(void) {
+extern "C" void glColor3i(void) {
 }
 
-void glColor3s(void) {
+extern "C" void glColor3s(void) {
 }
 
-void glColor3ub(void) {
+extern "C" void glColor3ub(void) {
 }
 
-void glColor3ui(void) {
+extern "C" void glColor3ui(void) {
 }
 
-void glColor3us(void) {
+extern "C" void glColor3us(void) {
 }
 
-void glColor4b(void) {
+extern "C" void glColor4b(void) {
 }
 
-void glColor4d(void) {
+extern "C" void glColor4d(void) {
 }
 
-void glColor4f(void) {
+extern "C" void glColor4f(void) {
 }
 
-void glColor4i(void) {
+extern "C" void glColor4i(void) {
 }
 
-void glColor4s(void) {
+extern "C" void glColor4s(void) {
 }
 
-void glColor4ub(void) {
+extern "C" void glColor4ub(void) {
 }
 
-void glColor4ui(void) {
+extern "C" void glColor4ui(void) {
 }
 
-void glColor4us(void) {
+extern "C" void glColor4us(void) {
 }
 
-void glColor3bv(void) {
+extern "C" void glColor3bv(void) {
 }
 
-void glColor3dv(void) {
+extern "C" void glColor3dv(void) {
 }
 
-void glColor3fv(void) {
+extern "C" void glColor3fv(void) {
 }
 
-void glColor3iv(void) {
+extern "C" void glColor3iv(void) {
 }
 
-void glColor3sv(void) {
+extern "C" void glColor3sv(void) {
 }
 
-void glColor3ubv(void) {
+extern "C" void glColor3ubv(void) {
 }
 
-void glColor3uiv(void) {
+extern "C" void glColor3uiv(void) {
 }
 
-void glColor3usv(void) {
+extern "C" void glColor3usv(void) {
 }
 
-void glColor4bv(void) {
+extern "C" void glColor4bv(void) {
 }
 
-void glColor4dv(void) {
+extern "C" void glColor4dv(void) {
 }
 
-void glColor4fv(void) {
+extern "C" void glColor4fv(void) {
 }
 
-void glColor4iv(void) {
+extern "C" void glColor4iv(void) {
 }
 
-void glColor4sv(void) {
+extern "C" void glColor4sv(void) {
 }
 
-void glColor4ubv(void) {
+extern "C" void glColor4ubv(void) {
 }
 
-void glColor4uiv(void) {
+extern "C" void glColor4uiv(void) {
 }
 
-void glColor4usv(void) {
+extern "C" void glColor4usv(void) {
 }
 
-void glTexCoord1d(void) {
+extern "C" void glTexCoord1d(void) {
 }
 
-void glTexCoord1f(void) {
+extern "C" void glTexCoord1f(void) {
 }
 
-void glTexCoord1i(void) {
+extern "C" void glTexCoord1i(void) {
 }
 
-void glTexCoord1s(void) {
+extern "C" void glTexCoord1s(void) {
 }
 
-void glTexCoord2d(void) {
+extern "C" void glTexCoord2d(void) {
 }
 
-void glTexCoord2f(void) {
+extern "C" void glTexCoord2f(void) {
 }
 
-void glTexCoord2i(void) {
+extern "C" void glTexCoord2i(void) {
 }
 
-void glTexCoord2s(void) {
+extern "C" void glTexCoord2s(void) {
 }
 
-void glTexCoord3d(void) {
+extern "C" void glTexCoord3d(void) {
 }
 
-void glTexCoord3f(void) {
+extern "C" void glTexCoord3f(void) {
 }
 
-void glTexCoord3i(void) {
+extern "C" void glTexCoord3i(void) {
 }
 
-void glTexCoord3s(void) {
+extern "C" void glTexCoord3s(void) {
 }
 
-void glTexCoord4d(void) {
+extern "C" void glTexCoord4d(void) {
 }
 
-void glTexCoord4f(void) {
+extern "C" void glTexCoord4f(void) {
 }
 
-void glTexCoord4i(void) {
+extern "C" void glTexCoord4i(void) {
 }
 
-void glTexCoord4s(void) {
+extern "C" void glTexCoord4s(void) {
 }
 
-void glTexCoord1dv(void) {
+extern "C" void glTexCoord1dv(void) {
 }
 
-void glTexCoord1fv(void) {
+extern "C" void glTexCoord1fv(void) {
 }
 
-void glTexCoord1iv(void) {
+extern "C" void glTexCoord1iv(void) {
 }
 
-void glTexCoord1sv(void) {
+extern "C" void glTexCoord1sv(void) {
 }
 
-void glTexCoord2dv(void) {
+extern "C" void glTexCoord2dv(void) {
 }
 
-void glTexCoord2fv(void) {
+extern "C" void glTexCoord2fv(void) {
 }
 
-void glTexCoord2iv(void) {
+extern "C" void glTexCoord2iv(void) {
 }
 
-void glTexCoord2sv(void) {
+extern "C" void glTexCoord2sv(void) {
 }
 
-void glTexCoord3dv(void) {
+extern "C" void glTexCoord3dv(void) {
 }
 
-void glTexCoord3fv(void) {
+extern "C" void glTexCoord3fv(void) {
 }
 
-void glTexCoord3iv(void) {
+extern "C" void glTexCoord3iv(void) {
 }
 
-void glTexCoord3sv(void) {
+extern "C" void glTexCoord3sv(void) {
 }
 
-void glTexCoord4dv(void) {
+extern "C" void glTexCoord4dv(void) {
 }
 
-void glTexCoord4fv(void) {
+extern "C" void glTexCoord4fv(void) {
 }
 
-void glTexCoord4iv(void) {
+extern "C" void glTexCoord4iv(void) {
 }
 
-void glTexCoord4sv(void) {
+extern "C" void glTexCoord4sv(void) {
 }
 
-void glRasterPos2d(void) {
+extern "C" void glRasterPos2d(void) {
 }
 
-void glRasterPos2f(void) {
+extern "C" void glRasterPos2f(void) {
 }
 
-void glRasterPos2i(void) {
+extern "C" void glRasterPos2i(void) {
 }
 
-void glRasterPos2s(void) {
+extern "C" void glRasterPos2s(void) {
 }
 
-void glRasterPos3d(void) {
+extern "C" void glRasterPos3d(void) {
 }
 
-void glRasterPos3f(void) {
+extern "C" void glRasterPos3f(void) {
 }
 
-void glRasterPos3i(void) {
+extern "C" void glRasterPos3i(void) {
 }
 
-void glRasterPos3s(void) {
+extern "C" void glRasterPos3s(void) {
 }
 
-void glRasterPos4d(void) {
+extern "C" void glRasterPos4d(void) {
 }
 
-void glRasterPos4f(void) {
+extern "C" void glRasterPos4f(void) {
 }
 
-void glRasterPos4i(void) {
+extern "C" void glRasterPos4i(void) {
 }
 
-void glRasterPos4s(void) {
+extern "C" void glRasterPos4s(void) {
 }
 
-void glRasterPos2dv(void) {
+extern "C" void glRasterPos2dv(void) {
 }
 
-void glRasterPos2fv(void) {
+extern "C" void glRasterPos2fv(void) {
 }
 
-void glRasterPos2iv(void) {
+extern "C" void glRasterPos2iv(void) {
 }
 
-void glRasterPos2sv(void) {
+extern "C" void glRasterPos2sv(void) {
 }
 
-void glRasterPos3dv(void) {
+extern "C" void glRasterPos3dv(void) {
 }
 
-void glRasterPos3fv(void) {
+extern "C" void glRasterPos3fv(void) {
 }
 
-void glRasterPos3iv(void) {
+extern "C" void glRasterPos3iv(void) {
 }
 
-void glRasterPos3sv(void) {
+extern "C" void glRasterPos3sv(void) {
 }
 
-void glRasterPos4dv(void) {
+extern "C" void glRasterPos4dv(void) {
 }
 
-void glRasterPos4fv(void) {
+extern "C" void glRasterPos4fv(void) {
 }
 
-void glRasterPos4iv(void) {
+extern "C" void glRasterPos4iv(void) {
 }
 
-void glRasterPos4sv(void) {
+extern "C" void glRasterPos4sv(void) {
 }
 
-void glRectd(void) {
+extern "C" void glRectd(void) {
 }
 
-void glRectf(void) {
+extern "C" void glRectf(void) {
 }
 
-void glRecti(void) {
+extern "C" void glRecti(void) {
 }
 
-void glRects(void) {
+extern "C" void glRects(void) {
 }
 
-void glRectdv(void) {
+extern "C" void glRectdv(void) {
 }
 
-void glRectfv(void) {
+extern "C" void glRectfv(void) {
 }
 
-void glRectiv(void) {
+extern "C" void glRectiv(void) {
 }
 
-void glRectsv(void) {
+extern "C" void glRectsv(void) {
 }
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", glShadeModel);
 
-void glLightf(void) {
+extern "C" void glLightf(void) {
 }
 
-void glLighti(void) {
+extern "C" void glLighti(void) {
 }
 
-void glLightfv(void) {
+extern "C" void glLightfv(void) {
 }
 
-void glLightiv(void) {
+extern "C" void glLightiv(void) {
 }
 
-void glGetLightfv(void) {
+extern "C" void glGetLightfv(void) {
 }
 
-void glGetLightiv(void) {
+extern "C" void glGetLightiv(void) {
 }
 
-void glLightModelf(void) {
+extern "C" void glLightModelf(void) {
 }
 
-void glLightModeli(void) {
+extern "C" void glLightModeli(void) {
 }
 
-void glLightModelfv(void) {
+extern "C" void glLightModelfv(void) {
 }
 
-void glLightModeliv(void) {
+extern "C" void glLightModeliv(void) {
 }
 
-void glMaterialf(void) {
+extern "C" void glMaterialf(void) {
 }
 
-void glMateriali(void) {
+extern "C" void glMateriali(void) {
 }
 
-void glMaterialfv(void) {
+extern "C" void glMaterialfv(void) {
 }
 
-void glMaterialiv(void) {
+extern "C" void glMaterialiv(void) {
 }
 
-void glGetMaterialfv(void) {
+extern "C" void glGetMaterialfv(void) {
 }
 
-void glGetMaterialiv(void) {
+extern "C" void glGetMaterialiv(void) {
 }
 
-void glColorMaterial(void) {
+extern "C" void glColorMaterial(void) {
 }
 
-void glPixelZoom(void) {
+extern "C" void glPixelZoom(void) {
 }
 
-void glPixelStoref(void) {
+extern "C" void glPixelStoref(void) {
 }
 
-void glPixelStorei(void) {
+extern "C" void glPixelStorei(void) {
 }
 
-void glPixelTransferf(void) {
+extern "C" void glPixelTransferf(void) {
 }
 
-void glPixelTransferi(void) {
+extern "C" void glPixelTransferi(void) {
 }
 
-void glPixelMapfv(void) {
+extern "C" void glPixelMapfv(void) {
 }
 
-void glPixelMapuiv(void) {
+extern "C" void glPixelMapuiv(void) {
 }
 
-void glPixelMapusv(void) {
+extern "C" void glPixelMapusv(void) {
 }
 
-void glGetPixelMapfv(void) {
+extern "C" void glGetPixelMapfv(void) {
 }
 
-void glGetPixelMapuiv(void) {
+extern "C" void glGetPixelMapuiv(void) {
 }
 
-void glGetPixelMapusv(void) {
+extern "C" void glGetPixelMapusv(void) {
 }
 
-void glBitmap(void) {
+extern "C" void glBitmap(void) {
 }
 
-void glReadPixels(void) {
+extern "C" void glReadPixels(void) {
 }
 
-void glDrawPixels(void) {
+extern "C" void glDrawPixels(void) {
 }
 
-void glCopyPixels(void) {
+extern "C" void glCopyPixels(void) {
 }
 
-void glStencilFunc(void) {
+extern "C" void glStencilFunc(void) {
 }
 
-void glStencilMask(void) {
+extern "C" void glStencilMask(void) {
 }
 
-void glStencilOp(void) {
+extern "C" void glStencilOp(void) {
 }
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", glClearStencil);
 
-void glTexGend(void) {
+extern "C" void glTexGend(void) {
 }
 
-void glTexGenf(void) {
+extern "C" void glTexGenf(void) {
 }
 
-void glTexGeni(void) {
+extern "C" void glTexGeni(void) {
 }
 
-void glTexGendv(void) {
+extern "C" void glTexGendv(void) {
 }
 
-void glTexGenfv(void) {
+extern "C" void glTexGenfv(void) {
 }
 
-void glTexGeniv(void) {
+extern "C" void glTexGeniv(void) {
 }
 
-void glGetTexGendv(void) {
+extern "C" void glGetTexGendv(void) {
 }
 
-void glGetTexGenfv(void) {
+extern "C" void glGetTexGenfv(void) {
 }
 
-void glGetTexGeniv(void) {
+extern "C" void glGetTexGeniv(void) {
 }
 
-void glTexEnvf(void) {
+extern "C" void glTexEnvf(void) {
 }
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", glTexEnvi);
 
-void glTexEnvfv(void) {
+extern "C" void glTexEnvfv(void) {
 }
 
-void glTexEnviv(void) {
+extern "C" void glTexEnviv(void) {
 }
 
-void glGetTexEnvfv(void) {
+extern "C" void glGetTexEnvfv(void) {
 }
 
-void glGetTexEnviv(void) {
+extern "C" void glGetTexEnviv(void) {
 }
 
-void glTexParameterf(void) {
+extern "C" void glTexParameterf(void) {
 }
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", glTexParameteri);
 
-void glTexParameterfv(void) {
+extern "C" void glTexParameterfv(void) {
 }
 
-void glTexParameteriv(void) {
+extern "C" void glTexParameteriv(void) {
 }
 
-void glGetTexParameterfv(void) {
+extern "C" void glGetTexParameterfv(void) {
 }
 
-void glGetTexParameteriv(void) {
+extern "C" void glGetTexParameteriv(void) {
 }
 
-void glGetTexLevelParameterfv(void) {
+extern "C" void glGetTexLevelParameterfv(void) {
 }
 
-void glGetTexLevelParameteriv(void) {
+extern "C" void glGetTexLevelParameteriv(void) {
 }
 
-void glTexImage1D(void) {
+extern "C" void glTexImage1D(void) {
 }
 
-void glTexImage2D(void) {
+extern "C" void glTexImage2D(void) {
 }
 
-void glGetTexImage(void) {
+extern "C" void glGetTexImage(void) {
 }
 
-void glMap1d(void) {
+extern "C" void glMap1d(void) {
 }
 
-void glMap1f(void) {
+extern "C" void glMap1f(void) {
 }
 
-void glMap2d(void) {
+extern "C" void glMap2d(void) {
 }
 
-void glMap2f(void) {
+extern "C" void glMap2f(void) {
 }
 
-void glGetMapdv(void) {
+extern "C" void glGetMapdv(void) {
 }
 
-void glGetMapfv(void) {
+extern "C" void glGetMapfv(void) {
 }
 
-void glGetMapiv(void) {
+extern "C" void glGetMapiv(void) {
 }
 
-void glEvalCoord1d(void) {
+extern "C" void glEvalCoord1d(void) {
 }
 
-void glEvalCoord1f(void) {
+extern "C" void glEvalCoord1f(void) {
 }
 
-void glEvalCoord1dv(void) {
+extern "C" void glEvalCoord1dv(void) {
 }
 
-void glEvalCoord1fv(void) {
+extern "C" void glEvalCoord1fv(void) {
 }
 
-void glEvalCoord2d(void) {
+extern "C" void glEvalCoord2d(void) {
 }
 
-void glEvalCoord2f(void) {
+extern "C" void glEvalCoord2f(void) {
 }
 
-void glEvalCoord2dv(void) {
+extern "C" void glEvalCoord2dv(void) {
 }
 
-void glEvalCoord2fv(void) {
+extern "C" void glEvalCoord2fv(void) {
 }
 
-void glMapGrid1d(void) {
+extern "C" void glMapGrid1d(void) {
 }
 
-void glMapGrid1f(void) {
+extern "C" void glMapGrid1f(void) {
 }
 
-void glMapGrid2d(void) {
+extern "C" void glMapGrid2d(void) {
 }
 
-void glMapGrid2f(void) {
+extern "C" void glMapGrid2f(void) {
 }
 
-void glEvalPoint1(void) {
+extern "C" void glEvalPoint1(void) {
 }
 
-void glEvalPoint2(void) {
+extern "C" void glEvalPoint2(void) {
 }
 
-void glEvalMesh1(void) {
+extern "C" void glEvalMesh1(void) {
 }
 
-void glEvalMesh2(void) {
+extern "C" void glEvalMesh2(void) {
 }
 
-void glFogf(void) {
+extern "C" void glFogf(void) {
 }
 
-void glFogi(void) {
+extern "C" void glFogi(void) {
 }
 
-void glFogfv(void) {
+extern "C" void glFogfv(void) {
 }
 
-void glFogiv(void) {
+extern "C" void glFogiv(void) {
 }
 
-void glFeedbackBuffer(void) {
+extern "C" void glFeedbackBuffer(void) {
 }
 
-void glPassThrough(void) {
+extern "C" void glPassThrough(void) {
 }
 
-void glSelectBuffer(void) {
+extern "C" void glSelectBuffer(void) {
 }
 
-void glInitNames(void) {
+extern "C" void glInitNames(void) {
 }
 
-void glLoadName(void) {
+extern "C" void glLoadName(void) {
 }
 
-void glPushName(void) {
+extern "C" void glPushName(void) {
 }
 
-void glPopName(void) {
+extern "C" void glPopName(void) {
 }
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", glGenTextures);
@@ -1697,315 +1695,315 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", glDeleteTextures);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", glBindTexture);
 
-void glPrioritizeTextures(void) {
+extern "C" void glPrioritizeTextures(void) {
 }
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", glAreTexturesResident);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", glIsTexture);
 
-void glTexSubImage1D(void) {
+extern "C" void glTexSubImage1D(void) {
 }
 
-void glTexSubImage2D(void) {
+extern "C" void glTexSubImage2D(void) {
 }
 
-void glCopyTexImage1D(void) {
+extern "C" void glCopyTexImage1D(void) {
 }
 
-void glCopyTexImage2D(void) {
+extern "C" void glCopyTexImage2D(void) {
 }
 
-void glCopyTexSubImage1D(void) {
+extern "C" void glCopyTexSubImage1D(void) {
 }
 
-void glCopyTexSubImage2D(void) {
+extern "C" void glCopyTexSubImage2D(void) {
 }
 
-void glVertexPointer(void) {
+extern "C" void glVertexPointer(void) {
 }
 
-void glNormalPointer(void) {
+extern "C" void glNormalPointer(void) {
 }
 
-void glColorPointer(void) {
+extern "C" void glColorPointer(void) {
 }
 
-void glIndexPointer(void) {
+extern "C" void glIndexPointer(void) {
 }
 
-void glTexCoordPointer(void) {
+extern "C" void glTexCoordPointer(void) {
 }
 
-void glEdgeFlagPointer(void) {
+extern "C" void glEdgeFlagPointer(void) {
 }
 
-void glGetPointerv(void) {
+extern "C" void glGetPointerv(void) {
 }
 
-void glArrayElement(void) {
+extern "C" void glArrayElement(void) {
 }
 
-void glDrawArrays(void) {
+extern "C" void glDrawArrays(void) {
 }
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", glDrawElements);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", glInterleavedArrays);
 
-void glDrawRangeElements(void) {
+extern "C" void glDrawRangeElements(void) {
 }
 
-void glTexImage3D(void) {
+extern "C" void glTexImage3D(void) {
 }
 
-void glTexSubImage3D(void) {
+extern "C" void glTexSubImage3D(void) {
 }
 
-void glCopyTexSubImage3D(void) {
+extern "C" void glCopyTexSubImage3D(void) {
 }
 
-void glColorTable(void) {
+extern "C" void glColorTable(void) {
 }
 
-void glColorSubTable(void) {
+extern "C" void glColorSubTable(void) {
 }
 
-void glColorTableParameteriv(void) {
+extern "C" void glColorTableParameteriv(void) {
 }
 
-void glColorTableParameterfv(void) {
+extern "C" void glColorTableParameterfv(void) {
 }
 
-void glCopyColorSubTable(void) {
+extern "C" void glCopyColorSubTable(void) {
 }
 
-void glCopyColorTable(void) {
+extern "C" void glCopyColorTable(void) {
 }
 
-void glGetColorTable(void) {
+extern "C" void glGetColorTable(void) {
 }
 
-void glGetColorTableParameterfv(void) {
+extern "C" void glGetColorTableParameterfv(void) {
 }
 
-void glGetColorTableParameteriv(void) {
+extern "C" void glGetColorTableParameteriv(void) {
 }
 
-void glBlendEquation(void) {
+extern "C" void glBlendEquation(void) {
 }
 
-void glBlendColor(void) {
+extern "C" void glBlendColor(void) {
 }
 
-void glHistogram(void) {
+extern "C" void glHistogram(void) {
 }
 
-void glResetHistogram(void) {
+extern "C" void glResetHistogram(void) {
 }
 
-void glGetHistogram(void) {
+extern "C" void glGetHistogram(void) {
 }
 
-void glGetHistogramParameterfv(void) {
+extern "C" void glGetHistogramParameterfv(void) {
 }
 
-void glGetHistogramParameteriv(void) {
+extern "C" void glGetHistogramParameteriv(void) {
 }
 
-void glMinmax(void) {
+extern "C" void glMinmax(void) {
 }
 
-void glResetMinmax(void) {
+extern "C" void glResetMinmax(void) {
 }
 
-void glGetMinmax(void) {
+extern "C" void glGetMinmax(void) {
 }
 
-void glGetMinmaxParameterfv(void) {
+extern "C" void glGetMinmaxParameterfv(void) {
 }
 
-void glGetMinmaxParameteriv(void) {
+extern "C" void glGetMinmaxParameteriv(void) {
 }
 
-void glConvolutionFilter1D(void) {
+extern "C" void glConvolutionFilter1D(void) {
 }
 
-void glConvolutionFilter2D(void) {
+extern "C" void glConvolutionFilter2D(void) {
 }
 
-void glConvolutionParameterf(void) {
+extern "C" void glConvolutionParameterf(void) {
 }
 
-void glConvolutionParameterfv(void) {
+extern "C" void glConvolutionParameterfv(void) {
 }
 
-void glConvolutionParameteri(void) {
+extern "C" void glConvolutionParameteri(void) {
 }
 
-void glConvolutionParameteriv(void) {
+extern "C" void glConvolutionParameteriv(void) {
 }
 
-void glCopyConvolutionFilter1D(void) {
+extern "C" void glCopyConvolutionFilter1D(void) {
 }
 
-void glCopyConvolutionFilter2D(void) {
+extern "C" void glCopyConvolutionFilter2D(void) {
 }
 
-void glGetConvolutionFilter(void) {
+extern "C" void glGetConvolutionFilter(void) {
 }
 
-void glGetConvolutionParameterfv(void) {
+extern "C" void glGetConvolutionParameterfv(void) {
 }
 
-void glGetConvolutionParameteriv(void) {
+extern "C" void glGetConvolutionParameteriv(void) {
 }
 
-void glSeparableFilter2D(void) {
+extern "C" void glSeparableFilter2D(void) {
 }
 
-void glGetSeparableFilter(void) {
+extern "C" void glGetSeparableFilter(void) {
 }
 
-void glActiveTexture(void) {
+extern "C" void glActiveTexture(void) {
 }
 
-void glClientActiveTexture(void) {
+extern "C" void glClientActiveTexture(void) {
 }
 
-void glCompressedTexImage1D(void) {
+extern "C" void glCompressedTexImage1D(void) {
 }
 
-void glCompressedTexImage2D(void) {
+extern "C" void glCompressedTexImage2D(void) {
 }
 
-void glCompressedTexImage3D(void) {
+extern "C" void glCompressedTexImage3D(void) {
 }
 
-void glCompressedTexSubImage1D(void) {
+extern "C" void glCompressedTexSubImage1D(void) {
 }
 
-void glCompressedTexSubImage2D(void) {
+extern "C" void glCompressedTexSubImage2D(void) {
 }
 
-void glCompressedTexSubImage3D(void) {
+extern "C" void glCompressedTexSubImage3D(void) {
 }
 
-void glGetCompressedTexImage(void) {
+extern "C" void glGetCompressedTexImage(void) {
 }
 
-void glMultiTexCoord1d(void) {
+extern "C" void glMultiTexCoord1d(void) {
 }
 
-void glMultiTexCoord1dv(void) {
+extern "C" void glMultiTexCoord1dv(void) {
 }
 
-void glMultiTexCoord1f(void) {
+extern "C" void glMultiTexCoord1f(void) {
 }
 
-void glMultiTexCoord1fv(void) {
+extern "C" void glMultiTexCoord1fv(void) {
 }
 
-void glMultiTexCoord1i(void) {
+extern "C" void glMultiTexCoord1i(void) {
 }
 
-void glMultiTexCoord1iv(void) {
+extern "C" void glMultiTexCoord1iv(void) {
 }
 
-void glMultiTexCoord1s(void) {
+extern "C" void glMultiTexCoord1s(void) {
 }
 
-void glMultiTexCoord1sv(void) {
+extern "C" void glMultiTexCoord1sv(void) {
 }
 
-void glMultiTexCoord2d(void) {
+extern "C" void glMultiTexCoord2d(void) {
 }
 
-void glMultiTexCoord2dv(void) {
+extern "C" void glMultiTexCoord2dv(void) {
 }
 
-void glMultiTexCoord2f(void) {
+extern "C" void glMultiTexCoord2f(void) {
 }
 
-void glMultiTexCoord2fv(void) {
+extern "C" void glMultiTexCoord2fv(void) {
 }
 
-void glMultiTexCoord2i(void) {
+extern "C" void glMultiTexCoord2i(void) {
 }
 
-void glMultiTexCoord2iv(void) {
+extern "C" void glMultiTexCoord2iv(void) {
 }
 
-void glMultiTexCoord2s(void) {
+extern "C" void glMultiTexCoord2s(void) {
 }
 
-void glMultiTexCoord2sv(void) {
+extern "C" void glMultiTexCoord2sv(void) {
 }
 
-void glMultiTexCoord3d(void) {
+extern "C" void glMultiTexCoord3d(void) {
 }
 
-void glMultiTexCoord3dv(void) {
+extern "C" void glMultiTexCoord3dv(void) {
 }
 
-void glMultiTexCoord3f(void) {
+extern "C" void glMultiTexCoord3f(void) {
 }
 
-void glMultiTexCoord3fv(void) {
+extern "C" void glMultiTexCoord3fv(void) {
 }
 
-void glMultiTexCoord3i(void) {
+extern "C" void glMultiTexCoord3i(void) {
 }
 
-void glMultiTexCoord3iv(void) {
+extern "C" void glMultiTexCoord3iv(void) {
 }
 
-void glMultiTexCoord3s(void) {
+extern "C" void glMultiTexCoord3s(void) {
 }
 
-void glMultiTexCoord3sv(void) {
+extern "C" void glMultiTexCoord3sv(void) {
 }
 
-void glMultiTexCoord4d(void) {
+extern "C" void glMultiTexCoord4d(void) {
 }
 
-void glMultiTexCoord4dv(void) {
+extern "C" void glMultiTexCoord4dv(void) {
 }
 
-void glMultiTexCoord4f(void) {
+extern "C" void glMultiTexCoord4f(void) {
 }
 
-void glMultiTexCoord4fv(void) {
+extern "C" void glMultiTexCoord4fv(void) {
 }
 
-void glMultiTexCoord4i(void) {
+extern "C" void glMultiTexCoord4i(void) {
 }
 
-void glMultiTexCoord4iv(void) {
+extern "C" void glMultiTexCoord4iv(void) {
 }
 
-void glMultiTexCoord4s(void) {
+extern "C" void glMultiTexCoord4s(void) {
 }
 
-void glMultiTexCoord4sv(void) {
+extern "C" void glMultiTexCoord4sv(void) {
 }
 
-void glLoadTransposeMatrixd(void) {
+extern "C" void glLoadTransposeMatrixd(void) {
 }
 
-void glLoadTransposeMatrixf(void) {
+extern "C" void glLoadTransposeMatrixf(void) {
 }
 
-void glMultTransposeMatrixd(void) {
+extern "C" void glMultTransposeMatrixd(void) {
 }
 
-void glMultTransposeMatrixf(void) {
+extern "C" void glMultTransposeMatrixf(void) {
 }
 
-void glSampleCoverage(void) {
+extern "C" void glSampleCoverage(void) {
 }
 
-void glSamplePass(void) {
+extern "C" void glSamplePass(void) {
 }
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _Z8GL2SCEGUjPi);
@@ -2038,62 +2036,62 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZSt6__copyISt15_De
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZN12HouseKeeping11AttribStack3getERNS_10EnableMaskEj);
 
-void gluBeginCurve(void) {
+extern "C" void gluBeginCurve(void) {
 }
 
-void gluBeginPolygon(void) {
+extern "C" void gluBeginPolygon(void) {
 }
 
-void gluBeginSurface(void) {
+extern "C" void gluBeginSurface(void) {
 }
 
-void gluBeginTrim(void) {
+extern "C" void gluBeginTrim(void) {
 }
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", gluBuild1DMipmaps);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", gluBuild2DMipmaps);
 
-void gluCylinder(void) {
+extern "C" void gluCylinder(void) {
 }
 
-void gluDeleteNurbsRenderer(void) {
+extern "C" void gluDeleteNurbsRenderer(void) {
 }
 
-void gluDeleteQuadric(void) {
+extern "C" void gluDeleteQuadric(void) {
 }
 
-void gluDeleteTess(void) {
+extern "C" void gluDeleteTess(void) {
 }
 
-void gluDisk(void) {
+extern "C" void gluDisk(void) {
 }
 
-void gluEndCurve(void) {
+extern "C" void gluEndCurve(void) {
 }
 
-void gluEndPolygon(void) {
+extern "C" void gluEndPolygon(void) {
 }
 
-void gluEndSurface(void) {
+extern "C" void gluEndSurface(void) {
 }
 
-void gluEndTrim(void) {
+extern "C" void gluEndTrim(void) {
 }
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", gluErrorString);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", gluErrorUnicodeStringEXT);
 
-void gluGetNurbsProperty(void) {
+extern "C" void gluGetNurbsProperty(void) {
 }
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", gluGetString);
 
-void gluGetTessProperty(void) {
+extern "C" void gluGetTessProperty(void) {
 }
 
-void gluLoadSamplingMatrices(void) {
+extern "C" void gluLoadSamplingMatrices(void) {
 }
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", gluLookAt);
@@ -2104,291 +2102,291 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", gluNewQuadric);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", gluNewTess);
 
-void gluNextContour(void) {
+extern "C" void gluNextContour(void) {
 }
 
-void gluNurbsCallback(void) {
+extern "C" void gluNurbsCallback(void) {
 }
 
-void gluNurbsCurve(void) {
+extern "C" void gluNurbsCurve(void) {
 }
 
-void gluNurbsProperty(void) {
+extern "C" void gluNurbsProperty(void) {
 }
 
-void gluNurbsSurface(void) {
+extern "C" void gluNurbsSurface(void) {
 }
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", gluOrtho2D);
 
-void gluPartialDisk(void) {
+extern "C" void gluPartialDisk(void) {
 }
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", gluPerspective);
 
-void gluPickMatrix(void) {
+extern "C" void gluPickMatrix(void) {
 }
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", gluProject);
 
-void gluPwlCurve(void) {
+extern "C" void gluPwlCurve(void) {
 }
 
-void gluQuadricCallback(void) {
+extern "C" void gluQuadricCallback(void) {
 }
 
-void gluQuadricDrawStyle(void) {
+extern "C" void gluQuadricDrawStyle(void) {
 }
 
-void gluQuadricNormals(void) {
+extern "C" void gluQuadricNormals(void) {
 }
 
-void gluQuadricOrientation(void) {
+extern "C" void gluQuadricOrientation(void) {
 }
 
-void gluQuadricTexture(void) {
+extern "C" void gluQuadricTexture(void) {
 }
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", gluScaleImage);
 
-void gluSphere(void) {
+extern "C" void gluSphere(void) {
 }
 
-void gluTessBeginContour(void) {
+extern "C" void gluTessBeginContour(void) {
 }
 
-void gluTessBeginPolygon(void) {
+extern "C" void gluTessBeginPolygon(void) {
 }
 
-void gluTessCallback(void) {
+extern "C" void gluTessCallback(void) {
 }
 
-void gluTessEndContour(void) {
+extern "C" void gluTessEndContour(void) {
 }
 
-void gluTessEndPolygon(void) {
+extern "C" void gluTessEndPolygon(void) {
 }
 
-void gluTessNormal(void) {
+extern "C" void gluTessNormal(void) {
 }
 
-void gluTessProperty(void) {
+extern "C" void gluTessProperty(void) {
 }
 
-void gluTessVertex(void) {
+extern "C" void gluTessVertex(void) {
 }
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", gluUnProject);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", gluUnProject4);
 
-void glutInit(void) {
+extern "C" void glutInit(void) {
 }
 
-void glutInitDisplayMode(void) {
+extern "C" void glutInitDisplayMode(void) {
 }
 
-void glutInitDisplayString(void) {
+extern "C" void glutInitDisplayString(void) {
 }
 
-void glutInitWindowPosition(void) {
+extern "C" void glutInitWindowPosition(void) {
 }
 
-void glutInitWindowSize(void) {
+extern "C" void glutInitWindowSize(void) {
 }
 
-void glutMainLoop(void) {
+extern "C" void glutMainLoop(void) {
 }
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", glutCreateWindow);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", glutCreateSubWindow);
 
-void glutDestroyWindow(void) {
+extern "C" void glutDestroyWindow(void) {
 }
 
-void glutPostRedisplay(void) {
+extern "C" void glutPostRedisplay(void) {
 }
 
-void glutPostWindowRedisplay(void) {
+extern "C" void glutPostWindowRedisplay(void) {
 }
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", glutSwapBuffers);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", glutGetWindow);
 
-void glutSetWindow(void) {
+extern "C" void glutSetWindow(void) {
 }
 
-void glutSetWindowTitle(void) {
+extern "C" void glutSetWindowTitle(void) {
 }
 
-void glutSetIconTitle(void) {
+extern "C" void glutSetIconTitle(void) {
 }
 
-void glutPositionWindow(void) {
+extern "C" void glutPositionWindow(void) {
 }
 
-void glutReshapeWindow(void) {
+extern "C" void glutReshapeWindow(void) {
 }
 
-void glutPopWindow(void) {
+extern "C" void glutPopWindow(void) {
 }
 
-void glutPushWindow(void) {
+extern "C" void glutPushWindow(void) {
 }
 
-void glutIconifyWindow(void) {
+extern "C" void glutIconifyWindow(void) {
 }
 
-void glutShowWindow(void) {
+extern "C" void glutShowWindow(void) {
 }
 
-void glutHideWindow(void) {
+extern "C" void glutHideWindow(void) {
 }
 
-void glutFullScreen(void) {
+extern "C" void glutFullScreen(void) {
 }
 
-void glutSetCursor(void) {
+extern "C" void glutSetCursor(void) {
 }
 
-void glutWarpPointer(void) {
+extern "C" void glutWarpPointer(void) {
 }
 
-void glutEstablishOverlay(void) {
+extern "C" void glutEstablishOverlay(void) {
 }
 
-void glutRemoveOverlay(void) {
+extern "C" void glutRemoveOverlay(void) {
 }
 
-void glutUseLayer(void) {
+extern "C" void glutUseLayer(void) {
 }
 
-void glutPostOverlayRedisplay(void) {
+extern "C" void glutPostOverlayRedisplay(void) {
 }
 
-void glutPostWindowOverlayRedisplay(void) {
+extern "C" void glutPostWindowOverlayRedisplay(void) {
 }
 
-void glutShowOverlay(void) {
+extern "C" void glutShowOverlay(void) {
 }
 
-void glutHideOverlay(void) {
+extern "C" void glutHideOverlay(void) {
 }
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", glutCreateMenu);
 
-void glutDestroyMenu(void) {
+extern "C" void glutDestroyMenu(void) {
 }
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", glutGetMenu);
 
-void glutSetMenu(void) {
+extern "C" void glutSetMenu(void) {
 }
 
-void glutAddMenuEntry(void) {
+extern "C" void glutAddMenuEntry(void) {
 }
 
-void glutAddSubMenu(void) {
+extern "C" void glutAddSubMenu(void) {
 }
 
-void glutChangeToMenuEntry(void) {
+extern "C" void glutChangeToMenuEntry(void) {
 }
 
-void glutChangeToSubMenu(void) {
+extern "C" void glutChangeToSubMenu(void) {
 }
 
-void glutRemoveMenuItem(void) {
+extern "C" void glutRemoveMenuItem(void) {
 }
 
-void glutAttachMenu(void) {
+extern "C" void glutAttachMenu(void) {
 }
 
-void glutDetachMenu(void) {
+extern "C" void glutDetachMenu(void) {
 }
 
-void glutDisplayFunc(void) {
+extern "C" void glutDisplayFunc(void) {
 }
 
-void glutReshapeFunc(void) {
+extern "C" void glutReshapeFunc(void) {
 }
 
-void glutKeyboardFunc(void) {
+extern "C" void glutKeyboardFunc(void) {
 }
 
-void glutMouseFunc(void) {
+extern "C" void glutMouseFunc(void) {
 }
 
-void glutMotionFunc(void) {
+extern "C" void glutMotionFunc(void) {
 }
 
-void glutPassiveMotionFunc(void) {
+extern "C" void glutPassiveMotionFunc(void) {
 }
 
-void glutEntryFunc(void) {
+extern "C" void glutEntryFunc(void) {
 }
 
-void glutVisibilityFunc(void) {
+extern "C" void glutVisibilityFunc(void) {
 }
 
-void glutIdleFunc(void) {
+extern "C" void glutIdleFunc(void) {
 }
 
-void glutTimerFunc(void) {
+extern "C" void glutTimerFunc(void) {
 }
 
-void glutMenuStateFunc(void) {
+extern "C" void glutMenuStateFunc(void) {
 }
 
-void glutSpecialFunc(void) {
+extern "C" void glutSpecialFunc(void) {
 }
 
-void glutSpaceballMotionFunc(void) {
+extern "C" void glutSpaceballMotionFunc(void) {
 }
 
-void glutSpaceballRotateFunc(void) {
+extern "C" void glutSpaceballRotateFunc(void) {
 }
 
-void glutSpaceballButtonFunc(void) {
+extern "C" void glutSpaceballButtonFunc(void) {
 }
 
-void glutButtonBoxFunc(void) {
+extern "C" void glutButtonBoxFunc(void) {
 }
 
-void glutDialsFunc(void) {
+extern "C" void glutDialsFunc(void) {
 }
 
-void glutTabletMotionFunc(void) {
+extern "C" void glutTabletMotionFunc(void) {
 }
 
-void glutTabletButtonFunc(void) {
+extern "C" void glutTabletButtonFunc(void) {
 }
 
-void glutMenuStatusFunc(void) {
+extern "C" void glutMenuStatusFunc(void) {
 }
 
-void glutOverlayDisplayFunc(void) {
+extern "C" void glutOverlayDisplayFunc(void) {
 }
 
-void glutWindowStatusFunc(void) {
+extern "C" void glutWindowStatusFunc(void) {
 }
 
-void glutKeyboardUpFunc(void) {
+extern "C" void glutKeyboardUpFunc(void) {
 }
 
-void glutSpecialUpFunc(void) {
+extern "C" void glutSpecialUpFunc(void) {
 }
 
-void glutJoystickFunc(void) {
+extern "C" void glutJoystickFunc(void) {
 }
 
-void glutSetColor(void) {
+extern "C" void glutSetColor(void) {
 }
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", glutGetColor);
 
-void glutCopyColormap(void) {
+extern "C" void glutCopyColormap(void) {
 }
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", glutGet);
@@ -2401,12 +2399,12 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", glutGetModifiers);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", glutLayerGet);
 
-void glutBitmapCharacter(void) {
+extern "C" void glutBitmapCharacter(void) {
 }
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", glutBitmapWidth);
 
-void glutStrokeCharacter(void) {
+extern "C" void glutStrokeCharacter(void) {
 }
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", glutStrokeWidth);
@@ -2415,92 +2413,92 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", glutBitmapLength);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", glutStrokeLength);
 
-void glutWireSphere(void) {
+extern "C" void glutWireSphere(void) {
 }
 
-void glutSolidSphere(void) {
+extern "C" void glutSolidSphere(void) {
 }
 
-void glutWireCone(void) {
+extern "C" void glutWireCone(void) {
 }
 
-void glutSolidCone(void) {
+extern "C" void glutSolidCone(void) {
 }
 
-void glutWireCube(void) {
+extern "C" void glutWireCube(void) {
 }
 
-void glutSolidCube(void) {
+extern "C" void glutSolidCube(void) {
 }
 
-void glutWireTorus(void) {
+extern "C" void glutWireTorus(void) {
 }
 
-void glutSolidTorus(void) {
+extern "C" void glutSolidTorus(void) {
 }
 
-void glutWireDodecahedron(void) {
+extern "C" void glutWireDodecahedron(void) {
 }
 
-void glutSolidDodecahedron(void) {
+extern "C" void glutSolidDodecahedron(void) {
 }
 
-void glutWireTeapot(void) {
+extern "C" void glutWireTeapot(void) {
 }
 
-void glutSolidTeapot(void) {
+extern "C" void glutSolidTeapot(void) {
 }
 
-void glutWireOctahedron(void) {
+extern "C" void glutWireOctahedron(void) {
 }
 
-void glutSolidOctahedron(void) {
+extern "C" void glutSolidOctahedron(void) {
 }
 
-void glutWireTetrahedron(void) {
+extern "C" void glutWireTetrahedron(void) {
 }
 
-void glutSolidTetrahedron(void) {
+extern "C" void glutSolidTetrahedron(void) {
 }
 
-void glutWireIcosahedron(void) {
+extern "C" void glutWireIcosahedron(void) {
 }
 
-void glutSolidIcosahedron(void) {
+extern "C" void glutSolidIcosahedron(void) {
 }
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", glutVideoResizeGet);
 
-void glutSetupVideoResizing(void) {
+extern "C" void glutSetupVideoResizing(void) {
 }
 
-void glutStopVideoResizing(void) {
+extern "C" void glutStopVideoResizing(void) {
 }
 
-void glutVideoResize(void) {
+extern "C" void glutVideoResize(void) {
 }
 
-void glutVideoPan(void) {
+extern "C" void glutVideoPan(void) {
 }
 
-void glutReportErrors(void) {
+extern "C" void glutReportErrors(void) {
 }
 
-void glutIgnoreKeyRepeat(void) {
+extern "C" void glutIgnoreKeyRepeat(void) {
 }
 
-void glutSetKeyRepeat(void) {
+extern "C" void glutSetKeyRepeat(void) {
 }
 
-void glutForceJoystickFunc(void) {
+extern "C" void glutForceJoystickFunc(void) {
 }
 
-void glutGameModeString(void) {
+extern "C" void glutGameModeString(void) {
 }
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", glutEnterGameMode);
 
-void glutLeaveGameMode(void) {
+extern "C" void glutLeaveGameMode(void) {
 }
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", glutGameModeGet);
@@ -2603,14 +2601,14 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZN7CubeMap10face_s
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZN7CubeMap9draw_faceENS_8FaceEnumE);
 
-void _ZN7CubeMap11draw_face_wENS_8FaceEnumE(void) {
+void CubeMap::draw_face_w(FaceEnum) {
 }
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZN7CubeMap4loadEv);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZN7CubeMap9draw_cubeEv);
 
-void _ZN7CubeMap11draw_cube_wEv(void) {
+void CubeMap::draw_cube_w() {
 }
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZN7CubeMap4drawEb);
@@ -2899,7 +2897,7 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZNK6interp20KeyFra
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZN6interp20KeyFrameSequenceBaseIfEixEj);
 
-void _ZN6interp16KeyFrameSequenceIfE9typed_fixEv(void) {
+template<> void interp::KeyFrameSequence<float>::typed_fix() {
 }
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZN6interp20KeyFrameSequenceBaseIfE18makeConsistantWithEPKNS_23VirtualKeyFrameSequenceE);
@@ -3036,7 +3034,7 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZN7glutils20Positi
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZN7glutils20PositioningInterface21set_inverse_transformEN4math6matrixE);
 
-void _ZN7glutils20PositioningInterface12set_callbackEv(void) {
+void glutils::PositioningInterface::set_callback() {
 }
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZN7glutils20PositioningInterface4saveESs);
@@ -3181,7 +3179,7 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZN7glutils18Trackb
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZN7glutils18TrackballInterfaceC1Ev);
 
-void _ZN7glutils18TrackballInterface5trackEv(void) {
+void glutils::TrackballInterface::track() {
 }
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZN7glutils18TrackballInterface5resetEv);
@@ -3506,7 +3504,7 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZN2gl7FrustumEffff
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZN2gl5OrthoEffffff);
 
-void _ZN2gl10PickMatrixEffffPi(void) {
+void gl::PickMatrix(float, float, float, float, int *) {
 }
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZN2gl11TranslatefvEPKf);
@@ -3521,7 +3519,7 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZN2gl6ColorvERKN4m
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZN2gl7VertexvERKN4math11vector_xyzwE);
 
-void _ZN2gl10ErrorCheckEPKci(void) {
+void gl::ErrorCheck(const char *, int) {
 }
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _GLOBAL__I__ZN2gl11_name_stackE);
@@ -3576,7 +3574,7 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _GLOBAL__I__ZN11vec
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _Z41__static_initialization_and_destruction_0ii_4D7EC);
 
-void _ZNK6interp16KeyFrameSequenceIN4math10quaternionEE4dumpEPKc(void) {
+template<> void interp::KeyFrameSequence<math::quaternion>::dump(const char *) const {
 }
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZNK6interp16KeyFrameSequenceIN4math10quaternionEE13calc_gradientES2_S2_f);
@@ -3981,10 +3979,10 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZN5scene13DefaultS
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZNK5scene13DefaultShader10getTextureEv);
 
-void _ZN5scene13DefaultShader7flattenERN4math14TransformStackE(void) {
+void scene::DefaultShader::flatten(math::TransformStack &) {
 }
 
-void _ZN5scene13DefaultShader4saveERSo(void) {
+void scene::DefaultShader::save(std::ostream &) {
 }
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _GLOBAL__I__ZN5scene13DefaultShaderC2ESsb);
@@ -4067,13 +4065,13 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZNK5scene5Graph14t
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZN5scene5Graph8add_nodeEN6common6handleINS_4NodeEEE);
 
-void _ZN5scene5Graph9printMapAEv(void) {
+void scene::Graph::printMapA() {
 }
 
-void _ZN5scene5Graph9printMapUEv(void) {
+void scene::Graph::printMapU() {
 }
 
-void _ZN5scene5Graph9printMapOEv(void) {
+void scene::Graph::printMapO() {
 }
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZN5scene5Graph5clearEv);
@@ -4564,21 +4562,21 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZN5scene5Graph4sav
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZN5scene8Material4saveERSo);
 
-void _ZN5scene5Group4saveERSo(void) {
+void scene::Group::save(std::ostream &) {
 }
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZN5scene4Mesh4saveERSo);
 
-void _ZN5scene4Node4saveERSo(void) {
+void scene::Node::save(std::ostream &) {
 }
 
-void _ZN5scene6Object4saveERSo(void) {
+void scene::Object::save(std::ostream &) {
 }
 
-void _ZN5scene5Setup4saveERSo(void) {
+void scene::Setup::save(std::ostream &) {
 }
 
-void _ZN5scene5Shape4saveERSo(void) {
+void scene::Shape::save(std::ostream &) {
 }
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZN5scene15StaticTransform4saveERSo);
@@ -4619,19 +4617,19 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _Z41__static_initia
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZN5scene5Graph8traverseENS_13TraversalTypeERN3sgl7FrustumERKN4math6matrixES8_S8_f);
 
-void _ZN5scene4Node8traverseERNS_17TraversalVarStackE(void) {
+void scene::Node::traverse(TraversalVarStack &) {
 }
 
-void _ZN5scene13DefaultShader8traverseERNS_17TraversalVarStackE(void) {
+void scene::DefaultShader::traverse(TraversalVarStack &) {
 }
 
-void _ZN5scene8Material8traverseERNS_17TraversalVarStackE(void) {
+void scene::Material::traverse(TraversalVarStack &) {
 }
 
-void _ZN5scene5Setup8traverseERNS_17TraversalVarStackE(void) {
+void scene::Setup::traverse(TraversalVarStack &) {
 }
 
-void _ZN5scene7Texture8traverseERNS_17TraversalVarStackE(void) {
+void scene::Texture::traverse(TraversalVarStack &) {
 }
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZN5scene6Object8traverseERNS_17TraversalVarStackE);
@@ -4656,7 +4654,7 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _GLOBAL__D__ZN5scen
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _Z41__static_initialization_and_destruction_0ii_84AF0);
 
-void _ZN5scene5Graph9save_vrmlESs(void) {
+void scene::Graph::save_vrml(std::string) {
 }
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _GLOBAL__I__ZN5scene5Graph9save_vrmlESs);
@@ -4765,7 +4763,7 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZN5scene8Material5
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZN5scene8Material5leaveEv);
 
-void _ZN5scene8Material7flattenERN4math14TransformStackE(void) {
+void scene::Material::flatten(math::TransformStack &) {
 }
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _GLOBAL__I__ZN5scene8MaterialC2ESsb);
@@ -4998,7 +4996,7 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZN5scene19MeshData
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _Z41__static_initialization_and_destruction_0ii_90870);
 
-void _ZN5scene4Node16set_default_nameEv(void) {
+void scene::Node::set_default_name() {
 }
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZN5scene4Node7MembersC2ESsb);
@@ -5023,7 +5021,7 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZN5scene4NodeD1Ev)
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZN5scene4NodeD0Ev);
 
-void _ZN5scene4Node7flattenERN4math14TransformStackE(void) {
+void scene::Node::flatten(math::TransformStack &) {
 }
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZN5scene4Node15incrParentCountEv);
@@ -5084,7 +5082,7 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZN5scene5SetupD1Ev
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZN5scene5SetupD0Ev);
 
-void _ZN5scene5Setup7flattenERN4math14TransformStackE(void) {
+void scene::Setup::flatten(math::TransformStack &) {
 }
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _GLOBAL__I__ZN5scene5SetupC2ESsb);
@@ -5095,10 +5093,10 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZNK5scene5Setup11g
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZNK5scene5Setup5cloneESs);
 
-void _ZN5scene5Setup5enterEv(void) {
+void scene::Setup::enter() {
 }
 
-void _ZN5scene5Setup5leaveEv(void) {
+void scene::Setup::leave() {
 }
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZN6common6handleIN5scene4NodeEEC1INS1_5SetupEEERKNS0_IT_EE);
@@ -5227,7 +5225,7 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZN5scene7Texture7s
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZN5scene7Texture16setOverrideAlphaEbh);
 
-void _ZN5scene7Texture7flattenERN4math14TransformStackE(void) {
+void scene::Texture::flatten(math::TransformStack &) {
 }
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _GLOBAL__I__ZN5scene7Texture12debug_outputE);
@@ -5648,7 +5646,7 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZN3sgl4Heap4sortEv
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZN3sgl4Heap13check_heapifyEv);
 
-void _ZN3sgl4Heap4dumpEv(void) {
+void sgl::Heap::dump() {
 }
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZN3sgl4Heap10check_sortEv);
@@ -6235,7 +6233,7 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZN3sgl11MeshBuilde
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZN3sgl11MeshBuilder17transformListSnapEv);
 
-void _ZN3sgl11MeshBuilder16transformListEndEv(void) {
+void sgl::MeshBuilder::transformListEnd() {
 }
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZN3sgl11MeshBuilder18transformListCloseEb);
@@ -6524,10 +6522,7 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZSt26__uninitializ
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _Z41__static_initialization_and_destruction_0ii_D2750);
 
-void _ZN3sgl12TransformSet9TransformC2Ev(void) {
-}
-
-void _ZN3sgl12TransformSet9TransformC1Ev(void) {
+sgl::TransformSet::Transform::Transform() {
 }
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZN3sgl12TransformSet9TransformC2EN4math6matrixE);
@@ -6940,10 +6935,7 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZSt6fill_nIN9__gnu
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _Z41__static_initialization_and_destruction_0ii_E2678);
 
-void _ZN2sh6MatrixC2Ev(void) {
-}
-
-void _ZN2sh6MatrixC1Ev(void) {
+sh::Matrix::Matrix() {
 }
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZN2sh6Matrix8IdentityEv);
@@ -6966,7 +6958,7 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZN2sh3PRTC2ENS_4Ar
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZN2sh3PRTC1ENS_4Args4ToolE);
 
-void _ZN2sh3PRT12import_modelEv(void) {
+void sh::PRT::import_model() {
 }
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZN2sh3PRT18init_mesh_verticesEv);
@@ -7327,7 +7319,7 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZN2sh9VectorRGB4sa
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZN2sh9VectorRGB4loadEPKc);
 
-void _ZNK2sh9VectorRGB5printEPKc(void) {
+void sh::VectorRGB::print(const char *) const {
 }
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _GLOBAL__I__ZNK2sh6Vector5printEPKc);
@@ -7518,7 +7510,7 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZNK12basic_parser5
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZN12basic_parser5c_strEv);
 
-void _ZN12basic_parser8watch_tpEj(void) {
+void basic_parser::watch_tp(unsigned int) {
 }
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _GLOBAL__I__ZN12basic_parserC2EPKcjS1_);
@@ -7573,16 +7565,10 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _GLOBAL__I__ZNK12ba
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _GLOBAL__D__ZNK12basic_parser3getIfEET_v);
 
-void _ZN5CCmprC2Ev(void) {
+CCmpr::CCmpr() {
 }
 
-void _ZN5CCmprC1Ev(void) {
-}
-
-void _ZN5CCmprD2Ev(void) {
-}
-
-void _ZN5CCmprD1Ev(void) {
+CCmpr::~CCmpr() {
 }
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZN5CCmpr12SetInputDataEPKvi);
