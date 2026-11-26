@@ -4,6 +4,9 @@
 extern int _info;
 int game_net_init(void);
 
+typedef struct { int a; int b; int c; int d; } INFO_T;
+#define INFO (*(INFO_T *)&_info)
+
 void SpriteScale(void) {
 }
 
@@ -23,7 +26,15 @@ int FadeState(void)
 void FadeDraw(void) {
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_moonball_main", game_init);
+#define INFO (*(INFO_T *)&_info)
+int game_init(void)
+{
+	INFO.a = 0;
+	INFO.b = 0;
+	INFO.c = 0;
+	INFO.d = 0;
+	return game_net_init();
+}
 
 int game_term(void) {
     return game_net_term();
