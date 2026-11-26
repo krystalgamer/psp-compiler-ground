@@ -5,11 +5,12 @@
 
 typedef struct {
 	u8 unk0;		/* +0x0 */
-	u8 pad1;
+	u8 unk1;		/* +0x1 */
 	s8 unk2;		/* +0x2 */
 	u8 pad3;
 	s16 unk4;	/* +0x4 */
-	u8 pad6[0xA - 6];
+	s16 unk6;	/* +0x6 */
+	s16 unk8;	/* +0x8 */
 	s16 se;			/* +0xA: sound effect to play this frame */
 } PZL_SND;
 
@@ -47,32 +48,37 @@ typedef struct {
 	u8 next;		/* 0x005: next ball color */
 	u8 unk006;		/* 0x006 */
 	u8 ndrop;		/* 0x007 */
-	u8 pad008[2];
+	u16 unk008;		/* 0x008 */
 	s16 bx;			/* 0x00A: ball position */
 	s16 by;			/* 0x00C */
 	s16 unk00E;		/* 0x00E */
-	u8 pad010[0x20 - 0x10];
+	int fx;			/* 0x010: 16.16 ball position */
+	int fy;			/* 0x014 */
+	int vx;			/* 0x018: ball speed */
+	int vy;			/* 0x01C */
 	s16 ofs_y;		/* 0x020 */
 	s8 scroll;		/* 0x022: map lines pushed down */
 	u8 unk023;		/* 0x023 */
-	u8 pad024[2];
+	u8 unk024;		/* 0x024 */
+	u8 unk025;		/* 0x025 */
 	s8 unk026;		/* 0x026 */
 	u8 unk027;		/* 0x027 */
 	s16 gx[256];		/* 0x028: guide dots */
 	s16 gy[256];		/* 0x228 */
 	u8 unk428;		/* 0x428 */
 	s8 unk429;		/* 0x429 */
-	u8 pad42A[2];
-	s8 guide_n;		/* 0x42C */
+	s16 unk42A;		/* 0x42A */
+	u8 guide_n;		/* 0x42C */
 	u8 guide_anim;		/* 0x42D */
 	u8 guide_col;		/* 0x42E */
 	u8 color;		/* 0x42F: current ball color */
-	int unk430;		/* 0x430 */
+	unsigned int unk430;	/* 0x430 */
 	int unk434;		/* 0x434 */
 	u8 pad438[0x43C - 0x438];
 	int key;		/* 0x43C: held buttons */
 	int key_rep;		/* 0x440: repeated buttons */
-	u8 pad444[0x44C - 0x444];
+	int unk444;		/* 0x444 */
+	int unk448;		/* 0x448 */
 	s8 bubstat;		/* 0x44C */
 	s8 bubstat_arg;		/* 0x44D */
 	s8 bubline;		/* 0x44E */
@@ -83,7 +89,7 @@ typedef struct {
 	u16 unk456;		/* 0x456 */
 	s16 unk458;		/* 0x458 */
 	u8 unk45A;		/* 0x45A */
-	u8 pad45B;
+	u8 unk45B;		/* 0x45B */
 	u8 unk45C;		/* 0x45C */
 	s8 monitor;		/* 0x45D */
 	s8 monitor_anim;	/* 0x45E */
@@ -108,8 +114,11 @@ typedef struct {
 		u8 pad3;
 		PZL_DROP d[NDROP];	/* 0x484 */
 	} drop;			/* 0x480 */
-	u8 pad_drop[0x13B4 - 0x484 - NDROP * 6];
-	PZL_ENT ent[192];	/* 0x13B4 */
+	u8 pad_drop[0x13B0 - 0x484 - NDROP * 6];
+	struct {
+		u8 pad0[4];
+		PZL_ENT e[192];	/* 0x13B4 */
+	} ent;			/* 0x13B0 */
 	u8 pad19B4[0x1AF0 - 0x19B4];
 	struct {
 		u8 pad0[4];
