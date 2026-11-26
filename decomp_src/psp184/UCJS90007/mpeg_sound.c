@@ -305,9 +305,70 @@ SceInt32 sound_checkConditionEnd(t_soundBuffer *pSound)
 	return 0;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/mpeg_sound", soundbuf_func);
+int sceKernelDelayThread(unsigned int delay);
+void *memcpy(void *d, const void *s, unsigned int n);
+SceInt32 control_setCondition(t_conditionCtrl *pCtrl, SceInt32 cond);
+SceInt32 control_waitConditionSoundStart(t_conditionCtrl *pCtrl);
+int sceWaveAudioGetRestSample(int channel);
+int sceWaveAudioWriteBlocking(int channel, int vol1, int vol2, void *buf);
+int sceKernelExitThread(int status);
+int sceKernelDelayThread(unsigned int delay);
+int sceKernelWaitSema(SceUID semid, int signal, unsigned int *timeout);
+int sceKernelSignalSema(SceUID semid, int signal);
+void *memcpy(void *dst, const void *src, unsigned int n);
+extern SceInt32 D_0008343C;
+extern SceInt32 D_0008D34C;
+int soundbuf_func(SceSize size, void *argp)
+{
+	SceInt32 ret;
+	t_avSyncControl **ppAvSync;
+	t_avSyncControl *pAvSync;
+	t_soundBuffer *pSound;
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/mpeg_sound", soundbuf_swapbuf);
+	ppAvSync = argp;
+	pAvSync = *ppAvSync;
+	pSound = pAvSync->pSound;
+	control_waitConditionSoundStart(pSound->pCtrl);
+	for (;;) {
+		sound_checkConditionEnd(pSound);
+		if (sound_getStatus(pSound) == 3)
+			break;
+		if (soundbuf_checkDecodeEnd(pSound) == 1 && soundbuf_getCurrentCount(pSound) == 0)
+			break;
+		if (soundbuf_getCurrentCount(pSound) > 0) {
+			ret = soundbuf_output(pSound);
+			if (ret < 0) {
+				D_0008D34C = ret;
+				sound_sendErrCondition(pSound);
+				return 1;
+			}
+			sceKernelWaitSema(pSound->lockSema, 1, NULL);
+			pSound->count--;
+			sceKernelSignalSema(pSound->lockSema, 1);
+			soundframeCount++;
+		} else {
+			soundframeDelay++;
+			sceKernelDelayThread(1000);
+		}
+	}
+	while (sceWaveAudioGetRestSample(0) != 0)
+		sceKernelDelayThread(1000);
+	control_setCondition(pSound->pCtrl, 0x20);
+	sceKernelExitThread(0);
+	return 0;
+}
+
+static SceInt32 soundbuf_swapbuf(t_soundBuffer *pSound, SceChar8 *buf)
+{
+	SceInt32 ret;
+
+	memcpy(outputBuf[D_0008343C], buf, pSound->bufSize);
+	pSound->read = (pSound->read + 1) % pSound->size;
+	ret = sceWaveAudioWriteBlocking(0, 0x8000, 0x8000, outputBuf[D_0008343C]);
+	if (ret >= 0)
+		D_0008343C ^= 1;
+	return ret;
+}
 
 SceInt32 soundbuf_output(t_soundBuffer *pSound)
 {

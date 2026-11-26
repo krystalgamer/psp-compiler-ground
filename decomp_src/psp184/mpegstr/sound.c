@@ -183,7 +183,48 @@ static SceInt32 soundbuf_checkDecodeEnd(t_soundBuffer *pSound)
 	return 0;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/mpegstr/nonmatchings/sound", soundbuf_func);
+SceInt32 control_setCondition(t_conditionCtrl *pCtrl, SceInt32 cond);
+SceInt32 control_waitConditionSoundStart(t_conditionCtrl *pCtrl);
+int sceWaveAudioGetRestSample(int channel);
+int sceKernelExitThread(int status);
+int sceKernelDelayThread(unsigned int delay);
+int sceKernelWaitSema(SceUID semid, int signal, unsigned int *timeout);
+int sceKernelSignalSema(SceUID semid, int signal);
+int printf(const char *fmt, ...);
+
+const char D_00012444[] = "sound count = %d\n";
+const char D_00012458[] = "sound delay = %d\n";
+
+int soundbuf_func(SceSize size, void *argp)
+{
+	t_avSyncControl **ppAvSync;
+	t_avSyncControl *pAvSync;
+	t_soundBuffer *pSound;
+
+	ppAvSync = argp;
+	pAvSync = *ppAvSync;
+	pSound = pAvSync->pSound;
+	control_waitConditionSoundStart(pSound->pCtrl);
+	while (soundbuf_checkDecodeEnd(pSound) != 1 || soundbuf_getCurrentCount(pSound) != 0) {
+		if (soundbuf_getCurrentCount(pSound) > 0) {
+			soundbuf_output(pSound);
+			sceKernelWaitSema(pSound->lockSema, 1, NULL);
+			pSound->count--;
+			sceKernelSignalSema(pSound->lockSema, 1);
+			soundframeCount++;
+		} else {
+			soundframeDelay++;
+			sceKernelDelayThread(1000);
+		}
+	}
+	while (sceWaveAudioGetRestSample(0) != 0)
+		sceKernelDelayThread(1000);
+	printf(D_00012444, soundframeCount);
+	printf(D_00012458, soundframeDelay);
+	control_setCondition(pSound->pCtrl, 0x20);
+	sceKernelExitThread(0);
+	return 0;
+}
 
 void *memcpy(void *d, const void *s, unsigned int n);
 void *memcpy(void *d, const void *s, unsigned int n);
