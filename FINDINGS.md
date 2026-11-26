@@ -594,13 +594,19 @@ libgcc/libsupc++ DWARF names `gcc-3.3.6/` paths.
   shorter `ASM_OUTPUT_ALIGNED_DECL_COMMON` (22 lines become 1).  So
   1.9.2 adds nothing to mips.h before `mips_builtins` (the VFPU
   declarations of 1.8.3 are there, the 1.8.4.internal lines are not).
-- No upstream 3.3.4–3.3.6 change shows in any code compared so far:
-  a 1.8.4 tree with the change below (`cc1-184ins`) and the 1.9.2 tree
-  give identical code for every reproduced function (newlib, libgcc,
-  libgum, libgu, libfpu, gim_picture), and the 3.3.3 libgcc2/dp-bit/
-  fp-bit/unwind-dw2 sources still reproduce 1.9.2's libgcc.  The 3.3.6
-  libsupc++ (eh_*.cc, tinfo.cc) built by `cc1plus-1.9.2` reproduces all
-  8 C++ units.
+- **Upstream 3.3.4–3.3.6 changes do show**: SDK libgim_picture's
+  `sceGimPictureLoad` (unmodified SDK 6.6.0 gim_picture.c) matches with
+  the 1.9.2 tree and not with a 1.8.4 tree that has the `ins` change below
+  (`cc1-184ins`, an experiment); its relocation loop `*p++ += base` keeps
+  a pointer copy (`addu v1,a0,zero`) because the post-increment of `p` is
+  emitted before the store.  That is gcc-3.3.4's PR middle-end/14470
+  (expr.c `store_expr` emits only the increments queued while expanding
+  the source, `emit_insns_enqueued_after_mark`): the 1.8.4 tree with
+  3.3.6's expr.c reproduces it.  The other functions compared (libgum,
+  libgu, libfpu, font, the rest of gim_picture) are the same with both;
+  the 3.3.3 libgcc2/dp-bit/fp-bit/unwind-dw2 sources still reproduce
+  1.9.2's libgcc, and the 3.3.6 libsupc++ (eh_*.cc, tinfo.cc) built by
+  `cc1plus-1.9.2` reproduces all 8 C++ units.
 - **Register ext/ins are on by default** (`-mext` in
   `config/compilers.txt`): 1.9.2's newlib and libgcc use them, and so does
   the SDK's libgim_picture although its Makefile (SDK 6.6.0
