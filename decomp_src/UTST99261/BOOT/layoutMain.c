@@ -143,7 +143,28 @@ char *lo_fullUrl(BOX *box, char *url) {
     return full;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/layoutMain", lo_getActiveFrameBodybox);
+BOX *lo_getActiveFrameBodybox(void) {
+    HISTNODE *h;
+    BOX *box;
+    int *nda;
+
+    nda = gESPRIT_LO_GLOBAL_NDA;
+    if (*nda == 0) {
+        return NULL;
+    }
+    h = HST_searchSessionIDHistoryNode(*nda);
+    if (h == NULL) {
+        return NULL;
+    }
+    box = h->body;
+    if (box == NULL) {
+        return NULL;
+    }
+    if (checkBoxValidity(box) != 0) {
+        return box;
+    }
+    return NULL;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
