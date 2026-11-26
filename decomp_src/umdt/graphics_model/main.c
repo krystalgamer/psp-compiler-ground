@@ -29,6 +29,56 @@ extern Vec3 g_rotate;
 extern char g_running;
 extern char g_reload;
 
+typedef struct ScePspFVector3 ScePspFVector3;
+typedef struct ScePspFVector4 ScePspFVector4;
+typedef struct ScePspFMatrix4 ScePspFMatrix4;
+struct ScePspFVector3 { float x, y, z; };
+struct ScePspFVector4 { float x, y, z, w; };
+struct ScePspFMatrix4 { ScePspFVector4 x, y, z, w; };
+typedef struct SceGmoModel SceGmoModel;
+typedef struct SceGmoMotion SceGmoMotion;
+
+extern SceGmoModel *g_model;
+extern int g_frame;
+extern int g_vbl_count;
+extern int g_vbl_step;
+extern int g_vbl_time;
+extern int g_cpu_load;
+extern int g_gpu_load;
+extern char g_cache_buf[1024 * 1024];
+extern char *g_cache_top;
+extern char *g_cache_packets[50];
+extern char *g_cache_packet;
+extern float g_cache_loop[2];
+extern float g_cache_fps;
+extern float g_cache_frame;
+extern ScePspFVector3 g_scale;
+
+void sceGmoModelDelete(SceGmoModel *model);
+int sceGmoModelGetCurrentMotion(SceGmoModel *model);
+SceGmoMotion *sceGmoModelGetMotion(SceGmoModel *model, int index);
+const float *sceGmoMotionGetFrameLoop(SceGmoMotion *motion);
+float sceGmoMotionGetFrameRate(SceGmoMotion *motion);
+float sceGmoMotionGetFrame(SceGmoMotion *motion);
+void sceGmoModelSetWorldMatrix(SceGmoModel *model, const ScePspFMatrix4 *m);
+void sceGmoModelAnimate(SceGmoModel *model, float step);
+void sceGmoModelUpdate(SceGmoModel *model);
+void sceGmoModelDraw(SceGmoModel *model);
+unsigned int sceKernelGetSystemTimeLow(void);
+int sceGuSync(int mode, int what);
+int sceDisplayWaitVblankStart(void);
+void *sceGuSwapBuffers(void);
+unsigned int sceDisplayGetVcount(void);
+void sceGumMatrixMode(int mode);
+void sceGumLoadIdentity(void);
+void sceGumTranslate(const ScePspFVector3 *v);
+void sceGumRotateY(float a);
+void sceGumRotateX(float a);
+void sceGumPushMatrix(void);
+void sceGumPopMatrix(void);
+void sceGumScale(const ScePspFVector3 *v);
+void sceGumStoreMatrix(ScePspFMatrix4 *m);
+
 void *malloc(unsigned int size)
 {
 	int i;
@@ -170,13 +220,77 @@ INCLUDE_RODATA("tmp/asm/umdt/graphics_model/nonmatchings/main", D_00016340);
 
 INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/main", end_scene);
 
-INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/main", swap_buffers);
+static void swap_buffers()
+{
+	int cpu_time = sceKernelGetSystemTimeLow();
+	int gpu_time;
+	int vbl_time;
+	int vbl_count;
+
+	sceGuSync(0, 0);
+	gpu_time = sceKernelGetSystemTimeLow();
+	sceDisplayWaitVblankStart();
+	sceGuSwapBuffers();
+	g_frame++;
+	vbl_time = sceKernelGetSystemTimeLow();
+	vbl_count = sceDisplayGetVcount();
+	if (g_vbl_count >= 0) {
+		g_vbl_step = vbl_count - g_vbl_count;
+		if (g_frame % 6 == 0) {
+			g_cpu_load = (cpu_time - g_vbl_time) * 100 / 16667;
+			g_gpu_load = (gpu_time - g_vbl_time) * 100 / 16667;
+		}
+	}
+	g_vbl_time = vbl_time;
+	g_vbl_count = vbl_count;
+}
 
 INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/main", move_objects);
 
-INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/main", draw_objects);
+static void draw_objects()
+{
+	int i;
+	float step = g_vbl_step * (1.0f / 60.0f);
+	ScePspFMatrix4 m;
 
-INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/main", clear_cache);
+	sceGumMatrixMode(2);
+	sceGumLoadIdentity();
+	sceGumTranslate((ScePspFVector3 *)&g_translate);
+	sceGumRotateY(g_rotate.y);
+	sceGumRotateX(g_rotate.x);
+	for (i = 0; i < g_menu_count; i++) {
+		ScePspFVector3 move = { ((i % 2 == 0) ? i : -i) * 6, 0, 0 };
+		SceGmoModel *model;
+
+		sceGumTranslate(&move);
+		sceGumPushMatrix();
+		sceGumScale(&g_scale);
+		sceGumStoreMatrix(&m);
+		model = g_model;
+		sceGmoModelSetWorldMatrix(model, &m);
+		sceGmoModelAnimate(model, step);
+		sceGmoModelUpdate(model);
+		sceGmoModelDraw(model);
+		sceGumPopMatrix();
+		step = 0.0f;
+	}
+}
+
+static void clear_cache()
+{
+	SceGmoModel *model = g_model;
+	int current = sceGmoModelGetCurrentMotion(model);
+	SceGmoMotion *motion = sceGmoModelGetMotion(model, current);
+	const float *loop = sceGmoMotionGetFrameLoop(motion);
+
+	g_cache_loop[0] = (loop == 0) ? 0.0f : loop[0];
+	g_cache_loop[1] = (loop == 0) ? 0.0f : loop[1];
+	g_cache_fps = sceGmoMotionGetFrameRate(motion);
+	g_cache_frame = sceGmoMotionGetFrame(motion);
+	memset(g_cache_packets, 0, sizeof(g_cache_packets));
+	g_cache_top = g_cache_buf;
+	g_cache_packet = 0;
+}
 
 INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/main", update_cache);
 
@@ -190,7 +304,11 @@ INCLUDE_RODATA("tmp/asm/umdt/graphics_model/nonmatchings/main", D_0001643C);
 
 INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/main", load_objects);
 
-INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/main", unload_objects);
+static void unload_objects()
+{
+	sceGmoModelDelete(g_model);
+	g_model = 0;
+}
 
 INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/main", load_file);
 
@@ -212,9 +330,32 @@ void draw_rect(int x, int y, int w, int h, int color)
 	sceGuDrawArray(6, format, 2, 0, vertex);
 }
 
-INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/main", inverse_orthonormal);
+static ScePspFMatrix4 *inverse_orthonormal(ScePspFMatrix4 *m0, const ScePspFMatrix4 *m1)
+{
+	float x = -m1->w.x;
+	float y = -m1->w.y;
+	float z = -m1->w.z;
 
-INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/main", rotate_vector3);
+	m0->x = (ScePspFVector4){ m1->x.x, m1->y.x, m1->z.x, 0 };
+	m0->y = (ScePspFVector4){ m1->x.y, m1->y.y, m1->z.y, 0 };
+	m0->z = (ScePspFVector4){ m1->x.z, m1->y.z, m1->z.z, 0 };
+	m0->w = (ScePspFVector4){ m1->x.x * x + m1->x.y * y + m1->x.z * z,
+	                          m1->y.x * x + m1->y.y * y + m1->y.z * z,
+	                          m1->z.x * x + m1->z.y * y + m1->z.z * z, 1 };
+	return m0;
+}
+
+static ScePspFVector3 *rotate_vector3(ScePspFVector3 *v0, const ScePspFMatrix4 *m1, const ScePspFVector3 *v2)
+{
+	float x = v2->x;
+	float y = v2->y;
+	float z = v2->z;
+
+	v0->x = m1->x.x * x + m1->y.x * y + m1->z.x * z;
+	v0->y = m1->x.y * x + m1->y.y * y + m1->z.y * z;
+	v0->z = m1->x.z * x + m1->y.z * y + m1->z.z * z;
+	return v0;
+}
 
 void GraphicsModelTestVersion(char *buf)
 {
