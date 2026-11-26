@@ -29,7 +29,7 @@ int GuifontClear(GUIFONT *font);
 typedef struct { /* size 0x20 */
     s8 type;            /* 2 */
     int unk4;
-    int color;          /* 0x8 */
+    GUIFONT *font;      /* 0x8 */
     s16 unkC;
     s16 unkE;
     s16 unk10;
@@ -46,7 +46,7 @@ typedef struct { /* size 0x10 */
 
 extern int _i_guigraphicsmalloc;
 extern int _i_guipixmapmalloc;
-extern int D_00584B68;
+extern GUIFONT *D_00584B68;    /* default font */
 
 int GuigraphicsClear(GUIGRAPHICS *g);
 int GuipixmapClear(GUIPIXMAP *p);
@@ -56,25 +56,20 @@ typedef struct GUIWIDGET { /* size 0x64 */
     struct GUIWIDGET *parent;   /* 0x4 */
     struct GUIWIDGET *child;    /* 0x8 */
     struct GUIWIDGET *next;     /* 0xC */
-    int color;                  /* 0x10 */
+    GUIFONT *font;              /* 0x10 */
     unsigned int flags;         /* 0x14: low 4 bits = kind */
-    int unk18;
-    int unk1C;
-    int unk20;
-    int unk24;
-    int unk28;
-    int unk2C;
-    int unk30;
-    s16 unk34;
+    int fg[3];                  /* 0x18 */
+    int bg[3];                  /* 0x24 */
+    s16 fg15;                   /* 0x30 */
+    s16 bg15;                   /* 0x32 */
+    s16 focus15;                /* 0x34 */
     s16 unk36;
     s16 unk38;
-    s16 unk3A;
-    s16 unk3C;
-    s16 unk3E;
-    s16 unk40;
-    s16 unk42;
-    int unk44;
-    int unk48;
+    s16 x;                      /* 0x3A */
+    s16 y;                      /* 0x3C */
+    s16 w;                      /* 0x3E */
+    s16 h;                      /* 0x40 */
+    s16 dirty[4];               /* 0x42: x, y, w, h */
     void *unk4C;
     union { void *p; s16 n; } unk50;
     u8 unk54[0x10];
@@ -82,11 +77,11 @@ typedef struct GUIWIDGET { /* size 0x64 */
 
 typedef struct {
     GUIWIDGET *root;            /* 0x0 */
-    GUIWIDGET *unk4;
+    GUIWIDGET *focus;           /* 0x4 */
     int unk8;
     int flags;                  /* 0xC */
     int unk10;
-    int unk14;
+    GUIWIDGET *top;             /* 0x14 */
     GUIFONT *font;              /* 0x18 */
     int unk1C;
     int mode;                   /* 0x20 */
@@ -124,6 +119,9 @@ void *GUI_Graphics_getGraphics(void *g, void *pixmap);
 void GUI_Graphics_freePixmap(void *pixmap);
 void GUI_Graphics_freeGraphics(void *g);
 void dizInit(void);
+void zWindDraw(GUIWIDGET *w);
+void GUI_ScrollPane_getScrollPosition(GUIWIDGET *w, int *x, int *y);
+void GUI_ScrollPane_getViewportSize(GUIWIDGET *w, int *width, int *height);
 void zWindExcEvent(GUIWIDGET *w, int type, GUIEVENT *ev, int a, int b);
 GUIFONT *GuifontCreate(void);
 int GuifontDelete(GUIFONT *font);

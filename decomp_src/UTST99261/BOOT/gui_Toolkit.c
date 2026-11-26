@@ -11,7 +11,7 @@ int GUI_Toolkit_initializeSystem(GUIWIDGET *w, int arg1) {
         puts("[X2]GUI_Toolkit_initializeSystem");
         return -1;
     }
-    s_windsystem_data.unk14 = (int)w;
+    s_windsystem_data.top = w;
     s_windsystem_data.unk10 = arg1;
     s_windsystem_data.unk1C = (int)GUI_Graphics_createGraphics();
     s_windsystem_data.width = s_windsystem_init.width;

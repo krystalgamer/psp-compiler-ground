@@ -38,7 +38,7 @@ int GuigraphicsClear(GUIGRAPHICS *g) {
     g->unkE = 0;
     g->unk10 = 0;
     g->unk12 = 0;
-    g->color = D_00584B68;
+    g->font = D_00584B68;
     return 1;
 }
 

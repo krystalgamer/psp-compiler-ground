@@ -4,7 +4,7 @@
 
 int GuiwidgetInit(void) {
     s_windsystem_data.root = NULL;
-    s_windsystem_data.unk4 = NULL;
+    s_windsystem_data.focus = NULL;
     s_windsystem_data.unk8 = 0;
     return 1;
 }
@@ -47,13 +47,13 @@ GUIWIDGET *GuiwidgetCreate(GUIWIDGET *parent) {
             p->next = w;
         }
     }
-    w->unk3A = 0;
-    w->unk3C = 0;
-    w->unk3E = 16;
-    w->unk40 = 16;
+    w->x = 0;
+    w->y = 0;
+    w->w = 16;
+    w->h = 16;
     w->flags = 0;
     _i_guiwidgetmalloc++;
-    w->unk34 = 25;
+    w->focus15 = 25;
     w->type = 1;
     return w;
 }
@@ -62,18 +62,18 @@ int GuiwidgetClear(GUIWIDGET *w) {
     w->parent = NULL;
     w->child = NULL;
     w->next = NULL;
-    w->unk18 = 0x88;
-    w->unk1C = 0x88;
-    w->unk20 = 0x88;
-    w->unk24 = 0xFF;
-    w->unk28 = 0xFF;
-    w->unk2C = 0xFF;
-    w->unk3A = 0;
-    w->unk3C = 0;
-    w->unk3E = s_windsystemChar.weight;
-    w->unk40 = s_windsystemChar.style;
+    w->fg[0] = 0x88;
+    w->fg[1] = 0x88;
+    w->fg[2] = 0x88;
+    w->bg[0] = 0xFF;
+    w->bg[1] = 0xFF;
+    w->bg[2] = 0xFF;
+    w->x = 0;
+    w->y = 0;
+    w->w = s_windsystemChar.weight;
+    w->h = s_windsystemChar.style;
     w->flags = 0x40000000;
-    w->color = D_00584B68;
+    w->font = D_00584B68;
     return 1;
 }
 
@@ -129,8 +129,8 @@ void _guiwidgetPurge(GUIWIDGET *w) {
     _i_guiwidgetmalloc--;
     w->type = 0;
     w->parent = NULL;
-    if (s_windsystem_data.unk4 == w) {
-        s_windsystem_data.unk4 = NULL;
+    if (s_windsystem_data.focus == w) {
+        s_windsystem_data.focus = NULL;
     }
     ESP_guiMemFree(w);
 }
