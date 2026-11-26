@@ -119,7 +119,70 @@ int ucs2ToAscii(u8 *dst, const u16 *src, int len) {
     return n;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iconv", glanceEncode);
+int glanceEncode(const u8 *s, int len) {
+    int state;
+    int i;
+    int ret;
+    u8 c;
+
+    state = 0;
+    i = 0;
+    ret = 0;
+    for (; i < len; i++) {
+        c = s[i];
+        if (state == 0) {
+            if (c >= 0x20 && c <= 0x7E) {
+                continue;
+            }
+            if (c < 7 || c == 0x7F) {
+                continue;
+            }
+            if (c == 0xFF) {
+                continue;
+            }
+            if (c == 0x1B) {
+                state = 1;
+            } else {
+                if (c >= 7 && c <= 13) {
+                    continue;
+                }
+                if (c >= 0xE && c <= 0x1F) {
+                    continue;
+                }
+                if ((c >= 0x80 && c <= 0x8D) || (c >= 0x90 && c <= 0xA0)) {
+                    ret = 2;
+                    break;
+                }
+                if (c == 0xFE) {
+                    ret = 3;
+                    break;
+                }
+            }
+            ret = 4;
+        } else if (state == 1) {
+            if (c == '$') {
+                state = 2;
+            } else if (c == '(') {
+                state = 3;
+            } else {
+                state = 0;
+            }
+        } else if (state == 2) {
+            state = 0;
+            if (c == '@' || c == 'B') {
+                ret = 1;
+                break;
+            }
+        } else {
+            state = 0;
+            if (c == 'B' || c == 'I' || c == 'J') {
+                ret = 1;
+                break;
+            }
+        }
+    }
+    return ret;
+}
 
 int checkASCII(const u8 *s, int len) {
     int i;
@@ -143,7 +206,70 @@ int checkASCII(const u8 *s, int len) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iconv", checkJIS);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iconv", checkShiftJIS);
+int checkShiftJIS(const u8 *s, int len) {
+    int state;
+    u8 lead;
+    int ret;
+    int i;
+    u8 c;
+
+    lead = 0;
+    state = 0;
+    i = 0;
+    ret = 0;
+    for (; i < len; i++) {
+        c = s[i];
+        if (state == 0) {
+            if (c >= 7 && c <= 13) {
+                continue;
+            }
+            if (c >= 0x20 && c <= 0x7E) {
+                continue;
+            }
+            if (c >= 0xA1 && c <= 0xDF) {
+                ret |= 2;
+            } else if (c >= 0x81 && c <= 0x9F) {
+                state = 1;
+                lead = c;
+                ret |= 1;
+            } else if (c >= 0xE0 && c <= 0xEF) {
+                state = 2;
+                lead = c;
+                ret |= 1;
+            } else {
+                ret = -1;
+                break;
+            }
+        } else if (state == 1) {
+            if ((c >= 0x40 && c <= 0x7E) || (c >= 0x80 && c <= 0xFC)) {
+                state = 0;
+                if (lead == 0x87 && c < 0x9E) {
+                    ret |= 4;
+                } else if (lead >= 0x85 && lead <= 0x87) {
+                    ret |= 8;
+                } else if (lead == 0x88 && c < 0x9E) {
+                    ret |= 8;
+                }
+            } else {
+                ret = -1;
+                break;
+            }
+        } else {
+            if ((c >= 0x40 && c <= 0x7E) || (c >= 0x80 && c <= 0xFC)) {
+                state = 0;
+                if (lead >= 0xED && lead <= 0xEE) {
+                    ret |= 4;
+                } else if (lead >= 0xEB && lead <= 0xEF) {
+                    ret |= 8;
+                }
+            } else {
+                ret = -1;
+                break;
+            }
+        }
+    }
+    return ret;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iconv", checkEUC);
 
