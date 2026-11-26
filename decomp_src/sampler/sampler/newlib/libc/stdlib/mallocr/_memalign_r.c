@@ -1,3 +1,6 @@
-#include "common.h"
-
-INCLUDE_ASM("tmp/asm/sampler/sampler/nonmatchings/newlib/libc/stdlib/mallocr/_memalign_r", _memalign_r);
+/* upstream: newlib-1.12.0/newlib/libc/stdlib/mallocr.c (Sony's psp-newlib build: 16-byte MALLOC_ALIGNMENT) */
+/* cflags: -O2 -fno-builtin */
+#define INTERNAL_NEWLIB
+#define DEFINE_MEMALIGN
+#define MALLOC_ALIGNMENT 16
+#include "libc/stdlib/mallocr.c"
