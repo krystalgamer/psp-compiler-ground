@@ -54,7 +54,19 @@ void Menu_Shutdown(void) {
 
 INCLUDE_ASM("tmp/asm/UTST99332/utility_basic/nonmatchings/menu/Menu_Init", Menu_Update);
 
-INCLUDE_ASM("tmp/asm/UTST99332/utility_basic/nonmatchings/menu/Menu_Init", Menu_ClearItems);
+void Menu_ClearItems(void)
+{
+	int i;
+
+	for (i = 0; i < 100; i++) {
+		menuitems[i].name = NULL;
+		menuitems[i].callback = NULL;
+	}
+
+	cancel_callback = NULL;
+
+	selection = 0;
+}
 
 void Menu_AppendItem(const char *name, Menu_Callback callback)
 {
