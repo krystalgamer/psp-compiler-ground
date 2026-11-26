@@ -97,17 +97,20 @@ typedef struct {
     union {
         int w;
         u8 b;
+        u8 c[4];
     } unk10;
 } TTEXT;
 typedef struct {
-    u8 unk0[0x10];
+    void *parent;
+    u8 unk4[0xC];
     int x;                      /* 0x10 */
     int y;
     int w;
     int h;
     TTEXT *geom;                /* 0x20 */
     TSTYLE *style;              /* 0x24 */
-    u8 unk28[0x10];
+    void *ctx;                  /* 0x28 */
+    u8 unk2C[0xC];
     s16 content;                /* 0x38 */
     s16 unk3A;
     s16 html;                   /* 0x3C */
@@ -266,9 +269,99 @@ TBOX *createTextBox(void *ctx, TBOX *parent, TBOX *prev, char *str, int len, int
     return b;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_text", divTextBox);
+void initTextBoxSize(TBOX *b);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_text", divPreTextBox);
+TBOX *divTextBox(TBOX *box, int a1, int a2, int *a3) {
+    void *parent;
+    int len;
+    int n;
+    int w;
+    char *rest;
+    char *str;
+    char *buf;
+    TBOX *nb;
+
+    *a3 = 0;
+    parent = box->parent;
+    if (parent == NULL) {
+        return NULL;
+    }
+    str = box->geom->str;
+    len = box->geom->len;
+    if (len <= 0) {
+        return NULL;
+    }
+    w = box->w;
+    rest = NULL;
+    n = divOverText(&rest, (JBOX *)box, str, len, a1, a2, a3);
+    if (n < 1 || n >= len) {
+        goto fail;
+    }
+    len -= n;
+    buf = MEM_malloc(0, len + 1);
+    memcpy(buf, box->geom->str, len);
+    buf[len] = 0;
+    MEM_free(0, box->geom->str);
+    box->geom->str = buf;
+    box->geom->len = len;
+    initTextBoxSize(box);
+    w -= box->w;
+    nb = createTextBox(box->ctx, parent, box, rest, n, w);
+    if (nb == NULL) {
+fail:
+        if (rest != NULL) {
+            MEM_free(0, rest);
+        }
+        return NULL;
+    }
+    nb->geom->unk10.c[1] = 1;
+    if (len < box->geom->unk8) {
+        nb->geom->unk8 = box->geom->unk8 - len;
+        box->geom->unk8 = len;
+    }
+    return nb;
+}
+
+void *memset(void *p, int c, unsigned int n);
+
+TBOX *divPreTextBox(TBOX *box) {
+    void *parent;
+    char *str;
+    int len;
+    int n;
+    char *rest;
+    char *buf;
+    TBOX *nb;
+
+    parent = box->parent;
+    if (parent == NULL) {
+        return NULL;
+    }
+    str = box->geom->str;
+    len = box->geom->len;
+    rest = NULL;
+    n = divOverText_pre(&rest, (JBOX *)box, str, len);
+    if (n < 1 || n >= len) {
+        goto fail;
+    }
+    len -= n;
+    buf = MEM_malloc(0, len + 1);
+    memset(buf, 0, len + 1);
+    memcpy(buf, str, len);
+    MEM_free(0, str);
+    box->geom->str = buf;
+    box->geom->len = len;
+    nb = createTextBox(box->ctx, parent, box, rest, n, 0);
+    if (nb == NULL) {
+fail:
+        if (rest != NULL) {
+            MEM_free(0, rest);
+        }
+        return NULL;
+    }
+    nb->geom->unk10.c[1] = 1;
+    return nb;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_text", integrateTextBox);
 
