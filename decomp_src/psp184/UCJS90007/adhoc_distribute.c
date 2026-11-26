@@ -238,9 +238,128 @@ int sceNetAdhocDistributeInitServer(unsigned int poolsize)
 	return 0;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/adhoc_distribute", sceNetAdhocDistributeCreateServer);
+int sceKernelCreateThread(const char *name, void *entry, int prio, int stacksize, unsigned int attr, void *option);
+void *memset(void *s, int c, unsigned int n);
+unsigned int strlen(const char *s);
+int sceUtilityGetSystemParamString(int id, char *str, int len);
+unsigned int strlen(const char *s);
+int sceNetAdhocMatchingCreate(int mode, int maxpeers, int port, int bufsize, unsigned int hellodelay, unsigned int pingdelay, int initcount, unsigned int msgdelay, void *callback);
+int sceKernelCreateMbx(const char *name, unsigned int attr, void *option);
+int sceKernelCreateThread(const char *name, void *entry, int initPriority, int stackSize, unsigned int attr, void *option);
+int sceKernelDeleteThread(int thid);
+int sceKernelDeleteMbx(int mbxid);
+int sceNetAdhocMatchingDelete(int id);
+void adhoc_distribute_free(void *p);
+int sceNetAdhocDistributeCreateServer(unsigned int thread_num, int worker_tpl, int worker_stacksize, unsigned int paramsfo_len, void *paramsfo, unsigned int datasize, void *databuf, struct SceNetAdhocctlGroupName *group_name)
+{
+	int ret;
+	unsigned int i;
+	void *p;
+	char nickname[128];
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/adhoc_distribute", sceNetAdhocDistributeStartServer);
+	if (!inited)
+		return 0x80410C12;
+	if (thread_num == 0 || thread_num > 8)
+		return 0x80410C13;
+	if (paramsfo_len == 0 || paramsfo == NULL)
+		return 0x80410C13;
+	if (datasize == 0 || databuf == NULL)
+		return 0x80410C13;
+	if (sctx != NULL)
+		return 0x80410C14;
+	ret = sceUtilityGetSystemParamString(1, nickname, sizeof(nickname));
+	if (ret < 0)
+		return ret;
+	memset(&_sctx, 0, sizeof(_sctx));
+	sctx = &_sctx;
+	_sctx.state = SCE_NET_ADHOC_DISTRIBUTE_SERVER_STATE_INIT;
+	_sctx.thread_num = thread_num;
+	_sctx.hello_optlen = 3 + sizeof(nickname) + 3 + paramsfo_len;
+	if (group_name != NULL)
+		_sctx.hello_optlen += 3 + sizeof(struct SceNetAdhocctlGroupName);
+	sctx->hello_opt = adhoc_distribute_malloc(sctx->hello_optlen);
+	if (sctx->hello_opt == NULL) {
+		sctx = NULL;
+		return 0x80410C15;
+	}
+	p = adhoc_download_maketag(1, nickname, sizeof(nickname), sctx->hello_opt);
+	p = adhoc_download_maketag(2, paramsfo, paramsfo_len, p);
+	if (group_name != NULL)
+		p = adhoc_download_maketag(3, group_name, sizeof(struct SceNetAdhocctlGroupName), p);
+	sctx->nickname_len = strlen(nickname);
+	sctx->datasize = datasize;
+	sctx->databuf = databuf;
+	ret = sceNetAdhocMatchingCreate(1, thread_num + 1, 0x8001, 0x800, 1000000, 30000000, 3, 1000000, adhoc_distribute_server_matching_cb_func);
+	if (ret < 0)
+		goto error;
+	sctx->matching_id = ret;
+	ret = sceKernelCreateMbx("SceNetAdhocDistribute", 0, NULL);
+	if (ret < 0)
+		goto error;
+	sctx->mbxid = ret;
+	for (i = 0; i < thread_num; i++) {
+		ret = sceKernelCreateThread("SceNetAdhocDistributeWorker", adhoc_distribute_worker_thread, worker_tpl, worker_stacksize, 0, NULL);
+		if (ret < 0)
+			goto error;
+		sctx->workertid[i] = ret;
+	}
+	memset(wctx, 0, sizeof(wctx));
+	return 0;
+error:
+	if (sctx != NULL) {
+		for (i = 0; i < thread_num; i++) {
+			if (sctx->workertid[i] > 0)
+				sceKernelDeleteThread(sctx->workertid[i]);
+		}
+		if (sctx->mbxid > 0)
+			sceKernelDeleteMbx(sctx->mbxid);
+		if (sctx->matching_id > 0)
+			sceNetAdhocMatchingDelete(sctx->matching_id);
+		if (sctx->hello_opt != NULL)
+			adhoc_distribute_free(sctx->hello_opt);
+		sctx = NULL;
+	}
+	return ret;
+}
+
+int sceKernelStartThread(int thid, unsigned int arglen, void *argp);
+int sceKernelStartThread(int thid, SceSize arglen, void *argp);
+int sceKernelTerminateThread(int thid);
+int sceNetAdhocMatchingStart(int id, int evthpri, int evthstack, int inthpri, int inthstack, int optlen, void *opt);
+int sceNetAdhocMatchingStop(int id);
+int sceNetAdhocDistributeStartServer(int matching_event_tpl, int matching_event_stack, int matching_input_tpl, int matching_input_stack)
+{
+	int ret;
+	int i;
+
+	if (!inited)
+		return 0x80410C12;
+	if (sctx == NULL)
+		return 0x80410C16;
+	if (sctx->state != SCE_NET_ADHOC_DISTRIBUTE_SERVER_STATE_INIT)
+		return 0x80410C17;
+	sctx->state = SCE_NET_ADHOC_DISTRIBUTE_SERVER_STATE_WAIT_FOR_REQUEST;
+	for (i = 0; i < 8; i++) {
+		if (sctx->workertid[i] > 0) {
+			ret = sceKernelStartThread(sctx->workertid[i], sizeof(i), &i);
+			if (ret < 0)
+				goto error;
+		}
+		wctx[i].state = SCE_NET_ADHOC_DISTRIBUTE_WORKER_STATE_DEAD;
+	}
+	ret = sceNetAdhocMatchingStart(sctx->matching_id, matching_event_tpl, matching_event_stack, matching_input_tpl, matching_input_stack, sctx->hello_optlen, sctx->hello_opt);
+	if (ret < 0)
+		goto error;
+	return 0;
+error:
+	for (i = 0; i < 8; i++) {
+		if (sctx->workertid[i] > 0)
+			sceKernelTerminateThread(sctx->workertid[i]);
+	}
+	sceNetAdhocMatchingStop(sctx->matching_id);
+	sctx->state = SCE_NET_ADHOC_DISTRIBUTE_SERVER_STATE_INIT;
+	return ret;
+}
 
 int sceNetAdhocDistributeStopServer(void)
 {
