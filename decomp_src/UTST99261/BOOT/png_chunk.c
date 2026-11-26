@@ -280,5 +280,68 @@ int handle_pHYs(PNGCTX *ctx, u8 *data, int len) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/png_chunk", handle_tRNS);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/png_chunk", png_readNextChunk);
+typedef struct {
+    char len[4];
+    char type[4];
+} CHUNKHDR;
+
+typedef struct {
+    char tag[4];
+    char *name;
+    int (*handler)(PNGCTX *ctx, u8 *data, unsigned int len, int more);
+} CHUNKTAB;
+
+extern CHUNKTAB name_tab[];
+extern char D_001326F0[];
+int memcmp(const void *a, const void *b, unsigned int n);
+
+#define HLEN(h) (*(u32 *)(h).len)
+
+int png_readNextChunk(PNGCTX *ctx, int *type) {
+    CHUNKHDR hdr;
+    CHUNKHDR next;
+    CHUNKTAB *e;
+    int more;
+    int ret;
+    u32 v;
+    u8 *p;
+
+    more = 0;
+    if (type != NULL) {
+        *type = 0;
+    }
+    if (ctx->size - (ctx->cur - ctx->buf) < 8) {
+        return -1;
+    }
+    hdr = *(CHUNKHDR *)ctx->cur;
+    ctx->cur += 8;
+    v = HLEN(hdr);
+    HLEN(hdr) = (v >> 24) | ((v >> 8) & 0xFF00) | ((v << 8) & 0xFF0000) | (v << 24);
+    if ((u32)(ctx->size - (ctx->cur - ctx->buf)) < HLEN(hdr)) {
+        HLEN(hdr) = ctx->size - (ctx->cur - ctx->buf);
+    }
+    for (e = name_tab; e->name != NULL; e++) {
+        if (memcmp(hdr.type, e->tag, 4) == 0) {
+            break;
+        }
+    }
+    ret = 0;
+    if (e->name != NULL) {
+        if (memcmp(e->name, D_001326F0, 4) == 0) {
+            p = ctx->cur + HLEN(hdr);
+            if ((u32)(ctx->buf - p + ctx->size - 4) >= 8) {
+                next = *(CHUNKHDR *)(p + 4);
+                if (memcmp(next.type, D_001326F0, 4) == 0) {
+                    more = 1;
+                }
+            }
+        }
+        ret = e->handler(ctx, ctx->cur, HLEN(hdr), more);
+    }
+    ctx->cur += HLEN(hdr) + 4;
+    if ((ret < 0) & (type != NULL)) {
+        *type = -1;
+    }
+    return ret;
+}
 
