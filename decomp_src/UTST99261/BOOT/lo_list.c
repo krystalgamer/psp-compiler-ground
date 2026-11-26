@@ -1,6 +1,15 @@
 /* cflags: -O1 */
 #include "common.h"
 #include "m2c_macros.h"
+typedef struct { u8 pad[0x3C]; unsigned int x3C; } IOMC_T;
+extern IOMC_T iom;
+extern int D_0058512C;
+void iom_updateCache();
+int iom_saveCache(void);
+void iom_deleteCache(int);
+unsigned int iom_preferenceCache(void);
+void *UTL_peekqueue(void *q, int a1);
+void iom_freeCache(void *c);
 signed char *MEM_malloc(M2C_UNK, int);                       /* extern */
 extern signed char D_0013F28C;
 M2C_UNK UTL_initqueue(M2C_UNK *);                   /* extern */
@@ -59,13 +68,32 @@ int iom_attachCache(void) {
     return temp_s0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_list", iom_detachCache);
+int iom_detachCache(void) {
+    void *e;
+    int r = 0;
+    iom_updateCache();
+    if (D_0058512C != 0) {
+        r = iom_saveCache();
+    }
+    while ((e = UTL_peekqueue(&D_00585130, 0)) != NULL) {
+        iom_freeCache(M2C_FIELD(e, void **, 8));
+    }
+    return r;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_list", iom_setCache);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_list", iom_getCache);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_list", iom_capacityCache);
+void iom_capacityCache(void) {
+    iom_updateCache();
+    while (iom_preferenceCache() < iom.x3C) {
+        iom_deleteCache(0);
+    }
+    if (D_0058512C != 0) {
+        iom_saveCache();
+    }
+}
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/lo_list", D_0013F284);
 
