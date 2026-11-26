@@ -20,7 +20,9 @@ typedef struct RBOX {
     struct RBOX *child;         /* 0x4 */
     struct RBOX *unk8;
     struct RBOX *next;          /* 0xC */
-    u8 unk10[0x10];
+    u8 unk10[0x8];
+    int unk18;
+    int unk1C;
     RGEOM *geom;                /* 0x20 */
     RSTYLE *style;              /* 0x24 */
     u8 unk28[0x8];
@@ -32,6 +34,27 @@ typedef struct RBOX {
     s16 unk3E;
     u16 flags40;                /* 0x40 */
 } RBOX;
+
+typedef struct {
+    char *str;
+    int unk4;
+    int unk8;
+    int len;                    /* 0xC */
+    u8 unk10[2];
+    u8 space;                   /* 0x12 */
+} RTEXT;
+
+typedef struct {
+    u8 unk0[0x10];
+    int x;                      /* 0x10 */
+    int y;
+    u8 unk18[0x7C];
+    int w;                      /* 0x94 */
+    int h;
+} RFRAME;
+
+#define TXT(b) ((RTEXT *)(b)->geom)
+#define FRM(b) ((RFRAME *)(b)->geom)
 
 typedef struct {
     int unk0;
@@ -77,7 +100,24 @@ M2C_UNK HST_flushHistoryGarbageList();              /* extern */
 void *HST_getHistoryGarbageList();                  /* extern */
 
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_relayout", restoreSpaceText);
+int restoreSpaceText(RBOX *box) {
+    char *old;
+    char *p;
+
+    old = TXT(box)->str;
+    p = MEM_malloc(0, TXT(box)->len + 2);
+    if (p == NULL) {
+        return 0;
+    }
+    p[0] = ' ';
+    memcpy(p + 1, old, TXT(box)->len);
+    p[TXT(box)->len + 1] = 0;
+    MEM_free(0, old);
+    TXT(box)->str = p;
+    TXT(box)->len++;
+    TXT(box)->space = 0;
+    return 1;
+}
 
 int terminateBlockBox(LOCTX *ctx, RBOX *box) {
     int r;
@@ -204,7 +244,26 @@ void relayoutByFrameBorderMove(RBOX *box) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_relayout", relayoutFramesetByFrameBorderMove);
+void relayoutFramesetByFrameBorderMove(RBOX *box) {
+    RLCTX ctx;
+    RBOX *body;
+
+    if (box != NULL && box->content == 2) {
+        body = (RBOX *)getBodyBox(box);
+        ctx.a = body;
+        ctx.b = body;
+        ctx.c = body;
+        ctx.d = (u8 *)body->geom + 0x90;
+        ctx.e = body->region;
+        ctx.f = 0;
+        body->unk18 = FRM(box)->w;
+        body->unk1C = FRM(box)->h;
+        FRM(body)->x = FRM(box)->w;
+        FRM(body)->y = FRM(box)->h;
+        repositionBox_frameset(box, 1);
+        relayoutBoxTreeLoop(&ctx, box);
+    }
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
