@@ -81,7 +81,27 @@ float Spline(float t, float pos0, float pos1, float pos2) {
     return ((((2.0f * temp_f15) + (2.0f * temp_f13)) - temp_f1) * t * t) + (((temp_f1 - temp_f15) - (temp_f13 * 3.0f)) * t) + temp_f13;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/menu/nonmatchings/category", CtrlSpline);
+static __inline__ float srnd(float f)
+{
+	return (rand() & 1) ? -f : f;
+}
+static void CtrlSpline(void)
+{
+	float p[3];
+	int cnt;
+
+	cnt = cat.scnt;
+	p[0] = cat.sbuf[cnt];
+	p[1] = cat.sbuf[(cnt == 0) ? 1 : ((cnt == 1) ? 2 : 0)];
+	p[2] = cat.sbuf[(cnt == 0) ? 2 : ((cnt == 1) ? 0 : 1)];
+	menu->pos.y = Spline(cat.t, p[0], p[1], p[2]);
+	cat.t += 0.02f;
+	if (cat.t >= 1.0f) {
+		cat.t = 0.0f;
+		cat.sbuf[cat.scnt] = srnd(0.0f + (rand() % 100) * 0.0005f);
+		cat.scnt = (cat.scnt + 1 >= 3) ? 0 : cat.scnt + 1;
+	}
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/menu/nonmatchings/category", RunCategory);
 
