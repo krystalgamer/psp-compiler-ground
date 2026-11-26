@@ -1,11 +1,38 @@
 #include "common.h"
 
-/* declarations recovered from DWARF (UTST99261 BOOT mpeg/main) */
-typedef void SceVoid;
+/* declarations recovered from DWARF (UTST99332 mpeg_ezmpegstr main) */
 typedef int SceInt32;
-struct _anon1;
+typedef void SceVoid;
+typedef struct t_soundBuffer t_soundBuffer;
+struct t_soundBuffer;
 typedef int SceUID;
 typedef char SceChar8;
+typedef unsigned int SceUInt32;
+struct t_soundBuffer { /* size 0x28 */
+    SceUID lock_sema;
+    SceUID status_flag;
+    SceChar8 **buf;
+    SceUInt32 *pts;
+    SceInt32 write;
+    SceInt32 read;
+    SceInt32 count;
+    SceInt32 size;
+    SceInt32 buf_size;
+    SceUInt32 soundLatestTimestamp;
+};
+typedef struct SceKernelLMOption SceKernelLMOption;
+struct SceKernelLMOption;
+typedef unsigned int SceSize;
+struct SceKernelLMOption { /* size 0x14 */
+    SceSize size;
+    SceUID mpidtext;
+    SceUID mpiddata;
+    unsigned int flags;
+    char position;
+    char access;
+    char creserved[2];
+};
+struct _anon1;
 struct _anon1 { /* size 0x10 */
     SceUID fd;
     SceChar8 assignName[10];
@@ -34,7 +61,6 @@ struct SceMpegRingbuffer { /* size 0x2c */
 };
 typedef struct SceMpegStream SceMpegStream;
 struct SceMpegStream;
-typedef unsigned int SceUInt32;
 typedef SceUInt32 SceMpegStreamId;
 typedef unsigned char SceUChar8;
 typedef short int SceShort16;
@@ -79,45 +105,25 @@ struct t_displayBuffer { /* size 0x28 */
     SceUID display_wait_sema;
     SceChar8 **buf;
     SceUInt32 *pts;
-    SceInt32 *write;
-    SceInt32 *read;
-    SceInt32 *count;
-    SceInt32 *size;
-    SceInt32 *displayMode;
-};
-typedef struct t_ringBuffer t_ringBuffer;
-struct t_ringBuffer;
-struct t_ringBuffer { /* size 0x10 */
-    SceInt32 data_len;
-    SceUID ringbuf_sema;
-    SceMpegRingbuffer *pRingbuf;
-    SceInt32 *status_flag;
-};
-typedef struct t_soundBuffer t_soundBuffer;
-struct t_soundBuffer;
-struct t_soundBuffer { /* size 0x24 */
-    SceUID lock_sema;
-    SceInt32 *terminate_flag;
-    SceChar8 **buf;
-    SceUInt32 *pts;
-    SceInt32 *write;
-    SceInt32 *read;
-    SceInt32 *count;
-    SceInt32 *size;
-    SceUID start_sema;
+    SceInt32 write;
+    SceInt32 read;
+    SceInt32 count;
+    SceInt32 size;
+    SceInt32 displayMode;
 };
 typedef struct t_avSyncControl t_avSyncControl;
 struct t_avSyncControl;
 typedef struct t_avSync_Video t_avSync_Video;
 struct t_avSync_Video;
-struct t_avSync_Video { /* size 0x14 */
+struct t_avSync_Video { /* size 0x18 */
     SceUInt32 *pts;
     SceInt32 write;
     SceInt32 read;
     SceInt32 count;
     SceInt32 size;
+    SceUInt32 videoLatestPts;
 };
-struct t_avSyncControl { /* size 0x1c */
+struct t_avSyncControl { /* size 0x20 */
     t_displayBuffer *pDisp;
     t_soundBuffer *pSound;
     t_avSync_Video video;
@@ -131,7 +137,6 @@ struct t_mpegStreamData { /* size 0x10 */
     SceMpegAu *pAtracAu;
 };
 typedef SceUChar8 *SceMpegHandle;
-typedef unsigned int u_int32;
 typedef struct SceCtrlData SceCtrlData;
 struct SceCtrlData;
 struct SceCtrlData { /* size 0x10 */
@@ -141,6 +146,18 @@ struct SceCtrlData { /* size 0x10 */
     unsigned char Ly;
     unsigned char Rsrv[6];
 };
+struct _scemoduleinfo;
+struct _scemoduleinfo { /* size 0x34 */
+    short unsigned int modattribute;
+    unsigned char modversion[2];
+    char modname[27];
+    char terminal;
+    void *gp_value;
+    const void *ent_top;
+    const void *ent_end;
+    const void *stub_top;
+    const void *stub_end;
+};
 typedef struct t_playInfo t_playInfo;
 struct t_playInfo;
 struct t_playInfo { /* size 0x8 */
@@ -148,16 +165,31 @@ struct t_playInfo { /* size 0x8 */
     SceUInt32 timestamp;
 };
 
-extern SceChar8 *dispbuf[1];
-extern SceInt32 audioFlag;
+extern int _gp[];
+extern const int __begin_of_section_lib_ent[1];
+extern const int __end_of_section_lib_ent[1];
+extern const int __begin_of_section_lib_stub[1];
+extern const int __end_of_section_lib_stub[1];
+extern const struct _scemoduleinfo __psp_moduleinfo;
+extern unsigned int __PSPEXP__module_info[2];
+extern unsigned int __PSPREN__module_info___psp_moduleinfo[2];
+extern SceInt32 sce_newlib_heap_kb_size;
 extern t_playInfo playInfo;
+extern SceInt32 audioFlag;
+extern SceInt32 frameCount;
+extern SceInt32 frameLoss;
+extern SceUID soundThread;
 
+static SceInt32 exit_func(SceInt32 count, SceInt32 arg1, SceVoid *arg2);
+static SceInt32 loadModule(SceUID *mid, SceChar8 *filename, SceKernelLMOption *option);
+static SceInt32 unloadModule(SceUID *mid);
 static SceInt32 ringbufferCallBack(SceVoid *pBuf, SceInt32 iNum, SceVoid *CallbackData);
-SceInt32 mpeg_main(char *filename);
-static SceInt32 startCheck(t_avSyncControl *pAvSync, t_ringBuffer *pRingCtrl);
-static SceInt32 playMovie(SceMpeg *pMpeg, SceMpegRingbuffer *pRB, t_mpegStreamData *pStreamData, t_ringBuffer *pRingCtrl, t_avSyncControl *pAvSync);
+SceInt32 main(SceInt32 argc, SceChar8 **argv);
 static SceInt32 readHeader(SceMpeg *pMpeg, StrFile *pStrFile, SceInt32 *pFilesize, SceInt32 *strOffset);
-static SceInt32 pad_read(t_displayBuffer *pDisp);
+static SceInt32 pad_read(void);
+static SceInt32 readPspStream(SceMpegRingbuffer *pRB);
+static SceInt32 startCheck(t_avSyncControl *pAvSync, SceMpegRingbuffer *pRB, SceInt32 filesize, SceInt32 demuxsize);
+static SceInt32 playMovie(SceMpeg *pMpeg, SceMpegRingbuffer *pRB, t_mpegStreamData *pStreamData, t_avSyncControl *pAvSync, SceInt32 filesize);
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/mpeg/mpeg_main", loadModule);
 

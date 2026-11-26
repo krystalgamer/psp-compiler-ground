@@ -1,6 +1,6 @@
 #include "common.h"
 
-/* declarations recovered from DWARF (UTST99261 BOOT mpeg/strfile) */
+/* declarations recovered from DWARF (UTST99332 mpeg_ezmpegstr strfile) */
 struct _anon1;
 typedef int SceUID;
 typedef char SceChar8;
@@ -10,25 +10,17 @@ struct _anon1 { /* size 0x10 */
 };
 typedef struct _anon1 StrFile;
 typedef int SceInt32;
+typedef void SceVoid;
 typedef long long int SceOff;
-typedef int SceMode;
-typedef SceUID (*FUNC_OPEN)(const char *, int, SceMode);
-typedef int (*FUNC_CLOSE)(SceUID);
-typedef SceOff (*FUNC_LSEEK)(SceUID, SceOff, int);
-typedef unsigned int SceSize;
-typedef int SceSSize;
-typedef SceSSize (*FUNC_READ)(SceUID, void *, SceSize);
 
-extern FUNC_OPEN localOpen;
-extern FUNC_CLOSE localClose;
-extern FUNC_LSEEK localLseek;
-extern FUNC_READ localRead;
 
-SceInt32 strFileAssign(StrFile *file, const SceChar8 *filename, SceInt32 flags);
-SceInt32 strFileUnassign(StrFile *file);
+
+SceInt32 strFileAssign(StrFile *file, const SceChar8 *filename);
 SceInt32 strFileOpen(StrFile *file, const SceChar8 *filename, SceInt32 flags);
 SceInt32 strFileClose(StrFile *file);
-SceInt32 strFileRead(StrFile *file, void *buff, SceInt32 size);
+SceInt32 strFileUnassign(StrFile *file);
+SceInt32 strFileRead(StrFile *file, SceVoid *buff, SceInt32 size);
+SceInt32 strFileWrite(StrFile *file, SceVoid *buff, SceInt32 size);
 SceOff strFileLseek(StrFile *file, SceOff offset, SceInt32 whence);
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/mpeg/strfile", strFileAssign);

@@ -1,12 +1,13 @@
 #include "common.h"
 
-/* declarations recovered from DWARF (psp184 mpegon decode) */
+/* declarations recovered from DWARF (UTST99332 mpeg_ezmpegstr decode) */
 typedef struct t_mpegStreamData t_mpegStreamData;
 struct t_mpegStreamData;
 typedef struct SceMpegStream SceMpegStream;
 struct SceMpegStream;
 typedef unsigned int SceUInt32;
 typedef SceUInt32 SceMpegStreamId;
+typedef void SceVoid;
 typedef unsigned char SceUChar8;
 typedef int SceInt32;
 typedef short int SceShort16;
@@ -14,7 +15,7 @@ typedef char SceChar8;
 struct SceMpegStream { /* size 0x40 */
     SceMpegStreamId qStreamId;
     SceMpegStreamId qStreamIdMask;
-    void *m_pRAPICtrlStream;
+    SceVoid *m_pRAPICtrlStream;
     SceUChar8 *m_pRAPI;
     SceInt32 m_iAuNum;
     SceInt32 m_iPesPacketForwardSize;
@@ -53,22 +54,17 @@ struct t_mpegStreamData { /* size 0x10 */
 typedef struct SceMpeg SceMpeg;
 struct SceMpeg;
 struct SceMpeg { /* size 0x4 */
-    void *sys;
+    SceVoid *sys;
 };
 typedef struct t_avSyncControl t_avSyncControl;
 struct t_avSyncControl;
 typedef struct t_displayBuffer t_displayBuffer;
 struct t_displayBuffer;
 typedef int SceUID;
-typedef struct t_conditionCtrl t_conditionCtrl;
-struct t_conditionCtrl;
-struct t_conditionCtrl { /* size 0x8 */
-    SceUID controlFlag;
-    SceUID waitFlag;
-};
 struct t_displayBuffer { /* size 0x28 */
-    SceUID lockSema;
-    SceUID delayFlag;
+    SceUID start_sema;
+    SceUID lock_sema;
+    SceUID display_wait_sema;
     SceChar8 **buf;
     SceUInt32 *pts;
     SceInt32 write;
@@ -76,21 +72,20 @@ struct t_displayBuffer { /* size 0x28 */
     SceInt32 count;
     SceInt32 size;
     SceInt32 displayMode;
-    t_conditionCtrl *pCtrl;
 };
 typedef struct t_soundBuffer t_soundBuffer;
 struct t_soundBuffer;
 struct t_soundBuffer { /* size 0x28 */
-    SceUID lockSema;
+    SceUID lock_sema;
+    SceUID status_flag;
     SceChar8 **buf;
     SceUInt32 *pts;
     SceInt32 write;
     SceInt32 read;
     SceInt32 count;
     SceInt32 size;
-    SceInt32 bufSize;
-    t_conditionCtrl *pCtrl;
-    SceUInt32 soundLatestPts;
+    SceInt32 buf_size;
+    SceUInt32 soundLatestTimestamp;
 };
 typedef struct t_avSync_Video t_avSync_Video;
 struct t_avSync_Video;
@@ -107,7 +102,6 @@ struct t_avSyncControl { /* size 0x20 */
     t_soundBuffer *pSound;
     t_avSync_Video video;
 };
-typedef void SceVoid;
 
 extern SceChar8 *dispbuf[2];
 
