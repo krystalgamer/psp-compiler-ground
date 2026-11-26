@@ -379,7 +379,32 @@ int sceGuFinish(void)
 	return size;
 }
 
+#ifdef NON_MATCHING
+/* Close: id & 0xffff is masked before the branch; the stall call is not crossjumped. */
+int sceGuFinishId(unsigned int id)
+{
+	GuContext *context;
+	int size;
+
+	if (__aw_list_mode == 0 || __aw_list_mode == 2) {
+		send_commandi(15, id & 0xffff);
+		send_commandi_stall(12, 0);
+	} else if (call_mode == 1) {
+		send_commandi(14, 0x120000);
+		send_commandi(12, 0);
+		send_commandi_stall(0, 0);
+	} else {
+		send_commandi(11, 0);
+	}
+	context = pList;
+	size = (unsigned int)context->current - (unsigned int)context->start;
+	__aw_list_mode = context->parent_context;
+	pList = &_ctx[__aw_list_mode];
+	return size;
+}
+#else
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", sceGuFinishId);
+#endif
 
 void sceGuCallMode(int mode)
 {
@@ -719,7 +744,31 @@ void sceGuDrawArray(int prim, int vtype, int count, const void *indices, const v
 	send_commandi_stall(4, (prim << 16) | count);
 }
 
+#ifdef NON_MATCHING
+/* Close: prim/n/vertices get different callee-saved registers. */
+void sceGuDrawArrayN(int prim, int vtype, int count, int n, const void *indices, const void *vertices)
+{
+	int i;
+	int cmd;
+
+	if (vtype)
+		send_commandi(18, vtype);
+	if (indices) {
+		send_commandi(16, (((unsigned int)indices) >> 8) & 0xf0000);
+		send_commandi(2, ((unsigned int)indices) & 0xffffff);
+	}
+	if (vertices) {
+		send_commandi(16, (((unsigned int)vertices) >> 8) & 0xf0000);
+		send_commandi(1, ((unsigned int)vertices) & 0xffffff);
+	}
+	cmd = (prim << 16) | count;
+	for (i = 0; i < n - 1; i++)
+		send_commandi(4, cmd);
+	send_commandi_stall(4, cmd);
+}
+#else
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", sceGuDrawArrayN);
+#endif
 
 void sceGuDrawBezier(int vtype, int ucount, int vcount, const void *indices, const void *vertices)
 {
@@ -822,7 +871,67 @@ void sceGuClearDepth(unsigned int depth)
 	_ctx[__aw_list_mode].clear_depth = depth;
 }
 
+#ifdef NON_MATCHING
+/* Close: %hi(_ctx) is CSEd into a saved register (orig recomputes it in the fast-clear loop). */
+struct Vertex {
+	unsigned int color;
+	unsigned short x, y, z;
+	unsigned short pad;
+};
+
+void sceGuClear(int flags)
+{
+	GuDrawBuffer *fb = &FBuf;
+	unsigned int filter;
+	struct Vertex *vertices;
+	int count;
+
+	if (FBuf.pixel_size == 3)
+		filter = (_ctx[__aw_list_mode].clear_color & 0xffffff) | (_ctx[__aw_list_mode].clear_stencil << 24);
+	else if (FBuf.pixel_size == 1)
+		filter = (_ctx[__aw_list_mode].clear_color & 0xffffff) | (_ctx[__aw_list_mode].clear_stencil << 31);
+	else if (FBuf.pixel_size == 2)
+		filter = (_ctx[__aw_list_mode].clear_color & 0xffffff) | (_ctx[__aw_list_mode].clear_stencil << 28);
+	else if (FBuf.pixel_size == 0)
+		filter = _ctx[__aw_list_mode].clear_color & 0xffffff;
+	else
+		filter = 0;
+	if (flags & 0x10) {
+		GuContext *context;
+		int i;
+
+		count = 16;
+		vertices = (struct Vertex *)sceGuGetMemory(count * sizeof(struct Vertex));
+		context = &_ctx[__aw_list_mode];
+		for (i = 0; i < count; i++) {
+			struct Vertex *curr = &vertices[i];
+			int j = i / 2;
+			int k = i % 2;
+
+			curr->color = filter;
+			curr->x = (j + k) * 64;
+			curr->y = k * fb->height;
+			curr->z = context->clear_depth;
+		}
+	} else {
+		count = 2;
+		vertices = (struct Vertex *)sceGuGetMemory(count * sizeof(struct Vertex));
+		vertices[0].color = filter;
+		vertices[0].x = 0;
+		vertices[0].y = 0;
+		vertices[0].z = _ctx[__aw_list_mode].clear_depth;
+		vertices[1].color = filter;
+		vertices[1].x = fb->width;
+		vertices[1].y = fb->height;
+		vertices[1].z = _ctx[__aw_list_mode].clear_depth;
+	}
+	send_commandi(211, ((flags & 7) << 8) | 1);
+	sceGuDrawArray(6, 0x80011C, count, 0, vertices);
+	send_commandi(211, 0);
+}
+#else
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", sceGuClear);
+#endif
 
 void sceGuDrawBuffer(int psm, void *fbp, int frame_width)
 {
@@ -902,7 +1011,31 @@ void sceGuViewport(int cx, int cy, int width, int height)
 	send_commandf(70, y);
 }
 
+#ifdef NON_MATCHING
+/* Close: the swap of near/far is scheduled differently. */
+void sceGuDepthRange(int near, int far)
+{
+	GuContext *context = &_ctx[__aw_list_mode];
+	float z = (near + far) / 2;
+	float zs, zo;
+	int lo = near, hi = far;
+
+	context->near_plane = near;
+	context->far_plane = far;
+	zs = z - (float)near;
+	if (near >= far) {
+		lo = far;
+		hi = near;
+	}
+	zo = z + (float)context->depth_offset;
+	send_commandf(68, zs);
+	send_commandf(71, zo);
+	send_commandi(214, lo);
+	send_commandi(215, hi);
+}
+#else
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", sceGuDepthRange);
+#endif
 
 void sceGuDepthOffset(unsigned int offset)
 {
@@ -995,7 +1128,19 @@ void sceGuPatchFrontFace(int arg0)
 	send_commandi(56, arg0);
 }
 
+#ifdef NON_MATCHING
+/* Close: the a0/a1 argument setup is scheduled in the opposite order. */
+void sceGuShadeModel(int mode)
+{
+	int m = 0;
+
+	if (mode == 1)
+		m = 1;
+	send_commandi(80, m);
+}
+#else
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", sceGuShadeModel);
+#endif
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", sceGuLight);
 
