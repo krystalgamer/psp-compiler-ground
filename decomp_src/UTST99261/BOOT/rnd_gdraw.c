@@ -102,7 +102,24 @@ int GUI_Component_setSize();
 int GUI_Component_setVisible();
 int GUI_Graphics_getMaskPattern();
 void rnd_drawFrameCallback();
-M2C_UNK rnd_drawRepaint();                          /* extern */
+void rnd_drawRepaint();
+extern void *gESPRIT_LO_GLOBAL_NDA;
+int GUI_Graphics_createPixmap();
+int GUI_Graphics_getGraphics();
+int GUI_Graphics_freeGraphics();
+int rnd_drawAllBoxnode();
+void lo_sendHalt(void);
+typedef struct {
+    u8 unk0[0x6C];
+    void *body;                 /* 0x6C */
+} RHIST;
+RHIST *HST_searchSessionIDHistoryNode(int id);
+typedef struct {
+    int x;
+    int y;
+    int w;
+    int h;
+} RRECT;
 M2C_UNK GUI_ScrollPane_getViewportSize();           /* extern */
 int rnd_updateAnimImageBoxnode();
 int rnd_updateAnimTextBoxnode();
@@ -785,7 +802,52 @@ void rnd_resetAnimImageBoxnode(void) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_gdraw", rnd_relayoutWidgets);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_gdraw", rnd_drawRepaint);
+void rnd_drawRepaint(int w, int g, int sid, int x, int y, int wd, int h) {
+    RRECT rect;
+    int white[3] = { 0xFF, 0xFF, 0xFF };
+    RHIST *hn;
+    void *body;
+    int pm;
+    int gr;
+
+    hn = HST_searchSessionIDHistoryNode(sid);
+    if (hn == NULL) {
+        return;
+    }
+    body = hn->body;
+    if (body == NULL) {
+        return;
+    }
+    if (gESPRIT_LO_GLOBAL_NDA == NULL) {
+        return;
+    }
+    rect.x = x;
+    rect.y = y;
+    rect.w = wd;
+    rect.h = h;
+    if (wd <= 0) {
+        return;
+    }
+    if (h <= 0) {
+        return;
+    }
+    pm = GUI_Graphics_createPixmap(wd, h);
+    if (pm == 0) {
+        lo_sendHalt();
+        return;
+    }
+    gr = GUI_Graphics_getGraphics(0, pm);
+    if (gr == 0) {
+        lo_sendHalt();
+    } else {
+        GUI_Graphics_setColor(gr, white);
+        GUI_Graphics_fillRect(gr, 0, 0, rect.w, rect.h);
+        rnd_drawAllBoxnode(gr, &rect, body, -rect.x, -rect.y);
+        GUI_Graphics_freeGraphics(gr);
+        GUI_Graphics_drawPixmap(g, pm, rect.x, rect.y, 0, 0, 0, 0, 0, 0);
+    }
+    GUI_Graphics_freePixmap(pm);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_gdraw", rnd_drawTextBoxnode);
 
@@ -820,7 +882,6 @@ void rnd_resetAnimTextBoxnode(void) {
     rnd_updateAnimTextBoxnode();
 }
 
-INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_gdraw", D_001335E0);
 
 typedef struct {
     int code;
