@@ -45,6 +45,18 @@ typedef struct JSPtr {
     int x0C;
 } JSPtr;
 
+typedef struct EspMsg {
+    int x00;
+    int src;                    /* 0x04 */
+    int x08;
+    int x0C;
+    int cmd;                    /* 0x10 */
+    int arg;                    /* 0x14 */
+    int x18;
+    int len;                    /* 0x1C */
+    void *data;                 /* 0x20 */
+} EspMsg;
+
 typedef struct JSMsgBody {
     int type;
     int x04;
