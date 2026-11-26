@@ -501,7 +501,24 @@ static void set_snd0(SaveParam *p)
 	p->snd0.size = 0;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_save", set_param_sizes);
+typedef struct { char gameName[16]; char saveName[20]; } MSDATA;
+extern int _msFreeSize[5];
+extern MSDATA _msDataSize;
+extern int _utilityDataSize[7];
+void set_param_sizes(SaveParam *p)
+{
+	memset(_msFreeSize, 0, sizeof(_msFreeSize));
+	memset(&_msDataSize, 0, 0x40);
+	memset(_utilityDataSize, 0, sizeof(_utilityDataSize));
+	*(int *)&p->_pad[0x5d0] = (int)_msFreeSize;
+	*(int *)&p->_pad[0x5d4] = (int)&_msDataSize;
+	memcpy((*(MSDATA **)&p->_pad[0x5d4])->gameName, D_0007BD40, 9);
+	(*(MSDATA **)&p->_pad[0x5d4])->gameName[9] = 0;
+	memcpy((*(MSDATA **)&p->_pad[0x5d4])->saveName, D_0007BD4C, 4);
+	(*(MSDATA **)&p->_pad[0x5d4])->saveName[4] = 0;
+	*(int *)&p->_pad[0x5d8] = (int)_utilityDataSize;
+	set_param_save(p);
+}
 
 void Deletebase(void)
 {
