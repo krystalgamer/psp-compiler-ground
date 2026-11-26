@@ -178,6 +178,24 @@ static int pad_read(void);
 int main(void);
 
 
+/* SDK prototypes (tools/sdk_protos.h) */
+void sceGuClear(int flags);
+void sceGuClearColor(unsigned int color);
+void sceGuClutLoad(int num_blocks, const void *cbp);
+void sceGuDebugPrint(int x, int y, unsigned int color, const char *str);
+void sceGuOffset(unsigned int x, unsigned int y);
+void sceGuTexImage(int mipmap, int width, int height, int tbw, const void *tbp);
+void sceGuTexLevelMode(unsigned int mode, float bias);
+void sceGuTexMode(int tpsm, int maxmips, int a2, int swizzle);
+void sceGuTexSlope(float slope);
+void sceGumDrawArray(int prim, int vtype, int count, const void *indices, const void *vertices);
+void sceGumPopMatrix(void);
+void sceGumPushMatrix(void);
+void sceGumRotateXYZ(const ScePspFVector3 *v);
+void sceGumScale(const ScePspFVector3 *v);
+void sceGumTranslate(const ScePspFVector3 *v);
+int sprintf(char *buf, const char *fmt, ...);
+
 INCLUDE_RODATA("tmp/asm/UTST99332/graphics_mipmap/nonmatchings/main", grid_clut);
 
 INCLUDE_RODATA("tmp/asm/UTST99332/graphics_mipmap/nonmatchings/main", way_clut);
