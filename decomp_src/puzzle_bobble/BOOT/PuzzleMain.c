@@ -513,7 +513,42 @@ int GetMapRight(int no)
 }
 
 
+#ifdef NON_MATCHING
+/* Close: the SelectPlayer and BallXPos loads come out in the opposite order. */
+void GameValueInit(int pl, int stage, int flag)
+{
+	PZL_STAT *st;
+	u8 save428;
+	int save434;
+
+	if ((unsigned int)pl > 1)
+		pl = 0;
+	st = &Stat[pl];
+	save428 = st->unk428;
+	ZeroMemory(st, sizeof(PZL_STAT));
+	st->scroll = -18;
+	st->unk00E = 600;
+	st->player = SelectPlayer;
+	st->bx = BallXPos[pl];
+	st->by = 0x1CC;
+	st->unk45F = 0;
+	st->unk454 = 0;
+	st->unk023 = 0;
+	st->unk027 = 8;
+	st->unk026 = 8;
+	st->unk430 = 0;
+	save434 = st->unk434;
+	if (flag < 0)
+		st->unk428 = save428;
+	else
+		st->unk428 = flag != 0;
+	if (stage >= 0)
+		StageNum = stage;
+	st->unk434 = save434;
+}
+#else
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", GameValueInit);
+#endif
 
 extern int OjamaStock[3];
 extern int WinStack[3];
