@@ -312,7 +312,16 @@ int sceGmoLayerGetMapType(SceGmoLayer *layer) {
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/gmo_model/gmo_material", sceGmoLayerSetTexCrop);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/gmo_model/gmo_material", sceGmoLayerGetTexCrop);
+const ScePspFRect *sceGmoLayerGetTexCrop(SceGmoLayer *layer)
+{
+    const ScePspFRect *var_v0;
+
+    var_v0 = NULL;
+    if (layer != NULL) {
+        var_v0 = !(layer->m_flags & 1) ? NULL : &layer->m_tex_crop;
+    }
+    return var_v0;
+}
 
 INCLUDE_RODATA("tmp/asm/UTST99332/demo_luga/nonmatchings/gmo_model/gmo_material", D_00021A8C);
 
