@@ -224,7 +224,24 @@ int decode_setCurrentStream(t_mpegStreamData *pStreamData, int type, int number)
     return var_v1;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/mpeg_seamless_change/nonmatchings/decode", decode_getCurrentStream);
+SceInt32 decode_getCurrentStream(t_mpegStreamData *pStreamData, SceMpegStrType type)
+{
+	SceInt32 ret;
+
+	switch (type) {
+	case 0:
+		ret = pStreamData->currentVideoStream;
+		break;
+	case 1:
+		ret = pStreamData->currentAudioStream;
+		break;
+	default:
+		ret = -1;
+		break;
+	}
+
+	return ret;
+}
 
 int decode_changeCurrentStreamGetAuMode(t_mpegStreamData *pStreamData, int mode) {
     sceMpegChangeGetAuMode(pStreamData->pMpeg, pStreamData->pVideoStream[pStreamData->currentVideoStream], mode);
