@@ -1,5 +1,21 @@
 #include "common.h"
 
+/* SDK prototypes (tools/sdk_protos.h) */
+void sceGuClutLoad(int num_blocks, const void *cbp);
+void sceGuClutMode(unsigned int cpsm, unsigned int shift, unsigned int mask, unsigned int a3);
+void sceGuColor(unsigned int color);
+void sceGuDisable(int state);
+void sceGuEnable(int state);
+void sceGuTexFunc(int tfx, int tcc);
+void sceGuTexImage(int mipmap, int width, int height, int tbw, const void *tbp);
+void sceGuTexMode(int tpsm, int maxmips, int a2, int swizzle);
+void sceGuTexOffset(float u, float v);
+void sceGuTexScale(float u, float v);
+void sceGumDrawBezier(int vtype, int ucount, int vcount, const void *indices, const void *vertices);
+void sceGumDrawSpline(int vtype, int ucount, int vcount, int uedge, int vedge, const void *indices, const void *vertices);
+void sceGumPopMatrix(void);
+void sceGumPushMatrix(void);
+
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_depthblur/nonmatchings/dragon", DrawDragon);
 
 INCLUDE_RODATA("tmp/asm/UTST99332/graphics_depthblur/nonmatchings/dragon", body);
