@@ -210,7 +210,37 @@ void maingame_all_free(void)
 	sound_volume_set1(0x8000);
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", game_control);
+void game_control(void)
+{
+	if (gmain.f.f0 == 1)
+		game_cnt_title();
+	else if (gmain.f.f0 == 2)
+		game_cnt_option_3559C();
+	else if (gmain.f.f0 == 3)
+		game_cnt_option2();
+	else if (gmain.f.f0 == 4)
+		game_cnt_stagestart();
+	else if (gmain.f.f0 == 5)
+		game_cnt_game();
+	else if (gmain.f.f0 == 6)
+		game_cnt_pause();
+	else if (gmain.f.f0 == 7)
+		game_cnt_stageclear();
+	else if (gmain.f.f0 == 8)
+		game_cnt_result();
+	else if (gmain.f.f0 == 9)
+		game_cnt_gameover();
+	else if (gmain.f.f0 == 10)
+		game_cnt_dead();
+	else if (gmain.f.f0 == 11)
+		game_cnt_netdead();
+	else if (gmain.f.f0 == 12)
+		game_cnt_ending();
+	else if (gmain.f.f0 == 13)
+		game_cnt_nameentry();
+	else if (gmain.f.f0 == 14)
+		game_cnt_hiscore_3B97C();
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", game_cnt_title);
 
