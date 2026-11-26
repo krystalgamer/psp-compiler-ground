@@ -491,7 +491,25 @@ void app_draw_frame(void)
 	sceGuSync(0, 0);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/main", draw_frame);
+int utility_update_netconf(void);
+int utility_update_msgdialog(void);
+
+static void draw_frame(void)
+{
+	app_draw_frame();
+
+	switch (_mrinfo.state) {
+	case MATCHING_ROOM_CONNECTING_ROOM:
+	case MATCHING_ROOM_CONNECTING_GAME:
+		utility_update_netconf();
+		break;
+	case MATCHING_ROOM_ERROR_DIALOG:
+		utility_update_msgdialog();
+		break;
+	default:
+		break;
+	}
+}
 
 void change_state(enum matching_room_state state) {
     if (state != MATCHING_ROOM_ROOM_LIST) {
