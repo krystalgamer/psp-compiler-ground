@@ -2,6 +2,7 @@
 #include "common.h"
 #include "parse_str.h"
 #include "m2c_macros.h"
+#define CF(c, o) M2C_FIELD(c, int *, o)
 PDStr Attr_getName(void *attr);
 extern char D_00137EB4[];
 extern char D_00137EE4[];
@@ -38,7 +39,25 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", parseCheckTag);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", parseElementName);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", parseElement);
+void parseElement(PCtx *c) {
+    int empty;
+
+    empty = 0;
+    parseElementName(c);
+    while (!((c->buf->cur[0] == '/' && c->buf->cur[1] == '>') || c->buf->cur[0] == '>' || (c->buf->count == c->buf->x04 - 1 && c->x1C[0] == c->x1C[1] - 1) || c->x44[2] == 2)) {
+        parseAttribute(c);
+    }
+    if (c->buf->cur[0] == '/' && c->buf->cur[1] == '>') {
+        empty = 1;
+        if (parseNextChar(c) == 1) {
+            return;
+        }
+    }
+    parseTagTransact(1, c, 0, 0, 0, 0);
+    if (empty) {
+        parseTagTransact(4, c, 0, 0, 0, 0);
+    }
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", parseAttribute);
 
@@ -164,7 +183,33 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", parseWellFormedTagWC);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", backToTextareaTag);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", parseTextarea);
+void parseTextarea(PCtx *c, PChar *str, int len) {
+    PDStr *d;
+    int el;
+    unsigned int i;
+
+    if (parseWellFormedTagWC(c, str, len) == 0) {
+        c->x44[2] = 2;
+        parseTagCountMinus(c, *(PTag *)((char *)c + 0x34));
+        backToTextareaTag(c);
+        return;
+    }
+    d = parseMBtoDScopy(str, len);
+    if (d != NULL && d->len != 0) {
+        for (i = 0; i < d->len; i++) {
+            d->data[i] = (d->data[i] >= 'a' && d->data[i] <= 'z') ? d->data[i] - 0x20 : d->data[i];
+        }
+    }
+    el = Document_createElement(CF(c, 0x118), d);
+    MEM_free(0, d->data);
+    d->data = NULL;
+    MEM_free(0, d);
+    if (el != 0) {
+        Node_appendChild(CF(c, 0x11C), el);
+        CF(c, 0x11C) = el;
+    }
+    parseAlertMessage(c);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", parseScript);
 
@@ -634,9 +679,61 @@ void parseAdjustBuffer(PStrBuf *b) {
     b->data[b->len] = 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", parseCtxtDataCopy);
+void parseCtxtDataCopy(PCtx *d, PCtx *s) {
+    CF(d, 0x0) = CF(s, 0x0);
+    CF(d, 0x4) = CF(s, 0x4);
+    CF(d, 0x8) = CF(s, 0x8);
+    CF(d, 0xC) = CF(s, 0xC);
+    CF(d, 0x10) = CF(s, 0x10);
+    CF(d, 0x34) = CF(s, 0x34);
+    CF(d, 0x38) = CF(s, 0x38);
+    CF(d, 0x3C) = CF(s, 0x3C);
+    CF(d, 0x48) = CF(s, 0x48);
+    CF(d, 0x50) = CF(s, 0x50);
+    d->tags = s->tags;
+    CF(d, 0x114) = CF(s, 0x114);
+    CF(d, 0x118) = CF(s, 0x118);
+    CF(d, 0x11C) = CF(s, 0x11C);
+    CF(d, 0x124) = CF(s, 0x124);
+    CF(d, 0x120) = CF(s, 0x120);
+    CF(d, 0x4C) = CF(s, 0x4C);
+    M2C_FIELD(d, unsigned char *, 0x12C) = M2C_FIELD(s, unsigned char *, 0x12C);
+    CF(d, 0x140) = CF(s, 0x140);
+    CF(d, 0x130) = CF(s, 0x130);
+    CF(d, 0x150) = CF(s, 0x150);
+    CF(d, 0x154) = CF(s, 0x154);
+    CF(d, 0x158) = CF(s, 0x158);
+    CF(d, 0x15C) = CF(s, 0x15C);
+    CF(d, 0x160) = CF(s, 0x160);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", parseInsertDocWriteBuffer);
+void parseInsertDocWriteBuffer(PCtx *c) {
+    int total;
+    int ins;
+    int pos;
+    int newlen;
+    PChar *nb;
+
+    total = c->buf->x04;
+    ins = CF(c, 0x148) / 2;
+    pos = c->buf->count;
+    newlen = total + ins;
+    nb = MEM_malloc(0, newlen * 2);
+    memcpy(nb, c->buf->base, pos * 2);
+    memcpy(nb + pos, (void *)CF(c, 0x144), ins * 2);
+    memcpy(nb + pos + ins, c->buf->cur, (total - pos) * 2);
+    MEM_free(0, c->buf->base);
+    c->buf->cur = NULL;
+    c->buf->base = NULL;
+    MEM_free(0, CF(c, 0x144));
+    CF(c, 0x144) = 0;
+    CF(c, 0x148) = 0;
+    c->buf->cur = nb;
+    c->buf->cur += pos;
+    c->buf->base = nb;
+    c->buf->x04 = newlen;
+    c->x44[0] += ins;
+}
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/parser", D_00137FA8);
 

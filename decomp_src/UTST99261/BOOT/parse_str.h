@@ -9,7 +9,12 @@ typedef struct PBuf {
     int x04;
     int x08;
     int count;                  /* 0x0C */
+    PChar *base;                /* 0x10 */
 } PBuf;
+
+typedef struct PTagCounts {
+    unsigned short n[95];
+} PTagCounts;
 
 typedef struct PCtx {
     int x00[6];
@@ -17,7 +22,7 @@ typedef struct PCtx {
     int x1C[9];
     int pos;                    /* 0x40 */
     int x44[4];
-    unsigned short tagCount[1]; /* 0x54 */
+    PTagCounts tags;            /* 0x54 */
 } PCtx;
 
 typedef struct PTag {

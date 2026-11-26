@@ -52,13 +52,13 @@ PTag parseDSTagNameCmp(PDStr *name) {
 }
 
 int parseTagCountPlus(PCtx *c, PTag t) {
-    c->tagCount[t.id]++;
+    c->tags.n[t.id]++;
     return 0;
 }
 
 int parseTagCountMinus(PCtx *c, PTag t) {
-    if (c->tagCount[t.id] != 0) {
-        c->tagCount[t.id]--;
+    if (c->tags.n[t.id] != 0) {
+        c->tags.n[t.id]--;
         return 0;
     }
     return 1;
