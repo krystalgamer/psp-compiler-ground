@@ -77,7 +77,52 @@ static void __checkUpdate(void)
 	}
 }
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgum", sceGumSetMatrixStack);
+void sceGumSetMatrixStack(ScePspFMatrix4 *m, int proj, int view, int world, int tex)
+{
+	if (tex) {
+		mat_stack[3].top = &m[proj + view + world];
+		mat_stack[3].cur = &m[proj + view + world];
+		mat_stack[3].bottom = &m[proj + view + world + tex];
+		cur_stack = &m[proj + view + world];
+		cur_matrix = 3;
+		sceGumLoadIdentity();
+		update[3] = 1;
+	} else {
+		update[3] = 0;
+	}
+	if (world) {
+		mat_stack[2].top = &m[proj + view];
+		mat_stack[2].cur = &m[proj + view];
+		mat_stack[2].bottom = &m[proj + view + world];
+		cur_stack = &m[proj + view];
+		cur_matrix = 2;
+		sceGumLoadIdentity();
+		update[2] = 1;
+	} else {
+		update[2] = 0;
+	}
+	if (view) {
+		mat_stack[1].top = &m[proj];
+		mat_stack[1].cur = &m[proj];
+		mat_stack[1].bottom = &m[proj + view];
+		cur_stack = &m[proj];
+		cur_matrix = 1;
+		sceGumLoadIdentity();
+		update[1] = 1;
+	} else {
+		update[1] = 0;
+	}
+	if (proj) {
+		mat_stack[0].top = m;
+		mat_stack[0].cur = m;
+		mat_stack[0].bottom = &m[proj];
+		cur_stack = m;
+		cur_matrix = 0;
+		sceGumLoadIdentity();
+	}
+	update[0] = 1;
+	cur_matrix = 0;
+}
 
 void sceGumSetCurMatrix(void)
 {
