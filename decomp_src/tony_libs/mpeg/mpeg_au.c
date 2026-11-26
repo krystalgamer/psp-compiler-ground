@@ -243,40 +243,6 @@ int func_00005510(void)
 	return 0;
 }
 
-INCLUDE_ASM("tmp/asm/tony_libs/mpeg/nonmatchings/mpeg_au", func_00005518);
-
-INCLUDE_ASM("tmp/asm/tony_libs/mpeg/nonmatchings/mpeg_au", func_00005694);
-
-INCLUDE_ASM("tmp/asm/tony_libs/mpeg/nonmatchings/mpeg_au", sceMpegChangeGetAvcAuMode);
-
-int sceMpegChangeGetAuMode(SceMpeg *mp, MpegStream *stream, int mode)
-{
-	MpegSys *sys = mp->sys;
-	int ret;
-
-	ret = func_00001100(mp);
-	if (ret != 0)
-		return ret;
-	func_00005AE0(sys->sema);
-	if (func_00001208(stream->id, mp->sys, 1) == (void *)-1) {
-		func_00005B7C(sys->sema);
-		return SCE_MPEG_ERROR_INVALID_VALUE;
-	}
-	switch (mode) {
-	case 0:
-		stream->unk30 &= ~1;
-		break;
-	case 1:
-		stream->unk30 |= 1;
-		break;
-	default:
-		ret = SCE_MPEG_ERROR_INVALID_VALUE;
-		break;
-	}
-	func_00005B7C(sys->sema);
-	return ret;
-}
-
 INCLUDE_RODATA("tmp/asm/tony_libs/mpeg/nonmatchings/mpeg_au", D_000079CC);
 
 INCLUDE_RODATA("tmp/asm/tony_libs/mpeg/nonmatchings/mpeg_au", D_00007A4C);

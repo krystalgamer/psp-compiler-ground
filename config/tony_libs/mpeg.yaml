@@ -59,6 +59,7 @@ segments:
       - [0x1574, c, mpeg_demux]
       - [0x3A8C, c, mpeg_ringbuf]
       - [0x407C, c, mpeg_au]
+      - [0x5598, c, mpeg_au2]
       - [0x5AD8, c, mpeg_sema]
       - [0x5C74, c, mpeg_video]
       - [0x6160, c, mpeg_audio]

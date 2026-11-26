@@ -5,6 +5,7 @@
 0x014F4 mpeg_demux       1.5.1.internal  mpeg_demux.c
 0x03A0C mpeg_ringbuf     1.5.1.internal  mpeg_ringbuf.c
 0x03FFC mpeg_au          1.5.1.internal  mpeg_au.c
+0x05518 mpeg_au2         1.5.1.internal  mpeg_au2.c
 0x05A58 mpeg_sema        1.5.1.internal  mpeg_sema.c
 0x05BF4 mpeg_video       1.5.1.internal  mpeg_video.c
 0x060E0 mpeg_audio       1.5.1.internal  mpeg_audio.c

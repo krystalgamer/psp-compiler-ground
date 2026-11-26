@@ -255,7 +255,7 @@ typedef struct MpegStream {
 	unsigned int id;
 	unsigned int mask;
 	struct StreamEntry *pair;
-	int unkC;
+	void *unkC;
 	int unk10;
 	int unk14;
 	int unk18;
