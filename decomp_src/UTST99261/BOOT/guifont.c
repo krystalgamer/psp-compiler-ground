@@ -54,6 +54,6 @@ int GuifontClear(GUIFONT *font) {
     return 1;
 }
 
-int GuifontDelete(void) {
+int GuifontDelete(GUIFONT *font) {
     return 1;
 }

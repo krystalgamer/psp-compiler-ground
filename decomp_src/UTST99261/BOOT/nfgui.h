@@ -92,7 +92,41 @@ typedef struct {
     int mode;                   /* 0x20 */
     GUIWIDGET *cur;             /* 0x24 */
     GUIWIDGET *unk28;
+    int unk2C;
+    int unk30;
+    int width;                  /* 0x34 */
+    int height;                 /* 0x38 */
+    void *pixmap;               /* 0x3C */
+    void *graphics;             /* 0x40 */
+    void *pixmap2;              /* 0x44 */
+    void *graphics2;            /* 0x48 */
 } WINDSYSTEMDATA;
+
+typedef struct {
+    int unk0;
+    int unk4;
+    int unk8;
+    int width;                  /* 0xC */
+    int height;                 /* 0x10 */
+} WINDSYSTEMINIT;
+
+extern WINDSYSTEMINIT s_windsystem_init;
+
+typedef struct {
+    s16 type;
+    GUIWIDGET *widget;
+    int data;
+} GUIEVENT;
+
+void *GUI_Graphics_createGraphics(void);
+void *GUI_Graphics_createPixmap(int w, int h);
+void *GUI_Graphics_getGraphics(void *g, void *pixmap);
+void GUI_Graphics_freePixmap(void *pixmap);
+void GUI_Graphics_freeGraphics(void *g);
+void dizInit(void);
+void zWindExcEvent(GUIWIDGET *w, int type, GUIEVENT *ev, int a, int b);
+GUIFONT *GuifontCreate(void);
+int GuifontDelete(GUIFONT *font);
 
 extern WINDSYSTEMDATA s_windsystem_data;
 extern int _i_guiwidgetmalloc;
