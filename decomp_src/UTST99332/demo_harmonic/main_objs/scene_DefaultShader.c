@@ -1,4 +1,6 @@
-#include "common.h"
+/* lang: c++ */
+/* cflags: -O2 -frename-registers */
+#include "../main.hpp"
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_DefaultShader", _Z41__static_initialization_and_destruction_0ii_5CF38);
 
@@ -30,10 +32,10 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Defaul
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_DefaultShader", _ZNK5scene13DefaultShader10getTextureEv);
 
-void _ZN5scene13DefaultShader7flattenERN4math14TransformStackE(void) {
+void scene::DefaultShader::flatten(math::TransformStack &) {
 }
 
-void _ZN5scene13DefaultShader4saveERSo(void) {
+void scene::DefaultShader::save(std::ostream &) {
 }
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_DefaultShader", _GLOBAL__I__ZN5scene13DefaultShaderC2ESsb);

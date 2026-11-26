@@ -1,4 +1,6 @@
-#include "common.h"
+/* lang: c++ */
+/* cflags: -O2 -frename-registers */
+#include "../main.hpp"
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/CubeMap_Face_Texture", _Z41__static_initialization_and_destruction_0ii_29F98);
 
@@ -30,14 +32,14 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/CubeMap_Face
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/CubeMap_Face_Texture", _ZN7CubeMap9draw_faceENS_8FaceEnumE);
 
-void _ZN7CubeMap11draw_face_wENS_8FaceEnumE(void) {
+void CubeMap::draw_face_w(FaceEnum) {
 }
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/CubeMap_Face_Texture", _ZN7CubeMap4loadEv);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/CubeMap_Face_Texture", _ZN7CubeMap9draw_cubeEv);
 
-void _ZN7CubeMap11draw_cube_wEv(void) {
+void CubeMap::draw_cube_w() {
 }
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/CubeMap_Face_Texture", _ZN7CubeMap4drawEb);

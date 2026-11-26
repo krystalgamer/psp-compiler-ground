@@ -1,4 +1,6 @@
-#include "common.h"
+/* lang: c++ */
+/* cflags: -O2 -frename-registers */
+#include "../main.hpp"
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/glutils_PositioningInterface", _Z41__static_initialization_and_destruction_0ii_306E8);
 
@@ -20,7 +22,7 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/glutils_Posi
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/glutils_PositioningInterface", _ZN7glutils20PositioningInterface21set_inverse_transformEN4math6matrixE);
 
-void _ZN7glutils20PositioningInterface12set_callbackEv(void) {
+void glutils::PositioningInterface::set_callback() {
 }
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/glutils_PositioningInterface", _ZN7glutils20PositioningInterface4saveESs);

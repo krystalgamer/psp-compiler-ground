@@ -1,4 +1,6 @@
-#include "common.h"
+/* lang: c++ */
+/* cflags: -O2 -frename-registers */
+#include "../main.hpp"
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Graph", _Z41__static_initialization_and_destruction_0ii_5DF00);
 
@@ -52,13 +54,13 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Graph"
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Graph", _ZN5scene5Graph8add_nodeEN6common6handleINS_4NodeEEE);
 
-void _ZN5scene5Graph9printMapAEv(void) {
+void scene::Graph::printMapA() {
 }
 
-void _ZN5scene5Graph9printMapUEv(void) {
+void scene::Graph::printMapU() {
 }
 
-void _ZN5scene5Graph9printMapOEv(void) {
+void scene::Graph::printMapO() {
 }
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Graph", _ZN5scene5Graph5clearEv);
