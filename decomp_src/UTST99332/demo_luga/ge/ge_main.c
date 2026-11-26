@@ -144,7 +144,20 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/ge/ge_main", geDrawStart);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/ge/ge_main", geSetModule);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/ge/ge_main", geDrawFinWait);
+void geDrawFinWait(void) {
+    if (ge_start != 0) {
+        if (ge_start != 1) {
+            ge_start -= 1;
+        } else {
+            sceGuFinish();
+            sceGuSync(0, 0);
+            sceDisplayWaitVblankStartCB();
+            sceGuSendList(0, ge_displist[ge_cdb], NULL);
+            ge_start = 0;
+            ge_cdb ^= 1;
+        }
+    }
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/ge/ge_main", geSendProc);
 
