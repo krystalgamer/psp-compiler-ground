@@ -120,7 +120,52 @@ int parseCheckMetaCharset(char *buf, int len) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parseStrings", parseCheckEncodeType);
+void parseCheckEncodeType(PCtx *c, int *src) {
+    int n;
+    char *p;
+    int i;
+    int r;
+    int m;
+
+    switch (src[10]) {
+    case 0:
+        n = src[6];
+        p = (char *)src[7];
+        for (i = 0; i < n && p[i] != 0; i++) {
+        }
+        if (i == n - 1) {
+            n = i;
+        }
+        m = parseCheckMetaCharset((char *)src[7], n);
+        if (m != -1) {
+            c->x00[2] = m;
+        } else {
+            r = checkEncode((char *)src[7], n);
+            if (r == 4 || r == 0 || r == -1) {
+                c->x00[2] = 2;
+            } else {
+                c->x00[2] = r;
+            }
+        }
+        break;
+    case 2:
+        c->x00[2] = 3;
+        break;
+    case 3:
+        c->x00[2] = 1;
+        break;
+    case 4:
+        c->x00[2] = 5;
+        break;
+    case 5:
+        c->x00[2] = 0;
+        break;
+    case 1:
+    default:
+        c->x00[2] = 2;
+        break;
+    }
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parseStrings", parseSetExtractedAuthData);
 
