@@ -7,6 +7,27 @@ M2C_UNK skipByte(int, M2C_UNK);                     /* extern */
 void *ESP_malloc(M2C_UNK);                          /* extern */
 M2C_UNK ESP_free(void *);                           /* extern */
 
+typedef struct GIFDESC { /* size 0x2C */
+    struct GIFDESC *next;
+    int unk4;
+    int unk8;
+    int unkC;
+    int unk10;
+    int unk14;
+    int unk18;
+    int unk1C;
+    int unk20;
+    int unk24;
+    int unk28;
+} GIFDESC;
+
+typedef struct {
+    int bs;                     /* 0x0 */
+    u8 unk4[0x50];
+    GIFDESC *cur;               /* 0x54 */
+    GIFDESC *list;              /* 0x58 */
+} GIFP;
+
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gif_parser", setTransparentColor);
 
@@ -65,7 +86,14 @@ int readImageDescriptor(void *arg0) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gif_parser", readApplicationExtension);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gif_parser", readOtherExtension);
+int readOtherExtension(GIFP *ctx) {
+    u8 n;
+
+    while ((n = getByte(ctx->bs)) != 0) {
+        skipByte(ctx->bs, n);
+    }
+    return 1;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gif_parser", readImageBlock);
 
@@ -181,7 +209,38 @@ int setGifBuffer(void **arg0, int arg1, int arg2) {
     return 1;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gif_parser", createImageDescriptor);
+int createImageDescriptor(GIFP *ctx) {
+    GIFDESC *d;
+    GIFDESC *p;
+    GIFDESC *prev;
+
+    d = ESP_malloc(sizeof(GIFDESC));
+    if (d == NULL) {
+        return -2;
+    }
+    d->next = NULL;
+    d->unk4 = 0;
+    d->unk8 = 0;
+    d->unkC = 0;
+    d->unk10 = 0;
+    d->unk14 = 0;
+    d->unk18 = 0;
+    d->unk1C = 0;
+    d->unk20 = 0;
+    d->unk24 = 0;
+    d->unk28 = 0;
+    if (ctx->list != NULL) {
+        prev = ctx->list;
+        for (p = prev->next; p != NULL; p = p->next) {
+            prev = p;
+        }
+        prev->next = d;
+    } else {
+        ctx->list = d;
+    }
+    ctx->cur = d;
+    return 1;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gif_parser", createInterlaceOrder);
 
