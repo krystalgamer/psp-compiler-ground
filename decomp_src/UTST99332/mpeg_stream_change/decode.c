@@ -140,7 +140,33 @@ int puts(const char *s);
 void free(void *p);
 
 
-INCLUDE_ASM("tmp/asm/UTST99332/mpeg_stream_change/nonmatchings/decode", decode_create);
+SceInt32 decode_create(t_mpegStreamData *pStreamData, SceMpeg *pMpeg)
+{
+	SceInt32 ret;
+
+	pStreamData->pMpeg = pMpeg;
+
+	pStreamData->videoStreamNum = 0;
+	pStreamData->audioStreamNum = 0;
+
+	pStreamData->avcEsBuf = 0;
+	pStreamData->pAudioEsBuf = NULL;
+
+	ret = decode_createAu(pStreamData, 0);
+	if (ret != 0) {
+		printf("fatal error : decode_createAu() M4AVC 0x%x\n", ret);
+		goto term;
+	}
+
+	ret = decode_createAu(pStreamData, 1);
+	if (ret != 0) {
+		printf("fatal error : decode_createAu() ATRAC 0x%x\n", ret);
+		goto term;
+	}
+
+term:
+	return ret;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/mpeg_stream_change/nonmatchings/decode", decode_reset);
 
