@@ -905,8 +905,6 @@ int EndressValueInit(int pl, int stage, int flag)
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", DrawMapData);
 
-#ifdef NON_MATCHING
-/* Close: operand order of the row address. */
 void SetBallMapReverse(PZL_STAT *dst, PZL_STAT *src)
 {
 	int x, y;
@@ -914,16 +912,16 @@ void SetBallMapReverse(PZL_STAT *dst, PZL_STAT *src)
 	u8 *dm = dst->mp.map;
 
 	for (y = 0; y < 18; y++) {
+		u8 *d = (u8 *)((y / 2 * 2 - y) + (int)dm) + y * 8 + 7;
+		u8 *s = sm + y * 8;
+
 		for (x = 0; x < 8; x++) {
-			dm[y / 2 * 2 - y + y * 8 + 7 - x] = sm[y * 8 + x];
+			*d-- = *s++;
 			if ((y & 1) && x == 6)
 				break;
 		}
 	}
 }
-#else
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", SetBallMapReverse);
-#endif
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", SetBallMap);
 
