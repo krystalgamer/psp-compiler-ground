@@ -217,7 +217,40 @@ INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/systemfile", sceSystemFileLoa
 
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/systemfile", sceSystemFileGetValue);
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/systemfile", sceSystemFileGetValue2);
+int sceSystemFileGetValue2(void *handle, void *index, void *buf, unsigned int size)
+{
+	SysFile *sf = handle;
+	register int ret;
+
+	if (handle == NULL)
+		SF_ERROR(ret, 3)
+	else if (index == NULL)
+		SF_ERROR(ret, 3)
+	else {
+		if (sf->flags & 2) {
+			SfKeyEnt *ent = index;
+
+			if (size < ent->len) {
+				SF_ERROR(ret, 8)
+				goto end;
+			}
+		} else {
+			SfIndex *ix = index;
+
+			if (ix->unk0 == 0) {
+				SF_ERROR(ret, 3)
+				goto end;
+			}
+			if (size < ((SfKeyEnt *)ix->unk0)->len) {
+				SF_ERROR(ret, 8)
+				goto end;
+			}
+		}
+		ret = sceSystemFileGetValue(handle, index, buf);
+	}
+end:
+	return ret;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/systemfile", sceSystemFileOverWriteToFile);
 
@@ -250,7 +283,27 @@ int sceSystemFileFree(void *handle)
 	return ret;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/systemfile", sceSystemFileInitFormatW);
+int sceSystemFileInitFormatW(void **phandle)
+{
+	SysFile *sf = NULL;
+	register int ret;
+
+	if (phandle == NULL)
+		SF_ERROR(ret, 3)
+	else {
+		sf = _newSystemFile(0, 0x200);
+		if (sf == NULL)
+			SF_ERROR(ret, 1)
+		else {
+			sf->fd = -1;
+			sf->flags |= 0x40;
+			sceSystemFileSetHeaderW(sf, NULL, 1, 1);
+			*phandle = sf;
+			ret = 0;
+		}
+	}
+	return ret;
+}
 
 int _indexcompare(const void *a, const void *b)
 {
