@@ -85,7 +85,46 @@ static inline int _waveStop(unsigned int ch)
 	return 0;
 }
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libwave", sceWaveInit);
+static __inline__ void wclr(void *dst, int n)
+{
+	char *p = dst;
+
+	while (--n >= 0)
+		*p++ = 0;
+}
+
+int sceWaveInit(void)
+{
+	if (D_005612EC != 0)
+		return 0x80440001;
+	D_00562644 = D_005612F4;
+	D_00562640 = D_00561364;
+	wclr(D_00562174, sizeof(D_00562174));
+	wclr(D_005623D4, sizeof(D_005623D4));
+	D_00562634.ch = sceAudioChReserve(-1, 0x1c0, 0);
+	if (D_00562634.ch < 0)
+		return 0x80440001;
+	D_00562648[0] = sceAudioChReserve(-1, 0x100, 0);
+	if (D_00562648[0] < 0) {
+		sceAudioChRelease(D_00562634.ch);
+		return 0x80440001;
+	}
+	D_00562648[1] = sceAudioChReserve(-1, 0x100, 0);
+	if (D_00562648[1] < 0) {
+		sceAudioChRelease(D_00562634.ch);
+		sceAudioChRelease(D_00562648[0]);
+		return 0x80440001;
+	}
+	D_00562648[2] = sceAudioChReserve(-1, 0x100, 0);
+	if (D_00562648[2] < 0) {
+		sceAudioChRelease(D_00562634.ch);
+		sceAudioChRelease(D_00562648[0]);
+		sceAudioChRelease(D_00562648[1]);
+		return 0x80440001;
+	}
+	D_005612EC = 1;
+	return 0;
+}
 
 int sceWaveSetVoice(unsigned int ch, void *data, int size, int flags)
 {
