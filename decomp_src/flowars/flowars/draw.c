@@ -778,7 +778,42 @@ INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/draw", show_result_dialog);
 
 INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/draw", draw_number);
 
-INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/draw", draw_number2);
+static void draw_number2(char *str, int x, int y, int space, int font_size, int align)
+{
+	int c, cnum, i, x_start;
+	int w = font_scale[font_size].width;
+	int h = font_scale[font_size].height;
+
+	sceGimPictureActivate(g_font[font_size]);
+	sceGuColor(0xffffffff);
+	if (align == 1) {
+		x_start = x + (space - strlen(str)) * w;
+	} else if (align == 2) {
+		x_start = x - strlen(str) * w / 2;
+		if (x_start < 0)
+			x_start = 0;
+	} else
+		x_start = x;
+	for (i = 0; i < (int)strlen(str) && i < 9; i++) {
+		c = str[i];
+		if (c >= '0' && str[i] <= '9')
+			cnum = c - '0';
+		else if (c == '+')
+			cnum = 10;
+		else if (c == '-')
+			cnum = 11;
+		else if (c == 'x' || c == 'X')
+			cnum = 12;
+		else if (c == ',')
+			cnum = 13;
+		else
+			continue;
+		sceGuSpriteMode(w, h, w, h);
+		sceGuDrawSprite(x_start + i * w, y, 0, w * cnum, 0, 0, 0);
+	}
+}
+
+__asm__(".globl draw_number2");
 
 void draw_timer(int sec) {
     sceGimPictureActivate(g_timer);
