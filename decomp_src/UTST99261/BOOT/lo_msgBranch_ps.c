@@ -225,7 +225,59 @@ done:
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_msgBranch_ps", abortResourceLoading);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_msgBranch_ps", setPageLoadedState);
+int HST_getDomObject(PHIST *h);
+
+void setPageLoadedState(void) {
+    PHIST *h;
+    PHIST *n;
+    PBOX *b;
+    int dom;
+    PJSEVENT ev;
+
+    h = (PHIST *)HST_getHeadHistoryNode();
+    if (h == NULL) {
+        return;
+    }
+loop:
+    n = HST_getChildHistoryNode(h);
+    if (n == NULL || HST_getRequestFlag(n) < 0) {
+        b = h->body;
+        if (b != NULL && (unsigned int)(b->geom->unk40 - 1) < 2) {
+            b->geom->unk40 = 3;
+            dom = HST_getDomObject(h);
+            if (dom != 0) {
+                initJSEvent(&ev, 0xC, dom, 0, 0);
+                sendJSEvent(Node_getJSObj(dom), &ev);
+            }
+        }
+        n = HST_getSiblingHistoryNode(h);
+        if (n == NULL || HST_getRequestFlag(n) < 0) {
+            h = HST_getParentHistoryNode(h);
+            while (h != NULL) {
+                b = h->body;
+                if (b != NULL && (unsigned int)(b->geom->unk40 - 1) < 2) {
+                    b->geom->unk40 = 3;
+                    dom = HST_getDomObject(h);
+                    if (dom != 0) {
+                        initJSEvent(&ev, 0xC, dom, 0, 0);
+                        sendJSEvent(Node_getJSObj(dom), &ev);
+                    }
+                }
+                n = HST_getSiblingHistoryNode(h);
+                if (n != NULL && HST_getRequestFlag(n) >= 0) {
+                    goto next;
+                }
+                h = HST_getParentHistoryNode(h);
+            }
+            return;
+        }
+    }
+next:
+    h = n;
+    if (h != NULL) {
+        goto loop;
+    }
+}
 
 void proc_msg_PL1(void) {
     initSessionSaveDataList();
