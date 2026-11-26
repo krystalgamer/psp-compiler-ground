@@ -143,7 +143,28 @@ int func_00001D50(const struct SceNetAdhocctlScanInfo *scan_info)
 	return 0;
 }
 
-INCLUDE_ASM("tmp/asm/tony_libs/pspnet_adhocctl/nonmatchings/main", func_00001E04);
+int func_00001E04(const struct SceNetAdhocctlGroupName *group_name, int num, const struct SceNetEtherAddr *macs, const struct gm_param *param, int timeout, int flags)
+{
+	struct adhocctl_ctx *p = &D_000068A4;
+	struct gm_request *gm = &D_00006F8C;
+	int ret;
+
+	if (p->busy != 0)
+		return ERR_BUSY;
+	p->busy = 1;
+	if (group_name != NULL)
+		p->group_name = *group_name;
+	else
+		memset(&p->group_name, 0, sizeof(p->group_name));
+	gm->num = num;
+	memcpy(gm->macs, macs, num * sizeof(struct SceNetEtherAddr));
+	gm->param = *param;
+	gm->timeout = timeout;
+	gm->flags = flags;
+	sceKernelSetEventFlag(p->evf, 0x10);
+	ret = 0;
+	return ret;
+}
 
 int func_00001F78(const struct SceNetAdhocctlGroupName *group_name, const struct SceNetEtherAddr *host, const struct gm_param *param, int timeout, int flags)
 {
