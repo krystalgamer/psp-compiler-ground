@@ -276,18 +276,18 @@ void sceGumTranslate(const ScePspFVector3 *v);
 int sceKernelDcacheWritebackAll(void);
 int sprintf(char *buf, const char *fmt, ...);
 
-#ifndef SCEGU_MATRIX_PROJECTION
 #define SCEGU_MATRIX_PROJECTION            0
-#endif
-#ifndef SCEGU_MATRIX_WORLD
 #define SCEGU_MATRIX_WORLD                 2
-#endif
-#ifndef SCEGU_SCR_WIDTH
 #define SCEGU_SCR_WIDTH       480
-#endif
-#ifndef SCEGU_SCR_HEIGHT
 #define SCEGU_SCR_HEIGHT      272
-#endif
+#define SCE_NET_ETHER_ADDR_LEN 6
+#define PAYLOAD_MOVE_TYPE	0x01
+#define PORT		777							
+#define PAYLOAD_MOVE_LEN	(1+4+4+4+4+4+4)		
+#define SCE_NET_ADHOC_F_NONBLOCK		0x0001
+#define SCE_ERROR_NET_ADHOC_WOULD_BLOCK				0x80410709
+#define SCE_OK							0
+
 static void rot_trans_pers(ScePspFVector3 *in, ScePspIVector2 *out)
 {
 	ScePspFMatrix4  wmat, pmat;
@@ -355,27 +355,6 @@ INCLUDE_ASM("tmp/asm/UTST99332/net_matching_stick/nonmatchings/adhoc_game", game
 
 INCLUDE_ASM("tmp/asm/UTST99332/net_matching_stick/nonmatchings/adhoc_game", game_net_term);
 
-#ifndef SCE_NET_ETHER_ADDR_LEN
-#define SCE_NET_ETHER_ADDR_LEN 6
-#endif
-#ifndef PAYLOAD_MOVE_TYPE
-#define PAYLOAD_MOVE_TYPE	0x01
-#endif
-#ifndef PORT
-#define PORT		777							
-#endif
-#ifndef PAYLOAD_MOVE_LEN
-#define PAYLOAD_MOVE_LEN	(1+4+4+4+4+4+4)		
-#endif
-#ifndef SCE_NET_ADHOC_F_NONBLOCK
-#define SCE_NET_ADHOC_F_NONBLOCK		0x0001
-#endif
-#ifndef SCE_ERROR_NET_ADHOC_WOULD_BLOCK
-#define SCE_ERROR_NET_ADHOC_WOULD_BLOCK				0x80410709
-#endif
-#ifndef SCE_OK
-#define SCE_OK							0
-#endif
 int
 send_position(OBJECT *obj)
 {
