@@ -29,8 +29,8 @@ typedef struct {
 	int prio;
 } SceWaveMain;
 
-extern int D_0006B0B4;
-extern int D_0006B0B8;
+extern volatile int D_0006B0B4;
+extern volatile int D_0006B0B8;
 extern char D_0006B0BC[];
 extern char D_0006B12C[];
 extern SceWaveVoice D_0006BF3C[8];
@@ -60,7 +60,50 @@ int sceKernelDeleteThread(int thid);
 int sceKernelExitThread(int status);
 static int func_000095E4(unsigned int args, void *argp);
 
-INCLUDE_ASM("tmp/asm/UTST99332/sound_at3streaming/nonmatchings/libwave", sceWaveInit);
+static __inline__ void wclr(void *dst, int n)
+{
+	char *p = dst;
+	int i;
+
+	for (i = 0; i < n; i++)
+		*p++ = 0;
+}
+
+int sceWaveInit(void)
+{
+	int i;
+	char *p;
+
+	if (D_0006B0B4 != 0)
+		return 0x80440001;
+	D_0006C40C = D_0006B0BC;
+	D_0006C408 = D_0006B12C;
+	wclr(D_0006BF3C, sizeof(D_0006BF3C));
+	wclr(D_0006C19C, sizeof(D_0006C19C));
+	D_0006C3FC.ch = sceAudioChReserve(-1, 0x1c0, 0);
+	if (D_0006C3FC.ch < 0)
+		return 0x80440001;
+	D_0006C410[0] = sceAudioChReserve(-1, 0x100, 0);
+	if (D_0006C410[0] < 0) {
+		sceAudioChRelease(D_0006C3FC.ch);
+		return 0x80440001;
+	}
+	D_0006C410[1] = sceAudioChReserve(-1, 0x100, 0);
+	if (D_0006C410[1] < 0) {
+		sceAudioChRelease(D_0006C3FC.ch);
+		sceAudioChRelease(D_0006C410[0]);
+		return 0x80440001;
+	}
+	D_0006C410[2] = sceAudioChReserve(-1, 0x100, 0);
+	if (D_0006C410[2] < 0) {
+		sceAudioChRelease(D_0006C3FC.ch);
+		sceAudioChRelease(D_0006C410[0]);
+		sceAudioChRelease(D_0006C410[1]);
+		return 0x80440001;
+	}
+	D_0006B0B4 = 1;
+	return 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/sound_at3streaming/nonmatchings/libwave", sceWaveSetVoice);
 
@@ -152,7 +195,30 @@ INCLUDE_ASM("tmp/asm/UTST99332/sound_at3streaming/nonmatchings/libwave", sceWave
 
 INCLUDE_ASM("tmp/asm/UTST99332/sound_at3streaming/nonmatchings/libwave", sceWavePlayEx);
 
-INCLUDE_ASM("tmp/asm/UTST99332/sound_at3streaming/nonmatchings/libwave", sceWaveStop);
+int sceWaveStop(unsigned int ch)
+{
+	int ret = 0x80440005;
+
+	if (ch < 8) {
+		if (D_0006BF3C[ch].stat != 0) {
+			D_0006BF3C[ch].flags |= 0x120000;
+			D_0006C19C[ch].stat = 0;
+			D_0006C19C[ch].pos = 0;
+			D_0006C19C[ch].unk30 = 0;
+			D_0006C19C[ch].unk34 = 0;
+			D_0006C19C[ch].unk28 = 0;
+			D_0006C19C[ch].unk2C = 0;
+		} else {
+			D_0006BF3C[ch].pos = 0;
+			D_0006BF3C[ch].unk30 = 0;
+			D_0006BF3C[ch].unk34 = 0;
+			D_0006BF3C[ch].unk28 = 0;
+			D_0006BF3C[ch].unk2C = 0;
+		}
+		ret = 0;
+	}
+	return ret;
+}
 
 int sceWaveAudioSetSample(unsigned int ch, int samplecount)
 {
@@ -207,7 +273,21 @@ int sceWaveStart(int prio)
 	return func_00009540(prio);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/sound_at3streaming/nonmatchings/libwave", sceWaveEnd);
+int sceWaveEnd(void)
+{
+	int i;
+
+	if (D_0006B0B4 != 3)
+		return 0x80440004;
+	for (i = 0; i < 8; i++)
+		sceWaveStop(i);
+	D_0006B0B8 = 1;
+	sceKernelWaitThreadEnd(D_0006C3FC.thid, NULL);
+	sceKernelDeleteThread(D_0006C3FC.thid);
+	D_0006B0B8 = 0;
+	D_0006B0B4 = 1;
+	return 0;
+}
 
 int sceWaveExit(void)
 {
