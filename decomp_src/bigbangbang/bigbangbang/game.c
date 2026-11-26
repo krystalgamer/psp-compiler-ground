@@ -302,7 +302,36 @@ static void DrawScore(void)
 	sceGuDisable(9);
 }
 
-INCLUDE_ASM("tmp/asm/bigbangbang/bigbangbang/nonmatchings/game", DrawMoon);
+static void DrawMoon(void)
+{
+	ScePspFVector3 vec;
+	float rot;
+
+	sceGuEnable(9);
+	sceGuTexWrap(0, 0);
+	sceGuTexFilter(0, 0);
+	sceGuTexFunc(0, 1);
+	sceGuTexMode(4, 0, 0, 0);
+	sceGuClutMode(1, 0, 0xff, 0);
+	sceGuClutLoad(1, &clut_moon);
+	sceGuTexImage(0, 128, 128, 128, &chr_moon);
+	sceGuTexOffset(0.0f, 0.0f);
+	sceGuTexScale(1.0f, 1.0f);
+	sceGumPushMatrix();
+	rot = (moon + 230.0f >= 360.0f) ? moon - 130.0f : moon + 230.0f;
+	vec.x = cosf(rot * 3.1415927f / 180.0f) * 280.0f;
+	vec.y = -sinf(rot * 3.1415927f / 180.0f) * 280.0f - 220.0f;
+	vec.z = -160.0f;
+	sceGumTranslate(&vec);
+	vec.x = 20.0f;
+	vec.y = 20.0f;
+	vec.z = 20.0f;
+	sceGumScale(&vec);
+	sceGuColor(0xffffffff);
+	sceGumDrawBezier(0x180, 4, 7, NULL, &sphere);
+	sceGumPopMatrix();
+	sceGuDisable(9);
+}
 
 extern Gu2dV16T D_0006EB20[4];
 static void DrawScope(void)
