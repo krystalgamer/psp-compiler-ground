@@ -1,7 +1,12 @@
 /* cflags: -O1 */
 #include "common.h"
+#include <stdarg.h>
+#include "psptypes.h"
 #include "m2c_macros.h"
 #include "dom_clib.h"
+extern ClibTm D_0025B580;
+extern int D_001F44DC;
+extern char D_0025B17C[];
 extern int timezone;
 extern int dylight;
 int *CLIB_gmtime(int *t);
@@ -290,7 +295,20 @@ void CLIB_abort(void) {
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/esp_config", monthdays);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/esp_config", CLIB_printf);
+int CLIB_printf(const char *fmt, ...) {
+    va_list ap;
+    int n;
+
+    if (D_001F44DC < 0) {
+        D_001F44DC = sceKernelCreateSema("pspBrowser-printf", 0, 1, 1, 0);
+    }
+    sceKernelWaitSema(D_001F44DC, 1, 0);
+    va_start(ap, fmt);
+    n = vsnprintf(D_0025B17C, 0x400, fmt, ap);
+    write(0, D_0025B17C, n);
+    sceKernelSignalSema(D_001F44DC, 1);
+    return n;
+}
 
 void CLIB_tzset(void) {
     ClibClock clk;
@@ -340,7 +358,36 @@ void CLIB_difftime(int arg0, int arg1) {
     __floatsidf(arg0 - arg1);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/esp_config", CLIB_gmtime);
+int *CLIB_gmtime(int *t) {
+    ScePspDateTime dt;
+    int yday;
+    int i;
+
+    yday = 0;
+    if (sceRtcSetTime_t(&dt, *t) < 0) {
+        return NULL;
+    }
+    D_0025B580.isdst = dylight;
+    D_0025B580.sec = dt.second;
+    D_0025B580.min = dt.minute;
+    D_0025B580.hour = dt.hour;
+    D_0025B580.mday = dt.day;
+    D_0025B580.mon = dt.month;
+    D_0025B580.year = dt.year;
+    D_0025B580.wday = sceRtcGetDayOfWeek(dt.year, dt.month, dt.day);
+    for (i = 1; i < D_0025B580.mon; i++) {
+        yday += sceRtcGetDaysInMonth(D_0025B580.year, i);
+    }
+    yday += D_0025B580.mday;
+    D_0025B580.yday = yday - 1;
+    if (D_0025B580.mon > 0) {
+        D_0025B580.mon--;
+    }
+    if (D_0025B580.year > 1900) {
+        D_0025B580.year -= 1900;
+    }
+    return (int *)&D_0025B580;
+}
 
 int *CLIB_localtime(int *t) {
     int lt;
