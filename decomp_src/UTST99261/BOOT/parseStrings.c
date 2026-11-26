@@ -5,7 +5,59 @@
 extern PTag htmlElementTable[];
 
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parseStrings", parseFindValue);
+void parseFindValue(char *s, int *start, int *end, int *next) {
+    int b;
+    int st;
+    int i;
+
+    b = 0;
+    st = 0;
+    i = 0;
+    for (;;) {
+        if (s[i] == 0) {
+            break;
+        }
+        switch (st) {
+        case 0:
+            if (s[i] == '=') {
+                st = 1;
+            }
+            break;
+        case 1:
+            if (s[i] == '"') {
+                st = 2;
+                i++;
+                b = i;
+                continue;
+            }
+            if (s[i] != ' ') {
+                st = 3;
+                b = i;
+            }
+            break;
+        case 2:
+            if (s[i] == '"') {
+                *start = b;
+                *end = i;
+                *next = i + 1;
+                return;
+            }
+            break;
+        case 3:
+            if (s[i] == ' ' || s[i] == '"') {
+                *start = b;
+                *end = i;
+                goto out;
+            }
+            break;
+        }
+        i++;
+    }
+    *start = 0;
+    *end = 0;
+out:
+    *next = i;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parseStrings", parseFindName);
 
@@ -13,7 +65,45 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parseStrings", procMetaTag);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parseStrings", parseFindMetaTag);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parseStrings", parseCheckMetaCharset);
+int parseCheckMetaCharset(char *buf, int len) {
+    int start;
+    int end;
+    int adv;
+    int off;
+    int n;
+    char *tag;
+    int r;
+    int left;
+
+    start = 0;
+    end = 0;
+    adv = 0;
+    off = 0;
+    left = len;
+    for (;;) {
+        if (left <= 0) {
+            return -1;
+        }
+        adv = 0;
+        parseFindMetaTag(buf + off, &start, &end, &adv, left);
+        n = end - start;
+        if (n != 0) {
+            tag = MEM_malloc(0, n + 1);
+            if (tag == NULL) {
+                return -1;
+            }
+            strncpy(tag, buf + (off + start), n);
+            tag[n] = 0;
+            r = procMetaTag(tag);
+            MEM_free(0, tag);
+            if (r != -1) {
+                return r;
+            }
+        }
+        off += adv;
+        left -= adv;
+    }
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parseStrings", parseCheckEncodeType);
 
