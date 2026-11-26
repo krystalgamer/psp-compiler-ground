@@ -30,7 +30,7 @@ O_FILES   = $(foreach f,$(S_FILES) $(C_FILES) $(BIN_FILES),$(BUILD)/$(f).o)
 # The compiler of a unit: the version in units.MODULE.txt, mapped by
 # config/compilers.txt to a cc1 in tmp/toolchains/bin.
 unit_of = $(patsubst decomp_src/$(TARGET)/$(MODULE)/%.c,%,$(1))
-cc1_of  = $(TOOLS)/cc1-$(shell $(PYTHON) tools/compiler.py $(TARGET) $(MODULE) $(call unit_of,$(1))) $(shell $(PYTHON) tools/compiler.py --flags $(TARGET) $(MODULE) $(call unit_of,$(1)))
+cc1_of  = $(TOOLS)/$(shell $(PYTHON) tools/compiler.py --prog $(TARGET) $(MODULE) $(call unit_of,$(1))) $(shell $(PYTHON) tools/compiler.py --flags $(TARGET) $(MODULE) $(call unit_of,$(1)))
 as_of   = $(PSP_AS) $(shell $(PYTHON) tools/compiler.py --as-flags $(TARGET) $(MODULE) $(call unit_of,$(1)))
 
 .PHONY: all extract split clean distclean toolchain
@@ -67,7 +67,7 @@ $(BUILD)/%.bin.o: %.bin
 
 $(BUILD)/%.c.o: %.c $(UNITS)
 	@mkdir -p $(@D)
-	$$(u=$$(grep -oP '^/\* upstream: \K(newlib|libgcc)' $<) && echo tools/$${u/newlib/nl}cpp.sh || echo '$(CPP) $(CPPFLAGS) -MMD -MF $(BUILD)/$*.c.d -MT $@') $< | $(call cc1_of,$<) $$(grep -oP "cflags: \K-O[0-3s](?: -(?:[fm][\w-]+|std)(?:=[\w.:]+)?)*" $< || echo -O2) $(CFLAGS) -o $(BUILD)/$*.c.s
+	$$(u=$$(grep -oP '^/\* upstream: \K(newlib|libgcc)' $<) && echo tools/$${u/newlib/nl}cpp.sh || echo '$(CPP) $(CPPFLAGS) $(shell $(PYTHON) tools/compiler.py --cppflags $(TARGET) $(MODULE) $(call unit_of,$<)) -MMD -MF $(BUILD)/$*.c.d -MT $@') $< | $(call cc1_of,$<) $$(grep -oP "cflags: \K-O[0-3s](?: -(?:[fm][\w-]+|std)(?:=[\w.:]+)?)*" $< || echo -O2) $(CFLAGS) -o $(BUILD)/$*.c.s
 	[ -z "$$($(PYTHON) tools/compiler.py --locfix $(TARGET) $(MODULE) $(call unit_of,$<))" ] || $(PYTHON) tools/locfix.py $(BUILD)/$*.c.s
 	$(call as_of,$<) -EL -G0 -Iinclude -o $@ $(BUILD)/$*.c.s
 	$(PYTHON) tools/fix_old_gas.py --text-align $$(grep -oP "text-align: \K[0-9]+" $< || echo 4) --data-align $$(grep -oP "data-align: \K[0-9]+" $< || echo 4) $@

@@ -26,6 +26,17 @@ def entry(target, module, unit):
     return comp[ver] + (extra[1:] if extra[:1] == [ver] else [])
 
 
+def is_cxx(target, module, unit):
+    """The unit is written in C++ (a `/* lang: c++ */` comment): built by
+    cc1plus.  Units of C++ originals written as C (mangled names) stay C."""
+    return unit_marker(target, module, unit, "lang: c++")
+
+
+def program(target, module, unit):
+    """cc1 or cc1plus binary name in tmp/toolchains/bin for the unit."""
+    return ("cc1plus-" if is_cxx(target, module, unit) else "cc1-") + compiler(target, module, unit)
+
+
 def compiler(target, module, unit):
     """cc1 name (tmp/toolchains/bin/cc1-NAME) for a unit."""
     return entry(target, module, unit)[0]
@@ -86,6 +97,10 @@ if __name__ == "__main__":
         print(driver_flags(*sys.argv[2:5]))
     elif sys.argv[1] == "--as-flags":
         print(as_flags(*sys.argv[2:5]))
+    elif sys.argv[1] == "--prog":
+        print(program(*sys.argv[2:5]))
+    elif sys.argv[1] == "--cppflags":
+        print("-x c++ -D__cplusplus" if is_cxx(*sys.argv[2:5]) else "")
     elif sys.argv[1] == "--locfix":
         print("1" if locfix(*sys.argv[2:5]) else "")
     else:

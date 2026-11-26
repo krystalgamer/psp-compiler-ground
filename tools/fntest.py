@@ -27,11 +27,13 @@ DRIVER = {"1.5.1": ("-mno-ulsw", ""), "1.3.1-orig": ("-mno-ulsw", ""),
 
 def compile_c(src, cc1, flags, out, incs=(), defs=()):
     i = out.with_suffix(".i")
-    subprocess.run(["cpp", "-P", "-undef", "-nostdinc", f"-I{ROOT/'include'}", f"-I{ROOT/'include/sdk'}", f"-I{ROOT/'include/libc'}", f"-I{ROOT/'decomp_src'}", *[f"-I{d}" for d in incs],
+    # a `/* lang: c++ */` file is preprocessed and compiled as C++ (cc1plus)
+    cxx = "/* lang: c++ */" in Path(src).read_text(errors="replace")
+    subprocess.run(["cpp", *(["-x", "c++", "-D__cplusplus"] if cxx else []), "-P", "-undef", "-nostdinc", f"-I{ROOT/'include'}", f"-I{ROOT/'include/sdk'}", f"-I{ROOT/'include/libc'}", f"-I{ROOT/'decomp_src'}", *[f"-I{d}" for d in incs],
                     "-D__GNUC__=3", "-D_LANGUAGE_C", "-D__psp__", "-D__mips__", "-DM2CTX", *[f"-D{d}" for d in defs], str(src), "-o", str(i)],
                    check=True)
     cflags, asflags = DRIVER.get(cc1, ("", ""))
-    r = subprocess.run([str(T / f"cc1-{cc1}"), "-quiet", "-G0", *cflags.split(), *flags.split(), str(i), "-o", str(out.with_suffix(".s"))],
+    r = subprocess.run([str(T / f"{'cc1plus' if cxx else 'cc1'}-{cc1}"), "-quiet", "-G0", *cflags.split(), *flags.split(), str(i), "-o", str(out.with_suffix(".s"))],
                        capture_output=True, text=True)
     if r.returncode:
         sys.stderr.write(r.stderr)
