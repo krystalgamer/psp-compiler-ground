@@ -256,7 +256,143 @@ int RselInt(void) {
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/plsel", RoundSelect);
+extern int D_000408E4;
+extern const double D_0002F670;	/* 23.5: a cst8 literal, kept in the unit's rodata */
+extern int D_00154028;
+extern int SelectModeFlag;
+extern const int r_num_u[];
+extern const int r_num_v[];
+int GetKeyHit(void);
+void SpriteInit(void);
+void SpriteKick(void);
+int se_play(int no);
+int DrawSpriteEx(int no, float z, float f0, float f1, float f2, float f3, float f4, float f5, float f6, float f7, float f8, float f9, float f10, float f11, float f12, float f13, int flag);
+int RoundSelect(void)
+{
+	int ret = 0;
+	int d100, d10, d1, a;
+
+	SpriteInit();
+	disp_title_bg(255);
+	DrawSpriteEz(2.0f, 40.0f, 8.0f, 400.0f, 48.0f, 0.0f, 0.0f, 7);
+	DrawSpriteEz(2.0f, 104.0f, 56.0f, 272.0f, 32.0f, 0.0f, 32.0f, 5);
+	DrawSpriteEz(2.0f, 148.0f, 248.0f, 184.0f, 24.0f, 0.0f, 0.0f, 8);
+	DrawSpriteEz(3.0f, 88.0f, 168.0f, 304.0f, 304.0f, 0.0f, 0.0f, 4);
+	DrawSpriteEz(1.0f, 120.0f, 200.0f, 240.0f, 32.0f, 0.0f, 10.0f, 6);
+	if (RsFlag < 48) {
+		RsFlag++;
+		SpriteDraw(9, -1, 2.0f, 128 - RsFlag, 144 - RsFlag, 0, 0, 128 + RsFlag, 144 - RsFlag, 95, 0, 128 - RsFlag, 144 + RsFlag, 0, 95, 128 + RsFlag, 144 + RsFlag, 95, 95);
+		SpriteDraw(9, -1, 2.0f, 240 - RsFlag, 144 - RsFlag, 0, 0, 240 + RsFlag, 144 - RsFlag, 95, 0, 240 - RsFlag, 144 + RsFlag, 0, 95, 240 + RsFlag, 144 + RsFlag, 95, 95);
+		SpriteDraw(9, -1, 2.0f, 352 - RsFlag, 144 - RsFlag, 0, 0, 352 + RsFlag, 144 - RsFlag, 95, 0, 352 - RsFlag, 144 + RsFlag, 0, 95, 352 + RsFlag, 144 + RsFlag, 95, 95);
+	} else {
+		if (GetKeyHit() & 0x20) {
+			se_play(5);
+			if (D_000408E4 > 0)
+				D_000408E4--;
+		}
+		if (GetKeyHit() & 0x80) {
+			se_play(5);
+			if (D_000408E4 < 2)
+				D_000408E4++;
+		}
+		d100 = Round / 100;
+		d10 = Round % 100 / 10;
+		d1 = Round % 10;
+		if (GetKeyHit() & 0x10) {
+			se_play(4);
+			switch (D_000408E4) {
+			case 0:
+				if (d1 < 9) {
+					d1++;
+					Round += 1;
+				} else {
+					d1 -= 9;
+					Round -= 9;
+				}
+				break;
+			case 1:
+				if (d10 < 9) {
+					d10++;
+					Round += 10;
+				} else {
+					d10 -= 9;
+					Round -= 90;
+				}
+				break;
+			case 2:
+				if (d100 < 5) {
+					d100++;
+					Round += 100;
+				} else {
+					d100 -= 5;
+					Round -= 500;
+				}
+				break;
+			}
+		}
+		if (GetKeyHit() & 0x40) {
+			se_play(4);
+			switch (D_000408E4) {
+			case 0:
+				if (d1 > 0 && Round > 0) {
+					Round -= 1;
+					d1--;
+				} else {
+					d1 += 9;
+					Round += 9;
+				}
+				break;
+			case 1:
+				if (d10 > 0) {
+					d10--;
+					Round -= 10;
+				} else {
+					d10 += 9;
+					Round += 90;
+				}
+				break;
+			case 2:
+				if (d100 > 0) {
+					d100--;
+					Round -= 100;
+				} else {
+					d100 += 5;
+					Round += 500;
+				}
+				break;
+			}
+		}
+		DrawSpriteEz(2.0f, 80.0f, 96.0f, 96.0f, 96.0f, 0.0f, 0.0f, 9);
+		DrawSpriteEz(2.0f, 192.0f, 96.0f, 96.0f, 96.0f, 0.0f, 0.0f, 9);
+		DrawSpriteEz(2.0f, 304.0f, 96.0f, 96.0f, 96.0f, 0.0f, 0.0f, 9);
+		DrawSpriteEz(2.0f, 80.0f, 96.0f, 96.0f, 96.0f, r_num_u[d100], r_num_v[d100], 11);
+		DrawSpriteEz(2.0f, 192.0f, 96.0f, 96.0f, 96.0f, r_num_u[d10], r_num_v[d10], 11);
+		DrawSpriteEz(2.0f, 304.0f, 96.0f, 96.0f, 96.0f, r_num_u[d1], r_num_v[d1], 11);
+		D_00154028 = (D_00154028 + 4) % 180;
+		if (D_00154028 < 0)
+			D_00154028 += 180;
+		SetSpriteColorRGBA(255, 255, 255, 255);
+		DrawSpriteEx(10, 2.0f, D_0002F670 - D_000408E4 * D_0002F670, -1.5f, 96.0f, 96.0f, 0, 0, 0, 0, 0, 0, 0, 0, (float)D_00154028 * 3.14f / 90.0f, 1.0f, 0);
+		if (GetKeyHit() & 0x2008) {
+			if (Round >= 501)
+				se_play(2);
+			else if (Round >= D_0101C3B8 + 1)
+				se_play(2);
+			else if (Round <= 0)
+				se_play(2);
+			else {
+				ret = 7;
+				SelectModeFlag = 2;
+				se_play(1);
+			}
+		} else if (GetKeyHit() & 0x4000) {
+			ret = 5;
+			se_play(3);
+		}
+	}
+	SpriteKick();
+	return ret;
+}
 
 #ifdef NON_MATCHING
 /* Close (one insn): the original computes num / 10 into a temporary and copies it to a saved register. */
