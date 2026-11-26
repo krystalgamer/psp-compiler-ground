@@ -106,6 +106,40 @@ SceInt32 dispbuf_func(SceSize size, SceVoid *argp);
 SceInt32 dispbuf_show(t_displayBuffer *pDisp);
 
 
+/* SDK prototypes (tools/sdk_protos.h) */
+void *malloc(unsigned int size);
+void *memalign(unsigned int align, unsigned int size);
+int puts(const char *s);
+void sceGuBlendFunc(int op, int src, int dest, unsigned int srcfix, unsigned int destfix);
+void sceGuClear(int flags);
+void sceGuClearColor(unsigned int color);
+void sceGuClearDepth(unsigned int depth);
+void sceGuClearStencil(unsigned int stencil);
+void sceGuColor(unsigned int color);
+void sceGuDebugPrint(int x, int y, unsigned int color, const char *str);
+void sceGuDepthBuffer(void *zbp, int frame_width);
+void sceGuDisable(int state);
+void sceGuDispBuffer(int width, int height, void *dbp, int frame_width);
+int sceGuDisplay(int state);
+void sceGuDrawArray(int prim, int vtype, int count, const void *indices, const void *vertices);
+void sceGuDrawBuffer(int psm, void *fbp, int frame_width);
+void sceGuDrawSprite(int x, int y, int z, int u, int v, int flip, int rotation);
+void sceGuEnable(int state);
+int sceGuFinish(void);
+void sceGuInit(void);
+void sceGuOffset(unsigned int x, unsigned int y);
+void sceGuScissor(int x, int y, int w, int h);
+void sceGuSpriteMode(int a0, int a1, int a2, int a3);
+void sceGuStart(int type, void *list, int size);
+int sceGuSync(int mode, int what);
+void sceGuTexFilter(int min, int mag);
+void sceGuTexFunc(int tfx, int tcc);
+void sceGuTexImage(int mipmap, int width, int height, int tbw, const void *tbp);
+void sceGuTexMode(int tpsm, int maxmips, int a2, int swizzle);
+void sceGuTexWrap(int u, int v);
+int sceKernelCreateSema(const char *name, unsigned int attr, int init, int max, void *option);
+int sprintf(char *buf, const char *fmt, ...);
+
 INCLUDE_ASM("tmp/asm/UTST99332/mpeg_mpegstr_gu/nonmatchings/display", init_all);
 
 INCLUDE_ASM("tmp/asm/UTST99332/mpeg_mpegstr_gu/nonmatchings/display", draw_frame);
