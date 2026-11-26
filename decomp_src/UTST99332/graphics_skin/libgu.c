@@ -144,7 +144,18 @@ void sceGuSetStatus(int state, int status) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_skin/nonmatchings/libgu", sceGuSetAllStatus);
+void sceGuSetAllStatus(unsigned int status);
+void sceGuSetAllStatus(unsigned int status)
+{
+	int i;
+
+	for (i = 0; i < 22; i++) {
+		if ((status >> i) & 1)
+			sceGuEnable(i);
+		else
+			sceGuDisable(i);
+	}
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_skin/nonmatchings/libgu", sceGuSetMatrix);
 

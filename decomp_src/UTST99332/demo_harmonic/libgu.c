@@ -4,7 +4,18 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/libgu", callback_sig);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/libgu", callback_fin);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/libgu", get_exp);
+int get_exp(int val)
+{
+	int i;
+
+	i = 9;
+	do {
+		if ((val >> i) & 1)
+			break;
+		i--;
+	} while (i > 0);
+	return i;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/libgu", flush_font);
 
@@ -34,7 +45,10 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/libgu", sceGuSignal);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/libgu", sceGuBreak);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/libgu", sceGuContinue);
+void sceGuContinue(void)
+{
+	sceGeContinue();
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/libgu", sceGuCallList);
 
@@ -54,9 +68,29 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/libgu", sceGuGetStatus
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/libgu", sceGuGetAllStatus);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/libgu", sceGuSetStatus);
+void sceGuEnable(int state);
+void sceGuDisable(int state);
+void sceGuSetStatus(int state, int status);
+void sceGuSetStatus(int state, int status)
+{
+	if (status == 0)
+		sceGuDisable(state);
+	else
+		sceGuEnable(state);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/libgu", sceGuSetAllStatus);
+void sceGuSetAllStatus(unsigned int status);
+void sceGuSetAllStatus(unsigned int status)
+{
+	int i;
+
+	for (i = 0; i < 22; i++) {
+		if ((status >> i) & 1)
+			sceGuEnable(i);
+		else
+			sceGuDisable(i);
+	}
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/libgu", sceGuSetMatrix);
 
@@ -112,7 +146,12 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/libgu", sceGuPatchPrim
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/libgu", sceGuAmbient);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/libgu", sceGuColor);
+void sceGuColor(unsigned int color);
+void sceGuMaterial(int mode, unsigned int color);
+void sceGuColor(unsigned int color)
+{
+	sceGuMaterial(7, color);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/libgu", sceGuColorMaterial);
 
@@ -200,6 +239,10 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/libgu", sceGuMorphWeig
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/libgu", sceGuDebugPrint);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/libgu", sceGuDebugFlush);
+void sceGuDebugFlush(void);
+void sceGuDebugFlush(void)
+{
+	flush_font();
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/libgu", sceGuSetCallback);
