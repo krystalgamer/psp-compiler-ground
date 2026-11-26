@@ -4,7 +4,8 @@
 #define MAP_SIZE 0x240
 
 typedef struct {
-	u8 pad0[2];
+	u8 unk0;		/* +0x0 */
+	u8 pad1;
 	s8 unk2;		/* +0x2 */
 	u8 pad3[0xA - 3];
 	s16 se;			/* +0xA: sound effect to play this frame */
@@ -61,7 +62,8 @@ typedef struct {
 	s16 unk454;		/* 0x454 */
 	u8 pad456[2];
 	s16 unk458;		/* 0x458 */
-	u8 pad45A[0x45D - 0x45A];
+	u8 pad45A[0x45C - 0x45A];
+	u8 unk45C;		/* 0x45C */
 	s8 monitor;		/* 0x45D */
 	s8 monitor_anim;	/* 0x45E */
 	u8 unk45F;		/* 0x45F */
@@ -80,8 +82,11 @@ typedef struct {
 	} drop;			/* 0x480 */
 	u8 pad_drop[0x13B8 - 0x484 - NDROP * 6];
 	PZL_ENT ent[192];	/* 0x13B8 */
-	u8 pad19B8[0x1AF4 - 0x19B8];
-	u8 map[MAP_SIZE];	/* 0x1AF4 */
+	u8 pad19B8[0x1AF0 - 0x19B8];
+	struct {
+		u8 pad0[4];
+		u8 map[MAP_SIZE];	/* 0x1AF4 */
+	} mp;			/* 0x1AF0 */
 	u8 pad1D34[0x1D58 - 0x1D34];
 	u8 attr[MAP_SIZE];	/* 0x1D58 */
 	u8 pad1F98[0x2220 - 0x1F98];

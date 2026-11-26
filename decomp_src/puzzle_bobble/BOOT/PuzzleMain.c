@@ -12,12 +12,17 @@ extern int PauseFlag;
 extern unsigned char PauseOk;
 extern int StageNum;
 extern int gim_bg_endress;
+extern int D_0014E92C;
+int CvtBallPos2MapPos(PZL_STAT *st, int x, int y);
+int CheckBallAround(PZL_STAT *st, int x, int y);
+int CheckOneColorAll(PZL_STAT *st);
+int GetBallMapAddr(PZL_STAT *st, int x, int y, int dir);
 extern int gim_bg_puzzle[];
 extern int gim_bg_vs[];
 extern const u16 BallXPos[];
 void SetPlayStatus(PZL_STAT *st, int a1, int no);
 int CheckBallAroundRainbow(PZL_STAT *st, int x, int y, int n);
-void CheckBallAroundRainbowTerm(PZL_STAT *st, int n);
+int CheckBallAroundRainbowTerm(PZL_STAT *st, int n);
 typedef struct {
 	int u, v, w, h, no;
 } PARTZ;
@@ -26,6 +31,7 @@ typedef struct {
 } SPRDATA;
 extern const SPRDATA SCORE_NUMERIC_PARTZ[];
 extern const SPRDATA NUMERIC_PARTZ[];
+extern const SPRDATA D_0002DEB4[];
 int SpriteDraw(int no, float z, int color, float x0, float y0, float u0, float v0, float x1, float y1, float u1, float v1, float x2, float y2, float u2, float v2, float x3, float y3, float u3, float v3);
 int DrawSpritePt4(int no, float z, int color, float x0, float y0, float u0, float v0, float x1, float y1, float u1, float v1, float x2, float y2, float u2, float v2, float x3, float y3, float u3, float v3);
 int SpriteDrawC(int x, float z, int y, const SPRDATA *p);
@@ -427,8 +433,8 @@ INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", DrawMapData);
 void SetBallMapReverse(PZL_STAT *dst, PZL_STAT *src)
 {
 	int x, y;
-	u8 *sm = src->map;
-	u8 *dm = dst->map;
+	u8 *sm = src->mp.map;
+	u8 *dm = dst->mp.map;
 
 	for (y = 0; y < 18; y++) {
 		for (x = 0; x < 8; x++) {
@@ -513,7 +519,37 @@ INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", CheckBallAroun
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", CheckBallAroundRainbow);
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", CheckBallAroundRainbowTerm);
+int CheckBallAroundRainbowTerm(PZL_STAT *st, int n)
+{
+	int i, dir, a;
+	int cnt = 0;
+	int ret = 0;
+	int x, y;
+	u8 col;
+
+	for (i = 0; i < 0x22E; i++) {
+		GetBallCoordinate(st, i, &x, &y);
+		if (st->attr[i] != 0) {
+			st->rainbow[i] = 0;
+			cnt++;
+			st->unk434++;
+			col = st->mp.map[i];
+			st->mp.map[i] = 0;
+			for (dir = 1; dir < 7; dir++) {
+				a = GetBallMapAddr(st, x, y, dir);
+				if (st->mp.map[a] == 13) {
+					st->mp.map[a] = col;
+					ret++;
+					st->rainbow[a] = 1;
+					st->drop.unk1 = 1;
+					st->snd.se = 24;
+				}
+			}
+		}
+	}
+	st->unk429 = cnt == 3;
+	return ret;
+}
 
 int CheckBallRainbow(PZL_STAT *st)
 {
@@ -526,7 +562,7 @@ int CheckBallRainbow(PZL_STAT *st)
 		st->attr[j] = 0;
 	n = 0;
 	for (i = 0; i < 0x22E; i++) {
-		if (st->rainbow[i] != 0 && (u8)(st->map[i] - 1) < 8) {
+		if (st->rainbow[i] != 0 && (u8)(st->mp.map[i] - 1) < 8) {
 			GetBallCoordinate(st, i, &x, &y);
 			n = CheckBallAroundRainbow(st, x, y, n);
 		}
@@ -550,8 +586,8 @@ void TermChain(PZL_STAT *st)
 	int i;
 
 	for (i = 0; i < MAP_SIZE; i++) {
-		if (st->map[i] == 0x68)
-			st->map[i] = 0;
+		if (st->mp.map[i] == 0x68)
+			st->mp.map[i] = 0;
 	}
 }
 
@@ -568,7 +604,7 @@ int CheckOneColorAll(PZL_STAT *st)
 	st->unk429 = 0;
 	if (col >= 1 && col <= 9) {
 		for (i = 0; i < 0x22E; i++) {
-			if (st->map[i] == col || st->attr[i] == 2) {
+			if (st->mp.map[i] == col || st->attr[i] == 2) {
 				n++;
 				GetBallCoordinate(st, i, &x, &y);
 				d = &st->drop.d[st->ndrop];
@@ -576,7 +612,7 @@ int CheckOneColorAll(PZL_STAT *st)
 				d->flag = 0;
 				d->y = y;
 				d->col = col;
-				st->map[i] = 0;
+				st->mp.map[i] = 0;
 				st->ndrop++;
 			}
 		}
@@ -595,7 +631,7 @@ int CheckRoundClear(PZL_STAT *st)
 	i = 0;
 	found = 0;
 	do {
-		if ((st->map[i] >= 1 && st->map[i] <= 9) || st->map[i] == 13) {
+		if ((st->mp.map[i] >= 1 && st->mp.map[i] <= 9) || st->mp.map[i] == 13) {
 			found = 1;
 			break;
 		}
@@ -625,7 +661,7 @@ int GetBallLine(PZL_STAT *st)
 
 	for (line = 32; line >= 0; line--) {
 		for (i = 0; i < w; i++) {
-			if (st->map[i + line * w] >= 1 && st->map[i + line * w] <= 11)
+			if (st->mp.map[i + line * w] >= 1 && st->mp.map[i + line * w] <= 11)
 				return line + st->scroll;
 		}
 	}
@@ -704,7 +740,14 @@ INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", VSModeBody);
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", EndressBody);
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", MonitorPut);
+void MonitorPut(PZL_STAT *st)
+{
+	if (st->mapsub < 2) {
+		D_0014E92C = (D_0014E92C + 3) % 60;
+		SpriteDrawC(50, 1.0f, 241, &D_0002DEB4[D_0014E92C / 20]);
+		SpriteDrawC(430, 1.0f, 241, &D_0002DEB4[4 + D_0014E92C / 15]);
+	}
+}
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", PollShutter);
 
