@@ -88,7 +88,7 @@ struct ScePspFVector4 { /* size 0x10 */
     float y;
     float z;
     float w;
-};
+} __attribute__((aligned(16)));
 typedef struct ScePspFVector4 ScePspFVector4;
 struct ScePspFMatrix4 { /* size 0x40 */
     ScePspFVector4 x;
