@@ -114,11 +114,8 @@ typedef struct {
 		u8 pad3;
 		PZL_DROP d[NDROP];	/* 0x484 */
 	} drop;			/* 0x480 */
-	u8 pad_drop[0x13B0 - 0x484 - NDROP * 6];
-	struct {
-		u8 pad0[4];
-		PZL_ENT e[192];	/* 0x13B4 */
-	} ent;			/* 0x13B0 */
+	u8 pad_drop[0x13B4 - 0x484 - NDROP * 6];
+	PZL_ENT ent[192];	/* 0x13B4 */
 	u8 pad19B4[0x1AF0 - 0x19B4];
 	struct {
 		u8 pad0[4];

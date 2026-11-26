@@ -1255,7 +1255,7 @@ void dsGMInit(int mode, int a1)
 	}
 	st->unk458 = 0;
 	for (i = 0; i < 192; i++)
-		st->ent.e[i].flag = 0;
+		st->ent[i].flag = 0;
 }
 
 int GetBallNext(PZL_STAT *st, int flag)
@@ -1870,17 +1870,17 @@ void CheckBallDrop(PZL_STAT *st)
 		GetBallCoordinate(st, i, &x2, &y2);
 		if (st->attr[i] == 0 && st->mp.map[i] != 0) {
 			st->rainbow[i] = 0;
-			st->ent.e[st->unk458].x = x2;
-			st->ent.e[st->unk458].y = y2;
-			st->ent.e[st->unk458].x += MapXBeginPos[st->mapno * 3 + st->mapsub] - 8;
-			st->ent.e[st->unk458].y += st->ofs_y + st->scroll * 14 + 32;
-			st->ent.e[st->unk458].col = st->mp.map[i];
-			st->ent.e[st->unk458].vy = -st->unk456;
+			st->ent[st->unk458].x = x2;
+			st->ent[st->unk458].y = y2;
+			st->ent[st->unk458].x += MapXBeginPos[st->mapno * 3 + st->mapsub] - 8;
+			st->ent[st->unk458].y += st->ofs_y + st->scroll * 14 + 32;
+			st->ent[st->unk458].col = st->mp.map[i];
+			st->ent[st->unk458].vy = -st->unk456;
 			ey[st->mp.map[i]] = y2;
 			ent[st->mp.map[i]] = st->unk458;
 			used[st->mp.map[i]] = 1;
 			ex[st->mp.map[i]] = x2;
-			st->ent.e[st->unk458].flag = 1;
+			st->ent[st->unk458].flag = 1;
 			st->unk456 += 2;
 			st->unk458 = (st->unk458 + 1) % 192;
 			DrawBubble(0.0f, x2 + MapXBeginPos[st->mapno * 3 + st->mapsub] + 72, y2 + st->ofs_y + st->scroll * 14, st->mp.map[i] - 1, 0);
@@ -1964,7 +1964,7 @@ void CheckChain(PZL_STAT *st, int col, int n, int a, int b)
 							st->mp.map[cur] = 0x68;
 							GetBallCoordinate(st, cur, &x2, &y2);
 							st->chain[st->nchain].a = a;
-							st->chain[st->nchain].b = (st->ent.e[n].flag = 0, b);
+							st->chain[st->nchain].b = (st->ent[n].flag = 0, b);
 							st->chain[st->nchain].x = x2;
 							st->chain[st->nchain].y = y2;
 							st->chain[st->nchain].col = col;
@@ -2969,27 +2969,27 @@ int PuzzleBody(void)
 
 			for (j = 0; j < 3; j++) {
 				for (i = 0; i < 192; i++) {
-					if (st->ent.e[i].flag) {
-						n = st->ent.e[i].vy++;
-						x = st->ent.e[i].x + 80;
-						y = st->ent.e[i].y - 32;
-						if (st->ent.e[i].col == 12) {
+					if (st->ent[i].flag) {
+						n = st->ent[i].vy++;
+						x = st->ent[i].x + 80;
+						y = st->ent[i].y - 32;
+						if (st->ent[i].col == 12) {
 							fl = 64 - n;
 							if (fl > 0) {
 								fl *= 0.015625f;
 								c = 11;
 							} else {
-								st->ent.e[i].flag = 0;
+								st->ent[i].flag = 0;
 								continue;
 							}
 						} else {
 							if (n > 0) {
 								y += n * n / 40;
 								if (y > 320)
-									st->ent.e[i].flag = 0;
+									st->ent[i].flag = 0;
 							}
 							fl = 0;
-							c = st->ent.e[i].col - 1;
+							c = st->ent[i].col - 1;
 						}
 						DrawBubble(fl, x, y, c, 0);
 					}
@@ -3665,27 +3665,27 @@ int EndressBody(int pl)
 
 			for (j = 0; j < 3; j++) {
 				for (i = 0; i < 192; i++) {
-					if (st->ent.e[i].flag) {
-						n = st->ent.e[i].vy++;
-						x = st->ent.e[i].x + 80;
-						y = st->ent.e[i].y - 32;
-						if (st->ent.e[i].col == 12) {
+					if (st->ent[i].flag) {
+						n = st->ent[i].vy++;
+						x = st->ent[i].x + 80;
+						y = st->ent[i].y - 32;
+						if (st->ent[i].col == 12) {
 							fl = 64 - n;
 							if (fl > 0) {
 								fl *= 0.015625f;
 								c = 11;
 							} else {
-								st->ent.e[i].flag = 0;
+								st->ent[i].flag = 0;
 								continue;
 							}
 						} else {
 							if (n > 0) {
 								y += n * n / 40;
 								if (y > 320)
-									st->ent.e[i].flag = 0;
+									st->ent[i].flag = 0;
 							}
 							fl = 0;
-							c = st->ent.e[i].col - 1;
+							c = st->ent[i].col - 1;
 						}
 						DrawBubble(fl, x, y, c, 0);
 					}
