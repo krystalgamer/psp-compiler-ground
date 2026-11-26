@@ -2,7 +2,7 @@
 #include "common.h"
 #include "m2c_macros.h"
 u16 *CSS_SkipQuotedString(u16 *p);
-void CSS_putcPoolBuf(void *p, unsigned char c);
+int CSS_putcPoolBuf(void *p, int c);
 void ParseCSSDeclaration(void *ctx, void *str, void **out);
 void *UCS_strdup(void *s);
 void CSS_mediaList(void *str, u16 *media);
@@ -20,7 +20,16 @@ M2C_UNK freeCSSStyleDeclaration(void *);            /* extern */
 M2C_UNK addCSSRule();                               /* extern */
 
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_API", CSS_matchChainMenber);
+int CSS_matchChainMenber(u16 *name, void **e) {
+    int found = 0;
+    for (; e != NULL && e[1] != NULL; e = *e) {
+        if (UCS_strcasecmp(name, e[1]) == 0) {
+            found = 1;
+            break;
+        }
+    }
+    return found;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_API", CSS_ISmatchSelector_BCE14);
 
@@ -510,17 +519,57 @@ void *CSS_newPoolBuf(void) {
     return var_v0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_API", CSS_freePoolBuf);
+void CSS_freePoolBuf(u16 *pb) {
+    void **b;
+    void **next;
+    if (pb == NULL) {
+        return;
+    }
+    b = M2C_FIELD(pb, void ***, 4);
+    if (b != NULL && *pb != 0) {
+        do {
+            next = *b;
+            MEM_free(0, b);
+            (*pb)--;
+            b = next;
+        } while (b != NULL && *pb != 0);
+    }
+    MEM_free(0, pb);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_API", CSS_putcPoolBuf);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_API", CSS_putsPoolBuf);
-
-void CSS_putCPoolBuf(void *p, int c) {
-    CSS_putcPoolBuf(p, c);
+int CSS_putsPoolBuf(void *pb, u16 *s) {
+    int r = 0;
+    if (pb == NULL || s == NULL) {
+        return -1;
+    }
+    for (; *s != 0; s++) {
+        r = CSS_putcPoolBuf(pb, *s);
+        if (r < 0) {
+            break;
+        }
+    }
+    return r;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_API", CSS_putSPoolBuf);
+void CSS_putCPoolBuf(void *p, int c) {
+    CSS_putcPoolBuf(p, (u8)c);
+}
+
+int CSS_putSPoolBuf(void *pb, u8 *s) {
+    int r = 0;
+    if (pb == NULL || s == NULL) {
+        return -1;
+    }
+    for (; *s != 0; s++) {
+        r = CSS_putcPoolBuf(pb, *s);
+        if (r < 0) {
+            break;
+        }
+    }
+    return r;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_API", CSS_getPoolBuf);
 

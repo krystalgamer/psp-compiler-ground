@@ -37,9 +37,11 @@ typedef struct {
     s16 unk50;
     s16 unk52;
     int unk54;
-    u8 unk58[0x10];
+    u8 unk58[0xC];
+    int unk64;                  /* 0x64: text color */
     s16 fontSize;               /* 0x68 */
-    u8 unk6A[0x5];
+    s16 unk6A;                  /* 0x6A: font style bits */
+    u8 unk6C[0x3];
     u8 unk6F;
     u8 unk70[0x3];
     u8 unk73;

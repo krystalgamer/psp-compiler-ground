@@ -67,7 +67,21 @@ int CSSSelectorList_getLength(void *arg0) {
     return M2C_FIELD(temp_v0, int *, 8);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_SelectorList", CSSSelectorList_item);
+void *CSSSelectorList_item(void *x, int idx) {
+    void *r;
+    int i;
+    if (x == NULL || M2C_FIELD(x, s16 **, 4) == NULL || *M2C_FIELD(x, s16 **, 4) != 7 ||
+        idx >= M2C_FIELD(M2C_FIELD(x, void **, 4), int *, 8)) {
+        return NULL;
+    }
+    for (r = M2C_FIELD(M2C_FIELD(x, void **, 4), void **, 0xC), i = 0; r != NULL && i < idx; i++) {
+        r = M2C_FIELD(r, void **, 0x18);
+    }
+    if (i == idx) {
+        return r;
+    }
+    return NULL;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)

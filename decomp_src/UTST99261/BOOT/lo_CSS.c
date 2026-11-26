@@ -3,6 +3,12 @@
 #include "nflayout.h"
 #include "lo_css.h"
 #include "m2c_macros.h"
+extern int *iomCookie;
+void *UTL_peekqueue(void *q, int a1);
+void iom_deleteCookie(void *c);
+int iom_saveCookie(void);
+void OS_thread_mutex_lock(int m);
+void OS_thread_mutex_unlock(int m);
 
 
 
@@ -250,7 +256,18 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_CSS", transFontSize);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_CSS", cssFontSize);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_CSS", cssFontStyle);
+void cssFontStyle(void *ctx, BOX *box, CSSVALUE *val, int n) {
+    switch (val->ident) {
+    case 0x53:
+    case 0x7D:
+        box->style->unk6A |= 2;
+        break;
+    case 0x7A:
+        box->style->unk6A &= ~2;
+        break;
+    }
+    box->style->unk64 = ui_global->color[box->style->unk6A][box->style->fontSize];
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_CSS", cssFontWeight);
 
@@ -446,7 +463,17 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_CSS", iom_setCookie);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_CSS", iom_getCookie);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_CSS", iom_destroyCookie);
+void iom_destroyCookie(void) {
+    void *e;
+    OS_thread_mutex_lock(iomCookie[5]);
+    while ((e = UTL_peekqueue(iomCookie + 1, 0)) != NULL) {
+        iom_deleteCookie(M2C_FIELD(e, void **, 8));
+    }
+    if (iomCookie[0] != 0) {
+        iom_saveCookie();
+    }
+    OS_thread_mutex_unlock(iomCookie[5]);
+}
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/lo_CSS", D_00139AE8);
 

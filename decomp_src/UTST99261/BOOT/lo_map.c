@@ -262,7 +262,25 @@ char *getDOMAttributeValue(void *elem, void *name) {
     return r;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_map", getDOMAttributeValue_PositiveNum);
+int getDOMAttributeValue_PositiveNum(void *elem, void *name) {
+    DOMString s;
+    char *str;
+    int n;
+    Element_getAttribute(&s, elem, name);
+    if (s.len == 0) {
+        return -1;
+    }
+    str = DOMStringtoUTF8(&s);
+    if (str == NULL) {
+        return -1;
+    }
+    n = atoi(str);
+    if (n < 0) {
+        n = 0;
+    }
+    MEM_free(0, str);
+    return n;
+}
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/lo_map", D_00139348);
 

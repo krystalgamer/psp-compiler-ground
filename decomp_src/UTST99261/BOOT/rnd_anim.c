@@ -1,6 +1,11 @@
 /* cflags: -O1 */
 #include "common.h"
 #include "m2c_macros.h"
+extern unsigned char _DOMa;
+extern unsigned char _DOMhref;
+void *Util_getNodeByTagName(void *node, void *tag);
+int Element_hasAttribute(void *node, void *name);
+void *Node_getParentNode(void *node);
 void *getBodyBox(void *);
 M2C_UNK *MEM_malloc(M2C_UNK, M2C_UNK);              /* extern */
 extern M2C_UNK *head;
@@ -158,7 +163,19 @@ void freeScroll(int arg0, int arg1) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_anim", searchDestinationAnchor);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_anim", getAncestorLink);
+void *getAncestorLink(void *node) {
+    while (node != NULL) {
+        node = Util_getNodeByTagName(node, &_DOMa);
+        if (node == NULL) {
+            return NULL;
+        }
+        if (Element_hasAttribute(node, &_DOMhref)) {
+            return node;
+        }
+        node = Node_getParentNode(node);
+    }
+    return NULL;
+}
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_anim", D_00139028);
 

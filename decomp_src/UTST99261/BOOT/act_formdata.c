@@ -1,6 +1,16 @@
 /* cflags: -O1 */
 #include "common.h"
 #include "m2c_macros.h"
+typedef struct CTYPE { char *ext; int type; } CTYPE;
+extern CTYPE contentType[];
+unsigned int strlen(const char *s);
+int strncmp(const char *a, const char *b, unsigned int n);
+int strcmp(const char *a, const char *b);
+typedef struct FILEDATA { int type; int size; void *data; } FILEDATA;
+void *MEM_malloc(int pool, unsigned int size);
+int fileContentType(char *path);
+int directoryCheck(char *path);
+void *readCFData(char *path, int *size);
 M2C_UNK MEM_free(M2C_UNK, void *);                  /* extern */
 extern unsigned char search;
 
@@ -58,7 +68,21 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/act_formdata", addFormCollectSy
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/act_formdata", fileContentType);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/act_formdata", newFileData);
+FILEDATA *newFileData(char *path) {
+    FILEDATA *fd = MEM_malloc(0, sizeof(FILEDATA));
+    if (fd == NULL) {
+        return NULL;
+    }
+    fd->type = fileContentType(path);
+    if (!directoryCheck(path)) {
+        return NULL;
+    }
+    fd->data = readCFData(path, &fd->size);
+    if (fd->data == NULL) {
+        fd->size = 0;
+    }
+    return fd;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -74,7 +98,17 @@ void deleteFileData(void *arg0) {
     MEM_free(0, arg0);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/act_formdata", memstr);
+char *memstr(char *s, int n, char *pat) {
+    int len = strlen(pat);
+    while (n > 0 && n >= len) {
+        if (*s == *pat && strncmp(s, pat, len) == 0) {
+            return s;
+        }
+        n--;
+        s++;
+    }
+    return NULL;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
