@@ -6,9 +6,12 @@ extern unsigned char gmo_file;
 extern int gmo_file_max;
 extern int gmo_max;
 typedef struct { int used; void *model; } GMO_FILE;
+typedef struct { float x, y, z; } GVEC3;
 typedef struct {
-	int used, f4, f8, fc;
-	u8 _p10[0x44 - 0x10];
+	int used, f4, file, fc;
+	u8 b10, b11, b12, b13;
+	int f14, f18, f1c;
+	GVEC3 pos, rot, scale;
 	int anime, motion, f4c;
 	float speed;
 	void *model;
@@ -89,7 +92,58 @@ void gmo_file_all_unload(void)
 
 INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_gmo", D_0007A8A4);
 
+/* gmo_load: equivalent C, 1 insn short: the original keeps the -1 for
+   fc/motion in a2 (the Duplicate arg) instead of a separate register. */
+#ifdef NON_MATCHING
+void *sceGmoModelDuplicate(void *model, int a1, int a2);
+int gmo_load(int no)
+{
+	GMO_FILE *f;
+	int i;
+
+	if ((unsigned int)no >= 50)
+		return -1;
+	f = &GMO_FILE_W[no];
+	if (f->used == 0)
+		return -1;
+	for (i = 0; i < 255; i++) {
+		if (GMO[i].used == 1)
+			continue;
+		{
+			GVEC3 one = {1.0f, 1.0f, 1.0f};
+			GMO[i].scale = one;
+		}
+		GMO[i].speed = 1.0f;
+		GMO[i].pos.x = 0;
+		GMO[i].pos.y = 0;
+		GMO[i].pos.z = 0;
+		GMO[i].rot.x = 0;
+		GMO[i].rot.y = 0;
+		GMO[i].rot.z = 0;
+		GMO[i].file = no;
+		GMO[i].motion = -1;
+		GMO[i].f14 = 1;
+		GMO[i].used = 1;
+		GMO[i].fc = -1;
+		GMO[i].b11 = 1;
+		GMO[i].b10 = 1;
+		GMO[i].b12 = 1;
+		GMO[i].b13 = 1;
+		GMO[i].f18 = 255;
+		GMO[i].f4 = 0;
+		GMO[i].anime = 0;
+		GMO[i].f4c = 0;
+		GMO[i].f1c = 0;
+		GMO[i].model = sceGmoModelDuplicate(f->model, 2, -1);
+		sceGmoModelSetCurrentMotion(GMO[i].model, -1, 0);
+		gmo_max++;
+		return i;
+	}
+	return -1;
+}
+#else
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_gmo", gmo_load);
+#endif
 
 int gmo_unload(int no)
 {
