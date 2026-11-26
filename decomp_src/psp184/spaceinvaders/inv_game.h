@@ -47,4 +47,7 @@ typedef struct {
 extern int D_005FB3B0;
 #define DE (*(DISPEFF *)&D_005FB3B0)
 
+typedef struct { int f0, f4, u, v, w, h; } TEXPOS;
+extern TEXPOS texpos_inv_effect[];
+
 #endif

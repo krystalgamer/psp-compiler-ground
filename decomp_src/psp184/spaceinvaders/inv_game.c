@@ -821,7 +821,57 @@ void particle_init(void)
 	}
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", particle_set);
+typedef struct {
+	int f0, f4, f8, fc, f10, f14, f18, f1c, f20, f24, f28;
+	float f2c, f30;
+	int f34, f38, f3c, f40;
+	float f44, f48, f4c, f50, f54, f58, f5c, f60, f64, f68, f6c, f70, f74, f78, f7c, f80;
+} PARTICLE2;
+int particle_set(int tex, int no)
+{
+	int i;
+	PARTICLE2 *p;
+
+	for (i = 0; i < 512; i++) {
+		p = &((PARTICLE2 *)&D_005EAB30)[i];
+		if (p->f0 == 0)
+			break;
+	}
+	if (i >= 512)
+		return -1;
+	p->f0 = 1;
+	p->f18 = tex;
+	p->f4 = 0;
+	p->f8 = 0;
+	p->fc = 0;
+	p->f14 = 0;
+	p->f1c = texpos_inv_effect[no].u;
+	p->f20 = texpos_inv_effect[no].v;
+	p->f24 = texpos_inv_effect[no].w;
+	p->f28 = texpos_inv_effect[no].h;
+	p->f2c = 255.0f;
+	p->f30 = 0;
+	p->f34 = 255;
+	p->f38 = 255;
+	p->f3c = 255;
+	p->f44 = 0;
+	p->f48 = 0;
+	p->f4c = 0;
+	p->f50 = 0;
+	p->f54 = 0;
+	p->f58 = 0;
+	p->f5c = 1.0f;
+	p->f60 = 1.0f;
+	p->f64 = 0;
+	p->f68 = 0;
+	p->f6c = 0;
+	p->f70 = 0;
+	p->f74 = 0;
+	p->f78 = 0;
+	p->f7c = 0;
+	p->f80 = 0;
+	return i;
+}
 
 typedef struct {
 	int f0, f4, f8, fc, f10, f14;
