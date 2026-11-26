@@ -17,7 +17,7 @@ extern CscCtx D_00001740;
 typedef struct {
 	unsigned int src;
 	unsigned int dst;
-	unsigned int next;
+	void *next;
 	unsigned int ctrl;
 } PesDesc;
 

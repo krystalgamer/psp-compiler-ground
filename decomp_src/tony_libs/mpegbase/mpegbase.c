@@ -392,4 +392,31 @@ int func_00001328(void)
 	return sceKernelPollSema(D_00001E00, 1);
 }
 
-INCLUDE_ASM("tmp/asm/tony_libs/mpegbase/nonmatchings/mpegbase", func_0000134C);
+int func_0000134C(unsigned int dst, unsigned int src, unsigned int size)
+{
+	int ret = 0;
+	int buf[4];
+	unsigned int d, s;
+
+	if (size == 0)
+		return 0;
+	s = src;
+	d = dst;
+	while (size != 0) {
+		if (size > 0xFFF0) {
+			ret = sceDmacplus_driver_BE693828((void *)d, (void *)s, 0xFFF);
+			size -= 0xFFF0;
+			s += 0xFFF0;
+			d += 0xFFF0;
+		} else {
+			ret = sceDmacplus_driver_BE693828((void *)d, (void *)s, size >> 4);
+			size = 0;
+		}
+		if (ret != 0)
+			break;
+		ret = sceDmacplus_driver_AB49D2CB(0, buf);
+		if (ret != 0)
+			break;
+	}
+	return ret;
+}
