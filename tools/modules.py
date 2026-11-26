@@ -29,6 +29,21 @@ ZIPS = {
 }
 
 
+# zips whose members need explicit module names: target -> {module: (zip, member)}
+# (psp_random_batch.zip: audiocodec and libatrac3plus are tony_libs' files, left out)
+NAMED = {
+    "rb": {
+        "jp_BOOT": ("psp_random_batch.zip", "demo_disc_japan_modules/BOOT.BIN.dec"),
+        "pal_BOOT": ("psp_random_batch.zip", "demo_disc_pal_modules/BOOT.BIN.dec"),
+        "pal_mpeg": ("psp_random_batch.zip", "demo_disc_pal_modules/mpeg.prx.dec"),
+        "pal_mpegbase": ("psp_random_batch.zip", "demo_disc_pal_modules/mpegbase.dec"),
+        "pal_videocodec": ("psp_random_batch.zip", "demo_disc_pal_modules/videocodec.dec"),
+        "gh_DEMOMOD": ("psp_random_batch.zip", "greatest_hits_module/DEMOMOD.PRX.dec"),
+        "rs4_main": ("psp_random_batch.zip", "retail_sampler_four_module/main.prx.dec"),
+    },
+}
+
+
 def targets():
     out = {k: dict(v) for k, v in FIXED.items()}
     with zipfile.ZipFile(ZIP) as z:
@@ -41,6 +56,9 @@ def targets():
         if (ROOT / "inputs" / zname).exists():
             with zipfile.ZipFile(ROOT / "inputs" / zname) as z:
                 out[t] = {n.split(".")[0]: f"zip:{zname}:{n}" for n in sorted(z.namelist()) if not n.endswith("/")}
+    for t, mods in NAMED.items():
+        if all((ROOT / "inputs" / z).exists() for z, _ in mods.values()):
+            out[t] = {m: f"zip:{z}:{n}" for m, (z, n) in mods.items()}
     return out
 
 

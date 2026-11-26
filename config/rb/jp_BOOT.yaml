@@ -1,0 +1,170 @@
+name: jp_BOOT (rb)
+sha1: b60fe8eb5ae9dcaeefc2da169da82cf0b3899006
+options:
+  basename: jp_BOOT
+  target_path: tmp/baserom/rb/jp_BOOT.prx
+  elf_path: tmp/build/rb/jp_BOOT.elf
+  base_path: ../..
+  platform: psp
+  compiler: GCC
+
+  asm_path: tmp/asm/rb/jp_BOOT
+  src_path: decomp_src/rb/jp_BOOT
+  build_path: tmp/build/rb
+  ld_script_path: tmp/build/rb/jp_BOOT.ld
+  cache_path: tmp/build/rb/.splat_cache.jp_BOOT
+  symbol_addrs_path:
+    - config/rb/symbol_addrs.jp_BOOT.txt
+    - tmp/build/rb/prx_syms.jp_BOOT.txt
+  reloc_addrs_path: [tmp/build/rb/reloc_addrs.jp_BOOT.txt]
+  asset_path: tmp/assets/rb/jp_BOOT
+  extensions_path: tools/splat_ext
+  undefined_funcs_auto_path: tmp/build/rb/undefined_funcs_auto.jp_BOOT.txt
+  undefined_syms_auto_path: tmp/build/rb/undefined_syms_auto.jp_BOOT.txt
+
+  find_file_boundaries: false
+  section_order: [".text", ".data", ".rodata", ".bss"]
+  migrate_rodata_to_functions: true
+  use_legacy_include_asm: false
+  generate_asm_macros_files: false
+  asm_function_macro: glabel
+  asm_jtbl_label_macro: jlabel
+  asm_data_macro: dlabel
+  asm_end_label: endlabel
+  string_encoding: ASCII
+  data_string_encoding: ASCII
+  rodata_string_guesser_level: 2
+  data_string_guesser_level: 2
+  gp_value: 0x26A330
+  add_set_gp_64: false
+  named_regs_for_c_funcs: false
+  ld_bss_is_noload: true
+  emit_subalign: false
+  ld_align_segment_vram_end: false
+  ld_align_section_vram_end: false
+  disasm_unknown: true
+  global_vram_start: 0x0
+  global_vram_end: 0x3A7848
+
+segments:
+  - [0x0, bin, elf_header]
+  - name: jp_BOOT
+    type: code
+    start: 0x80
+    vram: 0x0
+    subsegments:
+      - { start: 0x80, type: asm, name: init, linker_section: .init }
+      - { start: 0xA4, type: prxpad, order: .text }
+      - [0xC0, asm, asm/text_40]
+      - [0x1A8, c, crt0]
+      - [0x470, c, main]
+      - [0x4A8, c, system]
+      - [0x7FC, c, utils]
+      - [0x1094, c, movie]
+      - [0x27F4, c, display]
+      - [0x3800, c, fileread]
+      - [0x3A44, c, sound]
+      - [0x40DC, c, strfile]
+      - [0x4480, c, avsync]
+      - [0x46E8, c, bgm]
+      - [0x48AC, c, vag]
+      - [0x4AB0, c, at3plus]
+      - [0x5030, asm, asm/text_4FB0]
+      - [0xA608, c, libpsmf]
+      - [0xB098, c, psmfBase]
+      - [0xB848, c, libmpeg_util]
+      - [0xBB80, asm, asm/text_BB00]
+      - [0xC158, c, newlib/libc/stdlib/atexit]
+      - [0xC200, c, newlib/libc/stdlib/exit]
+      - [0xC2F0, c, newlib/libc/stdlib/malign]
+      - [0xC31C, c, newlib/libc/stdlib/mallocr/_memalign_r]
+      - [0xC4B8, c, newlib/libc/stdlib/malloc]
+      - [0xC504, c, newlib/libc/stdlib/mallocr/malloc_extend_top]
+      - [0xCCAC, c, newlib/libc/string/memcmp]
+      - [0xCD30, c, newlib/libc/machine/mips/memcpy]
+      - [0xCE74, c, newlib/libc/machine/mips/memset]
+      - [0xCF2C, c, newlib/libc/sys/psp/mlock]
+      - [0xCFA4, c, newlib/libc/stdio/printf]
+      - [0xD02C, c, newlib/libc/stdio/puts]
+      - [0xD0D0, c, newlib/libc/reent/sbrkr]
+      - [0xD12C, c, newlib/libc/machine/mips/strcmp]
+      - [0xD1A0, c, newlib/libc/machine/mips/strlen]
+      - [0xD1B8, c, newlib/libc/stdio/vfprintf]
+      - [0xEFCC, c, newlib/libc/stdlib/wcrtomb]
+      - [0xF06C, c, newlib/libc/stdlib/wcsrtombs]
+      - [0xF204, c, newlib/libc/stdlib/wctomb_r]
+      - [0xF664, c, newlib/libc/stdio/wsetup]
+      - [0xF778, c, newlib/libc/stdlib/dtoa]
+      - [0x10D54, c, newlib/libc/stdio/fflush]
+      - [0x10E48, c, newlib/libc/stdio/findfp]
+      - [0x110C0, c, newlib/libc/stdlib/mallocr/_free_r]
+      - [0x11494, c, newlib/libc/stdio/fvwrite]
+      - [0x11880, c, newlib/libc/stdio/fwalk]
+      - [0x11988, c, newlib/libc/locale/locale]
+      - [0x11A80, c, newlib/libc/stdio/makebuf]
+      - [0x11BD8, c, newlib/libc/string/memchr]
+      - [0x11CC0, c, newlib/libc/sys/psp/memmove]
+      - [0x120A0, asm, asm/text_12020]
+      - [0x120C0, c, newlib/libc/stdlib/mprec]
+      - [0x12FC4, c, newlib/libc/stdlib/mallocr/_realloc_r]
+      - [0x13534, c, newlib/libc/reent/reent]
+      - [0x13750, c, newlib/libm/math/s_isinf]
+      - [0x1378C, c, newlib/libm/math/s_isnan]
+      - [0x137B8, c, newlib/libc/stdio/stdio]
+      - [0x13938, c, newlib/libc/reent/writer]
+      - [0x139A0, c, newlib/libc/stdlib/mallocr/_calloc_r]
+      - [0x13A60, c, newlib/libc/reent/closer]
+      - [0x13ABC, c, newlib/libc/reent/fstatr]
+      - [0x13B20, c, newlib/libc/reent/lseekr]
+      - [0x13B88, c, newlib/libc/reent/readr]
+      - [0x13BF0, asm, asm/text_13B70]
+      - { start: 0x15A80, type: asm, name: fini, linker_section: .fini }
+      - { start: 0x15A9C, type: asm, name: sceStub, linker_section: .sceStub.text }
+      - { start: 0x15E0C, type: prxpad, order: .text }
+      - { start: 0x15E10, type: rodata, name: lib_ent_top, linker_section: .lib.ent.top }
+      - { start: 0x15E14, type: rodata, name: lib_ent, linker_section: .lib.ent }
+      - { start: 0x15E24, type: rodata, name: lib_ent_btm, linker_section: .lib.ent.btm }
+      - { start: 0x15E28, type: rodata, name: lib_stub_top, linker_section: .lib.stub.top }
+      - { start: 0x15E2C, type: rodata, name: lib_stub, linker_section: .lib.stub }
+      - { start: 0x15F58, type: rodata, name: lib_stub_btm, linker_section: .lib.stub.btm }
+      - { start: 0x15F5C, type: rodata, name: module_info, linker_section: .rodata.sceModuleInfo }
+      - { start: 0x15F90, type: rodata, name: resident, linker_section: .rodata.sceResident }
+      - { start: 0x160BC, type: rodata, name: nid, linker_section: .rodata.sceNid }
+      - { start: 0x16274, type: rodata, name: ctors, linker_section: .ctors }
+      - { start: 0x1627C, type: rodata, name: dtors, linker_section: .dtors }
+      - { start: 0x16284, type: rodata, name: jcr, linker_section: .jcr }
+      - { start: 0x16288, type: rodata, name: eh_frame, linker_section: .eh_frame }
+      - { start: 0x162EC, type: prxpad, order: .rodata }
+      - [0x162F0, .rodata, crt0]
+      - [0x16300, .rodata, system]
+      - [0x163A0, .rodata, movie]
+      - [0x16918, .rodata, display]
+      - [0x16964, .rodata, fileread]
+      - [0x1699C, .rodata, sound]
+      - [0x169C0, .rodata, strfile]
+      - [0x16A7C, .rodata, bgm]
+      - [0x16B58, .rodata, vag]
+      - [0x16BD4, .rodata, at3plus]
+      - [0x16D94, rodata, asm/rodata_16D14]
+      - [0x1761C, .rodata, libpsmf]
+      - [0x1763C, .rodata, libmpeg_util]
+      - [0x176C8, rodata, asm/rodata_17648]
+      - [0x176D0, .rodata, newlib/libc/stdlib/malign]
+      - [0x176D4, .rodata, newlib/libc/stdio/puts]
+      - [0x176D8, .rodata, newlib/libc/stdio/vfprintf]
+      - [0x178B8, .rodata, newlib/libc/stdlib/wctomb_r]
+      - [0x178D8, .rodata, newlib/libc/stdlib/dtoa]
+      - [0x17958, .rodata, newlib/libc/locale/locale]
+      - [0x179A0, .rodata, newlib/libc/stdlib/mprec]
+      - [0x17AD8, rodata, asm/rodata_17A58]
+  - [0x17BF8, bin, seg1_align]
+  - name: jp_BOOT_seg1
+    type: code
+    start: 0x17C00
+    vram: 0x17B80
+    bss_size: 0x12D984
+    subsegments:
+      - [0x17C00, data, data]
+      - { start: 0x279F34, type: bss, vram: 0x279EC0 }
+  - [0x279F34, bin, elf_trailer]
+  - [0x35DA5C]

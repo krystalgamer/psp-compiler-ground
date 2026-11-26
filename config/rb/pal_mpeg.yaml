@@ -1,0 +1,79 @@
+name: pal_mpeg (rb)
+sha1: 24478a8890aeeb1dc51f20d8a01ee5e3b6386181
+options:
+  basename: pal_mpeg
+  target_path: tmp/baserom/rb/pal_mpeg.prx
+  elf_path: tmp/build/rb/pal_mpeg.elf
+  base_path: ../..
+  platform: psp
+  compiler: GCC
+
+  asm_path: tmp/asm/rb/pal_mpeg
+  src_path: decomp_src/rb/pal_mpeg
+  build_path: tmp/build/rb
+  ld_script_path: tmp/build/rb/pal_mpeg.ld
+  cache_path: tmp/build/rb/.splat_cache.pal_mpeg
+  symbol_addrs_path:
+    - config/rb/symbol_addrs.pal_mpeg.txt
+    - tmp/build/rb/prx_syms.pal_mpeg.txt
+  reloc_addrs_path: [tmp/build/rb/reloc_addrs.pal_mpeg.txt]
+  asset_path: tmp/assets/rb/pal_mpeg
+  extensions_path: tools/splat_ext
+  undefined_funcs_auto_path: tmp/build/rb/undefined_funcs_auto.pal_mpeg.txt
+  undefined_syms_auto_path: tmp/build/rb/undefined_syms_auto.pal_mpeg.txt
+
+  find_file_boundaries: false
+  section_order: [".text", ".data", ".rodata", ".bss"]
+  migrate_rodata_to_functions: true
+  use_legacy_include_asm: false
+  generate_asm_macros_files: false
+  asm_function_macro: glabel
+  asm_jtbl_label_macro: jlabel
+  asm_data_macro: dlabel
+  asm_end_label: endlabel
+  string_encoding: ASCII
+  data_string_encoding: ASCII
+  rodata_string_guesser_level: 2
+  data_string_guesser_level: 2
+  gp_value: 0x8080
+  add_set_gp_64: false
+  named_regs_for_c_funcs: false
+  ld_bss_is_noload: true
+  emit_subalign: false
+  ld_align_segment_vram_end: false
+  ld_align_section_vram_end: false
+  disasm_unknown: true
+  global_vram_start: 0x0
+  global_vram_end: 0x7DA0
+
+segments:
+  - [0x0, bin, elf_header]
+  - name: pal_mpeg
+    type: code
+    start: 0x80
+    vram: 0x0
+    subsegments:
+      - [0x80, asm, asm/text_0]
+      - { start: 0x7614, type: asm, name: sceStub, linker_section: .sceStub.text }
+      - { start: 0x76D4, type: prxpad, order: .text }
+      - { start: 0x76E0, type: rodata, name: lib_ent_top, linker_section: .lib.ent.top }
+      - { start: 0x76E4, type: rodata, name: lib_ent, linker_section: .lib.ent }
+      - { start: 0x7704, type: rodata, name: lib_ent_btm, linker_section: .lib.ent.btm }
+      - { start: 0x7708, type: rodata, name: lib_stub_top, linker_section: .lib.stub.top }
+      - { start: 0x770C, type: rodata, name: lib_stub, linker_section: .lib.stub }
+      - { start: 0x7770, type: rodata, name: lib_stub_btm, linker_section: .lib.stub.btm }
+      - { start: 0x7774, type: rodata, name: module_info, linker_section: .rodata.sceModuleInfo }
+      - { start: 0x77A8, type: rodata, name: resident, linker_section: .rodata.sceResident }
+      - { start: 0x7924, type: rodata, name: nid, linker_section: .rodata.sceNid }
+      - [0x7984, rodata, asm/rodata_7904]
+  - [0x7BAC, bin, seg1_align]
+  - name: pal_mpeg_seg1
+    type: code
+    start: 0x7BC0
+    vram: 0x7B30
+    bss_size: 0x1DC
+    subsegments:
+      - [0x7BC0, data, data]
+      - { start: 0x7C44, type: bss, vram: 0x7BC0 }
+  - [0x7C44, bin, elf_trailer]
+  - [0x9AC8]

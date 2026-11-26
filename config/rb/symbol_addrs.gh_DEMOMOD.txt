@@ -1,0 +1,12 @@
+module_start = 0x00000000; // type:func
+module_stop = 0x00000370; // type:func
+module_info = 0x0000148C;
+sceDemoMod_F1E6202F = 0x00000398; // type:func
+sceDemoMod_1763EF9A = 0x000005E4; // type:func
+LoadExecForUser_BD2F1094 = 0x000013DC; // type:func
+sceKernelCreateThread = 0x000013E4; // type:func
+sceKernelStartThread = 0x000013EC; // type:func
+ThreadManForUser_71BC9871 = 0x000013F4; // type:func
+sceKernelGetThreadId = 0x000013FC; // type:func
+sceKernelDelayThread = 0x00001404; // type:func
+UtilsForUser_79D1C3FA = 0x0000140C; // type:func
