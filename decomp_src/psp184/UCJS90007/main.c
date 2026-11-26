@@ -554,7 +554,57 @@ void disp_printf(int color, const char *fmt, ...)
 	__builtin_va_end(ap);
 }
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/main", change_state);
+void *memset(void *s, int c, unsigned int n);
+void *memset(void *s, int c, unsigned int n);
+void change_state(enum connect_state state, int error_code)
+{
+	enum connect_state prev = _info.state;
+
+	_info.error_code = error_code;
+	_info.prev_state = prev;
+	_info.state = state;
+	_info.blink_counter = 0;
+	switch (prev) {
+	case 1:
+	case 9:
+	case 10:
+	case 14:
+	case 15:
+	case 22:
+	case 23:
+	case 24:
+	case 28:
+	case 29:
+	case 30:
+		fade_init();
+		break;
+	case 0:
+	case 2:
+	case 3:
+	case 4:
+	case 5:
+	case 6:
+	case 7:
+	case 8:
+	case 11:
+	case 12:
+	case 13:
+	case 16:
+	case 17:
+	case 18:
+	case 19:
+	case 20:
+	case 21:
+	case 25:
+	case 26:
+	case 27:
+		break;
+	}
+	if (_info.prev_state == 2 && _info.state != 2)
+		memset(disp_line, 0, sizeof(disp_line));
+	if (_info.prev_state == 0x12 && _info.state != 0x12)
+		free_log();
+}
 
 int ExitFunction(int count, int arg_impose, void *arg_self) {
     mpeg_exit_func();
