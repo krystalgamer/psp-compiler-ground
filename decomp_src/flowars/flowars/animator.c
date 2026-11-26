@@ -142,6 +142,8 @@ static void play_bonus_pae();
 static void add_pae(int pae, int sx, int sy, int dx, int dy, int delay, int sound);
 static void add_pae_bomb(int pae, int sx, int sy, int dx, int dy, int delay, int sound);
 static void add_ani(int ani, int x, int y, int flag_loop, int extand_frame, int sound);
+double pow(double x, double y);
+double sqrt(double x);
 static void start_ani();
 
 /* SDK functions (tools/sdk_protos.h) */
@@ -175,7 +177,24 @@ void clear_animation(void) {
     init_animator();
 }
 
-INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/animator", getCurrentPoint);
+float getCurrentPoint(Point *pt, PaeMoveParam *pp, float speed, int skipFrames)
+{
+	float cdist;
+	float cratio;
+
+	cdist = speed * (pp->frame - skipFrames);
+	cratio = 0;
+
+	if (pp->distance == 0) {
+		pt->x = pp->src.x;
+		pt->y = pp->src.y;
+	} else {
+		cratio = cdist / pp->distance;
+		pt->x = pp->src.x + cratio * pp->move.x;
+		pt->y = pp->src.y + cratio * pp->move.y;
+	}
+	return cdist;
+}
 
 INCLUDE_RODATA("tmp/asm/flowars/flowars/nonmatchings/animator", D_0002F858);
 
