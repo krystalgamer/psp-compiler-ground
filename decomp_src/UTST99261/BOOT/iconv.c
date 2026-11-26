@@ -1,17 +1,94 @@
 /* cflags: -O1 */
 #include "common.h"
+#include "UTST99261/BOOT/iconv.h"
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iconv", unicodeToJisx0201);
+u16 unicodeToJisx0201(u16 c) {
+    if (c < 0xFF) {
+        return c;
+    }
+    if (c >= 0xFF61 && c <= 0xFF9F) {
+        return c - 0xFEC0;
+    }
+    return 0;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iconv", unicodeToJisx0208);
+u16 unicodeToJisx0208(u16 c) {
+    unsigned int hi;
+    unsigned int lo;
+    const u16 *t;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iconv", unicodeToJisx0212);
+    hi = c >> 8;
+    lo = c & 0xFF;
+    t = unicodeToJisx0208_map[hi];
+    if (t == NULL) {
+        return 0;
+    }
+    return t[lo];
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iconv", jisx0201ToUnicode);
+u16 unicodeToJisx0212(u16 c) {
+    unsigned int hi;
+    unsigned int lo;
+    const u16 *t;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iconv", jisx0208ToUnicode);
+    hi = c >> 8;
+    lo = c & 0xFF;
+    t = unicodeToJisx0212_map[hi];
+    if (t == NULL) {
+        return 0;
+    }
+    return t[lo];
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iconv", jisx0212ToUnicode);
+u16 jisx0201ToUnicode(u16 c) {
+    if (c < 0x7F) {
+        if (c == 0x5C) {
+            return 0x5C;
+        }
+        if (c == 0x7E) {
+            return 0x7E;
+        }
+        return c;
+    }
+    if (c >= 0xA1 && c <= 0xDF) {
+        return c + 0xFEC0;
+    }
+    return 0x3F;
+}
+
+u16 jisx0208ToUnicode(u16 c) {
+    unsigned int hi;
+    unsigned int lo;
+    u16 u;
+
+    hi = c >> 8;
+    lo = c & 0xFF;
+    if (hi >= 0x21 && hi <= 0x7E && lo >= 0x21 && lo <= 0x7E) {
+        u = jisx0208ToUnicodeTable[(hi - 0x21) * 0x5E + (lo - 0x21)];
+        if (u == 0) {
+            return 0x3F;
+        }
+        return u;
+    }
+    return 0x3F;
+}
+
+u16 jisx0212ToUnicode(u16 c) {
+    unsigned int hi;
+    unsigned int lo;
+    u16 u;
+
+    hi = c >> 8;
+    lo = c & 0xFF;
+    if (hi >= 0x21 && hi <= 0x7E && lo >= 0x21 && lo <= 0x7E) {
+        u = jisx0212ToUnicodeTable[(hi - 0x21) * 0x5E + (lo - 0x21)];
+        if (u == 0) {
+            return 0x3F;
+        }
+        return u;
+    }
+    return 0x3F;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iconv", ucs2ToUtf8);
 
@@ -27,11 +104,42 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iconv", ucs2ToSjis);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iconv", ucs2ToEuc);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iconv", ucs2ToAscii);
+int ucs2ToAscii(u8 *dst, const u16 *src, int len) {
+    int i;
+    int n;
+
+    n = 0;
+    for (i = 0; i < len; i++) {
+        if (dst != NULL) {
+            *dst++ = *src;
+        }
+        n++;
+        src++;
+    }
+    return n;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iconv", glanceEncode);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iconv", checkASCII);
+int checkASCII(const u8 *s, int len) {
+    int i;
+    int r;
+    u8 c;
+
+    r = 0;
+    for (i = 0; i < len; i++) {
+        c = s[i];
+        if (c >= 7 && c <= 13) {
+            continue;
+        }
+        if (c >= 0x20 && c <= 0x7E) {
+            continue;
+        }
+        r = -1;
+        break;
+    }
+    return r;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iconv", checkJIS);
 
@@ -51,7 +159,20 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iconv", sjisToUcs2);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iconv", eucToUcs2);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iconv", asciiToUcs2);
+int asciiToUcs2(u16 *dst, const u8 *src, int len) {
+    int i;
+    int n;
+
+    n = 0;
+    for (i = 0; i < len; i++) {
+        if (dst != NULL) {
+            *dst++ = *src;
+        }
+        n++;
+        src++;
+    }
+    return n;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iconv", utf8ToSjis);
 
