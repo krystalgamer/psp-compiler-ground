@@ -61,6 +61,52 @@ void delLLIST();
 int countRequestedLLIST();
 void msgSendToOtherTask(LOBODY *msg, int mq);
 char *strchr(const char *s, int c);
+char *strcpy(char *d, const char *s);
+
+typedef struct {
+    u8 unk0[0x28];
+    char *name;                 /* 0x28 */
+} LP21GEOM;
+
+typedef struct {
+    u8 unk0[0x10];
+    int x;
+    int y;
+    int w;
+    int h;
+    LP21GEOM *geom;             /* 0x20 */
+} LP21ITEM;
+
+typedef struct LP21NODE {
+    struct LP21NODE *next;
+    int unk4;
+    LP21ITEM *item;
+} LP21NODE;
+
+typedef struct {
+    LP21NODE *head;             /* 0xA8 */
+    int unkAC;
+    int count;                  /* 0xB0 */
+} LP21LIST;
+
+typedef struct {
+    u8 unk0[0xA8];
+    LP21LIST list;
+} LP21SUB;
+
+typedef struct {
+    u8 unk0[0x20];
+    LP21SUB *sub;
+} LP21BOX;
+
+typedef struct {
+    int x;
+    int y;
+    int w;
+    int h;
+    int len;
+    char *str;
+} LP21ENT;
 
 typedef struct {
     int len;
@@ -377,7 +423,6 @@ void *make_msg_LP19(int arg0, int arg1, int arg2, int arg3, int arg4, int arg5, 
 #ifndef NULL
 #define NULL ((void *)0)
 #endif
-char *strcpy(char *d, const char *s);
 
 void *make_msg_LP20(int arg0, int arg1, int arg2, int arg3, signed char *arg4) {
     signed char *var_a1;
@@ -411,7 +456,70 @@ void *make_msg_LP20(int arg0, int arg1, int arg2, int arg3, signed char *arg4) {
     return var_v0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_sndmsg", make_msg_LP21);
+void *make_msg_LP21(int session, LP21BOX *box) {
+    void *m;
+    LP21LIST *list;
+    LP21NODE *n;
+    int count;
+    int max;
+    int size;
+    int *d;
+    LP21ENT *e;
+    char *s;
+    char *str;
+    int len;
+
+    size = 4;
+    m = make_layoutMsg_template(2, session, 0x3C);
+    if (m == NULL) {
+        return NULL;
+    }
+    list = &box->sub->list;
+    max = list->count;
+    n = box->sub->list.head;
+    for (count = 0; count <= max; count++) {
+        if (n == NULL) {
+            break;
+        }
+        str = n->item->geom->name;
+        len = 0;
+        if (str != NULL) {
+            len = strlen(str);
+        }
+        size = size + len + 0x19;
+        n = n->next;
+    }
+    d = MEM_malloc(0, size);
+    *d = count;
+    e = (LP21ENT *)(d + 1);
+    s = (char *)(e + count);
+    n = list->head;
+    for (count = 0; count <= max; count++) {
+        if (n == NULL) {
+            break;
+        }
+        str = n->item->geom->name;
+        len = 0;
+        if (str != NULL) {
+            len = strlen(str);
+        }
+        e->x = n->item->x;
+        e->y = n->item->y;
+        e->w = n->item->w;
+        e->h = n->item->h;
+        e->len = len;
+        e->str = s;
+        strcpy(e->str, str != NULL ? str : (char *)&D_00133950);
+        MEM_free(0, n->item->geom->name);
+        n->item->geom->name = NULL;
+        e++;
+        s += len + 1;
+        n = n->next;
+    }
+    M2C_FIELD(m, int *, 0x3C) = size;
+    M2C_FIELD(m, int **, 0x40) = d;
+    return m;
+}
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/lo_sndmsg", D_00133950);
 
