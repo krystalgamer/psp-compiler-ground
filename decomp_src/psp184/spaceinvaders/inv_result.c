@@ -86,7 +86,23 @@ void inv_movie_result_flag(int arg0) {
     D_004B47CC = arg0;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_result", inv_movie_result_txt_set);
+int sprintf(char *s, const char *fmt, ...);
+typedef struct { int f0[8]; char txt[0x200]; } MRES;
+#define MR (*(MRES *)&inv_movie_resut)
+void inv_movie_result_txt_set(char *s)
+{
+	int i;
+
+	sprintf(MR.txt, "%s", s);
+	for (i = 0; i < 0x200; i++) {
+		if (s[i] == 0)
+			break;
+		MR.txt[i] = s[i];
+	}
+	if (i >= 0x200)
+		i = 0x1ff;
+	MR.txt[i] = 0;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_result", inv_movie_result_disp);
 
