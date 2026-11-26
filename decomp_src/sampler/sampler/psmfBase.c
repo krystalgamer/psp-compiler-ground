@@ -36,6 +36,26 @@ SceUShort16 sceMpegSwap2(SceVoid *p);
 SceInt32 scePsmfCheckStreamType_Base(SceUInt32 stream_id, SceUInt32 private_stream_id);
 static SceInt32 _GetRelavantEP_map(ScePsmf_EP *pEp_map, SceUInt32 ep_id, SceUInt32 timestamp);
 
+/* scePsmfGetNumberOfEP_entries_Base and scePsmfCheckEP_map_Base, as inlined (-finline-functions)
+   into the functions defined after them */
+static inline SceInt32 _inl_GetNumberOfEP_entries(ScePsmf *psmf)
+{
+	SceInt32 number_of_EP_entries;
+
+	number_of_EP_entries = sceMpegSwap4((SceUChar8 *)psmf->currentStream + 8);
+	return number_of_EP_entries;
+}
+
+static inline SceInt32 _inl_CheckEP_map(ScePsmf *psmf)
+{
+	SceInt32 ret;
+
+	ret = SCE_PSMF_ERROR_NO_EP_MAP;
+	if (_inl_GetNumberOfEP_entries(psmf) != 0)
+		ret = 0;
+	return ret;
+}
+
 #ifdef NON_MATCHING
 SceInt32 scePsmfSpecifyStream_Base(ScePsmf *psmf, SceInt32 psmfStream_id)
 {
@@ -77,43 +97,42 @@ SceInt32 scePsmfGetPsmfStreamIdWithStream_Base(ScePsmf *psmf, SceUInt32 s_id, Sc
 	return ret;
 }
 
-#ifdef NON_MATCHING
 SceInt32 scePsmfGetEPWithId_Base(ScePsmf *psmf, SceInt32 ep_id, ScePsmf_EntryPoint *pEntry)
 {
 	ScePsmf_EP *pEp;
-	SceInt32 ret;
+	SceUInt32 offset_ep;
+	SceInt32 ret = 0;
 
-	ret = 0;
-	if (sceMpegSwap4((SceUChar8 *)psmf->currentStream + 8) == 0) {
-		ret = SCE_PSMF_ERROR_NO_EP_MAP;
-	} else if (ep_id >= (SceInt32)sceMpegSwap4((SceUChar8 *)psmf->currentStream + 8)) {
-		ret = SCE_PSMF_ERROR_INVALID_ID;
-	} else {
-		pEp = (ScePsmf_EP *)psmf->currentEP_map + ep_id;
-		pEntry->EP_start_offset = sceMpegSwap4(pEp->rpn_ep_start) << 11;
-		pEntry->PTS_EP_start = sceMpegSwap4(pEp->pts_ep_start);
+	ret = _inl_CheckEP_map(psmf);
+	if (ret == 0) {
+		if (ep_id >= _inl_GetNumberOfEP_entries(psmf)) {
+			ret = SCE_PSMF_ERROR_INVALID_ID;
+		} else {
+			offset_ep = ep_id * sizeof(ScePsmf_EP);
+			pEp = (ScePsmf_EP *)(psmf->currentEP_map + offset_ep);
+			pEntry->EP_start_offset = sceMpegSwap4(pEp->rpn_ep_start) << 11;
+			pEntry->PTS_EP_start = sceMpegSwap4(pEp->pts_ep_start);
+		}
 	}
 	return ret;
 }
-#else
-INCLUDE_ASM("tmp/asm/sampler/sampler/nonmatchings/psmfBase", scePsmfGetEPWithId_Base);
-#endif
 
-#ifdef NON_MATCHING
 SceInt32 scePsmfGetEPWithTimestamp_Base(ScePsmf *psmf, SceUInt32 timestamp, ScePsmf_EntryPoint *pEntry)
 {
 	ScePsmf_EP *pEp;
-	SceInt32 ep_id;
-	SceInt32 ret;
+	SceUInt32 ep_count;
+	SceUInt32 offset_ep;
+	SceInt32 id;
+	SceInt32 ret = 0;
 
-	ret = 0;
-	if (sceMpegSwap4((SceUChar8 *)psmf->currentStream + 8) == 0) {
-		ret = SCE_PSMF_ERROR_NO_EP_MAP;
-	} else {
-		ep_id = _GetRelavantEP_map(psmf->currentEP_map, sceMpegSwap4((SceUChar8 *)psmf->currentStream + 8), timestamp);
-		pEp = (ScePsmf_EP *)psmf->currentEP_map + ep_id;
-		if (ep_id < 0) {
-			ret = ep_id;
+	ret = _inl_CheckEP_map(psmf);
+	if (ret == 0) {
+		ep_count = sceMpegSwap4((SceUChar8 *)psmf->currentStream + 8);
+		id = _GetRelavantEP_map((ScePsmf_EP *)psmf->currentEP_map, ep_count, timestamp);
+		offset_ep = id * sizeof(ScePsmf_EP);
+		pEp = (ScePsmf_EP *)offset_ep;
+		if (id < 0) {
+			ret = id;
 		} else {
 			pEntry->EP_start_offset = sceMpegSwap4(pEp->rpn_ep_start) << 11;
 			pEntry->PTS_EP_start = sceMpegSwap4(pEp->pts_ep_start);
@@ -121,9 +140,6 @@ SceInt32 scePsmfGetEPWithTimestamp_Base(ScePsmf *psmf, SceUInt32 timestamp, SceP
 	}
 	return ret;
 }
-#else
-INCLUDE_ASM("tmp/asm/sampler/sampler/nonmatchings/psmfBase", scePsmfGetEPWithTimestamp_Base);
-#endif
 
 SceInt32 scePsmfCheckStreamType_Base(SceUInt32 stream_id, SceUInt32 private_stream_id)
 {
@@ -334,19 +350,20 @@ SceInt32 scePsmfCheckEP_map_Base(ScePsmf *psmf)
 	return ret;
 }
 
-#ifdef NON_MATCHING
 SceInt32 scePsmfGetEP_idWithTimestamp_Base(ScePsmf *psmf, SceUInt32 timestamp)
 {
+	ScePsmf_EP *pEp;
+	SceUInt32 ep_count;
 	SceInt32 ret;
 
-	ret = SCE_PSMF_ERROR_NO_EP_MAP;
-	if (sceMpegSwap4((SceUChar8 *)psmf->currentStream + 8) != 0)
-		ret = _GetRelavantEP_map(psmf->currentEP_map, sceMpegSwap4((SceUChar8 *)psmf->currentStream + 8), timestamp);
+	ret = _inl_CheckEP_map(psmf);
+	if (ret == 0) {
+		pEp = (ScePsmf_EP *)psmf->currentEP_map;
+		ep_count = sceMpegSwap4((SceUChar8 *)psmf->currentStream + 8);
+		ret = _GetRelavantEP_map(pEp, ep_count, timestamp);
+	}
 	return ret;
 }
-#else
-INCLUDE_ASM("tmp/asm/sampler/sampler/nonmatchings/psmfBase", scePsmfGetEP_idWithTimestamp_Base);
-#endif
 
 #ifdef NON_MATCHING
 SceInt32 scePsmfGetStreamType_Base(ScePsmf *psmf, SceInt32 psmfStream_id)
