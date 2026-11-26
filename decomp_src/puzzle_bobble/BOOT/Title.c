@@ -42,7 +42,56 @@ int TitleInit(void) {
     return 0;
 }
 
+#ifdef NON_MATCHING
+/* Close: %hi(D_00152960) and %hi(1.0f) swap saved registers, and the rotation
+ * argument is computed before the zero stack arguments are stored. */
+extern int D_00152960;
+extern int D_00152964;
+void disp_title_bg(int alpha);
+void SetSpriteColorRGBA(int r, int g, int b, int a);
+int DrawSpriteEx(int no, float z, float f0, float f1, float f2, float f3, float f4, float f5, float f6, float f7, float f8, float f9, float f10, float f11, float f12, float f13, int flag);
+
+int TitleDisp(void)
+{
+	int ret = 0;
+	float fade;
+	int a;
+
+	SpriteInit();
+	if (D_00152964 < 30) {
+		D_00152964++;
+		fade = D_00152964 / 30;
+	} else if (D_00152964 < 60) {
+		fade = 1.0f;
+		if (GetKeyHit() & 0x2008) {
+			se_play(1);
+			ret = 5;
+		}
+	} else {
+		D_00152964++;
+		fade = (180 - D_00152964) / 120.0f;
+		if (D_00152964 >= 180) {
+			ret = 2;
+			D_00152964 = 0;
+			D_00152960 = 0;
+		}
+	}
+	SpriteSetFader(fade);
+	disp_title_bg(255);
+	DrawSpriteEz(1.0f, 108.0f, 0.0f, 264.0f, 256.0f, 0.0f, 0.0f, 5);
+	DrawSpriteEz(1.0f, 84.0f, 240.0f, 312.0f, 24.0f, 0.0f, 0.0f, 4);
+	D_00152960 = (D_00152960 + 1) % 180;
+	a = D_00152960 * 2 - 180;
+	if (a < 0)
+		a = -a;
+	SetSpriteColorRGBA(255, 255, 255, a + 75);
+	DrawSpriteEx(3, 1.0f, 38.0f, 16.4f, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, (float)-D_00152960 * 3.14f / 90.0f, 1.0f, 0);
+	SpriteKick();
+	return ret;
+}
+#else
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/Title", TitleDisp);
+#endif
 
 int SigInit(void) {
     SpriteAllFreeImage();
