@@ -16,9 +16,99 @@ extern "C" {
 #include "common.h"
 }
 
+#include <vector>
+
+/* the demo's OpenGL emulation (C linkage) */
+extern "C" {
+typedef unsigned int GLenum;
+typedef float GLfloat;
+void glPushMatrix(void);
+void glPopMatrix(void);
+void glMultMatrixf(const GLfloat *);
+void glScalef(GLfloat, GLfloat, GLfloat);
+void glDisable(GLenum);
+void glEnable(GLenum);
+void glBegin(GLenum);
+void glEnd(void);
+void glColor3f(GLfloat, GLfloat, GLfloat);
+void glNormal3f(GLfloat, GLfloat, GLfloat);
+void glVertex3f(GLfloat, GLfloat, GLfloat);
+}
+#define GL_LINE_LOOP 0x0002
+#define GL_QUADS 0x0007
+#define GL_LIGHTING 0x0B50
+
 namespace math {
 struct TransformStack;
+struct vector_xyz {
+    float x, y, z;
+    vector_xyz() {}
+    vector_xyz(float x_, float y_, float z_) : x(x_), y(y_), z(z_) {}
+};
+struct vector_xyzw {
+    float x, y, z, w;
+    vector_xyzw() {}
+    vector_xyzw(float x_, float y_, float z_, float w_) : x(x_), y(y_), z(z_), w(w_) {}
+};
+struct matrix {
+    vector_xyzw r0, r1, r2, r3;
+    matrix() {}
+    matrix(const vector_xyzw &a, const vector_xyzw &b, const vector_xyzw &c, const vector_xyzw &d)
+        : r0(a), r1(b), r2(c), r3(d) {}
+    static const matrix &Identity()
+    {
+        static const matrix IDENTITY(vector_xyzw(1, 0, 0, 0), vector_xyzw(0, 1, 0, 0),
+                                     vector_xyzw(0, 0, 1, 0), vector_xyzw(0, 0, 0, 1));
+        return IDENTITY;
+    }
+};
 }
+
+namespace vertex_formats {
+struct T2UB_V3F {
+    unsigned char u, v;
+    math::vector_xyz p;
+    T2UB_V3F() : u(0), v(0), p(0, 0, 1) {}
+};
+}
+
+class WaterPatch {
+public:
+    enum Pass { };
+    WaterPatch(unsigned int, unsigned int, float, int, float, float);
+    ~WaterPatch();
+    void reset();
+    bool setf(float, float, float);
+    void set_disk(math::vector_xyzw, float, float, float);
+    bool set(unsigned int, unsigned int, float);
+    void idle(float);
+    void drawAsPlane(bool) const;
+    void drawW(bool) const;
+    void reflect();
+    void prepareRefraction() const;
+    void draw(Pass) const;
+    void update();
+private:
+    unsigned int _nx, _ny;                              /* 0x0 */
+    float _size;                                        /* 0x8 */
+    std::vector<math::vector_xyzw> _pos;                /* 0xC */
+    std::vector<math::vector_xyzw> _normal;             /* 0x18 */
+    std::vector<vertex_formats::T2UB_V3F> _vtx0;        /* 0x24 */
+    std::vector<vertex_formats::T2UB_V3F> _vtx1;        /* 0x30 */
+    std::vector<unsigned short> _indices;               /* 0x3C */
+    vertex_formats::T2UB_V3F _min, _max;                /* 0x48 */
+    float *_h0, *_h1, *_h;                              /* 0x68 */
+    float _f74;                                         /* 0x74 */
+    float _damping;                                     /* 0x78 */
+    int _mode;                                          /* 0x7C */
+    int _f80, _f84;                                     /* 0x80 */
+    float _speed;                                       /* 0x88 */
+    int _f8c;                                           /* 0x8C */
+    math::vector_xyzw _f90;                             /* 0x90 */
+    float _fa0;                                         /* 0xA0 */
+    bool _fa4, _fa5, _fa6;                              /* 0xA4 */
+    math::matrix _transform;                            /* 0xA8 */
+};
 
 namespace glut {
 extern int screen_width;
@@ -113,6 +203,8 @@ private:
 namespace common_internal {
 void on_error();
 void on_warning();
+void assert_display(const char *, const char *, const char *, const char *, int, const char *, ...);
+void clash();
 class Log {
 public:
     enum Channel { };
