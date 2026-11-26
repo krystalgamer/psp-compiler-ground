@@ -282,7 +282,155 @@ int MsSave2(void)
 	return 0;
 }
 
+#ifdef NON_MATCHING
+/* Two instructions short: logic and case layout complete (case order 2, 0, 1, 3, 4 and
+ * type order 2, 0, 1 reproduce the original block order); the status dispatch and the
+ * type register (v1 in the original, s1 here) differ. */
+extern int D_0101C3B8;
+int ret_GameStat(void);
+unsigned int get_free_ms(void);
+int utility_update_savedata(void)
+{
+	int ret = 0;
+	int status;
+
+	if (NowSaveFlag == 0)
+		return ret;
+	status = sceUtilitySavedataGetStatus();
+	switch (status) {
+	case 2:
+		sceGuSync(0, 0);
+		ret = sceUtilitySavedataUpdate(1);
+		if (ret != 0)
+			printf("sceUtilitySavedataUpdate failed - %08x\n", ret);
+		break;
+	case 0:
+		UtilityFlag = 0;
+		puts("SCE_UTILITY_COMMON_STATUS_NONE");
+		if (MsGim >= 0) {
+			release_gims(MsGim);
+			MsGim = -1;
+		}
+		NowSaveFlag = 0;
+		MsAccessFlag = 0;
+		switch (savedata_param.type) {
+		case 2:
+			MsAccessFlag = 1;
+			if (savedata_param.base.result == 0) {
+				load_buf();
+				printf("STAGE = %d\n", D_0101C3B8);
+			}
+			MsAccessFlag = 0;
+			break;
+		case 0:
+			puts("AUTO LOAD END");
+			MsAccessFlag = 1;
+			switch (savedata_param.base.result) {
+			case 0x80110306:
+				set_ms_dialog(0x9B);
+				MsType = 2;
+				MsWait = 180;
+				break;
+			case 0x80110301:
+			case 0x80110302:
+				if (ret_GameStat() == 8) {
+					set_ms_dialog(0x9F);
+					MsType = 3;
+				} else {
+					set_ms_dialog(0x94);
+					MsType = 4;
+					MsWait = 180;
+				}
+				break;
+			case 0x80110307:
+				if (ret_GameStat() == 8) {
+					set_ms_dialog(0x97);
+					MsType = 4;
+				} else if ((int)get_free_ms() < 0x100)
+					set_ms_dialog(0x96);
+				else
+					set_ms_dialog(0x95);
+				break;
+			case 0:
+				load_buf();
+				printf("STAGE = %d\n", D_0101C3B8);
+				MsAccessFlag = 0;
+				break;
+			case 0x8011030B:
+			default:
+				set_ms_dialog(0x8F);
+				break;
+			}
+			break;
+		case 1:
+			puts("AUTO SAVE END");
+			MsAccessFlag = 1;
+			printf("SAVE FINISH %08x\n", savedata_param.base.result);
+			switch (savedata_param.base.result) {
+			case 0x80110384:
+				if (OldError != savedata_param.base.result) {
+					set_ms_dialog(0xA7);
+					MsType = 6;
+				} else
+					MsAccessFlag = 0;
+				break;
+			case 0x80110381:
+			case 0x80110382:
+				if (OldError == savedata_param.base.result)
+					MsAccessFlag = 0;
+				else {
+					set_ms_dialog(0x9C);
+					MsType = 5;
+					puts("MsType = 5");
+				}
+				break;
+			case 0x80110383:
+				if (OldError == savedata_param.base.result)
+					MsAccessFlag = 0;
+				else {
+					set_ms_dialog(0xA0);
+					MsType = 6;
+					puts("MsType = 6");
+				}
+				break;
+			case 0:
+				MsAccessFlag = 0;
+				break;
+			case 0x8011038B:
+			default:
+				if (OldError == savedata_param.base.result)
+					MsAccessFlag = 0;
+				else {
+					set_ms_dialog(0xA2);
+					MsType = 6;
+				}
+				break;
+			}
+			OldError = savedata_param.base.result;
+			break;
+		}
+		break;
+	case 1:
+		break;
+	case 3:
+		ret = sceUtilitySavedataShutdownStart();
+		if (ret != 0)
+			printf("sceUtilitySavedataShutdownStart failed - %08x\n", ret);
+		show_results(&savedata_param);
+		break;
+	case 4:
+		puts("SCE_UTILITY_COMMON_STATUS_SHUTDOWN");
+		break;
+	default:
+		if (status != 0)
+			printf("SAVE UTILITY STATUS = %08x\n", status);
+		break;
+	}
+	return ret;
+}
+#else
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/file_sub", utility_update_savedata);
+#endif
 
 void set_ms_dialog(int no)
 {
