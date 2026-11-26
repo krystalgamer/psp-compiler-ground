@@ -1,6 +1,13 @@
 #include "common.h"
+#include "m2c_macros.h"
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_navigator", mes_navigator_java_enabled);
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int mes_navigator_java_enabled(void) {
+    return 8;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_navigator", mes_navigator_get);
 

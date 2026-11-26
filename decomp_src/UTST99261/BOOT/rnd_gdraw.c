@@ -1,14 +1,39 @@
 #include "common.h"
+#include "m2c_macros.h"
+M2C_UNK color2rgb();                                /* extern */
+M2C_UNK rnd_drawRepaint();                          /* extern */
+M2C_UNK GUI_ScrollPane_getViewportSize();           /* extern */
+M2C_UNK rnd_updateAnimImageBoxnode();               /* extern */
+M2C_UNK rnd_updateAnimTextBoxnode();                /* extern */
+
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_gdraw", color2rgb);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_gdraw", esp_colorValueToRGB);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_gdraw", rnd_drawRepaintCallback);
+void esp_colorValueToRGB(void) {
+    color2rgb();
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void rnd_drawRepaintCallback(void) {
+    rnd_drawRepaint();
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_gdraw", rnd_gdrawCreateView);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_gdraw", rnd_gdrawGetViewClientSize);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void rnd_gdrawGetViewClientSize(void) {
+    GUI_ScrollPane_getViewportSize();
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_gdraw", rnd_gdrawCreateTextline);
 
@@ -96,7 +121,13 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_gdraw", rnd_drawImageBoxnod
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_gdraw", rnd_updateAnimImageBoxnode);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_gdraw", rnd_resetAnimImageBoxnode);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void rnd_resetAnimImageBoxnode(void) {
+    rnd_updateAnimImageBoxnode();
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_gdraw", rnd_relayoutWidgets);
 
@@ -106,7 +137,13 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_gdraw", rnd_drawTextBoxnode
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_gdraw", rnd_updateAnimTextBoxnode);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_gdraw", rnd_resetAnimTextBoxnode);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void rnd_resetAnimTextBoxnode(void) {
+    rnd_updateAnimTextBoxnode();
+}
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_gdraw", D_001335E0);
 

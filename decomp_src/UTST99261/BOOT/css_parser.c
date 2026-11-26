@@ -1,4 +1,6 @@
 #include "common.h"
+#include "m2c_macros.h"
+
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_parser", CSS_StyleSheetRuleList);
 
@@ -44,7 +46,20 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_parser", freeCSSRule);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_parser", addCSSRule);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_parser", CSSRuleList_getLength);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int CSSRuleList_getLength(void *arg0) {
+    void *temp_v0;
+
+    if (arg0 != NULL) {
+        temp_v0 = M2C_FIELD(arg0, void **, 4);
+        if (temp_v0 != NULL) {
+            return M2C_FIELD(temp_v0, int *, 8);
+        }
+    }
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_parser", CSSRuleList_item);
 

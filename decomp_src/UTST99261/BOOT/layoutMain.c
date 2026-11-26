@@ -1,4 +1,7 @@
 #include "common.h"
+#include "m2c_macros.h"
+extern int D_00584CD4;
+
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/layoutMain", lo_halt);
 
@@ -26,7 +29,13 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/layoutMain", lo_fullUrl);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/layoutMain", lo_getActiveFrameBodybox);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/layoutMain", initSessionNumber);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void initSessionNumber(void) {
+    D_00584CD4 = 0x08000001;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/layoutMain", getSessionNumber);
 

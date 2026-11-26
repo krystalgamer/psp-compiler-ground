@@ -1,8 +1,17 @@
 #include "common.h"
+#include "m2c_macros.h"
+extern int mem_defaultPool;
+M2C_UNK mem_free(int);                              /* extern */
+
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Scroll", GUI_ScrollPane_add);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Scroll", GUI_ScrollPane_remove);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int GUI_ScrollPane_remove(void) {
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Scroll", GUI_ScrollPane_getComponent);
 
@@ -12,17 +21,47 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Scroll", GUI_ScrollPane_set
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Scroll", GUI_ScrollPane_getScrollPosition);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Scroll", GUI_ScrollPane_isVScrollbarVisible);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int GUI_ScrollPane_isVScrollbarVisible(void) {
+    return 0;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Scroll", GUI_ScrollPane_isHScrollbarVisible);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int GUI_ScrollPane_isHScrollbarVisible(void) {
+    return 0;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Scroll", GUI_ScrollPane_setVScrollbarVisible);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int GUI_ScrollPane_setVScrollbarVisible(void) {
+    return 0;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Scroll", GUI_ScrollPane_setHScrollbarVisible);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int GUI_ScrollPane_setHScrollbarVisible(void) {
+    return 0;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Scroll", GUI_ScrollPane_getVScrollbarWidth);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int GUI_ScrollPane_getVScrollbarWidth(void) {
+    return 0;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Scroll", GUI_ScrollPane_getHScrollbarHeight);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int GUI_ScrollPane_getHScrollbarHeight(void) {
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Scroll", GUI_ScrollPane_getViewportSize);
 
@@ -38,7 +77,19 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Scroll", MEM_init);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Scroll", MEM_destroy);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Scroll", MEM_attach);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+int MEM_attach(int arg0) {
+    int var_v0;
+
+    var_v0 = arg0;
+    if (arg0 == 0) {
+        var_v0 = mem_defaultPool;
+    }
+    return var_v0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Scroll", MEM_malloc);
 
@@ -46,10 +97,27 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Scroll", MEM_calloc);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Scroll", MEM_realloc);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Scroll", MEM_free);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void MEM_free(int arg0) {
+    int var_a0;
+
+    var_a0 = arg0;
+    if (var_a0 == 0) {
+        var_a0 = mem_defaultPool;
+    }
+    mem_free(var_a0);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Scroll", MEM_addHaltCallback);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Scroll", MEM_agent);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Scroll", MEM_checkViolation);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int MEM_checkViolation(void) {
+    return 0;
+}

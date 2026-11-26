@@ -1,4 +1,9 @@
 #include "common.h"
+#include "m2c_macros.h"
+M2C_UNK SDomiElement_getAttributeNode(int);         /* extern */
+M2C_UNK SDomiElement_setAttributeNode(int);         /* extern */
+M2C_UNK SDomiPtrArray_GetItem(int);                 /* extern */
+
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/SDomiElement", TagFilter);
 
@@ -8,13 +13,31 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/SDomiElement", NewAttribute);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/SDomiElement", SDomiElement_CheckNewAttr);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/SDomiElement", cmDomiElementNamedNodeSet_getNamedItem);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/SDomiElement", cmDomiElementNamedNodeSet_setNamedItem);
+void cmDomiElementNamedNodeSet_getNamedItem(void *arg0) {
+    SDomiElement_getAttributeNode(M2C_FIELD(arg0, int *, 4));
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void cmDomiElementNamedNodeSet_setNamedItem(void *arg0) {
+    SDomiElement_setAttributeNode(M2C_FIELD(arg0, int *, 4));
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/SDomiElement", cmDomiElementNamedNodeSet_removeNamedItem);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/SDomiElement", cmDomiElementNamedNodeSet_item);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void cmDomiElementNamedNodeSet_item(void *arg0) {
+    SDomiPtrArray_GetItem(M2C_FIELD(arg0, int *, 4) + 0x38);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/SDomiElement", cmDomiElementNamedNodeSet_get_length);
 
@@ -24,7 +47,12 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/SDomiElement", cmDomiElement_In
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/SDomiElement", cmDomiElement_FreeTrash);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/SDomiElement", cmDomiElement_get_attributes);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int cmDomiElement_get_attributes(int arg0) {
+    return arg0 + 0x48;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/SDomiElement", cmDomiElement_cloneNode);
 

@@ -1,4 +1,8 @@
 #include "common.h"
+#include "m2c_macros.h"
+M2C_UNK ps_i2314();                                 /* extern */
+M2C_UNK ps_i2606();                                 /* extern */
+
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/ps_l3800", sendMPU_REQ_SHOW_DIALOG);
 
@@ -28,7 +32,13 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/ps_l3800", ps_i220C);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/ps_l3800", ps_i2212);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/ps_l3800", ps_i2214);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void ps_i2214(void) {
+    ps_i2314();
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/ps_l3800", ps_i2215);
 
@@ -50,7 +60,12 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/ps_l3800", ps_i2312);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/ps_l3800", ps_i2314);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/ps_l3800", ps_i2315);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int ps_i2315(void) {
+    return 3;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/ps_l3800", ps_i2319);
 
@@ -68,9 +83,21 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/ps_l3800", ps_i241A);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/ps_l3800", ps_i2606);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/ps_l3800", ps_i2607);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/ps_l3800", ps_i2608);
+void ps_i2607(void) {
+    ps_i2606();
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void ps_i2608(void) {
+    ps_i2606();
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/ps_l3800", ps_i2609);
 

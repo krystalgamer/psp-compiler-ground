@@ -1,6 +1,15 @@
 #include "common.h"
+#include "m2c_macros.h"
+M2C_UNK cookieFile_init();                          /* extern */
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iom_cookie", iom_cookieFile_init);
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void iom_cookieFile_init(void) {
+    cookieFile_init();
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iom_cookie", cookieFile_fstab);
 
@@ -10,11 +19,33 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iom_cookie", cookieFile_open);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iom_cookie", cookieFile_close);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iom_cookie", cookieFile_pos);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int cookieFile_pos(void *arg0) {
+    return M2C_FIELD(arg0, int *, 0x10);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iom_cookie", cookieFile_len);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int cookieFile_len(void *arg0) {
+    return M2C_FIELD(arg0, int *, 8);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iom_cookie", cookieFile_seek);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int cookieFile_seek(void *arg0, int arg1) {
+    int var_v1;
+
+    var_v1 = -1;
+    if (M2C_FIELD(arg0, int *, 8) >= arg1) {
+        M2C_FIELD(arg0, int *, 0x10) = arg1;
+        var_v1 = arg1;
+    }
+    return var_v1;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iom_cookie", cookieFile_getc);
 

@@ -1,4 +1,6 @@
 #include "common.h"
+#include "m2c_macros.h"
+
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_floatManager", newRegion);
 
@@ -24,7 +26,12 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_floatManager", lfm_getHorizo
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_floatManager", lfm_getVerticalPosition);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_floatManager", lfm_getHeight);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int lfm_getHeight(void *arg0) {
+    return M2C_FIELD(arg0, int *, 8);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_floatManager", getNextTerminalFrame);
 

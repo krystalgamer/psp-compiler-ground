@@ -1,4 +1,6 @@
 #include "common.h"
+#include "m2c_macros.h"
+
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/http_setproxyhead", http_setproxyheader_Accept);
 
@@ -12,13 +14,23 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/http_setproxyhead", http_setpro
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/http_setproxyhead", http_setproxyheader_CacheControl);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/http_setproxyhead", http_setproxyheader_Connection);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int http_setproxyheader_Connection(void) {
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/http_setproxyhead", http_setproxyheader_ContentEncoding);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/http_setproxyhead", http_setproxyheader_ContentLanguage);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/http_setproxyhead", http_setproxyheader_ContentLength);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int http_setproxyheader_ContentLength(void) {
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/http_setproxyhead", http_setproxyheader_ContentLocation);
 
@@ -60,7 +72,12 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/http_setproxyhead", http_setpro
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/http_setproxyhead", http_setproxyheader);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/http_setproxyhead", http_proxyauth_passwdcb);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int http_proxyauth_passwdcb(void) {
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/http_setproxyhead", http_setproxyheader_Authorization);
 
@@ -76,13 +93,23 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/http_setproxyhead", http_setreq
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/http_setproxyhead", http_setrequestheader_CacheControl);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/http_setproxyhead", http_setrequestheader_Connection);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int http_setrequestheader_Connection(void) {
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/http_setproxyhead", http_setrequestheader_ContentEncoding);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/http_setproxyhead", http_setrequestheader_ContentLanguage);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/http_setproxyhead", http_setrequestheader_ContentLength);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int http_setrequestheader_ContentLength(void) {
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/http_setproxyhead", http_setrequestheader_ContentLocation);
 

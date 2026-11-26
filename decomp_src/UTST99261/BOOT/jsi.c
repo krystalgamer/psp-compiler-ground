@@ -1,4 +1,13 @@
 #include "common.h"
+#include "m2c_macros.h"
+extern int attached;
+M2C_UNK newDOMString_4B5FC();                       /* extern */
+M2C_UNK esp_getMemoNum();                           /* extern */
+M2C_UNK esp_loadMemoList();                         /* extern */
+M2C_UNK HST_getHistoryLength();                     /* extern */
+M2C_UNK HST_getCurrentIndex();                      /* extern */
+M2C_UNK esp_setDialogReply();                       /* extern */
+
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", newDOMString_4B5FC);
 
@@ -6,7 +15,13 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", duplicateDOMString);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSI_init);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSI_free);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void JSI_free(void) {
+    attached = 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSI_getElementPosition);
 
@@ -76,7 +91,12 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSI_freeURLRec);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSI_setURLProtocol);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSI_setURLPort);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+void JSI_setURLPort(short *arg0, short arg1) {
+    *arg0 = arg1;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSI_setURLHost);
 
@@ -86,7 +106,13 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSI_setURLHash);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSI_setURLSearch);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSI_newDOMString);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void JSI_newDOMString(void) {
+    newDOMString_4B5FC();
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSSendMail);
 
@@ -138,7 +164,14 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSPtrListDelAll);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSRunStart);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSRunFinish);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+void JSRunFinish(void *arg0) {
+    if (arg0 != NULL) {
+        M2C_FIELD(arg0, int *, 0xC) = 0;
+    }
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSPtrListDumpAll);
 
@@ -186,15 +219,42 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_abortLoading);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_handleDeviceEvent);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_saveCurrentPage);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int ESP_saveCurrentPage(void) {
+    return -1;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_deleteSavedPage);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int ESP_deleteSavedPage(void) {
+    return -1;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_deleteAllSavedPage);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int ESP_deleteAllSavedPage(void) {
+    return -1;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_getSavedPageNum);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_loadSavedPageList);
+void ESP_getSavedPageNum(void) {
+    esp_getMemoNum();
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void ESP_loadSavedPageList(void) {
+    esp_loadMemoList();
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_freeSavedPageList);
 
@@ -210,9 +270,21 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_getFocusAttribute);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_setTextField);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_getHistoryLength);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_currentHistoryIndex);
+void ESP_getHistoryLength(void) {
+    HST_getHistoryLength();
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void ESP_currentHistoryIndex(void) {
+    HST_getCurrentIndex();
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_getHistoryURL);
 
@@ -222,7 +294,12 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_hasNextHistory);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_hasPreviousHistory);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_deleteCache);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int ESP_deleteCache(void) {
+    return -1;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_setCookieEnabled);
 
@@ -292,4 +369,10 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_malloc);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_free);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_setModelessDialogReply);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void ESP_setModelessDialogReply(void) {
+    esp_setDialogReply();
+}

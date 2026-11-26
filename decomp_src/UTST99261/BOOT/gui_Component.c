@@ -1,4 +1,7 @@
 #include "common.h"
+#include "m2c_macros.h"
+extern int _iZwindDizF;
+
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Component", GUI_Component_setFont);
 
@@ -32,15 +35,31 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Component", GUI_Component_u
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Component", GUI_Component_setFocusColor);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Component", zWindSetDiz);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void zWindSetDiz(int arg0) {
+    _iZwindDizF = arg0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Component", make_dither_matrix);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Component", dizInit);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Component", MAX);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int MAX(int arg0, int arg1) {
+    return __builtin_allegrex_max(arg0, arg1);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Component", MIN);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int MIN(int arg0, int arg1) {
+    return __builtin_allegrex_min(arg0, arg1);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Component", dizCg);
 

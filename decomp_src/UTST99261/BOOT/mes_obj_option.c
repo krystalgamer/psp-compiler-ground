@@ -1,4 +1,6 @@
 #include "common.h"
+#include "m2c_macros.h"
+
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_option", mes_option_get);
 
@@ -7,7 +9,12 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_option", mes_option_put
 void mes_option_mark(void) {
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_option", mes_option_free);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+void mes_option_free(void) {
+    MEM_free(0);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_option", mes_option_class_init);
 

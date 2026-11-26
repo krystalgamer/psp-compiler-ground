@@ -1,4 +1,8 @@
 #include "common.h"
+#include "m2c_macros.h"
+M2C_UNK UDomiMemory_Allocate(int);                  /* extern */
+M2C_UNK UDomiMemory_Free();                         /* extern */
+
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", UDomiString_ToLower);
 
@@ -8,11 +12,28 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", UDomiString_Compa
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", UDomiString_CompareBinary);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", UDomiString_Allocate);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", UDomiString_Free);
+void UDomiString_Allocate(int arg0) {
+    UDomiMemory_Allocate(arg0 * 2);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", UDomiString_Copy);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void UDomiString_Free(void) {
+    UDomiMemory_Free();
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+void UDomiString_Copy(void *arg0, void *arg1, int arg2) {
+    UDomiMemory_Copy(arg0, arg1, arg2 * 2);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", UDomiString_Move);
 
@@ -115,7 +136,12 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", cmpstr);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", icmpstr);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", ps_PassWordChk);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int ps_PassWordChk(void) {
+    return 0;
+}
 
 void ps_PassWordSet(void) {
 }

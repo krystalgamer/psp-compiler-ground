@@ -1,4 +1,6 @@
 #include "common.h"
+#include "m2c_macros.h"
+
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/act_selection", addSelectionTarget);
 
@@ -96,6 +98,16 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/act_selection", html_BODY);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/act_selection", html_HEAD);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/act_selection", html_HTML);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int html_HTML(void) {
+    return 0;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/act_selection", html_TITLE);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int html_TITLE(void) {
+    return 0;
+}

@@ -1,8 +1,15 @@
 #include "common.h"
+#include "m2c_macros.h"
+
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_function", mes_function_constructor);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_function", mes_function_undefined);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int mes_function_undefined(void) {
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_function", mes_function_apply);
 

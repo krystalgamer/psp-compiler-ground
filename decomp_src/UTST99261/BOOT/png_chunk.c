@@ -1,4 +1,6 @@
 #include "common.h"
+#include "m2c_macros.h"
+
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/png_chunk", READINT32);
 
@@ -42,7 +44,12 @@ INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/png_chunk", bwidth);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/png_chunk", handle_IDAT);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/png_chunk", handle_IEND);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int handle_IEND(void) {
+    return 1;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/png_chunk", handle_IHDR);
 

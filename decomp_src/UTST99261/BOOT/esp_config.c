@@ -1,4 +1,8 @@
 #include "common.h"
+#include "m2c_macros.h"
+M2C_UNK do_string();                                /* extern */
+M2C_UNK __floatsidf(int);                           /* extern */
+
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/esp_config", do_bool);
 
@@ -10,9 +14,19 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/esp_config", esp_defaultConfig)
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/esp_config", esp_freeConfig);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/esp_config", esp_loadConfig);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int esp_loadConfig(void) {
+    return 0;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/esp_config", esp_saveConfig);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int esp_saveConfig(void) {
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/esp_config", esp_copyConfig);
 
@@ -26,7 +40,13 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/esp_config", esp_setIntConfig);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/esp_config", esp_getIntConfig);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/esp_config", esp_setStringConfig);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void esp_setStringConfig(void) {
+    do_string();
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/esp_config", esp_getStringConfig);
 
@@ -34,20 +54,50 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/esp_config", esp_system_callbac
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/esp_config", esp_setDialogReply);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/esp_config", esp_getMemoURLatIndex);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int esp_getMemoURLatIndex(void) {
+    return 0;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/esp_config", esp_getMemoURLatID);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int esp_getMemoURLatID(void) {
+    return 0;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/esp_config", esp_getMemoNum);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int esp_getMemoNum(void) {
+    return -1;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/esp_config", esp_loadMemoList);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int esp_loadMemoList(void) {
+    return 0;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/esp_config", esp_saveMemoList);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int esp_saveMemoList(void) {
+    return -1;
+}
 
 void esp_freeMemoList(void) {
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/esp_config", CLIB_getenv);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int CLIB_getenv(void) {
+    return 0;
+}
 
 void CLIB_abort(void) {
 }
@@ -60,7 +110,13 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/esp_config", CLIB_tzset);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/esp_config", CLIB_time);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/esp_config", CLIB_difftime);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void CLIB_difftime(int arg0, int arg1) {
+    __floatsidf(arg0 - arg1);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/esp_config", CLIB_gmtime);
 

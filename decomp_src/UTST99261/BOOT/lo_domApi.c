@@ -1,4 +1,6 @@
 #include "common.h"
+#include "m2c_macros.h"
+
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_domApi", DomStringToUtf8);
 
@@ -20,7 +22,12 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_domApi", initFramesetContent
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_domApi", initFrameBorderContent);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_domApi", initNoneContent);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+void initNoneContent(void *arg0) {
+    M2C_FIELD(arg0, short *, 0x38) = 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_domApi", initTextContent);
 
@@ -36,7 +43,12 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_domApi", initTdContent);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_domApi", initColContent);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_domApi", initHlineContent);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+void initHlineContent(void *arg0) {
+    M2C_FIELD(arg0, short *, 0x38) = 0xB;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_domApi", initButtonContent);
 

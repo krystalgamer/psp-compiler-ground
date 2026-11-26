@@ -1,4 +1,9 @@
 #include "common.h"
+#include "m2c_macros.h"
+M2C_UNK DOMAPI_NewDOMImplementation();              /* extern */
+M2C_UNK DOMAPI_DeleteDOMImplementation();           /* extern */
+M2C_UNK SDomiCharacterData_set_data();              /* extern */
+
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/DOMAPI", DOMAPI_Initialize);
 
@@ -20,9 +25,21 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/DOMAPI", DOMAPI_DeleteDOMImplem
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/DOMAPI", DOMAPI_Error);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/DOMAPI", Util_DOMAPI_NewHTMLDOMImplementation);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/DOMAPI", Util_DOMAPI_DeleteHTMLDOMImplementation);
+void Util_DOMAPI_NewHTMLDOMImplementation(void) {
+    DOMAPI_NewDOMImplementation();
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void Util_DOMAPI_DeleteHTMLDOMImplementation(void) {
+    DOMAPI_DeleteDOMImplementation();
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/DOMAPI", Util_HTMLDOMImplementation_createHTMLDocument);
 
@@ -60,7 +77,12 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/DOMAPI", DOMStringtoASCII);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/DOMAPI", DOMStringEncode);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/DOMAPI", DOMStringlen);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int DOMStringlen(void *arg0) {
+    return M2C_FIELD(arg0, int *, 4);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/DOMAPI", DOMStringcat);
 
@@ -76,7 +98,13 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/DOMAPI", cmDomiCharacterData_Fi
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/DOMAPI", cmDomiCharacterData_get_nodeValue);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/DOMAPI", cmDomiCharacterData_set_nodeValue);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void cmDomiCharacterData_set_nodeValue(void) {
+    SDomiCharacterData_set_data();
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/DOMAPI", cmDomiCharacterData_cloneNode);
 

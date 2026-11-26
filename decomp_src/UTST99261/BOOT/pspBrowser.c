@@ -1,4 +1,10 @@
 #include "common.h"
+#include "m2c_macros.h"
+M2C_UNK sjisToUtf8();                               /* extern */
+int sjisToUcs2();                                   /* extern */
+M2C_UNK utf8ToSjis();                               /* extern */
+int utf8ToUcs2();                                   /* extern */
+
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/pspBrowser", D_00130210);
 
@@ -40,13 +46,37 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/pspBrowser", pspBrowserSetFocus
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/pspBrowser", pspBrowserUnloadCallback);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/pspBrowser", pspBrowserSjisToUtf8);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/pspBrowser", pspBrowserSjisToUcs2);
+void pspBrowserSjisToUtf8(void) {
+    sjisToUtf8();
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/pspBrowser", pspBrowserUtf8ToSjis);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/pspBrowser", pspBrowserUtf8ToUcs2);
+int pspBrowserSjisToUcs2(void) {
+    return sjisToUcs2() * 2;
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void pspBrowserUtf8ToSjis(void) {
+    utf8ToSjis();
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+int pspBrowserUtf8ToUcs2(void) {
+    return utf8ToUcs2() * 2;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/pspBrowser", pspBrowserUcs2ToSjis);
 

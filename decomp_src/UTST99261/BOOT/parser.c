@@ -1,6 +1,17 @@
 #include "common.h"
+#include "m2c_macros.h"
+M2C_UNK parseDeleteMultiBuffer();                   /* extern */
+M2C_UNK parseHST_deleteHistoryNode(M2C_UNK, M2C_UNK); /* extern */
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", parseReleaseResource);
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void parseReleaseResource(void) {
+    parseDeleteMultiBuffer();
+    parseHST_deleteHistoryNode(0, 0);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", parseDocument);
 

@@ -1,4 +1,7 @@
 #include "common.h"
+#include "m2c_macros.h"
+M2C_UNK js_setChildOfSelect();                      /* extern */
+
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/js_for_parser", JSObjGetCharsLength);
 
@@ -108,7 +111,13 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/js_for_parser", TextSetInternal
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/js_for_parser", TextAreaSetInternal);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/js_for_parser", OptionSetInternal);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void OptionSetInternal(void) {
+    js_setChildOfSelect();
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/js_for_parser", JSObjectSetInternal);
 

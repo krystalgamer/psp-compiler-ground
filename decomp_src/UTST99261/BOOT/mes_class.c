@@ -1,4 +1,6 @@
 #include "common.h"
+#include "m2c_macros.h"
+
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_class", mes_class_init);
 
@@ -6,7 +8,12 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_class", mes_class_new);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_class", mes_class_instance_of);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_class", mes_class_get);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int mes_class_get(void *arg0) {
+    return M2C_FIELD(arg0, int *, 8);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_class", mes_class_property_get);
 

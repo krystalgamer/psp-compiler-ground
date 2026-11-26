@@ -1,4 +1,7 @@
 #include "common.h"
+#include "m2c_macros.h"
+M2C_UNK drawFrameBorderLoop();                      /* extern */
+
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_frame", newBuffer);
 
@@ -54,7 +57,13 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_frame", createFrameBorder_fr
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_frame", drawFrameBorderLoop);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_frame", drawFrameBorder);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void drawFrameBorder(void) {
+    drawFrameBorderLoop();
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_frame", updateParentFrameset);
 

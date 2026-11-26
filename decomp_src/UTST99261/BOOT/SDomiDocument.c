@@ -1,6 +1,16 @@
 #include "common.h"
+#include "m2c_macros.h"
+M2C_UNK SDomiNodeSLink_DeleteAll(int);              /* extern */
+M2C_UNK AcsExterngDomiNodeSetEmpty();               /* extern */
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/SDomiDocument", SDomiDocument_EmptyTrash);
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void SDomiDocument_EmptyTrash(int arg0) {
+    SDomiNodeSLink_DeleteAll(arg0 + 0x38);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/SDomiDocument", ImportDeep);
 
@@ -8,7 +18,12 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/SDomiDocument", cmDomiDocument_
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/SDomiDocument", cmDomiDocument_FreeTrash);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/SDomiDocument", cmDomiDocument_get_doctype);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int cmDomiDocument_get_doctype(void) {
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/SDomiDocument", cmDomiDocument_createElement);
 
@@ -36,9 +51,20 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/SDomiDocument", cmDomiDocument_
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/SDomiDocument", cmDomiDocument_createAttributeNS);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/SDomiDocument", cmDomiDocument_getElementsByTagNameNS);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/SDomiDocument", cmDomiDocument_getElementById);
+void cmDomiDocument_getElementsByTagNameNS(void) {
+    AcsExterngDomiNodeSetEmpty();
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int cmDomiDocument_getElementById(void) {
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/SDomiDocument", SDomiDocument_Initialize);
 

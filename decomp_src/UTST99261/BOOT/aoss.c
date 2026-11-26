@@ -1,4 +1,13 @@
 #include "common.h"
+#include "m2c_macros.h"
+M2C_UNK sceNetInetRecvfrom();                       /* extern */
+M2C_UNK sceNetInetSelect();                         /* extern */
+M2C_UNK sceNetInetSendto();                         /* extern */
+M2C_UNK sceNetInetSetsockopt();                     /* extern */
+M2C_UNK sceNetInetSocket();                         /* extern */
+M2C_UNK sceNetInetBind();                           /* extern */
+M2C_UNK sceNetInetClose();                          /* extern */
+
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/aoss", D_00141118);
 
@@ -92,41 +101,136 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/aoss", AddKey);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/aoss", Rotate);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/aoss", AOSS_Malloc);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+void *malloc(unsigned int size);
+void AOSS_Malloc(unsigned int arg0) {
+    malloc(arg0);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/aoss", AOSS_Free);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+void free(void *p);
+void AOSS_Free(void *arg0) {
+    free(arg0);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/aoss", AOSS_Memcmp);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int memcmp(const void *a, const void *b, unsigned int n);
+void AOSS_Memcmp(void *arg0, void *arg1, unsigned int arg2) {
+    memcmp(arg0, arg1, arg2);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/aoss", AOSS_Memcpy);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+void *memcpy(void *d, const void *s, unsigned int n);
+void *AOSS_Memcpy(void *arg0, void *arg1, unsigned int arg2) {
+    memcpy(arg0, arg1, arg2);
+    return arg0;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/aoss", AOSS_Memset);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+void *memset(void *s, int c, unsigned int n);
+void AOSS_Memset(void *arg0, int arg1, unsigned int arg2) {
+    memset(arg0, arg1, arg2);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/aoss", AOSS_Recvfrom);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/aoss", AOSS_Select);
+void AOSS_Recvfrom(void) {
+    sceNetInetRecvfrom();
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/aoss", AOSS_Sendto);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/aoss", AOSS_Setsockopt);
+void AOSS_Select(void) {
+    sceNetInetSelect();
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/aoss", AOSS_Socket);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/aoss", AOSS_Bind);
+void AOSS_Sendto(void) {
+    sceNetInetSendto();
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/aoss", AOSS_Close);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/aoss", AOSS_Htonl);
+void AOSS_Setsockopt(void) {
+    sceNetInetSetsockopt();
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void AOSS_Socket(void) {
+    sceNetInetSocket();
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void AOSS_Bind(void) {
+    sceNetInetBind();
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void AOSS_Close(void) {
+    sceNetInetClose();
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int AOSS_Htonl(int arg0) {
+    return __builtin_allegrex_wsbw(arg0);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/aoss", AOSS_Htons);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/aoss", AOSS_Ntohl);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int AOSS_Ntohl(int arg0) {
+    return __builtin_allegrex_wsbw(arg0);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/aoss", AOSS_Ntohs);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/aoss", AOSS_Strlen);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+unsigned int strlen(const char *s);
+void AOSS_Strlen(signed char *arg0) {
+    strlen(arg0);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/aoss", AOSS_Rand);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int rand(void);
+void AOSS_Rand(void) {
+    rand();
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/aoss", AOSS_FD_ZERO);
 
@@ -148,4 +252,9 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/aoss", necApConfigGetState);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/aoss", necApConfigGetResult);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/aoss", necApConfigGetVersion);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int necApConfigGetVersion(void) {
+    return 0x100;
+}

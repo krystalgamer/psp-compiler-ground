@@ -1,4 +1,6 @@
 #include "common.h"
+#include "m2c_macros.h"
+
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parseStrings", parseFindValue);
 
@@ -26,7 +28,12 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parseStrings", parseNextChar);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parseStrings", parseSkipChar);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parseStrings", parseNextInput);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int parseNextInput(void) {
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parseStrings", parseStrnCpy);
 

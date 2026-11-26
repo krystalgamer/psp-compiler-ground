@@ -1,6 +1,13 @@
 #include "common.h"
+#include "m2c_macros.h"
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_image", getRestImageTotalSquareSize);
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int getRestImageTotalSquareSize(void) {
+    return -1;
+}
 
 void incrementImageTotalSquareSize(void) {
 }

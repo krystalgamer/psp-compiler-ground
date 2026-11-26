@@ -1,4 +1,7 @@
 #include "common.h"
+#include "m2c_macros.h"
+M2C_UNK mes_util_vals_free(int);                    /* extern */
+
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_eval", mes_eval_scope_new);
 
@@ -110,7 +113,16 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_eval", mes_eval_unescape);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_eval", mes_eval_mark);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_eval", mes_eval_free);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void mes_eval_free(void *arg0) {
+    mes_util_vals_free(M2C_FIELD(arg0, int *, 0x24));
+    mes_util_vals_free(M2C_FIELD(arg0, int *, 0x28));
+    mes_util_vals_free(M2C_FIELD(arg0, int *, 0x2C));
+    mes_object_free(arg0);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_eval", mes_eval_initialize);
 

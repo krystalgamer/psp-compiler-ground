@@ -1,4 +1,7 @@
 #include "common.h"
+#include "m2c_macros.h"
+M2C_UNK mes_object_free_page(int);                  /* extern */
+
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_object", mes_object_init);
 
@@ -38,7 +41,13 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_object", mes_object_mark);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_object", mes_object_free_page);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_object", mes_object_free);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void mes_object_free(void *arg0) {
+    mes_object_free_page(M2C_FIELD(arg0, int *, 4));
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_object", mes_object_initialize);
 

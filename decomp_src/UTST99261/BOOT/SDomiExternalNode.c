@@ -1,12 +1,35 @@
 #include "common.h"
+#include "m2c_macros.h"
+extern unsigned char gSv2;
+extern unsigned char gSv1;
+M2C_UNK SDomiNodeSLink_DeleteAll(int);              /* extern */
+
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/SDomiExternalNode", SDomiExternalNode_Initialize);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/SDomiExternalNode", AcsExterngSv2);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/SDomiExternalNode", AcsExterngSv1);
+M2C_UNK *AcsExterngSv2(void) {
+    return &gSv2;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/SDomiExternalNode", cmDomiImplementation_Finalize);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+M2C_UNK *AcsExterngSv1(void) {
+    return &gSv1;
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void cmDomiImplementation_Finalize(int arg0) {
+    SDomiNodeSLink_DeleteAll(arg0 + 4);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/SDomiExternalNode", cmDomiImplementation_hasFeature);
 

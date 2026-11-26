@@ -1,4 +1,6 @@
 #include "common.h"
+#include "m2c_macros.h"
+
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/wsthread", addThreadTbl);
 
@@ -36,6 +38,16 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/wsthread", CreateMbxMan);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/wsthread", DeleteMbxMan);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/wsthread", mqInfo2mqID);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+unsigned int mqInfo2mqID(unsigned int arg0) {
+    return arg0 >> 1;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/wsthread", mqID2mqInfo);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int mqID2mqInfo(int arg0) {
+    return arg0 * 2;
+}

@@ -1,4 +1,8 @@
 #include "common.h"
+#include "m2c_macros.h"
+extern unsigned char gDomiError;
+extern unsigned char gDomiDocManager;
+
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/httpdisasm", strlinecmp);
 
@@ -10,9 +14,21 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/httpdisasm", strlinedup);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/httpdisasm", httpHeaderParse);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/httpdisasm", AcsExterngDomiError);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/httpdisasm", AcsExterngDomiDocManager);
+M2C_UNK *AcsExterngDomiError(void) {
+    return &gDomiError;
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+M2C_UNK *AcsExterngDomiDocManager(void) {
+    return &gDomiDocManager;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/httpdisasm", DomiAPI_RoPar);
 

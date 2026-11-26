@@ -1,4 +1,6 @@
 #include "common.h"
+#include "m2c_macros.h"
+
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_util", mes_util_streq);
 
@@ -44,9 +46,31 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_util", mes_util_is_alpha_di
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_util", mes_util_is_word_char);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_util", mes_util_digit);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int mes_util_digit(int arg0) {
+    int var_a0;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_util", mes_util_octal);
+    var_a0 = (arg0 & 0xFFFF) - 0x30;
+    if ((unsigned int) (var_a0 & 0xFFFF) >= 0xAU) {
+        var_a0 = -1;
+    }
+    return var_a0;
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int mes_util_octal(int arg0) {
+    int var_a0;
+
+    var_a0 = (arg0 & 0xFFFF) - 0x30;
+    if ((unsigned int) (var_a0 & 0xFFFF) >= 8U) {
+        var_a0 = -1;
+    }
+    return var_a0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_util", mes_util_hex);
 

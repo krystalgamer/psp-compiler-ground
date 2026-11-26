@@ -1,4 +1,9 @@
 #include "common.h"
+#include "m2c_macros.h"
+M2C_UNK HST_moveBackHistory();                      /* extern */
+M2C_UNK HST_moveFrontHistory();                     /* extern */
+M2C_UNK parseHST_deleteHistoryNode(M2C_UNK, M2C_UNK); /* extern */
+
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parseHistory", parseFreeItem);
 
@@ -16,7 +21,15 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parseHistory", parseMoveFrontUR
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parseHistory", parseMoveBackURI);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parseHistory", parseSavedContents);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void parseSavedContents(void) {
+    HST_moveBackHistory();
+    parseHST_deleteHistoryNode(0, 0);
+    HST_moveFrontHistory();
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parseHistory", parseCopyHistoryEntities);
 

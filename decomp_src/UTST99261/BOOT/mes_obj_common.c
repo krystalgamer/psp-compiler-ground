@@ -1,6 +1,13 @@
 #include "common.h"
+#include "m2c_macros.h"
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_common", mes_obj_common_constructor_not_allowed);
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int mes_obj_common_constructor_not_allowed(void) {
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_common", mes_obj_common_to_string);
 

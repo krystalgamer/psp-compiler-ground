@@ -1,4 +1,6 @@
 #include "common.h"
+#include "m2c_macros.h"
+
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/wsfileio", UTF8toEUC);
 
@@ -34,11 +36,26 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/wsfileio", FIO_mkdir);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/wsfileio", FIO_rmdir);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/wsfileio", FIO_opendir);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int FIO_opendir(void) {
+    return 0;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/wsfileio", FIO_closedir);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int FIO_closedir(void) {
+    return 0;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/wsfileio", FIO_readdir);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int FIO_readdir(void) {
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/wsfileio", FIO_rename);
 

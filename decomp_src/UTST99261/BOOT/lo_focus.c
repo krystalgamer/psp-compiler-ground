@@ -1,4 +1,6 @@
 #include "common.h"
+#include "m2c_macros.h"
+
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_focus", freeAllList);
 
@@ -8,9 +10,31 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_focus", appendFocusList);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_focus", removeAllFocusList);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_focus", getFocusListHead);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int getFocusListHead(void *arg0) {
+    int var_v0;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_focus", getFocusListTail);
+    var_v0 = 0;
+    if (arg0 != NULL) {
+        var_v0 = M2C_FIELD(M2C_FIELD(arg0, void **, 0x20), int *, 0x68);
+    }
+    return var_v0;
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int getFocusListTail(void *arg0) {
+    int var_v0;
+
+    var_v0 = 0;
+    if (arg0 != NULL) {
+        var_v0 = M2C_FIELD(M2C_FIELD(arg0, void **, 0x20), int *, 0x6C);
+    }
+    return var_v0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_focus", getFocusList);
 

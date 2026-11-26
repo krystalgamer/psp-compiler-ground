@@ -1,4 +1,6 @@
 #include "common.h"
+#include "m2c_macros.h"
+
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/http_state", http_state);
 
@@ -20,21 +22,61 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/http_state", OS_thread_join);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/http_state", OS_thread_self);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/http_state", OS_thread_attr_init);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int OS_thread_attr_init(void) {
+    return 0;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/http_state", OS_thread_attr_destroy);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int OS_thread_attr_destroy(void) {
+    return 0;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/http_state", OS_thread_attr_setschedparam);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int OS_thread_attr_setschedparam(void) {
+    return 0;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/http_state", OS_thread_attr_getschedparam);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int OS_thread_attr_getschedparam(void) {
+    return 0;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/http_state", OS_thread_attr_setstacksize);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int OS_thread_attr_setstacksize(void) {
+    return 0;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/http_state", OS_thread_attr_getstacksize);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int OS_thread_attr_getstacksize(void) {
+    return 0;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/http_state", OS_thread_setschedparam);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int OS_thread_setschedparam(void) {
+    return 0;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/http_state", OS_thread_getschedparam);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int OS_thread_getschedparam(void) {
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/http_state", OS_thread_mutex_create);
 

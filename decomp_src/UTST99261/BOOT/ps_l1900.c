@@ -1,10 +1,20 @@
 #include "common.h"
+#include "m2c_macros.h"
+M2C_UNK sendMPU_RPL_DATA_ATTR();                    /* extern */
+
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/ps_l1900", sendMPU_RPL_DATA_ATTR);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/ps_l1900", ps_l1903);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/ps_l1900", ps_l190F);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+int ps_l190F(void) {
+    sendMPU_RPL_DATA_ATTR();
+    return 3;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/ps_l1900", ps_l1913);
 

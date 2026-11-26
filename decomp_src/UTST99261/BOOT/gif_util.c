@@ -1,4 +1,10 @@
 #include "common.h"
+#include "m2c_macros.h"
+M2C_UNK createJpgContext();                         /* extern */
+M2C_UNK deleteJpgContext();                         /* extern */
+M2C_UNK initializeJpgContext();                     /* extern */
+M2C_UNK setJpgBuffer();                             /* extern */
+
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gif_util", moveByte);
 
@@ -10,13 +16,37 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gif_util", getFrameNumber);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gif_util", isCompletedImage);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gif_util", IMG_jpgCreateContext);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gif_util", IMG_jpgDestroyContext);
+void IMG_jpgCreateContext(void) {
+    createJpgContext();
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gif_util", IMG_jpgFinalizeContext);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gif_util", IMG_jpgInputData);
+void IMG_jpgDestroyContext(void) {
+    deleteJpgContext();
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void IMG_jpgFinalizeContext(void) {
+    initializeJpgContext();
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void IMG_jpgInputData(void) {
+    setJpgBuffer();
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gif_util", IMG_jpgReadHeader);
 

@@ -1,4 +1,7 @@
 #include "common.h"
+#include "m2c_macros.h"
+M2C_UNK addCSSRule();                               /* extern */
+
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_input", mes_input_inner);
 
@@ -14,7 +17,12 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_input", mes_input_get);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_input", mes_input_put);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_input", mes_input_free);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+void mes_input_free(void) {
+    MEM_free(0);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_input", readCFData);
 
@@ -26,7 +34,13 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_input", newCSSCharsetRu
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_input", freeCSSCharsetRule);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_input", addCSSCharsetRule);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void addCSSCharsetRule(void) {
+    addCSSRule();
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_input", CSSCharsetRule_getType);
 
@@ -40,17 +54,44 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_input", CSSCharsetRule_
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_input", CSSCharsetRule_getEncoding);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_input", CSSCharsetRule_setEncoding);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+void CSSCharsetRule_setEncoding(void *arg0, int arg1) {
+    if ((arg0 != NULL) && (M2C_FIELD(arg0, short *, 0) == 2)) {
+        M2C_FIELD(arg0, int *, 0x24) = arg1;
+    }
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_input", CSSCharsetRule_setParentStyleSheet);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+void CSSCharsetRule_setParentStyleSheet(void *arg0, int arg1) {
+    if ((arg0 != NULL) && (M2C_FIELD(arg0, short *, 0) == 2)) {
+        M2C_FIELD(arg0, int *, 0x1C) = arg1;
+    }
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_input", CSSCharsetRule_setParentRule);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+void CSSCharsetRule_setParentRule(void *arg0, int arg1) {
+    if ((arg0 != NULL) && (M2C_FIELD(arg0, short *, 0) == 2)) {
+        M2C_FIELD(arg0, int *, 0x20) = arg1;
+    }
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_input", newCSSImportRule);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_input", freeCSSImportRule);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_input", addCSSImportRule);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void addCSSImportRule(void) {
+    addCSSRule();
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_input", CSSImportRule_getType);
 
@@ -66,13 +107,32 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_input", CSSImportRule_g
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_input", CSSImportRule_getMedia);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_input", CSSImportRule_getStyleSheet);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int CSSImportRule_getStyleSheet(void) {
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_input", CSSImportRule_getMediaType);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_input", CSSImportRule_setParentStyleSheet);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+void CSSImportRule_setParentStyleSheet(void *arg0, int arg1) {
+    if ((arg0 != NULL) && (M2C_FIELD(arg0, short *, 0) == 3)) {
+        M2C_FIELD(arg0, int *, 0x1C) = arg1;
+    }
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_input", CSSImportRule_setParentRule);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+void CSSImportRule_setParentRule(void *arg0, int arg1) {
+    if ((arg0 != NULL) && (M2C_FIELD(arg0, short *, 0) == 3)) {
+        M2C_FIELD(arg0, int *, 0x20) = arg1;
+    }
+}
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_input", htlib_cstrACCEPT);
 

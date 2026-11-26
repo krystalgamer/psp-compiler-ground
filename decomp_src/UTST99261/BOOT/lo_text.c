@@ -1,4 +1,9 @@
 #include "common.h"
+#include "m2c_macros.h"
+int make_msg_LP1();                                 /* extern */
+M2C_UNK putLLIST(M2C_UNK *, int);                   /* extern */
+extern unsigned char REQUEST_LLIST;
+
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_text", divOverText);
 
@@ -30,7 +35,13 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_text", sendJSEvent);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_text", sendJSBubbleUpEvent);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_text", proc_msg_JL1);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void proc_msg_JL1(void) {
+    putLLIST(&REQUEST_LLIST, make_msg_LP1());
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_text", proc_msg_JL2);
 

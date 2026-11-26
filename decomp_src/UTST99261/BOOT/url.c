@@ -1,4 +1,10 @@
 #include "common.h"
+#include "m2c_macros.h"
+M2C_UNK createGifContext();                         /* extern */
+M2C_UNK deleteGifContext();                         /* extern */
+M2C_UNK initializeGifContext();                     /* extern */
+M2C_UNK setGifBuffer();                             /* extern */
+
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/url", trimspace);
 
@@ -18,7 +24,14 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/url", URL_setScheme);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/url", URL_setHost);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/url", URL_setPort);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+void URL_setPort(void *arg0, int arg1) {
+    if (M2C_FIELD(arg0, int *, 8) >= 0) {
+        M2C_FIELD(arg0, int *, 8) = arg1;
+    }
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/url", URL_setPath);
 
@@ -86,7 +99,12 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/url", UTL_mfileputc);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/url", UTL_mfileputs);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/url", UTL_mfilesize);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int UTL_mfilesize(void *arg0) {
+    return M2C_FIELD(arg0, int *, 4);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/url", UTL_mfilepos);
 
@@ -96,19 +114,53 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/url", UTL_mfileduplicate);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/url", UTL_strword);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/url", directoryCheck);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int directoryCheck(void) {
+    return 1;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/url", pathMake);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/url", IMG_gifCreateContext);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/url", IMG_gifDestroyContext);
+void IMG_gifCreateContext(void) {
+    createGifContext();
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/url", IMG_gifFinalizeContext);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/url", IMG_gifInputData);
+void IMG_gifDestroyContext(void) {
+    deleteGifContext();
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/url", IMG_gifStartDecompress);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void IMG_gifFinalizeContext(void) {
+    initializeGifContext();
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void IMG_gifInputData(void) {
+    setGifBuffer();
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int IMG_gifStartDecompress(void) {
+    return 1;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/url", IMG_gifGetImageData);
 

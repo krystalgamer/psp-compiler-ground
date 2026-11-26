@@ -1,4 +1,9 @@
 #include "common.h"
+#include "m2c_macros.h"
+extern unsigned char gSnull;
+extern unsigned char gSDnull;
+extern unsigned char gSHnull;
+
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/SDomiStrAcu", ResizeAllocation);
 
@@ -16,10 +21,28 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/SDomiStrAcu", SDomiStrAcu_Inser
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/SDomiStrAcu", SDomiStrAcu_Delete);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/SDomiStrAcu", AcsExterngSnull);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/SDomiStrAcu", AcsExterngSDnull);
+M2C_UNK *AcsExterngSnull(void) {
+    return &gSnull;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/SDomiStrAcu", AcsExterngSHnull);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+M2C_UNK *AcsExterngSDnull(void) {
+    return &gSDnull;
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+M2C_UNK *AcsExterngSHnull(void) {
+    return &gSHnull;
+}
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/SDomiStrAcu", gSnull);

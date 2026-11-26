@@ -1,4 +1,18 @@
 #include "common.h"
+#include "m2c_macros.h"
+M2C_UNK addData();                                  /* extern */
+M2C_UNK freeZBuf();                                 /* extern */
+M2C_UNK rnd_gdrawGetTextlineExtents();              /* extern */
+M2C_UNK rnd_gdrawGetTextboxExtents();               /* extern */
+M2C_UNK rnd_gdrawGetCheckboxExtents();              /* extern */
+M2C_UNK rnd_gdrawGetRadiobuttonExtents();           /* extern */
+M2C_UNK rnd_gdrawGetButtonExtents();                /* extern */
+M2C_UNK rnd_gdrawGetPulldownExtents();              /* extern */
+M2C_UNK rnd_gdrawGetListExtents();                  /* extern */
+M2C_UNK GUI_Graphics_getStringSize();               /* extern */
+M2C_UNK rnd_gdrawGetStringsVisibleLength();         /* extern */
+M2C_UNK colorValue();                               /* extern */
+
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/wszlib", newZBuf);
 
@@ -32,9 +46,21 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/wszlib", do_dynamic);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/wszlib", zlib_new);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/wszlib", zlib_addData);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/wszlib", zlib_free);
+void zlib_addData(void) {
+    addData();
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void zlib_free(void) {
+    freeZBuf();
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/wszlib", zlib_inflate);
 
@@ -50,43 +76,103 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/wszlib", getTextSelectionString
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/wszlib", selectText);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/wszlib", getTextlineExtents);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/wszlib", getTextboxExtents);
+void getTextlineExtents(void) {
+    rnd_gdrawGetTextlineExtents();
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/wszlib", getCheckboxExtents);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void getTextboxExtents(void) {
+    rnd_gdrawGetTextboxExtents();
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void getCheckboxExtents(void) {
+    rnd_gdrawGetCheckboxExtents();
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/wszlib", setCheckboxState);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/wszlib", getCheckboxState);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/wszlib", getRadiobuttonExtents);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void getRadiobuttonExtents(void) {
+    rnd_gdrawGetRadiobuttonExtents();
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/wszlib", setRadiobuttonState);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/wszlib", getRadiobuttonState);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/wszlib", getButtonExtents);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/wszlib", getPulldownExtents);
+void getButtonExtents(void) {
+    rnd_gdrawGetButtonExtents();
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void getPulldownExtents(void) {
+    rnd_gdrawGetPulldownExtents();
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/wszlib", setPulldownState);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/wszlib", getPulldownState);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/wszlib", getListExtents);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void getListExtents(void) {
+    rnd_gdrawGetListExtents();
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/wszlib", setListSelect);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/wszlib", getListSelect);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/wszlib", getStringsExtents);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/wszlib", getStringsVisibleLength);
+void getStringsExtents(void) {
+    GUI_Graphics_getStringSize();
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void getStringsVisibleLength(void) {
+    rnd_gdrawGetStringsVisibleLength();
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/wszlib", colorValue);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/wszlib", esp_colorNameToValue);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void esp_colorNameToValue(void) {
+    colorValue();
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/wszlib", isSimilarColor);
 

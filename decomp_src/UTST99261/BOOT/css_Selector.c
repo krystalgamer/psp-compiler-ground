@@ -1,4 +1,6 @@
 #include "common.h"
+#include "m2c_macros.h"
+
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_Selector", _getOneSelectorText);
 
@@ -18,27 +20,67 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_Selector", CSSSelector_getC
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_Selector", CSSSelector_getClass);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_Selector", CSSSelector_getClassName);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int CSSSelector_getClassName(void *arg0) {
+    return M2C_FIELD(arg0, int *, 4);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_Selector", CSSSelector_getNextClass);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int CSSSelector_getNextClass(int *arg0) {
+    return *arg0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_Selector", CSSSelector_getId);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_Selector", CSSSelector_getIdName);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int CSSSelector_getIdName(void *arg0) {
+    return M2C_FIELD(arg0, int *, 4);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_Selector", CSSSelector_getNextId);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int CSSSelector_getNextId(int *arg0) {
+    return *arg0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_Selector", CSSSelector_getPseudo);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_Selector", CSSSelector_getPseudoName);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int CSSSelector_getPseudoName(void *arg0) {
+    return M2C_FIELD(arg0, int *, 4);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_Selector", CSSSelector_getNextPseudo);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int CSSSelector_getNextPseudo(int *arg0) {
+    return *arg0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_Selector", CSSSelector_getAttribute);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_Selector", CSSSelector_getAttributeName);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int CSSSelector_getAttributeName(void *arg0) {
+    return M2C_FIELD(arg0, int *, 4);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_Selector", CSSSelector_getNextAttribute);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int CSSSelector_getNextAttribute(int *arg0) {
+    return *arg0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_Selector", CSSSelector_getCssStyleDeclarations);
 

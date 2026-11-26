@@ -1,4 +1,8 @@
 #include "common.h"
+#include "m2c_macros.h"
+M2C_UNK RequestEnd();                               /* extern */
+extern int LAYOUT_STOP;
+
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/ps_l1C00", D_00135C80);
 
@@ -46,11 +50,32 @@ INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/ps_l1C00", D_0013770C);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/ps_l1C00", RequestEnd);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/ps_l1C00", ps_l1C03);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/ps_l1C00", ps_l1C0B);
+int ps_l1C03(void) {
+    RequestEnd();
+    return 3;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/ps_l1C00", ps_l1C0C);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+int ps_l1C0B(void) {
+    RequestEnd();
+    return 3;
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+int ps_l1C0C(void) {
+    LAYOUT_STOP = 1;
+    return 0xC;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/ps_l1C00", ps_setUpdateType);
 

@@ -1,20 +1,86 @@
 #include "common.h"
+#include "m2c_macros.h"
+extern void *esp_context;
+
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iom_preference", iom_preferenceCache);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iom_preference", iom_preferenceCookie);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iom_preference", iom_preferenceOnline);
+int iom_preferenceCookie(void) {
+    int var_v1;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iom_preference", iom_preferenceHttpVersion);
+    var_v1 = 0;
+    if ((esp_context != NULL) && (M2C_FIELD(esp_context, int *, 0x80) != 0)) {
+        var_v1 = 1;
+    }
+    return var_v1;
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+int iom_preferenceOnline(void) {
+    int var_v1;
+
+    var_v1 = 0;
+    if ((esp_context != NULL) && (M2C_FIELD(esp_context, int *, 0x9C) != 0)) {
+        var_v1 = 1;
+    }
+    return var_v1;
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+int iom_preferenceHttpVersion(void) {
+    int var_v1;
+
+    var_v1 = 0xA;
+    if (esp_context != NULL) {
+        var_v1 = 0xB;
+        if (M2C_FIELD(esp_context, int *, 0x94) == 0) {
+            var_v1 = 0xA;
+        }
+    }
+    return var_v1;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iom_preference", iom_preferenceUserAgent);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iom_preference", iom_preferenceUnitId);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+signed char *iom_preferenceUnitId(void) {
+    signed char *var_v1;
+
+    var_v1 = NULL;
+    if ((esp_context != NULL) && ((var_v1 = M2C_FIELD(esp_context, signed char **, 0xB0), (var_v1 == NULL)) || (*var_v1 == 0))) {
+        var_v1 = NULL;
+    }
+    return var_v1;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iom_preference", iom_preferenceProxy);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iom_preference", iom_preferenceDownloadStop);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+int iom_preferenceDownloadStop(void) {
+    int var_v1;
+
+    var_v1 = 0;
+    if ((esp_context != NULL) && (M2C_FIELD(esp_context, int *, 0xD8) != 0)) {
+        var_v1 = 1;
+    }
+    return var_v1;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iom_preference", iom_malloc);
 

@@ -1,8 +1,18 @@
 #include "common.h"
+#include "m2c_macros.h"
+M2C_UNK sendMPL_REQ_DATA_ATTR();                    /* extern */
+
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/ps_u0A00", sendMPL_REQ_DATA_ATTR);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/ps_u0A00", ps_u0A03);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+int ps_u0A03(void) {
+    sendMPL_REQ_DATA_ATTR();
+    return 0xF;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/ps_u0A00", ps_u0A06);
 
@@ -14,7 +24,12 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/ps_u0A00", getBuffSize);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/ps_u0A00", ps_u0E13);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/ps_u0A00", ps_u3103);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int ps_u3103(void) {
+    return 3;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/ps_u0A00", ps_u3216);
 
