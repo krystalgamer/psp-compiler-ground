@@ -2,6 +2,12 @@
 #include "common.h"
 #include "lo_box.h"
 #include "m2c_macros.h"
+BOX *getBoxByHTML(BOX *box, int html);
+BOX *createBlockBox(void *ctx, BOX *parent, BOX *prev);
+void *Node_getOwnerDocument(void *node);
+BOX *Node_getBox(void *node);
+void addMapList(BOX *box, char *name);
+extern unsigned char _DOMname;
 int html_IMG_inner(void *node, BOX *box);
 BOX *getBodyBox(BOX *box);
 void addBoxList(void *list, BOX *box);
@@ -17,7 +23,6 @@ M2C_UNK MEM_free(M2C_UNK, int);                     /* extern */
 int getRawTextFromDomTree(int);                     /* extern */
 int getSessionSaveData(int);                        /* extern */
 
-M2C_UNK html_OPTION_sub();                          /* extern */
 M2C_UNK processArea();                              /* extern */
 
 
@@ -37,7 +42,22 @@ int getTabindex(void *node) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_html_form", createFileRefButton);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_html_form", html_OPTION_sub);
+BOX *html_OPTION_sub(void *node, BOX *parent, BOX *prev) {
+    BOX *box;
+    if (getBoxByHTML(parent, 0x4D) == NULL) {
+        return NULL;
+    }
+    box = createBox(node, 1);
+    if (box == NULL) {
+        return NULL;
+    }
+    linkBox(box, parent, prev);
+    box->display = 1;
+    box->html = 0x45;
+    initNoneContent(box, node);
+    initBoxProperty(box);
+    return box;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_html_form", getLegendTextWidth);
 
@@ -53,8 +73,8 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_html_form", html_SELECT_afte
 #define NULL ((void *)0)
 #endif
 
-void html_OPTION(void) {
-    html_OPTION_sub();
+BOX *html_OPTION(void *node, BOX *parent, BOX *prev) {
+    return html_OPTION_sub(node, parent, prev);
 }
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_html_form", html_OPTION_after);
@@ -84,9 +104,48 @@ void html_TEXTAREA_after(int arg0, void *arg1) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_html_form", html_BUTTON);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_html_form", html_FIELDSET);
+BOX *html_FIELDSET(void *node, BOX *parent, BOX *prev) {
+    BOX *box;
+    if (getBoxByHTML(parent, 0x11) != NULL) {
+        return NULL;
+    }
+    box = createBlockBox(node, parent, prev);
+    if (box == NULL) {
+        return NULL;
+    }
+    box->html = 0x21;
+    initBoxProperty(box);
+    box->style->unk30 = 2;
+    box->style->unk32 = 2;
+    box->style->unk34 = 2;
+    box->style->unk36 = 2;
+    box->style->unk48 = 3;
+    box->style->unk4A = 3;
+    box->style->unk4C = 3;
+    box->style->unk4E = 3;
+    applyCSSExtStyleSheetToBox(node, box);
+    applyCSSInlinePropertyToBox(node, box);
+    return box;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_html_form", html_LABEL);
+BOX *html_LABEL(void *node, BOX *parent, BOX *prev) {
+    BOX *box;
+    if (getBoxByHTML(parent, 0x11) != NULL) {
+        return NULL;
+    }
+    box = createBox(node, 1);
+    if (box == NULL) {
+        return NULL;
+    }
+    linkBox(box, parent, prev);
+    box->display = 1;
+    box->html = 0x36;
+    initNoneContent(box, node);
+    initBoxProperty(box);
+    applyCSSExtStyleSheetToBox(node, box);
+    applyCSSInlinePropertyToBox(node, box);
+    return box;
+}
 
 BOX *html_LEGEND(void *node, BOX *parent, BOX *prev) {
     BOX *box = createBox(node, 1);
@@ -143,4 +202,23 @@ int html_AREA(void) {
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_html_form", html_MAP);
+BOX *html_MAP(void *node, BOX *parent, BOX *prev) {
+    BOX *box = createBox(node, 1);
+    char *name;
+    if (box == NULL) {
+        return NULL;
+    }
+    linkBox(box, parent, prev);
+    box->display = 1;
+    box->html = 0x3B;
+    initNoneContent(box, node);
+    initBoxProperty(box);
+    name = getDOMAttributeValue(node, &_DOMname);
+    if (name != NULL) {
+        addMapList(Node_getBox(Node_getOwnerDocument(node)), name);
+        MEM_free(0, name);
+    }
+    applyCSSExtStyleSheetToBox(node, box);
+    applyCSSInlinePropertyToBox(node, box);
+    return box;
+}
