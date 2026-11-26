@@ -120,7 +120,20 @@ int soundbuf_getPts(t_soundBuffer *pSound, unsigned int *pPts) {
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/mpeg_mpegstr_pcm/nonmatchings/sound", soundbuf_setBuf);
+SceInt32 soundbuf_setBuf(t_soundBuffer *pSound)
+{
+	pSound->write2 = (pSound->write2 + 1) % 4;
+
+	if (pSound->write2 == 0) {
+		sceKernelWaitSema(pSound->lock_sema, 1, NULL);
+		pSound->count++;
+		sceKernelSignalSema(pSound->lock_sema, 1);
+
+		pSound->write = (pSound->write + 1) % pSound->size;
+	}
+
+	return 0;
+}
 
 int soundbuf_getCapacity(t_soundBuffer *pSound) {
     return pSound->size - pSound->count;
