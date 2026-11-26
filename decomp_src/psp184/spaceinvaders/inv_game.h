@@ -35,4 +35,12 @@ typedef struct {
 } SAVE_DATA;
 extern SAVE_DATA save_data;
 
+/* display effects (cap/blur/flash/fade/quake) at gmain + 0x1463C8 */
+typedef struct {
+	int f0, f4, f8, fc, f10, f14, f18, f1c, f20, f24, f28, f2c, f30, f34, f38, f3c;
+	int f40, f44, f48, f4c, f50, f54, f58, f5c, f60, f64, f68, f6c, f70, f74, f78, f7c;
+} DISPEFF;
+extern int D_005FB3B0;
+#define DE (*(DISPEFF *)&D_005FB3B0)
+
 #endif

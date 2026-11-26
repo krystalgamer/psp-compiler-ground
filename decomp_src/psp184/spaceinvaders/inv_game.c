@@ -898,7 +898,11 @@ void df_cap_control(void)
 		(*(int *)(b_D_005FB3B0 + 0x5C))++;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", df_cap_disp);
+M2C_UNK df_cap_disp(void)
+{
+	if (DE.f5c < DE.f60)
+		sprite_set(DE.f0, 0, 0, 0xF0, 0x88, 0, 0, 200, 200, 0, 0, DE.f48, DE.f4c, DE.f50, DE.f54, 1000, 2, DE.f58, (DE.f60 - DE.f5c) * 255 / DE.f60);
+}
 
 void df_flash_start(int a, int b, int c, int d, int e, int t)
 {
@@ -919,7 +923,11 @@ void df_flash_control(void)
 		(*(int *)(b_D_005FB3B0 + 0x78))++;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", df_flash_disp);
+M2C_UNK df_flash_disp(void)
+{
+	if (DE.f78 < DE.f7c)
+		poly_set(0, 0, 480, 272, 0, DE.f64, DE.f68, DE.f6c, DE.f70, DE.f64, DE.f68, DE.f6c, DE.f70, DE.f64, DE.f68, DE.f6c, DE.f70, DE.f64, DE.f68, DE.f6c, DE.f70, 1001, 2, DE.f74, (DE.f7c - DE.f78) * 255 / DE.f7c);
+}
 
 void df_fade_start(int a, int b, int c, int d, int t)
 {
