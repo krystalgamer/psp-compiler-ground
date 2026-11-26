@@ -203,13 +203,33 @@ void sceGumSetMatrixStack(void *stack, int proj, int view, int model, int textur
 int sceKernelLoadExec(const char *file, SceKernelLoadExecParam *param);
 char *strcat(char *d, const char *s);
 
-INCLUDE_ASM("tmp/asm/UTST99332/menu/nonmatchings/main", GetItem);
+int GetItem(int cat, int num)
+{
+	int i, n;
+
+	n = 0;
+	for (i = 0; i < cat; i++)
+		n += catlist[i];
+	n += num;
+	return n;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/menu/nonmatchings/main", PrxExec);
 
-INCLUDE_ASM("tmp/asm/UTST99332/menu/nonmatchings/main", InitSE);
+static void InitSE(void)
+{
+	int i;
 
-INCLUDE_ASM("tmp/asm/UTST99332/menu/nonmatchings/main", PlaySE);
+	sceWaveInit();
+	for (i = 0; i < 4; i++)
+		sceWaveSetVoice(i, se[i].p + 0x30, se[i].size - 0x30, 0);
+	sceWaveStart(16);
+}
+
+void PlaySE(int num)
+{
+	sceWavePlay(num, 127, 127);
+}
 
 INCLUDE_RODATA("tmp/asm/UTST99332/menu/nonmatchings/main", D_00016F80);
 
