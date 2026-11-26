@@ -22,7 +22,6 @@ M2C_UNK HST_attachHistory();                        /* extern */
 int GUI_RadioButton_getState(int);                  /* extern */
 void *Node_getBox();                                /* extern */
 extern void *gPREF_UI;
-void *duplicateDOMString(int);                      /* extern */
 extern void *gNDA_NAME_JS_GLOBAL;
 M2C_UNK js_delTimerID(int, M2C_UNK, M2C_UNK);       /* extern */
 int OS_thread_self();                               /* extern */
@@ -32,7 +31,6 @@ M2C_UNK esp_postMsgDataAttr(int, M2C_UNK, int, int); /* extern */
 int MEM_addHaltCallback(M2C_UNK, int);              /* extern */
 
 extern int attached;
-M2C_UNK newDOMString_4B5FC();                       /* extern */
 M2C_UNK esp_getMemoNum();                           /* extern */
 M2C_UNK esp_loadMemoList();                         /* extern */
 M2C_UNK HST_getHistoryLength();                     /* extern */
@@ -40,9 +38,48 @@ M2C_UNK HST_getCurrentIndex();                      /* extern */
 M2C_UNK esp_setDialogReply();                       /* extern */
 
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", newDOMString_4B5FC);
+DOMStr *newDOMString_4B5FC(const char *utf8, int len) {
+    DOMStr *s = MEM_malloc(0, sizeof(DOMStr));
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", duplicateDOMString);
+    if (s == NULL) {
+        return NULL;
+    }
+    if (len > 0) {
+        s->str = MEM_malloc(0, len * 2 + 2);
+        if (s->str == NULL) {
+            MEM_free(0, s);
+            return NULL;
+        }
+        s->size = s->len = utf8ToUcs2(s->str, utf8, len);
+    } else {
+        s->size = 0;
+        s->len = 0;
+        s->str = NULL;
+    }
+    return s;
+}
+
+DOMStr *duplicateDOMString(DOMStr *src) {
+    DOMStr *d = MEM_malloc(0, sizeof(DOMStr));
+
+    if (d == NULL) {
+        return NULL;
+    }
+    d->size = 0;
+    d->len = 0;
+    d->str = NULL;
+    if (src->len != 0) {
+        d->str = MEM_malloc(0, src->len * 2);
+        if (d->str == NULL) {
+            MEM_free(0, d);
+            return NULL;
+        }
+        memcpy(d->str, src->str, src->len * 2);
+        d->size = src->len;
+        d->len = src->len;
+    }
+    return d;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -62,13 +99,49 @@ void JSI_free(void) {
     attached = 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSI_getElementPosition);
+int JSI_getElementPosition(void *node, int *x, int *y) {
+    LayoutBox *box;
+
+    if (!attached) {
+        JSI_init();
+    }
+    if (node == NULL || (box = Node_getBox(node)) == NULL) {
+        return 0;
+    }
+    if (x != NULL) {
+        *x = box->x;
+    }
+    if (y != NULL) {
+        *y = box->y;
+    }
+    return 1;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSI_setButtonValue);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSI_getCheckboxState);
+int JSI_getCheckboxState(void *node) {
+    LayoutBox *box;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSI_setCheckboxState);
+    if (node == NULL || (box = Node_getBox(node)) == NULL || box->type != 14 || box->widget == NULL) {
+        return -1;
+    }
+    return GUI_Checkbox_getState(box->widget) == 1;
+}
+
+int JSI_setCheckboxState(void *node, int state) {
+    LayoutBox *box;
+    int on;
+
+    if (node == NULL || (box = Node_getBox(node)) == NULL || box->type != 14 || box->widget == NULL) {
+        return 0;
+    }
+    on = state != 0;
+    GUI_Checkbox_setState(box->widget, on);
+    OS_thread_mutex_lock(*(void **)(gESPRIT_LO_GLOBAL_NDA + 0x3C));
+    ((int *)box->data)[2] = on;
+    OS_thread_mutex_unlock(*(void **)(gESPRIT_LO_GLOBAL_NDA + 0x3C));
+    return 1;
+}
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", D_00133A2C);
 
@@ -92,7 +165,14 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSI_getDocumentSize);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSI_getFileUploadValue);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSI_getImageComplete);
+int JSI_getImageComplete(void *node) {
+    LayoutBox *box;
+
+    if (node == NULL || (box = Node_getBox(node)) == NULL) {
+        return 0;
+    }
+    return *(int *)box->data != 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSI_getLinkURL);
 
@@ -133,7 +213,23 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSI_setTextValue);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSI_getWindowRec);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSI_getWindowName);
+DOMStr *JSI_getWindowName(void *doc) {
+    void *h;
+    char *name;
+
+    if (doc == NULL) {
+        return NULL;
+    }
+    h = HST_searchDocumentHistoryNode(doc);
+    if (h == NULL) {
+        return NULL;
+    }
+    name = HST_getTargetName(h);
+    if (name == NULL) {
+        return NULL;
+    }
+    return newDOMString_4B5FC(name, strlen(name));
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSI_setWindowName);
 
@@ -229,8 +325,8 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSI_setURLSearch);
 #define NULL ((void *)0)
 #endif
 
-void JSI_newDOMString(void) {
-    newDOMString_4B5FC();
+DOMStr *JSI_newDOMString(const char *utf8, int len) {
+    return newDOMString_4B5FC(utf8, len);
 }
 
 int JSSendMail(JSMsgBody *b, const char *qname) {

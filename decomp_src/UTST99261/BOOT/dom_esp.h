@@ -67,6 +67,28 @@ typedef struct EspDevEvent {
     int x10;
 } EspDevEvent;
 
+/* DOMString as allocated by the JS interface */
+typedef struct DOMStr {
+    int size;
+    int len;
+    unsigned short *str;
+} DOMStr;
+
+typedef struct LayoutBox {
+    char x00[0x10];
+    int x;                            /* 0x10 */
+    int y;                            /* 0x14 */
+    int x18;
+    int x1C;
+    void *data;                       /* 0x20 */
+    int x24;
+    int x28;
+    void *widget;                     /* 0x2C */
+    int x30;
+    int x34;
+    short type;                       /* 0x38 */
+} LayoutBox;
+
 extern JSTimer *g_JS_TIMER_;
 extern JSPtr **g_JSPTRLIST_;
 
