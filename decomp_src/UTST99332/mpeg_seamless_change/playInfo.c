@@ -209,7 +209,23 @@ int playInfo_getPts(t_playInfo *pPlayInfo, unsigned int *pTimestamp) {
 
 INCLUDE_ASM("tmp/asm/UTST99332/mpeg_seamless_change/nonmatchings/playInfo", playInfo_changeVideoStream);
 
-INCLUDE_ASM("tmp/asm/UTST99332/mpeg_seamless_change/nonmatchings/playInfo", playInfo_audioDecode);
+SceInt32 playInfo_audioDecode(t_playInfo *pPlayInfo, t_avSyncControl *pAvSync, SceInt32 audio_init_flag)
+{
+	SceInt32 ret;
+
+	ret = decode_getAudioAu(&pPlayInfo->streamData, pAvSync);
+	if (ret != 0) {
+		if (ret != 1) {
+			printf("fatal error : decode_getAudioAu() 0x%x\n", ret);
+		}
+		goto term;
+	}
+
+	ret = decode_audioDecode(&pPlayInfo->streamData, pAvSync, audio_init_flag);
+
+term:
+	return ret;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/mpeg_seamless_change/nonmatchings/playInfo", playInfo_videoDecode);
 
