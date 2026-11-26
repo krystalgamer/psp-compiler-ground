@@ -33,8 +33,16 @@ typedef struct PsLocation {
 } PsLocation;
 
 typedef struct PsDomBuild {
-    int x[14];
+    int x[16];
 } PsDomBuild;
+
+typedef struct PsDomResult {
+    int type;
+    int len;
+    void *data;
+    int x0C;
+    int x10;
+} PsDomResult;
 
 typedef struct PsMqMsg {
     int x[4];

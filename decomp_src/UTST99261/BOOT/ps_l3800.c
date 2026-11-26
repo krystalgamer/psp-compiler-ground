@@ -2,6 +2,16 @@
 #include "common.h"
 #include "parse_ps.h"
 #include "m2c_macros.h"
+extern char D_001378D0[];
+extern char D_001378F0[];
+extern char D_00137910[];
+extern char D_00137934[];
+extern char D_0013798C[];
+extern int DOCUMENT_WRITE;
+extern int LAYOUT_STOP;
+extern int buf_Loding_Stop_FLG;
+extern int SaveUnitId;
+extern int RECIEVE_MSG;
 extern char D_00137AD8[];
 extern char D_00137B00[];
 extern char D_001379AC[];
@@ -119,7 +129,89 @@ int ps_l3903(PsIpc *msg) {
     return 3;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/ps_l3800", ps_l3912);
+int ps_l3912(PsIpc *msg) {
+    PsIpc m;
+    PsIpc lp;
+    PsDomBuild b;
+    PsDomResult dflt;
+    PsDomResult *r;
+    int *node;
+    int *buf;
+
+    node = HST_searchSessionIDHistoryNode(msg->x04);
+    if (node == NULL) {
+        ps_halt(D_001378D0);
+    }
+    DOCUMENT_WRITE = 1;
+    b.x[0] = node[1];
+    b.x[1] = node[0];
+    b.x[2] = node[5];
+    b.x[3] = node[4];
+    b.x[4] = node[7];
+    b.x[5] = node[6];
+    b.x[6] = msg->x18;
+    b.x[7] = msg->x1C;
+    b.x[9] = msg->x04;
+    b.x[11] = 1;
+    b.x[12] = 6;
+    b.x[13] = Accession;
+    b.x[14] = 0;
+    r = parseDomBuild(&b);
+    if (r == NULL) {
+        dflt.type = 0;
+        dflt.len = 0;
+        dflt.data = NULL;
+        dflt.x0C = 0;
+        dflt.x10 = 0;
+        r = &dflt;
+    }
+    initMPL_REQ_LOAD_PAGE(&lp);
+    lp.x04 = msg->x04;
+    lp.x10 = 2;
+    ps_sndmsg(&lp, 4);
+    switch (r->type) {
+    case 1:
+        buf = MEM_malloc(0, r->len * 2 + 0xC);
+        if (buf == NULL) {
+            ps_halt(D_00137910);
+        }
+        buf[1] = r->len;
+        buf[2] = (int)(buf + 3);
+        memcpy(buf + 3, r->data, r->len * 2);
+        buf[0] = node[26];
+        MEM_free(0, r->data);
+        m.type = 2;
+        m.x04 = msg->x04;
+        m.x08 = 1;
+        m.cmd = 0x30B;
+        m.x10 = 0;
+        m.x14 = 0;
+        m.x18 = r->len * 2 + 0xC;
+        m.x1C = (int)buf;
+        ps_sndmsg(&m, 4);
+        break;
+    case 0:
+        break;
+    case 2:
+        if (HST_getJSURI(node, HST_getJSURIlen(node)) == NULL) {
+            ps_halt(D_00137934);
+        }
+        break;
+    case 3:
+        if (HST_getCSSURI(node, HST_getCSSURIlen(node)) == NULL) {
+            ps_halt(D_00137934);
+        }
+        break;
+    default:
+        ps_halt(D_001378F0);
+        break;
+    }
+    if (r != NULL && r != &dflt) {
+        MEM_free(0, r);
+    }
+    MEM_free(0, msg->x1C);
+    return buf_ps_sts;
+}
 
 int ps_i2002(PsIpc *msg) {
     PsIpc m;
@@ -336,7 +428,79 @@ int ps_i2215(PsIpc *msg) {
     return 3;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/ps_l3800", ps_i2219);
+int ps_i2219(PsIpc *msg) {
+    PsDomBuild b;
+    PsIpc lp;
+    int *node;
+    void *r;
+
+    b.x[0] = ((int *)SaveURI)[0];
+    b.x[1] = ((int *)SaveURI)[1];
+    b.x[2] = ((int *)SaveREF)[0];
+    b.x[3] = ((int *)SaveREF)[1];
+    b.x[4] = 0;
+    b.x[5] = 0;
+    b.x[6] = 0;
+    b.x[7] = 0;
+    b.x[8] = 0;
+    b.x[9] = ps_sessionGen();
+    b.x[11] = 0;
+    b.x[12] = 4;
+    b.x[13] = Accession;
+    b.x[15] = 0;
+    r = parseDomBuild(&b);
+    node = HST_searchSessionIDHistoryNode(b.x[9]);
+    if (node == NULL) {
+        ps_halt(D_0013798C);
+    }
+    HST_setUnitId(node, SaveUnitId);
+    b.x[0] = node[1];
+    b.x[1] = node[0];
+    b.x[2] = node[5];
+    b.x[3] = node[4];
+    b.x[4] = node[7];
+    b.x[5] = node[6];
+    b.x[6] = msg->x18;
+    b.x[7] = msg->x1C;
+    b.x[11] = 3;
+    b.x[12] = 0;
+    b.x[13] = Accession;
+    node[15] = 4;
+    if (r != NULL) {
+        MEM_free(0, r);
+    }
+    r = parseDomBuild(&b);
+    initMPL_REQ_LOAD_PAGE(&lp);
+    lp.x04 = b.x[9];
+    ps_sndmsg(&lp, 4);
+    initMPL_REQ_LOAD_PAGE(&lp);
+    lp.x04 = b.x[9];
+    lp.x10 = 1;
+    ps_sndmsg(&lp, 4);
+    if (msg->x18 != 0) {
+        MEM_free(0, msg->x1C);
+    }
+    if (SaveURI != 0) {
+        MEM_free(0, SaveURI);
+    }
+    if (SaveREF != 0) {
+        MEM_free(0, SaveREF);
+    }
+    if (SaveTRAGETURI != 0) {
+        MEM_free(0, SaveTRAGETURI);
+    }
+    if (r != NULL) {
+        MEM_free(0, r);
+    }
+    if (RECIEVE_MSG != 0) {
+        MEM_free(0, RECIEVE_MSG);
+        RECIEVE_MSG = 0;
+    }
+    SaveURI = 0;
+    SaveREF = 0;
+    SaveTRAGETURI = 0;
+    return 7;
+}
 
 int ps_i221A(PsIpc *msg) {
     struct {
