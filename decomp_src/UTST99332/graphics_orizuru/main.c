@@ -148,7 +148,18 @@ void tick_per_orizuru(int i) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_orizuru/nonmatchings/main", tick);
+static void tick(void)
+{
+	int i;
+
+	for (i = 0; i < 128; i++) {
+		if (orizuru[i].speed == 0.0f) {
+			break;
+		}
+
+		tick_per_orizuru(i);
+	}
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_orizuru/nonmatchings/main", add_orizuru);
 
