@@ -450,4 +450,90 @@ static int pad_read(void)
 	return 1;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/sound_starmix/nonmatchings/main", main);
+SceInt32 init_atrac3plus(SceUChar8 *filename, SceUChar8 *pucReadBuf, SceInt32 iInputBufferSize, SceInt32 iOutputChannel, SceAtracArg *pPlayArg);
+SceInt32 play_atrac3plus(SceSize args, ScePVoid argp);
+void finish_atrac3plus(SceAtracArg *pPlayArg);
+int main(void)
+{
+	SceUID thread_id00, thread_id01;
+	SceInt32 status;
+	SceInt32 thread_status;
+	SceAtracArg atracArg;
+
+	status = 0;
+	menuInit();
+	if (starmix_loadModule() < 0)
+		return -1;
+	if (sound_init_all() < 0)
+		goto unload;
+	status = init_atrac3plus((SceUChar8 *)"disc0:/PSP_GAME/USRDIR/DATA/sound/wave/overload_loop.at3", aucReadBuf, 0x400000, 1, &atracArg);
+	if (status < 0) {
+		printf("init_atrac3plus error: 0x%08x\n", status);
+		goto soundend_and_unload;
+	}
+	thread_on = 1;
+	thread_id00 = sceKernelCreateThread("thread00", sound_idle, 0x10, 0x10000, 0, NULL);
+	if (thread_id00 < 0) {
+		status = thread_id00;
+		printf("sceKernelCreateThread:0x%08X\n", status);
+		goto soundend_and_unload;
+	}
+	thread_status = sceKernelStartThread(thread_id00, 0, 0);
+	if (thread_status != 0) {
+		status = thread_status;
+		printf("sceKernelStartThread:0x%08X\n", status);
+		goto soundend_and_unload;
+	}
+	thread_id01 = sceKernelCreateThread("thread01", play_atrac3plus, 0x11, 0x10000, 0, NULL);
+	if (thread_id01 < 0) {
+		status = thread_id01;
+		printf("sceKernelCreateThread:0x%08X\n", status);
+		thread_on = 0;
+		goto wait_sasthread;
+	}
+	thread_status = sceKernelStartThread(thread_id01, sizeof(SceAtracArg), &atracArg);
+	if (thread_status != 0) {
+		status = thread_status;
+		printf("sceKernelStartThread:0x%08X\n", status);
+		thread_on = 0;
+		goto wait_sasthread;
+	}
+	init_all();
+	init_pos();
+	while (pad_read()) {
+		draw_frame();
+		sceDisplayWaitVblankStart();
+		sceGuSwapBuffers();
+	}
+	sceGuTerm();
+	thread_on = 0;
+	finish_atrac3plus(&atracArg);
+	thread_status = sceKernelWaitThreadEnd(thread_id01, NULL);
+	if (thread_status != 0) {
+		status = thread_status;
+		printf("sceKernelWaitThread: 0x%08X\n", thread_status);
+	}
+	thread_status = sceKernelDeleteThread(thread_id01);
+	if (thread_status != 0) {
+		status = thread_status;
+		printf("sceKernelDeleteThread: 0x%08X\n", thread_status);
+	}
+wait_sasthread:
+	thread_status = sceKernelWaitThreadEnd(thread_id00, NULL);
+	if (thread_status != 0) {
+		status = thread_status;
+		printf("sceKernelWaitThread: 0x%08X\n", thread_status);
+	}
+	thread_status = sceKernelDeleteThread(thread_id00);
+	if (thread_status != 0) {
+		status = thread_status;
+		printf("sceKernelDeleteThread: 0x%08X\n", status);
+	}
+soundend_and_unload:
+	sound_end();
+unload:
+	if (starmix_unloadModule() < 0)
+		return -1;
+	menuTerm(4, 5);
+	return status;
+}
