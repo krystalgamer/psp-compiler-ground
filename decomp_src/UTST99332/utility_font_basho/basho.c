@@ -1,4 +1,5 @@
 /* cflags: -O0 */
+/* locfix */
 #include "common.h"
 
 /* declarations recovered from DWARF */
@@ -226,7 +227,56 @@ int sceIoOpen(const char *name, int flag, int mode);
 int sceIoRead(int fd, void *buf, unsigned int nbyte);
 int sceKernelDcacheWritebackAll(void);
 
-INCLUDE_ASM("tmp/asm/UTST99332/utility_font_basho/nonmatchings/basho", init_basho_text_texture);
+int sceKernelDcacheWritebackAll(void);
+
+int init_basho_text_texture(void)
+{
+	SceFont_t_libId libID;
+	int i;
+	int numFont;
+	SceFont_t_fontStyleInfo *pFontStyleInfoList;
+
+	libID = myInitFontLibrary();
+
+	numFont = myGetNumFontList(libID);
+	if (numFont == 0) {
+		printf("Error: There is no font-information in this tool.\n");
+		printf("Error: You have to do initializing of the flash memory.\n");
+		return -1;
+	}
+
+	pFontStyleInfoList = (SceFont_t_fontStyleInfo *)malloc(sizeof(SceFont_t_fontStyleInfo) * numFont);
+	myGetFontStyleInfoList(libID, pFontStyleInfoList, numFont);
+	free(pFontStyleInfoList);
+
+	pTextureImageTable = (unsigned int **)malloc(sizeof(unsigned int *) * numFont);
+	if (pTextureImageTable == NULL) {
+		printf("Error: can not alloc memory\n");
+		return -1;
+	}
+	numTexture = numFont;
+
+	{
+		int imageBufferSize = 0x10000;
+
+		for (i = 0; i < numTexture; i++) {
+			pTextureImageTable[i] = (unsigned int *)memalign(16, imageBufferSize);
+			if (pTextureImageTable[i] == NULL) {
+				printf("Error: can not alloc memory\n");
+				return -1;
+			}
+			memset(pTextureImageTable[i], 0, imageBufferSize);
+		}
+	}
+
+	myMakeTextTexture(libID, pTextureImageTable);
+
+	sceKernelDcacheWritebackAll();
+
+	myDoneFontLibrary(libID);
+
+	return 0;
+}
 
 int init_basho_pos_and_scale(void)
 {
