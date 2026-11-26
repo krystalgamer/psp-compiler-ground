@@ -251,6 +251,11 @@ typedef struct SceMpegAu {
 	int iEsSize;
 } SceMpegAu;
 
+/* the four timestamp words of SceMpegAu, copied as one struct */
+typedef struct {
+	unsigned int a, b, c, d;
+} AuTs;
+
 typedef struct MpegStream {
 	unsigned int id;
 	unsigned int mask;
