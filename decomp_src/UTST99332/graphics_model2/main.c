@@ -258,7 +258,38 @@ void unload_objects(void) {
 }
 /* Warning: struct SceGmoModel is not defined (only forward-declared) */
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_model2/nonmatchings/main", load_file);
+extern const char D_0001E69C[]; /* "host0:%s" (rodata emitted elsewhere) */
+int sprintf(char *buf, const char *fmt, ...);
+int sceIoOpen(const char *file, int flags, int mode);
+long long sceIoLseek(int fd, long long offset, int whence);
+int sceIoRead(int fd, void *data, unsigned int size);
+int sceIoClose(int fd);
+void *malloc(unsigned int size);
+
+static _Bool load_file(const char *filename, int **buf, int *size)
+{
+	char fullpath[256];
+
+	sprintf(fullpath, D_0001E69C, filename);
+
+	SceUID fd = sceIoOpen(fullpath, 1, 0777);
+	if (fd < 0) {
+		return 0;
+	}
+
+	*size = sceIoLseek(fd, 0, 2);
+	if (*size <= 0) {
+		sceIoClose(fd);
+		return 0;
+	}
+
+	sceIoLseek(fd, 0, 0);
+	*buf = malloc(*size);
+	sceIoRead(fd, *buf, *size);
+	sceIoClose(fd);
+
+	return 1;
+}
 
 void *sceGuGetMemory(int size);
 void sceGuDrawArray(int prim, int vtype, int count, const void *indices, const void *vertices);
