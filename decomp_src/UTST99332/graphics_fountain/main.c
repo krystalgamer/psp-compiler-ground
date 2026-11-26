@@ -132,7 +132,22 @@ void sceGumTranslate(const ScePspFVector3 *v);
 void sceGumDrawArray(int prim, int vtype, int count, const void *indices, const void *vertices);
 
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_fountain/nonmatchings/main", set_divide);
+static void set_divide(int pt)
+{
+	int d;
+
+	if (pt < 30) {
+		d = 3;
+	} else if (pt < 60) {
+		d = 4;
+	} else if (pt < 90) {
+		d = 6;
+	} else {
+		d = 8;
+	}
+
+	sceGuPatchDivide(d, d);
+}
 
 INCLUDE_RODATA("tmp/asm/UTST99332/graphics_fountain/nonmatchings/main", orifice);
 
