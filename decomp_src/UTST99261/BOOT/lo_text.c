@@ -98,6 +98,7 @@ typedef struct {
         int w;
         u8 b;
         u8 c[4];
+        s8 sc[4];
     } unk10;
 } TTEXT;
 typedef struct {
@@ -363,6 +364,10 @@ fail:
     return nb;
 }
 
+void delLinkBox();
+void delBoxList();
+int getCurrentLineCB();
+
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_text", integrateTextBox);
 
 void lo_initTimer(void) {
@@ -584,7 +589,50 @@ void proc_msg_JL4(JMSG *m) {
     MEM_free(0, m->data);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_text", proc_msg_JL5);
+typedef struct {
+    int unk0;
+    int unk4;
+    int len;                    /* 0x8 */
+    u16 str[1];                 /* 0xC */
+} JLINK;
+int ucs2ToUtf8();
+int strncasecmp();
+char *lo_fullUrl();
+void actLinkJumpInner();
+int make_msg_LP8();
+
+void proc_msg_JL5(JMSG *m) {
+    THIST *h;
+    JLINK *d;
+    char *url;
+
+    h = HST_searchSessionIDHistoryNode(m->session);
+    if (h == NULL || h->body == NULL || checkBoxValidity(h->body) == 0) {
+        MEM_free(0, m->data);
+        return;
+    }
+    if (m->unk10 == 0) {
+        d = m->data;
+        url = MEM_malloc(0, d->len * 3 + 1);
+        url[ucs2ToUtf8(url, d->str, d->len)] = 0;
+        if (strncasecmp(url, "mailto:", 7) != 0) {
+            if (*(int *)&m->unk14[0] != 0) {
+                h = HST_searchSessionIDHistoryNode(*(int *)&m->unk14[0]);
+            }
+            url = lo_fullUrl(h->body, url);
+            if (url == NULL) {
+                return;
+            }
+        }
+        actLinkJumpInner(m, HST_searchSessionIDHistoryNode(m->session), url, 0, 0, 0, d->unk0, d->unk4, 0);
+        MEM_free(0, url);
+    } else {
+        putLLIST(&REQUEST_LLIST, make_msg_LP8(m, NULL, NULL, NULL, 0, 0, 0));
+    }
+    if (m->data != NULL) {
+        MEM_free(0, m->data);
+    }
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
