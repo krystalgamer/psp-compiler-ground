@@ -393,9 +393,9 @@ extern L_Mod_Player tmp_mod_player;
 extern LevelManager levelManager;
 extern char enemy_name[6][3][12];
 extern AiManager aiManager;
-extern ModSystem mod_system;
-extern ModPlayer mod_player;
-extern ModGame mod_game;
+extern ModSystem mod_system __asm__("PRX_ZERO");
+extern ModPlayer mod_player __asm__("_init");
+extern ModGame mod_game __asm__("PRX_ZERO");
 extern int _gp[];
 extern const int __begin_of_section_lib_ent[1];
 extern const int __end_of_section_lib_ent[1];
@@ -433,6 +433,12 @@ int sceUtilitySavedataShutdownStart(void);
 int modSaveResult(void);
 int modSaveResultAborted(void);
 extern int D_0005AE44;
+extern char D_00032190[];
+extern char D_0003219C[];
+void pae_init(void);
+void srand(unsigned int seed);
+long time(long *t);
+char *strncpy(char *dst, const char *src, unsigned int n);
 
 /* SDK functions (tools/sdk_protos.h) */
 void sceKernelExitGame(void);
@@ -482,7 +488,53 @@ INCLUDE_RODATA("tmp/asm/flowars/flowars/nonmatchings/main", D_00030810);
 
 INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/main", draw_frame);
 
-INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/main", init_all);
+void init_all(void)
+{
+	g_round_count = 0;
+	g_game_count++;
+	g_gukjin_checked = 0;
+	pae_init();
+	handManager.init();
+	collectManager.init();
+	deckManager.init();
+	userManager.init();
+	inputManager.init();
+	animator.init();
+	gameManager.init();
+	missionManager.init();
+	aiManager.init();
+	if (g_win_player != -1)
+		g_nagari_count = 0;
+	g_wait_func = 0;
+	srand(time(0));
+	all_in_player = 0;
+	if (mod_game.game_type == 1) {
+		if (l_mod_player.hidden_game_rest > 0) {
+			if (!g_hidden_skin_on) {
+				if (l_mod_player.hidden_character == 1) {
+					skinManager.change_skin(5, 0);
+					strncpy(g_char_name[1], D_00032190, 12);
+					mod_player.hidden1_activated[mod_player.active_player] = 1;
+				} else if (l_mod_player.hidden_character == 2) {
+					skinManager.change_skin(5, 1);
+					strncpy(g_char_name[1], D_0003219C, 12);
+					mod_player.hidden2_activated[mod_player.active_player] = 1;
+				}
+				g_hidden_skin_on = 1;
+			}
+			l_mod_player.hidden_game_rest--;
+		} else if (g_hidden_skin_on == 1) {
+			int op;
+			int oc;
+
+			op = g_opp_party[0];
+			oc = g_opp_char[0];
+			skinManager.change_skin(op, oc);
+			strncpy(g_char_name[1], enemy_name[op][oc], 12);
+			g_hidden_skin_on = 0;
+		}
+	}
+}
 
 void start_timer(int sec)
 {
