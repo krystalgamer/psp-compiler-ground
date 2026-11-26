@@ -261,7 +261,27 @@ INCLUDE_RODATA("tmp/asm/UTST99332/graphics_editspline/nonmatchings/libgu", color
 
 INCLUDE_RODATA("tmp/asm/UTST99332/graphics_editspline/nonmatchings/libgu", D_00012FF4);
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_editspline/nonmatchings/libgu", sceGuInit);
+void sceGuInit(void);
+void sceGuInit(void)
+{
+	struct {
+		void (*signal_func)(int, void *);
+		void *signal_arg;
+		void (*finish_func)(int, void *);
+		void *finish_arg;
+	} callback;
+
+	callback.signal_func = callback_sig;
+	callback.signal_arg = &intrParam;
+	callback.finish_func = callback_fin;
+	callback.finish_arg = &intrParam;
+	intrCode = sceGeSetCallback(&callback);
+	vram_top = sceGeEdramGetAddr();
+	queid[0] = sceGeListEnQueue((void *)((unsigned int)initList & 0x1fffffff), 0, intrCode, 0);
+	reset_static_value();
+	intrParam.event = sceKernelCreateEventFlag("SceGuSignal", 0x200, 3, 0);
+	sceGeListSync(queid[0], 0);
+}
 
 void sceGuTerm(void)
 {
@@ -353,7 +373,21 @@ int sceGuCheckList(void)
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_editspline/nonmatchings/libgu", sceGuSync);
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_editspline/nonmatchings/libgu", sceGuSignalSync);
+void sceGuSignalSync(int signal)
+{
+	int i;
+
+	for (;;) {
+		for (i = 0; i < 16; i++) {
+			if (i >= intrParam.index)
+				break;
+			if (intrParam.signals[i] == (unsigned short)signal)
+				return;
+		}
+		sceKernelWaitEventFlag(intrParam.event, 1, 0, 0, 0);
+		sceKernelClearEventFlag(intrParam.event, ~1);
+	}
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_editspline/nonmatchings/libgu", sceGuEnable);
 
@@ -498,7 +532,17 @@ void sceGuBeginObject(int vtype, int count, const void *indices, const void *ver
 	send_commandi(9, 0);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_editspline/nonmatchings/libgu", sceGuEndObject);
+void sceGuEndObject(void)
+{
+	unsigned int *current = pList->current;
+
+	pList->current = p_bbox[n_bbox - 1];
+	send_commandi(16, (((unsigned int)current) >> 8) & 0xf0000);
+	send_commandi(9, ((unsigned int)current) & 0xffffff);
+	pList->current = current;
+	sceGeListUpdateStallAddr(queid[0], current);
+	n_bbox--;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_editspline/nonmatchings/libgu", sceGuDrawSprite);
 
@@ -540,7 +584,17 @@ void sceGuDrawBufferList(int psm, void *fbp, int frame_width)
 	send_commandi(157, ((((unsigned int)fbp) & 0xff000000) >> 8) | frame_width);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_editspline/nonmatchings/libgu", sceGuDepthBuffer);
+void sceGuDepthBuffer(void *zbp, int frame_width);
+void sceGuDepthBuffer(void *zbp, int frame_width)
+{
+	FBuf.depth_buffer = zbp;
+	if (!FBuf.depth_width)
+		FBuf.depth_width = frame_width;
+	if (FBuf.depth_width != frame_width)
+		FBuf.depth_width = frame_width;
+	send_commandi(158, (*(unsigned int *)&FBuf.depth_buffer) & 0xffffff);
+	send_commandi(159, (((*(unsigned int *)&FBuf.depth_buffer) & 0xff000000) >> 8) | FBuf.depth_width);
+}
 
 void sceGuDispBuffer(int width, int height, void *dbp, int frame_width)
 {
@@ -601,7 +655,16 @@ void sceGuPatchDivide(int ulevel, int vlevel)
 	send_commandi(54, ((vlevel << 8) | ulevel));
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_editspline/nonmatchings/libgu", sceGuPatchPrim);
+void sceGuPatchPrim(int prim);
+void sceGuPatchPrim(int prim)
+{
+	if (prim == 4)
+		send_commandi(55, 0);
+	else if (prim == 2)
+		send_commandi(55, 1);
+	else if (prim == 0)
+		send_commandi(55, 2);
+}
 
 void sceGuAmbient(unsigned int color)
 {
