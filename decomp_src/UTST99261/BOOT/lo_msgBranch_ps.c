@@ -63,13 +63,17 @@ typedef struct {
     int unk4;
     int unk8;
     int unkC;
-    u8 unk10[0x60];
+    u8 unk10[0x30];
+    int unk40;                  /* 0x40 */
+    u8 unk44[0x2C];
     void *focus;                /* 0x70 */
 } PGEOM;
 typedef struct {
     u8 unk0[0x20];
     PGEOM *geom;                /* 0x20 */
-    u8 unk24[0x14];
+    void *unk24;
+    int node;                   /* 0x28 */
+    u8 unk2C[0xC];
     s16 content;                /* 0x38 */
     u8 unk3A[4];
     s16 unk3E;                  /* 0x3E */
@@ -102,6 +106,11 @@ int make_msg_LP3();
 int make_msg_LJ6();
 int actSearchString();
 PHIST *HST_getChildHistoryNode(PHIST *h);
+PHIST *HST_getSiblingHistoryNode(PHIST *h);
+PHIST *HST_getParentHistoryNode(PHIST *h);
+int HST_getSessionID(PHIST *h);
+void delLLISTByDocumentSession();
+int make_msg_LI2();
 int HST_getRequestFlag(PHIST *h);
 typedef struct {
     u16 unk0;
@@ -158,7 +167,61 @@ int replaceTextStrings(PBOX *b, char *s, int st, int en);
 extern char D_001338FC[];
 
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_msgBranch_ps", sendJSUnloadEvent);
+typedef struct {
+    u8 unk0[0x30];
+} PJSEVENT;
+void initJSEvent(PJSEVENT *ev, int type, int node, int a, int b);
+void sendJSEvent(int obj, PJSEVENT *ev);
+
+void sendJSUnloadEvent(PHIST *root) {
+    PHIST *h;
+    PHIST *n;
+    PBOX *b;
+    PJSEVENT ev;
+
+    h = HST_getChildHistoryNode(root);
+    if (h == NULL) {
+        goto done;
+    }
+loop:
+    while ((n = HST_getChildHistoryNode(h)) != NULL) {
+        h = n;
+    }
+    if (HST_getRequestFlag(h) >= 0) {
+        b = h->body;
+        if (b != NULL && b->geom->unk40 != 4) {
+            initJSEvent(&ev, 0x17, b->node, 0, 0);
+            sendJSEvent(Node_getJSObj(b->node), &ev);
+        }
+    }
+    n = HST_getSiblingHistoryNode(h);
+    if (n == NULL) {
+        h = HST_getParentHistoryNode(h);
+        while (h != root) {
+            b = h->body;
+            if (b != NULL && b->geom->unk40 != 4) {
+                initJSEvent(&ev, 0x17, b->node, 0, 0);
+                sendJSEvent(Node_getJSObj(b->node), &ev);
+            }
+            n = HST_getSiblingHistoryNode(h);
+            if (n != NULL) {
+                break;
+            }
+            h = HST_getParentHistoryNode(h);
+        }
+        if (h == root) {
+            goto done;
+        }
+    }
+    h = n;
+    if (h != NULL) {
+        goto loop;
+    }
+done:
+    b = root->body;
+    initJSEvent(&ev, 0x17, b->node, 0, 0);
+    sendJSEvent(Node_getJSObj(b->node), &ev);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_msgBranch_ps", abortResourceLoading);
 
