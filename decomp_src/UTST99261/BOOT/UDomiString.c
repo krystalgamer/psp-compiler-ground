@@ -725,7 +725,15 @@ int ps_moveExMsgToTopExMsg(int from, int to, int sid) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", ps_sendAbortPageToDiffHistory);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", ps_sendAbortPage);
+int ps_sendAbortPage(int sid, int a, int b, int name, int len) {
+    void *node;
+
+    if (len != 0 && (node = HST_searchTargetNameHistoryNode(name, len)) != NULL && HST_getHeadHistoryNode() != node) {
+        sid = HST_getSessionID(node);
+    }
+    setParseMassageToDestTask(4, sid, 0, 0x304, b, a, 0, 0);
+    return 1;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", ps_sendGetStop);
 
@@ -854,7 +862,18 @@ int initMPU_REQ_SHOW_DIALOG(void *arg0, int arg1) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", initMPU_SIG_EXTDATA_SELECTED);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", sendStart);
+void sendStart(PsIpc *a, PsIpc *b, int *data) {
+    initMPU_RPL_LOAD_PAGE(a);
+    a->x04 = buf_sessionUI;
+    a->x14 = buf_localUI;
+    a->x18 = data[0] + 4;
+    a->x1C = (int)data;
+    ps_sndmsg(a, 1);
+    initMPU_SIG_RECV_STARTED(b);
+    b->x04 = buf_sessionUI;
+    b->x14 = buf_localUI;
+    ps_sndmsg(b, 1);
+}
 
 void sendComplete(PsIpc *m) {
     initMPU_SIG_LAYOUT_COMPLETE(m);
@@ -885,6 +904,24 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", CharEncode);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", Encoding);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", ps_saveCacheMode);
+void ps_saveCacheMode(int m) {
+    switch (m) {
+    case 1:
+        psCacheMode = 1;
+        break;
+    case 2:
+        psCacheMode = 2;
+        break;
+    case 3:
+        psCacheMode = 3;
+        break;
+    case 0:
+        psCacheMode = 0;
+        break;
+    default:
+        psCacheMode = 0;
+        break;
+    }
+}
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", tbl_psfunc);
