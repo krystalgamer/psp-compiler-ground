@@ -7,7 +7,7 @@ typedef struct {
 	u8 unk0;		/* +0x0 */
 	u8 unk1;		/* +0x1 */
 	s8 unk2;		/* +0x2 */
-	u8 pad3;
+	s8 unk3;		/* +0x3 */
 	s16 unk4;	/* +0x4 */
 	s16 unk6;	/* +0x6 */
 	s16 unk8;	/* +0x8 */
@@ -23,6 +23,14 @@ typedef struct {
 } PZL_DROP;
 
 #define NDROP 256
+
+/* an attack ball flying into the map */
+typedef struct {
+	s16 x, y;
+	s16 t;
+	s16 pos;
+	u8 col;
+} PZL_OJAMA;
 
 /* a ball hanging from a chain */
 typedef struct {
@@ -98,10 +106,11 @@ typedef struct {
 	u16 unk46C;		/* 0x46C */
 	u16 unk46E;		/* 0x46E */
 	s16 unk470;		/* 0x470 */
-	u8 pad472[0x476 - 0x472];
-	u16 unk476;		/* 0x476 */
+	u8 pad472[2];
+	s16 unk474;		/* 0x474: attack stock */
+	s16 unk476;		/* 0x476 */
 	s16 nchain;		/* 0x478: entries used in chain[] */
-	u8 pad47A;
+	u8 unk47A;		/* 0x47A */
 	s8 chara;		/* 0x47B */
 	s8 chara2;		/* 0x47C */
 	s8 chara_anim;		/* 0x47D */
@@ -116,7 +125,8 @@ typedef struct {
 	} drop;			/* 0x480 */
 	u8 pad_drop[0x13B4 - 0x484 - NDROP * 6];
 	PZL_ENT ent[192];	/* 0x13B4 */
-	u8 pad19B4[0x1AF0 - 0x19B4];
+	PZL_OJAMA oj[31];	/* 0x19B4: attack balls */
+	u8 pad1AEA[0x1AF0 - 0x1AEA];
 	struct {
 		u8 pad0[4];
 		u8 map[MAP_SIZE];	/* 0x1AF4 */
