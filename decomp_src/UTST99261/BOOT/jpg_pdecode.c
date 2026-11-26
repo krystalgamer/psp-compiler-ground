@@ -28,11 +28,14 @@ typedef struct {
     s16 *out[3];                /* 0x8 */
     s16 pred[4];                /* 0x14 */
     s16 *block;                 /* 0x1C */
-    u8 unk20[0x8C];
+    s16 idct[64];               /* 0x20 */
+    u8 unkA0[0xC];
     int *coef[4];               /* 0xAC */
     u8 unkBC[0xA];
     u16 width;                  /* 0xC6 */
-    u8 unkC8[0x8];
+    u8 unkC8[0x2];
+    u8 ncomp;                   /* 0xCA */
+    u8 unkCB[0x5];
     u16 mcuw;                   /* 0xD0 */
     u16 mcuh;                   /* 0xD2 */
     u8 unkD4[3];
@@ -243,6 +246,49 @@ int decodeHuffmanBlock_AC_subsequent();
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jpg_pdecode", decodeMCU_single);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jpg_pdecode", inverseDCT_MCU);
+void inverseDCT(JPCTX *ctx, int c);
+
+int inverseDCT_MCU(JPCTX *ctx) {
+    int stride;
+    int v;
+    int c;
+    int h;
+    int sy;
+    int sx;
+    int by;
+    int bx;
+    int y;
+    int x;
+    s16 *out;
+    int ys;
+    int xs;
+    int r;
+    int yo;
+
+    stride = ctx->hmax * 8;
+    for (c = 0; c < ctx->ncomp; c++) {
+        v = ctx->ci[c].v;
+        h = ctx->ci[c].h;
+        sy = ctx->vmax / v;
+        sx = ctx->hmax / h;
+        ys = sy * 8;
+        xs = sx * 8;
+        for (by = 0; by < v; by++) {
+            for (bx = 0; bx < h; bx++) {
+                ctx->block = (s16 *)*((int **)((u8 *)ctx + 0xB8))[c]++;
+                inverseDCT(ctx, c);
+                out = ctx->out[c] + (by * stride + bx) * 8;
+                for (y = 0; y < ys; y++) {
+                    yo = y * stride;
+                    r = (y / sy) * 8;
+                    for (x = 0; x < xs; x++) {
+                        out[yo + x] = ctx->idct[r + x / sx];
+                    }
+                }
+            }
+        }
+    }
+    return 1;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jpg_pdecode", decodeProgressiveJPG);
