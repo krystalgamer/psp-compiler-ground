@@ -230,7 +230,24 @@ SceInt32 dispbuf_checkDelayMode(t_displayBuffer *pDisp)
 
 INCLUDE_ASM("tmp/asm/UTST99332/mpeg_mpegstr_gu/nonmatchings/display", dispbuf_func);
 
-INCLUDE_ASM("tmp/asm/UTST99332/mpeg_mpegstr_gu/nonmatchings/display", dispbuf_show);
+SceInt32 dispbuf_show(t_displayBuffer *pDisp)
+{
+	SceChar8 *yCbCrBuf;
+
+	if (dispbuf_getMode(pDisp) == 1 || dispbuf_getMode(pDisp) == 0xff) {
+		yCbCrBuf = pDisp->buf[pDisp->read];
+
+		draw_frame(pDisp, yCbCrBuf);
+
+		pDisp->read = (pDisp->read + 1) % pDisp->size;
+		sceDisplayWaitVblankStart();
+		sceGuSwapBuffers();
+	} else {
+		pDisp->read = (pDisp->read + 1) % pDisp->size;
+	}
+
+	return 0;
+}
 
 int dispbuf_zoomin(t_displayBuffer *pDisp) {
     int temp_v1;
