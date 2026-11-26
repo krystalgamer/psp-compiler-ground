@@ -1100,7 +1100,17 @@ void sceGuTexSync(void)
 	send_commandi(204, 0x000000);
 }
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", sceGuTexImage);
+void sceGuTexImage(int mipmap, int width, int height, int tbw, const void *tbp)
+{
+	int w = get_exp(width);
+	int h = get_exp(height);
+	unsigned int hi = (((unsigned int)tbp) >> 8) & 0x0f0000;
+
+	send_commandi(tbpcmd_tbl[mipmap], ((unsigned int)tbp) & 0xffffff);
+	send_commandi(tbwcmd_tbl[mipmap], hi | tbw);
+	send_commandi(tsizecmd_tbl[mipmap], (h << 8) | w);
+	sceGuTexFlush();
+}
 
 void sceGuTexScale(float u, float v)
 {
