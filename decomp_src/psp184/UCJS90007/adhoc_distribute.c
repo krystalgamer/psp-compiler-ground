@@ -242,9 +242,55 @@ INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/adhoc_distribute", sceNetAdho
 
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/adhoc_distribute", sceNetAdhocDistributeStartServer);
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/adhoc_distribute", sceNetAdhocDistributeStopServer);
+int sceNetAdhocDistributeStopServer(void)
+{
+	int numWaitThreads;
+	int i;
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/adhoc_distribute", sceNetAdhocDistributeDeleteServer);
+	if (!inited)
+		return 0x80410C12;
+	if (sctx == NULL)
+		return 0x80410C16;
+	sctx->state = 0;
+	sceNetAdhocMatchingStop(sctx->matching_id);
+	sceKernelCancelReceiveMbx(sctx->mbxid, &numWaitThreads);
+	for (i = 0; i < 8; i++) {
+		if (sctx->workersid[i] > 0)
+			sceNetAdhocSetSocketAlert(sctx->workersid[i], 0x3F0);
+		if (sctx->workertid[i] > 0)
+			sceKernelWaitThreadEnd(sctx->workertid[i], NULL);
+	}
+	return 0;
+}
+
+int sceKernelDeleteThread(int thid);
+int sceKernelDeleteMbx(int mbxid);
+int sceNetAdhocMatchingDelete(int id);
+int sceNetAdhocMatchingStop(int id);
+int sceKernelCancelReceiveMbx(int mbxid, int *pnum);
+int sceNetAdhocSetSocketAlert(int id, int flag);
+int sceKernelWaitThreadEnd(int thid, unsigned int *timeout);
+int sceKernelDeleteThread(int thid);
+int sceNetAdhocDistributeDeleteServer(void)
+{
+	int i;
+
+	if (!inited)
+		return 0x80410C12;
+	if (sctx == NULL)
+		return 0x80410C16;
+	if (sctx->state != 0)
+		return 0x80410C17;
+	for (i = 0; i < 8; i++) {
+		if (sctx->workertid[i] > 0)
+			sceKernelDeleteThread(sctx->workertid[i]);
+	}
+	sceKernelDeleteMbx(sctx->mbxid);
+	sceNetAdhocMatchingDelete(sctx->matching_id);
+	adhoc_distribute_free(sctx->hello_opt);
+	sctx = NULL;
+	return 0;
+}
 
 int sceNetAdhocDistributeTermServer(void)
 {
