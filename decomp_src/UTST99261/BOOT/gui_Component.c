@@ -3,7 +3,7 @@
 #include "UTST99261/BOOT/nfgui.h"
 #include "m2c_macros.h"
 M2C_UNK make_dither_matrix(M2C_UNK *, M2C_UNK);     /* extern */
-extern unsigned char dither_matrix;
+extern s8 dither_matrix[8][8];
 
 extern int _iZwindDizF;
 
@@ -244,7 +244,7 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Component", make_dither_mat
 #endif
 
 void dizInit(void) {
-    make_dither_matrix(&dither_matrix, 8);
+    make_dither_matrix(dither_matrix, 8);
 }
 
 #ifndef NULL
@@ -261,6 +261,16 @@ int MIN(int arg0, int arg1) {
     return __builtin_allegrex_min(arg0, arg1);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Component", dizCg);
+s16 dizCg(int x, int y, u8 r, u8 g, u8 b) {
+    int d;
+
+    x %= 8;
+    y %= 8;
+    d = dither_matrix[y][x] - 32;
+    r = MAX(MIN(r + d, 255), 0);
+    g = MAX(MIN(g + d, 255), 0);
+    b = MAX(MIN(b + d, 255), 0);
+    return (r >> 3) | ((g >> 3) << 5) | ((b >> 3) << 10);
+}
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Component", D_00130A20);
