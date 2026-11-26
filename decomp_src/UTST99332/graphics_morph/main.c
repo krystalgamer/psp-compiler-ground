@@ -264,4 +264,28 @@ INCLUDE_ASM("tmp/asm/UTST99332/graphics_morph/nonmatchings/main", init_all);
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_morph/nonmatchings/main", pad_read);
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_morph/nonmatchings/main", main);
+void menuInit(void);
+void menuTerm(int cat, int num);
+
+int main(void)
+{
+	menuInit();
+
+	init_all();
+
+	while (pad_read()) {
+		draw_frame();
+		sceDisplayWaitVblankStart();
+		sceGuSwapBuffers();
+
+		if (morph) {
+			dir = step_morph(dir);
+		}
+	}
+
+	sceGuTerm();
+
+	menuTerm(1, 19);
+
+	return 0;
+}
