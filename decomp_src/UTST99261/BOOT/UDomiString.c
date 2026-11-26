@@ -4,6 +4,14 @@
 #include "parse_ps.h"
 #include "dom_domi.h"
 #include "m2c_macros.h"
+extern int mq_layout;
+extern int mq_iom;
+extern int mq_ui;
+typedef struct ExMsgNode {
+    PsIpc *msg;
+    struct ExMsgNode *prev;
+    struct ExMsgNode *next;
+} ExMsgNode;
 typedef struct PsTbl {
     int cmd;
     int x04;
@@ -153,7 +161,28 @@ INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", PNG);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", esp_psThread);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", ps_sndmsg);
+int ps_sndmsg(PsIpc *msg, int dest) {
+    struct {
+        int x00;
+        PsIpc body;
+    } m;
+    int q;
+
+    q = 0;
+    m.body = *msg;
+    if (dest == 2) {
+        q = mq_ps;
+    } else if (dest == 4) {
+        q = mq_layout;
+    } else if (dest == 5) {
+        q = mq_iom;
+    } else if (dest == 1) {
+        q = mq_ui;
+    }
+    if (OS_mq_send(q, &m, sizeof(m), 0) < 0) {
+        ps_halt("Parser : OS_mq_send(ps_comm) failed");
+    }
+}
 
 int setParseMassageToDestTask(int dest, int a, int b, int c, int d, int e, int f, int g) {
     PsMsg m;
@@ -783,9 +812,71 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", ps_setExMsg);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", ps_setTopExMsg);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", ps_getExMsg);
+int ps_getExMsg(int id, PsIpc *out) {
+    ExMsgBox *b;
+    ExMsgNode *n;
+    ExMsgNode *x;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", ps_getBottomExMsg);
+    out->type = 0;
+    out->x04 = 0;
+    out->x08 = 0;
+    out->cmd = 0;
+    out->x10 = 0;
+    out->x14 = 0;
+    out->x18 = 0;
+    out->x1C = 0;
+    b = ps_getExMsgBox(id);
+    if (b == NULL) {
+        return 0;
+    }
+    if (b->x08 == NULL) {
+        return 0;
+    }
+    n = b->x08;
+    x = n->next;
+    b->x08 = x;
+    if (x == NULL) {
+        b->x0C = NULL;
+    }
+    b->x04 = (void *)((int)b->x04 - 1);
+    *out = *n->msg;
+    MEM_free(0, n->msg);
+    MEM_free(0, n);
+    return 1;
+}
+
+int ps_getBottomExMsg(int id, PsIpc *out) {
+    ExMsgBox *b;
+    ExMsgNode *n;
+    ExMsgNode *x;
+
+    out->type = 0;
+    out->x04 = 0;
+    out->x08 = 0;
+    out->cmd = 0;
+    out->x10 = 0;
+    out->x14 = 0;
+    out->x18 = 0;
+    out->x1C = 0;
+    b = ps_getExMsgBox(id);
+    if (b == NULL) {
+        return 0;
+    }
+    if (b->x0C == NULL) {
+        return 0;
+    }
+    n = b->x0C;
+    x = n->prev;
+    b->x0C = x;
+    if (x == NULL) {
+        b->x08 = NULL;
+    }
+    b->x04 = (void *)((int)b->x04 - 1);
+    *out = *n->msg;
+    MEM_free(0, n->msg);
+    MEM_free(0, n);
+    return 1;
+}
 
 int ps_moveExMsgToExMsg(int from, int to, int sid) {
     PsIpc m;
@@ -811,7 +902,36 @@ int ps_moveExMsgToTopExMsg(int from, int to, int sid) {
     return 1;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", ps_sendAbortPageToDiffHistory);
+int ps_sendAbortPageToDiffHistory(int sid, int local, void *node) {
+    PsIpc m;
+    int sent;
+    int s;
+    int *n;
+
+    initMPL_REQ_ABORT_PAGE(&m);
+    m.x10 = local;
+    m.x14 = sid;
+    sent = 0;
+    s = 0;
+    while ((s = HST_diffHistoryNodes(node, s)) != 0) {
+        n = HST_searchSessionIDHistoryNode(s);
+        if (n == NULL) {
+            ps_halt("Parser : ps_sendAbortPageToDiffHistory\n");
+            return 0;
+        }
+        if (n[27] == 0) {
+            continue;
+        }
+        if (HST_getRequestFlag(n) < 0) {
+            continue;
+        }
+        m.x04 = s;
+        ps_sndmsg(&m, 4);
+        HST_setRequestFlag(n, 8);
+        sent = 1;
+    }
+    return sent != 0;
+}
 
 int ps_sendAbortPage(int sid, int a, int b, int name, int len) {
     void *node;
