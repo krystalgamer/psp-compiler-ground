@@ -35,7 +35,7 @@ struct ScePspFVector3 { /* size 0xc */
 typedef struct ScePspFVector3 ScePspFVector3;
 struct _anon1;
 typedef short unsigned int u_short16;
-struct _anon1 { /* size 0x10 */
+struct __attribute__((packed)) _anon1 { /* size 0x10 */
     u_short16 u;
     u_short16 v;
     float p[3];
@@ -250,7 +250,35 @@ INCLUDE_RODATA("tmp/asm/UTST99332/menu/nonmatchings/main", D_00016F80);
 
 INCLUDE_ASM("tmp/asm/UTST99332/menu/nonmatchings/main", InitFunc);
 
-INCLUDE_ASM("tmp/asm/UTST99332/menu/nonmatchings/main", DrawSprite);
+void sceKernelDcacheWritebackInvalidateRange(const void *p, unsigned int size);
+void DrawSprite(float x, float y, float w, float h, int u, int v)
+{
+	Gu2dV32T *model;
+
+	model = sceGuGetMemory(sizeof(Gu2dV32T) * 4);
+	model[0].u = 0;
+	model[0].v = v;
+	model[0].p[0] = x;
+	model[0].p[1] = y + h;
+	model[0].p[2] = 0.0f;
+	model[1].u = 0;
+	model[1].v = 0;
+	model[1].p[0] = x;
+	model[1].p[1] = y;
+	model[1].p[2] = 0.0f;
+	model[2].u = u;
+	model[2].v = v;
+	model[2].p[0] = x + w;
+	model[2].p[1] = y + h;
+	model[2].p[2] = 0.0f;
+	model[3].u = u;
+	model[3].v = 0;
+	model[3].p[0] = x + w;
+	model[3].p[1] = y;
+	model[3].p[2] = 0.0f;
+	sceKernelDcacheWritebackInvalidateRange(model, sizeof(Gu2dV32T) * 4);
+	sceGumDrawArray(4, 0x800182, 4, NULL, model);
+}
 
 void FadeSetup(int mode, int step, int c) {
     __fade = mode;
