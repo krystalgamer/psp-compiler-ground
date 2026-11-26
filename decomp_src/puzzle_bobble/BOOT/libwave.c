@@ -659,4 +659,74 @@ INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libwave", func_0001EE58);
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libwave", func_0001F0F4);
 
+#ifdef NON_MATCHING
+/* Four instructions short: fade-out (flag 0x100000) with restore from the backup voice
+ * set, then volume-scaled stereo/mono mixing with clipping; register use and the stereo
+ * test layout differ. */
+static void func_0001F60C(int ch, void *buf, void *src)
+{
+	SceWaveVoice *v = &D_00562174[ch];
+	SceWaveVoice *b = &D_005623D4[ch];
+	short *out = buf;
+	short *in = src;
+	int i, f, l, r, s;
+
+	for (i = 0; i < 28; i++) {
+		f = v->flags;
+		if (f & 0x100000) {
+			v->unk38 = (v->unk3C - v->unk40) * 127 / v->unk3C;
+			if (v->unk38 < 0)
+				v->unk38 = 0;
+			if (++v->unk40 >= v->unk3C) {
+				f &= ~0x100000;
+				v->flags = f;
+				v->unk40 = 0;
+				if (f & 0x10000) {
+					v->flags = f & ~0x10000;
+					v->stat = b->stat;
+					v->pos = b->pos;
+					v->vol_l = b->vol_l;
+					v->vol_r = b->vol_r;
+					v->unk30 = b->unk30;
+					v->unk34 = b->unk34;
+					v->unk28 = b->unk28;
+					v->unk2C = b->unk2C;
+				} else if (f & 0x20000) {
+					v->flags = f & ~0x20000;
+					v->stat = b->stat;
+					v->pos = b->pos;
+					v->unk30 = b->unk30;
+					v->unk34 = b->unk34;
+					v->unk28 = b->unk28;
+					v->unk2C = b->unk2C;
+				} else if (f & 0x40000) {
+					v->flags = f & ~0x40000;
+					v->stat = b->stat;
+				}
+			}
+		} else
+			v->unk38 = 127;
+		if ((D_00562174[ch].flags & 0x100) && (D_00562174[ch].flags & 0x200)) {
+			l = D_00562174[ch].vol_l * D_00562174[ch].unk38 / 127 * in[i * 2] / 4096;
+			r = D_00562174[ch].vol_r * D_00562174[ch].unk38 / 127 * in[i * 2 + 1] / 4096;
+		} else {
+			r = D_00562174[ch].vol_r * D_00562174[ch].unk38 / 127 * in[i] / 4096;
+			l = D_00562174[ch].vol_l * D_00562174[ch].unk38 / 127 * in[i] / 4096;
+		}
+		s = out[i * 2] + l;
+		if (s > 32767)
+			s = 32767;
+		if (s < -32768)
+			s = -32768;
+		out[i * 2] = s;
+		s = out[i * 2 + 1] + r;
+		if (s > 32767)
+			s = 32767;
+		if (s < -32768)
+			s = -32768;
+		out[i * 2 + 1] = s;
+	}
+}
+#else
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libwave", func_0001F60C);
+#endif
