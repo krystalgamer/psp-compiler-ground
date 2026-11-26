@@ -15,6 +15,7 @@ typedef void SceVoid;
 typedef unsigned int SceSize;
 typedef int SceSSize;
 typedef long long int SceOff;
+typedef long long SceIores;
 typedef struct SceIoStat SceIoStat;
 struct SceIoStat;
 typedef struct ScePspDateTime ScePspDateTime;
@@ -49,17 +50,100 @@ static SceSSize sceIoReadCB(SceUID fd, void *buf, SceSize nbyte);
 SceOff strFileLseek(StrFile *file, SceOff offset, SceInt32 whence);
 
 /* SDK functions (tools/sdk_protos.h) */
+int sceIoWaitAsyncCB(SceUID fd, SceIores *res);
+int memcmp(const void *s1, const void *s2, unsigned int n);
+char *strcpy(char *dst, const char *src);
+int printf(const char *fmt, ...);
+int puts(const char *s);
+int sceUmdActivate(int mode, const char *aliasname);
+int DvdUmdIoInit(void);
+SceUID sceIoOpen(const char *file, int flags, SceMode mode);
+int sceIoOpenAsync(const char *file, int flags, SceMode mode);
+SceUID DvdUmdRetryOpen(const char *file, int flags, SceMode mode);
+SceUID DvdUmdRetryOpenCB(const char *file, int flags, SceMode mode);
+int sceIoReadAsync(SceUID fd, void *buf, SceSize nbyte);
+int DvdUmdRetryReadCB(SceUID fd, void *buf, SceSize nbyte);
 int sceIoClose(int fd);
 int sceIoRead(int fd, void *buf, unsigned int nbyte);
 int sceIoWrite(int fd, const void *buf, unsigned int nbyte);
 int strcmp(const char *a, const char *b);
 
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/mpeg_strfile", strFileAssign);
+SceInt32 strFileAssign(StrFile *file, const SceChar8 *filename)
+{
+	SceInt32 ret;
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/mpeg_strfile", strFileOpen);
+	if (memcmp(filename, "host0:", 6) == 0) {
+		strcpy(file->assignName, "host0:");
+	} else if (memcmp(filename, "disc0:", 6) == 0) {
+		strcpy(file->assignName, "disc0:");
+		ret = sceUmdActivate(1, "disc0:");
+		if (ret < 0) {
+			goto end;
+		}
+		DvdUmdIoInit();
+	} else if (memcmp(filename, "ms0:", 4) == 0) {
+		strcpy(file->assignName, "ms0:");
+	} else {
+		file->fd = -1;
+		ret = -1;
+		goto end;
+	}
+	ret = 0;
+end:
+	return ret;
+}
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/mpeg_strfile", strFileOpenCB);
+SceInt32 strFileOpen(StrFile *file, const SceChar8 *filename, SceInt32 flags)
+{
+	if (memcmp(filename, "host0:", 6) == 0 || memcmp(filename, "ms0:", 4) == 0) {
+		file->fd = sceIoOpen(filename, flags, 0);
+		if (file->fd < 0) {
+			return file->fd;
+		}
+	} else if (memcmp(filename, "disc0:", 6) == 0) {
+		file->fd = DvdUmdRetryOpen(filename, flags, 0);
+	} else {
+		file->fd = -1;
+		return -1;
+	}
+	return 0;
+}
+
+static __inline__ SceUID sceIoOpenCB(const char *filename, int flag, SceMode mode)
+{
+	SceUID fd;
+	SceIores res;
+
+	fd = sceIoOpenAsync(filename, flag, mode);
+	if (fd < 0)
+		return fd;
+	fd = sceIoWaitAsyncCB(fd, &res);
+	if (fd == 0)
+		return (SceUID)res;
+	return fd;
+}
+
+SceInt32 strFileOpenCB(StrFile *file, const SceChar8 *filename, SceInt32 flags)
+{
+	SceInt32 ret = 0;
+
+	if (memcmp(filename, "host0:", 6) == 0 || memcmp(filename, "ms0:", 4) == 0) {
+		file->fd = sceIoOpenCB(filename, flags, 0);
+		if (file->fd < 0) {
+			ret = file->fd;
+		}
+	} else if (memcmp(filename, "disc0:", 6) == 0) {
+		file->fd = DvdUmdRetryOpenCB(filename, flags, 0);
+		if (file->fd < 0) {
+			ret = file->fd;
+		}
+	} else {
+		file->fd = -1;
+		ret = -1;
+	}
+	return ret;
+}
 
 int strFileClose(StrFile *file) {
     int temp_v0;
@@ -73,28 +157,24 @@ int strFileClose(StrFile *file) {
     return var_v1;
 }
 
-extern signed char D_0002F09C;
-
 int strFileUnassign(StrFile *file) {
     int temp_s0;
     int var_v0;
 
-    if (strcmp(file->assignName, &D_0002F09C) != 0) {
+    if (strcmp(file->assignName, "disc0:") != 0) {
         var_v0 = 0;
     } else {
-        temp_s0 = sceUmdDeactivate(2, &D_0002F09C);
+        temp_s0 = sceUmdDeactivate(2, "disc0:");
         DvdUmdIoTerm();
         var_v0 = temp_s0;
     }
     return var_v0;
 }
 
-extern signed char D_0002F09C;
-
 int strFileRead(StrFile *file, void *buff, unsigned int size) {
     int var_v0;
 
-    if (strcmp(file->assignName, &D_0002F09C) == 0) {
+    if (strcmp(file->assignName, "disc0:") == 0) {
         var_v0 = DvdUmdRetryRead(file->fd, buff, size);
     } else {
         var_v0 = sceIoRead(file->fd, buff, size);
@@ -102,7 +182,26 @@ int strFileRead(StrFile *file, void *buff, unsigned int size) {
     return var_v0;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/mpeg_strfile", strFileReadCB);
+static __inline__ SceSSize sceIoReadCB(SceUID fd, void *buf, SceSize nbyte)
+{
+	int res;
+	SceIores iores;
+
+	res = sceIoReadAsync(fd, buf, nbyte);
+	if (res < 0)
+		return res;
+	res = sceIoWaitAsyncCB(fd, &iores);
+	if (res == 0)
+		return (SceSSize)iores;
+	return res;
+}
+
+SceInt32 strFileReadCB(StrFile *file, SceVoid *buff, SceSize size)
+{
+	if (strcmp(file->assignName, "disc0:") == 0)
+		return DvdUmdRetryReadCB(file->fd, buff, size);
+	return sceIoReadCB(file->fd, buff, size);
+}
 
 int strFileReadNoRetry(StrFile *file, void *buff, unsigned int size) {
     return sceIoRead(file->fd, buff, size);
@@ -118,12 +217,10 @@ SceOff strFileLseek(StrFile *file, SceOff offset, SceInt32 whence)
 	return sceIoLseek(file->fd, offset, whence);
 }
 
-extern signed char D_0002F09C;
-
 int strFileGetStat(StrFile *file, signed char *filepath, SceIoStat *stbuf) {
     int var_v0;
 
-    if (strcmp(file->assignName, &D_0002F09C) == 0) {
+    if (strcmp(file->assignName, "disc0:") == 0) {
         var_v0 = DvdUmdRetryGetStat(filepath, stbuf);
     } else {
         var_v0 = sceIoGetstat(filepath, stbuf);
@@ -131,12 +228,10 @@ int strFileGetStat(StrFile *file, signed char *filepath, SceIoStat *stbuf) {
     return var_v0;
 }
 
-extern signed char D_0002F09C;
-
 int strFileGetStatCB(StrFile *file, signed char *filepath, SceIoStat *stbuf) {
     int var_v0;
 
-    if (strcmp(file->assignName, &D_0002F09C) == 0) {
+    if (strcmp(file->assignName, "disc0:") == 0) {
         var_v0 = DvdUmdRetryGetStatCB(filepath, stbuf);
     } else {
         var_v0 = sceIoGetstat(filepath, stbuf);
@@ -149,8 +244,3 @@ int strFileUmdReadBreak(void) {
     return 0;
 }
 
-INCLUDE_RODATA("tmp/asm/psp184/UCJS90007/nonmatchings/mpeg_strfile", D_0002F094);
-
-INCLUDE_RODATA("tmp/asm/psp184/UCJS90007/nonmatchings/mpeg_strfile", D_0002F09C);
-
-INCLUDE_RODATA("tmp/asm/psp184/UCJS90007/nonmatchings/mpeg_strfile", D_0002F0A4);
