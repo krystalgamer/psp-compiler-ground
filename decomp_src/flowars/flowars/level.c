@@ -167,7 +167,8 @@ extern int tmp_level_mission[11];
 extern L_Mod_Player l_mod_player;
 extern L_Mod_Player tmp_mod_player;
 extern LevelManager levelManager;
-extern ModPlayer mod_player __asm__("PRX_ZERO");
+/* mod_game, mod_player (and mod_system) are imported: their references are relocated against address 0; distinct symbols keep gcc from sharing the address */
+extern ModPlayer mod_player __asm__("_init");
 extern ModGame mod_game __asm__("PRX_ZERO");
 extern int g_enemy_party[5];
 extern long64 g_level_pan_money[12][2];
@@ -189,13 +190,42 @@ extern int D_00065EAC;
 
 INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/level", load_data);
 
-INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/level", update_data);
+static void update_data()
+{
+	if (mod_game.game_type == 1) {
+		mod_player.level[mod_player.active_player] = l_mod_player.level;
+		mod_player.my_money[mod_player.active_player] = l_mod_player.my_money;
+		mod_player.opp_money[mod_player.active_player] = l_mod_player.opp_money;
+		mod_player.win[mod_player.active_player] = l_mod_player.win;
+		mod_player.lose[mod_player.active_player] = l_mod_player.lose;
+		mod_player.hidden_character[mod_player.active_player] = l_mod_player.hidden_character;
+		mod_player.hidden_game_rest[mod_player.active_player] = l_mod_player.hidden_game_rest;
+		memcpy(mod_player.success_level_mission[mod_player.active_player], l_mod_player.success_level_mission, sizeof(l_mod_player.success_level_mission));
+	}
+}
+
+__asm__(".globl update_data");
 
 INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/level", update_level_mission);
 
 INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/level", is_level_cleared);
 
-INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/level", level_initialize);
+static void level_initialize()
+{
+	if (mod_player.level[mod_player.active_player] < 13) {
+		int indexLevel;
+
+		indexLevel = mod_player.level[mod_player.active_player] - 1;
+		if (l_mod_player.my_money <= 0)
+			l_mod_player.my_money = g_level_pan_money[indexLevel][0];
+		l_mod_player.opp_money = g_level_pan_money[indexLevel][1];
+		memcpy(g_level_mission, g_level_mission_list[indexLevel], sizeof(g_level_mission));
+		g_bet_money = g_level_bet_money[indexLevel];
+		memset(l_mod_player.success_level_mission, 0, sizeof(l_mod_player.success_level_mission));
+	}
+}
+
+__asm__(".globl level_initialize");
 
 static void next_level()
 {
