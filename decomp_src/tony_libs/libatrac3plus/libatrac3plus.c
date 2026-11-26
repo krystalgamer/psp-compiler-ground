@@ -159,7 +159,28 @@ int sceAtracAddStreamData(unsigned int id, unsigned int n)
 	return 0;
 }
 
-INCLUDE_ASM("tmp/asm/tony_libs/libatrac3plus/nonmatchings/libatrac3plus", sceAtracGetSecondBufferInfo);
+int sceAtracGetSecondBufferInfo(unsigned int id, unsigned int *pos, unsigned int *size)
+{
+	AtracInfo *info;
+	int r;
+
+	if (id >= 4 || !D_00003930[id].inUse)
+		return 0x80630005;
+	if (!D_00003930[id].info.state)
+		return 0x80630010;
+	info = &D_00003930[id].info;
+	if (info->state == 5) {
+		unsigned int end = func_0000201C(info, info->unk1C) + 1;
+		*pos = end;
+		r = 0;
+		*size = info->unk30 - end;
+	} else {
+		*pos = 0;
+		*size = 0;
+		r = 0x80630022;
+	}
+	return r;
+}
 
 INCLUDE_ASM("tmp/asm/tony_libs/libatrac3plus/nonmatchings/libatrac3plus", sceAtracSetSecondBuffer);
 
