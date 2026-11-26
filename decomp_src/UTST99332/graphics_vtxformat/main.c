@@ -161,7 +161,27 @@ INCLUDE_RODATA("tmp/asm/UTST99332/graphics_vtxformat/nonmatchings/main", D_00011
 
 INCLUDE_RODATA("tmp/asm/UTST99332/graphics_vtxformat/nonmatchings/main", D_00011E80);
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_vtxformat/nonmatchings/main", init_bezier);
+extern const struct zz7 { float v[7]; } D_00011E5C;
+static void init_bezier(void)
+{
+	const struct zz7 zz = D_00011E5C;
+
+	MODEL	*p;
+	int		i;
+
+	for (i=0; i<7*7; i++) {
+		p=&model[i];
+		p->u=uv[i%7];
+		p->v=uv[i/7];
+		p->col=0xffffffff;
+		p->vtx[0]=-6.0f+(2.0f*(float)(i%7));
+		p->vtx[1]= 6.0f-(2.0f*(float)(i/7));
+		if ((i%7)==0 || (i%7)==6)
+			p->vtx[2]=zz.v[i/7];
+		else
+			p->vtx[2]=zz.v[i%7];
+	}
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_vtxformat/nonmatchings/main", draw_bezier);
 
@@ -182,7 +202,141 @@ void draw_frame(void) {
     sceGuSync(0, 0);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_vtxformat/nonmatchings/main", init_all);
+#define SCEGU_IMMEDIATE                    0
+#define SCEGU_VRAM_BP_0       (void *)(SCEGU_VRAM_TOP)
+#define SCEGU_VRAM_BP_1       (void *)(SCEGU_VRAM_TOP+SCEGU_VRAM_BUFSIZE)
+#define SCEGU_VRAM_TOP        0x00000000
+#define SCEGU_VRAM_BUFSIZE    (SCEGU_VRAM_WIDTH*SCEGU_SCR_HEIGHT*2)
+#define SCEGU_VRAM_BP_2       (void *)(SCEGU_VRAM_TOP+(SCEGU_VRAM_BUFSIZE*2))
+#define SCEGU_VRAM_WIDTH      512
+#define SCEGU_SCR_OFFSETX     ((4096 - SCEGU_SCR_WIDTH) / 2)
+#define SCEGU_SCR_OFFSETY     ((4096 - SCEGU_SCR_HEIGHT) / 2)
+#define SCEGU_ADD                          0
+#define SCEGU_SRC_ALPHA                    2
+#define SCEGU_ONE_MINUS_SRC_ALPHA          3
+#define SCEGU_BLEND                        4
+#define SCEGU_SCISSOR_TEST                 2
+#define SCEGU_GREATER                      6
+#define SCEGU_ALPHA_TEST                   0
+#define SCEGU_GEQUAL                       7
+#define SCEGU_DEPTH_TEST                   1
+#define SCEGU_CW                           0
+#define SCEGU_NORMAL_REVERSE_PATCH        20
+#define SCEGU_PF5551                       1
+#define SCEGU_SINGLE_CLUT                  0
+#define SCEGU_TEXBUF_NORMAL                0
+#define SCEGU_LINEAR_MIPMAP_LINEAR         7
+#define SCEGU_NEAREST                      0
+#define SCEGU_TEX_MODULATE                 0
+#define SCEGU_RGBA                         1
+#define SCEGU_CLAMP                        1
+#define SCEGU_TEXTURE                      9
+#define SCEGU_DITHER                       6
+#define SCEGU_CLIP_PLANE                   8
+#define SCEGU_SMOOTH                       1
+#define SCEGU_LIGHT_DIRECTION              0
+#define SCEGU_DIFFUSE                      2
+#define SCEGU_LIGHT0                      11
+#define SCEGU_LIGHTING                    10
+#define SCEGU_FOG                          7
+#define SCEGU_MATRIX_PROJECTION            0
+#define SCEGU_PI                           3.1415926535897932384626433832f
+#define SCEGU_RAD(a)                       ((a)*SCEGU_PI/180.0f)
+#define SCEGU_SCR_WIDTH       480
+#define SCEGU_SCR_HEIGHT      272
+#define SCEGU_SCR_ASPECT      ((float)SCEGU_SCR_WIDTH / (float)SCEGU_SCR_HEIGHT)
+#define SCEGU_MATRIX_WORLD                 2
+#define SCEGU_SYNC_FINISH                  0
+#define SCEGU_SYNC_WAIT                    0
+#define SCEGU_DISPLAY_ON		1
+
+extern const ScePspIMatrix4 D_00011E80;
+static void init_all(void)
+{
+	ScePspIMatrix4	dith = D_00011E80;
+	ScePspFVector3	vec;
+
+	sceGuInit();
+
+	sceGuStart(SCEGU_IMMEDIATE, disp_list, sizeof(disp_list));
+	sceGuDrawBuffer(SCEGU_PF5551, SCEGU_VRAM_BP_0, SCEGU_VRAM_WIDTH);
+	sceGuDispBuffer(SCEGU_SCR_WIDTH, SCEGU_SCR_HEIGHT,
+					SCEGU_VRAM_BP_1, SCEGU_VRAM_WIDTH);
+	sceGuDepthBuffer(SCEGU_VRAM_BP_2, SCEGU_VRAM_WIDTH);
+
+	sceGuOffset(SCEGU_SCR_OFFSETX, SCEGU_SCR_OFFSETY);
+	sceGuViewport(2048, 2048, SCEGU_SCR_WIDTH, SCEGU_SCR_HEIGHT);
+	sceGuDepthRange(50000, 10000);
+
+	sceGuBlendFunc(SCEGU_ADD, SCEGU_SRC_ALPHA, SCEGU_ONE_MINUS_SRC_ALPHA, 0, 0);
+	sceGuEnable(SCEGU_BLEND);
+
+	sceGuScissor(0, 0, SCEGU_SCR_WIDTH, SCEGU_SCR_HEIGHT);
+	sceGuEnable(SCEGU_SCISSOR_TEST);
+
+	sceGuAlphaFunc(SCEGU_GREATER, 0x00, 0xff);
+	sceGuEnable(SCEGU_ALPHA_TEST);
+
+	sceGuDepthFunc(SCEGU_GEQUAL);
+	sceGuEnable(SCEGU_DEPTH_TEST);
+
+	sceGuFrontFace(SCEGU_CW);
+	sceGuEnable(SCEGU_NORMAL_REVERSE_PATCH);
+
+	sceGuTexMode(SCEGU_PF5551, 0, SCEGU_SINGLE_CLUT, SCEGU_TEXBUF_NORMAL);
+	sceGuTexFilter(SCEGU_LINEAR_MIPMAP_LINEAR, SCEGU_NEAREST);
+	sceGuTexFunc(SCEGU_TEX_MODULATE, SCEGU_RGBA);
+	sceGuTexWrap(SCEGU_CLAMP, SCEGU_CLAMP);
+	sceGuTexImage(0, 256, 256, 256, texture);
+	sceGuEnable(SCEGU_TEXTURE);
+
+	sceGuSetDither(&dith);
+	sceGuEnable(SCEGU_DITHER);
+	sceGuEnable(SCEGU_CLIP_PLANE);
+	sceGuShadeModel(SCEGU_SMOOTH);
+
+	vec.x=0.614497f;
+	vec.y=0.691714f;
+	vec.z=0.379372f;
+	sceGuLightColor(0, SCEGU_DIFFUSE, 0xffffffff);
+	sceGuLight(0, SCEGU_LIGHT_DIRECTION, SCEGU_DIFFUSE, &vec);
+	sceGuEnable(SCEGU_LIGHT0);
+	sceGuEnable(SCEGU_LIGHTING);
+
+	sceGuDisable(SCEGU_FOG);
+	sceGuAmbient(0xffdddddd);
+
+	sceGumSetMatrixStack(&matrix_stack[0], 8, 8, 32, 0);
+
+	sceGumMatrixMode(SCEGU_MATRIX_PROJECTION);
+	sceGumLoadIdentity();
+	sceGumPerspective(SCEGU_RAD(45.0f), SCEGU_SCR_ASPECT,
+					1.000000f, 100.000000f);
+
+	sceGumMatrixMode(SCEGU_MATRIX_WORLD);
+
+	sceGuClearColor(0x00ff4040);
+	sceGuClearDepth(0);
+	sceGuClearStencil(0);
+
+	sceGuFinish();
+	sceGuSync(SCEGU_SYNC_FINISH, SCEGU_SYNC_WAIT);
+	sceDisplayWaitVblankStart();
+
+	pos.x=  0.0f;
+	pos.y=  0.0f;
+	pos.z=-18.0f;
+	rot.x= 20.0f;
+	rot.y=-10.0f;
+	rot.z=  0.0f;
+
+	uvpos[0]=0.0f;
+	uvpos[1]=0.0f;
+
+	init_bezier();
+
+	sceGuDisplay(SCEGU_DISPLAY_ON);
+}
 
 static int pad_read(void)
 {
