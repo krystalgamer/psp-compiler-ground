@@ -311,4 +311,21 @@ static void remove_pae(int flagPlayer, int pos)
 
 __asm__(".globl remove_pae");
 
-INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/hand", check_chongtong_9450);
+static int check_chongtong(int player)
+{
+	int index;
+	int array_kind[13] = { 0 };
+	int pae, kind;
+
+	for (index = 0; index < 10 && (pae = get_pae(player, index)) != 0; index++) {
+		kind = paeManager.get_pae_kind(pae);
+		if (kind >= 1 && kind <= 12) {
+			array_kind[kind]++;
+			if (array_kind[kind] == 4)
+				return kind;
+		}
+	}
+	return 0;
+}
+
+__asm__(".globl check_chongtong_9450");
