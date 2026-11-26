@@ -3,6 +3,15 @@
 #include "parse_rnd.h"
 #include "parse_str.h"
 #include "m2c_macros.h"
+extern int DOM_NODE_MAX_SIZE;
+extern PChar DomMaxAlert[];
+extern PChar ds_font[];
+extern PChar ds_color[];
+extern PChar ds_ff00[];
+extern PChar ds_br[];
+void *Util_HTMLDocument_getBody();
+void *Document_createElement();
+void *Document_createTextNode();
 void *MEM_malloc();
 void MEM_free();
 int OS_clock_gettime();
@@ -438,7 +447,45 @@ void parseBackTag(PCtx *c) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parseStrings", parseWellFormedTag);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parseStrings", parseAlertMessage);
+void parseAlertMessage(PCtx *c) {
+    void *body;
+    void *parent;
+    void *el;
+    void *text;
+
+    c->alertCount++;
+    if (DOM_NODE_MAX_SIZE != 0) {
+        PDStr msg = {27, 27, DomMaxAlert};
+        PDStr font = {4, 4, ds_font};
+        PDStr color = {5, 5, ds_color};
+        PDStr ff00 = {7, 7, ds_ff00};
+        PDStr br = {2, 2, ds_br};
+
+        parent = NULL;
+        if (c->alertCount >= DOM_NODE_MAX_SIZE) {
+            body = Util_HTMLDocument_getBody(c->doc);
+            el = Document_createElement(c->doc, &br);
+            if (el != NULL) {
+                Node_appendChild(body, el);
+                parent = el;
+            }
+            el = Document_createElement(c->doc, &br);
+            if (el != NULL) {
+                Node_appendChild(parent, el);
+                parent = el;
+            }
+            el = Document_createElement(c->doc, &font);
+            if (el != NULL) {
+                parseElementSetAttribute(el, &color, &ff00);
+                Node_appendChild(parent, el);
+            }
+            text = Document_createTextNode(c->doc, 0);
+            CharacterData_setData(text, &msg);
+            Node_appendChild(el, text);
+            c->state = 15;
+        }
+    }
+}
 
 int rnd_addAnimBoxnode(RndBox *box, void *arg) {
     RndAnimNode *n;
@@ -589,13 +636,3 @@ void rnd_removeAnimBoxnode(RndBox *box) {
         }
     }
 }
-
-INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/parseStrings", D_00138FEC);
-
-INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/parseStrings", D_00138FF8);
-
-INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/parseStrings", D_00139004);
-
-INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/parseStrings", D_00139010);
-
-INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/parseStrings", D_0013901C);
