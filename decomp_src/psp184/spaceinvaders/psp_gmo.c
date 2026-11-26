@@ -52,7 +52,28 @@ int gmo_file_load(char *name)
 	return ret;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_gmo", gmo_addr_load);
+void *sceGmoModelCreate(int a0);
+int sceGmoModelLoadFile(void *model, void *buf, int a2, int a3);
+int gmo_addr_load(void *buf)
+{
+	int i, r;
+	GMO_FILE *f = GMO_FILE_W;
+
+	for (i = 0; i < 50; i++, f++) {
+		if (f->used == 1)
+			continue;
+		f->used = 1;
+		f->model = sceGmoModelCreate(0);
+		r = sceGmoModelLoadFile(f->model, buf, 0, 0);
+		gmo_file_max++;
+		if (r != 1) {
+			gmo_file_unload(i);
+			return -1;
+		}
+		return i;
+	}
+	return -1;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_gmo", gmo_file_unload);
 
