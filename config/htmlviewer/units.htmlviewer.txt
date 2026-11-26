@@ -44,12 +44,14 @@ kernel_bridge                                1.8.4.internal  kernel_bridge.c
 newlib/libc/sys/psp/atexit                   1.7.1           ../../../../../../newlib-1.12.0/newlib/libc/sys/psp/atexit.c
 newlib/libc/errno/errno                      1.7.1           ../../../../../newlib-1.12.0/newlib/libc/errno/errno.c
 newlib/libc/sys/psp/exit                     1.7.1           ../../../../../../newlib-1.12.0/newlib/libc/sys/psp/exit.c
+newlib/libc/sys/psp/exit_pad                 1.7.1           newlib/libc/sys/psp/exit_pad.c
 newlib/libc/sys/psp/getreent                 1.7.1           ../../../../../../newlib-1.12.0/newlib/libc/sys/psp/getreent.c
 newlib/libc/stdlib/mallocr/malloc_extend_top 1.7.1           ../../../../../newlib-1.12.0/newlib/libc/stdlib/mallocr.c
 newlib/libc/machine/mips/memcpy              1.7.1           ../../../../../../newlib-1.12.0/newlib/libc/machine/mips/memcpy.c
 newlib/libc/machine/mips/memset              1.7.1           ../../../../../../newlib-1.12.0/newlib/libc/machine/mips/memset.c
 newlib/libc/sys/psp/mlock                    1.7.1           ../../../../../../newlib-1.12.0/newlib/libc/sys/psp/mlock.c
 newlib/libc/sys/psp/modreent                 1.7.1           ../../../../../../newlib-1.12.0/newlib/libc/sys/psp/modreent.c
+newlib/libc/sys/psp/modreent_pad             1.7.1           newlib/libc/sys/psp/modreent_pad.c
 newlib/libc/stdio/printf                     1.7.1           ../../../../../newlib-1.12.0/newlib/libc/stdio/printf.c
 newlib/libc/stdio/puts                       1.7.1           ../../../../../newlib-1.12.0/newlib/libc/stdio/puts.c
 newlib/libc/reent/reent                      1.7.1           ../../../../../newlib-1.12.0/newlib/libc/reent/reent.c
