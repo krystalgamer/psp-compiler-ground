@@ -1336,7 +1336,32 @@ void bgm_init(int no)
 	sound_volume_set1(gmain.f.ff34);
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", bgm_control);
+extern u8 rank_up_break[][2];
+void bgm_control(void)
+{
+	BGMWORK *b = (BGMWORK *)&D_005FB76C;
+
+	if (b->no == -1)
+		return;
+	if (b->f18 == 1)
+		return;
+	if (b->f10 == get_now_sound_block() - 1)
+		return;
+	if (b->f8 == -1) {
+		status_font_set(1, 23, 60, 0, 50);
+		gmain.f.ff30 = 0x8000;
+		sound_volume_set(0x8000);
+	} else if (b->f8 == 1) {
+		status_font_set(1, 22, 60, 0, 50);
+		gmain.f.ff30 = 0x8000;
+		sound_volume_set(0x8000);
+	}
+	b->f14 = 0;
+	b->f8 = 0;
+	gmain.f.f10a0 = 0;
+	gmain.f.f10a4 = rank_up_break[b->fc][0] * rank_up_break[b->fc][1];
+	b->f10 = get_now_sound_block() - 1;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
