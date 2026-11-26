@@ -63,13 +63,107 @@ void func_00002224(AuthCtx *ctx, char *buf, int len)
 	func_000039C4(locked);
 }
 
-INCLUDE_ASM("tmp/asm/tony_libs/pspnet_adhoc_auth/nonmatchings/proto", func_00002458);
+void func_00002458(AuthCtx *ctx, Peer *peer, char *pkt)
+{
+	AuthBuf buf;
+	struct mbuf *m;
+	char *eh;
+	int s;
+
+	if (ctx->unk0 != 1)
+		return;
+	if (ctx->npeers >= ctx->unkA8)
+		return;
+	if (peer != 0)
+		return;
+	peer = sceNetMallocInternal(sizeof(Peer));
+	if (peer == 0)
+		return;
+	func_00003664(ctx, peer, (unsigned char *)pkt + 6, (unsigned char *)pkt + 0x14);
+	if (sceMemab_driver_A4720EED(&peer->sa, &buf) < 0) {
+		func_00003580(ctx, peer);
+		return;
+	}
+	buf.key = ctx->key;
+	m = func_000020B8(ctx, 3, &buf);
+	peer->unk15C = buf;
+	if (m) {
+		int s1;
+
+		eh = m->m_data;
+		memcpy(eh, peer->sa.mac.data, 6);
+		memcpy(eh + 6, ctx->mac.data, 6);
+		memcpy(eh + 12, D_00003E70, 2);
+		memcpy(eh + 14, D_00003E74, 2);
+		s1 = sceKernelCpuSuspendIntr();
+		IF_ENQUEUE(&ctx->ifh->if_snd, m);
+		sceKernelCpuResumeIntr(s1);
+		ctx->ifh->if_start(ctx->ifh);
+	}
+	peer->unk4E0 = 0;
+	s = sceKernelCpuSuspendIntr();
+	if (peer->alarm[0] > 0) {
+		sceKernelCancelAlarm(peer->alarm[0]);
+		peer->alarm[0] = 0;
+	}
+	peer->alarm[0] = sceKernelSetAlarm(ctx->unkDC, func_00003478, &peer->arg[0]);
+	sceKernelCpuResumeIntr(s);
+	func_00003818(ctx, peer, 1);
+}
 
 INCLUDE_ASM("tmp/asm/tony_libs/pspnet_adhoc_auth/nonmatchings/proto", func_000026F8);
 
 INCLUDE_ASM("tmp/asm/tony_libs/pspnet_adhoc_auth/nonmatchings/proto", func_00002C44);
 
-INCLUDE_ASM("tmp/asm/tony_libs/pspnet_adhoc_auth/nonmatchings/proto", func_00002EE0);
+void func_00002EE0(AuthCtx *ctx, Peer *peer, char *pkt)
+{
+	SaKey key;
+	char buf[0x60];
+	struct mbuf *m;
+	char *eh;
+	int s;
+
+	if (ctx->unk0 != 1)
+		return;
+	if (peer == 0 || peer->state != 3)
+		return;
+	key = peer->sa.key;
+	if (sceMemab_driver_DAE8A629(&key, pkt + 0x14, buf) < 0)
+		return;
+	cancelAlarm(&peer->alarm[0]);
+	peer->sa.key = key;
+	m = func_000020B8(ctx, 6, buf);
+	peer->unk4E8 = 0;
+	peer->seq = 0;
+	if (m) {
+		int s1;
+
+		eh = m->m_data;
+		memcpy(eh, peer->sa.mac.data, 6);
+		memcpy(eh + 6, ctx->mac.data, 6);
+		memcpy(eh + 12, D_00003E70, 2);
+		memcpy(eh + 14, D_00003E74, 2);
+		s1 = sceKernelCpuSuspendIntr();
+		IF_ENQUEUE(&ctx->ifh->if_snd, m);
+		sceKernelCpuResumeIntr(s1);
+		ctx->ifh->if_start(ctx->ifh);
+	}
+	s = sceKernelCpuSuspendIntr();
+	if (peer->alarm[2] > 0) {
+		sceKernelCancelAlarm(peer->alarm[2]);
+		peer->alarm[2] = 0;
+	}
+	peer->alarm[2] = sceKernelSetAlarm(ctx->unkE8, func_000034D0, &peer->arg[2]);
+	sceKernelCpuResumeIntr(s);
+	s = sceKernelCpuSuspendIntr();
+	if (peer->alarm[1] > 0) {
+		sceKernelCancelAlarm(peer->alarm[1]);
+		peer->alarm[1] = 0;
+	}
+	peer->alarm[1] = sceKernelSetAlarm(ctx->unkE4, func_00003528, &peer->arg[1]);
+	sceKernelCpuResumeIntr(s);
+	func_00003818(ctx, peer, 4);
+}
 
 void func_00003188(AuthCtx *ctx, Peer *peer, char *pkt)
 {

@@ -177,6 +177,11 @@ struct sa {
 	EtherAddr mac;
 };
 
+typedef struct {
+	int w[0x28];
+	AuthKey key;
+} AuthBuf;
+
 typedef struct AuthPeerInfo {
 	struct AuthPeerInfo *next;
 	AuthKey key;
@@ -209,7 +214,8 @@ typedef struct Peer {
 	int state;
 	struct sa sa;
 	AuthKey key;
-	char pad15C[0x48C - 0x15C];
+	AuthBuf unk15C;
+	char pad27C[0x48C - 0x27C];
 	struct alarmarg arg[3];
 	int alarm[3];
 	int unk4E0;
@@ -276,10 +282,12 @@ void func_00002EE0(AuthCtx *ctx, Peer *peer, char *pkt);
 void func_00003188(AuthCtx *ctx, Peer *peer, char *pkt);
 void func_00003330(AuthCtx *ctx, Peer *peer, char *pkt);
 Peer *func_000037C0(AuthCtx *ctx, const unsigned char *mac);
+void func_00003664(AuthCtx *ctx, Peer *peer, const unsigned char *mac, const unsigned char *key);
 struct mbuf *func_000020B8(AuthCtx *ctx, unsigned char type, const void *data);
 void func_00003580(AuthCtx *ctx, Peer *peer);
 void func_00003818(AuthCtx *ctx, Peer *peer, int state);
 unsigned int func_000034D0(void *common);
+unsigned int func_00003478(void *common);
 unsigned int func_00003528(void *common);
 void *sceNetMallocInternal(unsigned int size);
 void sceNetFreeInternal(void *p);
@@ -291,6 +299,8 @@ int sceMemab_driver_4DF566D3(struct sa *sa, void *data, int len, void *hdr, int 
 int sceMemab_driver_B54E1AA7(struct sa *sa, void *data, int len, void *hdr, int a, int b);
 int sceMemab_driver_E6D3ACE2(struct sa *sa, void *data, int len, void *hdr, int a);
 int sceMemab_driver_CF49BCBB(SaKey *key, void *data);
+int sceMemab_driver_A4720EED(struct sa *sa, AuthBuf *buf);
+int sceMemab_driver_DAE8A629(SaKey *key, void *data, void *out);
 int sceMemab_driver_F1D2B9B0(void *data, int len, void *hdr, int a);
 int sceNetIfhandle_driver_0542835F(int (*a)(struct mbuf *), int (*b)(struct mbuf *), int (*c)(struct mbuf *));
 int sceNetIfhandle_driver_773FC77C(void);
