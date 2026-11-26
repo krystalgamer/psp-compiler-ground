@@ -1,17 +1,9 @@
 /* cflags: -O1 */
 #include "common.h"
 #include "m2c_macros.h"
+#include "dom_clib.h"
 extern int timezone;
 extern int dylight;
-typedef struct ClibClock {
-    short year;
-    short month;
-    short day;
-    short hour;
-    short minute;
-    short second;
-    int usec;
-} ClibClock;
 int *CLIB_gmtime(int *t);
 extern char D_00133E78[];
 M2C_UNK MEM_free(M2C_UNK, int);                     /* extern */
@@ -79,7 +71,58 @@ int esp_saveConfig(void) {
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/esp_config", esp_copyConfig);
+int esp_copyConfig(char **dst, char **src) {
+    *(EspCfgBlk *)dst = *(EspCfgBlk *)src;
+    dst[16] = NULL;
+    dst[17] = NULL;
+    dst[10] = NULL;
+    dst[12] = NULL;
+    dst[13] = NULL;
+    dst[14] = NULL;
+    if (src[16] != NULL) {
+        dst[16] = MEM_malloc(0, strlen(src[16]) + 1);
+        if (dst[16] == NULL) {
+            return -1;
+        }
+        strcpy(dst[16], src[16]);
+    }
+    if (src[17] != NULL) {
+        dst[17] = MEM_malloc(0, strlen(src[17]) + 1);
+        if (dst[17] == NULL) {
+            return -1;
+        }
+        strcpy(dst[17], src[17]);
+    }
+    if (src[10] != NULL) {
+        dst[10] = MEM_malloc(0, strlen(src[10]) + 1);
+        if (dst[10] == NULL) {
+            return -1;
+        }
+        strcpy(dst[10], src[10]);
+    }
+    if (src[12] != NULL) {
+        dst[12] = MEM_malloc(0, strlen(src[12]) + 1);
+        if (dst[12] == NULL) {
+            return -1;
+        }
+        strcpy(dst[12], src[12]);
+    }
+    if (src[13] != NULL) {
+        dst[13] = MEM_malloc(0, strlen(src[13]) + 1);
+        if (dst[13] == NULL) {
+            return -1;
+        }
+        strcpy(dst[13], src[13]);
+    }
+    if (src[14] != NULL) {
+        dst[14] = MEM_malloc(0, strlen(src[14]) + 1);
+        if (dst[14] == NULL) {
+            return -1;
+        }
+        strcpy(dst[14], src[14]);
+    }
+    return 0;
+}
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/esp_config", D_00133EB0);
 
