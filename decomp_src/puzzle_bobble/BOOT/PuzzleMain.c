@@ -4460,20 +4460,20 @@ int EndressBody(int pl)
 			k = 0;
 			w = GetMapWidth(st->mapno);
 			for (i = 0; i < w; i++) {
-				if (st->mp.map[(11 - st->scroll) * w + i]) {
+				if (st->mp.map[i + (11 - st->scroll) * w]) {
 					k = 1;
 					break;
 				}
 			}
-			if (k) {
+			if (k == 0) {
+				st->unk006 = 1;
+			} else {
 				st->unk006 = 22;
 				st->unk025 = 12;
 				st->unk42A = 0;
 				se_play(9);
 				SetCharacters(st, 7, 0);
 				SetMonitor(st, 4);
-			} else {
-				st->unk006 = 1;
 			}
 			break;
 		}
@@ -4512,27 +4512,27 @@ int EndressBody(int pl)
 				Cont ^= 1;
 				se_play(4);
 			}
-			if (st->unk42A < 31 || !(st->key_rep & 0x2000)) {
+			if (st->unk42A >= 31 && (st->key_rep & 0x2000)) {
+				if (Cont) {
+					st->unk006 = 40;
+					ret = 0;
+					st->unk42A = 0;
+					bgm_stop();
+					se_play(10);
+				} else {
+					se_play(0);
+					st->unk006 = 0;
+					st->unk42A = 0;
+					st->unk428 = 0;
+					EndressModeInit();
+					ret = 0;
+					SetCharacters(st, 3, 0);
+					SetCharacters(st, 0, 1);
+					SetMonitor(st, 0);
+				}
+			} else {
 				ret = 0;
-				break;
 			}
-			if (Cont) {
-				st->unk006 = 40;
-				ret = 0;
-				st->unk42A = 0;
-				bgm_stop();
-				se_play(10);
-				break;
-			}
-			se_play(0);
-			st->unk006 = 0;
-			ret = 0;
-			st->unk42A = 0;
-			EndressModeInit();
-			st->unk428 = 0;
-			SetCharacters(st, 3, 0);
-			SetCharacters(st, 0, 1);
-			SetMonitor(st, 0);
 			break;
 		case 26:
 			PollShutter(0);
@@ -4582,28 +4582,25 @@ int EndressBody(int pl)
 				for (i = 0; i < 192; i++) {
 					if (st->ent[i].flag) {
 						n = st->ent[i].vy++;
-						x = st->ent[i].x + 80;
-						y = st->ent[i].y - 32;
+						x = st->ent[i].x;
+						y = st->ent[i].y;
+						x += 80;
+						y -= 32;
 						if (st->ent[i].col == 12) {
 							fl = 64 - n;
 							if (fl > 0) {
 								fl *= 0.015625f;
-								c = 11;
-							} else {
+								DrawBubble(fl, x, y, 11, 0);
+							} else
 								st->ent[i].flag = 0;
-								continue;
-							}
 						} else {
 							if (n > 0) {
 								y += n * n / 40;
 								if (y > 320)
 									st->ent[i].flag = 0;
 							}
-							fl = 0;
-							c = st->ent[i].col;
-							c--;
+							DrawBubble(0, x, y, st->ent[i].col - 1, 0);
 						}
-						DrawBubble(fl, x, y, c, 0);
 					}
 				}
 			}
