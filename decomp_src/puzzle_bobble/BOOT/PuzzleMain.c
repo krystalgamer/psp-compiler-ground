@@ -12,6 +12,16 @@ extern int PauseFlag;
 extern unsigned char PauseOk;
 extern int StageNum;
 extern int gim_bg_endress;
+typedef struct {
+	int u, v, w, h, no;
+} PARTZ;
+typedef struct {
+	int u, v, w, h, no, flag;
+} SPRDATA;
+extern const SPRDATA SCORE_NUMERIC_PARTZ[];
+int SpriteDraw(int no, float z, int color, float x0, float y0, float u0, float v0, float x1, float y1, float u1, float v1, float x2, float y2, float u2, float v2, float x3, float y3, float u3, float v3);
+int DrawSpritePt4(int no, float z, int color, float x0, float y0, float u0, float v0, float x1, float y1, float u1, float v1, float x2, float y2, float u2, float v2, float x3, float y3, float u3, float v3);
+int SpriteDrawC(int x, float z, int y, const SPRDATA *p);
 int EndressValueInit(int, int, int);
 void SpriteSetFader(float);
 int LoadGimFile(int no, int file);
@@ -347,9 +357,25 @@ void DrawAnk(int z, int x, int y, int num)
 	}
 }
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", DrawScore);
+void DrawScore(int z, int x, int y, int num)
+{
+	int i;
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", DrawCount);
+	for (i = 0; i < 9; i++) {
+		SpriteDrawC(x + 35 - i * 10, z, y - 6, &SCORE_NUMERIC_PARTZ[num % 10]);
+		num /= 10;
+	}
+}
+
+void DrawCount(int z, int x, int y, int num)
+{
+	int i;
+
+	for (i = 0; i < 3; i++) {
+		SpriteDrawC(x + 5 - i * 10, z, y - 6, &SCORE_NUMERIC_PARTZ[num % 10]);
+		num /= 10;
+	}
+}
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", Sin);
 
