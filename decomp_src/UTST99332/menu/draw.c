@@ -285,7 +285,28 @@ INCLUDE_RODATA("tmp/asm/UTST99332/menu/nonmatchings/draw", D_0001721C);
 
 INCLUDE_ASM("tmp/asm/UTST99332/menu/nonmatchings/draw", DrawDice);
 
-INCLUDE_ASM("tmp/asm/UTST99332/menu/nonmatchings/draw", DrawShadow);
+extern const ScePspFVector3 D_0001719C;
+void DrawShadow(float scale)
+{
+	ScePspFVector3 vec;
+	ScePspFVector3 t;
+
+	sceGumPushMatrix();
+	t = D_0001719C;
+	vec = t;
+	sceGumTranslate(&vec);
+	t.x = scale * 1.431355f;
+	t.y = 1.431355f;
+	t.z = 1.431355f;
+	vec = t;
+	sceGumScale(&vec);
+	sceGuColor(0x80FFFFFF);
+	sceGuEnable(9);
+	sceGuTexMode(2, 0, 0, 1);
+	sceGuTexImage(0, 32, 32, 32, pix_shadow);
+	sceGumDrawSpline(0x180, 4, 4, 3, 3, NULL, nurbsplane1);
+	sceGumPopMatrix();
+}
 
 extern Gu2dV16C D_001B57E8[];
 void DrawBG(void)
@@ -299,7 +320,18 @@ INCLUDE_ASM("tmp/asm/UTST99332/menu/nonmatchings/draw", DrawCategoryString);
 
 INCLUDE_ASM("tmp/asm/UTST99332/menu/nonmatchings/draw", DrawInfoString);
 
-INCLUDE_ASM("tmp/asm/UTST99332/menu/nonmatchings/draw", DrawItemBar);
+extern Gu2dV16C D_001B589C[];
+extern Gu2dV16 D_001B58E4[];
+extern Gu2dV16 D_001B58FC[];
+void DrawItemBar(void)
+{
+	sceGuDisable(9);
+	sceGumDrawArray(4, 0x80011C, 6, NULL, D_001B589C);
+	sceGuColor(0xFF0000D9);
+	sceGumDrawArray(4, 0x800100, 4, NULL, D_001B58E4);
+	sceGuColor(0xFF515151);
+	sceGumDrawArray(2, 0x800100, 5, NULL, D_001B58FC);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/menu/nonmatchings/draw", DrawItemFrame);
 
@@ -321,7 +353,29 @@ INCLUDE_ASM("tmp/asm/UTST99332/menu/nonmatchings/draw", _RetItemMove);
 
 INCLUDE_ASM("tmp/asm/UTST99332/menu/nonmatchings/draw", _UpdateItemPos);
 
-INCLUDE_ASM("tmp/asm/UTST99332/menu/nonmatchings/draw", InitItemList);
+void InitItemList(int max)
+{
+	DRAWITEM *p;
+	int i;
+
+	memset(drawitem, 0, sizeof(drawitem));
+	itemlist.anim = 0;
+	itemlist.dir = 0;
+	itemlist.max = 0;
+	p = drawitem;
+	for (i = 0; i < 11; i++) {
+		p->tex = i;
+		p->pos = i + 4;
+		p->x = 496.0f;
+		p->y = 254.0f;
+		p->w = 32.0f;
+		p->h = 18.0f;
+		p->c = -1;
+		p->move = 0;
+		p++;
+	}
+	itemlist.max = max;
+}
 
 int GetItemTex(void)
 {
