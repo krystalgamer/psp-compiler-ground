@@ -1,6 +1,15 @@
 /* cflags: -O1 */
 #include "common.h"
 #include "m2c_macros.h"
+extern char D_0013F038[];
+int checkAtributeByName(void *node, char *name);
+extern unsigned char _DOMcellpadding;
+extern unsigned char _DOMcellspacing;
+extern unsigned char _DOMhspace;
+extern unsigned char _DOMmarginheight;
+extern unsigned char _DOMmarginwidth;
+extern unsigned char _DOMspan;
+extern unsigned char _DOMvspace;
 M2C_UNK MEM_free(M2C_UNK, void *);                  /* extern */
 void *getBodyBox(int);                              /* extern */
 int lo_fullUrl(int, signed char *);                          /* extern */
@@ -51,7 +60,18 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/act_selection", forwardStrings)
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/act_selection", backwardStrings);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/act_selection", equalsChar);
+int equalsChar(char a, char b, int cs) {
+    if (cs) {
+        return a == b;
+    }
+    if ((unsigned)(a - 'a') < 26) {
+        a -= 0x20;
+    }
+    if ((unsigned)(b - 'a') < 26) {
+        b -= 0x20;
+    }
+    return a == b;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/act_selection", attr_ALIGN_text_block);
 
@@ -104,7 +124,13 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/act_selection", attr_WIDTH_imag
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/act_selection", attr_HEIGHT_image);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/act_selection", attr_HSPACE);
+void attr_HSPACE(void *node, void *box) {
+    int v = getDOMAttributeValue_PositiveNum(node, &_DOMhspace);
+    if (v >= 0) {
+        M2C_FIELD(M2C_FIELD(box, void **, 0x24), s16 *, 0x26) = v;
+        M2C_FIELD(M2C_FIELD(box, void **, 0x24), s16 *, 0x22) = v;
+    }
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -122,9 +148,21 @@ void attr_LINK(void *arg0, void *arg1) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/act_selection", attr_MARGINHEIGHT);
+void attr_MARGINHEIGHT(void *node, void *box) {
+    int v = getDOMAttributeValue_PositiveNum(node, &_DOMmarginheight);
+    if (v >= 0) {
+        M2C_FIELD(M2C_FIELD(box, void **, 0x24), s16 *, 0x28) = v;
+        M2C_FIELD(M2C_FIELD(box, void **, 0x24), s16 *, 0x2C) = v;
+    }
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/act_selection", attr_MARGINWIDTH);
+void attr_MARGINWIDTH(void *node, void *box) {
+    int v = getDOMAttributeValue_PositiveNum(node, &_DOMmarginwidth);
+    if (v >= 0) {
+        M2C_FIELD(M2C_FIELD(box, void **, 0x24), s16 *, 0x2E) = v;
+        M2C_FIELD(M2C_FIELD(box, void **, 0x24), s16 *, 0x2A) = v;
+    }
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -158,7 +196,13 @@ void attr_VLINK(void *arg0, void *arg1) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/act_selection", attr_VSPACE);
+void attr_VSPACE(void *node, void *box) {
+    int v = getDOMAttributeValue_PositiveNum(node, &_DOMvspace);
+    if (v >= 0) {
+        M2C_FIELD(M2C_FIELD(box, void **, 0x24), s16 *, 0x20) = v;
+        M2C_FIELD(M2C_FIELD(box, void **, 0x24), s16 *, 0x24) = v;
+    }
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/act_selection", attr_ALIGN_table);
 
@@ -189,9 +233,19 @@ void attr_BORDERCOLOR(void *arg0, void *arg1) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/act_selection", attr_CELLPADDING);
+void attr_CELLPADDING(void *node, void *box) {
+    int v = getDOMAttributeValue_PositiveNum(node, &_DOMcellpadding);
+    if (v >= 0) {
+        M2C_FIELD(M2C_FIELD(box, void **, 0x20), int *, 0x4) = v;
+    }
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/act_selection", attr_CELLSPACING);
+void attr_CELLSPACING(void *node, void *box) {
+    int v = getDOMAttributeValue_PositiveNum(node, &_DOMcellspacing);
+    if (v >= 0) {
+        M2C_FIELD(M2C_FIELD(box, void **, 0x20), int *, 0x8) = v;
+    }
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/act_selection", attr_COLSPAN);
 
@@ -203,11 +257,24 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/act_selection", attr_HEIGHT_tr)
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/act_selection", attr_HEIGHT_td);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/act_selection", attr_NOWRAP_td);
+void attr_NOWRAP_td(void *node, void *box) {
+    if (M2C_FIELD(box, s16 *, 0x38) == 6) {
+        if (checkAtributeByName(node, D_0013F038) == 0) {
+            M2C_FIELD(M2C_FIELD(box, void **, 0x20), u16 *, 0x18) |= 1;
+        } else {
+            M2C_FIELD(M2C_FIELD(box, void **, 0x20), u16 *, 0x18) &= ~1;
+        }
+    }
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/act_selection", attr_ROWSPAN);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/act_selection", attr_SPAN);
+void attr_SPAN(void *node, void *box) {
+    int v = getDOMAttributeValue_PositiveNum(node, &_DOMspan);
+    if (v > 0) {
+        M2C_FIELD(M2C_FIELD(box, void **, 0x20), int *, 0x4) = v;
+    }
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/act_selection", attr_VALIGN_td);
 

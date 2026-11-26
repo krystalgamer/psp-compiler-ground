@@ -1,6 +1,9 @@
 /* cflags: -O1 */
 #include "common.h"
 #include "m2c_macros.h"
+void *newCSSStyleRule();
+u16 *CSS_selectorList(void *r, u16 *p);
+u16 *CSS_SkipRule(u16 *p);
 M2C_UNK freeCSSCharsetRule();                       /* extern */
 M2C_UNK freeCSSImportRule();                        /* extern */
 M2C_UNK freeCSSStyleRule();                         /* extern */
@@ -48,11 +51,21 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_parser", CSS_mediaRule);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_parser", CSS_mediaRuleList);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_parser", CSS_pageRule);
+u16 *CSS_pageRule(void *a0, void *a1, u16 *p) {
+    return CSS_SkipRule(p);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_parser", CSS_fontfaceRule);
+u16 *CSS_fontfaceRule(void *a0, void *a1, u16 *p) {
+    return CSS_SkipRule(p);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_parser", CSS_styleRule);
+u16 *CSS_styleRule(void *a0, void *a1, u16 *p) {
+    void *r = newCSSStyleRule(a0, a1);
+    if (r == NULL) {
+        return p;
+    }
+    return CSS_selectorList(r, p);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_parser", CSS_selectorList);
 
@@ -74,7 +87,14 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_parser", CSS_StyleSheetRule
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_parser", CSS_mediaRuleSingle);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_parser", newCSSRule);
+void *newCSSRule(int type, int size, void *a2, void *a3) {
+    void *n = newCSSNode(type, size);
+    if (n != NULL) {
+        M2C_FIELD(n, void **, 0x1C) = a2;
+        M2C_FIELD(n, void **, 0x20) = a3;
+    }
+    return n;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -368,7 +388,16 @@ void freeCSSSelector(void *arg0) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_parser", addCSSSelector);
+void addCSSSelector(s16 *list, s16 *sel) {
+    if (list != NULL) {
+        if (*list != 8 || sel == NULL) {
+            return;
+        }
+        if (*sel == 9) {
+            addCSSNode(list, sel);
+        }
+    }
+}
 
 #ifndef NULL
 #define NULL ((void *)0)

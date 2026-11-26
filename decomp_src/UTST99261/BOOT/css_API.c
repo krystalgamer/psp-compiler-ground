@@ -339,7 +339,14 @@ void addCSSMediaRule(void) {
     addCSSRule();
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_API", CSSMediaRule_getType);
+int CSSMediaRule_getType(void *r) {
+    if (r != NULL) {
+        if (M2C_FIELD(r, s16 *, 0) == 4) {
+            return M2C_FIELD(r, s16 *, 0);
+        }
+    }
+    return -1;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_API", CSSMediaRule_getCssText);
 

@@ -54,7 +54,14 @@ int CSSSelector_getCombine(void *arg0) {
     return M2C_FIELD(arg0, int *, 0x20);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_Selector", CSSSelector_getClass);
+void *CSSSelector_getClass(s16 *s) {
+    if (s != NULL) {
+        if (*s == 9) {
+            return (char *)s + 0x28;
+        }
+    }
+    return NULL;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -70,7 +77,14 @@ int CSSSelector_getNextClass(int *arg0) {
     return *arg0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_Selector", CSSSelector_getId);
+void *CSSSelector_getId(s16 *s) {
+    if (s != NULL) {
+        if (*s == 9) {
+            return (char *)s + 0x30;
+        }
+    }
+    return NULL;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -86,7 +100,14 @@ int CSSSelector_getNextId(int *arg0) {
     return *arg0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_Selector", CSSSelector_getPseudo);
+void *CSSSelector_getPseudo(s16 *s) {
+    if (s != NULL) {
+        if (*s == 9) {
+            return (char *)s + 0x38;
+        }
+    }
+    return NULL;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -102,7 +123,14 @@ int CSSSelector_getNextPseudo(int *arg0) {
     return *arg0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_Selector", CSSSelector_getAttribute);
+void *CSSSelector_getAttribute(s16 *s) {
+    if (s != NULL) {
+        if (*s == 9) {
+            return (char *)s + 0x40;
+        }
+    }
+    return NULL;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)

@@ -1,10 +1,12 @@
 /* cflags: -O1 */
 #include "common.h"
+#include "css_types.h"
 #include "m2c_macros.h"
+extern void *CSSPropertyNames[];
+extern u16 CSSSTR_important[];
+void *MEM_calloc();
 void *CSSStyleDeclaration_getPropertyDeclaration(); /* extern */
 int CSSValue_getCssText(int);                       /* extern */
-int CSSStyleDeclaration_getName(short *);             /* extern */
-int CSSStyleDeclaration_getPriority(short *);         /* extern */
 M2C_UNK CSS_freePoolBuf(void *);                    /* extern */
 int CSS_getPoolBuf(void *);                         /* extern */
 M2C_UNK CSS_putSPoolBuf(void *, M2C_UNK *);         /* extern */
@@ -67,7 +69,13 @@ int CSSStyleDeclaration_removeProperty(void) {
     return var_s1;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_StyleDeclaration", CSSStyleDeclaration_getPropertyPriority);
+u16 *CSSStyleDeclaration_getPropertyPriority(void *a0, void *a1) {
+    CSSVALUE *d = CSSStyleDeclaration_getPropertyDeclaration(a0, a1);
+    if (d == NULL) {
+        return NULL;
+    }
+    return d->unk1E == 1 ? CSSSTR_important : NULL;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -99,7 +107,12 @@ int CSSStyleDeclaration_getParentRule(void *arg0) {
     return var_v0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_StyleDeclaration", CSSStyleDeclaration_getName);
+void *CSSStyleDeclaration_getName(CSSVALUE *d) {
+    if (d == NULL) {
+        return NULL;
+    }
+    return CSSPropertyNames[d->type * 2];
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -111,7 +124,14 @@ int CSSStyleDeclaration_getValue(void *arg0) {
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_StyleDeclaration", CSSStyleDeclaration_getPriority);
+u16 *CSSStyleDeclaration_getPriority(CSSVALUE *d) {
+    if (d != NULL) {
+        if (d->unk1E == 1) {
+            return CSSSTR_important;
+        }
+    }
+    return NULL;
+}
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/css_StyleDeclaration", CSSSTR_Percent);
 
@@ -857,7 +877,14 @@ void addCSSStyleRule(void) {
     addCSSRule();
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_StyleDeclaration", CSSStyleRule_getType);
+int CSSStyleRule_getType(s16 *r) {
+    if (r != NULL) {
+        if (*r == 7) {
+            return *r;
+        }
+    }
+    return -1;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_StyleDeclaration", CSSStyleRule_getCssText);
 
@@ -939,7 +966,14 @@ void freeCSSUnknownRule(void *arg0) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_StyleDeclaration", addCSSUnknownRule);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_StyleDeclaration", CSSUnknownRule_getType);
+int CSSUnknownRule_getType(s16 *r) {
+    if (r != NULL) {
+        if (*r == 1) {
+            return *r;
+        }
+    }
+    return -1;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -1033,7 +1067,13 @@ void addCSSValue(void) {
     addCSSNode();
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_StyleDeclaration", newCSSPrimitiveValue);
+s16 *newCSSPrimitiveValue(int type) {
+    s16 *v = MEM_calloc(0, 0x18);
+    if (v != NULL) {
+        *v = type;
+    }
+    return v;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_StyleDeclaration", freeCSSPrimitiveValue);
 
@@ -1068,17 +1108,25 @@ void CSSPrimitiveValue_setFloatValue(void *arg0, short arg1, int arg2, int arg3)
     }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_StyleDeclaration", CSSPrimitiveValue_getFloatValue);
+double CSSPrimitiveValue_getFloatValue(s16 *v, s16 type) {
+    return *v == type ? *(double *)(v + 4) : 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_StyleDeclaration", CSSPrimitiveValue_setStringValue);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_StyleDeclaration", CSSPrimitiveValue_getStringValue);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_StyleDeclaration", CSSPrimitiveValue_getCounterValue);
+void *CSSPrimitiveValue_getCounterValue(s16 *v) {
+    return *v == 0x17 ? (void *)(v + 4) : NULL;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_StyleDeclaration", CSSPrimitiveValue_getRectValue);
+void *CSSPrimitiveValue_getRectValue(s16 *v) {
+    return *v == 0x18 ? (void *)(v + 4) : NULL;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_StyleDeclaration", CSSPrimitiveValue_getRGBColorValue);
+void *CSSPrimitiveValue_getRGBColorValue(s16 *v) {
+    return *v == 0x19 ? (void *)(v + 4) : NULL;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)

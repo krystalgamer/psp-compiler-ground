@@ -1,31 +1,58 @@
+/* cflags: -O1 */
 #include "common.h"
+#include "m2c_macros.h"
+void commonProc_html_text_inline(void *a0, void *a1, void *a2, int tag);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_html_text_inline", commonProc_html_text_inline);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_html_text_inline", html_ABBR);
+void html_ABBR(void *a0, void *a1, void *a2) {
+    commonProc_html_text_inline(a0, a1, a2, 0x2);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_html_text_inline", html_ACRONYM);
+void html_ACRONYM(void *a0, void *a1, void *a2) {
+    commonProc_html_text_inline(a0, a1, a2, 0x3);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_html_text_inline", html_BR);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_html_text_inline", html_CITE);
+void html_CITE(void *a0, void *a1, void *a2) {
+    commonProc_html_text_inline(a0, a1, a2, 0x14);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_html_text_inline", html_CODE);
+void html_CODE(void *a0, void *a1, void *a2) {
+    commonProc_html_text_inline(a0, a1, a2, 0x15);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_html_text_inline", html_DFN);
+void html_DFN(void *a0, void *a1, void *a2) {
+    commonProc_html_text_inline(a0, a1, a2, 0x1A);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_html_text_inline", html_EM);
+void html_EM(void *a0, void *a1, void *a2) {
+    commonProc_html_text_inline(a0, a1, a2, 0x1F);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_html_text_inline", html_KBD);
+void html_KBD(void *a0, void *a1, void *a2) {
+    commonProc_html_text_inline(a0, a1, a2, 0x35);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_html_text_inline", html_Q);
+void html_Q(void *a0, void *a1, void *a2) {
+    commonProc_html_text_inline(a0, a1, a2, 0x49);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_html_text_inline", html_SAMP);
+void html_SAMP(void *a0, void *a1, void *a2) {
+    commonProc_html_text_inline(a0, a1, a2, 0x4B);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_html_text_inline", html_SPAN);
+void html_SPAN(void *a0, void *a1, void *a2) {
+    commonProc_html_text_inline(a0, a1, a2, 0x4F);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_html_text_inline", html_STRONG);
+void html_STRONG(void *a0, void *a1, void *a2) {
+    commonProc_html_text_inline(a0, a1, a2, 0x51);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_html_text_inline", html_VAR);
+void html_VAR(void *a0, void *a1, void *a2) {
+    commonProc_html_text_inline(a0, a1, a2, 0x61);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_html_text_inline", html_A);
