@@ -1,6 +1,26 @@
 /* cflags: -O1 */
 #include "common.h"
 #include "m2c_macros.h"
+#include "UTST99261/BOOT/pspBrowser.h"
+#include "UTST99261/BOOT/nfgui.h"
+
+typedef struct { /* size 0xD8 */
+    int unk0;
+    u8 unk4[0x98];
+    PSPBROWSER_FOCUS_CALLBACK focusCallback;    /* 0x9C */
+    int unkA0;
+    PSPBROWSER_UNLOAD_CALLBACK unloadCallback;  /* 0xA4 */
+    u8 unkA8[0x30];
+} PSPBROWSER_INSTANCE;
+
+extern PSPBROWSER_INSTANCE pspBrowserInstance;
+extern int _i_windsystemOn;
+int zWindSetSetFocusCallback(PSPBROWSER_FOCUS_CALLBACK callback);
+int ucs2ToSjis(char *dst, u16 *src, int len);
+int ucs2ToUtf8(char *dst, u16 *src, int len);
+void zWindSetFontClip();
+void zWindFontDraw();
+void zWindFontDrawSJ();
 unsigned int utf8nlen(void *, int);                          /* extern */
 M2C_UNK ESP_free(signed char *);                             /* extern */
 signed char *ESP_malloc(int);                                /* extern */
@@ -23,7 +43,6 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/pspBrowser", pspBrowserEventCal
 #ifndef NULL
 #define NULL ((void *)0)
 #endif
-void *memcpy(void *d, const void *s, unsigned int n);
 
 int pspBrowserStrcpyTo(void *arg0, int arg1, void *arg2, int arg3) {
     signed char *var_v0;
@@ -52,7 +71,6 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/pspBrowser", pspBrowserDeleteEx
 #ifndef NULL
 #define NULL ((void *)0)
 #endif
-unsigned int strlen(const char *s);
 char *strcpy(char *d, const char *s);
 
 signed char *pspBrowserNewExtensionCallback(int arg0, signed char *arg1, int arg2) {
@@ -104,9 +122,30 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/pspBrowser", pspBrowserAddAncho
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/pspBrowser", pspBrowserAddImage);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/pspBrowser", pspBrowserSetFocusCallback);
+int pspBrowserSetFocusCallback(PSPBROWSER_FOCUS_CALLBACK callback) {
+    if (pspBrowserInstance.unk0 == 0) {
+        return -5;
+    }
+    if (pspBrowserInstance.focusCallback != NULL) {
+        return -1;
+    }
+    if (zWindSetSetFocusCallback(callback) != 0) {
+        return -1;
+    }
+    pspBrowserInstance.focusCallback = callback;
+    return 0;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/pspBrowser", pspBrowserUnloadCallback);
+int pspBrowserUnloadCallback(PSPBROWSER_UNLOAD_CALLBACK callback) {
+    if (pspBrowserInstance.unk0 == 0) {
+        return -5;
+    }
+    if (pspBrowserInstance.unloadCallback != NULL) {
+        return -1;
+    }
+    pspBrowserInstance.unloadCallback = callback;
+    return 0;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -140,11 +179,23 @@ int pspBrowserUtf8ToUcs2(void) {
     return utf8ToUcs2() * 2;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/pspBrowser", pspBrowserUcs2ToSjis);
+int pspBrowserUcs2ToSjis(char *dst, u16 *src, int size) {
+    return ucs2ToSjis(dst, src, size / 2);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/pspBrowser", pspBrowserUcs2ToUtf8);
+int pspBrowserUcs2ToUtf8(char *dst, u16 *src, int size) {
+    return ucs2ToUtf8(dst, src, size / 2);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/pspBrowser", pspBrowserFontSetImage);
+void pspBrowserFontSetImage(void *image, int width, int height) {
+    zWindSetFontClip(image);
+    _i_pspBrowserFontState = 0;
+    if (width != 0) {
+        if (height != 0) {
+            _i_pspBrowserFontState = 1;
+        }
+    }
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -165,14 +216,57 @@ void null_callback(void) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/pspBrowser", zWindInit);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/pspBrowser", zWindExit);
+int zWindExit(void) {
+    if (_i_windsystemOn == 0) {
+        puts("[X1]zWindExit");
+        return -1;
+    }
+    _i_windsystemOn = 0;
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/pspBrowser", zWindExec);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/pspBrowser", zWindMouseOk);
+int zWindMouseOk(GUIWIDGET *w, int x, int y) {
+    int l;
+    int t;
+    int r;
+    int b;
+
+    if (w == NULL) {
+        return 0;
+    }
+    if (w->type != 1) {
+        return -1;
+    }
+    l = w->unk36;
+    t = w->unk38;
+    r = l + w->w;
+    b = t + w->h;
+    if (x < l) {
+        return -1;
+    }
+    if (r < x) {
+        return -1;
+    }
+    if (y < t) {
+        return -1;
+    }
+    if (b < y) {
+        return -1;
+    }
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/pspBrowser", zWindExecK);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/pspBrowser", zWindUpdate);
+int zWindUpdate(void) {
+    s_windsystem_data.flags &= ~2;
+    return 0;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/pspBrowser", zWindImageSet);
+int zWindImageSet(void *dst) {
+    memcpy(dst, s_windsystem_init.image, s_windsystem_init.width * s_windsystem_init.height * 2);
+    s_windsystem_init.image = dst;
+    return 0;
+}

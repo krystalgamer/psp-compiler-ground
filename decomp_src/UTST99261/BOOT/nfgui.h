@@ -117,7 +117,7 @@ typedef struct {
 } WINDSYSTEMDATA;
 
 typedef struct {
-    int unk0;
+    void *image;                /* 0x0: frame buffer */
     int unk4;
     int unk8;
     int width;                  /* 0xC */
