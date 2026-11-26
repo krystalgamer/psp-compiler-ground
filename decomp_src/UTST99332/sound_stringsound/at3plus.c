@@ -47,6 +47,12 @@ int sceIoClose(int fd);
 int printf(const char *fmt, ...);
 
 
+/* SDK prototypes (tools/sdk_protos.h) */
+void *memcpy(void *d, const void *s, unsigned int n);
+void *memset(void *s, int c, unsigned int n);
+int sceIoOpen(const char *name, int flag, int mode);
+int sceIoRead(int fd, void *buf, unsigned int nbyte);
+
 INCLUDE_ASM("tmp/asm/UTST99332/sound_stringsound/nonmatchings/at3plus", init_atrac3plus);
 
 INCLUDE_RODATA("tmp/asm/UTST99332/sound_stringsound/nonmatchings/at3plus", D_0001F6C0);
