@@ -1,10 +1,29 @@
 /* cflags: -O1 */
 #include "common.h"
+void iom_sendRequestFailed(void *msg, int err);
+void iom_freeMsg(void *msg);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iom_evpagesave", iom_evPageSave);
+int iom_evPageSave(void *msg) {
+    iom_sendRequestFailed(msg, -0x12C);
+    iom_freeMsg(msg);
+    return 0;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iom_evpagesave", iom_evPageBuild);
+int iom_evPageBuild(void *msg) {
+    iom_sendRequestFailed(msg, -0x12C);
+    iom_freeMsg(msg);
+    return 0;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iom_evpagesave", iom_evPageRemove);
+int iom_evPageRemove(void *msg) {
+    iom_sendRequestFailed(msg, -0x12C);
+    iom_freeMsg(msg);
+    iom_freeMsg(msg);
+    return 0;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iom_evpagesave", iom_evPageDispose);
+int iom_evPageDispose(void *msg) {
+    iom_sendRequestFailed(msg, -0x12C);
+    iom_freeMsg(msg);
+    return 0;
+}

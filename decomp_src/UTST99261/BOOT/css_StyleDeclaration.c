@@ -2,10 +2,13 @@
 #include "common.h"
 #include "css_types.h"
 #include "m2c_macros.h"
+int UCS_strcasecmp(u16 *a, void *b);
+void *CSSStyleDeclaration_getPropertyDeclaration(void *d, u16 *name);
+void addCSSNode(void *list, void *node);
+extern void *CSSIdentNames[];
 extern void *CSSPropertyNames[];
 extern u16 CSSSTR_important[];
 void *MEM_calloc();
-void *CSSStyleDeclaration_getPropertyDeclaration(); /* extern */
 int CSSValue_getCssText(int);                       /* extern */
 M2C_UNK CSS_freePoolBuf(void *);                    /* extern */
 int CSS_getPoolBuf(void *);                         /* extern */
@@ -15,58 +18,61 @@ M2C_UNK MEM_free(M2C_UNK, int);                     /* extern */
 M2C_UNK newCSSRule(M2C_UNK, M2C_UNK, int, int);     /* extern */
 
 M2C_UNK addCSSRule();                               /* extern */
-M2C_UNK addCSSNode();                               /* extern */
 
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_StyleDeclaration", CSSStyleDeclaration_getPropertyDeclaration);
-
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
-
-int CSSStyleDeclaration_getPropertyValue(void) {
-    int var_v1;
-    void *temp_v0;
-
-    temp_v0 = CSSStyleDeclaration_getPropertyDeclaration();
-    var_v1 = 0;
-    if (temp_v0 != NULL) {
-        var_v1 = CSSValue_getCssText(M2C_FIELD(temp_v0, int *, 0xC));
+void *CSSStyleDeclaration_getPropertyDeclaration(void *d, u16 *name) {
+    void *p;
+    for (p = d; p != NULL; p = M2C_FIELD(p, void **, 0x18)) {
+        if (UCS_strcasecmp(name, CSSPropertyNames[M2C_FIELD(p, s16 *, 0x1C) * 2]) == 0) {
+            return p;
+        }
     }
-    return var_v1;
+    return NULL;
 }
 
 #ifndef NULL
 #define NULL ((void *)0)
 #endif
 
-int CSSStyleDeclaration_getPropertyCSSValue(void) {
-    int var_v1;
-    void *temp_v0;
-
-    temp_v0 = CSSStyleDeclaration_getPropertyDeclaration();
-    var_v1 = 0;
-    if (temp_v0 != NULL) {
-        var_v1 = M2C_FIELD(temp_v0, int *, 0xC);
+int CSSStyleDeclaration_getPropertyValue(void *d, u16 *name) {
+    void *p;
+    int r;
+    p = CSSStyleDeclaration_getPropertyDeclaration(d, name);
+    r = 0;
+    if (p != NULL) {
+        r = CSSValue_getCssText(M2C_FIELD(p, int *, 0xC));
     }
-    return var_v1;
+    return r;
 }
 
 #ifndef NULL
 #define NULL ((void *)0)
 #endif
 
-int CSSStyleDeclaration_removeProperty(void) {
-    int var_s1;
-    void *temp_v0;
-
-    var_s1 = 0;
-    temp_v0 = CSSStyleDeclaration_getPropertyDeclaration();
-    if (temp_v0 != NULL) {
-        var_s1 = CSSValue_getCssText(M2C_FIELD(temp_v0, int *, 0xC));
-        freeCSSStyleDeclaration(temp_v0);
+int CSSStyleDeclaration_getPropertyCSSValue(void *d, u16 *name) {
+    void *p;
+    int r;
+    p = CSSStyleDeclaration_getPropertyDeclaration(d, name);
+    r = 0;
+    if (p != NULL) {
+        r = M2C_FIELD(p, int *, 0xC);
     }
-    return var_s1;
+    return r;
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+int CSSStyleDeclaration_removeProperty(void *d, u16 *name) {
+    void *p;
+    int r = 0;
+    p = CSSStyleDeclaration_getPropertyDeclaration(d, name);
+    if (p != NULL) {
+        r = CSSValue_getCssText(M2C_FIELD(p, int *, 0xC));
+        freeCSSStyleDeclaration(p);
+    }
+    return r;
 }
 
 u16 *CSSStyleDeclaration_getPropertyPriority(void *a0, void *a1) {
@@ -964,7 +970,15 @@ void freeCSSUnknownRule(void *arg0) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_StyleDeclaration", addCSSUnknownRule);
+void addCSSUnknownRule(void *r) {
+    if (r != NULL) {
+        if (M2C_FIELD(r, void **, 0x20) != NULL) {
+            addCSSNode(M2C_FIELD(r, void **, 0x20), r);
+        } else if (r != NULL && M2C_FIELD(r, void **, 0x1C) != NULL) {
+            addCSSNode(M2C_FIELD(r, void **, 0x1C), r);
+        }
+    }
+}
 
 int CSSUnknownRule_getType(s16 *r) {
     if (r != NULL) {
@@ -1048,11 +1062,8 @@ void CSSUnknownRule_setParentRule(void *arg0, int arg1) {
     }
 }
 
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
-void newCSSValue(void) {
-    newCSSNode(0xB, 0x38);
+void *newCSSValue(void) {
+    return newCSSNode(0xB, 0x38);
 }
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_StyleDeclaration", freeCSSValue);
@@ -1063,8 +1074,8 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_StyleDeclaration", duplicat
 #define NULL ((void *)0)
 #endif
 
-void addCSSValue(void) {
-    addCSSNode();
+void addCSSValue(void *decl, void *v) {
+    addCSSNode(decl, v);
 }
 
 s16 *newCSSPrimitiveValue(int type) {
@@ -1114,7 +1125,18 @@ double CSSPrimitiveValue_getFloatValue(s16 *v, s16 type) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_StyleDeclaration", CSSPrimitiveValue_setStringValue);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_StyleDeclaration", CSSPrimitiveValue_getStringValue);
+void *CSSPrimitiveValue_getStringValue(s16 *v) {
+    void *r;
+    s16 t = *v;
+    if (t == 0x13 || t == 0x14 || t == 0x16 || t == 0x1A) {
+        r = M2C_FIELD(v, void **, 8);
+    } else if (*v == 0x15) {
+        r = CSSIdentNames[M2C_FIELD(v, int *, 8)];
+    } else {
+        r = NULL;
+    }
+    return r;
+}
 
 void *CSSPrimitiveValue_getCounterValue(s16 *v) {
     return *v == 0x17 ? (void *)(v + 4) : NULL;
@@ -1141,7 +1163,16 @@ int CSSValueList_getLength(void *arg0) {
     return var_v0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_StyleDeclaration", CSSValueList_item);
+void *CSSValueList_item(void *list, int idx) {
+    void *r = NULL;
+    int i;
+    if (idx < M2C_FIELD(list, int *, 8)) {
+        for (r = M2C_FIELD(list, void **, 0xC), i = 0; r != NULL && i < idx; i++) {
+            r = M2C_FIELD(r, void **, 0x18);
+        }
+    }
+    return r;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)

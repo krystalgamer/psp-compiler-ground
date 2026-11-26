@@ -12,7 +12,20 @@ M2C_UNK moveFrameBorderByVertical(void *, int, int); /* extern */
 
 
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_frame", newBuffer);
+void *newBuffer(void) {
+    void **b = MEM_malloc(0, 0xC);
+    if (b == NULL) {
+        return NULL;
+    }
+    ((int *)b)[1] = 0;
+    ((int *)b)[2] = 5;
+    b[0] = MEM_malloc(0, 0x3C);
+    if (b[0] == NULL) {
+        MEM_free(0, b);
+        return NULL;
+    }
+    return b;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)

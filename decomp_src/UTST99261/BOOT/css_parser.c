@@ -155,7 +155,21 @@ int CSSRuleList_getLength(void *arg0) {
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_parser", CSSRuleList_item);
+void *CSSRuleList_item(void *list, int idx) {
+    void *r;
+    int i;
+    if (list == NULL || M2C_FIELD(list, void **, 4) == NULL || M2C_FIELD(M2C_FIELD(list, void **, 4), void **, 8) == NULL) {
+        return NULL;
+    }
+    i = 0;
+    for (r = list; r != NULL && i < idx; i++) {
+        r = M2C_FIELD(r, void **, 0x18);
+    }
+    if (i == idx) {
+        return r;
+    }
+    return NULL;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)

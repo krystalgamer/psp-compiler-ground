@@ -89,7 +89,13 @@ int CSSSelectorList_getCssSelectors(void *arg0) {
     return M2C_FIELD(arg0, int *, 0xC);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_SelectorList", newCSSStyleDeclaration);
+void *newCSSStyleDeclaration(int prop) {
+    void *n = newCSSNode(0xA, 0x20);
+    if (n != NULL) {
+        M2C_FIELD(n, s16 *, 0x1C) = prop;
+    }
+    return n;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)

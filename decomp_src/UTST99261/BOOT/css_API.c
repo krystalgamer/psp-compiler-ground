@@ -1,6 +1,7 @@
 /* cflags: -O1 */
 #include "common.h"
 #include "m2c_macros.h"
+u16 *CSS_SkipQuotedString(u16 *p);
 void CSS_putcPoolBuf(void *p, unsigned char c);
 void ParseCSSDeclaration(void *ctx, void *str, void **out);
 void *UCS_strdup(void *s);
@@ -273,7 +274,18 @@ int CSSStyleSheet_getCssRules(void *arg0) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_API", CSSStyleSheet_insertRule);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_API", CSSStyleSheet_deleteRule);
+void CSSStyleSheet_deleteRule(void *ss, int idx) {
+    void *r;
+    int i;
+    if (ss != NULL && M2C_FIELD(ss, s16 *, 0) == 0 && M2C_FIELD(ss, s16 *, 0x36) == 0) {
+        for (r = M2C_FIELD(ss, void **, 0xC), i = 0; r != NULL && i < idx; i++) {
+            r = M2C_FIELD(r, void **, 0x18);
+        }
+        if (i == idx) {
+            freeCSSRule(r);
+        }
+    }
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -441,9 +453,27 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_API", CSS_SkipQuotedString)
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_API", CSS_SkipRule);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_API", CSS_SkipProperty);
+u16 *CSS_SkipProperty(u16 *p) {
+    u16 c;
+    while ((c = *p) != 0) {
+        if (c == ';' || c == '}') {
+            break;
+        }
+        p++;
+        if (c == '\'' || c == '"') {
+            p = CSS_SkipQuotedString(p);
+        }
+    }
+    return p;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_API", CSS_SkipToEqual);
+u16 *CSS_SkipToEqual(u16 *p) {
+    u16 c;
+    while (c = *p, c != 0 && c != '=' && c != '\r' && c != '\n') {
+        p++;
+    }
+    return p;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_API", CSS_ident);
 
