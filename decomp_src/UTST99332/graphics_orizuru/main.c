@@ -222,7 +222,68 @@ void model_orizuru(void) {
     sceGumDrawArray(4, 0x1E0, 5, NULL, lwing);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_orizuru/nonmatchings/main", draw_orizuru);
+#ifndef SCEGU_SMOOTH /* sample */
+#define SCEGU_SMOOTH                       1
+#endif
+#ifndef SCEGU_PRIM_TRIANGLE_STRIP /* sample */
+#define SCEGU_PRIM_TRIANGLE_STRIP          4
+#endif
+#ifndef SCEGU_THROUGH /* sample */
+#define SCEGU_THROUGH            ( 1 << 23 )
+#endif
+#ifndef SCEGU_COLOR_PF5551 /* sample */
+#define SCEGU_COLOR_PF5551       ( 5 <<  2 )
+#endif
+#ifndef SCEGU_VERTEX_SHORT /* sample */
+#define SCEGU_VERTEX_SHORT       ( 2 <<  7 )
+#endif
+#ifndef SCEGU_DEPTH_TEST /* sample */
+#define SCEGU_DEPTH_TEST                   1
+#endif
+#ifndef SCEGU_FLAT /* sample */
+#define SCEGU_FLAT                         0
+#endif
+#ifndef MAX_ORIZURU /* sample */
+#define MAX_ORIZURU		128
+#endif
+#ifndef SCEGU_PI /* sample */
+#define SCEGU_PI                           3.1415926535897932384626433832f
+#endif
+#ifndef SCEGU_RAD /* sample */
+#define SCEGU_RAD(a)                       ((a)*SCEGU_PI/180.0f)
+#endif
+static void draw_orizuru(void)
+{
+	ORIZURUDAT		*p;
+	ScePspFVector3	vec;
+	int				i;
+
+	sceGuDisable(SCEGU_DEPTH_TEST);
+	sceGuShadeModel(SCEGU_SMOOTH);
+	sceGumDrawArray(SCEGU_PRIM_TRIANGLE_STRIP,
+					SCEGU_THROUGH|SCEGU_COLOR_PF5551|SCEGU_VERTEX_SHORT,
+					4, 0, background);
+
+	sceGuEnable(SCEGU_DEPTH_TEST);
+	sceGuShadeModel(SCEGU_FLAT);
+
+	for (i=0; i<MAX_ORIZURU; i++) {
+		p=&orizuru[i];
+		if (p->speed==0.0f)
+			break;
+
+		sceGumPushMatrix();
+
+		sceGumTranslate(&p->v);
+		sceGumRotateY(SCEGU_RAD(p->angle));
+		vec.x=(1.0f/4.0f), vec.y=(1.0f/4.0f), vec.z=(1.0f/4.0f);
+		sceGumScale(&vec);
+		sceGuColor(p->col);
+		model_orizuru();
+
+		sceGumPopMatrix();
+	}
+}
 
 void draw_frame(void) {
     sceGuStart(0, disp_list, 0x10000);
