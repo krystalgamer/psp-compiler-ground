@@ -132,6 +132,19 @@ INCLUDE_ASM("tmp/asm/UTST99332/graphics_model/nonmatchings/main", draw_objects);
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_model/nonmatchings/main", load_objects);
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_model/nonmatchings/main", unload_objects);
+static void unload_objects(void)
+{
+	{
+		int i;
+
+		for (i = 0; i < 3; i++) {
+			sceGmoModelDelete(g_copies[i]);
+			g_copies[i] = 0;
+		}
+	}
+
+	sceGmoModelDelete(g_model);
+	g_model = 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_model/nonmatchings/main", load_file);
