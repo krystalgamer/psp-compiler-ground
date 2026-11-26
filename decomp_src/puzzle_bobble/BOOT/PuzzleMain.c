@@ -1368,7 +1368,113 @@ void GetBallCoordinate(PZL_STAT *st, int idx, int *x, int *y)
 	*x = (D_0014E87C < D_0014E880) ? D_0014E87C * 16 : (D_0014E87C - D_0014E880) * 16 + 8;
 }
 
+#ifdef NON_MATCHING
+/* Rough (7 instructions short): logic complete (note the original marks attr[dir], not
+ * attr[addr], for a 9 neighbour); its frame is 16 bytes bigger and col and ret live in
+ * stack slots. */
+int CheckBallAround(PZL_STAT *st, int x, int y)
+{
+	int queue[596];
+	int px, py;
+	int i, k, a, c, col, cnt, n9, last, ret, n;
+
+	n9 = 0;
+	cnt = 0;
+	col = st->mp.map[GetBallMapAddr(st, x, y, 0)];
+	st->drop.unk1 = 0;
+	for (i = 1; i < 7; i++) {
+		a = GetBallMapAddr(st, x, y, i);
+		if (a >= 0) {
+			c = st->mp.map[a];
+			if (c == 9) {
+				st->attr[a] = 2;
+				st->color = col;
+				n9++;
+				st->drop.d[st->ndrop].x = mx[i] + x;
+				st->drop.d[st->ndrop].y = my[i] + y;
+				st->drop.d[st->ndrop].col = c;
+				st->drop.d[st->ndrop].flag = 0;
+				st->attr[i] = 1;
+				st->ndrop++;
+				st->snd.se = 23;
+			}
+			if (c == col) {
+				last = i;
+				cnt++;
+			}
+		}
+	}
+	if (n9 != 0)
+		return n9;
+	if (cnt == 0)
+		return 0;
+	if (cnt == 1) {
+		cnt = 0;
+		for (i = 1; i < 7; i++) {
+			a = GetBallMapAddr(st, x + mx[last], y + my[last], i);
+			if (a >= 0)
+				cnt += st->mp.map[a] == col;
+		}
+		if (cnt < 2)
+			return 0;
+	}
+	for (i = 0; i < 0x240; i++) {
+		st->attr[i] = 0;
+		st->rainbow[i] = 0;
+	}
+	i = GetBallMapAddr(st, x, y, 0);
+	GetBallCoordinate(st, i, &px, &py);
+	st->drop.d[st->ndrop].x = px;
+	st->drop.d[st->ndrop].y = py;
+	st->drop.d[st->ndrop].col = col;
+	st->drop.d[st->ndrop].flag = 0;
+	ret = 1;
+	st->attr[i] = 1;
+	st->ndrop++;
+	queue[0] = i;
+	cnt = 1;
+	do {
+		i = queue[--cnt];
+		GetBallCoordinate(st, i, &px, &py);
+		for (k = 1; k < 7; k++) {
+			a = GetBallMapAddr(st, px, py, k);
+			if (a >= 0 && st->mp.map[a] == col && st->attr[a] == 0) {
+				queue[cnt++] = a;
+				st->attr[a] = 1;
+				st->drop.d[st->ndrop].x = px + mx[k];
+				ret++;
+				st->drop.d[st->ndrop].y = py + my[k];
+				st->drop.d[st->ndrop].col = col;
+				st->drop.d[st->ndrop].flag = 0;
+				st->ndrop++;
+			}
+		}
+	} while (cnt > 0);
+	n = 0;
+	for (i = 0; i < 0x240; i++) {
+		GetBallCoordinate(st, i, &px, &py);
+		if (st->attr[i] != 0) {
+			st->mp.map[i] = 0;
+			n++;
+			st->unk434++;
+			st->rainbow[i] = 0;
+			for (k = 1; k < 7; k++) {
+				a = GetBallMapAddr(st, px, py, k);
+				if (st->mp.map[a] == 13) {
+					st->snd.se = 24;
+					st->mp.map[a] = col;
+					st->rainbow[a] = 1;
+					st->drop.unk1 = 1;
+				}
+			}
+		}
+	}
+	st->unk429 = n == 3;
+	return ret;
+}
+#else
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", CheckBallAround);
+#endif
 
 #ifdef NON_MATCHING
 /* Right size, diff 122 (register allocation): logic complete; n/ret and the colour swap
