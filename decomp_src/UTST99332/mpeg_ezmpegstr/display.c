@@ -78,7 +78,74 @@ static SceInt32 swap_buffer(SceChar8 *buffer)
 	return 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/mpeg_ezmpegstr/nonmatchings/display", dispbuf_create);
+void *malloc(unsigned int size);
+void *memalign(unsigned int align, unsigned int size);
+void free(void *p);
+
+SceInt32 dispbuf_create(t_displayBuffer *pDisp, SceInt32 disp_size, SceInt32 disp_num)
+{
+	SceInt32 i, ret;
+	SceChar8 *ge_addr;
+
+	pDisp->buf = NULL;
+	pDisp->pts = NULL;
+
+	ret = sceDisplaySetMode(0, 480, 272);
+	if (ret < 0) {
+		goto error;
+	}
+
+	pDisp->buf = malloc(disp_num * sizeof(SceChar8 *));
+	if (pDisp->buf == NULL) {
+		ret = -1;
+		goto error;
+	}
+
+	for (i = 0; i < disp_num; i++) {
+		pDisp->buf[i] = NULL;
+	}
+
+	for (i = 0; i < disp_num; i++) {
+		pDisp->buf[i] = memalign(16, disp_size);
+		if (pDisp->buf[i] == NULL) {
+			ret = -1;
+			goto error;
+		}
+	}
+
+	pDisp->pts = malloc(disp_num * sizeof(SceUInt32));
+	if (pDisp->pts == NULL) {
+		ret = -1;
+		goto error;
+	}
+
+	ge_addr = sceGeEdramGetAddr();
+
+	displayBuf[0] = ge_addr + 0x88000;
+	displayBuf[1] = ge_addr + 0x110000;
+
+	pDisp->size = disp_num;
+
+	goto term;
+
+error:
+	if (pDisp->buf != NULL) {
+		for (i = 0; i < pDisp->size; i++) {
+			if (pDisp->buf[i] != NULL) {
+				free(pDisp->buf[i]);
+			}
+		}
+
+		free(pDisp->buf);
+	}
+
+	if (pDisp->pts != NULL) {
+		free(pDisp->pts);
+	}
+
+term:
+	return ret;
+}
 
 int sceDisplaySetMode(int mode, int width, int height);
 SceInt32 dispbuf_reset(t_displayBuffer *pDisp)
