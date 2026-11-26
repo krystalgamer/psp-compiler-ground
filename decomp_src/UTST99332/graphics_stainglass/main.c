@@ -368,7 +368,83 @@ INCLUDE_ASM("tmp/asm/UTST99332/graphics_stainglass/nonmatchings/main", MainThrea
 
 INCLUDE_RODATA("tmp/asm/UTST99332/graphics_stainglass/nonmatchings/main", D_000133D0);
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_stainglass/nonmatchings/main", StartMainThread);
+#define SCE_KERNEL_USER_LOWEST_PRIORITY         111
+#define SCE_KERNEL_TH_USE_ScratchSRAM   0x00008000U
+#define SCE_KERNEL_TH_USE_VFPU          0x00004000U
+#define SCE_KERNEL_ERROR_NO_MEMORY 0x80020190
+#define SCE_KERNEL_ERROR_ILLEGAL_ATTR 0x80020191
+#define SCE_KERNEL_ERROR_ILLEGAL_STACK_SIZE 0x80020194
+#define SCE_KERNEL_ERROR_ILLEGAL_PRIORITY 0x80020193
+#define SCE_KERNEL_ERROR_ILLEGAL_ENTRY 0x80020192
+#define SCE_KERNEL_ERROR_SPAD_INUSE 0x800201b9
+#define SCE_KERNEL_ERROR_UNKNOWN_THID 0x80020198
+#define SCE_KERNEL_ERROR_ILLEGAL_THID 0x80020197
+#define SCE_KERNEL_ERROR_ILLEGAL_CONTEXT 0x80020064
+#define SCE_KERNEL_ERROR_NOT_DORMANT 0x800201a4
+
+void StartMainThread()
+{
+	SceUID main_thread = 0;
+
+	main_thread = sceKernelCreateThread( "main", MainThread, SCE_KERNEL_USER_LOWEST_PRIORITY
+		, 256*100, SCE_KERNEL_TH_USE_VFPU, NULL );
+
+	if ( ((unsigned int)main_thread) == SCE_KERNEL_ERROR_NO_MEMORY )
+	{
+		printf( "no memory\n" );
+	}
+	else if ( ((unsigned int)main_thread) == SCE_KERNEL_ERROR_ILLEGAL_ATTR )
+	{
+		printf( "illegal attr\n" );
+	}
+	else if ( ((unsigned int)main_thread) == SCE_KERNEL_ERROR_ILLEGAL_STACK_SIZE )
+	{
+		printf( "illegal stack size\n" );
+	}
+	else if ( ((unsigned int)main_thread) == SCE_KERNEL_ERROR_ILLEGAL_CONTEXT )
+	{
+		printf( "illegal context\n" );
+	}
+	else if ( ((unsigned int)main_thread) == SCE_KERNEL_ERROR_ILLEGAL_PRIORITY )
+	{
+		printf( "illegal priority\n" );
+	}
+	else if ( ((unsigned int)main_thread) == SCE_KERNEL_ERROR_ILLEGAL_ENTRY )
+	{
+		printf( "illegal entry\n" );
+	}
+	else if ( ((unsigned int)main_thread) == SCE_KERNEL_ERROR_SPAD_INUSE )
+	{
+		printf( "spad inuse\n" );
+	}
+	else
+	{
+		int err = sceKernelStartThread( main_thread, 0, NULL );
+
+		if ( ((unsigned int)err) == SCE_KERNEL_ERROR_UNKNOWN_THID )
+		{
+			printf( "unknown thid\n" );
+		}
+		else if ( ((unsigned int)err) == SCE_KERNEL_ERROR_ILLEGAL_THID )
+		{
+			printf( "illegal thid\n" );
+		}
+		else if ( ((unsigned int)err) == SCE_KERNEL_ERROR_ILLEGAL_CONTEXT )
+		{
+			printf( "illegal context\n" );
+		}
+		else if ( ((unsigned int)err) == SCE_KERNEL_ERROR_NOT_DORMANT )
+		{
+			printf( "not dormant\n" );
+		}
+		else
+		{
+			printf( "initial thread going to sleep, night night!\n" );
+
+			sceKernelSleepThread();
+		}
+	}
+}
 
 int main(void) {
     StartMainThread();
