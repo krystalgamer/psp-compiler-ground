@@ -3,7 +3,42 @@
 #include "m2c_macros.h"
 
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/main", main);
+void psp_init(void);
+void autoload(void);
+void autosave(void);
+int inv_title_main(void);
+void main_classicinv(void);
+void inv_matchup_main(void);
+void maingame_loop(int mode);
+void net_labo(void);
+
+void psp_init(void);
+void autoload(void);
+void autosave(void);
+int inv_title_main(void);
+void main_classicinv(void);
+void inv_matchup_main(void);
+void maingame_loop(int mode);
+void net_labo(void);
+int main(void)
+{
+	int r;
+
+	psp_init();
+	autoload();
+	for (;;) {
+		r = inv_title_main();
+		if (r == 0)
+			main_classicinv();
+		else if (r == 1)
+			inv_matchup_main();
+		else if (r == 2)
+			maingame_loop(0);
+		else if (r == 3)
+			net_labo();
+		autosave();
+	}
+}
 
 #ifndef NULL
 #define NULL ((void *)0)

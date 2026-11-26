@@ -1,11 +1,37 @@
 /* cflags: -O2 */
 #include "common.h"
 
+typedef struct { unsigned int size; int mpidtext; int mpiddata; unsigned int flags; char position; char access; char creserved[2]; } MLOPT;
+typedef struct { char *path; int mpid; } MODPATH;
+extern const MODPATH s_modules_path[10];
+extern int s_loaded_modules_id[10];
+int module_file_start(int *mid, char *path, MLOPT *opt);
+void *memset(void *, int, unsigned int);
+int sceKernelStopModule(int modid, int argsize, void *argp, int *status, void *opt);
+int sceKernelUnloadModule(int modid);
+
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_module_load", LoadModule);
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_module_load", LoadRequiredModules);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_module_load", StopDeleteLoadedModules);
+extern const MODPATH s_modules_path[10];
+extern int s_loaded_modules_id[10];
+int module_file_start(int *mid, char *path, MLOPT *opt);
+void *memset(void *, int, unsigned int);
+int sceKernelStopModule(int modid, int argsize, void *argp, int *status, void *opt);
+int sceKernelUnloadModule(int modid);
+void StopDeleteLoadedModules(void)
+{
+	unsigned int i;
+
+	for (i = 0; i < 10; i++) {
+		if (s_loaded_modules_id[i] == 0)
+			break;
+		sceKernelStopModule(s_loaded_modules_id[i], 0, NULL, NULL, NULL);
+		sceKernelUnloadModule(s_loaded_modules_id[i]);
+		s_loaded_modules_id[i] = 0;
+	}
+}
 
 INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_module_load", D_0007B824);
 

@@ -7,7 +7,13 @@ extern int myHeap_freesize;
 extern int myHeap_size;
 
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/my_heap", myHeapInit);
+void myHeapInit(int addr, int size)
+{
+	g_size = size;
+	myHeap_size = 0;
+	g_addr = addr;
+	myHeap_freesize = size;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
