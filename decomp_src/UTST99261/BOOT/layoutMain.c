@@ -4,7 +4,71 @@
 
 
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/layoutMain", lo_halt);
+typedef struct {
+    int type;
+    int unk4;
+    int unk8;
+    int unkC;
+    int unk10;
+    int unk14;
+    int unk18;
+    int unk1C;
+} HALTMSG;
+
+typedef struct {
+    int unk0;
+    HALTMSG m;
+} HALTBUF;
+
+void GUI_Toolkit_mutexUnlock();
+int OS_thread_mutex_unlock(int m);
+int OS_mq_receive(int q, void *buf, int size, int flag);
+void lo_sendHalt();
+void proc_msg_PL2(HALTMSG *m);
+void proc_msg_JL3(HALTMSG *m);
+extern int jsapi_lock;
+extern int D_00584D18;
+
+void lo_halt(void) {
+    HALTBUF buf;
+    HALTMSG m;
+    int q;
+    int *nda;
+
+    GUI_Toolkit_mutexUnlock();
+    nda = gESPRIT_LO_GLOBAL_NDA;
+    if (nda[0x10] != 0) {
+        OS_thread_mutex_unlock(nda[0x10]);
+    }
+    if (jsapi_lock != 0) {
+        OS_thread_mutex_unlock(jsapi_lock);
+    }
+    lo_sendHalt();
+    GUI_Toolkit_mutexUnlock();
+    q = D_00584D18;
+    do {
+        if (OS_mq_receive(q, &buf, 0x24, 0) == 0xB) {
+            break;
+        }
+        nda = gESPRIT_LO_GLOBAL_NDA;
+        if (nda[0x10] != 0) {
+            OS_thread_mutex_unlock(nda[0x10]);
+        }
+        m = buf.m;
+    } while (m.type != 2 || m.unkC != 0x302);
+    proc_msg_PL2(&m);
+    do {
+        if (OS_mq_receive(q, &buf, 0x24, 0) == 0xB) {
+            break;
+        }
+        nda = gESPRIT_LO_GLOBAL_NDA;
+        if (nda[0x10] != 0) {
+            OS_thread_mutex_unlock(nda[0x10]);
+        }
+        m = buf.m;
+    } while (m.type != 8 || m.unkC != 0x803);
+    proc_msg_JL3(&m);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/layoutMain", esp_loThread);
 
