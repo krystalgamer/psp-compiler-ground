@@ -2,9 +2,105 @@
 #include "common.h"
 #include "libwave_sdk.h"
 
-INCLUDE_ASM("tmp/asm/psp184/mpegon/nonmatchings/libwave", sceWaveInit);
+static __inline__ void wclr_i(void *dst, unsigned int n)
+{
+	char *p = dst;
+	unsigned int i;
 
-INCLUDE_ASM("tmp/asm/psp184/mpegon/nonmatchings/libwave", sceWaveSetVoice);
+	for (i = 0; i < n; i++)
+		*p++ = 0;
+}
+
+int sceWaveInit(void)
+{
+	if (D_0001378C != 0)
+		return 0x80440001;
+	D_00014AE4 = D_00013794;
+	D_00014AE0 = D_00013804;
+	wclr_i(D_00014614, sizeof(D_00014614));
+	wclr_i(D_00014874, sizeof(D_00014874));
+	D_00014AD4.ch = sceAudioChReserve(-1, 0x1c0, 0);
+	if (D_00014AD4.ch < 0)
+		return 0x80440001;
+	D_00014AE8[0] = sceAudioChReserve(-1, 0x100, 0);
+	if (D_00014AE8[0] < 0) {
+		sceAudioChRelease(D_00014AD4.ch);
+		return 0x80440001;
+	}
+	D_00014AE8[1] = sceAudioChReserve(-1, 0x100, 0);
+	if (D_00014AE8[1] < 0) {
+		sceAudioChRelease(D_00014AD4.ch);
+		sceAudioChRelease(D_00014AE8[0]);
+		return 0x80440001;
+	}
+	D_00014AE8[2] = sceAudioChReserve(-1, 0x100, 0);
+	if (D_00014AE8[2] < 0) {
+		sceAudioChRelease(D_00014AD4.ch);
+		sceAudioChRelease(D_00014AE8[0]);
+		sceAudioChRelease(D_00014AE8[1]);
+		return 0x80440001;
+	}
+	D_0001378C = 1;
+	return 0;
+}
+
+int sceWaveSetVoice(unsigned int ch, void *data, int size, int flags)
+{
+	SceWaveVoice *v;
+
+	if (ch >= 8)
+		return 0x80440005;
+	if ((unsigned int)size > 0x1800000)
+		return 0x80440007;
+	if (sceWaveGetStat(ch) != 0)
+		return 0x80440009;
+	if (!(flags & 0x400)) {
+		if (data == NULL)
+			return 0x80440006;
+		if (size == 0)
+			return 0x80440007;
+		v = &D_00014614[ch];
+		v->data = data;
+		v->size = size;
+		v->flags = flags;
+		v->pos = 0;
+		v->stat = 0;
+		v->vol_l = 0x1000;
+		v->vol_r = 0x1000;
+		v->unk3C = 0x70;
+		v->unk30 = 0;
+		v->unk34 = 0;
+		v->unk28 = 0;
+		v->unk2C = 0;
+		v->unk24 = 0;
+		v->unk10 = 0;
+		v->unk14 = 0;
+		v->unk40 = 0;
+	} else {
+		if (data != NULL)
+			return 0x80440006;
+		if (size != 0)
+			return 0x80440007;
+		v = &D_00014614[ch];
+		v->data = data;
+		v->size = size;
+		v->flags = flags;
+		v->pos = 0;
+		v->stat = 0;
+		v->vol_l = 0x1000;
+		v->vol_r = 0x1000;
+		v->unk3C = 0x70;
+		v->unk30 = 0;
+		v->unk34 = 0;
+		v->unk28 = 0;
+		v->unk2C = 0;
+		v->unk24 = 0;
+		v->unk10 = 0;
+		v->unk14 = 0;
+		v->unk40 = 0;
+	}
+	return 0;
+}
 
 int sceWaveSetVolume(unsigned int ch, unsigned int left, unsigned int right)
 {
@@ -234,7 +330,22 @@ int sceWaveStart(int prio)
 	return func_00005934(prio);
 }
 
-INCLUDE_ASM("tmp/asm/psp184/mpegon/nonmatchings/libwave", sceWaveEnd);
+int sceKernelDeleteThread(int thid);
+int sceWaveEnd(void)
+{
+	int i;
+
+	if (D_0001378C != 3)
+		return 0x80440004;
+	for (i = 0; i < 8; i++)
+		sceWaveStop(i);
+	D_00013790 = 1;
+	sceKernelWaitThreadEnd(D_00014AD4.thid, NULL);
+	sceKernelDeleteThread(D_00014AD4.thid);
+	D_00013790 = 0;
+	D_0001378C = 1;
+	return 0;
+}
 
 int sceWaveExit(void)
 {

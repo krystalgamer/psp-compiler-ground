@@ -29,8 +29,8 @@ typedef struct {
 	int prio;
 } SceWaveMain;
 
-extern int D_0001378C;
-extern int D_00013790;
+extern volatile int D_0001378C;
+extern volatile int D_00013790;
 extern char D_00013794[];
 extern char D_00013804[];
 extern SceWaveVoice D_00014614[8];
