@@ -340,7 +340,32 @@ int SpriteDrawC(float z, int x, int y, SPRDATA *p)
 	return SpriteDraw(p->no, -1, z, x - w, y - h, u, v, x + w, y - h, u + p->w, v, x - w, y + h, u, v + p->h, x + w, y + h, u + p->w, v + p->h);
 }
 
+#ifdef NON_MATCHING
+/* diff 4 (every store order): f0/f1 get $f27/$f26 the other way round; the
+ * same tie as in SpriteDraw3D.  No callers in this module. */
+int DrawSprite(int no, int flag, int n, float z, float f0, float f1, float f13, float f2, float f3, float f4, float f5, float f6, float f7)
+{
+	SPRITE *sp = GetSpriteBuf((int)z);
+
+	sp->type = 1;
+	sp->no = no;
+	sp->z = z;
+	sp->f[0] = f0;
+	sp->f[1] = f1;
+	sp->f[2] = f2;
+	sp->f[3] = f3;
+	sp->f[4] = f4;
+	sp->f[5] = f5;
+	sp->f[6] = f6;
+	sp->f[7] = f7;
+	sp->f[10] = n;
+	sp->f[13] = f13;
+	sp->flag = flag;
+	return 1;
+}
+#else
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/wrap_sprite", DrawSprite);
+#endif
 
 int DrawSpriteEz(float z, float x, float y, float w, float h, float u, float v, int no)
 {
