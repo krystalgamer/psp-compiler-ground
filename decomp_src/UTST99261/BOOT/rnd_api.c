@@ -20,6 +20,8 @@ typedef struct {
     u8 unk0[0x6D];
     s8 unk6D;
     s8 unk6E;
+    u8 unk6F[4];
+    s8 unk73;                   /* 0x73 */
 } BSTYLE;
 
 typedef struct BNODE {
@@ -35,6 +37,8 @@ typedef struct BNODE {
     int widget;                 /* 0x2C */
     u8 unk30[0x8];
     s16 type;                   /* 0x38 */
+    s16 unk3A;
+    s16 unk3C;                  /* 0x3C */
 } BNODE;
 
 typedef struct SELLIST {
@@ -44,6 +48,10 @@ typedef struct SELLIST {
 } SELLIST;
 
 extern SELLIST *sellist;
+int rnd_gdrawCreateBorder();
+void rnd_drawTextBoxnode(void *ctx, BNODE *n);
+void rnd_drawImageBoxnode(void *ctx, BNODE *n);
+void rnd_drawBasicBoxnode(void *ctx, BNODE *n);
 int drawObject(BNODE *node);
 void drawEachFrame(BNODE *node);
 int GUI_ScrollPane_remove();
@@ -267,7 +275,18 @@ void drawAnimation(void) {
     rnd_updateAnimBoxnode();
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_api", startBorder);
+int startBorder(BNODE *n) {
+    BNODE *p;
+
+    if (n == NULL || n->type != 3) {
+        return 0;
+    }
+    p = (BNODE *)rnd_findParentBoxnode((void *)n, 1);
+    if (p == NULL) {
+        return 0;
+    }
+    return rnd_gdrawCreateBorder(p->widget, n->x, n->y, n->w, n->h, 0x80B4FF, 0x202020, 1);
+}
 
 int moveBorder(int w, int dx, int dy) {
     int x;
@@ -337,7 +356,26 @@ void destroySelectList(void) {
     sellist = NULL;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_api", delSelectListBySID);
+void delSelectListBySID(int sid) {
+    SELLIST *prev;
+    SELLIST *p;
+
+    if (sellist == NULL) {
+        return;
+    }
+    prev = sellist;
+    p = sellist->next;
+    while (p != NULL) {
+        if (sid == 0 || (int)p->unk0 == sid) {
+            prev->next = p->next;
+            MEM_free(NULL, p);
+            p = prev->next;
+        } else {
+            prev = p;
+            p = p->next;
+        }
+    }
+}
 
 BNODE *getSelectListFromGadget(int gadget) {
     SELLIST *n;
@@ -355,7 +393,25 @@ BNODE *getSelectListFromGadget(int gadget) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_api", rnd_drawAllBoxnode);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_api", rnd_drawBoxnode);
+void rnd_drawBoxnode(void *ctx, BNODE *n) {
+    if (n->type == 0 && n->unk3C == 1) {
+        return;
+    }
+    if (n->style->unk73 == 1) {
+        return;
+    }
+    switch (n->type) {
+    case 9:
+        rnd_drawTextBoxnode(ctx, n);
+        break;
+    case 10:
+        rnd_drawImageBoxnode(ctx, n);
+        break;
+    default:
+        rnd_drawBasicBoxnode(ctx, n);
+        break;
+    }
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
