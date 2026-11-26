@@ -114,7 +114,7 @@ typedef struct SDomiImplementation {
 typedef struct SDomiDocument {
     SDomiInternalNode i;
     SDomiImplementation *implementation; /* 0x2C */             /* 0x2C */
-    void *x30;
+    SDomiNode *documentElement;       /* 0x30 */
     int changed;                      /* 0x34 */
     SDomiSLink trash;                 /* 0x38 */
 } SDomiDocument;
