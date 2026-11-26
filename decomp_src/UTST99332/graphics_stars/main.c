@@ -88,39 +88,82 @@ void sceGuClutLoad(int num_blocks, const void *cbp);
 int sceDisplayWaitVblankStart(void);
 
 
-#ifdef NON_MATCHING
-/* Close: constant materialization and conditional-move order differ. */
+#ifndef SCEGU_IMMEDIATE
+#define SCEGU_IMMEDIATE                    0
+#ifndef SCEGU_CLEAR_ALL
+#define SCEGU_CLEAR_ALL               0x0007
+#endif
+#ifndef SCEGU_TEXTURE
+#define SCEGU_TEXTURE                      9
+#endif
+#ifndef SCEGU_SCR_WIDTH
+#define SCEGU_SCR_WIDTH       480
+#endif
+#ifndef WALL_X
+#define WALL_X		(SCEGU_SCR_WIDTH-SIZE)
+#endif
+#ifndef SCEGU_SCR_HEIGHT
+#define SCEGU_SCR_HEIGHT      272
+#endif
+#ifndef SIZE
+#define SIZE		16
+#endif
+#ifndef WALL_Y
+#define WALL_Y		(SCEGU_SCR_HEIGHT-SIZE)
+#endif
+#ifndef MAXOBJ
+#define MAXOBJ		8
+#endif
+#ifndef SCEGU_NOFLIP
+#define SCEGU_NOFLIP                       0
+#endif
+#ifndef SCEGU_SYNC_FINISH
+#define SCEGU_SYNC_FINISH                  0
+#endif
+#ifndef SCEGU_SYNC_WAIT
+#define SCEGU_SYNC_WAIT                    0
+#endif
 static void draw_frame(void)
 {
-	POS *p;
-	int x, y;
-	int px, py;
-	int i, j;
+	POS	*p = pos;
+	int	x, y, px, py;
+	int	i, j;
 
-	sceGuStart(0, disp_list, sizeof(disp_list));
-	sceGuClear(7);
-	sceGuEnable(9);
-	sceGuSpriteMode(16, 16, 16, 16);
-	p = pos;
-	for (j = 0; j < maxnum; j++, p++) {
-		p->x += p->dx;
-		p->y += p->dy;
-		x = p->x % 928;
-		y = p->y & 511;
-		for (i = 1; i < 8; i++) {
-			x = (x + p->dx * 2) % 928;
-			y = (y + p->dy * 2) & 511;
-			py = y < 256 ? y : 512 - y;
-			px = x < 464 ? x : 928 - x;
-			sceGuColor(p->col + ((255 / (8 - i)) << 24));
-			sceGuDrawSprite(px, py, 0, 0, 0, 0, 0);
+	sceGuStart(SCEGU_IMMEDIATE, disp_list, sizeof(disp_list));
+	sceGuClear(SCEGU_CLEAR_ALL);
+
+	sceGuEnable(SCEGU_TEXTURE);
+	sceGuSpriteMode(SIZE, SIZE, SIZE, SIZE);
+	for (j = 0; j < maxnum; j++, p++) {	
+		if ((x = ((p->x+=p->dx) % (WALL_X*2))) >= WALL_X) {
+			px = WALL_X*2 - x;
+		} else {
+			px = x;
+		}
+		if ((y = ((p->y+=p->dy) % (WALL_Y*2))) >= WALL_Y) {
+			py = WALL_Y*2 - y;
+		} else {
+			py = y;
+		}
+		for (i = 1; i < MAXOBJ; i++) {
+			if ((x = ((x+p->dx*2) % (WALL_X*2))) >= WALL_X) {
+				px = WALL_X*2 - x;
+			} else {
+				px = x;
+			}
+			if ((y = ((y+p->dy*2) % (WALL_Y*2))) >= WALL_Y) {
+				py = WALL_Y*2 - y;
+			} else {
+				py = y;
+			}
+
+			sceGuColor(p->col + ((0xff/(MAXOBJ-i)) << 24));
+			sceGuDrawSprite(px, py, 0, 0, 0, SCEGU_NOFLIP, 0);
 		}
 	}
 	sceGuFinish();
-	sceGuSync(0, 0);
+	sceGuSync(SCEGU_SYNC_FINISH, SCEGU_SYNC_WAIT);
 }
-#else
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_stars/nonmatchings/main", draw_frame);
 #endif
 
 void init_all(void) {
