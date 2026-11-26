@@ -361,7 +361,37 @@ static void DrawGround(void)
 	sceGuDisable(SCEGU_TEXTURE);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/game", DrawScore);
+#define MAXBALLS	30
+
+static void DrawScore(void)
+{
+	extern Gu2dV16T	D_000CE680[MAXBALLS][4];
+	int		i;
+
+	if (!game.disp)
+		return;
+
+	sceGuEnable(SCEGU_TEXTURE);
+	sceGuTexWrap(SCEGU_REPEAT, SCEGU_REPEAT);
+	sceGuTexFilter(SCEGU_NEAREST, SCEGU_NEAREST);
+	sceGuTexFunc(SCEGU_TEX_MODULATE, SCEGU_RGBA);
+
+	sceGuTexMode(SCEGU_PFIDX4, 0, SCEGU_SINGLE_CLUT, SCEGU_TEXBUF_NORMAL);
+	sceGuClutMode(SCEGU_PF5551, 0, 0xff, 0);
+	sceGuClutLoad(1, (void *)clut_ball);
+	sceGuTexImage(0, 32, 32, 32, (void *)chr_ball);
+
+	SpriteScale(1, 1);
+	sceGuColor(0xffffffff);
+	for (i=0; i<MAXBALLS; i++) {
+		DrawSprite((LCDW-MAXBALLS*6)/2+(i%(MAXBALLS/2))*12,
+			8+(i/(MAXBALLS/2))*12,
+			16, 16, i>=game.score?0:16, 0, D_000CE680[i]);
+	}
+	sceKernelDcacheWritebackAll();
+
+	sceGuDisable(SCEGU_TEXTURE);
+}
 
 static void DrawMoon(void)
 {
