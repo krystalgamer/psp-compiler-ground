@@ -116,9 +116,80 @@ end:
 	return ret;
 }
 
-INCLUDE_ASM("tmp/asm/tony_libs/audiocodec/nonmatchings/audiocodec", func_000007B4);
+int func_000007B4(AudiocodecCtx *ctx, int codec)
+{
+	int ret = 0x80000004;
+	int size;
 
-INCLUDE_ASM("tmp/asm/tony_libs/audiocodec/nonmatchings/audiocodec", func_00000894);
+	switch (codec) {
+	case 0x1000:
+		if (ctx->unk30 != 0)
+			size = 0x100A;
+		else
+			size = ctx->unk40 + 2;
+		break;
+	case 0x1001:
+		size = ctx->unk30 * 2 + 1;
+		break;
+	case 0x1002:
+		if (ctx->unk38 == 9999) {
+			size = sceAudiocodecGetInfo(ctx, 0x1002);
+			if (size < 0)
+				break;
+		}
+		size = func_00000958(ctx->unk38, ctx->unk3C, ctx->unk44, ctx->unk48, &ctx->unk28);
+		break;
+	case 0x1003:
+		size = 0x600;
+		break;
+	case 0x1004:
+		size = func_00000958(ctx->unk30, ctx->unk34, ctx->unk3C, ctx->unk40, &ctx->unk28);
+		break;
+	default:
+		goto end;
+	}
+	ret = size;
+end:
+	return ret;
+}
+
+int func_00000894(AudiocodecCtx *ctx, int codec)
+{
+	int ret = 0x80000004;
+	int size;
+
+	switch (codec) {
+	case 0x1000:
+		if (ctx->unk38 == 1)
+			size = 0x2000;
+		else
+			size = ctx->unk48 << 12;
+		break;
+	case 0x1001:
+	case 0x1003:
+		size = 0x1000;
+		break;
+	case 0x1002:
+		if (ctx->unk38 == 9999) {
+			size = sceAudiocodecGetInfo(ctx, 0x1002);
+			if (size < 0)
+				break;
+		}
+		if (ctx->unk38 == 1)
+			size = 0x1200;
+		else
+			size = 0x900;
+		break;
+	case 0x1004:
+		size = 0x1200;
+		break;
+	default:
+		goto end;
+	}
+	ret = size;
+end:
+	return ret;
+}
 
 INCLUDE_ASM("tmp/asm/tony_libs/audiocodec/nonmatchings/audiocodec", func_00000958);
 
