@@ -65,6 +65,12 @@ M2C_UNK MEM_free(M2C_UNK, void *);                  /* extern */
 
 int GUI_createCheckbox();
 int GUI_createList();
+int GUI_createChoice();
+int GUI_createButton();
+int GUI_createRadioboxGroup();
+int GUI_RadioButton_getGroup();
+int GUI_createRadiobox();
+int GUI_Component_remove();
 int GUI_createFrameBorder();
 int GUI_Component_setColor();
 int GUI_Component_setFocusColor();
@@ -253,7 +259,37 @@ int rnd_gdrawGetCheckboxExtents(int *arg0, int *arg1) {
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_gdraw", rnd_gdrawCreateRadiobutton);
+int rnd_gdrawCreateRadiobutton(int parent, int group, int fgc, int bgc, int fcc, int disabled) {
+    int fg[3];
+    int bg[3];
+    int fc[3];
+    int w;
+    int g;
+
+    if (group == 0) {
+        g = GUI_createRadioboxGroup(parent);
+    } else {
+        g = GUI_RadioButton_getGroup(group);
+    }
+    if (g == 0) {
+        return 0;
+    }
+    w = GUI_createRadiobox(g, 0);
+    if (w == 0) {
+        GUI_Component_remove(g);
+        return 0;
+    }
+    color2rgb(fg, fgc);
+    color2rgb(bg, bgc);
+    GUI_Component_setColor(w, fg, bg);
+    color2rgb(fc, fcc);
+    GUI_Component_setFocusColor(w, fc);
+    GUI_ScrollPane_add(GUI_Component_getParent(parent), w);
+    if (disabled) {
+        GUI_Component_setEnabled(w, 0);
+    }
+    return w;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -264,7 +300,30 @@ int rnd_gdrawGetRadiobuttonExtents(int *arg0, int *arg1) {
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_gdraw", rnd_gdrawCreateButton);
+int rnd_gdrawCreateButton(int parent, int fgc, int bgc, int fcc, int font, int label, int disabled) {
+    int fg[3];
+    int bg[3];
+    int fc[3];
+    int w;
+    int sp;
+
+    sp = GUI_Component_getParent(parent);
+    w = GUI_createButton(parent, label, 0, 0);
+    if (w == 0) {
+        return 0;
+    }
+    color2rgb(fg, fgc);
+    color2rgb(bg, bgc);
+    GUI_Component_setColor(w, fg, bg);
+    color2rgb(fc, fcc);
+    GUI_Component_setFocusColor(w, fc);
+    if (disabled) {
+        GUI_Component_setEnabled(w, 0);
+    }
+    GUI_Component_setFont(w, font);
+    GUI_ScrollPane_add(sp, w);
+    return w;
+}
 
 int rnd_gdrawGetButtonExtents(int a, int b, int c, int *w, int *h) {
     getStringsExtents(a, b, c, w, h);
@@ -273,7 +332,30 @@ int rnd_gdrawGetButtonExtents(int a, int b, int c, int *w, int *h) {
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_gdraw", rnd_gdrawCreatePulldown);
+int rnd_gdrawCreatePulldown(int parent, int fgc, int bgc, int fcc, int font, int disabled) {
+    int fg[3];
+    int bg[3];
+    int fc[3];
+    int w;
+    int sp;
+
+    sp = GUI_Component_getParent(parent);
+    w = GUI_createChoice(parent);
+    if (w == 0) {
+        return 0;
+    }
+    color2rgb(fg, fgc);
+    color2rgb(bg, bgc);
+    GUI_Component_setColor(w, fg, bg);
+    color2rgb(fc, fcc);
+    GUI_Component_setFocusColor(w, fc);
+    GUI_Component_setFont(w, font);
+    if (disabled) {
+        GUI_Component_setEnabled(w, 0);
+    }
+    GUI_ScrollPane_add(sp, w);
+    return w;
+}
 
 int rnd_gdrawGetPulldownExtents(int font, char *s, int n2, int *w, int *h) {
     int n;
