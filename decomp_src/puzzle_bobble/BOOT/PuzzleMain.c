@@ -1394,7 +1394,82 @@ int CheckBallRainbow(PZL_STAT *st)
 	return 0;
 }
 
+#ifdef NON_MATCHING
+/* Two instructions short: the original guards the whole-map colour scan with `cnt < 0x22E`
+ * (slti on the candidate count, which is 0 there) and returns through the cnt register
+ * (s0) on every path.  Same loop structure otherwise; one variable i is reused for
+ * every loop and for the queue entry, as in the original. */
+int CheckNext(PZL_STAT *st)
+{
+	int queue[596];
+	int exist[32];
+	int cand[32];
+	int x, y;
+	int w, i, n, cnt, c;
+	unsigned int a;
+
+	w = GetMapWidth(st->mapno) * 2;
+	if (w == 0)
+		w = 16;
+	n = 1;
+	queue[0] = 0x22E - GetMapWidth(st->mapno) / 2;
+	for (i = 0; i < 0x22E; i++) {
+		if (i % w == w - 1)
+			st->attr[i] = -1;
+		else
+			st->attr[i] = 0;
+	}
+	for (i = 0; i < 32; i++) {
+		exist[i] = 0;
+		cand[i] = 0;
+	}
+	do {
+		i = queue[--n];
+		GetBallCoordinate(st, i, &x, &y);
+		for (i = 1; i < 7; i++) {
+			a = GetBallMapAddr(st, x, y, i);
+			if (a < 0x240 && -st->scroll * GetMapWidth(st->mapno) < (int)a && st->attr[a] == 0) {
+				c = st->mp.map[a];
+				st->attr[a] = 1;
+				if (c == 0)
+					queue[n++] = a;
+				else if (c >= 1 && c <= 8)
+					exist[c] = 1;
+			}
+		}
+	} while (n > 0);
+	cnt = 0;
+	for (i = 0; i < 32; i++) {
+		if (exist[i])
+			cand[cnt++] = i;
+	}
+	if (cnt != 0) {
+		if (cnt == 1 && cand[0] == 9)
+			cnt = 0;
+		else {
+			cnt = cand[rand() % cnt];
+			if (cnt != 0)
+				return cnt;
+		}
+	}
+	for (i = 0; i < 0x22E; i++) {
+		c = st->mp.map[i];
+		if (c >= 1 && c <= 8)
+			exist[c] = 1;
+	}
+	for (i = 0; i < 32; i++) {
+		if (exist[i])
+			cand[cnt++] = i;
+	}
+	if (cnt != 0)
+		return cand[rand() % cnt];
+	if (st->next < 8)
+		return st->next + 1;
+	return 1;
+}
+#else
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", CheckNext);
+#endif
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", CheckBallDrop);
 
