@@ -655,7 +655,39 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", bufo_dead_anim
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", boss_ufo_disp);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", boss_ufo_damage);
+typedef struct { float x, y, z; } BV3;
+typedef struct {
+	int f0, f4, f8, fc, f10, f14, f18, f1c;
+	int dmg, hp, f28, f2c, f30, f34, f38, f3c;
+	int f40, f44;
+	float f48, f4c;
+	int f50[5];
+	float pos[3];
+} BUFO_D;
+void efc_ufohit_start(int dmg, float a, float x, float y, float z);
+void se_play_3d(int no, float *pos, float dist);
+void boss_ufo_damage(BUFO_D *u, BV3 p, int dmg, int net, int flag)
+{
+	if (u->f4 == 1)
+		return;
+	u->dmg += dmg;
+	if (u->dmg >= u->hp) {
+		status_font_set(1, 32, 300, 0, 100);
+		u->f34 = 0;
+		u->f28 = 0;
+		u->f30 = 1;
+		if (net == 0)
+			inv_score_add(1000000);
+	}
+	u->f40++;
+	u->f4c = 0;
+	u->f14 = 16;
+	u->f18 = 60;
+	if (u->f0 == 1 && flag == 1) {
+		se_play_3d(23, u->pos, u->f4c);
+		efc_ufohit_start(dmg, u->f48, p.x, p.y, p.z);
+	}
+}
 
 void boss_ufo_tex_anime(int *u)
 {
