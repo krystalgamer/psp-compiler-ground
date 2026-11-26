@@ -1,468 +1,563 @@
-#include "common.h"
+/* lang: c++ */
+/* cflags: -O3 -fno-exceptions */
+#undef __EXCEPTIONS
+#include "cxx/defer_asm.h"
+#include "../main.hpp"
 
-void gluBeginCurve(void) {
+extern "C" void gluBeginCurve(void) {
 }
 
-void gluBeginPolygon(void) {
+extern "C" void gluBeginPolygon(void) {
 }
 
-void gluBeginSurface(void) {
+extern "C" void gluBeginSurface(void) {
 }
 
-void gluBeginTrim(void) {
+extern "C" void gluBeginTrim(void) {
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/gluBeginCurve", gluBuild1DMipmaps);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/gluBeginCurve", gluBuild2DMipmaps);
-
-void gluCylinder(void) {
+extern "C" int gluBuild1DMipmaps(void)
+{
+    return 0;
 }
 
-void gluDeleteNurbsRenderer(void) {
+extern "C" int gluBuild2DMipmaps(void)
+{
+    return 0;
 }
 
-void gluDeleteQuadric(void) {
+extern "C" void gluCylinder(void) {
 }
 
-void gluDeleteTess(void) {
+extern "C" void gluDeleteNurbsRenderer(void) {
 }
 
-void gluDisk(void) {
+extern "C" void gluDeleteQuadric(void) {
 }
 
-void gluEndCurve(void) {
+extern "C" void gluDeleteTess(void) {
 }
 
-void gluEndPolygon(void) {
+extern "C" void gluDisk(void) {
 }
 
-void gluEndSurface(void) {
+extern "C" void gluEndCurve(void) {
 }
 
-void gluEndTrim(void) {
+extern "C" void gluEndPolygon(void) {
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/gluBeginCurve", gluErrorString);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/gluBeginCurve", gluErrorUnicodeStringEXT);
-
-void gluGetNurbsProperty(void) {
+extern "C" void gluEndSurface(void) {
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/gluBeginCurve", gluGetString);
-
-void gluGetTessProperty(void) {
+extern "C" void gluEndTrim(void) {
 }
 
-void gluLoadSamplingMatrices(void) {
+extern "C" int gluErrorString(void)
+{
+    return 0;
+}
+
+extern "C" int gluErrorUnicodeStringEXT(void)
+{
+    return 0;
+}
+
+extern "C" void gluGetNurbsProperty(void) {
+}
+
+extern "C" int gluGetString(void)
+{
+    return 0;
+}
+
+extern "C" void gluGetTessProperty(void) {
+}
+
+extern "C" void gluLoadSamplingMatrices(void) {
 }
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/gluBeginCurve", gluLookAt);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/gluBeginCurve", gluNewNurbsRenderer);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/gluBeginCurve", gluNewQuadric);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/gluBeginCurve", gluNewTess);
-
-void gluNextContour(void) {
+extern "C" int gluNewNurbsRenderer(void)
+{
+    return 0;
 }
 
-void gluNurbsCallback(void) {
+extern "C" int gluNewQuadric(void)
+{
+    return 0;
 }
 
-void gluNurbsCurve(void) {
+extern "C" int gluNewTess(void)
+{
+    return 0;
 }
 
-void gluNurbsProperty(void) {
+extern "C" void gluNextContour(void) {
 }
 
-void gluNurbsSurface(void) {
+extern "C" void gluNurbsCallback(void) {
+}
+
+extern "C" void gluNurbsCurve(void) {
+}
+
+extern "C" void gluNurbsProperty(void) {
+}
+
+extern "C" void gluNurbsSurface(void) {
 }
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/gluBeginCurve", gluOrtho2D);
 
-void gluPartialDisk(void) {
+extern "C" void gluPartialDisk(void) {
 }
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/gluBeginCurve", gluPerspective);
 
-void gluPickMatrix(void) {
+extern "C" void gluPickMatrix(void) {
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/gluBeginCurve", gluProject);
+extern "C" int gluProject(void)
+{
+    return 0;
+}
 
-void gluPwlCurve(void) {
+extern "C" void gluPwlCurve(void) {
 }
 
-void gluQuadricCallback(void) {
+extern "C" void gluQuadricCallback(void) {
 }
 
-void gluQuadricDrawStyle(void) {
+extern "C" void gluQuadricDrawStyle(void) {
 }
 
-void gluQuadricNormals(void) {
+extern "C" void gluQuadricNormals(void) {
 }
 
-void gluQuadricOrientation(void) {
+extern "C" void gluQuadricOrientation(void) {
 }
 
-void gluQuadricTexture(void) {
+extern "C" void gluQuadricTexture(void) {
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/gluBeginCurve", gluScaleImage);
+extern "C" int gluScaleImage(void)
+{
+    return 0;
+}
 
-void gluSphere(void) {
+extern "C" void gluSphere(void) {
 }
 
-void gluTessBeginContour(void) {
+extern "C" void gluTessBeginContour(void) {
 }
 
-void gluTessBeginPolygon(void) {
+extern "C" void gluTessBeginPolygon(void) {
 }
 
-void gluTessCallback(void) {
+extern "C" void gluTessCallback(void) {
 }
 
-void gluTessEndContour(void) {
+extern "C" void gluTessEndContour(void) {
 }
 
-void gluTessEndPolygon(void) {
+extern "C" void gluTessEndPolygon(void) {
 }
 
-void gluTessNormal(void) {
+extern "C" void gluTessNormal(void) {
 }
 
-void gluTessProperty(void) {
+extern "C" void gluTessProperty(void) {
 }
 
-void gluTessVertex(void) {
+extern "C" void gluTessVertex(void) {
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/gluBeginCurve", gluUnProject);
+extern "C" int gluUnProject(void)
+{
+    return 0;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/gluBeginCurve", gluUnProject4);
+extern "C" int gluUnProject4(void)
+{
+    return 0;
+}
 
-void glutInit(void) {
+extern "C" void glutInit(void) {
 }
 
-void glutInitDisplayMode(void) {
+extern "C" void glutInitDisplayMode(void) {
 }
 
-void glutInitDisplayString(void) {
+extern "C" void glutInitDisplayString(void) {
 }
 
-void glutInitWindowPosition(void) {
+extern "C" void glutInitWindowPosition(void) {
 }
 
-void glutInitWindowSize(void) {
+extern "C" void glutInitWindowSize(void) {
 }
 
-void glutMainLoop(void) {
+extern "C" void glutMainLoop(void) {
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/gluBeginCurve", glutCreateWindow);
+extern "C" int glutCreateWindow(void)
+{
+    return 0;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/gluBeginCurve", glutCreateSubWindow);
+extern "C" int glutCreateSubWindow(void)
+{
+    return 0;
+}
 
-void glutDestroyWindow(void) {
+extern "C" void glutDestroyWindow(void) {
 }
 
-void glutPostRedisplay(void) {
+extern "C" void glutPostRedisplay(void) {
 }
 
-void glutPostWindowRedisplay(void) {
+extern "C" void glutPostWindowRedisplay(void) {
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/gluBeginCurve", glutSwapBuffers);
+extern "C" void glutSwapBuffers(void)
+{
+    extern void sceGuSwapBuffers_(void) __asm__("sceGuSwapBuffers");
+    sceGuSwapBuffers_();
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/gluBeginCurve", glutGetWindow);
+extern "C" int glutGetWindow(void)
+{
+    return 0;
+}
 
-void glutSetWindow(void) {
+extern "C" void glutSetWindow(void) {
 }
 
-void glutSetWindowTitle(void) {
+extern "C" void glutSetWindowTitle(void) {
 }
 
-void glutSetIconTitle(void) {
+extern "C" void glutSetIconTitle(void) {
 }
 
-void glutPositionWindow(void) {
+extern "C" void glutPositionWindow(void) {
 }
 
-void glutReshapeWindow(void) {
+extern "C" void glutReshapeWindow(void) {
 }
 
-void glutPopWindow(void) {
+extern "C" void glutPopWindow(void) {
 }
 
-void glutPushWindow(void) {
+extern "C" void glutPushWindow(void) {
 }
 
-void glutIconifyWindow(void) {
+extern "C" void glutIconifyWindow(void) {
 }
 
-void glutShowWindow(void) {
+extern "C" void glutShowWindow(void) {
 }
 
-void glutHideWindow(void) {
+extern "C" void glutHideWindow(void) {
 }
 
-void glutFullScreen(void) {
+extern "C" void glutFullScreen(void) {
 }
 
-void glutSetCursor(void) {
+extern "C" void glutSetCursor(void) {
 }
 
-void glutWarpPointer(void) {
+extern "C" void glutWarpPointer(void) {
 }
 
-void glutEstablishOverlay(void) {
+extern "C" void glutEstablishOverlay(void) {
 }
 
-void glutRemoveOverlay(void) {
+extern "C" void glutRemoveOverlay(void) {
 }
 
-void glutUseLayer(void) {
+extern "C" void glutUseLayer(void) {
 }
 
-void glutPostOverlayRedisplay(void) {
+extern "C" void glutPostOverlayRedisplay(void) {
 }
 
-void glutPostWindowOverlayRedisplay(void) {
+extern "C" void glutPostWindowOverlayRedisplay(void) {
 }
 
-void glutShowOverlay(void) {
+extern "C" void glutShowOverlay(void) {
 }
 
-void glutHideOverlay(void) {
+extern "C" void glutHideOverlay(void) {
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/gluBeginCurve", glutCreateMenu);
+extern "C" int glutCreateMenu(void)
+{
+    return 0;
+}
 
-void glutDestroyMenu(void) {
+extern "C" void glutDestroyMenu(void) {
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/gluBeginCurve", glutGetMenu);
+extern "C" int glutGetMenu(void)
+{
+    return 0;
+}
 
-void glutSetMenu(void) {
+extern "C" void glutSetMenu(void) {
 }
 
-void glutAddMenuEntry(void) {
+extern "C" void glutAddMenuEntry(void) {
 }
 
-void glutAddSubMenu(void) {
+extern "C" void glutAddSubMenu(void) {
 }
 
-void glutChangeToMenuEntry(void) {
+extern "C" void glutChangeToMenuEntry(void) {
 }
 
-void glutChangeToSubMenu(void) {
+extern "C" void glutChangeToSubMenu(void) {
 }
 
-void glutRemoveMenuItem(void) {
+extern "C" void glutRemoveMenuItem(void) {
 }
 
-void glutAttachMenu(void) {
+extern "C" void glutAttachMenu(void) {
 }
 
-void glutDetachMenu(void) {
+extern "C" void glutDetachMenu(void) {
 }
 
-void glutDisplayFunc(void) {
+extern "C" void glutDisplayFunc(void) {
 }
 
-void glutReshapeFunc(void) {
+extern "C" void glutReshapeFunc(void) {
 }
 
-void glutKeyboardFunc(void) {
+extern "C" void glutKeyboardFunc(void) {
 }
 
-void glutMouseFunc(void) {
+extern "C" void glutMouseFunc(void) {
 }
 
-void glutMotionFunc(void) {
+extern "C" void glutMotionFunc(void) {
 }
 
-void glutPassiveMotionFunc(void) {
+extern "C" void glutPassiveMotionFunc(void) {
 }
 
-void glutEntryFunc(void) {
+extern "C" void glutEntryFunc(void) {
 }
 
-void glutVisibilityFunc(void) {
+extern "C" void glutVisibilityFunc(void) {
 }
 
-void glutIdleFunc(void) {
+extern "C" void glutIdleFunc(void) {
 }
 
-void glutTimerFunc(void) {
+extern "C" void glutTimerFunc(void) {
 }
 
-void glutMenuStateFunc(void) {
+extern "C" void glutMenuStateFunc(void) {
 }
 
-void glutSpecialFunc(void) {
+extern "C" void glutSpecialFunc(void) {
 }
 
-void glutSpaceballMotionFunc(void) {
+extern "C" void glutSpaceballMotionFunc(void) {
 }
 
-void glutSpaceballRotateFunc(void) {
+extern "C" void glutSpaceballRotateFunc(void) {
 }
 
-void glutSpaceballButtonFunc(void) {
+extern "C" void glutSpaceballButtonFunc(void) {
 }
 
-void glutButtonBoxFunc(void) {
+extern "C" void glutButtonBoxFunc(void) {
 }
 
-void glutDialsFunc(void) {
+extern "C" void glutDialsFunc(void) {
 }
 
-void glutTabletMotionFunc(void) {
+extern "C" void glutTabletMotionFunc(void) {
 }
 
-void glutTabletButtonFunc(void) {
+extern "C" void glutTabletButtonFunc(void) {
 }
 
-void glutMenuStatusFunc(void) {
+extern "C" void glutMenuStatusFunc(void) {
 }
 
-void glutOverlayDisplayFunc(void) {
+extern "C" void glutOverlayDisplayFunc(void) {
 }
 
-void glutWindowStatusFunc(void) {
+extern "C" void glutWindowStatusFunc(void) {
 }
 
-void glutKeyboardUpFunc(void) {
+extern "C" void glutKeyboardUpFunc(void) {
 }
 
-void glutSpecialUpFunc(void) {
+extern "C" void glutSpecialUpFunc(void) {
 }
 
-void glutJoystickFunc(void) {
+extern "C" void glutJoystickFunc(void) {
 }
 
-void glutSetColor(void) {
+extern "C" void glutSetColor(void) {
 }
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/gluBeginCurve", glutGetColor);
 
-void glutCopyColormap(void) {
+extern "C" void glutCopyColormap(void) {
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/gluBeginCurve", glutGet);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/gluBeginCurve", glutDeviceGet);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/gluBeginCurve", glutExtensionSupported);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/gluBeginCurve", glutGetModifiers);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/gluBeginCurve", glutLayerGet);
-
-void glutBitmapCharacter(void) {
+extern "C" int glutGet(void)
+{
+    return 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/gluBeginCurve", glutBitmapWidth);
-
-void glutStrokeCharacter(void) {
+extern "C" int glutDeviceGet(void)
+{
+    return 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/gluBeginCurve", glutStrokeWidth);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/gluBeginCurve", glutBitmapLength);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/gluBeginCurve", glutStrokeLength);
-
-void glutWireSphere(void) {
+extern "C" int glutExtensionSupported(void)
+{
+    return 0;
 }
 
-void glutSolidSphere(void) {
+extern "C" int glutGetModifiers(void)
+{
+    return 0;
 }
 
-void glutWireCone(void) {
+extern "C" int glutLayerGet(void)
+{
+    return 0;
 }
 
-void glutSolidCone(void) {
+extern "C" void glutBitmapCharacter(void) {
 }
 
-void glutWireCube(void) {
+extern "C" int glutBitmapWidth(void)
+{
+    return 0;
 }
 
-void glutSolidCube(void) {
+extern "C" void glutStrokeCharacter(void) {
 }
 
-void glutWireTorus(void) {
+extern "C" int glutStrokeWidth(void)
+{
+    return 0;
 }
 
-void glutSolidTorus(void) {
+extern "C" int glutBitmapLength(void)
+{
+    return 0;
 }
 
-void glutWireDodecahedron(void) {
+extern "C" int glutStrokeLength(void)
+{
+    return 0;
 }
 
-void glutSolidDodecahedron(void) {
+extern "C" void glutWireSphere(void) {
 }
 
-void glutWireTeapot(void) {
+extern "C" void glutSolidSphere(void) {
 }
 
-void glutSolidTeapot(void) {
+extern "C" void glutWireCone(void) {
 }
 
-void glutWireOctahedron(void) {
+extern "C" void glutSolidCone(void) {
 }
 
-void glutSolidOctahedron(void) {
+extern "C" void glutWireCube(void) {
 }
 
-void glutWireTetrahedron(void) {
+extern "C" void glutSolidCube(void) {
 }
 
-void glutSolidTetrahedron(void) {
+extern "C" void glutWireTorus(void) {
 }
 
-void glutWireIcosahedron(void) {
+extern "C" void glutSolidTorus(void) {
 }
 
-void glutSolidIcosahedron(void) {
+extern "C" void glutWireDodecahedron(void) {
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/gluBeginCurve", glutVideoResizeGet);
-
-void glutSetupVideoResizing(void) {
+extern "C" void glutSolidDodecahedron(void) {
 }
 
-void glutStopVideoResizing(void) {
+extern "C" void glutWireTeapot(void) {
 }
 
-void glutVideoResize(void) {
+extern "C" void glutSolidTeapot(void) {
 }
 
-void glutVideoPan(void) {
+extern "C" void glutWireOctahedron(void) {
 }
 
-void glutReportErrors(void) {
+extern "C" void glutSolidOctahedron(void) {
 }
 
-void glutIgnoreKeyRepeat(void) {
+extern "C" void glutWireTetrahedron(void) {
 }
 
-void glutSetKeyRepeat(void) {
+extern "C" void glutSolidTetrahedron(void) {
 }
 
-void glutForceJoystickFunc(void) {
+extern "C" void glutWireIcosahedron(void) {
 }
 
-void glutGameModeString(void) {
+extern "C" void glutSolidIcosahedron(void) {
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/gluBeginCurve", glutEnterGameMode);
-
-void glutLeaveGameMode(void) {
+extern "C" int glutVideoResizeGet(void)
+{
+    return 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/gluBeginCurve", glutGameModeGet);
+extern "C" void glutSetupVideoResizing(void) {
+}
+
+extern "C" void glutStopVideoResizing(void) {
+}
+
+extern "C" void glutVideoResize(void) {
+}
+
+extern "C" void glutVideoPan(void) {
+}
+
+extern "C" void glutReportErrors(void) {
+}
+
+extern "C" void glutIgnoreKeyRepeat(void) {
+}
+
+extern "C" void glutSetKeyRepeat(void) {
+}
+
+extern "C" void glutForceJoystickFunc(void) {
+}
+
+extern "C" void glutGameModeString(void) {
+}
+
+extern "C" int glutEnterGameMode(void)
+{
+    return 0;
+}
+
+extern "C" void glutLeaveGameMode(void) {
+}
+
+extern "C" int glutGameModeGet(void)
+{
+    return 0;
+}

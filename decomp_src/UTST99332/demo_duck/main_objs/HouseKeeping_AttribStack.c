@@ -79,7 +79,10 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/HouseKeeping_Att
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/HouseKeeping_AttribStack", glDisable);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/HouseKeeping_AttribStack", glIsEnabled);
+extern "C" int glIsEnabled(void)
+{
+    return 0;
+}
 
 extern "C" void glEnableClientState(void) {
 }
@@ -109,11 +112,20 @@ extern "C" void glPushClientAttrib(void) {
 extern "C" void glPopClientAttrib(void) {
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/HouseKeeping_AttribStack", glRenderMode);
+extern "C" int glRenderMode(void)
+{
+    return 0;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/HouseKeeping_AttribStack", glGetError);
+extern "C" int glGetError(void)
+{
+    return 0;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/HouseKeeping_AttribStack", glGetString);
+extern "C" int glGetString(void)
+{
+    return 0;
+}
 
 extern "C" void glFinish(void) {
 }
@@ -146,19 +158,39 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/HouseKeeping_Att
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/HouseKeeping_AttribStack", glViewport);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/HouseKeeping_AttribStack", glPushMatrix);
+extern "C" void glPushMatrix(void)
+{
+    extern void sceGumPushMatrix_(void) __asm__("sceGumPushMatrix");
+    sceGumPushMatrix_();
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/HouseKeeping_AttribStack", glPopMatrix);
+extern "C" void glPopMatrix(void)
+{
+    extern void sceGumPopMatrix_(void) __asm__("sceGumPopMatrix");
+    sceGumPopMatrix_();
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/HouseKeeping_AttribStack", glLoadIdentity);
+extern "C" void glLoadIdentity(void)
+{
+    extern void sceGumLoadIdentity_(void) __asm__("sceGumLoadIdentity");
+    sceGumLoadIdentity_();
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/HouseKeeping_AttribStack", glLoadMatrixd);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/HouseKeeping_AttribStack", glLoadMatrixf);
+extern "C" void glLoadMatrixf(void)
+{
+    extern void sceGumLoadMatrix_(void) __asm__("sceGumLoadMatrix");
+    sceGumLoadMatrix_();
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/HouseKeeping_AttribStack", glMultMatrixd);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/HouseKeeping_AttribStack", glMultMatrixf);
+extern "C" void glMultMatrixf(void)
+{
+    extern void sceGumMultMatrix_(void) __asm__("sceGumMultMatrix");
+    sceGumMultMatrix_();
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/HouseKeeping_AttribStack", glRotated);
 
@@ -172,12 +204,18 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/HouseKeeping_Att
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/HouseKeeping_AttribStack", glTranslatef);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/HouseKeeping_AttribStack", glIsList);
+extern "C" int glIsList(void)
+{
+    return 0;
+}
 
 extern "C" void glDeleteLists(void) {
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/HouseKeeping_AttribStack", glGenLists);
+extern "C" int glGenLists(void)
+{
+    return 0;
+}
 
 extern "C" void glNewList(void) {
 }
@@ -727,7 +765,11 @@ extern "C" void glStencilMask(void) {
 extern "C" void glStencilOp(void) {
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/HouseKeeping_AttribStack", glClearStencil);
+extern "C" void glClearStencil(void)
+{
+    extern void sceGuClearStencil_(void) __asm__("sceGuClearStencil");
+    sceGuClearStencil_();
+}
 
 extern "C" void glTexGend(void) {
 }
@@ -916,9 +958,15 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/HouseKeeping_Att
 extern "C" void glPrioritizeTextures(void) {
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/HouseKeeping_AttribStack", glAreTexturesResident);
+extern "C" int glAreTexturesResident(void)
+{
+    return 0;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/HouseKeeping_AttribStack", glIsTexture);
+extern "C" int glIsTexture(void)
+{
+    return 0;
+}
 
 extern "C" void glTexSubImage1D(void) {
 }
