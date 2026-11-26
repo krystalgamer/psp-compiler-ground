@@ -1,8 +1,7 @@
 /* cflags: -O1 */
 #include "common.h"
+#include "UTST99261/BOOT/wszlib.h"
 #include "m2c_macros.h"
-M2C_UNK addData();                                  /* extern */
-M2C_UNK freeZBuf();                                 /* extern */
 M2C_UNK rnd_gdrawGetTextlineExtents();              /* extern */
 M2C_UNK rnd_gdrawGetTextboxExtents();               /* extern */
 M2C_UNK rnd_gdrawGetCheckboxExtents();              /* extern */
@@ -14,152 +13,675 @@ M2C_UNK GUI_Graphics_getStringSize();               /* extern */
 M2C_UNK rnd_gdrawGetStringsVisibleLength();         /* extern */
 M2C_UNK colorValue();                               /* extern */
 
+ZBUF *newZBuf(u8 *data, int size) {
+    ZBUF *zb;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/wszlib", newZBuf);
+    zb = ESP_malloc(sizeof(ZBUF));
+    if (zb == NULL) {
+        return NULL;
+    }
+    zb->head = NULL;
+    zb->pos = 0;
+    zb->bit = 0;
+    zb->out = NULL;
+    zb->outLen = 0;
+    zb->outSize = 0;
+    zb->data = data;
+    zb->size = size;
+    zb->ptr = data;
+    zb->total = size;
+    zb->cur = (ZCHUNK *)zb;
+    return zb;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/wszlib", addData);
+int addData(ZBUF *zb, u8 *data, int size) {
+    ZCHUNK *p;
+    ZCHUNK *c;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/wszlib", freeZBuf);
+    for (p = (ZCHUNK *)zb; p->next != NULL; p = p->next)
+        ;
+    c = ESP_malloc(sizeof(ZCHUNK));
+    if (c == NULL) {
+        return -2;
+    }
+    c->data = data;
+    c->size = size;
+    c->next = NULL;
+    p->next = c;
+    zb->total += size;
+    return 0;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/wszlib", readBits);
+void freeZBuf(ZBUF *zb) {
+    ZCHUNK *p;
+    ZCHUNK *n;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/wszlib", peekBits);
+    for (p = zb->head; p != NULL; p = n) {
+        n = p->next;
+        ESP_free(p);
+    }
+    if (zb->out != NULL) {
+        ESP_free(zb->out);
+    }
+    ESP_free(zb);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/wszlib", skipBits);
+int readBits(ZBUF *zb, int n, int msbFirst, unsigned int *out) {
+    unsigned int v;
+    int i;
+    int avail;
+    ZCHUNK *c;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/wszlib", writeBytes);
+    v = 0;
+    if ((unsigned int)n > 32) {
+        return -5;
+    }
+    if (zb->cur == NULL) {
+        return -1;
+    }
+    c = zb->cur;
+    avail = (c->size - zb->pos) * 8 - zb->bit;
+    if (avail < n) {
+        c = c->next;
+        do {
+            if (c == NULL) {
+                return -1;
+            }
+            avail += c->size * 8;
+            c = c->next;
+        } while (avail < n);
+    }
+    if (msbFirst == 1) {
+        for (i = 0; i < n; i++) {
+            v <<= 1;
+            if ((*zb->ptr >> zb->bit++) & 1) {
+                v |= 1;
+            }
+            if (zb->bit & 8) {
+                zb->bit = 0;
+                zb->pos++;
+                zb->ptr++;
+                if (zb->pos == zb->cur->size) {
+                    zb->cur = zb->cur->next;
+                    zb->pos = 0;
+                    if (zb->cur != NULL) {
+                        zb->ptr = zb->cur->data;
+                    } else if (i < n - 1) {
+                        return -1;
+                    }
+                }
+            }
+        }
+    } else {
+        for (i = 0; i < n; i++) {
+            if ((*zb->ptr >> zb->bit++) & 1) {
+                v |= 1 << i;
+            }
+            if (zb->bit & 8) {
+                zb->bit = 0;
+                zb->pos++;
+                zb->ptr++;
+                if (zb->pos == zb->cur->size) {
+                    zb->cur = zb->cur->next;
+                    zb->pos = 0;
+                    if (zb->cur != NULL) {
+                        zb->ptr = zb->cur->data;
+                    } else if (i < n - 1) {
+                        return -1;
+                    }
+                }
+            }
+        }
+    }
+    if (out != NULL) {
+        *out = v;
+    }
+    return 0;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/wszlib", skipCurByte);
+int peekBits(ZBUF *zb, int n, int msbFirst, unsigned int *out) {
+    unsigned int v;
+    int i;
+    int avail;
+    ZCHUNK *c;
+    ZCHUNK *t;
+    u8 *p;
+    unsigned int bit;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/wszlib", do_nocomp);
+    v = 0;
+    if ((unsigned int)n > 32) {
+        return -5;
+    }
+    if (zb->cur == NULL) {
+        return -1;
+    }
+    t = zb->cur;
+    avail = (t->size - zb->pos) * 8 - zb->bit;
+    if (avail < n) {
+        t = t->next;
+        do {
+            if (t == NULL) {
+                return -1;
+            }
+            avail += t->size * 8;
+            t = t->next;
+        } while (avail < n);
+    }
+    c = zb->cur;
+    p = zb->ptr;
+    bit = zb->bit;
+    if (msbFirst == 1) {
+        for (i = 0; i < n; i++) {
+            v = (v << 1) | ((*p >> bit) & 1);
+            bit++;
+            if (bit & 8) {
+                p++;
+                bit = 0;
+                if (p == c->data + c->size) {
+                    c = c->next;
+                    if (c != NULL) {
+                        p = c->data;
+                    }
+                }
+            }
+        }
+    } else {
+        for (i = 0; i < n; i++) {
+            if ((*p >> bit) & 1) {
+                v |= 1 << i;
+            }
+            bit++;
+            if (bit & 8) {
+                p++;
+                bit = 0;
+                if (p == c->data + c->size) {
+                    c = c->next;
+                    if (c != NULL) {
+                        p = c->data;
+                    }
+                }
+            }
+        }
+    }
+    if (out != NULL) {
+        *out = v;
+    }
+    return 0;
+}
+
+void skipBits(ZBUF *zb, int n) {
+    while (n > 8) {
+        zb->pos++;
+        zb->ptr++;
+        n -= 8;
+        if (zb->pos == zb->cur->size) {
+            zb->cur = zb->cur->next;
+            zb->pos = 0;
+            if (zb->cur != NULL) {
+                zb->ptr = zb->cur->data;
+            } else {
+                zb->ptr = NULL;
+            }
+        }
+    }
+    if (n > 0) {
+        n += zb->bit;
+        zb->bit = n;
+        if ((unsigned int)n >= 8) {
+            zb->pos++;
+            zb->ptr++;
+            zb->bit = n - 8;
+            if (zb->pos == zb->cur->size) {
+                zb->cur = zb->cur->next;
+                zb->pos = 0;
+                if (zb->cur != NULL) {
+                    zb->ptr = zb->cur->data;
+                } else {
+                    zb->ptr = NULL;
+                }
+            }
+        }
+    }
+}
+
+int writeBytes(ZBUF *zb, u8 *src, int len) {
+    u8 *old;
+    u8 *nb;
+    int sz;
+
+    old = NULL;
+    if (len <= 0) {
+        return -5;
+    }
+    if (zb->out == NULL) {
+        zb->outSize = (unsigned int)len < zb->total ? zb->total : len;
+        zb->out = ESP_malloc(zb->outSize);
+        if (zb->out == NULL) {
+            return -2;
+        }
+    } else if (zb->outSize < len + zb->outLen) {
+        sz = zb->outSize * 7 / 5;
+        while (sz < len + zb->outLen) {
+            sz = sz * 7 / 5;
+        }
+        old = zb->out;
+        nb = ESP_malloc(sz);
+        if (nb == NULL) {
+            return -2;
+        }
+        memcpy(nb, old, zb->outLen);
+        zb->out = nb;
+        zb->outSize = sz;
+    }
+    memcpy(zb->out + zb->outLen, src, len);
+    zb->outLen += len;
+    if (old != NULL) {
+        ESP_free(old);
+    }
+    return 0;
+}
+
+void skipCurByte(ZBUF *zb) {
+    if (zb->bit != 0) {
+        zb->bit = 0;
+        zb->pos++;
+        zb->ptr++;
+    }
+}
+
+int do_nocomp(ZBUF *zb) {
+    unsigned int len;
+    unsigned int nlen;
+    unsigned int n;
+    unsigned int rest;
+    int r;
+
+    skipCurByte(zb);
+    if ((r = readBits(zb, 16, 0, &len)) != 0) {
+        return r;
+    }
+    if ((r = readBits(zb, 16, 0, &nlen)) != 0) {
+        return r;
+    }
+    if (len != (~nlen & 0xFFFF)) {
+        return -3;
+    }
+    while (len != 0) {
+        rest = zb->cur->size - zb->pos;
+        n = len;
+        if (rest < n) {
+            n = rest;
+        }
+        if ((r = writeBytes(zb, zb->ptr, n)) != 0) {
+            return r;
+        }
+        zb->pos += n;
+        zb->ptr += n;
+        if (zb->pos == zb->cur->size) {
+            zb->cur = zb->cur->next;
+            zb->pos = 0;
+            if (zb->cur != NULL) {
+                zb->ptr = zb->cur->data;
+            }
+        }
+        len -= n;
+    }
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/wszlib", do_fixed);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/wszlib", calc_hc);
+int calc_hc(HCODE *t, int maxlen, int n, int rev) {
+    int *count;
+    int *next;
+    int i;
+    int code;
+    int len;
+
+    count = ESP_malloc(maxlen * 4 + 4);
+    if (count == NULL) {
+        return -2;
+    }
+    next = ESP_malloc(maxlen * 4 + 4);
+    if (next == NULL) {
+        ESP_free(count);
+        return -2;
+    }
+    memset(count, 0, maxlen * 4);
+    memset(next, 0, maxlen * 4);
+    for (i = 0; i < n; i++) {
+        count[t[i].len]++;
+    }
+    code = 0;
+    count[0] = 0;
+    for (i = 1; i <= maxlen; i++) {
+        code = (code + count[i - 1]) << 1;
+        next[i] = code;
+    }
+    ESP_free(count);
+    for (i = 0; i < n; i++) {
+        len = t[i].len;
+        if (len == 0) {
+            continue;
+        }
+        if (rev) {
+            t[i].code = next[len] << (maxlen - len);
+        } else {
+            t[i].code = next[len];
+        }
+        next[len]++;
+    }
+    ESP_free(next);
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/wszlib", read_code_length);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/wszlib", quick_sort);
+void quick_sort(HCODE *t, int lo, int hi) {
+    unsigned int pivot;
+    int i;
+    int j;
+    HCODE tmp;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/wszlib", pack_tree);
+    if (hi - lo <= 0) {
+        return;
+    }
+    pivot = t[(lo + hi) / 2].code;
+    i = lo;
+    j = hi;
+    for (;;) {
+        while (t[i].code < pivot) {
+            i++;
+        }
+        while (pivot < t[j].code && i <= j) {
+            j--;
+        }
+        if (j < i) {
+            break;
+        }
+        tmp = t[i];
+        t[i] = t[j];
+        t[j] = tmp;
+        j--;
+    }
+    j = j < lo ? lo : j;
+    quick_sort(t, lo, j);
+    quick_sort(t, j + 1, hi);
+}
+
+int pack_tree(HCODE *t, int n) {
+    int i;
+    int j;
+
+    j = 0;
+    for (i = 0; i < n; i++) {
+        if (t[i].len != 0) {
+            if (j < i) {
+                t[j] = t[i];
+                t[j].sym = i;
+                t[i].len = 0;
+            } else {
+                t[i].sym = i;
+            }
+            j++;
+        }
+    }
+    quick_sort(t, 0, j - 1);
+    return j;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/wszlib", do_dynamic);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/wszlib", zlib_new);
+ZBUF *zlib_new(u8 *data, int size) {
+    ZBUF *zb;
 
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
-
-void zlib_addData(void) {
-    addData();
+    zb = newZBuf(data, size);
+    if (zb == NULL) {
+        return NULL;
+    }
+    return zb;
 }
 
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
-
-void zlib_free(void) {
-    freeZBuf();
+int zlib_addData(void *handle, u8 *data, int size) {
+    return addData(handle, data, size);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/wszlib", zlib_inflate);
+void zlib_free(void *handle) {
+    freeZBuf(handle);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/wszlib", setTextStrings);
+int zlib_inflate(void *handle, u8 **out, int *outLen) {
+    ZBUF *zb = handle;
+    unsigned int cmf;
+    unsigned int flg;
+    unsigned int hdr;
+    int last;
+    int r;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/wszlib", getTextStrings);
+    hdr = 0;
+    last = 0;
+    if (out != NULL) {
+        *out = zb->out;
+    }
+    if (outLen != NULL) {
+        *outLen = zb->outLen;
+    }
+    if ((r = readBits(zb, 8, 0, &cmf)) != 0) {
+        return r;
+    }
+    if ((cmf & 0xF) != 8) {
+        return -3;
+    }
+    if ((r = readBits(zb, 8, 0, &flg)) != 0) {
+        return r;
+    }
+    if (((cmf << 8) + flg) % 31 != 0) {
+        return -3;
+    }
+    if (flg & 0x20) {
+        skipBits(zb, 16);
+    }
+    do {
+        if ((r = readBits(zb, 3, 0, &hdr)) != 0) {
+            return r;
+        }
+        if (hdr & 1) {
+            last = 1;
+        }
+        switch ((int)(hdr >> 1) & 3) {
+        case 0:
+            r = do_nocomp(zb);
+            break;
+        case 1:
+            r = do_fixed(zb);
+            break;
+        case 2:
+            r = do_dynamic(zb);
+            break;
+        default:
+            return -3;
+        }
+        if (r != 0) {
+            if (out != NULL) {
+                *out = zb->out;
+            }
+            if (outLen != NULL) {
+                *outLen = zb->outLen;
+            }
+            return r;
+        }
+    } while (!last);
+    if (out != NULL) {
+        *out = zb->out;
+    }
+    if (outLen != NULL) {
+        *outLen = zb->outLen;
+    }
+    return 0;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/wszlib", replaceTextStrings);
+int setTextStrings(FORMELEM *e, char *s) {
+    if (e->widget == NULL) {
+        return -100;
+    }
+    if (e->info->kind == 1) {
+        GUI_TextArea_setText(e->widget, s);
+    } else {
+        GUI_TextField_setText(e->widget, s);
+    }
+    return 0;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/wszlib", getTextSelectionRange);
+char *getTextStrings(FORMELEM *e) {
+    if (e->widget == NULL) {
+        return (char *)-100;
+    }
+    if (e->info->kind == 1) {
+        return rnd_gdrawGetTextboxString(e->widget);
+    }
+    return rnd_gdrawGetTextlineString(e->widget);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/wszlib", getTextSelectionString);
+int replaceTextStrings(FORMELEM *e, char *s, int start, int end) {
+    int t;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/wszlib", selectText);
+    if (e->widget == NULL) {
+        return -100;
+    }
+    if (end < start) {
+        t = start;
+        start = end;
+        end = t;
+    }
+    if (e->info->kind == 1) {
+        return rnd_gdrawReplaceTextboxString(e->widget, s, start, end);
+    }
+    return GUI_TextField_insert(e->widget, s, start, end);
+}
 
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
+int getTextSelectionRange(FORMELEM *e, int *start, int *end) {
+    if (e->widget == NULL) {
+        return -100;
+    }
+    if (e->info->kind == 1) {
+        return GUI_TextArea_getSelection(e->widget, start, end);
+    }
+    return GUI_TextField_getSelection(e->widget, start, end);
+}
+
+char *getTextSelectionString(FORMELEM *e) {
+    if (e->widget == NULL) {
+        return (char *)-100;
+    }
+    if (e->info->kind == 1) {
+        return rnd_gdrawGetTextboxSelectionString(e->widget);
+    }
+    return rnd_gdrawGetTextlineSelectionString(e->widget);
+}
+
+int selectText(FORMELEM *e) {
+    if (e->widget == NULL) {
+        return -100;
+    }
+    if (e->info->kind == 1) {
+        rnd_gdrawSelectTextbox(e->widget, 1);
+    } else {
+        GUI_TextField_selectAll(e->widget);
+    }
+    return 0;
+}
 
 void getTextlineExtents(void) {
     rnd_gdrawGetTextlineExtents();
 }
 
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
-
 void getTextboxExtents(void) {
     rnd_gdrawGetTextboxExtents();
 }
-
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
 
 void getCheckboxExtents(void) {
     rnd_gdrawGetCheckboxExtents();
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/wszlib", setCheckboxState);
+int setCheckboxState(FORMELEM *e, int state) {
+    if (e->widget == NULL) {
+        return -100;
+    }
+    GUI_Checkbox_setState(e->widget, state);
+    return 0;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/wszlib", getCheckboxState);
-
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
+int getCheckboxState(FORMELEM *e) {
+    if (e->widget == NULL) {
+        return -100;
+    }
+    return GUI_Checkbox_getState(e->widget);
+}
 
 void getRadiobuttonExtents(void) {
     rnd_gdrawGetRadiobuttonExtents();
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/wszlib", setRadiobuttonState);
+int setRadiobuttonState(FORMELEM *e, int state) {
+    if (e->widget == NULL) {
+        return -100;
+    }
+    GUI_RadioButton_setState(e->widget, state);
+    return 0;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/wszlib", getRadiobuttonState);
-
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
+int getRadiobuttonState(FORMELEM *e) {
+    if (e->widget == NULL) {
+        return -100;
+    }
+    return GUI_RadioButton_getState(e->widget);
+}
 
 void getButtonExtents(void) {
     rnd_gdrawGetButtonExtents();
 }
 
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
-
 void getPulldownExtents(void) {
     rnd_gdrawGetPulldownExtents();
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/wszlib", setPulldownState);
+int setPulldownState(FORMELEM *e, int index) {
+    if (e->widget == NULL) {
+        return -100;
+    }
+    GUI_Choice_select(e->widget, index);
+    return 0;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/wszlib", getPulldownState);
-
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
+int getPulldownState(FORMELEM *e) {
+    if (e->widget == NULL) {
+        return -100;
+    }
+    return GUI_Choice_getSelectedItem(e->widget);
+}
 
 void getListExtents(void) {
     rnd_gdrawGetListExtents();
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/wszlib", setListSelect);
+int setListSelect(FORMELEM *e, int index, int state) {
+    if (e->widget == NULL) {
+        return -100;
+    }
+    rnd_gdrawSetListState(e->widget, index, state, 0);
+    return 0;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/wszlib", getListSelect);
-
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
+int getListSelect(FORMELEM *e, int index) {
+    if (e->widget == NULL) {
+        return -100;
+    }
+    return GUI_List_isIndexSelected(e->widget, index);
+}
 
 void getStringsExtents(void) {
     GUI_Graphics_getStringSize();
 }
-
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
 
 void getStringsVisibleLength(void) {
     rnd_gdrawGetStringsVisibleLength();
@@ -167,15 +689,25 @@ void getStringsVisibleLength(void) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/wszlib", colorValue);
 
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
-
 void esp_colorNameToValue(void) {
     colorValue();
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/wszlib", isSimilarColor);
+int isSimilarColor(int c1, int c2) {
+    int r1, g1, b1;
+    int r2, g2, b2;
+
+    r1 = c1 & 0xFF;
+    g1 = (c1 >> 8) & 0xFF;
+    b1 = (c1 >> 16) & 0xFF;
+    r2 = c2 & 0xFF;
+    g2 = (c2 >> 8) & 0xFF;
+    b2 = (c2 >> 16) & 0xFF;
+    if ((r1 - r2 > -48 && r1 - r2 < 48) && (g1 - g2 > -48 && g1 - g2 < 48) && (b1 - b2 > -48 && b1 - b2 < 48)) {
+        return 0;
+    }
+    return -1;
+}
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/wszlib", distance_tab);
 
