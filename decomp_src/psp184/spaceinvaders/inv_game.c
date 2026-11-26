@@ -1010,7 +1010,37 @@ void df_blur_control(void)
 		(*(int *)(b_D_005FB3B0 + 0x40))++;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", df_blur_disp);
+typedef struct {
+	int f0, f4, f8, fc, f10, f14, f18, f1c, f20, f24, f28, f2c, f30, f34, f38, f3c;
+} SCREEN_BLUR;
+#define SB (*(SCREEN_BLUR *)&screen_blur)
+extern int game_pause;
+M2C_UNK df_blur_disp(void)
+{
+	if (DE.f40 < DE.f44) {
+		if (game_pause == 1) {
+			SB.f0 = 0;
+		} else if (DE.f40 < DE.f44 - 1) {
+			SB.f0 = 1;
+			SB.f8 = DE.f3c;
+			SB.fc = DE.f1c;
+			SB.f10 = DE.f20;
+			SB.f14 = 480;
+			SB.f18 = 272;
+			SB.f1c = 0;
+			SB.f20 = 0;
+			SB.f30 = DE.f2c;
+			SB.f34 = DE.f30;
+			SB.f2c = 0;
+			SB.f38 = DE.f34;
+			SB.f3c = DE.f38 * (DE.f44 - DE.f40) / DE.f44;
+			SB.f24 = DE.f24;
+			SB.f28 = DE.f28;
+		} else {
+			SB.f0 = 0;
+		}
+	}
+}
 
 void df_cap_start(int a, int b, int c, int d, int e, int t)
 {
