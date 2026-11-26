@@ -1007,7 +1007,26 @@ void dsGMInit(int mode, int a1)
 		st->ent[i].flag = 0;
 }
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", GetBallNext);
+int GetBallNext(PZL_STAT *st, int flag)
+{
+	int r;
+
+	if (flag && GetBallLine(st) >= 10)
+		return 9;
+	r = rand() % 1000;
+	if (r < 15)
+		return 13;
+	if (r < 25)
+		return 8;
+	if (r < 30)
+		return 9;
+	r = CheckNext(st) - 1;
+	if (r < 0)
+		r = st->next;
+	if (r < 0)
+		r = 0;
+	return r;
+}
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", CheckBallTouch);
 
