@@ -1,7 +1,9 @@
 /* cflags: -O1 */
 #include "common.h"
 #include "m2c_macros.h"
+#define JSTimer JSTimer_t
 #include "dom_esp.h"
+#undef JSTimer
 extern char D_001339EC[];
 extern int *g_JS_MSG_SID_;
 extern int *g_JS_PAGECHANGED_;
@@ -23,13 +25,103 @@ void JSStartInternal(int x) {
     JSSendMail(m, D_001339E0);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/js_main", JSRunInternal);
+void JSRunInternal(int *msg) {
+    int *g;
+    int **arg;
+    unsigned short *src;
+    int *ctx;
+    int len;
+    void *buf;
+    int r;
+    int r0;
+    int *res;
+    int m[8];
+    int *sidp;
+    int *pcp;
+
+    g = get_global_ptr();
+    sidp = g_JS_MSG_SID_;
+    *sidp = msg[1];
+    arg = (int **)msg[7];
+    src = (unsigned short *)arg[1];
+    ctx = arg[0];
+    MEM_free(0, arg);
+    JSRunStart(ctx);
+    pcp = g_JS_PAGECHANGED_;
+    *pcp = 0;
+    len = 0;
+    while (src[len] != 0) {
+        len++;
+    }
+    r0 = ctx[0];
+    buf = js_common_buffer_open(src, len * 2);
+    r = js_common_execute(r0, buf, 1);
+    js_common_buffer_close(buf);
+    MEM_free(0, src);
+    if (*pcp != 1) {
+        res = MEM_calloc(0, 0xC);
+        res[2] = 0;
+        res[0] = (r != 0x20) - 1;
+        SetIpcMember(m, 8, *sidp, 1, 0x802, 0, 0, res);
+        m[5] = msg[5];
+        m[6] = 0xC;
+        JSSendMail(m, D_001339E0);
+    }
+    JSRunFinish(ctx);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/js_main", JSFreeJSPtrInternal);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/js_main", JSHandleEventInternal);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/js_main", JSTimer);
+void JSTimer(int *msg) {
+    int *g;
+    char *t;
+    int cx;
+    int obj;
+    int id;
+    int rep;
+    char *data;
+    int len;
+    void *buf;
+    int *vals;
+    int n;
+    int i;
+    char *args;
+
+    g = get_global_ptr();
+    t = (char *)msg[7];
+    if (js_getTimerStatus(M2C_FIELD(t, int *, 0)) == 1) {
+        js_delTimerID(M2C_FIELD(t, int *, 0), 3, 0);
+        return;
+    }
+    cx = M2C_FIELD(t, int **, 8)[0];
+    obj = M2C_FIELD(t, int **, 8)[1];
+    id = M2C_FIELD(t, int *, 0);
+    rep = M2C_FIELD(t, int *, 4);
+    data = M2C_FIELD(t, char **, 0x10);
+    len = M2C_FIELD(t, unsigned short *, 0xC);
+    *g_JS_PAGECHANGED_ = 0;
+    if (rep == 1) {
+        OS_timer_start(id);
+    }
+    if (msg[4] == 0) {
+        buf = js_common_buffer_open(data, len * 2);
+        js_common_execute(cx, buf, 1);
+        js_common_buffer_close(buf);
+    } else if (msg[4] == 1) {
+        args = data;
+        n = M2C_FIELD(args, unsigned short *, 4);
+        vals = mes_util_vals(n, 0);
+        for (i = 0; i < n; i++) {
+            vals[i + 1] = M2C_FIELD(args, int **, 8)[i + 1];
+        }
+        js_common_eval(cx, M2C_FIELD(args, int *, 0), vals, obj, 1);
+    }
+    if (rep == 2) {
+        js_delTimerID(id, 2, 0);
+    }
+}
 
 void JSDestroyInternal(int sid) {
     int *g;
