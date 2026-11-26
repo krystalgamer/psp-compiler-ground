@@ -33,13 +33,18 @@ typedef struct {
     u16 width;                  /* 0xC6 */
     u8 unkC8[2];
     u8 ncomp;                   /* 0xCA */
-    u8 unkCB[0x11];
+    u8 unkCB[0x5];
+    u16 mcux;                   /* 0xD0 */
+    u8 unkD2[0xA];
     JCOMP comps[3];             /* 0xDC */
     JCOMPSEL comp[4];           /* 0x100 */
     JHTAB huff[2][4];           /* 0x10C */
     u8 unk18C[0x502];
     u8 hmax;                    /* 0x68E */
     u8 vmax;                    /* 0x68F */
+    unsigned int restart;       /* 0x690 */
+    unsigned int rcount;        /* 0x694 */
+    int lines;                  /* 0x698 */
 } JDCTX;
 
 int getBits(void *bs, int n);
@@ -155,4 +160,89 @@ void inverseDCT(JDCTX *ctx, int comp);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jpg_decode", decodeMCU);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jpg_decode", decodeJPG);
+void *ESP_malloc(int n);
+void ESP_free(void *p);
+void *memset(void *d, int c, unsigned int n);
+int getMarker(JDCTX *ctx);
+
+int decodeJPG(JDCTX *ctx, int n) {
+    int size;
+    int blk;
+    int i;
+    int bx;
+    int by;
+
+    if (n == 0) {
+        return -1;
+    }
+    size = ctx->mcux * ctx->hmax * n * ctx->vmax * 64;
+    if (ctx->rgb != NULL) {
+        ESP_free(ctx->rgb);
+    }
+    ctx->rgb = ESP_malloc(size * 3);
+    if (ctx->rgb == NULL) {
+        return -2;
+    }
+    memset(ctx->rgb, 0xFF, size * 3);
+    blk = ctx->hmax * ctx->vmax * 64;
+    ctx->out[0] = ESP_malloc(blk * 2);
+    if (ctx->out[0] == NULL) {
+        return -2;
+    }
+    memset(ctx->out[0], 0, blk * 2);
+    ctx->out[1] = ESP_malloc(blk * 2);
+    if (ctx->out[1] == NULL) {
+        return -2;
+    }
+    i = blk;
+    while (i-- != 0) {
+        ctx->out[1][i] = 0x80;
+    }
+    ctx->out[2] = ESP_malloc(blk * 2);
+    if (ctx->out[2] == NULL) {
+        return -2;
+    }
+    i = blk;
+    while (i-- != 0) {
+        ctx->out[2][i] = 0x80;
+    }
+    ctx->block = ESP_malloc(0x80);
+    if (ctx->block == NULL) {
+        return -2;
+    }
+    if (ctx->lines == 0) {
+        ctx->pred[0] = 0;
+        ctx->pred[1] = 0;
+        ctx->pred[2] = 0;
+        ctx->rcount = 0;
+    }
+    for (by = 0; by < n; by++) {
+        for (bx = 0; bx < ctx->mcux; bx++) {
+            if (decodeMCU(ctx) == -1) {
+                goto out;
+            }
+            translateRGB_30028(ctx, bx, by);
+            if (ctx->restart != 0) {
+                if (++ctx->rcount >= ctx->restart) {
+                    ctx->rcount = 0;
+                    if ((unsigned int)(getMarker(ctx) - 0xD0) < 8) {
+                        ctx->pred[0] = 0;
+                        ctx->pred[1] = 0;
+                        ctx->pred[2] = 0;
+                    }
+                }
+            }
+        }
+    }
+out:
+    ctx->lines += n;
+    ESP_free(ctx->out[0]);
+    ESP_free(ctx->out[1]);
+    ESP_free(ctx->out[2]);
+    ESP_free(ctx->block);
+    ctx->out[0] = NULL;
+    ctx->out[1] = NULL;
+    ctx->out[2] = NULL;
+    ctx->block = NULL;
+    return 1;
+}
