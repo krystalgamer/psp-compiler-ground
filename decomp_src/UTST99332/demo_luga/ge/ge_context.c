@@ -185,7 +185,38 @@ void sceGumSetMatrixStack(void *stack, int proj, int view, int model, int textur
 void geDrawFinWait(void);
 void geDrawStart(void);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/ge/ge_context", geSetLight);
+void geSetLight(int n, int param, geLIGHT *light)
+{
+	int enable = 0;
+
+	if (n >= 4) {
+		return;
+	}
+
+	geDrawStart();
+	if (param & 1) {
+		sceGuLight(n, light->type, light->comp, &light->vec);
+		sceGuLightColor(n, 2, light->diff_col);
+		sceGuLightColor(n, 4, light->spec_col);
+		enable = 1;
+	}
+
+	if (param & 2) {
+		sceGuLightSpot(n, &light->spot_vec, light->spot_s, light->spot_c);
+		enable = 1;
+	}
+
+	if (param & 4) {
+		sceGuLightAtt(n, light->att_a, light->att_b, light->att_c);
+		enable = 1;
+	}
+
+	if (enable) {
+		sceGuEnable(n + 11);
+		sceGuEnable(10);
+	}
+	geDrawFinWait();
+}
 
 void geSetCamera(int param, geCAMERA *camera)
 {
