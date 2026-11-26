@@ -247,9 +247,111 @@ static void init_pos(void)
 	}
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/sound_starmix/nonmatchings/main", sound_init_all);
+static int sound_init_all(void)
+{
+	unsigned int size01, size02;
 
-INCLUDE_ASM("tmp/asm/UTST99332/sound_starmix/nonmatchings/main", sound_idle);
+
+	
+	sceWaveInit();
+	sceWaveAudioSetSample(0, 1024);
+
+	
+	if(sceSasInit() != 0){
+		printf("Error:sceSasInit()\n");
+		return -1;
+	}
+
+	
+	if(file_read("host0:../../../data/sound/wave/fms.vag", vagbuf01, sizeof(vagbuf01), &size01, 0x30) < 0){
+		printf("Error:read file\n");
+		return -1;
+	}
+	if (size01 & 15) {
+		printf("Error:invalid file size\n");
+		return -1;
+	}
+
+	
+	if(file_read("host0:../../../data/sound/wave/squ.vag", vagbuf02, sizeof(vagbuf02), &size02, 0x30) < 0){
+		printf("Error:read file\n");
+		return -1;
+	}
+	if (size02 & 15) {
+		printf("Error:invalid file size\n");
+		return -1;
+	}
+
+	
+	fxsw = 0;
+	sceSasSetEffectType(4);	
+	sceSasSetEffect(1, fxsw);			
+	
+	sceSasSetEffectVolume(0x1000*3/4,
+						  0x1000*3/4);
+
+	
+	sceKernelDcacheWritebackInvalidateAll();
+
+	
+	sceSasSetVoice(0, vagbuf01, size01, 0);	
+	
+	sceSasSetPitch(0, 0x1800);	
+	
+	sceSasSetADSR(0, 0xf, 0x40000000, 100, 100, 0x10000000);
+	
+	sceSasSetVolume(0, 2500, 1000, 2500, 1000);	
+
+	
+	sceSasSetVoice(1, vagbuf01, size01, 0);	
+	
+	sceSasSetPitch(1, 0x1000);	
+	
+	sceSasSetADSR(1, 0xf, 0x40000000, 100, 100, 0x10000000);
+	
+	sceSasSetVolume(1, 1000, 2500, 1000, 2500);	
+
+	
+	sceSasSetVoice(2, vagbuf02, size02, 1);	
+	
+	ipitch = 0x0080;
+	sceSasSetPitch(2, ipitch);
+	
+	sceSasSetADSR(2, 0xf, 0x40000000, 0, 0, 0x20000000);
+	
+	sceSasSetVolume(2, 1000, 1000, 1000, 1000);	
+
+	
+	sceSasSetNoise(3, 0x30);
+	
+	sceSasSetADSR(3, 0xf, 0x40000000, 10, 10, 0x10000);
+	
+	sceSasSetVolume(3, 800, 800, 800, 800);	
+
+	return 0;
+}
+
+static SceInt32 sound_idle(SceSize args, ScePVoid argp)
+{
+	int iSide;
+	int iAccum;
+
+	iSide = 0;
+	iAccum = 0;
+	sceSasSetKeyOn(2);
+	while (thread_on) {
+		sceSasCore(&pcmBuf[iSide][iAccum * 512]);
+		iAccum++;
+		if (iAccum == 4) {
+			iAccum = 0;
+			sceWaveAudioWriteBlocking(0, 0x8000, 0x8000, pcmBuf[iSide]);
+			iSide ^= 1;
+		}
+	}
+	sceSasSetKeyOff(2);
+	sceKernelExitThread(0);
+	return 0;
+}
 
 void sound_end(void) {
     sceWaveAudioWriteBlocking(0, 0x8000, 0x8000, 0);
