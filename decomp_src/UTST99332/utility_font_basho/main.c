@@ -1,3 +1,4 @@
+/* cflags: -O0 */
 #include "common.h"
 
 /* declarations recovered from DWARF */
@@ -276,13 +277,65 @@ INCLUDE_ASM("tmp/asm/UTST99332/utility_font_basho/nonmatchings/main", main);
 
 INCLUDE_ASM("tmp/asm/UTST99332/utility_font_basho/nonmatchings/main", draw_frame);
 
-INCLUDE_ASM("tmp/asm/UTST99332/utility_font_basho/nonmatchings/main", func_000005BC);
+typedef int SceInt32;
+typedef char SceChar8;
+SceUID sceKernelLoadModule(const char *path, int flags, SceKernelLMOption *option);
+int sceKernelStartModule(SceUID modid, SceSize args, void *argp, int *status, void *option);
+int sceKernelStopModule(SceUID modid, SceSize args, void *argp, int *status, void *option);
+int sceKernelUnloadModule(SceUID modid);
+int fprintf(__FILE *fp, const char *fmt, ...);
 
-INCLUDE_ASM("tmp/asm/UTST99332/utility_font_basho/nonmatchings/main", myLoadModule);
+static int myLoadModule(void)
+{
+	SceInt32 loadModule(SceUID *mid, SceChar8 *filename, SceKernelLMOption *option)
+	{
+		SceInt32 res;
+		SceInt32 mresult;
 
-INCLUDE_ASM("tmp/asm/UTST99332/utility_font_basho/nonmatchings/main", func_000006EC);
+		do {
+			*mid = sceKernelLoadModule((const char *)filename, 0, option);
+		} while (*mid < 0);
+		do {
+			res = sceKernelStartModule(*mid, 0, NULL, &mresult, NULL);
+		} while (res < 0);
+		return 0;
+	}
 
-INCLUDE_ASM("tmp/asm/UTST99332/utility_font_basho/nonmatchings/main", myUnloadModule);
+	SceKernelLMOption uMode;
+
+	uMode.size = sizeof(SceKernelLMOption);
+	uMode.mpidtext = 2;
+	uMode.mpiddata = 2;
+	uMode.position = 0;
+	uMode.access = 1;
+
+	if (loadModule(&fontModukeID, (SceChar8 *)"disc0:/PSP_GAME/USRDIR/MODULE/libfont.prx", &uMode) != 0) {
+		fprintf(_impure_ptr->_stderr, "fatal error : can not load Module (libfont.prx)\n");
+		return -1;
+	}
+
+	return 0;
+}
+
+static int myUnloadModule(void)
+{
+	SceInt32 unloadModule(SceUID *mid)
+	{
+		SceInt32 mresult;
+
+		if (sceKernelStopModule(*mid, 0, NULL, &mresult, NULL) < 0) {
+			fprintf(_impure_ptr->_stderr, "fatal error : sceKernelStopModule\n");
+			return -1;
+		}
+		if (sceKernelUnloadModule(*mid) < 0) {
+			fprintf(_impure_ptr->_stderr, "fatal error : sceKernelUnloadModule\n");
+			return -1;
+		}
+		return 0;
+	}
+
+	return unloadModule(&fontModukeID);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/utility_font_basho/nonmatchings/main", init_all);
 
