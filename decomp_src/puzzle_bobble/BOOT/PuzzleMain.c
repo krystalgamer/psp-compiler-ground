@@ -569,7 +569,29 @@ void SurvivlaModeInit(int cont)
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", SurvivlaModeInit);
 #endif
 
+#ifdef NON_MATCHING
+/* diff 9 (best of all 120 store orders, either order of the first two stores): the
+ * StageNum/SurvCont %hi registers are swapped and the isSurvival store is scheduled
+ * one slot earlier.  SelectPlayer is read as a byte (s8). */
+void SurvivalInit(void)
+{
+	s8 sel;
+
+	StageNum = 0;
+	SurvCont = 0;
+	VSInit();
+	SurvivlaModeInit(0);
+	sel = SelectPlayer;
+	Stat[1].player = sel;
+	Stat[2].snd.unk2 = 3;
+	Stat[2].player = 0;
+	Stat[1].snd.unk2 = (sel + 3) % 6;
+	isSurvival = 1;
+	InitBubCrush();
+}
+#else
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", SurvivalInit);
+#endif
 
 int VSMain(void)
 {
