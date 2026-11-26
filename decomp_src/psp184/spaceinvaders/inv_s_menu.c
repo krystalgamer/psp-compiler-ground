@@ -111,7 +111,27 @@ void inv_classic_menu_free(void) {
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_menu", inv_classic_music_disp);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_menu", inv_classic_name_entry_init);
+extern int nx, ny, nret, ntbl, nnanm, nc, nnanmcnt;
+extern unsigned char Name[];
+void inv_classic_name_entry_init(void)
+{
+	nx = 0x18;
+	ny = 0x70;
+	nret = 0;
+	ntbl = 0;
+	nnanm = 0;
+	nc = 0;
+	nnanmcnt = 0;
+	Name[0] = 0;
+	Name[1] = 0;
+	Name[2] = 0;
+	Name[3] = 0;
+	Name[4] = 0;
+	Name[5] = 0;
+	Name[6] = 0;
+	Name[7] = 0;
+	Name[8] = 0;
+}
 
 INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_menu", D_0007CA20);
 
