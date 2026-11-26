@@ -171,7 +171,41 @@ INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/lo_image", noImage);
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/lo_image", discImage);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_image", makeHttpHeader);
+int sprintf(char *buf, const char *fmt, ...);
+
+char *makeHttpHeader(char *ref, char *user, char *pass) {
+    unsigned int rl;
+    unsigned int al;
+    char *p;
+
+    al = 0;
+    rl = 0;
+    p = NULL;
+    if (ref != NULL) {
+        rl = strlen(ref);
+    }
+    if (user != NULL) {
+        al = strlen(user);
+        if (pass != NULL) {
+            al += strlen(pass);
+        }
+    }
+    if (rl != 0 || al != 0) {
+        if (al != 0) {
+            if (rl != 0) {
+                p = MEM_malloc(0, rl + al + 0x22);
+                sprintf(p, "Referer: %s\nAuthorization: Basic %s:%s\n", ref, user, pass);
+            } else {
+                p = MEM_malloc(0, rl + al + 0x18);
+                sprintf(p, "Authorization: Basic %s:%s\n", user, pass);
+            }
+        } else if (rl != 0) {
+            p = MEM_malloc(0, rl + al + 0xB);
+            sprintf(p, "Referer: %s\n", ref);
+        }
+    }
+    return p;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_image", setRequestMessageBuffer);
 
