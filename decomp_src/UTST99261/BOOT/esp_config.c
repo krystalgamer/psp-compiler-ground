@@ -1,13 +1,38 @@
 /* cflags: -O1 */
 #include "common.h"
 #include "m2c_macros.h"
+extern char D_00133E78[];
 M2C_UNK MEM_free(M2C_UNK, int);                     /* extern */
 
 M2C_UNK do_string();                                /* extern */
 M2C_UNK __floatsidf(int);                           /* extern */
 
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/esp_config", do_bool);
+int do_bool(int *cfg, int id, char *str) {
+    int val;
+
+    val = 0;
+    if (strcasecmp(str, D_00133E78) == 0) {
+        val = 1;
+    }
+    switch (id) {
+    case 0:
+        cfg[1] = val;
+        break;
+    case 1:
+        cfg[6] = val;
+        break;
+    case 2:
+        cfg[5] = val;
+        break;
+    case 3:
+        cfg[22] = val == 0;
+        break;
+    default:
+        return -1;
+    }
+    return 0;
+}
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/esp_config", D_00133E78);
 
@@ -46,13 +71,81 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/esp_config", esp_copyConfig);
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/esp_config", D_00133EB0);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/esp_config", esp_setBoolConfig);
+int esp_setBoolConfig(int *cfg, int id, int val) {
+    return do_bool(cfg, id, val ? D_00133E78 : "false");
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/esp_config", esp_getBoolConfig);
+int esp_getBoolConfig(int *cfg, int id, int *out) {
+    switch (id) {
+    case 0:
+        *out = cfg[1];
+        break;
+    case 1:
+        *out = cfg[6];
+        break;
+    case 2:
+        *out = cfg[5];
+        break;
+    case 3:
+        *out = cfg[22] == 0;
+        break;
+    default:
+        return -1;
+    }
+    return 0;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/esp_config", esp_setIntConfig);
+int esp_setIntConfig(int *cfg, int id, int val) {
+    switch (id) {
+    case 0x1000:
+        cfg[0] = val;
+        break;
+    case 0x1001:
+        cfg[3] = val;
+        break;
+    case 0x1002:
+        cfg[9] = val;
+        break;
+    case 0x1003:
+        cfg[11] = val;
+        break;
+    case 0x1004:
+        cfg[8] = val;
+        break;
+    case 0x1005:
+        cfg[15] = val;
+        break;
+    default:
+        return -1;
+    }
+    return 0;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/esp_config", esp_getIntConfig);
+int esp_getIntConfig(int *cfg, int id, int *out) {
+    switch (id) {
+    case 0x1000:
+        *out = cfg[0];
+        break;
+    case 0x1001:
+        *out = cfg[3];
+        break;
+    case 0x1002:
+        *out = cfg[9];
+        break;
+    case 0x1003:
+        *out = cfg[11];
+        break;
+    case 0x1004:
+        *out = cfg[8];
+        break;
+    case 0x1005:
+        *out = cfg[15];
+        break;
+    default:
+        return -1;
+    }
+    return 0;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -62,7 +155,31 @@ void esp_setStringConfig(void) {
     do_string();
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/esp_config", esp_getStringConfig);
+int esp_getStringConfig(int *cfg, int id, int *out) {
+    switch (id) {
+    case 0x2000:
+        *out = cfg[16];
+        break;
+    case 0x2001:
+        *out = cfg[17];
+        break;
+    case 0x2002:
+        *out = cfg[10];
+        break;
+    case 0x2003:
+        *out = cfg[12];
+        break;
+    case 0x2004:
+        *out = cfg[13];
+        break;
+    case 0x2005:
+        *out = cfg[14];
+        break;
+    default:
+        return -1;
+    }
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/esp_config", esp_system_callback);
 
