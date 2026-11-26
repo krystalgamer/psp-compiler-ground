@@ -18,6 +18,9 @@ void psp_free(void *p);
 
 void psp_free(void *p);
 
+void *psp_malloc(int size);
+void *memset(void *, int, unsigned int);
+
 void inv_movie_result_tex_addr(int arg0) {
     D_004B47E0 = arg0;
 }
@@ -44,7 +47,17 @@ void inv_movie_result_disp_counter_set(int arg0) {
     D_004B47C8 = arg0;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_result", inv_movie_result_memset);
+void inv_movie_result_memset(void)
+{
+	u8 *r = (u8 *)&inv_movie_resut;
+
+	*(void **)(r + 0x14) = psp_malloc(0x3800);
+	*(void **)(r + 0x18) = psp_malloc(0x3800);
+	if (*(void **)(r + 0x14))
+		memset(*(void **)(r + 0x14), 0, 0x3800);
+	if (*(void **)(r + 0x18))
+		memset(*(void **)(r + 0x18), 0, 0x3800);
+}
 
 void *inv_movie_result_addr(void)
 {
@@ -77,7 +90,24 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_result", inv_movie_re
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_result", inv_movie_result_disp);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_result", inv_result_font_code);
+void *psp_malloc(int size);
+void *memset(void *, int, unsigned int);
+int inv_result_font_code(int c)
+{
+	if ((unsigned int)(c - 'A') < 26)
+		return c - 'A';
+	if ((unsigned int)(c - '0') < 10)
+		return c - '0' + 26;
+	if (c == ':')
+		return 36;
+	if (c == '-')
+		return 37;
+	if (c == '/')
+		return 38;
+	if (c == '%')
+		return 39;
+	return 40;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_result", maingame_loop);
 

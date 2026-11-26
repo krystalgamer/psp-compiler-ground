@@ -11,7 +11,31 @@ extern int D_00287354;
 
 extern int D_00287388;
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_pad", pad_init);
+int sceCtrlSetSamplingCycle(int cycle);
+int sceCtrlSetSamplingMode(int mode);
+int sceUtilityGetSystemParamInt(int id, int *value);
+void *memset(void *, int, unsigned int);
+
+int sceCtrlSetSamplingCycle(int cycle);
+int sceCtrlSetSamplingMode(int mode);
+int sceUtilityGetSystemParamInt(int id, int *value);
+void *memset(void *, int, unsigned int);
+void pad_init(void)
+{
+	int val;
+	u8 *p;
+
+	sceCtrlSetSamplingCycle(0);
+	sceCtrlSetSamplingMode(1);
+	p = (u8 *)&pad;
+	memset(p, 0, 0x4C);
+	if (sceUtilityGetSystemParamInt(9, &val) == 0) {
+		if (val == 0)
+			*(int *)(p + 0x48) = 0;
+		else
+			*(int *)(p + 0x48) = 1;
+	}
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_pad", pad_read);
 
