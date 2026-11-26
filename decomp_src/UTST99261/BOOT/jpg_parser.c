@@ -80,7 +80,17 @@ int mrkERR(void) {
     return -1;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jpg_parser", mrkDNL);
+int mrkDNL(JCTX *ctx) {
+    int ret;
+
+    if (getWord(ctx->bs, 1) != 4) {
+        ret = -1;
+    } else {
+        ctx->lines = getWord(ctx->bs, 1);
+        ret = ctx->lines ? 1 : -1;
+    }
+    return ret;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jpg_parser", mrkSOF0);
 
@@ -519,7 +529,15 @@ int mrkCOM(int *arg0) {
     return 1;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jpg_parser", readMarker);
+int readMarker(JCTX *ctx) {
+    int m;
+
+    m = getMarker(ctx);
+    if (m != -1 && markerTable[m](ctx) != -1) {
+        return m;
+    }
+    return -1;
+}
 
 int getMarker(JCTX *ctx) {
     int c;
