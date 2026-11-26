@@ -259,7 +259,61 @@ void InitGame(void)
 	FadeSetup(1, 0);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/game", RunGame);
+void RunGame(void)
+{
+	if (game.state != 5)
+		return;
+	switch (ball.state) {
+	case 0:
+		if (_info.server_flag > 0)
+			InitBall();
+		break;
+	case 1:
+		if (_info.server_flag) {
+			if (ground.t >= 160) {
+				ball.state = 2;
+				ground.dt *= 2;
+			}
+		}
+		break;
+	case 2:
+		if (_info.server_flag) {
+			ball.t++;
+			ball.pos.y = ball.d * ball.t - ball.t * 0.006f * ball.t + -30.0f;
+			if (ball.pos.y <= -30.0f)
+				ball.state = 0;
+		}
+		break;
+	case 3:
+		if (!CheckParticle())
+			ball.state = 0;
+		break;
+	}
+	if (_info.server_flag > 0 && ball.state > 0 && ground.e > 0.1f) {
+		ground.pos = sinf(ground.t * 3.1415927f / 180.0f) * -ground.e;
+		ground.t += ground.dt;
+		if (ground.t >= 360) {
+			ground.t -= 360;
+			ground.e *= 0.5f;
+			ground.dt *= 2;
+		}
+	}
+	moon += 0.016f;
+	if (_info.server_flag <= 0)
+		return;
+	if (moon >= 75.0f) {
+		game.state = 6;
+		game.result = 0;
+		game.count = 0;
+		game.key = 0;
+	}
+	if (game.score >= 30) {
+		game.result = 1;
+		game.state = 6;
+		game.count = 0;
+		game.key = 0;
+	}
+}
 
 static void DrawBall(void)
 {
