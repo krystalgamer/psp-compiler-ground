@@ -13,7 +13,3 @@ int sceGimPictureGetChunkCount(void *buf, int size) {
 }
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gim_format", sceGimPictureGetChunk);
-
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gim_format", sceGimPictureCountChunk);
-
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gim_format", sceGimPictureFindChunk);

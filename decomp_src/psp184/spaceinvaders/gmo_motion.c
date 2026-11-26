@@ -91,10 +91,6 @@ float find_root( float f0, float f1, float f2, float f3, float f )
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_motion", extrap_frame);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_motion", sceGmoVec3Set);
-
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_motion", sceGmoVec4Set);
-
 INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_motion", D_0007F040);
 
 INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_motion", sceGmoVec3_One);
@@ -108,51 +104,3 @@ INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_motion", sceGmoQua
 INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_motion", sceGmoRect_One);
 
 INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_motion", sceGmoCol4_One);
-
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_motion", sceGmoMat4Set);
-
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_motion", sceGmoQuatSet);
-
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_motion", sceGmoRectSet);
-
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_motion", sceGmoCol4Set);
-
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_motion", sceGmoVec3Load);
-
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_motion", sceGmoVec4Load);
-
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_motion", sceGmoMat4Load);
-
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_motion", sceGmoQuatLoad);
-
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_motion", sceGmoRectLoad);
-
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_motion", sceGmoCol4Load);
-
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_motion", sceGmoMat4Multiply);
-
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_motion", sceGmoMat4Scale);
-
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_motion", sceGmoFloatLerp);
-
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_motion", sceGmoMat4FromQuat);
-
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_motion", sceGmoQuatFromRotZYX);
-
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_motion", sceGmoQuatFromRotYXZ);
-
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_motion", sceGmoQuatSlerp);
-
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_motion", sceGmoVec4FromCol4);
-
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_motion", sceGmoCol4FromVec4);
-
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_motion", sceGmoCol4IsBlack);
-
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_motion", sceGmoCol4IsHollow);
-
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_motion", sceGmoBoneAffineMatrix);
-
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_motion", sceGmoBoneStackScale);
-
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_motion", sceGmoBoneApplyPivot);

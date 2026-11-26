@@ -1,5 +1,7 @@
 #include "common.h"
 
+INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_match", inv_matchup_main);
+
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_match", inv_matchup_init);
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_match", inv_matchup_demo);

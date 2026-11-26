@@ -109,7 +109,3 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gim_picture", sceGimPictu
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gim_picture", sceGimPictureGetWrap);
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gim_picture", reconfigure_picture);
-
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gim_picture", sceGimPictureAnimate);
-
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gim_picture", sceGimPictureControl);
