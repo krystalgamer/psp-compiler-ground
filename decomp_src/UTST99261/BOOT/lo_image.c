@@ -85,7 +85,7 @@ typedef struct {
 LHIST *HST_getChildHistoryNode(LHIST *h);
 LHIST *HST_getSiblingHistoryNode(LHIST *h);
 LHIST *HST_getParentHistoryNode(LHIST *h);
-void *imageDecode(const u8 *data, int size, int a, int b, int c);
+void *imageDecode();
 extern const u8 defImage[];
 extern const u8 noImage[];
 extern const u8 discImage[];
@@ -107,11 +107,11 @@ void delLLIST(LLIST *list, LNODE *n);
 #ifndef NULL
 #define NULL ((void *)0)
 #endif
-int getRestImageTotalSquareSize(void) {
+int getRestImageTotalSquareSize(IMGLIST *list) {
     return -1;
 }
 
-void incrementImageTotalSquareSize(void) {
+void incrementImageTotalSquareSize(IMGLIST *list) {
 }
 
 void addBoxList();
@@ -431,6 +431,9 @@ IMGENT *checkImageList(IMGLIST *list, char *name) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_image", requestImageData);
 
+int setBrokenImageData(LNODE *n, BOX *doc);
+extern void *D_00584CB0;
+
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_image", setImageData);
 
 int setBrokenImageData(LNODE *n, BOX *doc) {
@@ -715,7 +718,84 @@ void proc_msg_IL3(LOMSG *msg) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_image", proc_msg_IL4);
+typedef struct {
+    u8 unk0[0x30];
+} LJSEVENT;
+void initJSEvent(LJSEVENT *ev, int type, int node, int a, int b);
+void sendJSEvent(int obj, LJSEVENT *ev);
+int Node_getJSObj(int node);
+int isLoadedAllChild(HISTNODE *h);
+void GUI_ScrollPane_setScrollPosition(int w, int x, int y);
+LNODE *make_msg_LP4(int sid, int w, int h);
+LNODE *make_msg_LP21(int sid, BOX *body);
+void drawPaint(BOX *b);
+void drawObject(BOX *b);
+
+void proc_msg_IL4(LOMSG *msg) {
+    LNODE *n;
+    HISTNODE *h;
+    BOX *box;
+    BOX *body;
+    IMGENT *e;
+    LISTNODE *l;
+    LJSEVENT ev;
+    HISTNODE *p;
+    BOX *pb;
+
+    n = searchLLISTBySESSION(&REQUEST_LLIST, msg->session);
+    if (n == NULL) {
+        goto end;
+    }
+    h = HST_searchSessionIDHistoryNode(n->doc);
+    if (h == NULL || h->body == NULL || !checkBoxValidity(h->body)) {
+        goto del;
+    }
+    n->unk14 = 1;
+    box = (BOX *)n->unk18;
+    if (box == NULL) {
+        goto del;
+    }
+    body = getBodyBox(box);
+    if (body == NULL) {
+        goto end;
+    }
+    if (box->content == 10 && setBrokenImageData(n, box) == 0
+        && (e = checkImageList((IMGLIST *)((u8 *)body->geom + 0x54), n->data)) != NULL) {
+        for (l = e->boxes.head; l != NULL; l = l->next) {
+            if (((BOX *)l->data)->content == 10 && ((int *)((BOX *)l->data)->geom)[5] == 2) {
+                initJSEvent(&ev, 7, ((int *)l->data)[0xA], 0, 0);
+                sendJSEvent(Node_getJSObj(((int *)l->data)[0xA]), &ev);
+            }
+        }
+    }
+    if (((int *)body->geom)[0x10] == 2 && checkNoReceiveLLIST(&REQUEST_LLIST, ((int *)body->geom)[0xE]) == 0) {
+        for (p = h; p != NULL; p = (HISTNODE *)HST_getParentHistoryNode((LHIST *)p)) {
+            if (!isLoadedAllChild(p)) {
+                break;
+            }
+            pb = p->body;
+            initJSEvent(&ev, 0xC, ((int *)pb)[0xA], 0, 0);
+            sendJSEvent(Node_getJSObj(((int *)pb)[0xA]), &ev);
+        }
+        if (((int *)body->geom)[6] != 0 || ((int *)body->geom)[7] != 0) {
+            GUI_ScrollPane_setScrollPosition(((int *)body)[0xB], ((int *)body->geom)[6], ((int *)body->geom)[7]);
+        }
+        lo_global.flags &= ~8;
+        putLLIST(&REQUEST_LLIST, make_msg_LP4(n->doc, ((int *)body->geom)[2], ((int *)body->geom)[3]));
+        putLLIST(&REQUEST_LLIST, make_msg_LP21(n->doc, body));
+        ((int *)body->geom)[0x10] = 3;
+        drawPaint(body);
+    }
+    drawObject(box);
+del:
+    delLLIST(&REQUEST_LLIST, n);
+    if (n->data != NULL) {
+        MEM_free(NULL, n->data);
+    }
+    MEM_free(NULL, n);
+end:
+    MEM_free(NULL, msg->data);
+}
 
 void proc_msg_IL5(LOMSG *m) {
     LURLSTR *d;
