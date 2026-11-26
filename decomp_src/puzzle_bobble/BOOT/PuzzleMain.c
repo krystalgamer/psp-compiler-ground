@@ -3317,6 +3317,7 @@ int VSModeBody(int pl)
 	int zen;
 	int i;
 	int k;
+	int j;
 	short ang;
 
 	KeyStat = GetKeyStat();
@@ -3486,7 +3487,7 @@ int VSModeBody(int pl)
 			break;
 		}
 		case 6: {
-			int mode, n, j;
+			int mode, n;
 			int pos[8];
 			int x, y;
 
@@ -3915,7 +3916,6 @@ int VSModeBody(int pl)
 		}
 	}
 	if (st->scroll == -4) {
-		int j;
 
 		st->scroll = -4;
 		st->mp.map[8] = 13;
@@ -3932,8 +3932,6 @@ int VSModeBody(int pl)
 			}
 		}
 	} else {
-		int j;
-
 		st->scroll = -5;
 		st->mp.map[16] = 13;
 		for (i = 0; i < 7; i++)
@@ -3956,7 +3954,9 @@ int VSModeBody(int pl)
 		for (i = 0; i < st->nchain; i++) {
 			x = st->chain[i].x * t / 60 + st->chain[i].a * (60 - t) / 60;
 			y = st->chain[i].y * t / 60 + st->chain[i].b * (60 - t) / 60 - ((t - 30) * (t - 30) - 900) / 8;
-			DrawBubble(0, x + MapXBeginPos[st->mapno * 3 + st->mapsub] + 72, y + st->ofs_y + st->scroll * 14, st->chain[i].col - 1, 0);
+			y += st->ofs_y + st->scroll * 14;
+			x += MapXBeginPos[st->mapno * 3 + st->mapsub] + 72;
+			DrawBubble(0, x, y, st->chain[i].col - 1, 0);
 		}
 		if (++st->unk470 >= 60) {
 			for (i = 0; i < st->nchain; i++) {
@@ -3970,7 +3970,7 @@ int VSModeBody(int pl)
 		}
 	}
 	if (isPause == 0) {
-		int j, n, x, y, c;
+		int n, x, y, c;
 		float fl;
 
 		for (j = 0; j < 3; j++) {
