@@ -3686,7 +3686,7 @@ move\\t%0,%z4\\n\\
 (define_expand "andsi3"
   [(set (match_operand:SI 0 "register_operand" "=d,d")
 	(and:SI (match_operand:SI 1 "uns_arith_operand" "%d,d")
-		(match_operand:SI 2 "uns_arith_operand" "d,K")))]
+		(match_operand:SI 2 "nonmemory_operand" "d,K")))]
   ""
   "
 {
@@ -3695,6 +3695,10 @@ move\\t%0,%z4\\n\\
       operands[1] = force_reg (SImode, operands[1]);
       operands[2] = force_reg (SImode, operands[2]);
     }
+  else if (!uns_arith_operand (operands[2], SImode)
+	   && !(TARGET_ALLEGREX31 && TARGET_EXT
+		&& mips_and_ins_mask_p (operands[2])))
+    operands[2] = force_reg (SImode, operands[2]);
 }")
 
 (define_insn ""
@@ -3705,6 +3709,29 @@ move\\t%0,%z4\\n\\
   "@
    and\\t%0,%1,%2
    andi\\t%0,%1,%x2"
+  [(set_attr "type"	"arith")
+   (set_attr "mode"	"SI")])
+
+;; An AND that clears one bit field: Allegrex 3.1 ins from $0, in place.
+
+(define_insn "*andsi3_allegrex_ins"
+  [(set (match_operand:SI 0 "register_operand" "=d")
+	(and:SI (match_operand:SI 1 "register_operand" "0")
+		(match_operand:SI 2 "const_int_operand" "")))]
+  "TARGET_ALLEGREX31 && TARGET_EXT && !TARGET_MIPS16
+   && mips_and_ins_mask_p (operands[2])"
+  "*
+{
+  unsigned HOST_WIDE_INT m = ~INTVAL (operands[2]) & 0xffffffff;
+  int pos = exact_log2 (m & -m);
+  int size = 0;
+
+  for (m >>= pos; m & 1; m >>= 1)
+    size++;
+  operands[3] = GEN_INT (pos);
+  operands[4] = GEN_INT (size);
+  return \"ins\\t%0,$0,%3,%4\";
+}"
   [(set_attr "type"	"arith")
    (set_attr "mode"	"SI")])
 

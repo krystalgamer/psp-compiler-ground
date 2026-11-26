@@ -144,6 +144,7 @@ extern int              mips_register_move_cost PARAMS ((enum machine_mode,
 
 extern int		pic_address_needs_scratch PARAMS ((rtx));
 extern int		se_arith_operand PARAMS ((rtx, enum machine_mode));
+extern int		mips_and_ins_mask_p PARAMS ((rtx));
 extern int		coprocessor_operand PARAMS ((rtx, enum machine_mode));
 extern int		coprocessor2_operand PARAMS ((rtx, enum machine_mode));
 extern int		symbolic_operand PARAMS ((rtx, enum machine_mode));

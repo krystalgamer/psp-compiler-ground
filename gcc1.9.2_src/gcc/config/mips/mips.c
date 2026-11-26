@@ -702,6 +702,25 @@ uns_arith_operand (op, mode)
   return register_operand (op, mode);
 }
 
+/* Return nonzero if OP is a CONST_INT whose SImode complement is one
+   contiguous run of ones: ANDing with it clears a single bit field, which
+   the Allegrex 3.1 does in place with `ins rt,$0,pos,size' (-mext).  */
+
+int
+mips_and_ins_mask_p (op)
+     rtx op;
+{
+  unsigned HOST_WIDE_INT m;
+
+  if (GET_CODE (op) != CONST_INT)
+    return 0;
+  m = ~INTVAL (op) & 0xffffffff;
+  if (m == 0)
+    return 0;
+  m += m & -m;
+  return (m & 0xffffffff & (m - 1)) == 0;
+}
+
 /* Return truth value of whether OP can be used as an operands
    where a 16 bit integer is needed  */
 
