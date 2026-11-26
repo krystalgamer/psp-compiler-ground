@@ -40,7 +40,20 @@ int sceMpegRingbufferDestruct(SceMpegRingbuffer *rb)
 	return 0;
 }
 
-INCLUDE_ASM("tmp/asm/tony_libs/mpeg/nonmatchings/mpeg_ringbuf", func_00003E28);
+int func_00003E28(SceMpegRingbuffer *rb)
+{
+	MpegSys *sys = rb->mp->sys;
+	int ret;
+	int n;
+
+	ret = func_00001100(rb->mp);
+	if (ret != 0)
+		return ret;
+	func_00005AE0(sys->sema);
+	n = rb->iDataPackNum;
+	func_00005B7C(sys->sema);
+	return n;
+}
 
 int func_00003E90(SceMpegRingbuffer *rb, int num)
 {
