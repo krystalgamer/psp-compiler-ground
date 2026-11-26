@@ -41,6 +41,7 @@ newlib/libm/math/sf_floor                    1.8.4.internal  ../../../../../newl
 newlib/libm/math/sf_isnan                    1.8.4.internal  ../../../../../newlib-1.12.0/newlib/libm/math/sf_isnan.c
 newlib/libm/common/sf_scalbn                 1.8.4.internal  ../../../../../newlib-1.12.0/newlib/libm/common/sf_scalbn.c
 newlib/libm/common/sf_copysign               1.8.4.internal  ../../../../../newlib-1.12.0/newlib/libm/common/sf_copysign.c
+libwave                                      1.8.4.internal  libwave.c
 libgcc/fp-bit/__extendsfdf2                  1.8.4.internal  fp-bit.c
 libgcc/dp-bit/__make_dp                      1.8.4.internal  dp-bit.c
 libgcc/dp-bit/__truncdfsf2                   1.8.4.internal  dp-bit.c
