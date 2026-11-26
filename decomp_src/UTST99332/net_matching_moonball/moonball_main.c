@@ -317,7 +317,11 @@ void FadeDraw(void)
 	__fade = 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/moonball_main", DrawFunc);
+static void DrawFunc(void)
+{
+	if (func[program.mode].draw)
+		func[program.mode].draw();
+}
 
 static void KeyFunc(void)
 {
@@ -348,7 +352,17 @@ static void ProgramSwitch(void)
 	}
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/moonball_main", game_init);
+int game_init(void)
+{
+	int ret;
+
+	memset(&_info, 0, sizeof(_info));
+	InitFunc();
+	ret = game_net_init();
+	if (ret >= 0)
+		ProgramSwitch();
+	return ret;
+}
 
 int game_term(void) {
     return game_net_term();
