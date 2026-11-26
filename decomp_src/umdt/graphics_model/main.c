@@ -70,6 +70,14 @@ int sceDisplayWaitVblankStart(void);
 void *sceGuSwapBuffers(void);
 unsigned int sceDisplayGetVcount(void);
 void sceGumMatrixMode(int mode);
+unsigned int strlen(const char *s);
+int sceIoWrite(int fd, const void *buf, unsigned int size);
+int sceIoOpen(const char *path, int flags, int mode);
+long long sceIoLseek(int fd, long long offset, int whence);
+int sceIoRead(int fd, void *buf, unsigned int size);
+int sceIoClose(int fd);
+int UtilityFileAssign(const char *path, int mode);
+int UtilityFileUnassign(const char *path);
 extern const char **g_model_names;
 extern int g_model_size;
 /* end_scene's static VertexModes, TextureModes, PacketModes (.data) */
@@ -493,7 +501,50 @@ static void unload_objects()
 	g_model = 0;
 }
 
-INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/main", load_file);
+static unsigned char load_file(const char *filename, int **buf, int *size, int *fpl)
+{
+	char fullpath[256];
+	int fd;
+	unsigned char ret = 0;
+	int err;
+	char msg1[112];
+	char msg2[112];
+
+	sprintf(fullpath, "%s%s", "disc0:/PSP_GAME/USRDIR/GMO/", filename);
+	sprintf(msg1, "%s\n", fullpath);
+	sceIoWrite(0, msg1, strlen(msg1));
+	if (UtilityFileAssign(fullpath, 1) < 0) {
+		sprintf(msg2, "fatal error : strFileAssign()\n");
+		sceIoWrite(0, msg2, strlen(msg2));
+		goto end;
+	}
+	fd = sceIoOpen(fullpath, 1, 644);
+	if (fd < 0) {
+		sprintf(msg2, "fatal error : strFileOpen()\n");
+		sceIoWrite(0, msg2, strlen(msg2));
+		goto end;
+	}
+	*size = sceIoLseek(fd, 0, 2);
+	if (*size <= 0) {
+		sceIoClose(fd);
+		goto end;
+	}
+	sceIoLseek(fd, 0, 0);
+	*fpl = sceKernelCreateFpl("modelTest", 2, 256, *size, 1, 0);
+	if (*fpl < 0) {
+		*fpl = 0;
+		goto end;
+	}
+	err = sceKernelTryAllocateFpl(*fpl, (void **)buf);
+	if (err < 0)
+		goto end;
+	sceIoRead(fd, *buf, *size);
+	sceIoClose(fd);
+	ret = 1;
+end:
+	UtilityFileUnassign(fullpath);
+	return ret;
+}
 
 void *sceGuGetMemory(int size);
 void sceGuDrawArray(int prim, int vtype, int count, const void *indices, const void *vertices);
