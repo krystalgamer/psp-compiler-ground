@@ -155,6 +155,7 @@ typedef struct {
     int unk8;
     int width;                  /* 0xC */
     int height;                 /* 0x10 */
+    int unk14;
 } WINDSYSTEMINIT;
 
 extern WINDSYSTEMINIT s_windsystem_init;

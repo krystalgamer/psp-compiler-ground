@@ -397,6 +397,23 @@ void pspBrowserFontPutSJ(int x, int y, char *str, int len, int color) {
 void null_callback(void) {
 }
 
+typedef struct {
+    char *image;                /* 0x0 */
+    int width;                  /* 0x4 */
+    int height;                 /* 0x8 */
+    int unkC;
+    int unk10;
+    int unk14;
+    int fontSize;               /* 0x18 */
+    int font[4];                /* 0x1C */
+} ZWINDINIT;
+
+void zWindPartsSet(int size);
+void zWindFontSet(int type, short w, short h, short bpp, int f0, int f1, int f2, int f3);
+int GuigraphicsInit(void);
+int GuipixmapInit(void);
+int GuifontInit(void);
+
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/pspBrowser", zWindInit);
 
 int zWindExit(void) {
@@ -441,7 +458,48 @@ int zWindMouseOk(GUIWIDGET *w, int x, int y) {
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/pspBrowser", zWindExecK);
+GUIWIDGET *zWindExecK(GUIWIDGET *w, int x, int y) {
+    GUIWIDGET *r;
+    int x0;
+    int y0;
+    int x1;
+    int y1;
+
+    if (w == NULL) {
+        return NULL;
+    }
+    if (w->type != 1) {
+        return NULL;
+    }
+    x0 = w->unk36;
+    y0 = w->unk38;
+    x1 = x0 + w->w;
+    y1 = y0 + w->h;
+    switch (w->flags & 0xF) {
+    case 3:
+    case 4:
+    case 6:
+    case 8:
+    case 9:
+    case 10:
+    case 11:
+        if (!(w->flags & 0x40000000) && (x >= x0 & x < x1) && (y >= y0 & y < y1)) {
+            r = zWindExecK(w->child, x, y);
+            if (r == NULL) {
+                return w;
+            }
+            return r;
+        }
+        break;
+    default:
+        r = zWindExecK(w->child, x, y);
+        if (r != NULL) {
+            return r;
+        }
+        break;
+    }
+    return zWindExecK(w->next, x, y);
+}
 
 int zWindUpdate(void) {
     s_windsystem_data.flags &= ~2;
