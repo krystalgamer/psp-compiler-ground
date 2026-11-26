@@ -131,6 +131,21 @@ static SceInt32 soundbuf_checkDecodeEnd(t_soundBuffer *pSound)
 
 INCLUDE_ASM("tmp/asm/UTST99332/mpeg_mpegstr_pcm/nonmatchings/sound", soundbuf_func);
 
-INCLUDE_ASM("tmp/asm/UTST99332/mpeg_mpegstr_pcm/nonmatchings/sound", soundbuf_swapbuf);
+void *memcpy(void *d, const void *s, unsigned int n);
+extern int D_00010BD0;
+static SceInt32 soundbuf_swapbuf(t_soundBuffer *pSound, SceChar8 *buf)
+{
+	memcpy(output_buf[D_00010BD0], buf, pSound->buf_size);
+	pSound->read = (pSound->read + 1) % pSound->size;
+	sceWaveAudioWriteBlocking(0, 0x8000, 0x8000, output_buf[D_00010BD0]);
+	D_00010BD0 ^= 1;
+	return 0;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/mpeg_mpegstr_pcm/nonmatchings/sound", soundbuf_output);
+SceInt32 soundbuf_output(t_soundBuffer *pSound)
+{
+	SceChar8 *buf = pSound->buf[pSound->read];
+
+	soundbuf_swapbuf(pSound, buf);
+	return 0;
+}
