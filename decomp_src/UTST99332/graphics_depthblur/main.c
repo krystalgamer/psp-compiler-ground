@@ -280,51 +280,22 @@ void InitWall(void)
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_depthblur/nonmatchings/main", DrawTorus);
 
-#ifndef SCEGU_PFIDX4 /* sample */
 #define SCEGU_PFIDX4                       4
-#endif
-#ifndef SCEGU_SINGLE_CLUT /* sample */
 #define SCEGU_SINGLE_CLUT                  0
-#endif
-#ifndef SCEGU_TEXBUF_NORMAL /* sample */
 #define SCEGU_TEXBUF_NORMAL                0
-#endif
-#ifndef SCEGU_LINEAR_MIPMAP_LINEAR /* sample */
 #define SCEGU_LINEAR_MIPMAP_LINEAR         7
-#endif
-#ifndef SCEGU_NEAREST /* sample */
 #define SCEGU_NEAREST                      0
-#endif
-#ifndef SCEGU_TEX_MODULATE /* sample */
 #define SCEGU_TEX_MODULATE                 0
-#endif
-#ifndef SCEGU_RGB /* sample */
 #define SCEGU_RGB                          0
-#endif
-#ifndef SCEGU_REPEAT /* sample */
 #define SCEGU_REPEAT                       0
-#endif
-#ifndef SCEGU_PF5551 /* sample */
 #define SCEGU_PF5551                       1
-#endif
-#ifndef SCEGU_TEXTURE /* sample */
 #define SCEGU_TEXTURE                      9
-#endif
-#ifndef SCEGU_TEXTURE_FLOAT /* sample */
 #define SCEGU_TEXTURE_FLOAT      ( 3 <<  0 )
-#endif
-#ifndef SCEGU_VERTEX_FLOAT /* sample */
 #define SCEGU_VERTEX_FLOAT       ( 3 <<  7 )
-#endif
-#ifndef SCEGU_CULL_FACE /* sample */
 #define SCEGU_CULL_FACE                    5
-#endif
-#ifndef SCEGU_PI /* sample */
 #define SCEGU_PI                           3.1415926535897932384626433832f
-#endif
-#ifndef SCEGU_RAD /* sample */
 #define SCEGU_RAD(a)                       ((a)*SCEGU_PI/180.0f)
-#endif
+
 void DrawRoom(void)
 {
 	ScePspFVector3	vec;
