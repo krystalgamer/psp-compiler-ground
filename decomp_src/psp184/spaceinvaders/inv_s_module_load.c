@@ -10,7 +10,18 @@ void *memset(void *, int, unsigned int);
 int sceKernelStopModule(int modid, int argsize, void *argp, int *status, void *opt);
 int sceKernelUnloadModule(int modid);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_module_load", LoadModule);
+int LoadModule(char *path, int mpid)
+{
+	int mid;
+	MLOPT opt = { 0x14, mpid };
+
+	mid = 0;
+	opt.flags = 0;
+	opt.mpiddata = 0;
+	opt.position = 0;
+	module_file_start(&mid, path, &opt);
+	return mid;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_module_load", LoadRequiredModules);
 
