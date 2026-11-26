@@ -431,7 +431,162 @@ INCLUDE_RODATA("tmp/asm/UTST99332/utility_font_basho/nonmatchings/basho", D_0001
 
 INCLUDE_RODATA("tmp/asm/UTST99332/utility_font_basho/nonmatchings/basho", D_00013338);
 
-INCLUDE_ASM("tmp/asm/UTST99332/utility_font_basho/nonmatchings/basho", myMakeTextTexture);
+SceFont_t_fontId sceFontOpenUserFile(SceFont_t_libId libID, char *file, SceFont_t_u32 mode, SceFont_t_error *errorCode);
+SceFont_t_fontIndex sceFontFindOptimumFont(SceFont_t_libId libID, SceFont_t_fontStyleInfo *fontStyle, SceFont_t_error *errorCode);
+SceFont_t_fontId sceFontOpen(SceFont_t_libId libID, SceFont_t_fontIndex index, SceFont_t_u32 mode, SceFont_t_error *errorCode);
+SceFont_t_error sceFontGetFontInfo(SceFont_t_fontId fontID, SceFont_t_fontInfo *fontInfo);
+SceFont_t_error sceFontGetCharInfo(SceFont_t_fontId fontID, SceFont_t_charCode charCode, SceFont_t_charInfo *charInfo);
+SceFont_t_error sceFontGetCharGlyphImage_Clip(SceFont_t_fontId fontID, SceFont_t_charCode charCode, SceFont_t_userImageBufferRec *glyphImage, int clipXPos, int clipYPos, int clipWidth, int clipHeight);
+SceFont_t_error sceFontClose(SceFont_t_fontId fontID);
+
+SceFont_t_fontId sceFontOpenUserFile(SceFont_t_libId libID, char *file, SceFont_t_u32 mode, SceFont_t_error *errorCode);
+SceFont_t_fontIndex sceFontFindOptimumFont(SceFont_t_libId libID, SceFont_t_fontStyleInfo *fontStyle, SceFont_t_error *errorCode);
+SceFont_t_fontId sceFontOpen(SceFont_t_libId libID, SceFont_t_fontIndex index, SceFont_t_u32 mode, SceFont_t_error *errorCode);
+SceFont_t_error sceFontGetFontInfo(SceFont_t_fontId fontID, SceFont_t_fontInfo *fontInfo);
+SceFont_t_error sceFontGetCharInfo(SceFont_t_fontId fontID, SceFont_t_charCode charCode, SceFont_t_charInfo *charInfo);
+SceFont_t_error sceFontGetCharGlyphImage_Clip(SceFont_t_fontId fontID, SceFont_t_charCode charCode, SceFont_t_userImageBufferRec *glyphImage, int clipXPos, int clipYPos, int clipWidth, int clipHeight);
+SceFont_t_error sceFontClose(SceFont_t_fontId fontID);
+
+static void myMakeTextTexture(SceFont_t_libId libID, unsigned int **pTextureImage)
+{
+	typedef struct {
+		int langCode;
+		float size;
+		int familyCode;
+		int style;
+		char *pFilename;
+	} sequence;
+	extern sequence D_00014C30[19];
+	SceFont_t_error errorCode;
+	SceFont_t_fontStyleInfo targetStyle;
+	SceFont_t_fontIndex targetFontIndex;
+	SceFont_t_fontId fontID;
+	int i = 0;
+	int currentX64, currentY64;
+	SceFont_t_userImageBufferRec imageBufferInfo;
+
+	for (i = 0; i < sizeof(D_00014C30) / sizeof(D_00014C30[0]); i++) {
+		SceFont_t_charCode *pString;
+
+		if (D_00014C30[i].pFilename != NULL) {
+			fontID = sceFontOpenUserFile(libID, D_00014C30[i].pFilename, 0, &errorCode);
+		} else {
+			memset(&targetStyle, 0, sizeof(targetStyle));
+			if (D_00014C30[i].size > 0.0f) {
+				targetStyle.hSize = D_00014C30[i].size;
+			}
+			targetStyle.languageCode = D_00014C30[i].langCode;
+
+			targetStyle.familyCode = D_00014C30[i].familyCode;
+
+			targetStyle.style = D_00014C30[i].style;
+
+			targetFontIndex = sceFontFindOptimumFont(libID, &targetStyle, &errorCode);
+
+			if (errorCode != 0) {
+				printf("Error (sceFontFindOptimumFont)(%d): 0x%8.8x\n", i, errorCode);
+				return;
+			}
+
+			fontID = sceFontOpen(libID, targetFontIndex, 0, &errorCode);
+		}
+
+		if (errorCode != 0) {
+			printf("Error (sceFontOpen)(%d): 0x%8.8x\n", i, errorCode);
+			return;
+		}
+
+		{
+			SceFont_t_fontInfo fontInfo;
+			int lineSpace64;
+			int charSpace64;
+			int topMargin64;
+			int leftMargin64;
+			int lineCounter;
+
+			errorCode = sceFontGetFontInfo(fontID, &fontInfo);
+			if (errorCode != 0) {
+				printf("Error (sceFontGetFontInfo)(%d): 0x%8.8x\n", i, errorCode);
+				return;
+			}
+
+			switch ((SceFont_t_u16)D_00014C30[i].langCode) {
+			case 0:
+			case 1:
+				/* break shares the line: locfix would keep its delay slot empty */
+				pString = aTestText_J; break;
+			case 2:
+default:
+				pString = aTestText_E;
+				break;
+			}
+
+			lineSpace64 = 0x340;
+			charSpace64 = 0;
+			topMargin64 = 0x80;
+			leftMargin64 = 0;
+
+			imageBufferInfo.pixelFormat = 0;
+			imageBufferInfo.rect.width = 512;
+			imageBufferInfo.rect.height = 256;
+			imageBufferInfo.bytesPerLine = 256;
+			imageBufferInfo.reserved = 0;
+			imageBufferInfo.buffer = (SceFont_t_u8 *)pTextureImage[i];
+			lineCounter = 0;
+			currentY64 = topMargin64 + fontInfo.maxIGlyphMetrics.ascender64;
+			while (*pString != 0) {
+				SceFont_t_charInfo charInfo;
+
+				currentX64 = leftMargin64;
+				while (*pString != 0) {
+
+					errorCode = sceFontGetCharInfo(fontID, *pString, &charInfo);
+
+					if (errorCode != 0) {
+						printf("Error (sceFontGetCharInfo)(%d): 0x%8.8x\n", i, errorCode);
+						return;
+					}
+
+
+
+
+					imageBufferInfo.xPos64 = currentX64 + (charInfo.bitmapLeft << 6);
+
+
+					imageBufferInfo.yPos64 = currentY64 - (charInfo.bitmapTop << 6);
+
+
+
+
+					errorCode = sceFontGetCharGlyphImage_Clip(fontID, *pString, &imageBufferInfo, 0, 0, 510, 254);
+
+
+					if (errorCode != 0) {
+						printf("Error (sceFontGetCharGlyphImage_Clip): 0x%8.8x\n", errorCode);
+						return;
+					}
+
+
+					currentX64 += charInfo.glyphMetrics.horizontalAdvance64;
+					currentX64 += charSpace64;
+					pString++;
+				}
+				pString++;
+				currentX64 = leftMargin64;
+
+				currentY64 += fontInfo.maxIGlyphMetrics.ascender64;
+				currentY64 += lineSpace64;
+				lineCounter++;
+			}
+		}
+
+		errorCode = sceFontClose(fontID);
+		if (errorCode != 0) {
+			printf("Error (sceFontClose)(%d): 0x%8.8x\n", i, errorCode);
+			return;
+		}
+	}
+}
 
 static void myDoneFontLibrary(SceFont_t_libId libID)
 {
