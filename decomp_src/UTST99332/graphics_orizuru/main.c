@@ -207,7 +207,30 @@ INCLUDE_ASM("tmp/asm/UTST99332/graphics_orizuru/nonmatchings/main", init_all);
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_orizuru/nonmatchings/main", pad_read);
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_orizuru/nonmatchings/main", main);
+void menuInit(void);
+void menuTerm(int cat, int num);
+
+int main(void)
+{
+	menuInit();
+	init_all();
+
+	while (pad_read()) {
+		draw_frame();
+		sceDisplayWaitVblankStart();
+		sceGuSwapBuffers();
+
+		if (moving) {
+			tick();
+		}
+	}
+
+	sceGuTerm();
+
+	menuTerm(1, 20);
+
+	return 0;
+}
 
 INCLUDE_RODATA("tmp/asm/UTST99332/graphics_orizuru/nonmatchings/main", D_00011EB0);
 
