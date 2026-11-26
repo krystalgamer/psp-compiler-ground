@@ -1,6 +1,15 @@
 /* cflags: -O1 */
 #include "common.h"
+#include "parse_str.h"
 #include "m2c_macros.h"
+extern char D_00137EB4[];
+extern char D_00137EE4[];
+PDStr Node_getNodeName(int node);
+typedef struct PStrBuf {
+    PChar *data;
+    int cap;
+    int len;
+} PStrBuf;
 int DocumentSet(int, void *, M2C_UNK);              /* extern */
 void *HST_searchSessionIDHistoryNode(int);          /* extern */
 int Node_getJSObj(int);                             /* extern */
@@ -44,11 +53,27 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", parseAttrValue);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", parseComment);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", parseInvalidComment);
+void parseInvalidComment(PCtx *c) {
+    for (;;) {
+        if (*c->buf->cur == '>') {
+            break;
+        }
+        if (parseNextChar(c) == 1) {
+            return;
+        }
+    }
+    parseSkipChar(c, 1);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", parseMarkedSection);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", parseDocType);
+void parseDocType(PCtx *c) {
+    do {
+        if (*c->buf->cur == '>') {
+            return;
+        }
+    } while (parseNextChar(c) != 1);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", parseProcessingInstruction);
 
@@ -140,11 +165,23 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", parseForm);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", parseFrame);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", parseJSEventHandler);
+int parseJSEventHandler(PDStr *s) {
+    if ((unsigned)s->len >= 2 && (s->data[0] == 'O' || s->data[0] == 'o') && (s->data[1] == 'N' || s->data[1] == 'n')) {
+        return 1;
+    }
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", parseJSCreateEventArray);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", parseJSDestroyEventArray);
+int parseJSDestroyEventArray(void **ev) {
+    while (ev[0] != NULL) {
+        MEM_free(0, ev[0]);
+        MEM_free(0, ev[1]);
+        ev += 2;
+    }
+    return 0;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -175,25 +212,98 @@ block_3:
     Node_setJSObj(M2C_FIELD(arg0, int *, 0x118), temp_v0_3);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", parseJSAnchorSet);
+void parseJSAnchorSet(PCtx *c) {
+    void *ev[32];
+    int obj;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", parseJSBodySet);
+    parseJSCreateEventArray(Node_getAttributes(M2C_FIELD(c, int *, 0x11C)), ev);
+    obj = ASet(M2C_FIELD(c, int *, 0x158), M2C_FIELD(c, int *, 0x11C), ev);
+    parseJSDestroyEventArray(ev);
+    Node_setJSObj(M2C_FIELD(c, int *, 0x11C), obj);
+}
+
+void parseJSBodySet(PCtx *c) {
+    void *ev[32];
+    PDStr name;
+    int node;
+
+    name = Node_getNodeName(M2C_FIELD(c, int *, 0x11C));
+        if (parseDStrEqual("frameset", &name)) {
+        node = Node_getAttributes(M2C_FIELD(c, int *, 0x11C));
+    } else {
+        node = Node_getAttributes(Util_HTMLDocument_getBody(M2C_FIELD(c, int *, 0x118)));
+    }
+    parseJSCreateEventArray(node, ev);
+    EventHandlerSet(M2C_FIELD(c, int *, 0x158), ev);
+    parseJSDestroyEventArray(ev);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", parseJSButtonSet);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", parseJSFormSet);
+void parseJSFormSet(PCtx *c) {
+    void *ev[32];
+    int obj;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", parseJSImgSet);
+    parseJSCreateEventArray(Node_getAttributes(M2C_FIELD(c, int *, 0x11C)), ev);
+    obj = FormSet(M2C_FIELD(c, int *, 0x158), M2C_FIELD(c, int *, 0x11C), ev);
+    parseJSDestroyEventArray(ev);
+    M2C_FIELD(c, int *, 0x15C) = obj;
+    Node_setJSObj(M2C_FIELD(c, int *, 0x11C), obj);
+}
+
+void parseJSImgSet(PCtx *c) {
+    void *ev[32];
+    int obj;
+
+    parseJSCreateEventArray(Node_getAttributes(M2C_FIELD(c, int *, 0x11C)), ev);
+    obj = ImageSet(M2C_FIELD(c, int *, 0x158), M2C_FIELD(c, int *, 0x11C), ev);
+    parseJSDestroyEventArray(ev);
+    Node_setJSObj(M2C_FIELD(c, int *, 0x11C), obj);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", parseJSInputTypeCmp);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", parseJSInputSet);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", parseJSSelectSet);
+void parseJSSelectSet(PCtx *c) {
+    void *ev[32];
+    int obj;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", parseJSOptionSet);
+    if (M2C_FIELD(c, int *, 0x15C) == 0) {
+        return;
+    }
+    parseJSCreateEventArray(Node_getAttributes(M2C_FIELD(c, int *, 0x11C)), ev);
+    obj = SelectSet(M2C_FIELD(c, int *, 0x15C), M2C_FIELD(c, int *, 0x11C), ev);
+    parseJSDestroyEventArray(ev);
+    M2C_FIELD(c, int *, 0x160) = obj;
+    Node_setJSObj(M2C_FIELD(c, int *, 0x11C), obj);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", parseJSTextareaSet);
+void parseJSOptionSet(PCtx *c) {
+    void *ev[32];
+    int obj;
+
+    if (M2C_FIELD(c, int *, 0x160) == 0) {
+        return;
+    }
+    parseJSCreateEventArray(Node_getAttributes(M2C_FIELD(c, int *, 0x11C)), ev);
+    obj = OptionSet(M2C_FIELD(c, int *, 0x160), M2C_FIELD(c, int *, 0x11C), ev);
+    parseJSDestroyEventArray(ev);
+    Node_setJSObj(M2C_FIELD(c, int *, 0x11C), obj);
+}
+
+void parseJSTextareaSet(PCtx *c) {
+    void *ev[32];
+    int obj;
+
+    if (M2C_FIELD(c, int *, 0x15C) == 0) {
+        return;
+    }
+    parseJSCreateEventArray(Node_getAttributes(M2C_FIELD(c, int *, 0x11C)), ev);
+    obj = TextAreaSet(M2C_FIELD(c, int *, 0x15C), M2C_FIELD(c, int *, 0x11C), ev);
+    parseJSDestroyEventArray(ev);
+    Node_setJSObj(M2C_FIELD(c, int *, 0x11C), obj);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", parseInvalidTag);
 
@@ -261,7 +371,22 @@ void *parseNewCtxt(void) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", parseFreeCtxt);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", parseInitCtxt);
+void parseInitCtxt(PCtx *c) {
+    c->x00[0] = 0;
+    c->x00[1] = 0;
+    c->x00[2] = 2;
+    c->x00[3] = 0;
+    c->buf = NULL;
+    c->x1C[1] = 0;
+    c->buf->cur = NULL;
+    c->buf->x04 = 0;
+    c->buf->x08 = 0;
+    c->buf->count = 0;
+    c->pos = 0;
+    c->x44[0] = 0;
+    c->x44[1] = 0;
+    c->x44[2] = 1;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", parseDataInputBuf);
 
@@ -281,7 +406,18 @@ void *parseNewMultiCtxt(void) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", parseRegistBuffer);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", parseSearchSessionID);
+void *parseSearchSessionID(int sid, void ***list) {
+    void *found;
+    int i;
+
+    found = NULL;
+    for (i = 0; i < ((int *)list)[1]; i++) {
+        if (sid == M2C_FIELD((*list)[i], int *, 0x10)) {
+            found = (*list)[i];
+        }
+    }
+    return found;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", parseDeleteMultiBuffer);
 
@@ -327,9 +463,18 @@ void parseGrowBuffer(void *arg0) {
     M2C_FIELD(arg0, int *, 0) = MEM_realloc(0, M2C_FIELD(arg0, int *, 0), temp_a2 * 2);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", parseSetBuffer);
+void parseSetBuffer(PStrBuf *b, PChar ch) {
+    if (b->len >= b->cap) {
+        parseGrowBuffer(b);
+    }
+    b->data[b->len] = ch;
+    b->len++;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", parseAdjustBuffer);
+void parseAdjustBuffer(PStrBuf *b) {
+    b->data = (PChar *)MEM_realloc(0, (int)b->data, b->len * 2 + 2);
+    b->data[b->len] = 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", parseCtxtDataCopy);
 
