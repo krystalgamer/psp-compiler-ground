@@ -100,7 +100,15 @@ static void init_all(void);
 static int pad_read(void);
 
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_editbone/nonmatchings/main", init_effector);
+static void init_effector(void)
+{
+	int i;
+
+	for (i = 0; i < 4; i++) {
+		effector[i].pos.x = effector[i].pos.y = effector[i].pos.z = 0.0f;
+		effector[i].rot.x = effector[i].rot.y = effector[i].rot.z = 0.0f;
+	}
+}
 
 INCLUDE_RODATA("tmp/asm/UTST99332/graphics_editbone/nonmatchings/main", pole);
 
