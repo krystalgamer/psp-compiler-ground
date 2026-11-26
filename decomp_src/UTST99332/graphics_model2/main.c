@@ -243,7 +243,62 @@ INCLUDE_RODATA("tmp/asm/UTST99332/graphics_model2/nonmatchings/main", D_0001E69C
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_model2/nonmatchings/main", begin_scene);
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_model2/nonmatchings/main", end_scene);
+extern const char *const D_0001E5C4[], *const D_0001E5D4[], *const D_0001E5F4[];
+void sceGuDebugPrint(int x, int y, unsigned int color, const char *str);
+extern const char D_0001E5B8[];
+extern const char D_0001E5BC[];
+extern const char D_0001E5CC[];
+extern const char D_0001E5D0[];
+extern const char D_0001E5DC[];
+extern const char D_0001E5E4[];
+extern const char D_0001E5EC[];
+extern const char D_0001E600[];
+extern const char D_0001E610[];
+extern const char D_0001E61C[];
+extern const char D_0001E628[];
+extern const char D_0001E634[];
+extern const char D_0001E640[];
+extern const char D_0001E64C[];
+extern const char D_0001E658[];
+extern const char D_0001E660[];
+extern const char D_0001E674[];
+#define MENU_CACHE ((0)+5)
+#define SCEGU_TEXTURE                      9
+#define SCEGU_DEPTH_TEST                   1
+
+void end_scene()
+{
+	char buf[ 64 ] ;
+	if ( g_frame * g_vbl_step % 30 < 15 ) {
+		sceGuDebugPrint( 0, g_menu_select * 10 + 10, 0xffffffff, D_0001E674 ) ;
+	}
+	sprintf( buf, D_0001E600, g_model_names[ g_menu_model ], ( g_model_size + 1023 ) / 1024 ) ;
+	sceGuDebugPrint( 10, 10, 0xffffffff, buf ) ;
+	sprintf( buf, D_0001E610, D_0001E5C4[ g_menu_vertex ] ) ;
+	sceGuDebugPrint( 10, 20, 0xffffffff, buf ) ;
+	sprintf( buf, D_0001E61C, D_0001E5D4[ g_menu_texture ] ) ;
+	sceGuDebugPrint( 10, 30, 0xffffffff, buf ) ;
+	sprintf( buf, D_0001E628, D_0001E5F4[ g_menu_packet ] ) ;
+	sceGuDebugPrint( 10, 40, 0xffffffff, buf ) ;
+	sprintf( buf, D_0001E634, g_menu_count ) ;
+	sceGuDebugPrint( 10, 50, 0xffffffff, buf ) ;
+	if ( g_menu_select == MENU_CACHE ) {
+		sprintf( buf, D_0001E660, g_menu_cache, ( g_cache_top - g_cache_buf + 1023 ) / 1024 ) ;
+		sceGuDebugPrint( 10, 60, 0xffffffff, buf ) ;
+	}
+	sprintf( buf, D_0001E640, g_cpu_load ) ;
+	sceGuDebugPrint( 10, 240, 0xffffffff, buf ) ;
+	sprintf( buf, D_0001E64C, g_gpu_load ) ;
+	sceGuDebugPrint( 10, 250, 0xffffffff, buf ) ;
+	if ( g_reload ) {
+		sceGuDebugPrint( 400, 10, 0xffffffff, D_0001E658 ) ;
+	}
+
+	sceGuDisable( SCEGU_TEXTURE ) ;
+	sceGuDisable( SCEGU_DEPTH_TEST ) ;
+	draw_rect( 82, 241, g_cpu_load, 7, 0x8f00 ) ;
+	draw_rect( 82, 251, g_gpu_load, 7, 0x800f ) ;
+}
 
 static void swap_buffers()
 {
