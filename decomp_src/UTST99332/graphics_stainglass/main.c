@@ -371,7 +371,30 @@ static void init_all(void)
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_stainglass/nonmatchings/main", pad_read);
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_stainglass/nonmatchings/main", MainThread);
+#define SceSize unsigned int
+
+int MainThread( SceSize _ArgNum, void* _ArgData )
+{
+	menuInit();
+	init_all();
+
+	StainGlassInit();
+
+	while ( pad_read() )
+	{
+		draw_frame();
+
+		sceDisplayWaitVblankStart();
+		sceGuSwapBuffers();
+	}
+
+	StainGlassRelease();
+
+	sceGuTerm();
+	menuTerm(1, 27);
+
+	return 0;
+}
 
 INCLUDE_RODATA("tmp/asm/UTST99332/graphics_stainglass/nonmatchings/main", D_000133D0);
 
