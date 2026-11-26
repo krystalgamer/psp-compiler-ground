@@ -83,7 +83,23 @@ u_int32 MakeRGBA8888(float rf,float gf,float bf, float af)
 	return result;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_stainglass/nonmatchings/stainglass", float2ushort);
+u_short float2ushort( float val )
+{
+	int retval;
+
+	__asm__ (
+		".set			push\n"		
+		".set			noreorder\n"	
+		"lv.s s000, %1			\n"
+		"vsat0.s s000,s000	     \n"
+		"vf2iz.s s000,s000,15	\n"
+		"sv.s s000, %0			\n"
+		".set			pop\n"		
+		: "=m" (retval)
+		: "m" (val));
+
+	return retval;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_stainglass/nonmatchings/stainglass", MatrixVectorMultiply);
 
