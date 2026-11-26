@@ -123,7 +123,24 @@ void my_heap__draw_status(unsigned char *pixels, int width, int col0, int col1)
 	}
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/ge/my_heap", my_heap__init);
+void my_heap__init(void *addr, size_t size)
+{
+	if (addr == NULL || size == 0) {
+		return;
+	}
+	size = size / sizeof(block) * sizeof(block);
+
+	g_top = (block *)addr;
+	g_end = (block *)((char *)addr + size) - 1;
+	g_end->next = g_top;
+	g_end->size = 0;
+	g_top->next = g_end;
+	g_top->size = size / sizeof(block) - 2;
+
+	g_total_size = g_top->size;
+	g_total_free = g_top->size;
+	g_alloc_count = 0;
+}
 
 
 void my_heap__term(void) {
