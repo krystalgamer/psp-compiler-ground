@@ -33,18 +33,7 @@ typedef struct GMAIN_FIELDS {
 	u8 _padf44[0xc];
 	int ff50; /* bg_free, bg_init, maingame_init */
 	u8 _padf54[0x10];
-	int ff64; /* maingame_all_free, maingame_all_init */
-	int ff68; /* maingame_all_free, maingame_all_init */
-	int ff6c; /* status_disp */
-	int ff70; /* bufo_dead_anime, efc_bom2_start, efc_bom_start */
-	int ff74; /* ziki_disp */
-	int ff78; /* maingame_movie */
-	int ff7c; /* end_result_font_disp */
-	u8 _padf80[0x50];
-	int ffd0; /* ufo_init */
-	u8 _padfd4[0x24];
-	int fff8; /* shield_init */
-	u8 _padffc[0x1c];
+	int ff64[45]; /* texture ids (bmp_file_load): maingame_all_init/free, inv_spr_set*, status_disp, ziki_disp, efc_* ... */
 	int f1018; /* maingame_init */
 	u8 _pad101c[0x30];
 	int f104c; /* ufo_init */
