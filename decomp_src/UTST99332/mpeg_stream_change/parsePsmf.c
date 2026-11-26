@@ -94,7 +94,39 @@ SceInt32 sInfo_getNumberOfStreams(t_streamInfo *pStreamInfo, SceInt32 streamType
 	}
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/mpeg_stream_change/nonmatchings/parsePsmf", setNumberOfStreams);
+SceInt32 setNumberOfStreams(t_streamInfo *pStreamInfo, SceMpegStrType streamType)
+{
+	SceInt32 ret;
+
+	switch (streamType) {
+	case 0:
+		ret = scePsmfGetNumberOfSpecificStreams(pStreamInfo->pVideoPsmf, streamType);
+		if (ret < 0) {
+			printf("fatal error : scePsmfGetNumberOfSpecificStreams() M4AVC 0x%x\n", ret);
+			goto term;
+		}
+
+		pStreamInfo->numberOfAvcStreams = ret;
+		break;
+	case 1:
+		ret = scePsmfGetNumberOfSpecificStreams(pStreamInfo->pAudioPsmf, streamType);
+		if (ret < 0) {
+			printf("fatal error : scePsmfGetNumberOfSpecificStreams() ATRAC 0x%x\n", ret);
+			goto term;
+		}
+
+		pStreamInfo->numberOfAudioStreams = ret;
+		break;
+	default:
+		ret = -1;
+		goto term;
+	}
+
+	ret = 0;
+
+term:
+	return ret;
+}
 
 SceInt32 sInfo_setCurrentStream(t_streamInfo *pStreamInfo, SceMpegStrType streamType, SceInt32 streamTypeId)
 {
