@@ -405,6 +405,46 @@ INCLUDE_ASM("tmp/asm/UTST99332/net_network_flow/nonmatchings/main", init_all);
 
 INCLUDE_ASM("tmp/asm/UTST99332/net_network_flow/nonmatchings/main", pad_read_11DC);
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_network_flow/nonmatchings/main", poll_adhoc_dialog_state);
+extern int matching_ctx_id_17344;
+int net_create_pdp(char *etherstr);
+int matching_start(OBJECT *obj);
+int poll_adhoc_dialog_state(void)
+{
+	enum SceNetAdhocDialogState adhoc_dialog_state;
+	int ret;
+
+	if (connect_state != CONNECTING_PRIMARY_IBSS && connect_state != CONNECTING_SECONDARY_IBSS && connect_state != ERROR_DIALOG)
+		return 0;
+	ret = sceNetAdhocDialogGetState(&adhoc_dialog_state);
+	if (ret < 0)
+		goto error;
+	if (adhoc_dialog_state == SCE_NET_ADHOC_DIALOG_STATE_CONNECTED) {
+		switch (connect_state) {
+		case CONNECTING_PRIMARY_IBSS:
+			connect_state = PRIMARY_IBSS;
+			net_create_pdp(etherstr);
+			sceNetAdhocctlGetParameter(&adhocctl_param);
+			matching_ctx_id_17344 = matching_start(obj);
+			init_param();
+			break;
+		case CONNECTING_SECONDARY_IBSS:
+			connect_state = SECONDARY_IBSS;
+			net_create_pdp(etherstr);
+			sceNetAdhocctlGetParameter(&adhocctl_param);
+			init_param();
+			break;
+		case ERROR_DIALOG:
+			connect_state = ERROR_DISCONNECT;
+			break;
+		}
+		ignore_pad_input = 1;
+	} else if (adhoc_dialog_state == SCE_NET_ADHOC_DIALOG_STATE_DISCONNECTED) {
+		connect_state = DISCONNECTED;
+		ignore_pad_input = 1;
+		goto error;
+	}
+error:
+	return ret;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/net_network_flow/nonmatchings/main", main);
