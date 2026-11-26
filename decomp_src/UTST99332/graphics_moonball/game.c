@@ -129,7 +129,7 @@ void sceGumScale(const ScePspFVector3 *v);
 void sceGumTranslate(const ScePspFVector3 *v);
 void sceGumDrawArray(int prim, int vtype, int count, const void *indices, const void *vertices);
 void sceGumDrawBezier(int vtype, int ucount, int vcount, const void *indices, const void *vertices);
-int sceKernelDcacheWritebackAll(void);
+void sceKernelDcacheWritebackAll(void);
 float sinf(float x);
 float cosf(float x);
 void sceGuEnable(int state);
@@ -151,7 +151,7 @@ void sceGumScale(const ScePspFVector3 *v);
 void sceGumTranslate(const ScePspFVector3 *v);
 void sceGumDrawArray(int prim, int vtype, int count, const void *indices, const void *vertices);
 void sceGumDrawBezier(int vtype, int ucount, int vcount, const void *indices, const void *vertices);
-int sceKernelDcacheWritebackAll(void);
+void sceKernelDcacheWritebackAll(void);
 float sinf(float x);
 float cosf(float x);
 void SpriteScale(int x, int y);
@@ -317,7 +317,72 @@ static void DrawBG(void)
 		4, 0, (void *)D_000774C0);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_moonball/nonmatchings/game", DrawGround);
+#define GNDNUMS	48
+#define SCEGU_TEXTURE_FLOAT      ( 3 <<  0 )
+#define SCEGU_NORMAL_FLOAT       ( 3 <<  5 )
+#define SCEGU_VERTEX_FLOAT       ( 3 <<  7 )
+
+static void DrawGround(void)
+{
+	extern float	D_000774F0[48];
+	ScePspFVector3	vec;
+	int				i;
+
+	sceGuEnable(SCEGU_TEXTURE);
+
+	sceGuTexWrap(SCEGU_REPEAT, SCEGU_REPEAT);
+	sceGuTexFilter(SCEGU_NEAREST, SCEGU_NEAREST);
+	sceGuTexFunc(SCEGU_TEX_MODULATE, SCEGU_RGBA);
+
+	sceGuTexMode(SCEGU_PFIDX4, 0, SCEGU_SINGLE_CLUT, SCEGU_TEXBUF_NORMAL);
+	sceGuClutMode(SCEGU_PF5551, 0, 0xff, 0);
+	sceGuClutLoad(1, clut_water);
+	sceGuTexImage(0, 128, 128, 128, (void *)chr_water);
+
+	for (i=0; i<GNDNUMS; i++)
+		D_000774F0[i]=gnd[i];
+	D_000774F0[ 5*3+1]=ground.pos;
+	D_000774F0[ 6*3+1]=ground.pos;
+	D_000774F0[ 9*3+1]=ground.pos;
+	D_000774F0[10*3+1]=ground.pos;
+
+	sceKernelDcacheWritebackAll();
+
+	for (i=0; i<GNDNUMS; i++) {
+		sceGumPushMatrix();
+
+		vec.x=gndpos[i*2+0];
+		vec.y=-16.0f;
+		vec.z=gndpos[i*2+1];
+		sceGumTranslate(&vec);
+
+		sceGuTexOffset(ground.tex[0], ground.tex[0]);
+		sceGuColor(0xffffffff);
+
+		if (ground.point==i)
+			sceGumDrawBezier(SCEGU_VERTEX_FLOAT, 4, 4, 0, D_000774F0);
+		else
+			sceGumDrawBezier(SCEGU_VERTEX_FLOAT, 4, 4, 0, gnd);
+
+		sceGuTexOffset(1.0f-ground.tex[1], ground.tex[1]);
+		sceGuColor(0x60ffffff);
+		sceGumDrawArray(SCEGU_PRIM_TRIANGLE_STRIP,
+					SCEGU_TEXTURE_FLOAT|SCEGU_NORMAL_FLOAT|SCEGU_VERTEX_FLOAT,
+					4, 0, (void *)gnd_poly);
+
+		sceGumPopMatrix();
+	}
+
+	ground.tex[0]+=0.0010f;
+	if (ground.tex[0]>1.0f)
+		ground.tex[0]=0.0f;
+
+	ground.tex[1]+=0.0020f;
+	if (ground.tex[1]>1.0f)
+		ground.tex[1]=0.0f;
+
+	sceGuDisable(SCEGU_TEXTURE);
+}
 
 static void DrawScore(void)
 {
