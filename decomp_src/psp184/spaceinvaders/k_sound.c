@@ -31,6 +31,17 @@ extern int sound_block_max;
 int sceKernelWaitThreadEnd(int thid, void *timeout);
 int sceKernelDeleteThread(int thid);
 
+extern int next_sound_block_no1;
+extern int sound_block_no1;
+extern int se_play_no;
+typedef struct { int f0; int f4; int f8; } SD_T;
+extern SD_T sd[50];
+typedef struct { int modid; int f4; int f8; } MODULE_T;
+extern MODULE_T module[2];
+int sceKernelStopModule(int modid, int argsize, void *argp, int *status, void *opt);
+int sceKernelUnloadModule(int modid);
+int sceAtracSetDataAndGetID(void *buf, int size);
+
 static int load_module(char *path, SceKernelLMOption *opt)
 {
 	int mid;
@@ -39,13 +50,54 @@ static int load_module(char *path, SceKernelLMOption *opt)
 	return mid;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/k_sound", unload_module);
+extern MODULE_T module[2];
+int sceKernelStopModule(int modid, int argsize, void *argp, int *status, void *opt);
+int sceKernelUnloadModule(int modid);
+int sceAtracSetDataAndGetID(void *buf, int size);
+static int unload_module(int modid)
+{
+	int ret;
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/k_sound", unloadModuleAt3plus);
+	ret = sceKernelStopModule(modid, 0, NULL, NULL, NULL);
+	if (ret < 0)
+		return ret;
+	ret = sceKernelUnloadModule(modid);
+	if (ret < 0)
+		return ret;
+	return 0;
+}
+
+int unloadModuleAt3plus(void)
+{
+	int i;
+
+	for (i = 1; i >= 0; i--) {
+		if (module[i].modid >= 0) {
+			if (unload_module(module[i].modid) < 0)
+				return -1;
+		}
+	}
+	return 0;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/k_sound", loadModuleAt3plus);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/k_sound", init_atrac3plus);
+int init_atrac3plus(void *buf, int size, int outputChannel, int *p)
+{
+	int ret;
+
+	p[0] = -1;
+	ret = sceAtracSetDataAndGetID(buf, size);
+	p[0] = ret;
+	if (ret < 0)
+		goto RELEASE_ARGID;
+	p[2] = outputChannel;
+	return 0;
+
+RELEASE_ARGID:
+	release_at3playArgID(p);
+	return ret;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/k_sound", play_atrac3plus);
 
@@ -64,7 +116,25 @@ void release_at3playArgID(int *arg0) {
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/k_sound", sound_init);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/k_sound", sound_init2);
+int sound_init2(void)
+{
+	int i;
+
+	sound_start_flag = 0;
+	sound_start_flag1 = 0;
+	sound_block_max = 0;
+	sound_block_no = -1;
+	next_sound_block_no = -1;
+	sound_block_no1 = -1;
+	next_sound_block_no1 = -1;
+	for (i = 0; i != 50; i++) {
+		sd[i].f0 = 0;
+		sd[i].f4 = -1;
+		sd[i].f8 = 0;
+	}
+	se_play_no = 0;
+	return 0;
+}
 
 void sound_close(void) {
 }
@@ -153,7 +223,16 @@ int next_sound_block_plus(void)
 	return next_sound_block_no;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/k_sound", next_sound_block_minus);
+int next_sound_block_minus(void)
+{
+	if (next_sound_block_no == -1)
+		next_sound_block_no = sound_block_no - 1;
+	else
+		next_sound_block_no = next_sound_block_no - 1;
+	if (next_sound_block_no < 0)
+		next_sound_block_no = 0;
+	return next_sound_block_no;
+}
 
 INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/k_sound", D_0007AB1C);
 
