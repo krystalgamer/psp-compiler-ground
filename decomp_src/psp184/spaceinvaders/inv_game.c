@@ -195,7 +195,19 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", maingame_free)
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", maingame_movie);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", maingame_all_free);
+void dispeffect_all_free(void);
+void maingame_all_free(void)
+{
+	int i;
+
+	dispeffect_all_free();
+	for (i = 0xF64 / 4; i < 0xF64 / 4 + 45; i++) {
+		if (((int *)&gmain)[i] > 0)
+			bmp_file_unload(((int *)&gmain)[i]);
+	}
+	sound_volume_set(0x8000);
+	sound_volume_set1(0x8000);
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", game_control);
 
@@ -921,7 +933,23 @@ void timer_stop(int a)
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", timer_control);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", bgm_init);
+typedef struct { int no, mode, f8, fc, f10, f14, f18; } BGMWORK;
+void bgm_init(int no)
+{
+	BGMWORK *b = (BGMWORK *)&D_005FB76C;
+	b->no = no;
+	b->f18 = 0;
+	b->f14 = 0;
+	if (no != -1)
+		b->mode = 8;
+	else
+		b->mode = 10;
+	b->f8 = 0;
+	b->fc = 0;
+	b->f10 = 0;
+	sound_volume_set(gmain.f.ff30);
+	sound_volume_set1(gmain.f.ff34);
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", bgm_control);
 
@@ -1116,7 +1144,18 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", inv_nowloading
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", root_init);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", risarju_init);
+typedef struct { int f0, f4; float f8, fc; int f10, f14, f18; } RISARJU;
+#define risarju (*(RISARJU *)&D_005FB78C)
+void risarju_init(void)
+{
+	risarju.fc = 500.0f;
+	risarju.f14 = 4;
+	risarju.f18 = 3;
+	risarju.f0 = 0;
+	risarju.f4 = 0;
+	risarju.f10 = 0;
+	risarju.f8 = D_004B60A4;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", risarju_control);
 
