@@ -65,7 +65,22 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_match", inv_matchup
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_match", inv_matchup_startdemo2);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_match", inv_matchup_continue_main);
+void inv_matchup_continue_main(void)
+{
+	int i;
+	INV_W *w = (INV_W *)&inv;
+	u8 *p;
+
+	for (i = 0; i < 48; i++, w++) {
+		p = w->spr;
+		if (p) {
+			if (w->f4 == 1)
+				*(int *)(p + 0x78) = hato(*(int *)(p + 0x78), 270, 2);
+			else if (w->f4 == 2)
+				*(int *)(p + 0x78) = hato(*(int *)(p + 0x78), 90, 2);
+		}
+	}
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_match", inv_matchup_continue_cont);
 
@@ -155,7 +170,39 @@ void SprMoveEnemySub(void)
 	}
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_match", SprMoveEnemy);
+void SprMoveEnemySub(void);
+int SprMoveEnemy(void)
+{
+	int i, f = 0;
+	INV_W *w;
+
+	SprMoveEnemySub();
+	for (i = 0, w = (INV_W *)&inv; i < 48; i++, w++) {
+		if (w->spr) {
+			switch (*(int *)(w->spr + 0x10)) {
+			case 5:
+				if (w->fC < 3)
+					f |= 1;
+				else if (w->fC >= 57)
+					f |= 2;
+				break;
+			case 6:
+				if (w->fC >= 57)
+					f |= 2;
+				else if (w->fC < 3)
+					f |= 1;
+				break;
+			}
+		}
+	}
+	if (f == 3)
+		return 2;
+	if (f == 1)
+		return 0;
+	if (f == 2)
+		return 1;
+	return 3;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_match", matchup_inv_enemyshort);
 
