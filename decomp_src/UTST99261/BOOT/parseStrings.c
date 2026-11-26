@@ -342,7 +342,62 @@ void parseConvertUTF8toUCS2(char *src, int len, PChar **out, int *outLen) {
     *outLen = n;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parseStrings", parseCheckLastTag);
+int parseCheckLastTag(void *ctx, unsigned char *s, int n, int enc) {
+    int st;
+    int i;
+    int last;
+
+    last = 0;
+    switch (enc) {
+    case -1:
+    case 0:
+    case 3:
+    case 5:
+        for (i = 1; i <= n; i++) {
+            if (*s == '>') {
+                last = i;
+            }
+            s++;
+        }
+        break;
+    case 2:
+    case 4:
+        for (i = 1; i <= n; i++) {
+            if (*s == '>' && !((s[-1] >= 0x81 && s[-1] <= 0x9F) || (s[-1] >= 0xE0 && s[-1] <= 0xEF))) {
+                last = i;
+            }
+            s++;
+        }
+        break;
+    case 1:
+        st = 0;
+        for (i = 1; i <= n; i++) {
+            if (st == 0) {
+                if (*s == '>') {
+                    last = i;
+                } else if (*s == 0x1B) {
+                    s++;
+                    i++;
+                    if (*s == '$') {
+                        st = 1;
+                    }
+                }
+                s++;
+            } else if (st == 1) {
+                if (*s == 0x1B) {
+                    s++;
+                    i++;
+                    if (*s == '(') {
+                        st = 0;
+                    }
+                }
+                s++;
+            }
+        }
+        break;
+    }
+    return last;
+}
 
 int parseConvertEncode(void *dst, void *src, int n, int enc) {
     int r;
