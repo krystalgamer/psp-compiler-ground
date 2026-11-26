@@ -17,6 +17,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "tools"))
 import objcmp  # noqa: E402
+import compiler  # noqa: E402
 
 T = ROOT / "tmp" / "toolchains" / "bin"
 # what each cc1's psp-gcc driver adds (cc1 options, psp-as options)
@@ -29,7 +30,7 @@ def compile_c(src, cc1, flags, out, incs=(), defs=()):
     i = out.with_suffix(".i")
     # a `/* lang: c++ */` file is preprocessed and compiled as C++ (cc1plus)
     cxx = "/* lang: c++ */" in Path(src).read_text(errors="replace")
-    subprocess.run(["cpp", *(["-x", "c++", "-D__cplusplus"] if cxx else []), "-P", "-undef", "-nostdinc", f"-I{ROOT/'include'}", f"-I{ROOT/'include/sdk'}", f"-I{ROOT/'include/libc'}", f"-I{ROOT/'decomp_src'}", *[f"-I{d}" for d in incs],
+    subprocess.run(["cpp", *(compiler.cxx_cppflags() if cxx else []), "-P", "-undef", "-nostdinc", f"-I{ROOT/'include'}", f"-I{ROOT/'include/sdk'}", f"-I{ROOT/'include/libc'}", f"-I{ROOT/'decomp_src'}", *[f"-I{d}" for d in incs],
                     "-D__GNUC__=3", "-D_LANGUAGE_C", "-D__psp__", "-D__mips__", "-DM2CTX", *[f"-D{d}" for d in defs], str(src), "-o", str(i)],
                    check=True)
     cflags, asflags = DRIVER.get(cc1, ("", ""))

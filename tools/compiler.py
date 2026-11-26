@@ -32,6 +32,18 @@ def is_cxx(target, module, unit):
     return unit_marker(target, module, unit, "lang: c++")
 
 
+def cxx_cppflags():
+    """Preprocessor options of C++ units, ahead of the C ones: the original
+    psp-gcc 1.3.1 release's installed libstdc++ headers, gcc and newlib
+    headers (fetched by tools/setup_toolchain.sh), and g++'s predefines."""
+    t = ROOT / "tmp" / "toolchains" / "psp-gcc-1.3.1"
+    cxx = next((t / "include" / "c++").glob("3.3.3*"), t / "include" / "c++" / "3.3.3")
+    gcc = next((t / "lib" / "gcc-lib" / "psp").glob("3.3.3*"), t / "lib")
+    dirs = [cxx, cxx / "psp", cxx / "backward", gcc / "include", t / "psp" / "include", ROOT / "include" / "cxx"]
+    return ["-x", "c++", "-D__cplusplus", "-include", str(ROOT / "include" / "cxx" / "predef.h"),
+            *[f"-I{d}" for d in dirs]]
+
+
 def program(target, module, unit):
     """cc1 or cc1plus binary name in tmp/toolchains/bin for the unit."""
     return ("cc1plus-" if is_cxx(target, module, unit) else "cc1-") + compiler(target, module, unit)
@@ -100,7 +112,7 @@ if __name__ == "__main__":
     elif sys.argv[1] == "--prog":
         print(program(*sys.argv[2:5]))
     elif sys.argv[1] == "--cppflags":
-        print("-x c++ -D__cplusplus" if is_cxx(*sys.argv[2:5]) else "")
+        print(" ".join(cxx_cppflags()) if is_cxx(*sys.argv[2:5]) else "")
     elif sys.argv[1] == "--locfix":
         print("1" if locfix(*sys.argv[2:5]) else "")
     else:
