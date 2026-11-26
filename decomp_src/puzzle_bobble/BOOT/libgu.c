@@ -481,7 +481,13 @@ void sceGuDepthOffset(unsigned int offset)
 	sceGuDepthRange(context->near_plane, context->far_plane);
 }
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", sceGuOffset);
+void sceGuOffset(unsigned int x, unsigned int y)
+{
+	unsigned int sy = y << 4;
+
+	send_commandi(76, x << 4);
+	send_commandi(77, sy);
+}
 
 void sceGuPatchDivide(int ulevel, int vlevel)
 {
@@ -636,11 +642,22 @@ void sceGuTexSync(void)
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", sceGuTexImage);
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", sceGuTexScale);
+void sceGuTexScale(float u, float v)
+{
+	send_commandf(72, u);
+	send_commandf(73, v);
+}
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", sceGuTexOffset);
+void sceGuTexOffset(float u, float v)
+{
+	send_commandf(74, u);
+	send_commandf(75, v);
+}
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", sceGuTexFlush);
+void sceGuTexFlush(void)
+{
+	send_commandf(203, 0.0f);
+}
 
 void sceGuTexSlope(float slope)
 {
