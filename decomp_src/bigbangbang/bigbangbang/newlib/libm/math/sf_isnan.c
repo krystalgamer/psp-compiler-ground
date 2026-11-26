@@ -1,3 +1,3 @@
-#include "common.h"
-
-INCLUDE_ASM("tmp/asm/bigbangbang/bigbangbang/nonmatchings/newlib/libm/math/sf_isnan", isnanf);
+/* upstream: newlib-1.12.0/newlib/libm/math/sf_isnan.c (unmodified) */
+/* cflags: -O2 -fno-builtin */
+#include "libm/math/sf_isnan.c"
