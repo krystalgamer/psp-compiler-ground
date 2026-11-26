@@ -419,13 +419,21 @@ modules (`tools/nltest.py`, `tools/objcmp.py`).
   No C++ function so far needs a cc1plus change. With ~700 demo functions per
   module in C++ (math, scene, sgl, support library), 1.5.1 differs only in
   `set_disk`, the `operator==`s and `std::_Deque_base<math::matrix>::
-  _M_initialize_map` (0x134 vs 0x128). Inlining at -O3 follows GCC 3.3's
+  _M_initialize_map` (0x134 vs 0x128), `sh::Vector::eval` (`movz`) and
+  `Texture::isPow2`. Inlining at -O3 follows GCC 3.3's
   rules: a function called before its definition is never inlined there,
   and out-of-class members of class templates (weak instances) are never
   auto-inlined (the original calls `t_array<T>::addr()`/`handle::release()`).
-  Not explained yet: the original calls `textures::Texture::setFiltering`
-  from `linear()` and `operator=` from the copy constructor, where
-  cc1plus-1.6.1 inlines both.
+  The original calls `textures::Texture::setFiltering` from `linear()`
+  where a first draft inlined it: that is the source, not the compiler.
+  1.6.1's cp/, tree-inline.c, integrate.c and params.def are identical to
+  FSF 3.3.3 (limits 300/600 insns, 10 per statement), and the decision is
+  `DECL_NUM_STMTS` of setFiltering after its inline helpers are merged.
+  Writing `SetBitField`'s body as three statements (`v = value & mask;
+  reg &= ~...; reg |= v << start_bit;`) instead of one expression keeps the
+  identical code but puts setFiltering over the limit, so `linear`/
+  `nearest` match (adding >= 6 empty statements does the same). The copy
+  constructor calling `operator=` is presumably the same effect.
 
 ## psp-gcc 1.7.1 (release build)
 
