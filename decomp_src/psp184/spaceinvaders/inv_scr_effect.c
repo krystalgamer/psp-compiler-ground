@@ -9,7 +9,24 @@ extern int e_pri;
 extern int d_pri;
 
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_scr_effect", inv_screffect_all_init);
+void *memset(void *s, int c, unsigned int n);
+extern unsigned char inv_screfc, p_3307FC, inv_scrdisp, p2;
+extern int e_co, d_co;
+void inv_screffect_all_init(void)
+{
+	memset(&inv_screfc, 0, 0x7000);
+	memset(&p_3307FC, 0, 0xC000);
+	memset(&inv_scrdisp, 0, 0x7000);
+	memset(&p2, 0, 0xC000);
+	alpha_mode_348800 = 2;
+	texture_no_3487FC = -1;
+	texture_no2 = -1;
+	alpha_mode2 = 3;
+	d_pri = 500;
+	e_co = 0;
+	d_co = 0;
+	e_pri = 0;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
