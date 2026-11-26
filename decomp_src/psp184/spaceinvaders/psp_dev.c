@@ -1,6 +1,12 @@
 /* cflags: -O2 */
 #include "common.h"
 #include "m2c_macros.h"
+typedef struct { float x, y, z; } FVEC3;
+typedef struct { float x, y, z, w; } FVEC4;
+typedef struct { FVEC4 x, y, z, w; } FMAT4;
+float sinf(float x);
+float cosf(float x);
+#define DEG2RAD(a) ((a) / 180.0f * 3.1415927f)
 extern unsigned char g_matrix_buf;
 extern int g_packet;
 extern unsigned char g_packet_buf;
@@ -315,8 +321,6 @@ void square_draw(int x, int y, int w, int h, int col)
 	sceGuDrawArray(6, 0x800118, 2, NULL, v);
 }
 
-typedef struct { float x, y, z, w; } FVEC4;
-typedef struct { FVEC4 x, y, z, w; } FMAT4;
 void sceGumPushMatrix(void);
 void sceGumPopMatrix(void);
 void sceGumStoreMatrix(FMAT4 *m);
@@ -342,19 +346,108 @@ void MatrixVectorMultiply(FVEC4 *o, FMAT4 *m, FVEC4 *v)
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_dev", mat_local2screen);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_dev", vec_rot_xyz);
+float sinf(float x);
+float cosf(float x);
+void vec_rot_xyz(FVEC3 *base, FVEC3 *r, FVEC3 *o, float len)
+{
+	FVEC3 p, a, b, c;
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_dev", vec_rot_zyx);
+	p.x = 0.0f;
+	p.y = 0.0f;
+	p.z = len;
+	a.x = p.x;
+	a.y = p.y * cosf(DEG2RAD(-r->x)) + p.z * sinf(DEG2RAD(-r->x));
+	a.z = p.y * -sinf(DEG2RAD(-r->x)) + p.z * cosf(DEG2RAD(-r->x));
+	b.x = a.x * cosf(DEG2RAD(-r->y)) - sinf(DEG2RAD(-r->y)) * a.z;
+	b.y = a.y;
+	b.z = a.x * sinf(DEG2RAD(-r->y)) + a.z * cosf(DEG2RAD(-r->y));
+	c.x = b.x * cosf(DEG2RAD(-r->z)) + b.y * sinf(DEG2RAD(-r->z));
+	c.y = b.x * -sinf(DEG2RAD(-r->z)) + b.y * cosf(DEG2RAD(-r->z));
+	c.z = b.z;
+	o->x = base->x + c.x;
+	o->y = base->y + c.y;
+	o->z = base->z + c.z;
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_dev", vec_roll_yxz);
+void vec_rot_zyx(FVEC3 *base, FVEC3 *r, FVEC3 *o, float len)
+{
+	FVEC3 p = { 0.0f, 0.0f, len };
+	FVEC3 a, b, c;
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_dev", vec_roll_zxy);
+	c.x = p.x * cosf(DEG2RAD(-r->z)) + p.y * sinf(DEG2RAD(-r->z));
+	c.y = p.x * -sinf(DEG2RAD(-r->z)) + p.y * cosf(DEG2RAD(-r->z));
+	c.z = p.z;
+	b.x = c.x * cosf(DEG2RAD(-r->y)) - sinf(DEG2RAD(-r->y)) * c.z;
+	b.y = c.y;
+	b.z = c.x * sinf(DEG2RAD(-r->y)) + c.z * cosf(DEG2RAD(-r->y));
+	a.x = b.x;
+	a.y = b.y * cosf(DEG2RAD(-r->x)) + b.z * sinf(DEG2RAD(-r->x));
+	a.z = b.y * -sinf(DEG2RAD(-r->x)) + b.z * cosf(DEG2RAD(-r->x));
+	o->x = base->x + a.x;
+	o->y = base->y + a.y;
+	o->z = base->z + a.z;
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_dev", vec_roll_yxz_rv);
+void vec_roll_yxz(FVEC3 *v, FVEC3 *r, FVEC3 *o)
+{
+	FVEC3 a, b;
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_dev", vec_roll_zxy_rv);
+	b.x = v->x * cosf(DEG2RAD(r->y)) - sinf(DEG2RAD(r->y)) * v->z;
+	b.y = v->y;
+	b.z = v->x * sinf(DEG2RAD(r->y)) + v->z * cosf(DEG2RAD(r->y));
+	a.x = b.x;
+	a.y = b.y * cosf(DEG2RAD(r->x)) + b.z * sinf(DEG2RAD(r->x));
+	a.z = b.y * -sinf(DEG2RAD(r->x)) + b.z * cosf(DEG2RAD(r->x));
+	o->x = a.x * cosf(DEG2RAD(r->z)) + a.y * sinf(DEG2RAD(r->z));
+	o->y = a.x * -sinf(DEG2RAD(r->z)) + a.y * cosf(DEG2RAD(r->z));
+	o->z = a.z;
+}
 
-typedef struct { float x, y, z; } FVEC3;
+void vec_roll_zxy(FVEC3 *v, FVEC3 *r, FVEC3 *o)
+{
+	FVEC3 a, b;
+
+	b.x = v->x * cosf(DEG2RAD(r->z)) + v->y * sinf(DEG2RAD(r->z));
+	b.y = v->x * -sinf(DEG2RAD(r->z)) + v->y * cosf(DEG2RAD(r->z));
+	b.z = v->z;
+	a.x = b.x;
+	a.y = b.y * cosf(DEG2RAD(r->x)) + b.z * sinf(DEG2RAD(r->x));
+	a.z = b.y * -sinf(DEG2RAD(r->x)) + b.z * cosf(DEG2RAD(r->x));
+	o->x = a.x * cosf(DEG2RAD(r->y)) - sinf(DEG2RAD(r->y)) * a.z;
+	o->y = a.y;
+	o->z = a.x * sinf(DEG2RAD(r->y)) + a.z * cosf(DEG2RAD(r->y));
+}
+
+void vec_roll_yxz_rv(FVEC3 *v, FVEC3 *r, FVEC3 *o)
+{
+	FVEC3 a, b;
+
+	b.x = v->x * cosf(DEG2RAD(-r->y)) - sinf(DEG2RAD(-r->y)) * v->z;
+	b.y = v->y;
+	b.z = v->x * sinf(DEG2RAD(-r->y)) + v->z * cosf(DEG2RAD(-r->y));
+	a.x = b.x;
+	a.y = b.y * cosf(DEG2RAD(-r->x)) + b.z * sinf(DEG2RAD(-r->x));
+	a.z = b.y * -sinf(DEG2RAD(-r->x)) + b.z * cosf(DEG2RAD(-r->x));
+	o->x = a.x * cosf(DEG2RAD(-r->z)) + a.y * sinf(DEG2RAD(-r->z));
+	o->y = a.x * -sinf(DEG2RAD(-r->z)) + a.y * cosf(DEG2RAD(-r->z));
+	o->z = a.z;
+}
+
+void vec_roll_zxy_rv(FVEC3 *v, FVEC3 *r, FVEC3 *o)
+{
+	FVEC3 a, b;
+
+	b.x = v->x * cosf(DEG2RAD(-r->z)) + v->y * sinf(DEG2RAD(-r->z));
+	b.y = v->x * -sinf(DEG2RAD(-r->z)) + v->y * cosf(DEG2RAD(-r->z));
+	b.z = v->z;
+	a.x = b.x;
+	a.y = b.y * cosf(DEG2RAD(-r->x)) + b.z * sinf(DEG2RAD(-r->x));
+	a.z = b.y * -sinf(DEG2RAD(-r->x)) + b.z * cosf(DEG2RAD(-r->x));
+	o->x = a.x * cosf(DEG2RAD(-r->y)) - sinf(DEG2RAD(-r->y)) * a.z;
+	o->y = a.y;
+	o->z = a.x * sinf(DEG2RAD(-r->y)) + a.z * cosf(DEG2RAD(-r->y));
+}
+
 float sqrtf(float x);
 void vec_one(FVEC3 *v, FVEC3 *o)
 {
