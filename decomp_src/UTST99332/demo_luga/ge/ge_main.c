@@ -391,4 +391,28 @@ static void pad_func(void)
 	}
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/ge/ge_main", program_switch);
+static void program_switch(void)
+{
+	switch (pProg->flag) {
+	case 0:
+		if (geModuleCommon.init != NULL) {
+			geModuleCommon.init();
+		}
+		if (geModule[pProg->mode].init != NULL) {
+			geModule[pProg->mode].init();
+		}
+		pProg->flag = 1;
+		break;
+	case 1:
+		break;
+	case 2:
+		if (geModuleCommon.deinit != NULL) {
+			geModuleCommon.deinit();
+		}
+		if (geModule[pProg->mode].deinit != NULL) {
+			geModule[pProg->mode].deinit();
+		}
+		pProg->flag = 0;
+		break;
+	}
+}
