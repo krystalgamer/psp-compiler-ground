@@ -13,7 +13,7 @@ int GUI_Toolkit_initializeSystem(GUIWIDGET *w, int arg1) {
     }
     s_windsystem_data.top = w;
     s_windsystem_data.unk10 = arg1;
-    s_windsystem_data.unk1C = (int)GUI_Graphics_createGraphics();
+    s_windsystem_data.unk1C = (int)GUI_Graphics_createGraphics(w);
     s_windsystem_data.width = s_windsystem_init.width;
     s_windsystem_data.height = s_windsystem_init.height;
     s_windsystem_data.pixmap = GUI_Graphics_createPixmap(s_windsystem_init.width, s_windsystem_init.height);

@@ -6,7 +6,30 @@ extern int _zWindDrawTexClipOffX;
 extern int _zWindDrawTexClipOffY;
 
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Graphic", GUI_Graphics_createGraphics);
+GUIGRAPHICS *GUI_Graphics_createGraphics(GUIWIDGET *w) {
+    GUIGRAPHICS *g;
+
+    if (w == NULL) {
+        puts("[X1]GUI_Graphics_createGraphics");
+        return NULL;
+    }
+    if (w->type != 1) {
+        puts("[X2]GUI_Graphics_createGraphics");
+        return NULL;
+    }
+    g = GuigraphicsCreate();
+    g->x = 0;
+    g->y = 0;
+    g->ox = s_windsystem_init.width;
+    g->oy = s_windsystem_init.height;
+    g->color = 0xFFFF;
+    g->pixmap = GuipixmapCreate();
+    g->pixmap->kind = 10;
+    g->pixmap->w = s_windsystem_init.width;
+    g->pixmap->h = s_windsystem_init.height;
+    g->pixmap->data = NULL;
+    return g;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Graphic", GUI_Graphics_getGraphics);
 
@@ -191,7 +214,29 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Graphic", GUI_Graphics_getA
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Graphic", GUI_createFrame);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Graphic", GUI_createPanel);
+GUIWIDGET *GUI_createPanel(GUIWIDGET *parent) {
+    GUIWIDGET *w;
+
+    if (parent != NULL && parent->type != 1) {
+        puts("[X1]GUI_createPanel");
+        return NULL;
+    }
+    s_windsystem_data.flags |= 4;
+    w = GuiwidgetCreate(parent);
+    if (w == NULL) {
+        puts("[X2]GUI_createPanel");
+        s_windsystem_data.flags &= ~4;
+        return NULL;
+    }
+    w->flags = (w->flags & ~0xF) | 2;
+    w->x = 0;
+    w->y = 0;
+    w->w = 64;
+    w->h = 20;
+    zWindDraw();
+    s_windsystem_data.flags &= ~4;
+    return w;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Graphic", GUI_createButton);
 
@@ -256,7 +301,28 @@ int GUI_Button_setImage(GUIWIDGET *w, void * v) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Graphic", GUI_Button_setLabel);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Graphic", GUI_RadioButton_setState);
+int GUI_RadioButton_setState(GUIWIDGET *w, int state) {
+    if (w == NULL) {
+        puts("[X1]GUI_RadioButton_setState");
+        return -1;
+    }
+    if (w->type != 1) {
+        puts("[X2]GUI_RadioButton_setState");
+        return -1;
+    }
+    if ((w->flags & 0xF) != 6) {
+        puts("[X3]GUI_RadioButton_setState");
+        return -1;
+    }
+    s_windsystem_data.flags |= 4;
+    w->u.list.state = state;
+    if (state == 1) {
+        w->parent->unk50.p = w;
+    }
+    zWindDraw();
+    s_windsystem_data.flags &= ~4;
+    return 0;
+}
 
 int GUI_RadioButton_getState(GUIWIDGET *w) {
     if (w == NULL) {

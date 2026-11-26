@@ -158,7 +158,10 @@ typedef struct {
     int data;
 } GUIEVENT;
 
-GUIGRAPHICS *GUI_Graphics_createGraphics(void);
+GUIGRAPHICS *GUI_Graphics_createGraphics(GUIWIDGET *w);
+GUIGRAPHICS *GuigraphicsCreate(void);
+GUIPIXMAP *GuipixmapCreate(void);
+GUIWIDGET *GuiwidgetCreate(GUIWIDGET *parent);
 GUIPIXMAP *GUI_Graphics_createPixmap(int w, int h);
 GUIGRAPHICS *GUI_Graphics_getGraphics(GUIGRAPHICS *g, GUIPIXMAP *pixmap);
 void GUI_Graphics_freePixmap(GUIPIXMAP *pixmap);
