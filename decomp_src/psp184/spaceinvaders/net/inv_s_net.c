@@ -29,12 +29,47 @@ int utility_net_connect(char *name);
 void change_state(int state);
 int utility_msgdialog(int err);
 int utility_check_msgdialog_completed(int *res);
+extern int _mrinfo;
+extern int handlerId;
+int rand(void);
+int sceNetAdhocctlDelHandler(int id);
+int sceNetAdhocctlTerm(void);
+int sceNetAdhocTerm(void);
+int sceNetTerm(void);
+int sceNetAdhocctlScan(void);
+int sceNetAdhocctlDisconnect(void);
+int sceNetAdhocctlGetState(int *state);
+int net_delete_ptp(void);
+void matching_term(void);
+int game_term(void);
+
 char mac2a(int n)
 {
 	return *nametbl[n % 62];
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_net", get_random_num);
+extern int _mrinfo;
+extern int handlerId;
+int rand(void);
+int sceNetAdhocctlDelHandler(int id);
+int sceNetAdhocctlTerm(void);
+int sceNetAdhocTerm(void);
+int sceNetTerm(void);
+int sceNetAdhocctlScan(void);
+int sceNetAdhocctlDisconnect(void);
+int sceNetAdhocctlGetState(int *state);
+int net_delete_ptp(void);
+void matching_term(void);
+int game_term(void);
+static unsigned int get_random_num(unsigned int min, unsigned int max)
+{
+	unsigned int num;
+
+	if (max == min)
+		return min;
+	num = rand();
+	return num / (0x7fffffff / (max - min + 1) + 1) + min;
+}
 
 int get_bssid(char *str)
 {
@@ -79,21 +114,101 @@ static int polling_error(void)
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_net", _net_init);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_net", _net_term);
+int _net_term(void)
+{
+	if (handlerId >= 0) {
+		sceNetAdhocctlDelHandler(handlerId);
+		handlerId = -1;
+	}
+	sceNetAdhocctlTerm();
+	sceNetAdhocTerm();
+	sceNetTerm();
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_net", net_scan);
+static int net_scan(void)
+{
+	int ret;
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_net", net_connect);
+	evf = 0;
+	ret = sceNetAdhocctlScan();
+	if (ret < 0) {
+		change_state(0);
+	} else if (_mrinfo == 1) {
+		change_state(2);
+	}
+	return ret;
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_net", net_disconnect);
+static int net_connect(void)
+{
+	int ret;
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_net", check_adhocctl_scan_completed);
+	ret = utility_net_connect(lobby_group_name);
+	if (ret < 0) {
+		change_state(0);
+	} else {
+		change_state(5);
+	}
+	return ret;
+}
+
+static int net_disconnect(void)
+{
+	int ret;
+
+	net_delete_ptp();
+	matching_term();
+	game_term();
+	ret = sceNetAdhocctlDisconnect();
+	if (ret < 0) {
+	} else if (_mrinfo == 16) {
+		change_state(7);
+	} else if (_mrinfo == 17) {
+		change_state(9);
+	}
+	return 0;
+}
+
+static int check_adhocctl_scan_completed(void)
+{
+	int state;
+	int ret;
+
+	ret = 0;
+	if (!(evf & 9))
+		goto end;
+	ret = sceNetAdhocctlGetState(&state);
+	if (ret < 0)
+		goto end;
+	if (state == 2)
+		goto end;
+	ret = polling_error();
+	if (ret < 0)
+		change_state(0);
+	else
+		change_state(3);
+end:
+	return ret;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_net", check_adhocctl_connect_completed);
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_net", check_adhocctl_disconnect_completed);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_net", check_adhocctl_connected_error);
+static int check_adhocctl_connected_error(void)
+{
+	int ret;
+
+	ret = polling_error();
+	if (ret == 0)
+		goto end;
+	ret = utility_msgdialog(ret);
+	if (ret < 0)
+		goto end;
+	change_state(10);
+end:
+	return ret;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_net", check_error_dialog_closed);
 

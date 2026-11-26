@@ -55,13 +55,12 @@ typedef struct _anon5 SceUtilityMsgDialogParam;
 
 extern SceUtilityNetconfParam netconfParam;
 extern SceUtilityNetconfAdhocParam netconfAdhocParam;
-extern SceUtilityMsgDialogParam msgdialog_param;
+extern SceUtilityMsgDialogParam msgdialog_param __asm__("msgdialog_param_28DDF4");
 
 int utility_init_netconf(SceUtilityNetconfType type, struct SceNetAdhocctlGroupName *group_name);
 int utility_update_netconf(void);
 int utility_net_connect(struct SceNetAdhocctlGroupName *group_name);
 int utility_check_connect_completed(int *done_flag);
-int utility_msgdialog(int error_code);
 int utility_update_msgdialog(void);
 int utility_check_msgdialog_completed(int *done_flag);
 
@@ -82,7 +81,26 @@ int utility_net_connect(struct SceNetAdhocctlGroupName *group_name) {
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_utility", utility_check_connect_completed);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_utility", utility_msgdialog);
+int utility_msgdialog(int error_code) {
+    int temp_v0;
+
+    memset(&msgdialog_param, 0, 0x244U);
+    msgdialog_param.base.size = 0x244;
+    msgdialog_param.base.main_thread_priority = 0x11;
+    msgdialog_param.base.sub_thread_priority = 0x13;
+    msgdialog_param.base.font_thread_priority = 0x12;
+    msgdialog_param.base.sound_thread_priority = 0x10;
+    msgdialog_param.errorNum = (unsigned int) error_code;
+    msgdialog_param.base.ctrl_assign = 0;
+    msgdialog_param.type = 0;
+    temp_v0 = sceUtilityMsgDialogInitStart(&msgdialog_param);
+    if (temp_v0 == 0) {
+
+    } else {
+        ;
+    }
+    return temp_v0;
+}
 
 int utility_update_msgdialog(void)
 {
