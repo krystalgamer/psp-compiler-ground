@@ -198,46 +198,52 @@ int save_confirm(void)
 }
 
 #ifdef NON_MATCHING
-/* Close: the original does not move the sceIoDevctl arguments above the
-   MsAccessFlag test. */
+/* One instruction short: early returns, the ms_check() inline and the out-of-line 0xA5
+ * call reproduce the original, except that its `err < 0` branch still goes through the
+ * `err != 0` test (ours threads the jump straight to the save path). */
+static __inline__ int ms_check(void)
+{
+	int status;
+	int err = sceIoDevctl("mscmhc0:", 0x02025806, NULL, 0, &status, sizeof(status));
+
+	if (err >= 0)
+		err = status == 1;
+	return err;
+}
 int MsSave(void)
 {
-	int ret = -1;
 	int err;
-	int status;
 
-	if (MsAccessFlag == 0) {
-		err = sceIoDevctl("mscmhc0:", 0x02025806, NULL, 0, &status, sizeof(status));
-		if (err >= 0)
-			err = status == 1;
-		if (err != 0 || OldError != 0x80110381) {
-			printf("PUZZLE AUTO SAVE\n");
-			memset(&savedata_param, 0, sizeof(savedata_param));
-			savedata_param.base.size = sizeof(savedata_param);
-			savedata_param.base.main_thread_priority = 0x11;
-			savedata_param.base.sub_thread_priority = 0x13;
-			savedata_param.base.font_thread_priority = 0x12;
-			savedata_param.base.sound_thread_priority = 0x10;
-			savedata_param.base.message_lang = 0;
-			savedata_param.base.ctrl_assign = 0;
-			savedata_param.type = 1;
-			savedata_param.overWriteMode = 1;
-			set_param_save(&savedata_param);
-			err = sceUtilitySavedataInitStart(&savedata_param);
-			if (err == 0) {
-				NowSaveFlag = 1;
-				MsAccessFlag = 1;
-				UtilityFlag = 1;
-				set_ms_dialog(ret_GameStat() == 2 ? 0xA5 : 0xA1);
-				ret = 0;
-			} else {
-				printf("sceUtilitySavedataInitStart failed - %08x\n", err);
-				ret = -1;
-				NowSaveFlag = 0;
-			}
-		}
+	if (MsAccessFlag != 0)
+		return -1;
+	if (ms_check() == 0 && OldError == 0x80110381)
+		return -1;
+	printf("PUZZLE AUTO SAVE\n");
+	memset(&savedata_param, 0, sizeof(savedata_param));
+	savedata_param.base.size = sizeof(savedata_param);
+	savedata_param.base.main_thread_priority = 0x11;
+	savedata_param.base.sub_thread_priority = 0x13;
+	savedata_param.base.font_thread_priority = 0x12;
+	savedata_param.base.sound_thread_priority = 0x10;
+	savedata_param.base.message_lang = 0;
+	savedata_param.base.ctrl_assign = 0;
+	savedata_param.type = 1;
+	savedata_param.overWriteMode = 1;
+	set_param_save(&savedata_param);
+	err = sceUtilitySavedataInitStart(&savedata_param);
+	if (err != 0) {
+		printf("sceUtilitySavedataInitStart failed - %08x\n", err);
+		NowSaveFlag = 0;
+		return -1;
 	}
-	return ret;
+	MsAccessFlag = 1;
+	NowSaveFlag = 1;
+	UtilityFlag = 1;
+	if (ret_GameStat() != 2)
+		set_ms_dialog(0xA1);
+	else
+		set_ms_dialog(0xA5);
+	return 0;
 }
 #else
 INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/file_sub", D_0002F068);
