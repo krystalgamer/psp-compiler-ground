@@ -365,7 +365,31 @@ void draw_model(void) {
     sceGumPopMatrix();
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_network_flow/nonmatchings/main", draw_menu);
+extern char D_00014E3C[];
+extern char D_00014E4C[];
+extern char D_00014E5C[];
+extern char D_00014E6C[];
+extern char D_00014E98[];
+extern short int board_16A8C[2][3];
+static void draw_menu(void)
+{
+	char line_buff[64];
+
+	sceGumPushMatrix();
+	sceGuColor(0x90000000);
+	sceGumDrawArray(6, 0x800100, 2, NULL, board_16A8C);
+	sprintf(line_buff, D_00014E3C, etherstr);
+	sceGuDebugPrint(8, 8, 0xffffff, line_buff);
+	sprintf(line_buff, D_00014E4C, adhocctl_param.group_name.data);
+	sceGuDebugPrint(8, 24, 0xffffff, line_buff);
+	sprintf(line_buff, D_00014E5C, adhocctl_param.channel);
+	sceGuDebugPrint(8, 32, 0xffffff, line_buff);
+	sprintf(line_buff, D_00014E6C, adhocctl_param.bssid.data[0], adhocctl_param.bssid.data[1], adhocctl_param.bssid.data[2], adhocctl_param.bssid.data[3], adhocctl_param.bssid.data[4], adhocctl_param.bssid.data[5]);
+	sceGuDebugPrint(8, 40, 0xffffff, line_buff);
+	sprintf(line_buff, D_00014E98, adhocctl_param.nickname.data);
+	sceGuDebugPrint(8, 48, 0xffffff, line_buff);
+	sceGumPopMatrix();
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/net_network_flow/nonmatchings/main", draw_frame_DB4);
 
