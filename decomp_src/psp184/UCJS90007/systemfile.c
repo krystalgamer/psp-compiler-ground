@@ -1,4 +1,8 @@
-/* libsystemfile: built -O0 (frame pointer, every variable in memory). */
+/* libsystemfile: built -O0 (frame pointer, every variable in memory).
+   The result variable of the sceSystemFile* API functions is a `register int`: at -O0 it is
+   spilled by reload, so its stores/reloads use reload registers ($3, $4/$5 ...) and get a
+   spill slot after the other locals; a plain copy into it as the last statement before the
+   join goes through a second register temporary in Sony's code. */
 /* cflags: -O0 */
 #include "common.h"
 
