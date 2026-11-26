@@ -225,7 +225,60 @@ static void split(char *line, int *count, char **column, int maxcount)
 	*count = i;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/loader", load_logfile_thread);
+int sceIoOpen(const char *name, int flag, int mode);
+int sceIoClose(int fd);
+void *memset(void *s, int c, unsigned int n);
+void *memcpy(void *d, const void *s, unsigned int n);
+char *strcpy(char *d, const char *s);
+void *malloc(unsigned int size);
+extern const char D_0002DDE8[6] __attribute__((aligned(4)));
+void *memcpy(void *dst, const void *src, unsigned int n);
+char *strncat(char *dst, const char *src, unsigned int n);
+int sceIoOpen(const char *name, int flag, int mode);
+int sceIoClose(int fd);
+void *malloc(unsigned int size);
+void free_log(void);
+int insert_log(struct log_display *log);
+extern int error_code_8265C;
+static int load_logfile_thread(SceSize argsize, void *arg)
+{
+	int log_fd;
+	char log_buff[256];
+	char filename[300];
+	char *s;
+	char *column[10];
+	int count;
+	struct log_display *log;
+
+	/* original: strcpy(filename, "ms0:/"); the literal is shared with load_boot_binary_thread (still asm) */
+	memcpy(filename, D_0002DDE8, sizeof(D_0002DDE8));
+	strncat(filename, _info.log_filename, 256);
+	log_fd = sceIoOpen(filename, 0x203, 0644);
+	if (log_fd < 0)
+		goto error;
+	while ((s = fdgets_local(log_buff, log_fd)) != NULL) {
+		if (log_buff[0] == '#')
+			continue;
+		split(log_buff, &count, column, 10);
+		log = malloc(sizeof(struct log_display));
+		memset(log, 0, sizeof(struct log_display));
+		strcpy(log->peer_addr, column[3]);
+		strcpy(log->start_date, column[4]);
+		strcpy(log->start_time, column[5]);
+		strcpy(log->finish_date, column[6]);
+		strcpy(log->finish_time, column[7]);
+		strcpy(log->dist_time, column[8]);
+		strcpy(log->error_code, column[9]);
+		insert_log(log);
+		memset(log_buff, 0, sizeof(log_buff));
+	}
+	sceIoClose(log_fd);
+	return 0x12;
+error:
+	error_code_8265C = log_fd;
+	free_log();
+	return -1;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/loader", load_boot_binary_thread);
 
