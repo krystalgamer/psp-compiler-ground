@@ -425,4 +425,34 @@ term:
 	return ret;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/mpeg_mpegstr_gu/nonmatchings/main", pad_read);
+extern SceCtrlData D_00015FAC; /* static SceCtrlData buf in pad_read (bss is asm) */
+
+static SceInt32 pad_read(t_displayBuffer *pDisp)
+{
+	SceUInt32 padd;
+	SceUInt32 prev;
+	SceInt32 ret;
+
+	prev = cont;
+	ret = 0;
+
+	sceCtrlReadBufferPositive(&D_00015FAC, 1);
+	cont = D_00015FAC.Buttons;
+	padd = cont & (cont ^ prev);
+
+	if (padd & 0x1) {
+		playInfo.playMode = 10;
+		ret = 1;
+	} else if (padd & 0x8) {
+		playInfo.playMode = 1;
+		ret = 1;
+	} else if (padd & 0x200) {
+		dispbuf_zoomin(pDisp);
+	} else if (padd & 0x100) {
+		dispbuf_zoomout(pDisp);
+	} else if (padd & 0x2000) {
+		dispbuf_setDelayMode(pDisp);
+	}
+
+	return ret;
+}
