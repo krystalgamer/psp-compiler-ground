@@ -86,7 +86,21 @@ int my_heap__get_total_free(void) {
     return g_total_free * 0x10;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/ge/my_heap", my_heap__get_max_free);
+int my_heap__get_max_free()
+{
+	block *p;
+	int max = 0;
+
+	p = g_top;
+	do {
+		if (p->size > max) {
+			max = p->size;
+		}
+		p = p->next;
+	} while (p != g_top);
+
+	return max * sizeof(block);
+}
 
 
 int my_heap__get_alloc_count(void) {
