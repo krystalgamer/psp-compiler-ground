@@ -120,7 +120,51 @@ int utf8nlen(const u8 *s, int max) {
     }
     return n;
 }
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iconv", tobase64);
+extern const char B64[];
+unsigned int strlen(const char *s);
+char *strcpy(char *d, const char *s);
+void *memset(void *p, int c, unsigned int n);
+void *MEM_malloc(void *pool, unsigned int n);
+void MEM_free(void *pool, void *p);
+
+#define ENC(c) ((c) ? B64[c] : 'A')
+char *tobase64(char *s) {
+    int len;
+    char *out;
+    char *buf;
+    int i;
+    int j;
+    int pad;
+
+    j = 0;
+    pad = 0;
+    len = strlen(s);
+    out = MEM_malloc(0, len * 2);
+    buf = MEM_malloc(0, len * 2);
+    memset(buf, 0, len * 2);
+    strcpy(buf, s);
+    if (len / 3 * 3 == len - 1) {
+        pad = 1;
+    } else if (len / 3 * 3 == len - 2) {
+        pad = 2;
+    }
+    for (i = 0; i < len; i += 3) {
+        out[j] = ENC(buf[i] >> 2);
+        out[j + 1] = ENC(((buf[i] & 3) << 4) | (buf[i + 1] >> 4));
+        out[j + 2] = ENC(((buf[i + 1] & 0xF) << 2) | (buf[i + 2] >> 6));
+        out[j + 3] = ENC(buf[i + 2] & 0x3F);
+        j += 4;
+    }
+    out[j] = 0;
+    if (pad == 1) {
+        out[j - 1] = '=';
+        out[j - 2] = '=';
+    } else if (pad == 2) {
+        out[j - 1] = '=';
+    }
+    MEM_free(0, buf);
+    return out;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iconv", ucs2ToJis);
 
