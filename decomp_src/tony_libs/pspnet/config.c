@@ -9,8 +9,6 @@ SceUInt func_00002D48(void *common);
 int func_00002C74(SceSize args, void *argp);
 /* --- end declarations --- */
 
-INCLUDE_ASM("tmp/asm/tony_libs/pspnet/nonmatchings/config", sceNetConfig80211ScanJoinRequest);
-
 unsigned int sceNetRand(void);
 extern char D_0000A150[];
 
@@ -109,6 +107,87 @@ static inline int bssid_cmp(const u_char *a, const u_char *b)
 	if (x > y)
 		return 1;
 	return 0;
+}
+
+int sceNetConfig80211ScanJoinRequest(const char *name, const char *ssid, int ssidlen, const char *key, int keylen, int ps, int scantype)
+{
+	struct scanparam sp;
+	struct {
+		int mode;
+		int unk4;
+		int unk8;
+		struct {
+			int type;
+			char key[16];
+		} key[4];
+		char pad5C[0xA0 - 0x5C];
+	} auth;
+	union { struct bssdesc d; char b[0x64]; } bss;
+	char ssidbuf[32];
+	struct bsslist *p;
+	int len, ret, out, i, nowep, ch;
+
+	memset(&sp, 0, sizeof(sp));
+	if (ssid != NULL)
+		memcpy(sp.ssid, ssid, ssidlen);
+	sp.type = scantype;
+	sp.ssidlen = ssidlen;
+	for (i = 0, ch = 1; i < 14; i++, ch++)
+		sp.chan[i] = ch;
+	sp.unk3C = 1;
+	sp.unk40 = 0;
+	sp.unk44 = 6;
+	sp.unk48 = 100;
+	memset(D_0000A150, 0, 0xA80);
+	len = 0xA80;
+	ret = scan_req(name, &sp, &len, D_0000A150, &out);
+	if (ret < 0)
+		goto end;
+	if (len == 0) {
+		ret = 0x80410106;
+		goto end;
+	}
+	__builtin_memset(ssidbuf, 0, sizeof(ssidbuf));
+	if (ssid != NULL)
+		memcpy(ssidbuf, ssid, ssidlen);
+	for (p = (struct bsslist *)D_0000A150; p != NULL; p = p->next) {
+		if (ssidlen != 0 && memcmp(p->d.ssid, ssidbuf, 32) != 0)
+			continue;
+		memset(&auth, 0, sizeof(auth));
+		if (key == NULL) {
+			auth.mode = 0;
+			auth.unk4 = 0;
+		} else {
+			if (keylen != 5 && keylen != 13) {
+				ret = 0x80410103;
+				goto end;
+			}
+			auth.mode = 1;
+			auth.unk4 = 1;
+			for (i = 0; i < 4; i++) {
+				if (keylen == 5)
+					auth.key[i].type = 1;
+				else if (keylen == 13)
+					auth.key[i].type = 2;
+				memcpy(auth.key[i].key, key, keylen);
+			}
+		}
+		ret = sceNetConfig80211SetAuth(name, (int)&auth);
+		if (ret < 0)
+			goto end;
+		ret = sceNetConfig80211SetPowerSave(name, ps);
+		if (ret < 0)
+			goto end;
+		memset(&bss, 0, sizeof(bss));
+		bss.d = p->d;
+		ret = join_req(name, &bss, &out);
+		if (ret == 0)
+			break;
+	}
+	if (p == NULL)
+		ret = 0x80410107;
+end:
+	return ret;
 }
 
 int sceNetConfig80211ScanCreateRequest(const char *name, const char *ssid, int ssidlen, int chan)
