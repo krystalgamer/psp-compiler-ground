@@ -137,7 +137,60 @@ int sceKernelCreateThread(const char *name, void *entry, int prio, int stacksize
 int sceKernelDeleteThread(int thid);
 int sceKernelStartThread(int thid, unsigned int arglen, void *argp);
 
-INCLUDE_ASM("tmp/asm/UTST99332/sound_playsmf/nonmatchings/main", draw_frame);
+#define SCEGU_IMMEDIATE                    0
+#define SCEGU_CLEAR_ALL               0x0007
+#define SCEGU_TEXTURE                      9
+#define SCEGU_SCR_WIDTH       480
+#define WALL_X			(SCEGU_SCR_WIDTH-SIZE)
+#define SCEGU_SCR_HEIGHT      272
+#define SIZE			16
+#define WALL_Y			(SCEGU_SCR_HEIGHT-SIZE)
+#define MAXOBJ			8
+#define SCEGU_NOFLIP                       0
+#define SCEGU_SYNC_FINISH                  0
+#define SCEGU_SYNC_WAIT                    0
+
+static void draw_frame(void)
+{
+	POS	*p = pos;
+	int	x, y, px, py;
+	int	i, j;
+
+	sceGuStart(SCEGU_IMMEDIATE, disp_list, sizeof(disp_list));
+	sceGuClear(SCEGU_CLEAR_ALL);
+
+	sceGuEnable(SCEGU_TEXTURE);
+	sceGuSpriteMode(SIZE, SIZE, SIZE, SIZE);
+	for (j = 0; j < maxnum; j++, p++) {
+		if ((x = ((p->x+=p->dx) % (WALL_X*2))) >= WALL_X) {
+			px = WALL_X*2 - x;
+		} else {
+			px = x;
+		}
+		if ((y = ((p->y+=p->dy) % (WALL_Y*2))) >= WALL_Y) {
+			py = WALL_Y*2 - y;
+		} else {
+			py = y;
+		}
+		for (i = 1; i < MAXOBJ; i++) {
+			if ((x = ((x+p->dx*2) % (WALL_X*2))) >= WALL_X) {
+				px = WALL_X*2 - x;
+			} else {
+				px = x;
+			}
+			if ((y = ((y+p->dy*2) % (WALL_Y*2))) >= WALL_Y) {
+				py = WALL_Y*2 - y;
+			} else {
+				py = y;
+			}
+
+			sceGuColor(p->col + ((0xff/(MAXOBJ-i)) << 24));
+			sceGuDrawSprite(px, py, 0, 0, 0, SCEGU_NOFLIP, 0);
+		}
+	}
+	sceGuFinish();
+	sceGuSync(SCEGU_SYNC_FINISH, SCEGU_SYNC_WAIT);
+}
 
 void init_all(void) {
     sceGuInit();
@@ -199,7 +252,119 @@ int pad_read(void) {
     return 1;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/sound_playsmf/nonmatchings/main", sndp_thread);
+extern unsigned int D_00018574; /* static unsigned int playVelocity in sndp_thread */
+extern unsigned int D_00018578; /* static unsigned int playPanpot in sndp_thread */
+extern int D_00018F10; /* static int playStartFlag in sndp_thread */
+int sceSsSynthesis(void *pBuf);
+int sceSsSMFGetPlayStatus(int id);
+int sceSsSMFSetPlayVelocity(int id, unsigned int vel);
+int sceSsSMFSetPlaySendVelocity(int id, unsigned int vel);
+int sceSsSMFSetPlayPanpot(int id, unsigned int pan);
+int sceSsSMFSetPlaySendPanpot(int id, unsigned int pan);
+int sceSsSMFSetChannelMute(int id, int ch);
+int sceSsSMFResetChannelMute(int id);
+int sceSsSMFPlay(int id, int a, int b, int c, int d, int e);
+int sceSsSMFStop(int id);
+int sceSsSMFPause(int id);
+int sceSsSMFResume(int id);
+int sceKernelExitThread(int status);
+
+static int sndp_thread(SceSize args, ScePVoid argp)
+{
+	volatile int iSide = 0;
+
+	while (iThreadExitFlag == 0) {
+		if (s_updateFlag) {
+			s_updateFlag = 0;
+
+			if ((s_padd & 0x10) && !(s_oldpadd & 0x10)) {
+				if (D_00018574 < 127) {
+					D_00018574++;
+					printf("@SET PLAY VELOCITY : %d\n", D_00018574);
+					sceSsSMFSetPlayVelocity(smfID, D_00018574);
+					sceSsSMFSetPlaySendVelocity(smfID, D_00018574);
+				}
+			}
+
+			if ((s_padd & 0x8) && !(s_oldpadd & 0x8)) {
+				printf("PLAY STATUS : %d\n", sceSsSMFGetPlayStatus(smfID));
+			}
+
+			if ((s_padd & 0x40) && !(s_oldpadd & 0x40)) {
+				if (D_00018574 > 0) {
+					D_00018574--;
+					printf("@SET PLAY VELOCITY : %d\n", D_00018574);
+					sceSsSMFSetPlayVelocity(smfID, D_00018574);
+					sceSsSMFSetPlaySendVelocity(smfID, D_00018574);
+				}
+			}
+
+			if ((s_padd & 0x80) && !(s_oldpadd & 0x80)) {
+				if (D_00018578 > 0) {
+					D_00018578--;
+					printf("@SET PLAY PANPOT : %d\n", D_00018578);
+					sceSsSMFSetPlayPanpot(smfID, D_00018578);
+					sceSsSMFSetPlaySendPanpot(smfID, D_00018578);
+				}
+			}
+
+			if ((s_padd & 0x20) && !(s_oldpadd & 0x20)) {
+				if (D_00018578 < 127) {
+					D_00018578++;
+					printf("@SET PLAY PANPOT : %d\n", D_00018578);
+					sceSsSMFSetPlayPanpot(smfID, D_00018578);
+					sceSsSMFSetPlaySendPanpot(smfID, D_00018578);
+				}
+			}
+
+			if ((s_padd & 0x100) && !(s_oldpadd & 0x100)) {
+				printf("@CHANNEL 0 MUTE\n");
+				sceSsSMFSetChannelMute(smfID, 0);
+			}
+
+			if ((s_padd & 0x200) && !(s_oldpadd & 0x200)) {
+				printf("@RESET CHANNEL MUTE\n");
+				sceSsSMFResetChannelMute(smfID);
+			}
+
+			if ((s_padd & 0x1000) && !(s_oldpadd & 0x1000)) {
+				printf("@SMF PLAY START\n");
+				D_00018F10 = 1;
+				sceSsSMFPlay(smfID, 48, 64, 48, 64, 1);
+			}
+
+			if ((s_padd & 0x4000) && !(s_oldpadd & 0x4000)) {
+				printf("@SMF PLAY STOP\n");
+				sceSsSMFStop(smfID);
+			}
+
+			if ((s_padd & 0x8000) && !(s_oldpadd & 0x8000)) {
+				printf("@SMF PLAY PAUSE\n");
+				sceSsSMFPause(smfID);
+			}
+
+			if ((s_padd & 0x2000) && !(s_oldpadd & 0x2000)) {
+				printf("@SMF PLAY RESUME\n");
+				sceSsSMFResume(smfID);
+			}
+		}
+
+		sceSsSynthesis(pcmBuf[iSide]);
+
+		sceWaveAudioWriteBlocking(0, 0x8000, 0x8000, pcmBuf[iSide]);
+		iSide ^= 1;
+
+		if (D_00018F10) {
+			if (sceSsSMFGetPlayStatus(smfID) == 0) {
+				D_00018F10 = 0;
+				printf("@SMF PLAY FINISH\n");
+			}
+		}
+	}
+
+	sceKernelExitThread(0);
+	return 0;
+}
 
 int sceIoOpen(const char *file, int flags, int mode);
 long long sceIoLseek(int fd, long long offset, int whence);
@@ -229,8 +394,144 @@ static int file_read(const char *pFile, void *pBuf, unsigned int uBufSize, unsig
 	return 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/sound_playsmf/nonmatchings/main", sndp_setting);
+int sceSsBindSoundData(SceSsSndpCtx *pCtx, void *pHd, void *pBd);
+int sceSsSMFBind(SceSsSmfCtx *pCtx, void *pSmf, int hdID);
+int sceSsSetEffectParam(SceSsEffectParam *pParam);
+int puts(const char *s);
 
-INCLUDE_ASM("tmp/asm/UTST99332/sound_playsmf/nonmatchings/main", file_setting);
+static int sndp_setting(void)
+{
+	SceSsEffectParam effectParam;
 
-INCLUDE_ASM("tmp/asm/UTST99332/sound_playsmf/nonmatchings/main", main);
+	phdID = sceSsBindSoundData(&sndpCtx, phdWork, pbdWork);
+	if (phdID < 0) {
+		printf("sceSsBindSoundData() error\n");
+		return -1;
+	}
+
+	smfID = sceSsSMFBind(&smfCtx, smfWork, phdID);
+	if (smfID < 0) {
+		printf("sceSsSMFBind() error\n");
+		return -1;
+	}
+
+	effectParam.setMask = 0xFFFFFFFF;
+	effectParam.type = 3;
+	effectParam.delayTime = 0;
+	effectParam.feedBack = 0;
+	effectParam.effectVolume_l = 0x1000;
+	effectParam.effectVolume_r = 0x1000;
+	effectParam.drySwitch = 1;
+	effectParam.wetSwitch = 1;
+
+	if (sceSsSetEffectParam(&effectParam) != 0) {
+		printf("sceSsSetEffectParam() error\n");
+		return -1;
+	}
+
+	return 0;
+}
+
+static int file_setting(void)
+{
+	const char *phdFile, *pbdFile, *smfFile;
+	int iRc;
+
+	phdFile = "disc0:/PSP_GAME/USRDIR/DATA/sound/sndp/Impression.phd";
+	pbdFile = "disc0:/PSP_GAME/USRDIR/DATA/sound/sndp/Impression.pbd";
+	smfFile = "disc0:/PSP_GAME/USRDIR/DATA/sound/sndp/Impression.mid";
+
+	iRc = file_read(phdFile, phdWork, sizeof(phdWork), &iPhdSize, 0);
+	if (iRc < 0) {
+		printf("phd file read error:%s\n", phdFile);
+		return -1;
+	}
+
+	iRc = file_read(pbdFile, pbdWork, sizeof(pbdWork), &iPbdSize, 0);
+	if (iRc < 0) {
+		printf("pbd file read error:%s\n", pbdFile);
+		return -1;
+	}
+
+	iRc = file_read(smfFile, smfWork, sizeof(smfWork), &iSmfSize, 0);
+	if (iRc < 0) {
+		printf("smf file read error:%s\n", smfFile);
+		return -1;
+	}
+
+	return 0;
+}
+
+int main(void)
+{
+	SceUID thid;
+	SceInt32 status;
+
+	menuInit();
+
+	if (sasload() < 0)
+		return -1;
+
+	if (sceWaveInit() != 0) {
+		printf("sceWaveInit error\n");
+		return -1;
+	}
+
+	sceWaveAudioSetSample(0, 256);
+
+	if (sceSsInit(32) != 0) {
+		printf("sceSsInit error\n");
+		return -1;
+	}
+
+	if (file_setting() != 0)
+		return -1;
+
+	if (sndp_setting() != 0)
+		return -1;
+
+	thid = sceKernelCreateThread("sndp thread", sndp_thread, 16, 0x1000, 0, NULL);
+	if (thid < 0) {
+		printf("sceKernelCreateThread:%08X\n", thid);
+		return -1;
+	}
+
+	status = sceKernelStartThread(thid, 0, NULL);
+	if (status != 0) {
+		printf("sceKernelStartThread:%08X\n", status);
+		return -1;
+	}
+
+	init_all();
+	init_pos();
+
+	while (pad_read() != 0) {
+		draw_frame();
+		sceDisplayWaitVblankStart();
+		sceGuSwapBuffers();
+	}
+
+	sceGuTerm();
+
+	iThreadExitFlag = 1;
+	sceKernelWaitThreadEnd(thid, NULL);
+	status = sceKernelDeleteThread(thid);
+	if (status != 0) {
+		printf("sceKernelDeleteThread: %08X\n", status);
+	}
+
+	if (sceSsExit() != 0) {
+		printf("sceSsExit() error\n");
+	}
+
+	if (sceWaveExit() != 0) {
+		printf("sceWaveExit() error\n");
+	}
+
+	sound_end();
+	if (sasunload() < 0)
+		return -1;
+
+	menuTerm(4, 3);
+	return 0;
+}
