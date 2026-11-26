@@ -1,7 +1,3 @@
-#include "common.h"
-
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/gcc-3.3.6/libstdc__-v3/libsupc__/eh_catch", __cxa_begin_catch);
-
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/gcc-3.3.6/libstdc__-v3/libsupc__/eh_catch", __cxa_end_catch);
-
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/gcc-3.3.6/libstdc__-v3/libsupc__/eh_catch", _ZSt18uncaught_exceptionv);
+/* lang: c++ */
+/* the gcc-3.3.6 libstdc++ source of the 1.9.2 tree, as built for psp-gcc 1.9.2 */
+#include "../gcc1.9.2_src/libstdc++-v3/libsupc++/eh_catch.cc"
