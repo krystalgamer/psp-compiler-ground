@@ -191,7 +191,32 @@ INCLUDE_RODATA("tmp/asm/UTST99332/mpeg_seamless_change/nonmatchings/parsePsmf", 
 
 INCLUDE_RODATA("tmp/asm/UTST99332/mpeg_seamless_change/nonmatchings/parsePsmf", D_00011D64);
 
-INCLUDE_ASM("tmp/asm/UTST99332/mpeg_seamless_change/nonmatchings/parsePsmf", sInfo_getEPOffset);
+extern const char D_00011D34[]; /* shared rodata string */
+float sceDisplayGetFramePerSec(void);
+
+SceInt32 sInfo_getEPOffset(t_streamInfo *pStreamInfo, SceInt32 timestamp, SceInt32 *offset, SceInt32 *odd)
+{
+	SceInt32 ret;
+	ScePsmfEntryPoint ep;
+	ScePsmf *pPsmf;
+
+	pPsmf = pStreamInfo->pVideoPsmf;
+
+	ret = scePsmfGetEPWithTimestamp(pPsmf, timestamp, &ep);
+	if (ret != 0) {
+		printf(D_00011D34, ret);
+		goto term;
+	}
+
+	*offset = ep.offset;
+
+	*odd = (SceInt32)((float)(timestamp - ep.pts) / (90000.0f / (sceDisplayGetFramePerSec() * 0.5f)));
+
+	ret = 0;
+
+term:
+	return ret;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/mpeg_seamless_change/nonmatchings/parsePsmf", sInfo_getNextEPTimestamp);
 
