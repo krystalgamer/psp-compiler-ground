@@ -56,7 +56,9 @@ void FadeDraw(void) {
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_matching_handler", game_init);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_matching_handler", game_term);
+int game_term(void) {
+    return game_net_term();
+}
 
 void draw_top_for_game(void) {
 }

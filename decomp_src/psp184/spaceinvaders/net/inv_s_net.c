@@ -38,8 +38,14 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_net", net_updat
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_net", utility_update_shutdown);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_net", matching_get_established_num);
+extern int D_0039AE40;
+int matching_get_established_num(void) {
+    return D_0039AE40 - 1;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_net", matching_parent_select);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_net", matching_parent_cancel);
+extern int D_0039AE60;
+int matching_parent_cancel(struct SceNetEtherAddr *addr) {
+    return sceNetAdhocMatchingCancelTarget(D_0039AE60, addr);
+}
