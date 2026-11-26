@@ -29,7 +29,9 @@ typedef struct {
 	int prio;
 } SceWaveMain;
 
-extern int D_002F1B20;
+/* state and stop flag, shared with the audio thread */
+extern volatile int D_002F1B20;
+extern volatile int D_002F1B24;
 extern int D_0008BF30;
 extern char D_002F1B28[];
 extern char D_002F1B98[];
@@ -87,7 +89,28 @@ INCLUDE_ASM("tmp/asm/sampler/sampler/nonmatchings/libwave", sceWaveInit);
 
 INCLUDE_ASM("tmp/asm/sampler/sampler/nonmatchings/libwave", sceWaveSetVoice);
 
-INCLUDE_ASM("tmp/asm/sampler/sampler/nonmatchings/libwave", sceWaveGetVolume);
+int sceWaveGetVolume(unsigned int ch, int *left, int *right)
+{
+	if (ch >= 8)
+		return 0x80440005;
+	if (left == NULL)
+		return 0x8044000A;
+	if (right == NULL)
+		return 0x8044000A;
+	if (D_002F29A8[ch].vol_l <= 0)
+		*left = 0;
+	else if (D_002F29A8[ch].vol_l >= 128)
+		*left = (D_002F29A8[ch].vol_l - 1) / 32;
+	else
+		*left = D_002F29A8[ch].vol_l / 32;
+	if (D_002F29A8[ch].vol_r <= 0)
+		*right = 0;
+	else if (D_002F29A8[ch].vol_r >= 128)
+		*right = (D_002F29A8[ch].vol_r - 1) / 32;
+	else
+		*right = D_002F29A8[ch].vol_r / 32;
+	return 0;
+}
 
 int sceWaveGetRestByte(unsigned int ch, int *rest)
 {
@@ -119,7 +142,21 @@ INCLUDE_RODATA("tmp/asm/sampler/sampler/nonmatchings/libwave", D_000174B4);
 
 INCLUDE_ASM("tmp/asm/sampler/sampler/nonmatchings/libwave", sceWaveStart);
 
-INCLUDE_ASM("tmp/asm/sampler/sampler/nonmatchings/libwave", sceWaveEnd);
+int sceWaveEnd(void)
+{
+	int i;
+
+	if (D_002F1B20 != 3)
+		return 0x80440004;
+	for (i = 0; i < 8; i++)
+		_waveStop(i);
+	D_002F1B24 = 1;
+	sceKernelWaitThreadEnd(D_002F2E68.thid, NULL);
+	sceKernelDeleteThread(D_002F2E68.thid);
+	D_002F1B24 = 0;
+	D_002F1B20 = 1;
+	return 0;
+}
 
 int sceWaveExit(void)
 {
