@@ -291,7 +291,7 @@ int transFontSize(int h) {
     int w;
     int hh;
     for (i = 6; i >= 0; i--) {
-        GUI_Graphics_getStringSize(ui_global->color[0][i], D_00139A8C, 1, &w, &hh);
+        GUI_Graphics_getStringSize(ui_global->color[0][i], "A", 1, &w, &hh);
         if (h >= hh) {
             break;
         }
@@ -752,7 +752,7 @@ char *get_cookie(void *url) {
         iom_mfree(c);
         return NULL;
     }
-    sprintf(buf, D_00139C00, c);
+    sprintf(buf, "Cookie: %s", c);
     iom_mfree(c);
     return buf;
 }
