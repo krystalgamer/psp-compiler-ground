@@ -7,6 +7,15 @@ typedef struct HstStr {
     int len;
 } HstStr;
 
+typedef struct HstFrag {
+    struct HstFrag *next;
+    struct HstFrag **prev;
+    int a;
+    int b;
+    int c;
+    char *name;
+} HstFrag;
+
 typedef struct HstNode {
     HstStr uri;                 /* 0x00 */
     HstStr s08;                 /* 0x08 */
