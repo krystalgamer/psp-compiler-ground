@@ -436,7 +436,34 @@ static void draw_headline(void)
 	sceGuDebugPrint((480 - strlen(buf) * 8) / 2 + 1, 11, 0xFFFFFF, buf);
 }
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/main", draw_top);
+void sceGuEnable(int state);
+void sceGuTexMode(int tpsm, int maxmips, int a2, int swizzle);
+void sceGuTexImage(int mipmap, int width, int height, int tbw, const void *tbp);
+void sceGuTexFilter(int min, int mag);
+void sceGuTexFunc(int tfx, int tcc);
+void sceGuTexWrap(int u, int v);
+void sceGuClutMode(unsigned int cpsm, unsigned int shift, unsigned int mask, unsigned int a3);
+void sceGuClutLoad(int num_blocks, const void *cbp);
+void begin_scene(void);
+void process_fade(void);
+void SpriteScale(int x, int y);
+void DrawSprite(int x, int y, int w, int h, int u, int v, SceGeVertexT16V16_UV_NORMAL *model);
+extern SceGeVertexT16V16_UV_NORMAL D_00031700[];
+static void draw_top(void)
+{
+	begin_scene();
+	process_fade();
+	sceGuEnable(9);
+	sceGuTexWrap(0, 0);
+	sceGuTexFilter(0, 0);
+	sceGuTexFunc(0, 1);
+	sceGuTexMode(4, 0, 0, 0);
+	sceGuClutMode(2, 0, 0xFF, 0);
+	sceGuClutLoad(1, clut_dialog);
+	sceGuTexImage(0, 512, 64, 512, DialogTextureImageTable[0].buffer);
+	SpriteScale(1, 1);
+	DrawSprite(0x65, 0x79, 0x200, 0x40, 0, 0, D_00031700);
+}
 
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/main", draw_title_mini);
 
@@ -458,7 +485,37 @@ static void check_osk_completed(void)
 	}
 }
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/main", update_1080);
+static void update_1080(void)
+{
+	int done = 0;
+
+	switch (_info.state) {
+	case 0x19:
+		check_osk_completed();
+		break;
+	case 0x1C:
+	case 0x1D:
+	case 0x1E:
+		utility_check_msgdialog_completed(&done);
+		if (done > 0) {
+			switch (_info.state) {
+			case 0x1C:
+				change_state(2, 0);
+				break;
+			case 0x1D:
+				change_state(0x1A, 0);
+				break;
+			case 0x1E:
+				change_state(0xF, 0);
+				break;
+			}
+		}
+		break;
+	}
+	loader_update();
+	net_update();
+	mpeg_update();
+}
 
 int vsprintf(char *buf, const char *fmt, va_list ap);
 void disp_printf(int color, const char *fmt, ...)
