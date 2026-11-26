@@ -1,3 +1,4 @@
+/* cflags: -O2 -frename-registers */
 #include "common.h"
 
 /* declarations recovered from DWARF */
@@ -83,7 +84,36 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/kernel_bridge", _open);
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/kernel_bridge", _lseek);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/kernel_bridge", _sbrk);
+void *_sbrk(ptrdiff_t incr)
+{
+	char *newheap;
+	char *oldheap;
+
+	if (minheap == 0) {
+		int size = 0x10000;
+
+		if (&sce_newlib_heap_kb_size != 0)
+			size = sce_newlib_heap_kb_size << 10;
+		if (size != 0) {
+			mbid = sceKernelAllocPartitionMemory(2, "UserSbrk", 0, size, 0);
+			if (mbid > 0) {
+				char *head = sceKernelGetBlockHeadAddr(mbid);
+				maxheap = head + size;
+				currentheap = head;
+				minheap = head;
+			}
+		}
+	}
+	if (minheap != 0) {
+		newheap = currentheap + incr;
+		if (newheap >= minheap && newheap <= maxheap) {
+			oldheap = currentheap;
+			currentheap = newheap;
+			return oldheap;
+		}
+	}
+	return (void *)-1;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/kernel_bridge", _read);
 
@@ -91,7 +121,11 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/kernel_bridge", _write);
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/kernel_bridge", _close);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/kernel_bridge", _fstat);
+int _fstat(int file, struct stat *st)
+{
+	st->st_mode = 0x2000;
+	return 0;
+}
 
 int isatty(int fd)
 {
