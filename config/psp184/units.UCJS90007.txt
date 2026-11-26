@@ -24,6 +24,7 @@ mpeg_strfile                                 1.8.4.internal  mpeg_strfile.c
 mpeg_io                                      1.8.4.internal  mpeg_io.c
 mpeg_list                                    1.8.4.internal  mpeg_list.c
 userinterrupt                                1.8.4.internal  userinterrupt.c
+systemfile                                   1.8.4.internal  systemfile.c
 gim_callback                                 1.8.4.internal  gim_callback.c
 gim_picture                                  1.8.4.internal  gim_picture.c
 gim_animate                                  1.8.4.internal  gim_animate.c

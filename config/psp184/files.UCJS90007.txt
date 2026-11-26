@@ -2,6 +2,8 @@
 # SDK 2.5.0 libwave (no DWARF; its version string precedes its rodata).
 0x1F728 libwave         1.8.4.internal  libwave.c
 rodata 0x3018C libwave
+# libsystemfile (sceSystemFile*, no DWARF, no SDK source): one unit until its objects are known.
+0x0C338 systemfile      1.8.4.internal  systemfile.c
 # SDK 2.5.0 libgim_picture (no DWARF), objects in the SDK 6.6.0 source's function order.
 0x125F8 gim_callback    1.8.4.internal  gim_callback.c
 0x12B44 gim_picture     1.8.4.internal  gim_picture.c
