@@ -182,7 +182,31 @@ INCLUDE_RODATA("tmp/asm/UTST99332/mpeg_seamless_change/nonmatchings/playInfo", D
 
 INCLUDE_RODATA("tmp/asm/UTST99332/mpeg_seamless_change/nonmatchings/playInfo", D_000117E4);
 
-INCLUDE_ASM("tmp/asm/UTST99332/mpeg_seamless_change/nonmatchings/playInfo", playInfo_reset);
+SceInt32 playInfo_reset(t_playInfo *pPlayInfo)
+{
+	SceInt32 ret;
+
+	sInfo_getStartTimestamp(&pPlayInfo->sInfo, &pPlayInfo->timestamp);
+
+	ret = sInfo_reset(&pPlayInfo->sInfo, sInfo_getCurrentStreamTypeNumber(&pPlayInfo->sInfo, 0), sInfo_getCurrentStreamTypeNumber(&pPlayInfo->sInfo, 1));
+	if (ret != 0) {
+		printf("fatal error : sInfo_init() 0x%x\n", ret);
+		goto term;
+	}
+
+	ret = decode_reset(&pPlayInfo->streamData, decode_getCurrentStream(&pPlayInfo->streamData, 0), decode_getCurrentStream(&pPlayInfo->streamData, 1));
+	if (ret != 0) {
+		printf("fatal error : decode_iit() 0x%x\n", ret);
+		goto term;
+	}
+
+	pPlayInfo->playMode = 0;
+
+	pPlayInfo->videoChangeMode = 0;
+
+term:
+	return ret;
+}
 
 int playInfo_getAudioStreamNum(t_playInfo *pPlayInfo) {
     return sInfo_getNumberOfStreams(&pPlayInfo->sInfo, 1);
