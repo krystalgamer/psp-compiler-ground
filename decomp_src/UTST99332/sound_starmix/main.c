@@ -148,7 +148,61 @@ static int file_read(const char *pFile, void *pBuf, unsigned int uBufSize, unsig
 	return 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/sound_starmix/nonmatchings/main", draw_frame);
+#define SCEGU_IMMEDIATE                    0
+#define SCEGU_CLEAR_ALL               0x0007
+#define SCEGU_TEXTURE                      9
+#define SCEGU_SCR_WIDTH       480
+#define WALL_X			(SCEGU_SCR_WIDTH-SIZE)
+#define SCEGU_SCR_HEIGHT      272
+#define SIZE			16
+#define WALL_Y			(SCEGU_SCR_HEIGHT-SIZE)
+#define MAXOBJ			8
+#define SCEGU_NOFLIP                       0
+#define SCEGU_SYNC_FINISH                  0
+#define SCEGU_SYNC_WAIT                    0
+
+static void draw_frame(void)
+{
+	POS	*p = pos;
+	int	x, y, px, py;
+	int	i, j;
+
+	sceGuStart(SCEGU_IMMEDIATE, disp_list, sizeof(disp_list));
+	sceGuClear(SCEGU_CLEAR_ALL);
+
+	sceGuEnable(SCEGU_TEXTURE);
+	sceGuSpriteMode(SIZE, SIZE, SIZE, SIZE);
+	for (j = 0; j < maxnum; j++, p++) {	
+		if ((x = ((p->x+=p->dx) % (WALL_X*2))) >= WALL_X) {
+			px = WALL_X*2 - x;
+		} else {
+			px = x;
+		}
+		if ((y = ((p->y+=p->dy) % (WALL_Y*2))) >= WALL_Y) {
+			py = WALL_Y*2 - y;
+		} else {
+			py = y;
+		}
+		for (i = 1; i < MAXOBJ; i++) {
+			if ((x = ((x+p->dx*2) % (WALL_X*2))) >= WALL_X) {
+				px = WALL_X*2 - x;
+			} else {
+				px = x;
+			}
+			if ((y = ((y+p->dy*2) % (WALL_Y*2))) >= WALL_Y) {
+				py = WALL_Y*2 - y;
+			} else {
+				py = y;
+			}
+
+			sceGuColor(p->col + ((0xff/(MAXOBJ-i)) << 24));
+			sceGuDrawSprite(px, py, 0, 0, 0, SCEGU_NOFLIP, 0);
+		}
+	}
+	sceGuDebugPrint(0, 0, 0xffffffff, decode_position);
+	sceGuFinish();
+	sceGuSync(SCEGU_SYNC_FINISH, SCEGU_SYNC_WAIT);
+}
 
 void init_all(void) {
     sceGuInit();
