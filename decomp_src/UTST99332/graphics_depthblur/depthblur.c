@@ -99,7 +99,74 @@ void UseFrameBufferBlurmap(void)
 	sceGuTexFlush();
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_depthblur/nonmatchings/depthblur", DepthBlurUpdate);
+void DepthBlurUpdate(void)
+{
+	
+	int i;
+	
+	int notch = _focus*16;
+	float depth;
+	float blur;
+	
+	
+	
+	
+	for(i = 0; i < notch; i++)
+	{
+		depth = (i/15.0f);
+		blur = (notch-i)/(float)(notch+1);
+		if(blur > 1.0f)
+			blur = 1.0f;
+		if(blur < 0.0f)
+			blur = 0.0f;
+		_zclut[i] = MakeRGBA8888(depth,depth,blur,1);
+		
+	}
+	
+	for(i = notch; i < 16; i++)
+	{
+		depth = (i/15.0f);
+		blur = powf((i-notch)/(float)(16-notch),0.4f+_focus*0.6f);
+		if(blur > 1.0f)
+			blur = 1.0f;
+		if(blur < 0.0f)
+			blur = 0.0f;
+		_zclut[i] = MakeRGBA8888(depth,depth,blur,1);
+	}
+	
+	for(i = 16; i < 256; i++)
+	{
+		_zclut[i] = _zclut[15];
+	}
+	
+	
+	
+	
+	
+	for(i = 0;i < 16; i++)
+	{
+		int d=i;
+		int b=(_zclut[i]>>16)&0xff;
+		
+		_redclut[i] = b|b<<8|b<<16|d<<27;
+	}
+	
+	
+	
+	for(i = 0; i< 32; i++)
+	{
+		_idclut[i] = i<<3|i<<11|i<<19|i<<27;
+	}
+	
+	
+	for(i = 0; i< 32; i++)
+	{
+		unsigned char val = (i/31.0f)*255;
+		u_int16 twochan = val|(val<<8);
+		_16to32clut[i] =((twochan&0x1f)<<3)|((twochan&0x7e0)<<(11-5))
+						|((twochan&0xf800)<<(19-5-6));
+	}
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_depthblur/nonmatchings/depthblur", DepthBlurDraw);
 
