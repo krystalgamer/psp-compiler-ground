@@ -3321,6 +3321,7 @@ int VSModeBody(int pl)
 	int i;
 	int k;
 	short ang;
+	int x, n;
 
 	KeyStat = GetKeyStat();
 	KeyHit = GetKeyHit();
@@ -3953,14 +3954,12 @@ int VSModeBody(int pl)
 	}
 	if (isPause == 0 && st->nchain) {
 		int t = st->unk470;
-		int x, y;
 
 		for (i = 0; i < st->nchain; i++) {
-			y = st->chain[i].y * t / 60 + st->chain[i].b * (60 - t) / 60 - ((t - 30) * (t - 30) - 900) / 8;
 			x = st->chain[i].x * t / 60 + st->chain[i].a * (60 - t) / 60;
-			y += st->ofs_y + st->scroll * 14;
 			x += MapXBeginPos[st->mapno * 3 + st->mapsub] + 72;
-			DrawBubble(0, x, y, st->chain[i].col - 1, 0);
+			n = st->chain[i].y * t / 60 + st->chain[i].b * (60 - t) / 60 - ((t - 30) * (t - 30) - 900) / 8;
+			DrawBubble(0, x, n + (st->ofs_y + st->scroll * 14), st->chain[i].col - 1, 0);
 		}
 		if (++st->unk470 >= 60) {
 			for (i = 0; i < st->nchain; i++) {
@@ -3974,7 +3973,7 @@ int VSModeBody(int pl)
 		}
 	}
 	if (isPause == 0) {
-		int j, n, x, y, c;
+		int j, y, c;
 		float fl;
 
 		for (j = 0; j < 3; j++) {
