@@ -9,6 +9,12 @@ int sceIoClose(int);                                /* extern */
 M2C_UNK sceKernelDeleteEventFlag(int);              /* extern */
 extern unsigned char playArg;
 typedef long long SceOff_;
+typedef struct {
+	int atracId;
+	int fd;
+	int evf;
+	int ch;
+} AT3ARG;
 int sceAtracGetStreamDataInfo(int atracID, unsigned char **ppucWritePointer, unsigned int *puiWritableByte, unsigned int *puiReadPosition);
 int sceAtracAddStreamData(int atracID, unsigned int uiAddByte);
 int sceAtracGetNextDecodePosition(int atracID, unsigned int *puiSamplePosition);
@@ -31,12 +37,6 @@ INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/at3plus", D_0002EC98);
 
 INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/at3plus", D_0002ECC4);
 
-typedef struct {
-	int atracId;
-	int fd;
-	int evf;
-	int ch;
-} AT3ARG;
 extern int NowBgm;
 extern int PlayFlag;
 int sceAtracGetRemainFrame(int atracId, int *remain);
