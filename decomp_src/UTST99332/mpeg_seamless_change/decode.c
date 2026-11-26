@@ -195,7 +195,31 @@ INCLUDE_ASM("tmp/asm/UTST99332/mpeg_seamless_change/nonmatchings/decode", decode
 
 INCLUDE_ASM("tmp/asm/UTST99332/mpeg_seamless_change/nonmatchings/decode", decode_createAudioAu);
 
-INCLUDE_ASM("tmp/asm/UTST99332/mpeg_seamless_change/nonmatchings/decode", decode_deleteAu);
+SceInt32 decode_deleteAu(t_mpegStreamData *pStreamData, SceMpegStrType type)
+{
+	SceInt32 ret;
+
+	switch (type) {
+	case 0:
+		if (pStreamData->avcEsBuf1) {
+			sceMpegFreeAvcEsBuf(pStreamData->pMpeg, pStreamData->avcEsBuf1);
+			pStreamData->avcEsBuf1 = 0;
+		}
+		if (pStreamData->avcEsBuf2) {
+			sceMpegFreeAvcEsBuf(pStreamData->pMpeg, pStreamData->avcEsBuf2);
+			pStreamData->avcEsBuf2 = 0;
+		}
+		break;
+	case 1:
+		if (pStreamData->pAudioEsBuf) {
+			free(pStreamData->pAudioEsBuf);
+			pStreamData->pAudioEsBuf = NULL;
+		}
+		break;
+	}
+
+	return 0;
+}
 
 int decode_getAudioOutSize(t_mpegStreamData *pStreamData) {
     return pStreamData->audioOutSize;
