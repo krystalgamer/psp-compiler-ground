@@ -24,7 +24,41 @@ extern const StreamTypeInfo D_000078F4[];
 
 INCLUDE_ASM("tmp/asm/tony_libs/mpeg/nonmatchings/mpeg_demux", func_000014F4);
 
-INCLUDE_ASM("tmp/asm/tony_libs/mpeg/nonmatchings/mpeg_demux", func_000018A8);
+int func_000018A8(BitReader *br, PackHeader *ph)
+{
+	unsigned int a, b, c, n, e;
+	unsigned int i;
+
+	BitFill(br, 34);
+	a = br->bits >> 29;
+	BitFill(br, 3);
+	BitFill(br, 1);
+	b = br->bits >> 17;
+	BitFill(br, 15);
+	BitFill(br, 1);
+	c = br->bits >> 17;
+	BitFill(br, 15);
+	BitFill(br, 1);
+	e = br->bits >> 23;
+	BitFill(br, 9);
+	ph->unk[0] = e;
+	BitFill(br, 30);
+	n = br->bits >> 29;
+	BitFill(br, 3);
+	ph->unk[1] = (a << 30) | (b << 15) | c;
+	ph->unk[2] = a >> 2;
+	for (i = 0; i < n; i++)
+		BitFill(br, 8);
+	if (br->bits == 0x1BB) {
+		ph->unk[3] = 1;
+		BitFill(br, 56);
+		func_00003984(br, 40);
+		while ((br->bits >> 31) == 1)
+			func_00003984(br, 24);
+	} else
+		ph->unk[3] = 0;
+	return 1;
+}
 
 INCLUDE_ASM("tmp/asm/tony_libs/mpeg/nonmatchings/mpeg_demux", func_00001F38);
 

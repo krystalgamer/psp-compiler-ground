@@ -444,8 +444,7 @@ static __inline__ void BitFill(BitReader *br, int n)
 	br->bits <<= n;
 	br->avail -= n;
 	while (br->avail < 25) {
-		br->bits |= *br->p << (24 - br->avail);
-		br->p++;
+		br->bits |= *br->p++ << (24 - br->avail);
 		if (br->p >= br->end)
 			br->p = br->start;
 		br->avail += 8;
