@@ -286,7 +286,19 @@ INCLUDE_ASM("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/moonball_main"
 
 INCLUDE_ASM("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/moonball_main", DrawFunc);
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/moonball_main", KeyFunc);
+static void KeyFunc(void)
+{
+	u_int32		prev=cont;
+	u_int32		padd;
+	SceCtrlData	buf;
+
+	sceCtrlPeekBufferPositive(&buf, 1);
+	cont = buf.Buttons;
+	padd=cont & (cont^prev);
+
+	if (func[program.mode].key!=0)
+		func[program.mode].key(padd, cont);
+}
 
 static void ProgramSwitch(void)
 {
