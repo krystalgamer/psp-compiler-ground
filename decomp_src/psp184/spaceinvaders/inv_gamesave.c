@@ -4,7 +4,47 @@
 extern unsigned char save_data;
 
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_gamesave", inv_save_data_init);
+void *memset(void *s, int c, unsigned int n);
+int sprintf(char *s, const char *fmt, ...);
+void ms_init(void);
+#define SDI(o) (*(int *)(&save_data + (o)))
+#define SDS(o) ((char *)(&save_data + (o)))
+void inv_save_data_init(void)
+{
+	memset(&save_data, 0, 0x460);
+	SDI(0x8) = 100;
+	SDI(0xC) = 80;
+	SDI(0x10) = 60;
+	SDI(0x14) = 40;
+	SDI(0x18) = 20;
+	SDI(0x70) = 0;
+	SDI(0x74) = 3;
+	SDI(0x7C) = 1;
+	SDI(0x78) = 1;
+	sprintf(SDS(0x1C), "SPACE");
+	sprintf(SDS(0x25), "INVADERS");
+	sprintf(SDS(0x2E), "GALAXY");
+	sprintf(SDS(0x37), "BEAT");
+	sprintf(SDS(0x40), "CLASSIC");
+	SDI(0x80) = 10000;
+	SDI(0x84) = 8000;
+	SDI(0x88) = 6000;
+	SDI(0x8C) = 4000;
+	SDI(0x90) = 2000;
+	SDI(0xCC) = 1;
+	SDI(0xF8) = 1;
+	sprintf(SDS(0x94), "SPACE");
+	sprintf(SDS(0x9D), "INVADERS");
+	sprintf(SDS(0xA6), "Galaxy");
+	sprintf(SDS(0xAF), "beat");
+	sprintf(SDS(0xB8), "FUTURE");
+	SDI(0xD4) = 1;
+	SDI(0xD8) = 2;
+	SDI(0xE0) = 10;
+	SDI(0xE4) = 32;
+	SDI(0) = 0;
+	ms_init();
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
