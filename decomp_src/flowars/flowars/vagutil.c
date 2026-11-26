@@ -106,7 +106,34 @@ static void vag_read_cluster(void)
 	print_nothing("## VAG_READ_CLUSTER done\n");
 }
 
-INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/vagutil", load_5330);
+static void load()
+{
+	print_nothing("### sound util init\n");
+	int index;
+
+
+	for (index = 0; index < 7; index++)
+		sprintf(vagFile[index], "bgm%03d.vag", index + 1);
+
+	for (; index < 33; index++)
+		sprintf(vagFile[index], "eff%03d.vag", index - 6);
+
+	for (; index < 62; index++)
+		sprintf(vagFile[index], "vom%03d.vag", index - 32);
+
+	for (; index < 91; index++)
+		sprintf(vagFile[index], "vof%03d.vag", index - 61);
+
+	vag_read_cluster();
+
+	print_nothing("### sound load complete\n");
+
+	g_stage_status = 3;
+	sceKernelExitDeleteThread(1);
+}
+
+__asm__(".globl load_5330");
+
 
 static void init()
 {
