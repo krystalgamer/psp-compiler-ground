@@ -42,7 +42,36 @@ INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_gmo", D_0007A8A4);
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_gmo", gmo_load);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_gmo", gmo_unload);
+typedef struct { int used; void *model; } GMO_FILE;
+typedef struct {
+	int used, f4, f8, fc;
+	u8 _p10[0x44 - 0x10];
+	int anime, motion, f4c;
+	float speed;
+	void *model;
+	int effect[4];
+} GMO_W;
+#define GMO ((GMO_W *)&gmo)
+#define GMO_FILE_W ((GMO_FILE *)&gmo_file)
+int sceGmoModelDelete(void *model);
+int sceGmoModelSetCurrentMotion(void *model, int motion, float speed);
+int gmo_unload(int no)
+{
+	GMO_W *g;
+	int ret = 0;
+
+	if ((unsigned int)no < 255) {
+		g = &GMO[no];
+		if (g->used != 0) {
+			sceGmoModelDelete(g->model);
+			ret = 1;
+			g->used = 0;
+			g->model = 0;
+			gmo_max--;
+		}
+	}
+	return ret;
+}
 
 void gmo_all_unload(void)
 {
@@ -54,9 +83,41 @@ void gmo_all_unload(void)
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_gmo", gmo_anime_start);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_gmo", gmo_anime_direct);
+int gmo_anime_direct(int no, int motion, float speed)
+{
+	GMO_W *g;
+	int ret = 0;
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_gmo", gmo_anime_stop);
+	if ((unsigned int)no < 255) {
+		g = &GMO[no];
+		if (g->used != 0) {
+			g->anime = 2;
+			g->motion = motion;
+			g->speed = speed;
+			sceGmoModelSetCurrentMotion(g->model, motion, 0);
+			ret = 1;
+		}
+	}
+	return ret;
+}
+
+int gmo_anime_stop(int no)
+{
+	GMO_W *g;
+	int ret = 0;
+
+	if ((unsigned int)no < 255) {
+		g = &GMO[no];
+		if (g->used != 0) {
+			g->speed = 0;
+			g->motion = -1;
+			g->anime = 0;
+			sceGmoModelSetCurrentMotion(g->model, -1, g->speed);
+			ret = 1;
+		}
+	}
+	return ret;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_gmo", gmo_effect);
 
