@@ -330,7 +330,35 @@ void DrawBG(void)
 	sceGumDrawArray(4, 0x80011C, 4, NULL, D_001B57E8);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/menu/nonmatchings/draw", DrawCategoryString);
+void sceKernelDcacheWritebackInvalidateRange(const void *p, unsigned int size);
+extern Gu2dV16T D_001B5818[];
+extern Gu2dV16 D_001B5840[];
+void DrawCategoryString(int mode)
+{
+	D_001B5818[0].v = menu->cat * 20 + 20;
+	D_001B5818[1].v = menu->cat * 20;
+	D_001B5818[2].v = menu->cat * 20 + 20;
+	D_001B5818[3].v = menu->cat * 20;
+	sceKernelDcacheWritebackInvalidateRange(D_001B5818, sizeof(Gu2dV16T) * 4);
+	if (mode) {
+		D_001B5840[1].p[0] = 0x74;
+		D_001B5840[2].p[0] = 0x83;
+	} else {
+		D_001B5840[1].p[0] = 0xA4;
+		D_001B5840[2].p[0] = 0xB3;
+	}
+	sceKernelDcacheWritebackInvalidateRange(D_001B5840, sizeof(Gu2dV16) * 3);
+	sceGuEnable(9);
+	sceGuClutMode(1, 0, 0xFF, 0);
+	sceGuClutLoad(1, clut_category);
+	sceGuTexMode(4, 0, 0, 0);
+	sceGuTexImage(0, 128, 128, 128, pix_category);
+	sceGuColor(0xFFFFFFFF);
+	sceGumDrawArray(4, 0x800102, 4, NULL, D_001B5818);
+	sceGuDisable(9);
+	sceGuColor(0xFFFFFFFF);
+	sceGumDrawArray(2, 0x800100, 3, NULL, D_001B5840);
+}
 
 extern Gu2dV16T D_001B5854[];
 extern Gu2dV16 D_001B587C[];
@@ -364,7 +392,43 @@ void DrawItemBar(void)
 	sceGumDrawArray(2, 0x800100, 5, NULL, D_001B58FC);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/menu/nonmatchings/draw", DrawItemFrame);
+extern Gu2dV16 D_001B591C[];
+extern Gu2dV16 D_001B5934[];
+void DrawItemFrame(int xstep, int ystep)
+{
+	int x, y;
+
+	x = 0x65 - xstep;
+	y = 0x39 - ystep;
+	if (x < 0) x = 0;
+	if (y < 0) y = 0;
+	if (x > 0x65) x = 0x65;
+	if (y > 0x39) y = 0x39;
+	D_001B591C[0].p[0] = 0xF0 - x;
+	D_001B591C[1].p[0] = 0xF0 - x;
+	D_001B591C[1].p[1] = 0x5C - y;
+	D_001B591C[3].p[1] = 0x5C - y;
+	D_001B591C[2].p[0] = 0xF0 + x;
+	D_001B591C[0].p[1] = 0x5D + y;
+	D_001B591C[2].p[1] = 0x5D + y;
+	D_001B591C[3].p[0] = 0xF0 + x;
+	D_001B5934[0].p[0] = 0xF0 - x;
+	D_001B5934[0].p[1] = 0x5C + y;
+	D_001B5934[1].p[0] = 0xF0 - x;
+	D_001B5934[1].p[1] = 0x5C - y;
+	D_001B5934[2].p[0] = 0xEF + x;
+	D_001B5934[3].p[0] = 0xEF + x;
+	D_001B5934[2].p[1] = 0x5C - y;
+	D_001B5934[3].p[1] = 0x5C + y;
+	D_001B5934[4].p[0] = 0xF0 - x;
+	D_001B5934[4].p[1] = 0x5C + y;
+	sceKernelDcacheWritebackInvalidateRange(D_001B591C, sizeof(Gu2dV16) * 4);
+	sceKernelDcacheWritebackInvalidateRange(D_001B5934, sizeof(Gu2dV16) * 5);
+	sceGuColor(0xFF656B62);
+	sceGumDrawArray(4, 0x800100, 4, NULL, D_001B591C);
+	sceGuColor(0xFF000000);
+	sceGumDrawArray(2, 0x800100, 5, NULL, D_001B5934);
+}
 
 void DrawItemSelect(void) {
     int temp_s0;
