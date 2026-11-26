@@ -198,4 +198,10 @@ static SceInt32 soundbuf_swapbuf(t_soundBuffer *pSound, SceChar8 *buf)
 	return 0;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/mpegstr/nonmatchings/sound", soundbuf_output);
+SceInt32 soundbuf_output(t_soundBuffer *pSound)
+{
+	SceChar8 *buf = pSound->buf[pSound->read];
+
+	soundbuf_swapbuf(pSound, buf);
+	return 0;
+}

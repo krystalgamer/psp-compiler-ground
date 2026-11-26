@@ -110,6 +110,14 @@ int read_sendEndCondition(t_ringBuffer *pRing) {
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/mpegon/nonmatchings/fileread", read_checkConditionEnd);
+SceInt32 read_checkConditionEnd(t_ringBuffer *pRing)
+{
+	SceUInt32 pattern;
+
+	control_getCondition(pRing->pCtrl, &pattern);
+	if ((pattern & 0xFF) == 0xFF)
+		read_setStatus(pRing, 3);
+	return 0;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/mpegon/nonmatchings/fileread", read_func);

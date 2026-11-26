@@ -332,11 +332,23 @@ block_6:
     return var_a0;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/mpeg_main", checkDecodeEnd);
+static SceInt32 checkDecodeEnd(t_conditionCtrl *pCtrl)
+{
+	SceUInt32 cond;
+
+	control_getCondition(pCtrl, &cond);
+	if (cond & 8)
+		return 1;
+	return -1;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/mpeg_main", checkPlayerErrCondition);
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/mpeg_main", setPlayerEndCondition);
+static SceInt32 setPlayerEndCondition(t_conditionCtrl *pCtrl)
+{
+	control_setCondition(pCtrl, 0xFF);
+	return 0;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/mpeg_main", playMovie);
 

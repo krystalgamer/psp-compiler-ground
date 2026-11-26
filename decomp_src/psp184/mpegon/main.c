@@ -207,9 +207,46 @@ static SceInt32 readHeader(SceMpeg *pMpeg, StrFile *pStrFile, SceInt32 *pFilesiz
 int sceCtrlReadBufferPositive(SceCtrlData *data, int count);
 
 
-INCLUDE_ASM("tmp/asm/psp184/mpegon/nonmatchings/main", ringbufferCallBack);
+int printf(const char *fmt, ...);
+int printf(const char *fmt, ...);
+static SceInt32 ringbufferCallBack(SceVoid *pBuf, SceInt32 iNum, SceVoid *CallbackData)
+{
+	SceInt32 iReadSize;
+	SceInt32 sectorSize = 2048;
 
-INCLUDE_ASM("tmp/asm/psp184/mpegon/nonmatchings/main", exit_func);
+	iReadSize = strFileRead((StrFile *)CallbackData, pBuf, iNum * sectorSize);
+	if (iReadSize < 0) {
+		printf("iReadSize = 0x%x\n", iReadSize);
+		return iReadSize;
+	}
+	if (iReadSize % sectorSize != 0)
+		return -1;
+	return iReadSize / sectorSize;
+}
+
+void sceKernelExitGame(void);
+int sceKernelWaitThreadEnd(SceUID thid, SceUInt32 *timeout);
+int sceKernelPowerTick(int type);
+void sceKernelExitGame(void);
+static int exit_func(int count, int arg1, void *arg2)
+{
+	t_conditionCtrl *pCtrl = *(t_conditionCtrl **)arg2;
+
+	if (pCtrl != NULL)
+		setPlayerEndCondition(pCtrl);
+	strFileUmdReadBreak();
+	if (audioFlag == 1) {
+		if (soundThread > 0)
+			sceKernelWaitThreadEnd(soundThread, 0);
+	}
+	if (dispThread > 0)
+		sceKernelWaitThreadEnd(dispThread, 0);
+	if (readThread > 0)
+		sceKernelWaitThreadEnd(readThread, 0);
+	sceKernelPowerTick(0);
+	sceKernelExitGame();
+	return 0;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/mpegon/nonmatchings/main", main);
 
@@ -240,7 +277,15 @@ block_6:
     return var_a0;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/mpegon/nonmatchings/main", checkDecodeEnd);
+static SceInt32 checkDecodeEnd(t_conditionCtrl *pCtrl)
+{
+	SceUInt32 cond;
+
+	control_getCondition(pCtrl, &cond);
+	if (cond & 8)
+		return 1;
+	return -1;
+}
 
 INCLUDE_RODATA("tmp/asm/psp184/mpegon/nonmatchings/main", D_00011E7C);
 
@@ -324,9 +369,25 @@ INCLUDE_RODATA("tmp/asm/psp184/mpegon/nonmatchings/main", D_0001221C);
 
 INCLUDE_RODATA("tmp/asm/psp184/mpegon/nonmatchings/main", D_0001224C);
 
-INCLUDE_ASM("tmp/asm/psp184/mpegon/nonmatchings/main", checkPlayerErrCondition);
+int puts(const char *s);
+int puts(const char *s);
+static SceInt32 checkPlayerErrCondition(t_conditionCtrl *pCtrl)
+{
+	SceUInt32 cond;
 
-INCLUDE_ASM("tmp/asm/psp184/mpegon/nonmatchings/main", setPlayerEndCondition);
+	control_getCondition(pCtrl, &cond);
+	if (cond & 0x800) {
+		puts("fatal error : player error occured");
+		return -1;
+	}
+	return 0;
+}
+
+static SceInt32 setPlayerEndCondition(t_conditionCtrl *pCtrl)
+{
+	control_setCondition(pCtrl, 0xFF);
+	return 0;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/mpegon/nonmatchings/main", playMovie);
 
