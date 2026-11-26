@@ -161,7 +161,90 @@ SceInt32 playInfo_changeVideoStream(t_playInfo *pPlayInfo);
 SceInt32 playInfo_changeAudioStream(t_playInfo *pPlayInfo);
 
 
-INCLUDE_ASM("tmp/asm/UTST99332/mpeg_stream_change/nonmatchings/playInfo", playInfo_create);
+SceInt32 playInfo_create(t_playInfo *pPlayInfo, SceMpeg *pMpeg, ScePsmf *pVideoPsmf, ScePsmf *pAudioPsmf, SceInt32 fileSize, SceInt32 audioFlag)
+{
+	SceInt32 ch;
+	SceInt32 i;
+	SceInt32 ret;
+
+	pPlayInfo->playMode = 0;
+
+	ret = sInfo_setPsmf(&pPlayInfo->sInfo, pVideoPsmf, pAudioPsmf, audioFlag);
+	if (ret != 0) {
+		printf("fatal error : sInfo_setPsmf() 0x%x\n", ret);
+		goto term;
+	}
+
+	ret = decode_create(&pPlayInfo->streamData, pMpeg);
+	if (ret != 0) {
+		printf("fatal error : decode_create() 0x%x\n", ret);
+		goto term;
+	}
+
+	ret = decode_setCurrentStream(&pPlayInfo->streamData, 0, 0);
+	if (ret != 0) {
+		printf("fatal error : decode_setCurrentStream() M4AVC 0x%x\n", ret);
+		goto term;
+	}
+
+	ret = decode_setCurrentStream(&pPlayInfo->streamData, 1, 0);
+	if (ret != 0) {
+		printf("fatal error : decode_setCurrentStream() ATRAC 0x%x\n", ret);
+		goto term;
+	}
+
+	for (i = 0; i < sInfo_getNumberOfStreams(&pPlayInfo->sInfo, 0); i++) {
+		ret = sInfo_setCurrentStream(&pPlayInfo->sInfo, 0, i);
+		if (ret != 0) {
+			printf("fatal error : sInfo_setCurrentStream() 0x%x\n", ret);
+			goto term;
+		}
+
+		ret = sInfo_getCurrentStreamCh(&pPlayInfo->sInfo, &ch, 0);
+		if (ret != 0) {
+			printf("fatal error : sInfo_getCurrentStreamCh() 0x%x\n", ret);
+			goto term;
+		}
+
+		ret = decode_setRegistStream(&pPlayInfo->streamData, 0, ch);
+		if (ret != 0) {
+			printf("fatal error : decode_setRegistStream() video 0x%x\n", ret);
+			goto term;
+		}
+	}
+
+	for (i = 0; i < sInfo_getNumberOfStreams(&pPlayInfo->sInfo, 1); i++) {
+		ret = sInfo_setCurrentStream(&pPlayInfo->sInfo, 1, i);
+		if (ret != 0) {
+			printf("fatal error : sInfo_setCurrentStream() 0x%x\n", ret);
+			goto term;
+		}
+
+		ret = sInfo_getCurrentStreamCh(&pPlayInfo->sInfo, &ch, 1);
+		if (ret != 0) {
+			printf("fatal error : sInfo_getCurrentStreamCh() 0x%x\n", ret);
+			goto term;
+		}
+
+		ret = decode_setRegistStream(&pPlayInfo->streamData, 1, ch);
+		if (ret != 0) {
+			printf("fatal error : decode_setRegistStream() audio 0x%x\n", ret);
+			goto term;
+		}
+	}
+
+	sInfo_setCurrentStream(&pPlayInfo->sInfo, 0, 0);
+	sInfo_setCurrentStream(&pPlayInfo->sInfo, 1, 0);
+
+	sInfo_getStartTimestamp(&pPlayInfo->sInfo, &pPlayInfo->timestamp);
+
+	pPlayInfo->fileSize = fileSize;
+
+	ret = 0;
+
+term:
+	return ret;
+}
 
 int playInfo_delete(t_playInfo *pPlayInfo, int audioFlag) {
     t_mpegStreamData *temp_s1;
