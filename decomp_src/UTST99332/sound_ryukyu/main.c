@@ -402,12 +402,38 @@ static int file_read(const char *pFile, void *pBuf, unsigned int uBufSize, unsig
 	return 0;
 }
 
-INCLUDE_RODATA("tmp/asm/UTST99332/sound_ryukyu/nonmatchings/main", D_00011C30);
+#define VAGFILE_MAX			(2)
 
-INCLUDE_RODATA("tmp/asm/UTST99332/sound_ryukyu/nonmatchings/main", D_00011C64);
+static void sas_setting(void)
+{
+	#define	VAGFILE_HDR		(48)
+	const char *vagFile[] = {
+		"disc0:/PSP_GAME/USRDIR/DATA/sound/wave/tone01l.vag",
+		"disc0:/PSP_GAME/USRDIR/DATA/sound/wave/tone01r.vag"
+	};
+	int iVoice;
+	int iRc;
 
-INCLUDE_RODATA("tmp/asm/UTST99332/sound_ryukyu/nonmatchings/main", D_00011C98);
+	for (iVoice=0 ;iVoice<VAGFILE_MAX ;iVoice++){
+		iRc = file_read(
+			vagFile[iVoice],vagWork[iVoice],sizeof(vagWork[iVoice]),&iVagSize[iVoice],VAGFILE_HDR
+		);
+		if (iRc < 0){
+			printf("vag file read error:%s\n",vagFile[iVoice]);
+			continue;
+		}
+		printf("read: %s\n",vagFile[iVoice]);
+	}
 
-INCLUDE_ASM("tmp/asm/UTST99332/sound_ryukyu/nonmatchings/main", sas_setting);
+	for (iVoice=0 ;iVoice<16 ;iVoice+=2){
+		sceSasSetVoice(iVoice,vagWork[0],iVagSize[0],0);
+		sceSasSetADSR(iVoice,0x0F,0x40000000,100,100,0x10000000);
+		sceSasSetVolume(iVoice,0x1000,0,0,0);
+
+		sceSasSetVoice(iVoice+1,vagWork[1],iVagSize[1],0);
+		sceSasSetADSR(iVoice+1,0x0F,0x40000000,100,100,0x10000000);
+		sceSasSetVolume(iVoice+1,0,0x1000,0,0);
+	}
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/sound_ryukyu/nonmatchings/main", main);
