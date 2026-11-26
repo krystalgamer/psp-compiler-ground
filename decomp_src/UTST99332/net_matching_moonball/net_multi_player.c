@@ -104,6 +104,12 @@ int printf(const char *fmt, ...);
 
 extern int D_000DB7D8;
 
+/* SDK prototypes (tools/sdk_protos.h) */
+int memcmp(const void *a, const void *b, unsigned int n);
+void *memset(void *s, int c, unsigned int n);
+int sceKernelSignalSema(int semid, int signal);
+int sceKernelWaitSema(int semid, int signal, unsigned int *timeout);
+
 int matching_get_established_num(void) {
     return D_000DB7D8 - 1;
 }

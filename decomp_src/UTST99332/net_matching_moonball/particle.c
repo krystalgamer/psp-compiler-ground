@@ -32,6 +32,10 @@ void SetParticle(float x, float y, float z, float speed, int number, int c);
 void DrawParticle(void);
 
 
+/* SDK prototypes (tools/sdk_protos.h) */
+float cosf(float x);
+float sinf(float x);
+
 void random_seed(unsigned int seed) {
     rand_data = seed;
 }

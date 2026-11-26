@@ -215,6 +215,46 @@ void draw_p2p_game_parameter(int index, int color, int x, int *y_ptr);
 int game_pad_read_top(void);
 
 
+/* SDK prototypes (tools/sdk_protos.h) */
+int sceDisplayWaitVblankStart(void);
+void sceGuAlphaFunc(int a0, int a1, int a2);
+void sceGuAmbient(unsigned int color);
+void sceGuBlendFunc(int op, int src, int dest, unsigned int srcfix, unsigned int destfix);
+void sceGuClearColor(unsigned int color);
+void sceGuClearDepth(unsigned int depth);
+void sceGuClearStencil(unsigned int stencil);
+void sceGuColor(unsigned int color);
+void sceGuDebugPrint(int x, int y, unsigned int color, const char *str);
+void sceGuDepthBuffer(void *zbp, int frame_width);
+void sceGuDepthFunc(int function);
+void sceGuDepthRange(int near, int far);
+void sceGuDisable(int state);
+void sceGuDispBuffer(int width, int height, void *dbp, int frame_width);
+int sceGuDisplay(int state);
+void sceGuDrawBuffer(int psm, void *fbp, int frame_width);
+void sceGuEnable(int state);
+int sceGuFinish(void);
+void sceGuFrontFace(int order);
+void sceGuInit(void);
+void sceGuLight(int light, int type, int components, const ScePspFVector3 *position);
+void sceGuLightColor(int light, int component, unsigned int color);
+void sceGuOffset(unsigned int x, unsigned int y);
+void sceGuScissor(int x, int y, int w, int h);
+void sceGuSetDither(const void *matrix);
+void sceGuShadeModel(int mode);
+void sceGuSpecular(float power);
+void sceGuStart(int type, void *list, int size);
+int sceGuSync(int mode, int what);
+void sceGuTerm(void);
+void sceGuViewport(int cx, int cy, int width, int height);
+void sceGumDrawArray(int prim, int vtype, int count, const void *indices, const void *vertices);
+void sceGumLoadIdentity(void);
+void sceGumMatrixMode(int mode);
+void sceGumPerspective(float fovy, float aspect, float near, float far);
+void sceGumSetMatrixStack(void *stack, int proj, int view, int model, int texture);
+int sprintf(char *buf, const char *fmt, ...);
+unsigned int strlen(const char *s);
+
 INCLUDE_RODATA("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/moonball_main", D_0001A020);
 
 INCLUDE_RODATA("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/moonball_main", D_0001A060);

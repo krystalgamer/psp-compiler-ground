@@ -147,6 +147,20 @@ int sceDisplayWaitVblankStart(void);
 int printf(const char *fmt, ...);
 
 
+/* SDK prototypes (tools/sdk_protos.h) */
+void *memset(void *s, int c, unsigned int n);
+int sceCtrlSetSamplingMode(int mode);
+void sceGuClear(int flags);
+void sceGuColor(unsigned int color);
+void sceGuDebugPrint(int x, int y, unsigned int color, const char *str);
+void sceGuDrawArray(int prim, int vtype, int count, const void *indices, const void *vertices);
+void *sceGuSwapBuffers(void);
+void sceGuTerm(void);
+unsigned int sceKernelGetSystemTimeLow(void);
+int sprintf(char *buf, const char *fmt, ...);
+void srand(unsigned int seed);
+unsigned int strlen(const char *s);
+
 void gu_init(void) {
     sceGuInit();
     sceGuStart(0, disp_list, 0x50000);

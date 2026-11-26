@@ -209,6 +209,10 @@ void DrawParticle(void);
 int random(void);
 void random_seed(unsigned int seed);
 int Pickup(int scrw, int scrh, int x, int y, ScePspFVector3 *v0, ScePspFVector3 *v1, ScePspFVector3 *v2);
+/* SDK prototypes (tools/sdk_protos.h) */
+int memcmp(const void *a, const void *b, unsigned int n);
+void *memset(void *s, int c, unsigned int n);
+
 void InitBall(void)
 {
 	ground.pos = 0.0f;

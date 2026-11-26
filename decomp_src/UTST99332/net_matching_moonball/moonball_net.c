@@ -95,6 +95,11 @@ int game_net_init(void);
 int send_recv_game_data(void);
 
 
+/* SDK prototypes (tools/sdk_protos.h) */
+int memcmp(const void *a, const void *b, unsigned int n);
+void *memset(void *s, int c, unsigned int n);
+int printf(const char *fmt, ...);
+
 INCLUDE_ASM("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/moonball_net", game_net_init);
 
 int game_net_term(void) {
