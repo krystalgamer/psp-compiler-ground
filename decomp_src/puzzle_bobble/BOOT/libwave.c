@@ -657,7 +657,111 @@ static void func_0001EE58(int ch, void *dst)
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libwave", func_0001EE58);
 #endif
 
+#ifdef NON_MATCHING
+/* Seven instructions short: raw PCM (0x38 mono / 0x70 stereo bytes) block fetch with
+ * one-shot and loop modes; the original recomputes &D_00562174[ch] for the stereo
+ * loop path and differs in register allocation. */
+static __inline__ void wcpy(void *dst, void *src, int n)
+{
+	char *p = dst, *q = src;
+	int i;
+
+	for (i = 0; i < n; i++)
+		*p++ = *q++;
+}
+
+static void func_0001F0F4(int ch, void *dst)
+{
+	unsigned char *data = D_00562174[ch].data;
+	unsigned char *d = dst;
+	int n, rem;
+	SceWaveVoice *v;
+
+	if (!(D_00562174[ch].flags & 1)) {
+		if (!(D_00562174[ch].flags & 0x200)) {
+			if (D_00562174[ch].pos + 0x38 <= (int)D_00562174[ch].size) {
+				wcpy(d, data + D_00562174[ch].pos, 0x38);
+				D_00562174[ch].pos += 0x38;
+			} else {
+				wclr(d, 0x70);
+				wcpy(d, data + D_00562174[ch].pos, D_00562174[ch].size - D_00562174[ch].pos);
+				D_00562174[ch].pos = 0;
+				D_00562174[ch].stat = 0;
+			}
+		} else {
+			if (D_00562174[ch].pos + 0x70 <= (int)D_00562174[ch].size) {
+				wcpy(d, data + D_00562174[ch].pos, 0x70);
+				D_00562174[ch].pos += 0x70;
+			} else {
+				wclr(d, 0x70);
+				wcpy(d, data + D_00562174[ch].pos, D_00562174[ch].size - D_00562174[ch].pos);
+				D_00562174[ch].pos = 0;
+				D_00562174[ch].stat = 0;
+			}
+		}
+		return;
+	}
+	if (!(D_00562174[ch].flags & 0x200)) {
+		if ((int)D_00562174[ch].size >= 0x38) {
+			if (D_00562174[ch].pos + 0x38 < (int)D_00562174[ch].size) {
+				wcpy(d, data + D_00562174[ch].pos, 0x38);
+				D_00562174[ch].pos += 0x38;
+			} else {
+				rem = D_00562174[ch].size - D_00562174[ch].pos;
+				wcpy(d, data + D_00562174[ch].pos, rem);
+				D_00562174[ch].pos = 0;
+				wcpy(d + rem, data, 0x38 - rem);
+				D_00562174[ch].pos = 0x38 - rem;
+			}
+		} else {
+			rem = D_00562174[ch].size - D_00562174[ch].pos;
+			wcpy(d, data + D_00562174[ch].pos, rem);
+			n = 0x38 - rem;
+			D_00562174[ch].pos = 0;
+			v = &D_00562174[ch];
+			for (;;) {
+				if ((int)v->size >= n)
+					break;
+				wcpy(d + rem, data, v->size);
+				n -= v->size;
+				rem += v->size;
+			}
+			wcpy(d + rem, data, n);
+			v->pos += n;
+		}
+	} else {
+		if ((int)D_00562174[ch].size >= 0x70) {
+			if (D_00562174[ch].pos + 0x70 < (int)D_00562174[ch].size) {
+				wcpy(d, data + D_00562174[ch].pos, 0x70);
+				D_00562174[ch].pos += 0x70;
+			} else {
+				rem = D_00562174[ch].size - D_00562174[ch].pos;
+				wcpy(d, data + D_00562174[ch].pos, rem);
+				D_00562174[ch].pos = 0;
+				wcpy(d + rem, data, 0x70 - rem);
+				D_00562174[ch].pos = 0x70 - rem;
+			}
+		} else {
+			rem = D_00562174[ch].size - D_00562174[ch].pos;
+			wcpy(d, data + D_00562174[ch].pos, rem);
+			n = 0x70 - rem;
+			D_00562174[ch].pos = 0;
+			v = &D_00562174[ch];
+			for (;;) {
+				if ((int)v->size >= n)
+					break;
+				wcpy(d + rem, data, v->size);
+				n -= v->size;
+				rem += v->size;
+			}
+			wcpy(d + rem, data, n);
+			v->pos += n;
+		}
+	}
+}
+#else
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libwave", func_0001F0F4);
+#endif
 
 #ifdef NON_MATCHING
 /* Four instructions short: fade-out (flag 0x100000) with restore from the backup voice
