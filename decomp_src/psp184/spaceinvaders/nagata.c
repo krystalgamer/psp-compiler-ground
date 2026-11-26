@@ -91,7 +91,46 @@ int vec_length_fast(int arg0, int arg1) {
     return (arg0 * arg0) + (arg1 * arg1);
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/nagata", num2str);
+extern char num2str_dat[];
+void *memset(void *s, int c, unsigned int n);
+char *num2str(int num, int digits)
+{
+	char *tbl[13] = { "\x82\x4f", "\x82\x50", "\x82\x51", "\x82\x52", "\x82\x53", "\x82\x54", "\x82\x55",
+			  "\x82\x56", "\x82\x57", "\x82\x58", "\x81\x40", "\x81\x5b", "" };
+	char *s;
+	int pos, i, k, p, d;
+	char nz;
+
+	memset(num2str_dat, 0, 256);
+	pos = 0;
+	i = digits;
+	if (num < 0) {
+		pos = 2;
+		num = -num;
+		s = tbl[11];
+		num2str_dat[0] = s[0];
+		num2str_dat[1] = s[1];
+	}
+	nz = 0;
+	for (; i > 0; i--) {
+		p = 1;
+		for (k = 0; k < i - 1; k++)
+			p *= 10;
+		d = (num / p) % 10;
+		if (d != 0)
+			nz = 1;
+		if (i == 1)
+			nz = 1;
+		if (d == 0 && nz == 0)
+			s = tbl[10];
+		else
+			s = tbl[d];
+		num2str_dat[pos] = s[0];
+		num2str_dat[pos + 1] = s[1];
+		pos += 2;
+	}
+	return num2str_dat;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -115,30 +154,3 @@ int addr_to_int(unsigned char *p)
 	return v;
 }
 
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/nagata", D_0007A594);
-
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/nagata", D_0007A598);
-
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/nagata", D_0007A59C);
-
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/nagata", D_0007A5A0);
-
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/nagata", D_0007A5A4);
-
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/nagata", D_0007A5A8);
-
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/nagata", D_0007A5AC);
-
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/nagata", D_0007A5B0);
-
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/nagata", D_0007A5B4);
-
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/nagata", D_0007A5B8);
-
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/nagata", D_0007A5BC);
-
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/nagata", D_0007A5C0);
-
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/nagata", D_0007A5C4);
-
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/nagata", D_0007A5C8);
