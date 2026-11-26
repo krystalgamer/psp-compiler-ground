@@ -4,7 +4,9 @@
 #define MAP_SIZE 0x240
 
 typedef struct {
-	u8 pad0[0xA];
+	u8 pad0[2];
+	s8 unk2;		/* +0x2 */
+	u8 pad3[0xA - 3];
 	s16 se;			/* +0xA: sound effect to play this frame */
 } PZL_SND;
 
@@ -23,9 +25,14 @@ typedef struct {
 	u8 pad000[2];
 	u8 mapno;		/* 0x002 */
 	u8 mapsub;		/* 0x003 */
-	u8 pad004[3];
+	u8 pad004;
+	u8 next;		/* 0x005: next ball color */
+	u8 pad006;
 	u8 ndrop;		/* 0x007 */
-	u8 pad008[0x20 - 0x8];
+	u8 pad008[2];
+	s16 bx;			/* 0x00A: ball position */
+	s16 by;			/* 0x00C */
+	u8 pad00E[0x20 - 0xE];
 	s16 ofs_y;		/* 0x020 */
 	s8 scroll;		/* 0x022: map lines pushed down */
 	u8 pad023[0x429 - 0x23];
@@ -45,7 +52,8 @@ typedef struct {
 	s8 chara;		/* 0x47B */
 	s8 chara2;		/* 0x47C */
 	s8 chara_anim;		/* 0x47D */
-	u8 pad47E[0x480 - 0x47E];
+	s8 player;		/* 0x47E */
+	u8 pad47F;
 	struct {
 		u8 pad0[4];
 		PZL_DROP d[NDROP];	/* 0x484 */

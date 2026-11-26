@@ -9,6 +9,32 @@ int GetKeyHit();                                    /* extern */
 int PollShutter(M2C_UNK);                           /* extern */
 extern int PauseFlag;
 extern unsigned char PauseOk;
+extern int StageNum;
+extern int isSurvival;
+extern int SurvCont;
+extern int SelectPlayer;
+extern int gimfile_main[];
+extern int gimfile_bubble[];
+extern const int mx[];
+extern const int my[];
+extern int D_0014E86C;
+extern int D_0014E870;
+extern int D_0014E874;
+extern int D_0014E878;
+extern int D_0014E87C;
+extern int D_0014E880;
+extern int D_0014E884;
+void LoadFileList(int no, int *list);
+void SpriteAllFreeImage(void);
+void VSModeInit(int);
+void SurvivlaModeInit(int);
+void EndressModeInit(void);
+void VSInit(void);
+void InitBubCrush(void);
+void SetMonitor(PZL_STAT *st, int mon);
+int CvtBallPos2MapPosLocal(PZL_STAT *st, int x, int y);
+int CheckNext(PZL_STAT *st);
+int rand(void);
 
 
 int SysTimeIncrement(void)
@@ -195,7 +221,19 @@ int PuzzleMain(void)
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", VSModeInit);
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", VSInit);
+void VSInit(void)
+{
+	isSurvival = 0;
+	StageNum = 0;
+	SpriteAllFreeImage();
+	LoadFileList(1, gimfile_main);
+	LoadFileList(50, gimfile_bubble);
+	VSModeInit(0);
+	PollShutter(3);
+	Stat[1].player = SelectPlayer;
+	Stat[2].player = 0;
+	InitBubCrush();
+}
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", SurvivlaModeInit);
 
@@ -230,7 +268,17 @@ int VSMain(void)
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", EndressModeInit);
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", EndressInit);
+void EndressInit(void)
+{
+	SpriteAllFreeImage();
+	LoadFileList(1, gimfile_main);
+	LoadFileList(50, gimfile_bubble);
+	EndressModeInit();
+	PollShutter(3);
+	Stat[1].player = SelectPlayer;
+	SetMonitor(&Stat[2], 8);
+	InitBubCrush();
+}
 
 int EndressMain(void)
 {
@@ -353,13 +401,41 @@ INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", CheckBallTouch
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", CheckBallCollision);
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", CvtBallPos2MapPos);
+int CvtBallPos2MapPos(PZL_STAT *st, int x, int y)
+{
+	int lx = (st->bx - MapXBeginPos[st->mapno * 3 + st->mapsub]) + x;
+	int ly = (st->by - st->ofs_y) + y;
+	return CvtBallPos2MapPosLocal(st, lx, ly);
+}
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", CvtBallPos2MapPosLocal);
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", GetBallMapAddr);
+int GetBallMapAddr(PZL_STAT *st, int x, int y, int dir)
+{
+	D_0014E878 = GetMapWidth(st->mapno) * 16;
+	if (dir < 0)
+		dir = 0;
+	else if (dir >= 7)
+		dir = 6;
+	D_0014E870 = x + mx[dir];
+	D_0014E874 = y + my[dir];
+	if (D_0014E870 < 0 || D_0014E874 < 0 || D_0014E870 >= D_0014E878)
+		D_0014E86C = -1;
+	else
+		D_0014E86C = CvtBallPos2MapPosLocal(st, D_0014E870, D_0014E874);
+	return D_0014E86C;
+}
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", GetBallCoordinate);
+void GetBallCoordinate(PZL_STAT *st, int idx, int *x, int *y)
+{
+	int line;
+
+	D_0014E880 = GetMapWidth(st->mapno);
+	D_0014E87C = idx % (D_0014E880 * 2);
+	line = idx / (D_0014E880 * 2);
+	*y = (line * 2 + D_0014E87C / D_0014E880 - D_0014E884) * 14;
+	*x = (D_0014E87C < D_0014E880) ? D_0014E87C * 16 : (D_0014E87C - D_0014E880) * 16 + 8;
+}
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", CheckBallAround);
 
@@ -418,27 +494,24 @@ int CheckOneColorAll(PZL_STAT *st)
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", CheckOneColorAll);
 #endif
 
-#ifdef NON_MATCHING
-/* Close: i and the loop bound test swap registers. */
 int CheckRoundClear(PZL_STAT *st)
 {
-	int i;
-	int ret = 0;
-	int found = 0;
+	int i, ret, found;
 
-	for (i = 0; i < 0x22E; i++) {
+	ret = 0;
+	i = 0;
+	found = 0;
+	do {
 		if ((st->map[i] >= 1 && st->map[i] <= 9) || st->map[i] == 13) {
 			found = 1;
 			break;
 		}
-	}
+		i++;
+	} while (i < 0x22E);
 	if (!found)
 		ret = 1;
 	return ret;
 }
-#else
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", CheckRoundClear);
-#endif
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", CheckBallGuide);
 
@@ -478,20 +551,12 @@ void DoBubStat(PZL_STAT *st, int arg)
 	st->bubstat = 1;
 }
 
-#ifdef NON_MATCHING
-/* Close: the original keeps the branch; here it is if-converted to a mask. */
 void SetBubStat(PZL_STAT *st)
 {
 	int line = GetBallLine(st);
-	int stat = (line >= 9) + 1;
 
-	if (line < 7)
-		stat = 0;
-	st->bubline = stat;
+	st->bubline = line < 7 ? 0 : line < 9 ? 1 : 2;
 }
-#else
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", SetBubStat);
-#endif
 
 
 void DriveWarning(void) {
