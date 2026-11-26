@@ -296,7 +296,120 @@ void draw_frame(void) {
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_morph/nonmatchings/main", init_all);
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_morph/nonmatchings/main", pad_read);
+#ifndef SCE_CTRL_UP /* sample */
+#define SCE_CTRL_UP					(1<<4)
+#endif
+#ifndef SCE_CTRL_DOWN /* sample */
+#define SCE_CTRL_DOWN				(1<<6)
+#endif
+#ifndef SCE_CTRL_LEFT /* sample */
+#define SCE_CTRL_LEFT				(1<<7)
+#endif
+#ifndef SCE_CTRL_RIGHT /* sample */
+#define SCE_CTRL_RIGHT				(1<<5)
+#endif
+#ifndef DROT /* sample */
+#define DROT		2.5f
+#endif
+#ifndef SCE_CTRL_L /* sample */
+#define SCE_CTRL_L					(1<<8)
+#endif
+#ifndef SCE_CTRL_L1 /* sample */
+#define SCE_CTRL_L1					SCE_CTRL_L
+#endif
+#ifndef SCE_CTRL_R /* sample */
+#define SCE_CTRL_R					(1<<9)
+#endif
+#ifndef SCE_CTRL_R1 /* sample */
+#define SCE_CTRL_R1					SCE_CTRL_R
+#endif
+#ifndef DPOS /* sample */
+#define DPOS		2.0f
+#endif
+#ifndef SCE_CTRL_CIRCLE /* sample */
+#define SCE_CTRL_CIRCLE				(1<<13)
+#endif
+#ifndef SCE_CTRL_TRIANGLE /* sample */
+#define SCE_CTRL_TRIANGLE			(1<<12)
+#endif
+#ifndef SCE_CTRL_SQUARE /* sample */
+#define SCE_CTRL_SQUARE				(1<<15)
+#endif
+#ifndef SCE_CTRL_START /* sample */
+#define SCE_CTRL_START				(1<<3)
+#endif
+#ifndef STEP /* sample */
+#define STEP		0.05f
+#endif
+#ifndef SCE_CTRL_SELECT /* sample */
+#define SCE_CTRL_SELECT				(1<<0)
+#endif
+static int pad_read(void)
+{
+	unsigned int	prev=cont;
+	unsigned int	padd;
+	SceCtrlData		buf;
+
+	sceCtrlReadBufferPositive(&buf, 1);
+	cont = buf.Buttons;
+	padd=cont&(cont^prev);
+
+	if (cont & SCE_CTRL_UP) {
+		rot.x-=DROT;
+		if (rot.x<0.0f)
+			rot.x=360.0f+rot.x;
+	}
+	if (cont & SCE_CTRL_DOWN) {
+		rot.x+=DROT;
+		if (rot.x>=360.0f)
+			rot.x=rot.x-360.0f;
+	}
+	if (cont & SCE_CTRL_LEFT) {
+		rot.y-=DROT;
+		if (rot.y<0.0f)
+			rot.y=360.0f+rot.y;
+	}
+	if (cont & SCE_CTRL_RIGHT) {
+		rot.y+=DROT;
+		if (rot.y>=360.0f)
+			rot.y=rot.y-360.0f;
+	}
+
+	if (cont & SCE_CTRL_L1)
+		pos.z-=DPOS;
+	if (cont & SCE_CTRL_R1)
+		pos.z+=DPOS;
+
+	if (padd & SCE_CTRL_CIRCLE)
+		morph^=1;
+
+	if (!morph) {
+		if (cont & SCE_CTRL_TRIANGLE)
+			step_morph(-STEP);
+		if (cont & SCE_CTRL_SQUARE)
+			step_morph(STEP);
+	}
+
+	if (padd & SCE_CTRL_START) {
+		pos.x=  0.0f;
+		pos.y=-12.0f;
+		pos.z=-44.0f;
+		rot.x= 16.0f;
+		rot.y=310.0f;
+		rot.z=  0.0f;
+
+		morph=0;
+		weight=0.0f;
+		dir=STEP;
+		sceGuMorphWeight(0, 0.0f);
+		sceGuMorphWeight(1, 1.0f);
+	}
+
+	if (padd & SCE_CTRL_SELECT)
+		return 0;
+
+	return 1;
+}
 
 void menuInit(void);
 void menuTerm(int cat, int num);
