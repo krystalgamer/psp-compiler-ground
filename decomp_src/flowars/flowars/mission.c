@@ -38,7 +38,7 @@ struct _anon3 { /* size 0x4 */
 };
 typedef struct _anon3 UserInfo;
 
-extern ModGame mod_game;
+extern ModGame mod_game __asm__("PRX_ZERO");
 extern int g_mission_state;
 extern int g_mission_type;
 extern int g_mission_baesu;
@@ -134,9 +134,65 @@ static void init_mission()
 
 __asm__(".globl init_mission");
 
-INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/mission", assign_mission);
+static void assign_mission(int pan_level)
+{
+	if (mod_game.game_type != 1)
+		pan_level = rand() % 12 + 1;
+	g_mission_grade = get_mission_grade(pan_level);
+	if (g_mission_grade < 5) {
+		g_mission_type = 1;
+		g_mission_index = get_rand_mission(g_mission_grade);
+		g_mission_baesu = mission_baesu[pan_level - 1][g_mission_grade - 1];
+		g_mission_pae_num = get_mission_paes(g_mission_pae);
+	} else if (g_mission_grade == 5) {
+		g_mission_type = 2;
+		g_mission_index = get_rand_mission(5);
+		get_mission_paes(g_mission_pae);
+		g_mission_baesu = 2;
+		g_mission_pae_num = 4;
+	} else {
+		g_mission_type = 3;
+		get_mission_paes(g_mission_pae);
+		g_mission_baesu = 2;
+		g_mission_pae_num = 9;
+	}
+}
 
-INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/mission", check_mission_success);
+__asm__(".globl assign_mission");
+
+static int check_mission_success(int flagPlayer)
+{
+	int i;
+	int retVal = 0;
+
+	if (g_mission_type == 1) {
+		if (flagPlayer == g_mission_who[0] && flagPlayer == g_mission_who[1] && flagPlayer == g_mission_who[2]) {
+			if (g_mission_pae_num == 3 || (g_mission_pae_num == 4 && flagPlayer == g_mission_who[3])) {
+				set_mission_state(2);
+				retVal = 1;
+			}
+		}
+	} else if (g_mission_type == 2) {
+		for (i = 0; i < 4; i++)
+			if (flagPlayer == g_mission_who[i])
+				retVal++;
+	} else if (g_mission_type == 3) {
+		for (i = 0; i < 8; i++) {
+			int p0;
+			int p1;
+			int p2;
+
+			p0 = mission_bingo_line[i][0];
+			p1 = mission_bingo_line[i][1];
+			p2 = mission_bingo_line[i][2];
+			if (flagPlayer == g_mission_who[p0] && flagPlayer == g_mission_who[p1] && flagPlayer == g_mission_who[p2])
+				retVal++;
+		}
+	}
+	return retVal;
+}
+
+__asm__(".globl check_mission_success");
 
 static int reg_mission_pae(int flagPlayer, int pae_num)
 {
