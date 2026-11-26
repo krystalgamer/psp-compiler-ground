@@ -120,7 +120,45 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/layoutMain", initUrlList);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/layoutMain", searchUrlList);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/layoutMain", addUrlList);
+int addUrlList(LIST *list, char *url) {
+    LISTNODE *n;
+    LISTNODE *p;
+    LISTNODE *last;
+    LISTNODE *h;
+
+    if (searchUrlList(list, url) != 0) {
+        return 0;
+    }
+    if (list->count >= 256) {
+        last = list->tail;
+        p = last->prev;
+        list->tail = p;
+        if (p != NULL) {
+            p->next = NULL;
+        }
+        if (last->data != NULL) {
+            MEM_free(NULL, last->data);
+        }
+        MEM_free(NULL, last);
+        list->count--;
+    }
+    n = MEM_malloc(NULL, sizeof(LISTNODE));
+    n->next = NULL;
+    n->prev = NULL;
+    n->data = NULL;
+    h = list->head;
+    if (h != NULL) {
+        h->prev = n;
+        n->next = h;
+        list->head = n;
+    } else {
+        list->head = n;
+        list->tail = n;
+    }
+    n->data = url;
+    list->count++;
+    return 1;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
