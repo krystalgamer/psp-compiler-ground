@@ -248,7 +248,35 @@ SceInt32 decode_delete(t_mpegStreamData *pStreamData)
 
 INCLUDE_ASM("tmp/asm/UTST99332/mpeg_stream_change/nonmatchings/decode", decode_changeAuMode);
 
-INCLUDE_ASM("tmp/asm/UTST99332/mpeg_stream_change/nonmatchings/decode", decode_initAu);
+SceInt32 decode_initAu(t_mpegStreamData *pStreamData, SceMpegStrType type, SceInt32 number)
+{
+	SceInt32 ret;
+
+	switch (type) {
+	case 0:
+		ret = sceMpegInitAu(pStreamData->pMpeg, pStreamData->avcEsBuf, &pStreamData->avcAu[number]);
+		if (ret != 0) {
+			printf("fatal error : sceMpegInitAu() AVC 0x%x\n", ret);
+			goto term;
+		}
+		break;
+	case 1:
+		ret = sceMpegInitAu(pStreamData->pMpeg, pStreamData->pAudioEsBuf, &pStreamData->audioAu[number]);
+		if (ret != 0) {
+			printf("fatal error : sceMpegInitAu() 0x%x\n", ret);
+			goto term;
+		}
+		break;
+	default:
+		ret = -1;
+		goto term;
+	}
+
+	ret = 0;
+
+term:
+	return ret;
+}
 
 SceInt32 decode_createAu(t_mpegStreamData *pStreamData, SceMpegStrType type)
 {
