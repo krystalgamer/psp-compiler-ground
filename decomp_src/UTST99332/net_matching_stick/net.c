@@ -447,4 +447,46 @@ static int check_error_dialog_closed(void)
 	return ret;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_matching_stick/nonmatchings/net", net_update);
+int net_update(void)
+{
+	switch (_mrinfo.state) {
+	case MATCHING_ROOM_SCAN:
+		net_scan();
+		break;
+	case MATCHING_ROOM_SCANNING:
+		check_adhocctl_scan_completed();
+		break;
+	case MATCHING_ROOM_CONNECT_ROOM:
+		net_connect();
+		break;
+	case MATCHING_ROOM_CONNECTING_ROOM:
+	case MATCHING_ROOM_CONNECTING_GAME:
+		check_adhocctl_connect_completed();
+		break;
+	case MATCHING_ROOM_DISCONNECTING_ROOM:
+	case MATCHING_ROOM_DISCONNECTING:
+		check_adhocctl_disconnect_completed();
+		break;
+	case MATCHING_ROOM_ERROR_DIALOG:
+		check_error_dialog_closed();
+		break;
+	case MATCHING_ROOM_START_GAME:
+	case MATCHING_ROOM_DISCONNECT:
+		net_disconnect();
+		break;
+	case MATCHING_ROOM_GAME:
+		send_recv_game_data();
+		break;
+	case MATCHING_ROOM_GAME_DISCONNECT:
+		net_exit_gamemode();
+		break;
+	default:
+		net_update_multi_player();
+		break;
+	}
+	if (_mrinfo.state < MATCHING_ROOM_ROOM_LIST)
+		goto END;
+	check_adhocctl_connected_error();
+END:
+	return 0;
+}
