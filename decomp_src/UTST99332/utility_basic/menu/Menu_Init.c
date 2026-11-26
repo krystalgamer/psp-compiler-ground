@@ -56,7 +56,18 @@ INCLUDE_ASM("tmp/asm/UTST99332/utility_basic/nonmatchings/menu/Menu_Init", Menu_
 
 INCLUDE_ASM("tmp/asm/UTST99332/utility_basic/nonmatchings/menu/Menu_Init", Menu_ClearItems);
 
-INCLUDE_ASM("tmp/asm/UTST99332/utility_basic/nonmatchings/menu/Menu_Init", Menu_AppendItem);
+void Menu_AppendItem(const char *name, Menu_Callback callback)
+{
+    int i;
+
+    for (i = 0; i < 100; i++) {
+        if (menuitems[i].name == 0) {
+            menuitems[i].name = name;
+            menuitems[i].callback = callback;
+            return;
+        }
+    }
+}
 
 void Menu_SetCancelCallback(void (*callback)(int)) {
     cancel_callback = callback;

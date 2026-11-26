@@ -87,7 +87,20 @@ void OnPush_Nectonf_ApnetStatus(int selection) {
 
 INCLUDE_ASM("tmp/asm/UTST99332/utility_basic/nonmatchings/netconf", OnPush_Netconf_Adhoc);
 
-INCLUDE_ASM("tmp/asm/UTST99332/utility_basic/nonmatchings/netconf", OnCancel_Netconf_Adhoc);
+static void OnCancel_Netconf_Adhoc(int selection)
+{
+    int state;
+
+    Menu_WriteLine("OnCancel_Netconf_Adhoc", 0x00ffffff);
+    Menu_LockInput();
+    sample_type = 3;
+    sample_status = 2;
+    sceNetAdhocctlGetState(&state);
+    if (state != 0) {
+        Menu_WriteLine("Disconnect adhoc", 0x00ffffff);
+        sceNetAdhocctlDisconnect();
+    }
+}
 
 void OnPush_Nectonf_AdhocConnect(int selection) {
     Menu_WriteLine("OnPush_Nectonf_AdhocConnect", 0xFFFFFF);

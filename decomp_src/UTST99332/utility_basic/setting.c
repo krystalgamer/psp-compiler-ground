@@ -25,9 +25,19 @@ static void OnPush_ChangeAssign(int selection);
 int GetAssign();
 
 
-INCLUDE_ASM("tmp/asm/UTST99332/utility_basic/nonmatchings/setting", OnPush_ChangeSetting);
+void OnPush_ChangeSetting(int selection)
+{
+    Menu_ClearItems();
+    Menu_AppendItem("change lang >", OnPush_ChangeLang);
+    Menu_AppendItem("change assing >", OnPush_ChangeAssign);
+    Menu_SetCancelCallback(OnCancel_ChangeSetting);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/utility_basic/nonmatchings/setting", OnCancel_ChangeSetting);
+static void OnCancel_ChangeSetting(int selection)
+{
+    Menu_WriteLine("OnCancel_SaveData", 0x00ffffff);
+    CreateMenu_Root();
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/utility_basic/nonmatchings/setting", OnPush_Japanese);
 
@@ -57,6 +67,12 @@ INCLUDE_ASM("tmp/asm/UTST99332/utility_basic/nonmatchings/setting", OnPush_Circl
 
 INCLUDE_ASM("tmp/asm/UTST99332/utility_basic/nonmatchings/setting", OnPush_Cross);
 
-INCLUDE_ASM("tmp/asm/UTST99332/utility_basic/nonmatchings/setting", OnPush_ChangeAssign);
+static void OnPush_ChangeAssign(int selection)
+{
+    Menu_ClearItems();
+    Menu_AppendItem("circle is enter", OnPush_Circle);
+    Menu_AppendItem("cross  is enter", OnPush_Cross);
+    Menu_SetCancelCallback(OnPush_ChangeSetting);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/utility_basic/nonmatchings/setting", GetAssign);

@@ -65,7 +65,14 @@ INCLUDE_ASM("tmp/asm/UTST99332/utility_basic/nonmatchings/draw", draw_frame);
 
 INCLUDE_ASM("tmp/asm/UTST99332/utility_basic/nonmatchings/draw", init_all);
 
-INCLUDE_ASM("tmp/asm/UTST99332/utility_basic/nonmatchings/draw", init_pos);
+static void init_pos(void)
+{
+    pos.rot.x = 30.0f;
+    pos.rot.y = pos.rot.z = 0.0f;
+    pos.trans.x = 0.0f;
+    pos.trans.y = -0.5f;
+    pos.trans.z = -10.0f;
+}
 
 void term_all(void) {
     sceGuTerm();
