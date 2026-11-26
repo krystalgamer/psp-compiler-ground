@@ -184,7 +184,35 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_dev", psp_begin_scene
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_dev", psp_end_scene);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_dev", psp_swap_buffers);
+extern void *dbp;
+extern int g_cpu_load, g_frame, g_gpu_load, g_vbl_count, g_vbl_step;
+extern int g_vbl_time;
+unsigned int sceKernelGetSystemTimeLow(void);
+int sceGuSync(int mode, int what);
+int sceDisplayWaitVblankStartCB(void);
+void *sceGuSwapBuffers(void);
+int sceDisplayGetVcount(void);
+void psp_swap_buffers(void)
+{
+	int t0, t1, t2;
+	int vc;
+
+	t0 = sceKernelGetSystemTimeLow();
+	sceGuSync(0, 0);
+	t1 = sceKernelGetSystemTimeLow();
+	sceDisplayWaitVblankStartCB();
+	dbp = sceGuSwapBuffers();
+	g_frame++;
+	t2 = sceKernelGetSystemTimeLow();
+	vc = sceDisplayGetVcount();
+	if (g_vbl_count >= 0) {
+		g_vbl_step = vc - g_vbl_count;
+		g_cpu_load = (t0 - g_vbl_time) * 100 / 16667;
+		g_gpu_load = (t1 - g_vbl_time) * 100 / 16667;
+	}
+	g_vbl_time = t2;
+	g_vbl_count = vc;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -265,11 +293,52 @@ void debug_poly_rgba(void) {
 void psp_debug_disp(void) {
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_dev", square_draw);
+typedef struct { short u, v; short x, y, z; } SQVTX;
+void *sceGuGetMemory(int size);
+void sceGuBlendFunc(int op, int src, int dest, unsigned int srcfix, unsigned int destfix);
+void sceGuEnable(int state);
+void sceGuDrawArray(int prim, int vtype, int count, const void *indices, const void *vertices);
+void square_draw(int x, int y, int w, int h, int col)
+{
+	short *v = sceGuGetMemory(16);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_dev", mat_local2world);
+	sceGuBlendFunc(0, 2, 3, 0, 0);
+	sceGuEnable(4);
+	v[0] = col;
+	v[1] = x;
+	v[2] = y;
+	v[3] = 0;
+	v[4] = col;
+	v[5] = x + w;
+	v[6] = y + h;
+	v[7] = 0;
+	sceGuDrawArray(6, 0x800118, 2, NULL, v);
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_dev", MatrixVectorMultiply);
+typedef struct { float x, y, z, w; } FVEC4;
+typedef struct { FVEC4 x, y, z, w; } FMAT4;
+void sceGumPushMatrix(void);
+void sceGumPopMatrix(void);
+void sceGumStoreMatrix(FMAT4 *m);
+void mat_local2world(float *v, float *o)
+{
+	FMAT4 m;
+
+	sceGumPushMatrix();
+	sceGumStoreMatrix(&m);
+	sceGumPopMatrix();
+	o[0] = m.x.x * v[0] + m.y.x * v[1] + m.z.x * v[2] + m.w.x * v[3];
+	o[1] = m.x.y * v[0] + m.y.y * v[1] + m.z.y * v[2] + m.w.y * v[3];
+	o[2] = m.x.z * v[0] + m.y.z * v[1] + m.z.z * v[2] + m.w.z * v[3];
+}
+
+void MatrixVectorMultiply(FVEC4 *o, FMAT4 *m, FVEC4 *v)
+{
+	o->x = v->x * m->x.x + v->y * m->y.x + v->z * m->z.x + v->w * m->w.x;
+	o->y = v->x * m->x.y + v->y * m->y.y + v->z * m->z.y + v->w * m->w.y;
+	o->z = v->x * m->x.z + v->y * m->y.z + v->z * m->z.z + v->w * m->w.z;
+	o->w = v->x * m->x.w + v->y * m->y.w + v->z * m->z.w + v->w * m->w.w;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_dev", mat_local2screen);
 
@@ -285,7 +354,16 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_dev", vec_roll_yxz_rv
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_dev", vec_roll_zxy_rv);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_dev", vec_one);
+typedef struct { float x, y, z; } FVEC3;
+float sqrtf(float x);
+void vec_one(FVEC3 *v, FVEC3 *o)
+{
+	float l = sqrtf(v->x * v->x + v->y * v->y + v->z * v->z);
+
+	o->x = v->x / l;
+	o->y = v->y / l;
+	o->z = v->z / l;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_dev", vec_axis_rot);
 
