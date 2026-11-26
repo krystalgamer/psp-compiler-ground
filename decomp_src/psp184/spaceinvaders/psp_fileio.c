@@ -5,7 +5,7 @@ M2C_UNK file_load(int, int, int);                   /* extern */
 int file_size();                                    /* extern */
 extern int file_load_size_max;
 M2C_UNK sceUmdRegisterUMDCallBack(int);             /* extern */
-extern unsigned char UMDCallBackFunc;
+int UMDCallBackFunc(int count, int stat, void *common);
 extern int gDVDUMDSampleCallBackId;
 M2C_UNK sceKernelDeleteCallback(int);               /* extern */
 M2C_UNK sceUmdUnRegisterUMDCallBack(int);           /* extern */
@@ -153,7 +153,16 @@ int file_size_get(int arg0) {
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_fileio", file_async_control);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_fileio", UMDCallBackFunc);
+int UMDCallBackFunc(int count, int stat, void *common)
+{
+	if (stat & 0x20) {
+	} else if (stat & 0x10) {
+	} else if (stat & 0x8) {
+		if (sceUmdCheckMedium() != 0)
+			sceUmdGetErrorStat();
+	}
+	return 0;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_fileio", file_bind_addr);
 
