@@ -5,4 +5,4 @@
 #include "dp-bit.c"
 
 /* _clz.o (no .text): its __clz_tab lands in this unit */
-__asm__(".include \"include/labels.inc\"\n.pushsection .rodata\n.include \"tmp/asm/psp184/spaceinvaders/nonmatchings/libgcc/dp-bit/__fpcmp_parts_d/__clz_tab.s\"\n.popsection");
+__asm__(".include \"include/labels.inc\"\n.pushsection .rodata\n.include \"decomp_src/psp184/spaceinvaders/libgcc/dp-bit/data/__clz_tab.s\"\n.popsection");

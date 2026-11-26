@@ -6,5 +6,5 @@
 __asm__(".include \"include/labels.inc\"");
 #define INCLUDE_RODATA(FOLDER, NAME) \
     __asm__(".section .rodata\n.include \"" FOLDER "/" #NAME ".s\"\n.section .text")
-INCLUDE_RODATA("tmp/asm/UTST99332/menu/nonmatchings/newlib/libc/stdlib/dtoa", _ctype_b);
-INCLUDE_RODATA("tmp/asm/UTST99332/menu/nonmatchings/newlib/libc/stdlib/dtoa", D_00195A24);
+INCLUDE_RODATA("decomp_src/UTST99332/menu/newlib/libc/stdlib/data", _ctype_b);
+INCLUDE_RODATA("decomp_src/UTST99332/menu/newlib/libc/stdlib/data", D_00195A24);
