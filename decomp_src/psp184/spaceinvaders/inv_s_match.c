@@ -1,3 +1,4 @@
+/* cflags: -O2 -fno-merge-constants */
 #include "common.h"
 #include "m2c_macros.h"
 M2C_UNK ASC_SetStringRGBA(M2C_UNK, M2C_UNK *, M2C_UNK, M2C_UNK, M2C_UNK, M2C_UNK, M2C_UNK, M2C_UNK); /* extern */

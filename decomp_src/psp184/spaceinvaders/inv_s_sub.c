@@ -1,3 +1,4 @@
+/* cflags: -O2 -fno-merge-constants */
 #include "common.h"
 
 void Sys_AssertMes(void *a, int b, void *c, void *d);

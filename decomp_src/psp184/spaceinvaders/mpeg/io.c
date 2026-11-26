@@ -1,3 +1,4 @@
+/* cflags: -O2 -fno-merge-constants */
 #include "common.h"
 #define sceIoReadCB sceIoReadCB_10B3C
 

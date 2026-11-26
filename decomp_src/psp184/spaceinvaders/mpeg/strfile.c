@@ -1,3 +1,4 @@
+/* cflags: -O2 -fno-merge-constants */
 #include "common.h"
 
 /* declarations recovered from DWARF (UTST99332 mpeg_ezmpegstr strfile) */
