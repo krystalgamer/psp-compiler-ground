@@ -238,7 +238,34 @@ static void move_grain(void)
 	}
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_fountain/nonmatchings/main", draw_grain);
+void DrawSphere(ScePspFVector3 *array, float r);
+#ifndef SCEGU_PI /* sample */
+#define SCEGU_PI                           3.1415926535897932384626433832f
+#endif
+#ifndef SCEGU_RAD /* sample */
+#define SCEGU_RAD(a)                       ((a)*SCEGU_PI/180.0f)
+#endif
+static void draw_grain(void)
+{
+	GRAIN_DAT	*p;
+	int			i;
+	int			c;
+
+	for (i=0; i<num_of_grain; i++) {
+		p=&grain[i];
+		sceGumPushMatrix();
+
+		sceGumTranslate(&p->pos);
+		sceGumRotateY(SCEGU_RAD(p->rot));
+		set_divide(p->t);
+
+		c=p->c|(p->a<<24);
+		sceGuColor(c);
+		DrawSphere(p->array,p->scale);
+
+		sceGumPopMatrix();
+	}
+}
 
 /* Warning: Gap in callee-saved word stack region.
  * Saved: [0x0, 0x4, 0x10, 0x14], gap at: 0x8. */
