@@ -103,4 +103,46 @@ void ASC_SetString(int arg0, int arg1, int arg2) {
     ASC_SetStringRGBA(8, arg0, arg1, arg2, 0xFF, 0xFF, 0xFF, 0xFF);
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_font", ASC_Disp);
+void sprite_set(int tex, int x, int y, int w, int h, int u, int v, int sx, int sy, int a0, int a1, int r, int g, int b, int a, int col, int m, int f, int al);
+void spr_trans(int src, int dst, int x, int y, int u, int v, int w, int h);
+void spr_trans_pal(int src, int dst, int x, int y, int u, int v, int w, int h, int pal);
+void ASC_Disp(int *dst, int mode)
+{
+	ASCBUF *b = (ASCBUF *)&AscBuff;
+	int i, x, y, col;
+	unsigned int c, u, v;
+	unsigned char *p;
+
+	for (i = 0; i < numAscBuf; i++, b++) {
+		x = b->x;
+		y = b->y;
+		for (p = (unsigned char *)b->str; *p != 0; p++, x += 8) {
+			c = (unsigned char)(*p - 0x20);
+			u = c & 15;
+			v = c >> 4;
+			if (b->mode & 4) {
+				if (mode == 4) {
+					if (b->a != 255)
+						spr_trans_pal(((int *)ptexsrc_28FB64)[7], dst[7], x, y, u * 8, v * 8, 8, 8, b->a);
+					else
+						spr_trans(((int *)ptexsrc_28FB64)[7], dst[7], x, y, u * 8, v * 8, 8, 8);
+				}
+			} else if (b->mode & 8) {
+				if (mode == 8) {
+					if (b->a != 255)
+						spr_trans_pal(((int *)ptexsrc_28FB64)[7], dst[7], x, y, u * 8, v * 8, 8, 8, b->a);
+					else
+						spr_trans(((int *)ptexsrc_28FB64)[7], dst[7], x, y, u * 8, v * 8, 8, 8);
+				}
+			} else {
+				if (b->mode & 1)
+					col = 255;
+				else if (b->mode & 2)
+					col = 10;
+				else
+					col = 0;
+				sprite_set(tex, x, y, 8, 8, u * 8, v * 8, 100, 100, 0, 0, b->r, b->g, b->b, b->a, col, 2, 1, 255);
+			}
+		}
+	}
+}
