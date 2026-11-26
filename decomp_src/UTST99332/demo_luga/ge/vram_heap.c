@@ -38,7 +38,34 @@ int vram_heap__get_max_free();
 int vram_heap__get_alloc_count();
 
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/ge/vram_heap", vram_heap__init);
+void vram_heap__init(VramHeap mode)
+{
+	void *addr;
+	size_t size;
+
+	switch (mode) {
+	case VRAM_HEAP_32:
+		addr = (void *)0x4154000;
+		size = 0xAC000;
+		break;
+	case VRAM_HEAP_16:
+	default:
+		addr = (void *)0x40CC000;
+		size = 0x134000;
+		break;
+	}
+
+	g_top = (block *)addr;
+	g_end = (block *)((char *)addr + size) - 1;
+	g_end->next = g_top;
+	g_end->size = 0;
+	g_top->next = g_end;
+	g_top->size = size / sizeof(block) - 2;
+
+	g_total_size = g_top->size;
+	g_total_free = g_top->size;
+	g_alloc_count = 0;
+}
 
 void *vram_heap__alloc(size_t size)
 {
