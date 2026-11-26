@@ -212,7 +212,49 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Graphic", GUI_Graphics_getA
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Graphic", GUI_Graphics_getAnimationGIFFrameProperty);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Graphic", GUI_createFrame);
+GUIWIDGET *GUI_createFrame(GUIWIDGET *parent, char *text) {
+    GUIWIDGET *w;
+    int len;
+    char *buf;
+
+    if (parent != NULL && parent->type != 1) {
+        puts("[X1]GUI_createFrame");
+        return NULL;
+    }
+    len = 0;
+    if (text != NULL) {
+        len = strlen(text);
+    }
+    buf = NULL;
+    if (len != 0) {
+        buf = ESP_guiMemAlloc(len + 1);
+        if (buf == NULL) {
+            puts("[X2]GUI_createFrame");
+            return NULL;
+        }
+        memcpy(buf, text, len + 1);
+        buf[len] = 0;
+    }
+    s_windsystem_data.flags |= 4;
+    w = GuiwidgetCreate(parent);
+    if (w == NULL) {
+        if (len != 0) {
+            ESP_guiMemFree(buf);
+        }
+        puts("[X3]GUI_createFrame");
+        s_windsystem_data.flags &= ~4;
+        return NULL;
+    }
+    w->flags = (w->flags & ~0xF) | 1;
+    w->unk4C = buf;
+    w->x = 0;
+    w->y = 0;
+    w->w = 64;
+    w->h = 20;
+    zWindDraw();
+    s_windsystem_data.flags &= ~4;
+    return w;
+}
 
 GUIWIDGET *GUI_createPanel(GUIWIDGET *parent) {
     GUIWIDGET *w;
@@ -238,9 +280,126 @@ GUIWIDGET *GUI_createPanel(GUIWIDGET *parent) {
     return w;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Graphic", GUI_createButton);
+GUIWIDGET *GUI_createButton(GUIWIDGET *parent, char *text , void *a, void *b) {
+    GUIWIDGET *w;
+    int len;
+    char *buf;
+    int sw;
+    int sh;
+    int fg[3];
+    int bg[3];
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Graphic", GUI_createCheckbox);
+    if (parent != NULL && parent->type != 1) {
+        puts("[X1]GUI_createButton");
+        return NULL;
+    }
+    len = 0;
+    if (text != NULL) {
+        len = strlen(text);
+    }
+    buf = NULL;
+    if (len != 0) {
+        buf = ESP_guiMemAlloc(len + 1);
+        if (buf == NULL) {
+            puts("[X2]GUI_createButton");
+            return NULL;
+        }
+        memcpy(buf, text, len + 1);
+        buf[len] = 0;
+    }
+    s_windsystem_data.flags |= 4;
+    w = GuiwidgetCreate(parent);
+    if (w == NULL) {
+        if (len != 0) {
+            ESP_guiMemFree(buf);
+        }
+        puts("[X3]GUI_createButton");
+        s_windsystem_data.flags &= ~4;
+        return NULL;
+    }
+    w->flags = (w->flags & ~0xF) | 3;
+    GUI_Graphics_getStringSize(w->font, buf, len, &sw, &sh);
+    if (sw == 0) {
+        sw = 64;
+        sh = 20;
+    }
+    w->unk50.p = buf;
+    w->u.choice.sel = len;
+    w->unk4C = b;
+    w->u.button.image = a;
+    w->u.choice.unk56 = 0;
+    w->x = 0;
+    w->y = 0;
+    w->w = sw + 4;
+    w->h = sh + 4;
+    fg[0] = 0;
+    fg[1] = 0;
+    fg[2] = 0;
+    bg[0] = 0x80;
+    bg[1] = 0x80;
+    bg[2] = 0x80;
+    GUI_Component_setColor(w, fg, bg);
+    zWindDraw();
+    s_windsystem_data.flags &= ~4;
+    return w;
+}
+
+GUIWIDGET *GUI_createCheckbox(GUIWIDGET *parent, char *text ) {
+    GUIWIDGET *w;
+    int len;
+    char *buf;
+    int sw;
+    int sh;
+    int fg[3];
+    int bg[3];
+
+    if (parent != NULL && parent->type != 1) {
+        puts("[X1]GUI_createCheckbox");
+        return NULL;
+    }
+    len = 0;
+    if (text != NULL) {
+        len = strlen(text);
+    }
+    buf = NULL;
+    if (len != 0) {
+        buf = ESP_guiMemAlloc(len + 1);
+        if (buf == NULL) {
+            puts("[X2]GUI_createCheckbox");
+            return NULL;
+        }
+        memcpy(buf, text, len + 1);
+        buf[len] = 0;
+    }
+    s_windsystem_data.flags |= 4;
+    w = GuiwidgetCreate(parent);
+    if (w == NULL) {
+        if (len != 0) {
+            ESP_guiMemFree(buf);
+        }
+        puts("[X3]GUI_createCheckbox");
+        s_windsystem_data.flags &= ~4;
+        return NULL;
+    }
+    w->flags = (w->flags & ~0xF) | 4;
+    GUI_Graphics_getStringSize(w->font, buf, len, &sw, &sh);
+    w->unk4C = buf;
+    w->u.list.state = 0;
+    w->x = 0;
+    w->y = 0;
+    w->w = sw + 20;
+    w->h = sh;
+    fg[0] = 0;
+    fg[1] = 0;
+    fg[2] = 0;
+    bg[0] = 0xdc;
+    bg[1] = 0xdc;
+    bg[2] = 0xdc;
+    GUI_Component_setColor(w, fg, bg);
+    zWindDraw();
+    s_windsystem_data.flags &= ~4;
+    return w;
+}
 
 GUIWIDGET *GUI_createRadioboxGroup(GUIWIDGET *parent) {
     GUIWIDGET *w;
@@ -267,9 +426,113 @@ GUIWIDGET *GUI_createRadioboxGroup(GUIWIDGET *parent) {
     return w;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Graphic", GUI_createRadiobox);
+GUIWIDGET *GUI_createRadiobox(GUIWIDGET *parent, char *text ) {
+    GUIWIDGET *w;
+    int len;
+    char *buf;
+    int sw;
+    int sh;
+    int fg[3];
+    int bg[3];
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Graphic", GUI_createLabel);
+    if (parent == NULL) {
+        puts("[X1]GUI_createRadiobox");
+        return NULL;
+    }
+    if (parent->type != 1) {
+        puts("[X2]GUI_createRadiobox");
+        return NULL;
+    }
+    len = 0;
+    if (text != NULL) {
+        len = strlen(text);
+    }
+    buf = NULL;
+    if (len != 0) {
+        buf = ESP_guiMemAlloc(len + 1);
+        if (buf == NULL) {
+            puts("[X3]GUI_createRadiobox");
+            return NULL;
+        }
+        memcpy(buf, text, len + 1);
+        buf[len] = 0;
+    }
+    s_windsystem_data.flags |= 4;
+    w = GuiwidgetCreate(parent);
+    if (w == NULL) {
+        if (len != 0) {
+            ESP_guiMemFree(buf);
+        }
+        puts("[X4]GUI_createRadiobox");
+        s_windsystem_data.flags &= ~4;
+        return NULL;
+    }
+    if (parent->unk50.p == NULL) {
+        parent->unk50.p = w;
+    }
+    w->flags = (w->flags & ~0xF) | 6;
+    GUI_Graphics_getStringSize(w->font, buf, len, &sw, &sh);
+    w->unk4C = buf;
+    w->u.list.state = 0;
+    w->x = 0;
+    w->y = 0;
+    w->w = sw + 20;
+    w->h = sh;
+    fg[0] = 0;
+    fg[1] = 0;
+    fg[2] = 0;
+    bg[0] = 0xdc;
+    bg[1] = 0xdc;
+    bg[2] = 0xdc;
+    GUI_Component_setColor(w, fg, bg);
+    zWindDraw();
+    s_windsystem_data.flags &= ~4;
+    return w;
+}
+
+GUIWIDGET *GUI_createLabel(GUIWIDGET *parent, char *text) {
+    GUIWIDGET *w;
+    int len;
+    char *buf;
+
+    if (parent != NULL && parent->type != 1) {
+        puts("[X1]GUI_createLabel");
+        return NULL;
+    }
+    len = 0;
+    if (text != NULL) {
+        len = strlen(text);
+    }
+    buf = NULL;
+    if (len != 0) {
+        buf = ESP_guiMemAlloc(len + 1);
+        if (buf == NULL) {
+            puts("[X2]GUI_createLabel");
+            return NULL;
+        }
+        memcpy(buf, text, len + 1);
+        buf[len] = 0;
+    }
+    s_windsystem_data.flags |= 4;
+    w = GuiwidgetCreate(parent);
+    if (w == NULL) {
+        if (len != 0) {
+            ESP_guiMemFree(buf);
+        }
+        puts("[X3]GUI_createLabel");
+        s_windsystem_data.flags &= ~4;
+        return NULL;
+    }
+    w->flags = (w->flags & ~0xF) | 7;
+    w->unk4C = buf;
+    w->x = 0;
+    w->y = 0;
+    w->w = 64;
+    w->h = 20;
+    zWindDraw();
+    s_windsystem_data.flags &= ~4;
+    return w;
+}
 
 GUIWIDGET *GUI_createList(GUIWIDGET *parent, void *a) {
     GUIWIDGET *w;

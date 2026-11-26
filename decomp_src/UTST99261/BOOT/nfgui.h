@@ -183,6 +183,7 @@ extern int _i_guiwidgetmalloc;
 GUIFONT *GuifontCreateOne(void);
 int GuiwidgetInit(void);
 int GUI_Component_setColor(GUIWIDGET *w, int *fg, int *bg);
+int GUI_Graphics_getStringSize(GUIFONT *font, char *s, int len, int *w, int *h);
 int GuiwidgetClear(GUIWIDGET *w);
 int GuiwidgetDelete(GUIWIDGET *w);
 void GuiwidgetAllOpening(void);
