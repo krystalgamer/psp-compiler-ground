@@ -44,12 +44,10 @@ extern ScePspFMatrix4 *cur_stack;
 extern MATRIX_STACK mat_stack[4];
 extern int update[4];
 
-void sceGumSetMatrixStack(ScePspFMatrix4 *m, int proj, int view, int world, int tex);
 void sceGumRotateXYZ(const ScePspFVector3 *vec);
 static ScePspFMatrix4 *_sceGumMulMatrix(ScePspFMatrix4 *m0, const ScePspFMatrix4 *m1, const ScePspFMatrix4 *m2);
 void sceGumRotateZYX(const ScePspFVector3 *vec);
 void sceGumPerspective(float fovy, float aspect, float r_near, float r_far);
-void sceGumMultMatrix(const ScePspFMatrix4 *m);
 void sceGumOrtho(float left, float right, float bottom, float top, float r_near, float r_far);
 void sceGumLookAt(const ScePspFVector3 *eye, const ScePspFVector3 *center, const ScePspFVector3 *up);
 ScePspFVector4 *sceGumProject(ScePspFVector4 *xyzq, const ScePspFVector3 *pos);
@@ -59,12 +57,106 @@ void sceGumUpdateMatrix(void);
 void sceGumStoreContext(SceGumContext *ctx);
 void sceGumLoadContext(SceGumContext *ctx);
 void sceGumRotateX(float angle);
-void sceGumRotateY(float angle);
-void sceGumRotateZ(float angle);
 static void _sceGumCheckUpdate(void);
 
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgum", sceGumSetMatrixStack);
+static __inline__ ScePspFMatrix4 *_sceGumMulMatrix(ScePspFMatrix4 *m0, const ScePspFMatrix4 *m1, const ScePspFMatrix4 *m2)
+{
+ ScePspFMatrix4 tm;
+ tm.x.x = m1->x.x*m2->x.x + m1->y.x*m2->x.y + m1->z.x*m2->x.z + m1->w.x*m2->x.w;
+ tm.x.y = m1->x.y*m2->x.x + m1->y.y*m2->x.y + m1->z.y*m2->x.z + m1->w.y*m2->x.w;
+ tm.x.z = m1->x.z*m2->x.x + m1->y.z*m2->x.y + m1->z.z*m2->x.z + m1->w.z*m2->x.w;
+ tm.x.w = m1->x.w*m2->x.x + m1->y.w*m2->x.y + m1->z.w*m2->x.z + m1->w.w*m2->x.w;
+ tm.y.x = m1->x.x*m2->y.x + m1->y.x*m2->y.y + m1->z.x*m2->y.z + m1->w.x*m2->y.w;
+ tm.y.y = m1->x.y*m2->y.x + m1->y.y*m2->y.y + m1->z.y*m2->y.z + m1->w.y*m2->y.w;
+ tm.y.z = m1->x.z*m2->y.x + m1->y.z*m2->y.y + m1->z.z*m2->y.z + m1->w.z*m2->y.w;
+ tm.y.w = m1->x.w*m2->y.x + m1->y.w*m2->y.y + m1->z.w*m2->y.z + m1->w.w*m2->y.w;
+ tm.z.x = m1->x.x*m2->z.x + m1->y.x*m2->z.y + m1->z.x*m2->z.z + m1->w.x*m2->z.w;
+ tm.z.y = m1->x.y*m2->z.x + m1->y.y*m2->z.y + m1->z.y*m2->z.z + m1->w.y*m2->z.w;
+ tm.z.z = m1->x.z*m2->z.x + m1->y.z*m2->z.y + m1->z.z*m2->z.z + m1->w.z*m2->z.w;
+ tm.z.w = m1->x.w*m2->z.x + m1->y.w*m2->z.y + m1->z.w*m2->z.z + m1->w.w*m2->z.w;
+ tm.w.x = m1->x.x*m2->w.x + m1->y.x*m2->w.y + m1->z.x*m2->w.z + m1->w.x*m2->w.w;
+ tm.w.y = m1->x.y*m2->w.x + m1->y.y*m2->w.y + m1->z.y*m2->w.z + m1->w.y*m2->w.w;
+ tm.w.z = m1->x.z*m2->w.x + m1->y.z*m2->w.y + m1->z.z*m2->w.z + m1->w.z*m2->w.w;
+ tm.w.w = m1->x.w*m2->w.x + m1->y.w*m2->w.y + m1->z.w*m2->w.z + m1->w.w*m2->w.w;
+ memcpy(m0, &tm, sizeof(ScePspFMatrix4));
+ return (m0);
+}
+
+static __inline__ ScePspFVector4 *_sceGumHomogeneousTransform(ScePspFVector4 *v0, const ScePspFMatrix4 *m, const ScePspFVector3 *v1)
+{
+ ScePspFVector4 tv;
+ tv.x = m->x.x*v1->x + m->y.x*v1->y + m->z.x*v1->z + m->w.x;
+ tv.y = m->x.y*v1->x + m->y.y*v1->y + m->z.y*v1->z + m->w.y;
+ tv.z = m->x.z*v1->x + m->y.z*v1->y + m->z.z*v1->z + m->w.z;
+ tv.w = m->x.w*v1->x + m->y.w*v1->y + m->z.w*v1->z + m->w.w;
+ memcpy(v0, &tv, sizeof(ScePspFVector4));
+ return (v0);
+}
+
+
+void sceGumSetMatrixStack(ScePspFMatrix4 *m, int proj, int view, int world, int tex)
+{
+ cur_stack = ((void *)0);
+ if (tex) {
+  mat_stack[3].top = &m[(proj+view+world)];
+  mat_stack[3].cur = &m[(proj+view+world)];
+  mat_stack[3].bottom = &m[(proj+view+world+tex)];
+  cur_stack = mat_stack[3].cur;
+  cur_matrix = 3;
+  sceGumLoadIdentity();
+  update[3] = 1;
+ } else {
+  mat_stack[3].top = ((void *)0);
+  mat_stack[3].cur = ((void *)0);
+  mat_stack[3].bottom = ((void *)0);
+  update[3] = 0;
+ }
+ if (world) {
+  mat_stack[2].top = &m[(proj+view)];
+  mat_stack[2].cur = &m[(proj+view)];
+  mat_stack[2].bottom = &m[(proj+view+world)];
+  cur_stack = mat_stack[2].cur;
+  cur_matrix = 2;
+  sceGumLoadIdentity();
+  update[2] = 1;
+ } else {
+  mat_stack[2].top = ((void *)0);
+  mat_stack[2].cur = ((void *)0);
+  mat_stack[2].bottom = ((void *)0);
+  update[2] = 0;
+ }
+ if (view) {
+  mat_stack[1].top = &m[proj];
+  mat_stack[1].cur = &m[proj];
+  mat_stack[1].bottom = &m[(proj+view)];
+  cur_stack = mat_stack[1].cur;
+  cur_matrix = 1;
+  sceGumLoadIdentity();
+  update[1] = 1;
+ } else {
+  mat_stack[1].top = ((void *)0);
+  mat_stack[1].cur = ((void *)0);
+  mat_stack[1].bottom = ((void *)0);
+  update[1] = 0;
+ }
+ if (proj) {
+  mat_stack[0].top = &m[0];
+  mat_stack[0].cur = &m[0];
+  mat_stack[0].bottom = &m[proj];
+  cur_stack = mat_stack[0].cur;
+  cur_matrix = 0;
+  sceGumLoadIdentity();
+  update[0] = 1;
+ } else {
+  mat_stack[0].top = ((void *)0);
+  mat_stack[0].cur = ((void *)0);
+  mat_stack[0].bottom = ((void *)0);
+  update[0] = 1;
+ }
+ cur_matrix = 0;
+ return;
+}
 
 void sceGumLoadIdentity(void)
 {
@@ -108,9 +200,59 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgum", sceGumLoadContex
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgum", sceGumRotateX);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgum", sceGumRotateY);
+void sceGumRotateY(float angle)
+{
+ ScePspFMatrix4 m;
+ float s, c;
+ s = (float)sinf(angle);
+ c = (float)cosf(angle);
+ m.x.x = c;
+ m.x.y = 0.0f;
+ m.x.z = -1.0f * s;
+ m.x.w = 0.0f;
+ m.y.x = 0.0f;
+ m.y.y = 1.0f;
+ m.y.z = 0.0f;
+ m.y.w = 0.0f;
+ m.z.x = s;
+ m.z.y = 0.0f;
+ m.z.z = c;
+ m.z.w = 0.0f;
+ m.w.x = 0.0f;
+ m.w.y = 0.0f;
+ m.w.z = 0.0f;
+ m.w.w = 1.0f;
+ _sceGumMulMatrix(cur_stack, cur_stack, &m);
+ update[cur_matrix] = 1;
+ return;
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgum", sceGumRotateZ);
+void sceGumRotateZ(float angle)
+{
+ ScePspFMatrix4 m;
+ float s, c;
+ s = (float)sinf(angle);
+ c = (float)cosf(angle);
+ m.x.x = c;
+ m.x.y = s;
+ m.x.z = 0.0f;
+ m.x.w = 0.0f;
+ m.y.x = -1.0f*s;
+ m.y.y = c;
+ m.y.z = 0.0f;
+ m.y.w = 0.0f;
+ m.z.x = 0.0f;
+ m.z.y = 0.0f;
+ m.z.z = 1.0f;
+ m.z.w = 0.0f;
+ m.w.x = 0.0f;
+ m.w.y = 0.0f;
+ m.w.z = 0.0f;
+ m.w.w = 1.0f;
+ _sceGumMulMatrix(cur_stack, cur_stack, &m);
+ update[cur_matrix] = 1;
+ return;
+}
 
 void sceGumTranslate(const ScePspFVector3 *v)
 {
@@ -144,7 +286,12 @@ void sceGumScale(const ScePspFVector3 *v)
 	update[cur_matrix] = 1;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgum", sceGumMultMatrix);
+void sceGumMultMatrix(const ScePspFMatrix4 *m)
+{
+ _sceGumMulMatrix(cur_stack, cur_stack, m);
+ update[cur_matrix] = 1;
+ return;
+}
 
 void sceGumMatrixMode(int mode)
 {
