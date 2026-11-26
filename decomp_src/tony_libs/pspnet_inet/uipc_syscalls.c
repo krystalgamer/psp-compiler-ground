@@ -130,7 +130,55 @@ INCLUDE_ASM("tmp/asm/tony_libs/pspnet_inet/nonmatchings/uipc_syscalls", sceNetIn
 
 INCLUDE_ASM("tmp/asm/tony_libs/pspnet_inet/nonmatchings/uipc_syscalls", sceNetInetAccept);
 
-INCLUDE_ASM("tmp/asm/tony_libs/pspnet_inet/nonmatchings/uipc_syscalls", sceNetInetConnect);
+int
+sceNetInetConnect(int s, const struct sockaddr *name, socklen_t namelen)
+{
+	struct thread_info *ti;
+	struct socket *so;
+	struct mbuf *nam;
+	int error;
+
+	ti = _sce_pspnet_thread_enter();
+	if (ti == NULL)
+		return -1;
+	so = getsock(s);
+	if (so == NULL) {
+		error = EBADF;
+		goto out;
+	}
+	sothread_attach(ti, so);
+	if ((so->so_state & SS_NBIO) && (so->so_state & SS_ISCONNECTING)) {
+		error = EALREADY;
+		goto detach;
+	}
+	error = sockargs(&nam, name, namelen, MT_SONAME);
+	if (error)
+		goto detach;
+	error = soconnect(so, nam);
+	if (error)
+		goto bad;
+	if ((so->so_state & SS_NBIO) && (so->so_state & SS_ISCONNECTING)) {
+		m_freem(nam);
+		error = EINPROGRESS;
+		goto detach;
+	}
+	s = _sce_pspnet_spllock();
+	while ((so->so_state & SS_ISCONNECTING) && so->so_error == 0)
+		if ((error = _sce_pspnet_tsleep((caddr_t)&so->so_timeo, 0)) != 0)
+			break;
+	if (error == 0) {
+		error = so->so_error;
+		so->so_error = 0;
+	}
+	_sce_pspnet_splunlock(s);
+bad:
+	so->so_state &= ~SS_ISCONNECTING;
+	m_freem(nam);
+detach:
+	sothread_detach(ti, so);
+out:
+	return _sce_pspnet_thread_leave(ti, error);
+}
 
 ssize_t
 sceNetInetSendmsg(int s, const struct msghdr *mp, int flags)
