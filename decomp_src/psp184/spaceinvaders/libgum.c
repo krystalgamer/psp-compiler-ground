@@ -69,10 +69,6 @@ void sceGumPushMatrix(void);
 void sceGumPopMatrix(void);
 void sceGumLoadMatrix(const ScePspFMatrix4 *m);
 void sceGumStoreMatrix(ScePspFMatrix4 *m);
-void sceGumDrawArray(int prim, int type, int count, const void *idx, const void *p);
-void sceGumDrawArrayN(int prim, int type, int n_verts, int n_prims, const void *idx, const void *p);
-void sceGumDrawBezier(int type, int ucount, int vcount, const void *idx, const void *p);
-void sceGumDrawSpline(int type, int ucount, int vcount, int uflag, int vflag, const void *idx, const void *p);
 static void _sceGumCheckUpdate(void);
 
 
@@ -124,12 +120,33 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgum", sceGumLoadMatrix
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgum", sceGumStoreMatrix);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgum", sceGumDrawArray);
+void sceGumDrawArray(int prim, int type, int count, const void *idx, const void *p)
+{
+ _sceGumCheckUpdate();
+ sceGuDrawArray(prim, type, count, idx, p);
+ return;
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgum", sceGumDrawArrayN);
+void sceGumDrawArrayN(int prim, int type, int n_verts, int n_prims, const void *idx, const void *p)
+{
+ _sceGumCheckUpdate();
+ sceGuDrawArrayN(prim, type, n_verts, n_prims, idx, p);
+ return;
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgum", sceGumDrawBezier);
+void sceGumDrawBezier(int type, int ucount, int vcount, const void *idx, const void *p)
+{
+ _sceGumCheckUpdate();
+ sceGuDrawBezier(type, ucount, vcount, idx, p);
+ return;
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgum", sceGumDrawSpline);
+void sceGumDrawSpline(int type, int ucount, int vcount, int uflag,
+     int vflag, const void *idx, const void *p)
+{
+ _sceGumCheckUpdate();
+ sceGuDrawSpline(type, ucount, vcount, uflag, vflag, idx, p);
+ return;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgum", _sceGumCheckUpdate);
