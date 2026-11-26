@@ -411,4 +411,26 @@ term:
 	return ret;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/mpeg_timecode_jump/nonmatchings/main", pad_read);
+extern u_int32 D_000117EC; /* static SceUInt32 oldpadd in pad_read (bss is asm) */
+extern u_int32 D_000117F0; /* static SceUInt32 padd in pad_read */
+
+static SceInt32 pad_read(t_displayBuffer *pDisp)
+{
+	SceCtrlData buf;
+
+	D_000117EC = D_000117F0;
+	sceCtrlReadBufferPositive(&buf, 1);
+	D_000117F0 = buf.Buttons;
+
+	if (D_000117F0 & 0x1) {
+		playInfo.playMode = 10;
+		return 1;
+	} else if (D_000117F0 & 0x8) {
+		playInfo.playMode = 1;
+		return 1;
+	} else if (D_000117F0 & ~D_000117EC & 0x2000) {
+		dispbuf_setDelayMode(pDisp);
+	}
+
+	return 0;
+}
