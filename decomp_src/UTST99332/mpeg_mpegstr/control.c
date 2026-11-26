@@ -44,7 +44,20 @@ int control_setCondition(t_conditionCtrl *pCtrl, unsigned int pattern) {
     return sceKernelSetEventFlag(pCtrl->control_flag);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/mpeg_mpegstr/nonmatchings/control", control_getCondition);
+SceInt32 control_getCondition(t_conditionCtrl *pCtrl, SceUInt32 *pPattern)
+{
+	SceKernelEventFlagInfo info;
+
+	info.size = sizeof(info);
+
+	sceKernelReferEventFlagStatus(pCtrl->control_flag, &info);
+
+
+	*pPattern = info.currentPattern;
+
+
+	return 0;
+}
 
 int control_waitConditionDispStart(t_conditionCtrl *pCtrl) {
     sceKernelWaitEventFlag(pCtrl->control_flag, 1, 0, 0, 0);
