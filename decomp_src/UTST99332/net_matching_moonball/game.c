@@ -141,13 +141,111 @@ void sceGuClutMode(unsigned int cpsm, unsigned int shift, unsigned int mask, uns
 void sceGuClutLoad(int num_blocks, const void *cbp);
 
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/game", InitBall);
+void sceGuTexOffset(float u, float v);
+void sceGuTexScale(float u, float v);
+void sceGumLoadIdentity(void);
+void sceGumPushMatrix(void);
+void sceGumPopMatrix(void);
+void sceGumScale(const ScePspFVector3 *v);
+void sceGumTranslate(const ScePspFVector3 *v);
+void sceGumDrawArray(int prim, int vtype, int count, const void *indices, const void *vertices);
+void sceGumDrawBezier(int vtype, int ucount, int vcount, const void *indices, const void *vertices);
+int sceKernelDcacheWritebackAll(void);
+float sinf(float x);
+float cosf(float x);
+void sceGuEnable(int state);
+void sceGuDisable(int state);
+void sceGuColor(unsigned int color);
+void sceGuTexMode(int tpsm, int maxmips, int a2, int swizzle);
+void sceGuTexImage(int mipmap, int width, int height, int tbw, const void *tbp);
+void sceGuTexFilter(int min, int mag);
+void sceGuTexFunc(int tfx, int tcc);
+void sceGuTexWrap(int u, int v);
+void sceGuTexOffset(float u, float v);
+void sceGuTexScale(float u, float v);
+void sceGuClutMode(unsigned int cpsm, unsigned int shift, unsigned int mask, unsigned int a3);
+void sceGuClutLoad(int num_blocks, const void *cbp);
+void sceGumLoadIdentity(void);
+void sceGumPushMatrix(void);
+void sceGumPopMatrix(void);
+void sceGumScale(const ScePspFVector3 *v);
+void sceGumTranslate(const ScePspFVector3 *v);
+void sceGumDrawArray(int prim, int vtype, int count, const void *indices, const void *vertices);
+void sceGumDrawBezier(int vtype, int ucount, int vcount, const void *indices, const void *vertices);
+int sceKernelDcacheWritebackAll(void);
+float sinf(float x);
+float cosf(float x);
+void sceGuEnable(int state);
+void sceGuDisable(int state);
+void sceGuColor(unsigned int color);
+void sceGuTexMode(int tpsm, int maxmips, int a2, int swizzle);
+void sceGuTexImage(int mipmap, int width, int height, int tbw, const void *tbp);
+void sceGuTexFilter(int min, int mag);
+void sceGuTexFunc(int tfx, int tcc);
+void sceGuTexWrap(int u, int v);
+void sceGuTexOffset(float u, float v);
+void sceGuTexScale(float u, float v);
+void sceGuClutMode(unsigned int cpsm, unsigned int shift, unsigned int mask, unsigned int a3);
+void sceGuClutLoad(int num_blocks, const void *cbp);
+void sceGumLoadIdentity(void);
+void sceGumPushMatrix(void);
+void sceGumPopMatrix(void);
+void sceGumScale(const ScePspFVector3 *v);
+void sceGumTranslate(const ScePspFVector3 *v);
+void sceGumDrawArray(int prim, int vtype, int count, const void *indices, const void *vertices);
+void sceGumDrawBezier(int vtype, int ucount, int vcount, const void *indices, const void *vertices);
+int sceKernelDcacheWritebackAll(void);
+float sinf(float x);
+float cosf(float x);
+void SpriteScale(int x, int y);
+void DrawSprite(int x, int y, int w, int h, int u, int v, Gu2dV16T *model);
+void FadeSetup(int mode, int c);
+int FadeState(void);
+void FadeDraw(void);
+int CheckParticle(void);
+void InitParticle(void);
+void SetParticle(float x, float y, float z, float speed, int number, int c);
+void DrawParticle(void);
+int random(void);
+void random_seed(unsigned int seed);
+int Pickup(int scrw, int scrh, int x, int y, ScePspFVector3 *v0, ScePspFVector3 *v1, ScePspFVector3 *v2);
+void InitBall(void)
+{
+	ground.pos = 0.0f;
+	ground.e = 8.0f;
+	ground.dt = 3;
+	ground.t = 0;
+	ground.point = random() % 24;
+	ball.pos.x = gndpos[ground.point * 2];
+	ball.state = 1;
+	ball.pos.y = -30.0f;
+	ball.pos.z = gndpos[ground.point * 2 + 1];
+	ball.c = clut[random() % 7];
+	ball.t = 0;
+	ball.d = (float)(random() % 10) * 0.01f + 1.0f;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/game", InitGame);
 
 INCLUDE_ASM("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/game", RunGame);
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/game", DrawBall);
+static void DrawBall(void)
+{
+	ScePspFVector3 vec;
+
+	sceGumPushMatrix();
+	vec.x = ball.pos.x;
+	vec.y = ball.pos.y;
+	vec.z = ball.pos.z;
+	sceGumTranslate(&vec);
+	vec.x = 1.8f;
+	vec.y = 1.8f;
+	vec.z = 1.8f;
+	sceGumScale(&vec);
+	sceGuColor(ball.c);
+	sceGumDrawBezier(0x180, 4, 7, NULL, &sphere);
+	sceGumPopMatrix();
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/game", DrawBG);
 
@@ -155,7 +253,36 @@ INCLUDE_ASM("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/game", DrawGro
 
 INCLUDE_ASM("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/game", DrawScore);
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/game", DrawMoon);
+static void DrawMoon(void)
+{
+	ScePspFVector3 vec;
+	float rot;
+
+	sceGuEnable(9);
+	sceGuTexWrap(0, 0);
+	sceGuTexFilter(0, 0);
+	sceGuTexFunc(0, 1);
+	sceGuTexMode(4, 0, 0, 0);
+	sceGuClutMode(1, 0, 0xff, 0);
+	sceGuClutLoad(1, &clut_moon);
+	sceGuTexImage(0, 128, 128, 128, &chr_moon);
+	sceGuTexOffset(0.0f, 0.0f);
+	sceGuTexScale(1.0f, 1.0f);
+	sceGumPushMatrix();
+	rot = (moon + 230.0f >= 360.0f) ? moon - 130.0f : moon + 230.0f;
+	vec.x = cosf(rot * 3.1415927f / 180.0f) * 280.0f;
+	vec.y = -sinf(rot * 3.1415927f / 180.0f) * 280.0f - 220.0f;
+	vec.z = -160.0f;
+	sceGumTranslate(&vec);
+	vec.x = 20.0f;
+	vec.y = 20.0f;
+	vec.z = 20.0f;
+	sceGumScale(&vec);
+	sceGuColor(0xffffffff);
+	sceGumDrawBezier(0x180, 4, 7, NULL, &sphere);
+	sceGumPopMatrix();
+	sceGuDisable(9);
+}
 
 void DrawScope(SCOPE *sc) {
     if (sc->state == 0) {

@@ -151,4 +151,36 @@ INCLUDE_ASM("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/net_multi_play
 
 INCLUDE_ASM("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/net_multi_player", net_recv_members_ptp);
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_matching_moonball/nonmatchings/net_multi_player", net_update_multi_player);
+int matching_restart_to_create_room(void);
+int net_update_multi_player(void)
+{
+	switch (_mrinfo.state) {
+	case 20:
+		if (matching_restart_to_create_room() < 0)
+			change_state(17);
+		else
+			change_state(21);
+		break;
+	case 18:
+		net_create_listen_socket();
+		break;
+	case 19:
+		net_recv_members_ptp();
+		break;
+	case 21:
+		break;
+	case 22:
+		net_create_connect_socket();
+		break;
+	case 23:
+		net_connect_socket();
+		break;
+	case 24:
+		net_send_members_ptp();
+		break;
+	case 25:
+		net_flush_members_ptp();
+		break;
+	}
+	return 0;
+}
