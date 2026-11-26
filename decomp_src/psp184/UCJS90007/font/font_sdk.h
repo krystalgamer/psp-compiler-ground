@@ -1,0 +1,4889 @@
+/* SDK headers used by the libgu debug font (kernel.h, geman.h, libgu.h), preprocessed
+   with their macros kept (cpp -dD), SDK 6.6.0 versions. */
+#ifndef FONT_SDK_H
+#define FONT_SDK_H
+#define _SCE_KERNEL_H 
+
+#define _SCE_DEVKIT_VERSION_H 
+
+#define SCE_DEVKIT_VERSION 0x06060010
+
+#define _SCE_KERNELTYPES_H 
+
+#define _SCEUID 
+typedef int SceUID;
+#define SceUID_NAME_MAX 31
+
+typedef unsigned int SceSize;
+typedef unsigned char SceUChar;
+typedef unsigned int SceUInt;
+
+typedef int SceSSize;
+typedef int SceMode;
+
+__extension__ typedef long long SceOff;
+
+#define _SCE_KERNEL_IORES_T 
+
+__extension__ typedef long long SceIores;
+#define _KERROR_H 
+
+enum KernelErrorCode {
+  SCE_KERNEL_ERROR_OK = 0x0,
+
+  SCE_KERNEL_ERROR_ERROR = 0x80020001,
+
+  SCE_KERNEL_ERROR_NOTIMP = 0x80020002,
+
+  SCE_KERNEL_ERROR_ILLEGAL_EXPCODE = 0x80020032,
+
+  SCE_KERNEL_ERROR_EXPHANDLER_NOUSE = 0x80020033,
+
+  SCE_KERNEL_ERROR_EXPHANDLER_USED = 0x80020034,
+
+  SCE_KERNEL_ERROR_SYCALLTABLE_NOUSED = 0x80020035,
+
+  SCE_KERNEL_ERROR_SYCALLTABLE_USED = 0x80020036,
+
+  SCE_KERNEL_ERROR_ILLEGAL_SYSCALLTABLE = 0x80020037,
+
+  SCE_KERNEL_ERROR_ILLEGAL_PRIMARY_SYSCALL_NUMBER = 0x80020038,
+
+  SCE_KERNEL_ERROR_PRIMARY_SYSCALL_NUMBER_INUSE = 0x80020039,
+
+  SCE_KERNEL_ERROR_ILLEGAL_NMICODE = 0x8002003a,
+
+  SCE_KERNEL_ERROR_ILLEGAL_CONTEXT = 0x80020064,
+
+  SCE_KERNEL_ERROR_ILLEGAL_INTRCODE = 0x80020065,
+
+  SCE_KERNEL_ERROR_CPUDI = 0x80020066,
+
+  SCE_KERNEL_ERROR_FOUND_HANDLER = 0x80020067,
+
+  SCE_KERNEL_ERROR_NOTFOUND_HANDLER = 0x80020068,
+
+  SCE_KERNEL_ERROR_ILLEGAL_INTRLEVEL = 0x80020069,
+
+  SCE_KERNEL_ERROR_ILLEGAL_ADDRESS = 0x8002006a,
+
+  SCE_KERNEL_ERROR_ILLEGAL_INTRPARAM = 0x8002006b,
+
+  SCE_KERNEL_ERROR_ILLEGAL_STACK_ADDRESS = 0x8002006c,
+
+  SCE_KERNEL_ERROR_ALREADY_STACK_SET = 0x8002006d,
+
+  SCE_KERNEL_ERROR_NO_TIMER = 0x80020096,
+
+  SCE_KERNEL_ERROR_ILLEGAL_TIMERID = 0x80020097,
+
+  SCE_KERNEL_ERROR_ILLEGAL_SOURCE = 0x80020098,
+
+  SCE_KERNEL_ERROR_ILLEGAL_PRESCALE = 0x80020099,
+
+  SCE_KERNEL_ERROR_TIMER_BUSY = 0x8002009a,
+
+  SCE_KERNEL_ERROR_TIMER_NOT_SETUP = 0x8002009b,
+
+  SCE_KERNEL_ERROR_TIMER_NOT_INUSE = 0x8002009c,
+
+  SCE_KERNEL_ERROR_IDTYPE_EXIST = 0x800200c8,
+
+  SCE_KERNEL_ERROR_IDTYPE_NOT_EXIST = 0x800200c9,
+
+  SCE_KERNEL_ERROR_IDTYPE_NOT_EMPTY = 0x800200ca,
+
+  SCE_KERNEL_ERROR_UNKNOWN_UID = 0x800200cb,
+
+  SCE_KERNEL_ERROR_UNMATCH_UID_TYPE = 0x800200cc,
+
+  SCE_KERNEL_ERROR_ID_NOT_EXIST = 0x800200cd,
+
+  SCE_KERNEL_ERROR_NOT_FOUND_UIDFUNC = 0x800200ce,
+
+  SCE_KERNEL_ERROR_UID_ALREADY_HOLDER = 0x800200cf,
+
+  SCE_KERNEL_ERROR_UID_NOT_HOLDER = 0x800200d0,
+
+  SCE_KERNEL_ERROR_ILLEGAL_PERM = 0x800200d1,
+
+  SCE_KERNEL_ERROR_ILLEGAL_ARGUMENT = 0x800200d2,
+
+  SCE_KERNEL_ERROR_ILLEGAL_ADDR = 0x800200d3,
+
+  SCE_KERNEL_ERROR_OUT_OF_RANGE = 0x800200d4,
+
+  SCE_KERNEL_ERROR_MEM_RANGE_OVERLAP = 0x800200d5,
+
+  SCE_KERNEL_ERROR_ILLEGAL_PARTITION = 0x800200d6,
+
+  SCE_KERNEL_ERROR_PARTITION_INUSE = 0x800200d7,
+
+  SCE_KERNEL_ERROR_ILLEGAL_MEMBLOCKTYPE = 0x800200d8,
+
+  SCE_KERNEL_ERROR_MEMBLOCK_ALLOC_FAILED = 0x800200d9,
+
+  SCE_KERNEL_ERROR_MEMBLOCK_RESIZE_LOCKED = 0x800200da,
+
+  SCE_KERNEL_ERROR_MEMBLOCK_RESIZE_FAILED = 0x800200db,
+
+  SCE_KERNEL_ERROR_HEAPBLOCK_ALLOC_FAILED = 0x800200dc,
+
+  SCE_KERNEL_ERROR_HEAP_ALLOC_FAILED = 0x800200dd,
+
+  SCE_KERNEL_ERROR_ILLEGAL_CHUNK_ID = 0x800200de,
+
+  SCE_KERNEL_ERROR_NOCHUNK = 0x800200df,
+
+  SCE_KERNEL_ERROR_NO_FREECHUNK = 0x800200e0,
+
+  SCE_KERNEL_ERROR_MEMBLOCK_NOT_NEIGHBORING = 0x800200e1,
+
+  SCE_KERNEL_ERROR_MEMBLOCK_JOINT_FAILED = 0x800200e2,
+
+  SCE_KERNEL_ERROR_MEMBLOCK_SEPARATE_FAILED = 0x800200e3,
+
+  SCE_KERNEL_ERROR_ILLEGAL_ALIGNMENTSIZE = 0x800200e4,
+
+  SCE_KERNEL_ERROR_ILLEGAL_DEVKIT_VERSION = 0x800200e5,
+
+  SCE_KERNEL_ERROR_LINKERR = 0x8002012c,
+
+  SCE_KERNEL_ERROR_ILLEGAL_OBJECT = 0x8002012d,
+
+  SCE_KERNEL_ERROR_UNKNOWN_MODULE = 0x8002012e,
+
+  SCE_KERNEL_ERROR_NOFILE = 0x8002012f,
+
+  SCE_KERNEL_ERROR_FILEERR = 0x80020130,
+
+  SCE_KERNEL_ERROR_MEMINUSE = 0x80020131,
+
+  SCE_KERNEL_ERROR_PARTITION_MISMATCH = 0x80020132,
+
+  SCE_KERNEL_ERROR_ALREADY_STARTED = 0x80020133,
+
+  SCE_KERNEL_ERROR_NOT_STARTED = 0x80020134,
+
+  SCE_KERNEL_ERROR_ALREADY_STOPPED = 0x80020135,
+
+  SCE_KERNEL_ERROR_CAN_NOT_STOP = 0x80020136,
+
+  SCE_KERNEL_ERROR_NOT_STOPPED = 0x80020137,
+
+  SCE_KERNEL_ERROR_NOT_REMOVABLE = 0x80020138,
+
+  SCE_KERNEL_ERROR_EXCLUSIVE_LOAD = 0x80020139,
+
+  SCE_KERNEL_ERROR_LIBRARY_NOT_YET_LINKED = 0x8002013a,
+
+  SCE_KERNEL_ERROR_LIBRARY_FOUND = 0x8002013b,
+
+  SCE_KERNEL_ERROR_LIBRARY_NOTFOUND = 0x8002013c,
+
+  SCE_KERNEL_ERROR_ILLEGAL_LIBRARY = 0x8002013d,
+
+  SCE_KERNEL_ERROR_LIBRARY_INUSE = 0x8002013e,
+
+  SCE_KERNEL_ERROR_ALREADY_STOPPING = 0x8002013f,
+
+  SCE_KERNEL_ERROR_ILLEGAL_OFFSET = 0x80020140,
+
+  SCE_KERNEL_ERROR_ILLEGAL_POSITION = 0x80020141,
+
+  SCE_KERNEL_ERROR_ILLEGAL_ACCESS = 0x80020142,
+
+  SCE_KERNEL_ERROR_MODULE_MGR_BUSY = 0x80020143,
+
+  SCE_KERNEL_ERROR_ILLEGAL_FLAG = 0x80020144,
+
+  SCE_KERNEL_ERROR_CANNOT_GET_MODULELIST = 0x80020145,
+
+  SCE_KERNEL_ERROR_PROHIBIT_LOADMODULE_DEVICE = 0x80020146,
+
+  SCE_KERNEL_ERROR_PROHIBIT_LOADEXEC_DEVICE = 0x80020147,
+
+  SCE_KERNEL_ERROR_UNSUPPORTED_PRX_TYPE = 0x80020148,
+
+  SCE_KERNEL_ERROR_ILLEGAL_PERM_CALL = 0x80020149,
+
+  SCE_KERNEL_ERROR_CANNOT_GET_MODULE_INFORMATION = 0x8002014a,
+
+  SCE_KERNEL_ERROR_ILLEGAL_LOADEXEC_BUFFER = 0x8002014b,
+
+  SCE_KERNEL_ERROR_ILLEGAL_LOADEXEC_FILENAME = 0x8002014c,
+
+  SCE_KERNEL_ERROR_NO_EXIT_CALLBACK = 0x8002014d,
+
+  SCE_KERNEL_ERROR_MEDIA_IS_CHANGED = 0x8002014e,
+
+  SCE_KERNEL_ERROR_TRY_TO_USE_BETA_VERSION_MODULE = 0x8002014f,
+
+  SCE_KERNEL_ERROR_BSOD_FAULT = 0x80020150,
+
+  SCE_KERNEL_ERROR_REBOOT_AFTER_HIBERNATION = 0x80020151,
+
+  SCE_KERNEL_ERROR_LICENSE_EXPIRED = 0x80020152,
+
+  SCE_KERNEL_ERROR_NO_MEMORY = 0x80020190,
+
+  SCE_KERNEL_ERROR_ILLEGAL_ATTR = 0x80020191,
+
+  SCE_KERNEL_ERROR_ILLEGAL_ENTRY = 0x80020192,
+
+  SCE_KERNEL_ERROR_ILLEGAL_PRIORITY = 0x80020193,
+
+  SCE_KERNEL_ERROR_ILLEGAL_STACK_SIZE = 0x80020194,
+
+  SCE_KERNEL_ERROR_ILLEGAL_MODE = 0x80020195,
+
+  SCE_KERNEL_ERROR_ILLEGAL_MASK = 0x80020196,
+
+  SCE_KERNEL_ERROR_ILLEGAL_THID = 0x80020197,
+
+  SCE_KERNEL_ERROR_UNKNOWN_THID = 0x80020198,
+
+  SCE_KERNEL_ERROR_UNKNOWN_SEMID = 0x80020199,
+
+  SCE_KERNEL_ERROR_UNKNOWN_EVFID = 0x8002019a,
+
+  SCE_KERNEL_ERROR_UNKNOWN_MBXID = 0x8002019b,
+
+  SCE_KERNEL_ERROR_UNKNOWN_VPLID = 0x8002019c,
+
+  SCE_KERNEL_ERROR_UNKNOWN_FPLID = 0x8002019d,
+
+  SCE_KERNEL_ERROR_UNKNOWN_MPPID = 0x8002019e,
+
+  SCE_KERNEL_ERROR_UNKNOWN_ALMID = 0x8002019f,
+
+  SCE_KERNEL_ERROR_UNKNOWN_TEID = 0x800201a0,
+
+  SCE_KERNEL_ERROR_UNKNOWN_CBID = 0x800201a1,
+
+  SCE_KERNEL_ERROR_DORMANT = 0x800201a2,
+
+  SCE_KERNEL_ERROR_SUSPEND = 0x800201a3,
+
+  SCE_KERNEL_ERROR_NOT_DORMANT = 0x800201a4,
+
+  SCE_KERNEL_ERROR_NOT_SUSPEND = 0x800201a5,
+
+  SCE_KERNEL_ERROR_NOT_WAIT = 0x800201a6,
+
+  SCE_KERNEL_ERROR_CAN_NOT_WAIT = 0x800201a7,
+
+  SCE_KERNEL_ERROR_WAIT_TIMEOUT = 0x800201a8,
+
+  SCE_KERNEL_ERROR_WAIT_CANCEL = 0x800201a9,
+
+  SCE_KERNEL_ERROR_RELEASE_WAIT = 0x800201aa,
+
+  SCE_KERNEL_ERROR_NOTIFY_CALLBACK = 0x800201ab,
+
+  SCE_KERNEL_ERROR_THREAD_TERMINATED = 0x800201ac,
+
+  SCE_KERNEL_ERROR_SEMA_ZERO = 0x800201ad,
+
+  SCE_KERNEL_ERROR_SEMA_OVF = 0x800201ae,
+
+  SCE_KERNEL_ERROR_EVF_COND = 0x800201af,
+
+  SCE_KERNEL_ERROR_EVF_MULTI = 0x800201b0,
+
+  SCE_KERNEL_ERROR_EVF_ILPAT = 0x800201b1,
+
+  SCE_KERNEL_ERROR_MBOX_NOMSG = 0x800201b2,
+
+  SCE_KERNEL_ERROR_MPP_FULL = 0x800201b3,
+
+  SCE_KERNEL_ERROR_MPP_EMPTY = 0x800201b4,
+
+  SCE_KERNEL_ERROR_WAIT_DELETE = 0x800201b5,
+
+  SCE_KERNEL_ERROR_ILLEGAL_MEMBLOCK = 0x800201b6,
+
+  SCE_KERNEL_ERROR_ILLEGAL_MEMSIZE = 0x800201b7,
+
+  SCE_KERNEL_ERROR_ILLEGAL_SPADADDR = 0x800201b8,
+
+  SCE_KERNEL_ERROR_SPAD_INUSE = 0x800201b9,
+
+  SCE_KERNEL_ERROR_SPAD_NOT_INUSE = 0x800201ba,
+
+  SCE_KERNEL_ERROR_ILLEGAL_TYPE = 0x800201bb,
+
+  SCE_KERNEL_ERROR_ILLEGAL_SIZE = 0x800201bc,
+
+  SCE_KERNEL_ERROR_ILLEGAL_COUNT = 0x800201bd,
+
+  SCE_KERNEL_ERROR_UNKNOWN_VTID = 0x800201be,
+
+  SCE_KERNEL_ERROR_ILLEGAL_VTID = 0x800201bf,
+
+  SCE_KERNEL_ERROR_ILLEGAL_KTLSID = 0x800201c0,
+
+  SCE_KERNEL_ERROR_KTLS_FULL = 0x800201c1,
+
+  SCE_KERNEL_ERROR_KTLS_BUSY = 0x800201c2,
+
+  SCE_KERNEL_ERROR_UNKNOWN_MUTEXID = 0x800201c3,
+
+  SCE_KERNEL_ERROR_MUTEX_FAILED_TO_OWN = 0x800201c4,
+
+  SCE_KERNEL_ERROR_MUTEX_NOT_OWNED = 0x800201c5,
+
+  SCE_KERNEL_ERROR_MUTEX_LOCK_OVF = 0x800201c6,
+
+  SCE_KERNEL_ERROR_MUTEX_UNLOCK_UDF = 0x800201c7,
+
+  SCE_KERNEL_ERROR_MUTEX_RECURSIVE = 0x800201c8,
+
+  SCE_KERNEL_ERROR_MBOX_LOOP = 0x800201c9,
+
+  SCE_KERNEL_ERROR_UNKNOWN_LWMUTEXID = 0x800201ca,
+
+  SCE_KERNEL_ERROR_LWMUTEX_FAILED_TO_OWN = 0x800201cb,
+
+  SCE_KERNEL_ERROR_LWMUTEX_NOT_OWNED = 0x800201cc,
+
+  SCE_KERNEL_ERROR_LWMUTEX_LOCK_OVF = 0x800201cd,
+
+  SCE_KERNEL_ERROR_LWMUTEX_UNLOCK_UDF = 0x800201ce,
+
+  SCE_KERNEL_ERROR_LWMUTEX_RECURSIVE = 0x800201cf,
+
+  SCE_KERNEL_ERROR_UNKNOWN_TLSPLID = 0x800201d0,
+
+  SCE_KERNEL_ERROR_UTLS_FULL = 0x800201d1,
+
+  SCE_KERNEL_ERROR_UTLS_BUSY = 0x800201d2,
+
+  SCE_KERNEL_ERROR_DMAC_REQUEST_FAILED = 0x800202bc,
+
+  SCE_KERNEL_ERROR_DMAC_REQUEST_DENIED = 0x800202bd,
+
+  SCE_KERNEL_ERROR_DMAC_OP_QUEUED = 0x800202be,
+
+  SCE_KERNEL_ERROR_DMAC_OP_NOT_QUEUED = 0x800202bf,
+
+  SCE_KERNEL_ERROR_DMAC_OP_RUNNING = 0x800202c0,
+
+  SCE_KERNEL_ERROR_DMAC_OP_NOT_ASSIGNED = 0x800202c1,
+
+  SCE_KERNEL_ERROR_DMAC_OP_TIMEOUT = 0x800202c2,
+
+  SCE_KERNEL_ERROR_DMAC_OP_FREED = 0x800202c3,
+
+  SCE_KERNEL_ERROR_DMAC_OP_USED = 0x800202c4,
+
+  SCE_KERNEL_ERROR_DMAC_OP_EMPTY = 0x800202c5,
+
+  SCE_KERNEL_ERROR_DMAC_OP_ABORTED = 0x800202c6,
+
+  SCE_KERNEL_ERROR_DMAC_OP_ERROR = 0x800202c7,
+
+  SCE_KERNEL_ERROR_DMAC_CHANNEL_RESERVED = 0x800202c8,
+
+  SCE_KERNEL_ERROR_DMAC_CHANNEL_EXCLUDED = 0x800202c9,
+
+  SCE_KERNEL_ERROR_DMAC_PRIVILEGE_ADDRESS = 0x800202ca,
+
+  SCE_KERNEL_ERROR_DMAC_NO_ENOUGHSPACE = 0x800202cb,
+
+  SCE_KERNEL_ERROR_DMAC_CHANNEL_NOT_ASSIGNED = 0x800202cc,
+
+  SCE_KERNEL_ERROR_DMAC_CHILD_OPERATION = 0x800202cd,
+
+  SCE_KERNEL_ERROR_DMAC_TOO_MUCH_SIZE = 0x800202ce,
+
+  SCE_KERNEL_ERROR_DMAC_INVALID_ARGUMENT = 0x800202cf,
+
+  SCE_KERNEL_ERROR_MFILE = 0x80020320,
+
+  SCE_KERNEL_ERROR_NODEV = 0x80020321,
+
+  SCE_KERNEL_ERROR_XDEV = 0x80020322,
+
+  SCE_KERNEL_ERROR_BADF = 0x80020323,
+
+  SCE_KERNEL_ERROR_INVAL = 0x80020324,
+
+  SCE_KERNEL_ERROR_UNSUP = 0x80020325,
+
+  SCE_KERNEL_ERROR_ALIAS_USED = 0x80020326,
+
+  SCE_KERNEL_ERROR_CANNOT_MOUNT = 0x80020327,
+
+  SCE_KERNEL_ERROR_DRIVER_DELETED = 0x80020328,
+
+  SCE_KERNEL_ERROR_ASYNC_BUSY = 0x80020329,
+
+  SCE_KERNEL_ERROR_NOASYNC = 0x8002032a,
+
+  SCE_KERNEL_ERROR_REGDEV = 0x8002032b,
+
+  SCE_KERNEL_ERROR_NOCWD = 0x8002032c,
+
+  SCE_KERNEL_ERROR_NAMETOOLONG = 0x8002032d,
+
+  SCE_KERNEL_ERROR_STDIO_NOT_OPENED = 0x80020384,
+
+  SCE_KERNEL_ERROR_DECI2P_UNKNOWN_SID = 0x800203e8,
+
+  SCE_KERNEL_ERROR_DECI2P_ALREADYUSE_PROTOCOL = 0x800203e9,
+
+  SCE_KERNEL_ERROR_DECI2P_TOOMANY_PROTOCOL = 0x800203ea,
+
+  SCE_KERNEL_ERROR_DECI2P_TOOSMALL_BUFFER = 0x800203eb,
+
+  SCE_KERNEL_ERROR_DECI2P_INVALID_PROTOCOL = 0x800203ec,
+
+  SCE_KERNEL_ERROR_DECI2P_INVALID_HEADER = 0x800203ed,
+
+  SCE_KERNEL_ERROR_DECI2P_NO_ROUTE = 0x800203ee,
+
+  SCE_KERNEL_ERROR_DECI2P_NO_SPACE = 0x800203ef,
+
+  SCE_KERNEL_ERROR_DECI2P_NO_HOSTIF = 0x800203f0,
+
+  SCE_KERNEL_ERROR_CACHE_ALIGNMENT = 0x8002044c,
+
+  SCE_KERNEL_ERROR_ERRORMAX = 0x8002044d
+
+};
+#define _SCE_MODULEEXPORT_H 
+
+#define SCE_MODULE_NAME_LEN 27
+#define SCE_MODULE_MAX_SEGMENTS 4
+
+#define SCE_MODINFO_SECTION_NAME ".rodata.sceModuleInfo"
+#define SCE_RESIDENT_SECTION_NAME ".rodata.sceResident"
+#define SCE_FUNCTION_STUB_SECTION_NAME ".sceStub.text"
+#define SCE_VARIABLE_STUB_SECTION_NAME ".rodata.sceVstub"
+
+#define SCE_LIB_AUTO_EXPORT (0x0001)
+#define SCE_LIB_WEAK_EXPORT (0x0002)
+#define SCE_LIB_NOLINK_EXPORT (0x0004)
+#define SCE_LIB_WEAK_IMPORT (0x0008)
+
+#define __SCE_LIB_DECLARE_BY_ASM 1
+
+#define __SCE_MODULE_LINK_TRIGGER_BY_ASM 1
+
+#define __SCE_LIB_DECLARE_BASE_MACRO(libname,attribute) __asm__( ".pushsection   .psp_lib_mark_" #libname ",\"aw\",@progbits\n" "        .align 2\n" "        .type __PSPLIB_" #libname ", @object\n" "        .size __PSPLIB_" #libname ", 8\n" "__PSPLIB_" #libname ":  .long  1 \n" "           .long  " #attribute "\n" "        .popsection\n")
+#define __SCE_LIB_STUB_BASE_MACRO(libname,stubfile) __asm__( ".pushsection   .psp_lib_mark_" #libname ",\"aw\",@progbits\n" "        .align 2\n" "        .type __PSPSFN_" #libname "_" #stubfile ", @object\n" "        .size __PSPSFN_" #libname "_" #stubfile ", 4\n" "__PSPSFN_" #libname "_" #stubfile ":  .long  0 \n" "        .popsection\n")
+#define __SCE_LIB_DECLARE_BASE_MACRO2(libname,attribute) __asm__( ".pushsection   .psp_lib_mark_" #libname ",\"aw\",@progbits\n" "        .align 2\n" "        .type __PSPLIB2_" #libname ", @object\n" "        .size __PSPLIB2_" #libname ", 12\n" "__PSPLIB2_" #libname ":  .long  2 \n" "           .long  " #attribute "\n" "           .long  1\n" "        .popsection\n")
+#define __SCE_LIB_NIDSUF_BASE_MACRO(libname,nidsuffixstr) __asm__( ".pushsection   .psp_lib_marknid__" #libname ",\"aw\",@progbits\n" "        .align 0\n" "        .type __PSPLIBNID__" #libname ", @object\n" "__PSPLIBNID__" #libname ": .asciz \"" nidsuffixstr "\"\n" "        .size __PSPLIBNID__" #libname ", . - __PSPLIBNID__" #libname "\n" "        .popsection\n")
+#define SCE_LIB_DECLARE_WITH_STUB(libname,attribute,stubfile) __SCE_LIB_DECLARE_BASE_MACRO( libname, attribute ); __SCE_LIB_STUB_BASE_MACRO( libname, stubfile )
+
+#define SCE_LIB_DECLARE(libname,attribute) SCE_LIB_DECLARE_WITH_STUB( libname, attribute, libname ## _stub )
+
+#define SCE_LIB_DECLARE_WITH_STUB_NSUFFIX(libname,attribute,stubfile,nidsuffixstr) __SCE_LIB_DECLARE_BASE_MACRO2( libname, attribute ); __SCE_LIB_STUB_BASE_MACRO( libname, stubfile ); __SCE_LIB_NIDSUF_BASE_MACRO( libname, nidsuffixstr )
+
+#define SCE_LIB_DECLARE_WITH_NID_SUFFIX(libname,attribute,nidsuffixstr) SCE_LIB_DECLARE_WITH_STUB_NSUFFIX( libname, attribute, libname ## _stub, nidsuffixstr )
+
+#define __SCE_MODULE_LINK_FTRIGGER(exportname,funcname,libname) __asm__( ".pushsection   .psp_lib_markimport_" #libname ",\"aw\",@progbits\n" "        .align 2\n" "        .long  " #funcname "\n" "        .popsection\n")
+
+#define __SCE_MODULE_LINK_VTRIGGER(exportname,varname,libname) __asm__( ".pushsection   .psp_lib_markimport_" #libname ",\"aw\",@progbits\n" "        .align 2\n" "        .long  " #varname "\n" "        .popsection\n")
+#define __SCE_LIB_EXPORT_BASE_MACRO(vfflag,exportname,fvname,libname,openlevel) __asm__( ".pushsection   .psp_lib_mark_" #libname ",\"aw\",@progbits\n" "        .align 2\n" "        .type __PSPEXP_" #libname "_" #exportname ", @object\n" "        .size __PSPEXP_" #libname "_" #exportname ", 8\n" "__PSPEXP_" #libname "_" #exportname ":\n" "          .long  1, " #vfflag "\n" "        .type __PSPREN_" #libname "_" #exportname "_" #fvname ", @object\n" "        .size __PSPREN_" #libname "_" #exportname "_" #fvname ", 8\n" "__PSPREN_" #libname "_" #exportname "_" #fvname ":\n" "          .long  1, " #openlevel "\n" "        .popsection\n")
+#define __SCE_LIB_EXPORT_BASE_MACRO_WITH_NID(vfflag,exportname,fvname,nidname,libname,openlevel) __asm__( ".pushsection   .psp_lib_mark_" #libname ",\"aw\",@progbits\n" "        .align 2\n" "        .type __PSPEXP_" #libname "_" #exportname ", @object\n" "        .size __PSPEXP_" #libname "_" #exportname ", 8\n" "__PSPEXP_" #libname "_" #exportname ":\n" "          .long  1, " #vfflag "\n" "        .type __PSPNID_" #libname "_" #exportname "_" #nidname ", @object\n" "        .size __PSPNID_" #libname "_" #exportname "_" #nidname ", 4\n" "__PSPNID_" #libname "_" #exportname "_" #nidname ":\n" "          .long  0 \n" "        .type __PSPREN_" #libname "_" #exportname "_" #fvname ", @object\n" "        .size __PSPREN_" #libname "_" #exportname "_" #fvname ", 8\n" "__PSPREN_" #libname "_" #exportname "_" #fvname ":\n" "          .long  1, " #openlevel "\n" "        .popsection\n")
+#define SCE_LIB_EXPORT_FUNC_WITH_FULLOPTION(exportname,funcname,libname,openlevel) __SCE_MODULE_LINK_FTRIGGER(exportname,funcname,libname); __SCE_LIB_EXPORT_BASE_MACRO(0,exportname,funcname,libname,openlevel)
+
+#define SCE_LIB_EXPORT_WITH_FULLOPTION(exportname,funcname,libname,openlevel) SCE_LIB_EXPORT_FUNC_WITH_FULLOPTION(exportname,funcname,libname,openlevel)
+
+#define SCE_LIB_EXPORT_WITH_OPENLEVEL(funcname,libname,openlevel) SCE_LIB_EXPORT_FUNC_WITH_FULLOPTION( funcname,funcname,libname,openlevel)
+
+#define SCE_LIB_EXPORT_OTHER_NAME(exportname,funcname,libname) SCE_LIB_EXPORT_FUNC_WITH_FULLOPTION( exportname, funcname, libname, 0 )
+
+#define SCE_LIB_EXPORT(funcname,libname) SCE_LIB_EXPORT_WITH_OPENLEVEL( funcname, libname, 0 )
+
+#define SCE_LIB_EXPORT_FUNC_OTHER_NIDNAME_WITH_FULLOPTION(exportname,funcname,nidname,libname,openlevel) __SCE_MODULE_LINK_FTRIGGER(exportname,funcname,libname); __SCE_LIB_EXPORT_BASE_MACRO_WITH_NID(0,exportname,funcname,nidname,libname,openlevel)
+
+#define SCE_LIB_EXPORT_OTHER_NID_WITH_OPENLEVEL(funcname,nidname,libname,openlevel) SCE_LIB_EXPORT_FUNC_OTHER_NIDNAME_WITH_FULLOPTION(funcname,funcname,nidname,libname,openlevel)
+
+#define SCE_LIB_EXPORT_OTHER_NAME_OTHER_NID(exportname,funcname,nidname,libname) SCE_LIB_EXPORT_FUNC_OTHER_NIDNAME_WITH_FULLOPTION(exportname,funcname,nidname,libname,0)
+
+#define SCE_LIB_EXPORT_OTHER_NID(funcname,nidname,libname) SCE_LIB_EXPORT_OTHER_NID_WITH_OPENLEVEL( funcname, nidname, libname, 0 )
+
+#define SCE_LIB_EXPORT_VAR_WITH_FULLOPTION(exportname,varname,libname,openlevel) __SCE_MODULE_LINK_VTRIGGER(exportname,varname,libname); __SCE_LIB_EXPORT_BASE_MACRO(1,exportname,varname,libname,openlevel)
+
+#define SCE_LIB_EXPORT_VAR_WITH_OPENLEVEL(varname,libname,openlevel) SCE_LIB_EXPORT_VAR_WITH_FULLOPTION( varname, varname, libname, openlevel )
+
+#define SCE_LIB_EXPORT_VAR_OTHER_NAME(exportname,varname,libname) SCE_LIB_EXPORT_VAR_WITH_FULLOPTION( exportname, varname, libname, 0 )
+
+#define SCE_LIB_EXPORT_VAR(varname,libname) SCE_LIB_EXPORT_VAR_WITH_OPENLEVEL( varname, libname, 0 )
+
+#define SCE_LIB_EXPORT_VAR_OTHER_NIDNAME_WITH_FULLOPTION(exportname,varname,nidname,libname,openlevel) __SCE_MODULE_LINK_VTRIGGER(exportname,varname,libname); __SCE_LIB_EXPORT_BASE_MACRO_WITH_NID(1,exportname,varname,nidname,libname,openlevel)
+
+#define SCE_LIB_EXPORT_VAR_OTHER_NID_WITH_OPENLEVEL(varname,nidname,libname,openlevel) SCE_LIB_EXPORT_VAR_OTHER_NIDNAME_WITH_FULLOPTION( varname, varname, nidname, libname, openlevel )
+
+#define SCE_LIB_EXPORT_VAR_OTHER_NAME_OTHER_NID(exportname,varname,nidname,libname) SCE_LIB_EXPORT_VAR_OTHER_NIDNAME_WITH_FULLOPTION( exportname, varname, nidname, libname, 0 )
+
+#define SCE_LIB_EXPORT_VAR_OTHER_NID(varname,nidname,libname) SCE_LIB_EXPORT_VAR_OTHER_NID_WITH_OPENLEVEL( varname, nidname, libname, 0 )
+
+#define SCE_GP_SAFE __attribute__ ((gp_safe))
+
+typedef struct _scemoduleinfo {
+    unsigned short modattribute;
+    unsigned char modversion[2];
+    char modname[27];
+    char terminal;
+    void *gp_value;
+    const void *ent_top;
+    const void *ent_end;
+    const void *stub_top;
+    const void *stub_end;
+} _sceModuleInfo;
+
+typedef const _sceModuleInfo SceModuleInfo;
+
+#define SCE_MODULE_INFO_SECTION __attribute__((aligned(4),section(SCE_MODINFO_SECTION_NAME),unused))
+
+#define SCE_IMPORT_VARIABLE_ATTR __attribute__((section(SCE_VARIABLE_STUB_SECTION_NAME)))
+
+#define SCE_LIB_TABEL_ADDRESS_DEFINE() static const int __begin_of_section_lib_ent[1] __attribute__((aligned(4),section(".lib.ent.top"),unused)) = {0}; static const int __end_of_section_lib_ent[1] __attribute__((aligned(4),section(".lib.ent.btm"),unused)) = {0}; static const int __begin_of_section_lib_stub[1] __attribute__((aligned(4),section(".lib.stub.top"),unused)) = {0}; static const int __end_of_section_lib_stub[1] __attribute__((aligned(4),section(".lib.stub.btm"),unused)) = {0}
+#define __SCE_MODULE_SDK_VERSION_EXPORT(version) const unsigned int __psp_module_sdk_version = version; SCE_LIB_EXPORT_VAR_OTHER_NAME( module_sdk_version, __psp_module_sdk_version, )
+#define SCE_MODULE_INFO_PLAIN(name,attribute,major,minor) extern int _gp[]; SCE_LIB_TABEL_ADDRESS_DEFINE(); SceModuleInfo __psp_moduleinfo SCE_MODULE_INFO_SECTION = { attribute, { minor, major }, #name, 0, (void*)_gp, (const void*)(__begin_of_section_lib_ent+1), (const void*)(__end_of_section_lib_ent), (const void*)(__begin_of_section_lib_stub+1), (const void*)(__end_of_section_lib_stub) }; SCE_LIB_EXPORT_VAR_OTHER_NAME( module_info, __psp_moduleinfo, )
+#define SCE_MODULE_INFO(name,attribute,major,minor) SCE_MODULE_INFO_PLAIN( name, attribute, major, minor ); __SCE_MODULE_SDK_VERSION_EXPORT(SCE_DEVKIT_VERSION)
+
+#define SCE_MODULE_ATTR_CANT_STOP (0x0001)
+#define SCE_MODULE_ATTR_EXCLUSIVE_LOAD (0x0002)
+#define SCE_MODULE_ATTR_EXCLUSIVE_START (0x0004)
+
+#define SCE_MODULE_START(funcname) SCE_LIB_EXPORT_OTHER_NAME( module_start, funcname, )
+
+#define SCE_MODULE_STOP(funcname) SCE_LIB_EXPORT_OTHER_NAME( module_stop, funcname, )
+
+#define SCE_MODULE_REBOOT_BEFORE(funcname) SCE_LIB_EXPORT_OTHER_NAME( module_reboot_before, funcname, )
+#define SCE_MODULE_START_THREAD_PARAMETER(initPriority,stackSize,attr) SCE_LIB_EXPORT_VAR_OTHER_NAME( module_start_thread_parameter, _sce_module_startthpara, ); const int _sce_module_startthpara[] = {3, initPriority, stackSize, attr}
+#define SCE_MODULE_STOP_THREAD_PARAMETER(initPriority,stackSize,attr) SCE_LIB_EXPORT_VAR_OTHER_NAME( module_stop_thread_parameter, _sce_module_stopthpara, ); const int _sce_module_stopthpara[] = {3, initPriority, stackSize, attr}
+#define SCE_MODULE_REBOOT_BEFORE_THREAD_PARAMETER(initPriority,stackSize,attr) SCE_LIB_EXPORT_VAR_OTHER_NAME( module_reboot_before_thread_parameter, _sce_module_stopthpara, ); const int _sce_module_reboot_beforethpara[] = {3, initPriority, stackSize, attr}
+#define _SCE_EXPORTCPLUSPLUS_H 
+#define __SCE_MODULE_LINK_TRIGGER_BY_ASM 1
+
+#define __SCE_LIB_EP_STRING0(a) #a
+#define __SCE_LIB_EP_STRING(a) __SCE_LIB_EP_STRING0(a)
+
+#define __SCE_LIB_EXPORTPICKUP_BASE_MACRO(libname,type,openlevel,flag,pattern) __asm__( ".pushsection   .psp_lib_markpickup_" #libname ",\"aw\",@progbits\n" "        .align 0\n" "        .asciz \"" __FILE__ ":" __SCE_LIB_EP_STRING(__LINE__) ";" #type "(" #openlevel "," #flag ");" pattern "\"\n" "        .popsection\n")
+#define SCE_LIB_EXPORTPICKUP_CPP_FUNC(pattern,libname) __SCE_LIB_EXPORTPICKUP_BASE_MACRO(libname, CPF, 0, 0, pattern)
+
+#define SCE_LIB_EXPORTPICKUP_CPP_FUNC_WITH_OPENLEVEL(pattern,libname,opnlv) __SCE_LIB_EXPORTPICKUP_BASE_MACRO(libname, CPF, opnlv, 0, pattern)
+
+#define SCE_LIB_EXPORTPICKUP_CPP_FUNC_IGNORE(pattern,libname) __SCE_LIB_EXPORTPICKUP_BASE_MACRO(libname, CPF, 0, 2, pattern)
+
+#define SCE_LIB_EXPORTPICKUP_CPP_LOCAL_FUNC(pattern,libname) __SCE_LIB_EXPORTPICKUP_BASE_MACRO(libname, CPF, 0, 1, pattern)
+
+#define SCE_LIB_EXPORTPICKUP_CPP_LOCAL_FUNC_WITH_OPENLEVEL(pattern,libname,opnlv) __SCE_LIB_EXPORTPICKUP_BASE_MACRO(libname, CPF, opnlv, 1, pattern)
+
+#define SCE_LIB_EXPORTPICKUP_CPP_LOCAL_FUNC_IGNORE(pattern,libname) __SCE_LIB_EXPORTPICKUP_BASE_MACRO(libname, CPF, 0, 3, pattern)
+
+#define SCE_LIB_EXPORTPICKUP_CPP_VAR(pattern,libname) __SCE_LIB_EXPORTPICKUP_BASE_MACRO(libname, CPV, 0, 0, pattern)
+
+#define SCE_LIB_EXPORTPICKUP_CPP_VAR_WITH_OPENLEVEL(pattern,libname,opnlv) __SCE_LIB_EXPORTPICKUP_BASE_MACRO(libname, CPV, opnlv, 0, pattern)
+
+#define SCE_LIB_EXPORTPICKUP_CPP_VAR_IGNORE(pattern,libname) __SCE_LIB_EXPORTPICKUP_BASE_MACRO(libname, CPV, 0, 2, pattern)
+
+#define SCE_LIB_EXPORTPICKUP_CPP_LOCAL_VAR(pattern,libname) __SCE_LIB_EXPORTPICKUP_BASE_MACRO(libname, CPV, 0, 1, pattern)
+
+#define SCE_LIB_EXPORTPICKUP_CPP_LOCAL_VAR_WITH_OPENLEVEL(pattern,libname,opnlv) __SCE_LIB_EXPORTPICKUP_BASE_MACRO(libname, CPV, opnlv, 1, pattern)
+
+#define SCE_LIB_EXPORTPICKUP_CPP_LOCAL_VAR_IGNORE(pattern,libname) __SCE_LIB_EXPORTPICKUP_BASE_MACRO(libname, CPV, 0, 3, pattern)
+
+#define SCE_LIB_EXPORTPICKUP_CLASS(pattern,libname) __SCE_LIB_EXPORTPICKUP_BASE_MACRO(libname, CLS, 0, 0, pattern)
+
+#define SCE_LIB_EXPORTPICKUP_CLASS_IGNORE(pattern,libname) __SCE_LIB_EXPORTPICKUP_BASE_MACRO(libname, CLS, 0, 2, pattern)
+
+#define SCE_LIB_EXPORTPICKUP_NAMESPACE(pattern,libname) __SCE_LIB_EXPORTPICKUP_BASE_MACRO(libname, NSP, 0, 0, pattern)
+
+#define SCE_LIB_EXPORTPICKUP_NAMESPACE_IGNORE(pattern,libname) __SCE_LIB_EXPORTPICKUP_BASE_MACRO(libname, NSP, 0, 2, pattern)
+
+#define SCE_LIB_EXPORTPICKUP_ELF_VISIBILITY_DEFAULT(libname) __SCE_LIB_EXPORTPICKUP_BASE_MACRO(libname, ELF, 0, 0, "STV_DEFAULT")
+
+#define SCE_LIB_EXPORTPICKUP_ELF_VISIBILITY_LOCAL_DEFAULT(libname) __SCE_LIB_EXPORTPICKUP_BASE_MACRO(libname, ELF, 0, 1, "STV_DEFAULT")
+
+#define SCE_LIB_EXPORTPICKUP_ELF_VISIBILITY_HIDDEN_IGNORE(libname) __SCE_LIB_EXPORTPICKUP_BASE_MACRO(libname, ELF, 0, 2, "STV_HIDDEN")
+
+#define SCE_LIB_EXPORTPICKUP_ELF_VISIBILITY_LOCAL_HIDDEN_IGNORE(libname) __SCE_LIB_EXPORTPICKUP_BASE_MACRO(libname, ELF, 0, 3, "STV_HIDDEN")
+
+#define SCE_LIB_EXPORTPICKUP_C_FUNC(pattern,libname) __SCE_LIB_EXPORTPICKUP_BASE_MACRO(libname, CFN, 0, 0, pattern)
+
+#define SCE_LIB_EXPORTPICKUP_C_FUNC_WITH_OPENLEVEL(pattern,libname,opnlv) __SCE_LIB_EXPORTPICKUP_BASE_MACRO(libname, CFN, opnlv, 0, pattern)
+
+#define SCE_LIB_EXPORTPICKUP_C_FUNC_IGNORE(pattern,libname) __SCE_LIB_EXPORTPICKUP_BASE_MACRO(libname, CFN, 0, 2, pattern)
+
+#define SCE_LIB_EXPORTPICKUP_C_LOCAL_FUNC(pattern,libname) __SCE_LIB_EXPORTPICKUP_BASE_MACRO(libname, CFN, 0, 1, pattern)
+
+#define SCE_LIB_EXPORTPICKUP_C_LOCAL_FUNC_WITH_OPENLEVEL(pattern,libname,opnlv) __SCE_LIB_EXPORTPICKUP_BASE_MACRO(libname, CFN, opnlv, 1, pattern)
+
+#define SCE_LIB_EXPORTPICKUP_C_LOCAL_FUNC_IGNORE(pattern,libname) __SCE_LIB_EXPORTPICKUP_BASE_MACRO(libname, CFN, 0, 3, pattern)
+
+#define SCE_LIB_EXPORTPICKUP_C_VAR(pattern,libname) __SCE_LIB_EXPORTPICKUP_BASE_MACRO(libname, CVR, 0, 0, pattern)
+
+#define SCE_LIB_EXPORTPICKUP_C_VAR_WITH_OPENLEVEL(pattern,libname,opnlv) __SCE_LIB_EXPORTPICKUP_BASE_MACRO(libname, CVR, opnlv, 0, pattern)
+
+#define SCE_LIB_EXPORTPICKUP_C_VAR_IGNORE(pattern,libname) __SCE_LIB_EXPORTPICKUP_BASE_MACRO(libname, CVR, 0, 2, pattern)
+
+#define SCE_LIB_EXPORTPICKUP_C_LOCAL_VAR(pattern,libname) __SCE_LIB_EXPORTPICKUP_BASE_MACRO(libname, CVR, 0, 1, pattern)
+
+#define SCE_LIB_EXPORTPICKUP_C_LOCAL_VAR_WITH_OPENLEVEL(pattern,libname,opnlv) __SCE_LIB_EXPORTPICKUP_BASE_MACRO(libname, CVR, opnlv, 1, pattern)
+
+#define SCE_LIB_EXPORTPICKUP_C_LOCAL_VAR_IGNORE(pattern,libname) __SCE_LIB_EXPORTPICKUP_BASE_MACRO(libname, CVR, 0, 3, pattern)
+
+#define _SCE_ALLEGREX_H 
+
+#define SCE_ALLEGREX_CACHE_BLOCK_SIZE 64
+#define SCE_ALLEGREX_DCACHE_BLOCK_SIZE SCE_ALLEGREX_CACHE_BLOCK_SIZE
+#define SCE_ALLEGREX_ICACHE_BLOCK_SIZE SCE_ALLEGREX_CACHE_BLOCK_SIZE
+
+#define SCE_ALLEGREX_CACHE_BLOCKS 256
+#define SCE_ALLEGREX_DCACHE_BLOCKS SCE_ALLEGREX_CACHE_BLOCKS
+#define SCE_ALLEGREX_ICACHE_BLOCKS SCE_ALLEGREX_CACHE_BLOCKS
+
+#define SCE_ALLEGREX_CACHE_CAPACITY (SCE_ALLEGREX_CACHE_BLOCKS * SCE_ALLEGREX_CACHE_BLOCK_SIZE)
+#define SCE_ALLEGREX_DCACHE_CAPACITY (SCE_ALLEGREX_DCACHE_BLOCKS * SCE_ALLEGREX_DCACHE_BLOCK_SIZE)
+#define SCE_ALLEGREX_ICACHE_CAPACITY (SCE_ALLEGREX_ICACHE_BLOCKS * SCE_ALLEGREX_ICACHE_BLOCK_SIZE)
+
+#define SCE_ALLEGREX_CACHE_WAYS 2
+#define SCE_ALLEGREX_DCACHE_WAYS SCE_ALLEGREX_CACHE_WAYS
+#define SCE_ALLEGREX_ICACHE_WAYS SCE_ALLEGREX_CACHE_WAYS
+
+#define SCE_ALLEGREX_CACHE_INDEXES (SCE_ALLEGREX_CACHE_BLOCKS / SCE_ALLEGREX_CACHE_WAYS)
+#define SCE_ALLEGREX_DCACHE_INDEXES (SCE_ALLEGREX_DCACHE_BLOCKS / SCE_ALLEGREX_DCACHE_WAYS)
+#define SCE_ALLEGREX_ICACHE_INDEXES (SCE_ALLEGREX_ICACHE_BLOCKS / SCE_ALLEGREX_ICACHE_WAYS)
+
+#define SCE_ALLEGREX_CACHEOP_INDEX_INVALIDATE_I 0x04
+#define SCE_ALLEGREX_CACHEOP_INDEX_UNLOCK_I 0x06
+#define SCE_ALLEGREX_CACHEOP_HIT_INVALIDATE_I 0x08
+#define SCE_ALLEGREX_CACHEOP_FILL_I 0x0A
+#define SCE_ALLEGREX_CACHEOP_FILL_WITH_LOCK_I 0x0B
+#define SCE_ALLEGREX_CACHEOP_INDEX_WRITEBACK_INVALIDATE_D 0x14
+#define SCE_ALLEGREX_CACHEOP_INDEX_UNLOCK_D 0x16
+#define SCE_ALLEGREX_CACHEOP_CREATE_DIRTY_EXCLUSIVE_D 0x18
+#define SCE_ALLEGREX_CACHEOP_HIT_INVALIDATE_D 0x19
+#define SCE_ALLEGREX_CACHEOP_HIT_WRITEBACK_D 0x1A
+#define SCE_ALLEGREX_CACHEOP_HIT_WRITEBACK_INVALIDATE_D 0x1B
+#define SCE_ALLEGREX_CACHEOP_CREATE_DIRTY_EXCLUSIVE_WITH_LOCK_D 0x1C
+#define SCE_ALLEGREX_CACHEOP_FILL_D 0x1E
+#define SCE_ALLEGREX_CACHEOP_FILL_WITH_LOCK_D 0x1F
+
+#define SCE_ALLEGREX_FCR31_FS 0x01000000U
+#define SCE_ALLEGREX_FCR31_C 0x00800000U
+#define SCE_ALLEGREX_FCR31_CAUSE_E 0x00020000U
+#define SCE_ALLEGREX_FCR31_CAUSE_V 0x00010000U
+#define SCE_ALLEGREX_FCR31_CAUSE_Z 0x00008000U
+#define SCE_ALLEGREX_FCR31_CAUSE_O 0x00004000U
+#define SCE_ALLEGREX_FCR31_CAUSE_U 0x00002000U
+#define SCE_ALLEGREX_FCR31_CAUSE_I 0x00001000U
+#define SCE_ALLEGREX_FCR31_ENABLES_V 0x00000800U
+#define SCE_ALLEGREX_FCR31_ENABLES_Z 0x00000400U
+#define SCE_ALLEGREX_FCR31_ENABLES_O 0x00000200U
+#define SCE_ALLEGREX_FCR31_ENABLES_U 0x00000100U
+#define SCE_ALLEGREX_FCR31_ENABLES_I 0x00000080U
+#define SCE_ALLEGREX_FCR31_FLAGS_V 0x00000040U
+#define SCE_ALLEGREX_FCR31_FLAGS_Z 0x00000020U
+#define SCE_ALLEGREX_FCR31_FLAGS_O 0x00000010U
+#define SCE_ALLEGREX_FCR31_FLAGS_U 0x00000008U
+#define SCE_ALLEGREX_FCR31_FLAGS_I 0x00000004U
+#define SCE_ALLEGREX_FCR31_RM_RN 0x00000000U
+#define SCE_ALLEGREX_FCR31_RM_RZ 0x00000001U
+#define SCE_ALLEGREX_FCR31_RM_RP 0x00000002U
+#define SCE_ALLEGREX_FCR31_RM_RM 0x00000003U
+#define SCE_ALLEGREX_USE_BUILTIN 1
+#define sceAllegrexClz(_val) __builtin_allegrex_clz(_val)
+#define sceAllegrexClo(_val) __builtin_allegrex_clo(_val)
+#define sceAllegrexCtz(_val) __builtin_allegrex_ctz(_val)
+#define sceAllegrexCto(_val) __builtin_allegrex_cto(_val)
+#define sceAllegrexMax(_val1,_val2) __builtin_allegrex_max((_val1),(_val2))
+#define sceAllegrexMin(_val1,_val2) __builtin_allegrex_min((_val1),(_val2))
+#define sceAllegrexSeb(_val) __builtin_allegrex_seb(_val)
+#define sceAllegrexSeh(_val) __builtin_allegrex_seh(_val)
+#define sceAllegrexWsbw(_x) __builtin_allegrex_wsbw(_x)
+#define sceAllegrexWsbh(_x) __builtin_allegrex_wsbh(_x)
+#define sceAllegrexBitrev(_val) __builtin_allegrex_bitrev(_val)
+#define sceAllegrexRotl(_val,_n) __builtin_allegrex_rotl((_val),(_n))
+#define sceAllegrexRotr(_val,_n) __builtin_allegrex_rotr((_val),(_n))
+#define sceAllegrexExt(_x,_pos,_size) __builtin_allegrex_ext((_x),(_pos),(_size))
+#define sceAllegrexIns(_val1,_val2,_pos,_size) __builtin_allegrex_ins((_val1),(_val2),(_pos),(_size))
+#define sceAllegrexCache(_code,_p) __builtin_allegrex_cache((_code),(_p))
+#define sceAllegrexSync() __builtin_allegrex_sync()
+
+#define sceAllegrexCeil(_val) __builtin_allegrex_ceil_w_s(_val)
+#define sceAllegrexFloor(_val) __builtin_allegrex_floor_w_s(_val)
+#define sceAllegrexRound(_val) __builtin_allegrex_round_w_s(_val)
+#define sceAllegrexTrunc(_val) __builtin_allegrex_trunc_w_s(_val)
+#define sceAllegrexSqrt(_val) __builtin_allegrex_sqrt_s(_val)
+#define _SCE_PROFILER_H 
+#define SCE_PROFILER_Enable 0x00
+#define SCE_PROFILER_System_Clock_Cycle 0x04
+#define SCE_PROFILER_CPU_Geared_Cycle 0x08
+#define SCE_PROFILER_Internal_Stall 0x0C
+#define SCE_PROFILER_Memory_Stall 0x10
+#define SCE_PROFILER_COPz_Busy_Stall 0x14
+#define SCE_PROFILER_VFPU_Busy_Stall 0x18
+#define SCE_PROFILER_Sleep_Stall 0x1C
+#define SCE_PROFILER_Bus_Busy_Cycle 0x20
+#define SCE_PROFILER_Uncached_Load 0x24
+#define SCE_PROFILER_Uncached_Store 0x28
+#define SCE_PROFILER_Cached_Load 0x2C
+#define SCE_PROFILER_Cached_Store 0x30
+#define SCE_PROFILER_ICache_Miss 0x34
+#define SCE_PROFILER_DCache_Miss 0x38
+#define SCE_PROFILER_DCache_Writeback 0x3C
+#define SCE_PROFILER_COP0_Instruction 0x40
+#define SCE_PROFILER_COP1_Instruction 0x44
+#define SCE_PROFILER_COP2_Instruction 0x48
+
+typedef struct SceProfilerRegs {
+        volatile unsigned int en;
+        volatile unsigned int n_ck;
+        volatile unsigned int n_gck;
+        volatile unsigned int n_stalli;
+        volatile unsigned int n_stallm;
+        volatile unsigned int n_slipc;
+        volatile unsigned int n_stallc;
+        volatile unsigned int n_sleep;
+        volatile unsigned int n_bus;
+        volatile unsigned int n_uld;
+        volatile unsigned int n_ust;
+        volatile unsigned int n_cld;
+        volatile unsigned int n_cst;
+        volatile unsigned int n_imiss;
+
+        volatile unsigned int n_dmiss;
+        volatile unsigned int n_wbk;
+        volatile unsigned int n_cop0;
+        volatile unsigned int n_fpu;
+        volatile unsigned int n_vfpu;
+} SceProfilerRegs;
+
+SceProfilerRegs *sceKernelReferGlobalProfiler(void);
+
+SceProfilerRegs *sceKernelReferThreadProfiler(void);
+
+static __inline__ int sceKernelProfilerReset(SceProfilerRegs *pRegs);
+static __inline__ int sceKernelProfilerStart(SceProfilerRegs *pRegs);
+static __inline__ int sceKernelProfilerStop(SceProfilerRegs *pRegs);
+
+static __inline__ unsigned int sceKernelProfilerGetSystemClockCycle(const SceProfilerRegs *pRegs);
+static __inline__ unsigned int sceKernelProfilerGetCpuClockCycle(const SceProfilerRegs *pRegs);
+static __inline__ unsigned int sceKernelProfilerGetInternalStall(const SceProfilerRegs *pRegs);
+static __inline__ unsigned int sceKernelProfilerGetMemoryStall(const SceProfilerRegs *pRegs);
+static __inline__ unsigned int sceKernelProfilerGetFpuStall(const SceProfilerRegs *pRegs);
+static __inline__ unsigned int sceKernelProfilerGetVfpuStall(const SceProfilerRegs *pRegs);
+static __inline__ unsigned int sceKernelProfilerGetSleepStall(const SceProfilerRegs *pRegs);
+static __inline__ unsigned int sceKernelProfilerGetBusBusyCycle(const SceProfilerRegs *pRegs);
+static __inline__ unsigned int sceKernelProfilerGetUncacheLoadCount(const SceProfilerRegs *pRegs);
+static __inline__ unsigned int sceKernelProfilerGetUncacheStoreCount(const SceProfilerRegs *pRegs);
+static __inline__ unsigned int sceKernelProfilerGetCacheLoadCount(const SceProfilerRegs *pRegs);
+static __inline__ unsigned int sceKernelProfilerGetCacheStoreCount(const SceProfilerRegs *pRegs);
+static __inline__ unsigned int sceKernelProfilerGetIcacheMissCount(const SceProfilerRegs *pRegs);
+static __inline__ unsigned int sceKernelProfilerGetDcacheMissCount(const SceProfilerRegs *pRegs);
+static __inline__ unsigned int sceKernelProfilerGetDcacheWritebackCount(const SceProfilerRegs *pRegs);
+static __inline__ unsigned int sceKernelProfilerGetCop0Count(const SceProfilerRegs *pRegs);
+static __inline__ unsigned int sceKernelProfilerGetFpuCount(const SceProfilerRegs *pRegs);
+static __inline__ unsigned int sceKernelProfilerGetVfpuCount(const SceProfilerRegs *pRegs);
+
+static __inline__ unsigned int sceKernelProfilerGetStallCycle(const SceProfilerRegs *pRegs);
+static __inline__ unsigned int sceKernelProfilerGetExecInstructions(const SceProfilerRegs *pRegs);
+static __inline__ float sceKernelProfilerGetCPI(const SceProfilerRegs *pRegs);
+static __inline__ float sceKernelProfilerGetIcacheHitRatio(const SceProfilerRegs *pRegs);
+static __inline__ float sceKernelProfilerGetDcacheHitRatio(const SceProfilerRegs *pRegs);
+static __inline__ float sceKernelProfilerGetCpuAverageFreq(const SceProfilerRegs *pRegs);
+static __inline__ float sceKernelProfilerGetCpuAverageLoad(const SceProfilerRegs *pRegs);
+
+static __inline__ int sceKernelProfilerReset(SceProfilerRegs *pRegs)
+{
+        unsigned int en;
+
+        en = pRegs->en;
+        pRegs->en = 0U;
+        __builtin_allegrex_sync();
+
+        pRegs->n_ck = 0U;
+        pRegs->n_gck = 0U;
+        pRegs->n_stalli = 0U;
+        pRegs->n_stallm = 0U;
+        pRegs->n_slipc = 0U;
+        pRegs->n_stallc = 0U;
+        pRegs->n_sleep = 0U;
+        pRegs->n_bus = 0U;
+        pRegs->n_uld = 0U;
+        pRegs->n_ust = 0U;
+        pRegs->n_cld = 0U;
+        pRegs->n_cst = 0U;
+        pRegs->n_imiss = 0U;
+        pRegs->n_dmiss = 0U;
+        pRegs->n_wbk = 0U;
+        pRegs->n_cop0 = 0U;
+        pRegs->n_fpu = 0U;
+        pRegs->n_vfpu = 0U;
+        __builtin_allegrex_sync();
+
+        return ((int)en);
+
+}
+
+static __inline__ int sceKernelProfilerStart(SceProfilerRegs *pRegs)
+{
+        unsigned int en;
+
+        en = pRegs->en;
+        {if (en==0U) {{
+                pRegs->en = 1U;
+                __builtin_allegrex_sync();
+
+        }}}
+
+        return ((int)en);
+
+}
+
+static __inline__ int sceKernelProfilerStop(SceProfilerRegs *pRegs)
+{
+        unsigned int en;
+
+        en = pRegs->en;
+        {if (en!=0U) {{
+                pRegs->en = 0U;
+                __builtin_allegrex_sync();
+
+        }}}
+
+        return ((int)en);
+
+}
+
+static __inline__ unsigned int sceKernelProfilerGetSystemClockCycle(const SceProfilerRegs *pRegs)
+{
+        return (pRegs->n_ck);
+}
+
+static __inline__ unsigned int sceKernelProfilerGetCpuClockCycle(const SceProfilerRegs *pRegs)
+{
+        return (pRegs->n_gck);
+}
+
+static __inline__ unsigned int sceKernelProfilerGetInternalStall(const SceProfilerRegs *pRegs)
+{
+        return (pRegs->n_stalli);
+}
+
+static __inline__ unsigned int sceKernelProfilerGetMemoryStall(const SceProfilerRegs *pRegs)
+{
+        return (pRegs->n_stallm);
+}
+
+static __inline__ unsigned int sceKernelProfilerGetFpuStall(const SceProfilerRegs *pRegs)
+{
+        return (pRegs->n_slipc);
+}
+
+static __inline__ unsigned int sceKernelProfilerGetVfpuStall(const SceProfilerRegs *pRegs)
+{
+        return (pRegs->n_stallc);
+}
+
+static __inline__ unsigned int sceKernelProfilerGetSleepStall(const SceProfilerRegs *pRegs)
+{
+        return (pRegs->n_sleep);
+}
+
+static __inline__ unsigned int sceKernelProfilerGetBusBusyCycle(const SceProfilerRegs *pRegs)
+{
+        return (pRegs->n_bus);
+}
+
+static __inline__ unsigned int sceKernelProfilerGetUncacheLoadCount(const SceProfilerRegs *pRegs)
+{
+        return (pRegs->n_uld);
+}
+
+static __inline__ unsigned int sceKernelProfilerGetUncacheStoreCount(const SceProfilerRegs *pRegs)
+{
+        return (pRegs->n_ust);
+}
+
+static __inline__ unsigned int sceKernelProfilerGetCacheLoadCount(const SceProfilerRegs *pRegs)
+{
+        return (pRegs->n_cld);
+}
+
+static __inline__ unsigned int sceKernelProfilerGetCacheStoreCount(const SceProfilerRegs *pRegs)
+{
+        return (pRegs->n_cst);
+}
+
+static __inline__ unsigned int sceKernelProfilerGetIcacheMissCount(const SceProfilerRegs *pRegs)
+{
+        return (pRegs->n_imiss);
+}
+
+static __inline__ unsigned int sceKernelProfilerGetDcacheMissCount(const SceProfilerRegs *pRegs)
+{
+        return (pRegs->n_dmiss);
+}
+
+static __inline__ unsigned int sceKernelProfilerGetDcacheWritebackCount(const SceProfilerRegs *pRegs)
+{
+        return (pRegs->n_wbk);
+}
+
+static __inline__ unsigned int sceKernelProfilerGetCop0Count(const SceProfilerRegs *pRegs)
+{
+        return (pRegs->n_cop0);
+}
+
+static __inline__ unsigned int sceKernelProfilerGetFpuCount(const SceProfilerRegs *pRegs)
+{
+        return (pRegs->n_fpu);
+}
+
+static __inline__ unsigned int sceKernelProfilerGetVfpuCount(const SceProfilerRegs *pRegs)
+{
+        return (pRegs->n_vfpu);
+}
+
+static __inline__ unsigned int sceKernelProfilerGetStallCycle(const SceProfilerRegs *pRegs)
+{
+        return (pRegs->n_stalli + pRegs->n_stallm + pRegs->n_slipc + pRegs->n_stallc);
+}
+
+static __inline__ unsigned int sceKernelProfilerGetExecInstructions(const SceProfilerRegs *pRegs)
+{
+        return (pRegs->n_gck - (pRegs->n_stalli + pRegs->n_stallm + pRegs->n_slipc + pRegs->n_stallc + pRegs->n_sleep));
+}
+static __inline__ float sceKernelProfilerGetCPI(const SceProfilerRegs *pRegs)
+{
+        unsigned int inst;
+        float cpi;
+
+        inst = sceKernelProfilerGetExecInstructions(pRegs);
+        {if (inst==0U) {{
+
+                return (0.0f);
+        }}}
+
+        cpi = ((float)pRegs->n_gck - (float)pRegs->n_sleep) / (float)inst;
+
+        return (cpi);
+}
+
+static __inline__ float sceKernelProfilerGetIcacheHitRatio(const SceProfilerRegs *pRegs)
+{
+        unsigned int inst;
+        float ratio;
+
+        inst = sceKernelProfilerGetExecInstructions(pRegs);
+        {if (inst==0U) {{
+
+                return (0.0f);
+        }}}
+
+        ratio = 1.0f - (float)pRegs->n_imiss / (float)inst;
+
+        return (ratio);
+}
+
+static __inline__ float sceKernelProfilerGetDcacheHitRatio(const SceProfilerRegs *pRegs)
+{
+        unsigned int ldst;
+        float ratio;
+
+        ldst = pRegs->n_cld + pRegs->n_cst;
+        {if (ldst==0) {{
+
+                return (0.0f);
+        }}}
+
+        ratio = 1.0f - (float)pRegs->n_dmiss / (float)ldst;
+
+        return (ratio);
+}
+
+#define _SCE_POWER_GETPLLCLOCKFREQUENCYFLOAT_DEFINED 
+float scePowerGetPllClockFrequencyFloat(void);
+
+static __inline__ float sceKernelProfilerGetCpuAverageFreq(const SceProfilerRegs *pRegs)
+{
+        float freq;
+
+        freq = ((float)pRegs->n_gck) / ((float)pRegs->n_ck) * scePowerGetPllClockFrequencyFloat();
+
+        return (freq);
+}
+
+static __inline__ float sceKernelProfilerGetCpuAverageLoad(const SceProfilerRegs *pRegs)
+{
+        float load;
+
+        load = ((float)(pRegs->n_gck - pRegs->n_sleep)) / ((float)pRegs->n_gck);
+
+        return (load);
+}
+#define _SCE_CPUREG_H_ 
+#define KU0BASE 0x00000000
+#define KU1BASE 0x40000000
+
+#define K0BASE 0x80000000
+#define K0SIZE 0x20000000
+#define K1BASE 0xA0000000
+#define K1SIZE 0x20000000
+#define K2BASE 0xC0000000
+#define K2SIZE 0x20000000
+
+#define _SCE_SYSMEM_H 
+typedef int SceKernelSysMemAlloc_t;
+
+#define SCE_KERNEL_SMEM_Low (0)
+#define SCE_KERNEL_SMEM_High (1)
+#define SCE_KERNEL_SMEM_Addr (2)
+
+#define SCE_KERNEL_SMEM_LOW (0)
+#define SCE_KERNEL_SMEM_HIGH (1)
+#define SCE_KERNEL_SMEM_ADDR (2)
+#define SCE_KERNEL_SMEM_LOWALIGNED (3)
+#define SCE_KERNEL_SMEM_HIGHALIGNED (4)
+#define SCE_KERNEL_UNKNOWN_PARTITION ((SceUID)0)
+#define SCE_KERNEL_PRIMARY_KERNEL_PARTITION ((SceUID)1)
+
+#define SCE_KERNEL_PRIMARY_USER_PARTITION ((SceUID)2)
+unsigned int sceKernelMaxFreeMemSize(void);
+
+unsigned int sceKernelTotalFreeMemSize(void);
+
+void *sceKernelPrintf(const char *format, ...) __attribute__((format(__printf__, 1, 2)));
+
+int sceKernelSetCompiledSdkVersion(unsigned int version);
+
+int sceKernelSetCompilerVersion(unsigned int version);
+
+typedef struct SceKernelMemoryBlockOptParam {
+    SceSize size;
+} SceKernelMemoryBlockOptParam;
+
+SceUID sceKernelAllocMemoryBlock(const char *name, SceKernelSysMemAlloc_t type, SceSize size,
+                                  const SceKernelMemoryBlockOptParam *optParam);
+int sceKernelFreeMemoryBlock(SceUID mbid);
+int sceKernelGetMemoryBlockAddr(SceUID mbid, void **blockp);
+#define _SCE_INTRMAN_H_ 
+
+int sceKernelCpuSuspendIntr(void);
+
+void sceKernelCpuResumeIntr(int oldstat);
+void sceKernelCpuResumeIntrWithSync(int oldstat);
+int sceKernelIsCpuIntrSuspended(int oldstat);
+int sceKernelIsCpuIntrEnable(void);
+#define _SCE_THREAD_H 
+
+#define _SCE_PSPTYPES_H 
+
+#define SCE_PSPTYPES_ALIGNED(_a) __attribute__((aligned(_a)))
+#define SCE_PSPTYPES_USE_ULONG128 
+typedef char char8;
+typedef unsigned char u_char8;
+typedef short short16;
+typedef unsigned short u_short16;
+typedef short int16;
+typedef unsigned short u_int16;
+typedef int int32;
+typedef unsigned int u_int32;
+
+typedef int int64 __attribute__((mode(DI)));
+typedef unsigned int u_int64 __attribute__((mode(DI)));
+typedef int long64 __attribute__((mode(DI)));
+typedef unsigned int u_long64 __attribute__((mode(DI)));
+typedef int long128 __attribute__((mode(TI)));
+typedef unsigned int u_long128 __attribute__((mode(TI)));
+
+typedef char SceChar8;
+typedef unsigned char SceUChar8;
+typedef short SceShort16;
+typedef unsigned short SceUShort16;
+typedef int SceInt32;
+typedef unsigned int SceUInt32;
+
+typedef int SceInt64 __attribute__((mode(DI)));
+typedef unsigned int SceUInt64 __attribute__((mode(DI)));
+typedef int SceLong64 __attribute__((mode(DI)));
+typedef unsigned int SceULong64 __attribute__((mode(DI)));
+typedef int SceLong128 __attribute__((mode(TI)));
+typedef unsigned int SceULong128 __attribute__((mode(TI)));
+
+typedef float SceFloat;
+typedef float SceFloat32;
+
+typedef signed char SceSByte;
+typedef signed char SceSByte8;
+typedef unsigned char SceByte;
+typedef unsigned char SceByte8;
+
+typedef unsigned short SceWChar16;
+typedef unsigned int SceWChar32;
+
+#define SCE_FALSE (0)
+#define SCE_TRUE (1)
+typedef int SceBool;
+
+typedef int SceIntPtr;
+typedef unsigned int SceUIntPtr;
+
+typedef void SceVoid;
+typedef void * ScePVoid;
+
+#define SCE_NULL ((void *)0)
+
+typedef struct ScePspSRect {
+        short x, y, w, h;
+} ScePspSRect;
+
+typedef struct ScePspIRect {
+        int x, y, w, h;
+} ScePspIRect;
+
+typedef struct ScePspL64Rect {
+        SceLong64 x, y, w, h;
+} ScePspL64Rect;
+
+typedef struct ScePspFRect {
+        float x, y, w, h;
+} ScePspFRect;
+
+typedef struct ScePspSVector2 {
+        short x, y;
+} ScePspSVector2;
+
+typedef struct ScePspIVector2 {
+        int x, y;
+} ScePspIVector2;
+
+typedef struct ScePspL64Vector2 {
+        SceLong64 x, y;
+} ScePspL64Vector2;
+
+typedef struct ScePspFVector2 {
+        float x, y;
+} ScePspFVector2;
+
+typedef union ScePspVector2 {
+        ScePspFVector2 fv;
+        ScePspIVector2 iv;
+        float f[2];
+        int i[2];
+} ScePspVector2;
+
+typedef struct ScePspSVector3 {
+        short x, y, z;
+} ScePspSVector3;
+
+typedef struct ScePspIVector3 {
+        int x, y, z;
+} ScePspIVector3;
+
+typedef struct ScePspL64Vector3 {
+        SceLong64 x, y, z;
+} ScePspL64Vector3;
+
+typedef struct ScePspFVector3 {
+        float x, y, z;
+} ScePspFVector3;
+
+typedef union ScePspVector3 {
+        ScePspFVector3 fv;
+        ScePspIVector3 iv;
+        float f[3];
+        int i[3];
+} ScePspVector3;
+
+typedef struct ScePspSVector4 {
+        short x, y, z, w;
+} ScePspSVector4;
+
+typedef struct ScePspIVector4 {
+        int x, y, z, w;
+} __attribute__((aligned(16))) ScePspIVector4;
+
+typedef struct ScePspIVector4Unaligned {
+        int x, y, z, w;
+} ScePspIVector4Unaligned;
+
+typedef struct ScePspL64Vector4 {
+        SceLong64 x, y, z, w;
+} ScePspL64Vector4;
+
+typedef struct ScePspFVector4 {
+        float x, y, z, w;
+} __attribute__((aligned(16))) ScePspFVector4;
+
+typedef struct ScePspFVector4Unaligned {
+        float x, y, z, w;
+} ScePspFVector4Unaligned;
+
+typedef union ScePspVector4 {
+        ScePspFVector4 fv;
+        ScePspIVector4 iv;
+
+        SceULong128 qw;
+
+        float f[4];
+        int i[4];
+} __attribute__((aligned(16))) ScePspVector4;
+
+typedef struct ScePspIMatrix2 {
+        ScePspIVector2 x, y;
+} ScePspIMatrix2;
+
+typedef struct ScePspFMatrix2 {
+        ScePspFVector2 x, y;
+} ScePspFMatrix2;
+
+typedef union ScePspMatrix2 {
+        ScePspFMatrix2 fm;
+        ScePspIMatrix2 im;
+        ScePspFVector2 fv[2];
+        ScePspIVector2 iv[2];
+        ScePspVector2 v[2];
+        float f[2][2];
+        int i[2][2];
+} ScePspMatrix2;
+
+typedef struct ScePspIMatrix3 {
+        ScePspIVector3 x, y, z;
+} ScePspIMatrix3;
+
+typedef struct ScePspFMatrix3 {
+        ScePspFVector3 x, y, z;
+} ScePspFMatrix3;
+
+typedef union ScePspMatrix3 {
+        ScePspFMatrix3 fm;
+        ScePspIMatrix3 im;
+        ScePspFVector3 fv[3];
+        ScePspIVector3 iv[3];
+        ScePspVector3 v[3];
+        float f[3][3];
+        int i[3][3];
+} ScePspMatrix3;
+
+typedef struct ScePspIMatrix4 {
+        ScePspIVector4 x, y, z, w;
+} __attribute__((aligned(16))) ScePspIMatrix4;
+
+typedef struct ScePspIMatrix4Unaligned {
+        ScePspIVector4Unaligned x, y, z, w;
+} ScePspIMatrix4Unaligned;
+
+typedef struct ScePspFMatrix4 {
+        ScePspFVector4 x, y, z, w;
+} __attribute__((aligned(16))) ScePspFMatrix4;
+
+typedef struct ScePspFMatrix4Unaligned {
+        ScePspFVector4Unaligned x, y, z, w;
+} ScePspFMatrix4Unaligned;
+
+typedef union ScePspMatrix4 {
+        ScePspFMatrix4 fm;
+        ScePspIMatrix4 im;
+        ScePspFVector4 fv[4];
+        ScePspIVector4 iv[4];
+        ScePspVector4 v[4];
+
+        SceULong128 qw[4];
+
+        float f[4][4];
+        int i[4][4];
+} __attribute__((aligned(16))) ScePspMatrix4;
+
+typedef struct ScePspFQuaternion {
+        float x, y, z, w;
+} __attribute__((aligned(16))) ScePspFQuaternion;
+
+typedef struct ScePspFQuaternionUnaligned {
+        float x, y, z, w;
+} ScePspFQuaternionUnaligned;
+
+typedef struct ScePspFPlane {
+        float a, b, c, d;
+} __attribute__((aligned(16))) ScePspFPlane;
+
+typedef struct ScePspFPlaneUnaligned {
+        float a, b, c, d;
+} ScePspFPlaneUnaligned;
+
+typedef struct ScePspFColor {
+        float r, g, b, a;
+} __attribute__((aligned(16))) ScePspFColor;
+
+typedef struct ScePspFColorUnaligned {
+        float r, g, b, a;
+} ScePspFColorUnaligned;
+
+#define ScePspRGBA32 ScePspRGBA8888
+typedef unsigned int ScePspRGBA8888;
+typedef unsigned short ScePspRGBA4444;
+typedef unsigned short ScePspRGBA5551;
+typedef unsigned short ScePspRGB565;
+#define SCE_PSP_MAKE_RGBA8888(_r,_g,_b,_a) ((ScePspRGBA8888)((((unsigned int)_a)<<24) | (((unsigned int)_b)<<16) | (((unsigned int)_g)<<8) | ((unsigned int)_r)))
+
+#define SCE_PSP_MAKE_RGBA4444(_r,_g,_b,_a) ((ScePspRGBA4444)((((unsigned int)_a)<<12) | (((unsigned int)_b)<<8) | (((unsigned int)_g)<<4) | ((unsigned int)_r)))
+
+#define SCE_PSP_MAKE_RGBA5551(_r,_g,_b,_a) ((ScePspRGBA5551)((((unsigned int)_a)<<15) | (((unsigned int)_b)<<10) | (((unsigned int)_g)<<5) | ((unsigned int)_r)))
+
+#define SCE_PSP_MAKE_RGB565(_r,_g,_b) ((ScePspRGB565) ( (((unsigned int)_b)<<11) | (((unsigned int)_g)<<5) | ((unsigned int)_r)))
+
+#define SCE_PSP_EXTRACT_R_FROM_RGBA8888(_rgba8888) ((_rgba8888 ) & 0xFF)
+#define SCE_PSP_EXTRACT_G_FROM_RGBA8888(_rgba8888) ((_rgba8888>> 8) & 0xFF)
+#define SCE_PSP_EXTRACT_B_FROM_RGBA8888(_rgba8888) ((_rgba8888>>16) & 0xFF)
+#define SCE_PSP_EXTRACT_A_FROM_RGBA8888(_rgba8888) ((_rgba8888>>24) & 0xFF)
+#define SCE_PSP_EXTRACT_R_FROM_RGBA4444(_rgba4444) ((_rgba4444 ) & 0xF)
+#define SCE_PSP_EXTRACT_G_FROM_RGBA4444(_rgba4444) ((_rgba4444>> 4) & 0xF)
+#define SCE_PSP_EXTRACT_B_FROM_RGBA4444(_rgba4444) ((_rgba4444>> 8) & 0xF)
+#define SCE_PSP_EXTRACT_A_FROM_RGBA4444(_rgba4444) ((_rgba4444>>12) & 0xF)
+#define SCE_PSP_EXTRACT_R_FROM_RGBA5551(_rgba5551) ((_rgba5551 ) & 0x1F)
+#define SCE_PSP_EXTRACT_G_FROM_RGBA5551(_rgba5551) ((_rgba5551>> 5) & 0x1F)
+#define SCE_PSP_EXTRACT_B_FROM_RGBA5551(_rgba5551) ((_rgba5551>>10) & 0x1F)
+#define SCE_PSP_EXTRACT_A_FROM_RGBA5551(_rgba5551) ((_rgba5551>>15) & 0x1)
+#define SCE_PSP_EXTRACT_R_FROM_RGB565(_rgba565) ((_rgba565 ) & 0x1F)
+#define SCE_PSP_EXTRACT_G_FROM_RGB565(_rgba565) ((_rgba565>> 5) & 0x3F)
+#define SCE_PSP_EXTRACT_B_FROM_RGB565(_rgba565) ((_rgba565>>11) & 0x1F)
+
+typedef union ScePspUnion32 {
+        unsigned int ui;
+        int i;
+        unsigned short us[2];
+        short s[2];
+        unsigned char uc[4];
+        char c[4];
+        float f;
+        ScePspRGBA8888 rgba8888;
+        ScePspRGBA4444 rgba4444[2];
+        ScePspRGBA5551 rgba5551[2];
+        ScePspRGB565 rgb565[2];
+        void *p;
+} ScePspUnion32;
+
+typedef union ScePspUnion64 {
+        SceULong64 ul;
+        SceLong64 l;
+        unsigned int ui[2];
+        int i[2];
+        unsigned short us[4];
+        short s[4];
+        unsigned char uc[8];
+        char c[8];
+        float f[2];
+        ScePspSRect sr;
+        ScePspSVector4 sv;
+        ScePspRGBA8888 rgba8888[2];
+        ScePspRGBA4444 rgba4444[4];
+        ScePspRGBA5551 rgba5551[4];
+        ScePspRGB565 rgb565[4];
+} ScePspUnion64;
+
+typedef union ScePspUnion128 {
+
+        SceULong128 qw;
+        SceULong128 uq;
+        SceLong128 q;
+        SceULong64 ul[2];
+        SceLong64 l[2];
+        unsigned int ui[4];
+        int i[4];
+        unsigned short us[8];
+        short s[8];
+        unsigned char uc[16];
+        char c[16];
+        float f[4];
+        ScePspFRect fr;
+        ScePspIRect ir;
+        ScePspFVector4 fv;
+        ScePspIVector4 iv;
+        ScePspFQuaternion fq;
+        ScePspFPlane fp;
+        ScePspFColor fc;
+        ScePspRGBA8888 rgba8888[4];
+        ScePspRGBA4444 rgba4444[8];
+        ScePspRGBA5551 rgba5551[8];
+        ScePspRGB565 rgb565[8];
+} __attribute__((aligned(16))) ScePspUnion128;
+
+typedef union ScePspUnion512 {
+
+        SceULong128 qw[4];
+        SceULong128 uq[4];
+        SceLong128 q[4];
+
+        ScePspUnion32 un32[16];
+        ScePspUnion64 un64[8];
+        ScePspUnion128 un128[4];
+        SceULong64 ul[8];
+        SceLong64 l[8];
+        unsigned int ui[16];
+        int i[16];
+        unsigned short us[32];
+        short s[32];
+        unsigned char uc[64];
+        char c[64];
+        float f[16];
+        ScePspFRect fr[4];
+        ScePspIRect ir[4];
+        ScePspFVector4 fv[4];
+        ScePspIVector4 iv[4];
+        ScePspFQuaternion fq[4];
+        ScePspFPlane fp[4];
+        ScePspFColor fc[4];
+        ScePspRGBA8888 rgba8888[16];
+        ScePspRGBA4444 rgba4444[32];
+        ScePspRGBA5551 rgba5551[32];
+        ScePspRGB565 rgb565[32];
+        ScePspFMatrix4 fm;
+        ScePspIMatrix4 im;
+} __attribute__((aligned(16))) ScePspUnion512;
+
+typedef struct ScePspDateTime {
+        unsigned short year;
+        unsigned short month;
+        unsigned short day;
+        unsigned short hour;
+        unsigned short minute;
+        unsigned short second;
+        unsigned int microsecond;
+} ScePspDateTime;
+
+#define SCE_KERNEL_TH_SELF 0
+#define SCE_KERNEL_TPRI_RUN 0
+
+#define SCE_KERNEL_USER_HIGHEST_PRIORITY 16
+#define SCE_KERNEL_MODULE_INIT_PRIORITY 32
+#define SCE_KERNEL_USER_LOWEST_PRIORITY 111
+
+#define SCE_KERNEL_EXIT_SUCCESS 0
+#define SCE_KERNEL_EXIT_FAILURE 1
+
+typedef struct SceKernelSysClock {
+    SceUInt32 low;
+    SceUInt32 hi;
+} SceKernelSysClock;
+
+typedef int (*SceKernelThreadEntry)(SceSize argSize, void *argBlock);
+
+typedef struct SceKernelThreadOptParam {
+    SceSize size;
+    SceUID stackMpid;
+} SceKernelThreadOptParam;
+
+typedef struct SceKernelThreadInfo {
+    SceSize size;
+    char name[31 + 1];
+    SceUInt attr;
+    int status;
+    SceKernelThreadEntry entry;
+    void *stack;
+    int stackSize;
+    void *gpReg;
+    int initPriority;
+    int currentPriority;
+    int waitType;
+    SceUID waitId;
+    int wakeupCount;
+    int exitStatus;
+    SceKernelSysClock runClocks;
+    SceUInt intrPreemptCount;
+    SceUInt threadPreemptCount;
+    SceUInt releaseCount;
+    int notifycallback;
+} SceKernelThreadInfo;
+
+typedef struct SceKernelThreadRunStatus {
+    SceSize size;
+    int status;
+    int currentPriority;
+    int waitType;
+    int waitId;
+    int wakeupCount;
+    SceKernelSysClock runClocks;
+    SceUInt intrPreemptCount;
+    SceUInt threadPreemptCount;
+    SceUInt releaseCount;
+    int notifycallback;
+} SceKernelThreadRunStatus;
+
+#define SCE_KERNEL_THS_RUN 0x01
+#define SCE_KERNEL_THS_READY 0x02
+#define SCE_KERNEL_THS_WAIT 0x04
+#define SCE_KERNEL_THS_SUSPEND 0x08
+#define SCE_KERNEL_THS_WAITSUSPEND 0x0c
+#define SCE_KERNEL_THS_DORMANT 0x10
+#define SCE_KERNEL_THS_DEAD 0x20
+
+#define SCE_KERNEL_TSW_SLEEP 1
+#define SCE_KERNEL_TSW_DELAY 2
+#define SCE_KERNEL_TSW_SEMA 3
+#define SCE_KERNEL_TSW_EVENTFLAG 4
+#define SCE_KERNEL_TSW_MBX 5
+#define SCE_KERNEL_TSW_VPL 6
+#define SCE_KERNEL_TSW_FPL 7
+#define SCE_KERNEL_TSW_MPP 8
+#define SCE_KERNEL_TSW_WAITTHEND 9
+#define SCE_KERNEL_TSW_RELTHEVH 10
+#define SCE_KERNEL_TSW_DELCALLBACK 11
+#define SCE_KERNEL_TSW_MUTEX 12
+#define SCE_KERNEL_TSW_LWMUTEX 13
+#define SCE_KERNEL_TSW_TLSPL 14
+#define SCE_KERNEL_TSW_SLEEP_CB 0x101
+#define SCE_KERNEL_TSW_DELAY_CB 0x102
+#define SCE_KERNEL_TSW_SEMA_CB 0x103
+#define SCE_KERNEL_TSW_EVENTFLAG_CB 0x104
+#define SCE_KERNEL_TSW_MBX_CB 0x105
+#define SCE_KERNEL_TSW_VPL_CB 0x106
+#define SCE_KERNEL_TSW_FPL_CB 0x107
+#define SCE_KERNEL_TSW_MPP_CB 0x108
+#define SCE_KERNEL_TSW_WAITTHEND_CB 0x109
+#define SCE_KERNEL_TSW_MUTEX_CB 0x10C
+#define SCE_KERNEL_TSW_LWMUTEX_CB 0x10D
+
+#define SCE_KERNEL_TH_UMODE 0x80000000U
+#define SCE_KERNEL_TH_NO_FILLSTACK 0x00100000U
+#define SCE_KERNEL_TH_CLEAR_STACK 0x00200000U
+#define SCE_KERNEL_TH_LOW_STACK 0x00400000U
+#define SCE_KERNEL_TH_USE_VFPU 0x00004000U
+#define SCE_KERNEL_TH_NEVERUSE_FPU 0x00002000U
+
+SceUID sceKernelCreateThread(const char *name, SceKernelThreadEntry entry, int initPriority, SceSize stackSize, SceUInt attr, const SceKernelThreadOptParam *optParam);
+int sceKernelDeleteThread(SceUID thid);
+int sceKernelStartThread(SceUID thid, SceSize argSize, const void *argBlock);
+int sceKernelExitThread(int exitStatus);
+int sceKernelExitDeleteThread(int exitStatus);
+int sceKernelTerminateThread(SceUID thid);
+int sceKernelTerminateDeleteThread(SceUID thid);
+int sceKernelSuspendDispatchThread(void);
+int sceKernelResumeDispatchThread(int olddisp);
+int sceKernelChangeCurrentThreadAttr(SceUInt clearAttr, SceUInt setAttr);
+int sceKernelChangeThreadPriority(SceUID thid, int priority);
+int sceKernelRotateThreadReadyQueue(int priority);
+int sceKernelReleaseWaitThread(SceUID thid);
+SceUID sceKernelGetThreadId(void);
+int sceKernelGetThreadCurrentPriority(void);
+int sceKernelGetThreadExitStatus(SceUID thid);
+int sceKernelReferThreadStatus(SceUID thid, SceKernelThreadInfo *info);
+int sceKernelReferThreadRunStatus(SceUID thid, SceKernelThreadRunStatus *runstat);
+int sceKernelExtendThreadStack(SceSize stackSize, int (*func)(void *), void *common);
+int sceKernelCheckThreadStack(void);
+int sceKernelGetThreadStackFreeSize(SceUID thid);
+
+typedef int (*SceKernelThreadEventHandler)(int type, SceUID thid, void *common);
+
+typedef struct SceKernelThreadEventHandlerInfo {
+    SceSize size;
+    char name[31 + 1];
+    SceUID threadId;
+    int mask;
+    SceKernelThreadEventHandler handler;
+    void *common;
+} SceKernelThreadEventHandlerInfo;
+
+#define SCE_KERNEL_TE_CREATE 0x01U
+#define SCE_KERNEL_TE_START 0x02U
+#define SCE_KERNEL_TE_EXIT 0x04U
+#define SCE_KERNEL_TE_DELETE 0x08U
+#define SCE_KERNEL_TE_ALL (SCE_KERNEL_TE_CREATE|SCE_KERNEL_TE_START|SCE_KERNEL_TE_EXIT|SCE_KERNEL_TE_DELETE)
+
+#define SCE_KERNEL_TH_USER ((SceUID)0xfffffff0U)
+
+SceUID sceKernelRegisterThreadEventHandler(const char *name, SceUID thid, int mask, SceKernelThreadEventHandler handler, void *common);
+int sceKernelReleaseThreadEventHandler(SceUID teid);
+int sceKernelReferThreadEventHandlerStatus(SceUID teid, SceKernelThreadEventHandlerInfo *info);
+
+#define SCE_KERNEL_AT_THFIFO 0x0000U
+#define SCE_KERNEL_AT_THPRI 0x0100U
+#define SCE_KERNEL_AT_SINGLE 0x0000U
+#define SCE_KERNEL_AT_MULTI 0x0200U
+#define SCE_KERNEL_AT_MSFIFO 0x0000U
+#define SCE_KERNEL_AT_MSPRI 0x0400U
+
+int sceKernelSleepThread(void);
+int sceKernelSleepThreadCB(void);
+int sceKernelWakeupThread(SceUID thid);
+int sceKernelCancelWakeupThread(SceUID thid);
+int sceKernelDonateWakeupThread(SceUID thid);
+int sceKernelSuspendThread(SceUID thid);
+int sceKernelResumeThread(SceUID thid);
+int sceKernelWaitThreadEnd(SceUID thid, SceUInt *timeout);
+int sceKernelWaitThreadEndCB(SceUID thid, SceUInt *timeout);
+
+typedef struct SceKernelSemaOptParam {
+    SceSize size;
+} SceKernelSemaOptParam;
+
+typedef struct SceKernelSemaInfo {
+    SceSize size;
+    char name[31 + 1];
+    SceUInt attr;
+    int initCount;
+    int currentCount;
+    int maxCount;
+    int numWaitThreads;
+} SceKernelSemaInfo;
+
+#define SCE_KERNEL_SA_THFIFO SCE_KERNEL_AT_THFIFO
+#define SCE_KERNEL_SA_THPRI SCE_KERNEL_AT_THPRI
+
+SceUID sceKernelCreateSema(const char *name, SceUInt attr, int initCount, int maxCount, const SceKernelSemaOptParam *optParam);
+int sceKernelDeleteSema(SceUID semid);
+int sceKernelSignalSema(SceUID semid, int signalcount);
+int sceKernelWaitSema(SceUID semid, int needcount, SceUInt *timeout);
+int sceKernelWaitSemaCB(SceUID semid, int needcount, SceUInt *timeout);
+int sceKernelPollSema(SceUID semid, int needcount);
+int sceKernelCancelSema(SceUID semid, int setcount, int *numWaitThreads);
+int sceKernelReferSemaStatus(SceUID semid, SceKernelSemaInfo *info);
+
+typedef struct SceKernelEventFlagOptParam {
+    SceSize size;
+} SceKernelEventFlagOptParam;
+
+typedef struct SceKernelEventFlagInfo {
+    SceSize size;
+    char name[31 + 1];
+    SceUInt attr;
+    SceUInt initPattern;
+    SceUInt currentPattern;
+    int numWaitThreads;
+} SceKernelEventFlagInfo;
+
+#define SCE_KERNEL_EA_SINGLE SCE_KERNEL_AT_SINGLE
+#define SCE_KERNEL_EA_MULTI SCE_KERNEL_AT_MULTI
+
+#define SCE_KERNEL_EW_AND 0U
+#define SCE_KERNEL_EW_OR 1U
+#define SCE_KERNEL_EW_CLEAR_ALL 0x10U
+#define SCE_KERNEL_EW_CLEAR_PAT 0x20U
+#define SCE_KERNEL_EW_CLEAR SCE_KERNEL_EW_CLEAR_ALL
+
+SceUID sceKernelCreateEventFlag(const char *name, SceUInt attr, SceUInt initPattern, const SceKernelEventFlagOptParam *optParam);
+int sceKernelDeleteEventFlag(SceUID evfid);
+int sceKernelSetEventFlag(SceUID evfid, SceUInt bitpattern);
+int sceKernelClearEventFlag(SceUID evfid, SceUInt bitpattern);
+int sceKernelWaitEventFlag(SceUID evfid, SceUInt bitpattern, int waitmode, SceUInt *resultpat, SceUInt *timeout);
+int sceKernelWaitEventFlagCB(SceUID evfid, SceUInt bitpattern, int waitmode, SceUInt *resultpat, SceUInt *timeout);
+int sceKernelPollEventFlag(SceUID evfid, SceUInt bitpattern, int waitmode, SceUInt *resultpat);
+int sceKernelCancelEventFlag(SceUID evfid, SceUInt setpattern, int *numWaitThreads);
+int sceKernelReferEventFlagStatus(SceUID evfid, SceKernelEventFlagInfo *info);
+
+typedef struct SceKernelMutexOptParam {
+    SceSize size;
+} SceKernelMutexOptParam;
+
+typedef struct SceKernelMutexInfo {
+    SceSize size;
+    char name[31 + 1];
+    SceUInt attr;
+    int initCount;
+    int currentCount;
+    SceUID currentOwner;
+    int numWaitThreads;
+} SceKernelMutexInfo;
+
+#define SCE_KERNEL_MA_THFIFO SCE_KERNEL_AT_THFIFO
+#define SCE_KERNEL_MA_THPRI SCE_KERNEL_AT_THPRI
+#define SCE_KERNEL_MA_RECURSIVE 0x0200U
+
+SceUID sceKernelCreateMutex(const char *name, SceUInt attr, int initCount, const SceKernelMutexOptParam *optParam);
+int sceKernelDeleteMutex(SceUID mtxid);
+int sceKernelLockMutex(SceUID mtxid, int lockcount, SceUInt *timeout);
+int sceKernelLockMutexCB(SceUID mtxid, int lockcount, SceUInt *timeout);
+int sceKernelTryLockMutex(SceUID mtxid, int lockcount);
+int sceKernelUnlockMutex(SceUID mtxid, int unlockcount);
+int sceKernelCancelMutex(SceUID mtxid, int newlockcount, int *numWaitThreads);
+int sceKernelReferMutexStatus(SceUID mtxid, SceKernelMutexInfo *info);
+
+typedef struct SceKernelLwMutexWork {
+    SceUInt32 opaque[8];
+} SceKernelLwMutexWork;
+
+typedef struct SceKernelLwMutexOptParam {
+    SceSize size;
+} SceKernelLwMutexOptParam;
+
+typedef struct SceKernelLwMutexInfo {
+    SceSize size;
+    char name[31 + 1];
+    SceUInt attr;
+    SceUID uid;
+    SceKernelLwMutexWork *branch;
+    int initCount;
+    int currentCount;
+    SceUID currentOwner;
+    int numWaitThreads;
+} SceKernelLwMutexInfo;
+
+#define SCE_KERNEL_LWMA_THFIFO SCE_KERNEL_AT_THFIFO
+#define SCE_KERNEL_LWMA_THPRI SCE_KERNEL_AT_THPRI
+#define SCE_KERNEL_LWMA_RECURSIVE 0x0200U
+
+int sceKernelCreateLwMutex(SceKernelLwMutexWork *work, const char *name, SceUInt attr, int initCount, const SceKernelLwMutexOptParam *optParam);
+int sceKernelDeleteLwMutex(SceKernelLwMutexWork *work);
+int sceKernelLockLwMutex(SceKernelLwMutexWork *work, int lockcount, SceUInt *timeout);
+int sceKernelLockLwMutexCB(SceKernelLwMutexWork *work, int lockcount, SceUInt *timeout);
+int sceKernelTryLockLwMutex(SceKernelLwMutexWork *work, int lockcount);
+int sceKernelUnlockLwMutex(SceKernelLwMutexWork *work, int unlockcount);
+int sceKernelReferLwMutexStatus(SceKernelLwMutexWork *work, SceKernelLwMutexInfo *info);
+int sceKernelReferLwMutexStatusByID(SceUID lwmutexid, SceKernelLwMutexInfo *info);
+
+typedef struct SceKernelMbxOptParam {
+    SceSize size;
+} SceKernelMbxOptParam;
+
+typedef struct SceKernelMsgPacket {
+    struct SceKernelMsgPacket *next;
+    SceUChar msgPriority;
+    SceUChar dummy[3];
+} SceKernelMsgPacket;
+
+typedef struct SceKernelMbxInfo {
+    SceSize size;
+    char name[31 + 1];
+    SceUInt attr;
+    int numWaitThreads;
+    int numMessage;
+    SceKernelMsgPacket *topPacket;
+} SceKernelMbxInfo;
+
+#define SCE_KERNEL_MBA_THFIFO SCE_KERNEL_AT_THFIFO
+#define SCE_KERNEL_MBA_THPRI SCE_KERNEL_AT_THPRI
+#define SCE_KERNEL_MBA_MSFIFO SCE_KERNEL_AT_MSFIFO
+#define SCE_KERNEL_MBA_MSPRI SCE_KERNEL_AT_MSPRI
+
+SceUID sceKernelCreateMbx(const char *name, SceUInt attr, const SceKernelMbxOptParam *optParam);
+int sceKernelDeleteMbx(SceUID mbxid);
+int sceKernelSendMbx(SceUID mbxid, SceKernelMsgPacket *sendmsg);
+int sceKernelReceiveMbx(SceUID mbxid, SceKernelMsgPacket **recvmsg, SceUInt *timeout);
+int sceKernelReceiveMbxCB(SceUID mbxid, SceKernelMsgPacket **recvmsg, SceUInt *timeout);
+int sceKernelPollMbx(SceUID mbxid, SceKernelMsgPacket **recvmsg);
+int sceKernelCancelReceiveMbx(SceUID mbxid, int *numWaitThreads);
+int sceKernelReferMbxStatus(SceUID mbxid, SceKernelMbxInfo *info);
+
+typedef struct SceKernelMppOptParam {
+    SceSize size;
+} SceKernelMppOptParam;
+
+typedef struct SceKernelMppInfo {
+    SceSize size;
+    char name[31 + 1];
+    SceUInt attr;
+    int bufSize;
+    int freeSize;
+    int numSendWaitThreads;
+    int numReceiveWaitThreads;
+} SceKernelMppInfo;
+
+#define SCE_KERNEL_MPA_THFIFO_S 0x0000U
+#define SCE_KERNEL_MPA_THPRI_S 0x0100U
+#define SCE_KERNEL_MPA_THFIFO_R 0x0000U
+#define SCE_KERNEL_MPA_THPRI_R 0x1000U
+#define SCE_KERNEL_MPA_THFIFO (SCE_KERNEL_MPA_THFIFO_S|SCE_KERNEL_MPA_THFIFO_R)
+#define SCE_KERNEL_MPA_THPRI (SCE_KERNEL_MPA_THPRI_S|SCE_KERNEL_MPA_THPRI_R)
+#define SCE_KERNEL_MPA_MEMBTM 0x4000U
+
+#define SCE_KERNEL_MPW_FULL 0U
+#define SCE_KERNEL_MPW_ASAP 1U
+
+SceUID sceKernelCreateMsgPipe(const char *name, SceUID mpid, SceUInt attr, SceSize bufsize, const SceKernelMppOptParam *optParam);
+int sceKernelDeleteMsgPipe(SceUID mppid);
+int sceKernelSendMsgPipe(SceUID mppid, const void *sendbuf, SceSize sendsize, int waitmode, SceSize *result, SceUInt *timeout);
+int sceKernelSendMsgPipeCB(SceUID mppid, const void *sendbuf, SceSize sendsize, int waitmode, SceSize *result, SceUInt *timeout);
+int sceKernelTrySendMsgPipe(SceUID mppid, const void *sendbuf, SceSize sendsize, int waitmode, SceSize *result);
+int sceKernelReceiveMsgPipe(SceUID mppid, void *recvbuf, SceSize recvsize, int waitmode, SceSize *result, SceUInt *timeout);
+int sceKernelReceiveMsgPipeCB(SceUID mppid, void *recvbuf, SceSize recvsize, int waitmode, SceSize *result, SceUInt *timeout);
+int sceKernelTryReceiveMsgPipe(SceUID mppid, void *recvbuf, SceSize recvsize, int waitmode, SceSize *result);
+int sceKernelCancelMsgPipe(SceUID mppid, int *numSendWaitThreads, int *numReceiveWaitThreads);
+int sceKernelReferMsgPipeStatus(SceUID mppid, SceKernelMppInfo *info);
+
+typedef struct SceKernelVplOptParam {
+    SceSize size;
+} SceKernelVplOptParam;
+
+typedef struct SceKernelVplInfo {
+    SceSize size;
+    char name[31 + 1];
+    SceUInt attr;
+    int poolSize;
+    int freeSize;
+    int numWaitThreads;
+} SceKernelVplInfo;
+
+#define SCE_KERNEL_VA_THFIFO SCE_KERNEL_AT_THFIFO
+#define SCE_KERNEL_VA_THPRI SCE_KERNEL_AT_THPRI
+#define SCE_KERNEL_VA_THPASS 0x0200U
+#define SCE_KERNEL_VA_MEMBTM 0x4000U
+
+SceUID sceKernelCreateVpl(const char *name, SceUID mpid, SceUInt attr, SceSize size, const SceKernelVplOptParam *optParam);
+int sceKernelDeleteVpl(SceUID vplid);
+int sceKernelAllocateVpl(SceUID vplid, SceSize size, void **blockp, SceUInt *timeout);
+int sceKernelAllocateVplCB(SceUID vplid, SceSize size, void **blockp, SceUInt *timeout);
+int sceKernelTryAllocateVpl(SceUID vplid, SceSize size, void **blockp);
+int sceKernelFreeVpl(SceUID vplid, void *block);
+int sceKernelCancelVpl(SceUID vplid, int *numWaitThreads);
+int sceKernelReferVplStatus(SceUID vplid, SceKernelVplInfo *info);
+
+typedef struct SceKernelFplOptParam {
+    SceSize size;
+    SceSize alignment;
+} SceKernelFplOptParam;
+
+typedef struct SceKernelFplInfo {
+    SceSize size;
+    char name[31 + 1];
+    SceUInt attr;
+    int blockSize;
+    int numBlocks;
+    int freeBlocks;
+    int numWaitThreads;
+} SceKernelFplInfo;
+
+#define SCE_KERNEL_FA_THFIFO SCE_KERNEL_AT_THFIFO
+#define SCE_KERNEL_FA_THPRI SCE_KERNEL_AT_THPRI
+#define SCE_KERNEL_FA_MEMBTM 0x4000U
+
+SceUID sceKernelCreateFpl(const char *name, SceUID mpid, SceUInt attr, SceSize blockSize, int numBlocks, const SceKernelFplOptParam *optParam);
+int sceKernelDeleteFpl(SceUID fplid);
+int sceKernelAllocateFpl(SceUID fplid, void **blockp, SceUInt *timeout);
+int sceKernelAllocateFplCB(SceUID fplid, void **blockp, SceUInt *timeout);
+int sceKernelTryAllocateFpl(SceUID fplid, void **blockp);
+int sceKernelFreeFpl(SceUID fplid, void *block);
+int sceKernelCancelFpl(SceUID fplid, int *numWaitThreads);
+int sceKernelReferFplStatus(SceUID fplid, SceKernelFplInfo *info);
+
+typedef struct SceKernelTlsplOptParam {
+    SceSize size;
+    SceSize alignment;
+} SceKernelTlsplOptParam;
+
+typedef struct SceKernelTlsplInfo {
+    SceSize size;
+    char name[31 + 1];
+    SceUInt attr;
+    int idx;
+    int blockSize;
+    int numBlocks;
+    int freeBlocks;
+    int numWaitThreads;
+} SceKernelTlsplInfo;
+
+#define SCE_KERNEL_TA_THFIFO SCE_KERNEL_AT_THFIFO
+#define SCE_KERNEL_TA_THPRI SCE_KERNEL_AT_THPRI
+#define SCE_KERNEL_TA_MEMBTM 0x4000U
+
+SceUID sceKernelCreateTlspl(const char *name, SceUID mpid, SceUInt attr, SceSize blockSize, int numBlocks, const SceKernelTlsplOptParam *optParam);
+int sceKernelDeleteTlspl(SceUID tlsplid);
+void *sceKernelGetTlsAddr(SceUID tlsplid);
+int sceKernelReferTlsplStatus(SceUID tlsplid, SceKernelTlsplInfo *info);
+
+typedef SceUInt (*SceKernelAlarmHandler)(void *common);
+
+typedef struct SceKernelAlarmInfo {
+    SceSize size;
+    SceKernelSysClock schedule;
+    SceKernelAlarmHandler handler;
+    void *common;
+} SceKernelAlarmInfo;
+
+int sceKernelGetSystemTime(SceKernelSysClock *clk);
+
+__extension__ unsigned long long sceKernelGetSystemTimeWide(void);
+
+SceUInt32 sceKernelGetSystemTimeLow(void);
+int sceKernelDelayThread(SceUInt usec);
+int sceKernelDelayThreadCB(SceUInt usec);
+int sceKernelDelaySysClockThread(const SceKernelSysClock *clk);
+int sceKernelDelaySysClockThreadCB(const SceKernelSysClock *clk);
+
+SceUID sceKernelSetAlarm(SceUInt usec, SceKernelAlarmHandler handler, void *common);
+SceUID sceKernelSetSysClockAlarm(const SceKernelSysClock *clk, SceKernelAlarmHandler handler, void *common);
+int sceKernelCancelAlarm(SceUID almid);
+int sceKernelReferAlarmStatus(SceUID almid, SceKernelAlarmInfo *info);
+
+int sceKernelUSec2SysClock(unsigned int usec, SceKernelSysClock *clk);
+int sceKernelSysClock2USec(const SceKernelSysClock *clk, int *sec, int *usec);
+
+__extension__ unsigned long long sceKernelUSec2SysClockWide(unsigned int usec);
+__extension__ int sceKernelSysClock2USecWide(unsigned long long clk, int *sec, int *usec);
+
+typedef SceUInt (*SceKernelVTimerHandler)(SceUID vtid, SceKernelSysClock *schedule, SceKernelSysClock *actual, void *common);
+
+__extension__ typedef SceUInt (*SceKernelVTimerHandlerWide)(SceUID vtid, unsigned long long *schedule, unsigned long long *actual, void *common);
+
+typedef struct SceKernelVTimerOptParam {
+    SceSize size;
+} SceKernelVTimerOptParam;
+
+typedef struct SceKernelVTimerInfo {
+    SceSize size;
+    char name[31 + 1];
+    int active;
+    SceKernelSysClock base;
+    SceKernelSysClock current;
+    SceKernelSysClock schedule;
+    SceKernelVTimerHandler handler;
+    void *common;
+} SceKernelVTimerInfo;
+
+SceUID sceKernelCreateVTimer(const char *name, const SceKernelVTimerOptParam *optParam);
+int sceKernelDeleteVTimer(SceUID vtid);
+int sceKernelGetVTimerBase(SceUID vtid, SceKernelSysClock *base);
+int sceKernelGetVTimerTime(SceUID vtid, SceKernelSysClock *clk);
+int sceKernelSetVTimerTime(SceUID vtid, SceKernelSysClock *clk);
+int sceKernelStartVTimer(SceUID vtid);
+int sceKernelStopVTimer(SceUID vtid);
+int sceKernelSetVTimerHandler(SceUID vtid, SceKernelSysClock *schedule, SceKernelVTimerHandler handler, void *common);
+int sceKernelCancelVTimerHandler(SceUID vtid);
+
+__extension__ unsigned long long sceKernelGetVTimerBaseWide(SceUID vtid);
+__extension__ unsigned long long sceKernelGetVTimerTimeWide(SceUID vtid);
+__extension__ unsigned long long sceKernelSetVTimerTimeWide(SceUID vtid, unsigned long long clk);
+__extension__ int sceKernelSetVTimerHandlerWide(SceUID vtid, unsigned long long schedule, SceKernelVTimerHandlerWide handler, void *common);
+
+int sceKernelReferVTimerStatus(SceUID vtid, SceKernelVTimerInfo *info);
+
+typedef int (*SceKernelCallbackFunction)(int count, int arg, void *common);
+
+typedef struct SceKernelCallbackInfo {
+    SceSize size;
+    char name[31 + 1];
+    SceUID threadId;
+    SceKernelCallbackFunction callback;
+    void *common;
+    int notifyCount;
+    int notifyArg;
+} SceKernelCallbackInfo;
+
+SceUID sceKernelCreateCallback(const char *name, SceKernelCallbackFunction callback, void *common);
+int sceKernelDeleteCallback(SceUID cbid);
+int sceKernelNotifyCallback(SceUID cbid, int arg);
+int sceKernelCancelCallback(SceUID cbid);
+int sceKernelGetCallbackCount(SceUID cbid);
+int sceKernelCheckCallback(void);
+int sceKernelReferCallbackStatus(SceUID cbid, SceKernelCallbackInfo *info);
+
+typedef struct SceKernelSystemStatus {
+    SceSize size;
+    SceUInt status;
+    SceKernelSysClock idleClocks;
+    SceUInt comesOutOfIdleCount;
+    SceUInt threadSwitchCount;
+    SceUInt vfpuSwitchCount;
+} SceKernelSystemStatus;
+
+#define SCE_KERNEL_TSS_THREAD 0
+#define SCE_KERNEL_TSS_DISABLEDISPATCH 1
+#define SCE_KERNEL_TSS_DISABLEINTR 3
+#define SCE_KERNEL_TSS_NOTHREAD 4
+
+int sceKernelReferSystemStatus(SceKernelSystemStatus *info);
+int sceKernelGetThreadmanIdList(int type, SceUID *readbuf, int readbufsize, int *idcount);
+int sceKernelGetThreadmanIdType(SceUID uid);
+
+enum SceKernelIdListType {
+    SCE_KERNEL_TMID_Thread = 1,
+    SCE_KERNEL_TMID_Semaphore,
+    SCE_KERNEL_TMID_EventFlag,
+    SCE_KERNEL_TMID_Mbox,
+    SCE_KERNEL_TMID_Vpl,
+    SCE_KERNEL_TMID_Fpl,
+    SCE_KERNEL_TMID_Mpipe,
+    SCE_KERNEL_TMID_Callback,
+    SCE_KERNEL_TMID_ThreadEventHandler,
+    SCE_KERNEL_TMID_Alarm,
+    SCE_KERNEL_TMID_VTimer,
+    SCE_KERNEL_TMID_Mutex,
+    SCE_KERNEL_TMID_LwMutex,
+    SCE_KERNEL_TMID_Tlspl,
+    SCE_KERNEL_TMID_SleepThread = 64,
+    SCE_KERNEL_TMID_DelayThread,
+    SCE_KERNEL_TMID_SuspendThread,
+    SCE_KERNEL_TMID_DormantThread,
+    SCE_KERNEL_TMID_PAD = 0x40000000
+};
+#define _SCE_IOFILEMGR_H 
+
+#define _SCE_IOFILEMGR_FCNTL_H 
+#define SCE_FREAD (0x0001)
+#define SCE_FWRITE (0x0002)
+#define SCE_FNBLOCK (0x0004)
+#define SCE_FDIRO (0x0008)
+#define SCE_FRLOCK (0x0010)
+#define SCE_FWLOCK (0x0020)
+#define SCE_FAPPEND (0x0100)
+#define SCE_FCREAT (0x0200)
+#define SCE_FTRUNC (0x0400)
+#define SCE_EXCL (0x0800)
+#define SCE_FSCAN (0x1000)
+#define SCE_FRCOM (0x2000)
+#define SCE_FNBUF (0x4000)
+#define SCE_FASYNC (0x8000)
+#define SCE_FFDEXCL (0x01000000)
+#define SCE_FPWLOCK (0x02000000)
+#define SCE_FGAMEDATA (0x40000000)
+
+#define SCE_O_RDONLY (SCE_FREAD)
+#define SCE_O_WRONLY (SCE_FWRITE)
+#define SCE_O_RDWR (SCE_FREAD|SCE_FWRITE)
+#define SCE_O_NBLOCK (SCE_FNBLOCK)
+#define SCE_O_APPEND (SCE_FAPPEND)
+#define SCE_O_CREAT (SCE_FCREAT)
+#define SCE_O_TRUNC (SCE_FTRUNC)
+#define SCE_O_EXCL (SCE_EXCL)
+#define SCE_O_NOBUF (SCE_FNBUF)
+#define SCE_O_NOWAIT (SCE_FASYNC)
+#define SCE_O_FDEXCL (SCE_FFDEXCL)
+#define SCE_O_PWLOCK (SCE_FPWLOCK)
+#define SCE_O_FGAMEDATA (SCE_FGAMEDATA)
+
+#define SCE_SEEK_SET (0)
+#define SCE_SEEK_CUR (1)
+#define SCE_SEEK_END (2)
+#define _SCE_IOFILEMGR_STAT_H 
+#define SCE_STM_FMT (0xf << 12)
+#define SCE_STM_FLNK (0x4 << 12)
+#define SCE_STM_FREG (0x2 << 12)
+#define SCE_STM_FDIR (0x1 << 12)
+#define SCE_STM_ISLNK(m) (((m) & SCE_STM_FMT) == SCE_STM_FLNK)
+#define SCE_STM_ISREG(m) (((m) & SCE_STM_FMT) == SCE_STM_FREG)
+#define SCE_STM_ISDIR(m) (((m) & SCE_STM_FMT) == SCE_STM_FDIR)
+
+#define SCE_STM_RWXU 00700
+#define SCE_STM_RUSR 00400
+#define SCE_STM_WUSR 00200
+#define SCE_STM_XUSR 00100
+
+#define SCE_STM_RWXG 00070
+#define SCE_STM_RGRP 00040
+#define SCE_STM_WGRP 00020
+#define SCE_STM_XGRP 00010
+
+#define SCE_STM_RWXO 00007
+#define SCE_STM_ROTH 00004
+#define SCE_STM_WOTH 00002
+#define SCE_STM_XOTH 00001
+
+#define SCE_STM_RWXUGO (SCE_STM_RWXU|SCE_STM_RWXG|SCE_STM_RWXO)
+#define SCE_STM_RUGO (SCE_STM_RUSR|SCE_STM_RGRP|SCE_STM_ROTH)
+#define SCE_STM_WUGO (SCE_STM_WUSR|SCE_STM_WGRP|SCE_STM_WOTH)
+#define SCE_STM_XUGO (SCE_STM_XUSR|SCE_STM_XGRP|SCE_STM_XOTH)
+
+#define SCE_CST_MODE 0x0001
+#define SCE_CST_ATTR 0x0002
+#define SCE_CST_SIZE 0x0004
+#define SCE_CST_CT 0x0008
+#define SCE_CST_AT 0x0010
+#define SCE_CST_MT 0x0020
+#define SCE_CST_PRVT 0x0040
+
+typedef struct SceIoStat {
+    SceMode st_mode;
+    unsigned int st_attr;
+    SceOff st_size;
+    ScePspDateTime st_ctime;
+    ScePspDateTime st_atime;
+    ScePspDateTime st_mtime;
+    unsigned int st_private[6];
+} SceIoStat;
+
+int sceIoChstat(const char *name, const SceIoStat *buf, unsigned int cbit);
+int sceIoGetstat(const char *name, SceIoStat *buf);
+#define _SCE_IOFILEMGR_DIRENT_H 
+
+typedef struct SceIoDirent {
+        SceIoStat d_stat;
+        char d_name[256];
+    void *d_private;
+    int dummy;
+} SceIoDirent;
+
+SceUID sceIoDopen(const char *dirname);
+int sceIoDclose(SceUID fd);
+int sceIoDread(SceUID fd, SceIoDirent *buf);
+
+#define SCE_D_TYPE_NULL 0x0
+#define SCE_D_TYPE_CHAR 0x1
+#define SCE_D_TYPE_BLOCK 0x4
+#define SCE_D_TYPE_FS 0x10
+#define SCE_D_TYPE_ALIAS 0x20
+#define SCE_D_TYPE_MOUNTPT 0x40
+
+int sceIoRemove(const char *filename);
+int sceIoMkdir(const char *dirname, SceMode mode);
+int sceIoRmdir(const char *dirname);
+int sceIoRename(const char *oldname, const char *newname);
+int sceIoChdir(const char *dirname);
+int sceIoDevctl(const char *devname, int cmd, const void *arg, SceSize arglen,
+                   void *bufp, SceSize buflen);
+int sceIoSync(const char *devname, int flag);
+int sceIoGetDevType(SceUID fd);
+SceUID sceIoOpen(const char *filename, int flag, SceMode mode);
+int sceIoClose(SceUID fd);
+int sceIoIoctl(SceUID fd, int cmd, const void *argp, SceSize arglen,
+                  void *bufp, SceSize buflen);
+SceOff sceIoLseek(SceUID fd, SceOff offset, int whence);
+long sceIoLseek32(SceUID fd, long offset, int whence);
+SceSSize sceIoRead(SceUID fd, void *buf, SceSize nbyte);
+SceSSize sceIoWrite(SceUID fd, const void *buf, SceSize nbyte);
+int sceIoPollAsync(SceUID fd, SceIores *result);
+int sceIoWaitAsync(SceUID fd, SceIores *result);
+int sceIoWaitAsyncCB(SceUID fd, SceIores *result);
+int sceIoSetAsyncCallback(SceUID fd, SceUID cbid, int arg);
+SceUID sceIoOpenAsync(const char *filename, int flag, SceMode mode);
+int sceIoCloseAsync(SceUID fd);
+int sceIoIoctlAsync(SceUID fd, int cmd, const void *argp, SceSize arglen,
+                       void *bufp, SceSize buflen);
+int sceIoLseekAsync(SceUID fd, SceOff offset, int whence);
+int sceIoLseek32Async(SceUID fd, long offset, int whence);
+int sceIoReadAsync(SceUID fd, void *buf, SceSize nbyte);
+int sceIoWriteAsync(SceUID fd, const void *buf, SceSize nbyte);
+int sceIoChangeAsyncPriority(SceUID fd, int level);
+int sceIoCancel(SceUID fd);
+int sceIoGetFdList(SceUID *readbuf, int readbufsize, int *fdcount);
+
+static __inline__
+SceUID sceIoOpenCB(const char *filename, int flag, SceMode mode)
+{
+    SceUID fd;
+    int res;
+    SceIores iores;
+    fd = sceIoOpenAsync(filename, flag, mode);
+    {if (fd < 0) {{
+        return fd;
+    }}}
+    res = sceIoWaitAsyncCB(fd, &iores);
+
+    {if (res == 0) {{
+        return (SceUID)iores;
+    }} else {{
+        return (SceUID)res;
+    }}}
+
+}
+
+static __inline__
+int sceIoCloseCB(SceUID fd)
+{
+    int res;
+    SceIores iores;
+    res = sceIoCloseAsync(fd);
+    {if (res < 0) {{
+        return res;
+    }}}
+    res = sceIoWaitAsyncCB(fd, &iores);
+
+    {if (res == 0) {{
+        return (int)iores;
+    }} else {{
+        return res;
+    }}}
+
+}
+
+static __inline__
+int sceIoIoctlCB(SceUID fd, int cmd, const void *argp, SceSize arglen,
+                    void *bufp, SceSize buflen)
+{
+    int res;
+    SceIores iores;
+    res = sceIoIoctlAsync(fd, cmd, argp, arglen, bufp, buflen);
+    {if (res < 0) {{
+        return res;
+    }}}
+    res = sceIoWaitAsyncCB(fd, &iores);
+
+    {if (res == 0) {{
+        return (int)iores;
+    }} else {{
+        return res;
+    }}}
+
+}
+
+static __inline__
+SceOff sceIoLseekCB(SceUID fd, SceOff offset, int whence)
+{
+    int res;
+    SceIores iores;
+    res = sceIoLseekAsync(fd, offset, whence);
+    {if (res < 0) {{
+
+        return (SceOff)res;
+
+    }}}
+    res = sceIoWaitAsyncCB(fd, &iores);
+
+    {if (res == 0) {{
+        return (SceOff)iores;
+    }} else {{
+        return (SceOff)res;
+    }}}
+
+}
+
+static __inline__
+long sceIoLseek32CB(SceUID fd, long offset, int whence)
+{
+    int res;
+    SceIores iores;
+    res = sceIoLseek32Async(fd, offset, whence);
+    {if (res < 0) {{
+
+        return (long)res;
+
+    }}}
+    res = sceIoWaitAsyncCB(fd, &iores);
+
+    {if (res == 0) {{
+        return (long)iores;
+    }} else {{
+        return (long)res;
+    }}}
+
+}
+
+static __inline__
+SceSSize sceIoReadCB(SceUID fd, void *buf, SceSize nbyte)
+{
+    int res;
+    SceIores iores;
+    res = sceIoReadAsync(fd, buf, nbyte);
+    {if (res < 0) {{
+
+        return (SceSSize)res;
+
+    }}}
+    res = sceIoWaitAsyncCB(fd, &iores);
+
+    {if (res == 0) {{
+        return (SceSSize)iores;
+    }} else {{
+        return (SceSSize)res;
+    }}}
+
+}
+
+static __inline__
+SceSSize sceIoWriteCB(SceUID fd, const void *buf, SceSize nbyte)
+{
+    int res;
+    SceIores iores;
+    res = sceIoWriteAsync(fd, buf, nbyte);
+    {if (res < 0) {{
+
+        return (SceSSize)res;
+
+    }}}
+    res = sceIoWaitAsyncCB(fd, &iores);
+
+    {if (res == 0) {{
+        return (SceSSize)iores;
+    }} else {{
+        return (SceSSize)res;
+    }}}
+
+}
+#define _SCE_MODULEMGR_H 
+#define SCE_KERNEL_MAX_MODULE_SEGMENT 4
+
+#define SCE_KERNEL_MODULE_NAME_LEN 27
+
+#define SCE_KERNEL_START_SUCCESS (0)
+
+#define SCE_KERNEL_START_FAIL (1)
+
+#define SCE_KERNEL_START_RESIDENT SCE_KERNEL_START_SUCCESS
+#define SCE_KERNEL_START_NO_RESIDENT SCE_KERNEL_START_FAIL
+
+#define SCE_KERNEL_STOP_SUCCESS (0)
+
+#define SCE_KERNEL_STOP_FAIL (1)
+
+#define SCE_KERNEL_RESIDENT SCE_KERNEL_START_RESIDENT
+#define SCE_KERNEL_NO_RESIDENT SCE_KERNEL_START_NO_RESIDENT
+#define SCE_KERNEL_RESIDENT_END SCE_KERNEL_START_RESIDENT
+#define SCE_KERNEL_NO_RESIDENT_END SCE_KERNEL_START_NO_RESIDENT
+
+typedef struct SceKernelLMOption {
+        SceSize size;
+        SceUID mpidtext;
+        SceUID mpiddata;
+
+        unsigned int flags;
+        char position;
+        char access;
+        char creserved[2];
+} SceKernelLMOption;
+
+#define SCE_KERNEL_LM_POS_Low SCE_KERNEL_SMEM_Low
+#define SCE_KERNEL_LM_POS_High SCE_KERNEL_SMEM_High
+
+#define SCE_KERNEL_LM_POS_LOW SCE_KERNEL_LM_POS_Low
+#define SCE_KERNEL_LM_POS_HIGH SCE_KERNEL_LM_POS_High
+
+#define SCE_KERNEL_LM_ACCESS_Noseek (1)
+
+#define SCE_KERNEL_LMWO_ACCESS_Noseek SCE_KERNEL_LM_ACCESS_Noseek
+
+typedef struct SceKernelSMOption {
+        SceSize size;
+        SceUID mpidstack;
+        SceSize stacksize;
+        int priority;
+        unsigned int attribute;
+} SceKernelSMOption;
+
+SceUID sceKernelLoadModule(const char *path, int flags,
+                                                        const SceKernelLMOption *pOpt);
+SceUID sceKernelLoadModuleByID(int inputid, int flag,
+                                                                const SceKernelLMOption *opt);
+SceUID sceKernelLoadModuleWithBlockOffset(const char *path, SceUID block, SceOff offset);
+SceUID sceKernelLoadModuleByIDWithBlockOffset(int inputid, SceUID block, SceOff offset);
+
+SceUID sceKernelLoadModuleNpDrm(const char *path, int flags,
+                                                                 const SceKernelLMOption *pOpt);
+
+int sceKernelStartModule(SceUID modid, SceSize args, const void *argp, int *modresult,
+                                                                const SceKernelSMOption *pOpt);
+
+int sceKernelStopModule(SceUID modid, SceSize args, const void *argp, int *modresult,
+                                                                const SceKernelSMOption *pOpt);
+
+int sceKernelUnloadModule(SceUID modid);
+
+int sceKernelStopUnloadSelfModule(SceSize args, const void *argp, int *modresult,
+                                                                                const SceKernelSMOption *pOpt);
+int sceKernelStopUnloadSelfModuleWithStatus(int exitStatus, SceSize args,
+                                                                                                const void *argp, int *modresult,
+                                                                                                const SceKernelSMOption *pOpt);
+
+typedef struct SceKernelModuleInfoV0 {
+        SceSize size;
+        char nsegment;
+        char reserved[3];
+        int segmentaddr[4];
+        int segmentsize[4];
+        unsigned int entry_addr;
+        unsigned int gp_value;
+        unsigned int text_addr;
+        unsigned int text_size;
+        unsigned int data_size;
+        unsigned int bss_size;
+} SceKernelModuleInfoV0;
+
+typedef struct SceKernelModuleInfo {
+
+        SceSize size;
+        char nsegment;
+        char reserved[3];
+        int segmentaddr[4];
+        int segmentsize[4];
+        unsigned int entry_addr;
+        unsigned int gp_value;
+        unsigned int text_addr;
+        unsigned int text_size;
+        unsigned int data_size;
+        unsigned int bss_size;
+
+        unsigned short modattribute;
+        unsigned char modversion[2];
+
+        char modname[27];
+        char terminal;
+} SceKernelModuleInfo;
+
+int sceKernelQueryModuleInfo(SceUID uid, SceKernelModuleInfo *pInfo);
+
+SceUID sceKernelGetModuleId(void);
+SceUID sceKernelGetModuleIdByAddress(const void *base);
+int sceKernelGetModuleIdList(SceUID *readbuf, int readbufsize, int *idcount);
+int sceKernelGetModuleGPByAddress(const void *addr, unsigned int *pGP);
+
+#define _SCE_KERNELUTILS_H 
+
+#define SCE_KERNEL_CACHEADDR_USE_TEMPLATE 0
+
+#define SCE_KERNEL_UTILS_USE_DCACHE_INLINE_ASSEMBLY 1
+static __inline__ int sceKernelIsCachedAddr(const void *v);
+static __inline__ int sceKernelIsUncachedAddr(const void *v);
+
+static __inline__ int sceKernelIsCachedAddr(const void *v)
+{
+
+        return (__builtin_allegrex_ext((unsigned int)v, 30, 1)==0U);
+
+}
+
+static __inline__ int sceKernelIsUncachedAddr(const void *v)
+{
+
+        return (__builtin_allegrex_ext((unsigned int)v, 30, 1)!=0U);
+
+}
+static __inline__ unsigned int sceKernelMakeCachedAddrUIntPtr(const void *v);
+static __inline__ unsigned int sceKernelMakeUncachedAddrUIntPtr(const void *v);
+static __inline__ unsigned int sceKernelMakePhysicalAddrUIntPtr(const void *v);
+static __inline__ void *sceKernelMakeCachedAddr(const void *v);
+static __inline__ void *sceKernelMakeUncachedAddr(const void *v);
+static __inline__ void *sceKernelMakePhysicalAddr(const void *v);
+
+static __inline__ unsigned int sceKernelMakeCachedAddrUIntPtr(const void *v)
+{
+
+        return (__builtin_allegrex_ext((unsigned int)v, 0, 29));
+
+}
+static __inline__ void *sceKernelMakeCachedAddr(const void *_p)
+{
+        ScePspUnion32 u;
+        u.ui = sceKernelMakeCachedAddrUIntPtr(_p);
+        return u.p;
+}
+
+static __inline__ unsigned int sceKernelMakeUncachedAddrUIntPtr(const void *v)
+{
+
+        return (__builtin_allegrex_ins(0x40000000U, (unsigned int)v, 0, 29));
+
+}
+static __inline__ void *sceKernelMakeUncachedAddr(const void *_p)
+{
+        ScePspUnion32 u;
+        u.ui = sceKernelMakeUncachedAddrUIntPtr(_p);
+        return u.p;
+}
+
+static __inline__ unsigned int sceKernelMakePhysicalAddrUIntPtr(const void *v)
+{
+
+        return (__builtin_allegrex_ext((unsigned int)v, 0, 29));
+
+}
+static __inline__ void *sceKernelMakePhysicalAddr(const void *_p)
+{
+        ScePspUnion32 u;
+        u.ui = sceKernelMakePhysicalAddrUIntPtr(_p);
+        return u.p;
+}
+void sceKernelDcacheWritebackAll(void);
+
+void sceKernelDcacheWritebackInvalidateAll(void);
+
+int sceKernelDcacheWritebackRange(const void *start, unsigned int size);
+
+int sceKernelDcacheWritebackInvalidateRange(const void *start, unsigned int size);
+
+int sceKernelDcacheInvalidateRange(void *start, unsigned int size);
+
+#define SCE_KERNEL_DCACHE_PROBE_MISS 0
+
+#define SCE_KERNEL_DCACHE_PROBE_HIT 1
+
+#define SCE_KERNEL_DCACHE_PROBE_HIT_DIRTY 2
+
+int sceKernelDcacheProbe(const void *addr);
+
+int sceKernelDcacheProbeRange(const void *start, unsigned int size);
+
+void sceKernelIcacheInvalidateAll(void);
+
+int sceKernelIcacheInvalidateRange(const void *start, unsigned int size);
+
+#define SCE_KERNEL_ICACHE_PROBE_MISS 0
+
+#define SCE_KERNEL_ICACHE_PROBE_HIT 1
+
+int sceKernelIcacheProbe(const void *addr);
+
+static __inline__ void sceKernelDcacheFillRange(const void *start, unsigned int size);
+static __inline__ void sceKernelDcacheCreateDirtyExclusiveRange(void *start, unsigned int size);
+
+static __inline__ void sceKernelDcacheFillRange(const void *start, unsigned int size)
+{
+        unsigned int uiStart, uiEnd;
+        unsigned int ui;
+
+        uiStart = (unsigned int)start;
+
+        {if (__builtin_allegrex_ext(uiStart, 30, 1)!=0U) {{
+
+                return;
+        }}}
+
+        uiEnd = uiStart + size;
+        {for (ui=uiStart; ui<uiEnd; ui+=64) {{
+
+                __builtin_allegrex_cache(0x1E, (void *)ui);
+
+        }}}
+        return;
+}
+
+static __inline__ void sceKernelDcacheCreateDirtyExclusiveRange(void *start, unsigned int size)
+{
+        unsigned int uiStart, uiEnd;
+        unsigned int ui;
+
+        uiStart = (unsigned int)start;
+
+        {if (__builtin_allegrex_ext(uiStart, 30, 1)!=0U) {{
+                return;
+        }}}
+
+        uiEnd = (((uiStart + size - 64) | (64 - 1)) ^ (64 - 1));
+        ui = (((uiStart + 64 - 1) | (64 - 1)) ^ (64 - 1));
+        {while (ui <= uiEnd) {{
+
+                __builtin_allegrex_cache(0x18, (void *)ui);
+
+                ui += 64;
+        }}}
+        return;
+}
+
+void *sceKernelMemcpy(void *dest, const void *src, unsigned int size);
+void *sceKernelMemset(void *start, int c, unsigned int size);
+#define sceKernelDcacheMemset sceKernelMemset
+#define sceKernelDcacheMemcpy sceKernelMemcpy
+
+static __inline__ void sceKernelDcacheMemsetInline(void *start, int c, unsigned int size);
+static __inline__ void sceKernelDcacheMemcpyInline(void *dest, const void *src, unsigned int size);
+
+static __inline__ void sceKernelDcacheMemsetInline(void *start, int c, unsigned int size)
+{
+        __asm__ volatile (
+                ".set			push\n"
+                ".set			noreorder\n"
+                ".set			noat\n"
+                "ext			$1,  %0,  30,  1\n"
+                "bne			$1,  $0,  3f\n"
+                "addu			%2,  %0,  %2\n"
+
+                "ins			%1,  %1,   8,  8\n"
+                "ins			%1,  %1,  16, 16\n"
+
+        "0:\n"
+                "beq			%0,  %2,  9f\n"
+                "andi			$1,  %0,  0x003F\n"
+                "beq			$1,  $0,  1f\n"
+                "sb				%1,  0(%0)\n"
+                "j				0b\n"
+                "addiu			%0,  %0,  1\n"
+
+        "1:\n"
+                "move			$1,  %2\n"
+                "ins			$1,  $0,   0,  6\n"
+                "beq			%0,  $1, 3f\n"
+                "nop\n"
+        "2:\n"
+                "cache			0x18, 0(%0)\n"
+                "sw				%1,   0(%0)\n"
+                "sw				%1,   4(%0)\n"
+                "sw				%1,   8(%0)\n"
+                "sw				%1,  12(%0)\n"
+                "sw				%1,  16(%0)\n"
+                "sw				%1,  20(%0)\n"
+                "sw				%1,  24(%0)\n"
+                "sw				%1,  28(%0)\n"
+                "sw				%1,  32(%0)\n"
+                "sw				%1,  36(%0)\n"
+                "sw				%1,  40(%0)\n"
+                "sw				%1,  44(%0)\n"
+                "sw				%1,  48(%0)\n"
+                "sw				%1,  52(%0)\n"
+                "sw				%1,  56(%0)\n"
+                "addiu			%0,  %0,  64\n"
+                "bne			%0,  $1,  2b\n"
+                "sw				%1,  -4(%0)\n"
+        "3:\n"
+                "beq			%0,  %2,  9f\n"
+                "addiu			%0,  %0,  1\n"
+                "j				3b\n"
+                "sb				%1,  -1(%0)\n"
+        "9:\n"
+                ".set			pop\n"
+                : "+r"(start), "+r"(c), "+r"(size)
+                :
+                : "memory", "$1"
+        );
+        return;
+}
+
+static __inline__ void sceKernelDcacheMemcpyInline(void *dest, const void *src, unsigned int size)
+{
+        unsigned int dend;
+        __asm__ volatile (
+                ".set			push\n"
+                ".set			noreorder\n"
+                ".set			noat\n"
+                "or				%3,  %0,  %1\n"
+                "ext			%3,  %0,  30,  1\n"
+                "bne			%3,  $0,  3f\n"
+                "addu			%3,  %0,  %2\n"
+                "sltu			$1,  %2,  128\n"
+                "bnez			$1,  2f\n"
+                "xor			$1,  %0,  %1\n"
+                "andi			$1,  $1,  0x0003\n"
+                "bne			$1,  $0,  3f\n"
+                "addiu			%2,  %0,  63\n"
+                "ins			%2,  $0,  0, 6\n"
+        "0:\n"
+                "beq			%2,  %0,  8f\n"
+                "lbu			$1,   0(%1)\n"
+                "addiu			%0,  %0,  1\n"
+                "addiu			%1,  %1,  1\n"
+                "j				0b\n"
+                "sb				$1,  -1(%0)\n"
+        "8:\n"
+                "move			$1,  %3\n"
+                "ins			$1,  $0,  0,  6\n"
+        "1:\n"
+                "cache			0x18, 0(%0)\n"
+                "lw				%2,   0(%1)\n"
+                "sw				%2,   0(%0)\n"
+                "lw				%2,   4(%1)\n"
+                "sw				%2,   4(%0)\n"
+                "lw				%2,   8(%1)\n"
+                "sw				%2,   8(%0)\n"
+                "lw				%2,  12(%1)\n"
+                "sw				%2,  12(%0)\n"
+                "lw				%2,  16(%1)\n"
+                "sw				%2,  16(%0)\n"
+                "lw				%2,  20(%1)\n"
+                "sw				%2,  20(%0)\n"
+                "lw				%2,  24(%1)\n"
+                "sw				%2,  24(%0)\n"
+                "lw				%2,  28(%1)\n"
+                "sw				%2,  28(%0)\n"
+                "lw				%2,  32(%1)\n"
+                "sw				%2,  32(%0)\n"
+                "lw				%2,  36(%1)\n"
+                "sw				%2,  36(%0)\n"
+                "lw				%2,  40(%1)\n"
+                "sw				%2,  40(%0)\n"
+                "lw				%2,  44(%1)\n"
+                "sw				%2,  44(%0)\n"
+                "lw				%2,  48(%1)\n"
+                "sw				%2,  48(%0)\n"
+                "lw				%2,  52(%1)\n"
+                "sw				%2,  52(%0)\n"
+                "lw				%2,  56(%1)\n"
+                "sw				%2,  56(%0)\n"
+                "addiu			%0,  %0,  64\n"
+                "lw				%2,  60(%1)\n"
+                "addiu			%1,  %1,  64\n"
+                "bne			%0,  $1,  1b\n"
+                "sw				%2,  60-64(%0)\n"
+        "2:\n"
+                "beq			%0,  %3,  9f\n"
+                "nop\n"
+        "3:\n"
+                "addiu			%0,  %0,  1\n"
+                "lbu			%2,   0(%1)\n"
+                "addiu			%1,  %1,  1\n"
+                "bne			%0,  %3,  3b\n"
+                "sb				%2,  -1(%0)\n"
+        "9:\n"
+                ".set			pop\n"
+                : "+r"(dest), "+r"(src), "+r"(size), "=&r"(dend)
+                :
+                : "memory", "$1"
+        );
+        return;
+}
+
+#define SCE_KERNEL_UTILS_MD5_BLOCK_SIZE 64
+#define SCE_KERNEL_UTILS_MD5_DIGEST_SIZE 16
+
+typedef struct SceKernelUtilsMd5Context {
+        unsigned int h[4];
+        unsigned int pad;
+        unsigned short usRemains;
+        unsigned short usComputed;
+
+        __extension__ unsigned long long int ullTotalLen;
+
+        unsigned char buf[64];
+} SceKernelUtilsMd5Context;
+
+int sceKernelUtilsMd5Digest(const void *plain, unsigned int uiLen, unsigned char *digest);
+
+int sceKernelUtilsMd5BlockInit(SceKernelUtilsMd5Context *pContext);
+int sceKernelUtilsMd5BlockUpdate(SceKernelUtilsMd5Context *pContext, const void *plain, unsigned int uiLen);
+int sceKernelUtilsMd5BlockResult(SceKernelUtilsMd5Context *pContext, unsigned char *digest);
+
+#define SCE_KERNEL_UTILS_SHA1_BLOCK_SIZE 64
+#define SCE_KERNEL_UTILS_SHA1_DIGEST_SIZE 20
+
+typedef struct SceKernelUtilsSha1Context {
+        unsigned int h[5];
+        unsigned short usRemains;
+        unsigned short usComputed;
+
+        __extension__ unsigned long long int ullTotalLen;
+
+        unsigned char buf[64];
+} SceKernelUtilsSha1Context;
+
+int sceKernelUtilsSha1Digest(const void *plain, unsigned int len, unsigned char *digest);
+
+int sceKernelUtilsSha1BlockInit(SceKernelUtilsSha1Context *pContext);
+int sceKernelUtilsSha1BlockUpdate(SceKernelUtilsSha1Context *pContext, const void *plain, unsigned int uiLen);
+int sceKernelUtilsSha1BlockResult(SceKernelUtilsSha1Context *pContext, unsigned char *digest);
+
+typedef struct SceKernelUtilsMt19937Context {
+        unsigned int count;
+        unsigned int state[624];
+} SceKernelUtilsMt19937Context;
+
+int sceKernelUtilsMt19937Init(SceKernelUtilsMt19937Context *pCtx, unsigned int seed);
+unsigned int sceKernelUtilsMt19937UInt(SceKernelUtilsMt19937Context *pCtx);
+#define SCE_KERNEL_POWER_LOCK_DEFAULT 0
+int sceKernelPowerLock(int locktype);
+
+int sceKernelPowerUnlock(int locktype);
+
+#define SCE_KERNEL_VOLATILE_MEM_DEFAULT 0
+int sceKernelVolatileMemLock(int arg, void **ppAdr, unsigned int *puiSize);
+int sceKernelVolatileMemTryLock(int arg, void **ppAdr, unsigned int *puiSize);
+int sceKernelVolatileMemUnlock(int arg);
+
+#define SCE_KERNEL_POWER_TICK_DEFAULT 0x00
+
+#define SCE_KERNEL_POWER_TICK_SUSPENDONLY 0x01
+
+#define SCE_KERNEL_POWER_TICK_LCDONLY 0x06
+
+int sceKernelPowerTick(int ticktype);
+
+unsigned char sceKernelGetGPI(void);
+void sceKernelSetGPO(unsigned char gpo);
+
+void sceKernelPutUserLog(unsigned int arg0, unsigned int arg1, unsigned int arg2, unsigned int arg3);
+
+#define SCE_KERNEL_DECI2P_MEMBTM 0x4000U
+
+SceUID sceKernelDeci2pOpen(const char *protoname, unsigned short protonum, SceSize bufsize, SceUInt attr, const void *optParam);
+int sceKernelDeci2pClose(SceUID socketid);
+int sceKernelDeci2pRead(SceUID socketid, void *buf, SceSize nbyte);
+int sceKernelDeci2pWrite(SceUID socketid, const void *buf, SceSize nbyte);
+
+#define SCE_KERNEL_DECI2P_CALLBACKARG_DATA_READY 0x00000001
+#define SCE_KERNEL_DECI2P_CALLBACKARG_NOROUTE 0x00010000
+#define SCE_KERNEL_DECI2P_CALLBACKARG_NOPROTO 0x00020000
+int sceKernelDeci2pRegisterCallback(SceUID socketid, SceUID cbid);
+
+int sceKernelRegisterStdoutPipe(SceUID uid);
+int sceKernelRegisterStderrPipe(SceUID uid);
+#define _SCE_LOADEXEC_H 
+typedef struct SceKernelLoadExecParam {
+        SceSize size;
+
+        SceSize args;
+
+        const void *argp;
+
+        const char *key;
+
+} SceKernelLoadExecParam;
+
+int sceKernelLoadExec(const char *file, const SceKernelLoadExecParam *pParam);
+
+int sceKernelLoadExecNpDrm(const char *file, const SceKernelLoadExecParam *pParam);
+
+int sceKernelExitGame(void);
+
+int sceKernelRegisterExitCallback(SceUID uid);
+#define _SCE_GEMAN_H 
+
+#define _SCE_GECMD_H 
+#define SCE_GE_EXTRACT_ADDR24(_adr32) (((SceUInt32)(_adr32)) & 0x00FFFFFFU)
+#define SCE_GE_EXTRACT_BASE8(_adr32) ((((SceUInt32)(_adr32))>>24) & 0x0FU)
+#define SCE_GE_EXTRACT_BASE24(_adr32) ((((SceUInt32)(_adr32))>>8) & 0x000FFFFFU)
+static __inline__ unsigned int sceGeExtractFloat24(float _float32);
+static __inline__ unsigned int sceGeExtractFloat24(float _float32)
+{
+        ScePspUnion32 u;
+        u.f = _float32;
+        return (u.ui>>8);
+}
+#define SCE_GE_EXTRACT_FLOAT24(_float32) sceGeExtractFloat24(_float32)
+#define _SCE_GE_CMD_DEFINE(_n) (_n ##U)
+
+#define SCE_GE_CMD_NOP _SCE_GE_CMD_DEFINE(0x00)
+
+#define SCE_GE_CMD_VADR _SCE_GE_CMD_DEFINE(0x01)
+
+#define SCE_GE_CMD_IADR _SCE_GE_CMD_DEFINE(0x02)
+
+#define SCE_GE_CMD_PRIM _SCE_GE_CMD_DEFINE(0x04)
+
+#define SCE_GE_CMD_BEZIER _SCE_GE_CMD_DEFINE(0x05)
+
+#define SCE_GE_CMD_SPLINE _SCE_GE_CMD_DEFINE(0x06)
+
+#define SCE_GE_CMD_BBOX _SCE_GE_CMD_DEFINE(0x07)
+
+#define SCE_GE_CMD_JUMP _SCE_GE_CMD_DEFINE(0x08)
+
+#define SCE_GE_CMD_BJUMP _SCE_GE_CMD_DEFINE(0x09)
+
+#define SCE_GE_CMD_CALL _SCE_GE_CMD_DEFINE(0x0A)
+
+#define SCE_GE_CMD_RET _SCE_GE_CMD_DEFINE(0x0B)
+
+#define SCE_GE_CMD_END _SCE_GE_CMD_DEFINE(0x0C)
+
+#define SCE_GE_CMD_SIGNAL _SCE_GE_CMD_DEFINE(0x0E)
+
+#define SCE_GE_CMD_FINISH _SCE_GE_CMD_DEFINE(0x0F)
+
+#define SCE_GE_CMD_BASE _SCE_GE_CMD_DEFINE(0x10)
+
+#define SCE_GE_CMD_VTYPE _SCE_GE_CMD_DEFINE(0x12)
+
+#define SCE_GE_CMD_OFFSET _SCE_GE_CMD_DEFINE(0x13)
+
+#define SCE_GE_CMD_ORIGIN _SCE_GE_CMD_DEFINE(0x14)
+
+#define SCE_GE_CMD_REGION1 _SCE_GE_CMD_DEFINE(0x15)
+
+#define SCE_GE_CMD_REGION2 _SCE_GE_CMD_DEFINE(0x16)
+
+#define SCE_GE_CMD_LTE _SCE_GE_CMD_DEFINE(0x17)
+
+#define SCE_GE_CMD_LE0 _SCE_GE_CMD_DEFINE(0x18)
+
+#define SCE_GE_CMD_LE1 _SCE_GE_CMD_DEFINE(0x19)
+
+#define SCE_GE_CMD_LE2 _SCE_GE_CMD_DEFINE(0x1A)
+
+#define SCE_GE_CMD_LE3 _SCE_GE_CMD_DEFINE(0x1B)
+
+#define SCE_GE_CMD_CLE _SCE_GE_CMD_DEFINE(0x1C)
+
+#define SCE_GE_CMD_BCE _SCE_GE_CMD_DEFINE(0x1D)
+
+#define SCE_GE_CMD_TME _SCE_GE_CMD_DEFINE(0x1E)
+
+#define SCE_GE_CMD_FGE _SCE_GE_CMD_DEFINE(0x1F)
+
+#define SCE_GE_CMD_DTE _SCE_GE_CMD_DEFINE(0x20)
+
+#define SCE_GE_CMD_ABE _SCE_GE_CMD_DEFINE(0x21)
+
+#define SCE_GE_CMD_ATE _SCE_GE_CMD_DEFINE(0x22)
+
+#define SCE_GE_CMD_ZTE _SCE_GE_CMD_DEFINE(0x23)
+
+#define SCE_GE_CMD_STE _SCE_GE_CMD_DEFINE(0x24)
+
+#define SCE_GE_CMD_AAE _SCE_GE_CMD_DEFINE(0x25)
+
+#define SCE_GE_CMD_PCE _SCE_GE_CMD_DEFINE(0x26)
+
+#define SCE_GE_CMD_CTE _SCE_GE_CMD_DEFINE(0x27)
+
+#define SCE_GE_CMD_LOE _SCE_GE_CMD_DEFINE(0x28)
+
+#define SCE_GE_CMD_BONEN _SCE_GE_CMD_DEFINE(0x2A)
+
+#define SCE_GE_CMD_BONED _SCE_GE_CMD_DEFINE(0x2B)
+
+#define SCE_GE_CMD_WEIGHT0 _SCE_GE_CMD_DEFINE(0x2C)
+
+#define SCE_GE_CMD_WEIGHT1 _SCE_GE_CMD_DEFINE(0x2D)
+
+#define SCE_GE_CMD_WEIGHT2 _SCE_GE_CMD_DEFINE(0x2E)
+
+#define SCE_GE_CMD_WEIGHT3 _SCE_GE_CMD_DEFINE(0x2F)
+
+#define SCE_GE_CMD_WEIGHT4 _SCE_GE_CMD_DEFINE(0x30)
+
+#define SCE_GE_CMD_WEIGHT5 _SCE_GE_CMD_DEFINE(0x31)
+
+#define SCE_GE_CMD_WEIGHT6 _SCE_GE_CMD_DEFINE(0x32)
+
+#define SCE_GE_CMD_WEIGHT7 _SCE_GE_CMD_DEFINE(0x33)
+
+#define SCE_GE_CMD_DIVIDE _SCE_GE_CMD_DEFINE(0x36)
+
+#define SCE_GE_CMD_PPM _SCE_GE_CMD_DEFINE(0x37)
+
+#define SCE_GE_CMD_PFACE _SCE_GE_CMD_DEFINE(0x38)
+
+#define SCE_GE_CMD_WORLDN _SCE_GE_CMD_DEFINE(0x3A)
+
+#define SCE_GE_CMD_WORLDD _SCE_GE_CMD_DEFINE(0x3B)
+
+#define SCE_GE_CMD_VIEWN _SCE_GE_CMD_DEFINE(0x3C)
+
+#define SCE_GE_CMD_VIEWD _SCE_GE_CMD_DEFINE(0x3D)
+
+#define SCE_GE_CMD_PROJN _SCE_GE_CMD_DEFINE(0x3E)
+
+#define SCE_GE_CMD_PROJD _SCE_GE_CMD_DEFINE(0x3F)
+
+#define SCE_GE_CMD_TGENN _SCE_GE_CMD_DEFINE(0x40)
+
+#define SCE_GE_CMD_TGEND _SCE_GE_CMD_DEFINE(0x41)
+
+#define SCE_GE_CMD_SX _SCE_GE_CMD_DEFINE(0x42)
+
+#define SCE_GE_CMD_SY _SCE_GE_CMD_DEFINE(0x43)
+
+#define SCE_GE_CMD_SZ _SCE_GE_CMD_DEFINE(0x44)
+
+#define SCE_GE_CMD_TX _SCE_GE_CMD_DEFINE(0x45)
+
+#define SCE_GE_CMD_TY _SCE_GE_CMD_DEFINE(0x46)
+
+#define SCE_GE_CMD_TZ _SCE_GE_CMD_DEFINE(0x47)
+
+#define SCE_GE_CMD_SU _SCE_GE_CMD_DEFINE(0x48)
+
+#define SCE_GE_CMD_SV _SCE_GE_CMD_DEFINE(0x49)
+
+#define SCE_GE_CMD_TU _SCE_GE_CMD_DEFINE(0x4A)
+
+#define SCE_GE_CMD_TV _SCE_GE_CMD_DEFINE(0x4B)
+
+#define SCE_GE_CMD_OFFSETX _SCE_GE_CMD_DEFINE(0x4C)
+
+#define SCE_GE_CMD_OFFSETY _SCE_GE_CMD_DEFINE(0x4D)
+
+#define SCE_GE_CMD_SHADE _SCE_GE_CMD_DEFINE(0x50)
+
+#define SCE_GE_CMD_NREV _SCE_GE_CMD_DEFINE(0x51)
+
+#define SCE_GE_CMD_MATERIAL _SCE_GE_CMD_DEFINE(0x53)
+
+#define SCE_GE_CMD_MEC _SCE_GE_CMD_DEFINE(0x54)
+
+#define SCE_GE_CMD_MAC _SCE_GE_CMD_DEFINE(0x55)
+
+#define SCE_GE_CMD_MDC _SCE_GE_CMD_DEFINE(0x56)
+
+#define SCE_GE_CMD_MSC _SCE_GE_CMD_DEFINE(0x57)
+
+#define SCE_GE_CMD_MAA _SCE_GE_CMD_DEFINE(0x58)
+
+#define SCE_GE_CMD_MK _SCE_GE_CMD_DEFINE(0x5B)
+
+#define SCE_GE_CMD_AC _SCE_GE_CMD_DEFINE(0x5C)
+
+#define SCE_GE_CMD_AA _SCE_GE_CMD_DEFINE(0x5D)
+
+#define SCE_GE_CMD_LMODE _SCE_GE_CMD_DEFINE(0x5E)
+
+#define SCE_GE_CMD_LTYPE0 _SCE_GE_CMD_DEFINE(0x5F)
+
+#define SCE_GE_CMD_LTYPE1 _SCE_GE_CMD_DEFINE(0x60)
+
+#define SCE_GE_CMD_LTYPE2 _SCE_GE_CMD_DEFINE(0x61)
+
+#define SCE_GE_CMD_LTYPE3 _SCE_GE_CMD_DEFINE(0x62)
+
+#define SCE_GE_CMD_LX0 _SCE_GE_CMD_DEFINE(0x63)
+
+#define SCE_GE_CMD_LY0 _SCE_GE_CMD_DEFINE(0x64)
+
+#define SCE_GE_CMD_LZ0 _SCE_GE_CMD_DEFINE(0x65)
+
+#define SCE_GE_CMD_LX1 _SCE_GE_CMD_DEFINE(0x66)
+
+#define SCE_GE_CMD_LY1 _SCE_GE_CMD_DEFINE(0x67)
+
+#define SCE_GE_CMD_LZ1 _SCE_GE_CMD_DEFINE(0x68)
+
+#define SCE_GE_CMD_LX2 _SCE_GE_CMD_DEFINE(0x69)
+
+#define SCE_GE_CMD_LY2 _SCE_GE_CMD_DEFINE(0x6A)
+
+#define SCE_GE_CMD_LZ2 _SCE_GE_CMD_DEFINE(0x6B)
+
+#define SCE_GE_CMD_LX3 _SCE_GE_CMD_DEFINE(0x6C)
+
+#define SCE_GE_CMD_LY3 _SCE_GE_CMD_DEFINE(0x6D)
+
+#define SCE_GE_CMD_LZ3 _SCE_GE_CMD_DEFINE(0x6E)
+
+#define SCE_GE_CMD_LDX0 _SCE_GE_CMD_DEFINE(0x6F)
+
+#define SCE_GE_CMD_LDY0 _SCE_GE_CMD_DEFINE(0x70)
+
+#define SCE_GE_CMD_LDZ0 _SCE_GE_CMD_DEFINE(0x71)
+
+#define SCE_GE_CMD_LDX1 _SCE_GE_CMD_DEFINE(0x72)
+
+#define SCE_GE_CMD_LDY1 _SCE_GE_CMD_DEFINE(0x73)
+
+#define SCE_GE_CMD_LDZ1 _SCE_GE_CMD_DEFINE(0x74)
+
+#define SCE_GE_CMD_LDX2 _SCE_GE_CMD_DEFINE(0x75)
+
+#define SCE_GE_CMD_LDY2 _SCE_GE_CMD_DEFINE(0x76)
+
+#define SCE_GE_CMD_LDZ2 _SCE_GE_CMD_DEFINE(0x77)
+
+#define SCE_GE_CMD_LDX3 _SCE_GE_CMD_DEFINE(0x78)
+
+#define SCE_GE_CMD_LDY3 _SCE_GE_CMD_DEFINE(0x79)
+
+#define SCE_GE_CMD_LDZ3 _SCE_GE_CMD_DEFINE(0x7A)
+
+#define SCE_GE_CMD_LKA0 _SCE_GE_CMD_DEFINE(0x7B)
+
+#define SCE_GE_CMD_LKB0 _SCE_GE_CMD_DEFINE(0x7C)
+
+#define SCE_GE_CMD_LKC0 _SCE_GE_CMD_DEFINE(0x7D)
+
+#define SCE_GE_CMD_LKA1 _SCE_GE_CMD_DEFINE(0x7E)
+
+#define SCE_GE_CMD_LKB1 _SCE_GE_CMD_DEFINE(0x7F)
+
+#define SCE_GE_CMD_LKC1 _SCE_GE_CMD_DEFINE(0x80)
+
+#define SCE_GE_CMD_LKA2 _SCE_GE_CMD_DEFINE(0x81)
+
+#define SCE_GE_CMD_LKB2 _SCE_GE_CMD_DEFINE(0x82)
+
+#define SCE_GE_CMD_LKC2 _SCE_GE_CMD_DEFINE(0x83)
+
+#define SCE_GE_CMD_LKA3 _SCE_GE_CMD_DEFINE(0x84)
+
+#define SCE_GE_CMD_LKB3 _SCE_GE_CMD_DEFINE(0x85)
+
+#define SCE_GE_CMD_LKC3 _SCE_GE_CMD_DEFINE(0x86)
+
+#define SCE_GE_CMD_LKS0 _SCE_GE_CMD_DEFINE(0x87)
+
+#define SCE_GE_CMD_LKS1 _SCE_GE_CMD_DEFINE(0x88)
+
+#define SCE_GE_CMD_LKS2 _SCE_GE_CMD_DEFINE(0x89)
+
+#define SCE_GE_CMD_LKS3 _SCE_GE_CMD_DEFINE(0x8A)
+
+#define SCE_GE_CMD_LKO0 _SCE_GE_CMD_DEFINE(0x8B)
+
+#define SCE_GE_CMD_LKO1 _SCE_GE_CMD_DEFINE(0x8C)
+
+#define SCE_GE_CMD_LKO2 _SCE_GE_CMD_DEFINE(0x8D)
+
+#define SCE_GE_CMD_LKO3 _SCE_GE_CMD_DEFINE(0x8E)
+
+#define SCE_GE_CMD_LAC0 _SCE_GE_CMD_DEFINE(0x8F)
+
+#define SCE_GE_CMD_LDC0 _SCE_GE_CMD_DEFINE(0x90)
+
+#define SCE_GE_CMD_LSC0 _SCE_GE_CMD_DEFINE(0x91)
+
+#define SCE_GE_CMD_LAC1 _SCE_GE_CMD_DEFINE(0x92)
+
+#define SCE_GE_CMD_LDC1 _SCE_GE_CMD_DEFINE(0x93)
+
+#define SCE_GE_CMD_LSC1 _SCE_GE_CMD_DEFINE(0x94)
+
+#define SCE_GE_CMD_LAC2 _SCE_GE_CMD_DEFINE(0x95)
+
+#define SCE_GE_CMD_LDC2 _SCE_GE_CMD_DEFINE(0x96)
+
+#define SCE_GE_CMD_LSC2 _SCE_GE_CMD_DEFINE(0x97)
+
+#define SCE_GE_CMD_LAC3 _SCE_GE_CMD_DEFINE(0x98)
+
+#define SCE_GE_CMD_LDC3 _SCE_GE_CMD_DEFINE(0x99)
+
+#define SCE_GE_CMD_LSC3 _SCE_GE_CMD_DEFINE(0x9A)
+
+#define SCE_GE_CMD_CULL _SCE_GE_CMD_DEFINE(0x9B)
+
+#define SCE_GE_CMD_FBP _SCE_GE_CMD_DEFINE(0x9C)
+
+#define SCE_GE_CMD_FBW _SCE_GE_CMD_DEFINE(0x9D)
+
+#define SCE_GE_CMD_ZBP _SCE_GE_CMD_DEFINE(0x9E)
+
+#define SCE_GE_CMD_ZBW _SCE_GE_CMD_DEFINE(0x9F)
+
+#define SCE_GE_CMD_TBP0 _SCE_GE_CMD_DEFINE(0xA0)
+
+#define SCE_GE_CMD_TBP1 _SCE_GE_CMD_DEFINE(0xA1)
+
+#define SCE_GE_CMD_TBP2 _SCE_GE_CMD_DEFINE(0xA2)
+
+#define SCE_GE_CMD_TBP3 _SCE_GE_CMD_DEFINE(0xA3)
+
+#define SCE_GE_CMD_TBP4 _SCE_GE_CMD_DEFINE(0xA4)
+
+#define SCE_GE_CMD_TBP5 _SCE_GE_CMD_DEFINE(0xA5)
+
+#define SCE_GE_CMD_TBP6 _SCE_GE_CMD_DEFINE(0xA6)
+
+#define SCE_GE_CMD_TBP7 _SCE_GE_CMD_DEFINE(0xA7)
+
+#define SCE_GE_CMD_TBW0 _SCE_GE_CMD_DEFINE(0xA8)
+
+#define SCE_GE_CMD_TBW1 _SCE_GE_CMD_DEFINE(0xA9)
+
+#define SCE_GE_CMD_TBW2 _SCE_GE_CMD_DEFINE(0xAA)
+
+#define SCE_GE_CMD_TBW3 _SCE_GE_CMD_DEFINE(0xAB)
+
+#define SCE_GE_CMD_TBW4 _SCE_GE_CMD_DEFINE(0xAC)
+
+#define SCE_GE_CMD_TBW5 _SCE_GE_CMD_DEFINE(0xAD)
+
+#define SCE_GE_CMD_TBW6 _SCE_GE_CMD_DEFINE(0xAE)
+
+#define SCE_GE_CMD_TBW7 _SCE_GE_CMD_DEFINE(0xAF)
+
+#define SCE_GE_CMD_CBP _SCE_GE_CMD_DEFINE(0xB0)
+
+#define SCE_GE_CMD_CBW _SCE_GE_CMD_DEFINE(0xB1)
+
+#define SCE_GE_CMD_XBP1 _SCE_GE_CMD_DEFINE(0xB2)
+
+#define SCE_GE_CMD_XBW1 _SCE_GE_CMD_DEFINE(0xB3)
+
+#define SCE_GE_CMD_XBP2 _SCE_GE_CMD_DEFINE(0xB4)
+
+#define SCE_GE_CMD_XBW2 _SCE_GE_CMD_DEFINE(0xB5)
+
+#define SCE_GE_CMD_TSIZE0 _SCE_GE_CMD_DEFINE(0xB8)
+
+#define SCE_GE_CMD_TSIZE1 _SCE_GE_CMD_DEFINE(0xB9)
+
+#define SCE_GE_CMD_TSIZE2 _SCE_GE_CMD_DEFINE(0xBA)
+
+#define SCE_GE_CMD_TSIZE3 _SCE_GE_CMD_DEFINE(0xBB)
+
+#define SCE_GE_CMD_TSIZE4 _SCE_GE_CMD_DEFINE(0xBC)
+
+#define SCE_GE_CMD_TSIZE5 _SCE_GE_CMD_DEFINE(0xBD)
+
+#define SCE_GE_CMD_TSIZE6 _SCE_GE_CMD_DEFINE(0xBE)
+
+#define SCE_GE_CMD_TSIZE7 _SCE_GE_CMD_DEFINE(0xBF)
+
+#define SCE_GE_CMD_TMAP _SCE_GE_CMD_DEFINE(0xC0)
+
+#define SCE_GE_CMD_TSHADE _SCE_GE_CMD_DEFINE(0xC1)
+
+#define SCE_GE_CMD_TMODE _SCE_GE_CMD_DEFINE(0xC2)
+
+#define SCE_GE_CMD_TPF _SCE_GE_CMD_DEFINE(0xC3)
+
+#define SCE_GE_CMD_CLOAD _SCE_GE_CMD_DEFINE(0xC4)
+
+#define SCE_GE_CMD_CLUT _SCE_GE_CMD_DEFINE(0xC5)
+
+#define SCE_GE_CMD_TFILTER _SCE_GE_CMD_DEFINE(0xC6)
+
+#define SCE_GE_CMD_TWRAP _SCE_GE_CMD_DEFINE(0xC7)
+
+#define SCE_GE_CMD_TLEVEL _SCE_GE_CMD_DEFINE(0xC8)
+
+#define SCE_GE_CMD_TFUNC _SCE_GE_CMD_DEFINE(0xC9)
+
+#define SCE_GE_CMD_TEC _SCE_GE_CMD_DEFINE(0xCA)
+
+#define SCE_GE_CMD_TFLUSH _SCE_GE_CMD_DEFINE(0xCB)
+
+#define SCE_GE_CMD_TSYNC _SCE_GE_CMD_DEFINE(0xCC)
+
+#define SCE_GE_CMD_FOG1 _SCE_GE_CMD_DEFINE(0xCD)
+
+#define SCE_GE_CMD_FOG2 _SCE_GE_CMD_DEFINE(0xCE)
+
+#define SCE_GE_CMD_FC _SCE_GE_CMD_DEFINE(0xCF)
+
+#define SCE_GE_CMD_TSLOPE _SCE_GE_CMD_DEFINE(0xD0)
+
+#define SCE_GE_CMD_FPF _SCE_GE_CMD_DEFINE(0xD2)
+
+#define SCE_GE_CMD_CMODE _SCE_GE_CMD_DEFINE(0xD3)
+
+#define SCE_GE_CMD_SCISSOR1 _SCE_GE_CMD_DEFINE(0xD4)
+
+#define SCE_GE_CMD_SCISSOR2 _SCE_GE_CMD_DEFINE(0xD5)
+
+#define SCE_GE_CMD_MINZ _SCE_GE_CMD_DEFINE(0xD6)
+
+#define SCE_GE_CMD_MAXZ _SCE_GE_CMD_DEFINE(0xD7)
+
+#define SCE_GE_CMD_CTEST _SCE_GE_CMD_DEFINE(0xD8)
+
+#define SCE_GE_CMD_CREF _SCE_GE_CMD_DEFINE(0xD9)
+
+#define SCE_GE_CMD_CMSK _SCE_GE_CMD_DEFINE(0xDA)
+
+#define SCE_GE_CMD_ATEST _SCE_GE_CMD_DEFINE(0xDB)
+
+#define SCE_GE_CMD_STEST _SCE_GE_CMD_DEFINE(0xDC)
+
+#define SCE_GE_CMD_SOP _SCE_GE_CMD_DEFINE(0xDD)
+
+#define SCE_GE_CMD_ZTEST _SCE_GE_CMD_DEFINE(0xDE)
+
+#define SCE_GE_CMD_BLEND _SCE_GE_CMD_DEFINE(0xDF)
+
+#define SCE_GE_CMD_FIXA _SCE_GE_CMD_DEFINE(0xE0)
+
+#define SCE_GE_CMD_FIXB _SCE_GE_CMD_DEFINE(0xE1)
+
+#define SCE_GE_CMD_DITH1 _SCE_GE_CMD_DEFINE(0xE2)
+
+#define SCE_GE_CMD_DITH2 _SCE_GE_CMD_DEFINE(0xE3)
+
+#define SCE_GE_CMD_DITH3 _SCE_GE_CMD_DEFINE(0xE4)
+
+#define SCE_GE_CMD_DITH4 _SCE_GE_CMD_DEFINE(0xE5)
+
+#define SCE_GE_CMD_LOP _SCE_GE_CMD_DEFINE(0xE6)
+
+#define SCE_GE_CMD_ZMSK _SCE_GE_CMD_DEFINE(0xE7)
+
+#define SCE_GE_CMD_PMSK1 _SCE_GE_CMD_DEFINE(0xE8)
+
+#define SCE_GE_CMD_PMSK2 _SCE_GE_CMD_DEFINE(0xE9)
+
+#define SCE_GE_CMD_XSTART _SCE_GE_CMD_DEFINE(0xEA)
+
+#define SCE_GE_CMD_XPOS1 _SCE_GE_CMD_DEFINE(0xEB)
+
+#define SCE_GE_CMD_XPOS2 _SCE_GE_CMD_DEFINE(0xEC)
+
+#define SCE_GE_CMD_XSIZE _SCE_GE_CMD_DEFINE(0xEE)
+
+#define SCE_GE_CMD_DUMMY _SCE_GE_CMD_DEFINE(0xFF)
+
+#define SCE_GE_KEEP 0
+#define SCE_GE_UPDATE 1
+#define SCE_GE_OFF 0
+#define SCE_GE_ON 1
+
+#define SCE_GE_SET_NOP() (SCE_GE_CMD_NOP<<24)
+#define SCE_GE_SET_NOP_LABEL24(_label24) ((SCE_GE_CMD_NOP<<24) | ((_label24) & 0x00FFFFFF))
+
+#define SCE_GE_SET_VADR(_adr) ((SCE_GE_CMD_VADR<<24) | ((_adr) & 0x00FFFFFF))
+#define SCE_GE_SET_VADR_ADDR24(_adr32) ((SCE_GE_CMD_VADR<<24) | SCE_GE_EXTRACT_ADDR24(_adr32))
+
+#define SCE_GE_SET_IADR(_adr) ((SCE_GE_CMD_IADR<<24) | ((_adr) & 0x00FFFFFF))
+#define SCE_GE_SET_IADR_ADDR24(_adr32) ((SCE_GE_CMD_IADR<<24) | SCE_GE_EXTRACT_ADDR24(_adr32))
+
+#define SCE_GE_SET_PRIM(_count,_prim) ((SCE_GE_CMD_PRIM<<24) | ((_prim)<<16) | (_count))
+#define SCE_GE_PRIM_POINTS 0
+#define SCE_GE_PRIM_LINES 1
+#define SCE_GE_PRIM_LINE_STRIP 2
+#define SCE_GE_PRIM_TRIANGLES 3
+#define SCE_GE_PRIM_TRIANGLE_STRIP 4
+#define SCE_GE_PRIM_TRIANGLE_FAN 5
+#define SCE_GE_PRIM_RECTANGLES 6
+
+#define SCE_GE_SET_BEZIER(_ucount,_vcount) ((SCE_GE_CMD_BEZIER<<24) | ((_vcount)<<8) | (_ucount))
+
+#define SCE_GE_SET_SPLINE(_ucount,_vcount,_uf,_vf) ((SCE_GE_CMD_SPLINE<<24) | ((_vf)<<18) | ((_uf)<<16) | ((_vcount)<<8) | (_ucount))
+
+#define SCE_GE_SPLINE_CLOSE_CLOSE 0
+#define SCE_GE_SPLINE_OPEN_CLOSE 1
+#define SCE_GE_SPLINE_CLOSE_OPEN 2
+#define SCE_GE_SPLINE_OPEN_OPEN 3
+
+#define SCE_GE_SET_BBOX(_count) ((SCE_GE_CMD_BBOX<<24) | (_count))
+
+#define SCE_GE_SET_JUMP(_adr) ((SCE_GE_CMD_JUMP<<24) | ((_adr) & 0x00FFFFFF))
+#define SCE_GE_SET_JUMP_ADDR24(_adr32) ((SCE_GE_CMD_JUMP<<24) | SCE_GE_EXTRACT_ADDR24(_adr32))
+
+#define SCE_GE_SET_BJUMP(_adr) ((SCE_GE_CMD_BJUMP<<24) | ((_adr) & 0x00FFFFFF))
+#define SCE_GE_SET_BJUMP_ADDR24(_adr32) ((SCE_GE_CMD_BJUMP<<24) | SCE_GE_EXTRACT_ADDR24(_adr32))
+
+#define SCE_GE_SET_CALL(_adr) ((SCE_GE_CMD_CALL<<24) | ((_adr) & 0x00FFFFFF))
+#define SCE_GE_SET_CALL_ADDR24(_adr32) ((SCE_GE_CMD_CALL<<24) | SCE_GE_EXTRACT_ADDR24(_adr32))
+
+#define SCE_GE_SET_RET() ((SCE_GE_CMD_RET<<24))
+
+#define SCE_GE_SET_END() ((SCE_GE_CMD_END<<24))
+
+#define SCE_GE_SET_SIGNAL() ((SCE_GE_CMD_SIGNAL<<24))
+
+#define SCE_GE_SET_FINISH() ((SCE_GE_CMD_FINISH<<24))
+
+#define SCE_GE_SET_BASE(_base) ((SCE_GE_CMD_BASE<<24) | (((_base) & 0x0F)<<16))
+#define SCE_GE_SET_BASE_BASE8(_base32) ((SCE_GE_CMD_BASE<<24) | (SCE_GE_EXTRACT_BASE8(_base32)<<16))
+
+#define SCE_GE_SET_VTYPE(_tt,_ct,_nt,_vt,_wt,_it,_wc,_mc,_tru) ((SCE_GE_CMD_VTYPE<<24) | ((_tru)<<23) | ((_mc)<<18) | ((_wc)<<14) | ((_it)<<11) | ((_wt)<<9) | ((_vt)<<7) | ((_nt)<<5) | ((_ct)<<2) | (_tt))
+
+#define SCE_GE_VTYPE_NONE 0
+#define SCE_GE_VTYPE_CHAR 1
+#define SCE_GE_VTYPE_UCHAR 1
+#define SCE_GE_VTYPE_SHORT 2
+#define SCE_GE_VTYPE_USHORT 2
+#define SCE_GE_VTYPE_FLOAT 3
+
+#define SCE_GE_VTYPE_TTNONE SCE_GE_VTYPE_NONE
+#define SCE_GE_VTYPE_TTUCHAR SCE_GE_VTYPE_UCHAR
+#define SCE_GE_VTYPE_TTUSHORT SCE_GE_VTYPE_USHORT
+#define SCE_GE_VTYPE_TTFLOAT SCE_GE_VTYPE_FLOAT
+
+#define SCE_GE_VTYPE_CTNONE 0
+#define SCE_GE_VTYPE_CT5650 4
+#define SCE_GE_VTYPE_CT5551 5
+#define SCE_GE_VTYPE_CT4444 6
+#define SCE_GE_VTYPE_CT8888 7
+
+#define SCE_GE_VTYPE_NTNONE SCE_GE_VTYPE_NONE
+#define SCE_GE_VTYPE_NTCHAR SCE_GE_VTYPE_CHAR
+#define SCE_GE_VTYPE_NTSHORT SCE_GE_VTYPE_SHORT
+#define SCE_GE_VTYPE_NTFLOAT SCE_GE_VTYPE_FLOAT
+
+#define SCE_GE_VTYPE_VTCHAR SCE_GE_VTYPE_CHAR
+#define SCE_GE_VTYPE_VTSHORT SCE_GE_VTYPE_SHORT
+#define SCE_GE_VTYPE_VTFLOAT SCE_GE_VTYPE_FLOAT
+
+#define SCE_GE_VTYPE_WTNONE SCE_GE_VTYPE_NONE
+#define SCE_GE_VTYPE_WTUCHAR SCE_GE_VTYPE_UCHAR
+#define SCE_GE_VTYPE_WTUSHORT SCE_GE_VTYPE_USHORT
+#define SCE_GE_VTYPE_WTFLOAT SCE_GE_VTYPE_FLOAT
+
+#define SCE_GE_VTYPE_ITNONE SCE_GE_VTYPE_NONE
+#define SCE_GE_VTYPE_ITUCHAR SCE_GE_VTYPE_UCHAR
+#define SCE_GE_VTYPE_ITUSHORT SCE_GE_VTYPE_USHORT
+
+#define SCE_GE_VTYPE_WEIGHT1 0
+#define SCE_GE_VTYPE_WEIGHT2 1
+#define SCE_GE_VTYPE_WEIGHT3 2
+#define SCE_GE_VTYPE_WEIGHT4 3
+#define SCE_GE_VTYPE_WEIGHT5 4
+#define SCE_GE_VTYPE_WEIGHT6 5
+#define SCE_GE_VTYPE_WEIGHT7 6
+#define SCE_GE_VTYPE_WEIGHT8 7
+
+#define SCE_GE_VTYPE_BLEND0 0
+#define SCE_GE_VTYPE_BLEND2 1
+#define SCE_GE_VTYPE_BLEND3 2
+#define SCE_GE_VTYPE_BLEND4 3
+#define SCE_GE_VTYPE_BLEND5 4
+#define SCE_GE_VTYPE_BLEND6 5
+#define SCE_GE_VTYPE_BLEND7 6
+#define SCE_GE_VTYPE_BLEND8 7
+
+#define SCE_GE_VTYPE_NORMAL 0
+#define SCE_GE_VTYPE_THROUGH 1
+
+#define SCE_GE_SET_OFFSET(_offset) ((SCE_GE_CMD_OFFSET<<24) | ((_offset) & 0x00FFFFFF))
+#define SCE_GE_SET_OFFSET_BASE24(_offset) ((SCE_GE_CMD_OFFSET<<24) | SCE_GE_EXTRACT_BASE24(_offset))
+
+#define SCE_GE_SET_ORIGIN() ((SCE_GE_CMD_ORIGIN<<24))
+
+#define SCE_GE_SET_REGION1(_sx1,_sy1) ((SCE_GE_CMD_REGION1<<24) | ((_sy1)<<10) | (_sx1))
+
+#define SCE_GE_SET_REGION2(_sx2,_sy2) ((SCE_GE_CMD_REGION2<<24) | ((_sy2)<<10) | (_sx2))
+
+#define SCE_GE_SET_LTE(_lte) ((SCE_GE_CMD_LTE<<24) | (_lte))
+
+#define SCE_GE_SET_LE0(_le) ((SCE_GE_CMD_LE0<<24) | (_le))
+
+#define SCE_GE_SET_LE1(_le) ((SCE_GE_CMD_LE1<<24) | (_le))
+
+#define SCE_GE_SET_LE2(_le) ((SCE_GE_CMD_LE2<<24) | (_le))
+
+#define SCE_GE_SET_LE3(_le) ((SCE_GE_CMD_LE3<<24) | (_le))
+
+#define SCE_GE_SET_LEn(_n,_le) (((SCE_GE_CMD_LE0+(_n))<<24) | (_le))
+
+#define SCE_GE_SET_CLE(_cle) ((SCE_GE_CMD_CLE<<24) | (_cle))
+
+#define SCE_GE_SET_BCE(_bce) ((SCE_GE_CMD_BCE<<24) | (_bce))
+
+#define SCE_GE_SET_TME(_tme) ((SCE_GE_CMD_TME<<24) | (_tme))
+
+#define SCE_GE_SET_FGE(_fge) ((SCE_GE_CMD_FGE<<24) | (_fge))
+
+#define SCE_GE_SET_DTE(_dte) ((SCE_GE_CMD_DTE<<24) | (_dte))
+
+#define SCE_GE_SET_ABE(_abe) ((SCE_GE_CMD_ABE<<24) | (_abe))
+
+#define SCE_GE_SET_ATE(_ate) ((SCE_GE_CMD_ATE<<24) | (_ate))
+
+#define SCE_GE_SET_ZTE(_zte) ((SCE_GE_CMD_ZTE<<24) | (_zte))
+
+#define SCE_GE_SET_STE(_ste) ((SCE_GE_CMD_STE<<24) | (_ste))
+
+#define SCE_GE_SET_AAE(_aae) ((SCE_GE_CMD_AAE<<24) | (_aae))
+
+#define SCE_GE_SET_PCE(_pce) ((SCE_GE_CMD_PCE<<24) | (_pce))
+
+#define SCE_GE_SET_CTE(_cte) ((SCE_GE_CMD_CTE<<24) | (_cte))
+
+#define SCE_GE_SET_LOE(_loe) ((SCE_GE_CMD_LOE<<24) | (_loe))
+
+#define SCE_GE_SET_BONEN(_num) ((SCE_GE_CMD_BONEN<<24) | (_num))
+
+#define SCE_GE_SET_BONED(_bone) ((SCE_GE_CMD_BONED<<24) | (_bone))
+#define SCE_GE_SET_BONED_FLOAT24(_bone) ((SCE_GE_CMD_BONED<<24) | SCE_GE_EXTRACT_FLOAT24(_bone))
+
+#define SCE_GE_SET_WEIGHT0(_weight0) ((SCE_GE_CMD_WEIGHT0<<24) | (_weight0))
+#define SCE_GE_SET_WEIGHT0_FLOAT24(_wgt0) ((SCE_GE_CMD_WEIGHT0<<24) | SCE_GE_EXTRACT_FLOAT24(_wgt0))
+
+#define SCE_GE_SET_WEIGHT1(_weight1) ((SCE_GE_CMD_WEIGHT1<<24) | (_weight1))
+#define SCE_GE_SET_WEIGHT1_FLOAT24(_wgt1) ((SCE_GE_CMD_WEIGHT1<<24) | SCE_GE_EXTRACT_FLOAT24(_wgt1))
+
+#define SCE_GE_SET_WEIGHT2(_weight2) ((SCE_GE_CMD_WEIGHT2<<24) | (_weight2))
+#define SCE_GE_SET_WEIGHT2_FLOAT24(_wgt2) ((SCE_GE_CMD_WEIGHT2<<24) | SCE_GE_EXTRACT_FLOAT24(_wgt2))
+
+#define SCE_GE_SET_WEIGHT3(_weight3) ((SCE_GE_CMD_WEIGHT3<<24) | (_weight3))
+#define SCE_GE_SET_WEIGHT3_FLOAT24(_wgt3) ((SCE_GE_CMD_WEIGHT3<<24) | SCE_GE_EXTRACT_FLOAT24(_wgt3))
+
+#define SCE_GE_SET_WEIGHT4(_weight4) ((SCE_GE_CMD_WEIGHT4<<24) | (_weight4))
+#define SCE_GE_SET_WEIGHT4_FLOAT24(_wgt4) ((SCE_GE_CMD_WEIGHT4<<24) | SCE_GE_EXTRACT_FLOAT24(_wgt4))
+
+#define SCE_GE_SET_WEIGHT5(_weight5) ((SCE_GE_CMD_WEIGHT5<<24) | (_weight5))
+#define SCE_GE_SET_WEIGHT5_FLOAT24(_wgt5) ((SCE_GE_CMD_WEIGHT5<<24) | SCE_GE_EXTRACT_FLOAT24(_wgt5))
+
+#define SCE_GE_SET_WEIGHT6(_weight6) ((SCE_GE_CMD_WEIGHT6<<24) | (_weight6))
+#define SCE_GE_SET_WEIGHT6_FLOAT24(_wgt6) ((SCE_GE_CMD_WEIGHT6<<24) | SCE_GE_EXTRACT_FLOAT24(_wgt6))
+
+#define SCE_GE_SET_WEIGHT7(_weight7) ((SCE_GE_CMD_WEIGHT7<<24) | (_weight7))
+#define SCE_GE_SET_WEIGHT7_FLOAT24(_wgt7) ((SCE_GE_CMD_WEIGHT7<<24) | SCE_GE_EXTRACT_FLOAT24(_wgt7))
+
+#define SCE_GE_SET_WEIGHTn(_n,_weight) (((SCE_GE_CMD_WEIGHT0+(_n))<<24) | (_weight))
+#define SCE_GE_SET_WEIGHTn_FLOAT24(_n,_wgt) (((SCE_GE_CMD_WEIGHT0+(_n))<<24) | SCE_GE_EXTRACT_FLOAT24(_wgt))
+
+#define SCE_GE_SET_DIVIDE(_udiv,_vdiv) ((SCE_GE_CMD_DIVIDE<<24) | ((_vdiv)<<8) | (_udiv))
+
+#define SCE_GE_SET_PPM(_ppm) ((SCE_GE_CMD_PPM<<24) | (_ppm))
+#define SCE_GE_PPM_TRIANGLE 0
+#define SCE_GE_PPM_LINE 1
+#define SCE_GE_PPM_POINT 2
+
+#define SCE_GE_SET_PFACE(_pface) ((SCE_GE_CMD_PFACE<<24) | (_pface))
+#define SCE_GE_PFACE_CLOCKWISE 0
+#define SCE_GE_PFACE_COUNTERCLOCKWISE 1
+#define SCE_GE_PFACE_CW SCE_GE_PFACE_CLOCKWISE
+#define SCE_GE_PFACE_CCW SCE_GE_PFACE_COUNTERCLOCKWISE
+
+#define SCE_GE_SET_WORLDN(_num) ((SCE_GE_CMD_WORLDN<<24) | (_num))
+
+#define SCE_GE_SET_WORLDD(_world) ((SCE_GE_CMD_WORLDD<<24) | (_world))
+#define SCE_GE_SET_WORLDD_FLOAT24(_world) ((SCE_GE_CMD_WORLDD<<24) | SCE_GE_EXTRACT_FLOAT24(_world))
+
+#define SCE_GE_SET_VIEWN(_num) ((SCE_GE_CMD_VIEWN<<24) | (_num))
+
+#define SCE_GE_SET_VIEWD(_view) ((SCE_GE_CMD_VIEWD<<24) | (_view))
+#define SCE_GE_SET_VIEWD_FLOAT24(_view) ((SCE_GE_CMD_VIEWD<<24) | SCE_GE_EXTRACT_FLOAT24(_view))
+
+#define SCE_GE_SET_PROJN(_num) ((SCE_GE_CMD_PROJN<<24) | (_num))
+
+#define SCE_GE_SET_PROJD(_proj) ((SCE_GE_CMD_PROJD<<24) | (_proj))
+#define SCE_GE_SET_PROJD_FLOAT24(_proj) ((SCE_GE_CMD_PROJD<<24) | SCE_GE_EXTRACT_FLOAT24(_proj))
+
+#define SCE_GE_SET_TGENN(_num) ((SCE_GE_CMD_TGENN<<24) | (_num))
+
+#define SCE_GE_SET_TGEND(_tgen) ((SCE_GE_CMD_TGEND<<24) | (_tgen))
+#define SCE_GE_SET_TGEND_FLOAT24(_tgen) ((SCE_GE_CMD_TGEND<<24) | SCE_GE_EXTRACT_FLOAT24(_tgen))
+
+#define SCE_GE_SET_SX(_sx) ((SCE_GE_CMD_SX<<24) | (_sx))
+#define SCE_GE_SET_SX_FLOAT24(_sx) ((SCE_GE_CMD_SX<<24) | SCE_GE_EXTRACT_FLOAT24(_sx))
+
+#define SCE_GE_SET_SY(_sy) ((SCE_GE_CMD_SY<<24) | (_sy))
+#define SCE_GE_SET_SY_FLOAT24(_sy) ((SCE_GE_CMD_SY<<24) | SCE_GE_EXTRACT_FLOAT24(_sy))
+
+#define SCE_GE_SET_SZ(_sz) ((SCE_GE_CMD_SZ<<24) | (_sz))
+#define SCE_GE_SET_SZ_FLOAT24(_sz) ((SCE_GE_CMD_SZ<<24) | SCE_GE_EXTRACT_FLOAT24(_sz))
+
+#define SCE_GE_SET_TX(_tx) ((SCE_GE_CMD_TX<<24) | (_tx))
+#define SCE_GE_SET_TX_FLOAT24(_tx) ((SCE_GE_CMD_TX<<24) | SCE_GE_EXTRACT_FLOAT24(_tx))
+
+#define SCE_GE_SET_TY(_ty) ((SCE_GE_CMD_TY<<24) | (_ty))
+#define SCE_GE_SET_TY_FLOAT24(_ty) ((SCE_GE_CMD_TY<<24) | SCE_GE_EXTRACT_FLOAT24(_ty))
+
+#define SCE_GE_SET_TZ(_tz) ((SCE_GE_CMD_TZ<<24) | (_tz))
+#define SCE_GE_SET_TZ_FLOAT24(_tz) ((SCE_GE_CMD_TZ<<24) | SCE_GE_EXTRACT_FLOAT24(_tz))
+
+#define SCE_GE_SET_SU(_su) ((SCE_GE_CMD_SU<<24) | (_su))
+#define SCE_GE_SET_SU_FLOAT24(_su) ((SCE_GE_CMD_SU<<24) | SCE_GE_EXTRACT_FLOAT24(_su))
+
+#define SCE_GE_SET_SV(_sv) ((SCE_GE_CMD_SV<<24) | (_sv))
+#define SCE_GE_SET_SV_FLOAT24(_sv) ((SCE_GE_CMD_SV<<24) | SCE_GE_EXTRACT_FLOAT24(_sv))
+
+#define SCE_GE_SET_TU(_tu) ((SCE_GE_CMD_TU<<24) | (_tu))
+#define SCE_GE_SET_TU_FLOAT24(_tu) ((SCE_GE_CMD_TU<<24) | SCE_GE_EXTRACT_FLOAT24(_tu))
+
+#define SCE_GE_SET_TV(_tv) ((SCE_GE_CMD_TV<<24) | (_tv))
+#define SCE_GE_SET_TV_FLOAT24(_tv) ((SCE_GE_CMD_TV<<24) | SCE_GE_EXTRACT_FLOAT24(_tv))
+
+#define SCE_GE_SET_OFFSETX(_offx) ((SCE_GE_CMD_OFFSETX<<24) | (_offx))
+
+#define SCE_GE_SET_OFFSETY(_offy) ((SCE_GE_CMD_OFFSETY<<24) | (_offy))
+
+#define SCE_GE_SET_SHADE(_iip) ((SCE_GE_CMD_SHADE<<24) | (_iip))
+#define SCE_GE_SHADE_FLAT 0
+#define SCE_GE_SHADE_GOURAUD 1
+
+#define SCE_GE_SET_NREV(_nrev) ((SCE_GE_CMD_NREV<<24) | (_nrev))
+#define SCE_GE_NREV_NORMAL 0
+#define SCE_GE_NREV_REVERSE 1
+
+#define SCE_GE_SET_MATERIAL(_ac,_dc,_sc) ((SCE_GE_CMD_MATERIAL<<24) | ((_sc)<<2) | ((_dc)<<1) | (_ac))
+#define SCE_GE_MATERIAL_KEEP SCE_GE_KEEP
+#define SCE_GE_MATERIAL_UPDATE SCE_GE_UPDATE
+
+#define SCE_GE_SET_MEC(_r,_g,_b) ((SCE_GE_CMD_MEC<<24) | ((_b)<<16) | ((_g)<<8) | (_r))
+#define SCE_GE_SET_MEC_RGB24(_rgb24) ((SCE_GE_CMD_MEC<<24) | ((_rgb24) & 0x00FFFFFF))
+
+#define SCE_GE_SET_MAC(_r,_g,_b) ((SCE_GE_CMD_MAC<<24) | ((_b)<<16) | ((_g)<<8) | (_r))
+#define SCE_GE_SET_MAC_RGB24(_rgb24) ((SCE_GE_CMD_MAC<<24) | ((_rgb24) & 0x00FFFFFF))
+
+#define SCE_GE_SET_MDC(_r,_g,_b) ((SCE_GE_CMD_MDC<<24) | ((_b)<<16) | ((_g)<<8) | (_r))
+#define SCE_GE_SET_MDC_RGB24(_rgb24) ((SCE_GE_CMD_MDC<<24) | ((_rgb24) & 0x00FFFFFF))
+
+#define SCE_GE_SET_MSC(_r,_g,_b) ((SCE_GE_CMD_MSC<<24) | ((_b)<<16) | ((_g)<<8) | (_r))
+#define SCE_GE_SET_MSC_RGB24(_rgb24) ((SCE_GE_CMD_MSC<<24) | ((_rgb24) & 0x00FFFFFF))
+
+#define SCE_GE_SET_MAA(_a) ((SCE_GE_CMD_MAA<<24) | (_a))
+
+#define SCE_GE_SET_MK(_k) ((SCE_GE_CMD_MK<<24) | (_k))
+#define SCE_GE_SET_MK_FLOAT24(_k) ((SCE_GE_CMD_MK<<24) | SCE_GE_EXTRACT_FLOAT24(_k))
+
+#define SCE_GE_SET_AC(_r,_g,_b) ((SCE_GE_CMD_AC<<24) | ((_b)<<16) | ((_g)<<8) | (_r))
+#define SCE_GE_SET_AC_RGB24(_rgb24) ((SCE_GE_CMD_AC<<24) | ((_rgb24) & 0x00FFFFFF))
+
+#define SCE_GE_SET_AA(_a) ((SCE_GE_CMD_AA<<24) | (_a))
+
+#define SCE_GE_SET_LMODE(_ssc) ((SCE_GE_CMD_LMODE<<24) | (_ssc))
+#define SCE_GE_LMODE_SINGLE_COLOR 0
+#define SCE_GE_LMODE_SEPARATE_SPECULAR_COLOR 1
+
+#define SCE_GE_SET_LTYPE0(_comp,_type) ((SCE_GE_CMD_LTYPE0<<24) | ((_type)<<8) | (_comp))
+
+#define SCE_GE_SET_LTYPE1(_comp,_type) ((SCE_GE_CMD_LTYPE1<<24) | ((_type)<<8) | (_comp))
+
+#define SCE_GE_SET_LTYPE2(_comp,_type) ((SCE_GE_CMD_LTYPE2<<24) | ((_type)<<8) | (_comp))
+
+#define SCE_GE_SET_LTYPE3(_comp,_type) ((SCE_GE_CMD_LTYPE3<<24) | ((_type)<<8) | (_comp))
+
+#define SCE_GE_SET_LTYPEn(_n,_comp,_type) (((SCE_GE_CMD_LTYPE0+(_n))<<24) | ((_type)<<8) | (_comp))
+
+#define SCE_GE_LTYPE_DIRECTION 0
+#define SCE_GE_LTYPE_POINT 1
+#define SCE_GE_LTYPE_SPOT 2
+#define SCE_GE_LTYPE_PARALLEL SCE_GE_LTYPE_DIRECTION
+#define SCE_GE_LTYPE_DIFFUSE 0
+#define SCE_GE_LTYPE_DIFFUSE_AND_SPECULAR 1
+#define SCE_GE_LTYPE_POWERED_DIFFUSE_AND_SPECULAR 2
+
+#define SCE_GE_SET_LX0(_lx) ((SCE_GE_CMD_LX0<<24) | (_lx))
+#define SCE_GE_SET_LX0_FLOAT24(_lx) ((SCE_GE_CMD_LX0<<24) | SCE_GE_EXTRACT_FLOAT24(_lx))
+
+#define SCE_GE_SET_LY0(_ly) ((SCE_GE_CMD_LY0<<24) | (_ly))
+#define SCE_GE_SET_LY0_FLOAT24(_ly) ((SCE_GE_CMD_LY0<<24) | SCE_GE_EXTRACT_FLOAT24(_ly))
+
+#define SCE_GE_SET_LZ0(_lz) ((SCE_GE_CMD_LZ0<<24) | (_lz))
+#define SCE_GE_SET_LZ0_FLOAT24(_lz) ((SCE_GE_CMD_LZ0<<24) | SCE_GE_EXTRACT_FLOAT24(_lz))
+
+#define SCE_GE_SET_LX1(_lx) ((SCE_GE_CMD_LX1<<24) | (_lx))
+#define SCE_GE_SET_LX1_FLOAT24(_lx) ((SCE_GE_CMD_LX1<<24) | SCE_GE_EXTRACT_FLOAT24(_lx))
+
+#define SCE_GE_SET_LY1(_ly) ((SCE_GE_CMD_LY1<<24) | (_ly))
+#define SCE_GE_SET_LY1_FLOAT24(_ly) ((SCE_GE_CMD_LY1<<24) | SCE_GE_EXTRACT_FLOAT24(_ly))
+
+#define SCE_GE_SET_LZ1(_lz) ((SCE_GE_CMD_LZ1<<24) | (_lz))
+#define SCE_GE_SET_LZ1_FLOAT24(_lz) ((SCE_GE_CMD_LZ1<<24) | SCE_GE_EXTRACT_FLOAT24(_lz))
+
+#define SCE_GE_SET_LX2(_lx) ((SCE_GE_CMD_LX2<<24) | (_lx))
+#define SCE_GE_SET_LX2_FLOAT24(_lx) ((SCE_GE_CMD_LX2<<24) | SCE_GE_EXTRACT_FLOAT24(_lx))
+
+#define SCE_GE_SET_LY2(_ly) ((SCE_GE_CMD_LY2<<24) | (_ly))
+#define SCE_GE_SET_LY2_FLOAT24(_ly) ((SCE_GE_CMD_LY2<<24) | SCE_GE_EXTRACT_FLOAT24(_ly))
+
+#define SCE_GE_SET_LZ2(_lz) ((SCE_GE_CMD_LZ2<<24) | (_lz))
+#define SCE_GE_SET_LZ2_FLOAT24(_lz) ((SCE_GE_CMD_LZ2<<24) | SCE_GE_EXTRACT_FLOAT24(_lz))
+
+#define SCE_GE_SET_LX3(_lx) ((SCE_GE_CMD_LX3<<24) | (_lx))
+#define SCE_GE_SET_LX3_FLOAT24(_lx) ((SCE_GE_CMD_LX3<<24) | SCE_GE_EXTRACT_FLOAT24(_lx))
+
+#define SCE_GE_SET_LY3(_ly) ((SCE_GE_CMD_LY3<<24) | (_ly))
+#define SCE_GE_SET_LY3_FLOAT24(_ly) ((SCE_GE_CMD_LY3<<24) | SCE_GE_EXTRACT_FLOAT24(_ly))
+
+#define SCE_GE_SET_LZ3(_lz) ((SCE_GE_CMD_LZ3<<24) | (_lz))
+#define SCE_GE_SET_LZ3_FLOAT24(_lz) ((SCE_GE_CMD_LZ3<<24) | SCE_GE_EXTRACT_FLOAT24(_lz))
+
+#define SCE_GE_SET_LXn(_n,_lx) (((SCE_GE_CMD_LX0+(_n)*3)<<24) | (_lx))
+#define SCE_GE_SET_LYn(_n,_ly) (((SCE_GE_CMD_LY0+(_n)*3)<<24) | (_ly))
+#define SCE_GE_SET_LZn(_n,_lz) (((SCE_GE_CMD_LZ0+(_n)*3)<<24) | (_lz))
+#define SCE_GE_SET_LXn_FLOAT24(_n,_lx) (((SCE_GE_CMD_LX0+(_n)*3)<<24) | SCE_GE_EXTRACT_FLOAT24(_lx))
+#define SCE_GE_SET_LYn_FLOAT24(_n,_ly) (((SCE_GE_CMD_LY0+(_n)*3)<<24) | SCE_GE_EXTRACT_FLOAT24(_ly))
+#define SCE_GE_SET_LZn_FLOAT24(_n,_lz) (((SCE_GE_CMD_LZ0+(_n)*3)<<24) | SCE_GE_EXTRACT_FLOAT24(_lz))
+
+#define SCE_GE_SET_LDX0(_ldx) ((SCE_GE_CMD_LDX0<<24) | (_ldx))
+#define SCE_GE_SET_LDX0_FLOAT24(_ldx) ((SCE_GE_CMD_LDX0<<24) | SCE_GE_EXTRACT_FLOAT24(_ldx))
+
+#define SCE_GE_SET_LDY0(_ldy) ((SCE_GE_CMD_LDY0<<24) | (_ldy))
+#define SCE_GE_SET_LDY0_FLOAT24(_ldy) ((SCE_GE_CMD_LDY0<<24) | SCE_GE_EXTRACT_FLOAT24(_ldy))
+
+#define SCE_GE_SET_LDZ0(_ldz) ((SCE_GE_CMD_LDZ0<<24) | (_ldz))
+#define SCE_GE_SET_LDZ0_FLOAT24(_ldz) ((SCE_GE_CMD_LDZ0<<24) | SCE_GE_EXTRACT_FLOAT24(_ldz))
+
+#define SCE_GE_SET_LDX1(_ldx) ((SCE_GE_CMD_LDX1<<24) | (_ldx))
+#define SCE_GE_SET_LDX1_FLOAT24(_ldx) ((SCE_GE_CMD_LDX1<<24) | SCE_GE_EXTRACT_FLOAT24(_ldx))
+
+#define SCE_GE_SET_LDY1(_ldy) ((SCE_GE_CMD_LDY1<<24) | (_ldy))
+#define SCE_GE_SET_LDY1_FLOAT24(_ldy) ((SCE_GE_CMD_LDY1<<24) | SCE_GE_EXTRACT_FLOAT24(_ldy))
+
+#define SCE_GE_SET_LDZ1(_ldz) ((SCE_GE_CMD_LDZ1<<24) | (_ldz))
+#define SCE_GE_SET_LDZ1_FLOAT24(_ldz) ((SCE_GE_CMD_LDZ1<<24) | SCE_GE_EXTRACT_FLOAT24(_ldz))
+
+#define SCE_GE_SET_LDX2(_ldx) ((SCE_GE_CMD_LDX2<<24) | (_ldx))
+#define SCE_GE_SET_LDX2_FLOAT24(_ldx) ((SCE_GE_CMD_LDX2<<24) | SCE_GE_EXTRACT_FLOAT24(_ldx))
+
+#define SCE_GE_SET_LDY2(_ldy) ((SCE_GE_CMD_LDY2<<24) | (_ldy))
+#define SCE_GE_SET_LDY2_FLOAT24(_ldy) ((SCE_GE_CMD_LDY2<<24) | SCE_GE_EXTRACT_FLOAT24(_ldy))
+
+#define SCE_GE_SET_LDZ2(_ldz) ((SCE_GE_CMD_LDZ2<<24) | (_ldz))
+#define SCE_GE_SET_LDZ2_FLOAT24(_ldz) ((SCE_GE_CMD_LDZ2<<24) | SCE_GE_EXTRACT_FLOAT24(_ldz))
+
+#define SCE_GE_SET_LDX3(_ldx) ((SCE_GE_CMD_LDX3<<24) | (_ldx))
+#define SCE_GE_SET_LDX3_FLOAT24(_ldx) ((SCE_GE_CMD_LDX3<<24) | SCE_GE_EXTRACT_FLOAT24(_ldx))
+
+#define SCE_GE_SET_LDY3(_ldy) ((SCE_GE_CMD_LDY3<<24) | (_ldy))
+#define SCE_GE_SET_LDY3_FLOAT24(_ldy) ((SCE_GE_CMD_LDY3<<24) | SCE_GE_EXTRACT_FLOAT24(_ldy))
+
+#define SCE_GE_SET_LDZ3(_ldz) ((SCE_GE_CMD_LDZ3<<24) | (_ldz))
+#define SCE_GE_SET_LDZ3_FLOAT24(_ldz) ((SCE_GE_CMD_LDZ3<<24) | SCE_GE_EXTRACT_FLOAT24(_ldz))
+
+#define SCE_GE_SET_LDXn(_n,_ldx) (((SCE_GE_CMD_LDX0+(_n)*3)<<24) | (_ldx))
+#define SCE_GE_SET_LDYn(_n,_ldy) (((SCE_GE_CMD_LDY0+(_n)*3)<<24) | (_ldy))
+#define SCE_GE_SET_LDZn(_n,_ldz) (((SCE_GE_CMD_LDZ0+(_n)*3)<<24) | (_ldz))
+#define SCE_GE_SET_LDXn_FLOAT24(_n,_ldx) (((SCE_GE_CMD_LDX0+(_n)*3)<<24) | SCE_GE_EXTRACT_FLOAT24(_ldx))
+#define SCE_GE_SET_LDYn_FLOAT24(_n,_ldy) (((SCE_GE_CMD_LDY0+(_n)*3)<<24) | SCE_GE_EXTRACT_FLOAT24(_ldy))
+#define SCE_GE_SET_LDZn_FLOAT24(_n,_ldz) (((SCE_GE_CMD_LDZ0+(_n)*3)<<24) | SCE_GE_EXTRACT_FLOAT24(_ldz))
+
+#define SCE_GE_SET_LKA0(_lka) ((SCE_GE_CMD_LKA0<<24) | (_lka))
+#define SCE_GE_SET_LKA0_FLOAT24(_lka) ((SCE_GE_CMD_LKA0<<24) | SCE_GE_EXTRACT_FLOAT24(_lka))
+
+#define SCE_GE_SET_LKB0(_lkb) ((SCE_GE_CMD_LKB0<<24) | (_lkb))
+#define SCE_GE_SET_LKB0_FLOAT24(_lkb) ((SCE_GE_CMD_LKB0<<24) | SCE_GE_EXTRACT_FLOAT24(_lkb))
+
+#define SCE_GE_SET_LKC0(_lkc) ((SCE_GE_CMD_LKC0<<24) | (_lkc))
+#define SCE_GE_SET_LKC0_FLOAT24(_lkc) ((SCE_GE_CMD_LKC0<<24) | SCE_GE_EXTRACT_FLOAT24(_lkc))
+
+#define SCE_GE_SET_LKA1(_lka) ((SCE_GE_CMD_LKA1<<24) | (_lka))
+#define SCE_GE_SET_LKA1_FLOAT24(_lka) ((SCE_GE_CMD_LKA1<<24) | SCE_GE_EXTRACT_FLOAT24(_lka))
+
+#define SCE_GE_SET_LKB1(_lkb) ((SCE_GE_CMD_LKB1<<24) | (_lkb))
+#define SCE_GE_SET_LKB1_FLOAT24(_lkb) ((SCE_GE_CMD_LKB1<<24) | SCE_GE_EXTRACT_FLOAT24(_lkb))
+
+#define SCE_GE_SET_LKC1(_lkc) ((SCE_GE_CMD_LKC1<<24) | (_lkc))
+#define SCE_GE_SET_LKC1_FLOAT24(_lkc) ((SCE_GE_CMD_LKC1<<24) | SCE_GE_EXTRACT_FLOAT24(_lkc))
+
+#define SCE_GE_SET_LKA2(_lka) ((SCE_GE_CMD_LKA2<<24) | (_lka))
+#define SCE_GE_SET_LKA2_FLOAT24(_lka) ((SCE_GE_CMD_LKA2<<24) | SCE_GE_EXTRACT_FLOAT24(_lka))
+
+#define SCE_GE_SET_LKB2(_lkb) ((SCE_GE_CMD_LKB2<<24) | (_lkb))
+#define SCE_GE_SET_LKB2_FLOAT24(_lkb) ((SCE_GE_CMD_LKB2<<24) | SCE_GE_EXTRACT_FLOAT24(_lkb))
+
+#define SCE_GE_SET_LKC2(_lkc) ((SCE_GE_CMD_LKC2<<24) | (_lkc))
+#define SCE_GE_SET_LKC2_FLOAT24(_lkc) ((SCE_GE_CMD_LKC2<<24) | SCE_GE_EXTRACT_FLOAT24(_lkc))
+
+#define SCE_GE_SET_LKA3(_lka) ((SCE_GE_CMD_LKA3<<24) | (_lka))
+#define SCE_GE_SET_LKA3_FLOAT24(_lka) ((SCE_GE_CMD_LKA3<<24) | SCE_GE_EXTRACT_FLOAT24(_lka))
+
+#define SCE_GE_SET_LKB3(_lkb) ((SCE_GE_CMD_LKB3<<24) | (_lkb))
+#define SCE_GE_SET_LKB3_FLOAT24(_lkb) ((SCE_GE_CMD_LKB3<<24) | SCE_GE_EXTRACT_FLOAT24(_lkb))
+
+#define SCE_GE_SET_LKC3(_lkc) ((SCE_GE_CMD_LKC3<<24) | (_lkc))
+#define SCE_GE_SET_LKC3_FLOAT24(_lkc) ((SCE_GE_CMD_LKC3<<24) | SCE_GE_EXTRACT_FLOAT24(_lkc))
+
+#define SCE_GE_SET_LKAn(_n,_lka) (((SCE_GE_CMD_LKA0+(_n)*3)<<24) | (_lka))
+#define SCE_GE_SET_LKBn(_n,_lkb) (((SCE_GE_CMD_LKB0+(_n)*3)<<24) | (_lkb))
+#define SCE_GE_SET_LKCn(_n,_lkc) (((SCE_GE_CMD_LKC0+(_n)*3)<<24) | (_lkc))
+#define SCE_GE_SET_LKAn_FLOAT24(_n,_lka) (((SCE_GE_CMD_LKA0+(_n)*3)<<24) | SCE_GE_EXTRACT_FLOAT24(_lka))
+#define SCE_GE_SET_LKBn_FLOAT24(_n,_lkb) (((SCE_GE_CMD_LKB0+(_n)*3)<<24) | SCE_GE_EXTRACT_FLOAT24(_lkb))
+#define SCE_GE_SET_LKCn_FLOAT24(_n,_lkc) (((SCE_GE_CMD_LKC0+(_n)*3)<<24) | SCE_GE_EXTRACT_FLOAT24(_lkc))
+
+#define SCE_GE_SET_LKS0(_lks) ((SCE_GE_CMD_LKS0<<24) | (_lks))
+#define SCE_GE_SET_LKS0_FLOAT24(_lks) ((SCE_GE_CMD_LKS0<<24) | SCE_GE_EXTRACT_FLOAT24(_lks))
+
+#define SCE_GE_SET_LKS1(_lks) ((SCE_GE_CMD_LKS1<<24) | (_lks))
+#define SCE_GE_SET_LKS1_FLOAT24(_lks) ((SCE_GE_CMD_LKS1<<24) | SCE_GE_EXTRACT_FLOAT24(_lks))
+
+#define SCE_GE_SET_LKS2(_lks) ((SCE_GE_CMD_LKS2<<24) | (_lks))
+#define SCE_GE_SET_LKS2_FLOAT24(_lks) ((SCE_GE_CMD_LKS2<<24) | SCE_GE_EXTRACT_FLOAT24(_lks))
+
+#define SCE_GE_SET_LKS3(_lks) ((SCE_GE_CMD_LKS3<<24) | (_lks))
+#define SCE_GE_SET_LKS3_FLOAT24(_lks) ((SCE_GE_CMD_LKS3<<24) | SCE_GE_EXTRACT_FLOAT24(_lks))
+
+#define SCE_GE_SET_LKSn(_n,_lks) (((SCE_GE_CMD_LKS0+(_n))<<24) | (_lks))
+#define SCE_GE_SET_LKSn_FLOAT24(_n,_lks) (((SCE_GE_CMD_LKS0+(_n))<<24) | SCE_GE_EXTRACT_FLOAT24(_lks))
+
+#define SCE_GE_SET_LKO0(_lko) ((SCE_GE_CMD_LKO0<<24) | (_lko))
+#define SCE_GE_SET_LKO0_FLOAT24(_lko) ((SCE_GE_CMD_LKO0<<24) | SCE_GE_EXTRACT_FLOAT24(_lko))
+
+#define SCE_GE_SET_LKO1(_lko) ((SCE_GE_CMD_LKO1<<24) | (_lko))
+#define SCE_GE_SET_LKO1_FLOAT24(_lko) ((SCE_GE_CMD_LKO1<<24) | SCE_GE_EXTRACT_FLOAT24(_lko))
+
+#define SCE_GE_SET_LKO2(_lko) ((SCE_GE_CMD_LKO2<<24) | (_lko))
+#define SCE_GE_SET_LKO2_FLOAT24(_lko) ((SCE_GE_CMD_LKO2<<24) | SCE_GE_EXTRACT_FLOAT24(_lko))
+
+#define SCE_GE_SET_LKO3(_lko) ((SCE_GE_CMD_LKO3<<24) | (_lko))
+#define SCE_GE_SET_LKO3_FLOAT24(_lko) ((SCE_GE_CMD_LKO3<<24) | SCE_GE_EXTRACT_FLOAT24(_lko))
+
+#define SCE_GE_SET_LKOn(_n,_lko) (((SCE_GE_CMD_LKO0+(_n))<<24) | (_lko))
+#define SCE_GE_SET_LKOn_FLOAT24(_n,_lko) (((SCE_GE_CMD_LKO0+(_n))<<24) | SCE_GE_EXTRACT_FLOAT24(_lko))
+
+#define SCE_GE_SET_LAC0(_r,_g,_b) ((SCE_GE_CMD_LAC0<<24) | ((_b)<<16) | ((_g)<<8) | (_r))
+#define SCE_GE_SET_LAC0_RGB24(_rgb24) ((SCE_GE_CMD_LAC0<<24) | ((_rgb24) & 0x00FFFFFF))
+
+#define SCE_GE_SET_LDC0(_r,_g,_b) ((SCE_GE_CMD_LDC0<<24) | ((_b)<<16) | ((_g)<<8) | (_r))
+#define SCE_GE_SET_LDC0_RGB24(_rgb24) ((SCE_GE_CMD_LDC0<<24) | ((_rgb24) & 0x00FFFFFF))
+
+#define SCE_GE_SET_LSC0(_r,_g,_b) ((SCE_GE_CMD_LSC0<<24) | ((_b)<<16) | ((_g)<<8) | (_r))
+#define SCE_GE_SET_LSC0_RGB24(_rgb24) ((SCE_GE_CMD_LSC0<<24) | ((_rgb24) & 0x00FFFFFF))
+
+#define SCE_GE_SET_LAC1(_r,_g,_b) ((SCE_GE_CMD_LAC1<<24) | ((_b)<<16) | ((_g)<<8) | (_r))
+#define SCE_GE_SET_LAC1_RGB24(_rgb24) ((SCE_GE_CMD_LAC1<<24) | ((_rgb24) & 0x00FFFFFF))
+
+#define SCE_GE_SET_LDC1(_r,_g,_b) ((SCE_GE_CMD_LDC1<<24) | ((_b)<<16) | ((_g)<<8) | (_r))
+#define SCE_GE_SET_LDC1_RGB24(_rgb24) ((SCE_GE_CMD_LDC1<<24) | ((_rgb24) & 0x00FFFFFF))
+
+#define SCE_GE_SET_LSC1(_r,_g,_b) ((SCE_GE_CMD_LSC1<<24) | ((_b)<<16) | ((_g)<<8) | (_r))
+#define SCE_GE_SET_LSC1_RGB24(_rgb24) ((SCE_GE_CMD_LSC1<<24) | ((_rgb24) & 0x00FFFFFF))
+
+#define SCE_GE_SET_LAC2(_r,_g,_b) ((SCE_GE_CMD_LAC2<<24) | ((_b)<<16) | ((_g)<<8) | (_r))
+#define SCE_GE_SET_LAC2_RGB24(_rgb24) ((SCE_GE_CMD_LAC2<<24) | ((_rgb24) & 0x00FFFFFF))
+
+#define SCE_GE_SET_LDC2(_r,_g,_b) ((SCE_GE_CMD_LDC2<<24) | ((_b)<<16) | ((_g)<<8) | (_r))
+#define SCE_GE_SET_LDC2_RGB24(_rgb24) ((SCE_GE_CMD_LDC2<<24) | ((_rgb24) & 0x00FFFFFF))
+
+#define SCE_GE_SET_LSC2(_r,_g,_b) ((SCE_GE_CMD_LSC2<<24) | ((_b)<<16) | ((_g)<<8) | (_r))
+#define SCE_GE_SET_LSC2_RGB24(_rgb24) ((SCE_GE_CMD_LSC2<<24) | ((_rgb24) & 0x00FFFFFF))
+
+#define SCE_GE_SET_LAC3(_r,_g,_b) ((SCE_GE_CMD_LAC3<<24) | ((_b)<<16) | ((_g)<<8) | (_r))
+#define SCE_GE_SET_LAC3_RGB24(_rgb24) ((SCE_GE_CMD_LAC3<<24) | ((_rgb24) & 0x00FFFFFF))
+
+#define SCE_GE_SET_LDC3(_r,_g,_b) ((SCE_GE_CMD_LDC3<<24) | ((_b)<<16) | ((_g)<<8) | (_r))
+#define SCE_GE_SET_LDC3_RGB24(_rgb24) ((SCE_GE_CMD_LDC3<<24) | ((_rgb24) & 0x00FFFFFF))
+
+#define SCE_GE_SET_LSC3(_r,_g,_b) ((SCE_GE_CMD_LSC3<<24) | ((_b)<<16) | ((_g)<<8) | (_r))
+#define SCE_GE_SET_LSC3_RGB24(_rgb24) ((SCE_GE_CMD_LSC3<<24) | ((_rgb24) & 0x00FFFFFF))
+
+#define SCE_GE_SET_LACn(_n,_r,_g,_b) (((SCE_GE_CMD_LAC0+(_n)*3)<<24) | ((_b)<<16) | ((_g)<<8) | (_r))
+#define SCE_GE_SET_LDCn(_n,_r,_g,_b) (((SCE_GE_CMD_LDC0+(_n)*3)<<24) | ((_b)<<16) | ((_g)<<8) | (_r))
+#define SCE_GE_SET_LSCn(_n,_r,_g,_b) (((SCE_GE_CMD_LSC0+(_n)*3)<<24) | ((_b)<<16) | ((_g)<<8) | (_r))
+#define SCE_GE_SET_LACn_RGB24(_n,_rgb24) (((SCE_GE_CMD_LAC0+(_n)*3)<<24) | ((_rgb24) & 0x00FFFFFF))
+#define SCE_GE_SET_LDCn_RGB24(_n,_rgb24) (((SCE_GE_CMD_LDC0+(_n)*3)<<24) | ((_rgb24) & 0x00FFFFFF))
+#define SCE_GE_SET_LSCn_RGB24(_n,_rgb24) (((SCE_GE_CMD_LSC0+(_n)*3)<<24) | ((_rgb24) & 0x00FFFFFF))
+
+#define SCE_GE_SET_CULL(_cis) ((SCE_GE_CMD_CULL<<24) | (_cis))
+#define SCE_GE_CULL_COUNTERCLOCKWISE 0
+#define SCE_GE_CULL_CLOCKWISE 1
+#define SCE_GE_CULL_CCW SCE_GE_CULL_COUNTERCLOCKWISE
+#define SCE_GE_CULL_CW SCE_GE_CULL_CLOCKWISE
+
+#define SCE_GE_SET_FBP(_fbp) ((SCE_GE_CMD_FBP<<24) | ((_fbp) & 0x00FFFFFF))
+#define SCE_GE_SET_FBP_ADDR24(_fbp32) ((SCE_GE_CMD_FBP<<24) | SCE_GE_EXTRACT_ADDR24(_fbp32))
+
+#define SCE_GE_SET_FBW(_fbw,_base) ((SCE_GE_CMD_FBW<<24) | (((_base) & 0xFF)<<16) | (_fbw))
+#define SCE_GE_SET_FBW_BASE8(_fbw,_base32) ((SCE_GE_CMD_FBW<<24) | (SCE_GE_EXTRACT_BASE8(_base32)<<16) | (_fbw))
+
+#define SCE_GE_SET_ZBP(_zbp) ((SCE_GE_CMD_ZBP<<24) | ((_zbp) & 0x00FFFFFF))
+#define SCE_GE_SET_ZBP_ADDR24(_zbp32) ((SCE_GE_CMD_ZBP<<24) | SCE_GE_EXTRACT_ADDR24(_zbp32))
+
+#define SCE_GE_SET_ZBW(_zbw,_base) ((SCE_GE_CMD_ZBW<<24) | (((_base) & 0xFF)<<16) | (_zbw))
+#define SCE_GE_SET_ZBW_BASE8(_zbw,_base32) ((SCE_GE_CMD_ZBW<<24) | (SCE_GE_EXTRACT_BASE8(_base32)<<16) | (_zbw))
+
+#define SCE_GE_SET_TBP0(_tbp) ((SCE_GE_CMD_TBP0<<24) | ((_tbp) & 0x00FFFFFF))
+#define SCE_GE_SET_TBP0_ADDR24(_tbp32) ((SCE_GE_CMD_TBP0<<24) | SCE_GE_EXTRACT_ADDR24(_tbp32))
+
+#define SCE_GE_SET_TBP1(_tbp) ((SCE_GE_CMD_TBP1<<24) | ((_tbp) & 0x00FFFFFF))
+#define SCE_GE_SET_TBP1_ADDR24(_tbp32) ((SCE_GE_CMD_TBP1<<24) | SCE_GE_EXTRACT_ADDR24(_tbp32))
+
+#define SCE_GE_SET_TBP2(_tbp) ((SCE_GE_CMD_TBP2<<24) | ((_tbp) & 0x00FFFFFF))
+#define SCE_GE_SET_TBP2_ADDR24(_tbp32) ((SCE_GE_CMD_TBP2<<24) | SCE_GE_EXTRACT_ADDR24(_tbp32))
+
+#define SCE_GE_SET_TBP3(_tbp) ((SCE_GE_CMD_TBP3<<24) | ((_tbp) & 0x00FFFFFF))
+#define SCE_GE_SET_TBP3_ADDR24(_tbp32) ((SCE_GE_CMD_TBP3<<24) | SCE_GE_EXTRACT_ADDR24(_tbp32))
+
+#define SCE_GE_SET_TBP4(_tbp) ((SCE_GE_CMD_TBP4<<24) | ((_tbp) & 0x00FFFFFF))
+#define SCE_GE_SET_TBP4_ADDR24(_tbp32) ((SCE_GE_CMD_TBP4<<24) | SCE_GE_EXTRACT_ADDR24(_tbp32))
+
+#define SCE_GE_SET_TBP5(_tbp) ((SCE_GE_CMD_TBP5<<24) | ((_tbp) & 0x00FFFFFF))
+#define SCE_GE_SET_TBP5_ADDR24(_tbp32) ((SCE_GE_CMD_TBP5<<24) | SCE_GE_EXTRACT_ADDR24(_tbp32))
+
+#define SCE_GE_SET_TBP6(_tbp) ((SCE_GE_CMD_TBP6<<24) | ((_tbp) & 0x00FFFFFF))
+#define SCE_GE_SET_TBP6_ADDR24(_tbp32) ((SCE_GE_CMD_TBP6<<24) | SCE_GE_EXTRACT_ADDR24(_tbp32))
+
+#define SCE_GE_SET_TBP7(_tbp) ((SCE_GE_CMD_TBP7<<24) | ((_tbp) & 0x00FFFFFF))
+#define SCE_GE_SET_TBP7_ADDR24(_tbp32) ((SCE_GE_CMD_TBP7<<24) | SCE_GE_EXTRACT_ADDR24(_tbp32))
+
+#define SCE_GE_SET_TBPn(_n,_tbp) (((SCE_GE_CMD_TBP0+(_n))<<24) | ((_tbp) & 0x00FFFFFF))
+#define SCE_GE_SET_TBPn_ADDR24(_n,_tbp32) (((SCE_GE_CMD_TBP0+(_n))<<24) | SCE_GE_EXTRACT_ADDR24(_tbp32))
+
+#define SCE_GE_SET_TBW0(_tbw,_base) ((SCE_GE_CMD_TBW0<<24) | (((_base) & 0xFF)<<16) | (_tbw))
+#define SCE_GE_SET_TBW0_BASE8(_tbw,_base32) ((SCE_GE_CMD_TBW0<<24) | (SCE_GE_EXTRACT_BASE8(_base32)<<16) | (_tbw))
+
+#define SCE_GE_SET_TBW1(_tbw,_base) ((SCE_GE_CMD_TBW1<<24) | (((_base) & 0xFF)<<16) | (_tbw))
+#define SCE_GE_SET_TBW1_BASE8(_tbw,_base32) ((SCE_GE_CMD_TBW1<<24) | (SCE_GE_EXTRACT_BASE8(_base32)<<16) | (_tbw))
+
+#define SCE_GE_SET_TBW2(_tbw,_base) ((SCE_GE_CMD_TBW2<<24) | (((_base) & 0xFF)<<16) | (_tbw))
+#define SCE_GE_SET_TBW2_BASE8(_tbw,_base32) ((SCE_GE_CMD_TBW2<<24) | (SCE_GE_EXTRACT_BASE8(_base32)<<16) | (_tbw))
+
+#define SCE_GE_SET_TBW3(_tbw,_base) ((SCE_GE_CMD_TBW3<<24) | (((_base) & 0xFF)<<16) | (_tbw))
+#define SCE_GE_SET_TBW3_BASE8(_tbw,_base32) ((SCE_GE_CMD_TBW3<<24) | (SCE_GE_EXTRACT_BASE8(_base32)<<16) | (_tbw))
+
+#define SCE_GE_SET_TBW4(_tbw,_base) ((SCE_GE_CMD_TBW4<<24) | (((_base) & 0xFF)<<16) | (_tbw))
+#define SCE_GE_SET_TBW4_BASE8(_tbw,_base32) ((SCE_GE_CMD_TBW4<<24) | (SCE_GE_EXTRACT_BASE8(_base32)<<16) | (_tbw))
+
+#define SCE_GE_SET_TBW5(_tbw,_base) ((SCE_GE_CMD_TBW5<<24) | (((_base) & 0xFF)<<16) | (_tbw))
+#define SCE_GE_SET_TBW5_BASE8(_tbw,_base32) ((SCE_GE_CMD_TBW5<<24) | (SCE_GE_EXTRACT_BASE8(_base32)<<16) | (_tbw))
+
+#define SCE_GE_SET_TBW6(_tbw,_base) ((SCE_GE_CMD_TBW6<<24) | (((_base) & 0xFF)<<16) | (_tbw))
+#define SCE_GE_SET_TBW6_BASE8(_tbw,_base32) ((SCE_GE_CMD_TBW6<<24) | (SCE_GE_EXTRACT_BASE8(_base32)<<16) | (_tbw))
+
+#define SCE_GE_SET_TBW7(_tbw,_base) ((SCE_GE_CMD_TBW7<<24) | (((_base) & 0xFF)<<16) | (_tbw))
+#define SCE_GE_SET_TBW7_BASE8(_tbw,_base32) ((SCE_GE_CMD_TBW7<<24) | (SCE_GE_EXTRACT_BASE8(_base32)<<16) | (_tbw))
+
+#define SCE_GE_SET_TBWn(_n,_tbw,_base) (((SCE_GE_CMD_TBW0+(_n))<<24) | (((_base) & 0xFF)<<16) | (_tbw))
+#define SCE_GE_SET_TBWn_BASE8(_n,_tbw,_base32) (((SCE_GE_CMD_TBW0+(_n))<<24) | (SCE_GE_EXTRACT_BASE8(_base32)<<16) | (_tbw))
+
+#define SCE_GE_SET_CBP(_cbp) ((SCE_GE_CMD_CBP<<24) | ((_cbp) & 0x00FFFFFF))
+#define SCE_GE_SET_CBP_ADDR24(_cbp32) ((SCE_GE_CMD_CBP<<24) | SCE_GE_EXTRACT_ADDR24(_cbp32))
+
+#define SCE_GE_SET_CBW(_base) ((SCE_GE_CMD_CBW<<24) | (((_base) & 0xFF)<<16))
+#define SCE_GE_SET_CBW_BASE8(_base32) ((SCE_GE_CMD_CBW<<24) | (SCE_GE_EXTRACT_BASE8(_base32)<<16))
+
+#define SCE_GE_SET_XBP1(_xbp) ((SCE_GE_CMD_XBP1<<24) | ((_xbp) & 0x00FFFFFF))
+#define SCE_GE_SET_XBP1_ADDR24(_xbp32) ((SCE_GE_CMD_XBP1<<24) | SCE_GE_EXTRACT_ADDR24(_xbp32))
+
+#define SCE_GE_SET_XBW1(_xbw,_base) ((SCE_GE_CMD_XBW1<<24) | (((_base) & 0xFF)<<16) | (_xbw))
+#define SCE_GE_SET_XBW1_BASE8(_xbw,_base32) ((SCE_GE_CMD_XBW1<<24) | (SCE_GE_EXTRACT_BASE8(_base32)<<16) | (_xbw))
+
+#define SCE_GE_SET_XBP2(_xbp) ((SCE_GE_CMD_XBP2<<24) | ((_xbp) & 0x00FFFFFF))
+#define SCE_GE_SET_XBP2_ADDR24(_xbp32) ((SCE_GE_CMD_XBP2<<24) | SCE_GE_EXTRACT_ADDR24(_xbp32))
+
+#define SCE_GE_SET_XBW2(_xbw,_base) ((SCE_GE_CMD_XBW2<<24) | (((_base) & 0xFF)<<16) | (_xbw))
+#define SCE_GE_SET_XBW2_BASE8(_xbw,_base32) ((SCE_GE_CMD_XBW2<<24) | (SCE_GE_EXTRACT_BASE8(_base32)<<16) | (_xbw))
+
+#define SCE_GE_SET_TSIZE0(_tw,_th) ((SCE_GE_CMD_TSIZE0<<24) | ((_th)<<8) | (_tw))
+
+#define SCE_GE_SET_TSIZE1(_tw,_th) ((SCE_GE_CMD_TSIZE1<<24) | ((_th)<<8) | (_tw))
+
+#define SCE_GE_SET_TSIZE2(_tw,_th) ((SCE_GE_CMD_TSIZE2<<24) | ((_th)<<8) | (_tw))
+
+#define SCE_GE_SET_TSIZE3(_tw,_th) ((SCE_GE_CMD_TSIZE3<<24) | ((_th)<<8) | (_tw))
+
+#define SCE_GE_SET_TSIZE4(_tw,_th) ((SCE_GE_CMD_TSIZE4<<24) | ((_th)<<8) | (_tw))
+
+#define SCE_GE_SET_TSIZE5(_tw,_th) ((SCE_GE_CMD_TSIZE5<<24) | ((_th)<<8) | (_tw))
+
+#define SCE_GE_SET_TSIZE6(_tw,_th) ((SCE_GE_CMD_TSIZE6<<24) | ((_th)<<8) | (_tw))
+
+#define SCE_GE_SET_TSIZE7(_tw,_th) ((SCE_GE_CMD_TSIZE7<<24) | ((_th)<<8) | (_tw))
+
+#define SCE_GE_SET_TSIZEn(_n,_tw,_th) (((SCE_GE_CMD_TSIZE0+(_n))<<24) | ((_th)<<8) | (_tw))
+
+#define SCE_GE_SET_TMAP(_tmn,_tmi) ((SCE_GE_CMD_TMAP<<24) | ((_tmi)<<8) | (_tmn))
+#define SCE_GE_TMAP_TMN_UV 0
+#define SCE_GE_TMAP_TMN_PROJECTION 1
+#define SCE_GE_TMAP_TMN_SHADE 2
+#define SCE_GE_TMAP_TMI_XYZ 0
+#define SCE_GE_TMAP_TMI_UV 1
+#define SCE_GE_TMAP_TMI_NORMALIZED_NORMAL 2
+#define SCE_GE_TMAP_TMI_NORMAL 3
+
+#define SCE_GE_SET_TSHADE(_u,_v) ((SCE_GE_CMD_TSHADE<<24) | ((_v)<<8) | (_u))
+
+#define SCE_GE_SET_TMODE(_hsm,_mc,_mxl) ((SCE_GE_CMD_TMODE<<24) | ((_mxl)<<16) | ((_mc)<<8) | ((_hsm)))
+#define SCE_GE_TMODE_HSM_NORMAL 0
+#define SCE_GE_TMODE_HSM_HIGHSPEED 1
+
+#define SCE_GE_SET_TPF(_tpf,_ext) ((SCE_GE_CMD_TPF<<24) | ((_ext)<<8) | (_tpf))
+#define SCE_GE_TPF_5650 0
+#define SCE_GE_TPF_5551 1
+#define SCE_GE_TPF_4444 2
+#define SCE_GE_TPF_8888 3
+#define SCE_GE_TPF_IDTEX4 4
+#define SCE_GE_TPF_IDTEX8 5
+#define SCE_GE_TPF_IDTEX16 6
+#define SCE_GE_TPF_IDTEX32 7
+#define SCE_GE_TPF_DXT1 8
+#define SCE_GE_TPF_DXT3 9
+#define SCE_GE_TPF_DXT5 10
+
+#define SCE_GE_SET_CLOAD(_np) ((SCE_GE_CMD_CLOAD<<24) | (_np))
+
+#define SCE_GE_SET_CLUT(_cpf,_sft,_msk,_csa) ((SCE_GE_CMD_CLUT<<24) | ((_csa)<<16) | ((_msk)<<8) | ((_sft)<<2) | (_cpf))
+
+#define SCE_GE_CLUT_CPF_5650 0
+#define SCE_GE_CLUT_CPF_5551 1
+#define SCE_GE_CLUT_CPF_4444 2
+#define SCE_GE_CLUT_CPF_8888 3
+
+#define SCE_GE_SET_TFILTER(_min,_mag) ((SCE_GE_CMD_TFILTER<<24) | ((_mag)<<8) | (_min))
+#define SCE_GE_TFILTER_NEAREST 0
+#define SCE_GE_TFILTER_LINEAR 1
+#define SCE_GE_TFILTER_NEAREST_MIPMAP_NEAREST 4
+#define SCE_GE_TFILTER_LINEAR_MIPMAP_NEAREST 5
+#define SCE_GE_TFILTER_NEAREST_MIPMAP_LINEAR 6
+#define SCE_GE_TFILTER_LINEAR_MIPMAP_LINEAR 7
+
+#define SCE_GE_SET_TWRAP(_wms,_wmt) ((SCE_GE_CMD_TWRAP<<24) | ((_wmt)<<8) | (_wms))
+#define SCE_GE_TWRAP_REPEAT 0
+#define SCE_GE_TWRAP_CLAMP 1
+
+#define SCE_GE_SET_TLEVEL(_lcm,_offl) ((SCE_GE_CMD_TLEVEL<<24) | ((_offl)<<16) | (_lcm))
+#define SCE_GE_TLEVEL_AUTO 0
+#define SCE_GE_TLEVEL_CONSTANT 1
+#define SCE_GE_TLEVEL_SLOPE 2
+#define SCE_GE_TLEVEL_VARIABLE1 SCE_GE_TLEVEL_AUTO
+#define SCE_GE_TLEVEL_FIX SCE_GE_TLEVEL_CONSTANT
+#define SCE_GE_TLEVEL_VARIABLE2 SCE_GE_TLEVEL_SLOPE
+
+#define SCE_GE_SET_TFUNC(_txf,_tcc,_cd) ((SCE_GE_CMD_TFUNC<<24) | ((_cd)<<16) | ((_tcc)<<8) | (_txf))
+#define SCE_GE_TFUNC_MODULATE 0
+#define SCE_GE_TFUNC_DECAL 1
+#define SCE_GE_TFUNC_BLEND 2
+#define SCE_GE_TFUNC_REPLACE 3
+#define SCE_GE_TFUNC_ADD 4
+#define SCE_GE_TFUNC_RGB 0
+#define SCE_GE_TFUNC_RGBA 1
+
+#define SCE_GE_SET_TEC(_r,_g,_b) ((SCE_GE_CMD_TEC<<24) | ((_b)<<16) | ((_g)<<8) | (_r))
+#define SCE_GE_SET_TEC_RGB24(_rgb24) ((SCE_GE_CMD_TEC<<24) | ((_rgb24) & 0x00FFFFFF))
+
+#define SCE_GE_SET_TFLUSH() (SCE_GE_CMD_TFLUSH<<24)
+
+#define SCE_GE_SET_TSYNC() (SCE_GE_CMD_TSYNC<<24)
+
+#define SCE_GE_SET_FOG1(_fog1) ((SCE_GE_CMD_FOG1<<24) | (_fog1))
+#define SCE_GE_SET_FOG1_FLOAT24(_fog1) ((SCE_GE_CMD_FOG1<<24) | SCE_GE_EXTRACT_FLOAT24(_fog1))
+
+#define SCE_GE_SET_FOG2(_fog2) ((SCE_GE_CMD_FOG2<<24) | (_fog2))
+#define SCE_GE_SET_FOG2_FLOAT24(_fog2) ((SCE_GE_CMD_FOG2<<24) | SCE_GE_EXTRACT_FLOAT24(_fog2))
+
+#define SCE_GE_SET_FC(_r,_g,_b) ((SCE_GE_CMD_FC<<24) | ((_b)<<16) | ((_g)<<8) | (_r))
+#define SCE_GE_SET_FC_RGB24(_rgb24) ((SCE_GE_CMD_FC<<24) | ((_rgb24) & 0x00FFFFFF))
+
+#define SCE_GE_SET_TSLOPE(_tslope) ((SCE_GE_CMD_TSLOPE<<24) | (_tslope))
+#define SCE_GE_SET_TSLOPE_FLOAT24(_tslope) ((SCE_GE_CMD_TSLOPE<<24) | SCE_GE_EXTRACT_FLOAT24(_tslope))
+
+#define SCE_GE_SET_FPF(_fpf) ((SCE_GE_CMD_FPF<<24) | (_fpf))
+#define SCE_GE_FPF_5650 0
+#define SCE_GE_FPF_5551 1
+#define SCE_GE_FPF_4444 2
+#define SCE_GE_FPF_8888 3
+
+#define SCE_GE_SET_CMODE(_set,_cen,_aen,_zen) ((SCE_GE_CMD_CMODE<<24) | ((_zen)<<10) | ((_aen)<<9) | ((_cen)<<8) | (_set))
+
+#define SCE_GE_CMODE_NORMAL 0
+#define SCE_GE_CMODE_CLEAR 1
+#define SCE_GE_CMODE_KEEP 0
+#define SCE_GE_CMODE_UPDATE 1
+
+#define SCE_GE_SET_SCISSOR1(_sx1,_sy1) ((SCE_GE_CMD_SCISSOR1<<24) | ((_sy1)<<10) | (_sx1))
+
+#define SCE_GE_SET_SCISSOR2(_sx2,_sy2) ((SCE_GE_CMD_SCISSOR2<<24) | ((_sy2)<<10) | (_sx2))
+
+#define SCE_GE_SET_MINZ(_minz) ((SCE_GE_CMD_MINZ<<24) | (_minz))
+
+#define SCE_GE_SET_MAXZ(_maxz) ((SCE_GE_CMD_MAXZ<<24) | (_maxz))
+
+#define SCE_GE_SET_CTEST(_ctf) ((SCE_GE_CMD_CTEST<<24) | (_ctf))
+#define SCE_GE_CTEST_NEVER 0
+#define SCE_GE_CTEST_ALWAYS 1
+#define SCE_GE_CTEST_EQUAL 2
+#define SCE_GE_CTEST_NOTEQUAL 3
+
+#define SCE_GE_SET_CREF(_r,_g,_b) ((SCE_GE_CMD_CREF<<24) | ((_b)<<16) | ((_g)<<8) | (_r))
+#define SCE_GE_SET_CREF_RGB24(_rgb24) ((SCE_GE_CMD_CREF<<24) | ((_rgb24) & 0x00FFFFFF))
+
+#define SCE_GE_SET_CMSK(_r,_g,_b) ((SCE_GE_CMD_CMSK<<24) | ((_b)<<16) | ((_g)<<8) | (_r))
+#define SCE_GE_SET_CMSK_RGB24(_rgb24) ((SCE_GE_CMD_CMSK<<24) | ((_rgb24) & 0x00FFFFFF))
+
+#define SCE_GE_SET_ATEST(_atf,_aref,_amsk) ((SCE_GE_CMD_ATEST<<24) | ((_amsk)<<16) | ((_aref)<<8) | (_atf))
+#define SCE_GE_ATEST_NEVER 0
+#define SCE_GE_ATEST_ALWAYS 1
+#define SCE_GE_ATEST_EQUAL 2
+#define SCE_GE_ATEST_NOTEQUAL 3
+#define SCE_GE_ATEST_LESS 4
+#define SCE_GE_ATEST_LEQUAL 5
+#define SCE_GE_ATEST_GREATER 6
+#define SCE_GE_ATEST_GEQUAL 7
+
+#define SCE_GE_SET_STEST(_stf,_sref,_smsk) ((SCE_GE_CMD_STEST<<24) | ((_smsk)<<16) | ((_sref)<<8) | (_stf))
+#define SCE_GE_STEST_NEVER 0
+#define SCE_GE_STEST_ALWAYS 1
+#define SCE_GE_STEST_EQUAL 2
+#define SCE_GE_STEST_NOTEQUAL 3
+#define SCE_GE_STEST_LESS 4
+#define SCE_GE_STEST_LEQUAL 5
+#define SCE_GE_STEST_GREATER 6
+#define SCE_GE_STEST_GEQUAL 7
+
+#define SCE_GE_SET_SOP(_sfail,_zfail,_zpass) ((SCE_GE_CMD_SOP<<24) | ((_zpass)<<16) | ((_zfail)<<8) | (_sfail))
+
+#define SCE_GE_SOP_KEEP 0
+#define SCE_GE_SOP_ZERO 1
+#define SCE_GE_SOP_REPLACE 2
+#define SCE_GE_SOP_INVERT 3
+#define SCE_GE_SOP_INCR 4
+#define SCE_GE_SOP_DECR 5
+
+#define SCE_GE_SET_ZTEST(_ztf) ((SCE_GE_CMD_ZTEST<<24) | (_ztf))
+#define SCE_GE_ZTEST_NEVER 0
+#define SCE_GE_ZTEST_ALWAYS 1
+#define SCE_GE_ZTEST_EQUAL 2
+#define SCE_GE_ZTEST_NOTEQUAL 3
+#define SCE_GE_ZTEST_LESS 4
+#define SCE_GE_ZTEST_LEQUAL 5
+#define SCE_GE_ZTEST_GREATER 6
+#define SCE_GE_ZTEST_GEQUAL 7
+
+#define SCE_GE_SET_BLEND(_a,_b,_equ) ((SCE_GE_CMD_BLEND<<24) | ((_equ)<<8) | ((_b)<<4) | (_a))
+#define SCE_GE_BLEND_A_CD 0
+#define SCE_GE_BLEND_A_255_CD 1
+#define SCE_GE_BLEND_A_AS 2
+#define SCE_GE_BLEND_A_255_AS 3
+#define SCE_GE_BLEND_A_AD 4
+#define SCE_GE_BLEND_A_255_AD 5
+#define SCE_GE_BLEND_A_2AS 6
+#define SCE_GE_BLEND_A_255_2AS 7
+#define SCE_GE_BLEND_A_2AD 8
+#define SCE_GE_BLEND_A_255_2AD 9
+#define SCE_GE_BLEND_A_FIXA 10
+#define SCE_GE_BLEND_B_CS 0
+#define SCE_GE_BLEND_B_255_CS 1
+#define SCE_GE_BLEND_B_AS 2
+#define SCE_GE_BLEND_B_255_AS 3
+#define SCE_GE_BLEND_B_AD 4
+#define SCE_GE_BLEND_B_255_AD 5
+#define SCE_GE_BLEND_B_2AS 6
+#define SCE_GE_BLEND_B_255_2AS 7
+#define SCE_GE_BLEND_B_2AD 8
+#define SCE_GE_BLEND_B_255_2AD 9
+#define SCE_GE_BLEND_B_FIXB 10
+#define SCE_GE_BLEND_CSA_PLUS_CDB 0
+#define SCE_GE_BLEND_CSA_MINUS_CDB 1
+#define SCE_GE_BLEND_CDB_MINUS_CSA 2
+#define SCE_GE_BLEND_MIN_CS_CD 3
+#define SCE_GE_BLEND_MAX_CS_CD 4
+#define SCE_GE_BLEND_ABS_CS_CD 5
+
+#define SCE_GE_SET_FIXA(_r,_g,_b) ((SCE_GE_CMD_FIXA<<24) | ((_b)<<16) | ((_g)<<8) | (_r))
+#define SCE_GE_SET_FIXA_RGB24(_rgb24) ((SCE_GE_CMD_FIXA<<24) | ((_rgb24) & 0x00FFFFFF))
+
+#define SCE_GE_SET_FIXB(_r,_g,_b) ((SCE_GE_CMD_FIXB<<24) | ((_b)<<16) | ((_g)<<8) | (_r))
+#define SCE_GE_SET_FIXB_RGB24(_rgb24) ((SCE_GE_CMD_FIXB<<24) | ((_rgb24) & 0x00FFFFFF))
+
+#define SCE_GE_SET_DITH1(_dm00,_dm01,_dm02,_dm03) ((SCE_GE_CMD_DITH1<<24) | (((_dm03) & 0xF)<<12) | (((_dm02) & 0xF)<<8) | (((_dm01) & 0xF)<<4) | ((_dm00) & 0xF))
+
+#define SCE_GE_SET_DITH2(_dm04,_dm05,_dm06,_dm07) ((SCE_GE_CMD_DITH2<<24) | (((_dm07) & 0xF)<<12) | (((_dm06) & 0xF)<<8) | (((_dm05) & 0xF)<<4) | ((_dm04) & 0xF))
+
+#define SCE_GE_SET_DITH3(_dm08,_dm09,_dm10,_dm11) ((SCE_GE_CMD_DITH3<<24) | (((_dm11) & 0xF)<<12) | (((_dm10) & 0xF)<<8) | (((_dm09) & 0xF)<<4) | ((_dm08) & 0xF))
+
+#define SCE_GE_SET_DITH4(_dm12,_dm13,_dm14,_dm15) ((SCE_GE_CMD_DITH4<<24) | (((_dm15) & 0xF)<<12) | (((_dm14) & 0xF)<<8) | (((_dm13) & 0xF)<<4) | ((_dm12) & 0xF))
+
+#define SCE_GE_SET_LOP(_lop) ((SCE_GE_CMD_LOP<<24) | (_lop))
+#define SCE_GE_LOP_CLEAR 0
+#define SCE_GE_LOP_AND 1
+#define SCE_GE_LOP_AND_REVERSE 2
+#define SCE_GE_LOP_COPY 3
+#define SCE_GE_LOP_AND_INVERTED 4
+#define SCE_GE_LOP_NOOP 5
+#define SCE_GE_LOP_XOR 6
+#define SCE_GE_LOP_OR 7
+#define SCE_GE_LOP_NOR 8
+#define SCE_GE_LOP_EQUIV 9
+#define SCE_GE_LOP_INVERT 10
+#define SCE_GE_LOP_OR_REVERSE 11
+#define SCE_GE_LOP_COPY_INVERTED 12
+#define SCE_GE_LOP_OR_INVERTED 13
+#define SCE_GE_LOP_NAND 14
+#define SCE_GE_LOP_SET 15
+
+#define SCE_GE_SET_ZMSK(_zmsk) ((SCE_GE_CMD_ZMSK<<24) | (_zmsk))
+
+#define SCE_GE_SET_PMSK1(_rmsk,_gmsk,_bmsk) ((SCE_GE_CMD_PMSK1<<24) | ((_bmsk)<<16) | ((_gmsk)<<8) | (_rmsk))
+#define SCE_GE_SET_PMSK1_RGB24(_rgb24) ((SCE_GE_CMD_PMSK1<<24) | ((_rgb24) & 0x00FFFFFF))
+
+#define SCE_GE_SET_PMSK2(_pmsk) ((SCE_GE_CMD_PMSK2<<24) | (_pmsk))
+
+#define SCE_GE_SET_XSTART(_xpf) ((SCE_GE_CMD_XSTART<<24) | (_xpf))
+#define SCE_GE_XSTART_XPF_16BIT 0
+#define SCE_GE_XSTART_XPF_32BIT 1
+
+#define SCE_GE_SET_XPOS1(_sx1,_sy1) ((SCE_GE_CMD_XPOS1<<24) | ((_sy1)<<10) | (_sx1))
+
+#define SCE_GE_SET_XPOS2(_sx2,_sy2) ((SCE_GE_CMD_XPOS2<<24) | ((_sy2)<<10) | (_sx2))
+
+#define SCE_GE_SET_XSIZE(_width,_height) ((SCE_GE_CMD_XSIZE<<24) | ((_height)<<10) | (_width))
+
+#define SCE_GE_SET_DUMMY() ((SCE_GE_CMD_DUMMY<<24))
+
+#define SCE_GE_SET_FINISH_ID16(_id16) ((SCE_GE_CMD_FINISH<<24) | ((_id16) & 0xFFFF))
+
+#define SCE_GE_SIGNAL_SIGNAL_WAIT 0x01
+
+#define SCE_GE_SIGNAL_SIGNAL_NOWAIT 0x02
+
+#define SCE_GE_SIGNAL_SIGNAL_PAUSE 0x03
+
+#define SCE_GE_SIGNAL_DRAWSYNC 0x08
+
+#define SCE_GE_SIGNAL_JUMP 0x10
+
+#define SCE_GE_SIGNAL_CALL 0x11
+
+#define SCE_GE_SIGNAL_RET 0x12
+
+#define SCE_GE_SIGNAL_RJUMP 0x13
+
+#define SCE_GE_SIGNAL_RCALL 0x14
+
+#define SCE_GE_SIGNAL_OJUMP 0x15
+
+#define SCE_GE_SIGNAL_OCALL 0x16
+
+#define SCE_GE_SIGNAL_RTBP0 0x20
+
+#define SCE_GE_SIGNAL_RTBP1 0x21
+
+#define SCE_GE_SIGNAL_RTBP2 0x22
+
+#define SCE_GE_SIGNAL_RTBP3 0x23
+
+#define SCE_GE_SIGNAL_RTBP4 0x24
+
+#define SCE_GE_SIGNAL_RTBP5 0x25
+
+#define SCE_GE_SIGNAL_RTBP6 0x26
+
+#define SCE_GE_SIGNAL_RTBP7 0x27
+
+#define SCE_GE_SIGNAL_OTBP0 0x28
+
+#define SCE_GE_SIGNAL_OTBP1 0x29
+
+#define SCE_GE_SIGNAL_OTBP2 0x2A
+
+#define SCE_GE_SIGNAL_OTBP3 0x2B
+
+#define SCE_GE_SIGNAL_OTBP4 0x2C
+
+#define SCE_GE_SIGNAL_OTBP5 0x2D
+
+#define SCE_GE_SIGNAL_OTBP6 0x2E
+
+#define SCE_GE_SIGNAL_OTBP7 0x2F
+
+#define SCE_GE_SIGNAL_RCBP 0x30
+
+#define SCE_GE_SIGNAL_OCBP 0x38
+
+#define SCE_GE_SIGNAL_BREAK 0xFF
+#define SCE_GE_EXTRACT_LO16(_adr32) (((SceUInt32)(_adr32)) & 0xFFFF)
+#define SCE_GE_EXTRACT_HI16(_adr32) ((((SceUInt32)(_adr32))>>16) & 0x0FFF)
+
+#define SCE_GE_SET_SIGNAL_SIGNAL_WAIT(_id) ((SCE_GE_CMD_SIGNAL<<24) | (SCE_GE_SIGNAL_SIGNAL_WAIT<<16) | ((_id) & 0xFFFF))
+#define SCE_GE_SET_END_SIGNAL_WAIT() SCE_GE_SET_END()
+
+#define SCE_GE_SET_SIGNAL_SIGNAL_NOWAIT(_id) ((SCE_GE_CMD_SIGNAL<<24) | (SCE_GE_SIGNAL_SIGNAL_NOWAIT<<16) | ((_id) & 0xFFFF))
+#define SCE_GE_SET_END_SIGNAL_NOWAIT() SCE_GE_SET_END()
+
+#define SCE_GE_SET_SIGNAL_SIGNAL_PAUSE(_id) ((SCE_GE_CMD_SIGNAL<<24) | (SCE_GE_SIGNAL_SIGNAL_PAUSE<<16) | ((_id) & 0xFFFF))
+#define SCE_GE_SET_END_SIGNAL_PAUSE() SCE_GE_SET_END()
+
+#define SCE_GE_SET_SIGNAL_DRAWSYNC() ((SCE_GE_CMD_SIGNAL<<24) | (SCE_GE_SIGNAL_DRAWSYNC<<16))
+#define SCE_GE_SET_END_DRAWSYNC() SCE_GE_SET_END()
+
+#define SCE_GE_SET_SIGNAL_JUMP(_hi16) ((SCE_GE_CMD_SIGNAL<<24) | (SCE_GE_SIGNAL_JUMP<<16) | ((_hi16) & 0x0FFF))
+#define SCE_GE_SET_SIGNAL_JUMP_ADDR16(_adr32) ((SCE_GE_CMD_SIGNAL<<24) | (SCE_GE_SIGNAL_JUMP<<16) | SCE_GE_EXTRACT_HI16(_adr32))
+#define SCE_GE_SET_END_JUMP(_lo16) ((SCE_GE_CMD_END<<24) | ((_lo16) & 0xFFFF))
+#define SCE_GE_SET_END_JUMP_ADDR16(_adr32) ((SCE_GE_CMD_END<<24) | SCE_GE_EXTRACT_LO16(_adr32))
+
+#define SCE_GE_SET_SIGNAL_CALL(_hi16) ((SCE_GE_CMD_SIGNAL<<24) | (SCE_GE_SIGNAL_CALL<<16) | ((_hi16) & 0x0FFF))
+#define SCE_GE_SET_SIGNAL_CALL_ADDR16(_adr32) ((SCE_GE_CMD_SIGNAL<<24) | (SCE_GE_SIGNAL_CALL<<16) | SCE_GE_EXTRACT_HI16(_adr32))
+#define SCE_GE_SET_END_CALL(_lo16) ((SCE_GE_CMD_END<<24) | ((_lo16) & 0xFFFF))
+#define SCE_GE_SET_END_CALL_ADDR16(_adr32) ((SCE_GE_CMD_END<<24) | SCE_GE_EXTRACT_LO16(_adr32))
+
+#define SCE_GE_SET_SIGNAL_RET() ((SCE_GE_CMD_SIGNAL<<24) | (SCE_GE_SIGNAL_RET<<16))
+#define SCE_GE_SET_END_RET() SCE_GE_SET_END()
+
+#define SCE_GE_SET_SIGNAL_RJUMP(_hi16) ((SCE_GE_CMD_SIGNAL<<24) | (SCE_GE_SIGNAL_RJUMP<<16) | ((_hi16) & 0xFFFF))
+#define SCE_GE_SET_END_RJUMP(_lo16) ((SCE_GE_CMD_END<<24) | ((_lo16) & 0xFFFF))
+
+#define SCE_GE_SET_SIGNAL_RCALL(_hi16) ((SCE_GE_CMD_SIGNAL<<24) | (SCE_GE_SIGNAL_RCALL<<16) | ((_hi16) & 0xFFFF))
+#define SCE_GE_SET_END_RCALL(_lo16) ((SCE_GE_CMD_END<<24) | ((_lo16) & 0xFFFF))
+
+#define SCE_GE_SET_SIGNAL_OJUMP(_hi16) ((SCE_GE_CMD_SIGNAL<<24) | (SCE_GE_SIGNAL_OJUMP<<16) | ((_hi16) & 0xFFFF))
+#define SCE_GE_SET_END_OJUMP(_lo16) ((SCE_GE_CMD_END<<24) | ((_lo16) & 0xFFFF))
+
+#define SCE_GE_SET_SIGNAL_OCALL(_hi16) ((SCE_GE_CMD_SIGNAL<<24) | (SCE_GE_SIGNAL_OCALL<<16) | ((_hi16) & 0xFFFF))
+#define SCE_GE_SET_END_OCALL(_lo16) ((SCE_GE_CMD_END<<24) | ((_lo16) & 0xFFFF))
+
+#define SCE_GE_SET_SIGNAL_RTBPn(_n,_hi16) ((SCE_GE_CMD_SIGNAL<<24) | ((SCE_GE_SIGNAL_RTBP0 + (_n))<<16) | ((_hi16) & 0xFFFF))
+#define SCE_GE_SET_END_RTBPn(_n,_tbw,_lo16) ((SCE_GE_CMD_END<<24) | (((_tbw) & 0xFF)<<16) | ((_lo16) & 0xFFFF))
+
+#define SCE_GE_SET_SIGNAL_RTBP0(_hi16) SCE_GE_SET_SIGNAL_RTBPn(0,(_hi16))
+#define SCE_GE_SET_END_RTBP0(_tbw,_lo16) SCE_GE_SET_END_RTBPn(0,(_tbw),(_lo16))
+#define SCE_GE_SET_SIGNAL_RTBP1(_hi16) SCE_GE_SET_SIGNAL_RTBPn(1,(_hi16))
+#define SCE_GE_SET_END_RTBP1(_tbw,_lo16) SCE_GE_SET_END_RTBPn(1,(_tbw),(_lo16))
+#define SCE_GE_SET_SIGNAL_RTBP2(_hi16) SCE_GE_SET_SIGNAL_RTBPn(2,(_hi16))
+#define SCE_GE_SET_END_RTBP2(_tbw,_lo16) SCE_GE_SET_END_RTBPn(2,(_tbw),(_lo16))
+#define SCE_GE_SET_SIGNAL_RTBP3(_hi16) SCE_GE_SET_SIGNAL_RTBPn(3,(_hi16))
+#define SCE_GE_SET_END_RTBP3(_tbw,_lo16) SCE_GE_SET_END_RTBPn(3,(_tbw),(_lo16))
+#define SCE_GE_SET_SIGNAL_RTBP4(_hi16) SCE_GE_SET_SIGNAL_RTBPn(4,(_hi16))
+#define SCE_GE_SET_END_RTBP4(_tbw,_lo16) SCE_GE_SET_END_RTBPn(4,(_tbw),(_lo16))
+#define SCE_GE_SET_SIGNAL_RTBP5(_hi16) SCE_GE_SET_SIGNAL_RTBPn(5,(_hi16))
+#define SCE_GE_SET_END_RTBP5(_tbw,_lo16) SCE_GE_SET_END_RTBPn(5,(_tbw),(_lo16))
+#define SCE_GE_SET_SIGNAL_RTBP6(_hi16) SCE_GE_SET_SIGNAL_RTBPn(6,(_hi16))
+#define SCE_GE_SET_END_RTBP6(_tbw,_lo16) SCE_GE_SET_END_RTBPn(6,(_tbw),(_lo16))
+#define SCE_GE_SET_SIGNAL_RTBP7(_hi16) SCE_GE_SET_SIGNAL_RTBPn(7,(_hi16))
+#define SCE_GE_SET_END_RTBP7(_tbw,_lo16) SCE_GE_SET_END_RTBPn(7,(_tbw),(_lo16))
+
+#define SCE_GE_SET_SIGNAL_OTBPn(_n,_hi16) ((SCE_GE_CMD_SIGNAL<<24) | ((SCE_GE_SIGNAL_OTBP0 + (_n))<<16) | ((_hi16) & 0xFFFF))
+#define SCE_GE_SET_END_OTBPn(_n,_tbw,_lo16) ((SCE_GE_CMD_END<<24) | (((_tbw) & 0xFF)<<16) | ((_lo16) & 0xFFFF))
+
+#define SCE_GE_SET_SIGNAL_OTBP0(_hi16) SCE_GE_SET_SIGNAL_OTBPn(0,(_hi16))
+#define SCE_GE_SET_END_OTBP0(_tbw,_lo16) SCE_GE_SET_END_OTBPn(0,(_tbw),(_lo16))
+#define SCE_GE_SET_SIGNAL_OTBP1(_hi16) SCE_GE_SET_SIGNAL_OTBPn(1,(_hi16))
+#define SCE_GE_SET_END_OTBP1(_tbw,_lo16) SCE_GE_SET_END_OTBPn(1,(_tbw),(_lo16))
+#define SCE_GE_SET_SIGNAL_OTBP2(_hi16) SCE_GE_SET_SIGNAL_OTBPn(2,(_hi16))
+#define SCE_GE_SET_END_OTBP2(_tbw,_lo16) SCE_GE_SET_END_OTBPn(2,(_tbw),(_lo16))
+#define SCE_GE_SET_SIGNAL_OTBP3(_hi16) SCE_GE_SET_SIGNAL_OTBPn(3,(_hi16))
+#define SCE_GE_SET_END_OTBP3(_tbw,_lo16) SCE_GE_SET_END_OTBPn(3,(_tbw),(_lo16))
+#define SCE_GE_SET_SIGNAL_OTBP4(_hi16) SCE_GE_SET_SIGNAL_OTBPn(4,(_hi16))
+#define SCE_GE_SET_END_OTBP4(_tbw,_lo16) SCE_GE_SET_END_OTBPn(4,(_tbw),(_lo16))
+#define SCE_GE_SET_SIGNAL_OTBP5(_hi16) SCE_GE_SET_SIGNAL_OTBPn(5,(_hi16))
+#define SCE_GE_SET_END_OTBP5(_tbw,_lo16) SCE_GE_SET_END_OTBPn(5,(_tbw),(_lo16))
+#define SCE_GE_SET_SIGNAL_OTBP6(_hi16) SCE_GE_SET_SIGNAL_OTBPn(6,(_hi16))
+#define SCE_GE_SET_END_OTBP6(_tbw,_lo16) SCE_GE_SET_END_OTBPn(6,(_tbw),(_lo16))
+#define SCE_GE_SET_SIGNAL_OTBP7(_hi16) SCE_GE_SET_SIGNAL_OTBPn(7,(_hi16))
+#define SCE_GE_SET_END_OTBP7(_tbw,_lo16) SCE_GE_SET_END_OTBPn(7,(_tbw),(_lo16))
+
+#define SCE_GE_SET_SIGNAL_RCBP(_hi16) ((SCE_GE_CMD_SIGNAL<<24) | ((SCE_GE_SIGNAL_RCBP)<<16) | ((_hi16) & 0xFFFF))
+#define SCE_GE_SET_END_RCBP(_lo16) ((SCE_GE_CMD_END<<24) | ((_lo16) & 0xFFFF))
+
+#define SCE_GE_SET_SIGNAL_OCBP(_hi16) ((SCE_GE_CMD_SIGNAL<<24) | ((SCE_GE_SIGNAL_OCBP)<<16) | ((_hi16) & 0xFFFF))
+#define SCE_GE_SET_END_OCBP(_lo16) ((SCE_GE_CMD_END<<24) | ((_lo16) & 0xFFFF))
+
+#define SCE_GE_SET_SIGNAL_BREAK(_mark) ((SCE_GE_CMD_SIGNAL<<24) | (SCE_GE_SIGNAL_BREAK<<16) | ((_mark) & 0xFFFF))
+#define SCE_GE_SET_END_BREAK() SCE_GE_SET_END()
+
+unsigned int sceGeEdramGetSize(void);
+
+void *sceGeEdramGetAddr(void);
+
+int sceGeEdramSetAddrTranslation(int width);
+
+unsigned int sceGeGetCmd(int cmdno);
+
+#define SCE_GE_MTX_BONEA 0
+
+#define SCE_GE_MTX_BONEB 1
+
+#define SCE_GE_MTX_BONEC 2
+
+#define SCE_GE_MTX_BONED 3
+
+#define SCE_GE_MTX_BONEE 4
+
+#define SCE_GE_MTX_BONEF 5
+
+#define SCE_GE_MTX_BONEG 6
+
+#define SCE_GE_MTX_BONEH 7
+
+#define SCE_GE_MTX_WORLD 8
+
+#define SCE_GE_MTX_VIEW 9
+
+#define SCE_GE_MTX_PROJ 10
+
+#define SCE_GE_MTX_TGEN 11
+
+int sceGeGetMtx(int mtxno, unsigned int *puiMtx);
+
+typedef struct SceGeContext {
+        unsigned int buffer[512];
+} SceGeContext;
+
+int sceGeSaveContext(SceGeContext *pCtx);
+
+int sceGeRestoreContext(const SceGeContext *pCtx);
+
+typedef struct SceGeStack {
+        unsigned int buffer[8];
+} SceGeStack;
+
+typedef struct SceGeListOptParam {
+        unsigned int size;
+        SceGeContext *pGeContext;
+
+        int nStackDepth;
+
+        SceGeStack *pStackBuf;
+
+} SceGeListOptParam;
+
+int sceGeListEnQueue(const void *pMadr, const void *pSadr, int cbid,
+        const SceGeListOptParam *pOpt);
+
+int sceGeListEnQueueHead(const void *pMadr, const void *pSadr, int cbid,
+        const SceGeListOptParam *pOpt);
+
+int sceGeListDeQueue(int id);
+
+int sceGeListUpdateStallAddr(int id, const void *pSadr);
+
+#define SCE_GE_LIST_COMPLETED 0
+
+#define SCE_GE_LIST_QUEUED 1
+
+#define SCE_GE_LIST_DRAWING 2
+
+#define SCE_GE_LIST_STALLING 3
+
+#define SCE_GE_LIST_PAUSED 4
+
+int sceGeListSync(int id, int mode);
+
+int sceGeDrawSync(int mode);
+
+typedef struct SceGeBreakParam {
+        unsigned int buf[4];
+} SceGeBreakParam;
+
+int sceGeBreak(int mode, SceGeBreakParam *pParam);
+
+int sceGeContinue(void);
+
+typedef struct SceGeCbParam {
+        void (*pSignalFunc)(int intrcode, void *cookie, const void *madr);
+        void *pSignalCookie;
+        void (*pFinishFunc)(int intrcode, void *cookie, const void *madr);
+        void *pFinishCookie;
+} SceGeCbParam;
+
+int sceGeSetCallback(const SceGeCbParam *pParam);
+
+int sceGeUnsetCallback(int id);
+#define _SCE_LIBGU_H 
+
+#define SCEGU_DISPLAY_OFF 0
+#define SCEGU_DISPLAY_ON 1
+
+#define SCEGU_SCR_WIDTH 480
+#define SCEGU_SCR_HEIGHT 272
+#define SCEGU_SCR_ASPECT ((float)SCEGU_SCR_WIDTH / (float)SCEGU_SCR_HEIGHT)
+#define SCEGU_SCR_OFFSETX ((4096 - SCEGU_SCR_WIDTH) / 2)
+#define SCEGU_SCR_OFFSETY ((4096 - SCEGU_SCR_HEIGHT) / 2)
+
+#define SCEGU_VRAM_TOP 0x00000000
+#define SCEGU_VRAM_WIDTH 512
+
+#define SCEGU_VRAM_BUFSIZE (SCEGU_VRAM_WIDTH*SCEGU_SCR_HEIGHT*2)
+#define SCEGU_VRAM_BP_0 (void *)(SCEGU_VRAM_TOP)
+#define SCEGU_VRAM_BP_1 (void *)(SCEGU_VRAM_TOP+SCEGU_VRAM_BUFSIZE)
+#define SCEGU_VRAM_BP_2 (void *)(SCEGU_VRAM_TOP+(SCEGU_VRAM_BUFSIZE*2))
+
+#define SCEGU_VRAM_BUFSIZE32 (SCEGU_VRAM_WIDTH*SCEGU_SCR_HEIGHT*4)
+#define SCEGU_VRAM_BP32_0 (void *)(SCEGU_VRAM_TOP)
+#define SCEGU_VRAM_BP32_1 (void *)(SCEGU_VRAM_TOP+SCEGU_VRAM_BUFSIZE32)
+#define SCEGU_VRAM_BP32_2 (void *)(SCEGU_VRAM_TOP+(SCEGU_VRAM_BUFSIZE32*2))
+
+#define SCEGU_IMMEDIATE 0
+#define SCEGU_CALL 1
+#define SCEGU_LIST 2
+#define SCEGU_CALL_CACHED 3
+#define SCEGU_LIST_CACHED 4
+
+#define SCEGU_NORMAL_CALL 0
+#define SCEGU_SIGNAL_CALL 1
+
+#define SCEGU_MATRIX_PROJECTION 0
+#define SCEGU_MATRIX_VIEW 1
+#define SCEGU_MATRIX_WORLD 2
+#define SCEGU_MATRIX_TEXTURE 3
+
+#define SCEGU_SYNC_FINISH 0
+#define SCEGU_SYNC_SIGNAL 1
+#define SCEGU_SYNC_END 2
+#define SCEGU_SYNC_LIST 3
+#define SCEGU_SYNC_SENDLIST 4
+
+#define SCEGU_SYNC_WAIT 0
+#define SCEGU_SYNC_NOWAIT 1
+
+#define SCEGU_ALPHA_TEST 0
+#define SCEGU_DEPTH_TEST 1
+#define SCEGU_SCISSOR_TEST 2
+#define SCEGU_STENCIL_TEST 3
+#define SCEGU_BLEND 4
+#define SCEGU_CULL_FACE 5
+#define SCEGU_DITHER 6
+#define SCEGU_FOG 7
+#define SCEGU_CLIP_PLANE 8
+#define SCEGU_TEXTURE 9
+#define SCEGU_LIGHTING 10
+#define SCEGU_LIGHT0 11
+#define SCEGU_LIGHT1 12
+#define SCEGU_LIGHT2 13
+#define SCEGU_LIGHT3 14
+#define SCEGU_AALINE 15
+#define SCEGU_CULL_PATCH 16
+#define SCEGU_COLOR_TEST 17
+#define SCEGU_LOGICAL_OPERATION 18
+#define SCEGU_NORMAL_REVERSE_PRIM 19
+#define SCEGU_NORMAL_REVERSE_PATCH 20
+#define SCEGU_COLOR_DOUBLE 21
+
+#define SCEGU_NEVER 0
+#define SCEGU_ALWAYS 1
+#define SCEGU_EQUAL 2
+#define SCEGU_NOTEQUAL 3
+#define SCEGU_LESS 4
+#define SCEGU_LEQUAL 5
+#define SCEGU_GREATER 6
+#define SCEGU_GEQUAL 7
+
+#define SCEGU_KEEP 0
+#define SCEGU_ZERO 1
+#define SCEGU_REPLACE 2
+#define SCEGU_INVERT 3
+#define SCEGU_INCR 4
+#define SCEGU_DECR 5
+
+#define SCEGU_ADD 0
+#define SCEGU_SUBTRACT 1
+#define SCEGU_REVERSE_SUBTRACT 2
+#define SCEGU_MIN 3
+#define SCEGU_MAX 4
+#define SCEGU_ABS 5
+
+#define SCEGU_SRC_COLOR 0
+#define SCEGU_ONE_MINUS_SRC_COLOR 1
+#define SCEGU_DST_COLOR 0
+#define SCEGU_ONE_MINUS_DST_COLOR 1
+#define SCEGU_SRC_ALPHA 2
+#define SCEGU_ONE_MINUS_SRC_ALPHA 3
+#define SCEGU_DST_ALPHA 4
+#define SCEGU_ONE_MINUS_DST_ALPHA 5
+#define SCEGU_DOUBLE_SRC_ALPHA 6
+#define SCEGU_ONE_MINUS_DOUBLE_SRC_ALPHA 7
+#define SCEGU_DOUBLE_DST_ALPHA 8
+#define SCEGU_ONE_MINUS_DOUBLE_DST_ALPHA 9
+#define SCEGU_FIX_VALUE 10
+
+#define SCEGU_LOP_CLEAR 0
+#define SCEGU_LOP_AND 1
+#define SCEGU_LOP_AND_REVERSE 2
+#define SCEGU_LOP_COPY 3
+#define SCEGU_LOP_AND_INVERTED 4
+#define SCEGU_LOP_NOOP 5
+#define SCEGU_LOP_XOR 6
+#define SCEGU_LOP_OR 7
+#define SCEGU_LOP_NOR 8
+#define SCEGU_LOP_EQUIV 9
+#define SCEGU_LOP_INVERT 10
+#define SCEGU_LOP_OR_REVERSE 11
+#define SCEGU_LOP_COPY_INVERTED 12
+#define SCEGU_LOP_OR_INVERTED 13
+#define SCEGU_LOP_NAND 14
+#define SCEGU_LOP_SET 15
+
+#define SCEGU_CW 0
+#define SCEGU_CCW 1
+
+#define SCEGU_FLAT 0
+#define SCEGU_SMOOTH 1
+
+#define SCEGU_AMBIENT 1
+#define SCEGU_DIFFUSE 2
+#define SCEGU_SPECULAR 4
+#define SCEGU_AMBIENT_AND_DIFFUSE 3
+#define SCEGU_DIFFUSE_AND_SPECULAR 6
+#define SCEGU_POWERED_DIFFUSE 8
+
+#define SCEGU_LIGHT_DIRECTION 0
+#define SCEGU_LIGHT_POINT 1
+#define SCEGU_LIGHT_SPOT 2
+
+#define SCEGU_SINGLE_CLUT 0
+#define SCEGU_MULTI_CLUT 1
+
+#define SCEGU_PF5650 0
+#define SCEGU_PF5551 1
+#define SCEGU_PF4444 2
+#define SCEGU_PF8888 3
+#define SCEGU_PFIDX4 4
+#define SCEGU_PFIDX8 5
+#define SCEGU_PFIDX16 6
+#define SCEGU_PFIDX32 7
+#define SCEGU_PFDXT1 8
+#define SCEGU_PFDXT3 9
+#define SCEGU_PFDXT5 10
+#define SCEGU_PFDXT1EXT 264
+#define SCEGU_PFDXT3EXT 265
+#define SCEGU_PFDXT5EXT 266
+
+#define SCEGU_RGB 0
+#define SCEGU_RGBA 1
+
+#define SCEGU_TEX_MODULATE 0
+#define SCEGU_TEX_DECAL 1
+#define SCEGU_TEX_BLEND 2
+#define SCEGU_TEX_REPLACE 3
+#define SCEGU_TEX_ADD 4
+
+#define SCEGU_NEAREST 0
+#define SCEGU_LINEAR 1
+#define SCEGU_NEAREST_MIPMAP_NEAREST 4
+#define SCEGU_LINEAR_MIPMAP_NEAREST 5
+#define SCEGU_NEAREST_MIPMAP_LINEAR 6
+#define SCEGU_LINEAR_MIPMAP_LINEAR 7
+
+#define SCEGU_REPEAT 0
+#define SCEGU_CLAMP 1
+
+#define SCEGU_UV_MAP 0
+#define SCEGU_PROJECTION_MAP 1
+#define SCEGU_SHADE_MAP 2
+
+#define SCEGU_PROJ_XYZ 0
+#define SCEGU_PROJ_UV 1
+#define SCEGU_PROJ_NORMALIZE_NORMAL 2
+#define SCEGU_PROJ_NORMAL 3
+
+#define SCEGU_LOD_AUTO 0
+#define SCEGU_LOD_CONSTANT 1
+#define SCEGU_LOD_SLOPE 2
+
+#define SCEGU_TEXBUF_NORMAL 0
+#define SCEGU_TEXBUF_FAST 1
+
+#define SCEGU_CLEAR_COLOR 0x0001
+#define SCEGU_CLEAR_STENCIL 0x0002
+#define SCEGU_CLEAR_DEPTH 0x0004
+#define SCEGU_CLEAR_ALL 0x0007
+#define SCEGU_CLEAR_FAST 0x0010
+#define SCEGU_CLEAR_FASTALL (SCEGU_CLEAR_FAST|SCEGU_CLEAR_ALL)
+
+#define SCEGU_PRIM_POINTS 0
+#define SCEGU_PRIM_LINES 1
+#define SCEGU_PRIM_LINE_STRIP 2
+#define SCEGU_PRIM_TRIANGLES 3
+#define SCEGU_PRIM_TRIANGLE_STRIP 4
+#define SCEGU_PRIM_TRIANGLE_FAN 5
+#define SCEGU_PRIM_RECTANGLES 6
+
+#define SCEGU_CLOSE_CLOSE 0
+#define SCEGU_OPEN_CLOSE 1
+#define SCEGU_CLOSE_OPEN 2
+#define SCEGU_OPEN_OPEN 3
+
+#define SCEGU_NOFLIP 0
+#define SCEGU_FLIP_U 1
+#define SCEGU_FLIP_V 2
+#define SCEGU_FLIP_UV 3
+#define SCEGU_NOROTATE 0
+#define SCEGU_ROTATE_90 1
+#define SCEGU_ROTATE_180 2
+#define SCEGU_ROTATE_270 3
+
+#define SCEGU_TEXTURE_NONE ( 0 << 0 )
+#define SCEGU_TEXTURE_UBYTE ( 1 << 0 )
+#define SCEGU_TEXTURE_USHORT ( 2 << 0 )
+#define SCEGU_TEXTURE_FLOAT ( 3 << 0 )
+
+#define SCEGU_COLOR_NONE ( 0 << 2 )
+#define SCEGU_COLOR_PF5650 ( 4 << 2 )
+#define SCEGU_COLOR_PF5551 ( 5 << 2 )
+#define SCEGU_COLOR_PF4444 ( 6 << 2 )
+#define SCEGU_COLOR_PF8888 ( 7 << 2 )
+
+#define SCEGU_NORMAL_NONE ( 0 << 5 )
+#define SCEGU_NORMAL_BYTE ( 1 << 5 )
+#define SCEGU_NORMAL_SHORT ( 2 << 5 )
+#define SCEGU_NORMAL_FLOAT ( 3 << 5 )
+
+#define SCEGU_VERTEX_NONE ( 0 << 7 )
+#define SCEGU_VERTEX_BYTE ( 1 << 7 )
+#define SCEGU_VERTEX_SHORT ( 2 << 7 )
+#define SCEGU_VERTEX_FLOAT ( 3 << 7 )
+
+#define SCEGU_WEIGHT_NONE ( 0 << 9 )
+#define SCEGU_WEIGHT_UBYTE ( 1 << 9 )
+#define SCEGU_WEIGHT_USHORT ( 2 << 9 )
+#define SCEGU_WEIGHT_FLOAT ( 3 << 9 )
+
+#define SCEGU_INDEX_NONE ( 0 << 11 )
+#define SCEGU_INDEX_UBYTE ( 1 << 11 )
+#define SCEGU_INDEX_USHORT ( 2 << 11 )
+
+#define SCEGU_WEIGHT_1 ( 0 << 14 )
+#define SCEGU_WEIGHT_2 ( 1 << 14 )
+#define SCEGU_WEIGHT_3 ( 2 << 14 )
+#define SCEGU_WEIGHT_4 ( 3 << 14 )
+#define SCEGU_WEIGHT_5 ( 4 << 14 )
+#define SCEGU_WEIGHT_6 ( 5 << 14 )
+#define SCEGU_WEIGHT_7 ( 6 << 14 )
+#define SCEGU_WEIGHT_8 ( 7 << 14 )
+
+#define SCEGU_VERTEX_1 ( 0 << 18 )
+#define SCEGU_VERTEX_2 ( 1 << 18 )
+#define SCEGU_VERTEX_3 ( 2 << 18 )
+#define SCEGU_VERTEX_4 ( 3 << 18 )
+#define SCEGU_VERTEX_5 ( 4 << 18 )
+#define SCEGU_VERTEX_6 ( 5 << 18 )
+#define SCEGU_VERTEX_7 ( 6 << 18 )
+#define SCEGU_VERTEX_8 ( 7 << 18 )
+
+#define SCEGU_THROUGH ( 1 << 23 )
+
+#define SCEGU_SINGLE_COLOR 0
+#define SCEGU_SEPARATE_SPECULAR_COLOR 1
+#define SCEGU_EYE_FIX 0
+#define SCEGU_EYE_OBJECT 1
+
+#define SCEGU_PI 3.1415926535897932384626433832f
+#define SCEGU_RAD(a) ((a)*SCEGU_PI/180.0f)
+
+#define SCEGU_SIGNAL_WAIT 1
+#define SCEGU_SIGNAL_NOWAIT 2
+#define SCEGU_SIGNAL_PAUSE 3
+
+#define SCEGU_INT_SIGNAL 1
+#define SCEGU_INT_END 2
+#define SCEGU_INT_FINISH 4
+
+#define SCEGU_QUEUE_TAIL 0
+#define SCEGU_QUEUE_HEAD 1
+
+#define SCEGU_BREAK_PAUSE 0
+#define SCEGU_BREAK_CANCEL 1
+
+typedef SceGeContext SceGuContext;
+int sceGuInit( void );
+
+int sceGuTerm( void );
+
+int sceGuStart( int mode, void *p, int size );
+
+int sceGuFinish( void );
+
+int sceGuFinishId( unsigned short id );
+
+void *sceGuGetMemory( int size );
+
+void *sceGuGetAlignedMemory(unsigned int uiAlign, unsigned int uiSize);
+
+int sceGuCheckList( void );
+
+void *sceGuBeginPacket(unsigned int *puiSize);
+
+void sceGuEndPacket(void *pEnd);
+
+int sceGuFlush(void);
+
+void sceGuSignal( int mode, unsigned short id );
+
+int sceGuSignalSync( unsigned short id );
+
+void *sceGuSetCallback( int id, void (*cb)(int) );
+void *sceGuSetCallback2( int id, void (*cb)(int, const void *) );
+
+int sceGuBreak( int mode );
+
+int sceGuContinue( void );
+
+void sceGuCallMode( int mode );
+
+int sceGuCallList( const void *p );
+
+void *sceGuJumpList( const void *p );
+
+int sceGuSendList( int mode, const void *p, SceGuContext *ctx, int nStackDepth, SceGeStack *stack );
+
+int sceGuSignalCall(const void *p);
+
+void sceGuSignalRet(void);
+
+void sceGuSignalDrawSync(void);
+
+int sceGuSync( int mode, int block );
+
+int sceGuDisplay( int sw );
+
+void sceGuDispBuffer( int width, int height, void *dbp, int dbw );
+
+void sceGuDispBuffer2( int fpf, int width, int height, void *dbp, int dbw );
+
+void sceGuDrawBuffer( int fpf, void *fbp, int fbw );
+
+void sceGuDrawBuffer2( int fpf, void *fbp, int fbw );
+
+void sceGuDrawBufferList( int fpf, void *fbp, int fbw );
+
+void *sceGuSwapBuffers( void );
+
+void sceGuDepthBuffer( void *zbp, int zbw );
+
+void sceGuSetDither( const ScePspIMatrix4 *d );
+
+void sceGuEnable( int cap );
+
+void sceGuDisable( int cap );
+
+void sceGuSetStatus( int cap, int flag );
+
+int sceGuGetStatus( int cap );
+
+unsigned int sceGuGetAllStatus( void );
+
+void sceGuSetAllStatus( unsigned int status );
+
+void sceGuBeginObject( int type, int count, const void *idx, const void *p );
+
+int sceGuEndObject( void );
+
+void sceGuDrawArray( int prim, int type, int count, const void *idx,
+                                                const void *p );
+
+void sceGuDrawArrayN( int prim, int type, int n_verts, int n_prims,
+                                                const void *idx, const void *p );
+
+void sceGuDrawBezier( int type, int ucount, int vcount, const void *idx,
+                                                const void *p );
+
+void sceGuDrawSpline( int type, int ucount, int vcount, int uflag, int vflag,
+                                                const void *idx, const void *p );
+
+void sceGuDrawSprite( int x, int y, int z, int u, int v, int flip, int rotate );
+
+void sceGuPatchDivide( int udiv, int vdiv );
+
+void sceGuPatchPrim( int prim );
+
+void sceGuSpriteMode( int sw, int sh, int dw, int dh );
+
+void sceGuClearColor( unsigned int col );
+
+void sceGuClearStencil( int stencil );
+
+void sceGuClearDepth( int depth );
+
+void sceGuClear( int mask );
+
+void sceGuCopyImage( int mode, int sx, int sy, int width, int height,
+                                        int sbw, void *sbp, int dx, int dy, int dbw, void *dbp );
+
+void sceGuCopyImage2( int mode, int sx, int sy, int width, int height,
+                                        int sbw, void *sbp, int dx, int dy, int dbw, void *dbp,
+                                        int sbh, int dbh, int sbm, int dbm );
+
+void sceGuViewport( int x, int y, int width, int height );
+
+void sceGuDepthRange( int r_near, int r_far );
+
+void sceGuDepthOffset( int offset );
+
+void sceGuOffset( int x, int y );
+
+void sceGuAmbient( unsigned int col );
+
+void sceGuColor( unsigned int col );
+
+void sceGuColorMaterial( int type );
+
+void sceGuMaterial( int type, unsigned int col );
+
+void sceGuAmbientColor( unsigned int ac );
+
+void sceGuModelColor( unsigned int mec, unsigned int mac, unsigned int mdc,
+                                                unsigned int msc );
+
+void sceGuSpecular( float power );
+
+void sceGuFrontFace( int mode );
+
+void sceGuShadeModel( int model );
+
+void sceGuLight( int n, int type, int comp, const ScePspFVector3 *vec );
+
+void sceGuLightMode( int ssc );
+
+void sceGuLightAtt( int n, float a, float b, float c );
+
+void sceGuLightSpot( int n, float s, float c, const ScePspFVector3 *vec );
+
+void sceGuLightColor( int n, int type, unsigned int col );
+
+void sceGuTexMode( int tpf, int maxlod, int mc, int hsm );
+
+void sceGuTexFilter( int min, int mag );
+
+void sceGuTexFunc( int func, int component );
+
+void sceGuTexEnvColor( unsigned int col );
+
+void sceGuTexWrap( int uwrap, int vwrap );
+
+void sceGuTexLevelMode( int calc, float offset );
+
+void sceGuTexMapMode( int map, int lu, int lv );
+
+void sceGuTexSync( void );
+
+void sceGuTexFlush( void );
+
+void sceGuTexImage( int level, int width, int height, int w, const void *tbp );
+
+void sceGuTexScale( float su, float sv );
+
+void sceGuTexOffset( float tu, float tv );
+
+void sceGuTexProjMapMode( int mode );
+
+void sceGuTexSlope( float tslope );
+
+void sceGuClutMode( int cpf, int shift, int mask, int csa );
+
+void sceGuClutLoad( int np, const void *cbp );
+
+void sceGuClutCopyLoad( int np, const void *cbp );
+
+void sceGuFog( float zs, float ze, unsigned int col );
+
+void sceGuColorFunc( int func, unsigned int cref, unsigned int cmsk );
+
+void sceGuAlphaFunc( int func, unsigned int aref, unsigned int amsk );
+
+void sceGuDepthFunc( int func );
+
+void sceGuDepthMask( int flag );
+
+void sceGuScissor( int x, int y, int width, int height );
+
+void sceGuStencilFunc( int func, unsigned int sref, unsigned int smsk );
+
+void sceGuStencilOp( int sfail, int zfail, int zpass );
+
+void sceGuBlendFunc( int equ, int asel, int bsel, unsigned int afix, unsigned int bfix );
+
+void sceGuLogicalOp( int lop );
+
+void sceGuPixelMask( unsigned int pmsk );
+
+void sceGuBoneMatrix( int n, const ScePspFMatrix4 *m );
+
+void sceGuMorphWeight( int n, float f );
+
+void sceGuSetMatrix( int mode, const ScePspFMatrix4 *f );
+
+void sceGuDebugPrint( int x, int y, unsigned int col, const char *str );
+void sceGuDebugFlush( void );
+#endif
