@@ -267,7 +267,20 @@ int sound_start(int no)
 	return 0;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/k_sound", sound_stop);
+int sound_stop(void)
+{
+	if (sound_start_flag) {
+		int id = thid;
+		iFadeOutFlag = 1;
+		if (sceKernelWaitThreadEnd(id, NULL) != 0)
+			return -1;
+		if (sceKernelDeleteThread(thid) != 0)
+			return -1;
+		sound_start_flag = 0;
+		return 0;
+	}
+	return 0;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -463,7 +476,20 @@ int sound_start1(int no)
 	return 0;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/k_sound", sound_stop1);
+int sound_stop1(void)
+{
+	if (sound_start_flag1) {
+		int id = thid2;
+		iFadeOutFlag1 = 1;
+		if (sceKernelWaitThreadEnd(id, NULL) != 0)
+			return -1;
+		if (sceKernelDeleteThread(thid2) != 0)
+			return -1;
+		sound_start_flag1 = 0;
+		return 0;
+	}
+	return 0;
+}
 
 void sound_volume_set(int vol)
 {
