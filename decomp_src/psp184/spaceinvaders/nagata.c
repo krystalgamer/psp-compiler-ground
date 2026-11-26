@@ -139,9 +139,79 @@ int sjis_check(void *arg0) {
     return (unsigned int) ((M2C_FIELD(arg0, signed char *, 1) + (M2C_FIELD(arg0, signed char *, 0) << 8)) & 0xFFFF) > 0x813FU;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/nagata", num_digit_get0);
+int num_digit_get0(int v, int n)
+{
+	int r = 0;
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/nagata", num_digit_get);
+	if (n == 1) {
+		r = v % 10;
+	} else if (n == 2) {
+		r = (v / 10) % 10;
+	} else if (n == 3) {
+		r = (v / 100) % 10;
+	} else if (n == 4) {
+		r = (v / 1000) % 10;
+	} else if (n == 5) {
+		r = (v / 10000) % 10;
+	} else if (n == 6) {
+		r = (v / 100000) % 10;
+	} else if (n == 7) {
+		r = (v / 1000000) % 10;
+	} else if (n == 8) {
+		r = (v / 10000000) % 10;
+	} else if (n == 9) {
+		r = (v / 100000000) % 10;
+	} else if (n == 10) {
+		r = (v / 1000000000) % 10;
+	}
+	return r;
+}
+
+int num_digit_get(int v, int n)
+{
+	int r = -1;
+
+	if (n == 1) {
+		r = v % 10;
+	} else if (n == 2) {
+		r = (v / 10) % 10;
+		if (v < 10)
+			r = -1;
+	} else if (n == 3) {
+		r = (v / 100) % 10;
+		if (v < 100)
+			r = -1;
+	} else if (n == 4) {
+		r = (v / 1000) % 10;
+		if (v < 1000)
+			r = -1;
+	} else if (n == 5) {
+		r = (v / 10000) % 10;
+		if (v < 10000)
+			r = -1;
+	} else if (n == 6) {
+		r = (v / 100000) % 10;
+		if (v < 100000)
+			r = -1;
+	} else if (n == 7) {
+		r = (v / 1000000) % 10;
+		if (v < 1000000)
+			r = -1;
+	} else if (n == 8) {
+		r = (v / 10000000) % 10;
+		if (v < 10000000)
+			r = -1;
+	} else if (n == 9) {
+		r = (v / 100000000) % 10;
+		if (v < 100000000)
+			r = -1;
+	} else if (n == 10) {
+		r = (v / 1000000000) % 10;
+		if (v < 1000000000)
+			r = -1;
+	}
+	return r;
+}
 
 int addr_to_int(unsigned char *p)
 {
