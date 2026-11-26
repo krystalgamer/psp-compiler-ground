@@ -1,25 +1,31 @@
 /* cflags: -O1 */
 #include "common.h"
-#include "m2c_macros.h"
-M2C_UNK memmove();                                  /* extern */
-
-
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiMemory", UDomiMemory_Allocate);
-
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiMemory", UDomiMemory_Free);
-
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
+#include "dom_domi.h"
+void *MEM_malloc(int pool, unsigned int size);
+void MEM_free(int pool, void *p);
+int DomiMoreMemory(void);
 void *memcpy(void *d, const void *s, unsigned int n);
-void UDomiMemory_Copy(void *arg0, void *arg1, unsigned int arg2) {
-    memcpy(arg0, arg1, arg2);
+void *memmove(void *d, const void *s, unsigned int n);
+
+void *UDomiMemory_Allocate(unsigned int size) {
+    void *p;
+
+    do {
+        p = MEM_malloc(0, size);
+    } while (p == NULL && DomiMoreMemory());
+    return p;
 }
 
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
+void UDomiMemory_Free(void *p) {
+    if (p != NULL) {
+        MEM_free(0, p);
+    }
+}
 
-void UDomiMemory_Move(void) {
-    memmove();
+void UDomiMemory_Copy(void *d, const void *s, unsigned int n) {
+    memcpy(d, s, n);
+}
+
+void UDomiMemory_Move(void *d, const void *s, unsigned int n) {
+    memmove(d, s, n);
 }

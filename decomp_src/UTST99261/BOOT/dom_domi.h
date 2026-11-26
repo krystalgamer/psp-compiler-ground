@@ -1,0 +1,220 @@
+/* NetFront-style DOM core (SDomi* / cmDomi* / UDomi*), recovered from the asm */
+#ifndef DOM_DOMI_H
+#define DOM_DOMI_H
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+typedef unsigned short DOMChar;
+
+typedef struct SDomiString {
+    unsigned int len;
+    DOMChar *str;
+} SDomiString;
+
+/* reference-counted string data, the characters follow it */
+typedef struct SDomiStringData {
+    int ref;
+    SDomiString s;
+} SDomiStringData;
+
+typedef struct SDomiStringH {
+    SDomiStringData *d;
+} SDomiStringH;
+
+/* growable character buffer */
+typedef struct SDomiStrAcu {
+    unsigned int grow;
+    unsigned int alloc;
+    unsigned int len;
+    DOMChar *buf;
+} SDomiStrAcu;
+
+typedef struct SDomiSLink {
+    struct SDomiSLink *next;
+} SDomiSLink;
+
+typedef struct SDomiPtrArray {
+    unsigned int grow;
+    unsigned int alloc;
+    unsigned int count;
+    void **items;
+} SDomiPtrArray;
+
+struct SDomiDocument;
+struct SDomiNodeVt;
+
+typedef struct SDomiNode {
+    const struct SDomiNodeVt *vt;    /* 0x00 */
+    unsigned char flags;              /* 0x04 */
+    unsigned char nodeType;           /* 0x05 */
+    SDomiSLink trash;                 /* 0x08 */
+    struct SDomiDocument *ownerDocument; /* 0x0C */
+    SDomiStringH nodeName;            /* 0x10 */
+    void *x14;
+    void *x18;
+    void *x1C;
+} SDomiNode;
+
+/* leaf node with its own sibling links */
+typedef struct SDomiExternalNode {
+    SDomiNode n;
+    SDomiNode *parentNode;            /* 0x20 */
+    SDomiNode *previousSibling;       /* 0x24 */
+    SDomiNode *nextSibling;           /* 0x28 */
+} SDomiExternalNode;
+
+typedef struct SDomiCharacterData {
+    SDomiExternalNode e;
+    SDomiStrAcu data;                 /* 0x2C */
+} SDomiCharacterData;
+
+typedef struct SDomiProcessingInstruction {
+    SDomiExternalNode e;
+    SDomiStringH data;                /* 0x2C */
+} SDomiProcessingInstruction;
+
+typedef struct SDomiInternalNode {
+    SDomiNode n;
+    SDomiNode *firstChild;            /* 0x20 */
+    SDomiNode *lastChild;             /* 0x24 */
+    void *x28;
+} SDomiInternalNode;
+
+typedef struct SDomiTrunkNode {
+    SDomiInternalNode i;
+    SDomiNode *parentNode;            /* 0x2C */
+    SDomiNode *previousSibling;       /* 0x30 */
+    SDomiNode *nextSibling;           /* 0x34 */
+} SDomiTrunkNode;
+
+typedef struct SDomiNotation {
+    SDomiNode n;
+    void *x20;
+    SDomiStringH publicId;            /* 0x24 */
+    SDomiStringH systemId;            /* 0x28 */
+} SDomiNotation;
+
+typedef int (*SDomiFn)();
+
+typedef struct SDomiNodeVt {
+    void (*Finalize)();               /* 0x00 */
+    void (*Changed)();                /* 0x04 */
+    void (*SetParentNode)();          /* 0x08 */
+    void (*SetPreviousSibling)();     /* 0x0C */
+    void (*SetNextSibling)();         /* 0x10 */
+    void (*InheritObjInfo)();         /* 0x14 */
+    void (*FreeTrash)();              /* 0x18 */
+    int (*get_nodeValue)();           /* 0x1C */
+    int (*set_nodeValue)();           /* 0x20 */
+    SDomiNode *(*get_parentNode)();   /* 0x24 */
+    int (*get_childNodes)();          /* 0x28 */
+    SDomiNode *(*get_firstChild)();   /* 0x2C */
+    SDomiNode *(*get_lastChild)();    /* 0x30 */
+    SDomiNode *(*get_previousSibling)(); /* 0x34 */
+    SDomiNode *(*get_nextSibling)();  /* 0x38 */
+    void *(*get_attributes)();        /* 0x3C */
+    int (*insertBefore)();            /* 0x40 */
+    int (*removeChild)();             /* 0x44 */
+    int (*hasChildNodes)();           /* 0x48 */
+    int (*cloneNode)();               /* 0x4C */
+    int (*isSupported)();             /* 0x50 */
+    int (*get_namespaceURI)();        /* 0x54 */
+    int (*get_prefix)();              /* 0x58 */
+    int (*set_prefix)();              /* 0x5C */
+    int (*get_localName)();           /* 0x60 */
+    int (*hasAttributes)();           /* 0x64 */
+    /* SDomiDocument */
+    int (*get_doctype)();             /* 0x68 */
+    int (*createElement)();           /* 0x6C */
+    int (*createDocumentFragment)();  /* 0x70 */
+    int (*createTextNode)();          /* 0x74 */
+    int (*createComment)();           /* 0x78 */
+    int (*createCDATASection)();      /* 0x7C */
+    int (*createProcessingInstruction)(); /* 0x80 */
+    int (*createAttribute)();         /* 0x84 */
+    int (*createEntityReference)();   /* 0x88 */
+    int (*getElementsByTagName)();    /* 0x8C */
+    int (*importNode)();              /* 0x90 */
+    int (*createElementNS)();         /* 0x94 */
+    int (*createAttributeNS)();       /* 0x98 */
+    int (*getElementsByTagNameNS)();  /* 0x9C */
+    int (*getElementById)();          /* 0xA0 */
+} SDomiNodeVt;
+
+/* named node set (attributes) vtable */
+typedef struct SDomiNamedNodeSetVt {
+    void (*Finalize)();               /* 0x00 */
+    SDomiNode *(*getNamedItem)();     /* 0x04 */
+    int (*setNamedItem)();            /* 0x08 */
+    SDomiNode *(*item)();             /* 0x0C */
+    int (*removeNamedItem)();         /* 0x10 */
+    unsigned int (*get_length)();     /* 0x14 */
+} SDomiNamedNodeSetVt;
+
+typedef struct SDomiNamedNodeSet {
+    const SDomiNamedNodeSetVt *vt;
+} SDomiNamedNodeSet;
+
+extern SDomiStringData gSDnull;
+
+SDomiStringData *AcsExterngSDnull(void);
+const SDomiString *AcsExterngSnull(void);
+
+/* a string handle starts as a reference to the shared empty string */
+#define SDomiStringH_Init(h) (AcsExterngSDnull()->ref++, (h)->d = AcsExterngSDnull())
+
+void *UDomiMemory_Allocate(unsigned int size);
+void UDomiMemory_Free(void *p);
+void UDomiMemory_Copy(void *d, const void *s, unsigned int n);
+void UDomiMemory_Move(void *d, const void *s, unsigned int n);
+DOMChar *UDomiString_Allocate(unsigned int len);
+void UDomiString_Free(DOMChar *s);
+void UDomiString_Copy(DOMChar *d, const DOMChar *s, unsigned int len);
+void UDomiString_Move(DOMChar *d, const DOMChar *s, unsigned int len);
+
+int SDomiStringData_Free(SDomiStringData *d);
+void SDomiStringH_Finalize(SDomiStringH *h);
+int SDomiStringH_Set(SDomiStringH *h, const SDomiString *s);
+void SDomiStringH_Assign(SDomiStringH *h, const SDomiStringH *src);
+
+void SDomiStrAcu_Initialize(SDomiStrAcu *a, unsigned int grow);
+void SDomiStrAcu_Finalize(SDomiStrAcu *a);
+void SDomiStrAcu_Reset(SDomiStrAcu *a);
+int SDomiStrAcu_Truncate(SDomiStrAcu *a);
+int SDomiStrAcu_Allocate(SDomiStrAcu *a, unsigned int n);
+int SDomiStrAcu_Insert(SDomiStrAcu *a, unsigned int pos, const SDomiString *s);
+void SDomiStrAcu_Delete(SDomiStrAcu *a, unsigned int pos, unsigned int n);
+
+SDomiSLink *SDomiSLink_first(SDomiSLink *head);
+SDomiSLink *SDomiSLink_next(SDomiSLink *head, SDomiSLink *cur);
+void SDomiSLink_Insert(SDomiSLink *head, SDomiSLink *l);
+void SDomiSLink_Remove(SDomiSLink *head, SDomiSLink *l);
+SDomiSLink *SDomiSLink_RemoveFirst(SDomiSLink *head);
+SDomiSLink *SDomiSLink_RemoveLast(SDomiSLink *head);
+SDomiNode *RecoverNodePtr(SDomiSLink *l);
+SDomiNode *SDomiNodeSLink_RemoveFirst(SDomiSLink *head);
+void SDomiNodeSLink_DeleteAll(SDomiSLink *head);
+
+void SDomiPtrArray_Initialize(SDomiPtrArray *a, unsigned int grow);
+void SDomiPtrArray_Finalize(SDomiPtrArray *a);
+void SDomiPtrArray_Free(SDomiPtrArray *a);
+void *SDomiPtrArray_GetItem(SDomiPtrArray *a, unsigned int i);
+void SDomiPtrArray_Replace(SDomiPtrArray *a, unsigned int i, void *p);
+int SDomiPtrArray_Insert(SDomiPtrArray *a, unsigned int i, void *p);
+void SDomiPtrArray_Remove(SDomiPtrArray *a, unsigned int i);
+
+void SDomiNode_Initialize(SDomiNode *n, const SDomiNodeVt *vt, int flags, int type,
+                          struct SDomiDocument *doc, const SDomiStringH *name);
+void SDomiExternalNode_Initialize(SDomiNode *n, const SDomiNodeVt *vt, int flags, int type,
+                                  struct SDomiDocument *doc, const SDomiStringH *name);
+void SDomiInternalNode_Initialize(SDomiNode *n, const SDomiNodeVt *vt, int flags, int type,
+                                  struct SDomiDocument *doc, const SDomiStringH *name);
+void cmDomiNode_Finalize(SDomiNode *n);
+void cmDomiInternalNode_Changed(SDomiNode *n);
+
+void SDomiCharacterData_set_data(SDomiNode *n, const SDomiString *s);
+int SDomiCharacterData_deleteData(SDomiNode *n, unsigned int off, unsigned int count);
+
+#endif
