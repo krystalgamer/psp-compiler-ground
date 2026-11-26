@@ -94,7 +94,10 @@ typedef struct {
     int unk4;
     int unk8;
     int len;                    /* 0xC */
-    u8 unk10;
+    union {
+        int w;
+        u8 b;
+    } unk10;
 } TTEXT;
 typedef struct {
     u8 unk0[0x10];
@@ -207,14 +210,14 @@ TBOX *createTextBox(void *ctx, TBOX *parent, TBOX *prev, char *str, int len, int
     g->unk4 = 0;
     g->unk8 = 0;
     g->len = 0;
-    *(int *)&g->unk10 = 0;
+    g->unk10.w = 0;
     b->geom = g;
     b->content = 9;
     b->html = 1;
     b->style = prev->style;
     b->geom->str = str;
     b->geom->len = len;
-    b->geom->unk10 = b->style->unk68;
+    b->geom->unk10.b = b->style->unk68;
     b->w = w + b->style->pad26 + b->style->pad36 + b->style->pad2E + b->style->pad2A + b->style->pad32 + b->style->pad22;
     b->h = prev->h;
     b->x += parent->style->pad36;
