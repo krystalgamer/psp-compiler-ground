@@ -58,28 +58,82 @@ extern SceChar8 *displayBuf[2];
 
 static SceInt32 swap_buffer(SceChar8 *buffer);
 SceInt32 dispbuf_create(t_displayBuffer *pDisp, SceInt32 disp_size, SceInt32 disp_num);
-SceInt32 dispbuf_reset(t_displayBuffer *pDisp);
-SceInt32 dispbuf_delete(t_displayBuffer *pDisp);
-SceInt32 dispbuf_getDrawbuf(t_displayBuffer *pDisp, SceChar8 **buffer);
 SceInt32 dispbuf_setPts(t_displayBuffer *pDisp, SceUInt32 pts);
 SceInt32 dispbuf_getPts(t_displayBuffer *pDisp, SceUInt32 *pPts);
-SceInt32 dispbuf_dataSet(t_displayBuffer *pDisp);
 SceInt32 dispbuf_getCapacity(t_displayBuffer *pDisp);
 SceInt32 dispbuf_getCurrentCount(t_displayBuffer *pDisp);
 SceInt32 dispbuf_setMode(t_displayBuffer *pDisp, SceInt32 mode);
 SceInt32 dispbuf_getMode(t_displayBuffer *pDisp);
-SceInt32 dispbuf_display(SceVoid *pAv);
 static SceInt32 dispbuf_show(t_displayBuffer *pDisp);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/mpeg/display", swap_buffer);
+int inv_movie_result_disp(void *p);
+void *inv_movie_result_addr(void);
+void psp_free(void *p);
+static SceInt32 swap_buffer(SceChar8 *buf)
+{
+	SceChar8 *tmp;
+
+	sceDmacMemcpy(displayBuf[0], buf, 0x88000);
+	if (inv_movie_result_disp(buf + 0x80000) == 1) {
+		sceDmacMemcpy(displayBuf[0] + 0x80000, inv_movie_result_addr(), 0x3800);
+	}
+	sceDisplaySetFrameBuf(displayBuf[0], 512, 3, 1);
+	tmp = displayBuf[0];
+	displayBuf[0] = displayBuf[1];
+	displayBuf[1] = tmp;
+	return 0;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/mpeg/display", dispbuf_create);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/mpeg/display", dispbuf_reset);
+SceInt32 dispbuf_reset(t_displayBuffer *pDisp)
+{
+	SceInt32 ret;
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/mpeg/display", dispbuf_delete);
+	frameCount = 0;
+	frameLoss = 0;
+	pDisp->write = 0;
+	pDisp->read = 0;
+	pDisp->count = 0;
+	dispbuf_setMode(pDisp, 1);
+	ret = sceDisplaySetMode(0, 480, 272);
+	if (ret < 0) {
+		return ret;
+	}
+	sceDisplaySetFrameBuf(0, 512, 3, 1);
+	return 0;
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/mpeg/display", dispbuf_getDrawbuf);
+SceInt32 dispbuf_delete(t_displayBuffer *pDisp)
+{
+	int i;
+
+	sceKernelDeleteSema(pDisp->lock_sema);
+	if (pDisp->buf != NULL) {
+		for (i = 0; i < pDisp->size; i++) {
+			if (pDisp->buf[i] != NULL) {
+				psp_free(pDisp->buf[i]);
+			}
+		}
+		psp_free(pDisp->buf);
+	}
+	if (pDisp->pts != NULL) {
+		psp_free(pDisp->pts);
+	}
+	return 0;
+}
+
+int dispbuf_getDrawbuf(t_displayBuffer *pDisp, signed char **buffer) {
+    int temp_v0;
+
+    temp_v0 = dispbuf_getCapacity(pDisp);
+    if (temp_v0 > 0) {
+        *buffer = pDisp->buf[pDisp->write];
+    } else {
+        *buffer = NULL;
+    }
+    return temp_v0;
+}
 
 int dispbuf_setPts(t_displayBuffer *pDisp, unsigned int pts) {
     pDisp->pts[pDisp->write] = pts;
@@ -91,7 +145,14 @@ int dispbuf_getPts(t_displayBuffer *pDisp, unsigned int *pPts) {
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/mpeg/display", dispbuf_dataSet);
+SceInt32 dispbuf_dataSet(t_displayBuffer *pDisp)
+{
+	sceKernelWaitSemaCB(pDisp->lock_sema, 1, 0);
+	pDisp->count++;
+	pDisp->write = (pDisp->write + 1) % pDisp->size;
+	sceKernelSignalSema(pDisp->lock_sema, 1);
+	return 0;
+}
 
 int dispbuf_getCapacity(t_displayBuffer *pDisp) {
     return pDisp->size - pDisp->count;
@@ -110,7 +171,33 @@ int dispbuf_getMode(t_displayBuffer *pDisp) {
     return pDisp->displayMode;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/mpeg/display", dispbuf_display);
+SceInt32 dispbuf_display(t_avSyncControl *pAvSync)
+{
+	t_displayBuffer *pDisp = pAvSync->pDisp;
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/mpeg/display", dispbuf_show);
+	dispbuf_setMode(pDisp, avsync_Compare(pAvSync));
+	if (dispbuf_getCurrentCount(pDisp) > 0) {
+		if (dispbuf_getMode(pDisp) != 3) {
+			dispbuf_show(pDisp);
+			pDisp->count--;
+			frameCount++;
+		}
+	} else {
+		frameLoss++;
+	}
+	return 0;
+}
+
+static SceInt32 dispbuf_show(t_displayBuffer *pDisp)
+{
+	if (dispbuf_getMode(pDisp) == 1) {
+		swap_buffer(pDisp->buf[pDisp->read]);
+		pDisp->read = (pDisp->read + 1) % pDisp->size;
+		sceKernelPowerTick(0);
+		sceDisplayWaitVblankStartCB();
+	} else {
+		pDisp->read = (pDisp->read + 1) % pDisp->size;
+	}
+	return 0;
+}
 

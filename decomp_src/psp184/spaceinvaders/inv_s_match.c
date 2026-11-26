@@ -1,12 +1,43 @@
 #include "common.h"
+#include "m2c_macros.h"
+M2C_UNK ASC_SetStringRGBA(M2C_UNK, M2C_UNK *, M2C_UNK, M2C_UNK, M2C_UNK, M2C_UNK, M2C_UNK, M2C_UNK); /* extern */
+int pad_cansel_button();                            /* extern */
+int pad_ret_button();                               /* extern */
+M2C_UNK se_start(M2C_UNK);                          /* extern */
+extern unsigned char D_0007CCD8;
+extern int RT;
+extern int Anm;
+extern int gcnt_28FC04;
+
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_match", inv_matchup_main);
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_match", inv_matchup_init);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_match", inv_matchup_demo);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_match", inv_matchup_start);
+void inv_matchup_demo(void) {
+    int temp_s0;
+    int temp_s1;
+
+    ASC_SetStringRGBA(2, &D_0007CCD8, 0xBC, 0xC8, 0x40, 0xFF, 0xFF, 0xFF);
+    temp_s1 = pad_sw();
+    temp_s0 = pad_ret_button();
+    if (temp_s1 & (temp_s0 | pad_cansel_button())) {
+        se_start(1);
+        RT = 9;
+    }
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void inv_matchup_start(void) {
+    RT = 3;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_match", inv_matchup_startdemo);
 
@@ -22,7 +53,15 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_match", inv_matchup
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_match", inv_matchup_continue);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_match", inv_matchup_winlose);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void inv_matchup_winlose(void) {
+    RT = 8;
+    gcnt_28FC04 = 0;
+    Anm = 0;
+}
 
 INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_match", D_0007CCD8);
 

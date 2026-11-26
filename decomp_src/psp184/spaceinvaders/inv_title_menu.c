@@ -1,6 +1,28 @@
 #include "common.h"
+#include "m2c_macros.h"
+M2C_UNK inv_logo();                                 /* extern */
+M2C_UNK inv_title_free();                           /* extern */
+M2C_UNK inv_title_init();                           /* extern */
+M2C_UNK inv_title_memcheck();                       /* extern */
+M2C_UNK inv_title_roop();                           /* extern */
+extern int D_003491E4;
+extern unsigned char D_00349218;
+extern int D_00349230;
+extern int D_00349234;
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_title_menu", inv_title_main);
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+int inv_title_main(void) {
+    inv_title_memcheck();
+    inv_logo();
+    inv_title_init();
+    inv_title_roop();
+    inv_title_free();
+    return D_003491E4;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_title_menu", inv_title_memcheck);
 
@@ -42,19 +64,38 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_title_menu", title_ma
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_title_menu", title_init);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_title_menu", title_start);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void title_start(void) {
+    M2C_FIELD(&D_00349218, int *, 0) = 1;
+    M2C_FIELD(&D_00349218, int *, 4) = 0;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_title_menu", title_start_check);
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_title_menu", title_control);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_title_menu", select_init);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void select_init(void) {
+    D_00349230 = 0;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_title_menu", select_start);
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_title_menu", select_start_check);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_title_menu", select_set);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void select_set(int arg0) {
+    D_00349234 = arg0;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_title_menu", select_control);
 

@@ -1,4 +1,5 @@
 #include "common.h"
+#define sceIoReadCB sceIoReadCB_10B3C
 
 /* declarations recovered from DWARF (psp184 mpegon io) */
 typedef int SceInt32;
@@ -100,6 +101,18 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/mpeg/io", DvdUmdRetryRead
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/mpeg/io", DvdUmdRetryReadCB);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/mpeg/io", sceIoReadCB_10B3C);
+static SceSSize sceIoReadCB(SceUID fd, void *buf, SceSize nbyte)
+{
+	long long res;
+	SceInt32 ret;
+
+	ret = sceIoReadAsync(fd, buf, nbyte);
+	if (ret < 0)
+		return ret;
+	ret = sceIoWaitAsyncCB(fd, &res);
+	if (ret == 0)
+		ret = (SceInt32)res;
+	return ret;
+}
 
 INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/mpeg/io", D_0007AF50);

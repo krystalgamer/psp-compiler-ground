@@ -1,10 +1,27 @@
 #include "common.h"
+#include "m2c_macros.h"
+extern int D_004B47E0;
+extern int D_004B47C8;
+extern int D_004B47CC;
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_result", inv_movie_result_tex_addr);
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void inv_movie_result_tex_addr(int arg0) {
+    D_004B47E0 = arg0;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_result", inv_movie_result_reset);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_result", inv_movie_result_disp_counter_set);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void inv_movie_result_disp_counter_set(int arg0) {
+    D_004B47C8 = arg0;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_result", inv_movie_result_memset);
 
@@ -12,7 +29,13 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_result", inv_movie_re
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_result", inv_movie_result_free);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_result", inv_movie_result_flag);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void inv_movie_result_flag(int arg0) {
+    D_004B47CC = arg0;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_result", inv_movie_result_txt_set);
 

@@ -1,13 +1,58 @@
 #include "common.h"
+#include "m2c_macros.h"
+M2C_UNK psp_loopend();                              /* extern */
+M2C_UNK psp_loopstart();                            /* extern */
+M2C_UNK sceKernelCheckCallback();                   /* extern */
+int sceKernelGetCallbackCount(int);                 /* extern */
+M2C_UNK utility_update_savedata();                  /* extern */
+extern int exit_cb;
+extern int loop_28E478;
+extern int utility_type;
+extern unsigned char NickName;
+extern int g_lang;
+extern int g_assign;
+extern unsigned char _sd_strings;
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_save", ExitFunction_16C74);
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+void sceKernelExitGame(void);
+int ExitFunction_16C74(void) {
+    sceKernelExitGame();
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_save", utility_update_savedata);
 
 void UtilityClose(void) {
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_save", sub_thread_16D10);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int sceKernelExitDeleteThread(int status);
+
+int sub_thread_16D10(void) {
+    int temp_s0;
+
+    loop_28E478 = 1;
+    utility_type = 0;
+loop_1:
+    psp_loopstart();
+    temp_s0 = sceKernelGetCallbackCount(exit_cb);
+    utility_update_savedata();
+    sceKernelCheckCallback();
+    psp_loopend();
+    if (temp_s0 == 0) {
+        if (loop_28E478 != 0) {
+            goto loop_1;
+        }
+    }
+    sceKernelExitDeleteThread(0);
+    utility_type = -1;
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_save", ms_init);
 
@@ -27,11 +72,29 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_save", _ms_load);
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_save", _ms_save);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_save", GetMessageNickName);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_save", GetMessageLang);
+M2C_UNK *GetMessageNickName(void) {
+    return &NickName;
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_save", GetAssign);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+int GetMessageLang(void) {
+    return g_lang;
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+int GetAssign(void) {
+    return g_assign;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_save", set_savedata_param);
 
@@ -39,7 +102,21 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_save", set_param_lo
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_save", set_param_save);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_save", set_params);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+void *memcpy(void *d, const void *s, unsigned int n);
+unsigned int strlen(const char *s);
+
+void set_params(int arg0) {
+    void *temp_s3;
+
+    temp_s3 = arg0 + 0x80;
+    memcpy(temp_s3, M2C_FIELD(&_sd_strings, signed char **, 0), strlen(M2C_FIELD(&_sd_strings, signed char **, 0)) + 1);
+    memcpy(arg0 + 0x100, M2C_FIELD(&_sd_strings, signed char **, 4), strlen(M2C_FIELD(&_sd_strings, signed char **, 4)) + 1);
+    memcpy(arg0 + 0x180, M2C_FIELD(&_sd_strings, signed char **, 8), strlen(M2C_FIELD(&_sd_strings, signed char **, 8)) + 1);
+    M2C_FIELD(temp_s3, signed char *, 0x500) = 1;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_save", set_icon0);
 

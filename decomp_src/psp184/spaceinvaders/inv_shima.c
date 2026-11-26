@@ -1,8 +1,31 @@
 #include "common.h"
+#include "m2c_macros.h"
+M2C_UNK psp_loopstart();                            /* extern */
+M2C_UNK psp_loopend();                              /* extern */
+M2C_UNK classic_inv_init_pos_sub(M2C_UNK);          /* extern */
+extern int gcnt_28F36C;
+M2C_UNK spr_trans(int, int, int, int, M2C_UNK, M2C_UNK, M2C_UNK, M2C_UNK); /* extern */
+extern void *D_0028F38C;
+extern void *ptexsrc_28F380;
+extern unsigned char sexp;
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_shima", psp_xstart);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_shima", psp_xend);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void psp_xstart(void) {
+    psp_loopstart();
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void psp_xend(void) {
+    ASC_Reset();
+    psp_loopend();
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_shima", nickname_set);
 
@@ -52,7 +75,14 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_shima", classic_inv_i
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_shima", classic_inv_init_pos_sub);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_shima", classic_inv_init_pos);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void classic_inv_init_pos(void) {
+    classic_inv_init_pos_sub(0);
+    classic_inv_init_pos_sub(1);
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_shima", classic_inv_ready);
 
@@ -142,7 +172,29 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_shima", classic_inv_m
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_shima", classic_inv_draw);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_shima", classic_inv_enemy_chk);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int classic_inv_enemy_chk(int arg0) {
+    int temp_v0;
+    int var_a0;
+    int var_v1;
+
+    temp_v0 = SprHeadGet();
+    var_v1 = temp_v0;
+    var_a0 = 0;
+    if (temp_v0 != 0) {
+        do {
+            if (M2C_FIELD(var_v1, int *, 0xC) != 0) {
+                if (M2C_FIELD(var_v1, int *, 0x14) == arg0) {
+                    var_a0 += (unsigned int) (M2C_FIELD(var_v1, int *, 0x10) - 1) < 5U;
+                }
+            }
+            var_v1 = M2C_FIELD(var_v1, int *, 0x94);
+        } while (var_v1 != 0);
+    }
+    return var_a0;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_shima", classic_inv_enemyshot);
 
@@ -238,17 +290,36 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_shima", classic_inv_d
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_shima", inv_classic_fade);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_shima", inv_classic_gcntget);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+int inv_classic_gcntget(void) {
+    return gcnt_28F36C;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_shima", classic_inv_screen_clr);
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_shima", classic_inv_screen_allclr);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_shima", classic_inv_name_entry_cur);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void classic_inv_name_entry_cur(int arg0, int arg1) {
+    spr_trans(M2C_FIELD(ptexsrc_28F380, int *, 0x1C), M2C_FIELD(D_0028F38C, int *, 0x1C), arg0, arg1, 0xB8, 0x28, 8, 8);
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_shima", classic_inv_name_entry_cur_erase);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_shima", classic_inv_expsys_init);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+void *memset(void *s, int c, unsigned int n);
+
+void classic_inv_expsys_init(void) {
+    memset(&sexp, 0, 0x140U);
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_shima", classic_inv_expsys_setsub);
 
