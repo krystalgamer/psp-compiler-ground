@@ -13,13 +13,14 @@ extern char D_00132354[];   /* "file:" */
 typedef struct {
     QUEUE q;
     int len;            /* 0x8 */
+    u8 flag;            /* 0xC */
 } MBLOCK;
 
 typedef struct {
     int unk0;
     int size;           /* 0x4 */
     QUEUE q;            /* 0x8 */
-    int unk10;
+    MBLOCK *first;      /* 0x10 */
     MBLOCK *cur;        /* 0x14 */
     int off;            /* 0x18 */
 } MFILE;
@@ -412,7 +413,28 @@ int UTL_sizequeue(QUEUE *q) {
     return n;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/url", UTL_mfilecreate);
+MFILE *UTL_mfilecreate(int bsize) {
+    MFILE *f;
+
+    f = MEM_malloc(NULL, sizeof(MFILE));
+    if (f == NULL) {
+        return NULL;
+    }
+    f->unk0 = bsize;
+    f->size = 0;
+    f->off = 0;
+    f->first = MEM_malloc(NULL, bsize + 0x10);
+    if (f->first == NULL) {
+        MEM_free(NULL, f);
+        return NULL;
+    }
+    f->first->len = 0;
+    f->first->flag = 1;
+    f->cur = f->first;
+    UTL_initqueue(&f->q);
+    UTL_enqueue(&f->q, &f->first->q);
+    return f;
+}
 
 int UTL_mfiledelete(MFILE *f) {
     void *b;
@@ -439,7 +461,25 @@ int UTL_mfilegetc(void *f) {
     return c;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/url", UTL_mfileclean);
+void UTL_mfileclean(MFILE *f) {
+    MBLOCK *b;
+    MBLOCK *n;
+
+    for (b = (MBLOCK *)UTL_peekqueue(&f->q, NULL); b != NULL && f->cur != b; b = (MBLOCK *)UTL_peekqueue(&f->q, &b->q)) {
+        if (b->flag == 1) {
+            n = MEM_malloc(NULL, sizeof(MBLOCK));
+            if (n == NULL) {
+                return;
+            }
+            *n = *b;
+            UTL_insqueue(&f->q, &b->q, &n->q);
+            UTL_relqueue(&f->q, &b->q);
+            MEM_free(NULL, b);
+            b = n;
+            b->flag = 0;
+        }
+    }
+}
 
 int UTL_mfileputc(void *f, int c) {
     u8 ch;
@@ -475,7 +515,26 @@ int UTL_mfilepos(MFILE *f) {
     return pos;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/url", UTL_mfileseek);
+void UTL_mfileseek(MFILE *f, int pos) {
+    MBLOCK *b;
+    int len;
+
+    if (pos < 0) {
+        pos = 0;
+    }
+    f->cur = (MBLOCK *)UTL_peekqueue(&f->q, NULL);
+    while (f->cur->len < pos) {
+        len = f->cur->len;
+        pos -= len;
+        b = (MBLOCK *)UTL_peekqueue(&f->q, &f->cur->q);
+        if (b == NULL) {
+            pos = len;
+            break;
+        }
+        f->cur = b;
+    }
+    f->off = pos;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/url", UTL_mfileduplicate);
 
