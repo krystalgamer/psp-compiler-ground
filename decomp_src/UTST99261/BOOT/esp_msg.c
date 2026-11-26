@@ -1,8 +1,7 @@
 /* cflags: -O1 */
 #include "common.h"
+#include "dom_esp.h"
 #include "m2c_macros.h"
-M2C_UNK MEM_free(M2C_UNK, void *);                  /* extern */
-void *MEM_malloc(M2C_UNK, int);                     /* extern */
 
 
 #ifndef NULL
@@ -31,43 +30,325 @@ void *cnvExtSchemeSelected(void *arg0) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/esp_msg", esp_msgThread);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/esp_msg", esp_setupPointerDeviceMessage);
+int esp_setupPointerDeviceMessage(EspMsg *m, int type, int x, int y, int btn, int time) {
+    EspDevEvent *e;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/esp_msg", esp_setupKeyDeviceMessage);
+    e = MEM_malloc(0, 0x14);
+    if (e == NULL) {
+        m->data = NULL;
+        return -1;
+    }
+    m->cmd = 4;
+    m->arg = 0;
+    m->len = 0x14;
+    m->data = e;
+    *(short *)e = type;
+    ((int *)e)[1] = time;
+    ((int *)e)[2] = x;
+    ((int *)e)[3] = y;
+    ((short *)e)[8] = btn;
+    return 0;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/esp_msg", esp_postMessage);
+int esp_setupKeyDeviceMessage(EspMsg *m, int type, int key, int mod, int time) {
+    EspDevEvent *e;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/esp_msg", esp_postMsgInit);
+    e = MEM_malloc(0, 0x14);
+    if (e == NULL) {
+        m->data = NULL;
+        return -1;
+    }
+    m->cmd = 4;
+    m->arg = 0;
+    m->len = 0x14;
+    m->data = e;
+    *(short *)e = type;
+    ((int *)e)[1] = time;
+    ((short *)e)[4] = key;
+    ((short *)e)[5] = mod;
+    return 0;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/esp_msg", esp_postMsgQuit);
+int esp_postMessage(int q, EspMsg *m) {
+    if (OS_mq_send(q, m, sizeof(EspMsg), 0) < 0) {
+        return -1;
+    }
+    return 0;
+}
+
+int esp_postMsgInit(int q, void *a) {
+    EspMsg m;
+
+    m.x00 = 0;
+    m.x08 = 0;
+    m.x0C = 0;
+    m.arg = 0;
+    m.x18 = 0;
+    m.len = 0;
+    m.src = 1;
+    m.cmd = 0;
+    m.data = a;
+    return esp_postMessage(q, &m);
+}
+
+int esp_postMsgQuit(int q) {
+    EspMsg m;
+
+    m.x00 = 0;
+    m.x08 = 0;
+    m.x0C = 0;
+    m.arg = 0;
+    m.x18 = 0;
+    m.len = 0;
+    m.data = NULL;
+    m.src = 1;
+    m.cmd = 1;
+    return esp_postMessage(q, &m);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/esp_msg", esp_postMsgLoadPage);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/esp_msg", esp_postMsgSubmitForm);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/esp_msg", esp_postMsgRepaint);
+int esp_postMsgRepaint(int q) {
+    EspMsg m;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/esp_msg", esp_postMsgDeviceEvent);
+    m.x00 = 0;
+    m.x08 = 0;
+    m.x0C = 0;
+    m.arg = 0;
+    m.x18 = 0;
+    m.len = 0;
+    m.data = NULL;
+    m.src = 1;
+    m.cmd = 3;
+    return esp_postMessage(q, &m);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/esp_msg", esp_postMsgStop);
+int esp_postMsgDeviceEvent(int q, void *a) {
+    EspMsg m;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/esp_msg", esp_postMsgFindString);
+    m.x00 = 0;
+    m.x08 = 0;
+    m.x0C = 0;
+    m.arg = 0;
+    m.x18 = 0;
+    m.src = 1;
+    m.cmd = 4;
+    m.len = 0x14;
+    m.data = a;
+    return esp_postMessage(q, &m);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/esp_msg", esp_postMsgDataAttr);
+int esp_postMsgStop(int q) {
+    EspMsg m;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/esp_msg", esp_postMsgSaveURL);
+    m.x00 = 0;
+    m.x08 = 0;
+    m.x0C = 0;
+    m.arg = 0;
+    m.x18 = 0;
+    m.len = 0;
+    m.data = NULL;
+    m.src = 1;
+    m.cmd = 5;
+    return esp_postMessage(q, &m);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/esp_msg", esp_postMsgTitle);
+int esp_postMsgFindString(int q, int dir, int flags, char *str) {
+    EspMsg m;
+    int size;
+    short *d;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/esp_msg", esp_postMsgConfigChanged);
+    size = strlen(str) + 0x11;
+    d = MEM_malloc(0, size);
+    if (d == NULL) {
+        return -1;
+    }
+    d[0] = 0;
+    d[1] = flags;
+    d[2] = dir;
+    ((int *)d)[2] = strlen(str);
+    ((int *)d)[3] = (int)(d + 8);
+    strcpy((char *)(d + 8), str);
+    m.x00 = 0;
+    m.x08 = 0;
+    m.x0C = 0;
+    m.arg = 0;
+    m.x18 = 0;
+    m.src = 1;
+    m.cmd = 6;
+    m.len = size;
+    m.data = d;
+    return esp_postMessage(q, &m);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/esp_msg", esp_postMsgFreeScroll);
+int esp_postMsgDataAttr(int q, int a, int b, int c) {
+    EspMsg m;
+    int *d;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/esp_msg", esp_postMsgEditMenu);
+    m.x00 = 0;
+    m.x08 = 0;
+    m.x0C = 0;
+    m.arg = 0;
+    m.x18 = 0;
+    m.len = 0;
+    m.data = NULL;
+    m.src = 1;
+    m.cmd = 0xA;
+    d = MEM_malloc(0, 0xC);
+    if (d == NULL) {
+        return -1;
+    }
+    d[0] = a;
+    d[1] = b;
+    d[2] = c;
+    m.len = 0xC;
+    m.data = d;
+    return esp_postMessage(q, &m);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/esp_msg", esp_postMsgDeleteCookie);
+int esp_postMsgSaveURL(int q, char *url, int x) {
+    EspMsg m;
+    int size;
+    int *d;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/esp_msg", esp_postMsgInputData);
+    m.x00 = 0;
+    m.x08 = 0;
+    m.x0C = 0;
+    m.arg = 0;
+    m.x18 = 0;
+    m.len = 0;
+    m.data = NULL;
+    m.src = 1;
+    m.cmd = 0xB;
+    size = strlen(url) + 0xD;
+    d = MEM_malloc(0, size);
+    if (d == NULL) {
+        return -1;
+    }
+    d[0] = 0;
+    d[1] = (int)(d + 3);
+    strcpy((char *)(d + 3), url);
+    d[2] = x;
+    m.len = size;
+    m.data = d;
+    return esp_postMessage(q, &m);
+}
+
+int esp_postMsgTitle(int q) {
+    EspMsg m;
+
+    m.x00 = 0;
+    m.x08 = 0;
+    m.x0C = 0;
+    m.arg = 0;
+    m.x18 = 0;
+    m.len = 0;
+    m.data = NULL;
+    m.src = 1;
+    m.cmd = 12;
+    return esp_postMessage(q, &m);
+}
+
+int esp_postMsgConfigChanged(int q) {
+    EspMsg m;
+
+    m.x00 = 0;
+    m.x08 = 0;
+    m.x0C = 0;
+    m.arg = 0;
+    m.x18 = 0;
+    m.len = 0;
+    m.data = NULL;
+    m.src = 1;
+    m.cmd = 13;
+    return esp_postMessage(q, &m);
+}
+
+int esp_postMsgFreeScroll(int q, int a) {
+    EspMsg m;
+
+    m.x00 = 0;
+    m.x08 = 0;
+    m.x0C = 0;
+    m.x18 = 0;
+    m.len = 0;
+    m.data = NULL;
+    m.src = 1;
+    m.cmd = 15;
+    m.arg = a;
+    return esp_postMessage(q, &m);
+}
+
+int esp_postMsgEditMenu(int q, int op, char *str) {
+    EspMsg m;
+    int len;
+    char *p;
+
+    m.x00 = 0;
+    m.x08 = 0;
+    m.x0C = 0;
+    m.x18 = 0;
+    m.len = 0;
+    m.data = NULL;
+    m.src = 1;
+    m.cmd = 0x30;
+    m.arg = op;
+    if (op == 0 && str != NULL) {
+        len = strlen(str);
+        p = MEM_malloc(0, len + 1);
+        if (p == NULL) {
+            return -1;
+        }
+        strcpy(p, str);
+        m.len = len + 1;
+        m.data = p;
+    }
+    return esp_postMessage(q, &m);
+}
+
+int esp_postMsgDeleteCookie(int q) {
+    EspMsg m;
+
+    m.x00 = 0;
+    m.x08 = 0;
+    m.x0C = 0;
+    m.arg = 0;
+    m.x18 = 0;
+    m.len = 0;
+    m.data = NULL;
+    m.src = 1;
+    m.cmd = 51;
+    return esp_postMessage(q, &m);
+}
+
+int esp_postMsgInputData(int q, char *str) {
+    EspMsg m;
+    int size;
+    int *d;
+
+    size = 8;
+    if (str != NULL) {
+        size = strlen(str) + 9;
+    }
+    d = MEM_malloc(0, size);
+    if (d == NULL) {
+        return -1;
+    }
+    d[0] = str != NULL ? strlen(str) + 1 : 0;
+    memcpy(d + 1, str, d[0]);
+    m.x00 = 0;
+    m.x08 = 0;
+    m.x0C = 0;
+    m.arg = 0;
+    m.x18 = 0;
+    m.src = 1;
+    m.cmd = 0x36;
+    m.len = size;
+    m.data = d;
+    return esp_postMessage(q, &m);
+}
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/esp_msg", D_00133C84);
 
