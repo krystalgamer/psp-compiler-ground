@@ -52,7 +52,23 @@ char *index(const char *ss, int cc)
 	}
 }
 
-INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/string", rindex);
+char *rindex(const char *ss, int cc)
+{
+	char *s = (char *)ss;
+	char c = cc;
+	char *w;
+
+	if (s == NULL)
+		return NULL;
+	while (*s++)
+		;
+	s--;
+	do {
+		if (*s == c)
+			return s;
+	} while (ss < s--);
+	return NULL;
+}
 
 SceSize strlen(const char *ss)
 {
@@ -87,9 +103,37 @@ char *strncat(char *dest, const char *src, SceSize nn)
 	return dest;
 }
 
-INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/string", strncmp);
+int strncmp(const char *s1, const char *s2, SceSize nn)
+{
+	int n = nn;
 
-INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/string", strncasecmp);
+	if (s1 == NULL || s2 == NULL) {
+		if (s1 == s2)
+			return 0;
+		return (s1 == NULL) ? -1 : 1;
+	}
+	while (--n >= 0 && *s1 == *s2++) {
+		if (*s1++ == '\0')
+			return 0;
+	}
+	return (n < 0) ? 0 : *s1 - s2[-1];
+}
+
+int strncasecmp(const char *s1, const char *s2, SceSize nn)
+{
+	int n = nn;
+
+	if (s1 == NULL || s2 == NULL) {
+		if (s1 == s2)
+			return 0;
+		return (s1 == NULL) ? -1 : 1;
+	}
+	while (--n >= 0 && tolower(*s1) == tolower(*s2++)) {
+		if (*s1++ == '\0')
+			return 0;
+	}
+	return (n < 0) ? 0 : tolower(*s1) - tolower(s2[-1]);
+}
 
 char *strncpy(char *dest, const char *src, SceSize nn)
 {
@@ -157,7 +201,23 @@ char *strpbrk(const char *s1, const char *s2)
 	return NULL;
 }
 
-INCLUDE_ASM("tmp/asm/umdt/graphics_model/nonmatchings/string", strrchr);
+char *strrchr(const char *ss, int cc)
+{
+	char *s = (char *)ss;
+	char c = cc;
+	char *w;
+
+	if (s == NULL)
+		return NULL;
+	while (*s++)
+		;
+	s--;
+	do {
+		if (*s == c)
+			return s;
+	} while (ss < s--);
+	return NULL;
+}
 
 int strspn(const char *s1, const char *s2)
 {
