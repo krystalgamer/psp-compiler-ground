@@ -591,7 +591,71 @@ static int func_0001ED14(short *dst, unsigned char *src, int *h1, int *h2)
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libwave", func_0001ED14);
 #endif
 
+#ifdef NON_MATCHING
+/* Three instructions long: one-shot (0), loop (1, restart at unk10, loop point marked
+ * by flag 6 / end by flag 3) and stop-at-end (2) VAG voice blocks; the copy loops and
+ * register use differ. */
+static void func_0001EE58(int ch, void *dst)
+{
+	unsigned char *data = D_00562174[ch].data;
+	SceWaveVoice *v;
+	unsigned char *buf;
+	int i, r;
+
+	wclr(dst, 0x70);
+	v = &D_00562174[ch];
+	switch ((unsigned char)v->flags) {
+	case 0:
+		if ((int)v->size < v->pos + 16) {
+			v->stat = 0;
+			v->pos = 0;
+			return;
+		}
+		buf = D_00562640;
+		for (i = 0; i < 16; i++)
+			buf[i] = data[v->pos + i];
+		D_00562174[ch].pos += 16;
+		func_0001ED14(dst, D_00562640, &D_00562174[ch].unk30, &D_00562174[ch].unk34);
+		return;
+	case 1:
+		if ((int)v->size < 16)
+			return;
+		if ((int)v->size < v->pos + 16) {
+			D_00562174[ch].pos = D_00562174[ch].unk10;
+			for (i = 0; i < 16; i++)
+				((unsigned char *)D_00562640)[i] = data[D_00562174[ch].pos + i];
+		} else {
+			for (i = 0; i < 16; i++)
+				((unsigned char *)D_00562640)[i] = data[v->pos + i];
+		}
+		break;
+	case 2:
+		if ((int)v->size < 16)
+			return;
+		if ((int)v->size < v->pos + 16) {
+			v->stat = 0;
+			v->pos = 0;
+			return;
+		}
+		for (i = 0; i < 16; i++)
+			((unsigned char *)D_00562640)[i] = data[v->pos + i];
+		break;
+	default:
+		return;
+	}
+	r = func_0001ED14(dst, D_00562640, &D_00562174[ch].unk30, &D_00562174[ch].unk34);
+	if (r == 3) {
+		D_00562174[ch].unk14 = D_00562174[ch].pos;
+		D_00562174[ch].pos = D_00562174[ch].unk10;
+	} else if (r == 6) {
+		D_00562174[ch].unk10 = D_00562174[ch].pos;
+		D_00562174[ch].pos += 16;
+	} else
+		D_00562174[ch].pos += 16;
+}
+#else
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libwave", func_0001EE58);
+#endif
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libwave", func_0001F0F4);
 
