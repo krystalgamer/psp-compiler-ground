@@ -462,7 +462,29 @@ void delLLISTByHistoryTree(LLIST *list, LHIST *root) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_image", countRequestedLLIST);
+int countRequestedLLIST(LLIST *list, int doc) {
+    LNODE *n;
+    int i;
+    int count;
+
+    if (list == NULL) {
+        return 0;
+    }
+    n = list->head;
+    if (n == NULL) {
+        return 0;
+    }
+    for (i = 0, count = 0; i < list->count; i++) {
+        if (n->doc == doc) {
+            count++;
+        }
+        n = n->next;
+        if (n == NULL) {
+            break;
+        }
+    }
+    return count;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_image", msgBranch);
 
