@@ -15,6 +15,8 @@ extern template unsigned short *fill_n(unsigned short *, unsigned int, const uns
 
 /* static in WaterPatch.cpp; stays in the module's .bss (asm) */
 extern unsigned int mipmap_offset[5];
+/* set_disk's `static int seed` */
+extern int set_disk_seed __asm__("_ZZN10WaterPatch8set_diskEN4math11vector_xyzwEfffE4seed");
 
 /* the strings stay in the module's .rodata (asm) */
 extern const char D_0015DB64[];     /* " *** error " */
@@ -71,7 +73,22 @@ bool WaterPatch::setf(float x, float y, float v)
     return set((int)(x * _nx), (int)(y * _ny), v);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/WaterPatch", _ZN10WaterPatch8set_diskEN4math11vector_xyzwEfff);
+float WaterPatch::set_disk(math::vector_xyzw c, float radius, float, float height)
+{
+    if (radius <= 0)
+        return 0;
+    int r = (int)(radius / _size);
+    if (r == 0)
+        r = 1;
+    int cx = (int)(c.x / _size + ((float)_nx - 1) * 0.5f);
+    int cy = (int)(c.y / _size + ((float)_ny - 1) * 0.5f);
+    set_disk_seed++;
+    for (int i = -r; i <= r; i++)
+        for (int j = -r; j <= r; j++)
+            if (i * i + j * j <= r * r)
+                set(cx + i, cy + j, height);
+    return 0;
+}
 
 bool WaterPatch::set(unsigned int x, unsigned int y, float v)
 {

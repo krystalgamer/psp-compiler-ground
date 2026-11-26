@@ -28,6 +28,9 @@ void glMultMatrixf(const GLfloat *);
 void glScalef(GLfloat, GLfloat, GLfloat);
 void glDisable(GLenum);
 void glEnable(GLenum);
+void glBlendFunc(GLenum, GLenum);
+void glPushAttrib(unsigned int);
+void glPopAttrib(void);
 void glBegin(GLenum);
 void glEnd(void);
 void glColor3f(GLfloat, GLfloat, GLfloat);
@@ -72,7 +75,13 @@ struct T2UB_V3F {
 };
 }
 
-extern "C" void *sceGeEdramGetAddr(void);
+extern "C" {
+#include "psptypes.h"
+#include "libgu.h"
+#include "libgum.h"
+void *sceGeEdramGetAddr(void);
+void sceGuTexLevelMode(unsigned int mode, float bias);
+}
 
 namespace psp {
 enum PixelFormat { };
@@ -101,7 +110,7 @@ public:
     ~WaterPatch();
     void reset();
     bool setf(float, float, float);
-    void set_disk(math::vector_xyzw, float, float, float);
+    float set_disk(math::vector_xyzw, float, float, float);
     bool set(unsigned int, unsigned int, float);
     void idle(float);
     void drawAsPlane(bool) const;
