@@ -1,13 +1,31 @@
 /* cflags: -O1 */
 #include "common.h"
 #include "m2c_macros.h"
+typedef struct JsBuf {
+    unsigned char *cur;
+    unsigned char *end;
+} JsBuf;
 M2C_UNK MEM_free(M2C_UNK, int);                     /* extern */
 M2C_UNK mes_eval(int, int, int, int, int);          /* extern */
 M2C_UNK mes_stack_init(M2C_UNK);                    /* extern */
 M2C_UNK mes_window_set_global_property(int);        /* extern */
 
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/js_common", js_common_buffer_open);
+JsBuf *js_common_buffer_open(unsigned char *p, int len) {
+    JsBuf *b;
+
+    b = MEM_malloc(0, sizeof(JsBuf));
+    if (b != NULL) {
+        if (p == NULL || len == 0) {
+            b->cur = NULL;
+            b->end = NULL;
+        } else {
+            b->cur = p;
+            b->end = p + len - 1;
+        }
+    }
+    return b;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -17,7 +35,12 @@ void js_common_buffer_close(int arg0) {
     MEM_free(0, arg0);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/js_common", js_common_buffer_getc);
+int js_common_buffer_getc(JsBuf *b) {
+    if (b->cur != NULL && b->cur <= b->end) {
+        return *b->cur++;
+    }
+    return -1;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
