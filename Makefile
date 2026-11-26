@@ -67,7 +67,7 @@ $(BUILD)/%.bin.o: %.bin
 
 $(BUILD)/%.c.o: %.c $(UNITS)
 	@mkdir -p $(@D)
-	$$(u=$$(grep -oP '^/\* upstream: \K(newlib|libgcc)' $<) && echo tools/$${u/newlib/nl}cpp.sh || echo '$(CPP) $(CPPFLAGS)') $< | $(call cc1_of,$<) $$(grep -oP "cflags: \K-O[0-3s](?: -(?:[fm][\w-]+|std)(?:=[\w.:]+)?)*" $< || echo -O2) $(CFLAGS) -o $(BUILD)/$*.c.s
+	$$(u=$$(grep -oP '^/\* upstream: \K(newlib|libgcc)' $<) && echo tools/$${u/newlib/nl}cpp.sh || echo '$(CPP) $(CPPFLAGS) -MMD -MF $(BUILD)/$*.c.d -MT $@') $< | $(call cc1_of,$<) $$(grep -oP "cflags: \K-O[0-3s](?: -(?:[fm][\w-]+|std)(?:=[\w.:]+)?)*" $< || echo -O2) $(CFLAGS) -o $(BUILD)/$*.c.s
 	[ -z "$$($(PYTHON) tools/compiler.py --locfix $(TARGET) $(MODULE) $(call unit_of,$<))" ] || $(PYTHON) tools/locfix.py $(BUILD)/$*.c.s
 	$(call as_of,$<) -EL -G0 -Iinclude -o $@ $(BUILD)/$*.c.s
 	$(PYTHON) tools/fix_old_gas.py --text-align $$(grep -oP "text-align: \K[0-9]+" $< || echo 4) --data-align $$(grep -oP "data-align: \K[0-9]+" $< || echo 4) $@
@@ -83,3 +83,6 @@ clean:
 
 distclean:
 	rm -rf tmp/build tmp/asm tmp/assets
+
+# header dependencies of the C units (cpp -MMD)
+-include $(patsubst %.c.o,%.c.d,$(filter %.c.o,$(O_FILES)))
