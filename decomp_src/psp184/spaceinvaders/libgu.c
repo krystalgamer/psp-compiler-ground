@@ -481,7 +481,17 @@ void sceGuBeginObject(int vtype, int count, const void *indices, const void *ver
 	send_commandi(9, 0);
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", sceGuEndObject);
+void sceGuEndObject(void)
+{
+	unsigned int *current = pList->current;
+
+	pList->current = p_bbox[n_bbox - 1];
+	send_commandi(16, (((unsigned int)current) >> 8) & 0xf0000);
+	send_commandi(9, ((unsigned int)current) & 0xffffff);
+	pList->current = current;
+	sceGeListUpdateStallAddr(queid[0], current);
+	n_bbox--;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", sceGuDrawSprite);
 
@@ -615,7 +625,16 @@ void sceGuPatchDivide(int ulevel, int vlevel)
 	send_commandi(54, ((vlevel << 8) | ulevel));
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", sceGuPatchPrim);
+void sceGuPatchPrim(int prim);
+void sceGuPatchPrim(int prim)
+{
+	if (prim == 4)
+		send_commandi(55, 0);
+	else if (prim == 2)
+		send_commandi(55, 1);
+	else if (prim == 0)
+		send_commandi(55, 2);
+}
 
 void sceGuAmbient(unsigned int color);
 void sceGuAmbient(unsigned int color)

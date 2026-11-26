@@ -133,4 +133,39 @@ SceInt32 avsync_video_getPts(t_avSyncControl *pAvSync, SceUInt32 *pPts)
 	return ret;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/mpeg/avsync", avsync_Compare);
+int dispbuf_getCurrentCount(t_displayBuffer *pDisp);
+int dispbuf_getPts(t_displayBuffer *pDisp, unsigned int *pPts);
+int soundbuf_getCurrentCount(t_soundBuffer *pSound);
+int soundbuf_getPts(t_soundBuffer *pSound, unsigned int *pPts);
+SceInt32 avsync_Compare(t_avSyncControl *pAvSync)
+{
+	SceInt32 ret;
+	SceInt32 ptsDiff;
+	SceUInt32 soundPts, videoPts;
+
+	if (pAvSync->pSound == NULL) {
+		ret = 1;
+		goto term;
+	}
+
+	if (soundbuf_getCurrentCount(pAvSync->pSound) == 0 || dispbuf_getCurrentCount(pAvSync->pDisp) == 0) {
+		ret = 1;
+		goto term;
+	}
+
+	soundbuf_getPts(pAvSync->pSound, &soundPts);
+	dispbuf_getPts(pAvSync->pDisp, &videoPts);
+
+	ptsDiff = soundPts - videoPts;
+
+	if (ptsDiff >= -(videoIntervalSize * 2) && ptsDiff <= videoIntervalSize * 2) {
+		ret = 1;
+	} else {
+		if (ptsDiff > videoIntervalSize * 2)
+			ret = 2;
+		else
+			ret = 3;
+	}
+term:
+	return ret;
+}
