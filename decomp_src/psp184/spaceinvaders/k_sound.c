@@ -51,6 +51,12 @@ int sceAtracGetNextDecodePosition(int id, int *pos);
 int sceAtracGetSoundSample(int id, int *end, int *loopStart, int *loopEnd);
 void psp_free(void *p);
 
+extern char D_0007AB1C[];
+int sceKernelCreateThread(const char *name, void *entry, int prio, int stack, int attr, void *opt);
+int sceKernelStartThread(int thid, int argsize, void *argp);
+int sceCtrlSetSamplingCycle(int cycle);
+int play_atrac3plus(int args, void *argp);
+
 static int load_module(char *path, SceKernelLMOption *opt, int flags)
 {
 	int mid;
@@ -234,7 +240,29 @@ void sound_relece(void)
 	sound_block_max = 0;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/k_sound", sound_start);
+extern char D_0007AB1C[];
+int sceKernelCreateThread(const char *name, void *entry, int prio, int stack, int attr, void *opt);
+int sceKernelStartThread(int thid, int argsize, void *argp);
+int sceCtrlSetSamplingCycle(int cycle);
+int play_atrac3plus(int args, void *argp);
+int sound_start(int no)
+{
+	if (sound_start_flag == 1)
+		sound_stop();
+	next_sound_block_no = -1;
+	iFadeOutFlag = 0;
+	sound_block_no = no;
+	if (init_atrac3plus((void *)sd[no].f0, sd[no].f4, 0, &playArg) < 0)
+		return -1;
+	thid = sceKernelCreateThread(D_0007AB1C, play_atrac3plus, 0x10, 0x10000, 0, 0);
+	if (thid < 0)
+		return -1;
+	if (sceKernelStartThread(thid, 0xC, &playArg) != 0)
+		return -1;
+	sceCtrlSetSamplingCycle(0);
+	sound_start_flag = 1;
+	return 0;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/k_sound", sound_stop);
 
