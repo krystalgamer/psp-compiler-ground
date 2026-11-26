@@ -129,16 +129,70 @@ extern int net_num;
 extern int net_pause;
 extern int net_timeerror;
 int pad_sw(void);
-void utility_update(void);
 int net_update(void);
 int net_gamecomm_packinit(void);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_netmain", win_init);
+typedef struct { int f[10]; } WIN_T;
+extern WIN_T win[4];
+extern int D_0039AE3C;
+void utility_update_netconf(void);
+void utility_update_msgdialog(void);
+void psp_loopstart(void);
+void psp_loopend(void);
+int sceGuSync(int mode, int what);
+void game_net_term(void);
+int _net_term(void);
+int sceNetAdhocctlGetState(int *state);
+int net_lobbysub(void);
+int matching_get_established_num(void);
+
+extern WIN_T win[4];
+extern int D_0039AE3C;
+void utility_update_netconf(void);
+void utility_update_msgdialog(void);
+void psp_loopstart(void);
+void psp_loopend(void);
+int sceGuSync(int mode, int what);
+void game_net_term(void);
+int _net_term(void);
+int sceNetAdhocctlGetState(int *state);
+int net_lobbysub(void);
+int matching_get_established_num(void);
+void win_init(void)
+{
+	int i;
+
+	for (i = 0; i < 4; i++) {
+
+		win[i].f[0] = 0;
+		win[i].f[6] = 0;
+		win[i].f[9] = 0;
+		win[i].f[1] = 0;
+		win[i].f[2] = 0;
+		win[i].f[5] = 1;
+		win[i].f[8] = 0;
+		win[i].f[7] = 1;
+		win[i].f[3] = 0;
+		win[i].f[4] = 0;
+
+	}
+}
 
 void gu_init(void) {
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_netmain", utility_update);
+void utility_update(void)
+{
+	switch ((int)_mrinfo.state) {
+	case 5:
+	case 8:
+		utility_update_netconf();
+		break;
+	case 10:
+		utility_update_msgdialog();
+		break;
+	}
+}
 
 void change_state(enum matching_room_state state) {
     if (state != MATCHING_ROOM_ROOM_LIST) {
@@ -182,7 +236,6 @@ extern int net_num;
 extern int net_pause;
 extern int net_timeerror;
 int pad_sw(void);
-void utility_update(void);
 int net_update(void);
 int net_gamecomm_packinit(void);
 void net_core(void)
@@ -191,11 +244,34 @@ void net_core(void)
 	net_update();
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_netmain", net_term);
+void net_term(void)
+{
+	int state;
+
+	sceNetAdhocctlGetState(&state);
+	change_state(17);
+	do {
+		psp_loopstart();
+		psp_loopend();
+		net_gamecomm_pack();
+	} while (_mrinfo.state != 0);
+	game_net_term();
+	_net_term();
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_netmain", net_lobbysub);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_netmain", net_lobby);
+int net_lobby(void)
+{
+	int ret;
+
+	ret = net_lobbysub();
+	if (ret == 1)
+		return 1;
+	if (ret == 2)
+		return 2;
+	return 1;
+}
 
 int net_gamecomm_pack(void)
 {
@@ -205,7 +281,19 @@ int net_gamecomm_pack(void)
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_netmain", net_gamecomm_packinit);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_netmain", net_gamecomm_packend);
+int net_gamecomm_packend(void)
+{
+	if (net_errorget() == 2) {
+		do {
+			psp_loopstart();
+			sceGuSync(0, 0);
+			net_gamecomm_pack();
+			psp_loopend();
+		} while (_mrinfo.state != 0);
+		return 1;
+	}
+	return _mrinfo.state == 0;
+}
 
 int net_mynumget(void)
 {
@@ -259,7 +347,12 @@ int net_pauseget(void)
 	return net_pause;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_netmain", net_entryget);
+int net_entryget(void)
+{
+	if (D_0039AE3C)
+		return matching_get_established_num();
+	return 0;
+}
 
 int net_timeerrorget(void)
 {
