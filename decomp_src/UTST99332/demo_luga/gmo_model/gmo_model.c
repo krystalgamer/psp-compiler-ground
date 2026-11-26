@@ -253,7 +253,21 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/gmo_model/gmo_model", sceG
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/gmo_model/gmo_model", sceGmoModelDuplicate);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/gmo_model/gmo_model", sceGmoModelLoadFile);
+_Bool sceGmoModelLoadFile( SceGmoModel *model, const void *buf, int size, int index )
+{
+ if ( model == 0 ) return 0 ;
+ if ( buf == 0 ) return 0 ;
+
+ if ( !sceGmoModelCheckFileHeader( buf, size ) ) return 0 ;
+
+ SceGmoChunk *chunk = sceGmoModelGetChunk( buf, size, index ) ;
+ if ( chunk == 0 ) {
+  ;
+  return 0 ;
+ }
+ ;
+ return sceGmoModelLoad( model, chunk ) ;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/gmo_model/gmo_model", sceGmoModelLoad);
 

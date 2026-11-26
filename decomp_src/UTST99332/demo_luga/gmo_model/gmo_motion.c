@@ -264,7 +264,12 @@ SceGmoModel *sceGmoMotionGetParent(SceGmoMotion *motion) {
 }
 /* Warning: struct SceGimPicture is not defined (only forward-declared) */
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/gmo_model/gmo_motion", sceGmoMotionSetFrameLoop);
+void sceGmoMotionSetFrameLoop( SceGmoMotion *motion, float start, float end )
+{
+ if ( motion == 0 ) return ;
+ motion->m_frame_loop[ 0 ] = start ;
+ motion->m_frame_loop[ 1 ] = end ;
+}
 
 float *sceGmoMotionGetFrameLoop(SceGmoMotion *motion) {
     return (motion == NULL) ? NULL : motion->m_frame_loop;

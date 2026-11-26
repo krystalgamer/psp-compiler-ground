@@ -296,7 +296,14 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/gmo_model/gmo_part", sceGm
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/gmo_model/gmo_part", sceGmoMeshLoad);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/gmo_model/gmo_part", sceGmoMeshUnload);
+void sceGmoMeshUnload( SceGmoMesh *mesh )
+{
+ if ( mesh == 0 ) return ;
+
+ mesh->m_chunk = 0 ;
+ mesh->m_blend_subset = 0 ;
+ mesh->m_n_blend_subset = 0 ;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/gmo_model/gmo_part", sceGmoMeshDraw);
 
