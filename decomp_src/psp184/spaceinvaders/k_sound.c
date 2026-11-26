@@ -156,7 +156,37 @@ void release_at3playArgID(int *arg0) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/k_sound", sound_init);
+int sceWaveInit(void);
+int sceWaveStart(int n);
+int sound_init(void)
+{
+	int i;
+
+	sound_start_flag = 0;
+	sound_start_flag1 = 0;
+	sound_block_max = 0;
+	sound_block_no = -1;
+	next_sound_block_no = -1;
+	sound_block_no1 = -1;
+	next_sound_block_no1 = -1;
+	sound_volume = 0x8000;
+	sound1_volume = 0x8000;
+	for (i = 0; i != 50; i++) {
+		sd[i].f0 = 0;
+		sd[i].f4 = -1;
+		sd[i].f8 = 0;
+	}
+	if (loadModuleAt3plus() < 0)
+		return -1;
+	if (sceWaveInit() != 0) {
+		if (unloadModuleAt3plus() < 0)
+			return -1;
+	}
+	if (sceWaveStart(16) != 0)
+		return -1;
+	se_play_no = 0;
+	return 0;
+}
 
 int sound_init2(void)
 {
@@ -181,47 +211,42 @@ int sound_init2(void)
 void sound_close(void) {
 }
 
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/k_sound", D_0007A97C);
+int LoadFile(char *name, int *size);
+int sprintf(char *buf, const char *fmt, ...);
+void sound_load(int no)
+{
+	char buf[112];
+	char *name[19] = {
+		"match_up.at3",
+		"classic_01.at3",
+		"classic_02.at3",
+		"classic_03.at3",
+		"classic_04.at3",
+		"classic_05.at3",
+		"classic_06.at3",
+		"classic_07.at3",
+		"totalresult.at3",
+		"opening.at3",
+		"intro_chapter.at3",
+		"startravel01.at3",
+		"startravel02.at3",
+		"startravel03.at3",
+		"startravel04.at3",
+		"startravel05.at3",
+		"startravel06.at3",
+		"startravel07.at3",
+		"endroll.at3",
+	};
+	int i;
 
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/k_sound", D_0007A98C);
-
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/k_sound", D_0007A99C);
-
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/k_sound", D_0007A9AC);
-
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/k_sound", D_0007A9BC);
-
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/k_sound", D_0007A9CC);
-
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/k_sound", D_0007A9DC);
-
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/k_sound", D_0007A9EC);
-
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/k_sound", D_0007A9FC);
-
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/k_sound", D_0007AA0C);
-
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/k_sound", D_0007AA18);
-
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/k_sound", D_0007AA2C);
-
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/k_sound", D_0007AA40);
-
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/k_sound", D_0007AA54);
-
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/k_sound", D_0007AA68);
-
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/k_sound", D_0007AA7C);
-
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/k_sound", D_0007AA90);
-
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/k_sound", D_0007AAA4);
-
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/k_sound", D_0007AAB8);
-
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/k_sound", D_0007AAC4);
-
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/k_sound", sound_load);
+	bgm_bind_load = 0;
+	sound_block_max = 1;
+	for (i = 0; i != sound_block_max; i++) {
+		sprintf(buf, "music/%s", name[no]);
+		sd[i].f0 = LoadFile(buf, &sd[i].f4);
+		sd[i].f8 = 0;
+	}
+}
 
 void sound_relece(void)
 {
@@ -331,65 +356,58 @@ int next_sound_block_minus(void)
 
 INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/k_sound", D_0007AB1C);
 
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/k_sound", D_0007AB28);
+void *file_bind_addr(int bind, char *name);
+int file_bind_size(int bind, char *name);
+void se_load(void)
+{
+	char *name[28] = {
+		"select.vag",
+		"start.vag",
+		"beem.vag",
+		"hit.vag",
+		"owari.vag",
+		"ufo.vag",
+		"ufoend.vag",
+		"inv1_1.vag",
+		"inv1_2.vag",
+		"inv1_3.vag",
+		"inv1_4.vag",
+		"01.vag",
+		"02.vag",
+		"04.vag",
+		"05.vag",
+		"06.vag",
+		"07.vag",
+		"08.vag",
+		"10.vag",
+		"11.vag",
+		"12.vag",
+		"13.vag",
+		"sebeetshoot.vag",
+		"sebighitbomb.vag",
+		"08-2.vag",
+		"rock_on2.vag",
+		"ska.vag",
+		"",
+	};
+	int size;
+	int bind, i, j;
+	u8 *d;
 
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/k_sound", D_0007AB34);
+	bind = LoadFile("music/bind_se.dat", &size);
+	for (i = 0; i < 27; i++) {
+		void *p = file_bind_addr(bind, name[i]);
 
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/k_sound", D_0007AB40);
-
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/k_sound", D_0007AB4C);
-
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/k_sound", D_0007AB54);
-
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/k_sound", D_0007AB60);
-
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/k_sound", D_0007AB68);
-
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/k_sound", D_0007AB74);
-
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/k_sound", D_0007AB80);
-
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/k_sound", D_0007AB8C);
-
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/k_sound", D_0007AB98);
-
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/k_sound", D_0007ABA4);
-
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/k_sound", D_0007ABAC);
-
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/k_sound", D_0007ABB4);
-
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/k_sound", D_0007ABBC);
-
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/k_sound", D_0007ABC4);
-
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/k_sound", D_0007ABCC);
-
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/k_sound", D_0007ABD4);
-
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/k_sound", D_0007ABDC);
-
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/k_sound", D_0007ABE4);
-
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/k_sound", D_0007ABEC);
-
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/k_sound", D_0007ABF4);
-
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/k_sound", D_0007ABFC);
-
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/k_sound", D_0007AC0C);
-
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/k_sound", D_0007AC20);
-
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/k_sound", D_0007AC2C);
-
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/k_sound", D_0007AC3C);
-
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/k_sound", D_0007AC44);
-
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/k_sound", D_0007AC48);
-
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/k_sound", se_load);
+		if (p) {
+			((SE_T *)&se)[i].addr = (int)p;
+			((SE_T *)&se)[i].size = file_bind_size(bind, name[i]);
+			d = (u8 *)((SE_T *)&se)[i].addr;
+			for (j = 0; j != ((SE_T *)&se)[i].size - 0x30; j++)
+				d[j] = d[j + 0x30];
+			((SE_T *)&se)[i].size -= 0x30;
+		}
+	}
+}
 
 int sceAtracGetNextDecodePosition(int id, int *pos);
 int sceAtracGetSoundSample(int id, int *end, int *loopStart, int *loopEnd);
