@@ -436,4 +436,76 @@ static void sas_setting(void)
 	}
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/sound_ryukyu/nonmatchings/main", main);
+#define SAMPLES				(256)
+#define SCE_KERNEL_USER_HIGHEST_PRIORITY        16
+#define STACKSIZE			(4096)
+#define SCE_KERNEL_ERROR_OK    0x0
+#define SCE_OK							0
+
+int main(void)
+{
+	SceUID thid;
+	SceInt32 status;
+
+	menuInit();
+	if (sasload() < 0) {
+		return -1;
+	}
+
+
+	if (sceWaveInit() != SCE_OK){
+		printf("sceWaveInit error\n");
+		return -1;
+	}
+	sceWaveAudioSetSample(0,SAMPLES);
+
+	if (sceSasInit() != SCE_OK){
+		printf("sceSasInit error\n");
+		return -1;
+	}
+
+	sas_setting();
+
+	thid = sceKernelCreateThread("sas thread",sas_thread,SCE_KERNEL_USER_HIGHEST_PRIORITY,STACKSIZE,0,NULL);
+	if (thid < 0){
+		printf("sceKernelCreateThread:%08X\n",thid);
+		return -1;
+	}
+
+	status = sceKernelStartThread(thid,0,NULL);
+	if (status != SCE_KERNEL_ERROR_OK){
+		printf("sceKernelStartThread:%08X\n",status);
+		return -1;
+	}
+
+
+	init_all();
+	init_pos();
+
+	while (pad_read()) {
+		draw_frame();
+		sceDisplayWaitVblankStart();
+		sceGuSwapBuffers();
+	}
+	sceGuTerm();
+
+
+	iThreadExitFlag = !0;
+	status = sceKernelWaitThreadEnd(thid,NULL);
+	status = sceKernelDeleteThread(thid);
+	if (status != SCE_KERNEL_ERROR_OK){
+		printf("sceKernelDeleteThread: %08X\n",status);
+	}
+
+	if (sceSasExit() != SCE_OK){
+		printf("sceSasExit() error\n");
+	}
+	if (sceWaveExit() != SCE_OK){
+		printf("sceWaveExit() error\n");
+	}
+	if (sasunload() < 0) {
+		return -1;
+	}
+	menuTerm(4, 4);
+	return 0;
+}
