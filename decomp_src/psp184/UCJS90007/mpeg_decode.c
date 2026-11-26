@@ -131,8 +131,87 @@ SceInt32 decode_setStreamData(t_mpegStreamData *pStreamData, SceMpegStream *pStr
 	return 0;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/mpeg_decode", decode_audioDecode);
+SceInt32 decode_audioDecode(SceMpeg *pMpeg, t_mpegStreamData *pStreamData, t_avSyncControl *pAvSync, SceInt32 audio_init_flag)
+{
+	SceInt32 ret;
+	SceVoid *atracBody;
+	SceChar8 *pSoundBuf;
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/mpeg_decode", decode_videoDecode);
+	if (soundbuf_getCapacity(pAvSync->pSound) == 0) {
+		ret = 1;
+		goto term;
+	}
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/mpeg_decode", decode_videoDecodeEnd);
+	ret = sceMpegGetAtracAu(pMpeg, pStreamData->pAtracStream, pStreamData->pAtracAu, &atracBody);
+	if (ret != 0) {
+		goto term;
+	}
+
+	soundbuf_getDrawbuf(pAvSync->pSound, &pSoundBuf);
+
+	ret = sceMpegAtracDecode(pMpeg, pStreamData->pAtracAu, pSoundBuf, audio_init_flag);
+	if (ret != 0) 
+		goto term;
+
+	soundbuf_setPts(pAvSync->pSound, pStreamData->pAtracAu->pts.ts);
+
+	if (audio_init_flag == 0) {
+		soundbuf_setBuf(pAvSync->pSound);
+	}
+
+term:
+	return ret;
+}
+
+SceInt32 decode_videoDecode(SceMpeg *pMpeg, t_mpegStreamData *pStreamData, t_avSyncControl *pAvSync)
+{
+	SceChar8 *pVideoBuf;
+	SceUInt32 pts;
+	SceInt32 rgbNum;
+	SceInt32 ret;
+	SceInt32 avcAttr;
+
+	ret = 1;
+	if (dispbuf_getCapacity(pAvSync->pDisp) == 0)
+		goto END;
+	ret = sceMpegGetAvcAu(pMpeg, pStreamData->pAvcStream, pStreamData->pAvcAu, &avcAttr);
+	if (ret != 0)
+		goto END;
+	dispbuf_getDrawbuf(pAvSync->pDisp, &pVideoBuf);
+	dispbuf[0] = pVideoBuf;
+	ret = sceMpegAvcDecode(pMpeg, pStreamData->pAvcAu, 512, dispbuf, &rgbNum);
+	if (ret != 0) 
+		goto END;
+	avsync_video_setPts(pAvSync, pStreamData->pAvcAu->pts.ts);
+	if (rgbNum == 1) {
+		avsync_video_getPts(pAvSync, &pts);
+		dispbuf_setPts(pAvSync->pDisp, pts);
+		dispbuf_dataSet(pAvSync->pDisp);
+	}
+END:
+	return ret;
+}
+
+SceInt32 decode_videoDecodeEnd(SceMpeg *pMpeg, t_avSyncControl *pAvSync)
+{
+	SceChar8 *pVideoBuf;
+	SceUInt32 pts;
+	SceInt32 rgbNum;
+	SceInt32 ret;
+
+	ret = 1;
+	if (dispbuf_getCapacity(pAvSync->pDisp) == 0)
+		goto END;
+	dispbuf_getDrawbuf(pAvSync->pDisp, &pVideoBuf);
+	dispbuf[0] = pVideoBuf;
+	ret = sceMpegAvcDecodeStop(pMpeg, 512, dispbuf, &rgbNum);
+	if (ret != 0)
+		goto END;
+	if (rgbNum > 0) {
+		avsync_video_getPts(pAvSync, &pts);
+		dispbuf_setPts(pAvSync->pDisp, pts);
+		dispbuf_dataSet(pAvSync->pDisp);
+	}
+END:
+	return ret;
+}
