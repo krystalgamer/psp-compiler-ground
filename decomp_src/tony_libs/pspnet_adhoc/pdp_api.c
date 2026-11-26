@@ -115,7 +115,12 @@ int sceNetAdhocPdpRecv(int id, struct SceNetEtherAddr *saddr, u_short *sport, vo
 	return func_00001F20(id, saddr, sport, buf, len, timeout, flag, NULL);
 }
 
-INCLUDE_ASM("tmp/asm/tony_libs/pspnet_adhoc/nonmatchings/pdp_api", sceNetAdhoc_lib_67346A2A);
+int sceNetAdhoc_lib_67346A2A(int id, struct SceNetEtherAddr *saddr, u_short *sport, void *buf, int *len, unsigned int timeout, int flag, int *x)
+{
+	if (buf == NULL || len == NULL || x == NULL)
+		return 0x80410711;
+	return func_00001F20(id, saddr, sport, buf, len, timeout, flag, x);
+}
 
 int func_00001F20(int id, struct SceNetEtherAddr *saddr, u_short *sport, void *buf, int *len, unsigned int timeout, int flag, int *x)
 {

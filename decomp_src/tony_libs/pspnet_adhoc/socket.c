@@ -5,7 +5,17 @@
 #include "adhoc.h"
 /* --- end declarations --- */
 
-INCLUDE_ASM("tmp/asm/tony_libs/pspnet_adhoc/nonmatchings/socket", func_00000D3C);
+int func_00000D3C(void)
+{
+	int ret;
+
+	TAILQ_INIT(&D_00007418);
+	ret = _sce_pspnet_start_of_adhoc_module_in_sched(func_00000FF0);
+	if (ret < 0)
+		return ret;
+	D_00007420 = 0;
+	return 0;
+}
 
 void func_00000D84(void)
 {
