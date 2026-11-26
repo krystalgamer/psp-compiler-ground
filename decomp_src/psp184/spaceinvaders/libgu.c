@@ -312,7 +312,21 @@ int sceGuCheckList(void)
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", sceGuSync);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", sceGuSignalSync);
+void sceGuSignalSync(int signal)
+{
+	int i;
+
+	for (;;) {
+		for (i = 0; i < 16; i++) {
+			if (i >= intrParam.index)
+				break;
+			if (intrParam.signals[i] == (unsigned short)signal)
+				return;
+		}
+		sceKernelWaitEventFlag(intrParam.event, 1, 0, 0, 0);
+		sceKernelClearEventFlag(intrParam.event, ~1);
+	}
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", sceGuEnable);
 
@@ -514,7 +528,16 @@ void sceGuDrawBufferList(int psm, void *fbp, int frame_width)
 	send_commandi(157, ((((unsigned int)fbp) & 0xff000000) >> 8) | frame_width);
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", sceGuDepthBuffer);
+void sceGuDepthBuffer(void *zbp, int frame_width)
+{
+	FBuf.depth_buffer = zbp;
+	if (!FBuf.depth_width)
+		FBuf.depth_width = frame_width;
+	if (FBuf.depth_width != frame_width)
+		FBuf.depth_width = frame_width;
+	send_commandi(158, (*(unsigned int *)&FBuf.depth_buffer) & 0xffffff);
+	send_commandi(159, (((*(unsigned int *)&FBuf.depth_buffer) & 0xff000000) >> 8) | FBuf.depth_width);
+}
 
 void sceGuDispBuffer(int width, int height, void *dbp, int frame_width);
 void sceGuDispBuffer(int width, int height, void *dbp, int frame_width)
@@ -531,7 +554,19 @@ void sceGuDispBuffer(int width, int height, void *dbp, int frame_width)
 		sceDisplaySetFrameBuf((char *)vram_top + (unsigned int)FBuf.disp_buffer, frame_width, FBuf.pixel_size, 1);
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", sceGuDisplay);
+int sceGuDisplay(int state)
+{
+	int old;
+	GuDrawBuffer *fb = &FBuf;
+
+	if (!state)
+		sceDisplaySetFrameBuf(0, 0, 0, 1);
+	else
+		sceDisplaySetFrameBuf((char *)vram_top + (unsigned int)fb->disp_buffer, fb->frame_width, fb->pixel_size, 1);
+	old = disp_sw;
+	disp_sw = state;
+	return old;
+}
 
 void *sceGuSwapBuffers(void);
 void *sceGuSwapBuffers(void)
@@ -706,7 +741,10 @@ void sceGuTexFunc(int tfx, int tcc)
 	send_commandi(201, context->fragment_2x | ((tcc << 8) | tfx));
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", sceGuTexEnvColor);
+void sceGuTexEnvColor(unsigned int color)
+{
+	send_commandi(202, color & 0xffffff);
+}
 
 void sceGuTexWrap(int u, int v);
 void sceGuTexWrap(int u, int v)
@@ -778,7 +816,18 @@ void sceGuClutLoad(int num_blocks, const void *cbp)
 	send_commandi(196, num_blocks);
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", sceGuFog);
+void sceGuFog(float near, float far, unsigned int color);
+void sceGuFog(float near, float far, unsigned int color)
+{
+	float range = far - near;
+	float distance = 0.0f;
+
+	if (range != 0.0f)
+		distance = 1.0f / range;
+	send_commandi(207, color & 0xffffff);
+	send_commandi(205, (*(unsigned int *)&far) >> 8);
+	send_commandi(206, (*(unsigned int *)&distance) >> 8);
+}
 
 void sceGuColorFunc(int func, unsigned int color, unsigned int mask)
 {
