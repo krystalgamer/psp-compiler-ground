@@ -140,7 +140,27 @@ static void PositioningStoreMatrix( Positioning* _Positioning
 	sceGumPopMatrix();
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_stainglass/nonmatchings/main", draw_dragon_with_camera_transform);
+#define SCEGU_BLEND                        4
+#define SCEGU_ALPHA_TEST                   0
+#define SCEGU_CULL_FACE                    5
+
+static void draw_dragon_with_camera_transform()
+{
+	sceGumPushMatrix();
+
+	PositioningMultMatrix( & _camera_inverse_transform );
+
+	PositioningMultMatrix( & _dragon_transform );
+
+	sceGuDisable( SCEGU_BLEND );
+	sceGuDisable( SCEGU_ALPHA_TEST);
+
+	sceGuDisable( SCEGU_CULL_FACE );
+
+	DrawDragon(texflag);
+
+	sceGumPopMatrix();
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_stainglass/nonmatchings/main", draw_frame);
 
