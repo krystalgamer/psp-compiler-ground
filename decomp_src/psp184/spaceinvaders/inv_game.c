@@ -965,7 +965,15 @@ void df_fade_control(void)
 	}
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", df_fade_disp);
+M2C_UNK df_fade_disp(void)
+{
+	if (DE.f90 == 0) {
+		if (DE.f94 < DE.f98)
+			poly_set(0, 0, 480, 272, 0, DE.f80, DE.f84, DE.f88, DE.f8c, DE.f80, DE.f84, DE.f88, DE.f8c, DE.f80, DE.f84, DE.f88, DE.f8c, DE.f80, DE.f84, DE.f88, DE.f8c, 20000, 2, 1, (DE.f98 - DE.f94) * 255 / DE.f98);
+	} else {
+		poly_set(0, 0, 480, 272, 0, DE.f80, DE.f84, DE.f88, DE.f8c, DE.f80, DE.f84, DE.f88, DE.f8c, DE.f80, DE.f84, DE.f88, DE.f8c, DE.f80, DE.f84, DE.f88, DE.f8c, 20000, 2, 1, DE.f94 * 255 / DE.f98);
+	}
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
