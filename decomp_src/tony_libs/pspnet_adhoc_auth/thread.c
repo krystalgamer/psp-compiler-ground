@@ -84,7 +84,44 @@ next:
 
 INCLUDE_ASM("tmp/asm/tony_libs/pspnet_adhoc_auth/nonmatchings/thread", func_00001758);
 
-INCLUDE_ASM("tmp/asm/tony_libs/pspnet_adhoc_auth/nonmatchings/thread", func_000019FC);
+void func_000019FC(AuthCtx *ctx)
+{
+	int locked;
+	struct mbuf *m;
+	char *eh;
+	int s;
+
+	locked = func_00003968();
+	if (ctx->unk0 != 1)
+		goto out;
+	if (ctx->npeers >= ctx->unkA8)
+		goto alarm;
+	m = func_000020B8(ctx, 2, ctx->key.data);
+	if (m) {
+		int s1;
+
+		m->m_flags |= M_BCAST;
+		eh = m->m_data;
+		memcpy(eh, D_00003E78, 6);
+		memcpy(eh + 6, ctx->mac.data, 6);
+		memcpy(eh + 12, D_00003E70, 2);
+		memcpy(eh + 14, D_00003E74, 2);
+		s1 = sceKernelCpuSuspendIntr();
+		IF_ENQUEUE(&ctx->ifh->if_snd, m);
+		sceKernelCpuResumeIntr(s1);
+		ctx->ifh->if_start(ctx->ifh);
+	}
+alarm:
+	s = sceKernelCpuSuspendIntr();
+	if (ctx->alarm > 0) {
+		sceKernelCancelAlarm(ctx->alarm);
+		ctx->alarm = 0;
+	}
+	ctx->alarm = sceKernelSetAlarm(ctx->alarmTime, func_00003424, &ctx->arg);
+	sceKernelCpuResumeIntr(s);
+out:
+	func_000039C4(locked);
+}
 
 INCLUDE_ASM("tmp/asm/tony_libs/pspnet_adhoc_auth/nonmatchings/thread", func_00001BA4);
 

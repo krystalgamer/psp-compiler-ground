@@ -139,6 +139,17 @@ typedef struct {
 	unsigned char data[6];
 } EtherAddr;
 
+struct ifnet {
+	char unk0[0x10];
+	void (*if_start)(struct ifnet *);
+	int unk14;
+	struct ifqueue if_snd;
+};
+
+extern const char D_00003E70[];
+extern const char D_00003E74[];
+extern const unsigned char D_00003E78[];
+
 typedef struct {
 	unsigned char data[0x80];
 } AuthKey;
@@ -200,7 +211,7 @@ typedef struct AuthCtx {
 	Peer *first;
 	Peer **last;
 	int npeers;
-	void *ifh;
+	struct ifnet *ifh;
 	EtherAddr mac;
 	AuthKey key;
 	char padA6[2];
@@ -243,6 +254,9 @@ void func_00001BA4(AuthCtx *ctx, Peer *peer);
 void func_00001DA0(AuthCtx *ctx, Peer *peer);
 void func_00001F2C(AuthCtx *ctx);
 void func_00002224(AuthCtx *ctx, char *buf, int len);
+struct mbuf *func_000020B8(AuthCtx *ctx, unsigned char type, const void *data);
+void func_00003580(AuthCtx *ctx, Peer *peer);
+void func_00003818(AuthCtx *ctx, Peer *peer, int state);
 unsigned int func_000034D0(void *common);
 unsigned int func_00003528(void *common);
 void *sceNetMallocInternal(unsigned int size);
