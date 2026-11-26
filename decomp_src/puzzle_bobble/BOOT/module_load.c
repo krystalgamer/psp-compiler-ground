@@ -1,11 +1,31 @@
 #include "common.h"
 #include "m2c_macros.h"
+#include <modulemgr.h>
+#include <iofilemgr.h>
 
-M2C_UNK LoadRequiredModules();                      /* extern */
-M2C_UNK loadModuleAt3plus();                        /* extern */
-M2C_UNK puts(M2C_UNK *);                            /* extern */
-M2C_UNK sceKernelExitDeleteThread(M2C_UNK);         /* extern */
+typedef struct {
+	const char *path;
+	SceUID mpid;
+} MODULE_PATH;
 
+typedef struct {
+	SceUID id;
+	int type;
+	const char *name;
+} MODULE_ENT;
+
+extern const MODULE_PATH s_modules_path[9];
+extern SceUID s_loaded_modules_id[9];
+extern MODULE_ENT module[2];
+
+int printf(const char *, ...);
+int puts(const char *);
+void *memset(void *, int, unsigned int);
+void wait_umd(void);
+int LoadRequiredModules(void);
+int loadModuleAt3plus(void);
+int sceKernelExitDeleteThread(int);
+SceUID load_module(const char *name, SceKernelLMOption *lmopt, SceKernelSMOption *smopt);
 
 INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/module_load", D_0002F9B8);
 
@@ -33,13 +53,90 @@ INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/module_load", s_modules_
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/module_load", LoadModule);
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/module_load", LoadRequiredModules);
+int LoadRequiredModules(void)
+{
+	unsigned int i;
+	SceUID id;
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/module_load", StopDeleteLoadedModules);
+	puts("MODULE LOAD START");
+	memset(s_loaded_modules_id, 0, sizeof(s_loaded_modules_id));
+	for (i = 0; i < 9; i++) {
+		printf("MODULE LOAD %s\n", s_modules_path[i].path);
+		id = LoadModule(s_modules_path[i].path, s_modules_path[i].mpid);
+		if (id < 0) {
+			printf("MODULE LOAD FAILED %s\n", s_modules_path[i].path);
+			return id;
+		}
+		s_loaded_modules_id[i] = id;
+	}
+	return 0;
+}
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/module_load", load_module);
+void StopDeleteLoadedModules(void)
+{
+	unsigned int i;
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/module_load", loadModuleAt3plus);
+	for (i = 0; i < 9; i++) {
+		if (s_loaded_modules_id[i] == 0)
+			break;
+		sceKernelStopModule(s_loaded_modules_id[i], 0, 0, 0, 0);
+		sceKernelUnloadModule(s_loaded_modules_id[i]);
+		s_loaded_modules_id[i] = 0;
+	}
+}
+
+SceUID load_module(const char *name, SceKernelLMOption *lmopt, SceKernelSMOption *smopt)
+{
+	SceUID modid;
+	int ret;
+
+	modid = sceKernelLoadModule(name, 0, lmopt);
+	if (modid < 0) {
+		printf("fatal error : cannot load %s 0x%08x\n", name, modid);
+		return modid;
+	}
+	ret = sceKernelStartModule(modid, 0, 0, 0, smopt);
+	if (ret < 0) {
+		printf("fatal error : cannot start %s 0x%08x\n", name, ret);
+		return ret;
+	}
+	return modid;
+}
+
+int loadModuleAt3plus(void)
+{
+	SceKernelLMOption opt1;
+	SceKernelLMOption opt2;
+	SceKernelLMOption *opt;
+	int i;
+
+	wait_umd();
+	opt1.size = sizeof(opt1);
+	opt1.mpidtext = 1;
+	opt1.mpiddata = 1;
+	opt1.position = 0;
+	opt1.access = 1;
+	opt2.size = sizeof(opt2);
+	opt2.mpidtext = 2;
+	opt2.mpiddata = 2;
+	opt2.position = 0;
+	opt2.access = 1;
+	for (i = 0; i < 2; i++) {
+		if (module[i].type == 1)
+			opt = &opt1;
+		else
+			opt = &opt2;
+		module[i].id = load_module(module[i].name, opt, 0);
+		if (module[i].id < 0) {
+			printf("fatal error : cannot load Module (%s)", module[i].name);
+			do {
+				wait_umd();
+				module[i].id = load_module(module[i].name, opt, 0);
+			} while (module[i].id < 0);
+		}
+	}
+	return 0;
+}
 
 int sub_thread(void) {
     puts("module load-----------");
