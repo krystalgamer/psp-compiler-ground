@@ -17,7 +17,17 @@ INCLUDE_ASM("tmp/asm/UTST99332/graphics_stainglass/nonmatchings/stainglass", Gen
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_stainglass/nonmatchings/stainglass", UseFrameBufferMipmap);
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_stainglass/nonmatchings/stainglass", RandSeed);
+void RandSeed( unsigned int val )
+{
+	__asm__ volatile (
+		".set			push\n"					
+		".set			noreorder\n"			
+		"lv.s s000, %0	        \n"
+		"vrnds.s s000          \n"
+		".set			pop\n"					
+		: : "m" (val)
+		);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_stainglass/nonmatchings/stainglass", Rand);
 
