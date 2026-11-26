@@ -76,6 +76,20 @@ static SceInt32 unload_module(SceUID mid)
 	return 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/sound_stringsound/nonmatchings/at3loadmodule", unloadModuleAt3plus);
+int unloadModuleAt3plus(void)
+{
+	int i;
+
+	for (i = 1; i >= 0; i--) {
+		if (module[i].moduleID >= 0) {
+			if (unload_module(module[i].moduleID) < 0) {
+				printf("fatal error : cannot unload module %s\n", module[i].modulename);
+				return -1;
+			}
+		}
+	}
+
+	return 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/sound_stringsound/nonmatchings/at3loadmodule", loadModuleAt3plus);
