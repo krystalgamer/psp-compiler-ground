@@ -176,6 +176,20 @@ void sceGuDrawSprite(int x, int y, int z, int u, int v, int flip, int rotation);
 int rand(void);
 
 
+/* SDK prototypes (tools/sdk_protos.h) */
+void *memset(void *s, int c, unsigned int n);
+void sceGuDisable(int state);
+void sceGuLight(int light, int type, int components, const ScePspFVector3 *position);
+void sceGuLightColor(int light, int component, unsigned int color);
+void sceGuTexFunc(int tfx, int tcc);
+void sceGuTexMapMode(int mode, unsigned int a1, unsigned int a2);
+void sceGumDrawArray(int prim, int vtype, int count, const void *indices, const void *vertices);
+void sceGumDrawSpline(int vtype, int ucount, int vcount, int uedge, int vedge, const void *indices, const void *vertices);
+void sceGumPopMatrix(void);
+void sceGumPushMatrix(void);
+void sceGumScale(const ScePspFVector3 *v);
+void sceGumTranslate(const ScePspFVector3 *v);
+
 INCLUDE_ASM("tmp/asm/UTST99332/menu/nonmatchings/draw", SwapDice);
 
 INCLUDE_ASM("tmp/asm/UTST99332/menu/nonmatchings/draw", GetDice);

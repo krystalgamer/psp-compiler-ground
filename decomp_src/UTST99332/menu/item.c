@@ -1,5 +1,17 @@
 #include "common.h"
 
+/* SDK prototypes (tools/sdk_protos.h) */
+void sceGuColor(unsigned int color);
+void sceGuDisable(int state);
+void sceGuEnable(int state);
+void sceGumDrawArray(int prim, int vtype, int count, const void *indices, const void *vertices);
+void sceGumLoadIdentity(void);
+void sceGumPopMatrix(void);
+void sceGumPushMatrix(void);
+void sceGumRotateX(float angle);
+void sceGumRotateY(float angle);
+void sceGumRotateZ(float angle);
+
 INCLUDE_ASM("tmp/asm/UTST99332/menu/nonmatchings/item", InitItem);
 
 INCLUDE_ASM("tmp/asm/UTST99332/menu/nonmatchings/item", _DrawItemFade);

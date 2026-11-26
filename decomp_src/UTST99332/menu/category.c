@@ -40,6 +40,19 @@ void RunCategory(void);
 void KeyCategory(u_int32 padd, u_int32 cont, float *axis);
 
 
+/* SDK prototypes (tools/sdk_protos.h) */
+int rand(void);
+void sceGuDisable(int state);
+void sceGuEnable(int state);
+void sceGumLoadIdentity(void);
+void sceGumPopMatrix(void);
+void sceGumPushMatrix(void);
+void sceGumRotateX(float angle);
+void sceGumRotateY(float angle);
+void sceGumRotateZ(float angle);
+void sceGumScale(const ScePspFVector3 *v);
+void sceGumTranslate(const ScePspFVector3 *v);
+
 INCLUDE_ASM("tmp/asm/UTST99332/menu/nonmatchings/category", InitCategory);
 
 INCLUDE_ASM("tmp/asm/UTST99332/menu/nonmatchings/category", DrawCategory);

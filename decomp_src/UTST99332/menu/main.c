@@ -160,6 +160,49 @@ static int ProgramSwitch(void);
 int main(int argc, char **argv);
 
 
+/* SDK prototypes (tools/sdk_protos.h) */
+int sceCtrlReadBufferPositive(SceCtrlData *data, int count);
+int sceCtrlSetSamplingMode(int mode);
+int sceDisplayWaitVblankStart(void);
+void sceGuAlphaFunc(int a0, int a1, int a2);
+void sceGuAmbient(unsigned int color);
+void sceGuBlendFunc(int op, int src, int dest, unsigned int srcfix, unsigned int destfix);
+void sceGuClearColor(unsigned int color);
+void sceGuClearDepth(unsigned int depth);
+void sceGuClearStencil(unsigned int stencil);
+void sceGuColor(unsigned int color);
+void sceGuDepthBuffer(void *zbp, int frame_width);
+void sceGuDepthFunc(int function);
+void sceGuDepthRange(int near, int far);
+void sceGuDisable(int state);
+void sceGuDispBuffer(int width, int height, void *dbp, int frame_width);
+int sceGuDisplay(int state);
+void sceGuDrawBuffer(int psm, void *fbp, int frame_width);
+void sceGuEnable(int state);
+void sceGuFrontFace(int order);
+void *sceGuGetMemory(int size);
+void sceGuInit(void);
+void sceGuLight(int light, int type, int components, const ScePspFVector3 *position);
+void sceGuLightColor(int light, int component, unsigned int color);
+void sceGuOffset(unsigned int x, unsigned int y);
+void sceGuScissor(int x, int y, int w, int h);
+void sceGuSetDither(const void *matrix);
+void sceGuShadeModel(int mode);
+void sceGuSpecular(float power);
+void *sceGuSwapBuffers(void);
+void sceGuTerm(void);
+void sceGuTexFilter(int min, int mag);
+void sceGuTexFunc(int tfx, int tcc);
+void sceGuTexWrap(int u, int v);
+void sceGuViewport(int cx, int cy, int width, int height);
+void sceGumDrawArray(int prim, int vtype, int count, const void *indices, const void *vertices);
+void sceGumLoadIdentity(void);
+void sceGumMatrixMode(int mode);
+void sceGumPerspective(float fovy, float aspect, float near, float far);
+void sceGumSetMatrixStack(void *stack, int proj, int view, int model, int texture);
+int sceKernelLoadExec(const char *file, SceKernelLoadExecParam *param);
+char *strcat(char *d, const char *s);
+
 INCLUDE_ASM("tmp/asm/UTST99332/menu/nonmatchings/main", GetItem);
 
 INCLUDE_ASM("tmp/asm/UTST99332/menu/nonmatchings/main", PrxExec);
