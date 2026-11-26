@@ -8,8 +8,9 @@
 /* vtables and typeinfo stay in the module's data: never emit them here */
 #pragma interface
 
-#include <iosfwd>
+#include <ostream>
 #include <string>
+#include <stdlib.h>
 
 extern "C" {
 #include "common.h"
@@ -88,10 +89,14 @@ class Date {
 public:
     struct CopiableMembers {
         CopiableMembers();
+        bool operator==(const CopiableMembers &) const;
         int year, month, day, hour, minute, second;
     };
     Date();
     Date(const char *);
+    bool operator==(const Date &) const;
+    bool operator!=(const Date &) const;
+    void output(std::ostream &) const;
     void set_from_time_t(long *);
     void get_date();
     void get_file_date(const char *);

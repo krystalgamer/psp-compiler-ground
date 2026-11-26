@@ -1,12 +1,22 @@
-#include "common.h"
+/* lang: c++ */
+/* cflags: -O2 -frename-registers */
+#include "../main.hpp"
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/glutils_CheckerTexture", _Z41__static_initialization_and_destruction_0ii_23318);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/glutils_CheckerTexture", _ZN7glutils14CheckerTexture10check_initEv);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/glutils_CheckerTexture", _ZN7glutils14CheckerTexture3getEv);
+textures::Texture *glutils::CheckerTexture::get()
+{
+    check_init();
+    return &_checker_texture;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/glutils_CheckerTexture", _ZN7glutils14CheckerTexture4nameEv);
+unsigned int glutils::CheckerTexture::name()
+{
+    check_init();
+    return _name;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/glutils_CheckerTexture", _ZN7glutils14CheckerTexture5resetEv);
 

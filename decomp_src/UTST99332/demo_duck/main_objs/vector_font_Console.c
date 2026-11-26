@@ -1,4 +1,6 @@
-#include "common.h"
+/* lang: c++ */
+/* cflags: -O2 -frename-registers */
+#include "../main.hpp"
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/vector_font_Console", _Z41__static_initialization_and_destruction_0ii_237B0);
 
@@ -28,9 +30,18 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/vector_font_Cons
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/vector_font_Console", _ZNK11vector_font7Console4drawEv);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/vector_font_Console", _ZN11vector_font7Console11setViewportEff);
+void vector_font::Console::setViewport(float x, float y)
+{
+    vx = x;
+    vy = y;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/vector_font_Console", _ZN11vector_font7Console8setColorEfff);
+void vector_font::Console::setColor(float r_, float g_, float b_)
+{
+    r = r_;
+    g = g_;
+    b = b_;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/vector_font_Console", _GLOBAL__I__ZN11vector_font7ConsoleC2Ejj);
 

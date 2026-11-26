@@ -1,4 +1,5 @@
 /* lang: c++ */
+/* cflags: -O2 -frename-registers */
 #include "../main.hpp"
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/app3d_Callbacks", _Z41__static_initialization_and_destruction_0ii_E548);
@@ -39,13 +40,26 @@ void app3d::Callbacks::draw() {
 void app3d::Callbacks::before_vsync() {
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/app3d_Callbacks", _ZN5app3d9Callbacks10toggleGridEv);
+void app3d::Callbacks::toggleGrid()
+{
+    grid = !grid;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/app3d_Callbacks", _ZN5app3d9Callbacks11displayGridEb);
+void app3d::Callbacks::displayGrid(bool b)
+{
+    grid = b;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/app3d_Callbacks", _ZN5app3d9Callbacks13setSceneScaleEf);
+void app3d::Callbacks::setSceneScale(float s)
+{
+    scene_scale = s;
+    reset_camera();
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/app3d_Callbacks", _ZN5app3d9Callbacks11togglePivotEv);
+void app3d::Callbacks::togglePivot()
+{
+    pivot = !pivot;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/app3d_Callbacks", _ZN5app3d9Callbacks10setFrustumERKN3sgl7FrustumE);
 

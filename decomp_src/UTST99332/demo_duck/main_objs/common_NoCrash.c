@@ -1,9 +1,13 @@
 /* lang: c++ */
+/* cflags: -O2 -frename-registers */
 #include "../main.hpp"
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/common_NoCrash", _Z41__static_initialization_and_destruction_0ii_14188);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/common_NoCrash", _ZN6common7NoCrashEb);
+void common::NoCrash(bool b)
+{
+    no_crash = b;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/common_NoCrash", _ZN6common15common_internal3LogC2EPKcbbbb);
 
@@ -16,7 +20,10 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/common_NoCrash",
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/common_NoCrash", _ZN6common15common_internal3Log3getENS1_7ChannelE);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/common_NoCrash", _ZN6common3LogEPKc);
+common::common_internal::Log &common::Log(const char *)
+{
+    return common_internal::Log::get((common_internal::Log::Channel)1);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/common_NoCrash", _ZN6common15common_internal14assert_displayEPKcS2_S2_S2_iS2_z);
 
@@ -42,7 +49,10 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/common_NoCrash",
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/common_NoCrash", _ZN6common15common_internal3LoglsEb);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/common_NoCrash", _ZN6common15common_internal3Log7useHexaEb);
+void common::common_internal::Log::useHexa(bool b)
+{
+    hexa = b;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/common_NoCrash", __tcf_0_15118);
 
