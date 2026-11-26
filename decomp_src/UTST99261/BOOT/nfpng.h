@@ -14,14 +14,15 @@ typedef struct { /* size 0x58 */
     u8 compression;         /* 0x1A */
     u8 filter;              /* 0x1B */
     u8 interlace;           /* 0x1C */
-    u8 unk1D[0x7];
+    u8 unk1D[0x3];
+    unsigned int gamma;     /* 0x20 */
     unsigned int npal;      /* 0x24 */
     int physX;              /* 0x28 */
     int physY;              /* 0x2C */
     u8 unit;                /* 0x30 */
     u8 *palette;            /* 0x34: RGBA entries */
     int hasTrans;           /* 0x38 */
-    void *unk3C;
+    u8 *gammaTable;         /* 0x3C */
     s16 trR;                /* 0x40 */
     s16 trG;
     s16 trB;

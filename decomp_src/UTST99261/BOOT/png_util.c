@@ -35,8 +35,8 @@ int png_createContext(PNGCTX **pctx) {
 #endif
 
 int png_destroyContext(PNGCTX *ctx) {
-    if (ctx->unk3C != NULL) {
-        ESP_free(ctx->unk3C);
+    if (ctx->gammaTable != NULL) {
+        ESP_free(ctx->gammaTable);
     }
     if (ctx->image != NULL) {
         ESP_free(ctx->image);

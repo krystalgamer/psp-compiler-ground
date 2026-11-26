@@ -245,7 +245,28 @@ int handle_PLTE(PNGCTX *ctx, u8 *data, int len) {
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/png_chunk", handle_gAMA);
+double pow(double x, double y);
+
+int handle_gAMA(PNGCTX *ctx, u8 *data, int len) {
+    int i;
+
+    if (len < 4) {
+        return -1;
+    }
+    ctx->gamma = READINT32(&data);
+    if (ctx->gammaTable != NULL) {
+        return 0;
+    }
+    ctx->gammaTable = ESP_malloc(256);
+    if (ctx->gammaTable == NULL) {
+        return -1;
+    }
+    ctx->gammaTable[0] = 0;
+    for (i = 1; i < 256; i++) {
+        ctx->gammaTable[i] = pow(i / 255.0, 1.0 / (ctx->gamma / 100000.0 * 2.2)) * 255.0 + 0.5;
+    }
+    return 0;
+}
 
 int handle_pHYs(PNGCTX *ctx, u8 *data, int len) {
     if (len < 9) {
@@ -261,26 +282,3 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/png_chunk", handle_tRNS);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/png_chunk", png_readNextChunk);
 
-INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/png_chunk", D_00132788);
-
-INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/png_chunk", D_0013278C);
-
-INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/png_chunk", D_00132790);
-
-INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/png_chunk", D_00132794);
-
-INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/png_chunk", D_00132798);
-
-INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/png_chunk", D_0013279C);
-
-INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/png_chunk", D_001327A0);
-
-INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/png_chunk", D_001327A4);
-
-INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/png_chunk", D_001327A8);
-
-INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/png_chunk", D_001327AC);
-
-INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/png_chunk", D_001327B0);
-
-INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/png_chunk", D_001327B4);
