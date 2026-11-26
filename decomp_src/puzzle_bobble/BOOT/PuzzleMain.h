@@ -58,10 +58,14 @@ typedef struct {
 	u8 pad024[2];
 	s8 unk026;		/* 0x026 */
 	u8 unk027;		/* 0x027 */
-	u8 pad028[0x428 - 0x28];
+	s16 gx[256];		/* 0x028: guide dots */
+	s16 gy[256];		/* 0x228 */
 	u8 unk428;		/* 0x428 */
 	s8 unk429;		/* 0x429 */
-	u8 pad42A[0x42F - 0x42A];
+	u8 pad42A[2];
+	s8 guide_n;		/* 0x42C */
+	u8 guide_anim;		/* 0x42D */
+	u8 guide_col;		/* 0x42E */
 	u8 color;		/* 0x42F: current ball color */
 	int unk430;		/* 0x430 */
 	int unk434;		/* 0x434 */

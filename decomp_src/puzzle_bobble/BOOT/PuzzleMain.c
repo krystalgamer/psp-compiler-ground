@@ -2045,7 +2045,110 @@ int CheckRoundClear(PZL_STAT *st)
 	return ret;
 }
 
+#ifdef NON_MATCHING
+/* Rough (13 instructions long): logic complete (16.16 fixed-point trajectory with wall
+ * bounces, dots every 4 frames into gx/gy, hit test, CPU neighbour copy); ours spills
+ * more (frame 112 vs 96) and computes |vx| once per branch. */
+extern int D_0014E888;
+extern int D_0014E88C;
+extern int D_0014E890;
+extern int D_0014E894;
+extern u8 CpuCheckBall[];
+typedef struct { s16 x, y; } BCPOS;
+extern const BCPOS BallCollisionPosition[8];
+void CheckBallGuide(PZL_STAT *st)
+{
+	int lx, ly;
+	int left, right, top, bottom;
+	int end, match;
+	int frame, n, anim, i, p, a, ix, iy;
+
+	end = 0;
+	match = 0;
+	if (st->mapsub == 0) {
+		left = (GetMapLeft(st->mapno) << 16) + 0x80000;
+		right = (GetMapRight(st->mapno) << 16) - 0x90000;
+	} else if (st->mapsub == 1) {
+		left = 0x200000;
+		right = 0x8F0000;
+	} else {
+		left = 0xB00000;
+		right = 0x11F0000;
+	}
+	bottom = 0x1180000 - (st->scroll * 14 << 16);
+	n = 0;
+	top = 0x200000 - (st->scroll * 14 << 16);
+	frame = 0;
+	D_0014E890 = -Cos(st->unk454);
+	D_0014E894 = -Sin(st->unk454);
+	D_0014E888 = st->bx << 16;
+	D_0014E88C = st->by << 16;
+	anim = st->guide_anim;
+	while (1) {
+		D_0014E888 += D_0014E890;
+		D_0014E88C += D_0014E894;
+		if (D_0014E888 < left) {
+			D_0014E890 = D_0014E890 < 0 ? -D_0014E890 : D_0014E890;
+			D_0014E888 = left;
+		} else if (right < D_0014E888) {
+			D_0014E890 = -(D_0014E890 < 0 ? -D_0014E890 : D_0014E890);
+			D_0014E888 = right;
+		}
+		if (D_0014E88C < top) {
+			D_0014E88C = top;
+			D_0014E894 = D_0014E894 < 0 ? -D_0014E894 : D_0014E894;
+		}
+		if (bottom < D_0014E88C)
+			end = 1;
+		iy = D_0014E88C >> 16;
+		ix = *(s16 *)((char *)&D_0014E888 + 2);
+		if ((frame & 3) == 0 && n < 256) {
+			st->gx[n] = ix;
+			st->gy[n] = iy + st->scroll * 14;
+			n++;
+		}
+		ly = iy - st->ofs_y;
+		lx = ix - MapXBeginPos[st->mapno * 3 + st->mapsub];
+		for (i = 0; i < 8; i++) {
+			p = CvtBallPos2MapPosLocal(st, lx + BallCollisionPosition[i].x, ly + BallCollisionPosition[i].y);
+			if (p < 0 || st->mp.map[p] != 0) {
+				GetBallCoordinate(st, GetBallMapAddr(st, lx, ly, 0), &lx, &ly);
+				end = 1;
+				for (i = 1; i < 7; i++) {
+					a = GetBallMapAddr(st, lx, ly, i);
+					if (st->mapsub == 2)
+						CpuCheckBall[i - 1] = st->mp.map[a];
+					if (a >= 0 && st->mp.map[a] == st->cur + 1)
+						match = 1;
+				}
+				goto done;
+			}
+		}
+		frame++;
+		if (end)
+			break;
+	}
+done:
+	st->guide_col = match ? 2 : 1;
+	if (end == 1) {
+		lx = ix - MapXBeginPos[st->mapno * 3 + st->mapsub];
+		ly = iy - st->ofs_y;
+		GetBallCoordinate(st, CvtBallPos2MapPosLocal(st, lx, ly), &lx, &ly);
+		n -= n >= 256;
+		n = n / 8 * 8;
+		for (i = 7; i >= 0; i--) {
+			st->gx[n] = lx + MapXBeginPos[st->mapno * 3 + st->mapsub];
+			st->gy[n] = ly + st->ofs_y + st->scroll * 14;
+			n++;
+		}
+	}
+	anim++;
+	st->guide_anim = anim % 8;
+	st->guide_n = n / 8;
+}
+#else
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", CheckBallGuide);
+#endif
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", CheckBallGuideVS);
 
