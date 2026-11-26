@@ -1,5 +1,6 @@
-#include "common.h"
+/* upstream: newlib-1.12.0/newlib/libc/stdlib/malign.c (unmodified) */
+/* cflags: -O2 -fno-builtin */
+#include "libc/stdlib/malign.c"
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/newlib/libc/stdlib/malign", memalign);
-
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/newlib/libc/stdlib/malign", D_00080204);
+/* locale's "C" string, split into this object's rodata */
+__asm__(".pushsection .rodata\n.align 2\n.globl D_00080204\nD_00080204:\n.asciz \"C\"\n.align 2\n.popsection");
