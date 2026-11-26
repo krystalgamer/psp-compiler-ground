@@ -3,6 +3,9 @@
 #include "parse_ps.h"
 #include "dom_domi.h"
 #include "m2c_macros.h"
+extern char D_00135598[];
+extern int mq_js;
+extern char D_0013559C[];
 extern const char _ctype_[];
 extern int buf_ps_sts;
 M2C_UNK MEM_free(M2C_UNK, int);                     /* extern */
@@ -33,7 +36,6 @@ extern int LAYOUT_STOP;
 extern int Layout_Cont;
 extern int NOTARGET;
 extern int On_Save;
-extern int PS_LOCATION_HEAD;
 extern signed char PageGetType;
 extern int RECIEVE_MSG;
 extern int RELOAD_FLG;
@@ -369,9 +371,23 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", ChkContentType);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", ps_searchRequestFlagHistoryNode);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", ps_ExternalSearchSessionParentHistoryNode);
+void *ps_ExternalSearchSessionParentHistoryNode(void *a, int b) {
+    void *head = HST_getHeadHistoryNode();
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", ps_ExternalSearchSessionHistoryNode);
+    if (b == 1) {
+        return HST_getParentExtHistoryURI(head, a, D_00135598);
+    }
+    return HST_getParentExtHistoryURI(head, a, D_0013559C);
+}
+
+void *ps_ExternalSearchSessionHistoryNode(void *a, int b) {
+    void *head = HST_getHeadHistoryNode();
+
+    if (b == 1) {
+        return HST_getExtHistoryURI(head, a, D_00135598);
+    }
+    return HST_getExtHistoryURI(head, a, D_0013559C);
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -434,17 +450,86 @@ INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", D_0013574C);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", ps_JSMailBoxClean);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", ps_JSMailBoxfree);
+void ps_JSMailBoxfree(void) {
+    PsMqMsg m;
+
+    while (GetMQUEUE(mq_js, &m)) {
+        buf_ps_evt = m.evt;
+        if (m.data != NULL) {
+            MEM_free(0, m.data);
+        }
+    }
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", ps_MailBoxClean);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", ps_ParseDomBuildCall);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", ps_FrontParseDomBuild);
+void ps_FrontParseDomBuild(void) {
+    PsDomBuild b;
+    void *r;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", ps_BackParseDomBuild);
+    b.x[0] = 0;
+    b.x[1] = 0;
+    b.x[2] = 0;
+    b.x[3] = 0;
+    b.x[4] = 0;
+    b.x[5] = 0;
+    b.x[6] = 0;
+    b.x[7] = 0;
+    b.x[9] = 0;
+    b.x[11] = 0;
+    b.x[12] = 8;
+    b.x[13] = 0;
+    r = parseDomBuild(&b);
+    if (r != NULL) {
+        MEM_free(0, r);
+    }
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", ps_ParseDomBuildFree);
+void ps_BackParseDomBuild(void) {
+    PsDomBuild b;
+    void *r;
+
+    b.x[0] = 0;
+    b.x[1] = 0;
+    b.x[2] = 0;
+    b.x[3] = 0;
+    b.x[4] = 0;
+    b.x[5] = 0;
+    b.x[6] = 0;
+    b.x[7] = 0;
+    b.x[9] = 0;
+    b.x[11] = 0;
+    b.x[12] = 9;
+    b.x[13] = 0;
+    r = parseDomBuild(&b);
+    if (r != NULL) {
+        MEM_free(0, r);
+    }
+}
+
+void ps_ParseDomBuildFree(void) {
+    PsDomBuild b;
+    void *r;
+
+    b.x[0] = 0;
+    b.x[1] = 0;
+    b.x[2] = 0;
+    b.x[3] = 0;
+    b.x[4] = 0;
+    b.x[5] = 0;
+    b.x[6] = 0;
+    b.x[7] = 0;
+    b.x[9] = 0;
+    b.x[11] = 0;
+    b.x[12] = 12;
+    b.x[13] = 0;
+    r = parseDomBuild(&b);
+    if (r != NULL) {
+        MEM_free(0, r);
+    }
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", ps_SendIOMChk);
 
@@ -462,7 +547,20 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", ps_isMoveHistory)
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", ps_fragmentJump);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", ps_isGetRequest);
+int ps_isGetRequest(void *node) {
+    char *uri, *u;
+
+    if (node == NULL || (uri = HST_getCurURI(node)) == NULL) {
+        return 0;
+    }
+    while ((node = HST_getParentHistoryNode(node)) != NULL) {
+        u = HST_getCurURI(node);
+        if (u != NULL && strcmp(uri, u) == 0) {
+            return 0;
+        }
+    }
+    return 1;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", ps_errStringParseDomBuild);
 

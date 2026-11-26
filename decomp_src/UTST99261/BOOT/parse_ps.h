@@ -22,6 +22,29 @@ typedef struct PsMsg {
     int arg[7];
 } PsMsg;
 
+typedef struct PsLocation {
+    int id;
+    int x04;
+    int x08;
+    int x0C;
+    struct PsLocation *prev;          /* 0x10 */
+    struct PsLocation *next;          /* 0x14 */
+    void *buf;                        /* 0x18 */
+} PsLocation;
+
+typedef struct PsDomBuild {
+    int x[14];
+} PsDomBuild;
+
+typedef struct PsMqMsg {
+    int x[4];
+    int evt;                          /* 0x10 */
+    int x14[3];
+    void *data;                       /* 0x20 */
+} PsMqMsg;
+
+extern PsLocation *PS_LOCATION_HEAD;
+extern PsLocation *D_0025B5CC;
 extern ExMsgBoxList exMsgBoxList;
 ExMsgBox *ps_getExMsgBox();
 
