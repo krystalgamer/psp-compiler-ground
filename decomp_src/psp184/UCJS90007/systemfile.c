@@ -510,7 +510,34 @@ int sceSystemFileGetFD(void *handle)
 	return ret;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/systemfile", sceSystemFileGetIndexInfo);
+int sceSystemFileGetIndexInfo(void *handle, void *index, char **pname, unsigned int *plen, unsigned int *pmaxlen)
+{
+	SysFile *sf = handle;
+	SfKeyEnt *ent;
+	register int ret;
+
+	if (handle == NULL)
+		SF_ERROR(ret, 3)
+	else if (index == NULL)
+		SF_ERROR(ret, 3)
+	else {
+		if (sf->flags & 2) {
+			ent = index;
+			*pname = ((SfKeyFile *)sf)->strtab + ent->off;
+		} else {
+			if ((ent = (SfKeyEnt *)((SfIndex *)index)->unk0) == NULL) {
+				SF_ERROR(ret, 3)
+				goto end;
+			}
+			*pname = ((SfIndex *)index)->name;
+		}
+		*plen = ent->len;
+		*pmaxlen = ent->maxlen;
+		ret = 0;
+	}
+end:
+	return ret;
+}
 
 int sceSystemFileGetHeader(void *handle, SfHeader **phdr, int *pversion, int *pflag)
 {
