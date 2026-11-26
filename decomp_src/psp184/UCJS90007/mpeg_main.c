@@ -295,7 +295,21 @@ static int check_mpeg_dialog_completed(void);
 static void monitor_mpeg_play_thread(void);
 
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/mpeg_main", ringbufferCallBack);
+SceInt32 control_getCondition(t_conditionCtrl *pCtrl, SceUInt32 *pattern);
+SceInt32 strFileRead(StrFile *file, void *buff, SceSize size);
+static SceInt32 ringbufferCallBack(SceVoid *pBuf, SceInt32 iNum, SceVoid *CallbackData)
+{
+	SceInt32 iTypeSize = 0x800;
+	SceInt32 iReadSize;
+	StrFile *pStrFile = (StrFile *)CallbackData;
+
+	iReadSize = strFileRead(pStrFile, pBuf, iNum * iTypeSize);
+	if (iReadSize < 0)
+		return iReadSize;
+	if (iReadSize % iTypeSize != 0)
+		return -1;
+	return iReadSize / iTypeSize;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/mpeg_main", mpeg_exit_func);
 
@@ -342,7 +356,24 @@ static SceInt32 checkDecodeEnd(t_conditionCtrl *pCtrl)
 	return -1;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/mpeg_main", checkPlayerErrCondition);
+static SceInt32 checkPlayerErrCondition(t_conditionCtrl *pCtrl)
+{
+	SceUInt32 pattern;
+	SceInt32 ret = 0;
+
+	control_getCondition(pCtrl, &pattern);
+	if (pattern & 0x800) {
+		if (pattern & 0x400)
+			ret = 0x80410C86;
+		else if (pattern & 0x200)
+			ret = 0x80410C87;
+		else if (pattern & 0x100)
+			ret = 0x80410C88;
+		else
+			ret = 0x80410C89;
+	}
+	return ret;
+}
 
 static SceInt32 setPlayerEndCondition(t_conditionCtrl *pCtrl)
 {
@@ -354,11 +385,91 @@ INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/mpeg_main", playMovie);
 
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/mpeg_main", readHeader);
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/mpeg_main", start_mpeg_play_thread);
+int sceKernelCreateThread(const char *name, void *entry, int prio, int stacksize, unsigned int attr, void *option);
+int sceKernelStartThread(int thid, unsigned int arglen, void *argp);
+extern int error_code_8341C;
+extern char D_0002EFE8[];
+static int start_mpeg_play_thread(int (*thread_func)(SceSize, void *))
+{
+	int ret;
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/mpeg_main", start_mpeg_init_thread);
+	ret = sceKernelCreateThread(D_0002EFE8, thread_func, 0x21, 0x2000, 0, NULL);
+	if (ret < 0)
+		goto error;
+	mpeg_tid = ret;
+	ret = sceKernelStartThread(ret, 0, NULL);
+	if (ret < 0)
+		goto error;
+	change_state(10, 0);
+	return 0;
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/mpeg_main", check_mpeg_init_completed);
+error:
+	if (mpeg_tid >= 0) {
+		sceKernelDeleteThread(mpeg_tid);
+		mpeg_tid = -1;
+	}
+	error_code_8341C = ret;
+	ret = utility_msgdialog_fileio(ret);
+	if (ret < 0)
+		change_state(1, 0);
+	else
+		change_state(0x18, 0);
+	return ret;
+}
+
+extern int error_code_8341C;
+extern char D_0002EFE8[];
+static int start_mpeg_init_thread(int (*thread_func)(SceSize, void *))
+{
+	int ret;
+
+	ret = sceKernelCreateThread(D_0002EFE8, thread_func, 0x21, 0x2000, 0, NULL);
+	if (ret < 0)
+		goto error;
+	mpeg_tid = ret;
+	ret = sceKernelStartThread(ret, 0, NULL);
+	if (ret < 0)
+		goto error;
+	change_state(12, 0);
+	return 0;
+
+error:
+	if (mpeg_tid >= 0) {
+		sceKernelDeleteThread(mpeg_tid);
+		mpeg_tid = -1;
+	}
+	error_code_8341C = ret;
+	ret = utility_msgdialog_mpeg_fileio(ret);
+	if (ret < 0)
+		change_state(1, 0);
+	else
+		change_state(0x18, 0);
+	return ret;
+}
+
+int sceKernelDeleteThread(int thid);
+extern int error_code_8341C;
+static int check_mpeg_init_completed(void)
+{
+	int ret;
+
+	ret = sceKernelGetThreadExitStatus(mpeg_tid);
+	if (ret == (int)0x800201A4)
+		return 0;
+	if (ret < 0) {
+		if (utility_msgdialog_mpeg_fileio(error_code_8341C) < 0) {
+			change_state(1, 0);
+		} else {
+			net_stop_server();
+			change_state(0x18, 0);
+		}
+	} else {
+		change_state(ret, 0);
+	}
+	sceKernelDeleteThread(mpeg_tid);
+	mpeg_tid = -1;
+	return 0;
+}
 
 extern int D_0008D338;
 static int check_mpeg_dialog_completed(void)
