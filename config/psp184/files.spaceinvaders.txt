@@ -78,3 +78,4 @@
 0x675E4 libgu           1.6.1.internal  libgu.c
 0x6B5BC libwave         1.6.1.internal  libwave.c
 rodata 0x7AF20 mpeg_avsync
+rodata 0x7F060 gmo_math
