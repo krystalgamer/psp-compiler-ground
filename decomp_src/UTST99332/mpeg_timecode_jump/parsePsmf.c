@@ -39,7 +39,31 @@ INCLUDE_RODATA("tmp/asm/UTST99332/mpeg_timecode_jump/nonmatchings/parsePsmf", D_
 
 INCLUDE_RODATA("tmp/asm/UTST99332/mpeg_timecode_jump/nonmatchings/parsePsmf", D_000107FC);
 
-INCLUDE_ASM("tmp/asm/UTST99332/mpeg_timecode_jump/nonmatchings/parsePsmf", changePsmfTimestamp);
+extern const char D_00010790[]; /* "...scePsmfGetPresentationStartTime() 0x%x\n" (shared rodata) */
+extern const char D_000107C8[];
+int scePsmfGetPresentationStartTime(ScePsmf *psmf, SceUInt32 *t);
+int scePsmfGetPresentationEndTime(ScePsmf *psmf, SceUInt32 *t);
+
+SceInt32 changePsmfTimestamp(ScePsmf *pPsmf, SceUInt32 timestamp, SceUInt32 *psmfTimestamp)
+{
+	SceUInt32 startTime;
+	SceFloat timecodePerSec;
+	SceInt32 ret;
+
+	ret = scePsmfGetPresentationStartTime(pPsmf, &startTime);
+	if (ret != 0) {
+		printf(D_00010790, ret);
+		goto term;
+	}
+
+	timecodePerSec = (SceFloat)timestamp / 1000.0f;
+
+	*psmfTimestamp = startTime + (SceUInt32)(timecodePerSec * 90000.0f);
+	ret = 0;
+
+term:
+	return ret;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/mpeg_timecode_jump/nonmatchings/parsePsmf", getPlayTime);
 
