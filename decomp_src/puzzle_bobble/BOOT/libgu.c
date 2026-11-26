@@ -357,7 +357,27 @@ void sceGuSetDither(const int *matrix)
 	send_commandi(229, dither[3]);
 }
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", sceGuFinish);
+int sceGuFinish(void)
+{
+	GuContext *context;
+	int size;
+
+	if (__aw_list_mode == 0 || __aw_list_mode == 2) {
+		send_commandi(15, 0);
+		send_commandi_stall(12, 0);
+	} else if (call_mode == 1) {
+		send_commandi(14, 0x120000);
+		send_commandi(12, 0);
+		send_commandi_stall(0, 0);
+	} else {
+		send_commandi(11, 0);
+	}
+	context = pList;
+	size = (unsigned int)context->current - (unsigned int)context->start;
+	__aw_list_mode = context->parent_context;
+	pList = &_ctx[__aw_list_mode];
+	return size;
+}
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", sceGuFinishId);
 
@@ -439,7 +459,21 @@ int sceGuSync(int mode, int what)
 	}
 }
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", sceGuSignalSync);
+void sceGuSignalSync(int signal)
+{
+	int i;
+
+	for (;;) {
+		for (i = 0; i < 16; i++) {
+			if (i >= intrParam.index)
+				break;
+			if (intrParam.signals[i] == (unsigned short)signal)
+				return;
+		}
+		sceKernelWaitEventFlag(intrParam.event, 1, 0, 0, 0);
+		sceKernelClearEventFlag(intrParam.event, ~1);
+	}
+}
 
 void sceGuEnable(int state)
 {
