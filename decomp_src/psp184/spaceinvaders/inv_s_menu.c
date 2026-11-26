@@ -39,7 +39,14 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_menu", inv_classic_
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_menu", inv_classic_menu);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_menu", inv_classic_hiscoreinit);
+int sceUtilityGetSystemParamInt(int id, int *value);
+int inv_classic_hiscoreinit(void)
+{
+	int v;
+
+	sceUtilityGetSystemParamInt(4, &v);
+	return 0;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_menu", inv_classic_hiscore);
 

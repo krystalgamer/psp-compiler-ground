@@ -29,7 +29,7 @@ extern int _Icon0Size;
 extern void *_Pic1;
 extern int _Pic1Size;
 extern int autoloadflg;
-int autoload(void);
+void autoload(void);
 typedef struct {
 	void *buf;
 	int bufSize;
@@ -81,7 +81,12 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_save", ms_autoload)
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_save", autoload);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_save", ms_load);
+void ms_load(void)
+{
+	autoloadflg = 0;
+	autoload();
+	autoloadflg = 1;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_save", ms_autosave);
 

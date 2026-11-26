@@ -104,7 +104,16 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/nagata", num_digit_get0);
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/nagata", num_digit_get);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/nagata", addr_to_int);
+int addr_to_int(unsigned char *p)
+{
+	int v;
+
+	v = *p++;
+	v += *p++ << 8;
+	v += *p << 16;
+	v += p[1] << 24;
+	return v;
+}
 
 INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/nagata", D_0007A594);
 
