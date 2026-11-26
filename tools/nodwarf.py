@@ -39,17 +39,38 @@ RULES = {
 }
 
 
+_known = None
+
+
+def known_files():
+    """function name -> source basenames, from the modules split with DWARF
+    (tmp/asm/T/M/nonmatchings/UNIT/FUNC.s)"""
+    global _known
+    if _known is None:
+        _known = collections.defaultdict(set)
+        for p in (ROOT / "tmp" / "asm").glob("*/*/nonmatchings/*/*.s"):
+            _known[p.stem].add(p.parent.name)
+    return _known
+
+
 def owner_by_name(name, files, here):
-    """files: all non-DWARF files; here: those with local functions in this gap"""
+    """files: all non-DWARF files; here: those with local functions in this gap.
+    Callers check the result against the link order."""
     for f in files:
         r = RULES.get(os.path.basename(f))
         if r and re.search(r, name):
             return f
-    for f in here:
+    units = known_files().get(name, set())
+    hits = [f for f in files if os.path.splitext(os.path.basename(f))[0] in units]
+    if len(hits) == 1:
+        return hits[0]
+    # longest stem contained in the name (inv_laser_start -> inv_laser.c)
+    best = None
+    for f in list(here) + [f for f in files if f not in here]:
         stem = os.path.splitext(os.path.basename(f))[0]
-        if len(stem) >= 5 and stem.lower() in name.lower():
-            return f
-    return None
+        if len(stem) >= 5 and stem.lower() in name.lower() and (best is None or len(stem) > len(best[1])):
+            best = (f, stem)
+    return best[0] if best else None
 
 
 def analyse(target, module):
@@ -100,7 +121,16 @@ def analyse(target, module):
                         owners[x] = f
         here = set(owners.values())
         named = {x: owner_by_name(funcs[x], files, here) for x in fs if x not in owners}
-        owners.update({x: f for x, f in named.items() if f})
+        # a name match must fit the link order of the local-symbol owners around it
+        # (inv_classic_sound_load in inv_shima.c is not mpeg/sound.c's)
+        anchors = sorted(owners)
+        for x, f in sorted(named.items()):
+            if not f:
+                continue
+            prev = [owners[y] for y in anchors if y < x]
+            nxt = [owners[y] for y in anchors if y > x]
+            if (not prev or order[prev[-1]] <= order[f]) and (not nxt or order[f] <= order[nxt[0]]):
+                owners[x] = f
         known = sorted(owners)
         if not known:
             problems.append(f"gap 0x{a:X}-0x{b:X}: {len(fs)} functions, no file")
