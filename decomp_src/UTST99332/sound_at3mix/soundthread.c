@@ -49,4 +49,13 @@ INCLUDE_ASM("tmp/asm/UTST99332/sound_at3mix/nonmatchings/soundthread", play_atra
 
 INCLUDE_ASM("tmp/asm/UTST99332/sound_at3mix/nonmatchings/soundthread", at3_bgm_play);
 
-INCLUDE_ASM("tmp/asm/UTST99332/sound_at3mix/nonmatchings/soundthread", at3_bgm_play_end);
+int at3_bgm_play_end(int fadeout_mode)
+{
+	if (fadeout_mode) {
+		gPlayArg.endflag = 0x100;
+	} else {
+		gPlayArg.endflag = -1;
+	}
+
+	return 0;
+}
