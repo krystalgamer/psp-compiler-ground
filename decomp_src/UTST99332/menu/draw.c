@@ -297,7 +297,45 @@ INCLUDE_RODATA("tmp/asm/UTST99332/menu/nonmatchings/draw", D_000171F8);
 
 INCLUDE_RODATA("tmp/asm/UTST99332/menu/nonmatchings/draw", D_0001721C);
 
-INCLUDE_ASM("tmp/asm/UTST99332/menu/nonmatchings/draw", DrawDice);
+extern const ScePspFVector3 D_00017184, D_00017190;
+void DrawDice(float scale)
+{
+	ScePspFVector3 vec;
+	ScePspFVector3 t;
+	int i;
+
+	sceGumPushMatrix();
+	t = D_00017184;
+	vec = t;
+	sceGuLightColor(0, 2, 0xffffffff);
+	sceGuLight(0, 0, 2, &vec);
+	sceGuEnable(11);
+	t = D_00017190;
+	vec = t;
+	sceGuLightColor(1, 2, 0xffffffff);
+	sceGuLight(1, 0, 2, &vec);
+	sceGuEnable(12);
+	sceGuColor(0xffffffff);
+	sceGuEnable(9);
+	sceGuClutMode(1, 0, 0xff, 0);
+	sceGuClutLoad(1, clut_ref);
+	sceGuTexMode(4, 0, 0, 0);
+	sceGuTexImage(0, 64, 64, 64, pix_ref);
+	sceGuTexFunc(0, 0);
+	sceGuTexMapMode(2, 0, 1);
+	sceGumPushMatrix();
+	t.x = scale;
+	t.y = 1.0f;
+	t.z = 1.0f;
+	vec = t;
+	sceGumScale(&vec);
+	for (i = 0; i < 26; i++)
+		sceGumDrawSpline(0x180, 4, 4, 3, 3, NULL, array_dice[i]);
+	sceGuTexFunc(0, 1);
+	sceGuTexMapMode(0, 0, 0);
+	sceGumPopMatrix();
+	sceGumPopMatrix();
+}
 
 extern const ScePspFVector3 D_0001719C;
 void DrawShadow(float scale)
