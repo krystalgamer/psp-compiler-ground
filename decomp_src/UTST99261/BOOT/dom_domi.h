@@ -223,6 +223,13 @@ typedef struct SDomiElementVt {
 
 #define ELEMVT(e) ((const SDomiElementVt *)((SDomiNode *)(e))->vt)
 
+/* string of the DOM API layer (DOMAPI.c) */
+typedef struct DOMString {
+    int size;
+    int len;
+    DOMChar *str;
+} DOMString;
+
 extern SDomiStringData gSDnull;
 
 SDomiStringData *AcsExterngSDnull(void);

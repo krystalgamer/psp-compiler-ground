@@ -1,96 +1,97 @@
 /* cflags: -O1 */
 #include "common.h"
-#include "m2c_macros.h"
-M2C_UNK SDomiDocManager_Initialize(M2C_UNK *);      /* extern */
+#include "dom_domi.h"
+typedef struct SDomiDocManager SDomiDocManager;
 extern int gDOMAPIUse;
-extern unsigned char gDomiDocManager;
+extern SDomiDocManager gDomiDocManager;
 extern int gDomiError;
-M2C_UNK SDomiDocManager_Finalize(M2C_UNK *);        /* extern */
-M2C_UNK SDomiDocManager_EmptyTrash(M2C_UNK *);      /* extern */
-M2C_UNK MEM_free(M2C_UNK, int);                     /* extern */
-unsigned char *MEM_malloc(M2C_UNK, int);                       /* extern */
-M2C_UNK SDomiStrAcu_Finalize(int);                  /* extern */
-M2C_UNK cmDomiNode_Finalize(int);                   /* extern */
-
-M2C_UNK DOMAPI_NewDOMImplementation();              /* extern */
-M2C_UNK DOMAPI_DeleteDOMImplementation();           /* extern */
-M2C_UNK SDomiCharacterData_set_data();              /* extern */
-
-
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
+void *MEM_malloc(int pool, unsigned int size);
+void MEM_free(int pool, void *p);
+int ucs2ToAscii(unsigned char *dst, const DOMChar *src, int len);
+SDomiString DomiAPI_ConvertString(const DOMString *s);
+void SDomiDocManager_Initialize(SDomiDocManager *m);
+void SDomiDocManager_Finalize(SDomiDocManager *m);
+void SDomiDocManager_EmptyTrash(SDomiDocManager *m);
+int SDomiDocManager_AddDocument(SDomiDocManager *m, const SDomiString *id, SDomiDocument *doc);
+SDomiDocument *SDomiDocManager_ReuseDocument(SDomiDocManager *m, const SDomiString *id);
+void SDomiDocManager_TrashDocument(SDomiDocManager *m, const SDomiString *id);
+void SDomiDocManager_DiscardDocument(SDomiDocManager *m, const SDomiString *id);
+void SDomiDocManager_DeleteDocuments(SDomiDocManager *m, SDomiImplementation *impl);
+SDomiDocManager *AcsExterngDomiDocManager(void);
+void SDomiImplementation_Initialize(SDomiImplementation *impl, const SDomiImplementationVt *vt);
+int SDomiDocument_createCharacterData(SDomiDocument *doc, int type, const SDomiString *s, SDomiNode **out);
+SDomiImplementation *DOMAPI_NewDOMImplementation(void);
+void DOMAPI_DeleteDOMImplementation(SDomiImplementation *impl);
 
 void DOMAPI_Initialize(void) {
-    int temp_v1;
-
-    temp_v1 = gDOMAPIUse + 1;
-    gDOMAPIUse = temp_v1;
-    if (temp_v1 == 1) {
+    if (++gDOMAPIUse == 1) {
         SDomiDocManager_Initialize(&gDomiDocManager);
     }
     gDomiError = 0;
 }
 
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
-
 void DOMAPI_Finalize(void) {
-    int temp_v0;
-
     if (gDOMAPIUse != 0) {
-        temp_v0 = gDOMAPIUse - 1;
-        gDOMAPIUse = temp_v0;
-        if (temp_v0 == 0) {
+        if (--gDOMAPIUse == 0) {
             SDomiDocManager_Finalize(&gDomiDocManager);
         }
     }
     gDomiError = 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/DOMAPI", DOMAPI_AddDocument);
+int DOMAPI_AddDocument(const DOMString *id, SDomiDocument *doc) {
+    SDomiString s = DomiAPI_ConvertString(id);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/DOMAPI", DOMAPI_ReuseDocument);
+    return SDomiDocManager_AddDocument(&gDomiDocManager, &s, doc);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/DOMAPI", DOMAPI_TrashDocument);
+SDomiDocument *DOMAPI_ReuseDocument(const DOMString *id) {
+    SDomiString s = DomiAPI_ConvertString(id);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/DOMAPI", DOMAPI_DiscardDocument);
+    return SDomiDocManager_ReuseDocument(&gDomiDocManager, &s);
+}
 
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
+void DOMAPI_TrashDocument(const DOMString *id) {
+    SDomiString s = DomiAPI_ConvertString(id);
+
+    SDomiDocManager_TrashDocument(&gDomiDocManager, &s);
+}
+
+void DOMAPI_DiscardDocument(const DOMString *id) {
+    SDomiString s = DomiAPI_ConvertString(id);
+
+    SDomiDocManager_DiscardDocument(&gDomiDocManager, &s);
+}
 
 void DOMAPI_EmptyTrash(void) {
     SDomiDocManager_EmptyTrash(&gDomiDocManager);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/DOMAPI", DOMAPI_NewDOMImplementation);
+SDomiImplementation *DOMAPI_NewDOMImplementation(void) {
+    SDomiImplementation *impl = UDomiMemory_Allocate(sizeof(SDomiImplementation));
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/DOMAPI", DOMAPI_DeleteDOMImplementation);
+    if (impl != NULL) {
+        SDomiImplementation_Initialize(impl, NULL);
+    }
+    return impl;
+}
 
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
+void DOMAPI_DeleteDOMImplementation(SDomiImplementation *impl) {
+    SDomiDocManager_DeleteDocuments(AcsExterngDomiDocManager(), impl);
+    impl->vt->Finalize(impl);
+    UDomiMemory_Free(impl);
+}
 
 int DOMAPI_Error(void) {
     return gDomiError;
 }
 
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
-
-void Util_DOMAPI_NewHTMLDOMImplementation(void) {
-    DOMAPI_NewDOMImplementation();
+SDomiImplementation *Util_DOMAPI_NewHTMLDOMImplementation(void) {
+    return DOMAPI_NewDOMImplementation();
 }
 
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
-
-void Util_DOMAPI_DeleteHTMLDOMImplementation(void) {
-    DOMAPI_DeleteDOMImplementation();
+void Util_DOMAPI_DeleteHTMLDOMImplementation(SDomiImplementation *impl) {
+    DOMAPI_DeleteDOMImplementation(impl);
 }
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/DOMAPI", Util_HTMLDOMImplementation_createHTMLDocument);
@@ -111,19 +112,12 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/DOMAPI", Util_Node_TraceNode);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/DOMAPI", Util_getNodeByTagName);
 
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
-
-void DOMStringfree(void *arg0) {
-    int temp_a1;
-
-    temp_a1 = M2C_FIELD(arg0, int *, 8);
-    if (temp_a1 != 0) {
-        MEM_free(0, temp_a1);
-        M2C_FIELD(arg0, int *, 8) = 0;
-        M2C_FIELD(arg0, int *, 4) = 0;
-        M2C_FIELD(arg0, int *, 0) = 0;
+void DOMStringfree(DOMString *s) {
+    if (s->str != NULL) {
+        MEM_free(0, s->str);
+        s->str = NULL;
+        s->len = 0;
+        s->size = 0;
     }
 }
 
@@ -139,30 +133,20 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/DOMAPI", DOMStringtoEUC);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/DOMAPI", DOMStringtoUTF8);
 
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
+unsigned char *DOMStringtoASCII(const DOMString *s) {
+    unsigned char *p = MEM_malloc(0, s->len * 2 + 1);
 
-unsigned char *DOMStringtoASCII(void *arg0) {
-    unsigned char *temp_v0;
-    unsigned char *var_v0;
-
-    temp_v0 = MEM_malloc(0, (M2C_FIELD(arg0, int *, 4) * 2) + 1);
-    var_v0 = NULL;
-    if (temp_v0 != NULL) {
-        temp_v0[ucs2ToAscii(temp_v0, M2C_FIELD(arg0, unsigned short **, 8), M2C_FIELD(arg0, int *, 4))] = 0;
-        var_v0 = temp_v0;
+    if (p == NULL) {
+        return NULL;
     }
-    return var_v0;
+    p[ucs2ToAscii(p, s->str, s->len)] = 0;
+    return p;
 }
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/DOMAPI", DOMStringEncode);
 
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
-int DOMStringlen(void *arg0) {
-    return M2C_FIELD(arg0, int *, 4);
+int DOMStringlen(const DOMString *s) {
+    return s->len;
 }
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/DOMAPI", DOMStringcat);
@@ -175,32 +159,31 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/DOMAPI", DOMStringcasecmpChar);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/DOMAPI", DOMStringcasecmpCharFast);
 
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
-
-void cmDomiCharacterData_Finalize(int arg0) {
-    SDomiStrAcu_Finalize(arg0 + 0x2C);
-    cmDomiNode_Finalize(arg0);
+void cmDomiCharacterData_Finalize(SDomiCharacterData *n) {
+    SDomiStrAcu_Finalize(&n->data);
+    cmDomiNode_Finalize(&n->e.n);
 }
 
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
-int cmDomiCharacterData_get_nodeValue(void *arg0, void *arg1) {
-    M2C_FIELD(arg1, int *, 0) = (int) M2C_FIELD(arg0, int *, 0x34);
-    M2C_FIELD(arg1, int *, 4) = (int) M2C_FIELD(arg0, int *, 0x38);
+int cmDomiCharacterData_get_nodeValue(SDomiCharacterData *n, SDomiString *out) {
+    out->len = n->data.len;
+    out->str = n->data.buf;
     return 0;
 }
 
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
-
-void cmDomiCharacterData_set_nodeValue(void) {
-    SDomiCharacterData_set_data();
+int cmDomiCharacterData_set_nodeValue(SDomiCharacterData *n, const SDomiString *s) {
+    return SDomiCharacterData_set_data(n, s);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/DOMAPI", cmDomiCharacterData_cloneNode);
+int cmDomiCharacterData_cloneNode(SDomiCharacterData *n, int deep, SDomiNode **out) {
+    SDomiNode *clone;
+    int r;
+
+    *out = NULL;
+    r = SDomiDocument_createCharacterData(n->e.n.ownerDocument, n->e.n.nodeType, (SDomiString *)&n->data.len, &clone);
+    if (r == 0) {
+        *out = clone;
+    }
+    return r;
+}
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/DOMAPI", D_00134DB4);
