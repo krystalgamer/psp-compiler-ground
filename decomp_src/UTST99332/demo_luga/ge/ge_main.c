@@ -147,7 +147,21 @@ void geModelInit(int heap);
 void geSetCamera(int param, geCAMERA *camera);
 void geSetContext(geCONTEXT *context);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/ge/ge_main", geDrawStart);
+void geDrawStart(void)
+{
+	if (ge_start != 0) {
+		ge_start++;
+		return;
+	}
+
+	ge_start = 1;
+	sceGuStart(2, ge_displist[ge_cdb], sizeof(ge_displist[0]));
+	if (pCont->vramdepth == 1) {
+		sceGuDrawBufferList(1, ge_fbp[0][ge_cdb], 512);
+	} else if (pCont->vramdepth == 3) {
+		sceGuDrawBufferList(3, ge_fbp[1][ge_cdb], 512);
+	}
+}
 
 int geSetModule(int num, geMODULE *module)
 {
@@ -190,7 +204,26 @@ void geDrawFinWait(void) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/ge/ge_main", geSendProc);
+void geSendProc(void (*func)(void))
+{
+	geDrawStart();
+	if (func != NULL) {
+		func();
+	}
+
+	if (ge_start != 0) {
+		if (ge_start != 1) {
+			ge_start -= 1;
+		} else {
+			sceGuFinish();
+			sceGuSync(0, 0);
+			sceDisplayWaitVblankStartCB();
+			sceGuSendList(0, ge_displist[ge_cdb], NULL);
+			ge_start = 0;
+			ge_cdb ^= 1;
+		}
+	}
+}
 
 void geInit(void)
 {
