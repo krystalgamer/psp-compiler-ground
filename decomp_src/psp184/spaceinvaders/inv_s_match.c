@@ -25,6 +25,11 @@ extern u8 D_00080F88[];
 int VramAtariSub(s8 *buf, int x, int y, int w);
 void spr_boxmask(void *mask, int tex, int x, int y, int w, int h, int mw, int mh);
 
+typedef struct { int *p; int f4[7]; } INV_T;
+extern INV_T invt[] __asm__("inv");
+extern int enemove_c_1p_max;
+extern int enemove_c_2p_max;
+
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_match", inv_matchup_main);
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_match", inv_matchup_init);
@@ -167,9 +172,56 @@ INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_match", D_0007CD
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_match", matchup_inv_rankjudge);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_match", matchup_inv_reinforce);
+int matchup_inv_reinforce(int pl)
+{
+	int i;
+	int ret = 0;
+	int *s;
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_match", matchup_inv_reinforce_alloc);
+	for (i = 0; i < 48; i++) {
+		s = invt[i].p;
+		if (s && (s[3] & 2) && s[4] == pl) {
+			if (pl == 5) {
+				if (invt[i].f4[2] < 0x18)
+					ret = 1;
+			} else if (pl == 6) {
+				if (invt[i].f4[2] >= 0x23)
+					ret = 1;
+			}
+		}
+	}
+	return ret == 0;
+}
+
+extern INV_T invt[] __asm__("inv");
+extern int enemove_c_1p_max;
+extern int enemove_c_2p_max;
+void matchup_inv_reinforce_alloc(int pl)
+{
+	int i;
+	int start = 0;
+	int *s;
+
+	if (pl == 5) {
+		if (enemove_c_1p_max >= 0x18)
+			return;
+		enemove_c_1p_max += 8;
+		start = 0x10;
+	} else if (pl == 6) {
+		if (enemove_c_2p_max >= 0x30)
+			return;
+		enemove_c_2p_max += 8;
+		start = 0x28;
+	}
+	for (i = start; i < start + 8; i++) {
+		s = invt[i].p;
+		if (s) {
+			s[3] |= 0xA;
+			s[26] = s[10];
+			s[27] = s[11];
+		}
+	}
+}
 
 INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_match", D_0007CE04);
 
