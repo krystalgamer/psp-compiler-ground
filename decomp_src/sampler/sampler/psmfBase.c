@@ -25,6 +25,18 @@ typedef struct ScePsmf_Group {
 	SceUChar8 number_of_streams;
 } ScePsmf_Group;
 
+typedef struct ScePsmf_GroupStream {
+	SceUChar8 stream_id;
+	SceUChar8 private_stream_id;
+	SceUChar8 p_std_buffer_scale_and_size[2];
+	SceUChar8 ep_map_for_one_stream_id_start_address[4];
+	SceUChar8 number_of_EP_entries[4];
+} ScePsmf_GroupStream;
+
+typedef struct ScePsmf_SequenceInfo_Static {
+	SceUChar8 type;
+} ScePsmf_SequenceInfo_Static;
+
 #define SCE_PSMF_ERROR_NO_EP_MAP	0x80615025
 #define SCE_PSMF_ERROR_INVALID_ID	0x80615100
 #define SCE_PSMF_ERROR_NOT_FOUND	0x80615500
@@ -319,26 +331,22 @@ SceInt32 scePsmfGetSequenceInfo_Video_Base(ScePsmf *psmf, ScePsmf_SequenceInfo_V
 	return ret;
 }
 
-#ifdef NON_MATCHING
 SceInt32 scePsmfGetSequenceInfo_Audio_Base(ScePsmf *psmf, ScePsmf_SequenceInfo_Audio *pSInfo_Audio)
 {
-	SceUChar8 *pStream;
-	SceInt32 ret;
+	ScePsmf_SequenceInfo_Static *s_static;
+	SceInt32 ret = 0;
+	SceInt32 type;
 
-	ret = 0;
-	pStream = psmf->currentStream;
-	if (scePsmfCheckStreamType_Base(pStream[0], pStream[1]) == 1) {
-		pStream += 0xC;
-		pSInfo_Audio->channel_configuration = pStream[2];
-		pSInfo_Audio->sampling_frequency = pStream[3];
+	type = scePsmfCheckStreamType_Base(((SceUChar8 *)psmf->currentStream)[0], ((SceUChar8 *)psmf->currentStream)[1]);
+	s_static = (ScePsmf_SequenceInfo_Static *)((SceUChar8 *)psmf->currentStream + 12);
+	if (type == 1) {
+		pSInfo_Audio->channel_configuration = ((SceUChar8 *)s_static)[2];
+		pSInfo_Audio->sampling_frequency = ((SceUChar8 *)s_static)[3];
 	} else {
 		ret = SCE_PSMF_ERROR_INVALID_ID;
 	}
 	return ret;
 }
-#else
-INCLUDE_ASM("tmp/asm/sampler/sampler/nonmatchings/psmfBase", scePsmfGetSequenceInfo_Audio_Base);
-#endif
 
 SceInt32 scePsmfCheckEP_map_Base(ScePsmf *psmf)
 {
