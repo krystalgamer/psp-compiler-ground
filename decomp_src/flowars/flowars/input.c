@@ -168,9 +168,9 @@ extern int g_game_paused;
 extern Graphics graphics;
 extern int g_draw_vs_switch;
 extern L_Mod_Player l_mod_player;
-extern ModSystem mod_system;
-extern ModPlayer mod_player;
-extern ModGame mod_game;
+extern ModSystem mod_system __asm__("PRX_ZERO");
+extern ModPlayer mod_player __asm__("PRX_ZERO");
+extern ModGame mod_game __asm__("PRX_ZERO");
 extern int key_pressed;
 extern unsigned int counter;
 extern unsigned int delay;
@@ -179,7 +179,13 @@ extern int key_enable[8];
 extern char warning_msg[100];
 
 static void set_key_enable(int key, int flag);
+int sceCtrlSetSamplingMode(unsigned int uiMode);
+void stop_timer(void);
+/* "input changed confirm to 1\n", shared with pad_read (still asm) */
+extern char D_0002F7A8[];
+void print_nothing(const char *fmt, ...);
 static void init();
+static void init_63EC();
 static void press_circle();
 static int pad_read();
 
@@ -201,9 +207,71 @@ int get_key_enable(int key) {
     return key_enable[key];
 }
 
-INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/input", init_63EC);
+static void init_63EC()
+{
+	sceCtrlSetSamplingMode(1);
+	inputManager.g_cursor_pos = 0;
+	memset(key_enable, 0, sizeof(key_enable));
+}
 
-INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/input", press_circle);
+__asm__(".globl init_63EC");
+
+static void press_circle()
+{
+	if (g_stage_status == 14 && g_player_index == g_turn) {
+		g_player_pae_pos = inputManager.g_cursor_pos;
+		gameManager.goto_stage(15);
+		stop_timer();
+	}
+	if (g_stage_status == 28) {
+		stop_timer();
+		g_confirm = 2;
+		gameManager.goto_stage(15);
+		set_key_enable(3, 0);
+	} else if (g_stage_status == 27) {
+		stop_timer();
+		g_confirm = 2;
+		gameManager.goto_stage(14);
+		set_key_enable(3, 0);
+	} else if (g_stage_status == 29) {
+		stop_timer();
+		print_nothing(D_0002F7A8);
+		g_confirm = 2;
+		gameManager.goto_stage(61);
+		set_key_enable(3, 0);
+	} else if (g_stage_status == 31) {
+		stop_timer();
+		print_nothing("input changed confirm to 2\n");
+		g_confirm = 2;
+		gameManager.goto_stage(18);
+		set_key_enable(3, 0);
+	} else if (g_stage_status == 32) {
+		stop_timer();
+		print_nothing("input changed confirm2 to 2\n");
+		g_confirm2 = 2;
+		gameManager.goto_stage(20);
+		set_key_enable(3, 0);
+	} else if (g_stage_status == 71) {
+		stop_timer();
+		g_confirm = 2;
+		gameManager.goto_stage(61);
+		set_key_enable(3, 0);
+	} else if (g_stage_status == 94) {
+		set_key_enable(4, 0);
+		gameManager.goto_stage(93);
+	} else if (g_stage_status == 95) {
+		stop_timer();
+		gameManager.goto_stage(96);
+		set_key_enable(3, 0);
+		set_key_enable(4, 0);
+	} else if (g_stage_status == 97) {
+		stop_timer();
+		mod_system.return_value = 7;
+		g_continue = 0;
+	}
+}
+
+__asm__(".globl press_circle");
 
 INCLUDE_RODATA("tmp/asm/flowars/flowars/nonmatchings/input", D_0002F7A8);
 
