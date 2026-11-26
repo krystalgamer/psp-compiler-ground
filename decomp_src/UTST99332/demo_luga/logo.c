@@ -113,6 +113,8 @@ int proc_logo(void *p) {
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/logo", draw_logo);
+void draw_logo(void) {
+    geObjectDraw(&md->obj[0xF].co[0].z);
+}
 
 INCLUDE_RODATA("tmp/asm/UTST99332/demo_luga/nonmatchings/logo", D_00021630);
