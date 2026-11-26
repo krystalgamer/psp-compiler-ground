@@ -283,7 +283,157 @@ int OptionInit(void) {
     return 0;
 }
 
+#ifdef NON_MATCHING
+/* Byte-matches (fntest) but cannot be installed while the unit is mixed: its switch's
+ * jump table must sit at D_0002F428, before the float literals of the C functions that
+ * precede it.  Each two-way alpha/u choice is two separate calls (crossjumped). */
+typedef struct {
+	int unk00, unk04, unk08, unk0C, unk10, unk14, unk18, unk1C, unk20, unk24;
+} SaveData;
+extern SaveData SaveDataBuf;
+extern int D_0015402C;
+extern int D_00154030;
+extern int D_00154034;
+extern int D_00154038;
+extern int MsAccessFlag;
+extern const int option_ch_x[];
+extern const int option_ch_y[];
+extern const int option_ch_w[];
+extern const int option_ch_u[];
+extern const int option_ch_v[];
+int GetKeyHit(void);
+void SpriteInit(void);
+void SpriteKick(void);
+void SpriteSetFader(float);
+int se_play(int no);
+int MsLoad2(void);
+int MsSave2(void);
+void write_op_num(int x, int y, int num);
+int OptionMode(void)
+{
+	int ret;
+	int key;
+	int i;
+
+	if (MsAccessFlag) {
+		key = 0;
+		SpriteSetFader(0.5f);
+	} else {
+		key = GetKeyHit();
+		SpriteSetFader(1.0f);
+	}
+	SpriteInit();
+	ret = 0;
+	if (D_00154038)
+		disp_title_bg(127);
+	else
+		disp_title_bg(255);
+	DrawSpriteEz(2.0f, 140.0f, 8.0f, 200.0f, 48.0f, 0.0f, 96.0f, 7);
+	DrawSpriteEz(2.0f, 148.0f, 248.0f, 184.0f, 24.0f, 0.0f, 0.0f, 8);
+	if (D_00154030 == 0) {
+		for (i = 0; i < 4; i++) {
+			if (D_0015402C == i)
+				SetSpriteColorRGBA(255, 255, 255, 255);
+			else
+				SetSpriteColorRGBA(255, 255, 255, 127);
+			DrawSpriteEz(2.0f, option_ch_x[i], option_ch_y[i], option_ch_w[i], 32.0f, option_ch_u[i], option_ch_v[i], 12);
+		}
+		if (key & 0x40) {
+			se_play(4);
+			if (++D_0015402C >= 4)
+				D_0015402C = 0;
+		}
+		if (key & 0x10) {
+			se_play(4);
+			if (--D_0015402C < 0)
+				D_0015402C = 3;
+		}
+		SetSpriteColorRGBA(255, 255, 255, 255);
+		switch (D_0015402C) {
+		case 0:
+			if (GetKeyHit() & 0x20A0) {
+				SaveDataBuf.unk10 = 1 - SaveDataBuf.unk10;
+				se_play(4);
+			}
+			if (SaveDataBuf.unk10 == 1)
+				DrawSpriteEz(2.0f, 288.0f, 77.0f, 40.0f, 24.0f, 0.0f, 24.0f, 13);
+			else
+				DrawSpriteEz(2.0f, 288.0f, 77.0f, 40.0f, 24.0f, 40.0f, 24.0f, 13);
+			break;
+		case 1:
+			if (GetKeyHit() & 0x2008) {
+				se_play(4);
+				D_00154030 = 1;
+			}
+			break;
+		case 2:
+			if (key & 0x2008)
+				MsLoad2();
+			break;
+		case 3:
+			if (GetKeyHit() & 0x2008) {
+				se_play(4);
+				MsSave2();
+				D_0015402C = 4;
+			}
+			break;
+		case 4:
+			if (MsAccessFlag == 0) {
+				ret = 5;
+				D_0015402C = 3;
+			}
+			break;
+		}
+	} else {
+		for (i = 4; i < 10; i++)
+			DrawSpriteEz(2.0f, option_ch_x[i], option_ch_y[i], option_ch_w[i], 32.0f, option_ch_u[i], option_ch_v[i], 12);
+		write_op_num(318, 84, SaveDataBuf.unk14);
+		write_op_num(318, 112, SaveDataBuf.unk18);
+		write_op_num(318, 140, SaveDataBuf.unk1C);
+		SetSpriteColorRGBA(255, 255, 255, 127);
+		if (D_00154034 == 0) {
+			DrawSpriteEz(2.0f, 168.0f, 180.0f, 144.0f, 32.0f, 0.0f, 0.0f, 14);
+			SetSpriteColorRGBA(255, 255, 255, 255);
+			DrawSpriteEz(2.0f, 205.0f, 208.0f, 70.0f, 32.0f, 136.0f, 0.0f, 12);
+		} else {
+			DrawSpriteEz(2.0f, 205.0f, 208.0f, 70.0f, 32.0f, 136.0f, 0.0f, 12);
+			SetSpriteColorRGBA(255, 255, 255, 255);
+			DrawSpriteEz(2.0f, 168.0f, 180.0f, 144.0f, 32.0f, 0.0f, 0.0f, 14);
+		}
+		if (D_00154038 == 1) {
+			DrawSpriteEz(0.0f, 0.0f, 100.0f, 240.0f, 104.0f, 0.0f, 0.0f, 15);
+			DrawSpriteEz(0.0f, 240.0f, 100.0f, 240.0f, 104.0f, 240.0f, 0.0f, 15);
+			if (GetKeyHit() & 0x2008) {
+				SaveDataBuf.unk14 = 0;
+				SaveDataBuf.unk18 = 0;
+				SaveDataBuf.unk1C = 0;
+				se_play(1);
+				D_00154038 = 0;
+			}
+			if (GetKeyHit() & 0x4000) {
+				se_play(3);
+				D_00154038 = 0;
+			}
+		} else {
+			if (GetKeyHit() & 0x50) {
+				D_00154034 = 1 - D_00154034;
+				se_play(4);
+			}
+			if (GetKeyHit() & 0x2008) {
+				se_play(4);
+				if (D_00154034 == 0)
+					D_00154030 = 0;
+				else
+					D_00154038 = 1;
+			}
+		}
+	}
+	SpriteKick();
+	return ret;
+}
+#else
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/plsel", OptionMode);
+#endif
 
 INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/plsel", D_0002F648);
 
