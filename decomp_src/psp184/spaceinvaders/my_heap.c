@@ -1,4 +1,4 @@
-/* cflags: -O2 -fno-merge-constants */
+/* cflags: -O2 */
 #include "common.h"
 #include "m2c_macros.h"
 extern int g_addr;

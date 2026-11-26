@@ -1,4 +1,4 @@
-/* cflags: -O2 -fno-merge-constants */
+/* cflags: -O2 */
 #include "common.h"
 
 /* declarations recovered from DWARF (UTST99332 net_matching_moonball game) */
