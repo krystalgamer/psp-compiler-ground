@@ -392,7 +392,22 @@ static void DrawFunc(void)
 	sceGuSync(0, 0);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/menu/nonmatchings/main", KeyFunc);
+static void KeyFunc(void)
+{
+	u_int32 prev;
+	u_int32 padd;
+	SceCtrlData buf;
+	float axis[2];
+
+	prev = cont;
+	sceCtrlReadBufferPositive(&buf, 1);
+	padd = buf.Buttons & (buf.Buttons ^ prev);
+	cont = buf.Buttons;
+	axis[0] = buf.Lx - 128;
+	axis[1] = buf.Ly - 128;
+	if (func[program.mode].key)
+		func[program.mode].key(padd, cont, axis);
+}
 
 static int ProgramSwitch(void)
 {
