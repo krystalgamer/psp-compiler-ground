@@ -3,6 +3,131 @@
 # functions and names) and the module's .comment version.
 0x003E8 WaterPatch      1.6.1.internal  WaterPatch.cpp
 0x02D3C main            1.6.1.internal  main.cpp
+# main.cpp's range holds ~120 C++ objects (only the first has an STT_FILE
+# symbol): each starts with its __static_initialization_and_destruction_0
+# (GCC 3.3 emits it first; its _GLOBAL__I_/_GLOBAL__D_ and the weak template
+# instances it is the first to need follow the object's functions), or, for an
+# object without static constructors, with the first non-weak function after
+# such a run.  Names are made up from the constructor's key function.
+# With main split, the units' references would split .rodata by unit, which
+# the units' C (written against one asm blob) doesn't follow yet: keep it whole.
+rodata blob
+0x0DC98 glut_ReshapeFunc         1.6.1.internal  main_objs/glut_ReshapeFunc.cpp
+0x0E548 app3d_Callbacks          1.6.1.internal  main_objs/app3d_Callbacks.cpp
+0x10CDC common_Date              1.6.1.internal  main_objs/common_Date.cpp   # no static init
+0x1116C common_GetFileExtension  1.6.1.internal  main_objs/common_GetFileExtension.cpp
+0x11DB0 psp_GetKernelErrName     1.6.1.internal  main_objs/psp_GetKernelErrName.cpp
+0x13AC0 common_StateMachine_VirtualState 1.6.1.internal  main_objs/common_StateMachine_VirtualState.cpp
+0x14188 common_NoCrash           1.6.1.internal  main_objs/common_NoCrash.cpp
+0x1517C libc_fix_ItoA            1.6.1.internal  main_objs/libc_fix_ItoA.cpp
+0x15328 psp_DisplayList          1.6.1.internal  main_objs/psp_DisplayList.cpp
+0x155EC psp_VertexArrayEdit      1.6.1.internal  main_objs/psp_VertexArrayEdit.cpp
+0x1C7E8 psp_vram                 1.6.1.internal  main_objs/psp_vram.cpp
+0x1DD84 MakeRGBA8888             1.6.1.internal  main_objs/MakeRGBA8888.cpp   # no static init
+0x1F6B0 HouseKeeping_AttribStack 1.6.1.internal  main_objs/HouseKeeping_AttribStack.cpp
+0x22B1C gluBeginCurve            1.6.1.internal  main_objs/gluBeginCurve.cpp   # no static init
+0x23318 glutils_CheckerTexture   1.6.1.internal  main_objs/glutils_CheckerTexture.cpp
+0x237B0 vector_font_Console      1.6.1.internal  main_objs/vector_font_Console.cpp
+0x248C0 CubeMap_Face_Texture     1.6.1.internal  main_objs/CubeMap_Face_Texture.cpp
+0x2739C glutils_Material         1.6.1.internal  main_objs/glutils_Material.cpp
+0x27A88 interp_Path              1.6.1.internal  main_objs/interp_Path.cpp
+0x312EC glutils_Picking          1.6.1.internal  main_objs/glutils_Picking.cpp
+0x3245C glutils_PickingBase      1.6.1.internal  main_objs/glutils_PickingBase.cpp   # no static init
+0x326A0 glutils_PositioningInterface 1.6.1.internal  main_objs/glutils_PositioningInterface.cpp
+0x344BC obj                      1.6.1.internal  main_objs/obj.cpp
+0x34578 glutils_RectanglePicking 1.6.1.internal  main_objs/glutils_RectanglePicking.cpp
+0x34B28 glutils_StippleMask      1.6.1.internal  main_objs/glutils_StippleMask.cpp   # no static init
+0x34F1C math_Trackball           1.6.1.internal  main_objs/math_Trackball.cpp
+0x368F4 glutils_TrackballInterface 1.6.1.internal  main_objs/glutils_TrackballInterface.cpp
+0x374F0 glutils_TurnTable        1.6.1.internal  main_objs/glutils_TurnTable.cpp
+0x39E9C glutils_vertex_cache1    1.6.1.internal  main_objs/glutils_vertex_cache1.cpp
+0x3CA7C gl_ext_pglBlendEquationExt 1.6.1.internal  main_objs/gl_ext_pglBlendEquationExt.cpp
+0x3D214 glutils__arrow_pstack    1.6.1.internal  main_objs/glutils__arrow_pstack.cpp
+0x485D8 gl__name_stack           1.6.1.internal  main_objs/gl__name_stack.cpp
+0x4C9B0 vector_font_OutputText   1.6.1.internal  main_objs/vector_font_OutputText.cpp
+0x4D7EC interp_KeyFrameSequence  1.6.1.internal  main_objs/interp_KeyFrameSequence.cpp
+0x4E530 math_SphericalCoord      1.6.1.internal  main_objs/math_SphericalCoord.cpp
+0x4EC9C math_ZYZ                 1.6.1.internal  main_objs/math_ZYZ.cpp
+0x4FBD8 math_basic_net_basic_net 1.6.1.internal  main_objs/math_basic_net_basic_net.cpp
+0x50C2C math_bspline_curve_curve 1.6.1.internal  main_objs/math_bspline_curve_curve.cpp
+0x52538 math_matrix_eigenVectors 1.6.1.internal  main_objs/math_matrix_eigenVectors.cpp
+0x53F1C math_safe_acosf          1.6.1.internal  main_objs/math_safe_acosf.cpp
+0x55168 math_matrix_matrix       1.6.1.internal  main_objs/math_matrix_matrix.cpp
+0x5D6E0 math_quaternion_quaternion 1.6.1.internal  main_objs/math_quaternion_quaternion.cpp
+0x5F064 scene_HasBVdata          1.6.1.internal  main_objs/scene_HasBVdata.cpp
+0x5F3B4 scene_DefaultShader      1.6.1.internal  main_objs/scene_DefaultShader.cpp
+0x6030C scene_Graph              1.6.1.internal  main_objs/scene_Graph.cpp
+0x73D6C scene_Graph_2            1.6.1.internal  main_objs/scene_Graph_2.cpp
+0x75580 scene_GraphParser        1.6.1.internal  main_objs/scene_GraphParser.cpp
+0x7FDA0 scene_Graph_3            1.6.1.internal  main_objs/scene_Graph_3.cpp
+0x84160 scene_Graph_4            1.6.1.internal  main_objs/scene_Graph_4.cpp
+0x84AF0 scene_Graph_5            1.6.1.internal  main_objs/scene_Graph_5.cpp
+0x84E7C scene_Node               1.6.1.internal  main_objs/scene_Node.cpp
+0x85A08 scene_Group              1.6.1.internal  main_objs/scene_Group.cpp
+0x87014 scene_Material           1.6.1.internal  main_objs/scene_Material.cpp
+0x8798C scene_Mesh               1.6.1.internal  main_objs/scene_Mesh.cpp
+0x89B80 scene_MeshData           1.6.1.internal  main_objs/scene_MeshData.cpp
+0x8D9CC draw_mesh_enabled        1.6.1.internal  main_objs/draw_mesh_enabled.cpp
+0x90870 scene_Node_2             1.6.1.internal  main_objs/scene_Node_2.cpp
+0x915F8 scene_Object             1.6.1.internal  main_objs/scene_Object.cpp
+0x91EDC scene_Setup              1.6.1.internal  main_objs/scene_Setup.cpp
+0x92780 scene_Shape              1.6.1.internal  main_objs/scene_Shape.cpp
+0x938DC scene_StaticTransform    1.6.1.internal  main_objs/scene_StaticTransform.cpp
+0x94488 scene_Switch             1.6.1.internal  main_objs/scene_Switch.cpp
+0x94E70 scene_Texture            1.6.1.internal  main_objs/scene_Texture.cpp
+0x95D10 scene_Transform          1.6.1.internal  main_objs/scene_Transform.cpp
+0x9AB00 scene_TraversalVarStack  1.6.1.internal  main_objs/scene_TraversalVarStack.cpp
+0x9E944 scene_VertexArray        1.6.1.internal  main_objs/scene_VertexArray.cpp
+0xA0A18 VertexColorEnv           1.6.1.internal  main_objs/VertexColorEnv.cpp
+0xA19B0 sgl_BV                   1.6.1.internal  main_objs/sgl_BV.cpp
+0xA49E0 BVH                      1.6.1.internal  main_objs/BVH.cpp
+0xA5028 sgl_Box                  1.6.1.internal  main_objs/sgl_Box.cpp
+0xA5C1C sgl_Frustum              1.6.1.internal  main_objs/sgl_Frustum.cpp
+0xA82EC sgl_Heap                 1.6.1.internal  main_objs/sgl_Heap.cpp
+0xA9488 sgl_LineSet_Line_Vertex  1.6.1.internal  main_objs/sgl_LineSet_Line_Vertex.cpp
+0xAB598 sgl_Mesh                 1.6.1.internal  main_objs/sgl_Mesh.cpp
+0xB2ABC sgl_Mesh_2               1.6.1.internal  main_objs/sgl_Mesh_2.cpp
+0xB478C sgl_Mesh_3               1.6.1.internal  main_objs/sgl_Mesh_3.cpp
+0xB6290 sgl_Mesh_4               1.6.1.internal  main_objs/sgl_Mesh_4.cpp
+0xC3BA8 sgl_MeshBuilder_extruded_var_extruded_var 1.6.1.internal  main_objs/sgl_MeshBuilder_extruded_var_extruded_var.cpp
+0xCE0FC sgl_MeshParams           1.6.1.internal  main_objs/sgl_MeshParams.cpp
+0xCF2FC sgl_Stripper             1.6.1.internal  main_objs/sgl_Stripper.cpp
+0xD2750 sgl_TransformSet_Transform 1.6.1.internal  main_objs/sgl_TransformSet_Transform.cpp
+0xD2FF0 math_TransformStack      1.6.1.internal  main_objs/math_TransformStack.cpp
+0xD7260 math_TransformStackFunc  1.6.1.internal  main_objs/math_TransformStackFunc.cpp
+0xD7664 sgl_Edge                 1.6.1.internal  main_objs/sgl_Edge.cpp
+0xD8BE8 sh_DebugMap              1.6.1.internal  main_objs/sh_DebugMap.cpp
+0xD9170 sh_Env                   1.6.1.internal  main_objs/sh_Env.cpp
+0xDAD48 sh_HDRMap                1.6.1.internal  main_objs/sh_HDRMap.cpp
+0xDC77C Icosahedron_Bin          1.6.1.internal  main_objs/Icosahedron_Bin.cpp
+0xE2678 sh_Matrix                1.6.1.internal  main_objs/sh_Matrix.cpp
+0xE2CD4 sh_PRT                   1.6.1.internal  main_objs/sh_PRT.cpp
+0xE9668 sh_PolarFunction         1.6.1.internal  main_objs/sh_PolarFunction.cpp
+0xE999C sgl_RT                   1.6.1.internal  main_objs/sgl_RT.cpp
+0xED368 sh_sh_rot_Rmn            1.6.1.internal  main_objs/sh_sh_rot_Rmn.cpp
+0xEEA98 math_factorial           1.6.1.internal  main_objs/math_factorial.cpp
+0xEF3B4 sh_SphereSampling_Sample 1.6.1.internal  main_objs/sh_SphereSampling_Sample.cpp
+0xF1214 sh_SphericalRGBFn        1.6.1.internal  main_objs/sh_SphericalRGBFn.cpp
+0xF2488 sh_SquareMap             1.6.1.internal  main_objs/sh_SquareMap.cpp
+0xF2B2C sh_TestEnvSet_TestEnv    1.6.1.internal  main_objs/sh_TestEnvSet_TestEnv.cpp
+0xF50B4 sh_Vector                1.6.1.internal  main_objs/sh_Vector.cpp
+0xF5D78 interp_VectorRGBAnim     1.6.1.internal  main_objs/interp_VectorRGBAnim.cpp
+0xF7100 sh_VerticesVector        1.6.1.internal  main_objs/sh_VerticesVector.cpp
+0xF8640 FieldParser              1.6.1.internal  main_objs/FieldParser.cpp   # no static init
+0xF8B54 common_FileDump          1.6.1.internal  main_objs/common_FileDump.cpp
+0xF962C basic_file_parser_basic_file_parser 1.6.1.internal  main_objs/basic_file_parser_basic_file_parser.cpp
+0xF9A54 basic_parser_basic_parser 1.6.1.internal  main_objs/basic_parser_basic_parser.cpp
+0xFB454 float_basic_parser_get   1.6.1.internal  main_objs/float_basic_parser_get.cpp
+0xFB6B8 CCmpr                    1.6.1.internal  main_objs/CCmpr.cpp   # no static init
+0xFC798 sys_timer_Push           1.6.1.internal  main_objs/sys_timer_Push.cpp
+0xFD508 sys_timer_GetDeltaTime   1.6.1.internal  main_objs/sys_timer_GetDeltaTime.cpp
+0xFDA58 textures_textures_internal_Bmp 1.6.1.internal  main_objs/textures_textures_internal_Bmp.cpp
+0xFE8C8 psp_DumpVramBuffers      1.6.1.internal  main_objs/psp_DumpVramBuffers.cpp   # no static init
+0xFED6C FloatImage               1.6.1.internal  main_objs/FloatImage.cpp
+0x101494 textures_Texture         1.6.1.internal  main_objs/textures_Texture.cpp
+0x106860 textures_Texture_2       1.6.1.internal  main_objs/textures_Texture_2.cpp
+0x107670 textures_textures_internal_Tga 1.6.1.internal  main_objs/textures_textures_internal_Tga.cpp
+0x1086CC sgi_rgb_bwtorgba         1.6.1.internal  main_objs/sgi_rgb_bwtorgba.cpp
 0x109D90 libgum          1.6.1.internal  libgum.c
 0x10B4B0 libgu           1.6.1.internal  libgu.c
 0x144BB0 kernel_bridge   1.6.1.internal  kernel_bridge.c

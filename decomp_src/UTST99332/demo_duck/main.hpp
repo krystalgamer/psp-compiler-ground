@@ -19,8 +19,16 @@ namespace math {
 struct TransformStack;
 }
 
+namespace glut {
+extern int screen_width;
+extern int screen_height;
+}
+
 namespace app {
 void set_initial_res(int, int);
+int width();
+int height();
+float ratio();
 class Callbacks {
 public:
     Callbacks();
@@ -46,7 +54,16 @@ public:
     virtual ~Callbacks();
     virtual void draw();
     virtual void before_vsync();
+    void reset_camera();
+    void toggleGrid();
     void displayGrid(bool);
+    void setSceneScale(float);
+    void togglePivot();
+private:
+    char _pad5[0xEE1 - 5];
+    bool grid;          /* 0xEE1 */
+    bool pivot;         /* 0xEE2 */
+    float scene_scale;  /* 0xEE4 */
 };
 }
 
@@ -58,8 +75,23 @@ public:
 };
 
 namespace common {
+extern bool no_crash;
+void NoCrash(bool);
+class File {
+public:
+    bool is_open() const;
+    int flush();
+private:
+    struct Handle { int fd; } *handle;
+};
 class Date {
 public:
+    struct CopiableMembers {
+        CopiableMembers();
+        int year, month, day, hour, minute, second;
+    };
+    Date();
+    Date(const char *);
     void set_from_time_t(long *);
     void get_date();
     void get_file_date(const char *);
@@ -70,7 +102,7 @@ public:
     int getMinute() const;
     int getSecond() const;
 private:
-    int year, month, day, hour, minute, second;
+    CopiableMembers m;
 };
 
 namespace common_internal {
@@ -78,6 +110,8 @@ void on_error();
 void on_warning();
 class Log {
 public:
+    enum Channel { };
+    static Log &get(Channel);
     ~Log();
     void useHexa(bool);
 private:
@@ -85,6 +119,49 @@ private:
     bool hexa;
 };
 }
+common_internal::Log &Log(const char *);
+}
+
+/* depth blur (C++ linkage) */
+extern int _depthrange;
+extern float _focus;
+extern int _depthblur_debug;
+extern int depthblur_mode;
+extern bool depthspread;
+void DepthBlurSetRange(int);
+void DepthBlurIncrRange();
+void DepthBlurDecrRange();
+int DepthBlurGetRange();
+void DepthBlurSetFocus(float);
+float DepthBlurGetFocus();
+void DepthBlurCycleDebugMode();
+int DepthBlurGetDebugMode();
+void DepthBlurNextMode();
+void DepthBlurSetMode(int);
+void DepthBlurToggleSpread();
+
+namespace libc_fix {
+float AtoF(const char *);
+void ItoA(char *, unsigned int, int);
+void ItoAX(char *, unsigned int, int);
+int AtoI(const char *);
+}
+
+namespace psp {
+template<class T, class F> T convert(const F &);
+}
+
+namespace vector_font {
+class Console {
+public:
+    void setViewport(float, float);
+    void setColor(float, float, float);
+private:
+    char _pad0[0x18];
+    float vx, vy;       /* 0x18 */
+    char _pad20[8];
+    float r, g, b;      /* 0x28 */
+};
 }
 
 class CubeMap {
@@ -106,7 +183,20 @@ namespace math {
 struct quaternion;
 }
 
+namespace textures {
+class Texture;
+}
+
 namespace glutils {
+class CheckerTexture {
+public:
+    static void check_init();
+    static textures::Texture *get();
+    static unsigned int name();
+private:
+    static textures::Texture _checker_texture;
+    static unsigned int _name;
+};
 class PositioningInterface {
 public:
     void set_callback();

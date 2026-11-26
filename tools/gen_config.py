@@ -116,9 +116,17 @@ def rodata_overrides(t, name):
     out = []
     for line in path.read_text().splitlines():
         line = line.split("#")[0].split()
-        if line and line[0] == "rodata":
+        if line and line[0] == "rodata" and line[1] != "blob":
             out.append((int(line[1], 16), line[2]))
     return out
+
+
+def rodata_blob(t, name):
+    """A `rodata blob` line in files.MODULE.txt: all of .rodata stays one asm
+    file, however the units' references split it."""
+    path = ROOT / "config" / t / f"files.{name}.txt"
+    return path.exists() and any(l.split("#")[0].split()[:2] == ["rodata", "blob"]
+                                 for l in path.read_text().splitlines())
 
 
 def unit_name(src, used):
@@ -465,8 +473,8 @@ def main():
             out.append(f"      - {{ start: 0x{off:X}, type: {typ}, name: {nm}, linker_section: {s.name} }}\n")
             prev_kind = ".text" if typ == "asm" else ".rodata"
         elif s.name == ".rodata":
-            owners = rodata_owners(elf, data, segs, units, s)
-            overrides = rodata_overrides(t, name)
+            owners = None if rodata_blob(t, name) else rodata_owners(elf, data, segs, units, s)
+            overrides = [] if rodata_blob(t, name) else rodata_overrides(t, name)
             if owners is None and overrides:
                 # references out of unit order: only the hand-made split
                 # (`rodata ADDR UNIT` lines), the rest stays asm
