@@ -21,6 +21,14 @@ typedef struct {
 
 #define NDROP 256
 
+/* a ball hanging from a chain */
+typedef struct {
+	s16 a, b;
+	s16 x, y;
+	s16 col;
+	s16 pos;
+} PZL_CHAIN;
+
 typedef struct {
 	u8 pad0[3];
 	u8 flag;
@@ -74,7 +82,9 @@ typedef struct {
 	PZL_SND snd;		/* 0x460 */
 	u16 unk46C;		/* 0x46C */
 	u16 unk46E;		/* 0x46E */
-	u8 pad470[0x47B - 0x470];
+	u8 pad470[0x478 - 0x470];
+	s16 nchain;		/* 0x478: entries used in chain[] */
+	u8 pad47A;
 	s8 chara;		/* 0x47B */
 	s8 chara2;		/* 0x47C */
 	s8 chara_anim;		/* 0x47D */
@@ -98,7 +108,8 @@ typedef struct {
 	u8 attr[MAP_SIZE];	/* 0x1D58 */
 	u8 pad1F98[0x2220 - 0x1F98];
 	u8 rainbow[MAP_SIZE];	/* 0x2220 */
-	u8 pad2460[0x27C4 - 0x2460];
+	u8 pad2460[0x24C4 - 0x2460];
+	PZL_CHAIN chain[64];	/* 0x24C4 */
 } PZL_STAT;
 
 extern PZL_STAT Stat[3];

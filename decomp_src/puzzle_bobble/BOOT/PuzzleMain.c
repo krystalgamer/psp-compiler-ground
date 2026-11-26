@@ -1473,7 +1473,65 @@ INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", CheckNext);
 
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", CheckBallDrop);
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", CheckChain);
+void CheckChain(PZL_STAT *st, int col, int n, int a, int b)
+{
+	int queue[596];
+	int x, y, x2, y2;
+	int w, i, cnt, c, cur, k, p;
+	unsigned int addr;
+
+	w = GetMapWidth(st->mapno) * 2;
+	if (w == 0)
+		w = 16;
+	cnt = 1;
+	i = 0;
+	queue[0] = 0x22E - GetMapWidth(st->mapno) / 2;
+	for (; i < 0x22E; i++) {
+		if (i % w == w - 1)
+			st->attr[i] = -1;
+		else
+			st->attr[i] = 0;
+	}
+	do {
+		i = queue[--cnt];
+		cur = i;
+		GetBallCoordinate(st, i, &x, &y);
+		for (i = 1; i < 7; i++) {
+			addr = GetBallMapAddr(st, x, y, i);
+			if (addr < 0x240 && -st->scroll * GetMapWidth(st->mapno) < (int)addr) {
+				c = st->mp.map[addr];
+				if (st->attr[addr] != 0)
+					continue;
+				st->attr[addr] = 1;
+				if (c == 0 || c == 0x68) {
+					queue[cnt++] = addr;
+				} else if (c == col) {
+					GetBallCoordinate(st, addr, &x2, &y2);
+					for (k = 1; k < 7; k++) {
+						p = GetBallMapAddr(st, x2, y2, k);
+						if (st->mp.map[p] == c && st->mp.map[cur] == 0) {
+							st->mp.map[cur] = 0x68;
+							GetBallCoordinate(st, cur, &x2, &y2);
+							st->chain[st->nchain].a = a;
+							st->chain[st->nchain].b = (st->ent[n].flag = 0, b);
+							st->chain[st->nchain].x = x2;
+							st->chain[st->nchain].y = y2;
+							st->chain[st->nchain].col = col;
+							st->chain[st->nchain].pos = cur;
+							st->nchain++;
+							goto end;
+						}
+					}
+				}
+			}
+		}
+	} while (cnt > 0);
+end:
+	for (i = 0; i < 0x22E; i++) {
+		if (i % w == w - 1)
+			st->attr[i] = 0;
+	}
+}
 
 
 void TermChain(PZL_STAT *st)
