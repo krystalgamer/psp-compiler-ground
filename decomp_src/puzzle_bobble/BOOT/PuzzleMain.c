@@ -1677,7 +1677,132 @@ int CheckNext(PZL_STAT *st)
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", CheckNext);
 #endif
 
+#ifdef NON_MATCHING
+/* Three instructions long, logic complete (groups hanging from the ceiling (12), the
+ * falling balls become ent[] entries, chain colours go to CheckChain); register
+ * allocation of st and the loop counters differs. */
+void TermChain(PZL_STAT *st);
+void CheckBallDrop(PZL_STAT *st)
+{
+	int queue[308];
+	int used[12], ent[12], ex[12], ey[12];
+	int x, y, x2, y2;
+	int i, k, g, cnt, ngroup, flag, sound, n, mul, a, nc;
+
+	ngroup = 0;
+	for (i = 0; i < 0x240; i++) {
+		st->attr[i] = 0;
+		st->group[i] = 0;
+	}
+	GetMapWidth(st->mapno);
+	for (i = 0; i < 0x22E; i++) {
+		if (st->mp.map[i] != 12 || st->attr[i] != 0)
+			continue;
+		ngroup++;
+		st->attr[i] = 1;
+		st->group[i] = ngroup;
+		GetBallCoordinate(st, i, &x, &y);
+		for (k = 1; k < 7; k++) {
+			a = GetBallMapAddr(st, x, y, k);
+			if (a >= 0 && st->mp.map[a] != 0 && st->attr[a] == 0) {
+				st->attr[a] = 1;
+				cnt = 1;
+				queue[0] = a;
+				st->group[a] = ngroup;
+				do {
+					GetBallCoordinate(st, queue[--cnt], &x2, &y2);
+					for (g = 1; g < 7; g++) {
+						a = GetBallMapAddr(st, x2, y2, g);
+						if (a >= 0 && st->attr[a] == 0 && st->mp.map[a] != 0) {
+							queue[cnt++] = a;
+							st->attr[a] = 1;
+							st->group[a] = ngroup;
+						}
+					}
+				} while (cnt > 0);
+			}
+		}
+	}
+	if (st->mapsub == 0) {
+		for (g = 1; g <= ngroup; g++) {
+			flag = 0;
+			for (i = 0; i < 0x22E; i++) {
+				if (st->group[i] == g && st->mp.map[i] != 12)
+					flag = 1;
+			}
+			if (flag == 0) {
+				for (i = 0; i < 0x22E; i++) {
+					if (st->group[i] == g && st->mp.map[i] == 12)
+						st->attr[i] = 0;
+				}
+			}
+		}
+	}
+	st->unk456 = 0;
+	mul = 1;
+	n = 0;
+	for (i = 0; i < 8; i++) {
+		used[i + 1] = 0;
+		st->chaincol[i + 1] = 0;
+	}
+	sound = 0;
+	for (i = 0x22D; i >= 0; i--) {
+		GetBallCoordinate(st, i, &x2, &y2);
+		if (st->attr[i] == 0 && st->mp.map[i] != 0) {
+			st->rainbow[i] = 0;
+			st->ent[st->unk458].x = x2;
+			st->ent[st->unk458].y = y2;
+			st->ent[st->unk458].x += MapXBeginPos[st->mapno * 3 + st->mapsub] - 8;
+			st->ent[st->unk458].y += st->ofs_y + st->scroll * 14 + 32;
+			st->ent[st->unk458].col = st->mp.map[i];
+			st->ent[st->unk458].vy = -st->unk456;
+			ey[st->mp.map[i]] = y2;
+			ent[st->mp.map[i]] = st->unk458;
+			st->ent[st->unk458].flag = 1;
+			used[st->mp.map[i]] = 1;
+			ex[st->mp.map[i]] = x2;
+			st->unk456 += 2;
+			st->unk458 = (st->unk458 + 1) % 192;
+			DrawBubble(0.0f, x2 + MapXBeginPos[st->mapno * 3 + st->mapsub] + 72, y2 + st->ofs_y + st->scroll * 14, st->mp.map[i] - 1, 0);
+			if (st->mp.map[i] != 0 && st->mp.map[i] != 12)
+				sound = 1;
+			n++;
+			st->mp.map[i] = 0;
+			if (st->unk429 * 3 + 17 >= n)
+				mul *= 2;
+		}
+	}
+	st->score += n;
+	if (st->score >= 10000)
+		st->score = 9999;
+	if (sound)
+		se_play(16);
+	if (st->unk45F != 0) {
+		nc = 0;
+		for (i = 1; i < 9; i++) {
+			if (used[i])
+				st->chaincol[nc++] = i;
+		}
+		st->nchain = 0;
+		st->unk470 = 0;
+		if (nc != 0) {
+			for (i = 0; i < nc; i++)
+				CheckChain(st, st->chaincol[i], ent[st->chaincol[i]], ex[st->chaincol[i]], ey[st->chaincol[i]]);
+			TermChain(st);
+		}
+	}
+	if (n != 0) {
+		st->unk434 += mul;
+		if (st->mapsub != 1)
+			Stat[1].unk476 += n * 2;
+		else
+			Stat[2].unk476 += n * 2;
+	}
+	st->unk45A = 0;
+}
+#else
 INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/PuzzleMain", CheckBallDrop);
+#endif
 
 void CheckChain(PZL_STAT *st, int col, int n, int a, int b)
 {

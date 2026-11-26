@@ -30,9 +30,10 @@ typedef struct {
 } PZL_CHAIN;
 
 typedef struct {
-	u8 pad0[3];
+	s16 x, y;
+	s16 vy;
+	u8 col;
 	u8 flag;
-	int pad4;
 } PZL_ENT;
 
 /* a player's game state (Stat[3]); only the fields seen so far are named */
@@ -70,11 +71,13 @@ typedef struct {
 	s8 bubstat_arg;		/* 0x44D */
 	s8 bubline;		/* 0x44E */
 	u8 cpu;			/* 0x44F: CPU player state */
-	u8 pad450[0x454 - 0x450];
+	s16 score;		/* 0x450 */
+	u8 pad452[0x454 - 0x452];
 	s16 unk454;		/* 0x454 */
-	u8 pad456[2];
+	u16 unk456;		/* 0x456 */
 	s16 unk458;		/* 0x458 */
-	u8 pad45A[0x45C - 0x45A];
+	u8 unk45A;		/* 0x45A */
+	u8 pad45B;
 	u8 unk45C;		/* 0x45C */
 	s8 monitor;		/* 0x45D */
 	s8 monitor_anim;	/* 0x45E */
@@ -82,7 +85,9 @@ typedef struct {
 	PZL_SND snd;		/* 0x460 */
 	u16 unk46C;		/* 0x46C */
 	u16 unk46E;		/* 0x46E */
-	u8 pad470[0x478 - 0x470];
+	s16 unk470;		/* 0x470 */
+	u8 pad472[0x476 - 0x472];
+	u16 unk476;		/* 0x476 */
 	s16 nchain;		/* 0x478: entries used in chain[] */
 	u8 pad47A;
 	s8 chara;		/* 0x47B */
@@ -97,18 +102,21 @@ typedef struct {
 		u8 pad3;
 		PZL_DROP d[NDROP];	/* 0x484 */
 	} drop;			/* 0x480 */
-	u8 pad_drop[0x13B8 - 0x484 - NDROP * 6];
-	PZL_ENT ent[192];	/* 0x13B8 */
-	u8 pad19B8[0x1AF0 - 0x19B8];
+	u8 pad_drop[0x13B4 - 0x484 - NDROP * 6];
+	PZL_ENT ent[192];	/* 0x13B4 */
+	u8 pad19B4[0x1AF0 - 0x19B4];
 	struct {
 		u8 pad0[4];
 		u8 map[MAP_SIZE];	/* 0x1AF4 */
 	} mp;			/* 0x1AF0 */
 	u8 pad1D34[0x1D58 - 0x1D34];
 	u8 attr[MAP_SIZE];	/* 0x1D58 */
-	u8 pad1F98[0x2220 - 0x1F98];
+	u8 pad1F98[0x1FBC - 0x1F98];
+	u8 group[MAP_SIZE];	/* 0x1FBC */
+	u8 pad21FC[0x2220 - 0x21FC];
 	u8 rainbow[MAP_SIZE];	/* 0x2220 */
-	u8 pad2460[0x24C4 - 0x2460];
+	u8 pad2460[0x2484 - 0x2460];
+	u8 chaincol[0x40];	/* 0x2484 */
 	PZL_CHAIN chain[64];	/* 0x24C4 */
 } PZL_STAT;
 
