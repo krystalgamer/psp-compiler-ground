@@ -1107,7 +1107,45 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/history", HST_getParentExtSessi
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/history", HST_getParentExtHistoryURI);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/history", HST_getExtHistoryURI);
+void *HST_getExtHistoryURI(HstNode *top, int sid, char *type) {
+    HstNode *node;
+    HstNode *r;
+
+    node = top;
+    r = searchExtFileHistoryURI(node, sid, type);
+    if (r != NULL) {
+        return r;
+    }
+    while (node != NULL) {
+        if (node->child != NULL) {
+            node = node->child;
+        } else if (node->next != NULL) {
+            node = node->next;
+        } else {
+            node = node->parent;
+            if (node == NULL) {
+                break;
+            }
+        climb:
+            if (node->next == NULL) {
+                goto up;
+            }
+            node = node->next;
+        }
+        r = searchExtFileHistoryURI(node, sid, type);
+        if (r != NULL) {
+            return r;
+        }
+        continue;
+    up:
+        node = node->parent;
+        if (node != NULL) {
+            goto climb;
+        }
+        break;
+    }
+    return NULL;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
