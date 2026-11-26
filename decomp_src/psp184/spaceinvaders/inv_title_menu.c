@@ -19,6 +19,11 @@ extern int title_main;
 extern int D_00349230;
 extern int D_00349268;
 
+extern int memory_buf;
+extern int malloc_max_size;
+typedef struct { int f0; int f4; int f8; int fC; } BG_T;
+typedef struct { int f0; int f4; int f8[6]; int f20[6]; } SEL_T;
+
 int inv_title_main(void) {
     inv_title_memcheck();
     inv_logo();
@@ -80,7 +85,17 @@ INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_title_menu", D_000
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_title_menu", title_main_return);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_title_menu", title_init);
+void title_init(void)
+{
+	int *p = (int *)&D_00349218;
+
+
+	p[3] = 0;
+	p[0] = 0;
+	p[1] = 0;
+	p[2] = 0;
+	
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -113,7 +128,18 @@ void select_init(void) {
     D_00349230 = 0;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_title_menu", select_start);
+void select_start(void)
+{
+	int i;
+	SEL_T *s = (SEL_T *)&D_00349230;
+
+	s->f0 = 1;
+	s->f4 = -1;
+	for (i = 0; i < 6; i++) {
+		s->f20[i] = 0;
+		s->f8[i] = 0;
+	}
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_title_menu", select_start_check);
 
@@ -139,11 +165,48 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_title_menu", title_bg
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_title_menu", title_bg_star_disp);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_title_menu", game_bg_init);
+void game_bg_init(void)
+{
+	int i;
+	BG_T *bg = (BG_T *)&D_00349268;
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_title_menu", game_bg_start);
+	for (i = 0; i < 4; i++) {
+		bg[i].f0 = ((int *)&D_00349268 - 24)[i];
+		bg[i].f4 = 0;
+	}
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_title_menu", game_bg_end);
+void game_bg_start(int no)
+{
+	int i;
+	BG_T *bg = (BG_T *)&D_00349268;
+
+	for (i = 0; i < 4; i++) {
+		if (i == no) {
+			if (bg[i].f4 == 0 || bg[i].f4 == 3) {
+				bg[i].f4 = 1;
+				bg[i].f8 = 0;
+				bg[i].fC = 0;
+			}
+		} else {
+			if (bg[i].f4 == 1 || bg[i].f4 == 2)
+				bg[i].f4 = 3;
+		}
+	}
+}
+
+void game_bg_end(int no)
+{
+	int i;
+	BG_T *bg = (BG_T *)&D_00349268;
+
+	for (i = 0; i < 4; i++) {
+		if (i == no || no == -1) {
+			if (bg[i].f4 == 1 || bg[i].f4 == 2)
+				bg[i].f4 = 3;
+		}
+	}
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_title_menu", game_bg_disp);
 
