@@ -35,13 +35,17 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/WaterPatch", _ZNK10WaterPa
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/WaterPatch", _ZN10WaterPatch6updateEv);
 
+#ifndef NULL
 #define NULL ((void *)0)
-
+#endif
 
 void _GLOBAL__I__ZN10WaterPatchC2Ejjfiff(void) {
     _Z41__static_initialization_and_destruction_0ii_3E8(1, 0xFFFF);
 }
 
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
 void _GLOBAL__D__ZN10WaterPatchC2Ejjfiff(void) {
     _Z41__static_initialization_and_destruction_0ii_3E8(0, 0xFFFF);
