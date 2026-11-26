@@ -73,7 +73,108 @@ static SceInt32 soundbuf_swapbuf(t_soundBuffer *pSound, SceChar8 *buf);
 SceInt32 soundbuf_output(t_soundBuffer *pSound);
 
 
-INCLUDE_ASM("tmp/asm/psp184/mpegon/nonmatchings/sound", soundbuf_create);
+int puts(const char *s);
+int sceWaveInit(void);
+int sceWaveAudioSetSample(int channel, int samples);
+int sceKernelCreateSema(const char *name, unsigned int attr, int init, int max, void *option);
+void *malloc(unsigned int size);
+void *memalign(unsigned int align, unsigned int size);
+
+const char D_00012448[] = "fatal error : sceWaveInit()";
+const char D_00012464[] = "sound_lockSema";
+
+SceInt32 soundbuf_create(t_soundBuffer *pSound, SceInt32 bufSize, SceInt32 buf_num, t_conditionCtrl *pCtrl)
+{
+	SceInt32 i, ret;
+
+	pSound->bufSize = bufSize;
+	pSound->size = buf_num;
+	pSound->pCtrl = pCtrl;
+
+	pSound->buf = NULL;
+	pSound->pts = NULL;
+
+	outputBuf[0] = NULL;
+	outputBuf[1] = NULL;
+
+	ret = 0;
+
+	if (sceWaveInit() != 0) {
+		puts(D_00012448);
+		ret = -1;
+		goto error;
+	}
+
+	if (sceWaveAudioSetSample(0, 2048) != 0) {
+		ret = -1;
+		goto error;
+	}
+
+	pSound->lockSema = sceKernelCreateSema(D_00012464, 0, 1, 1, NULL);
+
+	pSound->buf = malloc(pSound->size * sizeof(SceChar8 *));
+	if (pSound->buf == NULL) {
+		ret = -1;
+		goto error;
+	}
+
+	for (i = 0; i < pSound->size; i++) {
+		pSound->buf[i] = NULL;
+	}
+
+	for (i = 0; i < pSound->size; i++) {
+		pSound->buf[i] = memalign(64, pSound->bufSize);
+		if (pSound->buf[i] == NULL) {
+			ret = -1;
+			goto error;
+		}
+	}
+
+	pSound->pts = malloc(pSound->size * sizeof(SceUInt32));
+	if (pSound->pts == NULL) {
+		ret = -1;
+		goto error;
+	}
+
+	for (i = 0; i < 2; i++) {
+		outputBuf[i] = malloc(pSound->bufSize);
+		if (outputBuf[i] == NULL) {
+			goto error;
+		}
+	}
+
+	soundIntervalSize = 4179;
+
+	goto term;
+
+error:
+	if (pSound->buf != NULL) {
+		for (i = 0; i < pSound->size; i++) {
+			if (pSound->buf[i] != NULL) {
+				free(pSound->buf[i]);
+				pSound->buf[i] = NULL;
+			}
+		}
+
+		free(pSound->buf);
+		pSound->buf = NULL;
+	}
+
+	if (pSound->pts != NULL) {
+		free(pSound->pts);
+		pSound->pts = NULL;
+	}
+
+	for (i = 0; i < 2; i++) {
+		if (outputBuf[i] != NULL) {
+			free(outputBuf[i]);
+			outputBuf[i] = NULL;
+		}
+	}
+
+term:
+	return ret;
+}
 
 SceInt32 soundbuf_reset(t_soundBuffer *pSound)
 {
