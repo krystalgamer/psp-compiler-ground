@@ -1,49 +1,68 @@
+/* cflags: -O1 */
 #include "common.h"
-#include "m2c_macros.h"
+#include "dom_domi.h"
 
+int SDomiText_splitText(SDomiCharacterData *n, unsigned int off, SDomiNode **out) {
+    unsigned int len = n->data.len;
+    SDomiNode *clone;
+    SDomiNode *dummy;
+    SDomiNode *parent;
+    int r;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/SDomiText", SDomiText_splitText);
-
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/SDomiText", cmDomiTrunkNode_Changed);
-
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
-void cmDomiTrunkNode_SetParentNode(void *arg0, int arg1) {
-    M2C_FIELD(arg0, int *, 0x2C) = arg1;
+    *out = NULL;
+    if (len < off) {
+        return 1;
+    }
+    r = n->e.n.vt->cloneNode(n, 0, &clone);
+    if (r == 0) {
+        parent = n->e.n.vt->get_parentNode(n);
+        if (parent != NULL) {
+            r = parent->vt->insertBefore(parent, clone, n->e.n.vt->get_nextSibling(n), &dummy);
+            if (r != 0) {
+                return r;
+            }
+        }
+        SDomiCharacterData_deleteData(n, off, len - off);
+        SDomiCharacterData_deleteData((SDomiCharacterData *)clone, 0, off);
+        *out = clone;
+    }
+    return r;
 }
 
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
-void cmDomiTrunkNode_SetPreviousSibling(void *arg0, int arg1) {
-    M2C_FIELD(arg0, int *, 0x30) = arg1;
+void cmDomiTrunkNode_Changed(SDomiTrunkNode *n) {
+    SDomiNode *parent;
+    SDomiDocument *doc;
+
+    cmDomiInternalNode_Changed(&n->i.n);
+    parent = n->parentNode;
+    if (parent != NULL) {
+        doc = n->i.n.ownerDocument;
+        if (doc == NULL || doc->changed != 0) {
+            parent->vt->Changed(parent);
+        }
+    }
 }
 
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
-void cmDomiTrunkNode_SetNextSibling(void *arg0, int arg1) {
-    M2C_FIELD(arg0, int *, 0x34) = arg1;
+void cmDomiTrunkNode_SetParentNode(SDomiTrunkNode *n, SDomiNode *p) {
+    n->parentNode = p;
 }
 
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
-int cmDomiTrunkNode_get_parentNode(void *arg0) {
-    return M2C_FIELD(arg0, int *, 0x2C);
+void cmDomiTrunkNode_SetPreviousSibling(SDomiTrunkNode *n, SDomiNode *p) {
+    n->previousSibling = p;
 }
 
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
-int cmDomiTrunkNode_get_previousSibling(void *arg0) {
-    return M2C_FIELD(arg0, int *, 0x30);
+void cmDomiTrunkNode_SetNextSibling(SDomiTrunkNode *n, SDomiNode *p) {
+    n->nextSibling = p;
 }
 
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
-int cmDomiTrunkNode_get_nextSibling(void *arg0) {
-    return M2C_FIELD(arg0, int *, 0x34);
+SDomiNode *cmDomiTrunkNode_get_parentNode(SDomiTrunkNode *n) {
+    return n->parentNode;
+}
+
+SDomiNode *cmDomiTrunkNode_get_previousSibling(SDomiTrunkNode *n) {
+    return n->previousSibling;
+}
+
+SDomiNode *cmDomiTrunkNode_get_nextSibling(SDomiTrunkNode *n) {
+    return n->nextSibling;
 }

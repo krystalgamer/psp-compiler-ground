@@ -1,5 +1,14 @@
+/* cflags: -O1 */
 #include "common.h"
 #include "m2c_macros.h"
+int DocumentSet(int, void *, M2C_UNK);              /* extern */
+void *HST_searchSessionIDHistoryNode(int);          /* extern */
+int Node_getJSObj(int);                             /* extern */
+M2C_UNK Node_setJSObj(int, int);                    /* extern */
+void *MEM_malloc(M2C_UNK, M2C_UNK);                 /* extern */
+M2C_UNK MEM_free(M2C_UNK, M2C_UNK *);               /* extern */
+int MEM_realloc(M2C_UNK, int, int);                 /* extern */
+
 M2C_UNK parseDeleteMultiBuffer();                   /* extern */
 M2C_UNK parseHST_deleteHistoryNode(M2C_UNK, M2C_UNK); /* extern */
 
@@ -137,7 +146,34 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", parseJSCreateEventArra
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", parseJSDestroyEventArray);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", parseJSDocumentSet);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void parseJSDocumentSet(void *arg0) {
+    int temp_v0_2;
+    int temp_v0_3;
+    int var_a0;
+    int var_s3;
+    void *temp_v0;
+
+    var_s3 = 0;
+    temp_v0 = HST_searchSessionIDHistoryNode(M2C_FIELD(arg0, int *, 0x10));
+    temp_v0_2 = HST_getParentHistoryNode(temp_v0);
+    if (temp_v0_2 != 0) {
+        var_a0 = 0;
+        if (HST_getDomObject((void *) temp_v0_2) != 0) {
+            var_s3 = Node_getJSObj(HST_getDomObject((void *) temp_v0_2));
+            goto block_3;
+        }
+    } else {
+block_3:
+        var_a0 = var_s3;
+    }
+    temp_v0_3 = DocumentSet(var_a0, temp_v0, 0);
+    M2C_FIELD(arg0, int *, 0x158) = temp_v0_3;
+    Node_setJSObj(M2C_FIELD(arg0, int *, 0x118), temp_v0_3);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", parseJSAnchorSet);
 
@@ -165,7 +201,63 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", parseIsSetAttribute);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", parseElementSetAttribute);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", parseNewCtxt);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+void *memset(void *s, int c, unsigned int n);
+
+void *parseNewCtxt(void) {
+    void *temp_v0;
+
+    temp_v0 = MEM_malloc(0, 0x170);
+    M2C_FIELD(temp_v0, int *, 0) = 0;
+    M2C_FIELD(temp_v0, int *, 4) = 0;
+    M2C_FIELD(temp_v0, int *, 8) = 2;
+    M2C_FIELD(temp_v0, int *, 0xC) = 0;
+    M2C_FIELD(temp_v0, int *, 0x10) = 0;
+    M2C_FIELD(temp_v0, int *, 0x14) = 0;
+    M2C_FIELD(temp_v0, int *, 0x18) = 0;
+    M2C_FIELD(temp_v0, int *, 0x1C) = 0;
+    M2C_FIELD(temp_v0, int *, 0x20) = 0;
+    M2C_FIELD(temp_v0, int *, 0x24) = 5;
+    M2C_FIELD(temp_v0, void **, 0x28) = MEM_malloc(0, 0x14);
+    M2C_FIELD(temp_v0, int *, 0x2C) = 0;
+    M2C_FIELD(temp_v0, int *, 0x30) = 0;
+    M2C_FIELD(temp_v0, int *, 0x34) = 0;
+    M2C_FIELD(temp_v0, signed char *, 0x38) = 0;
+    M2C_FIELD(temp_v0, signed char *, 0x39) = 0;
+    M2C_FIELD(temp_v0, signed char *, 0x3A) = 0;
+    M2C_FIELD(temp_v0, signed char *, 0x3B) = 0;
+    M2C_FIELD(temp_v0, signed char *, 0x3C) = 0;
+    M2C_FIELD(temp_v0, signed char *, 0x3D) = 0;
+    M2C_FIELD(temp_v0, short *, 0x3E) = -1;
+    M2C_FIELD(temp_v0, int *, 0x40) = 0;
+    M2C_FIELD(temp_v0, int *, 0x44) = 0;
+    M2C_FIELD(temp_v0, int *, 0x48) = 0;
+    M2C_FIELD(temp_v0, int *, 0x4C) = 1;
+    M2C_FIELD(temp_v0, int *, 0x50) = 0;
+    memset(temp_v0 + 0x54, 0, 0xBEU);
+    M2C_FIELD(temp_v0, int *, 0x120) = 0;
+    M2C_FIELD(temp_v0, int *, 0x124) = 0;
+    M2C_FIELD(temp_v0, signed char *, 0x128) = 0x61;
+    M2C_FIELD(temp_v0, signed char *, 0x12C) = 3;
+    M2C_FIELD(temp_v0, int *, 0x130) = 0;
+    M2C_FIELD(temp_v0, int *, 0x134) = 2;
+    M2C_FIELD(temp_v0, signed char *, 0x138) = 0x30;
+    M2C_FIELD(temp_v0, int *, 0x13C) = 0;
+    M2C_FIELD(temp_v0, int *, 0x140) = 0xA;
+    M2C_FIELD(temp_v0, int *, 0x144) = 0;
+    M2C_FIELD(temp_v0, int *, 0x148) = 0;
+    M2C_FIELD(temp_v0, int *, 0x150) = 8;
+    M2C_FIELD(temp_v0, int *, 0x154) = 8;
+    M2C_FIELD(temp_v0, int *, 0x158) = 0;
+    M2C_FIELD(temp_v0, int *, 0x15C) = 0;
+    M2C_FIELD(temp_v0, int *, 0x160) = 0;
+    M2C_FIELD(temp_v0, int *, 0x164) = 0;
+    M2C_FIELD(temp_v0, int *, 0x168) = 1;
+    M2C_FIELD(temp_v0, signed char *, 0x16C) = 0;
+    return temp_v0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", parseFreeCtxt);
 
@@ -173,7 +265,19 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", parseInitCtxt);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", parseDataInputBuf);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", parseNewMultiCtxt);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void *parseNewMultiCtxt(void) {
+    void *temp_v0;
+
+    temp_v0 = MEM_malloc(0, 0xC);
+    M2C_FIELD(temp_v0, int *, 4) = 0;
+    M2C_FIELD(temp_v0, int *, 8) = 5;
+    M2C_FIELD(temp_v0, void **, 0) = MEM_malloc(0, 0x14);
+    return temp_v0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", parseRegistBuffer);
 
@@ -181,11 +285,47 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", parseSearchSessionID);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", parseDeleteMultiBuffer);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", parseCreateBuffer);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", parseDeleteBuffer);
+void *parseCreateBuffer(void) {
+    void *temp_s0;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", parseGrowBuffer);
+    temp_s0 = MEM_malloc(0, 0xC);
+    M2C_FIELD(temp_s0, void **, 0) = MEM_malloc(0, 0x800);
+    M2C_FIELD(temp_s0, int *, 4) = 0x400;
+    M2C_FIELD(temp_s0, int *, 8) = 0;
+    return temp_s0;
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void parseDeleteBuffer(M2C_UNK *arg0) {
+    M2C_UNK *temp_a1;
+
+    if (arg0 != NULL) {
+        temp_a1 = *arg0;
+        if (temp_a1 != NULL) {
+            MEM_free(0, temp_a1);
+        }
+        MEM_free(0, arg0);
+    }
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void parseGrowBuffer(void *arg0) {
+    int temp_a2;
+
+    temp_a2 = M2C_FIELD(arg0, int *, 4) + 0x400;
+    M2C_FIELD(arg0, int *, 4) = temp_a2;
+    M2C_FIELD(arg0, int *, 0) = MEM_realloc(0, M2C_FIELD(arg0, int *, 0), temp_a2 * 2);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", parseSetBuffer);
 

@@ -1,5 +1,8 @@
+/* cflags: -O1 */
 #include "common.h"
 #include "m2c_macros.h"
+M2C_UNK SDomiDocManager_Free(M2C_UNK *);            /* extern */
+
 extern unsigned char gDomiError;
 extern unsigned char gDomiDocManager;
 
@@ -210,7 +213,13 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/httpdisasm", Document_importNod
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/httpdisasm", Document_getElementById);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/httpdisasm", DomiMoreMemory);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void DomiMoreMemory(void) {
+    SDomiDocManager_Free(&gDomiDocManager);
+}
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/httpdisasm", D_00134D90);
 

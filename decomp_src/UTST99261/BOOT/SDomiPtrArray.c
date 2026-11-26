@@ -1,33 +1,66 @@
+/* cflags: -O1 */
 #include "common.h"
-#include "m2c_macros.h"
-M2C_UNK UDomiMemory_Free(int);                      /* extern */
+#include "dom_domi.h"
 
-
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/SDomiPtrArray", SDomiPtrArray_Initialize);
-
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
-
-void SDomiPtrArray_Finalize(void) {
-    SDomiPtrArray_Free();
+void SDomiPtrArray_Initialize(SDomiPtrArray *a, unsigned int grow) {
+    a->grow = grow;
+    a->alloc = 0;
+    a->count = 0;
+    a->items = NULL;
 }
 
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
-
-void SDomiPtrArray_Free(void *arg0) {
-    M2C_FIELD(arg0, int *, 4) = 0;
-    M2C_FIELD(arg0, int *, 8) = 0;
-    UDomiMemory_Free(M2C_FIELD(arg0, int *, 0xC));
-    M2C_FIELD(arg0, int *, 0xC) = 0;
+void SDomiPtrArray_Finalize(SDomiPtrArray *a) {
+    SDomiPtrArray_Free(a);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/SDomiPtrArray", SDomiPtrArray_GetItem);
+void SDomiPtrArray_Free(SDomiPtrArray *a) {
+    a->alloc = 0;
+    a->count = 0;
+    UDomiMemory_Free(a->items);
+    a->items = NULL;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/SDomiPtrArray", SDomiPtrArray_Replace);
+void *SDomiPtrArray_GetItem(SDomiPtrArray *a, unsigned int i) {
+    return i < a->count ? a->items[i] : NULL;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/SDomiPtrArray", SDomiPtrArray_Insert);
+void SDomiPtrArray_Replace(SDomiPtrArray *a, unsigned int i, void *p) {
+    if (i < a->count) {
+        a->items[i] = p;
+    }
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/SDomiPtrArray", SDomiPtrArray_Remove);
+int SDomiPtrArray_Insert(SDomiPtrArray *a, unsigned int i, void *p) {
+    unsigned int size;
+    void **items;
+
+    if (a->count < i) {
+        i = a->count;
+    }
+    if (a->alloc <= a->count) {
+        size = a->count + a->grow + 1;
+        items = UDomiMemory_Allocate(size * sizeof(void *));
+        if (items == NULL) {
+            return 0;
+        }
+        UDomiMemory_Copy(items, a->items, i * sizeof(void *));
+        items[i] = p;
+        UDomiMemory_Copy(&items[i + 1], &a->items[i], (a->count - i) * sizeof(void *));
+        a->alloc = size;
+        a->count++;
+        UDomiMemory_Free(a->items);
+        a->items = items;
+    } else {
+        UDomiMemory_Move(&a->items[i + 1], &a->items[i], (a->count - i) * sizeof(void *));
+        a->items[i] = p;
+        a->count++;
+    }
+    return 1;
+}
+
+void SDomiPtrArray_Remove(SDomiPtrArray *a, unsigned int i) {
+    if (i < a->count) {
+        a->count--;
+        UDomiMemory_Move(&a->items[i], &a->items[i + 1], (a->count - i) * sizeof(void *));
+    }
+}

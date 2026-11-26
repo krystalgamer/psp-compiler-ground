@@ -1,22 +1,28 @@
+/* cflags: -O1 */
 #include "common.h"
-#include "m2c_macros.h"
+#include "dom_domi.h"
 
-
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
-int RecoverNodePtr(int arg0) {
-    int var_v0;
-
-    var_v0 = arg0 - 8;
-    if (arg0 == 0) {
-        var_v0 = 0;
-    }
-    return var_v0;
+SDomiNode *RecoverNodePtr(SDomiSLink *l) {
+    return l != NULL ? (SDomiNode *)((char *)l - 8) : NULL;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/SDomiNodeSLink", SDomiNodeSLink_RemoveFirst);
+SDomiNode *SDomiNodeSLink_RemoveFirst(SDomiSLink *head) {
+    return RecoverNodePtr(SDomiSLink_RemoveFirst(head));
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/SDomiNodeSLink", SDomiNodeSLink_DeleteAll);
+void SDomiNodeSLink_DeleteAll(SDomiSLink *head) {
+    SDomiNode *n;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/SDomiNodeSLink", cmDomiNotation_Finalize);
+    while ((n = SDomiNodeSLink_RemoveFirst(head)) != NULL) {
+        n->vt->Finalize(n);
+        UDomiMemory_Free(n);
+    }
+}
+
+void cmDomiNotation_Finalize(SDomiNode *n) {
+    SDomiNotation *no = (SDomiNotation *)n;
+
+    SDomiStringH_Finalize(&no->systemId);
+    SDomiStringH_Finalize(&no->publicId);
+    cmDomiNode_Finalize(n);
+}

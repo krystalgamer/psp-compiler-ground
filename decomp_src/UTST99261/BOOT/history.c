@@ -1,14 +1,55 @@
+/* cflags: -O1 */
 #include "common.h"
 #include "m2c_macros.h"
+int HST_initHistory();                              /* extern */
+extern int history;
+void *MEM_malloc(M2C_UNK, M2C_UNK);                 /* extern */
+M2C_UNK OS_thread_mutex_lock(int);                  /* extern */
+M2C_UNK OS_thread_mutex_unlock(int);                /* extern */
+int HST_httpHeaderDuplicate(int);                   /* extern */
+M2C_UNK HST_httpHeaderFree(int);                    /* extern */
+M2C_UNK MEM_free(M2C_UNK, void *);                  /* extern */
+M2C_UNK freeFragmentIDs(int);                       /* extern */
+M2C_UNK searchHistoryNodeInner(M2C_UNK, int, M2C_UNK); /* extern */
+M2C_UNK HST_deleteHistoryNode(int);                 /* extern */
+
 
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/history", HST_initHistory);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/history", HST_attachHistory);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+int HST_attachHistory(void) {
+    int var_v1;
+
+    var_v1 = 0;
+    if (history == 0) {
+        var_v1 = HST_initHistory();
+    }
+    return var_v1;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/history", HST_freeHistory);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/history", HST_createHistoryNode);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+void *memset(void *s, int c, unsigned int n);
+
+void *HST_createHistoryNode(void) {
+    void *temp_v0;
+    void *var_v0;
+
+    temp_v0 = MEM_malloc(0, 0xB8);
+    var_v0 = NULL;
+    if (temp_v0 != NULL) {
+        memset(temp_v0, 0, 0xB8U);
+        var_v0 = temp_v0;
+    }
+    return var_v0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/history", HST_deleteHistoryNode);
 
@@ -20,7 +61,23 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/history", HST_getHistoryLength)
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/history", HST_getCurrentIndex);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/history", HST_addSiblingHistoryNode);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int HST_addSiblingHistoryNode(void *arg0, void *arg1) {
+    void *var_a0;
+
+    var_a0 = arg0;
+    if (M2C_FIELD(var_a0, int *, 0xB0) != 0) {
+        do {
+            var_a0 = M2C_FIELD(var_a0, void **, 0xB0);
+        } while (M2C_FIELD(var_a0, int *, 0xB0) != 0);
+    }
+    M2C_FIELD(var_a0, void **, 0xB0) = arg1;
+    M2C_FIELD(arg1, int *, 0xA8) = (int) M2C_FIELD(var_a0, int *, 0xA8);
+    M2C_FIELD(arg1, void **, 0xB4) = var_a0;
+    return 0;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -52,11 +109,79 @@ int HST_getParentHistoryNode(void *arg0) {
     return M2C_FIELD(arg0, int *, 0xA8);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/history", HST_moveFrontHistory);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/history", HST_moveBackHistory);
+int HST_moveFrontHistory(void) {
+    void *temp_v0;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/history", HST_getHistoryWithOffset);
+    OS_thread_mutex_lock(M2C_FIELD(history, int *, 8));
+    temp_v0 = M2C_FIELD(history, void **, 0);
+    if ((temp_v0 == NULL) || (M2C_FIELD(temp_v0, int *, 4) == 0)) {
+        OS_thread_mutex_unlock(M2C_FIELD(history, int *, 8));
+        return -1;
+    }
+    M2C_FIELD(history, void **, 0) = (void *) M2C_FIELD(M2C_FIELD(history, void **, 0), void **, 4);
+    OS_thread_mutex_unlock(M2C_FIELD(history, int *, 8));
+    return 0;
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+int HST_moveBackHistory(void) {
+    void *temp_v0;
+
+    OS_thread_mutex_lock(M2C_FIELD(history, int *, 8));
+    temp_v0 = M2C_FIELD(history, void **, 0);
+    if ((temp_v0 == NULL) || (M2C_FIELD(temp_v0, int *, 8) == 0)) {
+        OS_thread_mutex_unlock(M2C_FIELD(history, int *, 8));
+        return -1;
+    }
+    M2C_FIELD(history, void **, 0) = (void *) M2C_FIELD(M2C_FIELD(history, void **, 0), void **, 8);
+    OS_thread_mutex_unlock(M2C_FIELD(history, int *, 8));
+    return 0;
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+int HST_getHistoryWithOffset(int arg0) {
+    int *var_s0;
+    int var_a0;
+    int var_a1;
+    int var_v0;
+
+    OS_thread_mutex_lock(M2C_FIELD(history, int *, 8));
+    if (arg0 >= 0) {
+        var_s0 = M2C_FIELD(history, int **, 0);
+        var_a1 = arg0;
+        if ((var_s0 != NULL) & (arg0 > 0)) {
+            do {
+                var_s0 = M2C_FIELD(var_s0, int **, 4);
+                var_a1 -= 1;
+            } while ((var_s0 != NULL) & (var_a1 > 0));
+        }
+    } else {
+        var_a0 = -arg0;
+        var_s0 = M2C_FIELD(history, int **, 0);
+        if ((var_s0 != NULL) & (var_a0 > 0)) {
+            do {
+                var_s0 = M2C_FIELD(var_s0, int **, 8);
+                var_a0 -= 1;
+            } while ((var_s0 != NULL) & (var_a0 > 0));
+        }
+    }
+    OS_thread_mutex_unlock(M2C_FIELD(history, int *, 8));
+    var_v0 = 0;
+    if (var_s0 != NULL) {
+        var_v0 = *var_s0;
+    }
+    return var_v0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/history", HST_setCurURI);
 
@@ -154,7 +279,34 @@ int HST_getTitlelen(void *arg0) {
     return M2C_FIELD(arg0, int *, 0x2C);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/history", HST_setJSURI);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int HST_setJSURI(void *arg0, void *arg1) {
+    int temp_v0;
+    int var_v0;
+    void *var_v1;
+
+    temp_v0 = M2C_FIELD(arg0, int *, 0x78);
+    if (temp_v0 == 0) {
+        M2C_FIELD(arg0, void **, 0x74) = arg1;
+        var_v0 = 1;
+        goto block_6;
+    }
+    if (temp_v0 > 0) {
+        var_v1 = M2C_FIELD(arg0, void **, 0x74);
+        if (M2C_FIELD(var_v1, int *, 0xB0) != 0) {
+            do {
+                var_v1 = M2C_FIELD(var_v1, void **, 0xB0);
+            } while (M2C_FIELD(var_v1, int *, 0xB0) != 0);
+        }
+        M2C_FIELD(var_v1, void **, 0xB0) = arg1;
+        var_v0 = M2C_FIELD(arg0, int *, 0x78) + 1;
+block_6:
+        M2C_FIELD(arg0, int *, 0x78) = var_v0;
+    }
+    return 0;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -167,7 +319,34 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/history", HST_getJSURI);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/history", HST_deleteJSURI);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/history", HST_setCSSURI);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int HST_setCSSURI(void *arg0, void *arg1) {
+    int temp_v0;
+    int var_v0;
+    void *var_v1;
+
+    temp_v0 = M2C_FIELD(arg0, int *, 0x80);
+    if (temp_v0 == 0) {
+        M2C_FIELD(arg0, void **, 0x7C) = arg1;
+        var_v0 = 1;
+        goto block_6;
+    }
+    if (temp_v0 > 0) {
+        var_v1 = M2C_FIELD(arg0, void **, 0x7C);
+        if (M2C_FIELD(var_v1, int *, 0xB0) != 0) {
+            do {
+                var_v1 = M2C_FIELD(var_v1, void **, 0xB0);
+            } while (M2C_FIELD(var_v1, int *, 0xB0) != 0);
+        }
+        M2C_FIELD(var_v1, void **, 0xB0) = arg1;
+        var_v0 = M2C_FIELD(arg0, int *, 0x80) + 1;
+block_6:
+        M2C_FIELD(arg0, int *, 0x80) = var_v0;
+    }
+    return 0;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -180,7 +359,13 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/history", HST_getCSSURI);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/history", HST_deleteCSSURI);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/history", HST_setStyleSheet);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int HST_setStyleSheet(void *arg0, int arg1) {
+    M2C_FIELD(arg0, int *, 0x70) = arg1;
+    return 0;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -189,7 +374,13 @@ int HST_getStyleSheet(void *arg0) {
     return M2C_FIELD(arg0, int *, 0x70);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/history", HST_setSourceType);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int HST_setSourceType(void *arg0, int arg1) {
+    M2C_FIELD(arg0, int *, 0x30) = (int) (arg1 != 0);
+    return 0;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -198,7 +389,13 @@ int HST_getSourceType(void *arg0) {
     return M2C_FIELD(arg0, int *, 0x30);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/history", HST_setMemoIndex);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int HST_setMemoIndex(void *arg0, int arg1) {
+    M2C_FIELD(arg0, int *, 0x34) = arg1;
+    return 0;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -207,7 +404,13 @@ int HST_getMemoIndex(void *arg0) {
     return M2C_FIELD(arg0, int *, 0x34);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/history", HST_setMethodType);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int HST_setMethodType(void *arg0, int arg1) {
+    M2C_FIELD(arg0, int *, 0x38) = (int) (arg1 != 0);
+    return 0;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -216,7 +419,13 @@ int HST_getMethodType(void *arg0) {
     return M2C_FIELD(arg0, int *, 0x38);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/history", HST_setRequestFlag);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int HST_setRequestFlag(void *arg0, int arg1) {
+    M2C_FIELD(arg0, int *, 0x3C) = arg1;
+    return 0;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -225,7 +434,13 @@ int HST_getRequestFlag(void *arg0) {
     return M2C_FIELD(arg0, int *, 0x3C);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/history", HST_setCharSet);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int HST_setCharSet(void *arg0, int arg1) {
+    M2C_FIELD(arg0, int *, 0x44) = arg1;
+    return 0;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -234,7 +449,13 @@ int HST_getCharSet(void *arg0) {
     return M2C_FIELD(arg0, int *, 0x44);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/history", HST_setSessionID);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int HST_setSessionID(void *arg0, int arg1) {
+    M2C_FIELD(arg0, int *, 0x48) = arg1;
+    return 0;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -243,7 +464,13 @@ int HST_getSessionID(void *arg0) {
     return M2C_FIELD(arg0, int *, 0x48);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/history", HST_setUnitId);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int HST_setUnitId(void *arg0, int arg1) {
+    M2C_FIELD(arg0, int *, 0x4C) = arg1;
+    return 0;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -284,7 +511,27 @@ int HST_getAuthPasswordlen(void *arg0) {
     return M2C_FIELD(arg0, int *, 0x5C);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/history", HST_setHttpHeader);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+int HST_setHttpHeader(void *arg0, int arg1) {
+    int temp_a0;
+    int temp_v0;
+    int var_v0;
+
+    temp_v0 = HST_httpHeaderDuplicate(arg1);
+    var_v0 = -1;
+    if (temp_v0 != 0) {
+        temp_a0 = M2C_FIELD(arg0, int *, 0x60);
+        if (temp_a0 != 0) {
+            HST_httpHeaderFree(temp_a0);
+        }
+        M2C_FIELD(arg0, int *, 0x60) = temp_v0;
+        var_v0 = 0;
+    }
+    return var_v0;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -302,9 +549,38 @@ int HST_getPostData(void *arg0) {
     return M2C_FIELD(arg0, int *, 0x64);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/history", HST_freePostData);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/history", HST_setDomObject);
+int HST_freePostData(void *arg0) {
+    void *temp_a1;
+    void *temp_a1_2;
+    void *temp_s0;
+
+    temp_s0 = M2C_FIELD(arg0, void **, 0x64);
+    if (temp_s0 != NULL) {
+        temp_a1 = M2C_FIELD(temp_s0, void **, 0);
+        if (temp_a1 != NULL) {
+            MEM_free(0, temp_a1);
+        }
+        temp_a1_2 = M2C_FIELD(temp_s0, void **, 4);
+        if (temp_a1_2 != NULL) {
+            MEM_free(0, temp_a1_2);
+        }
+        MEM_free(0, temp_s0);
+        M2C_FIELD(arg0, void **, 0x64) = NULL;
+    }
+    return 0;
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int HST_setDomObject(void *arg0, int arg1) {
+    M2C_FIELD(arg0, int *, 0x68) = arg1;
+    return 0;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -317,7 +593,15 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/history", HST_createFragmentIDs
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/history", HST_setFragmentIDs);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/history", HST_deleteFragmentIDs);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void HST_deleteFragmentIDs(void *arg0) {
+    freeFragmentIDs(M2C_FIELD(arg0, int *, 0x8C));
+    M2C_FIELD(arg0, int *, 0x8C) = 0;
+    M2C_FIELD(arg0, int *, 0x88) = 0;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -351,7 +635,13 @@ int HST_getFragmentIDsPosition(void *arg0) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/history", HST_moveFragmentIDs);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/history", HST_setTransStatus);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int HST_setTransStatus(void *arg0, int arg1) {
+    M2C_FIELD(arg0, int *, 0xA4) = arg1;
+    return 0;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -364,15 +654,44 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/history", HST_searchSessionIDHi
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/history", HST_searchRequestFlagHistoryNode);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/history", HST_searchDocumentHistoryNode);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void HST_searchDocumentHistoryNode(int arg0) {
+    searchHistoryNodeInner(3, arg0, 0);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/history", HST_searchTargetNameHistoryNode);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/history", HST_searchUriHistoryNode);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/history", HST_getHistoryGarbageList);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/history", HST_flushHistoryGarbageList);
+int HST_getHistoryGarbageList(void) {
+    return M2C_FIELD(history, int *, 4);
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void HST_flushHistoryGarbageList(void) {
+    void *temp_s0;
+    void *var_a1;
+
+    var_a1 = M2C_FIELD(M2C_FIELD(history, void **, 4), void **, 4);
+    if (var_a1 != NULL) {
+        do {
+            temp_s0 = M2C_FIELD(var_a1, void **, 4);
+            MEM_free(0, var_a1);
+            var_a1 = temp_s0;
+        } while (temp_s0 != NULL);
+    }
+    M2C_FIELD(M2C_FIELD(history, void **, 4), int *, 4) = 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/history", searchExtFileSessionID);
 
@@ -438,9 +757,41 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/history", HST_searchJSRequestFl
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/history", HST_diffHistoryNodes);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/history", HST_deleteCurrentHistory);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/history", deleteHistory);
+void HST_deleteCurrentHistory(void) {
+    void *temp_a0;
+    void *temp_s1;
+
+    OS_thread_mutex_lock(M2C_FIELD(history, int *, 8));
+    temp_a0 = M2C_FIELD(history, void **, 0);
+    temp_s1 = M2C_FIELD(temp_a0, void **, 8);
+    deleteHistory(temp_a0);
+    M2C_FIELD(history, void **, 0) = temp_s1;
+    OS_thread_mutex_unlock(M2C_FIELD(history, int *, 8));
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void deleteHistory(void *arg0) {
+    void *temp_v1;
+    void *temp_v1_2;
+
+    temp_v1 = M2C_FIELD(arg0, void **, 4);
+    if (temp_v1 != NULL) {
+        M2C_FIELD(temp_v1, void **, 8) = (void *) M2C_FIELD(arg0, void **, 8);
+    }
+    temp_v1_2 = M2C_FIELD(arg0, void **, 8);
+    if (temp_v1_2 != NULL) {
+        M2C_FIELD(temp_v1_2, void **, 4) = (void *) M2C_FIELD(arg0, void **, 4);
+    }
+    HST_deleteHistoryNode(M2C_FIELD(arg0, int *, 0));
+    MEM_free(0, arg0);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/history", searchHistoryNodeInner);
 
@@ -450,7 +801,13 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/history", uricmp_5704C);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/history", freeFragmentIDs);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/history", HST_setRequestResult);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int HST_setRequestResult(void *arg0, int arg1) {
+    M2C_FIELD(arg0, int *, 0x40) = arg1;
+    return 0;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
