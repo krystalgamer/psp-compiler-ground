@@ -24,6 +24,12 @@ int sceKernelRegisterExitCallback(int cbid);
 void sceKernelExitGame(void);
 
 
+/* SDK prototypes (tools/sdk_protos.h) */
+int sceKernelCreateThread(const char *name, void *entry, int prio, int stacksize, unsigned int attr, void *option);
+int sceKernelLoadExec(const char *file, SceKernelLoadExecParam *param);
+int sceKernelStartThread(int thid, unsigned int arglen, void *argp);
+int sprintf(char *buf, const char *fmt, ...);
+
 int ExitFunction(int count, int arg_impose, void *arg_self) {
     sceKernelExitGame();
     return 0;

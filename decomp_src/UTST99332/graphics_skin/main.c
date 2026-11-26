@@ -108,6 +108,41 @@ void sceGumDrawSpline(int vtype, int ucount, int vcount, int uedge, int vedge, c
 int sceDisplayWaitVblankStart(void);
 
 
+/* SDK prototypes (tools/sdk_protos.h) */
+int sceCtrlReadBufferPositive(SceCtrlData *data, int count);
+void sceGuAmbient(unsigned int color);
+void sceGuClearColor(unsigned int color);
+void sceGuClearDepth(unsigned int depth);
+void sceGuClearStencil(unsigned int stencil);
+void sceGuColor(unsigned int color);
+void sceGuDepthBuffer(void *zbp, int frame_width);
+void sceGuDepthFunc(int function);
+void sceGuDepthRange(int near, int far);
+void sceGuDisable(int state);
+void sceGuDispBuffer(int width, int height, void *dbp, int frame_width);
+int sceGuDisplay(int state);
+void sceGuDrawBuffer(int psm, void *fbp, int frame_width);
+void sceGuEnable(int state);
+void sceGuFrontFace(int order);
+void sceGuInit(void);
+void sceGuLight(int light, int type, int components, const ScePspFVector3 *position);
+void sceGuLightColor(int light, int component, unsigned int color);
+void sceGuOffset(unsigned int x, unsigned int y);
+void sceGuScissor(int x, int y, int w, int h);
+void sceGuSetDither(const void *matrix);
+void sceGuShadeModel(int mode);
+void sceGuTexFilter(int min, int mag);
+void sceGuTexFunc(int tfx, int tcc);
+void sceGuTexImage(int mipmap, int width, int height, int tbw, const void *tbp);
+void sceGuTexMode(int tpsm, int maxmips, int a2, int swizzle);
+void sceGuTexScale(float u, float v);
+void sceGuTexWrap(int u, int v);
+void sceGuViewport(int cx, int cy, int width, int height);
+void sceGumMatrixMode(int mode);
+void sceGumPerspective(float fovy, float aspect, float near, float far);
+void sceGumSetMatrixStack(void *stack, int proj, int view, int model, int texture);
+void sceGumStoreMatrix(ScePspFMatrix4 *m);
+
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_skin/nonmatchings/main", boneCalc);
 
 extern float D_00011B58;
