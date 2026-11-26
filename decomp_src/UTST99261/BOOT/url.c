@@ -64,7 +64,11 @@ void *memcpy(void *d, const void *s, unsigned int n);
 unsigned int strlen(const char *s);
 char *pathMake(char *path);
 int GIFParser(GIFCTX *ctx, int flag);
-int UTL_mfileread(void *f, void *buf, unsigned int n);
+int UTL_mfileread(MFILE *f, void *buf, int n);
+int UTL_mfilesize(void *f);
+int UTL_mfiledelete(MFILE *f);
+void UTL_mfileseek(MFILE *f, int pos);
+MFILE *UTL_mfilecreate(int bsize);
 QUEUE *UTL_peekqueue(QUEUE *q, QUEUE *e);
 int UTL_mfilewrite(void *f, void *buf, unsigned int n);
 
@@ -448,7 +452,36 @@ int UTL_mfiledelete(MFILE *f) {
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/url", UTL_mfileread);
+int UTL_mfileread(MFILE *f, void *buf, int n) {
+    int total = 0;
+    int len;
+    MBLOCK *b;
+
+    if (f->cur->flag != 1) {
+        return 0;
+    }
+    while (n > 0) {
+        len = f->cur->len - f->off;
+        if (len > 0) {
+            if (len > n) {
+                len = n;
+            }
+            memcpy(buf, (char *)(f->cur + 1) + f->off, len);
+            f->off += len;
+            n -= len;
+            buf = (char *)buf + len;
+            total += len;
+        } else {
+            b = (MBLOCK *)UTL_peekqueue(&f->q, &f->cur->q);
+            if (b == NULL) {
+                return total;
+            }
+            f->cur = b;
+            f->off = 0;
+        }
+    }
+    return total;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/url", UTL_mfilewrite);
 
@@ -536,7 +569,30 @@ void UTL_mfileseek(MFILE *f, int pos) {
     f->off = pos;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/url", UTL_mfileduplicate);
+MFILE *UTL_mfileduplicate(MFILE *f) {
+    char buf[0x200];
+    MFILE *d;
+    int size;
+    int n;
+
+    if (f == NULL || (d = UTL_mfilecreate(f->unk0)) == NULL) {
+        return NULL;
+    }
+    size = UTL_mfilesize(f);
+    UTL_mfileseek(f, 0);
+    while (size > 0) {
+        n = UTL_mfileread(f, buf, 0x200);
+        if (n <= 0) {
+            break;
+        }
+        if (UTL_mfilewrite(d, buf, n) != n) {
+            UTL_mfiledelete(d);
+            return NULL;
+        }
+        size -= n;
+    }
+    return d;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/url", UTL_strword);
 
