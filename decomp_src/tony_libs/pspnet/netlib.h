@@ -145,6 +145,8 @@ extern struct callout_list D_0000AC10;
 
 int _sce_pspnet_spllock(void);
 void _sce_pspnet_splunlock(int s);
+void _sce_pspnet_schednetintr(int isr);
+void sceNetMAdj(struct mbuf *m, int len);
 void _sce_pspnet_callout_stop(struct callout *c);
 void _sce_pspnet_callout_reset_usec(struct callout *c, unsigned int usec, void (*func)(void *), void *arg);
 struct thread_info *_sce_pspnet_get_threadinfo(SceUID thid);
@@ -379,9 +381,11 @@ struct if_data {
 	unsigned long long ifi_mtu;
 	unsigned long long ifi_metric;
 	unsigned long long ifi_baudrate;
-	char unk58[0x88 - 0x58];
+	char unk58[0x80 - 0x58];
+	unsigned long long ifi_ibytes;
 	unsigned long long ifi_obytes;
-	char unk90[0xB0 - 0x90];
+	unsigned long long ifi_imcasts;
+	char unk98[0xB0 - 0x98];
 };
 
 #define if_type if_data.ifi_type
@@ -392,6 +396,8 @@ struct if_data {
 #define if_metric if_data.ifi_metric
 #define if_baudrate if_data.ifi_baudrate
 #define if_obytes if_data.ifi_obytes
+#define if_ibytes if_data.ifi_ibytes
+#define if_imcasts if_data.ifi_imcasts
 
 struct ifnet {
 	void *if_softc;

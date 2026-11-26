@@ -240,7 +240,94 @@ int _sce_pspnet_stop_of_adhoc_module_in_if_ethersubr_core(void)
 	return 0;
 }
 
-INCLUDE_ASM("tmp/asm/tony_libs/pspnet/nonmatchings/if_ethersubr", func_00006E34);
+void func_00006E34(struct ifnet *ifp, struct mbuf *m)
+{
+	struct ifqueue *inq = NULL;
+	int isr = 0;
+	u_char *eh;
+	u_short etype;
+	int s;
+
+	if ((ifp->if_flags & 1) == 0) {
+		sceNetMFreem(m);
+		return;
+	}
+	eh = mtod(m, u_char *);
+	etype = (u_short)__builtin_allegrex_wsbh((eh[13] << 8) | eh[12]);
+	if (m->m_pkthdr.len > ifp->if_mtu + 14 + (((u_short)m->m_flags & 0x1000) ? 4 : 0) + ((etype == 0x8100) ? 4 : 0)) {
+		sceNetMFreem(m);
+		return;
+	}
+	ifp->if_ibytes += m->m_pkthdr.len;
+	if (eh[0] & 1)
+		ifp->if_imcasts++;
+	else if ((ifp->if_flags & 0x100) &&
+	    memcmp(ifp->if_sadl->sdl_data + ifp->if_sadl->sdl_nlen, eh, 6) != 0) {
+		sceNetMFreem(m);
+		return;
+	}
+	if (etype == 0x88C8) {
+		s = _sce_pspnet_spllock();
+		if (D_0000B094 > 0) {
+			if (((int (*)(struct ifnet *, struct mbuf *, struct ifqueue **))D_0000B08C)(ifp, m, &inq) >= 0) {
+				if (inq->ifq_len >= inq->ifq_maxlen) {
+					inq->ifq_drops++;
+					sceNetMFreem(m);
+				} else {
+					m->m_nextpkt = NULL;
+					if (inq->ifq_tail == NULL)
+						inq->ifq_head = m;
+					else
+						inq->ifq_tail->m_nextpkt = m;
+					inq->ifq_tail = m;
+					inq->ifq_len++;
+				}
+				_sce_pspnet_splunlock(s);
+				_sce_pspnet_schednetintr(0x1D);
+				return;
+			}
+			_sce_pspnet_splunlock(s);
+			return;
+		}
+		_sce_pspnet_splunlock(s);
+	}
+	if (D_0000B090 > 0) {
+		int handled = 0;
+
+		((void (*)(struct ifnet *, struct mbuf *, int, int *))D_0000B080)(ifp, m, etype, &handled);
+		if (handled > 0)
+			return;
+	}
+	sceNetMAdj(m, 14);
+	if (m->m_flags & 0x1000)
+		sceNetMAdj(m, -4);
+	if (D_0000B090 > 0) {
+		int handled = 0;
+
+		((void (*)(struct ifnet *, struct mbuf *, int, u_char *, struct ifqueue **, int *, int *))D_0000B084)(ifp, m, etype, eh, &inq, &isr, &handled);
+		if (handled > 0)
+			return;
+	}
+	if (inq == NULL) {
+		sceNetMFreem(m);
+		return;
+	}
+	s = _sce_pspnet_spllock();
+	if (inq->ifq_len >= inq->ifq_maxlen) {
+		inq->ifq_drops++;
+		sceNetMFreem(m);
+	} else {
+		m->m_nextpkt = NULL;
+		if (inq->ifq_tail == NULL)
+			inq->ifq_head = m;
+		else
+			inq->ifq_tail->m_nextpkt = m;
+		inq->ifq_tail = m;
+		inq->ifq_len++;
+		_sce_pspnet_schednetintr(isr);
+	}
+	_sce_pspnet_splunlock(s);
+}
 
 int func_000071C8(struct ifnet *ifp, struct mbuf *m, void *dst, void *rt)
 {
