@@ -450,7 +450,47 @@ static int func_00006324(unsigned int args, void *argp)
 	return 0;
 }
 
+#ifdef NON_MATCHING
+/* near-miss: register allocation/loop invariants differ (size 0x1e0 vs 0x1e8) */
+static int func_00006440(char *buf)
+{
+	SceWaveVoice *p;
+	int ch;
+	int n = 0;
+
+	wclr_i(buf, 0x70);
+	for (ch = 0, p = D_006A003C; ch < 8; ch++, p++) {
+		if (p->stat == 0)
+			continue;
+		n++;
+		if (!(p->flags & 0x400)) {
+			if (!(p->flags & 0x100)) {
+				if (p->data != NULL)
+					func_0000676C(ch, D_006A050C);
+			} else {
+				if (p->data != NULL)
+					func_00006A18(ch, D_006A050C);
+			}
+		} else {
+			if (p->unk44 != 0) {
+				wclr_i(D_006A050C, 0x70);
+				if (!(D_006A003C[ch].flags & 0x100)) {
+					if (((SceWaveCallback)D_006A003C[ch].unk44)(ch, D_006A0508, 0x10, D_006A003C[ch].unk48))
+						D_006A003C[ch].stat = 0;
+					func_00006628(D_006A050C, D_006A0508, &D_006A003C[ch].unk30, &D_006A003C[ch].unk34);
+				} else {
+					if (((SceWaveCallback)D_006A003C[ch].unk44)(ch, D_006A050C, 0x70, D_006A003C[ch].unk48))
+						D_006A003C[ch].stat = 0;
+				}
+			}
+		}
+		func_00006F88(ch, buf, D_006A050C);
+	}
+	return n;
+}
+#else
 INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libwave", func_00006440);
+#endif
 
 /* VAG (PS-ADPCM) block decoder: 28 samples from a 16-byte block */
 extern const signed char D_000F3644[2][5];
@@ -492,9 +532,241 @@ static int func_00006628(short *dst, unsigned char *vag, int *hist1, int *hist2)
 	return flags;
 }
 
+#ifdef NON_MATCHING
+/* near-miss: block layout of the error/wrap paths and register choice differ (size 0x294 vs 0x2ac) */
+static __inline__ void wcpy_i(void *dst, const void *src, unsigned int n)
+{
+	char *d = dst;
+	const char *s = src;
+	unsigned int i;
+
+	for (i = 0; i < n; i++)
+		*d++ = *s++;
+}
+
+static void func_0000676C(int ch, void *dst)
+{
+	char *data = D_006A003C[ch].data;
+	int ret;
+
+	wclr_i(dst, 0x70);
+	switch ((unsigned char)D_006A003C[ch].flags) {
+	case 0:
+		if (D_006A003C[ch].size < D_006A003C[ch].pos + 16) {
+			D_006A003C[ch].pos = 0;
+			D_006A003C[ch].stat = 0;
+			break;
+		}
+		wcpy_i(D_006A0508, data + D_006A003C[ch].pos, 16);
+		D_006A003C[ch].pos += 16;
+		func_00006628(dst, D_006A0508, &D_006A003C[ch].unk30, &D_006A003C[ch].unk34);
+		break;
+	case 1:
+		if (D_006A003C[ch].size < 16)
+			break;
+		if (D_006A003C[ch].pos + 16 <= D_006A003C[ch].size) {
+			wcpy_i(D_006A0508, data + D_006A003C[ch].pos, 16);
+		} else {
+			D_006A003C[ch].pos = D_006A003C[ch].unk10;
+			wcpy_i(D_006A0508, data + D_006A003C[ch].pos, 16);
+		}
+		ret = func_00006628(dst, D_006A0508, &D_006A003C[ch].unk30, &D_006A003C[ch].unk34);
+		if (ret == 3) {
+			D_006A003C[ch].unk14 = D_006A003C[ch].pos;
+			D_006A003C[ch].pos = D_006A003C[ch].unk10;
+		} else if (ret == 6) {
+			D_006A003C[ch].unk10 = D_006A003C[ch].pos;
+			D_006A003C[ch].pos += 16;
+		} else {
+			D_006A003C[ch].pos += 16;
+		}
+		break;
+	case 2:
+		if (D_006A003C[ch].size < 16)
+			break;
+		if (D_006A003C[ch].size < D_006A003C[ch].pos + 16) {
+			D_006A003C[ch].pos = 0;
+			D_006A003C[ch].stat = 0;
+			break;
+		}
+		wcpy_i(D_006A0508, data + D_006A003C[ch].pos, 16);
+		ret = func_00006628(dst, D_006A0508, &D_006A003C[ch].unk30, &D_006A003C[ch].unk34);
+		if (ret == 3) {
+			D_006A003C[ch].unk14 = D_006A003C[ch].pos;
+			D_006A003C[ch].pos = D_006A003C[ch].unk10;
+		} else if (ret == 6) {
+			D_006A003C[ch].unk10 = D_006A003C[ch].pos;
+			D_006A003C[ch].pos += 16;
+		} else {
+			D_006A003C[ch].pos += 16;
+		}
+		break;
+	}
+}
+#else
 INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libwave", func_0000676C);
+#endif
 
+#ifdef NON_MATCHING
+/* near-miss: base-pointer reuse and branch likelihood differ (size 0x56c vs 0x570) */
+static void func_00006A18(int ch, void *dst)
+{
+	char *data = D_006A003C[ch].data;
+	int n, rest;
+
+	if (!(D_006A003C[ch].flags & 1)) {
+		if (!(D_006A003C[ch].flags & 0x200)) {
+			if (D_006A003C[ch].pos + 0x38 <= D_006A003C[ch].size) {
+				wcpy_i(dst, data + D_006A003C[ch].pos, 0x38);
+				D_006A003C[ch].pos += 0x38;
+			} else {
+				wclr_i(dst, 0x70);
+				wcpy_i(dst, data + D_006A003C[ch].pos, D_006A003C[ch].size - D_006A003C[ch].pos);
+				D_006A003C[ch].pos = 0;
+				D_006A003C[ch].stat = 0;
+			}
+		} else {
+			if (D_006A003C[ch].pos + 0x70 <= D_006A003C[ch].size) {
+				wcpy_i(dst, data + D_006A003C[ch].pos, 0x70);
+				D_006A003C[ch].pos += 0x70;
+			} else {
+				wclr_i(dst, 0x70);
+				wcpy_i(dst, data + D_006A003C[ch].pos, D_006A003C[ch].size - D_006A003C[ch].pos);
+				D_006A003C[ch].pos = 0;
+				D_006A003C[ch].stat = 0;
+			}
+		}
+	} else {
+		if (!(D_006A003C[ch].flags & 0x200)) {
+			if (D_006A003C[ch].size >= 0x38) {
+				if (D_006A003C[ch].pos + 0x38 < D_006A003C[ch].size) {
+					wcpy_i(dst, data + D_006A003C[ch].pos, 0x38);
+					D_006A003C[ch].pos += 0x38;
+				} else {
+					n = D_006A003C[ch].size - D_006A003C[ch].pos;
+					wcpy_i(dst, data + D_006A003C[ch].pos, n);
+					D_006A003C[ch].pos = 0;
+					wcpy_i((char *)dst + n, data, 0x38 - n);
+					D_006A003C[ch].pos = 0x38 - n;
+				}
+			} else {
+				n = D_006A003C[ch].size - D_006A003C[ch].pos;
+				wcpy_i(dst, data + D_006A003C[ch].pos, n);
+				rest = 0x38 - n;
+				D_006A003C[ch].pos = 0;
+				for (;;) {
+					if (!(D_006A003C[ch].size < rest))
+						break;
+					wcpy_i((char *)dst + n, data, D_006A003C[ch].size);
+					rest -= D_006A003C[ch].size;
+					n += D_006A003C[ch].size;
+				}
+				wcpy_i((char *)dst + n, data, rest);
+				D_006A003C[ch].pos += rest;
+			}
+		} else {
+			if (D_006A003C[ch].size >= 0x70) {
+				if (D_006A003C[ch].pos + 0x70 < D_006A003C[ch].size) {
+					wcpy_i(dst, data + D_006A003C[ch].pos, 0x70);
+					D_006A003C[ch].pos += 0x70;
+				} else {
+					n = D_006A003C[ch].size - D_006A003C[ch].pos;
+					wcpy_i(dst, data + D_006A003C[ch].pos, n);
+					D_006A003C[ch].pos = 0;
+					wcpy_i((char *)dst + n, data, 0x70 - n);
+					D_006A003C[ch].pos = 0x70 - n;
+				}
+			} else {
+				n = D_006A003C[ch].size - D_006A003C[ch].pos;
+				wcpy_i(dst, data + D_006A003C[ch].pos, n);
+				rest = 0x70 - n;
+				D_006A003C[ch].pos = 0;
+				for (;;) {
+					if (!(D_006A003C[ch].size < rest))
+						break;
+					wcpy_i((char *)dst + n, data, D_006A003C[ch].size);
+					rest -= D_006A003C[ch].size;
+					n += D_006A003C[ch].size;
+				}
+				wcpy_i((char *)dst + n, data, rest);
+				D_006A003C[ch].pos += rest;
+			}
+		}
+	}
+}
+#else
 INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libwave", func_00006A18);
+#endif
 
+#ifdef NON_MATCHING
+/* near-miss: only the shared clamp block is scheduled differently (16 lines) */
+static void func_00006F88(int ch, short *out, short *src)
+{
+	int i;
+	int l, r, x;
+
+	for (i = 0; i < 28; i++) {
+		if (D_006A003C[ch].flags & 0x100000) {
+			D_006A003C[ch].unk38 = (D_006A003C[ch].unk3C - D_006A003C[ch].unk40) * 127 / D_006A003C[ch].unk3C;
+			if (D_006A003C[ch].unk38 < 0)
+				D_006A003C[ch].unk38 = 0;
+			D_006A003C[ch].unk40++;
+			if (D_006A003C[ch].unk40 >= D_006A003C[ch].unk3C) {
+				D_006A003C[ch].flags &= ~0x100000;
+				D_006A003C[ch].unk40 = 0;
+				if (D_006A003C[ch].flags & 0x10000) {
+					D_006A003C[ch].flags &= ~0x10000;
+					D_006A003C[ch].stat = D_006A029C[ch].stat;
+					D_006A003C[ch].pos = D_006A029C[ch].pos;
+					D_006A003C[ch].vol_l = D_006A029C[ch].vol_l;
+					D_006A003C[ch].vol_r = D_006A029C[ch].vol_r;
+					D_006A003C[ch].unk30 = D_006A029C[ch].unk30;
+					D_006A003C[ch].unk34 = D_006A029C[ch].unk34;
+					D_006A003C[ch].unk28 = D_006A029C[ch].unk28;
+					D_006A003C[ch].unk2C = D_006A029C[ch].unk2C;
+				} else if (D_006A003C[ch].flags & 0x20000) {
+					D_006A003C[ch].flags &= ~0x20000;
+					D_006A003C[ch].stat = D_006A029C[ch].stat;
+					D_006A003C[ch].pos = D_006A029C[ch].pos;
+					D_006A003C[ch].unk30 = D_006A029C[ch].unk30;
+					D_006A003C[ch].unk34 = D_006A029C[ch].unk34;
+					D_006A003C[ch].unk28 = D_006A029C[ch].unk28;
+					D_006A003C[ch].unk2C = D_006A029C[ch].unk2C;
+				} else if (D_006A003C[ch].flags & 0x40000) {
+					D_006A003C[ch].flags &= ~0x40000;
+					D_006A003C[ch].stat = D_006A029C[ch].stat;
+				}
+			}
+		} else {
+			D_006A003C[ch].unk38 = 127;
+		}
+		if (!(D_006A003C[ch].flags & 0x100)) {
+			l = D_006A003C[ch].vol_l * D_006A003C[ch].unk38 / 127;
+			r = D_006A003C[ch].vol_r * D_006A003C[ch].unk38 / 127;
+			l = l * src[i] / 4096;
+			r = r * src[i] / 4096;
+		} else if (!(D_006A003C[ch].flags & 0x200)) {
+			l = D_006A003C[ch].vol_l * D_006A003C[ch].unk38 / 127;
+			r = D_006A003C[ch].vol_r * D_006A003C[ch].unk38 / 127;
+			l = l * src[i] / 4096;
+			r = r * src[i] / 4096;
+		} else {
+			l = D_006A003C[ch].vol_l * D_006A003C[ch].unk38 / 127;
+			r = D_006A003C[ch].vol_r * D_006A003C[ch].unk38 / 127;
+			l = l * src[i * 2] / 4096;
+			r = r * src[i * 2 + 1] / 4096;
+		}
+		x = out[i * 2] + l;
+		x = (x > 32767) ? 32767 : x;
+		if (x < -32768) x = -32768;
+		out[i * 2] = x;
+		x = out[i * 2 + 1] + r;
+		x = (x > 32767) ? 32767 : x;
+		if (x < -32768) x = -32768;
+		out[i * 2 + 1] = x;
+	}
+}
+#else
 INCLUDE_ASM("tmp/asm/htmlviewer/htmlviewer/nonmatchings/libwave", func_00006F88);
+#endif
 
