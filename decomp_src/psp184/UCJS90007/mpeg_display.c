@@ -1,3 +1,4 @@
+/* cflags: -O2 -fmove-all-movables */
 #include "common.h"
 
 /* declarations recovered from DWARF */
@@ -451,7 +452,58 @@ SceInt32 disp_checkConditionEnd(t_displayBuffer *pDisp)
 	return 0;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/mpeg_display", dispbuf_func);
+SceInt32 control_waitDisp(t_conditionCtrl *pCtrl);
+SceInt32 control_setCondition(t_conditionCtrl *pCtrl, SceInt32 cond);
+SceInt32 control_waitConditionDispStart(t_conditionCtrl *pCtrl);
+SceInt32 avsync_Compare(t_avSyncControl *pAvSync);
+int sceKernelExitThread(int status);
+int sceKernelWaitSema(SceUID semid, int signal, unsigned int *timeout);
+int sceKernelSignalSema(SceUID semid, int signal);
+extern SceInt32 D_0008D34C;
+int dispbuf_func(SceSize size, void *argp)
+{
+	SceInt32 ret;
+	SceInt32 currentMode;
+	t_avSyncControl **ppAvSync;
+	t_avSyncControl *pAvSync;
+	t_displayBuffer *pDisp;
+
+	ppAvSync = argp;
+	pAvSync = *ppAvSync;
+	pDisp = pAvSync->pDisp;
+	control_waitConditionDispStart(pDisp->pCtrl);
+	for (;;) {
+		disp_checkConditionEnd(pDisp);
+		if (disp_getStatus(pDisp) == 3)
+			break;
+		if (dispbuf_checkDecodeEnd(pDisp) == 1 && dispbuf_getCurrentCount(pDisp) == 0)
+			break;
+		currentMode = avsync_Compare(pAvSync);
+		dispbuf_setMode(pDisp, currentMode);
+		if (dispbuf_getCurrentCount(pDisp) > 0) {
+			if (dispbuf_getMode(pDisp) != 4) {
+				ret = dispbuf_show(pDisp);
+				if (ret < 0) {
+					D_0008D34C = ret;
+					display_sendErrCondition(pDisp);
+					return 1;
+				}
+				sceKernelWaitSema(pDisp->lockSema, 1, NULL);
+				pDisp->count--;
+				sceKernelSignalSema(pDisp->lockSema, 1);
+				frameCount++;
+			}
+		} else {
+			frameLoss++;
+		}
+		control_setCondition(pDisp->pCtrl, 2);
+		control_waitDisp(pDisp->pCtrl);
+	}
+	sceDisplaySetFrameBuf(NULL, 512, 3, 1);
+	control_setCondition(pDisp->pCtrl, 0x10);
+	sceKernelExitThread(0);
+	return 0;
+}
 
 SceInt32 control_waitDisp(t_conditionCtrl *pCtrl);
 SceInt32 dispbuf_show(t_displayBuffer *pDisp)
