@@ -452,7 +452,44 @@ static int func_0002053C(unsigned int args, void *argp)
 
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/libwave", func_00020658);
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/libwave", func_00020840);
+extern const signed char D_000301A4[2][5];
+static int func_00020840(short *dst, unsigned char *vag, int *hist1, int *hist2)
+{
+	short *out;
+	int predict, shift, flags;
+	int s1, s2, f0, f1, i, k;
+	int d0, d1;
+
+	k = 2;
+	flags = vag[0];
+	predict = flags >> 4;
+	shift = flags & 0xF;
+	flags = vag[1];
+	s1 = *hist1;
+	s2 = *hist2;
+	f0 = D_000301A4[0][predict];
+	f1 = D_000301A4[1][predict];
+	if (flags == 7)
+		return flags;
+	out = dst;
+	for (i = 0; i < 14; i++) {
+		signed char b = vag[k++];
+
+		d0 = (((b << 28) >> (shift + 10)) + (s1 * f0 + s2 * f1)) >> 6;
+		if (d0 > 32767) d0 = 32767;
+		if (d0 < -32768) d0 = -32768;
+		*out++ = d0;
+		d1 = (((b & ~0xF) << (14 - shift)) + (d0 * f0 + s1 * f1)) >> 6;
+		if (d1 > 32767) d1 = 32767;
+		if (d1 < -32768) d1 = -32768;
+		*out++ = d1;
+		s2 = d0;
+		s1 = d1;
+	}
+	*hist1 = s1;
+	*hist2 = s2;
+	return flags;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/libwave", func_00020984);
 
