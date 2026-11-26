@@ -290,7 +290,26 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", ziki_control);
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", ziki_disp);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", ziki_damage);
+extern int D_005FB894;
+void ziki_damage(void *zz, float *pos)
+{
+	u8 *z = zz;
+	L2V3 v = *(L2V3 *)pos;
+	u8 *st;
+
+	if (D_005FB894 == 1)
+		return;
+	st = (u8 *)&inv_status;
+	(*(int *)(st + 0x4C))++;
+	if (*(int *)(st + 0x4C) > 2000000000)
+		*(int *)(st + 0x4C) = 2000000000;
+	*(int *)(z + 0x18) = 1;
+	*(int *)(z + 0x2C) = 0;
+	*(int *)(z + 0x8) = 1;
+	*(int *)(z + 0x10) = 1;
+	*(int *)(z + 0x14) = 1;
+	status_font_set(1, 0x21, 0x78, 0, 0x14);
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", ziki_break_check);
 
@@ -364,7 +383,17 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", zako_control_o
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", zako_normal_anime);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", zako_shot_count);
+typedef struct { int f0, f4, f8, fc; float f10; int f14, f18, f1c, f20; } STAGE_FORMAT;
+extern STAGE_FORMAT stage_format[];
+unsigned long genrand_int32(void);
+int zako_shot_count(void)
+{
+	int n = (float)(genrand_int32() % 3000) * stage_format[gmain.f.ff28].f10;
+
+	if (n < 180)
+		n = 180;
+	return n;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", zako_shot);
 
