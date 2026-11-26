@@ -1,3 +1,4 @@
+/* cflags: -O2 -fno-merge-constants */
 #include "common.h"
 #include "m2c_macros.h"
 
@@ -63,7 +64,21 @@ INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/plsel", r_keta);
 
 INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/plsel", D_0002F428);
 
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/plsel", disp_title_bg);
+void SetSpriteColorRGBA(int r, int g, int b, int a);
+int DrawSpriteEz(float z, float x, float y, float w, float h, float u, float v, int no);
+int SpriteDraw(int no, int color, float z, float x0, float y0, float u0, float v0, float x1, float y1, float u1, float v1, float x2, float y2, float u2, float v2, float x3, float y3, float u3, float v3);
+
+void disp_title_bg(int alpha)
+{
+	SetSpriteColorRGBA(255, 255, 255, alpha);
+	DrawSpriteEz(4.0f, 0.0f, 0.0f, 240.0f, 272.0f, 0.0f, 0.0f, 0);
+	DrawSpriteEz(4.0f, 240.0f, 0.0f, 240.0f, 272.0f, 240.0f, 0.0f, 0);
+	DrawSpriteEz(2.0f, 0.0f, 112.0f, 240.0f, 160.0f, 0.0f, 0.0f, 1);
+	SpriteDraw(1, -1, 2.0f, 240.0f, 112.0f, 239.0f, 0.0f, 479.0f, 112.0f, 0.0f, 0.0f,
+		   240.0f, 271.0f, 239.0f, 159.0f, 479.0f, 271.0f, 0.0f, 159.0f);
+	DrawSpriteEz(2.0f, 0.0f, 112.0f, 124.0f, 160.0f, 0.0f, 0.0f, 2);
+	DrawSpriteEz(2.0f, 356.0f, 112.0f, 124.0f, 160.0f, 124.0f, 0.0f, 2);
+}
 
 void sel_obj_move(void)
 {
