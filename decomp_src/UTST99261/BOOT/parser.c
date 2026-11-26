@@ -125,7 +125,48 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", parseHTMLTag);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", parseCharEntity);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", parseCheckTag);
+int parseCheckTag(PCtx *c) {
+    PChar *p;
+
+    if (c->x44[0] == 0) {
+        return 0;
+    }
+    p = c->buf->cur;
+    if (p[0] != '<') {
+        return -1;
+    }
+    if (p[1] != ' ' && p[1] != '\t' && p[1] != '\n' && p[1] != '\r' && p[1] != '!' && p[1] != '?' && p[1] != '/' && ((p[1] >= 'A' && p[1] <= 'Z') || (p[1] >= 'a' && p[1] <= 'z'))) {
+        if ((p[1] == 'a' || p[1] == 'A') && p[2] == '>') {
+            return 3;
+        }
+        return 1;
+    }
+    if (c->buf->cur[1] == ' ' || c->buf->cur[1] == '\t' || c->buf->cur[1] == '\n' || c->buf->cur[1] == '\r') {
+        return 8;
+    }
+    if (c->buf->cur[1] == '/') {
+        if (c->buf->cur[2] == ' ' || c->buf->cur[2] == '\t' || c->buf->cur[2] == '\n' || c->buf->cur[2] == '\r') {
+            return 8;
+        }
+        return 2;
+    }
+    if (c->buf->cur[1] == '!') {
+        if (c->buf->cur[2] == '-' && c->buf->cur[3] == '-') {
+            return 4;
+        }
+        if (c->buf->cur[2] == 'D' && c->buf->cur[3] == 'O' && c->buf->cur[4] == 'C' && c->buf->cur[5] == 'T' && c->buf->cur[6] == 'Y' && c->buf->cur[7] == 'P' && c->buf->cur[8] == 'E') {
+            return 5;
+        }
+        if (c->buf->cur[2] == '[') {
+            return 6;
+        }
+        return 9;
+    }
+    if (c->buf->cur[1] == '?') {
+        return 7;
+    }
+    return -1;
+}
 
 void parseElementName(PCtx *c) {
     PChar name[1024];
