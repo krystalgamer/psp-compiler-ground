@@ -141,7 +141,58 @@ static void get_lastcollect_pos(int flagPlayer, int flagPae, int *x, int *y)
 
 __asm__(".globl get_lastcollect_pos");
 
-INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/collect", count_pi);
+int count_pi(int flagPlayer, int *danpi, int *ssangpi, int *sampi)
+{
+	int i;
+	int p;
+	int jum;
+	int cnt = 0;
+
+	*danpi = 0;
+	*ssangpi = 0;
+	*sampi = 0;
+	if (flagPlayer == 1) {
+		for (i = 0; i < 25 && (p = g_opp_collection_pi[i]) != 0; i++) {
+			if (p != 33) {
+				jum = paeManager.is_pi(p);
+				if (jum == 3)
+					(*sampi)++;
+				else if (jum == 2)
+					(*ssangpi)++;
+				else
+					(*danpi)++;
+				cnt++;
+			}
+		}
+	} else if (flagPlayer == 2) {
+		for (i = 0; i < 25 && (p = g_opp2_collection_pi[i]) != 0; i++) {
+			if (p != 33) {
+				jum = paeManager.is_pi(p);
+				if (jum == 3)
+					(*sampi)++;
+				else if (jum == 2)
+					(*ssangpi)++;
+				else
+					(*danpi)++;
+				cnt++;
+			}
+		}
+	} else if (flagPlayer == 0) {
+		for (i = 0; i < 25 && (p = g_my_collection_pi[i]) != 0; i++) {
+			if (p != 33) {
+				jum = paeManager.is_pi(p);
+				if (jum == 3)
+					(*sampi)++;
+				else if (jum == 2)
+					(*ssangpi)++;
+				else
+					(*danpi)++;
+				cnt++;
+			}
+		}
+	}
+	return cnt;
+}
 
 INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/collect", add_collect);
 
@@ -251,7 +302,124 @@ __asm__(".globl move_gukjin");
 
 INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/collect", count_A300);
 
-INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/collect", count_not_flying);
+static void count_not_flying(int flagPlayer, int *gwang, int *mung, int *dan, int *pi)
+{
+	int i;
+	int cnt = 0;
+	int p;
+
+	if (flagPlayer == 1) {
+		if (gwang) {
+			for (i = 0; i < 5; i++) {
+				p = g_opp_collection_gwang[i];
+				if (p > 0 && !animator.is_flying(p))
+					cnt++;
+			}
+			*gwang = cnt;
+		}
+		if (mung) {
+			cnt = 0;
+			for (i = 0; i < 9; i++) {
+				p = g_opp_collection_mung[i];
+				if (p > 0 && !animator.is_flying(p))
+					cnt++;
+			}
+			*mung = cnt;
+		}
+		if (dan) {
+			cnt = 0;
+			for (i = 0; i < 10; i++) {
+				p = g_opp_collection_dan[i];
+				if (p > 0 && !animator.is_flying(p))
+					cnt++;
+			}
+			*dan = cnt;
+		}
+		if (pi) {
+			cnt = 0;
+			for (i = 0; i < 25; i++) {
+				p = g_opp_collection_pi[i];
+				if (p > 0 && !animator.is_flying(p))
+					cnt++;
+			}
+			*pi = cnt;
+		}
+	} else if (flagPlayer == 2) {
+		if (gwang) {
+			for (i = 0; i < 5; i++) {
+				p = g_opp2_collection_gwang[i];
+				if (p > 0 && !animator.is_flying(p))
+					cnt++;
+			}
+			*gwang = cnt;
+		}
+		if (mung) {
+			cnt = 0;
+			for (i = 0; i < 9; i++) {
+				p = g_opp2_collection_mung[i];
+				if (p > 0 && !animator.is_flying(p))
+					cnt++;
+			}
+			*mung = cnt;
+		}
+		if (dan) {
+			cnt = 0;
+			for (i = 0; i < 10; i++) {
+				p = g_opp2_collection_dan[i];
+				if (p > 0 && !animator.is_flying(p))
+					cnt++;
+			}
+			*dan = cnt;
+		}
+		if (pi) {
+			cnt = 0;
+			for (i = 0; i < 25; i++) {
+				p = g_opp2_collection_pi[i];
+				if (p > 0 && !animator.is_flying(p))
+					cnt++;
+			}
+			*pi = cnt;
+		}
+	} else {
+		if (gwang) {
+			for (i = 0; i < 5; i++) {
+				p = g_my_collection_gwang[i];
+				if (p > 0 && !animator.is_flying(p))
+					cnt++;
+			}
+			*gwang = cnt;
+		}
+		if (mung) {
+			cnt = 0;
+			for (i = 0; i < 9; i++) {
+				p = g_my_collection_mung[i];
+				if (p > 0 && !animator.is_flying(p))
+					cnt++;
+			}
+			*mung = cnt;
+		}
+		if (dan) {
+			cnt = 0;
+			for (i = 0; i < 10; i++) {
+				p = g_my_collection_dan[i];
+				if (p > 0 && !animator.is_flying(p))
+					cnt++;
+			}
+			*dan = cnt;
+		}
+		if (pi) {
+			cnt = 0;
+			for (i = 0; i < 25; i++) {
+				p = g_my_collection_pi[i];
+				if (p > 0 && !animator.is_flying(p))
+					cnt++;
+			}
+			*pi = cnt;
+		}
+	}
+}
+
+__asm__(".globl count_not_flying");
 
 static int count_not_flying_pi(int flagPlayer)
 {
@@ -283,4 +451,53 @@ static int count_not_flying_pi(int flagPlayer)
 
 __asm__(".globl count_not_flying_pi");
 
-INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/collect", count_kind);
+static int count_kind(int flagPlayer, int kind)
+{
+	int i;
+	int p;
+	int cnt = 0;
+
+	if (flagPlayer == 1) {
+		for (i = 0; i < 5 && (p = g_opp_collection_gwang[i]) != 0; i++)
+			if (kind == paeManager.get_pae_kind(p))
+				cnt++;
+		for (i = 0; i < 9 && (p = g_opp_collection_mung[i]) != 0; i++)
+			if (kind == paeManager.get_pae_kind(p))
+				cnt++;
+		for (i = 0; i < 10 && (p = g_opp_collection_dan[i]) != 0; i++)
+			if (kind == paeManager.get_pae_kind(p))
+				cnt++;
+		for (i = 0; i < 25 && (p = g_opp_collection_pi[i]) != 0; i++)
+			if (kind == paeManager.get_pae_kind(p))
+				cnt++;
+	} else if (flagPlayer == 2) {
+		for (i = 0; i < 5 && (p = g_opp2_collection_gwang[i]) != 0; i++)
+			if (kind == paeManager.get_pae_kind(p))
+				cnt++;
+		for (i = 0; i < 9 && (p = g_opp2_collection_mung[i]) != 0; i++)
+			if (kind == paeManager.get_pae_kind(p))
+				cnt++;
+		for (i = 0; i < 10 && (p = g_opp2_collection_dan[i]) != 0; i++)
+			if (kind == paeManager.get_pae_kind(p))
+				cnt++;
+		for (i = 0; i < 25 && (p = g_opp2_collection_pi[i]) != 0; i++)
+			if (kind == paeManager.get_pae_kind(p))
+				cnt++;
+	} else if (flagPlayer == 0) {
+		for (i = 0; i < 5 && (p = g_my_collection_gwang[i]) != 0; i++)
+			if (kind == paeManager.get_pae_kind(p))
+				cnt++;
+		for (i = 0; i < 9 && (p = g_my_collection_mung[i]) != 0; i++)
+			if (kind == paeManager.get_pae_kind(p))
+				cnt++;
+		for (i = 0; i < 10 && (p = g_my_collection_dan[i]) != 0; i++)
+			if (kind == paeManager.get_pae_kind(p))
+				cnt++;
+		for (i = 0; i < 25 && (p = g_my_collection_pi[i]) != 0; i++)
+			if (kind == paeManager.get_pae_kind(p))
+				cnt++;
+	}
+	return cnt;
+}
+
+__asm__(".globl count_kind");
