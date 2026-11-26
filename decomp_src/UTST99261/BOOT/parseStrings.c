@@ -3,6 +3,7 @@
 #include "parse_rnd.h"
 #include "parse_str.h"
 #include "m2c_macros.h"
+void HST_addAuthorizationDB();
 extern int DOM_NODE_MAX_SIZE;
 extern PChar DomMaxAlert[];
 extern PChar ds_font[];
@@ -167,7 +168,73 @@ void parseCheckEncodeType(PCtx *c, int *src) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parseStrings", parseSetExtractedAuthData);
+char *parseSetExtractedAuthData(char *url, int len) {
+    int found;
+    int at;
+    int i;
+    int colon;
+    int slash;
+    int nl;
+    int rest;
+    char **auth;
+
+    slash = 0;
+    found = 0;
+    colon = 0;
+    for (at = 0; at < len; at++) {
+        if (url[at] == '@') {
+            found = 1;
+            break;
+        }
+    }
+    if (!found) {
+        return url;
+    }
+    for (i = at - 1; i >= 0; i--) {
+        if (url[i] == ':') {
+            colon = i;
+        }
+        if (url[i] == '/') {
+            slash = i;
+            break;
+        }
+    }
+    if (slash == 0) {
+        return url;
+    }
+    if (colon + 1 == at || colon == 0) {
+        return url;
+    }
+    auth = MEM_malloc(0, 12);
+    rest = len - at;
+    nl = rest + slash;
+    auth[0] = MEM_malloc(0, nl + 1);
+    memcpy(auth[0], url, slash + 1);
+    memcpy(auth[0] + slash + 1, url + at + 1, --rest);
+    auth[0][nl] = 0;
+    if (colon == slash + 1) {
+        auth[1] = NULL;
+    } else if (colon + 1 == at || colon == 0) {
+        len = at - slash;
+        auth[1] = MEM_malloc(0, len);
+        memcpy(auth[1], url + slash + 1, len - 1);
+        auth[1][len - 1] = 0;
+        auth[2] = NULL;
+        goto add;
+    } else {
+        len = colon - slash;
+        auth[1] = MEM_malloc(0, len);
+        memcpy(auth[1], url + slash + 1, len - 1);
+        auth[1][len - 1] = 0;
+    }
+    len = at - colon;
+    auth[2] = MEM_malloc(0, len);
+    memcpy(auth[2], url + colon + 1, len - 1);
+    auth[2][len - 1] = 0;
+add:
+    HST_addAuthorizationDB(auth);
+    return auth[0];
+}
 
 PTag parseTagNameCmp(PChar *name) {
     PTag t;
