@@ -147,7 +147,17 @@ int isatty(int fd)
 	return 1;
 }
 
-INCLUDE_ASM("tmp/asm/bigbangbang/bigbangbang/nonmatchings/kernel_bridge", _exit);
+void _exit(int status)
+{
+	if (&sce_newlib_nocreate_thread_in_start != NULL) {
+		if (status == 0)
+			free_heap();
+		sceKernelExitThread(status);
+	} else {
+		free_heap();
+		sceKernelSelfStopUnloadModule(1, 0, NULL);
+	}
+}
 
 int _kill(int pid, int sig)
 {
@@ -159,9 +169,33 @@ int _getpid(void)
 	return -1;
 }
 
-INCLUDE_ASM("tmp/asm/bigbangbang/bigbangbang/nonmatchings/kernel_bridge", free_heap);
+void free_heap(void)
+{
+	sceKernelFreePartitionMemory(mbid);
+}
 
-INCLUDE_ASM("tmp/asm/bigbangbang/bigbangbang/nonmatchings/kernel_bridge", _sbrk);
+void *_sbrk(int incr)
+{
+	unsigned int result;
+	unsigned int realsize;
+
+	if (minheap == 0) {
+		realsize = 64 * 1024;
+		if (&sce_newlib_heap_kb_size != NULL)
+			realsize = sce_newlib_heap_kb_size * 1024;
+		mbid = sceKernelAllocPartitionMemory(2, "block", 0, realsize, NULL);
+		if (mbid > 0) {
+			minheap = currentheap = (unsigned int)sceKernelGetBlockHeadAddr(mbid);
+			maxheap = currentheap + realsize;
+		}
+	}
+	if (minheap != 0 && currentheap + incr >= minheap && currentheap + incr <= maxheap) {
+		result = currentheap;
+		currentheap += incr;
+		return (void *)result;
+	}
+	return (void *)-1;
+}
 
 int _fork(void)
 {
