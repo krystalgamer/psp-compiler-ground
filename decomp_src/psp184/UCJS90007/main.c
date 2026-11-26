@@ -414,7 +414,28 @@ static __inline__ int sceMScmIsMediumInserted(void)
 
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/main", gu_init);
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/main", font_init);
+void *memset(void *s, int c, unsigned int n);
+void init_pss_text_texture(void);
+void myMakeTextTexture(SceFont_t_charCode *pString, struct TextureImageTable *pTextureImage, SceFont_t_fontStyleInfo *fstyle);
+static int font_init(void)
+{
+	SceFont_t_fontStyleInfo fstyle;
+
+	init_pss_text_texture();
+	memset(&fstyle, 0, sizeof(fstyle));
+	fstyle.hSize = 20.0f;
+	fstyle.languageCode = 2;
+	fstyle.familyCode = 1;
+	fstyle.style = 5;
+	myMakeTextTexture(aString[0][_info.lang], &DialogTextureImageTable[0], &fstyle);
+	memset(&fstyle, 0, sizeof(fstyle));
+	fstyle.hSize = 5.0f;
+	fstyle.languageCode = 2;
+	fstyle.familyCode = 1;
+	fstyle.style = 5;
+	myMakeTextTexture(aString[0][_info.lang], &DialogTextureImageTable[1], &fstyle);
+	return 0;
+}
 
 static void fade_init(void)
 {
