@@ -214,7 +214,22 @@ int GetItem(int cat, int num)
 	return n;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/menu/nonmatchings/main", PrxExec);
+void PrxExec(int cat, int num)
+{
+	SceKernelLoadExecParam param;
+	char fname[64];
+	int n;
+
+	n = GetItem(cat, num);
+	strcpy(fname, "disc0:");
+	strcat(fname, "/PSP_GAME/USRDIR/PRX/");
+	strcat(fname, filelist[n]);
+	param.size = sizeof(param);
+	param.args = 0;
+	param.argp = NULL;
+	param.key = NULL;
+	sceKernelLoadExec(fname, &param);
+}
 
 static void InitSE(void)
 {
@@ -248,7 +263,30 @@ int FadeState(void) {
     return __fade;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/menu/nonmatchings/main", FadeDraw);
+extern Gu2dV16 D_001A3E48[];
+void FadeDraw(void)
+{
+	u_int32 c, a;
+
+	if (__fadecount >= 255 || __fade == 0) {
+		__fade = 0;
+		__fadecount = 0;
+		return;
+	}
+	if (__fade == 1)
+		a = 255 - __fadecount;
+	else
+		a = __fadecount;
+	sceGuDisable(9);
+	c = (a << 24) | __fadecolor;
+	sceGuColor(c);
+	sceGumDrawArray(6, 0x800100, 2, NULL, D_001A3E48);
+	__fadecount += __fadestep;
+	if (__fadecount >= 255) {
+		__fade = 0;
+		__fadecount = 0;
+	}
+}
 
 void sceGuStart(int type, void *list, int size);
 int sceGuFinish(void);
