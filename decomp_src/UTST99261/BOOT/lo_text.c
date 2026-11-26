@@ -41,9 +41,32 @@ typedef struct {
 } TLOGLOBAL;
 
 typedef struct {
-    int unk0;
-    int target;
+    s16 type;
+    s16 unk2;
+    int target;                 /* 0x4 */
+    s16 x;                      /* 0x8 */
+    s16 y;
+    s16 cx;                     /* 0xC */
+    s16 cy;
+    s16 sx;                     /* 0x10 */
+    s16 sy;
+    s16 unk14;
+    s16 unk16;
+    s16 unk18;
+    s16 w;                      /* 0x1A */
+    s16 h;
+    s16 unk1E;
+    int unk20;                  /* 0x20 */
 } JSEVENT;
+
+void *getViewClientSize();
+void getBodyAbsolutePos();
+void actDefaultClickAction();
+void actFormInput();
+typedef struct {
+    int unk0;
+    JSEVENT ev;                 /* 0x4 */
+} JEVDATA;
 
 typedef struct {
     int unk0;
@@ -213,7 +236,34 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_text", initJSEnv);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_text", destroyJSEnv);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_text", initJSEvent);
+void initJSEvent(JSEVENT *ev, int type, int node, int x, int y) {
+    void *body;
+    int cw;
+    int ch;
+    int vx;
+    int vy;
+    int bx;
+    int by;
+
+    body = (void *)getBodyBox(Node_getBox(node));
+    getViewClientSize(body, &cw, &ch);
+    getViewPort(body, &vx, &vy);
+    getBodyAbsolutePos(body, &bx, &by);
+    ev->type = type;
+    ev->target = node;
+    ev->x = x;
+    ev->y = y;
+    ev->cx = x - bx + vx;
+    ev->cy = y - by + vy;
+    ev->sx = x;
+    ev->sy = y;
+    ev->unk14 = 1;
+    ev->unk16 = 0;
+    ev->unk18 = 0;
+    ev->w = cw;
+    ev->h = ch;
+    ev->unk20 = 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_text", sendJSEvent);
 
@@ -258,7 +308,24 @@ void proc_msg_JL2(TMSG *msg) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_text", proc_msg_JL3);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_text", proc_msg_JL4);
+void proc_msg_JL4(JMSG *m) {
+    THIST *h;
+    JSEVENT *ev;
+
+    h = HST_searchSessionIDHistoryNode(m->session);
+    if (h != NULL && h->body != NULL && checkBoxValidity((int)h->body)) {
+        ev = &((JEVDATA *)m->data)->ev;
+        if (ev->type == 4) {
+            if (m->unk10 & 2) {
+                m->unk10 = 0;
+                actDefaultClickAction(m, Node_getBox(ev->target), ev->target, ev->x, ev->y);
+            }
+        } else if ((ev->type == 0x16 || ev->type == 0x13) && (m->unk10 & 2)) {
+            actFormInput(m, Node_getBox(ev->target), Node_getBox(ev->unk20), getInputType(ev->unk20));
+        }
+    }
+    MEM_free(0, m->data);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_text", proc_msg_JL5);
 
