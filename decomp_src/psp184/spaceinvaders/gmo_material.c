@@ -296,6 +296,11 @@ static __inline__ void *SCEGMO_CHUNK_ARGS( const SceGmoChunk *chunk )
  if ( 0x8000 & chunk->type ) return (char *)chunk + 8 ;
  return (char *)chunk + chunk->args_offs ;
 }
+static __inline__ int SCEGMO_CHUNK_ARGSSIZE( const SceGmoChunk *chunk )
+{
+ if ( 0x8000 & chunk->type ) return chunk->next_offs - 8 ;
+ return chunk->data_offs - chunk->args_offs ;
+}
 void sceGmoMaterialUnload(SceGmoMaterial *material);
 void sceGmoMaterialUpdate(SceGmoMaterial *material, SceGmoModel *model);
 int sceGmoMaterialActivate(SceGmoMaterial *material, SceGmoModel *model, int idx);
@@ -325,6 +330,10 @@ static float *float_lerp(float *dst, const float *src1, const float *src2, int d
 void sceGmoLayerUnloadCache( SceGmoLayer *layer ) ;
 ScePspFRect *sceGmoRectSet( ScePspFRect *r, float x, float y, float w, float h ) ;
 void sceGuCallList( const void *list ) ;
+int *sceGmoCol4Load( int *dst, const void *src ) ;
+int *sceGmoCol4FromVec4( int *dst, const vec4 *src ) ;
+float *sceGmoFloatLerp( float *dst, const float *src1, const float *src2, int dim, float rate ) ;
+vec4 *sceGmoVec4Set( vec4 *dst, float x, float y, float z, float w ) ;
 vec4 *sceGmoVec4FromCol4( vec4 *dst, const int *src ) ;
 void sceGmoMaterialControl( SceGmoMaterial *material, int type, int idx, const float *val, int cnt, float weight ) ;
 int sceGmoCol4IsBlack( const int *col ) ;
@@ -433,7 +442,124 @@ SceGmoMaterial *sceGmoMaterialDuplicate( SceGmoMaterial *material, int flags )
  return material2 ;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_material", sceGmoMaterialLoad);
+_Bool sceGmoMaterialLoad( SceGmoMaterial *material, const SceGmoChunk *chunk )
+{
+	if ( material == 0 ) return 0 ;
+	if ( chunk == 0 ) return 0 ;
+
+	sceGmoMaterialUnload( material ) ;
+
+	SceGmoChunk *end = SCEGMO_CHUNK_NEXT( chunk ) ;
+	for ( chunk = SCEGMO_CHUNK_CHILD( chunk ) ; chunk < end ; chunk = SCEGMO_CHUNK_NEXT( chunk ) ) {
+		void *args = SCEGMO_CHUNK_ARGS( chunk ) ;
+
+		switch ( SCEGMO_CHUNK_TYPE( chunk ) ) {
+		    case 0x0009 : {
+			SceGmoLayer *layer = sceGmoLayerCreate( chunk ) ;
+			if ( layer == 0 ) return 0 ;
+
+			int flag = 0 ;
+			switch ( sceGmoLayerGetMapType( layer ) ) {
+			    case 0x82 : flag = 0x0001 ; break ;
+			    case 0x83 : flag = 0x0002 ; break ;
+			    case 0x84 : flag = 0x0004 ; break ;
+			    case 0x85 : flag = 0x0008 ; break ;
+			    case 0x86 : flag = 0x0010 ; break ;
+			    case 0x87 :
+			    case 0x88 : {
+				sceGmoLayerDelete( layer ) ;
+				layer = 0 ;
+				break ;
+			    }
+			}
+			material->m_flags |= flag ;
+			if ( layer != 0 ) {
+				material->m_layers[ material->m_n_layers ++ ] = layer ;
+			}
+			break ;
+		    }
+		    case 0x0081 : {
+			SceGmoRenderState *cmd = (SceGmoRenderState *)args ;
+			int flag = 0 ;
+			switch ( cmd->state ) {
+			    case 0 : flag = 0x0001 ; break ;
+			    case 1 : flag = 0x0002 ; break ;
+			    case 3 : flag = 0x0008 ; break ;
+			    case 4 : flag = 0x0010 ; break ;
+			    case 5 : flag = 0x0020 ; break ;
+			    case 6 : flag = 0x0040 ; break ;
+			    case 7 : flag = 0x0080 ; break ;
+			}
+			material->m_enable_mask |= flag ;
+			material->m_enable_bits |= !( cmd->value ) ? 0 : flag ;
+			break ;
+		    }
+		    case 0x0082 : {
+			SceGmoDiffuse *cmd = (SceGmoDiffuse *)args ;
+			if ( SCEGMO_CHUNK_ARGSSIZE( chunk ) < (int)sizeof( SceGmoDiffuse ) ) {
+				material->m_colors[ 1 ] = *(int *)cmd ;
+				break ;
+			}
+			sceGmoCol4Load( material->m_colors + 1, &( cmd->color ) ) ;
+			break ;
+		    }
+		    case 0x0083 : {
+			SceGmoSpecular *cmd = (SceGmoSpecular *)args ;
+			if ( SCEGMO_CHUNK_ARGSSIZE( chunk ) < 0x14 ) {
+				material->m_colors[ 2 ] = *(int *)cmd ;
+				material->m_shininess = ( (float *)cmd )[ 1 ] ;
+				break ;
+			}
+			sceGmoCol4Load( material->m_colors + 2, &( cmd->color ) ) ;
+			material->m_shininess = cmd->shininess ;
+			break ;
+		    }
+		    case 0x0084 : {
+			SceGmoEmission *cmd = (SceGmoEmission *)args ;
+			if ( SCEGMO_CHUNK_ARGSSIZE( chunk ) < (int)sizeof( SceGmoEmission ) ) {
+				material->m_colors[ 3 ] = *(int *)cmd ;
+				break ;
+			}
+			sceGmoCol4Load( material->m_colors + 3, &( cmd->color ) ) ;
+			break ;
+		    }
+		    case 0x0085 : {
+			SceGmoAmbient *cmd = (SceGmoAmbient *)args ;
+			if ( SCEGMO_CHUNK_ARGSSIZE( chunk ) < (int)sizeof( SceGmoAmbient ) ) {
+				material->m_colors[ 4 ] = *(int *)cmd ;
+				material->m_flags |= 0x40000000 ;
+				break ;
+			}
+			sceGmoCol4Load( material->m_colors + 4, &( cmd->color ) ) ;
+			material->m_flags |= 0x40000000 ;
+			break ;
+		    }
+		    case 0x0086 : {
+			SceGmoReflection *cmd = (SceGmoReflection *)args ;
+			sceGmoCol4Set( (unsigned int *)( material->m_colors + 5 ), 1, 1, 1, cmd->reflection ) ;
+			break ;
+		    }
+		    case 0x0087 : {
+			SceGmoRefraction *cmd = (SceGmoRefraction *)args ;
+			material->m_refraction = cmd->refraction ;
+			break ;
+		    }
+		    case 0x0088 : {
+			SceGmoBump *cmd = (SceGmoBump *)args ;
+			material->m_bump = cmd->bump ;
+			break ;
+		    }
+		}
+	}
+
+	if ( !( material->m_flags & 0x40000000 ) ) {
+		material->m_colors[ 4 ] = material->m_colors[ 1 ] ;
+	}
+	if ( !reconfigure_material( material ) ) return 0 ;
+
+	material->m_initial = sceGmoMaterialDuplicate( material, 0x0100 ) ;
+	return ( material->m_initial != 0 ) ;
+}
 
 void sceGmoMaterialUnload( SceGmoMaterial *material )
 {
@@ -482,7 +608,85 @@ int sceGmoMaterialActivate( SceGmoMaterial *material, SceGmoModel *model, int in
 	return sceGmoLayerActivate( material->m_layers[ index ], model, material ) ;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_material", sceGmoMaterialControl);
+void sceGmoMaterialControl( SceGmoMaterial *material, int type, int idx, const float *val, int cnt, float weight )
+{
+	if ( material == 0 ) return ;
+	if ( val == 0 ) return ;
+
+	sceGmoMaterialUnloadCache( material ) ;
+
+	int *dst ;
+	int flags ;
+	int channel ;
+	vec4 reflection ;
+	switch ( type ) {
+	    case 0x82 :
+		if ( !( material->m_flags & 0x40000000 ) ) {
+			sceGmoMaterialControl( material, 0x85, idx, val, cnt, weight ) ;
+		}
+		dst = material->m_colors + 1 ;
+		flags = 0x0001 ;
+		channel = 0 ;
+		break ;
+	    case 0x83 :
+		dst = material->m_colors + 2 ;
+		flags = 0x0002 ;
+		channel = 1 ;
+		break ;
+	    case 0x84 :
+		dst = material->m_colors + 3 ;
+		flags = 0x0004 ;
+		channel = 2 ;
+		break ;
+	    case 0x85 :
+		material->m_flags |= 0x40000000 ;
+		dst = material->m_colors + 4 ;
+		flags = 0x0008 ;
+		channel = 3 ;
+		break ;
+	    case 0x86 :
+		sceGmoVec4Set( &reflection, 1, 1, 1, *val ) ;
+		val = (float *)&reflection ;
+		dst = material->m_colors + 5 ;
+		flags = 0x0010 ;
+		channel = 4 ;
+		break ;
+
+	    case 0x87 :
+		material->m_anim_flags |= 0x0020 | ( 0x0020 << 16 ) ;
+		material->m_refraction = *val ;
+		return ;
+	    case 0x88 :
+		material->m_anim_flags |= 0x0040 | ( 0x0040 << 16 ) ;
+		material->m_bump = *val ;
+		return ;
+	    case 0x98 : {
+		if ( material->m_flags & 0x80000000 ) idx ++ ;
+		if ( idx < 0 || idx >= material->m_n_layers ) return ;
+		flags = 0x0100 | ( 0x0100 << 16 ) ;
+		material->m_anim_flags |= flags << idx ;
+		SceGmoLayer *layer = material->m_layers[ idx ] ;
+		sceGmoLayerSetTexCrop( layer, (rect *)val ) ;
+		return ;
+	    }
+	    default :
+		return ;
+	}
+
+	float sum = material->m_anim_weights[ channel ] + weight ;
+	material->m_anim_weights[ channel ] = sum ;
+	weight /= sum ;
+	vec4 tmp ;
+	sceGmoVec4FromCol4( &tmp, dst ) ;
+	sceGmoFloatLerp( (float *)&tmp, (float *)&tmp, val, 4, weight ) ;
+	sceGmoCol4FromVec4( dst, &tmp ) ;
+	if ( channel == 1 ) {
+		float *fp = &( material->m_shininess ) ;
+		sceGmoFloatLerp( fp, fp, val + 4, 1, weight ) ;
+	}
+	if ( sum > 0.99f ) flags |= ( flags << 16 ) ;
+	material->m_anim_flags |= flags ;
+}
 
 void sceGmoMaterialSetParent(SceGmoMaterial *material, SceGmoModel *parent) {
     if (material != NULL) {
@@ -856,11 +1060,8 @@ const rect *sceGmoLayerGetTexCrop( SceGmoLayer *layer )
 	return &( layer->m_tex_crop ) ;
 }
 
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_material", D_0007EF5C);
 
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_material", D_0007EF78);
 
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_material", D_0007EF98);
 
 static _Bool reconfigure_layer( SceGmoLayer *layer )
 {
