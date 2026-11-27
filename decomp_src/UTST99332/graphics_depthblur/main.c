@@ -426,7 +426,269 @@ void DrawRoom(void)
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_depthblur/nonmatchings/main", draw_frame);
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_depthblur/nonmatchings/main", init_gfx);
+#ifndef SCEGU_IMMEDIATE /* sample */
+#define SCEGU_IMMEDIATE                    0
+#endif
+#ifndef SCEGU_PF8888 /* sample */
+#define SCEGU_PF8888                       3
+#endif
+#ifndef SCEGU_VRAM_BP32_0 /* sample */
+#define SCEGU_VRAM_BP32_0     (void *)(SCEGU_VRAM_TOP)
+#endif
+#ifndef SCEGU_VRAM_BP32_1 /* sample */
+#define SCEGU_VRAM_BP32_1     (void *)(SCEGU_VRAM_TOP+SCEGU_VRAM_BUFSIZE32)
+#endif
+#ifndef SCEGU_VRAM_BUFSIZE32 /* sample */
+#define SCEGU_VRAM_BUFSIZE32  (SCEGU_VRAM_WIDTH*SCEGU_SCR_HEIGHT*4)
+#endif
+#ifndef SCEGU_VRAM_BP32_2 /* sample */
+#define SCEGU_VRAM_BP32_2     (void *)(SCEGU_VRAM_TOP+(SCEGU_VRAM_BUFSIZE32*2))
+#endif
+#ifndef SCEGU_PF5650 /* sample */
+#define SCEGU_PF5650                       0
+#endif
+#ifndef SCEGU_VRAM_BP_0 /* sample */
+#define SCEGU_VRAM_BP_0       (void *)(SCEGU_VRAM_TOP)
+#endif
+#ifndef SCEGU_VRAM_BP_1 /* sample */
+#define SCEGU_VRAM_BP_1       (void *)(SCEGU_VRAM_TOP+SCEGU_VRAM_BUFSIZE)
+#endif
+#ifndef SCEGU_VRAM_TOP /* sample */
+#define SCEGU_VRAM_TOP        0x00000000
+#endif
+#ifndef SCEGU_VRAM_BUFSIZE /* sample */
+#define SCEGU_VRAM_BUFSIZE    (SCEGU_VRAM_WIDTH*SCEGU_SCR_HEIGHT*2)
+#endif
+#ifndef SCEGU_VRAM_BP_2 /* sample */
+#define SCEGU_VRAM_BP_2       (void *)(SCEGU_VRAM_TOP+(SCEGU_VRAM_BUFSIZE*2))
+#endif
+#ifndef SCEGU_VRAM_WIDTH /* sample */
+#define SCEGU_VRAM_WIDTH      512
+#endif
+#ifndef SCEGU_SCR_OFFSETX /* sample */
+#define SCEGU_SCR_OFFSETX     ((4096 - SCEGU_SCR_WIDTH) / 2)
+#endif
+#ifndef SCEGU_SCR_OFFSETY /* sample */
+#define SCEGU_SCR_OFFSETY     ((4096 - SCEGU_SCR_HEIGHT) / 2)
+#endif
+#ifndef SCEGU_ADD /* sample */
+#define SCEGU_ADD                          0
+#endif
+#ifndef SCEGU_SRC_ALPHA /* sample */
+#define SCEGU_SRC_ALPHA                    2
+#endif
+#ifndef SCEGU_ONE_MINUS_SRC_ALPHA /* sample */
+#define SCEGU_ONE_MINUS_SRC_ALPHA          3
+#endif
+#ifndef SCEGU_BLEND /* sample */
+#define SCEGU_BLEND                        4
+#endif
+#ifndef SCEGU_SCISSOR_TEST /* sample */
+#define SCEGU_SCISSOR_TEST                 2
+#endif
+#ifndef SCEGU_GREATER /* sample */
+#define SCEGU_GREATER                      6
+#endif
+#ifndef SCEGU_ALPHA_TEST /* sample */
+#define SCEGU_ALPHA_TEST                   0
+#endif
+#ifndef SCEGU_GEQUAL /* sample */
+#define SCEGU_GEQUAL                       7
+#endif
+#ifndef SCEGU_DEPTH_TEST /* sample */
+#define SCEGU_DEPTH_TEST                   1
+#endif
+#ifndef SCEGU_CW /* sample */
+#define SCEGU_CW                           0
+#endif
+#ifndef SCEGU_NORMAL_REVERSE_PATCH /* sample */
+#define SCEGU_NORMAL_REVERSE_PATCH        20
+#endif
+#ifndef SCEGU_TEX_MODULATE /* sample */
+#define SCEGU_TEX_MODULATE                 0
+#endif
+#ifndef SCEGU_RGBA /* sample */
+#define SCEGU_RGBA                         1
+#endif
+#ifndef SCEGU_LINEAR_MIPMAP_LINEAR /* sample */
+#define SCEGU_LINEAR_MIPMAP_LINEAR         7
+#endif
+#ifndef SCEGU_NEAREST /* sample */
+#define SCEGU_NEAREST                      0
+#endif
+#ifndef SCEGU_REPEAT /* sample */
+#define SCEGU_REPEAT                       0
+#endif
+#ifndef SCEGU_TEXTURE /* sample */
+#define SCEGU_TEXTURE                      9
+#endif
+#ifndef SCEGU_DITHER /* sample */
+#define SCEGU_DITHER                       6
+#endif
+#ifndef SCEGU_CLIP_PLANE /* sample */
+#define SCEGU_CLIP_PLANE                   8
+#endif
+#ifndef SCEGU_SMOOTH /* sample */
+#define SCEGU_SMOOTH                       1
+#endif
+#ifndef SCEGU_SPECULAR /* sample */
+#define SCEGU_SPECULAR                     4
+#endif
+#ifndef SCEGU_DIFFUSE_AND_SPECULAR /* sample */
+#define SCEGU_DIFFUSE_AND_SPECULAR         6
+#endif
+#ifndef SCEGU_LIGHT0 /* sample */
+#define SCEGU_LIGHT0                      11
+#endif
+#ifndef SCEGU_LIGHT_DIRECTION /* sample */
+#define SCEGU_LIGHT_DIRECTION              0
+#endif
+#ifndef SCEGU_DIFFUSE /* sample */
+#define SCEGU_DIFFUSE                      2
+#endif
+#ifndef SCEGU_LIGHT1 /* sample */
+#define SCEGU_LIGHT1                      12
+#endif
+#ifndef SCEGU_LIGHTING /* sample */
+#define SCEGU_LIGHTING                    10
+#endif
+#ifndef SCEGU_FOG /* sample */
+#define SCEGU_FOG                          7
+#endif
+#ifndef SCEGU_MATRIX_PROJECTION /* sample */
+#define SCEGU_MATRIX_PROJECTION            0
+#endif
+#ifndef SCEGU_PI /* sample */
+#define SCEGU_PI                           3.1415926535897932384626433832f
+#endif
+#ifndef SCEGU_RAD /* sample */
+#define SCEGU_RAD(a)                       ((a)*SCEGU_PI/180.0f)
+#endif
+#ifndef SCEGU_SCR_WIDTH /* sample */
+#define SCEGU_SCR_WIDTH       480
+#endif
+#ifndef SCEGU_SCR_HEIGHT /* sample */
+#define SCEGU_SCR_HEIGHT      272
+#endif
+#ifndef SCEGU_SCR_ASPECT /* sample */
+#define SCEGU_SCR_ASPECT      ((float)SCEGU_SCR_WIDTH / (float)SCEGU_SCR_HEIGHT)
+#endif
+#ifndef SCEGU_MATRIX_VIEW /* sample */
+#define SCEGU_MATRIX_VIEW                  1
+#endif
+#ifndef SCEGU_MATRIX_WORLD /* sample */
+#define SCEGU_MATRIX_WORLD                 2
+#endif
+#ifndef SCEGU_CULL_FACE /* sample */
+#define SCEGU_CULL_FACE                    5
+#endif
+#ifndef SCEGU_SYNC_FINISH /* sample */
+#define SCEGU_SYNC_FINISH                  0
+#endif
+#ifndef SCEGU_SYNC_WAIT /* sample */
+#define SCEGU_SYNC_WAIT                    0
+#endif
+extern const ScePspIMatrix4 D_00015300;
+static void init_gfx(void)
+{
+	ScePspIMatrix4 dith = D_00015300;
+	ScePspFVector3 vec;
+
+	sceGuInit();
+
+	sceGuStart(SCEGU_IMMEDIATE, disp_list, sizeof(disp_list));
+	if(frame32)
+	{
+		sceGuDrawBuffer(SCEGU_PF8888, SCEGU_VRAM_BP32_0, SCEGU_VRAM_WIDTH);
+		sceGuDispBuffer(SCEGU_SCR_WIDTH, SCEGU_SCR_HEIGHT, SCEGU_VRAM_BP32_1, SCEGU_VRAM_WIDTH);
+		sceGuDepthBuffer(SCEGU_VRAM_BP32_2, SCEGU_VRAM_WIDTH);
+	}
+	else
+	{
+		sceGuDrawBuffer(SCEGU_PF5650, SCEGU_VRAM_BP_0, SCEGU_VRAM_WIDTH);
+		sceGuDispBuffer(SCEGU_SCR_WIDTH, SCEGU_SCR_HEIGHT, SCEGU_VRAM_BP_1, SCEGU_VRAM_WIDTH);
+		sceGuDepthBuffer(SCEGU_VRAM_BP_2, SCEGU_VRAM_WIDTH);
+	}
+
+	sceGuOffset(SCEGU_SCR_OFFSETX, SCEGU_SCR_OFFSETY);
+	sceGuViewport(2048, 2048, SCEGU_SCR_WIDTH, SCEGU_SCR_HEIGHT);
+	sceGuDepthRange(32767, 0);
+
+	sceGuBlendFunc(SCEGU_ADD, SCEGU_SRC_ALPHA, SCEGU_ONE_MINUS_SRC_ALPHA, 0, 0);
+	sceGuEnable(SCEGU_BLEND);
+
+	sceGuScissor(0, 0, SCEGU_SCR_WIDTH, SCEGU_SCR_HEIGHT);
+	sceGuEnable(SCEGU_SCISSOR_TEST);
+
+	sceGuAlphaFunc(SCEGU_GREATER, 0x00, 0xff);
+	sceGuEnable(SCEGU_ALPHA_TEST);
+
+	sceGuDepthFunc(SCEGU_GEQUAL);
+	sceGuEnable(SCEGU_DEPTH_TEST);
+
+	sceGuFrontFace(SCEGU_CW);
+	sceGuEnable(SCEGU_NORMAL_REVERSE_PATCH);
+
+	sceGuTexFunc(SCEGU_TEX_MODULATE, SCEGU_RGBA);
+	sceGuTexFilter(SCEGU_LINEAR_MIPMAP_LINEAR, SCEGU_NEAREST);
+	sceGuTexWrap(SCEGU_REPEAT, SCEGU_REPEAT);
+	sceGuDisable(SCEGU_TEXTURE);
+
+	sceGuSetDither(&dith);
+	sceGuEnable(SCEGU_DITHER);
+	sceGuEnable(SCEGU_CLIP_PLANE);
+	sceGuShadeModel(SCEGU_SMOOTH);
+
+	vec.x=10.0f;
+	vec.y= 4.0f;
+	vec.z=10.0f;
+	sceGuLightColor(0, SCEGU_DIFFUSE, 0xff008000);
+	sceGuLightColor(0, SCEGU_SPECULAR, 0xffffffff);
+	sceGuLight(0, SCEGU_LIGHT_DIRECTION, SCEGU_DIFFUSE_AND_SPECULAR, &vec);
+	sceGuEnable(SCEGU_LIGHT0);
+
+	vec.x=-1.0f;
+	vec.y=-2.0f;
+	vec.z= 1.0f;
+	sceGuLightColor(1, SCEGU_DIFFUSE, 0xff000080);
+	sceGuLight(1, SCEGU_LIGHT_DIRECTION, SCEGU_DIFFUSE, &vec);
+	sceGuEnable(SCEGU_LIGHT1);
+	sceGuEnable(SCEGU_LIGHTING);
+
+	sceGuSpecular(60.0f);
+
+	sceGuFog(24.0f, 60.0f, 0xff000000);
+	sceGuDisable(SCEGU_FOG);
+
+	sceGuAmbient(0xffc0c0c0);
+
+	sceGumSetMatrixStack(&matrix_stack[0], 8, 8, 32, 0);
+
+	sceGumMatrixMode(SCEGU_MATRIX_PROJECTION);
+	sceGumLoadIdentity();
+	sceGumPerspective(SCEGU_RAD(45.0f), SCEGU_SCR_ASPECT, 1.000000f, 1000.000000f);
+
+	sceGumMatrixMode(SCEGU_MATRIX_VIEW);
+	sceGumLoadIdentity();
+
+	sceGumMatrixMode(SCEGU_MATRIX_WORLD);
+	sceGumLoadIdentity();
+
+	
+
+	sceGuClearColor( 0xFF0F0F0F );
+
+	sceGuClearDepth(0);
+	sceGuClearStencil(0);
+
+	sceGuDisable( SCEGU_CULL_FACE );
+
+	sceGuFinish();
+	sceGuSync(SCEGU_SYNC_FINISH, SCEGU_SYNC_WAIT);
+	sceDisplayWaitVblankStart();
+	sceGuDisplay(1);
+	
+}
 
 void init_all(void) {
     init_gfx();
