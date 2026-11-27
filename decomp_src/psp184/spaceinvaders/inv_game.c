@@ -1491,7 +1491,21 @@ void df_blur_end(void)
 	*(int *)(b_D_005FB3B0 + 0x40) = *(int *)(b_D_005FB3B0 + 0x44);
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", df_blur_scrpos_set);
+void df_blur_scrpos_set(int x, int y)
+{
+	u8 *w = (u8 *)&D_005FB3B0;
+	int sx, sy;
+	int pos[2];
+
+	if (x < 0) x = 0;
+	else if (x > 479) x = 479;
+	if (y < 0) y = 0;
+	else if (y > 271) y = 271;
+	sx = (*(int *)(w + 0x24) - 100) * 480 / 100;
+	sy = (*(int *)(w + 0x28) - 100) * 272 / 100;
+	*(int *)(w + 0x1C) = (480 - x) * sx / 480 - sx;
+	*(int *)(w + 0x20) = (272 - y) * sy / 272 - sy;
+}
 
 void df_blur_control(void)
 {
