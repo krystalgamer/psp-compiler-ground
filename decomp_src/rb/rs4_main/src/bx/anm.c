@@ -19,16 +19,30 @@ class B2aFile {
 public:
 	void ReAssign();
 };
+void Calc(Manager *);
 }
+void GpPrim_Init();
 extern "C" {
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/anm", bxInit);
+extern unsigned char D_00108E74;
+void consPrintf(const char *, ...);
+void bxInit(void)
+{
+	consPrintf((const char *)&D_00108E74, __FUNCTION__);
+	GpPrim_Init();
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/bx/anm", D_00108E74);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/anm", bxTerm);
+void bxTerm(void)
+{
+	consPrintf((const char *)&D_00108E74, __FUNCTION__);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/anm", bxCleanup);
+void bxCleanup(void)
+{
+	GpPrim_Init();
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/anm", bxAnmInit);
 
@@ -42,7 +56,11 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/anm", bxAnmInitAssign);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/anm", bxAnmTerm);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/anm", bxAnmExec);
+int bxAnmExec(B2A::Manager *m)
+{
+	B2A::Calc(m);
+	return *(int *)((char *)m + 0x5C);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/anm", bxAnmDraw);
 
