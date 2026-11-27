@@ -3,6 +3,13 @@
 #ifndef NULL
 #define NULL ((void *)0)
 #endif
+void DmeFree(void **);
+int rt_memory_free(void **);
+int rt_time_get_local();
+char *strncpy(char *, const char *, unsigned int);
+int rt_comm_linkaddress_toint();
+extern char gNetUpdateErrors[];
+void *memcpy(void *, const void *, unsigned int);
 int NetClientIndexToClientIndexPacket(int arg0);
 int NetGetMsgClientIndex(void *arg0);
 int NetGetMyWorldID(void);
@@ -26,7 +33,6 @@ void NetSetHeartbeatInterval(int arg0);
 void p2p_system_change_cb(int arg0, int arg1, void *arg2);
 void udp_data_cb(void);
 void *DMEmalloc(M2C_UNK);                           /* extern */
-void *NetGetClientInfo(int, int);                   /* extern */
 M2C_UNK rt_comm_linkaddress_toext(void *, void *);  /* extern */
 M2C_UNK rt_mutex_unlock(int, M2C_UNK);              /* extern */
 M2C_UNK rt_timebase_get_globaltime(void *);         /* extern */
@@ -122,7 +128,11 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal",
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", DMEmalloc);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", DmeFree);
+void DmeFree(void **p)
+{
+    if (*p != NULL)
+        rt_memory_free(p);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", NetIRegisterMemoryCallbacks);
 
@@ -164,7 +174,13 @@ int NetIGetCurrentUDPSourceBinaryIP(void *arg0) {
     return var_a2;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", NetIGetLocalTime);
+int NetIGetLocalTime(void)
+{
+    int t;
+
+    rt_time_get_local(&t);
+    return t;
+}
 
 int NetIGetTime(void *arg0) {
     int var_v1;
@@ -187,7 +203,18 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", Ne
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", NetIGetConnectionStatus);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", NetIGetServerVersion);
+int NetIGetServerVersion(char *out, char *dme)
+{
+    int ret = 0x17;
+
+    if (dme != NULL) {
+        if (out != NULL) {
+            strncpy(out, dme + 0x418, 16);
+            ret = 0;
+        }
+    }
+    return ret;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", NetISendTo);
 
@@ -348,7 +375,7 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", Ne
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", NetGetClientPingInfo);
 
 extern void *gppClientPingInfo[256];
-int DmeFree(void *);
+
 int NetCleanupClientPingInfoArray(void)
 {
     int i;
@@ -388,19 +415,44 @@ int NetSetConnInfo(int arg0, int arg1) {
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", NetCreateConnInfo);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", NetDestroyConnInfoBare);
+void NetDestroyConnInfoBare(void *p)
+{
+    DmeFree(&p);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", NetDestroyConnInfo);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", NetGetClientInfo);
+void *NetGetClientInfo(int arr, int idx)
+{
+    void *p = NULL;
+
+    if (arr != 0 && (unsigned int)idx < 256)
+        p = ((void **)arr)[idx];
+    return p;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", NetCreateClientInfo);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", NetDestroyClientInfo);
+void NetDestroyClientInfo(void **arr, int idx)
+{
+    if (arr != NULL)
+        DmeFree(&arr[idx]);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", NetGetServerIpAddress);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", NetSetServerIpAddress);
+int NetSetServerIpAddress(char *dme, void *addr)
+{
+    int ret = 0x17;
+
+    if (addr != NULL) {
+        if (dme != NULL) {
+            rt_comm_linkaddress_toint(dme + 0x410, addr);
+            ret = 0;
+        }
+    }
+    return ret;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", NetCheckForPingTimeouts);
 

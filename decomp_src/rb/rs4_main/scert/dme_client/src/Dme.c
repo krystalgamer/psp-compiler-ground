@@ -78,7 +78,18 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/Dme", NetSend
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/Dme", NetRegisterDataStream);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/Dme", NetSetDefaultMemoryCallbackParams);
+int NetSetDefaultMemoryCallbackParams(int *p)
+{
+    int ret = 0x17;
+
+    if (p != NULL) {
+        p[0] = 0;
+        p[1] = 0;
+        p[2] = 0;
+        ret = 0;
+    }
+    return ret;
+}
 
 void NetRegisterMemoryCallbacks(void) {
     NetIRegisterMemoryCallbacks();
@@ -188,7 +199,19 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/Dme", NetTick
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/Dme", NetLeave);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/Dme", NetSetDefaultDisconnectParams);
+int NetSetDefaultDisconnectParams(int *p)
+{
+    int ret = 0x17;
+
+    if (p != NULL) {
+        p[0] = 0;
+        p[1] = 0;
+        p[2] = 0;
+        p[3] = 0;
+        ret = 0;
+    }
+    return ret;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/Dme", NetDisconnect);
 
