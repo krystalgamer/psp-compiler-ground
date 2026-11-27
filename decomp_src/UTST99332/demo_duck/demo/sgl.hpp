@@ -19,13 +19,6 @@
             ".text\n")
 #endif
 
-namespace sh {
-class TestEnvSet {
-public:
-    void load();
-};
-}
-
 /* assert macro of the demo's library (common/assert): __PRETTY_FUNCTION__ is an extern label */
 #define SGL_ASSERT(c, err, text, file, fn, line, sep) \
     if (!(c)) { \
@@ -35,6 +28,8 @@ public:
     }
 
 namespace sgl {
+/* stand-in until demo/math.hpp declares math::area */
+float sgl_math_area(math::vector_xyzw, math::vector_xyzw, math::vector_xyzw) __asm__("_ZN4math4areaENS_11vector_xyzwES0_S0_");
 class Heap {
 public:
     struct Element {
@@ -66,21 +61,29 @@ public:
     int _n;
     bool _heap;
 };
-enum VertexAttrEnum { };
+enum VertexAttrEnum { POS, NOR, COL, TEX };
 enum InputMode { };
 enum BeginMode { };
 enum LineMode { };
+/* units whose .rodata can't be C define SGL_POSITION_ONE as an extern 1.0f */
+#ifndef SGL_POSITION_ONE
+#define SGL_POSITION_ONE 1
+#endif
 struct Position : math::vector_xyzw {
-    Position() {}
+    Position() : math::vector_xyzw(0, 0, 0, SGL_POSITION_ONE) {}
     Position(float x, float y, float z, float w) : math::vector_xyzw(x, y, z, w) {}
 };
 struct Normal : math::vector_xyzw {
-    Normal() {}
+    Normal() : math::vector_xyzw(0, 0, 0, 0) {}
     Normal(float x, float y, float z) : math::vector_xyzw(x, y, z, 0) {}
 };
 /* sgl::Color: demo/math.hpp */
 struct TexCoord : math::vector_xyzw {
-    TexCoord() {}
+    TexCoord()
+    {
+        x = 0;
+        y = 0;
+    }
     TexCoord(float u, float v)
     {
         x = u;
@@ -88,19 +91,37 @@ struct TexCoord : math::vector_xyzw {
     }
 };
 struct Triangle {
+    int operator[](int i) const { return v[i & 3]; }
+    int edge(int i) const { return e[i & 3]; }
     int v[3];
     int e[3];
 };
 struct Vertex {
-    int position, normal, color, texcoord;
+    Vertex()
+    {
+        _attr[POS] = -1;
+        _attr[NOR] = -1;
+        _attr[COL] = -1;
+        _attr[TEX] = -1;
+    }
+    Vertex(int p, int n, int c, int t)
+    {
+        _attr[POS] = p;
+        _attr[NOR] = n;
+        _attr[COL] = c;
+        _attr[TEX] = t;
+    }
+    int _attr[4];
     bool operator<(const Vertex &) const;
 };
 struct Edge {
     Edge(int, int, int, int);
     int numAdjacentTriangles() const;
     void order();
-    int t0, t1;
-    int v0, v1;
+    int vertex(int i) const { return v[i & 1]; }
+    int triangle(int i) const { return t[i & 1]; }
+    int t[2];
+    int v[2];
 };
 /* an attribute value and whether it was given */
 template<class T> struct Attr {
@@ -146,6 +167,11 @@ public:
     int getVertexAttributeIndex(int, VertexAttrEnum) const;
     void setVertexAttributeIndex(int, VertexAttrEnum, int);
     int getVertexPositionIndex(int) const;
+    Position getVertexPosition(int) const;
+    Normal getVertexNormal(int) const;
+    Color getVertexColor(int) const;
+    TexCoord getVertexTexCoord(int) const;
+    void print(std::string) const;
     std::vector<Position> _positions;   /* 0x04 */
     std::vector<Normal> _normals;       /* 0x10 */
     std::vector<Color> _colors;         /* 0x1C */
@@ -177,6 +203,23 @@ public:
     std::vector<float> _floats;             /* 0x20 */
     std::vector<math::vector_xyzw> _float4s; /* 0x2C */
 };
+/* lib/sgl/VarlenListsList.h */
+class VarlenListsList {
+public:
+    struct List {
+        unsigned int _head;
+        unsigned int _size;
+        unsigned int _cur;
+    };
+    void reset();
+    void freeze();
+    void clear(unsigned int _List);
+    void add(unsigned int _List, int);
+    unsigned int _n;
+    std::vector<List> _lists;   /* 0x04 */
+    std::vector<int> _data;     /* 0x10 */
+};
+math::vector_xyzw ProjectOnPlane(const math::vector_xyzw &, const math::vector_xyzw &, const math::vector_xyzw &);
 struct StencilShadowData;
 class Mesh : public CoreMesh {
 public:
@@ -203,11 +246,35 @@ public:
     int internal_texcoord_index(int) const;
     int internal_vertex_index(int) const;
     void snap_offsets();
+    void print_positions();
+    void print_vertices();
+    void print_triangles();
     template<class V, class T> void setAt(unsigned int, V &, T);
     const std::vector<Triangle> &getTriangles() const;
     const std::vector<Edge> &getEdges() const;
     const std::vector<Normal> &getTrianglesNormals() const;
+    float triangleArea(int) const;
+    float triangleEdgeLenght(int, int) const;
+    void getTriangleEdgeIndex(int, int &, int &, int &) const;
+    int getTriangleEdgeIndex(int, int) const;
+    void getTriangleVertexIndex(int, int &, int &, int &) const;
+    int getTriangleVertexIndex(int, int) const;
+    void getTriangleVertexAttributeIndex(int, VertexAttrEnum, int &, int &, int &) const;
+    void getTriangleVertexPosition(int, Position &, Position &, Position &) const;
+    void getTriangleVertexColor(int, Color &, Color &, Color &) const;
+    void getTriangleVertexNormal(int, Normal &, Normal &, Normal &) const;
+    void getTriangleVertexTexCoord(int, TexCoord &, TexCoord &, TexCoord &) const;
+    Position getTriangleVertexPosition(int, int) const;
+    Normal getTriangleVertexNormal(int, int) const;
+    Color getTriangleVertexColor(int, int) const;
+    TexCoord getTriangleVertexTexCoord(int, int) const;
+    Normal getTriangleNormal(int) const;
+    int getEdgePositionIndex(int, int) const;
     int getEdgeVertexIndex(int, int) const;
+    void getEdgeVertexIndex(int, int &, int &) const;
+    int getEdgeTriangleIndex(int, int) const;
+    void getEdgeVertexPosition(int, Position &, Position &) const;
+    Position calcTriangleCenter(int) const;
     int getEdgeVertexAttributeIndex(int, int, VertexAttrEnum) const;
     void removeUsusedPositions();
     void removeUsusedNormals();
@@ -223,13 +290,14 @@ public:
     void discardNormals();
     void discardTexCoords();
     void reverseTrianglesVertices();
+    void reverseVerticesNormals();
     static void calcStencilShadowData(StencilShadowData &, const CoreMesh &);
     Offsets _offsets;                   /* 0x5C */
     bool _locked;                       /* 0x74 */
     std::vector<Triangle> _triangles;   /* 0x78 */
     std::vector<Edge> _edges;           /* 0x84 */
     std::vector<Normal> _tnormals;      /* 0x90 */
-    int _f9C;
+    bool _f9C;
 };
 
 class LineSet {
@@ -574,6 +642,61 @@ public:
     math::vector_xyzw _testLight;   /* 0xA0 */
     char _pB0[0xC];
     char _fBC;                      /* BVH */
+};
+}
+
+/* sh::Args::Env, sh::Env, sh::TestEnvSet (declarations maintained by cxx-apps3) */
+namespace sh {
+namespace Args {
+struct Env {
+    enum Type { };
+    Type type;                  /* 0x00 */
+    std::string name;           /* 0x04 */
+    float exposure;             /* 0x08 */
+    int _fC;
+    int _f10;
+    float _f14;
+    int _f18;
+    int _f1C;
+    float _f20;
+    std::string dir;            /* 0x24 */
+    bool _f28;
+    float cube_size;            /* 0x2C */
+    float _f30;
+    float _f34;
+    float _f38;
+};
+}
+class Env {
+public:
+    Env(Args::Env);
+    ~Env();
+    void draw(bool);
+    bool load(bool);
+    Args::Env _args;            /* 0x000 */
+    VectorRGB _sh;              /* 0x03C */
+    CubeMap _cube;              /* 0x06C */
+    CubeMap _cube_blur;         /* 0x2D8 */
+};
+class TestEnvSet {
+public:
+    enum EnvEnum { };
+    enum { MAX_ENV = 7 };
+    class TestEnv : public common::shared_object_base {
+    public:
+        TestEnv(EnvEnum, Args::Env);
+        virtual ~TestEnv() {}
+        void load();
+        Env _env;               /* 0x008 */
+        EnvEnum _type;          /* 0x54C */
+        bool _loaded;           /* 0x550 */
+    };
+    TestEnvSet(Args::Env, EnvEnum);
+    void load();
+    void next();
+    void draw(bool);
+    std::vector<common::handle<TestEnv> > _lights;  /* 0x0 */
+    int _current_light;                             /* 0xC */
 };
 }
 

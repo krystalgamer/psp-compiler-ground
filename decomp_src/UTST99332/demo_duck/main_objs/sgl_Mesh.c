@@ -2,7 +2,62 @@
 /* cflags: -O3 -fno-exceptions */
 #undef __EXCEPTIONS
 #include "cxx/defer_asm.h"
+extern const float D_0016E22C;
+#define SGL_POSITION_ONE D_0016E22C
 #include "../main.hpp"
+
+extern const char D_0016E24C[];     /* " = " */
+extern const char D_0016E250[];     /* "position at " */
+extern const char D_0016E260[];     /* "vertex at " */
+extern const char D_0016E26C[];     /* "triangle at " */
+
+/* these template instances are still asm below */
+namespace std {
+extern template void vector<sgl::Triangle>::_M_insert_aux(vector<sgl::Triangle>::iterator, const sgl::Triangle &);
+extern template vector<sgl::Triangle>::iterator
+__uninitialized_copy_aux(vector<sgl::Triangle>::iterator, vector<sgl::Triangle>::iterator, vector<sgl::Triangle>::iterator,
+                         __false_type);
+}
+
+extern const char D_0016E248[];     /* " " */
+extern const char D_0016E2D4[];     /* "../lib/sgl/Mesh.cpp" */
+extern const char D_0016E2E8[];     /* " *** error " */
+extern const char D_0016E3B4[];     /* "0 <= ti && ti < (int)_triangles.size()" */
+extern const char D_0016E6C8[];
+extern const char D_0016E7F0[];
+extern const char D_0016E85C[];
+extern const char D_0016E2A8[];
+extern const char D_0016E334[];
+extern const char D_0016E360[];
+extern const float D_0016E22C;
+extern const float D_0016E230;
+extern const float D_0016E234;
+extern const int triangleEdgeLenght_NEXT[3] __asm__("_ZZNK3sgl4Mesh18triangleEdgeLenghtEiiE4NEXT");
+#define MESH_ASSERT(c, text, fn, line) SGL_ASSERT(c, D_0016E2E8, text, D_0016E2D4, fn, line, D_0016E248)
+#define PRETTY(n, s) extern const char n[] __asm__("_ZZNK3sgl4Mesh" s "E19__PRETTY_FUNCTION__")
+PRETTY(triangleArea_name, "12triangleAreaEi");
+PRETTY(triangleEdgeLenght_name, "18triangleEdgeLenghtEii");
+PRETTY(getTriangleEdgeIndex3_name, "20getTriangleEdgeIndexEiRiS1_S1_");
+PRETTY(getTriangleEdgeIndex_name, "20getTriangleEdgeIndexEii");
+PRETTY(getTriangleVertexIndex3_name, "22getTriangleVertexIndexEiRiS1_S1_");
+PRETTY(getTriangleVertexIndex_name, "22getTriangleVertexIndexEii");
+PRETTY(getTriangleVertexAttributeIndex_name, "31getTriangleVertexAttributeIndexEiNS_14VertexAttrEnumERiS2_S2_");
+PRETTY(getTriangleVertexPosition3_name, "25getTriangleVertexPositionEiRNS_8PositionES2_S2_");
+PRETTY(getTriangleVertexColor3_name, "22getTriangleVertexColorEiRNS_5ColorES2_S2_");
+PRETTY(getTriangleVertexNormal3_name, "23getTriangleVertexNormalEiRNS_6NormalES2_S2_");
+PRETTY(getTriangleVertexTexCoord3_name, "25getTriangleVertexTexCoordEiRNS_8TexCoordES2_S2_");
+PRETTY(getTriangleVertexPosition_name, "25getTriangleVertexPositionEii");
+PRETTY(getTriangleVertexNormal_name, "23getTriangleVertexNormalEii");
+PRETTY(getTriangleVertexColor_name, "22getTriangleVertexColorEii");
+PRETTY(getTriangleVertexTexCoord_name, "25getTriangleVertexTexCoordEii");
+PRETTY(getTriangleNormal_name, "17getTriangleNormalEi");
+PRETTY(getEdgePositionIndex_name, "20getEdgePositionIndexEii");
+PRETTY(getEdgeVertexIndex_name, "18getEdgeVertexIndexEii");
+PRETTY(getEdgeVertexIndex2_name, "18getEdgeVertexIndexEiRiS1_");
+PRETTY(getEdgeTriangleIndex_name, "20getEdgeTriangleIndexEii");
+PRETTY(getEdgeVertexPosition_name, "21getEdgeVertexPositionEiRNS_8PositionES2_");
+#define CHECK_TI(fn, line) MESH_ASSERT(0 <= ti && ti < (int)_triangles.size(), D_0016E3B4, fn, line)
+#define CHECK_EI(fn, line) MESH_ASSERT(0 <= ei && ei < (int)_edges.size(), D_0016E85C, fn, line)
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_Mesh", _Z41__static_initialization_and_destruction_0ii_AB598);
 
@@ -10,11 +65,11 @@ sgl::Mesh::Offsets::Offsets() : position(0), normal(0), color(0), texcoord(0), v
 {
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_Mesh", _ZN3sgl4MeshD2Ev);
+sgl::Mesh::~Mesh()
+{
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_Mesh", _ZN3sgl4MeshD1Ev);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_Mesh", _ZN3sgl4MeshD0Ev);
 
 void sgl::Mesh::unlock()
 {
@@ -66,11 +121,19 @@ int sgl::Mesh::internal_vertex_index(int i) const
     return i;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_Mesh", _ZN3sgl4MeshC2Eb);
+sgl::Mesh::Mesh(bool b) : _locked(b), _f9C(0)
+{
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_Mesh", _ZN3sgl4MeshC1Eb);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_Mesh", _ZN3sgl4Mesh12snap_offsetsEv);
+void sgl::Mesh::snap_offsets()
+{
+    _offsets.position = _positions.size();
+    _offsets.normal = _normals.size();
+    _offsets.color = _colors.size();
+    _offsets.texcoord = _texcoords.size();
+    _offsets.vertex = _vertices.size();
+}
 
 void sgl::Mesh::normalAt(int i, Normal n)
 {
@@ -92,15 +155,37 @@ void sgl::Mesh::positionAt(int i, Position p)
     setAt(internal_position_index(i), _positions, p);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_Mesh", _ZN3sgl4Mesh8vertexAtEiiiii);
+void sgl::Mesh::vertexAt(int v, int p, int n, int c, int t)
+{
+    setAt(internal_vertex_index(v), _vertices, Vertex(internal_position_index(p), internal_normal_index(n), internal_color_index(c), internal_texcoord_index(t)));
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_Mesh", _ZN3sgl4Mesh16pushBackTriangleENS_8TriangleE);
+void sgl::Mesh::pushBackTriangle(Triangle t)
+{
+    _triangles.push_back(t);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_Mesh", _ZN3sgl4Mesh15print_positionsEv);
+void sgl::Mesh::print_positions()
+{
+    int i = 0;
+    for (std::vector<Position>::iterator it = _positions.begin(); it != _positions.end(); ++it, ++i)
+        std::cout << D_0016E250 << i << D_0016E24C << it->x << D_0016E248 << it->y << D_0016E248 << it->z << std::endl;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_Mesh", _ZN3sgl4Mesh14print_verticesEv);
+void sgl::Mesh::print_vertices()
+{
+    int i = 0;
+    for (std::vector<Vertex>::iterator it = _vertices.begin(); it != _vertices.end(); ++it, ++i)
+        std::cout << D_0016E260 << i << D_0016E24C << it->_attr[POS] << D_0016E248 << it->_attr[NOR] << D_0016E248 << it->_attr[COL]
+                  << D_0016E248 << it->_attr[TEX] << D_0016E248 << std::endl;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_Mesh", _ZN3sgl4Mesh15print_trianglesEv);
+void sgl::Mesh::print_triangles()
+{
+    int i = 0;
+    for (std::vector<Triangle>::iterator it = _triangles.begin(); it != _triangles.end(); ++it, ++i)
+        std::cout << D_0016E26C << i << D_0016E24C << it->v[0] << D_0016E248 << it->v[1] << D_0016E248 << it->v[2] << std::endl;
+}
 
 const std::vector<sgl::Triangle> &sgl::Mesh::getTriangles() const
 {
@@ -117,52 +202,166 @@ const std::vector<sgl::Normal> &sgl::Mesh::getTrianglesNormals() const
     return _tnormals;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_Mesh", _ZNK3sgl4Mesh12triangleAreaEi);
+float sgl::Mesh::triangleArea(int i) const
+{
+    MESH_ASSERT(i >= 0 && i < (int)getTriangles().size(), D_0016E2A8, triangleArea_name, 226);
+    Position a, b, c;
+    getTriangleVertexPosition(i, a, b, c);
+    return sgl_math_area(a, b, c);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_Mesh", _ZNK3sgl4Mesh18triangleEdgeLenghtEii);
+float sgl::Mesh::triangleEdgeLenght(int t, int e) const
+{
+    MESH_ASSERT(t >= 0 && t < (int)getTriangles().size(), D_0016E334, triangleEdgeLenght_name, 237);
+    MESH_ASSERT(e >= 0 && e < 3, D_0016E360, triangleEdgeLenght_name, 238);
+    math::vector_xyzw d = getTriangleVertexPosition(t, e) - getTriangleVertexPosition(t, triangleEdgeLenght_NEXT[e]);
+    return sqrtf(math::dot(d, d));
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_Mesh", _ZNK3sgl4Mesh20getTriangleEdgeIndexEiRiS1_S1_);
+void sgl::Mesh::getTriangleEdgeIndex(int ti, int &a, int &b, int &c) const
+{
+    CHECK_TI(getTriangleEdgeIndex3_name, 254);
+    a = _triangles[ti].e[0];
+    b = _triangles[ti].e[1];
+    c = _triangles[ti].e[2];
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_Mesh", _ZNK3sgl4Mesh20getTriangleEdgeIndexEii);
+int sgl::Mesh::getTriangleEdgeIndex(int ti, int e) const
+{
+    CHECK_TI(getTriangleEdgeIndex_name, 265);
+    return _triangles[ti].edge(e);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_Mesh", _ZNK3sgl4Mesh22getTriangleVertexIndexEiRiS1_S1_);
+void sgl::Mesh::getTriangleVertexIndex(int ti, int &a, int &b, int &c) const
+{
+    CHECK_TI(getTriangleVertexIndex3_name, 277);
+    a = _triangles[ti].v[0];
+    b = _triangles[ti].v[1];
+    c = _triangles[ti].v[2];
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_Mesh", _ZNK3sgl4Mesh22getTriangleVertexIndexEii);
+int sgl::Mesh::getTriangleVertexIndex(int ti, int v) const
+{
+    CHECK_TI(getTriangleVertexIndex_name, 288);
+    return _triangles[ti][v];
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_Mesh", _ZNK3sgl4Mesh31getTriangleVertexAttributeIndexEiNS_14VertexAttrEnumERiS2_S2_);
+void sgl::Mesh::getTriangleVertexAttributeIndex(int ti, VertexAttrEnum attr, int &a, int &b, int &c) const
+{
+    CHECK_TI(getTriangleVertexAttributeIndex_name, 297);
+    const Triangle &t = _triangles[ti];
+    a = getVertexAttributeIndex(t[0], attr);
+    b = getVertexAttributeIndex(t[1], attr);
+    c = getVertexAttributeIndex(t[2], attr);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_Mesh", _ZNK3sgl4Mesh25getTriangleVertexPositionEiRNS_8PositionES2_S2_);
+void sgl::Mesh::getTriangleVertexPosition(int ti, Position &a, Position &b, Position &c) const
+{
+    CHECK_TI(getTriangleVertexPosition3_name, 311);
+    const Triangle &t = _triangles[ti];
+    a = getVertexPosition(t[0]);
+    b = getVertexPosition(t[1]);
+    c = getVertexPosition(t[2]);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_Mesh", _ZNK3sgl4Mesh22getTriangleVertexColorEiRNS_5ColorES2_S2_);
+void sgl::Mesh::getTriangleVertexColor(int ti, Color &a, Color &b, Color &c) const
+{
+    CHECK_TI(getTriangleVertexColor3_name, 325);
+    const Triangle &t = _triangles[ti];
+    a = getVertexColor(t[0]);
+    b = getVertexColor(t[1]);
+    c = getVertexColor(t[2]);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_Mesh", _ZNK3sgl4Mesh23getTriangleVertexNormalEiRNS_6NormalES2_S2_);
+void sgl::Mesh::getTriangleVertexNormal(int ti, Normal &a, Normal &b, Normal &c) const
+{
+    CHECK_TI(getTriangleVertexNormal3_name, 339);
+    const Triangle &t = _triangles[ti];
+    a = getVertexNormal(t[0]);
+    b = getVertexNormal(t[1]);
+    c = getVertexNormal(t[2]);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_Mesh", _ZNK3sgl4Mesh25getTriangleVertexTexCoordEiRNS_8TexCoordES2_S2_);
+void sgl::Mesh::getTriangleVertexTexCoord(int ti, TexCoord &a, TexCoord &b, TexCoord &c) const
+{
+    CHECK_TI(getTriangleVertexTexCoord3_name, 353);
+    const Triangle &t = _triangles[ti];
+    a = getVertexTexCoord(t[0]);
+    b = getVertexTexCoord(t[1]);
+    c = getVertexTexCoord(t[2]);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_Mesh", _ZNK3sgl4Mesh25getTriangleVertexPositionEii);
+sgl::Position sgl::Mesh::getTriangleVertexPosition(int ti, int tv) const
+{
+    MESH_ASSERT(0 <= tv && tv <= 2, D_0016E6C8, getTriangleVertexPosition_name, 364);
+    CHECK_TI(getTriangleVertexPosition_name, 365);
+    return getVertexPosition(_triangles[ti][tv]);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_Mesh", _ZNK3sgl4Mesh23getTriangleVertexNormalEii);
+sgl::Normal sgl::Mesh::getTriangleVertexNormal(int ti, int tv) const
+{
+    MESH_ASSERT(0 <= tv && tv <= 2, D_0016E6C8, getTriangleVertexNormal_name, 374);
+    CHECK_TI(getTriangleVertexNormal_name, 375);
+    return getVertexNormal(_triangles[ti][tv]);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_Mesh", _ZNK3sgl4Mesh22getTriangleVertexColorEii);
+sgl::Color sgl::Mesh::getTriangleVertexColor(int ti, int tv) const
+{
+    MESH_ASSERT(0 <= tv && tv <= 2, D_0016E6C8, getTriangleVertexColor_name, 384);
+    CHECK_TI(getTriangleVertexColor_name, 385);
+    return getVertexColor(_triangles[ti][tv]);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_Mesh", _ZNK3sgl4Mesh25getTriangleVertexTexCoordEii);
+sgl::TexCoord sgl::Mesh::getTriangleVertexTexCoord(int ti, int tv) const
+{
+    MESH_ASSERT(0 <= tv && tv <= 2, D_0016E6C8, getTriangleVertexTexCoord_name, 394);
+    CHECK_TI(getTriangleVertexTexCoord_name, 395);
+    return getVertexTexCoord(_triangles[ti][tv]);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_Mesh", _ZNK3sgl4Mesh17getTriangleNormalEi);
+sgl::Normal sgl::Mesh::getTriangleNormal(int ti) const
+{
+    MESH_ASSERT(0 <= ti && ti < (int)_tnormals.size(), D_0016E7F0, getTriangleNormal_name, 467);
+    return _tnormals[ti];
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_Mesh", _ZNK3sgl4Mesh20getEdgePositionIndexEii);
+int sgl::Mesh::getEdgePositionIndex(int ei, int v) const
+{
+    CHECK_EI(getEdgePositionIndex_name, 474);
+    return getVertexPositionIndex(_edges[ei].vertex(v));
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_Mesh", _ZNK3sgl4Mesh18getEdgeVertexIndexEii);
+int sgl::Mesh::getEdgeVertexIndex(int ei, int v) const
+{
+    CHECK_EI(getEdgeVertexIndex_name, 485);
+    return _edges[ei].vertex(v);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_Mesh", _ZNK3sgl4Mesh18getEdgeVertexIndexEiRiS1_);
+void sgl::Mesh::getEdgeVertexIndex(int ei, int &a, int &b) const
+{
+    CHECK_EI(getEdgeVertexIndex2_name, 492);
+    a = _edges[ei].vertex(0);
+    b = _edges[ei].vertex(1);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_Mesh", _ZNK3sgl4Mesh20getEdgeTriangleIndexEii);
+int sgl::Mesh::getEdgeTriangleIndex(int ei, int t) const
+{
+    CHECK_EI(getEdgeTriangleIndex_name, 502);
+    return _edges[ei].triangle(t);
+}
 
 int sgl::Mesh::getEdgeVertexAttributeIndex(int e, int v, VertexAttrEnum a) const
 {
     return getVertexAttributeIndex(getEdgeVertexIndex(e, v), a);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_Mesh", _ZNK3sgl4Mesh21getEdgeVertexPositionEiRNS_8PositionES2_);
+void sgl::Mesh::getEdgeVertexPosition(int ei, Position &a, Position &b) const
+{
+    CHECK_EI(getEdgeVertexPosition_name, 517);
+    const Edge &e = _edges[ei];
+    a = getVertexPosition(e.vertex(0));
+    b = getVertexPosition(e.vertex(1));
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_Mesh", _ZNK3sgl4Mesh18calcTriangleCenterEi);
 
