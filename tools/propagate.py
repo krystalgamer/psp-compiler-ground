@@ -156,19 +156,34 @@ def unit_text(target, module, unit, path):
 
 
 def drop_jump_tables(target, module, unit, func, text):
-    """The C now emits FUNC's jump tables itself: drop their INCLUDE_RODATA."""
+    """The C now emits FUNC's jump tables itself: drop their INCLUDE_RODATA.
+    None if a table shares its rodata file with other data (can't install)."""
     d = ROOT / "tmp" / "asm" / target / module / "nonmatchings" / unit
     f = d / f"{func}.s"
     if not f.exists():
         return text
-    labels = set(re.findall(r"jlabel (\.L\w+)", f.read_text()))
+    # splat writes local labels as `jlabel .L...` or `.L...:`
+    labels = {a or b for a, b in re.findall(r"^\s*(?:jlabel (\.L\w+)|(\.L\w+):)", f.read_text(), re.M)}
     if not labels:
         return text
+    bad = []
 
     def keep(m):
         r = d / f"{m.group(1)}.s"
-        return "" if r.exists() and any(l in r.read_text() for l in labels) else m.group(0)
-    return re.sub(r'^INCLUDE_RODATA\("[^"]+", (\w+)\);\n?', keep, text, flags=re.M)
+        if not r.exists():
+            return m.group(0)
+        rt = r.read_text()
+        # `.word .L...` or numeric `.word 0x... # .L...`
+        words = [c or v for v, c in re.findall(r"^\s*(?:/\*.*?\*/\s*)?\.word (\S+)(?:\s*# (\.L\w+))?", rt, re.M)]
+        if not any(w in labels for w in words):
+            return m.group(0)
+        other = re.search(r"^\s*(?:/\*.*?\*/\s*)?\.(?:asciz|ascii|byte|half|short|float|double|space)\b", rt, re.M)
+        if other or not all(w in labels for w in words):
+            bad.append(m.group(1))
+            return m.group(0)
+        return ""
+    text = re.sub(r'^INCLUDE_RODATA\("[^"]+", (\w+)\);\n?', keep, text, flags=re.M)
+    return None if bad else text
 
 
 _mprotos = {}
@@ -197,7 +212,10 @@ def try_body(target, module, unit, func, body, mod):
 def try_body1(target, module, unit, func, body, mod, protos):
     path = ROOT / "decomp_src" / target / module / f"{unit}.c"
     text = unit_text(target, module, unit, path)
-    pat = re.compile(r'^INCLUDE_ASM\("[^"]+", ' + re.escape(func) + r"\);$", re.M)
+    inc = r'INCLUDE_ASM\("[^"]+", ' + re.escape(func) + r"\);"
+    # a NON_MATCHING draft block goes as a whole (its #else holds the INCLUDE_ASM)
+    pat = re.compile(r"^#ifdef NON_MATCHING\n(?:(?!#endif\b|#ifdef NON_MATCHING\n).*\n)*?#else\n"
+                     + inc + r"\n#endif$|^(?<!#else\n)" + inc + "$", re.M)
     sdk = m2cdraft.sdk_protos(text)
     decl = "\n".join(v for k, v in sdk.items() if re.search(rf"\b{k}\(", body))
     # the module's own functions the body calls without a declaration in the unit:
@@ -207,7 +225,11 @@ def try_body1(target, module, unit, func, body, mod, protos):
              if n in mp and n not in sdk and not re.search(rf"^[^\n;(]*\b{n}\s*\([^;{{]*\)\s*[;{{]", text, re.M)]
     decl = "\n".join(x for x in [decl] + extra if x)
     new = pat.sub(lambda _: (decl + "\n" if decl else "") + body.rstrip("\n"), text, count=1)
+    if new == text:
+        return None
     new = drop_jump_tables(target, module, unit, func, new)
+    if new is None:
+        return None
     m = re.search(r"cflags: (-O[0-9s](?: -(?:[fm][\w-]+|std)(?:=[\w.:]+)?)*)", text)
     flags = (m.group(1) if m else "-O2") + " " + compiler.driver_flags(target, module, unit)
     with tempfile.TemporaryDirectory() as td:
