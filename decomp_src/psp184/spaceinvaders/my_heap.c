@@ -2,7 +2,7 @@
 #include "common.h"
 #include "m2c_macros.h"
 extern int g_addr;
-extern int g_size;
+extern unsigned int g_size;
 extern int myHeap_freesize;
 extern int myHeap_size;
 
@@ -26,12 +26,34 @@ void myHeapTerm(void) {
     myHeap_freesize = 0;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/my_heap", myHeapAlloc);
+void *myHeapAlloc( unsigned int size )
+{
+	if ( size == 0 ) return 0 ;
+	if ( g_size < size ) return 0 ;
+	int addr = (int)g_addr ;
+	g_addr = ( addr + size ) ;
+	g_size -= size ;
+	myHeap_freesize = g_size;
+	myHeap_size += size;
+	return (void *)( addr ) ;
+}
 
 void myHeapFree(void) {
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/my_heap", myHeapAlloc16);
+void *myHeapAlloc16( unsigned int size )
+{
+	if ( size == 0 ) return 0 ;
+	int addr = (int)g_addr ;
+	int pad = 15 & ( 16 - ( 15 & addr ) ) ;
+	size += pad ;
+	if ( g_size < size ) return 0 ;
+	g_addr = ( addr + size ) ;
+	g_size -= size ;
+	myHeap_freesize = g_size;
+	myHeap_size += size;
+	return (void *)( addr + pad ) ;
+}
 
 void myHeapFree16(void) {
 }
