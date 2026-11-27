@@ -1816,9 +1816,9 @@ do {							\
   /* COP3 registers */							\
   1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,			\
   1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,			\
-  /* VFPU registers */							\
-  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,			\
-  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,			\
+  /* VFPU registers (vector registers allocatable from 1.11.0) */	\
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,			\
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,			\
   1, 1									\
 }
 
@@ -2110,10 +2110,10 @@ extern char mips_hard_regno_mode_ok[][FIRST_PSEUDO_REGISTER];
    mips_builtins, so there are 34 new registers, each one name: here 32
    vector registers (the eight 4x4 matrices' columns) for VFPU_REGS and
    one register each for VFPU_SRAND and VFPU_CC.  Their numbering, modes
-   and names are a reconstruction.  No code uses them: they are fixed,
-   and the compiler generates no VFPU instruction (the patterns and
-   expanders of the VFPU builtins in enum mips_builtins are not
-   reconstructed).
+   and names are a reconstruction.  1.11.0 no longer fixes the 32 vector
+   registers (FIXED_REGISTERS), which shows only in loop.c's budget (one
+   more n_non_fixed_regs each); the compiler still generates no VFPU
+   instruction (the VFPU builtins are not reconstructed).
 
    psp-gcc 1.8's mips.h has 55 more lines than 1.7.1's between struct
    mips_cpu_info and enum reg_class.  The VFPU register definitions
