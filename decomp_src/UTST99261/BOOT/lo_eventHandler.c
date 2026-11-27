@@ -55,7 +55,58 @@ void getBodyAbsolutePos(BOX *box, int *px, int *py);
 FOCUSLIST *getFocusListWithArea(void *frame, void *obj, void *link);
 int getDataAttribute(void *a, int x, int y);
 typedef struct { int sid; u8 u4[0xC]; int x10; BOX *x14; void *x18; void *x1C; int x20; int x24; BOX *x28; } LEHG2;
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_eventHandler", getTargetBox);
+typedef struct LEHLINK { struct LEHLINK *next; int x4; BOX *box; } LEHLINK;
+BOX *getTargetBox(BOX *box, int x, int y, int k) {
+    BOX *found = NULL;
+    BOX *r;
+    void *geom;
+    LEHLINK *l;
+    int w, h;
+    int vx, vy;
+    if (box->content == 1) {
+        geom = box->geom;
+        if (x < M2C_FIELD(geom, int *, 0) || x >= M2C_FIELD(geom, int *, 0) + M2C_FIELD(geom, int *, 8) || y < M2C_FIELD(geom, int *, 4) || y >= M2C_FIELD(geom, int *, 4) + M2C_FIELD(geom, int *, 0xC) || M2C_FIELD(geom, int *, 0x40) == 4) {
+            return NULL;
+        }
+        getViewClientSize(box, &w, &h);
+        geom = box->geom;
+        if (x >= M2C_FIELD(geom, int *, 0) + w || y >= M2C_FIELD(geom, int *, 4) + h) {
+            return box;
+        }
+        getViewPort(box, &vx, &vy);
+        x = x - M2C_FIELD(box->geom, int *, 0) + vx;
+        y = y - M2C_FIELD(box->geom, int *, 4) + vy;
+        found = box;
+        for (l = M2C_FIELD(box->geom, LEHLINK **, 0x9C); l != NULL; l = l->next) {
+            if (x >= l->box->x && x < l->box->x + l->box->width && y >= l->box->y && y < l->box->y + l->box->height) {
+                found = l->box;
+                box = l->box;
+                break;
+            }
+        }
+    } else if (box->content == 5) {
+    } else if (box->content == 0x11) {
+        if (x >= box->x && x < box->x + box->width && y >= box->y && y < box->y + box->height) {
+            return box;
+        }
+        return NULL;
+    } else if (box->content == 2) {
+    } else if (box->content == 0) {
+    } else {
+        if (x >= box->x && x < box->x + box->width && y >= box->y && y < box->y + box->height) {
+            found = box;
+        } else if (box->display == 3) {
+            return NULL;
+        }
+    }
+    for (box = getChildBox(box); box != NULL; box = getBrotherBox(box)) {
+        r = getTargetBox(box, x, y, k);
+        if (r != NULL) {
+            return r;
+        }
+    }
+    return found;
+}
 
 void *getEventTargetNode(BOX *box) {
     void *node;
