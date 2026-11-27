@@ -21,6 +21,19 @@ M2C_UNK cookieFile_init();                          /* extern */
 #endif
 
 void *memset(void *, int, unsigned int);
+typedef struct { int mq; int x4; int x8; int xC; } IOMHDR;
+extern IOMHDR iom;
+extern int (*D_00139CB4[])(void *msg);
+void CLIB_tzset(void);
+void iom_initializeEnvironment(void);
+void iom_finalizeEnvironment(void);
+int OS_mq_open(const char *name, int mode);
+int OS_mq_getattr(int mq, void *attr);
+void *iom_recvMsg(int mq);
+int iom_translateMsg(void *msg);
+void *iom_freeMsg(void *msg);
+int iom_evStartup(void *msg);
+void OS_thread_exit(void *r);
 void iom_cookieFile_init(void) {
     cookieFile_init();
 }
@@ -258,4 +271,50 @@ CookieDom *iom_subdomainCookie(char *host, CookieDom *d) {
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/iom_cookie", D_00139CB4);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iom_cookie", esp_iomThread);
+int esp_iomThread(void)
+{
+    char attr[16];
+    void *m;
+    int t;
+
+    CLIB_tzset();
+    memset(&iom, 0, 0x104);
+    iom_initializeEnvironment();
+    iom.mq = OS_mq_open("/tmp/mq_iom", 2);
+    if (iom.mq < 0)
+        return 0;
+    OS_mq_getattr(iom.mq, attr);
+    iom.xC = 0;
+    for (;;) {
+        m = iom_recvMsg(iom.mq);
+        if (m == NULL)
+            continue;
+        t = iom_translateMsg(m);
+        if (t < 0) {
+            iom_freeMsg(m);
+            continue;
+        }
+        if (t != 0) {
+            iom_freeMsg(m);
+            continue;
+        }
+        if (iom_evStartup(m) >= 0)
+            break;
+    }
+    for (;;) {
+        m = iom_recvMsg(iom.mq);
+        if (m == NULL)
+            continue;
+        t = iom_translateMsg(m);
+        if (t < 0) {
+            iom_freeMsg(m);
+            continue;
+        }
+        if (D_00139CB4[t](m) < 0)
+            continue;
+        if (t == 2) {
+            iom_finalizeEnvironment();
+            OS_thread_exit(NULL);
+        }
+    }
+}
