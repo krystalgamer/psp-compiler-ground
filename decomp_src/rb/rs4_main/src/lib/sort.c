@@ -1,4 +1,4 @@
-/* cflags: -Os */
+/* cflags: -Os -fno-strength-reduce */
 #include "common.h"
 #include "m2c_macros.h"
 
@@ -186,7 +186,20 @@ int *textChr(int *p, int c)
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/lib/sort", textCmp);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/lib/sort", textCpy);
+int *textCpy(int *d, int *s)
+{
+	int *r = d;
+	while (d && s) {
+		if (*s == 0 || *s == -1)
+			d = 0;
+		else {
+			*d = *s;
+			s++;
+			d++;
+		}
+	}
+	return r;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/lib/sort", textCSpn);
 

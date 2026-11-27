@@ -1,4 +1,4 @@
-/* cflags: -Os */
+/* cflags: -Os -fno-strength-reduce */
 #include "common.h"
 #include "m2c_macros.h"
 M2C_UNK consPrintf(M2C_UNK *, M2C_UNK *, int, int); /* extern */

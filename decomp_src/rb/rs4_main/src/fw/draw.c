@@ -1,10 +1,10 @@
-/* cflags: -Os */
+/* cflags: -Os -fno-strength-reduce */
 #include "common.h"
 #include "m2c_macros.h"
 M2C_UNK sceKernelCpuResumeIntr(int);                /* extern */
 int sceKernelCpuSuspendIntr();                      /* extern */
 extern unsigned int DrawPC;
-M2C_UNK resOvlProcInst(int, int, int, int, int, int); /* extern */
+void resOvlProcInst();
 extern int CurrentInst;
 
 extern int Env;
@@ -159,7 +159,14 @@ void resSetOvlProcTbl(int arg0) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/draw", resOvlProcInst);
+typedef void (*OvlFn)(int, int, int);
+typedef struct { int a, b; OvlFn *tbl; int pad[5]; } InstEnt2;
+void resOvlProcInst(int i, int j, int a, int b, int c, int d)
+{
+	OvlFn *t = ((InstEnt2 *)&InstBuf)[i].tbl;
+	if (t)
+		t[j](a, b, c);
+}
 
 #ifndef NULL
 #define NULL ((void *)0)

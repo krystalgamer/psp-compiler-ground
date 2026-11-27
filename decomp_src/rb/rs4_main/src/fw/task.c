@@ -1,4 +1,4 @@
-/* cflags: -Os */
+/* cflags: -Os -fno-strength-reduce */
 #include "common.h"
 #include "m2c_macros.h"
 
@@ -18,7 +18,13 @@ int taskProc_Free(int a, int b, int c)
 	return 0;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/task", taskMove);
+extern int *pCurrent;
+void rsvMove();
+void taskMove(void *a, void *b, int c, int d)
+{
+	if (pCurrent)
+		rsvMove(*pCurrent, a ? a : (void *)taskProc_Move, b ? b : (void *)taskProc_Free, c, d);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/task", taskProc_Sort);
 

@@ -1,4 +1,4 @@
-/* cflags: -Os */
+/* cflags: -Os -fno-strength-reduce */
 #include "common.h"
 #include "m2c_macros.h"
 M2C_UNK consPrintf(M2C_UNK *, M2C_UNK *, M2C_UNK, M2C_UNK *, M2C_UNK *); /* extern */
@@ -327,7 +327,15 @@ int i3dCollisionInitModel(void *arg0, void *arg1) {
     return 1;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d", i3dCollisionTermModel);
+int i3dCollisionTermModel(char *p)
+{
+	int t = *(int *)(p + 0x78);
+	*(int *)(p + 0x74) = 0;
+	*(int *)(p + 0x78) = 0;
+	if (t)
+		_memFree(t, &D_000FCCA8, 0x65F);
+	return 1;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)

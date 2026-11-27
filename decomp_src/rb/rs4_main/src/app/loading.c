@@ -1,4 +1,4 @@
-/* cflags: -Os */
+/* cflags: -Os -fno-strength-reduce */
 #include "common.h"
 #include "m2c_macros.h"
 extern int pNowLocale;
@@ -23,7 +23,19 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/loading", localeChangeDire
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/loading", localeChange);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/loading", localeInit);
+int sceUtilityGetSystemParamInt(int, int *);
+int localeChange();
+int localeSetKeyConfig(void);
+int localeInit(void)
+{
+	int lang;
+	if (sceUtilityGetSystemParamInt(8, &lang) == 0)
+		localeChange(lang, 0);
+	else
+		localeChange(0, 0);
+	localeSetKeyConfig();
+	return 1;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)

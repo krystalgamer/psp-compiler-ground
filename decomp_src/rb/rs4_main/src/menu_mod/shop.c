@@ -1,4 +1,4 @@
-/* cflags: -Os */
+/* cflags: -Os -fno-strength-reduce */
 #include "common.h"
 #include "m2c_macros.h"
 M2C_UNK _AniFrameSet(int, int);                     /* extern */
@@ -135,7 +135,19 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/shop", _SortCardListS
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/shop", _SortCardListSetInit);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/shop", _SortCardListGet);
+typedef struct { unsigned char kind; char pad; unsigned short id; } SortCard;
+int _SortCardListGet(SortCard *t, int n, SortCard *k)
+{
+	int r = 0;
+	int i;
+	for (i = 0; i < n; i++) {
+		if (t[i].id == k->id && t[i].kind == k->kind) {
+			r = i;
+			break;
+		}
+	}
+	return r;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/shop", _CardListDel);
 
