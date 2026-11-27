@@ -14,6 +14,8 @@ extern int UmdReady;
 extern int UmdState;
 
 
+typedef struct { int Ofs; int Num; short Elm[1]; } ElmCntx;
+
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/umd", umdProc);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/umd", umdPref);
@@ -63,7 +65,19 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/umd", umdDump);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/umd", calcNumBcd);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/umd", calcBcdNum);
+extern int DecTbl[];
+int calcBcdNum(int *arg0) {
+    int sum = 0;
+    int n = *arg0;
+    unsigned char *p = (unsigned char *)(arg0 + 1);
+    if (!(n > 0)) {
+        consPrintf("cassert : %s %d : %s : %s\n", "src/lib/calc.c", 0x49, "calcBcdNum", "Place > 0");
+    }
+    for (; n != 0; n--) {
+        sum += *p++ * DecTbl[n];
+    }
+    return sum;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/umd", consInit);
 
@@ -119,9 +133,60 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/dev/umd", D_000FAB5C);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/umd", elmTerm);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/umd", elmCall);
+extern unsigned char D_000FAB04, D_000FAB20, D_000FAB54;
+short elmCall(void *arg0) {
+    short var_a0;
+    short *e;
+    int temp_s0;
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/umd", elmFree);
+    if (arg0 == NULL) {
+        consPrintf(&D_000FAB04, &D_000FAB20, 0x45, "elmCall", &D_000FAB54);
+    }
+    temp_s0 = M2C_FIELD(arg0, int *, 0);
+    if (temp_s0 < 0) {
+        consPrintf(&D_000FAB04, &D_000FAB20, 0x49, "elmCall", "Ofs >= 0");
+    }
+    var_a0 = -1;
+    if (temp_s0 < M2C_FIELD(arg0, int *, 4)) {
+        M2C_FIELD(arg0, int *, 0) = (int) (temp_s0 + 1);
+        e = ((ElmCntx *)arg0)->Elm;
+        var_a0 = e[temp_s0];
+    }
+    return var_a0;
+}
+
+extern unsigned char D_000FAB04, D_000FAB20, D_000FAB54;
+int elmFree(void *arg0, short arg1) {
+    int temp_s0;
+    int var_v0;
+    short *e;
+
+    if (arg0 == NULL) {
+        consPrintf(&D_000FAB04, &D_000FAB20, 0x61, "elmFree", &D_000FAB54);
+    }
+    if (arg1 < 0) {
+        consPrintf(&D_000FAB04, &D_000FAB20, 0x62, "elmFree", "Elm >= 0");
+    }
+    if (arg1 >= M2C_FIELD(arg0, int *, 4)) {
+        consPrintf(&D_000FAB04, &D_000FAB20, 0x63, "elmFree", "Elm < pCntx->Num");
+    }
+    temp_s0 = M2C_FIELD(arg0, int *, 0);
+    if (temp_s0 <= 0) {
+        consPrintf(&D_000FAB04, &D_000FAB20, 0x67, "elmFree", "Ofs > 0");
+    }
+    if (M2C_FIELD(arg0, int *, 4) < temp_s0) {
+        consPrintf(&D_000FAB04, &D_000FAB20, 0x68, "elmFree", "Ofs <= pCntx->Num");
+    }
+    var_v0 = 0;
+    if (temp_s0 != 0) {
+        temp_s0--;
+        M2C_FIELD(arg0, int *, 0) = temp_s0;
+        e = ((ElmCntx *)arg0)->Elm;
+        e[temp_s0] = arg1;
+        var_v0 = 1;
+    }
+    return var_v0;
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/dev/umd", D_000FABEC);
 
