@@ -2,15 +2,33 @@
 /* cflags: -O3 -fno-exceptions */
 #undef __EXCEPTIONS
 #include "cxx/defer_asm.h"
+#define basic_parser basic_parser_base_hpp
+#define basic_file_parser basic_file_parser_base_hpp
 #include "../main.hpp"
+#undef basic_parser
+#undef basic_file_parser
+#include "../../demo_duck/demo/parser.hpp"
+#include "../../demo_duck/demo/sgl.hpp"
+
+extern const float D_0017251C;      /* 1 */
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sh_HDRMap", _Z41__static_initialization_and_destruction_0ii_DAD48);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sh_HDRMap", _ZN2sh6HDRMapC2EPKcf);
+sh::HDRMap::HDRMap(const char *name, float exposure) : _exposure(exposure), _name(name)
+{
+    load();
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sh_HDRMap", _ZN2sh6HDRMapC1EPKcf);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sh_HDRMap", _ZNK2sh6HDRMap10convert01fEf);
+float sh::HDRMap::convert01f(float v) const
+{
+    float t = (v - _min) / (_max - _min);
+    if (t > D_0017251C)
+        t = D_0017251C;
+    if (t < 0)
+        t = 0;
+    return t;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sh_HDRMap", _ZNK2sh6HDRMap9convert0iEfj);
 
@@ -26,9 +44,17 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sh_HDRMap", _ZNK
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sh_HDRMap", _ZNK2sh6HDRMap7getUVucEffRhS1_S1_);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sh_HDRMap", _ZNK2sh6HDRMap12getThetaPhifEffRfS1_S1_);
+void sh::HDRMap::getThetaPhif(float theta, float phi, float &r, float &g, float &b) const
+{
+    math::SphericalCoord sc(theta, phi);
+    getDf(sc._dir, r, g, b);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sh_HDRMap", _ZNK2sh6HDRMap13getThetaPhiucEffRhS1_S1_);
+void sh::HDRMap::getThetaPhiuc(float theta, float phi, unsigned char &r, unsigned char &g, unsigned char &b) const
+{
+    math::SphericalCoord sc(theta, phi);
+    getDuc(sc._dir, r, g, b);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sh_HDRMap", _ZNK2sh6HDRMap5getDfEN4math11vector_xyzwERfS3_S3_);
 

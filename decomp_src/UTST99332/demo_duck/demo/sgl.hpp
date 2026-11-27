@@ -516,6 +516,34 @@ public:
     }
     float &operator[](int i) { return v[i]; }
     const float &operator[](int i) const { return v[i]; }
+    Vector &operator+=(const Vector &o)
+    {
+        v[0] += o.v[0];
+        v[1] += o.v[1];
+        v[2] += o.v[2];
+        v[3] += o.v[3];
+        return *this;
+    }
+    Vector &operator-=(const Vector &o)
+    {
+        v[0] -= o.v[0];
+        v[1] -= o.v[1];
+        v[2] -= o.v[2];
+        v[3] -= o.v[3];
+        return *this;
+    }
+    Vector operator+(const Vector &o) const
+    {
+        Vector t(*this);
+        t += o;
+        return t;
+    }
+    Vector operator-(const Vector &o) const
+    {
+        Vector t(*this);
+        t -= o;
+        return t;
+    }
     void print(const char *) const;
     float eval(float, float, int) const;
     float v[COEFFS];
@@ -524,6 +552,8 @@ class VectorRGB {
 public:
     VectorRGB() {}
     VectorRGB(const Vector &r_, const Vector &g_, const Vector &b_) : r(r_), g(g_), b(b_) {}
+    VectorRGB operator+(const VectorRGB &o) const { return VectorRGB(r + o.r, g + o.g, b + o.b); }
+    VectorRGB operator-(const VectorRGB &o) const { return VectorRGB(r - o.r, g - o.g, b - o.b); }
     void print(const char *) const;
     void eval(float, float, float &, float &, float &) const;
     void save(const char *);
@@ -598,8 +628,10 @@ class Icosahedron {
 public:
     class Bin {
     public:
+        ~Bin();
         Bin *searchLeaf(math::vector_xyzw);
         bool intersect(math::vector_xyzw) const;
+        bool in_negative_half_space(math::vector_xyzw) const;
         void setBinIndex(unsigned int);
         int getBinIndex() const;
         void setLeafIndex(unsigned int);
@@ -610,6 +642,9 @@ public:
         int _f90;
         int _f94;
         Bin *_children[4];          /* 0x98 */
+        int _fA8;
+        std::vector<unsigned int> _vAC;
+        unsigned char _depth;       /* 0xB8 */
     };
     Icosahedron(unsigned char);
     ~Icosahedron();
@@ -620,11 +655,16 @@ public:
     Bin *searchLeaf(math::vector_xyzw);
     void listAllBins(std::vector<Bin *> &);
     void listAllBinsRec(std::vector<Bin *> &, Bin *);
+    void listBins(std::vector<Bin *> &, unsigned char);
+    void listBinsRec(std::vector<Bin *> &, Bin *, unsigned char);
+    void listPosHalfSpaceLeafBins(std::vector<Bin *> &, const math::vector_xyzw &);
+    void listPosHalfSpaceLeafBinsRec(std::vector<Bin *> &, Bin *, const math::vector_xyzw &);
     /* data */
     bool _f0;
     int _f4;
     std::vector<Bin *> _bins;       /* 0x08 */
-    char _p14[0x2C - 0x14];
+    std::vector<Bin *> _v14;
+    std::vector<Bin *> _v20;
 };
 
 namespace sh {
@@ -819,4 +859,33 @@ public:
 };
 }
 
+#endif
+
+/* sh::HDRMap needs FloatImage (demo/parser.hpp): units include parser.hpp, then this header again */
+#if defined(DEMO_DUCK_DEMO_PARSER_HPP) && !defined(DEMO_DUCK_DEMO_SGL_HDRMAP)
+#define DEMO_DUCK_DEMO_SGL_HDRMAP
+namespace sh {
+class HDRMap : public SphericalRGBFn {
+public:
+    HDRMap(const char *, float);
+    virtual void eval(float theta, float phi, float &r, float &g, float &b) const;
+    virtual ~HDRMap() {}
+    float convert01f(float) const;
+    unsigned int convert0i(float, unsigned int) const;
+    unsigned int convert255(float) const;
+    void load();
+    void save_vert_distribution();
+    void save(const char *);
+    void getUVf(float, float, float &, float &, float &) const;
+    void getUVuc(float, float, unsigned char &, unsigned char &, unsigned char &) const;
+    void getThetaPhif(float, float, float &, float &, float &) const;
+    void getThetaPhiuc(float, float, unsigned char &, unsigned char &, unsigned char &) const;
+    void getDf(math::vector_xyzw, float &, float &, float &) const;
+    void getDuc(math::vector_xyzw, unsigned char &, unsigned char &, unsigned char &) const;
+    FloatImage _img;                    /* 0x04 */
+    float _exposure;                    /* 0x2C */
+    float _min, _max;                   /* 0x30 */
+    std::string _name;                  /* 0x38 */
+};
+}
 #endif

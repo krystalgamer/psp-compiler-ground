@@ -19,6 +19,8 @@ extern const char D_0017282C[];     /* " *** error " */
 extern const char D_0017285C[];     /* "../lib/sh/Icosahedron.cpp" */
 extern const char D_00172878[];     /* " " */
 extern const char D_00172974[];     /* "_leaf" */
+extern const char D_00172C10[];
+extern const char listBins_name[] __asm__("_ZZN11Icosahedron8listBinsERSt6vectorIPNS_3BinESaIS2_EEhE19__PRETTY_FUNCTION__");
 extern const char getLeafIndex_name[] __asm__("_ZZNK11Icosahedron3Bin12getLeafIndexEvE19__PRETTY_FUNCTION__");
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/Icosahedron_Bin", _Z41__static_initialization_and_destruction_0ii_DC77C);
@@ -27,9 +29,14 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/Icosahedron_Bin"
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/Icosahedron_Bin", _ZN11Icosahedron3BinC1EN4math11vector_xyzwES2_S2_h);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/Icosahedron_Bin", _ZN11Icosahedron3BinD2Ev);
+Icosahedron::Bin::~Bin()
+{
+    delete _children[0];
+    delete _children[1];
+    delete _children[2];
+    delete _children[3];
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/Icosahedron_Bin", _ZN11Icosahedron3BinD1Ev);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/Icosahedron_Bin", _ZN11Icosahedron3Bin11setChildrenEPS0_S1_S1_S1_);
 
@@ -81,9 +88,12 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/Icosahedron_Bin"
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/Icosahedron_Bin", _ZN11IcosahedronC1Eh);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/Icosahedron_Bin", _ZN11IcosahedronD2Ev);
+Icosahedron::~Icosahedron()
+{
+    for (std::vector<Bin *>::iterator it = _bins.begin(); it != _bins.end(); ++it)
+        delete *it;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/Icosahedron_Bin", _ZN11IcosahedronD1Ev);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/Icosahedron_Bin", _ZNK11Icosahedron3Bin9intersectEN4math11vector_xyzwE);
 
@@ -101,9 +111,27 @@ Icosahedron::Bin *Icosahedron::searchLeaf(math::vector_xyzw v)
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/Icosahedron_Bin", _ZN11Icosahedron11listBinsRecERSt6vectorIPNS_3BinESaIS2_EES2_h);
+void Icosahedron::listBinsRec(std::vector<Bin *> &out, Bin *b, unsigned char depth)
+{
+    if (b->_depth == depth) {
+        out.push_back(b);
+        return;
+    }
+    if (b->_leaf)
+        return;
+    listBinsRec(out, b->_children[0], depth);
+    listBinsRec(out, b->_children[1], depth);
+    listBinsRec(out, b->_children[2], depth);
+    listBinsRec(out, b->_children[3], depth);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/Icosahedron_Bin", _ZN11Icosahedron8listBinsERSt6vectorIPNS_3BinESaIS2_EEh);
+void Icosahedron::listBins(std::vector<Bin *> &out, unsigned char depth)
+{
+    out.resize(0);
+    for (std::vector<Bin *>::iterator it = _bins.begin(); it != _bins.end(); ++it)
+        listBinsRec(out, *it, depth);
+    SGL_ASSERT(out.size() == (unsigned int)(20 << (2 * depth)), D_0017282C, D_00172C10, D_0017285C, listBins_name, 501, D_00172878);
+}
 
 void Icosahedron::listAllBinsRec(std::vector<Bin *> &out, Bin *b)
 {
@@ -123,9 +151,26 @@ void Icosahedron::listAllBins(std::vector<Bin *> &out)
         listAllBinsRec(out, *it);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/Icosahedron_Bin", _ZN11Icosahedron27listPosHalfSpaceLeafBinsRecERSt6vectorIPNS_3BinESaIS2_EES2_RKN4math11vector_xyzwE);
+void Icosahedron::listPosHalfSpaceLeafBinsRec(std::vector<Bin *> &out, Bin *b, const math::vector_xyzw &n)
+{
+    if (b->in_negative_half_space(n))
+        return;
+    if (b->_leaf) {
+        out.push_back(b);
+        return;
+    }
+    listPosHalfSpaceLeafBinsRec(out, b->_children[0], n);
+    listPosHalfSpaceLeafBinsRec(out, b->_children[1], n);
+    listPosHalfSpaceLeafBinsRec(out, b->_children[2], n);
+    listPosHalfSpaceLeafBinsRec(out, b->_children[3], n);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/Icosahedron_Bin", _ZN11Icosahedron24listPosHalfSpaceLeafBinsERSt6vectorIPNS_3BinESaIS2_EERKN4math11vector_xyzwE);
+void Icosahedron::listPosHalfSpaceLeafBins(std::vector<Bin *> &out, const math::vector_xyzw &n)
+{
+    out.resize(0);
+    for (std::vector<Bin *>::iterator it = _bins.begin(); it != _bins.end(); ++it)
+        listPosHalfSpaceLeafBinsRec(out, *it, n);
+}
 
 extern "C" {
 void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_DC77C");
