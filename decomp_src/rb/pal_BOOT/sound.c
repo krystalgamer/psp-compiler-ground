@@ -83,7 +83,10 @@ int sceKernelCreateSema(const char *name, unsigned int attr, int init, int max, 
 void *malloc(unsigned int size);
 void *memalign(unsigned int align, unsigned int size);
 void free(void *p);
-INCLUDE_ASM("tmp/asm/rb/pal_BOOT/nonmatchings/sound", func_00003B78);
+int func_00003B78(void)
+{
+	return soundLatestPts;
+}
 
 SceInt32 soundbuf_create(t_soundBuffer *pSound, SceInt32 buf_size, SceInt32 buf_num)
 {

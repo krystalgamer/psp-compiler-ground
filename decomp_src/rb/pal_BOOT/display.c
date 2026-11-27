@@ -158,7 +158,7 @@ extern SPRT_ENV sprt;
 extern SceChar8 disp_list[65536];
 
 static int init_all(t_displayBuffer *pDisp);
-static unsigned char set_blink(void);
+static void set_blink(void);
 static void draw_menu(void);
 static void draw_frame(t_displayBuffer *pDisp, SceChar8 *buffer);
 SceInt32 dispbuf_create(t_displayBuffer *pDisp, SceInt32 disp_size, SceInt32 disp_num, SceInt32 pixelFormat);
@@ -207,7 +207,27 @@ static int init_all(t_displayBuffer *pDisp)
 	return 0;
 }
 
-INCLUDE_ASM("tmp/asm/rb/pal_BOOT/nonmatchings/display", set_blink);
+extern unsigned char blinkalpha;
+
+static void set_blink(void)
+{
+	int c;
+
+	c = blinkframe * 255 / 8;
+	if (blinkframe >= 9)
+		c = 255;
+	else
+		blinkframe++;
+
+	if (ablinkframe >= 9)
+		ablinkdir = -1;
+
+	if (ablinkframe < 0)
+		ablinkdir = 1;
+
+	ablinkframe += ablinkdir;
+	blinkalpha = c;
+}
 
 INCLUDE_ASM("tmp/asm/rb/pal_BOOT/nonmatchings/display", draw_menu);
 

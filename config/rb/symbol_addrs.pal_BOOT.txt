@@ -651,3 +651,6 @@ MovieStat = 0x000023A4; // type:func
 psmf = 0x002A2DA4;
 psmfT = 0x002A2DCC;
 opadd = 0x002A2C5C;
+blinkalpha = 0x002A2F04;
+ablinkframe = 0x002A2F08;
+ablinkdir = 0x002A23E0;
