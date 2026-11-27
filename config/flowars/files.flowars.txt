@@ -23,3 +23,14 @@
 0x2E67C crtend          1.6.1           crtend.c
 # gim_picture.o's __psp_libinfo__ (unreferenced, so gen_config gives it to dvdumd_io)
 rodata 0x30B80 gim_picture
+# data-only units (no code): newlib's constants and reent, libgcc's tables
+dataunit newlib/libm/math/s_infconst 1.6.1 ../../../../../newlib-1.12.0/newlib/libm/math/s_infconst.c
+dataunit newlib/libm/common/s_lib_ver 1.6.1 ../../../../../newlib-1.12.0/newlib/libm/common/s_lib_ver.c
+dataunit libgcc/dp-bit/__thenan_df 1.6.1 dp-bit.c
+dataunit libgcc/libgcc2/__clz_tab 1.6.1 ../../gcc-3.3.3/gcc/libgcc2.c
+dataunit newlib/libc/reent/impure 1.6.1 ../../../../../newlib-1.12.0/newlib/libc/reent/impure.c
+rodata 0x317A8 newlib/libm/math/s_infconst
+rodata 0x317B0 newlib/libm/common/s_lib_ver
+rodata 0x31828 libgcc/dp-bit/__thenan_df
+rodata 0x31840 libgcc/libgcc2/__clz_tab
+rodata 0x3194C newlib/libc/reent/impure
