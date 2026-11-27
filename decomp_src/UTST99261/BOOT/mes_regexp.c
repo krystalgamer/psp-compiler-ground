@@ -88,11 +88,14 @@ extern unsigned char mes_state_method;
 M2C_UNK mes_util_vals_free(int);                    /* extern */
 
 
-int mes_regexp_execute(void *ctx, void *re, int s, int flag);
+int mes_regexp_execute(void *ctx, RxObj *re, int s, int flag);
 int mes_eval_object_get(void *ctx, int obj, unsigned int id);
 int mes_eval_to_string(void *ctx, int v);
 RxState *mes_regexp_pattern_exec(void *ctx, RxObj *re, int s, int i);
 extern const double D_0013BFE0;
+void *mes_array_new(void *ctx, int n);
+int mes_string_new(void *ctx, const void *str, int len);
+extern const double D_0013BFD8;
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_regexp", mes_regexp_new);
 
 #ifndef NULL
@@ -309,7 +312,50 @@ void mes_regexp_compile(void *ctx, RxObj *re)
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_regexp", mes_regexp_constructor);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_regexp", mes_regexp_execute);
+int mes_regexp_execute(void *ctx, RxObj *re, int s, int array) {
+    int len;
+    int i;
+    int j;
+    RxState *st;
+    void *arr;
+
+    len = ((RxStr *)(s & ~3))->len;
+    i = 0;
+    if (re->global) {
+        if (re->lastIndex > D_0013BFD8)
+            i = 0x7FFFFFFF;
+        else
+            i = re->lastIndex;
+    }
+    for (; i >= 0 && i <= len; i++) {
+        st = mes_regexp_pattern_exec(ctx, re, s, i);
+        if (st != NULL) {
+            if (re->global)
+                re->lastIndex = st->f4;
+            *--M2C_FIELD(ctx, int **, 0x18) = (int)st;
+            if (array) {
+                arr = mes_array_new(ctx, re->ncap + 1);
+                if (arr != NULL) {
+                    *--M2C_FIELD(ctx, int **, 0x18) = (int)arr;
+                    mes_object_set(arr, mes_ids[0xC0 / 4], (i << 2) | 1, 8);
+                    mes_object_set(arr, mes_ids[0xC4 / 4], s, 8);
+                    mes_object_set(arr, 1, mes_string_new(ctx, ((RxStr *)(s & ~3))->str + i, st->f4 - i), 8);
+                    st = M2C_FIELD(st, RxState **, 8);
+                    if (st != NULL) {
+                        for (j = 0; j < ((RxCap *)st)->n; j++)
+                            mes_object_set(arr, ((j + 1) << 2) | 1, ((RxCap *)st)->vals[j], 8);
+                    }
+                    M2C_FIELD(ctx, int **, 0x18)++;
+                }
+            } else
+                arr = (void *)mes_string_new(ctx, ((RxStr *)(s & ~3))->str + i, st->f4 - i);
+            M2C_FIELD(ctx, int **, 0x18)++;
+            return (int)arr;
+        }
+    }
+    re->lastIndex = 0;
+    return 0;
+}
 
 int mes_regexp_exec(void *ctx, int v) {
     void *re;
