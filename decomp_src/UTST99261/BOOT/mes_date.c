@@ -2,6 +2,9 @@
 #include "common.h"
 #include "mes_js.h"
 #include "m2c_macros.h"
+extern const double D_0013BD88;       /* 86400000.0 */
+extern const double D_0013BD90;       /* 86400000.0 */
+int mes_date_month_days(int year, int month);
 extern const double D_0013BDA8;       /* 1000.0 */
 double mes_num(MesValue v);
 typedef struct MesDNum {
@@ -90,7 +93,20 @@ void mes_date_initialize(void) {
     mes_gc_register(&mes_date_method, 0x3C, 0x10, 0x10);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_date", mes_date_is_leap_year);
+int mes_date_is_leap_year(int y)
+{
+    int r = 0;
+    int m;
+
+    if (!(y & 3)) {
+        if (y % 100 == 0) {
+            m = y - y / 400 * 400;
+            r = m == 0;
+        } else
+            r = 1;
+    }
+    return r;
+}
 
 int mes_date_year_days(int year)
 {
@@ -180,9 +196,48 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_date", mes_date_string);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_date", mes_date_from_string);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_date", mes_date_from_value);
+MesDate *mes_date_from_value(MesContext *ctx, MesValue v)
+{
+    MesDate *d = mes_date_new(ctx);
+    double x;
+    double c;
+    int n;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_date", mes_date_to_value);
+    if (d != NULL && v != 0x1C && v != 0x14 && v != 0x18) {
+        x = mes_number_floor(mes_num(v));
+        c = D_0013BD88;
+        n = mes_number_fdiv(x, c);
+        d->valid = 1;
+        d->year = 1970;
+        d->month = 1;
+        d->mday = n + 1;
+        d->hours = 0;
+        d->minutes = 0;
+        d->seconds = 0;
+        d->ms = x - n * c;
+        mes_date_normalize(d);
+    }
+    return d;
+}
+
+MesValue mes_date_to_value(MesContext *ctx, MesDate *d)
+{
+    int y;
+    int days;
+    int ms;
+
+    if (!d->valid)
+        return 0x1C;
+    y = d->year - 1;
+    days = y * 365 + y / 4 - y / 100 + y / 400 - 719162;
+    if (y < 0)
+        days--;
+    for (y = 1; y < d->month; y++)
+        days += mes_date_month_days(d->year, y);
+    days += d->mday - 1;
+    ms = ((d->hours * 60 + d->minutes) * 60 + d->seconds - d->gmtoff) * 1000 + d->ms;
+    return mes_number_alloc(ctx, days * D_0013BD90 + ms);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_date", mes_date_constructor);
 
