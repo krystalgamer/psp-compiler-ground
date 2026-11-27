@@ -145,7 +145,108 @@ void sceGimPictureActivate( SceGimPicture *picture )
 	sceGimPictureActivateRenderState( picture ) ;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gim_activate", sceGimPictureActivateTexture);
+void sceGuTexMode( int tpsm, int maxmips, int a2, int swizzle ) ;
+void sceGuTexImage( int mipmap, int width, int height, int tbw, const void *tbp ) ;
+void sceGuClutMode( int cpsm, int shift, int mask, int a3 ) ;
+void sceGuClutLoad( int num_blocks, const void *cbp ) ;
+static __inline__ int sceGimPicturePow2( int n )
+{
+	return 1 << ( 32 - __builtin_allegrex_clz( n - 1 ) ) ;
+}
+
+void sceGimPictureActivateTexture( SceGimPicture *picture )
+{
+	if ( picture == 0 ) return ;
+
+	if ( picture->m_flags == 0 ) {
+		SceGimImageHeader *img = picture->m_image ;
+		if ( img != 0 ) {
+			sceGuTexMode( img->format, 0, 0, img->order ) ;
+			void **offsets = (void **)( (char *)img + img->offsets ) ;
+			sceGuTexImage( 0, img->width, img->height, picture->m_buf_width, *offsets ) ;
+		}
+		SceGimPaletteHeader *pal = picture->m_palette ;
+		if ( pal != 0 ) {
+			sceGuClutMode( pal->format,
+				picture->m_palette_offset[ 0 ],
+				picture->m_palette_offset[ 1 ],
+				picture->m_palette_offset[ 2 ] ) ;
+			void **offsets = (void **)( (char *)pal + pal->offsets ) ;
+			sceGuClutLoad( picture->m_clut_load, *offsets ) ;
+		}
+		return ;
+	}
+
+	SceGimImageHeader *img = picture->m_image ;
+	if ( img != 0 ) {
+		int w = img->width ;
+		int h = img->height ;
+		int w2 = sceGimPicturePow2( w ) ;
+		int h2 = sceGimPicturePow2( h ) ;
+		int align = img->pitch_align * 8 / img->bpp - 1 ;
+		int n_levels = img->level_count ;
+		void **offsets = (void **)( (char *)img + img->offsets ) ;
+
+		int n_frames = img->frame_count ;
+		int frame = picture->m_image_frame % n_frames ;
+		if ( frame < 0 ) frame += n_frames ;
+
+		if ( picture->m_enable_bits & 0x0001 ) {
+			int clut = 0 ;
+			if ( picture->m_flags & 0x0008 ) clut = 1 ;
+			sceGuTexMode( img->format, 1, clut, img->order ) ;
+			w = ( w + align ) & ~align ;
+			void *buf = offsets[ frame * n_levels ] ;
+			sceGuTexImage( 0, w2, h2, w, buf ) ;
+			frame = picture->m_image_frame2 % n_frames ;
+			if ( frame < 0 ) frame = frame + n_frames ;
+			buf = offsets[ frame * n_levels ] ;
+			sceGuTexImage( 1, w2, h2, w, buf ) ;
+		} else {
+			offsets += frame * n_levels ;
+			int clut = 0 ;
+			if ( picture->m_flags & 0x0004 ) clut = 1 ;
+			sceGuTexMode( img->format, n_levels - 1, clut, img->order ) ;
+			{ int i ; for ( i = 0 ; i < n_levels ; i ++ ) {
+				void *buf = *( offsets ++ ) ;
+				sceGuTexImage( i, w2, h2, ( w + align ) & ~align, buf ) ;
+				if ( img->level_type == 1 ) {
+					w = ( w + 1 ) / 2 ;
+					w2 = ( w2 + 1 ) / 2 ;
+					h2 = ( h2 + 1 ) / 2 ;
+				}
+			} }
+		}
+	}
+
+	SceGimPaletteHeader *pal = picture->m_palette ;
+	if ( pal != 0 ) {
+		sceGuClutMode( pal->format,
+			picture->m_palette_offset[ 0 ],
+			picture->m_palette_offset[ 1 ],
+			picture->m_palette_offset[ 2 ] ) ;
+
+		void **offsets = (void **)( (char *)pal + pal->offsets ) ;
+		int n_levels = pal->level_count ;
+		int n_frames = pal->frame_count ;
+		int frame = picture->m_palette_frame % n_frames ;
+		if ( frame < 0 ) frame = frame + n_frames ;
+		if ( !( picture->m_enable_bits & 0x0001 ) ) {
+			sceGuClutLoad( picture->m_clut_load, offsets[ frame * n_levels ] ) ;
+		} else {
+			int count = pal->width / 16 ;
+			if ( pal->format == 3 ) count *= 2 ;
+			int frame2 = picture->m_palette_frame2 % n_frames ;
+			if ( frame2 < 0 ) frame2 = frame2 + n_frames ;
+			if ( frame2 == frame + 1 && n_levels == 1 && count <= 16 ) {
+				sceGuClutLoad( count * 2, offsets[ frame * n_levels ] ) ;
+			} else {
+				sceGuClutLoad( count * 2, (char *)offsets[ frame2 * n_levels ] - count * 32 ) ;
+				sceGuClutLoad( count, offsets[ frame * n_levels ] ) ;
+			}
+		}
+	}
+}
 
 void sceGuTexLevelMode( int mode, float bias ) ;
 void sceGuTexOffset( float u, float v ) ;
