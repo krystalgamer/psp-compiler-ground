@@ -153,7 +153,15 @@ void sceGumMatrixMode(int mode);
 void sceGumPerspective(float fovy, float aspect, float near, float far);
 void sceGumSetMatrixStack(void *stack, int proj, int view, int model, int texture);
 
-INCLUDE_RODATA("tmp/asm/UTST99332/graphics_vtxformat/nonmatchings/main", uv);
+const float uv[7] = {
+	0.000000000f,
+	0.166666667f,
+	0.333333333f,
+	0.500000000f,
+	0.666666667f,
+	0.833333333f,
+	1.000000000f,
+};
 
 INCLUDE_RODATA("tmp/asm/UTST99332/graphics_vtxformat/nonmatchings/main", coltbl);
 
@@ -183,7 +191,51 @@ static void init_bezier(void)
 	}
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_vtxformat/nonmatchings/main", draw_bezier);
+#define SCEGU_TEXTURE_FLOAT      ( 3 <<  0 )
+#define SCEGU_COLOR_PF5551       ( 5 <<  2 )
+#define SCEGU_VERTEX_FLOAT       ( 3 <<  7 )
+
+static void draw_bezier(void)
+{
+	float	newuv[7];
+	int		i;
+
+	
+	newuv[0]=uv[0];
+	newuv[6]=uv[6];
+	newuv[3]=uv[3]+uvpos[0];
+	newuv[1]=newuv[3]/3.0f;
+	newuv[2]=newuv[3]/3.0f*2.0f;
+	newuv[4]=newuv[3]+(newuv[6]-newuv[3])/3.0f;
+	newuv[5]=newuv[3]+(newuv[6]-newuv[3])/3.0f*2.0f;
+	for (i=0; i<7*7; i++) {
+		model[i].u=newuv[i%7];
+	}
+
+	
+	newuv[0]=uv[0];
+	newuv[6]=uv[6];
+	newuv[3]=uv[3]+uvpos[1];
+	newuv[1]=newuv[3]/3.0f;
+	newuv[2]=newuv[3]/3.0f*2.0f;
+	newuv[4]=newuv[3]+(newuv[6]-newuv[3])/3.0f;
+	newuv[5]=newuv[3]+(newuv[6]-newuv[3])/3.0f*2.0f;
+	for (i=0; i<7*7; i++) {
+		model[i].v=newuv[i/7];
+	}
+
+	
+	for (i=0; i<7*7; i++) {
+		if (colflag)
+			model[i].col=coltbl[((frame/2)+i)%8];
+		else
+			model[i].col=0xffffffff;
+	}
+
+	sceKernelDcacheWritebackInvalidateRange((char *)model, sizeof(model));
+	sceGumDrawBezier(SCEGU_TEXTURE_FLOAT|SCEGU_COLOR_PF5551|SCEGU_VERTEX_FLOAT,
+						7, 7, 0, (void *)model);
+}
 
 /* Warning: Gap in callee-saved word stack region.
  * Saved: [0x0, 0x4, 0x10, 0x14], gap at: 0x8. */
