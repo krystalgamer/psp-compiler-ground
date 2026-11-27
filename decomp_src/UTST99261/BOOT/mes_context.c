@@ -24,7 +24,7 @@ typedef struct UString {
 } UString;
 int mes_util_string_eq(UString *s, int v);
 int mes_string_new3(void *ctx, UString *s);
-void mes_context_hash(void *str, unsigned int hash);
+void mes_context_hash(int str, unsigned int hash);
 typedef struct HashEnt {
     struct HashEnt *next;
     void *str;
@@ -49,7 +49,20 @@ void mes_context_global_initialize(void)
         mes_id_hash[i] = NULL;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_context", mes_context_hash);
+void mes_context_hash(int str, unsigned int hash)
+{
+    HashEnt *e;
+
+    if (str != 0) {
+        e = MEM_malloc(0, 0xC);
+        if (e != NULL) {
+            e->hash = hash;
+            e->str = (void *)str;
+            e->next = mes_id_hash[hash % 0x71];
+            mes_id_hash[hash % 0x71] = e;
+        }
+    }
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_context", mes_context_index);
 
@@ -79,7 +92,7 @@ int mes_context_id(void *ctx, UString *s)
             return (int)e->str;
     }
     v = mes_string_new3(ctx, s);
-    mes_context_hash((void *)v, h);
+    mes_context_hash(v, h);
     return v;
 }
 
@@ -100,7 +113,7 @@ int mes_context_id2(void *ctx, const char *str)
             return (int)e->str;
     }
     v = mes_string_new2(ctx, str, len);
-    mes_context_hash((void *)v, h);
+    mes_context_hash(v, h);
     return v;
 }
 
@@ -119,7 +132,7 @@ int mes_context_id3(void *ctx, const UCSChar *str, int len)
             return (int)e->str;
     }
     v = mes_string_new(ctx, str, len);
-    mes_context_hash((void *)v, h);
+    mes_context_hash(v, h);
     return v;
 }
 
