@@ -907,7 +907,21 @@ int CSSStyleRule_getType(s16 *r) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_StyleDeclaration", CSSStyleRule_getCssText);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_StyleDeclaration", CSSStyleRule_setCssText);
+void CSSStyleRule_setCssText(void *r, char *text) {
+    void *ss;
+    s16 *n;
+
+    if (r != NULL && M2C_FIELD(r, void **, 0x1C) != NULL && M2C_FIELD(M2C_FIELD(r, void **, 0x1C), short *, 0x36) == 0
+        && (ss = newCSSNode(0, 0x3C)) != NULL) {
+        CSS_StyleSheetRuleSingle(ss, text);
+        n = M2C_FIELD(ss, s16 **, 0xC);
+        if (n != NULL && *n == 7) {
+            popCSSNode(n);
+            addCSSNode(M2C_FIELD(r, void **, 0x1C), n);
+        }
+        freeCSSStyleSheet(ss);
+    }
+}
 
 #ifndef NULL
 #define NULL ((void *)0)

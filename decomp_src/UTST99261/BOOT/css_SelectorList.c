@@ -16,11 +16,32 @@ extern unsigned char D_0013ED58;
 
 
 
+int CSS_ISmatchCSSChain(void *a, void *b);
+int CSS_ISmatchCombine(void *a, void *b);
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_SelectorList", CSS_ISmatchCSSChain);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_SelectorList", CSS_ISmatchCombine);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_SelectorList", CSS_ISmatchSelector_C9540);
+int CSS_ISmatchSelector_C9540(void *a, void *b) {
+    int r;
+
+    r = UCS_strcasecmp(M2C_FIELD(a, void **, 0x24), M2C_FIELD(b, void **, 0x24));
+    if (r != 0)
+        return r;
+    r = CSS_ISmatchCSSChain((char *)a + 0x28, (char *)b + 0x28);
+    if (r != 0)
+        return r;
+    r = CSS_ISmatchCSSChain((char *)a + 0x30, (char *)b + 0x30);
+    if (r != 0)
+        return r;
+    r = CSS_ISmatchCSSChain((char *)a + 0x40, (char *)b + 0x40);
+    if (r != 0)
+        return r;
+    r = CSS_ISmatchCSSChain((char *)a + 0x38, (char *)b + 0x38);
+    if (r != 0)
+        return r;
+    return CSS_ISmatchCombine(M2C_FIELD(a, void **, 0x20), M2C_FIELD(b, void **, 0x20));
+}
 
 #ifndef NULL
 #define NULL ((void *)0)

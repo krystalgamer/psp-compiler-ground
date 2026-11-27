@@ -218,7 +218,25 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iom_preference", iom_diffexpire
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iom_preference", iom_rmdir);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iom_preference", iom_strnmcat);
+char *iom_strnmcat(char *dst, int n, ...) {
+    __builtin_va_list ap;
+    char *d;
+    int i, j, len;
+    char *s;
+
+    __builtin_va_start(ap, n);
+    d = dst;
+    for (i = 0; i < n; i++) {
+        len = __builtin_va_arg(ap, int);
+        s = __builtin_va_arg(ap, char *);
+        if (s != NULL) {
+            for (j = 0; j < len && s[j] != 0; j++)
+                *d++ = s[j];
+        }
+    }
+    *d = 0;
+    return dst;
+}
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/iom_preference", D_0013A02C);
 

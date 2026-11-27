@@ -10,6 +10,9 @@ int MEM_malloc(M2C_UNK, M2C_UNK);                   /* extern */
 M2C_UNK MEM_free(M2C_UNK, void *);                  /* extern */
 
 
+void *createAreaInfo(s8 type, void *map, void *node);
+void addFocusList(void *ctx, int kind, void *node, short tabindex, void *info);
+void *appendFocusList(void *ctx, int kind, void *node, void *last, void *info);
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_map", parseCoords);
 
 #ifndef NULL
@@ -221,7 +224,20 @@ signed char getAreaIndex(void *arg0, int arg1) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_map", getAreaList);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_map", adaptArea);
+void adaptArea(void *ctx, void *map, void *link, s8 type) {
+    void *info = createAreaInfo(type, map, M2C_FIELD(link, void **, 0));
+    void *r;
+
+    if (info != NULL) {
+        if (M2C_FIELD(map, int *, 8) > 0) {
+            addFocusList(ctx, 1, M2C_FIELD(link, void **, 0), M2C_FIELD(map, int *, 8), info);
+        } else {
+            r = appendFocusList(ctx, 1, M2C_FIELD(link, void **, 0), M2C_FIELD(link, void **, 4), info);
+            if (r != NULL)
+                M2C_FIELD(link, void **, 4) = r;
+        }
+    }
+}
 
 void adaptAreaList(void *a0, void *map, void *a2) {
     void *a;
