@@ -65,7 +65,17 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/decksel", D_00102A
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/decksel", D_00102A70);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/decksel", _AniInfoSet_342B8);
+void bxAnmSetFrame(int, float);
+void bxAnmSetSpeed(int, float);
+void bxAnmSetLoop(int, int);
+void bxAnmSetPause(int, int);
+void _AniInfoSet_342B8(int anm)
+{
+	bxAnmSetFrame(anm, 0.0f);
+	bxAnmSetSpeed(anm, 1.0f);
+	bxAnmSetLoop(anm, 1);
+	bxAnmSetPause(anm, 0);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/decksel", _WinAniExe);
 

@@ -88,11 +88,41 @@ int scxRelease(void *arg0) {
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/scx", scxPlay);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/scx", scxVolume);
+extern unsigned char D_000FE65C, D_000FE69C;
+int sgxSndSetVolume();
+int scxVolume(int id, int vol, int arg)
+{
+	if (id >= 0) {
+		sgxSndSetVolume(id, vol, arg);
+	} else {
+		consPrintf(&D_000FE65C, &D_000FE69C, id);
+	}
+	return 1;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/scx", scxStop);
+extern unsigned char D_000FE65C, D_000FE6A8;
+int sgxSndStop();
+int scxStop(int id, int arg)
+{
+	if (id >= 0) {
+		sgxSndStop(id, arg);
+	} else {
+		consPrintf(&D_000FE65C, &D_000FE6A8, id);
+	}
+	return 1;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/scx", scxPause);
+extern unsigned char D_000FE65C, D_000FE6B0;
+int sgxSndPause();
+int scxPause(int id, int arg)
+{
+	if (id >= 0) {
+		sgxSndPause(id, arg);
+	} else {
+		consPrintf(&D_000FE65C, &D_000FE6B0, id);
+	}
+	return 1;
+}
 
 extern unsigned char D_000FE65C, D_000FE6BC;
 int sgxSndGetStatus();
