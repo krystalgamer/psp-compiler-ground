@@ -431,6 +431,8 @@ segments:
       - [0x171E50, rodata, asm/rodata_171DD0]
       - [0x172290, .rodata, main_objs/sh_DebugMap]
       - [0x1722B8, rodata, asm/rodata_172238]
+      - [0x17259C, .rodata, main_objs/sh_HDRMap]
+      - [0x1725DC, rodata, asm/rodata_17255C]
       - [0x172CC4, .rodata, main_objs/sh_Matrix]
       - [0x172D0C, rodata, asm/rodata_172C8C]
       - [0x172D5C, .rodata, main_objs/sh_PRT]

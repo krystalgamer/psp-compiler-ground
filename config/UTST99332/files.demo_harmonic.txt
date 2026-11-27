@@ -40,6 +40,9 @@ rodata 0x16EBEC -
 # sh_* objects whose static initializer (the header statics) is C++: .rodata after the vtable, .bss
 rodata 0x16FD1C main_objs/sh_Matrix
 rodata 0x16FD64 -
+# sh_HDRMap: the float pools of convert01f .. eval (load's is its asm's)
+rodata 0x16F5F4 main_objs/sh_HDRMap
+rodata 0x16F634 -
 # sh_PRT: the float pools of PRT::draw_samples .. draw_averaged_normals (draw_with_sh's are its asm's)
 rodata 0x16FDB4 main_objs/sh_PRT
 rodata 0x16FDCC -

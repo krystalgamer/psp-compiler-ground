@@ -421,6 +421,8 @@ segments:
       - [0x16EF28, rodata, asm/rodata_16EEA8]
       - [0x16F368, .rodata, main_objs/sh_DebugMap]
       - [0x16F390, rodata, asm/rodata_16F310]
+      - [0x16F674, .rodata, main_objs/sh_HDRMap]
+      - [0x16F6B4, rodata, asm/rodata_16F634]
       - [0x16FD9C, .rodata, main_objs/sh_Matrix]
       - [0x16FDE4, rodata, asm/rodata_16FD64]
       - [0x16FE34, .rodata, main_objs/sh_PRT]
