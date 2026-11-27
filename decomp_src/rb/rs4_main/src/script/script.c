@@ -363,7 +363,52 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/script/script", ScriptCompile)
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/script/script", ScriptCompileInit);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/script/script", ScriptCompileTerm);
+#define SFREE(p, l) if (p) _memFree(p, &D_001000E0, l)
+int ScriptCompileTerm(char *s)
+{
+	int i;
+	void *t;
+	if (s == NULL)
+		consPrintf(&D_001000F4, &D_001000E0, 0xFA8, "ScriptCompileTerm", &D_001001E8);
+	if (*(void **)(s + 0x160)) i3dFreeMdl(*(void **)(s + 0x160));
+	if (*(void ***)(s + 0x58)) {
+		for (i = 0; i < *(int *)(s + 0x60); i++) {
+			t = (*(void ***)(s + 0x58))[i * 2];
+			(*(void ***)(s + 0x58))[i * 2] = NULL;
+			SFREE(t, 0xFB2);
+		}
+	}
+	SFREE(*(void **)(s + 0x28), 0xFB6);
+	SFREE(*(void **)(s + 0x34), 0xFB7);
+	SFREE(*(void **)(s + 0x40), 0xFB8);
+	SFREE(*(void **)(s + 0x4C), 0xFB9);
+	SFREE(*(void **)(s + 0x58), 0xFBA);
+	SFREE(*(void **)(s + 0x64), 0xFBB);
+	SFREE(*(void **)(s + 0x70), 0xFBC);
+	SFREE(*(void **)(s + 0x138), 0xFBE);
+	SFREE(*(void **)(s + 0x134), 0xFBF);
+	SFREE(*(void **)(s + 0x128), 0xFC0);
+	SFREE(*(void **)(s + 0x13C), 0xFC1);
+	SFREE(*(void **)(s + 0x140), 0xFC2);
+	SFREE(*(void **)(s + 0x148), 0xFC3);
+	SFREE(*(void **)(s + 0x158), 0xFC5);
+	*(void **)(s + 0x138) = NULL;
+	*(void **)(s + 0x134) = NULL;
+	*(void **)(s + 0x128) = NULL;
+	*(void **)(s + 0x13C) = NULL;
+	*(void **)(s + 0x140) = NULL;
+	*(void **)(s + 0x148) = NULL;
+	*(void **)(s + 0x28) = NULL;
+	*(void **)(s + 0x34) = NULL;
+	*(void **)(s + 0x40) = NULL;
+	*(void **)(s + 0x4C) = NULL;
+	*(void **)(s + 0x58) = NULL;
+	*(void **)(s + 0x64) = NULL;
+	*(void **)(s + 0x70) = NULL;
+	*(void **)(s + 0x158) = NULL;
+	_memFree(s, &D_001000E0, 0xFD8);
+	return 1;
+}
 
 void _ScriptManual(void *arg0) {
     M2C_FIELD(arg0, int *, 0x40) = 2;
