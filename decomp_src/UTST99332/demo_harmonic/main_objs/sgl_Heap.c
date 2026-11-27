@@ -10,6 +10,8 @@ extern const char D_0016AF40[];     /* "../lib/sgl/Heap.cpp" */
 extern const char D_0016AF54[];     /* " " */
 extern const char D_0016AF74[];     /* "i >= 0 && i < _n" */
 extern const char D_0016AFA0[];     /* "_n > 0" */
+extern const char D_0016B084[];     /* "value( i ) >= value( i - 1 )" */
+extern const char check_sort_name[] __asm__("_ZZN3sgl4Heap10check_sortEvE19__PRETTY_FUNCTION__");
 extern const char change_value_name[] __asm__("_ZZN3sgl4Heap12change_valueEjfE19__PRETTY_FUNCTION__");
 extern const char remove_name[] __asm__("_ZZN3sgl4Heap6removeEiE19__PRETTY_FUNCTION__");
 extern const char pop_name[] __asm__("_ZZN3sgl4Heap3popEvE19__PRETTY_FUNCTION__");
@@ -156,7 +158,11 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Heap", _
 void sgl::Heap::dump() {
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Heap", _ZN3sgl4Heap10check_sortEv);
+void sgl::Heap::check_sort()
+{
+    for (int i = 1; i < _n; i++)
+        HEAP_ASSERT(value(i) >= value(i - 1), D_0016B084, check_sort_name, 285);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Heap", _ZN3sgl4Heap4TestEv);
 

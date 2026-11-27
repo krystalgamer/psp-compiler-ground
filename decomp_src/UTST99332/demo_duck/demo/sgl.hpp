@@ -54,7 +54,7 @@ public:
     void sort();
     int check_heapify();
     void dump();
-    int check_sort();
+    void check_sort();
     static void Test();
     int *_index;
     Element *_e;

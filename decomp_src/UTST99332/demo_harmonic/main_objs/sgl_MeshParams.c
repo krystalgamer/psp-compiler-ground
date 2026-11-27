@@ -4,6 +4,8 @@
 #include "cxx/defer_asm.h"
 #include "../main.hpp"
 
+extern const float D_0016E25C;      /* 0.8f */
+
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_MeshParams", _Z41__static_initialization_and_destruction_0ii_CBD18);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_MeshParams", _ZN3sgl10MeshParamsC2Ev);
@@ -12,7 +14,21 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_MeshPara
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_MeshParams", _ZN3sgl10MeshParams5resetEv);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_MeshParams", _ZN3sgl10MeshParams4set0Ef);
+void sgl::MeshParams::set0(float v)
+{
+    set(ParamsBool(1), true);
+    set(ParamsBool(2), true);
+    set(ParamsBool(3), true);
+    set(ParamsBool(4), true);
+    set(ParamsBool(5), true);
+    set(ParamsBool(6), true);
+    set(ParamsBool(7), true);
+    set(ParamsBool(8), false);
+    set(ParamsBool(9), true);
+    set(ParamsFloat(0), v);
+    set(ParamsFloat4(0), math::vector_xyzw(D_0016E25C, D_0016E25C, D_0016E25C, 0));
+    set(ParamsBool(18), false);
+}
 
 void sgl::MeshParams::set(ParamsBool p, bool b)
 {
