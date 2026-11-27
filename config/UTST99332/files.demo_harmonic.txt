@@ -26,6 +26,12 @@ bss 0x19B458 gcc-3.3.3/libstdc__-v3/src/ctype
 bss 0x19B45C -
 rodata 0x177918 gcc-3.3.3/libstdc__-v3/src/ctype
 rodata 0x177928 -
+rodata 0x176204 gcc-3.3.3/libstdc__-v3/src/ios
+rodata 0x1762DC -
+bss 0x19740C gcc-3.3.3/libstdc__-v3/src/ios
+bss 0x197414 -
+rodata 0x1770D4 gcc-3.3.3/libstdc__-v3/src/localename
+rodata 0x1770E8 -
 # math_* objects whose static initializer (the header statics) is C++: their .rodata and .bss
 rodata 0x1655F8 main_objs/math_SphericalCoord
 rodata 0x165628 main_objs/math_ZYZ
