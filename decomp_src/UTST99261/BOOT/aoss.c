@@ -1,6 +1,7 @@
 /* cflags: -O2 -frename-registers */
 #include "common.h"
 #include "m2c_macros.h"
+extern unsigned char *s_buf;
 typedef struct AossApInfo {
     int ssidlen;
     char ssid[0x20];                  /* 0x4 */
@@ -286,7 +287,18 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/aoss", AstsSetInitReq);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/aoss", AstsSetSecureReq);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/aoss", AstsRestartReq);
+int AstsRestartReq(int a, int b, int c)
+{
+    unsigned char *buf = s_buf;
+    unsigned char seq[8];
+
+    AOSS_Memset(buf, 0, 0x5DC);
+    AOSS_Memcpy(seq, (unsigned char *)b + 0x10, 8);
+    CryptSeqNo(seq, 8, (unsigned char *)D_00141144, AOSS_Strlen(D_00141144));
+    SetPacketHeader((short *)buf, 0x3000, 0, 0, 0, 0x11, seq);
+    SendPacketUDP(buf, 0x18, 0, c);
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/aoss", SetStaData);
 

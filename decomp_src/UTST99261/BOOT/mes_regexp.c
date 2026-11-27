@@ -1,6 +1,15 @@
 /* cflags: -O1 */
 #include "common.h"
 #include "m2c_macros.h"
+extern unsigned int D_0058530C, D_005852D0, D_005852D4, D_005852F0;
+int mes_number_alloc(void *ctx, double d);
+int mes_object_get(void *obj, unsigned int id);
+void *mes_util_string_new(void);
+void mes_util_string_put(void *s, unsigned short c);
+void mes_util_string_put_string(void *s, int v);
+void mes_util_string_free(void *s);
+int mes_string_new3(void *ctx, void *s);
+void *mes_regexp_alternative(void *c);
 typedef struct RxStr {
     unsigned short *str;
     int len;                          /* 0x4 */
@@ -16,6 +25,9 @@ typedef struct RxObj {
     int f1C;
     double lastIndex;                 /* 0x20 */
     int ncap;                         /* 0x28 */
+    unsigned char global;             /* 0x2C */
+    unsigned char icase;              /* 0x2D */
+    unsigned char multiline;          /* 0x2E */
 } RxObj;
 typedef struct RxComp {
     void *ctx;
@@ -247,7 +259,28 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_regexp", mes_regexp_term);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_regexp", mes_regexp_alternative);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_regexp", mes_regexp_disjunction);
+void *mes_regexp_disjunction(RxComp *c)
+{
+    void *ctx = c->ctx;
+    void *a = mes_regexp_alternative(c);
+    void *b;
+    RxClosure *cl;
+
+    if (c->p < c->end && *c->p == '|') {
+        c->p++;
+        *--M2C_FIELD(ctx, int **, 0x18) = (int)a;
+        b = mes_regexp_disjunction(c);
+        *--M2C_FIELD(ctx, int **, 0x18) = (int)b;
+        cl = mes_closure_new(ctx, 2, 2);
+        M2C_FIELD(ctx, int **, 0x18) += 2;
+        if (cl != NULL) {
+            cl->vals[1] = (int)a;
+            cl->vals[2] = (int)b;
+        }
+        return cl;
+    }
+    return a;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_regexp", mes_regexp_eval);
 

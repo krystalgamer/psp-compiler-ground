@@ -1,6 +1,14 @@
 /* cflags: -O1 */
 #include "common.h"
 #include "m2c_macros.h"
+int sceKernelWaitSema(int id, int signal, void *timeout);
+int OS_mq_send(int a, int b, int n, int c);
+void OS_thread_exit(int r);
+void *MEM_calloc(int heap, unsigned int size);
+void *OS_thread_mutex_create(void);
+int OS_thread_mutex_init(void *m, int a);
+int OS_thread_create(void *id, int a, void *fn, int b);
+int esp_timerThread(void);
 typedef struct TimeSpec {
     int sec;
     int nsec;
@@ -74,7 +82,60 @@ int clock_gettime(TimeSpec *ts)
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/wstimer", esp_timerThread);
+int esp_timerThread(void)
+{
+    TimeSpec ts;
+    int elapsed;
+    int ds, dn;
+    char *t;
+    void **p;
+    void **q;
+
+    for (;;) {
+        if (sceKernelWaitSema(sema_id_timer, 1, 0) < 0)
+            break;
+        p = sys_timer;
+        p[3] = (void *)sceKernelSetAlarm(10000, timer_handler, 0);
+        if ((int)sys_timer[3] < 0)
+            break;
+        OS_thread_mutex_lock((int)sys_timer[2]);
+        if (sys_timer[0] == NULL) {
+            if ((int)sys_timer[3] < 0)
+                break;
+            sceKernelCancelAlarm((int)sys_timer[3]);
+            sys_timer[3] = (void *)-1;
+            break;
+        }
+        clock_gettime(&ts);
+        q = sys_timer;
+        ds = ts.sec - (int)q[4];
+        dn = ts.nsec - (int)q[5];
+        elapsed = ds * 1000 + dn / 1000000;
+        q[4] = (void *)ts.sec;
+        q[5] = (void *)ts.nsec;
+        for (t = M2C_FIELD(sys_timer[0], char **, 0x18); t != NULL; t = M2C_FIELD(t, char **, 0x18)) {
+            if (M2C_FIELD(t, unsigned short *, 6) & 1) {
+                M2C_FIELD(t, int *, 0x14) -= elapsed;
+                if (M2C_FIELD(t, int *, 0x14) <= 0) {
+                    if (M2C_FIELD(t, unsigned short *, 4) == 1)
+                        OS_mq_send(M2C_FIELD(t, int *, 8), M2C_FIELD(t, int *, 0xC), 0x24, 0);
+                    else if (!(M2C_FIELD(t, unsigned short *, 6) & 0x100)) {
+                        OS_mq_send(M2C_FIELD(t, int *, 8), M2C_FIELD(t, int *, 0xC), 0x24, 0);
+                        M2C_FIELD(t, unsigned short *, 6) |= 0x100;
+                    }
+                    M2C_FIELD(t, int *, 0x14) = M2C_FIELD(t, int *, 0x10);
+                }
+            }
+        }
+        OS_thread_mutex_unlock((int)sys_timer[2]);
+    }
+    thread_id_timer = -1;
+    sceKernelDeleteSema(sema_id_timer);
+    sema_id_timer = -1;
+    OS_thread_mutex_unlock((int)sys_timer[2]);
+    OS_thread_exit(0);
+    return 0;
+}
 
 int timer_handler(void *arg)
 {
@@ -127,7 +188,40 @@ int chkTimer(int id)
     return -1;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/wstimer", OS_timer_init);
+int OS_timer_init(void)
+{
+    int *head;
+    void **p;
+
+    if (sys_timer != NULL)
+        return -1;
+    sys_timer = MEM_calloc(0, 0x18);
+    if (sys_timer == NULL)
+        return -1;
+    p = sys_timer;
+    p[2] = OS_thread_mutex_create();
+    if (OS_thread_mutex_init(sys_timer[2], 0) != 0) {
+        MEM_free(0, sys_timer);
+        return -1;
+    }
+    head = MEM_calloc(0, 0x1C);
+    head[0] = (unsigned int)head >> 1;
+    sys_timer[0] = head;
+    clock_gettime((TimeSpec *)&sys_timer[4]);
+    if (timer_create((int *)&sys_timer[3]) < 0) {
+        OS_thread_mutex_destroy((int)sys_timer[2]);
+        MEM_free(0, sys_timer);
+        return -1;
+    }
+    if (OS_thread_create(&sys_timer[1], 0, esp_timerThread, 0) != 0) {
+        timer_delete((int)sys_timer[3]);
+        OS_thread_mutex_destroy((int)sys_timer[2]);
+        MEM_free(0, sys_timer);
+        return -1;
+    }
+    thread_id_timer = (int)sys_timer[1];
+    return 0;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -164,7 +258,38 @@ void OS_timer_destroy(void) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/wstimer", OS_timer_set);
+int OS_timer_set(int a, int b, int c, int d, int e)
+{
+    int *ev;
+    int *t;
+
+    if (sys_timer == NULL)
+        return -1;
+    ev = MEM_calloc(0, 0x24);
+    if (ev == NULL)
+        return -1;
+    t = MEM_calloc(0, 0x1C);
+    if (t == NULL) {
+        MEM_free(0, ev);
+        return -1;
+    }
+    t[0] = (unsigned int)t >> 1;
+    ((short *)t)[2] = b;
+    ((short *)t)[3] = 0;
+    t[2] = a;
+    t[3] = (int)ev;
+    t[4] = c;
+    t[5] = c;
+    ev[1] = 9;
+    ev[2] = d;
+    ev[3] = e;
+    ev[4] = 0;
+    ev[5] = t[0];
+    OS_thread_mutex_lock((int)sys_timer[2]);
+    addTimer(t);
+    OS_thread_mutex_unlock((int)sys_timer[2]);
+    return t[0];
+}
 
 int OS_timer_start(int id)
 {

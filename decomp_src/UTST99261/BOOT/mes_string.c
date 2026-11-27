@@ -73,7 +73,36 @@ MesValue mes_string_new(MesContext *ctx, const void *str, int len)
     return (MesValue)s | 3;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_string", mes_string_new2);
+MesValue mes_string_new2(MesContext *ctx, const char *str, int len)
+{
+    MesStr *s;
+    const char *p;
+    UCSChar *d;
+    MesValue r;
+
+    if (str != NULL && len == 0) {
+        p = str;
+        while (*p++ != 0)
+            len++;
+    }
+    if (len == 0 && (r = mes_empty) != 0)
+        return r;
+    s = mes_gc_alloc(ctx, 1);
+    if (s == NULL)
+        return 0;
+    s->len = len;
+    if (len > 0) {
+        d = s->str = MEM_malloc(0, len * 2);
+        if (d == NULL)
+            return 0;
+        do {
+            *d++ = *str++;
+            len--;
+        } while (len > 0);
+    } else
+        s->str = NULL;
+    return (MesValue)s | 3;
+}
 
 MesValue mes_string_new3(MesContext *ctx, void *b)
 {

@@ -1,6 +1,9 @@
 /* cflags: -O1 */
 #include "common.h"
 #include "m2c_macros.h"
+int strlen(const char *s);
+int utf8ToUcs2(unsigned short *d, const char *s, int n);
+int ucs2ToEuc(char *d, unsigned short *s, int n);
 typedef struct FioFile {
     struct FioFile *next;
     int f4;
@@ -129,7 +132,24 @@ int FIO_fputc(int c, FioFile *fp)
     return c;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/wsfileio", FIO_fgets);
+char *FIO_fgets(char *buf, int n, FioFile *fp)
+{
+    char *p = buf;
+    unsigned int i;
+    int c;
+
+    for (i = 0; i < n - 1; i++) {
+        c = FIO_fgetc(fp);
+        if (c == 0)
+            return NULL;
+        if ((unsigned char)c == 0 || (unsigned char)c == '\n') {
+            *p = 0;
+            break;
+        }
+        *p++ = c;
+    }
+    return buf;
+}
 
 int FIO_fputs(const char *str, FioFile *fp)
 {

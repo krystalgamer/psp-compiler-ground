@@ -1,6 +1,32 @@
 /* cflags: -O1 */
 #include "common.h"
 #include "m2c_macros.h"
+void *FIO_fopen(const char *path, const char *mode);
+int FIO_fseek(void *fp, int off, int whence);
+int FIO_ftell(void *fp);
+int FIO_fread(void *buf, int size, int n, void *fp);
+int FIO_fwrite(void *buf, int size, int n, void *fp);
+int FIO_fclose(void *fp);
+void *memset(void *p, int c, unsigned int n);
+void *CSS_newPoolBuf(void);
+void CSS_putSPoolBuf(void *pb, const char *s);
+void CSS_putsPoolBuf(void *pb, void *s);
+void *CSS_getMediaTypeString(int t);
+void CSS_freePoolBuf(void *pb);
+void *newCSSNode(int a, int size);
+void CSS_StyleSheetRuleSingle(void *ss, char *text);
+void popCSSNode(void *n);
+void addCSSNode(void *p, void *n);
+void pushCSSNode(void *p, void *n);
+void freeCSSStyleSheet(void *ss);
+int Node_getSid(void *node);
+typedef struct InpMsg {
+    int w[8];                         /* inp */
+} InpMsg;
+void SetIpcMember(InpMsg *msg, int a, int sid, int b, int cmd, int c, int d, void *node);
+int JSSendMail(InpMsg *msg, const char *name);
+void *mes_class_private_get(void *obj);
+void *Node_getOwnerDocument(void *node);
 typedef struct MesContext MesContext;
 int mes_input_inner(MesContext *ctx, int cmd, int kind);
 typedef struct CSSRule {
@@ -15,7 +41,15 @@ int CSS_getPoolBuf(unsigned short *);                          /* extern */
 M2C_UNK addCSSRule();                               /* extern */
 
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_input", mes_input_inner);
+int mes_input_inner(MesContext *ctx, int cmd, int kind)
+{
+    InpMsg msg;
+    void **priv = mes_class_private_get(M2C_FIELD(M2C_FIELD(ctx, void **, 0x10), void **, 0x1C));
+
+    SetIpcMember(&msg, 8, Node_getSid(Node_getOwnerDocument(*priv)), 0, cmd, kind, 0, *priv);
+    JSSendMail(&msg, "/tmp/mq_lo");
+    return 0;
+}
 
 int mes_input_blur(MesContext *ctx)
 {
@@ -48,7 +82,32 @@ void mes_input_free(void) {
     MEM_free(0);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_input", readCFData);
+void *readCFData(char *path, int *size)
+{
+    void *fp;
+    int n;
+    void *buf;
+
+    *size = 0;
+    if (path[0] == 0)
+        return NULL;
+    fp = FIO_fopen(path, "rb");
+    if (fp == NULL)
+        return NULL;
+    FIO_fseek(fp, 0, 2);
+    n = FIO_ftell(fp);
+    FIO_fseek(fp, 0, 0);
+    buf = MEM_malloc(0, n + 1);
+    if (buf == NULL) {
+        FIO_fclose(fp);
+        return NULL;
+    }
+    memset(buf, 0, n + 1);
+    FIO_fread(buf, n, 1, fp);
+    FIO_fclose(fp);
+    *size = n;
+    return buf;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_input", writeCFData);
 
@@ -124,7 +183,29 @@ int CSSCharsetRule_getCssText(void *arg0) {
     return var_v0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_input", CSSCharsetRule_setCssText);
+int CSSCharsetRule_setCssText(void *r, char *text)
+{
+    int ret = -1;
+    void *ss;
+    CSSRule *n;
+    CSSRule *old;
+
+    if (r != NULL && M2C_FIELD(r, void **, 0x1C) != NULL && M2C_FIELD(M2C_FIELD(r, void **, 0x1C), short *, 0x36) == 0
+        && (ss = newCSSNode(0, 0x3C)) != NULL) {
+    CSS_StyleSheetRuleSingle(ss, text);
+    n = M2C_FIELD(ss, CSSRule **, 0xC);
+    if (n != NULL && n->type == 2 && n->f24 != NULL) {
+        old = M2C_FIELD(M2C_FIELD(r, void **, 0x1C), CSSRule **, 0xC);
+        ret = 0;
+        if (old != NULL && old->type == 2)
+            freeCSSCharsetRule(old);
+        popCSSNode(n);
+        pushCSSNode(M2C_FIELD(r, void **, 0x1C), n);
+    }
+    freeCSSStyleSheet(ss);
+    }
+    return ret;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -216,7 +297,25 @@ int CSSImportRule_getType(CSSRule *r)
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_input", CSSImportRule_getCssText);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_input", CSSImportRule_setCssText);
+int CSSImportRule_setCssText(void *r, char *text)
+{
+    int ret = -1;
+    void *ss;
+    CSSRule *n;
+
+    if (r != NULL && M2C_FIELD(r, void **, 0x1C) != NULL && M2C_FIELD(M2C_FIELD(r, void **, 0x1C), short *, 0x36) == 0
+        && (ss = newCSSNode(0, 0x3C)) != NULL) {
+    CSS_StyleSheetRuleSingle(ss, text);
+    n = M2C_FIELD(ss, CSSRule **, 0xC);
+    if (n != NULL && n->type == 3 && n->f24 != NULL) {
+        popCSSNode(n);
+        addCSSNode(M2C_FIELD(r, void **, 0x1C), n);
+        ret = 0;
+    }
+    freeCSSStyleSheet(ss);
+    }
+    return ret;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
