@@ -90,6 +90,7 @@ def module_funcs(target, module):
                 words.append(mask(w, relocs[o]) if o in relocs else w)
             funcs[name] = words
             funcs.calls[name] = calls
+            funcs.addr[name] = a
     return funcs
 
 
@@ -98,6 +99,7 @@ class Funcs(dict):
     def __init__(self):
         super().__init__()
         self.calls = {}
+        self.addr = {}
 
 
 def base_name(n):
@@ -147,17 +149,25 @@ def members(path):
         yield n, subprocess.run(["ar", "p", str(p), n], capture_output=True).stdout
 
 
-def lookup(mod, fn, n, words=None):
+def candidates(mod, fn):
+    return ([fn] if fn in mod else []) + [k for k in mod if re.fullmatch(re.escape(fn) + r"_[0-9A-F]+", k)]
+
+
+def lookup(mod, fn, n, words=None, anchor=None):
     """The module function for fn: splat names duplicated statics FN_ADDR,
-    so among the candidates take the closest one."""
-    cands = ([fn] if fn in mod else []) + [k for k in mod if re.fullmatch(re.escape(fn) + r"_[0-9A-F]+", k)]
+    so among the candidates take the one nearest the object's other
+    functions (anchor address), else the closest in bytes."""
+    cands = candidates(mod, fn)
     if not cands:
         return None
+    addr = getattr(mod, "addr", {})
 
     def score(k):
         if len(mod[k]) != n:
-            return 10 ** 9
-        return sum(1 for a, b in zip(words, mod[k]) if a != b) if words is not None else 0
+            return (1, 0)
+        if anchor is not None and k in addr:
+            return (0, abs(addr[k] - anchor))
+        return (0, sum(1 for a, b in zip(words, mod[k]) if a != b) if words is not None else 0)
     return min(cands, key=score)
 
 
@@ -184,8 +194,13 @@ def compare(mod, objs, verbose=False):
     res = {}
     for path in objs:
         for name, data in members(path):
-            for fn, words in obj_funcs(data).items():
-                key = lookup(mod, fn, len(words), words)
+            ofuncs = obj_funcs(data)
+            # addresses of the object's unambiguous functions locate its duplicates
+            uniq = sorted(mod.addr[c[0]] for c in (candidates(mod, f) for f in ofuncs)
+                          if len(c) == 1 and c[0] in getattr(mod, "addr", {}))
+            anchor = uniq[len(uniq) // 2] if uniq else None
+            for fn, words in ofuncs.items():
+                key = lookup(mod, fn, len(words), words, anchor)
                 if key is None:
                     continue
                 orig = mod[key]
