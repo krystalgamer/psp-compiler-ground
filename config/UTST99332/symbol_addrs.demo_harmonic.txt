@@ -7663,3 +7663,7 @@ errno = 0x0019BB40; // size:0x4
 end = 0x0019BB44;
 D_00165AC8 = 0x00165AC8; // size:0x8 nosplit (a double, loaded as two words)
 D_00165AD0 = 0x00165AD0; // size:0x8 nosplit (a double, loaded as two words)
+D_00160880 = 0x00160880; // size:0x8 nosplit (a double, loaded as two words)
+D_00160888 = 0x00160888; // size:0x8 nosplit (a double, loaded as two words)
+D_00162690 = 0x00162690; // size:0x8 nosplit (a double, loaded as two words)
+D_001742B0 = 0x001742B0; // size:0x8 nosplit (a double, loaded as two words)
