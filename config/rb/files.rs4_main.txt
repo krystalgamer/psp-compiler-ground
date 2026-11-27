@@ -361,3 +361,5 @@ rodata 0x1106E4 -
 rodata 0x110720 -
 rodata 0x10FCC0 -
 rodata 0x10FE40 newlib/libc/stdlib/dtoa
+rodata 0x110D84 -
+rodata 0x110E88 libgcc/libgcc2/__fixunsdfdi
