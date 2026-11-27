@@ -801,7 +801,16 @@ void DrawCube(float, float, float);
 class TrackballInterface : public PositioningInterface {
 public:
     void track();
+    virtual ~TrackballInterface();
 };
+/* linkonce copies: glutils_TrackballInterface.o defines DEMO_LINKONCE_TrackballInterface */
+#if DEMO_LINKONCE_TrackballInterface
+_Pragma("implementation \"sgl_linkonce\"") _Pragma("interface \"sgl_linkonce\"")
+#endif
+inline TrackballInterface::~TrackballInterface() {}
+#if DEMO_LINKONCE_TrackballInterface
+_Pragma("interface")
+#endif
 }
 
 namespace sgl {
