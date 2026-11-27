@@ -444,7 +444,102 @@ void DrawRoom(void)
 	sceGumPopMatrix();
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_depthblur/nonmatchings/main", draw_frame);
+extern const char D_00015290[];
+extern const char D_000152A0[];
+extern const char D_000152AC[];
+extern const char D_000152C0[];
+extern const char D_000152D4[];
+extern const char D_000152E4[];
+unsigned long long sceKernelGetSystemTimeWide(void);
+#ifndef SCEGU_IMMEDIATE /* sample */
+#define SCEGU_IMMEDIATE                    0
+#endif
+#ifndef SCEGU_CLEAR_ALL /* sample */
+#define SCEGU_CLEAR_ALL               0x0007
+#endif
+#ifndef SCEGU_BLEND /* sample */
+#define SCEGU_BLEND                        4
+#endif
+#ifndef SCEGU_MATRIX_WORLD /* sample */
+#define SCEGU_MATRIX_WORLD                 2
+#endif
+#ifndef SCEGU_SYNC_FINISH /* sample */
+#define SCEGU_SYNC_FINISH                  0
+#endif
+#ifndef SCEGU_SYNC_WAIT /* sample */
+#define SCEGU_SYNC_WAIT                    0
+#endif
+extern const double D_000154C8;
+extern double D_00019990;
+extern double D_00019998;
+extern float D_000199A0;
+#define t_start D_00019990
+#define t_end D_00019998
+#define t D_000199A0
+static void draw_frame(void)
+{
+	double t_diff = t_end - t_start;
+
+	
+	unsigned int status = sceGuGetAllStatus();
+
+	t+=1.f/60.f;
+
+	t_start = ((double) sceKernelGetSystemTimeWide())/ D_000154C8;
+	sceGuStart(SCEGU_IMMEDIATE, disp_list, sizeof(disp_list));
+
+	
+	sceGuClear(SCEGU_CLEAR_ALL);
+	
+	sceGuDisable(SCEGU_BLEND);
+
+	sceGumMatrixMode(SCEGU_MATRIX_WORLD);
+	sceGumLoadIdentity();
+
+	DrawRoom();
+	
+	draw_dragon_with_camera_transform();
+
+	if( modes[mode].toggle )
+	{
+		GenFrameBufferBlurmap(modes[mode].format,modes[mode].copy,
+			!depthspread,frame32,modes[mode].final32);
+	
+		DepthBlurUpdate();
+		DepthBlurDraw(); 
+	}
+	
+
+	
+	char buff[256];
+	sprintf(buff,D_00015290,(float)t_diff);
+	sceGuDebugPrint(10,10,0xff0000ff,buff);
+	sceGuDebugPrint(10,20,0xff0000ff,modes[mode].desc);
+	sprintf(buff,D_000152A0,focus);
+	sceGuDebugPrint(10,30,0xff0000ff,buff);
+	if(frame32)
+		sceGuDebugPrint(10,40,0xff0000ff,D_000152AC);
+	else
+		sceGuDebugPrint(10,40,0xff0000ff,D_000152C0);
+	if(depthspread)
+		sceGuDebugPrint(10,50,0xff0000ff,D_000152D4);
+	else
+		sceGuDebugPrint(10,50,0xff0000ff,D_000152E4);
+	
+	
+	
+	
+	sceKernelDcacheWritebackInvalidateAll();
+
+	sceGuFinish();
+	sceGuSync(SCEGU_SYNC_FINISH, SCEGU_SYNC_WAIT);
+	t_end = ((double) sceKernelGetSystemTimeWide()) / D_000154C8;
+	
+	sceGuSetAllStatus(status);
+}
+#undef t_start
+#undef t_end
+#undef t
 
 #ifndef SCEGU_IMMEDIATE /* sample */
 #define SCEGU_IMMEDIATE                    0
