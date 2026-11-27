@@ -292,4 +292,54 @@ static int pad_read(void)
 	return 1;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/sound_at3streaming/nonmatchings/main", main);
+#define MS_PHYSDEV_NAME "msstor0p1:/"
+#define MS_FSDEV_NAME   "fatms0:"
+#define SCE_MT_RDONLY	      0x01
+#define SCE_KERNEL_ERROR_OK    0x0
+#define FILENAME "disc0:/PSP_GAME/USRDIR/DATA/sound/wave/overload-loop.at3"
+#define MS_ASIGN_NAME   "prfat0:"
+#define SCE_KERNEL_NO_RESIDENT          (1)
+#define SCE_KERNEL_NO_RESIDENT_END      SCE_KERNEL_NO_RESIDENT
+
+int main(void)
+{
+	SceUID thid;
+	SceInt32 status;
+
+	menuInit();
+	if (loadModuleAt3plus() < 0) {
+		return -1;
+	}
+	if ((status = sceWaveInit()) != 0) {
+		printf("sceWaveInit error:%08X\n", status);
+		goto wave_exit;
+	}
+	if ((thid = at3_bgm_play("disc0:/PSP_GAME/USRDIR/DATA/sound/wave/overload_loop.at3")) < 0) {
+		printf("something failed...:%x\n", thid);
+		goto wave_exit;
+	}
+	init_all();
+	init_pos();
+	InitString();
+	while (pad_read()) {
+		draw_frame();
+		sceDisplayWaitVblankStart();
+		sceGuSwapBuffers();
+	}
+	sceGuTerm();
+	at3_bgm_play_end(1);
+	if ((status = sceKernelWaitThreadEnd(thid, NULL)) != 0) {
+		printf("sceKernelWaitThread: %08X\n", status);
+	}
+	if ((status = sceKernelDeleteThread(thid)) != 0) {
+		printf("sceKernelDeleteThread: %08X\n", status);
+		goto wave_exit;
+	}
+wave_exit:
+	if ((status = sceWaveExit()) != 0) {
+		printf("sceWaveExit error:%08X\n", status);
+	}
+	unloadModuleAt3plus();
+	menuTerm(4, 2);
+	return SCE_KERNEL_NO_RESIDENT_END;
+}
