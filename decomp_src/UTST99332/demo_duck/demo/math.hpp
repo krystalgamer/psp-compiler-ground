@@ -196,22 +196,25 @@ namespace keyframe_tangent {
 enum Type { };
 enum Side { };
 }
+/* out-of-class template members: never inlined (their instances are called); the attribute also keeps
+   cc1plus from instantiating them early for the inliner (instance order in interp_Path) */
+#define INTERP_NOINLINE __attribute__((noinline))
 template<class T> class KeyFrame {
 public:
-    KeyFrame();
-    KeyFrame(float, T, bool);
+    KeyFrame() INTERP_NOINLINE;
+    KeyFrame(float, T, bool) INTERP_NOINLINE;
     ~KeyFrame() {}
-    bool isClosingKey() const;
-    T value() const;
-    void setValue(T);
-    float time() const;
-    void setTime(float);
-    void setTangentType(keyframe_tangent::Type, int);
-    keyframe_tangent::Type getTangentType(keyframe_tangent::Side) const;
+    bool isClosingKey() const INTERP_NOINLINE;
+    T value() const INTERP_NOINLINE;
+    void setValue(T) INTERP_NOINLINE;
+    float time() const INTERP_NOINLINE;
+    void setTime(float) INTERP_NOINLINE;
+    void setTangentType(keyframe_tangent::Type, int) INTERP_NOINLINE;
+    keyframe_tangent::Type getTangentType(keyframe_tangent::Side) const INTERP_NOINLINE;
     float _time;
-    int _type[2];
-    bool _closing;
     T _value;
+    keyframe_tangent::Type _type[2];
+    bool _closing;
     T _tangent[2];
 };
 class VirtualKeyFrameSequence {
@@ -242,57 +245,57 @@ public:
 /* members out of class (their instances stay asm where they are) */
 template<class T> class KeyFrameSequenceBase : public VirtualKeyFrameSequence {
 public:
-    KeyFrameSequenceBase();
-    virtual ~KeyFrameSequenceBase();
-    virtual bool empty() const;
-    virtual int size() const;
-    virtual int sizeLessClosingKey() const;
-    virtual void clear();
-    virtual void remove(unsigned int);
-    virtual float getLastTime() const;
-    virtual float getKeyTime(int) const;
-    virtual void setKeyTime(int, float);
-    virtual bool isClosingKey(int) const;
-    virtual void setCloseDt(float);
-    virtual float getCloseDt() const;
-    virtual void setClose(bool);
-    virtual bool isClosed() const;
-    virtual void setLoop(bool);
-    virtual bool isLoop() const;
-    virtual void setRelative(bool);
-    virtual bool isRelative() const;
-    virtual void finish();
-    virtual void setTangentType(int, keyframe_tangent::Type, int);
-    virtual keyframe_tangent::Type getTangentType(int, keyframe_tangent::Side) const;
-    virtual int wrap_key_index(int) const;
-    virtual void invalidate_cached_key_interval();
-    virtual bool calc_tangent_setup(int, T &, T &, T &, float &, float &);
+    KeyFrameSequenceBase() INTERP_NOINLINE;
+    virtual ~KeyFrameSequenceBase() INTERP_NOINLINE;
+    virtual bool empty() const INTERP_NOINLINE;
+    virtual int size() const INTERP_NOINLINE;
+    virtual int sizeLessClosingKey() const INTERP_NOINLINE;
+    virtual void clear() INTERP_NOINLINE;
+    virtual void remove(unsigned int) INTERP_NOINLINE;
+    virtual float getLastTime() const INTERP_NOINLINE;
+    virtual float getKeyTime(int) const INTERP_NOINLINE;
+    virtual void setKeyTime(int, float) INTERP_NOINLINE;
+    virtual bool isClosingKey(int) const INTERP_NOINLINE;
+    virtual void setCloseDt(float) INTERP_NOINLINE;
+    virtual float getCloseDt() const INTERP_NOINLINE;
+    virtual void setClose(bool) INTERP_NOINLINE;
+    virtual bool isClosed() const INTERP_NOINLINE;
+    virtual void setLoop(bool) INTERP_NOINLINE;
+    virtual bool isLoop() const INTERP_NOINLINE;
+    virtual void setRelative(bool) INTERP_NOINLINE;
+    virtual bool isRelative() const INTERP_NOINLINE;
+    virtual void finish() INTERP_NOINLINE;
+    virtual void setTangentType(int, keyframe_tangent::Type, int) INTERP_NOINLINE;
+    virtual keyframe_tangent::Type getTangentType(int, keyframe_tangent::Side) const INTERP_NOINLINE;
+    virtual int wrap_key_index(int) const INTERP_NOINLINE;
+    virtual void invalidate_cached_key_interval() INTERP_NOINLINE;
+    virtual bool calc_tangent_setup(int, T &, T &, T &, float &, float &) INTERP_NOINLINE;
     virtual void calc_tangent(int) = 0;
     virtual T calc_gradient(T, T, float) const = 0;
-    virtual void calc_all_tangent();
-    virtual int find_key_interval(float);
-    virtual bool evaluate_setup(float, float &, T &, KeyFrame<T> *&, KeyFrame<T> *&);
-    virtual void push_closing_key();
-    virtual void update_closing_key();
-    virtual void on_set_key_value(int);
-    virtual T get_key_abs_rel_value(int);
-    virtual void set_key_abs_rel_value(int, T);
+    virtual void calc_all_tangent() INTERP_NOINLINE;
+    virtual int find_key_interval(float) INTERP_NOINLINE;
+    virtual bool evaluate_setup(float, float &, T &, KeyFrame<T> *&, KeyFrame<T> *&) INTERP_NOINLINE;
+    virtual void push_closing_key() INTERP_NOINLINE;
+    virtual void update_closing_key() INTERP_NOINLINE;
+    virtual void on_set_key_value(int) INTERP_NOINLINE;
+    virtual T get_key_abs_rel_value(int) INTERP_NOINLINE;
+    virtual void set_key_abs_rel_value(int, T) INTERP_NOINLINE;
     virtual T op(T, T) = 0;
     virtual T op_inv(T, T) = 0;
     virtual T op_identity() const = 0;
-    virtual void setDefault(T);
-    virtual T getDefault() const;
-    virtual int insert(float, T);
-    virtual int insert(float);
-    virtual const std::vector<KeyFrame<T> > &getKeyList() const;
-    virtual KeyFrame<T> &operator[](unsigned int);
+    virtual void setDefault(T) INTERP_NOINLINE;
+    virtual T getDefault() const INTERP_NOINLINE;
+    virtual int insert(float, T) INTERP_NOINLINE;
+    virtual int insert(float) INTERP_NOINLINE;
+    virtual const std::vector<KeyFrame<T> > &getKeyList() const INTERP_NOINLINE;
+    virtual KeyFrame<T> &operator[](unsigned int) INTERP_NOINLINE;
     virtual T evaluate(float) = 0;
-    virtual void makeRelative();
-    virtual void makeAbsolute();
+    virtual void makeRelative() INTERP_NOINLINE;
+    virtual void makeAbsolute() INTERP_NOINLINE;
     virtual void typed_fix() = 0;
-    virtual void makeConsistantWith(const VirtualKeyFrameSequence *);
-    void setKeyValue(int, T);
-    T getKeyAbsRelValue(int);
+    virtual void makeConsistantWith(const VirtualKeyFrameSequence *) INTERP_NOINLINE;
+    void setKeyValue(int, T) INTERP_NOINLINE;
+    T getKeyAbsRelValue(int) INTERP_NOINLINE;
     T _default;
     std::vector<KeyFrame<T> > _keys;
     bool _closed;
@@ -305,12 +308,12 @@ public:
 template<class T> class KeyFrameSequence : public KeyFrameSequenceBase<T> {
 public:
     KeyFrameSequence() {}
-    virtual ~KeyFrameSequence();
-    virtual void dump(const char *) const;
-    virtual void calc_tangent(int);
-    virtual T calc_gradient(T, T, float) const;
-    virtual T evaluate(float);
-    virtual void typed_fix();
+    virtual ~KeyFrameSequence() INTERP_NOINLINE;
+    virtual void dump(const char *) const INTERP_NOINLINE;
+    virtual void calc_tangent(int) INTERP_NOINLINE;
+    virtual T calc_gradient(T, T, float) const INTERP_NOINLINE;
+    virtual T evaluate(float) INTERP_NOINLINE;
+    virtual void typed_fix() INTERP_NOINLINE;
 };
 template<class T> class KeyFrameSequenceA;
 template<> class KeyFrameSequenceA<float> : public KeyFrameSequence<float> {
