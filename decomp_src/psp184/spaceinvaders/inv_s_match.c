@@ -481,7 +481,51 @@ int SprMoveEnemy(void)
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_match", matchup_inv_enemyshort);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_match", matchup_inv_winlose_set);
+extern int WinLose;
+extern int WinLose;
+void matchup_inv_winlose_set(int no)
+{
+	int i, n;
+
+	if (no != 3) {
+		if (--ziki[no].f8 != 0) {
+			se_start(4);
+		} else {
+			se_start(4);
+			se_start(4);
+			se_start(4);
+			if (no == 0)
+				WinLose = 0;
+			else
+				WinLose = 1;
+			RT = 7;
+		}
+	} else {
+		n = 0;
+		for (i = 0; i < 2; i++) {
+			if (--ziki[i].f8 == 0)
+				n++;
+			else
+				se_start(4);
+		}
+		if (n == 2) {
+			WinLose = n;
+			RT = 7;
+		} else if (ziki[0].f8 == 0) {
+			se_start(4);
+			se_start(4);
+			se_start(4);
+			RT = 7;
+			WinLose = 0;
+		} else if (ziki[1].f8 == 0) {
+			se_start(4);
+			se_start(4);
+			se_start(4);
+			WinLose = 1;
+			RT = 7;
+		}
+	}
+}
 
 static void matchup_inv_ufodispjudge(void)
 {
