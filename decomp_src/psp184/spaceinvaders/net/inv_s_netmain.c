@@ -204,7 +204,39 @@ void change_state(enum matching_room_state state) {
     _mrinfo.v_cursor_pos = 0;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_netmain", get_nickname);
+int memcmp(const void *a, const void *b, unsigned int n);
+void sceNetEtherNtostr(const struct SceNetEtherAddr *addr, char *str);
+static int get_nickname(int buflen, struct SceNetEtherAddr *addr, struct SceNetAdhocctlNickname **n)
+{
+	struct SceNetAdhocctlPeerInfo *p;
+	char buf[32];
+	int ret = 0;
+
+	if (buflen == 0) {
+		ret = 2;
+		goto end;
+	}
+	if (memcmp(&_mrinfo.local_addr, addr, 6) == 0) {
+		if (_mrinfo.hello_opt.nickname.data[0] != 0) {
+			*n = &_mrinfo.hello_opt.nickname;
+			ret = 1;
+		}
+		goto end;
+	}
+	for (p = peerinfo; p != NULL; p = p->next) {
+		if (memcmp(&p->mac_addr, addr, 6) != 0)
+			continue;
+		if (p->nickname.data[0] != 0) {
+			*n = &p->nickname;
+			ret = 1;
+		} else {
+			sceNetEtherNtostr(&p->mac_addr, buf);
+		}
+		break;
+	}
+end:
+	return ret;
+}
 
 void ASC_SetStringRGBA(int font, char *str, int x, int y, int r, int g, int b, int a);
 int sprintf(char *buf, const char *fmt, ...);
