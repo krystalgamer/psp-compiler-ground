@@ -60,17 +60,82 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/Dme", NetInit
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/Dme", NetClose);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/Dme", NetGetAverageDelayToClient);
+int NetMutexLock();
+int NetMutexUnlock();
+int NetMapRtError();
+int NetIGetAverageDelayToClient();
+int NetGetAverageDelayToClient(int a0, int a1)
+{
+    int r, e;
+    r = NetMapRtError(NetMutexLock());
+    if (r != 0) return r;
+    e = NetIGetAverageDelayToClient(a0, a1);
+    r = NetMapRtError(NetMutexUnlock());
+    if (r != 0) return r;
+    return e;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/Dme", NetGetBufferStatus);
+int NetMutexLock();
+int NetMutexUnlock();
+int NetMapRtError();
+int NetIGetBufferStatus();
+int NetGetBufferStatus(int a0, int a1, int a2, int a3, int a4)
+{
+    int r, e;
+    r = NetMapRtError(NetMutexLock());
+    if (r != 0) return r;
+    e = NetIGetBufferStatus(a0, a1, a2, a3, a4);
+    r = NetMapRtError(NetMutexUnlock());
+    if (r != 0) return r;
+    return e;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/Dme", NetSetSendAggregationInterval);
+int NetMutexLock();
+int NetMutexUnlock();
+int NetMapRtError();
+int NetISetSendAggregationInterval();
+int NetSetSendAggregationInterval(int a0, int a1, int a2)
+{
+    int r, e;
+    r = NetMapRtError(NetMutexLock());
+    if (r != 0) return r;
+    e = NetISetSendAggregationInterval(a0, a1, a2);
+    r = NetMapRtError(NetMutexUnlock());
+    if (r != 0) return r;
+    return e;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/Dme", NetGetBandwidthInfo);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/Dme", NetRegisterMessage);
+int NetMutexLock();
+int NetMutexUnlock();
+int NetMapRtError();
+int NetIRegisterMessage();
+int NetRegisterMessage(int a0, int a1, int a2)
+{
+    int r, e;
+    r = NetMapRtError(NetMutexLock());
+    if (r != 0) return r;
+    e = NetIRegisterMessage(a0, a1, a2);
+    r = NetMapRtError(NetMutexUnlock());
+    if (r != 0) return r;
+    return e;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/Dme", NetRegisterApplicationMessage);
+int NetMutexLock();
+int NetMutexUnlock();
+int NetMapRtError();
+int NetIRegisterApplicationMessage();
+int NetRegisterApplicationMessage(int a0, int a1)
+{
+    int r, e;
+    r = NetMapRtError(NetMutexLock());
+    if (r != 0) return r;
+    e = NetIRegisterApplicationMessage(a0, a1);
+    r = NetMapRtError(NetMutexUnlock());
+    if (r != 0) return r;
+    return e;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/Dme", NetSendMessage);
 
@@ -95,7 +160,20 @@ void NetRegisterMemoryCallbacks(void) {
     NetIRegisterMemoryCallbacks();
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/Dme", NetAssignLocalServer);
+int NetMutexLock();
+int NetMutexUnlock();
+int NetMapRtError();
+int NetIAssignLocalServer();
+int NetAssignLocalServer(int a0, int a1)
+{
+    int r, e;
+    r = NetMapRtError(NetMutexLock());
+    if (r != 0) return r;
+    e = NetIAssignLocalServer(a0, a1);
+    r = NetMapRtError(NetMutexUnlock());
+    if (r != 0) return r;
+    return e;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/Dme", NetConnect);
 
@@ -115,17 +193,95 @@ int NetSetDefaultJoinParams(void *arg0) {
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/Dme", NetHostPeerToPeer);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/Dme", NetSetNATServiceAddr);
+int NetMutexLock();
+int NetMutexUnlock();
+int NetMapRtError();
+int NetISetNATServiceAddr();
+int NetSetNATServiceAddr(int a0)
+{
+    int r, e;
+    r = NetMapRtError(NetMutexLock());
+    if (r != 0) return r;
+    e = NetISetNATServiceAddr(a0);
+    r = NetMapRtError(NetMutexUnlock());
+    if (r != 0) return r;
+    return e;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/Dme", NetSetDefaultResolveAddrParams);
+int NetMutexLock();
+int NetMutexUnlock();
+int NetMapRtError();
+int NetISetDefaultResolveAddrParams();
+int NetSetDefaultResolveAddrParams(int a0)
+{
+    int r, e;
+    r = NetMapRtError(NetMutexLock());
+    if (r != 0) return r;
+    e = NetISetDefaultResolveAddrParams(a0);
+    r = NetMapRtError(NetMutexUnlock());
+    if (r != 0) return r;
+    return e;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/Dme", NetResolveAddr);
+int NetMutexLock();
+int NetMutexUnlock();
+int NetMapRtError();
+int NetIResolveAddr();
+int NetResolveAddr(int a0, int a1)
+{
+    int r, e;
+    r = NetMapRtError(NetMutexLock());
+    if (r != 0) return r;
+    e = NetIResolveAddr(a0, a1);
+    r = NetMapRtError(NetMutexUnlock());
+    if (r != 0) return r;
+    return e;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/Dme", NetIncomingClient);
+int NetMutexLock();
+int NetMutexUnlock();
+int NetMapRtError();
+int NetIIncomingClient();
+int NetIncomingClient(int a0, int a1)
+{
+    int r, e;
+    r = NetMapRtError(NetMutexLock());
+    if (r != 0) return r;
+    e = NetIIncomingClient(a0, a1);
+    r = NetMapRtError(NetMutexUnlock());
+    if (r != 0) return r;
+    return e;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/Dme", NetSetMyClientReceiveBroadcast);
+int NetMutexLock();
+int NetMutexUnlock();
+int NetMapRtError();
+int NetISetMyClientReceiveBroadcast();
+int NetSetMyClientReceiveBroadcast(int a0, int a1)
+{
+    int r, e;
+    r = NetMapRtError(NetMutexLock());
+    if (r != 0) return r;
+    e = NetISetMyClientReceiveBroadcast(a0, a1);
+    r = NetMapRtError(NetMutexUnlock());
+    if (r != 0) return r;
+    return e;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/Dme", NetPing);
+int NetMutexLock();
+int NetMutexUnlock();
+int NetMapRtError();
+int NetIPing();
+int NetPing(int a0, int a1, int a2)
+{
+    int r, e;
+    r = NetMapRtError(NetMutexLock());
+    if (r != 0) return r;
+    e = NetIPing(a0, a1, a2);
+    r = NetMapRtError(NetMutexUnlock());
+    if (r != 0) return r;
+    return e;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/Dme", NetPingIP);
 
@@ -145,15 +301,80 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/Dme", NetGetC
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/Dme", NetGetClient);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/Dme", NetGetMyIpAddress);
+int NetMutexLock();
+int NetMutexUnlock();
+int NetMapRtError();
+int NetIGetMyIpAddress();
+int NetGetMyIpAddress(int a0)
+{
+    int r, e;
+    r = NetMapRtError(NetMutexLock());
+    if (r != 0) return r;
+    e = NetIGetMyIpAddress(a0);
+    r = NetMapRtError(NetMutexUnlock());
+    if (r != 0) return r;
+    return e;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/Dme", NetGetMyNetAddress);
+int NetMutexLock();
+int NetMutexUnlock();
+int NetMapRtError();
+int NetIGetMyNetAddress();
+int NetGetMyNetAddress(int a0, int a1)
+{
+    int r, e;
+    r = NetMapRtError(NetMutexLock());
+    if (r != 0) return r;
+    e = NetIGetMyNetAddress(a0, a1);
+    r = NetMapRtError(NetMutexUnlock());
+    if (r != 0) return r;
+    return e;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/Dme", NetGetClientIpAddress);
+int NetMutexLock();
+int NetMutexUnlock();
+int NetMapRtError();
+int NetIGetClientIpAddress();
+int NetGetClientIpAddress(int a0, int a1, int a2)
+{
+    int r, e;
+    r = NetMapRtError(NetMutexLock());
+    if (r != 0) return r;
+    e = NetIGetClientIpAddress(a0, a1, a2);
+    r = NetMapRtError(NetMutexUnlock());
+    if (r != 0) return r;
+    return e;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/Dme", NetGetMyClientIndex);
+int NetMutexLock();
+int NetMutexUnlock();
+int NetMapRtError();
+int NetIGetMyClientIndex();
+int NetGetMyClientIndex(int a0, int a1)
+{
+    int r, e;
+    r = NetMapRtError(NetMutexLock());
+    if (r != 0) return r;
+    e = NetIGetMyClientIndex(a0, a1);
+    r = NetMapRtError(NetMutexUnlock());
+    if (r != 0) return r;
+    return e;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/Dme", NetGetPeerToPeerHostClientIndex);
+int NetMutexLock();
+int NetMutexUnlock();
+int NetMapRtError();
+int NetIGetPeerToPeerHostClientIndex();
+int NetGetPeerToPeerHostClientIndex(int a0, int a1)
+{
+    int r, e;
+    r = NetMapRtError(NetMutexLock());
+    if (r != 0) return r;
+    e = NetIGetPeerToPeerHostClientIndex(a0, a1);
+    r = NetMapRtError(NetMutexUnlock());
+    if (r != 0) return r;
+    return e;
+}
 
 int NetGetLocalTime(int *arg0) {
     int var_v0;
@@ -179,17 +400,69 @@ int NetGetTime(void *arg0, int *arg1) {
     return var_v0;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/Dme", NetGetConnectStatus);
+int NetMutexLock();
+int NetMutexUnlock();
+int NetMapRtError();
+int NetIGetConnectStatus();
+int NetGetConnectStatus(int a0, int a1)
+{
+    int r, e;
+    r = NetMapRtError(NetMutexLock());
+    if (r != 0) return r;
+    e = NetIGetConnectStatus(a0, a1);
+    r = NetMapRtError(NetMutexUnlock());
+    if (r != 0) return r;
+    return e;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/Dme", NetGetValidClientCount);
+int NetMutexLock();
+int NetMutexUnlock();
+int NetMapRtError();
+int NetIGetValidClientCount();
+int NetGetValidClientCount(int a0, int a1)
+{
+    int r, e;
+    r = NetMapRtError(NetMutexLock());
+    if (r != 0) return r;
+    e = NetIGetValidClientCount(a0, a1);
+    r = NetMapRtError(NetMutexUnlock());
+    if (r != 0) return r;
+    return e;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/Dme", NetSetDefaultStreamMediaParams);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/Dme", NetGetConnectionStatus);
+int NetMutexLock();
+int NetMutexUnlock();
+int NetMapRtError();
+int NetIGetConnectionStatus();
+int NetGetConnectionStatus(int a0, int a1)
+{
+    int r, e;
+    r = NetMapRtError(NetMutexLock());
+    if (r != 0) return r;
+    e = NetIGetConnectionStatus(a0, a1);
+    r = NetMapRtError(NetMutexUnlock());
+    if (r != 0) return r;
+    return e;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/Dme", NetDataStreamBytesFree);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/Dme", NetGetServerVersion);
+int NetMutexLock();
+int NetMutexUnlock();
+int NetMapRtError();
+int NetIGetServerVersion();
+int NetGetServerVersion(int a0, int a1)
+{
+    int r, e;
+    r = NetMapRtError(NetMutexLock());
+    if (r != 0) return r;
+    e = NetIGetServerVersion(a0, a1);
+    r = NetMapRtError(NetMutexUnlock());
+    if (r != 0) return r;
+    return e;
+}
 
 int NetMutexLock();
 int NetMutexUnlock();
@@ -206,7 +479,20 @@ int NetUpdate(void)
     return e;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/Dme", NetGetNetUpdateErrors);
+int NetMutexLock();
+int NetMutexUnlock();
+int NetMapRtError();
+int NetIGetNetUpdateErrors();
+int NetGetNetUpdateErrors(int a0)
+{
+    int r, e;
+    r = NetMapRtError(NetMutexLock());
+    if (r != 0) return r;
+    e = NetIGetNetUpdateErrors(a0);
+    r = NetMapRtError(NetMutexUnlock());
+    if (r != 0) return r;
+    return e;
+}
 
 int NetMutexLock();
 int NetMutexUnlock();
@@ -239,7 +525,20 @@ int NetSetDefaultDisconnectParams(int *p)
     return ret;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/Dme", NetDisconnect);
+int NetMutexLock();
+int NetMutexUnlock();
+int NetMapRtError();
+int NetIDisconnect();
+int NetDisconnect(int a0)
+{
+    int r, e;
+    r = NetMapRtError(NetMutexLock());
+    if (r != 0) return r;
+    e = NetIDisconnect(a0);
+    r = NetMapRtError(NetMutexUnlock());
+    if (r != 0) return r;
+    return e;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/Dme", NetStreamMediaJoinChannel);
 

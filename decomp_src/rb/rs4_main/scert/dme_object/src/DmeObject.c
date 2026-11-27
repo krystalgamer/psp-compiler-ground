@@ -66,7 +66,20 @@ int NetSetDefaultRegisterObjectFilterParams(int *p)
     return ret;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_object/src/DmeObject", NetRegisterObjectFilter);
+int NetMutexLock();
+int NetMutexUnlock();
+int NetMapRtError();
+int NetIRegisterObjectFilter();
+int NetRegisterObjectFilter(int a0, int a1)
+{
+    int r, e;
+    r = NetMapRtError(NetMutexLock());
+    if (r != 0) return r;
+    e = NetIRegisterObjectFilter(a0, a1);
+    r = NetMapRtError(NetMutexUnlock());
+    if (r != 0) return r;
+    return e;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_object/src/DmeObject", NetCreateObject);
 
@@ -74,9 +87,35 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_object/src/DmeObject", N
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_object/src/DmeObject", NetGetObject);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_object/src/DmeObject", NetSetMyClientObject);
+int NetMutexLock();
+int NetMutexUnlock();
+int NetMapRtError();
+int NetISetMyClientObject();
+int NetSetMyClientObject(int a0)
+{
+    int r, e;
+    r = NetMapRtError(NetMutexLock());
+    if (r != 0) return r;
+    e = NetISetMyClientObject(a0);
+    r = NetMapRtError(NetMutexUnlock());
+    if (r != 0) return r;
+    return e;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_object/src/DmeObject", NetFreeObject);
+int NetMutexLock();
+int NetMutexUnlock();
+int NetMapRtError();
+int NetIFreeObject();
+int NetFreeObject(int a0)
+{
+    int r, e;
+    r = NetMapRtError(NetMutexLock());
+    if (r != 0) return r;
+    e = NetIFreeObject(a0);
+    r = NetMapRtError(NetMutexUnlock());
+    if (r != 0) return r;
+    return e;
+}
 
 int NetMutexLock();
 int NetMutexUnlock();
@@ -93,17 +132,82 @@ int NetFreeAllObjects(void)
     return e;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_object/src/DmeObject", NetRequestObjectPrivateOwnership);
+int NetMutexLock();
+int NetMutexUnlock();
+int NetMapRtError();
+int NetIRequestObjectPrivateOwnership();
+int NetRequestObjectPrivateOwnership(int a0)
+{
+    int r, e;
+    r = NetMapRtError(NetMutexLock());
+    if (r != 0) return r;
+    e = NetIRequestObjectPrivateOwnership(a0);
+    r = NetMapRtError(NetMutexUnlock());
+    if (r != 0) return r;
+    return e;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_object/src/DmeObject", NetReleaseObjectPrivateOwnership);
+int NetMutexLock();
+int NetMutexUnlock();
+int NetMapRtError();
+int NetIReleaseObjectPrivateOwnership();
+int NetReleaseObjectPrivateOwnership(int a0)
+{
+    int r, e;
+    r = NetMapRtError(NetMutexLock());
+    if (r != 0) return r;
+    e = NetIReleaseObjectPrivateOwnership(a0);
+    r = NetMapRtError(NetMutexUnlock());
+    if (r != 0) return r;
+    return e;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_object/src/DmeObject", NetRegisterStructure);
+int NetMutexLock();
+int NetMutexUnlock();
+int NetMapRtError();
+int NetIRegisterStructure();
+int NetRegisterStructure(int a0, int a1, int a2)
+{
+    int r, e;
+    r = NetMapRtError(NetMutexLock());
+    if (r != 0) return r;
+    e = NetIRegisterStructure(a0, a1, a2);
+    r = NetMapRtError(NetMutexUnlock());
+    if (r != 0) return r;
+    return e;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_object/src/DmeObject", NetRegisterRemoteObjectCallback);
+int NetMutexLock();
+int NetMutexUnlock();
+int NetMapRtError();
+int NetIRegisterRemoteObjectCallback();
+int NetRegisterRemoteObjectCallback(int a0, int a1, int a2, int a3)
+{
+    int r, e;
+    r = NetMapRtError(NetMutexLock());
+    if (r != 0) return r;
+    e = NetIRegisterRemoteObjectCallback(a0, a1, a2, a3);
+    r = NetMapRtError(NetMutexUnlock());
+    if (r != 0) return r;
+    return e;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_object/src/DmeObject", NetSendObjectFullUpdate);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_object/src/DmeObject", NetGetSessionMasterClientIndex);
+int NetMutexLock();
+int NetMutexUnlock();
+int NetMapRtError();
+int NetIGetSessionMasterClientIndex();
+int NetGetSessionMasterClientIndex(int a0, int a1)
+{
+    int r, e;
+    r = NetMapRtError(NetMutexLock());
+    if (r != 0) return r;
+    e = NetIGetSessionMasterClientIndex(a0, a1);
+    r = NetMapRtError(NetMutexUnlock());
+    if (r != 0) return r;
+    return e;
+}
 
 int NetGetMaxStructures(int *arg0) {
     int var_v1;
