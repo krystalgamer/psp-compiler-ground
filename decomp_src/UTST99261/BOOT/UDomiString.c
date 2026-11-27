@@ -92,9 +92,14 @@ int *MEM_malloc(M2C_UNK, M2C_UNK);                  /* extern */
 
 
 typedef struct PSNAME { unsigned int len; char *name; } PSNAME;
-extern char D_001354B8[];
 int strncmp(const char *a, const char *b, unsigned int n);
 void *memcpy(void *d, const void *s, unsigned int n);
+typedef struct PSDATA { int pad[2]; unsigned int len; char *data; } PSDATA;
+typedef struct PSREQ { int pad[4]; int hist; int pad2[2]; PSDATA *d; } PSREQ;
+int HST_getHistoryWithOffset(int off);
+unsigned int HST_getCurURIlen(int h);
+char *HST_getCurURI(int h);
+int icmpstr(char *a, char *b, int n);
 unsigned short UDomiString_ToLower(unsigned short c) {
     if (c < 0x80) {
         return tolower(c);
@@ -424,7 +429,43 @@ void ps_save(PsIpc *msg, int sid) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", ps_Security);
+int ps_Security(PSREQ *req) {
+    unsigned int *buf;
+    char *s;
+    int h;
+    unsigned int len;
+    PSDATA *d;
+
+    if (req->hist != 0) {
+        h = HST_getHistoryWithOffset(req->hist);
+        if (h == 0)
+            return 2;
+        len = HST_getCurURIlen(h);
+        buf = (unsigned int *)MEM_malloc(0, len + 4);
+        if (buf == NULL)
+            ps_halt("Parser : (char*)E_malloc(ps_u0203) failed\n");
+        buf[0] = len;
+        memcpy(buf + 1, HST_getCurURI(h), buf[0]);
+    } else {
+        d = req->d;
+        buf = (unsigned int *)MEM_malloc(0, d->len + 4);
+        if (buf == NULL)
+            ps_halt("Parser : (char*)E_malloc(ps_u0203) failed");
+        buf[0] = d->len;
+        memcpy(buf + 1, d->data, d->len);
+    }
+    s = (char *)MEM_malloc(0, 9);
+    memset(s, 0, 9);
+    memcpy(s, buf + 1, 8);
+    if (icmpstr(s, "https://", 8) == 1) {
+        MEM_free(0, buf);
+        MEM_free(0, s);
+        return 1;
+    }
+    MEM_free(0, buf);
+    MEM_free(0, s);
+    return 0;
+}
 
 void ps_SaveName(int len, char *path, PSNAME *n) {
     int i;
@@ -442,17 +483,13 @@ void ps_SaveName(int len, char *path, PSNAME *n) {
         n->name = (char *)MEM_malloc(0, n->len + 1);
         memset(n->name, 0, n->len + 1);
         if (n == NULL)
-            ps_halt(D_001354B8);
+            ps_halt("Parser : (char*)E_malloc(ps_u0203) failed");
         memcpy(n->name, path + i + 1, n->len);
     } else {
         n->len = 0;
         n->name = NULL;
     }
 }
-
-INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", D_001354B8);
-
-INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", D_001354E4);
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", D_001354F0);
 
