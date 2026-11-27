@@ -76,11 +76,92 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_gim_control", I3rLayer__SetRot
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_gim_control", I3dLightStatusParam__ClearA);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_gim_control", I3dLightStatus__SetDirLight);
+typedef struct { float dir[4]; float col[4]; } I3dDirLight;
+typedef struct { char pad[0x10]; unsigned int nDir; I3dDirLight *pDir; char p2[0x10]; void *render; } I3dLightStatus;
+void *I3dRender__ReserveTrashQwc(void *, int);
+void I3dVecNormalizeXYZ(float *, const float *);
+int I3dLightStatus__SetDirLight(I3dLightStatus *ls, unsigned int n, I3dDirLight *src)
+{
+	ls->nDir = n;
+	if (n == 0) {
+		ls->pDir = 0;
+	} else {
+		I3dDirLight *dst = I3dRender__ReserveTrashQwc(ls->render, n * 2);
+		unsigned int i;
+
+		for (i = 0; i < n; i++) {
+			I3dDirLight *d = &dst[i], *s = &src[i];
+			I3dVecNormalizeXYZ(d->dir, s->dir);
+			__asm__ volatile(
+				"lv.q C000.q,0(%1)\n"
+				"sv.q C000.q,0(%0)\n"
+				: : "r"(d->col), "r"(s->col) : "memory");
+		}
+		ls->pDir = dst;
+	}
+	return 0;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_gim_control", I3dLightStatus__SetPointLight);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_gim_control", I3dLightStatus__SetSpotLight);
+typedef struct { float pos[4]; float dir[4]; float col[4]; float spread, angle, p2, p3; } I3dSpotLight;
+typedef struct { char pad[0x20]; unsigned int nSpot; I3dSpotLight *pSpot; void *render; } I3dLightStatusS;
+extern const float D_001090BC;
+extern const float D_001090C0;
+extern const float D_001090C4;
+extern const float D_001090C8;
+float cosf(float);
+float sinf(float);
+int I3dLightStatus__SetSpotLight(I3dLightStatusS *ls, unsigned int n, I3dSpotLight *src)
+{
+	ls->nSpot = n;
+	if (n == 0) {
+		ls->pSpot = 0;
+	} else {
+		I3dSpotLight *dst = I3dRender__ReserveTrashQwc(ls->render, n * 4);
+		unsigned int i;
+
+		for (i = 0; i < n; i++) {
+			I3dSpotLight *d = &dst[i], *s = &src[i];
+			float a, b, ca, cb;
+
+			__asm__ volatile(
+				"lv.q C000.q,0(%1)\n"
+				"sv.q C000.q,0(%0)\n"
+				: : "r"(d->pos), "r"(s->pos) : "memory");
+			I3dVecNormalizeXYZ(d->dir, s->dir);
+			__asm__ volatile(
+				"lv.q C000.q,0(%1)\n"
+				"sv.q C000.q,0(%0)\n"
+				: : "r"(d->col), "r"(s->col) : "memory");
+			a = s->angle;
+			b = s->spread;
+			if (D_001090BC < a)
+				a = D_001090BC;
+			if (a < D_001090C0)
+				a = D_001090C0;
+			if (D_001090BC < b)
+				b = D_001090BC;
+			if (b < D_001090C0)
+				b = D_001090C0;
+			if (a * D_001090C4 < b)
+				b = a * D_001090C4;
+			cb = cosf(b);
+			ca = cosf(a);
+			d->spread = ca;
+			d->angle = D_001090C8 / (cb - ca);
+			d->p2 = ca * ca;
+			d->p3 = D_001090C8 / sinf(a);
+		}
+		ls->pSpot = dst;
+	}
+	return 0;
+}
+
+const float D_001090BC = 1.5697963f;
+const float D_001090C0 = 0.001f;
+const float D_001090C4 = 0.95f;
+const float D_001090C8 = 1.0f;
 
 void I3dLightStatus__SetAmbientLight()
 {
