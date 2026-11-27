@@ -440,6 +440,8 @@ segments:
       - [0x175318, rodata, asm/rodata_175298]
       - [0x176284, .rodata, gcc-3.3.3/libstdc__-v3/src/ios]
       - [0x17635C, rodata, asm/rodata_1762DC]
+      - [0x1763F4, .rodata, gcc-3.3.3/libstdc__-v3/src/locale]
+      - [0x17657C, rodata, asm/rodata_1764FC]
       - [0x177154, .rodata, gcc-3.3.3/libstdc__-v3/src/localename]
       - [0x177168, rodata, asm/rodata_1770E8]
       - [0x1776F0, .rodata, gcc-3.3.3/libstdc__-v3/libsupc__/eh_personality]
@@ -472,6 +474,8 @@ segments:
       - { start: 0x189CE4, type: bss, vram: 0x18E4EC, name: bss_18E4EC }
       - { start: 0x189CE4, type: .bss, vram: 0x19740C, name: gcc-3.3.3/libstdc__-v3/src/ios }
       - { start: 0x189CE4, type: bss, vram: 0x197414, name: bss_197414 }
+      - { start: 0x189CE4, type: .bss, vram: 0x197414, name: gcc-3.3.3/libstdc__-v3/src/locale }
+      - { start: 0x189CE4, type: bss, vram: 0x197428, name: bss_197428 }
       - { start: 0x189CE4, type: .bss, vram: 0x19B454, name: gcc-3.3.3/libstdc__-v3/src/codecvt }
       - { start: 0x189CE4, type: .bss, vram: 0x19B458, name: gcc-3.3.3/libstdc__-v3/src/ctype }
       - { start: 0x189CE4, type: bss, vram: 0x19B45C, name: bss_19B45C }

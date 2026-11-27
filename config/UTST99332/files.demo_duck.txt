@@ -36,6 +36,10 @@ bss 0x19A88C gcc-3.3.3/libstdc__-v3/src/ios
 bss 0x19A894 -
 rodata 0x17A404 gcc-3.3.3/libstdc__-v3/src/localename
 rodata 0x17A418 -
+rodata 0x1796A4 gcc-3.3.3/libstdc__-v3/src/locale
+rodata 0x17982C -
+bss 0x19A894 gcc-3.3.3/libstdc__-v3/src/locale
+bss 0x19A8A8 -
 # WaterPatch.cpp's C++ .bss: the header statics (math::HERMITE_BASIS..), mipmap_offset[5], set_disk's seed
 bss 0x18CF9C WaterPatch
 bss 0x18D0F8 -
