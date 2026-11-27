@@ -143,7 +143,31 @@ int _open (const char *path, int flags, ...)
 	return result;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/kernel_bridge", _lseek);
+long long sceIoLseek(SceUID fd, long long offset, int whence);
+static off_t _sys_lseek (int file, off_t offset, int dir)
+{
+	return sceIoLseek(FileToUID(file), (long long int) offset, dir);
+}
+off_t _lseek (int file, off_t offset, int dir)
+
+{
+	off_t result;
+	int newdir;
+	int fd = FileToUID(file);
+
+	if (fd < 0) {
+		return -9;
+	}
+	switch(dir) {
+		case 0:	newdir = 0;	break;
+		case 1:	newdir = 1;	break;
+		case 2:	newdir = 2;	break;
+		default:		newdir = dir;			break;
+	}
+
+	result = _sys_lseek(fd, offset, newdir);
+	return result;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/kernel_bridge", _exit);
 
