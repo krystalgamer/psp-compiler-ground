@@ -232,15 +232,125 @@ void sceGmoMeshUnloadCache( SceGmoMesh *mesh )
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_part", sceGmoMeshDraw);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_part", draw_mesh);
+static void draw_mesh( SceGmoMesh *mesh, SceGmoPart *part )
+{
+	SceGmoArraysHeader *arrays = 0 ;
+	int index = -1 ;
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_part", draw_arrays);
+	SceGmoChunk *chunk = mesh->m_chunk ;
+	SceGmoChunk *end = SCEGMO_CHUNK_NEXT( chunk ) ;
+	for ( chunk = SCEGMO_CHUNK_CHILD( chunk ) ; chunk < end ; chunk = SCEGMO_CHUNK_NEXT( chunk ) ) {
+		int type = SCEGMO_CHUNK_TYPE( chunk ) ;
+		if ( type < SCEGMO_DRAW_ARRAYS || type > SCEGMO_DRAW_RECT_PATCH ) continue ;
+		SceGmoDrawArrays *cmd = (SceGmoDrawArrays *)SCEGMO_CHUNK_ARGS( chunk ) ;
+		int idx = cmd->arrays ;
+		if ( index != idx ) {
+			SceGmoChunk *chunk2 = sceGmoPartGetArrays( part, idx ) ;
+			if ( chunk2 == 0 ) continue ;
+			arrays = (SceGmoArraysHeader *)SCEGMO_CHUNK_ARGS( chunk2 ) ;
+			index = idx ;
+		}
+		switch ( type ) {
+		    case SCEGMO_DRAW_ARRAYS :
+			draw_arrays( arrays, (SceGmoDrawArrays *)cmd ) ;
+			break ;
+		    case SCEGMO_DRAW_B_SPLINE :
+			draw_b_spline( arrays, (SceGmoDrawBSpline *)cmd ) ;
+			break ;
+		    case SCEGMO_DRAW_RECT_MESH :
+			draw_rect_mesh( arrays, (SceGmoDrawRectMesh *)cmd ) ;
+			break ;
+		    case SCEGMO_DRAW_RECT_PATCH :
+			draw_rect_patch( arrays, (SceGmoDrawRectPatch *)cmd ) ;
+			break ;
+		}
+	}
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_part", draw_b_spline);
+static void draw_arrays( SceGmoArraysHeader *arrays, SceGmoDrawArrays *cmd )
+{
+	int mode = cmd->mode ;
+	int n_verts = cmd->n_verts ;
+	int n_prims = cmd->n_prims ;
+	unsigned short *indices = cmd->indices ;
+	int format = arrays->format ;
+	void *buffer = arrays + 1 ;
+	if ( SCEGMO_PRIM_SEQUENTIAL & mode ) {
+		int stride = format >> 24 ;
+		stride += ( ( format >> 18 ) & 7 ) * stride ;
+		buffer = (char *)buffer + stride * indices[ 0 ] ;
+		format &= ~(2 << 11) ;
+		indices = 0 ;
+	}
+	sceGuDrawArrayN( mode, format, n_verts, n_prims, indices, buffer ) ;
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_part", draw_rect_mesh);
+static void draw_b_spline( SceGmoArraysHeader *arrays, SceGmoDrawBSpline *cmd )
+{
+	int width = cmd->width ;
+	int height = cmd->height ;
+	int format = arrays->format ;
+	int mode = cmd->mode ;
+	int flags_u = 3 & ( mode >> 12 ) ;
+	int flags_v = 3 & ( mode >> 14 ) ;
+	unsigned short *indices = cmd->indices ;
+	void *buffer = arrays + 1 ;
+	if ( SCEGMO_PRIM_SEQUENTIAL & mode ) {
+		int stride = format >> 24 ;
+		stride += ( ( format >> 18 ) & 7 ) * stride ;
+		buffer = (char *)buffer + stride * indices[ 0 ] ;
+		format &= ~(2 << 11) ;
+		indices = 0 ;
+	}
+	sceGuDrawSpline( format, width, height, flags_u, flags_v, indices, buffer ) ;
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_part", draw_rect_patch);
+static void draw_rect_mesh( SceGmoArraysHeader *arrays, SceGmoDrawRectMesh *cmd )
+{
+	int mode = cmd->mode ;
+	int width = cmd->width ;
+	int height = cmd->height ;
+	unsigned short *indices = (unsigned short *)sceGuGetMemory( sizeof( short ) * width * 2 * ( height - 1 ) ) ;
+	unsigned short *sp = cmd->indices ;
+	unsigned short *dp = indices ;
+	int index = 0 ;
+	if ( SCEGMO_PRIM_SEQUENTIAL & mode ) {
+		index = sp[ 0 ] ;
+		sp = 0 ;
+	}
+	int index2 = index + width ;
+	{ int i ; for ( i = 1 ; i < height ; i ++ ) {
+		{ int j ; for ( j = 0 ; j < width ; j ++ ) {
+			dp[ 0 ] = ( sp == 0 ) ? index : sp[ index ] ;
+			dp[ 1 ] = ( sp == 0 ) ? index2 : sp[ index2 ] ;
+			dp += 2 ;
+			index += 1 ;
+			index2 += 1 ;
+		} }
+	} }
+	int n_verts = width * 2 ;
+	int format = arrays->format ;
+	void *buffer = arrays + 1 ;
+	sceGuDrawArrayN( mode, format, n_verts, height - 1, indices, buffer ) ;
+}
+
+static void draw_rect_patch( SceGmoArraysHeader *arrays, SceGmoDrawRectPatch *cmd )
+{
+	int width = cmd->width ;
+	int height = cmd->height ;
+	int format = arrays->format ;
+	int mode = cmd->mode ;
+	unsigned short *indices = cmd->indices ;
+	void *buffer = arrays + 1 ;
+	if ( SCEGMO_PRIM_SEQUENTIAL & mode ) {
+		int stride = format >> 24 ;
+		stride += ( ( format >> 18 ) & 7 ) * stride ;
+		buffer = (char *)buffer + stride * indices[ 0 ] ;
+		format &= ~(2 << 11) ;
+		indices = 0 ;
+	}
+	sceGuDrawBezier( format, width, height, indices, buffer ) ;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_part", get_packet_size);
 
