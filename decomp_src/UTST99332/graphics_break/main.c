@@ -206,7 +206,15 @@ static void mk_pkt(void)
 	sceGuFinish();
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_break/nonmatchings/main", cbvsync);
+void sceGuBreak(int mode);
+static void cbvsync(int idx, void *cookie)
+{
+	vcnt++;
+	sceGuBreak(0);
+	sceGuSendList(1, packet[cdb], &context);
+	sceGuContinue();
+	mk_pkt();
+}
 
 static void frame_update(void)
 {
