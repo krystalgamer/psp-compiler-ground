@@ -459,7 +459,26 @@ int setBrokenImageData(LNODE *n, BOX *doc) {
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_image", calcHttpHeaderSize);
+int calcHttpHeaderSize(char *s, int len) {
+    int i;
+    for (i = 0; i < len;) {
+        if (s[i++] == '\r' && s[i++] == '\n' && s[i++] == '\r') {
+            if (s[i] == '\n') {
+                return i + 1;
+            }
+            i++;
+        }
+    }
+    for (i = 0; i < len;) {
+        if (s[i++] == '\n') {
+            if (s[i] == '\n') {
+                return i + 1;
+            }
+            i++;
+        }
+    }
+    return 0;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
