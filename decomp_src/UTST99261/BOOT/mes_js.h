@@ -62,7 +62,8 @@ typedef struct MesFrame {
 } MesFrame;
 
 struct MesContext {
-    char pad[0x10];
+    char pad[0xC];
+    MesObject *global;                /* 0x0C */
     MesFrame *frame;
     int f14;
     MesValue *sp;                     /* value stack, grows down */
