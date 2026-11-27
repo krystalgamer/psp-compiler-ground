@@ -397,8 +397,6 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh", _
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh", _ZN3sgl14PrimitiveIndexIiE7flattenEv);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh", _ZNSt14__simple_allocIiSt24__default_alloc_templateILb1ELi0EEE8allocateEj);
-
 /* the original's .gnu.linkonce.t order */
 DEMO_LINKONCE_ORDER(DEMO_LINKONCE(_ZN3sgl4Mesh5setAtISt6vectorINS_6NormalESaIS3_EES3_EEvjRT_T0_)
                     DEMO_LINKONCE(_ZN3sgl4Mesh5setAtISt6vectorINS_5ColorESaIS3_EES3_EEvjRT_T0_)
@@ -457,6 +455,9 @@ extern "C" void sgl_Mesh_instances(sgl::Mesh *m, sgl::PrimitiveIndex<int> *pi, s
     vt->insert(vt->end(), vt->begin(), vt->end());
     vtr->insert(vtr->end(), vtr->begin(), vtr->end());
     vi->insert(vi->end(), vi->begin(), vi->end());
+    /* the out-of-line copy that PrimitiveIndex<int>::flatten (asm) calls */
+    int *(*volatile alloc)(std::size_t) = &std::__simple_alloc<int, std::__default_alloc_template<true, 0> >::allocate;
+    (void)alloc;
 }
 
 template<class V, class T> void sgl::Mesh::setAt(unsigned int i, V &v, T t)
