@@ -2,8 +2,11 @@
 /* cflags: -Os */
 #include "common.h"
 namespace B2A {
+class B2aFile;
 class Manager {
 public:
+	B2aFile *file;
+	~Manager();
 	float GetFrame();
 	void SetFrame(float);
 	float GetEndFrame();
@@ -17,6 +20,7 @@ public:
 };
 class B2aFile {
 public:
+	~B2aFile();
 	void ReAssign();
 };
 void Calc(Manager *);
@@ -44,7 +48,14 @@ void bxCleanup(void)
 	GpPrim_Init();
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/anm", bxAnmInit);
+int sceKernelGetGPI(void);
+B2A::Manager *bxAnmInitEx(void *, int);
+B2A::Manager *bxAnmInit(void *p)
+{
+	if (sceKernelGetGPI() & 1)
+		consPrintf((const char *)&D_00108E74, __FUNCTION__);
+	return bxAnmInitEx(p, 0);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/anm", bxAnmInitEx);
 
