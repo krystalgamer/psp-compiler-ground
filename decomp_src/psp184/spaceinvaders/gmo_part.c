@@ -199,7 +199,35 @@ SceGmoMesh *sceGmoMeshDuplicate( SceGmoMesh *mesh, int flags )
  return mesh ;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_part", sceGmoMeshLoad);
+_Bool sceGmoMeshLoad( SceGmoMesh *mesh, SceGmoChunk *chunk )
+{
+ if ( mesh == 0 ) return 0 ;
+ if ( chunk == 0 ) return 0 ;
+
+ sceGmoMeshUnload( mesh ) ;
+
+ mesh->m_chunk = chunk ;
+
+ SceGmoChunk *end = SCEGMO_CHUNK_NEXT( chunk ) ;
+ for ( chunk = SCEGMO_CHUNK_CHILD( chunk ) ; chunk < end ; chunk = SCEGMO_CHUNK_NEXT( chunk ) ) {
+  void *args = SCEGMO_CHUNK_ARGS( chunk ) ;
+
+  switch ( SCEGMO_CHUNK_TYPE( chunk ) ) {
+      case SCEGMO_SET_MATERIAL : {
+   SceGmoSetMaterial *cmd = (SceGmoSetMaterial *)args ;
+   mesh->m_material = cmd->material ;
+   break ;
+      }
+      case SCEGMO_BLEND_SUBSET : {
+   SceGmoBlendSubset *cmd = (SceGmoBlendSubset *)args ;
+   mesh->m_blend_subset = cmd->indices ;
+   mesh->m_n_blend_subset = cmd->n_indices ;
+   break ;
+      }
+  }
+ }
+ return 1 ;
+}
 
 void sceGmoMeshUnload( SceGmoMesh *mesh )
 {
@@ -230,7 +258,35 @@ void sceGmoMeshUnloadCache( SceGmoMesh *mesh )
 	mesh->m_cache = 0 ;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_part", sceGmoMeshDraw);
+void sceGmoMeshDraw( SceGmoMesh *mesh, SceGmoModel *model, SceGmoBone *bone, SceGmoPart *part )
+{
+	if ( mesh == 0 ) return ;
+
+	sceGmoContextSetBone( bone, model, mesh->m_blend_subset, mesh->m_n_blend_subset ) ;
+
+	SceGmoMaterial *material = sceGmoModelGetMaterial( model, mesh->m_material ) ;
+	int count = sceGmoMaterialGetLayerCount( material ) ;
+	void *cache = mesh->m_cache ;
+	if ( cache != 0 ) {
+		if ( material == 0 ) {
+			sceGuCallList( cache ) ;
+			return ;
+		}
+		{ int i ; for ( i = 0 ; i < count ; i ++ ) {
+			if ( sceGmoContextSetMaterial( material, model, i ) == 0 ) continue ;
+			sceGuCallList( cache ) ;
+		} }
+	} else {
+		if ( material == 0 ) {
+			draw_mesh( mesh, part ) ;
+			return ;
+		}
+		{ int i ; for ( i = 0 ; i < count ; i ++ ) {
+			if ( sceGmoContextSetMaterial( material, model, i ) == 0 ) continue ;
+			draw_mesh( mesh, part ) ;
+		} }
+	}
+}
 
 static void draw_mesh( SceGmoMesh *mesh, SceGmoPart *part )
 {
@@ -352,5 +408,31 @@ static void draw_rect_patch( SceGmoArraysHeader *arrays, SceGmoDrawRectPatch *cm
 	sceGuDrawBezier( format, width, height, indices, buffer ) ;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_part", get_packet_size);
+static int get_packet_size( SceGmoMesh *mesh )
+{
+	int setup = 5 ;
+	int total = 3 ;
+
+	SceGmoChunk *chunk = mesh->m_chunk ;
+	SceGmoChunk *end = SCEGMO_CHUNK_NEXT( chunk ) ;
+	for ( chunk = SCEGMO_CHUNK_CHILD( chunk ) ; chunk < end ; chunk = SCEGMO_CHUNK_NEXT( chunk ) ) {
+		SceGmoDrawArrays *cmd = (SceGmoDrawArrays *)SCEGMO_CHUNK_ARGS( chunk ) ;
+		switch ( SCEGMO_CHUNK_TYPE( chunk ) ) {
+		    case SCEGMO_DRAW_ARRAYS :
+			total += setup + cmd->n_prims ;
+			break ;
+		    case SCEGMO_DRAW_B_SPLINE :
+			total += setup + 1 ;
+			break ;
+		    case SCEGMO_DRAW_RECT_MESH :
+			total += setup + ( cmd->n_prims - 1 ) ;
+			total += 2 + cmd->n_verts * ( cmd->n_prims - 1 ) ;
+			break ;
+		    case SCEGMO_DRAW_RECT_PATCH :
+			total += setup + 1 ;
+			break ;
+		}
+	}
+	return total * sizeof( unsigned int ) ;
+}
 
