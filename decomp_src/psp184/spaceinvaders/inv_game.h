@@ -12,7 +12,8 @@ extern int inv_status;
 typedef struct {
 	u8 _p0[0xCC];
 	int fcc, fd0, fd4, fd8;
-	u8 _pdc[0x100 - 0xDC];
+	int fdc, fe0, fe4, fe8;
+	u8 _pec[0x100 - 0xEC];
 	int f100, f104, f108, f10c, f110, f114, f118;
 } SAVE_DATA;
 extern SAVE_DATA save_data;

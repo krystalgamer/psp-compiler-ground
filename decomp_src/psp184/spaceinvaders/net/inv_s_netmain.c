@@ -117,7 +117,7 @@ extern struct SceNetAdhocctlScanInfo scaninfo[32];
 extern struct SceNetAdhocMatchingMember mmember[17];
 
 void draw_net_scan_result_list(int x, int y);
-void draw_net_hello_list(int *x_ptr, int *y_ptr);
+void draw_net_hello_list(int x, int y);
 void draw_net_established_list(int *x_ptr, int *y_ptr);
 static int get_nickname(int buflen, struct SceNetEtherAddr *addr, struct SceNetAdhocctlNickname **n);
 void draw_net_member_list(int *x_ptr, int *y_ptr);

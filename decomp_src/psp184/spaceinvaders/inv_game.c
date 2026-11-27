@@ -69,7 +69,7 @@ void psp_loopstart(void);
 void psp_loopend(void);
 int sceGuSync(int mode, int what);
 int error_code_daialogget(void);
-int inv_netgame_loop(void);
+int inv_netgame_loop();
 void *file_bind_addr(int bind, char *name);
 int bmp_addr_load_normal(void *buf);
 int bmp_addr_load16(void *buf);
@@ -312,7 +312,82 @@ void maingame_free(void)
 	psp_loopend();
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", maingame_movie);
+typedef struct { int used, f4, f8, type, f10, f14; void *p18, *p1c; int f20, f24; } TEXF_T;
+extern TEXF_T tex_file[];
+extern char text_buf[];
+extern char *future_result_list[];
+extern char *movie_filename[];
+extern char D_0007DB9C[], D_0007DBA0[], D_0007DBAC[], D_0007DBBC[], D_0007DBD4[], D_0007DBE4[];
+int sprintf(char *s, const char *fmt, ...);
+void inv_movie_result_tex_addr(void *p);
+void inv_movie_result_flag(int f);
+void inv_movie_result_reset(void);
+void inv_movie_result_memset(void);
+void inv_movie_result_disp_counter_set(int n);
+void inv_movie_result_txt_set(char *s);
+void inv_movie_result_free(void);
+void se_stop(void);
+void sound_close(void);
+void mpeg_main(char *name, int f);
+void sound_init2(void);
+void psp_init2(void);
+void maingame_movie(void)
+{
+	int t;
+
+	if (gmain.ff38 < 2 || gmain.ff38 > 13) {
+		inv_movie_result_flag(0);
+	} else {
+		inv_movie_result_tex_addr(tex_file[gmain.ff64[5]].p1c);
+		inv_movie_result_flag(1);
+		inv_movie_result_reset();
+		inv_movie_result_memset();
+		if (gmain.ff38 == 13)
+			inv_movie_result_disp_counter_set(150);
+		sprintf(text_buf, D_0007DB9C, future_result_list[0]);
+		sprintf(text_buf, D_0007DBA0, text_buf, future_result_list[1], IST.f1c);
+		sprintf(text_buf, D_0007DBAC, text_buf, future_result_list[2], IST.f28);
+		sprintf(text_buf, D_0007DBA0, text_buf, future_result_list[3], IST.f20);
+		sprintf(text_buf, D_0007DBAC, text_buf, future_result_list[4], IST.f34);
+		sprintf(text_buf, D_0007DBA0, text_buf, future_result_list[6], IST.f3c);
+		sprintf(text_buf, D_0007DBAC, text_buf, future_result_list[7], IST.f40);
+		sprintf(text_buf, D_0007DBA0, text_buf, future_result_list[8], IST.f44);
+		sprintf(text_buf, D_0007DBAC, text_buf, future_result_list[9], IST.f48);
+		sprintf(text_buf, D_0007DBA0, text_buf, future_result_list[10], IST.f4c);
+		t = IST.f54;
+		if (t >= 10000)
+			sprintf(text_buf, D_0007DBBC, text_buf, future_result_list[13], t / 10000, t / 100 % 100, t % 100);
+		else
+			sprintf(text_buf, D_0007DBE4, text_buf, future_result_list[13], t / 100 % 100, t % 100);
+		sprintf(text_buf, D_0007DBA0, text_buf, future_result_list[11], IST.f50);
+		sprintf(text_buf, D_0007DBD4, text_buf, future_result_list[12], IST.f58);
+		inv_movie_result_txt_set(text_buf);
+	}
+	sound_stop1();
+	sound_stop();
+	se_stop();
+	sound_close();
+	psp_loopstart();
+	psp_loopend();
+	psp_loopstart();
+	psp_loopend();
+	mpeg_main(movie_filename[gmain.ff38], 1);
+	if (gmain.ff38 >= 2 && gmain.ff38 <= 13) {
+		inv_movie_result_flag(0);
+		inv_movie_result_free();
+	}
+	if (gmain.ff38 == 15) {
+		gmain.ff38 = 1;
+		psp_loopstart();
+		psp_loopend();
+		psp_loopstart();
+		psp_loopend();
+		mpeg_main(movie_filename[gmain.ff38], 1);
+	}
+	sound_init2();
+	psp_init2();
+	gmain.f1060 -= 200;
+}
 
 void dispeffect_all_free(void);
 void maingame_all_free(void)
