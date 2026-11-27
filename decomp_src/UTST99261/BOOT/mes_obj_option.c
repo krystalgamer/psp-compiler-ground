@@ -6,9 +6,74 @@ extern MesClassDef mes_option_def;
 extern MesClass *mes_option_class;
 
 
+typedef struct { unsigned short *str; int len; } OptStr;
+typedef struct { void *elem; int form; } OptPriv;
+extern DOMString _DOMselected;
+extern DOMString _DOMvalue;
+void Element_setAttribute(void *elem, DOMString *name, DOMString *value);
+void Element_removeAttribute(void *elem, DOMString *name);
+void JSI_setOptionState(void *elem, int on);
+void JSI_setOptionText(void *elem, DOMString *s);
+void *memcpy(void *d, const void *s, unsigned int n);
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_option", mes_option_get);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_option", mes_option_put);
+int mes_option_put(MesContext *ctx, MesObject *o, OptPriv *p, int id, MesValue v)
+{
+    DOMString ds;
+    OptStr *s;
+
+    if (p == NULL)
+        return 0;
+    switch (id) {
+    case 0:
+    case 2:
+    case 3:
+        break;
+    case 1:
+        if (v == 12) {
+            ds.size = _DOMselected.size;
+            ds.len = _DOMselected.len;
+            ds.str = MEM_malloc(0, ds.len * 2);
+            if (ds.str == NULL)
+                break;
+            memcpy(ds.str, _DOMselected.str, _DOMselected.len * 2);
+            Element_setAttribute(p->elem, &_DOMselected, &ds);
+            MEM_free(0, ds.str);
+        } else if (v == 8) {
+            Element_removeAttribute(p->elem, &_DOMselected);
+        }
+        break;
+    case 4:
+        if (v == 12 || v == 8)
+            JSI_setOptionState(p->elem, v == 12);
+        break;
+    case 5:
+        if ((v & 3) == 3) {
+            s = (OptStr *)(v & ~3);
+            ds.len = ds.size = s->len;
+            ds.str = MEM_malloc(0, s->len * 2);
+            if (ds.str == NULL)
+                break;
+            memcpy(ds.str, s->str, s->len * 2);
+            JSI_setOptionText(p->elem, &ds);
+            MEM_free(0, ds.str);
+        }
+        break;
+    case 6:
+        if ((v & 3) == 3) {
+            s = (OptStr *)(v & ~3);
+            ds.len = ds.size = s->len;
+            ds.str = MEM_malloc(0, s->len * 2);
+            if (ds.str == NULL)
+                break;
+            memcpy(ds.str, s->str, s->len * 2);
+            Element_setAttribute(p->elem, &_DOMvalue, &ds);
+            MEM_free(0, ds.str);
+        }
+        break;
+    }
+    return 1;
+}
 
 void mes_option_mark(void) {
 }
