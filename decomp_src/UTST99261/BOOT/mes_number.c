@@ -55,6 +55,10 @@ extern const double D_0013B780;
 extern const double D_0013B788;
 extern const double D_0013B790;
 double mes_util_expt(double b, int e);
+extern const double D_0013B7A8;
+extern const double D_0013B7B0;
+extern const double D_0013B798;
+extern const double D_0013B7A0;
 MesValue mes_number_alloc_int32(MesContext *ctx, int n)
 {
     MesValue v = MES_INT(n);
@@ -480,9 +484,146 @@ void mes_number_to_exponential_sub(MesSBuf *s)
         s->len--;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_number", mes_number_to_exponential);
+MesValue mes_number_to_exponential(MesContext *ctx, MesValue digits)
+{
+    MesValue v = (MesValue)ctx->frame->thisobj;
+    MesValue r;
+    void *s;
+    double d;
+    double lo;
+    double hi;
+    double t;
+    int e;
+    int n;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_number", mes_number_to_precision_sub);
+    if (MES_IS_OBJECT(v))
+        v = ((MesValue *)v)[3];
+    if ((v & 3) != 1 && (v & 3) != 2)
+        return mes_eval_type_error(ctx, v);
+    n = mes_eval_to_int32(ctx, digits);
+    if ((unsigned int)n > 20) {
+        ctx->f14 = mes_error_range(ctx, v);
+        return 0;
+    }
+    r = mes_number_to_special(v);
+    if (r != 0)
+        return r;
+    d = mes_num(v);
+    s = mes_util_string_new();
+    if (s == NULL)
+        return ctx->f14 = D_00585288;
+    if (d < 0) {
+        d = -d;
+        mes_util_string_put(s, '-');
+    }
+    if (d == 0) {
+        mes_util_string_put(s, '0');
+    } else {
+        e = 16;
+        if (n)
+            e = n;
+        t = D_0013B798;
+        lo = mes_util_expt(t, e);
+        hi = lo * t;
+        while (d < lo) {
+            d *= D_0013B798;
+            e--;
+        }
+        while (d >= hi) {
+            d /= D_0013B798;
+            e++;
+        }
+        lo = floor(d + D_0013B7A0);
+        if (lo >= hi) {
+            lo = floor(lo / D_0013B798);
+            e++;
+        }
+        mes_number_to_fixed_sub(s, lo, n ? n : 16, 1);
+        if (!n)
+            mes_number_to_exponential_sub(s);
+        mes_util_string_put(s, 'e');
+        if (e < 0) {
+            mes_util_string_put(s, '-');
+            e = -e;
+        } else {
+            mes_util_string_put(s, '+');
+        }
+        mes_util_string_puti(s, e, 1, 10);
+    }
+    r = mes_string_new3(ctx, s);
+    mes_util_string_free(s);
+    return r;
+}
+
+MesValue mes_number_to_precision_sub(MesContext *ctx, double d, int prec)
+{
+    void *s;
+    int e;
+    double lo;
+    double hi;
+    double t;
+    MesValue v;
+
+    s = mes_util_string_new();
+    if (s == NULL)
+        return ctx->f14 = D_00585288;
+    if (d < 0) {
+        d = -d;
+        mes_util_string_put(s, '-');
+    }
+    if (d == 0) {
+        mes_util_string_put(s, '0');
+    } else {
+        e = 15;
+        if (prec)
+            e = prec - 1;
+        t = D_0013B7A8;
+        lo = mes_util_expt(t, e);
+        hi = lo * t;
+        while (d < lo) {
+            d *= D_0013B7A8;
+            e--;
+        }
+        while (d >= hi) {
+            d /= D_0013B7A8;
+            e++;
+        }
+        lo = floor(d + D_0013B7B0);
+        if (lo >= hi) {
+            lo = floor(lo / D_0013B7A8);
+            e++;
+        }
+        if (e < -6 || e >= (prec ? prec : 21)) {
+            mes_number_to_fixed_sub(s, lo, prec ? prec - 1 : 15, 0);
+            if (!prec)
+                mes_number_to_exponential_sub(s);
+            mes_util_string_put(s, 'e');
+            if (e < 0) {
+                mes_util_string_put(s, '-');
+                e = -e;
+            } else {
+                mes_util_string_put(s, '+');
+            }
+            mes_util_string_puti(s, e, 1, 10);
+        } else if (prec == 0) {
+            if (e + 1 >= 16) {
+                mes_number_to_fixed_sub(s, lo, 15 - e, 0);
+                while (e + 1 >= 17) {
+                    mes_util_string_put(s, '0');
+                    e--;
+                }
+            } else {
+                mes_number_to_fixed_sub(s, lo, 15 - e, 0);
+                mes_number_to_exponential_sub(s);
+            }
+        } else {
+            mes_number_to_fixed_sub(s, lo, prec - e - 1, 0);
+        }
+    }
+    v = mes_string_new3(ctx, s);
+    mes_util_string_free(s);
+    return v;
+}
 
 MesValue mes_number_to_precision(MesContext *ctx, MesValue p)
 {
