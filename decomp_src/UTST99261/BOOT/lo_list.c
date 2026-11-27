@@ -23,9 +23,68 @@ signed char *getListNumCharAtAU(int n);
 signed char *getListNumCharAtAL(int n);
 signed char *getListNumCharAtIU(int n);
 signed char *getListNumCharAtIL(int n);
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_list", getListNumCharAtIU);
+extern char *roman_lc[4][9];
+extern char D_0013F284[];
+extern char D_0013F288[];
+void *MEM_calloc(int, unsigned int);
+char *strcat(char *d, const char *s);
+char *strcpy(char *d, const char *s);
+extern char *roman_uc[4][9];
+signed char *getListNumCharAtIU(int n) {
+    int d[4];
+    int i;
+    int size;
+    int m;
+    int r;
+    char *s;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_list", getListNumCharAtIL);
+    m = n;
+    size = 3;
+    for (i = 3; i >= 0; i--) {
+        r = n % 10;
+        if (r != 0)
+            size += 4;
+        d[i] = r;
+        n /= 10;
+    }
+    s = MEM_calloc(0, size);
+    if (m < 0)
+        memcpy(s, D_0013F284, 2);
+    for (i = 0; i < 4; i++) {
+        if (d[i] != 0)
+            strcat(s, roman_uc[i][d[i] - 1]);
+    }
+    strcat(s, D_0013F288);
+    return (signed char *)s;
+}
+
+signed char *getListNumCharAtIL(int n) {
+    int d[4];
+    int i;
+    int size;
+    int m;
+    int r;
+    char *s;
+
+    m = n;
+    size = 3;
+    for (i = 3; i >= 0; i--) {
+        r = n % 10;
+        if (r != 0)
+            size += 4;
+        d[i] = r;
+        n /= 10;
+    }
+    s = MEM_calloc(0, size);
+    if (m < 0)
+        memcpy(s, D_0013F284, 2);
+    for (i = 0; i < 4; i++) {
+        if (d[i] != 0)
+            strcat(s, roman_lc[i][d[i] - 1]);
+    }
+    strcat(s, D_0013F288);
+    return (signed char *)s;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_list", getListNumCharAtAU);
 
