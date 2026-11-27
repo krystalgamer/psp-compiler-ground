@@ -786,7 +786,8 @@ segments:
       - [0x110A10, .rodata, gcc-3.3.6/libstdc__-v3/libsupc__/eh_personality]
       - [0x110A48, .rodata, libgcc/libgcc2/__floatdisf]
       - [0x110A58, .rodata, libgcc/dp-bit/__floatsidf]
-      - [0x110A60, .rodata, gcc-3.3.6/gcc/unwind-dw2]
+      - [0x110A60, rodata, asm/rodata_1109A0]
+      - [0x110A78, .rodata, gcc-3.3.6/gcc/unwind-dw2]
       - [0x110E10, .rodata, gcc-3.3.6/gcc/unwind-dw2-fde]
       - [0x110E44, .rodata, libgcc/libgcc2/__fixunsdfdi]
       - [0x110F50, .rodata, libgcc/libgcc2/__floatdidf]
@@ -801,6 +802,7 @@ segments:
     subsegments:
       - [0x110FC0, data, data]
       - { start: 0x116618, type: bss, vram: 0x116580, name: bss_116580 }
+      - { start: 0x116618, type: .bss, vram: 0x139E50, name: gcc-3.3.6/gcc/unwind-dw2 }
       - { start: 0x116618, type: .bss, vram: 0x139F28, name: gcc-3.3.6/gcc/unwind-dw2-fde }
       - { start: 0x116618, type: bss, vram: 0x139F38, name: bss_139F38 }
   - [0x116618, bin, elf_trailer]
