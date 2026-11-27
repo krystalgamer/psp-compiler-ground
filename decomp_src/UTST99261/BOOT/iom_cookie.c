@@ -1,6 +1,9 @@
 /* cflags: -O1 */
 #include "common.h"
 #include "m2c_macros.h"
+int strcasecmp(const char *, const char *);
+unsigned int strlen(const char *);
+typedef struct CookieDom { int pad[2]; char *name; } CookieDom;
 typedef struct CFILE { u8 *buf; int cap; int len; int sum; int pos; } CFILE;
 extern CFILE cookieFile;
 void *memcpy(void *d, const void *s, unsigned int n);
@@ -200,7 +203,15 @@ void iom_deleteDomainCookie(void *arg0) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iom_cookie", iom_domainCookie);
+CookieDom *iom_domainCookie(char *domain) {
+    CookieDom *d;
+
+    for (d = UTL_peekqueue(iomCookie + 0xC, NULL); d != NULL; d = UTL_peekqueue(iomCookie + 0xC, d)) {
+        if (strcasecmp(d->name, domain) == 0)
+            return d;
+    }
+    return NULL;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iom_cookie", iom_subdomainCookie);
 
