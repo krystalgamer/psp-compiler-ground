@@ -396,7 +396,51 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_match", BoxAtari_ek
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_match", BoxAtari_e4m);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_match", BoxAtari_ez4m);
+#define ABS(x) ((x) < 0 ? -(x) : (x))
+extern INV_W ziki[];
+int BoxAtari_ez4m(int a0, int a1, int x, int y, int w, int h)
+{
+	int i, dy, dh, dx, dw, sx, sy, sx2, sy2, ex, ey;
+	int s;
+
+	for (i = 0; i < 2; i++) {
+		s = (int)ziki[i].spr;
+		if (s) {
+			sy = *(int *)(s + 0x2C);
+			sx = *(int *)(s + 0x28);
+			dx = ABS(sx - x);
+			dy = ABS(sy - y);
+			sx2 = sx + 8;
+			sy2 = sy + 16;
+			ex = x + w;
+			ey = y + h;
+			dw = ABS(ex - sx2);
+			dh = ABS(ey - sy2);
+			if (dy < 16) {
+				if (dh < 16) {
+					if (dx < 8) {
+						if (dw < 8) {
+							if (i == 0) {
+								if (ziki[0].f1C == 0 && *(int *)(ziki[0].spr + 0x14) != 4) {
+									*(int *)(ziki[0].spr + 0x14) = 4;
+									ziki[0].f14 = 180;
+									return 1;
+								}
+							} else {
+								if (ziki[i].f1C == 0 && *(int *)(s + 0x14) != 5) {
+									*(int *)(s + 0x14) = 5;
+									ziki[i].f14 = 180;
+									return 2;
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+	return 0;
+}
 
 extern int *screensrc;
 extern u8 D_00080F88[];
