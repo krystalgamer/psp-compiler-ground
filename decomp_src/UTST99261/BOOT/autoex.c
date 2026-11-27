@@ -98,7 +98,18 @@ void *GetFirstElement(AEFrame *f, int *type, int *len)
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/autoex", SetFrameData);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/autoex", SetElementData);
+unsigned char *SetElementData(unsigned char *p, int type, void *data, int len)
+{
+    unsigned int pad;
+
+    ((AEHdr *)p)->type = AE_NTOHS((unsigned short)type);
+    ((AEHdr *)p)->len = AE_NTOHS((unsigned short)len);
+    pad = ((unsigned int)(len + 0xB) >> 3 << 3) - 4;
+    p += 4;
+    memset(p, 0, pad);
+    memcpy(p, data, len);
+    return p + pad;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/autoex", SetSingleElement);
 
