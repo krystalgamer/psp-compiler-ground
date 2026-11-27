@@ -13,14 +13,14 @@ typedef struct { int x0; int type; int x8; int xC; int code; int a1; int x18; in
 unsigned int strlen(const char *s);
 void *memcpy(void *d, const void *s, unsigned int n);
 typedef struct { int code; char *msg; } IERRT;
-extern IERRT D_0013F41C[];
-extern IERRT D_0013F46C[];
+extern const IERRT D_0013F41C[];
+extern const IERRT D_0013F46C[];
 extern int G_sendflag;
 char *strcpy(char *d, const char *s);
 typedef struct { int x0; int type; int x8; int xC; int code; int a1; int x18; int size; char *data; } IMSGF;
 int iom_sendRequestFailed(IMSGF *msg, int err) {
     unsigned int idx = -0x12C - err;
-    IERRT *t;
+    const IERRT *t;
     int mq;
     int code;
     IMSGF *m;
@@ -220,10 +220,32 @@ int iom_sendLocation(IMSGL *msg, int a1, char *url, char *url2) {
     return 0;
 }
 
-INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/iom_send", D_0013F400);
+const char D_0013F400[] = "<html><body></body></html>";
 
-INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/iom_send", D_0013F41C);
+const IERRT D_0013F41C[10] = {
+    {400, D_0013F400},
+    {400, D_0013F400},
+    {400, D_0013F400},
+    {400, D_0013F400},
+    {404, D_0013F400},
+    {404, D_0013F400},
+    {404, D_0013F400},
+    {400, D_0013F400},
+    {-1, D_0013F400},
+    {400, D_0013F400},
+};
 
-INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/iom_send", D_0013F46C);
+const IERRT D_0013F46C[10] = {
+    {400, D_0013F400},
+    {400, D_0013F400},
+    {400, D_0013F400},
+    {400, D_0013F400},
+    {404, D_0013F400},
+    {404, D_0013F400},
+    {404, D_0013F400},
+    {400, D_0013F400},
+    {-1, D_0013F400},
+    {400, D_0013F400},
+};
 
-INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/iom_send", D_0013F4BC);
+const char D_0013F4BC[] = "byte code";
