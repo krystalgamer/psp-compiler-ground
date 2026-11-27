@@ -1,40 +1,108 @@
 /* lang: c++ */
-/* cflags: -Os */
+/* cflags: -Os -fno-strength-reduce -fno-merge-constants */
+/* #pragma interface: FadeTask's vtable stays in the module's asm .rodata */
+#pragma interface "rodata"
 #include "common.h"
+
+extern "C" void *_memAllocMBL(unsigned int size, const char *file, int line);
+extern "C" void _memFree(void *p, const char *file, int line);
+
+namespace Ys {
+class Object {
+public:
+	static void *operator new(unsigned int size) { return _memAllocMBL(size, "src/ys/ys_object.h", 23); }
+	static void operator delete(void *p) { _memFree(p, "src/ys/ys_object.h", 25); }
+};
+
+namespace Effect {
+class Fade : public Object {
+public:
+	unsigned char busy : 1;
+	char _pad[0x13];
+	Fade *Init(float time, unsigned char r, unsigned char g, unsigned char b);
+	void Start_Fade(bool in, float to);
+	void Run();
+	void Draw();
+};
+}
+}
+
+using Ys::Effect::Fade;
+
 extern "C" {
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_fx_fade_cif", YsFx__BlackFade__Create);
+Fade *YsFx__BlackFade__Create(float time)
+{
+	return (new Fade)->Init(time, 0, 0, 0);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_fx_fade_cif", YsFx__BlackFade__Destroy);
+void YsFx__BlackFade__Destroy(Fade *f)
+{
+	if (f)
+		delete f;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_fx_fade_cif", YsFx__BlackFade__Is_Busy);
+int YsFx__BlackFade__Is_Busy(Fade *f)
+{
+	return f->busy;
+}
 
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_fx_fade_cif", D_00104C2C);
+void YsFx__BlackFade__Start_FadeIn(Fade *f, bool b)
+{
+	f->Start_Fade(b, 1.0f);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_fx_fade_cif", YsFx__BlackFade__Start_FadeIn);
+void YsFx__BlackFade__Start_FadeOut(Fade *f, bool b)
+{
+	f->Start_Fade(b, 0.0f);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_fx_fade_cif", YsFx__BlackFade__Start_FadeOut);
+void YsFx__BlackFade__Run(Fade *f)
+{
+	f->Run();
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_fx_fade_cif", YsFx__BlackFade__Run);
+void YsFx__BlackFade__Draw(Fade *f)
+{
+	f->Draw();
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_fx_fade_cif", YsFx__BlackFade__Draw);
+Fade *YsFx__WhiteFade__Create(float time)
+{
+	return (new Fade)->Init(time, 0xFF, 0xFF, 0xFF);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_fx_fade_cif", YsFx__WhiteFade__Create);
+void YsFx__WhiteFade__Destroy(Fade *f)
+{
+	if (f)
+		delete f;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_fx_fade_cif", YsFx__WhiteFade__Destroy);
+int YsFx__WhiteFade__Is_Busy(Fade *f)
+{
+	return f->busy;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_fx_fade_cif", YsFx__WhiteFade__Is_Busy);
+void YsFx__WhiteFade__Start_FadeIn(Fade *f, bool b)
+{
+	f->Start_Fade(b, 1.0f);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_fx_fade_cif", YsFx__WhiteFade__Start_FadeIn);
+void YsFx__WhiteFade__Start_FadeOut(Fade *f, bool b)
+{
+	f->Start_Fade(b, 0.0f);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_fx_fade_cif", YsFx__WhiteFade__Start_FadeOut);
+void YsFx__WhiteFade__Run(Fade *f)
+{
+	f->Run();
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_fx_fade_cif", YsFx__WhiteFade__Run);
-
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_fx_fade_cif", YsFx__WhiteFade__Draw);
+void YsFx__WhiteFade__Draw(Fade *f)
+{
+	f->Draw();
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_fx_fade_cif", _ZTVN2Ys6Effect8FadeTaskE);
-
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_fx_fade_cif", D_00104C50);
-
-} /* extern "C": m2c drafts with mangled names, kept as C linkage */
+}
