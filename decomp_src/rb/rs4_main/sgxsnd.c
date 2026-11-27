@@ -57,7 +57,24 @@ void SlotUpdateVolume(void *, int);
 void sgxAttrCopyUpdate(void *, void *);
 static inline char *SndListFirst2(char *l) { char *n = *(char **)(l + 4); return (*(int *)(n + 8) < 0) ? NULL : n; }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", SlotGetAt_7DD48);
+extern int gSgxPrefWarn;
+extern const char D_0010A40C[];
+typedef struct { char pad[0x24]; char *slots; int num; } SndWorkS;
+
+#define WW ((SndWorkS *)&gWork_11FC84)
+void *SlotGetAt_7DD48(int id, const char *name)
+{
+    if (id >= 0 && id <= WW->num - 1) {
+        char *p = WW->slots + id * 0xFC;
+        if ((*(int *)(p + 0xC) & 1) && !(p[0x87] & 2) && ((signed char *)p)[0xE5] == 0) return p;
+    }
+    if (name != NULL && (gSgxDebugFlags & 2)) {
+        sgxPrintfPref(gSgxPrefWarn, D_0010A400, 0x54, D_0010A40C, name, id);
+        return NULL;
+    }
+    return NULL;
+}
+#undef WW
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", SlotGetAtStop);
 

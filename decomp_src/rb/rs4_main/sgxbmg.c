@@ -11,9 +11,29 @@ void *SlotGetAt_7A70C(int, const char *);
 void sgxDI();
 void sgxEI();
 
+extern const char D_00109F94[];
+extern unsigned char gWork_11FC0C;
+extern int gSgxDebugFlags;
+extern int gSgxPrefWarn;
+int sgxPrintfPref(int, const void *, int, const char *, ...);
+typedef struct { char pad[0x24]; char *slots; int num; } BmgWorkS;
+
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/sgxbmg", D_00109F94);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxbmg", SlotGetAt_7A70C);
+#define WW ((BmgWorkS *)&gWork_11FC0C)
+void *SlotGetAt_7A70C(int id, const char *name)
+{
+    if (id >= 0 && id <= WW->num - 1) {
+        char *p = WW->slots + id * 0x54;
+        if (*(int *)(p + 0xC) & 1) return p;
+    }
+    if (name != NULL && (gSgxDebugFlags & 2)) {
+        sgxPrintfPref(gSgxPrefWarn, D_00109F94, 0x69, "sgxBmg%s unknown ID (%d)\n", name, id);
+        return NULL;
+    }
+    return NULL;
+}
+#undef WW
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxbmg", sgxBmgInit);
 

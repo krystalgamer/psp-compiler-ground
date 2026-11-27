@@ -44,6 +44,8 @@ void VoCtrlSas(void *, int, int, int);
 void VoCtrlAt3(void *, int, int, int);
 int sgxVoAllocDevice(int, int, int, int, int, int);
 
+typedef struct { char pad[0x44C]; char *slots; int num; } PspWorkS;
+
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxpsp", sgxPspInit);
 
 extern int gWork_1207F0[];
@@ -302,7 +304,20 @@ int At3PlayFile(int a, int b, int c, int d, int e, int f, int g, int h) {
     return At3Play(a, 1, b, c, d, e, f, g, h);
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxpsp", At3GetSlot);
+#define WW ((PspWorkS *)gWork_1207F0)
+void *At3GetSlot(int id, const char *name)
+{
+    if (id >= 0 && id <= WW->num - 1) {
+        char *p = WW->slots + id * 0x60B0;
+        if (p != NULL && ((unsigned char *)p)[0x36] == 0) return p;
+    }
+    if (name != NULL && (gSgxDebugFlags & 1)) {
+        sgxPrintfPref(gSgxPrefErr, &D_0010B074, 0x8E1, "AT3 : '%s' unknown ID (%d)\n", name, id);
+        return NULL;
+    }
+    return NULL;
+}
+#undef WW
 
 void At3Stop(int id) {
     char *p = At3GetSlot(id, "Stop");

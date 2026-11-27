@@ -2,7 +2,6 @@
 #include "m2c_macros.h"
 M2C_UNK sgxFree(int);                               /* extern */
 extern unsigned char gWork_11FC38;
-void *ResGetSlot(int, M2C_UNK);                     /* extern */
 M2C_UNK sgxDI();                                    /* extern */
 M2C_UNK sgxEI();                                    /* extern */
 extern int D_0011FC40;
@@ -34,9 +33,26 @@ void sgxSndUseTuning(int);
 #define SGX_ERR(line, ...) if (gSgxDebugFlags & 1) sgxPrintfPref(gSgxPrefErr, D_0010A158, line, __VA_ARGS__)
 typedef struct { int pad[0x10]; int nOpen; int nOpen2; int nTune; } ResWorkT;
 
+extern int gSgxPrefWarn;
+typedef struct { char pad[4]; char *slots; int num; } ResWorkS;
+
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/sgxres", D_0010A158);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxres", ResGetSlot);
+#define WW ((ResWorkS *)&gWork_11FC38)
+void *ResGetSlot(int id, M2C_UNK namev)
+{
+    const char *name = (const char *)namev;
+    if (id >= 0 && id <= WW->num - 1) {
+        char *p = WW->slots + id * 0x184;
+        if (*(int *)(p + 0xC) & 1) return p;
+    }
+    if (name != NULL && (gSgxDebugFlags & 2)) {
+        sgxPrintfPref(gSgxPrefWarn, D_0010A158, 0x93, "sgxRes%s unknown ID (%d)\n", name, id);
+        return NULL;
+    }
+    return NULL;
+}
+#undef WW
 
 #ifndef NULL
 #define NULL ((void *)0)

@@ -46,9 +46,28 @@ int UnitMergeVoiceStatus(void *);
 void sgxPortCommand(int id, int *cmd);
 extern int D_00113CC8[];
 
+extern int gSgxDebugFlags;
+extern int gSgxPrefWarn;
+int sgxPrintfPref(int, const void *, int, const char *, ...);
+typedef struct { char pad[0x24]; char *slots; int num; } PortWorkS;
+
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/sgxport", D_0010AD00);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxport", SlotGetAt_848F0);
+extern const char D_0010AD00[];
+#define WW ((PortWorkS *)&gWork_11FEA4)
+void *SlotGetAt_848F0(int id, const char *name)
+{
+    if (id >= 0 && id <= WW->num - 1) {
+        char *p = WW->slots + id * 0xA0;
+        if (*(int *)(p + 0xC) & 1) return p;
+    }
+    if (name != NULL && (gSgxDebugFlags & 2)) {
+        sgxPrintfPref(gSgxPrefWarn, D_0010AD00, 0x16A, "sgxPort%s unknown ID (%d)\n", name, id);
+        return NULL;
+    }
+    return NULL;
+}
+#undef WW
 
 void ResetMidiChData(int arg0)
 {

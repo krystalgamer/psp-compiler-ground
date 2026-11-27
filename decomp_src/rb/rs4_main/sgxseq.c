@@ -57,9 +57,27 @@ static inline void SeqNodeAddTail(SeqNode *l, SeqNode *n) {
     n->next->prev = n;
 }
 
+extern int gSgxDebugFlags;
+extern int gSgxPrefWarn;
+typedef struct { char pad[0x24]; char *slots; int num; } SeqWorkS;
+
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/sgxseq", D_0010A814);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxseq", SlotGetAt_81530);
+#define WW ((SeqWorkS *)&gWork_11FE60)
+void *SlotGetAt_81530(int id, int namev)
+{
+    const char *name = (const char *)namev;
+    if (id >= 0 && id <= WW->num - 1) {
+        char *p = WW->slots + id * 0x24;
+        if (*(int *)(p + 0xC) & 1) return p;
+    }
+    if (name != NULL && (gSgxDebugFlags & 2)) {
+        sgxPrintfPref(gSgxPrefWarn, D_0010A814, 0xBD, "sgxSeq%s unknown ID (%d)\n", name, id);
+        return NULL;
+    }
+    return NULL;
+}
+#undef WW
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxseq", sgxSeqInit);
 
