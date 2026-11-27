@@ -29,6 +29,8 @@ char *http_getresponseheader_SetCookie(int h, int i);
 int iom_setCookie(char *url, char *cookie, int flag);
 extern int D_00585204;
 extern int G_sendflag;
+INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/iom_evhttp", D_0013F290);
+
 int iom_evHttpCtx(void *msg) {
     void *d = M2C_FIELD(msg, void **, 0x20);
     return D_0013F290[*(int *)d](msg, d);
@@ -66,9 +68,21 @@ int iom_freeStateHttpCtx(void *arg0) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iom_evhttp", iom_initStateHttpCtx);
 
+INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/iom_evhttp", D_0013F2C0);
+
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iom_evhttp", iom_setupStateHttpCtx);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iom_evhttp", iom_connectingStateHttpCtx);
+
+INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/iom_evhttp", D_0013F2E4);
+
+INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/iom_evhttp", D_0013F2E8);
+
+INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/iom_evhttp", D_0013F2F0);
+
+INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/iom_evhttp", D_0013F2F4);
+
+INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/iom_evhttp", D_0013F2F8);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iom_evhttp", iom_downloadStateHttpCtx);
 
@@ -121,6 +135,10 @@ int iom_doneStateHttpCtx(void *arg0, void *arg1) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iom_evhttp", iom_setHttpRequestHeader);
 
+INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/iom_evhttp", D_0013F38C);
+
+INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/iom_evhttp", D_0013F390);
+
 int iom_httpToLocalError(int e) {
     int r = 0;
     if (e < 0) {
@@ -164,6 +182,12 @@ int iom_setCookie2(void *ctx) {
     iom_mfree(url);
     return 0;
 }
+
+INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/iom_evhttp", D_0013F3AC);
+
+INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/iom_evhttp", D_0013F3B4);
+
+INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/iom_evhttp", D_0013F3BC);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iom_evhttp", iom_evGetMethod);
 

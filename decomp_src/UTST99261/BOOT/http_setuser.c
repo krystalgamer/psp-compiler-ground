@@ -2,7 +2,6 @@
 #include "common.h"
 #include "http_lib.h"
 extern char htlib_cstrAUTHORIZATION[];
-extern char D_00140220[];
 unsigned int strlen(const char *s);
 void *memset(void *s, int c, unsigned int n);
 void *memcpy(void *d, const void *s, unsigned int n);
@@ -37,7 +36,7 @@ int http_setuser(int h, char *user, char *passwd)
         memset(o->user, 0, strlen(user) + 1);
         memcpy(o->user, user, strlen(user));
         if (passwd == NULL)
-            passwd = D_00140220;
+            passwd = "";
         o->passwd = MEM_malloc(0, strlen(passwd) + 1);
         if (o->passwd == NULL) {
         nomem:

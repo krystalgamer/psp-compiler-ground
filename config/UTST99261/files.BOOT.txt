@@ -244,3 +244,6 @@ rodata 0x13F140 lo_html_meta
 rodata 0x13F14C lo_html_legacy
 rodata 0x13F170 lo_html_notag
 rodata 0x13F17C lo_list  # roman numerals of lo_list's .data tables (roman_lc/roman_uc)
+rodata 0x13F290 iom_evhttp
+rodata 0x13F3C4 iom_evstartup
+rodata 0x140220 http_setuser

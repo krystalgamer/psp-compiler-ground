@@ -12,9 +12,6 @@ int UTL_mfilewrite(void *f, void *buf, int len);
 unsigned int strlen(const char *s);
 void MEM_free(void *pool, void *p);
 typedef struct MQATTR { int x0; int x4; int x8; int xC; } MQATTR;
-extern MQATTR D_0013F3C4;
-extern char D_0013F3D4[];
-extern char D_0013F3E0[];
 extern int D_00585108;
 extern int D_0058510C;
 extern int D_00585204;
@@ -30,17 +27,16 @@ void iom_sendMsg(IOMMSG *msg, int mq);
 
 
 int iom_evStartup(IOMMSG *msg) {
-    MQATTR attr;
+    MQATTR attr = { 0, 0x80, 0x24, 0 };
     int q;
     int r;
     IOMMSG *m;
-    attr = D_0013F3C4;
-    q = OS_mq_open(D_0013F3D4, 0x202, 0x1A4, &attr);
+    q = OS_mq_open("/tmp/mq_ps", 0x202, 0x1A4, &attr);
     if (q == 0) {
         goto fail;
     }
     D_00585108 = q;
-    q = OS_mq_open(D_0013F3E0, 0x202, 0x1A4, &attr);
+    q = OS_mq_open("/tmp/mq_lo", 0x202, 0x1A4, &attr);
     if (q == 0) {
         goto fail;
     }
