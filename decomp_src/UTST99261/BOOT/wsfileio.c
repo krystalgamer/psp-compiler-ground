@@ -26,6 +26,8 @@ M2C_UNK MEM_free(M2C_UNK, void *);                  /* extern */
 
 
 
+int fio_getfd(FioFile *fp);
+void fio_freeList(void *p);
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/wsfileio", UTF8toEUC);
 
 int FIO_init(void)
@@ -275,7 +277,37 @@ int FIO_rename(const char *from, const char *to)
     return r;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/wsfileio", fio_delfilelist);
+int fio_delfilelist(FioFile *fp) {
+    int fd;
+    FioFile *p;
+    FioFile *q;
+
+    if (pFioman->list == NULL)
+        return -1;
+    if (OS_thread_mutex_lock(pFioman->f0) != 0)
+        return -1;
+    fd = fio_getfd(fp);
+    if (fd < 0)
+        return 0;
+    for (p = pFioman->list; p != NULL; p = p->next) {
+        if (p->fd == fd)
+            break;
+    }
+    if (p == NULL) {
+        OS_thread_mutex_unlock(pFioman->f0);
+        return -1;
+    }
+    if (pFioman->list == p) {
+        pFioman->list = p->next;
+    } else {
+        for (q = pFioman->list; q->next != p; q = q->next)
+            ;
+        q->next = p->next;
+    }
+    fio_freeList(p);
+    OS_thread_mutex_unlock(pFioman->f0);
+    return 0;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
