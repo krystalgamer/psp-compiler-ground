@@ -417,6 +417,7 @@ extern "C" void scene_Graph_uses(scene::Graph *g, scene_graph_uses::TreeO *to, s
     common::handle<scene::Material> h(*hn);
     common::handle<scene::DefaultShader> i(*hn);
     ln->insert(ln->begin(), *hn);
+    ln->clear();
     std::uninitialized_copy(vn->begin(), vn->end(), vn->begin());
     g->getMappedNode<scene::Group>(*(std::string *)0);
     g->getMappedNode<scene::Object>(*(std::string *)0);
@@ -459,8 +460,6 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _Z
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZNSt6vectorIN6common6handleIN5scene4NodeEEESaIS4_EE13_M_insert_auxEN9__gnu_cxx17__normal_iteratorIPS4_S6_EERKS4_);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZNK3sgl14PrimitiveIndexIiE22countTrianglesInStripsEv);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZNSt10_List_baseIN6common6handleIN5scene4NodeEEESaIS4_EE7__clearEv);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZNK4math6matrix5equalERKS0_f);
 
