@@ -33,6 +33,12 @@ extern char D_0013F070[];
 extern char D_0013F078[];
 extern char D_0013F080[];
 int strcasecmp(const char *a, const char *b);
+extern char D_0013F05C[];
+extern char D_0013F060[];
+extern char D_0013F064[];
+extern char D_0013F068[];
+extern char D_0013F06C[];
+int strcmp(const char *a, const char *b);
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_html_list", getLINumber);
 
 BOX *createLIBox_li(void *node, BOX *parent, BOX *prev) {
@@ -55,7 +61,33 @@ BOX *createLIBox_li(void *node, BOX *parent, BOX *prev) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_html_list", createLIBox_head);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_html_list", getTypeAtAttr);
+int getTypeAtAttr(void *node) {
+    int t;
+    char *s;
+
+    t = 3;
+    s = getDOMAttributeValue(node, &_DOMtype);
+    if (s == NULL)
+        return 3;
+    if (strcmp(s, D_0013F05C) == 0)
+        t = 12;
+    else if (strcmp(s, D_0013F060) == 0)
+        t = 13;
+    else if (strcmp(s, D_0013F064) == 0)
+        t = 14;
+    else if (strcmp(s, D_0013F068) == 0)
+        t = 15;
+    else if (strcmp(s, D_0013F06C) == 0)
+        t = 11;
+    else if (strcasecmp(s, D_0013F070) == 0)
+        t = 1;
+    else if (strcasecmp(s, D_0013F078) == 0)
+        t = 2;
+    else if (strcasecmp(s, D_0013F080) == 0)
+        t = 0;
+    MEM_free(0, s);
+    return t;
+}
 
 BOX *html_DL(void *node, BOX *parent, BOX *prev) {
     int w;
