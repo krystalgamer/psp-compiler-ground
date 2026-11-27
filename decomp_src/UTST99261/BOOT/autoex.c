@@ -1,9 +1,22 @@
 /* cflags: -O2 */
 #include "common.h"
+typedef struct AESockaddr {
+    unsigned char len;
+    unsigned char family;
+    unsigned short port;              /* 0x2 */
+    int addr;                         /* 0x4 */
+    char zero[8];
+} AESockaddr;
+extern int bDebug;
+void *memcpy(void *d, const void *s, unsigned int n);
+int sceNetApctlGetInfo(int code, void *info);
+int _keywrap_decrypt(unsigned char *out, unsigned char *in, int len, unsigned char *key, int keylen);
+unsigned char *GetFrameData(unsigned char *p, int *type, int *len);
+int SendFrameViaInterface(int s, void *to, void *info, void *buf, int len);
 extern int _gNecApResult;
 extern int _gNecApState;
 extern int _gNecApTimeout;
-int SendBroadcast(int s, void *buf, int len);
+int SendBroadcast(int s, unsigned char *buf, int len);
 int sceNetInetSendto(int s, void *buf, int len, int flags, void *to, int tolen);
 int printf(const char *fmt, ...);
 int _AutoConfigThreadEx(int a);
@@ -24,9 +37,9 @@ typedef struct __attribute__((packed)) AEFrame {
     unsigned int f4;
 } AEFrame;
 void *memset(void *d, int c, unsigned int n);
-unsigned char *SetElementData(unsigned char *p, int a, int b, int c);
+unsigned char *SetElementData(unsigned char *p, int type, void *data, int len);
 
-int SendFrameViaInterface(int s, void *to, int unused, void *buf, int len)
+int SendFrameViaInterface(int s, void *to, void *info, void *buf, int len)
 {
     int r = sceNetInetSendto(s, buf, len, 0, to, 16);
 
@@ -37,9 +50,24 @@ int SendFrameViaInterface(int s, void *to, int unused, void *buf, int len)
     return r;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/autoex", SendBroadcast);
+int SendBroadcast(int s, unsigned char *buf, int len)
+{
+    AESockaddr sa;
+    char info[0x80];
+    int r;
 
-int SendFrame(int s, int unused, void *buf, int len)
+    sa.len = 16;
+    sa.family = 2;
+    sa.port = AE_NTOHS(0xE601);
+    sa.addr = -1;
+    sceNetApctlGetInfo(8, info);
+    r = SendFrameViaInterface(s, &sa, info, buf, len);
+    if (bDebug)
+        printf("AUTOCFG:Send Broadcast ID=%04X Size=%d (%d)\n", AE_NTOHS(((AEHdr *)buf)->type), AE_NTOHS(((AEHdr *)buf)->len), r);
+    return r;
+}
+
+int SendFrame(int s, int unused, unsigned char *buf, int len)
 {
     return SendBroadcast(s, buf, len);
 }
@@ -76,7 +104,20 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/autoex", SetSingleElement);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/autoex", IsSearchCommand);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/autoex", GetCommandElement);
+int GetCommandElement(unsigned char *frame, int cmd, unsigned char *out, unsigned char *key)
+{
+    int type, len;
+    unsigned char *p = GetFrameData(frame, &type, &len);
+
+    if (p == NULL || type != cmd)
+        return 0;
+    if (key != NULL) {
+        _keywrap_decrypt(out, p, len, key, 16);
+        len -= 8;
+    } else
+        memcpy(out, p, len);
+    return len;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/autoex", SetSearchRes);
 
