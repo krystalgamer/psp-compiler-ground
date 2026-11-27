@@ -311,4 +311,96 @@ static int pad_read(void)
 	return 1;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/sound_at3doubleplay/nonmatchings/main", main);
+SceInt32 play_atrac3plus(unsigned int args, void *argp);
+SceInt32 init_atrac3plus(char *filename, SceUChar8 *pucReadBuf, SceInt32 iInputBufferSize, SceInt32 ioutputChannel, ScePlayArg *pPlayArg);
+int main(void)
+{
+	SceUID thid0, thid1;
+	ScePlayArg playArg0, playArg1;
+	SceInt32 status;
+	SceInt32 thread_status;
+
+	menuInit();
+	if (loadModuleAt3plus() < 0)
+		return -1;
+	if ((status = sceWaveInit()) != 0) {
+		printf("sceWaveInit error:%d\n", status);
+		goto unload;
+	}
+	iFadeOutFlag = 0;
+	status = init_atrac3plus("disc0:/PSP_GAME/USRDIR/DATA/sound/wave/bgm01_1_at3p.at3", aucReadBuf0, 0x100000, 0, &playArg0);
+	if (status < 0) {
+		printf("init_atrac3plus error :0x%08X\n", status);
+		goto waveexit_and_unload;
+	}
+	status = init_atrac3plus("disc0:/PSP_GAME/USRDIR/DATA/sound/wave/bgm01_2_at3p.at3", aucReadBuf1, 0x100000, 1, &playArg1);
+	if (status < 0) {
+		printf("init_atrac3plus error :0x%08X\n", status);
+		goto waveexit_and_unload;
+	}
+	thid0 = sceKernelCreateThread("thread 0", play_atrac3plus, 0x10, 0x10000, 0, NULL);
+	if (thid0 < 0) {
+		status = thid0;
+		printf("sceKernelCreateThread:0x%08X\n", status);
+		goto waveexit_and_unload;
+	}
+	status = sceKernelStartThread(thid0, sizeof(ScePlayArg), &playArg0);
+	if (status != 0) {
+		printf("sceKernelStartThread:0x%08X\n", status);
+		goto waveexit_and_unload;
+	}
+	thid1 = sceKernelCreateThread("thread 1", play_atrac3plus, 0x10, 0x10000, 0, NULL);
+	if (thid1 < 0) {
+		status = thid1;
+		printf("sceKernelCreateThread:0x%08X\n", status);
+		iFadeOutFlag = 1;
+		goto wait_thread0;
+	}
+	status = sceKernelStartThread(thid1, sizeof(ScePlayArg), &playArg1);
+	if (status != 0) {
+		printf("sceKernelStartThread:0x%08X\n", status);
+		iFadeOutFlag = 1;
+		goto wait_thread0;
+	}
+	init_all();
+	init_pos();
+	InitString();
+	while (pad_read()) {
+		draw_frame();
+		sceDisplayWaitVblankStart();
+		sceGuSwapBuffers();
+	}
+	sceGuTerm();
+	iFadeOutFlag = 1;
+	thread_status = sceKernelWaitThreadEnd(thid1, NULL);
+	if (thread_status != 0) {
+		status = thread_status;
+		printf("sceKernelWaitThread: 0x%08X\n", thread_status);
+	}
+	thread_status = sceKernelDeleteThread(thid1);
+	if (thread_status != 0) {
+		status = thread_status;
+		printf("sceKernelWaitThread: 0x%08X\n", thread_status);
+	}
+wait_thread0:
+	thread_status = sceKernelWaitThreadEnd(thid0, NULL);
+	if (thread_status != 0) {
+		status = thread_status;
+		printf("sceKernelWaitThread: 0x%08X\n", thread_status);
+	}
+	thread_status = sceKernelDeleteThread(thid0);
+	if (thread_status != 0) {
+		status = thread_status;
+		printf("sceKernelDeleteThread: 0x%08X\n", thread_status);
+	}
+waveexit_and_unload:
+	if (sceWaveExit() != 0) {
+		printf("sceWaveExit error\n");
+		status = -1;
+	}
+unload:
+	if (unloadModuleAt3plus() < 0)
+		return -1;
+	menuTerm(4, 0);
+	return status;
+}
