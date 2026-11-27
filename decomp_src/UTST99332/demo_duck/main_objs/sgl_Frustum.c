@@ -11,6 +11,10 @@
 __asm__(".globl _GLOBAL__I__ZN3sgl7FrustumC2Ev");
 __asm__(".globl _GLOBAL__D__ZN3sgl7FrustumC2Ev");
 
+extern "C" const char D_0016DD08[], D_0016DD1C[], D_0016DD30[], D_0016DD44[], D_0016DD58[], D_0016DD6C[], D_0016DD80[],
+    D_0016DD94[], D_0016DDA8[];
+extern "C" int printf(const char *, ...);
+
 sgl::Frustum::Frustum()
 {
 }
@@ -37,7 +41,18 @@ void sgl::Frustum::disable()
     _f8 = false;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_Frustum", _ZNK3sgl7Frustum5printEv);
+void sgl::Frustum::print() const
+{
+    printf(D_0016DD08, _fC);
+    printf(D_0016DD1C, _f10);
+    printf(D_0016DD30, _f14);
+    printf(D_0016DD44, _f18);
+    printf(D_0016DD58, _f24);
+    printf(D_0016DD6C, _f1C);
+    printf(D_0016DD80, _f20);
+    printf(D_0016DD94, _f38);
+    printf(D_0016DDA8, _f3C);
+}
 
 float sgl::Frustum::getFov() const
 {

@@ -999,8 +999,11 @@ class BV;
 class Frustum : public common::shared_object_base {
 public:
     Frustum();
+    Frustum(float, float, float, float, float, float, float, float);
     virtual ~Frustum();
     bool intersect(BV &);
+    void print() const;
+    void setFov(float);
     void enable();
     void disable();
     void get(float &, float &, float &, float &, float &, float &) const;
