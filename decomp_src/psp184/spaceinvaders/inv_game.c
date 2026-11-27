@@ -2292,9 +2292,45 @@ int clippint_check(float x, float w)
 	return ret;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", inv_spr_set);
+void inv_spr_set(int type, int no, int x, int y, int pri, int c1, int c2)
+{
+	int w, h, u, v;
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", inv_spr_set_col);
+	switch (type) {
+	case 0:
+		w = 256; h = 256; u = 0; v = 0;
+		break;
+	case 3:
+		w = texpos_inv_effect[no].w;
+		h = texpos_inv_effect[no].h;
+		u = texpos_inv_effect[no].u;
+		v = texpos_inv_effect[no].v;
+		break;
+	default:
+		return;
+	}
+	sprite_set(gmain.f.ff64[type], x, y, w, h, u, v, 100, 100, 0, 0, 255, 255, 255, 255, pri, 2, c1, c2);
+}
+
+void inv_spr_set_col(int type, int no, int x, int y, int r, int g, int b, int pri, int c1, int c2)
+{
+	int w, h, u, v;
+
+	switch (type) {
+	case 0:
+		w = 320; h = 64; u = 0; v = 0;
+		break;
+	case 3:
+		w = texpos_inv_effect[no].w;
+		h = texpos_inv_effect[no].h;
+		u = texpos_inv_effect[no].u;
+		v = texpos_inv_effect[no].v;
+		break;
+	default:
+		return;
+	}
+	sprite_set(gmain.f.ff64[type], x, y, w, h, u, v, 100, 100, 0, 0, r, g, b, 255, pri, 2, c1, c2);
+}
 
 typedef struct { float x, y, z; L2V3 rot; } ROUTE_R;
 typedef struct { u8 p[0x10C0]; ROUTE_R r[1]; } GMRR_T;
