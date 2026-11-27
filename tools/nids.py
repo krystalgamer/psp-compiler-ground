@@ -116,6 +116,11 @@ def name_module(target, m, db, used, write, verbose=False):
     if write:
         p = ROOT / "config" / target / f"symbol_addrs.{m}.txt"
         old = [l for l in p.read_text().splitlines() if l.strip()] if p.exists() else []
+        # an unresolved NID's placeholder (LIB_NID) doesn't replace a name
+        # already given to its address by hand
+        named = {l.split("=")[1].split(";")[0].strip() for l in old}
+        lines = [l for l in lines if not (re.match(r"\w+_[0-9A-F]{8} =", l)
+                                          and l.split("=")[1].split(";")[0].strip() in named)]
         names = {l.split("=")[0].strip() for l in lines}
         addrs = {l.split("=")[1].split(";")[0].strip() for l in lines}
         keep = [l for l in old if l.split("=")[0].strip() not in names

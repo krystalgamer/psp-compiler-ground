@@ -154,6 +154,17 @@ modules (`tools/nltest.py`, `tools/objcmp.py`).
   1.5.1): the original loads float literals in source order through one
   register; every cc1 reverses each pair and interleaves the address loads.
 
+- Pre-release firmware 1.02's selfboot `loadexec_test` and `zzzzdummy` (two
+  builds of one test program, 1.5.1.internal with DWARF) are completely C
+  with the 1.5.1 tree: app, crt0, kernel_bridge, newlib, libgcc; no flag
+  changes.  `allegrex-2.2.1` is the Allegrex patch level of every 1.5.1 and
+  1.5.1.internal object here (2.2.2 starts with 1.6.1).  1.5.1.internal's
+  newlib `memmove` is an older version than 1.6.1's: the unaligned start is
+  copied byte by byte through a `switch`, and its `ulw`/`usw` expand to byte
+  loads (no `-mulsw` assembler), consistent with `-mno-ulsw`.  The two
+  builds differ in kernel_bridge: zzzzdummy's is older, without the
+  `if (fd < 0) return -9;` checks in `_read`/`_write`/`_close`/`_lseek`.
+
 ## psp-gcc 1.6.1
 
 - **32-bit `HOST_WIDE_INT`** (psp-gcc 1.7.1, `psp: use a 32-bit
