@@ -22,7 +22,40 @@ int func_00000000(char *str, char **argv, int max)
 	return n;
 }
 
-INCLUDE_ASM("tmp/asm/selfboot/lflash_write/nonmatchings/lflash_write", func_0000009C);
+char *func_0000009C(char *buf, int size, SceUID fd)
+{
+	char *p = buf;
+	char c;
+	int n;
+	int nl = '\n';
+
+	if (size <= 0)
+		goto fail;
+	for (;;) {
+		if (--size == 0)
+			break;
+		n = sceIoRead(fd, &c, 1);
+		if (n == 0)
+			break;
+		if (c == nl)
+			break;
+		if (n == 0 && p == buf)
+			return NULL;
+		if (n < 0) {
+			printf(D_00005160, n);
+			return NULL;
+		}
+		*p++ = c;
+	}
+	if (c == '\n' && size != 0)
+		*p++ = '\n';
+	*p = '\0';
+	if (p == buf)
+		return NULL;
+	return buf;
+fail:
+	return NULL;
+}
 
 INCLUDE_RODATA("tmp/asm/selfboot/lflash_write/nonmatchings/lflash_write", D_00005160);
 
