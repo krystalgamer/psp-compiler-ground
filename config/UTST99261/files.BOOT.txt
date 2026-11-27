@@ -204,5 +204,32 @@
 0xEF4F0 md5             1.5.1           md5.c
 0xF0470 libgu          1.5.1.internal          libgu.c
 0xFBAE4 libwave        1.5.1.internal          libwave.c
+# libgcc (not libwave): libgcc2 _fixunsdfsi.o/_udivdi3.o, fp-bit/dp-bit objects, one per L_ function
+0xFD864 __fixunsdfsi    1.5.1.internal  libgcc/libgcc2/__fixunsdfsi.c
+0xFD8E8 __udivdi3       1.5.1.internal  libgcc/libgcc2/__udivdi3.c
+0xFDE38 __extendsfdf2   1.5.1.internal  libgcc/fp-bit/__extendsfdf2.c
+0xFDE84 _fpadd_parts    1.5.1.internal  libgcc/dp-bit/_fpadd_parts.c
+0xFE2A8 __muldf3        1.5.1.internal  libgcc/dp-bit/__muldf3.c
+0xFE620 __divdf3        1.5.1.internal  libgcc/dp-bit/__divdf3.c
+0xFE844 __eqdf2         1.5.1.internal  libgcc/dp-bit/__eqdf2.c
+0xFE8CC __nedf2         1.5.1.internal  libgcc/dp-bit/__nedf2.c
+0xFE954 __gtdf2         1.5.1.internal  libgcc/dp-bit/__gtdf2.c
+0xFE9DC __gedf2         1.5.1.internal  libgcc/dp-bit/__gedf2.c
+0xFEA64 __ltdf2         1.5.1.internal  libgcc/dp-bit/__ltdf2.c
+0xFEAEC __ledf2         1.5.1.internal  libgcc/dp-bit/__ledf2.c
+0xFEB74 __floatsidf     1.5.1.internal  libgcc/dp-bit/__floatsidf.c
+0xFEC50 __fixdfsi       1.5.1.internal  libgcc/dp-bit/__fixdfsi.c
+0xFED20 __negdf2        1.5.1.internal  libgcc/dp-bit/__negdf2.c
+0xFED64 __make_dp       1.5.1.internal  libgcc/dp-bit/__make_dp.c
+0xFED98 __truncdfsf2    1.5.1.internal  libgcc/dp-bit/__truncdfsf2.c
+0xFEE14 __unpack_f      1.5.1.internal  libgcc/fp-bit/__unpack_f.c
+0xFEEE0 __make_fp       1.5.1.internal  libgcc/fp-bit/__make_fp.c
+0xFEF10 __pack_d        1.5.1.internal  libgcc/dp-bit/__pack_d.c
+0xFF1AC __unpack_d      1.5.1.internal  libgcc/dp-bit/__unpack_d.c
+0xFF2C8 __fpcmp_parts_d 1.5.1.internal  libgcc/dp-bit/__fpcmp_parts_d.c
+0xFF418 __pack_f        1.5.1.internal  libgcc/fp-bit/__pack_f.c
 0xFF57C kernel_bridge  1.5.1.internal          kernel_bridge.c
 rodata 0x1327B8 wszlib   # length_tab: do_fixed addresses it as length_tab-257, outside the table
+rodata 0x145788 libgcc/libgcc2/__fixunsdfsi
+rodata 0x145798 libgcc/dp-bit/__floatsidf
+rodata 0x1457A0 libgcc/dp-bit/__pack_d
