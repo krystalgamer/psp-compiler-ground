@@ -1,126 +1,319 @@
 /* lang: c++ */
-/* cflags: -Os */
+/* cflags: -Os -fno-strength-reduce -fno-merge-constants -fno-exceptions */
+/* #pragma interface: the vtables, typeinfo and implicit destructors stay in the module's asm */
+#pragma interface "rodata"
 #include "common.h"
+
+struct tagTtrFontCntx;
+struct InstDat;
+
 extern "C" {
+InstDat *resGetDatLocal(int a, int b);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_screen_panel", _ZN7SaruNet11ScreenPanel5Panel4InitER14tagTtrFontCntxPN2Ys4TaskE);
+namespace Saru {
+struct PlayerName;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_screen_panel", _ZN7SaruNet11ScreenPanel5Panel18Create_TextContextEPciPPj);
+namespace Ys {
+class Task {
+public:
+	void *task_p;
+	void *state_p;
+	virtual ~Task();
+};
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_screen_panel", _ZN7SaruNet11ScreenPanel11CancelPanel4InitER14tagTtrFontCntxPN2Ys4TaskE);
+class ScreenPanel : public Task {
+public:
+	char _c[0x54];
+	tagTtrFontCntx *font_p;
+	bool opened : 1;
+	bool suspend : 1;
+	unsigned int _flags : 30;
+	ScreenPanel *Init(tagTtrFontCntx &f, Task *parent);
+	static tagTtrFontCntx *Create_TextContext(InstDat &d, char *s, int n, unsigned int **pp);
+	void Wakeup_NormalTask();
+};
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_screen_panel", _ZN7SaruNet11ScreenPanel10MenuPanel24InitER14tagTtrFontCntxS3_S3_iPN2Ys4TaskE);
+class Cancel_ScreenPanel : public ScreenPanel {
+public:
+	Cancel_ScreenPanel *Init(tagTtrFontCntx &f, bool b, Task *parent);
+};
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_screen_panel", _ZN7SaruNet11ScreenPanel10MenuPanel219Create_ItemContext0EPciPPj);
+class MenuScreenPanel2 : public ScreenPanel {
+public:
+	MenuScreenPanel2 *Init(tagTtrFontCntx &f, tagTtrFontCntx &f0, tagTtrFontCntx &f1, int se, Task *parent);
+	static tagTtrFontCntx *Create_ItemContext0(InstDat &d, char *s, int n, unsigned int **pp);
+	static tagTtrFontCntx *Create_ItemContext1(InstDat &d, char *s, int n, unsigned int **pp);
+};
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_screen_panel", _ZN7SaruNet11ScreenPanel10MenuPanel219Create_ItemContext1EPciPPj);
+class YesNo_ScreenPanel : public MenuScreenPanel2 {
+public:
+	YesNo_ScreenPanel *Init(tagTtrFontCntx &f, int se, Task *parent);
+};
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_screen_panel", _ZN7SaruNet11ScreenPanel11YesNo_Panel4InitER14tagTtrFontCntxiPN2Ys4TaskE);
+class ScreenPanelDaemon {
+public:
+	static ScreenPanelDaemon *_instance_p;
+	ScreenPanel &Add_Panel(ScreenPanel &p);
+};
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_screen_panel", _ZN7SaruNet11ScreenPanel10Connecting4InitEPN2Ys4TaskE);
+namespace SaruNet {
+namespace ScreenPanel {
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_screen_panel", _ZN7SaruNet11ScreenPanel5Error4InitEPN2Ys4TaskE);
+class Panel : public Ys::ScreenPanel {
+public:
+	Panel *Init(tagTtrFontCntx &f, Ys::Task *parent);
+	static tagTtrFontCntx *Create_TextContext(char *s, int n, unsigned int **pp);
+};
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_screen_panel", _ZN7SaruNet11ScreenPanel18Error_ConfirmRetry4InitEiPN2Ys4TaskE);
+class CancelPanel : public Ys::Cancel_ScreenPanel {
+public:
+	CancelPanel *Init(tagTtrFontCntx &f, Ys::Task *parent);
+};
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_screen_panel", _ZN7SaruNet11ScreenPanel13Error_WLanOff4InitEPN2Ys4TaskE);
+class MenuPanel2 : public Ys::MenuScreenPanel2 {
+public:
+	MenuPanel2 *Init(tagTtrFontCntx &f, tagTtrFontCntx &f0, tagTtrFontCntx &f1, int se, Ys::Task *parent);
+	static tagTtrFontCntx *Create_ItemContext0(char *s, int n, unsigned int **pp);
+	static tagTtrFontCntx *Create_ItemContext1(char *s, int n, unsigned int **pp);
+};
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_screen_panel", _ZN7SaruNet11ScreenPanel21Error_WLanOff_Startup4InitEPN2Ys4TaskE);
+class YesNo_Panel : public Ys::YesNo_ScreenPanel {
+public:
+	YesNo_Panel *Init(tagTtrFontCntx &f, int se, Ys::Task *parent);
+};
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_screen_panel", _ZN7SaruNet11ScreenPanel12Reject_Match4InitEPN2Ys4TaskE);
+class Connecting : public Panel {
+public:
+	Panel *Init(Ys::Task *parent);
+};
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_screen_panel", _ZN7SaruNet11ScreenPanel23Wait_ReplyRequestResult4InitERN4Saru10PlayerNameEPN2Ys4TaskE);
+class Error : public CancelPanel {
+public:
+	void Init(Ys::Task *parent);
+};
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_screen_panel", _ZN7SaruNet11ScreenPanel12Missing_Card4InitEPN2Ys4TaskE);
+class Error_ConfirmRetry : public YesNo_Panel {
+public:
+	void Init(int se, Ys::Task *parent);
+};
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_screen_panel", _ZN7SaruNet11ScreenPanel12Reject_Trade4InitEPN2Ys4TaskE);
+class Error_WLanOff : public CancelPanel {
+public:
+	void Init(Ys::Task *parent);
+};
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_screen_panel", _ZN7SaruNet11ScreenPanel28Wait_ReplyTradeRequestResult4InitERN4Saru10PlayerNameEPN2Ys4TaskE);
+class Error_WLanOff_Startup : public CancelPanel {
+public:
+	void Init(Ys::Task *parent);
+};
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_screen_panel", _ZN7SaruNet11ScreenPanel20Confirm_Trade_WaiWai4InitERN4Saru10PlayerNameEPN2Ys4TaskE);
+#define CANCEL_PANEL(C) \
+class C : public CancelPanel { \
+public: \
+	C *Init(Ys::Task *parent); \
+};
+#define CANCEL_PANEL_NAME(C) \
+class C : public CancelPanel { \
+public: \
+	C *Init(Saru::PlayerName &name, Ys::Task *parent); \
+};
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_screen_panel", _ZN7SaruNet11ScreenPanel24Confirm_TradeCard_WaiWai4InitERN4Saru10PlayerNameEPN2Ys4TaskE);
+CANCEL_PANEL(Reject_Match)
+CANCEL_PANEL_NAME(Wait_ReplyRequestResult)
+CANCEL_PANEL(Missing_Card)
+CANCEL_PANEL(Reject_Trade)
+CANCEL_PANEL_NAME(Wait_ReplyTradeRequestResult)
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_screen_panel", _ZN7SaruNet11ScreenPanel23Wait_FinishTrade_WaiWai4InitERN4Saru10PlayerNameEPN2Ys4TaskE);
+class Confirm_Trade_WaiWai : public YesNo_Panel {
+public:
+	Confirm_Trade_WaiWai *Init(Saru::PlayerName &name, Ys::Task *parent);
+};
 
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_screen_panel", D_00108560);
+class Confirm_TradeCard_WaiWai : public YesNo_Panel {
+public:
+	Confirm_TradeCard_WaiWai *Init(Saru::PlayerName &name, Ys::Task *parent);
+};
 
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_screen_panel", D_00108574);
+class Wait_FinishTrade_WaiWai : public Panel {
+public:
+	Wait_FinishTrade_WaiWai *Init(Saru::PlayerName &name, Ys::Task *parent);
+};
 
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_screen_panel", _ZTVN7SaruNet16NetworkTaskState11Delay_ErrorE);
+Panel *Panel::Init(tagTtrFontCntx &f, Ys::Task *parent)
+{
+	Ys::ScreenPanel::Init(f, parent);
+	Ys::ScreenPanelDaemon::_instance_p->Add_Panel(*this);
+	return this;
+}
 
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_screen_panel", D_001085A8);
+tagTtrFontCntx *Panel::Create_TextContext(char *s, int n, unsigned int **pp)
+{
+	return Ys::ScreenPanel::Create_TextContext(*resGetDatLocal(1, 5), s, n, pp);
+}
 
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_screen_panel", _ZTVN7SaruNet16NetworkTaskState8QuitWaitE);
+CancelPanel *CancelPanel::Init(tagTtrFontCntx &f, Ys::Task *parent)
+{
+	Ys::Cancel_ScreenPanel::Init(f, parent, 0);
+	Ys::ScreenPanelDaemon::_instance_p->Add_Panel(*this);
+	return this;
+}
 
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_screen_panel", D_001085D0);
+MenuPanel2 *MenuPanel2::Init(tagTtrFontCntx &f, tagTtrFontCntx &f0, tagTtrFontCntx &f1, int se, Ys::Task *parent)
+{
+	Ys::MenuScreenPanel2::Init(f, f0, f1, se, parent);
+	Ys::ScreenPanelDaemon::_instance_p->Add_Panel(*this);
+	return this;
+}
 
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_screen_panel", _ZTVN7SaruNet16NetworkTaskState9SetupWaitE);
+tagTtrFontCntx *MenuPanel2::Create_ItemContext0(char *s, int n, unsigned int **pp)
+{
+	return Ys::MenuScreenPanel2::Create_ItemContext0(*resGetDatLocal(1, 5), s, n, pp);
+}
 
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_screen_panel", D_001085F8);
+tagTtrFontCntx *MenuPanel2::Create_ItemContext1(char *s, int n, unsigned int **pp)
+{
+	return Ys::MenuScreenPanel2::Create_ItemContext1(*resGetDatLocal(1, 5), s, n, pp);
+}
 
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_screen_panel", _ZTVN7SaruNet16NetworkTaskState11StartupWaitE);
+YesNo_Panel *YesNo_Panel::Init(tagTtrFontCntx &f, int se, Ys::Task *parent)
+{
+	Ys::YesNo_ScreenPanel::Init(f, se, parent);
+	Ys::ScreenPanelDaemon::_instance_p->Add_Panel(*this);
+	return this;
+}
 
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_screen_panel", D_00108620);
+Panel *Connecting::Init(Ys::Task *parent)
+{
+	Panel *p = Panel::Init(*Create_TextContext("MENU_TEXT_25", 0, 0), parent);
+	suspend = 0;
+	return p;
+}
 
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_screen_panel", _ZTVN7SaruNet11NetworkTaskE);
+void Error::Init(Ys::Task *parent)
+{
+	CancelPanel::Init(*Panel::Create_TextContext("MENU_TEXT_27", 0, 0), parent);
+}
 
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_screen_panel", D_00108648);
+void Error_ConfirmRetry::Init(int se, Ys::Task *parent)
+{
+	YesNo_Panel::Init(*Panel::Create_TextContext("MENU_TEXT_26", 0, 0), se, parent);
+}
 
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_screen_panel", _ZTVN7SaruNet11ScreenPanel13Error_WLanOffE);
+void Error_WLanOff::Init(Ys::Task *parent)
+{
+	CancelPanel::Init(*Panel::Create_TextContext("MENU_TEXT_28", 0, 0), parent);
+}
 
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_screen_panel", D_00108698);
+void Error_WLanOff_Startup::Init(Ys::Task *parent)
+{
+	CancelPanel::Init(*Panel::Create_TextContext("MENU_TEXT_30", 0, 0), parent);
+}
 
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_screen_panel", _ZTVN7SaruNet11ScreenPanel5ErrorE);
+Reject_Match *Reject_Match::Init(Ys::Task *parent)
+{
+	CancelPanel::Init(*Panel::Create_TextContext("MENU_TEXT_39", 0, 0), parent);
+	Wakeup_NormalTask();
+	return this;
+}
 
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_screen_panel", D_001086D0);
+Wait_ReplyRequestResult *Wait_ReplyRequestResult::Init(Saru::PlayerName &name, Ys::Task *parent)
+{
+	unsigned int *arg[1] = { (unsigned int *)&name };
+	CancelPanel::Init(*Panel::Create_TextContext("MENU_TEXT_37", 1, arg), parent);
+	Wakeup_NormalTask();
+	return this;
+}
 
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_screen_panel", _ZTVN7SaruNet11ScreenPanel10ConnectingE);
+Missing_Card *Missing_Card::Init(Ys::Task *parent)
+{
+	CancelPanel::Init(*Panel::Create_TextContext("MENU_TEXT_190", 0, 0), parent);
+	Wakeup_NormalTask();
+	return this;
+}
 
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_screen_panel", D_00108708);
+Reject_Trade *Reject_Trade::Init(Ys::Task *parent)
+{
+	CancelPanel::Init(*Panel::Create_TextContext("MENU_TEXT_36", 0, 0), parent);
+	Wakeup_NormalTask();
+	return this;
+}
 
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_screen_panel", _ZTIN7SaruNet16NetworkTaskState11StartupWaitE);
+Wait_ReplyTradeRequestResult *Wait_ReplyTradeRequestResult::Init(Saru::PlayerName &name, Ys::Task *parent)
+{
+	unsigned int *arg[1] = { (unsigned int *)&name };
+	CancelPanel::Init(*Panel::Create_TextContext("MENU_TEXT_34", 1, arg), parent);
+	Wakeup_NormalTask();
+	return this;
+}
 
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_screen_panel", _ZTIN7SaruNet16NetworkTaskState9SetupWaitE);
+Confirm_Trade_WaiWai *Confirm_Trade_WaiWai::Init(Saru::PlayerName &name, Ys::Task *parent)
+{
+	unsigned int *arg[1] = { (unsigned int *)&name };
+	YesNo_Panel::Init(*Panel::Create_TextContext("MENU_TEXT_35", 1, arg), 3, parent);
+	Wakeup_NormalTask();
+	return this;
+}
 
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_screen_panel", _ZTIN7SaruNet16NetworkTaskState8QuitWaitE);
+Confirm_TradeCard_WaiWai *Confirm_TradeCard_WaiWai::Init(Saru::PlayerName &name, Ys::Task *parent)
+{
+	unsigned int *arg[1] = { (unsigned int *)&name };
+	YesNo_Panel::Init(*Panel::Create_TextContext("MENU_TEXT_54", 1, arg), 3, parent);
+	Wakeup_NormalTask();
+	return this;
+}
 
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_screen_panel", _ZTIN7SaruNet16NetworkTaskState11Delay_ErrorE);
+Wait_FinishTrade_WaiWai *Wait_FinishTrade_WaiWai::Init(Saru::PlayerName &name, Ys::Task *parent)
+{
+	unsigned int *arg[1] = { (unsigned int *)&name };
+	Panel::Init(*Create_TextContext("MENU_TEXT_141", 1, arg), parent);
+	suspend = 0;
+	return this;
+}
 
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_screen_panel", _ZTIN7SaruNet11NetworkTaskE);
+}
+}
 
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_screen_panel", _ZTIN7SaruNet11ScreenPanel10ConnectingE);
 
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_screen_panel", _ZTIN7SaruNet11ScreenPanel5ErrorE);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_screen_panel", _ZTIN7SaruNet11ScreenPanel13Error_WLanOffE);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_screen_panel", _ZTSN7SaruNet11ScreenPanel13Error_WLanOffE);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_screen_panel", _ZTSN7SaruNet11ScreenPanel5ErrorE);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_screen_panel", _ZTSN7SaruNet11ScreenPanel10ConnectingE);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_screen_panel", _ZTSN7SaruNet11NetworkTaskE);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_screen_panel", _ZTSN7SaruNet16NetworkTaskState11Delay_ErrorE);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_screen_panel", _ZTSN7SaruNet16NetworkTaskState8QuitWaitE);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_screen_panel", _ZTSN7SaruNet16NetworkTaskState9SetupWaitE);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_screen_panel", _ZTSN7SaruNet16NetworkTaskState11StartupWaitE);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_screen_panel", _ZTVN7SaruNet11ScreenPanel5PanelE);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_screen_panel", D_001088D0);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_screen_panel", _ZTIN7SaruNet11ScreenPanel5PanelE);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_screen_panel", _ZTIN7SaruNet11ScreenPanel11CancelPanelE);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_screen_panel", _ZTSN7SaruNet11ScreenPanel11CancelPanelE);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_screen_panel", _ZTSN7SaruNet11ScreenPanel5PanelE);
-
-} /* extern "C": m2c drafts with mangled names, kept as C linkage */
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_screen_panel", D_00108560); }
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_screen_panel", D_00108574); }
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_screen_panel", _ZTVN7SaruNet16NetworkTaskState11Delay_ErrorE); }
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_screen_panel", D_001085A8); }
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_screen_panel", _ZTVN7SaruNet16NetworkTaskState8QuitWaitE); }
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_screen_panel", D_001085D0); }
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_screen_panel", _ZTVN7SaruNet16NetworkTaskState9SetupWaitE); }
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_screen_panel", D_001085F8); }
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_screen_panel", _ZTVN7SaruNet16NetworkTaskState11StartupWaitE); }
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_screen_panel", D_00108620); }
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_screen_panel", _ZTVN7SaruNet11NetworkTaskE); }
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_screen_panel", D_00108648); }
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_screen_panel", _ZTVN7SaruNet11ScreenPanel13Error_WLanOffE); }
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_screen_panel", D_00108698); }
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_screen_panel", _ZTVN7SaruNet11ScreenPanel5ErrorE); }
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_screen_panel", D_001086D0); }
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_screen_panel", _ZTVN7SaruNet11ScreenPanel10ConnectingE); }
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_screen_panel", D_00108708); }
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_screen_panel", _ZTIN7SaruNet16NetworkTaskState11StartupWaitE); }
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_screen_panel", _ZTIN7SaruNet16NetworkTaskState9SetupWaitE); }
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_screen_panel", _ZTIN7SaruNet16NetworkTaskState8QuitWaitE); }
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_screen_panel", _ZTIN7SaruNet16NetworkTaskState11Delay_ErrorE); }
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_screen_panel", _ZTIN7SaruNet11NetworkTaskE); }
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_screen_panel", _ZTIN7SaruNet11ScreenPanel10ConnectingE); }
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_screen_panel", _ZTIN7SaruNet11ScreenPanel5ErrorE); }
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_screen_panel", _ZTIN7SaruNet11ScreenPanel13Error_WLanOffE); }
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_screen_panel", _ZTSN7SaruNet11ScreenPanel13Error_WLanOffE); }
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_screen_panel", _ZTSN7SaruNet11ScreenPanel5ErrorE); }
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_screen_panel", _ZTSN7SaruNet11ScreenPanel10ConnectingE); }
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_screen_panel", _ZTSN7SaruNet11NetworkTaskE); }
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_screen_panel", _ZTSN7SaruNet16NetworkTaskState11Delay_ErrorE); }
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_screen_panel", _ZTSN7SaruNet16NetworkTaskState8QuitWaitE); }
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_screen_panel", _ZTSN7SaruNet16NetworkTaskState9SetupWaitE); }
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_screen_panel", _ZTSN7SaruNet16NetworkTaskState11StartupWaitE); }
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_screen_panel", _ZTVN7SaruNet11ScreenPanel5PanelE); }
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_screen_panel", D_001088D0); }
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_screen_panel", _ZTIN7SaruNet11ScreenPanel5PanelE); }
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_screen_panel", _ZTIN7SaruNet11ScreenPanel11CancelPanelE); }
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_screen_panel", _ZTSN7SaruNet11ScreenPanel11CancelPanelE); }
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_screen_panel", _ZTSN7SaruNet11ScreenPanel5PanelE); }
