@@ -16,7 +16,17 @@ void *gimAlloc(int size)
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/gim", D_000FCC50);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/gim", gimFree);
+void gimFree(void *p)
+{
+	if (GimDebug == 1) {
+		char *ra;
+		__asm__ volatile("or %0, $31, $0\n\taddiu %0, %0, -8" : "=r"(ra));
+		consPrintf("%s : %p\n", "gimFree", ra);
+	}
+	_memFree(p, &D_000FCC50, 73);
+}
+/* three unreferenced empty strings follow gimFree's */
+__asm__(".section .rodata\n.align 2\n.asciz \"\"\n.align 2\n.asciz \"\"\n.align 2\n.asciz \"\"\n.previous");
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/gim", i3dInit);
 
