@@ -39,7 +39,12 @@ def compile_c(src, cc1, flags, out, incs=(), defs=()):
     if r.returncode:
         sys.stderr.write(r.stderr)
         return None
-    subprocess.run([str(T / "psp-as"), "-G0", *asflags.split(), "-o", str(out), str(out.with_suffix(".s"))], check=True)
+    r = subprocess.run([str(T / "psp-as"), "-G0", *asflags.split(), "-o", str(out), str(out.with_suffix(".s"))],
+                       capture_output=True, text=True)
+    if r.returncode:
+        # e.g. a draft with an inline asm the assembler rejects: a failed draft, not a crash
+        sys.stderr.write(r.stderr)
+        return None
     return out
 
 
