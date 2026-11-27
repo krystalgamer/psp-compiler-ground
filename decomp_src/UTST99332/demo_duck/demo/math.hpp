@@ -53,8 +53,9 @@ inline float length(const vector_xyzw &v)
 {
     return sqrtf(dot(v, v));
 }
+/* 16 bytes (RectanglePicking::setStart(vector_xy) copies 4 words) */
 struct vector_xy {
-    float x, y;
+    float x, y, _pad[2];
     vector_xy() {}
     vector_xy(float x_, float y_) : x(x_), y(y_) {}
 };
