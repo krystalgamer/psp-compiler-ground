@@ -1206,7 +1206,7 @@ public:
     class TestEnv : public common::shared_object_base {
     public:
         TestEnv(EnvEnum, Args::Env);
-        virtual ~TestEnv() {}
+        virtual ~TestEnv();
         void load();
         Env _env;               /* 0x008 */
         EnvEnum _type;          /* 0x54C */
@@ -1231,6 +1231,13 @@ public:
     std::vector<common::handle<TestEnv> > _lights;  /* 0x0 */
     int _current_light;                             /* 0xC */
 };
+#if SGL_LINKONCE_TestEnv
+SGL_LINKONCE_BEGIN
+#endif
+inline TestEnvSet::TestEnv::~TestEnv() {}
+#if SGL_LINKONCE_TestEnv
+SGL_LINKONCE_END
+#endif
 }
 
 #endif

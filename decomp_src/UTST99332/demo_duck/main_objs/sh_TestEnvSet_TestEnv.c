@@ -3,6 +3,7 @@
 #undef __EXCEPTIONS
 #include "cxx/defer_asm.h"
 #define DEMO_TEMPLATE_DEFS
+#define SGL_LINKONCE_TestEnv 1
 #include "../main.hpp"
 
 /* this object's .gnu.linkonce.t sections in the original's order */
@@ -127,7 +128,3 @@ void _GLOBAL__D__ZN2sh10TestEnvSet7TestEnvC2ENS0_7EnvEnumENS_4Args3EnvE(void)
 #define INCLUDE_ASM INCLUDE_ASM_LINKONCE
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sh_TestEnvSet_TestEnv", _ZN6common5setAtISt6vectorINS_6handleIN2sh10TestEnvSet7TestEnvEEESaIS6_EEPS5_EEvjRT_T0_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sh_TestEnvSet_TestEnv", _ZN2sh10TestEnvSet7TestEnvD1Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sh_TestEnvSet_TestEnv", _ZN2sh10TestEnvSet7TestEnvD0Ev);
