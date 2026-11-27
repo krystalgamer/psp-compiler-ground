@@ -75,7 +75,57 @@ SceGmoMotion *sceGmoMotionDuplicate( SceGmoMotion *motion, int flags )
  return motion2 ;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_motion", sceGmoMotionLoad);
+_Bool sceGmoMotionLoad( SceGmoMotion *motion, SceGmoChunk *chunk )
+{
+ if ( motion == 0 ) return 0 ;
+ if ( chunk == 0 ) return 0 ;
+
+ sceGmoMotionUnload( motion ) ;
+
+ if ( !sceGmoModelCopyPtr( &( motion->m_chunk ), chunk, SCEGMO_CHUNK_SIZE( chunk ) ) ) {
+  ;
+  return 0 ;
+ }
+ chunk = motion->m_chunk ;
+ chunk->type = 1 ;
+
+ int n_anims = sceGmoModelCountChunk( chunk, SCEGMO_ANIMATE ) ;
+ int n_fcurves = sceGmoModelCountChunk( chunk, SCEGMO_FCURVE ) ;
+ if ( !sceGmoModelAllocPtr( &( motion->m_anims ), n_anims * sizeof( void * ) )
+   || !sceGmoModelAllocPtr( &( motion->m_fcurves ), n_fcurves * sizeof( void * ) ) ) {
+  ;
+ }
+
+ SceGmoChunk *end = SCEGMO_CHUNK_NEXT( chunk ) ;
+ for ( chunk = SCEGMO_CHUNK_CHILD( chunk ) ; chunk < end ; chunk = SCEGMO_CHUNK_NEXT( chunk ) ) {
+  void *args = SCEGMO_CHUNK_ARGS( chunk ) ;
+
+  switch ( SCEGMO_CHUNK_TYPE( chunk ) ) {
+      case SCEGMO_FRAME_RATE : {
+   motion->m_frame_rate = ( (SceGmoFrameRate *)args )->fps ;
+   break ;
+      }
+      case SCEGMO_FRAME_LOOP : {
+   motion->m_frame_loop[ 0 ] = ( (SceGmoFrameLoop *)args )->start ;
+   motion->m_frame_loop[ 1 ] = ( (SceGmoFrameLoop *)args )->end ;
+   break ;
+      }
+      case SCEGMO_ANIMATE : {
+   motion->m_anims[ motion->m_n_anims ++ ] = chunk ;
+   break ;
+      }
+      case SCEGMO_FCURVE : {
+   motion->m_fcurves[ motion->m_n_fcurves ++ ] = chunk ;
+   break ;
+      }
+      case 0x00b4 : {
+   if ( *(int *)args == 0 ) motion->m_flags |= NOREPEAT ;
+   break ;
+      }
+  }
+ }
+ return 1 ;
+}
 
 void sceGmoMotionUnload( SceGmoMotion *motion )
 {
