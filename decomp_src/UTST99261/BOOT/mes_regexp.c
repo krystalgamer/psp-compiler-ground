@@ -1,6 +1,57 @@
 /* cflags: -O1 */
 #include "common.h"
 #include "m2c_macros.h"
+typedef struct RxStr {
+    unsigned short *str;
+    int len;                          /* 0x4 */
+} RxStr;
+typedef struct RxObj {
+    int gc;
+    int f4;
+    int f8;
+    int fC;
+    int f10;
+    int source;                       /* 0x14 */
+    void *node;                       /* 0x18 */
+    int f1C;
+    double lastIndex;                 /* 0x20 */
+    int ncap;                         /* 0x28 */
+} RxObj;
+typedef struct RxComp {
+    void *ctx;
+    RxObj *re;                        /* 0x4 */
+    unsigned short *p;                /* 0x8 */
+    unsigned short *end;              /* 0xC */
+    int len;                          /* 0x10 */
+    int ncap;                         /* 0x14 */
+} RxComp;
+typedef struct RxClosure {
+    int gc;
+    int type;                         /* 0x4 */
+    int *vals;                        /* 0x8 */
+} RxClosure;
+typedef struct RxCap {
+    int gc;
+    int n;                            /* 0x4 */
+    int *vals;                        /* 0x8 */
+} RxCap;
+typedef struct RxState {
+    int gc;
+    int f4;
+    unsigned short *str;              /* 0x8 */
+    int fC;
+    int len;                          /* 0x10 */
+} RxState;
+extern unsigned int D_005852E0;       /* "lastIndex" */
+void *mes_gc_alloc(void *ctx, int kind);
+int *mes_util_vals(int n, int a);
+int mes_util_is_word_char(unsigned short c);
+int mes_util_digit(unsigned short c);
+int mes_object_canput(void *obj, unsigned int id);
+int mes_eval_to_number(void *ctx, int v);
+double mes_num(int v);
+void *mes_regexp_disjunction(RxComp *c);
+RxClosure *mes_closure_new(void *ctx, int type, int n);
 extern unsigned int mes_ids[];
 extern void *mes_classes[];
 extern unsigned int D_005852B8;
@@ -39,11 +90,39 @@ void mes_regexp_mark(void *arg0) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_regexp", mes_regexp_get);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_regexp", mes_regexp_put);
+void mes_regexp_put(void *ctx, RxObj *re, unsigned int id, int v)
+{
+    if (id == D_005852E0)
+        re->lastIndex = mes_num(mes_eval_to_number(ctx, v));
+    else
+        mes_object_set(re, id, v, 8);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_regexp", mes_regexp_canput);
+int mes_regexp_canput(void *ctx, RxObj *re, unsigned int id)
+{
+    if (id == D_005852E0)
+        return 1;
+    if (id == mes_ids[61] || id == mes_ids[46] || id == mes_ids[47] || id == mes_ids[54])
+        return 0;
+    return mes_object_canput(re, id);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_regexp", mes_closure_new);
+RxClosure *mes_closure_new(void *ctx, int type, int n)
+{
+    RxClosure *cl = mes_gc_alloc(ctx, 9);
+
+    if (cl != NULL) {
+        cl->type = type;
+        if (n == 0)
+            cl->vals = NULL;
+        else {
+            cl->vals = mes_util_vals(n, 0);
+            if (cl->vals == NULL)
+                return NULL;
+        }
+    }
+    return cl;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -69,7 +148,18 @@ void mes_closure_free(void *arg0) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_regexp", mes_cap_new);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_regexp", mes_cap_mark);
+void mes_cap_mark(RxCap *cap)
+{
+    int i;
+    int *p;
+
+    if (cap->gc & 1)
+        return;
+    cap->gc |= 1;
+    p = cap->vals;
+    for (i = 0; i < cap->n; i++)
+        mes_gc_mark(*p++);
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -81,7 +171,16 @@ void mes_cap_free(void *arg0) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_regexp", mes_state_new);
+void *mes_state_new(void *ctx, int a, int b)
+{
+    RxClosure *o = mes_gc_alloc(ctx, 11);
+
+    if (o != NULL) {
+        o->type = a;
+        o->vals = (int *)b;
+    }
+    return o;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -114,11 +213,23 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_regexp", mes_regexp_decimal
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_regexp", mes_regexp_atom);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_regexp", mes_regexp_is_word_char);
+int mes_regexp_is_word_char(RxState *s, int i)
+{
+    if (i < 0 || i == s->len)
+        return 0;
+    return mes_util_is_word_char(s->str[i]);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_regexp", mes_regexp_assertion_tester);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_regexp", mes_regexp_assertion);
+RxClosure *mes_regexp_assertion(RxComp *c, unsigned short ch)
+{
+    RxClosure *cl = mes_closure_new(c->ctx, 10, 1);
+
+    if (cl != NULL)
+        cl->vals[1] = (ch << 2) | 1;
+    return cl;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_regexp", mes_regexp_term);
 
@@ -130,7 +241,21 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_regexp", mes_regexp_eval);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_regexp", mes_regexp_pattern_exec);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_regexp", mes_regexp_compile);
+void mes_regexp_compile(void *ctx, RxObj *re)
+{
+    RxComp c;
+    RxStr *s;
+
+    c.ctx = ctx;
+    c.re = re;
+    s = (RxStr *)(re->source & ~3);
+    c.p = s->str;
+    c.len = s->len;
+    c.end = c.p + c.len;
+    c.ncap = 0;
+    re->node = mes_regexp_disjunction(&c);
+    re->ncap = c.ncap;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_regexp", mes_regexp_constructor);
 
