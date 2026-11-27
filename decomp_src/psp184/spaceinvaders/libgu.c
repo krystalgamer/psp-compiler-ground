@@ -193,7 +193,90 @@ static const GuLightSettings lcmd[4] = {
 
 INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", color_material);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", flush_font);
+typedef struct {
+	int x;
+	int y;
+	unsigned int color;
+	char c;
+} GuDebugChar;
+
+extern int aw_fontcnt[2];
+extern GuDebugChar aw_fontbuf[2][1024];
+
+extern const unsigned int fonttex[];
+
+void flush_font(void)
+{
+	unsigned short *fp, *p16, *p32;
+	unsigned int data;
+	unsigned int mask;
+	int code;
+	int off;
+	int u, v;
+	int col;
+	int fx, fy;
+	int fontcnt;
+	GuDebugChar *fontbuf;
+	GuDrawBuffer *fbuf = &FBuf;
+
+	fontbuf = aw_fontbuf[aw_frame];
+	fontcnt = aw_fontcnt[aw_frame];
+	if (fontcnt == 0) {
+		return;
+	}
+
+	data = 0;
+	mask = 0;
+	while (fontcnt) {
+		fx = fontbuf->x;
+		fy = fontbuf->y;
+		if (((unsigned int)(fy + 7) < (unsigned int)fbuf->height) && ((unsigned int)(fx + 7) < (unsigned int)fbuf->width) && (fy >= 0) && (fx >= 0)) {
+			const unsigned int *glyph;
+			int psm;
+			unsigned int fb;
+			int fw;
+			code = fontbuf->c;
+			col = fontbuf->color;
+			glyph = &fonttex[code * 2];
+			psm = fbuf->pixel_size;
+			fb = (unsigned int)fbuf->frame_buffer;
+			fw = fbuf->frame_width;
+			for (v = 0; v < 8; v++) {
+				if (v == 0) {
+					data = glyph[0];
+					mask = 1;
+				} else if (v == 4) {
+					data = glyph[1];
+					mask = 1;
+				}
+
+				off = fx + (fy + v) * fw;
+				p16 = (unsigned short *)(off * 2 + (unsigned int)vram_top + fb);
+				p32 = (unsigned short *)(off * 4 + (unsigned int)vram_top + fb);
+				for (u = 0; u < 8; u++) {
+					if (psm == 3) {
+						fp = (unsigned short *)((unsigned int)p32 + 0x40000000);
+						if (data & mask) {
+							fp[0] = col;
+							fp[1] = col >> 16;
+						}
+					} else {
+						fp = (unsigned short *)((unsigned int)p16 + 0x40000000);
+						if (data & mask) {
+							*fp = col;
+						}
+					}
+					mask = mask << 1;
+					p32 += 2;
+					p16++;
+				}
+			}
+		}
+		fontbuf++;
+		fontcnt--;
+	}
+	aw_fontcnt[aw_frame] = 0;
+}
 
 extern int gu_init_34A318;
 static void reset_static_value(void)
@@ -862,9 +945,76 @@ void sceGuClearDepth(unsigned int depth)
 	_ctx[__aw_list_mode].clear_depth = depth;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", sceGuClear);
+typedef struct {
+	unsigned int color;
+	unsigned short x, y, z;
+	unsigned short pad;
+} GuClearVertex;
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", sceGuDrawBuffer);
+void sceGuClear(int flags)
+{
+	unsigned int filter;
+	GuClearVertex *vertices;
+	int count;
+	GuDrawBuffer *fbuf = &FBuf;
+
+	if (fbuf->pixel_size == 3)
+		filter = (_ctx[__aw_list_mode].clear_stencil << 24) | (_ctx[__aw_list_mode].clear_color & 0xffffff);
+	else if (fbuf->pixel_size == 1)
+		filter = (_ctx[__aw_list_mode].clear_stencil << 31) | (_ctx[__aw_list_mode].clear_color & 0xffffff);
+	else if (fbuf->pixel_size == 2)
+		filter = (_ctx[__aw_list_mode].clear_stencil << 28) | (_ctx[__aw_list_mode].clear_color & 0xffffff);
+	else if (fbuf->pixel_size == 0)
+		filter = _ctx[__aw_list_mode].clear_color & 0xffffff;
+	else
+		filter = 0;
+
+	if (flags & 0x10) {
+		GuClearVertex *curr;
+		int i;
+
+		count = 16;
+		vertices = (GuClearVertex *)sceGuGetMemory(count * sizeof(GuClearVertex));
+		for (i = 0, curr = vertices; i < count; i++, curr++) {
+			int j = i / 2;
+			int k = i - j * 2;
+			curr->color = filter;
+			curr->x = (j + k) * 64;
+			curr->y = k * fbuf->height;
+			curr->z = _ctx[__aw_list_mode].clear_depth;
+		}
+	} else {
+		vertices = (GuClearVertex *)sceGuGetMemory(2 * sizeof(GuClearVertex));
+		count = 2;
+		vertices[0].color = filter;
+		vertices[0].x = _ctx[__aw_list_mode].scissor_start[0];
+		vertices[0].y = _ctx[__aw_list_mode].scissor_start[1];
+		vertices[0].z = _ctx[__aw_list_mode].clear_depth;
+		vertices[1].color = filter;
+		vertices[1].x = _ctx[__aw_list_mode].scissor_end[0] + 1;
+		vertices[1].y = _ctx[__aw_list_mode].scissor_end[1] + 1;
+		vertices[1].z = _ctx[__aw_list_mode].clear_depth;
+	}
+	send_commandi(211, ((flags & 7) << 8) | 1);
+	sceGuDrawArray(6, 0x80011C, count, 0, vertices);
+	send_commandi(211, 0);
+}
+
+void sceGuDrawBuffer(int psm, void *fbp, int frame_width)
+{
+	GuDrawBuffer *fb = &FBuf;
+
+	fb->pixel_size = psm;
+	fb->frame_buffer = fbp;
+	fb->frame_width = frame_width;
+	if (!fb->depth_buffer && fb->height) fb->depth_buffer = (char *)fbp + fb->height * frame_width * 4;
+	if (!fb->depth_width) fb->depth_width = frame_width;
+	send_commandi(210, fb->pixel_size);
+	send_commandi(156, *(unsigned int *)&fb->frame_buffer & 0xffffff);
+	send_commandi(157, ((*(unsigned int *)&fb->frame_buffer & 0xff000000) >> 8) | frame_width);
+	send_commandi(158, *(unsigned int *)&fb->depth_buffer & 0xffffff);
+	send_commandi(159, ((*(unsigned int *)&fb->depth_buffer & 0xff000000) >> 8) | fb->depth_width);
+}
 
 void sceGuDrawBufferList(int psm, void *fbp, int frame_width);
 void sceGuDrawBufferList(int psm, void *fbp, int frame_width)
@@ -1286,7 +1436,69 @@ void sceGuBoneMatrix(unsigned int index, const ScePspFMatrix4 *matrix)
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", sceGuMorphWeight);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", sceGuDebugPrint);
+void sceGuDebugPrint(int x, int y, unsigned int color, const char *str)
+{
+	int r, g, b, a;
+	int fx, fy;
+	int code;
+	int fontcnt;
+	GuDebugChar *fontbuf;
+
+	fontbuf = aw_fontbuf[aw_frame];
+	fontcnt = aw_fontcnt[aw_frame];
+	fontbuf = &fontbuf[fontcnt];
+	if (fontcnt >= 1024)
+		return;
+
+	fx = x;
+	fy = y;
+
+	r = (color >> 0) & 0xff;
+	g = (color >> 8) & 0xff;
+	b = (color >> 16) & 0xff;
+	a = (color >> 24) & 0xff;
+
+	if (FBuf.pixel_size == 0) {
+		r = r >> 3;
+		g = g >> 2;
+		b = b >> 3;
+		color = (b << 11) | (g << 5) | r;
+	} else if (FBuf.pixel_size == 1) {
+		r = r >> 3;
+		g = g >> 3;
+		b = b >> 3;
+		a = a >> 7;
+		color = (a << 15) | (b << 10) | (g << 5) | r;
+	} else if (FBuf.pixel_size == 2) {
+		r = r >> 4;
+		g = g >> 4;
+		b = b >> 4;
+		a = a >> 4;
+		color = (a << 12) | (b << 8) | (g << 4) | r;
+	}
+
+	while (*str) {
+		if (*str == '\n') {
+			fx = x;
+			fy += 8;
+			str++;
+			continue;
+		}
+		code = *str - '!' + 1;
+
+		fontbuf->x = fx;
+		fontbuf->y = fy;
+		fontbuf->color = color;
+		fontbuf->c = code++;
+
+		fx += 8;
+
+		str++;
+		fontcnt++;
+		fontbuf++;
+	}
+	aw_fontcnt[aw_frame] = fontcnt;
+}
 
 void sceGuDebugFlush(void);
 void sceGuDebugFlush(void)
