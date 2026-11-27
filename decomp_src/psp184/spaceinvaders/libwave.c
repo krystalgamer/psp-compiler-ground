@@ -2,7 +2,47 @@
 #include "common.h"
 #include "libwave_sdk.h"
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libwave", sceWaveInit);
+static __inline__ void wclr(void *dst, int n)
+{
+	char *p = dst;
+	int i;
+
+	for (i = 0; i < n; i++)
+		*p++ = 0;
+}
+
+int sceWaveInit(void)
+{
+	if (D_003523D4 != 0)
+		return 0x80440001;
+	D_0035372C = D_003523DC;
+	D_00353728 = D_0035244C;
+	wclr(D_0035325C, sizeof(D_0035325C));
+	wclr(D_003534BC, sizeof(D_003534BC));
+	D_0035371C.ch = sceAudioChReserve(-1, 0x1c0, 0);
+	if (D_0035371C.ch < 0)
+		return 0x80440001;
+	D_00353730[0] = sceAudioChReserve(-1, 0x100, 0);
+	if (D_00353730[0] < 0) {
+		sceAudioChRelease(D_0035371C.ch);
+		return 0x80440001;
+	}
+	D_00353730[1] = sceAudioChReserve(-1, 0x100, 0);
+	if (D_00353730[1] < 0) {
+		sceAudioChRelease(D_0035371C.ch);
+		sceAudioChRelease(D_00353730[0]);
+		return 0x80440001;
+	}
+	D_00353730[2] = sceAudioChReserve(-1, 0x100, 0);
+	if (D_00353730[2] < 0) {
+		sceAudioChRelease(D_0035371C.ch);
+		sceAudioChRelease(D_00353730[0]);
+		sceAudioChRelease(D_00353730[1]);
+		return 0x80440001;
+	}
+	D_003523D4 = 1;
+	return 0;
+}
 
 int sceWaveSetVoice(unsigned int ch, void *data, int size, int flags)
 {
@@ -290,7 +330,21 @@ int sceWaveStart(int prio)
 	return func_0006C324(prio);
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libwave", sceWaveEnd);
+int sceWaveEnd(void)
+{
+	int i;
+
+	if (D_003523D4 != 3)
+		return 0x80440004;
+	for (i = 0; i < 8; i++)
+		sceWaveStop(i);
+	D_003523D8 = 1;
+	sceKernelWaitThreadEnd(D_0035371C.thid, NULL);
+	sceKernelDeleteThread(D_0035371C.thid);
+	D_003523D8 = 0;
+	D_003523D4 = 1;
+	return 0;
+}
 
 int sceWaveExit(void)
 {
