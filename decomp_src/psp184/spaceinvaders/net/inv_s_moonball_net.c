@@ -96,7 +96,35 @@ int game_net_init(void);
 int game_net_term(void);
 int send_recv_game_data(void);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_moonball_net", game_net_init);
+extern int retry_count, retry_max, nownum, nownum2[4], nownum2cnt;
+void *memcpy(void *d, const void *s, unsigned int n);
+int game_net_init(void)
+{
+	int ret;
+
+	sceNetGetLocalEtherAddr(&local_addr);
+	nownum = -1;
+	nownum2[0] = 0;
+	nownum2[1] = 0;
+	nownum2[2] = 0;
+	nownum2[3] = 0;
+	nownum2cnt = 120;
+	retry_count = 0;
+	retry_max = 0;
+	if (_mrinfo.hello_opt.game_type == GAME_TYPE_PARENT) {
+		_info.server_flag = 1;
+	} else {
+		_info.server_flag = 0;
+		memcpy(&_info.server, &minfo[_mrinfo.requesting_minfo_id].addr, sizeof(struct SceNetEtherAddr));
+	}
+	ret = sceNetAdhocPdpCreate(&local_addr, 0x309, 0x400, 0);
+	if (ret < 0) {
+		goto error;
+	}
+	socket_id = ret;
+error:
+	return ret;
+}
 
 int game_net_term(void) {
     int temp_v0;
