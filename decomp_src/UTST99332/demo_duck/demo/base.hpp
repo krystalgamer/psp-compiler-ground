@@ -923,6 +923,11 @@ public:
     void setAlphaFlags(AlphaMask);
     void setTextureFunc(TextureFunction);
     TextureFunction getTextureFunc() const;
+    void initGl(int);
+    void setGlFiltering(int);
+    void setGlWrapS(int);
+    void setGlWrapT(int);
+    void setGlTextureFunc();
     void setFiltering(Filtering);
     Filtering getFiltering() const;
     void setWrapS(Wrapping);

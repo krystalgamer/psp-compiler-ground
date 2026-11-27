@@ -4,17 +4,55 @@
 #include "cxx/defer_asm.h"
 #include "../main.hpp"
 
+extern "C" {
+void glBindTexture(unsigned int, unsigned int);
+void glTexParameteri(unsigned int, unsigned int, int);
+void glTexEnvi(unsigned int, unsigned int, int);
+}
+
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/textures_Texture_2", _Z41__static_initialization_and_destruction_0ii_106860);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/textures_Texture_2", _ZN8textures7Texture6initGlEi);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/textures_Texture_2", _ZN8textures7Texture14setGlFilteringEi);
+void textures::Texture::setGlFiltering(int name)
+{
+    glBindTexture(0xDE1, name);
+    int f = getFiltering() == 1 ? 0x2600 : 0x2601;
+    glTexParameteri(0xDE1, 0x2800, f);
+    glTexParameteri(0xDE1, 0x2801, f);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/textures_Texture_2", _ZN8textures7Texture10setGlWrapSEi);
+void textures::Texture::setGlWrapS(int name)
+{
+    glBindTexture(0xDE1, name);
+    glTexParameteri(0xDE1, 0x2802, !getWrapS() ? 0x2900 : 0x2901);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/textures_Texture_2", _ZN8textures7Texture10setGlWrapTEi);
+void textures::Texture::setGlWrapT(int name)
+{
+    glBindTexture(0xDE1, name);
+    glTexParameteri(0xDE1, 0x2803, !getWrapT() ? 0x2900 : 0x2901);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/textures_Texture_2", _ZN8textures7Texture16setGlTextureFuncEv);
+void textures::Texture::setGlTextureFunc()
+{
+    int mode = 0x2100;
+    switch (getTextureFunc()) {
+    case 0:
+        mode = 0x2100;
+        break;
+    case 1:
+        mode = 0x2101;
+        break;
+    case 2:
+        mode = 0xBE2;
+        break;
+    case 3:
+        mode = 0x1E01;
+        break;
+    }
+    glTexEnvi(0x2300, 0x2200, mode);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/textures_Texture_2", _ZN8textures7Texture7setupGlEib);
 

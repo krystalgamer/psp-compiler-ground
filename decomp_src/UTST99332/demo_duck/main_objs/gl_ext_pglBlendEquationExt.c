@@ -6,13 +6,32 @@
 
 #include "UTST99332/demo_duck/gl.hpp"
 
+namespace gl_ext {
+extern void (*pglBlendEquationExt)(unsigned int);
+extern void (*pglBlendColorEXT)(float, float, float, float);
+template<class F> void InitExtension(std::vector<std::string> &, F &, const char *);
+void BlendColorEXT(float, float, float, float);
+std::vector<std::string> Initialize();
+}
+extern "C" const char D_001670FC[], D_00167110[];
+
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/gl_ext_pglBlendEquationExt", _Z41__static_initialization_and_destruction_0ii_3CA7C);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/gl_ext_pglBlendEquationExt", _ZN6gl_ext16BlendEquationEXTEj);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/gl_ext_pglBlendEquationExt", _ZN6gl_ext13BlendColorEXTEffff);
+void gl_ext::BlendColorEXT(float r, float g, float b, float a)
+{
+    if (pglBlendColorEXT && use_extensions)
+        pglBlendColorEXT(r, g, b, a);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/gl_ext_pglBlendEquationExt", _ZN6gl_ext10InitializeEv);
+std::vector<std::string> gl_ext::Initialize()
+{
+    std::vector<std::string> v;
+    InitExtension(v, pglBlendEquationExt, D_001670FC);
+    InitExtension(v, pglBlendColorEXT, D_00167110);
+    return v;
+}
 
 void gl_ext::Toggle()
 {

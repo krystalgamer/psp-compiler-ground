@@ -3,10 +3,26 @@
 #undef __EXCEPTIONS
 #include "cxx/defer_asm.h"
 #include "../main.hpp"
+#include <deque>
+
+namespace sys {
+namespace timer {
+extern std::deque<float> time_stack;
+float GetTime();
+void Push();
+}
+}
+
+/* weak instances stay asm */
+extern template class std::deque<float>;
+extern template class std::_Deque_base<float, std::allocator<float> >;
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sys_timer_Push", _Z41__static_initialization_and_destruction_0ii_FA3B4);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sys_timer_Push", _ZN3sys5timer4PushEv);
+void sys::timer::Push()
+{
+    time_stack.push_back(GetTime());
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sys_timer_Push", _ZN3sys5timer3PopEPKc);
 
