@@ -33,6 +33,15 @@ int scrollToFocusPosition();
 void *getBox_fromAccessKey(void *body, u16 key);
 extern int D_00584CEC;
 int isFocusInDisplay(void *frame, FOCUSLIST *l);
+typedef struct { int sid; u8 u4[0xC]; int x10; BOX *x14; void *x18; u8 u1C[0xC]; BOX *x28; int x2C; int x30; int x34; int x38; } LEHG;
+typedef struct { int u0; int x4; int x; int y; } LEHPT;
+void *startBorder(BOX *box);
+void freeScrollStart(BOX *box, int x, int y);
+BOX *getTargetBox(BOX *box, int x, int y, int k);
+void *Node_getOwnerDocument(void *node);
+void moveBorder(void *b, int dx, int dy);
+void freeScroll(int x, int y);
+int sendJSBubbleUpEvent(void *node, LEHJSEVENT *ev);
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_eventHandler", getTargetBox);
 
 void *getEventTargetNode(BOX *box) {
@@ -65,9 +74,126 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_eventHandler", handlePointin
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_eventHandler", handlePointingCheck);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_eventHandler", handleDragStart);
+int handleDragStart(void *ev) {
+    LEHPT *m = M2C_FIELD(ev, LEHPT **, 0x1C);
+    LEHG *g = (LEHG *)gESPRIT_LO_GLOBAL_NDA;
+    BOX *box;
+    BOX *body;
+    void *n;
+    int sid;
+    LEHJSEVENT jev;
+    if (g->x10 == 1) {
+        return 0;
+    }
+    box = g->x14;
+    if (box == NULL) {
+        return -1;
+    }
+    if (!checkBoxValidity(box)) {
+        return -1;
+    }
+    if (box->content == 3) {
+        void *geom;
+        g->x28 = box;
+        geom = box->geom;
+        M2C_FIELD(geom, void **, 4) = startBorder(box);
+        g->x2C = g->x34 = m->x;
+        g->x30 = g->x38 = m->y;
+        return 0;
+    }
+    body = M2C_FIELD(HST_getHeadHistoryNode(), BOX **, 0x6C);
+    if (body == NULL || (box = getTargetBox(body, m->x, m->y, m->x4)) == NULL) {
+        return -1;
+    }
+    sid = M2C_FIELD(getBodyBox(box)->geom, int *, 0x38);
+    if (sid != g->sid) {
+        box = g->x14;
+    }
+    if (D_00584CEC == 0 && sid == g->sid && M2C_FIELD(box, s16 *, 0x3E) == 0) {
+        n = getEventTargetNode(box);
+        if (Node_getJSObj(n) == NULL) {
+            n = getDOMDocument(n);
+        }
+        if (n != g->x18) {
+            initJSEvent(&jev, 0xF, g->x18, m->x, m->y);
+            sendJSBubbleUpEvent(g->x18, &jev);
+            initJSEvent(&jev, 0x10, n, m->x, m->y);
+            sendJSBubbleUpEvent(n, &jev);
+        }
+        initJSEvent(&jev, 0xE, n, m->x, m->y);
+        sendJSEvent(Node_getJSObj(n), &jev);
+        g->x18 = n;
+    }
+    if (D_00584CEC == 1) {
+        freeScrollStart(box, m->x, m->y);
+    }
+    return 0;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_eventHandler", handleDragDoing);
+int handleDragDoing(void *ev) {
+    LEHPT *m = M2C_FIELD(ev, LEHPT **, 0x1C);
+    LEHG *g = (LEHG *)gESPRIT_LO_GLOBAL_NDA;
+    BOX *box;
+    BOX *body;
+    void *n;
+    int dx;
+    int dy;
+    LEHJSEVENT jev;
+    if (g->x10 == 1) {
+        return 0;
+    }
+    if (g->x28 != NULL) {
+        dx = 0;
+        dy = 0;
+        if (!checkBoxValidity(g->x28)) {
+            return -1;
+        }
+        if (*(int *)g->x28->geom == 0) {
+            dy = m->y - g->x38;
+            g->x38 = m->y;
+        } else {
+            dx = m->x - g->x34;
+            g->x34 = m->x;
+        }
+        moveBorder(M2C_FIELD(g->x28->geom, void **, 4), dx, dy);
+        return 0;
+    }
+    box = g->x14;
+    if (box == NULL || !checkBoxValidity(box)) {
+        return -1;
+    }
+    if (D_00584CEC == 0) {
+        body = M2C_FIELD(HST_getHeadHistoryNode(), BOX **, 0x6C);
+        if (body == NULL || (box = getTargetBox(body, m->x, m->y, m->x4)) == NULL) {
+            return -1;
+        }
+        if (M2C_FIELD(getBodyBox(box)->geom, int *, 0x38) == g->sid && M2C_FIELD(box, s16 *, 0x3E) == 0) {
+            n = getEventTargetNode(box);
+            if (n != NULL && Node_getJSObj(n) == NULL) {
+                n = Node_getOwnerDocument(n);
+            }
+            if (n != g->x18) {
+                if (g->x18 != NULL) {
+                    initJSEvent(&jev, 0xF, g->x18, m->x, m->y);
+                    sendJSBubbleUpEvent(g->x18, &jev);
+                }
+                if (n != NULL) {
+                    initJSEvent(&jev, 0x10, n, m->x, m->y);
+                    sendJSBubbleUpEvent(n, &jev);
+                }
+            }
+            if (n != NULL) {
+                initJSEvent(&jev, 0xE, n, m->x, m->y);
+                sendJSEvent(Node_getJSObj(n), &jev);
+            }
+            g->x18 = n;
+        }
+    }
+    if (D_00584CEC == 1) {
+        freeScroll(m->x, m->y);
+    }
+    return 0;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
