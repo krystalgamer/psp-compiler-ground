@@ -1546,7 +1546,7 @@ typedef struct SceGmoContext {
  int m_default_mask ;
  int m_default_bits ;
  int m_current_bits ;
- rect m_default_offs ;
+ rect m_default_offs __attribute__((aligned(16))) ;
  rect m_current_offs ;
  rect m_default_crop ;
  rect m_current_crop ;
@@ -1559,3 +1559,4 @@ enum {
  TEX_CROP_ACTIVE = 0x00000002,
  TEX_TRIM_ACTIVE = 0x00000004,
 } ;
+ScePspFRect *sceGmoRectSet( ScePspFRect *r, float x, float y, float w, float h ) ;

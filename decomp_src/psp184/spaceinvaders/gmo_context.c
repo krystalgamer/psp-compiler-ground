@@ -1,7 +1,29 @@
 #include "common.h"
 #include "gmo_context_sdk.h"
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_context", sceGmoContextBegin);
+void sceGmoContextBegin()
+{
+	SceGmoContext *c = &g_context ;
+	c->m_flags = TEX_OFFS_ACTIVE | TEX_CROP_ACTIVE | TEX_TRIM_ACTIVE ;
+
+	c->m_model = (SceGmoModel *)-1 ;
+	c->m_bone = (SceGmoBone *)-1 ;
+	c->m_material = (SceGmoMaterial *)-1 ;
+	c->m_texture = (SceGmoTexture *)-1 ;
+	c->m_layer_index = 0 ;
+	c->m_layer_state = 0 ;
+
+	c->m_default_mask = 0 ;
+	c->m_default_bits = SCEGMO_ENABLE_DEFAULT ;
+	c->m_current_bits = SCEGMO_ENABLE_FLUSH ;
+
+	sceGmoRectSet( &( c->m_default_offs ), 0, 0, 1, 1 ) ;
+	sceGmoRectSet( &( c->m_current_offs ), 0, 0, 1, 1 ) ;
+	sceGmoRectSet( &( c->m_default_crop ), 0, 0, 1, 1 ) ;
+	sceGmoRectSet( &( c->m_current_crop ), 0, 0, 1, 1 ) ;
+	sceGmoRectSet( &( c->m_default_trim ), 0, 0, 1, 1 ) ;
+	sceGmoRectSet( &( c->m_current_trim ), 0, 0, 1, 1 ) ;
+}
 
 void sceGmoContextEnd()
 {
@@ -88,17 +110,74 @@ void sceGmoContextSetEnableBits( int mask, int bits )
  }
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_context", sceGmoContextDefaultTexOffs);
+void sceGmoContextDefaultTexOffs( const rect *offs )
+{
+	SceGmoContext *c = &g_context ;
+	if ( offs == 0 ) {
+		sceGmoRectSet( &( c->m_default_offs ), 0, 0, 1, 1 ) ;
+	} else {
+		c->m_default_offs = *offs ;
+	}
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_context", sceGmoContextDefaultTexCrop);
+void sceGmoContextDefaultTexCrop( const rect *crop )
+{
+	SceGmoContext *c = &g_context ;
+	if ( crop == 0 ) {
+		sceGmoRectSet( &( c->m_default_crop ), 0, 0, 1, 1 ) ;
+	} else {
+		c->m_default_crop = *crop ;
+	}
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_context", sceGmoContextDefaultTexTrim);
+void sceGmoContextDefaultTexTrim( const rect *trim )
+{
+	SceGmoContext *c = &g_context ;
+	if ( trim == 0 ) {
+		sceGmoRectSet( &( c->m_default_trim ), 0, 0, 1, 1 ) ;
+	} else {
+		c->m_default_trim = *trim ;
+	}
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_context", sceGmoContextSetTexOffs);
+void sceGmoContextSetTexOffs( const rect *offs )
+{
+	SceGmoContext *c = &g_context ;
+	if ( offs == 0 ) {
+		if ( !( c->m_flags & TEX_OFFS_ACTIVE ) ) return ;
+		c->m_flags &= ~TEX_OFFS_ACTIVE ;
+	} else {
+		c->m_flags |= TEX_OFFS_ACTIVE ;
+		c->m_current_offs = *offs ;
+	}
+	activate_tex_crop() ;
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_context", sceGmoContextSetTexCrop);
+void sceGmoContextSetTexCrop( const rect *crop )
+{
+	SceGmoContext *c = &g_context ;
+	if ( crop == 0 ) {
+		if ( !( c->m_flags & TEX_CROP_ACTIVE ) ) return ;
+		c->m_flags &= ~TEX_CROP_ACTIVE ;
+	} else {
+		c->m_flags |= TEX_CROP_ACTIVE ;
+		c->m_current_crop = *crop ;
+	}
+	activate_tex_crop() ;
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_context", sceGmoContextSetTexTrim);
+void sceGmoContextSetTexTrim( const rect *trim )
+{
+	SceGmoContext *c = &g_context ;
+	if ( trim == 0 ) {
+		if ( !( c->m_flags & TEX_TRIM_ACTIVE ) ) return ;
+		c->m_flags &= ~TEX_TRIM_ACTIVE ;
+	} else {
+		c->m_flags |= TEX_TRIM_ACTIVE ;
+		c->m_current_trim = *trim ;
+	}
+	activate_tex_crop() ;
+}
 
 void activate_enable_bits( int mask, int bits )
 {
@@ -168,6 +247,21 @@ void activate_enable_bits( int mask, int bits )
  }
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_context", activate_tex_crop);
+void activate_tex_crop()
+{
+	SceGmoContext *c = &g_context ;
+	int state = c->m_flags ;
+	rect *offs = ( state & TEX_OFFS_ACTIVE ) ? &( c->m_current_offs ) : &( c->m_default_offs ) ;
+	rect *crop = ( state & TEX_CROP_ACTIVE ) ? &( c->m_current_crop ) : &( c->m_default_crop ) ;
+	rect *trim = ( state & TEX_TRIM_ACTIVE ) ? &( c->m_current_trim ) : &( c->m_default_trim ) ;
+
+	float wc = crop->w ;
+	float hc = crop->h ;
+	float wt = trim->w ;
+	float ht = trim->h ;
+	sceGuTexScale( offs->w * wc * wt, offs->h * hc * ht ) ;
+	sceGuTexOffset( ( offs->x * wc + crop->x ) * wt + trim->x,
+			( offs->y * hc + crop->y ) * ht + trim->y ) ;
+}
 
 INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_context", __psp_libinfo___7F130);
