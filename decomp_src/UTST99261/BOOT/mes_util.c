@@ -163,7 +163,12 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_util", mes_util_string_puti
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_util", mes_util_string_put_string);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_util", mes_util_string_get);
+UCSChar mes_util_string_get(UString *s, int pos)
+{
+    if (s != NULL && mes_util_string_pos(s, pos) != 0)
+        return s->cur->data[pos - s->base];
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_util", mes_util_string_eq);
 
@@ -306,7 +311,23 @@ char mes_util_hex_char(unsigned int v)
     return '?';
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_util", mes_util_vals);
+UVals *mes_util_vals(int n, int init)
+{
+    UVals *v;
+    int i;
+
+    if (n <= 0)
+        return NULL;
+    v = MEM_malloc(0, n * 4 + 4);
+    if (v != NULL) {
+        v->n = n;
+        if (init != 0x20) {
+            for (i = 0; i < n; i++)
+                v->v[i] = init;
+        }
+    }
+    return v;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
