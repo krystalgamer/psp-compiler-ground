@@ -108,7 +108,22 @@ void DrawCategory(void)
 	DrawItemBar();
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/menu/nonmatchings/category", InitSpline);
+static __inline__ float srnd(float f)
+{
+	return (rand() & 1) ? -f : f;
+}
+static void InitSpline(void)
+{
+	int i;
+	float t;
+
+	cat.t = 0.0f;
+	cat.scnt = 2;
+	t = cat.t;
+	for (i = 0; i < 3; i++) {
+		cat.sbuf[i] = srnd((rand() % 100) * 0.0005f + t);
+	}
+}
 
 float Spline(float t, float pos0, float pos1, float pos2) {
     float temp_f13;
@@ -121,10 +136,6 @@ float Spline(float t, float pos0, float pos1, float pos2) {
     return ((((2.0f * temp_f15) + (2.0f * temp_f13)) - temp_f1) * t * t) + (((temp_f1 - temp_f15) - (temp_f13 * 3.0f)) * t) + temp_f13;
 }
 
-static __inline__ float srnd(float f)
-{
-	return (rand() & 1) ? -f : f;
-}
 static void CtrlSpline(void)
 {
 	float p[3];
