@@ -597,7 +597,11 @@ void VertexArrayEdit::texcoord(float s, float t)
     set(Value<float>(T, t, _n));
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/psp_VertexArrayEdit", _ZN3psp15VertexArrayEdit5colorEffff);
+#define VAE_F2UB(x) ((x) > 1 ? 255 : (x) < 0 ? 0 : (unsigned char)(unsigned int)((x) * 255))
+void VertexArrayEdit::color(float r, float g, float b, float a)
+{
+    color4ub(VAE_F2UB(r), VAE_F2UB(g), VAE_F2UB(b), VAE_F2UB(a));
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/psp_VertexArrayEdit", _ZN3psp15VertexArrayEdit8color4ubEhhhh);
 
