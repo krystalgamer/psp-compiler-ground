@@ -2,6 +2,8 @@
 /* cflags: -O3 -fno-exceptions */
 #undef __EXCEPTIONS
 #include "cxx/defer_asm.h"
+/* stl_tree.h before main.hpp (outside its #pragma interface): its out-of-line inline functions are this object's */
+#include <bits/stl_tree.h>
 extern const char scene_bvdata_warn[] __asm__("D_00169204");         /* " *** warning " */
 extern const char scene_bvdata_notvalid[] __asm__("D_001691BC");     /* "! valid()" */
 extern const char scene_bvdata_file[] __asm__("D_001691CC");         /* "../lib/scene/BVdata.h" */
@@ -428,6 +430,15 @@ extern "C" void scene_Graph_uses(scene::Graph *g, scene_graph_uses::TreeO *to, s
     ta->lower_bound(*(std::string *)0);
     ta->insert_unique(ta->begin(), *(Pair *)0);
     ta->insert_unique(*(Pair *)0);
+    /* stl_tree.h's out-of-line inline functions (static pointers in a discarded section: no .rodata) */
+    static void (std::_Rb_tree_base_iterator::*incr)() __attribute__((section(".discard.data"))) = &std::_Rb_tree_base_iterator::_M_increment;
+    static void (std::_Rb_tree_base_iterator::*decr)() __attribute__((section(".discard.data"))) = &std::_Rb_tree_base_iterator::_M_decrement;
+    static void (*rebalance)(std::_Rb_tree_node_base *, std::_Rb_tree_node_base *&) __attribute__((section(".discard.data"))) = &std::_Rb_tree_rebalance;
+    static std::_Rb_tree_node_base *(*rebalance_for_erase)(std::_Rb_tree_node_base *, std::_Rb_tree_node_base *&, std::_Rb_tree_node_base *&,
+                                                           std::_Rb_tree_node_base *&) __attribute__((section(".discard.data"))) = &std::_Rb_tree_rebalance_for_erase;
+    static void (*rotate_left)(std::_Rb_tree_node_base *, std::_Rb_tree_node_base *&) __attribute__((section(".discard.data"))) = &std::_Rb_tree_rotate_left;
+    static void (*rotate_right)(std::_Rb_tree_node_base *, std::_Rb_tree_node_base *&) __attribute__((section(".discard.data"))) = &std::_Rb_tree_rotate_right;
+    __asm__ volatile("" : : "m"(incr), "m"(decr), "m"(rebalance), "m"(rebalance_for_erase), "m"(rotate_left), "m"(rotate_right));
 }
 
 /* from here on INCLUDE_ASM puts the asm in its own .gnu.linkonce.t section (written as
@@ -457,14 +468,3 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _Z
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZN6common6handleIN5scene4NodeEEC1ERKS3_);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZNSt22_Rb_tree_base_iterator12_M_incrementEv);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZNSt22_Rb_tree_base_iterator12_M_decrementEv);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZSt18_Rb_tree_rebalancePSt18_Rb_tree_node_baseRS0_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZSt28_Rb_tree_rebalance_for_erasePSt18_Rb_tree_node_baseRS0_S1_S1_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZSt20_Rb_tree_rotate_leftPSt18_Rb_tree_node_baseRS0_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZSt21_Rb_tree_rotate_rightPSt18_Rb_tree_node_baseRS0_);
