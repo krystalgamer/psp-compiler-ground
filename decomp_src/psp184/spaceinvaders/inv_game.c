@@ -1255,7 +1255,87 @@ int laser2_hit_check_enemy(float x, float w)
 	return ret;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", laser2_hit_check_ufo);
+void ufo_damage(void *u, BV3 p, int dmg, int net, int flag);
+void netgame_ufo_damage_set3(int no, int dmg, int life) __asm__("netgame_ufo_damage_set");
+typedef struct { u8 p[0xEB9D0]; int n; } GMU4_T;
+#define GMU4_N ((*(GMU4_T *)&gmain).n)
+extern BUFO_D D_005A0CF4;
+int laser2_hit_check_ufo(float x, float w)
+{
+	int i, hit;
+	int ret = 0, wrap = 0;
+	float r[2];
+	UFO_T *u;
+	BUFO_D *b;
+
+	r[0] = x;
+	r[1] = x;
+	if (x < gmain.f.f10bc - w && w < x) {
+		r[0] = x - w;
+		r[1] = x + w;
+	} else {
+		wrap = 1;
+		if (gmain.f.f10bc - w <= r[0]) {
+			r[0] = r[0] - w;
+			r[1] = r[1] + (w - gmain.f.f10bc);
+		} else {
+			r[0] = r[0] - (w - gmain.f.f10bc);
+			r[1] = r[1] + w;
+		}
+	}
+	if (gmain.f.ff28 != 13) {
+		for (i = 0; i < GMU4_N; i++) {
+			u = &ufo_t[i];
+			if (u->f[1] == 0)
+				continue;
+			if (u->f[2] == 1)
+				continue;
+			if (u->f[4] == 1)
+				continue;
+			if (u->f[13] == 1)
+				continue;
+			hit = 1;
+			if (wrap == 0) {
+				if (((float *)u->f)[17] < r[0] || r[1] < ((float *)u->f)[17])
+					hit = 0;
+			} else {
+				if (r[1] <= ((float *)u->f)[17] && ((float *)u->f)[17] <= r[0])
+					hit = 0;
+			}
+			if (hit) {
+				int dmg = rank_shot_attack[bgm_rank()][1];
+				ufo_damage(u, *(BV3 *)&u->f[0x5C / 4], dmg, 0, 1);
+				netgame_ufo_damage_set3(i, dmg, u->f[9]);
+			}
+		}
+	} else {
+		b = &D_005A0CF4;
+		if (b->f0 == 0)
+			return ret;
+		if (b->f4 == 1)
+			return ret;
+		if (b->f8 == 1)
+			return ret;
+		if (b->f30 == 1)
+			return ret;
+		hit = 1;
+		if (wrap == 0) {
+			if (b->f48 < r[0] || r[1] < b->f48)
+				hit = 0;
+		} else {
+			if (r[1] <= b->f48 && b->f48 <= r[0])
+				hit = 0;
+		}
+		if (hit) {
+			int dmg;
+			ret = 1;
+			dmg = rank_shot_attack[bgm_rank()][1];
+			boss_ufo_damage(b, *(BV3 *)b->pos, dmg, 0, 1);
+			netgame_ufo_damage_set3(0, dmg, b->dmg);
+		}
+	}
+	return ret;
+}
 
 void boss_laser_init(void)
 {
