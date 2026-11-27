@@ -45,6 +45,8 @@ void rnd_updateUpdateWidgetList(void);
 void rnd_clearUpdateWidgetList(void);
 typedef struct UWNODE { struct UWNODE *next; void *pane; RRECT *rect; } UWNODE;
 void GUI_ScrollPane_getViewportSize(void *pane, int *w, int *h);
+typedef struct MARQUEE { int dir; int pos; int start; int len; int amount; int x14; int interval; RPOS t; int x24; } MARQUEE;
+typedef struct MARQATTR { int behavior; int direction; int amount; } MARQATTR;
 int checkParentBox(M2C_UNK *arg0, int arg1) {
     M2C_UNK *var_a0;
     int var_v0;
@@ -275,7 +277,77 @@ void rnd_resetAnimBoxnode(void) {
         GUI_Component_update(M2C_FIELD(ui_global, void **, 0x90), 0, 0, 0, 0);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_anim", rnd_newMarquee);
+int rnd_newMarquee(void *box, void *anim) {
+    MARQUEE *m;
+    void *c;
+    int w;
+    int bw;
+
+    m = MEM_malloc(0, 0x28);
+    if (m == NULL)
+        return -100;
+    w = 0;
+    for (c = M2C_FIELD(box, void **, 4); c != NULL; c = M2C_FIELD(c, void **, 0xC)) {
+        if (w < M2C_FIELD(c, int *, 0x10) + M2C_FIELD(c, int *, 0x18))
+            w = M2C_FIELD(c, int *, 0x10) + M2C_FIELD(c, int *, 0x18);
+    }
+    w -= M2C_FIELD(box, int *, 0x10);
+    bw = M2C_FIELD(box, int *, 0x18);
+    if (M2C_FIELD(box, MARQATTR **, 0x20)->behavior == 1) {
+        RPOS ts;
+        if (M2C_FIELD(box, MARQATTR **, 0x20)->direction == 1) {
+            m->dir = -2;
+            m->start = bw;
+        } else {
+            m->dir = 2;
+            m->start = -w;
+        }
+        m->pos = m->start;
+        m->len = w + bw;
+        m->amount = M2C_FIELD(box, MARQATTR **, 0x20)->amount;
+        m->x14 = 0;
+        m->interval = 50000000;
+        OS_clock_gettime(0, &ts);
+        m->t = ts;
+    } else if (M2C_FIELD(box, MARQATTR **, 0x20)->behavior == 2) {
+        RPOS ts;
+        if (M2C_FIELD(box, MARQATTR **, 0x20)->direction == 1) {
+            m->dir = -2;
+            m->start = bw;
+        } else {
+            m->dir = 2;
+            m->start = -w;
+        }
+        m->pos = m->start;
+        m->len = bw < w ? w : bw;
+        m->amount = M2C_FIELD(box, MARQATTR **, 0x20)->amount;
+        m->x14 = 0;
+        m->interval = 50000000;
+        OS_clock_gettime(0, &ts);
+        m->t = ts;
+    } else {
+        RPOS ts;
+        if (M2C_FIELD(box, MARQATTR **, 0x20)->direction == 1) {
+            m->dir = -2;
+            m->start = bw < w ? 0 : bw - w;
+        } else {
+            m->dir = 2;
+            m->start = bw < w ? bw - w : 0;
+        }
+        m->pos = m->start;
+        m->len = bw < w ? w - bw : bw - w;
+        m->amount = M2C_FIELD(box, MARQATTR **, 0x20)->amount;
+        m->amount = M2C_FIELD(box, MARQATTR **, 0x20)->amount;
+        m->x14 = 0;
+        m->interval = 50000000;
+        OS_clock_gettime(0, &ts);
+        m->t = ts;
+    }
+    m->x24 = 0;
+    M2C_FIELD(box, MARQUEE **, 0x2C) = m;
+    M2C_FIELD(anim, MARQUEE **, 0xC) = m;
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_anim", rnd_updateAnimMarqueeBoxnode);
 
