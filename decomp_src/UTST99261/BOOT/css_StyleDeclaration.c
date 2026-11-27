@@ -1194,7 +1194,21 @@ double CSSPrimitiveValue_getFloatValue(s16 *v, s16 type) {
     return *v == type ? *(double *)(v + 4) : 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_StyleDeclaration", CSSPrimitiveValue_setStringValue);
+void CSSPrimitiveValue_setStringValue(void *v, short type, u16 *s) {
+    int i;
+
+    if (type == 19 || type == 20 || type == 22 || type == 26) {
+        M2C_FIELD(v, s16 *, 0) = type;
+        M2C_FIELD(v, u16 **, 8) = s;
+    } else if (type == 21) {
+        for (i = 0; i < 0xD1; i++) {
+            if (UCS_strcasecmp(CSSIdentNames[i], s) == 0) {
+                M2C_FIELD(v, int *, 8) = i;
+                break;
+            }
+        }
+    }
+}
 
 void *CSSPrimitiveValue_getStringValue(s16 *v) {
     void *r;
