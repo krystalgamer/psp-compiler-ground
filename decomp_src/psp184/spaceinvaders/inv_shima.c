@@ -77,7 +77,42 @@ void nickname_set(int no)
 	}
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_shima", classic_game_init);
+extern int gcnttmp[2], deadsw, menusw, gamestart_wait, enemy_shottype[2], hiscoreentry, play2flg, demo3flg;
+extern int classicwork_i[] __asm__("classicwork");
+void SprInit(void);
+void classic_inv_tamainit(void);
+void SprAllDispSet(void);
+void classic_inv_init(void);
+void classic_inv_init_pos(void);
+void classic_game_init(void)
+{
+	int tex;
+	gcnt_28F36C = 0;
+	gcnttmp[0] = 0;
+	gcnttmp[1] = 0;
+	deadsw = 0;
+	menusw = 0;
+	SprInit();
+	gamestart_wait = 2;
+	classic_inv_tamainit();
+	classicwork_i[11] = 0;
+	classicwork_i[12] = 0;
+	classic_inv_init();
+	classic_inv_init_pos();
+	memset((void *)ptexdis1[0][7], 0, 0x10000);
+	memset((void *)ptexdis2[0][7], 0, 0x10000);
+	memset((void *)ptexdis1[1][7], 0, 0x10000);
+	memset((void *)ptexdis2[1][7], 0, 0x10000);
+	tex = ptexdis1[0][7];
+	enemy_shottype[1] = 0;
+	enemy_shottype[0] = 0;
+	spr_boxfill(tex, 0, 240, 224, 1, 2);
+	spr_boxfill(ptexdis2[0][7], 0, 240, 224, 1, 2);
+	SprAllDispSet();
+	hiscoreentry = -1;
+	play2flg = 0;
+	demo3flg = 0;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_shima", classic_game_stageinit);
 
