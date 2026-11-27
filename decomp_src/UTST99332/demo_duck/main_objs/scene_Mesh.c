@@ -7,7 +7,22 @@ extern const char scene_mesh_expr[] __asm__("D_0016BB60");    /* "_mesh" */
 extern const char scene_mesh_file[] __asm__("D_0016BB68");    /* "../lib/scene/Mesh.h" */
 extern const char scene_mesh_sp[] __asm__("D_0016BB7C");      /* " " */
 extern const char scene_mesh_getData_name[] __asm__("_ZZN5scene4Mesh7getDataEvE19__PRETTY_FUNCTION___16BAAC");
+#define DEMO_TEMPLATE_DEFS
 #include "../main.hpp"
+SCENE_ALLOC_FIRST_USE
+/* linkonce order: this object's .gnu.linkonce.t sections in Sony's link order */
+SCENE_LINKONCE_ORDER(
+    SCENE_LINKONCE(_ZN6common6handleIN5scene19MeshDataInterleaved10SharedDataEE10invalidateEv)
+    SCENE_LINKONCE(_ZN6common6handleIN5scene19MeshDataInterleaved10VertexDataEE10invalidateEv)
+    SCENE_LINKONCE(_ZSt13__destroy_auxIPN3sgl8PositionEEvT_S3_12__false_type)
+    SCENE_LINKONCE(_ZNSt19_Bvector_alloc_baseISaIbELb1EE13_M_deallocateEv)
+    SCENE_LINKONCE(_ZNSt6vectorIiSaIiEED1Ev)
+    SCENE_LINKONCE(_ZN3sgl17StencilShadowDataC1Ev)
+    SCENE_LINKONCE(_ZN6common6handleIN5scene19MeshDataInterleaved10SharedDataEED1Ev)
+    SCENE_LINKONCE(_ZN6common6handleIN5scene19MeshDataInterleaved10VertexDataEED1Ev)
+    SCENE_LINKONCE(_ZN6common6handleIN5scene19MeshDataInterleaved10SharedDataEED0Ev)
+    SCENE_LINKONCE(_ZN6common6handleIN5scene19MeshDataInterleaved10VertexDataEED0Ev)
+);
 
 extern const char D_0016BA24[];
 /* called, not inlined, by format() in the original */
@@ -85,23 +100,18 @@ bool scene::Mesh::isClonable() const
     return true;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Mesh", _ZN6common6handleIN5scene19MeshDataInterleaved10SharedDataEE10invalidateEv);
+/* instances used by the (asm) methods above */
+template void common::handle<scene::MeshDataInterleaved::SharedData>::invalidate();
+template void common::handle<scene::MeshDataInterleaved::VertexData>::invalidate();
+template void std::__destroy_aux<sgl::Position *>(sgl::Position *, sgl::Position *, __false_type);
+template void std::_Bvector_alloc_base<std::allocator<bool>, true>::_M_deallocate();
+template std::vector<int>::~vector();
+template common::handle<scene::MeshDataInterleaved::SharedData>::~handle();
+template common::handle<scene::MeshDataInterleaved::VertexData>::~handle();
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Mesh", _ZN6common6handleIN5scene19MeshDataInterleaved10VertexDataEE10invalidateEv);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Mesh", _ZSt13__destroy_auxIPN3sgl8PositionEEvT_S3_12__false_type);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Mesh", _ZNSt19_Bvector_alloc_baseISaIbELb1EE13_M_deallocateEv);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Mesh", _ZNSt6vectorIiSaIiEED1Ev);
+/* from here on INCLUDE_ASM puts the asm in its own .gnu.linkonce.t section (written as
+   INCLUDE_ASM so that splat keeps these functions as asm) */
+#undef INCLUDE_ASM
+#define INCLUDE_ASM(FOLDER, NAME) INCLUDE_ASM_LINKONCE(FOLDER, NAME)
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Mesh", _ZN3sgl17StencilShadowDataC1Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Mesh", _ZN6common6handleIN5scene19MeshDataInterleaved10SharedDataEED1Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Mesh", _ZN6common6handleIN5scene19MeshDataInterleaved10VertexDataEED1Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Mesh", _ZN6common6handleIN5scene19MeshDataInterleaved10SharedDataEED0Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Mesh", _ZN6common6handleIN5scene19MeshDataInterleaved10VertexDataEED0Ev);
-

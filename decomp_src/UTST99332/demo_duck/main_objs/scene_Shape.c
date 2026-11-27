@@ -8,14 +8,14 @@ extern const char scene_bvdata_notvalid[] __asm__("D_0016CD48");     /* "! valid
 extern const char scene_bvdata_file[] __asm__("D_0016CD54");         /* "../lib/scene/BVdata.h" */
 extern const char scene_bvdata_created[] __asm__("D_0016CD6C");      /* "bounding box already created" */
 extern const char scene_bvdata_create_name[] __asm__("_ZZN5scene6BVdata6createEN3sgl2BV4TypeEE19__PRETTY_FUNCTION___16CD0C");
+#define DEMO_TEMPLATE_DEFS
 #include "../main.hpp"
+/* linkonce order: this object's .gnu.linkonce.t sections in Sony's link order */
+SCENE_LINKONCE_ORDER(
+    SCENE_LINKONCE(_ZN6common6handleIN5scene5SetupEEaSERKS3_)
+);
 
 extern const char D_0016CD04[];
-
-/* these template instances are still asm below */
-namespace common {
-extern template class handle<scene::Setup>;
-}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Shape", _Z41__static_initialization_and_destruction_0ii_92780);
 
@@ -125,6 +125,3 @@ const char *scene::Shape::getTypeName() const
 }
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Shape", _ZNK5scene5Shape5cloneESs);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Shape", _ZN6common6handleIN5scene5SetupEEaSERKS3_);
-

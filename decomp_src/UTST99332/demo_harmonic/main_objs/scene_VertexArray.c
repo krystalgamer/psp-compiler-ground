@@ -2,7 +2,20 @@
 /* cflags: -O3 -fno-exceptions */
 #undef __EXCEPTIONS
 #include "cxx/defer_asm.h"
+#define DEMO_TEMPLATE_DEFS
 #include "../main.hpp"
+SCENE_ALLOC_FIRST_USE
+/* linkonce order: this object's .gnu.linkonce.t sections in Sony's link order */
+SCENE_LINKONCE_ORDER(
+    SCENE_LINKONCE(_ZNSt6vectorIN14vertex_formats16T2F_C4UB_N3F_V3FESaIS1_EE5eraseEN9__gnu_cxx17__normal_iteratorIPS1_S3_EES7_)
+    SCENE_LINKONCE(_ZNSt6vectorIN14vertex_formats16T2F_C4UB_N3F_V3FESaIS1_EE14_M_fill_insertEN9__gnu_cxx17__normal_iteratorIPS1_S3_EEjRKS1_)
+    SCENE_LINKONCE(_ZSt4fillIN9__gnu_cxx17__normal_iteratorIPN14vertex_formats16T2F_C4UB_N3F_V3FESt6vectorIS3_SaIS3_EEEES3_EvT_S9_RKT0_)
+    SCENE_LINKONCE(_ZSt24__uninitialized_copy_auxIPN14vertex_formats16T2F_C4UB_N3F_V3FES2_ET0_T_S4_S3_12__false_type)
+    SCENE_LINKONCE(_ZSt26__uninitialized_fill_n_auxIPN14vertex_formats16T2F_C4UB_N3F_V3FEjS1_ET_S3_T0_RKT1_12__false_type)
+    SCENE_LINKONCE(_ZSt24__uninitialized_copy_auxIN9__gnu_cxx17__normal_iteratorIPN14vertex_formats16T2F_C4UB_N3F_V3FESt6vectorIS3_SaIS3_EEEES4_ET0_T_SA_S9_12__false_type)
+    SCENE_LINKONCE(_ZSt24__uninitialized_copy_auxIN9__gnu_cxx17__normal_iteratorIPN14vertex_formats16T2F_C4UB_N3F_V3FESt6vectorIS3_SaIS3_EEEES8_ET0_T_SA_S9_12__false_type)
+    SCENE_LINKONCE(_ZSt26__uninitialized_fill_n_auxIN9__gnu_cxx17__normal_iteratorIPN14vertex_formats16T2F_C4UB_N3F_V3FESt6vectorIS3_SaIS3_EEEEjS3_ET_S9_T0_RKT1_12__false_type)
+);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_VertexArray", _Z41__static_initialization_and_destruction_0ii_9C520);
 
@@ -38,18 +51,19 @@ void _GLOBAL__D__ZN5scene11VertexArrayC2Ev(void)
     static_init(0, 0xFFFF);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_VertexArray", _ZNSt6vectorIN14vertex_formats16T2F_C4UB_N3F_V3FESaIS1_EE5eraseEN9__gnu_cxx17__normal_iteratorIPS1_S3_EES7_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_VertexArray", _ZNSt6vectorIN14vertex_formats16T2F_C4UB_N3F_V3FESaIS1_EE14_M_fill_insertEN9__gnu_cxx17__normal_iteratorIPS1_S3_EEjRKS1_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_VertexArray", _ZSt4fillIN9__gnu_cxx17__normal_iteratorIPN14vertex_formats16T2F_C4UB_N3F_V3FESt6vectorIS3_SaIS3_EEEES3_EvT_S9_RKT0_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_VertexArray", _ZSt24__uninitialized_copy_auxIPN14vertex_formats16T2F_C4UB_N3F_V3FES2_ET0_T_S4_S3_12__false_type);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_VertexArray", _ZSt26__uninitialized_fill_n_auxIPN14vertex_formats16T2F_C4UB_N3F_V3FEjS1_ET_S3_T0_RKT1_12__false_type);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_VertexArray", _ZSt24__uninitialized_copy_auxIN9__gnu_cxx17__normal_iteratorIPN14vertex_formats16T2F_C4UB_N3F_V3FESt6vectorIS3_SaIS3_EEEES4_ET0_T_SA_S9_12__false_type);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_VertexArray", _ZSt24__uninitialized_copy_auxIN9__gnu_cxx17__normal_iteratorIPN14vertex_formats16T2F_C4UB_N3F_V3FESt6vectorIS3_SaIS3_EEEES8_ET0_T_SA_S9_12__false_type);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_VertexArray", _ZSt26__uninitialized_fill_n_auxIN9__gnu_cxx17__normal_iteratorIPN14vertex_formats16T2F_C4UB_N3F_V3FESt6vectorIS3_SaIS3_EEEEjS3_ET_S9_T0_RKT1_12__false_type);
+/* the vector's instances that the (asm) methods above use */
+template std::vector<vertex_formats::T2F_C4UB_N3F_V3F>::iterator
+std::vector<vertex_formats::T2F_C4UB_N3F_V3F>::erase(std::vector<vertex_formats::T2F_C4UB_N3F_V3F>::iterator,
+                                                     std::vector<vertex_formats::T2F_C4UB_N3F_V3F>::iterator);
+namespace std {
+typedef vertex_formats::T2F_C4UB_N3F_V3F VA_T;
+typedef vector<VA_T>::iterator VA_It;
+template void fill<VA_It, VA_T>(VA_It, VA_It, const VA_T &);
+template VA_T *__uninitialized_copy_aux<VA_T *, VA_T *>(VA_T *, VA_T *, VA_T *, __false_type);
+template VA_T *__uninitialized_fill_n_aux<VA_T *, unsigned int, VA_T>(VA_T *, unsigned int, const VA_T &, __false_type);
+template VA_T *__uninitialized_copy_aux<VA_It, VA_T *>(VA_It, VA_It, VA_T *, __false_type);
+template VA_It __uninitialized_copy_aux<VA_It, VA_It>(VA_It, VA_It, VA_It, __false_type);
+template VA_It __uninitialized_fill_n_aux<VA_It, unsigned int, VA_T>(VA_It, unsigned int, const VA_T &, __false_type);
+}
+template void std::vector<vertex_formats::T2F_C4UB_N3F_V3F>::_M_fill_insert(std::vector<vertex_formats::T2F_C4UB_N3F_V3F>::iterator,
+                                                                                    unsigned int, const vertex_formats::T2F_C4UB_N3F_V3F &);

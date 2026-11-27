@@ -8,6 +8,29 @@
 #include <deque>
 #include <map>
 
+/* Template instances / out-of-line inline functions of a scene unit's tail are
+   .gnu.linkonce.t sections, linked in the object's section order.  The tail
+   mixes C++ instances with INCLUDE_ASM_LINKONCE ones (and our headers differ
+   from Sony's in which members are inline, which changes cc1plus's deferral
+   order), so the unit creates those sections up front, in Sony's link order
+   (tmp/cxx/scene4/tailconv.py); cc1plus's code for each function is unchanged. */
+#define SCENE_LINKONCE(n) "\t.section .gnu.linkonce.t." #n ",\"ax\",@progbits\n"
+#define SCENE_LINKONCE_ORDER(s) __asm__(s "\t.text\n")
+
+/* std::__default_alloc_template<true,0>::allocate/deallocate are never inlined in the demos (only
+   their own out-of-line copies call getenv/_S_refill), but cc1plus inlines each of them into the
+   first function of a unit that calls it (e.g. a vector<T>::operator= instance), and never again in
+   that unit afterwards.  In Sony's objects that first caller was among the functions that are
+   still asm here, so a unit whose instances call the allocator first instantiates this function
+   (its dead code inlines both and is then dropped with the "GLIBCPP_FORCE_NEW" string; the function
+   itself is discarded at link: it is not in the unit's linkonce list). */
+template<int N> void scene_alloc_first_use(unsigned int n)
+{
+    if (0)
+        std::__default_alloc_template<true, 0>::deallocate(std::__default_alloc_template<true, 0>::allocate(n), n);
+}
+#define SCENE_ALLOC_FIRST_USE template void scene_alloc_first_use<0>(unsigned int);
+
 namespace common {
 /* std::map comparator on strings (scene::Graph's multimap) */
 struct LessStr {
@@ -73,6 +96,16 @@ extern const char scene_mesh_getData_name[];
 
 namespace sgl {
 struct StencilShadowData;
+}
+
+namespace vertex_formats {
+/* scene::VertexArray's interleaved vertex (36 bytes) */
+struct T2F_C4UB_N3F_V3F {
+    float t[2];
+    unsigned char c[4];
+    float n[3];
+    float v[3];
+};
 }
 
 namespace scene {
@@ -508,6 +541,8 @@ public:
 
 class MeshDataInterleaved {
 public:
+    struct SharedData;
+    struct VertexData;
     void draw(const TraversalVarStack &);
     void convert(const MeshData &);
 };

@@ -2,7 +2,14 @@
 /* cflags: -O3 -fno-exceptions */
 #undef __EXCEPTIONS
 #include "cxx/defer_asm.h"
+#define DEMO_TEMPLATE_DEFS
 #include "../main.hpp"
+SCENE_ALLOC_FIRST_USE
+/* linkonce order: this object's .gnu.linkonce.t sections in Sony's link order */
+SCENE_LINKONCE_ORDER(
+    SCENE_LINKONCE(_ZNSt4listIN6common6handleIN5scene4NodeEEESaIS4_EEaSERKS6_)
+    SCENE_LINKONCE(_ZNSt4listIN6common6handleIN5scene4NodeEEESaIS4_EE5eraseESt14_List_iteratorIS4_RS4_PS4_E)
+);
 
 extern const char D_0016881C[];
 
@@ -107,7 +114,6 @@ bool scene::Group::isClonable() const
     return true;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Group", _ZNSt4listIN6common6handleIN5scene4NodeEEESaIS4_EEaSERKS6_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Group", _ZNSt4listIN6common6handleIN5scene4NodeEEESaIS4_EE5eraseESt14_List_iteratorIS4_RS4_PS4_E);
-
+/* used by clone() (asm) */
+template std::list<common::handle<scene::Node> > &std::list<common::handle<scene::Node> >::operator=(const std::list<common::handle<scene::Node> > &);
+template std::list<common::handle<scene::Node> >::iterator std::list<common::handle<scene::Node> >::erase(std::list<common::handle<scene::Node> >::iterator);

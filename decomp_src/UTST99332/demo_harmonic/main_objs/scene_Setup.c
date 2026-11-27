@@ -2,7 +2,12 @@
 /* cflags: -O3 -fno-exceptions */
 #undef __EXCEPTIONS
 #include "cxx/defer_asm.h"
+#define DEMO_TEMPLATE_DEFS
 #include "../main.hpp"
+/* linkonce order: this object's .gnu.linkonce.t sections in Sony's link order */
+SCENE_LINKONCE_ORDER(
+    SCENE_LINKONCE(_ZN6common6handleIN5scene4NodeEEC1INS1_5SetupEEERKNS0_IT_EE)
+);
 
 extern const char D_00169D5C[];
 
@@ -49,5 +54,6 @@ void scene::Setup::enter() {
 void scene::Setup::leave() {
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Setup", _ZN6common6handleIN5scene4NodeEEC1INS1_5SetupEEERKNS0_IT_EE);
+/* used by clone() (asm) */
+template common::handle<scene::Node>::handle(const common::handle<scene::Setup> &);
 
