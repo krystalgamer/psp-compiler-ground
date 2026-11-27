@@ -1,6 +1,11 @@
 /* cflags: -O1 */
 #include "common.h"
 #include "mes_js.h"
+double ceil(double x);
+double acos(double x);
+double asin(double x);
+extern const double D_0013B928, D_0013B930, D_0013B938, D_0013B940;
+extern const double D_0013B998;
 MesValue mes_eval_to_number(MesContext *ctx, MesValue v);
 double mes_num(MesValue v);
 MesValue mes_number_alloc(MesContext *ctx, double d);
@@ -62,7 +67,21 @@ MesValue mes_math_atan(MesContext *ctx, MesValue v)
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_math", mes_math_atan2);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_math", mes_math_ceil);
+MesValue mes_math_ceil(MesContext *ctx, MesValue v)
+{
+    MesValue n = mes_eval_to_number(ctx, v);
+    MesValue ret;
+    double d;
+
+    if (n == 0x1C || n == 0x14 || n == 0x18 || n == 1 || n == 0x10)
+        return n;
+    d = mes_num(n);
+    if (d < 0 && d > D_0013B998)
+        ret = 0x10;
+    else
+        ret = mes_number_alloc(ctx, ceil(d));
+    return ret;
+}
 
 MesValue mes_math_cos(MesContext *ctx, MesValue v)
 {
@@ -93,7 +112,21 @@ MesValue mes_math_exp(MesContext *ctx, MesValue v)
     return ret;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_math", mes_math_floor);
+MesValue mes_math_floor(MesContext *ctx, MesValue v)
+{
+    MesValue n = mes_eval_to_number(ctx, v);
+    MesValue ret;
+    double d;
+
+    if (n == 0x1C || n == 0x14 || n == 0x18 || n == 1 || n == 0x10)
+        return n;
+    d = mes_num(n);
+    if (d > 0 && d < D_0013B9A0)
+        ret = 1;
+    else
+        ret = mes_number_alloc(ctx, floor(d));
+    return ret;
+}
 
 MesValue mes_math_log(MesContext *ctx, MesValue v)
 {
@@ -147,7 +180,25 @@ MesValue mes_math_sin(MesContext *ctx, MesValue v)
     return mes_number_alloc(ctx, sin(mes_num(n)));
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_math", mes_math_sqrt);
+MesValue mes_math_sqrt(MesContext *ctx, MesValue v)
+{
+    MesValue n = mes_eval_to_number(ctx, v);
+    MesValue ret;
+    double d;
+
+    if (n == 0x1C || n == 1 || n == 0x10 || n == 0x14)
+        ret = n;
+    else if (n == 0x18)
+        ret = 0x1C;
+    else {
+        d = mes_num(n);
+        if (d < 0)
+            ret = 0x1C;
+        else
+            ret = mes_number_alloc(ctx, sqrt(d));
+    }
+    return ret;
+}
 
 MesValue mes_math_tan(MesContext *ctx, MesValue v)
 {
