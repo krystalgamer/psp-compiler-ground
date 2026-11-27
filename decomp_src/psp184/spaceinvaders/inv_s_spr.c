@@ -151,7 +151,44 @@ void SprAllDispSet(void) {
     SprAllDispSetSub(1);
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_spr", SprDraw4Psp);
+typedef struct SPRD {
+	int f0, f4, tex, attr;
+	unsigned char p10[0x18];
+	int x, y;
+	unsigned char p30[0x10];
+	int w, h, u, v;
+	unsigned char p50[0x10];
+	int sx, sy, ex, ey, escale, ealpha, pri;
+	int r, g, b, a;
+	void *anm;
+	int f90;
+	struct SPRD *next;
+} SPRD;
+int hato(int cur, int target, int shift);
+int sprite_center_set(int tex, int x, int y, int w, int h, int u, int v, int sx, int sy, int rot, int a10, int r, int g, int b, int a, int pri, int a16, int a17, int a18);
+void SprDraw4Psp(void)
+{
+	SPRD *s;
+
+	for (s = (SPRD *)spr_head; s != NULL; s = s->next) {
+		if (s->attr != 0 && ((s->attr >> 1) & 1)) {
+			sprite_center_set(s->tex, s->x + s->w / 2, s->y + s->h / 2, s->w, s->h, s->u, s->v, s->sx, s->sy, s->pri * 1000, 0, s->r, s->g, s->b, s->a, 10, 2, 1, 255);
+			if (s->attr & 8) {
+				sprite_center_set(s->tex, s->ex, s->ey, s->w, s->h, s->u, s->v, s->escale, s->escale, s->pri * 1000, 0, 255, 255, 255, s->a, 10, 2, 2, s->ealpha);
+				s->escale = hato(s->escale, 800, 2);
+				s->ealpha = hato(s->ealpha, 0, 4);
+				if (s->escale == 200 && s->ealpha == 0) {
+					s->ealpha = 255;
+					s->escale = 100;
+					s->attr &= ~8;
+				}
+			} else {
+				s->ealpha = 255;
+				s->escale = 100;
+			}
+		}
+	}
+}
 
 typedef struct { int u, v; } ANMTBL;
 typedef struct SPRAN { unsigned char p0[0xC]; int attr; unsigned char p10[8]; int idx; int wait; int cnt; unsigned char p24[0x24]; int f48, f4C; unsigned char p50[0x3C]; ANMTBL *anm; int f90; struct SPRAN *next; } SPRAN;
