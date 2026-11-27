@@ -92,7 +92,34 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/movie", movCleanup);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/movie", movPutCB);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/movie", movProc);
+extern int D_00119B70;
+extern unsigned char Ring;
+extern int AudioInit;
+int sceMpegRingbufferAvailableSize(void *);
+int sceMpegRingbufferPut(void *, int, int);
+void movDecodeVideo(void);
+void movDecodeAudio(void);
+int movProc(void)
+{
+	int n;
+	D_00119B70 ^= 1;
+	if (D_00119B70 != 0)
+		return 1;
+	n = sceMpegRingbufferAvailableSize(&Ring);
+	if (n < 0)
+		consPrintf(&D_000FDC20, &D_000FDC10, 0x18D, "movProc", "FreePack >= 0");
+	if (sceMpegRingbufferPut(&Ring, 0x400, n) < 0)
+		return 0;
+	n = sceMpegRingbufferAvailableSize(&Ring);
+	if (n < 0)
+		return 0;
+	if (n >= 0x400)
+		return -1;
+	movDecodeVideo();
+	movDecodeAudio();
+	AudioInit = 0;
+	return 1;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/movie", movDecodeVideo);
 
