@@ -427,9 +427,70 @@ static int func_0006C324(int prio)
 	return 0;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libwave", func_0006C3C8);
+extern char D_0035245C[2][0x700];
+static int func_0006C4E4(char *buf);
+static int func_0006C6BC(short *dst, unsigned char *vag, int *hist1, int *hist2);
+static void func_0006C800(int ch, void *buf);
+static void func_0006CA9C(int ch, void *buf);
+static void func_0006CFB4(int ch, char *dst, void *src);
+typedef int (*SceWaveCallback)(int ch, void *buf, int size, int arg);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libwave", func_0006C4E4);
+static int func_0006C3C8(unsigned int args, void *argp)
+{
+	SceWaveMain *m = (SceWaveMain *)argp;
+	int i = 0;
+	int j;
+
+	while (D_003523D8 == 0) {
+		if (func_0006C4E4(D_0035245C[i]) == 0) {
+			sceKernelDelayThread(10000);
+			continue;
+		}
+		for (j = 1; j < 16; j++)
+			func_0006C4E4(D_0035245C[i] + j * 0x70);
+		sceAudioOutputBlocking(m->ch, 0x8000, D_0035245C[i]);
+		i = (i + 1) % 2;
+	}
+	sceAudioOutputBlocking(m->ch, 0, NULL);
+	sceKernelExitThread(0);
+	return 0;
+}
+
+static int func_0006C4E4(char *buf)
+{
+	int ch;
+	int n = 0;
+
+	wclr(buf, 0x70);
+	for (ch = 0; ch < 8; ch++) {
+		if (D_0035325C[ch].stat == 0)
+			continue;
+		n++;
+		if (!(D_0035325C[ch].flags & 0x400)) {
+			if (!(D_0035325C[ch].flags & 0x100)) {
+				if (D_0035325C[ch].data != NULL)
+					func_0006C800(ch, D_0035372C);
+			} else {
+				if (D_0035325C[ch].data != NULL)
+					func_0006CA9C(ch, D_0035372C);
+			}
+		} else {
+			if (D_0035325C[ch].unk44 != 0) {
+				wclr(D_0035372C, 0x70);
+				if (!(D_0035325C[ch].flags & 0x100)) {
+					if (((SceWaveCallback)D_0035325C[ch].unk44)(ch, D_00353728, 0x10, D_0035325C[ch].unk48))
+						D_0035325C[ch].stat = 0;
+					func_0006C6BC(D_0035372C, D_00353728, &D_0035325C[ch].unk30, &D_0035325C[ch].unk34);
+				} else {
+					if (((SceWaveCallback)D_0035325C[ch].unk44)(ch, D_0035372C, 0x70, D_0035325C[ch].unk48))
+						D_0035325C[ch].stat = 0;
+				}
+			}
+		}
+		func_0006CFB4(ch, buf, D_0035372C);
+	}
+	return n;
+}
 
 extern const signed char D_0007FB28[2][5];
 static int func_0006C6BC(short *dst, unsigned char *vag, int *hist1, int *hist2)
