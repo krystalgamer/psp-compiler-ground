@@ -363,11 +363,7 @@ public:
 /* lib/sgl/KdTree.h (member bodies: sgl_Mesh_4.c, the holder of most instances) */
 struct KdTreeNode {
     KdTreeNode() : _size(0), _start(0), _longest_axis(-1), _split(0), _leaf(true), _f14(0), _left(0), _right(0) {}
-    ~KdTreeNode()
-    {
-        delete _left;
-        delete _right;
-    }
+    ~KdTreeNode();
     unsigned int _size;
     unsigned int _start;
     short _longest_axis;
@@ -377,6 +373,18 @@ struct KdTreeNode {
     KdTreeNode *_left;
     KdTreeNode *_right;
 };
+/* the out-of-line copy (it deletes its children recursively): sgl_BV defines SGL_LINKONCE_KdTreeNode */
+#if SGL_LINKONCE_KdTreeNode
+SGL_LINKONCE_BEGIN
+#endif
+inline KdTreeNode::~KdTreeNode()
+{
+    delete _left;
+    delete _right;
+}
+#if SGL_LINKONCE_KdTreeNode
+SGL_LINKONCE_END
+#endif
 template<class T> class KdTree {
 public:
     KdTree(std::vector<T> &, int, float);

@@ -2,6 +2,7 @@
 /* cflags: -O3 -fno-exceptions */
 #undef __EXCEPTIONS
 #include "cxx/defer_asm.h"
+#define SGL_LINKONCE_KdTreeNode 1
 #include "../main.hpp"
 
 /* these template instances are still asm below */
@@ -290,5 +291,3 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_BV", _ZS
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_BV", _ZSt24__uninitialized_copy_auxIN9__gnu_cxx17__normal_iteratorIPN4math11vector_xyzwESt6vectorIS3_SaIS3_EEEES4_ET0_T_SA_S9_12__false_type);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_BV", _ZSt26__uninitialized_fill_n_auxIN9__gnu_cxx17__normal_iteratorIPN4math11vector_xyzwESt6vectorIS3_SaIS3_EEEEjS3_ET_S9_T0_RKT1_12__false_type);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_BV", _ZN3sgl10KdTreeNodeD1Ev);
