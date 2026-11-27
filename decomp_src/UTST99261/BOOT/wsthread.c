@@ -2,31 +2,27 @@
 #include "common.h"
 #include "http_os.h"
 #include "m2c_macros.h"
-typedef struct MbxAttr {
-    int f0;
-    int f4;
-} MbxAttr;
-typedef struct MbxStatus {
-    int w[8];
-} MbxStatus;
-int CreateMbxMan(void);
 typedef struct ThreadEnt {
     int id;
     int f4, f8, fC, f10;
     struct ThreadEnt *next;           /* 0x14 */
 } ThreadEnt;
+
 typedef struct ThreadList {
     OSMutex *mutex;
     ThreadEnt *head;
     ThreadEnt *tail;
 } ThreadList;
+
 typedef struct MsgMan {
     int count;
     OSMutex *mutex;
 } MsgMan;
+
 typedef struct MbxMsg {
     struct MbxMsg *next;
 } MbxMsg;
+
 typedef struct Mbx {
     int sema;
     int f4, f8;
@@ -34,9 +30,53 @@ typedef struct Mbx {
     MbxMsg *head;                     /* 0x10 */
     MbxMsg *tail;                     /* 0x14 */
 } Mbx;
+
+typedef struct MqAttr {
+    int mq_flags;
+    int mq_maxmsg;
+    int mq_msgsize;
+    int mq_curmsgs;
+} MqAttr;
+
 typedef struct MqInfo {
     unsigned int magic;
+    int mbx;
+    int flags;
+    MqAttr attr;
 } MqInfo;
+
+typedef struct MqMap {
+    char *name;
+    int mbx;
+    struct MqMap *next;
+} MqMap;
+
+typedef struct MqMsg {
+    struct MqMsg *next;
+    unsigned char prio;
+    int len;
+    char data[4];
+} MqMsg;
+
+extern MqMap mqmap_head;
+int strcmp(const char *a, const char *b);
+void *memcpy(void *d, const void *s, unsigned int n);
+int DeleteMbx(int id);
+int SendMbx(int id, MbxMsg *msg);
+int PollMbx(MbxMsg **out, int id);
+int ReceiveMbx(MbxMsg **out, int id);
+
+typedef struct MbxAttr {
+    int f0;
+    int f4;
+} MbxAttr;
+
+typedef struct MbxStatus {
+    int w[8];
+} MbxStatus;
+
+int CreateMbxMan(void);
+
 extern ThreadList thread_list;
 OSMutex *OS_thread_mutex_create(void);
 int OS_thread_mutex_init(OSMutex *m, void *attr);
@@ -124,15 +164,119 @@ int OS_mq_close(int id)
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/wsthread", OS_mq_unlink);
+int OS_mq_unlink(const char *name)
+{
+    MqMap *prev = &mqmap_head;
+    MqMap *p;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/wsthread", OS_mq_send);
+    for (p = mqmap_head.next; p != NULL; p = p->next) {
+        if (strcmp(p->name, name) == 0)
+            break;
+        prev = p;
+    }
+    if (p == NULL)
+        return -1;
+    prev->next = p->next;
+    if (DeleteMbx(p->mbx) != 0)
+        return -1;
+    MEM_free(0, p);
+    return 0;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/wsthread", OS_mq_receive);
+int OS_mq_send(int id, const char *buf, int len, unsigned int prio)
+{
+    MqMsg *msg = NULL;
+    MqInfo *info = mqID2mqInfo(id);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/wsthread", OS_mq_getattr);
+    if (info->magic != 0x98765432) {
+        *__errno() = 9;
+        goto fail;
+    }
+    msg = MEM_malloc(0, len + 0x10);
+    if (msg == NULL) {
+        *__errno() = 0x7A;
+        goto fail;
+    }
+    msg->next = NULL;
+    msg->prio = prio;
+    msg->len = len;
+    memcpy(msg->data, buf, len);
+    if (SendMbx(info->mbx, (MbxMsg *)msg) == 0)
+        return 0;
+    *__errno() = 0xB;
+fail:
+    if (msg != NULL)
+        MEM_free(0, msg);
+    return -1;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/wsthread", OS_mq_setattr);
+int OS_mq_receive(int id, char *buf, int len, unsigned int *prio)
+{
+    MqMsg *msg;
+    MqInfo *info;
+    int r, ret;
+
+    ret = 9;
+    info = mqID2mqInfo(id);
+    if (info->magic != 0x98765432) {
+        *__errno() = ret;
+        goto err;
+    }
+    if (info->flags & 0x4000)
+        r = PollMbx((MbxMsg **)&msg, info->mbx);
+    else
+        r = ReceiveMbx((MbxMsg **)&msg, info->mbx);
+    if (r != 0) {
+        *__errno() = 0xB;
+        goto err;
+    }
+    ret = msg->len;
+    memcpy(buf, msg->data, ret);
+    if (prio != NULL)
+        *prio = msg->prio;
+    MEM_free(0, msg);
+    return ret;
+err:
+    return -1;
+}
+
+int OS_mq_getattr(int id, MqAttr *out)
+{
+    MqInfo *info = mqID2mqInfo(id);
+    MqAttr *a;
+
+    if (info->magic != 0x98765432 || out == NULL) {
+        *__errno() = 9;
+        return -1;
+    }
+    a = &info->attr;
+    out->mq_flags = info->flags;
+    out->mq_maxmsg = a->mq_maxmsg;
+    out->mq_msgsize = a->mq_msgsize;
+    out->mq_curmsgs = a->mq_curmsgs;
+    return 0;
+}
+
+int OS_mq_setattr(int id, MqAttr *attr, MqAttr *old)
+{
+    MqInfo *info = mqID2mqInfo(id);
+    MqAttr *a;
+
+    if (info->magic != 0x98765432 || attr == NULL)
+        return -1;
+    if (old != NULL) {
+        a = &info->attr;
+        old->mq_flags = info->flags;
+        old->mq_maxmsg = a->mq_maxmsg;
+        old->mq_msgsize = a->mq_msgsize;
+        old->mq_curmsgs = a->mq_curmsgs;
+    }
+    if (attr->mq_flags & 0x4000)
+        info->flags |= 0x4000;
+    else
+        info->flags &= ~0x4000;
+    return 0;
+}
 
 int CreateMbx(MbxAttr *a)
 {
