@@ -146,7 +146,24 @@ int fontOfsPos(int *arg0, int arg1) {
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/font", D_000FC544);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/font", fontIsMarkFont);
+int fontIsMarkFont(int c)
+{
+	int r, i, n;
+	short *t;
+	char *q;
+	r = 0;
+	t = *(short **)pMarkTextDat;
+	n = (unsigned int)((int *)pMarkTextDat)[1] >> 1;
+	for (i = 1; i < n; i++) {
+		q = (char *)(i * sizeof(short));
+		q += (int)t;
+		if (*(short *)q == c)
+			r = 1;
+	}
+	if (r)
+		consPrintf("%s : Found Mark Code = %x\n", "fontIsMarkFont", c);
+	return r;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/font", fontGetCharWidth);
 
