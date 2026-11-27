@@ -37,7 +37,16 @@ M2C_UNK *drawGetEnv(void) {
     return &Env;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/draw", drawDispCallback);
+extern int VSyncCt;
+void drawDispCallback(int a, int b)
+{
+	int s;
+	if (b == 0x13) {
+		s = sceKernelCpuSuspendIntr();
+		VSyncCt++;
+		sceKernelCpuResumeIntr(s);
+	}
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -178,4 +187,11 @@ void resOvlProcCurrent(int arg0, int arg1, int arg2, int arg3) {
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/draw", resOvlProcAll);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/draw", resReadInstThr);
+int thrEntry();
+void _resReadInst();
+int resReadInstThr(int thr, int inst)
+{
+	int arg[4];
+	arg[0] = inst;
+	return thrEntry(thr, _resReadInst, arg, 1);
+}

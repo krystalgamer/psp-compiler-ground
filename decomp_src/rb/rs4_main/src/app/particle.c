@@ -123,7 +123,13 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/particle", partCusConvExt)
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/particle", partInitEnvCntx);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/particle", partFreeEnvCntx);
+int partFreeEnvCntx(void *p)
+{
+	if (p != NULL) {
+		_memFree(p, &D_000FE0C4, 0x2E3);
+	}
+	return 1;
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/particle", D_000FE190);
 

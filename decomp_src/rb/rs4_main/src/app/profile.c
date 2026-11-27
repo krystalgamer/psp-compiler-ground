@@ -62,9 +62,21 @@ void randDumpSeed(int i)
 		consPrintf("%s : Tick=%08x Ch=%d %0qx\n", __FUNCTION__, l_uTick, i, l_au64RandSeed[i]);
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/profile", randDumpSeedAll);
+void randDumpSeedAll(void)
+{
+	int i;
+	for (i = 0; i < 5; i++) {
+		randDumpSeed(i);
+	}
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/profile", randSetSeed);
+void randSetSeed(int i, unsigned long long seed)
+{
+	if (i < 5) {
+		l_au64RandSeed[i] = seed;
+	}
+	randDumpSeed(i);
+}
 
 extern unsigned long long l_au64RandSeed[];
 unsigned long long randGetSeed(int i)
