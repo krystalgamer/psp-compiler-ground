@@ -1,6 +1,30 @@
 /* cflags: -O1 */
 #include "common.h"
 #include "m2c_macros.h"
+typedef struct CtxStr {
+    unsigned short *chars;                   /* 0x0 */
+    int slen;                         /* 0x4 */
+} CtxStr;
+int mes_util_streq(const unsigned short *a, const unsigned short *b, int n);
+int mes_util_streq2(const unsigned short *a, const char *b, int n);
+int mes_string_new2(void *ctx, const char *s, int len);
+int mes_string_new(void *ctx, const unsigned short *s, int len);
+typedef unsigned short UCSChar;
+typedef struct UChunk {
+    struct UChunk *next;
+    UCSChar data[100];
+} UChunk;
+typedef struct UString {
+    UChunk *head;
+    UChunk *f4;
+    UChunk *cur;
+    int cap;
+    int base;
+    int len;
+} UString;
+int mes_util_string_eq(UString *s, int v);
+int mes_string_new3(void *ctx, UString *s);
+void mes_context_hash(void *str, unsigned int hash);
 typedef struct HashEnt {
     struct HashEnt *next;
     void *str;
@@ -29,11 +53,75 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_context", mes_context_hash)
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_context", mes_context_index);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_context", mes_context_id);
+int mes_context_id(void *ctx, UString *s)
+{
+    unsigned int h = 0;
+    int n, m;
+    UChunk *ch;
+    UCSChar *p;
+    HashEnt *e;
+    int v;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_context", mes_context_id2);
+    n = s->len;
+    ch = s->head;
+    while (n > 0) {
+        p = ch->data;
+        m = n;
+        if (m > 100)
+            m = 100;
+        n -= m;
+        while (m-- > 0)
+            h = h * 37 ^ *p++;
+        ch = ch->next;
+    }
+    for (e = mes_id_hash[h % 0x71]; e != NULL; e = e->next) {
+        if (e->hash == h && mes_util_string_eq(s, (int)e->str))
+            return (int)e->str;
+    }
+    v = mes_string_new3(ctx, s);
+    mes_context_hash((void *)v, h);
+    return v;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_context", mes_context_id3);
+int mes_context_id2(void *ctx, const char *str)
+{
+    unsigned int h = 0;
+    const char *p;
+    int len;
+    HashEnt *e;
+    int v;
+
+    for (p = str; *p != 0; p++)
+        h = h * 37 ^ (UCSChar)*p;
+    len = p - str;
+    for (e = mes_id_hash[h % 0x71]; e != NULL; e = e->next) {
+        if (e->hash == h && ((CtxStr *)((int)e->str & ~3))->slen == len
+            && mes_util_streq2(((CtxStr *)((int)e->str & ~3))->chars, str, len))
+            return (int)e->str;
+    }
+    v = mes_string_new2(ctx, str, len);
+    mes_context_hash((void *)v, h);
+    return v;
+}
+
+int mes_context_id3(void *ctx, const UCSChar *str, int len)
+{
+    unsigned int h = 0;
+    const UCSChar *p;
+    HashEnt *e;
+    int v;
+
+    for (p = str; p < str + len; p++)
+        h = h * 37 ^ *p;
+    for (e = mes_id_hash[h % 0x71]; e != NULL; e = e->next) {
+        if (e->hash == h && ((CtxStr *)((int)e->str & ~3))->slen == len
+            && mes_util_streq(((CtxStr *)((int)e->str & ~3))->chars, str, len))
+            return (int)e->str;
+    }
+    v = mes_string_new(ctx, str, len);
+    mes_context_hash((void *)v, h);
+    return v;
+}
 
 void mes_context_mark(void)
 {
@@ -46,7 +134,24 @@ void mes_context_mark(void)
     mes_gc_mark(mes_empty);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_context", mes_context_gc);
+void mes_context_gc(void)
+{
+    int i;
+    HashEnt **pp;
+    HashEnt *e;
+
+    for (i = 0; i < 0x71; i++) {
+        pp = &mes_id_hash[i];
+        while ((e = *pp) != NULL) {
+            if (*(int *)((int)e->str & ~3) & 1) {
+                pp = &e->next;
+            } else {
+                *pp = e->next;
+                MEM_free(0, e);
+            }
+        }
+    }
+}
 
 void mes_context_hash_free(void)
 {
