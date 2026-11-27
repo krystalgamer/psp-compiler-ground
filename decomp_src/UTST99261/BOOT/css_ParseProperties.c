@@ -422,13 +422,292 @@ u16 *ParseCSSBorderCollapse(void *decl, u16 *p) {
     return r;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_ParseProperties", ParseCSSBorderColor);
+u16 *ParseCSSBorderColor(void *decl, u16 *p) {
+    CSSVALUE *top = NULL;
+    CSSVALUE *right = NULL;
+    CSSVALUE *bottom = NULL;
+    CSSVALUE *left = NULL;
+    u16 *r;
+    CSSVALUE *v;
+    v = newCSSValue();
+    if (v == NULL) {
+        goto fail;
+    }
+    p = CSS_SkipBlanksAndComments(p);
+    r = ParseCSSIdent(v, p, 0x4D);
+    if (r != NULL) {
+        addCSSValue(decl, v);
+        p = r;
+    } else {
+        top = v;
+        r = ParseBorderColor(v, p);
+        if (r == NULL) {
+            goto bad;
+        }
+        addCSSValue(decl, v);
+        p = CSS_SkipBlanksAndComments(r);
+        right = newCSSValue();
+        if (right == NULL) {
+            goto fail;
+        }
+        r = ParseBorderColor(right, p);
+        if (r == NULL) {
+            freeCSSValue(right);
+            if ((right = duplicateCSSValue(top)) == NULL) {
+                goto fail;
+            }
+            if ((bottom = duplicateCSSValue(top)) == NULL) {
+                goto fail;
+            }
+            if ((left = duplicateCSSValue(top)) == NULL) {
+                goto fail;
+            }
+            addCSSValue(decl, right);
+            addCSSValue(decl, bottom);
+            addCSSValue(decl, left);
+            return p;
+        }
+        addCSSValue(decl, right);
+        p = CSS_SkipBlanksAndComments(r);
+        bottom = newCSSValue();
+        if (bottom == NULL) {
+            goto fail;
+        }
+        r = ParseBorderColor(bottom, p);
+        if (r == NULL) {
+            freeCSSValue(bottom);
+            if ((bottom = duplicateCSSValue(top)) == NULL) {
+                goto fail;
+            }
+            if ((left = duplicateCSSValue(right)) == NULL) {
+                goto fail;
+            }
+            addCSSValue(decl, bottom);
+            addCSSValue(decl, left);
+            return p;
+        }
+        addCSSValue(decl, bottom);
+        p = CSS_SkipBlanksAndComments(r);
+        left = newCSSValue();
+        if (left == NULL) {
+            goto fail;
+        }
+        r = ParseBorderColor(left, p);
+        if (r == NULL) {
+            freeCSSValue(left);
+            if ((left = duplicateCSSValue(right)) == NULL) {
+                goto fail;
+            }
+        } else {
+            p = r;
+        }
+        addCSSValue(decl, left);
+        goto end;
+bad:
+        freeCSSValue(v);
+        return CSS_SkipProperty(p);
+    }
+end:
+    return p;
+fail:
+    freeCSSValue(top);
+    freeCSSValue(right);
+    freeCSSValue(bottom);
+    freeCSSValue(left);
+    return CSS_SkipProperty(p);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_ParseProperties", ParseCSSBorderSpacing);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_ParseProperties", ParseCSSBorderStyle);
+u16 *ParseCSSBorderStyle(void *decl, u16 *p) {
+    CSSVALUE *top = NULL;
+    CSSVALUE *right = NULL;
+    CSSVALUE *bottom = NULL;
+    CSSVALUE *left = NULL;
+    u16 *r;
+    CSSVALUE *v;
+    v = newCSSValue();
+    if (v == NULL) {
+        goto fail;
+    }
+    p = CSS_SkipBlanksAndComments(p);
+    r = ParseCSSIdent(v, p, 0x4D);
+    if (r != NULL) {
+        addCSSValue(decl, v);
+        p = r;
+    } else {
+        top = v;
+        r = ParseBorderStyle(v, p);
+        if (r == NULL) {
+            goto bad;
+        }
+        addCSSValue(decl, v);
+        p = CSS_SkipBlanksAndComments(r);
+        right = newCSSValue();
+        if (right == NULL) {
+            goto fail;
+        }
+        r = ParseBorderStyle(right, p);
+        if (r == NULL) {
+            freeCSSValue(right);
+            if ((right = duplicateCSSValue(top)) == NULL) {
+                goto fail;
+            }
+            if ((bottom = duplicateCSSValue(top)) == NULL) {
+                goto fail;
+            }
+            if ((left = duplicateCSSValue(top)) == NULL) {
+                goto fail;
+            }
+            addCSSValue(decl, right);
+            addCSSValue(decl, bottom);
+            addCSSValue(decl, left);
+            return p;
+        }
+        addCSSValue(decl, right);
+        p = CSS_SkipBlanksAndComments(r);
+        bottom = newCSSValue();
+        if (bottom == NULL) {
+            goto fail;
+        }
+        r = ParseBorderStyle(bottom, p);
+        if (r == NULL) {
+            freeCSSValue(bottom);
+            if ((bottom = duplicateCSSValue(top)) == NULL) {
+                goto fail;
+            }
+            if ((left = duplicateCSSValue(right)) == NULL) {
+                goto fail;
+            }
+            addCSSValue(decl, bottom);
+            addCSSValue(decl, left);
+            return p;
+        }
+        addCSSValue(decl, bottom);
+        p = CSS_SkipBlanksAndComments(r);
+        left = newCSSValue();
+        if (left == NULL) {
+            goto fail;
+        }
+        r = ParseBorderStyle(left, p);
+        if (r == NULL) {
+            freeCSSValue(left);
+            if ((left = duplicateCSSValue(right)) == NULL) {
+                goto fail;
+            }
+        } else {
+            p = r;
+        }
+        addCSSValue(decl, left);
+        goto end;
+bad:
+        freeCSSValue(v);
+        return CSS_SkipProperty(p);
+    }
+end:
+    return p;
+fail:
+    freeCSSValue(top);
+    freeCSSValue(right);
+    freeCSSValue(bottom);
+    freeCSSValue(left);
+    return CSS_SkipProperty(p);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_ParseProperties", ParseCSSBorderWidth);
+u16 *ParseCSSBorderWidth(void *decl, u16 *p) {
+    CSSVALUE *top = NULL;
+    CSSVALUE *right = NULL;
+    CSSVALUE *bottom = NULL;
+    CSSVALUE *left = NULL;
+    u16 *r;
+    CSSVALUE *v;
+    v = newCSSValue();
+    if (v == NULL) {
+        goto fail;
+    }
+    p = CSS_SkipBlanksAndComments(p);
+    r = ParseCSSIdent(v, p, 0x4D);
+    if (r != NULL) {
+        addCSSValue(decl, v);
+        p = r;
+    } else {
+        top = v;
+        r = ParseBorderWidth(v, p);
+        if (r == NULL) {
+            goto bad;
+        }
+        addCSSValue(decl, v);
+        p = CSS_SkipBlanksAndComments(r);
+        right = newCSSValue();
+        if (right == NULL) {
+            goto fail;
+        }
+        r = ParseBorderWidth(right, p);
+        if (r == NULL) {
+            freeCSSValue(right);
+            if ((right = duplicateCSSValue(top)) == NULL) {
+                goto fail;
+            }
+            if ((bottom = duplicateCSSValue(top)) == NULL) {
+                goto fail;
+            }
+            if ((left = duplicateCSSValue(top)) == NULL) {
+                goto fail;
+            }
+            addCSSValue(decl, right);
+            addCSSValue(decl, bottom);
+            addCSSValue(decl, left);
+            return p;
+        }
+        addCSSValue(decl, right);
+        p = CSS_SkipBlanksAndComments(r);
+        bottom = newCSSValue();
+        if (bottom == NULL) {
+            goto fail;
+        }
+        r = ParseBorderWidth(bottom, p);
+        if (r == NULL) {
+            freeCSSValue(bottom);
+            if ((bottom = duplicateCSSValue(top)) == NULL) {
+                goto fail;
+            }
+            if ((left = duplicateCSSValue(right)) == NULL) {
+                goto fail;
+            }
+            addCSSValue(decl, bottom);
+            addCSSValue(decl, left);
+            return p;
+        }
+        addCSSValue(decl, bottom);
+        p = CSS_SkipBlanksAndComments(r);
+        left = newCSSValue();
+        if (left == NULL) {
+            goto fail;
+        }
+        r = ParseBorderWidth(left, p);
+        if (r == NULL) {
+            freeCSSValue(left);
+            if ((left = duplicateCSSValue(right)) == NULL) {
+                goto fail;
+            }
+        } else {
+            p = r;
+        }
+        addCSSValue(decl, left);
+        goto end;
+bad:
+        freeCSSValue(v);
+        return CSS_SkipProperty(p);
+    }
+end:
+    return p;
+fail:
+    freeCSSValue(top);
+    freeCSSValue(right);
+    freeCSSValue(bottom);
+    freeCSSValue(left);
+    return CSS_SkipProperty(p);
+}
 
 u16 *ParseCSSBottom(void *decl, u16 *p) {
     CSSVALUE *v;
@@ -964,7 +1243,100 @@ u16 *ParseCSSMarginWidth(CSSVALUE *v, u16 *p) {
     return r;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_ParseProperties", ParseCSSMargin);
+u16 *ParseCSSMargin(void *decl, u16 *p) {
+    CSSVALUE *top = NULL;
+    CSSVALUE *right = NULL;
+    CSSVALUE *bottom = NULL;
+    CSSVALUE *left = NULL;
+    u16 *r;
+    CSSVALUE *v;
+    v = newCSSValue();
+    if (v == NULL) {
+        goto fail;
+    }
+    p = CSS_SkipBlanksAndComments(p);
+    r = ParseCSSIdent(v, p, 0x4D);
+    if (r != NULL) {
+        addCSSValue(decl, v);
+        p = r;
+    } else {
+        top = v;
+        r = ParseCSSMarginWidth(v, p);
+        if (r == NULL) {
+            goto bad;
+        }
+        addCSSValue(decl, v);
+        p = CSS_SkipBlanksAndComments(r);
+        right = newCSSValue();
+        if (right == NULL) {
+            goto fail;
+        }
+        r = ParseCSSMarginWidth(right, p);
+        if (r == NULL) {
+            freeCSSValue(right);
+            if ((right = duplicateCSSValue(top)) == NULL) {
+                goto fail;
+            }
+            if ((bottom = duplicateCSSValue(top)) == NULL) {
+                goto fail;
+            }
+            if ((left = duplicateCSSValue(top)) == NULL) {
+                goto fail;
+            }
+            addCSSValue(decl, right);
+            addCSSValue(decl, bottom);
+            addCSSValue(decl, left);
+            return p;
+        }
+        addCSSValue(decl, right);
+        p = CSS_SkipBlanksAndComments(r);
+        bottom = newCSSValue();
+        if (bottom == NULL) {
+            goto fail;
+        }
+        r = ParseCSSMarginWidth(bottom, p);
+        if (r == NULL) {
+            freeCSSValue(bottom);
+            if ((bottom = duplicateCSSValue(top)) == NULL) {
+                goto fail;
+            }
+            if ((left = duplicateCSSValue(right)) == NULL) {
+                goto fail;
+            }
+            addCSSValue(decl, bottom);
+            addCSSValue(decl, left);
+            return p;
+        }
+        addCSSValue(decl, bottom);
+        p = CSS_SkipBlanksAndComments(r);
+        left = newCSSValue();
+        if (left == NULL) {
+            goto fail;
+        }
+        r = ParseCSSMarginWidth(left, p);
+        if (r == NULL) {
+            freeCSSValue(left);
+            if ((left = duplicateCSSValue(right)) == NULL) {
+                goto fail;
+            }
+        } else {
+            p = r;
+        }
+        addCSSValue(decl, left);
+        goto end;
+bad:
+        freeCSSValue(v);
+        return CSS_SkipProperty(p);
+    }
+end:
+    return p;
+fail:
+    freeCSSValue(top);
+    freeCSSValue(right);
+    freeCSSValue(bottom);
+    freeCSSValue(left);
+    return CSS_SkipProperty(p);
+}
 
 u16 *ParseCSSMarginTop(void *decl, u16 *p) {
     CSSVALUE *v;
@@ -1126,7 +1498,100 @@ u16 *ParseCSSPaddingTop(void *decl, u16 *p) {
     return r;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_ParseProperties", ParseCSSPadding);
+u16 *ParseCSSPadding(void *decl, u16 *p) {
+    CSSVALUE *top = NULL;
+    CSSVALUE *right = NULL;
+    CSSVALUE *bottom = NULL;
+    CSSVALUE *left = NULL;
+    u16 *r;
+    CSSVALUE *v;
+    v = newCSSValue();
+    if (v == NULL) {
+        goto fail;
+    }
+    p = CSS_SkipBlanksAndComments(p);
+    r = ParseCSSIdent(v, p, 0x4D);
+    if (r != NULL) {
+        addCSSValue(decl, v);
+        p = r;
+    } else {
+        top = v;
+        r = ParseCSSUnit(v, p);
+        if (r == NULL) {
+            goto bad;
+        }
+        addCSSValue(decl, v);
+        p = CSS_SkipBlanksAndComments(r);
+        right = newCSSValue();
+        if (right == NULL) {
+            goto fail;
+        }
+        r = ParseCSSUnit(right, p);
+        if (r == NULL) {
+            freeCSSValue(right);
+            if ((right = duplicateCSSValue(top)) == NULL) {
+                goto fail;
+            }
+            if ((bottom = duplicateCSSValue(top)) == NULL) {
+                goto fail;
+            }
+            if ((left = duplicateCSSValue(top)) == NULL) {
+                goto fail;
+            }
+            addCSSValue(decl, right);
+            addCSSValue(decl, bottom);
+            addCSSValue(decl, left);
+            return p;
+        }
+        addCSSValue(decl, right);
+        p = CSS_SkipBlanksAndComments(r);
+        bottom = newCSSValue();
+        if (bottom == NULL) {
+            goto fail;
+        }
+        r = ParseCSSUnit(bottom, p);
+        if (r == NULL) {
+            freeCSSValue(bottom);
+            if ((bottom = duplicateCSSValue(top)) == NULL) {
+                goto fail;
+            }
+            if ((left = duplicateCSSValue(right)) == NULL) {
+                goto fail;
+            }
+            addCSSValue(decl, bottom);
+            addCSSValue(decl, left);
+            return p;
+        }
+        addCSSValue(decl, bottom);
+        p = CSS_SkipBlanksAndComments(r);
+        left = newCSSValue();
+        if (left == NULL) {
+            goto fail;
+        }
+        r = ParseCSSUnit(left, p);
+        if (r == NULL) {
+            freeCSSValue(left);
+            if ((left = duplicateCSSValue(right)) == NULL) {
+                goto fail;
+            }
+        } else {
+            p = r;
+        }
+        addCSSValue(decl, left);
+        goto end;
+bad:
+        freeCSSValue(v);
+        return CSS_SkipProperty(p);
+    }
+end:
+    return p;
+fail:
+    freeCSSValue(top);
+    freeCSSValue(right);
+    freeCSSValue(bottom);
+    freeCSSValue(left);
+    return CSS_SkipProperty(p);
+}
 
 u16 *ParseCSSPageBreakAfter(void *decl, u16 *p) {
     CSSVALUE *v;
