@@ -70,6 +70,10 @@ void func_000035B4(const unsigned char *in, void *ks, unsigned char *out)
 
 INCLUDE_ASM("tmp/asm/selfboot/lflash_write/nonmatchings/des", func_00003668);
 
+INCLUDE_ASM("tmp/asm/selfboot/lflash_write/nonmatchings/des", func_000036EC);
+
+INCLUDE_ASM("tmp/asm/selfboot/lflash_write/nonmatchings/des", func_00003770);
+
 int func_00003870(const unsigned char *in, const unsigned char *key, unsigned char *out, const unsigned char *iv, unsigned int n)
 {
 	unsigned char tmp[8];
@@ -122,6 +126,26 @@ void func_00003B84(void *a, void *k1, void *k2, void *b)
 
 INCLUDE_ASM("tmp/asm/selfboot/lflash_write/nonmatchings/des", func_00003BA4);
 
+INCLUDE_ASM("tmp/asm/selfboot/lflash_write/nonmatchings/des", func_00003C74);
+
+INCLUDE_ASM("tmp/asm/selfboot/lflash_write/nonmatchings/des", func_00003D44);
+
+INCLUDE_ASM("tmp/asm/selfboot/lflash_write/nonmatchings/des", func_00003DEC);
+
+INCLUDE_ASM("tmp/asm/selfboot/lflash_write/nonmatchings/des", func_00003E94);
+
+INCLUDE_ASM("tmp/asm/selfboot/lflash_write/nonmatchings/des", func_00003FF0);
+
+INCLUDE_ASM("tmp/asm/selfboot/lflash_write/nonmatchings/des", func_00004154);
+
+INCLUDE_ASM("tmp/asm/selfboot/lflash_write/nonmatchings/des", func_0000428C);
+
+INCLUDE_ASM("tmp/asm/selfboot/lflash_write/nonmatchings/des", func_000043C4);
+
+INCLUDE_ASM("tmp/asm/selfboot/lflash_write/nonmatchings/des", func_00004538);
+
+INCLUDE_ASM("tmp/asm/selfboot/lflash_write/nonmatchings/des", func_000046FC);
+
 INCLUDE_ASM("tmp/asm/selfboot/lflash_write/nonmatchings/des", func_0000489C);
 
 void func_000049C8(void *a, void *k1, void *b)
@@ -131,6 +155,8 @@ void func_000049C8(void *a, void *k1, void *b)
 
 INCLUDE_ASM("tmp/asm/selfboot/lflash_write/nonmatchings/des", func_000049E8);
 
+INCLUDE_ASM("tmp/asm/selfboot/lflash_write/nonmatchings/des", func_00004B88);
+
 INCLUDE_ASM("tmp/asm/selfboot/lflash_write/nonmatchings/des", func_00004BA8);
 
 void func_00004D00(void *a, void *k1, void *b)
@@ -139,6 +165,8 @@ void func_00004D00(void *a, void *k1, void *b)
 }
 
 INCLUDE_ASM("tmp/asm/selfboot/lflash_write/nonmatchings/des", func_00004D20);
+
+INCLUDE_ASM("tmp/asm/selfboot/lflash_write/nonmatchings/des", func_00004EF0);
 
 void LflashFatfmt_B7A424A4(void) {
 }
