@@ -130,7 +130,34 @@ SceInt32 decode_setStreamData(t_mpegStreamData *pStreamData, SceMpegStream *pStr
 	return 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/mpeg_mpegstr_pcm/nonmatchings/decode", decode_pcmDemux);
+SceInt32 decode_pcmDemux(SceMpeg *pMpeg, t_mpegStreamData *pStreamData, t_avSyncControl *pAvSync)
+{
+	SceChar8 *pSoundBuf;
+	SceInt32 iAttr;
+	SceInt32 i;
+
+	for (i = 0; i < 25; i++) {
+		if (soundbuf_getCapacity(pAvSync->pSound) == 0) {
+			return 1;
+		}
+
+		SceInt32 ret;
+		ret = sceMpegGetPcmAu(pMpeg, pStreamData->pPcmStream, pStreamData->pPcmAu, &iAttr);
+		if (ret != 0) {
+			return ret;
+		}
+
+		soundbuf_getDrawbuf(pAvSync->pSound, &pSoundBuf);
+
+		memcpy(pSoundBuf, pStreamData->pPcmAu->pEsBuf, pStreamData->pPcmAu->iEsSize);
+
+		soundbuf_setPts(pAvSync->pSound, pStreamData->pPcmAu->pts.ts);
+
+		soundbuf_setBuf(pAvSync->pSound);
+	}
+
+	return 0;
+}
 
 SceInt32 decode_videoDecode(SceMpeg *pMpeg, t_mpegStreamData *pStreamData, t_avSyncControl *pAvSync)
 {
