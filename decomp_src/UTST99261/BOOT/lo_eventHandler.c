@@ -24,6 +24,15 @@ void getTextSelectionRange(BOX *box, int *start, int *end);
 void replaceTextStrings(BOX *box, char *s, int start, int end);
 char *strchr(const char *s, int c);
 void *make_msg_LP19(void *ev, int x, int y, int a, int b, int c, int d);
+typedef struct { u8 unk0[0x30]; } LEHJSEVENT;
+void initJSEvent(LEHJSEVENT *ev, int type, void *node, int a, int b);
+int sendJSEvent(void *obj, LEHJSEVENT *ev);
+void *getDOMDocument(void *node);
+void actSetFocusByBox(void *frame, void *box, int arg);
+int scrollToFocusPosition();
+void *getBox_fromAccessKey(void *body, u16 key);
+extern int D_00584CEC;
+int isFocusInDisplay(void *frame, FOCUSLIST *l);
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_eventHandler", getTargetBox);
 
 void *getEventTargetNode(BOX *box) {
@@ -69,7 +78,53 @@ int handleDragEnd(void) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_eventHandler", handlePointingUp);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_eventHandler", handleEnter);
+int handleEnter(void *ev) {
+    void *g = gESPRIT_LO_GLOBAL_NDA;
+    HISTNODE *node = NULL;
+    HISTNODE *c;
+    BOX *box;
+    void *t;
+    void *n;
+    void *target;
+    FOCUSLIST *f;
+    LEHJSEVENT jev;
+    if (*(int *)g != 0) {
+        node = HST_searchSessionIDHistoryNode(*(int *)g);
+    }
+    if (node == NULL) {
+        node = HST_getHeadHistoryNode();
+        while ((c = HST_getChildHistoryNode(node)) != NULL && HST_getRequestFlag(c) >= 0) {
+            node = c;
+        }
+    }
+    box = M2C_FIELD(node, BOX **, 0x6C);
+    if (box == NULL || !checkBoxValidity(box)) {
+        return -1;
+    }
+    f = FFRAME(box)->cur;
+    if (f == NULL) {
+        return 0;
+    }
+    t = f->obj;
+    if (M2C_FIELD(t, s16 *, 0x3E) == 1) {
+        return 0;
+    }
+    if (isFocusInDisplay(box, f)) {
+        return 0;
+    }
+    n = getEventTargetNode(t);
+    if (D_00584CEC == 0) {
+        t = n;
+        if (Node_getJSObj(n) == NULL) {
+            t = getDOMDocument(n);
+        }
+        initJSEvent(&jev, 4, t, 0, 0);
+        if (sendJSEvent(Node_getJSObj(t), &jev) == 1) {
+            return 0;
+        }
+    }
+    return actDefaultClickActionWithFocus(ev, FFRAME(box)->cur, n);
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -441,7 +496,36 @@ INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/lo_eventHandler", D_00139084
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_eventHandler", getBox_fromAccessKey);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_eventHandler", handleAccessKey);
+int handleAccessKey(void *frame) {
+    void *data = M2C_FIELD(frame, void **, 0x1C);
+    void *body;
+    void *box;
+    void *node;
+    void *target;
+    LEHJSEVENT ev;
+    body = lo_getActiveFrameBodybox();
+    if (body == NULL) {
+        return -1;
+    }
+    box = getBox_fromAccessKey(body, M2C_FIELD(data, u16 *, 8));
+    if (box == NULL) {
+        return 0;
+    }
+    actSetFocusByBox(body, box, 1);
+    scrollToFocusPosition();
+    node = M2C_FIELD(box, void **, 0x28);
+    if (D_00584CEC == 0) {
+        target = node;
+        if (Node_getJSObj(node) == NULL) {
+            target = getDOMDocument(node);
+        }
+        initJSEvent(&ev, 4, target, 0, 0);
+        if (sendJSEvent(Node_getJSObj(target), &ev) == 1) {
+            return 0;
+        }
+    }
+    return actDefaultClickAction(frame, box, node, 0, 0);
+}
 
 int handleInputText(void *ev) {
     int start = 0;
