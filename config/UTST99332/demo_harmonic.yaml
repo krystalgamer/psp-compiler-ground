@@ -408,6 +408,8 @@ segments:
       - [0x163D98, rodata, asm/rodata_163D18]
       - [0x163DD4, .rodata, main_objs/math_Trackball]
       - [0x163E14, rodata, asm/rodata_163D94]
+      - [0x163E88, .rodata, main_objs/glutils_TrackballInterface]
+      - [0x163EA4, rodata, asm/rodata_163E24]
       - [0x163F50, .rodata, main_objs/glutils_TurnTable]
       - [0x163F9C, rodata, asm/rodata_163F1C]
       - [0x164154, .rodata, main_objs/gl_ext_pglBlendEquationExt]
@@ -524,6 +526,8 @@ segments:
       - [0x170BDC, rodata, asm/rodata_170B5C]
       - [0x170CF8, .rodata, main_objs/sh_SphereSampling_Sample]
       - [0x170D14, rodata, asm/rodata_170C94]
+      - [0x170FE8, .rodata, main_objs/sh_SphericalRGBFn]
+      - [0x171004, rodata, asm/rodata_170F84]
       - [0x171218, .rodata, main_objs/sh_SquareMap]
       - [0x171268, rodata, asm/rodata_1711E8]
       - [0x1712A0, .rodata, main_objs/sh_TestEnvSet_TestEnv]
@@ -532,6 +536,8 @@ segments:
       - [0x171484, rodata, asm/rodata_171404]
       - [0x1715F4, .rodata, main_objs/interp_VectorRGBAnim]
       - [0x171610, rodata, asm/rodata_171590]
+      - [0x172354, .rodata, main_objs/sh_VerticesVector]
+      - [0x172370, rodata, asm/rodata_1722F0]
       - [0x172980, .rodata, main_objs/common_FileDump]
       - [0x172B30, rodata, asm/rodata_172AB0]
       - [0x172C30, .rodata, main_objs/basic_parser_basic_parser]
@@ -545,6 +551,8 @@ segments:
       - [0x173004, rodata, asm/rodata_172F84]
       - [0x1733D0, .rodata, main_objs/FloatImage]
       - [0x1733F4, rodata, asm/rodata_173374]
+      - [0x1740E4, .rodata, main_objs/textures_Texture_2]
+      - [0x174100, rodata, asm/rodata_174080]
       - [0x174A20, .rodata, menu]
       - [0x174A78, .rodata, libgum]
       - [0x174AA8, .rodata, libgu]
@@ -646,6 +654,8 @@ segments:
       - { start: 0x189CE4, type: .bss, vram: 0x18AFAC, name: main_objs/glutils_RectanglePicking }
       - { start: 0x189CE4, type: .bss, vram: 0x18B030, name: main_objs/math_Trackball }
       - { start: 0x189CE4, type: bss, vram: 0x18B0B4, name: bss_18B0B4 }
+      - { start: 0x189CE4, type: .bss, vram: 0x18B0B4, name: main_objs/glutils_TrackballInterface }
+      - { start: 0x189CE4, type: bss, vram: 0x18B178, name: bss_18B178 }
       - { start: 0x189CE4, type: .bss, vram: 0x18B178, name: main_objs/glutils_TurnTable }
       - { start: 0x189CE4, type: bss, vram: 0x18B23C, name: bss_18B23C }
       - { start: 0x189CE4, type: .bss, vram: 0x18B368, name: main_objs/gl_ext_pglBlendEquationExt }
@@ -717,11 +727,15 @@ segments:
       - { start: 0x189CE4, type: .bss, vram: 0x18E2DC, name: main_objs/math_factorial }
       - { start: 0x189CE4, type: .bss, vram: 0x18E360, name: main_objs/sh_SphereSampling_Sample }
       - { start: 0x189CE4, type: bss, vram: 0x18E3E4, name: bss_18E3E4 }
+      - { start: 0x189CE4, type: .bss, vram: 0x18E3E4, name: main_objs/sh_SphericalRGBFn }
+      - { start: 0x189CE4, type: bss, vram: 0x18E468, name: bss_18E468 }
       - { start: 0x189CE4, type: .bss, vram: 0x18E468, name: main_objs/sh_SquareMap }
       - { start: 0x189CE4, type: bss, vram: 0x18E4EC, name: bss_18E4EC }
       - { start: 0x189CE4, type: .bss, vram: 0x18E570, name: main_objs/sh_Vector }
       - { start: 0x189CE4, type: .bss, vram: 0x18E5F4, name: main_objs/interp_VectorRGBAnim }
       - { start: 0x189CE4, type: bss, vram: 0x18E6B8, name: bss_18E6B8 }
+      - { start: 0x189CE4, type: .bss, vram: 0x18E6B8, name: main_objs/sh_VerticesVector }
+      - { start: 0x189CE4, type: bss, vram: 0x18E7BC, name: bss_18E7BC }
       - { start: 0x189CE4, type: .bss, vram: 0x18E7BC, name: main_objs/common_FileDump }
       - { start: 0x189CE4, type: .bss, vram: 0x18E7C0, name: main_objs/basic_file_parser_basic_file_parser }
       - { start: 0x189CE4, type: .bss, vram: 0x18E7C4, name: main_objs/basic_parser_basic_parser }
@@ -730,6 +744,8 @@ segments:
       - { start: 0x189CE4, type: .bss, vram: 0x18E7F8, name: main_objs/sys_timer_GetDeltaTime }
       - { start: 0x189CE4, type: .bss, vram: 0x18E860, name: main_objs/textures_textures_internal_Bmp }
       - { start: 0x189CE4, type: bss, vram: 0x18E8E4, name: bss_18E8E4 }
+      - { start: 0x189CE4, type: .bss, vram: 0x18E9F0, name: main_objs/textures_Texture_2 }
+      - { start: 0x189CE4, type: bss, vram: 0x18EA74, name: bss_18EA74 }
       - { start: 0x189CE4, type: .bss, vram: 0x18EA74, name: main_objs/textures_textures_internal_Tga }
       - { start: 0x189CE4, type: .bss, vram: 0x18EA78, name: main_objs/sgi_rgb_bwtorgba }
       - { start: 0x189CE4, type: bss, vram: 0x18EA7C, name: bss_18EA7C }
