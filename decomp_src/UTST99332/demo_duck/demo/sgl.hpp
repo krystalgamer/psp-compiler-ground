@@ -807,6 +807,7 @@ class SphericalRGBFn {
 public:
     virtual void eval(float theta, float phi, float &r, float &g, float &b) const = 0;
     virtual ~SphericalRGBFn() {}
+    void saveCubeMap(const char *, textures::Texture **, unsigned int, int, float) const;
 };
 /* stand-ins until demo/base.hpp / demo/math.hpp declare them */
 common::common_internal::Log &Log_float(common::common_internal::Log &, float) __asm__("_ZN6common15common_internal3LoglsEf");
@@ -1051,7 +1052,25 @@ namespace sh {
 /* 0x6C bytes of floats, bitwise-copied (vector<sh::Vertex> instances in sh_PRT) */
 struct Vertex {
     Vertex();
-    float _p0[0x6C / 4];
+    float _p0[3];
+    VectorRGB _sh;                      /* 0x0C */
+    float _p3C[(0x6C - 0x3C) / 4];
+};
+class VerticesVector {
+public:
+    VerticesVector() : _fC(0), _f10(0), _f14(0), _f18(0), _f1C(0), _f20(0), _f24(0), _f28(0) {}
+    bool load(std::string);
+    void save(std::string);
+    std::vector<Vertex> _v;
+    int _fC, _f10, _f14, _f18, _f1C, _f20, _f24, _f28;
+};
+/* evaluates a VectorRGB (sh_Env) */
+class FunctionEvaluator : public SphericalRGBFn {
+public:
+    FunctionEvaluator(const VectorRGB &f) : _f(&f) {}
+    virtual void eval(float theta, float phi, float &r, float &g, float &b) const;
+    virtual ~FunctionEvaluator() {}
+    const VectorRGB *_f;
 };
 class PRT {
 public:
@@ -1063,8 +1082,7 @@ public:
         bool _fA0, _fA1, _fA2;
         int _fA4[10];                   /* 0xA4 */
     };
-    struct VertexData {
-        std::vector<PerVertexData> _v;
+    struct VertexData : VerticesVector {
     };
     void import_model();
     static const char *DrawFlagName(DrawFlag);
@@ -1076,11 +1094,17 @@ public:
     void process();
     void process(VertexData &);
     void save_if_doesnt_exit();
+    void save();
+    void load();
+    void saveVertexSHAsCubeMap(const char *, unsigned int, unsigned int);
     sgl::RT _rt;
     char _p22C[0x2FC - 0x22C];
     SphereSampling _sampling;           /* 0x2FC */
     bool _processed;                    /* 0x334 */
     VertexData _vdata;                  /* 0x338 */
+    std::vector<PerVertexData> _pvd;    /* 0x364 */
+    char _p370[0x3C8 - 0x370];
+    std::string _name;                  /* 0x3C8 */
 };
 #if SGL_LINKONCE_PerVertexData
 SGL_LINKONCE_BEGIN

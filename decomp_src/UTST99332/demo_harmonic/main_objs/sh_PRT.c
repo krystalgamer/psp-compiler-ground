@@ -6,6 +6,16 @@
 #include "../main.hpp"
 
 #include "UTST99332/demo_duck/gl.hpp"
+#include <fstream>
+extern const char D_0016FFC4[];     /* " " */
+extern const char D_0016FFC8[];     /* " *** error " */
+extern const char D_0016FF2C[];     /* ".prt" */
+static inline std::string prt_filename(const std::string &name)
+{
+    std::string s(name);
+    s += D_0016FF2C;
+    return s;
+}
 extern const float D_0016FDB4;      /* 1.0f */
 extern const char D_0016FE28[];     /* "num sphere samples=" */
 extern const char D_0017006C[];     /* "DRAW_SH" */
@@ -38,7 +48,17 @@ void sh::PRT::process()
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sh_PRT", _ZN2sh3PRT7processERNS0_10VertexDataE);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sh_PRT", _ZN2sh3PRT19save_if_doesnt_exitEv);
+extern const char D_0016FF34[];
+void sh::PRT::save_if_doesnt_exit()
+{
+    std::fstream f;
+    f.open(prt_filename(_name).c_str(), std::ios::in);
+    if (!f.is_open()) {
+        common::Log() << D_0016FF34;
+        save();
+    } else
+        f.close();
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sh_PRT", _ZN2sh3PRT19diffuse_shadow_passERNS0_10VertexDataE);
 
@@ -61,7 +81,10 @@ const char *sh::PRT::DrawFlagName(DrawFlag f)
     return D_00170098;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sh_PRT", _ZN2sh3PRT12draw_samplesEiRKNS_9VectorRGBE);
+void sh::PRT::draw_samples(int, const VectorRGB &)
+{
+    glColor3f(1, 0, 0);
+}
 
 void sh::PRT::draw(int flags, DrawFlag f, const math::matrix &m, int k)
 {
@@ -81,7 +104,19 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sh_PRT", _ZN
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sh_PRT", _ZN2sh3PRT10check_meshEv);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sh_PRT", _ZN2sh3PRT21saveVertexSHAsCubeMapEPKcjj);
+extern const char D_0016FFB0[];     /* "../lib/sh/PRT.cpp" */
+extern const char D_0017017C[];
+extern const char D_001701AC[];
+extern const char D_001701CC[];
+extern const float D_0016FDC0;      /* 1.0f */
+extern const char saveVertexSHAsCubeMap_name[] __asm__("_ZZN2sh3PRT21saveVertexSHAsCubeMapEPKcjjE19__PRETTY_FUNCTION__");
+void sh::PRT::saveVertexSHAsCubeMap(const char *name, unsigned int _Index, unsigned int size)
+{
+    SGL_ASSERT(_Index > 0 && _Index < _vdata._v.size(), D_0016FFC8, D_0017017C, D_0016FFB0, saveVertexSHAsCubeMap_name, 1244, D_0016FFC4);
+    std::cout << D_001701AC << _Index << D_001701CC;
+    FunctionEvaluator f(_pvd[_Index]._sh[0]);
+    const float e = D_0016FDC0; f.saveCubeMap(name, 0, size, 0, e);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sh_PRT", _ZN2sh3PRT18make_adj_tri_listsEv);
 
@@ -91,9 +126,34 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sh_PRT", _ZN
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sh_PRT", _ZN2sh3PRT20calc_average_normalsEv);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sh_PRT", _ZN2sh3PRT4saveEv);
+extern const char D_001702DC[];
+void sh::PRT::save()
+{
+    if (!_processed) {
+        common::Log() << D_001702DC;
+        return;
+    }
+    _vdata.save(prt_filename(_name));
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sh_PRT", _ZN2sh3PRT4loadEv);
+extern const char D_0017032C[];
+extern const char D_00170378[];
+void sh::PRT::load()
+{
+    if (_processed) {
+        common::Log() << D_0017032C;
+        return;
+    }
+    VertexData d;
+    if (!d.load(prt_filename(_name)))
+        return;
+    if (d._v.size() != _rt.getMesh()->getVertices().size()) {
+        common::Log() << D_00170378;
+        return;
+    }
+    for (unsigned int i = 0; i != d._v.size(); i++)
+        _vdata._v[i]._sh = d._v[i]._sh;
+}
 
 extern "C" {
 void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_E08F0");
@@ -131,8 +191,6 @@ DEMO_LINKONCE_ORDER(DEMO_LINKONCE(_ZNSt6vectorIN2sh3PRT13PerVertexDataESaIS2_EE6
                     DEMO_LINKONCE(_ZSt24__uninitialized_copy_auxIN9__gnu_cxx17__normal_iteratorIPN2sh3PRT13PerVertexDataESt6vectorIS4_SaIS4_EEEES9_ET0_T_SB_SA_12__false_type)
                     DEMO_LINKONCE(_ZSt26__uninitialized_fill_n_auxIN9__gnu_cxx17__normal_iteratorIPN2sh3PRT13PerVertexDataESt6vectorIS4_SaIS4_EEEEjS4_ET_SA_T0_RKT1_12__false_type)
                     DEMO_LINKONCE(_ZN2sh3PRT13PerVertexDataC1Ev));
-extern const char D_0016FFC4[];     /* " " */
-extern const char D_0016FFC8[];     /* " *** error " */
 extern const char D_00170420[];
 extern const char D_0017042C[];
 extern const char D_00170430[];

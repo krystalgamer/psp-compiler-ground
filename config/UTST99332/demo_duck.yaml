@@ -433,6 +433,8 @@ segments:
       - [0x1722B8, rodata, asm/rodata_172238]
       - [0x172CC4, .rodata, main_objs/sh_Matrix]
       - [0x172D0C, rodata, asm/rodata_172C8C]
+      - [0x172D5C, .rodata, main_objs/sh_PRT]
+      - [0x172D60, rodata, asm/rodata_172CE0]
       - [0x174140, .rodata, main_objs/sh_SquareMap]
       - [0x174190, rodata, asm/rodata_174110]
       - [0x1741C8, .rodata, main_objs/sh_TestEnvSet_TestEnv]

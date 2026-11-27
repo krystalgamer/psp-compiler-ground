@@ -47,6 +47,9 @@ rodata 0x171B14 -
 # sh_* objects whose static initializer (the header statics) is C++: .rodata after the vtable, .bss
 rodata 0x172C44 main_objs/sh_Matrix
 rodata 0x172C8C -
+# sh_PRT: the float pool (1.0f) of PRT::draw_samples
+rodata 0x172CDC main_objs/sh_PRT
+rodata 0x172CE0 -
 rodata 0x172210 main_objs/sh_DebugMap
 rodata 0x172238 -
 rodata 0x1740C0 main_objs/sh_SquareMap
