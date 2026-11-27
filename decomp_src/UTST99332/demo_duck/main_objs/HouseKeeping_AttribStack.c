@@ -1485,6 +1485,9 @@ extern "C" void HouseKeeping_instance_refs(std::deque<unsigned int> &d, std::deq
     d.pop_back();
     d.pop_front();
     d = e;
+    /* deque<unsigned>::pop_back's out-of-line copy (static pointer in a discarded section: no .rodata) */
+    static void (std::deque<unsigned int>::*pop_back)() __attribute__((section(".discard.data"))) = &std::deque<unsigned int>::pop_back;
+    __asm__ volatile("" : : "m"(pop_back));
 }
 
 /* out-of-line inline members / instances that stay asm */
@@ -1492,7 +1495,5 @@ extern "C" void HouseKeeping_instance_refs(std::deque<unsigned int> &d, std::deq
 #define INCLUDE_ASM INCLUDE_ASM_LINKONCE
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/HouseKeeping_AttribStack", _ZN12HouseKeeping11AttribStackC1Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/HouseKeeping_AttribStack", _ZNSt5dequeIjSaIjEE8pop_backEv);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/HouseKeeping_AttribStack", _ZN12HouseKeeping11AttribStack3getERNS_10EnableMaskEj);
