@@ -200,6 +200,7 @@ template<class T> class KeyFrame {
 public:
     KeyFrame();
     KeyFrame(float, T, bool);
+    ~KeyFrame() {}
     bool isClosingKey() const;
     T value() const;
     void setValue(T);
