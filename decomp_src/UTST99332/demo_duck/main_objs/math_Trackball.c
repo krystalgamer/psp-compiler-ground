@@ -2,12 +2,14 @@
 /* cflags: -O3 -fno-exceptions */
 #undef __EXCEPTIONS
 #include "cxx/defer_asm.h"
-/* the constants stay in the module's .rodata (asm) */
-extern const float D_00166CB0;      /* 1.0f: reset()'s matrix::Identity() */
-#define MATH_IDENTITY_ONE D_00166CB0
+#define DEMO_STATICS_MATH
+#define DEMO_STATICS_IOSTREAM
 #include "../main.hpp"
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/math_Trackball", _Z41__static_initialization_and_destruction_0ii_34F1C);
+/* the module's .ctors/.dtors refer to the static constructor/destructor; cc1plus keys them to the
+   first public symbol, the deferred-asm wrapper of the (still asm) first function */
+__asm__(".globl _GLOBAL__I__ZN4math9TrackballC2ERKNS_6matrixE\n_GLOBAL__I__ZN4math9TrackballC2ERKNS_6matrixE = _GLOBAL__I__ZN4math9TrackballC2ERKNS_6matrixE__asm");
+__asm__(".globl _GLOBAL__D__ZN4math9TrackballC2ERKNS_6matrixE\n_GLOBAL__D__ZN4math9TrackballC2ERKNS_6matrixE = _GLOBAL__D__ZN4math9TrackballC2ERKNS_6matrixE__asm");
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/math_Trackball", _ZN4math9TrackballC2ERKNS_6matrixE);
 
@@ -38,20 +40,3 @@ const math::matrix &math::Trackball::getDeltaRot() const
 {
     return _deltaRot;
 }
-
-extern "C" {
-void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_34F1C");
-void _GLOBAL__I__ZN4math9TrackballC2ERKNS_6matrixE(void);
-void _GLOBAL__D__ZN4math9TrackballC2ERKNS_6matrixE(void);
-}
-
-void _GLOBAL__I__ZN4math9TrackballC2ERKNS_6matrixE(void)
-{
-    static_init(1, 0xFFFF);
-}
-
-void _GLOBAL__D__ZN4math9TrackballC2ERKNS_6matrixE(void)
-{
-    static_init(0, 0xFFFF);
-}
-

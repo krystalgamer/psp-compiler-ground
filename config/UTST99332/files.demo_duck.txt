@@ -356,7 +356,6 @@ bss 0x191C48 main_objs/float_basic_parser_get
 rodata 0x166BAC main_objs/glutils_RectanglePicking
 rodata 0x166C34 -
 bss 0x18E42C main_objs/glutils_RectanglePicking
-bss 0x18E4B0 -
 bss 0x18EAA8 main_objs/interp_KeyFrameSequence
 rodata 0x169078 main_objs/scene_DefaultShader
 rodata 0x1690A4 -
@@ -439,3 +438,8 @@ rodata 0x171158 main_objs/sgl_MeshParams
 rodata 0x171188 -
 bss 0x190B3C main_objs/sgl_MeshParams
 bss 0x190C40 -
+# math_Trackball: C++ static initializer; .rodata: the float pools (track()'s THRESHOLD after them stays asm); .bss
+rodata 0x166C74 main_objs/math_Trackball
+rodata 0x166CB4 -
+bss 0x18E4B0 main_objs/math_Trackball
+bss 0x18E534 -
