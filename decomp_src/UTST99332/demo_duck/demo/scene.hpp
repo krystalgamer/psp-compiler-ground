@@ -144,6 +144,21 @@ void math_TransformStack_push(math::TransformStack &) __asm__("_ZN4math14Transfo
 void math_TransformStack_pop(math::TransformStack &) __asm__("_ZN4math14TransformStack3popEv");
 void math_TransformStack_mult(math::TransformStack &, const math::matrix &)
     __asm__("_ZN4math14TransformStack4multERKNS_6matrixE");
+int sgl_PrimitiveIndex_countTriangles(const sgl::PrimitiveIndex<int> &)
+    __asm__("_ZNK3sgl14PrimitiveIndexIiE14countTrianglesEv");
+/* math::matrix members not declared in demo/math.hpp yet */
+math::vector_xyz math_matrix_eulerAnglesXYZ(const math::matrix &) __asm__("_ZNK4math6matrix14eulerAnglesXYZEv");
+math::vector_xyz math_matrix_eulerAngles(const math::matrix &, math::RotationOrder)
+    __asm__("_ZNK4math6matrix11eulerAnglesENS_13RotationOrderE");
+math::matrix math_matrix_EulerRotation(float, float, float, math::RotationOrder)
+    __asm__("_ZN4math6matrix13EulerRotationEfffNS_13RotationOrderE");
+void textures_Texture_setupGl(textures::Texture &, int, bool) __asm__("_ZN8textures7Texture7setupGlEib");
+int textures_Texture_load(textures::Texture &, const char *) __asm__("_ZN8textures7Texture4loadEPKc");
+void textures_Texture_resizePow2(textures::Texture &, bool, bool, bool) __asm__("_ZN8textures7Texture10resizePow2Ebbb");
+void textures_Texture_initGl(textures::Texture &, int) __asm__("_ZN8textures7Texture6initGlEi");
+void gl_GenTextures(int, unsigned int *) __asm__("_ZN2gl11GenTexturesEiPj");
+void gl_DeleteTextures(int, const unsigned int *) __asm__("_ZN2gl14DeleteTexturesEiPKj");
+extern "C" void sceGuTexFunc(int tfx, int tcc);
 bool sgl_Frustum_intersect(sgl::Frustum *, sgl::BV &) __asm__("_ZN3sgl7Frustum9intersectERNS_2BVE");
 
 class BVdata {
@@ -192,6 +207,14 @@ public:
         int _f24;               /* 0x24 */
     };
     Node(std::string, bool);
+    /* clone(): `*copy = *this` copies the flags and Members, not the
+       shared_object_base (its handle data) */
+    Node &operator=(const Node &o)
+    {
+        common::VarSetFunc<NodeFlags, bool>::operator=(o);
+        _m = o._m;
+        return *this;
+    }
     virtual ~Node();
     virtual const char *getTypeName() const;
     virtual void save(std::ostream &);
@@ -313,7 +336,18 @@ public:
     void setHint(std::string);
     void setOverrideAlpha(bool, unsigned char);
     static bool debug_output;
-    char _p28[0x80 - 0x28];
+    /* textures::Texture is 0x54 bytes (its operator= copies 0x50; demo/base.hpp declares 0x50) */
+    struct Tex {
+        Tex &operator=(const Tex &o)
+        {
+            t = o.t;
+            return *this;
+        }
+        textures::Texture t;
+        int _f50;
+    };
+    Tex _tex;                       /* 0x28 */
+    unsigned int _texid;            /* 0x7C: GL texture name */
     std::string _path;              /* 0x80 */
     std::string _hint;              /* 0x84 */
     bool _override_alpha;           /* 0x88 */
@@ -411,8 +445,30 @@ public:
     virtual void traverse(TraversalVarStack &);
     virtual bool calcbv(math::TransformStack &, sgl::BV &);
     virtual common::handle<Node> clone(std::string) const;
+    enum Space { };
     void flushCache();
     void invalidate_cached_mat();
+    void setIdentity();
+    void setFromMatrix(math::matrix);
+    math::vector_xyz getEulerAngles(math::RotationOrder) const;
+    void setEulerRotation(const math::vector_xyz &, math::RotationOrder);
+    void setRotation(const math::quaternion &);
+    void setRotation(math::vector_xyz);
+    void set_rotation(const math::matrix &);
+    void preTransform(math::matrix, math::matrix, math::matrix, bool);
+    static void SetViewerTransform(const math::matrix &);
+    static void SetParentTransform(const math::matrix &);
+    void translate(Space, float, float, float);
+    void rotate(Space, float, float, float, math::RotationOrder);
+    void rotateX(Space, float);
+    void rotateY(Space, float);
+    void rotateZ(Space, float);
+    void transform(Space, const math::matrix &);
+    static float set_angle(float);
+    static bool use_angle_range;
+    static float angle_range;
+    static math::matrix tmp_viewer_transform;
+    static math::matrix tmp_parent_transform;
     const math::matrix &getMatrix() const;
     math::vector_xyz getTranslation() const;
     math::vector_xyz getScale() const;
@@ -431,6 +487,7 @@ class MeshData : public sgl::CoreMesh {
 public:
     MeshData();
     virtual ~MeshData();
+    void copy(const sgl::Mesh &);
     void finish();
     void draw(const TraversalVarStack &);
 };

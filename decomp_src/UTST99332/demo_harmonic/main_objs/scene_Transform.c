@@ -5,6 +5,15 @@
 #include "../main.hpp"
 
 extern const char D_0016A148[];
+extern const char D_0016A1E0[];     /* "../lib/scene/Transform.cpp" */
+extern const char D_0016A1FC[];     /* " " */
+extern const char D_0016A258[];     /* "_RotationOrder == math::XYZ" */
+extern const char D_0016A274[];     /* " *** error " */
+extern const char Transform_setEulerRotation_name[]
+    __asm__("_ZZN5scene9Transform16setEulerRotationERKN4math10vector_xyzENS1_13RotationOrderEE19__PRETTY_FUNCTION__");
+extern const float D_0016A12C, D_0016A130, D_0016A134;     /* 1.0f */
+extern const float D_0016A13C;      /* 2 pi */
+extern const float D_0016A144;      /* 1.0f */
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Transform", _Z41__static_initialization_and_destruction_0ii_938EC);
 
@@ -38,23 +47,51 @@ math::quaternion scene::Transform::getRotation() const
     return math::quaternion::FromEulerAngles(_euler.x, _euler.y, _euler.z, (math::RotationOrder)0);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Transform", _ZNK5scene9Transform14getEulerAnglesEN4math13RotationOrderE);
+math::vector_xyz scene::Transform::getEulerAngles(math::RotationOrder o) const
+{
+    if (o == 0)
+        return _euler;
+    return math_matrix_eulerAngles(getMatrix(), o);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Transform", _ZN5scene9Transform16setEulerRotationERKN4math10vector_xyzENS1_13RotationOrderE);
+void scene::Transform::setEulerRotation(const math::vector_xyz &v, math::RotationOrder o)
+{
+    SCENE_ASSERT(o == 0, D_0016A274, D_0016A258, D_0016A1E0, Transform_setEulerRotation_name, 153, D_0016A1FC);
+    setRotation(v);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Transform", _ZN5scene9Transform11setRotationERKN4math10quaternionE);
+void scene::Transform::setRotation(const math::quaternion &q)
+{
+    set_rotation(q.toMatrix());
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Transform", _ZN5scene9Transform12set_rotationERKN4math6matrixE);
+void scene::Transform::set_rotation(const math::matrix &m)
+{
+    const math::vector_xyz &e = math_matrix_eulerAnglesXYZ(m);
+    setRotation(e);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Transform", _ZN5scene9Transform12preTransformEN4math6matrixES2_S2_b);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Transform", _ZN5scene9Transform18SetViewerTransformERKN4math6matrixE);
+void scene::Transform::SetViewerTransform(const math::matrix &m)
+{
+    tmp_viewer_transform = m;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Transform", _ZN5scene9Transform18SetParentTransformERKN4math6matrixE);
+void scene::Transform::SetParentTransform(const math::matrix &m)
+{
+    tmp_parent_transform = m;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Transform", _ZN5scene9Transform9translateENS0_5SpaceEfff);
+void scene::Transform::translate(Space s, float x, float y, float z)
+{
+    transform(s, math::matrix::Translation(x, y, z));
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Transform", _ZN5scene9Transform6rotateENS0_5SpaceEfffN4math13RotationOrderE);
+void scene::Transform::rotate(Space s, float a, float b, float c, math::RotationOrder o)
+{
+    transform(s, math_matrix_EulerRotation(a, b, c, o));
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Transform", _ZN5scene9Transform7rotateXENS0_5SpaceEf);
 
@@ -64,7 +101,12 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Transf
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Transform", _ZN5scene9Transform9transformENS0_5SpaceERKN4math6matrixE);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Transform", _ZN5scene9Transform9set_angleEf);
+float scene::Transform::set_angle(float a)
+{
+    if (use_angle_range)
+        return math::wrap(a, angle_range, D_0016A13C);
+    return a;
+}
 
 void scene::Transform::setTranslation(math::vector_xyz v)
 {

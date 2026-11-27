@@ -2,10 +2,45 @@
 /* cflags: -O3 -fno-exceptions */
 #undef __EXCEPTIONS
 #include "cxx/defer_asm.h"
+extern const char scene_bvdata_warn[] __asm__("D_001662E4");         /* " *** warning " */
+extern const char scene_bvdata_notvalid[] __asm__("D_0016629C");     /* "! valid()" */
+extern const char scene_bvdata_file[] __asm__("D_001662AC");         /* "../lib/scene/BVdata.h" */
+extern const char scene_bvdata_created[] __asm__("D_001662C4");      /* "bounding box already created" */
+extern const char scene_bvdata_err[] __asm__("D_001663E4");          /* " *** error " */
+extern const char scene_bvdata_valid[] __asm__("D_001668A0");        /* "valid()" */
+extern const char scene_bvdata_sp[] __asm__("D_00166598");           /* " " */
+extern const char scene_bvdata_get_name[] __asm__("_ZZN5scene6BVdata3getEvE19__PRETTY_FUNCTION___166880");
+extern const char scene_mesh_err[] __asm__("D_001663E4");
+extern const char scene_mesh_expr[] __asm__("D_0016657C");
+extern const char scene_mesh_file[] __asm__("D_00166584");
+extern const char scene_mesh_sp[] __asm__("D_00166598");
+extern const char scene_mesh_getData_name[] __asm__("_ZZN5scene4Mesh7getDataEvE19__PRETTY_FUNCTION___166554");
+extern const char scene_bvdata_create_name[] __asm__("_ZZN5scene6BVdata6createEN3sgl2BV4TypeEE19__PRETTY_FUNCTION___166268");
 #include "../main.hpp"
+extern const char D_001663E4[];     /* " *** error " */
+extern const char D_001663CC[];     /* "../lib/scene/Graph.cpp" */
+extern const char D_00166598[];     /* " " */
+extern const char D_00166600[];     /* "::" */
+extern const char D_00166720[];     /* "! _namespace_stack.empty()" */
+extern const char D_001668C4[];     /* "\n" */
+extern const char Graph_finish_name[] __asm__("_ZZN5scene5Graph6finishEvE19__PRETTY_FUNCTION__");
+extern const char Graph_popNamespace_name[] __asm__("_ZZN5scene5Graph12popNamespaceEvE19__PRETTY_FUNCTION__");
+extern const char Graph_getNamespace_name[] __asm__("_ZZNK5scene5Graph12getNamespaceEvE19__PRETTY_FUNCTION__");
+extern const char Graph_loadNamespace_name[] __asm__("_ZZN5scene5Graph13loadNamespaceESsE19__PRETTY_FUNCTION__");
+extern const char D_0016659C[];
+extern const char D_001665D8[];
+extern const char Graph_newMesh_name[] __asm__("_ZZN5scene5Graph7newMeshESsRKN3sgl4MeshEjE19__PRETTY_FUNCTION__");
+extern const char D_001663BC[];     /* "object.valid()" */
+extern const char Graph_cloneGroup_name[] __asm__("_ZZN5scene5Graph10cloneGroupESsSsE19__PRETTY_FUNCTION__");
+extern const char Graph_cloneObject_name[] __asm__("_ZZN5scene5Graph11cloneObjectESsSsE19__PRETTY_FUNCTION__");
 
 /* weak instances still asm in this object */
 extern template class std::_Deque_base<std::string, std::allocator<std::string> >;
+extern template class std::deque<std::string, std::allocator<std::string> >;
+extern template class std::_Deque_base<math::matrix, std::allocator<math::matrix> >;
+extern template class std::deque<math::matrix, std::allocator<math::matrix> >;
+extern template class std::_List_base<common::handle<scene::Transform>, std::allocator<common::handle<scene::Transform> > >;
+extern template class std::_List_base<common::handle<scene::StaticTransform>, std::allocator<common::handle<scene::StaticTransform> > >;
 extern template class std::_Rb_tree<const std::string, std::pair<const std::string, common::handle<scene::Node> >,
                                     std::_Select1st<std::pair<const std::string, common::handle<scene::Node> > >,
                                     std::less<const std::string>,
@@ -14,6 +49,9 @@ extern template class std::_Rb_tree<const std::string, std::pair<const std::stri
                                     std::_Select1st<std::pair<const std::string, common::handle<scene::Node> > >,
                                     common::LessStr,
                                     std::allocator<std::pair<const std::string, common::handle<scene::Node> > > >;
+
+extern const char D_00166294[];     /* "root" */
+extern const char D_001662A8[];     /* "" */
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Graph", _Z41__static_initialization_and_destruction_0ii_5DF00);
 
@@ -28,11 +66,21 @@ Graph::~Graph()
 }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Graph", _ZN5scene5Graph10deleteNodeEN6common6handleINS_4NodeEEE);
+void scene::Graph::deleteNode(common::handle<Node> n)
+{
+    if (hnull(n))
+        return;
+    hdelete(n);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Graph", _ZN5scene5Graph12deleteBranchEN6common6handleINS_4NodeEEE);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Graph", _ZN5scene5Graph9cloneNodeEN6common6handleINS_4NodeEEESs);
+common::handle<scene::Node> scene::Graph::cloneNode(common::handle<Node> n, std::string name)
+{
+    common::handle<Node> c = n->clone(name);
+    add_node(c);
+    return c;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Graph", _ZN5scene5Graph11cloneBranchEN6common6handleINS_5GroupEEESs);
 
@@ -42,13 +90,47 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Graph"
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Graph", _ZN5scene5Graph9newObjectESs);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Graph", _ZN5scene5Graph7newMeshESsRKN3sgl4MeshEj);
+common::handle<scene::Mesh> scene::Graph::newMesh(std::string name, const sgl::Mesh &m, unsigned int fmt)
+{
+    common::handle<Mesh> h = newNode<Mesh>(name, true);
+    SCENE_ASSERT(sgl_PrimitiveIndex_countTriangles(m.getPrims()), D_001663E4, D_001665D8, D_001663CC, Graph_newMesh_name, 231,
+                 D_0016659C);
+    h->getData().copy(m);
+    h->format(fmt);
+    return h;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Graph", _ZN5scene5Graph9getObjectESs);
+common::handle<scene::Object> scene::Graph::getObject(std::string name)
+{
+    std::string key = name;
+    key += D_00166600;
+    key += name;
+    NodeMap::iterator i = _mapA.find(key);
+    return common::handle<Object>(i != _mapA.end() ? i->second : common::handle<Node>());
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Graph", _ZN5scene5Graph10newTextureESsbSs);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Graph", _ZN5scene5Graph17flattenTransformsEN6common6handleINS_5GroupEEE);
+void scene::Graph::flattenTransforms(common::handle<Group> g)
+{
+    math::TransformStack ts;
+    ts.push();
+    ts.identity();
+    g->flatten(ts);
+    ts.pop();
+    {
+        common::handles_list<Transform> l;
+        getSublist<Transform>(l);
+        for (common::handles_list<Transform>::iterator i = l.begin(); i != l.end(); ++i)
+            (*i)->setIdentity();
+    }
+    {
+        common::handles_list<StaticTransform> l;
+        getSublist<StaticTransform>(l);
+        for (common::handles_list<StaticTransform>::iterator i = l.begin(); i != l.end(); ++i)
+            (*i)->setIdentity();
+    }
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Graph", _ZN5scene5Graph7cleanUpEv);
 
@@ -58,15 +140,41 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Graph"
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Graph", _ZN5scene5Graph10assertFlatEv);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Graph", _ZN5scene5Graph13loadNamespaceESs);
+void scene::Graph::loadNamespace(std::string ns)
+{
+    SCENE_ASSERT(!_namespace_stack.empty(), D_001663E4, D_00166720, D_001663CC, Graph_loadNamespace_name, 593, D_00166598);
+    _namespace_stack.top() = ns;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Graph", _ZN5scene5Graph13pushNamespaceESs);
+void scene::Graph::pushNamespace(std::string ns)
+{
+    _namespace_stack.push(ns);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Graph", _ZN5scene5Graph12popNamespaceEv);
+void scene::Graph::popNamespace()
+{
+    SCENE_ASSERT(!_namespace_stack.empty(), D_001663E4, D_00166720, D_001663CC, Graph_popNamespace_name, 607, D_00166598);
+    _namespace_stack.pop();
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Graph", _ZNK5scene5Graph12getNamespaceEv);
+const std::string &scene::Graph::getNamespace() const
+{
+    SCENE_ASSERT(!_namespace_stack.empty(), D_001663E4, D_00166720, D_001663CC, Graph_getNamespace_name, 613, D_00166598);
+    return _namespace_stack.top();
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Graph", _ZNK5scene5Graph14translatedNameESs);
+std::string scene::Graph::translatedName(std::string name) const
+{
+    std::string r;
+    r = getNamespace();
+    if (r == D_001662A8)
+        r = name;
+    else {
+        r += D_00166600;
+        r += name;
+    }
+    return r;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Graph", _ZN5scene5Graph8add_nodeEN6common6handleINS_4NodeEEE);
 
@@ -79,13 +187,25 @@ void scene::Graph::printMapU() {
 void scene::Graph::printMapO() {
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Graph", _ZN5scene5Graph5clearEv);
+void scene::Graph::clear()
+{
+    *this = Graph();
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Graph", _ZN5scene5Graph5getBVEv);
+sgl::BV &scene::Graph::getBV()
+{
+    return _root->_bvdata.get();
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Graph", _ZN5scene5Graph23tag_identity_transformsEv);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Graph", _ZN5scene5Graph6finishEv);
+void scene::Graph::finish()
+{
+    common::Log() << Graph_finish_name << D_001668C4;
+    tag_identity_transforms();
+    calcbv();
+    _finish_called = true;
+}
 
 extern "C" {
 void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_5DF00");

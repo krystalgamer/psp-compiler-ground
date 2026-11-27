@@ -10,6 +10,11 @@ extern const char scene_bvdata_err[] __asm__("D_00169304");          /* " *** er
 extern const char scene_bvdata_valid[] __asm__("D_001697C0");        /* "valid()" */
 extern const char scene_bvdata_sp[] __asm__("D_001694B8");           /* " " */
 extern const char scene_bvdata_get_name[] __asm__("_ZZN5scene6BVdata3getEvE19__PRETTY_FUNCTION___1697A0");
+extern const char scene_mesh_err[] __asm__("D_00169304");
+extern const char scene_mesh_expr[] __asm__("D_0016949C");
+extern const char scene_mesh_file[] __asm__("D_001694A4");
+extern const char scene_mesh_sp[] __asm__("D_001694B8");
+extern const char scene_mesh_getData_name[] __asm__("_ZZN5scene4Mesh7getDataEvE19__PRETTY_FUNCTION___169474");
 extern const char scene_bvdata_create_name[] __asm__("_ZZN5scene6BVdata6createEN3sgl2BV4TypeEE19__PRETTY_FUNCTION___169188");
 #include "../main.hpp"
 extern const char D_00169304[];     /* " *** error " */
@@ -22,25 +27,20 @@ extern const char Graph_finish_name[] __asm__("_ZZN5scene5Graph6finishEvE19__PRE
 extern const char Graph_popNamespace_name[] __asm__("_ZZN5scene5Graph12popNamespaceEvE19__PRETTY_FUNCTION__");
 extern const char Graph_getNamespace_name[] __asm__("_ZZNK5scene5Graph12getNamespaceEvE19__PRETTY_FUNCTION__");
 extern const char Graph_loadNamespace_name[] __asm__("_ZZN5scene5Graph13loadNamespaceESsE19__PRETTY_FUNCTION__");
-extern const char D_00169304[];     /* " *** error " */
+extern const char D_001694BC[];
+extern const char D_001694F8[];
+extern const char Graph_newMesh_name[] __asm__("_ZZN5scene5Graph7newMeshESsRKN3sgl4MeshEjE19__PRETTY_FUNCTION__");
 extern const char D_001692DC[];     /* "object.valid()" */
-extern const char D_001692EC[];     /* "../lib/scene/Graph.cpp" */
-extern const char D_001694B8[];     /* " " */
-extern const char D_00169520[];     /* "::" */
-extern const char D_00169640[];     /* "! _namespace_stack.empty()" */
-extern const char D_001697E4[];     /* "\n" */
 extern const char Graph_cloneGroup_name[] __asm__("_ZZN5scene5Graph10cloneGroupESsSsE19__PRETTY_FUNCTION__");
 extern const char Graph_cloneObject_name[] __asm__("_ZZN5scene5Graph11cloneObjectESsSsE19__PRETTY_FUNCTION__");
-extern const char Graph_finish_name[] __asm__("_ZZN5scene5Graph6finishEvE19__PRETTY_FUNCTION__");
-extern const char Graph_popNamespace_name[] __asm__("_ZZN5scene5Graph12popNamespaceEvE19__PRETTY_FUNCTION__");
-extern const char Graph_getNamespace_name[] __asm__("_ZZNK5scene5Graph12getNamespaceEvE19__PRETTY_FUNCTION__");
-extern const char Graph_loadNamespace_name[] __asm__("_ZZN5scene5Graph13loadNamespaceESsE19__PRETTY_FUNCTION__");
 
 /* weak instances still asm in this object */
 extern template class std::_Deque_base<std::string, std::allocator<std::string> >;
 extern template class std::deque<std::string, std::allocator<std::string> >;
 extern template class std::_Deque_base<math::matrix, std::allocator<math::matrix> >;
 extern template class std::deque<math::matrix, std::allocator<math::matrix> >;
+extern template class std::_List_base<common::handle<scene::Transform>, std::allocator<common::handle<scene::Transform> > >;
+extern template class std::_List_base<common::handle<scene::StaticTransform>, std::allocator<common::handle<scene::StaticTransform> > >;
 extern template class std::_Rb_tree<const std::string, std::pair<const std::string, common::handle<scene::Node> >,
                                     std::_Select1st<std::pair<const std::string, common::handle<scene::Node> > >,
                                     std::less<const std::string>,
@@ -90,7 +90,15 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _Z
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZN5scene5Graph9newObjectESs);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZN5scene5Graph7newMeshESsRKN3sgl4MeshEj);
+common::handle<scene::Mesh> scene::Graph::newMesh(std::string name, const sgl::Mesh &m, unsigned int fmt)
+{
+    common::handle<Mesh> h = newNode<Mesh>(name, true);
+    SCENE_ASSERT(sgl_PrimitiveIndex_countTriangles(m.getPrims()), D_00169304, D_001694F8, D_001692EC, Graph_newMesh_name, 231,
+                 D_001694BC);
+    h->getData().copy(m);
+    h->format(fmt);
+    return h;
+}
 
 common::handle<scene::Object> scene::Graph::getObject(std::string name)
 {
@@ -103,7 +111,26 @@ common::handle<scene::Object> scene::Graph::getObject(std::string name)
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZN5scene5Graph10newTextureESsbSs);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZN5scene5Graph17flattenTransformsEN6common6handleINS_5GroupEEE);
+void scene::Graph::flattenTransforms(common::handle<Group> g)
+{
+    math::TransformStack ts;
+    ts.push();
+    ts.identity();
+    g->flatten(ts);
+    ts.pop();
+    {
+        common::handles_list<Transform> l;
+        getSublist<Transform>(l);
+        for (common::handles_list<Transform>::iterator i = l.begin(); i != l.end(); ++i)
+            (*i)->setIdentity();
+    }
+    {
+        common::handles_list<StaticTransform> l;
+        getSublist<StaticTransform>(l);
+        for (common::handles_list<StaticTransform>::iterator i = l.begin(); i != l.end(); ++i)
+            (*i)->setIdentity();
+    }
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZN5scene5Graph7cleanUpEv);
 
