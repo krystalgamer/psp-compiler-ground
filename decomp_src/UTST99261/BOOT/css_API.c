@@ -793,7 +793,12 @@ u16 *CSS_SkipWord(u16 *p) {
     return p;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_API", CSS_SkipXWord);
+u16 *CSS_SkipXWord(u16 *p) {
+    while (*p != ' ' && *p != '\t' && (*p != '\r' && *p != '\n') && *p != 0xC && *p != 0xFEFF && *p != 0 && *p != ';' && *p != '}') {
+        p++;
+    }
+    return p;
+}
 
 u16 *CSS_SkipBlanksAndComments(u16 *p) {
     p = CSS_SkipBlanks(p);

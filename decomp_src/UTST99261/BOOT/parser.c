@@ -803,7 +803,17 @@ void backToStyleTag(PCtx *c) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", parseStyle);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", parseStyleAttribute);
+void parseStyleAttribute(PCtx *c, PDStr *name, PDStr *val) {
+    if (parseDStrEqual(D_00137EB4, name) && val != NULL) {
+        if (parseDStrEqual(D_00137EE4, val)) {
+            CF(c, 0x150) = 7;
+        } else {
+            CF(c, 0x150) = 8;
+        }
+    } else {
+        CF(c, 0x150) = 7;
+    }
+}
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/parser", D_00137EE4);
 

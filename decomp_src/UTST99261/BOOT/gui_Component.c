@@ -176,7 +176,13 @@ int GUI_Component_getMinimumSize(GUIWIDGET *w, int *width, int *height) {
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Component", GUI_Component_requestFocus);
+int GUI_Component_requestFocus(GUIWIDGET *w, int flag) {
+    s_windsystem_data.flags |= 4;
+    s_windsystem_data.focus = flag ? w : s_windsystem_data.top;
+    zWindDraw();
+    s_windsystem_data.flags &= ~4;
+    return 0;
+}
 
 int GUI_Component_setEnabled(GUIWIDGET *w, int enabled) {
     if (w == NULL) {
