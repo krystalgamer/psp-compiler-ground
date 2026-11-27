@@ -63,9 +63,33 @@ SceInt32 strFileAssign(StrFile *file, const SceChar8 *filename)
 	return 1;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/mpeg/strfile", strFileOpen);
+SceInt32 strFileOpen(StrFile *file, const SceChar8 *filename, SceInt32 flags)
+{
+	if (memcmp(filename, D_0007AF24, 6) == 0 || memcmp(filename, D_0007AF34, 4) == 0) {
+		file->fd = sceIoOpen(filename, flags, 0);
+		if (file->fd < 0)
+			return -1;
+	} else if (memcmp(filename, D_0007AF2C, 6) == 0) {
+		file->fd = DvdUmdRetryOpen(filename, flags, 0);
+	} else {
+		return -1;
+	}
+	return 1;
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/mpeg/strfile", strFileOpenCB);
+SceInt32 strFileOpenCB(StrFile *file, const SceChar8 *filename, SceInt32 flags)
+{
+	if (memcmp(filename, D_0007AF24, 6) == 0 || memcmp(filename, D_0007AF34, 4) == 0) {
+		file->fd = sceIoOpenCB(filename, flags, 0);
+		if (file->fd < 0)
+			return -1;
+	} else if (memcmp(filename, D_0007AF2C, 6) == 0) {
+		file->fd = DvdUmdRetryOpenCB(filename, flags, 0);
+	} else {
+		return -1;
+	}
+	return 1;
+}
 
 int sceIoClose(int fd);
 int strFileClose(StrFile *file) {
