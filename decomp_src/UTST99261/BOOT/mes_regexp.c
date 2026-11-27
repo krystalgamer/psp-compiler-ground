@@ -99,6 +99,7 @@ extern const double D_0013BFD8;
 void mes_object_init(void *o, int cls, int proto);
 int mes_error_syntax(void *ctx, int s);
 extern int D_00585360;
+int mes_util_is_line_terminator(unsigned short c);
 RxObj *mes_regexp_new(void *ctx, int source, int flags) {
     RxObj *re;
     unsigned short *p;
@@ -224,7 +225,37 @@ void mes_closure_free(void *arg0) {
     mes_util_vals_free(M2C_FIELD(arg0, int *, 8));
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_regexp", mes_cap_new);
+RxCap *mes_cap_new(void *ctx, int n, RxCap *src)
+{
+    RxCap *c;
+    int *p;
+    int i;
+
+    c = mes_gc_alloc(ctx, 10);
+    if (c != NULL) {
+        if (src != NULL)
+            n = src->n;
+        c->n = n;
+        if (n > 0) {
+            p = MEM_malloc(0, n * 4);
+            c->vals = p;
+            if (p == NULL)
+                return NULL;
+            if (src != NULL) {
+                for (i = 0; i < n; i++)
+                    *p++ = src->vals[i];
+                return c;
+            } else {
+                for (i = 0; i < n; i++)
+                    *p++ = 0;
+                return c;
+            }
+        } else {
+            c->vals = NULL;
+        }
+    }
+    return c;
+}
 
 void mes_cap_mark(RxCap *cap)
 {
@@ -310,7 +341,34 @@ int mes_regexp_is_word_char(RxState *s, int i)
     return mes_util_is_word_char(s->str[i]);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_regexp", mes_regexp_assertion_tester);
+int mes_regexp_assertion_tester(RxState *st, unsigned short ch, RxState *x)
+{
+    int i = x->f4;
+    int r;
+    int a, b;
+
+    switch (ch) {
+    case '^':
+        r = 0;
+        if (i == 0 || (M2C_FIELD(st, RxObj **, 4)->multiline && mes_util_is_line_terminator(st->str[i - 1])))
+            r = 1;
+        return r;
+    case '$':
+        r = 0;
+        if (i == st->len || (M2C_FIELD(st, RxObj **, 4)->multiline && mes_util_is_line_terminator(st->str[i])))
+            r = 1;
+        return r;
+    case 'b':
+        a = mes_regexp_is_word_char(st, i - 1);
+        b = mes_regexp_is_word_char(st, i);
+        return (a && !b) || (!a && b);
+    case 'B':
+        a = mes_regexp_is_word_char(st, i - 1);
+        b = mes_regexp_is_word_char(st, i);
+        return (!a || b) && (a || !b);
+    }
+    return 0;
+}
 
 RxClosure *mes_regexp_assertion(RxComp *c, unsigned short ch)
 {
@@ -476,7 +534,24 @@ int mes_regexp_test(void *ctx, int v) {
     return 8;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_regexp", mes_regexp_to_string);
+int mes_regexp_to_string(void *ctx)
+{
+    RxObj *re = (RxObj *)M2C_FIELD(M2C_FIELD(ctx, void **, 0x10), void **, 0x1C);
+    void *s = mes_util_string_new();
+
+    mes_util_string_put(s, '/');
+    mes_util_string_put_string(s, re->source);
+    mes_util_string_put(s, '/');
+    if (re->global)
+        mes_util_string_put(s, 'g');
+    if (re->icase)
+        mes_util_string_put(s, 'i');
+    if (re->multiline)
+        mes_util_string_put(s, 'm');
+    re = (RxObj *)mes_string_new3(ctx, s);
+    mes_util_string_free(s);
+    return (int)re;
+}
 
 void mes_regexp_setup(void *ctx)
 {
