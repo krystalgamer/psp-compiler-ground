@@ -61,7 +61,15 @@ void I3dSortByOT(void) {
     I3dSortStrictStable();
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_sorter", I3dSorter__Sort);
+extern int (*s_apI3dSortFunc[])();
+int I3dSorter__Sort(int *s)
+{
+	if (s[9] != 0) {
+		((int *)s[3])[1] = 0;
+		s[1] = s_apI3dSortFunc[s[5]](s[1], s[6], s[7], s[9]);
+	}
+	return 0;
+}
 
 void BubbleSort();
 void RadixSort();
