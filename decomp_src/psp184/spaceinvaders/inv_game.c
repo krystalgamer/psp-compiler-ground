@@ -740,7 +740,64 @@ void zako_control_once(ENEMY *p)
 	q->f3c = zako_type_color[e->f30][2];
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", zako_normal_anime);
+typedef struct { int f0, f4, f8, fc; float f10; int f14, f18, f1c, f20, f24, f28, f2c, f30, f34, f38, disp; float f40, f44; int _p48[(0x60 - 0x48) / 4]; float f60, f64, f68; L2V3 pos; L2V3 scr; L2V3 base; L2V3 ofs; } ZNA_T;
+typedef struct { int f0, f4; u8 _p[0x2564 - 8]; } ZNA_G;
+extern ZNA_G zna_g[] __asm__("D_005A0D80");
+extern int D_004B4F9C;
+extern float zna_zx __asm__("D_005A0710");
+float sinf(float);
+float cosf(float);
+void zako_mov_count(ZNA_T *e);
+int zako_shot_count(void);
+void zako_shot(ENEMY *e);
+void root_offset_get(L2V3 *out, float pos, float x, float y, float len);
+void root_pos_get(L2V3 *out, L2V3 *ofs, float pos, float len);
+void zako_normal_anime(ZCO_T *p, int vis)
+{
+	ZNA_T *e = (ZNA_T *)p;
+	L2V3 o;
+	int st;
+
+	if (zna_g[e->f38].f4 == 0)
+		return;
+	zako_mov_count(e);
+	if (vis == 1) {
+		root_offset_get(&o, e->f68, sinf(e->f44 / 180.0f * 3.1415927f) * e->f60, 0.0f,
+			e->f0 * 300.0f + 1000.0f + cosf(e->f44 / 180.0f * 3.1415927f) * e->f60);
+		e->ofs.x = o.x - e->base.x;
+		e->ofs.y = o.y - e->base.y;
+		e->ofs.z = o.z - e->base.z;
+		e->fc = sinf(e->f44 / 180.0f * 3.1415927f) * 64.0f + 64.0f;
+		root_pos_get(&e->pos, &e->ofs, e->f68, e->f0 * 300.0f + 1000.0f);
+	}
+	st = gmain.f.f10;
+	e->f10 -= st;
+	if (e->f10 < 0.0f)
+		e->f10 = 0.0f;
+	if (vis == 1 && D_004B4F9C > 0) {
+		if (e->f68 < zna_zx + 10.0f && zna_zx - 10.0f < e->f68) {
+			if (D_004B4F9C == 1)
+				e->f10 -= st;
+			else
+				e->f10 -= st * 2;
+		}
+	}
+	if (e->f10 < 0.0f)
+		e->f10 = 0.0f;
+	if (e->f24 != 1 && e->f20 >= e->f24 - 1)
+		e->f10 = 255.0f;
+	if (e->f10 < 90.0f)
+		e->f8 = sinf((90.0f - e->f10) / 180.0f * 3.1415927f) * 255.0f;
+	else if (e->f8 > 0) {
+		e->f8 -= 8;
+		if (e->f8 < 0)
+			e->f8 = 0;
+	}
+	if (e->f10 <= 0.0f) {
+		e->f10 = zako_shot_count();
+		zako_shot((ENEMY *)e);
+	}
+}
 
 typedef struct { int f0; float f4; int f8, fc; float f10; int f14, f18, f1c, f20; } STAGE_FORMAT;
 extern STAGE_FORMAT stage_format[];
