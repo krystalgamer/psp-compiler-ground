@@ -334,4 +334,15 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_GraphParse
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_GraphParser", _ZN5scene5Graph7newNodeINS_8MaterialEEEN6common6handleIT_EESsb);
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_GraphParser", _ZN5scene5Group4findINS_5ShapeEEEvRN6common14handles_vectorINS_4NodeEEEb);
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_GraphParser", _ZN5scene5Group4findINS_4MeshEEEvRN6common14handles_vectorINS_4NodeEEEb);
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_GraphParser", _ZN5scene11GraphParser11step_matrixERN4math6matrixE);
+SGL_LINKONCE_BEGIN
+inline void scene::GraphParser::step_matrix(math::matrix &m)
+{
+    math::matrix t;
+    for (int i = 0; i < 4; i++)
+        for (int j = 0; j < 4; j++) {
+            step();
+            t.r[i][j] = get<float>();
+        }
+    m = math::matrix(t.r[0], t.r[1], t.r[2], t.r[3]);
+}
+SGL_LINKONCE_END
