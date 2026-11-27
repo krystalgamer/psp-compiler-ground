@@ -67,6 +67,8 @@ void GUI_Toolkit_terminateSystem(void);
 void OS_mq_unlink(char *name);
 void esp_freeConfig(EspConfig *c);
 void OS_timer_destroy(void);
+int OS_thread_create(int *tid, int attr, void (*fn)(), char **argv);
+void esp_jsThread();
 DOMStr *newDOMString_4B5FC(const char *utf8, int len) {
     DOMStr *s = MEM_malloc(0, sizeof(DOMStr));
 
@@ -1256,7 +1258,24 @@ int JSFreeJSPtr(JSPtr *p) {
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSCreate);
+int JSCreate(void) {
+    char *argv[3];
+    int tid;
+    char *buf;
+    buf = MEM_malloc(0, 0x64);
+    strcpy(buf, "REF_JS_MAIN");
+    argv[0] = MEM_malloc(0, strlen(buf) + 1);
+    strcpy(argv[0], buf);
+    strcpy(buf, "0");
+    argv[1] = MEM_malloc(0, strlen(buf) + 1);
+    strcpy(argv[1], buf);
+    argv[2] = NULL;
+    OS_thread_create(&tid, 0, esp_jsThread, argv);
+    MEM_free(0, argv[0]);
+    MEM_free(0, argv[1]);
+    MEM_free(0, buf);
+    return tid;
+}
 
 int JSStart(void) {
     JSMsgBody b;
@@ -1308,7 +1327,6 @@ int JSDestroy(JSMsg *m) {
     return 0;
 }
 
-INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", D_00133A50);
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", D_00133A54);
 
