@@ -15,9 +15,8 @@ extern unsigned char savedata_param;
 extern unsigned int g_utilityType;
 M2C_UNK FreeData_GameBuf();                         /* extern */
 void SetData_InitBase();
-M2C_UNK SetData_Normal(int, void *);                /* extern */
 M2C_UNK sceUtilitySavedataInitStart(void *);        /* extern */
-M2C_UNK FreeData_Normal(int, int);char *strcpy(char *d, const char *s);
+int FreeData_Normal(int, void *);char *strcpy(char *d, const char *s);
 
 extern unsigned char D_00103954;
 void *_memAllocZero();
@@ -43,6 +42,10 @@ void *memset(void *s, int c, unsigned int n);
 
 int UtilityUnlink();
 void gameEnSoftReset(void);
+void *localeGetRegionCntx();
+unsigned int strlen(const char *);
+void *memcpy(void *, const void *, unsigned long);
+extern unsigned char D_00104098;
 
 void SetData_Paramsfo_String(int arg0) {
     signed char *temp_s2;
@@ -247,8 +250,8 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/saveutil", ShowResult
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/saveutil", SetData_Load);
 
-void FreeData_Load(void) {
-    FreeData_GameBuf();
+void FreeData_Load(int a, int b) {
+    FreeData_GameBuf(a);
 }
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/saveutil", SetData_Save);
@@ -281,9 +284,77 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/saveutil", D_00104
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/saveutil", D_001040AC);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/saveutil", SetData_Normal);
+int SetData_Normal(int mode, char *p)
+{
+	int ret;
+	*(int *)(p + 0x30) = mode;
+	*(int *)(p + 0x38) = 0;
+	Copy_SecureFileId((int)(p + 0x5DC));
+	switch (mode) {
+	case 0:
+	case 2:
+		SetData_Load(p, 1);
+		ret = 0;
+		break;
+	case 1:
+	case 3:
+		SetData_Save(p, 1);
+		ret = 0;
+		break;
+	case 9:
+	case 10:
+		SetData_Delete(p);
+		ret = 0;
+		break;
+	case 8:
+		SetData_Sizes(p);
+		ret = 0;
+		break;
+	case 4:
+	case 5:
+	case 6:
+	default:
+		ret = 1;
+		break;
+	case 7:
+		ret = 0;
+		break;
+	}
+	return ret;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/saveutil", FreeData_Normal);
+int FreeData_Normal(int mode, void *p)
+{
+	int ret;
+	switch (mode) {
+	case 0:
+	case 2:
+		FreeData_Load(p, 1);
+		ret = 0;
+		break;
+	case 1:
+	case 3:
+		FreeData_Save(p, 1);
+		ret = 0;
+		break;
+	case 8:
+		FreeData_Sizes(p);
+		ret = 0;
+		break;
+	case 4:
+	case 5:
+	case 6:
+	default:
+		ret = 1;
+		break;
+	case 7:
+	case 9:
+	case 10:
+		ret = 0;
+		break;
+	}
+	return ret;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/saveutil", SetData_Sizes);
 
