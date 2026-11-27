@@ -68,7 +68,12 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_sorter", I3dSortStrictStable);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_sorter", I3dSorter__Construct);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_sorter", I3dRender__SortTagCmdProc_Call);
+int I3dRender__ProcessSortTagCmd_Recursive();
+int I3dRender__SortTagCmdProc_Call(void *r, char *t)
+{
+	I3dRender__ProcessSortTagCmd_Recursive(r, *(void **)(t + 0x10));
+	return 0;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -90,9 +95,17 @@ int I3dRender__SortTagCmdProc_ClearState(char *r, char *t)
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_sorter", I3dRender__SortTagCmdProc_ClearStateAndSendPacket);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_sorter", I3dRender__SortTagCmdProc_LogMsg);
+int I3dTtyPrintf();
+int I3dRender__SortTagCmdProc_LogMsg(void *r, char *t)
+{
+	I3dTtyPrintf(*(void **)(t + 0x10));
+	return 0;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_sorter", I3dRender__SortTagCmdProc_Callback);
+int I3dRender__SortTagCmdProc_Callback(void *r, char *t)
+{
+	return (*(int (**)(void *, void *))(t + 0x10))(*(void **)(t + 0x14), *(void **)(t + 0x18)) != 0;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_sorter", I3dRender__ProcessSortTagCmd_Recursive);
 

@@ -21,9 +21,19 @@ int I3rRoot__CheckIdString(signed char *arg0) {
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_parser_i3r", I3rRoot__PackSub);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_parser_i3r", I3rRoot__Unpack);
+int I3rRoot__PackSub();
+int I3rRoot__Unpack(void *r)
+{
+	I3rRoot__PackSub(r, 1);
+	return 0;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_parser_i3r", I3rRoot__Pack);
+int I3rRoot__PackSub();
+int I3rRoot__Pack(void *r)
+{
+	I3rRoot__PackSub(r, 0);
+	return 0;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)

@@ -1,7 +1,6 @@
 #include "common.h"
 #include "m2c_macros.h"
 M2C_UNK I3dResourceTag__PurgeCache();               /* extern */
-M2C_UNK I3dMemBlock__InsertList(void *, M2C_UNK, int); /* extern */
 M2C_UNK I3dCacheManager__RemoveMemBlock(void *, void *); /* extern */
 M2C_UNK I3dMemBlock__ChangeAttributeToGarbage(void *, void *); /* extern */
 M2C_UNK I3dMemBlock__MoveList(void *, M2C_UNK, int); /* extern */
@@ -17,7 +16,16 @@ M2C_UNK sceGimPictureDelete(int);                   /* extern */
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_cache_manager", I3dMemBlock__RemoveList);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_cache_manager", I3dMemBlock__InsertList);
+typedef struct MBLnk { struct MBk *next, *prev; } MBLnk;
+typedef struct MBk { MBLnk l[1]; } MBk;
+void I3dMemBlock__InsertList(MBk *b, int i, MBk *h)
+{
+	MBk *p = h->l[i].prev;
+	p->l[i].next = b;
+	b->l[i].prev = p;
+	b->l[i].next = h;
+	h->l[i].prev = b;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_cache_manager", I3dMemBlock__MoveList);
 
@@ -158,7 +166,11 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_cache_manager", I3dCacheManage
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_cache_manager", I3dCacheManager__End);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_cache_manager", I3dCacheManager__CreateOriginGarbage);
+int I3dCacheManager__CreateNewMemBlockAsGarbage();
+int I3dCacheManager__CreateOriginGarbage(char *cm)
+{
+	return I3dCacheManager__CreateNewMemBlockAsGarbage(cm, *(int *)(cm + 4), cm + 0x18);
+}
 
 #ifndef NULL
 #define NULL ((void *)0)

@@ -1,7 +1,6 @@
 #include "common.h"
 #include "m2c_macros.h"
 int I3dPkDrawSphereMarkerA(int, int, int, int, float); /* extern */
-int I3dRenderStage__OpenPacketUca_ByUint32(int, M2C_UNK); /* extern */
 int SendDefaultStatus(int, int);                    /* extern */
 int I3dPkDrawBoxMarkerA(int, int, int, int, int, int); /* extern */
 int I3dPkDrawObbMarkerA(int, int, int, int, int);   /* extern */
@@ -112,7 +111,11 @@ int I3dRenderStage__GetCurrentViewStatus(void *arg0) {
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_render_marker", I3dRenderStage__OpenPacket);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_render_marker", I3dRenderStage__OpenPacket_ByUint32);
+int I3dSorter__OpenPacketAndClearState_ByUint32();
+int I3dRenderStage__OpenPacket_ByUint32(char *st, unsigned int n)
+{
+	return I3dSorter__OpenPacketAndClearState_ByUint32(*(void **)(st + 0x818), n, 0);
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -124,7 +127,11 @@ void I3dRenderStage__ClosePacket(void *arg0) {
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_render_marker", I3dRenderStage__OpenPacketUca);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_render_marker", I3dRenderStage__OpenPacketUca_ByUint32);
+int I3dSorter__OpenPacketAndClearStateUca_ByUint32();
+int I3dRenderStage__OpenPacketUca_ByUint32(char *st, unsigned int n)
+{
+	return I3dSorter__OpenPacketAndClearStateUca_ByUint32(*(void **)(st + 0x818), n, 0);
+}
 
 #ifndef NULL
 #define NULL ((void *)0)

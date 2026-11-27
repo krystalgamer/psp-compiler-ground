@@ -72,7 +72,11 @@ void I3dPacketEntry__MoveLruPrev(void *arg0, void *arg1) {
     M2C_FIELD(arg0, void **, 8) = arg1;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_packet_cache", I3dPacketEntry__GetTexEnv);
+int I3dPacketEntry__GetTexEnv(int *e, int i)
+{
+	((int *)e[5])[i]++;
+	return ((int *)e[4])[i];
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_packet_cache", I3dPacketEntry__SetTofu);
 
