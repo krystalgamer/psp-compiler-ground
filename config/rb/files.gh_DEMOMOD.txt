@@ -1,0 +1,2 @@
+# Stripped demo-disc module (psp-gcc 1.4.0): one C unit.
+0x00000 demomod          1.4.0  demomod.c
