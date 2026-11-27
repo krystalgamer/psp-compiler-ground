@@ -23,7 +23,7 @@ int sscanf(const char *, const char *, ...);
 
 float cardlistCpyTtr2Float32();
 
-int cardlistCpyTtr2Ascii();
+void cardlistCpyTtr2Ascii();
 
 int cardlistGetCardID(int id)
 {
@@ -33,9 +33,46 @@ int cardlistGetCardID(int id)
 	return -1;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/cardlist", cardlistCpyTtr2Ucs4);
+typedef struct { int c[13]; } TtrNF;
+extern TtrNF D_00101F4C;
+char *ttrGetStringByNumber();
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/cardlist", cardlistCpyTtr2Ascii);
+void cardlistCpyTtr2Ucs4(int *dst, int ttr, int num, int max)
+{
+	TtrNF def;
+	int len;
+	int n;
+	unsigned short *p;
+	char *s = ttrGetStringByNumber(ttr, num, &len);
+	if (s == NULL) {
+		def = D_00101F4C;
+		s = (char *)&def;
+	}
+	p = (unsigned short *)s;
+	for (n = len / 2; n != 0 && max >= 2; n--) {
+		max--;
+		*dst++ = *p++;
+	}
+	*dst = 0;
+}
+
+void cardlistCpyTtr2Ascii(char *dst, int ttr, int num)
+{
+	TtrNF def;
+	int len;
+	int n;
+	short *p;
+	char *s = ttrGetStringByNumber(ttr, num, &len);
+	if (s == NULL) {
+		def = D_00101F4C;
+		s = (char *)&def;
+	}
+	p = (short *)s;
+	for (n = len / 2; n != 0; n--) {
+		*dst++ = *p++;
+	}
+	*dst = 0;
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/cardlist", D_00101F4C);
 
