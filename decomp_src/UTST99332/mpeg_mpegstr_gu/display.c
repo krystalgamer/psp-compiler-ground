@@ -140,7 +140,52 @@ void sceGuTexWrap(int u, int v);
 int sceKernelCreateSema(const char *name, unsigned int attr, int init, int max, void *option);
 int sprintf(char *buf, const char *fmt, ...);
 
-INCLUDE_ASM("tmp/asm/UTST99332/mpeg_mpegstr_gu/nonmatchings/display", init_all);
+SceInt32 init_all(t_displayBuffer *pDisp)
+{
+	sceGuInit();
+
+	sceGuStart(0, disp_list, 0x10000);
+
+	if (pDisp->pixelFormat == 3) {
+		sceGuDrawBuffer(3, (void *)0, 512);
+		sceGuDispBuffer(480, 272, (void *)0x88000, 512);
+		sceGuDepthBuffer((void *)0x110000, 512);
+	} else {
+		if (pDisp->pixelFormat == 0) {
+			sceGuDrawBuffer(0, (void *)0, 512);
+		} else if (pDisp->pixelFormat == 1) {
+			sceGuDrawBuffer(1, (void *)0, 512);
+		} else if (pDisp->pixelFormat == 2) {
+			sceGuDrawBuffer(2, (void *)0, 512);
+		} else {
+			return -1;
+		}
+		sceGuDispBuffer(480, 272, (void *)0x44000, 512);
+		sceGuDepthBuffer((void *)0x88000, 512);
+	}
+
+	sceGuOffset(0, 0);
+
+	sceGuScissor(0, 0, 480, 272);
+	sceGuEnable(2);
+
+	sceGuTexFunc(0, 1);
+	sceGuTexFilter(7, 0);
+	sceGuTexWrap(0, 0);
+	sceGuEnable(9);
+
+	sceGuClearColor(0);
+	sceGuClearDepth(0);
+	sceGuClearStencil(0);
+
+	sceGuFinish();
+	sceGuSync(0, 0);
+	sceDisplayWaitVblankStart();
+
+	sceGuDisplay(1);
+
+	return 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/mpeg_mpegstr_gu/nonmatchings/display", draw_frame);
 
