@@ -115,7 +115,40 @@ void glutils::Picking::begin(float x0, float y0, float x1, float y1)
     begin_internal((x0 + x1) * D_00162684, (y0 + y1) * D_00162684, fabsf(x0 - x1), fabsf(y0 - y1));
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/glutils_Picking", _ZN7glutils7Picking14begin_internalEffff);
+extern "C" {
+void glPushMatrix(void);
+void glSelectBuffer(int, unsigned int *);
+void glGetFloatv(unsigned int, float *);
+void glGetIntegerv(unsigned int, int *);
+void glLoadIdentity(void);
+void glMultMatrixf(const float *);
+void gluPickMatrix(double, double, double, double, int *);
+}
+extern "C" const float D_00162688;
+extern "C" const double D_00162690;
+extern "C" const char D_0016260C[], D_00162610[], D_0016261C[], D_0016262C[], D_00162648[];
+extern const char begin_internal_PRETTY[] __asm__("_ZZN7glutils7Picking14begin_internalEffffE19__PRETTY_FUNCTION__");
+
+void glutils::Picking::begin_internal(float x, float y, float size_x, float size_y)
+{
+    int viewport[4];
+    float proj[16];
+    glPushMatrix();
+    glSelectBuffer(_size, _buffer);
+    glRenderMode(0x1C02);
+    glMatrixMode(0x1701);
+    glPushMatrix();
+    glGetFloatv(0xBA7, proj);
+    glLoadIdentity();
+    glGetIntegerv(0xBA2, viewport);
+    size_x = fabsf(size_x) < D_00162690 ? D_00162688 : fabsf(size_x);
+    size_y = fabsf(size_y) < D_00162690 ? D_00162688 : fabsf(size_y);
+    SGL_ASSERT(size_x > 0.f, D_00162610, D_00162648, D_0016262C, begin_internal_PRETTY, 305, D_0016260C);
+    SGL_ASSERT(size_y > 0.f, D_00162610, D_0016261C, D_0016262C, begin_internal_PRETTY, 306, D_0016260C);
+    gluPickMatrix(x, y, size_x, size_y, viewport);
+    glMultMatrixf(proj);
+    glMatrixMode(0x1700);
+}
 
 void glutils::Picking::end()
 {
