@@ -1,8 +1,6 @@
 #include "common.h"
 #include "m2c_macros.h"
 M2C_UNK I3dResourceTag__PurgeCache();               /* extern */
-M2C_UNK I3dCacheManager__RemoveMemBlock(void *, void *); /* extern */
-M2C_UNK I3dMemBlock__ChangeAttributeToGarbage(void *, void *); /* extern */
 M2C_UNK I3dCacheManager__CreateNewMemBlockAsGarbage(int, int, int); /* extern */
 M2C_UNK I3dCacheManager__ClearAllKeepAttr(int);     /* extern */
 M2C_UNK I3dCacheManager__ClearAllMoveAttr(int);     /* extern */
@@ -57,7 +55,16 @@ int I3dMemBlock__ChangeAttributeToCache(char *b, void *t)
 	return I3dResourceTag__SetMemBlock(t, b);
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_cache_manager", I3dMemBlock__ChangeAttributeToGarbage);
+void I3dMemBlock__ChangeAttributeToGarbage(b)
+	char *b;
+{
+	int t = *(int *)(b + 0x40);
+	*(unsigned int *)(b + 0x30) = (*(unsigned int *)(b + 0x30) & ~0x10) | 1;
+	if (t != 0) {
+		I3dResourceTag__SetMemBlock(t, 0);
+		*(int *)(b + 0x40) = 0;
+	}
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_cache_manager", I3dMemBlock__Construct);
 
@@ -98,7 +105,14 @@ int I3dResourceTag__Destruct(void) {
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_cache_manager", I3dCacheManager__CreateNewMemBlockAsGarbage);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_cache_manager", I3dCacheManager__RemoveMemBlock);
+int I3dCacheManager__RemoveMemBlock(int *cm, void *b)
+{
+	I3dMemBlock__ChangeAttributeToGarbage(b, b);
+	I3dMemBlock__Destruct(b);
+	((int *)cm[23])[cm[24]] = (int)b;
+	cm[24]++;
+	return 0;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
