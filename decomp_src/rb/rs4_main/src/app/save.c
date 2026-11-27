@@ -208,7 +208,32 @@ void saveCurrentDataInit(void) {
     saveDataInit(saveGetCurrentData(), 0);
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/save", saveIsRemainCard);
+typedef struct { int d[0xC04 / 4]; } SAlbum;
+int saveIsRemainCard(void)
+{
+	int sd;
+	SAlbum album;
+	SAlbum touch;
+	int dup;
+	int i, j, n, id;
+	sd = saveGetCurrentData();
+	album = *(SAlbum *)(sd + 0x668);
+	memset(&touch, 0, 0xC04);
+	j = cardlistGetSaveID(*(unsigned short *)(sd + 0x228));
+	salbumTouchCardBySaveID(&touch, j, 0);
+	salbumTouchCardBySaveID(&touch, j, 1);
+	salbumTouchCardBySaveID(&touch, j, 2);
+	for (i = 0; i < 5; i++)
+		for (j = 0; j < 20; j++)
+			salbumTouchCard(&touch, (i * 0x34 + j) * 4 + sd + 0x2D4);
+	n = 0;
+	for (id = 0xFF; id >= 0; id--)
+		for (j = 0; j < 3; j++) {
+			salbumGetCardDupBySaveID(&touch, id, j, &dup, 0);
+			n += salbumCalcCardNumBySaveID(&album, id, j, dup ? -1 : 0);
+		}
+	return n > 0;
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/save", D_000FE58C);
 
