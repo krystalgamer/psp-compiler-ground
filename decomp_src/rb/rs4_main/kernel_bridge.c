@@ -52,7 +52,7 @@ typedef int SceUID;
 extern char *currentheap;
 extern char *minheap;
 extern char *maxheap;
-extern int sce_newlib_heap_kb_size;
+extern int sce_newlib_heap_kb_size __attribute__((weak));
 extern SceUID mbid;
 extern void (*const sce_newlib_stop_func)(void);
 
@@ -115,7 +115,42 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/kernel_bridge", _exit);
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/kernel_bridge", sce_newlib_stop_func);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/kernel_bridge", _sbrk);
+SceUID sceKernelAllocPartitionMemory(SceUID partitionid, const char *name, int type, unsigned int size, void *addr);
+void *sceKernelGetBlockHeadAddr(SceUID blockid);
+void *_sbrk (ptrdiff_t incr)
+{
+	void *result;
+	unsigned int realsize;
+
+	if ( minheap == NULL ) {
+		if (&sce_newlib_heap_kb_size == NULL) {
+			realsize = 64*1024;
+		} else if (sce_newlib_heap_kb_size == 0) {
+			return (void *)-1;
+		} else {
+			realsize = sce_newlib_heap_kb_size*1024;
+		}
+		if (realsize > 0) {
+			mbid = sceKernelAllocPartitionMemory(2,
+												"UserSbrk",
+												3,
+												realsize, (void *)4096);
+			if ( mbid > 0 ) {
+				minheap = currentheap = sceKernelGetBlockHeadAddr(mbid);
+				maxheap = currentheap + realsize;
+			}
+		}
+	}
+	if ( minheap != NULL
+		&& ((currentheap+incr) >= minheap)
+		&& ((currentheap+incr) <= maxheap) ) {
+		result = currentheap;
+		currentheap += incr;
+		return result;
+	} else {
+		return (void *)-1;
+	}
+}
 
 int _read (int file, void *ptr, size_t len)
 {
