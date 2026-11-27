@@ -673,4 +673,14 @@ libgcc/libsupc++ DWARF names `gcc-3.3.6/` paths.
   code (i3dcs_obb, i3d_collision, i3d_packet_util, ... `lv.q`/`sv.q`/
   `vdot`/`vmmul`) sits in Sony's middleware without DWARF, and the
   libgum/libgu functions with VFPU variants are the `USE_VFPU 0` C ones.
-  So the 1.8 VFPU builtins remain unrecovered.
+  So the 1.8 VFPU builtins remain unrecovered.  The game's own C++
+  (`Ys::Cop::Matrix4x4::Set_Zero`/`Set_Unit`/`Set_Matrix` in ys_cop.cc:
+  `vmzero.q`/`vmidt.q`, `lv.q`/`sv.q` at fixed `$a0`/`$a1` offsets) is
+  reproduced exactly by `asm volatile` blocks with no operands, i.e. it
+  needs no builtin either.
+- The game's C++ objects keep their float constants with their strings
+  and aggregates in one `.rodata` in emission order (ys_fx_fade_cif:
+  `"src/ys/ys_object.h"`, two `1.0f`, then the vtable); with this repo's
+  link order that needs `-fno-merge-constants` per unit, as for 1.8.4's
+  mixed units.  All the C++ is `-Os -fno-strength-reduce -fno-exceptions`
+  like the C game code.
