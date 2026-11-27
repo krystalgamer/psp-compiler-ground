@@ -29,6 +29,9 @@ void putLLIST(void *l, void *m);
 void *Node_getLastChild(void *node);
 void *Node_getPreviousSibling(void *node);
 int HST_getSessionID(void *h);
+extern unsigned char _DOMinput, _DOMtype, _DOMbutton, _DOMcheckbox, _DOMfile, _DOMhidden, _DOMimage, _DOMpassword, _DOMradio, _DOMreset, _DOMsubmit, _DOMselect, _DOMtextarea;
+void Node_getNodeName(DOMString *s, void *node);
+void Element_getAttribute(DOMString *s, void *node, void *name);
 RadioEnt *getRadioListByName(void *ctx, void *box) {
     RadioEnt *r = M2C_FIELD(M2C_FIELD(ctx, void **, 0x20), RadioEnt **, 0x80);
 
@@ -139,7 +142,53 @@ void *getPreviousForm(void *start) {
     return NULL;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_form", getInputType);
+int getInputType(void *node) {
+    DOMString name;
+    DOMString type;
+    int t = 0;
+
+    Node_getNodeName(&name, node);
+    if (DOMStringcasecmpFast(&name, &_DOMinput) == 0) {
+        Element_getAttribute(&type, node, &_DOMtype);
+        if (type.len == 0)
+            return 11;
+        if (DOMStringcasecmpFast(&type, &_DOMbutton) == 0)
+            t = 1;
+        else if (DOMStringcasecmpFast(&type, &_DOMcheckbox) == 0)
+            t = 2;
+        else if (DOMStringcasecmpFast(&type, &_DOMfile) == 0)
+            t = 3;
+        else if (DOMStringcasecmpFast(&type, &_DOMhidden) == 0)
+            t = 4;
+        else if (DOMStringcasecmpFast(&type, &_DOMimage) == 0)
+            t = 5;
+        else if (DOMStringcasecmpFast(&type, &_DOMpassword) == 0)
+            t = 6;
+        else if (DOMStringcasecmpFast(&type, &_DOMradio) == 0)
+            t = 7;
+        else if (DOMStringcasecmpFast(&type, &_DOMreset) == 0)
+            t = 8;
+        else if (DOMStringcasecmpFast(&type, &_DOMsubmit) == 0)
+            t = 10;
+        else
+            t = 11;
+    } else if (DOMStringcasecmpFast(&name, &_DOMbutton) == 0) {
+        Element_getAttribute(&type, node, &_DOMtype);
+        if (type.len == 0)
+            return 10;
+        if (DOMStringcasecmpFast(&type, &_DOMbutton) == 0)
+            t = 1;
+        else if (DOMStringcasecmpFast(&type, &_DOMreset) == 0)
+            t = 8;
+        else
+            t = 10;
+    } else if (DOMStringcasecmpFast(&name, &_DOMselect) == 0) {
+        t = 9;
+    } else if (DOMStringcasecmpFast(&name, &_DOMtextarea) == 0) {
+        t = 12;
+    }
+    return t;
+}
 
 void addFormList(void *ctx, void *form) {
     FormEnt *e;
