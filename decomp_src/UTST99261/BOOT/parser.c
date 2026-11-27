@@ -1329,7 +1329,84 @@ int parseJSInputTypeCmp(PDStr *s) {
     return 3;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", parseJSInputSet);
+void parseJSInputSet(PCtx *c) {
+    PDStr s;
+    PJSEvent ev[16];
+    int obj;
+    int type;
+    void *map;
+    int n;
+    int i;
+    void *attr;
+    int cnt;
+    PChar *p;
+
+    obj = 0;
+    type = 3;
+    cnt = 0;
+    if (CF(c, 0x15C) == 0) {
+        return;
+    }
+    map = Node_getAttributes(CF(c, 0x11C));
+    n = NamedNodeMap_getLength(map);
+    for (i = 0; i < n; i++) {
+        attr = NamedNodeMap_item(map, i);
+        s = Attr_getName(attr);
+        if (parseDStrEqual(D_00137EB4, &s) == 1) {
+            s = Attr_getValue(attr);
+            parseDStrTrace(&s);
+            type = parseJSInputTypeCmp(&s);
+        } else if (parseJSEventHandler(&s) == 1) {
+            p = MEM_malloc(0, s.len * 2 + 2);
+            memcpy(p, s.data, s.len * 2);
+            p[s.len] = 0;
+            ev[cnt].name = p;
+            s = Attr_getValue(attr);
+            p = MEM_malloc(0, s.len * 2 + 2);
+            memcpy(p, s.data, s.len * 2);
+            p[s.len] = 0;
+            ev[cnt].value = p;
+            cnt++;
+            if (cnt >= 15)
+                break;
+        }
+    }
+    ev[cnt].name = NULL;
+    ev[cnt].value = NULL;
+    if (type != 0) {
+        switch (type) {
+        case 1:
+            obj = ButtonSet(CF(c, 0x15C), CF(c, 0x11C), ev);
+            break;
+        case 2:
+            obj = CheckboxSet(CF(c, 0x15C), CF(c, 0x11C), ev);
+            break;
+        case 3:
+            obj = TextSet(CF(c, 0x15C), CF(c, 0x11C), ev);
+            break;
+        case 4:
+            obj = SubmitSet(CF(c, 0x15C), CF(c, 0x11C), ev);
+            break;
+        case 5:
+            obj = ResetSet(CF(c, 0x15C), CF(c, 0x11C), ev);
+            break;
+        case 6:
+            obj = RadioSet(CF(c, 0x15C), CF(c, 0x11C), ev);
+            break;
+        case 7:
+            obj = PasswordSet(CF(c, 0x15C), CF(c, 0x11C), ev);
+            break;
+        case 8:
+            obj = HiddenSet(CF(c, 0x15C), CF(c, 0x11C), ev);
+            break;
+        case 9:
+            obj = FileUploadSet(CF(c, 0x15C), CF(c, 0x11C), ev);
+            break;
+        }
+        parseJSDestroyEventArray(ev);
+        Node_setJSObj(CF(c, 0x11C), obj);
+    }
+}
 
 void parseJSSelectSet(PCtx *c) {
     void *ev[32];
