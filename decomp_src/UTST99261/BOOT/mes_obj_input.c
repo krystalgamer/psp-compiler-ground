@@ -1,6 +1,18 @@
 /* cflags: -O1 */
 #include "common.h"
 #include "m2c_macros.h"
+void *FIO_fopen(const char *path, const char *mode);
+int FIO_fseek(void *fp, int off, int whence);
+int FIO_ftell(void *fp);
+int FIO_fread(void *buf, int size, int n, void *fp);
+int FIO_fwrite(void *buf, int size, int n, void *fp);
+int FIO_fclose(void *fp);
+void *memset(void *p, int c, unsigned int n);
+void *CSS_newPoolBuf(void);
+void CSS_putSPoolBuf(void *pb, const char *s);
+void CSS_putsPoolBuf(void *pb, void *s);
+void *CSS_getMediaTypeString(int t);
+void CSS_freePoolBuf(void *pb);
 void *newCSSNode(int a, int size);
 void CSS_StyleSheetRuleSingle(void *ss, char *text);
 void popCSSNode(void *n);
@@ -70,7 +82,32 @@ void mes_input_free(void) {
     MEM_free(0);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_input", readCFData);
+void *readCFData(char *path, int *size)
+{
+    void *fp;
+    int n;
+    void *buf;
+
+    *size = 0;
+    if (path[0] == 0)
+        return NULL;
+    fp = FIO_fopen(path, "rb");
+    if (fp == NULL)
+        return NULL;
+    FIO_fseek(fp, 0, 2);
+    n = FIO_ftell(fp);
+    FIO_fseek(fp, 0, 0);
+    buf = MEM_malloc(0, n + 1);
+    if (buf == NULL) {
+        FIO_fclose(fp);
+        return NULL;
+    }
+    memset(buf, 0, n + 1);
+    FIO_fread(buf, n, 1, fp);
+    FIO_fclose(fp);
+    *size = n;
+    return buf;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_input", writeCFData);
 
