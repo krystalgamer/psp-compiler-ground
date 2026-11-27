@@ -52,7 +52,85 @@ void Menu_Init(void) {
 void Menu_Shutdown(void) {
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/utility_basic/nonmatchings/menu/Menu_Init", Menu_Update);
+int sceCtrlReadBufferPositive(SceCtrlData *pData, int nBufs);
+void sceGuStart(int type, void *list, int size);
+void sceGuDebugPrint(int x, int y, unsigned int color, const char *str);
+int sceGuFinish(void);
+int sceGuSync(int mode, int what);
+extern __typeof__(disp_list) disp_list_347C0;
+
+static inline int IsValidMenuItem(int sel)
+{
+	return (unsigned int)sel < 100 && menuitems[sel].name != NULL && menuitems[sel].callback != NULL;
+}
+
+extern u_int32 D_00034780;
+#define cont D_00034780
+
+void Menu_Update(void)
+{
+	int i;
+
+	if (lock_count == 0) {
+		u_int32 prev = cont;
+		u_int32 padd;
+		SceCtrlData buf[1];
+		int ret;
+
+		ret = sceCtrlReadBufferPositive(buf, 1);
+		if (ret != 0)
+			cont = buf[0].Buttons;
+		else
+			cont = 0;
+		padd = cont & (cont ^ prev);
+
+		if (padd & 0x2000) {
+			if (IsValidMenuItem(selection))
+				(*menuitems[selection].callback)(selection);
+		} else if (padd & 0x4000) {
+			if (cancel_callback)
+				(*cancel_callback)(selection);
+		} else if (padd & 0x0010) {
+			if (IsValidMenuItem(selection - 1))
+				selection--;
+		} else if (padd & 0x0040) {
+			if (IsValidMenuItem(selection + 1))
+				selection++;
+		}
+	}
+
+	if (show) {
+		sceGuStart(0, disp_list_347C0, sizeof(disp_list_347C0));
+
+		for (i = 0; i < 100 && menuitems[i].name; i++) {
+			int color = 0x00ffffff;
+			if (i == selection)
+				color = 0x000000ff;
+			sceGuDebugPrint(8, i * 9 + 8, color, menuitems[i].name);
+		}
+
+		sceGuDebugPrint(0, 85, 0x00ffffff, "------------------------------------------------");
+
+		for (i = 0; i < 20; i++)
+			sceGuDebugPrint(8, i * 9 + 90, output[i].color, output[i].str);
+
+		if (lock_count) {
+			int color = 0x00ffffff;
+			if (tick % 60 > 30)
+				color = 0;
+			sceGuDebugPrint(440, 260, color, "BUSY");
+		}
+
+		sceGuFinish();
+		sceGuSync(0, 0);
+	}
+
+	tick++;
+}
+#undef cont
+
+/* unreferenced empty string literal that followed Menu_Update's strings */
+const char D_00014B7C[] = "";
 
 void Menu_ClearItems(void)
 {
