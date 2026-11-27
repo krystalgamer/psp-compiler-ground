@@ -1072,7 +1072,21 @@ void sceGuClear(int flags)
 	send_commandi(211, 0);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_vtxformat/nonmatchings/libgu", sceGuDrawBuffer);
+void sceGuDrawBuffer(int psm, void *fbp, int frame_width)
+{
+	GuDrawBuffer *fb = &FBuf;
+
+	fb->pixel_size = psm;
+	fb->frame_buffer = fbp;
+	fb->frame_width = frame_width;
+	if (!fb->depth_buffer && fb->height) fb->depth_buffer = (char *)fbp + fb->height * frame_width * 4;
+	if (!fb->depth_width) fb->depth_width = frame_width;
+	send_commandi(210, fb->pixel_size);
+	send_commandi(156, *(unsigned int *)&fb->frame_buffer & 0xffffff);
+	send_commandi(157, ((*(unsigned int *)&fb->frame_buffer & 0xff000000) >> 8) | frame_width);
+	send_commandi(158, *(unsigned int *)&fb->depth_buffer & 0xffffff);
+	send_commandi(159, ((*(unsigned int *)&fb->depth_buffer & 0xff000000) >> 8) | fb->depth_width);
+}
 
 void sceGuDrawBufferList(int psm, void *fbp, int frame_width)
 {
