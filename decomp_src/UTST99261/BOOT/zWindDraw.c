@@ -187,7 +187,50 @@ int zWindDraw(void) {
     return r;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/zWindDraw", zWindFontSet);
+void zWindFontSet(int type, s16 w, s16 h, s16 bpp, void *f0, void *f1, void *f2, void *f3) {
+    s_windsystemChar.flags = type;
+    s_windsystemChar.font[0] = 0;
+    s_windsystemChar.font[1] = 0;
+    s_windsystemChar.font[2] = 0;
+    s_windsystemChar.font[3] = 0;
+    switch (type) {
+    case 1:
+        if (f0) {
+            s_windsystemChar.flags |= 0x8000;
+            s_windsystemChar.font[0] = (int)f0;
+        }
+        if (f1) {
+            s_windsystemChar.flags |= 0x4000;
+            s_windsystemChar.font[1] = (int)f1;
+        }
+        if (f2) {
+            s_windsystemChar.flags |= 0x2000;
+            s_windsystemChar.font[2] = (int)f2;
+        }
+        if (f3) {
+            s_windsystemChar.flags |= 0x1000;
+            s_windsystemChar.font[3] = (int)f3;
+        }
+        break;
+    case 8:
+        if (f0) {
+            s_windsystemChar.flags |= 0x8000;
+            s_windsystemChar.font[0] = (int)f0;
+        }
+        if (f1) {
+            s_windsystemChar.flags |= 0x4000;
+            s_windsystemChar.font[1] = (int)f1;
+        }
+        break;
+    default:
+        return;
+    }
+    s_windsystemChar.w = w;
+    s_windsystemChar.h = h;
+    s_windsystemChar.bpp = bpp;
+    s_windsystemChar.wbytes = (w * bpp + 7) / 8;
+    s_windsystemChar.hbytes = (h * bpp + 7) / 8;
+}
 
 int zWindLocateSet(int x, int y) {
     int w;
