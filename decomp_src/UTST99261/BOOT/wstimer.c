@@ -1,6 +1,11 @@
 /* cflags: -O1 */
 #include "common.h"
 #include "m2c_macros.h"
+void *MEM_calloc(int heap, unsigned int size);
+void *OS_thread_mutex_create(void);
+int OS_thread_mutex_init(void *m, int a);
+int OS_thread_create(void *id, int a, void *fn, int b);
+void esp_timerThread(void);
 typedef struct TimeSpec {
     int sec;
     int nsec;
@@ -127,7 +132,40 @@ int chkTimer(int id)
     return -1;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/wstimer", OS_timer_init);
+int OS_timer_init(void)
+{
+    int *head;
+    void **p;
+
+    if (sys_timer != NULL)
+        return -1;
+    sys_timer = MEM_calloc(0, 0x18);
+    if (sys_timer == NULL)
+        return -1;
+    p = sys_timer;
+    p[2] = OS_thread_mutex_create();
+    if (OS_thread_mutex_init(sys_timer[2], 0) != 0) {
+        MEM_free(0, sys_timer);
+        return -1;
+    }
+    head = MEM_calloc(0, 0x1C);
+    head[0] = (unsigned int)head >> 1;
+    sys_timer[0] = head;
+    clock_gettime((TimeSpec *)&sys_timer[4]);
+    if (timer_create((int *)&sys_timer[3]) < 0) {
+        OS_thread_mutex_destroy((int)sys_timer[2]);
+        MEM_free(0, sys_timer);
+        return -1;
+    }
+    if (OS_thread_create(&sys_timer[1], 0, esp_timerThread, 0) != 0) {
+        timer_delete((int)sys_timer[3]);
+        OS_thread_mutex_destroy((int)sys_timer[2]);
+        MEM_free(0, sys_timer);
+        return -1;
+    }
+    thread_id_timer = (int)sys_timer[1];
+    return 0;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -164,7 +202,38 @@ void OS_timer_destroy(void) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/wstimer", OS_timer_set);
+int OS_timer_set(int a, int b, int c, int d, int e)
+{
+    int *ev;
+    int *t;
+
+    if (sys_timer == NULL)
+        return -1;
+    ev = MEM_calloc(0, 0x24);
+    if (ev == NULL)
+        return -1;
+    t = MEM_calloc(0, 0x1C);
+    if (t == NULL) {
+        MEM_free(0, ev);
+        return -1;
+    }
+    t[0] = (unsigned int)t >> 1;
+    ((short *)t)[2] = b;
+    ((short *)t)[3] = 0;
+    t[2] = a;
+    t[3] = (int)ev;
+    t[4] = c;
+    t[5] = c;
+    ev[1] = 9;
+    ev[2] = d;
+    ev[3] = e;
+    ev[4] = 0;
+    ev[5] = t[0];
+    OS_thread_mutex_lock((int)sys_timer[2]);
+    addTimer(t);
+    OS_thread_mutex_unlock((int)sys_timer[2]);
+    return t[0];
+}
 
 int OS_timer_start(int id)
 {
