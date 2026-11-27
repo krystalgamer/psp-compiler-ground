@@ -224,8 +224,13 @@ public:
     void operator=(const BVdata &o)
     {
         if (o._bv) {
+#ifdef SCENE_BVDATA_CREATE
+            if (!_bv)
+                create(sgl::BV::Type(0));
+#else
             if (!_bv && !valid())
                 _bv = new sgl::BV, _bv->setType(sgl::BV::Type(0));
+#endif
             *_bv = *o._bv;
         } else if (_bv)
             delete _bv, _bv = 0;

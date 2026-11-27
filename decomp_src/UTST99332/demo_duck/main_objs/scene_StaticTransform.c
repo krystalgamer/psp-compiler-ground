@@ -1,12 +1,21 @@
 /* lang: c++ */
-/* cflags: -O3 -fno-exceptions */
+/* cflags: -O3 -fno-exceptions -fno-merge-constants */
 #undef __EXCEPTIONS
 #include "cxx/defer_asm.h"
+#define SCENE_BVDATA_LITERALS
+#define SCENE_BVDATA_CREATE
+#define DEMO_STATICS_MATH
+#define DEMO_STATICS_IOSTREAM
 #include "../main.hpp"
+/* linkonce order: this object's .gnu.linkonce.t sections in Sony's link order */
+SCENE_LINKONCE_ORDER(
+    SCENE_LINKONCE(_ZNK5scene15StaticTransform11getTypeNameEv)
+    SCENE_LINKONCE(_ZNK5scene15StaticTransform5cloneESs)
+);
 
-extern const char D_0016CE18[];
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_StaticTransform", _Z41__static_initialization_and_destruction_0ii_938DC);
+/* the module's .ctors/.dtors refer to the static constructor/destructor */
+__asm__(".globl _GLOBAL__I__ZN5scene15StaticTransformC2ESsb");
+__asm__(".globl _GLOBAL__D__ZN5scene15StaticTransformC2ESsb");
 
 scene::StaticTransform::StaticTransform(std::string name, bool b) : Group(name, b)
 {
@@ -29,7 +38,26 @@ math::matrix scene::StaticTransform::getMatrix() const
     return _matrix;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_StaticTransform", _ZN5scene15StaticTransform11setIdentityEv);
+void scene::StaticTransform::setIdentity()
+{
+    _matrix = math::matrix::Identity();
+    _identity = true;
+}
+
+/* (after setIdentity: its float pool precedes the type name) */
+/* inline in the class (weak copies emitted with the vtable, in the object's tail) */
+SGL_LINKONCE_BEGIN
+inline const char *scene::StaticTransform::getTypeName() const
+{
+    return "StaticTransform";
+}
+/* clone() (asm) inlines StaticTransform::operator= -> BVdata::operator= -> create(): create's __PRETTY_FUNCTION__
+   stays in .rodata (its warning is dead code); this linkonce copy (discarded by the link) emits it there */
+inline void StaticTransform_refs(scene::StaticTransform &a, const scene::StaticTransform &b)
+{
+    a = b;
+}
+SGL_LINKONCE_END
 
 void scene::StaticTransform::flatten(math::TransformStack &ts)
 {
@@ -39,26 +67,7 @@ void scene::StaticTransform::flatten(math::TransformStack &ts)
     math_TransformStack_pop(ts);
 }
 
-extern "C" {
-void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_938DC");
-void _GLOBAL__I__ZN5scene15StaticTransformC2ESsb(void);
-void _GLOBAL__D__ZN5scene15StaticTransformC2ESsb(void);
-}
-
-void _GLOBAL__I__ZN5scene15StaticTransformC2ESsb(void)
-{
-    static_init(1, 0xFFFF);
-}
-
-void _GLOBAL__D__ZN5scene15StaticTransformC2ESsb(void)
-{
-    static_init(0, 0xFFFF);
-}
-
-const char *scene::StaticTransform::getTypeName() const
-{
-    return D_0016CE18;
-}
-
+/* inline in the class too (weak copies in the tail), still asm */
+#undef INCLUDE_ASM
+#define INCLUDE_ASM INCLUDE_ASM_LINKONCE
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_StaticTransform", _ZNK5scene15StaticTransform5cloneESs);
-

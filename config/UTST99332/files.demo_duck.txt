@@ -124,7 +124,6 @@ bss 0x18EB6C main_objs/math_SphericalCoord
 bss 0x18EBEC main_objs/math_ZYZ
 bss 0x18EC6C -
 bss 0x190E44 main_objs/math_TransformStackFunc
-bss 0x190EC4 -
 # draw_mesh_enabled: vector<short>::reserve()'s "vector::reserve" (after PrimitiveIndex's strings)
 rodata 0x16C908 main_objs/draw_mesh_enabled
 rodata 0x16C918 -
@@ -353,7 +352,6 @@ bss 0x190284 -
 rodata 0x175828 main_objs/common_FileDump
 rodata 0x1759D8 -
 bss 0x191C3C main_objs/common_FileDump
-bss 0x191C40 -
 rodata 0x175DA0 main_objs/float_basic_parser_get
 rodata 0x175E4C -
 bss 0x191C48 main_objs/float_basic_parser_get
@@ -363,7 +361,6 @@ rodata 0x166C34 -
 bss 0x18E42C main_objs/glutils_RectanglePicking
 bss 0x18E4B0 -
 bss 0x18EAA8 main_objs/interp_KeyFrameSequence
-bss 0x18EB6C -
 rodata 0x169078 main_objs/scene_DefaultShader
 rodata 0x1690A4 -
 bss 0x18F010 main_objs/scene_DefaultShader
@@ -371,8 +368,20 @@ bss 0x18F094 -
 rodata 0x168FCC main_objs/scene_HasBVdata
 rodata 0x169038 -
 bss 0x18EF8C main_objs/scene_HasBVdata
-bss 0x18F010 -
 rodata 0x171DE0 main_objs/sgl_Edge
 rodata 0x1721DC -
 bss 0x190EC4 main_objs/sgl_Edge
-bss 0x190FC8 -
+# scene_Object, scene_Setup, scene_StaticTransform, scene_Switch: C++ static initializers, getTypeName's string, BVdata::create's __PRETTY_FUNCTION__ (Group-derived: clone() inlines it); .bss: the header statics
+rodata 0x16CBB8 main_objs/scene_Object
+rodata 0x16CC08 -
+bss 0x18FC58 main_objs/scene_Object
+rodata 0x16CC68 main_objs/scene_Setup
+rodata 0x16CC8C -
+bss 0x18FCDC main_objs/scene_Setup
+bss 0x18FD60 -
+rodata 0x16CDF8 main_objs/scene_StaticTransform
+rodata 0x16CE54 -
+bss 0x18FDE4 main_objs/scene_StaticTransform
+rodata 0x16CEB8 main_objs/scene_Switch
+rodata 0x16CF08 -
+bss 0x18FE68 main_objs/scene_Switch

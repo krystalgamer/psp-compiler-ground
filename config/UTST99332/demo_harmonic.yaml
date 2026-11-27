@@ -418,6 +418,14 @@ segments:
       - [0x168704, rodata, asm/rodata_168684]
       - [0x169A60, .rodata, main_objs/draw_mesh_enabled]
       - [0x169A70, rodata, asm/rodata_1699F0]
+      - [0x169D10, .rodata, main_objs/scene_Object]
+      - [0x169D60, rodata, asm/rodata_169CE0]
+      - [0x169DC0, .rodata, main_objs/scene_Setup]
+      - [0x169DE4, rodata, asm/rodata_169D64]
+      - [0x169F50, .rodata, main_objs/scene_StaticTransform]
+      - [0x169FAC, rodata, asm/rodata_169F2C]
+      - [0x16A010, .rodata, main_objs/scene_Switch]
+      - [0x16A060, rodata, asm/rodata_169FE0]
       - [0x16A0C0, .rodata, main_objs/scene_Texture]
       - [0x16A128, rodata, asm/rodata_16A0A8]
       - [0x16A738, .rodata, main_objs/VertexColorEnv]
@@ -541,24 +549,25 @@ segments:
       - { start: 0x189CE4, type: .bss, vram: 0x18AFAC, name: main_objs/glutils_RectanglePicking }
       - { start: 0x189CE4, type: bss, vram: 0x18B030, name: bss_18B030 }
       - { start: 0x189CE4, type: .bss, vram: 0x18B628, name: main_objs/interp_KeyFrameSequence }
-      - { start: 0x189CE4, type: bss, vram: 0x18B6EC, name: bss_18B6EC }
       - { start: 0x189CE4, type: .bss, vram: 0x18B6EC, name: main_objs/math_SphericalCoord }
       - { start: 0x189CE4, type: .bss, vram: 0x18B76C, name: main_objs/math_ZYZ }
       - { start: 0x189CE4, type: bss, vram: 0x18B7EC, name: bss_18B7EC }
       - { start: 0x189CE4, type: .bss, vram: 0x18BB0C, name: main_objs/scene_HasBVdata }
-      - { start: 0x189CE4, type: bss, vram: 0x18BB90, name: bss_18BB90 }
       - { start: 0x189CE4, type: .bss, vram: 0x18BB90, name: main_objs/scene_DefaultShader }
       - { start: 0x189CE4, type: bss, vram: 0x18BC14, name: bss_18BC14 }
       - { start: 0x189CE4, type: .bss, vram: 0x18C12C, name: main_objs/scene_Graph_5 }
       - { start: 0x189CE4, type: bss, vram: 0x18C230, name: bss_18C230 }
+      - { start: 0x189CE4, type: .bss, vram: 0x18C7D8, name: main_objs/scene_Object }
+      - { start: 0x189CE4, type: .bss, vram: 0x18C85C, name: main_objs/scene_Setup }
+      - { start: 0x189CE4, type: bss, vram: 0x18C8E0, name: bss_18C8E0 }
+      - { start: 0x189CE4, type: .bss, vram: 0x18C964, name: main_objs/scene_StaticTransform }
+      - { start: 0x189CE4, type: .bss, vram: 0x18C9E8, name: main_objs/scene_Switch }
       - { start: 0x189CE4, type: .bss, vram: 0x18CA6C, name: main_objs/scene_Texture }
       - { start: 0x189CE4, type: bss, vram: 0x18CAF0, name: bss_18CAF0 }
       - { start: 0x189CE4, type: .bss, vram: 0x18CD80, name: main_objs/VertexColorEnv }
       - { start: 0x189CE4, type: bss, vram: 0x18CE04, name: bss_18CE04 }
       - { start: 0x189CE4, type: .bss, vram: 0x18D9C4, name: main_objs/math_TransformStackFunc }
-      - { start: 0x189CE4, type: bss, vram: 0x18DA44, name: bss_18DA44 }
       - { start: 0x189CE4, type: .bss, vram: 0x18DA44, name: main_objs/sgl_Edge }
-      - { start: 0x189CE4, type: bss, vram: 0x18DB48, name: bss_18DB48 }
       - { start: 0x189CE4, type: .bss, vram: 0x18DB48, name: main_objs/sh_DebugMap }
       - { start: 0x189CE4, type: bss, vram: 0x18DCA0, name: bss_18DCA0 }
       - { start: 0x189CE4, type: .bss, vram: 0x18DED0, name: main_objs/sh_Matrix }
@@ -568,7 +577,6 @@ segments:
       - { start: 0x189CE4, type: .bss, vram: 0x18E468, name: main_objs/sh_SquareMap }
       - { start: 0x189CE4, type: bss, vram: 0x18E4EC, name: bss_18E4EC }
       - { start: 0x189CE4, type: .bss, vram: 0x18E7BC, name: main_objs/common_FileDump }
-      - { start: 0x189CE4, type: bss, vram: 0x18E7C0, name: bss_18E7C0 }
       - { start: 0x189CE4, type: .bss, vram: 0x18E7C0, name: main_objs/basic_file_parser_basic_file_parser }
       - { start: 0x189CE4, type: bss, vram: 0x18E7C4, name: bss_18E7C4 }
       - { start: 0x189CE4, type: .bss, vram: 0x18E7C8, name: main_objs/float_basic_parser_get }
