@@ -1,6 +1,7 @@
 /* cflags: -O1 */
 #include "common.h"
 #include "m2c_macros.h"
+int mes_object_get(void *obj, unsigned int id);
 typedef struct GcMethod {
     int f0;
     int kind;
@@ -158,7 +159,19 @@ int mes_user_index(MesUser *obj, int id)
     return -1;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_class", mes_user_get);
+int mes_user_get(void *ctx, MesUser *o, unsigned int id)
+{
+    int (*get)(void *, MesUser *, void *, int) = *(void **)((char *)o->def + 0x10);
+    int idx;
+    int r;
+
+    if (get != NULL && (idx = mes_user_index(o, id)) >= 0) {
+        r = get(ctx, o, o->priv, idx);
+        if (r != 0x20)
+            return r;
+    }
+    return mes_object_get(o, id);
+}
 
 #ifndef NULL
 #define NULL ((void *)0)

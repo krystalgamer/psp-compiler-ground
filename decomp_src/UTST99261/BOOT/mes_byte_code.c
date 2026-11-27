@@ -42,7 +42,27 @@ void *mes_byte_code_new(void) {
     return temp_v0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_byte_code", mes_byte_code_put);
+void mes_byte_code_put(ByteCode *bc, unsigned char c)
+{
+    BcChunk *n;
+
+    if (bc != NULL) {
+        if (bc->off >= 0x40) {
+            n = MEM_malloc(0, 0x44);
+            if (n == NULL)
+                return;
+            n->next = NULL;
+            if (bc->head == NULL)
+                bc->head = n;
+            else
+                bc->cur->next = n;
+            bc->cur = n;
+            bc->off = 0;
+        }
+        bc->cur->data[bc->off++] = c;
+        bc->size++;
+    }
+}
 
 void mes_byte_code_op(ByteCode *bc, unsigned char op)
 {
@@ -53,7 +73,30 @@ void mes_byte_code_op(ByteCode *bc, unsigned char op)
     }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_byte_code", mes_byte_code_opw);
+void mes_byte_code_opw(ByteCode *bc, unsigned char op, int n)
+{
+    union {
+        unsigned int i;
+        unsigned short s;
+    } w;
+
+    if ((unsigned int)(n + 0x80) < 0x100) {
+        mes_byte_code_put(bc, (op & 0x1F) | 0x80);
+        mes_byte_code_put(bc, n);
+    } else if ((unsigned int)(n + 0x8000) <= 0xFFFF) {
+        mes_byte_code_put(bc, (op & 0x1F) | 0xA0);
+        w.s = n;
+        mes_byte_code_put(bc, w.i);
+        mes_byte_code_put(bc, w.i >> 8);
+    } else {
+        mes_byte_code_put(bc, (op & 0x1F) | 0xC0);
+        w.i = n;
+        mes_byte_code_put(bc, w.i);
+        mes_byte_code_put(bc, w.i >> 8);
+        mes_byte_code_put(bc, w.i >> 16);
+        mes_byte_code_put(bc, w.i >> 24);
+    }
+}
 
 void mes_byte_code_opn(ByteCode *bc, unsigned char op, double d)
 {

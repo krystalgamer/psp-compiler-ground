@@ -1,6 +1,7 @@
 /* cflags: -O1 */
 #include "common.h"
 #include "m2c_macros.h"
+int *mes_util_vals(int n, int a);
 typedef struct MesList {
     struct MesList *next;
     int v;
@@ -147,4 +148,26 @@ int mes_list_tail_find(MesTail *t, int v)
     return mes_list_tail_add(t, v);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_list", mes_list_tail_to_vals);
+int *mes_list_tail_to_vals(MesTail *t)
+{
+    int *vals;
+    int *p;
+    MesList *l;
+    MesList *next;
+
+    if (t == NULL)
+        return NULL;
+    vals = NULL;
+    if (t->count > 0) {
+        vals = mes_util_vals(t->count, 0);
+        p = vals != NULL ? vals + 1 : NULL;
+        for (l = t->head; l != NULL; l = next) {
+            next = l->next;
+            if (p != NULL)
+                *p++ = l->v;
+            MEM_free(0, l);
+        }
+    }
+    MEM_free(0, t);
+    return vals;
+}
