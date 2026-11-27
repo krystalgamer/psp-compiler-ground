@@ -105,7 +105,40 @@ void dumpOskUtilityTextResult(int n, OskData *d)
 	}
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/osk", utility_update_osk);
+void drawPrintf(const char *, ...);
+int sceUtilityOskGetStatus(void);
+int sceUtilityOskUpdate(int);
+int sceUtilityOskShutdownStart(void);
+int utility_update_osk(void)
+{
+	int ret = 0;
+	int st = sceUtilityOskGetStatus();
+	drawPrintf("Osk : %d:%d\n", st, sample_type_11A910);
+	switch (st) {
+	case 2:
+		ret = sceUtilityOskUpdate(((int *)gameGetCntx())[0x80 / 4] + 1);
+		if (ret != 0)
+			consPrintf("sceUtilityOskUpdate failed - %d\n", ret);
+		break;
+	case 3:
+		ret = sceUtilityOskShutdownStart();
+		if (ret == 0)
+			consPrintf("sceUtilityOskShutdownStart ok\n");
+		else
+			consPrintf("sceUtilityOskShutdownStart failed - %d\n", ret);
+		break;
+	case 4:
+		consPrintf("SCE_UTILITY_COMMON_STATUS_SHUTDOWN\n");
+		break;
+	case 0:
+		consPrintf("SCE_UTILITY_COMMON_STATUS_NONE\n");
+		sample_type_11A910 = 0;
+		break;
+	case 1:
+		break;
+	}
+	return ret;
+}
 
 void OnPush_OSK(int a) {
     int temp_v0;
