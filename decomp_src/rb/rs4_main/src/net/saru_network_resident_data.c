@@ -1,4 +1,7 @@
+/* lang: c++ */
+/* cflags: -Os */
 #include "common.h"
+extern "C" {
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_resident_data", _Z41__static_initialization_and_destruction_0ii_54B18);
 
@@ -788,3 +791,5 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_resident_data
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_resident_data", _ZN3B2A4CalcEPNS_7ManagerE);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_resident_data", _ZN3B2A4DrawEPNS_7ManagerE);
+
+} /* extern "C": m2c drafts with mangled names, kept as C linkage */

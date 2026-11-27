@@ -1,3 +1,5 @@
+/* lang: c++ */
+/* cflags: -Os */
 #include "common.h"
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/vfs_internal_file", _Z19normalize__filenamePKcPcj);

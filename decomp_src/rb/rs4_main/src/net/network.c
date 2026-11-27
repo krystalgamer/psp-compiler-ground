@@ -1,3 +1,5 @@
+/* lang: c++ */
+/* cflags: -Os */
 #include "common.h"
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/network", _ZN3Net7Network6mallocEj);

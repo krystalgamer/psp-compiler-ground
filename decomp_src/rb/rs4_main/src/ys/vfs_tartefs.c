@@ -1,4 +1,7 @@
+/* lang: c++ */
+/* cflags: -Os */
 #include "common.h"
+extern "C" {
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/vfs_tartefs", _Z11map__memoryPvPN3Vfs5Tarte6Format4Node4BaseE);
 
@@ -787,3 +790,5 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/vfs_tartefs", _ZTSN2Ys17
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/vfs_tartefs", _ZN2Ys4Tile5ResetEv);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/vfs_tartefs", _ZN2Ys4Tile4DrawEv);
+
+} /* extern "C": m2c drafts with mangled names, kept as C linkage */

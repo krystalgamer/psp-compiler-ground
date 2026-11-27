@@ -1,4 +1,7 @@
+/* lang: c++ */
+/* cflags: -Os */
 #include "common.h"
+extern "C" {
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _ZN3B2A13DeleteManagerEPNS_7ManagerE);
 
@@ -156,3 +159,5 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _ZdlPv);
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _ZdaPv);
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", D_00108FF4);
+
+} /* extern "C": m2c drafts with mangled names, kept as C linkage */

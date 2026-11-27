@@ -1,4 +1,7 @@
+/* lang: c++ */
+/* cflags: -Os */
 #include "common.h"
+extern "C" {
 
 void _Z11print_debugPKciRN3Net12EtherAddressEPvi(void) {
 }
@@ -1110,3 +1113,5 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_event", D
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_event", _ZTVN7SaruNet10CardBattle11NetworkTaskE);
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_event", D_00107678);
+
+} /* extern "C": m2c drafts with mangled names, kept as C linkage */
