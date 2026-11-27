@@ -107,7 +107,55 @@ extern int minfo_num;
 
 void matching_cancel(int id);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_netpad", pad_circle);
+typedef struct { u8 pad[6]; u8 num; u8 rest[0x3F0 - 7]; } NETDATA;
+extern NETDATA netdata[];
+int _net_init(void);
+int matching_get_established_num(void);
+int matching_select(int peer_idx);
+int net_mynumget(void);
+void net_mynumset(int num);
+int *net_gidgetadd(void);
+void sceNetEtherNtostr(const struct SceNetEtherAddr *addr, char *str);
+void sceNetEtherStrton(const char *str, struct SceNetEtherAddr *addr);
+void pad_circle(void)
+{
+	char etherstr[32];
+	struct SceNetEtherAddr mac;
+	int *gid;
+
+	switch ((int)_mrinfo.state) {
+	case MATCHING_ROOM_TOP:
+		_net_init();
+		change_state(MATCHING_ROOM_CONNECT_ROOM);
+		break;
+	case MATCHING_ROOM_ROOM_LIST:
+		if (minfo[_mrinfo.v_cursor_pos].status != 0) {
+			matching_select(_mrinfo.v_cursor_pos);
+			if (_mrinfo.hello_opt.game_type == 0) {
+				net_mynumset(minfo[_mrinfo.v_cursor_pos].hello_opt.cur_player_num);
+				netdata[net_mynumget()].num = net_mynumget();
+				sceNetEtherNtostr(&minfo[_mrinfo.v_cursor_pos].addr, etherstr);
+				sceNetEtherStrton(etherstr, &mac);
+				gid = net_gidgetadd();
+				gid[0] = mac.data[0];
+				gid[1] = mac.data[1];
+				gid[2] = mac.data[2];
+				gid[3] = mac.data[3];
+				gid[4] = mac.data[4];
+				gid[5] = mac.data[5];
+			}
+			change_state(MATCHING_ROOM_REQUESTING);
+		}
+		break;
+	case MATCHING_ROOM_PARENT_WAIT:
+		if (matching_get_established_num() > 0) {
+			change_state(MATCHING_ROOM_PARENT_START_INFORM);
+		}
+		break;
+	default:
+		break;
+	}
+}
 
 void pad_triangle(void) {
 }
