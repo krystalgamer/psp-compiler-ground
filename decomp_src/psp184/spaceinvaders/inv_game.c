@@ -747,7 +747,7 @@ extern int D_004B4F9C;
 extern float zna_zx __asm__("D_005A0710");
 float sinf(float);
 float cosf(float);
-void zako_mov_count(ZNA_T *e);
+void zako_mov_count(ZNA_T *e, int vis);
 int zako_shot_count(void);
 void zako_shot(ENEMY *e);
 void root_offset_get(L2V3 *out, float pos, float x, float y, float len);
@@ -760,7 +760,7 @@ void zako_normal_anime(ZCO_T *p, int vis)
 
 	if (zna_g[e->f38].f4 == 0)
 		return;
-	zako_mov_count(e);
+	zako_mov_count(e, vis);
 	if (vis == 1) {
 		root_offset_get(&o, e->f68, sinf(e->f44 / 180.0f * 3.1415927f) * e->f60, 0.0f,
 			e->f0 * 300.0f + 1000.0f + cosf(e->f44 / 180.0f * 3.1415927f) * e->f60);
