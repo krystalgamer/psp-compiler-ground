@@ -22,7 +22,8 @@ public:
     void copyImageEnd();
     void copyImage(int, int, int, int, void *, void *);
     void *displayBuffer() const { return f14 ? f40 : f44; }
-    char _pad0[0x14];
+    int f0;
+    char _pad4[0x14 - 4];
     int f14;                /* 0x14 */
     char _pad18[0x28];
     void *f40, *f44;        /* 0x40 */
