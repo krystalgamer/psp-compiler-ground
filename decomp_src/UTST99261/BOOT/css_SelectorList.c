@@ -18,9 +18,57 @@ extern unsigned char D_0013ED58;
 
 int CSS_ISmatchCSSChain(void *a, void *b);
 int CSS_ISmatchCombine(void *a, void *b);
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_SelectorList", CSS_ISmatchCSSChain);
+typedef struct CSSChain { struct CSSChain *next; void *name; } CSSChain;
+int CSS_ISmatchCSSChain(void *pa, void *pb) {
+    CSSChain *a = pa;
+    CSSChain *b = pb;
+    int r;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_SelectorList", CSS_ISmatchCombine);
+    while (a != NULL && b != NULL) {
+        if (a->name == NULL && b->name == NULL)
+            return 0;
+        if (b->name == NULL)
+            return 1;
+        if (a->name == NULL)
+            return -1;
+        r = UCS_strcasecmp(a->name, b->name);
+        if (r != 0)
+            return r;
+        a = a->next;
+        b = b->next;
+    }
+    if (a == NULL && b == NULL)
+        return 0;
+    if (b != NULL)
+        return -1;
+    return 1;
+}
+
+int CSS_ISmatchCombine(void *pa, void *pb) {
+    char *a = pa;
+    char *b = pb;
+    int r;
+
+    while (a != NULL && b != NULL) {
+        if ((r = UCS_strcasecmp(M2C_FIELD(a, void **, 0x24), M2C_FIELD(b, void **, 0x24))) != 0)
+            return r;
+        if ((r = CSS_ISmatchCSSChain(a + 0x28, b + 0x28)) != 0)
+            return r;
+        if ((r = CSS_ISmatchCSSChain(a + 0x30, b + 0x30)) != 0)
+            return r;
+        if ((r = CSS_ISmatchCSSChain(a + 0x40, b + 0x40)) != 0)
+            return r;
+        if ((r = CSS_ISmatchCSSChain(a + 0x38, b + 0x38)) != 0)
+            return r;
+        a = M2C_FIELD(a, char **, 0x20);
+        b = M2C_FIELD(b, char **, 0x20);
+    }
+    if (a == NULL && b == NULL)
+        return 0;
+    if (b != NULL)
+        return -1;
+    return 1;
+}
 
 int CSS_ISmatchSelector_C9540(void *a, void *b) {
     int r;

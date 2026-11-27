@@ -16,7 +16,26 @@ M2C_UNK initBoxProperty(void *);                    /* extern */
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_html_legacy", font_attr);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_html_legacy", html_BASEFONT);
+BOX *html_BASEFONT(void *node, BOX *parent, BOX *prev) {
+    BOX *box;
+
+    if (getBoxByHTML(parent, 0x2C) != NULL) {
+        box = getBodyBox(parent);
+        if (box == NULL)
+            return NULL;
+    } else {
+        box = createBox(node, 1);
+        if (box == NULL)
+            return NULL;
+        linkBox(box, parent, prev);
+        box->display = 0;
+        box->html = 9;
+        initNoneContent(box, node);
+        initBoxProperty(box);
+    }
+    font_attr(node, box);
+    return box->content == 1 ? NULL : box;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
