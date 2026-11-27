@@ -1,8 +1,47 @@
+/* cflags: -O1 */
 #include "common.h"
+#include "mes_js.h"
+#include "m2c_macros.h"
+extern MesClassDef mes_location_def;
+extern MesClass *mes_location_class;
+void *HST_searchSessionIDHistoryNode(int sid);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_location", mes_location_check_value);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_location", mes_location_to_string);
+
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void mes_location_check_value(MesContext *ctx, MesObject *obj, void **elem, int *sid, void **node)
+{
+    void *e;
+    int s;
+    void *n;
+    MesObject *o;
+
+    o = obj;
+    if (obj == NULL)
+        o = ctx->frame->thisobj;
+    e = mes_class_private_get(o);
+    s = Node_getSid(e);
+    n = HST_searchSessionIDHistoryNode(s);
+    *elem = e;
+    *sid = s;
+    *node = n;
+}
+
+MesValue mes_location_to_string(MesContext *ctx)
+{
+    void *elem;
+    int sid;
+    char *node;
+
+    mes_location_check_value(ctx, ctx->frame->thisobj, &elem, &sid, (void **)&node);
+    if (elem != NULL && node != NULL && *(void **)(node + 0x6C) != NULL)
+        return mes_location_get(ctx, ctx->frame->thisobj, elem, 4);
+    return MES_UNDEFINED;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_location", mes_location_reload);
 
@@ -18,9 +57,19 @@ void mes_location_mark(void) {
 void mes_location_free(void) {
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_location", mes_location_class_init);
+void mes_location_class_init(MesContext *ctx)
+{
+    mes_location_class = mes_class_init(ctx, &mes_location_def);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_location", mes_location_new);
+MesObject *mes_location_new(MesContext *ctx, void *elem)
+{
+    MesObject *obj = mes_class_new(ctx, mes_location_class);
+
+    if (obj != NULL)
+        mes_class_private_set(obj, elem);
+    return obj;
+}
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_location", D_0013FA0C);
 

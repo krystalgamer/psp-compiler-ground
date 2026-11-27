@@ -11,9 +11,22 @@ typedef struct MesObject MesObject;
 typedef struct MesClass MesClass;
 typedef struct MesClassDef MesClassDef;
 
-#define MES_INT(i) (((i) << 2) | 1)
+#define MES_INT(i) ((i) * 4 | 1)
 #define MES_NULL 4
 #define MES_UNDEFINED 0x20
+
+/* per-call state: this object at 0x1C */
+typedef struct MesFrame {
+    char pad[0x1C];
+    MesObject *thisobj;
+} MesFrame;
+
+struct MesContext {
+    char pad[0x10];
+    MesFrame *frame;
+    int f14;
+    MesValue *sp;                     /* value stack, grows down */
+};
 
 typedef struct JSEventRec {
     short type;
@@ -24,6 +37,10 @@ extern JSEventRec *g_JS_EVENT_REC_;
 MesClass *mes_class_init(MesContext *ctx, MesClassDef *def);
 MesObject *mes_class_new(MesContext *ctx, MesClass *cls);
 void mes_class_private_set(MesObject *obj, void *priv);
+void *mes_class_private_get(MesObject *obj);
+void mes_gc_mark(MesValue v);
+void MEM_free(int heap, void *p);
+MesValue mes_eval_to_string(MesContext *ctx, MesValue v);
 MesValue mes_string_new(MesContext *ctx, const void *str, int len);
 int mes_event_handle_event(MesContext *ctx, MesObject *obj, int type);
 MesValue mes_input_get(MesContext *ctx, MesObject *obj, void *elem, int id, int type);
@@ -39,6 +56,8 @@ int mes_link_common_put_sub(MesContext *ctx, void *elem, int id, MesValue v, voi
 extern DOMString _DOMname;
 DOMString Element_getAttribute(void *elem, DOMString *name);
 void *Node_getFirstChild(void *node);
+void *Node_getOwnerDocument(void *node);
+int Node_getSid(void *node);
 DOMString Node_getNodeValue(void *node);
 int JSI_getElementPosition(void *elem, int *x, int *y);
 

@@ -1,8 +1,29 @@
+/* cflags: -O1 */
 #include "common.h"
+#include "mes_js.h"
+extern MesClassDef mes_form_def;
+extern MesClass *mes_form_class;
+extern char D_0013F788[];
+typedef struct IpcMsg {
+    int w[8];
+} IpcMsg;
+void SetIpcMember(IpcMsg *msg, int a, int sid, int b, int cmd, int c, int d, void *node);
+void JSSendMail(IpcMsg *msg, const char *name);
+typedef struct MesFormPriv {
+    void *form;
+} MesFormPriv;
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_form", mes_form_handle_event);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_form", mes_form_reset);
+int mes_form_reset(MesContext *ctx)
+{
+    IpcMsg msg;
+    void *form = ((MesFormPriv *)mes_class_private_get(ctx->frame->thisobj))->form;
+
+    SetIpcMember(&msg, 8, Node_getSid(Node_getOwnerDocument(form)), 0, 0x80B, 1, 0, form);
+    JSSendMail(&msg, D_0013F788);
+    return 0;
+}
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_form", D_0013F788);
 
@@ -17,9 +38,16 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_form", mes_form_put);
 void mes_form_mark(void) {
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_form", mes_form_free);
+void mes_form_free(MesContext *ctx, void *priv)
+{
+    if (priv != NULL)
+        MEM_free(0, priv);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_form", mes_form_class_init);
+void mes_form_class_init(MesContext *ctx)
+{
+    mes_form_class = mes_class_init(ctx, &mes_form_def);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_form", mes_form_new);
 

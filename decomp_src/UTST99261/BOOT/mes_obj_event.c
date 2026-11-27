@@ -1,4 +1,8 @@
+/* cflags: -O1 */
 #include "common.h"
+#include "mes_js.h"
+extern MesClassDef mes_event_def;
+extern MesClass *mes_event_class;
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_event", mes_event_get);
 
@@ -8,9 +12,15 @@ void mes_event_mark(void) {
 void mes_event_free(void) {
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_event", mes_event_class_init);
+void mes_event_class_init(MesContext *ctx)
+{
+    mes_event_class = mes_class_init(ctx, &mes_event_def);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_event", mes_event_new);
+MesObject *mes_event_new(MesContext *ctx)
+{
+    return mes_class_new(ctx, mes_event_class);
+}
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_event", D_0013C78C);
 

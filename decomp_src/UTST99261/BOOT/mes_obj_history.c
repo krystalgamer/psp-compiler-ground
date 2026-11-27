@@ -1,14 +1,33 @@
+/* cflags: -O1 */
 #include "common.h"
+#include "mes_js.h"
+extern MesClassDef mes_history_def;
+extern MesClass *mes_history_class;
+MesValue mes_history_go_inner(MesContext *ctx, int n);
+int HST_getHistoryLength(void);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_history", mes_history_go_inner);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_history", mes_history_back);
+MesValue mes_history_back(MesContext *ctx)
+{
+    return mes_history_go_inner(ctx, -1);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_history", mes_history_forward);
+MesValue mes_history_forward(MesContext *ctx)
+{
+    return mes_history_go_inner(ctx, 1);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_history", mes_history_go);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_history", mes_history_get);
+MesValue mes_history_get(MesContext *ctx, MesObject *obj, void *elem, int id)
+{
+    MesValue ret = MES_UNDEFINED;
+
+    if (id == 2)
+        ret = MES_INT(HST_getHistoryLength());
+    return ret;
+}
 
 void mes_history_mark(void) {
 }
@@ -16,9 +35,15 @@ void mes_history_mark(void) {
 void mes_history_free(void) {
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_history", mes_history_class_init);
+void mes_history_class_init(MesContext *ctx)
+{
+    mes_history_class = mes_class_init(ctx, &mes_history_def);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_history", mes_history_new);
+MesObject *mes_history_new(MesContext *ctx)
+{
+    return mes_class_new(ctx, mes_history_class);
+}
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_history", D_0013F89C);
 

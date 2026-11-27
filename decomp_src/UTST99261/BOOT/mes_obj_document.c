@@ -1,18 +1,62 @@
+/* cflags: -O1 */
 #include "common.h"
+#include "mes_js.h"
+#include "m2c_macros.h"
+extern MesClassDef mes_document_def;
+extern MesClass *mes_document_class;
+DOMString *JSI_getDocumentSelection(void *doc);
+void JSI_freeDOMString(DOMString *s);
+MesValue mes_document_write_inner(MesContext *ctx, int newline);
+typedef struct MesDocPriv {
+    void *doc;
+    MesValue v;
+} MesDocPriv;
+extern int *g_JS_NEEDREDRAW_;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_document", mes_document_get_selection);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_document", mes_document_handle_event);
+MesValue mes_document_get_selection(MesContext *ctx)
+{
+    MesDocPriv *priv = mes_class_private_get(ctx->frame->thisobj);
+    DOMString *s = JSI_getDocumentSelection(priv->doc);
+    MesValue ret;
+
+    if (s == NULL)
+        return MES_NULL;
+    ret = mes_string_new(ctx, s->str, s->len);
+    JSI_freeDOMString(s);
+    return ret;
+}
+
+int mes_document_handle_event(MesContext *ctx, MesObject *obj)
+{
+    short type = g_JS_EVENT_REC_->type;
+
+    if (type == 4 || type == 13 || type == 17)
+        return mes_event_handle_event(ctx, obj, type);
+    return 12;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_document", mes_document_write_inner);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_document", mes_document_write);
+MesValue mes_document_write(MesContext *ctx)
+{
+    return mes_document_write_inner(ctx, 0);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_document", mes_document_writeln);
+MesValue mes_document_writeln(MesContext *ctx)
+{
+    return mes_document_write_inner(ctx, 1);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_document", mes_document_setAttribute);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_document", mes_document_redrawForce);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void mes_document_redrawForce(void) {
+    *g_JS_NEEDREDRAW_ = 1;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_document", mes_document_get);
 
@@ -20,11 +64,22 @@ INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_document", D_0013F52
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_document", mes_document_put);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_document", mes_document_mark);
+void mes_document_mark(MesContext *ctx, MesDocPriv *priv)
+{
+    if (priv != NULL && priv->v != MES_NULL)
+        mes_gc_mark(priv->v);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_document", mes_document_free);
+void mes_document_free(MesContext *ctx, MesDocPriv *priv)
+{
+    if (priv != NULL)
+        MEM_free(0, priv);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_document", mes_document_class_init);
+void mes_document_class_init(MesContext *ctx)
+{
+    mes_document_class = mes_class_init(ctx, &mes_document_def);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_document", mes_document_new);
 
