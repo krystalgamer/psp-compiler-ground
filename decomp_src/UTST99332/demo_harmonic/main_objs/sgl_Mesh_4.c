@@ -36,6 +36,13 @@ extern const char D_0016C5C0[];     /* " in triangle " */
 extern const char findTriangleEdge_name[] __asm__("_ZZNK3sgl4Mesh16findTriangleEdgeEiiiE19__PRETTY_FUNCTION__");
 extern const char D_0016C23C[];     /* "_finish" */
 extern const char explodeTriangleVertices_name[] __asm__("_ZZN3sgl4Mesh23explodeTriangleVerticesEvE19__PRETTY_FUNCTION__");
+extern const char D_0016C134[];     /* "" */
+extern const char D_0016C1CC[];     /* "num (graph) edges     " */
+extern const char D_0016C1E8[];     /* "num (graph) triangles " */
+extern const char D_0016C7B0[];
+extern const char D_0016C7EC[];     /* "num < 9" */
+extern const char D_0016C7F4[];
+extern const char searchCommonPosPair_name[] __asm__("_ZZN3sgl4Mesh19searchCommonPosPairEiiRiS1_E19__PRETTY_FUNCTION__");
 #define FINISH_ASSERT(c, text, fn, line) SGL_ASSERT(c, D_0016C198, text, D_0016C1B0, fn, line, D_0016C238)
 #define VLL_ASSERT(c, text, fn, line) SGL_ASSERT(c, D_0016C198, text, D_0016C398, fn, line, D_0016C238)
 inline void sgl::VarlenListsList::clear(unsigned int _List)
@@ -48,7 +55,16 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh_4",
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh_4", _ZN3sgl4Mesh6finishERKNS_10MeshParamsE);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh_4", _ZN3sgl4Mesh5printESs);
+void sgl::Mesh::print(std::string name)
+{
+    if (name != D_0016C134)
+        common::Log() << name;
+    CoreMesh::print(name);
+    if (!getTriangles().empty())
+        common::Log() << D_0016C1E8 << (unsigned int)getTriangles().size() << D_0016C1E4;
+    if (!getEdges().empty())
+        common::Log() << D_0016C1CC << (unsigned int)getEdges().size() << D_0016C1E4;
+}
 
 void sgl::Mesh::removeUsusedPositions()
 {
@@ -171,7 +187,30 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh_4",
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh_4", _ZN3sgl4Mesh25check_duplicate_pos_indexEv);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh_4", _ZN3sgl4Mesh19searchCommonPosPairEiiRiS1_);
+bool sgl::Mesh::searchCommonPosPair(int ti, int tj, int &a, int &b)
+{
+    int tip[3], tjp[3];
+    getTriangleVertexAttributeIndex(ti, POS, tip[0], tip[1], tip[2]);
+    getTriangleVertexAttributeIndex(tj, POS, tjp[0], tjp[1], tjp[2]);
+    FINISH_ASSERT(tip[0] != tip[1] && tip[1] != tip[2] && tip[2] != tip[0], D_0016C7F4, searchCommonPosPair_name, 936);
+    FINISH_ASSERT(tjp[0] != tjp[1] && tjp[1] != tjp[2] && tjp[2] != tjp[0], D_0016C7B0, searchCommonPosPair_name, 937);
+    int common[9];
+    int num = 0;
+    for (int i = 0; i != 3; i++)
+        for (int j = 0; j != 3; j++)
+            if (tip[i] == tjp[j]) {
+                FINISH_ASSERT(num < 9, D_0016C7EC, searchCommonPosPair_name, 949);
+                common[num++] = tip[i];
+            }
+    if (num == 0)
+        return false;
+    if (num == 2) {
+        a = common[0];
+        b = common[1];
+        return true;
+    }
+    return false;
+}
 
 /* the local arrays' initializers stay in the module's .rodata */
 struct CmpEdgesMasks {

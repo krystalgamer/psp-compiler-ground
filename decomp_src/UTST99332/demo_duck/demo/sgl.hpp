@@ -319,6 +319,8 @@ public:
     void makePositionsAdjacentTrianglesLists(VarlenListsList &);
     int findTriangleEdge(int, int, int) const;
     bool cmpEdges(int, int, unsigned int);
+    void print(std::string);
+    bool searchCommonPosPair(int, int, int &, int &);
     void explodeTriangleVertices();
     void calc_initial_edges();
     static void calcStencilShadowData(StencilShadowData &, const CoreMesh &);
