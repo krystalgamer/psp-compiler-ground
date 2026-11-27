@@ -6,7 +6,7 @@
 void sceGuInit(void);
 void sceGuTerm(void);
 void sceGuStart(int type, void *list, int size);
-int sceGuFinish(void);
+void sceGuFinish(void);
 int sceGuSync(int mode, int what);
 void *sceGuSwapBuffers(void);
 int sceGuDisplay(int state);
@@ -144,8 +144,8 @@ int sceKernelCreateSema(const char *name, unsigned int attr, int init, int max, 
 int sceKernelDeleteSema(int semid);
 int sceKernelSignalSema(int semid, int signal);
 int sceKernelWaitSema(int semid, int signal, unsigned int *timeout);
-int sceKernelDcacheWritebackAll(void);
-int sceKernelDcacheWritebackInvalidateAll(void);
+void sceKernelDcacheWritebackAll(void);
+void sceKernelDcacheWritebackInvalidateAll(void);
 int sceIoOpen(const char *name, int flag, int mode);
 int sceIoClose(int fd);
 int sceIoRead(int fd, void *buf, unsigned int nbyte);
