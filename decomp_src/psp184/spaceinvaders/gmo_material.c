@@ -324,6 +324,9 @@ static float *float_lerp(float *dst, const float *src1, const float *src2, int d
 void sceGmoLayerUnloadCache( SceGmoLayer *layer ) ;
 ScePspFRect *sceGmoRectSet( ScePspFRect *r, float x, float y, float w, float h ) ;
 void sceGuCallList( const void *list ) ;
+int sceGmoCol4IsBlack( const int *col ) ;
+int sceGmoCol4IsHollow( const int *col ) ;
+void sceGmoBaseCopy( SceGmoBase *dst, const SceGmoBase *src ) ;
 ScePspFRect *sceGmoRectLoad( ScePspFRect *dst, const void *src ) ;
 void sceGmoBaseConstruct( SceGmoBase *base ) ;
 unsigned int *sceGmoCol4Set( unsigned int *dst, float r, float g, float b, float a ) ;
@@ -386,7 +389,46 @@ void sceGmoMaterialDelete( SceGmoMaterial *material )
  }
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_material", sceGmoMaterialDuplicate);
+SceGmoMaterial *sceGmoMaterialDuplicate( SceGmoMaterial *material, int flags )
+{
+
+ if ( material == 0 ) return 0 ;
+ if ( !( 0x0001 & flags )
+   && !( 0x0100 & flags )
+   && !( 0x0200 & flags ) ) {
+  material->m_reference ++ ;
+  return material ;
+ }
+
+ SceGmoMaterial *material2 = sceGmoMaterialCreate( 0 ) ;
+ if ( material2 == 0 ) return 0 ;
+ sceGmoBaseCopy( &( material2->m_base ), &( material->m_base ) ) ;
+
+ flags &= ~0x0001 ;
+ flags |= 0x0002 ;
+ { int i ; for ( i = 0 ; i < material->m_n_layers ; i ++ ) {
+  SceGmoLayer *src = material->m_layers[ i ] ;
+  SceGmoLayer *dst = sceGmoLayerDuplicate( src, flags ) ;
+  if ( dst == 0 && src != 0 ) {
+   sceGmoMaterialDelete( material2 ) ;
+   return 0 ;
+  }
+  material2->m_layers[ material2->m_n_layers ++ ] = dst ;
+ } }
+ material2->m_initial = sceGmoMaterialDuplicate( material->m_initial, 0 ) ;
+ material2->m_flags = material->m_flags ;
+
+ material2->m_enable_mask = material->m_enable_mask ;
+ material2->m_enable_bits = material->m_enable_bits ;
+ memcpy( material2->m_colors, material->m_colors, sizeof( material->m_colors ) ) ;
+ material2->m_shininess = material->m_shininess ;
+ material2->m_refraction = material->m_refraction ;
+ material2->m_bump = material->m_bump ;
+
+ material2->m_anim_flags = material->m_anim_flags ;
+ memcpy( material2->m_anim_weights, material->m_anim_weights, sizeof( material->m_anim_weights ) ) ;
+ return material2 ;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_material", sceGmoMaterialLoad);
 
@@ -475,7 +517,62 @@ SceGmoLayer *sceGmoMaterialGetLayer( SceGmoMaterial *material, int index )
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_material", complement_animation_5CAE0);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_material", reconfigure_material);
+static _Bool reconfigure_material( SceGmoMaterial *material )
+{
+	if ( !( material->m_flags & 0x0001 ) ) {
+		material->m_flags |= 0x0001 | 0x80000000 ;
+		SceGmoLayer *layer = sceGmoLayerCreate( 0 ) ;
+		if ( layer == 0 ) return 0 ;
+		{ int i ; for ( i = 0 ; i < material->m_n_layers ; i ++ ) {
+			material->m_layers[ i + 1 ] = material->m_layers[ i ] ;
+		} }
+		material->m_layers[ 0 ] = layer ;
+		material->m_n_layers ++ ;
+	}
+	if ( !sceGmoCol4IsBlack( &( material->m_colors[ 3 ] ) ) ) {
+		if ( !( material->m_flags & 0x0004 ) ) {
+			material->m_flags |= 0x0004 ;
+			SceGmoLayer *layer = sceGmoLayerCreate( 0 ) ;
+			if ( layer == 0 ) return 0 ;
+			material->m_layers[ material->m_n_layers ++ ] = layer ;
+			sceGmoLayerSetMapType( layer, 0x84 ) ;
+		}
+	}
+	if ( !sceGmoCol4IsHollow( &( material->m_colors[ 5 ] ) ) ) {
+		if ( !( material->m_flags & 0x0010 ) ) {
+			material->m_flags |= 0x0010 ;
+			SceGmoLayer *layer = sceGmoLayerCreate( 0 ) ;
+			if ( layer == 0 ) return 0 ;
+			material->m_layers[ material->m_n_layers ++ ] = layer ;
+			sceGmoLayerSetMapType( layer, 0x86 ) ;
+		}
+	}
+
+	SceGmoLayer *topmost = 0 ;
+	{ int i ; for ( i = 0 ; i < material->m_n_layers ; i ++ ) {
+		SceGmoLayer *layer = material->m_layers[ i ] ;
+		if ( sceGmoLayerGetMapType( layer ) == 0x82 ) topmost = layer ;
+	} }
+
+	if ( topmost != 0 ) {
+		int flags = material->m_flags ;
+		if ( !( flags & 0x0002 ) ) {
+			topmost->m_specular = 2 ;
+			topmost->m_enable_mask |= 0x00010000 ;
+			topmost->m_enable_bits |= 0x00010000 ;
+		} else {
+			topmost->m_specular = 0 ;
+			topmost->m_enable_mask |= 0x00010000 ;
+			topmost->m_enable_bits &= ~0x00010000 ;
+		}
+		if ( !( flags & 0x0008 ) ) {
+			topmost->m_ambient = 4 ;
+		} else {
+			topmost->m_ambient = 0 ;
+		}
+	}
+	return 1 ;
+}
 
 SceGmoLayer *sceGmoLayerCreate( const SceGmoChunk *chunk )
 {
