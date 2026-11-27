@@ -41,4 +41,25 @@ private:
     math::matrix _transform;                            /* 0xA8 */
 };
 
+/* interp::VectorRGBAnim needs sh::VectorRGB (demo/sgl.hpp) */
+namespace interp {
+class VectorRGBAnim {
+public:
+    VectorRGBAnim();
+    void startRecording();
+    void addRecord(sh::VectorRGB);
+    sh::VectorRGB deleteLastRecord();
+    void insertRecord(sh::VectorRGB, float);
+    void finishRecording();
+    bool isRecording() const;
+    sh::VectorRGB evaluate(float);
+    void load(std::string);
+    void save(std::string);
+    int size() const;
+    KeyFrameSequenceA<float> _seq[3][4];                /* 0x0: r, g, b x 4 coefficients */
+    unsigned int _count;                                /* 0x1B0 */
+    bool _recording;                                    /* 0x1B4 */
+};
+}
+
 #endif

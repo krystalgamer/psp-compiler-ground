@@ -123,13 +123,6 @@ struct T2UB_V3F {
 };
 }
 
-namespace interp {
-template<class T> class KeyFrameSequence {
-public:
-    void typed_fix();
-    void dump(const char *) const;
-};
-}
 
 namespace math {
 struct quaternion {
@@ -188,24 +181,160 @@ struct SH {
 };
 }
 
+namespace interp {
+namespace keyframe_tangent {
+enum Type { };
+enum Side { };
+}
+template<class T> class KeyFrame;
+class VirtualKeyFrameSequence {
+public:
+    virtual ~VirtualKeyFrameSequence() {}
+    virtual bool empty() const = 0;
+    virtual int size() const = 0;
+    virtual int sizeLessClosingKey() const = 0;
+    virtual void clear() = 0;
+    virtual void remove(unsigned int) = 0;
+    virtual void dump(const char *) const = 0;
+    virtual float getLastTime() const = 0;
+    virtual float getKeyTime(int) const = 0;
+    virtual void setKeyTime(int, float) = 0;
+    virtual bool isClosingKey(int) const = 0;
+    virtual void setCloseDt(float) = 0;
+    virtual float getCloseDt() const = 0;
+    virtual void setClose(bool) = 0;
+    virtual bool isClosed() const = 0;
+    virtual void setLoop(bool) = 0;
+    virtual bool isLoop() const = 0;
+    virtual void setRelative(bool) = 0;
+    virtual bool isRelative() const = 0;
+    virtual void finish() = 0;
+    virtual void setTangentType(int, keyframe_tangent::Type, int) = 0;
+    virtual keyframe_tangent::Type getTangentType(int, keyframe_tangent::Side) const = 0;
+};
+/* members out of class (their instances stay asm where they are) */
+template<class T> class KeyFrameSequenceBase : public VirtualKeyFrameSequence {
+public:
+    KeyFrameSequenceBase();
+    virtual ~KeyFrameSequenceBase();
+    virtual bool empty() const;
+    virtual int size() const;
+    virtual int sizeLessClosingKey() const;
+    virtual void clear();
+    virtual void remove(unsigned int);
+    virtual float getLastTime() const;
+    virtual float getKeyTime(int) const;
+    virtual void setKeyTime(int, float);
+    virtual bool isClosingKey(int) const;
+    virtual void setCloseDt(float);
+    virtual float getCloseDt() const;
+    virtual void setClose(bool);
+    virtual bool isClosed() const;
+    virtual void setLoop(bool);
+    virtual bool isLoop() const;
+    virtual void setRelative(bool);
+    virtual bool isRelative() const;
+    virtual void finish();
+    virtual void setTangentType(int, keyframe_tangent::Type, int);
+    virtual keyframe_tangent::Type getTangentType(int, keyframe_tangent::Side) const;
+    virtual int wrap_key_index(int) const;
+    virtual void invalidate_cached_key_interval();
+    virtual void calc_tangent_setup(int, T &, T &, T &, float &, float &);
+    virtual void calc_tangent(int) = 0;
+    virtual T calc_gradient(T, T, float) const = 0;
+    virtual void calc_all_tangent();
+    virtual int find_key_interval(float);
+    virtual void evaluate_setup(float, float &, T &, KeyFrame<T> *&, KeyFrame<T> *&);
+    virtual void push_closing_key();
+    virtual void update_closing_key();
+    virtual void on_set_key_value(int);
+    virtual T get_key_abs_rel_value(int);
+    virtual void set_key_abs_rel_value(int, T);
+    virtual T op(T, T) = 0;
+    virtual T op_inv(T, T) = 0;
+    virtual T op_identity() const = 0;
+    virtual void setDefault(T);
+    virtual T getDefault() const;
+    virtual int insert(float, T);
+    virtual int insert(float);
+    virtual const std::vector<KeyFrame<T> > &getKeyList() const;
+    virtual KeyFrame<T> &operator[](unsigned int);
+    virtual T evaluate(float) = 0;
+    virtual void makeRelative();
+    virtual void makeAbsolute();
+    virtual void typed_fix() = 0;
+    virtual void makeConsistantWith(const VirtualKeyFrameSequence *);
+    void setKeyValue(int, T);
+    T getKeyAbsRelValue(int);
+    T _default;
+    std::vector<KeyFrame<T> > _keys;
+    bool _closed;
+    float _closeDt;
+    bool _relative;
+    bool _loop;
+    int _cached;
+};
+/* the sequences the demo uses are explicit specializations here: the template vtables must not be emitted */
+template<class T> class KeyFrameSequence : public KeyFrameSequenceBase<T> {
+public:
+    KeyFrameSequence() {}
+    virtual ~KeyFrameSequence();
+    virtual void dump(const char *) const;
+    virtual void calc_tangent(int);
+    virtual T calc_gradient(T, T, float) const;
+    virtual T evaluate(float);
+    virtual void typed_fix();
+};
+template<class T> class KeyFrameSequenceA;
+template<> class KeyFrameSequenceA<float> : public KeyFrameSequence<float> {
+public:
+    KeyFrameSequenceA() {}
+    virtual ~KeyFrameSequenceA();
+    virtual float op(float, float);
+    virtual float op_inv(float, float);
+    virtual float op_identity() const;
+};
+template<> class KeyFrameSequence<math::quaternion> : public KeyFrameSequenceBase<math::quaternion> {
+public:
+    KeyFrameSequence() {}
+    virtual ~KeyFrameSequence();
+    virtual void dump(const char *) const;
+    virtual void calc_tangent(int);
+    virtual math::quaternion calc_gradient(math::quaternion, math::quaternion, float) const;
+    virtual math::quaternion op(math::quaternion, math::quaternion);
+    virtual math::quaternion op_inv(math::quaternion, math::quaternion);
+    virtual math::quaternion op_identity() const;
+    virtual math::quaternion evaluate(float);
+    virtual void typed_fix();
+};
+}
+
 /* accessors (generated from the asm; members named by offset) */
+namespace math {
+struct Frame {
+    Frame() {}
+    Frame(const vector_xyz &p, const quaternion &q) : pos(p), rot(q) {}
+    vector_xyz pos;
+    quaternion rot;
+};
+}
 namespace interp {
 class Path {
 public:
+    Path();
+    void startRecording();
+    void addRecord(math::Frame);
+    void deleteLastRecord();
+    void finishRecording();
     bool isRecording() const;
+    void load(std::string);
+    void save(std::string);
+    math::Frame evaluate(float);
     int size() const;
-    /* data */
-    int _f0;
-    bool _f4;
-};
-class VectorRGBAnim {
-public:
-    bool isRecording() const;
-    int size() const;
-    /* data */
-    char _p0[0x1B0];
-    int _f1B0;
-    bool _f1B4;
+    unsigned int _count;                                /* 0x0 */
+    bool _recording;                                    /* 0x4 */
+    KeyFrameSequenceA<float> _x, _y, _z;                /* 0x8, 0x2C, 0x50 */
+    KeyFrameSequence<math::quaternion> _rot;            /* 0x74 */
 };
 }
 

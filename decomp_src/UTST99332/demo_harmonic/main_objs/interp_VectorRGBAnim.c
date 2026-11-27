@@ -4,28 +4,64 @@
 #include "cxx/defer_asm.h"
 #include "../main.hpp"
 
+/* constants and strings stay in the module's .rodata (asm) */
+extern const float D_00171590;      /* 1.0f: finishRecording's closing dt */
+extern const char D_00171644[];     /* "finish recording shl anim\n" */
+
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/interp_VectorRGBAnim", _Z41__static_initialization_and_destruction_0ii_F3994);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/interp_VectorRGBAnim", _ZN6interp13VectorRGBAnimC2Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/interp_VectorRGBAnim", _ZN6interp13VectorRGBAnimC1Ev);
+interp::VectorRGBAnim::VectorRGBAnim() : _count(0), _recording(false)
+{
+    for (int c = 0; c != 3; c++)
+        for (int i = 0; i != 4; i++) {
+            _seq[c][i].setRelative(false);
+            _seq[c][i].setClose(false);
+            _seq[c][i].setCloseDt(0);
+        }
+}
 
 bool interp::VectorRGBAnim::isRecording() const
 {
-    return _f1B4;
+    return _recording;
 }
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/interp_VectorRGBAnim", _ZN6interp13VectorRGBAnim14startRecordingEv);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/interp_VectorRGBAnim", _ZN6interp13VectorRGBAnim9addRecordEN2sh9VectorRGBE);
+void interp::VectorRGBAnim::addRecord(sh::VectorRGB v)
+{
+    if (_recording)
+        insertRecord(v, _count);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/interp_VectorRGBAnim", _ZN6interp13VectorRGBAnim16deleteLastRecordEv);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/interp_VectorRGBAnim", _ZN6interp13VectorRGBAnim12insertRecordEN2sh9VectorRGBEf);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/interp_VectorRGBAnim", _ZN6interp13VectorRGBAnim15finishRecordingEv);
+void interp::VectorRGBAnim::finishRecording()
+{
+    if (!_recording)
+        return;
+    _recording = false;
+    for (int c = 0; c != 3; c++)
+        for (int i = 0; i != 4; i++) {
+            _seq[c][i].setClose(true);
+            _seq[c][i].setCloseDt(D_00171590);
+            _seq[c][i].finish();
+        }
+    common::Log() << D_00171644;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/interp_VectorRGBAnim", _ZN6interp13VectorRGBAnim8evaluateEf);
+sh::VectorRGB interp::VectorRGBAnim::evaluate(float t)
+{
+    sh::VectorRGB r;
+    float s = t * _count;
+    for (int i = 0; i != 4; i++) {
+        r.r[i] = _seq[0][i].evaluate(s);
+        r.g[i] = _seq[1][i].evaluate(s);
+        r.b[i] = _seq[2][i].evaluate(s);
+    }
+    return r;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/interp_VectorRGBAnim", _ZN6interp13VectorRGBAnim4loadESs);
 
@@ -33,7 +69,7 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/interp_Vecto
 
 int interp::VectorRGBAnim::size() const
 {
-    return _f1B0;
+    return _count;
 }
 
 extern "C" {
@@ -51,3 +87,4 @@ void _GLOBAL__D__ZN6interp13VectorRGBAnimC2Ev(void)
 {
     static_init(0, 0xFFFF);
 }
+

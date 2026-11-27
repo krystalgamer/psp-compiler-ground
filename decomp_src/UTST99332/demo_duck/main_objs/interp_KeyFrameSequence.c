@@ -6,7 +6,7 @@
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/interp_KeyFrameSequence", _Z41__static_initialization_and_destruction_0ii_4D7EC);
 
-template<> void interp::KeyFrameSequence<math::quaternion>::dump(const char *) const {
+void interp::KeyFrameSequence<math::quaternion>::dump(const char *) const {
 }
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/interp_KeyFrameSequence", _ZNK6interp16KeyFrameSequenceIN4math10quaternionEE13calc_gradientES2_S2_f);

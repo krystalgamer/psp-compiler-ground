@@ -4,11 +4,26 @@
 #include "cxx/defer_asm.h"
 #include "../main.hpp"
 
+
+extern const float D_00163A14;      /* 1.0f: finishRecording's closing dt */
+
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/interp_Path", _Z41__static_initialization_and_destruction_0ii_27A88);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/interp_Path", _ZN6interp4PathC2Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/interp_Path", _ZN6interp4PathC1Ev);
+interp::Path::Path() : _count(0), _recording(false)
+{
+    _x.setRelative(false);
+    _x.setClose(false);
+    _x.setCloseDt(0);
+    _y.setRelative(false);
+    _y.setClose(false);
+    _y.setCloseDt(0);
+    _z.setRelative(false);
+    _z.setClose(false);
+    _z.setCloseDt(0);
+    _rot.setRelative(false);
+    _rot.setClose(false);
+    _rot.setCloseDt(0);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/interp_Path", _ZN6interp4Path14startRecordingEv);
 
@@ -16,22 +31,44 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/interp_Path", _Z
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/interp_Path", _ZN6interp4Path16deleteLastRecordEv);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/interp_Path", _ZN6interp4Path15finishRecordingEv);
+void interp::Path::finishRecording()
+{
+    if (!_recording)
+        return;
+    _recording = false;
+    _x.setClose(true);
+    _y.setClose(true);
+    _z.setClose(true);
+    _rot.setClose(true);
+    const float dt = D_00163A14;
+    _x.setCloseDt(dt);
+    _y.setCloseDt(dt);
+    _z.setCloseDt(dt);
+    _rot.setCloseDt(dt);
+    _x.finish();
+    _y.finish();
+    _z.finish();
+    _rot.finish();
+}
 
 bool interp::Path::isRecording() const
 {
-    return _f4;
+    return _recording;
 }
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/interp_Path", _ZN6interp4Path4loadESs);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/interp_Path", _ZN6interp4Path4saveESs);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/interp_Path", _ZN6interp4Path8evaluateEf);
+math::Frame interp::Path::evaluate(float t)
+{
+    float s = t * _count;
+    return math::Frame(math::vector_xyz(_x.evaluate(s), _y.evaluate(s), _z.evaluate(s)), _rot.evaluate(s));
+}
 
 int interp::Path::size() const
 {
-    return _f0;
+    return _count;
 }
 
 extern "C" {
