@@ -3,6 +3,8 @@
 #ifndef NULL
 #define NULL ((void *)0)
 #endif
+int rt_p2p_generic_disconnect();
+int rt_udp_send_unconnected();
 int NetUsePeerToPeer(void *arg0);
 int NetUseUDP(void);
 int rt_p2p_get_max_peers(void *arg0, int *arg1);
@@ -42,9 +44,31 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_g
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_get_my_address);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_get_my_peer_index);
+int rt_p2p_get_my_peer_index(void *p2p, unsigned short *out)
+{
+    int ret = 2;
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_get_host_index);
+    if (out != NULL) {
+        if (p2p != NULL) {
+            *out = M2C_FIELD(p2p, unsigned short *, 0x1A4);
+            ret = 0;
+        }
+    }
+    return ret;
+}
+
+int rt_p2p_get_host_index(void *p2p, unsigned short *out)
+{
+    int ret = 2;
+
+    if (out != NULL) {
+        if (p2p != NULL) {
+            *out = M2C_FIELD(p2p, unsigned short *, 0x1A2);
+            ret = 0;
+        }
+    }
+    return ret;
+}
 
 int rt_p2p_get_virtual_port(void *arg0, unsigned short *arg1) {
     int var_v1;
@@ -94,7 +118,15 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_s
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_receive_broadcasts);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_send_to);
+typedef struct { unsigned int ip; unsigned int port; } RtP2PAddr;
+int rt_p2p_send_to(void *p2p, RtP2PAddr addr, void *data, int len)
+{
+    int ret = 2;
+
+    if (p2p != NULL)
+        ret = rt_udp_send_unconnected(M2C_FIELD(p2p, int *, 0), addr, data, len);
+    return ret;
+}
 
 int rt_p2p_get_max_peers(void *arg0, int *arg1) {
     int var_v1;
@@ -110,7 +142,16 @@ int rt_p2p_get_max_peers(void *arg0, int *arg1) {
     return var_v1;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_set_max_peers);
+int rt_p2p_set_max_peers(void *p2p, int n)
+{
+    int ret = 2;
+
+    if (p2p != NULL) {
+        M2C_FIELD(p2p, unsigned short *, 0x19C) = n;
+        ret = 0;
+    }
+    return ret;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_set_overlay_type);
 
@@ -235,11 +276,20 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_h
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_handle_timeout_event);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_handle_closed_event);
+static int rt_p2p_handle_closed_event(void *p2p, int conn, void *data)
+{
+    return rt_p2p_generic_disconnect(p2p, conn, 3, data);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_handle_reset_event);
+static int rt_p2p_handle_reset_event(void *p2p, int conn, void *data)
+{
+    return rt_p2p_generic_disconnect(p2p, conn, 3, data);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_handle_error_event);
+static int rt_p2p_handle_error_event(void *p2p, int conn, void *data)
+{
+    return rt_p2p_generic_disconnect(p2p, conn, 3, data);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_get_peer_by_address);
 
