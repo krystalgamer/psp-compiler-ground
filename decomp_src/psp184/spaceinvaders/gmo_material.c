@@ -308,6 +308,11 @@ static unsigned int col32_lerp(unsigned int src1, unsigned int src2, float rate)
 static float *float_lerp(float *dst, const float *src1, const float *src2, int dim, float rate);
 void sceGmoLayerUnloadCache( SceGmoLayer *layer ) ;
 ScePspFRect *sceGmoRectSet( ScePspFRect *r, float x, float y, float w, float h ) ;
+void sceGuCallList( const void *list ) ;
+SceGmoTexture *sceGmoModelGetTexture( SceGmoModel *model, int index ) ;
+void sceGmoContextSetTexture( SceGmoTexture *texture, SceGmoModel *model ) ;
+void sceGmoContextSetTexCrop( const rect *crop ) ;
+void sceGmoContextSetEnableBits( int mask, int bits ) ;
 _Bool sceGmoLayerLoadCache( SceGmoLayer *layer, SceGmoMaterial *material ) ;
 void sceGmoModelFreeMemory2( void *addr ) ;
 void *sceGmoModelAllocUncachedBuffer( void *ptr_ptr, int size ) ;
@@ -528,7 +533,38 @@ void sceGmoLayerUnloadCache( SceGmoLayer *layer )
 	layer->m_cache = 0 ;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_material", sceGmoLayerActivate);
+int sceGmoLayerActivate( SceGmoLayer *layer, SceGmoModel *model, SceGmoMaterial *material )
+{
+	if ( layer == 0 ) return 0 ;
+	if ( material == 0 ) return 0 ;
+	int ambient = material->m_colors[ layer->m_ambient ] ;
+	if ( ( 0xff000000 & ambient ) == 0 ) return 0 ;
+
+	SceGmoTexture *texture = sceGmoModelGetTexture( model, layer->m_texture ) ;
+
+	sceGmoContextSetTexture( texture, model ) ;
+
+	rect *crop = !( layer->m_flags & 1 ) ? 0 : &( layer->m_tex_crop ) ;
+	sceGmoContextSetTexCrop( crop ) ;
+
+	int mask = layer->m_enable_mask | material->m_enable_mask ;
+	int bits = layer->m_enable_bits | ( ~layer->m_enable_mask & material->m_enable_bits ) ;
+	sceGmoContextSetEnableBits( mask, bits ) ;
+
+	if ( layer->m_cache != 0 ) {
+		sceGuCallList( layer->m_cache ) ;
+	} else {
+		sceGuMaterial( 2, material->m_colors[ layer->m_diffuse ] ) ;
+		sceGuMaterial( 4, material->m_colors[ layer->m_specular ] ) ;
+		sceGuMaterial( 1, ambient ) ;
+		sceGuSpecular( material->m_shininess ) ;
+
+		int *blend = layer->m_blend_func ;
+		sceGuBlendFunc( blend[ 0 ], blend[ 1 ], blend[ 2 ], blend[ 3 ], blend[ 4 ] ) ;
+	}
+
+	return layer->m_map_type ;
+}
 
 void sceGmoLayerSetMapType( SceGmoLayer *layer, int type )
 {
