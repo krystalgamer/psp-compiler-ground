@@ -1986,7 +1986,44 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", status_score_d
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", deb_status_disp);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", clippint_check);
+int clippint_check(float x, float w)
+{
+	int r[2];
+	int wrap = 0;
+	int ret;
+
+	r[1] = r[0] = CAM.f4c;
+	while (r[0] <= 0.0f)
+		r[0] += gmain.f.f10bc - 0.0f;
+	while (r[0] >= gmain.f.f10bc)
+		r[0] -= gmain.f.f10bc - 0.0f;
+	while (r[1] <= 0.0f)
+		r[1] += gmain.f.f10bc - 0.0f;
+	while (r[1] >= gmain.f.f10bc)
+		r[1] -= gmain.f.f10bc - 0.0f;
+	if (r[0] < gmain.f.f10bc - w && w < r[0]) {
+		r[0] -= w;
+		r[1] += w;
+	} else {
+		wrap = 1;
+		if (gmain.f.f10bc - w <= r[0]) {
+			r[0] -= w;
+			r[1] += w - gmain.f.f10bc;
+		} else {
+			r[0] -= w - gmain.f.f10bc;
+			r[1] += w;
+		}
+	}
+	ret = 1;
+	if (wrap == 0) {
+		if (x < r[0] || r[1] < x)
+			ret = 0;
+	} else {
+		if (r[1] <= x && x <= r[0])
+			ret = 0;
+	}
+	return ret;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", inv_spr_set);
 
