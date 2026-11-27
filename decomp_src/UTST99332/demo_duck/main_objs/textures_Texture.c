@@ -729,6 +729,11 @@ void _GLOBAL__D__ZN8textures7TextureaSERKS0_(void)
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/textures_Texture", _ZN8textures7Texture7convertINS_4ABGRENS_4ARGBEEEvv);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/textures_Texture", _ZNSt6vectorIhSaIhEE7reserveEj);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/textures_Texture", _ZNSt6vectorIhSaIhEE13_M_insert_auxEN9__gnu_cxx17__normal_iteratorIPhS1_EERKh);
+/* asm functions use these instances */
+void textures_Texture_uses() __attribute__((section(".discard.instances")));
+void textures_Texture_uses()
+{
+    std::vector<unsigned char> v;
+    v.reserve(0);
+    v.push_back(0);
+}
