@@ -53,7 +53,15 @@ int Icosahedron::Bin::getLeafIndex() const
     return _f94;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/Icosahedron_Bin", _ZN11Icosahedron9on_sphereEN4math11vector_xyzwE);
+math::vector_xyzw Icosahedron::on_sphere(math::vector_xyzw v)
+{
+    math::vector_xyz t(v.x, v.y, v.z);
+    float l = sqrtf(t.x * t.x + t.y * t.y + t.z * t.z);
+    v.x /= l;
+    v.y /= l;
+    v.z /= l;
+    return v;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/Icosahedron_Bin", _ZN11Icosahedron10tri_subdivEN4math11vector_xyzwES1_S1_hh);
 

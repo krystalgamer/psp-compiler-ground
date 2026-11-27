@@ -879,6 +879,7 @@ public:
         Bin *searchLeaf(math::vector_xyzw);
         bool intersect(math::vector_xyzw) const;
         bool in_negative_half_space(math::vector_xyzw) const;
+        void setChildren(Bin *, Bin *, Bin *, Bin *);
         void setBinIndex(unsigned int);
         int getBinIndex() const;
         void setLeafIndex(unsigned int);
@@ -889,12 +890,13 @@ public:
         int _f90;
         int _f94;
         Bin *_children[4];          /* 0x98 */
-        int _fA8;
+        Bin *_parent;               /* 0xA8 */
         std::vector<unsigned int> _vAC;
         unsigned char _depth;       /* 0xB8 */
     };
     Icosahedron(unsigned char);
     ~Icosahedron();
+    math::vector_xyzw on_sphere(math::vector_xyzw);
     bool getDepth() const;
     void draw();
     void draw(unsigned char);
