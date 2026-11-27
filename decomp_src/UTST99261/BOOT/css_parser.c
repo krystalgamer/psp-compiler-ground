@@ -81,7 +81,66 @@ void *newCSSSelector(void);
 void freeCSSSelector(void *arg0);
 void addCSSSelector(s16 *list, s16 *sel);
 u16 *CSS_simpleSelector(void *sel, u16 *p);
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_parser", CSS_StyleSheetRuleList);
+extern u16 CSSSTR_charset[];
+extern u16 CSSSTR_import[];
+extern u16 CSSSTR_media[];
+extern u16 CSSSTR_font_face[];
+#define CSS_ATRULE(s) ((n = UCS_strlen(s)) != 0 && UCS_strncasecmp(p, s, n) == 0 && (p[n] == ' ' || p[n] == '\t' || (p[n] == '\r' || p[n] == '\n') || p[n] == 0xC || p[n] == 0xFEFF))
+u16 *CSS_Skip_S_CDO_CDC(u16 *p);
+#define CSS_ISSPACE_AT(q) ((q) == ' ' || (q) == '\t' || ((q) == '\r' || (q) == '\n') || (q) == 0xC || (q) == 0xFEFF)
+void CSS_StyleSheetRuleList(void *ss, u16 *p) {
+    u16 c;
+    u16 t;
+    int n;
+    p = CSS_SkipBlanksAndComments(p);
+    if (*p == '@') {
+        n = UCS_strlen(CSSSTR_charset);
+        if (UCS_strncasecmp(p, CSSSTR_charset, n) == 0 && CSS_ISSPACE_AT(p[n])) {
+            p = CSS_charsetRule(ss, NULL, p + n);
+        }
+    }
+    p = CSS_Skip_S_CDO_CDC(p);
+    t = *p;
+    if (t == '@') {
+        n = UCS_strlen(CSSSTR_import);
+        while (*p == '@') {
+            if (UCS_strncasecmp(p, CSSSTR_import, n) == 0 && CSS_ISSPACE_AT(p[n])) {
+                p = CSS_importRule(ss, NULL, p + n);
+                p = CSS_Skip_S_CDO_CDC(p);
+            } else {
+                break;
+            }
+        }
+    }
+    while ((c = *p) != 0) {
+        if (c == '.' || c == ':' || c == '*' || c == '[' || c == '#' || ((unsigned int)(c - 'A') < 26 || (unsigned int)(c - 'a') < 26) || (c == '_' || c == '-') || c == '@') {
+            if (c != '@') {
+                p = CSS_styleRule(ss, NULL, p);
+            } else {
+                n = UCS_strlen(CSSSTR_media);
+                if (UCS_strncasecmp(p, CSSSTR_media, n) == 0 && CSS_ISSPACE_AT(p[n])) {
+                    p = CSS_mediaRule(ss, NULL, p + n);
+                } else {
+                    n = UCS_strlen(CSSSTR_page);
+                    if (UCS_strncasecmp(p, CSSSTR_page, n) == 0 && CSS_ISSPACE_AT(p[n])) {
+                        p = CSS_pageRule(ss, NULL, p + n);
+                    } else {
+                        n = UCS_strlen(CSSSTR_font_face);
+                        if (UCS_strncasecmp(p, CSSSTR_font_face, n) == 0 && CSS_ISSPACE_AT(p[n])) {
+                            p = CSS_fontfaceRule(ss, NULL, p + n);
+                        } else {
+                            p = CSS_unknownRule(ss, NULL, p);
+                        }
+                    }
+                }
+            }
+            p = CSS_Skip_S_CDO_CDC(p);
+        } else {
+            p++;
+        }
+        p = CSS_Skip_S_CDO_CDC(p);
+    }
+}
 
 u16 *CSS_unknownRule(void *a0, void *a1, u16 *p) {
     void *r;
@@ -212,26 +271,20 @@ u16 *CSS_mediaRuleList(void *a0, void *a1, u16 *p) {
     int n;
     p = CSS_SkipBlanksAndComments(p);
     while ((c = *p) != 0) {
-        if (c == '.' || c == ':' || c == '*' || c == '[' || c == '#' || ((unsigned int)(c - 'A') < 26 || (unsigned int)(c - 'a') < 26) || (c == '_' || c == '-')) {
-            goto sel;
-        }
-        if (c != '@') {
+        if (c == '.' || c == ':' || c == '*' || c == '[' || c == '#' || ((unsigned int)(c - 'A') < 26 || (unsigned int)(c - 'a') < 26) || (c == '_' || c == '-') || c == '@') {
+            if (c != '@') {
+                p = CSS_styleRule(a0, a1, p);
+            } else {
+                n = UCS_strlen(CSSSTR_page);
+                if (UCS_strncasecmp(p, CSSSTR_page, n) == 0 && (p[n] == ' ' || p[n] == '\t' || (p[n] == '\r' || p[n] == '\n') || p[n] == 0xC || p[n] == 0xFEFF)) {
+                    p = CSS_pageRule(a0, a1, p + n);
+                } else {
+                    p = CSS_unknownRule(a0, a1, p);
+                }
+            }
+        } else {
             return p;
         }
-        goto at;
-sel:
-        if (c != '@') {
-            p = CSS_styleRule(a0, a1, p);
-            goto next;
-        }
-at:
-        n = UCS_strlen(CSSSTR_page);
-        if (UCS_strncasecmp(p, CSSSTR_page, n) == 0 && (p[n] == ' ' || p[n] == '\t' || (p[n] == '\r' || p[n] == '\n') || p[n] == 0xC || p[n] == 0xFEFF)) {
-        p = CSS_pageRule(a0, a1, p + n);
-        } else {
-            p = CSS_unknownRule(a0, a1, p);
-        }
-next:
         p = CSS_SkipBlanksAndComments(p);
     }
     return p;
@@ -440,9 +493,49 @@ u16 *CSS_mediaList(u16 *p, int *m) {
     return p;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_parser", CSS_StyleSheetRuleSingle);
+void CSS_StyleSheetRuleSingle(void *ss, u16 *p) {
+    u16 c;
+    int n;
+    p = CSS_SkipBlanksAndComments(p);
+    c = *p;
+    if (c == '.' || c == ':' || c == '*' || c == '[' || c == '#' || ((unsigned int)(c - 'A') < 26 || (unsigned int)(c - 'a') < 26) || (c == '_' || c == '-') || c == '@') {
+        if (c != '@') {
+            CSS_styleRule(ss, NULL, p);
+        } else if (CSS_ATRULE(CSSSTR_charset)) {
+            CSS_charsetRule(ss, NULL, p + n);
+        } else if (CSS_ATRULE(CSSSTR_import)) {
+            CSS_importRule(ss, NULL, p + n);
+        } else if (CSS_ATRULE(CSSSTR_media)) {
+            CSS_mediaRule(ss, NULL, p + n);
+        } else if (CSS_ATRULE(CSSSTR_page)) {
+            CSS_pageRule(ss, NULL, p + n);
+        } else if (CSS_ATRULE(CSSSTR_font_face)) {
+            CSS_fontfaceRule(ss, NULL, p + n);
+        } else {
+            CSS_unknownRule(ss, NULL, p);
+        }
+    }
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_parser", CSS_mediaRuleSingle);
+u16 *CSS_mediaRuleSingle(void *a0, void *a1, u16 *p) {
+    u16 c;
+    int n;
+    p = CSS_SkipBlanksAndComments(p);
+    c = *p;
+    if (c == '.' || c == ':' || c == '*' || c == '[' || c == '#' || ((unsigned int)(c - 'A') < 26 || (unsigned int)(c - 'a') < 26) || (c == '_' || c == '-') || c == '@') {
+        if (c != '@') {
+            p = CSS_styleRule(a0, a1, p);
+        } else {
+            n = UCS_strlen(CSSSTR_page);
+            if (UCS_strncasecmp(p, CSSSTR_page, n) == 0 && (p[n] == ' ' || p[n] == '\t' || (p[n] == '\r' || p[n] == '\n') || p[n] == 0xC || p[n] == 0xFEFF)) {
+                p = CSS_pageRule(a0, a1, p + n);
+            } else {
+                p = CSS_unknownRule(a0, a1, p);
+            }
+        }
+    }
+    return p;
+}
 
 void *newCSSRule(int type, int size, void *a2, void *a3) {
     void *n = newCSSNode(type, size);
