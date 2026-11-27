@@ -18,7 +18,15 @@ MesObject *mes_image_new(MesContext *ctx, MesImagePriv *priv);
 
 
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_image", mes_image_handle_event);
+int mes_image_handle_event(MesContext *ctx, MesObject *obj)
+{
+    short type = g_JS_EVENT_REC_->type;
+
+    if (type == 1 || type == 2 || type == 4 || type == 7 || type == 8 || type == 12 || type == 13 || type == 14 || type == 15
+        || type == 16 || type == 17)
+        return mes_event_handle_event(ctx, obj, type);
+    return 12;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)

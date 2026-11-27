@@ -1,6 +1,9 @@
 /* cflags: -O1 */
 #include "common.h"
 #include "mes_js.h"
+extern char D_0013FD60[];
+MesObject *mes_array_new(MesContext *ctx, unsigned int len);
+int mes_class_property_setup(MesContext *ctx, MesObject *obj, const char *name, MesValue v, int flags);
 extern MesClassDef mes_select_def;
 extern MesClass *mes_select_class;
 int Util_HTMLSelectElement_getLength(void *sel);
@@ -10,7 +13,15 @@ typedef struct MesSelectPriv {
     void *elem;
 } MesSelectPriv;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_select", mes_select_handle_event);
+int mes_select_handle_event(MesContext *ctx, MesObject *obj)
+{
+    short type = g_JS_EVENT_REC_->type;
+
+    if (type == 2 || type == 3 || type == 4 || type == 8 || type == 13 || type == 14 || type == 15 || type == 16
+        || type == 17)
+        return mes_event_handle_event(ctx, obj, type);
+    return 12;
+}
 
 MesValue mes_select_get(MesContext *ctx, MesObject *obj, MesSelectPriv *priv, int id)
 {
@@ -58,7 +69,19 @@ void mes_select_class_init(MesContext *ctx)
     mes_select_class = mes_class_init(ctx, &mes_select_def);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_select", mes_select_new);
+MesObject *mes_select_new(MesContext *ctx, void *priv)
+{
+    MesObject *o = mes_class_new(ctx, mes_select_class);
+    MesObject *a;
+
+    mes_class_private_set(o, priv);
+    *--ctx->sp = (MesValue)o;
+    a = mes_array_new(ctx, 0);
+    *--ctx->sp = (MesValue)a;
+    mes_class_property_setup(ctx, o, D_0013FD60, (MesValue)a, 7);
+    ctx->sp += 2;
+    return o;
+}
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_select", D_0013FD48);
 
