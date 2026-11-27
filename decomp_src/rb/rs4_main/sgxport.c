@@ -2,7 +2,6 @@
 #include "m2c_macros.h"
 M2C_UNK sgxFree(int);                               /* extern */
 extern unsigned char gWork_11FEA4;
-M2C_UNK UnitFreeAll_85854();                        /* extern */
 M2C_UNK AttrSetValue(int, short, int);                /* extern */
 M2C_UNK FadeFree(void *);                           /* extern */
 extern int D_0011FECC;
@@ -13,6 +12,20 @@ extern unsigned char D_0011FEB8;
 extern unsigned char D_0011FED0;
 extern unsigned char D_0011FEE8;
 
+
+void *SlotGetAt_848F0(int, const char *);
+void UnitFreeByID_8589C(void *, int, int);
+void UnitFree_85774(void *);
+void sgxVoFree(int);
+extern int D_00113C94[];
+static inline char *PortListFirst(char *l) {
+    char *n = *(char **)(l + 4);
+    return (*(int *)(n + 8) < 0) ? NULL : n;
+}
+static inline char *PortListNext(char *e) {
+    char *n = *(char **)(e + 4);
+    return (*(int *)(n + 8) < 0) ? NULL : n;
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/sgxport", D_0010AD00);
 
@@ -47,11 +60,24 @@ void sgxPortTerm(void) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxport", AttrClear);
+void AttrClear(short *a) {
+    int i;
+    a[0] = 0;
+    a[1] = 0;
+    for (i = 0; i < 24; i++) a[13 + i] = 0;
+    for (i = 0; i < 4; i++) {
+        a[17 + i * 6] = 0x1000;
+        a[18 + i * 6] = 1000;
+    }
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxport", AttrSetValue);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxport", AttrGetValue);
+int AttrGetValue(short *a, int idx) {
+    if ((unsigned int)(idx - 13) < 24) return a[idx];
+    if ((a[1] >> idx) & 1) return a[idx];
+    return D_00113C94[idx];
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxport", sgxPortAlloc);
 
@@ -61,11 +87,31 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxport", FadeAlloc);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxport", FadeFree);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxport", FadeFreeAll);
+void FadeFreeAll(char *l) {
+    char *e;
+    while ((e = PortListFirst(l)) != NULL) FadeFree(e);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxport", FadeFreeByAttr);
+void FadeFreeByAttr(char *l, int attr) {
+    char *e;
+    for (e = PortListFirst(l); e != NULL; e = PortListNext(e)) {
+        if (*(short *)(e + 0x14) == attr) {
+            FadeFree(e);
+            return;
+        }
+    }
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxport", AllocTakenVoice);
+void AllocTakenVoice(int v, short *tbl, int flag) {
+    int i;
+    for (i = 0; i < 2; i++, tbl++) {
+        if (*tbl == v) {
+            if (flag) sgxVoFree(*tbl);
+            *tbl = -1;
+            return;
+        }
+    }
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxport", UnitTakenVoice);
 
@@ -73,11 +119,24 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxport", UnitVoiceAlloc);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxport", UnitFree_85774);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxport", UnitFreeAll_85854);
+void UnitFreeAll_85854(p)
+    char *p;
+{
+    char *l = p + 0x18;
+    char *e;
+    while ((e = PortListFirst(l)) != NULL) UnitFree_85774(e);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxport", UnitFreeByID_8589C);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxport", UnitFreeAtAfter);
+void UnitFreeAtAfter(void *port, char *u) {
+    char *e, *n;
+    if (u == NULL) return;
+    for (e = PortListNext(u); e != NULL; e = n) {
+        n = PortListNext(e);
+        UnitFree_85774(e);
+    }
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxport", UnitPlayWave);
 
@@ -93,7 +152,9 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxport", CmdRelAny);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxport", CmdRelAll_86218);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxport", CmdStopAny);
+void CmdStopAny(void *port, int *cmd) {
+    UnitFreeByID_8589C(port, cmd[1], (cmd[0] == 7) ? 0 : 0x18);
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -117,7 +178,18 @@ void CmdCtrlMidiReset(int arg0, void *arg1) {
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxport", CmdAdsrID);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxport", CmdBendWID);
+void CmdBendWID(char *port, int *cmd) {
+    char *e;
+    int id = cmd[1];
+    int a = cmd[2];
+    int b = cmd[3];
+    for (e = PortListFirst(port + 0x18); e != NULL; e = PortListNext(e)) {
+        if (*(int *)(e + 8) == id) {
+            e[0x52] = a;
+            e[0x53] = b;
+        }
+    }
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -167,9 +239,20 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxport", CmdPause_866D0);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxport", sgxPortCommand);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxport", sgxPortGetStatus);
+int sgxPortGetStatus(int id) {
+    char *p = SlotGetAt_848F0(id, 0);
+    if (p == NULL) return 0;
+    return *(int *)(p + 0xC);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxport", sgxPortGetUnitStatus);
+int sgxPortGetUnitStatus(int id, int uid) {
+    char *p = SlotGetAt_848F0(id, 0);
+    char *e;
+    if (p == NULL) return -1;
+    for (e = PortListFirst(p + 0x18); e != NULL; e = PortListNext(e))
+        if (*(int *)(e + 8) == uid) return 3;
+    return 0;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
