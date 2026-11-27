@@ -709,6 +709,33 @@ libgcc/libsupc++ DWARF names `gcc-3.3.6/` paths.
   link order that needs `-fno-merge-constants` per unit, as for 1.8.4's
   mixed units.  All the C++ is `-Os -fno-strength-reduce -fno-exceptions`
   like the C game code.
+- Rechecked with much more C (libgu at `-O3`, the game's libxu, 208
+  functions of the stripped SCERT network library at `-O2`): all 179 C
+  units of rs4_main still compile to the same assembly with `cc1-184ins`
+  (3.3.3-based, with the `ins` change and 3.3.6's expr.c) and `cc1-1.9.2`.
+  No other 3.3.4–3.3.6 change shows.
+- libgu (`-O4` = `-O3`) shows 1.9.2's function output order: functions
+  the tree inliner may inline (at most 30 statements, `max-inline-insns-auto`
+  300 / 10 per statement) are deferred to the end of the file, the others
+  are output where they are defined.  The order is the module's when
+  `sceGuDisplay` is short enough to be deferred.  This SDK revision lacks
+  `_sceGuSetDebugFontCallback`, `sceGuSetCallback2`,
+  `sceGuSignalCall/Ret/DrawSync` and `sceGuClutCopyLoad`, and its
+  `initList` sends 0xF0–0xF9.  103 of the 119 functions are C.
+  `sceGupClear` (0x94FC8) doesn't match: the depth value and the vertex
+  pointer get `$t1`/`$t3` the other way round (and sched2 then orders two
+  loads differently).  `cc1-184ins` gives the same code, so it's not
+  3.3.4–3.3.6.  Without `-mext` the loads come in the module's order but the
+  `ext`s are missing.  The cause is unknown, maybe a source detail as in
+  the `REG_FREQ` case below.
+- Game code: `cvt.w.s` (7 times; casts give `trunc.w.s`, 165 times) is
+  inline asm, since the tree has no `cvt.w.s` pattern (`cardlistCpyTtr2Int32`
+  matches with `__asm__ volatile ("cvt.w.s %0, %1" ...)`).  `consPrintf` and
+  `drawPrintf` are `void f(const char *, ...)`.  The argument setup after
+  a call (`addu a2,v0` before the `%lo` of the format) only matches with
+  that prototype.  The m2c guesses (fixed arity, int) don't match.  This
+  is source, not compiler.  libxu is built with the game's
+  `-Os -fno-strength-reduce`.
 
 ## Solved: libgu two-command register tie (stale `REG_FREQ`)
 
