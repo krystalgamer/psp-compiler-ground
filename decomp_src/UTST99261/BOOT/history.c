@@ -111,7 +111,81 @@ void *HST_createHistoryNode(void) {
     return var_v0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/history", HST_deleteHistoryNode);
+int HST_deleteHistoryNode(int arg) {
+    HstNode *n = (HstNode *)arg;
+    HstNode *parent;
+    HstNode *next;
+    HstNode *prev;
+
+    next = n->next;
+    prev = M2C_FIELD(n, HstNode **, 0xB4);
+    parent = n->parent;
+    if (next != NULL) {
+        M2C_FIELD(next, HstNode **, 0xB4) = prev;
+    }
+    if (prev != NULL) {
+        prev->next = next;
+    }
+    if (parent != NULL) {
+        if (parent->child == n) {
+            parent->child = next;
+        }
+    }
+    n->next = NULL;
+    M2C_FIELD(n, HstNode **, 0xB4) = NULL;
+    n->parent = NULL;
+    while (n != NULL) {
+        if (M2C_FIELD(n, void **, 0) != NULL) {
+            MEM_free(0, M2C_FIELD(n, void **, 0));
+        }
+        if (M2C_FIELD(n, void **, 0x10) != NULL) {
+            MEM_free(0, M2C_FIELD(n, void **, 0x10));
+        }
+        if (M2C_FIELD(n, void **, 0x18) != NULL) {
+            MEM_free(0, M2C_FIELD(n, void **, 0x18));
+        }
+        if (M2C_FIELD(n, void **, 0x28) != NULL) {
+            MEM_free(0, M2C_FIELD(n, void **, 0x28));
+        }
+        if (M2C_FIELD(n, void **, 0x50) != NULL) {
+            MEM_free(0, M2C_FIELD(n, void **, 0x50));
+        }
+        if (M2C_FIELD(n, void **, 0x58) != NULL) {
+            MEM_free(0, M2C_FIELD(n, void **, 0x58));
+        }
+        if (M2C_FIELD(n, int *, 0x60) != 0) {
+            HST_httpHeaderFree(M2C_FIELD(n, int *, 0x60));
+        }
+        if (M2C_FIELD(n, void **, 0x64) != NULL) {
+            HST_freePostData(n);
+        }
+        if (M2C_FIELD(n, void **, 0x8C) != NULL) {
+            freeFragmentIDs(M2C_FIELD(n, void **, 0x8C));
+        }
+        addHistoryGarbage((void *)n->x48);
+        if (n->child != NULL) {
+            n = n->child;
+        } else if (n->next != NULL) {
+            next = n->next;
+            MEM_free(0, n);
+            n = next;
+        } else {
+            parent = n->parent;
+            MEM_free(0, n);
+            for (n = parent; n != NULL; n = parent) {
+                next = n->next;
+                parent = n->parent;
+                MEM_free(0, n);
+                if (next != NULL) {
+                    n = next;
+                    goto cont;
+                }
+            }
+            return;
+        }
+cont:;
+    }
+}
 
 int HST_registHistoryNode(void *node) {
     int *e;
