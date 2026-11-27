@@ -9,14 +9,21 @@ typedef struct HttpObj {
     void *f8;                         /* 0x08: mfile */
     char *statusline;                 /* 0x0C */
     int statuslen;                    /* 0x10 */
-    char pad14[0x18];
+    char pad14[8];
+    int f1C;                          /* 0x1C */
+    int state;                        /* 0x20 */
+    int f24;                          /* 0x24 */
+    int f28;
     void *f2C;
     void *f30;                        /* 0x30 */
     char *user;                       /* 0x34 */
     char *passwd;                     /* 0x38 */
     char pad3C[8];
-    int proxy;                        /* 0x44 */
-    char pad48[0x14];
+    char *proxy;                      /* 0x44 */
+    char *puser;                      /* 0x48 */
+    char *ppasswd;                    /* 0x4C */
+    char pad50[8];
+    int pport;                        /* 0x58 */
     int sema;                         /* 0x5C */
     void *mutex;                      /* 0x60 */
     void *mutex2;                     /* 0x64 */

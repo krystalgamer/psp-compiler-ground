@@ -17,7 +17,7 @@ int http_delreqresource(int h)
 
     if (h == 0)
         return -100;
-    if (o->proxy == 0)
+    if (o->proxy == NULL)
         ret = http_setrequestheader(h, 0, 0);
     else
         ret = http_setproxyheader(h, 0, 0);
