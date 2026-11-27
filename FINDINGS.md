@@ -709,3 +709,16 @@ libgcc/libsupc++ DWARF names `gcc-3.3.6/` paths.
   link order that needs `-fno-merge-constants` per unit, as for 1.8.4's
   mixed units.  All the C++ is `-Os -fno-strength-reduce -fno-exceptions`
   like the C game code.
+
+## Open: libgu two-command register tie (all versions)
+
+`sceGuTexScale`, `sceGuTexOffset`, `sceGuMorphWeight` and `sceGuLightColor`
+(~55 copies each across UTST99332, UTST99261, sampler, bigbangbang, ...) send
+two GE command words; the original gives the first value the other register
+of the pair (v0/v1 or a1/a2) than every cc1 here does. The allocator ranks
+the short-lived constant ahead of the float-bits value. Unchanged on every
+cc1 (1.3.1-orig .. 1.9.2) and ~40 flags; only `-fno-strict-aliasing` or
+`-fno-schedule-insns` flip it, and both break most other libgu functions.
+~60 source forms (types, unions, macros, nested inline helpers, pointer
+forms, K&R) tried without effect. Candidate for a Sony patch in register
+allocation priority or sched1, or per-object flags in Sony's libgu build.
