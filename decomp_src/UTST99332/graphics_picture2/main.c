@@ -199,107 +199,199 @@ void free16(void *addr) {
     free(addr);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_picture2/nonmatchings/main", main);
 
-INCLUDE_RODATA("tmp/asm/UTST99332/graphics_picture2/nonmatchings/main", D_00015A90);
+void menuInit(void);
+void menuTerm(int a, int b);
+void myHeapInit(void *addr, unsigned int size);
+void myHeapTerm(void);
+void *myHeapAlloc16(unsigned int size);
+void myHeapFree16(void *addr);
+void *malloc(unsigned int size);
+int sprintf(char *buf, const char *fmt, ...);
+void sceCtrlSetSamplingCycle(int cycle);
+void *sceGeEdramGetAddr(void);
+unsigned int sceGeEdramGetSize(void);
+void sceGumRotateX(float angle);
+void sceGimPictureSetMemoryManager(void *(*alloc_func)(size_t), void (*free_func)(void *));
+void sceGimPictureSetMemoryManager2(void *(*alloc_func)(size_t), void (*free_func)(void *));
+SceGimPicture *sceGimPictureCreate(void *chunk);
+_Bool sceGimPictureLoadFile(SceGimPicture *picture, const void *buf, int size, int index);
+void sceGimPictureDelete(SceGimPicture *picture);
+void sceGimPictureAnimate(SceGimPicture *picture, float step);
+void sceGimPictureActivate(SceGimPicture *picture);
+void sceGimPictureSetEnableBits(SceGimPicture *picture, int bits, int value);
+int sceGimPictureGetEnableBits(SceGimPicture *picture);
+SceGimImageHeader *sceGimPictureGetImage(SceGimPicture *picture);
+void sceGimPictureSetFrameRate(SceGimPicture *picture, float fps);
+int sceGimPictureGetImageFrame(SceGimPicture *picture);
+float sceGimPictureGetDissolve(SceGimPicture *picture);
+const float *sceGimPictureGetImageCrop(SceGimPicture *picture);
+void unload_objects(void);
+void *malloc16(unsigned int size);
+void free16(void *addr);
 
-INCLUDE_RODATA("tmp/asm/UTST99332/graphics_picture2/nonmatchings/main", D_00015AA0);
+const char *const g_default_picture_names[12] = {
+	"dog32_norm.gim",
+	"dog32_fast.gim",
+	"dog16_norm.gim",
+	"dog16_fast.gim",
+	"dog8_norm.gim",
+	"dog8_fast.gim",
+	"dog4_norm.gim",
+	"dog4_fast.gim",
+	"dog_dxt1.gim",
+	"dog_dxt3.gim",
+	"dog_dxt5.gim",
+	"dog8_anim.gim",
+};
 
-INCLUDE_RODATA("tmp/asm/UTST99332/graphics_picture2/nonmatchings/main", D_00015AB0);
+int main( int argc, const char **argv )
+{
+	menuInit() ;
+	sceCtrlSetSamplingMode( 1 ) ;
 
-INCLUDE_RODATA("tmp/asm/UTST99332/graphics_picture2/nonmatchings/main", D_00015AC0);
+	sceGuInit() ;
+	sceGuStart( 0, g_packet_buf, 0x100000 ) ;
+	sceGuDrawBuffer( 3, (void *)0, 512 ) ;
+	sceGuDispBuffer( 480, 272, (void *)0x88000, 512 ) ;
+	sceGuDepthBuffer( (void *)0x110000, 512 ) ;
+	sceGuOffset( 2048 - 240, 2048 - 136 ) ;
+	sceGuFinish() ;
+	sceGuSync( 0, 0 ) ;
+	sceGumSetMatrixStack( g_matrix_buf, 4, 4, 8, 0 ) ;
 
-INCLUDE_RODATA("tmp/asm/UTST99332/graphics_picture2/nonmatchings/main", D_00015AD0);
+	sceGimPictureSetMemoryManager( malloc, free ) ;
+	sceGimPictureSetMemoryManager2( malloc16, free16 ) ;
 
-INCLUDE_RODATA("tmp/asm/UTST99332/graphics_picture2/nonmatchings/main", D_00015AE0);
+	if ( argc > 1 ) {
+		g_picture_count = argc - 1 ;
+		g_picture_names = argv + 1 ;
+	}
 
-INCLUDE_RODATA("tmp/asm/UTST99332/graphics_picture2/nonmatchings/main", D_00015AF0);
+	sceGuDisplay( 1 ) ;
 
-INCLUDE_RODATA("tmp/asm/UTST99332/graphics_picture2/nonmatchings/main", D_00015B00);
+	while ( g_running ) {
+		if ( g_reload ) {
+			if ( !load_objects() ) break ;
+			g_vbl_count = -1 ;
+		}
+		sceGuStart( 0, g_packet_buf, 0x100000 ) ;
+		begin_scene() ;
+		move_objects() ;
+		if ( g_menu_copy == 0 ) {
+			draw_objects() ;
+		} else {
+			draw_objects2() ;
+		}
+		end_scene() ;
+		sceGuFinish() ;
+		swap_buffers() ;
+	}
+	unload_objects() ;
 
-INCLUDE_RODATA("tmp/asm/UTST99332/graphics_picture2/nonmatchings/main", D_00015B10);
+	myHeapTerm() ;
+	sceGuTerm() ;
+	menuTerm( 1, 22 ) ;
+	return 0 ;
+}
 
-INCLUDE_RODATA("tmp/asm/UTST99332/graphics_picture2/nonmatchings/main", D_00015B20);
+void begin_scene()
+{
+	g_frame_format = ( g_menu_frame == 0 ) ? 3 : 1 ;
+	g_frame_buffer = ( g_frame_count % 2 == 0 ) ? (void *)0 : (void *)0x88000 ;
+	sceGuDrawBuffer( g_frame_format, g_frame_buffer, 512 ) ;
+	sceGuDepthBuffer( (void *)0x110000, 512 ) ;
+	sceGuOffset( 2048 - 240, 2048 - 136 ) ;
+	sceGuViewport( 2048, 2048, 480, 272 ) ;
+	sceGuDepthRange( 0xe000, 0x1000 ) ;
+	sceGuEnable( 2 ) ;
+	sceGuScissor( 0, 0, 480, 272 ) ;
+	sceGuClearColor( 0xff800000 ) ;
+	sceGuClearDepth( 0 ) ;
+	sceGuClearStencil( 0 ) ;
+	sceGuClear( 7 ) ;
 
-INCLUDE_RODATA("tmp/asm/UTST99332/graphics_picture2/nonmatchings/main", D_00015B30);
+	sceGumMatrixMode( 1 ) ;
+	sceGumLoadIdentity() ;
+	sceGumLookAt( &(ScePspFVector3){ 0, 0, 50 }, &(ScePspFVector3){ 0, 0, 0 }, &(ScePspFVector3){ 0, 1, 0 } ) ;
+	sceGumMatrixMode( 0 ) ;
+	sceGumLoadIdentity() ;
+	sceGumPerspective( 60.0f * 3.14f / 180.0f, 480.0f / 272.0f, 10.0f, 1000000.0f ) ;
+	sceGumMatrixMode( 2 ) ;
 
-INCLUDE_RODATA("tmp/asm/UTST99332/graphics_picture2/nonmatchings/main", D_00015B40);
+	sceGuDisable( 7 ) ;
+	sceGuDisable( 10 ) ;
+	sceGuAmbient( 0xff404040 ) ;
+	sceGuMaterial( 1, 0xffffffff ) ;
 
-INCLUDE_RODATA("tmp/asm/UTST99332/graphics_picture2/nonmatchings/main", g_default_picture_names);
+	sceGuEnable( 4 ) ;
+	sceGuEnable( 6 ) ;
+	sceGuEnable( 9 ) ;
+	sceGuEnable( 8 ) ;
+	sceGuBlendFunc( 0, 2, 3, 0, 0 ) ;
+	sceGuTexFunc( 0, 1 ) ;
+	sceGuTexWrap( 1, 1 ) ;
+	switch ( g_menu_filter ) {
+	    case 0 :
+		sceGuTexFilter( 7, 1 ) ;
+		break ;
+	    case 1 :
+		sceGuTexFilter( 5, 1 ) ;
+		break ;
+	    case 2 :
+		sceGuTexFilter( 4, 0 ) ;
+		break ;
+	}
+	sceGuPatchDivide( g_menu_subdiv, g_menu_subdiv ) ;
+}
 
-INCLUDE_RODATA("tmp/asm/UTST99332/graphics_picture2/nonmatchings/main", D_00015B80);
+void end_scene()
+{
+	static const char *const PixelModes[] = { "DDR", "EDRAM" } ;
+	static const char *const FrameModes[] = { "32BPP", "16BPP" } ;
+	static const char *const FilterModes[] = { "TRILINEAR", "BILINEAR", "POINT" } ;
+	static const char *const DissolveModes[] = { "OFF", "ON" } ;
+	static const char *const CopyModes[] = { "OFF", "ON" } ;
+	char buf[ 64 ] ;
+	if ( g_frame_count * g_vbl_step % 30 < 15 ) {
+		sceGuDebugPrint( 0, g_menu_select * 10 + 10, 0xffffffff, ">" ) ;
+	}
+	sprintf( buf, "PICTURE  %s %dKB", g_picture_names[ g_menu_picture ], ( g_picture_size + 1023 ) / 1024 ) ;
+	sceGuDebugPrint( 10, 10, 0xffffffff, buf ) ;
+	sprintf( buf, "SUBDIV   %d", g_menu_subdiv ) ;
+	sceGuDebugPrint( 10, 20, 0xffffffff, buf ) ;
+	sprintf( buf, "PIXEL    %s", PixelModes[ g_menu_pixel ] ) ;
+	sceGuDebugPrint( 10, 30, 0xffffffff, buf ) ;
+	sprintf( buf, "FRAME    %s", FrameModes[ g_menu_frame ] ) ;
+	sceGuDebugPrint( 10, 40, 0xffffffff, buf ) ;
+	sprintf( buf, "FILTER   %s", FilterModes[ g_menu_filter ] ) ;
+	sceGuDebugPrint( 10, 50, 0xffffffff, buf ) ;
+	if ( g_menu_level < 0.0f ) {
+		sprintf( buf, "LEVEL    AUTO" ) ;
+	} else {
+		sprintf( buf, "LEVEL    %.1f", g_menu_level ) ;
+	}
+	sceGuDebugPrint( 10, 60, 0xffffffff, buf ) ;
+	sprintf( buf, "DISSOLVE %s", DissolveModes[ g_menu_dissolve ] ) ;
+	sceGuDebugPrint( 10, 70, 0xffffffff, buf ) ;
+	sprintf( buf, "COPY     %s", CopyModes[ g_menu_copy ] ) ;
+	sceGuDebugPrint( 10, 80, 0xffffffff, buf ) ;
+	sprintf( buf, "COUNT    %d", g_menu_count ) ;
+	sceGuDebugPrint( 10, 90, 0xffffffff, buf ) ;
+	sprintf( buf, "CPU %d%%", g_cpu_load ) ;
+	sceGuDebugPrint( 10, 240, 0xffffffff, buf ) ;
+	sprintf( buf, "GPU %d%%", g_gpu_load ) ;
+	sceGuDebugPrint( 10, 250, 0xffffffff, buf ) ;
+	if ( g_reload ) {
+		sceGuDebugPrint( 400, 10, 0xffffffff, "LOADING" ) ;
+	}
 
-INCLUDE_RODATA("tmp/asm/UTST99332/graphics_picture2/nonmatchings/main", D_00015B8C);
+	sceGuDisable( 9 ) ;
+	sceGuDisable( 1 ) ;
+	draw_rect( 82, 241, g_cpu_load, 7, 0x8f00 ) ;
+	draw_rect( 82, 251, g_gpu_load, 7, 0x800f ) ;
+}
 
-INCLUDE_RODATA("tmp/asm/UTST99332/graphics_picture2/nonmatchings/main", D_00015B98);
-
-INCLUDE_RODATA("tmp/asm/UTST99332/graphics_picture2/nonmatchings/main", D_00015B9C);
-
-INCLUDE_RODATA("tmp/asm/UTST99332/graphics_picture2/nonmatchings/main", D_00015BA4);
-
-INCLUDE_RODATA("tmp/asm/UTST99332/graphics_picture2/nonmatchings/main", D_00015BAC);
-
-INCLUDE_RODATA("tmp/asm/UTST99332/graphics_picture2/nonmatchings/main", D_00015BB4);
-
-INCLUDE_RODATA("tmp/asm/UTST99332/graphics_picture2/nonmatchings/main", D_00015BBC);
-
-INCLUDE_RODATA("tmp/asm/UTST99332/graphics_picture2/nonmatchings/main", D_00015BC4);
-
-INCLUDE_RODATA("tmp/asm/UTST99332/graphics_picture2/nonmatchings/main", D_00015BD0);
-
-INCLUDE_RODATA("tmp/asm/UTST99332/graphics_picture2/nonmatchings/main", D_00015BDC);
-
-INCLUDE_RODATA("tmp/asm/UTST99332/graphics_picture2/nonmatchings/main", D_00015BE4);
-
-INCLUDE_RODATA("tmp/asm/UTST99332/graphics_picture2/nonmatchings/main", D_00015BF0);
-
-INCLUDE_RODATA("tmp/asm/UTST99332/graphics_picture2/nonmatchings/main", D_00015BF4);
-
-INCLUDE_RODATA("tmp/asm/UTST99332/graphics_picture2/nonmatchings/main", D_00015BF8);
-
-INCLUDE_RODATA("tmp/asm/UTST99332/graphics_picture2/nonmatchings/main", D_00015C00);
-
-INCLUDE_RODATA("tmp/asm/UTST99332/graphics_picture2/nonmatchings/main", D_00015C08);
-
-INCLUDE_RODATA("tmp/asm/UTST99332/graphics_picture2/nonmatchings/main", D_00015C1C);
-
-INCLUDE_RODATA("tmp/asm/UTST99332/graphics_picture2/nonmatchings/main", D_00015C28);
-
-INCLUDE_RODATA("tmp/asm/UTST99332/graphics_picture2/nonmatchings/main", D_00015C34);
-
-INCLUDE_RODATA("tmp/asm/UTST99332/graphics_picture2/nonmatchings/main", D_00015C40);
-
-INCLUDE_RODATA("tmp/asm/UTST99332/graphics_picture2/nonmatchings/main", D_00015C4C);
-
-INCLUDE_RODATA("tmp/asm/UTST99332/graphics_picture2/nonmatchings/main", D_00015C5C);
-
-INCLUDE_RODATA("tmp/asm/UTST99332/graphics_picture2/nonmatchings/main", D_00015C68);
-
-INCLUDE_RODATA("tmp/asm/UTST99332/graphics_picture2/nonmatchings/main", D_00015C74);
-
-INCLUDE_RODATA("tmp/asm/UTST99332/graphics_picture2/nonmatchings/main", D_00015C80);
-
-INCLUDE_RODATA("tmp/asm/UTST99332/graphics_picture2/nonmatchings/main", D_00015C8C);
-
-INCLUDE_RODATA("tmp/asm/UTST99332/graphics_picture2/nonmatchings/main", D_00015C98);
-
-INCLUDE_RODATA("tmp/asm/UTST99332/graphics_picture2/nonmatchings/main", D_00015CA0);
-
-INCLUDE_RODATA("tmp/asm/UTST99332/graphics_picture2/nonmatchings/main", D_00015CB0);
-
-INCLUDE_RODATA("tmp/asm/UTST99332/graphics_picture2/nonmatchings/main", D_00015CB4);
-
-INCLUDE_RODATA("tmp/asm/UTST99332/graphics_picture2/nonmatchings/main", D_00015CD8);
-
-INCLUDE_RODATA("tmp/asm/UTST99332/graphics_picture2/nonmatchings/main", D_00015CE4);
-
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_picture2/nonmatchings/main", begin_scene);
-
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_picture2/nonmatchings/main", end_scene);
-
-unsigned int sceKernelGetSystemTimeLow(void);
-int sceDisplayWaitVblankStart(void);
-int sceGuSync(int mode, int what);
 void swap_buffers()
 {
 	int cpu_time = sceKernelGetSystemTimeLow() ;
@@ -323,13 +415,329 @@ void swap_buffers()
 	g_vbl_count = vbl_count ;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_picture2/nonmatchings/main", move_objects);
+void move_objects()
+{
+	float move = g_vbl_step * 0.5f ;
+	float turn = g_vbl_step * ( 2.0f * 3.14f / 180.0f ) ;
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_picture2/nonmatchings/main", draw_objects);
+	SceCtrlData buf ;
+	sceCtrlReadBufferPositive( &buf, 1 ) ;
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_picture2/nonmatchings/main", draw_objects2);
+	extern int D_00017AFC ;
+#define prev D_00017AFC
+	int state = buf.Buttons ;
+	int press = state & ~prev ;
+	prev = state ;
+#undef prev
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_picture2/nonmatchings/main", load_objects);
+	if ( press & 0x1 ) {
+		g_running = 0 ;
+		return ;
+	}
+	if ( press & 0x8 ) {
+		g_translate = (ScePspFVector3){ 0, 0, 0 } ;
+		g_rotate = (ScePspFVector3){ 0, 0, 0 } ;
+		g_menu_picture = 0 ;
+		g_menu_subdiv = 1 ;
+		g_menu_pixel = 0 ;
+		g_menu_frame = 0 ;
+		g_menu_filter = 0 ;
+		g_menu_level = -1.0f ;
+		g_menu_dissolve = 0 ;
+		g_menu_copy = 0 ;
+		g_menu_count = 1 ;
+		g_reload = 1 ;
+		return ;
+	}
+	if ( state & 0x80 ) g_rotate.z += turn ;
+	if ( state & 0x20 ) g_rotate.z -= turn ;
+	if ( state & 0x100 ) g_translate.z -= move ;
+	if ( state & 0x200 ) g_translate.z += move ;
+	float dx = ( buf.Lx - 128 ) / 128.0f ;
+	float dy = ( buf.Ly - 128 ) / 128.0f ;
+	if ( dx > -0.75f && dx < 0.75f ) dx = 0.0f ;
+	if ( dy > -0.75f && dy < 0.75f ) dy = 0.0f ;
+	g_translate.x += move * dx ;
+	g_translate.y -= move * dy ;
+
+	if ( press & 0x10 ) {
+		if ( g_menu_select > 0 ) g_menu_select -= 1 ;
+	}
+	if ( press & 0x40 ) {
+		if ( g_menu_select < 8 ) g_menu_select += 1 ;
+	}
+
+	if ( !( state & ( 0x2000 | 0x4000 ) ) ) {
+		g_disp_wire = 0 ;
+	}
+
+	switch ( g_menu_select ) {
+	    case 0 : {
+		if ( press & 0x2000 ) {
+			if ( g_menu_picture < g_picture_count - 1 ) {
+				g_menu_picture += 1 ;
+				g_reload = 1 ;
+			}
+		}
+		if ( press & 0x4000 ) {
+			if ( g_menu_picture > 0 ) {
+				g_menu_picture -= 1 ;
+				g_reload = 1 ;
+			}
+		}
+		break ;
+	    }
+	    case 1 : {
+		if ( press & 0x2000 ) {
+			if ( g_menu_subdiv < 64 ) g_menu_subdiv *= 2 ;
+			g_disp_wire = 1 ;
+		}
+		if ( press & 0x4000 ) {
+			if ( g_menu_subdiv > 1 ) g_menu_subdiv /= 2 ;
+			g_disp_wire = 1 ;
+		}
+		break ;
+	    }
+	    case 2 : {
+		if ( press & ( 0x2000 | 0x4000 ) ) {
+			g_menu_pixel = !g_menu_pixel ;
+			g_reload = 1 ;
+		}
+		break ;
+	    }
+	    case 3 : {
+		if ( press & ( 0x2000 | 0x4000 ) ) {
+			g_menu_frame = !g_menu_frame ;
+		}
+		break ;
+	    }
+	    case 4 : {
+		if ( press & 0x2000 ) {
+			if ( g_menu_filter < 2 ) g_menu_filter += 1 ;
+		}
+		if ( press & 0x4000 ) {
+			if ( g_menu_filter > 0 ) g_menu_filter -= 1 ;
+		}
+		break ;
+	    }
+	    case 5 : {
+		if ( state & 0x2000 ) {
+			g_menu_level += 0.1f ;
+			if ( g_menu_level > 7.0f ) g_menu_level = 7.0f ;
+		}
+		if ( state & 0x4000 ) {
+			g_menu_level -= 0.1f ;
+			if ( g_menu_level < -1.0f ) g_menu_level = -1.0f ;
+		}
+		break ;
+	    }
+	    case 6 : {
+		if ( press & ( 0x2000 | 0x4000 ) ) {
+			g_menu_dissolve = !g_menu_dissolve ;
+			int bits = g_menu_dissolve ? -1 : 0 ;
+			sceGimPictureSetEnableBits( g_picture, 1, bits ) ;
+		}
+		break ;
+	    }
+	    case 7 : {
+		if ( press & ( 0x2000 | 0x4000 ) ) {
+			g_menu_copy = !g_menu_copy ;
+			g_translate.z = 0.0f ;
+			g_rotate = (ScePspFVector3){ 0, 0, 0 } ;
+		}
+		break ;
+	    }
+	    case 8 : {
+		if ( press & 0x2000 ) {
+			if ( g_menu_count < 10 ) g_menu_count += 1 ;
+		}
+		if ( press & 0x4000 ) {
+			if ( g_menu_count > 0 ) g_menu_count -= 1 ;
+		}
+		break ;
+	    }
+	}
+}
+
+void draw_objects()
+{
+	float step = g_vbl_step * ( 1.0f / 60.0f ) ;
+
+	sceGumMatrixMode( 2 ) ;
+	sceGumLoadIdentity() ;
+	sceGumTranslate( &g_translate ) ;
+	sceGumRotateY( g_rotate.y ) ;
+	sceGumRotateX( g_rotate.x ) ;
+	sceGumRotateZ( g_rotate.z ) ;
+	sceGumScale( &g_scale ) ;
+
+	for ( int i = 0 ; i < g_menu_count ; i ++ ) {
+		SceGimPicture *picture = g_picture ;
+		sceGimPictureAnimate( picture, step ) ;
+		sceGimPictureActivate( picture ) ;
+		extern float D_00017244[] ;
+#define NoCrop D_00017244
+		const float *crop = sceGimPictureGetImageCrop( picture ) ;
+		if ( crop == 0 ) crop = NoCrop ;
+#undef NoCrop
+		sceGuTexOffset( crop[ 0 ], crop[ 1 ] ) ;
+		sceGuTexScale( crop[ 2 ], crop[ 3 ] ) ;
+		int bits = sceGimPictureGetEnableBits( picture ) ;
+		if ( bits & 1 ) {
+			float dissolve = sceGimPictureGetDissolve( picture ) ;
+			sceGuTexLevelMode( 1, dissolve ) ;
+		} else if ( g_menu_level > 0.0f ) {
+			sceGuTexLevelMode( 1, g_menu_level ) ;
+		} else {
+			sceGuTexLevelMode( 0, 0.0f ) ;
+		}
+		sceGumDrawBezier( g_vformat, 4, 4, 0, g_vbuffer ) ;
+		step = 0.0f ;
+	}
+	if ( g_disp_wire ) {
+		sceGuPatchPrim( 2 ) ;
+		sceGuDisable( 9 ) ;
+		sceGuLogicalOp( 6 ) ;
+		sceGumDrawBezier( g_vformat, 4, 4, 0, g_vbuffer ) ;
+		sceGuPatchPrim( 4 ) ;
+		sceGuEnable( 9 ) ;
+	}
+	sceGuTexOffset( 0.0f, 0.0f ) ;
+	sceGuTexScale( 1.0f, 1.0f ) ;
+	sceGuTexLevelMode( 0, 0.0f ) ;
+}
+
+static __inline__ int sceGimImageGetBPP( const SceGimImageHeader *image )
+{
+	return image->bpp ;
+}
+
+static __inline__ int sceGimImageGetWidth( const SceGimImageHeader *image, int level )
+{
+	int width = image->width ;
+	if ( level > 0 && image->level_type == 2 ) {
+		while ( -- level >= 0 ) width = ( width + 1 ) / 2 ;
+	}
+	return width ;
+}
+
+static __inline__ int sceGimImageGetHeight( const SceGimImageHeader *image, int level )
+{
+	int height = image->height ;
+	if ( level > 0 && image->level_type == 2 ) {
+		while ( -- level >= 0 ) height = ( height + 1 ) / 2 ;
+	}
+	return height ;
+}
+
+static __inline__ int sceGimImageGetBufWidth( const SceGimImageHeader *image, int width )
+{
+	int align = image->pitch_align * 8 / image->bpp - 1 ;
+	return ( width + align ) & ~align ;
+}
+
+static __inline__ const void *sceGimImageGetPixels( const SceGimImageHeader *image, int level, int frame )
+{
+	int n_levels = image->level_count ;
+	int n_frames = image->frame_count ;
+	if ( level < 0 || level >= n_levels ) return 0 ;
+	frame %= n_frames ;
+	if ( 0x8000 & frame ) frame = 0x7fff & ( frame + n_frames ) ;
+	void **offsets = (void **)( (char *)image + image->offsets ) ;
+	return offsets[ n_levels * frame + level ] ;
+}
+
+void draw_objects2()
+{
+	float step = g_vbl_step * ( 1.0f / 60.0f ) ;
+
+	for ( int i = 0 ; i < g_menu_count ; i ++ ) {
+		SceGimPicture *picture = g_picture ;
+		sceGimPictureAnimate( picture, step ) ;
+		step = 0.0f ;
+		SceGimImageHeader *image = sceGimPictureGetImage( picture ) ;
+		if ( image == 0 ) continue ;
+		int frame = sceGimPictureGetImageFrame( picture ) ;
+		const void *pixels = sceGimImageGetPixels( image, 0, frame ) ;
+		if ( pixels == 0 ) continue ;
+
+		int sbpp = sceGimImageGetBPP( image ) ;
+		int dbpp = ( g_frame_format == 3 ) ? 32 : 16 ;
+
+		float proj = 4.71118f ;
+		int cx = (int)( 240.0f + g_translate.x * proj + 0.5f ) ;
+		int cy = (int)( 136.0f - g_translate.y * proj + 0.5f ) ;
+		int sx = 0 ;
+		int sy = 0 ;
+		int sw = sceGimImageGetWidth( image, 0 ) ;
+		int sh = sceGimImageGetHeight( image, 0 ) ;
+		int sbw = sceGimImageGetBufWidth( image, sw ) ;
+		sw = sw * sbpp / dbpp ;
+		sbw = sbw * sbpp / dbpp ;
+
+		int dx = cx - sw / 2 ;
+		int dy = cy - sh / 2 ;
+		if ( dx < 0 ) {
+			sx = -dx ;
+			sw += dx ;
+			dx = 0 ;
+		}
+		if ( dy < 0 ) {
+			sy = -dy ;
+			sh += dy ;
+			dy = 0 ;
+		}
+		if ( sw > 480 - dx ) sw = 480 - dx ;
+		if ( sh > 272 - dy ) sh = 272 - dy ;
+		if ( sw > 0 && sh > 0 ) {
+			void *dbp = (char *)sceGeEdramGetAddr() + (int)g_frame_buffer ;
+			sceGuCopyImage( g_frame_format, sx, sy, sw, sh, sbw, (void *)pixels, dx, dy, 512, dbp ) ;
+		}
+	}
+}
+
+_Bool load_objects()
+{
+	unload_objects() ;
+
+	if ( g_menu_pixel == 0 ) {
+		sceGimPictureSetMemoryManager( malloc, free ) ;
+		sceGimPictureSetMemoryManager2( malloc16, free16 ) ;
+	} else {
+		int usage = 0x154000 ;
+		int size = sceGeEdramGetSize() ;
+		char *base = (char *)sceGeEdramGetAddr() ;
+		myHeapInit( base + usage, size - usage ) ;
+		sceGimPictureSetMemoryManager( malloc, free ) ;
+		sceGimPictureSetMemoryManager2( myHeapAlloc16, myHeapFree16 ) ;
+	}
+
+	int *data ;
+	int size ;
+	const char *filename = g_picture_names[ g_menu_picture ] ;
+	g_picture_size = 0 ;
+	if ( !load_file( filename, &data, &size ) ) return 0 ;
+	g_picture_size = size ;
+
+	SceGimPicture *picture = sceGimPictureCreate( 0 ) ;
+	g_picture = picture ;
+	sceGimPictureLoadFile( picture, data, size, 0 ) ;
+	sceGimPictureSetFrameRate( picture, 2.0f ) ;
+	if ( g_menu_dissolve ) {
+		sceGimPictureSetEnableBits( picture, 1, -1 ) ;
+	}
+
+	g_scale = (ScePspFVector3){ 1.0f, 1.0f, 1.0f } ;
+	SceGimImageHeader *image = sceGimPictureGetImage( g_picture ) ;
+	if ( image != 0 ) {
+		float proj = 0.21226104f ;
+		g_scale.x = sceGimImageGetWidth( image, 0 ) * proj ;
+		g_scale.y = sceGimImageGetHeight( image, 0 ) * proj ;
+	}
+	free( data ) ;
+	g_reload = 0 ;
+	return ( picture != 0 ) ;
+}
 
 void unload_objects(void) {
     sceGimPictureDelete(g_picture);
@@ -337,7 +745,6 @@ void unload_objects(void) {
 }
 /* Warning: struct SceGimPicture is not defined (only forward-declared) */
 
-extern const char D_00015CE4[]; /* "host0:%s" (rodata emitted elsewhere) */
 int sprintf(char *buf, const char *fmt, ...);
 int sceIoOpen(const char *file, int flags, int mode);
 long long sceIoLseek(int fd, long long offset, int whence);
@@ -349,7 +756,7 @@ static _Bool load_file(const char *filename, int **buf, int *size)
 {
 	char fullpath[256];
 
-	sprintf(fullpath, D_00015CE4, filename);
+	sprintf(fullpath, "disc0:/PSP_GAME/USRDIR/DATA/gim/%s", filename);
 
 	SceUID fd = sceIoOpen(fullpath, 1, 0777);
 	if (fd < 0) {
