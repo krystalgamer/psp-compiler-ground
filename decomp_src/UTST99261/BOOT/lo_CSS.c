@@ -75,6 +75,16 @@ typedef struct CSSSIDEFUNCS { CSSFUNC top; CSSFUNC bottom; CSSFUNC left; CSSFUNC
 extern CSSSIDEFUNCS allSidesFuncTable[];
 typedef struct CSSBORDERFUNCS { CSSFUNC color; CSSFUNC width; CSSFUNC style; } CSSBORDERFUNCS;
 extern CSSBORDERFUNCS BorderFuncTable[];
+extern const double D_00139B88;
+extern const double D_00139B90;
+int colorValue(int c);
+int CToc(int s);
+typedef struct CSSNUMPV { s16 type; s16 pad; int x4; double d; } CSSNUMPV;
+extern const double D_00139B98;
+extern const double D_00139BA0;
+extern const double D_00139B78;
+extern const double D_00139B80;
+typedef struct BGSTYLE { int color; u8 x4[0xC]; u8 set; } BGSTYLE;
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/lo_CSS", D_00139910);
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/lo_CSS", D_00139914);
@@ -249,7 +259,57 @@ int cssDStrContains(u16 *word, void *ds) {
 void cssBackgroundAttachment() {
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_CSS", cssBackgroundColor);
+void cssBackgroundColor(void *ctx, BOX *box, CSSVALUE *val, int n) {
+    int r;
+    int g;
+    int b;
+    CSSNUMPV *pv;
+    switch (val->unit) {
+    case 0x19:
+        ((BGSTYLE *)box->style)->set = 1;
+        pv = (CSSNUMPV *)val->ident;
+        if (pv->type == 1) {
+            r = pv->d;
+        } else if (pv->type == 2) {
+            r = pv->d * D_00139B78 / D_00139B80;
+        } else {
+            r = 0;
+        }
+        pv = *(CSSNUMPV **)(val + 1);
+        if (pv->type == 1) {
+            g = pv->d;
+        } else if (pv->type == 2) {
+            g = pv->d * D_00139B78 / D_00139B80;
+        } else {
+            g = 0;
+        }
+        pv = ((CSSNUMPV **)(val + 1))[1];
+        if (pv->type == 1) {
+            b = pv->d;
+        } else if (pv->type == 2) {
+            b = pv->d * D_00139B78 / D_00139B80;
+        } else {
+            b = 0;
+        }
+        ((BGSTYLE *)box->style)->color = ((r & 0xFF) << 16) | ((g & 0xFF) << 8) | (b & 0xFF);
+        break;
+    case 0x1A:
+        ((BGSTYLE *)box->style)->set = 1;
+        ((BGSTYLE *)box->style)->color = colorValue(CToc(val->ident));
+        break;
+    case 0x15:
+        if (val->ident == 0x4D) {
+            if (box->parent != NULL) {
+                ((BGSTYLE *)box->style)->set = ((BGSTYLE *)box->parent->style)->set;
+                ((BGSTYLE *)box->style)->color = ((BGSTYLE *)box->parent->style)->color;
+            } else {
+                ((BGSTYLE *)box->style)->set = 0;
+                ((BGSTYLE *)box->style)->color = 0;
+            }
+        }
+        break;
+    }
+}
 
 void cssBackgroundImage(void *ctx, BOX *box, CSSVALUE *val, int n) {
     int len = 0;
@@ -346,7 +406,49 @@ void cssBorderBottomWidth(void *ctx, BOX *box, CSSVALUE *val, int n) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_CSS", innerCSSSetBorderColor);
+void innerCSSSetBorderColor(CSSVALUE *val, s16 *width, int *color, int inherit) {
+    int r;
+    int g;
+    int b;
+    CSSNUMPV *pv;
+    switch (val->unit) {
+    case 0x19:
+        pv = (CSSNUMPV *)val->ident;
+        if (pv->type == 1) {
+            r = pv->d;
+        } else if (pv->type == 2) {
+            r = pv->d * D_00139B88 / D_00139B90;
+        } else {
+            r = 0;
+        }
+        pv = *(CSSNUMPV **)(val + 1);
+        if (pv->type == 1) {
+            g = pv->d;
+        } else if (pv->type == 2) {
+            g = pv->d * D_00139B88 / D_00139B90;
+        } else {
+            g = 0;
+        }
+        pv = ((CSSNUMPV **)(val + 1))[1];
+        if (pv->type == 1) {
+            b = pv->d;
+        } else if (pv->type == 2) {
+            b = pv->d * D_00139B88 / D_00139B90;
+        } else {
+            b = 0;
+        }
+        *color = ((r & 0xFF) << 16) | ((g & 0xFF) << 8) | (b & 0xFF);
+        break;
+    case 0x1A:
+        *color = colorValue(CToc(val->ident));
+        break;
+    case 0x15:
+        if (val->ident == 0x4D) {
+            *color = inherit;
+        }
+        break;
+    }
+}
 
 void cssBorderTopColor(void *ctx, BOX *box, CSSVALUE *val, int n) {
     BOX *parent = box->parent;
@@ -531,7 +633,44 @@ void cssBorder(void *ctx, BOX *box, CSSVALUE *val, int n) {
     cssBorderBottom(ctx, box, val, n);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_CSS", cssColor);
+void cssColor(void *ctx, BOX *box, CSSVALUE *val, int n) {
+    int r;
+    int g;
+    int b;
+    CSSNUMPV *pv;
+    switch (val->unit) {
+    case 0x19:
+        pv = (CSSNUMPV *)val->ident;
+        if (pv->type == 1) {
+            r = pv->d;
+        } else if (pv->type == 2) {
+            r = pv->d * D_00139B98 / D_00139BA0;
+        } else {
+            r = 0;
+        }
+        pv = *(CSSNUMPV **)(val + 1);
+        if (pv->type == 1) {
+            g = pv->d;
+        } else if (pv->type == 2) {
+            g = pv->d * D_00139B98 / D_00139BA0;
+        } else {
+            g = 0;
+        }
+        pv = ((CSSNUMPV **)(val + 1))[1];
+        if (pv->type == 1) {
+            b = pv->d;
+        } else if (pv->type == 2) {
+            b = pv->d * D_00139B98 / D_00139BA0;
+        } else {
+            b = 0;
+        }
+        box->style->unk54 = ((r & 0xFF) << 16) | ((g & 0xFF) << 8) | (b & 0xFF);
+        break;
+    case 0x1A:
+        box->style->unk54 = colorValue(CToc(val->ident));
+        break;
+    }
+}
 
 void cssFont(void *ctx, BOX *box, CSSVALUE *val, int n) {
     CSSVALUE *v = val;
