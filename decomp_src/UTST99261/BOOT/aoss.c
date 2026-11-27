@@ -898,7 +898,70 @@ int AOSS_version(void)
     return 0x2000767;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/aoss", GetWEPData);
+int GetWEPData(unsigned char *buf, unsigned char *out)
+{
+    unsigned char *p;
+    unsigned int len;
+
+    p = buf + 6;
+    for (;;) {
+        len = AOSS_Ntohs(*(unsigned short *)(p + 2));
+        switch (p[0]) {
+        case 0x10:
+        case 0x11:
+        case 0x12:
+        case 0x13:
+            if (len > 5)
+                return -1;
+            break;
+        case 0x20:
+        case 0x21:
+        case 0x22:
+        case 0x23:
+            if (len > 13)
+                return -1;
+            break;
+        case 0x15:
+        case 0x25:
+            if (len > 0x21)
+                return -1;
+            break;
+        }
+        switch (p[0]) {
+        case 0x10:
+        case 0x20:
+            AOSS_Memcpy(out + 0x30, p + 6, len);
+            *(int *)(out + 4) = len;
+            break;
+        case 0x11:
+        case 0x21:
+            AOSS_Memcpy(out + 0x70, p + 6, len);
+            *(int *)(out + 4) = len;
+            break;
+        case 0x12:
+        case 0x22:
+            AOSS_Memcpy(out + 0xB0, p + 6, len);
+            *(int *)(out + 4) = len;
+            break;
+        case 0x13:
+        case 0x23:
+            AOSS_Memcpy(out + 0xF0, p + 6, len);
+            *(int *)(out + 4) = len;
+            break;
+        case 0x15:
+        case 0x25:
+            if (len != 0 && ((unsigned char *)((int)len + (int)p))[5] != 0)
+                return -1;
+            AOSS_Memcpy(out + 8, p + 6, len);
+            break;
+        default:
+            return -1;
+        }
+        if (*(unsigned short *)(p + 4) == 0)
+            return 0;
+        p = buf + AOSS_Ntohs(*(unsigned short *)(p + 4)) + 6;
+    }
+}
 
 int GetWPAData(unsigned char *buf, unsigned char *out)
 {
