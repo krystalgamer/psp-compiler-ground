@@ -1332,6 +1332,7 @@ public:
     void swap(Texture &);
     int load(const char *);
     bool is32() const;
+    void drawGL();
     void convert32();
     void alphaHalfBias();
     void finish_load();

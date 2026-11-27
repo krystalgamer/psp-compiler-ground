@@ -61,4 +61,34 @@ void textures::Texture::setGlTextureFunc()
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/textures_Texture_2", _ZN8textures7Texture7setupGlEib);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/textures_Texture_2", _ZN8textures7Texture6drawGLEv);
+extern "C" {
+void glClear(unsigned int);
+void glMatrixMode(unsigned int);
+void glPushMatrix(void);
+void glPopMatrix(void);
+void glLoadIdentity(void);
+void gluOrtho2D(double, double, double, double);
+void glRasterPos2i(int, int);
+void glDrawPixels(int, int, unsigned int, unsigned int, const void *);
+}
+extern const double D_001771D8;
+
+void textures::Texture::drawGL()
+{
+    if (is32()) {
+        glClear(0x4100);
+        glMatrixMode(0x1701);
+        glPushMatrix();
+        glLoadIdentity();
+        gluOrtho2D(0, D_001771D8, 0, D_001771D8);
+        glMatrixMode(0x1700);
+        glPushMatrix();
+        glLoadIdentity();
+        glRasterPos2i(0, 0);
+        glDrawPixels(width(), height(), 0x1908, 0x1401, imagedata());
+        glMatrixMode(0x1701);
+        glPopMatrix();
+        glMatrixMode(0x1700);
+        glPopMatrix();
+    }
+}
