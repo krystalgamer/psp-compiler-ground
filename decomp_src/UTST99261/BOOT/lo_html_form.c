@@ -79,6 +79,29 @@ extern unsigned char _DOMcoords;
 void initBlockButtonContent(BOX *box, void *node);
 void *lfm_createPageRegion(BOX *box, int w);
 BOX *getParentBlockBox(BOX *box);
+typedef struct { int color[4][7]; } IMGUICOL;
+extern void *ui_global;
+extern int e_icon_image_width;
+extern int e_icon_image_height;
+void initImageContent(BOX *box, void *node);
+void *getFocusListTail(void *frame);
+void *addMapUserList(BOX *body, char *name, BOX *box, void *tail);
+void adaptAreaList(BOX *body, void *map, void *ul);
+void attr_BORDER_image(void *node, BOX *box);
+void attr_WIDTH_image(void *node, BOX *box);
+void attr_HEIGHT_image(void *node, BOX *box);
+void attr_ALIGN_image(void *node, BOX *box);
+void attr_HSPACE(void *node, BOX *box);
+void attr_VSPACE(void *node, BOX *box);
+unsigned int strlen(const char *s);
+int strncasecmp(const char *a, const char *b, unsigned int n);
+char *lo_fullUrl(BOX *box, char *s);
+void requestImageData(BOX *box, char *url, int a);
+extern unsigned char _DOMhref;
+extern unsigned char _DOMusemap;
+extern unsigned char _DOMalt;
+extern unsigned char _DOMsrc;
+extern unsigned char _DOMdata;
 int getTabindex(void *node) {
     char *s;
     s16 n = 0;
@@ -607,7 +630,133 @@ int html_OPTGROUP(void) {
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_html_form", html_IMG_inner);
+int html_IMG_inner(void *node, BOX *box) {
+    int tw;
+    int th;
+    BOX *body;
+    BOX *a;
+    char *s;
+    char *name;
+    void *ul;
+    int w;
+    int h;
+    char *url;
+    int ret;
+
+    initImageContent(box, node);
+    initBoxProperty(box);
+    box->style->fontSize = 1;
+    box->style->unk64 = ((IMGUICOL *)ui_global)->color[box->style->unk6A][1];
+    body = getBodyBox(box);
+    a = getBoxByHTML(box, 1);
+    if (a != NULL && Element_hasAttribute(M2C_FIELD(a, void **, 0x28), &_DOMhref)) {
+        box->style->unk30 = 2;
+        box->style->unk32 = 2;
+        box->style->unk34 = 2;
+        box->style->unk36 = 2;
+        box->style->unk48 = 1;
+        box->style->unk4A = 1;
+        box->style->unk4C = 1;
+        box->style->unk4E = 1;
+    }
+    s = getDOMAttributeValue(node, &_DOMusemap);
+    if (s != NULL) {
+        box->style->unk38 = colorValue("blue");
+        box->style->unk3C = colorValue("blue");
+        box->style->unk40 = colorValue("blue");
+        box->style->unk44 = colorValue("blue");
+        box->style->unk30 = 2;
+        box->style->unk32 = 2;
+        box->style->unk34 = 2;
+        box->style->unk36 = 2;
+        box->style->unk48 = 1;
+        box->style->unk4A = 1;
+        box->style->unk4C = 1;
+        box->style->unk4E = 1;
+        name = s;
+        if (*s == '#') {
+            name = s + 1;
+        }
+        ul = addMapUserList(body, name, box, getFocusListTail(body));
+        if (ul != NULL) {
+            adaptAreaList(body, getMapList(body, name), ul);
+        }
+        MEM_free(0, (int)s);
+    }
+    attr_BORDER_image(node, box);
+    attr_WIDTH_image(node, box);
+    attr_HEIGHT_image(node, box);
+    if ((box->style->flags & 3) == 1) {
+        w = box->style->width;
+    } else {
+        w = e_icon_image_width + 6;
+    }
+    if (((box->style->flags & 0xC) >> 2) == 1) {
+        h = box->style->height;
+    } else {
+        h = e_icon_image_height + 6;
+    }
+    if ((w == 0) | (h == 0)) {
+        h = 0;
+        w = 0;
+    }
+    attr_ALIGN_image(node, box);
+    if (M2C_FIELD(box->style, s8 *, 0x71)) {
+        box->display = 2;
+    }
+    attr_HSPACE(node, box);
+    attr_VSPACE(node, box);
+    s = getDOMAttributeValue(node, &_DOMalt);
+    if (s != NULL) {
+        M2C_FIELD(box->geom, char **, 0x18) = s;
+    } else {
+        M2C_FIELD(box->geom, char **, 0x18) = NULL;
+    }
+    if (s != NULL) {
+        if (!(box->style->flags & 3)) {
+            GUI_Graphics_getStringSize(box->style->unk64, s, strlen(s), &tw, &th);
+            if (tw <= 0) {
+                w = e_icon_image_width + 6;
+            } else {
+                w = e_icon_image_width + tw + 9;
+            }
+        }
+        if (!(box->style->flags & 0xC)) {
+            h = e_icon_image_height + 9;
+        }
+    }
+    applyCSSExtStyleSheetToBox(node, box);
+    applyCSSInlinePropertyToBox(node, box);
+    M2C_FIELD(box->geom, int *, 0xC) = w;
+    M2C_FIELD(box->geom, int *, 0x10) = h;
+    initImageBoxSize(box, w, h);
+    if (M2C_FIELD(ui_global, int *, 0x98) != 0) {
+        return 0;
+    }
+    if (box->html == 0x31) {
+        s = getDOMAttributeValue(node, &_DOMsrc);
+    } else {
+        s = getDOMAttributeValue(node, &_DOMdata);
+    }
+    if (s == NULL) {
+        return -1;
+    }
+    url = lo_fullUrl(box, s);
+    if (url == NULL) {
+        return -1;
+    }
+    if (strncasecmp(url, "proc", 4) != 0) {
+        requestImageData(box, url, M2C_FIELD(body->geom, int *, 0x38));
+        MEM_free(0, (int)url);
+        ret = 0;
+    } else {
+        M2C_FIELD(box->geom, int *, 0) = 0;
+        M2C_FIELD(box->geom, char **, 0x28) = url;
+        M2C_FIELD(box->geom, int *, 0x14) = 3;
+        ret = 1;
+    }
+    return ret;
+}
 
 BOX *html_IMG(void *node, BOX *parent, BOX *prev) {
     BOX *box = createBox(node, 1);
