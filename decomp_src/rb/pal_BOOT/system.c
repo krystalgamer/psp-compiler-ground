@@ -26,7 +26,37 @@ extern MOD_INFO minfo[5];
 extern StrFile strFile;
 extern SceUID th_id;
 
-INCLUDE_ASM("tmp/asm/rb/pal_BOOT/nonmatchings/system", load_module);
+static int load_module(void)
+{
+	SceKernelLMOption kMode;
+	SceKernelLMOption uMode;
+	SceKernelLMOption *pMode;
+	int mresult;
+	int i;
+
+	kMode.size = sizeof(kMode);
+	kMode.mpidtext = 1;
+	kMode.mpiddata = 1;
+	kMode.position = 0;
+	kMode.access = 1;
+	uMode.size = sizeof(uMode);
+	uMode.mpidtext = 2;
+	uMode.mpiddata = 2;
+	uMode.position = 0;
+	uMode.access = 1;
+
+	for (i = 0; i < sizeof(minfo) / sizeof(MOD_INFO); i++) {
+		if (minfo[i].mode == 0)
+			pMode = &kMode;
+		else
+			pMode = &uMode;
+		while ((minfo[i].mid = sceKernelLoadModule(minfo[i].path, 0, pMode)) < 0)
+			;
+		while (sceKernelStartModule(minfo[i].mid, 0, NULL, &mresult, NULL) < 0)
+			;
+	}
+	return 0;
+}
 
 static int unload_module(void)
 {

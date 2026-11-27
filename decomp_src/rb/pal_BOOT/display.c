@@ -181,7 +181,31 @@ SceInt32 dispbuf_pos(t_displayBuffer *pDisp, int x, int y);
 SceInt32 dispbuf_func(SceSize size, void *argp);
 
 
-INCLUDE_ASM("tmp/asm/rb/pal_BOOT/nonmatchings/display", init_all);
+static int init_all(t_displayBuffer *pDisp)
+{
+	sceGuStart(0, disp_list, sizeof(disp_list));
+	sceGuDrawBuffer(3, (void *)0, 512);
+	sceGuDispBuffer(480, 272, (void *)0x88000, 512);
+	sceGuOffset(0, 0);
+	sceGuScissor(0, 0, 480, 272);
+	sceGuEnable(2);
+	sceGuDisable(1);
+	sceGuTexFunc(0, 1);
+	sceGuTexFilter(1, 1);
+	sceGuTexWrap(1, 1);
+	sceGuEnable(9);
+	sceGuBlendFunc(0, 2, 3, 0, 0);
+	sceGuDisable(4);
+	sceGuColor(0xFFFFFFFF);
+	sceGuClearDepth(0);
+	sceGuClearStencil(0);
+	sceGuClearColor(0);
+	sceGuFinish();
+	sceGuSync(0, 0);
+	sceDisplayWaitVblankStart();
+	sceGuDisplay(1);
+	return 0;
+}
 
 INCLUDE_ASM("tmp/asm/rb/pal_BOOT/nonmatchings/display", set_blink);
 
