@@ -169,7 +169,10 @@ int _getpid(void)
 	return -1;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/kernel_bridge", free_heap);
+void free_heap(void)
+{
+	sceKernelFreePartitionMemory(mbid);
+}
 
 void *_sbrk(int incr)
 {
