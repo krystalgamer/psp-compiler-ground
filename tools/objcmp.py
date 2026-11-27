@@ -230,7 +230,10 @@ if __name__ == "__main__":
     sys.path.insert(0, str(Path(__file__).resolve().parent))
     args = [a for a in sys.argv[1:] if not a.startswith("-")]
     target, module, objs = args[0], args[1], args[2:]
-    res = compare(module_funcs(target, module), objs)
+    # -v: side by side of the first differing function; -v=FUNC: of FUNC
+    v = next((a for a in sys.argv[1:] if a == "-v" or a.startswith("-v=")), None)
+    res = compare(module_funcs(target, module), objs,
+                  verbose=(v[3:] if v and v.startswith("-v=") else bool(v)))
     for fn in sorted(res):
         print(f"{res[fn]:14} {fn}")
     same = sum(1 for v in res.values() if v == "same")
