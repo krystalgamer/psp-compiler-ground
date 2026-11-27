@@ -18,7 +18,60 @@ extern int y;
 extern int w;
 extern int h;
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_nettest", test);
+typedef struct { int f0, f4, x, y, w, h; u8 _p[0x3F0 - 0x18]; } NETDATA;
+extern NETDATA netdata[];
+unsigned int pad_tr(void);
+unsigned int pad_sw(void);
+void net_pauseset(void);
+int net_mynumget(void);
+int net_errorget(void);
+int net_entryget(void);
+void debug_text(int x, int y, char *str);
+int sprintf(char *, const char *, ...);
+void test(void)
+{
+	char buf[64];
+	int i, px, py, pw, ph;
+	NETDATA *p;
+
+	if (pad_tr() & 0x400080)
+		x--;
+	else if (pad_tr() & 0x800020)
+		x++;
+	else if (pad_tr() & 0x100010)
+		y--;
+	else if (pad_tr() & 0x200040)
+		y++;
+	else if (pad_tr() & 0x2000)
+		h--;
+	else if (pad_tr() & 0x4000)
+		h++;
+	else if (pad_tr() & 0x8000)
+		w--;
+	else if (pad_tr() & 0x1000)
+		w++;
+	else if (pad_sw() & 8)
+		net_pauseset();
+	netdata[net_mynumget()].x = x;
+	netdata[net_mynumget()].y = y;
+	netdata[net_mynumget()].w = w;
+	netdata[net_mynumget()].h = h;
+	p = netdata;
+	for (i = 0; i < 2; i++, p++) {
+		px = p->x;
+		py = p->y;
+		pw = p->w;
+		ph = p->h;
+		if (i == 0)
+			poly_set(px, py, pw, ph, 0, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 2, 2, 1, 255);
+		else if (i == 1)
+			poly_set(px, py, pw, ph, 0, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 2, 2, 1, 255);
+	}
+	sprintf(buf, "net_error %d", net_errorget());
+	debug_text(0, 56, buf);
+	sprintf(buf, "net_entryget %d", net_entryget());
+	debug_text(0, 64, buf);
+}
 
 extern char *AutoNetMsgTbl_80A38[];
 void net_init(void);
