@@ -58,6 +58,7 @@ typedef struct { int f0, f4, f8, fC; void *f10; } TAMA;
 extern TAMA ztama[], etama[];
 
 void SprFree(void *p);
+void se_start(int no);
 
 char *GetMessageNickName(void);
 int strlen(const char *s);
