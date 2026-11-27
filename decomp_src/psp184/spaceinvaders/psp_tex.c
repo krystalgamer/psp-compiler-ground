@@ -275,7 +275,106 @@ void sprite_bg_disp(void)
 	sceGuEnable(1);
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_tex", sprite_scr_disp);
+extern int spr_pri_co[];
+extern int sprite_disp_max;
+unsigned int sceKernelGetSystemTimeLow(void);
+extern int sprite_disp_time;
+int inv_screffect_pri_get(void);
+int inv_scrdisp_pri_get(void);
+int inv_font_pri_get(void);
+int sprite_screencopy_pri_get(void);
+int inv_screffect_disp(void);
+int inv_scrdisp_disp(void);
+int inv_font_disp(void);
+int sprite_screencopy_disp(void);
+void sprite_scr_disp(void)
+{
+	unsigned int t;
+	int i, cur, pri, d0, d1, d2, d3;
+	int *s;
+
+	sprite_disp_time = 0;
+	t = sceKernelGetSystemTimeLow();
+	sceGuDisable(1);
+	sceGuDisable(5);
+	sceGuDisable(10);
+	if (sprite_max == 0) {
+		if (inv_font_pri_get() < sprite_screencopy_pri_get()) {
+			inv_screffect_disp();
+			inv_scrdisp_disp();
+			inv_font_disp();
+			sprite_screencopy_disp();
+		} else {
+			inv_screffect_disp();
+			inv_scrdisp_disp();
+			sprite_screencopy_disp();
+			inv_font_disp();
+		}
+		sceGuEnable(1);
+		sceGuEnable(5);
+		sceGuEnable(10);
+	} else {
+		sceGuEnable(9);
+		sceGuTexFunc(0, 1);
+		sceGuTexMapMode(0, 0, 0);
+		sceGuTexWrap(0, 0);
+		sceGuTexFilter(1, 1);
+		cur = -1;
+		d0 = 0;
+		d1 = 0;
+		d2 = 0;
+		d3 = 0;
+		for (i = 0; i < sprite_max; i++) {
+			pri = spr_pri_co[i];
+			if (d0 == 0 && pri >= inv_screffect_pri_get()) {
+				d0 = 1;
+				if (inv_screffect_disp())
+					cur = -1;
+			}
+			if (d1 == 0 && pri >= inv_scrdisp_pri_get()) {
+				d1 = 1;
+				if (inv_scrdisp_disp())
+					cur = -1;
+			}
+			if (d2 == 0 && pri >= inv_font_pri_get()) {
+				d2 = 1;
+				if (inv_font_disp())
+					cur = -1;
+			}
+			if (d3 == 0 && pri >= sprite_screencopy_pri_get()) {
+				d3 = 1;
+				if (sprite_screencopy_disp())
+					cur = -1;
+			}
+			s = (int *)&sprite[spr_co[i]];
+			if (s[0] == 0)
+				continue;
+			if (s[4] != 2)
+				continue;
+			if (cur != s[2]) {
+				cur = s[2];
+				if (cur != -1)
+					set_texture(cur);
+			}
+			set_packet_scr(spr_co[i]);
+			sprite_disp_max++;
+		}
+		if (d0 == 0)
+			inv_screffect_disp();
+		if (d1 == 0)
+			inv_scrdisp_disp();
+		if (d2 == 0)
+			inv_font_disp();
+		if (d3 == 0)
+			sprite_screencopy_disp();
+		sceGuTexFilter(1, 1);
+		sceGuEnable(1);
+		sceGuEnable(5);
+		sceGuEnable(10);
+		sprite_max = 0;
+	}
+	sprite_disp_time = sceKernelGetSystemTimeLow() - t;
+}
 
 extern int bill_co[];
 extern int billbord_max, billbord_disp_max, billbord_disp_time;
