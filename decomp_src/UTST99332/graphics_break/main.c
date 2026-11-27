@@ -381,8 +381,28 @@ int pad_read(void) {
     return 1;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_break/nonmatchings/main", main);
+int main(void)
+{
+	menuInit();
 
-INCLUDE_RODATA("tmp/asm/UTST99332/graphics_break/nonmatchings/main", D_00011E60);
+	init_all();
 
-INCLUDE_RODATA("tmp/asm/UTST99332/graphics_break/nonmatchings/main", D_00011E64);
+	while (pad_read()) {
+		draw_frame();
+		prev_vcnt = cur_vcnt;
+		cur_vcnt = sceDisplayGetVcount();
+		sceDisplayWaitVblankStart();
+		fps = 60.0f / (cur_vcnt - prev_vcnt);
+		sceGuSwapBuffers();
+		frame_update();
+	}
+
+	sceGuTerm();
+
+	menuTerm(1, 2);
+
+	return 0;
+}
+
+const double D_00011E60 = 0.5;
+
