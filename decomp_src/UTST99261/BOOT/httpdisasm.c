@@ -1,6 +1,9 @@
 /* cflags: -O1 */
 #include "common.h"
 #include "dom_domi.h"
+void *MEM_malloc(int heap, unsigned int size);
+void *memcpy(void *d, const void *s, unsigned int n);
+#define HD_UPPER(c) ((unsigned char)((c) - 'a') < 26 ? (c) & ~0x20 : (c))
 typedef struct SDomiDocManager SDomiDocManager;
 extern int gDomiError;
 extern SDomiDocManager gDomiDocManager;
@@ -37,11 +40,29 @@ typedef struct SDomiDocumentType {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/httpdisasm", strlinecmp);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/httpdisasm", strlinevalue);
+int strlinevalue(const char *s)
+{
+    int v = 0;
+
+    while ((unsigned char)(*s - '0') < 10) {
+        v = v * 10 + *s - '0';
+        s++;
+    }
+    return v;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/httpdisasm", strlineword);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/httpdisasm", strlinedup);
+char *strlinedup(const char *s, int n)
+{
+    char *p = MEM_malloc(0, n + 1);
+
+    if (p == NULL)
+        return NULL;
+    memcpy(p, s, n);
+    p[n] = 0;
+    return p;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/httpdisasm", httpHeaderParse);
 
