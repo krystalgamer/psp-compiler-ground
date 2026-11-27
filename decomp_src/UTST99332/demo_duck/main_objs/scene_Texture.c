@@ -2,18 +2,38 @@
 /* cflags: -O3 -fno-exceptions */
 #undef __EXCEPTIONS
 #include "cxx/defer_asm.h"
+#define DEMO_STATICS_MATH
+#define DEMO_STATICS_IOSTREAM
 #include "../main.hpp"
 
-extern const char D_0016CF84[];
-extern const char D_0016CF8C[];     /* "\n" */
-extern const char D_0016CF90[];     /* "load failed\n" */
-extern const char D_0016CFA0[];     /* "load ok! \n" */
-extern const char D_0016CFAC[];     /* "pass1" */
-extern const char D_0016CFB4[];     /* "'s format is " */
-extern const char D_0016CFC4[];     /* "add_alpha" */
 #include "../gl.hpp"
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Texture", _Z41__static_initialization_and_destruction_0ii_94E70);
+/* the module's .ctors/.dtors refer to the static constructor/destructor */
+__asm__(".globl _GLOBAL__I__ZN5scene7Texture12debug_outputE");
+__asm__(".globl _GLOBAL__D__ZN5scene7Texture12debug_outputE");
+
+bool scene::Texture::debug_output;
+
+/* getTypeName/clone are inline (weak copies in the object's tail, emitted for the vtable) */
+SGL_LINKONCE_BEGIN
+inline const char *scene::Texture::getTypeName() const
+{
+    return "Texture";
+}
+
+inline common::handle<scene::Node> scene::Texture::clone(std::string suffix) const
+{
+    std::string name = getBasename();
+    name += suffix;
+    common::handle<Texture> h(new Texture(name.c_str(), false));
+    *h = *this;
+    h->setName(name.c_str());
+    h->_m._mapped = false;
+    while (h->getParentCount())
+        h->decrParentCount();
+    return h;
+}
+SGL_LINKONCE_END
 
 scene::Texture::Texture(std::string name, bool b)
     : Setup(name, b), _texid(0), _override_alpha(false), _alpha(128)
@@ -57,20 +77,20 @@ void scene::Texture::load()
         textures::Texture::OverrideAlpha(_alpha);
     } else
         textures::Texture::OverrideAlpha(-1);
-    common::Log() << _path.c_str() << D_0016CF8C;
+    common::Log() << _path.c_str() << "\n";
     _invalid = textures_Texture_load(_tex.t, _path.c_str()) < 0;
     textures::Texture::OverrideAlpha(-1);
     if (_invalid) {
-        common::Log() << D_0016CF90;
+        common::Log() << "load failed\n";
         return;
     }
-    common::Log() << D_0016CFA0;
+    common::Log() << "load ok! \n";
     if (!_tex.t.is32())
-        common::Log() << _path.c_str() << D_0016CFB4 << textures::FormatName(_tex.t.format()) << D_0016CF8C;
+        common::Log() << _path.c_str() << "'s format is " << textures::FormatName(_tex.t.format()) << "\n";
     if (!_texid)
         gl_GenTextures(1, &_texid);
     _tex.t.setFiltering((textures::Filtering)0);
-    _tex.t.setTextureFunc(_hint == D_0016CFAC ? (textures::TextureFunction)0 : (textures::TextureFunction)0);
+    _tex.t.setTextureFunc(_hint == "pass1" ? (textures::TextureFunction)0 : (textures::TextureFunction)0);
     textures_Texture_resizePow2(_tex.t, false, false, true);
     _tex.t.setWrapS((textures::Wrapping)1);
     _tex.t.setWrapT((textures::Wrapping)1);
@@ -85,7 +105,7 @@ void scene::Texture::enter()
         glDisable(GL_TEXTURE_2D);
     else {
         textures_Texture_setupGl(_tex.t, _texid, false);
-        if (_hint == D_0016CFC4)
+        if (_hint == "add_alpha")
             sceGuTexFunc(4, 1);
     }
 }
@@ -108,38 +128,3 @@ void scene::Texture::setOverrideAlpha(bool b, unsigned char a)
 
 void scene::Texture::flatten(math::TransformStack &) {
 }
-
-extern "C" {
-void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_94E70");
-void _GLOBAL__I__ZN5scene7Texture12debug_outputE(void);
-void _GLOBAL__D__ZN5scene7Texture12debug_outputE(void);
-}
-
-void _GLOBAL__I__ZN5scene7Texture12debug_outputE(void)
-{
-    static_init(1, 0xFFFF);
-}
-
-void _GLOBAL__D__ZN5scene7Texture12debug_outputE(void)
-{
-    static_init(0, 0xFFFF);
-}
-
-const char *scene::Texture::getTypeName() const
-{
-    return D_0016CF84;
-}
-
-common::handle<scene::Node> scene::Texture::clone(std::string suffix) const
-{
-    std::string name = getBasename();
-    name += suffix;
-    common::handle<Texture> h(new Texture(name.c_str(), false));
-    *h = *this;
-    h->setName(name.c_str());
-    h->_m._mapped = false;
-    while (h->getParentCount())
-        h->decrParentCount();
-    return h;
-}
-

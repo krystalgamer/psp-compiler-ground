@@ -417,6 +417,8 @@ segments:
       - [0x168E70, rodata, asm/rodata_168DF0]
       - [0x16C988, .rodata, main_objs/draw_mesh_enabled]
       - [0x16C998, rodata, asm/rodata_16C918]
+      - [0x16CFE8, .rodata, main_objs/scene_Texture]
+      - [0x16D050, rodata, asm/rodata_16CFD0]
       - [0x16D67C, .rodata, main_objs/VertexColorEnv]
       - [0x16D684, rodata, asm/rodata_16D604]
       - [0x16FF68, .rodata, main_objs/sgl_Mesh_4]
@@ -538,6 +540,8 @@ segments:
       - { start: 0x18CFCC, type: .bss, vram: 0x18EB6C, name: main_objs/math_SphericalCoord }
       - { start: 0x18CFCC, type: .bss, vram: 0x18EBEC, name: main_objs/math_ZYZ }
       - { start: 0x18CFCC, type: bss, vram: 0x18EC6C, name: bss_18EC6C }
+      - { start: 0x18CFCC, type: .bss, vram: 0x18FEEC, name: main_objs/scene_Texture }
+      - { start: 0x18CFCC, type: bss, vram: 0x18FF70, name: bss_18FF70 }
       - { start: 0x18CFCC, type: .bss, vram: 0x190E44, name: main_objs/math_TransformStackFunc }
       - { start: 0x18CFCC, type: bss, vram: 0x190EC4, name: bss_190EC4 }
       - { start: 0x18CFCC, type: .bss, vram: 0x190FC8, name: main_objs/sh_DebugMap }

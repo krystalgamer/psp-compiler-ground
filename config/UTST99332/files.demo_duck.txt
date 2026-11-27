@@ -321,3 +321,8 @@ bss 0x18D7D8 -
 0x109D90 libgum          1.6.1.internal  libgum.c
 0x10B4B0 libgu           1.6.1.internal  libgu.c
 0x144BB0 kernel_bridge   1.6.1.internal  kernel_bridge.c
+# scene_Texture: the header statics' float pool and its strings; .bss: the header statics, Texture::debug_output
+rodata 0x16CF68 main_objs/scene_Texture
+rodata 0x16CFD0 -
+bss 0x18FEEC main_objs/scene_Texture
+bss 0x18FF70 -
