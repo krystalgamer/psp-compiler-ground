@@ -1875,12 +1875,39 @@ void boss_laser_init(void)
 	}
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", boss_laser_start);
-
 typedef struct { int active, cnt; float ang, step, max; L2V3 st, ed, amp, pos; } BLZ_T;
-typedef struct { int f0, f4, f8, fc, f10, f14, f18, f1c, f20, f24, f28; float f2c, f30; int f34, f38, f3c, f40; L2V3 pos; int _p50[3]; float f5c, f60, f64, f68; int _p6c[6]; } BLP_T;
-/* both arrays live inside gmain: same base symbol, so the compiler may not disambiguate them */
+/* the laser and particle arrays live inside gmain: same base symbol, so the compiler may not disambiguate them */
 #define blz ((BLZ_T *)&gmain.b[0x1336C8])
+extern int D_004B6040;
+extern const double D_0007E788, D_0007E790;
+double genrand_real3(void);
+void boss_laser_start(L2V3 *st, L2V3 *ed, float step)
+{
+	int i;
+	BLZ_T *l;
+
+	if (D_004B6040 == 0)
+		return;
+	for (i = 0; i < 32; i++) {
+		l = &blz[i];
+		if (l->active == 0) {
+			l->step = step;
+			l->max = 90.0f;
+			l->ang = 0;
+			l->active = 1;
+			l->st = *st;
+			l->cnt = 0;
+			l->ed = *ed;
+			l->amp.x = (genrand_real3() - D_0007E788) * D_0007E790;
+			l->amp.y = (genrand_real3() - D_0007E788) * D_0007E790;
+			l->amp.z = (genrand_real3() - D_0007E788) * D_0007E790;
+			l->pos = *st;
+			return;
+		}
+	}
+}
+
+typedef struct { int f0, f4, f8, fc, f10, f14, f18, f1c, f20, f24, f28; float f2c, f30; int f34, f38, f3c, f40; L2V3 pos; int _p50[3]; float f5c, f60, f64, f68; int _p6c[6]; } BLP_T;
 #define blp ((BLP_T *)&gmain.b[0x135B48])
 int hit_check_shield(float *pos, float r);
 int hit_check_player(float *pos, float r);
