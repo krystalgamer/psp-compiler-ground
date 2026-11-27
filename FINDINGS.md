@@ -615,6 +615,11 @@ libgcc/libsupc++ DWARF names `gcc-3.3.6/` paths.
   the 3.3.3 libgcc2/dp-bit/fp-bit/unwind-dw2 sources still reproduce
   1.9.2's libgcc, and the 3.3.6 libsupc++ (eh_*.cc, tinfo.cc) built by
   `cc1plus-1.9.2` reproduces all 8 C++ units.
+- Beyond that expr.c change and the `ins` pattern, nothing else in
+  3.3.4–3.3.6 has shown: a 1.8.4 tree with both (`cc1-184ins` with
+  3.3.6's expr.c) compiles every C unit of rs4_main (94 units, about
+  1,300 functions: newlib, libgcc, SDK libraries, middleware, game code)
+  exactly like the 1.9.2 tree.
 - **Register ext/ins are on by default** (`-mext` in
   `config/compilers.txt`): 1.9.2's newlib and libgcc use them, and so does
   the SDK's libgim_picture although its Makefile (SDK 6.6.0
@@ -638,6 +643,12 @@ libgcc/libsupc++ DWARF names `gcc-3.3.6/` paths.
   tied operand causes), libsupc++'s `read_encoded_value_with_base`
   (`& ~3`), libgu (12 more functions than without it).  App code has 940
   `ins`, about a third with `$0`.
+- rs4_main's own build flags (the game's, not the compiler's): its game
+  code (src/app, dev, lib, fw, script, menu_mod) is `-Os` (m2c drafts match
+  only with it; `ctrlTrgProc`'s block layout), the middleware (i3d*, sgx*,
+  bin_common, libwave, libsas) `-O2`, the SDK libraries as their Makefiles
+  say (`-O4`, gim_picture `-O2 -std=gnu9x`).  None of these depends on the
+  cc1: 1.6.1 and 1.8.4 give the same code.
 - Everything else that differs is source: SDK 6.6.0 vs the module's SDK
   (struct layouts in libgu and gim_picture, `sceGumMultQuaternion`
   missing), Sony's newer newlib (`_REENT` is `__getreent()`, i.e.
