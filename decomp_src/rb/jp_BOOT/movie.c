@@ -557,7 +557,108 @@ int MovieStat(void)
 	return 1;
 }
 
-INCLUDE_ASM("tmp/asm/rb/jp_BOOT/nonmatchings/movie", MovieStart);
+long long strFileLseek(StrFile *file, long long offset, SceInt32 whence);
+int MovieStart(void)
+{
+	SceInt32 audioEsSize;
+	SceInt32 audioOutSize;
+	int fs;
+	int ret;
+
+	if (menu_list.selected == 1) {
+		audioFlag = 1;
+		readFlag = 1;
+	} else {
+		audioFlag = 0;
+		readFlag = 0;
+	}
+	if (readFlag == 0) {
+		pthumbBuf = thumbBuf + pinfo[menu_list.current].tstart;
+		thumbRest = fs = pinfo[menu_list.current].tsize;
+	} else {
+		if (strFileLseek(&strFile, streamOffset + pinfo[menu_list.current].start, 0) < 0)
+			return -1;
+		fs = pinfo[menu_list.current].size + 0x1000;
+	}
+	pStream[0] = sceMpegRegistStream(&mpeg, 0, 0);
+	if (pStream[0] == NULL) {
+		printf("fatal error : sceMpegRegistStream() AVC\n");
+		return -1;
+	}
+	if (audioFlag) {
+		pStream[1] = sceMpegRegistStream(&mpeg, 1, 0);
+		if (pStream[1] == NULL) {
+			printf("fatal error : sceMpegRegistStream() ATRAC\n");
+			return -1;
+		}
+	}
+	avcEsBuf = sceMpegMallocAvcEsBuf(&mpeg);
+	if (avcEsBuf == NULL) {
+		printf("fatal error : sceMpegMallocAvcEsBuf()\n");
+		return -1;
+	}
+	ret = sceMpegInitAu(&mpeg, avcEsBuf, &avcAu);
+	if (ret != 0) {
+		printf("fatal error : sceMpegInitAu() AVC %x\n", ret);
+		return -1;
+	}
+	if (audioFlag) {
+		ret = sceMpegQueryAtracEsSize(&mpeg, &audioEsSize, &audioOutSize);
+		if (ret != 0) {
+			printf("fatal error : sceQueryAtracEsSize() %x\n", ret);
+			return -1;
+		}
+		pAudioBuf = memalign(64, audioEsSize);
+		if (pAudioBuf == NULL) {
+			printf("fatal error : memalign audioEsSize\n");
+			return -1;
+		}
+		ret = sceMpegInitAu(&mpeg, pAudioBuf, &atracAu);
+		if (ret != 0) {
+			printf("fatal error : sceMpegInitAu() %x\n", ret);
+			return -1;
+		}
+	}
+	mpegStreamData.pAvcStream = pStream[0];
+	mpegStreamData.pAtracStream = pStream[1];
+	mpegStreamData.pAvcAu = &avcAu;
+	mpegStreamData.pAtracAu = &atracAu;
+	if (dispbuf_create(&displayCtrl, 0x88000, 1, decodeMode.iPixelFormat) < 0) {
+		printf("fatal error : dispbuf_create()\n");
+		return -1;
+	}
+	if (audioFlag) {
+		if (soundbuf_create(&soundCtrl, audioOutSize, 4) < 0) {
+			printf("fatal error : soundbuf_create()\n");
+			return -1;
+		}
+	}
+	if (read_create(&readCtrl, &ringbuf) < 0) {
+		printf("fatal error : read_create()\n");
+		return -1;
+	}
+	if (avsync_create(&avSync, &displayCtrl, &soundCtrl, 3) < 0) {
+		printf("fatal error : avsync_create()\n");
+		return -1;
+	}
+	if (audioFlag)
+		soundbuf_init(&soundCtrl);
+	dispbuf_init(&displayCtrl);
+	avsync_init(&avSync);
+	read_init(&readCtrl, fs);
+	{
+		MOVIE_LIST *pMv;
+
+		pMv = &movie_list[menu_list.current];
+		dispbuf_scale(&displayCtrl, menu_list.selected);
+		dispbuf_pos(&displayCtrl, pMv->posx, pMv->posy);
+	}
+	if (audioFlag)
+		sceKernelStartThread(soundThread, sizeof(t_avSyncControl), &avSync);
+	sceKernelStartThread(dispThread, sizeof(t_avSyncControl), &avSync);
+	sceKernelStartThread(readThread, sizeof(t_ringBuffer), &readCtrl);
+	return 0;
+}
 
 int MovieEnd(void)
 {
