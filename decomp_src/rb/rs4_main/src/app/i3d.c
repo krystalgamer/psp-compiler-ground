@@ -58,6 +58,13 @@ int copLetMat();
 int i3dAttachProc();
 
 int I3dRender__BeginScene(int);
+extern unsigned char D_000FCE5C, D_000FCF68, D_000FCF6C, D_000FCF70;
+int resCmpExt(void *, void *);
+int i3dAsmImg();
+int i3dAsmMdl();
+int i3dAsmMot();
+int i3dReleaseImg();
+int I3dPicture__Destruct(void *);
 int i3dMakeStage(int, int, float);
 int i3dSetTex();
 extern unsigned char D_000FD358;
@@ -170,21 +177,39 @@ int i3dAsmHit(void *arg0, int arg1) {
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d", i3dReleaseImg);
 
-int i3dReleaseMdl(void) {
+int i3dReleaseMdl() {
     return 1;
 }
 
-int i3dReleaseMot(void) {
+int i3dReleaseMot() {
     return 1;
 }
 
-int i3dReleaseHit(void) {
+int i3dReleaseHit() {
     return 1;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d", i3dAsmRes);
+int i3dAsmRes(void *name, int a)
+{
+	int ret;
+	if (resCmpExt(name, &D_000FCE5C) == 0) ret = i3dAsmImg(name, a);
+	else if (resCmpExt(name, &D_000FCF68) == 0) ret = i3dAsmMdl(name, a);
+	else if (resCmpExt(name, &D_000FCF6C) == 0) ret = i3dAsmMot(name, a);
+	else if (resCmpExt(name, &D_000FCF70) == 0) ret = i3dAsmHit(name, a);
+	else ret = 0;
+	return ret;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d", i3dReleaseRes);
+int i3dReleaseRes(void *name)
+{
+	int ret;
+	if (resCmpExt(name, &D_000FCE5C) == 0) ret = i3dReleaseImg(name);
+	else if (resCmpExt(name, &D_000FCF68) == 0) ret = i3dReleaseMdl(name);
+	else if (resCmpExt(name, &D_000FCF6C) == 0) ret = i3dReleaseMot(name);
+	else if (resCmpExt(name, &D_000FCF70) == 0) ret = i3dReleaseHit(name);
+	else ret = 0;
+	return ret;
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d", D_000FCF68);
 
