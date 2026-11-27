@@ -1,3 +1,4 @@
+/* data-align: 16 */
 #include "common.h"
 
 /* sinf, cosf and sqrtf are not declared: the builtins (pure, sqrtf inline) */

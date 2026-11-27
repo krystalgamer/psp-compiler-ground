@@ -1,3 +1,4 @@
+/* cflags: -O2 -fmerge-constants */
 #include "common.h"
 
 /* declarations recovered from DWARF */
@@ -289,14 +290,6 @@ INCLUDE_RODATA("tmp/asm/UTST99332/menu/nonmatchings/draw", D_00017190);
 
 INCLUDE_RODATA("tmp/asm/UTST99332/menu/nonmatchings/draw", D_0001719C);
 
-INCLUDE_RODATA("tmp/asm/UTST99332/menu/nonmatchings/draw", D_000171A8);
-
-INCLUDE_RODATA("tmp/asm/UTST99332/menu/nonmatchings/draw", D_000171D0);
-
-INCLUDE_RODATA("tmp/asm/UTST99332/menu/nonmatchings/draw", D_000171F8);
-
-INCLUDE_RODATA("tmp/asm/UTST99332/menu/nonmatchings/draw", D_0001721C);
-
 extern const ScePspFVector3 D_00017184, D_00017190;
 void DrawDice(float scale)
 {
@@ -482,9 +475,92 @@ void DrawItemSelect(void) {
     sceGuDrawSprite(0x8C, 0x24, 0, 0, 0, 0, 0);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/menu/nonmatchings/draw", _RetItemMove);
+static float _RetItemMove(int pos)
+{
+	float move = 0.0f;
 
-INCLUDE_ASM("tmp/asm/UTST99332/menu/nonmatchings/draw", _UpdateItemPos);
+	if (itemlist.dir == 0) {
+		switch (pos) {
+		case 0: move = -7.0f; break;
+		case 1: move = -5.25f; break;
+		case 2: move = -5.25f; break;
+		case 3: move = -6.25f; break;
+		case 4: move = -8.25f; break;
+		case 5: move = -8.25f; break;
+		case 6: move = -6.25f; break;
+		case 7: move = -5.25f; break;
+		case 8: move = -5.25f; break;
+		case 9: move = -7.0f; break;
+		}
+	} else {
+		switch (pos) {
+		case -1: move = 7.0f; break;
+		case 0: move = 5.25f; break;
+		case 1: move = 5.25f; break;
+		case 2: move = 6.25f; break;
+		case 3: move = 8.25f; break;
+		case 4: move = 8.25f; break;
+		case 5: move = 6.25f; break;
+		case 6: move = 5.25f; break;
+		case 7: move = 5.25f; break;
+		case 8: move = 7.0f; break;
+		}
+	}
+	return move;
+}
+
+INCLUDE_RODATA("tmp/asm/UTST99332/menu/nonmatchings/draw", D_000171F8);
+
+INCLUDE_RODATA("tmp/asm/UTST99332/menu/nonmatchings/draw", D_0001721C);
+
+
+static void _UpdateItemPos(void)
+{
+	DRAWITEM *p, *n;
+	int sp, st, tex, i;
+
+	if (itemlist.dir == 0) {
+		p = drawitem;
+		sp = p->pos - 1;
+		st = p->tex;
+	} else {
+		p = drawitem;
+		sp = p->pos + 1;
+		st = p->tex;
+	}
+	for (i = 0; i < 11; i++) {
+		drawitem[i].pos = sp + i;
+		drawitem[i].tex = st + i;
+	}
+	if (itemlist.dir == 0 && sp == -2) {
+		for (i = 0; i < 10; i++) {
+			p = &drawitem[i];
+			n = &drawitem[i + 1];
+			p->pos = n->pos;
+			p->x = n->x;
+			tex = n->tex;
+			p->tex = tex;
+		}
+		p = &drawitem[i];
+		p->pos = 9;
+		p->x = 496.0f;
+		p->tex = tex + 1;
+	}
+	if (itemlist.dir != 0 && sp == 0 && st > 0) {
+		for (i = 10; i > 0; i--) {
+			p = &drawitem[i];
+			n = &drawitem[i - 1];
+			p->pos = n->pos;
+			p->x = n->x;
+			tex = n->tex;
+			p->tex = tex;
+		}
+		p = &drawitem[i];
+		p->pos = -1;
+		p->x = -16.0f;
+		p->tex = tex - 1;
+	}
+}
 
 void InitItemList(int max)
 {
@@ -602,7 +678,42 @@ int DrawItemListOpen(int count)
 	return ret;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/menu/nonmatchings/draw", DrawItemListAnim);
+void DrawSprite(float x, float y, float w, float h, int u, int v);
+int GetItem(int cat, int num);
+int DrawItemListAnim(void)
+{
+	DRAWITEM *p;
+	int ret;
+	int i, n;
+
+	ret = 0;
+	for (i = 0; i < 11; i++) {
+		p = &drawitem[i];
+		if (p->tex > itemlist.max - 1)
+			continue;
+		p->x += _RetItemMove(p->pos);
+	}
+	sceGuEnable(9);
+	for (i = 0; i < 11; i++) {
+		p = &drawitem[i];
+		if (p->pos < -1 || p->pos >= 10)
+			continue;
+		{
+			n = GetItem(menu->cat, p->tex);
+			sceGuClutMode(1, 0, 0xff, 0);
+			sceGuClutLoad(1, clut_4bit[n]);
+			sceGuTexMode(4, 0, 0, 0);
+			sceGuTexImage(0, 64, 64, 64, pix_4bit[n]);
+			sceGuColor(itemlist_col[p->pos]);
+			DrawSprite(p->x - p->w * 0.5f, p->y - p->h * 0.5f, p->w, p->h, 64, 36);
+		}
+	}
+	if (++itemlist.anim >= 8) {
+		_UpdateItemPos();
+		ret = 1;
+	}
+	return ret;
+}
 
 void DrawSprite(float x, float y, float w, float h, int u, int v);
 int GetItem(int cat, int num);
@@ -659,7 +770,53 @@ void DrawItemList(void)
 	}
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/menu/nonmatchings/draw", SetItemSelect);
+void SetItemSelect(int n)
+{
+	DRAWITEM *p;
+	int i, j, max, count, ret;
+
+	count = 0;
+	ret = 0;
+	do {
+		max = 5;
+		if (itemlist.max < 5)
+			max = itemlist.max;
+		if (count == 0)
+			drawitem[0].move = 16.0f;
+		else if (count == 6)
+			drawitem[1].move = 16.0f;
+		else if (count == 10)
+			drawitem[2].move = 16.0f;
+		else if (count == 14)
+			drawitem[3].move = 16.0f;
+		else if (count == 18)
+			drawitem[4].move = 16.0f;
+		for (i = 0; i < max; i++) {
+			p = &drawitem[i];
+			p->x -= p->move;
+			if (p->move != 0.0f && p->x <= table_item[i]) {
+				p->x = table_item[i];
+				p->move = 0.0f;
+				if (i == max - 1)
+					ret = 1;
+			}
+		}
+		count++;
+	} while (ret == 0);
+	for (count = 0; count < n; count++) {
+		for (j = 0; j < 8; j++) {
+			for (i = 0; i < 11; i++) {
+				p = &drawitem[i];
+				if (p->tex > itemlist.max - 1)
+					continue;
+				p->x += _RetItemMove(p->pos);
+			}
+			for (i = 0; i < 11; i++)
+				;
+		}
+		_UpdateItemPos();
+	}
+}
 
 void InitLR(void) {
     lr.flag = 0;
