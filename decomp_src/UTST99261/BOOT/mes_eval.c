@@ -1,6 +1,9 @@
 /* cflags: -O1 */
 #include "common.h"
 #include "m2c_macros.h"
+extern void *D_00585334, *D_00585350, *D_00585364;
+extern unsigned int D_005852A0;
+struct EvCtx;
 typedef struct EvSc {
     char pad[0x14];
     unsigned char type;               /* 0x14 */
@@ -460,7 +463,43 @@ int mes_eval_object_put(int a, int b, int c, int d)
     return mes_eval_object_set(a, b, c, d, 8);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_eval", mes_eval_object_put2);
+int mes_eval_object_put2(EvCtx *ctx, int obj, unsigned int id, int v)
+{
+    if (obj == 0)
+        return 0;
+    switch ((unsigned int)obj & 3) {
+    case 0:
+        if (obj == 4)
+            return 0;
+        if (obj == 0xC || obj == 8)
+            return mes_eval_object_canput(ctx, (EvObj *)D_00585334, id);
+        if ((unsigned int)(obj - 0x10) <= 0xC)
+            return mes_eval_object_canput(ctx, (EvObj *)D_00585350, id);
+        break;
+    case 1:
+    case 2:
+        return mes_eval_object_canput(ctx, (EvObj *)D_00585350, id);
+    case 3:
+        if (id == D_005852E4)
+            return 0;
+        return mes_eval_object_canput(ctx, (EvObj *)D_00585364, id);
+    }
+    if (v == 0x20)
+        return mes_eval_object_delete(ctx, (void *)obj, id) == 0xC;
+    if (id == D_005852A0) {
+        if (v == 0 || v == 4)
+            M2C_FIELD(obj, int *, 8) = 0;
+        else
+            M2C_FIELD(obj, int *, 8) = mes_eval_to_object(ctx, v);
+        return 1;
+    }
+    if ((*(EvGc **)obj)->f14 != 0) {
+        ((int (*)(EvCtx *, int, unsigned int, int))(*(EvGc **)obj)->f14)(ctx, obj, id, v);
+        return 1;
+    }
+    mes_object_set(obj, id, v, 8);
+    return 1;
+}
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/mes_eval", D_0013B3E0);
 
