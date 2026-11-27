@@ -88,7 +88,124 @@ int ps_i2306(PsIpc *msg) {
     return 7;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/ps_i2300", ps_i2308);
+int ps_i2308(PsIpc *msg) {
+    PsIpc m;
+    struct {
+        int x00;
+        PsIpc body;
+    } q;
+    int *node;
+    int *n;
+    int r;
+    int i;
+    int js;
+    int css;
+    int flag;
+
+    node = NULL;
+    flag = 0;
+    if (msg->x14 != 0) {
+        n = ps_ExternalSearchSessionHistoryNode(msg->x04, msg->x14);
+        if (n == NULL) {
+            goto notfound;
+        }
+        HST_setRequestFlag(n, 4);
+    } else {
+        node = HST_searchSessionIDHistoryNode(msg->x04);
+        if (node == NULL) {
+        notfound:
+            if (msg->x18 != 0) {
+                MEM_free(0, msg->x1C);
+            }
+            return buf_ps_sts;
+        }
+        if (msg->x08 == 1) {
+            r = ps_ParseDomBuildCall(msg);
+            if (r != 0) {
+                q.body = *msg;
+                if (OS_mq_send(mq_js, &q, sizeof(q), 0) < 0) {
+                    ps_halt("Parser : mq_js,(char*)&pmbox failed");
+                }
+                return r;
+            }
+        }
+        node[15] = 4;
+    }
+    if (msg->x14 == 0) {
+        js = HST_getJSURIlen(node);
+        css = HST_getCSSURIlen(node);
+        if ((js | css) == 0) {
+            flag = 0;
+            goto term;
+        }
+        for (i = 0; i < js; i++) {
+            if (HST_getJSURI(node, i + 1)[15] != 4) {
+                flag = 1;
+                break;
+            }
+        }
+        for (i = 0; i < css; i++) {
+            if (HST_getCSSURI(node, i + 1)[15] != 4) {
+                flag = 1;
+                break;
+            }
+        }
+        if (flag == 0) {
+        term:
+            ps_DomTerm(msg->x04);
+            initMPL_REQ_LOAD_PAGE(&m);
+            m.x04 = msg->x04;
+            m.x10 = 1;
+            ps_sndmsg(&m, 4);
+        }
+    } else {
+        node = ps_ExternalSearchSessionParentHistoryNode(msg->x04, msg->x14);
+        js = HST_getJSURIlen(node);
+        css = HST_getCSSURIlen(node);
+        for (i = 0; i < js; i++) {
+            if (HST_getJSURI(node, i + 1)[15] != 4) {
+                flag = 1;
+                break;
+            }
+        }
+        for (i = 0; i < css; i++) {
+            if (HST_getCSSURI(node, i + 1)[15] != 4) {
+                flag = 1;
+                break;
+            }
+        }
+        if (flag == 0 && node[15] == 4) {
+            ps_DomTerm(node[0x48 / 4]);
+            initMPL_REQ_LOAD_PAGE(&m);
+            m.x04 = node[0x48 / 4];
+            m.x10 = 1;
+            ps_sndmsg(&m, 4);
+        }
+    }
+    for (i = 1; i < 7; i++) {
+        if (i == 4 || i == 5) {
+            continue;
+        }
+        node = HST_searchRequestFlagHistoryNode(i);
+        if (node != NULL) {
+            return 8;
+        }
+    }
+    for (i = 1; i < 4; i++) {
+        if (i == 2) {
+            continue;
+        }
+        node = ps_ExternalSearchRequestFlag(i, 1);
+        if (node != NULL) {
+            return 8;
+        }
+        node = ps_ExternalSearchRequestFlag(i, 2);
+        if (node != NULL) {
+            return 8;
+        }
+    }
+    return 7;
+}
 
 int ps_i2309(PsIpc *msg) {
     PsIpc m;
