@@ -241,7 +241,13 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", Ne
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", NetISendMessage);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", ParseMessageList);
+int rt_parse_execute();
+extern int gaParseErrors[];
+void ParseMessageList(void *list, char *ctx, int a, int b, int c)
+{
+    int r = rt_parse_execute(ctx, list, a, b, c, 0);
+    if (ctx != NULL) gaParseErrors[*(int *)(ctx + 0x46C)] = r;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", RemoteClientDisconnectEvent);
 

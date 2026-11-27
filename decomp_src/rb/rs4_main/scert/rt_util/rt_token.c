@@ -6,7 +6,6 @@
 int rt_token_is_valid(unsigned int arg0);
 void rt_token_shutdown(int *arg0);
 M2C_UNK rt_memory_free(void *);                     /* extern */
-M2C_UNK rt_token_destroy_table(int);                /* extern */
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_token", rt_token_start);
 
@@ -75,7 +74,14 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_token", rt_token_
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_token", rt_token_expand_table);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_token", rt_token_destroy_table);
+void rt_token_destroy_table(int *t)
+{
+    if (t == NULL) return;
+    if (t[2] != 0) rt_memory_free(&t[2]);
+    t[2] = 0;
+    t[1] = 0;
+    t[0] = 0;
+}
 
 void rt_token_add_ownership(int idx, int owner, int *t) {
     if (t == NULL) return;
