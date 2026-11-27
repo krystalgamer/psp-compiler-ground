@@ -318,6 +318,8 @@ public:
 class LineSet {
 public:
     LineSet();
+    void begin(LineMode);
+    void color(Color);
     void end();
     bool ready() const;
     void set_negate_normals(bool);
@@ -346,7 +348,7 @@ public:
     float _crease;          /* 0x10 */
 };
 
-class MeshBuilder {
+class MeshBuilder : public math::TransformStackFunc /* @0x4 */, public MeshParams /* @0x74 */ {
 public:
     struct begin_var {
         begin_var(InputMode, BeginMode);
@@ -383,6 +385,9 @@ public:
     };
     virtual ~MeshBuilder();
     void grey(float);
+    void begin(InputMode, BeginMode);
+    void begin(BeginMode);
+    void end();
     void normal(Normal);
     void normal(float, float, float);
     void color(Color);
@@ -435,9 +440,21 @@ public:
     void vertexAt(int, Position);
     void vertexAt(int, float, float, float);
     void vertexAt(int, int, int, int, int);
-    char _p4[0xB0 - 4];
-    Mesh *_mesh;                /* 0xB0 */
-    char _pB4[4];
+    void setParams(const MeshParams &);
+    void transformListSnap();
+    void extrusionBegin(LineMode);
+    void finish();
+    void splineSetDim(unsigned int, unsigned int);
+    void splineTesselateU(unsigned int);
+    void splineTesselateV(unsigned int);
+    void splineCloseU(bool);
+    void splineCloseV(bool);
+    void splineFlipS(bool);
+    void splineFlipT(bool);
+    int _fAC;
+    Mesh &_mesh;                /* 0xB0 */
+    bool _fB4;
+    bool _finished_called;      /* 0xB5 */
     begin_var _var;             /* 0xB8 */
     extruded_var _ext;          /* 0x120 */
     spline_var _spline;         /* 0x1CC */
@@ -688,6 +705,8 @@ public:
     ~Env();
     void draw(bool);
     bool load(bool);
+    const std::string &getName() const { return _args.name; }
+    VectorRGB getSH() const { return _sh; }
     Args::Env _args;            /* 0x000 */
     VectorRGB _sh;              /* 0x03C */
     CubeMap _cube;              /* 0x06C */
@@ -710,6 +729,18 @@ public:
     void load();
     void next();
     void draw(bool);
+    /* TestEnvSet.h's asserts: a unit that inlines getEnv defines TESTENVSET_H_STRINGS and the TES_H_*
+       string labels of its object */
+    const Env &getEnv(EnvEnum _Enum) const
+#ifdef TESTENVSET_H_STRINGS
+    {
+        SGL_ASSERT(_Enum < MAX_ENV, TES_H_ERROR, TES_H_ENUM_TEXT, TES_H_FILE, TES_H_GETENV_FN, 77, TES_H_SEP);
+        SGL_ASSERT(_lights[_Enum].valid(), TES_H_ERROR, TES_H_VALID_TEXT, TES_H_FILE, TES_H_GETENV_FN, 78, TES_H_SEP);
+        return _lights[_Enum]->_env;
+    }
+#else
+    ;
+#endif
     std::vector<common::handle<TestEnv> > _lights;  /* 0x0 */
     int _current_light;                             /* 0xC */
 };

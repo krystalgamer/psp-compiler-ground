@@ -4,7 +4,35 @@
 #include "cxx/defer_asm.h"
 #include "../main.hpp"
 
+extern const char D_0016DC64[];     /* " *** error " */
+extern const char D_0016DC90[];     /* "../lib/sgl/MeshBuilder.cpp" */
+extern const char D_0016DD38[];     /* " " */
+extern const char D_0016DE60[];     /* "_var._write_primitive == BSPLINE" */
+extern const char D_0016E0E4[];     /* "! _finished_called" */
+#define MB_ASSERT(c, text, fn, line) SGL_ASSERT(c, D_0016DC64, text, D_0016DC90, fn, line, D_0016DD38)
+#define MB_PRETTY(n, s) extern const char n[] __asm__("_ZZN3sgl11MeshBuilder" s "E19__PRETTY_FUNCTION__")
+MB_PRETTY(splineSetDim_name, "12splineSetDimEjj");
+MB_PRETTY(splineTesselateU_name, "16splineTesselateUEj");
+MB_PRETTY(splineTesselateV_name, "16splineTesselateVEj");
+MB_PRETTY(splineCloseU_name, "12splineCloseUEb");
+MB_PRETTY(splineCloseV_name, "12splineCloseVEb");
+MB_PRETTY(splineFlipS_name, "11splineFlipSEb");
+MB_PRETTY(splineFlipT_name, "11splineFlipTEb");
+MB_PRETTY(finish_name, "6finishEv");
+MB_PRETTY(begin_name, "5beginENS_9InputModeENS_9BeginModeE");
+MB_PRETTY(vertexAt_name, "8vertexAtEiNS_8PositionE");
+MB_PRETTY(vertexAt3_name, "8vertexAtEifff");
+extern const char D_0016DCE8[];     /* "_mesh.locked()" */
+extern const char D_0016E06C[];     /* "_var._input_mode == INDEXED" */
+#define CHECK_BSPLINE(fn, line) MB_ASSERT(_var._write_primitive == 4, D_0016DE60, fn, line)
+unsigned int math_max_u(unsigned int, unsigned int) __asm__("_ZN4math4max_IjEET_S1_S1_");
+
 extern const float D_0016DB84;
+namespace std {
+extern template vector<bool> &vector<bool>::operator=(const vector<bool> &);
+extern template vector<float> &vector<float>::operator=(const vector<float> &);
+extern template vector<math::vector_xyzw> &vector<math::vector_xyzw>::operator=(const vector<math::vector_xyzw> &);
+}
 namespace common {
 extern template class t_array<sgl::Position>;
 extern template class t_array2d<sgl::Position>;
@@ -48,21 +76,56 @@ void sgl::MeshBuilder::grey(float g)
     color(g, g, g, 0);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_MeshBuilder_extruded_var_extruded_var", _ZN3sgl11MeshBuilder5beginENS_9InputModeENS_9BeginModeE);
+void sgl::MeshBuilder::begin(InputMode im, BeginMode bm)
+{
+    MB_ASSERT(_mesh.locked(), D_0016DCE8, begin_name, 106);
+    _var = begin_var(im, bm);
+    _mesh.unlock();
+    _mesh.snap_offsets();
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_MeshBuilder_extruded_var_extruded_var", _ZN3sgl11MeshBuilder5beginENS_9BeginModeE);
+void sgl::MeshBuilder::begin(BeginMode bm)
+{
+    begin(InputMode(1), bm);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_MeshBuilder_extruded_var_extruded_var", _ZN3sgl11MeshBuilder3endEv);
 
 void sgl::MeshBuilder::normal(Normal n)
 {
-    if (_var._write_primitive == 1)
+    switch (_var._write_primitive) {
+    case 0:
+        break;
+    case 1:
         _var._normal.set(n);
+        break;
+    case 2:
+        break;
+    case 3:
+        break;
+    case 4:
+        break;
+    }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_MeshBuilder_extruded_var_extruded_var", _ZN3sgl11MeshBuilder6normalEfff);
+void sgl::MeshBuilder::normal(float x, float y, float z)
+{
+    normal(Normal(x, y, z));
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_MeshBuilder_extruded_var_extruded_var", _ZN3sgl11MeshBuilder5colorENS_5ColorE);
+void sgl::MeshBuilder::color(Color c)
+{
+    switch (_var._write_primitive) {
+    case 1:
+        _var._color.set(c);
+        break;
+    case 2:
+    case 3:
+        _var._color.set(c);
+        _ext._lineset.color(c);
+        break;
+    }
+}
 
 void sgl::MeshBuilder::color(float r, float g, float b, float a)
 {
@@ -105,11 +168,25 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_MeshBuil
 
 void sgl::MeshBuilder::texcoord(TexCoord t)
 {
-    if (_var._write_primitive == 1)
+    switch (_var._write_primitive) {
+    case 0:
+        break;
+    case 1:
         _var._texcoord.set(t);
+        break;
+    case 2:
+        break;
+    case 3:
+        break;
+    case 4:
+        break;
+    }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_MeshBuilder_extruded_var_extruded_var", _ZN3sgl11MeshBuilder8texcoordEff);
+void sgl::MeshBuilder::texcoord(float u, float v)
+{
+    texcoord(TexCoord(u, v));
+}
 
 void sgl::MeshBuilder::vertex(Position p)
 {
@@ -158,7 +235,12 @@ void sgl::MeshBuilder::revolutionEndAngle(float a)
     _ext._end_angle = a;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_MeshBuilder_extruded_var_extruded_var", _ZN3sgl11MeshBuilder14extrusionBeginENS_8LineModeE);
+void sgl::MeshBuilder::extrusionBegin(LineMode m)
+{
+    _ext._lineset.begin(m);
+    if (_colorG.valid)
+        _ext._lineset.color(_colorG.value);
+}
 
 void sgl::MeshBuilder::extrusionEnd()
 {
@@ -185,7 +267,10 @@ void sgl::MeshBuilder::transformListBegin()
     _ext._tset.clear();
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_MeshBuilder_extruded_var_extruded_var", _ZN3sgl11MeshBuilder17transformListSnapEv);
+void sgl::MeshBuilder::transformListSnap()
+{
+    _ext._tset.add(getTransform());
+}
 
 void sgl::MeshBuilder::transformListEnd() {
 }
@@ -221,7 +306,11 @@ sgl::MeshBuilder::spline_var::spline_var()
 {
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_MeshBuilder_extruded_var_extruded_var", _ZN3sgl11MeshBuilder12splineSetDimEjj);
+void sgl::MeshBuilder::splineSetDim(unsigned int nx, unsigned int ny)
+{
+    CHECK_BSPLINE(splineSetDim_name, 761);
+    _spline._ctrl.resize(nx, ny);
+}
 
 void sgl::MeshBuilder::splineControlPoint(float x, float y, float z)
 {
@@ -237,19 +326,43 @@ void sgl::MeshBuilder::splineControlPoint(float x, float y, float z, unsigned in
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_MeshBuilder_extruded_var_extruded_var", _ZN3sgl11MeshBuilder18splineControlPointENS_8PositionEjj);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_MeshBuilder_extruded_var_extruded_var", _ZN3sgl11MeshBuilder16splineTesselateUEj);
+void sgl::MeshBuilder::splineTesselateU(unsigned int n)
+{
+    CHECK_BSPLINE(splineTesselateU_name, 802);
+    _spline._tessU = math_max_u(1, n);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_MeshBuilder_extruded_var_extruded_var", _ZN3sgl11MeshBuilder16splineTesselateVEj);
+void sgl::MeshBuilder::splineTesselateV(unsigned int n)
+{
+    CHECK_BSPLINE(splineTesselateV_name, 809);
+    _spline._tessV = math_max_u(1, n);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_MeshBuilder_extruded_var_extruded_var", _ZN3sgl11MeshBuilder10spline_var5resetEv);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_MeshBuilder_extruded_var_extruded_var", _ZN3sgl11MeshBuilder12splineCloseUEb);
+void sgl::MeshBuilder::splineCloseU(bool b)
+{
+    CHECK_BSPLINE(splineCloseU_name, 821);
+    _spline._closeU = b;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_MeshBuilder_extruded_var_extruded_var", _ZN3sgl11MeshBuilder12splineCloseVEb);
+void sgl::MeshBuilder::splineCloseV(bool b)
+{
+    CHECK_BSPLINE(splineCloseV_name, 828);
+    _spline._closeV = b;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_MeshBuilder_extruded_var_extruded_var", _ZN3sgl11MeshBuilder11splineFlipSEb);
+void sgl::MeshBuilder::splineFlipS(bool b)
+{
+    CHECK_BSPLINE(splineFlipS_name, 835);
+    _spline._flipS = b;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_MeshBuilder_extruded_var_extruded_var", _ZN3sgl11MeshBuilder11splineFlipTEb);
+void sgl::MeshBuilder::splineFlipT(bool b)
+{
+    CHECK_BSPLINE(splineFlipT_name, 842);
+    _spline._flipT = b;
+}
 
 void sgl::MeshBuilder::splineEnableTexCoord(bool b)
 {
@@ -276,7 +389,7 @@ void sgl::MeshBuilder::normalAt(int i, float x, float y, float z)
 
 void sgl::MeshBuilder::normalAt(int i, Normal n)
 {
-    _mesh->normalAt(i, transform_normal(n));
+    _mesh.normalAt(i, transform_normal(n));
 }
 
 void sgl::MeshBuilder::colorAt(int i, float r, float g, float b, float a)
@@ -286,7 +399,7 @@ void sgl::MeshBuilder::colorAt(int i, float r, float g, float b, float a)
 
 void sgl::MeshBuilder::colorAt(int i, Color c)
 {
-    _mesh->colorAt(i, transform_color(c));
+    _mesh.colorAt(i, transform_color(c));
 }
 
 void sgl::MeshBuilder::texcoordAt(int i, float u, float v)
@@ -296,7 +409,7 @@ void sgl::MeshBuilder::texcoordAt(int i, float u, float v)
 
 void sgl::MeshBuilder::texcoordAt(int i, TexCoord t)
 {
-    _mesh->texcoordAt(i, transform_texcoord(t));
+    _mesh.texcoordAt(i, transform_texcoord(t));
 }
 
 void sgl::MeshBuilder::positionAt(int i, float x, float y, float z)
@@ -306,7 +419,7 @@ void sgl::MeshBuilder::positionAt(int i, float x, float y, float z)
 
 void sgl::MeshBuilder::positionAt(int i, Position p)
 {
-    _mesh->positionAt(i, transform_position(p));
+    _mesh.positionAt(i, transform_position(p));
 }
 
 void sgl::MeshBuilder::vertexAt(int i, int p)
@@ -314,13 +427,18 @@ void sgl::MeshBuilder::vertexAt(int i, int p)
     vertexAt(i, p, -1, -1, -1);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_MeshBuilder_extruded_var_extruded_var", _ZN3sgl11MeshBuilder8vertexAtEiNS_8PositionE);
+void sgl::MeshBuilder::vertexAt(int i, Position p)
+{
+    MB_ASSERT(_var._input_mode == 2, D_0016E06C, vertexAt_name, 1328);
+    positionAt(i, p);
+    vertexAt(i, i, -1, -1, -1);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_MeshBuilder_extruded_var_extruded_var", _ZN3sgl11MeshBuilder8vertexAtEifff);
 
 void sgl::MeshBuilder::vertexAt(int i, int p, int n, int c, int t)
 {
-    _mesh->vertexAt(i, p, n, c, t);
+    _mesh.vertexAt(i, p, n, c, t);
 }
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_MeshBuilder_extruded_var_extruded_var", _ZN3sgl11MeshBuilder6sphereEfiiff);
@@ -333,9 +451,18 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_MeshBuil
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_MeshBuilder_extruded_var_extruded_var", _ZN3sgl11MeshBuilder4gridEjjffffb);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_MeshBuilder_extruded_var_extruded_var", _ZN3sgl11MeshBuilder9setParamsERKNS_10MeshParamsE);
+void sgl::MeshBuilder::setParams(const MeshParams &p)
+{
+    static_cast<MeshParams &>(*this) = p;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_MeshBuilder_extruded_var_extruded_var", _ZN3sgl11MeshBuilder6finishEv);
+void sgl::MeshBuilder::finish()
+{
+    MB_ASSERT(!_finished_called, D_0016E0E4, finish_name, 1652);
+    _finished_called = true;
+    if (!_fB4)
+        _mesh.finish(*this);
+}
 
 extern "C" {
 void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_C17C4");
