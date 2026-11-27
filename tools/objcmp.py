@@ -17,6 +17,7 @@ from elftools.elf.elffile import ELFFile
 from elftools.elf.relocation import RelocationSection
 
 ROOT = Path(__file__).resolve().parent.parent
+import tmpdir  # noqa: E402,F401  (scratch files in tmp/)
 R_MIPS_26, R_MIPS_HI16, R_MIPS_LO16, R_MIPS_GPREL16 = 4, 5, 6, 7
 
 

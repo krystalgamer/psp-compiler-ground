@@ -13,6 +13,7 @@ import tempfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
+import tmpdir  # noqa: E402,F401  (scratch files in tmp/)
 sys.path.insert(0, str(ROOT / "tools"))
 import objcmp  # noqa: E402
 from fntest import DRIVER, T  # noqa: E402

@@ -12,6 +12,7 @@ import tempfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
+import tmpdir  # noqa: E402,F401  (scratch files in tmp/)
 # PSP EABI: $8-$11 are argument registers, which m2c's mipsee names a4-a7
 ABI = ["zero", "at", "v0", "v1", "a0", "a1", "a2", "a3",
        "a4", "a5", "a6", "a7", "t4", "t5", "t6", "t7",

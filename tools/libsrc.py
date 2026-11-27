@@ -21,6 +21,7 @@ from pathlib import Path
 from elftools.elf.elffile import ELFFile
 
 ROOT = Path(__file__).resolve().parent.parent
+import tmpdir  # noqa: E402,F401  (scratch files in tmp/)
 sys.path.insert(0, str(ROOT / "tools"))
 import compiler  # noqa: E402
 import objcmp  # noqa: E402
