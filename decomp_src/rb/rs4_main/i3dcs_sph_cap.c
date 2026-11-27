@@ -8,7 +8,20 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3dcs_sph_cap", I3dcs_GetIntersect
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3dcs_sph_cap", I3dcs_GetIntersectLineCylA);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3dcs_sph_cap", I3dcs_GetIntersectRayCylA);
+int I3dcs_GetIntersectRayCylA(const float *c, const float *d, const float *cap, const float *x, float *pmin, float *pmax)
+{
+	float t[2];
+	int r = I3dcs_GetIntersectLineCylA(c, d, cap, x, &t[0], &t[1]);
+	if (r == 0 || t[1] < 0.0f)
+		return 0;
+	if (t[0] < 0.0f)
+		r ^= 1;
+	if (pmin)
+		*pmin = t[0];
+	if (pmax)
+		*pmax = t[1];
+	return r;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3dcs_sph_cap", I3dcs_GetIntersectSegCylA);
 
@@ -18,7 +31,20 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3dcs_sph_cap", I3dcs_IsIntersectC
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3dcs_sph_cap", I3dcs_IsIntersectCylCapA);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3dcs_sph_cap", I3dcs_GetIntersectRayCapA);
+int I3dcs_GetIntersectRayCapA(const float *c, const float *d, const float *cap, const float *x, float *pmin, float *pmax)
+{
+	float t[2];
+	int r = I3dcs_GetIntersectLineCapA(c, d, cap, x, &t[0], &t[1]);
+	if (r == 0 || t[1] < 0.0f)
+		return 0;
+	if (t[0] < 0.0f)
+		r ^= 1;
+	if (pmin)
+		*pmin = t[0];
+	if (pmax)
+		*pmax = t[1];
+	return r;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3dcs_sph_cap", I3dcs_GetIntersectSegCapA);
 

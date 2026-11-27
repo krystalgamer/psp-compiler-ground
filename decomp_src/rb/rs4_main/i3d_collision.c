@@ -653,7 +653,23 @@ int I3dcs_IsIntersectCapCapA(const float *a, const float *b, const float *c, con
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_collision", I3dcs_GetIntersectLineSphereA);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_collision", I3dcs_GetIntersectRaySphereA);
+int I3dcs_GetIntersectRaySphereA(const float *c, const float *d, const float *s, float *pmin, float *pmax)
+{
+	float t[2];
+	int r = I3dcs_GetIntersectLineSphereA(c, d, s, &t[0], &t[1]);
+	if (r == 0)
+		return 0;
+	if (pmin)
+		*pmin = t[0];
+	if (pmax)
+		*pmax = t[1];
+	if (t[0] < 0.0f) {
+		if (t[1] < 0.0f)
+			return 0;
+		r--;
+	}
+	return r;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_collision", I3dcs_GetIntersectSegSphereA);
 
