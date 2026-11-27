@@ -1,3 +1,4 @@
+/* cflags: -O2 -fmerge-constants */
 #include "common.h"
 
 /* declarations recovered from DWARF */
@@ -187,7 +188,118 @@ SceInt32 init_all(t_displayBuffer *pDisp)
 	return 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/mpeg_mpegstr_gu/nonmatchings/display", draw_frame);
+SceInt32 draw_frame(t_displayBuffer *pDisp, SceChar8 *pYCbCrBuf)
+{
+	SceInt32 i;
+	SceInt32 ret;
+	SceChar8 str[32];
+	SceMpegAvcYCbCrRange range;
+	SceChar8 *buffer;
+	SceInt32 pixelSize;
+	SceInt32 currentSize;
+	SceInt32 baseX;
+	SceInt32 baseY;
+	SceFloat32 scale;
+
+	pixelSize = 128;
+
+	buffer = pDisp->workBuf;
+	scale = displayScale[pDisp->scale];
+
+	baseX = (SceInt32)(240.0f - (scale * 480.0f) * 0.5f);
+	baseY = (SceInt32)(136.0f - (scale * 272.0f) * 0.5f);
+
+	for (i = 0; i < 4; i++) {
+		if (480 - i * pixelSize < pixelSize) {
+			currentSize = 480 % pixelSize;
+		} else {
+			currentSize = pixelSize;
+		}
+
+		range.uiStartWidth = i * pixelSize;
+		range.uiStartHeight = 0;
+		range.uiLenWidth = currentSize;
+		range.uiLenHeight = 272;
+
+		ret = sceMpegAvcCsc(pDisp->pMpeg, pYCbCrBuf, &range, pixelSize, buffer);
+		if (ret != 0) {
+			printf("fatal error : sceMpegAvcCsc() 0x%x\n", ret);
+			ret = -1;
+			goto term;
+		}
+
+		sceGuStart(0, disp_list, 0x10000);
+		if (i == 0) {
+			sceGuClear(7);
+		}
+		sceGuEnable(9);
+
+		switch (pDisp->pixelFormat) {
+case 3:
+			sceGuTexMode(3, 0, 0, 0);
+			break;
+	case 0:
+			sceGuTexMode(0, 0, 0, 0);
+			break;
+case 1:
+			sceGuTexMode(1, 0, 0, 0);
+			break;
+case 2:
+			sceGuTexMode(2, 0, 0, 0);
+			break;
+	}
+
+		sceGuTexImage(0, 128, 512, 128, buffer);
+		sceGuBlendFunc(0, 10, 10, 0xffffffff, 0);
+		sceGuEnable(4);
+		sceGuColor(0xffffffff);
+
+		sceGuSpriteMode(currentSize, 272, (SceInt32)(currentSize * scale), (SceInt32)(scale * 272.0f));
+		sceGuDrawSprite((SceInt32)(baseX + i * (scale * pixelSize)), baseY, 0, 0, 0, 0, 0);
+
+		sceGuFinish();
+		sceGuSync(0, 0);
+	}
+
+	sceGuStart(0, disp_list, 0x10000);
+
+	sceGuBlendFunc(0, 2, 3, 0, 0);
+	sceGuEnable(4);
+
+	sceGuDisable(9);
+	sceGuColor(0x90000000);
+	sceGuDrawArray(6, 0x800100, 2, 0, board);
+
+	sceGuEnable(9);
+	switch (pDisp->pixelFormat) {
+case 3:
+		sceGuDebugPrint(8, 8, 0xffffffff, "RGBA8888");
+		break;
+case 0:
+		sceGuDebugPrint(8, 8, 0xffffffff, "RGB565");
+		break;
+case 1:
+		sceGuDebugPrint(8, 8, 0xffffffff, "RGBA5551");
+		break;
+case 2:
+		sceGuDebugPrint(8, 8, 0xffffffff, "RGBA4444");
+		break;
+	}
+
+	sprintf(str, "SCALE : %3.1f", scale);
+	sceGuDebugPrint(8, 16, 0xffffffff, str);
+	sceGuDebugPrint(8, 32, 0xffffffff, "START : RESTART");
+	sceGuDebugPrint(8, 40, 0xffffffff, "SELECT: EXIT");
+	sceGuDebugPrint(8, 48, 0xffffffff, "CIRCLE: DISP WAIT");
+	sceGuDebugPrint(8, 56, 0xffffffff, "R     : ZOOM IN");
+	sceGuDebugPrint(8, 64, 0xffffffff, "L     : ZOOM OUT");
+
+	sceGuFinish();
+	sceGuSync(0, 0);
+
+term:
+	return ret;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/mpeg_mpegstr_gu/nonmatchings/display", dispbuf_create);
 
@@ -433,12 +545,3 @@ int dispbuf_zoomout(t_displayBuffer *pDisp) {
     return 0;
 }
 
-INCLUDE_RODATA("tmp/asm/UTST99332/mpeg_mpegstr_gu/nonmatchings/display", D_00014788);
-
-INCLUDE_RODATA("tmp/asm/UTST99332/mpeg_mpegstr_gu/nonmatchings/display", D_0001478C);
-
-INCLUDE_RODATA("tmp/asm/UTST99332/mpeg_mpegstr_gu/nonmatchings/display", D_00014790);
-
-INCLUDE_RODATA("tmp/asm/UTST99332/mpeg_mpegstr_gu/nonmatchings/display", D_00014794);
-
-INCLUDE_RODATA("tmp/asm/UTST99332/mpeg_mpegstr_gu/nonmatchings/display", D_00014798);
