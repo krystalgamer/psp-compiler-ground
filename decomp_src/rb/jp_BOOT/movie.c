@@ -329,7 +329,81 @@ static SceInt32 pad_read(t_displayBuffer *pDisp)
 	return ret;
 }
 
-INCLUDE_ASM("tmp/asm/rb/jp_BOOT/nonmatchings/movie", thumb_load);
+SceInt32 strFileOpen(StrFile *file, const SceChar8 *filename, SceInt32 flags);
+SceInt32 strFileClose(StrFile *file);
+SceInt32 strFileRead(StrFile *file, void *buff, SceInt32 size);
+long long strFileLseek(StrFile *file, long long offset, SceInt32 whence);
+int puts(const char *s);
+extern const char D_0001634C[];
+extern const char D_00016368[];
+extern const char D_00016388[];
+extern const char D_000163B4[];
+extern const char D_000163DC[];
+extern const char D_000163FC[];
+static int thumb_load(void)
+{
+	SceInt32 iReadSize;
+	SceInt32 ret;
+	SceChar8 stream_buf[2048];
+	int strOffset;
+	int r;
+
+	if (strFileOpen(&strFile, "disc0:/PSP_GAME/USRDIR/MOVIE/thumbnail.pmf", 1) < 0) {
+		puts(D_0001634C);
+		return -1;
+	}
+	if (strFileLseek(&strFile, 0, 0) < 0) {
+		r = -1;
+		goto end;
+	}
+	if ((iReadSize = strFileRead(&strFile, stream_buf, 2048)) < 2048) {
+		printf(D_00016368, iReadSize);
+		r = -1;
+		goto end;
+	}
+	ret = sceMpegQueryStreamOffset(&mpeg, stream_buf, &strOffset);
+	if (ret != 0) {
+		puts(D_00016388);
+		r = -1;
+		goto end;
+	}
+	ret = sceMpegQueryStreamSize(stream_buf, &thumbFilesize);
+	if (ret != 0) {
+		puts(D_000163B4);
+		r = -1;
+		goto end;
+	}
+	if (strFileLseek(&strFile, 0, 0) < 0) {
+		puts(D_000163DC);
+		r = -1;
+		goto end;
+	}
+	pHeaderT = malloc(strOffset);
+	if (pHeaderT == NULL) {
+		r = -1;
+		goto end;
+	}
+	if ((iReadSize = strFileRead(&strFile, pHeaderT, strOffset)) < strOffset) {
+		printf(D_00016368, iReadSize);
+		r = -1;
+		goto end;
+	}
+	thumbBuf = memalign(64, thumbFilesize);
+	if (thumbBuf == NULL) {
+		puts(D_000163FC);
+		r = -1;
+		goto end;
+	}
+	if ((iReadSize = strFileRead(&strFile, thumbBuf, thumbFilesize)) < thumbFilesize) {
+		printf(D_00016368, iReadSize);
+		r = -1;
+		goto end;
+	}
+	strFileClose(&strFile);
+	r = 0;
+end:
+	return r;
+}
 
 void *memcpy(void *d, const void *s, unsigned int n);
 static SceInt32 ringbufferCallBack(SceVoid *pBuf, SceInt32 iNum, SceVoid *CallbackData)
