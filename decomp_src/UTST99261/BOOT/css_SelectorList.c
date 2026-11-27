@@ -124,7 +124,80 @@ void freeCSSSelectorList(void *arg0) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_SelectorList", addCSSSelectorList);
+void addCSSSelectorList(void *list, void *rule, void *name) {
+    void *n;
+    void *s;
+    void *sel;
+    CSSDECLN *d;
+    CSSDECLN *dn;
+    CSSDECLN *e;
+    CSSDECLN *en;
+    int r;
+    int k;
+
+    if (list == NULL)
+        return;
+    if (M2C_FIELD(list, s16 *, 0) != 7 || rule == NULL || M2C_FIELD(rule, s16 *, 0) != 8)
+        return;
+    M2C_FIELD(rule, void **, 0x1C) = name;
+    for (n = M2C_FIELD(list, void **, 0xC); n != NULL; n = M2C_FIELD(n, void **, 0x18)) {
+        r = UCS_strcmp(M2C_FIELD(n, void **, 0x1C), name);
+        if (r > 0) {
+            insCSSNode(n, rule);
+            break;
+        }
+        if (r == 0) {
+            sel = M2C_FIELD(rule, void **, 0xC);
+            for (s = M2C_FIELD(n, void **, 0xC); s != NULL; s = M2C_FIELD(s, void **, 0x18)) {
+                r = CSS_ISmatchSelector_C9540(s, sel);
+                if (r > 0) {
+                    insCSSNode(s, sel);
+                    break;
+                }
+                if (r == 0) {
+                    for (d = M2C_FIELD(sel, CSSDECLN **, 0xC); d != NULL; d = dn) {
+                        dn = d->next;
+                        for (e = M2C_FIELD(s, CSSDECLN **, 0xC); e != NULL; e = en) {
+                            en = e->next;
+                            r = d->prio - e->prio;
+                            if (r == 0) {
+                                if (d->important != 0 || e->important == 0) {
+                                    popCSSNode(d);
+                                    insCSSNode(e, d);
+                                    popCSSNode(e);
+                                    freeCSSStyleDeclaration(e);
+                                } else {
+                                    popCSSNode(d);
+                                    freeCSSStyleDeclaration(d);
+                                }
+                                break;
+                            }
+                            if (r < 0) {
+                                popCSSNode(d);
+                                insCSSNode(e, d);
+                                break;
+                            }
+                        }
+                        if (e == NULL) {
+                            popCSSNode(d);
+                            addCSSNode(s, d);
+                        }
+                    }
+                    M2C_FIELD(sel, void **, 0xC) = NULL;
+                    M2C_FIELD(sel, int *, 0x10) = 0;
+                    freeCSSSelector(sel);
+                    break;
+                }
+            }
+            if (s == NULL)
+                addCSSNode(n, sel);
+            freeCSSNode(rule);
+            break;
+        }
+    }
+    if (n == NULL)
+        addCSSNode(list, rule);
+}
 
 char *CSSSelectorList_getCssText(CSSSELLIST *l) {
     void *buf;
