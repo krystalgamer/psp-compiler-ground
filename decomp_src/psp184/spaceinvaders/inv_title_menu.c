@@ -335,7 +335,52 @@ M2C_UNK title_start_check(void)
 	return p[1] == 90;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_title_menu", title_control);
+typedef struct { int on, cnt, ang, alpha; } TITLE_T;
+extern int D_005FB7BC;
+extern char D_0007EA60[], D_0007EA68[], D_0007EA74[];
+int sprintf(char *buf, const char *fmt, ...);
+void sprite_center_set(int tex, int x, int y, int w, int h, int u, int v, int sw, int sh, int a9, int a10, int r, int g, int b, int a, int pri, int mode, int a17, int alpha);
+void inv_font_ascii_posf(char *str, int x, int y, int w, int h, int r, int g, int b, int a, int mode);
+float sinf_nb(float) __asm__("sinf");
+void title_control(void)
+{
+	TITLE_T *t = (TITLE_T *)&D_00349218;
+	int x, y, a;
+	char buf[256];
+
+	if (t->on) {
+		t->alpha = sinf_nb(t->cnt / 180.0f * 3.1415927f) * 255.0f;
+		if (t->alpha < 0)
+			t->alpha = 0;
+		else if (t->alpha > 255)
+			t->alpha = 255;
+		y = 60;
+		x = 80;
+		if (t->cnt < 90) {
+			y = 100;
+			x = 240;
+		} else if (t->cnt == 90 && t->ang != 90) {
+			t->ang += 2;
+			if (t->ang < 0)
+				t->ang = 0;
+			else if (t->ang > 90)
+				t->ang = 90;
+			y = (int)(sinf_nb((90 - t->ang) / 180.0f * 3.1415927f) * 40.0f) + 60;
+			x = (int)(sinf_nb((90 - t->ang) / 180.0f * 3.1415927f) * 160.0f) + 80;
+		}
+		if (t->alpha > 16) {
+			a = t->alpha;
+			if (TMS.f24 != 255)
+				a = TMS.f24;
+			sprite_center_set(TMS.f2c, x, 136, 256, 256, 0, 0, y, y, 0, 0, 255, 255, 255, 255, 100, 2, 2, a);
+			sprite_set(TMS.f30, 0, 238, 480, 32, 0, 0, 100, 100, 0, 0, 255, 255, 255, 255, 100, 2, 2, a);
+			if (D_005FB7BC == 1) {
+				sprintf(buf, D_0007EA60, D_0007EA68, D_0007EA74);
+				inv_font_ascii_posf(buf, 480, 0, 75, 75, 255, 255, 255, a, 2);
+			}
+		}
+	}
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
