@@ -228,9 +228,65 @@ void I3dPkSetMatrix_PSP(void) {
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_packet_util", I3dPkDrawSphereMarkerA);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_packet_util", I3dPkDrawBoxMarkerA);
+extern const int g_aiVtx[];
+extern const int g_aSkip[];
+extern const float g_aPosTbl[];
+extern const float D_00109164;
+void I3dPkDrawScissorLineStripFA(void *, int, const void *, int, int, float (*)[4], const int *);
+void I3dPkDrawBoxMarkerA(void *pk, int a1, const void *a2, const float *c, const float *h, int color)
+{
+	float v[16][4] __attribute__((aligned(16)));
+	float p[8][4] __attribute__((aligned(16)));
+	int i;
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_packet_util", I3dPkDrawObbMarkerA);
+	for (i = 0; i < 8; i++) {
+		p[i][0] = h[0] * g_aPosTbl[i & 1] + c[0];
+		p[i][1] = h[1] * g_aPosTbl[i & 2] + c[1];
+		p[i][2] = h[2] * g_aPosTbl[i & 4] + c[2];
+		p[i][3] = D_00109164;
+	}
+	for (i = 0; i < 16; i++) {
+		__asm__ volatile(
+			"lv.q C000.q,0(%1)\n"
+			"sv.q C000.q,0(%0)\n"
+			: : "r"(v[i]), "r"(p[g_aiVtx[i]]) : "memory");
+	}
+	I3dPkDrawScissorLineStripFA(pk, a1, a2, 16, color, v, g_aSkip);
+}
+
+const float D_00109164 = 1.0f;
+
+extern const float D_00109168;
+void I3dMatMulA(float *, const float *, const float *);
+void I3dMatCopyA(float *, const float *);
+void I3dPkDrawObbMarkerA(void *pk, int a1, const float *mat, const float *obb, int color)
+{
+	float v[16][4] __attribute__((aligned(16)));
+	float p[8][4] __attribute__((aligned(16)));
+	float m[16] __attribute__((aligned(16)));
+	int i;
+
+	for (i = 0; i < 8; i++) {
+		p[i][0] = g_aPosTbl[i & 1];
+		p[i][1] = g_aPosTbl[i & 2];
+		p[i][2] = g_aPosTbl[i & 4];
+		p[i][3] = D_00109168;
+	}
+	for (i = 0; i < 16; i++) {
+		__asm__ volatile(
+			"lv.q C000.q,0(%1)\n"
+			"sv.q C000.q,0(%0)\n"
+			: : "r"(v[i]), "r"(p[g_aiVtx[i]]) : "memory");
+	}
+	if (mat)
+		I3dMatMulA(m, obb, mat);
+	else
+		I3dMatCopyA(m, obb);
+	I3dPkDrawScissorLineStripFA(pk, a1, m, 16, color, v, g_aSkip);
+}
+
+const float D_00109168 = 1.0f;
+const float D_0010916C = 0.0f; /* padding before the 16-aligned D_00109170 */
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_packet_util", iI3dGuDrawSpline_PSP_61A38);
 
