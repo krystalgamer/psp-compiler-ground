@@ -110,6 +110,12 @@ char *strcpy(char *d, const char *s);
 typedef struct SIGEXT { char *a; char *b; char *c; int d; } SIGEXT;
 typedef struct MPUSIG { int type; int x4; int x8; int xC; int x10; int x14; int size; SIGEXT *data; } MPUSIG;
 typedef struct CTYPE { char name[20]; int len; int type; } CTYPE;
+int ps_i2208(PsIpc *msg);
+int ps_i2308(PsIpc *msg);
+int ps_i2406(PsIpc *msg);
+int ps_i2608(PsIpc *msg);
+int ps_i2906(PsIpc *msg);
+int ps_i2D06(PsIpc *msg);
 unsigned short UDomiString_ToLower(unsigned short c) {
     if (c < 0x80) {
         return tolower(c);
@@ -646,7 +652,62 @@ INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", D_00135744);
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", D_0013574C);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", ps_JSMailBoxClean);
+int ps_JSMailBoxClean(void) {
+    PsMqMsg m;
+    int ret;
+    int flag;
+
+    flag = 0;
+    buf_ps_sts = 200;
+    ret = 200;
+    while (GetMQUEUE(mq_js, &m)) {
+        buf_ps_evt = m.evt;
+        switch (m.evt) {
+        case 0x24:
+        case 0x25:
+            ret = ps_i2406((PsIpc *)&m.x[1]);
+            break;
+        case 0x26:
+            ret = ps_i2608((PsIpc *)&m.x[1]);
+            break;
+        case 0x23:
+            ret = ps_i2308((PsIpc *)&m.x[1]);
+            if (ret == 0x12 || ret == 0x1A)
+                return ret;
+            if (ret == 7)
+                flag = 1;
+            break;
+        case 0x22:
+            ret = ps_i2208((PsIpc *)&m.x[1]);
+            flag = 1;
+            break;
+        case 0x29:
+            ret = ps_i2906((PsIpc *)&m.x[1]);
+            break;
+        case 0x2D:
+            ret = ps_i2D06((PsIpc *)&m.x[1]);
+            break;
+        default:
+            if (m.data != NULL)
+                MEM_free(0, m.data);
+            ps_halt("ps_l1B12(illegal Message!) failed\n");
+            break;
+        }
+        if (ret == 0x12) {
+            buf_ps_sts = ret;
+            return 0x12;
+        }
+        if (ret == 0x1A) {
+            buf_ps_sts = ret;
+            return 0x1A;
+        }
+    }
+    if (flag == 1)
+        buf_ps_sts = 7;
+    else
+        buf_ps_sts = 8;
+    return buf_ps_sts;
+}
 
 void ps_JSMailBoxfree(void) {
     PsMqMsg m;
