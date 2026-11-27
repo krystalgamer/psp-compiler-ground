@@ -2,6 +2,8 @@
 #include "common.h"
 #include "mes_js.h"
 #include "m2c_macros.h"
+void mes_eval_type_error(MesContext *ctx, MesValue v);
+extern const double D_0013B890;
 MesValue mes_eval_object_get(MesContext *ctx, MesValue o, unsigned int id);
 MesValue mes_eval_object_put(MesContext *ctx, MesValue o, unsigned int id, MesValue v);
 int mes_eval_object_delete(MesContext *ctx, MesValue o, unsigned int id);
@@ -84,7 +86,29 @@ unsigned int mes_array_number_index(MesContext *ctx, int n)
     return ret;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_array", mes_array_length);
+unsigned int mes_array_length(MesContext *ctx, MesValue v)
+{
+    unsigned int n;
+    double x;
+    int i;
+
+    if (MES_IS_OBJECT(v) && ((unsigned char *)v)[0x10] == 8)
+        v = ((MesValue *)v)[3];
+    if (v == 0x10)
+        return 0;
+    if ((v & 3) == 1 && (i = v >> 2) >= 0)
+        return i;
+    if ((v & 3) == 2 && *(double *)((v & ~3) + 8) >= 0) {
+        n = *(double *)((v & ~3) + 8);
+        x = (int)n;
+        if ((int)n < 0)
+            x = x + D_0013B890;
+        if (x == *(double *)((v & ~3) + 8))
+            return n;
+    }
+    mes_eval_type_error(ctx, v);
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_array", mes_array_put);
 
