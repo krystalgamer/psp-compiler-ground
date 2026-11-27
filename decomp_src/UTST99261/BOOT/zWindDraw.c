@@ -1343,7 +1343,67 @@ typedef struct {
     int editable;               /* 0x58 */
 } ZTAREA;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/zWindDraw", zWindExcEventTextArea);
+int zWindExcEventTextArea(ZW *w, int type, ZEVENT *ev, int x, int y) {
+    int left;
+    int top;
+    int right;
+    int bottom;
+    switch (type) {
+    case 7:
+        if (ev->key != 0x80) {
+            break;
+        }
+        if (M2C_FIELD(w, int *, 0x58) == -1) {
+            break;
+        }
+        s_windsystem_data.mode = 4;
+        s_windsystem_data.target = w;
+        return 0;
+    case 3:
+        if (!(D_00584BCC & 0x20000000)) {
+            break;
+        }
+        if (M2C_FIELD(w, int *, 0x58) == -1) {
+            break;
+        }
+        left = w->px;
+        top = w->py;
+        right = left + w->w;
+        bottom = top + w->h;
+        if (x < left) {
+            return 0;
+        }
+        if (right < x) {
+            return 0;
+        }
+        if (y < top) {
+            return 0;
+        }
+        if (bottom < y) {
+            return 0;
+        }
+        if (right - 16 < x) {
+        if (y < top + 16) {
+            M2C_FIELD(w, s16 *, 0x52)--;
+            if (M2C_FIELD(w, s16 *, 0x52) < 0) {
+                M2C_FIELD(w, s16 *, 0x52) = 0;
+            } else {
+                zWindDraw();
+            }
+        }
+        if (bottom - 16 < y) {
+            M2C_FIELD(w, s16 *, 0x52)++;
+            if (M2C_FIELD(w, s16 *, 0x52) >= M2C_FIELD(w, s16 *, 0x54)) {
+                M2C_FIELD(w, s16 *, 0x52) = M2C_FIELD(w, s16 *, 0x54);
+            } else {
+                zWindDraw();
+            }
+        }
+        }
+        return 0;
+    }
+    return -1;
+}
 
 extern void (*D_00584B60)(ZW *w, ZEVENT *ev);
 
