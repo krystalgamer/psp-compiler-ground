@@ -30,49 +30,100 @@ void I3cLineParam_CnvAxis()
 		: : : "memory");
 }
 
+int IntersectSub_LineTri(void *, void *, void *, void *, void *, unsigned char, int);
+int I3cIntersectSub_RadiusPrim(void *, void *, void *, void *, void *, unsigned char, void *, int);
+int I3cIntersect_Main(void *, void *, void *, void *, void *, int);
+
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_collision", IntersectSub_LineTri);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_collision", I3cLine_IntersectTriA);
+int I3cLine_IntersectTriA(void *a, void *b, void *c, void *d, void *e, unsigned char f, void *g) {
+    return IntersectSub_LineTri(a, b, c, d, e, f, 0);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_collision", I3cRay_IntersectTriA);
+int I3cRay_IntersectTriA(void *a, void *b, void *c, void *d, void *e, unsigned char f, void *g) {
+    return IntersectSub_LineTri(a, b, c, d, e, f, 1);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_collision", I3cSegment_IntersectTriA);
+int I3cSegment_IntersectTriA(void *a, void *b, void *c, void *d, void *e, unsigned char f, void *g) {
+    return IntersectSub_LineTri(a, b, c, d, e, f, 3);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_collision", I3cSphere_IntersectTriA);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_collision", I3cIntersectSub_RadiusPrim);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_collision", I3cRLine_IntersectTriA);
+int I3cRLine_IntersectTriA(void *a, void *b, void *c, void *d, void *e, unsigned char f, void *g) {
+    return I3cIntersectSub_RadiusPrim(a, b, c, d, e, f, g, 0);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_collision", I3cRRay_IntersectTriA);
+int I3cRRay_IntersectTriA(void *a, void *b, void *c, void *d, void *e, unsigned char f, void *g) {
+    return I3cIntersectSub_RadiusPrim(a, b, c, d, e, f, g, 1);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_collision", I3cCapsule_IntersectTriA);
+int I3cCapsule_IntersectTriA(void *a, void *b, void *c, void *d, void *e, unsigned char f, void *g) {
+    return I3cIntersectSub_RadiusPrim(a, b, c, d, e, f, g, 2);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_collision", I3cIntersect_ScanAABB_Node);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_collision", I3cIntersect_Main);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_collision", I3cIntersect_SphereA);
+int I3dcs_IsIntersectSphereBoxA();
+int I3cSphere_IntersectTriA();
+int I3cIntersect_SphereA(void *a, void *b, void *c) {
+    return I3cIntersect_Main(a, b, c, (void *)I3dcs_IsIntersectSphereBoxA, (void *)I3cSphere_IntersectTriA, 1);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_collision", I3cIntersect_LineA);
+int I3dcs_IsIntersectLineBoxA();
+int I3cLine_IntersectTriA();
+int I3cIntersect_LineA(void *a, void *b, void *c) {
+    return I3cIntersect_Main(a, b, c, (void *)I3dcs_IsIntersectLineBoxA, (void *)I3cLine_IntersectTriA, 0);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_collision", I3cIntersect_RayA);
+int I3dcs_IsIntersectRayBoxA();
+int I3cRay_IntersectTriA();
+int I3cIntersect_RayA(void *a, void *b, void *c) {
+    return I3cIntersect_Main(a, b, c, (void *)I3dcs_IsIntersectRayBoxA, (void *)I3cRay_IntersectTriA, 0);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_collision", I3cIntersect_SegmentA);
+void I3dcs_IsIntersectSegBoxA();
+int I3cIntersect_SegmentA(void *a, void *b, void *c) {
+    return I3cIntersect_Main(a, b, c, (void *)I3dcs_IsIntersectSegBoxA, (void *)I3cSegment_IntersectTriA, 0);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_collision", I3cIntersect_RLineA);
+int I3dcs_IsIntersectRLineBoxA();
+int I3cRLine_IntersectTriA();
+int I3cIntersect_RLineA(void *a, void *b, void *c) {
+    return I3cIntersect_Main(a, b, c, (void *)I3dcs_IsIntersectRLineBoxA, (void *)I3cRLine_IntersectTriA, 1);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_collision", I3cIntersect_RRayA);
+int I3dcs_IsIntersectRRayBoxA();
+int I3cRRay_IntersectTriA();
+int I3cIntersect_RRayA(void *a, void *b, void *c) {
+    return I3cIntersect_Main(a, b, c, (void *)I3dcs_IsIntersectRRayBoxA, (void *)I3cRRay_IntersectTriA, 1);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_collision", I3cIntersect_CapsuleA);
+int I3dcs_IsIntersectCapBoxA();
+int I3cCapsule_IntersectTriA();
+int I3cIntersect_CapsuleA(void *a, void *b, void *c) {
+    return I3cIntersect_Main(a, b, c, (void *)I3dcs_IsIntersectCapBoxA, (void *)I3cCapsule_IntersectTriA, 1);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_collision", I3cSSS_IntersectTriA);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_collision", I3cRSS_IntersectTriA);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_collision", I3cIntersect_SSSA);
+int I3dcs_IsIntersectCapBoxA();
+int I3cSSS_IntersectTriA();
+int I3cIntersect_SSSA(void *a, void *b, void *c) {
+    return I3cIntersect_Main(a, b, c, (void *)I3dcs_IsIntersectCapBoxA, (void *)I3cSSS_IntersectTriA, 1);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_collision", I3cIntersect_RSSA);
+int I3dcs_IsIntersectRRayBoxA();
+int I3cRSS_IntersectTriA();
+int I3cIntersect_RSSA(void *a, void *b, void *c) {
+    return I3cIntersect_Main(a, b, c, (void *)I3dcs_IsIntersectRRayBoxA, (void *)I3cRSS_IntersectTriA, 1);
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
