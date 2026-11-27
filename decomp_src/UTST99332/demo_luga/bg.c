@@ -27,7 +27,7 @@ struct ScePspFVector4 { /* size 0x10 */
     float y;
     float z;
     float w;
-};
+} __attribute__((aligned(16)));
 struct ScePspFMatrix4 { /* size 0x40 */
     ScePspFVector4 x;
     ScePspFVector4 y;
@@ -93,7 +93,11 @@ void geColor(unsigned char r, unsigned char g, unsigned char b, unsigned char a)
 void geObjectDraw(geOBJECT *obj);
 void geObjectSetProc(int n, int (*proc)(void *));
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/bg", init_bg);
+void init_bg(void)
+{
+	geObjectSetProc(0, proc_bg);
+	md->obj[1] = (geOBJECT){ 1, 0, 0, 0.0f, { 0.0f, 0.0f, -900.0f }, { 0.0f, 0.0f, 0.0f }, { 1.0f, 1.0f, 1.0f } };
+}
 
 int proc_bg(void *p) {
     sceGuDisable(9);
@@ -103,7 +107,6 @@ int proc_bg(void *p) {
 }
 
 void draw_bg(void) {
-    geObjectDraw((geOBJECT *)&md->obj[1].t.y); /* offset 0x100 in md */
+    geObjectDraw(&md->obj[1]);
 }
 
-INCLUDE_RODATA("tmp/asm/UTST99332/demo_luga/nonmatchings/bg", D_00021580);
