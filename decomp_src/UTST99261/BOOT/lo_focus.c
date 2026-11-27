@@ -33,6 +33,11 @@ extern void *ui_global;
 #define NULL ((void *)0)
 #endif
 
+typedef struct STRWORD { char *start; char *end; } STRWORD;
+STRWORD UTL_strword(char *s, char *delim, char *stop);
+extern DOMString _DOMfocusnavi;
+void *MEM_calloc(int pool, unsigned int size);
+void *memcpy(void *d, const void *s, unsigned int n);
 void freeAllList(void *arg0) {
     void *temp_a1;
     void *temp_a1_2;
@@ -1044,4 +1049,72 @@ INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/lo_focus", D_00139130);
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/lo_focus", D_00139134);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_focus", lo_getFocusNavi);
+static const char D_00139164[6];
+static const char D_0013916C[4];
+void *lo_getFocusNavi(void *node)
+{
+    DOMString s;
+    STRWORD w;
+    char *str;
+    char **navi;
+    int klen;
+    int vlen;
+    char *key;
+    char *val;
+
+    if (!Element_hasAttribute(node, &_DOMfocusnavi))
+        return NULL;
+    Element_getAttribute(&s, node, &_DOMfocusnavi);
+    if (s.len == 0)
+        return NULL;
+    str = DOMStringtoUTF8(&s);
+    if (str == NULL)
+        return NULL;
+    navi = MEM_calloc(0, 16);
+    if (navi != NULL) {
+        w.end = str;
+        while (*w.end != 0) {
+            w = UTL_strword(w.end, (char *)D_00139164, (char *)D_0013916C);
+            klen = w.end - w.start;
+            if (klen <= 0)
+                break;
+            key = w.start;
+            w = UTL_strword(w.end, (char *)D_00139164, (char *)D_0013916C);
+            vlen = w.end - w.start;
+            if (vlen <= 0)
+                continue;
+            val = w.start;
+            key[klen] = 0;
+            if (navi[0] == NULL && strcasecmp(key, "navi-up") == 0) {
+                navi[0] = MEM_malloc(0, vlen + 1);
+                if (navi[0] != NULL) {
+                    memcpy(navi[0], val, vlen);
+                    navi[0][vlen] = 0;
+                }
+            } else if (navi[1] == NULL && strcasecmp(key, "navi-down") == 0) {
+                navi[1] = MEM_malloc(0, vlen + 1);
+                if (navi[1] != NULL) {
+                    memcpy(navi[1], val, vlen);
+                    navi[1][vlen] = 0;
+                }
+            } else if (navi[2] == NULL && strcasecmp(key, "navi-left") == 0) {
+                navi[2] = MEM_malloc(0, vlen + 1);
+                if (navi[2] != NULL) {
+                    memcpy(navi[2], val, vlen);
+                    navi[2][vlen] = 0;
+                }
+            } else if (navi[3] == NULL && strcasecmp(key, "navi-right") == 0) {
+                navi[3] = MEM_malloc(0, vlen + 1);
+                if (navi[3] != NULL) {
+                    memcpy(navi[3], val, vlen);
+                    navi[3][vlen] = 0;
+                }
+            }
+        }
+    }
+    MEM_free(0, str);
+    return navi;
+}
+
+static const char D_00139164[6] = " \t:;";
+static const char D_0013916C[4] = "\t:;";
