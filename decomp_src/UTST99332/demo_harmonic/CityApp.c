@@ -269,11 +269,31 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN6common7C
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN6common7CmdLine5TokenERSt6vectorISsSaISsEESs);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZNK6common7CmdLine8find_argEPKc);
+extern template common::CmdLine::const_iterator std::find<common::CmdLine::const_iterator, const char *>(common::CmdLine::const_iterator, common::CmdLine::const_iterator, const char *const &, std::random_access_iterator_tag);
+
+common::CmdLine::const_iterator common::CmdLine::find_arg(const char *opts) const
+{
+    std::vector<std::string> toks;
+    Token(toks, opts);
+    for (std::vector<std::string>::iterator it = toks.begin(); it != toks.end(); ++it) {
+        const_iterator f = std::find(_args.begin(), _args.end(), it->c_str());
+        if (f != _args.end())
+            return f + 1;
+    }
+    return _args.end();
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN6common7CmdLineC1ESsSsSsSsSs);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZNK6common7CmdLine6inListEPKc);
+bool common::CmdLine::inList(const char *list) const
+{
+    std::vector<std::string> toks;
+    Token(toks, list);
+    for (std::vector<std::string>::iterator it = toks.begin(); it != toks.end(); ++it)
+        if (std::find(_args.begin(), _args.end(), it->c_str()) != _args.end())
+            return true;
+    return false;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN6common7CmdLine6defArgESsjPKc);
 

@@ -385,6 +385,7 @@ namespace common {
 class CmdLine {
 public:
     typedef std::vector<std::string>::const_iterator const_iterator;
+    static void Token(std::vector<std::string> &, std::string);
     const_iterator find_arg(const char *) const;
     bool inList(const char *) const;
     const_iterator end() const { return _args.end(); }
