@@ -1058,7 +1058,46 @@ inline Bmp::~Bmp()
 #if DEMO_LINKONCE_Bmp
 _Pragma("interface")
 #endif
-class Tga;
+/* lib/textures/Tga.h */
+class Tga : public common::FileDump {
+public:
+    enum Error {
+        NON_IMPLEMENTED_RLE_BLACK_AND_WHITE = -11, NON_IMPLEMENTED_RLE_TRUE_COLOR, NON_IMPLEMENTED_RLE_COLOR_MAPPED,
+        WRONG_FORMAT_RLE_BLACK_AND_WHITE, WRONG_FORMAT_RLE_TRUE_COLOR, WRONG_FORMAT_RLE_COLOR_MAPPED,
+        WRONG_FORMAT_BLACK_AND_WHITE, WRONG_FORMAT_TRUE_COLOR, WRONG_FORMAT_COLOR_MAPPED, WRONG_FORMAT, CANT_OPEN
+    };
+    Tga() : common::FileDump(0) {}
+    virtual ~Tga();
+    virtual int load(const char *);
+    int load_error(Error, const char *);
+    const unsigned char *_pixels;       /* 0x24 */
+    unsigned char _id_length;           /* 0x28 */
+    unsigned char _colormap_type;       /* 0x29 */
+    unsigned char _image_type;          /* 0x2A */
+    const unsigned char *_id;           /* 0x2C */
+    const unsigned char *_colormap;     /* 0x30 */
+    unsigned short _cmap_first;         /* 0x34 */
+    unsigned short _cmap_length;        /* 0x36 */
+    unsigned char _cmap_depth;          /* 0x38 */
+    unsigned short _x_origin;           /* 0x3A */
+    unsigned short _y_origin;           /* 0x3C */
+    unsigned short _width;              /* 0x3E */
+    unsigned short _height;             /* 0x40 */
+    unsigned char _pixel_depth;         /* 0x42 */
+    unsigned char _descriptor;          /* 0x43 */
+    unsigned char _alpha_bits;          /* 0x44 */
+    unsigned char _origin;              /* 0x45 */
+};
+/* linkonce copies: textures_textures_internal_Tga.o defines DEMO_LINKONCE_Tga */
+#if DEMO_LINKONCE_Tga
+_Pragma("implementation \"sgl_linkonce\"") _Pragma("interface \"sgl_linkonce\"")
+#endif
+inline Tga::~Tga()
+{
+}
+#if DEMO_LINKONCE_Tga
+_Pragma("interface")
+#endif
 }
 
 /* units that keep the module's "" (asm .rodata) define this to an extern label */
