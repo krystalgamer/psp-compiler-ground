@@ -27,7 +27,7 @@ extern unsigned int mes_ids[];
 extern MesObject *D_00585354;
 extern void *mes_date_table;
 extern void *mes_date_table1;
-MesValue mes_date_constructor(MesContext *ctx);
+MesValue mes_date_constructor(MesContext *ctx, MesValue y, MesValue mo, MesValue da, MesValue h, MesValue mi, MesValue s, MesValue ms);
 void *mes_native_new(MesContext *ctx, int a, void *fn, int nargs, int flags);
 void mes_native_setup(MesContext *ctx, MesObject *o, void *table, int n);
 typedef struct MesDate {
@@ -65,6 +65,7 @@ M2C_UNK mes_gc_register(M2C_UNK *, M2C_UNK, M2C_UNK, M2C_UNK); /* extern */
 extern unsigned char mes_date_method;
 
 
+MesDate *mes_date_from_string(MesContext *ctx, MesValue s);
 MesDate *mes_date_new(MesContext *ctx)
 {
     MesDate *d = mes_gc_alloc(ctx, 7);
@@ -239,7 +240,103 @@ MesValue mes_date_to_value(MesContext *ctx, MesDate *d)
     return mes_number_alloc(ctx, days * D_0013BD90 + ms);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_date", mes_date_constructor);
+MesValue mes_date_constructor(MesContext *ctx, MesValue y, MesValue mo, MesValue da, MesValue h, MesValue mi, MesValue s, MesValue ms)
+{
+    MesDate *d;
+    MesValue n;
+    int argc;
+
+    if (ctx->frame->construct) {
+        switch (ctx->frame->args != NULL ? ctx->frame->args->argc : 0) {
+        case 0:
+            return (MesValue)mes_date_now(ctx);
+        case 1:
+            y = mes_eval_to_primitive(ctx, y, 0);
+            *--ctx->sp = y;
+            if ((y & 3) == 3) {
+                d = mes_date_from_string(ctx, y);
+            } else {
+                y = mes_eval_to_number(ctx, y);
+                *ctx->sp = y;
+                d = mes_date_from_value(ctx, y);
+            }
+            ctx->sp++;
+            break;
+        default:
+            d = mes_date_new(ctx);
+            *--ctx->sp = (MesValue)d;
+            d->valid = 1;
+            n = mes_eval_to_number(ctx, y);
+            if ((n & 3) == 1)
+                d->year = n >> 2;
+            else
+                d->valid = 0;
+            n = mes_eval_to_number(ctx, mo);
+            if ((n & 3) == 1)
+                d->month = (n >> 2) + 1;
+            else
+                d->valid = 0;
+            if (da == 0) {
+                d->mday = 1;
+            } else {
+                n = mes_eval_to_number(ctx, da);
+                if ((n & 3) == 1)
+                    d->mday = n >> 2;
+                else
+                    d->valid = 0;
+            }
+            if (h != 0) {
+                n = mes_eval_to_number(ctx, h);
+                if ((n & 3) == 1)
+                    d->hours = n >> 2;
+                else
+                    d->valid = 0;
+            } else {
+                d->hours = 0;
+            }
+            if (mi != 0) {
+                n = mes_eval_to_number(ctx, mi);
+                if ((n & 3) == 1)
+                    d->minutes = n >> 2;
+                else
+                    d->valid = 0;
+            } else {
+                d->minutes = 0;
+            }
+            if (s != 0) {
+                n = mes_eval_to_number(ctx, s);
+                if ((n & 3) == 1)
+                    d->seconds = n >> 2;
+                else
+                    d->valid = 0;
+            } else {
+                d->seconds = 0;
+            }
+            if (ms != 0) {
+                n = mes_eval_to_number(ctx, ms);
+                if ((n & 3) == 1)
+                    d->ms = n >> 2;
+                else
+                    d->valid = 0;
+            } else {
+                d->ms = 0;
+            }
+            d->gmtoff = mes_date_local_gmtoff;
+            d->zone = mes_date_local_zone;
+            ctx->sp++;
+            if (d->valid)
+                mes_date_normalize(d);
+            break;
+        }
+        return (MesValue)d;
+    }
+    d = mes_date_now(ctx);
+    *--ctx->sp = (MesValue)d;
+    mes_date_set_gmtoff(d, mes_date_local_gmtoff);
+    n = mes_date_string(ctx, d, 1, 1, 0);
+    ctx->sp++;
+    return n;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
