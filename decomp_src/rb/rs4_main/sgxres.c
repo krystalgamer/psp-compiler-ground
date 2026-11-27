@@ -22,6 +22,18 @@ static inline char *ResListFirst(void) {
 void *sgxResFindWave(int id, int idx, int z);
 int RoundWavePos(void *w, long long pos);
 
+extern int gSgxDebugFlags;
+extern int gSgxPrefErr;
+extern const char D_0010A158[];
+extern const char D_0010A228[];
+void sgxPrintfPref(int, const char *, int, const char *, ...);
+void sgxStrCpyN(char *, const char *, int);
+void ResUpdateTuningSlot(void *);
+void ResUpdateTuningSlotAll(void);
+void sgxSndUseTuning(int);
+#define SGX_ERR(line, ...) if (gSgxDebugFlags & 1) sgxPrintfPref(gSgxPrefErr, D_0010A158, line, __VA_ARGS__)
+typedef struct { int pad[0x10]; int nOpen; int nOpen2; int nTune; } ResWorkT;
+
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/sgxres", D_0010A158);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxres", ResGetSlot);
@@ -106,7 +118,15 @@ int sgxResAttachBody(int id, int body) {
     return 1;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxres", sgxResAttachBodyFile);
+int sgxResAttachBodyFile(int id, const char *name, int size) {
+    char *p = ResGetSlot(id, SLOT_NAME("AttachBodyFile"));
+    if (p == NULL) return 0;
+    *(int *)(p + 0x68) = 2;
+    *(int *)(p + 0x6C) = size;
+    sgxStrCpyN(p + 0x74, name, 0x100);
+    *(char **)(p + 0x70) = p + 0x74;
+    return 1;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxres", sgxResClose);
 
@@ -134,11 +154,25 @@ const char *sgxResGetName(int id) {
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/sgxres", D_0010A21C);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxres", sgxResSetBank);
+void sgxResSetBank(int id, int idx, int v) {
+    char *p = ResGetSlot(id, SLOT_NAME("SetBank"));
+    if (p == NULL) return;
+    if ((unsigned int)idx >= 4) {
+        SGX_ERR(0x20B, D_0010A228, idx);
+        return;
+    }
+    ((short *)(p + 0x178))[idx] = v;
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/sgxres", D_0010A228);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxres", sgxResGetBank);
+int sgxResGetBank(int id, int idx) {
+    char *p = ResGetSlot(id, SLOT_NAME("GetBank"));
+    if (p == NULL) return -1;
+    if ((unsigned int)idx < 4) return ((short *)(p + 0x178))[idx];
+    SGX_ERR(0x21A, D_0010A228, idx);
+    return -1;
+}
 
 void sgxResSetUserData(int id, int data) {
     char *p = ResGetSlot(id, SLOT_NAME("SetUserData"));
@@ -257,11 +291,31 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxres", sgxResIsWaveLoop);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxres", sgxResGetWaveInfo);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxres", sgxResGetSeqCount);
+int sgxResGetSeqCount(int id, int idx) {
+    char *p = ResGetSlot(id, SLOT_NAME("GetSeqCount"));
+    int *t;
+    int o;
+    if (p == NULL) return 0;
+    t = *(int **)(p + 0x34);
+    if (t == NULL) return 0;
+    if (idx >= *(int *)(p + 0x38)) return 0;
+    if (idx < 0) return *(int *)(p + 0x38);
+    o = t[idx + 2];
+    if (o == 0) return 0;
+    return *(int *)(*(char **)(p + 0x14) + o + 4);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxres", sgxResIsSeqLoop);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxres", sgxResSetCategory);
+void sgxResSetCategory(int id, int cat) {
+    char *p = ResGetSlot(id, SLOT_NAME("SetCategory"));
+    if (p == NULL) return;
+    if ((unsigned int)cat >= 16) {
+        SGX_ERR(0x462, "out of range category (%d)\n", cat);
+        return;
+    }
+    *(short *)(p + 0x12) = cat;
+}
 
 int sgxResGetCategory(int id) {
     char *p = ResGetSlot(id, "GetCategory");
