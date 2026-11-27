@@ -55,6 +55,8 @@ split: $(BASEROM)
 	rm -rf $(BUILD)/.splat_cache.$(MODULE) tmp/asm/$(TARGET)/$(MODULE)
 	$(PYTHON) tools/prx_relocs.py $(BASEROM) $(BUILD)/reloc_addrs.$(MODULE).txt $(BUILD)/prx_syms.$(MODULE).txt --names config/$(TARGET)/symbol_addrs.$(MODULE).txt
 	$(PYTHON) tools/split.py $(CONFIG)
+	@# the .s files of INCLUDE_ASM/INCLUDE_RODATA are new: rebuild the units that include them
+	@grep -rlE '^INCLUDE_(ASM|RODATA)' decomp_src/$(TARGET)/$(MODULE) --include='*.c' | sed 's#^#$(BUILD)/#; s#$$#.o#' | xargs -r rm -f
 
 $(BUILD)/%.s.o: %.s
 	@mkdir -p $(@D)

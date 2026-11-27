@@ -7648,3 +7648,5 @@ _ZNSt24__default_alloc_templateILb1ELi0EE12_S_free_listE = 0x0019EFA0; // size:0
 _ZNSs20_S_empty_rep_storageE = 0x0019EFC0; // size:0x10
 errno = 0x0019EFD0; // size:0x4
 end = 0x0019EFD4;
+D_001689E8 = 0x001689E8; // size:0x8 nosplit (a double, loaded as two words)
+D_001689F0 = 0x001689F0; // size:0x8 nosplit (a double, loaded as two words)

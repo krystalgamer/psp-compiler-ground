@@ -582,7 +582,13 @@ def main():
     # nids.py below re-adds the exports and imports over them
     keep = [l for l in sym_path.read_text().splitlines() if l.strip()] \
         if sym_path.exists() and elf.get_section_by_name(".symtab") is None else []
-    sym_path.write_text("\n".join(symbol_lines(elf, text_end) + keep) + "\n")
+    # hand-marked whole objects (`nosplit`, see tools/prx_relocs.py) survive
+    if sym_path.exists() and not keep:
+        keep = [l for l in sym_path.read_text().splitlines() if re.search(r"//.*\bnosplit\b", l)]
+    kaddr = {m[1].upper() for m in (re.search(r"=\s*0x([0-9A-Fa-f]+)", l) for l in keep) if m}
+    base = [l for l in symbol_lines(elf, text_end)
+            if not (m := re.search(r"=\s*0x([0-9A-Fa-f]+)", l)) or m[1].upper() not in kaddr]
+    sym_path.write_text("\n".join(base + keep) + "\n")
     if elf.get_section_by_name(".symtab") is None:
         import nids
         nids.name_module(t, name, nids.load_db(), {}, True)

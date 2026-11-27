@@ -40,9 +40,19 @@ def main():
     args = ap.parse_args()
 
     names = {}
+    # `NAME = ADDR; // ... size:0xN ... nosplit`: one object (e.g. a double the
+    # code loads as two words); references inside it are NAME+offset, not
+    # symbols of their own
+    whole = []
     for f in args.names:
-        for m in re.finditer(r"^\s*(\w+)\s*=\s*(0x[0-9A-Fa-f]+|\d+)\s*;", f.read_text(), re.M):
+        for m in re.finditer(r"^\s*(\w+)\s*=\s*(0x[0-9A-Fa-f]+|\d+)\s*;(.*)$", f.read_text(), re.M):
             names[int(m[2], 0)] = m[1]
+            z = re.search(r"\bsize:(0x[0-9A-Fa-f]+|\d+)", m[3])
+            if z and re.search(r"\bnosplit\b", m[3]):
+                whole.append((int(m[2], 0), int(z[1], 0), m[1]))
+
+    def inside(target):
+        return next(((a, n) for a, z, n in whole if a < target < a + z), None)
 
     raw = args.prx.read_bytes()
     elf = ELFFile(open(args.prx, "rb"))
@@ -153,6 +163,10 @@ def main():
 
     for typ, rom, loc, target, link_value, addr_base in resolved:
         if typ == R_MIPS_32 and loc in jump_entries:
+            continue
+        w = inside(target) if typ in (R_MIPS_HI16, R_MIPS_LO16, R_MIPS_32) else None
+        if w:
+            lines.append(f"rom:{rom:#X} reloc:{REL_NAMES[typ]} symbol:{w[1]} addend:{target - w[0]:#x}")
             continue
         seg = segs[addr_base]
         in_seg = seg["p_vaddr"] <= target <= seg["p_vaddr"] + seg["p_memsz"]

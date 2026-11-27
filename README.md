@@ -49,7 +49,10 @@ module's data. With `-O3` cc1plus outputs every function at the end of the
 file, so a C++ unit that still has asm includes `cxx/defer_asm.h`, whose
 `INCLUDE_ASM` defers the asm the same way. A unit's data can be given to it
 with `rodata ADDR UNIT` / `bss ADDR UNIT` lines (and `rodata|bss ADDR -` to
-end the range) in `config/TARGET/files.MODULE.txt`; the rest stays asm. A `/* srcname: PATH */` comment makes cc1 see
+end the range) in `config/TARGET/files.MODULE.txt`; the rest stays asm. A data label marked `size:0xN nosplit` in
+`config/TARGET/symbol_addrs.MODULE.txt` is one object: references inside it
+become `NAME + offset` (e.g. a double the code loads as two words), and
+`gen_config --force` keeps such lines. A `/* srcname: PATH */` comment makes cc1 see
 its input as PATH (the original's file name, `tools/cc1name.py`): an object
 with no public symbol names its static constructor after it, plus six
 letters from `-frandom-seed` (the original's random value, set in `cflags`). `tools/dwarf2cpp.py TARGET MODULE UNIT [--probe FILE]` gives
