@@ -9,7 +9,7 @@ void mes_util_string_put(void *s, unsigned short c);
 void mes_util_string_put_string(void *s, int v);
 void mes_util_string_free(void *s);
 int mes_string_new3(void *ctx, void *s);
-void *mes_regexp_alternative(void *c);
+void *mes_regexp_alternative();
 typedef struct RxStr {
     unsigned short *str;
     int len;                          /* 0x4 */

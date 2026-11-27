@@ -41,6 +41,7 @@ M2C_UNK mes_gc_register(M2C_UNK *, M2C_UNK, M2C_UNK, M2C_UNK); /* extern */
 extern unsigned char mes_array_method;
 
 
+int mes_eval_to_int32(MesContext *ctx, MesValue v);
 MesArray *mes_array_new(MesContext *ctx, unsigned int len)
 {
     MesArray *a = mes_gc_alloc(ctx, 6);
@@ -263,7 +264,43 @@ MesValue mes_array_shift(MesContext *ctx)
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_array", mes_array_slice);
+MesValue mes_array_slice(MesContext *ctx, MesValue start, MesValue end)
+{
+    MesArray *a;
+    MesValue t;
+    MesValue v;
+    unsigned int n;
+    int s;
+    int e;
+
+    a = mes_array_new(ctx, 0);
+    *--ctx->sp = (MesValue)a;
+    t = (MesValue)ctx->frame->thisobj;
+    v = mes_eval_object_get(ctx, t, D_005852E4);
+    n = 0;
+    if (v != 0x20)
+        n = mes_eval_to_uint32(ctx, v);
+    s = mes_eval_to_int32(ctx, start);
+    if (s < 0) {
+        s += n;
+        if (s < 0)
+            s = 0;
+    } else if (s > n)
+        s = n;
+    e = mes_eval_to_int32(ctx, end);
+    if (e < 0) {
+        e += n;
+        if (e < 0)
+            e = 0;
+    } else if (e > n)
+        e = n;
+    for (; s < e; s++) {
+        v = mes_eval_object_get(ctx, t, MES_INT(s));
+        mes_array_set(ctx, a, v);
+    }
+    ctx->sp++;
+    return (MesValue)a;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_array", mes_array_sort_compare);
 
@@ -271,7 +308,33 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_array", mes_array_sort);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_array", mes_array_splice);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_array", mes_array_unshift);
+MesValue mes_array_unshift(MesContext *ctx)
+{
+    MesValue t = (MesValue)ctx->frame->thisobj;
+    MesArgs *a;
+    MesValue v;
+    unsigned int n;
+    unsigned int i;
+
+    v = mes_eval_object_get(ctx, t, D_005852E4);
+    n = 0;
+    if (v != 0x20)
+        n = mes_eval_to_uint32(ctx, v);
+    a = ctx->frame->args;
+    if (a == NULL)
+        return MES_INT(n);
+    i = n;
+    while (i != 0) {
+        i--;
+        v = mes_eval_object_get(ctx, t, MES_INT(i));
+        mes_eval_object_put(ctx, t, MES_INT(i + a->argc), v);
+    }
+    for (i = 0; i < a->argc; i++)
+        mes_eval_object_put(ctx, t, MES_INT(i), a->argv[i]);
+    v = MES_INT(n + a->argc);
+    mes_eval_object_put(ctx, t, D_005852E4, v);
+    return v;
+}
 
 void mes_array_setup(MesContext *ctx)
 {
