@@ -1,34 +1,112 @@
 /* lang: c++ */
-/* cflags: -Os */
+/* cflags: -Os -fno-strength-reduce -fno-merge-constants -fno-exceptions */
+/* #pragma interface: the vtables, typeinfo and implicit destructors stay in the module's asm */
+#pragma interface "rodata"
 #include "common.h"
+
+struct InstDat;
+struct bxAnm;
+
 extern "C" {
+void _memFree(void *p, const char *file, int line);
+InstDat *resGetDatLocal(int a, int b);
+bxAnm *bxAnmInitEx(InstDat *d, int entry);
+void bxAnmTerm(bxAnm *a);
+int bxAnmExec(bxAnm *a);
+void bxAnmDraw(bxAnm *a, void *m, void *attr);
+int gameGetGameMode(void);
+int gameGetEntry(void);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_anim", _ZN2Ys6Anim2DC2Ev);
+namespace Ys {
+class Object {
+public:
+	static void operator delete(void *p) { _memFree(p, "src/ys/ys_object.h", 25); }
+};
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_anim", _ZN2Ys6Anim2DC1Ev);
+namespace Cop {
+class DrawAttribute {
+public:
+	char _0[0x30];
+	void Reset();
+};
+class Matrix4x4;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_anim", _ZN2Ys6Anim2DD2Ev);
+class Anim2D : public Object {
+public:
+	int _4[3];
+	Cop::DrawAttribute attr;
+	bxAnm *anm;
+	signed char entry;
+	signed char group;
+	short id;
+	signed char visible;
+	Anim2D();
+	virtual ~Anim2D();
+	void Unload();
+	void Load(int id_, int group_);
+	void Reload();
+	int Exec();
+	void Draw(Cop::Matrix4x4 &m);
+};
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_anim", _ZN2Ys6Anim2DD1Ev);
+Anim2D::Anim2D()
+{
+	attr.Reset();
+	anm = 0;
+	entry = gameGetGameMode() == 1 ? gameGetEntry() : 0;
+	visible = 1;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_anim", _ZN2Ys6Anim2DD0Ev);
+Anim2D::~Anim2D()
+{
+	Unload();
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_anim", _ZN2Ys6Anim2D6UnloadEv);
+void Anim2D::Unload()
+{
+	if (anm) {
+		bxAnmTerm(anm);
+		anm = 0;
+	}
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_anim", _ZN2Ys6Anim2D4LoadEii);
+void Anim2D::Load(int id_, int group_)
+{
+	Unload();
+	group = group_;
+	id = id_;
+	InstDat *d = resGetDatLocal(group_, id_);
+	if (d)
+		anm = bxAnmInitEx(d, entry);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_anim", _ZN2Ys6Anim2D6ReloadEv);
+void Anim2D::Reload()
+{
+	if (anm)
+		Load(id, group);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_anim", _ZN2Ys6Anim2D4ExecEv);
+int Anim2D::Exec()
+{
+	int r = 0;
+	if (anm)
+		r = bxAnmExec(anm);
+	return r;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_anim", _ZN2Ys6Anim2D4DrawERNS_3Cop9Matrix4x4E);
+void Anim2D::Draw(Cop::Matrix4x4 &m)
+{
+	bxAnm *a = anm;
+	if (a && visible)
+		bxAnmDraw(a, &m, &attr);
+}
 
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_anim", _ZTVN2Ys6Anim2DE);
+}
 
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_anim", D_00104B10);
 
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_anim", _ZTIN2Ys6Anim2DE);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_anim", _ZTSN2Ys6Anim2DE);
-
-} /* extern "C": m2c drafts with mangled names, kept as C linkage */
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_anim", _ZTVN2Ys6Anim2DE); }
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_anim", D_00104B10); }
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_anim", _ZTIN2Ys6Anim2DE); }
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_anim", _ZTSN2Ys6Anim2DE); }
