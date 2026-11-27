@@ -65,7 +65,21 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/shop", _ShopSaruCardC
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/shop", _ShopSaruCardCheck2);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/shop", _ShopDeckCheck);
+typedef struct { unsigned char kind; unsigned char pad; unsigned short id; } ShopCard;
+int _ShopDeckCheck(char *w, ShopCard *c)
+{
+	int r = -1;
+	int i, n;
+	if (c != NULL) {
+		n = *(int *)(w + 0x7FF4);
+		for (i = 0; i < n; i++) {
+			ShopCard *e = (ShopCard *)(i * 4 + (int)w + 0x5BE0);
+			if (e[1].id == c->id && e[1].kind == c->kind)
+				r = i;
+		}
+	}
+	return r;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/shop", _ShopDeckCheckSet);
 
