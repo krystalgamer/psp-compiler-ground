@@ -13,13 +13,13 @@ int strcasecmp(const char *a, const char *b);
 BOX *lo_getActiveFrameBodybox(void *ctx);
 void *MEM_malloc(int pool, unsigned int size);
 void *lo_getFocusNavi(void *node);
-FOCUSLIST *getNext2DFocusLeft(void *frame, void *a1, FOCUSLIST *l);
-FOCUSLIST *getNext2DFocusRight(void *frame, void *a1, FOCUSLIST *l);
+FOCUSLIST *getNext2DFocusLeft(void *frame, FOCUSLIST *list, FOCUSLIST *cur);
+FOCUSLIST *getNext2DFocusRight(void *frame, FOCUSLIST *list, FOCUSLIST *cur);
 FOCUSLIST *getNextNaviFocus(void *frame, FOCUSLIST *l, FOCUSLIST *cur, char *name);
 void scrollToCurrent2DFocusPosition(void *frame, FOCUSLIST *l);
 FOCUSLIST *scrollToNextPosition(void *frame, void *a1, FOCUSLIST *l, int dir);
-FOCUSLIST *getNext2DFocusDown(void *frame, void *a1, FOCUSLIST *l, void *obj);
-FOCUSLIST *getNext2DFocusUp(void *frame, void *a1, FOCUSLIST *l, void *obj);
+FOCUSLIST *getNext2DFocusDown(void *frame, FOCUSLIST *list, FOCUSLIST *cur, BOX *obj);
+FOCUSLIST *getNext2DFocusUp(void *frame, FOCUSLIST *list, FOCUSLIST *cur, BOX *obj);
 void *getBodyBox(void *box);
 void drawObject(BOX *box);
 int checkBoxValidity(void *box);
@@ -38,6 +38,16 @@ STRWORD UTL_strword(char *s, char *delim, char *stop);
 extern DOMString _DOMfocusnavi;
 void *MEM_calloc(int pool, unsigned int size);
 void *memcpy(void *d, const void *s, unsigned int n);
+double pow(double, double);
+double sqrt(double);
+extern const double D_001390F8;
+extern const double D_00139100;
+extern const double D_00139108;
+extern const double D_00139110;
+extern const double D_00139118;
+extern const double D_00139120;
+extern const double D_00139128;
+extern const double D_00139130;
 void freeAllList(void *arg0) {
     void *temp_a1;
     void *temp_a1_2;
@@ -419,13 +429,717 @@ void getRealFocusMaxBounds(FOCUSLIST *f, int *x, int *y, int *w, int *h) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_focus", getNext2DFocusUp);
+FOCUSLIST *getNext2DFocusUp(void *frame, FOCUSLIST *list, FOCUSLIST *cur, BOX *obj) {
+    int x, y, w, h;
+    int vx, vy, vw, vh;
+    int cx, cy, cw, ch;
+    FOCUSLIST *l;
+    FOCUSLIST *best;
+    FOCUSLIST *best2;
+    int bx, by, bw, bh, bd;
+    int b2x, b2y, b2w, b2h, b2d;
+    int mind;
+    int d;
+    int c;
+    int dist;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_focus", getNext2DFocusDown);
+    best = NULL;
+    best2 = NULL;
+    bx = 0;
+    by = 0;
+    bw = 0;
+    bh = 0;
+    bd = 0;
+    b2x = 0;
+    b2y = 0;
+    b2w = 0;
+    b2h = 0;
+    b2d = 0;
+    mind = -1;
+    if (cur == NULL) {
+        return list;
+    }
+    if (obj != NULL) {
+        x = obj->x;
+        y = obj->y + 1;
+        w = 0;
+        h = 0;
+        cur = NULL;
+    } else {
+        getRealFocusMaxBounds(cur, &x, &y, &w, &h);
+    }
+    getViewPort(frame, &vx, &vy);
+    getViewClientSize(frame, &vw, &vh);
+    if (((BOX *)FFRAME(frame))->x - (vx + vw) >= M2C_FIELD(ui_global, int *, 0x74) * 2) {
+        vw -= M2C_FIELD(ui_global, int *, 0x74) * 2;
+    }
+    if (((BOX *)FFRAME(frame))->y - (vy + vh) >= M2C_FIELD(ui_global, int *, 0x74) * 2 + 2) {
+        vh = vh - M2C_FIELD(ui_global, int *, 0x74) * 2 - 2;
+    }
+    if (vx >= M2C_FIELD(ui_global, int *, 0x74) * 2) {
+        vx += M2C_FIELD(ui_global, int *, 0x74) * 2;
+        vw -= M2C_FIELD(ui_global, int *, 0x74) * 2;
+    }
+    if (vy >= M2C_FIELD(ui_global, int *, 0x74) * 2 + 2) {
+        vy += M2C_FIELD(ui_global, int *, 0x74) * 2 + 2;
+        vh = vh - M2C_FIELD(ui_global, int *, 0x74) * 2 - 2;
+    }
+    if (x < vx) {
+        w -= vx - x;
+        x = vx;
+    }
+    if (y < vy) {
+        h -= vy - y;
+        y = vy;
+    }
+    if (x + w > vx + vw) {
+        w -= x + w - (vx + vw);
+    }
+    if (y + h > vy + vh) {
+        h -= y + h - (vy + vh);
+    }
+    for (l = list; l != NULL; l = l->next) {
+        if (l == cur) {
+            continue;
+        }
+        getRealFocusMaxBounds(l, &cx, &cy, &cw, &ch);
+        if (vx < cx + cw && vy < cy + ch && cx < vx + vw && cy < vy + vh &&
+            (y >= cy + ch || (cy < y && cy + ch < y + h && x < cx + cw && cx < x + w))) {
+            if (cx < vx) {
+                cw -= vx - cx;
+                cx = vx;
+            }
+            if (cy < vy) {
+                ch -= vy - cy;
+                cy = vy;
+            }
+            if (cx + cw > vx + vw) {
+                cw -= cx + cw - (vx + vw);
+            }
+            if (cy + ch > vy + vh) {
+                ch -= cy + ch - (vy + vh);
+            }
+            d = (w >> 1) + x;
+            if (d < cx) {
+                d = cx - d;
+            } else if (cx + cw < d) {
+                d = d - (cx + cw);
+            } else {
+                d = 0;
+            }
+            dist = sqrt(pow(d, D_001390F8) + pow(y - (cy + ch), D_001390F8)) * D_00139100;
+            if (best == NULL) {
+                best = l;
+                bx = cx;
+                by = cy;
+                bw = cw;
+                bh = ch;
+                bd = dist;
+                best2 = l;
+                b2x = cx;
+                b2y = cy;
+                b2w = cw;
+                b2h = ch;
+                b2d = dist;
+            } else if (by + bh < cy + ch) {
+                best = l;
+                bx = cx;
+                by = cy;
+                bw = cw;
+                bh = ch;
+                bd = dist;
+            } else if (by + bh == cy + ch && dist < bd) {
+                best = l;
+                bx = cx;
+                by = cy;
+                bw = cw;
+                bh = ch;
+                bd = dist;
+            }
+            if (dist < b2d) {
+                best2 = l;
+                b2x = cx;
+                b2y = cy;
+                b2w = cw;
+                b2h = ch;
+                b2d = dist;
+            }
+        }
+    }
+    if (best2 != NULL && best2 != best && by < b2y + b2h && (b2x >= bx + bw || bx >= b2x + b2w)) {
+        best = best2;
+    }
+    if (best != NULL) {
+        return best;
+    }
+    for (l = list; l != NULL; l = l->next) {
+        if (l == cur) {
+            continue;
+        }
+        getRealFocusMaxBounds(l, &cx, &cy, &cw, &ch);
+        if (vx < cx + cw && vy < cy + ch && cx < vx + vw && cy < vy + vh) {
+            if (cx < vx) {
+                cw -= vx - cx;
+                cx = vx;
+            }
+            if (cy < vy) {
+                ch -= vy - cy;
+                cy = vy;
+            }
+            if (cx + cw > vx + vw) {
+                cw -= cx + cw - (vx + vw);
+            }
+            if (cy + ch > vy + vh) {
+                ch -= cy + ch - (vy + vh);
+            }
+            ch = y - cy;
+            if (ch > 0) {
+                cw = abs(cx - x);
+                if (cw == 0) {
+                    cw = 1;
+                }
+                if (ch * 1000 / cw >= 200) {
+                    dist = sqrt(pow(cw, D_001390F8) + pow(ch, D_001390F8));
+                    if (dist <= mind || mind == -1) {
+                        mind = dist;
+                        best = l;
+                    }
+                }
+            }
+        }
+    }
+    if (best == NULL) {
+        best = cur;
+    }
+    return best;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_focus", getNext2DFocusLeft);
+FOCUSLIST *getNext2DFocusDown(void *frame, FOCUSLIST *list, FOCUSLIST *cur, BOX *obj) {
+    int x, y, w, h;
+    int vx, vy, vw, vh;
+    int cx, cy, cw, ch;
+    FOCUSLIST *l;
+    FOCUSLIST *best;
+    FOCUSLIST *best2;
+    int bx, by, bw, bh, bd;
+    int b2x, b2y, b2w, b2h, b2d;
+    int mind;
+    int d;
+    int c;
+    int dist;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_focus", getNext2DFocusRight);
+    best = NULL;
+    best2 = NULL;
+    bx = 0;
+    by = 0;
+    bw = 0;
+    bh = 0;
+    bd = 0;
+    b2x = 0;
+    b2y = 0;
+    b2w = 0;
+    b2h = 0;
+    b2d = 0;
+    mind = -1;
+    if (cur == NULL) {
+        return list;
+    }
+    if (obj != NULL) {
+        x = obj->x;
+        y = obj->y - 1;
+        w = 0;
+        h = 0;
+        cur = NULL;
+    } else {
+        getRealFocusMaxBounds(cur, &x, &y, &w, &h);
+    }
+    getViewPort(frame, &vx, &vy);
+    getViewClientSize(frame, &vw, &vh);
+    if (((BOX *)FFRAME(frame))->x - (vx + vw) >= M2C_FIELD(ui_global, int *, 0x74) * 2) {
+        vw -= M2C_FIELD(ui_global, int *, 0x74) * 2;
+    }
+    if (((BOX *)FFRAME(frame))->y - (vy + vh) >= M2C_FIELD(ui_global, int *, 0x74) * 2 + 2) {
+        vh = vh - M2C_FIELD(ui_global, int *, 0x74) * 2 - 2;
+    }
+    if (vx >= M2C_FIELD(ui_global, int *, 0x74) * 2) {
+        vx += M2C_FIELD(ui_global, int *, 0x74) * 2;
+        vw -= M2C_FIELD(ui_global, int *, 0x74) * 2;
+    }
+    if (vy >= M2C_FIELD(ui_global, int *, 0x74) * 2 + 2) {
+        vy += M2C_FIELD(ui_global, int *, 0x74) * 2 + 2;
+        vh = vh - M2C_FIELD(ui_global, int *, 0x74) * 2 - 2;
+    }
+    if (x < vx) {
+        w -= vx - x;
+        x = vx;
+    }
+    if (y < vy) {
+        h -= vy - y;
+        y = vy;
+    }
+    if (x + w > vx + vw) {
+        w -= x + w - (vx + vw);
+    }
+    if (y + h > vy + vh) {
+        h -= y + h - (vy + vh);
+    }
+    for (l = list; l != NULL; l = l->next) {
+        if (l == cur) {
+            continue;
+        }
+        getRealFocusMaxBounds(l, &cx, &cy, &cw, &ch);
+        if (vx < cx + cw && vy < cy + ch && cx < vx + vw && cy < vy + vh &&
+            (cy >= y + h || (y < cy && y + h < cy + ch && x < cx + cw && cx < x + w))) {
+            if (cx < vx) {
+                cw -= vx - cx;
+                cx = vx;
+            }
+            if (cy < vy) {
+                ch -= vy - cy;
+                cy = vy;
+            }
+            if (cx + cw > vx + vw) {
+                cw -= cx + cw - (vx + vw);
+            }
+            if (cy + ch > vy + vh) {
+                ch -= cy + ch - (vy + vh);
+            }
+            d = (w >> 1) + x;
+            if (d < cx) {
+                d = cx - d;
+            } else if (cx + cw < d) {
+                d = d - (cx + cw);
+            } else {
+                d = 0;
+            }
+            dist = sqrt(pow(d, D_00139108) + pow(y + h - cy, D_00139108)) * D_00139110;
+            if (best == NULL) {
+                best = l;
+                bx = cx;
+                by = cy;
+                bw = cw;
+                bh = ch;
+                bd = dist;
+                best2 = l;
+                b2x = cx;
+                b2y = cy;
+                b2w = cw;
+                b2h = ch;
+                b2d = dist;
+            } else if (cy < by) {
+                best = l;
+                bx = cx;
+                by = cy;
+                bw = cw;
+                bh = ch;
+                bd = dist;
+            } else if (by == cy && dist < bd) {
+                best = l;
+                bx = cx;
+                by = cy;
+                bw = cw;
+                bh = ch;
+                bd = dist;
+            }
+            if (dist < b2d) {
+                best2 = l;
+                b2x = cx;
+                b2y = cy;
+                b2w = cw;
+                b2h = ch;
+                b2d = dist;
+            }
+        }
+    }
+    if (best2 != NULL && best2 != best && b2y < by + bh && (b2x >= bx + bw || bx >= b2x + b2w)) {
+        best = best2;
+    }
+    if (best != NULL) {
+        return best;
+    }
+    for (l = list; l != NULL; l = l->next) {
+        if (l == cur) {
+            continue;
+        }
+        getRealFocusMaxBounds(l, &cx, &cy, &cw, &ch);
+        if (vx < cx + cw && vy < cy + ch && cx < vx + vw && cy < vy + vh) {
+            if (cx < vx) {
+                cw -= vx - cx;
+                cx = vx;
+            }
+            if (cy < vy) {
+                ch -= vy - cy;
+                cy = vy;
+            }
+            if (cx + cw > vx + vw) {
+                cw -= cx + cw - (vx + vw);
+            }
+            if (cy + ch > vy + vh) {
+                ch -= cy + ch - (vy + vh);
+            }
+            ch = cy - y;
+            if (ch > 0) {
+                cw = abs(cx - x);
+                if (cw == 0) {
+                    cw = 1;
+                }
+                if (ch * 1000 / cw >= 200) {
+                    dist = sqrt(pow(cw, D_00139108) + pow(ch, D_00139108));
+                    if (dist <= mind || mind == -1) {
+                        mind = dist;
+                        best = l;
+                    }
+                }
+            }
+        }
+    }
+    if (best == NULL) {
+        best = cur;
+    }
+    return best;
+}
+
+FOCUSLIST *getNext2DFocusLeft(void *frame, FOCUSLIST *list, FOCUSLIST *cur) {
+    int x, y, w, h;
+    int vx, vy, vw, vh;
+    int cx, cy, cw, ch;
+    FOCUSLIST *l;
+    FOCUSLIST *best;
+    FOCUSLIST *best2;
+    int bx, by, bw, bh, bd;
+    int b2x, b2y, b2w, b2h, b2d;
+    int mind;
+    int d;
+    int c;
+    int dist;
+
+    best = NULL;
+    best2 = NULL;
+    bx = 0;
+    by = 0;
+    bw = 0;
+    bh = 0;
+    bd = 0;
+    b2x = 0;
+    b2y = 0;
+    b2w = 0;
+    b2h = 0;
+    b2d = 0;
+    mind = -1;
+    if (cur == NULL) {
+        return list;
+    }
+    getRealFocusMaxBounds(cur, &x, &y, &w, &h);
+    getViewPort(frame, &vx, &vy);
+    getViewClientSize(frame, &vw, &vh);
+    if (((BOX *)FFRAME(frame))->x - (vx + vw) >= M2C_FIELD(ui_global, int *, 0x74) * 2) {
+        vw -= M2C_FIELD(ui_global, int *, 0x74) * 2;
+    }
+    if (((BOX *)FFRAME(frame))->y - (vy + vh) >= M2C_FIELD(ui_global, int *, 0x74) * 2 + 2) {
+        vh = vh - M2C_FIELD(ui_global, int *, 0x74) * 2 - 2;
+    }
+    if (vx >= M2C_FIELD(ui_global, int *, 0x74) * 2) {
+        vx += M2C_FIELD(ui_global, int *, 0x74) * 2;
+        vw -= M2C_FIELD(ui_global, int *, 0x74) * 2;
+    }
+    if (vy >= M2C_FIELD(ui_global, int *, 0x74) * 2 + 2) {
+        vy += M2C_FIELD(ui_global, int *, 0x74) * 2 + 2;
+        vh = vh - M2C_FIELD(ui_global, int *, 0x74) * 2 - 2;
+    }
+    if (x < vx) {
+        w -= vx - x;
+        x = vx;
+    }
+    if (y < vy) {
+        h -= vy - y;
+        y = vy;
+    }
+    if (x + w > vx + vw) {
+        w -= x + w - (vx + vw);
+    }
+    if (y + h > vy + vh) {
+        h -= y + h - (vy + vh);
+    }
+    for (l = list; l != NULL; l = l->next) {
+        if (l == cur) {
+            continue;
+        }
+        getRealFocusMaxBounds(l, &cx, &cy, &cw, &ch);
+        if (!(vx < cx + cw && vy < cy + ch && cx < vx + vw && cy < vy + vh)) continue;
+        if (y < cy + ch && cy < y + h && (x >= cx + cw || (cx < x && cx + cw < x + w))) {
+            if (cx < vx) {
+                cw -= vx - cx;
+                cx = vx;
+            }
+            if (cy < vy) {
+                ch -= vy - cy;
+                cy = vy;
+            }
+            if (cx + cw > vx + vw) {
+                cw -= cx + cw - (vx + vw);
+            }
+            if (cy + ch > vy + vh) {
+                ch -= cy + ch - (vy + vh);
+            }
+            d = (h >> 1) + y;
+            if (d < cy) {
+                d = cy - d;
+            } else if (cy + ch < d) {
+                d = d - (cy + ch);
+            } else {
+                d = 0;
+            }
+            dist = sqrt(pow(d, D_00139118) + pow(x - (cx + cw), D_00139118)) * D_00139120;
+            if (best == NULL) {
+                best = l;
+                bx = cx;
+                by = cy;
+                bw = cw;
+                bh = ch;
+                best2 = l;
+                b2x = cx;
+                b2y = cy;
+                b2w = cw;
+                b2h = ch;
+                b2d = dist;
+            } else if (bx + bw < cx + cw) {
+                best = l;
+                bx = cx;
+                by = cy;
+                bw = cw;
+                bh = ch;
+            } else if (bx + bw == cx + cw && dist < bd) {
+                best = l;
+                bx = cx;
+                by = cy;
+                bw = cw;
+                bh = ch;
+            }
+            if (dist < b2d) {
+                best2 = l;
+                b2x = cx;
+                b2y = cy;
+                b2w = cw;
+                b2h = ch;
+                b2d = dist;
+            }
+        }
+    }
+    if (best2 != NULL && best2 != best && bx < b2x + b2w && (b2y >= by + bh || by >= b2y + b2h)) {
+        best = best2;
+    }
+    if (best != NULL) {
+        return best;
+    }
+    for (l = list; l != NULL; l = l->next) {
+        if (l == cur) {
+            continue;
+        }
+        getRealFocusMaxBounds(l, &cx, &cy, &cw, &ch);
+        if (vx < cx + cw && vy < cy + ch && cx < vx + vw && cy < vy + vh) {
+            if (cx < vx) {
+                cw -= vx - cx;
+                cx = vx;
+            }
+            if (cy < vy) {
+                ch -= vy - cy;
+                cy = vy;
+            }
+            if (cx + cw > vx + vw) {
+                cw -= cx + cw - (vx + vw);
+            }
+            if (cy + ch > vy + vh) {
+                ch -= cy + ch - (vy + vh);
+            }
+            cw = x - cx;
+            ch = abs(y - cy);
+            if (cw > 0) {
+                if (ch * 1000 / cw < 200) {
+                    dist = sqrt(pow(cw, D_00139118) + pow(ch, D_00139118));
+                    if (dist <= mind || mind == -1) {
+                        mind = dist;
+                        best = l;
+                    }
+                }
+            }
+        }
+    }
+    if (best == NULL) {
+        best = cur;
+    }
+    return best;
+}
+
+FOCUSLIST *getNext2DFocusRight(void *frame, FOCUSLIST *list, FOCUSLIST *cur) {
+    int x, y, w, h;
+    int vx, vy, vw, vh;
+    int cx, cy, cw, ch;
+    FOCUSLIST *l;
+    FOCUSLIST *best;
+    FOCUSLIST *best2;
+    int bx, by, bw, bh, bd;
+    int b2x, b2y, b2w, b2h, b2d;
+    int mind;
+    int d;
+    int c;
+    int dist;
+
+    best = NULL;
+    best2 = NULL;
+    bx = 0;
+    by = 0;
+    bw = 0;
+    bh = 0;
+    bd = 0;
+    b2x = 0;
+    b2y = 0;
+    b2w = 0;
+    b2h = 0;
+    b2d = 0;
+    mind = -1;
+    if (cur == NULL) {
+        return list;
+    }
+    getRealFocusMaxBounds(cur, &x, &y, &w, &h);
+    getViewPort(frame, &vx, &vy);
+    getViewClientSize(frame, &vw, &vh);
+    if (((BOX *)FFRAME(frame))->x - (vx + vw) >= M2C_FIELD(ui_global, int *, 0x74) * 2) {
+        vw -= M2C_FIELD(ui_global, int *, 0x74) * 2;
+    }
+    if (((BOX *)FFRAME(frame))->y - (vy + vh) >= M2C_FIELD(ui_global, int *, 0x74) * 2 + 2) {
+        vh = vh - M2C_FIELD(ui_global, int *, 0x74) * 2 - 2;
+    }
+    if (vx >= M2C_FIELD(ui_global, int *, 0x74) * 2) {
+        vx += M2C_FIELD(ui_global, int *, 0x74) * 2;
+        vw -= M2C_FIELD(ui_global, int *, 0x74) * 2;
+    }
+    if (vy >= M2C_FIELD(ui_global, int *, 0x74) * 2 + 2) {
+        vy += M2C_FIELD(ui_global, int *, 0x74) * 2 + 2;
+        vh = vh - M2C_FIELD(ui_global, int *, 0x74) * 2 - 2;
+    }
+    if (x < vx) {
+        w -= vx - x;
+        x = vx;
+    }
+    if (y < vy) {
+        h -= vy - y;
+        y = vy;
+    }
+    if (x + w > vx + vw) {
+        w -= x + w - (vx + vw);
+    }
+    if (y + h > vy + vh) {
+        h -= y + h - (vy + vh);
+    }
+    for (l = list; l != NULL; l = l->next) {
+        if (l == cur) {
+            continue;
+        }
+        getRealFocusMaxBounds(l, &cx, &cy, &cw, &ch);
+        if (vx < cx + cw && vy < cy + ch && cx < vx + vw && cy < vy + vh &&
+            y < cy + ch && cy < y + h && (cx >= x + w || (x < cx && x + w < cx + cw))) {
+            if (cx < vx) {
+                cw -= vx - cx;
+                cx = vx;
+            }
+            if (cy < vy) {
+                ch -= vy - cy;
+                cy = vy;
+            }
+            if (cx + cw > vx + vw) {
+                cw -= cx + cw - (vx + vw);
+            }
+            if (cy + ch > vy + vh) {
+                ch -= cy + ch - (vy + vh);
+            }
+            d = (h >> 1) + y;
+            if (d < cy) {
+                d = cy - d;
+            } else if (cy + ch < d) {
+                d = d - (cy + ch);
+            } else {
+                d = 0;
+            }
+            dist = sqrt(pow(d, D_00139128) + pow(x + w - cx, D_00139128)) * D_00139130;
+            if (best == NULL) {
+                best = l;
+                bx = cx;
+                by = cy;
+                bw = cw;
+                bh = ch;
+                best2 = l;
+                b2x = cx;
+                b2y = cy;
+                b2w = cw;
+                b2h = ch;
+                b2d = dist;
+            } else if (cx < bx) {
+                best = l;
+                bx = cx;
+                by = cy;
+                bw = cw;
+                bh = ch;
+            } else if (bx == cx && dist < bd) {
+                best = l;
+                bx = cx;
+                by = cy;
+                bw = cw;
+                bh = ch;
+            }
+            if (dist < b2d) {
+                best2 = l;
+                b2x = cx;
+                b2y = cy;
+                b2w = cw;
+                b2h = ch;
+                b2d = dist;
+            }
+        }
+    }
+    if (best2 != NULL && best2 != best && b2x < bx + bw && (b2y >= by + bh || by >= b2y + b2h)) {
+        best = best2;
+    }
+    if (best != NULL) {
+        return best;
+    }
+    for (l = list; l != NULL; l = l->next) {
+        if (l == cur) {
+            continue;
+        }
+        getRealFocusMaxBounds(l, &cx, &cy, &cw, &ch);
+        if (vx < cx + cw && vy < cy + ch && cx < vx + vw && cy < vy + vh) {
+            if (cx < vx) {
+                cw -= vx - cx;
+                cx = vx;
+            }
+            if (cy < vy) {
+                ch -= vy - cy;
+                cy = vy;
+            }
+            if (cx + cw > vx + vw) {
+                cw -= cx + cw - (vx + vw);
+            }
+            if (cy + ch > vy + vh) {
+                ch -= cy + ch - (vy + vh);
+            }
+            cw = cx - x;
+            ch = abs(y - cy);
+            if (cw > 0) {
+                if (ch * 1000 / cw < 200) {
+                    dist = sqrt(pow(cw, D_00139128) + pow(ch, D_00139128));
+                    if (dist <= mind || mind == -1) {
+                        mind = dist;
+                        best = l;
+                    }
+                }
+            }
+        }
+    }
+    if (best == NULL) {
+        best = cur;
+    }
+    return best;
+}
 
 FOCUSLIST *findFocusInView(void *frame, void *a1, FOCUSLIST *def, void *box) {
     FOCUSLIST *l;
