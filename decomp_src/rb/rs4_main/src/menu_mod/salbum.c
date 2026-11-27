@@ -10,7 +10,7 @@ extern unsigned char D_00103870;
 extern unsigned char D_001038A4;
 extern unsigned char D_001038B0;
 M2C_UNK salbumCalcCardNumBySaveID(int, int, unsigned char, int); /* extern */
-M2C_UNK salbumClearNewFlagBySaveID(int, int, unsigned char);
+int salbumClearNewFlagBySaveID();
 
                            /* extern */
 
@@ -83,7 +83,19 @@ void salbumCalcCardNum(int arg0, void *arg1, int arg2) {
     salbumCalcCardNumBySaveID(arg0, cardlistGetSaveID((int) M2C_FIELD(arg1, unsigned short *, 2)), M2C_FIELD(arg1, unsigned char *, 0), arg2);
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/salbum", salbumClearNewFlagBySaveID);
+typedef struct { unsigned int num : 7, isnew : 1, rest : 24; } SalbumEnt;
+extern unsigned char D_00103854, D_00103870, D_001038A4;
+int salbumClearNewFlagBySaveID(SalbumEnt *p, unsigned int id, int kind)
+{
+	int r;
+	if (p == NULL)
+		consPrintf(&D_00103854, &D_00103870, 0x95, "salbumClearNewFlagBySaveID", &D_001038A4);
+	if (id >= 256 || kind >= 3)
+		return -1;
+	r = p[id * 3 + kind].isnew;
+	p[id * 3 + kind].isnew = 0;
+	return r;
+}
 
 void salbumClearNewFlag(int arg0, void *arg1) {
     if (arg1 == NULL) {
