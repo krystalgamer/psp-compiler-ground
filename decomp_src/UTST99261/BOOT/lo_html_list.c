@@ -39,6 +39,13 @@ extern char D_0013F064[];
 extern char D_0013F068[];
 extern char D_0013F06C[];
 int strcmp(const char *a, const char *b);
+extern unsigned char _DOMvalue;
+BOX *getListBox(BOX *b);
+void addBoxList(void *l, BOX *b);
+signed char *getListNumChar(int n, int type);
+void *createLIBox_head(void *node, BOX *li, signed char *str, int type);
+void delLinkBox(BOX *b);
+void freeBox(BOX *b, int f);
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_html_list", getLINumber);
 
 BOX *createLIBox_li(void *node, BOX *parent, BOX *prev) {
@@ -212,7 +219,61 @@ BOX *html_UL(void *node, BOX *parent, BOX *prev) {
     return box;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_html_list", html_LI);
+BOX *html_LI(void *node, BOX *parent, BOX *prev) {
+    BOX *li;
+    BOX *list;
+    int type;
+    int val;
+    int num;
+    int ltype;
+    char *s;
+    signed char *str;
+
+    ltype = 0;
+    li = createLIBox_li(node, parent, prev);
+    if (li == NULL)
+        return NULL;
+    list = getListBox(li);
+    if (list != NULL)
+        addBoxList((char *)list->geom + 8, li);
+    type = getTypeAtAttr(node);
+    val = 0;
+    s = getDOMAttributeValue(node, &_DOMvalue);
+    if (s != NULL) {
+        val = atoi(s);
+        val = val < 0 ? 0 : val;
+        MEM_free(0, s);
+    }
+    if (list != NULL) {
+        if (list->html == 0x43) {
+            num = val;
+            if (num == 0)
+                num = getLINumber(list, li);
+            M2C_FIELD(li->geom, int *, 0) = num;
+            if (type == 3)
+                ltype = M2C_FIELD(list->geom, int *, 4);
+            else
+                ltype = type;
+            str = getListNumChar(num, ltype);
+        } else {
+            if (type == 3)
+                ltype = M2C_FIELD(list->geom, int *, 4);
+            else
+                ltype = type;
+            str = NULL;
+        }
+    } else {
+        str = NULL;
+    }
+    if (createLIBox_head(node, li, str, ltype) == NULL) {
+        delLinkBox(li);
+        freeBox(li, 0);
+        return NULL;
+    }
+    applyCSSExtStyleSheetToBox((int)node, li);
+    applyCSSInlinePropertyToBox((int)node, li);
+    return li;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_html_list", html_APPLET_inner);
 
