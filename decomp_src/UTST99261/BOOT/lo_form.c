@@ -26,6 +26,8 @@ void *getFocusTargetContentContext(void *g);
 int checkBoxValidity(void *box);
 void *make_msg_LP20(int a, int b, int c, int d, int e);
 void putLLIST(void *l, void *m);
+void *Node_getLastChild(void *node);
+void *Node_getPreviousSibling(void *node);
 RadioEnt *getRadioListByName(void *ctx, void *box) {
     RadioEnt *r = M2C_FIELD(M2C_FIELD(ctx, void **, 0x20), RadioEnt **, 0x80);
 
@@ -73,7 +75,34 @@ void *getAncestorForm(void *node) {
     return NULL;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_form", getPreviousForm);
+void *getPreviousForm(void *start) {
+    DOMString s;
+    int up = 1;
+    void *n;
+    void *node = start;
+
+    while (node != NULL) {
+        if (!up && (n = Node_getLastChild(node)) != NULL) {
+            node = n;
+            continue;
+        }
+        {
+            if (Node_getNodeType(node) == 1) {
+                Element_getTagName(&s, node);
+                if (DOMStringcasecmpFast(&s, &_DOMform) == 0)
+                    return node;
+            }
+            if ((n = Node_getPreviousSibling(node)) != NULL) {
+                node = n;
+                up = 0;
+            } else {
+                node = Node_getParentNode(node);
+                up = 1;
+            }
+        }
+    }
+    return NULL;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_form", getInputType);
 
