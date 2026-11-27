@@ -2866,7 +2866,25 @@ void status_score_disp(int x, int y, int a, int b, int c, int d, int val)
 	}
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", status_score_disp2);
+extern TEXPOS texpos_inv_beat[];
+int num_digit_get(int v, int n);
+int inv_scrdisp_start(int x, int y, int w, int h, int u, int v, float rot, float sx, float sy, int a, int b, int c, int d);
+extern TEXPOS texpos_inv_beat[];
+int num_digit_get(int v, int n);
+int inv_scrdisp_start(int x, int y, int w, int h, int u, int v, float rot, float sx, float sy, int a, int b, int c, int d);
+void status_score_disp2(int x, int y, int a, int b, int c, int d, int val)
+{
+	int i, n, px;
+
+	px = x;
+	for (i = 10; i > 0; i--) {
+		n = num_digit_get(val, i);
+		if (n >= 0) {
+			inv_scrdisp_start(px, y, texpos_inv_beat[86 + n].w, texpos_inv_beat[86 + n].h, texpos_inv_beat[86 + n].u, texpos_inv_beat[86 + n].v, 0, 100.0f, 100.0f, a, b, c, d);
+			px += texpos_inv_beat[86].w - 1;
+		}
+	}
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", deb_status_disp);
 
