@@ -22,15 +22,15 @@ extern void *gCommPlatformInterfacePtr;
 extern unsigned char gCommAdhocInterface;
 extern unsigned char rt_comm_adhoc_create;
 void rt_comm_adhoc_destroy(int);
-extern unsigned char rt_comm_adhoc_get_broadcast_ip;
-extern unsigned char rt_comm_adhoc_get_dns_servers;
-extern unsigned char rt_comm_adhoc_get_local_ip;
-extern unsigned char rt_comm_adhoc_linkaddress_isequal;
-extern unsigned char rt_comm_adhoc_linkaddress_isnull;
+int rt_comm_adhoc_get_broadcast_ip();
+int rt_comm_adhoc_get_dns_servers();
+int rt_comm_adhoc_get_local_ip();
+int rt_comm_adhoc_linkaddress_isequal();
+int rt_comm_adhoc_linkaddress_isnull();
 void rt_comm_adhoc_linkaddress_setnull(RtLinkAddr *);
-extern unsigned char rt_comm_adhoc_linkaddress_toext;
+int rt_comm_adhoc_linkaddress_toext();
 int rt_comm_adhoc_linkaddress_toint(RtAdhocAddr *, RtAdhocAddr *);
-extern unsigned char rt_comm_adhoc_linkaddress_tostr;
+char *rt_comm_adhoc_linkaddress_tostr();
 extern unsigned char rt_comm_adhoc_receive_from;
 int rt_comm_adhoc_send_echo();
 extern unsigned char rt_comm_adhoc_send_to;
@@ -81,13 +81,37 @@ void rt_comm_adhoc_linkaddress_setnull(RtLinkAddr *a)
     a->port = 0;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_comm/src/psp/rtadhocnet/src/rt_comm_platform", rt_comm_adhoc_linkaddress_isnull);
+extern RtAdhocAddr gBroadcastAddress;
+extern RtAdhocAddr gLocalAddress;
+int sceNetEtherNtostr(unsigned char *, char *);
+int memcmp(const void *, const void *, unsigned int);
+void *memset(void *, int, unsigned int);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_comm/src/psp/rtadhocnet/src/rt_comm_platform", rt_comm_adhoc_linkaddress_isequal);
+int rt_comm_adhoc_linkaddress_isnull(RtLinkAddr a)
+{
+    unsigned char *p = (unsigned char *)&a;
+    unsigned int i;
+    for (i = 0; i < 6; i++, p++)
+        if (*p != 0) return 0;
+    return 1;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_comm/src/psp/rtadhocnet/src/rt_comm_platform", rt_comm_adhoc_linkaddress_tostr);
+int rt_comm_adhoc_linkaddress_isequal(RtLinkAddr a, RtLinkAddr b)
+{
+    return memcmp(&a, &b, 6) == 0;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_comm/src/psp/rtadhocnet/src/rt_comm_platform", rt_comm_adhoc_linkaddress_toext);
+char *rt_comm_adhoc_linkaddress_tostr(char *buf, RtLinkAddr a)
+{
+    sceNetEtherNtostr((unsigned char *)&a, buf);
+    return buf;
+}
+
+int rt_comm_adhoc_linkaddress_toext(RtAdhocAddr *out, RtLinkAddr a)
+{
+    *out = *(RtAdhocAddr *)&a;
+    return 0;
+}
 
 int rt_comm_adhoc_linkaddress_toint(RtAdhocAddr *out, RtAdhocAddr *a)
 {
@@ -117,9 +141,19 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_comm/src/psp/rtadhocnet/s
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_comm/src/psp/rtadhocnet/src/rt_comm_platform", rt_comm_adhoc_receive_from);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_comm/src/psp/rtadhocnet/src/rt_comm_platform", rt_comm_adhoc_get_local_ip);
+int rt_comm_adhoc_get_local_ip(RtAdhocAddr *out)
+{
+    if (gbInitialized_130B2C == 0) return 5;
+    *out = gLocalAddress;
+    return 0;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_comm/src/psp/rtadhocnet/src/rt_comm_platform", rt_comm_adhoc_get_broadcast_ip);
+int rt_comm_adhoc_get_broadcast_ip(RtAdhocAddr *out)
+{
+    if (gbInitialized_130B2C == 0) return 5;
+    *out = gBroadcastAddress;
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_comm/src/psp/rtadhocnet/src/rt_comm_platform", rt_comm_get_stat);
 
@@ -168,6 +202,13 @@ int rt_comm_adhoc_update(void) {
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_comm/src/psp/rtadhocnet/src/rt_comm_platform", rt_comm_adhoc_get_dns_servers);
+int rt_comm_adhoc_get_dns_servers(void *list, int n, int *count)
+{
+    if (list == NULL) return 2;
+    if (count == NULL) return 2;
+    memset(list, 0, n * 8);
+    *count = 0;
+    return 0;
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_comm/src/psp/rtadhocnet/src/rt_comm_platform", rcsid_10CEE4);
