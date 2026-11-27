@@ -50,6 +50,23 @@ static SceInt32 _GetRelavantEP_map(ScePsmf_EP *pEp_map, SceUInt32 ep_id, SceUInt
 
 /* scePsmfGetNumberOfEP_entries_Base and scePsmfCheckEP_map_Base, as inlined (-finline-functions)
    into the functions defined after them */
+static inline SceInt32 _inl_GetNumberOfEP_entries(ScePsmf *psmf)
+{
+	SceInt32 number_of_EP_entries;
+
+	number_of_EP_entries = sceMpegSwap4((SceUChar8 *)psmf->currentStream + 8);
+	return number_of_EP_entries;
+}
+
+static inline SceInt32 _inl_CheckEP_map(ScePsmf *psmf)
+{
+	SceInt32 ret;
+
+	ret = SCE_PSMF_ERROR_NO_EP_MAP;
+	if (_inl_GetNumberOfEP_entries(psmf) != 0)
+		ret = 0;
+	return ret;
+}
 
 INCLUDE_ASM("tmp/asm/rb/pal_BOOT/nonmatchings/psmfBase", scePsmfSpecifyStream_Base);
 
@@ -70,9 +87,49 @@ SceInt32 scePsmfGetPsmfStreamIdWithStream_Base(ScePsmf *psmf, SceUInt32 s_id, Sc
 	return ret;
 }
 
-INCLUDE_ASM("tmp/asm/rb/pal_BOOT/nonmatchings/psmfBase", scePsmfGetEPWithId_Base);
+SceInt32 scePsmfGetEPWithId_Base(ScePsmf *psmf, SceInt32 ep_id, ScePsmf_EntryPoint *pEntry)
+{
+	ScePsmf_EP *pEp;
+	SceUInt32 offset_ep;
+	SceInt32 ret = 0;
 
-INCLUDE_ASM("tmp/asm/rb/pal_BOOT/nonmatchings/psmfBase", scePsmfGetEPWithTimestamp_Base);
+	ret = _inl_CheckEP_map(psmf);
+	if (ret == 0) {
+		if (ep_id >= _inl_GetNumberOfEP_entries(psmf)) {
+			ret = SCE_PSMF_ERROR_INVALID_ID;
+		} else {
+			offset_ep = ep_id * sizeof(ScePsmf_EP);
+			pEp = (ScePsmf_EP *)(psmf->currentEP_map + offset_ep);
+			pEntry->EP_start_offset = sceMpegSwap4(pEp->rpn_ep_start) << 11;
+			pEntry->PTS_EP_start = sceMpegSwap4(pEp->pts_ep_start);
+		}
+	}
+	return ret;
+}
+
+SceInt32 scePsmfGetEPWithTimestamp_Base(ScePsmf *psmf, SceUInt32 timestamp, ScePsmf_EntryPoint *pEntry)
+{
+	ScePsmf_EP *pEp;
+	SceUInt32 ep_count;
+	SceUInt32 offset_ep;
+	SceInt32 id;
+	SceInt32 ret = 0;
+
+	ret = _inl_CheckEP_map(psmf);
+	if (ret == 0) {
+		ep_count = sceMpegSwap4((SceUChar8 *)psmf->currentStream + 8);
+		id = _GetRelavantEP_map((ScePsmf_EP *)psmf->currentEP_map, ep_count, timestamp);
+		offset_ep = id * sizeof(ScePsmf_EP);
+		pEp = (ScePsmf_EP *)offset_ep;
+		if (id < 0) {
+			ret = id;
+		} else {
+			pEntry->EP_start_offset = sceMpegSwap4(pEp->rpn_ep_start) << 11;
+			pEntry->PTS_EP_start = sceMpegSwap4(pEp->pts_ep_start);
+		}
+	}
+	return ret;
+}
 
 SceInt32 scePsmfCheckStreamType_Base(SceUInt32 stream_id, SceUInt32 private_stream_id)
 {
@@ -85,9 +142,52 @@ SceInt32 scePsmfCheckStreamType_Base(SceUInt32 stream_id, SceUInt32 private_stre
 
 INCLUDE_ASM("tmp/asm/rb/pal_BOOT/nonmatchings/psmfBase", _GetRelavantEP_map);
 
-INCLUDE_ASM("tmp/asm/rb/pal_BOOT/nonmatchings/psmfBase", scePsmfSpecifyGroupingPeriod_Base);
 
-INCLUDE_ASM("tmp/asm/rb/pal_BOOT/nonmatchings/psmfBase", scePsmfSpecifyGroup_Base);
+static __inline__ SceUInt32 _getOffset_GroupingPeriod(ScePsmf_GroupingPeriod *pGroupPeriod, SceInt32 gp_id)
+{
+	SceUInt32 offset;
+	SceInt32 i;
+
+	offset = 0;
+	for (i = 0; i < gp_id; i++)
+		offset += sceMpegSwap4((SceUChar8 *)pGroupPeriod + offset);
+	return offset;
+}
+
+SceInt32 scePsmfSpecifyGroupingPeriod_Base(ScePsmf *psmf, SceInt32 gp_id)
+{
+	SceUChar8 *pSeq = psmf->sequenceInfo;
+	ScePsmf_GroupingPeriod *pGroupPeriod;
+
+	if (gp_id >= pSeq[0x19])
+		return SCE_PSMF_ERROR_INVALID_ID;
+	pGroupPeriod = (ScePsmf_GroupingPeriod *)(pSeq + 0x1A);
+	psmf->currentGroupingPeriod = (SceUChar8 *)pGroupPeriod + _getOffset_GroupingPeriod(pGroupPeriod, gp_id);
+	return 0;
+}
+
+static __inline__ SceUInt32 _getOffset_Group(ScePsmf_Group *pGroup, SceInt32 group_id)
+{
+	SceUInt32 offset;
+	SceInt32 i;
+
+	offset = 0;
+	for (i = 0; i < group_id; i++)
+		offset += sceMpegSwap4((SceUChar8 *)pGroup + offset);
+	return offset;
+}
+
+SceInt32 scePsmfSpecifyGroup_Base(ScePsmf *psmf, SceInt32 group_id)
+{
+	ScePsmf_GroupingPeriod *pGroupPeriod = psmf->currentGroupingPeriod;
+	ScePsmf_Group *pGroup;
+
+	if (group_id >= pGroupPeriod->number_of_groups)
+		return SCE_PSMF_ERROR_INVALID_ID;
+	pGroup = (ScePsmf_Group *)((SceUChar8 *)pGroupPeriod + sizeof(ScePsmf_GroupingPeriod));
+	psmf->currentGroup = (SceUChar8 *)pGroup + _getOffset_Group(pGroup, group_id);
+	return 0;
+}
 
 SceInt32 scePsmfGetNumberOfTotalStream_Base(ScePsmf *psmf)
 {
@@ -217,6 +317,19 @@ SceInt32 scePsmfCheckEP_map_Base(ScePsmf *psmf)
 	return ret;
 }
 
-INCLUDE_ASM("tmp/asm/rb/pal_BOOT/nonmatchings/psmfBase", scePsmfGetEP_idWithTimestamp_Base);
+SceInt32 scePsmfGetEP_idWithTimestamp_Base(ScePsmf *psmf, SceUInt32 timestamp)
+{
+	ScePsmf_EP *pEp;
+	SceUInt32 ep_count;
+	SceInt32 ret;
+
+	ret = _inl_CheckEP_map(psmf);
+	if (ret == 0) {
+		pEp = (ScePsmf_EP *)psmf->currentEP_map;
+		ep_count = sceMpegSwap4((SceUChar8 *)psmf->currentStream + 8);
+		ret = _GetRelavantEP_map(pEp, ep_count, timestamp);
+	}
+	return ret;
+}
 
 INCLUDE_ASM("tmp/asm/rb/pal_BOOT/nonmatchings/psmfBase", scePsmfGetStreamType_Base);
