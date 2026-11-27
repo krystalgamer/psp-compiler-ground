@@ -2,7 +2,7 @@
 #include "common.h"
 #include "m2c_macros.h"
 unsigned int cccTtrToUcs4(void *, int, M2C_UNK *, M2C_UNK, M2C_UNK); /* extern */
-M2C_UNK consPrintf(M2C_UNK *, M2C_UNK *, M2C_UNK, M2C_UNK *, M2C_UNK *); /* extern */
+int consPrintf();
 int resGetDatLocal(M2C_UNK, M2C_UNK);               /* extern */
 extern unsigned char D_000FE318;
 extern unsigned char D_000FE334;
@@ -55,7 +55,12 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/profile", profileGetPerOfJ
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/profile", randInit);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/profile", randDumpSeed);
+extern unsigned long long l_au64RandSeed[];
+void randDumpSeed(int i)
+{
+	if (i < 5)
+		consPrintf("%s : Tick=%08x Ch=%d %0qx\n", __FUNCTION__, l_uTick, i, l_au64RandSeed[i]);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/profile", randDumpSeedAll);
 

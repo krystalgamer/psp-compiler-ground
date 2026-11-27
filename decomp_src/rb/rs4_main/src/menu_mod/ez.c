@@ -7,7 +7,7 @@ extern int D_0011A46C;
 extern unsigned char l_tMenuCntx;
 M2C_UNK cusGetKeyIndex(M2C_UNK, M2C_UNK, int);      /* extern */
 extern unsigned char l_szEdition;
-M2C_UNK consPrintf(M2C_UNK *, M2C_UNK *);           /* extern */
+int consPrintf();
 int gameChgGameMode(int);                           /* extern */
 M2C_UNK *gameChgModule(M2C_UNK, int);               /* extern */
 int menuGetGameMode(M2C_UNK);                       /* extern */

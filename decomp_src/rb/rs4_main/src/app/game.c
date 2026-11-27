@@ -152,7 +152,15 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/game", D_000FCBFC);
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/game", D_000FCC0C);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/game", gameSetResult);
+/* gameSetResult/gameGetResult constants (the original's float pool lies here) */
+__asm__(".section .rodata\n.align 2\n.globl D_000FCC1C\nD_000FCC1C: .float 256\n.globl D_000FCC20\nD_000FCC20: .float 0.00390625\n.previous");
+extern const float D_000FCC1C, D_000FCC20;
+
+int gameSetResult(float f)
+{
+	D_001116C8 = f * D_000FCC1C;
+	return 1;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -227,7 +235,10 @@ int gameGetWinner(void) {
     return D_001116C4;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/game", gameGetResult);
+float gameGetResult(void)
+{
+	return D_001116C8 * D_000FCC20;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
