@@ -2,7 +2,14 @@
 /* cflags: -O3 -fno-exceptions */
 #undef __EXCEPTIONS
 #include "cxx/defer_asm.h"
+#define DEMO_STATICS_MATH
+#define DEMO_STATICS_IOSTREAM
 #include "../main.hpp"
+
+/* the module's .ctors/.dtors refer to the static constructor/destructor; cc1plus keys them to the
+   first public symbol, the deferred-asm wrapper of the (still asm) first function */
+__asm__(".globl _GLOBAL__I__ZN3sgl3BoxC2Ev\n_GLOBAL__I__ZN3sgl3BoxC2Ev = _GLOBAL__I__ZN3sgl3BoxC2Ev__asm");
+__asm__(".globl _GLOBAL__D__ZN3sgl3BoxC2Ev\n_GLOBAL__D__ZN3sgl3BoxC2Ev = _GLOBAL__D__ZN3sgl3BoxC2Ev__asm");
 
 #include "UTST99332/demo_duck/gl.hpp"
 extern const float D_0016AC6C;      /* 1.0f */
@@ -15,8 +22,6 @@ extern const char D_0016ACD0[];     /* " *** error " */
 extern const char first_name[] __asm__("_ZZN3sgl3Box5firstEN4math11vector_xyzwEE19__PRETTY_FUNCTION__");
 #define BOX_ASSERT(c, text, fn, line) SGL_ASSERT(c, D_0016ACD0, text, D_0016ACB8, fn, line, D_0016ACCC)
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Box", _Z41__static_initialization_and_destruction_0ii_A2C44);
-
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Box", _ZN3sgl3BoxC2Ev);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Box", _ZN3sgl3BoxC1Ev);
@@ -27,7 +32,6 @@ sgl::Box::Box(math::vector_xyzw a, math::vector_xyzw b)
     add(b);
     finish();
 }
-
 
 void sgl::Box::first(math::vector_xyzw p)
 {
@@ -55,20 +59,3 @@ void sgl::Box::draw(int c) const
 }
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Box", _ZNK3sgl3Box4drawEv);
-
-extern "C" {
-void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_A2C44");
-void _GLOBAL__I__ZN3sgl3BoxC2Ev(void);
-void _GLOBAL__D__ZN3sgl3BoxC2Ev(void);
-}
-
-void _GLOBAL__I__ZN3sgl3BoxC2Ev(void)
-{
-    static_init(1, 0xFFFF);
-}
-
-void _GLOBAL__D__ZN3sgl3BoxC2Ev(void)
-{
-    static_init(0, 0xFFFF);
-}
-

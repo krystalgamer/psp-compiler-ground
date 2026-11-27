@@ -2,9 +2,15 @@
 /* cflags: -O3 -fno-exceptions */
 #undef __EXCEPTIONS
 #include "cxx/defer_asm.h"
+#define DEMO_STATICS_MATH
+#define DEMO_STATICS_IOSTREAM
 #define DEMO_LINKONCE_Bmp 1
 #define DEMO_TEMPLATE_DEFS
 #include "../main.hpp"
+
+/* the module's .ctors/.dtors refer to the static constructor/destructor */
+__asm__(".globl _GLOBAL__I__ZN8textures17textures_internal3Bmp4loadEPKc");
+__asm__(".globl _GLOBAL__D__ZN8textures17textures_internal3Bmp4loadEPKc");
 
 /* this object's .gnu.linkonce.t sections in the original's order */
 DEMO_LINKONCE_ORDER(
@@ -54,8 +60,6 @@ public:
     unsigned int _size;
 };
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/textures_textures_internal_Bmp", _Z41__static_initialization_and_destruction_0ii_FB674);
-
 int textures::textures_internal::Bmp::load(const char *name)
 {
     blocking(false);
@@ -92,22 +96,6 @@ int textures::textures_internal::Bmp::Get4idxPixel(const unsigned char *data, in
 }
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/textures_textures_internal_Bmp", _ZN8textures7SaveBmpEPKciiPKhS3_i);
-
-extern "C" {
-void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_FB674");
-void _GLOBAL__I__ZN8textures17textures_internal3Bmp4loadEPKc(void);
-void _GLOBAL__D__ZN8textures17textures_internal3Bmp4loadEPKc(void);
-}
-
-void _GLOBAL__I__ZN8textures17textures_internal3Bmp4loadEPKc(void)
-{
-    static_init(1, 0xFFFF);
-}
-
-void _GLOBAL__D__ZN8textures17textures_internal3Bmp4loadEPKc(void)
-{
-    static_init(0, 0xFFFF);
-}
 
 template<class T> void byte_array::read(unsigned int _Offset, T &_Value)
 {

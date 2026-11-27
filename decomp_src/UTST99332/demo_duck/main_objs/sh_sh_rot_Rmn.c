@@ -2,7 +2,13 @@
 /* cflags: -O3 -fno-exceptions */
 #undef __EXCEPTIONS
 #include "cxx/defer_asm.h"
+#define DEMO_STATICS_MATH
+#define DEMO_STATICS_IOSTREAM
 #include "../main.hpp"
+
+/* the module's .ctors/.dtors refer to the static constructor/destructor */
+__asm__(".globl _GLOBAL__I__ZN2sh6sh_rot3RmnE\n_GLOBAL__I__ZN2sh6sh_rot3RmnE = _GLOBAL__I__ZN2sh6sh_rot6setRmnEN4math6matrixE");
+__asm__(".globl _GLOBAL__D__ZN2sh6sh_rot3RmnE\n_GLOBAL__D__ZN2sh6sh_rot3RmnE = _GLOBAL__D__ZN2sh6sh_rot6setRmnEN4math6matrixE");
 
 extern const char D_00173888[];     /* " *** error " */
 extern const char D_00173894[];     /* "../lib/sh/Rotation.cpp" */
@@ -14,8 +20,6 @@ extern const char D_00173998[];     /* "" */
 extern const char W_name[] __asm__("_ZZN2sh6sh_rot1WEiiiRNS_9RotMatrixEE19__PRETTY_FUNCTION__");
 extern const char R_name[] __asm__("_ZZN2sh6sh_rot1REiiE19__PRETTY_FUNCTION__");
 extern int setRmn_P[3] __asm__("_ZZN2sh6sh_rot6setRmnEN4math6matrixEE1P");
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sh_sh_rot_Rmn", _Z41__static_initialization_and_destruction_0ii_ED368);
 
 void sh::sh_rot::setRmn(math::matrix m)
 {
@@ -71,8 +75,6 @@ sh::RotMatrix::RotMatrix()
 {
 }
 
-
-
 sh::RotMatrix::RotMatrix(math::matrix m)
 {
     m.r[3].x = 0;
@@ -80,8 +82,6 @@ sh::RotMatrix::RotMatrix(math::matrix m)
     m.r[3].z = 0;
     *this = TwoBands(m);
 }
-
-
 
 float sh::RotMatrix::at(int l, int a, int b) const
 {
@@ -113,20 +113,3 @@ sh::VectorRGB sh::RotMatrix::operator*(const VectorRGB &v) const
 {
     return VectorRGB(*this * v.r, *this * v.g, *this * v.b);
 }
-
-extern "C" {
-void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_ED368");
-void _GLOBAL__I__ZN2sh6sh_rot3RmnE(void);
-void _GLOBAL__D__ZN2sh6sh_rot3RmnE(void);
-}
-
-void _GLOBAL__I__ZN2sh6sh_rot3RmnE(void)
-{
-    static_init(1, 0xFFFF);
-}
-
-void _GLOBAL__D__ZN2sh6sh_rot3RmnE(void)
-{
-    static_init(0, 0xFFFF);
-}
-

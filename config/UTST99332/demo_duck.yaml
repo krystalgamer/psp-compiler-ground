@@ -413,6 +413,8 @@ segments:
       - [0x166D34, rodata, asm/rodata_166CB4]
       - [0x166E70, .rodata, main_objs/glutils_TurnTable]
       - [0x166EBC, rodata, asm/rodata_166E3C]
+      - [0x167074, .rodata, main_objs/gl_ext_pglBlendEquationExt]
+      - [0x167090, rodata, asm/rodata_167010]
       - [0x1676B4, .rodata, main_objs/glutils__arrow_pstack]
       - [0x16771C, rodata, asm/rodata_16769C]
       - [0x167738, .rodata, main_objs/gl__name_stack]
@@ -426,6 +428,8 @@ segments:
       - [0x1685E8, rodata, asm/rodata_168568]
       - [0x168604, .rodata, main_objs/math_basic_net_basic_net]
       - [0x168614, rodata, asm/rodata_168594]
+      - [0x168730, .rodata, main_objs/math_bspline_curve_curve]
+      - [0x16874C, rodata, asm/rodata_1686CC]
       - [0x168ABC, .rodata, main_objs/math_safe_acosf]
       - [0x168AC4, rodata, asm/rodata_168A44]
       - [0x168BFC, .rodata, main_objs/math_matrix_matrix]
@@ -458,10 +462,17 @@ segments:
       - [0x16CF88, rodata, asm/rodata_16CF08]
       - [0x16CFE8, .rodata, main_objs/scene_Texture]
       - [0x16D050, rodata, asm/rodata_16CFD0]
+      - [0x16D2B0, .rodata, main_objs/scene_TraversalVarStack]
+      - [0x16D2CC, rodata, asm/rodata_16D24C]
       - [0x16D660, .rodata, main_objs/VertexColorEnv]
       - [0x16D684, rodata, asm/rodata_16D604]
       - [0x16DBD4, .rodata, main_objs/BVH]
-      - [0x16DBF0, rodata, asm/rodata_16DB70]
+      - [0x16DBF0, .rodata, main_objs/sgl_Box]
+      - [0x16DC0C, rodata, asm/rodata_16DB8C]
+      - [0x16DCAC, .rodata, main_objs/sgl_Frustum]
+      - [0x16DCC8, rodata, asm/rodata_16DC48]
+      - [0x16DE74, .rodata, main_objs/sgl_Heap]
+      - [0x16DE90, rodata, asm/rodata_16DE10]
       - [0x16EDA8, .rodata, main_objs/sgl_Mesh_3]
       - [0x16F048, rodata, asm/rodata_16EFC8]
       - [0x16FF68, .rodata, main_objs/sgl_Mesh_4]
@@ -482,6 +493,8 @@ segments:
       - [0x17225C, rodata, asm/rodata_1721DC]
       - [0x172290, .rodata, main_objs/sh_DebugMap]
       - [0x1722B8, rodata, asm/rodata_172238]
+      - [0x172310, .rodata, main_objs/sh_Env]
+      - [0x17232C, rodata, asm/rodata_1722AC]
       - [0x17259C, .rodata, main_objs/sh_HDRMap]
       - [0x1725DC, rodata, asm/rodata_17255C]
       - [0x172CC4, .rodata, main_objs/sh_Matrix]
@@ -490,12 +503,18 @@ segments:
       - [0x172D74, rodata, asm/rodata_172CF4]
       - [0x173520, .rodata, main_objs/sh_PolarFunction]
       - [0x17353C, rodata, asm/rodata_1734BC]
+      - [0x17389C, .rodata, main_objs/sh_sh_rot_Rmn]
+      - [0x1738B8, rodata, asm/rodata_173838]
       - [0x173AE8, .rodata, main_objs/math_factorial]
       - [0x173B04, rodata, asm/rodata_173A84]
+      - [0x173C20, .rodata, main_objs/sh_SphereSampling_Sample]
+      - [0x173C3C, rodata, asm/rodata_173BBC]
       - [0x174140, .rodata, main_objs/sh_SquareMap]
       - [0x174190, rodata, asm/rodata_174110]
       - [0x1741C8, .rodata, main_objs/sh_TestEnvSet_TestEnv]
       - [0x1741F8, rodata, asm/rodata_174178]
+      - [0x174390, .rodata, main_objs/sh_Vector]
+      - [0x1743AC, rodata, asm/rodata_17432C]
       - [0x1758A8, .rodata, main_objs/common_FileDump]
       - [0x175A58, rodata, asm/rodata_1759D8]
       - [0x175B58, .rodata, main_objs/basic_parser_basic_parser]
@@ -505,6 +524,8 @@ segments:
       - [0x175EE4, rodata, asm/rodata_175E64]
       - [0x175EE8, .rodata, main_objs/sys_timer_GetDeltaTime]
       - [0x175EF8, rodata, asm/rodata_175E78]
+      - [0x175F10, .rodata, main_objs/textures_textures_internal_Bmp]
+      - [0x175F2C, rodata, asm/rodata_175EAC]
       - [0x1762F8, .rodata, main_objs/FloatImage]
       - [0x17631C, rodata, asm/rodata_17629C]
       - [0x177948, .rodata, menu]
@@ -615,11 +636,15 @@ segments:
       - { start: 0x18CFCC, type: bss, vram: 0x18E534, name: bss_18E534 }
       - { start: 0x18CFCC, type: .bss, vram: 0x18E5F8, name: main_objs/glutils_TurnTable }
       - { start: 0x18CFCC, type: bss, vram: 0x18E6BC, name: bss_18E6BC }
+      - { start: 0x18CFCC, type: .bss, vram: 0x18E7E8, name: main_objs/gl_ext_pglBlendEquationExt }
+      - { start: 0x18CFCC, type: bss, vram: 0x18E868, name: bss_18E868 }
       - { start: 0x18CFCC, type: .bss, vram: 0x18EA94, name: main_objs/vector_font_OutputText }
       - { start: 0x18CFCC, type: .bss, vram: 0x18EAA8, name: main_objs/interp_KeyFrameSequence }
       - { start: 0x18CFCC, type: .bss, vram: 0x18EB6C, name: main_objs/math_SphericalCoord }
       - { start: 0x18CFCC, type: .bss, vram: 0x18EBEC, name: main_objs/math_ZYZ }
       - { start: 0x18CFCC, type: bss, vram: 0x18EC6C, name: bss_18EC6C }
+      - { start: 0x18CFCC, type: .bss, vram: 0x18ECEC, name: main_objs/math_bspline_curve_curve }
+      - { start: 0x18CFCC, type: bss, vram: 0x18ED6C, name: bss_18ED6C }
       - { start: 0x18CFCC, type: .bss, vram: 0x18EE88, name: main_objs/math_matrix_matrix }
       - { start: 0x18CFCC, type: bss, vram: 0x18EF0C, name: bss_18EF0C }
       - { start: 0x18CFCC, type: .bss, vram: 0x18EF8C, name: main_objs/scene_HasBVdata }
@@ -639,10 +664,15 @@ segments:
       - { start: 0x18CFCC, type: .bss, vram: 0x18FE68, name: main_objs/scene_Switch }
       - { start: 0x18CFCC, type: .bss, vram: 0x18FEEC, name: main_objs/scene_Texture }
       - { start: 0x18CFCC, type: bss, vram: 0x18FF70, name: bss_18FF70 }
+      - { start: 0x18CFCC, type: .bss, vram: 0x190078, name: main_objs/scene_TraversalVarStack }
+      - { start: 0x18CFCC, type: bss, vram: 0x1900FC, name: bss_1900FC }
       - { start: 0x18CFCC, type: .bss, vram: 0x190200, name: main_objs/VertexColorEnv }
       - { start: 0x18CFCC, type: bss, vram: 0x190284, name: bss_190284 }
       - { start: 0x18CFCC, type: .bss, vram: 0x190314, name: main_objs/BVH }
-      - { start: 0x18CFCC, type: bss, vram: 0x190398, name: bss_190398 }
+      - { start: 0x18CFCC, type: .bss, vram: 0x190398, name: main_objs/sgl_Box }
+      - { start: 0x18CFCC, type: .bss, vram: 0x19041C, name: main_objs/sgl_Frustum }
+      - { start: 0x18CFCC, type: .bss, vram: 0x1904A0, name: main_objs/sgl_Heap }
+      - { start: 0x18CFCC, type: bss, vram: 0x190524, name: bss_190524 }
       - { start: 0x18CFCC, type: .bss, vram: 0x190830, name: main_objs/sgl_Mesh_3 }
       - { start: 0x18CFCC, type: bss, vram: 0x190934, name: bss_190934 }
       - { start: 0x18CFCC, type: .bss, vram: 0x190B3C, name: main_objs/sgl_MeshParams }
@@ -652,22 +682,29 @@ segments:
       - { start: 0x18CFCC, type: .bss, vram: 0x190E44, name: main_objs/math_TransformStackFunc }
       - { start: 0x18CFCC, type: .bss, vram: 0x190EC4, name: main_objs/sgl_Edge }
       - { start: 0x18CFCC, type: .bss, vram: 0x190FC8, name: main_objs/sh_DebugMap }
-      - { start: 0x18CFCC, type: bss, vram: 0x191120, name: bss_191120 }
+      - { start: 0x18CFCC, type: .bss, vram: 0x191120, name: main_objs/sh_Env }
+      - { start: 0x18CFCC, type: bss, vram: 0x1911A4, name: bss_1911A4 }
       - { start: 0x18CFCC, type: .bss, vram: 0x191350, name: main_objs/sh_Matrix }
       - { start: 0x18CFCC, type: bss, vram: 0x191428, name: bss_191428 }
       - { start: 0x18CFCC, type: .bss, vram: 0x19152C, name: main_objs/sh_PolarFunction }
       - { start: 0x18CFCC, type: bss, vram: 0x1915B0, name: bss_1915B0 }
+      - { start: 0x18CFCC, type: .bss, vram: 0x1916B4, name: main_objs/sh_sh_rot_Rmn }
+      - { start: 0x18CFCC, type: bss, vram: 0x191738, name: bss_191738 }
       - { start: 0x18CFCC, type: .bss, vram: 0x19175C, name: main_objs/math_factorial }
-      - { start: 0x18CFCC, type: bss, vram: 0x1917E0, name: bss_1917E0 }
+      - { start: 0x18CFCC, type: .bss, vram: 0x1917E0, name: main_objs/sh_SphereSampling_Sample }
+      - { start: 0x18CFCC, type: bss, vram: 0x191864, name: bss_191864 }
       - { start: 0x18CFCC, type: .bss, vram: 0x1918E8, name: main_objs/sh_SquareMap }
       - { start: 0x18CFCC, type: bss, vram: 0x19196C, name: bss_19196C }
+      - { start: 0x18CFCC, type: .bss, vram: 0x1919F0, name: main_objs/sh_Vector }
+      - { start: 0x18CFCC, type: bss, vram: 0x191A74, name: bss_191A74 }
       - { start: 0x18CFCC, type: .bss, vram: 0x191C3C, name: main_objs/common_FileDump }
       - { start: 0x18CFCC, type: .bss, vram: 0x191C40, name: main_objs/basic_file_parser_basic_file_parser }
       - { start: 0x18CFCC, type: .bss, vram: 0x191C44, name: main_objs/basic_parser_basic_parser }
       - { start: 0x18CFCC, type: .bss, vram: 0x191C48, name: main_objs/float_basic_parser_get }
       - { start: 0x18CFCC, type: .bss, vram: 0x191C4C, name: main_objs/sys_timer_Push }
       - { start: 0x18CFCC, type: .bss, vram: 0x191C78, name: main_objs/sys_timer_GetDeltaTime }
-      - { start: 0x18CFCC, type: bss, vram: 0x191CE0, name: bss_191CE0 }
+      - { start: 0x18CFCC, type: .bss, vram: 0x191CE0, name: main_objs/textures_textures_internal_Bmp }
+      - { start: 0x18CFCC, type: bss, vram: 0x191D64, name: bss_191D64 }
       - { start: 0x18CFCC, type: .bss, vram: 0x191EF4, name: main_objs/textures_textures_internal_Tga }
       - { start: 0x18CFCC, type: .bss, vram: 0x191EF8, name: main_objs/sgi_rgb_bwtorgba }
       - { start: 0x18CFCC, type: bss, vram: 0x191EFC, name: bss_191EFC }

@@ -2,15 +2,18 @@
 /* cflags: -O3 -fno-exceptions */
 #undef __EXCEPTIONS
 #include "cxx/defer_asm.h"
+#define DEMO_STATICS_MATH
+#define DEMO_STATICS_IOSTREAM
 #define SGL_LINKONCE_Frustum 1
 #include "../main.hpp"
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Frustum", _Z41__static_initialization_and_destruction_0ii_A3838);
+/* the module's .ctors/.dtors refer to the static constructor/destructor */
+__asm__(".globl _GLOBAL__I__ZN3sgl7FrustumC2Ev");
+__asm__(".globl _GLOBAL__D__ZN3sgl7FrustumC2Ev");
 
 sgl::Frustum::Frustum()
 {
 }
-
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Frustum", _ZN3sgl7FrustumC2Effffffff);
 
@@ -123,22 +126,6 @@ void sgl::FindBestAlignedDiagonal(math::vector_xyzw n, Box::Vertex &a, Box::Vert
         va |= 1;
     a = Box::Vertex(va);
     b = Box::Vertex(vb);
-}
-
-extern "C" {
-void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_A3838");
-void _GLOBAL__I__ZN3sgl7FrustumC2Ev(void);
-void _GLOBAL__D__ZN3sgl7FrustumC2Ev(void);
-}
-
-void _GLOBAL__I__ZN3sgl7FrustumC2Ev(void)
-{
-    static_init(1, 0xFFFF);
-}
-
-void _GLOBAL__D__ZN3sgl7FrustumC2Ev(void)
-{
-    static_init(0, 0xFFFF);
 }
 
 /* the original's .gnu.linkonce.t order */

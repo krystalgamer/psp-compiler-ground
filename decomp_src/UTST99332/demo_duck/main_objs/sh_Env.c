@@ -2,13 +2,17 @@
 /* cflags: -O3 -fno-exceptions */
 #undef __EXCEPTIONS
 #include "cxx/defer_asm.h"
+#define DEMO_STATICS_MATH
+#define DEMO_STATICS_IOSTREAM
 #define SGL_LINKONCE_FunctionEvaluator 1
 #include "../main.hpp"
 
+/* the module's .ctors/.dtors refer to the static constructor/destructor */
+__asm__(".globl _GLOBAL__I__ZN2sh3EnvC2ENS_4Args3EnvE");
+__asm__(".globl _GLOBAL__D__ZN2sh3EnvC2ENS_4Args3EnvE");
+
 extern "C" const char D_001722EC[], D_001722F0[], D_001722F4[], D_001722FC[], D_00172310[], D_00172314[];
 extern const char Env_dtor_name[] __asm__("_ZZN2sh3EnvD1EvE19__PRETTY_FUNCTION__");
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sh_Env", _Z41__static_initialization_and_destruction_0ii_D9170);
 
 sh::Env::Env(Args::Env args) : _args(args)
 {
@@ -54,25 +58,8 @@ void sh::Env::draw(bool b)
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sh_Env", _ZN2sh3Env4loadEb);
 
-extern "C" {
-void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_D9170");
-void _GLOBAL__I__ZN2sh3EnvC2ENS_4Args3EnvE(void);
-void _GLOBAL__D__ZN2sh3EnvC2ENS_4Args3EnvE(void);
-}
-
-void _GLOBAL__I__ZN2sh3EnvC2ENS_4Args3EnvE(void)
-{
-    static_init(1, 0xFFFF);
-}
-
-void _GLOBAL__D__ZN2sh3EnvC2ENS_4Args3EnvE(void)
-{
-    static_init(0, 0xFFFF);
-}
-
 /* inline members: .gnu.linkonce.t, after FunctionEvaluator's and CIEClearSky's dtors (splat only sees `INCLUDE_ASM(`) */
 #undef INCLUDE_ASM
 #define INCLUDE_ASM INCLUDE_ASM_LINKONCE
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sh_Env", _ZNK2sh11CIEClearSky4evalEffRfS1_S1_);
-

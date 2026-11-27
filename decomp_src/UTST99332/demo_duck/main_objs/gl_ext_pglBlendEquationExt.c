@@ -2,7 +2,11 @@
 /* cflags: -O3 -fno-exceptions */
 #undef __EXCEPTIONS
 #include "cxx/defer_asm.h"
+#define DEMO_STATICS_MATH
 #include "../main.hpp"
+
+/* the module's .ctors/.dtors refer to the static constructor/destructor */
+__asm__(".globl _GLOBAL__I__ZN6gl_ext19pglBlendEquationExtE\n_GLOBAL__I__ZN6gl_ext19pglBlendEquationExtE = _GLOBAL__I__ZN6gl_ext16BlendEquationEXTEj__asm");
 
 #include "UTST99332/demo_duck/gl.hpp"
 
@@ -14,8 +18,6 @@ void BlendColorEXT(float, float, float, float);
 std::vector<std::string> Initialize();
 }
 extern "C" const char D_001670FC[], D_00167110[];
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/gl_ext_pglBlendEquationExt", _Z41__static_initialization_and_destruction_0ii_3CA7C);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/gl_ext_pglBlendEquationExt", _ZN6gl_ext16BlendEquationEXTEj);
 
@@ -52,17 +54,8 @@ void gl_ext::VAIOBugCheck()
         VAIOBugCheck_count++;
 }
 
-extern "C" {
-void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_3CA7C");
-void _GLOBAL__I__ZN6gl_ext19pglBlendEquationExtE(void);
-}
-
-void _GLOBAL__I__ZN6gl_ext19pglBlendEquationExtE(void)
-{
-    static_init(1, 0xFFFF);
-}
-
+/* the object's weak tail (linkonce copies), still asm */
+#undef INCLUDE_ASM
+#define INCLUDE_ASM INCLUDE_ASM_LINKONCE
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/gl_ext_pglBlendEquationExt", _ZN6gl_ext13InitExtensionIPFvjEEEvRSt6vectorISsSaISsEERT_PKc);
-
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/gl_ext_pglBlendEquationExt", _ZN6gl_ext13InitExtensionIPFvffffEEEvRSt6vectorISsSaISsEERT_PKc);
-

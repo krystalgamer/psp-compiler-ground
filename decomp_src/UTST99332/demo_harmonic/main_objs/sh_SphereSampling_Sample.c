@@ -2,7 +2,13 @@
 /* cflags: -O3 -fno-exceptions */
 #undef __EXCEPTIONS
 #include "cxx/defer_asm.h"
+#define DEMO_STATICS_MATH
+#define DEMO_STATICS_IOSTREAM
 #include "../main.hpp"
+
+/* the module's .ctors/.dtors refer to the static constructor/destructor */
+__asm__(".globl _GLOBAL__I__ZN2sh14SphereSampling6SampleC2Ev");
+__asm__(".globl _GLOBAL__D__ZN2sh14SphereSampling6SampleC2Ev");
 
 extern const float D_00170C94;      /* 2^-30 */
 extern const float D_00170C98;      /* 0.5 */
@@ -11,13 +17,9 @@ extern const float D_00170C9C;
 extern const char D_00170CB4[];     /* "sphere sampling constructed, n=" */
 extern const char D_00170CD4[];     /* "\n" */
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sh_SphereSampling_Sample", _Z41__static_initialization_and_destruction_0ii_ECFD0);
-
 sh::SphereSampling::Sample::Sample()
 {
 }
-
-
 
 void sh::SphereSampling::swap(SphereSampling &o)
 {
@@ -34,8 +36,6 @@ sh::SphereSampling::SphereSampling(unsigned int n) : Icosahedron(2)
         Log_uint(common::Log() << D_00170CB4, n) << D_00170CD4;
     }
 }
-
-
 
 float sh::SphereSampling::canonical_random_var(unsigned int n)
 {
@@ -90,23 +90,6 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sh_SphereSam
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sh_SphereSampling_Sample", _ZN2sh14SphereSampling17precalc_sh_coeffsEv);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sh_SphereSampling_Sample", _ZN2sh14SphereSampling9partitionEv);
-
-extern "C" {
-void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_ECFD0");
-void _GLOBAL__I__ZN2sh14SphereSampling6SampleC2Ev(void);
-void _GLOBAL__D__ZN2sh14SphereSampling6SampleC2Ev(void);
-}
-
-void _GLOBAL__I__ZN2sh14SphereSampling6SampleC2Ev(void)
-{
-    static_init(1, 0xFFFF);
-}
-
-void _GLOBAL__D__ZN2sh14SphereSampling6SampleC2Ev(void)
-{
-    static_init(0, 0xFFFF);
-}
-
 
 extern "C" void sh_SphereSampling_Sample_instances(std::vector<sh::SphereSampling::Sample> *v, unsigned int n) __attribute__((section(".discard.asm")));
 extern "C" void sh_SphereSampling_Sample_instances(std::vector<sh::SphereSampling::Sample> *v, unsigned int n)

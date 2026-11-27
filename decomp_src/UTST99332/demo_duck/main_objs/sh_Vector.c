@@ -2,7 +2,13 @@
 /* cflags: -O3 -fno-exceptions */
 #undef __EXCEPTIONS
 #include "cxx/defer_asm.h"
+#define DEMO_STATICS_MATH
+#define DEMO_STATICS_IOSTREAM
 #include "../main.hpp"
+
+/* the module's .ctors/.dtors refer to the static constructor/destructor */
+__asm__(".globl _GLOBAL__I__ZNK2sh6Vector5printEPKc");
+__asm__(".globl _GLOBAL__D__ZNK2sh6Vector5printEPKc");
 #include <fstream>
 
 extern const char D_0017432C[];     /* " " */
@@ -16,7 +22,21 @@ extern const char D_0017446C[];     /* "i == math::SH::N(_maxL)" */
 extern const char D_00174484[];     /* "../lib/sh/Vector_1.h" */
 extern const char eval_name[] __asm__("_ZZNK2sh6Vector4evalEffiE19__PRETTY_FUNCTION__");
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sh_Vector", _Z41__static_initialization_and_destruction_0ii_F50B4);
+/* inline in the class (weak copies emitted with the vtable, in the object's tail) */
+SGL_LINKONCE_BEGIN
+inline float sh::Vector::eval(float theta, float phi, int maxL) const
+{
+    if ((unsigned int)maxL > BANDS - 1)
+        maxL = BANDS - 1;
+    float sum = 0;
+    int i = 0;
+    for (int l = 0; l <= maxL; l++)
+        for (int m = -l; m <= l; m++, i++)
+            sum += v[i] * SH_Eval(l, m, theta, phi);
+    SGL_ASSERT(i == math::SH::N(maxL), D_00174398, D_0017446C, D_00174484, eval_name, 189, D_0017432C);
+    return sum;
+}
+SGL_LINKONCE_END
 
 void sh::Vector::print(const char *name) const
 {
@@ -60,31 +80,3 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sh_Vector", _ZN2
 void sh::VectorRGB::print(const char *) const {
 }
 
-extern "C" {
-void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_F50B4");
-void _GLOBAL__I__ZNK2sh6Vector5printEPKc(void);
-void _GLOBAL__D__ZNK2sh6Vector5printEPKc(void);
-}
-
-void _GLOBAL__I__ZNK2sh6Vector5printEPKc(void)
-{
-    static_init(1, 0xFFFF);
-}
-
-void _GLOBAL__D__ZNK2sh6Vector5printEPKc(void)
-{
-    static_init(0, 0xFFFF);
-}
-
-float sh::Vector::eval(float theta, float phi, int maxL) const
-{
-    if ((unsigned int)maxL > BANDS - 1)
-        maxL = BANDS - 1;
-    float sum = 0;
-    int i = 0;
-    for (int l = 0; l <= maxL; l++)
-        for (int m = -l; m <= l; m++, i++)
-            sum += v[i] * SH_Eval(l, m, theta, phi);
-    SGL_ASSERT(i == math::SH::N(maxL), D_00174398, D_0017446C, D_00174484, eval_name, 189, D_0017432C);
-    return sum;
-}

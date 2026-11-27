@@ -136,7 +136,6 @@ rodata 0x1711E8 -
 bss 0x18DED0 main_objs/sh_Matrix
 bss 0x18DFA8 -
 bss 0x18DB48 main_objs/sh_DebugMap
-bss 0x18DCA0 -
 bss 0x18E468 main_objs/sh_SquareMap
 bss 0x18E4EC -
 # gl__name_stack: the float pools of gl::PushMatrix and gl::LoadIdentity (Identity()'s 1.0f)
@@ -326,7 +325,6 @@ bss 0x18A2C0 main_objs/libc_fix_ItoA
 bss 0x18A2C4 -
 bss 0x18E7C0 main_objs/basic_file_parser_basic_file_parser
 bss 0x18E7F8 main_objs/sys_timer_GetDeltaTime
-bss 0x18E860 -
 bss 0x18CD80 main_objs/VertexColorEnv
 bss 0x18CE04 -
 # common_FileDump, float_basic_parser_get, glutils_RectanglePicking, interp_KeyFrameSequence, scene_DefaultShader,
@@ -410,9 +408,7 @@ bss 0x18B23C -
 bss 0x18D944 main_objs/math_TransformStack
 # BVH: C++ static initializer (header statics); .rodata: its float pool; .bss
 rodata 0x16AC2C main_objs/BVH
-rodata 0x16AC48 -
 bss 0x18CE94 main_objs/BVH
-bss 0x18CF18 -
 # glutils_Material, sgl_MeshParams: C++ static initializers; .rodata: the units' float pools and strings (the asm functions' come with their .s); .bss: the header statics
 rodata 0x160EE0 main_objs/glutils_Material
 rodata 0x160F54 -
@@ -445,7 +441,6 @@ bss 0x18EA74 main_objs/textures_textures_internal_Tga
 rodata 0x170B40 main_objs/math_factorial
 rodata 0x170B5C -
 bss 0x18E2DC main_objs/math_factorial
-bss 0x18E360 -
 rodata 0x165C5C main_objs/math_matrix_matrix
 rodata 0x165C78 -
 bss 0x18BA08 main_objs/math_matrix_matrix
@@ -457,3 +452,46 @@ rodata 0x168A40 main_objs/scene_Material
 rodata 0x168A5C -
 bss 0x18C3B8 main_objs/scene_Material
 bss 0x18C43C -
+# C++ static initializers (header statics): their float pools and .bss (the units' other data stays asm)
+rodata 0x16A308 main_objs/scene_TraversalVarStack
+rodata 0x16A324 -
+bss 0x18CBF8 main_objs/scene_TraversalVarStack
+bss 0x18CC7C -
+rodata 0x16AC48 main_objs/sgl_Box
+rodata 0x16AC64 -
+bss 0x18CF18 main_objs/sgl_Box
+rodata 0x16AD04 main_objs/sgl_Frustum
+rodata 0x16AD20 -
+bss 0x18CF9C main_objs/sgl_Frustum
+rodata 0x16AECC main_objs/sgl_Heap
+rodata 0x16AEE8 -
+bss 0x18D020 main_objs/sgl_Heap
+bss 0x18D0A4 -
+rodata 0x16F368 main_objs/sh_Env
+rodata 0x16F384 -
+bss 0x18DCA0 main_objs/sh_Env
+bss 0x18DD24 -
+rodata 0x170C78 main_objs/sh_SphereSampling_Sample
+rodata 0x170C94 -
+bss 0x18E360 main_objs/sh_SphereSampling_Sample
+bss 0x18E3E4 -
+rodata 0x1713E8 main_objs/sh_Vector
+rodata 0x171404 -
+bss 0x18E570 main_objs/sh_Vector
+bss 0x18E5F4 -
+rodata 0x1708F4 main_objs/sh_sh_rot_Rmn
+rodata 0x170910 -
+bss 0x18E234 main_objs/sh_sh_rot_Rmn
+bss 0x18E2B8 -
+rodata 0x172F68 main_objs/textures_textures_internal_Bmp
+rodata 0x172F84 -
+bss 0x18E860 main_objs/textures_textures_internal_Bmp
+bss 0x18E8E4 -
+rodata 0x165790 main_objs/math_bspline_curve_curve
+rodata 0x1657AC -
+bss 0x18B86C main_objs/math_bspline_curve_curve
+bss 0x18B8EC -
+rodata 0x1640D4 main_objs/gl_ext_pglBlendEquationExt
+rodata 0x1640F0 -
+bss 0x18B368 main_objs/gl_ext_pglBlendEquationExt
+bss 0x18B3E8 -

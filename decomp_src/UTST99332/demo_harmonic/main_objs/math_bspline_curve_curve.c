@@ -2,8 +2,12 @@
 /* cflags: -O3 -fno-exceptions */
 #undef __EXCEPTIONS
 #include "cxx/defer_asm.h"
+#define DEMO_STATICS_MATH
 #define DEMO_TEMPLATE_DEFS
 #include "../main.hpp"
+
+/* the module's .ctors/.dtors refer to the static constructor/destructor */
+__asm__(".globl _GLOBAL__I__ZN4math7bspline5curveC2Ev");
 
 /* the strings stay in the module's .rodata (asm) */
 extern const char D_0016583C[];     /* "can't have cubic bsplines with less than 4 control points" */
@@ -17,8 +21,6 @@ extern const char curve_setCtrl_name[] __asm__("_ZZN4math7bspline5curve7setCtrlE
         common::common_internal::on_error(); \
         common::common_internal::clash(); \
     }
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_bspline_curve_curve", _Z41__static_initialization_and_destruction_0ii_4E7B0);
 
 math::bspline::curve::curve() : _Num(0), _Ctrl(0)
 {
@@ -60,16 +62,5 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_bspline
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_bspline_curve_curve", _ZN4math7bspline7surface9localEvalERNS_11vector_xyzwES3_S3_S3_ff);
 
-extern "C" {
-void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_4E7B0");
-void _GLOBAL__I__ZN4math7bspline5curveC2Ev(void);
-}
-
-void _GLOBAL__I__ZN4math7bspline5curveC2Ev(void)
-{
-    static_init(1, 0xFFFF);
-}
-
 /* the object's own instance (math_bspline_surface's ctor uses it; basic_net holds the rest of t_array2d<vector_xyzw>) */
 template common::t_array2d<math::vector_xyzw>::t_array2d(unsigned int, unsigned int);
-

@@ -2,8 +2,15 @@
 /* cflags: -O3 -fno-exceptions */
 #undef __EXCEPTIONS
 #include "cxx/defer_asm.h"
+#define DEMO_STATICS_MATH
+#define DEMO_STATICS_IOSTREAM
 #define DEMO_TEMPLATE_DEFS
 #include "../main.hpp"
+
+/* the module's .ctors/.dtors refer to the static constructor/destructor; cc1plus keys them to the
+   first public symbol, the deferred-asm wrapper of the (still asm) first function */
+__asm__(".globl _GLOBAL__I__ZN5scene17TraversalVarStackC2ENS_13TraversalTypeERN3sgl7FrustumEN4math6matrixES6_S6_N2sh9VectorRGBEf\n_GLOBAL__I__ZN5scene17TraversalVarStackC2ENS_13TraversalTypeERN3sgl7FrustumEN4math6matrixES6_S6_N2sh9VectorRGBEf = _GLOBAL__I__ZN5scene17TraversalVarStackC2ENS_13TraversalTypeERN3sgl7FrustumEN4math6matrixES6_S6_N2sh9VectorRGBEf__asm");
+__asm__(".globl _GLOBAL__D__ZN5scene17TraversalVarStackC2ENS_13TraversalTypeERN3sgl7FrustumEN4math6matrixES6_S6_N2sh9VectorRGBEf\n_GLOBAL__D__ZN5scene17TraversalVarStackC2ENS_13TraversalTypeERN3sgl7FrustumEN4math6matrixES6_S6_N2sh9VectorRGBEf = _GLOBAL__D__ZN5scene17TraversalVarStackC2ENS_13TraversalTypeERN3sgl7FrustumEN4math6matrixES6_S6_N2sh9VectorRGBEf__asm");
 SCENE_ALLOC_FIRST_USE
 /* linkonce order: this object's .gnu.linkonce.t sections in Sony's link order */
 SCENE_LINKONCE_ORDER(
@@ -28,8 +35,6 @@ extern const char D_0016D2A4[];     /* "../lib/scene/TraversalVarStack.cpp" */
 extern const char D_0016D2C8[];     /* " *** error " */
 extern const char D_0016D2D4[];     /* " " */
 extern const char internal_pop_name[] __asm__("_ZZN5scene17TraversalVarStack12internal_popEvE19__PRETTY_FUNCTION__");
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_TraversalVarStack", _Z41__static_initialization_and_destruction_0ii_9AB00);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_TraversalVarStack", _ZN5scene17TraversalVarStackC2ENS_13TraversalTypeERN3sgl7FrustumEN4math6matrixES6_S6_N2sh9VectorRGBEf);
 
@@ -72,22 +77,6 @@ void scene::TraversalVarStack::enable(Enabled e, bool on)
         _enabled |= e;
     else
         _enabled &= ~e;
-}
-
-extern "C" {
-void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_9AB00");
-void _GLOBAL__I__ZN5scene17TraversalVarStackC2ENS_13TraversalTypeERN3sgl7FrustumEN4math6matrixES6_S6_N2sh9VectorRGBEf(void);
-void _GLOBAL__D__ZN5scene17TraversalVarStackC2ENS_13TraversalTypeERN3sgl7FrustumEN4math6matrixES6_S6_N2sh9VectorRGBEf(void);
-}
-
-void _GLOBAL__I__ZN5scene17TraversalVarStackC2ENS_13TraversalTypeERN3sgl7FrustumEN4math6matrixES6_S6_N2sh9VectorRGBEf(void)
-{
-    static_init(1, 0xFFFF);
-}
-
-void _GLOBAL__D__ZN5scene17TraversalVarStackC2ENS_13TraversalTypeERN3sgl7FrustumEN4math6matrixES6_S6_N2sh9VectorRGBEf(void)
-{
-    static_init(0, 0xFFFF);
 }
 
 /* instances used by the (asm) methods above.  Explicit instantiations of single members (an

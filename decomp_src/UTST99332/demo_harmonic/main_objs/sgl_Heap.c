@@ -2,7 +2,13 @@
 /* cflags: -O3 -fno-exceptions */
 #undef __EXCEPTIONS
 #include "cxx/defer_asm.h"
+#define DEMO_STATICS_MATH
+#define DEMO_STATICS_IOSTREAM
 #include "../main.hpp"
+
+/* the module's .ctors/.dtors refer to the static constructor/destructor */
+__asm__(".globl _GLOBAL__I__ZN3sgl4HeapC2Ev");
+__asm__(".globl _GLOBAL__D__ZN3sgl4HeapC2Ev");
 
 extern const char D_0016AF24[];     /* " *** error " */
 extern const char D_0016AF30[];     /* "j >=0 && j < _n" */
@@ -28,9 +34,6 @@ template<class T> T min_(T a, T b);
 }
 
 #define HEAP_ASSERT(c, text, fn, line) SGL_ASSERT(c, D_0016AF24, text, D_0016AF40, fn, line, D_0016AF54)
-
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Heap", _Z41__static_initialization_and_destruction_0ii_A5F08);
 
 sgl::Heap::Heap() : _index(0), _e(0), _n(0), _heap(false)
 {
@@ -173,23 +176,6 @@ void sgl::Heap::check_sort()
 }
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Heap", _ZN3sgl4Heap4TestEv);
-
-extern "C" {
-void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_A5F08");
-void _GLOBAL__I__ZN3sgl4HeapC2Ev(void);
-void _GLOBAL__D__ZN3sgl4HeapC2Ev(void);
-}
-
-void _GLOBAL__I__ZN3sgl4HeapC2Ev(void)
-{
-    static_init(1, 0xFFFF);
-}
-
-void _GLOBAL__D__ZN3sgl4HeapC2Ev(void)
-{
-    static_init(0, 0xFFFF);
-}
-
 
 /* Test() (asm) calls math::min_<int>: referenced here (from a discarded function, before the template's
    definition: no inlining) it is instantiated after Swap<Heap::Element>, like Sony's */
