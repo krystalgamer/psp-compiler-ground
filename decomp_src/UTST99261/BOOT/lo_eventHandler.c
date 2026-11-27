@@ -53,6 +53,7 @@ char *getDOMAttributeValue(void *node, void *name);
 extern u8 _DOMusemap[];
 void getBodyAbsolutePos(BOX *box, int *px, int *py);
 FOCUSLIST *getFocusListWithArea(void *frame, void *obj, void *link);
+int getDataAttribute(void *a, int x, int y);
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_eventHandler", getTargetBox);
 
 void *getEventTargetNode(BOX *box) {
@@ -182,7 +183,53 @@ int handlePointingDown(void *ev) {
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_eventHandler", handlePointingCheck);
+int handlePointingCheck(void *ev) {
+    LEHPT2 *m = M2C_FIELD(ev, LEHPT2 **, 0x1C);
+    LEHG *g = (LEHG *)gESPRIT_LO_GLOBAL_NDA;
+    BOX *box;
+    void *n;
+    int r;
+    LEHJSEVENT jev;
+    if (g->x10 == 1) {
+        g->x10 = 0;
+        return 0;
+    }
+    if (m->kind == 3) {
+        getDataAttribute(NULL, m->x, m->y);
+        return 0;
+    }
+    if (g->sid == 0) {
+        return -1;
+    }
+    box = g->x14;
+    if (box == NULL || !checkBoxValidity(box)) {
+        g->x14 = NULL;
+        return -1;
+    }
+    if (box->content == 3) {
+        g->x14 = NULL;
+        return 0;
+    }
+    if (D_00584CEC == 0) {
+        n = g->x18;
+        if (n == NULL) {
+            return -1;
+        }
+        initJSEvent(&jev, 0x11, n, m->x, m->y);
+        sendJSBubbleUpEvent(n, &jev);
+        initJSEvent(&jev, 4, n, m->x, m->y);
+        r = sendJSBubbleUpEvent(n, &jev);
+        g->x18 = NULL;
+        if (r == 1) {
+            return 0;
+        }
+    }
+    g->x14 = NULL;
+    if (D_00584CEC == 1) {
+        return 0;
+    }
+    return actDefaultClickAction(ev, box, getEventTargetNode(box), m->x, m->y);
+}
 
 int handleDragStart(void *ev) {
     LEHPT *m = M2C_FIELD(ev, LEHPT **, 0x1C);
