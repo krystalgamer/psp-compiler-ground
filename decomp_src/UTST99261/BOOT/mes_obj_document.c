@@ -2,6 +2,12 @@
 #include "common.h"
 #include "mes_js.h"
 #include "m2c_macros.h"
+typedef struct DocNames {
+    const char *n[4];
+} DocNames;
+extern DocNames D_0013F654;
+MesObject *mes_array_new(MesContext *ctx, unsigned int len);
+int mes_class_property_setup(MesContext *ctx, MesObject *obj, const char *name, MesValue v, int flags);
 extern MesClassDef mes_document_def;
 extern MesClass *mes_document_class;
 DOMString *JSI_getDocumentSelection(void *doc);
@@ -81,7 +87,23 @@ void mes_document_class_init(MesContext *ctx)
     mes_document_class = mes_class_init(ctx, &mes_document_def);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_document", mes_document_new);
+MesObject *mes_document_new(MesContext *ctx, void *priv)
+{
+    DocNames names = D_0013F654;
+    MesObject *o = mes_class_new(ctx, mes_document_class);
+    MesObject *a;
+    unsigned int i;
+
+    mes_class_private_set(o, priv);
+    *--ctx->sp = (MesValue)o;
+    for (i = 0; i < 4; i++) {
+        a = mes_array_new(ctx, 0);
+        *--ctx->sp = (MesValue)a;
+        mes_class_property_setup(ctx, o, names.n[i], (MesValue)a, 7);
+    }
+    ctx->sp += i + 1;
+    return o;
+}
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_document", D_0013F57C);
 
