@@ -73,7 +73,35 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/ttrfont", l_afAlign);
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/ttrfont", D_000FE838);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/ttrfont", ttrFontPrepare);
+extern const float D_000FE900;
+extern unsigned char D_000FE85C, D_000FE864;
+void *_memAllocZeroMBL(int, void *, int);
+void copUnitMat(void *);
+void copInitAttr(void *);
+int textLen(int *);
+int textCpy(int *, int *);
+typedef struct { unsigned len:8; unsigned lines:8; unsigned pad:8; unsigned align:2; unsigned rest:6; } TtrFontBits;
+typedef struct { char pad[0x48]; int text[0xC2]; char m[0x40]; char attr[0x30]; float scale; TtrFontBits b; } TtrFontS;
+TtrFontS *ttrFontPrepare(int *text, int align)
+{
+	TtrFontS *f = _memAllocZeroMBL(0x3D0, &D_000FE838, 0x73);
+	int n;
+	if (f == NULL)
+		consPrintf(&D_000FE864, &D_000FE838, 0x74, "ttrFontPrepare", &D_000FE85C);
+	copUnitMat(f->m);
+	copInitAttr(f->attr);
+	f->scale = D_000FE900;
+	if (text) {
+		n = textLen(text);
+		if ((unsigned int)(n - 1) < 0xBF) {
+			textCpy(f->text, text);
+			f->b.len = n;
+			f->b.lines = textGetLine(text, (unsigned char)n);
+		}
+	}
+	f->b.align = align;
+	return f;
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/ttrfont", D_000FE85C);
 
