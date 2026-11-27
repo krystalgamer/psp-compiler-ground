@@ -241,6 +241,45 @@ static void calc_morph_index( float *weights, int n_weights, float index )
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_bone", complement_animation_5AB88);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_bone", calc_bone_matrix);
+static void calc_bone_matrix( SceGmoBone *bone, SceGmoModel *model )
+{
+	int flags = bone->m_flags ;
+	if ( flags & IS_LOCAL_DIRTY ) {
+		flags &= ~IS_LOCAL_DIRTY ;
+		if ( !( flags & 0x0040 ) ) {
+			sceGmoBoneAffineMatrix( &( bone->m_local_matrix ),
+				&( bone->m_translate ),
+				&( bone->m_rotate ),
+				&( bone->m_scale ), flags ) ;
+		}
+	}
+
+	SceGmoMat4 *stack = &( bone->m_stack_matrix ) ;
+	*stack = bone->m_local_matrix ;
+
+	SceGmoBone *parent = sceGmoModelGetBone( model, bone->m_parent_bone ) ;
+	int flags2 = ( parent == 0 ) ? 0 : parent->m_flags ;
+	if ( ( flags | flags2 ) & ( IS_SCALE_STACKED | 0x0008 | 0x0010 ) ) {
+		flags = sceGmoBoneStackScale( stack,
+				&( bone->m_stack_scale ), &( bone->m_scale ), flags,
+				&( parent->m_stack_scale ), &( parent->m_scale ), flags2 ) ;
+	}
+
+	if ( flags & 0x0080 ) {
+		const SceGmoVec3 *s2 = &( parent->m_stack_scale ) ;
+		if ( parent == 0 ) s2 = &sceGmoVec3_One ;
+		sceGmoBoneApplyPivot( stack, &( bone->m_pivot ), s2 ) ;
+	}
+
+	const SceGmoMat4 *m ;
+	if ( parent != 0 ) {
+		m = &( parent->m_stack_matrix ) ;
+	} else {
+		m = sceGmoModelGetWorldMatrix( model ) ;
+	}
+	sceGmoMat4Multiply( stack, m, stack ) ;
+
+	bone->m_flags = flags | IS_BLEND_DIRTY ;
+}
 
 INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_bone", D_0007ECBC);

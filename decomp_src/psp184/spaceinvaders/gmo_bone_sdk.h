@@ -2662,7 +2662,7 @@ SceGmoCol4 *sceGmoCol4Multiply( SceGmoCol4 *dst, const SceGmoCol4 *src1, const S
 float *sceGmoFloatLerp( float *dst, const float *src1, const float *src2, int count, float f ) ;
 void sceGmoBoneAffineMatrix( SceGmoMat4 *m, const SceGmoVec3 *translate, const SceGmoQuat *rotate, const SceGmoVec3 *scale, int flags ) ;
 int sceGmoBoneStackScale( SceGmoMat4 *m, SceGmoVec3 *sscale, const SceGmoVec3 *lscale, int flags, const SceGmoVec3 *sscale2, const SceGmoVec3 *lscale2, int flags2 ) ;
-void sceGmoBoneApplyPivot( SceGmoMat4 *m, const SceGmoVec3 *pivot, const SceGmoVec3 *sscale, const SceGmoVec3 *sscale2 ) ;
+void sceGmoBoneApplyPivot( SceGmoMat4 *m, const SceGmoVec3 *pivot, const SceGmoVec3 *sscale ) ;
 int sceGmoFCurveEval( const SceGmoChunk *chunk, float frame, float *output ) ;
 SceGmoMat4 *sceGmoMat4MultiplyRect( SceGmoMat4 *dst, const SceGmoMat4 *src1, const SceGmoRect *src2 ) ;
 SceGmoMat4 *sceGmoMat4Normalize( SceGmoMat4 *dst, const SceGmoMat4 *src ) ;
