@@ -967,14 +967,27 @@ public:
 class RectanglePicking : public PickingBase {
 public:
     RectanglePicking();
-    virtual ~RectanglePicking() {}
+    virtual ~RectanglePicking();
+    void setStart(math::vector_xy);
+    void setCurrent(math::vector_xy);
+    math::vector_xy getStart() const;
+    math::vector_xy getCurrent() const;
     void activate();
     void push_back(unsigned int);
     void resize(unsigned int);
-    char _p10[0x30 - 0x10];
+    math::vector_xy _start;             /* 0x10 */
+    math::vector_xy _current;           /* 0x20 */
     bool _f30;                          /* 0x30 */
     bool _f31;                          /* 0x31 */
 };
+/* linkonce copies: glutils_RectanglePicking.o defines DEMO_LINKONCE_RectanglePicking */
+#if DEMO_LINKONCE_RectanglePicking
+_Pragma("implementation \"sgl_linkonce\"") _Pragma("interface \"sgl_linkonce\"")
+#endif
+inline RectanglePicking::~RectanglePicking() {}
+#if DEMO_LINKONCE_RectanglePicking
+_Pragma("interface")
+#endif
 class StippleMask {
 public:
     enum { ROWS = 32, ROW_BYTES = 4 };

@@ -2,6 +2,7 @@
 /* cflags: -O3 -fno-exceptions */
 #undef __EXCEPTIONS
 #include "cxx/defer_asm.h"
+#define DEMO_LINKONCE_RectanglePicking 1
 #include "../main.hpp"
 
 /* weak instances stay asm */
@@ -13,20 +14,39 @@ glutils::RectanglePicking::RectanglePicking() : _f30(false), _f31(true)
 {
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/glutils_RectanglePicking", _ZN7glutils16RectanglePicking8setStartEN4math9vector_xyE);
+void glutils::RectanglePicking::setStart(math::vector_xy v)
+{
+    _start = v;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/glutils_RectanglePicking", _ZN7glutils16RectanglePicking10setCurrentEN4math9vector_xyE);
+void glutils::RectanglePicking::setCurrent(math::vector_xy v)
+{
+    _current = v;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/glutils_RectanglePicking", _ZNK7glutils16RectanglePicking8getStartEv);
+math::vector_xy glutils::RectanglePicking::getStart() const
+{
+    return _start;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/glutils_RectanglePicking", _ZNK7glutils16RectanglePicking10getCurrentEv);
+math::vector_xy glutils::RectanglePicking::getCurrent() const
+{
+    return _current;
+}
 
 void glutils::RectanglePicking::push_back(unsigned int name)
 {
     _hits.push_back(name);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/glutils_RectanglePicking", _ZN7glutils16RectanglePicking8activateEv);
+extern "C" const char D_00166BF4[], D_00166C00[], D_00166C0C[], D_00166C30[];
+extern const char RectanglePicking_activate_name[] __asm__("_ZZN7glutils16RectanglePicking8activateEvE19__PRETTY_FUNCTION__");
+
+void glutils::RectanglePicking::activate()
+{
+    SGL_ASSERT(_f31, D_00166BF4, D_00166C00, D_00166C0C, RectanglePicking_activate_name, 53, D_00166C30);
+    _f30 = true;
+}
 
 void glutils::RectanglePicking::resize(unsigned int n)
 {
@@ -48,8 +68,3 @@ void _GLOBAL__D__ZN7glutils16RectanglePickingC2Ev(void)
 {
     static_init(0, 0xFFFF);
 }
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/glutils_RectanglePicking", _ZN7glutils16RectanglePickingD1Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/glutils_RectanglePicking", _ZN7glutils16RectanglePickingD0Ev);
-
