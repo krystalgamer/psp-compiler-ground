@@ -172,8 +172,52 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3dcs_obb", BoxClipCheckA);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3dcs_obb", GetIntersectOBBSubA);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3dcs_obb", I3dcs_GetIntersectLineOBBA);
+extern const float D_00109BDC, D_00109BE0;
+int GetIntersectOBBSubA();
+int I3dcs_GetIntersectLineOBBA(const float *o, const float *d, const float *e, const float *b, float *pmin, float *pmax)
+{
+	float t[2];
+	int r;
+	t[0] = D_00109BDC;
+	t[1] = D_00109BE0;
+	r = GetIntersectOBBSubA(o, d, e, b, &t[0], &t[1]);
+	if (pmin)
+		*pmin = t[0];
+	if (pmax)
+		*pmax = t[1];
+	return r;
+}
+const float D_00109BDC = -9.99999968e+37f;
+const float D_00109BE0 = 9.99999968e+37f;
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3dcs_obb", I3dcs_GetIntersectRayOBBA);
+extern const float D_00109BE4;
+int I3dcs_GetIntersectRayOBBA(const float *o, const float *d, const float *e, const float *b, float *pmin, float *pmax)
+{
+	float t[2];
+	int r;
+	t[0] = 0.0f;
+	t[1] = D_00109BE4;
+	r = GetIntersectOBBSubA(o, d, e, b, &t[0], &t[1]);
+	if (pmin)
+		*pmin = t[0];
+	if (pmax)
+		*pmax = t[1];
+	return r;
+}
+const float D_00109BE4 = 9.99999968e+37f;
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3dcs_obb", I3dcs_GetIntersectSegOBBA);
+extern const float D_00109BE8;
+int I3dcs_GetIntersectSegOBBA(const float *o, const float *d, const float *e, const float *b, float *pmin, float *pmax)
+{
+	float t[2];
+	int r;
+	t[0] = 0.0f;
+	t[1] = D_00109BE8;
+	r = GetIntersectOBBSubA(o, d, e, b, &t[0], &t[1]);
+	if (pmin)
+		*pmin = t[0];
+	if (pmax)
+		*pmax = t[1];
+	return r;
+}
+const float D_00109BE8 = 1.0f;
