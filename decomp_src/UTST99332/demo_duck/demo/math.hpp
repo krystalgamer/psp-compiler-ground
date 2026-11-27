@@ -198,10 +198,10 @@ public:
     void setTangentType(keyframe_tangent::Type, int);
     keyframe_tangent::Type getTangentType(keyframe_tangent::Side) const;
     float _time;
-    T _value;
-    T _tangent[2];
     int _type[2];
     bool _closing;
+    T _value;
+    T _tangent[2];
 };
 class VirtualKeyFrameSequence {
 public:
@@ -255,7 +255,7 @@ public:
     virtual keyframe_tangent::Type getTangentType(int, keyframe_tangent::Side) const;
     virtual int wrap_key_index(int) const;
     virtual void invalidate_cached_key_interval();
-    virtual void calc_tangent_setup(int, T &, T &, T &, float &, float &);
+    virtual bool calc_tangent_setup(int, T &, T &, T &, float &, float &);
     virtual void calc_tangent(int) = 0;
     virtual T calc_gradient(T, T, float) const = 0;
     virtual void calc_all_tangent();

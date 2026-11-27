@@ -4,6 +4,7 @@
 #include "cxx/defer_asm.h"
 #include "../main.hpp"
 
+extern const float D_0016787C;      /* 1.0f: calc_tangent's identity quaternions */
 extern const float D_00167888;      /* 1.0f: op_identity's w */
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/interp_KeyFrameSequence", _Z41__static_initialization_and_destruction_0ii_4D7EC);
@@ -16,7 +17,21 @@ math::quaternion interp::KeyFrameSequence<math::quaternion>::calc_gradient(math:
     return (a.conj() * b).log() / t;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/interp_KeyFrameSequence", _ZN6interp16KeyFrameSequenceIN4math10quaternionEE12calc_tangentEi);
+void interp::KeyFrameSequence<math::quaternion>::calc_tangent(int i)
+{
+    const float one = D_0016787C;
+    math::quaternion a(0, 0, 0, one), b(0, 0, 0, one), c(0, 0, 0, one);
+    float s0, s1;
+    if (calc_tangent_setup(i, a, b, c, s0, s1)) {
+        KeyFrame<math::quaternion> &k = _keys[i];
+        k._tangent[0] = c * s0;
+        k._tangent[1] = c * s1;
+        if (k.getTangentType((keyframe_tangent::Side)1) == 1)
+            k._tangent[0] = b * s0;
+        if (k.getTangentType((keyframe_tangent::Side)2) == 1)
+            k._tangent[1] = a * s1;
+    }
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/interp_KeyFrameSequence", _ZN6interp16KeyFrameSequenceIN4math10quaternionEE8evaluateEf);
 
