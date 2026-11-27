@@ -342,3 +342,5 @@ int inv_scrdisp_disp(void)
 	inv_scrdisp_disp_time = sceKernelGetSystemTimeLow() - t;
 	return 1;
 }
+
+const float D_0007CEE4 = 0.0f;
