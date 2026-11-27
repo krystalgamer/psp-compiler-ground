@@ -1,8 +1,9 @@
 /* cflags: -O1 */
 #include "common.h"
 #include "m2c_macros.h"
-u16 *CSS_SkipQuotedString(u16 *p);
-int CSS_putcPoolBuf(void *p, int c);
+u16 *CSS_SkipQuotedString(u16 *p, u16 q);
+#define CSS_ISALNUM(c) ((unsigned int)((c) - '0') < 10 || (unsigned int)((c) - 'A') < 26 || (u16)((c) - 'a') < 26)
+int CSS_putcPoolBuf(void *p, u16 c);
 void ParseCSSDeclaration(void *ctx, void *str, void **out);
 void *UCS_strdup(void *s);
 void CSS_mediaList(void *str, u16 *media);
@@ -426,7 +427,26 @@ int CSSMediaRule_getCssRules(void *arg0) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_API", CSSMediaRule_insertRule);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_API", CSSMediaRule_deleteRule);
+int CSSMediaRule_deleteRule(void *rule, int idx) {
+    void *r;
+    int i;
+    int n;
+    if (rule == NULL || M2C_FIELD(rule, void **, 0x1C) == NULL || M2C_FIELD(M2C_FIELD(rule, void **, 0x1C), s16 *, 0x36) != 0) {
+        return -1;
+    }
+    n = M2C_FIELD(rule, int *, 8);
+    if (n < idx) {
+        return -1;
+    }
+    for (r = M2C_FIELD(rule, void **, 0xC), i = 0; r != NULL && i < n && i < idx; i++) {
+        r = M2C_FIELD(r, void **, 0x18);
+    }
+    if (i != idx) {
+        return -1;
+    }
+    freeCSSRule(r);
+    return i;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -450,7 +470,12 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_API", CSS_getMediaTypeStrin
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_API", CSS_SkipBlanks);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_API", CSS_SkipWord);
+u16 *CSS_SkipWord(u16 *p) {
+    while (CSS_ISALNUM(*p) || *p == '-' || *p == '%') {
+        p++;
+    }
+    return p;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_API", CSS_SkipXWord);
 
@@ -458,9 +483,54 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_API", CSS_SkipBlanksAndComm
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_API", CSS_Skip_S_CDO_CDC);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_API", CSS_SkipQuotedString);
+u16 *CSS_SkipQuotedString(u16 *p, u16 q) {
+    int done = 0;
+    u16 c;
+    while (!done) {
+        c = *p;
+        if (c == q) {
+            p++;
+            done = 1;
+        } else if (c == 0) {
+            done = 1;
+        } else {
+            c = *p++;
+            if (c == '\\') {
+                if (CSS_ISALNUM(*p)) {
+                    p++;
+                    if (CSS_ISALNUM(*p)) {
+                        p++;
+                    }
+                } else {
+                    p++;
+                }
+            }
+        }
+    }
+    return p;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_API", CSS_SkipRule);
+u16 *CSS_SkipRule(u16 *p) {
+    int depth = 0;
+    u16 c;
+    while ((c = *p) != 0) {
+        p++;
+        if (c == '{') {
+            depth++;
+        } else if (c == '}') {
+            if (depth == 0) {
+                break;
+            }
+            depth--;
+            if (depth == 0) {
+                return p;
+            }
+        } else if (c == '\'' || c == '"') {
+            p = CSS_SkipQuotedString(p, c);
+        }
+    }
+    return p;
+}
 
 u16 *CSS_SkipProperty(u16 *p) {
     u16 c;
@@ -470,7 +540,7 @@ u16 *CSS_SkipProperty(u16 *p) {
         }
         p++;
         if (c == '\'' || c == '"') {
-            p = CSS_SkipQuotedString(p);
+            p = CSS_SkipQuotedString(p, c);
         }
     }
     return p;
@@ -537,7 +607,29 @@ void CSS_freePoolBuf(u16 *pb) {
     MEM_free(0, pb);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_API", CSS_putcPoolBuf);
+int CSS_putcPoolBuf(void *pb, u16 c) {
+    void *b;
+    void *n;
+    if (pb == NULL) {
+        return -1;
+    }
+    b = M2C_FIELD(pb, void **, 8);
+    if (b == NULL) {
+        return -1;
+    }
+    if (M2C_FIELD(b, u16 *, 4) >= 0x100) {
+        n = MEM_calloc(0, 0x208);
+        if (n == NULL) {
+            return -1;
+        }
+        M2C_FIELD(b, void **, 0) = n;
+        M2C_FIELD(pb, void **, 8) = n;
+        M2C_FIELD(pb, u16 *, 0)++;
+        b = n;
+    }
+    ((u16 *)((char *)b + 6))[M2C_FIELD(b, u16 *, 4)++] = c;
+    return 0;
+}
 
 int CSS_putsPoolBuf(void *pb, u16 *s) {
     int r = 0;
