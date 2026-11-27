@@ -264,37 +264,35 @@ void SpriteScale(int x, int y) {
     __sscale_y = y;
 }
 
-#ifdef NON_MATCHING
-/* Close: only the two byte stores of model[3].p[0] come out low byte first
-   (the vertex struct is packed: every short is stored bytewise). */
+void sceGumDrawArray(int prim, int vtype, int count, const void *indices, const void *vertices);
 void DrawSprite(int x, int y, int w, int h, int u, int v, Gu2dV16T *model)
 {
 	sceGuEnable(9);
-	model[0].u = u;
-	model[0].v = v + h;
-	model[0].p[0] = x;
-	model[0].p[1] = y + h * __sscale_y;
-	model[0].p[2] = 0;
-	model[1].u = u;
-	model[1].v = v;
-	model[1].p[0] = x;
-	model[1].p[1] = y;
-	model[1].p[2] = 0;
-	model[2].u = u + w;
-	model[2].v = v + h;
-	model[2].p[0] = x + w * __sscale_x;
-	model[2].p[1] = y + h * __sscale_y;
-	model[2].p[2] = 0;
-	model[3].u = u + w;
-	model[3].v = v;
-	model[3].p[0] = x + w * __sscale_x;
-	model[3].p[1] = y;
-	model[3].p[2] = 0;
-	sceGumDrawArray(4, 0x800102, 4, NULL, model);
+
+	model[0].u=u, model[0].v=v+h;
+	model[0].p[0]=(short)x;
+	model[0].p[1]=(short)y+(h*__sscale_y);
+	model[0].p[2]=0;
+
+	model[1].u=u, model[1].v=v;
+	model[1].p[0]=(short)x;
+	model[1].p[1]=(short)y;
+	model[1].p[2]=0;
+
+	model[2].u=u+w, model[2].v=v+h;
+	model[2].p[0]=(short)x+(w*__sscale_x);
+	model[2].p[1]=(short)y+(h*__sscale_y);
+	model[2].p[2]=0;
+
+	model[3].u=u+w, model[3].v=v;
+	model[3].p[0]=(short)x+(w*__sscale_x);
+	model[3].p[1]=(short)y;
+	model[3].p[2]=0;
+
+	sceGumDrawArray(4,
+		0x800102,
+		4, 0, (void *)model);
 }
-#else
-INCLUDE_ASM("tmp/asm/bigbangbang/bigbangbang/nonmatchings/main", DrawSprite);
-#endif
 
 void FadeSetup(int mode, int c) {
     __fade = mode;

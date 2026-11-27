@@ -176,7 +176,14 @@ static void send_commandf(int cmd, float argument)
 	send_commandi(cmd, *((unsigned int *)&argument) >> 8);
 }
 
-INCLUDE_ASM("tmp/asm/bigbangbang/bigbangbang/nonmatchings/libgu", draw_region);
+static void draw_region(int x, int y, int w, int h)
+{
+	int ex = x + w - 1;
+	int ey = y + h - 1;
+
+	send_commandi(21, (y << 10) | x);
+	send_commandi(22, (ey << 10) | ex);
+}
 
 int get_exp(int val)
 {
@@ -465,7 +472,20 @@ void sceGuContinue(void)
 	sceGeContinue();
 }
 
-INCLUDE_ASM("tmp/asm/bigbangbang/bigbangbang/nonmatchings/libgu", sceGuCallList);
+void sceGuCallList(const void *list);
+void sceGuCallList(const void *list)
+{
+	unsigned int list_addr = (unsigned int)list;
+
+	if (call_mode == 1) {
+		send_commandi(14, (list_addr >> 16) | 0x110000);
+		send_commandi(12, list_addr & 0xffff);
+		send_commandi_stall(0, 0);
+	} else {
+		send_commandi(16, (list_addr >> 8) & 0xf0000);
+		send_commandi_stall(10, list_addr & 0xffffff);
+	}
+}
 
 void sceGuSendList(int mode, const void *list, void *context)
 {
@@ -506,7 +526,21 @@ int sceGuSync(int mode, int what)
 	}
 }
 
-INCLUDE_ASM("tmp/asm/bigbangbang/bigbangbang/nonmatchings/libgu", sceGuSignalSync);
+void sceGuSignalSync(int signal)
+{
+	int i;
+
+	for (;;) {
+		for (i = 0; i < 16; i++) {
+			if (i >= intrParam.index)
+				break;
+			if (intrParam.signals[i] == (unsigned short)signal)
+				return;
+		}
+		sceKernelWaitEventFlag(intrParam.event, 1, 0, 0, 0);
+		sceKernelClearEventFlag(intrParam.event, ~1);
+	}
+}
 
 void sceGuEnable(int state)
 {
@@ -585,9 +619,90 @@ void sceGuEnable(int state)
 		__gu_status |= (1 << state);
 }
 
-INCLUDE_ASM("tmp/asm/bigbangbang/bigbangbang/nonmatchings/libgu", sceGuDisable);
+void sceGuDisable(int state)
+{
+	GuDrawBuffer *fb = &FBuf;
 
-INCLUDE_RODATA("tmp/asm/bigbangbang/bigbangbang/nonmatchings/libgu", D_0000BFBC);
+	switch (state) {
+	case 0:
+		send_commandi(34, 0);
+		break;
+	case 1:
+		send_commandi(35, 0);
+		break;
+	case 2:
+		{
+			int h = fb->height - 1;
+			int w = fb->width - 1;
+
+			_ctx[__aw_list_mode].scissor_enable = 0;
+			send_commandi(212, 0);
+			send_commandi(213, (h << 10) | w);
+		}
+		break;
+	case 3:
+		send_commandi(36, 0);
+		break;
+	case 4:
+		send_commandi(33, 0);
+		break;
+	case 5:
+		send_commandi(29, 0);
+		break;
+	case 6:
+		send_commandi(32, 0);
+		break;
+	case 7:
+		send_commandi(31, 0);
+		break;
+	case 8:
+		send_commandi(28, 0);
+		break;
+	case 9:
+		send_commandi(30, 0);
+		break;
+	case 10:
+		send_commandi(23, 0);
+		break;
+	case 11:
+		send_commandi(24, 0);
+		break;
+	case 12:
+		send_commandi(25, 0);
+		break;
+	case 13:
+		send_commandi(26, 0);
+		break;
+	case 14:
+		send_commandi(27, 0);
+		break;
+	case 15:
+		send_commandi(37, 0);
+		break;
+	case 16:
+		send_commandi(38, 0);
+		break;
+	case 17:
+		send_commandi(39, 0);
+		break;
+	case 18:
+		send_commandi(40, 0);
+		break;
+	case 19:
+		send_commandi(81, 0);
+		break;
+	case 20:
+		send_commandi(56, 0);
+		break;
+	case 21:
+		_ctx[__aw_list_mode].fragment_2x = 0;
+		send_commandi(201, _ctx[__aw_list_mode].texture_function);
+		break;
+	}
+	if (state < 22)
+		__gu_status &= ~(1 << state);
+}
+
 
 
 int sceGuGetStatus(int state)
@@ -622,7 +737,42 @@ void sceGuSetAllStatus(unsigned int status)
 	}
 }
 
-INCLUDE_ASM("tmp/asm/bigbangbang/bigbangbang/nonmatchings/libgu", sceGuSetMatrix);
+void sceGuSetMatrix(int type, const ScePspFMatrix4 *matrix);
+void sceGuSetMatrix(int type, const ScePspFMatrix4 *matrix)
+{
+	const float *fmatrix = (const float *)matrix;
+
+	switch (type) {
+	case 0:
+		send_commandf(62, 0);
+		send_commandf(63, fmatrix[0]); send_commandf(63, fmatrix[1]); send_commandf(63, fmatrix[2]); send_commandf(63, fmatrix[3]);
+		send_commandf(63, fmatrix[4]); send_commandf(63, fmatrix[5]); send_commandf(63, fmatrix[6]); send_commandf(63, fmatrix[7]);
+		send_commandf(63, fmatrix[8]); send_commandf(63, fmatrix[9]); send_commandf(63, fmatrix[10]); send_commandf(63, fmatrix[11]);
+		send_commandf(63, fmatrix[12]); send_commandf(63, fmatrix[13]); send_commandf(63, fmatrix[14]); send_commandf(63, fmatrix[15]);
+		break;
+	case 1:
+		send_commandf(60, 0);
+		send_commandf(61, fmatrix[0]); send_commandf(61, fmatrix[1]); send_commandf(61, fmatrix[2]);
+		send_commandf(61, fmatrix[4]); send_commandf(61, fmatrix[5]); send_commandf(61, fmatrix[6]);
+		send_commandf(61, fmatrix[8]); send_commandf(61, fmatrix[9]); send_commandf(61, fmatrix[10]);
+		send_commandf(61, fmatrix[12]); send_commandf(61, fmatrix[13]); send_commandf(61, fmatrix[14]);
+		break;
+	case 2:
+		send_commandf(58, 0);
+		send_commandf(59, fmatrix[0]); send_commandf(59, fmatrix[1]); send_commandf(59, fmatrix[2]);
+		send_commandf(59, fmatrix[4]); send_commandf(59, fmatrix[5]); send_commandf(59, fmatrix[6]);
+		send_commandf(59, fmatrix[8]); send_commandf(59, fmatrix[9]); send_commandf(59, fmatrix[10]);
+		send_commandf(59, fmatrix[12]); send_commandf(59, fmatrix[13]); send_commandf(59, fmatrix[14]);
+		break;
+	case 3:
+		send_commandf(64, 0);
+		send_commandf(65, fmatrix[0]); send_commandf(65, fmatrix[1]); send_commandf(65, fmatrix[2]);
+		send_commandf(65, fmatrix[4]); send_commandf(65, fmatrix[5]); send_commandf(65, fmatrix[6]);
+		send_commandf(65, fmatrix[8]); send_commandf(65, fmatrix[9]); send_commandf(65, fmatrix[10]);
+		send_commandf(65, fmatrix[12]); send_commandf(65, fmatrix[13]); send_commandf(65, fmatrix[14]);
+		break;
+	}
+}
 
 void sceGuDrawArray(int prim, int vtype, int count, const void *indices, const void *vertices);
 void sceGuDrawArray(int prim, int vtype, int count, const void *indices, const void *vertices)
@@ -640,7 +790,28 @@ void sceGuDrawArray(int prim, int vtype, int count, const void *indices, const v
 	send_commandi_stall(4, (prim << 16) | count);
 }
 
-INCLUDE_ASM("tmp/asm/bigbangbang/bigbangbang/nonmatchings/libgu", sceGuDrawArrayN);
+void sceGuDrawArrayN(int prim, int vtype, int count, int a3, const void *indices, const void *vertices);
+void sceGuDrawArrayN(int prim, int vtype, int count, int n, const void *indices, const void *vertices)
+{
+	if (vtype)
+		send_commandi(18, vtype);
+	if (indices) {
+		send_commandi(16, (((unsigned int)indices) >> 8) & 0xf0000);
+		send_commandi(2, ((unsigned int)indices) & 0xffffff);
+	}
+	if (vertices) {
+		send_commandi(16, (((unsigned int)vertices) >> 8) & 0xf0000);
+		send_commandi(1, ((unsigned int)vertices) & 0xffffff);
+	}
+	prim = (prim << 16) | count;
+	{
+		int i;
+
+		for (i = 0; i < n - 1; i++)
+			send_commandi(4, prim);
+	}
+	send_commandi_stall(4, prim);
+}
 
 void sceGuDrawBezier(int vtype, int ucount, int vcount, const void *indices, const void *vertices);
 void sceGuDrawBezier(int vtype, int ucount, int vcount, const void *indices, const void *vertices)
@@ -692,7 +863,17 @@ void sceGuBeginObject(int vtype, int count, const void *indices, const void *ver
 	send_commandi(9, 0);
 }
 
-INCLUDE_ASM("tmp/asm/bigbangbang/bigbangbang/nonmatchings/libgu", sceGuEndObject);
+void sceGuEndObject(void)
+{
+	unsigned int *current = pList->current;
+
+	pList->current = p_bbox[n_bbox - 1];
+	send_commandi(16, (((unsigned int)current) >> 8) & 0xf0000);
+	send_commandi(9, ((unsigned int)current) & 0xffffff);
+	pList->current = current;
+	sceGeListUpdateStallAddr(queid[0], current);
+	n_bbox--;
+}
 
 typedef struct __attribute__((packed)) {
 	unsigned short u, v;
@@ -772,7 +953,20 @@ void sceGuSpriteMode(int a0, int a1, int a2, int a3)
 	context->sprite_mode[3] = a3;
 }
 
-INCLUDE_ASM("tmp/asm/bigbangbang/bigbangbang/nonmatchings/libgu", sceGuCopyImage);
+void sceGuCopyImage(int psm, int sx, int sy, int width, int height, int srcw, void *src, int dx, int dy, int destw, void *dest);
+void sceGuCopyImage(int psm, int sx, int sy, int width, int height, int srcw, void *src, int dx, int dy, int destw, void *dest)
+{
+	int is32 = (psm ^ 0x03) ? 0 : 1;
+
+	send_commandi(178, ((unsigned int)src) & 0xffffff);
+	send_commandi(179, ((((unsigned int)src) & 0xff000000) >> 8) | srcw);
+	send_commandi(235, (sy << 10) | sx);
+	send_commandi(180, ((unsigned int)dest) & 0xffffff);
+	send_commandi(181, ((((unsigned int)dest) & 0xff000000) >> 8) | destw);
+	send_commandi(236, (dy << 10) | dx);
+	send_commandi(238, ((height - 1) << 10) | (width - 1));
+	send_commandi(234, is32);
+}
 
 void sceGuClearColor(unsigned int color)
 {
@@ -827,9 +1021,36 @@ void sceGuDepthBuffer(void *zbp, int frame_width)
 	send_commandi(159, ((((unsigned int)FBuf.depth_buffer) & 0xff000000) >> 8) | FBuf.depth_width);
 }
 
-INCLUDE_ASM("tmp/asm/bigbangbang/bigbangbang/nonmatchings/libgu", sceGuDispBuffer);
+void sceGuDispBuffer(int width, int height, void *dbp, int frame_width);
+void sceGuDispBuffer(int width, int height, void *dispbp, int dispbw)
+{
+	FBuf.width = width;
+	FBuf.height = height;
+	FBuf.disp_buffer = dispbp;
+	if (!FBuf.frame_width)
+		FBuf.frame_width = dispbw;
+	if (FBuf.frame_width != dispbw)
+		FBuf.frame_width = dispbw;
+	draw_region(0, 0, FBuf.width, FBuf.height);
+	sceDisplaySetMode(0, FBuf.width, FBuf.height);
+	if (disp_sw == 1)
+		sceDisplaySetFrameBuf((char *)vram_top + (unsigned int)FBuf.disp_buffer, dispbw, FBuf.pixel_size, 1);
+}
 
-INCLUDE_ASM("tmp/asm/bigbangbang/bigbangbang/nonmatchings/libgu", sceGuDisplay);
+int sceGuDisplay(int state);
+int sceGuDisplay(int state)
+{
+	int old;
+	GuDrawBuffer *fb = &FBuf;
+
+	if (!state)
+		sceDisplaySetFrameBuf(0, 0, 0, 1);
+	else
+		sceDisplaySetFrameBuf((char *)vram_top + (unsigned int)fb->disp_buffer, fb->frame_width, fb->pixel_size, 1);
+	old = disp_sw;
+	disp_sw = state;
+	return old;
+}
 
 void *sceGuSwapBuffers(void)
 {
@@ -845,7 +1066,19 @@ void *sceGuSwapBuffers(void)
 	return FBuf.frame_buffer;
 }
 
-INCLUDE_ASM("tmp/asm/bigbangbang/bigbangbang/nonmatchings/libgu", sceGuViewport);
+void sceGuViewport(int cx, int cy, int width, int height);
+void sceGuViewport(int cx, int cy, int width, int height)
+{
+	float sx = width / 2;
+	float sy = -height / 2;
+	float x = cx;
+	float y = cy;
+
+	send_commandf(66, sx);
+	send_commandf(67, sy);
+	send_commandf(69, x);
+	send_commandf(70, y);
+}
 
 INCLUDE_ASM("tmp/asm/bigbangbang/bigbangbang/nonmatchings/libgu", sceGuDepthRange);
 
@@ -943,9 +1176,30 @@ void sceGuPatchFrontFace(int arg0)
 	send_commandi(56, arg0);
 }
 
-INCLUDE_ASM("tmp/asm/bigbangbang/bigbangbang/nonmatchings/libgu", sceGuShadeModel);
+void sceGuShadeModel(int mode);
+void sceGuShadeModel(int mode)
+{
+	if (mode != 1)
+		send_commandi(80, 0);
+	else
+		send_commandi(80, 1);
+}
 
-INCLUDE_ASM("tmp/asm/bigbangbang/bigbangbang/nonmatchings/libgu", sceGuLight);
+void sceGuLight(int light, int type, int components, const ScePspFVector3 *position);
+void sceGuLight(int light, int type, int components, const ScePspFVector3 *position)
+{
+	int kind;
+
+	type &= 3;
+	send_commandf(lcmd[light].xpos, position->x);
+	send_commandf(lcmd[light].ypos, position->y);
+	send_commandf(lcmd[light].zpos, position->z);
+	if (components == 8)
+		kind = 2;
+	else
+		kind = (components == 6) ? 1 : 0;
+	send_commandi(lcmd[light].type, (type << 8) | kind);
+}
 
 void sceGuLightMode(int mode)
 {
@@ -1058,7 +1312,18 @@ void sceGuTexSync(void)
 	send_commandi(204, 0x000000);
 }
 
-INCLUDE_ASM("tmp/asm/bigbangbang/bigbangbang/nonmatchings/libgu", sceGuTexImage);
+void sceGuTexImage(int mipmap, int width, int height, int tbw, const void *tbp);
+void sceGuTexImage(int mipmap, int width, int height, int tbw, const void *tbp)
+{
+	int w = get_exp(width);
+	int h = get_exp(height);
+	unsigned int hi = (((unsigned int)tbp) >> 8) & 0x0f0000;
+
+	send_commandi(tbpcmd_tbl[mipmap], ((unsigned int)tbp) & 0xffffff);
+	send_commandi(tbwcmd_tbl[mipmap], hi | tbw);
+	send_commandi(tsizecmd_tbl[mipmap], (h << 8) | w);
+	sceGuTexFlush();
+}
 
 void sceGuTexScale(float u, float v)
 {
@@ -1136,7 +1401,22 @@ void sceGuPixelMask(unsigned int mask)
 	send_commandi(233, mask >> 24);
 }
 
-INCLUDE_ASM("tmp/asm/bigbangbang/bigbangbang/nonmatchings/libgu", sceGuScissor);
+void sceGuScissor(int x, int y, int w, int h);
+void sceGuScissor(int x, int y, int w, int h)
+{
+	GuContext *context = &_ctx[__aw_list_mode];
+	int ex = x + w - 1;
+	int ey = y + h - 1;
+
+	context->scissor_start[0] = x;
+	context->scissor_start[1] = y;
+	context->scissor_end[0] = ex;
+	context->scissor_end[1] = ey;
+	if (context->scissor_enable) {
+		send_commandi(212, (y << 10) | x);
+		send_commandi(213, (ey << 10) | ex);
+	}
+}
 
 void sceGuStencilFunc(int func, int ref, int mask)
 {
@@ -1160,7 +1440,23 @@ void sceGuBlendFunc(int op, int src, int dest, unsigned int srcfix, unsigned int
 	send_commandi(225, destfix & 0xffffff);
 }
 
-INCLUDE_ASM("tmp/asm/bigbangbang/bigbangbang/nonmatchings/libgu", sceGuBoneMatrix);
+void sceGuBoneMatrix(unsigned int index, const ScePspFMatrix4 *matrix);
+void sceGuBoneMatrix(unsigned int index, const ScePspFMatrix4 *matrix)
+{
+	send_commandi(42, index * 12);
+	send_commandf(43, matrix->x.x);
+	send_commandf(43, matrix->x.y);
+	send_commandf(43, matrix->x.z);
+	send_commandf(43, matrix->y.x);
+	send_commandf(43, matrix->y.y);
+	send_commandf(43, matrix->y.z);
+	send_commandf(43, matrix->z.x);
+	send_commandf(43, matrix->z.y);
+	send_commandf(43, matrix->z.z);
+	send_commandf(43, matrix->w.x);
+	send_commandf(43, matrix->w.y);
+	send_commandf(43, matrix->w.z);
+}
 
 void sceGuMorphWeight(int index, float weight)
 {

@@ -68,7 +68,50 @@ int CheckParticle(void)
 	return 0;
 }
 
-INCLUDE_ASM("tmp/asm/bigbangbang/bigbangbang/nonmatchings/particle", SetParticle);
+float sinf(float x);
+float cosf(float x);
+void SetParticle(float x, float y, float z, float speed, int number, int c)
+{
+	PARTICLE	*p;
+	int			num, i;
+	float		angle;
+	float		spd;
+	float		rnd;
+
+	if (CheckParticle())
+		return;
+
+	for (num=0; num<number; num++) {
+		for (i=0; i<128; i++) {
+			nextindex=(nextindex+1)%128;
+			p=&particle[nextindex];
+			if (p->flg==0) {
+				angle=(float)(random()%360);
+				rnd=10.0f/(float)((random()%8192)+1);
+				spd=speed*rnd;
+				spd=spd>speed?speed:spd;
+
+				p->flg=1;
+				p->pos.x=x+((float)(random()%128)-64.0f)*0.02f;
+				p->pos.y=y+((float)(random()%128)-64.0f)*0.02f;
+				p->pos.z=z+((float)(random()%128)-64.0f)*0.02f;
+				p->spd.x=(float)cosf((angle*3.14159265358979323846f/180.0f))*spd;
+				p->spd.y=(float)sinf((angle*3.14159265358979323846f/180.0f))*spd;
+				p->rot.x=(float)(random()%360);
+				p->rot.y=(float)(random()%360);
+				p->rot.z=(float)(random()%360);
+
+				p->c=c;
+				p->a=128+(random()%128);
+
+				angle=(float)(random()%360);
+				p->spd.z=(float)cosf((angle*3.14159265358979323846f/180.0f))*spd;
+
+				break;
+			}
+		}
+	}
+}
 
 void sceGumPushMatrix(void);
 void sceGumPopMatrix(void);
