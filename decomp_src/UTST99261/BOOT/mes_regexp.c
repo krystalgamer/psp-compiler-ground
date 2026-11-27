@@ -100,6 +100,10 @@ void mes_object_init(void *o, int cls, int proto);
 int mes_error_syntax(void *ctx, int s);
 extern int D_00585360;
 int mes_util_is_line_terminator(unsigned short c);
+typedef struct RxVals { int v0; int v1; int v2; } RxVals;
+int mes_util_octal(unsigned short c);
+int mes_util_hex(unsigned short c);
+int mes_util_char_in(unsigned short c, const char *s);
 RxObj *mes_regexp_new(void *ctx, int source, int flags) {
     RxObj *re;
     unsigned short *p;
@@ -332,7 +336,178 @@ int mes_regexp_decimal_digits(RxComp *c)
     return n;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_regexp", mes_regexp_atom);
+RxClosure *mes_regexp_atom(RxComp *c) {
+    void *ctx;
+    unsigned short *p;
+    RxClosure *cl;
+    RxClosure *a;
+    int n;
+    int ch;
+    int type;
+
+    ctx = c->ctx;
+    p = c->p;
+    if (p >= c->end) {
+        return NULL;
+    }
+    ch = *p;
+    if (ch == '.') {
+        c->p++;
+        return mes_closure_new(ctx, 0x14, 0);
+    } else if (ch == '\\') {
+        p = c->p++;
+        if (c->p < c->end && *c->p != '0' && (n = mes_regexp_decimal_digits(c)) > 0) {
+            cl = mes_closure_new(ctx, 0x13, 1);
+            if (cl != NULL) {
+                cl->vals[1] = (n << 2) | 1;
+            }
+            return cl;
+        }
+        c->p = p;
+        p++;
+        if (p < c->end) {
+            if (*p == '0') {
+                p++;
+                if (p < c->end && mes_util_octal(*p) >= 0) {
+                    n = *p < '4';
+                    n += 2;
+                    while (n-- > 0 && p < c->end && mes_util_octal(*p) >= 0) {
+                        p++;
+                    }
+                }
+            } else if (*p == 'c') {
+                p += 2;
+            } else if (*p == 'x') {
+                p++;
+                for (n = 0; n < 2; n++) {
+                    if (p + n >= c->end || mes_util_hex(p[n]) < 0) {
+                        break;
+                    }
+                }
+                if (n == 2) {
+                    p += 2;
+                }
+            } else if (*p == 'u') {
+                p++;
+                for (n = 0; n < 4; n++) {
+                    if (p + n >= c->end || mes_util_hex(p[n]) < 0) {
+                        break;
+                    }
+                }
+                if (n == 4) {
+                    p += 4;
+                }
+            } else {
+                p++;
+            }
+        }
+        if (p > c->end) {
+            p = c->end;
+        }
+        cl = mes_closure_new(ctx, 0x12, 2);
+        if (cl != NULL) {
+            *--M2C_FIELD(ctx, int **, 0x18) = (int)cl;
+            ((RxVals *)cl->vals)->v1 = mes_string_new(ctx, c->p, p - c->p);
+            cl->vals[2] = 8;
+            M2C_FIELD(ctx, int **, 0x18)++;
+        }
+        c->p = p;
+        return cl;
+    } else if (ch == '[') {
+        c->p++;
+        type = 8;
+        if (c->p < c->end && *c->p == '^') {
+            c->p++;
+            type = 0xC;
+        }
+        p = c->p;
+        while (p < c->end && *p != ']') {
+            if (*p == '\\' && p + 1 < c->end) {
+                p += 2;
+            } else {
+                p++;
+            }
+        }
+        cl = mes_closure_new(ctx, 0x12, 2);
+        if (cl != NULL) {
+            *--M2C_FIELD(ctx, int **, 0x18) = (int)cl;
+            ((RxVals *)cl->vals)->v1 = mes_string_new(ctx, c->p, p - c->p);
+            cl->vals[2] = type;
+            M2C_FIELD(ctx, int **, 0x18)++;
+        }
+        if (p < c->end) {
+            c->p = p + 1;
+        } else {
+            M2C_FIELD(ctx, int *, 0x14) = mes_error_syntax(ctx, (int)c->re);
+            c->p = p;
+        }
+        return cl;
+    } else if (ch == '(') {
+        c->p++;
+        if (c->p + 1 < c->end && *c->p == '?' && ((ch = c->p[1]) == ':' || ch == '=' || ch == '!')) {
+            c->p += 2;
+            cl = mes_regexp_disjunction(c);
+            if (c->p < c->end && *c->p == ')') {
+                c->p++;
+            } else {
+                M2C_FIELD(ctx, int *, 0x14) = mes_error_syntax(ctx, (int)c->re);
+            }
+            if (ch == ':') {
+                return cl;
+            }
+            if (ch == '=') {
+                *--M2C_FIELD(ctx, int **, 0x18) = (int)cl;
+                a = mes_closure_new(ctx, 0xD, 1);
+            } else {
+                *--M2C_FIELD(ctx, int **, 0x18) = (int)cl;
+                a = mes_closure_new(ctx, 0xF, 1);
+            }
+            if (a != NULL) {
+                a->vals[1] = (int)cl;
+                cl = a;
+            }
+            M2C_FIELD(ctx, int **, 0x18)++;
+            return cl;
+        }
+        n = ++c->ncap;
+        cl = mes_regexp_disjunction(c);
+        if (c->p < c->end && *c->p == ')') {
+            c->p++;
+        } else {
+            M2C_FIELD(ctx, int *, 0x14) = mes_error_syntax(ctx, (int)c->re);
+        }
+        *--M2C_FIELD(ctx, int **, 0x18) = (int)cl;
+        a = mes_closure_new(ctx, 0xB, 2);
+        if (a != NULL) {
+            a->vals[1] = (int)cl;
+            a->vals[2] = (n << 2) | 1;
+            cl = a;
+        }
+        M2C_FIELD(ctx, int **, 0x18)++;
+        return cl;
+    } else {
+        if (p < c->end && !mes_util_char_in(*p, "()|\\.[^$")) {
+            p++;
+        }
+        while (p < c->end && !mes_util_char_in(*p, "*+?{()|\\.[^$")) {
+            p++;
+        }
+        if (c->p < p) {
+            if (c->p + 1 < p && p < c->end && mes_util_char_in(*p, "*+?{")) {
+                p--;
+            }
+            cl = mes_closure_new(ctx, 0x11, 1);
+            if (cl != NULL) {
+                *--M2C_FIELD(ctx, int **, 0x18) = (int)cl;
+                ((RxVals *)cl->vals)->v1 = mes_string_new(ctx, c->p, p - c->p);
+                M2C_FIELD(ctx, int **, 0x18)++;
+            }
+            c->p = p;
+            return cl;
+        }
+        return NULL;
+    }
+}
 
 int mes_regexp_is_word_char(RxState *s, int i)
 {
