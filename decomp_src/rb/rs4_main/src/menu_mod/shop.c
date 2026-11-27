@@ -173,7 +173,31 @@ void _SwapIntWorkSet(int *arg0, int *arg1) {
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/shop", _SortCardListSet);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/shop", _SortCardListSetInit);
+typedef struct { char pad[0xA78]; int xA78; char pad2[0xB58 - 0xA7C]; int key; int pad3[1]; } SCard;
+SCard *cardlistGetPtrBySaveID(int);
+void cardlistGetOneBySaveID(SCard *, int);
+
+void _SortCardListSetInit(char *w, CardWork4 *c, int n)
+{
+	int i, j, key, k;
+	char unused[0x40]; /* unreferenced; preserves the original frame layout */
+	SCard tmp;
+	for (i = 0; i < n - 1; i++) {
+		key = cardlistGetPtrBySaveID(*(unsigned short *)&c[i].b[2])->key;
+		for (j = i + 1; j < n; j++) {
+			k = cardlistGetPtrBySaveID(*(unsigned short *)&c[j].b[2])->key;
+			if (k < key) {
+				_SwapCardWorkSet(&c[i], &c[j]);
+				key = k;
+			}
+		}
+	}
+	for (i = 0; i < n; i++) {
+		cardlistGetOneBySaveID(&tmp, *(unsigned short *)&c[i].b[2]);
+		((int *)(w + 0x67E8))[i] = i;
+		((int *)(w + 0x73EC))[i] = tmp.xA78;
+	}
+}
 
 int _SortCardListGet(SortCard *t, int n, SortCard *k)
 {
