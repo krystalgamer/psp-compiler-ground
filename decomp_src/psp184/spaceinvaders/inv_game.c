@@ -1223,7 +1223,26 @@ void laser_hit_check(int *l)
 	}
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", laser_disp);
+typedef struct { float x, y, z; } LDV;
+typedef struct { int f0, f4; u8 _p8[0x20 - 8]; float f20; LDV pos; LDV f30; LDV p[8]; } LD_T;
+typedef struct { int f0, f4; u8 _p8[0x28 - 8]; float f28; u8 _p2c[0x7C - 0x2C]; LDV pos; LDV v[8]; } LDI_T;
+extern LDI_T inv_laser_w[] __asm__("inv_laser");
+void laser_disp(void)
+{
+	int i, j;
+	LD_T *l;
+
+	for (i = 0; i < 32; i++) {
+		l = &((LD_T *)&D_005E728C)[i];
+		if (l->f0 == 0)
+			continue;
+		inv_laser_w[l->f4].pos = l->pos;
+		inv_laser_w[l->f4].f4 = 1;
+		inv_laser_w[l->f4].f28 = l->f20;
+		for (j = 0; j < 8; j++)
+			inv_laser_w[l->f4].v[j] = l->p[j];
+	}
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
