@@ -45,7 +45,31 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/lib/thr", thrState);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/lib/thr", thrEntry);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/lib/thr", thrChange);
+extern unsigned char D_000FB64C, D_000FB680, D_000FB690;
+#ifndef THR_ASSERT
+#define THR_ASSERT(line, fn) consPrintf(&D_000FB64C, &D_000FB680, line, fn, &D_000FB690)
+#endif
+int sceKernelSleepThreadCB(void);
+void thrChange(void)
+{
+	int ret = sceKernelSleepThreadCB();
+	switch (ret) {
+	case 0:
+		break;
+	default:
+		THR_ASSERT(0xCB, "thrChange");
+		break;
+	case 0x800201AA:
+		THR_ASSERT(0xCC, "thrChange");
+		break;
+	case 0x800201A7:
+		THR_ASSERT(0xCD, "thrChange");
+		break;
+	case 0x80020064:
+		THR_ASSERT(0xCE, "thrChange");
+		break;
+	}
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/lib/thr", thrDelete);
 
