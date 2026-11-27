@@ -17,13 +17,22 @@ M2C_UNK rt_time_platform_get_time_string();         /* extern */
 M2C_UNK rt_time_platform_get_time_stamp();          /* extern */
 M2C_UNK rt_time_platform_get_date_time();           /* extern */
 M2C_UNK rt_time_elapsed_msecs();                    /* extern */
-M2C_UNK rt_time_get_msecs();                        /* extern */
 
 void rt_time_get_local(void) {
     rt_time_get_msecs();
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_time", rt_time_get_msecs);
+int rt_time_get_base_diff();
+int rt_time_timestamp_to_msecs();
+int rt_time_get_msecs(unsigned int *ms)
+{
+    unsigned int ts[2];
+    int r;
+    if (ms == NULL) return 2;
+    r = rt_time_get_base_diff(ts);
+    if (r != 0) return r;
+    return rt_time_timestamp_to_msecs(ts, ms);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_time", rt_time_get_secs);
 

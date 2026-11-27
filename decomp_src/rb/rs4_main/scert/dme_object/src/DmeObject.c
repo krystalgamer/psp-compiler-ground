@@ -20,7 +20,20 @@ extern void *gObjectInterfacePtr;
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_object/src/DmeObject", NetISendMyClientUpdate);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_object/src/DmeObject", NetRegisterObjectStart);
+int NetMutexLock();
+int NetMutexUnlock();
+int NetMapRtError();
+int NetIRegisterObjectStart();
+int NetRegisterObjectStart(void)
+{
+    int r, e;
+    r = NetMapRtError(NetMutexLock());
+    if (r != 0) return r;
+    e = NetIRegisterObjectStart();
+    r = NetMapRtError(NetMutexUnlock());
+    if (r != 0) return r;
+    return e;
+}
 
 int NetSetDefaultNetUseObjectsInParams(int *p)
 {
@@ -65,7 +78,20 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_object/src/DmeObject", N
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_object/src/DmeObject", NetFreeObject);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_object/src/DmeObject", NetFreeAllObjects);
+int NetMutexLock();
+int NetMutexUnlock();
+int NetMapRtError();
+int NetIFreeAllObjects();
+int NetFreeAllObjects(void)
+{
+    int r, e;
+    r = NetMapRtError(NetMutexLock());
+    if (r != 0) return r;
+    e = NetIFreeAllObjects();
+    r = NetMapRtError(NetMutexUnlock());
+    if (r != 0) return r;
+    return e;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_object/src/DmeObject", NetRequestObjectPrivateOwnership);
 

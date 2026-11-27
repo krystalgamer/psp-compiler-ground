@@ -141,7 +141,17 @@ void rt_socket_get_local_ip(void) {
     rt_socket_get_local_ip_platform();
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_socket/src/rt_socket", rt_socket_create_tcp);
+int sceNetInetSocket(int, int, int);
+int rt_socket_create_tcp(int *s)
+{
+    int r = sceNetInetSocket(2, 1, 0);
+    if (r == -1) {
+        *s = r;
+        return rt_socket_get_err_platform();
+    }
+    *s = r;
+    return 0;
+}
 
 void rt_socket_set_no_delay_tcp(void) {
     rt_socket_set_no_delay_tcp_platform();
@@ -165,7 +175,16 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_socket/src/rt_socket", rt
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_socket/src/rt_socket", rt_socket_peek_data_tcp);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_socket/src/rt_socket", rt_socket_create_udp);
+int rt_socket_create_udp(int *s)
+{
+    int r = sceNetInetSocket(2, 2, 0);
+    if (r == -1) {
+        *s = r;
+        return rt_socket_get_err_platform();
+    }
+    *s = r;
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_socket/src/rt_socket", rt_socket_accept_connection_udp);
 

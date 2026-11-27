@@ -70,6 +70,8 @@ int IsEqual(unsigned int *a, unsigned int *b)
     return 1;
 }
 
+void *memcpy(void *, const void *, unsigned long);
+
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_crypt/src/LargeInt", lintGetBit);
 
 void lintSetBit(int arg0, unsigned int arg1) {
@@ -94,11 +96,31 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_crypt/src/LargeInt", lint
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_crypt/src/LargeInt", lintDecrement);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_crypt/src/LargeInt", lintAdd);
+void lintAdd(unsigned int *r, unsigned int *a, unsigned int *b)
+{
+    unsigned int t[128];
+    memcpy(t, a, 0x200);
+    lintAddIP(t, b);
+    memcpy(r, t, 0x200);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_crypt/src/LargeInt", lintSub);
+void lintSubIP();
+void lintSub(unsigned int *r, unsigned int *a, unsigned int *b)
+{
+    unsigned int t[128];
+    memcpy(t, a, 0x200);
+    lintSubIP(t, b);
+    memcpy(r, t, 0x200);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_crypt/src/LargeInt", MOD);
+void MODIP();
+void MOD(unsigned int *r, unsigned int *a, unsigned int *b)
+{
+    unsigned int t[128];
+    memcpy(t, a, 0x200);
+    MODIP(t, b);
+    memcpy(r, t, 0x200);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_crypt/src/LargeInt", QUO);
 

@@ -81,7 +81,22 @@ int rt_upnp_disable_natservice_heartbeat(void *arg0) {
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_upnp/src/rt_upnp", rt_upnp_uber_resolve);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_upnp/src/rt_upnp", rt_upnp_update);
+int process_nat_resolution_timeslice();
+int process_heartbeat_timeslice();
+int rt_upnp_update(int *u)
+{
+    int r = 0;
+    if (u == NULL) return 2;
+    switch (u[0x3C / 4]) {
+    case 0:
+        r = process_heartbeat_timeslice(u);
+        break;
+    case 1:
+        r = process_nat_resolution_timeslice(u);
+        break;
+    }
+    return r;
+}
 
 int rt_upnp_set_memory_ceiling(void) {
     return 0;

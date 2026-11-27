@@ -78,7 +78,18 @@ int rt_memory_align_alloc(RtAlignedMem *m, unsigned int size, unsigned short ali
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_memory", rt_memory_align_alloc_init_zero);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_memory", rt_memory_align_free);
+int rt_memory_align_free(void **p)
+{
+    int r;
+    if (p == NULL) return 100;
+    if (p[0] != NULL) {
+        r = rt_memory_free(p);
+        if (r != 0) return r;
+        p[0] = NULL;
+    }
+    p[1] = NULL;
+    return 0;
+}
 
 int rt_memory_register_callbacks(int arg0, int arg1) {
     gpfMallocCallback = arg0;

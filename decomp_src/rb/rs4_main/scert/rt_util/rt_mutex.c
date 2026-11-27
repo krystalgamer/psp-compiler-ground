@@ -18,7 +18,17 @@ int rt_mutex_create(char *m)
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_mutex", rt_mutex_destroy);
+int rt_mutex_platform_destroy();
+int rt_mutex_destroy(unsigned char *m)
+{
+    int r;
+    if (m == NULL) return 2;
+    if (m[0] != 1) return 2;
+    r = rt_mutex_platform_destroy(m);
+    if (r != 0) return r;
+    m[0] = 0;
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_mutex", rt_mutex_lock);
 

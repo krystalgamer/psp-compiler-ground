@@ -121,7 +121,13 @@ void InitializePRNG(void) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_crypt/src/rt_crypt", KM_CreateRandomRCKey);
+unsigned int randomMT();
+void KM_CreateRandomRCKey(unsigned int *k)
+{
+    unsigned char i;
+    InitializePRNG();
+    for (i = 0; i < 16; i++) k[i] = randomMT();
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_crypt/src/rt_crypt", KM_Encrypt);
 
