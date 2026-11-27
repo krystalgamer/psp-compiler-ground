@@ -49,7 +49,17 @@
 0x39784 src_menu_mod_save 1.9.2           src/menu_mod/save.c
 0x398E8 src_menu_mod_saveutil 1.9.2           src/menu_mod/saveutil.c
 0x3C710 src_menu_mod_shop 1.9.2           src/menu_mod/shop.c
+0x40748 src_ys_libmm_semaphore 1.9.2           src/ys/libmm_semaphore.cc
+0x40910 src_ys_libmm_thread 1.9.2           src/ys/libmm_thread.cc
+# Tgs::ResidentData, Vfs::System (+ the vfs* C wrappers) and Vfs::Internal: no file
+# name in the module (no asserts); names guessed from the namespaces.
+0x40DC4 src_ys_tgs_resident_data 1.9.2           src/ys/tgs_resident_data.cc
+0x40DF4 src_ys_vfs 1.9.2           src/ys/vfs.cc
+0x411D0 src_ys_vfs_internal 1.9.2           src/ys/vfs_internal.cc
 0x419C8 src_ys_vfs_internal_file 1.9.2           src/ys/vfs_internal_file.cc
+rodata 0x10473C src/ys/libmm_semaphore
+rodata 0x1047E4 src/ys/libmm_thread
+rodata 0x104898 src/ys/vfs_internal
 0x41FD4 src_ys_vfs_tartefs 1.9.2           src/ys/vfs_tartefs.cc
 0x470BC src_net_network 1.9.2           src/net/network.cc
 0x4B958 src_net_network_lobby 1.9.2           src/net/network_lobby.cc

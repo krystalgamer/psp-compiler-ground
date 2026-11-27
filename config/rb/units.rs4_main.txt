@@ -47,6 +47,11 @@ src/menu_mod/salbum                          1.9.2           src/menu_mod/salbum
 src/menu_mod/save                            1.9.2           src/menu_mod/save.c
 src/menu_mod/saveutil                        1.9.2           src/menu_mod/saveutil.c
 src/menu_mod/shop                            1.9.2           src/menu_mod/shop.c
+src/ys/libmm_semaphore                       1.9.2           src/ys/libmm_semaphore.cc
+src/ys/libmm_thread                          1.9.2           src/ys/libmm_thread.cc
+src/ys/tgs_resident_data                     1.9.2           src/ys/tgs_resident_data.cc
+src/ys/vfs                                   1.9.2           src/ys/vfs.cc
+src/ys/vfs_internal                          1.9.2           src/ys/vfs_internal.cc
 src/ys/vfs_internal_file                     1.9.2           src/ys/vfs_internal_file.cc
 src/ys/vfs_tartefs                           1.9.2           src/ys/vfs_tartefs.cc
 src/net/network                              1.9.2           src/net/network.cc
