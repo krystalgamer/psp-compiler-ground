@@ -268,7 +268,43 @@ void mpeg_end(void)
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/mpeg/mpeg_main", mpeg_main);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/mpeg/mpeg_main", readHeader);
+long long strFileLseek(StrFile *file, long long offset, SceInt32 whence);
+static SceInt32 readHeader(SceMpeg *pMpeg, StrFile *pStrFile, SceInt32 *pFilesize, SceInt32 *strOffset)
+{
+	SceInt32 iReadSize, ret;
+	SceChar8 stream_buf[2048];
+
+	if (strFileLseek(pStrFile, 0, 0) < 0) {
+		ret = -1;
+		goto term;
+	}
+
+	iReadSize = strFileReadCB(pStrFile, stream_buf, 2048);
+	if (iReadSize < 2048) {
+		ret = -1;
+		goto term;
+	}
+
+	if (sceMpegQueryStreamOffset(pMpeg, stream_buf, strOffset) != 0) {
+		ret = -1;
+		goto term;
+	}
+
+	if (sceMpegQueryStreamSize(stream_buf, pFilesize) != 0) {
+		ret = -1;
+		goto term;
+	}
+
+	if (strFileLseek(pStrFile, 0, 0) < 0) {
+		ret = -1;
+		goto term;
+	}
+
+	ret = 0;
+
+term:
+	return ret;
+}
 
 int readPspStream(SceMpegRingbuffer *pRB) {
     int temp_v0;
