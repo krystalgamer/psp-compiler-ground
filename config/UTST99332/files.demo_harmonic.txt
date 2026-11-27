@@ -10,6 +10,9 @@
 # With CityApp split, the units' references would split .rodata by unit, which
 # the units' C (written against one asm blob) doesn't follow yet: keep it whole.
 rodata blob
+# libgu (SDK, C): fonttex .. the 1.0f constant
+rodata 0x174A28 libgu
+rodata 0x175298 -
 # libsupc++ units built from C++ give their own .rodata: eh_personality's
 # read_encoded_value_with_base jump table and pure's message
 rodata 0x177670 gcc-3.3.3/libstdc__-v3/libsupc__/eh_personality

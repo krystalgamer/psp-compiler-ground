@@ -435,6 +435,8 @@ segments:
       - [0x172FD0, rodata, asm/rodata_172F50]
       - [0x1733D0, .rodata, main_objs/FloatImage]
       - [0x1733F4, rodata, asm/rodata_173374]
+      - [0x174AA8, .rodata, libgu]
+      - [0x175318, rodata, asm/rodata_175298]
       - [0x1776F0, .rodata, gcc-3.3.3/libstdc__-v3/libsupc__/eh_personality]
       - [0x177724, rodata, asm/rodata_1776A4]
       - [0x17775C, .rodata, gcc-3.3.3/libstdc__-v3/libsupc__/pure]
