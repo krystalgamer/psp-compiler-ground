@@ -4,7 +4,7 @@
 #ifndef DEMO_DUCK_DEMO_PARSER_HPP
 #define DEMO_DUCK_DEMO_PARSER_HPP
 
-/* units that still rename base.hpp's old stand-ins (#define basic_parser ...) */
+/* units that still rename the old base.hpp stand-ins (#define basic_parser ...; sh_HDRMap) */
 #undef basic_parser
 #undef basic_file_parser
 

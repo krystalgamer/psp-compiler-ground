@@ -2,13 +2,7 @@
 /* cflags: -O3 -fno-exceptions */
 #undef __EXCEPTIONS
 #include "cxx/defer_asm.h"
-/* base.hpp still has its own stand-ins for these classes: keep them out of the way */
-#define basic_parser basic_parser_base_hpp
-#define basic_file_parser basic_file_parser_base_hpp
 #include "../main.hpp"
-#undef basic_parser
-#undef basic_file_parser
-#include "../../demo_duck/demo/parser.hpp"
 
 /* the strings stay in the module's .rodata (asm) */
 extern const char D_00172EA8[];     /* "../lib/system/basic_parser_spe.cpp" */

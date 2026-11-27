@@ -2,12 +2,7 @@
 /* cflags: -O3 -fno-exceptions */
 #undef __EXCEPTIONS
 #include "cxx/defer_asm.h"
-#define basic_parser basic_parser_base_hpp
-#define basic_file_parser basic_file_parser_base_hpp
 #include "../main.hpp"
-#undef basic_parser
-#undef basic_file_parser
-#include "../../demo_duck/demo/parser.hpp"
 
 /* constants and strings stay in the module's .rodata (asm) */
 extern const float D_00173340;      /* 255 */

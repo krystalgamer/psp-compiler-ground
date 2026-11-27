@@ -2,12 +2,7 @@
 /* cflags: -O3 -fno-exceptions */
 #undef __EXCEPTIONS
 #include "cxx/defer_asm.h"
-#define basic_parser basic_parser_base_hpp
-#define basic_file_parser basic_file_parser_base_hpp
 #include "../main.hpp"
-#undef basic_parser
-#undef basic_file_parser
-#include "../../demo_duck/demo/parser.hpp"
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgi_rgb_bwtorgba", _Z41__static_initialization_and_destruction_0ii_1086CC);
 
