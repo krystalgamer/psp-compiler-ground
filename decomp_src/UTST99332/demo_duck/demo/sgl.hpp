@@ -333,6 +333,38 @@ public:
     bool _finish;                       /* 0x9C */
 };
 
+class Stripper {
+public:
+    struct stripper_triangle {
+        int _adj[3];                /* neighbour triangles */
+        unsigned char _flags;       /* 0x0C */
+        int _f10, _f14;
+        int _untagged;              /* 0x18 */
+        int _heap_id;               /* 0x1C */
+    };
+    void undo();
+    void collect_triangles();
+    void assert_valid_vertex_index(int);
+    void assert_valid_edge_index(int);
+    void assert_valid_triangle_index(int);
+    void assert_valid_strip_index(int);
+    int get_opposite_vertex(int, int);
+    int get_common_edge(int, int);
+    int count_untagged_neighbors(int);
+    void path_tag_triangle(int);
+    void reset_flags();
+    void read_path(int, int *);
+    void feed_strips();
+    int count_strips();
+    Mesh &_mesh;
+    std::vector<stripper_triangle> _tris;   /* 0x04 */
+    unsigned int _size;                     /* 0x10 */
+    int _max_length;                        /* 0x14 */
+    bool _f18;
+    Heap _heap;                             /* 0x1C */
+    PrimitiveIndex<int> _prims;             /* 0x2C */
+};
+
 class LineSet {
 public:
     struct Line {
