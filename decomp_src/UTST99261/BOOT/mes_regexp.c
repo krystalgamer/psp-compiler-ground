@@ -148,7 +148,25 @@ void mes_regexp_mark(void *arg0) {
     mes_gc_mark(M2C_FIELD(arg0, int *, 0x18));
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_regexp", mes_regexp_get);
+int mes_regexp_get(void *ctx, RxObj *re, unsigned int id)
+{
+    int r;
+
+    if (id == D_0058530C) {
+        r = re->source;
+    } else if (id == D_005852D0) {
+        r = re->global ? 12 : 8;
+    } else if (id == D_005852D4) {
+        r = re->icase ? 12 : 8;
+    } else if (id == D_005852F0) {
+        r = re->multiline ? 12 : 8;
+    } else if (id == D_005852E0) {
+        r = mes_number_alloc(ctx, re->lastIndex);
+    } else {
+        r = mes_object_get(re, id);
+    }
+    return r;
+}
 
 void mes_regexp_put(void *ctx, RxObj *re, unsigned int id, int v)
 {
