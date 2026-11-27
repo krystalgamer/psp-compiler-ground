@@ -13,6 +13,8 @@ extern "C" int sceKernelChangeThreadPriority(int id, int prio);
 extern "C" int sceKernelReferThreadStatus(int id, SceKernelThreadInfo *info);
 extern "C" void consPrintf(const char *fmt, ...);
 extern "C" void _memFree(void *p, const char *file, int line);
+extern "C" int sceKernelExitThread(int status);
+extern "C" int sceKernelTerminateThread(int id);
 
 extern const char D_001047E4[], D_00104800[], D_00104818[], D_00104828[], D_00104840[];
 extern const char ThreadC1_FUNCTION[] __asm__("_ZZN9MetaMagic6ThreadC1EPKciijE12__FUNCTION__");
@@ -83,7 +85,22 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/libmm_thread", _ZNK9MetaMag
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/libmm_thread", _ZN9MetaMagic6Thread5StartEiPKv);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/libmm_thread", _ZN9MetaMagic6Thread4TermEv);
+void Thread::Term()
+{
+	int current_thread_id = sceKernelGetThreadId();
+	if (!(current_thread_id >= 0))
+		consPrintf(D_001047E4, D_00104800, 167, __FUNCTION__, D_00104828);
+	if (id == current_thread_id)
+		sceKernelExitThread(0);
+	else
+		sceKernelTerminateThread(id);
+}
+
+}
+
+extern "C" const char D_0010485C[] = "";
+
+namespace MetaMagic {
 
 int Thread::Run(int argSize, const void *argp)
 {
