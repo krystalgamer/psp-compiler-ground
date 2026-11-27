@@ -516,26 +516,100 @@ int sceWaveAudioWriteBlocking(unsigned int ch, unsigned int left, unsigned int r
 		return 0x8044000A;
 	return sceAudioOutputPannedBlocking(D_002D04FC[ch], left, right, buf);
 }
-INCLUDE_ASM("tmp/asm/rb/pal_BOOT/nonmatchings/libwave/sceWaveInit", func_000096C0);
-INCLUDE_ASM("tmp/asm/rb/pal_BOOT/nonmatchings/libwave/sceWaveInit", func_0000979C);
-INCLUDE_ASM("tmp/asm/rb/pal_BOOT/nonmatchings/libwave/sceWaveInit", func_00009954);
-INCLUDE_ASM("tmp/asm/rb/pal_BOOT/nonmatchings/libwave/sceWaveInit", func_00009A98);
-INCLUDE_ASM("tmp/asm/rb/pal_BOOT/nonmatchings/libwave/sceWaveInit", func_00009D34);
-INCLUDE_ASM("tmp/asm/rb/pal_BOOT/nonmatchings/libwave/sceWaveInit", func_0000A24C);
-
-
-
 extern char D_002CF228[2][0x700];
-
-
 static void func_00009A98(int ch, void *buf);
 static void func_00009D34(int ch, void *buf);
 static void func_0000A24C(int ch, char *dst, void *src);
 typedef int (*SceWaveCallback)(int ch, void *buf, int size, int arg);
-
-
 extern const signed char D_00017784[2][5];
+static void func_0000979C(char *buf);
+static int func_00009954(short *dst, unsigned char *vag, int *hist1, int *hist2);
 
+static int func_000096C0(unsigned int args, void *argp)
+{
+	SceWaveMain *m = (SceWaveMain *)argp;
+	int i = 0;
+	int j;
 
+	while (D_002CF1A4 == 0) {
+		for (j = 0; j < 16; j++)
+			func_0000979C(D_002CF228[i] + j * 0x70);
+		sceAudioOutputBlocking(m->ch, 0x8000, D_002CF228[i]);
+		i = (i + 1) % 2;
+	}
+	sceAudioOutputBlocking(m->ch, 0, NULL);
+	sceKernelExitThread(0);
+	return 0;
+}
+static void func_0000979C(char *buf)
+{
+	int ch;
 
+	wclr(buf, 0x70);
+	for (ch = 0; ch < 8; ch++) {
+		if (D_002D0028[ch].stat == 0)
+			continue;
+		if (!(D_002D0028[ch].flags & 0x400)) {
+			if (!(D_002D0028[ch].flags & 0x100)) {
+				if (D_002D0028[ch].data != NULL)
+					func_00009A98(ch, D_002D04F8);
+			} else {
+				if (D_002D0028[ch].data != NULL)
+					func_00009D34(ch, D_002D04F8);
+			}
+		} else {
+			if (D_002D0028[ch].unk44 != 0) {
+				wclr(D_002D04F8, 0x70);
+				if (!(D_002D0028[ch].flags & 0x100)) {
+					if (((SceWaveCallback)D_002D0028[ch].unk44)(ch, D_002D04F4, 0x10, D_002D0028[ch].unk48))
+						D_002D0028[ch].stat = 0;
+					func_00009954(D_002D04F8, D_002D04F4, &D_002D0028[ch].unk30, &D_002D0028[ch].unk34);
+				} else {
+					if (((SceWaveCallback)D_002D0028[ch].unk44)(ch, D_002D04F8, 0x70, D_002D0028[ch].unk48))
+						D_002D0028[ch].stat = 0;
+				}
+			}
+		}
+		func_0000A24C(ch, buf, D_002D04F8);
+	}
+}
+static int func_00009954(short *dst, unsigned char *vag, int *hist1, int *hist2)
+{
+	short *out;
+	int predict, shift, flags;
+	int s1, s2, f0, f1, i, k;
+	int d0, d1;
 
+	k = 2;
+	flags = vag[0];
+	predict = flags >> 4;
+	shift = flags & 0xF;
+	flags = vag[1];
+	s1 = *hist1;
+	s2 = *hist2;
+	f0 = D_00017784[0][predict];
+	f1 = D_00017784[1][predict];
+	if (flags == 7)
+		return flags;
+	out = dst;
+	for (i = 0; i < 14; i++) {
+		signed char b = vag[k++];
+
+		d0 = (((b << 28) >> (shift + 10)) + (s1 * f0 + s2 * f1)) >> 6;
+		if (d0 > 32767) d0 = 32767;
+		if (d0 < -32768) d0 = -32768;
+		d1 = (((b & ~0xF) << (14 - shift)) + (d0 * f0 + s1 * f1)) >> 6;
+		if (d1 > 32767) d1 = 32767;
+		if (d1 < -32768) d1 = -32768;
+		*out++ = d0;
+		*out++ = d1;
+		s2 = d0;
+		s1 = d1;
+	}
+	*hist1 = s1;
+	*hist2 = s2;
+	return flags;
+}
+INCLUDE_ASM("tmp/asm/rb/pal_BOOT/nonmatchings/libwave/sceWaveInit", func_00009A98);
+INCLUDE_ASM("tmp/asm/rb/pal_BOOT/nonmatchings/libwave/sceWaveInit", func_00009D34);
+INCLUDE_ASM("tmp/asm/rb/pal_BOOT/nonmatchings/libwave/sceWaveInit", func_0000A24C);
