@@ -725,6 +725,22 @@ libgcc/libsupc++ DWARF names `gcc-3.3.6/` paths.
   `vmzero.q`/`vmidt.q`, `lv.q`/`sv.q` at fixed `$a0`/`$a1` offsets) is
   reproduced exactly by `asm volatile` blocks with no operands, i.e. it
   needs no builtin either.
+- Why the module's VFPU code (2,304 VFPU words in 214 functions; none of
+  them in a compile unit with DWARF, and no DWARF unit has a vector type)
+  is taken to be inline asm and not output of the 1.8 VFPU builtins:
+  values cross FPU -> GPR -> VFPU and back (40 of 48 `mtv` are fed by an
+  `mfc1`, 77 of 103 `mfv` feed an `mtc1`), as inline asm `"r"` operands
+  force, where VFPU-aware code generation would load the value with one
+  `lv.s` from its memory slot; the C between VFPU instructions is control
+  flow and loop updates (separate asm statements), not scheduled into
+  straight-line VFPU runs; reorg never puts a VFPU instruction into a
+  compiler branch's delay slot (those stay `nop` next to VFPU code), and
+  the 126 function-final VFPU stores in `jr ra` delay slots are psp-as's
+  reorder swap, which it also does for 1.5.1's inline asm. 154 such
+  functions match byte for byte as `asm volatile` blocks, surrounding
+  compiler code included.  Confidence: medium-high.  A VFPU function with
+  DWARF (vector-typed variables) or one whose VFPU code is interleaved
+  with scheduled C would reopen it.
 - The game's C++ objects keep their float constants with their strings
   and aggregates in one `.rodata` in emission order (ys_fx_fade_cif:
   `"src/ys/ys_object.h"`, two `1.0f`, then the vtable); with this repo's
