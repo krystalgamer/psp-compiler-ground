@@ -11,6 +11,9 @@ extern unsigned char D_0011FC54;
 extern unsigned char D_0011FC44;
 
 
+#define SLOT_NAME(s) ((M2C_UNK)(s))
+int *ResGetFileHeader(int *arg0);
+
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/sgxres", D_0010A158);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxres", ResGetSlot);
@@ -28,7 +31,17 @@ int *ResGetFileHeader(int *arg0) {
     return var_v0;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxres", ResFindChunk);
+void *ResFindChunk(char *res, int id) {
+    int size = *(int *)(res + 8);
+    int ofs = 0x10;
+    while (ofs < size) {
+        int *c = (int *)(res + ofs);
+        ofs += 8;
+        if (c[0] == id) return res + ofs;
+        ofs += c[1];
+    }
+    return NULL;
+}
 
 extern void *D_0011FC48;
 
@@ -75,7 +88,15 @@ void sgxResTerm(void) {
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxres", sgxResOpen);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxres", sgxResAttachBody);
+int sgxResAttachBody(int id, int body) {
+    char *p = ResGetSlot(id, SLOT_NAME("AttachBody"));
+    if (p == NULL) return 0;
+    *(int *)(p + 0x68) = 1;
+    *(int *)(p + 0x70) = body;
+    *(int *)(p + 0x6C) = 0;
+    sceKernelDcacheWritebackInvalidateAll();
+    return 1;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxres", sgxResAttachBodyFile);
 
@@ -83,11 +104,20 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxres", sgxResClose);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxres", sgxResCloseAll);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxres", sgxResGetHeaderPtr);
+void *sgxResGetHeaderPtr(int id) {
+    char *p = ResGetSlot(id, SLOT_NAME("GetHeader"));
+    if (p == NULL) return NULL;
+    return *(void **)(p + 0x14);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxres", sgxResGetBodyPtr);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxres", sgxResGetName);
+extern const char D_0010A21C[];
+const char *sgxResGetName(int id) {
+    char *p = ResGetSlot(id, SLOT_NAME("GetResName"));
+    if (p == NULL) return D_0010A21C;
+    return *(const char **)(p + 0x18);
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/sgxres", D_0010A21C);
 
@@ -97,11 +127,22 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/sgxres", D_0010A228);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxres", sgxResGetBank);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxres", sgxResSetUserData);
+void sgxResSetUserData(int id, int data) {
+    char *p = ResGetSlot(id, SLOT_NAME("SetUserData"));
+    if (p != NULL) *(int *)(p + 0x180) = data;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxres", sgxResGetUserData);
+int sgxResGetUserData(int id) {
+    char *p = ResGetSlot(id, SLOT_NAME("GetUserData"));
+    if (p == NULL) return 0;
+    return *(int *)(p + 0x180);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxres", sgxResGetBankPtr);
+void *sgxResGetBankPtr(int id) {
+    char *p = ResGetSlot(id, SLOT_NAME("GetBankPtr"));
+    if (p == NULL) return NULL;
+    return p + 0x178;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxres", sgxResFindWave);
 
@@ -111,7 +152,11 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxres", sgxResFindSeq);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxres", sgxResFindAdsr);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxres", sgxResOfsToData);
+void *sgxResOfsToData(int id, int ofs) {
+    char *p = ResGetSlot(id, SLOT_NAME("OfsToData"));
+    if (p == NULL || *(char **)(p + 0x14) == NULL || ofs == 0) return NULL;
+    return *(char **)(p + 0x14) + ofs;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -149,9 +194,17 @@ void sgxResUnlock(int arg0) {
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxres", sgxResSyncUse);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxres", sgxResGetRefCount);
+int sgxResGetRefCount(int id) {
+    char *p = ResGetSlot(id, SLOT_NAME("GetRefCount"));
+    if (p == NULL) return 0;
+    return *(int *)(p + 0x174);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxres", sgxResIsClosing);
+int sgxResIsClosing(int id) {
+    char *p = ResGetSlot(id, SLOT_NAME("IsClosing"));
+    if (p == NULL) return 0;
+    return *(signed char *)(p + 0x10);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxres", sgxResReqToName);
 
@@ -163,7 +216,11 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxres", sgxResCanPlayType);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxres", sgxResEnumPlayName);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxres", sgxResGetWaveCount);
+int sgxResGetWaveCount(int id) {
+    char *p = ResGetSlot(id, SLOT_NAME("GetWaveCount"));
+    if (p == NULL) return 0;
+    return *(int *)(p + 0x30);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxres", sgxResIsWaveLoop);
 
@@ -175,7 +232,11 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxres", sgxResIsSeqLoop);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxres", sgxResSetCategory);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxres", sgxResGetCategory);
+int sgxResGetCategory(int id) {
+    char *p = ResGetSlot(id, "GetCategory");
+    if (p == NULL) return -1;
+    return *(short *)(p + 0x12);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxres", sgxResGetWaveSurroundCount);
 
@@ -237,9 +298,18 @@ int sgxdGetHeaderSize(int *arg0) {
     return var_v1;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxres", sgxdGetBodySize);
+int sgxdGetBodySize(int *res) {
+    int *h = ResGetFileHeader(res);
+    if (h == NULL) return -1;
+    return h[3] & 0x7FFFFFFF;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxres", sgxdGetBodyPtr);
+void *sgxdGetBodyPtr(char *res) {
+    int *h = ResGetFileHeader((int *)res);
+    if (h == NULL) return NULL;
+    if (h[3] >= 0) return NULL;
+    return res + h[2];
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
