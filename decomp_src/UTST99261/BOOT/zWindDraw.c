@@ -176,6 +176,7 @@ extern int _zWindDrawTexClipOffY;
 
 
 
+void GUI_Choice_select(ZW *w, int idx);
 int zWindDraw(void) {
     int r;
 
@@ -1353,7 +1354,68 @@ int zWindExcEventChoice(void *w, int type, ZEVENT *ev) {
     return -1;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/zWindDraw", zWindChoiceButton);
+int zWindChoiceButton(ZW *w, int x, int y) {
+    int fh = w->font->height;
+    int left = w->px;
+    int top;
+    int right;
+    int bottom;
+    int idx;
+    int lim;
+    if (w->py < D_00584BC8 / 2) {
+        top = w->py + w->h;
+    } else {
+        top = w->py - fh * 5 - 4;
+    }
+    right = left + w->w;
+    bottom = top + fh * 5 + 4;
+    if (x < left) {
+        return -1;
+    }
+    if (right < x) {
+        return -1;
+    }
+    if (y < top) {
+        return -1;
+    }
+    if (bottom < y) {
+        return -1;
+    }
+    if (right - 16 < x) {
+        if (y < top + 16) {
+            M2C_FIELD(w, s16 *, 0x58) += fh;
+            if (M2C_FIELD(w, s16 *, 0x58) > 0) {
+                M2C_FIELD(w, s16 *, 0x58) = 0;
+            }
+            zWindDraw();
+        }
+        if (bottom - 16 < y) {
+            x = fh * 5;
+            M2C_FIELD(w, s16 *, 0x58) -= fh;
+            if (M2C_FIELD(w, s16 *, 0x58) < x - fh * w->u.b.pressed) {
+                M2C_FIELD(w, s16 *, 0x58) = x - fh * w->u.b.pressed;
+                lim = M2C_FIELD(w, s16 *, 0x58);
+                if (lim > 0) {
+                    M2C_FIELD(w, s16 *, 0x58) = 0;
+                }
+            }
+            zWindDraw();
+        }
+        return 0;
+    }
+    idx = (y - M2C_FIELD(w, s16 *, 0x58) - top - 2) / fh;
+    if (idx < 0) {
+        return 0;
+    }
+    if (idx >= w->u.b.pressed) {
+        return 0;
+    }
+    GUI_Choice_select(w, idx);
+    zWindWidgetChoiceListDelete(s_windsystem_data.target);
+    s_windsystem_data.mode = 0;
+    s_windsystem_data.target = NULL;
+    return -1;
+}
 
 int zWindExcEventTextField(ZWIDGET *w, int type, ZEVENT *ev) {
     switch (type) {
