@@ -257,7 +257,47 @@ static void matchup_inv_ufodispjudge(void)
 	}
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_match", matchup_inv_ufodisp);
+extern MSPR *ufo;
+extern int ufodisp, ufoaddy, gcnt_28FC04, ufocnt_28FBC8;
+void matchup_inv_ufodisp(void)
+{
+	if (ufodisp) {
+		ufo->f[0xC / 4] |= 2;
+		if (ufoaddy == 0) {
+			if (genrand_int32() % 100 < 50) {
+				ufo->f[0x48 / 4] = 16;
+				ufo->f[0x4C / 4] = 0x38;
+				ufo->f[0x2C / 4] = 0;
+				ufo->f[0x78 / 4] = 0;
+				ufoaddy = 1;
+			} else {
+				ufo->f[0x4C / 4] = 0x38;
+				ufo->f[0x78 / 4] = 0;
+				ufo->f[0x2C / 4] = 0x110;
+				ufo->f[0x48 / 4] = 0x18;
+				ufoaddy = -1;
+			}
+		}
+	}
+	if (ufoaddy == 0)
+		return;
+	if (gcnt_28FC04 % 3 == 0) {
+		ufo->f[0x2C / 4] += ufoaddy;
+		if (ufoaddy == -1) {
+			if (ufo->f[0x2C / 4] <= 0) {
+				ufo->f[0xC / 4] &= ~2;
+				ufoaddy = 0;
+			}
+		} else if (ufoaddy == 1) {
+			if (ufo->f[0x2C / 4] >= 0x110) {
+				ufo->f[0xC / 4] &= ~2;
+				ufoaddy = 0;
+			}
+		}
+	}
+	if (ufocnt_28FBC8 % 152 == 0)
+		se_start(5);
+}
 
 typedef struct { int f0, f4, f8, fc; u8 pad[0x28 - 0x10]; int f28, f2c; u8 pad2[0x68 - 0x30]; int f68, f6c; } UFRS_T;
 typedef struct { UFRS_T *spr; int f4, f8, y; int f10[4]; } UFRI_T;
