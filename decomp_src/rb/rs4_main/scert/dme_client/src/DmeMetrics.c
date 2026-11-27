@@ -1,5 +1,12 @@
 #include "common.h"
-#include "rb/rs4_main/scert/scert.h"
+#include "m2c_macros.h"
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int NetSetDefaultBitMask(void *arg0);
+int NetSetDefaultLatencyMetricsParams(void *arg0);
+void NetSetLatencyMetricsCallback(int arg0, int arg1);
+extern unsigned char gLatencyMetrics;
 
 int NetSetDefaultLatencyMetricsParams(void *arg0) {
     int var_v0;

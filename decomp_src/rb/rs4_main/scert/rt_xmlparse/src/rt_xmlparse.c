@@ -1,5 +1,16 @@
 #include "common.h"
-#include "rb/rs4_main/scert/scert.h"
+#include "m2c_macros.h"
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int rt_xmlparse_create(void);
+int rt_xmlparse_destroy(void);
+int rt_xmlparse_is_document_complete(void);
+int rt_xmlparse_parse_buf(void);
+int rt_xmlparse_set_character_data_cb(void);
+int rt_xmlparse_set_element_end_cb(void);
+int rt_xmlparse_set_element_start_cb(void);
+int rt_xmlparse_set_user_data(void);
 
 int rt_xmlparse_create(void) {
     return 4;

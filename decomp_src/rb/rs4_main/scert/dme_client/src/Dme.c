@@ -1,5 +1,23 @@
 #include "common.h"
-#include "rb/rs4_main/scert/scert.h"
+#include "m2c_macros.h"
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int NetGetBuildTimeStamp(signed char *arg0);
+int NetGetLANBroadcastCommSetting(int *arg0);
+int NetGetLocalTime(int *arg0);
+int NetGetTime(void *arg0, int *arg1);
+int NetGetUPnPMemoryCeiling(int *arg0);
+int NetGetUdpBindPort(int *arg0);
+int NetIGetTime(void *arg0);
+int NetSetDefaultJoinParams(void *arg0);
+int NetSetDefaultLookupParams(void *arg0);
+int NetSetDefaultNetUsePeerToPeerInParams(void *arg0);
+void NetRegisterMemoryCallbacks(void);
+int NetIGetLocalTime();                             /* extern */
+M2C_UNK NetIRegisterMemoryCallbacks();              /* extern */
+extern signed char gBuildTimeStamp_10DEB4;
+extern void *gUDPInterfacePtr;
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/Dme", rcsid_10DE3C);
 

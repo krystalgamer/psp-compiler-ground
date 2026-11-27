@@ -1,5 +1,24 @@
 #include "common.h"
-#include "rb/rs4_main/scert/scert.h"
+#include "m2c_macros.h"
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int rt_comm_echo_is_enabled(void);
+int rt_comm_get_version_string_ptr(void);
+int rt_comm_is_valid_channel();
+int rt_isdigit(int arg0);
+void rt_comm_destroy(void *arg0);
+void rt_comm_display_state(void);
+void rt_comm_echo_set_default_options(int *arg0);
+void rt_comm_get_broadcast_ip(void);
+void rt_comm_get_dns_servers(void);
+void rt_comm_get_host_by_name(void);
+void rt_comm_get_local_ip(void);
+void rt_comm_linkaddress_toint(void);
+M2C_UNK rt_comm_release_channel_id(void *);         /* extern */
+extern void *gCommPlatformInterfacePtr;
+extern int gpszVersion_11536C;
+extern int gEchoInfo;
 
 int rt_comm_get_version_string_ptr(void) {
     return gpszVersion_11536C;

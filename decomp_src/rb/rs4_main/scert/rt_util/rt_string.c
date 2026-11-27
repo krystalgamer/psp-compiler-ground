@@ -1,5 +1,9 @@
 #include "common.h"
-#include "rb/rs4_main/scert/scert.h"
+#include "m2c_macros.h"
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int rt_strlen(signed char *arg0);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_string", rt_string_strncpy);
 

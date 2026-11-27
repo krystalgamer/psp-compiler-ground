@@ -1,5 +1,22 @@
 #include "common.h"
-#include "rb/rs4_main/scert/scert.h"
+#include "m2c_macros.h"
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int NetUsePeerToPeer(void *arg0);
+int NetUseUDP(void);
+int rt_p2p_get_max_peers(void *arg0, int *arg1);
+int rt_p2p_get_overlay_peer_count(void *arg0, int arg1, int *arg2);
+int rt_p2p_get_virtual_port(void *arg0, unsigned short *arg1);
+int rt_p2p_pack_type(int arg0, int arg1);
+int rt_p2p_process_local_broadcast_test(void *arg0, int arg1);
+int rt_p2p_set_send_aggregation(int *arg0);
+int rt_p2p_tick(int arg0);
+int rt_udp_set_aggregation_interval();
+void rt_p2p_reset_peer_info(void *arg0, void *arg1);
+M2C_UNK rt_p2p_resolve_interface();                 /* extern */
+M2C_UNK rt_comm_linkaddress_setnull(int);           /* extern */
+extern void *gUDPInterfacePtr;
 
 int NetUsePeerToPeer(void *arg0) {
     rt_p2p_resolve_interface();

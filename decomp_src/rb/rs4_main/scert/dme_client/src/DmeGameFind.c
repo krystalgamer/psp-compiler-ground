@@ -1,5 +1,11 @@
 #include "common.h"
-#include "rb/rs4_main/scert/scert.h"
+#include "m2c_macros.h"
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+void LANFindSetLocalServer(int arg0, int arg1);
+extern int gnLocalServerPort;
+extern int gpNetLocalServerConnection;
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeGameFind", NetLANFindEnableExchange);
 

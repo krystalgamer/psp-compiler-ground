@@ -1,5 +1,14 @@
 #include "common.h"
-#include "rb/rs4_main/scert/scert.h"
+#include "m2c_macros.h"
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+void NetFreeClientPointers(void);
+void NetInitializeClients(void);
+void *DMEmalloc(M2C_UNK);                           /* extern */
+M2C_UNK DmeFree(M2C_UNK *);                         /* extern */
+extern void *NetClientPointerList;
+extern void *gObjectInterfacePtr;
 
 void *memset(void *s, int c, unsigned int n);
 void NetInitializeClients(void) {

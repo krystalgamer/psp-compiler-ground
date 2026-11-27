@@ -1,5 +1,16 @@
 #include "common.h"
-#include "rb/rs4_main/scert/scert.h"
+#include "m2c_macros.h"
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int rt_memory_allocate_init_zero(void **arg0, unsigned int arg1);
+int rt_memory_get_aligned_address(unsigned int *arg0, unsigned int arg1, int arg2);
+int rt_memory_register_another_callback(int arg0);
+int rt_memory_register_callbacks(int arg0, int arg1);
+int rt_memory_allocate();                           /* extern */
+extern int gpfFreeCallback;
+extern int gpfMallocCallback;
+extern int gpfReallocCallback;
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_memory", rt_memory_allocate);
 

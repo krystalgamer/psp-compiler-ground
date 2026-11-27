@@ -1,5 +1,9 @@
 #include "common.h"
-#include "rb/rs4_main/scert/scert.h"
+#include "m2c_macros.h"
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int NetSetDefaultBitMask(void *arg0);
 
 int NetSetDefaultBitMask(void *arg0) {
     int var_v0;

@@ -1,5 +1,12 @@
 #include "common.h"
-#include "rb/rs4_main/scert/scert.h"
+#include "m2c_macros.h"
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int rt_mutex_platform_destroy(void *arg0);
+int rt_mutex_platform_get_thread_id(int *arg0);
+int rt_mutex_platform_lock(void *arg0);
+int rt_mutex_platform_unlock(void *arg0);
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/psp/rt_mutex_platform", rcsid_10ECAC);
 

@@ -1,5 +1,45 @@
 #include "common.h"
-#include "rb/rs4_main/scert/scert.h"
+#include "m2c_macros.h"
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int NetClientIndexToClientIndexPacket(int arg0);
+int NetGetMsgClientIndex(void *arg0);
+int NetGetMyWorldID(void);
+int NetGetNatService(M2C_UNK **arg0);
+int NetGetP2PHandle(void *arg0);
+int NetIGetClientIpAddress(void *arg0, int arg1, int arg2);
+int NetIGetCurrentUDPSourceBinaryIP(void *arg0);
+int NetIGetMyClientIndex(int *arg0, void *arg1);
+int NetIGetTime(void *arg0);
+int NetISetDefaultResolveAddrParams(void *arg0);
+int NetSetConnInfo(int arg0, int arg1);
+int NetSetDefaultIncomingClientParams(int *arg0);
+int NetSetPeerToPeerHostChangeCallback(int arg0, int arg1);
+int NetUseDme(void);
+int RtMsgToDmeConnectionIndex(unsigned int arg0);
+void NetCreateConnInfoBare(void);
+void NetGetMyAddressInfoInternal(void *arg0);
+void NetMutexUnlock(void);
+void NetResetTime(int arg0);
+void NetSetHeartbeatInterval(int arg0);
+void p2p_system_change_cb(int arg0, int arg1, void *arg2);
+void udp_data_cb(void);
+void *DMEmalloc(M2C_UNK);                           /* extern */
+void *NetGetClientInfo(int, int);                   /* extern */
+M2C_UNK rt_comm_linkaddress_toext(void *, void *);  /* extern */
+M2C_UNK rt_mutex_unlock(int, M2C_UNK);              /* extern */
+M2C_UNK rt_timebase_get_globaltime(void *);         /* extern */
+extern void *gObjectInterfacePtr;
+extern void *gDmeGlobals;
+extern void *gUDPInterfacePtr;
+extern unsigned char gppConnInfo;
+extern unsigned char gMyAddressInfo;
+extern unsigned char gNatService;
+extern int gbTimebaseEnabled;
+extern int HEARTBEAT_INTERVAL;
+extern int gpHostChangeCallbackData;
+extern int gpfHostChangeCallback;
 
 void NetSetHeartbeatInterval(int arg0) {
     HEARTBEAT_INTERVAL = arg0;

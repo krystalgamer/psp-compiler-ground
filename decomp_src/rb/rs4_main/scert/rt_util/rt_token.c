@@ -1,5 +1,12 @@
 #include "common.h"
-#include "rb/rs4_main/scert/scert.h"
+#include "m2c_macros.h"
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int rt_token_is_valid(unsigned int arg0);
+void rt_token_shutdown(int *arg0);
+M2C_UNK rt_memory_free(void *);                     /* extern */
+M2C_UNK rt_token_destroy_table(int);                /* extern */
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_token", rt_token_start);
 

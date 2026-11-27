@@ -1,5 +1,16 @@
 #include "common.h"
-#include "rb/rs4_main/scert/scert.h"
+#include "m2c_macros.h"
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int IsEven(int *arg0);
+int IsZero(int *arg0);
+int KM_SetUpdateCallback(int arg0);
+void lintAddIP(int arg0, int arg1);
+void lintClearBit(int arg0, unsigned int arg1);
+void lintSetBit(int arg0, unsigned int arg1);
+void lintSetSmallValue(int *arg0, int arg1);
+extern int gAppUpdateCallback;
 
 int KM_SetUpdateCallback(int arg0) {
     int temp_v0;

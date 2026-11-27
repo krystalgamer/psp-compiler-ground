@@ -1,5 +1,14 @@
 #include "common.h"
-#include "rb/rs4_main/scert/scert.h"
+#include "m2c_macros.h"
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int rt_upnp_xml_create_parser(void);
+int rt_upnp_xml_destroy_parser(void);
+int rt_upnp_xml_get_parse_data(void);
+int rt_upnp_xml_get_parser_type(void);
+int rt_upnp_xml_is_document_complete(void);
+int rt_upnp_xml_parse(void);
 
 int rt_upnp_xml_create_parser(void) {
     return 4;

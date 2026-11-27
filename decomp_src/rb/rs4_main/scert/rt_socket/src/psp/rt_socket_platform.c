@@ -1,5 +1,13 @@
 #include "common.h"
-#include "rb/rs4_main/scert/scert.h"
+#include "m2c_macros.h"
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int rt_socket_cleanup_stack_platform(void);
+int rt_socket_close_platform(void);
+int rt_socket_recvmsg_platform(void);
+int rt_socket_get_err_platform();                   /* extern */
+int sceNetInetClose();                              /* extern */
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_socket/src/psp/rt_socket_platform", rcsid_10D120);
 

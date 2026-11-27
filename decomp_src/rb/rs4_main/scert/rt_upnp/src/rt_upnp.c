@@ -1,5 +1,21 @@
 #include "common.h"
-#include "rb/rs4_main/scert/scert.h"
+#include "m2c_macros.h"
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int rt_upnp_add_port_mapping(void);
+int rt_upnp_delete_port_mapping(void);
+int rt_upnp_describe(void);
+int rt_upnp_describe_service(void);
+int rt_upnp_disable_natservice_heartbeat(void *arg0);
+int rt_upnp_discover(void);
+int rt_upnp_get_connect_status(void);
+int rt_upnp_get_external_ip(void);
+int rt_upnp_get_version_string(void);
+int rt_upnp_search_for_port_mapping(void);
+int rt_upnp_set_memory_ceiling(void);
+int rt_upnp_verify_port_mapping(void);
+extern int gpszVersionString;
 
 int rt_upnp_get_version_string(void) {
     return gpszVersionString;

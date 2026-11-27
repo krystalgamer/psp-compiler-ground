@@ -1,5 +1,39 @@
 #include "common.h"
-#include "rb/rs4_main/scert/scert.h"
+#include "m2c_macros.h"
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int rt_socket_cleanup_stack_platform(void);
+int rt_socket_close_platform(void);
+int rt_socket_get_version_string(void);
+int rt_socket_listen_tcp(void);
+int rt_socket_recvmsg_platform(void);
+void rt_socket_cleanup_stack(void);
+void rt_socket_close(void);
+void rt_socket_find_closed_sockets(void);
+void rt_socket_find_sockets_with_data(void);
+void rt_socket_get_available_bytes_to_read(void);
+void rt_socket_get_dns_servers(void);
+void rt_socket_get_local_ip(void);
+void rt_socket_initialize_stack(void);
+void rt_socket_is_connected(void);
+void rt_socket_recvmsg(void);
+void rt_socket_sendmsg(void);
+void rt_socket_set_no_delay_tcp(void);
+void rt_socket_set_non_blocking(void);
+M2C_UNK rt_socket_get_local_ip_platform();          /* extern */
+int rt_socket_get_err_platform();                   /* extern */
+M2C_UNK rt_socket_get_dns_servers_platform();       /* extern */
+M2C_UNK rt_socket_get_available_bytes_to_read_platform(); /* extern */
+int sceNetInetListen();                             /* extern */
+M2C_UNK rt_socket_sendmsg_platform();               /* extern */
+M2C_UNK rt_socket_is_connected_platform();          /* extern */
+M2C_UNK rt_socket_find_sockets_with_data_platform(); /* extern */
+M2C_UNK rt_socket_find_closed_sockets_platform();   /* extern */
+M2C_UNK rt_socket_set_non_blocking_platform();      /* extern */
+M2C_UNK rt_socket_initialize_stack_platform();      /* extern */
+M2C_UNK rt_socket_set_no_delay_tcp_platform();      /* extern */
+extern int gpszVersion_114A2C;
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_socket/src/rt_socket", rt_socket_get_version);
 

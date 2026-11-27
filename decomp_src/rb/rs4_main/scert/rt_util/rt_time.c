@@ -1,5 +1,23 @@
 #include "common.h"
-#include "rb/rs4_main/scert/scert.h"
+#include "m2c_macros.h"
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int rt_time_sleep_usecs_platform();
+void rt_time_elapsed(void);
+void rt_time_get_date_time(void);
+void rt_time_get_gmtime(void);
+void rt_time_get_local(void);
+void rt_time_get_time_stamp(void);
+void rt_time_get_time_string(void);
+void rt_time_platform_get_gmtime(void);
+void rt_time_sleep_usecs(void);
+void rt_time_start(void);
+M2C_UNK rt_time_platform_get_time_string();         /* extern */
+M2C_UNK rt_time_platform_get_time_stamp();          /* extern */
+M2C_UNK rt_time_platform_get_date_time();           /* extern */
+M2C_UNK rt_time_elapsed_msecs();                    /* extern */
+M2C_UNK rt_time_get_msecs();                        /* extern */
 
 void rt_time_get_local(void) {
     rt_time_get_msecs();

@@ -1,5 +1,42 @@
 #include "common.h"
-#include "rb/rs4_main/scert/scert.h"
+#include "m2c_macros.h"
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+M2C_UNK *rt_comm_platform_resolve_interface(void);
+int NetUseCommInet(void);
+int NetUseCommSockets(void);
+int rt_comm_platform_display_state(void);
+int rt_comm_platform_linkaddress_toint(int *arg0, int arg1);
+int rt_comm_platform_update(void);
+void rt_comm_platform_get_dns_servers(void);
+void rt_socket_get_dns_servers(void);
+int rt_ip_string2ip(int);                           /* extern */
+extern void *gCommPlatformInterfacePtr;
+extern unsigned char gCommPlatformInterface;
+extern unsigned char rt_comm_platform_create;
+extern unsigned char rt_comm_platform_destroy;
+extern unsigned char rt_comm_platform_get_avail_bytes_to_read;
+extern unsigned char rt_comm_platform_get_broadcast_ip;
+extern unsigned char rt_comm_platform_get_host_by_name;
+extern unsigned char rt_comm_platform_get_local_ip;
+extern unsigned char rt_comm_platform_get_remote_ip;
+extern unsigned char rt_comm_platform_is_connected;
+extern unsigned char rt_comm_platform_linkaddress_isequal;
+extern unsigned char rt_comm_platform_linkaddress_isnull;
+extern unsigned char rt_comm_platform_linkaddress_setnull;
+extern unsigned char rt_comm_platform_linkaddress_toext;
+extern unsigned char rt_comm_platform_linkaddress_tostr;
+extern unsigned char rt_comm_platform_receive;
+extern unsigned char rt_comm_platform_receive_echo;
+extern unsigned char rt_comm_platform_receive_from;
+extern unsigned char rt_comm_platform_send;
+extern unsigned char rt_comm_platform_send_echo;
+extern unsigned char rt_comm_platform_send_to;
+extern unsigned char rt_comm_platform_shutdown;
+extern unsigned char rt_comm_platform_startup;
+extern unsigned char rt_comm_platform_vsend;
+extern unsigned char rt_comm_platform_vsend_to;
 
 int NetUseCommInet(void) {
     rt_comm_platform_resolve_interface();

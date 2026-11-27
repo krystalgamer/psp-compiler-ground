@@ -1,5 +1,33 @@
 #include "common.h"
-#include "rb/rs4_main/scert/scert.h"
+#include "m2c_macros.h"
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+M2C_UNK *rt_udp_get_version_string(void);
+int NetUseUDP(void);
+int rt_udp_destroy_shared_channel_data(void *arg0);
+int rt_udp_disable_nat_service_heartbeat(void *arg0);
+int rt_udp_get_aggregation_interval(void *arg0, int *arg1);
+int rt_udp_get_inactivity_timeout(int *arg0);
+int rt_udp_get_local_address(void *arg0, void *arg1, int *arg2);
+int rt_udp_get_virtual_port(void *arg0, unsigned short *arg1);
+int rt_udp_listen(void *arg0, int arg1);
+int rt_udp_set_aggregation_interval();
+int rt_udp_set_connection_inactivity_timeout(void *arg0, int arg1);
+int rt_udp_set_inactivity_timeout(int arg0);
+int rt_upnp_disable_natservice_heartbeat(void *arg0);
+void rt_comm_destroy(void *arg0);
+void rt_udp_add_conn_to_list(void *arg0, void *arg1);
+void rt_udp_del_conn_from_list(void *arg0, void *arg1);
+void rt_udp_enable_unexpected_port(int arg0);
+void rt_udp_set_peer_id(void *arg0, int arg1);
+M2C_UNK rt_comm_shutdown();                         /* extern */
+M2C_UNK rt_memory_free(void *);                     /* extern */
+M2C_UNK rt_upnp_destroy(int);                       /* extern */
+M2C_UNK rt_udp_resolve_interface();                 /* extern */
+extern int gbEnableUnexpectedPort;
+extern unsigned char gszRtUdpVersionString;
+extern int RT_UDP_INACTIVITY_TIMEOUT;
 
 void rt_udp_enable_unexpected_port(int arg0) {
     gbEnableUnexpectedPort = arg0;

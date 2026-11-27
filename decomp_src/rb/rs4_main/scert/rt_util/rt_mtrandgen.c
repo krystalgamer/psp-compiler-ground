@@ -1,5 +1,12 @@
 #include "common.h"
-#include "rb/rs4_main/scert/scert.h"
+#include "m2c_macros.h"
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+void randReSync(void);
+extern int x1;
+extern int x2;
+extern int y;
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_mtrandgen", seedMT);
 

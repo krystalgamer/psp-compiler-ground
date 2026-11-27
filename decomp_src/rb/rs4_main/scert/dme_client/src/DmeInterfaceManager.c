@@ -1,5 +1,20 @@
 #include "common.h"
-#include "rb/rs4_main/scert/scert.h"
+#include "m2c_macros.h"
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+void ClearInterfacePointers(void);
+extern void *gObjectInterfacePtr;
+extern void *gCommPlatformInterfacePtr;
+extern void *gUDPInterfacePtr;
+extern int gACodecGSMInterfacePtr;
+extern int gACodecLPC10InterfacePtr;
+extern int gACodecLPCInterfacePtr;
+extern int gCryptInterfacePtr;
+extern int gMsgClientInterfacePtr;
+extern int gP2PInterfacePtr;
+extern int gStreamMediaInterfacePtr;
+extern int gVCodecJPEGInterfacePtr;
 
 void ClearInterfacePointers(void) {
     gMsgClientInterfacePtr = 0;

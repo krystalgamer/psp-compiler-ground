@@ -1,5 +1,11 @@
 #include "common.h"
-#include "rb/rs4_main/scert/scert.h"
+#include "m2c_macros.h"
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int rt_udp_mgr_destroy(void);
+M2C_UNK rt_udp_destroy(int);                        /* extern */
+extern int gMgr;
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_udp_mgr", rt_udp_mgr_create);
 

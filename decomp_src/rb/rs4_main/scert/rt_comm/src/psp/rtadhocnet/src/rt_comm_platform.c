@@ -1,5 +1,40 @@
 #include "common.h"
-#include "rb/rs4_main/scert/scert.h"
+#include "m2c_macros.h"
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+M2C_UNK *rt_comm_adhoc_resolve_interface(void);
+int NetUseCommAdhoc(void);
+int rt_comm_adhoc_display_state(void);
+int rt_comm_adhoc_get_avail_bytes_to_read(void);
+int rt_comm_adhoc_get_host_by_name(void);
+int rt_comm_adhoc_get_remote_ip(void);
+int rt_comm_adhoc_is_connected(void);
+int rt_comm_adhoc_receive(void);
+int rt_comm_adhoc_receive_echo(void);
+int rt_comm_adhoc_send(void);
+int rt_comm_adhoc_update(void);
+int rt_comm_adhoc_vsend(void);
+void rt_comm_adhoc_shutdown(void);
+extern void *gCommPlatformInterfacePtr;
+extern unsigned char gCommAdhocInterface;
+extern unsigned char rt_comm_adhoc_create;
+extern unsigned char rt_comm_adhoc_destroy;
+extern unsigned char rt_comm_adhoc_get_broadcast_ip;
+extern unsigned char rt_comm_adhoc_get_dns_servers;
+extern unsigned char rt_comm_adhoc_get_local_ip;
+extern unsigned char rt_comm_adhoc_linkaddress_isequal;
+extern unsigned char rt_comm_adhoc_linkaddress_isnull;
+extern unsigned char rt_comm_adhoc_linkaddress_setnull;
+extern unsigned char rt_comm_adhoc_linkaddress_toext;
+extern unsigned char rt_comm_adhoc_linkaddress_toint;
+extern unsigned char rt_comm_adhoc_linkaddress_tostr;
+extern unsigned char rt_comm_adhoc_receive_from;
+extern unsigned char rt_comm_adhoc_send_echo;
+extern unsigned char rt_comm_adhoc_send_to;
+extern unsigned char rt_comm_adhoc_startup;
+extern unsigned char rt_comm_adhoc_vsend_to;
+extern int gbInitialized_130B2C;
 
 int NetUseCommAdhoc(void) {
     rt_comm_adhoc_resolve_interface();

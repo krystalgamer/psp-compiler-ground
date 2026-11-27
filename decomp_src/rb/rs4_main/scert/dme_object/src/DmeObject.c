@@ -1,5 +1,23 @@
 #include "common.h"
-#include "rb/rs4_main/scert/scert.h"
+#include "m2c_macros.h"
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int InitObjectUpdateList(void);
+int NetGetMaxDataStreamTypes(int *arg0);
+int NetGetMaxDataStreams(int *arg0);
+int NetGetMaxFieldsPerStructure(int *arg0);
+int NetGetMaxObjects(int *arg0);
+int NetGetMaxStructures(int *arg0);
+int NetIGetSessionMasterClientIndex(int *arg0, void *arg1);
+int NetSetSessionMasterClientIndex(void *arg0, int arg1);
+int RemoveFromObjectUpdateList(void);
+void NetIGetDataStream(void);
+void NetISendFieldUpdates(void);
+void *NetIGetObject();                              /* extern */
+M2C_UNK SendGroupedFieldUpdate(int, M2C_UNK, M2C_UNK); /* extern */
+M2C_UNK NetGetStreamChannel();                      /* extern */
+extern void *gObjectInterfacePtr;
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_object/src/DmeObject", NetISendMyClientUpdate);
 

@@ -1,5 +1,15 @@
 #include "common.h"
-#include "rb/rs4_main/scert/scert.h"
+#include "m2c_macros.h"
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int NetUseCrypt(void);
+void InitializePRNG(void);
+void KM_GenerateRSAKeyPair(int arg0, int arg1);
+M2C_UNK rt_crypt_resolve_interface();               /* extern */
+M2C_UNK setNewSeed(M2C_UNK);                        /* extern */
+M2C_UNK RSAGenerateKeyPair(int, int);               /* extern */
+extern unsigned char D_00132074;
 
 int NetUseCrypt(void) {
     rt_crypt_resolve_interface();

@@ -1,5 +1,15 @@
 #include "common.h"
-#include "rb/rs4_main/scert/scert.h"
+#include "m2c_macros.h"
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int rt_constraint_check_RT_1BYTE(signed char *arg0, void *arg1);
+int rt_constraint_check_RT_2BYTE(short *arg0, void *arg1);
+int rt_constraint_check_RT_4BYTE(int *arg0, void *arg1);
+int rt_constraint_check_RT_4BYTE_FP(float *arg0, void *arg1);
+int rt_constraint_check_RT_U1BYTE(unsigned char *arg0, void *arg1);
+int rt_constraint_check_RT_U2BYTE(unsigned short *arg0, void *arg1);
+int rt_constraint_check_RT_U4BYTE(unsigned int *arg0, void *arg1);
 
 int rt_constraint_check_RT_1BYTE(signed char *arg0, void *arg1) {
     int var_a0;

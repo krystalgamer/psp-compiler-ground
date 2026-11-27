@@ -1,5 +1,9 @@
 #include "common.h"
-#include "rb/rs4_main/scert/scert.h"
+#include "m2c_macros.h"
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int rt_msg_set_byte(signed char *arg0, signed char arg1);
 
 int rt_msg_set_byte(signed char *arg0, signed char arg1) {
     int var_v0;
