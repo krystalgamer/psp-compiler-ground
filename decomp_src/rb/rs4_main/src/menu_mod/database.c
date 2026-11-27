@@ -1,7 +1,6 @@
 /* cflags: -Os -fno-strength-reduce */
 #include "common.h"
 #include "m2c_macros.h"
-M2C_UNK databaseFameRefresh();                      /* extern */
 extern signed char D_001025CC;
 extern signed char D_001026FC;
 extern unsigned char D_00102718;
@@ -21,7 +20,21 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/database", D_00102
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/database", D_001025E8);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/database", databaseFameRefresh);
+extern int l_anFameList[26];
+int ttrGetIndexNum();
+int cardlistCpyTtr2Int32();
+
+int databaseFameRefresh(void)
+{
+	int ttr = resGetDatLocal(1, 0x4F);
+	int i;
+	if (ttrGetIndexNum(ttr) < 25)
+		consPrintf(&D_001025CC, &D_001025E8, 0x28, "databaseFameRefresh", "nMaxFameList >= Profile_Ranking_Num");
+	for (i = 0; i < 25; i++)
+		l_anFameList[i] = cardlistCpyTtr2Int32(ttr, i + 1);
+	l_anFameList[25] = l_anFameList[24] + 1;
+	return 1;
+}
 
 int databaseAssortNameRefresh(void)
 {
