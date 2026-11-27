@@ -657,11 +657,29 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_collision", I3dcs_GetIntersect
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_collision", I3dcs_GetIntersectSegSphereA);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_collision", I3dcs_GetIntersectCapSphereA);
+int I3dcs_GetIntersectCapSphereA(const float *c, const float *a1, const float *sph, void *a3, void *a4)
+{
+	float s[4] __attribute__((aligned(16)));
+	I3dVecCopyA(s, sph);
+	s[3] += c[3];
+	return I3dcs_GetIntersectSegSphereA(c, a1, s, a3, a4);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_collision", I3dcs_GetIntersectRLineSphereA);
+int I3dcs_GetIntersectRLineSphereA(const float *c, const float *a1, const float *sph, void *a3, void *a4)
+{
+	float s[4] __attribute__((aligned(16)));
+	I3dVecCopyA(s, sph);
+	s[3] += c[3];
+	return I3dcs_GetIntersectLineSphereA(c, a1, s, a3, a4);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_collision", I3dcs_GetIntersectRRaySphereA);
+int I3dcs_GetIntersectRRaySphereA(const float *c, const float *a1, const float *sph, void *a3, void *a4)
+{
+	float s[4] __attribute__((aligned(16)));
+	I3dVecCopyA(s, sph);
+	s[3] += c[3];
+	return I3dcs_GetIntersectRaySphereA(c, a1, s, a3, a4);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_collision", I3dcs_IsIntersectCylSphereA);
 
