@@ -2,6 +2,15 @@
 #include "common.h"
 #include "mes_js.h"
 #include "m2c_macros.h"
+extern char D_0013C28C[];
+extern int *g_JS_PAGECHANGED_;
+unsigned int mes_context_id2(void *ctx, const char *name);
+MesProp *mes_object_search(MesObject *obj, unsigned int id);
+void *mes_class_private_get(MesObject *o);
+int Node_getSid(void *node);
+void *HST_searchSessionIDHistoryNode(int sid);
+void *HST_getHistoryWithOffset(int n);
+void mes_window_scroll_inner(void *dom, int kind, int x, int y, int sid);
 extern MesClassDef mes_window_def;
 extern MesClass *mes_window_class;
 extern char D_0013C294[];
@@ -9,7 +18,7 @@ int mes_window_history_move_inner(MesContext *ctx, int n);
 void js_delTimerID(int id, int kind, int b);
 MesValue mes_window_set_interval_inner(MesContext *ctx, MesValue *argv, int argc, int kind);
 void *mes_window_dialog_inner(MesContext *ctx, int kind, MesValue msg, void *out, int d);
-int mes_window_check_validate(MesContext *ctx, void **a, void **b, int *sid, void **node);
+void mes_window_check_validate(MesContext *ctx, void **a, void **b, int *sid, void **node);
 void *HST_getDomObject(void *node);
 typedef struct DialogResult {
     char pad[0x10];
@@ -17,7 +26,22 @@ typedef struct DialogResult {
 } DialogResult;
 
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_window", mes_window_check_validate);
+void mes_window_check_validate(MesContext *ctx, void **a, void **b, int *sid, void **node)
+{
+    MesObject *o;
+    void **priv;
+    int s;
+    void *n;
+
+    o = (MesObject *)mes_object_search(ctx->global, mes_context_id2(ctx, D_0013C28C))->value;
+    priv = mes_class_private_get(o);
+    s = Node_getSid(*priv);
+    n = HST_searchSessionIDHistoryNode(s);
+    *a = o;
+    *b = priv;
+    *sid = s;
+    *node = n;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_window", mes_window_dialog_inner_sub);
 
@@ -25,7 +49,20 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_window", mes_window_dia
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_window", mes_window_history_move_inner);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_window", mes_window_scroll_inner);
+void mes_window_scroll_inner(void *dom, int kind, int x, int y, int sid)
+{
+    IpcMsg msg;
+    int *buf = MEM_malloc(0, 16);
+
+    if (buf != NULL) {
+        buf[0] = (int)dom;
+        buf[1] = kind;
+        buf[2] = x;
+        buf[3] = y;
+        SetIpcMember(&msg, 8, sid, 0, 0x80C, 0, 16, buf);
+        JSSendMail(&msg, D_0013C294);
+    }
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_window", mes_window_set_interval_inner);
 
@@ -126,9 +163,47 @@ int mes_window_handle_event(MesContext *ctx, MesObject *obj)
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_window", mes_window_home);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_window", mes_window_scroll_by);
+MesValue mes_window_scroll_by(MesContext *ctx, MesValue x, MesValue y)
+{
+    struct {
+        void *a;
+        void *b;
+        int sid;
+        char *node;
+    } v;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_window", mes_window_scroll_to);
+    if ((x & 3) == 1 && (y & 3) == 1) {
+        mes_window_check_validate(ctx, &v.a, &v.b, &v.sid, (void **)&v.node);
+        if (v.node != NULL && *(void **)(v.node + 0x6C) != NULL)
+        {
+            x >>= 2;
+            y >>= 2;
+            mes_window_scroll_inner(HST_getDomObject(v.node), 1, x, y, v.sid);
+        }
+    }
+    return 0;
+}
+
+MesValue mes_window_scroll_to(MesContext *ctx, MesValue x, MesValue y)
+{
+    struct {
+        void *a;
+        void *b;
+        int sid;
+        char *node;
+    } v;
+
+    if ((x & 3) == 1 && (y & 3) == 1) {
+        mes_window_check_validate(ctx, &v.a, &v.b, &v.sid, (void **)&v.node);
+        if (v.node != NULL && *(void **)(v.node + 0x6C) != NULL)
+        {
+            x >>= 2;
+            y >>= 2;
+            mes_window_scroll_inner(HST_getDomObject(v.node), 0, x, y, v.sid);
+        }
+    }
+    return 0;
+}
 
 MesValue mes_window_set_interval(MesContext *ctx)
 {
