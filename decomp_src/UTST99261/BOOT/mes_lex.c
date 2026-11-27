@@ -1,16 +1,36 @@
 /* cflags: -O1 */
 #include "common.h"
 #include "m2c_macros.h"
+typedef struct MesReserved {
+    struct MesReserved *next;
+    unsigned int hash;                /* 0x4 */
+    short len;                        /* 0x8 */
+    const unsigned char *name;        /* 0xC */
+} MesReserved;
+extern MesReserved *mes_lex_reserved_hash[31];
+extern MesReserved mes_lex_reserved[];
 typedef struct MesLine {
     char pad[8];
     unsigned char eof;
+    char pad9[3];
+    unsigned short quote;             /* 0xC */
 } MesLine;
+typedef struct MesStrBuf {
+    char pad[0x14];
+    int len;                          /* 0x14 */
+} MesStrBuf;
 typedef struct MesLex {
     void *ctx;
-    char pad[0xC];
+    MesLine *line;                    /* 0x4 */
+    char pad8[8];
     unsigned char tok;                /* 0x10 */
     unsigned char prev;               /* 0x11 */
+    short f12;
+    MesStrBuf *str;                   /* 0x14 */
 } MesLex;
+int mes_line_match(MesLine *l, const char *s);
+void mes_util_string_put(MesStrBuf *s, int c);
+int mes_lex_escape(MesLine *l);
 int mes_line_peek(MesLine *l);
 int mes_line_skip(MesLine *l);
 int mes_stack_check(void *ctx);
@@ -65,17 +85,57 @@ void mes_lex_single_line_comment(MesLine *l)
         mes_line_skip(l);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_lex", mes_lex_multi_line_comment);
+int mes_lex_multi_line_comment(MesLine *l)
+{
+    int r = 0;
+
+    while (!l->eof) {
+        if (mes_line_peek(l) == '\n')
+            r = 0x65;
+        if (mes_line_match(l, "*/"))
+            return r;
+        mes_line_skip(l);
+    }
+    return r;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_lex", mes_lex_id);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_lex", mes_lex_number);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_lex", mes_lex_string);
+int mes_lex_string(MesLex *lx)
+{
+    MesLine *l = lx->line;
+    int q = l->quote;
+    int c;
+
+    mes_line_skip(l);
+    lx->str->len = 0;
+    while (!l->eof && (c = mes_line_peek(l)) != '\n' && c != q) {
+        mes_line_skip(l);
+        if (c == '\\')
+            c = mes_lex_escape(l);
+        mes_util_string_put(lx->str, c);
+    }
+    if (!l->eof && c == q)
+        mes_line_skip(l);
+    return 0x69;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_lex", mes_lex_regex);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_lex", mes_lex_regex_flags);
+int mes_lex_regex_flags(MesLex *lx)
+{
+    MesLine *l = lx->line;
+    int c;
+
+    lx->str->len = 0;
+    while (!l->eof && (c = mes_line_peek(l)) != '\n' && (c == 'g' || c == 'i' || c == 'm')) {
+        mes_util_string_put(lx->str, c);
+        mes_line_skip(l);
+    }
+    return 1;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_lex", mes_lex_token_sub);
 
