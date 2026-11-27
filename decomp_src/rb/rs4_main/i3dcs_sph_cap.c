@@ -22,7 +22,13 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3dcs_sph_cap", I3dcs_GetIntersect
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3dcs_sph_cap", I3dcs_GetIntersectSegCapA);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3dcs_sph_cap", I3dcs_GetIntersectRLineCapA);
+int I3dcs_GetIntersectRLineCapA(const float *c, const float *a1, const float *cap, void *a3, void *a4, void *a5)
+{
+	float s[4] __attribute__((aligned(16)));
+	I3dVecCopyA(s, cap);
+	s[3] += c[3];
+	return I3dcs_GetIntersectLineCapA(c, a1, s, a3, a4, a5);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3dcs_sph_cap", I3dcs_GetIntersectRRayCapA);
 
