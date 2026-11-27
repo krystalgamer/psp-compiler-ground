@@ -152,7 +152,31 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/act_selection", backwardSearchT
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/act_selection", forwardStrings);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/act_selection", backwardStrings);
+int backwardStrings(SelList *l, BOX *box, int start, char *pat, int patlen, int matched, int cs) {
+    char *p = M2C_FIELD(box->geom, char **, 0) + start - 1;
+    int len = start;
+    int i;
+    int r;
+
+    for (; len > 0; len--, p--) {
+        for (i = 0; (matched + i < patlen) & (i < len); i++) {
+            if (!equalsChar(*(p - i), pat[patlen - (matched + i) - 1], cs)) {
+                break;
+            }
+        }
+        if ((matched + i >= patlen) | (i >= len)) {
+            r = insertSelectionTarget(l, box, len - i, len);
+            if (r < 0) {
+                return r;
+            }
+            return matched + i;
+        }
+        if (matched != 0) {
+            return 0;
+        }
+    }
+    return 0;
+}
 
 int equalsChar(char a, char b, int cs) {
     if (cs) {
