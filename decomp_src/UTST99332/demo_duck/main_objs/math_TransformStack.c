@@ -1,29 +1,19 @@
 /* lang: c++ */
-/* cflags: -O3 -fno-exceptions */
+/* cflags: -O3 -fno-exceptions -fmerge-constants */
 #undef __EXCEPTIONS
 #include "cxx/defer_asm.h"
+#define DEMO_STATICS_MATH
 #include "../main.hpp"
 
-/* the strings stay in the module's .rodata (asm) */
-extern const char D_00171C4C[];     /* " " */
-extern const char D_00171C50[];     /* " *** error " */
-extern const char D_00171C5C[];     /* "_stack.empty()" */
-extern const char D_00171C6C[];     /* "../lib/sgl/TransformStack.cpp" */
-extern const char D_00171CB0[];     /* "! _stack.empty()" */
-extern const char TransformStack_dtor_name[] __asm__("_ZZN4math14TransformStackD1EvE19__PRETTY_FUNCTION__");
-extern const char TransformStack_pop_name[] __asm__("_ZZN4math14TransformStack3popEvE19__PRETTY_FUNCTION__");
-extern const char TransformStack_ctop_name[] __asm__("_ZZNK4math14TransformStack3topEvE19__PRETTY_FUNCTION__");
-extern const char TransformStack_ctopinv_name[] __asm__("_ZZNK4math14TransformStack7top_invEvE19__PRETTY_FUNCTION__");
-extern const char TransformStack_topinv_name[] __asm__("_ZZN4math14TransformStack7top_invEvE19__PRETTY_FUNCTION__");
-extern const char TransformStack_top_name[] __asm__("_ZZN4math14TransformStack3topEvE19__PRETTY_FUNCTION__");
+/* the module's .ctors/.dtors refer to the static constructor/destructor */
+__asm__(".globl _GLOBAL__I__ZN4math14TransformStackC2Ev");
+
 #define TS_ASSERT(c, s, name, line) \
     if (!(c)) { \
-        common::common_internal::assert_display(D_00171C50, s, D_00171C6C, name, line, D_00171C4C); \
+        common::common_internal::assert_display(" *** error ", s, "../lib/sgl/TransformStack.cpp", name, line, " "); \
         common::common_internal::on_error(); \
         common::common_internal::clash(); \
     }
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/math_TransformStack", _Z41__static_initialization_and_destruction_0ii_D2FF0);
 
 math::TransformStack::TransformStack()
 {
@@ -34,9 +24,8 @@ math::TransformStack::TransformStack()
 math::TransformStack::~TransformStack()
 {
     pop();
-    TS_ASSERT(_stack.empty(), D_00171C5C, TransformStack_dtor_name, 31);
+    TS_ASSERT(_stack.empty(), "_stack.empty()", __PRETTY_FUNCTION__, 31);
 }
-
 
 void math::TransformStack::push()
 {
@@ -45,7 +34,7 @@ void math::TransformStack::push()
 
 void math::TransformStack::pop()
 {
-    TS_ASSERT(! _stack.empty(), D_00171CB0, TransformStack_pop_name, 41);
+    TS_ASSERT(! _stack.empty(), "! _stack.empty()", __PRETTY_FUNCTION__, 41);
     _stack.pop();
     _dirty = true;
 }
@@ -80,19 +69,19 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/math_TransformSt
 
 const math::matrix &math::TransformStack::top() const
 {
-    TS_ASSERT(! _stack.empty(), D_00171CB0, TransformStack_ctop_name, 120);
+    TS_ASSERT(! _stack.empty(), "! _stack.empty()", __PRETTY_FUNCTION__, 120);
     return _stack.top();
 }
 
 math::matrix &math::TransformStack::top()
 {
-    TS_ASSERT(! _stack.empty(), D_00171CB0, TransformStack_top_name, 127);
+    TS_ASSERT(! _stack.empty(), "! _stack.empty()", __PRETTY_FUNCTION__, 127);
     return _stack.top();
 }
 
 const math::matrix &math::TransformStack::top_inv() const
 {
-    TS_ASSERT(! _stack.empty(), D_00171CB0, TransformStack_ctopinv_name, 134);
+    TS_ASSERT(! _stack.empty(), "! _stack.empty()", __PRETTY_FUNCTION__, 134);
     if (_dirty) {
         _inv = _stack.top().inverse();
         _dirty = false;
@@ -102,21 +91,10 @@ const math::matrix &math::TransformStack::top_inv() const
 
 math::matrix &math::TransformStack::top_inv()
 {
-    TS_ASSERT(! _stack.empty(), D_00171CB0, TransformStack_topinv_name, 147);
+    TS_ASSERT(! _stack.empty(), "! _stack.empty()", __PRETTY_FUNCTION__, 147);
     if (_dirty) {
         _inv = _stack.top().inverse();
         _dirty = false;
     }
     return _inv;
 }
-
-extern "C" {
-void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_D2FF0");
-void _GLOBAL__I__ZN4math14TransformStackC2Ev(void);
-}
-
-void _GLOBAL__I__ZN4math14TransformStackC2Ev(void)
-{
-    static_init(1, 0xFFFF);
-}
-

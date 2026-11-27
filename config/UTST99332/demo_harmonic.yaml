@@ -448,8 +448,8 @@ segments:
       - [0x16EC6C, rodata, asm/rodata_16EBEC]
       - [0x16ED10, .rodata, main_objs/sgl_TransformSet_Transform]
       - [0x16ED3C, rodata, asm/rodata_16ECBC]
-      - [0x16ED6C, .rodata, main_objs/math_TransformStack]
-      - [0x16ED74, rodata, asm/rodata_16ECF4]
+      - [0x16ED50, .rodata, main_objs/math_TransformStack]
+      - [0x16EEEC, rodata, asm/rodata_16EE6C]
       - [0x16EF0C, .rodata, main_objs/math_TransformStackFunc]
       - [0x16EF28, rodata, asm/rodata_16EEA8]
       - [0x16EF38, .rodata, main_objs/sgl_Edge]
@@ -594,7 +594,7 @@ segments:
       - { start: 0x189CE4, type: .bss, vram: 0x18CD80, name: main_objs/VertexColorEnv }
       - { start: 0x189CE4, type: bss, vram: 0x18CE04, name: bss_18CE04 }
       - { start: 0x189CE4, type: .bss, vram: 0x18D8C4, name: main_objs/sgl_TransformSet_Transform }
-      - { start: 0x189CE4, type: bss, vram: 0x18D944, name: bss_18D944 }
+      - { start: 0x189CE4, type: .bss, vram: 0x18D944, name: main_objs/math_TransformStack }
       - { start: 0x189CE4, type: .bss, vram: 0x18D9C4, name: main_objs/math_TransformStackFunc }
       - { start: 0x189CE4, type: .bss, vram: 0x18DA44, name: main_objs/sgl_Edge }
       - { start: 0x189CE4, type: .bss, vram: 0x18DB48, name: main_objs/sh_DebugMap }

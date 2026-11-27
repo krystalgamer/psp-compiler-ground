@@ -177,9 +177,9 @@ rodata 0x174178 -
 # math_basic_net_basic_net: the float pools of basic_net::basic_net(unsigned, unsigned) (C2, C1)
 rodata 0x168584 main_objs/math_basic_net_basic_net
 rodata 0x168594 -
-# math_TransformStack: the float pools (Identity()'s 1.0f) of TransformStack::push and identity
-rodata 0x171C14 main_objs/math_TransformStack
-rodata 0x171C1C -
+# math_TransformStack: the header statics' float pool, the float pools (Identity()'s 1.0f) of push and identity, strings and __PRETTY_FUNCTION__s
+rodata 0x171BF8 main_objs/math_TransformStack
+rodata 0x171D94 -
 # FloatImage: the float pools of gaussian1, gaussian2, blur2d, blur (blur2d/blur inlines gaussian2 with its literals)
 rodata 0x176278 main_objs/FloatImage
 rodata 0x17629C -
@@ -407,7 +407,6 @@ bss 0x18D4AC -
 rodata 0x171BB8 main_objs/sgl_TransformSet_Transform
 rodata 0x171BE4 -
 bss 0x190D44 main_objs/sgl_TransformSet_Transform
-bss 0x190DC4 -
 # sys_timer_Push: C++ static initializer (file static time_stack) and Pop(); .rodata: Pop's strings and float pool; .bss
 rodata 0x175E4C main_objs/sys_timer_Push
 rodata 0x175E64 -
@@ -424,3 +423,5 @@ rodata 0x166DF0 main_objs/glutils_TurnTable
 rodata 0x166E3C -
 bss 0x18E5F8 main_objs/glutils_TurnTable
 bss 0x18E6BC -
+# math_TransformStack: .bss of the C++ static initializer (header statics)
+bss 0x190DC4 main_objs/math_TransformStack
