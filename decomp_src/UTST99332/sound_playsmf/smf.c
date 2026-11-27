@@ -18,7 +18,7 @@ typedef struct {
 	unsigned char *data;
 	signed char unk8;
 	signed char hd;
-	unsigned char unkA[2];
+	unsigned short division;
 	unsigned char unkC;
 	unsigned char unkD[3];
 	int tempo;
@@ -414,7 +414,64 @@ static int func_0000A2C4(SmfData *smf)
 	return 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/sound_playsmf/nonmatchings/smf", func_0000A314);
+extern const char D_00017EAC[];
+extern const char D_00017EB4[];
+
+static __inline__ int smf_chk(unsigned char *a, const char *b)
+{
+	return *(int *)a == *(const int *)b;
+}
+
+int func_0000A314(unsigned char *data, SmfData *p)
+{
+	unsigned char fmt[2];
+	unsigned char div[2];
+	unsigned char len[4];
+	unsigned char sig[4];
+	unsigned char *s;
+	unsigned char *d;
+	unsigned int i;
+	int ret;
+
+	sig[0] = data[0];
+	sig[1] = data[1];
+	sig[2] = data[2];
+	sig[3] = data[3];
+	ret = 0x80540005;
+	if (smf_chk(sig, D_00017EAC)) {
+		s = data + 8;
+		i = 0;
+		d = &fmt[1];
+		for (; i < 2; i++)
+			*d-- = *s++;
+		ret = 0x80540005;
+		if (*(unsigned short *)fmt == 0) {
+			s = data + 12;
+			i = 0;
+		d = &div[1];
+			for (; i < 2; i++)
+				*d-- = *s++;
+			sig[0] = data[14];
+			sig[1] = data[15];
+			sig[2] = data[16];
+			sig[3] = data[17];
+			s = data + 18;
+			ret = 0x80540005;
+			if (smf_chk(sig, D_00017EB4)) {
+				i = 0;
+		d = &len[3];
+				for (; i < 4; i++)
+					*d-- = *s++;
+				p->ptr = data + 22;
+				ret = 0;
+				p->unk18 = *(int *)len;
+				p->data = data;
+				p->division = *(unsigned short *)div;
+			}
+		}
+	}
+	return ret;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/sound_playsmf/nonmatchings/smf", func_0000A444);
 
