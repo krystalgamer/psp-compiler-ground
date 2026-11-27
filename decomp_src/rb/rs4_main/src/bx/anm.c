@@ -1,6 +1,25 @@
 /* lang: c++ */
 /* cflags: -Os */
 #include "common.h"
+namespace B2A {
+class Manager {
+public:
+	float GetFrame();
+	void SetFrame(float);
+	float GetEndFrame();
+	void SetEndFrame(float);
+	int GetLoop();
+	void SetLoop(int);
+	int GetPause();
+	void SetPause(int);
+	float GetSpeed();
+	void SetSpeed(float);
+};
+class B2aFile {
+public:
+	void ReAssign();
+};
+}
 extern "C" {
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/anm", bxInit);
@@ -27,26 +46,59 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/anm", bxAnmExec);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/anm", bxAnmDraw);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/anm", bxAnmSetFrame);
+void bxAnmSetFrame(B2A::Manager *m, float v)
+{
+	m->SetFrame(v);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/anm", bxAnmGetFrame);
+float bxAnmGetFrame(B2A::Manager *m)
+{
+	return m->GetFrame();
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/anm", bxAnmSetLoop);
+void bxAnmSetLoop(B2A::Manager *m, int v)
+{
+	m->SetLoop(v);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/anm", bxAnmGetLoop);
+int bxAnmGetLoop(B2A::Manager *m)
+{
+	return m->GetLoop();
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/anm", bxAnmSetPause);
+void bxAnmSetPause(B2A::Manager *m, int v)
+{
+	m->SetPause(v);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/anm", bxAnmGetPause);
+int bxAnmGetPause(B2A::Manager *m)
+{
+	return m->GetPause();
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/anm", bxAnmSetSpeed);
+void bxAnmSetSpeed(B2A::Manager *m, float v)
+{
+	m->SetSpeed(v);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/anm", bxAnmGetSpeed);
+float bxAnmGetSpeed(B2A::Manager *m)
+{
+	return m->GetSpeed();
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/anm", bxAnmGetEndFrame);
+float bxAnmGetEndFrame(B2A::Manager *m)
+{
+	return m->GetEndFrame();
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/anm", bxAnmSetEndFrame);
+void bxAnmSetEndFrame(B2A::Manager *m, float v)
+{
+	m->SetEndFrame(v);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/anm", bxAnmTexReAssign);
+void bxAnmTexReAssign(B2A::B2aFile **f)
+{
+	(*f)->ReAssign();
+}
 
 } /* extern "C": m2c drafts with mangled names, kept as C linkage */
