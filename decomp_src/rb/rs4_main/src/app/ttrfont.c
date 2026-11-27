@@ -12,11 +12,41 @@ int i3dDrawImg();
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/ttrfont", D_000FE7C4);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/ttrfont", ttrFontOpen);
+void consPrintf(const char *, ...);
+unsigned int sceKernelGetGPI(void);
+int *localeGetCntx(void);
+int fontInit(int, int, int);
+int fontTerm(void);
+extern int l_tTtrFontOpenCntx;
+extern unsigned char D_000FE7C4, D_000FE7E8;
+int ttrFontOpen(void)
+{
+	int r;
+	if (sceKernelGetGPI() & 1) consPrintf(&D_000FE7C4, "ttrFontOpen");
+	if (l_tTtrFontOpenCntx) {
+		if (sceKernelGetGPI() & 1) consPrintf("already opened\n");
+		return 0;
+	}
+	r = fontInit(localeGetCntx()[0x24 / 4], localeGetCntx()[0x28 / 4], localeGetCntx()[0x2C / 4]);
+	l_tTtrFontOpenCntx = 1;
+	if (sceKernelGetGPI() & 1) consPrintf(&D_000FE7E8);
+	return r;
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/ttrfont", D_000FE7E8);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/ttrfont", ttrFontClose);
+int ttrFontClose(void)
+{
+	if (sceKernelGetGPI() & 1) consPrintf(&D_000FE7C4, "ttrFontClose");
+	if (!l_tTtrFontOpenCntx) {
+		if (sceKernelGetGPI() & 1) consPrintf("not opened\n");
+		return 0;
+	}
+	fontTerm();
+	l_tTtrFontOpenCntx = 0;
+	if (sceKernelGetGPI() & 1) consPrintf(&D_000FE7E8);
+	return 1;
+}
 
 int textGetLine(int *s, int n)
 {
@@ -71,7 +101,14 @@ int ttrFontTerm(int **arg0) {
     return 1;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/ttrfont", ttrFontUpdate);
+typedef struct { int w[16]; } TtrMat;
+typedef struct { int w[12]; } TtrAttr;
+int ttrFontUpdate(char *p, TtrMat *m, TtrAttr *a)
+{
+	*(TtrMat *)(p + 0x350) = *m;
+	*(TtrAttr *)(p + 0x390) = *a;
+	return 1;
+}
 
 int ttrFontDraw(int *p)
 {
