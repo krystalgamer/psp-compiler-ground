@@ -65,6 +65,18 @@ typedef struct DialogResult {
 } DialogResult;
 
 
+extern char D_0013C3FC[];
+extern char D_0013C434[];
+extern char D_0013C454[];
+extern char D_0013C45C[];
+extern char D_0013C3A8[];
+extern char D_0013C3E8[];
+extern char mes_window_native_table[];
+MesObject *mes_class_new(MesContext *ctx, MesClass *cls);
+MesValue mes_array_new(MesContext *ctx, int n);
+void mes_class_property_setup(MesContext *ctx, MesObject *o, const char *name, MesValue v, int flags);
+void mes_native_setup(MesContext *ctx, MesObject *o, void *table, int n);
+void mes_object_setup(MesContext *ctx, MesObject *o, const char *name, MesValue v, int flags, int x);
 void mes_window_check_validate(MesContext *ctx, void **a, void **b, int *sid, void **node)
 {
     MesObject *o;
@@ -488,7 +500,29 @@ void mes_window_class_init(MesContext *ctx)
     mes_window_class = mes_class_init(ctx, &mes_window_def);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_window", mes_window_new);
+MesObject *mes_window_new(MesContext *ctx, void *priv)
+{
+    MesObject *w;
+    MesValue frames;
+
+    w = mes_class_new(ctx, mes_window_class);
+    mes_class_private_set(w, priv);
+    *--ctx->sp = (MesValue)w;
+    frames = mes_array_new(ctx, 0);
+    mes_class_property_setup(ctx, w, D_0013C2A0, frames, 7);
+    mes_native_setup(ctx, ctx->global, mes_window_native_table, 0x11);
+    mes_object_setup(ctx, ctx->global, D_0013C2A0, frames, 7, 0);
+    mes_object_setup(ctx, ctx->global, D_0013C3FC, 4, 7, 0);
+    mes_object_setup(ctx, ctx->global, D_0013C434, (MesValue)w, 7, 0);
+    mes_object_setup(ctx, ctx->global, D_0013C454, (MesValue)w, 7, 0);
+    mes_object_setup(ctx, ctx->global, D_0013C45C, (MesValue)w, 7, 0);
+    mes_object_setup(ctx, ctx->global, D_0013C28C, (MesValue)w, 7, 0);
+    mes_object_setup(ctx, ctx->global, D_0013C3A8, 8, 7, 0);
+    mes_object_setup(ctx, ctx->global, D_0013C2A8, 1, 7, 0);
+    mes_object_setup(ctx, ctx->global, D_0013C3E8, 4, 7, 0);
+    ctx->sp++;
+    return w;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_window", mes_window_set_global_property);
 
