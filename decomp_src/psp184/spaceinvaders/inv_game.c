@@ -267,7 +267,85 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", game_cnt_resul
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", game_cnt_gameover);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", game_cnt_dead);
+extern int game_pause, D_005A06EC, D_003490D0, D_003490D4;
+extern char *D_000828EC;
+void beat_help_off(void);
+int inv_netgame_linkcheck2(int st);
+void inv_font_ascii_posf(char *str, int x, int y, int w, int h, int r, int g, int b, int a, int mode);
+void poly_set(int a0, int a1, int a2, int a3, int a4, int a5, int a6, int a7,
+	int s0, int s1, int s2, int s3, int s4, int s5, int s6, int s7,
+	int s8, int s9, int s10, int s11, int s12, int s13, int s14, int s15, int s16);
+extern int D_003490C8, D_003490CC;
+void se_stop(void);
+int sound_stop(void);
+int df_fade_check(void);
+void df_fade_start(int a, int b, int c, int d, int e);
+void game_cnt_dead(void)
+{
+	POS2_T pos = D_0007DD50;
+	int st;
+
+	st = gmain.f.f4;
+	game_pause = 0;
+	D_005A06EC = 1;
+	gmain.f.f1058 = 0;
+	gmain.f.f1068 = 0;
+	gmain.f.f1070 = 0;
+	if (st == 0) {
+		if (gmain.f.f8 == 0) {
+			beat_help_off();
+			se_stop();
+			gmain.f.f10ac = 14;
+			gmain.f.f10b0 = 127;
+			gmain.f.f10b4 = 127;
+		}
+		gmain.f.f8 += 8;
+		if (gmain.f.f8 > 255)
+			gmain.f.f8 = 255;
+		D_003490CC = gmain.f.f8;
+		D_003490C8 = gmain.f.f8;
+		if (gmain.f.f8 == 255) {
+			gmain.f.f8 = 0;
+			gmain.f.f4++;
+		}
+	} else if (st == 1) {
+		IST.f0--;
+		if (IST.f0 > 0)
+			gmain.f.f4 = 20;
+		else
+			gmain.f.f4 = 10;
+	} else if (st == 10) {
+		gmain.f.f8 += 8;
+		if (gmain.f.f8 > 255)
+			gmain.f.f8 = 255;
+		D_003490CC = 255 - gmain.f.f8;
+		D_003490C8 = 255 - gmain.f.f8;
+		if (gmain.f.f8 == 255) {
+			gmain.f.f4 = 11;
+			gmain.f.f8 = 0;
+		}
+	} else if (st == 11) {
+		gmain.f.f0 = 9;
+		gmain.f.f4 = 0;
+		gmain.f.f8 = 0;
+		gmain.f.f1058 = 0;
+	} else if (st == 20) {
+		df_fade_start(0, 0, 0, 1, 60);
+		gmain.f.f4++;
+	} else if (st == 21) {
+		if (df_fade_check())
+			gmain.f.f4++;
+	} else if (st == 22) {
+		sound_stop();
+		gmain.f.f105c = 1;
+		gmain.f.f1060 = gmain.f.ff28;
+		gmain.f.fc = 0;
+	}
+	if (D_003490C8 > 0)
+		inv_font_ascii_posf(D_000828EC, pos.x, pos.y, 100, 100, 255, 255, 255, D_003490C8, 4);
+	if (D_003490CC > 0)
+		poly_set(0, 0, 480, 272, 0, 128, 128, 128, 255, 128, 128, 128, 255, 128, 128, 128, 255, 128, 128, 128, 255, 2000, 2, 2, D_003490CC);
+}
 
 extern const POS2_T D_0007DD50;
 extern int game_pause, D_005A06EC, D_003490D0, D_003490D4;
