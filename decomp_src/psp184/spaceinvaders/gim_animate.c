@@ -1,4 +1,5 @@
 #include "common.h"
+#define eval_fcurve eval_fcurve_62354
 
 /* declarations recovered from DWARF (UTST99332 graphics_model gim_picture) */
 struct _anon1;
@@ -52,24 +53,33 @@ struct _anon3 { /* size 0x20 */
     unsigned int total;
 };
 typedef struct _anon3 SceGimSequenceHeader;
-struct SceGimPicture { /* size 0x54 */
+struct SceGimPicture { /* size 0x8c (gim_picture 1.5.0) */
     int m_reference;
     int m_flags;
+    int m_enable_bits;
+    void *m_unk0C;
     SceGimImageHeader *m_image;
     SceGimImageHeader *m_palette;
-    SceGimSequenceHeader *m_sequence;
     int m_buf_width;
     int m_clut_load;
+    float m_image_crop[4];
     float m_frame_loop[2];
     float m_frame_rate;
     float m_frame;
-    int m_enable_bits;
+    float m_dissolve;
     int m_image_frame;
     int m_image_frame2;
     int m_palette_frame;
     int m_palette_frame2;
-    float m_dissolve;
-    float m_image_crop[4];
+    SceGimSequenceHeader **m_sequences;
+    int m_n_sequences;
+    int m_current_sequence;
+    int m_image_plane;
+    int m_palette_offset[3];
+    int m_blend[1];
+    int m_func[2];
+    int m_filter[2];
+    int m_wrap[2];
 };
 typedef SceGimImageHeader SceGimPaletteHeader;
 typedef unsigned int size_t;
@@ -120,7 +130,40 @@ void sceGimPictureSetImageCrop(SceGimPicture *picture, const float *crop);
 const float *sceGimPictureGetImageCrop(SceGimPicture *picture);
 static void reconfigure_picture(SceGimPicture *picture);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gim_animate", sceGimPictureAnimate);
+static void eval_fcurve( SceGimPicture *picture, SceGimSequenceHeader *sequence, int index, float frame ) ;
+void sceGimPictureAnimate( SceGimPicture *picture, float step )
+{
+	if ( picture == 0 ) return ;
+	if ( !( picture->m_flags & 0x0010 ) ) return ;
+
+	float frame0 = picture->m_frame ;
+	float frame = frame0 + picture->m_frame_rate * step ;
+	float start = picture->m_frame_loop[ 0 ] ;
+	float end = picture->m_frame_loop[ 1 ] ;
+	if ( frame >= end && frame0 < end ) {
+		frame = ( picture->m_flags & 0x0080 ) ? end : start ;
+	} else if ( frame < start && frame0 >= start ) {
+		frame = ( picture->m_flags & 0x0080 ) ? start : end ;
+	}
+	picture->m_frame = frame ;
+
+	int idx = picture->m_current_sequence ;
+	if ( idx >= 0 && idx < picture->m_n_sequences ) {
+		SceGimSequenceHeader *sequence = picture->m_sequences[ idx ] ;
+		{ int i ; for ( i = 0 ; i < sequence->n_functions ; i ++ ) {
+			eval_fcurve( picture, sequence, i, frame ) ;
+		} }
+		return ;
+	}
+
+	int f = (int)frame ;
+	if ( frame < 0.0f ) f -- ;
+	picture->m_image_frame = f ;
+	picture->m_image_frame2 = f + 1 ;
+	picture->m_palette_frame = f ;
+	picture->m_palette_frame2 = f + 1 ;
+	picture->m_dissolve = frame - (float)f ;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gim_animate", sceGimPictureControl);
 
