@@ -857,9 +857,52 @@ void rnd_gdrawImageDelete(void *arg0) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_gdraw", rnd_gdrawImageUpdate);
+int rnd_gdrawImageUpdate(RGIMAGE *img, RTIME *now) {
+    RTIME t;
+    RTIME d;
+    int a;
+    int b;
+    int c;
+    int e;
+    int fd;
+    RTIME *p;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_gdraw", rnd_gdrawImageReset);
+    t = *now;
+    p = &t;
+    if (img->type != 2 || img->unk1C == 1)
+        return 0;
+    if (p->nsec >= img->y) {
+        d.sec = p->sec - img->x;
+        d.nsec = p->nsec - img->y;
+    } else {
+        d.sec = p->sec - img->x - 1;
+        d.nsec = p->nsec - img->y + 1000000000;
+    }
+    if (d.sec > img->unkC || (d.sec == img->unkC && d.nsec >= img->unk10)) {
+        img->pixmap = GUI_Graphics_getAnimationGIFNextFrame(img->anim, 0);
+        GUI_Graphics_getAnimationGIFFrameProperty(img->anim, &a, &b, &c, &e, &fd);
+        if (fd < 0)
+            img->unk1C = 1;
+        img->unkC = fd / 100;
+        img->unk10 = (fd % 100) * 10000000;
+        img->x = p->sec;
+        img->y = p->nsec;
+        return 1;
+    }
+    return 0;
+}
+
+int rnd_gdrawImageReset(RGIMAGE *img, RTIME *now) {
+    RTIME t;
+
+    t = *now;
+    if (img->type != 2 || img->unk1C == 1)
+        return 0;
+    img->x = t.sec;
+    img->y = t.nsec;
+    GUI_Graphics_getAnimationGIFNextFrame(img->anim, 1);
+    return 1;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_gdraw", rnd_drawImageBoxnode);
 
