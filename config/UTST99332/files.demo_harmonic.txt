@@ -42,6 +42,9 @@ rodata 0x1647A0 -
 # vector_font_Console: the float pools of Console::Console (C2, C1)
 rodata 0x160CAC main_objs/vector_font_Console
 rodata 0x160CBC -
+# sys_timer_GetDeltaTime: the double pools (1000000.0) of GetDeltaTime and GetTime
+rodata 0x172F40 main_objs/sys_timer_GetDeltaTime
+rodata 0x172F50 -
 # sh_TestEnvSet_TestEnv: the float pools of TestEnvSet::TestEnvSet (C2, C1)
 rodata 0x171220 main_objs/sh_TestEnvSet_TestEnv
 rodata 0x171250 -

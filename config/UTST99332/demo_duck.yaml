@@ -414,6 +414,8 @@ segments:
       - [0x174190, rodata, asm/rodata_174110]
       - [0x1741C8, .rodata, main_objs/sh_TestEnvSet_TestEnv]
       - [0x1741F8, rodata, asm/rodata_174178]
+      - [0x175EE8, .rodata, main_objs/sys_timer_GetDeltaTime]
+      - [0x175EF8, rodata, asm/rodata_175E78]
       - [0x17AA20, .rodata, gcc-3.3.3/libstdc__-v3/libsupc__/eh_personality]
       - [0x17AA54, rodata, asm/rodata_17A9D4]
       - [0x17AA8C, .rodata, gcc-3.3.3/libstdc__-v3/libsupc__/pure]

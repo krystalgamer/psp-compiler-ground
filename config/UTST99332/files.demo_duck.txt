@@ -43,6 +43,9 @@ bss 0x191350 main_objs/sh_Matrix
 bss 0x191428 -
 bss 0x1918E8 main_objs/sh_SquareMap
 bss 0x19196C -
+# sys_timer_GetDeltaTime: the double pools (1000000.0) of GetDeltaTime and GetTime
+rodata 0x175E68 main_objs/sys_timer_GetDeltaTime
+rodata 0x175E78 -
 # gl__name_stack: the float pools of gl::PushMatrix and gl::LoadIdentity (Identity()'s 1.0f)
 rodata 0x1676B8 main_objs/gl__name_stack
 rodata 0x1676C0 -
