@@ -87,6 +87,26 @@ int sigfillset(sigset_t *set);
 int sigprocmask(int how, const sigset_t *set, sigset_t *oldset);
 
 
+SceUID sceKernelStdin(void);
+SceUID sceKernelStdout(void);
+SceUID sceKernelStderr(void);
+int sceIoClose(SceUID fd);
+int sceIoRead(SceUID fd, void *data, unsigned int size);
+int sceIoWrite(SceUID fd, const void *data, unsigned int size);
+static inline int FileToUID(int fd)
+{
+	switch(fd) {
+		case 0:
+			return sceKernelStdin();
+		case 1:
+			return sceKernelStdout();
+		case 2:
+			return sceKernelStderr();
+		default:
+			return fd;
+	}
+}
+
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/kernel_bridge", _open);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/kernel_bridge", _lseek);
@@ -97,11 +117,38 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/kernel_bridge", sce_newlib_stop
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/kernel_bridge", _sbrk);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/kernel_bridge", _read);
+int _read (int file, void *ptr, size_t len)
+{
+	int fd = FileToUID(file);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/kernel_bridge", _write);
+	if (fd < 0) {
+		return -9;
+	} else {
+		return sceIoRead(fd, ptr, len);
+	}
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/kernel_bridge", _close);
+int _write (int file, const void *ptr, size_t len)
+{
+	int fd = FileToUID(file);
+
+	if (fd < 0) {
+		return -9;
+	} else {
+		return sceIoWrite(fd, ptr, len);
+	}
+}
+
+int _close (int file)
+{
+	int fd = FileToUID(file);
+
+	if (fd < 0) {
+		return -9;
+	} else {
+		return sceIoClose(fd);
+	}
+}
 
 int _fstat(int file, struct stat *st)
 {
