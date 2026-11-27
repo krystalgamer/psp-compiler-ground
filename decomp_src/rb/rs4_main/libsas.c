@@ -1,4 +1,7 @@
 #include "common.h"
+#include "m2c_macros.h"
+M2C_UNK sceSasInitWithGrain(M2C_UNK);               /* extern */
+
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/libsas", sceSasCore);
 
@@ -44,6 +47,12 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/libsas", sceSasSetEffectType);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/libsas", sceSasSetEffectParam);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/libsas", sceSasInit);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void sceSasInit(void) {
+    sceSasInitWithGrain(0x100);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/libsas", sceSasExit);

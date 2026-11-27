@@ -1,4 +1,20 @@
 #include "common.h"
+#include "m2c_macros.h"
+M2C_UNK sgxFree(int);                               /* extern */
+extern unsigned char gWork_11FE60;
+unsigned char *sgxBmgGetTail(short);                             /* extern */
+M2C_UNK sgxBmgGetLeft(short);                         /* extern */
+M2C_UNK UnitFreeAll_81DFC();                        /* extern */
+M2C_UNK sgxPortCommand(short, int);                   /* extern */
+extern void *D_0011FE68;
+int SesqMakeSubID();                                /* extern */
+int UnitIsUse(int, int);                            /* extern */
+extern int D_0011FE88;
+extern int D_0011FEA0;
+M2C_UNK sgxListEnumID(M2C_UNK *, M2C_UNK);          /* extern */
+extern unsigned char D_0011FE74;
+extern unsigned char D_0011FE8C;
+
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/sgxseq", D_0010A814);
 
@@ -6,27 +22,62 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxseq", SlotGetAt_81530);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxseq", sgxSeqInit);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxseq", sgxSeqTerm);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+void *memset(void *s, int c, unsigned int n);
+
+void sgxSeqTerm(void) {
+    if (M2C_FIELD(&gWork_11FE60, int *, 0) == 0) {
+
+    } else {
+        sgxFree(M2C_FIELD(&gWork_11FE60, int *, 0x24));
+        sgxFree(M2C_FIELD(&gWork_11FE60, int *, 0x3C));
+        memset(&gWork_11FE60, 0, 0x44U);
+    }
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxseq", sgxSeqAlloc);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxseq", sgxSeqFree);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxseq", GetData);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+unsigned char GetData(void *arg0) {
+    return *M2C_FIELD(arg0, unsigned char **, 0x44);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxseq", GetDataOfs);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxseq", IncData);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxseq", GetLeft);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int GetLeft(void *arg0) {
+    return M2C_FIELD(arg0, int *, 0x40) - (M2C_FIELD(arg0, int *, 0x44) - M2C_FIELD(arg0, int *, 0x3C));
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxseq", GetDataStr);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+unsigned char GetDataStr(void *arg0) {
+    return *sgxBmgGetTail(M2C_FIELD(arg0, short *, 0x1C));
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxseq", GetDataOfsStr);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxseq", IncDataStr);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxseq", GetLeftStr);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void GetLeftStr(void *arg0) {
+    sgxBmgGetLeft(M2C_FIELD(arg0, short *, 0x1C));
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxseq", UnitAlloc);
 
@@ -52,7 +103,13 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxseq", CmdRelAll_822E0);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxseq", CmdStop);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxseq", CmdStopAll_82384);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void CmdStopAll_82384(void) {
+    UnitFreeAll_81DFC();
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxseq", CmdPause_823A0);
 
@@ -66,11 +123,37 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxseq", SesqSetReg);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxseq", SesqGetReg);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxseq", SesqReadBcd);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int SesqReadBcd(void *arg0, int arg1) {
+    int temp_v0;
+    int var_a1;
+    int var_s0;
+    int var_s1;
+
+    var_a1 = arg1;
+    var_s1 = 0;
+    if (var_a1 > 0) {
+        var_s0 = var_a1;
+        do {
+            var_s0 -= 1;
+            temp_v0 = M2C_FIELD(arg0, int (**)(void *, int), 0x30)(arg0, var_a1);
+            var_a1 = (var_s1 * 0x64) + ((temp_v0 >> 4) * 0xA);
+            var_s1 = var_a1 + (temp_v0 & 0xF);
+        } while (var_s0 != 0);
+    }
+    return var_s1;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxseq", SesqReadData);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxseq", SesqCalcTime);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int SesqCalcTime(void *arg0, int arg1, float fparg0) {
+    return (int) ((float) arg1 * M2C_FIELD(arg0, float *, 0x4C) * fparg0);
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/sgxseq", D_0010A918);
 
@@ -104,7 +187,40 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxseq", SesqPlayWave);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxseq", SesqPlayNoise);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxseq", PortCommandGlobal);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void PortCommandGlobal(void *arg0, int arg1) {
+    short temp_s3;
+    void *temp_v1;
+    void *temp_v1_2;
+    void *temp_v1_3;
+    void *temp_v1_4;
+    void *var_s0;
+    void *var_s1;
+
+    var_s1 = (M2C_FIELD(D_0011FE68, int *, 8) >= 0) ? D_0011FE68 : NULL;
+    temp_s3 = M2C_FIELD(M2C_FIELD(M2C_FIELD(arg0, void **, 0x10), void **, 0x10), short *, 0x12);
+    if (var_s1 != NULL) {
+        do {
+            if (M2C_FIELD(M2C_FIELD(var_s1, void **, 0x10), short *, 0x12) == temp_s3) {
+                temp_v1_2 = M2C_FIELD(var_s1, void **, 0x18);
+                var_s0 = (M2C_FIELD(temp_v1_2, int *, 8) >= 0) ? temp_v1_2 : NULL;
+                if (var_s0 != NULL) {
+                    do {
+                        sgxPortCommand(M2C_FIELD(var_s0, short *, 0x1A), arg1);
+                        temp_v1_4 = M2C_FIELD(var_s0, void **, 4);
+                        temp_v1_3 = (M2C_FIELD(temp_v1_4, int *, 8) < 0) ? NULL : temp_v1_4;
+                        var_s0 = temp_v1_3;
+                    } while (temp_v1_3 != NULL);
+                }
+            }
+            temp_v1 = (M2C_FIELD(M2C_FIELD(var_s1, void **, 4), int *, 8) < 0) ? NULL : M2C_FIELD(var_s1, void **, 4);
+            var_s1 = temp_v1;
+        } while (temp_v1 != NULL);
+    }
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxseq", SesqStop);
 
@@ -122,9 +238,20 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxseq", SesqSubPlay);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxseq", SesqSubStop);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxseq", SesqSubGetStatus);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxseq", NoZero);
+int SesqSubGetStatus(int arg0) {
+    return (UnitIsUse(arg0, SesqMakeSubID()) == 0) ? 0 : 3;
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int NoZero(int arg0, int arg1) {
+    return (arg0 != 0) ? arg0 : arg1;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxseq", SesqCore);
 
@@ -140,7 +267,12 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxseq", MidiCMProgChg);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxseq", MidiCMKeyPress);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxseq", MidiCMChPress);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+void MidiCMChPress(void *arg0) {
+    M2C_FIELD(arg0, M2C_UNK (**)(), 0x30)();
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxseq", MidiCMBend);
 
@@ -156,10 +288,34 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxseq", SlotUnitProc_84650);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxseq", sgxSeqTickProc);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxseq", sgxSeqGetMaxSlotCount);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxseq", sgxSeqGetMaxUnitCount);
+int sgxSeqGetMaxSlotCount(void) {
+    return D_0011FE88;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxseq", sgxSeqGetFreeSlotCount);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxseq", sgxSeqGetFreeUnitCount);
+int sgxSeqGetMaxUnitCount(void) {
+    return D_0011FEA0;
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void sgxSeqGetFreeSlotCount(void) {
+    sgxListEnumID(&D_0011FE74, 0);
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void sgxSeqGetFreeUnitCount(void) {
+    sgxListEnumID(&D_0011FE8C, 0);
+}

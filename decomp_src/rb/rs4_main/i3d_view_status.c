@@ -1,16 +1,43 @@
 #include "common.h"
+#include "m2c_macros.h"
+
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_view_status", Set_matWorld_to_Cone);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_view_status", I3dViewStatus__GetWorldToViewMatrixA);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int I3dViewStatus__GetWorldToViewMatrixA(int arg0) {
+    return arg0 + 0xC0;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_view_status", I3dViewStatus__GetViewToClipMatrixA);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int I3dViewStatus__GetViewToClipMatrixA(int arg0) {
+    return arg0 + 0x240;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_view_status", I3dViewStatus__GetClipToScreenMatrixA);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int I3dViewStatus__GetClipToScreenMatrixA(int arg0) {
+    return arg0 + 0x2C0;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_view_status", I3dViewStatus__GetViewToWorldMatrixA);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int I3dViewStatus__GetViewToWorldMatrixA(int arg0) {
+    return arg0 + 0x3C0;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_view_status", Lerp);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+float Lerp(float fparg0, float fparg1, float fparg2) {
+    return fparg0 + ((fparg1 - fparg0) * fparg2);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_view_status", Extrapolation);
 

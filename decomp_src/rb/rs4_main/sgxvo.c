@@ -1,12 +1,42 @@
 #include "common.h"
+#include "m2c_macros.h"
+M2C_UNK sgxFree(int);                               /* extern */
+extern unsigned char gWork_11FF60;
+extern int D_0011FF64;
+extern int D_0011FF68;
+
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxvo", sgxVoInit);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxvo", sgxVoTerm);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+void *memset(void *s, int c, unsigned int n);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxvo", sgxVoGetSlotTop);
+void sgxVoTerm(void) {
+    if (M2C_FIELD(&gWork_11FF60, int *, 0) == 0) {
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxvo", sgxVoGetSlotNum);
+    } else {
+        sgxFree(M2C_FIELD(&gWork_11FF60, int *, 4));
+        memset(&gWork_11FF60, 0, 0x88CU);
+    }
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+int sgxVoGetSlotTop(void) {
+    return D_0011FF64;
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+int sgxVoGetSlotNum(void) {
+    return D_0011FF68;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxvo", sgxVoSetDeviceRange);
 
@@ -30,12 +60,30 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxvo", sgxVoAllocDevice);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxvo", sgxVoSetTakenCallback);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxvo", sgxVoGetStatus);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+signed char sgxVoGetStatus(int arg0) {
+    return M2C_FIELD(((arg0 * 0x30) + D_0011FF64), signed char *, 4);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxvo", sgxVoGetPlaySamples);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxvo", sgxVoGetPlayUnitSamples);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxvo", sgxVoGetDeviceID);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxvo", sgxVoGetSlotID);
+int sgxVoGetDeviceID(int arg0) {
+    return M2C_FIELD(((arg0 * 0x30) + D_0011FF64), int *, 0x18);
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+int sgxVoGetSlotID(int arg0) {
+    return M2C_FIELD(((arg0 * 0x30) + D_0011FF64), int *, 0x1C);
+}

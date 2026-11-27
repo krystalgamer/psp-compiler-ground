@@ -1,4 +1,11 @@
 #include "common.h"
+#include "m2c_macros.h"
+M2C_UNK I3dPk3dSprite__SetTransformMatrix(int, int); /* extern */
+int I3dRenderStage__GetCurrentViewStatus(int);      /* extern */
+int I3dViewStatus__GetViewToWorldMatrixA(int);      /* extern */
+M2C_UNK iI3dGuDrawSpline_PSP_61A38();               /* extern */
+M2C_UNK I3dGuSetMatrix_PSP();                       /* extern */
+
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_packet_util", AddVertexV);
 
@@ -52,13 +59,24 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_packet_util", I3dPk3dSprite__S
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_packet_util", I3dPk3dSprite__SetStParam);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_packet_util", I3dPk3dSprite__SetBillBoardMatrix);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void I3dPk3dSprite__SetBillBoardMatrix(int arg0, int arg1) {
+    I3dPk3dSprite__SetTransformMatrix(arg0, I3dViewStatus__GetViewToWorldMatrixA(I3dRenderStage__GetCurrentViewStatus(arg1)));
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_packet_util", I3dPk3dSprite__SetBillBoardMatrixWithZoom);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_packet_util", I3dPk3dSprite__Init);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_packet_util", I3dPk3dSprite__Term);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int I3dPk3dSprite__Term(int arg0) {
+    return arg0;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_packet_util", I3dPk3dSprite__Draw);
 
@@ -74,13 +92,25 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_packet_util", I3dPkDrawArray_P
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_packet_util", I3dPkDrawBezier_PSP);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_packet_util", I3dPkDrawSpline_PSP);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void I3dPkDrawSpline_PSP(void) {
+    iI3dGuDrawSpline_PSP_61A38();
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_packet_util", I3dPkPatchDivide_PSP);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_packet_util", I3dPkPatchPrim_PSP);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_packet_util", I3dPkSetMatrix_PSP);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void I3dPkSetMatrix_PSP(void) {
+    I3dGuSetMatrix_PSP();
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_packet_util", I3dPkDrawSphereMarkerA);
 
@@ -90,7 +120,13 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_packet_util", I3dPkDrawObbMark
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_packet_util", iI3dGuDrawSpline_PSP_61A38);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_packet_util", I3dRender__SetSoftwareScissor_PSP);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int I3dRender__SetSoftwareScissor_PSP(void *arg0, int arg1) {
+    M2C_FIELD(arg0, int *, 0x1C0) = (int) (arg1 & 0xFF);
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_packet_util", I3dRenderInitMain);
 

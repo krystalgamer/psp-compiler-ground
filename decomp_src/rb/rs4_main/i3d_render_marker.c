@@ -1,68 +1,228 @@
 #include "common.h"
+#include "m2c_macros.h"
+int I3dPkDrawSphereMarkerA(int, int, int, int, float); /* extern */
+int I3dRenderStage__OpenPacketUca_ByUint32(int, M2C_UNK); /* extern */
+M2C_UNK I3dRenderStage__SetCurrentPacketEntry(int, int); /* extern */
+int SendDefaultStatus(int, int);                    /* extern */
+int I3dPkDrawBoxMarkerA(int, int, int, int, int, int); /* extern */
+int I3dPkDrawObbMarkerA(int, int, int, int, int);   /* extern */
+M2C_UNK I3dSorter__ClosePacketAndClearStateUca(int); /* extern */
+M2C_UNK I3dSorter__OpenPacketAndClearState_ByUint32(int, M2C_UNK, M2C_UNK); /* extern */
+M2C_UNK I3dSorter__OpenPacketAndClearStateUca_ByUint32(int, M2C_UNK, M2C_UNK); /* extern */
+
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_render_marker", SendDefaultStatus);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_render_marker", I3dRenderStage__DrawLineA);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_render_marker", I3dRenderStage__DrawSphereMarkerA);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_render_marker", I3dRenderStage__DrawBoxMarkerA);
+int I3dRenderStage__DrawSphereMarkerA(int arg0, int arg1, int arg2, float fparg0) {
+    I3dRenderStage__SetCurrentPacketEntry(arg0, I3dRenderStage__GetDefaultPacketEntry());
+    I3dRenderStage__ClosePacketUca(arg0, I3dPkDrawSphereMarkerA(SendDefaultStatus(I3dRenderStage__OpenPacketUca_ByUint32(arg0, 0), arg0), arg0, arg1, arg2, fparg0));
+    return 0;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_render_marker", I3dRenderStage__DrawObbMarkerA);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+int I3dRenderStage__DrawBoxMarkerA(int arg0, int arg1, int arg2, int arg3, int arg4) {
+    I3dRenderStage__SetCurrentPacketEntry(arg0, I3dRenderStage__GetDefaultPacketEntry());
+    I3dRenderStage__ClosePacketUca(arg0, I3dPkDrawBoxMarkerA(SendDefaultStatus(I3dRenderStage__OpenPacketUca_ByUint32(arg0, 0), arg0), arg0, arg1, arg2, arg3, arg4));
+    return 0;
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+int I3dRenderStage__DrawObbMarkerA(int arg0, int arg1, int arg2, int arg3) {
+    I3dRenderStage__SetCurrentPacketEntry(arg0, I3dRenderStage__GetDefaultPacketEntry());
+    I3dRenderStage__ClosePacketUca(arg0, I3dPkDrawObbMarkerA(SendDefaultStatus(I3dRenderStage__OpenPacketUca_ByUint32(arg0, 0), arg0), arg0, arg1, arg2, arg3));
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_render_marker", I3dRenderStage__SetCurrentPacketEntry);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_render_marker", I3dRenderStage__SetCurrentLightStatus);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int I3dRenderStage__SetCurrentLightStatus(void *arg0, int arg1) {
+    M2C_FIELD(arg0, int *, 0x82C) = arg1;
+    return 0;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_render_marker", I3dRenderStage__SetCurrentFogStatus);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int I3dRenderStage__SetCurrentFogStatus(void *arg0, int arg1) {
+    M2C_FIELD(arg0, int *, 0x830) = arg1;
+    return 0;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_render_marker", I3dRenderStage__SetCurrentViewStatus);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int I3dRenderStage__SetCurrentViewStatus(void *arg0, int arg1) {
+    M2C_FIELD(arg0, int *, 0x834) = arg1;
+    return 0;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_render_marker", I3dRenderStage__GetDefaultPacketEntry);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int I3dRenderStage__GetDefaultPacketEntry(void *arg0) {
+    return M2C_FIELD(arg0, int *, 0x824);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_render_marker", I3dRenderStage__GetCurrentPacketEntry);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int I3dRenderStage__GetCurrentPacketEntry(void *arg0) {
+    return M2C_FIELD(arg0, int *, 0x828);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_render_marker", I3dRenderStage__GetCurrentLightStatus);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int I3dRenderStage__GetCurrentLightStatus(void *arg0) {
+    return M2C_FIELD(arg0, int *, 0x82C);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_render_marker", I3dRenderStage__GetCurrentFogStatus);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int I3dRenderStage__GetCurrentFogStatus(void *arg0) {
+    return M2C_FIELD(arg0, int *, 0x830);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_render_marker", I3dRenderStage__GetCurrentViewStatus);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int I3dRenderStage__GetCurrentViewStatus(void *arg0) {
+    return M2C_FIELD(arg0, int *, 0x834);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_render_marker", I3dRenderStage__OpenPacket);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_render_marker", I3dRenderStage__OpenPacket_ByUint32);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_render_marker", I3dRenderStage__ClosePacket);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void I3dRenderStage__ClosePacket(void *arg0) {
+    I3dSorter__ClosePacketAndClearState(M2C_FIELD(arg0, int *, 0x818));
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_render_marker", I3dRenderStage__OpenPacketUca);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_render_marker", I3dRenderStage__OpenPacketUca_ByUint32);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_render_marker", I3dRenderStage__ClosePacketUca);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_render_marker", I3dRenderStage__OpenInitPacket);
+void I3dRenderStage__ClosePacketUca(void *arg0) {
+    I3dSorter__ClosePacketAndClearStateUca(M2C_FIELD(arg0, int *, 0x818));
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_render_marker", I3dRenderStage__CloseInitPacket);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_render_marker", I3dRenderStage__OpenInitPacketUca);
+void I3dRenderStage__OpenInitPacket(void *arg0) {
+    I3dSorter__OpenPacketAndClearState_ByUint32(M2C_FIELD(arg0, int *, 0x81C), 0, 0);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_render_marker", I3dRenderStage__CloseInitPacketUca);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_render_marker", I3dRenderStage__OpenTermPacket);
+void I3dRenderStage__CloseInitPacket(void *arg0) {
+    I3dSorter__ClosePacketAndClearState(M2C_FIELD(arg0, int *, 0x81C));
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_render_marker", I3dRenderStage__CloseTermPacket);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_render_marker", I3dRenderStage__OpenTermPacketUca);
+void I3dRenderStage__OpenInitPacketUca(void *arg0) {
+    I3dSorter__OpenPacketAndClearStateUca_ByUint32(M2C_FIELD(arg0, int *, 0x81C), 0, 0);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_render_marker", I3dRenderStage__CloseTermPacketUca);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_render_marker", I3dRenderStage__SetMasterRegValue);
+void I3dRenderStage__CloseInitPacketUca(void *arg0) {
+    I3dSorter__ClosePacketAndClearStateUca(M2C_FIELD(arg0, int *, 0x81C));
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_render_marker", I3dRenderStage__SetMasterRegMask);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_render_marker", I3dRenderStage__GetMasterRegValue);
+void I3dRenderStage__OpenTermPacket(void *arg0) {
+    I3dSorter__OpenPacketAndClearState_ByUint32(M2C_FIELD(arg0, int *, 0x81C), 2, 0);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_render_marker", I3dRenderStage__GetMasterRegMask);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void I3dRenderStage__CloseTermPacket(void *arg0) {
+    I3dSorter__ClosePacketAndClearState(M2C_FIELD(arg0, int *, 0x81C));
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void I3dRenderStage__OpenTermPacketUca(void *arg0) {
+    I3dSorter__OpenPacketAndClearStateUca_ByUint32(M2C_FIELD(arg0, int *, 0x81C), 2, 0);
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void I3dRenderStage__CloseTermPacketUca(void *arg0) {
+    I3dSorter__ClosePacketAndClearStateUca(M2C_FIELD(arg0, int *, 0x81C));
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int I3dRenderStage__SetMasterRegValue(int arg0, int arg1, int arg2) {
+    M2C_FIELD(((arg1 * 8) + arg0), int *, 0x838) = arg2;
+    return 0;
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int I3dRenderStage__SetMasterRegMask(int arg0, int arg1, int arg2) {
+    M2C_FIELD(((arg1 * 8) + arg0), int *, 0x83C) = arg2;
+    return 0;
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int I3dRenderStage__GetMasterRegValue(int arg0, int arg1) {
+    return M2C_FIELD(((arg1 * 8) + arg0), int *, 0x838);
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int I3dRenderStage__GetMasterRegMask(int arg0, int arg1) {
+    return M2C_FIELD(((arg1 * 8) + arg0), int *, 0x83C);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_render_marker", I3dRenderStage__CreatePacketEntry_FromMaterial);
 
@@ -96,7 +256,18 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_render_marker", I3dSorter__Clo
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_render_marker", I3dSorter__OpenPacketAndClearState_ByUint32);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_render_marker", I3dSorter__ClosePacketAndClearState);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int I3dSorter__ClosePacketAndClearState(void *arg0, int arg1) {
+    void *temp_a3;
+
+    temp_a3 = M2C_FIELD(arg0, void **, 0x20);
+    M2C_FIELD(temp_a3, int *, 0x18) = arg1;
+    M2C_FIELD(arg0, int *, 0x28) = (int) (M2C_FIELD(arg0, int *, 0x28) + (arg1 - M2C_FIELD(temp_a3, int *, 0x14)));
+    M2C_FIELD(M2C_FIELD(arg0, void **, 0x10), int *, 0xF4) = (int) (((arg1 + 0x87) & 0x3FFFFF80) | 0x40000000);
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_render_marker", I3dSorter__OpenPacketAndClearStateUca_ByUint32);
 

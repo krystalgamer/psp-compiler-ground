@@ -1,4 +1,17 @@
 #include "common.h"
+#include "m2c_macros.h"
+M2C_UNK sgxFree(int);                               /* extern */
+extern unsigned char gWork_11FC84;
+M2C_UNK SlotPlay(M2C_UNK, int, int, M2C_UNK, int, M2C_UNK); /* extern */
+extern unsigned char D_0010A4D4;
+extern unsigned char D_0010A4E4;
+M2C_UNK SlotStopAll(M2C_UNK);                       /* extern */
+extern int D_0011FCAC;
+M2C_UNK sgxDI();                                    /* extern */
+M2C_UNK sgxEI();                                    /* extern */
+int sgxListEnumID(M2C_UNK *, M2C_UNK);              /* extern */
+extern unsigned char D_0011FC98;
+
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", SlotGetAt_7DD48);
 
@@ -10,7 +23,19 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", D_0010A40C);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", sgxSndInit);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", sgxSndTerm);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+void *memset(void *s, int c, unsigned int n);
+
+void sgxSndTerm(void) {
+    if (M2C_FIELD(&gWork_11FC84, int *, 0) == 0) {
+
+    } else {
+        sgxFree(M2C_FIELD(&gWork_11FC84, int *, 0x24));
+        memset(&gWork_11FC84, 0, 0x1B8U);
+    }
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", SlotUpdateVolume);
 
@@ -146,15 +171,45 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", sgxSndUseTuning);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", SlotPlay);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", sgxSndPlayWave);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", sgxSndPlayWaveStr);
+void sgxSndPlayWave(int arg0, int arg1, int arg2) {
+    SlotPlay(0, arg0, arg1, 0, arg2, 0);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", sgxSndPlayNote);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", sgxSndPlaySeq);
+void sgxSndPlayWaveStr(int arg0, int arg1, int arg2, int arg3) {
+    SlotPlay(3, -1, (arg0 << 0x10) | arg1, arg2, arg3, &D_0010A4D4);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", sgxSndPlaySeqStr);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void sgxSndPlayNote(int arg0, int arg1, int arg2, int arg3) {
+    SlotPlay(1, arg0, arg1, arg2, arg3, 0);
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void sgxSndPlaySeq(int arg0, int arg1, int arg2, int arg3) {
+    SlotPlay(2, arg0, arg1, arg2, arg3, 0);
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void sgxSndPlaySeqStr(int arg0, int arg1, int arg2) {
+    SlotPlay(4, -1, arg0, arg1, arg2, &D_0010A4E4);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", sgxSndPlayName);
 
@@ -192,9 +247,20 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", SlotStopAll);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", sgxSndStopAll);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", sgxSndStopFadeAll);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", ConvVol12);
+void sgxSndStopFadeAll(void) {
+    SlotStopAll(0);
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int ConvVol12(int arg0) {
+    return arg0 << 5;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", sgxSndRelease);
 
@@ -296,8 +362,25 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", sgxCategoryGetSoundRangeH
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", sgxCategorySetVolume);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", sgxSndGetMaxCount);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", sgxSndGetFreeCount);
+int sgxSndGetMaxCount(void) {
+    return D_0011FCAC;
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+int sgxSndGetFreeCount(void) {
+    int temp_s0;
+
+    sgxDI();
+    temp_s0 = sgxListEnumID(&D_0011FC98, 0);
+    sgxEI();
+    return temp_s0;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", sgxSndEnumUseID);

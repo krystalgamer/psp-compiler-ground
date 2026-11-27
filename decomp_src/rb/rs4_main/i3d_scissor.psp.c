@@ -1,4 +1,7 @@
 #include "common.h"
+#include "m2c_macros.h"
+M2C_UNK iI3dGuDrawSpline_PSP_6ADC0();               /* extern */
+
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_scissor.psp", CalculateVertexSize);
 
@@ -82,9 +85,47 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_scissor.psp", I3dGuSetMatrix_P
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_scissor.psp", I3dGuSetBoneMatrixIndex_PSP);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_scissor.psp", I3dGuSetBoneMatrix_PSP);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+void *I3dGuSetBoneMatrix_PSP(void *arg0, void *arg1) {
+    M2C_FIELD(arg0, int *, 0) = (int) (((unsigned int) M2C_FIELD(arg1, unsigned int *, 0) >> 8) | 0x2B000000);
+    M2C_FIELD(arg0, int *, 4) = (int) (((unsigned int) M2C_FIELD(arg1, unsigned int *, 4) >> 8) | 0x2B000000);
+    M2C_FIELD(arg0, int *, 8) = (int) (((unsigned int) M2C_FIELD(arg1, unsigned int *, 8) >> 8) | 0x2B000000);
+    M2C_FIELD(arg0, int *, 0xC) = (int) (((unsigned int) M2C_FIELD(arg1, unsigned int *, 0x10) >> 8) | 0x2B000000);
+    M2C_FIELD(arg0, int *, 0x10) = (int) (((unsigned int) M2C_FIELD(arg1, unsigned int *, 0x14) >> 8) | 0x2B000000);
+    M2C_FIELD(arg0, int *, 0x14) = (int) (((unsigned int) M2C_FIELD(arg1, unsigned int *, 0x18) >> 8) | 0x2B000000);
+    M2C_FIELD(arg0, int *, 0x18) = (int) (((unsigned int) M2C_FIELD(arg1, unsigned int *, 0x20) >> 8) | 0x2B000000);
+    M2C_FIELD(arg0, int *, 0x1C) = (int) (((unsigned int) M2C_FIELD(arg1, unsigned int *, 0x24) >> 8) | 0x2B000000);
+    M2C_FIELD(arg0, int *, 0x20) = (int) (((unsigned int) M2C_FIELD(arg1, unsigned int *, 0x28) >> 8) | 0x2B000000);
+    M2C_FIELD(arg0, int *, 0x24) = (int) (((unsigned int) M2C_FIELD(arg1, unsigned int *, 0x30) >> 8) | 0x2B000000);
+    M2C_FIELD(arg0, int *, 0x28) = (int) (((unsigned int) M2C_FIELD(arg1, unsigned int *, 0x34) >> 8) | 0x2B000000);
+    M2C_FIELD(arg0, int *, 0x2C) = (int) (((unsigned int) M2C_FIELD(arg1, unsigned int *, 0x38) >> 8) | 0x2B000000);
+    return arg0 + 0x30;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_scissor.psp", I3dGuBoneMatrix_PSP);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+void *I3dGuBoneMatrix_PSP(void *arg0, int arg1, void *arg2) {
+    void *temp_a3;
+
+    M2C_FIELD(arg0, int *, 0) = (int) ((arg1 * 0xC) | 0x2A000000);
+    temp_a3 = arg0 + 4;
+    M2C_FIELD(arg0, int *, 4) = (int) (((unsigned int) M2C_FIELD(arg2, unsigned int *, 0) >> 8) | 0x2B000000);
+    M2C_FIELD(temp_a3, int *, 4) = (int) (((unsigned int) M2C_FIELD(arg2, unsigned int *, 4) >> 8) | 0x2B000000);
+    M2C_FIELD(temp_a3, int *, 8) = (int) (((unsigned int) M2C_FIELD(arg2, unsigned int *, 8) >> 8) | 0x2B000000);
+    M2C_FIELD(temp_a3, int *, 0xC) = (int) (((unsigned int) M2C_FIELD(arg2, unsigned int *, 0x10) >> 8) | 0x2B000000);
+    M2C_FIELD(temp_a3, int *, 0x10) = (int) (((unsigned int) M2C_FIELD(arg2, unsigned int *, 0x14) >> 8) | 0x2B000000);
+    M2C_FIELD(temp_a3, int *, 0x14) = (int) (((unsigned int) M2C_FIELD(arg2, unsigned int *, 0x18) >> 8) | 0x2B000000);
+    M2C_FIELD(temp_a3, int *, 0x18) = (int) (((unsigned int) M2C_FIELD(arg2, unsigned int *, 0x20) >> 8) | 0x2B000000);
+    M2C_FIELD(temp_a3, int *, 0x1C) = (int) (((unsigned int) M2C_FIELD(arg2, unsigned int *, 0x24) >> 8) | 0x2B000000);
+    M2C_FIELD(temp_a3, int *, 0x20) = (int) (((unsigned int) M2C_FIELD(arg2, unsigned int *, 0x28) >> 8) | 0x2B000000);
+    M2C_FIELD(temp_a3, int *, 0x24) = (int) (((unsigned int) M2C_FIELD(arg2, unsigned int *, 0x30) >> 8) | 0x2B000000);
+    M2C_FIELD(temp_a3, int *, 0x28) = (int) (((unsigned int) M2C_FIELD(arg2, unsigned int *, 0x34) >> 8) | 0x2B000000);
+    M2C_FIELD(temp_a3, int *, 0x2C) = (int) (((unsigned int) M2C_FIELD(arg2, unsigned int *, 0x38) >> 8) | 0x2B000000);
+    return arg0 + 0x34;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_scissor.psp", I3dGuDrawArray_PSP);
 
@@ -94,7 +135,13 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_scissor.psp", I3dGuPatchPrim_P
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_scissor.psp", I3dGuDrawBezier_PSP);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_scissor.psp", I3dGuDrawSpline_PSP);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void I3dGuDrawSpline_PSP(void) {
+    iI3dGuDrawSpline_PSP_6ADC0();
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_scissor.psp", I3dGuLightMode_PSP);
 

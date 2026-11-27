@@ -1,4 +1,19 @@
 #include "common.h"
+#include "m2c_macros.h"
+M2C_UNK sgxFree(int);                               /* extern */
+extern unsigned char gWork_11FEA4;
+M2C_UNK UnitFreeAll_85854();                        /* extern */
+M2C_UNK ResetMidiChData(int);                       /* extern */
+M2C_UNK AttrSetValue(int, short, int);                /* extern */
+M2C_UNK FadeFree(void *);                           /* extern */
+extern int D_0011FECC;
+extern int D_0011FEE4;
+extern int D_0011FEFC;
+M2C_UNK sgxListEnumID(M2C_UNK *, M2C_UNK);          /* extern */
+extern unsigned char D_0011FEB8;
+extern unsigned char D_0011FED0;
+extern unsigned char D_0011FEE8;
+
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/sgxport", D_0010AD00);
 
@@ -8,7 +23,21 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxport", ResetMidiChData);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxport", sgxPortInit);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxport", sgxPortTerm);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+void *memset(void *s, int c, unsigned int n);
+
+void sgxPortTerm(void) {
+    if (M2C_FIELD(&gWork_11FEA4, int *, 0) == 0) {
+
+    } else {
+        sgxFree(M2C_FIELD(&gWork_11FEA4, int *, 0x24));
+        sgxFree(M2C_FIELD(&gWork_11FEA4, int *, 0x3C));
+        sgxFree(M2C_FIELD(&gWork_11FEA4, int *, 0x54));
+        memset(&gWork_11FEA4, 0, 0xBCU);
+    }
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxport", AttrClear);
 
@@ -58,21 +87,73 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxport", CmdRelAll_86218);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxport", CmdStopAny);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxport", CmdStopAll_86320);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void CmdStopAll_86320(void) {
+    UnitFreeAll_85854();
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxport", CmdCtrlID);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxport", CmdCtrlMidi);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxport", CmdCtrlMidiReset);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void CmdCtrlMidiReset(int arg0, void *arg1) {
+    ResetMidiChData(arg0 + (M2C_FIELD(arg1, int *, 4) * 6) + 0x38);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxport", CmdAdsrID);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxport", CmdBendWID);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxport", CmdBusIDID);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+void CmdBusIDID(void *arg0) {
+    void *temp_v1;
+    void *temp_v1_2;
+    void *temp_v1_3;
+    void *temp_v1_4;
+    void *var_v0;
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxport", CmdFilterTypeID);
+    temp_v1 = M2C_FIELD(arg0, void **, 0x1C);
+    temp_v1_2 = (M2C_FIELD(temp_v1, int *, 8) < 0) ? NULL : temp_v1;
+    var_v0 = temp_v1_2;
+    if (temp_v1_2 != NULL) {
+        do {
+            temp_v1_4 = M2C_FIELD(var_v0, void **, 4);
+            temp_v1_3 = (M2C_FIELD(temp_v1_4, int *, 8) < 0) ? NULL : temp_v1_4;
+            var_v0 = temp_v1_3;
+        } while (temp_v1_3 != NULL);
+    }
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+void CmdFilterTypeID(void *arg0) {
+    void *temp_v1;
+    void *temp_v1_2;
+    void *temp_v1_3;
+    void *temp_v1_4;
+    void *var_v0;
+
+    temp_v1 = M2C_FIELD(arg0, void **, 0x1C);
+    temp_v1_2 = (M2C_FIELD(temp_v1, int *, 8) < 0) ? NULL : temp_v1;
+    var_v0 = temp_v1_2;
+    if (temp_v1_2 != NULL) {
+        do {
+            temp_v1_4 = M2C_FIELD(var_v0, void **, 4);
+            temp_v1_3 = (M2C_FIELD(temp_v1_4, int *, 8) < 0) ? NULL : temp_v1_4;
+            var_v0 = temp_v1_3;
+        } while (temp_v1_3 != NULL);
+    }
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxport", CmdPause_866D0);
 
@@ -82,7 +163,38 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxport", sgxPortGetStatus);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxport", sgxPortGetUnitStatus);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxport", FadeProc);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+/* Warning: Gap in callee-saved word stack region.
+ * Saved: [0x0, 0x4, 0x10], gap at: 0x8. */
+void FadeProc(void *arg0, float fparg0) {
+    float temp_f2;
+    float temp_f5;
+    void *temp_s0;
+    void *temp_v1;
+    void *temp_v1_2;
+    void *var_a2;
+
+    temp_v1 = M2C_FIELD(arg0, void **, 4);
+    var_a2 = (M2C_FIELD(temp_v1, int *, 8) >= 0) ? temp_v1 : NULL;
+    if (var_a2 != NULL) {
+        do {
+            temp_v1_2 = M2C_FIELD(var_a2, void **, 4);
+            temp_f5 = M2C_FIELD(var_a2, float *, 0x1C) + fparg0;
+            temp_s0 = (M2C_FIELD(temp_v1_2, int *, 8) >= 0) ? temp_v1_2 : NULL;
+            M2C_FIELD(var_a2, float *, 0x1C) = temp_f5;
+            if (M2C_FIELD(var_a2, float *, 0x20) < temp_f5) {
+                FadeFree(var_a2);
+            } else {
+                temp_f2 = (float) M2C_FIELD(var_a2, short *, 0x18);
+                AttrSetValue(M2C_FIELD(var_a2, int *, 0x10), M2C_FIELD(var_a2, short *, 0x14), (int) (temp_f2 + (((float) M2C_FIELD(var_a2, short *, 0x16) - temp_f2) * temp_f5 * M2C_FIELD(var_a2, float *, 0x24))));
+            }
+            var_a2 = temp_s0;
+        } while (temp_s0 != NULL);
+    }
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxport", IsLfoActive);
 
@@ -108,14 +220,50 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxport", SlotUnitPauseProc);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxport", sgxPortTickProc);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxport", sgxPortGetMaxSlotCount);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxport", sgxPortGetMaxUnitCount);
+int sgxPortGetMaxSlotCount(void) {
+    return D_0011FECC;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxport", sgxPortGetMaxFadeCount);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxport", sgxPortGetFreeSlotCount);
+int sgxPortGetMaxUnitCount(void) {
+    return D_0011FEE4;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxport", sgxPortGetFreeUnitCount);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxport", sgxPortGetFreeFadeCount);
+int sgxPortGetMaxFadeCount(void) {
+    return D_0011FEFC;
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void sgxPortGetFreeSlotCount(void) {
+    sgxListEnumID(&D_0011FEB8, 0);
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void sgxPortGetFreeUnitCount(void) {
+    sgxListEnumID(&D_0011FED0, 0);
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void sgxPortGetFreeFadeCount(void) {
+    sgxListEnumID(&D_0011FEE8, 0);
+}

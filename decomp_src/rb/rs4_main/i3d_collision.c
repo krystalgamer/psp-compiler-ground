@@ -1,4 +1,14 @@
 #include "common.h"
+#include "m2c_macros.h"
+extern float g_I3cIntersectEpsilon;
+extern signed char g_bI3cStrictScale;
+float I3dcs_GetSqrDistLineSegA(int, int, void *, int, M2C_UNK, M2C_UNK); /* extern */
+float I3dcs_GetSqrDistRaySegA(int, int, void *, int, M2C_UNK, M2C_UNK); /* extern */
+float I3dcs_GetSqrDistSegSegA(int, int, void *, int, M2C_UNK, M2C_UNK); /* extern */
+int I3dcs_GetIntersectLineCylA(int, int, int, int, M2C_UNK, M2C_UNK); /* extern */
+int I3dcs_GetIntersectRayCylA(int, int, int, int, M2C_UNK, M2C_UNK); /* extern */
+int I3dcs_GetIntersectSegCylA(int, int, int, int, M2C_UNK, M2C_UNK); /* extern */
+
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_collision", I3cLineParam_CnvAxis);
 
@@ -46,13 +56,37 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_collision", I3cIntersect_SSSA)
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_collision", I3cIntersect_RSSA);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_collision", I3cIntersect_SetEpsilon);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_collision", I3cIntersect_GetEpsilon);
+void I3cIntersect_SetEpsilon(float fparg0) {
+    g_I3cIntersectEpsilon = fparg0;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_collision", I3cIntersect_SetStrictScale);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_collision", I3cIntersect_GetStrictScale);
+float I3cIntersect_GetEpsilon(void) {
+    return g_I3cIntersectEpsilon;
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void I3cIntersect_SetStrictScale(signed char arg0) {
+    g_bI3cStrictScale = arg0;
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+unsigned char I3cIntersect_GetStrictScale(void) {
+    return g_bI3cStrictScale;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_collision", CalcBlendRatio);
 
@@ -106,15 +140,101 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_collision", I3dcs_IsIntersectS
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_collision", I3dcs_IsIntersectSphereCapA);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_collision", I3dcs_IsIntersectCapLineA);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_collision", I3dcs_IsIntersectCapRayA);
+/* Warning: Gap in callee-saved word stack region.
+ * Saved: [0x0, 0x10], gap at: 0x4. */
+int I3dcs_IsIntersectCapLineA(void *arg0, int arg1, int arg2, int arg3) {
+    float temp_f20;
+    float temp_f20_2;
+    int var_v0;
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_collision", I3dcs_IsIntersectCapSegA);
+    temp_f20 = M2C_FIELD(arg0, float *, 0xC);
+    temp_f20_2 = temp_f20 * temp_f20;
+    var_v0 = 1;
+    if (!(I3dcs_GetSqrDistLineSegA(arg2, arg3, arg0, arg1, 0, 0) <= temp_f20_2)) {
+        var_v0 = 0;
+    }
+    return var_v0;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_collision", I3dcs_IsIntersectCapRLineA);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_collision", I3dcs_IsIntersectCapRRayA);
+/* Warning: Gap in callee-saved word stack region.
+ * Saved: [0x0, 0x10], gap at: 0x4. */
+int I3dcs_IsIntersectCapRayA(void *arg0, int arg1, int arg2, int arg3) {
+    float temp_f20;
+    float temp_f20_2;
+    int var_v0;
+
+    temp_f20 = M2C_FIELD(arg0, float *, 0xC);
+    temp_f20_2 = temp_f20 * temp_f20;
+    var_v0 = 1;
+    if (!(I3dcs_GetSqrDistRaySegA(arg2, arg3, arg0, arg1, 0, 0) <= temp_f20_2)) {
+        var_v0 = 0;
+    }
+    return var_v0;
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+/* Warning: Gap in callee-saved word stack region.
+ * Saved: [0x0, 0x10], gap at: 0x4. */
+int I3dcs_IsIntersectCapSegA(void *arg0, int arg1, int arg2, int arg3) {
+    float temp_f20;
+    float temp_f20_2;
+    int var_v0;
+
+    temp_f20 = M2C_FIELD(arg0, float *, 0xC);
+    temp_f20_2 = temp_f20 * temp_f20;
+    var_v0 = 1;
+    if (!(I3dcs_GetSqrDistSegSegA(arg2, arg3, arg0, arg1, 0, 0) <= temp_f20_2)) {
+        var_v0 = 0;
+    }
+    return var_v0;
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+/* Warning: Gap in callee-saved word stack region.
+ * Saved: [0x0, 0x10], gap at: 0x4. */
+int I3dcs_IsIntersectCapRLineA(void *arg0, int arg1, void *arg2, int arg3) {
+    float temp_f20;
+    int var_v0;
+
+    temp_f20 = M2C_FIELD(arg0, float *, 0xC) + M2C_FIELD(arg2, float *, 0xC);
+    var_v0 = 1;
+    if (!(I3dcs_GetSqrDistLineSegA(arg2, arg3, arg0, arg1, 0, 0) <= (temp_f20 * temp_f20))) {
+        var_v0 = 0;
+    }
+    return var_v0;
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+/* Warning: Gap in callee-saved word stack region.
+ * Saved: [0x0, 0x10], gap at: 0x4. */
+int I3dcs_IsIntersectCapRRayA(void *arg0, int arg1, void *arg2, int arg3) {
+    float temp_f20;
+    int var_v0;
+
+    temp_f20 = M2C_FIELD(arg0, float *, 0xC) + M2C_FIELD(arg2, float *, 0xC);
+    var_v0 = 1;
+    if (!(I3dcs_GetSqrDistRaySegA(arg2, arg3, arg0, arg1, 0, 0) <= (temp_f20 * temp_f20))) {
+        var_v0 = 0;
+    }
+    return var_v0;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_collision", I3dcs_IsIntersectCapCapA);
 
@@ -132,8 +252,26 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_collision", I3dcs_GetIntersect
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_collision", I3dcs_IsIntersectCylSphereA);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_collision", I3dcs_IsIntersectCylLineA);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_collision", I3dcs_IsIntersectCylRayA);
+int I3dcs_IsIntersectCylLineA(int arg0, int arg1, int arg2, int arg3) {
+    return I3dcs_GetIntersectLineCylA(arg2, arg3, arg0, arg1, 0, 0) != 0;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_collision", I3dcs_IsIntersectCylSegA);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+int I3dcs_IsIntersectCylRayA(int arg0, int arg1, int arg2, int arg3) {
+    return I3dcs_GetIntersectRayCylA(arg2, arg3, arg0, arg1, 0, 0) != 0;
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+int I3dcs_IsIntersectCylSegA(int arg0, int arg1, int arg2, int arg3) {
+    return I3dcs_GetIntersectSegCylA(arg2, arg3, arg0, arg1, 0, 0) != 0;
+}

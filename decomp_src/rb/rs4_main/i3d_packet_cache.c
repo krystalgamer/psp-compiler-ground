@@ -1,18 +1,76 @@
 #include "common.h"
+#include "m2c_macros.h"
+
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/i3d_packet_cache", g_aTestFuncTbl);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_packet_cache", I3dPacketCache__MakePresetPacket);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_packet_cache", I3dPacketCache__InsertLruPrev);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+void I3dPacketCache__InsertLruPrev(void *arg0, void *arg1) {
+    void *temp_v0;
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_packet_cache", I3dPacketCache__MoveLruPrev);
+    temp_v0 = M2C_FIELD(arg1, void **, 4);
+    M2C_FIELD(arg0, void **, 4) = temp_v0;
+    M2C_FIELD(temp_v0, void **, 8) = arg0;
+    M2C_FIELD(arg1, void **, 4) = arg0;
+    M2C_FIELD(arg0, void **, 8) = arg1;
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+void I3dPacketCache__MoveLruPrev(void *arg0, void *arg1) {
+    void *temp_a2;
+    void *temp_v0;
+    void *temp_v1;
+
+    temp_a2 = M2C_FIELD(arg0, void **, 4);
+    temp_v1 = M2C_FIELD(arg0, void **, 8);
+    M2C_FIELD(temp_v1, void **, 4) = temp_a2;
+    temp_v0 = M2C_FIELD(arg1, void **, 4);
+    M2C_FIELD(temp_a2, void **, 8) = temp_v1;
+    M2C_FIELD(arg0, void **, 4) = temp_v0;
+    M2C_FIELD(temp_v0, void **, 8) = arg0;
+    M2C_FIELD(arg1, void **, 4) = arg0;
+    M2C_FIELD(arg0, void **, 8) = arg1;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_packet_cache", I3dRenderStage__CreatePacketCache);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_packet_cache", I3dPacketEntry__InsertLruPrev);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+void I3dPacketEntry__InsertLruPrev(void *arg0, void *arg1) {
+    void *temp_v0;
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_packet_cache", I3dPacketEntry__MoveLruPrev);
+    temp_v0 = M2C_FIELD(arg1, void **, 4);
+    M2C_FIELD(arg0, void **, 4) = temp_v0;
+    M2C_FIELD(temp_v0, void **, 8) = arg0;
+    M2C_FIELD(arg1, void **, 4) = arg0;
+    M2C_FIELD(arg0, void **, 8) = arg1;
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+void I3dPacketEntry__MoveLruPrev(void *arg0, void *arg1) {
+    void *temp_a2;
+    void *temp_v0;
+    void *temp_v1;
+
+    temp_a2 = M2C_FIELD(arg0, void **, 4);
+    temp_v1 = M2C_FIELD(arg0, void **, 8);
+    M2C_FIELD(temp_v1, void **, 4) = temp_a2;
+    temp_v0 = M2C_FIELD(arg1, void **, 4);
+    M2C_FIELD(temp_a2, void **, 8) = temp_v1;
+    M2C_FIELD(arg0, void **, 4) = temp_v0;
+    M2C_FIELD(temp_v0, void **, 8) = arg0;
+    M2C_FIELD(arg1, void **, 4) = arg0;
+    M2C_FIELD(arg0, void **, 8) = arg1;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_packet_cache", I3dPacketEntry__GetTexEnv);
 

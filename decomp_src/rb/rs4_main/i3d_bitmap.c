@@ -1,4 +1,7 @@
 #include "common.h"
+#include "m2c_macros.h"
+M2C_UNK I3dResourceTag__PurgeCache();               /* extern */
+
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_bitmap", RemapOnMemorySub);
 
@@ -22,11 +25,31 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_bitmap", I3dPicture__Get_hPixe
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_bitmap", I3dClut__Construct);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_bitmap", I3dClut__Destruct);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_bitmap", I3dPicture__FlushCache);
+int I3dClut__Destruct(void *arg0) {
+    M2C_FIELD(arg0, signed char *, 0x26) = 0;
+    I3dClut__FlushCache();
+    return 0;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_bitmap", I3dClut__FlushCache);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void I3dPicture__FlushCache(void) {
+    I3dResourceTag__PurgeCache();
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void I3dClut__FlushCache(void) {
+    I3dResourceTag__PurgeCache();
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_bitmap", I3dLzc);
 

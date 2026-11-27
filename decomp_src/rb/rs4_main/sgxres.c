@@ -1,10 +1,32 @@
 #include "common.h"
+#include "m2c_macros.h"
+M2C_UNK sgxFree(int);                               /* extern */
+extern unsigned char gWork_11FC38;
+void *ResGetSlot(int, M2C_UNK);                     /* extern */
+M2C_UNK sgxDI();                                    /* extern */
+M2C_UNK sgxEI();                                    /* extern */
+extern int D_0011FC40;
+int sgxListEnumID(M2C_UNK *, M2C_UNK);              /* extern */
+extern unsigned char D_0011FC54;
+extern unsigned char D_0011FC44;
+
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/sgxres", D_0010A158);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxres", ResGetSlot);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxres", ResGetFileHeader);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int *ResGetFileHeader(int *arg0) {
+    int *var_v0;
+
+    var_v0 = NULL;
+    if (arg0 != NULL) {
+        var_v0 = ((*arg0 ^ 0x44584753) != 0) ? NULL : arg0;
+    }
+    return var_v0;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxres", ResFindChunk);
 
@@ -12,7 +34,19 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxres", MakeResList);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxres", sgxResInit);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxres", sgxResTerm);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+void *memset(void *s, int c, unsigned int n);
+
+void sgxResTerm(void) {
+    if (M2C_FIELD(&gWork_11FC38, int *, 0) == 0) {
+
+    } else {
+        sgxFree(M2C_FIELD(&gWork_11FC38, int *, 4));
+        memset(&gWork_11FC38, 0, 0x4CU);
+    }
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxres", sgxResOpen);
 
@@ -54,9 +88,39 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxres", sgxResFindAdsr);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxres", sgxResOfsToData);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxres", sgxResLock);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxres", sgxResUnlock);
+int sgxResLock(int arg0) {
+    int var_s0;
+    void *temp_v0;
+
+    sgxDI();
+    temp_v0 = ResGetSlot(arg0, 0);
+    var_s0 = 0;
+    if ((temp_v0 != NULL) && (M2C_FIELD(temp_v0, signed char *, 0x10) == 0)) {
+        var_s0 = 1;
+        M2C_FIELD(temp_v0, int *, 0x174) = (int) (M2C_FIELD(temp_v0, int *, 0x174) + 1);
+    }
+    sgxEI();
+    return var_s0;
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void sgxResUnlock(int arg0) {
+    void *temp_v0;
+
+    sgxDI();
+    temp_v0 = ResGetSlot(arg0, 0);
+    if (temp_v0 != NULL) {
+        M2C_FIELD(temp_v0, int *, 0x174) = (int) (M2C_FIELD(temp_v0, int *, 0x174) - 1);
+    }
+    sgxEI();
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxres", sgxResSyncUse);
 
@@ -132,8 +196,36 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxres", sgxdGetBodySize);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxres", sgxdGetBodyPtr);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxres", sgxResGetMaxCount);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxres", sgxResGetFreeCount);
+int sgxResGetMaxCount(void) {
+    return D_0011FC40;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxres", sgxResEnumOpenID);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+int sgxResGetFreeCount(void) {
+    int temp_s0;
+
+    sgxDI();
+    temp_s0 = sgxListEnumID(&D_0011FC54, 0);
+    sgxEI();
+    return temp_s0;
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+int sgxResEnumOpenID(int arg0) {
+    int temp_s0;
+
+    sgxDI();
+    temp_s0 = sgxListEnumID(&D_0011FC44, arg0);
+    sgxEI();
+    return temp_s0;
+}
