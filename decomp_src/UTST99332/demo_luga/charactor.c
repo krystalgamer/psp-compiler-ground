@@ -1,4 +1,5 @@
 /* cflags: -O2 -frename-registers */
+/* data-align: 16 */
 #include "common.h"
 
 /* declarations recovered from DWARF */
@@ -151,13 +152,104 @@ void geObjectSwitch(geOBJECT *obj, int num);
 int geRandom(void);
 int geTexSend(int n);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/charactor", pad_char);
+int pad_char(uint padd, uint cont, uchar *axis)
+{
+	geOBJECT *obj = &md->obj[0];
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/charactor", post_char);
+	obj->t.x += ((float)axis[0] - 127.0f) * 0.0025f;
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/charactor", init_char);
+	obj->t.z += ((float)axis[1] - 127.0f) * 0.0025f;
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/charactor", set_char_pos);
+	if (cont & 0x10)
+		obj->t.z -= 0.2f;
+
+	if (cont & 0x40)
+		obj->t.z += 0.2f;
+
+	if (cont & 0x80)
+		obj->t.x -= 0.2f;
+
+	if (cont & 0x20)
+		obj->t.x += 0.2f;
+
+	if (obj->t.z < -60.0f)
+		obj->t.z = -60.0f;
+	if (obj->t.z > -10.0f)
+		obj->t.z = -10.0f;
+
+	if (obj->t.x < -14.0f)
+		obj->t.x = -14.0f;
+	if (obj->t.x > 14.0f)
+		obj->t.x = 14.0f;
+
+	if (obj->model == 0) {
+		if (padd & 0x2000)
+			geObjectSwitch(obj, 1);
+
+		if (padd & 0x4000)
+			geObjectSwitch(obj, 2);
+	} else {
+		geObjectSwitch(obj, 0);
+	}
+
+	return 0;
+}
+
+void post_char(void)
+{
+	PMAINDATA m = md;
+	int wait[5] = { 0, 15, 50, 50, 70 };
+
+	if (m->obj[0].model != 0) {
+		m->face = 3;
+		m->face_cnt = wait[3] - 1;
+	} else {
+		m->face_cnt++;
+		if (m->face == 0) {
+			if (m->face_cnt > m->face_wait) {
+				m->face_cnt = 0;
+				m->face = geRandom() % 4 + 1;
+			}
+		} else {
+			if (m->face_cnt > wait[m->face]) {
+				m->face_cnt = 0;
+				m->face = 0;
+				m->face_wait = geRandom() % 10 * 10 + 180;
+			}
+		}
+	}
+}
+
+void init_char(void)
+{
+	geModelLoad(0, (int *)run, sizeof(run) / 4);
+	geModelLoad(1, (int *)roll, sizeof(roll) / 4);
+	geModelLoad(2, (int *)jump, sizeof(jump) / 4);
+
+	md->obj[0] = (geOBJECT){ 0, 0, 0, 1.0f / 30.0f, { 6.0f, 0.0f, -20.0f }, { 0.0f, 180.0f, 0.0f }, { 1.0f, 1.0f, 1.0f } };
+
+	md->face_cnt = 0;
+	md->face = 0;
+	md->face_wait = geRandom() % 10 * 10 + 180;
+}
+
+void set_char_pos(void)
+{
+	geOBJECT *obj = &md->obj[0];
+
+	switch (md->walkmode) {
+	case 0:
+		obj->t.x = 6.0f;
+		obj->t.z = -20.0f;
+		obj->r.y = 180.0f;
+		break;
+	case 1:
+		obj->t.x = -6.0f;
+		obj->t.z = -42.0f;
+		obj->r.y = 0.0f;
+		break;
+	}
+}
 
 void texture_char(SceGimPicture *picture)
 {
@@ -182,6 +274,4 @@ void term_char(void) {
     geModelDelete(0);
 }
 
-INCLUDE_RODATA("tmp/asm/UTST99332/demo_luga/nonmatchings/charactor", D_00020D60);
 
-INCLUDE_RODATA("tmp/asm/UTST99332/demo_luga/nonmatchings/charactor", D_00020D80);
