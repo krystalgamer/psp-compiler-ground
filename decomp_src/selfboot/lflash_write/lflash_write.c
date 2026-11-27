@@ -8,7 +8,6 @@
 int func_00000000(char *str, char **argv, int max)
 {
 	int n;
-	char *p;
 
 	for (n = 0; n <= max; n++) {
 		argv[n] = strtok(str, " \t\n");
@@ -319,8 +318,57 @@ int func_00000F40(unsigned int i)
 	return sceIoUnassign(D_00005710[i]);
 }
 
-INCLUDE_ASM("tmp/asm/selfboot/lflash_write/nonmatchings/lflash_write", func_00000F94);
+int func_00000F94(const char *list)
+{
+	char line[256];
+	char *argv[16];
+	SceUID fd;
+	int argc;
+	int i;
+	int part;
+	int ret;
 
+	fd = sceIoOpen(list, 1, 0777);
+	if (fd < 0) {
+		printf(D_0000521C, fd);
+		return 0;
+	}
+	while (func_0000009C(line, 256, fd) != NULL) {
+		argc = func_00000000(line, argv, 16);
+		if (argc > 0 && argv[0][0] == '#')
+			continue;
+		if (argc < 2) {
+			for (i = 0; i < argc; i++)
+				printf(D_000052A4, argv[i]);
+			puts(D_00005294);
+			continue;
+		}
+		part = func_00000E38(argv[1]);
+		if (part < 0) {
+			printf("partition argument error (iPartitionNo 0x%08x\n", part);
+			continue;
+		}
+		func_00000EDC(part);
+		strcpy(D_00006760, argv[0]);
+		if (D_00006760[strlen(D_00006760) - 1] == '/')
+			D_00006760[strlen(D_00006760) - 1] = '\0';
+		strcat(D_00006760, D_00005378);
+		strcpy(D_00006B60, D_00005710[part]);
+		strcat(D_00006B60, D_00005378);
+		D_00006860[0] = '\0';
+		if (func_0000081C() != 0)
+			puts("mkdir or file copy failed");
+		func_00000F40(part);
+	}
+	ret = sceIoClose(fd);
+	if (ret < 0)
+		printf(D_000052A8, ret);
+	return 0;
+}
+
+/* func_000011A4's local key array initializer (D_00005500) is word aligned; its INCLUDE_RODATA
+   is not, and the strings before it are now C */
+__asm__(".section .rodata\n\t.align 2\n\t.section .text");
 INCLUDE_RODATA("tmp/asm/selfboot/lflash_write/nonmatchings/lflash_write", D_00005500);
 
 INCLUDE_RODATA("tmp/asm/selfboot/lflash_write/nonmatchings/lflash_write", D_00005508);

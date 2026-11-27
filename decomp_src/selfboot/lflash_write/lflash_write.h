@@ -74,6 +74,8 @@ extern const char D_00005294[];	/* "argument error" */
 extern const char D_000052A4[];	/* "%s " */
 extern const char D_000052A8[];	/* "sceIoClose 0x%08x\n" */
 extern const char D_00005378[];	/* "/" */
+extern const char D_0000537C[];	/* "recurse_copy_dir %d\n" */
+extern const char D_00005394[];	/* "sceIoMkdir failed 0x%08x\n" */
 
 /* .data */
 extern char *D_000056E0[6];	/* "flash0".."flash5" */
