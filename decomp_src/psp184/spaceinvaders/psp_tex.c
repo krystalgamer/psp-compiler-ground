@@ -166,7 +166,44 @@ int bmp_file_copy(int no)
 	return bmp_file_copy_addrset(no, 0);
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_tex", bmp_file_copy_addrset);
+typedef struct { u8 b[0x40]; } CLUT16_T;
+typedef struct { u8 b[0x400]; } CLUT256_T;
+void *sceGeEdramGetAddr(void);
+void *memcpy(void *d, const void *s, unsigned int n);
+int bmp_file_copy_addrset(int no, int addr)
+{
+	TEX_FILE *t;
+	u8 *vram;
+	int sz;
+
+	if ((unsigned int)no >= 64)
+		return -1;
+	t = &tex_file[no];
+	if (t->used == 0)
+		return -1;
+	vram = (u8 *)sceGeEdramGetAddr();
+	vram += 0x154000;
+	vram += addr;
+	sz = 0;
+	if (t->type == 2) {
+		t->f24 = (int)vram;
+		sz = t->f4 * t->f8 * 4;
+		memcpy(vram, t->p1c, sz);
+	} else if (t->type == 1) {
+		t->f24 = (int)(vram + 0x400);
+		t->f20 = (int)vram;
+		sz = t->f4 * t->f8 + 0x400;
+		*(CLUT256_T *)vram = *(CLUT256_T *)t->p18;
+		memcpy((void *)t->f24, t->p1c, t->f4 * t->f8);
+	} else if (t->type == 0) {
+		t->f24 = (int)(vram + 0x40);
+		t->f20 = (int)vram;
+		sz = t->f4 * t->f8 / 2 + 0x40;
+		*(CLUT16_T *)vram = *(CLUT16_T *)t->p18;
+		memcpy((void *)t->f24, t->p1c, t->f4 * t->f8 / 2);
+	}
+	return sz;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_tex", screen_capture);
 
