@@ -42,9 +42,6 @@ int sjisToUtf8(char *dst, char *src, int len);
 void initButtonContent(BOX *box, void *node);
 void initButtonBoxSize(BOX *box);
 typedef struct { int color; } STYLE0;
-extern char D_0013F0A4[];
-extern char D_0013F0AC[];
-extern char D_0013F0B4[];
 void initSelectContent(BOX *box, void *node);
 int Element_hasAttribute(void *node, void *name);
 void attr_FOCUSCOLOR(void *node, BOX *box);
@@ -52,7 +49,6 @@ void addFocusList(void *ctx, int kind, void *node, short tabindex, void *info);
 void addFormElementList(BOX *body, int a, void *node);
 void addSelectList(BOX *box);
 extern unsigned char _DOMdisabled;
-extern char D_0013F0D0[];
 int atoi(const char *s);
 void initTextAreaContent(BOX *box, void *node);
 void initTextAreaBoxSize(BOX *box, int cols, int rows);
@@ -102,6 +98,29 @@ extern unsigned char _DOMusemap;
 extern unsigned char _DOMalt;
 extern unsigned char _DOMsrc;
 extern unsigned char _DOMdata;
+typedef struct { int pressed; int x4; char *label; } BTNGEOM;
+typedef struct { int size; } TXTGEOM;
+typedef struct { int x0[3]; int w; int h; } IMGG;
+char *strcpy(char *d, const char *s);
+int getInputType(void *node);
+void initCheckContent(BOX *box, void *node);
+void initRadioContent(BOX *box, void *node);
+void initPasswordContent(BOX *box, void *node);
+void initTextFieldContent(BOX *box, void *node, int a);
+void initCheckBoxSize(BOX *box);
+void initRadioBoxSize(BOX *box);
+void initTextFieldBoxSize(BOX *box, int size);
+void addRadioList(BOX *box);
+void delLinkBox(BOX *b);
+void freeBox(BOX *b, int f);
+void Node_setBox(void *node, BOX *box);
+void *getDOMDocument(void *node);
+void *HST_searchDocumentHistoryNode(void *doc);
+char *HST_getBaseURI(void *h);
+char *HST_getCurURI(void *h);
+char *URL_toAbsoluteURL(char *base, char *rel);
+int HST_getSessionID(void *h);
+extern unsigned char _DOMsize;
 int getTabindex(void *node) {
     char *s;
     s16 n = 0;
@@ -115,12 +134,6 @@ int getTabindex(void *node) {
     }
     return n;
 }
-
-INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/lo_html_form", D_0013F0A4);
-
-INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/lo_html_form", D_0013F0AC);
-
-INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/lo_html_form", D_0013F0B4);
 
 BOX *createFileRefButton(void *node, BOX *parent, BOX *prev) {
     char *s;
@@ -140,10 +153,10 @@ BOX *createFileRefButton(void *node, BOX *parent, BOX *prev) {
     box->html = 0x32;
     initButtonContent(box, node);
     *box->style = *prev->style;
-    box->style->unk54 = colorValue(D_0013F0A4);
-    ((STYLE0 *)box->style)->color = colorValue(D_0013F0AC);
+    box->style->unk54 = colorValue("#000000");
+    ((STYLE0 *)box->style)->color = colorValue("#cccccc");
     box->style->unk74 = 2;
-    s[sjisToUtf8(s, D_0013F0B4, 4)] = 0;
+    s[sjisToUtf8(s, "\x8e\x51\x8f\xc6", 4)] = 0;
     if (M2C_FIELD(box->geom, char **, 8) != NULL) {
         MEM_free(0, M2C_FIELD(box->geom, int *, 8));
     }
@@ -240,11 +253,160 @@ BOX *html_FORM(void *node, BOX *parent, BOX *prev) {
     return box;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_html_form", html_INPUT);
+BOX *html_INPUT(void *node, BOX *parent, BOX *prev) {
+    BOX *box;
+    BOX *fbtn = NULL;
+    int focus = 1;
+    int size;
+    int type;
+    char *s;
+    char *name;
+    void *h;
+    char *base;
+    char *url;
+    int w;
+    int ih;
 
-INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/lo_html_form", D_0013F0D0);
-
-INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/lo_html_form", D_0013F0D8);
+    if (getBoxByHTML(parent, 0x11) != NULL) {
+        return NULL;
+    }
+    box = createBox(node, 1);
+    if (box == NULL) {
+        return NULL;
+    }
+    linkBox(box, parent, prev);
+    box->display = 1;
+    box->html = 0x32;
+    initBoxProperty(box);
+    attr_ALIGN_image(node, box);
+    if (M2C_FIELD(box->style, s8 *, 0x71)) {
+        box->display = 2;
+    }
+    box->style->unk20 = 2;
+    box->style->unk22 = 2;
+    box->style->unk24 = 2;
+    box->style->unk26 = 2;
+    size = getDOMAttributeValue_PositiveNum(node, &_DOMsize);
+    size = size < 0 ? 0 : size;
+    type = getInputType(node);
+    switch (type) {
+    case 1:
+    case 8:
+    case 10:
+        initButtonContent(box, node);
+        if ((type == 8) | (type == 10)) {
+            if (((BTNGEOM *)box->geom)->label == NULL) {
+                ((BTNGEOM *)box->geom)->label = MEM_malloc(0, 8);
+                strcpy(((BTNGEOM *)box->geom)->label, type == 8 ? "RESET" : "SUBMIT");
+            }
+            ((BTNGEOM *)box->geom)->pressed = type == 8;
+        }
+        box->style->unk54 = colorValue("#000000");
+        ((STYLE0 *)box->style)->color = colorValue("#cccccc");
+        applyCSSExtStyleSheetToBox(node, box);
+        applyCSSInlinePropertyToBox(node, box);
+        initButtonBoxSize(box);
+        break;
+    case 2:
+        initCheckContent(box, node);
+        box->style->unk54 = colorValue("#000000");
+        ((STYLE0 *)box->style)->color = colorValue("#cccccc");
+        applyCSSExtStyleSheetToBox(node, box);
+        applyCSSInlinePropertyToBox(node, box);
+        initCheckBoxSize(box);
+        break;
+    case 7:
+        initRadioContent(box, node);
+        box->style->unk54 = colorValue("#000000");
+        ((STYLE0 *)box->style)->color = colorValue("#cccccc");
+        applyCSSExtStyleSheetToBox(node, box);
+        applyCSSInlinePropertyToBox(node, box);
+        initRadioBoxSize(box);
+        name = getDOMAttributeValue(node, &_DOMname);
+        if (name != NULL) {
+            M2C_FIELD(box->geom, char **, 0) = name;
+            addRadioList(box);
+        }
+        break;
+    case 6:
+        initPasswordContent(box, node);
+        ((TXTGEOM *)box->geom)[1].size = size;
+        box->style->unk54 = colorValue("#000000");
+        ((STYLE0 *)box->style)->color = colorValue("#ffffff");
+        applyCSSExtStyleSheetToBox(node, box);
+        applyCSSInlinePropertyToBox(node, box);
+        initTextFieldBoxSize(box, size);
+        break;
+    case 3:
+        box->style->unk54 = colorValue("#000000");
+        ((STYLE0 *)box->style)->color = colorValue("#ffffff");
+        box->style->unk74 = 2;
+        initTextFieldContent(box, node, 0);
+        applyCSSExtStyleSheetToBox(node, box);
+        applyCSSInlinePropertyToBox(node, box);
+        initTextFieldBoxSize(box, 10);
+        fbtn = createFileRefButton(node, parent, box);
+        if (fbtn == NULL) {
+            delLinkBox(box);
+            freeBox(box, 0);
+            return NULL;
+        }
+        Node_setBox(node, box);
+        break;
+    case 4:
+        focus = 0;
+        break;
+    case 5:
+        initImageContent(box, node);
+        ((IMGG *)box->geom)->w = w = e_icon_image_width + 6;
+        ((IMGG *)box->geom)->h = ih = e_icon_image_height + 6;
+        applyCSSExtStyleSheetToBox(node, box);
+        applyCSSInlinePropertyToBox(node, box);
+        initImageBoxSize(box, w, ih);
+        if (M2C_FIELD(ui_global, int *, 0x98) == 0) {
+            s = getDOMAttributeValue(node, &_DOMsrc);
+            if (s != NULL) {
+                h = HST_searchDocumentHistoryNode(getDOMDocument(node));
+                base = HST_getBaseURI(h);
+                if (base == NULL) {
+                    base = HST_getCurURI(h);
+                }
+                url = URL_toAbsoluteURL(base, s);
+                if (url != NULL) {
+                    requestImageData(box, url, HST_getSessionID(h));
+                    MEM_free(0, (int)url);
+                }
+                MEM_free(0, (int)s);
+            }
+        }
+        break;
+    default:
+        box->style->unk54 = colorValue("#000000");
+        ((STYLE0 *)box->style)->color = colorValue("#ffffff");
+        initTextFieldContent(box, node, 1);
+        ((TXTGEOM *)box->geom)[1].size = size;
+        applyCSSExtStyleSheetToBox(node, box);
+        applyCSSInlinePropertyToBox(node, box);
+        initTextFieldBoxSize(box, size);
+        break;
+    }
+    if (Element_hasAttribute(node, &_DOMdisabled) == 1) {
+        M2C_FIELD(box, s16 *, 0x3E) = 1;
+        if (fbtn != NULL) {
+            M2C_FIELD(fbtn, s16 *, 0x3E) = 1;
+        }
+    } else if (focus == 1) {
+        attr_FOCUSCOLOR(node, box);
+        if (type != 3) {
+            addFocusList(Node_getBox(Node_getOwnerDocument(node)), 0, box, getTabindex(node), 0);
+        } else if (fbtn != NULL) {
+            attr_FOCUSCOLOR(node, fbtn);
+            addFocusList(Node_getBox(Node_getOwnerDocument(node)), 0, fbtn, getTabindex(node), 0);
+        }
+    }
+    addFormElementList(getBodyBox(box), 0, node);
+    return box;
+}
 
 
 BOX *html_SELECT(void *node, BOX *parent, BOX *prev) {
@@ -266,8 +428,8 @@ BOX *html_SELECT(void *node, BOX *parent, BOX *prev) {
     box->style->unk22 = 2;
     box->style->unk24 = 2;
     box->style->unk26 = 2;
-    box->style->unk54 = colorValue(D_0013F0A4);
-    ((STYLE0 *)box->style)->color = colorValue(D_0013F0D0);
+    box->style->unk54 = colorValue("#000000");
+    ((STYLE0 *)box->style)->color = colorValue("#ffffff");
     applyCSSExtStyleSheetToBox(node, box);
     applyCSSInlinePropertyToBox(node, box);
     initSelectBoxSize(box);
@@ -431,8 +593,8 @@ BOX *html_TEXTAREA(void *node, BOX *parent, BOX *prev) {
     box->style->unk22 = 2;
     box->style->unk24 = 2;
     box->style->unk26 = 2;
-    box->style->unk54 = colorValue(D_0013F0A4);
-    ((STYLE0 *)box->style)->color = colorValue(D_0013F0D0);
+    box->style->unk54 = colorValue("#000000");
+    ((STYLE0 *)box->style)->color = colorValue("#ffffff");
     rows = 0;
     cols = 0;
     s = getDOMAttributeValue(node, &_DOMcols);
@@ -503,8 +665,8 @@ BOX *html_BUTTON(void *node, BOX *parent, BOX *prev) {
         box->width = pb->width - pb->style->unk26 - pb->style->unk36 - pb->style->unk2E - pb->style->unk2A - pb->style->unk32 - pb->style->unk22;
     }
     M2C_FIELD(box->style, u8 *, 0x10) = 1;
-    box->style->unk54 = colorValue(D_0013F0A4);
-    ((STYLE0 *)box->style)->color = colorValue(D_0013F0AC);
+    box->style->unk54 = colorValue("#000000");
+    ((STYLE0 *)box->style)->color = colorValue("#cccccc");
     box->style->unk20 = 1;
     box->style->unk22 = 1;
     box->style->unk24 = 1;
