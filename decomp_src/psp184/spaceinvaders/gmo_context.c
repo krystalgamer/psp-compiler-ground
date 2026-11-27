@@ -264,4 +264,3 @@ void activate_tex_crop()
 			( offs->y * hc + crop->y ) * ht + trim->y ) ;
 }
 
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_context", __psp_libinfo___7F130);
