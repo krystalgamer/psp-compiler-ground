@@ -238,11 +238,92 @@ INCLUDE_RODATA("tmp/asm/UTST99332/demo_luga/nonmatchings/ground", D_00020E50);
 
 INCLUDE_RODATA("tmp/asm/UTST99332/demo_luga/nonmatchings/ground", D_00020E54);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/ground", texture_gorund);
+void texture_gorund(SceGimPicture *picture)
+{
+	switch (md->obj_num) {
+	case 3:
+		if (md->tex_num == 0) {
+			geTexSend(1);
+		} else {
+			geModelNormalTexFunc(picture);
+		}
+		break;
+	case 4:
+		if (md->tex_num == 0) {
+			geTexSend(1);
+		} else {
+			geModelNormalTexFunc(picture);
+		}
+		break;
+	case 5:
+		if (md->tex_num == 0) {
+			geTexSend(1);
+		} else {
+			geModelNormalTexFunc(picture);
+		}
+		break;
+	case 6:
+		if (md->tex_num == 0) {
+			geTexSend(1);
+		} else {
+			geModelNormalTexFunc(picture);
+		}
+		break;
+	case 7:
+		if (md->tex_num == 0) {
+			geTexSend(1);
+		} else {
+			geModelNormalTexFunc(picture);
+		}
+		break;
+	case 8:
+		if (md->tex_num == 0) {
+			geTexSend(1);
+		} else {
+			geModelNormalTexFunc(picture);
+		}
+		break;
+	default:
+		geModelNormalTexFunc(picture);
+		break;
+	}
+	md->tex_num++;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/ground", init_ground);
+void init_ground(void)
+{
+	geModelLoad(3, (int *)map_0, sizeof(map_0) / 4);
+	geModelLoad(4, (int *)map_1, sizeof(map_1) / 4);
+	geModelLoad(5, (int *)map_2, sizeof(map_2) / 4);
+	geModelLoad(6, (int *)map_3, sizeof(map_3) / 4);
+	geModelLoad(7, (int *)map_4, sizeof(map_4) / 4);
+	geModelLoad(8, (int *)map_5, sizeof(map_5) / 4);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/ground", draw_ground);
+	md->obj[2] = (geOBJECT){ 0, 3, 0, 0.0f, { 0.0f, 0.0f, -100.0f }, { 0.0f, 180.0f, 0.0f }, { 1.0f, 1.0f, 1.0f } };
+	md->obj[3] = (geOBJECT){ 0, 4, 0, 0.0f, { 0.0f, 0.0f, -300.0f }, { 0.0f, 180.0f, 0.0f }, { 1.0f, 1.0f, 1.0f } };
+	md->obj[4] = (geOBJECT){ 0, 5, 0, 0.0f, { 0.0f, 0.0f, -500.0f }, { 0.0f, 180.0f, 0.0f }, { 1.0f, 1.0f, 1.0f } };
+	md->obj[5] = (geOBJECT){ 0, 6, 0, 0.0f, { 0.0f, 0.0f, -700.0f }, { 0.0f, 180.0f, 0.0f }, { 1.0f, 1.0f, 1.0f } };
+
+	md->nextgnd = 6;
+}
+
+void draw_ground(void)
+{
+	int lst[4];
+	int i;
+
+	__sort_gnd(lst);
+
+	geModelTexFunc(1);
+	geModelSetTexFunc(texture_gorund);
+	for (i = 0; i < 4; i++) {
+		md->obj_num = md->obj[lst[i] + 2].model;
+		md->tex_num = 0;
+		geObjectDraw(&md->obj[lst[i] + 2]);
+	}
+	geModelTexFunc(0);
+	geModelSetTexFunc(NULL);
+}
 
 void term_ground(void) {
     geModelDelete(3);
@@ -257,10 +338,6 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/ground", __sort_gnd);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/ground", set_ground_light);
 
-INCLUDE_RODATA("tmp/asm/UTST99332/demo_luga/nonmatchings/ground", D_00020E80);
 
-INCLUDE_RODATA("tmp/asm/UTST99332/demo_luga/nonmatchings/ground", D_00020F30);
 
-INCLUDE_RODATA("tmp/asm/UTST99332/demo_luga/nonmatchings/ground", D_00020FE0);
 
-INCLUDE_RODATA("tmp/asm/UTST99332/demo_luga/nonmatchings/ground", D_00021090);
