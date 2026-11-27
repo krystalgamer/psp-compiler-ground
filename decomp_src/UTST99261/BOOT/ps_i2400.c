@@ -62,6 +62,12 @@ extern char D_00137B20[];
 extern char D_00137B44[];
 extern int AuthDialogCancel;
 int *ps_PassWordChk();
+int memcmp(const void *a, const void *b, unsigned int n);
+extern char D_00137B18[];
+extern char D_00137B1C[];
+extern char D_00137BF4[];
+int ps_i221A();
+int *ps_searchRequestFlagHistoryNode();
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/ps_i2400", D_00137B18);
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/ps_i2400", D_00137B1C);
@@ -210,4 +216,162 @@ int ps_i2414_auth(PsIpc *msg) {
     return 0x13;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/ps_i2400", ps_i241A);
+int ps_i241A(PsIpc *msg) {
+    PsIpc m;
+    PsIpc m1;
+    PsDomBuild b;
+    char crlf2[4];
+    char lf2[2];
+    struct {
+        int x00;
+        PsIpc body;
+    } q;
+    int ret;
+    int *ext;
+    int *node;
+    PsDomResult *r;
+    PsDomResult *d;
+    int len;
+    int i;
+    int mode;
+    int *n;
+
+    memcpy(crlf2, D_00137B18, 4);
+    memcpy(lf2, D_00137B1C, 2);
+    ret = 0;
+    if (msg->x14 == 0) {
+        q.body = *msg;
+        if (OS_mq_send(mq_js, &q, sizeof(q), 0) < 0) {
+            ps_halt(D_00137C10);
+        }
+        return buf_ps_sts;
+    }
+    if (msg->x10 != 200) {
+        return ps_i221A(msg);
+    }
+    if (msg->x10 == 401) {
+        return ps_JSMailBoxClean();
+    }
+    ext = ps_ExternalSearchSessionHistoryNode(msg->x04, msg->x14);
+    if (ext == NULL) {
+        ps_halt("ExternalHistory NULL\n");
+    }
+    HST_setRequestFlag(ext, 3);
+    node = ps_ExternalSearchSessionParentHistoryNode(msg->x04, msg->x14);
+    if (node == NULL) {
+        ps_halt("sessrch_p NULL\n");
+    }
+    b.x[0] = node[1];
+    b.x[1] = node[0];
+    b.x[2] = node[5];
+    b.x[3] = node[4];
+    b.x[4] = node[7];
+    b.x[5] = node[6];
+    b.x[9] = node[0x48 / 4];
+    b.x[11] = 1;
+    b.x[13] = Accession;
+    len = msg->x18;
+    for (i = 0; i < msg->x18 - 3; i++) {
+        if (memcmp((char *)msg->x1C + i, crlf2, 4) == 0) {
+            len = i + 4;
+            break;
+        }
+    }
+    if (len != msg->x18) {
+        goto found;
+    }
+    for (i = 0; i < msg->x18 - 1; i++) {
+        if (memcmp((char *)msg->x1C + i, lf2, 2) == 0) {
+            len = i + 2;
+            break;
+        }
+    }
+    if (len == msg->x18) {
+        b.x[7] = 0;
+        b.x[6] = 0;
+    } else {
+    found:
+        b.x[7] = len + msg->x1C;
+        b.x[6] = msg->x18 - len;
+    }
+    Encoding(node, 0, &b.x[10]);
+    if (msg->x14 == 1) {
+        b.x[12] = msg->x14;
+    } else {
+        b.x[12] = 7;
+    }
+    r = parseDomBuild(&b);
+    initMPL_REQ_LOAD_PAGE(&m1);
+    m1.x04 = node[0x48 / 4];
+    ps_sndmsg(&m1, 4);
+    switch (r->type) {
+    case 0:
+        ret = ps_JSMailBoxClean();
+        break;
+    case 1:
+        d = MEM_malloc(0, r->len * 2 + 0xC);
+        if (d == NULL) {
+            ps_halt("(char*)E_malloc(ps_i241A) failed");
+        }
+        d->len = r->len;
+        d->data = (char *)d + 0xC;
+        memcpy(d->data, r->data, r->len * 2);
+        d->type = node[0x68 / 4];
+        MEM_free(0, r->data);
+        m.type = 2;
+        m.x04 = node[0x48 / 4];
+        m.x08 = 1;
+        m.cmd = 0x30B;
+        m.x10 = 0;
+        m.x14 = 0;
+        m.x18 = r->len * 2 + 0xC;
+        m.x1C = (int)d;
+        ps_sndmsg(&m, 4);
+        ret = 0x12;
+        break;
+    case 2:
+        n = HST_getJSURI(node, HST_getJSURIlen(node));
+        mode = 2;
+        if (node[0x30 / 4] != 1) {
+            mode = psCacheMode;
+        }
+        ps_getsend(n, mode, 3, r);
+        ret = 0x1A;
+        break;
+    case 3:
+        n = HST_getCSSURI(node, HST_getCSSURIlen(node));
+        mode = 2;
+        if (node[0x30 / 4] != 1) {
+            mode = psCacheMode;
+        }
+        ps_getsend(n, mode, 1, NULL);
+        ret = 0x1A;
+        break;
+    default:
+        ps_halt("ps_i241A(parseDomBuild) failed.");
+        break;
+    }
+    while ((n = ps_searchRequestFlagHistoryNode(node, 0)) != NULL) {
+        if (ps_isGetRequest(n) == 0) {
+            HST_setRequestFlag(n, 5);
+            ps_errStringParseDomBuild(n, D_00137BF4);
+        } else {
+            mode = 2;
+            if (n[0x30 / 4] != 1) {
+                mode = psCacheMode;
+            }
+            if (HST_getMethodType(n) == 0) {
+                ps_getsend(n, mode, 0, NULL);
+            } else {
+                ps_postsend_history(n, mode);
+            }
+        }
+    }
+    if (msg->x18 != 0) {
+        MEM_free(0, msg->x1C);
+    }
+    if (r != NULL) {
+        MEM_free(0, r);
+    }
+    return ret;
+}
