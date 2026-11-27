@@ -55,6 +55,13 @@ M2C_UNK MEM_free(M2C_UNK, void *);                  /* extern */
 
 M2C_UNK ps_i2314();                                 /* extern */
 
+int strlen(const char *s);
+void *memset(void *s, int c, unsigned int n);
+void *memcpy(void *d, const void *s, unsigned int n);
+extern char D_00137B20[];
+extern char D_00137B44[];
+extern int AuthDialogCancel;
+int *ps_PassWordChk();
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/ps_i2400", D_00137B18);
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/ps_i2400", D_00137B1C);
@@ -137,6 +144,70 @@ int ps_i2414(PsIpc *msg) {
     return 0x14;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/ps_i2400", ps_i2414_auth);
+int ps_i2414_auth(PsIpc *msg) {
+    PsIpc m;
+    int pm;
+    char *t;
+    char *s;
+    int pt;
+    int pp;
+    int size;
+    int *pw;
+    int *buf;
+    char *p;
+    int ret;
+
+    pp = 0;
+    t = D_00137B20;
+    s = D_00137B44;
+    AuthDialogCancel = 0;
+    if (msg->x10 != 0x191) {
+        return -1;
+    }
+    {
+        pt = 3 - ((strlen(t) + 3) & 3);
+        pm = 3 - ((strlen(s) + 3) & 3);
+        size = strlen(t) + strlen(s) + pt + pm + 0x1C;
+        pw = ps_PassWordChk(((int *)SaveURI)[0], ((int *)SaveURI)[1]);
+        if (pw != NULL) {
+            pp = 3 - ((pw[0] + 3) % 4);
+            size += pw[0] + pw[2] + pp;
+        }
+        buf = MEM_malloc(0, size);
+        memset(buf, 0, size);
+        buf[0] = 3;
+        buf[1] = strlen(t);
+        memcpy(&buf[2], t, strlen(t));
+        p = (char *)buf + (strlen(t) + pt) + 8;
+        *(int *)p = strlen(s);
+        memcpy(p + 4, s, strlen(s));
+        p = p + (strlen(s) + pm) + 4;
+        if (pw != NULL) {
+            *(int *)p = pw[0];
+            memcpy(p + 4, (void *)pw[1], pw[0]);
+            p = p + pw[0] + pp + 4;
+            *(int *)p = pw[2];
+            memcpy(p + 4, (void *)pw[3], pw[2]);
+        } else {
+            ((int *)p)[0] = 0;
+            ((int *)p)[1] = 0;
+        }
+        m.type = 2;
+        m.x04 = msg->x04;
+        m.x08 = 0;
+        m.cmd = 0xE;
+        m.x10 = 0;
+        m.x14 = 0x80000001;
+        m.x18 = size;
+        m.x1C = (int)buf;
+        ps_sndmsg(&m, 1);
+        before_ps_sts = 0x14;
+        buf_Message_cnt++;
+        if (pw != NULL) {
+            MEM_free(0, pw);
+        }
+    }
+    return 0x13;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/ps_i2400", ps_i241A);
