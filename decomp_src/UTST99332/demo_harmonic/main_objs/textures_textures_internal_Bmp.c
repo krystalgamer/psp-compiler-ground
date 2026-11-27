@@ -3,6 +3,7 @@
 #undef __EXCEPTIONS
 #include "cxx/defer_asm.h"
 #define DEMO_LINKONCE_Bmp 1
+#define DEMO_TEMPLATE_DEFS
 #include "../main.hpp"
 
 /* this object's .gnu.linkonce.t sections in the original's order */
@@ -133,7 +134,8 @@ void textures_internal_Bmp_uses()
 #undef INCLUDE_ASM
 #define INCLUDE_ASM INCLUDE_ASM_LINKONCE
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/textures_textures_internal_Bmp", _ZN6common7t_arrayIhEC1Ev);
+/* common::t_array<unsigned char>'s default ctor (SaveBmp, still asm, is its user) */
+template common::t_array<unsigned char>::t_array();
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/textures_textures_internal_Bmp", _ZN10byte_array5writeIcEEvjT_);
 
