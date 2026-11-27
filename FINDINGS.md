@@ -648,7 +648,15 @@ libgcc/libsupc++ DWARF names `gcc-3.3.6/` paths.
   only with it; `ctrlTrgProc`'s block layout), the middleware (i3d*, sgx*,
   bin_common, libwave, libsas) `-O2`, the SDK libraries as their Makefiles
   say (`-O4`, gim_picture `-O2 -std=gnu9x`).  None of these depends on the
-  cc1: 1.6.1 and 1.8.4 give the same code.
+  cc1: 1.6.1 and 1.8.4 give the same code.  The game code is in fact
+  `-Os -fno-strength-reduce`: `ScriptEnumOperand` and `_SortCardListGet`
+  recompute `base + i*size` (`sll`/`addu`) in every iteration, which plain
+  `-Os` strength-reduces to a pointer; the flag changes none of the ~340
+  other matched game functions.  Whether that is a Makefile flag or a
+  1.9.2 change that disables strength reduction under `-Os` can't be told
+  from this module (it has no other `-Os` code); at `-O2` strength
+  reduction is on as usual (libgim_picture's load_bmp/load_tga/load_tm2
+  lose 12 of 20 matches with `-fno-strength-reduce`).
 - Everything else that differs is source: SDK 6.6.0 vs the module's SDK
   (struct layouts in libgu and gim_picture, `sceGumMultQuaternion`
   missing), Sony's newer newlib (`_REENT` is `__getreent()`, i.e.
