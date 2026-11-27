@@ -1,13 +1,34 @@
 /* cflags: -O1 */
 #include "common.h"
 #include "m2c_macros.h"
+extern void *D_00585354;
+int *mes_util_vals(int n, int a);
+int mes_eval(void *ctx, int code, int *args, void *thisobj, int f);
+int mes_eval_to_string(void *ctx, int v);
+int mes_eval_string(void *ctx, int s, void *thisobj, int f);
+void *mes_native_new(void *ctx, int a, void *fn, int nargs, int flags);
 int mes_object_get(void *obj, unsigned int id);
 typedef struct GcMethod {
     int f0;
     int kind;
 } GcMethod;
+typedef struct ClsProp {
+    const char *name;
+    unsigned char index;              /* 0x4 */
+    unsigned char flags;              /* 0x5 */
+} ClsProp;
+typedef struct ClsMethod {
+    const char *name;
+    void *fn;                         /* 0x4 */
+    unsigned char nargs;              /* 0x8 */
+} ClsMethod;
 typedef struct ClassDef {
-    char pad[0x1C];
+    const char *name;
+    ClsProp *props;                   /* 0x4 */
+    ClsMethod *methods;               /* 0x8 */
+    void *ctor;                       /* 0xC */
+    void *get;                        /* 0x10 */
+    char pad14[8];
     void (*free)(void *obj, void *priv);
 } ClassDef;
 typedef struct MesUser {
@@ -45,7 +66,40 @@ extern unsigned char mes_user_method;
 
 
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_class", mes_class_init);
+MesUser *mes_class_init(void *ctx, ClassDef *def)
+{
+    MesUser *o;
+    ClsProp *p;
+    ClsMethod *m;
+    unsigned int id;
+    void *n;
+
+    o = mes_gc_alloc(ctx, 12);
+    if (o != NULL) {
+        mes_object_init(o, 9, D_00585354);
+        o->def = def;
+        o->priv = NULL;
+        *--*(int **)((char *)ctx + 0x18) = (int)o;
+        for (p = def->props; p->name != NULL; p++)
+            mes_object_setup(ctx, o, p->name, 0, p->flags | 0x10, p->index);
+        for (m = def->methods; m->name != NULL; m++) {
+            id = mes_context_id2(ctx, m->name);
+            *--*(int **)((char *)ctx + 0x18) = id;
+            n = mes_native_new(ctx, id, m->fn, m->nargs, 0);
+            *--*(int **)((char *)ctx + 0x18) = (int)n;
+            mes_object_set(o, id, (int)n, 0);
+            *(int **)((char *)ctx + 0x18) += 2;
+        }
+        id = mes_context_id2(ctx, def->name);
+        *--*(int **)((char *)ctx + 0x18) = id;
+        n = mes_native_new(ctx, id, def->ctor, 0, 1);
+        ((void **)n)[3] = o;
+        *--*(int **)((char *)ctx + 0x18) = (int)n;
+        mes_object_set(*(void **)((char *)ctx + 0xC), id, (int)n, 0);
+        *(int **)((char *)ctx + 0x18) += 3;
+    }
+    return o;
+}
 
 MesUser *mes_class_new(void *ctx, MesUser *cls)
 {
@@ -122,7 +176,28 @@ void *mes_class_private_get(MesUser *v)
     return v->priv;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_class", mes_class_call);
+int mes_class_call(void *ctx, int code, int argc, int *argv, void *thisobj)
+{
+    int *vals;
+    int i;
+    int r;
+
+    vals = mes_util_vals(argc, 0);
+    if (vals != NULL)
+        for (i = 0; i < argc; i++)
+            vals[i + 1] = *argv++;
+    r = mes_eval(ctx, code, vals, thisobj, 0);
+    if (r != 0x20)
+        return r;
+    code = mes_eval_to_string(ctx, code);
+    *--*(int **)((char *)ctx + 0x18) = code;
+    code = mes_eval_string(ctx, code, thisobj, 0);
+    **(int **)((char *)ctx + 0x18) = code;
+    r = mes_eval(ctx, code, vals, thisobj, 0);
+    if (r != 0x20)
+        return r;
+    return code;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -161,7 +236,7 @@ int mes_user_index(MesUser *obj, int id)
 
 int mes_user_get(void *ctx, MesUser *o, unsigned int id)
 {
-    int (*get)(void *, MesUser *, void *, int) = *(void **)((char *)o->def + 0x10);
+    int (*get)(void *, MesUser *, void *, int) = o->def->get;
     int idx;
     int r;
 
