@@ -2857,7 +2857,63 @@ void beat_help_off(void)
 	*(int *)(b_D_005FB7A8 + 0) = 0;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", beat_help_sync_disp);
+typedef struct { int on, mode, cnt; } BHS_T;
+extern BHS_T bhs_w __asm__("D_005FB7A8");
+extern char D_0007DB9C[];
+extern char *D_0008297C;
+extern char *future_name_list[];
+int sprintf(char *s, const char *fmt, ...);
+int inv_font_ascii_check_w(char *s, int size);
+void inv_font_ascii_posf(char *str, int x, int y, int w, int h, int r, int g, int b, int a, int mode);
+int poly_g4_set(int x0, int y0, int x1, int y1, int x2, int y2, int x3, int y3,
+	int r0, int g0, int b0, int a0, int r1, int g1, int b1, int a1,
+	int r2, int g2, int b2, int a2, int r3, int g3, int b3, int a3,
+	int z, int f10, int mode, int alpha);
+float sinf(float);
+void beat_help_sync_disp(void)
+{
+	int a, alpha, w;
+	int p[3][2];
+	BHS_T *b = &bhs_w;
+
+	if (b->on == 0)
+		return;
+	b->cnt++;
+	if (b->cnt >= 360) {
+		b->on = 0;
+		return;
+	}
+	a = b->cnt;
+	while (a < 0)
+		a += 180;
+	while (a >= 180)
+		a -= 180;
+	alpha = sinf(a / 180.0f * 3.1415927f) * 512.0f;
+	alpha = alpha < 255 ? alpha : 255;
+	if (b->mode == 0) {
+		sprintf(text_buf, D_0007DB9C, D_0008297C);
+		text_buf[6] = 0x84;
+		w = inv_font_ascii_check_w(text_buf, 100);
+		inv_font_ascii_posf(text_buf, 240, 136, 100, 100, 255, 255, 255, alpha, 7);
+	} else {
+		sprintf(text_buf, D_0007DB9C, future_name_list[127]);
+		text_buf[11] = 0x84;
+		w = inv_font_ascii_check_w(text_buf, 75);
+		inv_font_ascii_posf(text_buf, 240, 128, 75, 75, 255, 255, 255, alpha, 7);
+		sprintf(text_buf, D_0007DB9C, future_name_list[128]);
+		inv_font_ascii_posf(text_buf, 240, 144, 75, 75, 255, 255, 255, alpha, 7);
+	}
+	p[0][0] = 27;
+	p[0][1] = 55;
+	p[1][0] = 240 - w / 2;
+	p[1][1] = b->mode * 12 + 136;
+	p[2][0] = p[1][0] + w;
+	p[2][1] = p[1][1];
+	poly_g4_set(p[0][0], p[0][1], p[0][0] - 1, p[0][1] + 1, p[1][0], p[1][1], p[1][0] - 1, p[1][1] + 1,
+		64, 64, 64, 255, 64, 64, 64, 255, 255, 255, 255, 255, 255, 255, 255, 255, 2100, 2, 2, alpha);
+	poly_g4_set(p[1][0], p[1][1], p[1][0] - 1, p[1][1] + 1, p[2][0], p[2][1], p[2][0], p[2][1] + 1,
+		255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 2100, 2, 2, alpha);
+}
 
 extern int D_005E6F78;
 #define SHI(p, o) (*(int *)((p) + (o)))
