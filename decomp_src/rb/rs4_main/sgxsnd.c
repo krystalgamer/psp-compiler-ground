@@ -448,7 +448,14 @@ int sgxSndGetMarkerCallback(int id)
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", sgxSndDoMarkerCallback);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", sgxSndSetMidiMsgMarkerRange);
+extern const char D_0010A62C[];
+void sgxSndSetMidiMsgMarkerRange(int id, int lo, int hi) {
+    char *p = SlotGetAt_7DD48(id, D_0010A62C);
+    if (p == NULL) return;
+    if (lo < 0 || hi < 0) lo = hi = 0;
+    p[0xE0] = lo;
+    p[0xE1] = hi;
+}
 
 int sgxSndGetMidiMsgMarkerRangeLo(int id)
 {
@@ -466,7 +473,14 @@ int sgxSndGetMidiMsgMarkerRangeHi(int id)
     return M2C_FIELD(s, unsigned char *, 0xE1);
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", sgxSndSetMidiCtrlMarkerRange);
+extern const char D_0010A674[];
+void sgxSndSetMidiCtrlMarkerRange(int id, int lo, int hi) {
+    char *p = SlotGetAt_7DD48(id, D_0010A674);
+    if (p == NULL) return;
+    if (lo < 0 || hi < 0) lo = hi = -1;
+    p[0xE2] = lo;
+    p[0xE3] = hi;
+}
 
 int sgxSndGetMidiCtrlMarkerRangeLo(int id)
 {
@@ -498,7 +512,14 @@ int sgxSndGetFadeLevel(int id) {
     return *(short *)(p + 0x26) >> 5;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", sgxSndGetFadePos);
+extern const char D_0010A6DC[];
+extern const float D_0010A810;
+float sgxSndGetFadePos(int id) {
+    char *p = SlotGetAt_7DD48(id, D_0010A6DC);
+    if (p == NULL) return 0.0f;
+    return (*(float *)(p + 0x30) == 0.0f) ? D_0010A810 : *(float *)(p + 0x2C) / *(float *)(p + 0x30);
+}
+const float D_0010A810 = 1.0f;
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", sgxSndSetBank);
 
