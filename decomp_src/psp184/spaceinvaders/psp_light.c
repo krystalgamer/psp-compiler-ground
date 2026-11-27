@@ -4,13 +4,65 @@
 extern unsigned char D_003538BC;
 
 
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_light", D_0007A844);
+typedef struct { unsigned int c[4]; } COL4_T;
+typedef struct { float x, y, z; } LV3_T;
+const COL4_T D_0007A844 = { { 0xFF00FFFF, 0xFF0000FF, 0xFF00FF00, 0xFFFFFF00 } };
 
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_light", D_0007A854);
+const LV3_T D_0007A854 = { -5.0f, 10.0f, 5.0f };
 
 INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_light", D_0007A860);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_light", light_init);
+typedef struct {
+	signed char on; unsigned char f1; unsigned char type; unsigned char f3;
+	LV3_T pos;
+	unsigned char pad10[0x24 - 0x10];
+	unsigned int col[3];
+	int active, cnt, time;
+	unsigned int base[3];
+	unsigned int c48; int f4C; int f50; float f54; float f58; float f5C; int f60;
+	unsigned int c64; int f68; int f6C; float f70; float f74; float f78; int f7C;
+} LSUB2;
+typedef struct { unsigned char on, f1; unsigned char pad[2]; unsigned int ambient; float f8; LSUB2 sub[4]; } LIGHT_T;
+extern LIGHT_T light;
+void *memset(void *s, int c, unsigned int n);
+void light_init(void)
+{
+	COL4_T col = D_0007A844;
+	LV3_T pos;
+	LSUB2 *s;
+	int i;
+
+	memset(&light, 0, sizeof(light));
+	light.on = 1;
+	light.f1 = 0;
+	light.ambient = 0xFF222222;
+	light.f8 = 60.0f;
+	light.sub[0].on = 1;
+	light.sub[0].f1 = 0;
+	light.sub[0].type = 6;
+	pos = D_0007A854;
+	light.sub[0].pos = pos;
+	light.sub[0].col[0] = 0xFF000000;
+	light.sub[0].col[1] = 0xFFFFFF;
+	light.sub[0].col[2] = 0xFFFFFF;
+	for (i = 0; i < 4; i++) {
+		s = &light.sub[i];
+		s->c48 = col.c[i];
+		s->f4C = 0;
+		s->f50 = 0;
+		s->f54 = 1.0f;
+		s->c64 = col.c[i];
+		s->f68 = 0;
+		s->f6C = 0;
+		s->f70 = 1.0f;
+		s->f58 = -0.5f;
+		s->f5C = -0.5f;
+		s->f60 = 0;
+		s->f74 = 0.5f;
+		s->f78 = 0.5f;
+		s->f7C = 0;
+	}
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_light", light_cnt);
 
