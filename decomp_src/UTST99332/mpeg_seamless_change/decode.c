@@ -638,11 +638,85 @@ term:
 	return ret;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/mpeg_seamless_change/nonmatchings/decode", decode_videoDecode);
+SceInt32 decode_videoDecode(t_mpegStreamData *pStreamData, t_avSyncControl *pAvSync)
+{
+	SceChar8 *pVideoBuf;
+	SceUInt32 pts;
+	SceInt32 rgbNum;
+	SceInt32 ret;
+	SceInt32 flag;
 
-INCLUDE_ASM("tmp/asm/UTST99332/mpeg_seamless_change/nonmatchings/decode", decode_reservedVideoDecode);
+	ret = 1;
+	if (dispbuf_getCapacity(pAvSync->pDisp) == 0) {
+		goto term;
+	}
 
-INCLUDE_RODATA("tmp/asm/UTST99332/mpeg_seamless_change/nonmatchings/decode", D_00011C18);
+	ret = 0x80618001;
+	flag = pStreamData->videoDemuxFlag[pStreamData->currentVideoStream];
+	if (flag != 1) {
+		goto term;
+	}
+
+	dispbuf_getDrawbuf(pAvSync->pDisp, &pVideoBuf);
+
+	dispbuf[0] = pVideoBuf;
+
+	ret = sceMpegAvcDecode(pStreamData->pMpeg, &pStreamData->pAvcAu[pStreamData->currentVideoStream], 512, dispbuf, &rgbNum);
+	if (ret != 0) {
+		printf("fatal error : sceMpegAvcDecode() 0x%x\n", ret);
+		goto term;
+	}
+
+	avsync_video_setPts(pAvSync, pStreamData->pAvcAu[pStreamData->currentVideoStream].pts.ts);
+
+	if (rgbNum == 1) {
+		avsync_video_getPts(pAvSync, &pts);
+		dispbuf_setPts(pAvSync->pDisp, pts);
+		dispbuf_dataSet(pAvSync->pDisp);
+	}
+
+term:
+	return ret;
+}
+
+SceInt32 decode_reservedVideoDecode(t_mpegStreamData *pStreamData, t_avSyncControl *pAvSync)
+{
+	SceChar8 *pVideoBuf;
+	SceUInt32 pts;
+	SceInt32 rgbNum;
+	SceInt32 ret;
+
+	ret = 0;
+	if (dispbuf_getCapacity(pAvSync->pDisp) == 0) {
+		ret = 1;
+		goto term;
+	}
+
+	if (pStreamData->videoDemuxFlag[pStreamData->reservedVideoStream] == 0) {
+		goto term;
+	}
+
+	dispbuf_getDrawbuf(pAvSync->pDisp, &pVideoBuf);
+
+	dispbuf[0] = pVideoBuf;
+
+	ret = sceMpegAvcDecode(pStreamData->pMpeg, &pStreamData->pAvcAu[pStreamData->reservedVideoStream], 512, dispbuf, &rgbNum);
+	if (ret != 0) {
+		printf("fatal error : sceMpegAvcDecode() 0x%x\n", ret);
+		goto term;
+	}
+
+	avsync_video_setPts(pAvSync, pStreamData->pAvcAu[pStreamData->reservedVideoStream].pts.ts);
+
+	if (rgbNum == 1) {
+		avsync_video_getPts(pAvSync, &pts);
+		dispbuf_setPts(pAvSync->pDisp, pts);
+		dispbuf_dataSet(pAvSync->pDisp);
+	}
+
+term:
+	return ret;
+}
 
 SceInt32 decode_videoDecodeEnd(t_mpegStreamData *pStreamData, t_avSyncControl *pAvSync)
 {
