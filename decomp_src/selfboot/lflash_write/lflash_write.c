@@ -27,7 +27,52 @@ INCLUDE_ASM("tmp/asm/selfboot/lflash_write/nonmatchings/lflash_write", func_0000
 
 INCLUDE_RODATA("tmp/asm/selfboot/lflash_write/nonmatchings/lflash_write", D_00005160);
 
-INCLUDE_ASM("tmp/asm/selfboot/lflash_write/nonmatchings/lflash_write", func_000001A8);
+int func_000001A8(const char *path)
+{
+	char buf[256];
+	int len;
+	int i;
+	SceUID fd;
+	int count;
+
+	len = strlen(path);
+	if (len >= 256)
+		return -2;
+	strcpy(buf, path);
+	count = 0;
+	if (buf[len - 1] != '/') {
+		fd = sceIoDopen(buf);
+		printf("sceIoDopen 0x%08x\n", fd);
+		if (fd >= 0) {
+			sceIoDclose(fd);
+			return -1;
+		}
+		if (fd == 0x80020321) {
+			puts("SCE_KERNEL_ERROR_NODEV");
+			return -3;
+		}
+	}
+	for (i = len - 1; i >= 0; i--) {
+		if (buf[i] == '/') {
+			buf[i] = '\0';
+			puts(buf);
+			fd = sceIoDopen(buf);
+			printf("sceIoDopen 0x%08x\n", fd);
+			if (fd >= 0) {
+				sceIoDclose(fd);
+				if (count != 0)
+					return count;
+				return 0;
+			}
+			count++;
+			if (fd == 0x80020321) {
+				puts("SCE_KERNEL_ERROR_NODEV");
+				return -3;
+			}
+		}
+	}
+	return count - 1;
+}
 
 char *func_000002FC(char *path)
 {
@@ -40,7 +85,27 @@ char *func_000002FC(char *path)
 	return NULL;
 }
 
-INCLUDE_ASM("tmp/asm/selfboot/lflash_write/nonmatchings/lflash_write", func_00000350);
+int func_00000350(SceUID in, SceUID out)
+{
+	char buf[512];
+	int n, w, done;
+
+	do {
+		n = sceIoRead(in, buf, sizeof(buf));
+		if (n <= 0)
+			break;
+		done = 0;
+		while (done < n) {
+			w = sceIoWrite(out, buf + done, n - done);
+			done += w;
+			if (w < 0) {
+				printf("sceIoWrite 0x%08x\n", w);
+				return -2;
+			}
+		}
+	} while (n > 0);
+	return 0;
+}
 
 INCLUDE_RODATA("tmp/asm/selfboot/lflash_write/nonmatchings/lflash_write", D_000051B4);
 

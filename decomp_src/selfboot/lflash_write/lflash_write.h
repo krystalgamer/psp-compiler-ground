@@ -52,6 +52,9 @@ int sceIoMkdir(const char *dir, SceMode mode);
 int sceIoAssign(const char *dev1, const char *dev2, const char *dev3, int mode, void *unk1, long unk2);
 int sceIoUnassign(const char *dev);
 int ShellForKernel_9C3CFF4D(const char *name, const char *help, int (*func)(char *));
+char *func_0000009C(char *buf, int size, SceUID fd);
+int func_00000000(char *str, char **argv, int max);
+int func_000011A4(char *file);
 int func_00001594(char *cmd);
 int LflashFatfmt_B7A424A4(int argc, char **argv);
 
