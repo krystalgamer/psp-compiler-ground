@@ -63,7 +63,7 @@ segments:
       - [0x10A4, c, movie]
       - [0x295C, c, display]
       - [0x39A4, c, fileread]
-      - [0x3BF8, c, sound]
+      - [0x3BE8, c, sound]
       - [0x429C, c, strfile]
       - [0x4640, c, avsync]
       - [0x48A8, c, bgm]

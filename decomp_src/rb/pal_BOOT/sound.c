@@ -83,6 +83,12 @@ int sceKernelCreateSema(const char *name, unsigned int attr, int init, int max, 
 void *malloc(unsigned int size);
 void *memalign(unsigned int align, unsigned int size);
 void free(void *p);
+int func_00003B68(int pts)
+{
+	soundLatestPts = pts;
+	return 0;
+}
+
 int func_00003B78(void)
 {
 	return soundLatestPts;

@@ -147,7 +147,22 @@ int isatty(int fd)
 	return 1;
 }
 
-INCLUDE_ASM("tmp/asm/rb/pal_BOOT/nonmatchings/kernel_bridge", _exit);
+void _exit(int status)
+{
+	if (&sce_newlib_nocreate_thread_in_start != 0) {
+		if (status == 0)
+			free_heap();
+		sceKernelExitThread(status);
+	} else {
+		free_heap();
+		sceKernelSelfStopUnloadModule(1, 0, 0);
+	}
+}
+
+int _kill(int pid, int sig)
+{
+	return -1;
+}
 
 
 int _getpid(void)

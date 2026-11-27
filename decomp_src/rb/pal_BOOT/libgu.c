@@ -374,6 +374,11 @@ int sceGuFinish(void)
 
 INCLUDE_ASM("tmp/asm/rb/pal_BOOT/nonmatchings/libgu", sceGuFinishId);
 
+void sceGuCallMode(int mode)
+{
+	call_mode = mode;
+}
+
 void sceGuSignal(int signal, int behavior)
 {
 	send_commandi(14, (behavior & 0xffff) | ((signal & 0xff) << 16));

@@ -140,7 +140,27 @@ SceInt32 scePsmfCheckStreamType_Base(SceUInt32 stream_id, SceUInt32 private_stre
 	return SCE_PSMF_ERROR_UNKNOWN_STREAM;
 }
 
-INCLUDE_ASM("tmp/asm/rb/pal_BOOT/nonmatchings/psmfBase", _GetRelavantEP_map);
+static SceInt32 _GetRelavantEP_map(ScePsmf_EP *pEp_map, SceUInt32 ep_id, SceUInt32 timestamp)
+{
+	SceInt32 i;
+	ScePsmf_EP *pEp;
+
+	pEp = pEp_map;
+	for (i = 0; i < (SceInt32)ep_id; i++, pEp++) {
+		if (timestamp < sceMpegSwap4(pEp->pts_ep_start))
+			break;
+	}
+	if (i > 0)
+		i--;
+	else if (i == 0)
+		i = SCE_PSMF_ERROR_NOT_FOUND;
+	return i;
+}
+
+SceInt32 scePsmfBaseStartEntry(void)
+{
+	return 0;
+}
 
 
 static __inline__ SceUInt32 _getOffset_GroupingPeriod(ScePsmf_GroupingPeriod *pGroupPeriod, SceInt32 gp_id)
