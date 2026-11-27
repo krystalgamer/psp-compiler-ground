@@ -21,6 +21,9 @@ void *Node_getBox(void *node);
 typedef struct { double x; double y; double angle; int pad[2]; } MAPPT;
 typedef struct { MAPPT *pts; int n; u8 u8_[0x28]; int center; } MAPPOLY;
 double atan2(double y, double x);
+typedef struct MAPAREA { s16 type; s16 u2; void *x4; void *x8; struct MAPAREA *next; MAPPOLY poly; } MAPAREA;
+void parseCoords(int type, char *coords, MAPPOLY *p);
+int strcasecmp(const char *a, const char *b);
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_map", parseCoords);
 
 #ifndef NULL
@@ -236,7 +239,36 @@ INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/lo_map", D_00139300);
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/lo_map", D_00139304);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_map", addAreaList);
+MAPAREA *addAreaList(void *list, void *a1, char *shape, char *coords, void *t0) {
+    MAPAREA *ar;
+    if (shape == NULL && coords == NULL) {
+        return NULL;
+    }
+    ar = (MAPAREA *)MEM_malloc(0, 0x48);
+    ar->x4 = a1;
+    ar->x8 = t0;
+    if (coords == NULL) {
+        ar->type = 1;
+    } else if (shape == NULL || strcasecmp(shape, "rect") == 0) {
+        ar->type = 2;
+        parseCoords(2, coords, &ar->poly);
+    } else if (strcasecmp(shape, "circle") == 0) {
+        ar->type = 3;
+        parseCoords(3, coords, &ar->poly);
+    } else if (strcasecmp(shape, "poly") == 0 || strcasecmp(shape, "polygon") == 0) {
+        ar->type = 4;
+        initAreaBuffer(&ar->poly);
+        parseCoords(ar->type, coords, &ar->poly);
+        calcAngle(&ar->poly);
+        sortPoint(&ar->poly);
+    } else {
+        ar->type = 1;
+    }
+    ar->next = NULL;
+    M2C_FIELD(M2C_FIELD(list, MAPAREA **, 0x10), MAPAREA **, 0xC) = ar;
+    M2C_FIELD(list, MAPAREA **, 0x10) = ar;
+    return ar;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
