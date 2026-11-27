@@ -117,8 +117,23 @@ segments:
       - [0x13CBC, c, newlib/libc/reent/fstatr]
       - [0x13D20, c, newlib/libc/reent/lseekr]
       - [0x13D88, c, newlib/libc/reent/readr]
-      - [0x13DF0, c, libwave/__udivdi3]
-      - [0x148C8, c, libgcc/dp-bit]
+      - [0x13DF0, c, libgcc/libgcc2/__udivdi3]
+      - [0x14340, c, libgcc/libgcc2/__umoddi3]
+      - [0x148C8, c, libgcc/dp-bit/_fpadd_parts]
+      - [0x14CEC, c, libgcc/dp-bit/__muldf3]
+      - [0x15064, c, libgcc/dp-bit/__divdf3]
+      - [0x15288, c, libgcc/dp-bit/__eqdf2]
+      - [0x15310, c, libgcc/dp-bit/__nedf2]
+      - [0x15398, c, libgcc/dp-bit/__gtdf2]
+      - [0x15420, c, libgcc/dp-bit/__gedf2]
+      - [0x154A8, c, libgcc/dp-bit/__ltdf2]
+      - [0x15530, c, libgcc/dp-bit/__floatsidf]
+      - [0x1560C, c, libgcc/dp-bit/__fixdfsi]
+      - [0x156DC, c, libgcc/dp-bit/__negdf2]
+      - [0x15720, c, libgcc/dp-bit/__pack_d]
+      - [0x159BC, c, libgcc/dp-bit/__unpack_d]
+      - [0x15AD8, c, libgcc/dp-bit/__fpcmp_parts_d]
+      - [0x15C28, c, crtend]
       - { start: 0x15C80, type: asm, name: fini, linker_section: .fini }
       - { start: 0x15C9C, type: asm, name: sceStub, linker_section: .sceStub.text }
       - { start: 0x16014, type: prxpad, order: .text }
@@ -158,7 +173,8 @@ segments:
       - [0x17AD8, .rodata, newlib/libc/stdlib/dtoa]
       - [0x17B58, .rodata, newlib/libc/locale/locale]
       - [0x17BA0, .rodata, newlib/libc/stdlib/mprec]
-      - [0x17CD8, .rodata, libgcc/dp-bit]
+      - [0x17CD8, .rodata, libgcc/dp-bit/__floatsidf]
+      - [0x17CE0, .rodata, libgcc/dp-bit/__pack_d]
   - [0x17DF8, bin, seg1_align]
   - name: pal_BOOT_seg1
     type: code

@@ -65,8 +65,24 @@
 0x13C3C fstatr                   1.5.1           newlib/libc/reent/fstatr.c
 0x13CA0 lseekr                   1.5.1           newlib/libc/reent/lseekr.c
 0x13D08 readr                    1.5.1           newlib/libc/reent/readr.c
-0x13D70 __udivdi3                1.5.1           libwave/__udivdi3.c
-0x14848 dp-bit                   1.5.1           libgcc/dp-bit.c
+0x13D70 __udivdi3                1.5.1           libgcc/libgcc2/__udivdi3.c
+0x142C0 __umoddi3                1.5.1           libgcc/libgcc2/__umoddi3.c
+0x14848 _fpadd_parts             1.5.1           libgcc/dp-bit/_fpadd_parts.c
+0x14C6C __muldf3                 1.5.1           libgcc/dp-bit/__muldf3.c
+0x14FE4 __divdf3                 1.5.1           libgcc/dp-bit/__divdf3.c
+0x15208 __eqdf2                  1.5.1           libgcc/dp-bit/__eqdf2.c
+0x15290 __nedf2                  1.5.1           libgcc/dp-bit/__nedf2.c
+0x15318 __gtdf2                  1.5.1           libgcc/dp-bit/__gtdf2.c
+0x153A0 __gedf2                  1.5.1           libgcc/dp-bit/__gedf2.c
+0x15428 __ltdf2                  1.5.1           libgcc/dp-bit/__ltdf2.c
+0x154B0 __floatsidf              1.5.1           libgcc/dp-bit/__floatsidf.c
+0x1558C __fixdfsi                1.5.1           libgcc/dp-bit/__fixdfsi.c
+0x1565C __negdf2                 1.5.1           libgcc/dp-bit/__negdf2.c
+0x156A0 __pack_d                 1.5.1           libgcc/dp-bit/__pack_d.c
+0x1593C __unpack_d               1.5.1           libgcc/dp-bit/__unpack_d.c
+0x15A58 __fpcmp_parts_d          1.5.1           libgcc/dp-bit/__fpcmp_parts_d.c
+# crtend.o (asm): __do_global_ctors_aux
+0x15BA8 crtend                   1.5.1           crtend.c
 # .rodata (no objorder in the release toolchain, but each object's .rodata is
 # still contiguous): first-referencing unit's start; mprec owns the tens tables.
 rodata 0x164B0 crt0
@@ -91,4 +107,5 @@ rodata 0x17A38 newlib/libc/stdlib/wctomb_r
 rodata 0x17A58 newlib/libc/stdlib/dtoa
 rodata 0x17AD8 newlib/libc/locale/locale
 rodata 0x17B20 newlib/libc/stdlib/mprec
-rodata 0x17C58 libgcc/dp-bit
+rodata 0x17C58 libgcc/dp-bit/__floatsidf
+rodata 0x17C60 libgcc/dp-bit/__pack_d
