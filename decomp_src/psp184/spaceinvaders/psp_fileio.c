@@ -87,7 +87,72 @@ void file_free(void) {
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_fileio", file_load);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_fileio", file_size);
+extern char D_0007A660[];
+extern char D_0007A67C[];
+extern int exit_cb;
+int sprintf(char *buf, const char *fmt, ...);
+void time_wait(int us);
+int sceUmdGetDriveStat(void);
+int sceKernelPowerLock(int a);
+int sceKernelPowerUnlock(int a);
+int sceUmdActivate(int mode, const char *name);
+int sceUmdDeactivate(int mode, const char *name);
+int sceUmdWaitDriveStatCB(int stat, int timeout);
+int sceKernelGetCallbackCount(int cb);
+int sceIoOpen(const char *name, int flags, int mode);
+int sceIoClose(int fd);
+long long sceIoLseek(int fd, long long offset, int whence);
+int file_size(char *name)
+{
+	char path[256];
+	int fd, wait, state, size, ret;
+
+	fd = 0;
+	wait = 0;
+	state = 2;
+	sprintf(path, D_0007A660, name);
+	for (;;) {
+		if (wait != 0) {
+			time_wait(wait);
+			wait = 0;
+		}
+		if (!(sceUmdGetDriveStat() & 0x20)) {
+			sceKernelPowerLock(0);
+			sceUmdActivate(1, D_0007A67C);
+			if (sceUmdCheckMedium() == 0) {
+				do {
+					sceUmdWaitDriveStatCB(2, 1000000);
+					if (sceKernelGetCallbackCount(exit_cb) > 0)
+						break;
+				} while (sceUmdCheckMedium() == 0);
+			}
+			while (!(sceUmdGetDriveStat() & 0x20)) {
+				if (sceKernelGetCallbackCount(exit_cb) > 0)
+					break;
+			}
+			sceKernelPowerUnlock(0);
+		}
+		if (state == 2) {
+			ret = sceIoOpen(path, 1, 0777);
+			if (ret < 0) {
+				wait = 1000000;
+			} else {
+				fd = ret;
+				state = 4;
+			}
+		}
+		if (state == 4) {
+			size = sceIoLseek(fd, 0, 2);
+			sceIoClose(fd);
+			state = 2;
+			wait = 1000000;
+			if (size > 0) {
+				sceUmdDeactivate(2, D_0007A67C);
+				return size;
+			}
+		}
+	}
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_fileio", module_file_load);
 
