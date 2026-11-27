@@ -110,4 +110,12 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_packet_cache", I3dPkSetPixelBl
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_packet_cache", I3dPkResetDrawState);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_packet_cache", I3dPkClearZBuffer);
+unsigned int *I3dPk2dPrim_DrawSpriteF();
+extern unsigned char D_00109200, D_00109210, D_00109220;
+unsigned int *I3dPkClearZBuffer(unsigned int *p)
+{
+	*p++ = 0xD3000401;
+	p = I3dPk2dPrim_DrawSpriteF(p, &D_00109210, &D_00109220, &D_00109200);
+	*p++ = 0xD3000700;
+	return p;
+}

@@ -1,7 +1,6 @@
 #include "common.h"
 #include "m2c_macros.h"
 int I3dPkDrawSphereMarkerA(int, int, int, int, float); /* extern */
-int SendDefaultStatus(int, int);                    /* extern */
 int I3dPkDrawBoxMarkerA(int, int, int, int, int, int); /* extern */
 int I3dPkDrawObbMarkerA(int, int, int, int, int);   /* extern */
 M2C_UNK I3dSorter__ClosePacketAndClearStateUca(int); /* extern */
@@ -9,7 +8,17 @@ M2C_UNK I3dSorter__OpenPacketAndClearState_ByUint32(int, M2C_UNK, M2C_UNK); /* e
 M2C_UNK I3dSorter__OpenPacketAndClearStateUca_ByUint32(int, M2C_UNK, M2C_UNK); /* extern */
 
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_render_marker", SendDefaultStatus);
+unsigned int *I3dPkSendViewStatus();
+unsigned int *I3dPkSendFogStatus();
+unsigned int *I3dPkSetPixelBlend();
+unsigned int *SendDefaultStatus(unsigned int *p, void *st)
+{
+	p = I3dPkSendViewStatus(p, st);
+	p = I3dPkSendFogStatus(p, st);
+	p = I3dPkSetPixelBlend(p, 2);
+	*p++ = 0x22000000;
+	return p;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_render_marker", I3dRenderStage__DrawLineA);
 
