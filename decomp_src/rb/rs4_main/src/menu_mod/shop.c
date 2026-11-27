@@ -39,6 +39,13 @@ void _AniFrameSet(int anm, int frame)
 	bxAnmExec(anm);
 }
 
+static inline SortCard *card_at(SortCard *t, int i)
+{
+	SortCard *c = t;
+	c = (SortCard *)((char *)(i * sizeof *c) + (int)t);
+	return c;
+}
+
 int _ShopCursorInitSet(void *shop, SortCard *list, int card)
 {
 	int i;
@@ -50,8 +57,7 @@ int _ShopCursorInitSet(void *shop, SortCard *list, int card)
 	}
 	id = cardlistGetSaveID(card);
 	for (i = 0; i < M2C_FIELD(shop, int *, 0x10); i++) {
-		c = list;
-		c = (SortCard *)((char *)(i * sizeof(SortCard)) + (int)list);
+		c = card_at(list, i);
 		if (c->id == id) {
 			ret = i;
 			break;
@@ -155,8 +161,7 @@ int _SortCardListGet(SortCard *t, int n, SortCard *k)
 	int r = 0;
 	int i = 0;
 	while (i < n) {
-		c = t;
-		c = (SortCard *)((char *)(i * sizeof(SortCard)) + (int)t);
+		c = card_at(t, i);
 		if (c->id != k->id) { i++; continue; }
 		if (c->kind != k->kind) { i++; continue; }
 		r = i;
@@ -171,8 +176,7 @@ int _CardListDel(SortCard *t, int n, SortCard *k)
 	int i = _SortCardListGet(t, n, k);
 	n--;
 	for (; i < n; i++) {
-		c = t;
-		c = (SortCard *)((char *)(i * sizeof(SortCard)) + (int)t);
+		c = card_at(t, i);
 		c[0].id = c[1].id;
 		c[0].kind = c[1].kind;
 	}
