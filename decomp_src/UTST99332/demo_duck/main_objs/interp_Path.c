@@ -53,6 +53,13 @@
         common::common_internal::on_error(); \
         common::common_internal::clash(); \
     }
+/* ... with a message */
+#define INTERP_ASSERT_MSG(c, text, fn, line, msg) \
+    if (!(c)) { \
+        common::common_internal::assert_display(D_00163B08, text, D_00163AE0, fn, line, msg); \
+        common::common_internal::on_error(); \
+        common::common_internal::clash(); \
+    }
 extern const char D_00163A54[];     /* " " */
 extern const char D_00163AE0[];     /* "../lib/interp/KeyFrameSequenceBase.h" */
 extern const char D_00163B08[];     /* " *** error " */
@@ -88,6 +95,30 @@ extern const char PF_index_f[] __asm__("_ZZN6interp20KeyFrameSequenceBaseIfEixEj
 extern const char PF_index_q[] __asm__("_ZZN6interp20KeyFrameSequenceBaseIN4math10quaternionEEixEjE19__PRETTY_FUNCTION___164D94");
 extern const char PF_kf_getTangentType_f[] __asm__("_ZZNK6interp8KeyFrameIfE14getTangentTypeENS_16keyframe_tangent4SideEE19__PRETTY_FUNCTION___164E08");
 extern const char PF_kf_getTangentType_q[] __asm__("_ZZNK6interp8KeyFrameIN4math10quaternionEE14getTangentTypeENS_16keyframe_tangent4SideEE19__PRETTY_FUNCTION___164EAC");
+extern const char D_00163E90[];     /* "! _relative" */
+extern const char D_00163EE4[];     /* "_relative" */
+extern const char PF_makeRelative_f[] __asm__("_ZZN6interp20KeyFrameSequenceBaseIfE12makeRelativeEvE19__PRETTY_FUNCTION___163E48");
+extern const char PF_makeAbsolute_f[] __asm__("_ZZN6interp20KeyFrameSequenceBaseIfE12makeAbsoluteEvE19__PRETTY_FUNCTION___163E9C");
+extern const char PF_makeRelative_q[] __asm__("_ZZN6interp20KeyFrameSequenceBaseIN4math10quaternionEE12makeRelativeEvE19__PRETTY_FUNCTION___163FFC");
+extern const char PF_makeAbsolute_q[] __asm__("_ZZN6interp20KeyFrameSequenceBaseIN4math10quaternionEE12makeAbsoluteEvE19__PRETTY_FUNCTION___164050");
+extern const char PF_get_key_abs_rel_value_f[] __asm__("_ZZN6interp20KeyFrameSequenceBaseIfE21get_key_abs_rel_valueEiE19__PRETTY_FUNCTION___1642F8");
+extern const char PF_get_key_abs_rel_value_q[] __asm__("_ZZN6interp20KeyFrameSequenceBaseIN4math10quaternionEE21get_key_abs_rel_valueEiE19__PRETTY_FUNCTION___164350");
+extern const char PF_update_closing_key_f[] __asm__("_ZZN6interp20KeyFrameSequenceBaseIfE18update_closing_keyEvE19__PRETTY_FUNCTION___163FB0");
+extern const char PF_update_closing_key_q[] __asm__("_ZZN6interp20KeyFrameSequenceBaseIN4math10quaternionEE18update_closing_keyEvE19__PRETTY_FUNCTION___1640FC");
+extern const char PF_on_set_key_value_f[] __asm__("_ZZN6interp20KeyFrameSequenceBaseIfE16on_set_key_valueEiE19__PRETTY_FUNCTION___1641F0");
+extern const char PF_on_set_key_value_q[] __asm__("_ZZN6interp20KeyFrameSequenceBaseIN4math10quaternionEE16on_set_key_valueEiE19__PRETTY_FUNCTION___1642A0");
+extern const char PF_set_key_abs_rel_value_f[] __asm__("_ZZN6interp20KeyFrameSequenceBaseIfE21set_key_abs_rel_valueEifE19__PRETTY_FUNCTION___164458");
+extern const char PF_set_key_abs_rel_value_q[] __asm__("_ZZN6interp20KeyFrameSequenceBaseIN4math10quaternionEE21set_key_abs_rel_valueEiS2_E19__PRETTY_FUNCTION___1644B0");
+extern const char D_00163F3C[];     /* "keys.back() already a closing key" */
+extern const char D_00163F60[];     /* "! _keys.empty()" */
+extern const char D_00163F70[];     /* "trying to push a closing key in non closed animation" */
+extern const char D_00163FA8[];     /* "_closed" */
+extern const float D_00163A3C;      /* 1/3: KeyFrameSequence<float>::calc_tangent */
+extern const char PF_push_closing_key_f[] __asm__("_ZZN6interp20KeyFrameSequenceBaseIfE16push_closing_keyEvE19__PRETTY_FUNCTION___163EF0");
+extern const char PF_push_closing_key_q[] __asm__("_ZZN6interp20KeyFrameSequenceBaseIN4math10quaternionEE16push_closing_keyEvE19__PRETTY_FUNCTION___1640A4");
+extern const char D_00163D64[];     /* "_Index < _keys.size()" */
+extern const char PF_remove_f[] __asm__("_ZZN6interp20KeyFrameSequenceBaseIfE6removeEjE19__PRETTY_FUNCTION___163D18");
+extern const char PF_remove_q[] __asm__("_ZZN6interp20KeyFrameSequenceBaseIN4math10quaternionEE6removeEjE19__PRETTY_FUNCTION___163D7C");
 typedef interp::KeyFrame<float> KFf;
 typedef interp::KeyFrame<math::quaternion> KFq;
 typedef std::vector<KFf> VKf;
@@ -97,6 +128,14 @@ typedef std::vector<KFq> VKq;
 namespace interp {
 template<class T> struct kfs_data;
 template<> struct kfs_data<float> {
+    static const char *remove() { return PF_remove_f; }
+    static const char *push_closing_key() { return PF_push_closing_key_f; }
+    static const char *update_closing_key() { return PF_update_closing_key_f; }
+    static const char *on_set_key_value() { return PF_on_set_key_value_f; }
+    static const char *set_key_abs_rel_value() { return PF_set_key_abs_rel_value_f; }
+    static const char *makeRelative() { return PF_makeRelative_f; }
+    static const char *makeAbsolute() { return PF_makeAbsolute_f; }
+    static const char *get_key_abs_rel_value() { return PF_get_key_abs_rel_value_f; }
     static const char *index() { return PF_index_f; }
     static const char *kf_getTangentType() { return PF_kf_getTangentType_f; }
     static const char *getKeyTime() { return PF_getKeyTime_f; }
@@ -110,6 +149,14 @@ template<> struct kfs_data<float> {
     static const char *setKeyValue() { return PF_setKeyValue_f; }
 };
 template<> struct kfs_data<math::quaternion> {
+    static const char *remove() { return PF_remove_q; }
+    static const char *push_closing_key() { return PF_push_closing_key_q; }
+    static const char *update_closing_key() { return PF_update_closing_key_q; }
+    static const char *on_set_key_value() { return PF_on_set_key_value_q; }
+    static const char *set_key_abs_rel_value() { return PF_set_key_abs_rel_value_q; }
+    static const char *makeRelative() { return PF_makeRelative_q; }
+    static const char *makeAbsolute() { return PF_makeAbsolute_q; }
+    static const char *get_key_abs_rel_value() { return PF_get_key_abs_rel_value_q; }
     static const char *index() { return PF_index_q; }
     static const char *kf_getTangentType() { return PF_kf_getTangentType_q; }
     static const char *getKeyTime() { return PF_getKeyTime_q; }
@@ -381,6 +428,106 @@ template<class T> interp::KeyFrame<T> &interp::KeyFrameSequenceBase<T>::operator
     return _keys[_Index];
 }
 
+template<class T> void interp::KeyFrameSequenceBase<T>::makeRelative()
+{
+    INTERP_ASSERT(!_relative, D_00163E90, kfs_data<T>::makeRelative(), 1144);
+    for (typename std::vector<KeyFrame<T> >::iterator it = _keys.begin(); it < _keys.end(); it++)
+        it->setValue(op_inv(it->value(), _default));
+    finish();
+    _relative = true;
+}
+
+template<class T> void interp::KeyFrameSequenceBase<T>::makeAbsolute()
+{
+    INTERP_ASSERT(_relative, D_00163EE4, kfs_data<T>::makeAbsolute(), 1163);
+    for (typename std::vector<KeyFrame<T> >::iterator it = _keys.begin(); it < _keys.end(); it++)
+        it->setValue(op(_default, it->value()));
+    finish();
+    _relative = false;
+}
+
+template<class T> T interp::KeyFrameSequenceBase<T>::get_key_abs_rel_value(int _Index)
+{
+    INTERP_ASSERT(_Index >= 0 && _Index < (int)_keys.size(), D_00163C94, kfs_data<T>::get_key_abs_rel_value(), 1184);
+    T base = _relative ? _default : op_identity();
+    return op(base, _keys[_Index].value());
+}
+
+template<class T> T interp::KeyFrameSequence<T>::calc_gradient(T a, T b, float dt) const
+{
+    return (b - a) / dt;
+}
+
+template<class T> void interp::KeyFrameSequenceBase<T>::update_closing_key()
+{
+    if (!_closed)
+        return;
+    unsigned int n = _keys.size();
+    if (n < 2)
+        return;
+    INTERP_ASSERT(_keys.back().isClosingKey(), D_00163B84, kfs_data<T>::update_closing_key(), 365);
+    _keys.back().setTime(_keys[n - 2].time() + _closeDt);
+    _keys.back().setValue(_keys[0].value());
+}
+
+template<class T> void interp::KeyFrameSequenceBase<T>::on_set_key_value(int i)
+{
+    if (_closed && (int)_keys.size() > 1) {
+        INTERP_ASSERT(_keys.back().isClosingKey(), D_00163B84, kfs_data<T>::on_set_key_value(), 386);
+        if (_keys[i].isClosingKey())
+            _keys[0].setValue(_keys[i].value());
+    }
+}
+
+template<class T> void interp::KeyFrameSequenceBase<T>::set_key_abs_rel_value(int _Index, T v)
+{
+    INTERP_ASSERT(_Index >= 0 && _Index < (int)_keys.size(), D_00163C94, kfs_data<T>::set_key_abs_rel_value(), 1196);
+    KeyFrame<T> &k = _keys[_Index];
+    k.setValue(op_inv(v, _relative ? _default : op_identity()));
+}
+
+template<class T> void interp::KeyFrameSequenceBase<T>::push_closing_key()
+{
+    INTERP_ASSERT_MSG(_closed, D_00163FA8, kfs_data<T>::push_closing_key(), 345, D_00163F70);
+    INTERP_ASSERT(!_keys.empty(), D_00163F60, kfs_data<T>::push_closing_key(), 347);
+    INTERP_ASSERT_MSG(!_keys.back().isClosingKey(), D_00163AC0, kfs_data<T>::push_closing_key(), 349, D_00163F3C);
+    _keys.push_back(KeyFrame<T>(_keys.back().time() + _closeDt, _keys[0].value(), true));
+}
+
+template<class T> void interp::KeyFrameSequence<T>::calc_tangent(int i)
+{
+    T a, b, c;
+    float s0, s1;
+    if (this->calc_tangent_setup(i, a, b, c, s0, s1)) {
+        KeyFrame<T> &k = this->_keys[i];
+        T v = k.value();
+        const float third = D_00163A3C;
+        k._tangent[0] = v - c * s0 * third;
+        k._tangent[1] = k.value() + c * s1 * third;
+        if (k.getTangentType((keyframe_tangent::Side)1) == 1)
+            k._tangent[0] = k.value() - b * s0 * third;
+        if (k.getTangentType((keyframe_tangent::Side)2) == 1)
+            k._tangent[1] = k.value() + a * s1 * third;
+    }
+}
+
+template<class T> void interp::KeyFrameSequenceBase<T>::remove(unsigned int _Index)
+{
+    INTERP_ASSERT(_Index < _keys.size(), D_00163D64, kfs_data<T>::remove(), 617);
+    if (_keys[_Index].isClosingKey())
+        return;
+    for (unsigned int i = _Index + 1; i < _keys.size(); i++)
+        _keys[i - 1] = _keys[i];
+    _keys.resize(_keys.size() - 1);
+    if (_closed && _keys.size() == 1) {
+        INTERP_ASSERT(_keys.back().isClosingKey(), D_00163B84, kfs_data<T>::remove(), 636);
+        _keys.resize(0);
+    }
+    update_closing_key();
+    calc_all_tangent();
+    invalidate_cached_key_interval();
+}
+
 /* still asm */
 template<> interp::KeyFrame<math::quaternion>::KeyFrame();
 template<> interp::KeyFrame<math::quaternion>::KeyFrame(float, math::quaternion, bool);
@@ -433,9 +580,9 @@ template int interp::KeyFrameSequenceBase<math::quaternion>::insert(float);
 
 template void interp::KeyFrameSequenceBase<math::quaternion>::setKeyValue(int, math::quaternion);
 
-INST_INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/interp_Path", _ZN6interp20KeyFrameSequenceBaseIfE6removeEj, 46)
+template void interp::KeyFrameSequenceBase<float>::remove(unsigned int);
 
-INST_INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/interp_Path", _ZN6interp20KeyFrameSequenceBaseIN4math10quaternionEE6removeEj, 64)
+template void interp::KeyFrameSequenceBase<math::quaternion>::remove(unsigned int);
 
 template void interp::KeyFrameSequenceBase<float>::finish();
 
@@ -522,37 +669,37 @@ INST_INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/interp_Path
 
 INST_INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/interp_Path", _ZN6interp17KeyFrameSequenceAIfED0Ev, 38)
 
-INST_INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/interp_Path", _ZN6interp20KeyFrameSequenceBaseIfE12makeRelativeEv, 53)
+template void interp::KeyFrameSequenceBase<float>::makeRelative();
 
-INST_INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/interp_Path", _ZN6interp20KeyFrameSequenceBaseIfE12makeAbsoluteEv, 53)
+template void interp::KeyFrameSequenceBase<float>::makeAbsolute();
 
-INST_INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/interp_Path", _ZN6interp20KeyFrameSequenceBaseIfE16push_closing_keyEv, 57)
+template void interp::KeyFrameSequenceBase<float>::push_closing_key();
 
 template void interp::KeyFrameSequenceBase<float>::calc_all_tangent();
 
-INST_INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/interp_Path", _ZN6interp20KeyFrameSequenceBaseIfE18update_closing_keyEv, 59)
+template void interp::KeyFrameSequenceBase<float>::update_closing_key();
 
-INST_INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/interp_Path", _ZN6interp20KeyFrameSequenceBaseIN4math10quaternionEE12makeRelativeEv, 71)
+template void interp::KeyFrameSequenceBase<math::quaternion>::makeRelative();
 
-INST_INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/interp_Path", _ZN6interp20KeyFrameSequenceBaseIN4math10quaternionEE12makeAbsoluteEv, 71)
+template void interp::KeyFrameSequenceBase<math::quaternion>::makeAbsolute();
 
-INST_INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/interp_Path", _ZN6interp20KeyFrameSequenceBaseIN4math10quaternionEE16push_closing_keyEv, 75)
+template void interp::KeyFrameSequenceBase<math::quaternion>::push_closing_key();
 
 template void interp::KeyFrameSequenceBase<math::quaternion>::calc_all_tangent();
 
-INST_INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/interp_Path", _ZN6interp20KeyFrameSequenceBaseIN4math10quaternionEE18update_closing_keyEv, 77)
+template void interp::KeyFrameSequenceBase<math::quaternion>::update_closing_key();
 
 INST_INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/interp_Path", _ZN6interp20KeyFrameSequenceBaseIfE6insertEff, 47)
 
-INST_INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/interp_Path", _ZN6interp20KeyFrameSequenceBaseIfE16on_set_key_valueEi, 57)
+template void interp::KeyFrameSequenceBase<float>::on_set_key_value(int);
 
 INST_INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/interp_Path", _ZN6interp20KeyFrameSequenceBaseIN4math10quaternionEE6insertEfS2_, 67)
 
-INST_INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/interp_Path", _ZN6interp20KeyFrameSequenceBaseIN4math10quaternionEE16on_set_key_valueEi, 75)
+template void interp::KeyFrameSequenceBase<math::quaternion>::on_set_key_value(int);
 
-INST_INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/interp_Path", _ZN6interp20KeyFrameSequenceBaseIfE21get_key_abs_rel_valueEi, 62)
+template float interp::KeyFrameSequenceBase<float>::get_key_abs_rel_value(int);
 
-INST_INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/interp_Path", _ZN6interp20KeyFrameSequenceBaseIN4math10quaternionEE21get_key_abs_rel_valueEi, 80)
+template math::quaternion interp::KeyFrameSequenceBase<math::quaternion>::get_key_abs_rel_value(int);
 
 INST_INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/interp_Path", _ZN6interp20KeyFrameSequenceBaseIfE14evaluate_setupEfRfS2_RPNS_8KeyFrameIfEES6_, 81)
 
@@ -570,9 +717,9 @@ INST_INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/interp_Path
 
 template void interp::KeyFrame<math::quaternion>::setTime(float);
 
-INST_INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/interp_Path", _ZN6interp20KeyFrameSequenceBaseIfE21set_key_abs_rel_valueEif, 63)
+template void interp::KeyFrameSequenceBase<float>::set_key_abs_rel_value(int, float);
 
-INST_INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/interp_Path", _ZN6interp20KeyFrameSequenceBaseIN4math10quaternionEE21set_key_abs_rel_valueEiS2_, 83)
+template void interp::KeyFrameSequenceBase<math::quaternion>::set_key_abs_rel_value(int, math::quaternion);
 
 template int interp::KeyFrameSequenceBase<float>::size() const;
 
@@ -616,9 +763,9 @@ template int interp::KeyFrameSequenceBase<float>::wrap_key_index(int) const;
 
 INST_INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/interp_Path", _ZN6interp20KeyFrameSequenceBaseIfE18calc_tangent_setupEiRfS2_S2_S2_S2_, 73)
 
-INST_INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/interp_Path", _ZN6interp16KeyFrameSequenceIfE12calc_tangentEi, 49)
+template void interp::KeyFrameSequence<float>::calc_tangent(int);
 
-INST_INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/interp_Path", _ZNK6interp16KeyFrameSequenceIfE13calc_gradientEfff, 53)
+template float interp::KeyFrameSequence<float>::calc_gradient(float, float, float) const;
 
 INST_INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/interp_Path", _ZN6interp17KeyFrameSequenceAIfE2opEff, 40)
 
