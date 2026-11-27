@@ -2141,7 +2141,41 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", netgame_ufo_da
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", netgame_ufo_pos_set);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", netgame_ufo_pos_get);
+typedef struct { u8 p[0xEB9D0]; int n; } GMU2_T;
+#define GMU2_N ((*(GMU2_T *)&gmain).n)
+typedef struct { u8 pad[0x44]; float x; u8 pad2[4]; float max, vx; u8 rest[0xA4 - 0x54]; } UFOP_T;
+void netgame_ufo_pos_get(u8 *q, int k)
+{
+	int i;
+	float half, t;
+	UFOP_T *u;
+
+	if (gmain.f.f20 == 0)
+		return;
+	half = gmain.f.f10bc * 0.5f;
+	if (gmain.f.ff28 == 13)
+		return;
+	for (i = 0; i < GMU2_N; i++) {
+		t = ((int *)(q + k * 0x18 + 0x14))[i] / 100.0f;
+		u = &((UFOP_T *)&D_005A09BC)[i];
+		if (t < u->x - half)
+			t += gmain.f.f10bc;
+		else if (u->x + half < t)
+			t -= gmain.f.f10bc;
+		if (t < u->x - 1.0f)
+			u->vx += u->max / 100.0f;
+		else if (u->x + 1.0f < t)
+			u->vx -= u->max / 100.0f;
+		else if (u->vx > 0)
+			u->vx -= u->max / 100.0f;
+		else if (u->vx < 0)
+			u->vx += u->max / 100.0f;
+		if (u->vx < -u->max)
+			u->vx = -u->max;
+		else if (u->vx > 0)
+			u->vx = 0;
+	}
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", netgame_ufo_life_set);
 
