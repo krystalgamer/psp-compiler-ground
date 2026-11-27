@@ -118,7 +118,62 @@ void psp_edram_init(void)
 	myHeapInit((int)sceGeEdramGetAddr() + off, size - off);
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_dev", psp_init);
+void pad_init(); void psp_malloc_init(); void file_init(); void psp_debug_init(); void psp_sxit_callback();
+void light_init(); void gmo_init(); void camera_init(); void tex_init(); void inv_laser_all_init(); void inv_ring_all_init();
+void inv_star_init(); void inv_screffect_all_init(); void inv_particle_all_init(); void init_genrand(unsigned long s);
+void inv_nowloading_tex_load(); void inv_font_all_init(); void inv_font_tex_set(int, int); int bmp_file_load();
+void psp_loopstart(); void psp_loopend(); void inv_nowloading_disp2(); void inv_save_data_init(); void sound_init(); void se_load(); void mpeg_init();
+void sceGimPictureSetMemoryManager(); void sceGimPictureSetMemoryManager2(); void sceGmoModelSetMemoryManager(); void sceGmoModelSetMemoryManager2();
+void *psp_malloc(); void psp_free(); void *psp_malloc16(); void *myHeapAlloc(); void myHeapFree();
+void psp_init(void) {
+    pad_init();
+    psp_malloc_init();
+    file_init();
+    psp_debug_init();
+    sceGuInit();
+    sceGuStart(0, &g_packet_buf, 0x100000);
+    sceGuDrawBuffer(0, NULL, 0x200);
+    sceGuDispBuffer(0x1E0, 0x110, (void *)0x44000, 0x200);
+    sceGuDepthBuffer((void *)0x88000, 0x200);
+    sceGuOffset(0x710U, 0x778U);
+    sceGuFinish();
+    sceGuSync(0, 0);
+    sceGumSetMatrixStack(&g_matrix_buf, 4, 4, 8, 0);
+    psp_edram_init();
+    sceGimPictureSetMemoryManager(psp_malloc, psp_free);
+    sceGimPictureSetMemoryManager2(psp_malloc16, psp_free);
+    sceGmoModelSetMemoryManager(psp_malloc, psp_free);
+    sceGmoModelSetMemoryManager2(myHeapAlloc, myHeapFree);
+    psp_sxit_callback();
+    light_init();
+    gmo_init();
+    camera_init();
+    tex_init();
+    inv_laser_all_init();
+    inv_ring_all_init();
+    inv_star_init();
+    inv_screffect_all_init();
+    inv_particle_all_init();
+    init_genrand(0);
+    sceGuDisplay(1);
+    inv_nowloading_tex_load("loading.bmp");
+    inv_font_all_init();
+    inv_font_tex_set(bmp_file_load("font.bmp"), 2);
+    psp_loopstart();
+    inv_nowloading_disp2();
+    psp_loopend();
+    psp_loopstart();
+    inv_nowloading_disp2();
+    psp_loopend();
+    inv_save_data_init();
+    sound_init();
+    se_load();
+    mpeg_init();
+    psp_loopstart();
+    psp_loopend();
+    psp_loopstart();
+    psp_loopend();
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -151,6 +206,8 @@ void psp_init2(void) {
 }
 
 typedef struct { int m[16]; } DITHER_T;
+/* the dither matrix is 16-byte aligned (ScePspIMatrix4); while this unit is mixed, pad explicitly */
+const int D_0007A6B8[2] = { 0, 0 };
 const DITHER_T D_0007A6C0 = { { -4, 0, -3, 1, 2, -2, 3, -1, -3, 1, -4, 0, 3, -1, 2, -2 } };
 
 const FVEC3 D_0007A700 = { 0.0f, 0.0f, 50.0f };
