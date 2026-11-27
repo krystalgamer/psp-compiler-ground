@@ -403,6 +403,8 @@ segments:
       - [0x1637B0, .rodata, main_objs/glutils_CheckerTexture]
       - [0x1637CC, .rodata, main_objs/vector_font_Console]
       - [0x163860, rodata, asm/rodata_1637E0]
+      - [0x163A00, .rodata, main_objs/glutils_Material]
+      - [0x163A74, rodata, asm/rodata_1639F4]
       - [0x1654D8, .rodata, main_objs/glutils_PickingBase]
       - [0x1654E8, rodata, asm/rodata_165468]
       - [0x166C2C, .rodata, main_objs/glutils_RectanglePicking]
@@ -455,6 +457,8 @@ segments:
       - [0x16FF78, rodata, asm/rodata_16FEF8]
       - [0x170B10, .rodata, main_objs/sgl_MeshBuilder_extruded_var_extruded_var]
       - [0x170BD8, rodata, asm/rodata_170B58]
+      - [0x1711D8, .rodata, main_objs/sgl_MeshParams]
+      - [0x171208, rodata, asm/rodata_171188]
       - [0x171B84, .rodata, main_objs/sgl_Stripper]
       - [0x171B94, rodata, asm/rodata_171B14]
       - [0x171C38, .rodata, main_objs/sgl_TransformSet_Transform]
@@ -589,6 +593,8 @@ segments:
       - { start: 0x18CFCC, type: .bss, vram: 0x18DE78, name: main_objs/glutils_CheckerTexture }
       - { start: 0x18CFCC, type: .bss, vram: 0x18DF58, name: main_objs/vector_font_Console }
       - { start: 0x18CFCC, type: bss, vram: 0x18DF5C, name: bss_18DF5C }
+      - { start: 0x18CFCC, type: .bss, vram: 0x18E198, name: main_objs/glutils_Material }
+      - { start: 0x18CFCC, type: bss, vram: 0x18E21C, name: bss_18E21C }
       - { start: 0x18CFCC, type: .bss, vram: 0x18E42C, name: main_objs/glutils_RectanglePicking }
       - { start: 0x18CFCC, type: bss, vram: 0x18E4B0, name: bss_18E4B0 }
       - { start: 0x18CFCC, type: .bss, vram: 0x18E5F8, name: main_objs/glutils_TurnTable }
@@ -616,6 +622,8 @@ segments:
       - { start: 0x18CFCC, type: bss, vram: 0x190284, name: bss_190284 }
       - { start: 0x18CFCC, type: .bss, vram: 0x190314, name: main_objs/BVH }
       - { start: 0x18CFCC, type: bss, vram: 0x190398, name: bss_190398 }
+      - { start: 0x18CFCC, type: .bss, vram: 0x190B3C, name: main_objs/sgl_MeshParams }
+      - { start: 0x18CFCC, type: bss, vram: 0x190C40, name: bss_190C40 }
       - { start: 0x18CFCC, type: .bss, vram: 0x190D44, name: main_objs/sgl_TransformSet_Transform }
       - { start: 0x18CFCC, type: .bss, vram: 0x190DC4, name: main_objs/math_TransformStack }
       - { start: 0x18CFCC, type: .bss, vram: 0x190E44, name: main_objs/math_TransformStackFunc }

@@ -416,3 +416,12 @@ rodata 0x16AC2C main_objs/BVH
 rodata 0x16AC48 -
 bss 0x18CE94 main_objs/BVH
 bss 0x18CF18 -
+# glutils_Material, sgl_MeshParams: C++ static initializers; .rodata: the units' float pools and strings (the asm functions' come with their .s); .bss: the header statics
+rodata 0x160EE0 main_objs/glutils_Material
+rodata 0x160F54 -
+bss 0x18AD18 main_objs/glutils_Material
+bss 0x18AD9C -
+rodata 0x16E230 main_objs/sgl_MeshParams
+rodata 0x16E260 -
+bss 0x18D6BC main_objs/sgl_MeshParams
+bss 0x18D7C0 -
