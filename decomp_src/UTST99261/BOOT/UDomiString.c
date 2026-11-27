@@ -344,7 +344,31 @@ int ps_dmy3(void *arg0) {
     return buf_ps_sts;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", ps_transmit);
+int ps_transmit(int *m) {
+    int ret = buf_ps_sts;
+    int i;
+    PsTbl *p;
+    int dest;
+    int x;
+    if (m == NULL) {
+        return ret;
+    }
+    for (i = 0;; i++) {
+        if (D_00135260[i].cmd == -1) {
+            return ps_dmyskip(m);
+        }
+        p = &D_00135260[i];
+        if (p->cmd == m[3]) {
+            dest = p->dest;
+            x = p->x04;
+            if (p->sts != -1) {
+                ret = p->sts;
+            }
+            setParseMassageToDestTask(dest, m[1], m[2], x, m[4], m[5], m[6], m[7]);
+            return ret;
+        }
+    }
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
