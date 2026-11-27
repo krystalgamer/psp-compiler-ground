@@ -1,6 +1,27 @@
+/* cflags: -O2 -fno-merge-constants */
 #include "common.h"
 
-INCLUDE_ASM("tmp/asm/selfboot/lflash_write/nonmatchings/lflash_write", func_00000000);
+/* --- declarations --- */
+#include "lflash_write.h"
+/* --- end declarations --- */
+
+int func_00000000(char *str, char **argv, int max)
+{
+	int n;
+	char *p;
+
+	for (n = 0; n <= max; n++) {
+		argv[n] = strtok(str, " \t\n");
+		str = NULL;
+		if (argv[n] == NULL)
+			break;
+	}
+	if (n > max) {
+		puts("Too man args");
+		return 0;
+	}
+	return n;
+}
 
 INCLUDE_ASM("tmp/asm/selfboot/lflash_write/nonmatchings/lflash_write", func_0000009C);
 
@@ -8,7 +29,16 @@ INCLUDE_RODATA("tmp/asm/selfboot/lflash_write/nonmatchings/lflash_write", D_0000
 
 INCLUDE_ASM("tmp/asm/selfboot/lflash_write/nonmatchings/lflash_write", func_000001A8);
 
-INCLUDE_ASM("tmp/asm/selfboot/lflash_write/nonmatchings/lflash_write", func_000002FC);
+char *func_000002FC(char *path)
+{
+	int i;
+
+	for (i = strlen(path) - 1; i >= 0; i--) {
+		if (path[i] == '/')
+			return &path[i + 1];
+	}
+	return NULL;
+}
 
 INCLUDE_ASM("tmp/asm/selfboot/lflash_write/nonmatchings/lflash_write", func_00000350);
 
@@ -36,9 +66,30 @@ INCLUDE_RODATA("tmp/asm/selfboot/lflash_write/nonmatchings/lflash_write", D_0000
 
 INCLUDE_ASM("tmp/asm/selfboot/lflash_write/nonmatchings/lflash_write", func_0000081C);
 
-INCLUDE_ASM("tmp/asm/selfboot/lflash_write/nonmatchings/lflash_write", func_00000E38);
+int func_00000E38(const char *name)
+{
+	int i;
+	int ret;
 
-INCLUDE_ASM("tmp/asm/selfboot/lflash_write/nonmatchings/lflash_write", func_00000EDC);
+	for (i = 0; i < 6; i++) {
+		if (strcmp(D_000056E0[i], name) == 0)
+			break;
+	}
+	ret = -1;
+	if (i != 6) {
+		D_00005740[1] = D_000056F8[i];
+		LflashFatfmt_B7A424A4(2, D_00005740);
+		ret = i;
+	}
+	return ret;
+}
+
+int func_00000EDC(unsigned int i)
+{
+	if (i >= 6)
+		return -1;
+	return sceIoAssign(D_00005710[i], D_000056F8[i], D_00005728[i], 0, NULL, 0);
+}
 
 INCLUDE_RODATA("tmp/asm/selfboot/lflash_write/nonmatchings/lflash_write", D_00005378);
 
@@ -96,7 +147,13 @@ INCLUDE_RODATA("tmp/asm/selfboot/lflash_write/nonmatchings/lflash_write", D_0000
 
 INCLUDE_RODATA("tmp/asm/selfboot/lflash_write/nonmatchings/lflash_write", D_000054A0);
 
-INCLUDE_ASM("tmp/asm/selfboot/lflash_write/nonmatchings/lflash_write", func_00000F40);
+int func_00000F40(unsigned int i)
+{
+	if (i >= 6)
+		return -1;
+	printf("umount %s\n", D_00005710[i]);
+	return sceIoUnassign(D_00005710[i]);
+}
 
 INCLUDE_ASM("tmp/asm/selfboot/lflash_write/nonmatchings/lflash_write", func_00000F94);
 
@@ -108,4 +165,19 @@ INCLUDE_ASM("tmp/asm/selfboot/lflash_write/nonmatchings/lflash_write", func_0000
 
 INCLUDE_ASM("tmp/asm/selfboot/lflash_write/nonmatchings/lflash_write", func_00001594);
 
-INCLUDE_ASM("tmp/asm/selfboot/lflash_write/nonmatchings/lflash_write", module_bootstart);
+int module_bootstart(SceSize args, void *argp)
+{
+	int ret;
+
+	puts("==============================================");
+	putchar('\n');
+	puts("Flash Write Start .....");
+	putchar('\n');
+	ret = ShellForKernel_9C3CFF4D("lflash_write", "copy directories recursively from host to flashfat", func_00001594);
+	if (ret < 0)
+		ret = func_00001594("host0:psparc.txt");
+	putchar('\n');
+	puts("Finish Flash Write");
+	putchar('\n');
+	return ret;
+}
