@@ -83,4 +83,24 @@ int func_00003E90(SceMpegRingbuffer *rb, int num)
 	return n;
 }
 
-INCLUDE_ASM("tmp/asm/tony_libs/mpeg/nonmatchings/mpeg_ringbuf", func_00003F4C);
+void func_00003F4C(SceMpegRingbuffer *rb, int *pos, int addr)
+{
+	int d = addr - (int)rb->pBuf;
+	int idx = d / rb->iPackSize;
+	int w = rb->iWrite;
+
+	if (idx == w && d > 0) {
+		*pos = -1;
+		return;
+	}
+	if (rb->iWrite < rb->iRead) {
+		if (idx < *pos)
+			*pos = idx;
+	} else if (rb->iWrite < idx) {
+		if (rb->iRead >= *pos || idx < *pos)
+			*pos = idx;
+	} else {
+		if (rb->iRead >= *pos && idx < rb->iRead && idx < *pos)
+			*pos = idx;
+	}
+}
