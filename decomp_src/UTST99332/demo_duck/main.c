@@ -259,5 +259,25 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZNSt15basic_string
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZNSt15basic_stringbufIcSt11char_traitsIcESaIcEE8overflowEi);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZN2sh4Args3Env10GetEnvTypeESs);
+extern "C" const char D_0015E6F8[]; /* "DEBUG" */
+extern "C" const char D_0015E700[]; /* "debug" */
+extern "C" const char D_0015E708[]; /* "SKY" */
+extern "C" const char D_0015E70C[]; /* "sky" */
+extern "C" const char D_0015E710[]; /* "HDR" */
+extern "C" const char D_0015E714[]; /* "hdr" */
+extern "C" const char D_0015E718[]; /* "TEX" */
+extern "C" const char D_0015E71C[]; /* "tex" */
+
+sh::Args::Env::Type sh::Args::Env::GetEnvType(std::string s)
+{
+    if (s == D_0015E6F8 || s == D_0015E700)
+        return (Type)0;
+    if (s == D_0015E708 || s == D_0015E70C)
+        return (Type)1;
+    if (s == D_0015E710 || s == D_0015E714)
+        return (Type)3;
+    if (s == D_0015E718 || s == D_0015E71C)
+        return (Type)2;
+    return (Type)0;
+}
 

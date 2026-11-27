@@ -495,7 +495,27 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN6interp20
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZNSt6vectorIN6interp8KeyFrameIfEESaIS2_EE14_M_fill_insertEN9__gnu_cxx17__normal_iteratorIPS2_S4_EEjRKS2_);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN2sh4Args3Env10GetEnvTypeESs);
+extern "C" const char D_0015ACE0[]; /* "DEBUG" */
+extern "C" const char D_0015ACE8[]; /* "debug" */
+extern "C" const char D_0015ACF0[]; /* "SKY" */
+extern "C" const char D_0015ACF4[]; /* "sky" */
+extern "C" const char D_0015ACF8[]; /* "HDR" */
+extern "C" const char D_0015ACFC[]; /* "hdr" */
+extern "C" const char D_0015AD00[]; /* "TEX" */
+extern "C" const char D_0015AD04[]; /* "tex" */
+
+sh::Args::Env::Type sh::Args::Env::GetEnvType(std::string s)
+{
+    if (s == D_0015ACE0 || s == D_0015ACE8)
+        return (Type)0;
+    if (s == D_0015ACF0 || s == D_0015ACF4)
+        return (Type)1;
+    if (s == D_0015ACF8 || s == D_0015ACFC)
+        return (Type)3;
+    if (s == D_0015AD00 || s == D_0015AD04)
+        return (Type)2;
+    return (Type)0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN6interp20KeyFrameSequenceBaseIN4math10quaternionEED1Ev);
 

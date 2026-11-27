@@ -877,6 +877,7 @@ namespace sh {
 namespace Args {
 struct Env {
     enum Type { };
+    static Type GetEnvType(std::string s);
     Type type;                  /* 0x00 */
     std::string name;           /* 0x04 */
     float exposure;             /* 0x08 */
