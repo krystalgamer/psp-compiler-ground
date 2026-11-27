@@ -81,6 +81,14 @@ typedef struct { char *proto; char *host; int port; char *path; char *x10; char 
 JSURL *URL_new(char *s);
 void URL_free(JSURL *u);
 #define NEWDS(s) ((s) != NULL ? newDOMString_4B5FC((s), strlen(s)) : newDOMString_4B5FC(D_00133A2C, 0))
+int ucs2ToAscii(char *d, unsigned short *s, int n);
+void URL_setScheme(JSURL *u, char *s);
+void URL_setHost(JSURL *u, char *s);
+void URL_setPath(JSURL *u, char *s);
+void URL_setQuery(JSURL *u, char *s);
+void URL_setAnchor(JSURL *u, char *s);
+char *URL_toString(JSURL *u);
+extern DOMStr _DOMhref;
 DOMStr *newDOMString_4B5FC(const char *utf8, int len) {
     DOMStr *s = MEM_malloc(0, sizeof(DOMStr));
 
@@ -359,7 +367,73 @@ int JSI_getImageComplete(void *node) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSI_getLinkURL);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSI_setLinkURL);
+int JSI_setLinkURL(void *node, JSURLINFO *info) {
+    JSURL *u;
+    DOMStr *ds;
+    char *s;
+
+    u = URL_new(D_00133A2C);
+    if (u == NULL)
+        return 0;
+    if (info->port == 80)
+        u->port = 0;
+    else
+        u->port = info->port;
+    ds = info->proto;
+    s = MEM_malloc(0, ds->len + 1);
+    if (s == NULL) {
+        URL_free(u);
+        return 0;
+    }
+    s[ucs2ToAscii(s, ds->str, ds->len)] = 0;
+    URL_setScheme(u, s);
+    MEM_free(0, s);
+    ds = info->host;
+    s = MEM_malloc(0, ds->len + 1);
+    if (s == NULL) {
+        URL_free(u);
+        return 0;
+    }
+    s[ucs2ToAscii(s, ds->str, ds->len)] = 0;
+    URL_setHost(u, s);
+    MEM_free(0, s);
+    ds = info->path;
+    s = MEM_malloc(0, ds->len + 1);
+    if (s == NULL) {
+        URL_free(u);
+        return 0;
+    }
+    s[ucs2ToAscii(s, ds->str, ds->len)] = 0;
+    URL_setPath(u, s);
+    MEM_free(0, s);
+    ds = info->x14;
+    s = MEM_malloc(0, ds->len + 1);
+    if (s == NULL) {
+        URL_free(u);
+        return 0;
+    }
+    s[ucs2ToAscii(s, ds->str, ds->len)] = 0;
+    URL_setQuery(u, s);
+    MEM_free(0, s);
+    ds = info->x10;
+    s = MEM_malloc(0, ds->len + 1);
+    if (s == NULL) {
+        URL_free(u);
+        return 0;
+    }
+    s[ucs2ToAscii(s, ds->str, ds->len)] = 0;
+    URL_setAnchor(u, s);
+    MEM_free(0, s);
+    s = URL_toString(u);
+    if (s == NULL) {
+        URL_free(u);
+        return 0;
+    }
+    Element_setAttribute(node, &_DOMhref, newDOMString_4B5FC(s, strlen(s)));
+    MEM_free(0, s);
+    URL_free(u);
+    return 1;
+}
 
 JSURLINFO *JSI_getDocumentURL(void *node) {
     JSURLINFO *r;
