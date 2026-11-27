@@ -463,15 +463,14 @@ int sceGuFinish(void)
 	return size;
 }
 
-#ifdef NON_MATCHING
-/* Close: id & 0xffff is masked before the branch; the stall call is not crossjumped. */
 int sceGuFinishId(unsigned int id)
 {
 	GuContext *context;
 	int size;
 
+	id &= 0xffff;
 	if (__aw_list_mode == 0 || __aw_list_mode == 2) {
-		send_commandi(15, id & 0xffff);
+		send_commandi(15, id);
 		send_commandi_stall(12, 0);
 	} else if (call_mode == 1) {
 		send_commandi(14, 0x120000);
@@ -486,9 +485,6 @@ int sceGuFinishId(unsigned int id)
 	pList = &_ctx[__aw_list_mode];
 	return size;
 }
-#else
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", sceGuFinishId);
-#endif
 
 void sceGuCallMode(int mode)
 {
