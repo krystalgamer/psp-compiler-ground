@@ -165,6 +165,78 @@ void sceGimPictureAnimate( SceGimPicture *picture, float step )
 	picture->m_dissolve = frame - (float)f ;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gim_animate", sceGimPictureControl);
+void sceGimPictureSetImagePlane( SceGimPicture *picture, int plane ) ;
+static __inline__ int sceGimPicturePow2( int n )
+{
+	return 1 << ( 32 - __builtin_allegrex_clz( n - 1 ) ) ;
+}
+
+void sceGimPictureControl( SceGimPicture *picture, int param, float value )
+{
+	SceGimImageHeader *image = picture->m_image ;
+	int ival = (int)value ;
+	if ( value < 0.0f ) ival -- ;
+
+	switch ( param ) {
+	    case 0x0010 :
+		if ( image != 0 ) {
+			int pow2 = sceGimPicturePow2( image->width ) ;
+			picture->m_image_crop[ 0 ] = value / (float)pow2 ;
+			picture->m_flags |= 0x0020 ;
+		}
+		break ;
+	    case 0x0011 :
+		if ( image != 0 ) {
+			int pow2 = sceGimPicturePow2( image->height ) ;
+			picture->m_image_crop[ 1 ] = value / (float)pow2 ;
+			picture->m_flags |= 0x0020 ;
+		}
+		break ;
+	    case 0x0012 :
+		if ( image != 0 ) {
+			int pow2 = sceGimPicturePow2( image->width ) ;
+			picture->m_image_crop[ 2 ] = value / (float)pow2 ;
+			picture->m_flags |= 0x0020 ;
+		}
+		break ;
+	    case 0x0013 :
+		if ( image != 0 ) {
+			int pow2 = sceGimPicturePow2( image->height ) ;
+			picture->m_image_crop[ 3 ] = value / (float)pow2 ;
+			picture->m_flags |= 0x0020 ;
+		}
+		break ;
+	    case 0x0003 :
+		picture->m_image_frame = picture->m_image_frame2 = ival ;
+		break ;
+	    case 0x000b :
+		picture->m_palette_frame = picture->m_palette_frame2 = ival ;
+		break ;
+	    case 0x0001 :
+		sceGimPictureSetImagePlane( picture, ival ) ;
+		break ;
+	    case 0x0020 :
+		picture->m_blend[ 0 ] = ival ;
+		break ;
+	    case 0x0022 :
+		picture->m_func[ 0 ] = ival ;
+		break ;
+	    case 0x0023 :
+		picture->m_func[ 1 ] = ival ;
+		break ;
+	    case 0x0024 :
+		picture->m_filter[ 0 ] = ival ;
+		break ;
+	    case 0x0025 :
+		picture->m_filter[ 1 ] = ival ;
+		break ;
+	    case 0x0026 :
+		picture->m_wrap[ 0 ] = ival ;
+		break ;
+	    case 0x0027 :
+		picture->m_wrap[ 1 ] = ival ;
+		break ;
+	}
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gim_animate", eval_fcurve_62354);
