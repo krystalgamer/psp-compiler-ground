@@ -160,7 +160,26 @@ void CheckShoot(void) {
 void KeyGame(void) {
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_game", get_game_data);
+void *memcpy(void *d, const void *s, unsigned int n);
+int get_game_data(void *data)
+{
+	void *ptr;
+
+	ptr = data;
+	if (_info.server_flag > 0) {
+		memcpy(ptr, &ball, sizeof(BALL));
+		ptr = (char *)ptr + sizeof(BALL);
+		memcpy(ptr, &ground, sizeof(GROUND));
+		ptr = (char *)ptr + sizeof(GROUND);
+		memcpy(ptr, &game, sizeof(GAMEDAT));
+		ptr = (char *)ptr + sizeof(GAMEDAT);
+	}
+	sceNetGetLocalEtherAddr(&scope[0].addr);
+	memcpy(ptr, &scope[0], 0x20);
+	ptr = (char *)ptr + 0x20;
+	scope[0].beam_flag = 0;
+	return (char *)ptr - (char *)data;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_game", update_game_data);
 
