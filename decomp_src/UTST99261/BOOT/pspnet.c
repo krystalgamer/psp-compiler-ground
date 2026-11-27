@@ -21,8 +21,8 @@ void apctl_handler_EB714(int old, int state, int event, int error, void *arg)
 {
     if (old == 4 && state == 0 && event == 6)
         printf("Apctl error happened, error = 0x%x\n", error);
-    gConnectState = state;
     gScanEvent = state;
+    gConnectState = state;
 }
 
 int _InitNecApNetwork(void)
