@@ -76,7 +76,51 @@ out:
     *next = i;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parseStrings", parseFindName);
+void parseFindName(char *s, char *name, int *start, int *val, int *end)
+{
+    int st;
+    int len;
+    int i;
+    char c;
+
+    st = 0;
+    len = strlen(name);
+    i = 0;
+    for (;;) {
+        if (strncasecmp(s + st, name, len) == 0)
+            break;
+        while (s[i] != 0 && s[i] != ' ' && s[i] != ';')
+            i++;
+        if (s[i] == 0) {
+            *start = 0;
+            *val = 0;
+            *end = i;
+            return;
+        }
+        i++;
+        st = i;
+    }
+    i += len;
+    for (;;) {
+        c = s[i];
+        if (c == 0) {
+            *end = i;
+            return;
+        }
+        if (c != ' ') {
+            if (c != '=') {
+                *start = 0;
+                *val = 0;
+            } else {
+                *start = st;
+                *val = i;
+            }
+            *end = i;
+            return;
+        }
+        i++;
+    }
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parseStrings", procMetaTag);
 
