@@ -5,7 +5,7 @@ M2C_UNK psp_loopstart();                            /* extern */
 M2C_UNK psp_loopend();                              /* extern */
 M2C_UNK classic_inv_init_pos_sub(M2C_UNK);          /* extern */
 extern int gcnt_28F36C;
-M2C_UNK spr_trans(int, int, int, int, M2C_UNK, M2C_UNK, M2C_UNK, M2C_UNK); /* extern */
+void spr_trans(int, int, int, int, int, int, int, int);
 extern void *D_0028F38C;
 extern void *ptexsrc_28F380;
 extern unsigned char sexp;
@@ -517,7 +517,19 @@ INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_shima", D_0007C548
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_shima", classic_inv_demo_mojisub2);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_shima", classic_inv_demo_moji);
+void classic_inv_demo_mojisub(void);
+void classic_inv_demo_mojisub2(void);
+void classic_inv_demo_moji(void)
+{
+	if (demotype == 0)
+		classic_inv_demo_mojisub();
+	else if (demotype == 1)
+		classic_inv_demo_mojisub2();
+	spr_trans(((int *)ptexsrc_28F380)[7], ptexdis1[screen_sw][7], 62, 128, 0, 56, 16, 8);
+	spr_trans(((int *)ptexsrc_28F380)[7], ptexdis1[screen_sw][7], 66, 144, 0, 0, 8, 8);
+	spr_trans(((int *)ptexsrc_28F380)[7], ptexdis1[screen_sw][7], 62, 160, 0, 24, 16, 8);
+	spr_trans(((int *)ptexsrc_28F380)[7], ptexdis1[screen_sw][7], 62, 176, 32, 8, 16, 8);
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_shima", classic_inv_demo2_moji2);
 
