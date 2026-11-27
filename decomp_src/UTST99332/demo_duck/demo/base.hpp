@@ -217,6 +217,14 @@ namespace common {
 /* defined as { T t = a; a = b; b = t; } (byte-exact); only declared while
    units still have its instances as asm (else: duplicate symbols) */
 template<class T> void Swap(T &a, T &b);
+#ifdef DEMO_TEMPLATE_DEFS
+template<class T> void Swap(T &a, T &b)
+{
+    T t = a;
+    a = b;
+    b = t;
+}
+#endif
 /* v[i] = x, growing v as needed */
 template<class V, class T> void setAt(unsigned int i, V &v, T x);
 #ifdef DEMO_TEMPLATE_DEFS

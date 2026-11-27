@@ -2,10 +2,8 @@
 /* cflags: -O3 -fno-exceptions */
 #undef __EXCEPTIONS
 #include "cxx/defer_asm.h"
+#define DEMO_TEMPLATE_DEFS
 #include "../main.hpp"
-
-/* weak instances stay asm */
-extern template class common::t_array<unsigned char>;
 
 extern "C" const char D_0017597C[], D_00175984[], D_00175990[], D_00175998[], D_0017599C[], D_001759A8[];
 extern "C" const char D_001759AC[], D_001759B0[], D_001759BC[];
@@ -141,23 +139,13 @@ void _GLOBAL__D__ZN6common8FileDumpC2Ej(void)
     static_init(0, 0xFFFF);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/common_FileDump", _ZN6common7t_arrayIhEC1Ej);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/common_FileDump", _ZN6common7t_arrayIhED1Ev);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/common_FileDump", _ZN6common7t_arrayIhE6resizeEj);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/common_FileDump", _ZNK6common7t_arrayIhE8bytesizeEv);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/common_FileDump", _ZN6common7t_arrayIhE8allocateEj);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/common_FileDump", _ZN6common7t_arrayIhE7releaseEv);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/common_FileDump", _ZN6common7t_arrayIhED0Ev);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/common_FileDump", _ZN6common7t_arrayIhE4swapERS1_);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/common_FileDump", _ZN6common7t_arrayIhE4fillERKh);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/common_FileDump", _ZN6common4SwapINS_7t_arrayIhE7MembersEEEvRT_S5_);
 
