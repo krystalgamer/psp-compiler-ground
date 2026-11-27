@@ -112,7 +112,37 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/save", D_000FE4D4);
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/save", D_000FE4E8);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/save", saveSetData);
+extern unsigned char D_000FE524, D_000FE530, D_000FE544;
+typedef struct { int d[0x14B0 / 4]; } SaveBlk;
+
+int dencEncode(void *, int, int);
+int saveSetData(SaveCntx *c, int idx, int key, SaveBlk *in)
+{
+	SaveBlk tmp;
+	int r;
+	if (c == NULL)
+		consPrintf(&D_000FE474, &D_000FE464, 0x76, "saveSetData", &D_000FE498);
+	if (c->num == 0)
+		consPrintf(&D_000FE474, &D_000FE464, 0x77, "saveSetData", &D_000FE4BC);
+	if (c->size == 0)
+		consPrintf(&D_000FE474, &D_000FE464, 0x78, "saveSetData", &D_000FE4C8);
+	if (c->f8 != 0)
+		consPrintf(&D_000FE474, &D_000FE464, 0x79, "saveSetData", &D_000FE4D4);
+	if (c->data == NULL)
+		consPrintf(&D_000FE474, &D_000FE464, 0x7A, "saveSetData", &D_000FE4A0);
+	if (c->size != c->num * 0x14B0)
+		consPrintf(&D_000FE474, &D_000FE464, 0x7B, "saveSetData", &D_000FE4E8);
+	if (idx < 0)
+		consPrintf(&D_000FE474, &D_000FE464, 0x7D, "saveSetData", &D_000FE524);
+	if (idx >= c->num)
+		consPrintf(&D_000FE474, &D_000FE464, 0x7E, "saveSetData", &D_000FE530);
+	if (in == NULL)
+		consPrintf(&D_000FE474, &D_000FE464, 0x7F, "saveSetData", &D_000FE544);
+	tmp = *in;
+	r = dencEncode(&tmp, 0x14B0, key);
+	((SaveBlk *)c->data)[idx] = tmp;
+	return r;
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/save", D_000FE524);
 
@@ -120,8 +150,6 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/save", D_000FE530);
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/save", D_000FE544);
 
-extern unsigned char D_000FE524, D_000FE530, D_000FE544;
-typedef struct { int d[0x14B0 / 4]; } SaveBlk;
 int dencDecode(void *, int, int);
 int saveGetData(SaveCntx *c, int idx, int key, SaveBlk *out)
 {
