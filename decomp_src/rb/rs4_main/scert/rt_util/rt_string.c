@@ -24,7 +24,15 @@ int rt_strlen(signed char *arg0) {
     return var_v0;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_string", rt_strnlen);
+unsigned int rt_strnlen(const char *s, unsigned int n)
+{
+    const char *e = s + n;
+    const char *p;
+    if (s == NULL) return 0;
+    for (p = s; p < e && *p != 0; p++)
+        ;
+    return p - s;
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_string", rcsid_10EEF8);
 

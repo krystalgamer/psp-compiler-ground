@@ -115,9 +115,22 @@ void rt_comm_get_metrics(void *m)
 
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_comm/src/rt_comm", rt_comm_get_interface_data);
+int rt_comm_is_valid_channel();
+int rt_comm_get_interface_data(char *ch, void **out)
+{
+    *out = NULL;
+    if (rt_comm_is_valid_channel(ch) == 0) return 2;
+    *out = ch + 8;
+    return 0;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_comm/src/rt_comm", rt_comm_get_local_port);
+int rt_comm_get_local_port(char *ch, int *out)
+{
+    *out = 0;
+    if (rt_comm_is_valid_channel(ch) == 0) return 2;
+    *out = *(int *)(ch + 0x1C);
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_comm/src/rt_comm", rt_comm_is_connected);
 

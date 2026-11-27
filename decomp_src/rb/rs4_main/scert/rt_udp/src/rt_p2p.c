@@ -192,7 +192,14 @@ int rt_p2p_pack_type(int arg0, int arg1) {
     return (arg1 & 0x7FF) | ((arg0 & 0x1F) << 0xB);
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_unpack_type);
+void rt_msg_get_u2byte();
+void rt_p2p_unpack_type(void *msg, int *type, unsigned short *len)
+{
+    unsigned short v;
+    rt_msg_get_u2byte(msg, &v);
+    *type = v >> 11;
+    *len = v & 0x7FF;
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", grid1);
 

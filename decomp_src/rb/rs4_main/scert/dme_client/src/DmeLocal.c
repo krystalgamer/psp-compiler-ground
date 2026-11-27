@@ -32,7 +32,6 @@ void NetResetTime(int arg0);
 void NetSetHeartbeatInterval(int arg0);
 void p2p_system_change_cb(int arg0, int arg1, void *arg2);
 void udp_data_cb(void);
-void *DMEmalloc(M2C_UNK);                           /* extern */
 M2C_UNK rt_comm_linkaddress_toext(void *, void *);  /* extern */
 M2C_UNK rt_mutex_unlock(int, M2C_UNK);              /* extern */
 M2C_UNK rt_timebase_get_globaltime(void *);         /* extern */
@@ -128,7 +127,14 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal",
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", headerfile_rcsid_10E208);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", DMEmalloc);
+int rt_memory_allocate_init_zero();
+int puts(const char *);
+void *DMEmalloc(int size)
+{
+    void *p = NULL;
+    if (rt_memory_allocate_init_zero(&p, size) != 0) puts("rt_memory_allocate failed ");
+    return p;
+}
 
 void DmeFree(void **p)
 {
@@ -162,7 +168,12 @@ int NetIGetClientIpAddress(void *arg0, int arg1, int arg2) {
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", RemoteClientConnects);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", RemoteClientDisconnects);
+void *NetGetClientInfo();
+void RemoteClientDisconnects(int a)
+{
+    int *c = NetGetClientInfo(a);
+    if (c != NULL) memset(c, 0, 0x2C);
+}
 
 int NetIGetCurrentUDPSourceBinaryIP(void *arg0) {
     int var_a2;

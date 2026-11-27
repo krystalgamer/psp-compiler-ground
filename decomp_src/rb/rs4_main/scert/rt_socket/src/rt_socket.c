@@ -79,17 +79,43 @@ void rt_socket_set_non_blocking(void) {
     rt_socket_set_non_blocking_platform();
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_socket/src/rt_socket", rt_socket_set_broadcast);
+int rt_socket_set_broadcast(int s, int on)
+{
+    int val = on == 1;
+    if (sceNetInetSetsockopt(s, 0xFFFF, 0x20, &val, 4) != 0) return rt_socket_get_err_platform();
+    return 0;
+}
 
 void rt_socket_get_available_bytes_to_read(void) {
     rt_socket_get_available_bytes_to_read_platform();
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_socket/src/rt_socket", rt_socket_set_reuse_address);
+int sceNetInetSetsockopt(int, int, int, const void *, int);
+int rt_socket_get_err_platform();
+int rt_socket_set_reuse_address(int s, int v)
+{
+    int val = v;
+    if (sceNetInetSetsockopt(s, 0xFFFF, 4, &val, 4) != 0) return rt_socket_get_err_platform();
+    return 0;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_socket/src/rt_socket", rt_socket_set_send_buffer_size);
+int sceNetInetSetsockopt(int, int, int, const void *, int);
+int rt_socket_get_err_platform();
+int rt_socket_set_send_buffer_size(int s, int v)
+{
+    int val = v;
+    if (sceNetInetSetsockopt(s, 0xFFFF, 0x1001, &val, 4) != 0) return rt_socket_get_err_platform();
+    return 0;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_socket/src/rt_socket", rt_socket_set_receive_buffer_size);
+int sceNetInetSetsockopt(int, int, int, const void *, int);
+int rt_socket_get_err_platform();
+int rt_socket_set_receive_buffer_size(int s, int v)
+{
+    int val = v;
+    if (sceNetInetSetsockopt(s, 0xFFFF, 0x1002, &val, 4) != 0) return rt_socket_get_err_platform();
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_socket/src/rt_socket", rt_socket_get_receive_buffer_size);
 

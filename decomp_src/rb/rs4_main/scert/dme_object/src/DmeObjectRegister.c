@@ -14,7 +14,16 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_object/src/DmeObjectRegi
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_object/src/DmeObjectRegister", NetIRegisterObjectFilter);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_object/src/DmeObjectRegister", NetIRegisterRemoteObjectCallback);
+extern char *gObjectInterfacePtr;
+int NetIRegisterRemoteObjectCallback(unsigned int idx, void *a, void *b, void *c)
+{
+    char *o = gObjectInterfacePtr;
+    if (idx >= *(unsigned int *)(o + 0xF8)) return 0x17;
+    (*(void ***)(o + 0x158))[idx] = a;
+    (*(void ***)(o + 0x15C))[idx] = b;
+    (*(void ***)(o + 0x160))[idx] = c;
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_object/src/DmeObjectRegister", NetIRegisterDataStream);
 

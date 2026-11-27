@@ -4,7 +4,19 @@
 #define NULL ((void *)0)
 #endif
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_mutex", rt_mutex_create);
+int rt_mutex_platform_create();
+int rt_mutex_create(char *m)
+{
+    int r;
+    if (m == NULL) return 2;
+    m[0] = 0;
+    *(int *)(m + 4) = 0;
+    *(int *)(m + 8) = 0;
+    r = rt_mutex_platform_create(m);
+    if (r != 0) return r;
+    m[0] = 1;
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_mutex", rt_mutex_destroy);
 
