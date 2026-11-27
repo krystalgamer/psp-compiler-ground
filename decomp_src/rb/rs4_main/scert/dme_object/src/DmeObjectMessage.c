@@ -3,8 +3,14 @@
 #ifndef NULL
 #define NULL ((void *)0)
 #endif
+int NetClientLeaves();
+int NetFreeRemoteObject();
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_object/src/DmeObjectMessage", DeleteNetObjectPacketHandler);
+int DeleteNetObjectPacketHandler(int a, int b, int c, unsigned short *msg)
+{
+    NetFreeRemoteObject(*msg);
+    return 2;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_object/src/DmeObjectMessage", ElectSessionMaster);
 
@@ -34,7 +40,11 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_object/src/DmeObjectMess
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_object/src/DmeObjectMessage", AcceptClientPacketHandler);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_object/src/DmeObjectMessage", ClientLeavesPacketHandler);
+int ClientLeavesPacketHandler(int a, int b, int c)
+{
+    NetClientLeaves(a, c);
+    return 1;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_object/src/DmeObjectMessage", ClientUpdatePacketHandler);
 
