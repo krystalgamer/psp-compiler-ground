@@ -92,7 +92,27 @@ void *mes_parse_node_cons(int arg0, int arg1) {
     return temp_v0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_parse", mes_parse_node_set);
+void mes_parse_node_set(void *n, void *l)
+{
+    void *next;
+    int *p;
+
+    if (n != NULL) {
+        p = M2C_FIELD(n, int **, 8) + M2C_FIELD(n, unsigned short *, 2);
+        while (l != NULL) {
+            next = M2C_FIELD(l, void **, 0);
+            *--p = M2C_FIELD(l, int *, 4);
+            MEM_free(0, l);
+            l = next;
+        }
+    } else {
+        while (l != NULL) {
+            next = M2C_FIELD(l, void **, 0);
+            MEM_free(0, l);
+            l = next;
+        }
+    }
+}
 
 void *mes_parse_node_set1(void *n, int i, void *v)
 {
@@ -234,9 +254,65 @@ void *mes_parse_id(int arg0, void *arg1, int arg2) {
     return NULL;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_parse", mes_parse_constant);
+void *mes_parse_constant(void *p, void *lx, int flags)
+{
+    int t = mes_lex_peek(lx);
+    int v;
+    void *n;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_parse", mes_parse_regex);
+    if (t == 0x67)
+        return mes_parse_id((int)p, lx, 0);
+    if (t == 0x68) {
+        n = mes_parse_node_new(0x68, 0);
+        M2C_FIELD(n, double *, 8) = M2C_FIELD(lx, double *, 0x18);
+        M2C_FIELD(lx, unsigned char *, 0x10) = 0;
+        return n;
+    }
+    if (t == 0x69) {
+        n = mes_parse_node_new(0x69, 0);
+        v = mes_string_new3((int)p, M2C_FIELD(lx, int *, 0x14));
+        if (v != 0) {
+            M2C_FIELD(n, int *, 8) = v;
+            mes_parse_push(p, v);
+        } else {
+            mes_parse_node_free((int)n);
+            n = NULL;
+        }
+        M2C_FIELD(lx, unsigned char *, 0x10) = 0;
+        return n;
+    }
+    mes_parse_error_expect(lx, 0x69, flags);
+    return NULL;
+}
+
+void *mes_parse_regex(void *p, void *lx, int flags, int x)
+{
+    void *n = mes_parse_node_new(0x6A, 2);
+    void *s;
+    int v;
+
+    if (mes_lex_regex(lx, x) != 0x6A) {
+        mes_parse_error_expect(lx, 0x6A, flags);
+        mes_parse_node_free((int)n);
+        return NULL;
+    }
+    s = mes_parse_node_new(0x69, 0);
+    v = mes_string_new3((int)p, M2C_FIELD(lx, int *, 0x14));
+    M2C_FIELD(s, int *, 8) = v;
+    if (v != 0)
+        mes_parse_push(p, v);
+    mes_parse_node_set1(n, 0, s);
+    if (mes_lex_regex_flags(lx)) {
+        s = mes_parse_node_new(0x69, 0);
+        v = mes_string_new3((int)p, M2C_FIELD(lx, int *, 0x14));
+        M2C_FIELD(s, int *, 8) = v;
+        if (v != 0)
+            mes_parse_push(p, v);
+        mes_parse_node_set1(n, 1, s);
+    }
+    M2C_FIELD(lx, unsigned char *, 0x10) = 0;
+    return n;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_parse", mes_parse_primary_expression);
 
@@ -437,7 +513,38 @@ void *mes_parse_conditional_expression(void *p, void *lx, int flags)
     return n;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_parse", mes_parse_assignment_expression);
+void *mes_parse_assignment_expression(void *p, void *lx, int flags)
+{
+    void *e;
+    int t;
+    void *n;
+
+    if (mes_stack_check(p)) {
+        if (M2C_FIELD(lx, unsigned short *, 0x12) == 0)
+            mes_parse_error_expect(lx, 0, -1);
+        mes_lex_peek(lx);
+        M2C_FIELD(lx, unsigned char *, 0x10) = 0;
+        return NULL;
+    }
+    e = mes_parse_conditional_expression(p, lx, flags);
+    t = mes_lex_peek(lx);
+    if (t >= 0x55) {
+    if (t <= 0x60) {
+    M2C_FIELD(lx, unsigned char *, 0x10) = 0;
+    if (e == NULL || (M2C_FIELD(e, unsigned short *, 0) != 0x67 && M2C_FIELD(e, unsigned short *, 0) != 0xA1
+                      && M2C_FIELD(e, unsigned short *, 0) != 0xA2)) {
+        mes_parse_error_expect(lx, 0x67, flags);
+        mes_parse_node_free((int)e);
+        return NULL;
+    }
+    n = mes_parse_node_new(t, 2);
+    mes_parse_node_set1(n, 0, e);
+    mes_parse_node_set1(n, 1, mes_parse_assignment_expression(p, lx, flags));
+    return n;
+    }
+    }
+    return e;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_parse", mes_parse_expression);
 
@@ -452,7 +559,30 @@ void *mes_parse_condition(void *p, void *lx, int flags)
     return n;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_parse", mes_parse_statement_list);
+void *mes_parse_statement_list(void *p, void *lx, int flags)
+{
+    void *list = NULL;
+    int n = 0;
+    int t;
+    int pos;
+    void *node;
+
+    while ((t = mes_lex_peek(lx)) != 0x66 && t != 0x33 && t != 5 && t != 0x11) {
+        pos = M2C_FIELD(lx, unsigned short *, 0x12);
+        node = mes_parse_statement(p, lx, flags);
+        if (node != NULL) {
+            list = mes_parse_node_cons((int)list, (int)node);
+            n++;
+        } else if (pos < M2C_FIELD(lx, unsigned short *, 0x12))
+            break;
+    }
+    if (n > 0) {
+        node = mes_parse_node_new(0x9A, n);
+        mes_parse_node_set(node, list);
+        return node;
+    }
+    return NULL;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_parse", mes_parse_case_clause);
 
@@ -499,9 +629,40 @@ void *mes_parse_variable_declaration_list(void *p, void *lx, int flags)
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_parse", mes_parse_statement);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_parse", mes_parse_formal_parameter);
+void *mes_parse_formal_parameter(void *p, void *lx, int flags)
+{
+    void *list = NULL;
+    int n = 0;
+    void *node;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_parse", mes_parse_function);
+    while (mes_lex_peek(lx) == 0x67) {
+        node = mes_parse_id((int)p, lx, flags | 0x10);
+        list = mes_parse_node_cons((int)list, (int)node);
+        n++;
+        if (mes_lex_peek(lx) != 0x3A)
+            break;
+        mes_parse_check_token(lx, 0x3A, -1);
+    }
+    node = mes_parse_node_new(0x98, n);
+    mes_parse_node_set(node, list);
+    return node;
+}
+
+void *mes_parse_function(void *p, void *lx, int flags, int type)
+{
+    void *n = mes_parse_node_new(type, 3);
+
+    if (type == 0x96 || mes_lex_peek(lx) == 0x67)
+        mes_parse_node_set1(n, 0, mes_parse_id((int)p, lx, flags));
+    mes_parse_check_token(lx, 0x34, -1);
+    mes_parse_node_set1(n, 1, mes_parse_formal_parameter(p, lx, flags | 4));
+    if (mes_parse_check_token(lx, 0x35, flags))
+        return n;
+    mes_parse_check_token(lx, 0x32, -1);
+    mes_parse_node_set1(n, 2, mes_parse_source_elements(p, lx, flags | 2));
+    mes_parse_check_token(lx, 0x33, flags);
+    return n;
+}
 
 void *mes_parse_source_element(void *p, void *lx, int flags)
 {
@@ -514,7 +675,39 @@ void *mes_parse_source_element(void *p, void *lx, int flags)
     return mes_parse_statement(p, lx, flags);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_parse", mes_parse_source_elements);
+void *mes_parse_source_elements(void *p, void *lx, int flags)
+{
+    void *list = NULL;
+    int n = 0;
+    void *s = NULL;
+    int line;
+
+    flags |= 0x100;
+    line = M2C_FIELD(lx, int *, 0xC);
+    while (mes_lex_peek(lx) != 0x66 && M2C_FIELD(lx, unsigned char *, 0x10) != 0x33) {
+        if (s != NULL) {
+            list = mes_parse_node_cons((int)list, (int)s);
+            n++;
+        }
+        s = mes_parse_source_element(p, lx, flags);
+        if (mes_lex_peek(lx) != 0x66 && ((M2C_FIELD(lx, unsigned char *, 0x10) != 0x33) & (s == NULL))
+            && M2C_FIELD(lx, int *, 0xC) == line) {
+            mes_parse_error_expect(lx, 0x66, -1);
+            M2C_FIELD(lx, unsigned char *, 0x10) = 0;
+            mes_lex_peek(lx);
+        }
+        line = M2C_FIELD(lx, int *, 0xC);
+    }
+    if (n > 0) {
+        if (s != NULL) {
+            list = mes_parse_node_cons((int)list, (int)s);
+            n++;
+        }
+        s = mes_parse_node_new(0x9A, n);
+        mes_parse_node_set(s, list);
+    }
+    return s;
+}
 
 void *mes_parse_program(void *p, void *lx, int single)
 {
