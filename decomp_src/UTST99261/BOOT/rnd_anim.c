@@ -36,6 +36,13 @@ int rnd_gdrawImageReset(void *img, RPOS *t);
 int rnd_resetAnimImageBoxnode(void *bn);
 int rnd_updateAnimTextBoxnode(void *bn);
 void GUI_Component_update(void *c, int x, int y, int w, int h);
+typedef struct RRECT { int x; int y; int w; int h; } RRECT;
+extern const unsigned int D_00139028[];
+int rnd_updateAnimMarqueeBoxnode(void *bn, RPOS *t);
+int rnd_gdrawImageUpdate(void *img, RPOS *t);
+int rnd_updateAnimImageBoxnode(void *bn);
+void rnd_updateUpdateWidgetList(void);
+void rnd_clearUpdateWidgetList(void);
 int checkParentBox(M2C_UNK *arg0, int arg1) {
     M2C_UNK *var_a0;
     int var_v0;
@@ -121,7 +128,75 @@ void rnd_clearUpdateWidgetList(void) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_anim", rnd_updateUpdateWidgetList);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_anim", rnd_updateAnimBoxnode);
+void rnd_updateAnimBoxnode(void) {
+    RPOS now;
+    RPOS d;
+    RPOS ts;
+    int changed;
+    int flip;
+    RLIST *l;
+    RLIST *m;
+    void *pane;
+    RRECT *r;
+
+    changed = 0;
+    flip = 0;
+    OS_clock_gettime(0, &ts);
+    now = ts;
+    for (l = D_00584D50; l != NULL; l = l->next) {
+        changed |= rnd_updateAnimMarqueeBoxnode(l->data, &now);
+        pane = M2C_FIELD(getBodyBox(l->data), void **, 0x2C);
+        r = MEM_malloc(0, 0x10);
+        r->x = M2C_FIELD(l->data, int *, 0x10);
+        r->y = M2C_FIELD(l->data, int *, 0x14);
+        r->w = M2C_FIELD(l->data, int *, 0x18);
+        r->h = M2C_FIELD(l->data, int *, 0x1C);
+        rnd_addUpdateWidgetList((int)pane, (int)r);
+    }
+    for (m = D_00584D4C; m != NULL; m = m->next) {
+        if (rnd_gdrawImageUpdate(m->data, &now) == 1) {
+            for (l = m->x8; l != NULL; l = l->next) {
+                if (rnd_updateAnimImageBoxnode(l->data) != 0) {
+                    pane = M2C_FIELD(getBodyBox(l->data), void **, 0x2C);
+                    r = MEM_malloc(0, 0x10);
+                    r->x = M2C_FIELD(l->data, int *, 0x10);
+                    r->y = M2C_FIELD(l->data, int *, 0x14);
+                    r->w = M2C_FIELD(l->data, int *, 0x18);
+                    r->h = M2C_FIELD(l->data, int *, 0x1C);
+                    rnd_addUpdateWidgetList((int)pane, (int)r);
+                    changed = 1;
+                }
+            }
+        }
+    }
+    if (now.y >= rnd_global.x8) {
+        d.x = now.x - rnd_global.x4;
+        d.y = now.y - rnd_global.x8;
+    } else {
+        d.x = now.x - rnd_global.x4 - 1;
+        d.y = now.y - rnd_global.x8 + 1000000000;
+    }
+    if (d.x * 1000 + d.y / 1000000 >= D_00139028[rnd_global.x0])
+        flip = 1;
+    if (flip == 1) {
+        rnd_global.x0 ^= 1;
+        rnd_global.x4 = now.x;
+        rnd_global.x8 = now.y;
+        for (l = rnd_global.xC; l != NULL; l = l->next) {
+            changed |= rnd_updateAnimTextBoxnode(l->data);
+            pane = M2C_FIELD(getBodyBox(l->data), void **, 0x2C);
+            r = MEM_malloc(0, 0x10);
+            r->x = M2C_FIELD(l->data, int *, 0x10);
+            r->y = M2C_FIELD(l->data, int *, 0x14);
+            r->w = M2C_FIELD(l->data, int *, 0x18);
+            r->h = M2C_FIELD(l->data, int *, 0x1C);
+            rnd_addUpdateWidgetList((int)pane, (int)r);
+        }
+    }
+    if (changed)
+        rnd_updateUpdateWidgetList();
+    rnd_clearUpdateWidgetList();
+}
 
 void rnd_resetAnimBoxnode(void) {
     RPOS now;
