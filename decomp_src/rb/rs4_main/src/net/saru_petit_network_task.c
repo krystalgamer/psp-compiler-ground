@@ -215,9 +215,17 @@ public:
 }
 }
 
-extern "C" { INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_petit_network_task", _ZN7SaruNet9PetitGame11NetworkTaskD2Ev); }
-extern "C" { INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_petit_network_task", _ZN7SaruNet9PetitGame11NetworkTaskD1Ev); }
-extern "C" { INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_petit_network_task", _ZN7SaruNet9PetitGame11NetworkTaskD0Ev); }
+namespace SaruNet {
+namespace PetitGame {
+NetworkTask::~NetworkTask()
+{
+	Ys::ScreenPanelDaemon *d = Ys::ScreenPanelDaemon::_instance_p;
+	d->Remove_Panel();
+	if (!quit && !error)
+		Quit();
+}
+}
+}
 
 namespace SaruNet {
 namespace PetitGame {
