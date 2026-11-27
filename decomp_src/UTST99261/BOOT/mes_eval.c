@@ -1,6 +1,17 @@
 /* cflags: -O1 */
 #include "common.h"
 #include "m2c_macros.h"
+extern void *mes_classes[];
+extern unsigned int mes_ids[];
+int mes_number_to_special(int v);
+int mes_number_to_string(struct EvCtx *ctx, int v);
+int mes_eval_object_get(struct EvCtx *ctx, int obj, unsigned int id);
+int mes_eval(struct EvCtx *ctx, int f, int *args, int thisobj, int flags);
+void *mes_object_new(struct EvCtx *ctx, int cls, void *proto);
+int mes_number_equal(int a, int b, int f);
+int mes_string_compare(void *a, void *b);
+int mes_eval_type_error(void *ctx, int v);
+struct EvCtx;
 extern const double D_0013B3E0;       /* 4294967296.0 */
 extern const double D_0013B3E8;       /* 2147483648.0 */
 extern const double D_0013B3F0;       /* 4294967296.0 */
@@ -139,7 +150,38 @@ int mes_eval_type(unsigned int v)
     return ret;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_eval", mes_eval_to_primitive);
+int mes_eval_to_primitive(EvCtx *ctx, int v, int hint)
+{
+    int i;
+    int f;
+    int id;
+
+    if ((v & 3) != 0 || (unsigned int)v <= 0x20)
+        return v;
+    i = 1;
+    if (hint == 0) {
+        hint = (*(EvGc **)v)->kind == 7 ? 0x3E : 0x39;
+        i = 1;
+    }
+    do {
+        if (hint == 0x39) {
+            id = 0x43;
+            hint = 0x3E;
+        } else {
+            id = 0x40;
+            hint = 0x39;
+        }
+        f = mes_eval_object_get(ctx, v, mes_ids[id]);
+        if ((f & 3) == 0 && (unsigned int)f > 0x20 && (unsigned int)((*(EvGc **)f)->kind - 3) < 2) {
+            *--ctx->sp = f;
+            f = mes_eval(ctx, f, NULL, v, 1);
+            ctx->sp++;
+            if ((f & 3) != 0 || (unsigned int)f <= 0x20)
+                return f;
+        }
+    } while (i-- > 0);
+    return mes_eval_type_error(ctx, v);
+}
 
 int mes_eval_to_boolean(EvCtx *ctx, int v)
 {
@@ -236,9 +278,67 @@ unsigned int mes_eval_to_uint32(EvCtx *ctx, int v)
     return (unsigned int)d;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_eval", mes_eval_to_string);
+int mes_eval_to_string(EvCtx *ctx, int v)
+{
+    switch ((unsigned int)v & 3) {
+    case 0:
+        if (v == 0)
+            return D_00585320;
+        if (v == 0xC)
+            return D_0058531C;
+        if (v == 8)
+            return D_005852C4;
+        if (v == 4)
+            return D_005852F8;
+        if (v >= 0x10 && v <= 0x1C)
+            return mes_number_to_special(v);
+        v = mes_eval_to_primitive(ctx, v, 0x3E);
+        *--ctx->sp = v;
+        v = mes_eval_to_string(ctx, v);
+        ctx->sp++;
+        return v;
+    case 1:
+    case 2:
+        return mes_number_to_string(ctx, v);
+    case 3:
+        return v;
+    }
+    return D_00585320;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_eval", mes_eval_to_object);
+int mes_eval_to_object(EvCtx *ctx, int v)
+{
+    int cls;
+    EvObj *o;
+
+    switch ((unsigned int)v & 3) {
+    case 0:
+    default:
+        if (v == 0 || v == 4)
+            return mes_eval_type_error(ctx, v);
+        if (v == 0xC || v == 8) {
+            cls = 1;
+            break;
+        }
+        if (v >= 0x10 && v <= 0x1C) {
+            cls = 8;
+            break;
+        }
+        return v;
+    case 1:
+    case 2:
+        cls = 8;
+        break;
+    case 3:
+        cls = 13;
+        break;
+    }
+    o = mes_object_new(ctx, cls, mes_classes[cls]);
+    o->fC = v;
+    if (cls == 13)
+        mes_object_set((int)o, D_005852E4, (((EvStr *)(v & ~3))->len << 2) | 1, 7);
+    return (int)o;
+}
 
 unsigned int mes_eval_to_index(EvCtx *ctx, int v)
 {
