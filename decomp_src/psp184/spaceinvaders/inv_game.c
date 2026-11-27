@@ -2786,11 +2786,55 @@ void debprint_set(char *str)
 	}
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", status_disp_init);
+void status_disp_init(void)
+{
+	STATUS_W *t = &gmain.st;
+	int i, j;
+
+	t->f4 = 0;
+	t->f0 = 0;
+	for (i = 0; i < 2; i++) {
+		t->i8[i] = -1;
+		t->i10[i] = 0;
+		t->i18[i] = 0;
+		t->i20[i] = 1;
+		t->i28[i] = 0;
+	}
+	for (j = 0; j < 32; j++) {
+		t->ta[j] = 0;
+		t->tb[j] = 0;
+		t->tc[j] = -1;
+		t->td[j] = 0;
+	}
+	t->f40 = 0;
+	t->f44 = 0;
+	t->f4c = 0;
+	t->f50 = 0;
+	t->a7e = 255;
+	t->s80[0] = 255;
+	t->s80[1] = 255;
+	t->s74[0] = 0;
+	t->s74[1] = 0;
+	t->s74[2] = 0;
+	t->s74[3] = 0;
+	t->f48 = 999;
+	t->s80[2] = 255;
+	for (j = 0; j < 32; j++) {
+		t->s86[j] = 0;
+		t->sc6[j] = 0;
+		t->s106[j] = 0;
+		t->s146[j] = 0;
+	}
+	for (i = 0; i < 5; i++)
+		t->i54[i] = -1;
+	t->c68 = 0xf5;
+	t->c6c = 0x96;
+	t->c70 = 0x35;
+}
 
 void status_font_set(int i, int a, int b, int c, int pri)
 {
-	int *p = &gmain.st.f0[0] + i;
+	int *p = &gmain.st.f0 + i;
 
 	if (p[2] == -1 || pri >= p[4]) {
 		p[2] = a;

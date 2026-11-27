@@ -135,11 +135,18 @@ typedef struct {
 
 /* status display (0x146464, 0x2C8) */
 typedef struct {
-	int f0[0x68 / 4];
+	int f0, f4;
+	int i8[2], i10[2], i18[2], i20[2], i28[2];	/* font slots (status_font_set) */
+	int f30[4];
+	int f40, f44, f48, f4c, f50;
+	int i54[5];
 	int c68, c6c, c70;	/* score colour */
-	short f74[5];
+	short s74[4];
+	short s7c;
 	short a7e;		/* score alpha */
-	short f80[(0x188 - 0x80) / 2];
+	short s80[3];
+	short s86[32], sc6[32], s106[32], s146[32];
+	short s186;
 	s8 ta[32], tb[32];	/* 0x188 target list */
 	int tc[32], td[32];
 } STATUS_W;
