@@ -163,7 +163,48 @@ INCLUDE_RODATA("tmp/asm/UTST99332/graphics_break/nonmatchings/main", D_00011E10)
 
 INCLUDE_RODATA("tmp/asm/UTST99332/graphics_break/nonmatchings/main", D_00011E18);
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_break/nonmatchings/main", mk_pkt);
+extern const ScePspFVector3 D_00011DF8;
+void sceGumStoreContext(SceGumContext *ctx);
+void sceGumLoadContext(const SceGumContext *ctx);
+static void mk_pkt(void)
+{
+	ScePspFVector3 vec = D_00011DF8;
+	SceGumContext ctx;
+
+	cdb ^= 1;
+	sceGuStart(2, packet[cdb], 4096);
+	sceGuDrawBufferList(3, (void *)0, 512);
+	sceGuOffset(2048 - 420, 2048 - 238);
+	sceGuDepthRange(50000, 10000);
+	sceGuViewport(2048, 2048, 120, 68);
+	sceGuScissor(360, 204, 120, 68);
+	sceGuEnable(2);
+	sceGuClearColor(0);
+	sceGuClearStencil(0);
+	sceGuClearDepth(0xffff);
+	sceGuClear(7);
+	sceGuDisable(9);
+	sceGuDisable(4);
+	sceGuDisable(0);
+	sceGuDisable(1);
+	sceGuDisable(10);
+	sceGuColor(0xffffffff);
+
+	sceGumStoreContext(&ctx);
+
+	sceGumPushMatrix();
+	sceGumLoadIdentity();
+	sceGumTranslate(&vec);
+	sceGumRotateY(((vcnt * 2) % 360) * 3.1415927f / 180.0f);
+	sceGumDrawArray(3, 0x180, 3, 0, triangle);
+	sceGumPopMatrix();
+
+	sceGumLoadContext(&ctx);
+
+	sceGuCopyImage(3, 360, 204, 120, 68, 512, edram_addr, 360, 204, 512, (char *)edram_addr + 0x88000);
+
+	sceGuFinish();
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_break/nonmatchings/main", cbvsync);
 
