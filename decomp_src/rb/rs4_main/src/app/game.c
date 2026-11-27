@@ -304,7 +304,24 @@ int gameSetOsiokiLoserExt(int arg0) {
     return 1;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/game", gameSetFinish);
+typedef struct { int a, b, c, cur, next; } GameEnt2;
+extern int D_001116E8;
+void *taskHeadAlive();
+void *rsvNextAlive();
+unsigned int sceKernelGetGPI(void);
+int gameSetFinish(int f)
+{
+	int n = resGetCurrentInst();
+	char *t;
+	if (sceKernelGetGPI() & 4)
+		((GameEnt2 *)&GameData)[n].next = -1;
+	else
+		((GameEnt2 *)&GameData)[n].cur = 0;
+	D_001116E8 = f;
+	for (t = taskHeadAlive(); t; t = rsvNextAlive(t))
+		*(int *)(t + 0x28) = 0;
+	return 1;
+}
 
 int gameGetWinner(void) {
     return D_001116C4;
