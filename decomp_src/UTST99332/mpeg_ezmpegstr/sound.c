@@ -291,7 +291,34 @@ int soundbuf_setStartFlag(t_soundBuffer *pSound) {
     return sceKernelSetEventFlag(pSound->status_flag, 1);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/mpeg_ezmpegstr/nonmatchings/sound", soundbuf_func);
+SceInt32 soundbuf_func(SceSize size, void *argp)
+{
+	t_avSyncControl **ppAvSync;
+	t_avSyncControl *pAvSync;
+	t_soundBuffer *pSound;
+	SceUInt32 pattern;
+
+	ppAvSync = argp;
+	pAvSync = *ppAvSync;
+	pSound = pAvSync->pSound;
+	sceKernelWaitEventFlag(pSound->status_flag, 1, 1, &pattern, NULL);
+	while (soundbuf_checkDemuxEnd(pSound) != 0 || soundbuf_getCurrentCount(pSound) != 0) {
+		if (soundbuf_getCurrentCount(pSound) > 0) {
+			soundbuf_output(pSound);
+			sceKernelWaitSema(pSound->lock_sema, 1, NULL);
+			pSound->count--;
+			sceKernelSignalSema(pSound->lock_sema, 1);
+			soundframeCount++;
+		} else {
+			soundframeDelay++;
+			sceKernelDelayThread(1000);
+		}
+	}
+	printf("sound count = %d\n", soundframeCount);
+	printf("sound delay = %d\n", soundframeDelay);
+	sceKernelExitThread(0);
+	return 0;
+}
 
 void *memcpy(void *d, const void *s, unsigned int n);
 extern int D_0001033C;
