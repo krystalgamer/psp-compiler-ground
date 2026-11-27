@@ -21,3 +21,5 @@
 0x2C2A8 memmove_align   1.6.1           newlib/libc/sys/psp/memmove_align.c
 0x2C5A8 memmove_pad     1.6.1           newlib/libc/sys/psp/memmove_pad.c
 0x2E67C crtend          1.6.1           crtend.c
+# gim_picture.o's __psp_libinfo__ (unreferenced, so gen_config gives it to dvdumd_io)
+rodata 0x30B80 gim_picture

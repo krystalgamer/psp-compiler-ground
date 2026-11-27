@@ -205,4 +205,3 @@ SceInt32 DvdUmdRetryReadCB(SceUID fd, unsigned char *readbuf, SceSize readsize)
 	return ret;
 }
 
-INCLUDE_RODATA("tmp/asm/flowars/flowars/nonmatchings/dvdumd_io", __psp_libinfo___30B80);

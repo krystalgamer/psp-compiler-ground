@@ -210,7 +210,7 @@ segments:
       - [0x30A8C, .rodata, han]
       - [0x30A94, .rodata, strfile]
       - [0x30B78, .rodata, dvdumd_io]
-      - [0x30C18, .rodata, gim_picture]
+      - [0x30C00, .rodata, gim_picture]
       - [0x30C28, .rodata, gim_animate]
       - [0x30CC8, .rodata, load_bmp]
       - [0x30D3C, .rodata, load_tm2]
