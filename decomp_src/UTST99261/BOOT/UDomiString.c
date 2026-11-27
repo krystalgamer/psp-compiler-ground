@@ -125,6 +125,13 @@ typedef struct SubmitNote { short x0; int method; int x8; int len1; char *p1; in
 extern char D_0013574C[];
 void *MEM_calloc(int, unsigned int);
 int HST_getMethodType(void *h);
+typedef struct PsFatal { int code; char *msg; } PsFatal;
+extern PsFatal *FATAL_ERR_MSG;
+extern PsMqMsg COMPULSION_END;
+extern int jsapi_lock;
+int ps_u0103(PsIpc *msg);
+int ps_l1105(PsIpc *msg);
+int ps_i2104(PsIpc *msg);
 unsigned short UDomiString_ToLower(unsigned short c) {
     if (c < 0x80) {
         return tolower(c);
@@ -885,7 +892,78 @@ int ps_SendIOMChk(int n, char *s) {
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", ps_Terminate);
+void ps_Terminate(void) {
+    PsMqMsg m;
+    int attr[4];
+    int done;
+    PsFatal *e;
+
+    COMPULSION_END.x[1] = 2;
+    COMPULSION_END.x[2] = 0;
+    COMPULSION_END.x[3] = 0;
+    COMPULSION_END.evt = 0xFFFF;
+    COMPULSION_END.x14[0] = 0;
+    COMPULSION_END.x14[1] = 0;
+    COMPULSION_END.x14[2] = 0;
+    COMPULSION_END.data = NULL;
+    e = FATAL_ERR_MSG;
+    done = 0;
+    if (e != NULL) {
+        FATAL_ERR_MSG = NULL;
+        e->code = -1;
+        e->msg = "AllocationError(PS)";
+        COMPULSION_END.x14[2] = 50;
+        COMPULSION_END.data = e;
+    }
+    OS_mq_send(mq_ui, &COMPULSION_END, 0x24, 0);
+    COMPULSION_END_FLG = 1;
+    if (jsapi_lock != 0)
+        OS_thread_mutex_unlock(jsapi_lock);
+    OS_mq_getattr(mq_ps, attr);
+    attr[0] &= ~0x4000;
+    OS_mq_setattr(mq_ps, attr, 0);
+    for (;;) {
+        OS_mq_receive(mq_ps, &m, 0x24, 0);
+        buf_ps_evt = m.evt;
+        if (m.x[1] == 10) {
+            m.x[1] = 5;
+            OS_mq_send(mq_iom, &m, 0x24, 0);
+            continue;
+        }
+        switch (buf_ps_evt) {
+        case 1:
+            if (done == 0)
+                buf_ps_sts = ps_u0103((PsIpc *)&m.x[1]);
+            done = 1;
+            break;
+        case 0x11:
+            if (buf_ps_sts == 5) {
+                buf_ps_sts = ps_l1105((PsIpc *)&m.x[1]);
+                OS_mq_close(mq_ps);
+                OS_mq_close(mq_ps_su);
+                OS_mq_close(mq_ui);
+                OS_mq_close(mq_layout);
+                OS_mq_close(mq_iom);
+                OS_mq_close(mq_js);
+                OS_mq_unlink("/tmp/mq_ps");
+                OS_mq_unlink("/tmp/mq_ps_su");
+                OS_mq_unlink("/tmp/mq_lo");
+                OS_mq_unlink("/tmp/mq_iom");
+                OS_mq_unlink("/tmp/mq_ps_js");
+                OS_thread_exit(NULL);
+            }
+            break;
+        case 0x21:
+            if (buf_ps_sts == 4)
+                buf_ps_sts = ps_i2104((PsIpc *)&m.x[1]);
+            break;
+        default:
+            if (m.data != NULL)
+                MEM_free(0, m.data);
+            break;
+        }
+    }
+}
 
 PsLocation *ps_SetLocation(int id, int b, int c, int len, char *url) {
     PsLocation *p;
