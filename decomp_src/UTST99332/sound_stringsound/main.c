@@ -401,4 +401,67 @@ static int pad_read(void)
 	return 1;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/sound_stringsound/nonmatchings/main", main);
+SceInt32 init_atrac3plus(SceUChar8 *filename, SceUChar8 *pucFirstBuf, SceInt32 iFirstBufferSize, SceUChar8 *pucSecondBuf, SceInt32 iSecondBufSize, SceInt32 iOutputChannel, SceAtracArg *pPlayArg);
+int play_atrac3plus(unsigned int args, void *argp);
+void finish_atrac3plus(SceAtracArg *pPlayArg);
+int main(void)
+{
+	SceUID thid;
+	SceInt32 status;
+
+	menuInit();
+	if (loadModuleAt3plus() < 0) {
+		printf("loadModuleAt3plus error\n");
+		return -1;
+	}
+	if ((status = sceWaveInit()) != 0) {
+		printf("sceWaveInit error:0x%08x\n", status);
+		goto unload;
+	}
+	status = init_atrac3plus((SceUChar8 *)"disc0:/PSP_GAME/USRDIR/DATA/sound/wave/overload_loop.at3", aucFirstBuf, 0x400000, aucSecondBuf, 0xC800, 0, &playArg);
+	if (status < 0) {
+		printf("init_atrac3plus error: 0x%08x\n", status);
+		goto waveexit_and_unload;
+	}
+	thid = sceKernelCreateThread("thread 1", play_atrac3plus, 0x10, 0x10000, 0, NULL);
+	if (thid < 0) {
+		printf("sceKernelCreateThread:0x%08X\n", thid);
+		status = thid;
+		goto waveexit_and_unload;
+	}
+	status = sceKernelStartThread(thid, sizeof(SceAtracArg), &playArg);
+	if (status != 0) {
+		printf("sceKernelStartThread:0x%08X\n", status);
+		goto waveexit_and_unload;
+	}
+	init_all();
+	init_pos();
+	InitString();
+	while (pad_read()) {
+		draw_frame();
+		sceDisplayWaitVblankStart();
+		sceGuSwapBuffers();
+	}
+	sceGuTerm();
+	finish_atrac3plus(&playArg);
+	status = sceKernelWaitThreadEnd(thid, NULL);
+	if (status != 0) {
+		printf("sceKernelWaitThread: 0x%08X\n", status);
+		goto waveexit_and_unload;
+	}
+	status = sceKernelDeleteThread(thid);
+	if (status != 0)
+		printf("sceKernelDeleteThread: 0x%08X\n", status);
+waveexit_and_unload:
+	if (sceWaveExit() != 0) {
+		printf("sceWaveExit error\n");
+		status = -1;
+	}
+unload:
+	if (unloadModuleAt3plus() < 0) {
+		printf("unloadModuleAt3plus error\n");
+		status = -1;
+	}
+	menuTerm(4, 8);
+	return status;
+}
