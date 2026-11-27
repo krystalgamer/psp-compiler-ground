@@ -4,5 +4,24 @@
 0x04FB0 libgu           1.5.1.internal  libgu.c
 0x08808 libwave         1.5.1.internal  libwave.c
 0x0BB00 kernel_bridge   1.5.1.internal  kernel_bridge.c
-0x13B70 libwave_        1.5.1.internal  libwave.c
-0x14648 dp_bit          1.5.1.internal  dp-bit.c
+# libgcc (not libwave): libgcc2 _udivdi3.o/_umoddi3.o and the dp-bit objects, one per function
+0x13B70 __udivdi3       1.5.1.internal  libgcc/libgcc2/__udivdi3.c
+0x140C0 __umoddi3       1.5.1.internal  libgcc/libgcc2/__umoddi3.c
+0x14648 _fpadd_parts    1.5.1.internal  libgcc/dp-bit/_fpadd_parts.c
+0x14A6C __muldf3        1.5.1.internal  libgcc/dp-bit/__muldf3.c
+0x14DE4 __divdf3        1.5.1.internal  libgcc/dp-bit/__divdf3.c
+0x15008 __eqdf2         1.5.1.internal  libgcc/dp-bit/__eqdf2.c
+0x15090 __nedf2         1.5.1.internal  libgcc/dp-bit/__nedf2.c
+0x15118 __gtdf2         1.5.1.internal  libgcc/dp-bit/__gtdf2.c
+0x151A0 __gedf2         1.5.1.internal  libgcc/dp-bit/__gedf2.c
+0x15228 __ltdf2         1.5.1.internal  libgcc/dp-bit/__ltdf2.c
+0x152B0 __floatsidf     1.5.1.internal  libgcc/dp-bit/__floatsidf.c
+0x1538C __fixdfsi       1.5.1.internal  libgcc/dp-bit/__fixdfsi.c
+0x1545C __negdf2        1.5.1.internal  libgcc/dp-bit/__negdf2.c
+0x154A0 __pack_d        1.5.1.internal  libgcc/dp-bit/__pack_d.c
+0x1573C __unpack_d      1.5.1.internal  libgcc/dp-bit/__unpack_d.c
+0x15858 __fpcmp_parts_d 1.5.1.internal  libgcc/dp-bit/__fpcmp_parts_d.c
+# crtend.o: __do_global_ctors_aux
+0x159A8 crtend          1.5.1.internal  crtend.c
+rodata 0x17A58 libgcc/dp-bit/__floatsidf
+rodata 0x17A60 libgcc/dp-bit/__pack_d
