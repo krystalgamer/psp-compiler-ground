@@ -1,4 +1,4 @@
-/* cflags: -Os -fno-strength-reduce */
+/* cflags: -Os */
 #include "common.h"
 #include "m2c_macros.h"
 extern const float D_00104710;
@@ -39,17 +39,20 @@ void _AniFrameSet(int anm, int frame)
 	bxAnmExec(anm);
 }
 
-int _ShopCursorInitSet(void *shop, void *list, int card)
+int _ShopCursorInitSet(void *shop, SortCard *list, int card)
 {
 	int i;
 	int id;
 	int ret = 0;
+	SortCard *c;
 	if (card == 0) {
 		return 0;
 	}
 	id = cardlistGetSaveID(card);
 	for (i = 0; i < M2C_FIELD(shop, int *, 0x10); i++) {
-		if (((unsigned short *)list)[i * 2 + 1] == id) {
+		c = list;
+		c = (SortCard *)((char *)(i * sizeof(SortCard)) + (int)list);
+		if (c->id == id) {
 			ret = i;
 			break;
 		}
@@ -148,24 +151,30 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/shop", _SortCardListS
 
 int _SortCardListGet(SortCard *t, int n, SortCard *k)
 {
+	SortCard *c;
 	int r = 0;
-	int i;
-	for (i = 0; i < n; i++) {
-		if (t[i].id == k->id && t[i].kind == k->kind) {
-			r = i;
-			break;
-		}
+	int i = 0;
+	while (i < n) {
+		c = t;
+		c = (SortCard *)((char *)(i * sizeof(SortCard)) + (int)t);
+		if (c->id != k->id) { i++; continue; }
+		if (c->kind != k->kind) { i++; continue; }
+		r = i;
+		break;
 	}
 	return r;
 }
 
 int _CardListDel(SortCard *t, int n, SortCard *k)
 {
+	SortCard *c;
 	int i = _SortCardListGet(t, n, k);
 	n--;
 	for (; i < n; i++) {
-		t[i].id = t[i + 1].id;
-		t[i].kind = t[i + 1].kind;
+		c = t;
+		c = (SortCard *)((char *)(i * sizeof(SortCard)) + (int)t);
+		c[0].id = c[1].id;
+		c[0].kind = c[1].kind;
 	}
 	return n;
 }

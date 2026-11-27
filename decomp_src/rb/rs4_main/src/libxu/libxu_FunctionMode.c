@@ -1,4 +1,4 @@
-/* cflags: -Os -fno-strength-reduce */
+/* cflags: -Os */
 #include "common.h"
 extern unsigned int D_001147F8[];
 extern unsigned int D_0011484C[];

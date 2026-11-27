@@ -1,4 +1,4 @@
-/* cflags: -Os -fno-strength-reduce */
+/* cflags: -Os */
 #include "common.h"
 #include "m2c_macros.h"
 int semaInit(M2C_UNK *);                            /* extern */
@@ -146,19 +146,16 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/ctrl", ctrlFlushCtrlData);
 #define NULL ((void *)0)
 #endif
 
-int ctrlFlushCtrlDataAll(void) {
-    int temp_v0;
-    int var_s0;
-    int var_s1;
-
-    var_s1 = 0;
-    var_s0 = 0;
-    do {
-        temp_v0 = ctrlFlushCtrlData(var_s0);
-        var_s0 += 1;
-        var_s1 |= temp_v0;
-    } while (var_s0 == 0);
-    return var_s1;
+int ctrlFlushCtrlDataAll(void)
+{
+	int r = 0;
+	unsigned int i = 0;
+loop:
+	r |= ctrlFlushCtrlData(i);
+	i++;
+	if (i < 1)
+		goto loop;
+	return r;
 }
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/ctrl", ctrlFlushVirtualData);

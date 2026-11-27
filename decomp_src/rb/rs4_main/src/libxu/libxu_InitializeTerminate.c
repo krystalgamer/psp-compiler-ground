@@ -1,4 +1,4 @@
-/* cflags: -Os -fno-strength-reduce */
+/* cflags: -Os */
 #include "common.h"
 
 void xuInit(void) {

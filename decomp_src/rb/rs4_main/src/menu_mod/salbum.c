@@ -1,4 +1,4 @@
-/* cflags: -Os -fno-strength-reduce */
+/* cflags: -Os */
 #include "common.h"
 #include "m2c_macros.h"
 #ifndef NULL
@@ -17,10 +17,13 @@ M2C_UNK salbumClearNewFlagBySaveID(int, int, unsigned char);
 int salbumCalcKinds(int *p)
 {
 	int n = 0;
-	int i, j;
+	int i, j, k;
 	for (i = 0xFF; i >= 0; i--) {
 		for (j = 0; j < 3; j++) {
-			n += (unsigned int)((p[i * 3 + j] & 0x7F) - 1) < 0x7E;
+			k = i * 2;
+			k += i;
+			k += j;
+			n += (unsigned int)((p[k] & 0x7F) - 1) < 0x7E;
 		}
 	}
 	p[0x300] = n;

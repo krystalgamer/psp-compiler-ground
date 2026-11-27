@@ -1,4 +1,4 @@
-/* cflags: -Os -fno-strength-reduce */
+/* cflags: -Os */
 #include "common.h"
 #include "m2c_macros.h"
 int sceKernelGetGPI();                              /* extern */
@@ -50,7 +50,8 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/script/script", ScriptSettleVa
 int ScriptEnumOperand(int a, ScrOpnd *p)
 {
 	int n = 0;
-	while (p[n].c)
+	char *q;
+	while (q = (char *)(n * sizeof(ScrOpnd)), q += (int)p, ((ScrOpnd *)q)->c)
 		n++;
 	return n;
 }

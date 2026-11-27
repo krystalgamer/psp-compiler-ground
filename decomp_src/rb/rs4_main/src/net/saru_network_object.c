@@ -1,5 +1,5 @@
 /* lang: c++ */
-/* cflags: -Os -fno-strength-reduce */
+/* cflags: -Os */
 #pragma interface "rodata"
 #include "common.h"
 

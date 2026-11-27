@@ -1,4 +1,4 @@
-/* cflags: -Os -fno-strength-reduce */
+/* cflags: -Os */
 #include "common.h"
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/script/prog_wipeout", ProgWipeOut);

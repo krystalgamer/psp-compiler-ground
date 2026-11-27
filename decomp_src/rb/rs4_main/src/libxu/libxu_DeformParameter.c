@@ -1,4 +1,4 @@
-/* cflags: -Os -fno-strength-reduce */
+/* cflags: -Os */
 #include "common.h"
 /* declarations recovered from DWARF */
 typedef struct ScePspFMatrix4 ScePspFMatrix4 __attribute__((aligned(16)));

@@ -1,4 +1,4 @@
-/* cflags: -Os -fno-strength-reduce */
+/* cflags: -Os */
 #include "common.h"
 #include "m2c_macros.h"
 extern signed char D_000F9BF0;

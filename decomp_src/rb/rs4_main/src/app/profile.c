@@ -1,4 +1,4 @@
-/* cflags: -Os -fno-strength-reduce */
+/* cflags: -Os */
 #include "common.h"
 #include "m2c_macros.h"
 unsigned int cccTtrToUcs4(void *, int, M2C_UNK *, M2C_UNK, M2C_UNK); /* extern */
