@@ -91,6 +91,10 @@ extern struct MsgMan msg_man;
 
 
 
+extern MqAttr defattr;
+unsigned int strlen(const char *s);
+char *strcpy(char *d, const char *s);
+unsigned int mqInfo2mqID(MqInfo *info);
 int addThreadTbl(ThreadEnt *t)
 {
     if (thread_list.mutex == NULL) {
@@ -149,7 +153,81 @@ ThreadEnt *srchThreadTbl(int id)
     return NULL;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/wsthread", OS_mq_open);
+int OS_mq_open(const char *name, int oflag, ...)
+{
+    __builtin_va_list ap;
+    int mbx = -1;
+    MqMap *map = NULL;
+    MqInfo *info = NULL;
+    int flags = oflag & ~0x4000;
+    int nonblock = oflag & 0x4000;
+    MqAttr *attr;
+    MqMap *p;
+    MbxAttr ma;
+
+    for (p = mqmap_head.next; p != NULL; p = p->next) {
+        if (strcmp(p->name, name) == 0)
+            break;
+    }
+    if (p == NULL) {
+        if (!(flags & 0x200))
+            return -1;
+    }
+    if (p != NULL) {
+        if ((flags & 0xA00) == 0xA00)
+            return -1;
+    }
+    if (flags & 0x200) {
+        __builtin_va_start(ap, oflag);
+        __builtin_va_arg(ap, int);
+        attr = __builtin_va_arg(ap, MqAttr *);
+        __builtin_va_end(ap);
+    } else {
+        attr = NULL;
+    }
+    if (p == NULL) {
+        ma.f0 = 0;
+        mbx = CreateMbx(&ma);
+        if (mbx < 0)
+            return -1;
+        map = MEM_malloc(0, strlen(name) + 13);
+        if (map == NULL)
+            goto err;
+        map->next = NULL;
+        map->name = (char *)(map + 1);
+        strcpy(map->name, name);
+        map->mbx = mbx;
+        map->next = mqmap_head.next;
+        mqmap_head.next = map;
+        p = map;
+    }
+    if (attr == NULL) {
+        attr = &defattr;
+    } else if (attr->mq_maxmsg <= 0 || attr->mq_msgsize <= 0) {
+        goto err;
+    }
+    info = MEM_malloc(0, sizeof(MqInfo));
+    if (info == NULL) {
+        *__errno() = 34;
+        goto err;
+    }
+    info->flags = nonblock;
+    info->magic = 0x98765432;
+    info->mbx = p->mbx;
+    info->attr.mq_flags = 0;
+    info->attr.mq_maxmsg = attr->mq_maxmsg;
+    info->attr.mq_msgsize = attr->mq_msgsize;
+    info->attr.mq_curmsgs = 0;
+    return mqInfo2mqID(info);
+err:
+    if (info != NULL)
+        MEM_free(0, info);
+    if (map != NULL)
+        MEM_free(0, map);
+    if (mbx >= 0)
+        DeleteMbx(mbx);
+    return -1;
+}
 
 int OS_mq_close(int id)
 {
