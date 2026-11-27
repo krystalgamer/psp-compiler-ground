@@ -467,6 +467,24 @@ modules (`tools/nltest.py`, `tools/objcmp.py`).
   object's own instances (by original address range) after its `.text`.
   Instances in the middle of a unit therefore mark object boundaries that
   the static-initializer split missed (objects without static constructors).
+- UTST99332 demo_duck/demo_harmonic's libraries need no compiler change
+  either: the 1.6.1 tree's libstdc++ `src/codecvt.cc`, `ctype.cc`, `ios.cc`,
+  `locale.cc`, `localename.cc`, `fstream.cc` and `config/io/basic_file_stdio.cc`,
+  `config/locale/generic/{c_locale,collate,messages,monetary,numeric,time}_members.cc`
+  compile byte-identically with cc1plus-1.6.1 `-O2` (their initialized
+  `.data` stays asm), libgcc's `unwind-dw2.c`/`unwind-dw2-fde.c` with
+  `-O2 -fexceptions` (not `-fnon-call-exceptions`: that adds 4-8 bytes to
+  several functions), newlib's `vfscanf.c` with `WANT_PRINTF_LONG_LONG`
+  (like `vfprintf.c`).  Only the units' `.rodata`/`.bss` had to be carved.
+- In the demo C++, inline functions of the libstdc++ headers that main.hpp
+  includes after its `#pragma interface` are never emitted out of line
+  (e.g. stl_tree.h's `_Rb_tree_rebalance`, which scene_Graph's object
+  holds): including the header before main.hpp gives the original's copies.
+  An inline function defined under `#pragma implementation` or explicitly
+  instantiated (`template void deque<T>::push_back(...)`) is no longer
+  inlined into the unit's callers; taking its address (a static pointer in
+  a discarded section, so no .rodata constant) emits the copy and keeps the
+  inlining.
 
 - Divide-by-zero traps can vanish without a flag: in 1.6.1's mips.md the
   trap pattern (`div_trap_normal`) prints nothing when the scheduler linked it
