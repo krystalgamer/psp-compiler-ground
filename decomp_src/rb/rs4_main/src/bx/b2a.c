@@ -20,16 +20,6 @@ struct GpPrim {
 };
 
 
-namespace B2A {
-struct AnimState {
-	float frame;
-	float speed;
-	int loop;
-	short scene;
-	short _pad;
-	int pause;
-};
-
 struct FVEC {
 	float x, y, z, w;
 	void Set(float a, float b, float c, float d)
@@ -40,6 +30,17 @@ struct FVEC {
 		w = d;
 	}
 };
+
+namespace B2A {
+struct AnimState {
+	float frame;
+	float speed;
+	int loop;
+	short scene;
+	short _pad;
+	int pause;
+};
+
 
 struct Player {
 	int _0;
@@ -84,6 +85,7 @@ struct Object {
 	FVEC scale;
 	void Clear();
 	void Scale(float, float);
+	void MoveTo(FVEC &v);
 };
 
 struct Manager {
@@ -105,6 +107,9 @@ struct Manager {
 	void SetFrame(float);
 	float GetFrame();
 	float GetEndFrame();
+	void SetSpeed(float s);
+	void DrawOne(int n);
+	void draw(int n, ScePspFMatrix4 *a, ScePspFMatrix4 *b, unsigned int col);
 };
 
 void DeletePlayer(Player *);
@@ -396,7 +401,13 @@ int B2A::Manager::GetPause()
 
 extern "C" {
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _ZN3B2A7Manager8SetSpeedEf);
+}
+void B2A::Manager::SetSpeed(float sp)
+{
+	for (Player *p = players; p; p = p->next)
+		p->st->speed = sp;
+}
+extern "C" {
 
 } /* extern "C" */
 
@@ -463,7 +474,13 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _ZN3B2A7Manager7CalcO
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _ZN3B2A7Manager4CalcEv);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _ZN3B2A7Manager7DrawOneEi);
+}
+void B2A::Manager::DrawOne(int n)
+{
+	ScePspFMatrix4 *m = (ScePspFMatrix4 *)&_8[8];
+	draw(n, m, m, 0x80808080);
+}
+extern "C" {
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _ZN3B2A7Manager4DrawEv);
 
@@ -489,7 +506,12 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _ZN3B2A6Object5ClearE
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _ZN3B2A6Object7RefreshEv);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _ZN3B2A6Object6MoveToER4FVEC);
+}
+void B2A::Object::MoveTo(FVEC &v)
+{
+	pos = v;
+}
+extern "C" {
 
 } /* extern "C" */
 
