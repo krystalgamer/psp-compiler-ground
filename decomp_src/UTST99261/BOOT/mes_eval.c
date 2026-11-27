@@ -1,6 +1,13 @@
 /* cflags: -O1 */
 #include "common.h"
 #include "m2c_macros.h"
+extern const double D_0013B3E0;       /* 4294967296.0 */
+extern const double D_0013B3E8;       /* 2147483648.0 */
+extern const double D_0013B3F0;       /* 4294967296.0 */
+extern unsigned int D_005852F8, D_005852C4, D_0058531C, D_00585264, D_00585328, D_00585284;
+int mes_eval_to_primitive(struct EvCtx *ctx, int v, int hint);
+unsigned int mes_context_index(int s);
+double mes_number_fmod(double a, double b);
 typedef struct EvStr {
     unsigned short *str;
     int len;                          /* 0x4 */
@@ -151,7 +158,31 @@ int mes_eval_to_boolean(EvCtx *ctx, int v)
     return 8;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_eval", mes_eval_to_number);
+int mes_eval_to_number(EvCtx *ctx, int v)
+{
+    switch ((unsigned int)v & 3) {
+    case 0:
+        if (v == 0)
+            return 0x1C;
+        if (v == 4 || v == 8)
+            return 1;
+        if (v == 0xC)
+            return 5;
+        if (v >= 0x10 && v <= 0x1C)
+            return v;
+        v = mes_eval_to_primitive(ctx, v, 0x39);
+        *--ctx->sp = v;
+        v = mes_eval_to_number(ctx, v);
+        ctx->sp++;
+        return v;
+    case 1:
+    case 2:
+        return v;
+    case 3:
+        return mes_number_from_string(ctx, v, 0, 1);
+    }
+    return 1;
+}
 
 int mes_eval_to_integer(EvCtx *ctx, int v)
 {
@@ -165,15 +196,81 @@ int mes_eval_to_integer(EvCtx *ctx, int v)
     return v;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_eval", mes_eval_to_int32);
+int mes_eval_to_int32(EvCtx *ctx, int v)
+{
+    double d;
+    double m;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_eval", mes_eval_to_uint32);
+    v = mes_eval_to_number(ctx, v);
+    if ((v & 3) == 1)
+        return v >> 2;
+    if ((v & 3) != 2)
+        return 0;
+    d = ((EvNum *)(v & ~3))->d;
+    d = mes_number_floor(d);
+    m = D_0013B3E0;
+    d = mes_number_fmod(d, m);
+    if (d < 0)
+        d += m;
+    if (d >= D_0013B3E8)
+        d -= D_0013B3E0;
+    return (int)d;
+}
+
+unsigned int mes_eval_to_uint32(EvCtx *ctx, int v)
+{
+    double d;
+    double m;
+
+    v = mes_eval_to_number(ctx, v);
+    if ((v & 3) == 1)
+        return v >> 2;
+    if ((v & 3) != 2)
+        return 0;
+    d = ((EvNum *)(v & ~3))->d;
+    d = mes_number_floor(d);
+    m = D_0013B3F0;
+    d = mes_number_fmod(d, m);
+    if (d < 0)
+        d += m;
+    return (unsigned int)d;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_eval", mes_eval_to_string);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_eval", mes_eval_to_object);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_eval", mes_eval_to_index);
+unsigned int mes_eval_to_index(EvCtx *ctx, int v)
+{
+    switch ((unsigned int)v & 3) {
+    case 0:
+        if (v == 0)
+            return D_00585320;
+        if (v == 4)
+            return D_005852F8;
+        if (v == 8)
+            return D_005852C4;
+        if (v == 0xC)
+            return D_0058531C;
+        if (v == 0x10)
+            return 1;
+        if (v == 0x14)
+            return D_00585264;
+        if (v == 0x18)
+            return D_00585328;
+        if (v == 0x1C)
+            return D_00585284;
+        break;
+    case 1:
+        return v;
+    case 2:
+        break;
+    case 3:
+        return mes_context_index(v);
+    }
+    v = mes_eval_to_string(ctx, v);
+    return mes_context_index(v);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_eval", mes_eval_get_var);
 
