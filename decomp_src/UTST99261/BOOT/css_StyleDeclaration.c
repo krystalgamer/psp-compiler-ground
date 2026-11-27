@@ -20,6 +20,9 @@ M2C_UNK newCSSRule(M2C_UNK, M2C_UNK, int, int);     /* extern */
 M2C_UNK addCSSRule();                               /* extern */
 
 
+typedef struct CSSSELN { s16 type; s16 pad; int pad2[5]; struct CSSSELN *next; } CSSSELN;
+typedef struct CSSSELLIST { s16 type; s16 pad; int x4; int n; CSSSELN *head; } CSSSELLIST;
+char *CSSSelectorList_getCssText(void *s);
 void *CSSStyleDeclaration_getPropertyDeclaration(void *d, u16 *name) {
     void *p;
     for (p = d; p != NULL; p = M2C_FIELD(p, void **, 0x18)) {
@@ -905,7 +908,31 @@ int CSSStyleRule_getType(s16 *r) {
     return -1;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_StyleDeclaration", CSSStyleRule_getCssText);
+char *CSSStyleRule_getCssText(CSSSELLIST *l) {
+    void *buf;
+    char *t;
+    int i;
+    CSSSELN *s;
+
+    if (l == NULL || l->type != 7)
+        return NULL;
+    buf = CSS_newPoolBuf();
+    if (buf == NULL)
+        return NULL;
+    t = NULL;
+    for (s = l->head, i = 0; s != NULL && i < l->n; s = s->next, i++) {
+        if (s->type == 8) {
+            t = CSSSelectorList_getCssText(s);
+            if (t != NULL) {
+                CSS_putsPoolBuf(buf, (int)t);
+                MEM_free(0, t);
+            }
+        }
+    }
+    t = (char *)CSS_getPoolBuf(buf);
+    CSS_freePoolBuf(buf);
+    return t;
+}
 
 void CSSStyleRule_setCssText(void *r, char *text) {
     void *ss;
