@@ -244,4 +244,101 @@ int inv_screffect_disp(void)
 	return 1;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_scr_effect", inv_scrdisp_disp);
+extern int g_packet;
+extern int inv_scrdisp_disp_max, inv_scrdisp_disp_time;
+extern SCRV_T D_003427FC[];
+unsigned int sceKernelGetSystemTimeLow(void);
+void sceGuEnable(int);
+void sceGuDisable(int);
+void sceGuTexFunc(int, int);
+void sceGuTexMapMode(int, unsigned int, unsigned int);
+void sceGuTexWrap(int, int);
+void sceGuTexFilter(int, int);
+void set_texture(int);
+void sceGuAlphaFunc(int a0, int a1, int a2);
+void sceGuBlendFunc(int op, int src, int dest, unsigned int srcfix, unsigned int destfix);
+void sceKernelDcacheWritebackInvalidateRange(const void *p, unsigned int size);
+void sceGumDrawArrayN(int prim, int vtype, int count, int n, const void *indices, const void *vertices);
+int inv_scrdisp_disp(void)
+{
+	SCREFC *p;
+	SCRV_T *v;
+	int i, n, k, j;
+	unsigned int t;
+
+	n = 0;
+	inv_scrdisp_disp_max = 0;
+	inv_scrdisp_disp_time = 0;
+	if (d_co == 0)
+		return 0;
+	t = sceKernelGetSystemTimeLow();
+	v = (SCRV_T *)&p2;
+	if (g_packet)
+		v = D_003427FC;
+	k = 0;
+	for (i = 0; i < 512; i++) {
+		p = &((SCREFC *)&inv_scrdisp)[i];
+		if (p->on) {
+			p->on = 0;
+			j = k;
+			k += 4;
+			v[j].u = p->u0;
+			v[j].v = p->v0;
+			v[j + 1].u = p->u0;
+			v[j + 1].v = p->v1;
+			v[j + 2].u = p->u1;
+			v[j + 2].v = p->v0;
+			v[j + 3].u = p->u1;
+			v[j + 3].v = p->v1;
+			n++;
+			v[j].c = p->col;
+			v[j + 1].c = p->col;
+			v[j + 2].c = p->col;
+			v[j + 3].c = p->col;
+			v[j].x = p->x[0];
+			v[j].y = p->y[0];
+			v[j].z = d_pri;
+			v[j + 1].x = p->x[1];
+			v[j + 1].y = p->y[1];
+			v[j + 1].z = d_pri;
+			v[j + 2].x = p->x[2];
+			v[j + 2].y = p->y[2];
+			v[j + 2].z = d_pri;
+			v[j + 3].x = p->x[3];
+			v[j + 3].y = p->y[3];
+			v[j + 3].z = d_pri;
+		}
+	}
+	if (n == 0)
+		return 0;
+	inv_scrdisp_disp_max = n;
+	if (texture_no2 != -1) {
+		sceGuEnable(9);
+		sceGuTexFunc(0, 1);
+		sceGuTexMapMode(0, 0, 0);
+		sceGuTexWrap(1, 1);
+		sceGuTexFilter(1, 1);
+		set_texture(texture_no2);
+	}
+	sceGuAlphaFunc(1, 0, 0xFF);
+	sceGuEnable(0);
+	if (alpha_mode2 == 0) {
+		sceGuDisable(4);
+	} else if (alpha_mode2 == 1) {
+		sceGuBlendFunc(0, 2, 3, 0, 0);
+		sceGuEnable(4);
+	} else if (alpha_mode2 == 2) {
+		sceGuBlendFunc(0, 10, 10, -1, -1);
+		sceGuEnable(4);
+	} else if (alpha_mode2 == 3) {
+		sceGuBlendFunc(4, 0, 0, 0, 0);
+		sceGuEnable(4);
+	} else if (alpha_mode2 == 4) {
+		sceGuBlendFunc(2, 10, 10, -1, -1);
+		sceGuEnable(4);
+	}
+	sceKernelDcacheWritebackInvalidateRange(v, n * 3 * 16);
+	sceGumDrawArrayN(4, 0x80011A, 4, n, 0, v);
+	inv_scrdisp_disp_time = sceKernelGetSystemTimeLow() - t;
+	return 1;
+}
