@@ -41,6 +41,8 @@ int OS_mq_receive(int q, void *buf, int size, int flag);
 int OS_mq_send(int q, void *buf, int size, int flag);
 void proc_msg_PL2(LFMSG *m);
 void proc_msg_TM(LFMSG *m);
+typedef struct RadioItem { struct RadioItem *prev; struct RadioItem *next; void *box; } RadioItem;
+void *getBodyBox(void *box);
 RadioEnt *getRadioListByName(void *ctx, void *box) {
     RadioEnt *r = M2C_FIELD(M2C_FIELD(ctx, void **, 0x20), RadioEnt **, 0x80);
 
@@ -374,7 +376,59 @@ void actClearForm(void) {
     clearSaveFormData();
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_form", addRadioList);
+void addRadioList(void *box) {
+    void *body = getBodyBox(box);
+    RadioEnt *g;
+    RadioEnt *p;
+    RadioItem *t;
+    RadioItem *e;
+    if (M2C_FIELD(M2C_FIELD(body, void **, 0x20), RadioEnt **, 0x80) == NULL) {
+        g = MEM_malloc(0, 0x10);
+        g->pad = 0;
+        g->next = NULL;
+        g->box = NULL;
+        g->name = NULL;
+        g->name = *M2C_FIELD(box, char ***, 0x20);
+        M2C_FIELD(M2C_FIELD(body, void **, 0x20), RadioEnt **, 0x80) = g;
+    } else {
+        p = M2C_FIELD(M2C_FIELD(body, void **, 0x20), RadioEnt **, 0x80);
+        for (;;) {
+            if (strcmp(p->name, *M2C_FIELD(box, char ***, 0x20)) == 0
+                && getBoxByHTML(M2C_FIELD(p->box, void **, 8), 0x23) == getBoxByHTML(box, 0x23)) {
+                g = p;
+                break;
+            }
+            if (p->next == NULL) {
+                g = MEM_malloc(0, 0x10);
+                g->pad = 0;
+                g->next = NULL;
+                g->box = NULL;
+                g->name = NULL;
+                g->name = *M2C_FIELD(box, char ***, 0x20);
+                p->next = g;
+                g->pad = (int)p;
+                break;
+            }
+            p = p->next;
+        }
+    }
+    for (t = g->box; t != NULL; t = t->next) {
+        if (t->next == NULL) {
+            break;
+        }
+    }
+    e = MEM_malloc(0, 0xC);
+    e->prev = NULL;
+    e->next = NULL;
+    e->box = NULL;
+    if (t == NULL) {
+        g->box = e;
+    } else {
+        t->next = e;
+        e->prev = t;
+    }
+    e->box = box;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
