@@ -6,24 +6,142 @@ int taskMake(void *, M2C_UNK *, M2C_UNK, M2C_UNK);  /* extern */
 extern unsigned char ProgFrameIn;
 
 typedef struct { int a, b, c, d; } ScrOpnd;
+typedef struct { int *ucs4; int pad[2]; int len; } ConvEnt;
+typedef struct { char **words; int num; ConvEnt *ent; } ConvTblT;
+extern ConvTblT ConvTbl[19];
+typedef struct { int *str; int line; int pos; } ScrTok;
+extern unsigned char D_001000E0, D_001000F4, D_00100164;
+void consPrintf(const char *, ...);
+void *_memAllocZero(int, void *, int);
+int _memFree();
+unsigned int strlen(const char *);
+int *textASCIItoUCS4(const char *);
+char *textUCS4toASCII(int *);
+int textCmp(int *, int *);
+int textLen(int *);
+void ScriptCompileError(char *msg, ScrTok *t, int code);
+int ScriptWordSearchUCS4(int t, int *s);
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/script/script", D_001000E0);
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/script/script", D_001000F4);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/script/script", ScriptInit);
+int ScriptInit(void)
+{
+	unsigned int i;
+	int j;
+	ConvTblT *c;
+	int num;
+	char **w;
+	ConvEnt *e;
+	int len;
+	int *u;
+	for (i = 0; i < 19; i++) {
+		c = &ConvTbl[i];
+		num = c->num;
+		w = c->words;
+		e = _memAllocZero(num * 16, &D_001000E0, 0x206);
+		if (e == NULL)
+			consPrintf(&D_001000F4, &D_001000E0, 0x207, "ScriptInit", "apTok");
+		c->ent = e;
+		for (j = 0; j < num; j++) {
+			len = strlen(w[j]);
+			u = textASCIItoUCS4(w[j]);
+			if (u == NULL)
+				consPrintf(&D_001000F4, &D_001000E0, 0x20F, "ScriptInit", "pStr");
+			e[j].ucs4 = u;
+			e[j].len = len;
+		}
+	}
+	return 1;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/script/script", ScriptTerm);
+int ScriptTerm(void)
+{
+	unsigned int i;
+	int j, num;
+	ConvEnt *e;
+	for (i = 0; i < 19; i++) {
+		num = ConvTbl[i].num;
+		e = ConvTbl[i].ent;
+		for (j = 0; j < num; j++)
+			_memFree(e[j].ucs4, &D_001000E0, 0x224);
+		_memFree(ConvTbl[i].ent, &D_001000E0, 0x226);
+	}
+	return 1;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/script/script", ScriptCompileError);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/script/script", ScriptWordSearch);
+static inline int _wcmp(int *s, int *u)
+{
+	if (u == NULL) return -1;
+	return textCmp(s, u);
+}
+int ScriptWordSearch(char **w, int n, int *s)
+{
+	int i = 0;
+	int *u;
+	int r;
+	while (n) {
+		u = w[i] ? textASCIItoUCS4(w[i]) : NULL;
+		r = _wcmp(s, u);
+		if (u) _memFree(u, &D_001000E0, 0x24B);
+		if (r == 0) return i;
+		i++;
+		n--;
+	}
+	return -1;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/script/script", ScriptWordSearchUCS4);
+int ScriptWordSearchUCS4(int t, int *s)
+{
+	int len = textLen(s);
+	int num = ConvTbl[t].num;
+	ConvEnt *e = ConvTbl[t].ent;
+	int i, n = 0;
+	for (i = 0; n < num; i++, n++, e++) {
+		if (e->len == len && textCmp(s, e->ucs4) == 0)
+			return i;
+	}
+	return -1;
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/script/script", D_00100164);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/script/script", ScriptWordSection);
+int ScriptWordSection(ScrTok *t, int *a, int *b)
+{
+	int r = -1;
+	int x, y;
+	if (t->pos == 0) {
+	x = -1;
+	r = ScriptWordSearchUCS4(0, t->str);
+	y = 1;
+	if (r >= 0) {
+		switch (r) {
+		default:
+			ScriptCompileError((char *)&D_00100164, t, 0x280);
+			y = 0;
+			break;
+		case 0: x = 1; break;
+		case 1: x = 2; break;
+		case 2: x = 3; break;
+		case 3: x = 4; break;
+		case 4: x = 5; break;
+		case 5: x = 6; break;
+		case 6: x = 7; break;
+		case 7: x = 8; break;
+		case 8: x = 9; break;
+		case 9: x = 10; break;
+		case 10: x = 11; break;
+		case 11: x = 12; break;
+		}
+	}
+	if (a) *a = x;
+	if (b) *b = y;
+	}
+	return r;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/script/script", ScriptChkSpace);
 
@@ -50,7 +168,6 @@ int ScriptSearchName(char *s, unsigned int type, int *name)
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/script/script", ScriptEntryName);
 
 typedef struct ScrName { struct ScrName *next; } ScrName;
-int _memFree();
 void *memset(void *, int, unsigned int);
 extern unsigned char D_001000E0;
 typedef struct { ScrName *head; int x4; } ScrNameList;
