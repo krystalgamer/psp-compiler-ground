@@ -528,7 +528,37 @@ void relayoutProcBodyOnly(RBOX *box, int flag) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_relayout", relayoutBoxTreeLoop);
+void relayoutBoxTreeLoop(RLCTX *ctx, RBOX *root) {
+    RBOX *b;
+
+    D_00584CFC = 0;
+    b = root->child;
+    if (b != NULL && b != root)
+    do {
+        relayoutProc(ctx, b);
+        if (lo_global.unk64 != 0) {
+            lo_global.unk64 = 0;
+        } else if (b->child != NULL) {
+            b = b->child;
+            continue;
+        }
+        if (b->next != NULL) {
+            relayoutProcAfter(ctx, b);
+            b = b->next;
+            continue;
+        }
+        relayoutProcAfter(ctx, b);
+        b = b->parent;
+        while (b != NULL && b != root) {
+            relayoutProcAfter(ctx, b);
+            if (b->next != NULL) {
+                b = b->next;
+                break;
+            }
+            b = b->parent;
+        }
+    } while (b != NULL && b != root);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_relayout", relayoutBoxTreeLoopBodyOnly);
 
