@@ -58,10 +58,51 @@ int sceKernelDelayThread(unsigned int delay);
 int sceKernelWaitThreadEnd(int thid, unsigned int *timeout);
 int sceKernelDeleteThread(int thid);
 int sceKernelExitThread(int status);
-static int func_0000A448(unsigned int args, void *argp);
 
+static __inline__ void wclr(void *dst, int n)
+{
+	char *p = dst;
+	int i;
 
-INCLUDE_ASM("tmp/asm/rb/pal_BOOT/nonmatchings/libwave/sceWaveInit", sceWaveInit);
+	for (i = 0; i < n; i++)
+		*p++ = 0;
+}
+
+int sceWaveInit(void)
+{
+	int i;
+	char *p;
+
+	if (D_002CF1A0 != 0)
+		return 0x80440001;
+	D_002D04F8 = D_002CF1A8;
+	D_002D04F4 = D_002CF218;
+	wclr(D_002D0028, sizeof(D_002D0028));
+	wclr(D_002D0288, sizeof(D_002D0288));
+	D_002D04E8.ch = sceAudioChReserve(-1, 0x1c0, 0);
+	if (D_002D04E8.ch < 0)
+		return 0x80440001;
+	D_002D04FC[0] = sceAudioChReserve(-1, 0x100, 0);
+	if (D_002D04FC[0] < 0) {
+		sceAudioChRelease(D_002D04E8.ch);
+		return 0x80440001;
+	}
+	D_002D04FC[1] = sceAudioChReserve(-1, 0x100, 0);
+	if (D_002D04FC[1] < 0) {
+		sceAudioChRelease(D_002D04E8.ch);
+		sceAudioChRelease(D_002D04FC[0]);
+		return 0x80440001;
+	}
+	D_002D04FC[2] = sceAudioChReserve(-1, 0x100, 0);
+	if (D_002D04FC[2] < 0) {
+		sceAudioChRelease(D_002D04E8.ch);
+		sceAudioChRelease(D_002D04FC[0]);
+		sceAudioChRelease(D_002D04FC[1]);
+		return 0x80440001;
+	}
+	D_002CF1A0 = 1;
+	return 0;
+}
 
 int sceWaveSetVoice(unsigned int ch, void *data, int size, int flags)
 {
@@ -410,15 +451,16 @@ INCLUDE_ASM("tmp/asm/rb/pal_BOOT/nonmatchings/libwave/sceWaveInit", func_0000A24
 
 
 extern char D_002CF228[2][0x700];
-static int func_0000A564(char *buf);
 
 
-static int func_0000A73C(short *dst, unsigned char *vag, int *hist1, int *hist2);
-static void func_0000A880(int ch, void *buf);
-static void func_0000AB1C(int ch, void *buf);
-static void func_0000B034(int ch, char *dst, void *src);
+static void func_00009A98(int ch, void *buf);
+static void func_00009D34(int ch, void *buf);
+static void func_0000A24C(int ch, char *dst, void *src);
 typedef int (*SceWaveCallback)(int ch, void *buf, int size, int arg);
 
 
 extern const signed char D_00017784[2][5];
+
+
+
 
