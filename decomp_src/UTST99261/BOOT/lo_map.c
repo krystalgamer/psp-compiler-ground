@@ -13,6 +13,11 @@ M2C_UNK MEM_free(M2C_UNK, void *);                  /* extern */
 void *createAreaInfo(s8 type, void *map, void *node);
 void addFocusList(void *ctx, int kind, void *node, short tabindex, void *info);
 void *appendFocusList(void *ctx, int kind, void *node, void *last, void *info);
+typedef struct { char *name; void (*func)(void *node, void *box); } TagAfter;
+extern TagAfter jt_after[];
+extern int D_001F5E20;
+int DOMStringcasecmpCharFast(DOMString *s, char *name);
+void *Node_getBox(void *node);
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_map", parseCoords);
 
 #ifndef NULL
@@ -254,7 +259,23 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_map", initBoxProperty);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_map", htmlTagBranch);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_map", htmlTagBranchAfter);
+void htmlTagBranchAfter(void *node) {
+    DOMString s;
+    int i;
+    int idx = -1;
+
+    Element_getTagName(&s, node);
+    if (s.len != 0) {
+        for (i = 0; i < D_001F5E20; i++) {
+            if (DOMStringcasecmpCharFast(&s, jt_after[i].name) == 0) {
+                idx = i;
+                break;
+            }
+        }
+    }
+    if (idx >= 0)
+        jt_after[idx].func(node, Node_getBox(node));
+}
 
 DOMString *newDOMString(unsigned char *s, int len) {
     DOMString *d = (DOMString *)MEM_malloc(0, 0xC);
