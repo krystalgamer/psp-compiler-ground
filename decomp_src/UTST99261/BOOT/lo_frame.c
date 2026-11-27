@@ -3,6 +3,8 @@
 #include "nflayout.h"
 #include "lo_frame.h"
 #include "m2c_macros.h"
+extern char D_001391E0[];
+void insertCalcSize(s8 type, int sum, int total, int flag, FRAMESIZES *buf);
 BOX *createBox(void *ctx, int type);
 void insLinkBox(BOX *b, BOX *parent, BOX *after);
 void initFrameBorderContent(BOX *b, int type);
@@ -127,7 +129,70 @@ int countSizeType(s8 type, FRAMESIZES *a) {
     return n;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_frame", DetFrameSize);
+int DetFrameSize(char *str, int total, int *out, int max) {
+    FRAMESIZES *buf;
+    int dsum;
+    int psum;
+    int rest;
+    int sum;
+    int diff;
+    int i;
+    int j;
+    buf = newBuffer();
+    if (buf == NULL) {
+        return 0;
+    }
+    if (splitString(str, ',', buf) < 0) {
+        deleteBuffer((void **)buf);
+        return 0;
+    }
+    if ((sumInputSize('d', buf) == 0 && countSizeType('d', buf) == buf->count) || (sumInputSize('p', buf) == 0 && countSizeType('p', buf) == buf->count)) {
+        for (j = 0; j < buf->count; j++) {
+            buf->items[j].size = 1;
+        }
+    }
+    dsum = sumInputSize('d', buf);
+    if (dsum >= total || countSizeType('d', buf) == buf->count) {
+        insertCalcSize('d', dsum, total, 1, buf);
+    } else {
+        insertCalcSize('d', dsum, total, 0, buf);
+        psum = sumInputSize('p', buf);
+        if (psum >= 100 || countSizeType('d', buf) + countSizeType('p', buf) == buf->count) {
+            insertCalcSize('p', psum, total - dsum, 1, buf);
+        } else {
+            rest = total - dsum;
+            insertCalcSize('p', psum, rest, 0, buf);
+            insertCalcSize('a', sumInputSize('a', buf), rest * (100 - psum) / 100, 1, buf);
+        }
+    }
+    sum = 0;
+    if (buf->count < max - 1) {
+        for (i = 0; i < buf->count; i++) {
+            out[i] = buf->items[i].x8;
+            sum += buf->items[i].x8;
+        }
+        out[buf->count] = -1;
+    } else {
+        for (i = 0; i < max - 1; i++) {
+            out[i] = buf->items[i].x8;
+            sum += buf->items[i].x8;
+        }
+        out[max - 1] = -1;
+    }
+    if (sum != total) {
+        diff = sum - total;
+        for (j = 0; out[j] != -1; j++) {
+            if (out[j] - diff >= 0) {
+                out[j] -= diff;
+                break;
+            }
+            diff -= out[j];
+            out[j] = 0;
+        }
+    }
+    deleteBuffer((void **)buf);
+    return i;
+}
 
 BOX *getLastFrameBox(BOX *box) {
     BOX *c;
