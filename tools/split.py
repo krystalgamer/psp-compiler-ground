@@ -128,9 +128,47 @@ def fix_ld_script(ld_path: Path, config_path: Path):
                 head, tail = text[:m.start()], text[m.start():]
                 text = re.sub(rf"^\s*\S+{obj}\n", "", head, count=1, flags=re.M) + tail
     text = re.sub(r"^(\s*\.\w+_bss) \(NOLOAD\)", r"\1 0x0 (NOLOAD)", text, flags=re.M)
+    text = cxx_linkonce(text, cfg)
     # PRX parts are packed at their real file offsets (gaps are prxpad).
     text = re.sub(r"^\s*__romPos = ALIGN\(__romPos, \d+\);\n", "", text, flags=re.M)
     ld_path.write_text(rodata_order(text, ld_path.stem))
+
+
+def cxx_linkonce(text, cfg):
+    """C++ units (`/* lang: c++ */`): cc1plus puts template instances and
+    out-of-line inline functions in .gnu.linkonce.t.* sections, which follow
+    the object's .text.  Sony's link kept the first copy: in UTST99332's
+    demos no instance appears twice and its holder precedes every other
+    object that needs it.  ld keeps the first copy in script order, so each
+    C++ object keeps the linkonce sections of the functions in its own
+    address range (its copies of other objects' instances are discarded)."""
+    funcs = []
+    for path in cfg.get("options", {}).get("symbol_addrs_path", []):
+        if Path(path).is_file():
+            for line in Path(path).read_text().splitlines():
+                m = re.match(r"(\S+) = 0x([0-9A-Fa-f]+); // type:func", line)
+                if m:
+                    funcs.append((int(m.group(2), 16), m.group(1)))
+    if not funcs:
+        return text
+    funcs.sort()
+    for seg in cfg["segments"]:
+        if not isinstance(seg, dict) or seg.get("type") != "code":
+            continue
+        subs = [sub for sub in seg.get("subsegments", []) if isinstance(sub, list)]
+        for k, sub in enumerate(subs):
+            if sub[1] != "c":
+                continue
+            src = Path(cfg["options"].get("src_path", "src")) / f"{sub[2]}.c"
+            if not src.is_file() or "/* lang: c++ */" not in src.read_text(errors="replace"):
+                continue
+            lo = sub[0] - seg["start"] + seg["vram"]
+            hi = (subs[k + 1][0] - seg["start"] + seg["vram"]) if k + 1 < len(subs) else 1 << 32
+            names = [n for a, n in funcs if lo <= a < hi]
+            keep = "".join(f" .gnu.linkonce.t.{n}" for n in names)
+            obj = re.escape(f"/{src}.o(.text);")
+            text = re.sub(rf"^(\s*\S+?){obj}$", lambda m: f"{m.group(1)}/{src}.o(.text{keep});", text, count=1, flags=re.M)
+    return text
 
 
 def rodata_order(text, module):

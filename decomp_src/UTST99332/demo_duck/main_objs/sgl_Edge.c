@@ -30,7 +30,12 @@ extern const char getVertexColor_name[] __asm__("_ZZNK3sgl8CoreMesh14getVertexCo
 extern const char getVertexTexCoord_name[] __asm__("_ZZNK3sgl8CoreMesh17getVertexTexCoordEiE19__PRETTY_FUNCTION__");
 #define CHECK_VI(fn, line) TYPES_ASSERT(0 <= vi && vi < (int)_vertices.size(), D_00171E5C, fn, line)
 namespace common {
-extern template void Swap(int &, int &);
+template<class T> void Swap(T &a, T &b)
+{
+    T t = a;
+    a = b;
+    b = t;
+}
 }
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_Edge", _Z41__static_initialization_and_destruction_0ii_D7664);
@@ -221,5 +226,4 @@ void _GLOBAL__D__ZN3sgl4EdgeC2Eiiii(void)
     static_init(0, 0xFFFF);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_Edge", _ZN6common4SwapIiEEvRT_S2_);
 

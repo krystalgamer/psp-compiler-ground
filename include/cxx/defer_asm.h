@@ -11,14 +11,21 @@
 
 #if defined(M2CTX) || defined(PERMUTER)
 #define INCLUDE_ASM(FOLDER, NAME)
+#define INCLUDE_ASM_LINKONCE(FOLDER, NAME)
 #else
-#define INCLUDE_ASM(FOLDER, NAME) \
+#define INCLUDE_ASM(FOLDER, NAME) DEFER_ASM_IN(".text", FOLDER, NAME)
+/* A template instance / inline function kept as asm: in its own
+   .gnu.linkonce.t section like cc1plus's copies, so the link keeps the
+   first copy (the original holder object precedes every other user). */
+#define INCLUDE_ASM_LINKONCE(FOLDER, NAME) \
+    DEFER_ASM_IN(".section .gnu.linkonce.t." #NAME ",\"ax\",@progbits", FOLDER, NAME)
+#define DEFER_ASM_IN(SECTION, FOLDER, NAME) \
     extern "C" void NAME##__asm(void) __attribute__((section(".discard.asm"))); \
     extern "C" void NAME##__asm(void) \
     { \
         __asm__( \
             ".end " #NAME "__asm\n" \
-            ".text\n" \
+            SECTION "\n" \
             "    .set noat\n" \
             "    .set noreorder\n" \
             "    .include \"" FOLDER "/" #NAME ".s\"\n" \
