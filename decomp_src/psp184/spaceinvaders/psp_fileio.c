@@ -270,7 +270,131 @@ int file_size_get(int arg0) {
     return var_v0;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_fileio", file_async_control);
+extern int power_callback_flag;
+int sceIoOpenAsync(const char *name, int flags, int mode);
+int sceIoWaitAsync(int fd, long long *res);
+int sceIoReadAsync(int fd, void *buf, int size);
+void file_async_control(void)
+{
+	int i, r, err, n;
+	PFS *f;
+	long long res;
+	int z = 0;
+
+	if (power_callback_flag & 0x10000)
+		return;
+	if (power_callback_flag & 0x20000)
+		return;
+	for (i = 0; i < 1; i++) {
+		f = &pfs[i];
+		if (f->state == 0)
+			continue;
+		if (f->fc > 0) {
+			f->fc--;
+			continue;
+		}
+		if (!(sceUmdGetDriveStat() & 0x20)) {
+			if (f->state != 1) {
+				if (f->state >= 4)
+					sceIoClose(f->fd);
+				if (f->state >= 9 && f->buf != NULL) {
+					psp_free(f->buf);
+					f->buf = NULL;
+				}
+				f->state = 1;
+			}
+			if (f->mode == 1) {
+				sceKernelPowerLock(0);
+				sceUmdActivate(1, D_0007A67C);
+				sceKernelPowerUnlock(0);
+			} else {
+				sceUmdActivate(1, D_0007A67C);
+			}
+			continue;
+		}
+		err = 0;
+		if (f->state == 1) {
+			f->state = 2;
+		} else if (f->state == 2) {
+			r = sceIoOpenAsync(f->name, 1, 0777);
+			f->fd = r;
+			if (r >= 0)
+				f->state = 3;
+			else
+				err = 1;
+		} else if (f->state == 3) {
+			r = sceIoWaitAsync(f->fd, &res);
+			if (r == 0)
+				f->state = 4;
+			else if (r != 1)
+				err = 1;
+		} else if (f->state == 4) {
+			if (f->mode == 1)
+				sceKernelPowerLock(0);
+			n = sceIoLseek(f->fd, 0, 2);
+			err = 1;
+			if (n >= 0) {
+				f->f8 = n;
+				/* compare against a zero variable (slti, not srl) and the expect
+				   (malloc block out of line) reproduce the original; source form unknown */
+				err = (int)sceIoLseek(f->fd, 0, 0) < z;
+				if (__builtin_expect(!err, 0)) {
+					f->buf = psp_malloc(f->f8);
+					f->state = 9;
+				}
+			}
+			if (f->mode == 1)
+				sceKernelPowerUnlock(0);
+		} else if (f->state == 9) {
+			r = sceIoReadAsync(f->fd, f->buf, f->f8);
+			if (r == 0)
+				f->state = 10;
+			else
+				err = 1;
+		} else if (f->state == 10) {
+			r = sceIoWaitAsync(f->fd, &res);
+			if (r == 0)
+				f->state = 11;
+			else if (r != 1)
+				err = 1;
+		} else if (f->state == 11) {
+			if (f->mode == 1)
+				sceKernelPowerLock(0);
+			r = sceIoClose(f->fd);
+			if (f->mode == 1)
+				sceKernelPowerUnlock(0);
+			f->state = 13;
+			if (r != 0)
+				err = 1;
+		} else if (f->state == 12) {
+			r = sceIoWaitAsync(f->fd, &res);
+			if (r == 0)
+				f->state = 13;
+			else if (r != 1)
+				f->state = 11;
+		} else if (f->state == 13) {
+			sceUmdDeactivate(2, D_0007A67C);
+			f->state = 0;
+		} else {
+			err = 1;
+		}
+		if (err == 1) {
+			if (f->state >= 4) {
+				if (f->mode == 1)
+					sceKernelPowerLock(0);
+				sceIoClose(f->fd);
+				if (f->mode == 1)
+					sceKernelPowerUnlock(0);
+			}
+			if (f->state >= 9 && f->buf != NULL) {
+				psp_free(f->buf);
+				f->buf = NULL;
+			}
+			f->fc = 3600;
+			f->state = 1;
+		}
+	}
+}
 
 int UMDCallBackFunc(int count, int stat, void *common)
 {
