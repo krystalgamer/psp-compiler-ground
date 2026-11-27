@@ -2,6 +2,12 @@
 #include "common.h"
 #include "mes_js.h"
 #include "m2c_macros.h"
+typedef struct MesNatEnt {
+    const char *name;
+    void *fn;                         /* 0x4 */
+    unsigned char nargs;              /* 0x8 */
+} MesNatEnt;
+unsigned int mes_context_id2(void *ctx, const char *name);
 typedef struct MesNative {
     struct MesObject obj;
     int f14;
@@ -33,7 +39,18 @@ MesNative *mes_native_new(MesContext *ctx, int a, void *fn, int nargs, int flags
     return n;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_native", mes_native_setup);
+void mes_native_setup(MesContext *ctx, MesObject *obj, MesNatEnt *table, int n)
+{
+    int i;
+    unsigned int id;
+
+    for (i = 0; i < n; i++) {
+        id = mes_context_id2(ctx, table[i].name);
+        *--ctx->sp = id;
+        mes_object_set(obj, id, (MesValue)mes_native_new(ctx, id, table[i].fn, table[i].nargs, 0), 2);
+        ctx->sp++;
+    }
+}
 
 MesValue mes_native_get(MesContext *ctx, MesNative *n, unsigned int id)
 {
