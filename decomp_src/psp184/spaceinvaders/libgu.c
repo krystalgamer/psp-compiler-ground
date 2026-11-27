@@ -141,7 +141,17 @@ void sceGuPatchDivide(int a0, int a1);
 void sceGuColorMaterial(int a0);
 
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", callback_sig);
+void callback_sig(int id, void *arg)
+{
+	GuCallbackData *cb = (GuCallbackData *)arg;
+	int sig = id & 0xffff;
+
+	cb->signals[cb->index % 16] = sig;
+	cb->index++;
+	if (cb->signal_func)
+		cb->signal_func(sig);
+	sceKernelSetEventFlag(cb->event, 1);
+}
 
 void callback_fin(int id, void *arg)
 {
@@ -955,4 +965,19 @@ void sceGuDebugFlush(void)
 	flush_font();
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", sceGuSetCallback);
+void *sceGuSetCallback(int signal, void (*callback)(int))
+{
+	void (*old)(int) = 0;
+
+	switch (signal) {
+	case 1:
+		old = intrParam.signal_func;
+		intrParam.signal_func = callback;
+		break;
+	case 4:
+		old = intrParam.finish_func;
+		intrParam.finish_func = callback;
+		break;
+	}
+	return old;
+}
