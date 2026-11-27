@@ -19,6 +19,11 @@ BOX *html_TD_inner(void *node, BOX *tr, BOX *last, BOX *box);
 void *Node_getParentNode(void *node);
 BOX *Node_getBox(void *node);
 
+typedef struct COLGEOM { int x; int w; int span; signed char fixed; } COLGEOM;
+typedef struct COLLIST { void *x0; void *x4; BOX *box; } COLLIST;
+void initColContent(BOX *box, void *node, int type);
+void attr_SPAN(void *node, BOX *box);
+void attr_WIDTH_col(void *node, BOX *box);
 BOX *getTableBoxFromDOM(void *node) {
     BOX *box;
     for (node = Node_getParentNode(node); node != NULL; node = Node_getParentNode(node)) {
@@ -308,9 +313,110 @@ BOX *html_TH(void *node) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_html_table", html_TR);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_html_table", html_COL);
+BOX *html_COL(void *node) {
+    BOX *group;
+    BOX *last;
+    BOX *c;
+    BOX *box;
+    BOX *p;
+    COLLIST *l;
+    COLGEOM *g;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_html_table", html_COLGROUP);
+    group = getColGroupBoxFromDOM(node);
+    if (group == NULL) {
+        return NULL;
+    }
+    last = NULL;
+    for (c = group->child; c != NULL; c = c->next) {
+        last = c;
+    }
+    box = createBox(node, 1);
+    if (box == NULL) {
+        return NULL;
+    }
+    linkBoxNoTableCheck(box, group, last);
+    box->display = 1;
+    box->html = 0x16;
+    initColContent(box, node, 0);
+    attr_SPAN(node, box);
+    attr_ALIGN_trgroup(node, box);
+    attr_VALIGN_trgroup(node, box);
+    attr_WIDTH_col(node, box);
+    for (p = group; p != NULL; p = p->parent) {
+        if (p->html == 0x17) {
+            l = M2C_FIELD(p->geom, COLLIST **, 0x14);
+            if (l != NULL) {
+                g = (COLGEOM *)l->box->geom;
+                M2C_FIELD(box->geom, int *, 0) = g->x + g->w;
+            } else
+                M2C_FIELD(box->geom, int *, 0) = M2C_FIELD(p->geom, int *, 0);
+            addBoxList((LIST *)((char *)p->geom + 0x10), box);
+            M2C_FIELD(p->geom, int *, 8) += M2C_FIELD(box->geom, int *, 4);
+            break;
+        }
+        if (p->html == 0x55) {
+            l = M2C_FIELD(p->geom, COLLIST **, 0x40);
+            if (l != NULL) {
+                g = (COLGEOM *)l->box->geom;
+                if (g->fixed != 0 && g->span > 0)
+                    M2C_FIELD(box->geom, int *, 0) = g->x + g->span;
+                else
+                    M2C_FIELD(box->geom, int *, 0) = g->x + g->w;
+            }
+            addBoxList((LIST *)((char *)p->geom + 0x3C), box);
+            break;
+        }
+    }
+    applyCSSExtStyleSheetToBox(node, box);
+    applyCSSInlinePropertyToBox(node, box);
+    return box;
+}
+
+BOX *html_COLGROUP(void *node) {
+    BOX *table;
+    BOX *last;
+    BOX *c;
+    BOX *box;
+    BOX *tbl;
+    COLLIST *l;
+    COLGEOM *g;
+
+    table = getTableBoxFromDOM(node);
+    if (table == NULL) {
+        return NULL;
+    }
+    last = NULL;
+    for (c = table->child; c != NULL; c = c->next) {
+        last = c;
+    }
+    box = createBox(node, 1);
+    if (box == NULL) {
+        return NULL;
+    }
+    linkBoxNoTableCheck(box, table, last);
+    box->display = 1;
+    box->html = 0x17;
+    initColContent(box, node, 1);
+    attr_SPAN(node, box);
+    attr_ALIGN_trgroup(node, box);
+    attr_VALIGN_trgroup(node, box);
+    attr_WIDTH_col(node, box);
+    tbl = getTableBox(table);
+    if (tbl != NULL) {
+        l = M2C_FIELD(tbl->geom, COLLIST **, 0x40);
+        if (l != NULL) {
+            g = (COLGEOM *)l->box->geom;
+            if (g->fixed != 0 && g->span > 0)
+                M2C_FIELD(box->geom, int *, 0) = g->x + g->span;
+            else
+                M2C_FIELD(box->geom, int *, 0) = g->x + g->w;
+        }
+        addBoxList((LIST *)((char *)tbl->geom + 0x3C), box);
+    }
+    applyCSSExtStyleSheetToBox(node, box);
+    applyCSSInlinePropertyToBox(node, box);
+    return box;
+}
 
 BOX *html_TBODY(void *node) {
     BOX *table;
