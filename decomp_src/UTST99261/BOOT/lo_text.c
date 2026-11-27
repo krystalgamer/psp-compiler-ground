@@ -823,7 +823,42 @@ void actFormInput();
 int getAncestorForm();
 int getInputType();
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_text", proc_msg_JL11);
+void proc_msg_JL11(JMSG *m) {
+    JSEVENT ev;
+    int node;
+    int form;
+    int type;
+    int r;
+
+    node = M2C_FIELD(m, int *, 0x1C);
+    if (m->unk10 == 0) {
+        initJSEvent(&ev, 0x16, node, 0, 0);
+        ev.unk20 = node;
+        r = sendJSEvent(Node_getJSObj(node), &ev);
+        if (r != 1)
+            actSubmitForm(Node_getBox(node), 0, 0, 0);
+    } else if (m->unk10 == 1) {
+        initJSEvent(&ev, 0x13, node, 0, 0);
+        ev.unk20 = node;
+        if (sendJSEvent(Node_getJSObj(node), &ev) != 1)
+            actResetForm(Node_getBox(node), 0);
+    } else if (m->unk10 == 2) {
+        form = getAncestorForm(node);
+        if (form != 0) {
+            type = getInputType(node);
+            if (type != 0) {
+                initJSEvent(&ev, 4, node, 0, 0);
+                r = sendJSBubbleUpEvent(node, &ev);
+                if (r != 1) {
+                    if (type == 3)
+                        actFormInput(m, Node_getBox(form), M2C_FIELD(Node_getBox(node), int *, 0xC), 3);
+                    else
+                        actFormInput(m, Node_getBox(form), Node_getBox(node), type);
+                }
+            }
+        }
+    }
+}
 
 void proc_msg_JL12(JMSG *m) {
     JSCROLL *d;
