@@ -1104,6 +1104,7 @@ public:
     void setTestLight(math::vector_xyzw);
     void start();
     void build_bv_tree(bool, unsigned int);
+    void add(const Mesh &, unsigned int);
     void bvtree_trace(BVH::Node *, Ray &);
     void dumb_trace(Ray &);
     void trace(Ray &);

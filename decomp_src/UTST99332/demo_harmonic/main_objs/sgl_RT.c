@@ -32,7 +32,12 @@ void sgl::RT::start()
     _ready = true;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_RT", _ZN3sgl2RT3addERKNS_4MeshEj);
+void sgl::RT::add(const Mesh &m, unsigned int)
+{
+    int i = 0;
+    for (std::vector<sgl::Triangle>::const_iterator it = m.getTriangles().begin(); it != m.getTriangles().end(); ++it, ++i)
+        _triangles.push_back(Triangle(m.getTriangleVertexPosition(i, 0), m.getTriangleVertexPosition(i, 1), m.getTriangleVertexPosition(i, 2)));
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_RT", _ZN3sgl2RT3RayC2EN4math11vector_xyzwES3_NS1_4TypeE);
 
