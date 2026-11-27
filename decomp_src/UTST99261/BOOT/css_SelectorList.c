@@ -19,6 +19,7 @@ extern unsigned char D_0013ED58;
 int CSS_ISmatchCSSChain(void *a, void *b);
 int CSS_ISmatchCombine(void *a, void *b);
 typedef struct CSSChain { struct CSSChain *next; void *name; } CSSChain;
+typedef struct CSSDECLN { int pad[6]; struct CSSDECLN *next; s16 prio; s16 important; } CSSDECLN;
 int CSS_ISmatchCSSChain(void *pa, void *pb) {
     CSSChain *a = pa;
     CSSChain *b = pb;
@@ -203,7 +204,32 @@ void freeCSSStyleDeclaration(void *arg0) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_SelectorList", addCSSStyleDeclaration);
+void addCSSStyleDeclaration(void *list, CSSDECLN *d) {
+    CSSDECLN *n;
+    int c;
+
+    if (list == NULL)
+        return;
+    for (n = M2C_FIELD(list, CSSDECLN **, 0xC); n != NULL; n = n->next) {
+        c = d->prio - n->prio;
+        if (c == 0) {
+            if (d->important != 0 || n->important == 0) {
+                insCSSNode(n, d);
+                popCSSNode(n);
+                freeCSSStyleDeclaration(n);
+            } else {
+                freeCSSStyleDeclaration(d);
+            }
+            break;
+        }
+        if (c < 0) {
+            insCSSNode(n, d);
+            break;
+        }
+    }
+    if (n == NULL)
+        addCSSNode(list, d);
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
