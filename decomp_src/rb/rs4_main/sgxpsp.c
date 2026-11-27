@@ -44,7 +44,15 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxpsp", sgxPspTickProc);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxpsp", sgxDI);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxpsp", sgxEI);
+extern int gWork_1207F0[];
+void sgxEI(void) {
+    int *w = gWork_1207F0;
+    if (w[3] != 0) {
+        sceKernelSignalSema(w[2], 1);
+        return;
+    }
+    if (--gDICount == 0) sceKernelCpuResumeIntr(gDIStat);
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -137,7 +145,15 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/sgxpsp", D_0010B0AC);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxpsp", PcmSendInit);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxpsp", PcmSendTerm);
+void PcmSendTerm(int *p) {
+    if (p[0] == 0) return;
+    sceKernelWaitThreadEnd(p[3], NULL);
+    sceKernelDeleteThread(p[3]);
+    p[3] = -1;
+    sgxFree((int *)p[8]);
+    p[9] = 0;
+    p[8] = 0;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxpsp", PcmSendMain);
 
@@ -311,7 +327,15 @@ void UmdWaitReadable(void) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxpsp", WaitOneSec);
+void WaitOneSec(volatile int *flag) {
+    int wait = 100000;
+    int n = 1000000 / wait;
+    int i;
+    for (i = 0; i < n; i++) {
+        if (*flag) break;
+        sceKernelDelayThread(wait);
+    }
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxpsp", FileCmdRopen);
 
@@ -362,7 +386,16 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxpsp", VoCtrlAt3);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxpsp", sgxVoCtrl);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxpsp", VoiceToDeviceIndex);
+int VoiceToDeviceIndex(int v, int *dev, int *idx) {
+    int *w = gWork_1207F0;
+    int r = 0;
+    if (v >= 0 && v <= w[0x74 / 4] - 1) {
+        r = 1;
+        *dev = *(int *)(w[0x70 / 4] + v * 48 + 0x18);
+        *idx = *(int *)(w[0x70 / 4] + v * 48 + 0x1C);
+    }
+    return r;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -403,7 +436,14 @@ void sgxPspGetVoicePitch(void) {
     sgxPspVoGetPitch();
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxpsp", sgxPspAt3GetLocalID);
+int sgxPspAt3GetLocalID(int id) {
+    int i;
+    for (i = 0; i < gWork_1207F0[0x450 / 4]; i++) {
+        unsigned char *e = (unsigned char *)(i * 0x60B0 + gWork_1207F0[0x44C / 4]);
+        if (e[0x34] && *(int *)(e + 8) == id) return i;
+    }
+    return -1;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxpsp", sgxEffSetType);
 
