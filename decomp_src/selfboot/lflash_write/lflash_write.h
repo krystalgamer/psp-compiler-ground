@@ -38,6 +38,7 @@ char *strtok(char *s, const char *delim);
 int strcmp(const char *a, const char *b);
 char *strcpy(char *d, const char *s);
 char *strncpy(char *d, const char *s, unsigned int n);
+int strncmp(const char *a, const char *b, unsigned int n);
 unsigned int strlen(const char *s);
 
 SceUID sceIoOpen(const char *file, int flags, SceMode mode);

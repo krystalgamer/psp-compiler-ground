@@ -608,7 +608,35 @@ finish:
 INCLUDE_ASM("tmp/asm/selfboot/lflash_write/nonmatchings/lflash_write", func_000011A4);
 #endif
 
-INCLUDE_ASM("tmp/asm/selfboot/lflash_write/nonmatchings/lflash_write", func_00001594);
+int func_00001594(char *cmd)
+{
+	char *argv[16];
+	int argc;
+	int i;
+	int file = -1;
+
+	argc = func_00000000(cmd, argv, 16);
+	for (i = 0; argv[i] != NULL; i++) {
+		if (strncmp("-", argv[i], 1) == 0) {
+			if (strcmp("-h", argv[i]) == 0)
+				goto usage;
+			if (strcmp("-i", argv[i]) == 0)
+				return 0;
+			puts("invalid option");
+			goto usage;
+		}
+		if (file == -1)
+			file = i;
+	}
+	if (argc > 0) {
+		func_000011A4(argv[file]);
+		return 0;
+	}
+usage:
+	puts("write [option] configfile");
+	puts("\t-h\t help message");
+	return 0;
+}
 
 int module_bootstart(SceSize args, void *argp)
 {
