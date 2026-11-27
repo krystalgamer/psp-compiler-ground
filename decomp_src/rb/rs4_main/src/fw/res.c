@@ -492,7 +492,19 @@ void taskKillReflexive(void *arg0, int arg1, int arg2) {
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", taskKillChild);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", taskDefaultMsg);
+int taskKill();
+int taskDefaultMsg(int task, unsigned int msg, int p1, int p2)
+{
+	switch (msg) {
+	case 0:
+		return task;
+	case 4:
+		return task;
+	case 5:
+		return taskKill(task, p1, p2);
+	}
+	return 0;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", taskAllFree);
 

@@ -39,7 +39,18 @@ extern unsigned char D_001048C8;
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/shop", _ShopAniSet);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/shop", _AniInfoSet_3CB84);
+extern const float D_00104710;
+void bxAnmSetFrame(int, float);
+void bxAnmSetSpeed(int, float);
+void bxAnmSetLoop(int, int);
+void bxAnmSetPause(int, int);
+void _AniInfoSet_3CB84(int anm)
+{
+	bxAnmSetFrame(anm, 0.0f);
+	bxAnmSetSpeed(anm, D_00104710);
+	bxAnmSetLoop(anm, 1);
+	bxAnmSetPause(anm, 0);
+}
 
 void bxAnmSetFrame(int, float);
 void bxAnmSetSpeed(int, float);
@@ -163,7 +174,16 @@ int _SortCardListGet(SortCard *t, int n, SortCard *k)
 	return r;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/shop", _CardListDel);
+int _CardListDel(SortCard *t, int n, SortCard *k)
+{
+	int i = _SortCardListGet(t, n, k);
+	n--;
+	for (; i < n; i++) {
+		t[i].id = t[i + 1].id;
+		t[i].kind = t[i + 1].kind;
+	}
+	return n;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
