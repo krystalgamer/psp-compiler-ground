@@ -450,7 +450,73 @@ int *CLIB_localtime(int *t) {
     return tm;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/esp_config", CLIB_mktime);
+static inline int clib_setYear(ScePspDateTime *dt, int v)
+{
+    if (!((unsigned int)(v - 1) < 9999))
+        return 0x800001FF;
+    dt->year = v;
+    return 0;
+}
+static inline int clib_setMonth(ScePspDateTime *dt, int v)
+{
+    if (!((unsigned int)(v - 1) < 12))
+        return 0x800001FF;
+    dt->month = v;
+    return 0;
+}
+static inline int clib_setDay(ScePspDateTime *dt, int v)
+{
+    if (!((unsigned int)(v - 1) < 31))
+        return 0x800001FF;
+    dt->day = v;
+    return 0;
+}
+static inline int clib_setHour(ScePspDateTime *dt, int v)
+{
+    if (!((unsigned int)v < 24))
+        return 0x800001FF;
+    dt->hour = v;
+    return 0;
+}
+static inline int clib_setMinute(ScePspDateTime *dt, int v)
+{
+    if (!((unsigned int)v < 60))
+        return 0x800001FF;
+    dt->minute = v;
+    return 0;
+}
+static inline int clib_setSecond(ScePspDateTime *dt, int v)
+{
+    if (!((unsigned int)v < 60))
+        return 0x800001FF;
+    dt->second = v;
+    return 0;
+}
+int CLIB_mktime(int *tm)
+{
+    ScePspDateTime dt;
+    int t;
+
+    memset(&dt, 0, sizeof(dt));
+    if (clib_setYear(&dt, tm[5] + 1900) < 0)
+        return 0;
+    if (clib_setMonth(&dt, tm[4] + 1) < 0)
+        return 0;
+    if (clib_setDay(&dt, tm[3]) < 0)
+        return 0;
+    if (clib_setHour(&dt, tm[2]) < 0)
+        return 0;
+    if (clib_setMinute(&dt, tm[1]) < 0)
+        return 0;
+    if (clib_setSecond(&dt, tm[0]) < 0)
+        return 0;
+    dt.microsecond = 0;
+    if (sceRtcGetTime_t(&dt, &t) < 0)
+        return 0;
+    if (t - timezone < 0)
+        return 0;
+    return t - timezone;
+}
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/esp_config", D_0013428C);
 
