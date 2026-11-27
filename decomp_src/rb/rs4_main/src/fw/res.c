@@ -70,7 +70,18 @@ int resGetChildEntry(int i)
 	return 0;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", resChkData);
+int resChkData(int *d)
+{
+	unsigned int n = (unsigned int)d[1] >> 2;
+	int *p = (int *)d[0];
+	int s = 0;
+	for (; n; n--) {
+		s ^= *p;
+		s += *p;
+		p++;
+	}
+	return s;
+}
 
 void resSetOvlProcTbl(int arg0) {
     consPrintf("%s : %p\n", "resSetOvlProcTbl", arg0);

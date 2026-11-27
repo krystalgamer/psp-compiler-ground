@@ -233,7 +233,13 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/dev/ctrl", D_000F9E14);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/ctrl", ctrlMake);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/ctrl", ctrlMakeV);
+void ctrlMake();
+void ctrlMakeV(void *c)
+{
+	((signed char *)c)[0x98] = -128;
+	((signed char *)c)[0x99] = -128;
+	ctrlMake(c);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/ctrl", ctrlUpdate);
 

@@ -17,4 +17,10 @@ int coreTerm(void) {
     return 1;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/core", coreFunc);
+unsigned int coreFunc(unsigned int *p)
+{
+	unsigned int x = *p;
+	if ((x >> 26) == 2)
+		return (x & 0xF0000000) | ((x & 0x3FFFFFF) << 2);
+	return (unsigned int)p;
+}

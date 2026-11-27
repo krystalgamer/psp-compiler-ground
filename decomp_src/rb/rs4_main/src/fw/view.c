@@ -22,7 +22,18 @@ M2C_UNK *viewGetDefault(void) {
     return &DefView;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/view", viewMount);
+void viewMount(View *v)
+{
+	View *m = pMount;
+	if (!m)
+		m = v;
+	v->next = NULL;
+	v->prev = pChain;
+	pMount = m;
+	if (pChain)
+		pChain->next = v;
+	pChain = v;
+}
 
 void viewRemove(View *v)
 {
@@ -39,7 +50,21 @@ void viewRemove(View *v)
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/view", viewProc);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/view", persMount);
+typedef struct Pers { struct Pers *next, *prev; struct PView *view; } Pers;
+typedef struct PView { char pad[0x40]; Pers *head, *chain; } PView;
+void persMount(PView *v, Pers *p)
+{
+	if (v == NULL)
+		v = (PView *)&DefView;
+	p->next = NULL;
+	p->view = v;
+	p->prev = v->chain;
+	if (v->head == NULL)
+		v->head = p;
+	if (v->chain)
+		v->chain->next = p;
+	v->chain = p;
+}
 
 void persRemove(void *arg0) {
     void **temp_a1;
