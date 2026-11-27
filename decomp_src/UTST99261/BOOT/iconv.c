@@ -438,7 +438,31 @@ int checkUTF8(const u8 *s, int len) {
     return 4;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iconv", checkEncode);
+int checkEncode(unsigned char *s, int n)
+{
+    int r;
+    int sj;
+    int euc;
+
+    r = checkUTF8(s, n);
+    if (r != 5) {
+        r = glanceEncode(s, n);
+        if (r == 4) {
+            sj = checkShiftJIS(s, n);
+            euc = checkEUC(s, n);
+            if (sj >= 0) {
+                if (euc >= 0) {
+                    if (!(sj & 1))
+                        r = 3;
+                } else
+                    r = 2;
+            } else {
+                r = (euc >= 0) + 2;
+            }
+        }
+    }
+    return r;
+}
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/iconv", B64);
 
