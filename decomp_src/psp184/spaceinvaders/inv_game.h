@@ -10,10 +10,12 @@ typedef struct {
 extern int inv_status;
 #define IST (*(INV_STATUS *)&inv_status)
 typedef struct {
-	u8 _p0[0xCC];
+	u8 _p0[0x54];
+	int f54, f58, f5c, f60, f64, f68, f6c;	/* unlocked stages */
+	u8 _p70[0xCC - 0x70];
 	int fcc, fd0, fd4, fd8;
 	int fdc, fe0, fe4, fe8;
-	u8 _pec[0x100 - 0xEC];
+	int fec, ff0, ff4, ff8, ffc;
 	int f100, f104, f108, f10c, f110, f114, f118;
 } SAVE_DATA;
 extern SAVE_DATA save_data;

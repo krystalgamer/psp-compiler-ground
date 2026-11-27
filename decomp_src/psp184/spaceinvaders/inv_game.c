@@ -453,7 +453,117 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", game_cnt_pause
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", game_cnt_stageclear);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", game_cnt_result);
+typedef struct { POS2_T p[4]; } POS4_T;
+extern const POS4_T D_0007DD58;
+extern int D_003490B0, D_003490B4, D_003490B8, game_count;
+extern char D_0007DB9C[], D_0007DCDC[], text_buf[];
+extern char *future_name_list[];
+extern char *future_result_list[];
+void inv_font_ascii_posf(char *str, int x, int y, int w, int h, int r, int g, int b, int a, int mode);
+int net_mynumget(void);
+int inv_netgame_member_max(void);
+int df_fade_check(void);
+void df_fade_start(int a, int b, int c, int d, int e);
+void df_blur_start(int a, int b, int c, int d, int e, int f, int g, int h, int i, int j);
+void df_blur_scrpos_set(int x, int y);
+int sound_stop1(void);
+float sinf(float);
+int sprintf(char *, const char *, ...);
+void game_cnt_result(void)
+{
+	POS4_T pos = D_0007DD58;
+	int id[4], sc[4];
+	int i, j, n, m, v, k, me, b, y;
+
+	if (gmain.f4 == 0) {
+		gmain.f8 += 4;
+		if (gmain.f8 > 255)
+			gmain.f8 = 255;
+		D_003490B0 = gmain.f8;
+		D_003490B4 = gmain.f8;
+		D_003490B8 = 0;
+		if (gmain.f8 >= 255) {
+			gmain.f4 = 10;
+			gmain.f8 = 0;
+		}
+	} else if (gmain.f4 == 10) {
+		gmain.f8 += 4;
+		if (gmain.f8 >= 255) {
+			gmain.f4 = 20;
+			gmain.f8 = 0;
+		}
+	} else if (gmain.f4 == 20) {
+		gmain.f8 += 8;
+		if (gmain.f8 > 255)
+			gmain.f8 = 255;
+		df_blur_start(-7, 0, 103, 103, 255, 255, 255, gmain.f8, 2, 180);
+		df_blur_scrpos_set(240, 136);
+		if (gmain.f8 == 255) {
+			df_fade_start(0, 0, 0, 1, 60);
+			gmain.f4++;
+			gmain.f8 = 0;
+		}
+	} else if (gmain.f4 == 21) {
+		gmain.f8++;
+		if (gmain.f8 > 255)
+			gmain.f8 = 255;
+		D_003490B8 = gmain.f8;
+		if (df_fade_check()) {
+			sound_stop1();
+			gmain.f4++;
+		}
+	} else {
+		gmain.f1060 = gmain.ff28 + 201;
+		gmain.f105c = 1;
+		gmain.fc = 0;
+		gmain.ff38 = gmain.ff28 + 1;
+		if (gmain.f1c == 1) {
+			gmain.f1060 = gmain.ff28 + 1;
+			if (gmain.ff28 + 1 >= 14) {
+				gmain.f1060 = 1;
+				IST.fc++;
+			}
+		}
+	}
+	if (D_003490B0 > 0) {
+		poly_set(0, 0, 480, 272, 0, 0, 0, 0, 160, 0, 0, 0, 160, 0, 0, 0, 64, 0, 0, 0, 64, 2000, 2, 1, D_003490B0);
+		inv_font_ascii_posf(future_result_list[0], pos.p[0].x, pos.p[0].y, 100, 100, 255, 255, 255, D_003490B0, 3);
+		poly_set(0, pos.p[0].y + 12, 480, 1, 0, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 2100, 2, 1, D_003490B0);
+	}
+	if (D_003490B4 > 0) {
+		me = net_mynumget();
+		for (i = 0; i < inv_netgame_member_max(); i++) {
+			id[i] = i;
+			sc[i] = (&gmain.netpl[i])->score;
+		}
+		for (n = 1; n < inv_netgame_member_max(); n++) {
+			k = id[n];
+			v = sc[n];
+			for (j = n - 1; j >= 0 && sc[j] < v; j--) {
+				id[j + 1] = id[j];
+				sc[j + 1] = sc[j];
+			}
+			id[j + 1] = k;
+			sc[j + 1] = v;
+		}
+		for (m = 0, y = 0; m < inv_netgame_member_max(); m++, y += 40) {
+			if (id[m] != me)
+				b = 255;
+			else {
+				b = 128;
+				sinf((game_count % 180) / 180.0f * 3.1415927f);
+			}
+			sprintf(text_buf, D_0007DB9C, future_name_list[110 + m]);
+			inv_font_ascii_posf(text_buf, pos.p[1].x, pos.p[1].y + y, 100, 100, 255, 255, b, D_003490B4, 4);
+			sprintf(text_buf, D_0007DB9C, future_name_list[116 + id[m]]);
+			inv_font_ascii_posf(text_buf, pos.p[2].x, pos.p[2].y + y, 100, 100, 255, 255, b, D_003490B4, 3);
+			sprintf(text_buf, D_0007DCDC, sc[m]);
+			inv_font_ascii_posf(text_buf, pos.p[3].x, pos.p[3].y + y + 16, 100, 100, 255, 255, b, D_003490B4, 5);
+		}
+	}
+	if (D_003490B8 > 0)
+		poly_set(0, 0, 480, 272, 0, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 19999, 2, 2, D_003490B8);
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", game_cnt_gameover);
 
