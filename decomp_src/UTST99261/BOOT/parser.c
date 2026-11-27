@@ -133,7 +133,20 @@ int parseDocumentTEXT(PCtx *c) {
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", parseHTMLTag);
+int parseHTMLTag(PCtx *c)
+{
+    if (parseNextChar(c) == 1)
+        return 0;
+    while (*c->buf->cur != '>') {
+        while (*c->buf->cur == ' ' || *c->buf->cur == '\t' || *c->buf->cur == '\n' || *c->buf->cur == '\r') {
+            if (parseNextChar(c) == 1)
+                break;
+        }
+        if (parseNextChar(c) == 1)
+            return 0;
+    }
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", parseCharEntity);
 
@@ -877,7 +890,39 @@ int parseJSEventHandler(PDStr *s) {
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", parseJSCreateEventArray);
+int parseJSCreateEventArray(void *map, PJSEvent *ev)
+{
+    int n;
+    int i;
+    int cnt;
+    void *attr;
+    PDStr s;
+    PChar *p;
+
+    n = NamedNodeMap_getLength(map);
+    for (i = 0, cnt = 0; i < n; i++) {
+        attr = NamedNodeMap_item(map, i);
+        s = Attr_getName(attr);
+        parseDStrTrace(&s);
+        if (parseJSEventHandler(&s) == 1) {
+            p = MEM_malloc(0, s.len * 2 + 2);
+            memcpy(p, s.data, s.len * 2);
+            p[s.len] = 0;
+            ev[cnt].name = p;
+            s = Attr_getValue(attr);
+            p = MEM_malloc(0, s.len * 2 + 2);
+            memcpy(p, s.data, s.len * 2);
+            p[s.len] = 0;
+            ev[cnt].value = p;
+            cnt++;
+            if (cnt >= 15)
+                break;
+        }
+    }
+    ev[cnt].name = NULL;
+    ev[cnt].value = NULL;
+    return cnt;
+}
 
 int parseJSDestroyEventArray(void **ev) {
     while (ev[0] != NULL) {
