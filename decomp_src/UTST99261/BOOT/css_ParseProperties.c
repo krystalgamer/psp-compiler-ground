@@ -33,6 +33,8 @@ extern CSSPROPNAME CSSUnitNames[];
 double atof(const char *s);
 void *MEM_calloc(int pool, int size);
 void freeCSSPrimitiveValue(void *v, int all);
+extern u16 *CSSIdentNames[];
+#define CSS_TOUPPER(c) ((u16)((c) - 'a') < 26 ? (c) - 32 : (c))
 u16 *ParseUNIT(s16 *out, u16 *p) {
     char buf[256];
     u16 *ret = NULL;
@@ -108,7 +110,38 @@ u16 *ParseUNIT(s16 *out, u16 *p) {
     return ret;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_ParseProperties", ParseIDENT);
+u16 *ParseIDENT(s16 *out, u16 *p, int k) {
+    u16 *n;
+    u16 *ret;
+    int d;
+    if (out == NULL || p == NULL)
+        goto fail;
+    ret = NULL;
+    if (k < 0xD1) {
+        n = CSSIdentNames[k];
+        for (;;) {
+            d = CSS_TOUPPER(*n) - CSS_TOUPPER(*p);
+            if (d != 0 || *n == 0)
+                break;
+            n++;
+            p++;
+        }
+        ret = NULL;
+        if (*n == 0) {
+            if ((unsigned int)(*p - 'A') < 26 || (unsigned int)(*p - 'a') < 26 || *p == '_' || *p == '-') {
+                ret = NULL;
+            } else if ((u16)(*p - '0') < 10) {
+fail:
+                ret = NULL;
+            } else {
+                out[0] = 0x15;
+                *(int *)&out[4] = k;
+                ret = p;
+            }
+        }
+    }
+    return ret;
+}
 
 u16 *ParseURL(s16 *out, u16 *p) {
     u16 *s;
