@@ -19,6 +19,13 @@ M2C_UNK NetIRegisterMemoryCallbacks();              /* extern */
 extern signed char gBuildTimeStamp_10DEB4;
 extern void *gUDPInterfacePtr;
 
+typedef int (*NetIfFn)();
+extern void *gObjectInterfacePtr;
+extern void *gStreamMediaInterfacePtr;
+int NetMutexLock();
+int NetMutexUnlock();
+int NetMapRtError();
+
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/Dme", rcsid_10DE3C);
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/Dme", gszDmeVersionString);
@@ -152,7 +159,16 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/Dme", NetSend
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/Dme", NetSendApplicationMessage);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/Dme", NetRegisterDataStream);
+int NetRegisterDataStream(int a0, int a1, int a2, int a3)
+{
+    int r, e;
+    r = NetMapRtError(NetMutexLock());
+    if (r != 0) return r;
+    e = (*(NetIfFn *)((char *)gObjectInterfacePtr + 0x20))(a0, a1, a2, a3);
+    r = NetMapRtError(NetMutexUnlock());
+    if (r != 0) return r;
+    return e;
+}
 
 int NetSetDefaultMemoryCallbackParams(int *p)
 {
@@ -323,9 +339,27 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/Dme", NetPing
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/Dme", NetOpenDataStream);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/Dme", NetAddToDataStream);
+int NetAddToDataStream(int a0, int a1, int a2)
+{
+    int r, e;
+    r = NetMapRtError(NetMutexLock());
+    if (r != 0) return r;
+    e = (*(NetIfFn *)((char *)gObjectInterfacePtr + 0x4))(a0, a1, a2);
+    r = NetMapRtError(NetMutexUnlock());
+    if (r != 0) return r;
+    return e;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/Dme", NetEndDataStream);
+int NetEndDataStream(int a0)
+{
+    int r, e;
+    r = NetMapRtError(NetMutexLock());
+    if (r != 0) return r;
+    e = (*(NetIfFn *)((char *)gObjectInterfacePtr + 0x10))(a0);
+    r = NetMapRtError(NetMutexUnlock());
+    if (r != 0) return r;
+    return e;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/Dme", NetSendMyClientUpdate);
 
@@ -481,7 +515,16 @@ int NetGetConnectionStatus(int a0, int a1)
     return e;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/Dme", NetDataStreamBytesFree);
+int NetDataStreamBytesFree(int a0, int a1)
+{
+    int r, e;
+    r = NetMapRtError(NetMutexLock());
+    if (r != 0) return r;
+    e = (*(NetIfFn *)((char *)gObjectInterfacePtr + 0x0))(a0, a1);
+    r = NetMapRtError(NetMutexUnlock());
+    if (r != 0) return r;
+    return e;
+}
 
 int NetMutexLock();
 int NetMutexUnlock();
@@ -543,7 +586,16 @@ int NetTick(void)
     return e;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/Dme", NetLeave);
+int NetLeave(int a0)
+{
+    int r, e;
+    r = NetMapRtError(NetMutexLock());
+    if (r != 0) return r;
+    e = (*(NetIfFn *)((char *)gObjectInterfacePtr + 0x1C))(a0);
+    r = NetMapRtError(NetMutexUnlock());
+    if (r != 0) return r;
+    return e;
+}
 
 int NetSetDefaultDisconnectParams(int *p)
 {
@@ -574,23 +626,95 @@ int NetDisconnect(int a0)
     return e;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/Dme", NetStreamMediaJoinChannel);
+int NetStreamMediaJoinChannel(int a0, int a1)
+{
+    int r, e;
+    r = NetMapRtError(NetMutexLock());
+    if (r != 0) return r;
+    e = (*(NetIfFn *)((char *)gStreamMediaInterfacePtr + 0x2C))(a0, a1);
+    r = NetMapRtError(NetMutexUnlock());
+    if (r != 0) return r;
+    return e;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/Dme", NetStreamMediaQuitChannel);
+int NetStreamMediaQuitChannel(int a0, int a1)
+{
+    int r, e;
+    r = NetMapRtError(NetMutexLock());
+    if (r != 0) return r;
+    e = (*(NetIfFn *)((char *)gStreamMediaInterfacePtr + 0x30))(a0, a1);
+    r = NetMapRtError(NetMutexUnlock());
+    if (r != 0) return r;
+    return e;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/Dme", NetStreamMediaGetChannelInfo);
+int NetStreamMediaGetChannelInfo(int a0, int a1, int a2)
+{
+    int r, e;
+    r = NetMapRtError(NetMutexLock());
+    if (r != 0) return r;
+    e = (*(NetIfFn *)((char *)gStreamMediaInterfacePtr + 0x34))(a0, a1, a2);
+    r = NetMapRtError(NetMutexUnlock());
+    if (r != 0) return r;
+    return e;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/Dme", NetStreamMediaGetClientInfo);
+int NetStreamMediaGetClientInfo(int a0, int a1, int a2)
+{
+    int r, e;
+    r = NetMapRtError(NetMutexLock());
+    if (r != 0) return r;
+    e = (*(NetIfFn *)((char *)gStreamMediaInterfacePtr + 0x38))(a0, a1, a2);
+    r = NetMapRtError(NetMutexUnlock());
+    if (r != 0) return r;
+    return e;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/Dme", NetStreamMediaEndRecording);
+int NetStreamMediaEndRecording(int a0, int a1)
+{
+    int r, e;
+    r = NetMapRtError(NetMutexLock());
+    if (r != 0) return r;
+    e = (*(NetIfFn *)((char *)gStreamMediaInterfacePtr + 0x3C))(a0, a1);
+    r = NetMapRtError(NetMutexUnlock());
+    if (r != 0) return r;
+    return e;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/Dme", NetStreamMediaGetCurrentChannelState);
+int NetStreamMediaGetCurrentChannelState(int a0, int a1)
+{
+    int r, e;
+    r = NetMapRtError(NetMutexLock());
+    if (r != 0) return r;
+    e = (*(NetIfFn *)((char *)gStreamMediaInterfacePtr + 0x40))(a0, a1);
+    r = NetMapRtError(NetMutexUnlock());
+    if (r != 0) return r;
+    return e;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/Dme", NetStreamMediaSetDefaultIgnoreParams);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/Dme", NetStreamMediaSetIgnoreState);
+int NetStreamMediaSetIgnoreState(int a0)
+{
+    int r, e;
+    r = NetMapRtError(NetMutexLock());
+    if (r != 0) return r;
+    e = (*(NetIfFn *)((char *)gStreamMediaInterfacePtr + 0x44))(a0);
+    r = NetMapRtError(NetMutexUnlock());
+    if (r != 0) return r;
+    return e;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/Dme", NetJoin);
+int NetJoin(int a0, int a1)
+{
+    int r, e;
+    r = NetMapRtError(NetMutexLock());
+    if (r != 0) return r;
+    e = (*(NetIfFn *)((char *)gObjectInterfacePtr + 0x2C))(a0, a1);
+    r = NetMapRtError(NetMutexUnlock());
+    if (r != 0) return r;
+    return e;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/Dme", NetSetFieldChanged);
 
