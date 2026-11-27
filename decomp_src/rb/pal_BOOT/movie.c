@@ -1,215 +1,48 @@
 #include "common.h"
-#define strFile strFile_279F2C
+#include <psptypes.h>
+#include <kerneltypes.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <thread.h>
+#include <ctrlsvc.h>
+#include <libmpeg.h>
+#include <libpsmf.h>
+#include "strfile.h"
+#include "display.h"
+#include "sound.h"
+#include "avsync.h"
+#include "fileread.h"
+#include "menu.h"
 
-/* declarations recovered from DWARF */
-typedef struct t_displayBuffer t_displayBuffer;
-struct t_displayBuffer;
-typedef int SceUID;
-typedef char SceChar8;
-typedef unsigned int SceUInt32;
-typedef int SceInt32;
-struct t_displayBuffer { /* size 0x38 */
-    SceUID start_sema;
-    SceUID lock_sema;
-    SceUID display_wait_sema;
-    SceChar8 **buf;
-    SceUInt32 *pts;
-    SceInt32 *write;
-    SceInt32 *read;
-    SceInt32 *count;
-    SceInt32 *size;
-    SceInt32 pixelFormat;
-    SceInt32 *displayMode;
-    SceInt32 *scale;
-    SceInt32 *posx;
-    SceInt32 *posy;
-};
-typedef struct SceCtrlData SceCtrlData;
-struct SceCtrlData;
-struct SceCtrlData { /* size 0x10 */
-    unsigned int TimeStamp;
-    unsigned int Buttons;
-    unsigned char Lx;
-    unsigned char Ly;
-    unsigned char Rsrv[6];
-};
-typedef void SceVoid;
-struct _anon1;
-struct _anon1 { /* size 0x10 */
-    SceUID fd;
-    SceChar8 assignName[10];
-};
-typedef struct _anon1 StrFile;
-typedef struct t_avSyncControl t_avSyncControl;
-struct t_avSyncControl;
-typedef struct t_soundBuffer t_soundBuffer;
-struct t_soundBuffer;
-struct t_soundBuffer { /* size 0x24 */
-    SceUID lock_sema;
-    SceInt32 *terminate_flag;
-    SceChar8 **buf;
-    SceUInt32 *pts;
-    SceInt32 *write;
-    SceInt32 *read;
-    SceInt32 *count;
-    SceInt32 *size;
-    SceUID start_sema;
-};
-typedef struct t_avSync_Video t_avSync_Video;
-struct t_avSync_Video;
-struct t_avSync_Video { /* size 0x14 */
-    SceUInt32 *pts;
-    SceInt32 write;
-    SceInt32 read;
-    SceInt32 count;
-    SceInt32 size;
-};
-struct t_avSyncControl { /* size 0x1c */
-    t_displayBuffer *pDisp;
-    t_soundBuffer *pSound;
-    t_avSync_Video video;
-};
-typedef struct t_ringBuffer t_ringBuffer;
-struct t_ringBuffer;
-typedef struct SceMpegRingbuffer SceMpegRingbuffer;
-struct SceMpegRingbuffer;
-typedef SceInt32 (*SceMpegRBCallback)(SceVoid *, SceInt32, SceVoid *);
-struct SceMpegRingbuffer { /* size 0x2c */
-    SceInt32 m_iBufsize;
-    SceInt32 m_iRpos;
-    SceInt32 m_iWpos;
-    SceInt32 m_iInlen;
-    SceInt32 m_iTypeSize;
-    SceVoid *m_pBuf;
-    SceMpegRBCallback callback;
-    SceVoid *m_CallbackData;
-    SceVoid *pPack;
-    SceInt32 iSemaRB;
-    SceVoid *mp;
-};
-struct t_ringBuffer { /* size 0x10 */
-    SceInt32 data_len;
-    SceUID ringbuf_sema;
-    SceMpegRingbuffer *pRingbuf;
-    SceInt32 *end_flag;
-};
-typedef struct SceMpeg SceMpeg;
-struct SceMpeg;
-struct SceMpeg { /* size 0x4 */
-    SceVoid *sys;
-};
-typedef struct t_mpegStreamData t_mpegStreamData;
-struct t_mpegStreamData;
-typedef struct SceMpegStream SceMpegStream;
-struct SceMpegStream;
-typedef SceUInt32 SceMpegStreamId;
-typedef unsigned char SceUChar8;
-typedef short int SceShort16;
-struct SceMpegStream { /* size 0x40 */
-    SceMpegStreamId qStreamId;
-    SceMpegStreamId qStreamIdMask;
-    SceVoid *m_pRAPICtrlStream;
-    SceUChar8 *m_pRAPI;
-    SceInt32 m_iAuNum;
-    SceInt32 m_iPesPacketForwardSize;
-    SceInt32 m_iPesPacketForwardFlag;
-    SceShort16 m_iPesPacketAULocator;
-    SceShort16 reserved;
-    SceInt32 m_iPesPacketNum;
-    SceInt32 m_iAuSize;
-    SceInt32 m_iBoundarySize;
-    SceInt32 m_iAuSizeOfProceed;
-    SceUInt32 m_iGetAuMode;
-    SceInt32 m_iPayloadHeaderRemainderFlag;
-    SceInt32 m_iPayloadHeaderRemainderSize;
-    SceChar8 m_cPayloadHeaderBuf[4];
-};
-typedef struct SceMpegAu SceMpegAu;
-struct SceMpegAu;
-typedef struct SceMpegTimeStamp SceMpegTimeStamp;
-struct SceMpegTimeStamp;
-struct SceMpegTimeStamp { /* size 0x8 */
-    SceUInt32 MSB_ts;
-    SceUInt32 ts;
-};
-struct SceMpegAu { /* size 0x18 */
-    SceMpegTimeStamp pts;
-    SceMpegTimeStamp dts;
-    SceUChar8 *pEsBuf;
-    SceInt32 iEsSize;
-};
-struct t_mpegStreamData { /* size 0x10 */
-    SceMpegStream *pAvcStream;
-    SceMpegAu *pAvcAu;
-    SceMpegStream *pAtracStream;
-    SceMpegAu *pAtracAu;
-};
-typedef struct ScePsmf ScePsmf;
-struct ScePsmf;
-struct ScePsmf { /* size 0x28 */
-    SceInt32 type;
-    SceInt32 groupingPeriod_id;
-    SceInt32 group_id;
-    SceInt32 psmfStream_id;
-    SceVoid *header;
-    SceVoid *sequenceInfo;
-    SceVoid *currentGroupingPeriod;
-    SceVoid *currentGroup;
-    SceVoid *currentStream;
-    SceVoid *currentEP_map;
-};
-typedef struct ScePsmf_EntryPoint ScePsmf_EntryPoint;
-struct ScePsmf_EntryPoint;
-struct ScePsmf_EntryPoint { /* size 0x8 */
-    SceUInt32 PTS_EP_start;
-    SceUInt32 EP_start_offset;
-};
-struct _anon2;
-struct _anon2 { /* size 0x1c */
-    int thumbpts;
-    int fullptss;
-    int fullpts;
-    int fullptse;
-    void *texture;
-    int posx;
-    int posy;
-};
-typedef struct _anon2 MOVIE_LIST;
-struct _anon3;
-struct _anon3 { /* size 0x14 */
-    int current;
-    int page;
-    int pos;
-    int selected;
-    int saved;
-};
-typedef struct _anon3 MENU_LIST;
-typedef struct t_playInfo t_playInfo;
-struct t_playInfo;
-struct t_playInfo { /* size 0x8 */
-    SceInt32 playMode;
-    SceUInt32 timestamp;
-};
-struct _anon4;
-struct _anon4 { /* size 0x8 */
-    SceInt32 iDecodeMode;
-    SceInt32 iPixelFormat;
-};
-typedef struct _anon4 SceMpegAvcMode;
-struct _anon5;
-struct _anon5 { /* size 0x10 */
-    int start;
-    int size;
-    int tstart;
-    int tsize;
-};
-typedef struct _anon5 PTS_INFO;
-typedef SceUChar8 *SceMpegHandle;
+typedef struct {
+	SceMpegStream *pAvcStream;
+	SceMpegAu *pAvcAu;
+	SceMpegStream *pAtracStream;
+	SceMpegAu *pAtracAu;
+} t_mpegStreamData;
 
-extern MOVIE_LIST movie_list[];
+typedef struct {
+	SceInt32 playMode;
+	SceUInt32 timestamp;
+} t_playInfo;
+
+typedef struct {
+	int start;
+	int size;
+	int pts;
+	int tstart;
+	int tsize;
+} PTS_INFO;
+
+int BgmStart(void);
+int BgmEnd(void);
+
+extern MOVIE_LIST movie_list[12];
 extern MENU_LIST menu_list;
 extern SceChar8 *dispbuf[1];
 extern t_playInfo playInfo;
+#define strFile strFile_279F2C
 extern StrFile strFile;
 extern SceInt32 streamOffset;
 extern t_displayBuffer displayCtrl;
@@ -232,7 +65,7 @@ extern SceChar8 *pHeaderT;
 extern SceChar8 *pHeader;
 extern ScePsmf psmf;
 extern ScePsmf psmfT;
-extern PTS_INFO pinfo[14];
+extern PTS_INFO pinfo[12];
 extern SceUID dispThread;
 extern SceUID readThread;
 extern SceUID soundThread;
@@ -243,27 +76,72 @@ extern SceMpegHandle avcEsBuf;
 extern SceInt32 audioFlag;
 extern SceInt32 readFlag;
 
-static SceInt32 pad_read(t_displayBuffer *pDisp);
-static int thumb_load(void);
-static SceInt32 ringbufferCallBack(SceVoid *pBuf, SceInt32 iNum, SceVoid *CallbackData);
-static SceInt32 startCheck(t_avSyncControl *pAvSync, t_ringBuffer *pRingCtrl);
-static SceInt32 playMovie(SceMpeg *pMpeg, SceMpegRingbuffer *pRB, t_mpegStreamData *pStreamData, t_ringBuffer *pRingCtrl, t_avSyncControl *pAvSync);
-static SceInt32 readHeader(SceMpeg *pMpeg, StrFile *pStrFile, SceInt32 *pFilesize, SceInt32 *strOffset);
-static int skip_data(ScePsmf *psm, SceUInt32 pts);
-static int init_pinfo(void);
-int MovieInit(void);
-int MovieMain(void);
-int MovieTerm(void);
-int MovieStat(void);
-int MovieStart(void);
-int MovieEnd(void);
+#define opadd D_002C55DC
 
+static int init_pinfo(void);
+static SceInt32 playMovie(SceMpeg *pMpeg, SceMpegRingbuffer *pRB, t_mpegStreamData *pStreamData, t_ringBuffer *pRingCtrl, t_avSyncControl *pAvSync);
 
 INCLUDE_ASM("tmp/asm/rb/pal_BOOT/nonmatchings/movie", pad_read);
 
-INCLUDE_ASM("tmp/asm/rb/pal_BOOT/nonmatchings/movie", thumb_load);
 
-void *memcpy(void *d, const void *s, unsigned int n);
+static int thumb_load(void)
+{
+	SceInt32 iReadSize;
+	SceInt32 ret;
+	SceChar8 stream_buf[2048];
+	int strOffset;
+
+retry1:
+	if (strFileOpen(&strFile, "disc0:/PSP_GAME/USRDIR/MOVIE/menu.pmf", 1) < 0) {
+		printf("fatal error : strFileOpen()\n");
+		goto retry1;
+	}
+retry2:
+	if (strFileLseek(&strFile, 0, 0) < 0)
+		goto retry2;
+retry3:
+	if ((iReadSize = strFileRead(&strFile, stream_buf, 2048)) < 2048) {
+		printf("fatal error : strFileRead() %x\n", iReadSize);
+		goto retry3;
+	}
+	ret = sceMpegQueryStreamOffset(&mpeg, stream_buf, &strOffset);
+	if (ret != 0) {
+		printf("fatal error : sceMpegQueryStreamOffset()\n");
+		return -1;
+	}
+	ret = sceMpegQueryStreamSize(stream_buf, &thumbFilesize);
+	if (ret != 0) {
+		printf("fatal error : sceMpegQueryStreamSize()\n");
+		return -1;
+	}
+retry4:
+	if (strFileLseek(&strFile, 0, 0) < 0) {
+		printf("fatal error : strFileLseek()\n");
+		goto retry4;
+	}
+	pHeaderT = malloc(strOffset);
+	if (pHeaderT == NULL)
+		return -1;
+retry5:
+	if ((iReadSize = strFileRead(&strFile, pHeaderT, strOffset)) < strOffset) {
+		printf("fatal error : strFileRead() %x\n", iReadSize);
+		goto retry5;
+	}
+	thumbBuf = memalign(64, thumbFilesize);
+	if (thumbBuf == NULL) {
+		printf("Can't malloc thumbnail buffer\n");
+		return -1;
+	}
+retry6:
+	if ((iReadSize = strFileRead(&strFile, thumbBuf, thumbFilesize)) < thumbFilesize) {
+		printf("fatal error : strFileRead() %x\n", iReadSize);
+		goto retry6;
+	}
+	strFileClose(&strFile);
+	return 0;
+}
+
+
 static SceInt32 ringbufferCallBack(SceVoid *pBuf, SceInt32 iNum, SceVoid *CallbackData)
 {
 	SceInt32 iTypeSize;
@@ -310,23 +188,55 @@ static SceInt32 startCheck(t_avSyncControl *pAvSync, t_ringBuffer *pRingCtrl)
 	return ret;
 }
 
-INCLUDE_RODATA("tmp/asm/rb/pal_BOOT/nonmatchings/movie", D_00016554);
-
-INCLUDE_RODATA("tmp/asm/rb/pal_BOOT/nonmatchings/movie", D_00016570);
-
-INCLUDE_RODATA("tmp/asm/rb/pal_BOOT/nonmatchings/movie", D_00016590);
-
-INCLUDE_RODATA("tmp/asm/rb/pal_BOOT/nonmatchings/movie", D_000165BC);
-
-INCLUDE_RODATA("tmp/asm/rb/pal_BOOT/nonmatchings/movie", D_000165E4);
-
-INCLUDE_RODATA("tmp/asm/rb/pal_BOOT/nonmatchings/movie", D_00016604);
-
 INCLUDE_ASM("tmp/asm/rb/pal_BOOT/nonmatchings/movie", playMovie);
 
-INCLUDE_ASM("tmp/asm/rb/pal_BOOT/nonmatchings/movie", readHeader);
+static SceInt32 readHeader(SceMpeg *pMpeg, StrFile *pStrFile, SceInt32 *pFilesize, SceInt32 *strOffset)
+{
+	SceInt32 iReadSize;
+	SceInt32 ret;
+	SceChar8 stream_buf[2048];
 
-int printf(const char *fmt, ...);
+	if (strFileLseek(pStrFile, 0, 0) < 0) {
+		ret = -1;
+		goto end;
+	}
+	iReadSize = strFileRead(pStrFile, stream_buf, 2048);
+	if (iReadSize < 2048) {
+		printf("fatal error : strFileRead() %x\n", iReadSize);
+		ret = -1;
+		goto end;
+	}
+	if (sceMpegQueryStreamOffset(pMpeg, stream_buf, strOffset) != 0) {
+		printf("fatal error : sceMpegQueryStreamOffset()\n");
+		ret = -1;
+		goto end;
+	}
+	if (sceMpegQueryStreamSize(stream_buf, pFilesize) != 0) {
+		printf("fatal error : sceMpegQueryStreamSize()\n");
+		ret = -1;
+		goto end;
+	}
+	if (strFileLseek(pStrFile, 0, 0) < 0) {
+		printf("fatal error : strFileLseek()\n");
+		ret = -1;
+		goto end;
+	}
+	ret = -1;
+	pHeader = malloc(*strOffset);
+	if (pHeader != NULL) {
+		iReadSize = strFileRead(pStrFile, pHeader, *strOffset);
+		ret = 0;
+		if (iReadSize < *strOffset) {
+			printf("fatal error : strFileRead() %x\n", iReadSize);
+			free(pHeader);
+			ret = -1;
+		}
+	}
+end:
+	return ret;
+}
+
+
 static int skip_data(ScePsmf *psm, SceUInt32 pts)
 {
 	SceInt32 ret;
@@ -349,7 +259,73 @@ static int skip_data(ScePsmf *psm, SceUInt32 pts)
 
 INCLUDE_ASM("tmp/asm/rb/pal_BOOT/nonmatchings/movie", init_pinfo);
 
-INCLUDE_ASM("tmp/asm/rb/pal_BOOT/nonmatchings/movie", MovieInit);
+int MovieInit(void)
+{
+	SceInt32 bufferSize;
+	SceInt32 workSize;
+	SceInt32 ret;
+
+	decodeMode.iDecodeMode = -1;
+	audioFlag = 1;
+	decodeMode.iPixelFormat = 3;
+	ret = sceMpegInit();
+	if (ret != 0) {
+		printf("fatal error : sceMpegInit() %x\n", ret);
+		return -1;
+	}
+	bufferSize = sceMpegRingbufferQueryMemSize(960);
+	if (bufferSize < 0) {
+		printf("fatal error : sceMpegRingbufferQueryMemSize %x\n", bufferSize);
+		return -1;
+	}
+	workSize = sceMpegQueryMemSize(0);
+	if (workSize < 0) {
+		printf("fatal error : sceMpegQueryMemSize %x\n", workSize);
+		return -1;
+	}
+	pPSPStream = malloc(bufferSize);
+	if (pPSPStream == NULL) {
+		printf("fatal error : malloc pPSPStream\n");
+		return -1;
+	}
+	pWorkBuf = malloc(workSize);
+	if (pWorkBuf == NULL) {
+		printf("fatal error : malloc pWorkBuf\n;");
+		return -1;
+	}
+	ret = sceMpegRingbufferConstruct(&ringbuf, 960, pPSPStream, bufferSize, ringbufferCallBack, &strFile);
+	if (ret != 0) {
+		printf("fatal error : sceMpegRingbufferConstruct() %x\n", ret);
+		return -1;
+	}
+	ret = sceMpegCreate(&mpeg, pWorkBuf, workSize, &ringbuf, 512, 0, 0);
+	if (ret != 0) {
+		printf("fatal error : sceMpegCreate() %x\n", ret);
+		return -1;
+	}
+	sceMpegAvcDecodeMode(&mpeg, &decodeMode);
+	sceKernelChangeThreadPriority(sceKernelGetThreadId(), 0x40);
+	dispThread = sceKernelCreateThread("displayThread", dispbuf_func, 0x3F, 0x800, 0, NULL);
+	readThread = sceKernelCreateThread("readThread", read_func, 0x41, 0x800, 0, NULL);
+	if (audioFlag)
+		soundThread = sceKernelCreateThread("soundThread", soundbuf_func, 0x3D, 0x800, 0, NULL);
+	playInfo.playMode = 0;
+	thumb_load();
+retry1:
+	if (strFileOpen(&strFile, "disc0:/PSP_GAME/USRDIR/MOVIE/movie.pmf", 1) < 0) {
+		printf("fatal error : strFileOpen()\n");
+		goto retry1;
+	}
+retry2:
+	if (readHeader(&mpeg, &strFile, &fileSize, &streamOffset) != 0) {
+		printf("fatal error : readHeader\n");
+		goto retry2;
+	}
+	init_pinfo();
+	BgmStart();
+	return 0;
+}
+
 
 int MovieMain(void)
 {
@@ -374,10 +350,109 @@ int MovieMain(void)
 	return 0;
 }
 
-void free(void *p);
 INCLUDE_ASM("tmp/asm/rb/pal_BOOT/nonmatchings/movie", MovieTerm);
 
-INCLUDE_ASM("tmp/asm/rb/pal_BOOT/nonmatchings/movie", MovieStart);
+int MovieStart(void)
+{
+	SceInt32 audioEsSize;
+	SceInt32 audioOutSize;
+	int fs;
+	int ret;
+
+	if (menu_list.selected == 1) {
+		audioFlag = 1;
+		readFlag = 1;
+	} else {
+		audioFlag = 0;
+		readFlag = 0;
+	}
+	if (readFlag == 0) {
+		pthumbBuf = thumbBuf + pinfo[menu_list.current].tstart;
+		thumbRest = fs = pinfo[menu_list.current].tsize;
+	} else {
+		if (strFileLseek(&strFile, streamOffset + pinfo[menu_list.current].start, 0) < 0)
+			return -1;
+		fs = pinfo[menu_list.current].size + 0x1000;
+	}
+	pStream[0] = sceMpegRegistStream(&mpeg, 0, 0);
+	if (pStream[0] == NULL) {
+		printf("fatal error : sceMpegRegistStream() AVC\n");
+		return -1;
+	}
+	if (audioFlag) {
+		pStream[1] = sceMpegRegistStream(&mpeg, 1, 0);
+		if (pStream[1] == NULL) {
+			printf("fatal error : sceMpegRegistStream() ATRAC\n");
+			return -1;
+		}
+	}
+	avcEsBuf = sceMpegMallocAvcEsBuf(&mpeg);
+	if (avcEsBuf == NULL) {
+		printf("fatal error : sceMpegMallocAvcEsBuf()\n");
+		return -1;
+	}
+	ret = sceMpegInitAu(&mpeg, avcEsBuf, &avcAu);
+	if (ret != 0) {
+		printf("fatal error : sceMpegInitAu() AVC %x\n", ret);
+		return -1;
+	}
+	if (audioFlag) {
+		ret = sceMpegQueryAtracEsSize(&mpeg, &audioEsSize, &audioOutSize);
+		if (ret != 0) {
+			printf("fatal error : sceQueryAtracEsSize() %x\n", ret);
+			return -1;
+		}
+		pAudioBuf = memalign(64, audioEsSize);
+		if (pAudioBuf == NULL) {
+			printf("fatal error : memalign audioEsSize\n");
+			return -1;
+		}
+		ret = sceMpegInitAu(&mpeg, pAudioBuf, &atracAu);
+		if (ret != 0) {
+			printf("fatal error : sceMpegInitAu() %x\n", ret);
+			return -1;
+		}
+	}
+	mpegStreamData.pAvcStream = pStream[0];
+	mpegStreamData.pAtracStream = pStream[1];
+	mpegStreamData.pAvcAu = &avcAu;
+	mpegStreamData.pAtracAu = &atracAu;
+	if (dispbuf_create(&displayCtrl, 0x88000, 1, decodeMode.iPixelFormat) < 0) {
+		printf("fatal error : dispbuf_create()\n");
+		return -1;
+	}
+	if (audioFlag) {
+		if (soundbuf_create(&soundCtrl, audioOutSize, 4) < 0) {
+			printf("fatal error : soundbuf_create()\n");
+			return -1;
+		}
+	}
+	if (read_create(&readCtrl, &ringbuf) < 0) {
+		printf("fatal error : read_create()\n");
+		return -1;
+	}
+	if (avsync_create(&avSync, &displayCtrl, &soundCtrl, 3) < 0) {
+		printf("fatal error : avsync_create()\n");
+		return -1;
+	}
+	if (audioFlag)
+		soundbuf_init(&soundCtrl);
+	dispbuf_init(&displayCtrl);
+	avsync_init(&avSync);
+	read_init(&readCtrl, fs);
+	{
+		MOVIE_LIST *pMv;
+
+		pMv = &movie_list[menu_list.current];
+		dispbuf_scale(&displayCtrl, menu_list.selected);
+		dispbuf_pos(&displayCtrl, pMv->posx, pMv->posy);
+	}
+	if (audioFlag)
+		sceKernelStartThread(soundThread, sizeof(t_avSyncControl), &avSync);
+	sceKernelStartThread(dispThread, sizeof(t_avSyncControl), &avSync);
+	sceKernelStartThread(readThread, sizeof(t_ringBuffer), &readCtrl);
+	return 0;
+}
 
 int MovieEnd(void)
 {
