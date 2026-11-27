@@ -372,7 +372,48 @@ sbappendcontrol(struct sockbuf *sb, struct mbuf *m0, struct mbuf *control)
 	return (1);
 }
 
-INCLUDE_ASM("tmp/asm/tony_libs/pspnet_inet/nonmatchings/uipc_socket2", func_00005024);
+void sbcompress(struct sockbuf *sb, struct mbuf *m, struct mbuf *n)
+{
+	int eor = 0;
+	struct mbuf *o;
+
+	while (m) {
+		eor |= m->m_flags & M_EOR;
+		if (m->m_len == 0 &&
+		    (eor == 0 ||
+		     (((o = m->m_next) || (o = n)) &&
+		      o->m_type == m->m_type))) {
+			m = m_free(m);
+			continue;
+		}
+		if (n && (n->m_flags & M_EOR) == 0 && n->m_type == m->m_type &&
+		    (((n->m_flags & M_EXT) == 0 &&
+		      n->m_data + n->m_len + m->m_len <= &n->m_dat[MLEN]) ||
+		     ((~n->m_flags & (M_EXT | M_CLUSTER)) == 0 &&
+		      n->m_ext.ext_nextref == n &&
+		      n->m_data + n->m_len + m->m_len <= n->m_ext.ext_buf + MCLBYTES))) {
+			memcpy(mtod(n, caddr_t) + n->m_len, mtod(m, caddr_t),
+			    (unsigned)m->m_len);
+			n->m_len += m->m_len;
+			sb->sb_cc += m->m_len;
+			m = m_free(m);
+			continue;
+		}
+		if (n)
+			n->m_next = m;
+		else
+			sb->sb_mb = m;
+		sballoc(sb, m);
+		n = m;
+		m->m_flags &= ~M_EOR;
+		m = m->m_next;
+		n->m_next = 0;
+	}
+	if (eor) {
+		if (n)
+			n->m_flags |= eor;
+	}
+}
 
 void
 sbflush(struct sockbuf *sb)
