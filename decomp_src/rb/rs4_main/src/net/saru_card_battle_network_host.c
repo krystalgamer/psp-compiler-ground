@@ -1,32 +1,144 @@
 /* lang: c++ */
-/* cflags: -Os */
+/* cflags: -Os -fno-strength-reduce -fno-merge-constants -fno-exceptions */
+/* #pragma interface: the vtables, typeinfo and implicit destructors stay in the module's asm */
+#pragma interface "rodata"
 #include "common.h"
+
+struct NetTypeBroadcastSchedule;
+
 extern "C" {
+void _memFree(void *p, const char *file, int line);
+void *_memAllocMBL(unsigned int size, const char *file, int line);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_card_battle_network_host", _ZN7SaruNet10CardBattle11NetworkHostD1Ev);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_card_battle_network_host", _ZN7SaruNet10CardBattle11NetworkHostD0Ev);
+namespace Ys {
+class Object {
+public:
+	static void *operator new(unsigned int size) { return _memAllocMBL(size, "src/ys/ys_object.h", 23); }
+	static void operator delete(void *p) { _memFree(p, "src/ys/ys_object.h", 25); }
+};
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_card_battle_network_host", _ZNK7SaruNet10CardBattle10Class_Host26Get_RemoteCreateCallback_pEv);
+namespace Net {
+class ObjectClass {
+public:
+	virtual int Get_ClassID() const;
+	virtual int Set_ClassID(int id);
+	virtual int Get_Size() const;
+	virtual const char *Get_Name() const;
+	virtual void *Get_RemoteCreateCallback_p() const;
+	virtual void Register_Field();
+};
 
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_card_battle_network_host", D_00107424);
+class Object : public Ys::Object {
+public:
+	int class_id;
+	int object_index;
+	int _c;
+	bool owner;
+	void *net_object_p;
+	Object *Init(ObjectClass &cls, int object_index);
+	virtual ~Object();
+	virtual void Callback_Update(int a, int idx, int c);
+	virtual void Callback_Remove(int a, int idx);
+};
+}
 
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_card_battle_network_host", _ZTIN7SaruNet10CardBattle11NetworkGameE);
+namespace SaruNet {
+class Object : public Net::Object {
+public:
+};
+}
 
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_card_battle_network_host", _ZTIN7SaruNet10CardBattle11NetworkHostE);
+namespace SaruNetLib {
+class _Class_Host : public Net::ObjectClass {
+public:
+	static int _class_id;
+	virtual int Get_ClassID() const;
+	virtual int Set_ClassID(int id);
+};
 
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_card_battle_network_host", _ZTSN7SaruNet10CardBattle11NetworkHostE);
+class Class_Host : public _Class_Host {
+public:
+	virtual int Get_Size() const;
+	virtual const char *Get_Name() const;
+	virtual void *Get_RemoteCreateCallback_p() const;
+	virtual void Register_Field(NetTypeBroadcastSchedule &s);
+};
 
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_card_battle_network_host", _ZTSN7SaruNet10CardBattle11NetworkGameE);
+class Host : public SaruNet::Object {
+public:
+	virtual ~Host();
+	Host *Init();
+	Host *Init(int cls, int idx);
+	static void gCallback_RemoteCreate(int cls, int idx);
+};
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_card_battle_network_host", _ZN7SaruNet10CardBattle11NetworkHost22gCallback_RemoteCreateEii);
+namespace SaruNet {
+namespace CardBattle {
+class NetworkHost;
+}
 
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_card_battle_network_host", _ZTVN7SaruNet10CardBattle10Class_HostE);
+class Game {
+public:
+	char _0[0x38];
+	SaruNetLib::Host *host;
+	static Game *_instance_p;
+};
 
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_card_battle_network_host", D_001074B0);
+namespace CardBattle {
+class Class_Host : public SaruNetLib::Class_Host {
+public:
+	virtual void *Get_RemoteCreateCallback_p() const;
+};
 
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_card_battle_network_host", _ZTIN7SaruNet10CardBattle10Class_HostE);
+class NetworkHost : public SaruNetLib::Host {
+public:
+	static void gCallback_RemoteCreate(int cls, int idx);
+};
 
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_card_battle_network_host", _ZTSN7SaruNet10CardBattle10Class_HostE);
+}
+}
 
-} /* extern "C": m2c drafts with mangled names, kept as C linkage */
+extern "C" { INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_card_battle_network_host", _ZN7SaruNet10CardBattle11NetworkHostD1Ev); }
+extern "C" { INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_card_battle_network_host", _ZN7SaruNet10CardBattle11NetworkHostD0Ev); }
+
+namespace SaruNet {
+namespace CardBattle {
+
+void *Class_Host::Get_RemoteCreateCallback_p() const
+{
+	return (void *)NetworkHost::gCallback_RemoteCreate;
+}
+
+}
+}
+
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_card_battle_network_host", D_00107424); }
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_card_battle_network_host", _ZTIN7SaruNet10CardBattle11NetworkGameE); }
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_card_battle_network_host", _ZTIN7SaruNet10CardBattle11NetworkHostE); }
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_card_battle_network_host", _ZTSN7SaruNet10CardBattle11NetworkHostE); }
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_card_battle_network_host", _ZTSN7SaruNet10CardBattle11NetworkGameE); }
+
+namespace SaruNet {
+namespace CardBattle {
+
+void NetworkHost::gCallback_RemoteCreate(int cls, int idx)
+{
+	Game *g = Game::_instance_p;
+	g->host = (new NetworkHost)->Init(cls, idx);
+}
+
+}
+}
+
+extern "C" const char D_001074A4[] = "";
+
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_card_battle_network_host", _ZTVN7SaruNet10CardBattle10Class_HostE); }
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_card_battle_network_host", D_001074B0); }
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_card_battle_network_host", _ZTIN7SaruNet10CardBattle10Class_HostE); }
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_card_battle_network_host", _ZTSN7SaruNet10CardBattle10Class_HostE); }
+
+
