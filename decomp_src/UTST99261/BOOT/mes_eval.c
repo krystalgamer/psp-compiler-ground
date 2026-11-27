@@ -118,22 +118,10 @@ void mes_list_free2(int list, int keep);
 int mes_error_syntax(EvCtx *ctx, int a);
 typedef struct { unsigned int n; int items[1]; } EvArr;
 typedef struct { char pad[0x20]; int obj; EvArr *args; EvArr *locals; EvArr *x2C; } EvScF;
-typedef struct NatFn {
-    char pad[0x18];
-    int (*fn)();
-    unsigned char nargs;
-} NatFn;
-typedef struct NatArgs {
-    unsigned int n;
-    int v[1];
-} NatArgs;
-typedef struct NatFrame {
-    NatFn *func;
-    NatArgs *args;
-} NatFrame;
-typedef struct NatCtx {
-    NatFrame *frame;
-} NatCtx;
+typedef struct NatFn { char pad[0x18]; int (*fn)(); unsigned char nargs; } NatFn;
+typedef struct NatArgs { unsigned int n; int v[1]; } NatArgs;
+typedef struct NatFrame { char pad[0x20]; NatFn *func; NatArgs *args; } NatFrame;
+typedef struct NatCtx { char pad[0x10]; NatFrame *frame; } NatCtx;
 void *mes_eval_scope_new(EvCtx *ctx, int a, int b, int c)
 {
     char *o = mes_gc_alloc(ctx, 5);
@@ -610,7 +598,53 @@ int mes_eval_strict_equal(int a, int b)
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_eval", mes_eval_native);
+int mes_eval_native(NatCtx *ctx) {
+    int a[7];
+    NatFrame *f;
+    NatFn *n;
+    int *p;
+    unsigned int i;
+    int r;
+
+    f = ctx->frame;
+    n = f->func;
+    i = 0;
+    if (f->args != NULL) {
+        p = f->args->v;
+        for (; i < f->args->n && (int)i < 7; i++)
+            a[i] = *p++;
+    }
+    for (; (int)i < n->nargs; i++)
+        a[i] = 0;
+    r = 0;
+    switch (n->nargs) {
+    case 0:
+        r = n->fn(ctx);
+        break;
+    case 1:
+        r = n->fn(ctx, a[0]);
+        break;
+    case 2:
+        r = n->fn(ctx, a[0], a[1]);
+        break;
+    case 3:
+        r = n->fn(ctx, a[0], a[1], a[2]);
+        break;
+    case 4:
+        r = n->fn(ctx, a[0], a[1], a[2], a[3]);
+        break;
+    case 5:
+        r = n->fn(ctx, a[0], a[1], a[2], a[3], a[4]);
+        break;
+    case 6:
+        r = n->fn(ctx, a[0], a[1], a[2], a[3], a[4], a[5]);
+        break;
+    case 7:
+        r = n->fn(ctx, a[0], a[1], a[2], a[3], a[4], a[5], a[6]);
+        break;
+    }
+    return r;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_eval", mes_eval_byte);
 
