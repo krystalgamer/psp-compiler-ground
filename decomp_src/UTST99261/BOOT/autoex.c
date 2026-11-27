@@ -57,6 +57,11 @@ typedef struct AEKey {
 typedef struct AEWep { int type; int len; char key[32]; } AEWep;
 typedef struct AEProfile { unsigned char x0[0x100]; char ssid[32]; unsigned char x120[0xC]; int f12C; int f130; unsigned char x134[0x28]; AEWep wep[4]; char x1FC[0x48]; unsigned char x244[0x10]; } AEProfile;
 extern AEProfile AutoProfile;
+typedef struct AENecParam { char ssid[0x24]; int wep; char key[32]; } AENecParam;
+extern AENecParam _gNecApConfigParam;
+char *strcpy(char *d, const char *s);
+unsigned int strlen(const char *s);
+int AsciiToHex(unsigned char *out, char *s, int n);
 int SendFrameViaInterface(int s, void *to, void *info, void *buf, int len)
 {
     int r = sceNetInetSendto(s, buf, len, 0, to, 16);
@@ -393,7 +398,50 @@ int AsciiToHex(unsigned char *out, char *s, int n)
     return 1;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/autoex", StoreNetParam);
+int StoreNetParam(void)
+{
+    int ret = 1;
+    char *key;
+    int i;
+
+    strcpy(_gNecApConfigParam.ssid, AutoProfile.ssid);
+    switch (AutoProfile.f12C) {
+    case 0:
+        _gNecApConfigParam.wep = 0;
+        break;
+    case 1:
+        i = AutoProfile.f130;
+        if (i > 0) {
+            key = AutoProfile.wep[i - 1].key;
+            switch (strlen(key)) {
+            case 5:
+                _gNecApConfigParam.wep = 1;
+                memcpy(_gNecApConfigParam.key, key, 5);
+                break;
+            case 10:
+                _gNecApConfigParam.wep = 1;
+                AsciiToHex((unsigned char *)_gNecApConfigParam.key, key, 10);
+                break;
+            case 13:
+                _gNecApConfigParam.wep = 2;
+                memcpy(_gNecApConfigParam.key, key, 13);
+                break;
+            case 26:
+                _gNecApConfigParam.wep = 2;
+                AsciiToHex((unsigned char *)_gNecApConfigParam.key, key, 26);
+                break;
+            default:
+                ret = -7;
+                break;
+            }
+        }
+        break;
+    default:
+        ret = -7;
+        break;
+    }
+    return ret;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/autoex", _AutoConfigThreadEx);
 
