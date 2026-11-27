@@ -541,7 +541,36 @@ int sceSsVoiceGetStatus(int a0)
 	return voice_getVoiceStatus(a0);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/sound_playsmf/nonmatchings/libsndp", func_00008544);
+typedef struct { int pad[17]; int group; int prio; int rest[5]; } SsVoiceParam;
+int func_00008544(int a0, int a1, int a2, int a3, int a4, int a5, int a6, int a7)
+{
+	SsVoiceParam param;
+	unsigned int voices;
+	int i;
+	int ret;
+
+	ret = func_0000872C(a0, a1, a2, a3, a4, a5, a6, a7, &param);
+	if (ret != 0)
+		return ret;
+	if (param.group != 0) {
+		voices = voice_getVoiceByGroup(param.group, param.prio);
+		if (voices != 0) {
+			for (i = 0; i < (int)g_maxvoice; i++) {
+				if ((voices >> i) & 1) {
+					sceSsVoiceSetSustainHold(i, 0);
+					voice_noteOff(i);
+				}
+			}
+		}
+	}
+	i = voice_allocVoice(param.prio);
+	if (i < 0)
+		return 0x80540010;
+	ret = voice_noteOn(i, &param);
+	if (ret != 0)
+		return ret;
+	return i;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/sound_playsmf/nonmatchings/libsndp", func_00008628);
 
