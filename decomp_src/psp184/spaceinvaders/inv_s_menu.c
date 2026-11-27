@@ -51,7 +51,17 @@ void inv_classic_sound_init(void)
 		inv_classic_sound_load(music_libtbl[SD_MUSIC]);
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_menu", inv_classic_musicdisp_init);
+extern unsigned char save_data;
+extern int music_libtbl[];
+#define SD_MUSIC (*(int *)(&save_data + 0x4c))
+extern int music_sw;
+void inv_classic_musicdisp_init()
+{
+	music_sw = 0;
+	inv_classic_sound_free();
+	if (SD_MUSIC != 0)
+		inv_classic_sound_load(music_libtbl[SD_MUSIC]);
+}
 
 void inv_classic_menu_init(int a0)
 {
