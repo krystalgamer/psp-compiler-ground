@@ -194,9 +194,34 @@ void sceGumUpdateMatrix(void) {
     _sceGumCheckUpdate();
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgum", sceGumStoreContext);
+typedef struct { int cur_matrix; ScePspFMatrix4 *cur_stack; MATRIX_STACK mat_stack[4]; int update[4]; } _SceGumContext;
+void sceGumStoreContext(SceGumContext *ctx)
+{
+	int i;
+	_SceGumContext *cp = (_SceGumContext *)ctx;
+	cp->cur_matrix = cur_matrix;
+	cp->cur_stack = cur_stack;
+	for (i = 0; i < 4; i++) {
+		cp->mat_stack[i].top = mat_stack[i].top;
+		cp->mat_stack[i].bottom = mat_stack[i].bottom;
+		cp->mat_stack[i].cur = mat_stack[i].cur;
+		cp->update[i] = update[i];
+	}
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgum", sceGumLoadContext);
+void sceGumLoadContext(SceGumContext *ctx)
+{
+	int i;
+	const _SceGumContext *cp = (const _SceGumContext *)ctx;
+	cur_matrix = cp->cur_matrix;
+	cur_stack = cp->cur_stack;
+	for (i = 0; i < 4; i++) {
+		mat_stack[i].top = cp->mat_stack[i].top;
+		mat_stack[i].bottom = cp->mat_stack[i].bottom;
+		mat_stack[i].cur = cp->mat_stack[i].cur;
+		update[i] = cp->update[i];
+	}
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgum", sceGumRotateX);
 
