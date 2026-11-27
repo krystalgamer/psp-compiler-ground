@@ -12,7 +12,92 @@ extern int LAYOUT_STOP;
 
 #include "parse_ps.h"
 extern int mq_js;
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/ps_l1C00", RequestEnd);
+extern char D_00137764[];
+extern int mq_ps;
+extern int mq_ps_su;
+extern int buf_sessionUI;
+extern int buf_localUI;
+extern int buf_Loding_Stop_FLG;
+extern int SSLFlg;
+int OS_mq_send(int q, void *buf, int len, unsigned int prio);
+M2C_UNK RequestEnd(msg)
+PsIpc *msg;
+{
+    PsIpc m;
+    struct {
+        int x00;
+        PsIpc body;
+    } q;
+    struct {
+        int x00;
+        PsIpc body;
+    } out;
+    int f2;
+    int f17;
+    int f1A;
+
+    f2 = 0;
+    f17 = 0;
+    f1A = 0;
+    initMPU_SIG_LAYOUT_COMPLETE(&m);
+    m.x04 = buf_sessionUI;
+    m.x14 = buf_localUI;
+    ps_sndmsg(&m, 1);
+    m.x04 = msg->x04;
+    m.x08 = msg->x08;
+    m.x10 = msg->x10;
+    m.x14 = msg->x14;
+    m.x18 = msg->x18;
+    m.x1C = msg->x1C;
+    m.type = 2;
+    m.cmd = 5;
+    ps_sndmsg(&m, 1);
+    while (GetMQUEUE(mq_ps_su, &q)) {
+        switch (q.body.cmd) {
+        case 2:
+            if (f2 == 0) {
+                out.body = q.body;
+                if (OS_mq_send(mq_ps, &q, sizeof(out), 0) < 0) {
+                    ps_halt(D_00137764);
+                }
+                f2 = 1;
+            } else if (q.body.x1C != 0) {
+                MEM_free(0, q.body.x1C);
+            }
+            break;
+        case 0x17:
+            if (f17 == 0) {
+                out.body = q.body;
+                if (OS_mq_send(mq_ps, &q, sizeof(out), 0) < 0) {
+                    ps_halt("Parser : cmk_mbox_send(ps_i2309) failed");
+                }
+                f17 = 1;
+            } else if (q.body.x1C != 0) {
+                MEM_free(0, q.body.x1C);
+            }
+            break;
+        case 0x1A:
+            if (f1A == 0) {
+                out.body = q.body;
+                if (OS_mq_send(mq_ps, &q, sizeof(out), 0) < 0) {
+                    ps_halt("Parser : cmk_mbox_send(ps_i2309) failed");
+                }
+                f1A = 1;
+            } else if (q.body.x1C != 0) {
+                MEM_free(0, q.body.x1C);
+            }
+            break;
+        default:
+            if (q.body.x1C != 0) {
+                MEM_free(0, q.body.x1C);
+            }
+            break;
+        }
+    }
+    Accession = 0;
+    buf_Loding_Stop_FLG = 0;
+    SSLFlg = 0;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
