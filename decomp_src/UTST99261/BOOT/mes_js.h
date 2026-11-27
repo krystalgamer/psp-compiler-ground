@@ -35,6 +35,9 @@ struct MesObject {
 
 #define MES_INT(i) (((i) << 2) | 1)
 #define MES_NULL 4
+#define MES_FALSE 8
+#define MES_TRUE 12
+#define MES_IS_OBJECT(v) ((((v) & 3) == 0) & ((unsigned int)(v) > 0x20))
 #define MES_UNDEFINED 0x20
 
 /* per-call state: this object at 0x1C */
@@ -44,7 +47,9 @@ typedef struct MesArgs {
 } MesArgs;
 
 typedef struct MesFrame {
-    char pad[0x1C];
+    char pad[0x16];
+    unsigned char construct;          /* 0x16: called with new */
+    char pad17[5];
     MesObject *thisobj;
     int f20;
     MesArgs *args;
