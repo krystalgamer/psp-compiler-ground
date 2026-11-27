@@ -3,12 +3,10 @@
 M2C_UNK I3dResourceTag__PurgeCache();               /* extern */
 M2C_UNK I3dCacheManager__RemoveMemBlock(void *, void *); /* extern */
 M2C_UNK I3dMemBlock__ChangeAttributeToGarbage(void *, void *); /* extern */
-M2C_UNK I3dMemBlock__MoveList(void *, M2C_UNK, int); /* extern */
 M2C_UNK I3dCacheManager__CreateNewMemBlockAsGarbage(int, int, int); /* extern */
 M2C_UNK I3dCacheManager__ClearAllKeepAttr(int);     /* extern */
 M2C_UNK I3dCacheManager__ClearAllMoveAttr(int);     /* extern */
 M2C_UNK I3dCacheManager__ClearAllNewAttr();         /* extern */
-M2C_UNK I3dMemBlock__Destruct(void *);              /* extern */
 M2C_UNK I3dVecClear(int);                           /* extern */
 M2C_UNK I3dPicture__FlushCache(void *);             /* extern */
 M2C_UNK sceGimPictureDelete(int);                   /* extern */
@@ -36,7 +34,21 @@ void I3dMemBlock__InsertList(MBk *b, int i, MBk *h)
 	h->l[i].prev = b;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_cache_manager", I3dMemBlock__MoveList);
+typedef struct MBLnk3 { struct MBk3 *next, *prev; } MBLnk3;
+typedef struct MBk3 { MBLnk3 l[1]; } MBk3;
+void I3dMemBlock__MoveList(MBk3 *b, int i, MBk3 *h)
+{
+	MBk3 *n = b->l[i].next;
+	MBk3 *p;
+	n->l[i].prev = b->l[i].prev;
+	b->l[i].prev->l[i].next = n;
+	b->l[i].prev = b;
+	p = h->l[i].prev;
+	p->l[i].next = b;
+	b->l[i].prev = p;
+	b->l[i].next = h;
+	h->l[i].prev = b;
+}
 
 int I3dMemBlock__ChangeAttributeToCache(char *b, void *t)
 {
@@ -49,7 +61,13 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_cache_manager", I3dMemBlock__C
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_cache_manager", I3dMemBlock__Construct);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_cache_manager", I3dMemBlock__Destruct);
+int I3dMemBlock__Destruct(void *b)
+{
+	unsigned int i;
+	for (i = 0; i < 6; i++)
+		I3dMemBlock__RemoveList(b, i);
+	return 0;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)

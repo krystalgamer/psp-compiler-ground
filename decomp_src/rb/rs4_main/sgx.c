@@ -128,7 +128,21 @@ int sgxIsStrIncWC(const char *s)
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgx", sgxListArrayInit);
+typedef struct SgxL { struct SgxL *next, *prev; int idx; int f; } SgxL;
+void sgxListArrayInit(SgxL *head, SgxL *e, int n, int size)
+{
+	int i;
+	for (i = 0; i < n; i++) {
+		e->prev = e;
+		e->idx = i;
+		e->prev = head->prev;
+		head->prev = e;
+		e->next = head;
+		e->f = 0;
+		e->prev->next = e;
+		e = (SgxL *)((char *)e + size);
+	}
+}
 
 int sgxListEnumID(char *l, int *out)
 {

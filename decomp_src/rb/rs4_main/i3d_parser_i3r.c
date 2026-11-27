@@ -44,7 +44,15 @@ int I3rRoot__Get_nNode(void *arg0) {
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_parser_i3r", I3rRoot__GetNodeName);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_parser_i3r", I3rRoot__GetNodeIndexByName);
+int I3dSearchName();
+int I3rRoot__GetNodeIndexByName(char *r, char *name)
+{
+	char *h = *(char **)(r + 0x10);
+	int i = I3dSearchName(*(void **)(h + 0x20), *(unsigned short *)(h + 0x2E), name);
+	if (i < 0)
+		return -1;
+	return (*(unsigned short **)(h + 0x1C))[i];
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
