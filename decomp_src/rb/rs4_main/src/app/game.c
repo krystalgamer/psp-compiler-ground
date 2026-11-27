@@ -313,9 +313,21 @@ void gameEnSoftReset(void) {
     D_00111688 = 1;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/game", gameCtrlLock);
+extern unsigned char D_000FCBFC;
+typedef struct { int f0, f4, f8; } GameDataHd;
+void gameCtrlLock(void)
+{
+	consPrintf(&D_000FCBC8, &D_000FCBFC);
+	((GameDataHd *)&GameData)->f4 |= 0x40;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/game", gameCtrlUnlock);
+extern unsigned char D_000FCC0C;
+typedef struct { int f0, f4, f8; } GameDataHd2;
+void gameCtrlUnlock(void)
+{
+	((GameDataHd2 *)&GameData)->f8 |= 0x40;
+	consPrintf(&D_000FCBE4, &D_000FCC0C);
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/game", D_000FCC24);
 

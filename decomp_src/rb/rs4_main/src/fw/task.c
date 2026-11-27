@@ -59,7 +59,20 @@ M2C_UNK *viewGetDefault(void) {
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/task", viewMount);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/task", viewRemove);
+typedef struct View { struct View *next, *prev; } View;
+extern View *pMount, *pChain;
+void viewRemove(View *v)
+{
+	View *n = v->next, *p = v->prev;
+	if (pMount == v)
+		pMount = n;
+	if (pChain == v)
+		pChain = p;
+	if (n)
+		n->prev = p;
+	if (p)
+		p->next = n;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/task", viewProc);
 

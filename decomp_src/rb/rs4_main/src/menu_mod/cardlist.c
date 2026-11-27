@@ -14,7 +14,15 @@ extern unsigned char D_001021A0;
 int cardlistCpyTtr2Int32();                         /* extern */
 
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/cardlist", cardlistGetCardID);
+int *resGetDatLocal();
+int ttrGetStringByIndex();
+int cardlistGetCardID(int id)
+{
+	int a, b;
+	if (ttrGetStringByIndex(resGetDatLocal(1, 15), id, &a, &b))
+		return b;
+	return -1;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/cardlist", cardlistCpyTtr2Ucs4);
 

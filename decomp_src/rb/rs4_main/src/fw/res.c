@@ -266,7 +266,14 @@ void *resArg(int *r, unsigned int i)
 	return &D_000FBF80;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", resCmpExt);
+int strcmp(const char *, const char *);
+int resCmpExt(int *r, char *s)
+{
+	char *p = resArg(r, 1);
+	if (!p)
+		return -1;
+	return strcmp(p, s);
+}
 
 #ifndef NULL
 #define NULL ((void *)0)

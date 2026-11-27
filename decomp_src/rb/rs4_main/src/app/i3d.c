@@ -776,7 +776,15 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d", i3dCameraCardBattle)
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d", i3dLightInit);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d", i3dLightTerm);
+extern unsigned char D_000FD5E0;
+int i3dLightTerm(int a, char *p)
+{
+	int t = *(int *)(p + 0x70);
+	*(int *)(p + 0x70) = 0;
+	if (t)
+		_memFree(t, &D_000FD5E0, 0x577);
+	return 1;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d", i3dLightProc);
 

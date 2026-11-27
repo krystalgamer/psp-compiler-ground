@@ -170,7 +170,19 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/lib/sort", textASCIItoUCS4);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/lib/sort", textUCS4toASCII);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/lib/sort", textChr);
+int *textChr(int *p, int c)
+{
+	while (p) {
+		if (*p == 0 || *p == -1) {
+			p = 0;
+			break;
+		}
+		if (*p == c)
+			break;
+		p++;
+	}
+	return p;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/lib/sort", textCmp);
 

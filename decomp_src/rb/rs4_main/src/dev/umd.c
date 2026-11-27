@@ -36,7 +36,16 @@ signed char *umdParamToVirtual(int arg0, int arg1) {
     return &UmdVirtual;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/umd", umdNameToVirtual);
+typedef struct { int mode, attr; long long size; char t[48]; unsigned int priv[6]; } UmdStat;
+int sceIoGetstat(const char *, UmdStat *);
+char *umdPref();
+int umdNameToVirtual(char *name)
+{
+	UmdStat st;
+	if (sceIoGetstat(umdPref(name), &st) != 0)
+		return 0;
+	return (int)umdParamToVirtual(st.priv[0], (int)st.size);
+}
 
 #ifndef NULL
 #define NULL ((void *)0)

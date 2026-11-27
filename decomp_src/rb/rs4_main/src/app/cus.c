@@ -95,7 +95,14 @@ float to_float(const char *s)
 	return atof(s);
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/cus", trim);
+void trim(char *s)
+{
+	char *d = s;
+	do {
+		if (*s != ' ' && *s != '\t')
+			*d++ = *s;
+	} while (*s++);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/cus", find_section);
 
@@ -151,7 +158,14 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/cus", cusGetKeyName);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/cus", cusGetKeyIndex);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/cus", _fontAlloc);
+void *_memAlloc();
+int _fontAlloc(int a, int size)
+{
+	int r = -1;
+	if (size)
+		r = (int)_memAlloc(size, &D_000FC3F8, 0x41);
+	return r;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/cus", _fontFree);
 
@@ -379,7 +393,16 @@ void gameUnlock(void) {
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/cus", gameChkChange);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/cus", gameSwitchPlayer);
+typedef struct { char pad[0x9C]; int mode; int pad2; int player; } GameDataSw;
+int SaruNet_ResidentData__Is_Server();
+void gameSwitchPlayer(int a)
+{
+	GameDataSw *g = (GameDataSw *)&GameData;
+	if (g->mode != 2)
+		g->player = a;
+	else
+		g->player = !SaruNet_ResidentData__Is_Server();
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/cus", gameMain);
 

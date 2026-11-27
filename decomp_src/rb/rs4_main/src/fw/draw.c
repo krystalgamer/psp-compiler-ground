@@ -133,7 +133,17 @@ void *resGetInst(int arg0) {
     return (arg0 << 5) + &InstBuf;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/draw", resGetChildEntry);
+typedef struct { int *p; int pad[7]; } InstEnt;
+int resGetChildEntry(int i)
+{
+	int *c;
+	if (CurrentInst >= i) {
+		c = (int *)((InstEnt *)&InstBuf)[i].p[1];
+		if (c)
+			return c[1];
+	}
+	return 0;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/draw", resChkData);
 

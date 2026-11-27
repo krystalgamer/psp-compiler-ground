@@ -5,7 +5,7 @@ int sceKernelGetGPI();                              /* extern */
 M2C_UNK sgxResClose(int);                           /* extern */
 extern unsigned char D_000FE640;
 
-M2C_UNK consPrintf(M2C_UNK *, M2C_UNK *);           /* extern */
+int consPrintf();
 M2C_UNK sgxResCloseAll();                           /* extern */
 M2C_UNK sgxSndStopAll(M2C_UNK);                     /* extern */
 M2C_UNK sgxTerm();                                  /* extern */
@@ -94,7 +94,15 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/scx", scxStop);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/scx", scxPause);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/scx", scxState);
+extern unsigned char D_000FE65C, D_000FE6BC;
+int sgxSndGetStatus();
+int scxState(int id)
+{
+	if (id >= 0)
+		return sgxSndGetStatus(id);
+	consPrintf(&D_000FE65C, &D_000FE6BC, id);
+	return 0;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)

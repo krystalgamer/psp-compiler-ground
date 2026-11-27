@@ -124,7 +124,19 @@ void menuGetFlowIDNum(void) {
     cusGetKeyNum(6, (int) &l_szEdition);
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/ez", menuNextFlow);
+typedef struct { int flow[16]; } MenuFlowHd;
+int menuGetNextFlowID();
+int menuNextFlow(void)
+{
+	int n = menuGetNextFlowID();
+	int i;
+	if (n < 0)
+		return n;
+	for (i = 15; i != 0; i--)
+		((MenuFlowHd *)&l_tMenuCntx)->flow[i] = ((MenuFlowHd *)&l_tMenuCntx)->flow[i - 1];
+	((MenuFlowHd *)&l_tMenuCntx)->flow[0] = n;
+	return 0;
+}
 
 typedef struct { int flow[16]; } MenuFlowHead;
 int menuSetNewFlowForce(int a)

@@ -14,7 +14,7 @@ extern int D_0011B054;
 extern unsigned char savedata_param;
 extern unsigned int g_utilityType;
 M2C_UNK FreeData_GameBuf();                         /* extern */
-M2C_UNK SetData_InitBase(void *, M2C_UNK);          /* extern */
+void SetData_InitBase();
 M2C_UNK SetData_Normal(int, void *);                /* extern */
 M2C_UNK sceUtilitySavedataInitStart(void *);        /* extern */
 M2C_UNK FreeData_Normal(int, int);                  /* extern */
@@ -41,7 +41,13 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/saveutil", SetData_Ga
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/saveutil", FreeData_GameData);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/saveutil", SetData_GameBuf);
+extern unsigned char D_00103954;
+void *_memAllocZero();
+void SetData_GameBuf(char *p)
+{
+	*(void **)(p + 0x74) = _memAllocZero(0x80000, &D_00103954, 0xA6);
+	*(int *)(p + 0x78) = 0x80000;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/saveutil", FreeData_GameBuf);
 
@@ -57,13 +63,54 @@ void SetData_Pic1Buf(void) {
 void SetData_Snd0Buf(void) {
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/saveutil", SetData_Icon0);
+extern int l_atSaveRes[];
+typedef struct { void *buf; int bufSize; int size; int unk; } SaveFDIcon0;
+typedef struct { char pad[0x584]; SaveFDIcon0 d; } SavePIcon0;
+typedef struct { void *data; int size; } SaveDatIcon0;
+SaveDatIcon0 *resGetDatLocal();
+void SetData_Icon0(SavePIcon0 *p)
+{
+	SaveDatIcon0 *r;
+	r = resGetDatLocal(l_atSaveRes[0], l_atSaveRes[1]);
+	p->d.buf = r->data;
+	p->d.bufSize = r->size;
+	p->d.size = r->size;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/saveutil", SetData_Pic1);
+typedef struct { void *buf; int bufSize; int size; int unk; } SaveFDPic1;
+typedef struct { char pad[0x5A4]; SaveFDPic1 d; } SavePPic1;
+void SetData_Pic1(SavePPic1 *p)
+{
+	SaveDatIcon0 *r;
+	r = resGetDatLocal(l_atSaveRes[0], l_atSaveRes[3]);
+	p->d.buf = r->data;
+	p->d.bufSize = r->size;
+	p->d.size = r->size;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/saveutil", SetData_Icon1);
+typedef struct { void *buf; int bufSize; int size; int unk; } SaveFDIcon1;
+typedef struct { char pad[0x594]; SaveFDIcon1 d; } SavePIcon1;
+void SetData_Icon1(SavePIcon1 *p)
+{
+	SaveDatIcon0 *r;
+	if (l_atSaveRes[2] < 0)
+		return;
+	r = resGetDatLocal(l_atSaveRes[0], l_atSaveRes[2]);
+	p->d.buf = r->data;
+	p->d.bufSize = r->size;
+	p->d.size = r->size;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/saveutil", SetData_Snd0);
+typedef struct { void *buf; int bufSize; int size; int unk; } SaveFDSnd0;
+typedef struct { char pad[0x5B4]; SaveFDSnd0 d; } SavePSnd0;
+void SetData_Snd0(SavePSnd0 *p)
+{
+	SaveDatIcon0 *r;
+	r = resGetDatLocal(l_atSaveRes[0], l_atSaveRes[4]);
+	p->d.buf = r->data;
+	p->d.bufSize = r->size;
+	p->d.size = r->size;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -117,7 +164,18 @@ int Savedata_Update(void) {
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/saveutil", SetData_InitBase);
+int UtilGetMessageLang();
+int UtilGetAssign();
+void SetData_InitBase(int *p, int a)
+{
+	p[0] = a;
+	p[1] = UtilGetMessageLang();
+	p[2] = UtilGetAssign();
+	p[3] = 0x15;
+	p[4] = 0x17;
+	p[5] = 0x16;
+	p[6] = 0x14;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
