@@ -357,7 +357,67 @@ void set_texture(int no)
 	}
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_tex", set_packet_scr);
+typedef struct __attribute__((packed)) { unsigned short u, v; unsigned short c; short x, y, z; } SCRV_T;
+typedef struct {
+	int used, f4, tex, nearest, f10, mode;
+	u8 alpha;
+	u8 pad19[3];
+	int x[4], y[4], u[4], v[4], c[4];
+	int z;
+	SCRV_T pkt[2][4];
+} SPRITE_S;
+extern int g_packet;
+void sceGuBlendFunc(int op, int src, int dest, unsigned int srcfix, unsigned int destfix);
+void sceGuAlphaFunc(int a0, int a1, int a2);
+void sceGumDrawArray(int prim, int vtype, int count, const void *indices, const void *vertices);
+void sceKernelDcacheWritebackInvalidateRange(const void *p, unsigned int size);
+void set_packet_scr(int no)
+{
+	SPRITE_S *s = (SPRITE_S *)&sprite[no];
+	SCRV_T *v;
+	int i;
+
+	s->used = 0;
+	if (s->tex == -1)
+		sceGuDisable(9);
+	else
+		sceGuEnable(9);
+	if (s->mode == 0) {
+		sceGuDisable(4);
+	} else if (s->mode == 1) {
+		sceGuBlendFunc(0, 2, 3, 0, 0);
+		sceGuEnable(4);
+	} else if (s->mode == 2) {
+		sceGuBlendFunc(0, 10, 10, (s->alpha << 24) | (s->alpha << 16) | (s->alpha << 8) | s->alpha, -1);
+		sceGuEnable(4);
+	} else if (s->mode == 3) {
+		sceGuBlendFunc(4, 0, 0, 0, 0);
+		sceGuEnable(4);
+	} else if (s->mode == 4) {
+		sceGuBlendFunc(2, 10, 10, (s->alpha << 24) | (s->alpha << 16) | (s->alpha << 8) | s->alpha, -1);
+		sceGuEnable(4);
+	}
+	sceGuAlphaFunc(7, 0, 0xFF);
+	sceGuEnable(0);
+	if (s->nearest == 0)
+		sceGuTexFilter(1, 1);
+	else
+		sceGuTexFilter(0, 0);
+	v = s->pkt[0];
+	if (g_packet)
+		v = s->pkt[1];
+	for (i = 0; i < 4; i++) {
+		v[i].u = s->u[i];
+		v[i].v = s->v[i];
+		v[i].c = s->c[i];
+		v[i].x = s->x[i];
+		v[i].y = s->y[i];
+		v[i].z = s->z;
+	}
+	sceKernelDcacheWritebackInvalidateRange(v, 0x30);
+	sceGumDrawArray(4, 0x80011A, 4, 0, v);
+	sceGuEnable(9);
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_tex", set_packet_3d);
 
