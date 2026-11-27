@@ -13,7 +13,7 @@ extern int D_0011FBE8;
 extern int D_0011FBF0;
 extern int D_0011FC00;
 
-void IntersectSubOBBA()
+int IntersectSubOBBA()
 {
 	__asm__ volatile(
 		"lv.q C010.q,0($4)\n"
@@ -57,7 +57,39 @@ void I3dcsSub_ProjectVectorXYZA()
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3dcs_obb", I3dcs_IsIntersectLineOBBA);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3dcs_obb", I3dcs_IsIntersectRayOBBA);
+void I3dVecSubA(float *, const float *, const float *);
+void I3dVecCrossA(float *, const float *, const float *);
+int I3dcs_IsIntersectRayOBBA(const float *org, const float *dir, const float *ext, const float *obb)
+{
+	float cr[4] __attribute__((aligned(16)));
+	float v[4] __attribute__((aligned(16)));
+	float po[4] __attribute__((aligned(16)));
+	float pd[4] __attribute__((aligned(16)));
+
+	I3dVecSubA(v, org, obb + 12);
+	I3dcsSub_ProjectVectorXYZA(pd, obb, dir);
+	I3dcsSub_ProjectVectorXYZA(po, obb, v);
+	__asm__ volatile(
+		"lv.q C010.q,0(%1)\n"
+		"lv.q C020.q,0(%2)\n"
+		"vmul.q C000.q,C010.q,C020.q\n"
+		"sv.q C000.q,0(%0)\n"
+		: : "r"(cr), "r"(po), "r"(pd) : "memory");
+	__asm__ volatile(
+		"lv.q C010.q,0(%0)\n"
+		"vabs.q C000.q,C010.q\n"
+		"sv.q C000.q,0(%0)\n"
+		: : "r"(po) : "memory");
+	{
+		float a0 = po[0], a1 = po[1], a2 = po[2];
+		float e0 = ext[0], e1 = ext[1], e2 = ext[2];
+		float m0 = cr[0], m1 = cr[1], m2 = cr[2];
+		if ((e0 < a0 && m0 >= 0.0f) || (e1 < a1 && m1 >= 0.0f) || (e2 < a2 && m2 >= 0.0f))
+			return 0;
+	}
+	I3dVecCrossA(cr, dir, v);
+	return IntersectSubOBBA(cr, pd, ext, obb);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3dcs_obb", I3dcs_IsIntersectSegOBBA);
 
