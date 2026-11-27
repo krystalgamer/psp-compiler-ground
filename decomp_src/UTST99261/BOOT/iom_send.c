@@ -7,6 +7,11 @@ M2C_UNK iom_sendMsg(void *, int);                   /* extern */
 extern int D_00585108;
 
 
+int UTL_mfileread(void *f, void *buf, int n);
+typedef struct { int len; char *str; } LOCD;
+typedef struct { int x0; int type; int x8; int xC; int code; int a1; int x18; int size; LOCD *data; } IMSGL;
+unsigned int strlen(const char *s);
+void *memcpy(void *d, const void *s, unsigned int n);
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iom_send", iom_sendRequestFailed);
 
 int iom_sendRequestComplete(void *msg) {
@@ -70,9 +75,103 @@ int iom_sendReceiveStatus(void *arg0, int arg1, int arg2, int arg3) {
     return var_v0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iom_send", iom_sendContent);
+int iom_sendContent(void *msg, int a1, void *mf, int len) {
+    int mq;
+    int code;
+    void *m;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iom_send", iom_sendLocation);
+    if (len <= 0) {
+        return 0;
+    }
+    if (M2C_FIELD(msg, int *, 4) == 2) {
+        mq = D_00585108;
+        if (M2C_FIELD(msg, int *, 0x10) == 2) {
+            code = 0x24;
+        } else if (M2C_FIELD(msg, int *, 0x10) == 3) {
+            code = 0x25;
+        } else if (M2C_FIELD(msg, int *, 0x10) == 10) {
+            code = 0x2A;
+        } else {
+            return 0;
+        }
+    } else if (M2C_FIELD(msg, int *, 4) == 4) {
+        mq = D_0058510C;
+        if (M2C_FIELD(msg, int *, 0x10) == 0x10) {
+            code = 0x501;
+        } else if (M2C_FIELD(msg, int *, 0x10) == 0x12) {
+            code = 0x503;
+        } else {
+            return 0;
+        }
+    } else {
+        return 0;
+    }
+    m = iom_newMsg(msg);
+    if (m == NULL) {
+        return -0x12D;
+    }
+    M2C_FIELD(m, int *, 0x10) = code;
+    M2C_FIELD(m, int *, 0x14) = a1;
+    M2C_FIELD(m, void **, 0x20) = iom_malloc(len);
+    if (M2C_FIELD(m, void **, 0x20) == NULL) {
+        iom_freeMsg(m);
+        return -0x12D;
+    }
+    M2C_FIELD(m, int *, 0x1C) = UTL_mfileread(mf, M2C_FIELD(m, void **, 0x20), len);
+    iom_sendMsg(m, mq);
+    return 0;
+}
+
+int iom_sendLocation(IMSGL *msg, int a1, char *url, char *url2) {
+    int code;
+    int mq;
+    IMSGL *m;
+
+    if (msg->type == 2 || (msg->type == 5 && iom_translateMsg(msg) == 0xF)) {
+        code = 0x2D;
+        mq = D_00585108;
+    } else if (msg->type == 4) {
+        code = 0x506;
+        mq = D_0058510C;
+    } else {
+        return -0x12E;
+    }
+    m = iom_newMsg(msg);
+    if (m == NULL) {
+        return -0x12D;
+    }
+    m->code = code;
+    m->a1 = a1;
+    m->size = strlen(url) + 8;
+    m->data = iom_malloc(m->size);
+    if (m->data == NULL) {
+        iom_freeMsg(m);
+        return -0x12D;
+    }
+    m->data->len = strlen(url);
+    m->data->str = (char *)m->data + 8;
+    memcpy(m->data->str, url, strlen(url));
+    iom_sendMsg(m, mq);
+    if (msg->type == 2) {
+        m = iom_newMsg(msg);
+        if (m != NULL) {
+            mq = D_0058510C;
+            m->code = 0x506;
+            m->a1 = -1;
+            m->size = strlen(url2) + 8;
+            m->data = iom_malloc(m->size);
+            if (m->data == NULL) {
+                iom_freeMsg(m);
+                return 0;
+            }
+            m->data->len = strlen(url2);
+            m->data->str = (char *)m->data + 8;
+            memcpy(m->data->str, url2, strlen(url2));
+            iom_sendMsg(m, mq);
+        }
+    }
+    return 0;
+}
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/iom_send", D_0013F400);
 
