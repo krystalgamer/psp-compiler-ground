@@ -719,7 +719,27 @@ void sceGuDrawArray(int prim, int vtype, int count, const void *indices, const v
 	send_commandi_stall(4, (prim << 16) | count);
 }
 
-INCLUDE_ASM("tmp/asm/rb/jp_BOOT/nonmatchings/libgu", sceGuDrawArrayN);
+void sceGuDrawArrayN(int prim, int vtype, int count, int n, const void *indices, const void *vertices)
+{
+	if (vtype)
+		send_commandi(18, vtype);
+	if (indices) {
+		send_commandi(16, (((unsigned int)indices) >> 8) & 0xf0000);
+		send_commandi(2, ((unsigned int)indices) & 0xffffff);
+	}
+	if (vertices) {
+		send_commandi(16, (((unsigned int)vertices) >> 8) & 0xf0000);
+		send_commandi(1, ((unsigned int)vertices) & 0xffffff);
+	}
+	prim = (prim << 16) | count;
+	{
+		int i;
+
+		for (i = 0; i < n - 1; i++)
+			send_commandi(4, prim);
+	}
+	send_commandi_stall(4, prim);
+}
 
 void sceGuDrawBezier(int vtype, int ucount, int vcount, const void *indices, const void *vertices)
 {
@@ -1007,7 +1027,13 @@ void sceGuPatchFrontFace(int arg0)
 	send_commandi(56, arg0);
 }
 
-INCLUDE_ASM("tmp/asm/rb/jp_BOOT/nonmatchings/libgu", sceGuShadeModel);
+void sceGuShadeModel(int mode)
+{
+	if (mode != 1)
+		send_commandi(80, 0);
+	else
+		send_commandi(80, 1);
+}
 
 void sceGuLight(int light, int type, int components, const ScePspFVector3 *position)
 {
