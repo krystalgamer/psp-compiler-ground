@@ -32,6 +32,7 @@ int HST_getSessionID(void *h);
 extern unsigned char _DOMinput, _DOMtype, _DOMbutton, _DOMcheckbox, _DOMfile, _DOMhidden, _DOMimage, _DOMpassword, _DOMradio, _DOMreset, _DOMsubmit, _DOMselect, _DOMtextarea;
 void Node_getNodeName(DOMString *s, void *node);
 void Element_getAttribute(DOMString *s, void *node, void *name);
+typedef struct FormElem { void *elem; struct FormElem *next; } FormElem;
 RadioEnt *getRadioListByName(void *ctx, void *box) {
     RadioEnt *r = M2C_FIELD(M2C_FIELD(ctx, void **, 0x20), RadioEnt **, 0x80);
 
@@ -210,7 +211,39 @@ void addFormList(void *ctx, void *form) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_form", addFormElementList);
+void addFormElementList(void *ctx, void *form, void *elem) {
+    FormEnt *f;
+    FormElem *e;
+    FormElem *p;
+
+    if (ctx == NULL || elem == NULL)
+        return;
+    f = M2C_FIELD(M2C_FIELD(ctx, void **, 0x20), FormEnt **, 0x7C);
+    if (form != NULL) {
+        for (; f != NULL; f = f->next) {
+            if (f->form == form)
+                break;
+        }
+        if (f == NULL)
+            return;
+    } else {
+        if (f == NULL)
+            return;
+        while (f->next != NULL)
+            f = f->next;
+    }
+    e = MEM_malloc(0, sizeof(FormElem));
+    e->elem = elem;
+    e->next = NULL;
+    p = (FormElem *)f->pad;
+    if (p == NULL) {
+        f->pad = (int)e;
+    } else {
+        while (p->next != NULL)
+            p = p->next;
+        p->next = e;
+    }
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
