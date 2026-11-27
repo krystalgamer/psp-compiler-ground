@@ -59,7 +59,44 @@ void GraphicsTestVersion(char *buf)
 	sprintf(buf, "Ver. 041026_1");
 }
 
-INCLUDE_ASM("tmp/asm/umdt/graphicstest/nonmatchings/graphicstest", GraphicsTest);
+int GraphicsTest(int arg)
+{
+	unsigned int latch[4];
+	int sel;
+	char buf[32];
+
+	sel = 0;
+	_DrawAllMenu(sel);
+	for (;;) {
+		while (1) {
+			if (sceCtrlReadLatch(latch))
+				break;
+			sceDisplayWaitVblankStart();
+		}
+		if (latch[1] & 0x10) {
+			if (sel != 0) {
+				_DrawModeMenu(sel, _graphics_menu[sel].name, 0);
+				sel--;
+				_DrawModeMenu(sel, _graphics_menu[sel].name, 1);
+			}
+		} else if (latch[1] & 0x40) {
+			if (sel != 2) {
+				_DrawModeMenu(sel, _graphics_menu[sel].name, 0);
+				sel++;
+				_DrawModeMenu(sel, _graphics_menu[sel].name, 1);
+			}
+		} else if (latch[1] & 0x2000) {
+			_graphics_menu[sel].func(_graphics_menu[sel].arg);
+			_DrawAllMenu(sel);
+		} else if (latch[1] & 0x4000) {
+			break;
+		} else {
+			/* an insn without code: keeps cfg cleanup from forwarding this edge (orig keeps beqz; j exit; j top) */
+			__asm__ volatile ("");
+		}
+	}
+	return 0;
+}
 
 int GraphicsTestEntry(int a, int b)
 {
