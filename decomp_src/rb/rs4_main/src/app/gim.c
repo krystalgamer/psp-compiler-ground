@@ -1,7 +1,18 @@
 /* cflags: -Os -fno-strength-reduce */
 #include "common.h"
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/gim", gimAlloc);
+extern int GimDebug;
+extern unsigned char D_000FCC50;
+void *_memAllocMBL();
+void *gimAlloc(int size)
+{
+	if (GimDebug == 1) {
+		char *ra;
+		__asm__ volatile("or %0, $31, $0\n\taddiu %0, %0, -8" : "=r"(ra));
+		consPrintf("%s : %p %x\n", "gimAlloc", ra, size);
+	}
+	return _memAllocMBL(size, &D_000FCC50, 60);
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/gim", D_000FCC50);
 
