@@ -122,6 +122,8 @@ typedef struct NatFn { char pad[0x18]; int (*fn)(); unsigned char nargs; } NatFn
 typedef struct NatArgs { unsigned int n; int v[1]; } NatArgs;
 typedef struct NatFrame { char pad[0x20]; NatFn *func; NatArgs *args; } NatFrame;
 typedef struct NatCtx { char pad[0x10]; NatFrame *frame; } NatCtx;
+extern unsigned int D_005852C0;
+EvArr *mes_util_vals(int n, int a);
 void *mes_eval_scope_new(EvCtx *ctx, int a, int b, int c)
 {
     char *o = mes_gc_alloc(ctx, 5);
@@ -141,7 +143,48 @@ void *mes_eval_scope_new(EvCtx *ctx, int a, int b, int c)
     return o;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_eval", mes_eval_scope_bind);
+void *mes_eval_scope_bind(EvCtx *ctx, int f, EvArr *args, int thisobj)
+{
+    int kind;
+    char *s;
+    int n;
+
+    if ((f & 3) != 0 || (unsigned int)f <= 0x20)
+        goto fail;
+    kind = (*(EvGc **)f)->kind;
+    if (kind != 3 && (kind != 4 && kind != 8))
+        goto fail;
+    if (kind == 8) {
+        thisobj = f;
+        f = mes_eval_object_get(ctx, f, D_005852C0);
+        if ((f & 3) != 0 || (unsigned int)f <= 0x20)
+            goto fail;
+        kind = (*(EvGc **)f)->kind;
+        if (kind != 3) {
+            if (kind != 4) {
+fail:
+                return NULL;
+            }
+        }
+    }
+    s = mes_eval_scope_new(ctx, 1, f, thisobj);
+    if (s != NULL) {
+        *(EvArr **)(s + 0x24) = args;
+        if (kind == 3) {
+            *(int *)(s + 0x18) = *(int *)(f + 0x28);
+            if (*(unsigned short *)(f + 0x26) != 0)
+                *(EvArr **)(s + 0x2C) = mes_util_vals(*(unsigned short *)(f + 0x26), 0);
+            n = 0;
+            if (args != NULL)
+                n = args->n;
+            if (n < *(unsigned short *)(f + 0x24))
+                *(EvArr **)(s + 0x28) = mes_util_vals(*(unsigned short *)(f + 0x24) - n, 0);
+        } else {
+            *(int *)(s + 0x18) = M2C_FIELD(ctx, int *, 0x10);
+        }
+    }
+    return s;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_eval", mes_eval_scope_get);
 
