@@ -92,6 +92,16 @@ extern DOMStr _DOMhref;
 char *URL_toAbsoluteURL(char *base, char *rel);
 char *HST_getBaseURI(void *h);
 void *Node_getOwnerDocument(void *n);
+typedef struct OptItem { struct OptItem *next; int x4; char *text; } OptItem;
+int GUI_List_isIndexSelected();
+int GUI_Choice_getSelectedItem();
+int Document_createTextNode();
+int Node_getFirstChild();
+int Node_getChildNodes();
+unsigned int NodeList_getLength();
+int NodeList_item();
+int Node_getNodeType();
+int ucs2ToUtf8();
 DOMStr *newDOMString_4B5FC(const char *utf8, int len) {
     DOMStr *s = MEM_malloc(0, sizeof(DOMStr));
 
@@ -583,7 +593,68 @@ DOMStr *JSI_getOptionText(void *node) {
     return r;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSI_setOptionText);
+int JSI_setOptionText(void *node, DOMStr *text) {
+    LayoutBox *box;
+    char *s;
+    int idx;
+    int *info;
+    int sel;
+    OptItem *p;
+    int i;
+    int tn;
+    int list;
+    unsigned int n;
+    int c;
+
+    if (node == NULL || (box = Node_getBox(node)) == NULL || box->parent->widget == NULL)
+        return 0;
+    s = MEM_malloc(0, text->len * 3 + 1);
+    if (s == NULL)
+        return 0;
+    s[ucs2ToUtf8(s, text->str, text->len)] = 0;
+    idx = Util_HTMLOptionElement_getIndex(node);
+    info = box->parent->data;
+    if (info[1] >= 2 || info[0] == 1) {
+        sel = GUI_List_isIndexSelected(box->parent->widget, idx);
+        GUI_List_remove(box->parent->widget, idx);
+        GUI_List_add(box->parent->widget, s, idx);
+        if (sel)
+            GUI_List_select(box->parent->widget, idx);
+    } else {
+        sel = idx == GUI_Choice_getSelectedItem(box->parent->widget);
+        GUI_Choice_remove(box->parent->widget, idx);
+        GUI_Choice_insert(box->parent->widget, s, idx);
+        if (sel)
+            GUI_Choice_select(box->parent->widget, idx);
+    }
+    GUI_Component_update(box->parent->widget, 0, 0, 0, 0);
+    OS_thread_mutex_lock(M2C_FIELD(gESPRIT_LO_GLOBAL_NDA, void **, 0x3C));
+    i = 0;
+    for (p = ((OptItem **)box->parent->data)[2]; p != NULL; p = p->next) {
+        if (i == idx) {
+            if (p->text != NULL)
+                MEM_free(0, p->text);
+            p->text = s;
+            break;
+        }
+        i++;
+    }
+    OS_thread_mutex_unlock(M2C_FIELD(gESPRIT_LO_GLOBAL_NDA, void **, 0x3C));
+    tn = Document_createTextNode(Node_getOwnerDocument(node), text);
+    if (Node_getFirstChild(node) == 0) {
+        Node_appendChild(node, tn);
+        return 1;
+    }
+    list = Node_getChildNodes(node);
+    for (n = 0; n < NodeList_getLength(list); n++) {
+        c = NodeList_item(list, n);
+        if (Node_getNodeType(c) == 3) {
+            Node_replaceChild(node, tn, c);
+            return 1;
+        }
+    }
+    return 1;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
