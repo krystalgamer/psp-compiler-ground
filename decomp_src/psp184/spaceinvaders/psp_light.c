@@ -13,16 +13,17 @@ const LV3_T D_0007A854 = { -5.0f, 10.0f, 5.0f };
 INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_light", D_0007A860);
 
 typedef struct {
-	signed char on; unsigned char f1; unsigned char type; unsigned char f3;
+	signed char on; signed char f1; signed char type; unsigned char f3;
 	LV3_T pos;
-	unsigned char pad10[0x24 - 0x10];
+	LV3_T dir;
+	float exponent, cutoff;
 	unsigned int col[3];
 	int active, cnt, time;
 	unsigned int base[3];
 	unsigned int c48; int f4C; int f50; float f54; float f58; float f5C; int f60;
 	unsigned int c64; int f68; int f6C; float f70; float f74; float f78; int f7C;
 } LSUB2;
-typedef struct { unsigned char on, f1; unsigned char pad[2]; unsigned int ambient; float f8; LSUB2 sub[4]; } LIGHT_T;
+typedef struct { signed char on, f1; unsigned char pad[2]; unsigned int ambient; float f8; LSUB2 sub[4]; } LIGHT_T;
 extern LIGHT_T light;
 void *memset(void *s, int c, unsigned int n);
 void light_init(void)
@@ -64,7 +65,62 @@ void light_init(void)
 	}
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_light", light_cnt);
+typedef struct { float x, y, z, w; } LV4_T;
+extern int game_pause;
+void sceGuEnable(int state);
+void sceGuDisable(int state);
+void sceGuAmbient(unsigned int color);
+void sceGuSpecular(float power);
+void sceGuColorMaterial(int components);
+void sceGuModelColor(unsigned int emissive, unsigned int ambient, unsigned int diffuse, unsigned int specular);
+void sceGuLight(int light, int type, int components, const LV3_T *position);
+void sceGuLightColor(int light, int component, unsigned int color);
+void sceGuLightSpot(int light, const LV3_T *direction, float exponent, float cutoff);
+void mat_local2world(LV4_T *in, LV3_T *out);
+void light_cnt(void)
+{
+	LV3_T pos;
+	LV4_T v;
+	LSUB2 *s;
+	int i;
+
+	if (light.on == 0) {
+		sceGuDisable(10);
+		return;
+	}
+	sceGuEnable(10);
+	sceGuAmbient(light.ambient);
+	sceGuSpecular(light.f8);
+	sceGuColorMaterial(3);
+	sceGuModelColor(0xFF000000, 0xFF000000, 0xFFFFFFFF, 0xFFFFFFFF);
+	for (i = 0; i < 4; i++) {
+		s = &((LSUB2 *)&D_003538BC)[i];
+		if (s->on == 0) {
+			sceGuDisable(i + 11);
+			continue;
+		}
+		if (game_pause == 0)
+			light_timer_ctl(i);
+		if (s->f1 == 0) {
+			pos.x = s->pos.x;
+			pos.y = s->pos.y;
+			pos.z = s->pos.z;
+		} else {
+			v.x = s->pos.x;
+			v.y = s->pos.y;
+			v.z = s->pos.z;
+			v.w = 1.0f;
+			mat_local2world(&v, &pos);
+		}
+		sceGuEnable(i + 11);
+		sceGuLight(i, s->f1, s->type, &pos);
+		sceGuLightColor(i, 1, s->col[0]);
+		sceGuLightColor(i, 2, s->col[1]);
+		sceGuLightColor(i, 4, s->col[2]);
+		if (s->f1 == 2)
+			sceGuLightSpot(i, &s->dir, s->exponent, s->cutoff);
+	}
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_light", light_debug_disp);
 
