@@ -206,7 +206,20 @@ void change_state(enum matching_room_state state) {
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_netmain", get_nickname);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_netmain", draw_p2p_game_parameter);
+void ASC_SetStringRGBA(int font, char *str, int x, int y, int r, int g, int b, int a);
+int sprintf(char *buf, const char *fmt, ...);
+void draw_p2p_game_parameter(int index, int color, int x, int y)
+{
+	char mess_buff[128];
+
+	if (D_0039AE3C != 0)
+		return;
+	sprintf(mess_buff, "PlayerNum: %d/%d", minfo[index].hello_opt.cur_player_num, minfo[index].hello_opt.req_player_num);
+	if (color == 0xffffff)
+		ASC_SetStringRGBA(2, mess_buff, x, y, 255, 255, 255, 255);
+	else if (color == 0xff)
+		ASC_SetStringRGBA(2, mess_buff, x, y, 255, 0, 0, 255);
+}
 
 INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_netmain", D_0007B554);
 
