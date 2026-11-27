@@ -21,6 +21,16 @@ void actClearForm(void *f);
 void initImageList(void *l);
 void lfm_resetPageRegion(void *r, int w);
 void freeDrawObject(BOX *b);
+int getCurrentFocusIndex(BOX *box);
+void removeAllFocusList(BOX *box);
+void freeMapList(BOX *box);
+void freeRadioList(BOX *box);
+void freeFormList(BOX *box);
+void actSaveForm(BOX *body, BOX *box);
+HISTNODE *HST_getChildHistoryNode(HISTNODE *n);
+HISTNODE *HST_getSiblingHistoryNode(HISTNODE *n);
+int HST_getRequestFlag(HISTNODE *n);
+void HST_deleteHistoryNode(HISTNODE *n);
 int checkTableHierarchy(BOX *box, BOX **table) {
     while (box != NULL) {
         if (box->content == 6) {
@@ -191,7 +201,60 @@ int getBrotherBox(void *arg0) {
     return M2C_FIELD(arg0, int *, 0xC);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_box_api_low", freeBoxPre);
+void freeBoxPre(BOX *box) {
+    int *sd;
+    int i;
+    int *g;
+    HISTNODE *n;
+    HISTNODE *next;
+
+    switch (box->content) {
+    case 1:
+        sd = getSessionSaveData(M2C_FIELD(box->geom, int *, 0x38));
+        if (sd != NULL) {
+            if (M2C_FIELD(box, void **, 0x2C) != NULL)
+                getViewPort(box, sd + 1, sd + 2);
+            i = getCurrentFocusIndex(box);
+            if (i >= 0)
+                sd[3] = i;
+        }
+        actClearForm(M2C_FIELD(box->geom, void **, 0x38));
+        removeAllFocusList(box);
+        freeMapList(box);
+        freeRadioList(box);
+        freeFormList(box);
+        g = gESPRIT_LO_GLOBAL_NDA;
+        if (g[0] == 0 || g[0] == M2C_FIELD(box->geom, int *, 0x38)) {
+            g[0] = 0;
+            g[4] = 0;
+            g[5] = 0;
+            g[6] = 0;
+            g[7] = 0;
+            g[8] = 0;
+            g[9] = 0;
+            g[10] = 0;
+        }
+        n = HST_searchSessionIDHistoryNode(M2C_FIELD(box->geom, int *, 0x38));
+        if (n != NULL) {
+            for (n = HST_getChildHistoryNode(n); n != NULL; n = next) {
+                next = HST_getSiblingHistoryNode(n);
+                if (HST_getRequestFlag(n) == -1)
+                    HST_deleteHistoryNode(n);
+            }
+        }
+        if (M2C_FIELD(box->geom, void **, 0x30) != NULL) {
+            MEM_free(0, M2C_FIELD(box->geom, void **, 0x30));
+            M2C_FIELD(box->geom, void **, 0x30) = NULL;
+        }
+        break;
+    case 13:
+    case 14:
+    case 15:
+    case 18:
+        actSaveForm(getBodyBox(box), box);
+        break;
+    }
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_box_api_low", freeBox);
 
