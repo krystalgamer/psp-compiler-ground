@@ -304,6 +304,28 @@ inline void sh::Args::Env::getArgs(common::CmdLine &cl)
 }
 SGL_LINKONCE_END
 
+extern "C" void sceKernelDcacheWritebackAll(void);
+extern "C" int sceGuCheckList(void);
+extern "C" const char D_0015DDF4[]; /* "../lib/gl_psp/DisplayList.h" */
+extern "C" const char D_0015E6C4[]; /* "_wflag" */
+extern "C" const char D_0015E6CC[]; /* "_size == 0" */
+extern "C" const char D_0015E6D8[]; /* "_size < _capacity" */
+extern const char DisplayList_finish_fn[] __asm__("_ZZN3psp11DisplayList6finishEbE19__PRETTY_FUNCTION___15E6A0");
+
+SGL_LINKONCE_BEGIN
+inline void psp::DisplayList::finish(bool writeback)
+{
+    SGL_ASSERT(_wflag, D_0015DD0C, D_0015E6C4, D_0015DDF4, DisplayList_finish_fn, 0xBD, D_0015DCF0);
+    SGL_ASSERT(_size == 0, D_0015DD0C, D_0015E6CC, D_0015DDF4, DisplayList_finish_fn, 0xBE, D_0015DCF0);
+    _size = sceGuCheckList();
+    SGL_ASSERT(_size < _capacity, D_0015DD0C, D_0015E6D8, D_0015DDF4, DisplayList_finish_fn, 0xC2, D_0015DCF0);
+    if (writeback)
+        sceKernelDcacheWritebackAll();
+    sceGuFinish();
+    _wflag = false;
+}
+SGL_LINKONCE_END
+
 extern "C" const char D_0015E6F8[]; /* "DEBUG" */
 extern "C" const char D_0015E700[]; /* "debug" */
 extern "C" const char D_0015E708[]; /* "SKY" */
@@ -397,8 +419,6 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZNSsC1IPcEET_S1_RK
 CONT_INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", func_0000AB74, _ZNSsC1IPcEET_S1_RKSaIcE);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZN6common7CmdLine5TokenERSt6vectorISsSaISsEESs);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZN3psp11DisplayList6finishEb);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZN7TestAppC1EN2sh4Args6CommonE);
 

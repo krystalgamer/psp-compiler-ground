@@ -1015,7 +1015,10 @@ public:
     void resize(unsigned int);
     void set_name(const char *);
     void finish(bool);
-    char _p0[0x14];
+    char _p0[8];
+    unsigned int _capacity;     /* 0x8 */
+    unsigned int _size;         /* 0xC */
+    char _p10[4];
     char _name[32];             /* 0x14 */
 };
 }

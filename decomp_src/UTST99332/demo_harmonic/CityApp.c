@@ -542,6 +542,30 @@ template<> inline void interp::KeyFrameSequence<float>::typed_fix()
 }
 SGL_LINKONCE_END
 
+extern "C" void sceKernelDcacheWritebackAll(void);
+extern "C" int sceGuCheckList(void);
+extern "C" const char D_00159954[]; /* " *** error " */
+extern "C" const char D_00159968[]; /* "../lib/gl_psp/DisplayList.h" */
+extern "C" const char D_00159884[]; /* " " */
+extern "C" const char D_0015A1A8[]; /* "_wflag" */
+extern "C" const char D_0015A1B0[]; /* "_size == 0" */
+extern "C" const char D_0015A1BC[]; /* "_size < _capacity" */
+extern const char DisplayList_finish_fn[] __asm__("_ZZN3psp11DisplayList6finishEbE19__PRETTY_FUNCTION___15A184");
+
+SGL_LINKONCE_BEGIN
+inline void psp::DisplayList::finish(bool writeback)
+{
+    SGL_ASSERT(_wflag, D_00159954, D_0015A1A8, D_00159968, DisplayList_finish_fn, 0xBD, D_00159884);
+    SGL_ASSERT(_size == 0, D_00159954, D_0015A1B0, D_00159968, DisplayList_finish_fn, 0xBE, D_00159884);
+    _size = sceGuCheckList();
+    SGL_ASSERT(_size < _capacity, D_00159954, D_0015A1BC, D_00159968, DisplayList_finish_fn, 0xC2, D_00159884);
+    if (writeback)
+        sceKernelDcacheWritebackAll();
+    sceGuFinish();
+    _wflag = false;
+}
+SGL_LINKONCE_END
+
 extern "C" const char D_0015ACE0[]; /* "DEBUG" */
 extern "C" const char D_0015ACE8[]; /* "debug" */
 extern "C" const char D_0015ACF0[]; /* "SKY" */
@@ -1550,8 +1574,6 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZSt24__unin
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZNSs12_S_constructIPcEES0_T_S1_RKSaIcESt20forward_iterator_tag);
 CONT_INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", func_000087B4, _ZNSs12_S_constructIPcEES0_T_S1_RKSaIcESt20forward_iterator_tag);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN3psp11DisplayList6finishEb);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN7glutils17AnimableTrackballD0Ev);
 
