@@ -42,7 +42,26 @@ struct adhoc_socket *func_00000DFC(int type, int id)
 	return so;
 }
 
-INCLUDE_ASM("tmp/asm/tony_libs/pspnet_adhoc/nonmatchings/socket", func_00000E44);
+int func_00000E44(void)
+{
+	int id;
+	struct adhoc_socket *so;
+
+	id = (D_00007420 == 0xFF) ? 1 : D_00007420 + 1;
+	while (id != D_00007420) {
+		for (so = D_00007418.tqh_first; so != NULL; so = so->link.tqe_next) {
+			if (so->id == id)
+				break;
+		}
+		if (so == NULL)
+			goto found;
+		id = (id == 0xFF) ? 1 : id + 1;
+	}
+	return -1;
+found:
+	D_00007420 = id;
+	return id;
+}
 
 int func_00000ED0(u_char type, struct adhoc_socket **sop)
 {
