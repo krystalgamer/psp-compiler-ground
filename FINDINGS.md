@@ -211,6 +211,14 @@ modules (`tools/nltest.py`, `tools/objcmp.py`).
   `atexit`/`findfp`/`locale` data, rodata ranges).  Its game code (about
   400 KB) has no DWARF, and its `STT_FILE` symbols are not in link
   order, so `tools/nodwarf.py` cannot split it yet.
+  Its gmo_model and gim_picture libraries are SDK revision 1.5.0
+  (between devkit 0.6.0's sources and the 6.6.0 SDK's, which marks the
+  "1.5.0 and before" lines): material/primitive caches, gmo_math, 16-byte
+  rects, `sceGmo*Load` helpers, clz-based pow2.  All their C units match
+  with 1.6.1 (gmo_material, gmo_part, gmo_model, gmo_bone, gmo_motion,
+  gmo_context, gim_picture, gim_activate, gim_animate), including the
+  whole-unit rodata order (constants per object, then jump tables, with
+  `__psp_libinfo__` opening gmo_model's and gim_picture's rodata).
 - **No `-mno-ulsw` by default** (1.7.1 patch 0002): the unaligned copies
   of the 1.6.1 units use `lwl`/`swl` block moves, which `-mno-ulsw`
   forbids.
