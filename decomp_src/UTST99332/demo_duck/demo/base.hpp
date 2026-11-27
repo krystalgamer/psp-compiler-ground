@@ -970,6 +970,7 @@ public:
     void makeImportForDirectX(int, int);
     void flipVertical();
     void resize(int, int, bool);
+    void resizePow2(bool, bool, bool);
     bool isPow2();
     static bool IsPow2(int x) { return ((x | 0x80000000) & (x - 1)) == 0; }
     void setChannel(Channel, unsigned char);

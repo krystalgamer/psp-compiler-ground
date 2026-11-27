@@ -263,18 +263,27 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/textures_Texture
 
 int textures::closestPow2(int x, bool up)
 {
-    float f = x;
-    int e = *(int *)&f >> 23;
-    int lo = 1 << (e - 127);
-    int hi = 1 << (e - 126);
+    float f;
+    int e;
+    int lo;
+    int hi;
+    f = x;
+    e = *(int *)&f >> 23;
+    lo = 1 << (e - 127);
+    hi = 1 << (e - 126);
     if (x == lo)
         return lo;
     if (x == hi)
         return hi;
-    return up ? hi : lo;
+    if (up)
+        return hi;
+    return lo;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/textures_Texture", _ZN8textures7Texture10resizePow2Ebbb);
+void textures::Texture::resizePow2(bool up_x, bool up_y, bool filter)
+{
+    resize(closestPow2(m.info.width, up_x), closestPow2(m.info.height, up_y), filter);
+}
 
 bool textures::Texture::isPow2()
 {
