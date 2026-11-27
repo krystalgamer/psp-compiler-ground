@@ -256,7 +256,83 @@ MesValue mes_date_parse(MesContext *ctx, MesValue v)
     return mes_date_to_value(ctx, d);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_date", mes_date_utc);
+MesValue mes_date_utc(MesContext *ctx, MesValue y, MesValue mo, MesValue da, MesValue h, MesValue mi, MesValue s, MesValue ms)
+{
+    MesDate *d = mes_date_new(ctx);
+    MesValue r;
+    MesValue n;
+
+    *--ctx->sp = (MesValue)d;
+    d->valid = 1;
+    if (y == 0) {
+        d->year = 1970;
+    } else {
+        n = mes_eval_to_number(ctx, y);
+        if ((n & 3) == 1)
+            d->year = n >> 2;
+        else
+            d->valid = 0;
+    }
+    if (mo == 0) {
+        d->month = 1;
+    } else {
+        n = mes_eval_to_number(ctx, mo);
+        if ((n & 3) == 1)
+            d->month = (n >> 2) + 1;
+        else
+            d->valid = 0;
+    }
+    if (da == 0) {
+        d->mday = 1;
+    } else {
+        n = mes_eval_to_number(ctx, da);
+        if ((n & 3) == 1)
+            d->mday = n >> 2;
+        else
+            d->valid = 0;
+    }
+    if (h != 0) {
+        n = mes_eval_to_number(ctx, h);
+        if ((n & 3) == 1)
+            d->hours = n >> 2;
+        else
+            d->valid = 0;
+    } else {
+        d->hours = 0;
+    }
+    if (mi != 0) {
+        n = mes_eval_to_number(ctx, mi);
+        if ((n & 3) == 1)
+            d->minutes = n >> 2;
+        else
+            d->valid = 0;
+    } else {
+        d->minutes = 0;
+    }
+    if (s != 0) {
+        n = mes_eval_to_number(ctx, s);
+        if ((n & 3) == 1)
+            d->seconds = n >> 2;
+        else
+            d->valid = 0;
+    } else {
+        d->seconds = 0;
+    }
+    if (ms != 0) {
+        n = mes_eval_to_number(ctx, ms);
+        if ((n & 3) == 1)
+            d->ms = n >> 2;
+        else
+            d->valid = 0;
+    } else {
+        d->ms = 0;
+    }
+    if (d->valid)
+        mes_date_normalize(d);
+    r = mes_date_to_value(ctx, d);
+    ctx->sp++;
+    return r;
+}
 
 MesValue mes_date_to_string(MesContext *ctx)
 {
