@@ -19,6 +19,12 @@ void calcTdBoxPosition(void *ctx, BOX *box);
 void calcBlockButtonBoxPosition(void *ctx, BOX *box);
 void calcBlockBoxPosition(void *ctx, BOX *box);
 void calcFloatBoxPosition(void *ctx, BOX *box);
+void *lfm_createPageRegion(BOX *box, int w);
+BOX *getBoxByHTML(BOX *box, int html);
+typedef struct { u8 pad[0x10]; int width; } TDCOL;
+typedef struct { LIST l; int f; } URLL;
+extern URLL D_00584CF0;
+void lfm_resetPageRegion(void *r, int w);
 int getPrevLineHeight(void *arg0) {
     return M2C_FIELD(M2C_FIELD(arg0, void **, 4), int *, 0x34);
 }
@@ -113,9 +119,129 @@ void adjustInlineBoxDimensionLoop(int *arg0, int arg1) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_box_position", wordWrapProc);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_box_position", calcBlockButtonBoxPosition);
+void calcBlockButtonBoxPosition(void *ctx, BOX *box) {
+    int x, y, left, right;
+    int h;
+    int lw;
+    int cw;
+    int pad;
+    BOX *p;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_box_position", calcTableBoxPosition);
+    getBaseBlockPosition(ctx, &x, &y);
+    h = getPrevLineHeight(ctx);
+    lfm_getHorizontalArea(M2C_FIELD(ctx, void **, 0x10), M2C_FIELD(ctx, void **, 4), h, &left, &right);
+    lw = getLineWidth(M2C_FIELD(ctx, void **, 0xC));
+    if (box->style->unk72 < 2) {
+        box->x = lw != 0 ? lw + x : x + left;
+        box->y = h + y;
+        cw = getContainingBlockWidth(M2C_FIELD(ctx, void **, 4));
+    } else {
+        p = box->parent;
+        while (p->content != 1) {
+            if (p->display == 0 && M2C_FIELD(p->style, s8 *, 0x72) != 0)
+                break;
+            p = p->parent;
+        }
+        x = p->style->unk26 + p->x + p->style->unk36;
+        y = p->style->unk20 + p->y + p->style->unk30;
+        box->x = box->style->unk52 + x;
+        box->y = box->style->unk50 + y;
+        cw = p->width - p->style->unk26 - p->style->unk36 - p->style->unk32 - p->style->unk22;
+    }
+    pad = box->style->unk26 + box->style->unk36 + box->style->unk2E + box->style->unk2A + box->style->unk32 + box->style->unk22;
+    if (box->style->unk72 < 2) {
+        switch (box->style->flags & 3) {
+        case 1:
+            box->width = box->style->unk26 + box->style->width + box->style->unk22;
+            break;
+        case 2:
+            box->width = (right - box->style->unk26 - box->style->unk22) * box->style->width / 100 + box->style->unk26 + box->style->unk22;
+            break;
+        default:
+            box->width = calcBoxMaxWidth(ctx, box);
+            break;
+        }
+        box->height = 0;
+    } else if (M2C_FIELD(box->style, s8 *, 0x72) == 2) {
+        switch (box->style->flags & 3) {
+        case 1:
+            box->width = box->style->unk26 + box->style->width + box->style->unk22;
+            break;
+        case 2:
+            box->width = (cw - box->style->unk26 - box->style->unk22) * box->style->width / 100 + box->style->unk26 + box->style->unk22;
+            break;
+        default:
+            box->width = calcBoxMaxWidth(ctx, box) + pad;
+            break;
+        }
+        box->height = 0;
+    } else {
+        box->height = 0;
+    }
+    M2C_FIELD(box, int *, 0x34) = 0;
+    lfm_resetPageRegion(box->region, box->width);
+    addBoxList(M2C_FIELD(ctx, LIST **, 0xC), box);
+    turnupContent(ctx, box);
+    initLinePosition(box);
+}
+
+void calcTableBoxPosition(void *ctx, BOX *box) {
+    int x, y, left, right;
+    int ox, oy;
+    int h;
+    int w;
+    BOX *p;
+
+    ox = box->x;
+    oy = box->y;
+    if (M2C_FIELD(M2C_FIELD(ctx, LIST **, 0xC), void **, 0) != NULL) {
+        { int lf = lineFeedProc(ctx, box);
+        M2C_FIELD(M2C_FIELD(ctx, void **, 4), int *, 0x34) += lf; }
+    }
+    getBaseBlockPosition(ctx, &x, &y);
+    h = getPrevLineHeight(ctx);
+    lfm_getHorizontalArea(M2C_FIELD(ctx, void **, 0x10), M2C_FIELD(ctx, void **, 4), h, &left, &right);
+    if (box->style->unk72 < 2) {
+        box->x = x + left;
+        box->y = h + y;
+        box->parent->x = x + left;
+        box->parent->y = h + y;
+        w = getContainingBlockWidth(M2C_FIELD(ctx, void **, 4));
+    } else {
+        p = box->parent;
+        while (p->content != 1) {
+            if (p->display == 0 && M2C_FIELD(p->style, s8 *, 0x72) != 0)
+                break;
+            p = p->parent;
+        }
+        x = p->style->unk26 + p->x + p->style->unk36;
+        y = p->style->unk20 + p->y + p->style->unk30;
+        box->x = box->style->unk52 + x;
+        box->y = box->style->unk50 + y;
+        box->parent->x = box->style->unk52 + x;
+        box->parent->y = box->style->unk50 + y;
+        right = p->width - p->style->unk26 - p->style->unk36 - p->style->unk32 - p->style->unk22;
+        w = right;
+    }
+    box_setTableWidth(ctx, box, right);
+    if (box->style->unk72 < 2 && M2C_FIELD(box->style, s8 *, 0x71) == 0 && right > box->width) {
+        if (M2C_FIELD(box->style, s8 *, 0x6F) == 2) {
+            box->x += (right - box->width) / 2;
+        } else if (M2C_FIELD(box->style, s8 *, 0x6F) == 3) {
+            box->x += right - box->width;
+        }
+    }
+    if ((M2C_FIELD(box, u16 *, 0x40) & 2) && w == M2C_FIELD(box->geom, int *, 0xC) && right == M2C_FIELD(box->geom, int *, 0x10)) {
+        D_00584CF0.f = 1;
+        if (ox != box->x || oy != box->y)
+            moveBoxPositionChild(box, box->x - ox, box->y - oy);
+    } else {
+        M2C_FIELD(box->geom, int *, 0xC) = w;
+        M2C_FIELD(box->geom, int *, 0x10) = right;
+        M2C_FIELD(box, int *, 0x34) = M2C_FIELD(box->geom, int *, 8);
+        initLinePosition(box);
+    }
+}
 
 void calcTrBoxPosition(void *ctx, BOX *tr) {
     BOX *t = getTableBox(tr);
@@ -131,11 +257,163 @@ void calcTrBoxPosition(void *ctx, BOX *tr) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_box_position", calcTdBoxPosition);
+void calcTdBoxPosition(void *ctx, BOX *td) {
+    int x = 0;
+    BOX *t;
+    BOXGEOM *tg;
+    BOXSTYLE *st;
+    int i;
+    int ox, oy;
+
+    t = getTableBox(td);
+    if (t != NULL) {
+        tg = t->geom;
+        for (i = 0; i < M2C_FIELD(td->geom, u16 *, 0x12); i++)
+            x += (*(TDCOL **)((char *)tg + 0x20))[i].width;
+        x += (M2C_FIELD(td->geom, u16 *, 0x12) + 1) * M2C_FIELD(tg, int *, 8);
+        ox = td->x;
+        oy = td->y;
+        st = t->style;
+        td->x = st->unk26 + t->x + st->unk36 + x;
+        td->y = st->unk20 + t->y + st->unk30 + M2C_FIELD(t, int *, 0x34);
+        if (M2C_FIELD(ctx, s16 *, 0x16) == 0 && !(M2C_FIELD(td, u16 *, 0x40) & 1) && td->width == M2C_FIELD(td->geom, int *, 8)) {
+            D_00584CF0.f = 1;
+            if (ox != td->x || oy != td->y)
+                moveBoxPositionChild(td, td->x - ox, td->y - oy);
+            M2C_FIELD(td, u16 *, 0x40) |= 2;
+        } else {
+            lfm_resetPageRegion(td->region, td->width - td->style->unk36 - td->style->unk2E - td->style->unk2A - td->style->unk32);
+            M2C_FIELD(td, int *, 0x34) = 0;
+            M2C_FIELD(td, u16 *, 0x40) &= ~1;
+        }
+        M2C_FIELD(td->geom, int *, 8) = td->width;
+    }
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_box_position", calcInlineBoxPosition);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_box_position", calcBlockBoxPosition);
+void calcBlockBoxPosition(void *ctx, BOX *box) {
+    int x, y, left, right;
+    int m = 0;
+    int flag = 0;
+    int tbl = 0;
+    int h;
+    BOX *prev;
+    BOX *p;
+    BOX *q;
+    BOX *b;
+
+    if (box->content == 1)
+        return;
+    if (box->html == 0x2D || box->html == 0x3C)
+        flag = 1;
+    box->height = 0;
+    if (M2C_FIELD(M2C_FIELD(ctx, LIST **, 0xC), void **, 0) != NULL) {
+        int lf = lineFeedProc(ctx, box);
+        M2C_FIELD(M2C_FIELD(ctx, void **, 4), int *, 0x34) += lf;
+    }
+    getBaseBlockPosition(ctx, &x, &y);
+    h = getPrevLineHeight(ctx);
+    if (flag)
+        lfm_getHorizontalArea(M2C_FIELD(ctx, void **, 0x10), M2C_FIELD(ctx, void **, 4), h, &left, &right);
+    else
+        left = 0;
+    if (box->html != 0x2D && h == 0) {
+        if (box->style->unk20 != 0)
+            box->style->unk20 = 0;
+    }
+    prev = box->prev;
+    p = box->parent;
+    while (prev == NULL && p != NULL && p->display != 0 && p->display != 3) {
+        prev = p->prev;
+        p = p->parent;
+    }
+    if (prev != NULL && box->html != 0x2D && prev->html != 0x2D && (prev->display == 0 || prev->display == 3)) {
+        m = box->style->unk20 > prev->style->unk24 ? prev->style->unk24 : box->style->unk20;
+    }
+    if (m > 0)
+        M2C_FIELD(M2C_FIELD(ctx, void **, 4), int *, 0x34) -= m;
+    if (box->html == 0x12 && box->prev != NULL && box->prev->content == 4)
+        tbl = 1;
+    if (box->style->unk72 < 2) {
+        if (tbl)
+            box->x = box->prev->x;
+        else
+            box->x = x + left;
+        box->y = h + y - m;
+        if (flag)
+            m = right;
+        else
+            m = getContainingBlockWidth(M2C_FIELD(ctx, void **, 4));
+    } else {
+        q = box->parent;
+        while (q->content != 1) {
+            if (q->display == 0 && M2C_FIELD(q->style, s8 *, 0x72) != 0)
+                break;
+            q = q->parent;
+        }
+        x = q->style->unk26 + q->x + q->style->unk36;
+        y = q->style->unk20 + q->y + q->style->unk30;
+        box->x = box->style->unk52 + x;
+        box->y = box->style->unk50 + y;
+        m = q->width - q->style->unk26 - q->style->unk36 - q->style->unk32 - q->style->unk22;
+    }
+    h = box->style->unk26 + box->style->unk36 + box->style->unk2E + box->style->unk2A + box->style->unk32 + box->style->unk22;
+    if (tbl) {
+        box->width = box->prev->width;
+    } else if (box->style->unk72 < 2) {
+        switch (box->style->flags & 3) {
+        case 1:
+            box->width = box->style->unk26 + box->style->width + box->style->unk22;
+            break;
+        case 2:
+            box->width = (m - box->style->unk26 - box->style->unk22) * box->style->width / 100 + box->style->unk26 + box->style->unk22;
+            break;
+        default:
+            box->width = m;
+            break;
+        }
+    } else if (M2C_FIELD(box->style, s8 *, 0x72) == 2) {
+        switch (box->style->flags & 3) {
+        case 1:
+            box->width = box->style->unk26 + box->style->width + box->style->unk22;
+            break;
+        case 2:
+            box->width = (m - box->style->unk26 - box->style->unk22) * box->style->width / 100 + box->style->unk26 + box->style->unk22;
+            break;
+        default:
+            box->width = calcBoxMaxWidth(ctx, box) + h;
+            if (box->x + box->width > M2C_FIELD(M2C_FIELD(*(BOX **)ctx, void **, 0x20), int *, 8))
+                box->width = M2C_FIELD(M2C_FIELD(*(BOX **)ctx, void **, 0x20), int *, 8) - box->x;
+            break;
+        }
+        if (!flag) {
+            if (box->region == NULL)
+                box->region = lfm_createPageRegion(box, box->width - h);
+            else
+                lfm_resetPageRegion(box->region, box->width - h);
+        }
+    }
+    if (box->html == 0x2D) {
+        b = getBoxByHTML(box, 0x38);
+        if (b != NULL) {
+            LIST *l = (LIST *)((char *)b->geom + 4);
+            if (l->head == NULL)
+                addBoxList(l, box);
+        }
+    }
+    if (!tbl && box->width < m) {
+        b = box->html == 0x2D ? box : box->parent;
+        if (M2C_FIELD(b->style, s8 *, 0x6F) == 2)
+            box->x += (m - box->width) / 2;
+        else if (M2C_FIELD(b->style, s8 *, 0x6F) == 3)
+            box->x += m - box->width;
+    }
+    if (box->width - h < 0)
+        box->width = h;
+    M2C_FIELD(box, int *, 0x34) = 0;
+    initLinePosition(box);
+}
 
 void calcFloatBoxPosition(void *ctx, BOX *box) {
     int x, y;
