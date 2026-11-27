@@ -3,7 +3,7 @@
 #include "m2c_macros.h"
 
 extern int CurrentInst;
-M2C_UNK consPrintf(M2C_UNK *, M2C_UNK *, M2C_UNK, M2C_UNK *, M2C_UNK *); /* extern */
+int consPrintf();
 M2C_UNK resReadRefer(int, int, int);                /* extern */
 extern unsigned char D_000FB9F8;
 extern unsigned char D_000FBA08;

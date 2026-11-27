@@ -1,7 +1,7 @@
 /* cflags: -Os -fno-strength-reduce */
 #include "common.h"
 #include "m2c_macros.h"
-M2C_UNK consPrintf(M2C_UNK *);                      /* extern */
+int consPrintf();
 M2C_UNK getOskUtilityTextResult();                  /* extern */
 extern void *l_ptCntx;
 extern int sample_type_11A910;

@@ -3,7 +3,7 @@
 #include "m2c_macros.h"
 extern int sce_newlib_heap_kb_size;
 extern int sce_newlib_stack_kb_size;
-M2C_UNK consPrintf(M2C_UNK *, M2C_UNK *, M2C_UNK, M2C_UNK *, M2C_UNK *); /* extern */
+int consPrintf();
 int sceMpegInit();                                  /* extern */
 int semaInit(M2C_UNK *);                            /* extern */
 M2C_UNK thrEntry(M2C_UNK *, M2C_UNK *, M2C_UNK, M2C_UNK); /* extern */

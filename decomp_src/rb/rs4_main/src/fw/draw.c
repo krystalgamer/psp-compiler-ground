@@ -9,7 +9,7 @@ extern int CurrentInst;
 
 extern int Env;
 extern unsigned char InstBuf;
-M2C_UNK consPrintf(M2C_UNK *, M2C_UNK *, int);      /* extern */
+int consPrintf();
 extern void *pReadInst;
 
 

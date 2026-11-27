@@ -2,7 +2,7 @@
 #include "common.h"
 #include "m2c_macros.h"
 M2C_UNK _AniFrameSet(int, int);                     /* extern */
-M2C_UNK consPrintf(M2C_UNK *, M2C_UNK *, M2C_UNK, M2C_UNK *, M2C_UNK *); /* extern */
+int consPrintf();
 extern unsigned char D_0010473C;
 extern unsigned char D_00104758;
 extern unsigned char D_00104774;

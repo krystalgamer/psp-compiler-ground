@@ -1,7 +1,7 @@
 /* cflags: -Os -fno-strength-reduce */
 #include "common.h"
 #include "m2c_macros.h"
-M2C_UNK consPrintf(M2C_UNK *, M2C_UNK *, int, int); /* extern */
+int consPrintf();
 M2C_UNK ctrlSetVirtualType(M2C_UNK);                /* extern */
 M2C_UNK ctrlSuspend(M2C_UNK);                       /* extern */
 extern unsigned char D_000FF4B4;

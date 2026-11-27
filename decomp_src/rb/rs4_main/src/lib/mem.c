@@ -4,7 +4,7 @@
 M2C_UNK semaLock(int);                              /* extern */
 extern int MemSema;
 M2C_UNK semaUnlock(int);                            /* extern */
-M2C_UNK consPrintf(M2C_UNK *, int, void *, void *, int, int, unsigned char, void *, int); /* extern */
+int consPrintf();
 extern void *pAlloc;
 extern int pRoot;
 

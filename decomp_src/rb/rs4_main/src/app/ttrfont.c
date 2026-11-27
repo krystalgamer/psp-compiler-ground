@@ -4,7 +4,7 @@
 M2C_UNK _memFree(int **, M2C_UNK *, M2C_UNK);       /* extern */
 extern unsigned char D_000FE838;
 
-extern int l_pfnUtil;
+extern int (*l_pfnUtil)();
 
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/ttrfont", D_000FE7C4);
@@ -95,7 +95,20 @@ void UtilityUnlink(void) {
     l_pfnUtil = 0;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/ttrfont", UtilityUpdate);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+extern int (*l_pfnUtil)();
+
+int UtilityUpdate(void) {
+    int var_v0;
+
+    var_v0 = -1;
+    if (l_pfnUtil != NULL) {
+        var_v0 = l_pfnUtil();
+    }
+    return var_v0;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)

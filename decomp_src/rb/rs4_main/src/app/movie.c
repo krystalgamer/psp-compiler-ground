@@ -1,7 +1,7 @@
 /* cflags: -Os -fno-strength-reduce */
 #include "common.h"
 #include "m2c_macros.h"
-M2C_UNK consPrintf(M2C_UNK *, M2C_UNK *);           /* extern */
+int consPrintf();
 M2C_UNK partCusConvExt(int, unsigned short);                   /* extern */
 int sceKernelGetGPI();                              /* extern */
 extern unsigned char D_000FDD64;
@@ -57,7 +57,23 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/movie", D_000FDDC4);
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/movie", D_000FDDCC);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/movie", partSetDrawMat);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+extern unsigned char D_000FDD7C;
+extern unsigned char D_000FDD8C;
+extern unsigned char D_000FDDB4;
+
+int partSetDrawMat(void *arg0, int arg1) {
+    if (arg0 == NULL) {
+        consPrintf(&D_000FDD8C, &D_000FDD7C, 0x5D, "partSetDrawMat", &D_000FDDB4);
+    }
+    if (arg1 == 0) {
+        consPrintf(&D_000FDD8C, &D_000FDD7C, 0x5E, "partSetDrawMat", "pMat");
+    }
+    M2C_FIELD(arg0, int *, 0x18) = arg1;
+    return 1;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/movie", partTerm);
 
