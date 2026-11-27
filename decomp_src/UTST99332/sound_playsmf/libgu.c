@@ -827,7 +827,73 @@ void sceGuEndObject(void)
 	n_bbox--;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/sound_playsmf/nonmatchings/libgu", sceGuDrawSprite);
+typedef struct __attribute__((packed)) {
+	unsigned short u, v;
+	short x, y, z;
+} GuSpriteVertex;
+
+void sceGuDrawSprite(int x, int y, int z, int u, int v, int flip, int rotate)
+{
+	GuSpriteVertex *vtx = (GuSpriteVertex *)sceGuGetMemory(2 * sizeof(GuSpriteVertex));
+	GuSpriteVertex tmp;
+
+	vtx[0].u = u;
+	vtx[0].v = v;
+	vtx[0].x = x;
+	vtx[0].y = y;
+	vtx[0].z = z;
+	vtx[1].u = _ctx[__aw_list_mode].sprite_mode[0] + u;
+	vtx[1].v = _ctx[__aw_list_mode].sprite_mode[1] + v;
+	vtx[1].x = _ctx[__aw_list_mode].sprite_mode[2] + x;
+	vtx[1].y = _ctx[__aw_list_mode].sprite_mode[3] + y;
+	vtx[1].z = z;
+
+	switch (flip) {
+	case 0:
+		break;
+	case 1:
+		tmp.u = vtx[0].u;
+		vtx[0].u = vtx[1].u;
+		vtx[1].u = tmp.u;
+		break;
+	case 2:
+		tmp.v = vtx[0].v;
+		vtx[0].v = vtx[1].v;
+		vtx[1].v = tmp.v;
+		break;
+	case 3:
+		tmp.u = vtx[0].u;
+		tmp.v = vtx[0].v;
+		vtx[0].u = vtx[1].u;
+		vtx[0].v = vtx[1].v;
+		vtx[1].u = tmp.u;
+		vtx[1].v = tmp.v;
+		break;
+	}
+	switch (rotate) {
+	case 0:
+		break;
+	case 1:
+		tmp.y = vtx[0].y;
+		vtx[0].y = vtx[1].y;
+		vtx[1].y = tmp.y;
+		break;
+	case 2:
+		tmp.x = vtx[0].x;
+		tmp.y = vtx[0].y;
+		vtx[0].x = vtx[1].x;
+		vtx[0].y = vtx[1].y;
+		vtx[1].x = tmp.x;
+		vtx[1].y = tmp.y;
+		break;
+	case 3:
+		tmp.x = vtx[0].x;
+		vtx[0].x = vtx[1].x;
+		vtx[1].x = tmp.x;
+		break;
+	}
+	sceGuDrawArray(6, 0x800102, 2, 0, vtx);
+}
 
 void sceGuSpriteMode(int a0, int a1, int a2, int a3)
 {
