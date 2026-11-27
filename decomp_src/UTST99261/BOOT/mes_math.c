@@ -52,9 +52,39 @@ MesValue mes_math_abs(MesContext *ctx, MesValue v)
     return mes_number_alloc(ctx, d);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_math", mes_math_acos);
+MesValue mes_math_acos(MesContext *ctx, MesValue v)
+{
+    MesValue n = mes_eval_to_number(ctx, v);
+    double d;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_math", mes_math_asin);
+    if (n == 0x1C || n == 0x14 || n == 0x18)
+        return 0x1C;
+    if (n == 0x10)
+        n = 1;
+    d = mes_num(n);
+    if (d > D_0013B928 || d < D_0013B930)
+        return 0x1C;
+    if (d == D_0013B928)
+        return 1;
+    return mes_number_alloc(ctx, acos(d));
+}
+
+MesValue mes_math_asin(MesContext *ctx, MesValue v)
+{
+    MesValue n = mes_eval_to_number(ctx, v);
+    double d;
+
+    if (n == 0x1C || n == 0x14 || n == 0x18)
+        return 0x1C;
+    if (n == 0x10)
+        return 0x10;
+    if (n == 1)
+        return 1;
+    d = mes_num(n);
+    if (d > D_0013B938 || d < D_0013B940)
+        return 0x1C;
+    return mes_number_alloc(ctx, asin(d));
+}
 
 MesValue mes_math_atan(MesContext *ctx, MesValue v)
 {
