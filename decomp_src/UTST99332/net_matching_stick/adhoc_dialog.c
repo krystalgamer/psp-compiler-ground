@@ -266,7 +266,110 @@ error:
 	return ret;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_matching_stick/nonmatchings/adhoc_dialog", sceNetAdhocDialogGetState);
+int _sce_pspnet_adhoc_dialog_get_evf(struct SceNetAdhocDialogInfo *info, SceUInt *evf);
+int _sce_pspnet_adhoc_dialog_clear_evf(struct SceNetAdhocDialogInfo *info);
+int _sce_pspnet_adhoc_dialog_set_error_state(struct SceNetAdhocDialogInfo *info, int error_code);
+extern __typeof__(scaninfo) scaninfo_8B954;
+#define scaninfo scaninfo_8B954
+
+int sceNetAdhocDialogGetState(enum SceNetAdhocDialogState *state)
+{
+	int ret;
+	SceUInt evf;
+	int buflen;
+	int ctlstate;
+	struct SceNetAdhocctlScanInfo *sinfo;
+
+	if (inited == 0) {
+		return (int)0x80000001;
+	}
+
+	switch (info.state) {
+	case SCE_NET_ADHOC_DIALOG_INT_STATE_START_SCAN:
+		ret = sceNetAdhocctlScan();
+		if (ret < 0) {
+			goto error;
+		}
+		info.scan_num++;
+		info.state = SCE_NET_ADHOC_DIALOG_INT_STATE_SCANNING;
+		*state = SCE_NET_ADHOC_DIALOG_STATE_OPENED;
+		break;
+
+	case SCE_NET_ADHOC_DIALOG_INT_STATE_SCANNING:
+		ret = _sce_pspnet_adhoc_dialog_get_evf(&info, &evf);
+		if (ret < 0) {
+			goto error;
+		}
+		if (evf & 0x8) {
+			_sce_pspnet_adhoc_dialog_clear_evf(&info);
+			buflen = sizeof(scaninfo);
+			ret = sceNetAdhocctlGetScanInfo(&buflen, scaninfo);
+			if (ret < 0) {
+				goto error;
+			}
+			sinfo = NULL;
+			if (buflen != 0) {
+				for (sinfo = scaninfo; sinfo != NULL; sinfo = sinfo->next) {
+					if (strncmp((char *)sinfo->group_name.data, (char *)info.group_name.data, sizeof(info.group_name)) == 0) {
+						break;
+					}
+				}
+			}
+			if (sinfo == NULL) {
+				if (info.scan_num >= 5) {
+					ret = (int)0x80000024;
+					goto error;
+				}
+				info.state = SCE_NET_ADHOC_DIALOG_INT_STATE_START_SCAN;
+				*state = SCE_NET_ADHOC_DIALOG_STATE_OPENED;
+				break;
+			}
+			ret = sceNetAdhocctlJoin(sinfo);
+			if (ret < 0) {
+				goto error;
+			}
+			info.state = SCE_NET_ADHOC_DIALOG_INT_STATE_JOINING;
+			*state = SCE_NET_ADHOC_DIALOG_STATE_OPENED;
+			break;
+		}
+		*state = SCE_NET_ADHOC_DIALOG_STATE_OPENED;
+		break;
+
+	case SCE_NET_ADHOC_DIALOG_INT_STATE_CLOSED:
+		ret = sceNetAdhocctlGetState(&ctlstate);
+		if (ret < 0) {
+			break;
+		}
+		switch (ctlstate) {
+		case 0:
+			*state = SCE_NET_ADHOC_DIALOG_STATE_DISCONNECTED;
+			break;
+		case 1:
+			*state = SCE_NET_ADHOC_DIALOG_STATE_CONNECTED;
+			break;
+		case 2:
+			*state = SCE_NET_ADHOC_DIALOG_STATE_DISCONNECTED;
+			break;
+		case 3:
+			*state = SCE_NET_ADHOC_DIALOG_STATE_GAMEMODE;
+			break;
+		}
+		break;
+
+	default:
+		*state = SCE_NET_ADHOC_DIALOG_STATE_OPENED;
+		break;
+	}
+
+	return 0;
+
+error:
+	info.error_code = ret;
+	_sce_pspnet_adhoc_dialog_set_error_state(&info, ret);
+	*state = SCE_NET_ADHOC_DIALOG_STATE_OPENED;
+	return 0;
+}
+#undef scaninfo
 
 int sceNetAdhocctlAddHandler(void (*handler)(int event, int error, void *arg), void *arg);
 int sceNetAdhocctlDelHandler(int id);
