@@ -111,6 +111,24 @@ SGL_LINKONCE_END
 #endif
 }
 
+namespace glutils {
+/* a trackball whose transform can be recorded/played back as a path */
+class AnimableTrackball : public interp::HasPathInterface<interp::Path, math::Frame>, public math::Trackball {
+public:
+    AnimableTrackball(const math::matrix &);
+    virtual ~AnimableTrackball();
+    virtual void set(math::Frame);
+    virtual math::Frame get() const;
+};
+#if DEMO_LINKONCE_CityApp
+SGL_LINKONCE_BEGIN
+#endif
+inline AnimableTrackball::~AnimableTrackball() {}
+#if DEMO_LINKONCE_CityApp
+SGL_LINKONCE_END
+#endif
+}
+
 /* demo_harmonic's application */
 class CityApp : public app3d::Callbacks {
 public:
