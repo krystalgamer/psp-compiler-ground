@@ -1,25 +1,35 @@
 #include "common.h"
-
-/* declarations recovered from DWARF */
-typedef int SceUID;
+#include <psptypes.h>
+#include <kerneltypes.h>
+#include <stdio.h>
+#include <iofilemgr.h>
+#include <kernelutils.h>
+#include <libwave.h>
 
 extern char vagWork[2][40960];
 extern char *vagFile[2];
-
-static int file_read(const char *pFile, void *pBuf, unsigned int uBufSize, unsigned int *uSize, unsigned int uOffset);
-static void vag_read(void);
-int VagInit(void);
-int VagTerm(void);
-void VagPlay(int n);
-
-
-INCLUDE_ASM("tmp/asm/rb/jp_BOOT/nonmatchings/vag", file_read);
 
 INCLUDE_RODATA("tmp/asm/rb/jp_BOOT/nonmatchings/vag", D_00016AD8);
 
 INCLUDE_RODATA("tmp/asm/rb/jp_BOOT/nonmatchings/vag", D_00016B00);
 
-int printf(const char *fmt, ...);
+static int file_read(const char *pFile, void *pBuf, unsigned int uBufSize, unsigned int *uSize, unsigned int uOffset)
+{
+	SceUID fd;
+
+	fd = sceIoOpen(pFile, SCE_O_RDONLY, 0);
+	if (fd < 0)
+		return -1;
+	*uSize = sceIoLseek(fd, 0, SCE_SEEK_END) - uOffset;
+	if (*uSize > uBufSize)
+		*uSize = uBufSize;
+	sceIoLseek(fd, uOffset, SCE_SEEK_SET);
+	sceIoRead(fd, pBuf, *uSize);
+	sceIoClose(fd);
+	sceKernelDcacheWritebackAll();
+	return 0;
+}
+
 static void vag_read(void)
 {
 	int iSize;
@@ -36,7 +46,6 @@ static void vag_read(void)
 	}
 }
 
-int puts(const char *s);
 int VagInit(void)
 {
 	vag_read();

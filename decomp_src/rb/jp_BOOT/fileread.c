@@ -1,49 +1,22 @@
 #include "common.h"
+#include <psptypes.h>
+#include <kerneltypes.h>
+#include <thread.h>
+#include <libmpeg.h>
+#include <stdio.h>
+#include "fileread.h"
 
-/* declarations recovered from DWARF */
-typedef struct t_ringBuffer t_ringBuffer;
-struct t_ringBuffer;
-typedef int SceInt32;
-typedef int SceUID;
-typedef struct SceMpegRingbuffer SceMpegRingbuffer;
-struct SceMpegRingbuffer;
-typedef void SceVoid;
-typedef SceInt32 (*SceMpegRBCallback)(SceVoid *, SceInt32, SceVoid *);
-struct SceMpegRingbuffer { /* size 0x2c */
-    SceInt32 m_iBufsize;
-    SceInt32 m_iRpos;
-    SceInt32 m_iWpos;
-    SceInt32 m_iInlen;
-    SceInt32 m_iTypeSize;
-    SceVoid *m_pBuf;
-    SceMpegRBCallback callback;
-    SceVoid *m_CallbackData;
-    SceVoid *pPack;
-    SceInt32 iSemaRB;
-    SceVoid *mp;
-};
-struct t_ringBuffer { /* size 0x10 */
-    SceInt32 data_len;
-    SceUID ringbuf_sema;
-    SceMpegRingbuffer *pRingbuf;
-    SceInt32 *end_flag;
-};
-typedef unsigned int SceSize;
+#define MIN(a, b) ((a) < (b) ? (a) : (b))
 
 extern SceInt32 file_terminate_flag;
 
-SceInt32 read_create(t_ringBuffer *pRing, SceMpegRingbuffer *pRB);
-SceInt32 read_init(t_ringBuffer *pRing, int fileSize);
-SceInt32 read_end(t_ringBuffer *pRing);
-SceInt32 read_decode_sleep(t_ringBuffer *pRing);
-SceInt32 read_isEnd(t_ringBuffer *pRing);
-SceInt32 read_isFull(t_ringBuffer *pRing);
-SceInt32 read_setDemuxEnd(t_ringBuffer *pRing);
-SceInt32 read_getCapacity(t_ringBuffer *pRing);
-SceInt32 read_func(SceSize size, void *argp);
-
-
-INCLUDE_ASM("tmp/asm/rb/jp_BOOT/nonmatchings/fileread", read_create);
+SceInt32 read_create(t_ringBuffer *pRing, SceMpegRingbuffer *pRB)
+{
+	pRing->pRingbuf = pRB;
+	pRing->end_flag = &file_terminate_flag;
+	pRing->ringbuf_sema = sceKernelCreateSema("decode_sleep_sema", 0, 0, 1, NULL);
+	return 0;
+}
 
 SceInt32 read_init(t_ringBuffer *pRing, int fileSize)
 {
@@ -52,14 +25,12 @@ SceInt32 read_init(t_ringBuffer *pRing, int fileSize)
 	return 0;
 }
 
-int sceKernelDeleteSema(int semid);
 SceInt32 read_end(t_ringBuffer *pRing)
 {
 	sceKernelDeleteSema(pRing->ringbuf_sema);
 	return 0;
 }
 
-int sceKernelWaitSema(int semid, int signal, unsigned int *timeout);
 SceInt32 read_decode_sleep(t_ringBuffer *pRing)
 {
 	return sceKernelWaitSema(pRing->ringbuf_sema, 1, NULL);
@@ -90,4 +61,39 @@ SceInt32 read_getCapacity(t_ringBuffer *pRing)
 	return sceMpegRingbufferAvailableSize(pRing->pRingbuf);
 }
 
-INCLUDE_ASM("tmp/asm/rb/jp_BOOT/nonmatchings/fileread", read_func);
+SceInt32 read_func(SceSize size, void *argp)
+{
+	t_ringBuffer *pRing;
+	SceInt32 readSize;
+
+	pRing = argp;
+	readSize = 0;
+	while (read_isEnd(pRing) != 2) {
+		SceInt32 iReadSize;
+		SceInt32 iCapacitySize;
+		SceInt32 getSize;
+
+		iCapacitySize = sceMpegRingbufferAvailableSize(pRing->pRingbuf);
+		if (iCapacitySize > 0 && readSize < pRing->data_len) {
+				iReadSize = 32;
+				if (iCapacitySize < 32) {
+					size = pRing->data_len - readSize;
+					iReadSize = MIN(iCapacitySize, (SceInt32)size);
+				}
+				getSize = sceMpegRingbufferPut(pRing->pRingbuf, iReadSize, iCapacitySize);
+				if (getSize < 0) {
+					printf("error error error\n %d total = %d\n", getSize, readSize);
+					*pRing->end_flag = 3;
+					sceKernelSignalSema(pRing->ringbuf_sema, 1);
+					break;
+				}
+		} else
+			getSize = 0;
+		readSize += getSize * 2048;
+		sceKernelSignalSema(pRing->ringbuf_sema, 1);
+		if (readSize >= pRing->data_len && *pRing->end_flag == 0)
+			*pRing->end_flag = 1;
+	}
+	sceKernelExitThread(0);
+	return 0;
+}
