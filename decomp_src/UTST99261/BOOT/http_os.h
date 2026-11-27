@@ -9,6 +9,7 @@ typedef struct OSThread {
     int f8;
     int sema;                         /* 0x0C: signalled on exit */
     void *retval;                     /* 0x10 */
+    int f14;
 } OSThread;
 
 typedef int OSMutex;                  /* semaphore id */
