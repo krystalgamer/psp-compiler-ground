@@ -103,6 +103,14 @@ Pad &pad();
    deferred function, the INCLUDE_ASM_LINKONCE asm in definition order, explicit instantiations first). */
 #define DEMO_LINKONCE(n) "\t.section .gnu.linkonce.t." #n ",\"ax\",@progbits\n"
 #define DEMO_LINKONCE_ORDER(s) __asm__(s "\t.text\n")
+/* the rest of a function whose start splat put at the end of PREV's .s (a func_XXXXXXXX piece): it continues
+   PREV's .gnu.linkonce.t section (the line still contains "INCLUDE_ASM(" for splat) */
+#if defined(M2CTX) || defined(PERMUTER)
+#define CONT_INCLUDE_ASM(FOLDER, NAME, PREV)
+#else
+#define CONT_INCLUDE_ASM(FOLDER, NAME, PREV) \
+    DEFER_ASM_IN(".section .gnu.linkonce.t." #PREV ",\"ax\",@progbits", FOLDER, NAME)
+#endif
 
 /* Template members defined out of class (handle<>, t_array<>, t_array2d<>):
    the compiler never auto-inlines them (weak instances don't bind locally), so
