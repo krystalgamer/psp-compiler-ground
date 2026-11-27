@@ -865,7 +865,22 @@ int i3dLightTerm(int a, char *p)
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d", i3dLightProc);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d", initInitSys);
+extern unsigned char D_000FDA40, D_000FDA48;
+int mainGet_sce_newlib_heap_kb_size(void);
+int memInit();
+int consInit();
+int thrInit();
+int fileInit();
+int initInitSys(int a, int b)
+{
+	consPrintf(&D_000FDA40, "initInitSys");
+	memInit((mainGet_sce_newlib_heap_kb_size() << 10) - 0x80000);
+	consInit();
+	thrInit();
+	fileInit(a, b);
+	consPrintf(&D_000FDA48);
+	return 1;
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d", D_000FDA40);
 

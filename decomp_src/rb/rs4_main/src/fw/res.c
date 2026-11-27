@@ -419,7 +419,21 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", D_000FC098);
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", D_000FC0A8);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", taskTerm);
+extern unsigned char D_000FC050, D_000FC058, D_000FC0A8;
+int rsvTerm();
+int _memFree();
+int taskTerm(int *task)
+{
+	consPrintf(&D_000FC050, "taskTerm");
+	rsvTerm(task[0]);
+	_memFree(task[1], &D_000FC058, 0x43);
+	task[0] = 0;
+	task[1] = 0;
+	_memFree(task, &D_000FC058, 0x47);
+	pCurrent = pCurrent == (int)task ? 0 : pCurrent;
+	consPrintf(&D_000FC0A8);
+	return 1;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -459,7 +473,9 @@ int taskHeadAlive(void)
 #ifndef NULL
 #define NULL ((void *)0)
 #endif
-void taskProc(void *arg0) {
+void taskProc(arg0)
+    void *arg0;
+{
     M2C_FIELD(arg0, M2C_UNK (**)(), 8)();
 }
 
@@ -534,4 +550,16 @@ int taskSendChild(int *t, int a, int b, int c)
 	return taskSendTag(t, 0xD, t[7], 0x14, a, b, c);
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", taskSendReflexive);
+void taskProc();
+void taskSendReflexive(void *task, int a, int b, int c)
+{
+	void *t;
+	void *next;
+	for (t = M2C_FIELD(task, void **, 0x1C); t != NULL; t = next) {
+		next = M2C_FIELD(t, void **, 0x14);
+		if (M2C_FIELD(t, int *, 4) > 0) {
+			taskSendReflexive(t, a, b, c);
+		}
+	}
+	taskProc(task, a, b, c);
+}
