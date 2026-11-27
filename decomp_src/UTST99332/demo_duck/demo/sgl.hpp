@@ -813,9 +813,13 @@ float M(int, int, int, RotMatrix &);
 class SphericalRGBFn {
 public:
     virtual void eval(float theta, float phi, float &r, float &g, float &b) const = 0;
-    virtual ~SphericalRGBFn() {}
+    virtual ~SphericalRGBFn();
     void saveCubeMap(const char *, textures::Texture **, unsigned int, int, float) const;
 };
+/* sh_DebugMap holds the out-of-line copies, after DebugMap's own: defined there below */
+#if !SGL_LINKONCE_SphericalRGBFn
+inline SphericalRGBFn::~SphericalRGBFn() {}
+#endif
 /* stand-ins until demo/base.hpp / demo/math.hpp declare them */
 common::common_internal::Log &Log_float(common::common_internal::Log &, float) __asm__("_ZN6common15common_internal3LoglsEf");
 float math_wrap(float, float, float) __asm__("_ZN4math4wrapEfff");
@@ -861,6 +865,11 @@ SGL_LINKONCE_BEGIN
 #endif
 inline DebugMap::~DebugMap() {}
 #if SGL_LINKONCE_DebugMap
+SGL_LINKONCE_END
+#endif
+#if SGL_LINKONCE_SphericalRGBFn
+SGL_LINKONCE_BEGIN
+inline SphericalRGBFn::~SphericalRGBFn() {}
 SGL_LINKONCE_END
 #endif
 }

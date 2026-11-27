@@ -5,6 +5,7 @@
 #define DEMO_STATICS_MATH
 #define DEMO_STATICS_IOSTREAM
 #define SGL_LINKONCE_DebugMap 1
+#define SGL_LINKONCE_SphericalRGBFn 1
 #include "../main.hpp"
 
 /* the module's .ctors/.dtors refer to the static constructor/destructor */
@@ -37,11 +38,3 @@ void sh::DebugMap::eval(float theta, float phi, float &r, float &g, float &b) co
         }
     }
 }
-
-/* inline members: .gnu.linkonce.t, after DebugMap's (splat only sees `INCLUDE_ASM(`) */
-#undef INCLUDE_ASM
-#define INCLUDE_ASM INCLUDE_ASM_LINKONCE
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sh_DebugMap", _ZN2sh14SphericalRGBFnD1Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sh_DebugMap", _ZN2sh14SphericalRGBFnD0Ev);
