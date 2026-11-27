@@ -466,7 +466,27 @@ int sceGuFinish(void)
 	return size;
 }
 
-INCLUDE_ASM("tmp/asm/sampler/sampler/nonmatchings/libgu", sceGuFinishId);
+int sceGuFinishId(unsigned int id)
+{
+	GuContext *context;
+	int size;
+	id &= 0xffff;
+	if (__aw_list_mode == 0 || __aw_list_mode == 2) {
+		send_commandi(15, id);
+		send_commandi_stall(12, 0);
+	} else if (call_mode == 1) {
+		send_commandi(14, 0x120000);
+		send_commandi(12, 0);
+		send_commandi_stall(0, 0);
+	} else {
+		send_commandi(11, 0);
+	}
+	context = pList;
+	size = (unsigned int)context->current - (unsigned int)context->start;
+	__aw_list_mode = context->parent_context;
+	pList = &_ctx[__aw_list_mode];
+	return size;
+}
 
 void sceGuCallMode(int mode)
 {
