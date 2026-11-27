@@ -390,7 +390,55 @@ static int check_error_dialog_closed(void)
 	return 0;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_net", net_update);
+int net_scan(void);
+int check_adhocctl_scan_completed(void);
+int net_connect(void);
+int check_adhocctl_connect_completed(void);
+int check_adhocctl_disconnect_completed(void);
+int net_disconnect(void);
+int check_adhocctl_connected_error(void);
+int net_update(void)
+{
+	if (net_pauseget() != 0)
+		return;
+	switch (_mrinfo) {
+	case 1:
+		net_scan();
+		break;
+	case 2:
+		check_adhocctl_scan_completed();
+		break;
+	case 4:
+		net_connect();
+		break;
+	case 5:
+	case 8:
+		check_adhocctl_connect_completed();
+		break;
+	case 7:
+	case 9:
+		check_adhocctl_disconnect_completed();
+		break;
+	case 10:
+		check_error_dialog_closed();
+		break;
+	case 16:
+	case 17:
+		net_disconnect();
+		break;
+	case 26:
+		send_recv_game_data();
+		break;
+	default:
+		net_update_multi_player();
+		break;
+	}
+	if (_mrinfo < 11)
+		goto END;
+	check_adhocctl_connected_error();
+END:
+	return 0;
+}
 
 int utility_update_shutdown(void)
 {
