@@ -986,6 +986,143 @@ libgcc/libsupc++ DWARF names `gcc-3.3.6/` paths.
   is source, not compiler.  libxu is built with the game's
   `-Os -fno-strength-reduce`.
 
+## psp-gcc 1.11.0
+
+Target `navi` (`inputs/navi.zip`, a game's modules) has five PRX libraries
+whose `.comment` is "3.3.6+allegrex-2.2.2-psp-1.11.0": libz (zlib 1.2.3),
+libpng (libpng 1.2.12), libjpeg (IJG jpeg 6b), libblowfish and librsa
+(OpenSSL 0.9.6c's blowfish and RSA, from their strings).  They have no
+symbols and no DWARF.  Their sources were fetched into `tmp/navi/src`,
+compiled with each cc1 and compared function by function by
+`tmp/navi/cmp.py`. It finds each compiled function by exact search of the
+relocation-masked words, names exports by NID, places the rest between
+the exact matches and lists the module code that nothing covers
+(`--gaps`).
+
+- **Build flags and configuration (object-wide; the libraries' own
+  Makefiles):**
+  - zlib: `-O3`.  Function order is gcc 3.3's `-O3` deferral, e.g.
+    `deflateInit_` comes after `deflateInit2_`.
+  - libpng: `-O3 -funroll-loops` (its makefiles' default).  It links zlib
+    `-O3`, newlib's libm (`pow`, `__ieee754_pow`, `sqrt`, `fabs`, `finite`,
+    `isnan`, `rint`, `scalbn`, `copysign`, `matherr`: `-O2 -fno-builtin`,
+    a locfix build like 1.9.2's newlib) and libgcc's soft double.
+  - libjpeg: `-O2`, with configure's `jconfig.h`.  `jmemnobs.c` is replaced
+    by Sony's memory manager (user malloc/free hooks), and there is a
+    memory source manager (an unknown export).
+  - blowfish and RSA: `-O0` with no `ext`/`ins` at all (`-mno-ext`, or no
+    `-mext`), and RSA with `-DNO_ERR`.
+  - Headers: newlib's with `__DYNAMIC_REENT__` (`stderr` is
+    `__getreent()->_stderr`, as in 1.8.3 and later).  The C library itself
+    is the firmware's `sceLibc`, imported.
+- **Results.**  Every upstream function that is linked matches with the
+  1.11.0 tree, using only the flags above:
+
+  | Library | 1.11.0 tree | cc1-1.9.2 | 184ins | 1.8.4 `-mext` |
+  |---|---|---|---|---|
+  | zlib | 89/89 (+63 in libpng) | 87 | 87 | 84 |
+  | libpng | 336/336 | 330 | 328 | 307 |
+  | libjpeg | 330/330 | 315 | 314 | 304 |
+  | blowfish | 8/8 | 8 | – | – |
+
+  - libgcc built from the tree (`-O2 -mext`; dp-bit, fp-bit, libgcc2)
+    matches all of libpng's 23 functions, libjpeg's 11 and librsa's 16.
+    crtbegin/crtend are the tree's crtstuff.c.  So only the libraries'
+    own glue code is not covered: libjpeg's memory manager and source,
+    and librsa's Sony `RAND_poll`.
+  - RSA: 301 compiled functions match (282 distinct module functions;
+    identical getters share one copy).  What is left is source-level:
+    - stack.c and lhash.c pass `__LINE__` values one higher (Sony
+      edited them);
+    - `_dopr` reads `(_ctype_+1)[c]`, the newer ctype.h;
+    - `CRYPTO_get_ex_new_index` differs;
+    - the `RAND_poll` replacement is probably the 4.0.3 object.
+  - 1.8.4 and 1.7.1-orig miss 4 of blowfish's 8 `-O0` functions, which
+    1.9.2 matches (the gcc-3.3.6 base again).
+  - libpng's `png_do_unshift` and `png_do_read_invert_alpha` and libjpeg's
+    `compress_data` match with the 1.9.2 tree but not with `cc1-184ins`
+    (gcc 3.3.3 with 3.3.6's expr.c).  compress_data's difference is the
+    order of its stack spill slots.  These are more upstream 3.3.4–3.3.6
+    changes besides PR14470.
+- **The one compiler change: the 32 VFPU vector registers are no longer
+  fixed.**  All the functions the 1.9.2 tree misses differ the same way:
+  1.11.0 hoists more loop invariants out of large loops.
+  - Examples: zlib's `deflate_fast` keeps two table addresses in
+    s-registers (1.9.2 keeps one and rebuilds the other with `lui`/`addiu`
+    in the loop), and `inflate` keeps the constants 16, 17 and -1 in
+    registers.
+  - The deciding inequality in loop.c's `move_movables` is
+    `threshold * savings * lifetime >= insn_count`, with
+    `threshold = 2 * (1 + n_non_fixed_regs)` (half that when the loop has
+    a call).  The same formula, with `3 +`, applies in `strength_reduce`.
+  - An environment knob added to the threshold (a test tree only) shows
+    that the libraries need `n_non_fixed_regs` 32 or 33 higher than 1.9.2's:
+    - +16 to +30 still miss zlib's `deflate_fast`;
+    - +31 misses libjpeg's `encode_mcu_AC_first`;
+    - +32 and +33 match everything;
+    - +34 and more break zlib's `send_tree`.
+  - 32 is exactly the vector registers 176–207 that 1.8 added.
+    `gcc1.11.0_src` clears their `FIXED_REGISTERS` entries, while
+    VFPU_SRAND and VFPU_CC stay fixed.  They stay call-used, and no
+    pattern moves values into or out of them, so nothing is allocated
+    there.  A high-pressure float and integer test compiles exactly as
+    with 1.9.2.
+  - Why the registers were unfixed: VFPU code generation (the 1.8
+    builtins) needs allocatable VFPU registers, so this is presumably part
+    of Sony's VFPU work.  The navi libraries contain no VFPU instruction.
+  - 1.9.2 is unchanged.  No module built by 1.8.3, 1.8.4 or 1.9.2 tells
+    the two thresholds apart: rs4_main's 302 C units and UCJS90007's,
+    mpegon's and mpegstr's units compile to the same assembly with
+    `cc1-1.9.2` and `cc1-1.11.0`, apart from the version strings in
+    `-g` units.  Their loops are too small for the threshold to matter.
+    So the change could be as old as 1.8.3, but there is no evidence for
+    it before 1.11.0.
+  - Confidence: high that the threshold is 32 or 33 registers higher (23
+    functions, three libraries, every one of them fixed by the same knob
+    value with no losses).  Medium-high that it is the vector registers
+    (the only group of 32 that the trees keep fixed besides the COP0/2/3
+    registers, which stock gcc fixes too).
+- **The `-O0` libraries have no `ext` or `ins`.**  They clear bit fields
+  with `lui`/`addiu` and `and`, 30 times in librsa (`& 0xffff0000`,
+  `& ~7`, ...).  The 1.9.2 tree with `-mext` would emit `ins rt,$0` there,
+  because its `andsi3` keeps such masks.
+  - Two explanations fit equally well:
+    - the `-O0` objects were built without `-mext`: with `-mno-ext`,
+      `cc1-1.9.2` and `cc1-1.11.0` both give 301 RSA functions, against
+      294 without it;
+    - the expander keeps the mask only when optimizing (`optimize &&` in
+      `andsi3`): this gives the same 301.  This form is not in the tree.
+  - No `-O0` bit-field code exists to tell them apart, so the tree keeps
+    1.9.2's `andsi3`.  A plain `andsi3` (always `force_reg`) is ruled out
+    for 1.9.2: it changes rs4_main's `__ieee754_rem_pio2f` scheduling.
+- **The other navi modules:**
+  - librsa also contains one "4.0.3+allegrex-2.2.3-psp-2.3.1" object,
+    probably the `RAND_poll` replacement.
+  - libpep is all "4.0.4+allegrex-2.2.3-psp-2.5.3" and has a
+    `.gcc_compiled_long32` section.
+  - libsmojgb is 4.0.4 plus "3.3.6+allegrex-2.2.2-psp-1.13.0.internal".
+    Its libpng, libjpeg and zlib copies do not match 1.11.0 at `-O2`,
+    `-O3` or `-O3 -funroll-loops` (at most 50/337 png functions).  They
+    are probably the 4.0.4 objects; which code is 1.13.0.internal is open.
+  - print_msg:
+    - Its game code and runtime are SN Systems ProDG: EDG-style `__0F`
+      mangling (`__0FDmsgPc` = `msg(char *)`,
+      `__0FKerror_text6Nan_error_code`), `__std__needed_destruction_list`,
+      `__snmain` and libsn's `sn_floor`/`sn_log`/`fftoa`.
+    - Its crt0, crt0mark and kernel_bridge are psp-gcc 1.12.1.internal
+      (DWARF).  The SDK 6.6.0 kernel_bridge.c and crt0mark.c
+      (`-O4 -std=gnu9x`) match 26 of its 29 crt0/crt0mark/kernel_bridge
+      functions, with 1.9.2 and 1.11.0 alike.  crt0's `_start`, `_main`
+      and `_exit` differ (a source revision).
+    - Its libgcc (dp-bit, `__udivdi3`) is an old one: no `ext`/`ins`, abs
+      as `bltzl`/`negu`, the 1.5.1/1.3.1 trees' code.
+  - BOOT is SN Systems C++ (Windows paths `d:/develop/navichu/...`,
+    `.cplinit`) with Sony's i3d middleware.  It is stripped and has no
+    `.comment`.
+  - psmf and libpsmfplayer (`.wos`) are prebuilt SDK modules with the
+    newer 0x700000A1 relocation format and no sections.  They were not
+    analysed.
+
 ## Solved: libgu two-command register tie (stale `REG_FREQ`)
 
 `sceGuTexScale`, `sceGuTexOffset`, `sceGuMorphWeight` and `sceGuLightColor`
