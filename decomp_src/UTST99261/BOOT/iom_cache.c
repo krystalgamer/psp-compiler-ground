@@ -1,7 +1,9 @@
 /* cflags: -O1 */
 #include "common.h"
 #include "m2c_macros.h"
-typedef struct { u8 pad[0x28]; int x28; u8 pad2[0x10]; unsigned int x3C; u8 ids[125]; } IOMCID_T;
+/* cache ids: a struct at 0x3C, so &iom.cache.ids[i] is iom + i + 0x30 with displacement 0x10 */
+typedef struct { unsigned int size; u8 ids[125]; } IOMCACHE_T;
+typedef struct { u8 pad[0x28]; int x28; u8 pad2[0x10]; IOMCACHE_T cache; } IOMCID_T;
 extern IOMCID_T iom;
 void *UTL_peekqueue(void *q, void *e);
 int strcasecmp(const char *a, const char *b);
@@ -60,7 +62,7 @@ void iom_deleteCache(void *c) {
         M2C_FIELD(c, void **, 0x1C) = NULL;
     }
     iom_deleteCacheId(M2C_FIELD(c, int *, 8));
-    iom.x3C -= M2C_FIELD(c, int *, 0xC) + M2C_FIELD(c, int *, 0x10);
+    iom.cache.size -= M2C_FIELD(c, int *, 0xC) + M2C_FIELD(c, int *, 0x10);
     iom.x28 = 1;
     iom_freeCache(c);
 }
@@ -108,6 +110,10 @@ void *iom_domainCache(char *name) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iom_cache", iom_newCacheId);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iom_cache", iom_setCacheId);
+void iom_setCacheId(int id) {
+    iom.cache.ids[id >> 3] |= 1 << (id & 7);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iom_cache", iom_deleteCacheId);
+void iom_deleteCacheId(int id) {
+    iom.cache.ids[id >> 3] &= ~(1 << (id & 7));
+}
