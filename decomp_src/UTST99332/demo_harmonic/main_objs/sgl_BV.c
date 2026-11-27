@@ -4,6 +4,21 @@
 #include "cxx/defer_asm.h"
 #include "../main.hpp"
 
+/* these template instances are still asm below */
+namespace std {
+extern template void vector<math::vector_xyzw>::_M_insert_aux(vector<math::vector_xyzw>::iterator, const math::vector_xyzw &);
+extern template vector<math::vector_xyzw>::iterator vector<math::vector_xyzw>::erase(vector<math::vector_xyzw>::iterator,
+                                                                                    vector<math::vector_xyzw>::iterator);
+extern template void vector<math::vector_xyzw>::_M_fill_insert(vector<math::vector_xyzw>::iterator, vector<math::vector_xyzw>::size_type,
+                                                              const math::vector_xyzw &);
+}
+
+extern const char D_0016A764[];     /* " " */
+extern const char D_0016A768[];     /* " *** error " */
+extern const char D_0016A774[];
+extern const char D_0016A7B8[];     /* file */
+extern const char longestAxis_name[] __asm__("_ZZNK3sgl2BV11longestAxisEvE19__PRETTY_FUNCTION__");
+
 extern const float D_0016A708;      /* 1.0f */
 extern const float D_0016A70C;      /* 1.0f */
 
@@ -25,7 +40,18 @@ void sgl::BV::start()
     _started = true;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_BV", _ZN3sgl2BV3addEN4math11vector_xyzwE);
+void sgl::BV::add(math::vector_xyzw v)
+{
+    if (_started) {
+        Box::first(v);
+        if (_type == 1)
+            _points.resize(0);
+        _started = false;
+    } else
+        Box::add(v);
+    if (_type == 1)
+        _points.push_back(v);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_BV", _ZN3sgl2BV3addERKS0_RKN4math6matrixE);
 
@@ -34,7 +60,11 @@ void sgl::BV::add(float x, float y, float z)
     add(math::vector_xyzw(x, y, z, D_0016A70C));
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_BV", _ZN3sgl2BV3addERKS0_);
+void sgl::BV::add(const BV &o)
+{
+    for (int i = 0; i != 8; i++)
+        add(o._c[i]);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_BV", _ZN3sgl2BV6finishEv);
 

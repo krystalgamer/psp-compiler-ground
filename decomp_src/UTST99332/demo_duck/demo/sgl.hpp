@@ -674,8 +674,15 @@ public:
     struct Sample : public math::SphericalCoord {
         Sample();
         Vector sh;                      /* 0x18 */
+        float _value;                   /* 0x28 */
+        float _r, _g, _b;               /* 0x2C */
     };
     SphereSampling(unsigned int);
+    float canonical_random_var(unsigned int);
+    Vector project(float (*)(float, float));
+    VectorRGB project(const SphericalRGBFn *);
+    VectorRGB project();
+    Vector project1() const;
     void swap(SphereSampling &);
     void create_samples(int);
     void partition();
@@ -712,8 +719,12 @@ public:
     void finish();
     void draw() const;
     void draw(int) const;
+    int longestAxis() const;
+    static std::vector<math::vector_xyzw> _points;
     int _type;              /* 0x80 */
-    char _p84[0xE4 - 0x84];
+    char _p84[0xC4 - 0x84];
+    float _h[3];            /* 0xC4: half extents */
+    char _pD0[0xE4 - 0xD0];
     bool _started;          /* 0xE4 */
     char _pE5[0x14C - 0xE5];
 };

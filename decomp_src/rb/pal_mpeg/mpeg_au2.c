@@ -22,7 +22,52 @@ extern const char D_000079A4[];
 extern const StreamTypeInfo D_00007904[];
 /* --- end declarations --- */
 
-INCLUDE_ASM("tmp/asm/rb/pal_mpeg/nonmatchings/mpeg_au2", func_0000551C);
+int func_0000551C(SceMpeg *mp, MpegStream *stream)
+{
+	MpegSys *sys = mp->sys;
+	AuList2 *e;
+	SceMpegAuInfo info;
+	int n;
+	int ret;
+	int i;
+	int cnt;
+	unsigned char *x;
+	unsigned char *v;
+
+	ret = func_00001104(mp);
+	if (ret != 0)
+		return ret;
+	if (stream->pair == (StreamEntry *)-1)
+		return SCE_MPEG_ERROR_INVALID_VALUE;
+	func_00005AE4(sys->sema);
+	e = func_0000120C(stream->id, mp->sys, 1);
+	if (e == (AuList2 *)-1) {
+		func_00005B80(sys->sema);
+		return SCE_MPEG_ERROR_INVALID_VALUE;
+	}
+	func_000013B0((AuList2 *)stream->pair, 0, 1, &info, &n);
+	if (n != 1) {
+		ret = 0x80618004;
+		x = (unsigned char *)0xFFFF0000;
+	} else {
+		x = (unsigned char *)info.unk[7];
+	}
+	cnt = e->num;
+	for (i = 0; i < cnt; i++) {
+		func_000013B0(e, 0, 1, &info, &n);
+		v = (unsigned char *)info.unk[7];
+		if (x < v) {
+			if (v >= x + 0x800)
+				ret = 0x80618007;
+			break;
+		}
+		func_00001478(e, 1, &n);
+	}
+	stream->unk10 = 0x7FFF;
+	stream->unk2C = 0;
+	func_00005B80(sys->sema);
+	return ret;
+}
 
 int func_00005698(SceMpeg *mp, MpegStream *stream, int idx, int *out)
 {
