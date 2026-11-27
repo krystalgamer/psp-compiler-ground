@@ -748,9 +748,6 @@ void sceGuDisable(int state)
 		__gu_status &= ~(1 << state);
 }
 
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", D_0007FB00);
-
-const float D_0007FB1C = 1.0f;
 
 int sceGuGetStatus(int state);
 int sceGuGetStatus(int state)
@@ -1319,7 +1316,38 @@ void sceGuLightAtt(int light, float atten0, float atten1, float atten2)
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", sceGuLightSpot);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", sceGuLightColor);
+void sceGuLightColor(int light, int component, unsigned int color);
+void sceGuLightColor(int light, int component, unsigned int color)
+{
+	color &= 0xffffff;
+	switch (component) {
+	case 1:
+		send_commandi(lcmd[light].ambient, color);
+		break;
+	case 2:
+		send_commandi(lcmd[light].diffuse, color);
+		break;
+	case 3: {
+		int cmd = lcmd[light].diffuse;
+
+		send_commandi(lcmd[light].ambient, color);
+		send_commandi(cmd, color);
+		break;
+	}
+	case 4:
+		send_commandi(lcmd[light].specular, color);
+		break;
+	case 6: {
+		int cmd = lcmd[light].specular;
+
+		send_commandi(lcmd[light].diffuse, color);
+		send_commandi(cmd, color);
+		break;
+	}
+	}
+}
+
+const float D_0007FB1C = 1.0f;
 
 void sceGuTexMode(int tpsm, int maxmips, int a2, int swizzle);
 void sceGuTexMode(int tpsm, int maxmips, int a2, int swizzle)
