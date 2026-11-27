@@ -21,6 +21,13 @@ extern void *ui_global;
 
 
 
+extern unsigned char _DOMstart;
+BOX *createListBox(void *node, BOX *parent, BOX *prev, int html);
+char *getDOMAttributeValue(void *node, void *name);
+int atoi(const char *s);
+int getTypeAtAttr(void *node);
+void initBoxList(void *l);
+void MEM_free(void *pool, void *p);
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_html_list", getLINumber);
 
 BOX *createLIBox_li(void *node, BOX *parent, BOX *prev) {
@@ -98,7 +105,38 @@ BOX *html_DD(void *node, BOX *parent, BOX *prev) {
     return box;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_html_list", html_OL);
+BOX *html_OL(void *node, BOX *parent, BOX *prev) {
+    BOX *box;
+    int w, h;
+    int start;
+    char *s;
+    int t;
+
+    box = createListBox(node, parent, prev, 0x43);
+    if (box == NULL)
+        return NULL;
+    box->style->unk26 = ((UICOLORS *)ui_global)->unk74 * 4;
+    GUI_Graphics_getStringSize(box->style->unk64, D_0013F088, 1, &w, &h);
+    M2C_FIELD(box->style, s16 *, 0x20) = h;
+    M2C_FIELD(box->style, s16 *, 0x24) = h;
+    start = 0;
+    s = getDOMAttributeValue(node, &_DOMstart);
+    if (s != NULL) {
+        start = atoi(s);
+        start = start < 0 ? 0 : start;
+        MEM_free(0, s);
+    }
+    M2C_FIELD(box->geom, int *, 0) = start;
+    t = getTypeAtAttr(node);
+    if (t == 3)
+        M2C_FIELD(box->geom, int *, 4) = 11;
+    else
+        M2C_FIELD(box->geom, int *, 4) = t;
+    initBoxList((char *)box->geom + 8);
+    applyCSSExtStyleSheetToBox((int)node, box);
+    applyCSSInlinePropertyToBox((int)node, box);
+    return box;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_html_list", html_UL);
 
