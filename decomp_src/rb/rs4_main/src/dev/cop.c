@@ -420,17 +420,59 @@ void copRotMatZ(float *m, float ang)
 	m[5] = cs[1];
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/cop", copAngMatXYZ);
+void copRotMat(float *ang, float *x, float *y, float *z);
+void copAngMatXYZ(float *ang, float *m)
+{
+	float x[16], y[16], z[16];
+	copRotMat(ang, x, y, z);
+	copMulMat3(z, y, m);
+	copMulMat3(m, x, m);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/cop", copAngMatXZY);
+void copRotMat(float *ang, float *x, float *y, float *z);
+void copAngMatXZY(float *ang, float *m)
+{
+	float x[16], y[16], z[16];
+	copRotMat(ang, x, y, z);
+	copMulMat3(y, z, m);
+	copMulMat3(m, x, m);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/cop", copAngMatYXZ);
+void copRotMat(float *ang, float *x, float *y, float *z);
+void copAngMatYXZ(float *ang, float *m)
+{
+	float x[16], y[16], z[16];
+	copRotMat(ang, x, y, z);
+	copMulMat3(z, x, m);
+	copMulMat3(m, y, m);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/cop", copAngMatYZX);
+void copRotMat(float *ang, float *x, float *y, float *z);
+void copAngMatYZX(float *ang, float *m)
+{
+	float x[16], y[16], z[16];
+	copRotMat(ang, x, y, z);
+	copMulMat3(x, z, m);
+	copMulMat3(m, y, m);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/cop", copAngMatZXY);
+void copRotMat(float *ang, float *x, float *y, float *z);
+void copAngMatZXY(float *ang, float *m)
+{
+	float x[16], y[16], z[16];
+	copRotMat(ang, x, y, z);
+	copMulMat3(y, x, m);
+	copMulMat3(m, z, m);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/cop", copAngMatZYX);
+void copRotMat(float *ang, float *x, float *y, float *z);
+void copAngMatZYX(float *ang, float *m)
+{
+	float x[16], y[16], z[16];
+	copRotMat(ang, x, y, z);
+	copMulMat3(x, y, m);
+	copMulMat3(m, z, m);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/cop", copInterMat);
 
