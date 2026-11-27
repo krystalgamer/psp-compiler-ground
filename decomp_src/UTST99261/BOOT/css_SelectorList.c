@@ -20,6 +20,9 @@ int CSS_ISmatchCSSChain(void *a, void *b);
 int CSS_ISmatchCombine(void *a, void *b);
 typedef struct CSSChain { struct CSSChain *next; void *name; } CSSChain;
 typedef struct CSSDECLN { int pad[6]; struct CSSDECLN *next; s16 prio; s16 important; } CSSDECLN;
+typedef struct CSSSELN { s16 type; s16 pad; int pad2[5]; struct CSSSELN *next; } CSSSELN;
+typedef struct CSSSELLIST { s16 type; s16 pad; int x4; int n; CSSSELN *head; } CSSSELLIST;
+char *CSSSelector_getCssText(CSSSELN *s);
 int CSS_ISmatchCSSChain(void *pa, void *pb) {
     CSSChain *a = pa;
     CSSChain *b = pb;
@@ -123,7 +126,31 @@ void freeCSSSelectorList(void *arg0) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_SelectorList", addCSSSelectorList);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_SelectorList", CSSSelectorList_getCssText);
+char *CSSSelectorList_getCssText(CSSSELLIST *l) {
+    void *buf;
+    char *t;
+    int i;
+    CSSSELN *s;
+
+    if (l == NULL || l->type != 8)
+        return NULL;
+    buf = CSS_newPoolBuf();
+    if (buf == NULL)
+        return NULL;
+    t = NULL;
+    for (s = l->head, i = 0; s != NULL && i < l->n; s = s->next, i++) {
+        if (s->type == 9) {
+            t = CSSSelector_getCssText(s);
+            if (t != NULL) {
+                CSS_putsPoolBuf(buf, (int)t);
+                MEM_free(0, t);
+            }
+        }
+    }
+    t = (char *)CSS_getPoolBuf(buf);
+    CSS_freePoolBuf(buf);
+    return t;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
