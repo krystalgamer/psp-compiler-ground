@@ -237,5 +237,4 @@ extern "C" void gl__name_stack_instance_refs(std::deque<math::matrix> &d, std::d
     std::deque<math::matrix> t(e);
     d.push_back(e.back());
     d.pop_back();
-    d = e;
 }

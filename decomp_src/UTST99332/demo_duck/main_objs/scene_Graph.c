@@ -16,7 +16,138 @@ extern const char scene_mesh_file[] __asm__("D_001694A4");
 extern const char scene_mesh_sp[] __asm__("D_001694B8");
 extern const char scene_mesh_getData_name[] __asm__("_ZZN5scene4Mesh7getDataEvE19__PRETTY_FUNCTION___169474");
 extern const char scene_bvdata_create_name[] __asm__("_ZZN5scene6BVdata6createEN3sgl2BV4TypeEE19__PRETTY_FUNCTION___169188");
+#define DEMO_TEMPLATE_DEFS
+#define SCENE_GRAPH_TEMPLATE_DEFS
 #include "../main.hpp"
+SCENE_ALLOC_FIRST_USE
+/* linkonce order: this object's .gnu.linkonce.t sections in Sony's link order */
+SCENE_LINKONCE_ORDER(
+    SCENE_LINKONCE(_ZN6common6handleIN5scene5SetupEE10invalidateEv)
+    SCENE_LINKONCE(_ZN6common6handleIN5scene5ShapeEE10invalidateEv)
+    SCENE_LINKONCE(_ZN6common6handleIN5scene4MeshEE10invalidateEv)
+    SCENE_LINKONCE(_ZN5scene5Group4findINS_4NodeEEEvRN6common14handles_vectorIS2_EEb)
+    SCENE_LINKONCE(_ZN5scene5Graph13getMappedNodeINS_5GroupEEEN6common6handleIT_EERKSs)
+    SCENE_LINKONCE(_ZN5scene5Graph7newNodeINS_6ObjectEEEN6common6handleIT_EESsb)
+    SCENE_LINKONCE(_ZN6common6handleIN5scene4NodeEEaSINS1_6ObjectEEERS3_RKNS0_IT_EE)
+    SCENE_LINKONCE(_ZN5scene5Graph7newNodeINS_4MeshEEEN6common6handleIT_EESsb)
+    SCENE_LINKONCE(_ZNK3sgl14PrimitiveIndexIiE14countTrianglesEv)
+    SCENE_LINKONCE(_ZN5scene5Graph7newNodeINS_7TextureEEEN6common6handleIT_EESsb)
+    SCENE_LINKONCE(_ZN5scene5Graph10getSublistINS_9TransformEEEvRN6common12handles_listIT_EE)
+    SCENE_LINKONCE(_ZN5scene5Graph10getSublistINS_15StaticTransformEEEvRN6common12handles_listIT_EE)
+    SCENE_LINKONCE(_ZN5scene5Graph10getSublistINS_5GroupEEEvRN6common12handles_listIT_EE)
+    SCENE_LINKONCE(_ZN5scene5Graph10getSublistINS_5ShapeEEEvRN6common12handles_listIT_EE)
+    SCENE_LINKONCE(_ZN5scene5Graph10getSublistINS_8MaterialEEEvRN6common12handles_listIT_EE)
+    SCENE_LINKONCE(_ZN5scene5Graph7newNodeINS_13DefaultShaderEEEN6common6handleIT_EESsb)
+    SCENE_LINKONCE(_ZN6common6handleIKN5scene4NodeEE10invalidateEv)
+    SCENE_LINKONCE(_ZN6common6handleIN5scene4NodeEEaSERKS3_)
+    SCENE_LINKONCE(_ZNSt5dequeIN4math6matrixESaIS1_EEaSERKS3_)
+    SCENE_LINKONCE(_ZNSt5dequeISsSaISsEEaSERKS1_)
+    SCENE_LINKONCE(_ZN6common6handleIN5scene9TransformEE10invalidateEv)
+    SCENE_LINKONCE(_ZN6common6handleIN5scene15StaticTransformEE10invalidateEv)
+    SCENE_LINKONCE(_ZNSt11_Deque_baseISsSaISsEED2Ev)
+    SCENE_LINKONCE(_ZNSt8_Rb_treeIKSsSt4pairIS0_N6common6handleIN5scene4NodeEEEESt10_Select1stIS7_ENS2_7LessStrESaIS7_EE5eraseESt17_Rb_tree_iteratorIS7_RS7_PS7_ESG_)
+    SCENE_LINKONCE(_ZNSt6vectorIN6common6handleIN5scene4NodeEEESaIS4_EE13_M_insert_auxEN9__gnu_cxx17__normal_iteratorIPS4_S6_EERKS4_)
+    SCENE_LINKONCE(_ZN5scene5Graph13getMappedNodeINS_6ObjectEEEN6common6handleIT_EERKSs)
+    SCENE_LINKONCE(_ZN5scene5Graph13getMappedNodeINS_4MeshEEEN6common6handleIT_EERKSs)
+    SCENE_LINKONCE(_ZNK3sgl14PrimitiveIndexIiE22countTrianglesInStripsEv)
+    SCENE_LINKONCE(_ZNSt4listIN6common6handleIN5scene4NodeEEESaIS4_EE6insertESt14_List_iteratorIS4_RS4_PS4_ERKS4_)
+    SCENE_LINKONCE(_ZN5scene5Graph13getMappedNodeINS_13DefaultShaderEEEN6common6handleIT_EERKSs)
+    SCENE_LINKONCE(_ZNSt5dequeIN4math6matrixESaIS1_EE5eraseESt15_Deque_iteratorIS1_RS1_PS1_ES7_)
+    SCENE_LINKONCE(_ZNSt8_Rb_treeIKSsSt4pairIS0_N6common6handleIN5scene4NodeEEEESt10_Select1stIS7_ESt4lessIS0_ESaIS7_EEaSERKSD_)
+    SCENE_LINKONCE(_ZNSt8_Rb_treeIKSsSt4pairIS0_N6common6handleIN5scene4NodeEEEESt10_Select1stIS7_ENS2_7LessStrESaIS7_EEaSERKSC_)
+    SCENE_LINKONCE(_ZNSt5dequeISsSaISsEE5eraseESt15_Deque_iteratorISsRSsPSsES5_)
+    SCENE_LINKONCE(_ZNSt8_Rb_treeIKSsSt4pairIS0_N6common6handleIN5scene4NodeEEEESt10_Select1stIS7_ESt4lessIS0_ESaIS7_EE8_M_eraseEPSt13_Rb_tree_nodeIS7_E)
+    SCENE_LINKONCE(_ZNSt8_Rb_treeIKSsSt4pairIS0_N6common6handleIN5scene4NodeEEEESt10_Select1stIS7_ENS2_7LessStrESaIS7_EE8_M_eraseEPSt13_Rb_tree_nodeIS7_E)
+    SCENE_LINKONCE(_ZNSt11_Deque_baseISsSaISsEE17_M_initialize_mapEj)
+    SCENE_LINKONCE(_ZNSt11_Deque_baseISsSaISsEE16_M_destroy_nodesEPPSsS3_)
+    SCENE_LINKONCE(_ZNSt10_List_baseIN6common6handleIN5scene4NodeEEESaIS4_EE7__clearEv)
+    SCENE_LINKONCE(_ZNSt8_Rb_treeIKSsSt4pairIS0_N6common6handleIN5scene4NodeEEEESt10_Select1stIS7_ESt4lessIS0_ESaIS7_EE11lower_boundERS0_)
+    SCENE_LINKONCE(_ZNSt8_Rb_treeIKSsSt4pairIS0_N6common6handleIN5scene4NodeEEEESt10_Select1stIS7_ESt4lessIS0_ESaIS7_EE13insert_uniqueESt17_Rb_tree_iteratorIS7_RS7_PS7_ERKS7_)
+    SCENE_LINKONCE(_ZNSt10_List_baseIN6common6handleIN5scene9TransformEEESaIS4_EE7__clearEv)
+    SCENE_LINKONCE(_ZNSt4listIN6common6handleIN5scene9TransformEEESaIS4_EE6insertESt14_List_iteratorIS4_RS4_PS4_ERKS4_)
+    SCENE_LINKONCE(_ZNSt10_List_baseIN6common6handleIN5scene15StaticTransformEEESaIS4_EE7__clearEv)
+    SCENE_LINKONCE(_ZNSt4listIN6common6handleIN5scene15StaticTransformEEESaIS4_EE6insertESt14_List_iteratorIS4_RS4_PS4_ERKS4_)
+    SCENE_LINKONCE(_ZNSt10_List_baseIN6common6handleIN5scene5GroupEEESaIS4_EE7__clearEv)
+    SCENE_LINKONCE(_ZNSt4listIN6common6handleIN5scene5GroupEEESaIS4_EE6insertESt14_List_iteratorIS4_RS4_PS4_ERKS4_)
+    SCENE_LINKONCE(_ZNSt10_List_baseIN6common6handleIN5scene5ShapeEEESaIS4_EE7__clearEv)
+    SCENE_LINKONCE(_ZNSt4listIN6common6handleIN5scene5ShapeEEESaIS4_EE6insertESt14_List_iteratorIS4_RS4_PS4_ERKS4_)
+    SCENE_LINKONCE(_ZNSt6vectorIN3sgl5ColorESaIS1_EE5eraseEN9__gnu_cxx17__normal_iteratorIPS1_S3_EES7_)
+    SCENE_LINKONCE(_ZNSt10_List_baseIN6common6handleIN5scene8MaterialEEESaIS4_EE7__clearEv)
+    SCENE_LINKONCE(_ZNSt4listIN6common6handleIN5scene8MaterialEEESaIS4_EE6insertESt14_List_iteratorIS4_RS4_PS4_ERKS4_)
+    SCENE_LINKONCE(_ZNSt5dequeISsSaISsEE16_M_push_back_auxERKSs)
+    SCENE_LINKONCE(_ZNSt5dequeISsSaISsEE15_M_pop_back_auxEv)
+    SCENE_LINKONCE(_ZNSt8_Rb_treeIKSsSt4pairIS0_N6common6handleIN5scene4NodeEEEESt10_Select1stIS7_ENS2_7LessStrESaIS7_EE12insert_equalERKS7_)
+    SCENE_LINKONCE(_ZNSt5dequeIN4math6matrixESaIS1_EE5clearEv)
+    SCENE_LINKONCE(_ZNSt8_Rb_treeIKSsSt4pairIS0_N6common6handleIN5scene4NodeEEEESt10_Select1stIS7_ESt4lessIS0_ESaIS7_EE7_M_copyEPSt13_Rb_tree_nodeIS7_ESG_)
+    SCENE_LINKONCE(_ZNSt8_Rb_treeIKSsSt4pairIS0_N6common6handleIN5scene4NodeEEEESt10_Select1stIS7_ENS2_7LessStrESaIS7_EE7_M_copyEPSt13_Rb_tree_nodeIS7_ESF_)
+    SCENE_LINKONCE(_ZNSt5dequeISsSaISsEE5clearEv)
+    SCENE_LINKONCE(_ZNSt11_Deque_baseISsSaISsEE15_M_create_nodesEPPSsS3_)
+    SCENE_LINKONCE(_ZSt24__uninitialized_copy_auxISt15_Deque_iteratorISsRKSsPS1_ES0_ISsRSsPSsEET0_T_S9_S8_12__false_type)
+    SCENE_LINKONCE(_ZSt24__uninitialized_copy_auxIN9__gnu_cxx17__normal_iteratorIPN6common6handleIN5scene4NodeEEESt6vectorIS6_SaIS6_EEEESB_ET0_T_SD_SC_12__false_type)
+    SCENE_LINKONCE(_ZNSt8_Rb_treeIKSsSt4pairIS0_N6common6handleIN5scene4NodeEEEESt10_Select1stIS7_ESt4lessIS0_ESaIS7_EE9_M_insertEPSt18_Rb_tree_node_baseSF_RKS7_)
+    SCENE_LINKONCE(_ZNSt8_Rb_treeIKSsSt4pairIS0_N6common6handleIN5scene4NodeEEEESt10_Select1stIS7_ESt4lessIS0_ESaIS7_EE13insert_uniqueERKS7_)
+    SCENE_LINKONCE(_ZNSt6vectorIN3sgl5ColorESaIS1_EE14_M_fill_insertEN9__gnu_cxx17__normal_iteratorIPS1_S3_EEjRKS1_)
+    SCENE_LINKONCE(_ZNSt8_Rb_treeIKSsSt4pairIS0_N6common6handleIN5scene4NodeEEEESt10_Select1stIS7_ENS2_7LessStrESaIS7_EE9_M_insertEPSt18_Rb_tree_node_baseSE_RKS7_)
+    SCENE_LINKONCE(_ZNSt5dequeIN4math6matrixESaIS1_EE19_M_range_insert_auxISt15_Deque_iteratorIS1_RKS1_PS6_EEEvS5_IS1_RS1_PS1_ET_SD_St20forward_iterator_tag)
+    SCENE_LINKONCE(_ZNSt5dequeISsSaISsEE19_M_range_insert_auxISt15_Deque_iteratorISsRKSsPS4_EEEvS3_ISsRSsPSsET_SB_St20forward_iterator_tag)
+    SCENE_LINKONCE(_ZSt4fillIN9__gnu_cxx17__normal_iteratorIPN3sgl5ColorESt6vectorIS3_SaIS3_EEEES3_EvT_S9_RKT0_)
+    SCENE_LINKONCE(_ZNSt5dequeISsSaISsEE17_M_reallocate_mapEjb)
+    SCENE_LINKONCE(_ZNSt5dequeIN4math6matrixESaIS1_EE13_M_insert_auxISt15_Deque_iteratorIS1_RKS1_PS6_EEEvS5_IS1_RS1_PS1_ET_SD_j)
+    SCENE_LINKONCE(_ZNSt5dequeISsSaISsEE13_M_insert_auxISt15_Deque_iteratorISsRKSsPS4_EEEvS3_ISsRSsPSsET_SB_j)
+    SCENE_LINKONCE(_ZSt24__uninitialized_copy_auxIPN3sgl5ColorES2_ET0_T_S4_S3_12__false_type)
+    SCENE_LINKONCE(_ZSt26__uninitialized_fill_n_auxIPN3sgl5ColorEjS1_ET_S3_T0_RKT1_12__false_type)
+    SCENE_LINKONCE(_ZSt24__uninitialized_copy_auxIN9__gnu_cxx17__normal_iteratorIPN3sgl5ColorESt6vectorIS3_SaIS3_EEEES4_ET0_T_SA_S9_12__false_type)
+    SCENE_LINKONCE(_ZSt24__uninitialized_copy_auxIN9__gnu_cxx17__normal_iteratorIPN3sgl5ColorESt6vectorIS3_SaIS3_EEEES8_ET0_T_SA_S9_12__false_type)
+    SCENE_LINKONCE(_ZSt26__uninitialized_fill_n_auxIN9__gnu_cxx17__normal_iteratorIPN3sgl5ColorESt6vectorIS3_SaIS3_EEEEjS3_ET_S9_T0_RKT1_12__false_type)
+    SCENE_LINKONCE(_ZNSt5dequeIN4math6matrixESaIS1_EE24_M_new_elements_at_frontEj)
+    SCENE_LINKONCE(_ZNSt5dequeIN4math6matrixESaIS1_EE23_M_new_elements_at_backEj)
+    SCENE_LINKONCE(_ZSt25__uninitialized_copy_copyISt15_Deque_iteratorIN4math6matrixERS2_PS2_ES0_IS2_RKS2_PS6_ES5_ET1_T_SB_T0_SC_SA_)
+    SCENE_LINKONCE(_ZSt25__uninitialized_copy_copyISt15_Deque_iteratorIN4math6matrixERKS2_PS3_ES0_IS2_RS2_PS2_ES9_ET1_T_SB_T0_SC_SA_)
+    SCENE_LINKONCE(_ZNSt5dequeISsSaISsEE24_M_new_elements_at_frontEj)
+    SCENE_LINKONCE(_ZNSt5dequeISsSaISsEE23_M_new_elements_at_backEj)
+    SCENE_LINKONCE(_ZSt25__uninitialized_copy_copyISt15_Deque_iteratorISsRSsPSsES0_ISsRKSsPS4_ES3_ET1_T_S9_T0_SA_S8_)
+    SCENE_LINKONCE(_ZSt25__uninitialized_copy_copyISt15_Deque_iteratorISsRKSsPS1_ES0_ISsRSsPSsES7_ET1_T_S9_T0_SA_S8_)
+    SCENE_LINKONCE(_ZSt24__uninitialized_copy_auxISt15_Deque_iteratorIN4math6matrixERS2_PS2_ES5_ET0_T_S7_S6_12__false_type)
+    SCENE_LINKONCE(_ZSt24__uninitialized_copy_auxISt15_Deque_iteratorISsRSsPSsES3_ET0_T_S5_S4_12__false_type)
+    SCENE_LINKONCE(_ZNK4math6matrix5equalERKS0_f)
+    SCENE_LINKONCE(_ZN6common6handleIN5scene4NodeEEC1EPS2_)
+    SCENE_LINKONCE(_ZN6common6handleIN5scene4NodeEEC1ERKS3_)
+    SCENE_LINKONCE(_ZN6common6handleIN5scene4NodeEEC1INS1_6ObjectEEERKNS0_IT_EE)
+    SCENE_LINKONCE(_ZN6common6handleIN5scene5SetupEED1Ev)
+    SCENE_LINKONCE(_ZN6common6handleIN5scene4NodeEEC1INS1_7TextureEEERKNS0_IT_EE)
+    SCENE_LINKONCE(_ZN6common6handleIN5scene4NodeEEC1INS1_8MaterialEEERKNS0_IT_EE)
+    SCENE_LINKONCE(_ZN6common6handleIN5scene5ShapeEED1Ev)
+    SCENE_LINKONCE(_ZN6common6handleIN5scene4MeshEED1Ev)
+    SCENE_LINKONCE(_ZN6common6handleIN5scene4NodeEEC1INS1_4MeshEEERKNS0_IT_EE)
+    SCENE_LINKONCE(_ZN6common6handleIN5scene9TransformEED1Ev)
+    SCENE_LINKONCE(_ZN6common6handleIN5scene15StaticTransformEED1Ev)
+    SCENE_LINKONCE(_ZNSt22_Rb_tree_base_iterator12_M_incrementEv)
+    SCENE_LINKONCE(_ZNSt22_Rb_tree_base_iterator12_M_decrementEv)
+    SCENE_LINKONCE(_ZSt18_Rb_tree_rebalancePSt18_Rb_tree_node_baseRS0_)
+    SCENE_LINKONCE(_ZSt28_Rb_tree_rebalance_for_erasePSt18_Rb_tree_node_baseRS0_S1_S1_)
+    SCENE_LINKONCE(_ZN6common6handleIN5scene5GroupEEC1INS1_6ObjectEEERKNS0_IT_EE)
+    SCENE_LINKONCE(_ZN6common6handleIN5scene6ObjectEEC1INS1_4NodeEEERKNS0_IT_EE)
+    SCENE_LINKONCE(_ZN6common6handleIN5scene5ShapeEEC1INS1_4NodeEEERKNS0_IT_EE)
+    SCENE_LINKONCE(_ZN6common6handleIN5scene13DefaultShaderEEC1INS1_5SetupEEERKNS0_IT_EE)
+    SCENE_LINKONCE(_ZN6common6handleIN5scene4MeshEEC1INS1_4NodeEEERKNS0_IT_EE)
+    SCENE_LINKONCE(_ZN6common6handleIN5scene5SetupEEC1INS1_13DefaultShaderEEERKNS0_IT_EE)
+    SCENE_LINKONCE(_ZN6common6handleIKN5scene4NodeEEC1IS2_EERKNS0_IT_EE)
+    SCENE_LINKONCE(_ZN6common6handleIKN5scene4NodeEED1Ev)
+    SCENE_LINKONCE(_ZN6common6handleIN5scene5SetupEED0Ev)
+    SCENE_LINKONCE(_ZN6common6handleIN5scene5ShapeEED0Ev)
+    SCENE_LINKONCE(_ZN6common6handleIN5scene4MeshEED0Ev)
+    SCENE_LINKONCE(_ZN6common6handleIN5scene9TransformEED0Ev)
+    SCENE_LINKONCE(_ZN6common6handleIN5scene15StaticTransformEED0Ev)
+    SCENE_LINKONCE(_ZN6common6handleIN5scene9TransformEEC1INS1_4NodeEEERKNS0_IT_EE)
+    SCENE_LINKONCE(_ZN6common6handleIN5scene15StaticTransformEEC1INS1_4NodeEEERKNS0_IT_EE)
+    SCENE_LINKONCE(_ZN6common6handleIN5scene8MaterialEEC1INS1_4NodeEEERKNS0_IT_EE)
+    SCENE_LINKONCE(_ZN6common6handleIKN5scene4NodeEED0Ev)
+    SCENE_LINKONCE(_ZN6common6handleIN5scene13DefaultShaderEEC1INS1_4NodeEEERKNS0_IT_EE)
+    SCENE_LINKONCE(_ZNSt15_Deque_iteratorIN4math6matrixERS1_PS1_EpLEi)
+    SCENE_LINKONCE(_ZNSt15_Deque_iteratorISsRSsPSsEpLEi)
+    SCENE_LINKONCE(_ZSt20_Rb_tree_rotate_leftPSt18_Rb_tree_node_baseRS0_)
+    SCENE_LINKONCE(_ZSt21_Rb_tree_rotate_rightPSt18_Rb_tree_node_baseRS0_)
+);
 extern const char D_00169304[];     /* " *** error " */
 extern const char D_001692EC[];     /* "../lib/scene/Graph.cpp" */
 extern const char D_001694B8[];     /* " " */
@@ -34,23 +165,25 @@ extern const char D_001692DC[];     /* "object.valid()" */
 extern const char Graph_cloneGroup_name[] __asm__("_ZZN5scene5Graph10cloneGroupESsSsE19__PRETTY_FUNCTION__");
 extern const char Graph_cloneObject_name[] __asm__("_ZZN5scene5Graph11cloneObjectESsSsE19__PRETTY_FUNCTION__");
 
-/* weak instances still asm in this object */
-extern template class std::_Deque_base<std::string, std::allocator<std::string> >;
-extern template class std::deque<std::string, std::allocator<std::string> >;
-extern template class std::_Deque_base<math::matrix, std::allocator<math::matrix> >;
-extern template class std::deque<math::matrix, std::allocator<math::matrix> >;
-extern template class std::_List_base<common::handle<scene::Transform>, std::allocator<common::handle<scene::Transform> > >;
-extern template class std::_List_base<common::handle<scene::StaticTransform>, std::allocator<common::handle<scene::StaticTransform> > >;
-extern template class std::_Rb_tree<const std::string, std::pair<const std::string, common::handle<scene::Node> >,
-                                    std::_Select1st<std::pair<const std::string, common::handle<scene::Node> > >,
-                                    std::less<const std::string>,
-                                    std::allocator<std::pair<const std::string, common::handle<scene::Node> > > >;
-extern template class std::_Rb_tree<const std::string, std::pair<const std::string, common::handle<scene::Node> >,
-                                    std::_Select1st<std::pair<const std::string, common::handle<scene::Node> > >,
-                                    common::LessStr,
-                                    std::allocator<std::pair<const std::string, common::handle<scene::Node> > > >;
-
 extern const char D_001691B4[];     /* "root" */
+
+/* Graph.h's asserts (getMappedNode<T>, newNode<T>) */
+extern const char scene_graph_h_err[] __asm__("D_00169304");        /* " *** error " */
+extern const char scene_graph_h_name_expr[] __asm__("D_00169848");  /* "_Name != \"\"" */
+extern const char scene_graph_h_file[] __asm__("D_00169854");       /* "../lib/scene/Graph.h" */
+extern const char scene_graph_h_sp[] __asm__("D_001694B8");         /* " " */
+extern const char scene_graph_h_empty[] __asm__("D_001691C8");      /* "" */
+extern const char scene_graph_h_us[] __asm__("D_0016986C");         /* "_" */
+extern const char gmn_Group_name[] __asm__("_ZZN5scene5Graph13getMappedNodeINS_5GroupEEEN6common6handleIT_EERKSsE19__PRETTY_FUNCTION___1697E8");
+extern const char gmn_Object_name[] __asm__("_ZZN5scene5Graph13getMappedNodeINS_6ObjectEEEN6common6handleIT_EERKSsE19__PRETTY_FUNCTION__");
+extern const char gmn_Mesh_name[] __asm__("_ZZN5scene5Graph13getMappedNodeINS_4MeshEEEN6common6handleIT_EERKSsE19__PRETTY_FUNCTION___1698D0");
+extern const char gmn_DefaultShader_name[] __asm__("_ZZN5scene5Graph13getMappedNodeINS_13DefaultShaderEEEN6common6handleIT_EERKSsE19__PRETTY_FUNCTION___169A08");
+namespace scene {
+inline const char *scene_pf_getMappedNode(Group *) { return gmn_Group_name; }
+inline const char *scene_pf_getMappedNode(Object *) { return gmn_Object_name; }
+inline const char *scene_pf_getMappedNode(Mesh *) { return gmn_Mesh_name; }
+inline const char *scene_pf_getMappedNode(DefaultShader *) { return gmn_DefaultShader_name; }
+}
 extern const char D_001691C8[];     /* "" */
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _Z41__static_initialization_and_destruction_0ii_6030C);
@@ -223,203 +356,106 @@ void _GLOBAL__D__ZN5scene5Graph26disable_reflection_mappingE(void)
     static_init(0, 0xFFFF);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZN6common6handleIN5scene5SetupEE10invalidateEv);
+/* Instances that the (asm) methods above use: called from a function that the link discards
+   (.discard.asm), so cc1plus instantiates them implicitly at the end of the unit like Sony's
+   object did (explicit instantiations would be compiled before the deferred functions and change
+   e.g. cloneNode's code) */
+namespace scene_graph_uses {
+typedef common::handle<scene::Node> HN;
+typedef std::pair<const std::string, HN> Pair;
+typedef std::_Rb_tree<const std::string, Pair, std::_Select1st<Pair>, common::LessStr, std::allocator<Pair> > TreeO;
+typedef std::_Rb_tree<const std::string, Pair, std::_Select1st<Pair>, std::less<const std::string>, std::allocator<Pair> > TreeA;
+}
+namespace sgl {
+template<class T> int PrimitiveIndex<T>::countTriangles() const
+{
+    return countTrianglesInStrips() + _tri.size() / 3;
+}
+}
+/* asm: near-miss (tmp/cxx/drafts/scene4/NOTES.md) */
+extern template int sgl::PrimitiveIndex<int>::countTrianglesInStrips() const;
+template int sgl::PrimitiveIndex<int>::countTriangles() const;
+/* asm: near-miss (Graph.h newNode<T>, scene.hpp: one delay slot filled from the other path) */
+extern template common::handle<scene::Mesh> scene::Graph::newNode<scene::Mesh>(std::string, bool);
+/* asm (near-miss: v1/a2 swapped in the copy of the new element) */
+extern template void std::vector<common::handle<scene::Node> >::_M_insert_aux(std::vector<common::handle<scene::Node> >::iterator,
+                                                                               const common::handle<scene::Node> &);
+extern "C" void scene_Graph_uses(scene::Graph *g, scene_graph_uses::TreeO *to, scene_graph_uses::TreeA *ta,
+                                 std::vector<common::handle<scene::Node> > *vn, std::list<common::handle<scene::Node> > *ln,
+                                 std::vector<sgl::Color> *vc, common::handle<scene::Node> *hn, common::handle<const scene::Node> *hc,
+                                 common::handle<scene::Setup> *hs, common::handle<scene::Shape> *hsh, common::handle<scene::Mesh> *hm,
+                                 common::handle<scene::Object> *ho, common::handle<scene::DefaultShader> *hd)
+    __attribute__((section(".discard.asm")));
+extern "C" void scene_Graph_uses(scene::Graph *g, scene_graph_uses::TreeO *to, scene_graph_uses::TreeA *ta,
+                                 std::vector<common::handle<scene::Node> > *vn, std::list<common::handle<scene::Node> > *ln,
+                                 std::vector<sgl::Color> *vc, common::handle<scene::Node> *hn, common::handle<const scene::Node> *hc,
+                                 common::handle<scene::Setup> *hs, common::handle<scene::Shape> *hsh, common::handle<scene::Mesh> *hm,
+                                 common::handle<scene::Object> *ho, common::handle<scene::DefaultShader> *hd)
+{
+    using namespace scene_graph_uses;
+    g->getSublist(*(common::handles_list<scene::Group> *)0);
+    g->getSublist(*(common::handles_list<scene::Shape> *)0);
+    g->getSublist(*(common::handles_list<scene::Material> *)0);
+    hs->invalidate();
+    hsh->invalidate();
+    hm->invalidate();
+    hc->invalidate();
+    *hn = *hn;
+    common::handle<scene::Node> n1(*ho);
+    common::handle<scene::Node> n2(*(common::handle<scene::Texture> *)0);
+    common::handle<scene::Node> n3(*(common::handle<scene::Material> *)0);
+    common::handle<scene::Node> n4(*hm);
+    *hn = *ho;
+    common::handle<scene::Group> a(*ho);
+    common::handle<scene::Shape> b(*hn);
+    common::handle<scene::DefaultShader> c(*hs);
+    common::handle<scene::Mesh> d(*hn);
+    common::handle<scene::Setup> e(*hd);
+    common::handle<const scene::Node> f(*hn);
+    common::handle<scene::Material> h(*hn);
+    common::handle<scene::DefaultShader> i(*hn);
+    ln->insert(ln->begin(), *hn);
+    std::uninitialized_copy(vn->begin(), vn->end(), vn->begin());
+    g->getMappedNode<scene::Group>(*(std::string *)0);
+    g->getMappedNode<scene::Object>(*(std::string *)0);
+    g->getMappedNode<scene::Mesh>(*(std::string *)0);
+    g->getMappedNode<scene::DefaultShader>(*(std::string *)0);
+    std::deque<std::string> q;
+    vc->erase(vc->begin(), vc->end());
+    vc->insert(vc->begin(), 0, sgl::Color());
+    to->erase(to->begin(), to->end());
+    to->insert_equal(*(Pair *)0);
+    ta->lower_bound(*(std::string *)0);
+    ta->insert_unique(ta->begin(), *(Pair *)0);
+    ta->insert_unique(*(Pair *)0);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZN6common6handleIN5scene5ShapeEE10invalidateEv);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZN6common6handleIN5scene4MeshEE10invalidateEv);
+/* from here on INCLUDE_ASM puts the asm in its own .gnu.linkonce.t section (written as
+   INCLUDE_ASM so that splat keeps these functions as asm) */
+#undef INCLUDE_ASM
+#define INCLUDE_ASM(FOLDER, NAME) INCLUDE_ASM_LINKONCE(FOLDER, NAME)
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZN5scene5Group4findINS_4NodeEEEvRN6common14handles_vectorIS2_EEb);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZN5scene5Graph13getMappedNodeINS_5GroupEEEN6common6handleIT_EERKSs);
-
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZN5scene5Graph7newNodeINS_6ObjectEEEN6common6handleIT_EESsb);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZN6common6handleIN5scene4NodeEEaSINS1_6ObjectEEERS3_RKNS0_IT_EE);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZN5scene5Graph7newNodeINS_4MeshEEEN6common6handleIT_EESsb);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZNK3sgl14PrimitiveIndexIiE14countTrianglesEv);
-
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZN5scene5Graph7newNodeINS_7TextureEEEN6common6handleIT_EESsb);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZN5scene5Graph10getSublistINS_9TransformEEEvRN6common12handles_listIT_EE);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZN5scene5Graph10getSublistINS_15StaticTransformEEEvRN6common12handles_listIT_EE);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZN5scene5Graph10getSublistINS_5GroupEEEvRN6common12handles_listIT_EE);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZN5scene5Graph10getSublistINS_5ShapeEEEvRN6common12handles_listIT_EE);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZN5scene5Graph10getSublistINS_8MaterialEEEvRN6common12handles_listIT_EE);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZN5scene5Graph7newNodeINS_13DefaultShaderEEEN6common6handleIT_EESsb);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZN6common6handleIKN5scene4NodeEE10invalidateEv);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZN6common6handleIN5scene4NodeEEaSERKS3_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZNSt5dequeIN4math6matrixESaIS1_EEaSERKS3_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZNSt5dequeISsSaISsEEaSERKS1_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZN6common6handleIN5scene9TransformEE10invalidateEv);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZN6common6handleIN5scene15StaticTransformEE10invalidateEv);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZNSt11_Deque_baseISsSaISsEED2Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZNSt8_Rb_treeIKSsSt4pairIS0_N6common6handleIN5scene4NodeEEEESt10_Select1stIS7_ENS2_7LessStrESaIS7_EE5eraseESt17_Rb_tree_iteratorIS7_RS7_PS7_ESG_);
-
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZNSt6vectorIN6common6handleIN5scene4NodeEEESaIS4_EE13_M_insert_auxEN9__gnu_cxx17__normal_iteratorIPS4_S6_EERKS4_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZN5scene5Graph13getMappedNodeINS_6ObjectEEEN6common6handleIT_EERKSs);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZN5scene5Graph13getMappedNodeINS_4MeshEEEN6common6handleIT_EERKSs);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZNK3sgl14PrimitiveIndexIiE22countTrianglesInStripsEv);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZNSt4listIN6common6handleIN5scene4NodeEEESaIS4_EE6insertESt14_List_iteratorIS4_RS4_PS4_ERKS4_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZN5scene5Graph13getMappedNodeINS_13DefaultShaderEEEN6common6handleIT_EERKSs);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZNSt5dequeIN4math6matrixESaIS1_EE5eraseESt15_Deque_iteratorIS1_RS1_PS1_ES7_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZNSt8_Rb_treeIKSsSt4pairIS0_N6common6handleIN5scene4NodeEEEESt10_Select1stIS7_ESt4lessIS0_ESaIS7_EEaSERKSD_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZNSt8_Rb_treeIKSsSt4pairIS0_N6common6handleIN5scene4NodeEEEESt10_Select1stIS7_ENS2_7LessStrESaIS7_EEaSERKSC_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZNSt5dequeISsSaISsEE5eraseESt15_Deque_iteratorISsRSsPSsES5_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZNSt8_Rb_treeIKSsSt4pairIS0_N6common6handleIN5scene4NodeEEEESt10_Select1stIS7_ESt4lessIS0_ESaIS7_EE8_M_eraseEPSt13_Rb_tree_nodeIS7_E);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZNSt8_Rb_treeIKSsSt4pairIS0_N6common6handleIN5scene4NodeEEEESt10_Select1stIS7_ENS2_7LessStrESaIS7_EE8_M_eraseEPSt13_Rb_tree_nodeIS7_E);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZNSt11_Deque_baseISsSaISsEE17_M_initialize_mapEj);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZNSt11_Deque_baseISsSaISsEE16_M_destroy_nodesEPPSsS3_);
-
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZNSt10_List_baseIN6common6handleIN5scene4NodeEEESaIS4_EE7__clearEv);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZNSt8_Rb_treeIKSsSt4pairIS0_N6common6handleIN5scene4NodeEEEESt10_Select1stIS7_ESt4lessIS0_ESaIS7_EE11lower_boundERS0_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZNSt8_Rb_treeIKSsSt4pairIS0_N6common6handleIN5scene4NodeEEEESt10_Select1stIS7_ESt4lessIS0_ESaIS7_EE13insert_uniqueESt17_Rb_tree_iteratorIS7_RS7_PS7_ERKS7_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZNSt10_List_baseIN6common6handleIN5scene9TransformEEESaIS4_EE7__clearEv);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZNSt4listIN6common6handleIN5scene9TransformEEESaIS4_EE6insertESt14_List_iteratorIS4_RS4_PS4_ERKS4_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZNSt10_List_baseIN6common6handleIN5scene15StaticTransformEEESaIS4_EE7__clearEv);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZNSt4listIN6common6handleIN5scene15StaticTransformEEESaIS4_EE6insertESt14_List_iteratorIS4_RS4_PS4_ERKS4_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZNSt10_List_baseIN6common6handleIN5scene5GroupEEESaIS4_EE7__clearEv);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZNSt4listIN6common6handleIN5scene5GroupEEESaIS4_EE6insertESt14_List_iteratorIS4_RS4_PS4_ERKS4_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZNSt10_List_baseIN6common6handleIN5scene5ShapeEEESaIS4_EE7__clearEv);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZNSt4listIN6common6handleIN5scene5ShapeEEESaIS4_EE6insertESt14_List_iteratorIS4_RS4_PS4_ERKS4_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZNSt6vectorIN3sgl5ColorESaIS1_EE5eraseEN9__gnu_cxx17__normal_iteratorIPS1_S3_EES7_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZNSt10_List_baseIN6common6handleIN5scene8MaterialEEESaIS4_EE7__clearEv);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZNSt4listIN6common6handleIN5scene8MaterialEEESaIS4_EE6insertESt14_List_iteratorIS4_RS4_PS4_ERKS4_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZNSt5dequeISsSaISsEE16_M_push_back_auxERKSs);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZNSt5dequeISsSaISsEE15_M_pop_back_auxEv);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZNSt8_Rb_treeIKSsSt4pairIS0_N6common6handleIN5scene4NodeEEEESt10_Select1stIS7_ENS2_7LessStrESaIS7_EE12insert_equalERKS7_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZNSt5dequeIN4math6matrixESaIS1_EE5clearEv);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZNSt8_Rb_treeIKSsSt4pairIS0_N6common6handleIN5scene4NodeEEEESt10_Select1stIS7_ESt4lessIS0_ESaIS7_EE7_M_copyEPSt13_Rb_tree_nodeIS7_ESG_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZNSt8_Rb_treeIKSsSt4pairIS0_N6common6handleIN5scene4NodeEEEESt10_Select1stIS7_ENS2_7LessStrESaIS7_EE7_M_copyEPSt13_Rb_tree_nodeIS7_ESF_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZNSt5dequeISsSaISsEE5clearEv);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZNSt11_Deque_baseISsSaISsEE15_M_create_nodesEPPSsS3_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZSt24__uninitialized_copy_auxISt15_Deque_iteratorISsRKSsPS1_ES0_ISsRSsPSsEET0_T_S9_S8_12__false_type);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZSt24__uninitialized_copy_auxIN9__gnu_cxx17__normal_iteratorIPN6common6handleIN5scene4NodeEEESt6vectorIS6_SaIS6_EEEESB_ET0_T_SD_SC_12__false_type);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZNSt8_Rb_treeIKSsSt4pairIS0_N6common6handleIN5scene4NodeEEEESt10_Select1stIS7_ESt4lessIS0_ESaIS7_EE9_M_insertEPSt18_Rb_tree_node_baseSF_RKS7_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZNSt8_Rb_treeIKSsSt4pairIS0_N6common6handleIN5scene4NodeEEEESt10_Select1stIS7_ESt4lessIS0_ESaIS7_EE13insert_uniqueERKS7_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZNSt6vectorIN3sgl5ColorESaIS1_EE14_M_fill_insertEN9__gnu_cxx17__normal_iteratorIPS1_S3_EEjRKS1_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZNSt8_Rb_treeIKSsSt4pairIS0_N6common6handleIN5scene4NodeEEEESt10_Select1stIS7_ENS2_7LessStrESaIS7_EE9_M_insertEPSt18_Rb_tree_node_baseSE_RKS7_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZNSt5dequeIN4math6matrixESaIS1_EE19_M_range_insert_auxISt15_Deque_iteratorIS1_RKS1_PS6_EEEvS5_IS1_RS1_PS1_ET_SD_St20forward_iterator_tag);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZNSt5dequeISsSaISsEE19_M_range_insert_auxISt15_Deque_iteratorISsRKSsPS4_EEEvS3_ISsRSsPSsET_SB_St20forward_iterator_tag);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZSt4fillIN9__gnu_cxx17__normal_iteratorIPN3sgl5ColorESt6vectorIS3_SaIS3_EEEES3_EvT_S9_RKT0_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZNSt5dequeISsSaISsEE17_M_reallocate_mapEjb);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZNSt5dequeIN4math6matrixESaIS1_EE13_M_insert_auxISt15_Deque_iteratorIS1_RKS1_PS6_EEEvS5_IS1_RS1_PS1_ET_SD_j);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZNSt5dequeISsSaISsEE13_M_insert_auxISt15_Deque_iteratorISsRKSsPS4_EEEvS3_ISsRSsPSsET_SB_j);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZSt24__uninitialized_copy_auxIPN3sgl5ColorES2_ET0_T_S4_S3_12__false_type);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZSt26__uninitialized_fill_n_auxIPN3sgl5ColorEjS1_ET_S3_T0_RKT1_12__false_type);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZSt24__uninitialized_copy_auxIN9__gnu_cxx17__normal_iteratorIPN3sgl5ColorESt6vectorIS3_SaIS3_EEEES4_ET0_T_SA_S9_12__false_type);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZSt24__uninitialized_copy_auxIN9__gnu_cxx17__normal_iteratorIPN3sgl5ColorESt6vectorIS3_SaIS3_EEEES8_ET0_T_SA_S9_12__false_type);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZSt26__uninitialized_fill_n_auxIN9__gnu_cxx17__normal_iteratorIPN3sgl5ColorESt6vectorIS3_SaIS3_EEEEjS3_ET_S9_T0_RKT1_12__false_type);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZNSt5dequeIN4math6matrixESaIS1_EE24_M_new_elements_at_frontEj);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZNSt5dequeIN4math6matrixESaIS1_EE23_M_new_elements_at_backEj);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZSt25__uninitialized_copy_copyISt15_Deque_iteratorIN4math6matrixERS2_PS2_ES0_IS2_RKS2_PS6_ES5_ET1_T_SB_T0_SC_SA_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZSt25__uninitialized_copy_copyISt15_Deque_iteratorIN4math6matrixERKS2_PS3_ES0_IS2_RS2_PS2_ES9_ET1_T_SB_T0_SC_SA_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZNSt5dequeISsSaISsEE24_M_new_elements_at_frontEj);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZNSt5dequeISsSaISsEE23_M_new_elements_at_backEj);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZSt25__uninitialized_copy_copyISt15_Deque_iteratorISsRSsPSsES0_ISsRKSsPS4_ES3_ET1_T_S9_T0_SA_S8_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZSt25__uninitialized_copy_copyISt15_Deque_iteratorISsRKSsPS1_ES0_ISsRSsPSsES7_ET1_T_S9_T0_SA_S8_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZSt24__uninitialized_copy_auxISt15_Deque_iteratorIN4math6matrixERS2_PS2_ES5_ET0_T_S7_S6_12__false_type);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZSt24__uninitialized_copy_auxISt15_Deque_iteratorISsRSsPSsES3_ET0_T_S5_S4_12__false_type);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZNK4math6matrix5equalERKS0_f);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZN6common6handleIN5scene4NodeEEC1EPS2_);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZN6common6handleIN5scene4NodeEEC1ERKS3_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZN6common6handleIN5scene4NodeEEC1INS1_6ObjectEEERKNS0_IT_EE);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZN6common6handleIN5scene5SetupEED1Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZN6common6handleIN5scene4NodeEEC1INS1_7TextureEEERKNS0_IT_EE);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZN6common6handleIN5scene4NodeEEC1INS1_8MaterialEEERKNS0_IT_EE);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZN6common6handleIN5scene5ShapeEED1Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZN6common6handleIN5scene4MeshEED1Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZN6common6handleIN5scene4NodeEEC1INS1_4MeshEEERKNS0_IT_EE);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZN6common6handleIN5scene9TransformEED1Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZN6common6handleIN5scene15StaticTransformEED1Ev);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZNSt22_Rb_tree_base_iterator12_M_incrementEv);
 
@@ -428,46 +464,6 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _Z
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZSt18_Rb_tree_rebalancePSt18_Rb_tree_node_baseRS0_);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZSt28_Rb_tree_rebalance_for_erasePSt18_Rb_tree_node_baseRS0_S1_S1_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZN6common6handleIN5scene5GroupEEC1INS1_6ObjectEEERKNS0_IT_EE);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZN6common6handleIN5scene6ObjectEEC1INS1_4NodeEEERKNS0_IT_EE);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZN6common6handleIN5scene5ShapeEEC1INS1_4NodeEEERKNS0_IT_EE);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZN6common6handleIN5scene13DefaultShaderEEC1INS1_5SetupEEERKNS0_IT_EE);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZN6common6handleIN5scene4MeshEEC1INS1_4NodeEEERKNS0_IT_EE);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZN6common6handleIN5scene5SetupEEC1INS1_13DefaultShaderEEERKNS0_IT_EE);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZN6common6handleIKN5scene4NodeEEC1IS2_EERKNS0_IT_EE);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZN6common6handleIKN5scene4NodeEED1Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZN6common6handleIN5scene5SetupEED0Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZN6common6handleIN5scene5ShapeEED0Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZN6common6handleIN5scene4MeshEED0Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZN6common6handleIN5scene9TransformEED0Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZN6common6handleIN5scene15StaticTransformEED0Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZN6common6handleIN5scene9TransformEEC1INS1_4NodeEEERKNS0_IT_EE);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZN6common6handleIN5scene15StaticTransformEEC1INS1_4NodeEEERKNS0_IT_EE);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZN6common6handleIN5scene8MaterialEEC1INS1_4NodeEEERKNS0_IT_EE);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZN6common6handleIKN5scene4NodeEED0Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZN6common6handleIN5scene13DefaultShaderEEC1INS1_4NodeEEERKNS0_IT_EE);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZNSt15_Deque_iteratorIN4math6matrixERS1_PS1_EpLEi);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZNSt15_Deque_iteratorISsRSsPSsEpLEi);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph", _ZSt20_Rb_tree_rotate_leftPSt18_Rb_tree_node_baseRS0_);
 
