@@ -577,4 +577,50 @@ void usage(void) {
     printf("usage: %s.prx\n", "matching_stick");
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_matching_stick/nonmatchings/main", main);
+int load_required_modules(void);
+int unload_required_modules(void);
+int net_init(void);
+void net_term(void);
+int net_update(void);
+int pad_read(void);
+void menuInit(void);
+void menuTerm(int cat, int num);
+
+int main(int argc, char **argv)
+{
+	int ret;
+
+	menuInit();
+
+	if (load_required_modules() < 0)
+		return 1;
+
+	srand(sceKernelGetSystemTimeLow());
+	memset(&game_group_name, 0, sizeof(game_group_name));
+	memset(&_mrinfo, 0, sizeof(_mrinfo));
+	change_state(MATCHING_ROOM_TOP);
+
+	sceCtrlSetSamplingMode(1);
+
+	ret = net_init();
+	if (ret < 0)
+		goto end;
+
+	gu_init();
+
+	while (pad_read()) {
+		draw_frame_11E8();
+		net_update();
+		sceDisplayWaitVblankStart();
+		sceGuSwapBuffers();
+	}
+
+	sceGuTerm();
+	net_term();
+
+	if (unload_required_modules() < 0)
+		return 1;
+end:
+	menuTerm(3, 1);
+	return 1;
+}
