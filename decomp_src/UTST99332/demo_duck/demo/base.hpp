@@ -1177,14 +1177,14 @@ public:
     void setPath(std::string);
     static void OverrideAlpha(int);
     void set_4idx_pixel(int, int, unsigned char);
-    void make_from_bmp(const textures_internal::Bmp &);
-    void make_from_tga(const textures_internal::Tga &);
+    bool make_from_bmp(const textures_internal::Bmp &);
+    bool make_from_tga(const textures_internal::Tga &);
     void make_from_argb(int, const unsigned char *);
     void makeDummy(int, int);
     void make(int, int, Format);
     void print(std::ostream &);
     void swap(Texture &);
-    bool load(const char *);
+    int load(const char *);
     bool is32() const;
     void convert32();
     void alphaHalfBias();
