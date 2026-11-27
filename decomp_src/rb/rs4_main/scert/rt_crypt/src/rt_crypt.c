@@ -107,7 +107,19 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_crypt/src/rt_crypt", KM_S
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_crypt/src/rt_crypt", KM_SetGameSessionKey);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_crypt/src/rt_crypt", KM_GetGameSessionKey);
+void *memset(void *, int, unsigned long);
+int KM_GetGameSessionKey(int a, int b, unsigned char *out)
+{
+    char *km = GetKeyMaster();
+    if (out != NULL) {
+        if (km != NULL && !IsNullRCKey(*(unsigned char **)(km + 0x2C))) {
+            memcpy(out, *(void **)(km + 0x2C), 0x40);
+            return 0;
+        }
+        memset(out, 0, 0x40);
+    }
+    return -1;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_crypt/src/rt_crypt", KM_AddSymmetricKey);
 
