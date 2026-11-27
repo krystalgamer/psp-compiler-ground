@@ -430,7 +430,7 @@ segments:
       - [0x165810, .rodata, main_objs/math_bspline_curve_curve]
       - [0x16582C, rodata, asm/rodata_1657AC]
       - [0x165A70, .rodata, main_objs/math_matrix_eigenVectors]
-      - [0x165B48, rodata, asm/rodata_165AC8]
+      - [0x165B58, rodata, asm/rodata_165AD8]
       - [0x165B9C, .rodata, main_objs/math_safe_acosf]
       - [0x165BA4, rodata, asm/rodata_165B24]
       - [0x165CDC, .rodata, main_objs/math_matrix_matrix]
