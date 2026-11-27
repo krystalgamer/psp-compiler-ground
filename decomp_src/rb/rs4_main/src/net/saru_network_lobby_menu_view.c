@@ -1,5 +1,6 @@
 /* lang: c++ */
-/* cflags: -Os -fno-strength-reduce -fno-merge-constants -fno-exceptions */
+/* cflags: -Os -fno-merge-constants -fno-exceptions */
+/* strength reduction on: Update matches only with it (menu item pointer IV) */
 /* #pragma interface: the vtables, typeinfo and implicit destructors stay in the module's asm */
 #pragma interface "rodata"
 #include "common.h"
@@ -112,7 +113,14 @@ namespace SaruNet {
 struct LobbyPlayerMenuItem {
 	short active;
 	unsigned short rank;
-	char _4[0x88];
+	char address[6];
+	char _a[2];
+	unsigned int name[0x20];
+};
+
+struct LobbyPlayerMenu {
+	char _0[0x1C];
+	LobbyPlayerMenuItem items[16];
 };
 
 class LobbyPlayerMenuView_ItemTextContext {
@@ -150,7 +158,7 @@ public:
 	bool updated;
 	const short *select_tbl;
 	const ItemTextureResource *res_p;
-	LobbyPlayerMenuItem *items_p;
+	LobbyPlayerMenu *menu_p;
 	char _34[0xC];
 	Ys::Anim2D anim;
 	Ys::Anim2D up_anim;
@@ -209,7 +217,7 @@ LobbyPlayerMenuView *LobbyPlayerMenuView::Init(Ys::Task *parent, int n, int grou
 	open_anim = op;
 	close_anim = cl;
 	view_count = n;
-	items_p = 0;
+	menu_p = 0;
 	updated = 0;
 	top = 0;
 	if (up >= 0)
@@ -239,7 +247,62 @@ int LobbyPlayerMenuView::Reset_ItemTexture(int i)
 
 extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_lobby_menu_view", D_00107FC4); }
 extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_lobby_menu_view", D_00107FD8); }
-extern "C" { INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_lobby_menu_view", _ZN7SaruNet19LobbyPlayerMenuView6UpdateEv); }
+
+namespace SaruNet {
+
+void LobbyPlayerMenuView::Update()
+{
+	int total = count;
+	int rows = view_count;
+	int group = res_group;
+	if (total <= 0) {
+		anim.Load(select_anim, group);
+		top = 0;
+		select = 0;
+		for (int i = 0; i < rows; i++)
+			Reset_ItemTexture(i);
+		return;
+	}
+	int sel = select;
+	int t = top;
+	int d = sel - t;
+	if (d > 0) {
+		if (rows - 2 < d)
+			t = sel - rows + 2;
+	} else {
+		t = sel - 1;
+	}
+	if (!(t + rows < total))
+		t = total - rows;
+	if (t < 0)
+		t = 0;
+	top = t;
+	anim.Load(select_tbl[sel - t], group);
+	LobbyPlayerMenu *menu = menu_p;
+	if (menu) {
+		for (int i = 0; i < rows; i++) {
+			if (i < total) {
+				LobbyPlayerMenuView_ItemTextContext &c = context_p[i];
+				c.Remove_Context();
+				const ItemTextureResource &r = res_p[i];
+				LobbyPlayerMenuItem &item = menu->items[t + i];
+				unsigned int buf[0x14];
+				void *param[1];
+				param[0] = item.name;
+				c.font[0] = ttrFontInit(resGetDatLocal(group, r.id[0]), resGetDatLocal(1, 5), D_00107FD8, 1, param);
+				profileGetRankingTtrStr(buf, item.rank);
+				c.font[1] = ttrFontInit(resGetDatLocal(group, r.id[1]), resGetDatLocal(1, 5), (const char *)buf, 0, 0);
+			} else {
+				Reset_ItemTexture(i);
+			}
+		}
+	} else {
+		for (int i = 0; i < rows; i++)
+			Reset_ItemTexture(i);
+	}
+}
+
+}
 
 namespace SaruNet {
 
