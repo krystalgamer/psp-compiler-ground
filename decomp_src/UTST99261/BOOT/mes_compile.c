@@ -60,6 +60,7 @@ M2C_UNK mes_byte_code_op(int, M2C_UNK);             /* extern */
 
 void mes_byte_code_opw(int code, int op, int v);
 int mes_list_tail_find(int l, int v);
+void mes_compile_expression(CompState *c, Node *n, int keep);
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_compile", mes_compile_vars_list);
 
 #ifndef NULL
@@ -334,7 +335,46 @@ void mes_compile_function(Compiler *c, Node *n, int decl)
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_compile", mes_compile_expression);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_compile", mes_compile_lhs_expression);
+void mes_compile_lhs_expression(CompState *c, Node *n, int keep)
+{
+    Node *m;
+    int i;
+
+    if (n != NULL) {
+        if (n->type == 0xA1) {
+            mes_compile_expression(c, ((Node **)n->f8)[0], 0);
+            if (keep)
+                mes_byte_code_op(c->code, 9);
+            mes_compile_expression(c, ((Node **)n->f8)[1], 0);
+            mes_byte_code_op(c->code, 0x38);
+            return;
+        }
+        if (n->type == 0xA2) {
+            mes_compile_expression(c, ((Node **)n->f8)[0], 0);
+            if (keep)
+                mes_byte_code_op(c->code, 9);
+            m = ((Node **)n->f8)[1];
+            if (m != NULL && m->type == 0x67) {
+                i = mes_list_tail_find(c->list, (int)m->f8);
+                mes_byte_code_opw(c->code, 0xC3, i);
+            } else
+                mes_byte_code_op(c->code, 1);
+            return;
+        }
+        if (n->type == 0x67) {
+            i = mes_list_tail_find(c->list, (int)n->f8);
+            mes_byte_code_opw(c->code, 0xC6, i);
+            if (keep)
+                mes_byte_code_op(c->code, 9);
+            mes_byte_code_opw(c->code, 0xC3, i);
+            return;
+        }
+    }
+    if (keep)
+        mes_byte_code_op(c->code, 0x16);
+    mes_byte_code_op(c->code, 1);
+    mes_byte_code_op(c->code, 1);
+}
 
 void mes_compile_nest(Compiler *c, int type, int a, int b)
 {
