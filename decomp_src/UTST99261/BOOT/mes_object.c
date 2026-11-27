@@ -76,7 +76,23 @@ MesObject *mes_object_new(MesContext *ctx, int cls, MesObject *proto)
     return o;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_object", mes_object_search);
+MesProp *mes_object_search(MesObject *obj, unsigned int id)
+{
+    MesPage *pg;
+    unsigned int k;
+    int i;
+
+    for (pg = obj->props; pg != NULL; pg = pg->child[i]) {
+        for (i = 0; i < pg->n; i++) {
+            k = pg->items[i].id;
+            if (k == id)
+                return &pg->items[i];
+            if (id < k)
+                break;
+        }
+    }
+    return NULL;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -111,7 +127,18 @@ MesPage *mes_object_page_new(void)
     return MEM_malloc(0, sizeof(MesPage));
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_object", mes_object_insert_one);
+void mes_object_insert_one(MesPage *pg, MesProp *item, MesPage *child, int pos)
+{
+    int i;
+
+    for (i = pg->n; pos < i; i--) {
+        pg->items[i] = pg->items[i - 1];
+        pg->child[i + 1] = pg->child[i];
+    }
+    pg->items[pos] = *item;
+    pg->child[pos + 1] = child;
+    pg->n++;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_object", mes_object_insert_page);
 
@@ -195,7 +222,31 @@ void mes_object_delete(void *arg0) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_object", mes_object_prop_next);
+unsigned int mes_object_prop_next(MesObject *obj, unsigned int id)
+{
+    MesPage *pg;
+    MesProp *best;
+    int i;
+
+    best = NULL;
+    do {
+        if (best != NULL)
+            id = best->id;
+        best = NULL;
+        for (pg = obj->props; pg != NULL; pg = pg->child[i]) {
+                for (i = 0; i < pg->n; i++) {
+                if (id < pg->items[i].id) {
+                    if (best == NULL || pg->items[i].id < best->id)
+                        best = &pg->items[i];
+                    break;
+                }
+            }
+        }
+        if (best == NULL)
+            return 0;
+    } while (best->flags & 2);
+    return best->id;
+}
 
 void mes_object_setup(MesContext *ctx, MesObject *obj, const char *name, MesValue value, int flags, int fA)
 {
