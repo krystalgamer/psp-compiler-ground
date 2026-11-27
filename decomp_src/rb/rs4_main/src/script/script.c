@@ -31,7 +31,28 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/script/script", ScriptSearchNa
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/script/script", ScriptEntryName);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/script/script", ScriptCleanupName);
+typedef struct ScrName { struct ScrName *next; } ScrName;
+int _memFree();
+void *memset(void *, int, unsigned int);
+extern unsigned char D_001000E0;
+int ScriptCleanupName(char *s)
+{
+	unsigned int i;
+	ScrName *e, *n;
+	char *q;
+	for (i = 0; i < 15; i++) {
+		q = (char *)(i * 8);
+		q += (int)s;
+		e = *(ScrName **)(q + 0x98);
+		while (e) {
+			n = e->next;
+			_memFree(e, &D_001000E0, 0x3A5);
+			e = n;
+		}
+	}
+	memset(s + 0x98, 0, 0x78);
+	return 1;
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/script/script", D_001001E8);
 

@@ -119,4 +119,15 @@ void salbumTouchCard(int arg0, void *arg1) {
     salbumTouchCardBySaveID(arg0, cardlistGetSaveID((int) M2C_FIELD(arg1, unsigned short *, 2)), M2C_FIELD(arg1, unsigned char *, 0));
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/salbum", salbumGetAll);
+int cardlistGetCardNum();
+int salbumGetAll(void *p)
+{
+	int i;
+	int n = cardlistGetCardNum() - 1;
+	for (i = 0; i <= n; i++) {
+		salbumCalcCardNumBySaveID(p, i, 0, 1);
+		salbumCalcCardNumBySaveID(p, i, 1, 1);
+		salbumCalcCardNumBySaveID(p, i, 2, 1);
+	}
+	return 1;
+}
