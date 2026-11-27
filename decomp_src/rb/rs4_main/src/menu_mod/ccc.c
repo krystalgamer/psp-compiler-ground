@@ -4,6 +4,10 @@
 char *ttrFontInitEx();
 int textCpy();
 int ttrFontTerm();
+void consPrintf(const char *, ...);
+int sceCccSetErrorCharUTF8(int);
+int sceCccEncodeUTF8(char **, int);
+void *memset(void *, int, unsigned int);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/ccc", cccUcs4ToUtf8);
 
@@ -16,4 +20,11 @@ int cccTtrToUcs4(int *dst, int a, int b, int c, int d)
 	return r;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/ccc", cccTtrToUtf8);
+int cccTtrToUtf8(char *dst, int a, int b, int c, int d)
+{
+	int buf[192];
+	memset(buf, 0, 0x300);
+	cccTtrToUcs4(buf, a, b, c, d);
+	cccUcs4ToUtf8(dst, buf);
+	return 1;
+}
