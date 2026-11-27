@@ -2,21 +2,79 @@
 /* cflags: -O3 -fno-exceptions */
 #undef __EXCEPTIONS
 #include "cxx/defer_asm.h"
+#define basic_parser basic_parser_base_hpp
+#define basic_file_parser basic_file_parser_base_hpp
 #include "../main.hpp"
+#undef basic_parser
+#undef basic_file_parser
+#include "../../demo_duck/demo/parser.hpp"
+#include "../../demo_duck/gl.hpp"
+
+extern "C" void glVertex3fv(const GLfloat *);
+
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_basic_net_basic_net", _Z41__static_initialization_and_destruction_0ii_4D75C);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_basic_net_basic_net", _ZN4math9basic_netC2Ev);
+math::basic_net::basic_net()
+{
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_basic_net_basic_net", _ZN4math9basic_netC1Ev);
+math::basic_net::basic_net(unsigned int nx, unsigned int ny) : common::t_array2d<vector_xyzw>(nx, ny)
+{
+    float dx = 1.0f / (nx - 1);
+    float dy = 1.0f / (ny - 1);
+    for (unsigned int i = 0; i < nx; i++)
+        for (unsigned int j = 0; j < ny; j++)
+            addr()[i + j * nx] = vector_xyzw(dx * i - 0.5f, dy * j - 0.5f, 0, 1.0f);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_basic_net_basic_net", _ZN4math9basic_netC2Ejj);
+void math::basic_net::draw() const
+{
+    int nx = this->nx();
+    int ny = this->ny();
+    if (ny < 2 || nx < 2)
+        return;
+    const vector_xyzw *a = addr();
+    const vector_xyzw *b = a + nx;
+    for (int j = 0; j < ny - 1; j++) {
+        glBegin(5);
+        for (int i = 0; i < nx; i++) {
+            glVertex3fv(&a->x);
+            glVertex3fv(&b->x);
+            a++;
+            b++;
+        }
+        glEnd();
+    }
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_basic_net_basic_net", _ZN4math9basic_netC1Ejj);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_basic_net_basic_net", _ZNK4math9basic_net4drawEv);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_basic_net_basic_net", _ZNK4math9basic_net6draw_wEv);
+void math::basic_net::draw_w() const
+{
+    int nx = this->nx();
+    int ny = this->ny();
+    const vector_xyzw *p = addr();
+    for (int j = 0; j < ny; j++) {
+        glBegin(3);
+        const vector_xyzw *q = p;
+        for (int i = 0; i < nx; i++) {
+            glVertex3fv(&q->x);
+            q++;
+        }
+        glEnd();
+        p += nx;
+    }
+    p = addr();
+    for (int i = 0; i < nx; i++) {
+        glBegin(3);
+        const vector_xyzw *q = p;
+        for (int j = 0; j < ny; j++) {
+            glVertex3fv(&q->x);
+            q += nx;
+        }
+        glEnd();
+        p++;
+    }
+}
 
 extern "C" {
 void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_4D75C");
@@ -89,3 +147,4 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_basic_n
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_basic_net_basic_net", _ZN6common9t_array2dIN4math11vector_xyzwEE2atEii);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_basic_net_basic_net", _ZNK6common9t_array2dIN4math11vector_xyzwEE2atEii);
+

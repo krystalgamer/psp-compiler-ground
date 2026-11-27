@@ -43,12 +43,18 @@ bss 0x191350 main_objs/sh_Matrix
 bss 0x191428 -
 bss 0x1918E8 main_objs/sh_SquareMap
 bss 0x19196C -
+# gl__name_stack: the float pools of gl::PushMatrix and gl::LoadIdentity (Identity()'s 1.0f)
+rodata 0x1676B8 main_objs/gl__name_stack
+rodata 0x1676C0 -
 # vector_font_Console: the float pools of Console::Console (C2, C1)
 rodata 0x16374C main_objs/vector_font_Console
 rodata 0x16375C -
 # sh_TestEnvSet_TestEnv: the float pools of TestEnvSet::TestEnvSet (C2, C1)
 rodata 0x174148 main_objs/sh_TestEnvSet_TestEnv
 rodata 0x174178 -
+# math_basic_net_basic_net: the float pools of basic_net::basic_net(unsigned, unsigned) (C2, C1)
+rodata 0x168584 main_objs/math_basic_net_basic_net
+rodata 0x168594 -
 0x0DC98 glut_ReshapeFunc         1.6.1.internal  main_objs/glut_ReshapeFunc.cpp
 0x0E548 app3d_Callbacks          1.6.1.internal  main_objs/app3d_Callbacks.cpp
 0x10CDC common_Date              1.6.1.internal  main_objs/common_Date.cpp   # no static init

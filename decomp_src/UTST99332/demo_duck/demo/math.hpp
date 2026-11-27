@@ -12,6 +12,10 @@ template<class T> class t_array2d;
 #ifndef MATH_IDENTITY_ONE
 #define MATH_IDENTITY_ONE 1
 #endif
+/* quaternion()'s 1.0f, likewise */
+#ifndef MATH_QUAT_ONE
+#define MATH_QUAT_ONE 1
+#endif
 
 namespace math {
 struct TransformStack;
@@ -26,14 +30,26 @@ struct vector_xyzw {
     float x, y, z, w;
     vector_xyzw() {}
     vector_xyzw(float x_, float y_, float z_, float w_) : x(x_), y(y_), z(z_), w(w_) {}
+    float &operator[](int i) { return (&x)[i]; }
+    const float &operator[](int i) const { return (&x)[i]; }
     vector_xyzw operator+(const vector_xyzw &b) const { return vector_xyzw(x + b.x, y + b.y, z + b.z, w + b.w); }
     vector_xyzw operator-(vector_xyzw b) const { return vector_xyzw(x - b.x, y - b.y, z - b.z, w - b.w); }
     vector_xyzw operator-() const { return vector_xyzw(-x, -y, -z, -w); }
     vector_xyzw operator*(float s) const { return vector_xyzw(x * s, y * s, z * s, w * s); }
+    vector_xyzw operator*(const vector_xyzw &b) const { return vector_xyzw(x * b.x, y * b.y, z * b.z, w * b.w); }
+    vector_xyzw operator/(vector_xyzw b) const { return vector_xyzw(x / b.x, y / b.y, z / b.z, w / b.w); }
 };
 inline float dot(const vector_xyzw &a, const vector_xyzw &b)
 {
     return a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w;
+}
+inline vector_xyzw cross(const vector_xyzw &a, const vector_xyzw &b)
+{
+    return vector_xyzw(a.y * b.z - a.z * b.y, a.z * b.x - a.x * b.z, a.x * b.y - a.y * b.x, 0);
+}
+inline float length(const vector_xyzw &v)
+{
+    return sqrtf(dot(v, v));
 }
 struct vector_xy {
     float x, y;
@@ -117,7 +133,7 @@ public:
 
 namespace math {
 struct quaternion {
-    quaternion() : x(0), y(0), z(0), w(1) {}
+    quaternion() : x(0), y(0), z(0), w(MATH_QUAT_ONE) {}
     quaternion(const matrix &);
     quaternion(float x, float y, float z, float w);
     quaternion(vector_xyzw v);
@@ -264,11 +280,16 @@ class Trackball {
 public:
     enum Mode { };
     void mode(math::Trackball::Mode);
+    Trackball(const matrix &);
+    void track(matrix &, float, float, bool, bool);
+    void track(float, float, bool, bool);
+    void track(float dx, float dy, bool, bool, matrix);
+    void reset();
     const matrix &getTransform() const;
     const matrix &getDeltaRot() const;
     /* data */
     matrix _transform;                                  /* 0x0 */
-    char _p40[0x10];
+    quaternion _rot;                                    /* 0x40 */
     matrix _deltaRot;                                   /* 0x50 */
     int _f90;
 };

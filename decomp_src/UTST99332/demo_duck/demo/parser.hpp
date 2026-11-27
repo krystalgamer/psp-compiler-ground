@@ -70,6 +70,62 @@ public:
     void skip(const Field &);
 };
 
+struct ABGR_FLOAT : public math::vector_xyzw {
+    ABGR_FLOAT() {}
+    ABGR_FLOAT(float v) : math::vector_xyzw(v, v, v, v) {}
+    ABGR_FLOAT(float x_, float y_, float z_, float w_) : math::vector_xyzw(x_, y_, z_, w_) {}
+    ABGR_FLOAT(const math::vector_xyzw &v) : math::vector_xyzw(v.x, v.y, v.z, v.w) {}
+    void operator*=(float s) { x *= s; y *= s; z *= s; w *= s; }
+    void operator/=(float s) { x /= s; y /= s; z /= s; w /= s; }
+    void operator+=(const math::vector_xyzw &b) { (*this)[0] += b[0]; (*this)[1] += b[1]; (*this)[2] += b[2]; (*this)[3] += b[3]; }
+    void operator-=(const math::vector_xyzw &b) { (*this)[0] -= b[0]; (*this)[1] -= b[1]; (*this)[2] -= b[2]; (*this)[3] -= b[3]; }
+    void operator*=(const math::vector_xyzw &b) { (*this)[0] *= b[0]; (*this)[1] *= b[1]; (*this)[2] *= b[2]; (*this)[3] *= b[3]; }
+    void operator/=(const math::vector_xyzw &b) { (*this)[0] /= b[0]; (*this)[1] /= b[1]; (*this)[2] /= b[2]; (*this)[3] /= b[3]; }
+};
+
+class FloatImage : public common::t_array2d<ABGR_FLOAT> {
+public:
+    FloatImage();
+    FloatImage(unsigned int, unsigned int);
+    FloatImage(const FloatImage &);
+    FloatImage &operator=(const FloatImage &);
+    FloatImage(const textures::Texture &);
+    FloatImage &operator=(const textures::Texture &);
+    void operator*=(float);
+    void operator+=(float);
+    void operator-=(float);
+    void operator/=(float);
+    void operator*=(math::vector_xyzw);
+    void operator+=(math::vector_xyzw);
+    void operator-=(math::vector_xyzw);
+    void operator/=(math::vector_xyzw);
+    FloatImage operator*(math::vector_xyzw);
+    FloatImage operator+(math::vector_xyzw);
+    FloatImage operator-(math::vector_xyzw);
+    FloatImage operator/(math::vector_xyzw);
+    FloatImage operator*(const FloatImage &);
+    FloatImage operator+(const FloatImage &);
+    FloatImage operator-(const FloatImage &);
+    FloatImage operator/(const FloatImage &);
+    void copy(textures::Texture &);
+    static float gaussian1(float, float);
+    static float gaussian2(float, float);
+    void blur2d(int, float);
+    void blur(int, float);
+    int width() const { return nx(); }
+    int height() const { return ny(); }
+};
+
+namespace math {
+class basic_net : public common::t_array2d<vector_xyzw> {
+public:
+    basic_net();
+    basic_net(unsigned int nx, unsigned int ny);
+    void draw() const;
+    void draw_w() const;
+};
+}
+
 namespace sgi_rgb {
 void bwtorgba(unsigned char *b, unsigned char *l, int n);
 void latorgba(unsigned char *b, unsigned char *a, unsigned char *l, int n);

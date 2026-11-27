@@ -93,15 +93,27 @@ math::quaternion math::quaternion::FromEulerAngles(vector_xyz v, RotationOrder o
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/math_quaternion_quaternion", _ZN4math10quaternion15FromEulerAnglesEfffNS_13RotationOrderE);
 
-extern const float D_00168DF4;  /* 0.5f */
 
+extern const float D_00168DF4;  /* 0.5f */
 math::quaternion math::quaternion::FromAxisAngle(vector_xyz axis, float angle)
 {
     float h = angle * D_00168DF4;
     return quaternion(axis * sinf(h), cosf(h));
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/math_quaternion_quaternion", _ZN4math10quaternion11toAxisAngleERNS_10vector_xyzERf);
+extern const float D_00168DF8;  /* 1.0f */
+void math::quaternion::toAxisAngle(vector_xyz &axis, float &angle)
+{
+    vector_xyz v(x, y, z);
+    float l = sqrtf(v.x * v.x + v.y * v.y + v.z * v.z);
+    if (l > 0) {
+        angle = 2 * safe_acosf(w);
+        axis = vector_xyz(v.x / l, v.y / l, v.z / l);
+    } else {
+        angle = 0;
+        axis = vector_xyz(D_00168DF8, 0, 0);
+    }
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/math_quaternion_quaternion", _ZNK4math10quaternion8toMatrixEv);
 

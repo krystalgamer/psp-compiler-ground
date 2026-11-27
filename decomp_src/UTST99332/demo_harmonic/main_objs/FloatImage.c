@@ -2,67 +2,241 @@
 /* cflags: -O3 -fno-exceptions */
 #undef __EXCEPTIONS
 #include "cxx/defer_asm.h"
+#define basic_parser basic_parser_base_hpp
+#define basic_file_parser basic_file_parser_base_hpp
 #include "../main.hpp"
+#undef basic_parser
+#undef basic_file_parser
+#include "../../demo_duck/demo/parser.hpp"
+
+/* constants and strings stay in the module's .rodata (asm) */
+extern const float D_00173340;      /* 255 */
+extern const float D_00173344;      /* 1 */
+extern const float D_00173348;      /* 255 */
+extern const float D_00173350;      /* 1 */
+extern const float D_00173354;      /* 1 / pi */
+extern const float D_00173358;      /* 1 */
+extern const float D_0017335C;      /* 1 / pi */
+extern const char D_001733A8[];     /* " " */
+extern const char D_001733AC[];     /* " *** error " */
+extern const char D_001733B8[];     /* "_Value.width() == width()" */
+extern const char D_001733D4[];     /* "../lib/textures/FloatImage.cpp" */
+extern const char D_001733F4[];     /* "_Value.height() == height()" */
+extern const char PF_mul[] __asm__("_ZZN10FloatImagemlERKS_E19__PRETTY_FUNCTION__");
+extern const char PF_add[] __asm__("_ZZN10FloatImageplERKS_E19__PRETTY_FUNCTION__");
+extern const char PF_sub[] __asm__("_ZZN10FloatImagemiERKS_E19__PRETTY_FUNCTION__");
+extern const char PF_div[] __asm__("_ZZN10FloatImagedvERKS_E19__PRETTY_FUNCTION__");
+#define FI_ASSERT(c, s, pf, line) \
+    if (!(c)) { \
+        common::common_internal::assert_display(D_001733AC, s, D_001733D4, pf, line, D_001733A8); \
+        common::common_internal::on_error(); \
+        common::common_internal::clash(); \
+    }
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/FloatImage", _Z41__static_initialization_and_destruction_0ii_FC988);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/FloatImage", _ZN10FloatImageC2Ev);
+FloatImage::FloatImage()
+{
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/FloatImage", _ZN10FloatImageC1Ev);
+FloatImage::FloatImage(unsigned int nx, unsigned int ny) : common::t_array2d<ABGR_FLOAT>(nx, ny)
+{
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/FloatImage", _ZN10FloatImageC2Ejj);
+FloatImage::FloatImage(const FloatImage &o)
+{
+    *this = o;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/FloatImage", _ZN10FloatImageC1Ejj);
+FloatImage &FloatImage::operator=(const FloatImage &o)
+{
+    common::t_array2d<ABGR_FLOAT>::operator=(o);
+    return *this;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/FloatImage", _ZN10FloatImageC2ERKS_);
+FloatImage::FloatImage(const textures::Texture &t)
+{
+    *this = t;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/FloatImage", _ZN10FloatImageC1ERKS_);
+FloatImage &FloatImage::operator=(const textures::Texture &t)
+{
+    resize(t.width(), t.height());
+    const unsigned char *src = const_cast<textures::Texture &>(t).image.addr();
+    ABGR_FLOAT *dst = addr();
+    for (int y = 0; y != t.height(); y++)
+        for (int x = 0; x != t.width(); x++) {
+            dst->x = src[0] / D_00173340;
+            dst->y = src[1] / D_00173340;
+            dst->z = src[2] / D_00173340;
+            dst->w = src[3] / D_00173340;
+            src += 4;
+            dst++;
+        }
+    return *this;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/FloatImage", _ZN10FloatImageaSERKS_);
+void FloatImage::operator*=(float s)
+{
+    ABGR_FLOAT *p = addr();
+    for (unsigned int i = 0; i != size(); i++, p++)
+        *p *= s;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/FloatImage", _ZN10FloatImageC2ERKN8textures7TextureE);
+void FloatImage::operator+=(float s)
+{
+    ABGR_FLOAT *p = addr();
+    for (unsigned int i = 0; i != size(); i++, p++)
+        *p += ABGR_FLOAT(s);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/FloatImage", _ZN10FloatImageC1ERKN8textures7TextureE);
+void FloatImage::operator-=(float s)
+{
+    ABGR_FLOAT *p = addr();
+    for (unsigned int i = 0; i != size(); i++, p++)
+        *p -= ABGR_FLOAT(s);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/FloatImage", _ZN10FloatImageaSERKN8textures7TextureE);
+void FloatImage::operator/=(float s)
+{
+    ABGR_FLOAT *p = addr();
+    for (unsigned int i = 0; i != size(); i++, p++)
+        *p /= s;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/FloatImage", _ZN10FloatImagemLEf);
+void FloatImage::operator*=(math::vector_xyzw v)
+{
+    ABGR_FLOAT *p = addr();
+    for (unsigned int i = 0; i != size(); i++, p++)
+        *p *= v;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/FloatImage", _ZN10FloatImagepLEf);
+void FloatImage::operator+=(math::vector_xyzw v)
+{
+    ABGR_FLOAT *p = addr();
+    for (unsigned int i = 0; i != size(); i++, p++)
+        *p += v;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/FloatImage", _ZN10FloatImagemIEf);
+void FloatImage::operator-=(math::vector_xyzw v)
+{
+    ABGR_FLOAT *p = addr();
+    for (unsigned int i = 0; i != size(); i++, p++)
+        *p -= v;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/FloatImage", _ZN10FloatImagedVEf);
+void FloatImage::operator/=(math::vector_xyzw v)
+{
+    ABGR_FLOAT *p = addr();
+    for (unsigned int i = 0; i != size(); i++, p++)
+        *p /= v;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/FloatImage", _ZN10FloatImagemLEN4math11vector_xyzwE);
+FloatImage FloatImage::operator*(math::vector_xyzw v)
+{
+    FloatImage r(nx(), ny());
+    ABGR_FLOAT *d = r.addr();
+    ABGR_FLOAT *p = addr();
+    for (unsigned int i = 0; i != size(); i++, p++, d++)
+        *d = *p * v;
+    return r;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/FloatImage", _ZN10FloatImagepLEN4math11vector_xyzwE);
+FloatImage FloatImage::operator+(math::vector_xyzw v)
+{
+    FloatImage r(nx(), ny());
+    ABGR_FLOAT *d = r.addr();
+    ABGR_FLOAT *p = addr();
+    for (unsigned int i = 0; i != size(); i++, p++, d++)
+        *d = *p + v;
+    return r;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/FloatImage", _ZN10FloatImagemIEN4math11vector_xyzwE);
+FloatImage FloatImage::operator-(math::vector_xyzw v)
+{
+    FloatImage r(nx(), ny());
+    ABGR_FLOAT *d = r.addr();
+    ABGR_FLOAT *p = addr();
+    for (unsigned int i = 0; i != size(); i++, p++, d++)
+        *d = *p - v;
+    return r;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/FloatImage", _ZN10FloatImagedVEN4math11vector_xyzwE);
+FloatImage FloatImage::operator/(math::vector_xyzw v)
+{
+    FloatImage r(nx(), ny());
+    ABGR_FLOAT *d = r.addr();
+    ABGR_FLOAT *p = addr();
+    for (unsigned int i = 0; i != size(); i++, p++, d++)
+        *d = *p / v;
+    return r;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/FloatImage", _ZN10FloatImagemlEN4math11vector_xyzwE);
+FloatImage FloatImage::operator*(const FloatImage &_Value)
+{
+    FI_ASSERT(_Value.width() == width(), D_001733B8, PF_mul, 192);
+    FI_ASSERT(_Value.height() == height(), D_001733F4, PF_mul, 193);
+    FloatImage r(_Value.nx(), _Value.ny());
+    ABGR_FLOAT *d = r.addr();
+    const ABGR_FLOAT *q = _Value.addr();
+    ABGR_FLOAT *p = addr();
+    for (unsigned int i = 0; i != size(); i++, p++, q++, d++)
+        *d = *p * *q;
+    return r;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/FloatImage", _ZN10FloatImageplEN4math11vector_xyzwE);
+FloatImage FloatImage::operator+(const FloatImage &_Value)
+{
+    FI_ASSERT(_Value.width() == width(), D_001733B8, PF_add, 208);
+    FI_ASSERT(_Value.height() == height(), D_001733F4, PF_add, 209);
+    FloatImage r(_Value.nx(), _Value.ny());
+    ABGR_FLOAT *d = r.addr();
+    const ABGR_FLOAT *q = _Value.addr();
+    ABGR_FLOAT *p = addr();
+    for (unsigned int i = 0; i != size(); i++, p++, q++, d++)
+        *d = *p + *q;
+    return r;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/FloatImage", _ZN10FloatImagemiEN4math11vector_xyzwE);
+FloatImage FloatImage::operator-(const FloatImage &_Value)
+{
+    FI_ASSERT(_Value.width() == width(), D_001733B8, PF_sub, 224);
+    FI_ASSERT(_Value.height() == height(), D_001733F4, PF_sub, 225);
+    FloatImage r(_Value.nx(), _Value.ny());
+    ABGR_FLOAT *d = r.addr();
+    const ABGR_FLOAT *q = _Value.addr();
+    ABGR_FLOAT *p = addr();
+    for (unsigned int i = 0; i != size(); i++, p++, q++, d++)
+        *d = *p - *q;
+    return r;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/FloatImage", _ZN10FloatImagedvEN4math11vector_xyzwE);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/FloatImage", _ZN10FloatImagemlERKS_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/FloatImage", _ZN10FloatImageplERKS_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/FloatImage", _ZN10FloatImagemiERKS_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/FloatImage", _ZN10FloatImagedvERKS_);
+FloatImage FloatImage::operator/(const FloatImage &_Value)
+{
+    FI_ASSERT(_Value.width() == width(), D_001733B8, PF_div, 240);
+    FI_ASSERT(_Value.height() == height(), D_001733F4, PF_div, 241);
+    FloatImage r(_Value.nx(), _Value.ny());
+    ABGR_FLOAT *d = r.addr();
+    const ABGR_FLOAT *q = _Value.addr();
+    ABGR_FLOAT *p = addr();
+    for (unsigned int i = 0; i != size(); i++, p++, q++, d++)
+        *d = *p / *q;
+    return r;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/FloatImage", _ZN10FloatImage4copyERN8textures7TextureE);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/FloatImage", _ZN10FloatImage9gaussian1Eff);
+float FloatImage::gaussian1(float x, float sigma)
+{
+    float a = D_00173350 / (2 * sigma * sigma);
+    return expf(-(x * x) * a) * sqrtf(a * D_00173354);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/FloatImage", _ZN10FloatImage9gaussian2Eff);
+float FloatImage::gaussian2(float x, float sigma)
+{
+    float a = D_00173358 / (2 * sigma * sigma);
+    return expf(-(x * x) * a) * a * D_0017335C;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/FloatImage", _ZN10FloatImage6blur2dEif);
 
