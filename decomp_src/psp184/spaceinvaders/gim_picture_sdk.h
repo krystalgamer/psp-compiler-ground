@@ -1544,9 +1544,7 @@ static __inline__ int sceGimPictureCLZ( int num )
 }
 static __inline__ int sceGimPictureCTZ( int num )
 {
- int i ;
- for ( i = 0 ; i <= 31 ; i ++ ) if ( ( 1 << i ) & num ) return i ;
- return 32 ;
+ return __builtin_allegrex_clz( __builtin_allegrex_bitrev( num ) ) ;
 }
 static __inline__ int sceGimImageGetFormat( const SceGimImageHeader *image )
 {
@@ -1646,12 +1644,11 @@ struct SceGimPicture {
  int m_reference ;
  int m_flags ;
  int m_enable_bits ;
+ void *m_unk0C ;
  SceGimImageHeader *m_image ;
  SceGimPaletteHeader *m_palette ;
- struct SceGimTextureCache *m_texture_cache ;
- struct SceGimPixelCache *m_pixel_cache ;
- short m_buf_width ;
- short m_clut_load ;
+ int m_buf_width ;
+ int m_clut_load ;
  float __attribute__((aligned(16))) m_image_crop[ 4 ] ;
  float m_frame_loop[ 2 ] ;
  float m_frame_rate ;

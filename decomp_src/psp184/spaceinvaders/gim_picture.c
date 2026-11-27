@@ -51,17 +51,75 @@ const float *sceGimPictureGetImageCrop( SceGimPicture *picture )
  return picture->m_image_crop ;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gim_picture", sceGimPictureGetImage);
+SceGimImageHeader *sceGimPictureGetImage( SceGimPicture *picture )
+{
+	if ( picture == 0 ) return 0 ;
+	return picture->m_image ;
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gim_picture", sceGimPictureGetPalette);
+SceGimPaletteHeader *sceGimPictureGetPalette( SceGimPicture *picture )
+{
+	if ( picture == 0 ) return 0 ;
+	return picture->m_palette ;
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gim_picture", sceGimPictureGetImagePixels);
+void *sceGimPictureGetImagePixels( SceGimPicture *picture, int level, int frame )
+{
+	if ( picture == 0 ) return 0 ;
+	SceGimImageHeader *image = picture->m_image ;
+	if ( image == 0 ) return 0 ;
+	int n_levels = image->level_count ;
+	int n_frames = image->frame_count ;
+	if ( level < 0 || level >= n_levels ) return 0 ;
+	frame %= n_frames ;
+	if ( frame < 0 ) frame += n_frames ;
+	void **offsets = (void **)( (char *)image + image->offsets ) ;
+	return offsets[ n_levels * frame + level ] ;
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gim_picture", sceGimPictureGetPalettePixels);
+void *sceGimPictureGetPalettePixels( SceGimPicture *picture, int level, int frame )
+{
+	if ( picture == 0 ) return 0 ;
+	SceGimPaletteHeader *palette = picture->m_palette ;
+	if ( palette == 0 ) return 0 ;
+	int n_levels = palette->level_count ;
+	int n_frames = palette->frame_count ;
+	if ( level < 0 || level >= n_levels ) return 0 ;
+	frame %= n_frames ;
+	if ( frame < 0 ) frame += n_frames ;
+	void **offsets = (void **)( (char *)palette + palette->offsets ) ;
+	return offsets[ n_levels * frame + level ] ;
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gim_picture", sceGimPictureSetImagePixels);
+void sceGimPictureSetImagePixels( SceGimPicture *picture, int level, int frame, void *pixels )
+{
+	if ( picture == 0 ) return ;
+	if ( pixels == 0 ) return ;
+	SceGimImageHeader *image = picture->m_image ;
+	if ( image == 0 ) return ;
+	int n_levels = image->level_count ;
+	int n_frames = image->frame_count ;
+	if ( level < 0 || level >= n_levels ) return ;
+	frame %= n_frames ;
+	if ( frame < 0 ) frame += n_frames ;
+	void **offsets = (void **)( (char *)image + image->offsets ) ;
+	offsets[ n_levels * frame + level ] = pixels ;
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gim_picture", sceGimPictureSetPalettePixels);
+void sceGimPictureSetPalettePixels( SceGimPicture *picture, int level, int frame, void *pixels )
+{
+	if ( picture == 0 ) return ;
+	if ( pixels == 0 ) return ;
+	SceGimPaletteHeader *palette = picture->m_palette ;
+	if ( palette == 0 ) return ;
+	int n_levels = palette->level_count ;
+	int n_frames = palette->frame_count ;
+	if ( level < 0 || level >= n_levels ) return ;
+	frame %= n_frames ;
+	if ( frame < 0 ) frame += n_frames ;
+	void **offsets = (void **)( (char *)palette + palette->offsets ) ;
+	offsets[ n_levels * frame + level ] = pixels ;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gim_picture", sceGimPictureReallocImage);
 
@@ -222,9 +280,41 @@ int sceGimPictureGetCurrentSequence( SceGimPicture *picture )
  return picture->m_current_sequence ;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gim_picture", sceGimPictureGetImagePlaneCount);
+int sceGimPictureGetImagePlaneCount( SceGimPicture *picture )
+{
+	if ( picture == 0 ) return 0 ;
+	SceGimImageHeader *image = picture->m_image ;
+	if ( image == 0 ) return 0 ;
+	unsigned int mask = image->plane_mask ;
+	if ( mask == 0 ) return 0 ;
+	mask ^= mask >> 1 ;
+	mask = ( mask & 0x55555555 ) + ( mask >> 1 & 0x55555555 ) ;
+	mask = ( mask & 0x33333333 ) + ( mask >> 2 & 0x33333333 ) ;
+	mask = ( mask + ( mask >> 4 ) ) & 0x0f0f0f0f ;
+	mask += mask >> 8 ;
+	mask += mask >> 16 ;
+	return mask & 0xff ;
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gim_picture", sceGimPictureSetImagePlane);
+void sceGimPictureSetImagePlane( SceGimPicture *picture, int plane )
+{
+	if ( picture == 0 ) return ;
+	picture->m_image_plane = plane ;
+
+	SceGimImageHeader *image = picture->m_image ;
+	if ( image == 0 ) return ;
+	unsigned int mask = image->plane_mask ;
+	if ( mask == 0 ) {
+		sceGimPictureSetPaletteOffset( picture, 0, 255, 0 ) ;
+		return ;
+	}
+	mask ^= mask >> 1 ;
+	unsigned int bits = 1 ;
+	while ( -- plane >= 0 ) bits += ( mask - bits ) ^ mask ;
+	bits = ( mask - bits ) ^ mask ;
+	int shift = sceGimPictureCTZ( bits ) ;
+	sceGimPictureSetPaletteOffset( picture, shift, bits >> shift, 0 ) ;
+}
 
 int sceGimPictureGetImagePlane( SceGimPicture *picture )
 {
