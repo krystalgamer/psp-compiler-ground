@@ -65,6 +65,17 @@ void *MEM_calloc(int pool, unsigned int size);
 extern unsigned char _DOMvalue;
 extern unsigned char _DOMselected;
 extern unsigned char _DOMmultiple;
+typedef struct { int size; unsigned int len; unsigned short *str; } PADStr;
+void Node_getNodeName(PADStr *s, void *node);
+int DOMStringcasecmpCharFast(PADStr *s, char *name);
+void *Node_getParentNode(void *node);
+void *getMapList(void *box, char *name);
+void *addAreaList(void *list, void *node, char *shape, char *coords, int tab);
+int getDOMAttributeValue_PositiveNum(void *elem, void *name);
+signed char getAreaIndex(void *map, void *area);
+void adaptArea(void *box, void *area, void *img, int idx);
+extern unsigned char _DOMshape;
+extern unsigned char _DOMcoords;
 int getTabindex(void *node) {
     char *s;
     s16 n = 0;
@@ -558,7 +569,60 @@ BOX *html_IMG(void *node, BOX *parent, BOX *prev) {
     return box;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_html_form", processArea);
+int processArea(node)
+    void *node;
+{
+    PADStr name;
+    void *n;
+    char *s;
+    void *box;
+    void *map;
+    char *shape;
+    char *coords;
+    void *area;
+    int idx;
+    void *img;
+
+    n = node;
+    while (n != NULL) {
+        Node_getNodeName(&name, n);
+        if (name.len != 0 && DOMStringcasecmpCharFast(&name, "map") == 0) {
+            break;
+        }
+        n = Node_getParentNode(n);
+    }
+    if (n == NULL) {
+        goto out;
+    }
+    s = getDOMAttributeValue(n, &_DOMname);
+    if (s == NULL) {
+        goto out;
+    }
+    box = Node_getBox(Node_getOwnerDocument(node));
+    map = getMapList(box, s);
+    if (map == NULL) {
+        MEM_free(0, (int)s);
+        goto out;
+    }
+    MEM_free(0, (int)s);
+    shape = getDOMAttributeValue(node, &_DOMshape);
+    coords = getDOMAttributeValue(node, &_DOMcoords);
+    area = addAreaList(map, node, shape, coords, getDOMAttributeValue_PositiveNum(node, &_DOMtabindex));
+    if (shape != NULL) {
+        MEM_free(0, (int)shape);
+    }
+    if (coords != NULL) {
+        MEM_free(0, (int)coords);
+    }
+    if (area != NULL && M2C_FIELD(M2C_FIELD(map, void **, 4), void **, 8) != NULL) {
+        idx = getAreaIndex(map, area);
+        for (img = M2C_FIELD(M2C_FIELD(map, void **, 4), void **, 8); img != NULL; img = M2C_FIELD(img, void **, 8)) {
+            adaptArea(box, area, img, idx);
+        }
+    }
+out:
+    ;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
