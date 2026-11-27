@@ -1,6 +1,8 @@
 /* cflags: -O1 */
 #include "common.h"
 #include "m2c_macros.h"
+int mes_util_hex(int c);
+int mes_util_octal(int c);
 typedef struct MesReserved {
     struct MesReserved *next;
     unsigned int hash;                /* 0x4 */
@@ -31,7 +33,9 @@ typedef struct MesLex {
 int mes_line_match(MesLine *l, const char *s);
 void mes_util_string_put(MesStrBuf *s, int c);
 int mes_lex_escape(MesLine *l);
-int mes_line_peek(MesLine *l);
+int mes_line_peekn(MesLine *l, int n);
+void mes_line_skipn(MesLine *l, int n);
+unsigned short mes_line_peek(MesLine *l);
 int mes_line_skip(MesLine *l);
 int mes_stack_check(void *ctx);
 unsigned char mes_lex_token_sub(MesLex *lx);
@@ -77,7 +81,72 @@ void mes_lex_free(void *arg0) {
     MEM_free(0, arg0);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_lex", mes_lex_escape);
+int mes_lex_escape(MesLine *l)
+{
+    unsigned short c;
+    int i;
+    int d;
+
+    c = mes_line_peek(l);
+    switch (c) {
+    case 'b':
+        c = 8;
+        break;
+    case 't':
+        c = 9;
+        break;
+    case 'n':
+        c = 10;
+        break;
+    case 'v':
+        c = 11;
+        break;
+    case 'f':
+        c = 12;
+        break;
+    case 'r':
+        c = 13;
+        break;
+    case 'u':
+        mes_line_skip(l);
+        c = 0;
+        for (i = 0; i < 4; i++) {
+            d = mes_util_hex(mes_line_peekn(l, i));
+            if (d < 0)
+                return 'u';
+            c = (c << 4) | d;
+        }
+        mes_line_skipn(l, 4);
+        return c;
+    case 'x':
+        mes_line_skip(l);
+        c = 0;
+        for (i = 0; i < 2; i++) {
+            d = mes_util_hex(mes_line_peekn(l, i));
+            if (d < 0)
+                return 'x';
+            c = (c << 4) | d;
+        }
+        mes_line_skipn(l, 2);
+        return c;
+    default:
+        d = mes_util_octal(c);
+        i = c < '4';
+        i += 2;
+        c = 0;
+        if (d < 0) {
+            c = l->quote;
+            break;
+        }
+        while (i-- > 0 && (d = mes_util_octal(mes_line_peek(l))) >= 0) {
+            c = c * 8 + d;
+            mes_line_skip(l);
+        }
+        return c;
+    }
+    mes_line_skip(l);
+    return c;
+}
 
 void mes_lex_single_line_comment(MesLine *l)
 {
@@ -122,7 +191,25 @@ int mes_lex_string(MesLex *lx)
     return 0x69;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_lex", mes_lex_regex);
+int mes_lex_regex(MesLex *lx, int eq)
+{
+    MesLine *l = lx->line;
+    int esc;
+    int c;
+
+    lx->str->len = 0;
+    if (eq)
+        mes_util_string_put(lx->str, '=');
+    esc = 0;
+    while (!l->eof && (c = mes_line_peek(l)) != '\n' && (esc || c != '/')) {
+        mes_util_string_put(lx->str, c);
+        mes_line_skip(l);
+        esc = !esc && c == '\\';
+    }
+    if (!l->eof && c == '/')
+        mes_line_skip(l);
+    return 0x6A;
+}
 
 int mes_lex_regex_flags(MesLex *lx)
 {
