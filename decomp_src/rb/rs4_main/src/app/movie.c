@@ -13,11 +13,29 @@ extern unsigned char D_000FDC3C;
 extern unsigned char D_000FDC44;
 extern int MovSema;
 extern unsigned char ThrMovie;
-extern unsigned char movAudio;
+void movAudio(void);
 int sceMpegFinish();                                /* extern */
 int semaTerm(int);                                  /* extern */
 M2C_UNK semaLock(int);                              /* extern */
 M2C_UNK semaUnlock(int);
+extern char *StreamPtr;
+extern int StreamSize;
+void *memcpy(void *, const void *, unsigned int);
+typedef struct MovBlk { struct MovBlk *next; void *buf; } MovBlk;
+extern MovBlk *pHead, *pDrop;
+extern int AudioBlock;
+int _memFree();
+int sceWaveAudioWriteBlocking(int, int, int, void *);
+void sceKernelDelayThread(int);
+void movLock(void);
+void movUnlock(void);
+extern unsigned char Mpeg, VideoAu;
+extern void *pVideoStream;
+extern void *pVideoRenderBuf[2];
+extern void *pVideoRender;
+extern int D_00119B74;
+int sceMpegGetAvcAu(void *, void *, void *, void *);
+int sceMpegAvcDecode(void *, void *, int, void *, int *);
 
 int movInit(void) {
     int temp_v0;
@@ -31,7 +49,7 @@ int movInit(void) {
         consPrintf(&D_000FDC20, &D_000FDC10, 0x63, "movInit", &D_000FDC44);
     }
     thrMake(&ThrMovie, 0x12, &D_000FDC3C);
-    thrEntry(&ThrMovie, &movAudio, 0, 0);
+    thrEntry(&ThrMovie, (M2C_UNK *)movAudio, 0, 0);
     return 1;
 }
 
@@ -82,4 +100,23 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/movie", movDecodeAudio);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/movie", movDraw);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/movie", movAudio);
+void movAudio(void)
+{
+	for (;;) {
+		if (pHead) {
+			if (sceWaveAudioWriteBlocking(1, 0x8000, 0x8000, pHead->buf) < 0) continue;
+			movLock();
+			if (pDrop) {
+				_memFree(pDrop->buf, &D_000FDC10, 0x231);
+				_memFree(pDrop, &D_000FDC10, 0x232);
+				pDrop = 0;
+				AudioBlock--;
+			}
+			pDrop = pHead;
+			if (pHead) pHead = pHead->next;
+			movUnlock();
+		} else {
+			sceKernelDelayThread(1000);
+		}
+	}
+}
