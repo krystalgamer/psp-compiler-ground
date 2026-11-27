@@ -46,7 +46,17 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sh_HDRMap", _ZN2
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sh_HDRMap", _ZN2sh6HDRMap22save_vert_distributionEv);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sh_HDRMap", _ZN2sh6HDRMap4saveEPKc);
+void sh::HDRMap::save(const char *name)
+{
+    if (_img.empty())
+        return;
+    textures::Texture t;
+    int unused[4];      /* textures::Texture is 0x54 bytes (base.hpp: 0x50) */
+    (void)unused;
+    _img.copy(t);
+    t.flipVertical();
+    t.save(name);
+}
 
 void sh::HDRMap::getUVf(float u, float v, float &r, float &g, float &b) const
 {
