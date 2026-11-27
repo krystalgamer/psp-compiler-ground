@@ -1,3 +1,5 @@
+/* SDK crt0 kernel_bridge.o: its Makefile builds with -O4 (= -O3) */
+/* cflags: -O3 */
 #include "common.h"
 
 /* declarations recovered from DWARF */
@@ -101,7 +103,11 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/kernel_bridge", _write);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/kernel_bridge", _close);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/kernel_bridge", _fstat);
+int _fstat(int file, struct stat *st)
+{
+	st->st_mode = 0x2000;
+	return 0;
+}
 
 int isatty(int file) {
     return 1;
@@ -152,7 +158,14 @@ int _execve(const char *filename, char *const *argv, char *const *envp)
 	return -1;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/kernel_bridge", __free_heap);
+int sceKernelFreePartitionMemory(SceUID);
+void __free_heap(void)
+{
+	if (mbid != 0) {
+		sceKernelFreePartitionMemory(mbid);
+		mbid = 0;
+	}
+}
 
 clock_t clock(void)
 {
@@ -173,7 +186,11 @@ clock_t _times(struct tms *buf)
 	return -1;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/kernel_bridge", sigfillset);
+int sigfillset(sigset_t *set)
+{
+	*set = ~0;
+	return 0;
+}
 
 int sigprocmask(int how, const sigset_t *set, sigset_t *oldset)
 {
