@@ -51,6 +51,7 @@ extern unsigned char mes_string_method;
 
 int mes_util_streq(const UCSChar *a, const UCSChar *b, int n);
 MesValue mes_eval_to_number(MesContext *ctx, MesValue v);
+extern MesValue D_00585288;
 MesValue mes_string_new(MesContext *ctx, const void *str, int len)
 {
     MesStr *s;
@@ -159,7 +160,48 @@ int mes_string_compare(MesStr *a, MesStr *b)
     return a->len - b->len;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_string", mes_string_add);
+MesValue mes_string_add(MesContext *ctx, MesValue a, MesValue b)
+{
+    MesStr *r;
+    MesStr *sa;
+    int la;
+    int lb;
+    UCSChar *d;
+
+    a = mes_eval_to_string(ctx, a);
+    *--ctx->sp = a;
+    b = mes_eval_to_string(ctx, b);
+    *--ctx->sp = b;
+    r = NULL;
+    if ((a & 3) == 3 && (b & 3) == 3) {
+        r = mes_gc_alloc(ctx, 1);
+        if (r != NULL) {
+            sa = (MesStr *)(a & ~3);
+            la = sa->len;
+            lb = ((MesStr *)(b & ~3))->len;
+            r->len = la + lb;
+            if (la + lb != 0) {
+                r->str = MEM_malloc(0, (la + lb) * sizeof(UCSChar));
+                d = r->str;
+                if (d != NULL) {
+                    if (la > 0) {
+                        mes_memory_copy(sa->str, d, la * sizeof(UCSChar));
+                        d += la;
+                    }
+                    if (lb > 0)
+                        mes_memory_copy(((MesStr *)(b & ~3))->str, d, lb * sizeof(UCSChar));
+                } else
+                    r = NULL;
+            } else
+                r->str = NULL;
+        } else
+            ctx->f14 = D_00585288;
+    }
+    ctx->sp += 2;
+    if (r != NULL)
+        return (MesValue)r | 3;
+    return 0;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
