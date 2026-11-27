@@ -70,9 +70,11 @@ typedef struct {
 	int dmg, hp, f28, f2c, f30, f34, f38, f3c;
 	int f40, f44;
 	float f48, f4c;
-	int f50[5];
+	int f50[4];
+	float f60;
 	float pos[3];		/* 0x64 */
-	int f70[(0x88 - 0x70) / 4];
+	float rot[3];		/* 0x70 */
+	int f7c[(0x88 - 0x7C) / 4];
 } BUFO_D;
 
 /* shield unit (0x30) and shields (0x131F90) */
@@ -184,7 +186,7 @@ typedef struct GMAIN {
 	int zclip[2], zwrap;	/* 0xEB79C */
 	int zako_gmo[4][11][3];	/* 0xEB7A8 */
 	int ucnt;		/* 0xEB9B8 */
-	float uclip[2];
+	int uclip[2];
 	int uwrap;
 	int ufo_gmo[2];		/* 0xEB9C8 */
 	int ufo_n;		/* 0xEB9D0 */

@@ -1440,7 +1440,61 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", bufo_f_move_an
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", bufo_dead_anime);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", boss_ufo_disp);
+typedef struct { int gmo; BUFO_D b; } BOSSW;
+void boss_ufo_disp(void)
+{
+	BOSSW *w;
+	BUFO_D *b;
+	GMO_T *g;
+
+	if (gmain.f1088 == 0 || gmain.ff28 != 13)
+		return;
+	gmain.uwrap = 0;
+	gmain.uclip[1] = gmain.uclip[0] = (&gmain.cam)->f4c;
+	while (gmain.uclip[0] <= 0.0f)
+		gmain.uclip[0] += gmain.f10bc - 0.0f;
+	while (gmain.uclip[0] >= gmain.f10bc)
+		gmain.uclip[0] -= gmain.f10bc - 0.0f;
+	while (gmain.uclip[1] <= 0.0f)
+		gmain.uclip[1] += gmain.f10bc - 0.0f;
+	while (gmain.uclip[1] >= gmain.f10bc)
+		gmain.uclip[1] -= gmain.f10bc - 0.0f;
+	if (gmain.uclip[0] < gmain.f10bc - 40.0f && 40.0f < gmain.uclip[0]) {
+		gmain.uclip[0] -= 40.0f;
+		gmain.uclip[1] += 40.0f;
+	} else {
+		gmain.uwrap = 1;
+		if (gmain.f10bc - 40.0f <= gmain.uclip[0]) {
+			gmain.uclip[0] -= 40.0f;
+			gmain.uclip[1] += 40.0f - gmain.f10bc;
+		} else {
+			gmain.uclip[0] -= 40.0f - gmain.f10bc;
+			gmain.uclip[1] += 40.0f;
+		}
+	}
+	w = (BOSSW *)&gmain.bufo_gmo;
+	if (w->gmo >= 0)
+		((GMO_T *)gmo)[w->gmo].f4 = 0;
+	b = &w->b;
+	if (b->f4 == 1)
+		return;
+	b->f0 = 1;
+	if (gmain.uwrap == 0) {
+		if (b->f48 < gmain.uclip[0] || gmain.uclip[1] < b->f48)
+			b->f0 = 0;
+	} else {
+		if (gmain.uclip[1] <= b->f48 && b->f48 <= gmain.uclip[0])
+			b->f0 = 0;
+	}
+	if (b->f0 != 0 && w->gmo >= 0) {
+		g = &((GMO_T *)gmo)[w->gmo];
+		((int *)g)[3] = gmain.ff64[b->f10 + 32];
+		g->f4 = 1;
+		*(L2V3 *)((int *)g + 8) = *(L2V3 *)&b->pos;
+		*(L2V3 *)((int *)g + 11) = *(L2V3 *)&b->rot;
+		((float *)g)[12] += b->f60;
+	}
+}
 
 typedef L2V3 BV3;
 void efc_ufohit_start(int dmg, float a, float x, float y, float z);
