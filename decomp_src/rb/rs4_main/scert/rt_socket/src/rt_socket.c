@@ -56,6 +56,9 @@ int rt_socket_get_version_string(void) {
     return gpszVersion_114A2C;
 }
 
+int sceNetInetConnect(int, void *, int);
+typedef struct { unsigned char len, family; unsigned short port; int addr; char zero[8]; } RtSin2;
+
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_socket/src/rt_socket", rcsid_10CFCC);
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_socket/src/rt_socket", header_rcsid_10D030);
@@ -302,7 +305,16 @@ int rt_socket_create_udp(int *s)
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_socket/src/rt_socket", rt_socket_accept_connection_udp);
+int rt_socket_accept_connection_udp(int s, char *a)
+{
+    RtSin2 sin;
+    memset(&sin, 0, sizeof sin);
+    sin.family = 2;
+    sin.port = __builtin_allegrex_wsbh(*(unsigned short *)(a + 4));
+    sin.addr = *(int *)(a + 8);
+    if (sceNetInetConnect(s, &sin, sizeof sin) != 0) return rt_socket_get_err_platform();
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_socket/src/rt_socket", rt_socket_read_data_udp);
 

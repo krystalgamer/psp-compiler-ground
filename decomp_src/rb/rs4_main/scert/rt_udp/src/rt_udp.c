@@ -266,7 +266,20 @@ loop_4:
     }
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_udp", rt_udp_find_free_connection);
+char *rt_udp_find_free_connection(char *u)
+{
+    char *c = *(char **)(u + 8);
+    unsigned int i;
+    for (i = 0; i < *(unsigned int *)(u + 0x60); i++, c += 0x90) {
+        if (*(int *)c == 0) {
+            memset(c, 0, 0x90);
+            *(int *)(c + 0x44) = RT_UDP_INACTIVITY_TIMEOUT;
+            *(int *)(c + 0x74) = i;
+            return c;
+        }
+    }
+    return NULL;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_udp", rt_udp_setup_packet_sub_header);
 

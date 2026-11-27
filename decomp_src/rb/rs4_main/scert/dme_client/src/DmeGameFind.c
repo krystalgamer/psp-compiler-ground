@@ -7,6 +7,10 @@ void LANFindSetLocalServer(int arg0, int arg1);
 extern int gnLocalServerPort;
 extern int gpNetLocalServerConnection;
 
+extern void *gpExchangeCallbackUserData;
+extern void (*gpfnLANFindExchangeCallback)(int *, int *, int);
+int SendLANFindReply();
+
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeGameFind", NetLANFindEnableExchange);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeGameFind", NetLANFind);
@@ -41,7 +45,18 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeGameFind",
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeGameFind", LANFindResultsPacketHandler);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeGameFind", SendLANFindResultsOnExchange);
+int SendLANFindResultsOnExchange(int *res, int *flag, int c)
+{
+    void (*cb)(int *, int *, int) = gpfnLANFindExchangeCallback;
+    res[0x2D] = (int)gpExchangeCallbackUserData;
+    *flag = 1;
+    res[0] = c;
+    if (cb != NULL) {
+        cb(res, flag, c);
+        if (*flag == 0) return 0;
+    }
+    return SendLANFindReply(flag + 1, res[1], c);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeGameFind", SendLANFindReply);
 
