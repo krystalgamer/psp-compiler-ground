@@ -68,11 +68,41 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_gim_control", I3rLayer__GetRep
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_gim_control", I3rLayer__GetRotate);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_gim_control", I3rLayer__SetOffset);
+int I3rLayer__SetOffset(void *l, int v)
+{
+	void *a;
+	if (I3rLayer__IsExistAdjustStq(l) == 0)
+		return 1;
+	a = I3rLayer__GetAdjustStq(l);
+	if (I3rAdjustStq__IsExistOffset(a) == 0)
+		return 1;
+	*(int *)I3rAdjustStq__GetOffset(a) = v;
+	return 0;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_gim_control", I3rLayer__SetRepeat);
+int I3rLayer__SetRepeat(void *l, int v)
+{
+	void *a;
+	if (I3rLayer__IsExistAdjustStq(l) == 0)
+		return 1;
+	a = I3rLayer__GetAdjustStq(l);
+	if (I3rAdjustStq__IsExistRepeat(a) == 0)
+		return 1;
+	*(int *)I3rAdjustStq__GetRepeat(a) = v;
+	return 0;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_gim_control", I3rLayer__SetRotate);
+int I3rLayer__SetRotate(void *l, int v)
+{
+	void *a;
+	if (I3rLayer__IsExistAdjustStq(l) == 0)
+		return 1;
+	a = I3rLayer__GetAdjustStq(l);
+	if (I3rAdjustStq__IsExistRotate(a) == 0)
+		return 1;
+	*(int *)I3rAdjustStq__GetRotate(a) = v;
+	return 0;
+}
 
 void I3dVecClearA();
 void I3dLightStatusParam__ClearA(int *f)
