@@ -1,6 +1,15 @@
 /* cflags: -Os -fno-strength-reduce */
 #include "common.h"
 #include "m2c_macros.h"
+M2C_UNK _memFree(void *, M2C_UNK *, M2C_UNK);       /* extern */
+extern signed char D_000FE460;
+extern unsigned char D_000FE498;
+extern unsigned char D_000FE4A0;
+extern unsigned char D_000FE4BC;
+extern unsigned char D_000FE4C8;
+extern unsigned char D_000FE4D4;
+extern unsigned char D_000FE4E8;
+
 void consPrintf(const char *, ...);
 extern unsigned char D_000FE464;
 extern unsigned char D_000FE474;
@@ -23,7 +32,37 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/save", D_000FE498);
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/save", D_000FE4A0);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/save", saveTerm);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+int saveTerm(void *arg0) {
+    M2C_UNK *temp_v0;
+
+    temp_v0 = "saveTerm";
+    consPrintf(&D_000FE460, temp_v0);
+    if (arg0 == NULL) {
+        consPrintf(&D_000FE474, &D_000FE464, 0x60, temp_v0, &D_000FE498);
+    }
+    if (M2C_FIELD(arg0, int *, 0) == 0) {
+        consPrintf(&D_000FE474, &D_000FE464, 0x61, temp_v0, &D_000FE4BC);
+    }
+    if (M2C_FIELD(arg0, int *, 4) == 0) {
+        consPrintf(&D_000FE474, &D_000FE464, 0x62, temp_v0, &D_000FE4C8);
+    }
+    if (M2C_FIELD(arg0, int *, 8) != 0) {
+        consPrintf(&D_000FE474, &D_000FE464, 0x63, temp_v0, &D_000FE4D4);
+    }
+    if (M2C_FIELD(arg0, void **, 0xC) == NULL) {
+        consPrintf(&D_000FE474, &D_000FE464, 0x64, temp_v0, &D_000FE4A0);
+    }
+    if (M2C_FIELD(arg0, int *, 4) != (M2C_FIELD(arg0, int *, 0) * 0x14B0)) {
+        consPrintf(&D_000FE474, &D_000FE464, 0x65, temp_v0, &D_000FE4E8);
+    }
+    _memFree(M2C_FIELD(arg0, void **, 0xC), &D_000FE464, 0x67);
+    _memFree(arg0, &D_000FE464, 0x68);
+    return 1;
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/save", D_000FE4BC);
 

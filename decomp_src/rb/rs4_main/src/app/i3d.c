@@ -1,6 +1,22 @@
 /* cflags: -Os -fno-strength-reduce */
 #include "common.h"
 #include "m2c_macros.h"
+extern signed char D_000FCC88;
+extern unsigned char D_000FCDC0;
+extern unsigned char D_000FCDCC;
+extern void *pI3dTrash;
+int I3cRoot__Unpack(int);                           /* extern */
+int sceKernelGetGPI();                              /* extern */
+extern signed char D_000FCDE0;
+extern signed char D_000FCE38;
+int taskProc(int, M2C_UNK, int *, M2C_UNK);         /* extern */
+extern unsigned char D_000FD24C;
+extern signed char D_000FD254;
+extern signed char D_000FD368;
+extern unsigned char D_000FD388;
+extern unsigned char D_000FD394;
+extern unsigned char D_000FD3A0;
+
 #ifndef NULL
 #define NULL ((void *)0)
 #endif
@@ -69,7 +85,28 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d", D_000FCDC0);
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d", D_000FCDCC);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d", i3dTerm);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+int i3dTerm(void) {
+    M2C_UNK *temp_v0;
+
+    temp_v0 = "i3dTerm";
+    consPrintf(&D_000FCC88, temp_v0);
+    if (pI3dTrash == NULL) {
+        consPrintf(&D_000FCC8C, &D_000FCCA8, 0x52, temp_v0, &D_000FCDC0);
+    }
+    if (pI3dRender == NULL) {
+        consPrintf(&D_000FCC8C, &D_000FCCA8, 0x53, temp_v0, &D_000FCDCC);
+    }
+    I3dRender__Destruct(pI3dRender);
+    _memFree(pI3dRender, &D_000FCCA8, 0x57);
+    pI3dRender = NULL;
+    _memFree(pI3dTrash, &D_000FCCA8, 0x5A);
+    pI3dTrash = NULL;
+    return 1;
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d", D_000FCDE0);
 
@@ -111,7 +148,25 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d", _i3dAsmMotOpt);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d", i3dAsmMot);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d", i3dAsmHit);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+int i3dAsmHit(void *arg0, int arg1) {
+    if (sceKernelGetGPI() & 1) {
+        consPrintf(&D_000FCDE0, "i3dAsmHit");
+    }
+    if (M2C_FIELD(arg0, unsigned char *, 0x19) != 2) {
+        consPrintf(&D_000FCC8C, &D_000FCCA8, 0x1FF, "i3dAsmHit", &D_000FCDF4);
+    }
+    if (I3cRoot__Unpack(M2C_FIELD(arg0, int *, 0)) != 0) {
+        consPrintf(&D_000FCC8C, &D_000FCCA8, 0x204, "i3dAsmHit", &D_000FCDB0);
+    }
+    if (sceKernelGetGPI() & 1) {
+        consPrintf(&D_000FCE38, "i3dAsmHit");
+    }
+    return arg1;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d", i3dReleaseImg);
 
@@ -343,7 +398,29 @@ int i3dFreeAttach(int p)
 	return 1;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d", i3dAttachGetInfo);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+int i3dAttachGetInfo(int arg0, int *arg1) {
+    int var_v0;
+    int var_v1;
+
+    if (arg1 == NULL) {
+        consPrintf(&D_000FCC8C, &D_000FCCA8, 0x564, "i3dAttachGetInfo", &D_000FD24C);
+    }
+    var_v0 = 0;
+    if (arg0 != 0) {
+        var_v0 = taskProc(arg0, 0x18, arg1, 0);
+    }
+    *arg1 = var_v0;
+    var_v1 = 1;
+    if (var_v0 == 0) {
+        consPrintf(&D_000FD254, 0);
+        var_v1 = 0;
+    }
+    return var_v1;
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d", D_000FD24C);
 
@@ -452,7 +529,29 @@ int i3dCollisionMovePrim(int arg0, int arg1, int arg2) {
     return 1;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d", i3dCollisionGetInfo);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+int i3dCollisionGetInfo(int arg0, int *arg1) {
+    int var_v0;
+    int var_v1;
+
+    if (arg1 == NULL) {
+        consPrintf(&D_000FCC8C, &D_000FCCA8, 0x6B3, "i3dCollisionGetInfo", &D_000FD24C);
+    }
+    var_v0 = 0;
+    if (arg0 != 0) {
+        var_v0 = taskProc(arg0, 0x19, arg1, 0);
+    }
+    *arg1 = var_v0;
+    var_v1 = 1;
+    if (var_v0 == 0) {
+        consPrintf(&D_000FD254, 0);
+        var_v1 = 0;
+    }
+    return var_v1;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d", _i3dTriIntersect);
 
@@ -532,7 +631,25 @@ void i3dBeginScene(void) {
     i3dSetTex(0, 0);
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d", i3dEndScene);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+void sceGuCallList(const void *list);
+
+void i3dEndScene(void) {
+    pI3dStage = 0;
+    if (I3dRender__GetTrashRest(pI3dRender) == 0) {
+        consPrintf(&D_000FD368, 0);
+        consPrintf(&D_000FCC8C, &D_000FCCA8, 0x787, &D_000FD388, &D_000FD394);
+    }
+    if (I3dRender__GetTrashOverRun(pI3dRender) != 0) {
+        consPrintf(&D_000FCC8C, &D_000FCCA8, 0x78C, &D_000FD388, &D_000FD3A0);
+    }
+    if (I3dRender__EndScene(pI3dRender) != 0) {
+        consPrintf(&D_000FCC8C, &D_000FCCA8, 0x791, &D_000FD388, &D_000FCDB0);
+    }
+    sceGuCallList(I3dRender__GetDisplayListStartPoint(pI3dRender));
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d", i3dMakeStage);
 

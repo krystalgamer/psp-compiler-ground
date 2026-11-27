@@ -1,6 +1,10 @@
 /* cflags: -Os -fno-strength-reduce */
 #include "common.h"
 #include "m2c_macros.h"
+int sceUmdUnRegisterUMDCallBack(int);               /* extern */
+extern signed char D_000FA8A4;
+extern int UmdUID;
+
 void consPrintf(const char *, ...);
 int sceUmdActivate(M2C_UNK, int);                   /* extern */
 extern unsigned char D_000FA7FC;
@@ -48,7 +52,24 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/dev/umd", D_000FA88C);
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/dev/umd", D_000FA898);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/umd", umdTerm);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+int umdTerm(void) {
+    M2C_UNK *temp_v0;
+
+    temp_v0 = "umdTerm";
+    consPrintf(&D_000FA8A4, temp_v0);
+    if (UmdStandby == 1) {
+        if (sceUmdUnRegisterUMDCallBack(UmdUID) != 0) {
+            consPrintf(&D_000FA7FC, &D_000FA818, 0x79, temp_v0, &D_000FA870);
+        }
+        UmdStandby = 0;
+        UmdUID = -1;
+    }
+    return 1;
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/dev/umd", D_000FA8A4);
 

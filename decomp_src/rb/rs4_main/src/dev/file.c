@@ -1,6 +1,10 @@
 /* cflags: -Os -fno-strength-reduce */
 #include "common.h"
 #include "m2c_macros.h"
+signed char *filePref(int);                                  /* extern */
+extern signed char D_000F9E68;
+extern unsigned char D_000F9E84;
+
 M2C_UNK semaLock(int);                              /* extern */
 extern int FileSema;
 M2C_UNK semaUnlock(int);
@@ -68,4 +72,35 @@ int fileReadPath(int a, int b)
 	return fileRead(filePath(a), b);
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/file", fileWrite);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+void sceKernelDcacheWritebackAll(void);
+int sceIoOpen(const char *name, int flag, int mode);
+int sceIoClose(int fd);
+int sceIoWrite(int fd, const void *buf, unsigned int nbyte);
+
+int fileWrite(int arg0, void *arg1, unsigned int arg2) {
+    int temp_v0_2;
+    int temp_v0_3;
+    signed char *temp_v0;
+
+    fileLock();
+    temp_v0 = filePref(arg0);
+    temp_v0_2 = sceIoOpen(temp_v0, 0x202, 0);
+    if (temp_v0_2 < 0) {
+        consPrintf("fd : %x %s\n", temp_v0_2, temp_v0);
+        consPrintf(&D_000F9E68, &D_000F9E84, 0x1FB, "fileWrite", "fd >= 0");
+    }
+    sceKernelDcacheWritebackAll();
+    temp_v0_3 = sceIoWrite(temp_v0_2, arg1, arg2);
+    if (temp_v0_3 != arg2) {
+        consPrintf(&D_000F9E68, &D_000F9E84, 0x204, "fileWrite", "Size == Len");
+    }
+    if (sceIoClose(temp_v0_2) != 0) {
+        consPrintf(&D_000F9E68, &D_000F9E84, 0x208, "fileWrite", "ret == SCE_KERNEL_ERROR_OK");
+    }
+    consPrintf("%p : 0x%08x : %s\n", arg1, temp_v0_3, temp_v0);
+    fileUnlock();
+    return 1;
+}

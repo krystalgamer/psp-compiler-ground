@@ -1,19 +1,49 @@
 /* cflags: -Os -fno-strength-reduce */
 #include "common.h"
+#include "m2c_macros.h"
+extern signed char D_000F9BF0;
+extern unsigned char Seed;
+
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/dev/cop", D_000F9BF0);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/cop", copInit);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/cop", copTerm);
+void copInit(void) {
+    consPrintf(&D_000F9BF0, "copInit");
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void copTerm(void) {
+    consPrintf(&D_000F9BF0, "copTerm");
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/cop", copSetSeed);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/cop", copSetSeedHL);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void copSetSeedHL(int arg0, int arg1) {
+    M2C_FIELD(&Seed, int *, 0) = arg0;
+    M2C_FIELD(&Seed, int *, 4) = arg1;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/cop", copGetSeed);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/cop", copGetSeedHL);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void copGetSeedHL(int *arg0, int *arg1) {
+    *arg0 = M2C_FIELD(&Seed, int *, 0);
+    *arg1 = M2C_FIELD(&Seed, int *, 4);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/cop", copRand);
 

@@ -1,6 +1,21 @@
 /* cflags: -Os -fno-strength-reduce */
 #include "common.h"
 #include "m2c_macros.h"
+int semaInit(M2C_UNK *);                            /* extern */
+extern unsigned char CtrlInfoT;
+extern unsigned char CtrlRingBuf;
+extern int CtrlSema;
+extern signed char D_000F9C44;
+extern unsigned char D_000F9C48;
+extern unsigned char D_000F9C7C;
+int semaTerm(int);                                  /* extern */
+M2C_UNK semaLock(int);                              /* extern */
+M2C_UNK semaUnlock(int);                            /* extern */
+extern int CtrlSuspend;
+extern int CtrlVirtualType;
+int ctrlFlushCtrlData(int);                         /* extern */
+int ctrlFlushVirtualData(unsigned int);                      /* extern */
+
 void consPrintf(const char *, ...);
 extern unsigned char CtrlInfo;
 extern unsigned char D_000F9C50;
@@ -22,7 +37,32 @@ extern int CtrlEnter;
 
 extern int CtrlCancel;
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/ctrl", ctrlInit);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int sceCtrlSetSamplingCycle(int cycle);
+int sceCtrlSetSamplingMode(int mode);
+void *memset(void *s, int c, unsigned int n);
+
+int ctrlInit(void) {
+    M2C_UNK *temp_s0;
+    int temp_v0;
+
+    temp_s0 = "ctrlInit";
+    consPrintf(&D_000F9C44, temp_s0);
+    sceCtrlSetSamplingCycle(0);
+    sceCtrlSetSamplingMode(1);
+    memset(&CtrlInfo, 0, 0xA0U);
+    memset(&CtrlInfoV, 0, 0x140U);
+    memset(&CtrlInfoT, 0, 0x140U);
+    memset(&CtrlRingBuf, 0, 0x1020U);
+    temp_v0 = semaInit(&D_000F9C48);
+    CtrlSema = temp_v0;
+    if (temp_v0 <= 0) {
+        consPrintf(&D_000F9C50, &D_000F9C6C, 0x71, temp_s0, &D_000F9C7C);
+    }
+    return 1;
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/dev/ctrl", D_000F9C44);
 
@@ -34,23 +74,113 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/dev/ctrl", D_000F9C6C);
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/dev/ctrl", D_000F9C7C);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/ctrl", ctrlTerm);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/ctrl", ctrlLock);
+int ctrlTerm(void) {
+    M2C_UNK *temp_s0;
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/ctrl", ctrlUnlock);
+    temp_s0 = "ctrlTerm";
+    consPrintf(&D_000F9C44, temp_s0);
+    if (semaTerm(CtrlSema) != 1) {
+        consPrintf(&D_000F9C50, &D_000F9C6C, 0x80, temp_s0, "Ret == TRUE");
+    }
+    CtrlSema = -1;
+    return 1;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/ctrl", ctrlSuspend);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/ctrl", ctrlSetVirtualType);
+void ctrlLock(void) {
+    if (CtrlSema > 0) {
+        semaLock(CtrlSema);
+    }
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void ctrlUnlock(void) {
+    if (CtrlSema > 0) {
+        semaUnlock(CtrlSema);
+    }
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+int ctrlSuspend(int arg0) {
+    int temp_v0;
+
+    temp_v0 = CtrlSuspend;
+    CtrlSuspend = arg0;
+    return temp_v0;
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+int ctrlSetVirtualType(int arg0) {
+    int temp_s1;
+
+    temp_s1 = CtrlVirtualType;
+    if (arg0 < 0) {
+        consPrintf(&D_000F9C50, &D_000F9C6C, 0xB4, "ctrlSetVirtualType", "Type >= CtrlVirtualType_Exclusive");
+    }
+    if (arg0 >= 4) {
+        consPrintf(&D_000F9C50, &D_000F9C6C, 0xB5, "ctrlSetVirtualType", "Type < CtrlVirtualType_Num");
+    }
+    CtrlVirtualType = arg0;
+    return temp_s1;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/ctrl", ctrlFlushCtrlData);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/ctrl", ctrlFlushCtrlDataAll);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+int ctrlFlushCtrlDataAll(void) {
+    int temp_v0;
+    int var_s0;
+    int var_s1;
+
+    var_s1 = 0;
+    var_s0 = 0;
+    do {
+        temp_v0 = ctrlFlushCtrlData(var_s0);
+        var_s0 += 1;
+        var_s1 |= temp_v0;
+    } while (var_s0 == 0);
+    return var_s1;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/ctrl", ctrlFlushVirtualData);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/ctrl", ctrlFlushVirtualDataAll);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+int ctrlFlushVirtualDataAll(void) {
+    int var_s1;
+    unsigned int temp_a0;
+    unsigned int var_s0;
+
+    var_s1 = 0;
+    var_s0 = 0;
+    do {
+        temp_a0 = var_s0;
+        var_s0 += 1;
+        var_s1 |= ctrlFlushVirtualData(temp_a0);
+    } while (var_s0 < 2U);
+    return var_s1;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/ctrl", ctrlSetVirtualData);
 

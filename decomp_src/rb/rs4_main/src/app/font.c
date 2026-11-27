@@ -1,6 +1,12 @@
 /* cflags: -Os -fno-strength-reduce */
 #include "common.h"
 #include "m2c_macros.h"
+int sceFontClose(int);                              /* extern */
+int sceFontDoneLib(int);                            /* extern */
+extern unsigned char D_000FC438;
+extern int FontID;
+extern int LibID;
+
 #ifndef NULL
 #define NULL ((void *)0)
 #endif
@@ -61,7 +67,25 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/font", D_000FC494);
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/font", D_000FC498);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/font", fontTerm);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+int fontTerm(void) {
+    M2C_UNK *temp_v0;
+
+    temp_v0 = "fontTerm";
+    consPrintf("%s\n", temp_v0);
+    if (sceFontClose(FontID) != 0) {
+        consPrintf(&D_000FC41C, &D_000FC3F8, 0xC9, temp_v0, &D_000FC438);
+    }
+    FontID = 0;
+    if (sceFontDoneLib(LibID) != 0) {
+        consPrintf(&D_000FC41C, &D_000FC3F8, 0xCE, temp_v0, &D_000FC438);
+    }
+    LibID = 0x8046FFFF;
+    return 0;
+}
 
 int fontSetPgfResource(int arg0) {
     if (arg0 == 0) {

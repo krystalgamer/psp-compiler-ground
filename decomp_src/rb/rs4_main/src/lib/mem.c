@@ -1,6 +1,13 @@
 /* cflags: -Os -fno-strength-reduce */
 #include "common.h"
 #include "m2c_macros.h"
+int semaTerm(int);                                  /* extern */
+extern signed char D_000FACF8;
+extern unsigned char D_000FAD14;
+extern unsigned char D_000FAD44;
+extern int pFree;
+extern void *pHeap;
+
 #ifndef NULL
 #define NULL ((void *)0)
 #endif
@@ -40,7 +47,32 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/lib/mem", D_000FAD64);
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/lib/mem", D_000FAD7C);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/lib/mem", memTerm);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+void free(void *p);
+
+int memTerm(void) {
+    M2C_UNK *temp_v0;
+
+    temp_v0 = "memTerm";
+    consPrintf("%s : 0x%08x\n", temp_v0, pHeap);
+    if (pHeap == NULL) {
+        consPrintf(&D_000FACF8, &D_000FAD14, 0x8F, temp_v0, &D_000FAD44);
+    }
+    memLock();
+    free(pHeap);
+    pRoot = 0;
+    pAlloc = 0;
+    pFree = 0;
+    pHeap = NULL;
+    memUnlock();
+    if (semaTerm(MemSema) != 1) {
+        consPrintf(&D_000FACF8, &D_000FAD14, 0x9E, temp_v0, "Ret == TRUE");
+    }
+    MemSema = -1;
+    return 1;
+}
 
 void memLock(void) {
     if (MemSema > 0) {

@@ -1,6 +1,12 @@
 /* cflags: -Os -fno-strength-reduce */
 #include "common.h"
 #include "m2c_macros.h"
+M2C_UNK databaseFameRefresh();                      /* extern */
+extern signed char D_001025CC;
+extern signed char D_001026FC;
+extern unsigned char D_00102718;
+extern signed char D_00102728;
+
 M2C_UNK cardlistCpyTtr2Ucs4(int, int, int, M2C_UNK); /* extern */
 int resGetDatLocal(M2C_UNK, M2C_UNK);               /* extern */
 extern int l_nAssortNum;
@@ -56,7 +62,23 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/database", D_00102
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/database", D_00102748);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/database", databaseRefresh);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+int databaseRefresh(void) {
+    M2C_UNK *temp_v0;
+
+    temp_v0 = "databaseRefresh";
+    consPrintf(&D_001026FC, temp_v0);
+    if (l_patAssortDB == 0) {
+        consPrintf(&D_001025CC, &D_001025E8, 0x95, temp_v0, &D_00102718);
+    }
+    databaseFameRefresh();
+    databaseAssortNameRefresh();
+    consPrintf(&D_00102728, temp_v0);
+    return 1;
+}
 
 int databaseTerm(void) {
     if (l_patAssortDB != 0) {

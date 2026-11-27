@@ -1,8 +1,20 @@
 /* cflags: -Os -fno-strength-reduce */
 #include "common.h"
+#include "m2c_macros.h"
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/core", coreInit);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/core", coreTerm);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int coreInit(void) {
+    return 1;
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int coreTerm(void) {
+    return 1;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/core", coreFunc);
