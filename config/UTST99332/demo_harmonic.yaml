@@ -403,6 +403,8 @@ segments:
       - [0x1656F4, rodata, asm/rodata_165674]
       - [0x165B9C, .rodata, main_objs/math_safe_acosf]
       - [0x165BA4, rodata, asm/rodata_165B24]
+      - [0x165F44, .rodata, main_objs/math_quaternion_quaternion]
+      - [0x165F50, rodata, asm/rodata_165ED0]
       - [0x169A60, .rodata, main_objs/draw_mesh_enabled]
       - [0x169A70, rodata, asm/rodata_1699F0]
       - [0x16A754, .rodata, main_objs/VertexColorEnv]

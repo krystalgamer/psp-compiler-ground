@@ -83,6 +83,9 @@ rodata 0x173374 -
 # math_safe_acosf: the float pool (pi, 2 pi) of math::angle::Relative
 rodata 0x165B1C main_objs/math_safe_acosf
 rodata 0x165B24 -
+# math_quaternion_quaternion: the float pools (quaternion()'s 1.0f) of quaternion operator*, -=, *=
+rodata 0x165EC4 main_objs/math_quaternion_quaternion
+rodata 0x165ED0 -
 # interp_KeyFrameSequence: the float pools of KeyFrameSequence<quaternion>::calc_tangent, evaluate, op_identity
 rodata 0x16495C main_objs/interp_KeyFrameSequence
 rodata 0x16496C -
