@@ -1,0 +1,153 @@
+name: zzzzdummy (selfboot)
+sha1: 2aa3744cd51215642ab8b68ab082952c8f88ae59
+options:
+  basename: zzzzdummy
+  target_path: tmp/baserom/selfboot/zzzzdummy.prx
+  elf_path: tmp/build/selfboot/zzzzdummy.elf
+  base_path: ../..
+  platform: psp
+  compiler: GCC
+
+  asm_path: tmp/asm/selfboot/zzzzdummy
+  src_path: decomp_src/selfboot/zzzzdummy
+  build_path: tmp/build/selfboot
+  ld_script_path: tmp/build/selfboot/zzzzdummy.ld
+  cache_path: tmp/build/selfboot/.splat_cache.zzzzdummy
+  symbol_addrs_path:
+    - config/selfboot/symbol_addrs.zzzzdummy.txt
+    - tmp/build/selfboot/prx_syms.zzzzdummy.txt
+  reloc_addrs_path: [tmp/build/selfboot/reloc_addrs.zzzzdummy.txt]
+  asset_path: tmp/assets/selfboot/zzzzdummy
+  extensions_path: tools/splat_ext
+  undefined_funcs_auto_path: tmp/build/selfboot/undefined_funcs_auto.zzzzdummy.txt
+  undefined_syms_auto_path: tmp/build/selfboot/undefined_syms_auto.zzzzdummy.txt
+
+  find_file_boundaries: false
+  section_order: [".text", ".data", ".rodata", ".bss"]
+  migrate_rodata_to_functions: true
+  use_legacy_include_asm: false
+  generate_asm_macros_files: false
+  asm_function_macro: glabel
+  asm_jtbl_label_macro: jlabel
+  asm_data_macro: dlabel
+  asm_end_label: endlabel
+  string_encoding: ASCII
+  data_string_encoding: ASCII
+  rodata_string_guesser_level: 2
+  data_string_guesser_level: 2
+  gp_value: 0x87B0
+  add_set_gp_64: false
+  named_regs_for_c_funcs: false
+  ld_bss_is_noload: true
+  emit_subalign: false
+  ld_align_segment_vram_end: false
+  ld_align_section_vram_end: false
+  disasm_unknown: true
+  global_vram_start: 0x0
+  global_vram_end: 0xB388
+
+segments:
+  - [0x0, bin, elf_header]
+  - name: zzzzdummy
+    type: code
+    start: 0x80
+    vram: 0x0
+    subsegments:
+      - { start: 0x80, type: asm, name: init, linker_section: .init }
+      - { start: 0xA4, type: prxpad, order: .text }
+      - [0xC0, asm, asm/text_40]
+      - [0x1A8, c, crt0]
+      - [0x470, c, loadexec]
+      - [0x5D0, c, kernel_bridge]
+      - [0xB7C, c, newlib/libc/stdlib/atexit]
+      - [0xC24, c, newlib/libc/stdlib/exit]
+      - [0xD14, c, newlib/libc/stdlib/malloc]
+      - [0xD60, c, newlib/libc/stdlib/mallocr/malloc_extend_top]
+      - [0x1508, c, newlib/libc/machine/mips/memset]
+      - [0x15C0, c, newlib/libc/sys/psp/mlock]
+      - [0x1638, c, newlib/libc/stdio/printf]
+      - [0x16C0, c, newlib/libc/reent/sbrkr]
+      - [0x171C, c, newlib/libc/machine/mips/strlen]
+      - [0x1734, c, newlib/libc/stdio/vfprintf]
+      - [0x3548, c, newlib/libc/stdlib/wcrtomb]
+      - [0x35E8, c, newlib/libc/stdlib/wcsrtombs]
+      - [0x3780, c, newlib/libc/stdlib/wctomb_r]
+      - [0x3BE0, c, newlib/libc/stdio/wsetup]
+      - [0x3CF4, c, newlib/libc/stdlib/dtoa]
+      - [0x52D0, c, newlib/libc/stdio/fflush]
+      - [0x53C4, c, newlib/libc/stdio/findfp]
+      - [0x563C, c, newlib/libc/stdlib/mallocr/_free_r]
+      - [0x5A10, c, newlib/libc/stdio/fvwrite]
+      - [0x5DFC, c, newlib/libc/stdio/fwalk]
+      - [0x5F04, c, newlib/libc/locale/locale]
+      - [0x5FFC, c, newlib/libc/stdio/makebuf]
+      - [0x6154, c, newlib/libc/string/memchr]
+      - [0x623C, c, newlib/libc/machine/mips/memcpy]
+      - [0x6380, c, newlib/libc/sys/psp/memmove]
+      - [0x6760, asm, asm/text_66E0]
+      - [0x6780, c, newlib/libc/stdlib/mprec]
+      - [0x7684, c, newlib/libc/stdlib/mallocr/_realloc_r]
+      - [0x7BF4, c, newlib/libc/reent/reent]
+      - [0x7E10, c, newlib/libm/math/s_isinf]
+      - [0x7E4C, c, newlib/libm/math/s_isnan]
+      - [0x7E78, c, newlib/libc/stdio/stdio]
+      - [0x7FF8, c, newlib/libc/machine/mips/strcmp]
+      - [0x806C, c, newlib/libc/reent/writer]
+      - [0x80D4, c, newlib/libc/stdlib/mallocr/_calloc_r]
+      - [0x8194, c, newlib/libc/reent/closer]
+      - [0x81F0, c, newlib/libc/reent/fstatr]
+      - [0x8254, c, newlib/libc/reent/lseekr]
+      - [0x82BC, c, newlib/libc/reent/readr]
+      - [0x8324, asm, asm/text_82A4]
+      - [0x834C, c, libgcc/libgcc2/__udivdi3]
+      - [0x889C, c, libgcc/libgcc2/__umoddi3]
+      - [0x8E24, c, libgcc/dp-bit/_fpadd_parts]
+      - [0x9248, c, libgcc/dp-bit/__muldf3]
+      - [0x95C0, c, libgcc/dp-bit/__divdf3]
+      - [0x97E4, c, libgcc/dp-bit/__eqdf2]
+      - [0x986C, c, libgcc/dp-bit/__nedf2]
+      - [0x98F4, c, libgcc/dp-bit/__gtdf2]
+      - [0x997C, c, libgcc/dp-bit/__gedf2]
+      - [0x9A04, c, libgcc/dp-bit/__ltdf2]
+      - [0x9A8C, c, libgcc/dp-bit/__floatsidf]
+      - [0x9B68, c, libgcc/dp-bit/__fixdfsi]
+      - [0x9C38, c, libgcc/dp-bit/__negdf2]
+      - [0x9C7C, c, libgcc/dp-bit/__pack_d]
+      - [0x9F18, c, libgcc/dp-bit/__unpack_d]
+      - [0xA034, c, libgcc/dp-bit/__fpcmp_parts_d]
+      - [0xA184, c, crtend]
+      - { start: 0xA1DC, type: asm, name: fini, linker_section: .fini }
+      - { start: 0xA1F8, type: asm, name: sceStub, linker_section: .sceStub.text }
+      - { start: 0xA2A8, type: prxpad, order: .text }
+      - { start: 0xA2B0, type: rodata, name: lib_ent_top, linker_section: .lib.ent.top }
+      - { start: 0xA2B4, type: rodata, name: lib_ent, linker_section: .lib.ent }
+      - { start: 0xA2C4, type: rodata, name: lib_stub, linker_section: .lib.stub }
+      - { start: 0xA378, type: rodata, name: module_info, linker_section: .rodata.sceModuleInfo }
+      - { start: 0xA3AC, type: rodata, name: resident, linker_section: .rodata.sceResident }
+      - { start: 0xA490, type: rodata, name: nid, linker_section: .rodata.sceNid }
+      - { start: 0xA4E8, type: rodata, name: ctors, linker_section: .ctors }
+      - { start: 0xA4F0, type: rodata, name: dtors, linker_section: .dtors }
+      - { start: 0xA4F8, type: rodata, name: jcr, linker_section: .jcr }
+      - { start: 0xA4FC, type: rodata, name: eh_frame, linker_section: .eh_frame }
+      - [0xA560, .rodata, crt0]
+      - [0xA570, .rodata, loadexec]
+      - [0xA61C, .rodata, kernel_bridge]
+      - [0xA624, rodata, asm/rodata_A5A4]
+      - [0xA628, .rodata, newlib/libc/stdio/vfprintf]
+      - [0xA808, .rodata, newlib/libc/stdlib/wctomb_r]
+      - [0xA828, .rodata, newlib/libc/stdlib/dtoa]
+      - [0xA8A8, .rodata, newlib/libc/locale/locale]
+      - [0xA8F0, .rodata, newlib/libc/stdlib/mprec]
+      - [0xAA28, .rodata, libgcc/dp-bit/__floatsidf]
+      - [0xAA30, .rodata, libgcc/dp-bit/__pack_d]
+  - [0xAB48, bin, seg1_align]
+  - name: zzzzdummy_seg1
+    type: code
+    start: 0xAB50
+    vram: 0xAAD0
+    bss_size: 0xEC
+    subsegments:
+      - [0xAB50, data, data]
+      - { start: 0xB30C, type: bss, vram: 0xB290 }
+  - [0xB30C, bin, elf_trailer]
+  - [0x6C234]

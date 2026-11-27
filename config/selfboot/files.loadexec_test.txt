@@ -1,0 +1,26 @@
+# Objects without DWARF: start address (vram), unit, compiler, source.
+# STT_FILE symbols: crt0.c loadexec.c kernel_bridge.c, then libgcc (no STT_FILE for libgcc2).
+0x0046C kernel_bridge   1.5.1.internal  kernel_bridge.c
+# libgcc: libgcc2 _udivdi3.o/_umoddi3.o and the dp-bit objects, one per function
+0x08224 __udivdi3        1.5.1.internal  libgcc/libgcc2/__udivdi3.c
+0x08774 __umoddi3        1.5.1.internal  libgcc/libgcc2/__umoddi3.c
+0x08CFC _fpadd_parts     1.5.1.internal  libgcc/dp-bit/_fpadd_parts.c
+0x09120 __muldf3         1.5.1.internal  libgcc/dp-bit/__muldf3.c
+0x09498 __divdf3         1.5.1.internal  libgcc/dp-bit/__divdf3.c
+0x096BC __eqdf2          1.5.1.internal  libgcc/dp-bit/__eqdf2.c
+0x09744 __nedf2          1.5.1.internal  libgcc/dp-bit/__nedf2.c
+0x097CC __gtdf2          1.5.1.internal  libgcc/dp-bit/__gtdf2.c
+0x09854 __gedf2          1.5.1.internal  libgcc/dp-bit/__gedf2.c
+0x098DC __ltdf2          1.5.1.internal  libgcc/dp-bit/__ltdf2.c
+0x09964 __floatsidf      1.5.1.internal  libgcc/dp-bit/__floatsidf.c
+0x09A40 __fixdfsi        1.5.1.internal  libgcc/dp-bit/__fixdfsi.c
+0x09B10 __negdf2         1.5.1.internal  libgcc/dp-bit/__negdf2.c
+0x09B54 __pack_d         1.5.1.internal  libgcc/dp-bit/__pack_d.c
+0x09DF0 __unpack_d       1.5.1.internal  libgcc/dp-bit/__unpack_d.c
+0x09F0C __fpcmp_parts_d  1.5.1.internal  libgcc/dp-bit/__fpcmp_parts_d.c
+# crtend.o: __do_global_ctors_aux
+0x0A05C crtend          1.5.1.internal  crtend.c
+rodata 0xA49C kernel_bridge
+rodata 0xA8A8 libgcc/dp-bit/__floatsidf
+rodata 0xA8B0 libgcc/dp-bit/__pack_d
+rodata 0xA4A4 -    # "C" (_impure_data, impure.o has no code), not malloc.c
