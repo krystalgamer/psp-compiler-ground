@@ -22,7 +22,9 @@ SceInt32 strFileClose(StrFile *file);
 SceInt32 strFileWrite(StrFile *file, SceVoid *buff, SceInt32 size);
 SceOff strFileLseek(StrFile *file, SceOff offset, SceInt32 whence);
 
-extern char D_0007AF2C[];
+const char D_0007AF24[] = "host0:";
+const char D_0007AF2C[] = "disc0:";
+const char D_0007AF34[] = "ms0:";
 int memcmp(const void *a, const void *b, unsigned int n);
 char *strcpy(char *d, const char *s);
 int strcmp(const char *a, const char *b);
@@ -41,7 +43,25 @@ SceInt32 DvdUmdRetryReadCB(SceUID fd, void *readbuf, unsigned int readsize);
 static SceUID sceIoOpenCB(const char *name, int flags, int mode);
 static int sceIoReadCB_1017C(SceUID fd, void *buf, unsigned int nbyte);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/mpeg/strfile", strFileAssign);
+SceInt32 strFileAssign(StrFile *file, const SceChar8 *filename)
+{
+	SceInt32 ret;
+
+	if (memcmp(filename, D_0007AF24, 6) == 0) {
+		__builtin_memcpy(file->assignName, D_0007AF24, 7);
+	} else if (memcmp(filename, D_0007AF2C, 6) == 0) {
+		__builtin_memcpy(file->assignName, D_0007AF2C, 7);
+		ret = sceUmdActivate(1, D_0007AF2C);
+		if (ret < 0)
+			return -1;
+		DvdUmdIoInit();
+	} else if (memcmp(filename, D_0007AF34, 4) == 0) {
+		__builtin_memcpy(file->assignName, D_0007AF34, 5);
+	} else {
+		return -1;
+	}
+	return 1;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/mpeg/strfile", strFileOpen);
 
@@ -136,8 +156,5 @@ static int sceIoReadCB_1017C(SceUID fd, void *buf, unsigned int nbyte)
 	return ret;
 }
 
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/mpeg/strfile", D_0007AF24);
 
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/mpeg/strfile", D_0007AF2C);
 
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/mpeg/strfile", D_0007AF34);
