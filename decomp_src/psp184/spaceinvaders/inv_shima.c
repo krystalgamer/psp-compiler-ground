@@ -152,7 +152,56 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_shima", SprMoveTamaSu
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_shima", SprMoveTamaSub2);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_shima", SprMoveTama);
+typedef struct SPRT_T { int f0, f4, f8, fc, f10, f14, f18, f1c, f20, f24, f28, f2c, f30, f34, f38, f3c; u8 pad[0x84 - 0x40]; int f84; u8 pad2[0x94 - 0x88]; struct SPRT_T *next; } SPRT_T;
+void SprMoveTamaSub(int tex, int pl);
+void SprMoveTamaSub2(void);
+int hato(int cur, int target, int shift);
+void SprMoveTama(int mode, int cnt)
+{
+	SPRT_T *s;
+	int tex, pl;
+
+	if (mode == 0) {
+		if (nowplay == 0) {
+			tex = ptexdis1[screen_sw][7];
+			pl = 0;
+		} else {
+			tex = ptexdis2[screen_sw][7];
+			pl = 1;
+		}
+		if (SprHeadGet()) {
+			for (s = (SPRT_T *)SprHeadGet(); s; s = s->next) {
+				if (s->fc) {
+					if ((SPRT_T *)ztama[pl].f10 == s || cnt % 3 == 0) {
+						s->f28 += s->f38;
+						s->f2c += s->f3c;
+					}
+				}
+			}
+			SprMoveTamaSub(tex, pl);
+		}
+	} else if (mode == 1) {
+		if (SprHeadGet()) {
+			for (s = (SPRT_T *)SprHeadGet(); s; s = s->next) {
+				if (s->fc) {
+					if ((SPRT_T *)ztama[0].f10 == s) {
+						s->f28 += s->f38;
+						s->f2c += s->f3c;
+						s->f84 = hato(s->f84, 0, 6);
+					} else if ((SPRT_T *)ztama[1].f10 == s) {
+						s->f28 += s->f38;
+						s->f2c += s->f3c;
+						s->f84 = hato(s->f84, 0, 6);
+					} else if (cnt % 3 == 0) {
+						s->f28 += s->f38;
+						s->f2c += s->f3c;
+					}
+				}
+			}
+			SprMoveTamaSub2();
+		}
+	}
+}
 
 typedef struct SPRM_T { int f0, f4, f8, fc, f10, f14, f18, f1c, f20, f24, f28, f2c, f30, f34, f38, f3c, f40, f44, f48, f4c, f50, f54, f58, f5c; u8 pad[0x94 - 0x60]; struct SPRM_T *next; } SPRM_T;
 int classic_inv_enemy_chk(int pl);
