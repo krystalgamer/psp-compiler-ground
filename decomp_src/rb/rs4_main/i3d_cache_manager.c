@@ -2,7 +2,6 @@
 #include "m2c_macros.h"
 M2C_UNK I3dResourceTag__PurgeCache();               /* extern */
 M2C_UNK I3dCacheManager__CreateNewMemBlockAsGarbage(int, int, int); /* extern */
-M2C_UNK I3dCacheManager__ClearAllKeepAttr(int);     /* extern */
 M2C_UNK I3dVecClear(int);                           /* extern */
 M2C_UNK I3dPicture__FlushCache(void *);             /* extern */
 M2C_UNK sceGimPictureDelete(int);                   /* extern */
@@ -147,7 +146,22 @@ int I3dCacheManager__ClearAllMarkAttr(char *cm)
 	return 0;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_cache_manager", I3dCacheManager__ClearAllKeepAttr);
+typedef struct MBLnk8 { struct MBk8 *next, *prev; } MBLnk8;
+typedef struct MBk8 { MBLnk8 l[6]; unsigned int attr; int f34; int size; } MBk8;
+int I3dCacheManager__ClearAllKeepAttr(char *cm)
+{
+	MBk8 *h = (MBk8 *)(cm + 0x18);
+	MBk8 *b = ((MBk8 *)(cm + 0x18))->l[2].prev;
+	MBk8 *n;
+	while (b != h) {
+		b->attr &= ~0x100;
+		n = b->l[2].prev;
+		I3dMemBlock__RemoveList(b, 2);
+		*(int *)(cm + 8) -= b->size;
+		b = n;
+	}
+	return 0;
+}
 
 typedef struct MBLnk6 { struct MBk6 *next, *prev; } MBLnk6;
 typedef struct MBk6 { MBLnk6 l[6]; unsigned int attr; } MBk6;

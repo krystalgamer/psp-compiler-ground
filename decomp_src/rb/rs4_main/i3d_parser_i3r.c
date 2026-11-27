@@ -1,9 +1,17 @@
 #include "common.h"
 #include "m2c_macros.h"
-M2C_UNK I3dSearchName(int, unsigned short, int);               /* extern */
 
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_parser_i3r", I3dSearchName);
+int strcmp(const char *, const char *);
+int I3dSearchName(char **tbl, unsigned int n, char *name)
+{
+	unsigned int i;
+	for (i = 0; i < n; i++) {
+		if (strcmp(tbl[i], name) == 0)
+			return i;
+	}
+	return -1;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)

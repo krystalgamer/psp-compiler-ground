@@ -73,7 +73,18 @@ void I3dSortStrictStable(void *a, void *b, void *c, unsigned int n)
 		RadixSort(a, b, c);
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_sorter", I3dSorter__Construct);
+int I3dSorter__Construct(int *s, int a, int b, int c, int d)
+{
+	I3dSortTag__ConstructAsHead(s);
+	s[4] = a;
+	s[5] = b;
+	s[6] = c;
+	s[7] = d;
+	s[8] = 0;
+	s[9] = 0;
+	s[10] = 0;
+	return 0;
+}
 
 int I3dRender__ProcessSortTagCmd_Recursive();
 int I3dRender__SortTagCmdProc_Call(void *r, char *t)

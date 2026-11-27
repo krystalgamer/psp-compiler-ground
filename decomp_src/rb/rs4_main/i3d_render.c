@@ -163,7 +163,12 @@ int I3dRender__AdjustScissor(void *arg0, float fparg0) {
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_render", I3dRender__CreateRenderStage);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_render", I3dRender__CreateSorter);
+void *I3dRender__CreateSorter(void *r, int a, int b, int c)
+{
+	void *s = (void *)I3dRender__ReserveTrashQwc(r, 3);
+	I3dSorter__Construct(s, r, a, b, c);
+	return s;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
