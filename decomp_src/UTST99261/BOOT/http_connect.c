@@ -22,11 +22,34 @@ int sceHttpDeleteHeader(int id, const char *name);
 extern char htlib_cstrCONTENTLENGTH[];
 void http_connect_error_end(HttpObj *o);
 int sprintf(char *, const char *, ...);
+typedef struct HttpSrv { int f0; char *host; char *user; char *pass; char *path; int f14[3]; unsigned short port; } HttpSrv;
+int strcmp(const char *, const char *);
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/http_connect", http_connect);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/http_connect", http_connect_init);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/http_connect", http_connect_checkServer);
+int http_connect_checkServer(HttpSrv *a, HttpSrv *b)
+{
+    if (a->host == NULL || a->path == NULL || b->host == NULL || b->path == NULL)
+        return -1;
+    if (strcmp(a->host, b->host) != 0)
+        return -1;
+    if (a->user == NULL || b->user == NULL) {
+        if (a->user != NULL || b->user != NULL)
+            return -1;
+    } else if (strcmp(a->user, b->user) != 0)
+        return -1;
+    if (a->pass == NULL || b->pass == NULL) {
+        if (a->pass != NULL || b->pass != NULL)
+            return -1;
+    } else if (strcmp(a->pass, b->pass) != 0)
+        return -1;
+    if (strcmp(a->path, b->path) != 0)
+        return -1;
+    if (a->port != b->port)
+        return -1;
+    return 0;
+}
 
 int http_connect_SetAutoHead(int h, int body, unsigned int len, int method)
 {
