@@ -217,6 +217,29 @@ inline bool common::CmdLine::inList(const char *list) const
 }
 SGL_LINKONCE_END
 
+/* expanded before the instances below: the first inliner of the allocator (see requests.md FYI) */
+template<int> void main_alloc_first() __attribute__((section(".discard.instances")));
+template<int> void main_alloc_first()
+{
+    int never = 0;
+    if (never)
+        std::__default_alloc_template<true, 0>::deallocate(std::__default_alloc_template<true, 0>::allocate(8), 8);
+}
+template void main_alloc_first<0>();
+template void std::vector<common::CmdLine::Option>::push_back(const common::CmdLine::Option &);
+template void std::vector<common::CmdLine::Option>::_M_insert_aux(std::vector<common::CmdLine::Option>::iterator,
+                                                                  const common::CmdLine::Option &);
+
+SGL_LINKONCE_BEGIN
+inline void common::CmdLine::defArg(std::string names, unsigned int n, const char *help)
+{
+    std::vector<std::string> toks;
+    Token(toks, names);
+    for (std::vector<std::string>::iterator it = toks.begin(); it != toks.end(); ++it)
+        _options.push_back(Option(*it, n, help));
+}
+SGL_LINKONCE_END
+
 extern "C" const char D_0015E0CC[];
 extern "C" const char D_0015E110[];
 extern "C" const char D_0015E1A8[];
@@ -306,8 +329,9 @@ inline sh::Args::Env::Type sh::Args::Env::GetEnvType(std::string s)
 SGL_LINKONCE_END
 
 /* asm (near-misses: defArg inlines push_back, _M_insert_aux calls ~Option; see tmp/cxx/drafts/main/) */
-extern template void std::vector<common::CmdLine::Option>::_M_insert_aux(std::vector<common::CmdLine::Option>::iterator,
-                                                                         const common::CmdLine::Option &);
+/* asm (near-miss: cc1plus's frame is 16 bytes smaller) */
+typedef std::vector<common::CmdLine::Option>::iterator OptionIt;
+extern template OptionIt std::__uninitialized_copy_aux<OptionIt, OptionIt>(OptionIt, OptionIt, OptionIt, __false_type);
 /* asm: the basic_string<char *> range constructor's .s also holds _S_construct<char *> */
 extern template std::string::basic_string(char *, char *, const std::allocator<char> &);
 extern template char *std::string::_S_construct(char *, char *, const std::allocator<char> &, std::forward_iterator_tag);
@@ -382,10 +406,4 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZN7TestApp4turnEf)
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZSt4findIN9__gnu_cxx17__normal_iteratorIPKSsSt6vectorISsSaISsEEEEPKcET_SA_SA_RKT0_St26random_access_iterator_tag);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZNSt6vectorIN6common7CmdLine6OptionESaIS2_EE13_M_insert_auxEN9__gnu_cxx17__normal_iteratorIPS2_S4_EERKS2_);
-
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZSt24__uninitialized_copy_auxIN9__gnu_cxx17__normal_iteratorIPN6common7CmdLine6OptionESt6vectorIS4_SaIS4_EEEES9_ET0_T_SB_SA_12__false_type);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZN6common7CmdLine6OptionD1Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZN6common7CmdLine6defArgESsjPKc);
