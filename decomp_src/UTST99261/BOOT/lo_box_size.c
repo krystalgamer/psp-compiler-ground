@@ -16,6 +16,8 @@ void calcInLineBoxSize(void *ctx, BOX *box);
 void calcBlockBoxSize(void *ctx, BOX *box, int f);
 void calcBlockButtonBoxSize(void *ctx, BOX *box);
 void calcTdBoxSize(void *ctx, BOX *box);
+void getTextlineExtents(int font, int cols, int *w, int *h);
+void GUI_Component_setFont(void *c, int font);
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_box_size", calcInLineBoxSize);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_box_size", calcBlockBoxSize);
@@ -124,7 +126,22 @@ void initRadioBoxSize(BOX *box) {
     setBoxSize(box, w, h);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_box_size", initTextFieldBoxSize);
+void initTextFieldBoxSize(BOX *box, int cols) {
+    int size = getPreferredFontSize(box);
+    int w, h;
+
+    box->style->unk64 = ui_global->color[box->style->unk6A][size];
+    if (cols <= 0)
+        cols = 10;
+    getTextlineExtents(box->style->unk64, cols, &w, &h);
+    if ((box->style->flags & 3) == 1)
+        w = box->style->width;
+    if (((box->style->flags & 0xC) >> 2) == 1)
+        h = box->style->height;
+    if (M2C_FIELD(box, void **, 0x2C) != NULL)
+        GUI_Component_setFont(M2C_FIELD(box, void **, 0x2C), box->style->unk64);
+    setBoxSize(box, w, h);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_box_size", initTextAreaBoxSize);
 
