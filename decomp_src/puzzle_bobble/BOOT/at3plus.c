@@ -288,9 +288,6 @@ void at3plus_DisplayDecodePosition(int *arg)
 		printf("sceAtracGetNextDecodePosition = 0x%x\n", status);
 }
 
-#ifdef NON_MATCHING
-/* Close: the error printf branches are laid out/delay-slot filled differently
- * (the original's SetLoopNum error shares the common printf tail). */
 typedef struct {
 	unsigned char *pWrite;
 	unsigned int writable;
@@ -301,47 +298,60 @@ int sceAtracGetBufferInfoForReseting(int atracId, unsigned int sample, AT3BUFINF
 int sceAtracResetPlayPosition(int atracId, unsigned int sample, unsigned int first, unsigned int second);
 int sceAtracSetLoopNum(int atracId, int num);
 extern char D_0002EBF8[], D_0002EC70[];
-void reset_position(AT3ARG *arg)
+void reset_position(AT3ARG *pPlayArg)
 {
-	AT3BUFINFO info[2];
-	int first = 0, second = 0;
-	int ret;
+	struct { unsigned char *pucWritePositionFirstBuf; unsigned int uiWritableByteFirstBuf, uiMinWriteByteFirstBuf, uiReadPositionFirstBuf; unsigned char *pucWritePositionSecondBuf; unsigned int uiWritableByteSecondBuf, uiMinWriteByteSecondBuf, uiReadPositionSecondBuf; } bufferInfo;
+	int status;
+	int firstBufRead = 0, secondBufRead = 0;
 
-	ret = sceAtracGetBufferInfoForReseting(arg->atracId, 0, info);
-	if (ret < 0)
-		goto err_info;
-	if (info[0].minWrite != 0) {
-		ret = sceIoLseek(arg->fd, info[0].readPos, 0);
-		if (ret < 0)
-			goto err_seek;
-		ret = first = sceIoRead(arg->fd, info[0].pWrite, info[0].writable);
-		if (first < 0)
-			goto err_info;
+	status = sceAtracGetBufferInfoForReseting(pPlayArg->atracId, 0, (AT3BUFINFO *)&bufferInfo);
+
+	if (status < 0) {
+		printf("status = 0x%x(in sceAtracGetBufferInfoForResting)\n", status);
+		goto ERROR_OCCURED;
 	}
-	if (info[1].minWrite != 0) {
-		ret = sceIoLseek(arg->fd, info[1].readPos, 0);
-		if (ret < 0)
-			goto err_seek;
-		ret = second = sceIoRead(arg->fd, info[1].pWrite, info[1].writable);
-		if (second < 0)
-			goto err_info;
+
+	if (bufferInfo.uiMinWriteByteFirstBuf != 0) {
+		status = sceIoLseek(pPlayArg->fd, bufferInfo.uiReadPositionFirstBuf, 0);
+		if (status < 0) {
+			printf(D_0002EBF8, status);
+			goto ERROR_OCCURED;
+		}
+		firstBufRead = sceIoRead(pPlayArg->fd, bufferInfo.pucWritePositionFirstBuf, bufferInfo.uiWritableByteFirstBuf);
+		if (firstBufRead < 0) {
+			status = firstBufRead;
+			printf("status = 0x%x(in sceAtracGetBufferInfoForResting)\n", status);
+			goto ERROR_OCCURED;
+		}
 	}
-	ret = sceAtracResetPlayPosition(arg->atracId, 0, first, second);
-	if (ret < 0)
-		printf("status = 0x%x (in sceAtracResetPlayPosition)\n", ret);
-	ret = sceAtracSetLoopNum(arg->atracId, -1);
-	if (ret < 0)
-		printf(D_0002EC70, ret);
+
+	if (bufferInfo.uiMinWriteByteSecondBuf != 0) {
+		status = sceIoLseek(pPlayArg->fd, bufferInfo.uiReadPositionSecondBuf, 0);
+		if (status < 0) {
+			printf(D_0002EBF8, status);
+			goto ERROR_OCCURED;
+		}
+		secondBufRead = sceIoRead(pPlayArg->fd, bufferInfo.pucWritePositionSecondBuf, bufferInfo.uiWritableByteSecondBuf);
+		if (secondBufRead < 0) {
+			status = secondBufRead;
+			printf("status = 0x%x(in sceAtracGetBufferInfoForResting)\n", status);
+			goto ERROR_OCCURED;
+		}
+	}
+
+	status = sceAtracResetPlayPosition(pPlayArg->atracId, 0, firstBufRead, secondBufRead);
+	if (status < 0) {
+		printf("status = 0x%x (in sceAtracResetPlayPosition)\n", status);
+	}
+
+	status = sceAtracSetLoopNum(pPlayArg->atracId, -1);
+	if (status < 0) {
+		printf(D_0002EC70, status);
+	}
+
+ERROR_OCCURED:
 	return;
-err_seek:
-	printf(D_0002EBF8, ret);
-	return;
-err_info:
-	printf("status = 0x%x(in sceAtracGetBufferInfoForResting)\n", ret);
 }
-#else
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/at3plus", reset_position);
-#endif
 
 int getPlayMode(int evf, int mode)
 {
