@@ -42,6 +42,10 @@ void *Node_getOwnerDocument(void *node);
 void moveBorder(void *b, int dx, int dy);
 void freeScroll(int x, int y);
 int sendJSBubbleUpEvent(void *node, LEHJSEVENT *ev);
+int handlePointingMove(void *ev);
+int handlePointingDown(void *ev);
+int handlePointingUp(void *ev);
+int handlePointingCheck(void *ev);
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_eventHandler", getTargetBox);
 
 void *getEventTargetNode(BOX *box) {
@@ -706,6 +710,37 @@ int confirmScrollInfo(void *ev) {
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_eventHandler", handleMouseEvent);
+int handleMouseEvent(void *ev) {
+    u16 *d = M2C_FIELD(ev, u16 **, 0x1C);
+    switch (*d) {
+    case 3: handlePointingMove(ev); break;
+    case 0: handlePointingDown(ev); break;
+    case 1: handlePointingUp(ev); break;
+    case 2: handlePointingCheck(ev); break;
+    case 4: handleDragStart(ev); break;
+    case 5: handleDragDoing(ev); break;
+    case 8: handleEnter(ev); break;
+    case 17: handle1DFocusUp(); confirmScrollInfo(M2C_FIELD(ev, void **, 4)); break;
+    case 18: handle1DFocusDown(); confirmScrollInfo(M2C_FIELD(ev, void **, 4)); break;
+    case 19: handle2DFocusUp(); confirmScrollInfo(M2C_FIELD(ev, void **, 4)); break;
+    case 20: handle2DFocusDown(); confirmScrollInfo(M2C_FIELD(ev, void **, 4)); break;
+    case 21: handle2DFocusLeft(); confirmScrollInfo(M2C_FIELD(ev, void **, 4)); break;
+    case 22: handle2DFocusRight(); confirmScrollInfo(M2C_FIELD(ev, void **, 4)); break;
+    case 9: handlePageScrollUp(); confirmScrollInfo(M2C_FIELD(ev, void **, 4)); break;
+    case 10: handlePageScrollDown(); confirmScrollInfo(M2C_FIELD(ev, void **, 4)); break;
+    case 13: handle2DScrollUp(); confirmScrollInfo(M2C_FIELD(ev, void **, 4)); break;
+    case 14: handle2DScrollDown(); confirmScrollInfo(M2C_FIELD(ev, void **, 4)); break;
+    case 15: handle2DScrollLeft(); confirmScrollInfo(M2C_FIELD(ev, void **, 4)); break;
+    case 16: handle2DScrollRight(); confirmScrollInfo(M2C_FIELD(ev, void **, 4)); break;
+    case 11: handleScrollTop(); confirmScrollInfo(M2C_FIELD(ev, void **, 4)); break;
+    case 12: handleScrollBottom(); confirmScrollInfo(M2C_FIELD(ev, void **, 4)); break;
+    case 23: handleFrameFocusDown(); confirmScrollInfo(M2C_FIELD(ev, void **, 4)); break;
+    case 24: handleChoiceSelect(ev); break;
+    case 7: handleAccessKey(ev); break;
+    case 25: handleInputText(ev); break;
+    }
+    MEM_free(NULL, d);
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_eventHandler", getDataAttribute);
