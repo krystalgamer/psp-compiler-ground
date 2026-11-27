@@ -5,7 +5,15 @@ extern unsigned char gWork_11FC84;
 M2C_UNK SlotPlay(M2C_UNK, int, int, M2C_UNK, int, M2C_UNK); /* extern */
 extern unsigned char D_0010A4D4;
 extern unsigned char D_0010A4E4;
-M2C_UNK SlotStopAll(M2C_UNK);                       /* extern */
+void SlotStop(int, int, const void *, float);
+void SlotStopRes(int, int, float);
+void SlotStopName(int, int, float);
+void SlotStopCategory(int, int, float);
+void SlotStopAll(int, float);
+void SlotDoFade(int, int, int);
+void sgxSndSetStrBufCB(int, int, int, int);
+extern const char D_0010A504[];
+extern const char D_0010A50C[];
 extern int D_0011FCAC;
 M2C_UNK sgxDI();                                    /* extern */
 M2C_UNK sgxEI();                                    /* extern */
@@ -242,21 +250,39 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", sgxSndPlayNameF);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", SlotStop);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", sgxSndStop);
+void sgxSndStop(int id, int a1)
+{
+    SlotStop(id, a1, D_0010A504, 0.0f);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", sgxSndStopFade);
+void sgxSndStopFade(int id, float fade)
+{
+    SlotStop(id, 0, D_0010A50C, fade);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", SlotStopRes);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", sgxSndStopRes);
+void sgxSndStopRes(int id, int a1)
+{
+    SlotStopRes(id, a1, 0.0f);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", sgxSndStopFadeRes);
+void sgxSndStopFadeRes(int id, float fade)
+{
+    SlotStopRes(id, 0, fade);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", SlotStopName);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", sgxSndStopName);
+void sgxSndStopName(int id, int a1)
+{
+    SlotStopName(id, a1, 0.0f);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", sgxSndStopFadeName);
+void sgxSndStopFadeName(int id, float fade)
+{
+    SlotStopName(id, 0, fade);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", sgxSndStopNameF);
 
@@ -264,20 +290,29 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", sgxSndStopFadeNameF);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", SlotStopCategory);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", sgxSndStopCategory);
+void sgxSndStopCategory(int id, int a1)
+{
+    SlotStopCategory(id, a1, 0.0f);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", sgxSndStopFadeCategory);
+void sgxSndStopFadeCategory(int id, float fade)
+{
+    SlotStopCategory(id, 0, fade);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", SlotStopAll);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", sgxSndStopAll);
+void sgxSndStopAll(int a0)
+{
+    SlotStopAll(a0, 0.0f);
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
 #endif
 
-void sgxSndStopFadeAll(void) {
-    SlotStopAll(0);
+void sgxSndStopFadeAll(float fade) {
+    SlotStopAll(0, fade);
 }
 
 #ifndef NULL
@@ -305,7 +340,10 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", sgxSndSetSpeed);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", sgxSndCancelLock);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", sgxSndSetStrBuf);
+void sgxSndSetStrBuf(int a0, int a1, int a2)
+{
+    sgxSndSetStrBufCB(a0, a1, a2, 0);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", sgxSndSetStrBufCB);
 
@@ -345,7 +383,10 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", sgxSndGetMidiCtrlMarkerRa
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", SlotDoFade);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", sgxSndDoFade);
+void sgxSndDoFade(int a0, int a1)
+{
+    SlotDoFade(a0, a1, 0);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", sgxSndGetFadeLevel);
 
