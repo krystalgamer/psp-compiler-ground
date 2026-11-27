@@ -2,9 +2,187 @@
 #include "m2c_macros.h"
 
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_section", UnpackKey);
+typedef struct { short pad[2]; unsigned short idx[3]; } I3mKey;
+typedef struct { char pad[0x10]; unsigned short flags; char p2[0xe]; float (*vec)[4]; int p3; int (*pack)[2]; int p4; float sc[4][4]; } I3mSec;
+void UnpackKey(float *out, I3mKey *key, I3mSec *sec)
+{
+	unsigned int flags;
+	int (*pack)[2];
+	float (*sc)[4];
+	float (*vec)[4];
+	unsigned int i;
+	float *q;
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_section", UnpackKey2);
+	flags = sec->flags;
+	sc = sec->sc;
+	vec = sec->vec;
+	pack = sec->pack;
+
+	i = key->idx[0];
+	if (flags & 8) {
+		__asm__ volatile(
+			"lv.q C100.q,0(%1)\n"
+			"lv.q C110.q,16(%1)\n"
+			"lv.s S200.s,0(%2)\n"
+			"lv.s S201.s,4(%2)\n"
+			"vs2i.p C220.q,C200.p\n"
+			"vi2f.q C000.q,C220.q,31\n"
+			"vmul.q C000.q,C000.q,C100.q\n"
+			"vadd.q C000.q,C000.q,C110.q\n"
+			"sv.q C000.q,0(%0)\n"
+			: : "r"(out), "r"(sc), "r"(pack[i]) : "memory");
+	} else {
+		__asm__ volatile(
+			"lv.q C000.q,0(%1)\n"
+			"sv.q C000.q,0(%0)\n"
+			: : "r"(out), "r"(vec[i]) : "memory");
+	}
+	i = key->idx[1];
+	if (flags & 1) {
+		__asm__ volatile(
+			"lv.s S200.s,0(%1)\n"
+			"lv.s S201.s,4(%1)\n"
+			"vs2i.p C220.q,C200.p\n"
+			"vi2f.q C000.q,C220.q,31\n"
+			"sv.q C000.q,16(%0)\n"
+			: : "r"(out), "r"(pack[i]) : "memory");
+	} else {
+		__asm__ volatile(
+			"lv.q C000.q,0(%1)\n"
+			"sv.q C000.q,0(%0)\n"
+			: : "r"(out + 4), "r"(vec[i]) : "memory");
+	}
+	q = out + 8;
+	if (flags & 2) {
+		__asm__ volatile(
+			"vone.q C000.q\n"
+			"sv.q C000.q,0(%0)\n"
+			: : "r"(q) : "memory");
+	} else {
+		i = key->idx[2];
+		if (flags & 0x10) {
+		__asm__ volatile(
+			"lv.q C100.q,32(%1)\n"
+			"lv.q C110.q,48(%1)\n"
+			"lv.s S200.s,0(%2)\n"
+			"lv.s S201.s,4(%2)\n"
+			"vs2i.p C220.q,C200.p\n"
+			"vi2f.q C000.q,C220.q,31\n"
+			"vmul.q C000.q,C000.q,C100.q\n"
+			"vadd.q C000.q,C000.q,C110.q\n"
+			"sv.q C000.q,32(%0)\n"
+			: : "r"(out), "r"(sc), "r"(pack[i]) : "memory");
+	} else {
+		__asm__ volatile(
+			"lv.q C000.q,0(%1)\n"
+			"sv.q C000.q,0(%0)\n"
+			: : "r"(q), "r"(vec[i]) : "memory");
+	}
+	}
+}
+
+typedef struct { char pad[0x10]; unsigned short flags; unsigned short num; char p2[0xc]; float (*vec)[4]; int p3; int (*pack)[2]; int p4; float sc[4][4]; } I3mSec2;
+void UnpackKey2(float *out, I3mKey *key, I3mSec2 *sec)
+{
+	I3mKey *key2 = (I3mKey *)((unsigned short *)key + sec->num);
+	unsigned int flags;
+	int (*pack)[2];
+	float (*vec)[4];
+	unsigned int i, j;
+
+	flags = sec->flags;
+	vec = sec->vec;
+	pack = sec->pack;
+	i = key->idx[0];
+	j = key2->idx[0];
+	if (flags & 8) {
+		__asm__ volatile(
+			"lv.q C100.q,48(%0)\n"
+			"lv.q C110.q,64(%0)\n"
+			"lv.s S200.s,0(%1)\n"
+			"lv.s S201.s,4(%1)\n"
+			"lv.s S210.s,0(%2)\n"
+			"lv.s S211.s,4(%2)\n"
+			"vs2i.p C220.q,C200.p\n"
+			"vs2i.p C230.q,C210.p\n"
+			"vi2f.q C000.q,C220.q,31\n"
+			"vi2f.q C010.q,C230.q,31\n"
+			"vmul.q C000.q,C000.q,C100.q\n"
+			"vmul.q C010.q,C010.q,C100.q\n"
+			"vadd.q C000.q,C000.q,C110.q\n"
+			"vadd.q C010.q,C010.q,C110.q\n"
+			: : "r"(sec), "r"(pack[i]), "r"(pack[j]) : "memory");
+	} else {
+		__asm__ volatile(
+			"lv.q C000.q,0(%0)\n"
+			"lv.q C010.q,0(%1)\n"
+			: : "r"(vec[i]), "r"(vec[j]) : "memory");
+	}
+	__asm__ volatile(
+		"sv.q C000.q,0(%0)\n"
+		"sv.q C010.q,48(%0)\n"
+		: : "r"(out) : "memory");
+	i = key->idx[1];
+	j = key2->idx[1];
+	if (flags & 1) {
+		__asm__ volatile(
+			"lv.s S200.s,0(%0)\n"
+			"lv.s S201.s,4(%0)\n"
+			"lv.s S210.s,0(%1)\n"
+			"lv.s S211.s,4(%1)\n"
+			"vs2i.p C220.q,C200.p\n"
+			"vs2i.p C230.q,C210.p\n"
+			"vi2f.q C000.q,C220.q,31\n"
+			"vi2f.q C010.q,C230.q,31\n"
+			: : "r"(pack[i]), "r"(pack[j]) : "memory");
+	} else {
+		__asm__ volatile(
+			"lv.q C000.q,0(%0)\n"
+			"lv.q C010.q,0(%1)\n"
+			: : "r"(vec[i]), "r"(vec[j]) : "memory");
+	}
+	__asm__ volatile(
+		"sv.q C000.q,16(%0)\n"
+		"sv.q C010.q,64(%0)\n"
+		: : "r"(out) : "memory");
+	if (flags & 2) {
+		__asm__ volatile(
+			"vone.q C000.q\n"
+			"sv.q C000.q,32(%0)\n"
+			"sv.q C000.q,80(%0)\n"
+			: : "r"(out) : "memory");
+	} else {
+		i = key->idx[2];
+		j = key2->idx[2];
+		if (flags & 0x10) {
+			__asm__ volatile(
+				"lv.q C100.q,80(%0)\n"
+				"lv.q C110.q,96(%0)\n"
+				"lv.s S200.s,0(%1)\n"
+				"lv.s S201.s,4(%1)\n"
+				"lv.s S210.s,0(%2)\n"
+				"lv.s S211.s,4(%2)\n"
+				"vs2i.p C220.q,C200.p\n"
+				"vs2i.p C230.q,C210.p\n"
+				"vi2f.q C000.q,C220.q,31\n"
+				"vi2f.q C010.q,C230.q,31\n"
+				"vmul.q C000.q,C000.q,C100.q\n"
+				"vmul.q C010.q,C010.q,C100.q\n"
+				"vadd.q C000.q,C000.q,C110.q\n"
+				"vadd.q C010.q,C010.q,C110.q\n"
+				: : "r"(sec), "r"(pack[i]), "r"(pack[j]) : "memory");
+		} else {
+			__asm__ volatile(
+				"lv.q C000.q,0(%0)\n"
+				"lv.q C010.q,0(%1)\n"
+				: : "r"(vec[i]), "r"(vec[j]) : "memory");
+		}
+		__asm__ volatile(
+			"sv.q C000.q,32(%0)\n"
+			"sv.q C010.q,80(%0)\n"
+			: : "r"(out) : "memory");
+	}
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_section", UnpackSection);
 
