@@ -40,6 +40,17 @@ int sgxBmgWrite(int, const void *, int);
 void sgxAttrSetValueSafe(void *, int, int);
 void sgxSndPlayName(int, const char *, int);
 
+extern int gSgxDebugFlags;
+extern int gSgxPrefErr;
+extern const char D_0010A400[];
+extern const char D_0010A598[];
+void sgxPrintfPref(int, const char *, int, const char *, ...);
+void sgxPrintf(const char *, ...);
+void sgxCbRegist(int, int, void *, int, int);
+void sgxBmgSetLowBufCallback(int, int, int, int, int);
+#define SGX_ERR(line, ...) if (gSgxDebugFlags & 1) sgxPrintfPref(gSgxPrefErr, D_0010A400, line, __VA_ARGS__)
+#define SNDW ((char *)&gWork_11FC84)
+
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", SlotGetAt_7DD48);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", SlotGetAtStop);
@@ -215,11 +226,34 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", sgxSndTickProc);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", sgxSndTickProcPost);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", sgxSndSetSysReg);
+extern const char D_0010A44C[];
+typedef struct { char pad[0x134]; int sysreg[32]; } SndWorkSR;
+void sgxSndSetSysReg(int idx, int v) {
+    if ((unsigned int)idx >= 32) {
+        SGX_ERR(0x253, D_0010A44C, idx);
+        return;
+    }
+    ((SndWorkSR *)&gWork_11FC84)->sysreg[idx] = v;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", sgxSndGetSysReg);
+int sgxSndGetSysReg(int idx) {
+    if ((unsigned int)idx >= 32) {
+        SGX_ERR(0x25E, D_0010A44C, idx);
+        return 0;
+    }
+    return ((SndWorkSR *)&gWork_11FC84)->sysreg[idx];
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", sgxSndUseTuning);
+extern const char D_0010A464[];
+extern const char D_0010A468[];
+extern const char D_0010A478[];
+void sgxSndUseTuning(int on) {
+    char *w = SNDW;
+    if (*(int *)(w + 0x1B4) != on) {
+        *(int *)(w + 0x1B4) = on;
+        if (gSgxDebugFlags & 4) sgxPrintf(D_0010A468, on ? D_0010A464 : D_0010A478);
+    }
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", SlotPlay);
 
@@ -317,7 +351,13 @@ void sgxSndStopNameF(const char *fmt, int x, ...) {
     SlotStopName((int)buf, x, 0.0f);
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", sgxSndStopFadeNameF);
+void sgxSndStopFadeNameF(float fade, const char *fmt, ...) {
+    char buf[1024];
+    va_list ap;
+    va_start(ap, fmt);
+    vsprintf(buf, fmt, ap);
+    SlotStopName((int)buf, 0, fade);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", SlotStopCategory);
 
@@ -394,7 +434,13 @@ void sgxSndSetStrBuf(int a0, int a1, int a2)
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", sgxSndSetStrBufCB);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", sgxSndSetStrLowBufCB);
+extern const char D_0010A580[];
+void sgxSndSetStrLowBufCB(int id, int cb, int a, int b) {
+    char *p = SlotGetAt_7DD48(id, D_0010A580);
+    if (p == NULL) return;
+    if (*(short *)(p + 0x1E) < 0) return;
+    sgxBmgSetLowBufCallback(*(short *)(p + 0x1E), cb, *(int *)(p + 8), a, b);
+}
 
 int sgxSndGetStatus(int id)
 {
@@ -404,9 +450,25 @@ int sgxSndGetStatus(int id)
     return M2C_FIELD(s, int *, 0xC);
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", sgxSndSetReg);
+extern const char D_0010A590[];
+void sgxSndSetReg(int id, int idx, int v) {
+    char *p = SlotGetAt_7DD48(id, D_0010A590);
+    if (p == NULL) return;
+    if ((unsigned int)idx >= 8) {
+        SGX_ERR(0x675, D_0010A598, idx);
+        return;
+    }
+    ((int *)(p + 0xAC))[idx] = v;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", sgxSndGetReg);
+extern const char D_0010A5B4[];
+int sgxSndGetReg(int id, int idx) {
+    char *p = SlotGetAt_7DD48(id, D_0010A5B4);
+    if (p == NULL) return 0;
+    if ((unsigned int)idx < 8) return ((int *)(p + 0xAC))[idx];
+    SGX_ERR(0x684, D_0010A598, idx);
+    return -1;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", sgxSndSetCategory);
 
@@ -446,7 +508,11 @@ int sgxSndGetMarkerCallback(int id)
     return M2C_FIELD(s, int *, 0xCC);
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", sgxSndDoMarkerCallback);
+void sgxSndDoMarkerCallback(int id, int x) {
+    char *p = SlotGetAt_7DD48(id, 0);
+    if (p == NULL) return;
+    if (*(void **)(p + 0xCC) != NULL) sgxCbRegist(0, 0, *(void **)(p + 0xCC), id, x);
+}
 
 extern const char D_0010A62C[];
 void sgxSndSetMidiMsgMarkerRange(int id, int lo, int hi) {
@@ -521,13 +587,40 @@ float sgxSndGetFadePos(int id) {
 }
 const float D_0010A810 = 1.0f;
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", sgxSndSetBank);
+extern const char D_0010A6E8[];
+void sgxSndSetBank(int id, int idx, int v) {
+    char *p = SlotGetAt_7DD48(id, D_0010A6E8);
+    if (p == NULL) return;
+    if ((unsigned int)idx >= 4) {
+        SGX_ERR(0x76F, D_0010A598, idx);
+        return;
+    }
+    ((short *)(p + 0xA4))[idx] = v;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", sgxSndGetBank);
+extern const char D_0010A6F0[];
+int sgxSndGetBank(int id, int idx) {
+    char *p = SlotGetAt_7DD48(id, D_0010A6F0);
+    if (p == NULL) return -1;
+    if ((unsigned int)idx < 4) return ((short *)(p + 0xA4))[idx];
+    SGX_ERR(0x77E, D_0010A598, idx);
+    return -1;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", sgxSndSetChannelVolume);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", sgxSndGetChannelVolume);
+extern const char D_0010A728[];
+extern const char D_0010A70C[];
+typedef struct { char pad[0xD0]; unsigned char chvol[16]; } SndSlotCV;
+int sgxSndGetChannelVolume(int id, int ch) {
+    SndSlotCV *p = SlotGetAt_7DD48(id, D_0010A728);
+    if (p == NULL) return 0;
+    if ((unsigned int)ch >= 16) {
+        SGX_ERR(0x7A6, D_0010A70C, ch);
+        return 0;
+    }
+    return p->chvol[ch];
+}
 
 extern const char D_0010A73C[];
 int sgxSndWriteStrData(int id, const void *data, int size) {
@@ -586,9 +679,17 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", sgxSndUpdateSlotVolumeAll
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", sgxCategorySetSoundRange);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", sgxCategoryGetSoundRangeLo);
+typedef struct { int lo, hi; } SndRange;
+typedef struct { char pad[0xB4]; SndRange cat[16]; } SndWorkCat;
+int sgxCategoryGetSoundRangeLo(unsigned int c) {
+    if (c >= 16) return -1;
+    return ((SndWorkCat *)&gWork_11FC84)->cat[c].lo;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", sgxCategoryGetSoundRangeHi);
+int sgxCategoryGetSoundRangeHi(unsigned int c) {
+    if (c >= 16) return -1;
+    return ((SndWorkCat *)&gWork_11FC84)->cat[c].hi;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", sgxCategorySetVolume);
 
