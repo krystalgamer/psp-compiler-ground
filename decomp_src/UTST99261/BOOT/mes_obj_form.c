@@ -10,10 +10,22 @@ int Util_HTMLFormElement_getLength(void *form);
 extern MesClassDef mes_form_def;
 extern MesClass *mes_form_class;
 extern char D_0013F788[];
+extern char D_0013F7C4[];
 typedef struct MesFormPriv {
     void *form;
 } MesFormPriv;
 
+typedef struct MesStrF { DOMChar *str; int len; } MesStrF;
+typedef struct MesFormPriv2 { void *form; int obj; } MesFormPriv2;
+void Element_setAttribute(void *elem, DOMString *name, DOMString *value);
+void *memcpy(void *d, const void *s, unsigned int n);
+MesStrF *mes_obj_common_to_string(MesContext *ctx, MesValue v);
+int isAllowedAsPropertyName(MesStrF *s, void *t, void *x);
+int setNewPropertyReference(MesContext *ctx, int a, int c, MesValue s, MesObject *b, int y);
+int deleteOldPropertyReference(MesContext *ctx, int a, int c, MesValue s, MesValue old, MesObject *b);
+extern DOMString _DOMname;
+MesValue mes_class_property_get(MesContext *ctx, int obj, const char *name);
+extern char mes_form_properties[], mes_form_methods[];
 int mes_form_handle_event(MesContext *ctx, MesObject *obj)
 {
     short type = g_JS_EVENT_REC_->type;
@@ -75,9 +87,90 @@ MesValue mes_form_get(MesContext *ctx, MesObject *obj, MesFormPriv *priv, int id
     return MES_UNDEFINED;
 }
 
+
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_form", D_0013F7C4);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_form", mes_form_put);
+int mes_form_put(MesContext *ctx, MesObject *obj, MesFormPriv2 *priv, int id, MesValue v)
+{
+    MesStrF *s;
+    DOMString ds;
+    MesValue old;
+    int forms;
+    int ret;
+
+    switch (id) {
+    case 1:
+        s = mes_obj_common_to_string(ctx, v);
+        ds.size = ds.len = s->len;
+        ds.str = MEM_malloc(0, s->len * 2);
+        memcpy(ds.str, s->str, s->len * 2);
+        ctx->sp++;
+        Element_setAttribute(priv->form, &_DOMaction, &ds);
+        MEM_free(0, ds.str);
+        ret = 1;
+        break;
+    case 3:
+        s = mes_obj_common_to_string(ctx, v);
+        ds.size = ds.len = s->len;
+        ds.str = MEM_malloc(0, s->len * 2);
+        memcpy(ds.str, s->str, s->len * 2);
+        ctx->sp++;
+        Element_setAttribute(priv->form, &_DOMenctype, &ds);
+        MEM_free(0, ds.str);
+        ret = 1;
+        break;
+    case 4:
+        ret = 1;
+        break;
+    case 5:
+        s = mes_obj_common_to_string(ctx, v);
+        ds.size = ds.len = s->len;
+        ds.str = MEM_malloc(0, s->len * 2);
+        memcpy(ds.str, s->str, s->len * 2);
+        ctx->sp++;
+        Element_setAttribute(priv->form, &_DOMmethod, &ds);
+        MEM_free(0, ds.str);
+        ret = 1;
+        break;
+    case 6:
+        ret = 0;
+        if ((v & 3) != 3)
+            break;
+        s = (MesStrF *)(v & ~3);
+        ds.str = MEM_malloc(0, s->len * 2);
+        if (ds.str != NULL) {
+            old = mes_class_property_get(ctx, (int)obj, D_0013F7C4);
+            *--ctx->sp = old;
+            forms = mes_class_property_get(ctx, priv->obj, "forms");
+            deleteOldPropertyReference(ctx, priv->obj, forms, v, old, obj);
+            ds.len = ds.size = s->len;
+            memcpy(ds.str, s->str, s->len * 2);
+            Element_setAttribute(priv->form, &_DOMname, &ds);
+            MEM_free(0, ds.str);
+            ctx->sp++;
+            if (isAllowedAsPropertyName(s, mes_form_properties, mes_form_methods) == 1)
+                setNewPropertyReference(ctx, priv->obj, forms, v, obj, 1);
+        }
+        ret = 1;
+        break;
+    case 7:
+        s = mes_obj_common_to_string(ctx, v);
+        ds.size = ds.len = s->len;
+        ds.str = MEM_malloc(0, s->len * 2);
+        memcpy(ds.str, s->str, s->len * 2);
+        ctx->sp++;
+        Element_setAttribute(priv->form, &_DOMtarget, &ds);
+        MEM_free(0, ds.str);
+        ret = 1;
+        break;
+    case 2:
+        ret = 1;
+        break;
+    default:
+        ret = 0;
+    }
+    return ret;
+}
 
 void mes_form_mark(void) {
 }
