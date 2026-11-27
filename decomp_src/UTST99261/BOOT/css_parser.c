@@ -8,7 +8,7 @@ u16 *CSS_string(u16 *s, u16 **out);
 u16 *CSS_ident(u16 *s, u16 **out);
 void *UCS_strdup(void *s);
 void *newCSSStyleSheet(int type);
-void CSS_mediaList(void *str, u16 *media);
+u16 *CSS_mediaList(u16 *p, u16 *m);
 void CSS_StyleSheetRuleList(void *ss, u16 *text);
 void *newCSSStyleRule();
 u16 *CSS_selectorList(void *r, u16 *p);
@@ -48,9 +48,55 @@ M2C_UNK MEM_calloc(M2C_UNK, M2C_UNK);               /* extern */
 
 
 
+typedef struct CSSNODE { int x0; int x4; int x8; void *xC; int x10; int x14; struct CSSNODE *next; } CSSNODE;
+void *newCSSUnknownRule(void *a0, void *a1);
+void addCSSUnknownRule(void *r);
+int UCS_strlen(u16 *s);
+void *MEM_malloc(int pool, int size);
+void UCS_strcpy(void *d, u16 *s);
+u16 *ParseCSSDeclaration(void *parent, u16 *p, CSSNODE **out);
+u16 *CSS_SkipProperty(u16 *p);
+void *newCSSImportRule(void *a0, void *a1);
+void addCSSImportRule(void *r);
+extern u16 CSSSTR_url[];
+int UCS_strncasecmp(u16 *a, u16 *b, int n);
+u16 *CSS_nstring(u16 *s, u16 **out);
+void *newCSSMediaRule(void *a0, void *a1);
+void addCSSMediaRule(void *r);
+void freeCSSMediaRule(void *r);
+u16 *CSS_mediaRuleList(void *a0, void *r, u16 *p);
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_parser", CSS_StyleSheetRuleList);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_parser", CSS_unknownRule);
+u16 *CSS_unknownRule(void *a0, void *a1, u16 *p) {
+    void *r;
+    u16 *q;
+    u16 c;
+    u16 *s;
+    r = newCSSUnknownRule(a0, a1);
+    if (r == NULL) {
+        return p;
+    }
+    q = p;
+    while (*q != 0 && *q != ';' && *q != '{') {
+        q++;
+        q = CSS_SkipBlanksAndComments(q);
+    }
+    if (*q == '{') {
+        q = CSS_SkipRule(q);
+    }
+    c = *q;
+    *q = 0;
+    s = MEM_malloc(0, UCS_strlen(p) * 2 + 2);
+    if (s == NULL) {
+        *q = c;
+        return q;
+    }
+    UCS_strcpy(s, p);
+    M2C_FIELD(r, u16 **, 0x24) = s;
+    *q = c;
+    addCSSUnknownRule(r);
+    return q;
+}
 
 u16 *CSS_charsetRule(void *a0, void *a1, u16 *p) {
     u16 *str;
@@ -70,9 +116,80 @@ u16 *CSS_charsetRule(void *a0, void *a1, u16 *p) {
     return p;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_parser", CSS_importRule);
+u16 *CSS_importRule(void *a0, void *a1, u16 *p) {
+    void *r;
+    u16 *s;
+    int m;
+    int n;
+    r = newCSSImportRule(a0, a1);
+    if (r == NULL) {
+        return p;
+    }
+    p = CSS_SkipBlanksAndComments(p);
+    n = UCS_strlen(CSSSTR_url);
+    if (UCS_strncasecmp(p, CSSSTR_url, n) == 0) {
+        p = CSS_SkipBlanksAndComments(p + n);
+        if (*p == '(') {
+            p++;
+        }
+    }
+    p = CSS_string(CSS_SkipBlanksAndComments(p), &s);
+    if (s != NULL) {
+        M2C_FIELD(r, u16 **, 0x24) = s;
+    } else {
+        p = CSS_nstring(p, &s);
+        M2C_FIELD(r, u16 **, 0x24) = s;
+    }
+    p = CSS_SkipBlanksAndComments(p);
+    if (*p == ')') {
+        p++;
+    }
+    p = CSS_SkipBlanksAndComments(p);
+    if (*p != ';') {
+        p = CSS_mediaList(p, (u16 *)&m);
+        M2C_FIELD(r, u16 *, 0x28) = *(u16 *)&m;
+    }
+    p = CSS_SkipBlanksAndComments(p);
+    if (*p == ';') {
+        p++;
+    }
+    addCSSImportRule(r);
+    return p;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_parser", CSS_mediaRule);
+u16 *CSS_mediaRule(void *a0, void *a1, u16 *p) {
+    CSSNODE *r;
+    u16 m;
+    r = newCSSMediaRule(a0, a1);
+    if (r == NULL) {
+        return p;
+    }
+    p = CSS_mediaList(CSS_SkipBlanksAndComments(p), &m);
+    M2C_FIELD(r, u16 *, 0x24) = m;
+    p = CSS_SkipBlanksAndComments(p);
+    while (*p != '{' && *p != 0) {
+        p++;
+        p = CSS_SkipBlanksAndComments(p);
+    }
+    if (*p == '{') {
+        p++;
+    }
+    p = CSS_SkipBlanksAndComments(CSS_mediaRuleList(a0, r, CSS_SkipBlanksAndComments(p)));
+    p = CSS_SkipBlanksAndComments(p);
+    while (*p != '}' && *p != 0) {
+        p++;
+        p = CSS_SkipBlanksAndComments(p);
+    }
+    if (*p == '}') {
+        p++;
+    }
+    if (r->x8 != 0 && (*(s16 *)r->xC != 7 || ((CSSNODE *)r->xC)->x8 != 0)) {
+        addCSSMediaRule(r);
+    } else {
+        freeCSSMediaRule(r);
+    }
+    return p;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_parser", CSS_mediaRuleList);
 
@@ -98,11 +215,77 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_parser", CSS_selector);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_parser", CSS_simpleSelector);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_parser", CSS_pseudo);
+u16 *CSS_pseudo(u16 *p, u16 **out) {
+    u16 *name = NULL;
+    u16 *q;
+    u16 *r;
+    u16 c;
+    q = CSS_ident(p, &name);
+    if (name != NULL) {
+        r = CSS_SkipBlanksAndComments(q);
+        if (*r == '(') {
+            do {
+                r++;
+            } while (*r != 0 && *r != ')' && *r != ',' && *r != '}');
+            if (*r == ')') {
+                r++;
+            }
+            q = r;
+        }
+        MEM_free(0, (int)name);
+    }
+    if (p < q) {
+        c = *q;
+        *q = 0;
+        *out = UCS_strdup(p);
+        *q = c;
+        p = q;
+    }
+    return p;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_parser", CSS_attrib);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_parser", CSS_styleDeclaration);
+u16 *CSS_styleDeclaration(CSSNODE *rule, u16 *p) {
+    CSSNODE *d;
+    CSSNODE *n;
+    u16 *r;
+    if (rule == NULL) {
+        return p;
+    }
+    p = CSS_SkipBlanksAndComments(p);
+    if (*p != '{') {
+        return CSS_SkipProperty(p);
+    }
+    p++;
+    p = CSS_SkipBlanksAndComments(p);
+    r = ParseCSSDeclaration(rule->xC, p, &d);
+    if (rule->xC == NULL && d != NULL) {
+        do {
+            n = d->next;
+            freeCSSStyleDeclaration(d);
+            d = n;
+        } while (n != NULL);
+    }
+    if (d != NULL) {
+        for (rule = rule->next; rule != NULL; rule = rule->next) {
+            ParseCSSDeclaration(rule->xC, p, &d);
+            if (rule->xC == NULL && d != NULL) {
+                do {
+                    n = d->next;
+                    freeCSSStyleDeclaration(d);
+                    d = n;
+                } while (n != NULL);
+            }
+        }
+    }
+    p = CSS_SkipBlanksAndComments(r);
+    if (*p == '}') {
+        p++;
+        p = CSS_SkipBlanksAndComments(p);
+    }
+    return p;
+}
 
 void *CSS_ParseStyleSheet(short type, u16 *text, void *a2, void *ss, void *t0, void *t1, void *t2, u16 *media) {
     void *n;
