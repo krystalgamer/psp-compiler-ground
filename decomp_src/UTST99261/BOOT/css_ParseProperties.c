@@ -28,7 +28,83 @@ u16 *CSS_ident(u16 *s, u16 **out);
 void *newCSSPrimitiveValue(int type);
 void *duplicateCSSPrimitiveValue(void *s);
 void MEM_free(int pool, void *p);
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_ParseProperties", ParseUNIT);
+typedef struct CSSNUMVAL { s16 type; s16 pad; int x4; double d; } CSSNUMVAL;
+extern CSSPROPNAME CSSUnitNames[];
+double atof(const char *s);
+u16 *ParseUNIT(s16 *out, u16 *p) {
+    char buf[256];
+    u16 *ret = NULL;
+    int neg = 0;
+    int pct = 0;
+    int i;
+    int j;
+    u16 *q;
+    u16 save;
+    p = CSS_SkipBlanksAndComments(p);
+    if (*p == '-') {
+        neg = 1;
+        p++;
+    }
+    if (*p == '+') {
+        p++;
+    }
+    q = p;
+    i = 0;
+    while (i < 256) {
+        if ((u16)(*q - '0') < 10) {
+            buf[i++] = (char)*q & 0x7F;
+        } else if (*q == '.') {
+            buf[i++] = (char)*q & 0x7F;
+        } else {
+            if (*q == '%') {
+                pct = 1;
+            }
+            break;
+        }
+        q++;
+    }
+    buf[i] = 0;
+    if (i != 0) {
+        save = *q;
+        *q = 0;
+        ((CSSNUMVAL *)out)->d = atof(buf);
+        if (neg) {
+            ((CSSNUMVAL *)out)->d = -((CSSNUMVAL *)out)->d;
+        }
+        *q = save;
+        p = q;
+        if (pct) {
+            out[0] = 2;
+            ret = q + 1;
+        } else {
+            for (;;) {
+                if ((unsigned int)(*q - 'A') < 26 || (unsigned int)(*q - 'a') < 26) {
+                    q++;
+                } else {
+                    break;
+                }
+            }
+            ret = NULL;
+            if (p < q) {
+                save = *q;
+                *q = 0;
+                for (j = 0; j < 15; j++) {
+                    if (UCS_strcasecmp(CSSUnitNames[j].name, p) == 0) {
+                        out[0] = CSSUnitNames[j].id;
+                        ret = q;
+                        break;
+                    }
+                }
+                *q = save;
+            }
+            if (ret == NULL) {
+                out[0] = 1;
+                ret = p;
+            }
+        }
+    }
+    return ret;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_ParseProperties", ParseIDENT);
 
@@ -65,7 +141,56 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_ParseProperties", ParseCOLO
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_ParseProperties", ParseRECT);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_ParseProperties", ParseCOUNTER);
+u16 *ParseCOUNTER(s16 *out, u16 *p) {
+    u16 *r;
+    u16 *s[3];
+    s16 kind;
+    if ((r = ParseIDENT(out, p, 0x28)) == NULL && (r = ParseIDENT(out, p, 0x29)) == NULL) {
+        return NULL;
+    }
+    kind = out[4];
+    p = CSS_SkipBlanksAndComments(r);
+    if (*p == '(') {
+        p++;
+        p = CSS_SkipBlanksAndComments(p);
+    }
+    p = CSS_ident(p, &s[0]);
+    if (s[0] != NULL) {
+        out[0] = 0x17;
+        *(u16 **)(out + 4) = s[0];
+    }
+    p = CSS_SkipBlanksAndComments(p);
+    if (*p == ')') {
+        return p + 1;
+    }
+    if (*p == ',') {
+        p++;
+        p = CSS_SkipBlanksAndComments(p);
+    }
+    if (kind != 0x28) {
+        p = CSS_string(p, &s[2]);
+        if (s[2] != NULL) {
+            *(u16 **)(out + 8) = s[2];
+        }
+        p = CSS_SkipBlanksAndComments(p);
+        if (*p == ')') {
+            return p + 1;
+        }
+        if (*p == ',') {
+            p++;
+            p = CSS_SkipBlanksAndComments(p);
+        }
+    }
+    p = CSS_ident(p, &s[1]);
+    if (s[1] != NULL) {
+        *(u16 **)(out + 6) = s[1];
+    }
+    p = CSS_SkipBlanksAndComments(p);
+    if (*p == ')') {
+        p++;
+    }
+    return p;
+}
 
 u16 *ParseATTR(s16 *out, u16 *p) {
     u16 *s;
@@ -1305,7 +1430,40 @@ u16 *ParseFontVariant(CSSVALUE *v, u16 *p) {
     return r;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_ParseProperties", ParseFontWeight);
+u16 *ParseFontWeight(CSSVALUE *v, u16 *p) {
+    u16 *r;
+    p = CSS_SkipBlanksAndComments(p);
+    if ((r = ParseCSSIdent(v, p, 0x7A)) == NULL && (r = ParseCSSIdent(v, p, 0x17)) == NULL &&
+        (r = ParseCSSIdent(v, p, 0x16)) == NULL && (r = ParseCSSIdent(v, p, 0x5E)) == NULL) {
+        if ((u16)(p[0] - '1') < 9 && p[1] == '0' && p[2] == '0') {
+            v->type = 2;
+            v->unit = 0x15;
+            if (p[0] == '1') {
+                v->ident = 0;
+            } else if (p[0] == '2') {
+                v->ident = 1;
+            } else if (p[0] == '3') {
+                v->ident = 2;
+            } else if (p[0] == '4') {
+                v->ident = 3;
+            } else if (p[0] == '5') {
+                v->ident = 4;
+            } else if (p[0] == '6') {
+                v->ident = 5;
+            } else if (p[0] == '7') {
+                v->ident = 6;
+            } else if (p[0] == '8') {
+                v->ident = 7;
+            } else {
+                v->ident = 8;
+            }
+            r = p + 3;
+        } else {
+            r = ParseCSSIdent(v, p, 0x4D);
+        }
+    }
+    return r;
+}
 
 u16 *ParseFontSize(CSSVALUE *v, u16 *p) {
     u16 *r;
