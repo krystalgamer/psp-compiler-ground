@@ -34,6 +34,30 @@ int getLegendTextWidth(BOX *box);
 void initLinePosition(BOX *box);
 void moveBoxPosition(BOX *box, int dx, int dy);
 int strcmp(const char *a, const char *b);
+void GUI_Graphics_getStringSize(int font, char *s, int n, int *w, int *h);
+void addFormList(BOX *body, void *node);
+void *MEM_malloc(int pool, unsigned int size);
+int colorValue(char *s);
+int sjisToUtf8(char *dst, char *src, int len);
+void initButtonContent(BOX *box, void *node);
+void initButtonBoxSize(BOX *box);
+typedef struct { int color; } STYLE0;
+extern char D_0013F0A4[];
+extern char D_0013F0AC[];
+extern char D_0013F0B4[];
+void initSelectContent(BOX *box, void *node);
+int Element_hasAttribute(void *node, void *name);
+void attr_FOCUSCOLOR(void *node, BOX *box);
+void addFocusList(void *ctx, int kind, void *node, short tabindex, void *info);
+void addFormElementList(BOX *body, int a, void *node);
+void addSelectList(BOX *box);
+extern unsigned char _DOMdisabled;
+extern char D_0013F0D0[];
+int atoi(const char *s);
+void initTextAreaContent(BOX *box, void *node);
+void initTextAreaBoxSize(BOX *box, int cols, int rows);
+extern unsigned char _DOMcols;
+extern unsigned char _DOMrows;
 int getTabindex(void *node) {
     char *s;
     s16 n = 0;
@@ -54,7 +78,35 @@ INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/lo_html_form", D_0013F0AC);
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/lo_html_form", D_0013F0B4);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_html_form", createFileRefButton);
+BOX *createFileRefButton(void *node, BOX *parent, BOX *prev) {
+    char *s;
+    BOX *box;
+
+    s = MEM_malloc(0, 0xD);
+    if (s == NULL) {
+        return NULL;
+    }
+    box = createBox(node, 1);
+    if (box == NULL) {
+        MEM_free(0, (int)s);
+        return NULL;
+    }
+    linkBox(box, parent, prev);
+    box->display = 1;
+    box->html = 0x32;
+    initButtonContent(box, node);
+    *box->style = *prev->style;
+    box->style->unk54 = colorValue(D_0013F0A4);
+    ((STYLE0 *)box->style)->color = colorValue(D_0013F0AC);
+    box->style->unk74 = 2;
+    s[sjisToUtf8(s, D_0013F0B4, 4)] = 0;
+    if (M2C_FIELD(box->geom, char **, 8) != NULL) {
+        MEM_free(0, M2C_FIELD(box->geom, int *, 8));
+    }
+    M2C_FIELD(box->geom, char **, 8) = s;
+    initButtonBoxSize(box);
+    return box;
+}
 
 BOX *html_OPTION_sub(void *node, BOX *parent, BOX *prev) {
     BOX *box;
@@ -75,7 +127,42 @@ BOX *html_OPTION_sub(void *node, BOX *parent, BOX *prev) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_html_form", getLegendTextWidth);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_html_form", html_FORM);
+BOX *html_FORM(void *node, BOX *parent, BOX *prev) {
+    int w;
+    int h;
+    BOX *box;
+
+    if (getBoxByHTML(parent, 0x11) != NULL) {
+        return NULL;
+    }
+    box = createBlockBox(node, parent, prev);
+    if (box == NULL) {
+        return NULL;
+    }
+    box->html = 0x23;
+    initBoxProperty(box);
+    GUI_Graphics_getStringSize(box->style->unk64, "m", 1, &w, &h);
+    box->style->unk20 = h;
+    box->style->unk24 = h;
+    addFormList(getBodyBox(box), node);
+    applyCSSExtStyleSheetToBox(node, box);
+    applyCSSInlinePropertyToBox(node, box);
+    if (parent != box->parent) {
+        box->style->unk20 = 0;
+        box->style->unk22 = 0;
+        box->style->unk24 = 0;
+        box->style->unk26 = 0;
+        box->style->unk30 = 0;
+        box->style->unk32 = 0;
+        box->style->unk34 = 0;
+        box->style->unk36 = 0;
+        box->style->unk28 = 0;
+        box->style->unk2A = 0;
+        box->style->unk2C = 0;
+        box->style->unk2E = 0;
+    }
+    return box;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_html_form", html_INPUT);
 
@@ -84,7 +171,40 @@ INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/lo_html_form", D_0013F0D0);
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/lo_html_form", D_0013F0D8);
 
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_html_form", html_SELECT);
+BOX *html_SELECT(void *node, BOX *parent, BOX *prev) {
+    BOX *box;
+
+    if (getBoxByHTML(parent, 0x11) != NULL) {
+        return NULL;
+    }
+    box = createBox(node, 1);
+    if (box == NULL) {
+        return NULL;
+    }
+    linkBox(box, parent, prev);
+    box->display = 1;
+    box->html = 0x4D;
+    initSelectContent(box, node);
+    initBoxProperty(box);
+    box->style->unk20 = 2;
+    box->style->unk22 = 2;
+    box->style->unk24 = 2;
+    box->style->unk26 = 2;
+    box->style->unk54 = colorValue(D_0013F0A4);
+    ((STYLE0 *)box->style)->color = colorValue(D_0013F0D0);
+    applyCSSExtStyleSheetToBox(node, box);
+    applyCSSInlinePropertyToBox(node, box);
+    initSelectBoxSize(box);
+    if (Element_hasAttribute(node, &_DOMdisabled) == 1) {
+        M2C_FIELD(box, s16 *, 0x3E) = 1;
+    } else {
+        attr_FOCUSCOLOR(node, box);
+        addFocusList(Node_getBox(Node_getOwnerDocument(node)), 0, box, getTabindex(node), 0);
+    }
+    addFormElementList(getBodyBox(box), 0, node);
+    addSelectList(box);
+    return box;
+}
 
 void html_SELECT_after(void *node, BOX *box) {
     SelInfo *si = (SelInfo *)box->geom;
@@ -116,7 +236,56 @@ BOX *html_OPTION(void *node, BOX *parent, BOX *prev) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_html_form", html_OPTION_after);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_html_form", html_TEXTAREA);
+BOX *html_TEXTAREA(void *node, BOX *parent, BOX *prev) {
+    BOX *box;
+    char *s;
+    int cols;
+    int rows;
+
+    if (getBoxByHTML(parent, 0x11) != NULL) {
+        return NULL;
+    }
+    box = createBox(node, 1);
+    if (box == NULL) {
+        return NULL;
+    }
+    linkBox(box, parent, prev);
+    box->display = 1;
+    box->html = 0x58;
+    initTextAreaContent(box, node);
+    initBoxProperty(box);
+    box->style->unk20 = 2;
+    box->style->unk22 = 2;
+    box->style->unk24 = 2;
+    box->style->unk26 = 2;
+    box->style->unk54 = colorValue(D_0013F0A4);
+    ((STYLE0 *)box->style)->color = colorValue(D_0013F0D0);
+    rows = 0;
+    cols = 0;
+    s = getDOMAttributeValue(node, &_DOMcols);
+    if (s != NULL) {
+        cols = atoi(s);
+        MEM_free(0, (int)s);
+    }
+    s = getDOMAttributeValue(node, &_DOMrows);
+    if (s != NULL) {
+        rows = atoi(s);
+        MEM_free(0, (int)s);
+    }
+    M2C_FIELD(box->geom, int *, 4) = cols;
+    M2C_FIELD(box->geom, int *, 8) = rows;
+    applyCSSExtStyleSheetToBox(node, box);
+    applyCSSInlinePropertyToBox(node, box);
+    initTextAreaBoxSize(box, cols, rows);
+    if (Element_hasAttribute(node, &_DOMdisabled) == 1) {
+        M2C_FIELD(box, s16 *, 0x3E) = 1;
+    } else {
+        attr_FOCUSCOLOR(node, box);
+        addFocusList(Node_getBox(Node_getOwnerDocument(node)), 0, box, getTabindex(node), 0);
+    }
+    addFormElementList(getBodyBox(box), 0, node);
+    return box;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
