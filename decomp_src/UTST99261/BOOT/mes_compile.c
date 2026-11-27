@@ -270,7 +270,44 @@ void mes_compile_get_inc(CompState *c, Node *n, int pre, int inc, int keep)
     }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_compile", mes_compile_op);
+int mes_compile_op(int op) {
+    int r;
+    switch (op) {
+    case 0x19:
+        r = 0x1E;
+        break;
+    case 0x47:
+    case 0xA5:
+        r = 0x26;
+        break;
+    case 0x48:
+    case 0xA6:
+        r = 0x27;
+        break;
+    case 0x4F:
+        r = 0x37;
+        break;
+    case 0x50:
+        r = 0x2B;
+        break;
+    case 0x51:
+        r = 0xD4;
+        break;
+    case 0x52:
+        r = 0xD6;
+        break;
+    case 0xA3:
+        r = 0x24;
+        break;
+    case 0xA4:
+        r = 0x25;
+        break;
+    default:
+        r = 0;
+        break;
+    }
+    return r;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
