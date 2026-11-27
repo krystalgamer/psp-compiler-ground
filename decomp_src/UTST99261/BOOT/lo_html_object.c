@@ -39,6 +39,18 @@ void addBoxList(void *list, BOX *box);
 void *lfm_createPageRegion(BOX *box, int w);
 extern unsigned char _DOMscrolling;
 extern unsigned char _DOMname;
+typedef struct { char p[0x8C]; int w; int h; int x; int y; int x9C; int bcolor; int border; int num; int xAC; char *cols; char *rows; } FSGEOM;
+void initFramesetContent(BOX *box, void *node);
+void createFrameBorder_frameset(BOX *box, void *node, int *w, int *h, int *x, int *y);
+void initFrameSize(BOX *box, char *cols, char *rows);
+int colorValue(char *s);
+int atoi(const char *s);
+void *MEM_malloc(int pool, unsigned int size);
+void *memcpy(void *d, const void *s, unsigned int n);
+extern unsigned char _DOMbordercolor;
+extern unsigned char _DOMborder;
+extern unsigned char _DOMcols;
+extern unsigned char _DOMrows;
 int isImageMimeType(signed char *arg0) {
     return (unsigned int) (UTL_guessMIMEType(arg0) - 1) < 4U;
 }
@@ -207,9 +219,79 @@ BOX *html_FRAME(void *node, BOX *parent, BOX *prev) {
     return box;
 }
 
-const char D_0013F13C[4] __attribute__((aligned(4))) = "*";
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_html_object", html_FRAMESET);
+BOX *html_FRAMESET(void *node, BOX *parent, BOX *prev) {
+    int x;
+    int y;
+    int w;
+    int h;
+    BOX *body;
+    BOX *box;
+    int num = 0;
+    char *s;
+    char *cols;
+    char *rows;
+
+    body = getBodyBox(parent);
+    if (body == NULL) {
+        return NULL;
+    }
+    ((FRGEOM *)body->geom)->cols = 1;
+    if (parent->content == 2) {
+        num = getFramenum(parent);
+        getFrameSizeFromFramesetBox(&x, &y, &w, &h, parent, num);
+    } else {
+        w = 0;
+        h = 0;
+        x = M2C_FIELD(body->geom, int *, 8);
+        y = M2C_FIELD(body->geom, int *, 0xC);
+    }
+    box = createBox(node, 1);
+    if (box == NULL) {
+        return NULL;
+    }
+    linkBox(box, parent, prev);
+    box->display = 0;
+    box->html = 0x25;
+    initFramesetContent(box, node);
+    initBoxProperty(box);
+    ((FSGEOM *)box->geom)->w = w;
+    ((FSGEOM *)box->geom)->h = h;
+    ((FSGEOM *)box->geom)->x = x;
+    ((FSGEOM *)box->geom)->y = y;
+    ((FSGEOM *)box->geom)->border = 4;
+    if (parent->content == 2) {
+        ((FSGEOM *)box->geom)->num = num;
+        createFrameBorder_frameset(box, node, &w, &h, &x, &y);
+        ((FSGEOM *)box->geom)->w = w;
+        ((FSGEOM *)box->geom)->h = h;
+        ((FSGEOM *)box->geom)->x = x;
+        ((FSGEOM *)box->geom)->y = y;
+    }
+    s = getDOMAttributeValue(node, &_DOMbordercolor);
+    if (s != NULL) {
+        ((FSGEOM *)box->geom)->bcolor = colorValue(s);
+        MEM_free(0, s);
+    }
+    s = getDOMAttributeValue(node, &_DOMborder);
+    if (s != NULL) {
+        ((FSGEOM *)box->geom)->border = atoi(s);
+        MEM_free(0, s);
+    }
+    if (((FSGEOM *)box->geom)->border < 0) {
+        ((FSGEOM *)box->geom)->border = 4;
+    }
+    cols = getDOMAttributeValue(node, &_DOMcols);
+    rows = getDOMAttributeValue(node, &_DOMrows);
+    if (cols == NULL && rows == NULL) {
+        rows = MEM_malloc(0, 2);
+        memcpy(rows, "*", 2);
+    }
+    initFrameSize(box, cols, rows);
+    ((FSGEOM *)box->geom)->cols = cols;
+    ((FSGEOM *)box->geom)->rows = rows;
+    return box;
+}
 
 BOX *html_NOFRAMES(void *node, BOX *parent, BOX *prev) {
     BOX *box = createBox(node, 1);
