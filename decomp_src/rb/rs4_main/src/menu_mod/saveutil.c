@@ -13,7 +13,6 @@ extern int D_0011B054;
 
 extern unsigned char savedata_param;
 extern unsigned int g_utilityType;
-M2C_UNK FreeData_GameBuf();                         /* extern */
 void SetData_InitBase();
 M2C_UNK sceUtilitySavedataInitStart(void *);        /* extern */
 int FreeData_Normal(int, void *);char *strcpy(char *d, const char *s);
@@ -46,6 +45,16 @@ void *localeGetRegionCntx();
 unsigned int strlen(const char *);
 void *memcpy(void *, const void *, unsigned long);
 extern unsigned char D_00104098;
+typedef struct { char pad[0x80]; int f80; int f84; int f88; int f8C; } SaveGameCntx;
+SaveGameCntx *gameGetCntx();
+char *saveGetAccountData(int);
+int saveGetData(int, int, int, void *);
+int saveSetData(int, int, int, void *);
+typedef struct { int f0; int f4; int f8; } SaveShift;
+extern SaveShift l_tSHIFT;
+extern int D_0011B058;
+int _memFree();
+int memcmp(const void *, const void *, unsigned int);
 
 void SetData_Paramsfo_String(int arg0) {
     signed char *temp_s2;
@@ -59,9 +68,35 @@ void SetData_Paramsfo_String(int arg0) {
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/saveutil", D_00103954);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/saveutil", SetData_GameData);
+void SetData_GameData(char *p)
+{
+	void *d = _memAllocZero(0x14B0, &D_00103954, 0x81);
+	SaveGameCntx *g;
+	if (d == NULL)
+		consPrintf("cassert : %s %d : %s : %s\n", &D_00103954, 0x82, "SetData_GameData", "pSaveData");
+	g = gameGetCntx();
+	l_tSHIFT.f8 = (*(unsigned int *)(saveGetAccountData(g->f8C) + 0x14A0) >> 1) & 1;
+	*(unsigned int *)(saveGetAccountData(g->f8C) + 0x14A0) |= 2;
+	saveGetData(g->f88, g->f8C, 0x140962, d);
+	*(void **)(p + 0x74) = d;
+	*(int *)(p + 0x78) = 0x14B0;
+	*(int *)(p + 0x7C) = 0x14B0;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/saveutil", FreeData_GameData);
+typedef struct { unsigned b0:1; unsigned shift:1; unsigned rest:30; } SaveAccBits;
+int FreeData_GameData(p)
+	char *p;
+{
+	SaveGameCntx *g = gameGetCntx();
+	if (*(int *)(p + 0x1C) == 0 || (*(int *)(p + 0x1C) == 2 && *(int *)(p + 0x5CC) == 0)) {
+		consPrintf("save ok backup update\n");
+		saveSetData(g->f88, 2, 0x140962, *(void **)(p + 0x74));
+	} else {
+		consPrintf("save ng result = %x\n", *(int *)(p + 0x1C));
+		((SaveAccBits *)(saveGetAccountData(g->f8C) + 0x14A0))->shift = D_0011B058;
+	}
+	_memFree(*(void **)(p + 0x74), &D_00103954, 0x9F);
+}
 
 void SetData_GameBuf(char *p)
 {
@@ -69,7 +104,34 @@ void SetData_GameBuf(char *p)
 	*(int *)(p + 0x78) = 0x80000;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/saveutil", FreeData_GameBuf);
+typedef struct { int d[0x14B0 / 4]; } SaveAccData;
+void FreeData_GameBuf(char *p)
+{
+	SaveGameCntx *g, *g2;
+	SaveAccData *buf, *acc;
+	int r;
+	if (*(int *)(p + 0x1C) == 0 || (*(int *)(p + 0x1C) == 2 && *(int *)(p + 0x5CC) == 0)) {
+		if (l_tSHIFT.f0 != 0x1000000) {
+			g = gameGetCntx();
+			saveSetData(g->f88, g->f8C, 0x140962, *(void **)(p + 0x74));
+			saveSetData(g->f88, 2, 0x140962, *(void **)(p + 0x74));
+		} else {
+			g2 = gameGetCntx();
+			buf = _memAllocZero(0x14B0, &D_00103954, 0xBE);
+			acc = (SaveAccData *)saveGetAccountData(2);
+			*buf = *acc;
+			saveSetData(g2->f88, 2, 0x140962, *(void **)(p + 0x74));
+			r = memcmp(buf, acc, 0x14B0);
+			*acc = *buf;
+			_memFree(buf, &D_00103954, 0xCC);
+			l_tSHIFT.f4 = r == 0 ? 1 : 2;
+		}
+		consPrintf("load ok result=%d/%d\n", *(int *)(p + 0x1C), D_0011B054);
+	} else {
+		consPrintf("load ng result = %x\n", *(int *)(p + 0x1C));
+	}
+	_memFree(*(void **)(p + 0x74), &D_00103954, 0xD8);
+}
 
 void SetData_Icon0Buf(void) {
 }
