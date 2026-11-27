@@ -9,11 +9,31 @@ extern int e_icon_image_width;
 extern int e_icon_image_height;
 unsigned int strlen(const char *);
 void getStringsExtents(int font, char *s, int len, int *w, int *h);
+int lfm_getHeight(void *region);
+void adjustLineHposition(void *ctx, void *line);
+int adjustLineVposition(void *ctx, BOX *box, void *line);
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_box_size", calcInLineBoxSize);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_box_size", calcBlockBoxSize);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_box_size", calcBodyBoxSize);
+void calcBodyBoxSize(void *ctx, BOX *box) {
+    int h;
+
+    adjustLineHposition(ctx, M2C_FIELD(ctx, void **, 0xC));
+    M2C_FIELD(box, int *, 0x34) += adjustLineVposition(ctx, box, M2C_FIELD(ctx, void **, 0xC));
+    h = lfm_getHeight(box->region);
+    h = h > M2C_FIELD(box, int *, 0x34) ? h : M2C_FIELD(box, int *, 0x34);
+    box->height = h + box->style->unk30 + box->style->unk28 + box->style->unk2C + box->style->unk34;
+    if (M2C_FIELD(box->geom, int *, 0x44) == 0) {
+        if (M2C_FIELD(box->geom, int *, 0x14) < box->height)
+            M2C_FIELD(box->geom, int *, 0x14) = box->height;
+    } else {
+        box->width = M2C_FIELD(box->geom, int *, 8);
+        box->height = M2C_FIELD(box->geom, int *, 0xC);
+        M2C_FIELD(box->geom, int *, 0x10) = box->width;
+        M2C_FIELD(box->geom, int *, 0x14) = box->height;
+    }
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_box_size", calcBlockButtonBoxSize);
 
