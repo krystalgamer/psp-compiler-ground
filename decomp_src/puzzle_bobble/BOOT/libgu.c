@@ -898,72 +898,73 @@ void sceGuEndObject(void)
 	n_bbox--;
 }
 
-#ifdef NON_MATCHING
-/* Five instructions short: the logic is complete (packed vertices, cumulative 3->2->1
- * fallthrough swaps).  The empty `case 0:` reproduces the original's 1, <2, 2, 3 compare
- * tree, but the original lays the case blocks out with a jump between each pair. */
-typedef struct {
+typedef struct __attribute__((packed)) {
 	unsigned short u, v;
 	short x, y, z;
-} __attribute__((packed)) GuSpriteVertex;
-void sceGuDrawSprite(int x, int y, int z, int u, int v, int flip, int rotation)
+} GuSpriteVertex;
+
+void sceGuDrawSprite(int x, int y, int z, int u, int v, int flip, int rotate)
 {
-	GuSpriteVertex *vtx = sceGuGetMemory(2 * sizeof(GuSpriteVertex));
-	GuSpriteVertex t;
+	GuSpriteVertex *vtx = (GuSpriteVertex *)sceGuGetMemory(2 * sizeof(GuSpriteVertex));
+	GuSpriteVertex tmp;
 
 	vtx[0].u = u;
 	vtx[0].v = v;
 	vtx[0].x = x;
 	vtx[0].y = y;
 	vtx[0].z = z;
-	vtx[1].u = u + _ctx[__aw_list_mode].sprite_mode[0];
-	vtx[1].v = v + _ctx[__aw_list_mode].sprite_mode[1];
-	vtx[1].x = x + _ctx[__aw_list_mode].sprite_mode[2];
-	vtx[1].y = y + _ctx[__aw_list_mode].sprite_mode[3];
+	vtx[1].u = _ctx[__aw_list_mode].sprite_mode[0] + u;
+	vtx[1].v = _ctx[__aw_list_mode].sprite_mode[1] + v;
+	vtx[1].x = _ctx[__aw_list_mode].sprite_mode[2] + x;
+	vtx[1].y = _ctx[__aw_list_mode].sprite_mode[3] + y;
 	vtx[1].z = z;
+
 	switch (flip) {
 	case 0:
 		break;
-	case 3:
-		t.u = vtx[0].u;
-		t.v = vtx[0].v;
-		vtx[0].u = vtx[1].u;
-		vtx[0].v = vtx[1].v;
-		vtx[1].u = t.u;
-		vtx[1].v = t.v;
-	case 2:
-		t.v = vtx[0].v;
-		vtx[0].v = vtx[1].v;
-		vtx[1].v = t.v;
 	case 1:
-		t.u = vtx[0].u;
+		tmp.u = vtx[0].u;
 		vtx[0].u = vtx[1].u;
-		vtx[1].u = t.u;
-	}
-	switch (rotation) {
-	case 0:
+		vtx[1].u = tmp.u;
+		break;
+	case 2:
+		tmp.v = vtx[0].v;
+		vtx[0].v = vtx[1].v;
+		vtx[1].v = tmp.v;
 		break;
 	case 3:
-		t.x = vtx[0].x;
-		vtx[0].x = vtx[1].x;
-		vtx[1].x = t.x;
-	case 2:
-		t.x = vtx[0].x;
-		t.y = vtx[0].y;
-		vtx[0].x = vtx[1].x;
-		vtx[0].y = vtx[1].y;
-		vtx[1].x = t.x;
-		vtx[1].y = t.y;
+		tmp.u = vtx[0].u;
+		tmp.v = vtx[0].v;
+		vtx[0].u = vtx[1].u;
+		vtx[0].v = vtx[1].v;
+		vtx[1].u = tmp.u;
+		vtx[1].v = tmp.v;
+		break;
+	}
+	switch (rotate) {
+	case 0:
+		break;
 	case 1:
-		t.y = vtx[0].y;
+		tmp.y = vtx[0].y;
 		vtx[0].y = vtx[1].y;
-		vtx[1].y = t.y;
+		vtx[1].y = tmp.y;
+		break;
+	case 2:
+		tmp.x = vtx[0].x;
+		tmp.y = vtx[0].y;
+		vtx[0].x = vtx[1].x;
+		vtx[0].y = vtx[1].y;
+		vtx[1].x = tmp.x;
+		vtx[1].y = tmp.y;
+		break;
+	case 3:
+		tmp.x = vtx[0].x;
+		vtx[0].x = vtx[1].x;
+		vtx[1].x = tmp.x;
+		break;
 	}
 	sceGuDrawArray(6, 0x800102, 2, 0, vtx);
 }
-#else
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", sceGuDrawSprite);
-#endif
 
 void sceGuSpriteMode(int a0, int a1, int a2, int a3)
 {
