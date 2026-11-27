@@ -42,7 +42,22 @@ int I3dcs_GetIntersectSegCylA(const float *c, const float *d, const float *cap, 
 }
 const float D_00109BA8 = 1.0f;
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3dcs_sph_cap", I3dcs_IsIntersectCylRLineA);
+void I3dVecScaleA(float *, const float *, float);
+void I3dVecAddA(float *, const float *, const float *);
+float I3dVecDotA(const float *, const float *);
+int I3dcs_GetIntersectLineCylExA(const float *, const float *, const float *, const float *, float, float, float *, float *);
+extern const float D_00109BAC;
+float sqrtf(float);
+int I3dcs_IsIntersectCylRLineA(const float *cyl, const float *ax, const float *s, const float *sd)
+{
+	float c[4] __attribute__((aligned(16)));
+	float h;
+	I3dVecScaleA(c, ax, D_00109BAC);
+	I3dVecAddA(c, c, cyl);
+	h = sqrtf(I3dVecDotA(ax, ax));
+	return I3dcs_GetIntersectLineCylExA(s, sd, c, ax, h + (s[3] + s[3]), cyl[3] + s[3], 0, 0) != 0;
+}
+const float D_00109BAC = 0.5f;
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3dcs_sph_cap", I3dcs_IsIntersectCylRRayA);
 
