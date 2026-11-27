@@ -97,7 +97,37 @@ int sceSsUnbindSoundData(unsigned int hd)
 	return 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/sound_playsmf/nonmatchings/libsndp", sceSsNoteOn);
+typedef struct { unsigned int n; int pad[3]; unsigned int tone[1]; } SsProgParam;
+typedef struct { int pad[4]; unsigned int min; unsigned int max; } SsToneParam;
+int sdphd_getProgramParam(void *pHd, unsigned int idx, void **ppParam);
+int sdphd_getToneParam(void *pHd, unsigned int idx, void **ppParam);
+int sceSsNoteOn(unsigned int hd, int ch, unsigned int prog, unsigned int note, int a4, int a5, int a6)
+{
+	SsProgParam *pp;
+	SsToneParam *tp;
+	unsigned int i;
+	int v;
+	int ret = 0;
+
+	if (g_state == -1)
+		return 0;
+	if (hd > 32)
+		return 0;
+	if (g_hd[hd] == 0)
+		return 0;
+	if (sdphd_getProgramParam((void *)g_hd[hd]->hd, prog, (void **)&pp) != 0)
+		return 0;
+	for (i = 0; i < pp->n; i++) {
+		if (sdphd_getToneParam((void *)g_hd[hd]->hd, pp->tone[i], (void **)&tp) >= 0) {
+			if (note >= tp->min && note <= tp->max) {
+				v = func_00008544(hd, pp->tone[i], ch, note, 0, a4, a6, a5);
+				if (v >= 0)
+					ret |= 1 << v;
+			}
+		}
+	}
+	return ret;
+}
 
 typedef struct { unsigned char ch; unsigned char note; } SsMidiKey;
 unsigned int voice_getVoiceByMidi(SsMidiKey *key, int a1);
