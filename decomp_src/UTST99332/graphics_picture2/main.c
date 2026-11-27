@@ -297,7 +297,31 @@ INCLUDE_ASM("tmp/asm/UTST99332/graphics_picture2/nonmatchings/main", begin_scene
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_picture2/nonmatchings/main", end_scene);
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_picture2/nonmatchings/main", swap_buffers);
+unsigned int sceKernelGetSystemTimeLow(void);
+int sceDisplayWaitVblankStart(void);
+int sceGuSync(int mode, int what);
+void swap_buffers()
+{
+	int cpu_time = sceKernelGetSystemTimeLow() ;
+	sceGuSync( 0, 0 ) ;
+	int gpu_time = sceKernelGetSystemTimeLow() ;
+	sceGuDebugFlush() ;
+	sceGuDispBuffer( 480, 272, g_frame_buffer, 512 ) ;
+	sceDisplayWaitVblankStart() ;
+	g_frame_count ++ ;
+
+	int vbl_time = sceKernelGetSystemTimeLow() ;
+	int vbl_count = sceDisplayGetVcount() ;
+	if ( g_vbl_count >= 0 ) {
+		g_vbl_step = vbl_count - g_vbl_count ;
+		if ( g_frame_count % 6 == 0 ) {
+			g_cpu_load = ( cpu_time - g_vbl_time ) * 100 / 16667 ;
+			g_gpu_load = ( gpu_time - g_vbl_time ) * 100 / 16667 ;
+		}
+	}
+	g_vbl_time = vbl_time ;
+	g_vbl_count = vbl_count ;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_picture2/nonmatchings/main", move_objects);
 
