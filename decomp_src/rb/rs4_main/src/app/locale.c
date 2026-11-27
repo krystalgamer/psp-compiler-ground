@@ -12,13 +12,13 @@ int localeSetKeyConfig(void);
 char *resArg();
 int strncmp(const char *, const char *, unsigned int);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/locale", localeChangeDirect);
-
-int localeChangeDirect();
 typedef struct { unsigned char f0, f1, lang, btn; char name[8]; unsigned char flags; } LocInfo;
 typedef struct { unsigned char num, cur, f2, f3; int pad[3]; LocInfo *loc[1]; } RegionInfo;
 #define RGN ((RegionInfo *)pRegionCntx)
 #define NOWLOC ((LocInfo *)pNowLocale)
+int localeChangeDirect();
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/locale", localeChangeDirect);
+
 int localeChange(int lang, int btn)
 {
 	unsigned int n = RGN->num;
