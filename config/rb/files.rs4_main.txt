@@ -200,7 +200,11 @@ rodata 0x104898 src/ys/vfs_internal
 0x7122C i3d_parser_i3c  1.9.2           i3d_parser_i3c.c
 0x71A7C i3d_collision   1.9.2           i3d_collision.c
 0x75A98 i3dcs_sph_cap   1.9.2           i3dcs_sph_cap.c
+# i3dcs_obb / I3d*A / I3dGeomInit.. / sgx*: no STT_FILE; split at the name-prefix changes
 0x7703C i3dcs_obb       1.9.2           i3dcs_obb.c
+0x77EB8 i3d_geom_a      1.9.2           i3d_geom_a.c
+0x78580 i3d_geom        1.9.2           i3d_geom.c
+0x78F6C sgx             1.9.2           sgx.c
 0x7A2E0 sgxsys          1.9.2           sgxsys.c
 0x7A70C sgxbmg          1.9.2           sgxbmg.c
 0x7B7E0 sgxres          1.9.2           sgxres.c

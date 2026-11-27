@@ -187,6 +187,9 @@ i3d_parser_i3c                               1.9.2           i3d_parser_i3c.c
 i3d_collision                                1.9.2           i3d_collision.c
 i3dcs_sph_cap                                1.9.2           i3dcs_sph_cap.c
 i3dcs_obb                                    1.9.2           i3dcs_obb.c
+i3d_geom_a                                   1.9.2           i3d_geom_a.c
+i3d_geom                                     1.9.2           i3d_geom.c
+sgx                                          1.9.2           sgx.c
 sgxsys                                       1.9.2           sgxsys.c
 sgxbmg                                       1.9.2           sgxbmg.c
 sgxres                                       1.9.2           sgxres.c
