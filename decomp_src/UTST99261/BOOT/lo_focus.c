@@ -350,7 +350,61 @@ FOCUSLIST *getNextFocusDown(void *frame, FOCUSLIST *def, FOCUSLIST *cur) {
     return def;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_focus", getRealPositionOfAnchor);
+int getRealPositionOfAnchor(BOX *a, int *x, int *y, int *w, int *h) {
+    BOX *b;
+    int found;
+    int minx;
+    int miny;
+    int mw;
+    int mh;
+
+    if (a->html == 1) {
+        minx = 0;
+        found = 0;
+        miny = 0;
+        mw = 0;
+        mh = 0;
+        for (b = a->child; b != NULL && b->html != 1; ) {
+            if (b->content != 0 && b->width > 0 && b->height > 0) {
+                if (!found) {
+                    found = 1;
+                    minx = b->x;
+                    miny = b->y;
+                    mw = b->width;
+                    mh = b->height;
+                }
+                if (b->y < miny) {
+                    miny = b->y;
+                    minx = minx < b->x ? minx : b->x;
+                    mw = b->width;
+                    mh = b->height;
+                }
+            }
+            if (b->child != NULL) {
+                b = b->child;
+            } else if (b->next != NULL) {
+                b = b->next;
+            } else {
+                b = b->parent;
+                while (b != a && b->next == NULL) {
+                    b = b->parent;
+                }
+                if (b == a) {
+                    break;
+                }
+                b = b->next;
+            }
+        }
+        *x = minx;
+        *y = miny;
+        if (w != NULL) {
+            *w = mw;
+        }
+        if (h != NULL) {
+            *h = mh;
+        }
+    }
+}
 
 void getRealFocusMaxBounds(FOCUSLIST *f, int *x, int *y, int *w, int *h) {
     if (M2C_FIELD(f->obj, s16 *, 0x3A) == 1) {
