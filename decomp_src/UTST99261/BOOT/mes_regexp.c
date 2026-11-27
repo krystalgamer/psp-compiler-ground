@@ -96,7 +96,47 @@ extern const double D_0013BFE0;
 void *mes_array_new(void *ctx, int n);
 int mes_string_new(void *ctx, const void *str, int len);
 extern const double D_0013BFD8;
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_regexp", mes_regexp_new);
+void mes_object_init(void *o, int cls, int proto);
+int mes_error_syntax(void *ctx, int s);
+extern int D_00585360;
+RxObj *mes_regexp_new(void *ctx, int source, int flags) {
+    RxObj *re;
+    unsigned short *p;
+    int n;
+
+    re = mes_gc_alloc(ctx, 8);
+    if (re != NULL) {
+        mes_object_init(re, 0xC, D_00585360);
+        re->source = source;
+        re->node = NULL;
+        re->lastIndex = 0;
+        re->global = 0;
+        re->icase = 0;
+        re->multiline = 0;
+        re->ncap = 0;
+        if ((flags & 3) == 3) {
+            p = ((RxStr *)(flags & ~3))->str;
+            n = ((RxStr *)(flags & ~3))->len;
+            while (n-- > 0) {
+                switch (*p++) {
+                case 'g':
+                    re->global = 1;
+                    break;
+                case 'i':
+                    re->icase = 1;
+                    break;
+                case 'm':
+                    re->multiline = 1;
+                    break;
+                default:
+                    M2C_FIELD(ctx, int *, 0x14) = mes_error_syntax(ctx, flags);
+                    break;
+                }
+            }
+        }
+    }
+    return re;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
