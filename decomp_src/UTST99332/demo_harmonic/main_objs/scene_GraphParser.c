@@ -4,6 +4,7 @@
 #include "cxx/defer_asm.h"
 #define DEMO_TEMPLATE_DEFS
 #define SCENE_GRAPH_TEMPLATE_DEFS
+#define SGL_TEMPLATE_DEFS 1
 #include "../main.hpp"
 SCENE_ALLOC_FIRST_USE
 /* linkonce order: this object's .gnu.linkonce.t sections in Sony's link order */
@@ -196,6 +197,10 @@ extern "C" void scene_GraphParser_uses(scene::Graph *g, common::handle<scene::No
     common::handle<scene::Mesh> f(*hg);
 }
 
+/* sgl::PrimitiveIndex<int> members that the (asm) methods above call (nothing in C++ calls them) */
+template std::vector<int> &sgl::PrimitiveIndex<int>::tri();
+template std::vector<int> &sgl::PrimitiveIndex<int>::strips();
+
 /* from here on INCLUDE_ASM puts the asm in its own .gnu.linkonce.t section (written as
    INCLUDE_ASM so that splat keeps these functions as asm) */
 #undef INCLUDE_ASM
@@ -216,10 +221,6 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_GraphP
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_GraphParser", _ZN11FieldParser16step_xxxx_vectorIN3sgl8TexCoordEEEvRSt6vectorIT_SaIS4_EEjRKNS_5FieldE);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_GraphParser", _ZN11FieldParser16step_xxxx_vectorIN3sgl5ColorEEEvRSt6vectorIT_SaIS4_EEjRKNS_5FieldE);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_GraphParser", _ZN3sgl14PrimitiveIndexIiE3triEv);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_GraphParser", _ZN3sgl14PrimitiveIndexIiE6stripsEv);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_GraphParser", _ZN5scene5Graph7newNodeINS_8MaterialEEEN6common6handleIT_EESsb);
 

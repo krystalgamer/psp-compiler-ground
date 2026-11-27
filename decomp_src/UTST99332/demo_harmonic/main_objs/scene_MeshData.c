@@ -78,6 +78,18 @@ void _GLOBAL__D__ZN5scene8MeshDataC2Ev(void)
 }
 
 /* instances used by the (asm) methods above */
+namespace math {
+template<class T> T max_(T a, T b)
+{
+    return a < b ? b : a;
+}
+template<class T> T min_(T a, T b)
+{
+    return a < b ? a : b;
+}
+template float max_<float>(float, float);
+template float min_<float>(float, float);
+}
 namespace std {
 template vector<sgl::TexCoord> &vector<sgl::TexCoord>::operator=(const vector<sgl::TexCoord> &);
 template vector<sgl::Position> &vector<sgl::Position>::operator=(const vector<sgl::Position> &);
@@ -92,9 +104,6 @@ template vector<sh::VectorRGB> &vector<sh::VectorRGB>::operator=(const vector<sh
    INCLUDE_ASM so that splat keeps these functions as asm) */
 #undef INCLUDE_ASM
 #define INCLUDE_ASM(FOLDER, NAME) INCLUDE_ASM_LINKONCE(FOLDER, NAME)
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_MeshData", _ZN4math4max_IfEET_S1_S1_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_MeshData", _ZN4math4min_IfEET_S1_S1_);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_MeshData", _ZN5scene8MeshData26unfold_vertices_attributesISt6vectorIN3sgl8TexCoordESaIS4_EEEEbNS3_14VertexAttrEnumERT_);
 

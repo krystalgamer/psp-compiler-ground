@@ -4,6 +4,7 @@
 #include "cxx/defer_asm.h"
 #define DEMO_TEMPLATE_DEFS
 #define SCENE_GRAPH_TEMPLATE_DEFS
+#define SGL_TEMPLATE_DEFS 1
 #include "../main.hpp"
 /* linkonce order: this object's .gnu.linkonce.t sections in Sony's link order */
 SCENE_LINKONCE_ORDER(
@@ -88,13 +89,13 @@ extern "C" void scene_Graph_3_uses(scene::Graph *g, unsigned long *p)
     std::fill(p, p, 0);
 }
 
+/* sgl::PrimitiveIndex<int> members that the (asm) methods above call (nothing in C++ calls them) */
+template int sgl::PrimitiveIndex<int>::countVertices() const;
+template int sgl::PrimitiveIndex<int>::countVerticesInStrips() const;
+
 /* from here on INCLUDE_ASM puts the asm in its own .gnu.linkonce.t section (written as
    INCLUDE_ASM so that splat keeps these functions as asm) */
 #undef INCLUDE_ASM
 #define INCLUDE_ASM(FOLDER, NAME) INCLUDE_ASM_LINKONCE(FOLDER, NAME)
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph_3", _ZNK3sgl14PrimitiveIndexIiE13countVerticesEv);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph_3", _ZNK3sgl14PrimitiveIndexIiE21countVerticesInStripsEv);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph_3", _ZNK3sgl14PrimitiveIndexIiE5rangeERiS2_);
