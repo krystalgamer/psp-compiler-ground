@@ -14,6 +14,14 @@ extern unsigned char D_0011FC44;
 #define SLOT_NAME(s) ((M2C_UNK)(s))
 int *ResGetFileHeader(int *arg0);
 
+void sgxResClose(int id);
+static inline char *ResListFirst(void) {
+    char *p = *(char **)(&D_0011FC44 + 4);
+    return (*(int *)(p + 8) < 0) ? NULL : p;
+}
+void *sgxResFindWave(int id, int idx, int z);
+int RoundWavePos(void *w, long long pos);
+
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/sgxres", D_0010A158);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxres", ResGetSlot);
@@ -110,7 +118,12 @@ void *sgxResGetHeaderPtr(int id) {
     return *(void **)(p + 0x14);
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxres", sgxResGetBodyPtr);
+void *sgxResGetBodyPtr(int id, int *isFile) {
+    char *p = ResGetSlot(id, SLOT_NAME("GetBody"));
+    if (p == NULL) return NULL;
+    if (isFile != NULL) *isFile = *(int *)(p + 0x68) == 2;
+    return *(void **)(p + 0x70);
+}
 
 extern const char D_0010A21C[];
 const char *sgxResGetName(int id) {
@@ -150,7 +163,16 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxres", sgxResFindRgn);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxres", sgxResFindSeq);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxres", sgxResFindAdsr);
+int sgxResFindAdsr(int id, int idx) {
+    char *p = ResGetSlot(id, SLOT_NAME("FindAdsr"));
+    char *t;
+    if (p == NULL) return 0;
+    t = *(char **)(p + 0x44);
+    if (t == NULL) return 0;
+    if (idx < 0) return 0;
+    if (*(int *)(p + 0x48) - 1 < idx) return 0;
+    return *(int *)(t + idx * 4 + 8);
+}
 
 void *sgxResOfsToData(int id, int ofs) {
     char *p = ResGetSlot(id, SLOT_NAME("OfsToData"));
@@ -212,7 +234,16 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxres", sgxResNameToReq);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxres", sgxResNameToReqGlobal);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxres", sgxResCanPlayType);
+int sgxResCanPlayType(int id, int type) {
+    char *p = ResGetSlot(id, SLOT_NAME("CanPlay"));
+    if (p == NULL) return 0;
+    switch (type) {
+    case 0: return *(int *)(p + 0x30) > 0;
+    case 1: return *(int *)(p + 0x20) > 0;
+    case 2: return *(int *)(p + 0x38) > 0;
+    }
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxres", sgxResEnumPlayName);
 
@@ -238,7 +269,16 @@ int sgxResGetCategory(int id) {
     return *(short *)(p + 0x12);
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxres", sgxResGetWaveSurroundCount);
+int sgxResGetWaveSurroundCount(int id, int idx) {
+    char *p = ResGetSlot(id, SLOT_NAME("GetWaveSurroundCount"));
+    char *t;
+    if (p == NULL) return 0;
+    t = *(char **)(p + 0x2C);
+    if (t == NULL) return 0;
+    if (idx < 0) return 0;
+    if (*(int *)(p + 0x30) - 1 < idx) return 0;
+    return *(int *)(t + idx * 8 + 8);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxres", sgxResGetWaveSurroundInfo);
 
@@ -246,7 +286,16 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxres", sgxResFindWaveSurround);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxres", sgxResFindCopyWaveSurroundInfo);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxres", sgxResGetWaveMarkerCount);
+int sgxResGetWaveMarkerCount(int id, int idx) {
+    char *p = ResGetSlot(id, SLOT_NAME("GetWaveMarkerCount"));
+    char *t;
+    if (p == NULL) return 0;
+    t = *(char **)(p + 0x28);
+    if (t == NULL) return 0;
+    if (idx < 0) return 0;
+    if (*(int *)(p + 0x30) - 1 < idx) return 0;
+    return *(int *)(t + idx * 8 + 8);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxres", sgxResGetWaveMarkerInfo);
 
@@ -254,7 +303,11 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxres", sgxResFindWaveMarker);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxres", RoundWavePos);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxres", sgxResRoundWavePos);
+int sgxResRoundWavePos(int id, int idx, long long pos) {
+    void *w = sgxResFindWave(id, idx, 0);
+    if (w == NULL) return -1;
+    return RoundWavePos(w, pos);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxres", sgxResWaveTimeToPos);
 
