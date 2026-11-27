@@ -18,6 +18,9 @@ extern TagAfter jt_after[];
 extern int D_001F5E20;
 int DOMStringcasecmpCharFast(DOMString *s, char *name);
 void *Node_getBox(void *node);
+typedef struct { double x; double y; double angle; int pad[2]; } MAPPT;
+typedef struct { MAPPT *pts; int n; u8 u8_[0x28]; int center; } MAPPOLY;
+double atan2(double y, double x);
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_map", parseCoords);
 
 #ifndef NULL
@@ -44,9 +47,40 @@ void initAreaBuffer(void *arg0) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_map", insertBuffer_90298);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_map", calcAngle);
+void calcAngle(MAPPOLY *a) {
+    int i;
+    int c;
+    double d;
+    for (i = 0; i < a->n; i++) {
+        c = a->center;
+        if (i != c) {
+            d = atan2(a->pts[i].y - a->pts[c].y, a->pts[i].x - a->pts[c].x);
+            a->pts[i].angle = d;
+        } else {
+            a->pts[i].angle = 0;
+        }
+    }
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_map", sortPoint);
+int sortPoint(MAPPOLY *a) {
+    int i;
+    int j;
+    MAPPT tmp;
+    for (i = 0; i < a->n; i++) {
+        for (j = i; j > 0 && a->pts[j - 1].angle >= a->pts[j].angle; j--) {
+            if (a->pts[j - 1].angle != a->pts[j].angle) {
+                tmp = a->pts[j];
+                a->pts[j] = a->pts[j - 1];
+                a->pts[j - 1] = tmp;
+            } else if (a->pts[j - 1].x > a->pts[j].x) {
+                tmp = a->pts[j];
+                a->pts[j] = a->pts[j - 1];
+                a->pts[j - 1] = tmp;
+            }
+        }
+    }
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_map", checkInterior);
 
