@@ -64,9 +64,69 @@ void sceGimPictureDelete( SceGimPicture *picture )
  }
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gim_picture", sceGimPictureDuplicate);
+SceGimPicture *sceGimPictureDuplicate( SceGimPicture *picture, int flags )
+{
+	if ( picture == 0 ) return 0 ;
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gim_picture", sceGimPictureLoadFile);
+	if ( flags & 0x0002 ) {
+		flags &= ~0x0002 ;
+		if ( sceGimPictureHasAnimation( picture ) ) {
+			flags |= 0x0001 ;
+		}
+	}
+	if ( flags == 0 ) {
+		picture->m_reference ++ ;
+		return picture ;
+	}
+
+	SceGimPicture *picture2 = sceGimPictureCreate( 0 ) ;
+	if ( picture2 == 0 ) return 0 ;
+
+	*picture2 = *picture ;
+	picture2->m_reference = 1 ;
+	picture2->m_unk0C = 0 ;
+	if ( picture2->m_image != 0 ) picture2->m_image->reference ++ ;
+	if ( picture2->m_palette != 0 ) picture2->m_palette->reference ++ ;
+
+	if ( picture2->m_n_sequences > 0 ) {
+		int size = sizeof( void * ) * picture2->m_n_sequences ;
+		picture2->m_sequences = (SceGimSequenceHeader **)sceGimPictureAllocMemory( size ) ;
+		if ( picture2->m_sequences == 0 ) {
+			picture2->m_n_sequences = 0 ;
+			sceGimPictureDelete( picture2 ) ;
+			return 0 ;
+		}
+		{ int i ; for ( i = 0 ; i < picture2->m_n_sequences ; i ++ ) {
+			picture2->m_sequences[ i ] = picture->m_sequences[ i ] ;
+			picture2->m_sequences[ i ]->reference ++ ;
+		} }
+	}
+
+	return picture2 ;
+}
+
+_Bool sceGimPictureLoadFile( SceGimPicture *picture, const void *buf, int size, int idx )
+{
+	if ( picture == 0 ) return 0 ;
+	if ( buf == 0 || size < 4 ) return 0 ;
+
+	int signature = *(int *)buf ;
+	if ( signature == 0x2e47494d ) {
+		if ( !sceGimPictureCheckFileHeader( buf, size ) ) return 0 ;
+		SceGimChunk *chunk = sceGimPictureGetChunk( buf, size, idx ) ;
+		if ( chunk == 0 ) {
+			return 0 ;
+		}
+		return sceGimPictureLoad( picture, chunk ) ;
+	} else if ( signature == 0x324d4954 ) {
+		return sceGimPictureLoadTm2( picture, buf, size, idx ) ;
+	} else if ( ( 0xffff & signature ) == 0x4d42 ) {
+		return sceGimPictureLoadBmp( picture, buf, size ) ;
+	} else {
+		return sceGimPictureLoadTga( picture, buf, size ) ;
+	}
+	return 0 ;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gim_picture", sceGimPictureLoad);
 
