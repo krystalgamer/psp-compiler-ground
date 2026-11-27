@@ -957,6 +957,8 @@ public:
     void save(const std::string &);
     template<class T> void set(Value<T>);
     void check_size();                  /* inline: defined in psp_VertexArrayEdit.c */
+    static std::string BIT_NAMES[];
+    static std::string TYPE_NAMES[];
     static bool smart_color_map;
     static unsigned char current_color[4];
     static float current_normal[3];

@@ -454,6 +454,8 @@ segments:
       - { start: 0x18CFCC, type: bss, vram: 0x18CF80, name: bss_18CF80 }
       - { start: 0x18CFCC, type: .bss, vram: 0x18CF9C, name: WaterPatch }
       - { start: 0x18CFCC, type: bss, vram: 0x18D0F8, name: bss_18D0F8 }
+      - { start: 0x18CFCC, type: .bss, vram: 0x18D74C, name: main_objs/psp_VertexArrayEdit }
+      - { start: 0x18CFCC, type: bss, vram: 0x18D7D8, name: bss_18D7D8 }
       - { start: 0x18CFCC, type: .bss, vram: 0x18EB6C, name: main_objs/math_SphericalCoord }
       - { start: 0x18CFCC, type: .bss, vram: 0x18EBEC, name: main_objs/math_ZYZ }
       - { start: 0x18CFCC, type: bss, vram: 0x18EC6C, name: bss_18EC6C }

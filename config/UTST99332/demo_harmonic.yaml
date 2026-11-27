@@ -442,6 +442,8 @@ segments:
     subsegments:
       - [0x178F00, data, data]
       - { start: 0x189CE4, type: bss, vram: 0x189C40, name: bss_189C40 }
+      - { start: 0x189CE4, type: .bss, vram: 0x18A2CC, name: main_objs/psp_VertexArrayEdit }
+      - { start: 0x189CE4, type: bss, vram: 0x18A358, name: bss_18A358 }
       - { start: 0x189CE4, type: .bss, vram: 0x18B6EC, name: main_objs/math_SphericalCoord }
       - { start: 0x189CE4, type: .bss, vram: 0x18B76C, name: main_objs/math_ZYZ }
       - { start: 0x189CE4, type: bss, vram: 0x18B7EC, name: bss_18B7EC }

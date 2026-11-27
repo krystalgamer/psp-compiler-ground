@@ -4,6 +4,7 @@
 #include "cxx/defer_asm.h"
 /* before main.hpp's `#pragma interface`: std::dec/std::hex (used by address) are emitted here */
 #include <ios>
+#include <iostream>
 #include "../main.hpp"
 
 extern const char D_0015F9F8[], D_0015FA08[], D_0015F2A0[], D_0015EA40[], D_0015EA04[];
@@ -25,6 +26,8 @@ extern const char D_00160054[], D_00160064[];
 extern const char D_0015EA88[], D_0015EA9C[];
 extern const char PF_format[] __asm__("_ZZN3psp15VertexArrayEdit6formatEjE19__PRETTY_FUNCTION__");
 extern const char D_0015E87C[], D_0015E888[], D_0015E890[], D_0015E8A0[], D_0015E8B0[], D_0015E8C0[], D_0015E8CC[], D_0015E8DC[], D_0015E8EC[], D_0015E8FC[], D_0015E90C[], D_0015E91C[], D_0015E928[], D_0015E934[], D_0015E940[], D_0015E94C[], D_0015E958[], D_0015E964[], D_0015E974[], D_0015E984[], D_0015E994[];
+extern const char D_0015EE48[], D_0015F314[], D_0015F320[], D_0015F324[], D_0015F360[], D_0015F5D8[];
+extern const char PF_VA_DEBUG_printFormat[] __asm__("_ZZN3psp11VertexArray17DEBUG_printFormatEvE19__PRETTY_FUNCTION__");
 extern const char D_0015F0D4[], D_0015F0F8[], D_0015F108[];
 extern const char PF_import[] __asm__("_ZZN3psp15VertexArrayEdit6importERKS0_E19__PRETTY_FUNCTION__");
 extern const char PF_ConvertMaskInternal2Gu[] __asm__("_ZZN3psp22ConvertMaskInternal2GuEjE19__PRETTY_FUNCTION__");
@@ -72,7 +75,22 @@ template<> const char ConvertNames<char, unsigned int>::pretty_function[] __asm_
 template<> const char ConvertNames<short, unsigned int>::pretty_function[] __asm__("_ZZN3psp7convertIsjEET_RKT0_E19__PRETTY_FUNCTION__");
 template<> const char ConvertNames<float, unsigned int>::pretty_function[] __asm__("_ZZN3psp7convertIfjEET_RKT0_E19__PRETTY_FUNCTION__");
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/psp_VertexArrayEdit", _Z41__static_initialization_and_destruction_0ii_1ACC4);
+/* the module's .ctors/.dtors refer to the static constructor/destructor */
+__asm__(".globl _GLOBAL__I__ZN3psp15VertexArrayEdit9BIT_NAMESE");
+__asm__(".globl _GLOBAL__D__ZN3psp15VertexArrayEdit9BIT_NAMESE");
+
+extern const char D_0015E78C[], D_0015E794[], D_0015E79C[], D_0015E7A4[], D_0015E7AC[], D_0015E7B4[], D_0015E7BC[], D_0015E7C4[], D_0015E7CC[], D_0015E7D4[], D_0015E7DC[], D_0015E7E4[], D_0015E7EC[], D_0015E7F4[], D_0015E800[], D_0015E808[], D_0015E810[], D_0015E81C[], D_0015E824[], D_0015E82C[], D_0015E834[], D_0015E840[], D_0015E84C[], D_0015E858[], D_0015E864[], D_0015E86C[], D_0015E874[];
+std::string VertexArrayEdit::BIT_NAMES[] = {
+    D_0015E78C, D_0015E794, D_0015E79C, D_0015E7A4, D_0015E7AC, D_0015E7B4, D_0015E7BC, D_0015E7C4, D_0015E7CC, D_0015E7D4, D_0015E7DC, D_0015E7E4, D_0015E7EC, D_0015E7F4, D_0015E800, D_0015E808, D_0015E810
+};
+std::string VertexArrayEdit::TYPE_NAMES[] = {
+    D_0015E81C, D_0015E824, D_0015E82C, D_0015E834, D_0015E840, D_0015E84C, D_0015E858, D_0015E864, D_0015E86C, D_0015E874
+};
+bool VertexArrayEdit::smart_color_map;
+unsigned char VertexArrayEdit::current_color[4];
+float VertexArrayEdit::current_normal[3];
+float VertexArrayEdit::current_texcoord[2];
+
 
 std::string psp::GetPixelFormatBitMaskName(PixelFormatBitMask _Mask)
 {
@@ -546,31 +564,49 @@ void VertexArrayEdit::vertex(float x, float y, float z)
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/psp_VertexArrayEdit", _ZN3psp15VertexArrayEdit15DEBUG_print_bitENS0_7BitEnumEj);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/psp_VertexArrayEdit", _ZN3psp15VertexArrayEdit17DEBUG_printVertexEj);
+void VertexArrayEdit::DEBUG_printVertex(unsigned int _Index)
+{
+    DEBUG_print_bit(WA, _Index);
+    DEBUG_print_bit(WB, _Index);
+    DEBUG_print_bit(WC, _Index);
+    DEBUG_print_bit(WD, _Index);
+    DEBUG_print_bit(S, _Index);
+    DEBUG_print_bit(T, _Index);
+    DEBUG_print_bit(C, _Index);
+    DEBUG_print_bit(NX, _Index);
+    DEBUG_print_bit(NY, _Index);
+    DEBUG_print_bit(NZ, _Index);
+    DEBUG_print_bit(PX, _Index);
+    DEBUG_print_bit(PY, _Index);
+    DEBUG_print_bit(PZ, _Index);
+    std::cout << D_0015EE48;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/psp_VertexArrayEdit", _ZN3psp15VertexArrayEdit11DEBUG_printESs);
+void VertexArrayEdit::DEBUG_print(std::string _Name)
+{
+    std::cout << _Name;
+    for (unsigned int i = 0; i != _va->_num_vertices; i++) {
+        std::cout << D_0015F314 << i << D_0015F320;
+        DEBUG_printVertex(i);
+    }
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/psp_VertexArrayEdit", _ZNK3psp15VertexArrayEdit17DEBUG_printFormatEv);
+void VertexArrayEdit::DEBUG_printFormat() const
+{
+    std::cout << D_0015F324;
+    _desc.printFormat();
+    std::cout << D_0015F360;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/psp_VertexArrayEdit", _ZN3psp15VertexArrayEdit4saveERKSs);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/psp_VertexArrayEdit", _ZN3psp11VertexArray17DEBUG_printFormatEv);
-
-extern "C" {
-void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_1ACC4");
-void _GLOBAL__I__ZN3psp15VertexArrayEdit9BIT_NAMESE(void);
-void _GLOBAL__D__ZN3psp15VertexArrayEdit9BIT_NAMESE(void);
-}
-
-void _GLOBAL__I__ZN3psp15VertexArrayEdit9BIT_NAMESE(void)
+void VertexArray::DEBUG_printFormat()
 {
-    static_init(1, 0xFFFF);
+    VA_ASSERT(IsValidMask(_mask), D_0015F5D8, VA_CPP, PF_VA_DEBUG_printFormat, 1338, D_0015EA04);
+    VertexArrayEdit::Descriptor d(_mask);
+    d.printFormat();
 }
 
-void _GLOBAL__D__ZN3psp15VertexArrayEdit9BIT_NAMESE(void)
-{
-    static_init(0, 0xFFFF);
-}
 
 /* this object's .gnu.linkonce.t sections in the original's order */
 DEMO_LINKONCE_ORDER(
