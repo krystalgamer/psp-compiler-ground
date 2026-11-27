@@ -1,5 +1,5 @@
 /* lang: c++ */
-/* cflags: -O3 -fno-exceptions -fno-merge-constants */
+/* cflags: -O3 -fno-exceptions */
 #undef __EXCEPTIONS
 #include "cxx/defer_asm.h"
 #define SCENE_BVDATA_LITERALS
