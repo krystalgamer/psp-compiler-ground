@@ -2,8 +2,44 @@
 /* cflags: -O3 -fno-exceptions */
 #undef __EXCEPTIONS
 #include "cxx/defer_asm.h"
+#define DEMO_TEMPLATE_DEFS
 #include "../main.hpp"
 #include "../../demo_duck/gl.hpp"
+
+/* the object's .gnu.linkonce.t sections in the original's order (basic_net's inline destructor clones are asm) */
+DEMO_LINKONCE_ORDER(
+    DEMO_LINKONCE(_ZN6common9t_array2dIN4math11vector_xyzwEEC2Ev)
+    DEMO_LINKONCE(_ZN6common9t_array2dIN4math11vector_xyzwEEC2Ejj)
+    DEMO_LINKONCE(_ZN6common7t_arrayIN4math11vector_xyzwEE4addrEv)
+    DEMO_LINKONCE(_ZNK6common9t_array2dIN4math11vector_xyzwEE2nxEv)
+    DEMO_LINKONCE(_ZNK6common9t_array2dIN4math11vector_xyzwEE2nyEv)
+    DEMO_LINKONCE(_ZNK6common7t_arrayIN4math11vector_xyzwEE4addrEv)
+    DEMO_LINKONCE(_ZN6common7t_arrayIN4math11vector_xyzwEEC2Ev)
+    DEMO_LINKONCE(_ZN6common7t_arrayIN4math11vector_xyzwEEC2Ej)
+    DEMO_LINKONCE(_ZN6common7t_arrayIN4math11vector_xyzwEE8allocateEj)
+    DEMO_LINKONCE(_ZN4math9basic_netD1Ev)
+    DEMO_LINKONCE(_ZN4math9basic_netD0Ev)
+    DEMO_LINKONCE(_ZN6common9t_array2dIN4math11vector_xyzwEED2Ev)
+    DEMO_LINKONCE(_ZN6common9t_array2dIN4math11vector_xyzwEED1Ev)
+    DEMO_LINKONCE(_ZN6common9t_array2dIN4math11vector_xyzwEED0Ev)
+    DEMO_LINKONCE(_ZN6common7t_arrayIN4math11vector_xyzwEED2Ev)
+    DEMO_LINKONCE(_ZN6common7t_arrayIN4math11vector_xyzwEED1Ev)
+    DEMO_LINKONCE(_ZN6common7t_arrayIN4math11vector_xyzwEED0Ev)
+    DEMO_LINKONCE(_ZN6common7t_arrayIN4math11vector_xyzwEE7releaseEv)
+    DEMO_LINKONCE(_ZN6common7t_arrayIN4math11vector_xyzwEE4swapERS3_)
+    DEMO_LINKONCE(_ZN6common9t_array2dIN4math11vector_xyzwEE7releaseEv)
+    DEMO_LINKONCE(_ZN6common7t_arrayIN4math11vector_xyzwEE6resizeEj)
+    DEMO_LINKONCE(_ZN6common7t_arrayIN4math11vector_xyzwEE4fillERKS2_)
+    DEMO_LINKONCE(_ZN6common9t_array2dIN4math11vector_xyzwEE4swapERS3_)
+    DEMO_LINKONCE(_ZN6common9t_array2dIN4math11vector_xyzwEE6resizeEjj)
+    DEMO_LINKONCE(_ZN6common9t_array2dIN4math11vector_xyzwEE7resizexEj)
+    DEMO_LINKONCE(_ZN6common9t_array2dIN4math11vector_xyzwEE7resizeyEj)
+    DEMO_LINKONCE(_ZN6common9t_array2dIN4math11vector_xyzwEE4copyERKS3_iiiiii)
+    DEMO_LINKONCE(_ZN6common4SwapINS_7t_arrayIN4math11vector_xyzwEE7MembersEEEvRT_S7_)
+    DEMO_LINKONCE(_ZN6common4SwapINS_9t_array2dIN4math11vector_xyzwEE3DimEEEvRT_S7_)
+    DEMO_LINKONCE(_ZN6common9t_array2dIN4math11vector_xyzwEE2atEii)
+    DEMO_LINKONCE(_ZNK6common9t_array2dIN4math11vector_xyzwEE2atEii)
+);
 
 extern "C" void glVertex3fv(const GLfloat *);
 
@@ -81,65 +117,9 @@ void _GLOBAL__I__ZN4math9basic_netC2Ev(void)
     static_init(1, 0xFFFF);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_basic_net_basic_net", _ZN6common9t_array2dIN4math11vector_xyzwEEC2Ev);
+CONT_INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_basic_net_basic_net", _ZN4math9basic_netD1Ev, _ZN4math9basic_netD1Ev)
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_basic_net_basic_net", _ZN6common9t_array2dIN4math11vector_xyzwEEC2Ejj);
+CONT_INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_basic_net_basic_net", _ZN4math9basic_netD0Ev, _ZN4math9basic_netD0Ev)
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_basic_net_basic_net", _ZN6common7t_arrayIN4math11vector_xyzwEE4addrEv);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_basic_net_basic_net", _ZNK6common9t_array2dIN4math11vector_xyzwEE2nxEv);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_basic_net_basic_net", _ZNK6common9t_array2dIN4math11vector_xyzwEE2nyEv);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_basic_net_basic_net", _ZNK6common7t_arrayIN4math11vector_xyzwEE4addrEv);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_basic_net_basic_net", _ZN6common7t_arrayIN4math11vector_xyzwEEC2Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_basic_net_basic_net", _ZN6common7t_arrayIN4math11vector_xyzwEEC2Ej);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_basic_net_basic_net", _ZN6common7t_arrayIN4math11vector_xyzwEE8allocateEj);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_basic_net_basic_net", _ZN4math9basic_netD1Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_basic_net_basic_net", _ZN4math9basic_netD0Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_basic_net_basic_net", _ZN6common9t_array2dIN4math11vector_xyzwEED2Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_basic_net_basic_net", _ZN6common9t_array2dIN4math11vector_xyzwEED1Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_basic_net_basic_net", _ZN6common9t_array2dIN4math11vector_xyzwEED0Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_basic_net_basic_net", _ZN6common7t_arrayIN4math11vector_xyzwEED2Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_basic_net_basic_net", _ZN6common7t_arrayIN4math11vector_xyzwEED1Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_basic_net_basic_net", _ZN6common7t_arrayIN4math11vector_xyzwEED0Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_basic_net_basic_net", _ZN6common7t_arrayIN4math11vector_xyzwEE7releaseEv);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_basic_net_basic_net", _ZN6common7t_arrayIN4math11vector_xyzwEE4swapERS3_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_basic_net_basic_net", _ZN6common9t_array2dIN4math11vector_xyzwEE7releaseEv);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_basic_net_basic_net", _ZN6common7t_arrayIN4math11vector_xyzwEE6resizeEj);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_basic_net_basic_net", _ZN6common7t_arrayIN4math11vector_xyzwEE4fillERKS2_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_basic_net_basic_net", _ZN6common9t_array2dIN4math11vector_xyzwEE4swapERS3_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_basic_net_basic_net", _ZN6common9t_array2dIN4math11vector_xyzwEE6resizeEjj);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_basic_net_basic_net", _ZN6common9t_array2dIN4math11vector_xyzwEE7resizexEj);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_basic_net_basic_net", _ZN6common9t_array2dIN4math11vector_xyzwEE7resizeyEj);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_basic_net_basic_net", _ZN6common9t_array2dIN4math11vector_xyzwEE4copyERKS3_iiiiii);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_basic_net_basic_net", _ZN6common4SwapINS_7t_arrayIN4math11vector_xyzwEE7MembersEEEvRT_S7_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_basic_net_basic_net", _ZN6common4SwapINS_9t_array2dIN4math11vector_xyzwEE3DimEEEvRT_S7_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_basic_net_basic_net", _ZN6common9t_array2dIN4math11vector_xyzwEE2atEii);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_basic_net_basic_net", _ZNK6common9t_array2dIN4math11vector_xyzwEE2atEii);
-
+/* used only by basic_net's destructor clones (asm) */
+template common::t_array2d<math::vector_xyzw>::~t_array2d();
