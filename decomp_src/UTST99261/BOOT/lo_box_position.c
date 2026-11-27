@@ -12,6 +12,13 @@ void moveBoxPositionChild(BOX *box, int dx, int dy);
 #endif
 int getLineHeight(LINE *line);
 void lfm_addFloat(void *fm, void *blk, int h, int w, int bh, int side, int *dx, int *dy);
+void calcInlineBoxPosition(void *ctx, BOX *box);
+void calcTableBoxPosition(void *ctx, BOX *box);
+void calcTrBoxPosition(void *ctx, BOX *box);
+void calcTdBoxPosition(void *ctx, BOX *box);
+void calcBlockButtonBoxPosition(void *ctx, BOX *box);
+void calcBlockBoxPosition(void *ctx, BOX *box);
+void calcFloatBoxPosition(void *ctx, BOX *box);
 int getPrevLineHeight(void *arg0) {
     return M2C_FIELD(M2C_FIELD(arg0, void **, 4), int *, 0x34);
 }
@@ -300,4 +307,38 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_box_position", adjustLineVpo
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_box_position", adjustLineHposition);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_box_position", calcBoxPosition);
+void calcBoxPosition(void *ctx, BOX *box) {
+    if (box->parent == NULL)
+        return;
+    if (box->content == 1)
+        return;
+    switch (box->display) {
+    case 1:
+        calcInlineBoxPosition(ctx, box);
+        break;
+    case 0:
+    case 3:
+        switch (box->content) {
+        case 4:
+            calcTableBoxPosition(ctx, box);
+            break;
+        case 5:
+            calcTrBoxPosition(ctx, box);
+            break;
+        case 6:
+            calcTdBoxPosition(ctx, box);
+            break;
+        case 17:
+            calcBlockButtonBoxPosition(ctx, box);
+            break;
+        default:
+            if (box->html != 0x2C)
+                calcBlockBoxPosition(ctx, box);
+            break;
+        }
+        break;
+    case 2:
+        calcFloatBoxPosition(ctx, box);
+        break;
+    }
+}
