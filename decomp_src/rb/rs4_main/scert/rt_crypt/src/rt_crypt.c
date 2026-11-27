@@ -43,7 +43,12 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_crypt/src/rt_crypt", r
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_crypt/src/rt_crypt", header_rcsid_10DAE8);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_crypt/src/rt_crypt", KM_GetVersionStringPtr);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+M2C_UNK *KM_GetVersionStringPtr(void) {
+    return "rt_crypt version: 2.10.2";
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_crypt/src/rt_crypt", KM_SHA1);
 

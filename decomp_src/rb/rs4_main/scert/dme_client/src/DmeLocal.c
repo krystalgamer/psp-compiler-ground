@@ -217,7 +217,54 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", Ne
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", IncomingMessageFunc);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", MapMsgClientFailureReason);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int MapMsgClientFailureReason(int *arg0, unsigned int arg1) {
+    int var_v0;
+    int var_v1;
+
+    var_v1 = 0x17;
+    if (arg0 != NULL) {
+        switch (arg1) {
+        case 0:
+            *arg0 = 0;
+block_4:
+            var_v1 = 0;
+            break;
+        case 1:
+            var_v0 = 1;
+block_7:
+            *arg0 = var_v0;
+            goto block_4;
+        case 2:
+            var_v0 = 2;
+            goto block_7;
+        case 3:
+            var_v0 = 3;
+            goto block_7;
+        case 4:
+            var_v0 = 4;
+            goto block_7;
+        case 5:
+            var_v0 = 5;
+            goto block_7;
+        case 6:
+            var_v0 = 6;
+            goto block_7;
+        case 7:
+            var_v0 = 7;
+            goto block_7;
+        case 8:
+            var_v0 = 8;
+            goto block_7;
+        case 9:
+            var_v0 = 9;
+            goto block_7;
+        }
+    }
+    return var_v1;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", MyClientConnectsPeerToPeer);
 

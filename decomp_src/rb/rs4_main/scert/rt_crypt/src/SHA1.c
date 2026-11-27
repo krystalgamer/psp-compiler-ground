@@ -16,7 +16,7 @@ typedef struct {
 void SHAInit(SHA_CTX *);
 void SHAUpdate(SHA_CTX *, BYTE *, unsigned int);
 void SHAFinal(SHA_CTX *, BYTE *, unsigned int);
-static void endianTest(int *);
+void endianTest(int *);
 void SHSTransform(SHA_CTX *);
 void longReverse(UINT4 *, int, int);
 void SHAtoByte(BYTE *, UINT4 *, unsigned int);
@@ -92,6 +92,11 @@ void SHAFinal(SHA_CTX *shsInfo, BYTE *output, unsigned int len)
     SHAtoByte(output, shsInfo->digest, len);
     memset((void *)shsInfo, 0, sizeof(shsInfo));
 }
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+extern unsigned short D_0010D700;
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_crypt/src/SHA1", endianTest);
 

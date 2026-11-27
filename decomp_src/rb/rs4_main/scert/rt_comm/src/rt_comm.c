@@ -32,7 +32,12 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_comm/src/rt_comm", hea
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_comm/src/rt_comm", D_0010E854);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_comm/src/rt_comm", rt_comm_get_build_timestamp);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+M2C_UNK *rt_comm_get_build_timestamp(void) {
+    return "15:12:27 Sep 19 2005";
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_comm/src/rt_comm", rt_comm_startup);
 

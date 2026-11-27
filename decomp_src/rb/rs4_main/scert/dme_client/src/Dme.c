@@ -27,7 +27,20 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/Dme", gBui
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/Dme", gszrtBaseVersionString);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/Dme", NetGetClientVersion);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int sprintf(char *buf, const char *fmt, ...);
+int NetGetClientVersion(signed char *arg0) {
+    int var_v1;
+
+    var_v1 = 0x17;
+    if (arg0 != NULL) {
+        sprintf(arg0, "%d.%02d.%04d", 2, 0xA, 0x68);
+        var_v1 = 0;
+    }
+    return var_v1;
+}
 
 char *strcpy(char *d, const char *s);
 int NetGetBuildTimeStamp(signed char *arg0) {

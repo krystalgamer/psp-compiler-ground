@@ -61,6 +61,23 @@ int rt_mutex_platform_get_thread_id(int *arg0) {
     return var_v0;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/psp/rt_mutex_platform", rt_mutex_platform_begin_critical_section);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int sceKernelCpuSuspendIntr();                      /* extern */
+extern int goldIntr;
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/psp/rt_mutex_platform", rt_mutex_platform_end_critical_section);
+int rt_mutex_platform_begin_critical_section(void) {
+    goldIntr = sceKernelCpuSuspendIntr();
+    return 0;
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+M2C_UNK sceKernelCpuResumeIntr(int);                /* extern */
+
+int rt_mutex_platform_end_critical_section(void) {
+    sceKernelCpuResumeIntr(goldIntr);
+    return 0;
+}
