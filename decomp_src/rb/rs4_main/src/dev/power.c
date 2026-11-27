@@ -8,7 +8,7 @@ extern unsigned char D_000FA68C;
 extern unsigned char D_000FA6A8;
 extern unsigned char D_000FA6B8;
 extern int PowerUID;
-extern unsigned char powerProc;
+int powerProc(int a, int state);
 int sceKernelDeleteCallback(int);                   /* extern */
 int scePowerUnregisterCallback(M2C_UNK);            /* extern */
 extern int PowerState;
@@ -66,7 +66,12 @@ int powerTerm(void) {
     return 1;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/power", powerProc);
+extern int PowerState;
+int powerProc(int a, int state)
+{
+	PowerState = state;
+	return 0;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)

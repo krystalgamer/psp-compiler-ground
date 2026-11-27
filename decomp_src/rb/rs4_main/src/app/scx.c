@@ -12,7 +12,11 @@ M2C_UNK sgxTerm();                                  /* extern */
 extern unsigned char D_000FE5F4;
 
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/scx", scxMalloc);
+extern char D_000FE5A0[];
+void *scxMalloc(int size)
+{
+	return _memAlloc(size, D_000FE5A0, 0x34);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/scx", scxMfree);
 

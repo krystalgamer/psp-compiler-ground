@@ -88,9 +88,15 @@ int consLog(unsigned int arg0) {
     return var_v1;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/umd", dencEncode);
+int dencEncode(int a, int b, int c)
+{
+	return c;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/umd", dencDecode);
+int dencDecode(int a, int b, int c)
+{
+	return c;
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/dev/umd", D_000FAB04);
 

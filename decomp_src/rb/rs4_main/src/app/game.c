@@ -72,7 +72,12 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/game", gameTaskDraw);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/game", gameChgGameMode);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/game", gameInitArg);
+extern unsigned char GameData;
+void gameInitArg(void)
+{
+	int *p = (int *)&GameData;
+	p[0xB4 / 4] = p[0xAC / 4];
+}
 
 #ifndef NULL
 #define NULL ((void *)0)

@@ -124,7 +124,10 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d", i3dImgGetHeight);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d", _i3dMotTimeAdj);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d", i3dMotTimeAdj);
+void i3dMotTimeAdj(int a, int b, int c)
+{
+	_i3dMotTimeAdj(a, b, c, 0);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d", i3dMotUpdate);
 
@@ -526,9 +529,15 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d", i3dDrawTime);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d", _i3dDrawTexCut);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d", i3dDrawTexCut);
+void i3dDrawTexCut(int a, int b, int c)
+{
+	_i3dDrawTexCut(a, b, c, 0);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d", i3dDrawTexCutEx);
+void i3dDrawTexCutEx(int a, int b, int c)
+{
+	_i3dDrawTexCut(a, b, c, 1);
+}
 
 #ifndef NULL
 #define NULL ((void *)0)

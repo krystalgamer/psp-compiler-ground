@@ -1,6 +1,7 @@
 /* cflags: -Os */
 #include "common.h"
 #include "m2c_macros.h"
+
 extern int CurrentInst;
 M2C_UNK consPrintf(M2C_UNK *, M2C_UNK *, M2C_UNK, M2C_UNK *, M2C_UNK *); /* extern */
 M2C_UNK resReadRefer(int, int, int);                /* extern */
@@ -113,7 +114,10 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", resReleaseRefer);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", resGetEntrySect);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", resGetEntryLocal);
+int resGetEntryLocal(int a)
+{
+	return resGetEntrySect(a, 2);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", resGetEntryRefer);
 
@@ -157,15 +161,33 @@ int resGetSizeSect(int arg0, int arg1, int arg2) {
     return M2C_FIELD(resGetDatSect(arg0, arg1, arg2), int *, 4);
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", resGetSizeLocal);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+void resGetSizeLocal(int arg0, int arg1) {
+    resGetSizeSect(arg0, 2, arg1);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", resGetSizeTable);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+void resGetSizeTable(int arg0, int arg1) {
+    resGetSizeSect(arg0, 5, arg1);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", resGetSizeString);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+void resGetSizeString(int arg0, int arg1) {
+    resGetSizeSect(arg0, 6, arg1);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", resGetPtrSect);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", resGetPtrLocal);
+int resGetPtrLocal(int a, int b)
+{
+	return resGetPtrSect(a, 2, b);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", resGetPtrTable);
 
@@ -191,11 +213,26 @@ int resGetExtSect(int arg0, int arg1, int arg2) {
     return M2C_FIELD(resGetDatSect(arg0, arg1, arg2), int *, 0x10);
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", resGetExtLocal);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+void resGetExtLocal(int arg0, int arg1) {
+    resGetExtSect(arg0, 2, arg1);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", resGetExtTable);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+void resGetExtTable(int arg0, int arg1) {
+    resGetExtSect(arg0, 5, arg1);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", resGetExtString);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+void resGetExtString(int arg0, int arg1) {
+    resGetExtSect(arg0, 6, arg1);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", resArg);
 
@@ -295,7 +332,13 @@ int taskSwitchCntx(int arg0) {
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", taskRest);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", taskHead);
+int taskHead(void)
+{
+	int r = 0;
+	if (pCurrent)
+		r = **(int **)pCurrent;
+	return r;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", taskHeadAlive);
 
