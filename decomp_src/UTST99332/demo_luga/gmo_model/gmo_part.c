@@ -264,7 +264,24 @@ void reset_arrays( SceGmoPart *part )
  g_current_index = -1 ;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/gmo_model/gmo_part", set_arrays);
+/* the release inlines sceGmoPartGetArrays here, so its body was visible before this point */
+static inline SceGmoChunk *part_get_arrays_inline( SceGmoPart *part, int index )
+{
+ if ( part == 0 ) return 0 ;
+ index = (0x0fff&(index)) ;
+ if ( index >= part->m_n_arrays ) return 0 ;
+ return part->m_arrays[ index ] ;
+}
+
+_Bool set_arrays( int index )
+{
+ if ( g_current_index == index ) return 1 ;
+ SceGmoChunk *chunk = part_get_arrays_inline( g_current_part, index ) ;
+ if ( chunk == 0 ) return 0 ;
+ g_current_arrays = (SceGmoArraysHeader *)SCEGMO_CHUNK_ARGS( chunk ) ;
+ g_current_index = index ;
+ return 1 ;
+}
 
 void draw_arrays( SceGmoDrawArrays *cmd )
 {
