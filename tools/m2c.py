@@ -46,8 +46,12 @@ def c_prototypes(target, module):
            "typedef unsigned short u16; typedef int s32; typedef unsigned int u32;",
            "typedef float f32; typedef double f64; typedef int M2C_UNK;"]
     for f in sorted((ROOT / "decomp_src" / target / module).rglob("*.c")):
+        try:
+            text = f.read_text(errors="replace")
+        except OSError:
+            continue    # e.g. another process's temporary file, gone again
         for m in re.finditer(r"^(?:static )?([A-Za-z_][\w ]*?[\w*]) ?\*?\s*(\w+)\(([^;{}()]*)\)\s*\{",
-                             f.read_text(), re.M):
+                             text, re.M):
             line = m.group(0).rstrip("{").strip()
             words = set(re.findall(r"[A-Za-z_]\w*", re.sub(r"\w+\s*(,|\)|$)", r"\1", m.group(3))))
             words |= set(re.findall(r"[A-Za-z_]\w*", m.group(1)))
