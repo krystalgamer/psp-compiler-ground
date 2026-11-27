@@ -420,7 +420,30 @@ INCLUDE_ASM("tmp/asm/UTST99332/sound_playsmf/nonmatchings/smf", func_0000A444);
 
 INCLUDE_ASM("tmp/asm/UTST99332/sound_playsmf/nonmatchings/smf", func_0000A690);
 
-INCLUDE_ASM("tmp/asm/UTST99332/sound_playsmf/nonmatchings/smf", func_0000AB38);
+int _sceSsCalcAddPitch(int voice, int bend);
+int sceSsVoiceSetPitch(int voice, int pitch);
+
+int func_0000AB38(unsigned int ch, unsigned char lsb, unsigned char msb, SmfData *p)
+{
+	unsigned int bend;
+	unsigned int mask;
+	unsigned int v;
+
+	bend = msb << 7;
+	bend |= lsb;
+	if (bend >= 0x4000)
+		bend = 0x3FFF;
+	ch &= 0xF;
+	p->ch[ch].bend = bend;
+	mask = sceSsGetVoice(ch, p->ch[ch].id);
+	if (mask != 0) {
+		for (v = 0; v < 32; v++) {
+			if ((mask >> v) & 1)
+				sceSsVoiceSetPitch(v, _sceSsCalcAddPitch(v, bend));
+		}
+	}
+	return 0;
+}
 
 INCLUDE_RODATA("tmp/asm/UTST99332/sound_playsmf/nonmatchings/smf", D_00017EAC);
 
