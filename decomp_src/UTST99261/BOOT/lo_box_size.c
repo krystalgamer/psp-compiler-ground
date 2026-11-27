@@ -5,6 +5,10 @@
 M2C_UNK box_setTableHeight(void *);                 /* extern */
 
 
+extern int e_icon_image_width;
+extern int e_icon_image_height;
+unsigned int strlen(const char *);
+void getStringsExtents(int font, char *s, int len, int *w, int *h);
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_box_size", calcInLineBoxSize);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_box_size", calcBlockBoxSize);
@@ -41,9 +45,34 @@ int getPreferredFontSize(BOX *box) {
     return size;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_box_size", initTextBoxSize);
+void initTextBoxSize(BOX *box) {
+    int size = getPreferredFontSize(box);
+    int w, h;
+    char *s;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_box_size", initImageBoxSize);
+    box->style->unk64 = ui_global->color[box->style->unk6A][size];
+    s = *(char **)box->geom;
+    getStringsExtents(box->style->unk64, s, strlen(s), &w, &h);
+    if (h > 0)
+        h += 2;
+    setBoxSize(box, w, h);
+}
+
+void initImageBoxSize(BOX *box, int width, int height) {
+    int size = getPreferredFontSize(box);
+    int w, h;
+
+    box->style->unk64 = ui_global->color[box->style->unk6A][size];
+    w = width;
+    if (width < 0)
+        w = e_icon_image_width + 6;
+    h = height;
+    if (height < 0)
+        h = e_icon_image_height + 6;
+    box->geom->y = w;
+    M2C_FIELD(box->geom, int *, 8) = h;
+    setBoxSize(box, w, h);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_box_size", initButtonBoxSize);
 

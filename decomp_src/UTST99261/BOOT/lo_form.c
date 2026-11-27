@@ -11,16 +11,48 @@ M2C_UNK MEM_free(M2C_UNK, void *);                  /* extern */
 
 int Node_getBox(int);                               /* extern */
 M2C_UNK resetFormData(int, M2C_UNK);                /* extern */
-M2C_UNK clearSaveFormData();                        /* extern */
+void clearSaveFormData(void);
 
 
 typedef struct FormEnt { void *form; int pad; struct FormEnt *next; } FormEnt;
 void *MEM_malloc(int, int);
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_form", getRadioListByName);
+typedef struct SaveForm { int type; void *data; struct SaveForm *next; } SaveForm;
+typedef struct RadioEnt { int pad; struct RadioEnt *next; void *box; char *name; } RadioEnt;
+int strcmp(const char *, const char *);
+void *getBoxByHTML(void *box, int html);
+RadioEnt *getRadioListByName(void *ctx, void *box) {
+    RadioEnt *r = M2C_FIELD(M2C_FIELD(ctx, void **, 0x20), RadioEnt **, 0x80);
+
+    if (*M2C_FIELD(box, char ***, 0x20) == NULL)
+        return NULL;
+    for (; r != NULL; r = r->next) {
+        if (strcmp(r->name, *M2C_FIELD(box, char ***, 0x20)) == 0
+            && getBoxByHTML(M2C_FIELD(r->box, void **, 8), 0x23) == getBoxByHTML(box, 0x23))
+            return r;
+    }
+    return r;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_form", addSaveFormData);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_form", clearSaveFormData);
+void clearSaveFormData(void) {
+    void *sd = getSessionSaveData();
+    SaveForm *f;
+    SaveForm *next;
+
+    if (sd != NULL) {
+        for (f = M2C_FIELD(sd, SaveForm **, 0x10); f != NULL; f = next) {
+            next = f->next;
+            if (f->type == 0xD && f->data != NULL)
+                MEM_free(0, f->data);
+            else if (f->type == 0x12)
+                MEM_free(0, f->data);
+            MEM_free(0, f);
+        }
+        M2C_FIELD(sd, void **, 0x10) = NULL;
+        M2C_FIELD(sd, int *, 0x14) = 0;
+    }
+}
 
 void *getAncestorForm(void *node) {
     DOMString s;

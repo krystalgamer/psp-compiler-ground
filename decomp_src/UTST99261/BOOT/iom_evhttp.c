@@ -22,6 +22,11 @@ M2C_UNK iom_sendRequestFailed(void *, int);         /* extern */
 M2C_UNK iom_evGetMethod();                          /* extern */
 
 
+char *iom_malloc(int size);
+char *strcpy(char *, const char *);
+unsigned int strlen(const char *);
+char *http_getresponseheader_SetCookie(int h, int i);
+int iom_setCookie(char *url, char *cookie, int flag);
 int iom_evHttpCtx(void *msg) {
     void *d = M2C_FIELD(msg, void **, 0x20);
     return D_0013F290[*(int *)d](msg, d);
@@ -142,7 +147,21 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iom_evhttp", iom_httpCallback);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iom_evhttp", iom_location);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iom_evhttp", iom_setCookie2);
+int iom_setCookie2(void *ctx) {
+    char *url;
+    char *c;
+    int i;
+
+    url = iom_malloc(strlen(M2C_FIELD(ctx, char **, 0x10)) + 1);
+    if (url == NULL)
+        return -0x12D;
+    for (i = 0; (c = http_getresponseheader_SetCookie(M2C_FIELD(ctx, int *, 8), i)) != NULL; i++) {
+        strcpy(url, M2C_FIELD(ctx, char **, 0x10));
+        iom_setCookie(url, c, 1);
+    }
+    iom_mfree(url);
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iom_evhttp", iom_evGetMethod);
 
