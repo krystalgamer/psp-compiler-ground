@@ -1,11 +1,12 @@
 /* lang: c++ */
-/* cflags: -O3 -fno-exceptions */
+/* cflags: -O3 -fno-exceptions -fno-merge-constants */
 #undef __EXCEPTIONS
 #include "cxx/defer_asm.h"
+#define DEMO_STATICS_MATH
 #include "../main.hpp"
 
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_TransformSet_Transform", _Z41__static_initialization_and_destruction_0ii_D2750);
+/* the module's .ctors refer to the static constructor */
+__asm__(".globl _GLOBAL__I__ZN3sgl12TransformSet9TransformC2Ev");
 
 sgl::TransformSet::Transform::Transform() {
 }
@@ -14,10 +15,11 @@ sgl::TransformSet::Transform::Transform(math::matrix mm) : m(mm)
 {
 }
 
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_TransformSet_Transform", _ZN3sgl12TransformSetC2Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_TransformSet_Transform", _ZN3sgl12TransformSetC1Ev);
+sgl::TransformSet::TransformSet() : _closed(false)
+{
+    float a = 30;
+    _crease = a * 0.0174532924f;
+}
 
 void sgl::TransformSet::add(math::matrix m)
 {
@@ -32,16 +34,6 @@ void sgl::TransformSet::clear()
 void sgl::TransformSet::set_crease(float c)
 {
     _crease = c;
-}
-
-extern "C" {
-void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_D2750");
-void _GLOBAL__I__ZN3sgl12TransformSet9TransformC2Ev(void);
-}
-
-void _GLOBAL__I__ZN3sgl12TransformSet9TransformC2Ev(void)
-{
-    static_init(1, 0xFFFF);
 }
 
 /* the original's .gnu.linkonce.t order */
