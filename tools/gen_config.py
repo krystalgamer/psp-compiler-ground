@@ -99,7 +99,7 @@ def file_units(t, name, cus, text_end):
     ents = []
     for line in path.read_text().splitlines():
         line = line.split("#")[0].split()
-        if line and line[0] not in ("rodata", "bss"):
+        if line and line[0] not in ("rodata", "bss", "dataunit"):
             ents.append((int(line[0], 16), line[3], line[2]))
             NODWARF_UNITS.update({line[1], os.path.splitext(line[3])[0]})
     bounds = sorted([e[0] for e in ents] + [c[0] for c in cus] + [text_end])
@@ -118,6 +118,21 @@ def rodata_overrides(t, name):
         line = line.split("#")[0].split()
         if line and line[0] == "rodata" and line[1] != "blob":
             out.append((int(line[1], 16), line[2]))
+    return out
+
+
+def data_units(t, name):
+    """`dataunit UNIT VERSION SOURCE` lines of files.MODULE.txt: units with
+    data but no code (e.g. newlib's s_infconst, impure); a `rodata ADDR UNIT`
+    line places their .rodata."""
+    path = ROOT / "config" / t / f"files.{name}.txt"
+    if not path.exists():
+        return {}
+    out = {}
+    for line in path.read_text().splitlines():
+        line = line.split("#")[0].split()
+        if line and line[0] == "dataunit":
+            out[line[1]] = (line[2], line[3])
     return out
 
 
@@ -494,16 +509,20 @@ def main():
                 # (`rodata ADDR UNIT` lines), the rest stays asm
                 owners = [(s.addr, None)]
             if owners is not None:
+                dunits = data_units(t, name)
                 for addr, uname in overrides:
                     # `rodata ADDR -`: from ADDR on the rodata belongs to no unit (stays asm)
-                    ui = None if uname == "-" else next(i for i, u in enumerate(units) if u[2] == uname)
+                    ui = None if uname == "-" else uname if uname in dunits else \
+                        next(i for i, u in enumerate(units) if u[2] == uname)
                     owners = sorted([o for o in owners if o[0] != addr] + [(addr, ui)])
                 owners = [o for i, o in enumerate(owners) if i == 0 or o[1] is None or o[1] != owners[i - 1][1]]
             if owners is None:
                 out.append(f"      - [0x{off:X}, rodata, rodata]\n")
             else:
                 for addr, ui in owners:
-                    if ui is not None and units[ui][1] == "c":
+                    if isinstance(ui, str):
+                        out.append(f"      - [0x{addr - s.addr + off:X}, .rodata, {ui}]\n")
+                    elif ui is not None and units[ui][1] == "c":
                         out.append(f"      - [0x{addr - s.addr + off:X}, .rodata, {units[ui][2]}]\n")
                     else:
                         out.append(f"      - [0x{addr - s.addr + off:X}, rodata, asm/rodata_{addr:X}]\n")
@@ -572,6 +591,8 @@ def main():
         for addr, typ, nm, ver, src in units:
             if typ == "c":
                 f.write(f"{nm:44} {ver:15} {src}\n")
+        for nm, (ver, src) in data_units(t, name).items():
+            f.write(f"{nm:44} {ver:15} {src}\n")
     print(cfg)
 
 
