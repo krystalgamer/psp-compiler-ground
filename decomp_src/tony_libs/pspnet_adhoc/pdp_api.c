@@ -5,7 +5,46 @@
 #include "adhoc.h"
 /* --- end declarations --- */
 
-INCLUDE_ASM("tmp/asm/tony_libs/pspnet_adhoc/nonmatchings/pdp_api", sceNetAdhocPdpCreate);
+int sceNetAdhocPdpCreate(struct SceNetEtherAddr *saddr, u_short sport, unsigned int bufsize, int flag)
+{
+	struct adhoc_socket *so;
+	int s;
+	int ret;
+	int id;
+
+	if (saddr == NULL)
+		return 0x80410711;
+	s = _sce_pspnet_spllock();
+	if (D_00007400 == 0) {
+		ret = 0x80410712;
+		goto out;
+	}
+	id = func_00000E44();
+	if (id < 0) {
+		ret = 0x8041070F;
+		goto out;
+	}
+	if ((ret = func_00000ED0(1, &so)) < 0)
+		goto out;
+	if ((ret = func_00002A9C(so)) < 0)
+		goto err1;
+	if ((ret = func_00002B84(so->pcb, bufsize)) < 0)
+		goto err2;
+	if ((ret = func_00002108(so->pcb, saddr, sport)) < 0)
+		goto err3;
+	so->id = id;
+	_sce_pspnet_splunlock(s);
+	return id;
+err3:
+	func_00002304(so->pcb);
+err2:
+	func_00002B38(so);
+err1:
+	func_00000F74(so);
+out:
+	_sce_pspnet_splunlock(s);
+	return ret;
+}
 
 int sceNetAdhocPdpSend(int id, struct SceNetEtherAddr *daddr, u_short dport, void *data, int len, unsigned int timeout, int flag)
 {
