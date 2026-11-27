@@ -68,9 +68,27 @@ void func_000035B4(const unsigned char *in, void *ks, unsigned char *out)
 	}
 }
 
-INCLUDE_ASM("tmp/asm/selfboot/lflash_write/nonmatchings/des", func_00003668);
+int func_00003668(const unsigned char *in, const unsigned char *key, unsigned char *out, unsigned int n)
+{
+	unsigned char ks[128];
+	unsigned int i;
 
-INCLUDE_ASM("tmp/asm/selfboot/lflash_write/nonmatchings/des", func_000036EC);
+	func_0000349C(key, ks);
+	for (i = 0; i < n; i++)
+		func_00003500(in + i * 8, ks, out + i * 8);
+	return 0;
+}
+
+int func_000036EC(const unsigned char *in, const unsigned char *key, unsigned char *out, unsigned int n)
+{
+	unsigned char ks[128];
+	unsigned int i;
+
+	func_0000349C(key, ks);
+	for (i = 0; i < n; i++)
+		func_000035B4(in + i * 8, ks, out + i * 8);
+	return 0;
+}
 
 INCLUDE_ASM("tmp/asm/selfboot/lflash_write/nonmatchings/des", func_00003770);
 
@@ -114,23 +132,79 @@ void func_0000397C(const unsigned char *in, void *k1, void *k2, void *k3, unsign
 
 INCLUDE_ASM("tmp/asm/selfboot/lflash_write/nonmatchings/des", func_00003A74);
 
-void func_00003B64(void *a, void *k1, void *k2, void *b)
+void func_00003B64(const unsigned char *a, void *k1, void *k2, unsigned char *b)
 {
 	func_0000397C(a, k1, k2, k1, b);
 }
 
-void func_00003B84(void *a, void *k1, void *k2, void *b)
+void func_00003B84(const unsigned char *a, void *k1, void *k2, unsigned char *b)
 {
 	func_00003A74(a, k1, k2, k1, b);
 }
 
-INCLUDE_ASM("tmp/asm/selfboot/lflash_write/nonmatchings/des", func_00003BA4);
+int func_00003BA4(const unsigned char *in, const unsigned char *k1, const unsigned char *k2, const unsigned char *k3, unsigned char *out, unsigned int n)
+{
+	unsigned char ks1[128];
+	unsigned char ks2[128];
+	unsigned char ks3[128];
+	unsigned int i;
 
-INCLUDE_ASM("tmp/asm/selfboot/lflash_write/nonmatchings/des", func_00003C74);
+	if (n == 0)
+		return 0;
+	func_0000349C(k1, ks1);
+	func_0000349C(k2, ks2);
+	func_0000349C(k3, ks3);
+	for (i = 0; i < n; i++)
+		func_0000397C(in + i * 8, ks1, ks2, ks3, out + i * 8);
+	return 0;
+}
 
-INCLUDE_ASM("tmp/asm/selfboot/lflash_write/nonmatchings/des", func_00003D44);
+int func_00003C74(const unsigned char *in, const unsigned char *k1, const unsigned char *k2, const unsigned char *k3, unsigned char *out, unsigned int n)
+{
+	unsigned char ks1[128];
+	unsigned char ks2[128];
+	unsigned char ks3[128];
+	unsigned int i;
 
-INCLUDE_ASM("tmp/asm/selfboot/lflash_write/nonmatchings/des", func_00003DEC);
+	if (n == 0)
+		return 0;
+	func_0000349C(k1, ks1);
+	func_0000349C(k2, ks2);
+	func_0000349C(k3, ks3);
+	for (i = 0; i < n; i++)
+		func_00003A74(in + i * 8, ks1, ks2, ks3, out + i * 8);
+	return 0;
+}
+
+int func_00003D44(const unsigned char *in, const unsigned char *k1, const unsigned char *k2, unsigned char *out, unsigned int n)
+{
+	unsigned char ks1[128];
+	unsigned char ks2[128];
+	unsigned int i;
+
+	if (n == 0)
+		return 0;
+	func_0000349C(k1, ks1);
+	func_0000349C(k2, ks2);
+	for (i = 0; i < n; i++)
+		func_00003B64(in + i * 8, ks1, ks2, out + i * 8);
+	return 0;
+}
+
+int func_00003DEC(const unsigned char *in, const unsigned char *k1, const unsigned char *k2, unsigned char *out, unsigned int n)
+{
+	unsigned char ks1[128];
+	unsigned char ks2[128];
+	unsigned int i;
+
+	if (n == 0)
+		return 0;
+	func_0000349C(k1, ks1);
+	func_0000349C(k2, ks2);
+	for (i = 0; i < n; i++)
+		func_00003B84(in + i * 8, ks1, ks2, out + i * 8);
+	return 0;
+}
 
 INCLUDE_ASM("tmp/asm/selfboot/lflash_write/nonmatchings/des", func_00003E94);
 
