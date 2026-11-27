@@ -217,7 +217,9 @@ def try_body1(target, module, unit, func, body, mod, protos):
     pat = re.compile(r"^#ifdef NON_MATCHING\n(?:(?!#endif\b|#ifdef NON_MATCHING\n).*\n)*?#else\n"
                      + inc + r"\n#endif$|^(?<!#else\n)" + inc + "$", re.M)
     sdk = m2cdraft.sdk_protos(text)
-    decl = "\n".join(v for k, v in sdk.items() if re.search(rf"\b{k}\(", body))
+    # SDK prototypes of the functions the body calls (not FUNC itself, nor ones the unit has)
+    decl = "\n".join(v for k, v in sdk.items() if k != func and re.search(rf"\b{k}\(", body)
+                     and not re.search(rf"^[^\n;(]*\b{k}\s*\([^;{{]*\)\s*;", text, re.M))
     # the module's own functions the body calls without a declaration in the unit:
     # implicit int returns and double-promoted float arguments change the code
     mp = module_protos(target, module) if protos else {}
