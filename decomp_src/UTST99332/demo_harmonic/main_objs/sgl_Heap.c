@@ -16,7 +16,15 @@ extern const char change_value_name[] __asm__("_ZZN3sgl4Heap12change_valueEjfE19
 extern const char remove_name[] __asm__("_ZZN3sgl4Heap6removeEiE19__PRETTY_FUNCTION__");
 extern const char pop_name[] __asm__("_ZZN3sgl4Heap3popEvE19__PRETTY_FUNCTION__");
 namespace common {
-extern template void Swap(sgl::Heap::Element &, sgl::Heap::Element &);
+template<class T> void Swap(T &a, T &b)
+{
+    T t = a;
+    a = b;
+    b = t;
+}
+}
+namespace math {
+template<class T> T min_(T a, T b);
 }
 
 #define HEAP_ASSERT(c, text, fn, line) SGL_ASSERT(c, D_0016AF24, text, D_0016AF40, fn, line, D_0016AF54)
@@ -182,6 +190,18 @@ void _GLOBAL__D__ZN3sgl4HeapC2Ev(void)
     static_init(0, 0xFFFF);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Heap", _ZN6common4SwapIN3sgl4Heap7ElementEEEvRT_S5_);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Heap", _ZN4math4min_IiEET_S1_S1_);
+/* Test() (asm) calls math::min_<int>: referenced here (from a discarded function, before the template's
+   definition: no inlining) it is instantiated after Swap<Heap::Element>, like Sony's */
+extern "C" void sgl_Heap_instances(void) __attribute__((section(".discard.asm")));
+extern "C" void sgl_Heap_instances(void)
+{
+    math::min_(0, 0);
+}
+
+namespace math {
+template<class T> T min_(T a, T b)
+{
+    return a < b ? a : b;
+}
+}

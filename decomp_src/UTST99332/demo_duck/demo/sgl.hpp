@@ -155,7 +155,7 @@ public:
     void swap(PrimitiveIndex &);
     void offset(unsigned int);
     void flatten();
-    void unfold(std::vector<T> &);
+    size_t unfold(std::vector<T> &);
     template<class U> PrimitiveIndex &operator=(const PrimitiveIndex<U> &);
     std::vector<T> &strips();
     const std::vector<T> &strips() const;
@@ -166,11 +166,118 @@ public:
     int countTriangles() const;
     int countTrianglesInStrips() const;
     void range(int &, int &) const;
-    bool check() const;
+    void check() const;
     std::vector<T> _strips;     /* 0x00 */
     std::vector<T> _tri;        /* 0x0C */
     int n;                      /* 0x18 */
 };
+/* template bodies: only in units that hold (or emit) the instances (SGL_TEMPLATE_DEFS), the
+   others still have them as asm */
+/* the strings of the instances' asserts (__PRETTY_FUNCTION__ and the module's other labels differ per
+   instance/module): the holder unit declares the specializations it uses with the module's labels
+   (template<> const char sgl::PrimitiveIndexNames<short>::unfold[] __asm__("...");) */
+template<class T> struct PrimitiveIndexNames {
+    static const char unfold[], check[], assign[];
+    static const char err[], sep[], file[];
+    static const char val_ge_0[], retval_size[], tri_size[], count_n[];
+};
+#define SGL_PI_ASSERT(c, text, fn, line) \
+    SGL_ASSERT(c, PrimitiveIndexNames<T>::err, PrimitiveIndexNames<T>::text, PrimitiveIndexNames<T>::file, \
+               PrimitiveIndexNames<T>::fn, line, PrimitiveIndexNames<T>::sep)
+#if SGL_TEMPLATE_DEFS
+template<class T> PrimitiveIndex<T>::PrimitiveIndex() : n(0)
+{
+    clear();
+}
+template<class T> void PrimitiveIndex<T>::clear()
+{
+    _strips.clear();
+    _tri.clear();
+    n = 0;
+}
+template<class T> std::vector<T> &PrimitiveIndex<T>::strips() { return _strips; }
+template<class T> const std::vector<T> &PrimitiveIndex<T>::strips() const { return _strips; }
+template<class T> std::vector<T> &PrimitiveIndex<T>::tri() { return _tri; }
+template<class T> const std::vector<T> &PrimitiveIndex<T>::tri() const { return _tri; }
+template<class T> void PrimitiveIndex<T>::offset(unsigned int o)
+{
+    for (unsigned int i = 0; i != _tri.size(); i++)
+        _tri[i] += o;
+    for (int s = 0, j = 0; s != n; s++) {
+        int len = _strips[j++];
+        for (int l = 0; l != len; l++)
+            _strips[j + l] += o;
+        j += len;
+    }
+}
+template<class T> int PrimitiveIndex<T>::countVerticesInStrips() const
+{
+    int count = 0;
+    for (int i = 0, k = 0; i != n; i++) {
+        int len = _strips[k++];
+        count += len;
+        k += len;
+    }
+    return count;
+}
+template<class T> int PrimitiveIndex<T>::countVertices() const
+{
+    return countVerticesInStrips() + _tri.size();
+}
+template<class T> template<class U> PrimitiveIndex<T> &PrimitiveIndex<T>::operator=(const PrimitiveIndex<U> &o)
+{
+    n = o.n;
+    _strips.resize(o.strips().size());
+    _tri.resize(o.tri().size());
+    for (unsigned int i = 0; i != _strips.size(); i++) {
+        T val = o.strips()[i];
+        SGL_PI_ASSERT(val >= 0, val_ge_0, assign, 48);
+        _strips[i] = val;
+    }
+    for (unsigned int i = 0; i != _tri.size(); i++) {
+        T val = o.tri()[i];
+        SGL_PI_ASSERT(val >= 0, val_ge_0, assign, 58);
+        _tri[i] = val;
+    }
+    return *this;
+}
+template<class T> size_t PrimitiveIndex<T>::unfold(std::vector<T> &_Retval)
+{
+    size_t num_vertices = countVertices();
+    _Retval.clear();
+    _Retval.reserve(num_vertices);
+    int k = 0;
+    for (unsigned int i = 0; i != tri().size(); i++) {
+        _Retval.push_back(tri()[i]);
+        tri()[i] = k++;
+    }
+    for (int s = 0, j = 0; s != n; s++) {
+        int len = strips()[j++];
+        for (int l = 0; l != len; l++) {
+            _Retval.push_back(strips()[j + l]);
+            strips()[j + l] = k++;
+        }
+        j += len;
+    }
+    SGL_PI_ASSERT(_Retval.size() == num_vertices, retval_size, unfold, 369);
+    return num_vertices;
+}
+template<class T> void PrimitiveIndex<T>::check() const
+{
+    SGL_PI_ASSERT(3 * (_tri.size() / 3) == _tri.size(), tri_size, check, 202);
+    unsigned int i = 0;
+    int count = 0;
+    for (; i < _strips.size(); i += _strips[i] + 1)
+        count++;
+    SGL_PI_ASSERT(count == n, count_n, check, 218);
+}
+template<class T> void PrimitiveIndex<T>::swap(PrimitiveIndex &o)
+{
+    o._strips.swap(_strips);
+    o._tri.swap(_tri);
+    std::swap(n, o.n);
+}
+#endif
 
 class CoreMesh {
 public:
@@ -673,11 +780,36 @@ SGL_LINKONCE_END
 class PolarFunction : public SphericalRGBFn {
 public:
     virtual void eval(float theta, float phi, float &r, float &g, float &b) const;
-    virtual ~PolarFunction() {}
+    virtual ~PolarFunction();
     virtual float eval(float theta, float phi) const = 0;
 };
+#if SGL_LINKONCE_PolarFunction
+SGL_LINKONCE_BEGIN
+#endif
+inline PolarFunction::~PolarFunction() {}
+#if SGL_LINKONCE_PolarFunction
+SGL_LINKONCE_END
+#endif
+class DebugMap : public SphericalRGBFn {
+public:
+    virtual void eval(float theta, float phi, float &r, float &g, float &b) const;
+    virtual ~DebugMap();
+    sgl::Color _colors[6];              /* 0x04 */
+};
+#if SGL_LINKONCE_DebugMap
+SGL_LINKONCE_BEGIN
+#endif
+inline DebugMap::~DebugMap() {}
+#if SGL_LINKONCE_DebugMap
+SGL_LINKONCE_END
+#endif
 }
 
+namespace icosahedron {
+struct Face {
+    int a, b, c;
+};
+}
 /* accessors (generated from the asm; members named by offset) */
 class Icosahedron {
 public:
@@ -818,6 +950,13 @@ public:
     float _f30;
     float _f34;
 };
+#if SGL_LINKONCE_Frustum
+SGL_LINKONCE_BEGIN
+#endif
+inline Frustum::~Frustum() {}
+#if SGL_LINKONCE_Frustum
+SGL_LINKONCE_END
+#endif
 void FindBestAlignedDiagonal(math::vector_xyzw, Box::Vertex &, Box::Vertex &);
 class RT {
 public:
@@ -857,6 +996,11 @@ public:
 }
 
 namespace sh {
+/* 0x6C bytes of floats, bitwise-copied (vector<sh::Vertex> instances in sh_PRT) */
+struct Vertex {
+    Vertex();
+    float _p0[0x6C / 4];
+};
 class PRT {
 public:
     enum DrawFlag { DRAW_NORMAL, DRAW_SH, FULL_HEMISPHERE_VTX, DRAW_METRICS };
@@ -886,6 +1030,17 @@ public:
     bool _processed;                    /* 0x334 */
     VertexData _vdata;                  /* 0x338 */
 };
+#if SGL_LINKONCE_PerVertexData
+SGL_LINKONCE_BEGIN
+#endif
+inline PRT::PerVertexData::PerVertexData() : _fA0(false), _fA1(false), _fA2(false)
+{
+    for (int i = 0; i != 10; i++)
+        _fA4[i] = 0;
+}
+#if SGL_LINKONCE_PerVertexData
+SGL_LINKONCE_END
+#endif
 }
 
 /* sh::Args::Env, sh::Env, sh::TestEnvSet (declarations maintained by cxx-apps3) */
@@ -969,7 +1124,7 @@ class HDRMap : public SphericalRGBFn {
 public:
     HDRMap(const char *, float);
     virtual void eval(float theta, float phi, float &r, float &g, float &b) const;
-    virtual ~HDRMap() {}
+    virtual ~HDRMap();
     float convert01f(float) const;
     unsigned int convert0i(float, unsigned int) const;
     unsigned int convert255(float) const;
@@ -987,5 +1142,12 @@ public:
     float _min, _max;                   /* 0x30 */
     std::string _name;                  /* 0x38 */
 };
+#if SGL_LINKONCE_HDRMap
+SGL_LINKONCE_BEGIN
+#endif
+inline HDRMap::~HDRMap() {}
+#if SGL_LINKONCE_HDRMap
+SGL_LINKONCE_END
+#endif
 }
 #endif

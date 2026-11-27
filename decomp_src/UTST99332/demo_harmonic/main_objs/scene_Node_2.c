@@ -73,7 +73,7 @@ int scene::Node::getParentCount() const
     return _m._parent_count;
 }
 
-int scene::Node::getCreateCount() const
+unsigned int scene::Node::getCreateCount() const
 {
     return _m._create_count;
 }

@@ -2,6 +2,7 @@
 /* cflags: -O3 -fno-exceptions */
 #undef __EXCEPTIONS
 #include "cxx/defer_asm.h"
+#define SGL_LINKONCE_PolarFunction 1
 #include "../main.hpp"
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sh_PolarFunction", _Z41__static_initialization_and_destruction_0ii_E7284);
@@ -26,8 +27,3 @@ void _GLOBAL__D__ZNK2sh13PolarFunction4evalEffRfS1_S1_(void)
 {
     static_init(0, 0xFFFF);
 }
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sh_PolarFunction", _ZN2sh13PolarFunctionD1Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sh_PolarFunction", _ZN2sh13PolarFunctionD0Ev);
-

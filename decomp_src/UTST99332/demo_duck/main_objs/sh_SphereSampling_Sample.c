@@ -10,9 +10,6 @@ extern const float D_00173BC4;
 
 extern const char D_00173BDC[];     /* "sphere sampling constructed, n=" */
 extern const char D_00173BFC[];     /* "\n" */
-namespace std {
-extern template vector<sh::SphereSampling::Sample>::iterator vector<sh::SphereSampling::Sample>::erase(iterator, iterator);
-}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sh_SphereSampling_Sample", _Z41__static_initialization_and_destruction_0ii_EF3B4);
 
@@ -110,20 +107,10 @@ void _GLOBAL__D__ZN2sh14SphereSampling6SampleC2Ev(void)
     static_init(0, 0xFFFF);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sh_SphereSampling_Sample", _ZNSt6vectorIN2sh14SphereSampling6SampleESaIS2_EE5eraseEN9__gnu_cxx17__normal_iteratorIPS2_S4_EES8_);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sh_SphereSampling_Sample", _ZSt24__uninitialized_copy_auxIN9__gnu_cxx17__normal_iteratorIPKN2sh14SphereSampling6SampleESt6vectorIS4_SaIS4_EEEEPS4_ET0_T_SD_SC_12__false_type);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sh_SphereSampling_Sample", _ZNSt6vectorIN2sh14SphereSampling6SampleESaIS2_EE14_M_fill_insertEN9__gnu_cxx17__normal_iteratorIPS2_S4_EEjRKS2_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sh_SphereSampling_Sample", _ZSt4fillIN9__gnu_cxx17__normal_iteratorIPN2sh14SphereSampling6SampleESt6vectorIS4_SaIS4_EEEES4_EvT_SA_RKT0_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sh_SphereSampling_Sample", _ZSt24__uninitialized_copy_auxIPN2sh14SphereSampling6SampleES3_ET0_T_S5_S4_12__false_type);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sh_SphereSampling_Sample", _ZSt26__uninitialized_fill_n_auxIPN2sh14SphereSampling6SampleEjS2_ET_S4_T0_RKT1_12__false_type);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sh_SphereSampling_Sample", _ZSt24__uninitialized_copy_auxIN9__gnu_cxx17__normal_iteratorIPN2sh14SphereSampling6SampleESt6vectorIS4_SaIS4_EEEES5_ET0_T_SB_SA_12__false_type);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sh_SphereSampling_Sample", _ZSt24__uninitialized_copy_auxIN9__gnu_cxx17__normal_iteratorIPN2sh14SphereSampling6SampleESt6vectorIS4_SaIS4_EEEES9_ET0_T_SB_SA_12__false_type);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sh_SphereSampling_Sample", _ZSt26__uninitialized_fill_n_auxIN9__gnu_cxx17__normal_iteratorIPN2sh14SphereSampling6SampleESt6vectorIS4_SaIS4_EEEEjS4_ET_SA_T0_RKT1_12__false_type);
+extern "C" void sh_SphereSampling_Sample_instances(std::vector<sh::SphereSampling::Sample> *v, unsigned int n) __attribute__((section(".discard.asm")));
+extern "C" void sh_SphereSampling_Sample_instances(std::vector<sh::SphereSampling::Sample> *v, unsigned int n)
+{
+    std::vector<sh::SphereSampling::Sample> c(*v);
+    v->resize(n);
+}

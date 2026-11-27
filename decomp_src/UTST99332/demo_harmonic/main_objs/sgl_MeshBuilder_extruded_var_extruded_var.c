@@ -2,6 +2,7 @@
 /* cflags: -O3 -fno-exceptions */
 #undef __EXCEPTIONS
 #include "cxx/defer_asm.h"
+#define DEMO_TEMPLATE_DEFS 1
 #include "../main.hpp"
 
 extern const char D_0016DC64[];     /* " *** error " */
@@ -28,15 +29,6 @@ extern const char D_0016E06C[];     /* "_var._input_mode == INDEXED" */
 unsigned int math_max_u(unsigned int, unsigned int) __asm__("_ZN4math4max_IjEET_S1_S1_");
 
 extern const float D_0016DB84;
-namespace std {
-extern template vector<bool> &vector<bool>::operator=(const vector<bool> &);
-extern template vector<float> &vector<float>::operator=(const vector<float> &);
-extern template vector<math::vector_xyzw> &vector<math::vector_xyzw>::operator=(const vector<math::vector_xyzw> &);
-}
-namespace common {
-extern template class t_array<sgl::Position>;
-extern template class t_array2d<sgl::Position>;
-}
 extern const float D_0016DBB0;      /* 1.0f */
 extern const float D_0016DBB4;      /* 1.0f */
 
@@ -480,79 +472,103 @@ void _GLOBAL__D__ZN3sgl11MeshBuilder12extruded_varC2Ev(void)
     static_init(0, 0xFFFF);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_MeshBuilder_extruded_var_extruded_var", _ZNSt6vectorIN3sgl7LineSet4LineESaIS2_EEaSERKS4_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_MeshBuilder_extruded_var_extruded_var", _ZNSt6vectorIN3sgl12TransformSet9TransformESaIS2_EEaSERKS4_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_MeshBuilder_extruded_var_extruded_var", _ZN6common9t_array2dIN3sgl8PositionEED1Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_MeshBuilder_extruded_var_extruded_var", _ZN6common9t_array2dIN3sgl8PositionEEC1Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_MeshBuilder_extruded_var_extruded_var", _ZN6common9t_array2dIN3sgl8PositionEE6resizeEjj);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_MeshBuilder_extruded_var_extruded_var", _ZNK6common9t_array2dIN3sgl8PositionEE2nxEv);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_MeshBuilder_extruded_var_extruded_var", _ZNK6common9t_array2dIN3sgl8PositionEE2nyEv);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_MeshBuilder_extruded_var_extruded_var", _ZN4math4max_IjEET_S1_S1_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_MeshBuilder_extruded_var_extruded_var", _ZN6common9t_array2dIN3sgl8PositionEE2atEii);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_MeshBuilder_extruded_var_extruded_var", _ZN6common9t_array2dIN3sgl8PositionEEaSERKS3_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_MeshBuilder_extruded_var_extruded_var", _ZN4math4max_IiEET_S1_S1_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_MeshBuilder_extruded_var_extruded_var", _ZNSt6vectorIbSaIbEEaSERKS1_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_MeshBuilder_extruded_var_extruded_var", _ZNSt6vectorIfSaIfEEaSERKS1_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_MeshBuilder_extruded_var_extruded_var", _ZNSt6vectorIN4math11vector_xyzwESaIS1_EEaSERKS3_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_MeshBuilder_extruded_var_extruded_var", _ZN6common7t_arrayIN3sgl8PositionEED2Ev);
+/* inline members / instances kept as asm: .gnu.linkonce.t (splat only sees `INCLUDE_ASM(`) */
+#undef INCLUDE_ASM
+#define INCLUDE_ASM INCLUDE_ASM_LINKONCE
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_MeshBuilder_extruded_var_extruded_var", _ZN6common7t_arrayIN3sgl8PositionEEC2Ev);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_MeshBuilder_extruded_var_extruded_var", _ZN6common7t_arrayIN3sgl8PositionEE6resizeEj);
+/* the original's .gnu.linkonce.t order */
+DEMO_LINKONCE_ORDER(DEMO_LINKONCE(_ZNSt6vectorIN3sgl7LineSet4LineESaIS2_EEaSERKS4_)
+                    DEMO_LINKONCE(_ZNSt6vectorIN3sgl12TransformSet9TransformESaIS2_EEaSERKS4_)
+                    DEMO_LINKONCE(_ZN6common9t_array2dIN3sgl8PositionEED1Ev)
+                    DEMO_LINKONCE(_ZN6common9t_array2dIN3sgl8PositionEEC1Ev)
+                    DEMO_LINKONCE(_ZN6common9t_array2dIN3sgl8PositionEE6resizeEjj)
+                    DEMO_LINKONCE(_ZNK6common9t_array2dIN3sgl8PositionEE2nxEv)
+                    DEMO_LINKONCE(_ZNK6common9t_array2dIN3sgl8PositionEE2nyEv)
+                    DEMO_LINKONCE(_ZN4math4max_IjEET_S1_S1_)
+                    DEMO_LINKONCE(_ZN6common9t_array2dIN3sgl8PositionEE2atEii)
+                    DEMO_LINKONCE(_ZN6common9t_array2dIN3sgl8PositionEEaSERKS3_)
+                    DEMO_LINKONCE(_ZN4math4max_IiEET_S1_S1_)
+                    DEMO_LINKONCE(_ZNSt6vectorIbSaIbEEaSERKS1_)
+                    DEMO_LINKONCE(_ZNSt6vectorIfSaIfEEaSERKS1_)
+                    DEMO_LINKONCE(_ZNSt6vectorIN4math11vector_xyzwESaIS1_EEaSERKS3_)
+                    DEMO_LINKONCE(_ZN6common7t_arrayIN3sgl8PositionEED2Ev)
+                    DEMO_LINKONCE(_ZN6common7t_arrayIN3sgl8PositionEEC2Ev)
+                    DEMO_LINKONCE(_ZN6common7t_arrayIN3sgl8PositionEE6resizeEj)
+                    DEMO_LINKONCE(_ZN6common7t_arrayIN3sgl8PositionEE4addrEv)
+                    DEMO_LINKONCE(_ZN6common7t_arrayIN3sgl8PositionEEaSERKS3_)
+                    DEMO_LINKONCE(_ZSt24__uninitialized_copy_auxIN9__gnu_cxx17__normal_iteratorIPKN3sgl7LineSet4LineESt6vectorIS4_SaIS4_EEEEPS4_ET0_T_SD_SC_12__false_type)
+                    DEMO_LINKONCE(_ZSt24__uninitialized_copy_auxIN9__gnu_cxx17__normal_iteratorIPKN3sgl12TransformSet9TransformESt6vectorIS4_SaIS4_EEEEPS4_ET0_T_SD_SC_12__false_type)
+                    DEMO_LINKONCE(_ZN6common7t_arrayIN3sgl8PositionEE7releaseEv)
+                    DEMO_LINKONCE(_ZN6common7t_arrayIN3sgl8PositionEE8allocateEj)
+                    DEMO_LINKONCE(_ZSt24__uninitialized_copy_auxIN9__gnu_cxx17__normal_iteratorIPKN4math11vector_xyzwESt6vectorIS3_SaIS3_EEEEPS3_ET0_T_SC_SB_12__false_type)
+                    DEMO_LINKONCE(_ZN6common9t_array2dIN3sgl8PositionEED0Ev)
+                    DEMO_LINKONCE(_ZN6common7t_arrayIN3sgl8PositionEED1Ev)
+                    DEMO_LINKONCE(_ZN6common7t_arrayIN3sgl8PositionEED0Ev)
+                    DEMO_LINKONCE(_ZN6common7t_arrayIN3sgl8PositionEE4swapERS3_)
+                    DEMO_LINKONCE(_ZN6common9t_array2dIN3sgl8PositionEE7releaseEv)
+                    DEMO_LINKONCE(_ZN6common7t_arrayIN3sgl8PositionEE4fillERKS2_)
+                    DEMO_LINKONCE(_ZN6common9t_array2dIN3sgl8PositionEE4swapERS3_)
+                    DEMO_LINKONCE(_ZN6common9t_array2dIN3sgl8PositionEE7resizexEj)
+                    DEMO_LINKONCE(_ZN6common9t_array2dIN3sgl8PositionEE7resizeyEj)
+                    DEMO_LINKONCE(_ZN6common9t_array2dIN3sgl8PositionEE4copyERKS3_iiiiii)
+                    DEMO_LINKONCE(_ZN6common4SwapINS_7t_arrayIN3sgl8PositionEE7MembersEEEvRT_S7_)
+                    DEMO_LINKONCE(_ZN6common4SwapINS_9t_array2dIN3sgl8PositionEE3DimEEEvRT_S7_)
+                    DEMO_LINKONCE(_ZNK6common9t_array2dIN3sgl8PositionEE2atEii)
+                    DEMO_LINKONCE(_ZNK6common7t_arrayIN3sgl8PositionEE4addrEv));
+namespace math {
+template<class T> T max_(T, T);
+}
+extern "C" void t_array_Position_D0(void *) __asm__("_ZN6common7t_arrayIN3sgl8PositionEED0Ev");
+extern "C" void t_array2d_Position_D0(void *) __asm__("_ZN6common9t_array2dIN3sgl8PositionEED0Ev");
+/* t_array<Position>() stays asm (Position's default constructor schedules differently) */
+namespace common {
+extern template t_array<sgl::Position>::t_array();
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_MeshBuilder_extruded_var_extruded_var", _ZN6common7t_arrayIN3sgl8PositionEE4addrEv);
+extern "C" void sgl_MeshBuilder_extruded_var_extruded_var_instances(common::t_array2d<sgl::Position> *img, const sgl::Position *p, std::vector<sgl::LineSet::Line> *vl, std::vector<sgl::TransformSet::Transform> *vt, std::vector<bool> *vb, std::vector<float> *vf, std::vector<math::vector_xyzw> *vv, unsigned int n) __attribute__((section(".discard.asm")));
+extern "C" void sgl_MeshBuilder_extruded_var_extruded_var_instances(common::t_array2d<sgl::Position> *img, const sgl::Position *p, std::vector<sgl::LineSet::Line> *vl, std::vector<sgl::TransformSet::Transform> *vt, std::vector<bool> *vb, std::vector<float> *vf, std::vector<math::vector_xyzw> *vv, unsigned int n)
+{
+    typedef common::t_array<sgl::Position> A;
+    typedef common::t_array2d<sgl::Position> A2;
+    const A2 *ci = img;
+    *vl = *vl;
+    *vt = *vt;
+    A2 tmp;
+    img->A2::resize(n, n);
+    img->nx();
+    img->ny();
+    math::max_(n, n);
+    img->at(n, n);
+    *img = *img;
+    math::max_((int)n, (int)n);
+    *vb = *vb;
+    *vf = *vf;
+    *vv = *vv;
+    img->A::resize(n);
+    img->addr();
+    img->A::operator=(*img);
+    img->A::release();
+    img->allocate(n);
+    img->A2::~A2();
+    t_array2d_Position_D0(img);
+    img->A::~A();
+    t_array_Position_D0(img);
+    img->A::swap(*img);
+    img->A2::release();
+    img->A::fill(*p);
+    img->A2::swap(*img);
+    img->A2::resizex(n);
+    img->A2::resizey(n);
+    img->A2::copy(*img, n, n, n, n, n, n);
+    ci->at(n, n);
+    ci->addr();
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_MeshBuilder_extruded_var_extruded_var", _ZN6common7t_arrayIN3sgl8PositionEEaSERKS3_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_MeshBuilder_extruded_var_extruded_var", _ZSt24__uninitialized_copy_auxIN9__gnu_cxx17__normal_iteratorIPKN3sgl7LineSet4LineESt6vectorIS4_SaIS4_EEEEPS4_ET0_T_SD_SC_12__false_type);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_MeshBuilder_extruded_var_extruded_var", _ZSt24__uninitialized_copy_auxIN9__gnu_cxx17__normal_iteratorIPKN3sgl12TransformSet9TransformESt6vectorIS4_SaIS4_EEEEPS4_ET0_T_SD_SC_12__false_type);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_MeshBuilder_extruded_var_extruded_var", _ZN6common7t_arrayIN3sgl8PositionEE7releaseEv);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_MeshBuilder_extruded_var_extruded_var", _ZN6common7t_arrayIN3sgl8PositionEE8allocateEj);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_MeshBuilder_extruded_var_extruded_var", _ZSt24__uninitialized_copy_auxIN9__gnu_cxx17__normal_iteratorIPKN4math11vector_xyzwESt6vectorIS3_SaIS3_EEEEPS3_ET0_T_SC_SB_12__false_type);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_MeshBuilder_extruded_var_extruded_var", _ZN6common9t_array2dIN3sgl8PositionEED0Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_MeshBuilder_extruded_var_extruded_var", _ZN6common7t_arrayIN3sgl8PositionEED1Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_MeshBuilder_extruded_var_extruded_var", _ZN6common7t_arrayIN3sgl8PositionEED0Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_MeshBuilder_extruded_var_extruded_var", _ZN6common7t_arrayIN3sgl8PositionEE4swapERS3_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_MeshBuilder_extruded_var_extruded_var", _ZN6common9t_array2dIN3sgl8PositionEE7releaseEv);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_MeshBuilder_extruded_var_extruded_var", _ZN6common7t_arrayIN3sgl8PositionEE4fillERKS2_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_MeshBuilder_extruded_var_extruded_var", _ZN6common9t_array2dIN3sgl8PositionEE4swapERS3_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_MeshBuilder_extruded_var_extruded_var", _ZN6common9t_array2dIN3sgl8PositionEE7resizexEj);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_MeshBuilder_extruded_var_extruded_var", _ZN6common9t_array2dIN3sgl8PositionEE7resizeyEj);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_MeshBuilder_extruded_var_extruded_var", _ZN6common9t_array2dIN3sgl8PositionEE4copyERKS3_iiiiii);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_MeshBuilder_extruded_var_extruded_var", _ZN6common4SwapINS_7t_arrayIN3sgl8PositionEE7MembersEEEvRT_S7_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_MeshBuilder_extruded_var_extruded_var", _ZN6common4SwapINS_9t_array2dIN3sgl8PositionEE3DimEEEvRT_S7_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_MeshBuilder_extruded_var_extruded_var", _ZNK6common9t_array2dIN3sgl8PositionEE2atEii);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_MeshBuilder_extruded_var_extruded_var", _ZNK6common7t_arrayIN3sgl8PositionEE4addrEv);
-
+namespace math {
+template<class T> T max_(T a, T b)
+{
+    return a < b ? b : a;
+}
+}

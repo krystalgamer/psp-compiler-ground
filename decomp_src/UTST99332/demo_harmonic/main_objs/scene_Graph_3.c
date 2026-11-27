@@ -2,7 +2,19 @@
 /* cflags: -O3 -fno-exceptions */
 #undef __EXCEPTIONS
 #include "cxx/defer_asm.h"
+#define DEMO_TEMPLATE_DEFS
+#define SCENE_GRAPH_TEMPLATE_DEFS
 #include "../main.hpp"
+/* linkonce order: this object's .gnu.linkonce.t sections in Sony's link order */
+SCENE_LINKONCE_ORDER(
+    SCENE_LINKONCE(_ZN5scene5Graph10getSublistINS_4MeshEEEvRN6common12handles_listIT_EE)
+    SCENE_LINKONCE(_ZNK3sgl14PrimitiveIndexIiE13countVerticesEv)
+    SCENE_LINKONCE(_ZNK3sgl14PrimitiveIndexIiE21countVerticesInStripsEv)
+    SCENE_LINKONCE(_ZNK3sgl14PrimitiveIndexIiE5rangeERiS2_)
+    SCENE_LINKONCE(_ZSt4fillIPmiEvT_S1_RKT0_)
+    SCENE_LINKONCE(_ZNSt10_List_baseIN6common6handleIN5scene4MeshEEESaIS4_EE7__clearEv)
+    SCENE_LINKONCE(_ZNSt4listIN6common6handleIN5scene4MeshEEESaIS4_EE6insertESt14_List_iteratorIS4_RS4_PS4_ERKS4_)
+);
 
 extern const char D_001680F8[];
 extern const char D_0016812C[];
@@ -68,17 +80,21 @@ void _GLOBAL__D__ZN5scene5Graph4saveEPKc(void)
     static_init(0, 0xFFFF);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Graph_3", _ZN5scene5Graph10getSublistINS_4MeshEEEvRN6common12handles_listIT_EE);
+/* instances that the (asm) methods above use, referenced from a discarded function (see scene_Graph.c) */
+extern "C" void scene_Graph_3_uses(scene::Graph *g, unsigned long *p) __attribute__((section(".discard.asm")));
+extern "C" void scene_Graph_3_uses(scene::Graph *g, unsigned long *p)
+{
+    g->getSublist(*(common::handles_list<scene::Mesh> *)0);
+    std::fill(p, p, 0);
+}
+
+/* from here on INCLUDE_ASM puts the asm in its own .gnu.linkonce.t section (written as
+   INCLUDE_ASM so that splat keeps these functions as asm) */
+#undef INCLUDE_ASM
+#define INCLUDE_ASM(FOLDER, NAME) INCLUDE_ASM_LINKONCE(FOLDER, NAME)
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Graph_3", _ZNK3sgl14PrimitiveIndexIiE13countVerticesEv);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Graph_3", _ZNK3sgl14PrimitiveIndexIiE21countVerticesInStripsEv);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Graph_3", _ZNK3sgl14PrimitiveIndexIiE5rangeERiS2_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Graph_3", _ZSt4fillIPmiEvT_S1_RKT0_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Graph_3", _ZNSt10_List_baseIN6common6handleIN5scene4MeshEEESaIS4_EE7__clearEv);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Graph_3", _ZNSt4listIN6common6handleIN5scene4MeshEEESaIS4_EE6insertESt14_List_iteratorIS4_RS4_PS4_ERKS4_);
-

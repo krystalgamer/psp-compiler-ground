@@ -27,13 +27,26 @@ bss 0x18B76C main_objs/math_ZYZ
 bss 0x18B7EC -
 bss 0x18D9C4 main_objs/math_TransformStackFunc
 bss 0x18DA44 -
+# draw_mesh_enabled: vector<short>::reserve()'s "vector::reserve" (after PrimitiveIndex's strings)
+rodata 0x1699E0 main_objs/draw_mesh_enabled
+rodata 0x1699F0 -
+# sgl_MeshBuilder_extruded_var_extruded_var: the float pool (Position()'s 1.0f) of t_array<Position>::allocate
+rodata 0x16DC34 main_objs/sgl_MeshBuilder_extruded_var_extruded_var
+rodata 0x16DC38 -
+# sgl_Stripper: vector<int>::reserve()'s "vector::reserve" (after Stripper's strings)
+rodata 0x16EBDC main_objs/sgl_Stripper
+rodata 0x16EBEC -
 # sh_* objects whose static initializer (the header statics) is C++: .rodata after the vtable, .bss
 rodata 0x16FD1C main_objs/sh_Matrix
 rodata 0x16FD64 -
+rodata 0x16F2E8 main_objs/sh_DebugMap
+rodata 0x16F310 -
 rodata 0x171198 main_objs/sh_SquareMap
 rodata 0x1711E8 -
 bss 0x18DED0 main_objs/sh_Matrix
 bss 0x18DFA8 -
+bss 0x18DB48 main_objs/sh_DebugMap
+bss 0x18DCA0 -
 bss 0x18E468 main_objs/sh_SquareMap
 bss 0x18E4EC -
 # gl__name_stack: the float pools of gl::PushMatrix and gl::LoadIdentity (Identity()'s 1.0f)
@@ -48,6 +61,9 @@ rodata 0x16A6DC -
 # sys_timer_GetDeltaTime: the double pools (1000000.0) of GetDeltaTime and GetTime
 rodata 0x172F40 main_objs/sys_timer_GetDeltaTime
 rodata 0x172F50 -
+# glutils_PickingBase: vector<unsigned>::reserve()'s "vector::reserve" (after PickingBase's typeinfo name)
+rodata 0x1626E8 main_objs/glutils_PickingBase
+rodata 0x1626F8 -
 # sh_TestEnvSet_TestEnv: the float pools of TestEnvSet::TestEnvSet (C2, C1)
 rodata 0x171220 main_objs/sh_TestEnvSet_TestEnv
 rodata 0x171250 -

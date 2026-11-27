@@ -4,8 +4,6 @@
 #include "cxx/defer_asm.h"
 #include "../main.hpp"
 
-/* weak instances stay asm */
-extern template class std::vector<unsigned int>;
 
 glutils::PickingBase::PickingBase()
 {
@@ -17,6 +15,3 @@ const std::vector<unsigned int> &glutils::PickingBase::getHits() const
 {
     return _hits;
 }
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/glutils_PickingBase", _ZNSt6vectorIjSaIjEE7reserveEj);
-

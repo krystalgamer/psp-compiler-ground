@@ -7,6 +7,7 @@
 #include <list>
 #include <deque>
 #include <map>
+#include <sstream>
 
 /* Template instances / out-of-line inline functions of a scene unit's tail are
    .gnu.linkonce.t sections, linked in the object's section order.  The tail
@@ -34,7 +35,10 @@ template<int N> void scene_alloc_first_use(unsigned int n)
 namespace common {
 /* std::map comparator on strings (scene::Graph's multimap) */
 struct LessStr {
-    bool operator()(const std::string &a, const std::string &b) const;
+    bool operator()(const std::string &a, const std::string &b) const
+    {
+        return strcmp(a.c_str(), b.c_str()) < 0;
+    }
 };
 template<class T> class handles_list : public std::list<handle<T> > {
 };
@@ -280,7 +284,7 @@ public:
     void incrParentCount();
     void decrParentCount();
     int getParentCount() const;
-    int getCreateCount() const;
+    unsigned int getCreateCount() const;
     void setTmp(unsigned int);
     unsigned int getTmp() const;
     void setMagic(unsigned int);
@@ -545,6 +549,8 @@ public:
     struct VertexData;
     void draw(const TraversalVarStack &);
     void convert(const MeshData &);
+    common::handle<SharedData> _shared;     /* 0x0 (sizeof(scene::Mesh) is 0x44) */
+    common::handle<VertexData> _vertex;     /* 0x8 */
 };
 
 class Mesh : public Node, public HasBVdata {
@@ -664,5 +670,59 @@ public:
     bool _finish_called;                /* 0xF4 */
 };
 }
+
+/* scene::Graph's member templates (instances in scene_Graph*, scene_GraphParser) */
+#ifdef SCENE_GRAPH_TEMPLATE_DEFS
+namespace scene {
+/* the unit defines the assert strings scene_graph_h_err/_name_expr/_file/_sp/_empty (labels) and
+   inline scene::scene_pf_getMappedNode(T *) returning the instance's __PRETTY_FUNCTION__ label */
+template<class T> common::handle<T> Graph::getMappedNode(const std::string &_Name)
+{
+    SCENE_ASSERT(_Name != scene_graph_h_empty, scene_graph_h_err, scene_graph_h_name_expr, scene_graph_h_file,
+                 scene_pf_getMappedNode((T *)0), 91, scene_graph_h_sp);
+    std::string n = translatedName(_Name.c_str());
+    {
+        NodeMap::iterator i = _mapU.find(n.c_str());
+        if (i != _mapU.end())
+            return common::handle<T>(i->second);
+    }
+    {
+        NodeMultiMap::iterator i = _mapO.find(n.c_str());
+        if (i != _mapO.end())
+            return common::handle<T>(i->second);
+    }
+    return common::handle<T>();
+}
+/* also scene_graph_h_us ("_") */
+template<class T> common::handle<T> Graph::newNode(std::string name, bool mapped)
+{
+    std::string n = translatedName(name);
+    if (n != scene_graph_h_empty) {
+        common::handle<T> h = getMappedNode<T>(n);
+        if (hvalid(h))
+            return h;
+    }
+    common::handle<T> h(new T(n.c_str(), mapped));
+    if (name.empty()) {
+        std::ostringstream os;
+        os << h->getTypeName() << scene_graph_h_us << h->getCreateCount();
+        std::string nm = translatedName(os.str());
+        h->setName(nm);
+    }
+    add_node(h);
+    return h;
+}
+template<class T> void Graph::getSublist(common::handles_list<T> &l)
+{
+    l.clear();
+    for (NodeMultiMap::iterator i = _mapO.begin(); i != _mapO.end(); ++i) {
+        common::handle<T> h(i->second);
+        if (hnull(h))
+            continue;
+        l.push_back(h);
+    }
+}
+}
+#endif
 
 #endif

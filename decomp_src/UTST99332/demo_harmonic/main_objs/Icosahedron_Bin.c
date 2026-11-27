@@ -4,14 +4,6 @@
 #include "cxx/defer_asm.h"
 #include "../main.hpp"
 
-/* these template instances are still asm below */
-namespace std {
-extern template void vector<Icosahedron::Bin *>::_M_insert_aux(vector<Icosahedron::Bin *>::iterator, Icosahedron::Bin *const &);
-extern template vector<Icosahedron::Bin *>::iterator vector<Icosahedron::Bin *>::erase(vector<Icosahedron::Bin *>::iterator,
-                                                                                      vector<Icosahedron::Bin *>::iterator);
-extern template void vector<Icosahedron::Bin *>::_M_fill_insert(vector<Icosahedron::Bin *>::iterator, vector<Icosahedron::Bin *>::size_type,
-                                                               Icosahedron::Bin *const &);
-}
 
 #include "UTST99332/demo_duck/gl.hpp"
 extern const float D_0016F86C;      /* 1.0f */
@@ -188,30 +180,25 @@ void _GLOBAL__D__ZN11Icosahedron3BinC2EN4math11vector_xyzwES2_S2_h(void)
     static_init(0, 0xFFFF);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/Icosahedron_Bin", _ZNSt6vectorIPN11Icosahedron3BinESaIS2_EE13_M_insert_auxEN9__gnu_cxx17__normal_iteratorIPS2_S4_EERKS2_);
+/* the original's .gnu.linkonce.t order */
+DEMO_LINKONCE_ORDER(DEMO_LINKONCE(_ZNSt6vectorIPN11Icosahedron3BinESaIS2_EE13_M_insert_auxEN9__gnu_cxx17__normal_iteratorIPS2_S4_EERKS2_)
+                    DEMO_LINKONCE(_ZNSt6vectorIN11icosahedron4FaceESaIS1_EE13_M_insert_auxEN9__gnu_cxx17__normal_iteratorIPS1_S3_EERKS1_)
+                    DEMO_LINKONCE(_ZNSt6vectorIPN11Icosahedron3BinESaIS2_EE5eraseEN9__gnu_cxx17__normal_iteratorIPS2_S4_EES8_)
+                    DEMO_LINKONCE(_ZNSt6vectorIN11icosahedron4FaceESaIS1_EE14_M_fill_insertEN9__gnu_cxx17__normal_iteratorIPS1_S3_EEjRKS1_)
+                    DEMO_LINKONCE(_ZSt24__uninitialized_copy_auxIN9__gnu_cxx17__normal_iteratorIPN11icosahedron4FaceESt6vectorIS3_SaIS3_EEEES8_ET0_T_SA_S9_12__false_type)
+                    DEMO_LINKONCE(_ZNSt6vectorIPN11Icosahedron3BinESaIS2_EE14_M_fill_insertEN9__gnu_cxx17__normal_iteratorIPS2_S4_EEjRKS2_)
+                    DEMO_LINKONCE(_ZSt4fillIN9__gnu_cxx17__normal_iteratorIPN11icosahedron4FaceESt6vectorIS3_SaIS3_EEEES3_EvT_S9_RKT0_)
+                    DEMO_LINKONCE(_ZSt4fillIN9__gnu_cxx17__normal_iteratorIPPN11Icosahedron3BinESt6vectorIS4_SaIS4_EEEES4_EvT_SA_RKT0_)
+                    DEMO_LINKONCE(_ZSt24__uninitialized_copy_auxIPN11icosahedron4FaceES2_ET0_T_S4_S3_12__false_type)
+                    DEMO_LINKONCE(_ZSt26__uninitialized_fill_n_auxIPN11icosahedron4FaceEjS1_ET_S3_T0_RKT1_12__false_type)
+                    DEMO_LINKONCE(_ZSt24__uninitialized_copy_auxIN9__gnu_cxx17__normal_iteratorIPN11icosahedron4FaceESt6vectorIS3_SaIS3_EEEES4_ET0_T_SA_S9_12__false_type)
+                    DEMO_LINKONCE(_ZSt26__uninitialized_fill_n_auxIN9__gnu_cxx17__normal_iteratorIPN11icosahedron4FaceESt6vectorIS3_SaIS3_EEEEjS3_ET_S9_T0_RKT1_12__false_type)
+                    DEMO_LINKONCE(_ZSt6fill_nIPPN11Icosahedron3BinEjS2_ET_S4_T0_RKT1_)
+                    DEMO_LINKONCE(_ZSt6fill_nIN9__gnu_cxx17__normal_iteratorIPPN11Icosahedron3BinESt6vectorIS4_SaIS4_EEEEjS4_ET_SA_T0_RKT1_));
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/Icosahedron_Bin", _ZNSt6vectorIN11icosahedron4FaceESaIS1_EE13_M_insert_auxEN9__gnu_cxx17__normal_iteratorIPS1_S3_EERKS1_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/Icosahedron_Bin", _ZNSt6vectorIPN11Icosahedron3BinESaIS2_EE5eraseEN9__gnu_cxx17__normal_iteratorIPS2_S4_EES8_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/Icosahedron_Bin", _ZNSt6vectorIN11icosahedron4FaceESaIS1_EE14_M_fill_insertEN9__gnu_cxx17__normal_iteratorIPS1_S3_EEjRKS1_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/Icosahedron_Bin", _ZSt24__uninitialized_copy_auxIN9__gnu_cxx17__normal_iteratorIPN11icosahedron4FaceESt6vectorIS3_SaIS3_EEEES8_ET0_T_SA_S9_12__false_type);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/Icosahedron_Bin", _ZNSt6vectorIPN11Icosahedron3BinESaIS2_EE14_M_fill_insertEN9__gnu_cxx17__normal_iteratorIPS2_S4_EEjRKS2_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/Icosahedron_Bin", _ZSt4fillIN9__gnu_cxx17__normal_iteratorIPN11icosahedron4FaceESt6vectorIS3_SaIS3_EEEES3_EvT_S9_RKT0_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/Icosahedron_Bin", _ZSt4fillIN9__gnu_cxx17__normal_iteratorIPPN11Icosahedron3BinESt6vectorIS4_SaIS4_EEEES4_EvT_SA_RKT0_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/Icosahedron_Bin", _ZSt24__uninitialized_copy_auxIPN11icosahedron4FaceES2_ET0_T_S4_S3_12__false_type);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/Icosahedron_Bin", _ZSt26__uninitialized_fill_n_auxIPN11icosahedron4FaceEjS1_ET_S3_T0_RKT1_12__false_type);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/Icosahedron_Bin", _ZSt24__uninitialized_copy_auxIN9__gnu_cxx17__normal_iteratorIPN11icosahedron4FaceESt6vectorIS3_SaIS3_EEEES4_ET0_T_SA_S9_12__false_type);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/Icosahedron_Bin", _ZSt26__uninitialized_fill_n_auxIN9__gnu_cxx17__normal_iteratorIPN11icosahedron4FaceESt6vectorIS3_SaIS3_EEEEjS3_ET_S9_T0_RKT1_12__false_type);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/Icosahedron_Bin", _ZSt6fill_nIPPN11Icosahedron3BinEjS2_ET_S4_T0_RKT1_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/Icosahedron_Bin", _ZSt6fill_nIN9__gnu_cxx17__normal_iteratorIPPN11Icosahedron3BinESt6vectorIS4_SaIS4_EEEEjS4_ET_SA_T0_RKT1_);
+extern "C" void Icosahedron_Bin_instances(std::vector<icosahedron::Face> *v, const icosahedron::Face *f, unsigned int n) __attribute__((section(".discard.asm")));
+extern "C" void Icosahedron_Bin_instances(std::vector<icosahedron::Face> *v, const icosahedron::Face *f, unsigned int n)
+{
+    v->push_back(*f);
+    v->insert(v->end(), n, *f);
+}

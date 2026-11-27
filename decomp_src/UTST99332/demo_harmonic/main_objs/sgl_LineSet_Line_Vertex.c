@@ -86,21 +86,10 @@ void _GLOBAL__D__ZN3sgl7LineSet4Line6VertexC2Ev(void)
     static_init(0, 0xFFFF);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_LineSet_Line_Vertex", _ZNSt6vectorIN3sgl7LineSet4LineESaIS2_EE13_M_insert_auxEN9__gnu_cxx17__normal_iteratorIPS2_S4_EERKS2_);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_LineSet_Line_Vertex", _ZNSt6vectorIN3sgl7LineSet4LineESaIS2_EE5eraseEN9__gnu_cxx17__normal_iteratorIPS2_S4_EES8_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_LineSet_Line_Vertex", _ZNSt6vectorIN3sgl7LineSet4LineESaIS2_EE14_M_fill_insertEN9__gnu_cxx17__normal_iteratorIPS2_S4_EEjRKS2_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_LineSet_Line_Vertex", _ZSt24__uninitialized_copy_auxIN9__gnu_cxx17__normal_iteratorIPN3sgl7LineSet4LineESt6vectorIS4_SaIS4_EEEES9_ET0_T_SB_SA_12__false_type);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_LineSet_Line_Vertex", _ZSt4fillIN9__gnu_cxx17__normal_iteratorIPN3sgl7LineSet4LineESt6vectorIS4_SaIS4_EEEES4_EvT_SA_RKT0_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_LineSet_Line_Vertex", _ZSt24__uninitialized_copy_auxIPN3sgl7LineSet4LineES3_ET0_T_S5_S4_12__false_type);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_LineSet_Line_Vertex", _ZSt26__uninitialized_fill_n_auxIPN3sgl7LineSet4LineEjS2_ET_S4_T0_RKT1_12__false_type);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_LineSet_Line_Vertex", _ZSt24__uninitialized_copy_auxIN9__gnu_cxx17__normal_iteratorIPN3sgl7LineSet4LineESt6vectorIS4_SaIS4_EEEES5_ET0_T_SB_SA_12__false_type);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_LineSet_Line_Vertex", _ZSt26__uninitialized_fill_n_auxIN9__gnu_cxx17__normal_iteratorIPN3sgl7LineSet4LineESt6vectorIS4_SaIS4_EEEEjS4_ET_SA_T0_RKT1_12__false_type);
-
+extern "C" void sgl_LineSet_Line_Vertex_instances(std::vector<sgl::LineSet::Line> *v, const sgl::LineSet::Line *l, unsigned int n) __attribute__((section(".discard.asm")));
+extern "C" void sgl_LineSet_Line_Vertex_instances(std::vector<sgl::LineSet::Line> *v, const sgl::LineSet::Line *l, unsigned int n)
+{
+    v->resize(n);
+    v->push_back(*l);
+}

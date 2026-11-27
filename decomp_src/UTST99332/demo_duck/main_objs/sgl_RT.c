@@ -114,10 +114,28 @@ void _GLOBAL__D__ZN3sgl2RTC2Ev(void)
     static_init(0, 0xFFFF);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_RT", _ZN4math4min_IfEET_S1_S1_S1_);
+/* template instances used by the asm above (add, render, build_bv_tree): referenced from a discarded
+   function, before math::min_/max_ are defined (no inlining), in Sony's instantiation order */
+namespace math {
+template<class T> T min_(T, T, T);
+template<class T> T max_(T, T, T);
+}
+extern "C" void sgl_RT_instances(std::vector<sgl::RT::Triangle> *v, const sgl::RT::Triangle *t)
+    __attribute__((section(".discard.asm")));
+extern "C" void sgl_RT_instances(std::vector<sgl::RT::Triangle> *v, const sgl::RT::Triangle *t)
+{
+    math::min_(0.0f, 0.0f, 0.0f);
+    math::max_(0.0f, 0.0f, 0.0f);
+    v->push_back(*t);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_RT", _ZN4math4max_IfEET_S1_S1_S1_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_RT", _ZNSt6vectorIN3sgl2RT8TriangleESaIS2_EE13_M_insert_auxEN9__gnu_cxx17__normal_iteratorIPS2_S4_EERKS2_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_RT", _ZSt24__uninitialized_copy_auxIN9__gnu_cxx17__normal_iteratorIPN3sgl2RT8TriangleESt6vectorIS4_SaIS4_EEEES9_ET0_T_SB_SA_12__false_type);
+namespace math {
+template<class T> T min_(T a, T b, T c)
+{
+    return a <= b ? (a <= c ? a : c) : (b <= c ? b : c);
+}
+template<class T> T max_(T a, T b, T c)
+{
+    return b <= a ? (c <= a ? a : c) : (c <= b ? b : c);
+}
+}

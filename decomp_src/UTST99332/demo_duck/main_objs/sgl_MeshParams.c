@@ -91,12 +91,11 @@ void _GLOBAL__D__ZN3sgl10MeshParamsC2Ev(void)
     static_init(0, 0xFFFF);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_MeshParams", _ZNSt6vectorIfSaIfEE5eraseEN9__gnu_cxx17__normal_iteratorIPfS1_EES5_);
+/* std::vector<float> instances used by the asm above (MeshParams(), reset()): referenced from a
+   discarded function */
+extern "C" void sgl_MeshParams_instances(std::vector<float> *v, unsigned int n) __attribute__((section(".discard.asm")));
+extern "C" void sgl_MeshParams_instances(std::vector<float> *v, unsigned int n)
+{
+    v->resize(n);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_MeshParams", _ZNSt6vectorIfSaIfEE14_M_fill_insertEN9__gnu_cxx17__normal_iteratorIPfS1_EEjRKf);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_MeshParams", _ZSt4fillIN9__gnu_cxx17__normal_iteratorIPfSt6vectorIfSaIfEEEEfEvT_S7_RKT0_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_MeshParams", _ZSt6fill_nIPfjfET_S1_T0_RKT1_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_MeshParams", _ZSt6fill_nIN9__gnu_cxx17__normal_iteratorIPfSt6vectorIfSaIfEEEEjfET_S7_T0_RKT1_);

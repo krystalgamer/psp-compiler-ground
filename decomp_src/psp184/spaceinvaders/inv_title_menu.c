@@ -341,6 +341,7 @@ extern char D_0007EA60[], D_0007EA68[], D_0007EA74[];
 int sprintf(char *buf, const char *fmt, ...);
 void sprite_center_set(int tex, int x, int y, int w, int h, int u, int v, int sw, int sh, int a9, int a10, int r, int g, int b, int a, int pri, int mode, int a17, int alpha);
 void inv_font_ascii_posf(char *str, int x, int y, int w, int h, int r, int g, int b, int a, int mode);
+/* the two sinf((90 - ang) ...) calls are not CSEd: sinf is not the const builtin here */
 float sinf_nb(float) __asm__("sinf");
 void title_control(void)
 {

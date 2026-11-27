@@ -2,7 +2,110 @@
 /* cflags: -O3 -fno-exceptions */
 #undef __EXCEPTIONS
 #include "cxx/defer_asm.h"
+#define DEMO_TEMPLATE_DEFS
+#define SCENE_GRAPH_TEMPLATE_DEFS
 #include "../main.hpp"
+SCENE_ALLOC_FIRST_USE
+/* linkonce order: this object's .gnu.linkonce.t sections in Sony's link order */
+SCENE_LINKONCE_ORDER(
+    SCENE_LINKONCE(_ZN5scene5Graph7newNodeINS_5GroupEEEN6common6handleIT_EESsb)
+    SCENE_LINKONCE(_ZN6common6handleIN5scene6ObjectEEaSERKS3_)
+    SCENE_LINKONCE(_ZN5scene5Graph7newNodeINS_5ShapeEEEN6common6handleIT_EESsb)
+    SCENE_LINKONCE(_ZN5scene5Graph7newNodeINS_9TransformEEEN6common6handleIT_EESsb)
+    SCENE_LINKONCE(_ZN5scene5Graph7newNodeINS_15StaticTransformEEEN6common6handleIT_EESsb)
+    SCENE_LINKONCE(_ZN11FieldParser16step_xxxx_vectorIN3sgl8PositionEEEvRSt6vectorIT_SaIS4_EEjRKNS_5FieldE)
+    SCENE_LINKONCE(_ZN11FieldParser16step_xxxx_vectorIN3sgl6NormalEEEvRSt6vectorIT_SaIS4_EEjRKNS_5FieldE)
+    SCENE_LINKONCE(_ZN11FieldParser16step_xxxx_vectorIN3sgl8TexCoordEEEvRSt6vectorIT_SaIS4_EEjRKNS_5FieldE)
+    SCENE_LINKONCE(_ZN11FieldParser16step_xxxx_vectorIN3sgl5ColorEEEvRSt6vectorIT_SaIS4_EEjRKNS_5FieldE)
+    SCENE_LINKONCE(_ZN3sgl14PrimitiveIndexIiE3triEv)
+    SCENE_LINKONCE(_ZN3sgl14PrimitiveIndexIiE6stripsEv)
+    SCENE_LINKONCE(_ZN5scene5Graph7newNodeINS_8MaterialEEEN6common6handleIT_EESsb)
+    SCENE_LINKONCE(_ZN5scene5Graph13getMappedNodeINS_4NodeEEEN6common6handleIT_EERKSs)
+    SCENE_LINKONCE(_ZN5scene5Graph13getMappedNodeINS_8MaterialEEEN6common6handleIT_EERKSs)
+    SCENE_LINKONCE(_ZN5scene5Graph13getMappedNodeINS_5ShapeEEEN6common6handleIT_EERKSs)
+    SCENE_LINKONCE(_ZN5scene5Graph13getMappedNodeINS_5SetupEEEN6common6handleIT_EERKSs)
+    SCENE_LINKONCE(_ZN5scene5Group4findINS_5ShapeEEEvRN6common14handles_vectorINS_4NodeEEEb)
+    SCENE_LINKONCE(_ZN5scene5Group4findINS_4MeshEEEvRN6common14handles_vectorINS_4NodeEEEb)
+    SCENE_LINKONCE(_ZNSt6vectorIiSaIiEE5eraseEN9__gnu_cxx17__normal_iteratorIPiS1_EES5_)
+    SCENE_LINKONCE(_ZN5scene5Graph13getMappedNodeINS_9TransformEEEN6common6handleIT_EERKSs)
+    SCENE_LINKONCE(_ZN5scene5Graph13getMappedNodeINS_15StaticTransformEEEN6common6handleIT_EERKSs)
+    SCENE_LINKONCE(_ZNSt6vectorIN3sgl6VertexESaIS1_EE5eraseEN9__gnu_cxx17__normal_iteratorIPS1_S3_EES7_)
+    SCENE_LINKONCE(_ZNSt6vectorIN2sh9VectorRGBESaIS1_EE5eraseEN9__gnu_cxx17__normal_iteratorIPS1_S3_EES7_)
+    SCENE_LINKONCE(_ZNSt6vectorIiSaIiEE14_M_fill_insertEN9__gnu_cxx17__normal_iteratorIPiS1_EEjRKi)
+    SCENE_LINKONCE(_ZNSt6vectorIN3sgl8PositionESaIS1_EE5eraseEN9__gnu_cxx17__normal_iteratorIPS1_S3_EES7_)
+    SCENE_LINKONCE(_ZNSt6vectorIN3sgl6NormalESaIS1_EE5eraseEN9__gnu_cxx17__normal_iteratorIPS1_S3_EES7_)
+    SCENE_LINKONCE(_ZNSt6vectorIN3sgl8TexCoordESaIS1_EE5eraseEN9__gnu_cxx17__normal_iteratorIPS1_S3_EES7_)
+    SCENE_LINKONCE(_ZNSt6vectorIN3sgl6VertexESaIS1_EE14_M_fill_insertEN9__gnu_cxx17__normal_iteratorIPS1_S3_EEjRKS1_)
+    SCENE_LINKONCE(_ZNSt6vectorIN2sh9VectorRGBESaIS1_EE14_M_fill_insertEN9__gnu_cxx17__normal_iteratorIPS1_S3_EEjRKS1_)
+    SCENE_LINKONCE(_ZSt4fillIN9__gnu_cxx17__normal_iteratorIPiSt6vectorIiSaIiEEEEiEvT_S7_RKT0_)
+    SCENE_LINKONCE(_ZNSt6vectorIN3sgl8PositionESaIS1_EE14_M_fill_insertEN9__gnu_cxx17__normal_iteratorIPS1_S3_EEjRKS1_)
+    SCENE_LINKONCE(_ZNSt6vectorIN3sgl6NormalESaIS1_EE14_M_fill_insertEN9__gnu_cxx17__normal_iteratorIPS1_S3_EEjRKS1_)
+    SCENE_LINKONCE(_ZNSt6vectorIN3sgl8TexCoordESaIS1_EE14_M_fill_insertEN9__gnu_cxx17__normal_iteratorIPS1_S3_EEjRKS1_)
+    SCENE_LINKONCE(_ZSt4fillIN9__gnu_cxx17__normal_iteratorIPN3sgl6VertexESt6vectorIS3_SaIS3_EEEES3_EvT_S9_RKT0_)
+    SCENE_LINKONCE(_ZSt4fillIN9__gnu_cxx17__normal_iteratorIPN2sh9VectorRGBESt6vectorIS3_SaIS3_EEEES3_EvT_S9_RKT0_)
+    SCENE_LINKONCE(_ZSt4fillIN9__gnu_cxx17__normal_iteratorIPN3sgl8PositionESt6vectorIS3_SaIS3_EEEES3_EvT_S9_RKT0_)
+    SCENE_LINKONCE(_ZSt4fillIN9__gnu_cxx17__normal_iteratorIPN3sgl6NormalESt6vectorIS3_SaIS3_EEEES3_EvT_S9_RKT0_)
+    SCENE_LINKONCE(_ZSt4fillIN9__gnu_cxx17__normal_iteratorIPN3sgl8TexCoordESt6vectorIS3_SaIS3_EEEES3_EvT_S9_RKT0_)
+    SCENE_LINKONCE(_ZSt24__uninitialized_copy_auxIPN3sgl6VertexES2_ET0_T_S4_S3_12__false_type)
+    SCENE_LINKONCE(_ZSt26__uninitialized_fill_n_auxIPN3sgl6VertexEjS1_ET_S3_T0_RKT1_12__false_type)
+    SCENE_LINKONCE(_ZSt24__uninitialized_copy_auxIN9__gnu_cxx17__normal_iteratorIPN3sgl6VertexESt6vectorIS3_SaIS3_EEEES4_ET0_T_SA_S9_12__false_type)
+    SCENE_LINKONCE(_ZSt24__uninitialized_copy_auxIN9__gnu_cxx17__normal_iteratorIPN3sgl6VertexESt6vectorIS3_SaIS3_EEEES8_ET0_T_SA_S9_12__false_type)
+    SCENE_LINKONCE(_ZSt26__uninitialized_fill_n_auxIN9__gnu_cxx17__normal_iteratorIPN3sgl6VertexESt6vectorIS3_SaIS3_EEEEjS3_ET_S9_T0_RKT1_12__false_type)
+    SCENE_LINKONCE(_ZSt24__uninitialized_copy_auxIPN2sh9VectorRGBES2_ET0_T_S4_S3_12__false_type)
+    SCENE_LINKONCE(_ZSt26__uninitialized_fill_n_auxIPN2sh9VectorRGBEjS1_ET_S3_T0_RKT1_12__false_type)
+    SCENE_LINKONCE(_ZSt24__uninitialized_copy_auxIN9__gnu_cxx17__normal_iteratorIPN2sh9VectorRGBESt6vectorIS3_SaIS3_EEEES4_ET0_T_SA_S9_12__false_type)
+    SCENE_LINKONCE(_ZSt24__uninitialized_copy_auxIN9__gnu_cxx17__normal_iteratorIPN2sh9VectorRGBESt6vectorIS3_SaIS3_EEEES8_ET0_T_SA_S9_12__false_type)
+    SCENE_LINKONCE(_ZSt26__uninitialized_fill_n_auxIN9__gnu_cxx17__normal_iteratorIPN2sh9VectorRGBESt6vectorIS3_SaIS3_EEEEjS3_ET_S9_T0_RKT1_12__false_type)
+    SCENE_LINKONCE(_ZSt6fill_nIPijiET_S1_T0_RKT1_)
+    SCENE_LINKONCE(_ZSt6fill_nIN9__gnu_cxx17__normal_iteratorIPiSt6vectorIiSaIiEEEEjiET_S7_T0_RKT1_)
+    SCENE_LINKONCE(_ZSt24__uninitialized_copy_auxIPN3sgl8PositionES2_ET0_T_S4_S3_12__false_type)
+    SCENE_LINKONCE(_ZSt26__uninitialized_fill_n_auxIPN3sgl8PositionEjS1_ET_S3_T0_RKT1_12__false_type)
+    SCENE_LINKONCE(_ZSt24__uninitialized_copy_auxIN9__gnu_cxx17__normal_iteratorIPN3sgl8PositionESt6vectorIS3_SaIS3_EEEES4_ET0_T_SA_S9_12__false_type)
+    SCENE_LINKONCE(_ZSt24__uninitialized_copy_auxIN9__gnu_cxx17__normal_iteratorIPN3sgl8PositionESt6vectorIS3_SaIS3_EEEES8_ET0_T_SA_S9_12__false_type)
+    SCENE_LINKONCE(_ZSt26__uninitialized_fill_n_auxIN9__gnu_cxx17__normal_iteratorIPN3sgl8PositionESt6vectorIS3_SaIS3_EEEEjS3_ET_S9_T0_RKT1_12__false_type)
+    SCENE_LINKONCE(_ZSt24__uninitialized_copy_auxIPN3sgl6NormalES2_ET0_T_S4_S3_12__false_type)
+    SCENE_LINKONCE(_ZSt26__uninitialized_fill_n_auxIPN3sgl6NormalEjS1_ET_S3_T0_RKT1_12__false_type)
+    SCENE_LINKONCE(_ZSt24__uninitialized_copy_auxIN9__gnu_cxx17__normal_iteratorIPN3sgl6NormalESt6vectorIS3_SaIS3_EEEES4_ET0_T_SA_S9_12__false_type)
+    SCENE_LINKONCE(_ZSt24__uninitialized_copy_auxIN9__gnu_cxx17__normal_iteratorIPN3sgl6NormalESt6vectorIS3_SaIS3_EEEES8_ET0_T_SA_S9_12__false_type)
+    SCENE_LINKONCE(_ZSt26__uninitialized_fill_n_auxIN9__gnu_cxx17__normal_iteratorIPN3sgl6NormalESt6vectorIS3_SaIS3_EEEEjS3_ET_S9_T0_RKT1_12__false_type)
+    SCENE_LINKONCE(_ZSt24__uninitialized_copy_auxIPN3sgl8TexCoordES2_ET0_T_S4_S3_12__false_type)
+    SCENE_LINKONCE(_ZSt26__uninitialized_fill_n_auxIPN3sgl8TexCoordEjS1_ET_S3_T0_RKT1_12__false_type)
+    SCENE_LINKONCE(_ZSt24__uninitialized_copy_auxIN9__gnu_cxx17__normal_iteratorIPN3sgl8TexCoordESt6vectorIS3_SaIS3_EEEES4_ET0_T_SA_S9_12__false_type)
+    SCENE_LINKONCE(_ZSt24__uninitialized_copy_auxIN9__gnu_cxx17__normal_iteratorIPN3sgl8TexCoordESt6vectorIS3_SaIS3_EEEES8_ET0_T_SA_S9_12__false_type)
+    SCENE_LINKONCE(_ZSt26__uninitialized_fill_n_auxIN9__gnu_cxx17__normal_iteratorIPN3sgl8TexCoordESt6vectorIS3_SaIS3_EEEEjS3_ET_S9_T0_RKT1_12__false_type)
+    SCENE_LINKONCE(_ZN6common6handleIN5scene4NodeEEC1INS1_5ShapeEEERKNS0_IT_EE)
+    SCENE_LINKONCE(_ZN6common6handleIN5scene4NodeEEC1INS1_9TransformEEERKNS0_IT_EE)
+    SCENE_LINKONCE(_ZN6common6handleIN5scene4NodeEEC1INS1_15StaticTransformEEERKNS0_IT_EE)
+    SCENE_LINKONCE(_ZN11FieldParserD0Ev)
+    SCENE_LINKONCE(_ZN11FieldParserD1Ev)
+    SCENE_LINKONCE(_ZN5scene11GraphParserD0Ev)
+    SCENE_LINKONCE(_ZN5scene11GraphParserD1Ev)
+    SCENE_LINKONCE(_ZN5scene11GraphParser11step_matrixERN4math6matrixE)
+    SCENE_LINKONCE(_ZN6common6handleIN5scene5SetupEEC1INS1_4NodeEEERKNS0_IT_EE)
+    SCENE_LINKONCE(_ZN6common6handleIN5scene5ShapeEEC1INS1_5GroupEEERKNS0_IT_EE)
+    SCENE_LINKONCE(_ZN6common6handleIN5scene4MeshEEC1INS1_5GroupEEERKNS0_IT_EE)
+);
+
+/* Graph.h's asserts (getMappedNode<T>) */
+extern const char scene_graph_h_err[] __asm__("D_00169F88");        /* " *** error " */
+extern const char scene_graph_h_name_expr[] __asm__("D_0016AA8C");  /* "_Name != \"\"" */
+extern const char scene_graph_h_file[] __asm__("D_0016AA98");       /* "../lib/scene/Graph.h" */
+extern const char scene_graph_h_sp[] __asm__("D_00169F94");         /* " " */
+extern const char scene_graph_h_empty[] __asm__("D_00169F40");      /* "" */
+extern const char gmn_Node_name[] __asm__("_ZZN5scene5Graph13getMappedNodeINS_4NodeEEEN6common6handleIT_EERKSsE19__PRETTY_FUNCTION__");
+extern const char gmn_Material_name[] __asm__("_ZZN5scene5Graph13getMappedNodeINS_8MaterialEEEN6common6handleIT_EERKSsE19__PRETTY_FUNCTION__");
+extern const char gmn_Shape_name[] __asm__("_ZZN5scene5Graph13getMappedNodeINS_5ShapeEEEN6common6handleIT_EERKSsE19__PRETTY_FUNCTION__");
+extern const char gmn_Setup_name[] __asm__("_ZZN5scene5Graph13getMappedNodeINS_5SetupEEEN6common6handleIT_EERKSsE19__PRETTY_FUNCTION__");
+extern const char gmn_Transform_name[] __asm__("_ZZN5scene5Graph13getMappedNodeINS_9TransformEEEN6common6handleIT_EERKSsE19__PRETTY_FUNCTION__");
+extern const char gmn_StaticTransform_name[] __asm__("_ZZN5scene5Graph13getMappedNodeINS_15StaticTransformEEEN6common6handleIT_EERKSsE19__PRETTY_FUNCTION__");
+namespace scene {
+inline const char *scene_pf_getMappedNode(Node *) { return gmn_Node_name; }
+inline const char *scene_pf_getMappedNode(Material *) { return gmn_Material_name; }
+inline const char *scene_pf_getMappedNode(Shape *) { return gmn_Shape_name; }
+inline const char *scene_pf_getMappedNode(Setup *) { return gmn_Setup_name; }
+inline const char *scene_pf_getMappedNode(Transform *) { return gmn_Transform_name; }
+inline const char *scene_pf_getMappedNode(StaticTransform *) { return gmn_StaticTransform_name; }
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_GraphParser", _Z41__static_initialization_and_destruction_0ii_75580);
 
@@ -62,9 +165,45 @@ void _GLOBAL__D__ZN5scene11GraphParserC2ERNS_5GraphESsj(void)
     static_init(0, 0xFFFF);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_GraphParser", _ZN5scene5Graph7newNodeINS_5GroupEEEN6common6handleIT_EESsb);
+/* instances that the (asm) methods above use, referenced from a discarded function so that cc1plus
+   instantiates them at the end of the unit (see scene_Graph.c) */
+template<class V> static inline void scene_GraphParser_vec(V *v)
+{
+    v->erase(v->begin(), v->end());
+    v->insert(v->begin(), 0, *(typename V::value_type *)0);
+}
+extern "C" void scene_GraphParser_uses(scene::Graph *g, common::handle<scene::Node> *hn, common::handle<scene::Group> *hg)
+    __attribute__((section(".discard.asm")));
+extern "C" void scene_GraphParser_uses(scene::Graph *g, common::handle<scene::Node> *hn, common::handle<scene::Group> *hg)
+{
+    const std::string &s = *(std::string *)0;
+    *(common::handle<scene::Object> *)0 = *(common::handle<scene::Object> *)0;
+    g->getMappedNode<scene::Node>(s);
+    g->getMappedNode<scene::Material>(s);
+    g->getMappedNode<scene::Shape>(s);
+    g->getMappedNode<scene::Setup>(s);
+    g->getMappedNode<scene::Transform>(s);
+    g->getMappedNode<scene::StaticTransform>(s);
+    scene_GraphParser_vec((std::vector<int> *)0);
+    scene_GraphParser_vec((std::vector<sgl::Vertex> *)0);
+    scene_GraphParser_vec((std::vector<sh::VectorRGB> *)0);
+    scene_GraphParser_vec((std::vector<sgl::Position> *)0);
+    scene_GraphParser_vec((std::vector<sgl::Normal> *)0);
+    scene_GraphParser_vec((std::vector<sgl::TexCoord> *)0);
+    common::handle<scene::Node> a(*(common::handle<scene::Shape> *)0);
+    common::handle<scene::Node> b(*(common::handle<scene::Transform> *)0);
+    common::handle<scene::Node> c(*(common::handle<scene::StaticTransform> *)0);
+    common::handle<scene::Setup> d(*hn);
+    common::handle<scene::Shape> e(*hg);
+    common::handle<scene::Mesh> f(*hg);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_GraphParser", _ZN6common6handleIN5scene6ObjectEEaSERKS3_);
+/* from here on INCLUDE_ASM puts the asm in its own .gnu.linkonce.t section (written as
+   INCLUDE_ASM so that splat keeps these functions as asm) */
+#undef INCLUDE_ASM
+#define INCLUDE_ASM(FOLDER, NAME) INCLUDE_ASM_LINKONCE(FOLDER, NAME)
+
+INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_GraphParser", _ZN5scene5Graph7newNodeINS_5GroupEEEN6common6handleIT_EESsb);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_GraphParser", _ZN5scene5Graph7newNodeINS_5ShapeEEEN6common6handleIT_EESsb);
 
@@ -86,117 +225,9 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_GraphParse
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_GraphParser", _ZN5scene5Graph7newNodeINS_8MaterialEEEN6common6handleIT_EESsb);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_GraphParser", _ZN5scene5Graph13getMappedNodeINS_4NodeEEEN6common6handleIT_EERKSs);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_GraphParser", _ZN5scene5Graph13getMappedNodeINS_8MaterialEEEN6common6handleIT_EERKSs);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_GraphParser", _ZN5scene5Graph13getMappedNodeINS_5ShapeEEEN6common6handleIT_EERKSs);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_GraphParser", _ZN5scene5Graph13getMappedNodeINS_5SetupEEEN6common6handleIT_EERKSs);
-
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_GraphParser", _ZN5scene5Group4findINS_5ShapeEEEvRN6common14handles_vectorINS_4NodeEEEb);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_GraphParser", _ZN5scene5Group4findINS_4MeshEEEvRN6common14handles_vectorINS_4NodeEEEb);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_GraphParser", _ZNSt6vectorIiSaIiEE5eraseEN9__gnu_cxx17__normal_iteratorIPiS1_EES5_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_GraphParser", _ZN5scene5Graph13getMappedNodeINS_9TransformEEEN6common6handleIT_EERKSs);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_GraphParser", _ZN5scene5Graph13getMappedNodeINS_15StaticTransformEEEN6common6handleIT_EERKSs);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_GraphParser", _ZNSt6vectorIN3sgl6VertexESaIS1_EE5eraseEN9__gnu_cxx17__normal_iteratorIPS1_S3_EES7_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_GraphParser", _ZNSt6vectorIN2sh9VectorRGBESaIS1_EE5eraseEN9__gnu_cxx17__normal_iteratorIPS1_S3_EES7_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_GraphParser", _ZNSt6vectorIiSaIiEE14_M_fill_insertEN9__gnu_cxx17__normal_iteratorIPiS1_EEjRKi);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_GraphParser", _ZNSt6vectorIN3sgl8PositionESaIS1_EE5eraseEN9__gnu_cxx17__normal_iteratorIPS1_S3_EES7_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_GraphParser", _ZNSt6vectorIN3sgl6NormalESaIS1_EE5eraseEN9__gnu_cxx17__normal_iteratorIPS1_S3_EES7_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_GraphParser", _ZNSt6vectorIN3sgl8TexCoordESaIS1_EE5eraseEN9__gnu_cxx17__normal_iteratorIPS1_S3_EES7_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_GraphParser", _ZNSt6vectorIN3sgl6VertexESaIS1_EE14_M_fill_insertEN9__gnu_cxx17__normal_iteratorIPS1_S3_EEjRKS1_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_GraphParser", _ZNSt6vectorIN2sh9VectorRGBESaIS1_EE14_M_fill_insertEN9__gnu_cxx17__normal_iteratorIPS1_S3_EEjRKS1_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_GraphParser", _ZSt4fillIN9__gnu_cxx17__normal_iteratorIPiSt6vectorIiSaIiEEEEiEvT_S7_RKT0_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_GraphParser", _ZNSt6vectorIN3sgl8PositionESaIS1_EE14_M_fill_insertEN9__gnu_cxx17__normal_iteratorIPS1_S3_EEjRKS1_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_GraphParser", _ZNSt6vectorIN3sgl6NormalESaIS1_EE14_M_fill_insertEN9__gnu_cxx17__normal_iteratorIPS1_S3_EEjRKS1_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_GraphParser", _ZNSt6vectorIN3sgl8TexCoordESaIS1_EE14_M_fill_insertEN9__gnu_cxx17__normal_iteratorIPS1_S3_EEjRKS1_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_GraphParser", _ZSt4fillIN9__gnu_cxx17__normal_iteratorIPN3sgl6VertexESt6vectorIS3_SaIS3_EEEES3_EvT_S9_RKT0_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_GraphParser", _ZSt4fillIN9__gnu_cxx17__normal_iteratorIPN2sh9VectorRGBESt6vectorIS3_SaIS3_EEEES3_EvT_S9_RKT0_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_GraphParser", _ZSt4fillIN9__gnu_cxx17__normal_iteratorIPN3sgl8PositionESt6vectorIS3_SaIS3_EEEES3_EvT_S9_RKT0_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_GraphParser", _ZSt4fillIN9__gnu_cxx17__normal_iteratorIPN3sgl6NormalESt6vectorIS3_SaIS3_EEEES3_EvT_S9_RKT0_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_GraphParser", _ZSt4fillIN9__gnu_cxx17__normal_iteratorIPN3sgl8TexCoordESt6vectorIS3_SaIS3_EEEES3_EvT_S9_RKT0_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_GraphParser", _ZSt24__uninitialized_copy_auxIPN3sgl6VertexES2_ET0_T_S4_S3_12__false_type);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_GraphParser", _ZSt26__uninitialized_fill_n_auxIPN3sgl6VertexEjS1_ET_S3_T0_RKT1_12__false_type);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_GraphParser", _ZSt24__uninitialized_copy_auxIN9__gnu_cxx17__normal_iteratorIPN3sgl6VertexESt6vectorIS3_SaIS3_EEEES4_ET0_T_SA_S9_12__false_type);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_GraphParser", _ZSt24__uninitialized_copy_auxIN9__gnu_cxx17__normal_iteratorIPN3sgl6VertexESt6vectorIS3_SaIS3_EEEES8_ET0_T_SA_S9_12__false_type);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_GraphParser", _ZSt26__uninitialized_fill_n_auxIN9__gnu_cxx17__normal_iteratorIPN3sgl6VertexESt6vectorIS3_SaIS3_EEEEjS3_ET_S9_T0_RKT1_12__false_type);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_GraphParser", _ZSt24__uninitialized_copy_auxIPN2sh9VectorRGBES2_ET0_T_S4_S3_12__false_type);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_GraphParser", _ZSt26__uninitialized_fill_n_auxIPN2sh9VectorRGBEjS1_ET_S3_T0_RKT1_12__false_type);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_GraphParser", _ZSt24__uninitialized_copy_auxIN9__gnu_cxx17__normal_iteratorIPN2sh9VectorRGBESt6vectorIS3_SaIS3_EEEES4_ET0_T_SA_S9_12__false_type);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_GraphParser", _ZSt24__uninitialized_copy_auxIN9__gnu_cxx17__normal_iteratorIPN2sh9VectorRGBESt6vectorIS3_SaIS3_EEEES8_ET0_T_SA_S9_12__false_type);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_GraphParser", _ZSt26__uninitialized_fill_n_auxIN9__gnu_cxx17__normal_iteratorIPN2sh9VectorRGBESt6vectorIS3_SaIS3_EEEEjS3_ET_S9_T0_RKT1_12__false_type);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_GraphParser", _ZSt6fill_nIPijiET_S1_T0_RKT1_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_GraphParser", _ZSt6fill_nIN9__gnu_cxx17__normal_iteratorIPiSt6vectorIiSaIiEEEEjiET_S7_T0_RKT1_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_GraphParser", _ZSt24__uninitialized_copy_auxIPN3sgl8PositionES2_ET0_T_S4_S3_12__false_type);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_GraphParser", _ZSt26__uninitialized_fill_n_auxIPN3sgl8PositionEjS1_ET_S3_T0_RKT1_12__false_type);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_GraphParser", _ZSt24__uninitialized_copy_auxIN9__gnu_cxx17__normal_iteratorIPN3sgl8PositionESt6vectorIS3_SaIS3_EEEES4_ET0_T_SA_S9_12__false_type);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_GraphParser", _ZSt24__uninitialized_copy_auxIN9__gnu_cxx17__normal_iteratorIPN3sgl8PositionESt6vectorIS3_SaIS3_EEEES8_ET0_T_SA_S9_12__false_type);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_GraphParser", _ZSt26__uninitialized_fill_n_auxIN9__gnu_cxx17__normal_iteratorIPN3sgl8PositionESt6vectorIS3_SaIS3_EEEEjS3_ET_S9_T0_RKT1_12__false_type);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_GraphParser", _ZSt24__uninitialized_copy_auxIPN3sgl6NormalES2_ET0_T_S4_S3_12__false_type);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_GraphParser", _ZSt26__uninitialized_fill_n_auxIPN3sgl6NormalEjS1_ET_S3_T0_RKT1_12__false_type);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_GraphParser", _ZSt24__uninitialized_copy_auxIN9__gnu_cxx17__normal_iteratorIPN3sgl6NormalESt6vectorIS3_SaIS3_EEEES4_ET0_T_SA_S9_12__false_type);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_GraphParser", _ZSt24__uninitialized_copy_auxIN9__gnu_cxx17__normal_iteratorIPN3sgl6NormalESt6vectorIS3_SaIS3_EEEES8_ET0_T_SA_S9_12__false_type);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_GraphParser", _ZSt26__uninitialized_fill_n_auxIN9__gnu_cxx17__normal_iteratorIPN3sgl6NormalESt6vectorIS3_SaIS3_EEEEjS3_ET_S9_T0_RKT1_12__false_type);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_GraphParser", _ZSt24__uninitialized_copy_auxIPN3sgl8TexCoordES2_ET0_T_S4_S3_12__false_type);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_GraphParser", _ZSt26__uninitialized_fill_n_auxIPN3sgl8TexCoordEjS1_ET_S3_T0_RKT1_12__false_type);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_GraphParser", _ZSt24__uninitialized_copy_auxIN9__gnu_cxx17__normal_iteratorIPN3sgl8TexCoordESt6vectorIS3_SaIS3_EEEES4_ET0_T_SA_S9_12__false_type);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_GraphParser", _ZSt24__uninitialized_copy_auxIN9__gnu_cxx17__normal_iteratorIPN3sgl8TexCoordESt6vectorIS3_SaIS3_EEEES8_ET0_T_SA_S9_12__false_type);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_GraphParser", _ZSt26__uninitialized_fill_n_auxIN9__gnu_cxx17__normal_iteratorIPN3sgl8TexCoordESt6vectorIS3_SaIS3_EEEEjS3_ET_S9_T0_RKT1_12__false_type);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_GraphParser", _ZN6common6handleIN5scene4NodeEEC1INS1_5ShapeEEERKNS0_IT_EE);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_GraphParser", _ZN6common6handleIN5scene4NodeEEC1INS1_9TransformEEERKNS0_IT_EE);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_GraphParser", _ZN6common6handleIN5scene4NodeEEC1INS1_15StaticTransformEEERKNS0_IT_EE);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_GraphParser", _ZN11FieldParserD0Ev);
 
@@ -207,10 +238,3 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_GraphParse
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_GraphParser", _ZN5scene11GraphParserD1Ev);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_GraphParser", _ZN5scene11GraphParser11step_matrixERN4math6matrixE);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_GraphParser", _ZN6common6handleIN5scene5SetupEEC1INS1_4NodeEEERKNS0_IT_EE);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_GraphParser", _ZN6common6handleIN5scene5ShapeEEC1INS1_5GroupEEERKNS0_IT_EE);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_GraphParser", _ZN6common6handleIN5scene4MeshEEC1INS1_5GroupEEERKNS0_IT_EE);
-

@@ -2,6 +2,7 @@
 /* cflags: -O3 -fno-exceptions */
 #undef __EXCEPTIONS
 #include "cxx/defer_asm.h"
+#define SGL_LINKONCE_Frustum 1
 #include "../main.hpp"
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Frustum", _Z41__static_initialization_and_destruction_0ii_A3838);
@@ -140,8 +141,6 @@ void _GLOBAL__D__ZN3sgl7FrustumC2Ev(void)
     static_init(0, 0xFFFF);
 }
 
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Frustum", _ZN3sgl7FrustumD0Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Frustum", _ZN3sgl7FrustumD1Ev);
-
+/* the original's .gnu.linkonce.t order */
+DEMO_LINKONCE_ORDER(DEMO_LINKONCE(_ZN3sgl7FrustumD0Ev)
+                    DEMO_LINKONCE(_ZN3sgl7FrustumD1Ev));

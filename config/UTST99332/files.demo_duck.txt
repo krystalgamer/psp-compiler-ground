@@ -34,13 +34,26 @@ bss 0x18EBEC main_objs/math_ZYZ
 bss 0x18EC6C -
 bss 0x190E44 main_objs/math_TransformStackFunc
 bss 0x190EC4 -
+# draw_mesh_enabled: vector<short>::reserve()'s "vector::reserve" (after PrimitiveIndex's strings)
+rodata 0x16C908 main_objs/draw_mesh_enabled
+rodata 0x16C918 -
+# sgl_MeshBuilder_extruded_var_extruded_var: the float pool (Position()'s 1.0f) of t_array<Position>::allocate
+rodata 0x170B5C main_objs/sgl_MeshBuilder_extruded_var_extruded_var
+rodata 0x170B60 -
+# sgl_Stripper: vector<int>::reserve()'s "vector::reserve" (after Stripper's strings)
+rodata 0x171B04 main_objs/sgl_Stripper
+rodata 0x171B14 -
 # sh_* objects whose static initializer (the header statics) is C++: .rodata after the vtable, .bss
 rodata 0x172C44 main_objs/sh_Matrix
 rodata 0x172C8C -
+rodata 0x172210 main_objs/sh_DebugMap
+rodata 0x172238 -
 rodata 0x1740C0 main_objs/sh_SquareMap
 rodata 0x174110 -
 bss 0x191350 main_objs/sh_Matrix
 bss 0x191428 -
+bss 0x190FC8 main_objs/sh_DebugMap
+bss 0x191120 -
 bss 0x1918E8 main_objs/sh_SquareMap
 bss 0x19196C -
 # VertexColorEnv: the float pools (2 pi) of VertexColorEnv::VertexColorEnv (C2, C1)
@@ -55,6 +68,9 @@ rodata 0x1676C0 -
 # vector_font_Console: the float pools of Console::Console (C2, C1)
 rodata 0x16374C main_objs/vector_font_Console
 rodata 0x16375C -
+# glutils_PickingBase: vector<unsigned>::reserve()'s "vector::reserve" (after PickingBase's typeinfo name)
+rodata 0x165458 main_objs/glutils_PickingBase
+rodata 0x165468 -
 # sh_TestEnvSet_TestEnv: the float pools of TestEnvSet::TestEnvSet (C2, C1)
 rodata 0x174148 main_objs/sh_TestEnvSet_TestEnv
 rodata 0x174178 -

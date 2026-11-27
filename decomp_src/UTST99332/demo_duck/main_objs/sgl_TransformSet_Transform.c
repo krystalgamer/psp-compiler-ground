@@ -4,12 +4,6 @@
 #include "cxx/defer_asm.h"
 #include "../main.hpp"
 
-namespace std {
-extern template void vector<sgl::TransformSet::Transform>::_M_insert_aux(vector<sgl::TransformSet::Transform>::iterator,
-                                                                        const sgl::TransformSet::Transform &);
-extern template vector<sgl::TransformSet::Transform>::iterator
-vector<sgl::TransformSet::Transform>::erase(iterator, iterator);
-}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_TransformSet_Transform", _Z41__static_initialization_and_destruction_0ii_D2750);
 
@@ -50,9 +44,7 @@ void _GLOBAL__I__ZN3sgl12TransformSet9TransformC2Ev(void)
     static_init(1, 0xFFFF);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_TransformSet_Transform", _ZNSt6vectorIN3sgl12TransformSet9TransformESaIS2_EE13_M_insert_auxEN9__gnu_cxx17__normal_iteratorIPS2_S4_EERKS2_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_TransformSet_Transform", _ZNSt6vectorIN3sgl12TransformSet9TransformESaIS2_EE5eraseEN9__gnu_cxx17__normal_iteratorIPS2_S4_EES8_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_TransformSet_Transform", _ZSt24__uninitialized_copy_auxIN9__gnu_cxx17__normal_iteratorIPN3sgl12TransformSet9TransformESt6vectorIS4_SaIS4_EEEES9_ET0_T_SB_SA_12__false_type);
-
+/* the original's .gnu.linkonce.t order */
+DEMO_LINKONCE_ORDER(DEMO_LINKONCE(_ZNSt6vectorIN3sgl12TransformSet9TransformESaIS2_EE13_M_insert_auxEN9__gnu_cxx17__normal_iteratorIPS2_S4_EERKS2_)
+                    DEMO_LINKONCE(_ZNSt6vectorIN3sgl12TransformSet9TransformESaIS2_EE5eraseEN9__gnu_cxx17__normal_iteratorIPS2_S4_EES8_)
+                    DEMO_LINKONCE(_ZSt24__uninitialized_copy_auxIN9__gnu_cxx17__normal_iteratorIPN3sgl12TransformSet9TransformESt6vectorIS4_SaIS4_EEEES9_ET0_T_SB_SA_12__false_type));

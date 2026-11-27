@@ -4,20 +4,18 @@
 #include "cxx/defer_asm.h"
 extern const float D_0016B304;
 #define SGL_POSITION_ONE D_0016B304
+#define SGL_TEMPLATE_DEFS 1
 #include "../main.hpp"
+
+/* setAt<vector<Position>, Position> stays asm (linkonce, below): its Position() 1.0f is a pool of its own
+   (this unit's SGL_POSITION_ONE is another function's) */
+extern template void sgl::Mesh::setAt<std::vector<sgl::Position>, sgl::Position>(unsigned int, std::vector<sgl::Position> &,
+                                                                                 sgl::Position);
 
 extern const char D_0016B324[];     /* " = " */
 extern const char D_0016B328[];     /* "position at " */
 extern const char D_0016B338[];     /* "vertex at " */
 extern const char D_0016B344[];     /* "triangle at " */
-
-/* these template instances are still asm below */
-namespace std {
-extern template void vector<sgl::Triangle>::_M_insert_aux(vector<sgl::Triangle>::iterator, const sgl::Triangle &);
-extern template vector<sgl::Triangle>::iterator
-__uninitialized_copy_aux(vector<sgl::Triangle>::iterator, vector<sgl::Triangle>::iterator, vector<sgl::Triangle>::iterator,
-                         __false_type);
-}
 
 extern const char D_0016B320[];     /* " " */
 extern const char D_0016B3AC[];     /* "../lib/sgl/Mesh.cpp" */
@@ -68,8 +66,6 @@ sgl::Mesh::Offsets::Offsets() : position(0), normal(0), color(0), texcoord(0), v
 sgl::Mesh::~Mesh()
 {
 }
-
-
 
 void sgl::Mesh::unlock()
 {
@@ -124,7 +120,6 @@ int sgl::Mesh::internal_vertex_index(int i) const
 sgl::Mesh::Mesh(bool b) : _locked(b), _finish(0)
 {
 }
-
 
 void sgl::Mesh::snap_offsets()
 {
@@ -387,69 +382,85 @@ void _GLOBAL__D__ZN3sgl4Mesh10use_purpleE(void)
     static_init(0, 0xFFFF);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh", _ZN3sgl4Mesh5setAtISt6vectorINS_6NormalESaIS3_EES3_EEvjRT_T0_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh", _ZN3sgl4Mesh5setAtISt6vectorINS_5ColorESaIS3_EES3_EEvjRT_T0_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh", _ZN3sgl4Mesh5setAtISt6vectorINS_8TexCoordESaIS3_EES3_EEvjRT_T0_);
+/* inline members / instances kept as asm: .gnu.linkonce.t (splat only sees `INCLUDE_ASM(`) */
+#undef INCLUDE_ASM
+#define INCLUDE_ASM INCLUDE_ASM_LINKONCE
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh", _ZN3sgl4Mesh5setAtISt6vectorINS_8PositionESaIS3_EES3_EEvjRT_T0_);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh", _ZN3sgl4Mesh5setAtISt6vectorINS_6VertexESaIS3_EES3_EEvjRT_T0_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh", _ZN3sgl14PrimitiveIndexIiE6offsetEj);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh", _ZNSt6vectorIN3sgl8TriangleESaIS1_EEaSERKS3_);
-
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh", _ZN3sgl14PrimitiveIndexIiE7flattenEv);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh", _ZN3sgl14PrimitiveIndexIiE5clearEv);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh", _ZNSt6vectorIN3sgl8TriangleESaIS1_EE13_M_insert_auxEN9__gnu_cxx17__normal_iteratorIPS1_S3_EERKS1_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh", _ZNSt6vectorIN3sgl4EdgeESaIS1_EE5eraseEN9__gnu_cxx17__normal_iteratorIPS1_S3_EES7_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh", _ZNSt6vectorIN3sgl8TriangleESaIS1_EE5eraseEN9__gnu_cxx17__normal_iteratorIPS1_S3_EES7_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh", _ZNSt6vectorIN3sgl8PositionESaIS1_EE13_M_insert_auxEN9__gnu_cxx17__normal_iteratorIPS1_S3_EERKS1_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh", _ZNSt6vectorIbSaIbEE14_M_fill_insertESt13_Bit_iteratorjb);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh", _ZNSt6vectorIN3sgl6NormalESaIS1_EE13_M_insert_auxEN9__gnu_cxx17__normal_iteratorIPS1_S3_EERKS1_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh", _ZNSt6vectorIN3sgl5ColorESaIS1_EE13_M_insert_auxEN9__gnu_cxx17__normal_iteratorIPS1_S3_EERKS1_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh", _ZNSt6vectorIN3sgl8TexCoordESaIS1_EE13_M_insert_auxEN9__gnu_cxx17__normal_iteratorIPS1_S3_EERKS1_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh", _ZNSt6vectorIN3sgl6VertexESaIS1_EE13_M_insert_auxEN9__gnu_cxx17__normal_iteratorIPS1_S3_EERKS1_);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh", _ZNSt14__simple_allocIiSt24__default_alloc_templateILb1ELi0EEE8allocateEj);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh", _ZSt24__uninitialized_copy_auxIN9__gnu_cxx17__normal_iteratorIPKN3sgl8TriangleESt6vectorIS3_SaIS3_EEEEPS3_ET0_T_SC_SB_12__false_type);
+/* the original's .gnu.linkonce.t order */
+DEMO_LINKONCE_ORDER(DEMO_LINKONCE(_ZN3sgl4Mesh5setAtISt6vectorINS_6NormalESaIS3_EES3_EEvjRT_T0_)
+                    DEMO_LINKONCE(_ZN3sgl4Mesh5setAtISt6vectorINS_5ColorESaIS3_EES3_EEvjRT_T0_)
+                    DEMO_LINKONCE(_ZN3sgl4Mesh5setAtISt6vectorINS_8TexCoordESaIS3_EES3_EEvjRT_T0_)
+                    DEMO_LINKONCE(_ZN3sgl4Mesh5setAtISt6vectorINS_8PositionESaIS3_EES3_EEvjRT_T0_)
+                    DEMO_LINKONCE(_ZN3sgl4Mesh5setAtISt6vectorINS_6VertexESaIS3_EES3_EEvjRT_T0_)
+                    DEMO_LINKONCE(_ZN3sgl14PrimitiveIndexIiE6offsetEj)
+                    DEMO_LINKONCE(_ZNSt6vectorIN3sgl8TriangleESaIS1_EEaSERKS3_)
+                    DEMO_LINKONCE(_ZN3sgl14PrimitiveIndexIiE7flattenEv)
+                    DEMO_LINKONCE(_ZN3sgl14PrimitiveIndexIiE5clearEv)
+                    DEMO_LINKONCE(_ZNSt6vectorIN3sgl8TriangleESaIS1_EE13_M_insert_auxEN9__gnu_cxx17__normal_iteratorIPS1_S3_EERKS1_)
+                    DEMO_LINKONCE(_ZNSt6vectorIN3sgl4EdgeESaIS1_EE5eraseEN9__gnu_cxx17__normal_iteratorIPS1_S3_EES7_)
+                    DEMO_LINKONCE(_ZNSt6vectorIN3sgl8TriangleESaIS1_EE5eraseEN9__gnu_cxx17__normal_iteratorIPS1_S3_EES7_)
+                    DEMO_LINKONCE(_ZNSt6vectorIN3sgl8PositionESaIS1_EE13_M_insert_auxEN9__gnu_cxx17__normal_iteratorIPS1_S3_EERKS1_)
+                    DEMO_LINKONCE(_ZNSt6vectorIbSaIbEE14_M_fill_insertESt13_Bit_iteratorjb)
+                    DEMO_LINKONCE(_ZNSt6vectorIN3sgl6NormalESaIS1_EE13_M_insert_auxEN9__gnu_cxx17__normal_iteratorIPS1_S3_EERKS1_)
+                    DEMO_LINKONCE(_ZNSt6vectorIN3sgl5ColorESaIS1_EE13_M_insert_auxEN9__gnu_cxx17__normal_iteratorIPS1_S3_EERKS1_)
+                    DEMO_LINKONCE(_ZNSt6vectorIN3sgl8TexCoordESaIS1_EE13_M_insert_auxEN9__gnu_cxx17__normal_iteratorIPS1_S3_EERKS1_)
+                    DEMO_LINKONCE(_ZNSt6vectorIN3sgl6VertexESaIS1_EE13_M_insert_auxEN9__gnu_cxx17__normal_iteratorIPS1_S3_EERKS1_)
+                    DEMO_LINKONCE(_ZNSt14__simple_allocIiSt24__default_alloc_templateILb1ELi0EEE8allocateEj)
+                    DEMO_LINKONCE(_ZSt24__uninitialized_copy_auxIN9__gnu_cxx17__normal_iteratorIPKN3sgl8TriangleESt6vectorIS3_SaIS3_EEEEPS3_ET0_T_SC_SB_12__false_type)
+                    DEMO_LINKONCE(_ZNSt6vectorIN3sgl6VertexESaIS1_EE15_M_range_insertIN9__gnu_cxx17__normal_iteratorIPS1_S3_EEEEvS8_T_S9_St20forward_iterator_tag)
+                    DEMO_LINKONCE(_ZNSt6vectorIN3sgl8PositionESaIS1_EE15_M_range_insertIN9__gnu_cxx17__normal_iteratorIPS1_S3_EEEEvS8_T_S9_St20forward_iterator_tag)
+                    DEMO_LINKONCE(_ZNSt6vectorIN3sgl6NormalESaIS1_EE15_M_range_insertIN9__gnu_cxx17__normal_iteratorIPS1_S3_EEEEvS8_T_S9_St20forward_iterator_tag)
+                    DEMO_LINKONCE(_ZNSt6vectorIN3sgl5ColorESaIS1_EE15_M_range_insertIN9__gnu_cxx17__normal_iteratorIPS1_S3_EEEEvS8_T_S9_St20forward_iterator_tag)
+                    DEMO_LINKONCE(_ZNSt6vectorIN3sgl8TexCoordESaIS1_EE15_M_range_insertIN9__gnu_cxx17__normal_iteratorIPS1_S3_EEEEvS8_T_S9_St20forward_iterator_tag)
+                    DEMO_LINKONCE(_ZNSt6vectorIN3sgl8TriangleESaIS1_EE15_M_range_insertIN9__gnu_cxx17__normal_iteratorIPS1_S3_EEEEvS8_T_S9_St20forward_iterator_tag)
+                    DEMO_LINKONCE(_ZNSt6vectorIiSaIiEE15_M_range_insertIN9__gnu_cxx17__normal_iteratorIPiS1_EEEEvS6_T_S7_St20forward_iterator_tag)
+                    DEMO_LINKONCE(_ZSt24__uninitialized_copy_auxIN9__gnu_cxx17__normal_iteratorIPN3sgl8TriangleESt6vectorIS3_SaIS3_EEEES8_ET0_T_SA_S9_12__false_type)
+                    DEMO_LINKONCE(_ZSt4fillISt13_Bit_iteratorbEvT_S1_RKT0_)
+                    DEMO_LINKONCE(_ZSt6fill_nISt13_Bit_iteratorjbET_S1_T0_RKT1_)
+                    DEMO_LINKONCE(_ZSt24__uninitialized_copy_auxIPN3sgl8TriangleES2_ET0_T_S4_S3_12__false_type)
+                    DEMO_LINKONCE(_ZSt24__uninitialized_copy_auxIN9__gnu_cxx17__normal_iteratorIPN3sgl8TriangleESt6vectorIS3_SaIS3_EEEES4_ET0_T_SA_S9_12__false_type)
+                    DEMO_LINKONCE(_ZSt6__copyISt13_Bit_iteratorS0_ET0_T_S2_S1_St26random_access_iterator_tag));
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh", _ZNSt6vectorIN3sgl6VertexESaIS1_EE15_M_range_insertIN9__gnu_cxx17__normal_iteratorIPS1_S3_EEEEvS8_T_S9_St20forward_iterator_tag);
+extern "C" void sgl_Mesh_instances(sgl::Mesh *m, sgl::PrimitiveIndex<int> *pi, std::vector<sgl::Normal> *vn, std::vector<sgl::Color> *vc, std::vector<sgl::TexCoord> *vt, std::vector<sgl::Position> *vp, std::vector<sgl::Vertex> *vv, std::vector<sgl::Triangle> *vtr, std::vector<sgl::Edge> *ve, std::vector<bool> *vb, std::vector<int> *vi, unsigned int n, const sgl::Position *pp) __attribute__((section(".discard.asm")));
+extern "C" void sgl_Mesh_instances(sgl::Mesh *m, sgl::PrimitiveIndex<int> *pi, std::vector<sgl::Normal> *vn, std::vector<sgl::Color> *vc, std::vector<sgl::TexCoord> *vt, std::vector<sgl::Position> *vp, std::vector<sgl::Vertex> *vv, std::vector<sgl::Triangle> *vtr, std::vector<sgl::Edge> *ve, std::vector<bool> *vb, std::vector<int> *vi, unsigned int n, const sgl::Position *pp)
+{
+    m->setAt(n, *vn, sgl::Normal());
+    m->setAt(n, *vc, sgl::Color());
+    m->setAt(n, *vt, sgl::TexCoord());
+    vp->push_back(*pp);
+    m->setAt(n, *vv, sgl::Vertex());
+    pi->offset(n);
+    pi->flatten();
+    *vtr = *vtr;
+    pi->clear();
+    vtr->push_back(sgl::Triangle());
+    ve->resize(n);
+    vtr->resize(n);
+    vb->resize(n);
+    vv->insert(vv->end(), vv->begin(), vv->end());
+    vp->insert(vp->end(), vp->begin(), vp->end());
+    vn->insert(vn->end(), vn->begin(), vn->end());
+    vc->insert(vc->end(), vc->begin(), vc->end());
+    vt->insert(vt->end(), vt->begin(), vt->end());
+    vtr->insert(vtr->end(), vtr->begin(), vtr->end());
+    vi->insert(vi->end(), vi->begin(), vi->end());
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh", _ZNSt6vectorIN3sgl8PositionESaIS1_EE15_M_range_insertIN9__gnu_cxx17__normal_iteratorIPS1_S3_EEEEvS8_T_S9_St20forward_iterator_tag);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh", _ZNSt6vectorIN3sgl6NormalESaIS1_EE15_M_range_insertIN9__gnu_cxx17__normal_iteratorIPS1_S3_EEEEvS8_T_S9_St20forward_iterator_tag);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh", _ZNSt6vectorIN3sgl5ColorESaIS1_EE15_M_range_insertIN9__gnu_cxx17__normal_iteratorIPS1_S3_EEEEvS8_T_S9_St20forward_iterator_tag);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh", _ZNSt6vectorIN3sgl8TexCoordESaIS1_EE15_M_range_insertIN9__gnu_cxx17__normal_iteratorIPS1_S3_EEEEvS8_T_S9_St20forward_iterator_tag);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh", _ZNSt6vectorIN3sgl8TriangleESaIS1_EE15_M_range_insertIN9__gnu_cxx17__normal_iteratorIPS1_S3_EEEEvS8_T_S9_St20forward_iterator_tag);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh", _ZNSt6vectorIiSaIiEE15_M_range_insertIN9__gnu_cxx17__normal_iteratorIPiS1_EEEEvS6_T_S7_St20forward_iterator_tag);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh", _ZSt24__uninitialized_copy_auxIN9__gnu_cxx17__normal_iteratorIPN3sgl8TriangleESt6vectorIS3_SaIS3_EEEES8_ET0_T_SA_S9_12__false_type);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh", _ZSt4fillISt13_Bit_iteratorbEvT_S1_RKT0_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh", _ZSt6fill_nISt13_Bit_iteratorjbET_S1_T0_RKT1_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh", _ZSt24__uninitialized_copy_auxIPN3sgl8TriangleES2_ET0_T_S4_S3_12__false_type);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh", _ZSt24__uninitialized_copy_auxIN9__gnu_cxx17__normal_iteratorIPN3sgl8TriangleESt6vectorIS3_SaIS3_EEEES4_ET0_T_SA_S9_12__false_type);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh", _ZSt6__copyISt13_Bit_iteratorS0_ET0_T_S2_S1_St26random_access_iterator_tag);
-
+template<class V, class T> void sgl::Mesh::setAt(unsigned int i, V &v, T t)
+{
+    if (_locked)
+        return;
+    if (i == v.size())
+        v.push_back(t);
+    else {
+        if (i > v.size())
+            v.resize(i + 1);
+        v[i] = t;
+    }
+}

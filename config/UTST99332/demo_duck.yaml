@@ -395,6 +395,8 @@ segments:
       - [0x15DB94, rodata, asm/rodata_15DB14]
       - [0x1637CC, .rodata, main_objs/vector_font_Console]
       - [0x1637DC, rodata, asm/rodata_16375C]
+      - [0x1654D8, .rodata, main_objs/glutils_PickingBase]
+      - [0x1654E8, rodata, asm/rodata_165468]
       - [0x167738, .rodata, main_objs/gl__name_stack]
       - [0x167740, rodata, asm/rodata_1676C0]
       - [0x1678FC, .rodata, main_objs/interp_KeyFrameSequence]
@@ -404,12 +406,20 @@ segments:
       - [0x1685E8, rodata, asm/rodata_168568]
       - [0x168604, .rodata, main_objs/math_basic_net_basic_net]
       - [0x168614, rodata, asm/rodata_168594]
+      - [0x16C988, .rodata, main_objs/draw_mesh_enabled]
+      - [0x16C998, rodata, asm/rodata_16C918]
       - [0x16D67C, .rodata, main_objs/VertexColorEnv]
       - [0x16D684, rodata, asm/rodata_16D604]
+      - [0x170BDC, .rodata, main_objs/sgl_MeshBuilder_extruded_var_extruded_var]
+      - [0x170BE0, rodata, asm/rodata_170B60]
+      - [0x171B84, .rodata, main_objs/sgl_Stripper]
+      - [0x171B94, rodata, asm/rodata_171B14]
       - [0x171C94, .rodata, main_objs/math_TransformStack]
       - [0x171C9C, rodata, asm/rodata_171C1C]
       - [0x171E34, .rodata, main_objs/math_TransformStackFunc]
       - [0x171E50, rodata, asm/rodata_171DD0]
+      - [0x172290, .rodata, main_objs/sh_DebugMap]
+      - [0x1722B8, rodata, asm/rodata_172238]
       - [0x172CC4, .rodata, main_objs/sh_Matrix]
       - [0x172D0C, rodata, asm/rodata_172C8C]
       - [0x174140, .rodata, main_objs/sh_SquareMap]
@@ -440,6 +450,8 @@ segments:
       - { start: 0x18CFCC, type: bss, vram: 0x18EC6C, name: bss_18EC6C }
       - { start: 0x18CFCC, type: .bss, vram: 0x190E44, name: main_objs/math_TransformStackFunc }
       - { start: 0x18CFCC, type: bss, vram: 0x190EC4, name: bss_190EC4 }
+      - { start: 0x18CFCC, type: .bss, vram: 0x190FC8, name: main_objs/sh_DebugMap }
+      - { start: 0x18CFCC, type: bss, vram: 0x191120, name: bss_191120 }
       - { start: 0x18CFCC, type: .bss, vram: 0x191350, name: main_objs/sh_Matrix }
       - { start: 0x18CFCC, type: bss, vram: 0x191428, name: bss_191428 }
       - { start: 0x18CFCC, type: .bss, vram: 0x1918E8, name: main_objs/sh_SquareMap }

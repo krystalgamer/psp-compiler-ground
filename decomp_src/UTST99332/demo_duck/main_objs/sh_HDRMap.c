@@ -2,13 +2,9 @@
 /* cflags: -O3 -fno-exceptions */
 #undef __EXCEPTIONS
 #include "cxx/defer_asm.h"
-#define basic_parser basic_parser_base_hpp
-#define basic_file_parser basic_file_parser_base_hpp
+#define SGL_LINKONCE_HDRMap 1
+#define DEMO_TEMPLATE_DEFS 1
 #include "../main.hpp"
-#undef basic_parser
-#undef basic_file_parser
-#include "../../demo_duck/demo/parser.hpp"
-#include "../../demo_duck/demo/sgl.hpp"
 
 extern const float D_0017251C;      /* 1 */
 
@@ -78,65 +74,79 @@ void _GLOBAL__D__ZN2sh6HDRMapC2EPKcf(void)
     static_init(0, 0xFFFF);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sh_HDRMap", _ZN2sh6HDRMapD1Ev);
+/* the original's .gnu.linkonce.t order */
+DEMO_LINKONCE_ORDER(DEMO_LINKONCE(_ZN2sh6HDRMapD1Ev)
+                    DEMO_LINKONCE(_ZN2sh6HDRMapD0Ev)
+                    DEMO_LINKONCE(_ZNK6common9t_array2dI10ABGR_FLOATE2nxEv)
+                    DEMO_LINKONCE(_ZNK6common9t_array2dI10ABGR_FLOATE2nyEv)
+                    DEMO_LINKONCE(_ZN6common9t_array2dI10ABGR_FLOATED2Ev)
+                    DEMO_LINKONCE(_ZN6common9t_array2dI10ABGR_FLOATE6resizeEjj)
+                    DEMO_LINKONCE(_ZN6common7t_arrayI10ABGR_FLOATE4addrEv)
+                    DEMO_LINKONCE(_ZNK6common7t_arrayI10ABGR_FLOATE5emptyEv)
+                    DEMO_LINKONCE(_ZN4math4min_IjEET_S1_S1_)
+                    DEMO_LINKONCE(_ZNK6common7t_arrayI10ABGR_FLOATE4addrEv)
+                    DEMO_LINKONCE(_ZN6common7t_arrayI10ABGR_FLOATED2Ev)
+                    DEMO_LINKONCE(_ZN6common7t_arrayI10ABGR_FLOATE6resizeEj)
+                    DEMO_LINKONCE(_ZN6common7t_arrayI10ABGR_FLOATE7releaseEv)
+                    DEMO_LINKONCE(_ZN6common7t_arrayI10ABGR_FLOATE8allocateEj)
+                    DEMO_LINKONCE(_ZN10FloatImageD0Ev)
+                    DEMO_LINKONCE(_ZN10FloatImageD1Ev)
+                    DEMO_LINKONCE(_ZN6common9t_array2dI10ABGR_FLOATED1Ev)
+                    DEMO_LINKONCE(_ZN6common9t_array2dI10ABGR_FLOATED0Ev)
+                    DEMO_LINKONCE(_ZN6common7t_arrayI10ABGR_FLOATED1Ev)
+                    DEMO_LINKONCE(_ZN6common7t_arrayI10ABGR_FLOATED0Ev)
+                    DEMO_LINKONCE(_ZN6common7t_arrayI10ABGR_FLOATE4swapERS2_)
+                    DEMO_LINKONCE(_ZN6common9t_array2dI10ABGR_FLOATE7releaseEv)
+                    DEMO_LINKONCE(_ZN6common7t_arrayI10ABGR_FLOATE4fillERKS1_)
+                    DEMO_LINKONCE(_ZN6common9t_array2dI10ABGR_FLOATE4swapERS2_)
+                    DEMO_LINKONCE(_ZN6common9t_array2dI10ABGR_FLOATE7resizexEj)
+                    DEMO_LINKONCE(_ZN6common9t_array2dI10ABGR_FLOATE7resizeyEj)
+                    DEMO_LINKONCE(_ZN6common9t_array2dI10ABGR_FLOATE4copyERKS2_iiiiii)
+                    DEMO_LINKONCE(_ZN6common4SwapINS_7t_arrayI10ABGR_FLOATE7MembersEEEvRT_S6_)
+                    DEMO_LINKONCE(_ZN6common4SwapINS_9t_array2dI10ABGR_FLOATE3DimEEEvRT_S6_)
+                    DEMO_LINKONCE(_ZN6common9t_array2dI10ABGR_FLOATE2atEii)
+                    DEMO_LINKONCE(_ZNK6common9t_array2dI10ABGR_FLOATE2atEii));
+namespace math {
+template<class T> T min_(T, T);
+}
+/* t_array<ABGR_FLOAT>'s D0 (called by its vtable in the original) */
+extern "C" void t_array_ABGR_FLOAT_D0(void *) __asm__("_ZN6common7t_arrayI10ABGR_FLOATED0Ev");
+extern "C" void t_array2d_ABGR_FLOAT_D0(void *) __asm__("_ZN6common9t_array2dI10ABGR_FLOATED0Ev");
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sh_HDRMap", _ZN2sh6HDRMapD0Ev);
+extern "C" void sh_HDRMap_instances(FloatImage *img, const ABGR_FLOAT *c, unsigned int n) __attribute__((section(".discard.asm")));
+extern "C" void sh_HDRMap_instances(FloatImage *img, const ABGR_FLOAT *c, unsigned int n)
+{
+    typedef common::t_array<ABGR_FLOAT> A;
+    typedef common::t_array2d<ABGR_FLOAT> A2;
+    const FloatImage *ci = img;
+    img->nx();
+    img->ny();
+    img->A2::resize(n, n);
+    img->addr();
+    img->empty();
+    math::min_(n, n);
+    ci->addr();
+    img->A::resize(n);
+    img->A::release();
+    img->allocate(n);
+    img->A2::~A2();
+    t_array2d_ABGR_FLOAT_D0(img);
+    img->A::~A();
+    t_array_ABGR_FLOAT_D0(img);
+    img->A::swap(*img);
+    img->A2::release();
+    img->A::fill(*c);
+    img->A2::swap(*img);
+    img->A2::resizex(n);
+    img->A2::resizey(n);
+    img->A2::copy(*img, n, n, n, n, n, n);
+    img->at(n, n);
+    ci->at(n, n);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sh_HDRMap", _ZNK6common9t_array2dI10ABGR_FLOATE2nxEv);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sh_HDRMap", _ZNK6common9t_array2dI10ABGR_FLOATE2nyEv);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sh_HDRMap", _ZN6common9t_array2dI10ABGR_FLOATED2Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sh_HDRMap", _ZN6common9t_array2dI10ABGR_FLOATE6resizeEjj);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sh_HDRMap", _ZN6common7t_arrayI10ABGR_FLOATE4addrEv);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sh_HDRMap", _ZNK6common7t_arrayI10ABGR_FLOATE5emptyEv);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sh_HDRMap", _ZN4math4min_IjEET_S1_S1_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sh_HDRMap", _ZNK6common7t_arrayI10ABGR_FLOATE4addrEv);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sh_HDRMap", _ZN6common7t_arrayI10ABGR_FLOATED2Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sh_HDRMap", _ZN6common7t_arrayI10ABGR_FLOATE6resizeEj);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sh_HDRMap", _ZN6common7t_arrayI10ABGR_FLOATE7releaseEv);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sh_HDRMap", _ZN6common7t_arrayI10ABGR_FLOATE8allocateEj);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sh_HDRMap", _ZN10FloatImageD0Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sh_HDRMap", _ZN10FloatImageD1Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sh_HDRMap", _ZN6common9t_array2dI10ABGR_FLOATED1Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sh_HDRMap", _ZN6common9t_array2dI10ABGR_FLOATED0Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sh_HDRMap", _ZN6common7t_arrayI10ABGR_FLOATED1Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sh_HDRMap", _ZN6common7t_arrayI10ABGR_FLOATED0Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sh_HDRMap", _ZN6common7t_arrayI10ABGR_FLOATE4swapERS2_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sh_HDRMap", _ZN6common9t_array2dI10ABGR_FLOATE7releaseEv);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sh_HDRMap", _ZN6common7t_arrayI10ABGR_FLOATE4fillERKS1_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sh_HDRMap", _ZN6common9t_array2dI10ABGR_FLOATE4swapERS2_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sh_HDRMap", _ZN6common9t_array2dI10ABGR_FLOATE7resizexEj);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sh_HDRMap", _ZN6common9t_array2dI10ABGR_FLOATE7resizeyEj);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sh_HDRMap", _ZN6common9t_array2dI10ABGR_FLOATE4copyERKS2_iiiiii);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sh_HDRMap", _ZN6common4SwapINS_7t_arrayI10ABGR_FLOATE7MembersEEEvRT_S6_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sh_HDRMap", _ZN6common4SwapINS_9t_array2dI10ABGR_FLOATE3DimEEEvRT_S6_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sh_HDRMap", _ZN6common9t_array2dI10ABGR_FLOATE2atEii);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sh_HDRMap", _ZNK6common9t_array2dI10ABGR_FLOATE2atEii);
-
+namespace math {
+template<class T> T min_(T a, T b)
+{
+    return a < b ? a : b;
+}
+}
