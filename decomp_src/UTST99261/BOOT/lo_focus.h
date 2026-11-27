@@ -16,7 +16,8 @@ typedef struct FOCUSLIST {
     struct FOCUSLIST *next;     /* 0x4 */
     s8 type;                    /* 0x8: 0 box, 1 image map area */
     void *obj;                  /* 0xC: box */
-    int x10;
+    s16 tabindex;               /* 0x10 */
+    s16 x12;
     FOCUSAREA *area;            /* 0x14 */
     void *x18;
 } FOCUSLIST;

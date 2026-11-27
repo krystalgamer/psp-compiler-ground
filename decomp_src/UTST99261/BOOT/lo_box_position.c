@@ -18,7 +18,14 @@ INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/lo_box_position", D_00139244
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_box_position", lineProcByBR);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_box_position", getPositionParameter);
+void getPositionParameter(void *ctx, void *unused, int *x, int *y, int *left, int *right) {
+    int h;
+    getBaseBlockPosition(ctx, x, y);
+    h = getPrevLineHeight(ctx);
+    *right = 0;
+    *left = 0;
+    lfm_getHorizontalArea(M2C_FIELD(ctx, void **, 0x10), M2C_FIELD(ctx, void **, 4), h, left, right);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_box_position", delSpaceText);
 
@@ -101,7 +108,19 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_box_position", calcBlockButt
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_box_position", calcTableBoxPosition);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_box_position", calcTrBoxPosition);
+void calcTrBoxPosition(void *ctx, BOX *tr) {
+    BOX *t = getTableBox(tr);
+    BOXGEOM *g;
+    BOXSTYLE *st;
+    if (t != NULL) {
+        g = t->geom;
+        st = t->style;
+        tr->x = st->unk26 + t->x + st->unk36 + M2C_FIELD(g, int *, 8);
+        tr->y = st->unk20 + t->y + st->unk30 + M2C_FIELD(t, int *, 0x34);
+        tr->width = t->width - st->unk26 - st->unk36 - st->unk32 - st->unk22 - M2C_FIELD(g, int *, 8) * 2;
+        M2C_FIELD(tr, int *, 0x34) = 0;
+    }
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_box_position", calcTdBoxPosition);
 
@@ -193,11 +212,39 @@ int getLineHeight(LINE *line) {
     return h;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_box_position", lineFeedProc);
+int lineFeedProc(void *ctx, BOX *box) {
+    int r;
+    adjustLineHposition(ctx, M2C_FIELD(ctx, void **, 0xC));
+    r = adjustLineVposition(ctx, M2C_FIELD(ctx, void **, 4), M2C_FIELD(ctx, void **, 0xC));
+    updateLiFirstLineList(ctx);
+    initBoxList(M2C_FIELD(ctx, LIST **, 0xC));
+    initLinePosition(box);
+    return r;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_box_position", turnupContent);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_box_position", moveBoxPositionChild);
+void moveBoxPositionChild(BOX *box, int dx, int dy) {
+    BOX *c = box->child;
+    while (c != NULL && c != box) {
+        c->x += dx;
+        c->y += dy;
+        if (c->child != NULL) {
+            c = c->child;
+        } else if (c->next != NULL) {
+            c = c->next;
+        } else {
+            c = c->parent;
+            while (c != NULL && c != box) {
+                if (c->next != NULL) {
+                    c = c->next;
+                    break;
+                }
+                c = c->parent;
+            }
+        }
+    }
+}
 
 void moveBoxPosition(BOX *box, int dx, int dy) {
     box->x += dx;

@@ -1,19 +1,43 @@
 /* cflags: -O1 */
 #include "common.h"
 #include "m2c_macros.h"
-u16 *CSS_SkipQuotedString(u16 *p);
-int CSS_putcPoolBuf(void *p, int c);
+extern u16 CSSSTR_ASTERISK[];
+void insCSSNode(void *pos, void *node);
+void pushCSSNode(void *list, void *node);
+void CSS_mediaRuleSingle(void *ss, void *rule, u16 *text);
+u16 *CSSRule_getCssText(void *rule);
+void CSS_StyleSheetRuleSingle(void *ss, u16 *text);
+typedef struct {
+    void *url;
+    u16 mediatypes;
+    void *rule;
+} CSSIMPORTITEM;
+extern u16 CSSSTR_CDO[];
+extern u16 CSSSTR_CDC[];
+int UCS_strlen(u16 *s);
+int UCS_strncasecmp(u16 *a, u16 *b, int n);
+void *memcpy(void *d, const void *s, unsigned int n);
+u16 *CSS_SkipBlanks(u16 *p);
+void popCSSNode(void *node);
+#define CN_PARENT(n) M2C_FIELD(n, void **, 4)
+#define CN_PREV(n) M2C_FIELD(n, void **, 0x14)
+#define CN_NEXT(n) M2C_FIELD(n, void **, 0x18)
+#define CL_COUNT(l) M2C_FIELD(l, int *, 8)
+#define CL_HEAD(l) M2C_FIELD(l, void **, 0xC)
+#define CL_TAIL(l) M2C_FIELD(l, void **, 0x10)
+u16 *CSS_SkipQuotedString(u16 *p, u16 q);
+#define CSS_ISALNUM(c) ((unsigned int)((c) - '0') < 10 || (unsigned int)((c) - 'A') < 26 || (u16)((c) - 'a') < 26)
+int CSS_putcPoolBuf(void *p, u16 c);
 void ParseCSSDeclaration(void *ctx, void *str, void **out);
 void *UCS_strdup(void *s);
 void CSS_mediaList(void *str, u16 *media);
 extern u16 D_001F70A8[];
 extern char D_0025BA4C[];
 M2C_UNK MEM_free(M2C_UNK, void *);                  /* extern */
-int CSS_getMediaTypeString(short);                    /* extern */
+u16 *CSS_getMediaTypeString(short);                 /* extern */
 M2C_UNK newCSSRule(M2C_UNK, M2C_UNK, int, int);     /* extern */
 M2C_UNK freeCSSRule(void *);                        /* extern */
 void *MEM_calloc(M2C_UNK, M2C_UNK);                 /* extern */
-M2C_UNK popCSSNode();                               /* extern */
 
 M2C_UNK CSS_ParseStyleSheet(short);                   /* extern */
 M2C_UNK freeCSSStyleDeclaration(void *);            /* extern */
@@ -31,7 +55,41 @@ int CSS_matchChainMenber(u16 *name, void **e) {
     return found;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_API", CSS_ISmatchSelector_BCE14);
+int CSS_ISmatchSelector_BCE14(void *sel, void **e, int unused) {
+    int ret = 0;
+    int m;
+    if (M2C_FIELD(sel, void **, 0x20) == NULL) {
+        m = 0;
+        if (e[1] != NULL) {
+            if (CSS_matchChainMenber(e[1], (void **)((char *)sel + 0x30))) {
+                m = 1;
+            }
+        } else if (M2C_FIELD(sel, void **, 0x34) == NULL) {
+            m = 1;
+        }
+        if (e[2] != NULL) {
+            if (CSS_matchChainMenber(e[2], (void **)((char *)sel + 0x28))) {
+                m |= 2;
+            }
+        } else if (M2C_FIELD(sel, void **, 0x2C) == NULL) {
+            m |= 2;
+        }
+        if (e[3] != NULL) {
+            if (CSS_matchChainMenber(e[3], (void **)((char *)sel + 0x38))) {
+                m |= 4;
+            }
+        } else if (M2C_FIELD(sel, void **, 0x3C) == NULL) {
+            m |= 4;
+        }
+        if (M2C_FIELD(sel, void **, 0x44) == NULL) {
+            m |= 8;
+        }
+        if (m == 0xF) {
+            ret = 1;
+        }
+    }
+    return ret;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -47,7 +105,47 @@ void *CSS2_AttributeParse(void *ctx, void *str) {
     return out;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_API", CSS2_getImportRuleList);
+int *CSS2_getImportRuleList(void *ss) {
+    int i;
+    int *list = NULL;
+    void *r;
+    int n;
+    CSSIMPORTITEM *it;
+    if (ss == NULL || M2C_FIELD(ss, s16 *, 0) != 0) {
+        return list;
+    }
+    {
+        n = 0;
+        for (r = M2C_FIELD(ss, void **, 0xC); r != NULL; r = M2C_FIELD(r, void **, 0x18)) {
+            if (M2C_FIELD(r, s16 *, 0) == 3) {
+                n++;
+            }
+        }
+        if (n == 0) {
+            return list;
+        }
+        {
+            list = MEM_calloc(0, n * sizeof(CSSIMPORTITEM) + 4);
+            if (list == NULL) {
+                return NULL;
+            }
+            {
+                list[0] = n;
+                it = (CSSIMPORTITEM *)(list + 1);
+                for (r = M2C_FIELD(ss, void **, 0xC), i = 0; r != NULL && i < n; r = M2C_FIELD(r, void **, 0x18)) {
+                    if (M2C_FIELD(r, s16 *, 0) == 3) {
+                        it->url = M2C_FIELD(r, void **, 0x24);
+                        it->mediatypes = M2C_FIELD(r, u16 *, 0x28);
+                        it->rule = r;
+                        it++;
+                        i++;
+                    }
+                }
+            }
+        }
+    }
+    return list;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_API", CSS2_getProperty);
 
@@ -281,7 +379,47 @@ int CSSStyleSheet_getCssRules(void *arg0) {
     return M2C_FIELD(arg0, int *, 0xC);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_API", CSSStyleSheet_insertRule);
+int CSSStyleSheet_insertRule(void *ss, u16 *text, int idx) {
+    int ret = -1;
+    void *tmp;
+    void *r;
+    void *n;
+    int i;
+    if (ss != NULL && M2C_FIELD(ss, s16 *, 0) == 0 && M2C_FIELD(ss, s16 *, 0x36) == 0) {
+        tmp = newCSSNode(0, 0x3C);
+        if (tmp != NULL) {
+            CSS_StyleSheetRuleSingle(tmp, text);
+            r = M2C_FIELD(tmp, void **, 0xC);
+            if (r != NULL) {
+                if (M2C_FIELD(r, s16 *, 0) == 2) {
+                    if (idx == 0 || M2C_FIELD(M2C_FIELD(ss, void **, 0xC), s16 *, 0) != 2) {
+                        ret = 0;
+                    }
+                } else if (M2C_FIELD(r, s16 *, 0) == 3) {
+                    if (M2C_FIELD(ss, int *, 8) >= idx) {
+                        if (idx == 0) {
+                            ret = 0;
+                        }
+                    }
+                }
+                if (ret == 0) {
+                    popCSSNode(r);
+                    for (n = M2C_FIELD(ss, void **, 0xC), i = 0; n != NULL && i < idx; i++) {
+                        n = M2C_FIELD(n, void **, 0x18);
+                    }
+                    if (n != NULL) {
+                        insCSSNode(n, r);
+                    } else {
+                        pushCSSNode(ss, r);
+                    }
+                    ret = i;
+                }
+            }
+            freeCSSStyleSheet(tmp);
+        }
+    }
+    return ret;
+}
 
 void CSSStyleSheet_deleteRule(void *ss, int idx) {
     void *r;
@@ -369,9 +507,59 @@ int CSSMediaRule_getType(void *r) {
     return -1;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_API", CSSMediaRule_getCssText);
+u16 *CSSMediaRule_getCssText(void *rule) {
+    void *pb;
+    u16 *s;
+    void *r;
+    int i;
+    if (rule == NULL || M2C_FIELD(rule, s16 *, 0) != 4) {
+        return NULL;
+    }
+    pb = CSS_newPoolBuf();
+    if (pb == NULL) {
+        return NULL;
+    }
+    CSS_putSPoolBuf(pb, "@media ");
+    s = (u16 *)CSSMediaRule_getMedia(rule);
+    if (s != NULL) {
+        CSS_putsPoolBuf(pb, s);
+        MEM_free(0, s);
+    }
+    CSS_putSPoolBuf(pb, " {");
+    CSS_putSPoolBuf(pb, "\n");
+    for (r = M2C_FIELD(rule, void **, 0xC), i = 0; r != NULL && i < M2C_FIELD(rule, int *, 8); r = M2C_FIELD(r, void **, 0x18), i++) {
+        s = CSSRule_getCssText(r);
+        if (s != NULL) {
+            CSS_putsPoolBuf(pb, s);
+            MEM_free(0, s);
+        }
+    }
+    CSS_putSPoolBuf(pb, "}");
+    CSS_putSPoolBuf(pb, "\n");
+    s = CSS_getPoolBuf(pb);
+    CSS_freePoolBuf(pb);
+    return s;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_API", CSSMediaRule_setCssText);
+int CSSMediaRule_setCssText(void *rule, u16 *text) {
+    int ret = -1;
+    void *ss;
+    void *r;
+    if (rule != NULL && M2C_FIELD(rule, void **, 0x1C) != NULL && M2C_FIELD(M2C_FIELD(rule, void **, 0x1C), s16 *, 0x36) == 0) {
+        ss = newCSSNode(0, 0x3C);
+        if (ss != NULL) {
+            CSS_StyleSheetRuleSingle(ss, text);
+            r = M2C_FIELD(ss, void **, 0xC);
+            if (r != NULL && M2C_FIELD(r, s16 *, 0) == 4) {
+                popCSSNode(r);
+                addCSSNode(M2C_FIELD(rule, void **, 0x1C), r);
+                ret = 0;
+            }
+            freeCSSStyleSheet(ss);
+        }
+    }
+    return ret;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -424,9 +612,67 @@ int CSSMediaRule_getCssRules(void *arg0) {
     return M2C_FIELD(arg0, int *, 0xC);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_API", CSSMediaRule_insertRule);
+int CSSMediaRule_insertRule(void *rule, u16 *text, int idx) {
+    void *ss;
+    void *r;
+    void *cur;
+    void *n;
+    int i;
+    int cnt;
+    if (rule == NULL || M2C_FIELD(rule, void **, 0x1C) == NULL || M2C_FIELD(M2C_FIELD(rule, void **, 0x1C), s16 *, 0x36) != 0) {
+        return -1;
+    }
+    ss = newCSSNode(0, 0x3C);
+    if (ss != NULL) {
+        CSS_mediaRuleSingle(ss, rule, text);
+        r = M2C_FIELD(ss, void **, 0xC);
+        if (r != NULL) {
+            popCSSNode(r);
+            cnt = M2C_FIELD(rule, int *, 8);
+            cur = M2C_FIELD(rule, void **, 0xC);
+            n = cur;
+            i = 0;
+            while (n != NULL && i < cnt && i < idx) {
+                cur = n;
+                n = M2C_FIELD(n, void **, 0x18);
+                i++;
+            }
+            idx = i;
+            if (cur != NULL) {
+                insCSSNode(cur, r);
+            } else {
+                pushCSSNode(rule, r);
+            }
+        } else {
+            idx = -1;
+        }
+        freeCSSStyleSheet(ss);
+    } else {
+        idx = -1;
+    }
+    return idx;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_API", CSSMediaRule_deleteRule);
+int CSSMediaRule_deleteRule(void *rule, int idx) {
+    void *r;
+    int i;
+    int n;
+    if (rule == NULL || M2C_FIELD(rule, void **, 0x1C) == NULL || M2C_FIELD(M2C_FIELD(rule, void **, 0x1C), s16 *, 0x36) != 0) {
+        return -1;
+    }
+    n = M2C_FIELD(rule, int *, 8);
+    if (n < idx) {
+        return -1;
+    }
+    for (r = M2C_FIELD(rule, void **, 0xC), i = 0; r != NULL && i < n && i < idx; i++) {
+        r = M2C_FIELD(r, void **, 0x18);
+    }
+    if (i != idx) {
+        return -1;
+    }
+    freeCSSRule(r);
+    return i;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -446,21 +692,185 @@ void CSSMediaRule_setParentRule(void *arg0, int arg1) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_API", CSS_getMediaTypeString);
+u16 *CSS_getMediaTypeString(s16 type) {
+    void *pb;
+    u16 *ret;
+    int sep = 0;
+    pb = CSS_newPoolBuf();
+    if (pb == NULL) {
+        return NULL;
+    }
+    ret = NULL;
+    if (type != 0) {
+        if (type == 0x1FF) {
+            CSS_putSPoolBuf(pb, " all");
+        } else {
+            if (type & 1) {
+                CSS_putSPoolBuf(pb, " screen");
+                sep = 1;
+            }
+            if (type & 0x2) {
+                if (sep) {
+                    CSS_putSPoolBuf(pb, ", tty");
+                } else {
+                    CSS_putSPoolBuf(pb, " tty");
+                    sep = 1;
+                }
+            }
+            if (type & 0x4) {
+                if (sep) {
+                    CSS_putSPoolBuf(pb, ", tv");
+                } else {
+                    CSS_putSPoolBuf(pb, " tv");
+                    sep = 1;
+                }
+            }
+            if (type & 0x8) {
+                if (sep) {
+                    CSS_putSPoolBuf(pb, ", projection");
+                } else {
+                    CSS_putSPoolBuf(pb, " projection");
+                    sep = 1;
+                }
+            }
+            if (type & 0x10) {
+                if (sep) {
+                    CSS_putSPoolBuf(pb, ", handheld");
+                } else {
+                    CSS_putSPoolBuf(pb, " handheld");
+                    sep = 1;
+                }
+            }
+            if (type & 0x20) {
+                if (sep) {
+                    CSS_putSPoolBuf(pb, ", print");
+                } else {
+                    CSS_putSPoolBuf(pb, " print");
+                    sep = 1;
+                }
+            }
+            if (type & 0x40) {
+                if (sep) {
+                    CSS_putSPoolBuf(pb, ", braille");
+                } else {
+                    CSS_putSPoolBuf(pb, " braille");
+                    sep = 1;
+                }
+            }
+            if (type & 0x80) {
+                if (sep) {
+                    CSS_putSPoolBuf(pb, ", embossed");
+                } else {
+                    CSS_putSPoolBuf(pb, " embossed");
+                    sep = 1;
+                }
+            }
+            if (type & 0x100) {
+                if (sep) {
+                    CSS_putSPoolBuf(pb, ", aural");
+                } else {
+                    CSS_putSPoolBuf(pb, " aural");
+                }
+            }
+        }
+        ret = CSS_getPoolBuf(pb);
+    }
+    CSS_freePoolBuf(pb);
+    return ret;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_API", CSS_SkipBlanks);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_API", CSS_SkipWord);
+u16 *CSS_SkipWord(u16 *p) {
+    while (CSS_ISALNUM(*p) || *p == '-' || *p == '%') {
+        p++;
+    }
+    return p;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_API", CSS_SkipXWord);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_API", CSS_SkipBlanksAndComments);
+u16 *CSS_SkipBlanksAndComments(u16 *p) {
+    p = CSS_SkipBlanks(p);
+    while (p[0] == '/' && p[1] == '*') {
+        p += 2;
+        while (*p != 0 && !(p[0] == '*' && p[1] == '/')) {
+            p++;
+        }
+        if (*p != 0) {
+            p += 2;
+        }
+        p = CSS_SkipBlanks(p);
+    }
+    return p;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_API", CSS_Skip_S_CDO_CDC);
+u16 *CSS_Skip_S_CDO_CDC(u16 *p) {
+    int cdo = UCS_strlen(CSSSTR_CDO);
+    int cdc = UCS_strlen(CSSSTR_CDC);
+    while (*p != 0) {
+        p = CSS_SkipBlanksAndComments(p);
+        if (UCS_strncasecmp(p, CSSSTR_CDO, cdo) == 0) {
+            p += cdo;
+            continue;
+        }
+        if (UCS_strncasecmp(p, CSSSTR_CDC, cdc) == 0) {
+            p += cdc;
+            continue;
+        }
+        break;
+    }
+    return p;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_API", CSS_SkipQuotedString);
+u16 *CSS_SkipQuotedString(u16 *p, u16 q) {
+    int done = 0;
+    u16 c;
+    while (!done) {
+        c = *p;
+        if (c == q) {
+            p++;
+            done = 1;
+        } else if (c == 0) {
+            done = 1;
+        } else {
+            c = *p++;
+            if (c == '\\') {
+                if (CSS_ISALNUM(*p)) {
+                    p++;
+                    if (CSS_ISALNUM(*p)) {
+                        p++;
+                    }
+                } else {
+                    p++;
+                }
+            }
+        }
+    }
+    return p;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_API", CSS_SkipRule);
+u16 *CSS_SkipRule(u16 *p) {
+    int depth = 0;
+    u16 c;
+    while ((c = *p) != 0) {
+        p++;
+        if (c == '{') {
+            depth++;
+        } else if (c == '}') {
+            if (depth == 0) {
+                break;
+            }
+            depth--;
+            if (depth == 0) {
+                return p;
+            }
+        } else if (c == '\'' || c == '"') {
+            p = CSS_SkipQuotedString(p, c);
+        }
+    }
+    return p;
+}
 
 u16 *CSS_SkipProperty(u16 *p) {
     u16 c;
@@ -470,7 +880,7 @@ u16 *CSS_SkipProperty(u16 *p) {
         }
         p++;
         if (c == '\'' || c == '"') {
-            p = CSS_SkipQuotedString(p);
+            p = CSS_SkipQuotedString(p, c);
         }
     }
     return p;
@@ -484,11 +894,111 @@ u16 *CSS_SkipToEqual(u16 *p) {
     return p;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_API", CSS_ident);
+u16 *CSS_ident(u16 *s, u16 **out) {
+    u16 *p;
+    u16 *buf;
+    int n;
+    u16 c;
+    *out = NULL;
+    p = s;
+    n = 0;
+    if ((u16)(*p - 'A') < 26 || (u16)(*p - 'a') < 26 || *p == '_' || *p == '-') {
+        p++;
+        n++;
+        while ((c = *p) != 0) {
+            if ((u16)(c - 'A') < 26 || (u16)(c - 'a') < 26 || c == '_' || c == '-' || (u16)(c - '0') < 10 || c == '-') {
+                p++;
+                n++;
+            } else {
+                break;
+            }
+        }
+        if (n != 0) {
+            buf = MEM_malloc(0, (n + 1) * 2);
+            if (buf != NULL) {
+                UCS_strncpy(buf, s, n);
+                buf[n] = 0;
+                *out = buf;
+            }
+        }
+    }
+    return p;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_API", CSS_string);
+u16 *CSS_string(u16 *s, u16 **out) {
+    u16 *p;
+    u16 *start;
+    u16 *d;
+    int len;
+    u16 c;
+    *out = NULL;
+    p = s;
+    c = *s;
+    if (c == '\'' || c == '"') {
+        p = s + 1;
+        start = p;
+        p = CSS_SkipQuotedString(p, c);
+        if (start < p) {
+            p--;
+            c = *p;
+            *p = 0;
+            len = UCS_strlen(start);
+            *p = c;
+            p++;
+            if (len != 0) {
+                d = MEM_malloc(0, (len + 1) * 2);
+                if (d != NULL) {
+                    *out = d;
+                    while (c = *start, *start++ != 0 && len != 0) {
+                        len--;
+                        if (c == '\\') {
+                            if (len != 0) {
+                                if (*start == '\r' || *start == '\n') {
+                                    len--;
+                                    start++;
+                                    if (len != 0) {
+                                        if (*start == '\r' || *start == '\n') {
+                                            len--;
+                                            start++;
+                                        }
+                                    }
+                                    continue;
+                                }
+                            }
+                        }
+                        *d++ = c;
+                    }
+                    *d = 0;
+                }
+            }
+        }
+    }
+    return p;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_API", CSS_nstring);
+u16 *CSS_nstring(u16 *s, u16 **out) {
+    u16 *p;
+    u16 *buf;
+    int n;
+    u16 c;
+    *out = NULL;
+    p = s;
+    n = 0;
+    while ((c = *p) != 0 && !(c == ')' || c == ';' || c == '}' || (c == ' ' || c == '\t' || c == '\r' || c == '\n' || c == 0xC || c == 0xFEFF))) {
+        p++;
+        n++;
+    }
+    if (n == 0) {
+        return p;
+    }
+    buf = MEM_malloc(0, (n + 1) * 2);
+    if (buf != NULL) {
+        UCS_strncpy(buf, s, n);
+        buf[n] = 0;
+        *out = buf;
+    }
+    return p;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_API", CToc);
 
@@ -537,7 +1047,29 @@ void CSS_freePoolBuf(u16 *pb) {
     MEM_free(0, pb);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_API", CSS_putcPoolBuf);
+int CSS_putcPoolBuf(void *pb, u16 c) {
+    void *b;
+    void *n;
+    if (pb == NULL) {
+        return -1;
+    }
+    b = M2C_FIELD(pb, void **, 8);
+    if (b == NULL) {
+        return -1;
+    }
+    if (M2C_FIELD(b, u16 *, 4) >= 0x100) {
+        n = MEM_calloc(0, 0x208);
+        if (n == NULL) {
+            return -1;
+        }
+        M2C_FIELD(b, void **, 0) = n;
+        M2C_FIELD(pb, void **, 8) = n;
+        M2C_FIELD(pb, u16 *, 0)++;
+        b = n;
+    }
+    ((u16 *)((char *)b + 6))[M2C_FIELD(b, u16 *, 4)++] = c;
+    return 0;
+}
 
 int CSS_putsPoolBuf(void *pb, u16 *s) {
     int r = 0;
@@ -585,10 +1117,10 @@ void *newCSSNode(int type, int size) {
 #define NULL ((void *)0)
 #endif
 
-void freeCSSNode(int arg0) {
-    if (arg0 != 0) {
-        popCSSNode();
-        MEM_free(0, arg0);
+void freeCSSNode(void *n) {
+    if (n != NULL) {
+        popCSSNode(n);
+        MEM_free(0, n);
     }
 }
 
@@ -632,7 +1164,52 @@ void pushCSSNode(void *arg0, void *arg1) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_API", popCSSNode);
+void popCSSNode(void *node) {
+    void *list;
+    void *prev;
+    void *next;
+    void *p;
+    if (node == NULL) {
+        return;
+    }
+    prev = CN_PREV(node);
+    next = CN_NEXT(node);
+    if (prev != NULL) {
+        if (next != NULL) {
+            CN_NEXT(prev) = next;
+            CN_PREV(CN_NEXT(node)) = prev;
+            list = CN_PARENT(node);
+            if (list != NULL) {
+                CL_COUNT(list)--;
+            }
+            CN_NEXT(node) = NULL;
+        } else {
+            p = CN_PREV(node);
+            CN_NEXT(p) = NULL;
+            list = CN_PARENT(node);
+            if (list != NULL) {
+                CL_TAIL(list) = p;
+                CL_COUNT(list)--;
+            }
+        }
+        CN_PREV(node) = NULL;
+    } else if (next != NULL) {
+        CN_PREV(next) = NULL;
+        list = CN_PARENT(node);
+        if (list != NULL) {
+            CL_HEAD(list) = next;
+            CL_COUNT(list)--;
+        }
+        CN_NEXT(node) = NULL;
+    } else {
+        list = CN_PARENT(node);
+        if (list != NULL && CL_HEAD(list) == node) {
+            CL_HEAD(list) = NULL;
+            CL_TAIL(list) = NULL;
+            CL_COUNT(list) = 0;
+        }
+    }
+}
 
 #ifndef NULL
 #define NULL ((void *)0)

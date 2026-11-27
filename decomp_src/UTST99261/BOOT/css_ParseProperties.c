@@ -2,6 +2,12 @@
 #include "common.h"
 #include "css_types.h"
 #include "m2c_macros.h"
+u16 *CSS_nstring(u16 *p, u16 **out);
+typedef struct CSSPROPNAME { u16 *name; u16 id; } CSSPROPNAME;
+extern CSSPROPNAME CSSPropertyNames[];
+extern int CSSPropertyIndexTable[];
+int UCS_strcasecmp(u16 *a, u16 *b);
+CSSVALUE *duplicateCSSValue(CSSVALUE *v);
 CSSVALUE *newCSSValue();
 void addCSSValue(void *decl, CSSVALUE *v);
 void freeCSSValue(CSSVALUE *v);
@@ -274,11 +280,80 @@ u16 *ParseCSSBackgroundRepeat(void *decl, u16 *p) {
     return CSS_SkipProperty(p);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_ParseProperties", ParseBorderColor);
+u16 *ParseBorderColor(CSSVALUE *v, u16 *p) {
+    u16 *r;
+    p = CSS_SkipBlanksAndComments(p);
+    if ((r = ParseCSSIdent(v, p, 0xBA)) != NULL) {
+        return r;
+    }
+    if ((r = ParseCSSIdent(v, p, 0x4D)) != NULL) {
+        return r;
+    }
+    if ((r = ParseCSSColor(v, p)) == NULL) {
+        return NULL;
+    }
+    return r;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_ParseProperties", ParseBorderStyle);
+u16 *ParseBorderStyle(CSSVALUE *v, u16 *p) {
+    u16 *r;
+    p = CSS_SkipBlanksAndComments(p);
+    if ((r = ParseCSSIdent(v, p, 0x79)) != NULL) {
+        return r;
+    }
+    if ((r = ParseCSSIdent(v, p, 0xA3)) != NULL) {
+        return r;
+    }
+    if ((r = ParseCSSIdent(v, p, 0x35)) != NULL) {
+        return r;
+    }
+    if ((r = ParseCSSIdent(v, p, 0x43)) != NULL) {
+        return r;
+    }
+    if ((r = ParseCSSIdent(v, p, 0x8C)) != NULL) {
+        return r;
+    }
+    if ((r = ParseCSSIdent(v, p, 0x50)) != NULL) {
+        return r;
+    }
+    if ((r = ParseCSSIdent(v, p, 0x80)) != NULL) {
+        return r;
+    }
+    if ((r = ParseCSSIdent(v, p, 0x2E)) != NULL) {
+        return r;
+    }
+    if ((r = ParseCSSIdent(v, p, 0x34)) != NULL) {
+        return r;
+    }
+    if ((r = ParseCSSIdent(v, p, 0x46)) != NULL) {
+        return r;
+    }
+    if ((r = ParseCSSIdent(v, p, 0x4D)) == NULL) {
+        return NULL;
+    }
+    return r;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_ParseProperties", ParseBorderWidth);
+u16 *ParseBorderWidth(CSSVALUE *v, u16 *p) {
+    u16 *r;
+    p = CSS_SkipBlanksAndComments(p);
+    if ((r = ParseCSSUnit(v, p)) != NULL) {
+        return r;
+    }
+    if ((r = ParseCSSIdent(v, p, 0xB8)) != NULL) {
+        return r;
+    }
+    if ((r = ParseCSSIdent(v, p, 0x6C)) != NULL) {
+        return r;
+    }
+    if ((r = ParseCSSIdent(v, p, 0xB7)) != NULL) {
+        return r;
+    }
+    if ((r = ParseCSSIdent(v, p, 0x4D)) == NULL) {
+        return NULL;
+    }
+    return r;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_ParseProperties", ParseCSSBorder);
 
@@ -852,7 +927,20 @@ u16 *ParseCSSListStyleType(void *decl, u16 *p) {
     return CSS_SkipProperty(p);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_ParseProperties", ParseCSSMarginWidth);
+u16 *ParseCSSMarginWidth(CSSVALUE *v, u16 *p) {
+    u16 *r;
+    p = CSS_SkipBlanksAndComments(p);
+    if ((r = ParseCSSUnit(v, p)) != NULL) {
+        return r;
+    }
+    if ((r = ParseCSSIdent(v, p, 0xE)) != NULL) {
+        return r;
+    }
+    if ((r = ParseCSSIdent(v, p, 0x4D)) == NULL) {
+        return NULL;
+    }
+    return r;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_ParseProperties", ParseCSSMargin);
 
@@ -964,7 +1052,20 @@ u16 *ParseCSSOutlineColor(void *decl, u16 *p) {
     return r;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_ParseProperties", ParseCSSOutlineStyle);
+u16 *ParseCSSOutlineStyle(void *decl, u16 *p) {
+    CSSVALUE *v;
+    u16 *r;
+    v = newCSSValue();
+    if (v != NULL) {
+        r = ParseBorderStyle(v, p);
+        if (r != NULL && v->type == 2 && v->unit == 0x15 && v->ident != 0x46) {
+            addCSSValue(decl, v);
+            return r;
+        }
+        freeCSSValue(v);
+    }
+    return CSS_SkipProperty(p);
+}
 
 u16 *ParseCSSOverflow(void *decl, u16 *p) {
     CSSVALUE *v;
@@ -1247,7 +1348,43 @@ u16 *ParseCSSZIndex(void *decl, u16 *p) {
     return r;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_ParseProperties", find_Property);
+int find_Property(u16 *name) {
+    int c;
+    int lo;
+    int hi = 0;
+    int mid;
+    int r;
+    if (!((unsigned int)(name[0] - 'A') < 26) && !((unsigned int)(name[0] - 'a') < 26)) {
+        return -1;
+    }
+    if ((u16)(name[0] - 'a') < 26) {
+        c = name[0] - 'a';
+    } else {
+        c = name[0] - 'A';
+    }
+    lo = CSSPropertyIndexTable[c];
+    if (lo < 0) {
+        return -1;
+    }
+    for (c++; c < 27; c++) {
+        hi = CSSPropertyIndexTable[c];
+        if (hi >= 0) {
+            break;
+        }
+    }
+    while (lo < hi) {
+        mid = (lo + hi) / 2;
+        r = UCS_strcasecmp(CSSPropertyNames[mid].name, name);
+        if (r < 0) {
+            lo = mid + 1;
+        } else if (r > 0) {
+            hi = mid;
+        } else {
+            return CSSPropertyNames[mid].id;
+        }
+    }
+    return -1;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_ParseProperties", ParseCSSDeclaration);
 

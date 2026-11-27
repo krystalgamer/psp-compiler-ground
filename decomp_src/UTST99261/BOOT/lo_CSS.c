@@ -4,6 +4,21 @@
 #include "nflayout.h"
 #include "lo_css.h"
 #include "m2c_macros.h"
+typedef struct {
+    char *start;
+    char *end;
+} STRWORD;
+STRWORD UTL_strword(char *s, char *delim, char *stop);
+extern char D_00139BEC[];
+char *lo_fullUrl(BOX *box, char *s);
+void requestImageData(BOX *box, char *url, int x);
+int strncasecmp(const char *a, const char *b, unsigned int n);
+void OS_thread_mutex_destroy(int m);
+int iom_preferenceCookie(void);
+void iom_updateCookie(void);
+int iom_addCookie(char *url, char *hdr, int x);
+void iom_freeCookie(void *c);
+void innerCSSSetIntParam(CSSVALUE *val, int *out, BOX *parent, int fontSize, int inherit);
 extern int *gCOOKIE_IDX_GLOBAL;
 extern int D_00585114[];
 extern char D_00139C00[];
@@ -46,14 +61,70 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_CSS", innerCSSSetBorderWidth
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_CSS", cssDStrCmp);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_CSS", cssDStrContains);
+int cssDStrContains(u16 *word, void *ds) {
+    int found = 0;
+    int wlen;
+    int n;
+    u16 *buf;
+    u16 *p;
+    u16 *q;
+    wlen = UCS_strlen(word);
+    n = M2C_FIELD(ds, int *, 4);
+    buf = MEM_malloc(0, n * 2 + 2);
+    if (buf == NULL) {
+        return 0;
+    }
+    UCS_strncpy(buf, M2C_FIELD(ds, u16 **, 8), n);
+    buf[n] = 0;
+    p = buf;
+    while (n > 0 && (q = UCS_strstr(p, word)) != NULL) {
+        if (p < q) {
+            n -= q - p;
+            if (q[-1] == ' ') {
+                if (wlen >= n || q[wlen] == ' ') {
+                    found = 1;
+                    break;
+                }
+            }
+        } else {
+            if (wlen >= n || q[wlen] == ' ') {
+                found = 1;
+                break;
+            }
+        }
+        p = q + 1;
+        n--;
+    }
+    MEM_free(0, buf);
+    return found;
+}
 
 void cssBackgroundAttachment(void) {
 }
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_CSS", cssBackgroundColor);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_CSS", cssBackgroundImage);
+void cssBackgroundImage(void *ctx, BOX *box, CSSVALUE *val, int n) {
+    int len = 0;
+    char *s;
+    char *url;
+    int i;
+    if (val->unit == 0x14 && box->display == 0) {
+        while (((u16 *)val->ident)[len] != 0) {
+            len++;
+        }
+        s = MEM_malloc(0, len + 1);
+        for (i = 0; i < len; i++) {
+            s[i] = ((u16 *)val->ident)[i];
+        }
+        s[len] = 0;
+        url = lo_fullUrl(box, s);
+        if (url != NULL) {
+            requestImageData(box, url, M2C_FIELD(getBodyBox(box)->geom, int *, 0x38));
+            MEM_free(0, url);
+        }
+    }
+}
 
 void cssBackgroundRepeat(void *ctx, BOX *box, CSSVALUE *val, int n) {
     switch (val->ident) {
@@ -340,7 +411,27 @@ void cssFontWeight(void *ctx, BOX *box, CSSVALUE *val, int n) {
     box->style->unk64 = ui_global->color[box->style->unk6A][box->style->fontSize];
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_CSS", cssHeight);
+void cssHeight(void *ctx, BOX *box, CSSVALUE *val, int n) {
+    BOX *parent = box->parent;
+    int h = box->style->height;
+    if (box->content == 0 && box->display != 0 && box->display != 3) {
+        return;
+    }
+    if (val->unit == 0x15 && val->ident == 0xE) {
+        return;
+    }
+    innerCSSSetIntParam(val, &h, box->parent, box->style->fontSize, parent != NULL ? parent->height : 0);
+    if (h >= 0) {
+        box->style->height = h;
+        if (val->unit == 2) {
+            box->style->flags &= ~0xC;
+            box->style->flags |= 8;
+        } else {
+            box->style->flags &= ~0xC;
+            box->style->flags |= 4;
+        }
+    }
+}
 
 void cssLeft(void *ctx, BOX *box, CSSVALUE *val, int n) {
     BOX *parent = box->parent;
@@ -512,7 +603,37 @@ void cssTop(void *ctx, BOX *box, CSSVALUE *val, int n) {
                              parent != NULL ? parent->style->unk50 : 0);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_CSS", cssVerticalAlign);
+void cssVerticalAlign(void *ctx, BOX *box, CSSVALUE *val, int n) {
+    switch (val->ident) {
+    case 0x10:
+        box->style->unk70[0] = 0;
+        break;
+    case 0xA8:
+        box->style->unk70[0] = 1;
+        break;
+    case 0xA9:
+        box->style->unk70[0] = 2;
+        break;
+    case 0xB9:
+        box->style->unk70[0] = 3;
+        break;
+    case 0xB6:
+        box->style->unk70[0] = 4;
+        break;
+    case 0x6F:
+        box->style->unk70[0] = 5;
+        break;
+    case 0x19:
+        box->style->unk70[0] = 6;
+        break;
+    case 0xB5:
+        box->style->unk70[0] = 7;
+        break;
+    case 0x4D:
+        box->style->unk70[0] = box->parent != NULL ? box->parent->style->unk70[0] : 0;
+        break;
+    }
+}
 
 void cssVisibility(void *ctx, BOX *box, CSSVALUE *val, int n) {
     switch (val->ident) {
@@ -528,7 +649,27 @@ void cssVisibility(void *ctx, BOX *box, CSSVALUE *val, int n) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_CSS", cssWidth);
+void cssWidth(void *ctx, BOX *box, CSSVALUE *val, int n) {
+    BOX *parent = box->parent;
+    int w = box->style->width;
+    if (box->content == 0 && box->display != 0 && box->display != 3) {
+        return;
+    }
+    if (val->unit == 0x15 && val->ident == 0xE) {
+        return;
+    }
+    innerCSSSetIntParam(val, &w, box->parent, box->style->fontSize, parent != NULL ? parent->width : 0);
+    if (w >= 0) {
+        box->style->width = w;
+        if (val->unit == 2) {
+            box->style->flags &= ~3;
+            box->style->flags |= 2;
+        } else {
+            box->style->flags &= ~3;
+            box->style->flags |= 1;
+        }
+    }
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_CSS", matchesNode);
 
@@ -586,9 +727,47 @@ int iom_attachCookie(void) {
     return r;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_CSS", iom_detachCookie);
+int iom_detachCookie(void) {
+    int r = 0;
+    void **e;
+    OS_thread_mutex_lock(iomCookie[5]);
+    iom_updateCookie();
+    if (iomCookie[0] != 0) {
+        r = iom_saveCookie();
+    }
+    while ((e = UTL_peekqueue(&iomCookie[1], 0)) != NULL) {
+        if (M2C_FIELD(e[2], int *, 0x10) == -1) {
+            iom_deleteCookie(e[2]);
+        } else {
+            iom_freeCookie(e[2]);
+        }
+    }
+    gCOOKIE_IDX_GLOBAL = NULL;
+    OS_thread_mutex_unlock(iomCookie[5]);
+    OS_thread_mutex_destroy(iomCookie[5]);
+    iomCookie = NULL;
+    return r;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_CSS", iom_setCookie);
+int iom_setCookie(char *url, char *hdr, int x) {
+    int r;
+    OS_thread_mutex_lock(iomCookie[5]);
+    if (url == NULL || hdr == NULL) {
+        OS_thread_mutex_unlock(iomCookie[5]);
+        return 0;
+    }
+    if (iom_preferenceCookie() == 0) {
+        OS_thread_mutex_unlock(iomCookie[5]);
+        return 0;
+    }
+    iom_updateCookie();
+    r = iom_addCookie(url, hdr, x);
+    if (iomCookie[0] != 0) {
+        iom_saveCookie();
+    }
+    OS_thread_mutex_unlock(iomCookie[5]);
+    return r;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_CSS", iom_getCookie);
 
@@ -734,7 +913,21 @@ INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/lo_CSS", D_00139BE4);
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/lo_CSS", D_00139BEC);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_CSS", set_cookie);
+int set_cookie(void *x, char *hdr) {
+    STRWORD w;
+    w = UTL_strword(hdr, D_00139BEC, " \t:");
+    if (w.end - w.start == 10 && strncasecmp(w.start, "Set-Cookie", 10) == 0) {
+        hdr = w.end;
+        while (*hdr == ' ' || *hdr == '\t' || *hdr == ':') {
+            hdr++;
+        }
+    }
+    iomCookie = gCOOKIE_IDX_GLOBAL;
+    if (iomCookie == NULL) {
+        return -1;
+    }
+    return iom_setCookie(x, hdr, 0) < 0 ? -1 : 1;
+}
 
 char *get_cookie(void *url) {
     char *c;
