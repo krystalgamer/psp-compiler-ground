@@ -161,7 +161,19 @@ void I3dTexEnv__SetErrorTex(void) {
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_sorter", I3dCheckTim2FileHeader);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_sorter", I3dGetTim2PictureHeader);
+void *I3dGetTim2PictureHeader(unsigned char *t, unsigned int n)
+{
+	unsigned char *p;
+	unsigned int i;
+	if (n >= *(unsigned short *)(t + 6))
+		return 0;
+	p = t + 0x10;
+	if (t[5])
+		p = t + 0x80;
+	for (i = 0; i < n; i++)
+		p += *(unsigned int *)p;
+	return p;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
