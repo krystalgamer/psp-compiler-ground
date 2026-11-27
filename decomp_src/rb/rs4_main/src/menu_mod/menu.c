@@ -8,13 +8,11 @@ int cusGetKeyName(M2C_UNK, M2C_UNK, int, int, M2C_UNK); /* extern */
 extern int D_0011A46C;
 
 extern unsigned char l_tMenuCntx;
-M2C_UNK cusGetKeyIndex(M2C_UNK, M2C_UNK, int);      /* extern */
+int cusGetKeyIndex(M2C_UNK, M2C_UNK, int);      /* extern */
 extern unsigned char l_szEdition;
 void consPrintf(const char *, ...);
 int gameChgGameMode(int);                           /* extern */
-M2C_UNK *gameChgModule(M2C_UNK, int);               /* extern */
-int menuGetGameMode(M2C_UNK);                       /* extern */
-int menuGetModule(M2C_UNK);                         /* extern */
+int gameChgModule(int, int);
 extern unsigned char D_00102EDC;
 extern unsigned char D_00103018;
 M2C_UNK cardlistRefresh();                          /* extern */
@@ -22,7 +20,15 @@ M2C_UNK databaseRefresh();                          /* extern */
 M2C_UNK *localeChange(int, int);                    /* extern */
 void *localeGetRegionCntx();
 typedef struct { int flow[16]; } MenuFlowHd;
-int menuGetNextFlowID();
+typedef struct { char name[4]; int module; int mode; } MenuModDB;
+extern MenuModDB l_atMenuModuleDB[7];
+extern unsigned char D_00102E94;
+int strncmp(const char *, const char *, unsigned int);
+int sceKernelGetGPI(void);
+int thrState(int);
+int mainGetThrBack(void);
+int *gameGetCntx();
+int menuGetNextFlowID(int sel);
 
 typedef struct { int flow[16]; } MenuFlowHead;
 
@@ -34,9 +40,39 @@ typedef struct { char pad[0x348]; int a; char pad2[0x64C - 0x34C]; int b; } Menu
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/menu", D_00102E94);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/menu", menuGetModule);
+int menuGetModule(int id)
+{
+	char name[32];
+	unsigned int i;
+	MenuModDB *e;
+	int r;
+	if (id < 0) id = *(int *)&l_tMenuCntx;
+	r = menuGetFlowName(id, name);
+	if (r < 0) return r;
+	for (i = 0; i < 7; i++) {
+		e = &l_atMenuModuleDB[i];
+		if (strncmp(name, e->name, 4) == 0) return e->module;
+	}
+	consPrintf(&D_00102E94, "menuGetModule", id);
+	return -4;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/menu", menuGetGameMode);
+int menuGetGameMode(int id)
+{
+	char name[32];
+	unsigned int i;
+	MenuModDB *e;
+	int r;
+	if (id < 0) id = *(int *)&l_tMenuCntx;
+	r = menuGetFlowName(id, name);
+	if (r < 0) return r;
+	for (i = 0; i < 7; i++) {
+		e = &l_atMenuModuleDB[i];
+		if (strncmp(name, e->name, 4) == 0) return e->mode < 0 ? -5 : e->mode;
+	}
+	consPrintf(&D_00102E94, "menuGetGameMode", id);
+	return -4;
+}
 
 M2C_UNK *menuGetCntx(void) {
     return &l_tMenuCntx;
@@ -44,12 +80,41 @@ M2C_UNK *menuGetCntx(void) {
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/menu", D_00102EDC);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/menu", menuFlowInit);
+extern char l_szResetFlow[], l_szStartFlow[];
+extern int l_nResetFlowID, l_nResetFlowGameMode, l_nResetFlowLabel;
+void gameEnSoftReset(void);
+static inline void _menuPushFlow(int n)
+{
+	int i;
+	for (i = 15; i != 0; i--)
+		((MenuFlowHd *)&l_tMenuCntx)->flow[i] = ((MenuFlowHd *)&l_tMenuCntx)->flow[i - 1];
+	((MenuFlowHd *)&l_tMenuCntx)->flow[0] = n;
+}
+int menuFlowInit(void)
+{
+	int i, id;
+	consPrintf(&D_00102EDC, "menuFlowInit");
+	for (i = 0; i < 16; i++)
+		((MenuFlowHd *)&l_tMenuCntx)->flow[i] = -1;
+	consPrintf("%s:%c\n", "menuFlowInit", '[');
+	_menuPushFlow(menuGetFlowID(l_szResetFlow));
+	if (menuNextFlow(0) < 0)
+		consPrintf("cassert : %s %d : %s : %s\n", "src/menu_mod/menu.c", 0x98, "menuFlowInit", "nRet>=0");
+	l_nResetFlowID = ((MenuFlowHd *)&l_tMenuCntx)->flow[0];
+	l_nResetFlowLabel = menuGetModule(l_nResetFlowID);
+	l_nResetFlowGameMode = menuGetGameMode(l_nResetFlowID);
+	_menuPushFlow(menuGetFlowID(l_szStartFlow));
+	if (menuNextFlow(0) < 0)
+		consPrintf("cassert : %s %d : %s : %s\n", "src/menu_mod/menu.c", 0xA1, "menuFlowInit", "nRet>=0");
+	gameEnSoftReset();
+	consPrintf("}\n");
+	return 1;
+}
 
-void menuGetFlowID(int arg0) {
+int menuGetFlowID(int arg0) {
     cusSetInst(1);
     cusSetSection(6, (int) &l_szEdition);
-    cusGetKeyIndex(6, 0, arg0);
+    return cusGetKeyIndex(6, 0, arg0);
 }
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/menu", menuGetNextFlowID);
@@ -72,9 +137,9 @@ void menuGetFlowIDNum(void) {
     cusGetKeyNum(6, (int) &l_szEdition);
 }
 
-int menuNextFlow(void)
+int menuNextFlow(int sel)
 {
-	int n = menuGetNextFlowID();
+	int n = menuGetNextFlowID(sel);
 	int i;
 	if (n < 0)
 		return n;
@@ -165,7 +230,25 @@ int menuChkCardBattle(void)
 	return ((MenuCB2 *)&l_tMenuCntx)->a != -1 && ((MenuCB2 *)&l_tMenuCntx)->b != -1;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/menu", menuGosubSaruColle);
+typedef struct { char pad[0x65C]; int f65C; } MenuCntxS;
+int menuGosubSaruColle(void)
+{
+	int ret = 0;
+	consPrintf(&D_00102EDC, "menuGosubSaruColle");
+	if (!(sceKernelGetGPI() & 4)) {
+		((MenuCntxS *)&l_tMenuCntx)->f65C = -1;
+		ret = gameChgModule(2, 7);
+		ret = ret && gameChgGameMode(3);
+	} else {
+		((MenuCntxS *)&l_tMenuCntx)->f65C = 0;
+		if (thrState(mainGetThrBack()) == 0) {
+			ret = 1;
+			gameGetCntx()[0x38 / 4] = -1;
+		}
+	}
+	consPrintf(&D_00103018, ret);
+	return ret;
+}
 
 int menuIsSaruColle(void) {
     return ~D_0011A46C == 0;
