@@ -11,6 +11,7 @@ typedef struct FRAMESIZE {
 typedef struct FRAMESIZES {
     FRAMESIZE *items;           /* 0x0 */
     int count;                  /* 0x4 */
+    int cap;                    /* 0x8 */
 } FRAMESIZES;
 
 typedef struct FRAMEDATA {

@@ -41,7 +41,34 @@ void deleteBuffer(void **buf) {
     MEM_free(0, buf);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_frame", insertBuffer_87F0C);
+int insertBuffer_87F0C(char *s, int len, FRAMESIZES *b) {
+    FRAMESIZE *p;
+    int v;
+    if (b->count >= b->cap) {
+        p = MEM_realloc(0, b->items, b->cap * 2 * sizeof(FRAMESIZE));
+        if (p == NULL) {
+            return -1;
+        }
+        b->cap = b->cap * 2;
+        b->items = p;
+    }
+    if (strchr(s, '*') != NULL) {
+        b->items[b->count].type = 'a';
+    } else if (strchr(s, '%') != NULL) {
+        b->items[b->count].type = 'p';
+    } else {
+        b->items[b->count].type = 'd';
+    }
+    v = atoi(s);
+    if (b->items[b->count].type == 'a' && v == 0) {
+        b->items[b->count].size = 1;
+    } else {
+        b->items[b->count].size = v;
+    }
+    b->items[b->count].x8 = 0;
+    b->count++;
+    return 0;
+}
 
 int splitString(char *s, char sep, void *out) {
     int i = 0;
@@ -433,7 +460,40 @@ void createFrameBorder(BOX *box, int type, int *x, int *y, int *w, int *h) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_frame", createFrameBorder_frameset);
+void createFrameBorder_frameset(BOX *box, int type, int *x, int *y, int *w, int *h) {
+    BOX *fs;
+    int idx;
+    int ncols;
+    int nrows;
+    int col;
+    int row;
+    fs = (BOX *)getFramesetBox(box->parent);
+    if (box == NULL) {
+        return;
+    }
+    idx = FSETD(box)->xA8;
+    ncols = FSETD(fs)->ncols;
+    nrows = FSETD(fs)->nrows;
+    if (ncols != 0) {
+        col = idx % ncols;
+        row = idx / ncols;
+        if (nrows != 0) {
+            if (row != 0) {
+                if (col == 0) {
+                    FSETD(box)->xAC = (int)createFrameBorderBox_hfull(fs, type, x, y, w, h, idx);
+                }
+            } else if (col != 0) {
+                FSETD(box)->xAC = (int)createFrameBorderBox_vfull(fs, type, x, y, w, h, idx);
+            }
+        } else if (idx != 0) {
+            FSETD(box)->xAC = (int)createFrameBorderBox_vfull(fs, type, x, y, w, h, idx);
+        }
+    } else if (nrows != 0) {
+        if (idx != 0) {
+            FSETD(box)->xAC = (int)createFrameBorderBox_hfull(fs, type, x, y, w, h, idx);
+        }
+    }
+}
 
 void drawFrameBorderLoop(BOX *box) {
     BOX *c;
