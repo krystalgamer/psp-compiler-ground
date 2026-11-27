@@ -61,7 +61,20 @@ MesValue mes_document_writeln(MesContext *ctx)
     return mes_document_write_inner(ctx, 1);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_document", mes_document_setAttribute);
+void mes_document_setAttribute(MesValue v, MesDocPriv *priv, DOMString *name)
+{
+    MesStrD *s;
+    DOMString ds;
+
+    if ((v & 3) == 3) {
+        s = (MesStrD *)(v & ~3);
+        ds.len = ds.size = s->len;
+        ds.str = MEM_malloc(0, s->len * 2);
+        memcpy(ds.str, s->str, s->len * 2);
+        Element_setAttribute(Util_HTMLDocument_getBody(priv->doc), name, &ds);
+        MEM_free(0, ds.str);
+    }
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
