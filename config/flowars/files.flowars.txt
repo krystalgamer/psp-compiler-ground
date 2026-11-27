@@ -1,0 +1,23 @@
+# Objects without DWARF: start address (vram), unit, compiler, source.
+# From tools/nodwarf.py (STT_FILE symbols), boundaries checked against psp184/spaceinvaders,
+# which links the same libgim/libgu/libwave revision (identical object sizes):
+# sceGimPictureAnimate (0x19CB4) opens gim_animate.c, gim_private.c follows gim_format.c's 0xC4 bytes.
+# gcc 3.3.3 crtstuff.c (CRT_BEGIN / CRT_END): crtbegin.o and crtend.o .text.
+0x00040 crtbegin        1.6.1           crtbegin.c
+0x18690 gim_callback    1.6.1.internal  gim_callback.c
+0x187C0 gim_picture     1.6.1.internal  gim_picture.c
+0x19CB4 gim_animate     1.6.1.internal  gim_animate.c
+0x1A1B8 gim_activate    1.6.1.internal  gim_activate.c
+0x1A714 load_bmp        1.6.1.internal  load_bmp.c
+0x1B16C load_tga        1.6.1.internal  load_tga.c
+0x1B72C load_tm2        1.6.1.internal  load_tm2.c
+0x1BC28 gim_format      1.6.1.internal  gim_format.c
+0x1BCEC gim_private     1.6.1.internal  gim_private.c
+0x1BD98 libgu           1.6.1.internal  libgu.c
+0x21E30 libwave         1.6.1.internal  libwave.c
+# Sony's psp-newlib memmove.o was built with -falign-loops=64: the linker aligns it to 64
+# bytes (memmove_align: nothing of its own, the gap after memchr.o) and the old assembler pads
+# its .text to a multiple of 64 bytes (memmove_pad: the rest of memmove.o's .text).
+0x2C2A8 memmove_align   1.6.1           newlib/libc/sys/psp/memmove_align.c
+0x2C5A8 memmove_pad     1.6.1           newlib/libc/sys/psp/memmove_pad.c
+0x2E67C crtend          1.6.1           crtend.c
