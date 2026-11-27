@@ -269,7 +269,48 @@ INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", D_0007DF98)
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", maingame_main);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", maingame_free);
+extern int game_model_load;
+int sound_stop1(void);
+void se_stop(void);
+void gmo_all_unload(void);
+void inv_particle_all_init(void);
+void sound_relece(void);
+void psp_edram_init(void);
+void psp_loopstart(void);
+void psp_loopend(void);
+void bg_free(void);
+void df_fade_start(int a, int b, int c, int d, int e);
+void dispeffect_init(void);
+int sound_stop(void);
+void maingame_free(void)
+{
+	int i;
+
+	game_model_load = 0;
+	sound_stop1();
+	sound_stop();
+	se_stop();
+	bg_free();
+	gmo_all_unload();
+	inv_particle_all_init();
+	if (gmain.ff28 >= 1 && gmain.ff28 <= 14)
+		sound_relece();
+	if (gmain.f108c == 1) {
+		for (i = 0; i < 16; i++)
+			gmo_file_unload(gmain.gmo_id[i]);
+	}
+	psp_edram_init();
+	dispeffect_init();
+	df_fade_start(0, 0, 0, 1, 1);
+	psp_loopstart();
+	psp_loopend();
+	psp_loopstart();
+	psp_loopend();
+	psp_loopstart();
+	psp_loopend();
+	psp_loopstart();
+	psp_loopend();
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", maingame_movie);
 
