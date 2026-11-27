@@ -33,7 +33,12 @@ unsigned short I3cRoot__Get_nGroup(void *arg0) {
     return M2C_FIELD(arg0, unsigned short *, 0x16);
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_parser_i3c", I3cRoot__GetGroupName);
+void *I3cRoot__GetGroupName(char *r, unsigned short i)
+{
+	if (i < *(unsigned short *)(r + 0x16))
+		return (*(void ***)(r + 0x1C))[i];
+	return 0;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_parser_i3c", I3cRoot__GetNodeIndexByName);
 

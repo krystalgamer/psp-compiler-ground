@@ -14,7 +14,16 @@ M2C_UNK I3dPicture__FlushCache(void *);             /* extern */
 M2C_UNK sceGimPictureDelete(int);                   /* extern */
 
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_cache_manager", I3dMemBlock__RemoveList);
+typedef struct MBLnk2 { struct MBk2 *next, *prev; } MBLnk2;
+typedef struct MBk2 { MBLnk2 l[1]; } MBk2;
+void I3dMemBlock__RemoveList(MBk2 *b, int i)
+{
+	MBk2 *n = b->l[i].next;
+	n->l[i].prev = b->l[i].prev;
+	b->l[i].prev->l[i].next = n;
+	b->l[i].prev = b;
+	b->l[i].next = b;
+}
 
 typedef struct MBLnk { struct MBk *next, *prev; } MBLnk;
 typedef struct MBk { MBLnk l[1]; } MBk;

@@ -123,7 +123,13 @@ int I3dRender__CloseTrashUca(void *arg0, int arg1) {
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_render", I3dRender__InitTexCache);
+int I3dCacheManager__PurgeAllCache();
+int I3dRender__InitTexCache(char *r)
+{
+	I3dCacheManager__PurgeAllCache(r);
+	I3dCacheManager__PurgeAllCache(r + 0x70);
+	return 0;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_render", I3dRender__JoinPacketEntry);
 

@@ -109,7 +109,13 @@ int I3dRenderStage__GetCurrentViewStatus(void *arg0) {
     return M2C_FIELD(arg0, int *, 0x834);
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_render_marker", I3dRenderStage__OpenPacket);
+int I3dSorter__OpenPacketAndClearState_ByUint32();
+int I3dRenderStage__OpenPacket(char *st, float z)
+{
+	union { float f; int i; } u;
+	u.f = z;
+	return I3dSorter__OpenPacketAndClearState_ByUint32(*(void **)(st + 0x818), u.i ^ ((u.i >> 31) | 0x80000000), 0);
+}
 
 int I3dSorter__OpenPacketAndClearState_ByUint32();
 int I3dRenderStage__OpenPacket_ByUint32(char *st, unsigned int n)
@@ -125,7 +131,13 @@ void I3dRenderStage__ClosePacket(void *arg0) {
     I3dSorter__ClosePacketAndClearState(M2C_FIELD(arg0, int *, 0x818));
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_render_marker", I3dRenderStage__OpenPacketUca);
+int I3dSorter__OpenPacketAndClearStateUca_ByUint32();
+int I3dRenderStage__OpenPacketUca(char *st, float z)
+{
+	union { float f; int i; } u;
+	u.f = z;
+	return I3dSorter__OpenPacketAndClearStateUca_ByUint32(*(void **)(st + 0x818), u.i ^ ((u.i >> 31) | 0x80000000), 0);
+}
 
 int I3dSorter__OpenPacketAndClearStateUca_ByUint32();
 int I3dRenderStage__OpenPacketUca_ByUint32(char *st, unsigned int n)
