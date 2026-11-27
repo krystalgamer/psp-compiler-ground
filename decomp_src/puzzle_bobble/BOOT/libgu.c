@@ -1013,8 +1013,6 @@ void sceGuClearDepth(unsigned int depth)
 	_ctx[__aw_list_mode].clear_depth = depth;
 }
 
-#ifdef NON_MATCHING
-/* Close: %hi(_ctx) is CSEd into a saved register (orig recomputes it in the fast-clear loop). */
 struct Vertex {
 	unsigned int color;
 	unsigned short x, y, z;
@@ -1029,11 +1027,11 @@ void sceGuClear(int flags)
 	int count;
 
 	if (FBuf.pixel_size == 3)
-		filter = (_ctx[__aw_list_mode].clear_color & 0xffffff) | (_ctx[__aw_list_mode].clear_stencil << 24);
+		filter = (_ctx[__aw_list_mode].clear_stencil << 24) | (_ctx[__aw_list_mode].clear_color & 0xffffff);
 	else if (FBuf.pixel_size == 1)
-		filter = (_ctx[__aw_list_mode].clear_color & 0xffffff) | (_ctx[__aw_list_mode].clear_stencil << 31);
+		filter = (_ctx[__aw_list_mode].clear_stencil << 31) | (_ctx[__aw_list_mode].clear_color & 0xffffff);
 	else if (FBuf.pixel_size == 2)
-		filter = (_ctx[__aw_list_mode].clear_color & 0xffffff) | (_ctx[__aw_list_mode].clear_stencil << 28);
+		filter = (_ctx[__aw_list_mode].clear_stencil << 28) | (_ctx[__aw_list_mode].clear_color & 0xffffff);
 	else if (FBuf.pixel_size == 0)
 		filter = _ctx[__aw_list_mode].clear_color & 0xffffff;
 	else
@@ -1044,7 +1042,6 @@ void sceGuClear(int flags)
 
 		count = 16;
 		vertices = (struct Vertex *)sceGuGetMemory(count * sizeof(struct Vertex));
-		context = &_ctx[__aw_list_mode];
 		for (i = 0; i < count; i++) {
 			struct Vertex *curr = &vertices[i];
 			int j = i / 2;
@@ -1053,7 +1050,7 @@ void sceGuClear(int flags)
 			curr->color = filter;
 			curr->x = (j + k) * 64;
 			curr->y = k * fb->height;
-			curr->z = context->clear_depth;
+			curr->z = _ctx[__aw_list_mode].clear_depth;
 		}
 	} else {
 		count = 2;
@@ -1071,9 +1068,6 @@ void sceGuClear(int flags)
 	sceGuDrawArray(6, 0x80011C, count, 0, vertices);
 	send_commandi(211, 0);
 }
-#else
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", sceGuClear);
-#endif
 
 void sceGuDrawBuffer(int psm, void *fbp, int frame_width)
 {
