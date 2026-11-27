@@ -163,7 +163,17 @@ int rt_time_get_base_diff(unsigned int *out)
     return rt_time_elapsed_timestamp(gBaseTimeStamp, out);
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_time", rt_time_elapsed_timestamp);
+int rt_time_calc_diff();
+int rt_time_elapsed_timestamp(void *start, void *out)
+{
+    unsigned int now[2];
+    int r;
+    if (start == NULL) return 2;
+    if (out == NULL) return 2;
+    r = rt_time_get_time_stamp(now);
+    if (r != 0) return r;
+    return rt_time_calc_diff(start, now, out);
+}
 
 void rt_time_sleep_usecs(void) {
     rt_time_sleep_usecs_platform();

@@ -8,7 +8,6 @@ void InitializePRNG(void);
 void KM_GenerateRSAKeyPair(int arg0, int arg1);
 M2C_UNK rt_crypt_resolve_interface();               /* extern */
 M2C_UNK setNewSeed(M2C_UNK);                        /* extern */
-M2C_UNK RSAGenerateKeyPair(int, int);               /* extern */
 extern unsigned char D_00132074;
 
 int NetUseCrypt(void) {
@@ -55,7 +54,16 @@ void KM_GenerateRSAKeyPair(int arg0, int arg1) {
     RSAGenerateKeyPair(arg0, arg1);
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_crypt/src/rt_crypt", RSAGenerateKeyPair);
+void *memcpy(void *, const void *, unsigned long);
+void lintGenerateKeyPair();
+void RSAGenerateKeyPair(void *pub, void *priv)
+{
+    unsigned int a[128];
+    unsigned int b[128];
+    lintGenerateKeyPair(a, b, 0x11, 0x200);
+    memcpy(pub, a, 0x40);
+    memcpy(priv, b, 0x40);
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_crypt/src/rt_crypt", rcsid_10DA20);
 
@@ -70,7 +78,16 @@ M2C_UNK *KM_GetVersionStringPtr(void) {
     return "rt_crypt version: 2.10.2";
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_crypt/src/rt_crypt", KM_SHA1);
+void SHAInit();
+void SHAUpdate();
+void SHAFinal();
+void KM_SHA1(void *data, int len, void *out, int outlen)
+{
+    char ctx[0x60];
+    SHAInit(ctx);
+    SHAUpdate(ctx, data, len);
+    SHAFinal(ctx, out, outlen);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_crypt/src/rt_crypt", KM_Salted_SHA1);
 

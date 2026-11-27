@@ -13,7 +13,24 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_socket/src/psp/rt_sock
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_socket/src/psp/rt_socket_platform", rt_socket_get_err_platform);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_socket/src/psp/rt_socket_platform", rt_socket_initialize_stack_platform);
+int rt_time_start();
+void rt_time_elapsed();
+int rt_socket_is_interface_up();
+int rt_socket_initialize_stack_platform(void)
+{
+    char start[16];
+    int up;
+    unsigned int el;
+    int r;
+    rt_time_start(start);
+    for (;;) {
+        r = rt_socket_is_interface_up(&up);
+        if (r != 0) return r;
+        if (up != 0) return 0;
+        rt_time_elapsed(start, &el);
+        if (el > 95000) return 0xCF0C;
+    }
+}
 
 int rt_socket_cleanup_stack_platform(void) {
     return 0;

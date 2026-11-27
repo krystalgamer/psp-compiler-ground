@@ -61,7 +61,26 @@ int NetGetBuildTimeStamp(signed char *arg0) {
     return var_v1;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/Dme", NetSetDefaultInitializeParams);
+void rt_time_get_gmtime();
+void seedMT();
+int NetSetDefaultInitializeParams(int *p)
+{
+    int tm[12];
+    int ret = 0x17;
+    if (p != NULL) {
+        memset(p, 0, 0x6C);
+        rt_time_get_gmtime(tm);
+        seedMT(tm[8]);
+        ret = 0;
+        p[3] = -1;
+        p[0] = 1;
+        p[0x60 / 4] = 0;
+        p[0x5C / 4] = 0;
+        p[1] = 0;
+        p[2] = 1;
+    }
+    return ret;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/Dme", NetInitialize);
 

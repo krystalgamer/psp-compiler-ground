@@ -348,7 +348,23 @@ int rt_socket_send_data_connected_udp(int s, void *buf, int len, int *got)
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_socket/src/rt_socket", in_cksum);
+unsigned short in_cksum(unsigned short *p, int len)
+{
+    int sum = 0;
+    unsigned short odd;
+    while (len > 1) {
+        sum += *p++;
+        len -= 2;
+    }
+    if (len == 1) {
+        odd = 0;
+        *(unsigned char *)&odd = *(unsigned char *)p;
+        sum += odd;
+    }
+    sum = (sum >> 16) + (sum & 0xFFFF);
+    sum += sum >> 16;
+    return ~sum;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_socket/src/rt_socket", rt_socket_create_icmp_echo);
 
