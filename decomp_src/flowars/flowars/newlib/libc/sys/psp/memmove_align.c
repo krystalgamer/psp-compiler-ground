@@ -1,3 +1,2 @@
-#include "common.h"
-
-INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/newlib/libc/sys/psp/memmove_align", func_0002C2A8);
+/* Nothing of its own: the linker's alignment of memmove.o (64 bytes, -falign-loops=64)
+   after memchr.o. */

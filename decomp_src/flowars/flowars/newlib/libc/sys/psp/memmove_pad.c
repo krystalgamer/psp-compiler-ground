@@ -1,3 +1,2 @@
-#include "common.h"
-
-INCLUDE_ASM("tmp/asm/flowars/flowars/nonmatchings/newlib/libc/sys/psp/memmove_pad", func_0002C5A8);
+/* The rest of memmove.o's .text: its alignment padding to 64 bytes (-falign-loops=64),
+   which the old assembler adds to the C object itself. */

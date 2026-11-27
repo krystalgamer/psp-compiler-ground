@@ -1,11 +1,9 @@
 /* Sony's psp-newlib libc/sys/psp/memmove.c (not in newlib 1.12.0) */
-/* cflags: -O2 -fno-builtin */
-/* The original object was built with -falign-loops=64: with that flag (and
-   without the NOPS() below) the same C compiles identically, the object
-   being 64-byte aligned.  The cflags line cannot carry "=64" and the module
-   splits keep that alignment padding as asm around this unit, so the nops
-   gcc's four loop alignments produce are written out here instead. */
-#define NOPS(n) __asm__ (".rept " #n "\n\tnop\n\t.endr")
+/* cflags: -O2 -fno-builtin -falign-loops=64 */
+/* text-align: 64 */
+/* Built with -falign-loops=64: the object is 64-byte aligned (the gap after memchr.o is the
+   linker's, unit memmove_align) and the old assembler pads its .text to a multiple of 64 bytes
+   (unit memmove_pad). */
 #include "common.h"
 #include <stddef.h>
 
@@ -80,7 +78,6 @@ static __inline__ __attribute__((always_inline)) void *do_rcopy(void *dst0, cons
 	}
 copy_with_byte:
 	if (len > 0) {
-		NOPS(10);
 		do {
 			*--dst = *--src;
 			len--;
@@ -118,7 +115,6 @@ static __inline__ __attribute__((always_inline)) void *do_copy(void *dst0, const
 		wsrc = (const long *)src;
 		len &= 15;
 		if (lc) {
-			NOPS(15);
 			do {
 				long tmp0, tmp1, tmp2, tmp3;
 
@@ -137,7 +133,6 @@ static __inline__ __attribute__((always_inline)) void *do_copy(void *dst0, const
 		lc = (size_t)len >> 2;
 		len &= 3;
 		if (lc) {
-			NOPS(1);
 			do {
 				*wdst++ = *wsrc++;
 			} while (--lc);
@@ -163,7 +158,6 @@ static __inline__ __attribute__((always_inline)) void *do_copy(void *dst0, const
 	}
 copy_with_byte:
 	if (len > 0) {
-		NOPS(6);
 		do {
 			*dst++ = *src++;
 			len--;
