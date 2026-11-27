@@ -79,9 +79,38 @@ void sceGmoModelExportPicture( const char *filename, SceGimPicture *picture )
  g_set_picture( filename, picture ) ;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_callback", open_cluster);
+static void *open_cluster( int type, size_t size, size_t align )
+{
+	close_cluster( type ) ;
+	if ( size == 0 ) return 0 ;
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_callback", close_cluster);
+	int mask = align - 1 ;
+	if ( mask < 3 || ( mask & align ) != 0 ) mask = 3 ;
+
+	size = sizeof( Cluster ) + size + mask ;
+	size = ( size + mask ) & ~mask ;
+	Cluster *curr = (Cluster *)g_alloc_memory[ type ]( size ) ;
+	if ( curr == 0 ) return 0 ;
+
+	curr->m_count = 0 ;
+	curr->m_mask = mask ;
+	curr->m_end = (char *)curr + size ;
+	unsigned int top = (unsigned int)curr + sizeof( Cluster ) ;
+	curr->m_top = (char *)( ( top + mask ) & ~mask ) ;
+
+	curr->m_next = g_cluster_list[ type ] ;
+	g_cluster_list[ type ] = curr ;
+	g_cluster_curr[ type ] = curr ;
+	return curr ;
+}
+
+static size_t close_cluster( int type )
+{
+	Cluster *curr = g_cluster_curr[ type ] ;
+	if ( curr == 0 ) return 0 ;
+	g_cluster_curr[ type ] = 0 ;
+	return curr->m_top - (char *)curr ;
+}
 
 extern __typeof__(g_alloc_memory) g_alloc_memory_836CC;
 #define g_alloc_memory g_alloc_memory_836CC
@@ -107,6 +136,21 @@ void *alloc_from_cluster( int type, size_t size )
 #undef g_alloc_memory
 #undef g_cluster_curr
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_callback", free_from_cluster);
+static void free_from_cluster( int type, void *addr )
+{
+	if ( addr == 0 ) return ;
+	Cluster *curr = g_cluster_list[ type ] ;
+	while ( curr != 0 ) {
+		if ( addr > (void *)curr && addr < (void *)curr->m_end ) {
+			if ( -- curr->m_count == 0 ) {
+				g_cluster_list[ type ] = curr->m_next ;
+				g_free_memory[ type ]( curr ) ;
+			}
+			return ;
+		}
+		curr = curr->m_next ;
+	}
+	g_free_memory[ type ]( addr ) ;
+}
 
 INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_callback", __psp_libinfo___7EC2C);
