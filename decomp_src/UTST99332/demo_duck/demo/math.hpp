@@ -220,7 +220,7 @@ public:
 };
 class VirtualKeyFrameSequence {
 public:
-    virtual ~VirtualKeyFrameSequence() {}
+    virtual ~VirtualKeyFrameSequence();
     virtual bool empty() const = 0;
     virtual int size() const = 0;
     virtual int sizeLessClosingKey() const = 0;
@@ -243,6 +243,16 @@ public:
     virtual void setTangentType(int, keyframe_tangent::Type, int) = 0;
     virtual keyframe_tangent::Type getTangentType(int, keyframe_tangent::Side) const = 0;
 };
+/* inline; interp_Path's object holds its out-of-line copies (INTERP_LINKONCE_VKFS: emitted as .gnu.linkonce.t there) */
+#ifdef INTERP_LINKONCE_VKFS
+_Pragma("implementation \"interp_vkfs\"") _Pragma("interface \"interp_vkfs\"")
+#endif
+inline VirtualKeyFrameSequence::~VirtualKeyFrameSequence()
+{
+}
+#ifdef INTERP_LINKONCE_VKFS
+_Pragma("interface")
+#endif
 /* members out of class (their instances stay asm where they are) */
 template<class T> class KeyFrameSequenceBase : public VirtualKeyFrameSequence {
 public:
@@ -309,7 +319,7 @@ public:
 template<class T> class KeyFrameSequence : public KeyFrameSequenceBase<T> {
 public:
     KeyFrameSequence() {}
-    virtual ~KeyFrameSequence() INTERP_NOINLINE;
+    virtual ~KeyFrameSequence();
     virtual void dump(const char *) const INTERP_NOINLINE;
     virtual void calc_tangent(int) INTERP_NOINLINE;
     virtual T calc_gradient(T, T, float) const INTERP_NOINLINE;
@@ -319,7 +329,7 @@ public:
 template<class T> class KeyFrameSequenceA : public KeyFrameSequence<T> {
 public:
     KeyFrameSequenceA() {}
-    virtual ~KeyFrameSequenceA() INTERP_NOINLINE;
+    virtual ~KeyFrameSequenceA();
     virtual T op(T, T) INTERP_NOINLINE;
     virtual T op_inv(T, T) INTERP_NOINLINE;
     virtual T op_identity() const INTERP_NOINLINE;

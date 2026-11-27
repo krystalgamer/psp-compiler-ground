@@ -2,6 +2,7 @@
 /* cflags: -O3 -fno-exceptions */
 #undef __EXCEPTIONS
 #include "cxx/defer_asm.h"
+#define INTERP_LINKONCE_VKFS
 #include "../main.hpp"
 
 /* A template instance kept as asm: explicitly instantiated wrapper (its own code goes to a
@@ -393,6 +394,18 @@ template<class T> interp::KeyFrame<T>::KeyFrame() : _time(0), _value(0)
     _closing = false;
     _tangent[0] = 0;
     _tangent[1] = 0;
+}
+
+template<class T> inline interp::KeyFrameSequenceBase<T>::~KeyFrameSequenceBase()
+{
+}
+
+template<class T> inline interp::KeyFrameSequence<T>::~KeyFrameSequence()
+{
+}
+
+template<class T> inline interp::KeyFrameSequenceA<T>::~KeyFrameSequenceA()
+{
 }
 
 template<class T> bool interp::KeyFrame<T>::isClosingKey() const
@@ -1041,6 +1054,8 @@ void interp_Path_instances()
     ((interp::KeyFrameSequenceBase<float> *)0)->interp::KeyFrameSequenceBase<float>::makeConsistantWith((const interp::VirtualKeyFrameSequence *)0);
     ((interp::KeyFrameSequenceBase<math::quaternion> *)0)->interp::KeyFrameSequenceBase<math::quaternion>::makeConsistantWith((const interp::VirtualKeyFrameSequence *)0);
     *(VKf *)0 = *(const VKf *)0;
+    ((interp::KeyFrameSequenceBase<float> *)0)->interp::KeyFrameSequenceBase<float>::~KeyFrameSequenceBase();
+    ((interp::KeyFrameSequenceBase<math::quaternion> *)0)->interp::KeyFrameSequenceBase<math::quaternion>::~KeyFrameSequenceBase();
     *(VKq *)0 = *(const VKq *)0;
 }
 
@@ -1146,23 +1161,23 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/interp_Path", fu
 
 
 
-INST_INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/interp_Path", _ZN6interp23VirtualKeyFrameSequenceD1Ev, 41)
 
-INST_INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/interp_Path", _ZN6interp23VirtualKeyFrameSequenceD0Ev, 41)
+
+
 
 INST_INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/interp_Path", _ZN6interp20KeyFrameSequenceBaseIN4math10quaternionEED2Ev, 59)
 
-INST_INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/interp_Path", _ZN6interp17KeyFrameSequenceAIfED1Ev, 38)
 
-INST_INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/interp_Path", _ZN6interp20KeyFrameSequenceBaseIN4math10quaternionEED1Ev, 59)
 
-INST_INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/interp_Path", _ZN6interp20KeyFrameSequenceBaseIN4math10quaternionEED0Ev, 59)
 
-INST_INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/interp_Path", _ZN6interp20KeyFrameSequenceBaseIfED1Ev, 41)
 
-INST_INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/interp_Path", _ZN6interp20KeyFrameSequenceBaseIfED0Ev, 41)
 
-INST_INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/interp_Path", _ZN6interp17KeyFrameSequenceAIfED0Ev, 38)
+
+
+
+
+
+
 
 
 
