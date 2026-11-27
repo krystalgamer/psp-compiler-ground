@@ -58,6 +58,13 @@ void initTextAreaContent(BOX *box, void *node);
 void initTextAreaBoxSize(BOX *box, int cols, int rows);
 extern unsigned char _DOMcols;
 extern unsigned char _DOMrows;
+typedef struct OptN { struct OptN *next; struct OptN *prev; char *text; char *value; void *node; int selected; int x18; } OptN;
+typedef struct { int pad[2]; OptN *opts; void *sel; } SelI;
+char *getTextFromDomTree(void *node);
+void *MEM_calloc(int pool, unsigned int size);
+extern unsigned char _DOMvalue;
+extern unsigned char _DOMselected;
+extern unsigned char _DOMmultiple;
 int getTabindex(void *node) {
     char *s;
     s16 n = 0;
@@ -234,7 +241,104 @@ BOX *html_OPTION(void *node, BOX *parent, BOX *prev) {
     return html_OPTION_sub(node, parent, prev);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_html_form", html_OPTION_after);
+void html_OPTION_after(void *node, BOX *box) {
+    BOX *b;
+    SelI *si;
+    OptN *o;
+    OptN *n;
+    OptN *p;
+    int found;
+
+    for (b = box->parent; b != NULL; b = b->parent) {
+        if (b->content == 0x12) {
+            break;
+        }
+    }
+    if (b == NULL) {
+        return;
+    }
+    si = (SelI *)b->geom;
+    o = si->opts;
+    if (o != NULL) {
+        while (o->next != NULL) {
+            o = o->next;
+        }
+        if (o->node == node) {
+            if (si->opts == o) {
+                si->opts = NULL;
+            } else {
+                o->prev->next = NULL;
+            }
+            if (o->text != NULL) {
+                MEM_free(0, (int)o->text);
+            }
+            if (o->value != NULL) {
+                MEM_free(0, (int)o->value);
+            }
+            MEM_free(0, (int)o);
+        }
+    }
+    n = MEM_malloc(0, sizeof(OptN));
+    if (n == NULL) {
+        return;
+    }
+    n->next = NULL;
+    n->prev = NULL;
+    n->text = NULL;
+    n->value = NULL;
+    n->selected = 0;
+    n->x18 = 0;
+    n->node = node;
+    n->text = getTextFromDomTree(node);
+    if (n->text == NULL) {
+        n->text = MEM_calloc(0, 1);
+        if (n->text == NULL) {
+            goto fail;
+        }
+    }
+    n->value = getDOMAttributeValue(n->node, &_DOMvalue);
+    if (n->value == NULL && !Element_hasAttribute(n->node, &_DOMvalue)) {
+        n->value = getTextFromDomTree(node);
+        if (n->value == NULL) {
+            n->value = MEM_calloc(0, 1);
+            if (n->value == NULL) {
+                MEM_free(0, (int)n->text);
+fail:
+                MEM_free(0, (int)n);
+                return;
+            }
+        }
+    }
+    if (si->sel == NULL && Element_hasAttribute(n->node, &_DOMselected)) {
+        if (!Element_hasAttribute(M2C_FIELD(b, void **, 0x28), &_DOMmultiple)) {
+            found = 0;
+            for (o = si->opts; o != NULL; o = o->next) {
+                if (o->selected) {
+                    found = 1;
+                    break;
+                }
+            }
+            if (!found) {
+                n->selected = 1;
+            }
+        } else {
+            n->selected = 1;
+        }
+    }
+    if (si->opts == NULL) {
+        si->opts = n;
+    } else {
+        p = si->opts;
+        for (;;) {
+            if (p->next == NULL) {
+                break;
+            }
+            p = p->next;
+        }
+        p->next = n;
+        n->prev = p;
+    }
+}
 
 BOX *html_TEXTAREA(void *node, BOX *parent, BOX *prev) {
     BOX *box;
