@@ -54,6 +54,9 @@ rodata 0x17B1E4 -
 bss 0x19E8E0 gcc-3.3.3/gcc/unwind-dw2
 bss 0x19E998 gcc-3.3.3/gcc/unwind-dw2-fde
 bss 0x19E9A8 -
+# crt0, menu (C): their .rodata (duck: crt0 runs up to WaterPatch, menu up to libgum)
+rodata 0x15DAB0 crt0
+rodata 0x1778C8 menu
 # kernel_bridge (Sony's newlib glue, C): its "UserSbrk"
 rodata 0x17B2E4 kernel_bridge
 rodata 0x17B2F0 -

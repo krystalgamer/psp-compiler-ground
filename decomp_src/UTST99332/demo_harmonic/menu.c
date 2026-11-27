@@ -14,8 +14,6 @@ typedef struct SceKernelLoadExecParam SceKernelLoadExecParam;
 
 
 
-static int check_exit(SceSize arglen, void *arg);
-void menuInit(void);
 void menuTerm(int cat, int num);
 
 
@@ -24,11 +22,39 @@ int ExitFunction(int count, int arg_impose, void *arg_self) {
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/menu", check_exit);
+void check_exit(unsigned int arglen, void *arg) {
+    sceKernelRegisterExitCallback(sceKernelCreateCallback("exit", ExitFunction, 0));
+loop_1:
+    sceKernelDelayThreadCB(0x2710);
+    goto loop_1;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/menu", menuInit);
+void menuInit(void) {
+    int temp_v0;
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/menu", menuTerm);
+    temp_v0 = sceKernelCreateThread("CheckExitGame", check_exit, 0x10, 0x1000, 0x200000, 0);
+    if (temp_v0 >= 0) {
+        sceKernelStartThread(temp_v0, 0, 0);
+        sceIoAssign("disc0:", "umd0:", 0, 0, 0, 0);
+    }
+}
+
+int sprintf(char *, const char *, ...);
+int sceKernelLoadExec(const char *file, SceKernelLoadExecParam *param);
+
+void menuTerm(int cat, int num)
+{
+	SceKernelLoadExecParam param;
+	char arg[32];
+	int len;
+
+	len = sprintf(arg, "%d%c%d%c", cat, 0, num, 0);
+	param.size = sizeof(param);
+	param.args = len;
+	param.argp = arg;
+	param.key = NULL;
+	sceKernelLoadExec("disc0:/PSP_GAME/USRDIR/PRX/menu.prx", &param);
+}
 
 int menuGetDevice(void) {
     return 0;

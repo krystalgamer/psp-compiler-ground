@@ -383,7 +383,8 @@ segments:
       - { start: 0x14F594, type: rodata, name: eh_frame, linker_section: .eh_frame }
       - { start: 0x15717C, type: rodata, name: gcc_except_table, linker_section: .gcc_except_table }
       - { start: 0x159838, type: prxpad, order: .rodata }
-      - [0x159840, rodata, asm/rodata_1597C0]
+      - [0x159840, .rodata, crt0]
+      - [0x159850, rodata, asm/rodata_1597D0]
       - [0x1600F4, .rodata, main_objs/psp_VertexArrayEdit]
       - [0x1601AC, rodata, asm/rodata_16012C]
       - [0x160D2C, .rodata, main_objs/vector_font_Console]
@@ -435,6 +436,7 @@ segments:
       - [0x172FD0, rodata, asm/rodata_172F50]
       - [0x1733D0, .rodata, main_objs/FloatImage]
       - [0x1733F4, rodata, asm/rodata_173374]
+      - [0x174A20, .rodata, menu]
       - [0x174A78, .rodata, libgum]
       - [0x174AA8, .rodata, libgu]
       - [0x175318, .rodata, newlib/libm/math/sf_atan]

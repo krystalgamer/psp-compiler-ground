@@ -50,6 +50,10 @@ rodata 0x177EB4 -
 bss 0x19B460 gcc-3.3.3/gcc/unwind-dw2
 bss 0x19B518 gcc-3.3.3/gcc/unwind-dw2-fde
 bss 0x19B528 -
+# crt0, menu (C): their .rodata
+rodata 0x1597C0 crt0
+rodata 0x1597D0 -
+rodata 0x1749A0 menu
 # kernel_bridge (Sony's newlib glue, C): its "UserSbrk"
 rodata 0x177FB4 kernel_bridge
 rodata 0x177FC0 -
