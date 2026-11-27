@@ -4,6 +4,15 @@
 #include "cxx/defer_asm.h"
 #include "../main.hpp"
 
+extern "C" {
+extern const float D_00163718, D_0016371C;
+extern const double D_00163720, D_00163728;
+void sceGumOrtho(float, float, float, float, float, float);
+void sceGumPerspective(float, float, float, float);
+void sceGumLookAt(math::vector_xyz *, math::vector_xyz *, math::vector_xyz *);
+void sceGumSetCurMatrix(void);
+}
+
 extern "C" void gluBeginCurve(void) {
 }
 
@@ -77,7 +86,20 @@ extern "C" void gluGetTessProperty(void) {
 extern "C" void gluLoadSamplingMatrices(void) {
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/gluBeginCurve", gluLookAt);
+extern "C" void gluLookAt(double ex, double ey, double ez, double cx, double cy, double cz, double ux, double uy, double uz)
+{
+    math::vector_xyz eye, center, up;
+    eye.x = ex;
+    eye.y = ey;
+    eye.z = ez;
+    center.x = cx;
+    center.y = cy;
+    center.z = cz;
+    up.x = ux;
+    up.y = uy;
+    up.z = uz;
+    sceGumLookAt(&eye, &center, &up);
+}
 
 extern "C" int gluNewNurbsRenderer(void)
 {
@@ -109,12 +131,20 @@ extern "C" void gluNurbsProperty(void) {
 extern "C" void gluNurbsSurface(void) {
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/gluBeginCurve", gluOrtho2D);
+extern "C" void gluOrtho2D(double left, double right, double bottom, double top)
+{
+    sceGumOrtho(left, right, bottom, top, D_00163718, D_0016371C);
+    sceGumSetCurMatrix();
+}
 
 extern "C" void gluPartialDisk(void) {
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/gluBeginCurve", gluPerspective);
+extern "C" void gluPerspective(double fovy, double aspect, double zNear, double zFar)
+{
+    sceGumPerspective(fovy * D_00163720 / D_00163728, aspect, zNear, zFar);
+    sceGumSetCurMatrix();
+}
 
 extern "C" void gluPickMatrix(void) {
 }
