@@ -30,6 +30,12 @@
 1.8.4.internal  1.8.4   mixed:-fno-merge-constants as:-mulsw
 1.9.2           1.9.2   -mext newlib:locfix as:-mulsw
 1.9.2.internal  1.9.2   -mext as:-mulsw
+# 1.11.0 (gcc-3.3.6, navi's libraries): 1.9.2 with the VFPU vector registers
+# no longer fixed (FINDINGS.md); its newlib libm is a locfix build too.  The
+# newer internal compilers are unreconstructed: nearest is 1.11.0.
+1.11.0          1.11.0  -mext newlib:locfix as:-mulsw
+1.12.1.internal 1.11.0  -mext as:-mulsw
+1.13.0.internal 1.11.0  -mext as:-mulsw
 # Per-module additions (the game's own build, not the compiler's):
 # spaceinvaders' release 1.6.1 objects link their .rodata/.rodata.cst4/.rodata.cst8 in
 # first-use order (5 units contradict -fno-merge-constants); UTST99261's 1.6.1 units don't.

@@ -24,7 +24,8 @@ T = ROOT / "tmp" / "toolchains" / "bin"
 # what each cc1's psp-gcc driver adds (cc1 options, psp-as options)
 DRIVER = {"1.5.1": ("-mno-ulsw", ""), "1.3.1-orig": ("-mno-ulsw", ""),
           "1.6.1": ("", "-mulsw"), "1.7.1-orig": ("", "-mulsw"),
-          "1.8.3": ("", "-mulsw"), "1.8.4": ("", "-mulsw"), "1.9.2": ("-mext", "-mulsw")}
+          "1.8.3": ("", "-mulsw"), "1.8.4": ("", "-mulsw"), "1.9.2": ("-mext", "-mulsw"),
+          "1.11.0": ("-mext", "-mulsw")}
 
 
 def compile_c(src, cc1, flags, out, incs=(), defs=()):
