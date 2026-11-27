@@ -7,6 +7,7 @@ extern const float D_0015E748;
 #define MATH_IDENTITY_ONE D_0015E748
 #define DEMO_TEMPLATE_DEFS
 #define DEMO_LINKONCE_data_owner 1
+#define DEMO_LINKONCE_CmdLine 1
 #include "main.hpp"
 
 /* this object's .gnu.linkonce.t sections in the original's order */
@@ -304,9 +305,18 @@ inline sh::Args::Env::Type sh::Args::Env::GetEnvType(std::string s)
 }
 SGL_LINKONCE_END
 
+/* asm (near-misses: defArg inlines push_back, _M_insert_aux calls ~Option; see tmp/cxx/drafts/main/) */
+extern template void std::vector<common::CmdLine::Option>::_M_insert_aux(std::vector<common::CmdLine::Option>::iterator,
+                                                                         const common::CmdLine::Option &);
 /* asm: the basic_string<char *> range constructor's .s also holds _S_construct<char *> */
 extern template std::string::basic_string(char *, char *, const std::allocator<char> &);
 extern template char *std::string::_S_construct(char *, char *, const std::allocator<char> &, std::forward_iterator_tag);
+
+/* out-of-line copies of inline library members (address taken in a discarded section) */
+void (std::vector<std::string>::*main_ref_push_back_s)(const std::string &) __attribute__((section(".discard.refs"))) =
+    &std::vector<std::string>::push_back;
+void (std::vector<common::CmdLine::Option>::*main_ref_push_back_o)(const common::CmdLine::Option &)
+    __attribute__((section(".discard.refs"))) = &std::vector<common::CmdLine::Option>::push_back;
 
 /* out-of-line inline members / instances that stay asm */
 #undef INCLUDE_ASM
@@ -334,6 +344,8 @@ extern "C" void main_instance_refs(common::handle<scene::Node> &n, common::handl
     common::handle<scene::Texture> d(n);
     common::handle<scene::Switch> e(n);
     common::handle<scene::Object> f;
+    ((scene::Graph::NodeMap *)0)->find(*(const std::string *)0);
+    ((scene::Graph::NodeMultiMap *)0)->find(*(const std::string *)0);
     std::ostringstream os;
     os.str();
     /* the first function that inlines streambuf::_M_out_cur_move is the only one (cc1plus 3.3): the original
@@ -349,36 +361,18 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZN7TestAppD0Ev);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZN7TestAppD1Ev);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZNSt6vectorISsSaISsEE9push_backERKSs);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZNSt6vectorIN6common7CmdLine6OptionESaIS2_EE9push_backERKS2_);
-
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZN5scene5Group6searchIS0_EEN6common6handleIT_EERKSsb);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZN5scene5Graph7newNodeINS_6SwitchEEEN6common6handleIT_EESsb);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZN5scene5Graph13getMappedNodeINS_7TextureEEEN6common6handleIT_EERKSs);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZNSt6vectorIN6common7CmdLine6OptionESaIS2_EE13_M_insert_auxEN9__gnu_cxx17__normal_iteratorIPS2_S4_EERKS2_);
-
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZN5scene5Graph13getMappedNodeINS_6SwitchEEEN6common6handleIT_EERKSs);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZNSt8_Rb_treeIKSsSt4pairIS0_N6common6handleIN5scene4NodeEEEESt10_Select1stIS7_ESt4lessIS0_ESaIS7_EE4findERS0_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZNSt8_Rb_treeIKSsSt4pairIS0_N6common6handleIN5scene4NodeEEEESt10_Select1stIS7_ENS2_7LessStrESaIS7_EE4findERS0_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZSt24__uninitialized_copy_auxIN9__gnu_cxx17__normal_iteratorIPN6common7CmdLine6OptionESt6vectorIS4_SaIS4_EEEES9_ET0_T_SB_SA_12__false_type);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZNSsC1IPcEET_S1_RKSaIcE);
 CONT_INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", func_0000AB74, _ZNSsC1IPcEET_S1_RKSaIcE);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZN6common7CmdLine6OptionD1Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZN6common7CmdLine6OptionC1ESsjPKc);
-
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZN6common7CmdLine5TokenERSt6vectorISsSaISsEESs);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZN6common7CmdLine6defArgESsjPKc);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZN3psp11DisplayList6finishEb);
 
@@ -387,3 +381,11 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZN7TestAppC1EN2sh4
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZN7TestApp4turnEf);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZSt4findIN9__gnu_cxx17__normal_iteratorIPKSsSt6vectorISsSaISsEEEEPKcET_SA_SA_RKT0_St26random_access_iterator_tag);
+
+INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZNSt6vectorIN6common7CmdLine6OptionESaIS2_EE13_M_insert_auxEN9__gnu_cxx17__normal_iteratorIPS2_S4_EERKS2_);
+
+INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZSt24__uninitialized_copy_auxIN9__gnu_cxx17__normal_iteratorIPN6common7CmdLine6OptionESt6vectorIS4_SaIS4_EEEES9_ET0_T_SB_SA_12__false_type);
+
+INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZN6common7CmdLine6OptionD1Ev);
+
+INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZN6common7CmdLine6defArgESsjPKc);

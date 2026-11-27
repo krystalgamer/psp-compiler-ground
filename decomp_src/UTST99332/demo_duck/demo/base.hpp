@@ -824,11 +824,11 @@ class FileDump {
 public:
     FileDump(unsigned int);
     virtual ~FileDump();
+    virtual int load(const char *);     /* vtable: D1, D0, load, save (textures_internal::Bmp/Tga override load) */
+    virtual int save(const char *);
     void reference_owned_data();
     void setArray(const unsigned char *, unsigned int);
     void failed(const char *, const char *, const char *);
-    int save(const char *);
-    int load(const char *);
     void binary();
     void text();
     void blocking(bool);
