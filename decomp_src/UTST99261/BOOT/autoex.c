@@ -54,6 +54,9 @@ typedef struct AEKey {
     AEMac b;
     char key[4];
 } AEKey;
+typedef struct AEWep { int type; int len; char key[32]; } AEWep;
+typedef struct AEProfile { unsigned char x0[0x100]; char ssid[32]; unsigned char x120[0xC]; int f12C; int f130; unsigned char x134[0x28]; AEWep wep[4]; char x1FC[0x48]; unsigned char x244[0x10]; } AEProfile;
+extern AEProfile AutoProfile;
 int SendFrameViaInterface(int s, void *to, void *info, void *buf, int len)
 {
     int r = sceNetInetSendto(s, buf, len, 0, to, 16);
@@ -176,7 +179,51 @@ unsigned char *SetElementData(unsigned char *p, int type, void *data, int len)
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/autoex", SetSingleElement);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/autoex", IsSearchCommand);
+int IsSearchCommand(unsigned char *frame, int *out)
+{
+    int type;
+    int len;
+    unsigned char *p;
+    int etype;
+    int elen;
+    unsigned char *end;
+    unsigned char *e;
+    int minor = 0;
+    int major = 0;
+    int dual = 0;
+    int ret = 0;
+
+    p = GetFrameData(frame, &type, &len);
+    if (p != 0 && type == 1) {
+        end = p + len;
+        p += 8;
+        while ((e = GetElementData(&p, end, &etype, &elen)) != 0) {
+            switch (etype) {
+            case 1:
+                major = AE_NTOHS(*(unsigned short *)e);
+                break;
+            case 5:
+                dual = AE_NTOHS(*(unsigned short *)e);
+                break;
+            case 2:
+                minor = AE_NTOHS(*(unsigned short *)e);
+                break;
+            }
+        }
+        if (major != 1 || minor != 1) {
+            if (bDebug)
+                printf("AUTOCFG:Error Version Major=%d Minor=%d\n", major, minor);
+            ret = 0;
+        } else {
+            if (dual > 0)
+                *out = 1;
+            else
+                *out = 0;
+            ret = 1;
+        }
+    }
+    return ret;
+}
 
 int GetCommandElement(unsigned char *frame, int cmd, unsigned char *out, unsigned char *key)
 {
@@ -255,7 +302,64 @@ int GetMacEncKey(AEKey *out)
     return 1;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/autoex", GetWLanSetElement);
+int GetWLanSetElement(AEFrame *f)
+{
+    unsigned char *p;
+    int type;
+    int len;
+    unsigned char *end;
+    unsigned char *e;
+    int found = 0;
+    int i;
+    int v;
+    char *d;
+
+    p = (unsigned char *)f + 8;
+    end = p + AE_NTOHS(f->len);
+    while ((e = GetElementData(&p, end, &type, &len)) != 0) {
+        switch (type) {
+        case 0x201:
+            memset(AutoProfile.ssid, 0, 32);
+            found = 1;
+            memcpy(AutoProfile.ssid, e, len);
+            break;
+        case 0x202:
+            AutoProfile.f12C = AE_NTOHS(*(unsigned short *)e);
+            break;
+        case 0x203:
+            v = AE_NTOHS(*(unsigned short *)e);
+            for (i = 0; i < 4; i++)
+                AutoProfile.wep[i].type = v;
+            break;
+        case 0x204:
+            v = AE_NTOHS(*(unsigned short *)e);
+            for (i = 0; i < 4; i++)
+                AutoProfile.wep[i].len = v;
+            break;
+        case 0x205:
+            AutoProfile.f130 = AE_NTOHS(*(unsigned short *)e);
+            break;
+        case 0x206:
+        case 0x207:
+        case 0x208:
+        case 0x209:
+            memset(AutoProfile.wep[type - 0x206].key, 0, 32);
+            if (AutoProfile.wep[0].type == 1) {
+                d = AutoProfile.wep[type - 0x206].key;
+                for (i = 0; i < len; i++)
+                    d += sprintf(d, "%02X", *e++);
+            } else {
+                memcpy(AutoProfile.wep[type - 0x206].key, e, len);
+            }
+            break;
+        case 0x20A:
+            memset(AutoProfile.x1FC, 0, 0x48);
+            memcpy(AutoProfile.x1FC, e, len);
+            break;
+        }
+    }
+    return found;
+}
 
 int AsciiToHex(unsigned char *out, char *s, int n)
 {
