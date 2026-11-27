@@ -1,6 +1,10 @@
 /* cflags: -Os -fno-strength-reduce */
 #include "common.h"
 #include "m2c_macros.h"
+M2C_UNK cardlistCpyTtr2Ucs4(int, int, int, M2C_UNK); /* extern */
+int resGetDatLocal(M2C_UNK, M2C_UNK);               /* extern */
+extern int l_nAssortNum;
+
 M2C_UNK _memFree(int, M2C_UNK *, M2C_UNK);          /* extern */
 extern unsigned char D_001025E8;
 extern int l_patAssortDB;
@@ -12,7 +16,28 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/database", D_00102
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/database", databaseFameRefresh);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/database", databaseAssortNameRefresh);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+void *memset(void *s, int c, unsigned int n);
+
+int databaseAssortNameRefresh(void) {
+    int temp_s0;
+    int temp_s1;
+    int var_s2;
+
+    var_s2 = 0;
+    if (l_nAssortNum > 0) {
+        do {
+            temp_s0 = var_s2 * 0xC0;
+            memset(temp_s0 + l_patAssortDB + 0x40, 0, 0x20U);
+            temp_s1 = var_s2 + 1;
+            cardlistCpyTtr2Ucs4(l_patAssortDB + temp_s0 + 0x40, resGetDatLocal(1, 0x4D), temp_s1, 0x20);
+            var_s2 = temp_s1;
+        } while (temp_s1 < l_nAssortNum);
+    }
+    return 1;
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/database", D_00102638);
 
