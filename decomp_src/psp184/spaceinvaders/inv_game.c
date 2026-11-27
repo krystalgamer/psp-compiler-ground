@@ -3220,14 +3220,32 @@ void netgame_zako_damage_set(int a, int b, int c, int dmg)
 		p->n++;
 	}
 	p->q[p->n].kind = 1;
-	p->q[p->n].id = (a << 16) + (b << 8) + c;
-	p->q[p->n].dmg = dmg;
-	p->q[p->n].rnd = genrand_int32();
-	p->q[p->n].f10 = 4;
+	p->q[p->n].d[0] = (a << 16) + (b << 8) + c;
+	p->q[p->n].d[1] = dmg;
+	p->q[p->n].d[2] = genrand_int32();
+	p->q[p->n].d[3] = 4;
 	p->n++;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", netgame_zako_damage_get);
+void netgame_zako_damage_get(NETPL *q, int k)
+{
+	int i, found = 0;
+	int id = q->q[k].d[2];
+	EGROUP *g;
+
+	for (i = 0; i < 32; i++) {
+		if (gmain.fea8[i] == id)
+			found = 1;
+	}
+	if (found == 1)
+		return;
+	gmain.fea8[gmain.fea4] = q->q[k].d[2];
+	gmain.fea4++;
+	if (gmain.fea4 >= 32)
+		gmain.fea4 = 0;
+	g = &gmain.egroup[((u8 *)&q->q[k].d[0])[2]];
+	zako_damage(&g->e[((u8 *)&q->q[k].d[0])[1]][((u8 *)&q->q[k].d[0])[0]], q->q[k].d[1], 0, 1);
+}
 
 void netgame_zako_dead_set(int a, int b, int c)
 {
@@ -3244,14 +3262,32 @@ void netgame_zako_dead_set(int a, int b, int c)
 		p->n++;
 	}
 	p->q[p->n].kind = 2;
-	p->q[p->n].id = (a << 16) + (b << 8) + c;
-	p->q[p->n].dmg = 0;
-	p->q[p->n].rnd = genrand_int32();
-	p->q[p->n].f10 = 4;
+	p->q[p->n].d[0] = (a << 16) + (b << 8) + c;
+	p->q[p->n].d[1] = 0;
+	p->q[p->n].d[2] = genrand_int32();
+	p->q[p->n].d[3] = 4;
 	p->n++;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", netgame_zako_dead_get);
+void netgame_zako_dead_get(NETPL *q, int k)
+{
+	int i, found = 0;
+	int id = q->q[k].d[2];
+	EGROUP *g;
+
+	for (i = 0; i < 32; i++) {
+		if (gmain.fea8[i] == id)
+			found = 1;
+	}
+	if (found == 1)
+		return;
+	gmain.fea8[gmain.fea4] = q->q[k].d[2];
+	gmain.fea4++;
+	if (gmain.fea4 >= 32)
+		gmain.fea4 = 0;
+	g = &gmain.egroup[((u8 *)&q->q[k].d[0])[2]];
+	zako_death(&g->e[((u8 *)&q->q[k].d[0])[1]][((u8 *)&q->q[k].d[0])[0]], 0, 1);
+}
 
 void netgame_ufo_damage_set(int no, int dmg)
 {
@@ -3268,14 +3304,14 @@ void netgame_ufo_damage_set(int no, int dmg)
 		p->n++;
 	}
 	p->q[p->n].kind = 3;
-	p->q[p->n].id = no;
-	p->q[p->n].dmg = dmg;
-	p->q[p->n].rnd = genrand_int32();
-	p->q[p->n].f10 = 4;
+	p->q[p->n].d[0] = no;
+	p->q[p->n].d[1] = dmg;
+	p->q[p->n].d[2] = genrand_int32();
+	p->q[p->n].d[3] = 4;
 	if (gmain.ff28 != 13)
-		p->q[p->n].f14 = (&gmain.ufo[no])->life;
+		p->q[p->n].d[4] = (&gmain.ufo[no])->life;
 	else
-		p->q[p->n].f14 = (&gmain.bufo)->dmg;
+		p->q[p->n].d[4] = (&gmain.bufo)->dmg;
 	p->n++;
 }
 

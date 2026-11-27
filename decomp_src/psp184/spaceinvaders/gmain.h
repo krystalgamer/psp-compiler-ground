@@ -9,7 +9,7 @@
 typedef struct { float x, y, z; } L2V3;
 
 /* net send queue entry / per-player net state (gmain.netpl[4], 0x24) */
-typedef struct { int kind, id, dmg, rnd, f10, f14; } NETQ;
+typedef struct { int kind; int d[5]; } NETQ;
 typedef struct { int n, f4, score, st; NETQ q[38]; } NETPL;
 
 /* route point (gmain.route[], 0x10C0) */
