@@ -69,6 +69,16 @@ def main():
     a = ap.parse_args()
     mod = objcmp.module_funcs(a.target, a.module)
     cc1s = a.cc1.split(",") if a.cc1 else ["1.5.1", "1.6.1", "1.3.1-orig", "1.7.1-orig"]
+    if not a.cc1:
+        # the unit's own compiler (units.MODULE.txt) first
+        src = Path(a.file).resolve()
+        base = ROOT / "decomp_src" / a.target / a.module
+        if src.is_relative_to(base) and src.suffix == ".c":
+            unit = src.relative_to(base).with_suffix("").as_posix()
+            units = compiler.table(ROOT / "config" / a.target / f"units.{a.module}.txt")
+            if unit in units:
+                own = compiler.compiler(a.target, a.module, unit)
+                cc1s = [own] + [c for c in cc1s if c != own]
     m = re.search(r"cflags: (-O[0-9s](?: -(?:[fm][\w-]+|std)(?:=[\w.:]+)?)*)", Path(a.file).read_text())
     flags = a.flags or [m.group(1) if m else "-O2"]
     with tempfile.TemporaryDirectory() as td:
