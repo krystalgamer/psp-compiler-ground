@@ -22,7 +22,20 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/script/event", D_000FF3CC);
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/script/event", D_000FF3E8);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/script/event", EventSetTask);
+extern unsigned char D_000FF400, D_000FF428;
+int EventSetTask(void *s, int idx, int task)
+{
+	if (s == NULL || M2C_FIELD(s, int **, 0x134) == NULL) {
+		consPrintf(&D_000FF400, "EventSetTask", idx);
+		return 0;
+	}
+	if (idx >= 0 && idx < M2C_FIELD(s, int *, 0x54)) {
+		M2C_FIELD(s, int **, 0x134)[idx] = task;
+		return 1;
+	}
+	consPrintf(&D_000FF428, "EventSetTask", idx);
+	return 0;
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/script/event", D_000FF400);
 

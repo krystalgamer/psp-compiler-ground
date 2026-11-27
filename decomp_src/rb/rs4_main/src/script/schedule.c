@@ -22,7 +22,20 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/script/schedule", D_000FF91
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/script/schedule", D_000FF934);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/script/schedule", ScheduleSetTask);
+extern unsigned char D_000FF94C, D_000FF974;
+int ScheduleSetTask(void *s, int idx, int task)
+{
+	if (s == NULL || M2C_FIELD(s, int **, 0x138) == NULL) {
+		consPrintf(&D_000FF94C, "ScheduleSetTask", idx);
+		return 0;
+	}
+	if (idx >= 0 && idx < M2C_FIELD(s, int *, 0x48)) {
+		M2C_FIELD(s, int **, 0x138)[idx] = task;
+		return 1;
+	}
+	consPrintf(&D_000FF974, "ScheduleSetTask", idx);
+	return 0;
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/script/schedule", D_000FF94C);
 

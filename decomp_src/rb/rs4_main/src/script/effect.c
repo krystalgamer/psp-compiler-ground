@@ -22,7 +22,20 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/script/effect", D_000FF2E0)
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/script/effect", D_000FF2FC);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/script/effect", EffectSetTask);
+extern unsigned char D_000FF314, D_000FF33C;
+int EffectSetTask(void *s, int idx, int task)
+{
+	if (s == NULL || M2C_FIELD(s, int **, 0x140) == NULL) {
+		consPrintf(&D_000FF314, "EffectSetTask", idx);
+		return 0;
+	}
+	if (idx >= 0 && idx < M2C_FIELD(s, int *, 0x8C)) {
+		M2C_FIELD(s, int **, 0x140)[idx] = task;
+		return 1;
+	}
+	consPrintf(&D_000FF33C, "EffectSetTask", idx);
+	return 0;
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/script/effect", D_000FF314);
 
