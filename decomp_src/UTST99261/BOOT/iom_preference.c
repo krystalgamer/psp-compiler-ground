@@ -22,7 +22,16 @@ char *FIO_readdir(void *d);
 void FIO_closedir(void *d);
 void FIO_remove(char *path);
 int strcmp(const char *a, const char *b);
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iom_preference", iom_preferenceCache);
+int iom_preferenceCache(void) {
+    int r;
+
+    if (esp_context != NULL) {
+        r = M2C_FIELD(esp_context, int *, 0x7C);
+        if (r >= 0)
+            return r;
+    }
+    return 0;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -69,7 +78,16 @@ int iom_preferenceHttpVersion(void) {
     return var_v1;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iom_preference", iom_preferenceUserAgent);
+char *iom_preferenceUserAgent(void) {
+    char *r;
+
+    if (esp_context != NULL) {
+        r = M2C_FIELD(esp_context, char **, 0xAC);
+        if (r != NULL)
+            return r;
+    }
+    return NULL;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
