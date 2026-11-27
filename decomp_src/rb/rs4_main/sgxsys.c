@@ -16,6 +16,8 @@ void CbCallFunc(int arg0, M2C_UNK (*arg1)(int, int), int arg2, int arg3) {
     }
 }
 
+extern int gWork_11FBE0[];
+
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsys", sgxCbCallMode);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsys", sgxCbRegist);
@@ -56,7 +58,12 @@ int sgxGetFormUnitSample(unsigned int arg0) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsys", sgxSetStrPcmBufSample);
+int sgxSetStrPcmBufSample(int n)
+{
+    int old = gWork_11FBE0[7];
+    gWork_11FBE0[7] = n;
+    return old;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)

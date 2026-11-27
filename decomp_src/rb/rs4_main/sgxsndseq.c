@@ -4,6 +4,8 @@ M2C_UNK sgxSeqFree(int);                            /* extern */
 int sgxResFindSeq();                                /* extern */
 
 
+void sgxSeqCommand(int, int *);
+
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsndseq", SeqInit);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsndseq", SeqStrInit);
@@ -23,11 +25,30 @@ void SeqTerm(void *arg0) {
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsndseq", SeqProcPost);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsndseq", SeqPause);
+void SeqPause(char *s, int x)
+{
+    int cmd[8];
+    cmd[0] = 6;
+    cmd[1] = x;
+    sgxSeqCommand(*(int *)(s + 0x94), cmd);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsndseq", SeqWait);
+void SeqWait(char *s, int x)
+{
+    int cmd[8];
+    cmd[0] = 7;
+    cmd[1] = x;
+    sgxSeqCommand(*(int *)(s + 0x94), cmd);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsndseq", SeqRel);
+void SeqRel(char *s, int x)
+{
+    int cmd[8];
+    cmd[0] = 2;
+    cmd[2] = x;
+    cmd[1] = 0;
+    sgxSeqCommand(*(int *)(s + 0x94), cmd);
+}
 
 #ifndef NULL
 #define NULL ((void *)0)

@@ -3,6 +3,10 @@
 M2C_UNK sgxPortFree(int);                           /* extern */
 
 
+void *sgxResFindWave();
+void *sgxResFindRgn();
+void sgxPortCommand(int, int *);
+
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsndnote", WaveInit);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsndnote", NoteInit);
@@ -22,12 +26,28 @@ void NoteTerm(void *arg0) {
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsndnote", NoteProcPost);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsndnote", NotePause);
+void NotePause(char *s, int x)
+{
+    int cmd[12];
+    cmd[0] = 17;
+    cmd[1] = x;
+    sgxPortCommand(*(int *)(s + 0x94), cmd);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsndnote", NoteRel);
+void NoteRel(char *s, int x)
+{
+    int cmd[12];
+    cmd[0] = 4;
+    cmd[2] = x;
+    cmd[1] = 0;
+    sgxPortCommand(*(int *)(s + 0x94), cmd);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsndnote", WaveCalcBufAlign);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsndnote", WaveCheckReq);
+int WaveCheckReq(int a, int b)
+{
+    return sgxResFindWave(a, b, 0) != NULL;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsndnote", NoteCheckReq);

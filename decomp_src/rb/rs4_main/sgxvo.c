@@ -6,6 +6,9 @@ extern int D_0011FF64;
 extern int D_0011FF68;
 
 
+typedef struct { int pad; struct { int a, b, lo, hi; } dev[8]; char pad2[0x84 - 0x84]; } VoWorkA;
+typedef struct { char pad[0x84]; struct { int a, b, lo, hi; } cat[3][16]; } VoWorkB;
+
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxvo", sgxVoInit);
 
 #ifndef NULL
@@ -40,17 +43,35 @@ int sgxVoGetSlotNum(void) {
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxvo", sgxVoSetDeviceRange);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxvo", sgxVoGetDeviceRangeLo);
+int sgxVoGetDeviceRangeLo(unsigned int d)
+{
+    if (d >= 8) return 0;
+    return ((VoWorkA *)&gWork_11FF60)->dev[d].lo;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxvo", sgxVoGetDeviceRangeHi);
+int sgxVoGetDeviceRangeHi(unsigned int d)
+{
+    if (d >= 8) return 0;
+    return ((VoWorkA *)&gWork_11FF60)->dev[d].hi;
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/sgxvo", D_0010AEE4);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxvo", sgxCategorySetVoiceRange);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxvo", sgxCategoryGetVoiceRangeLo);
+int sgxCategoryGetVoiceRangeLo(unsigned int c, unsigned int t)
+{
+    if (c >= 16) return 0;
+    if (t >= 3) return 0;
+    return ((VoWorkB *)&gWork_11FF60)->cat[t][c].lo;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxvo", sgxCategoryGetVoiceRangeHi);
+int sgxCategoryGetVoiceRangeHi(unsigned int c, unsigned int t)
+{
+    if (c >= 16) return 0;
+    if (t >= 3) return 0;
+    return ((VoWorkB *)&gWork_11FF60)->cat[t][c].hi;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxvo", FindVoNormal);
 
@@ -68,7 +89,10 @@ signed char sgxVoGetStatus(int arg0) {
     return M2C_FIELD(((arg0 * 0x30) + D_0011FF64), signed char *, 4);
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxvo", sgxVoGetPlaySamples);
+long long sgxVoGetPlaySamples(int v)
+{
+    return *(long long *)((char *)D_0011FF64 + v * 48 + 0x20);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxvo", sgxVoGetPlayUnitSamples);
 

@@ -7,6 +7,10 @@ extern unsigned char D_0011FC20;
 extern unsigned char D_0011FC10;
 
 
+void *SlotGetAt_7A70C(int, const char *);
+void sgxDI();
+void sgxEI();
+
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/sgxbmg", D_00109F94);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxbmg", SlotGetAt_7A70C);
@@ -25,37 +29,83 @@ void sgxBmgAlloc(int arg0, int arg1, int arg2) {
     sgxBmgAllocEx(-1, arg0, arg1, arg2);
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxbmg", sgxBmgAllocSub);
+int sgxBmgAllocSub(int a, int b)
+{
+    return sgxBmgAllocEx(a, 0, b, 0);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxbmg", sgxBmgLock);
+int sgxBmgLock(int id)
+{
+    char *p = SlotGetAt_7A70C(id, "Lock");
+    if (p == NULL) return 0;
+    sgxDI();
+    (*(unsigned short *)(p + 0x10))++;
+    sgxEI();
+    return 1;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxbmg", sgxBmgFree);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxbmg", sgxBmgAlignBuf);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxbmg", sgxBmgGetBuf);
+void *sgxBmgGetBuf(int id)
+{
+    char *p = SlotGetAt_7A70C(id, "GetBuf");
+    if (p == NULL) return NULL;
+    return *(void **)(p + 0x24);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxbmg", sgxBmgGetSize);
+int sgxBmgGetSize(int id)
+{
+    char *p = SlotGetAt_7A70C(id, "GetSize");
+    if (p == NULL) return 0;
+    return *(int *)(p + 0x28);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxbmg", sgxBmgGetRefCount);
+int sgxBmgGetRefCount(int id)
+{
+    char *p = SlotGetAt_7A70C(id, "GetRefCount");
+    if (p == NULL) return 0;
+    return *(short *)(p + 0x10);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxbmg", sgxBmgIncBuf);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxbmg", sgxBmgDecBuf);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxbmg", sgxBmgGetHead);
+char *sgxBmgGetHead(int id)
+{
+    char *p = SlotGetAt_7A70C(id, "GetHead");
+    if (p == NULL) return NULL;
+    return *(char **)(p + 0x24) + *(int *)(p + 0x34);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxbmg", sgxBmgGetTail);
+char *sgxBmgGetTail(int id)
+{
+    char *p = SlotGetAt_7A70C(id, "GetTail");
+    if (p == NULL) return NULL;
+    return *(char **)(p + 0x24) + *(int *)(p + 0x38);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxbmg", sgxBmgGetHeadOfs);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxbmg", sgxBmgGetTailOfs);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxbmg", sgxBmgGetFree);
+int sgxBmgGetFree(int id)
+{
+    char *p = SlotGetAt_7A70C(id, "GetFree");
+    if (p == NULL) return 0;
+    return *(int *)(p + 0x28) - *(int *)(p + 0x3C);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxbmg", sgxBmgGetLinearFree);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxbmg", sgxBmgGetLeft);
+int sgxBmgGetLeft(int id)
+{
+    char *p = SlotGetAt_7A70C(id, "GetLeft");
+    if (p == NULL) return 0;
+    return *(int *)(p + 0x3C);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxbmg", sgxBmgGetLinearLeft);
 
@@ -67,7 +117,11 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxbmg", sgxBmgWrite);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxbmg", sgxBmgRead);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxbmg", sgxBmgWriteTerm);
+void sgxBmgWriteTerm(int id)
+{
+    char *p = SlotGetAt_7A70C(id, "WriteTerm");
+    if (p != NULL) p[0x12] = 1;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxbmg", sgxBmgIsFinished);
 
