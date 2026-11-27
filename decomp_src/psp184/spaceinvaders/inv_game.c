@@ -2054,7 +2054,33 @@ void item_init(void)
 		l->on = 0;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", item_start);
+extern const double D_0007E798, D_0007E7A0, D_0007E7A8;
+double genrand_real2(void);
+double genrand_real3(void);
+void item_start(int type, float x, float y, float z)
+{
+	int i;
+	ITEM_T *p;
+
+	for (i = 0; i < 128; i++) {
+		p = &gmain.item[i];
+		if (p->on == 0) {
+			p->kind = type;
+			p->on = 1;
+			p->t = 0;
+			p->spd = genrand_real2() + D_0007E798;
+			p->pos.x = x;
+			p->pos.y = y;
+			p->pos.z = z;
+			p->ax = (genrand_real3() - D_0007E7A0) * D_0007E7A8;
+			p->ay = (genrand_real3() - D_0007E7A0) * D_0007E7A8;
+			p->f24 = 0;
+			p->f28 = 0;
+			p->cur = p->pos;
+			return;
+		}
+	}
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", item_control);
 
