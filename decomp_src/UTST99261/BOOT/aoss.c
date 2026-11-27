@@ -1,6 +1,31 @@
 /* cflags: -O2 -frename-registers */
 #include "common.h"
 #include "m2c_macros.h"
+typedef struct AossApInfo {
+    int ssidlen;
+    char ssid[0x20];                  /* 0x4 */
+    int f24;                          /* 0x24 */
+    int keylen;                       /* 0x28 */
+    char key[0x10];                   /* 0x2C */
+} AossApInfo;
+typedef struct AossSockaddr {
+    unsigned char len;
+    unsigned char family;             /* 0x1 */
+    unsigned short port;              /* 0x2 */
+    unsigned int addr;                /* 0x4 */
+    char zero[8];
+} AossSockaddr;
+extern char D_00141138[];
+extern char D_00141144[];
+unsigned int AOSS_Strlen(const char *s);
+unsigned short AOSS_Ntohs(unsigned short v);
+int AOSS_Htonl(int v);
+int AOSS_Sendto(int s, void *buf, int len, int flags, void *to, int tolen);
+int CryptSeqNo(unsigned char *buf, int len, unsigned char *key, int keylen);
+int EncodeRC4(unsigned char *in, unsigned char *out, int len, unsigned char *crcp, unsigned char *iv, unsigned char *key, int keylen);
+int AstsSetInitReq(int a, int b, int c);
+int AstsSetSecureReq(int a, int b, int c);
+int AstsRestartReq(int a, int b, int c);
 unsigned short AOSS_Htons(unsigned short v);
 typedef struct RC4Ctx {
     unsigned int x;
@@ -49,20 +74,33 @@ int AOSS_Status(int s);
 unsigned int update_crc(unsigned int c, unsigned char *buf, int len, int init, unsigned int *table);
 void make_crc_table(int a, unsigned int *table);
 int sceRtcGetCurrentTick(unsigned long long *t);
-M2C_UNK sceNetInetRecvfrom();                       /* extern */
-M2C_UNK sceNetInetSelect();                         /* extern */
-M2C_UNK sceNetInetSendto();                         /* extern */
-M2C_UNK sceNetInetSetsockopt();                     /* extern */
-M2C_UNK sceNetInetSocket();                         /* extern */
-M2C_UNK sceNetInetBind();                           /* extern */
-M2C_UNK sceNetInetClose();                          /* extern */
+int sceNetInetRecvfrom(int s, void *buf, int len, int flags, void *from, int *fromlen);
+int sceNetInetSelect(int n, void *r, void *w, void *e, void *t);
+int sceNetInetSendto(int s, void *buf, int len, int flags, void *to, int tolen);
+int sceNetInetSetsockopt(int s, int level, int name, void *val, int len);
+int sceNetInetSocket(int domain, int type, int proto);
+int sceNetInetBind(int s, void *addr, int len);
+int sceNetInetClose(int s);
 
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/aoss", D_00141118);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/aoss", AOSS_Init_old);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/aoss", aoss_IP_sta);
+unsigned int aoss_IP_sta(unsigned int a, unsigned int mask)
+{
+    unsigned int x;
+    volatile unsigned int tmp;
+    void *p;
+
+    x = (a & mask) | ((a & ~mask) + 1);
+    if (!(x < ((a & mask) | ~mask)))
+        x = (a & mask) | 1;
+    p = AOSS_Malloc(100);
+    tmp = x;
+    AOSS_Free(p);
+    return x;
+}
 
 void aoss_release(void)
 {
@@ -102,7 +140,17 @@ int aoss_check_str(unsigned char *s, int n)
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/aoss", checkAP);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/aoss", AOSS_set_APInfo);
+int AOSS_set_APInfo(AossApInfo *info)
+{
+    info->ssidlen = AOSS_Strlen(D_00141138);
+    AOSS_Memcpy(info->ssid, D_00141138, info->ssidlen);
+    info->f24 = 1;
+    info->keylen = AOSS_Strlen(D_00141144);
+    if ((unsigned int)info->keylen >= 14)
+        return -1;
+    AOSS_Memcpy(info->key, D_00141144, info->keylen);
+    return 0;
+}
 
 void MakeSendSeqID(int n, unsigned char *p, unsigned char *mac)
 {
@@ -186,9 +234,32 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/aoss", SetStaData);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/aoss", PacketDataSet);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/aoss", SetPacketHeader);
+void SetPacketHeader(short *hdr, short a, short b, short c, char d, char e, unsigned char *key)
+{
+    hdr[0] = AOSS_Htons(1);
+    hdr[1] = 0;
+    hdr[2] = 0;
+    hdr[3] = AOSS_Htons(a);
+    hdr[4] = 0;
+    hdr[5] = AOSS_Htons(b);
+    hdr[6] = AOSS_Htons(c);
+    ((char *)hdr)[14] = d;
+    ((char *)hdr)[15] = e;
+    AOSS_Memcpy(hdr + 8, key, 8);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/aoss", SendPacketUDP);
+int SendPacketUDP(void *buf, int len, unsigned char bcast, int sock)
+{
+    AossSockaddr sa;
+
+    AOSS_Memset(&sa, 0, 16);
+    sa.family = 2;
+    sa.port = AOSS_Htons(0x5790);
+    sa.addr = AOSS_Htonl(gData.ip);
+    if (bcast == 0xFF || (signed char)gData.f18 == 0)
+        sa.addr = -1;
+    return AOSS_Sendto(sock, buf, len, 0, &sa, 16);
+}
 
 int EncodeRC4(unsigned char *in, unsigned char *out, int len, unsigned char *crcp, unsigned char *iv, unsigned char *key, int keylen)
 {
@@ -414,56 +485,56 @@ void AOSS_Memset(void *arg0, int arg1, unsigned int arg2) {
 #define NULL ((void *)0)
 #endif
 
-void AOSS_Recvfrom(void) {
-    sceNetInetRecvfrom();
+int AOSS_Recvfrom(int s, void *buf, int len, int flags, void *from, int *fromlen) {
+    return sceNetInetRecvfrom(s, buf, len, flags, from, fromlen);
 }
 
 #ifndef NULL
 #define NULL ((void *)0)
 #endif
 
-void AOSS_Select(void) {
-    sceNetInetSelect();
+int AOSS_Select(int n, void *r, void *w, void *e, void *t) {
+    return sceNetInetSelect(n, r, w, e, t);
 }
 
 #ifndef NULL
 #define NULL ((void *)0)
 #endif
 
-void AOSS_Sendto(void) {
-    sceNetInetSendto();
+int AOSS_Sendto(int s, void *buf, int len, int flags, void *to, int tolen) {
+    return sceNetInetSendto(s, buf, len, flags, to, tolen);
 }
 
 #ifndef NULL
 #define NULL ((void *)0)
 #endif
 
-void AOSS_Setsockopt(void) {
-    sceNetInetSetsockopt();
+int AOSS_Setsockopt(int s, int level, int name, void *val, int len) {
+    return sceNetInetSetsockopt(s, level, name, val, len);
 }
 
 #ifndef NULL
 #define NULL ((void *)0)
 #endif
 
-void AOSS_Socket(void) {
-    sceNetInetSocket();
+int AOSS_Socket(int domain, int type, int proto) {
+    return sceNetInetSocket(domain, type, proto);
 }
 
 #ifndef NULL
 #define NULL ((void *)0)
 #endif
 
-void AOSS_Bind(void) {
-    sceNetInetBind();
+int AOSS_Bind(int s, void *addr, int len) {
+    return sceNetInetBind(s, addr, len);
 }
 
 #ifndef NULL
 #define NULL ((void *)0)
 #endif
 
-void AOSS_Close(void) {
-    sceNetInetClose();
+int AOSS_Close(int s) {
+    return sceNetInetClose(s);
 }
 
 #ifndef NULL
