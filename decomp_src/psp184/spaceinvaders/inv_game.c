@@ -445,7 +445,116 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", game_cnt_optio
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", game_cnt_option2);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", game_cnt_stagestart);
+typedef struct { POS2_T p[7]; } POS7_T;
+extern const POS7_T D_0007DCE0;
+extern char D_0007DD18[], D_0007DB9C[], text_buf[];
+extern char *future_name_list[];
+extern int D_00349084[3], D_00349090[4];
+void inv_font_ascii(char *str, int x, int y, int w, int h, int r, int g, int b, int a);
+int inv_font_ascii_check_w(char *s, int size);
+void inv_font_ascii_posf(char *str, int x, int y, int w, int h, int r, int g, int b, int a, int mode);
+int net_mynumget(void);
+void inv_stagestart_set(void);
+int inv_netgame_linkcheck(int st);
+void sound_start(int no);
+void timer_init(int a);
+void timer_play(int a);
+void df_fade_start(int a, int b, int c, int d, int e);
+void enemy_gp_start(int line);
+void bgm_rank_start(void);
+int sprintf(char *, const char *, ...);
+void game_cnt_stagestart(void)
+{
+	TIMER_W *tm = &gmain.timer;
+	POS7_T pos = D_0007DCE0;
+	int w;
+	char **s;
+
+	if (gmain.f4 == 0) {
+		inv_stagestart_set();
+		gmain.f4++;
+		D_00349090[0] = 0;
+		D_00349090[1] = 0;
+		D_00349090[2] = 0;
+		D_00349090[3] = 0;
+		D_00349084[0] = 0;
+		D_00349084[1] = 0;
+		D_00349084[2] = 0;
+	} else if (gmain.f4 == 1) {
+		if (gmain.f1c != 1 || inv_netgame_linkcheck(1) == 1)
+			gmain.f4 = 10;
+	} else if (gmain.f4 == 10) {
+		sound_start(0);
+		timer_init(stage_format[gmain.ff28].fc);
+		timer_play(1);
+		df_fade_start(0, 0, 0, 0, 60);
+		gmain.f4++;
+	} else if (gmain.f4 == 11) {
+		if (tm->f[10] == 1)
+			gmain.f4 = 12;
+	} else if (gmain.f4 == 12) {
+		if (gmain.f1c != 1 || inv_netgame_linkcheck(0) == 1) {
+			gmain.f1070 = 1;
+			gmain.f0 = 5;
+			gmain.f8 = 0;
+			gmain.f4 = 0;
+		}
+	}
+	if (gmain.f4 == 11) {
+		if (tm->f[9] == 0)
+			D_00349084[0] = gmain.timer.f[21];
+		else if (tm->f[9] == 1)
+			D_00349084[1] = gmain.timer.f[21];
+		else if (tm->f[9] == 2)
+			D_00349084[0] = D_00349084[1] = 255 - gmain.timer.f[21];
+		else if (tm->f[9] == 3) {
+			D_00349084[0] = 0;
+			D_00349084[1] = 0;
+			D_00349084[2] = 255 - gmain.timer.f[21];
+		}
+		if (D_00349084[0] > 0) {
+			int n = gmain.ff28 + 73;
+			inv_font_ascii(future_name_list[n], pos.p[0].x - inv_font_ascii_check_w(future_name_list[n], 100) / 2, pos.p[0].y, 100, 100, 255, 255, 255, D_00349084[0]);
+			if (IST.fc >= 2) {
+				sprintf(text_buf, D_0007DD18, future_name_list[124], IST.fc);
+				inv_font_ascii_posf(text_buf, pos.p[3].x, pos.p[3].y, 100, 100, 255, 255, 255, D_00349084[0], 8);
+			}
+			if (gmain.f1c == 1) {
+				sprintf(text_buf, D_0007DB9C, future_name_list[116 + net_mynumget()]);
+				inv_font_ascii_posf(text_buf, pos.p[6].x, pos.p[6].y, 100, 100, 255, 255, 255, D_00349084[0], 0);
+			} else {
+				sprintf(text_buf, D_0007DD18, future_name_list[23], IST.f0);
+				inv_font_ascii_posf(text_buf, pos.p[4].x, pos.p[4].y, 100, 100, 255, 255, 255, D_00349084[0], 8);
+			}
+			sprintf(text_buf, D_0007DD18, future_name_list[106], IST.f4);
+			inv_font_ascii_posf(text_buf, pos.p[5].x, pos.p[5].y, 100, 100, 255, 255, 255, D_00349084[0], 8);
+		}
+		if (D_00349084[1] > 0) {
+			int n = gmain.ff28 + 91;
+			inv_font_ascii(future_name_list[n], pos.p[1].x - inv_font_ascii_check_w(future_name_list[n], 100) / 2, pos.p[1].y, 100, 100, 255, 255, 255, D_00349084[1]);
+		}
+		if (D_00349084[2] > 0) {
+			inv_font_ascii(future_name_list[87], pos.p[2].x - inv_font_ascii_check_w(future_name_list[87], 100) / 2, pos.p[2].y, 100, 100, 255, 255, 255, D_00349084[2]);
+		}
+		if (D_00349090[0] == 0 && tm->f[9] == 0 && tm->f[8] == 0) {
+			enemy_gp_start(0);
+			D_00349090[0] = 1;
+		}
+		if (D_00349090[1] == 0 && tm->f[9] == 0 && tm->f[8] == 2) {
+			enemy_gp_start(1);
+			D_00349090[1] = 1;
+		}
+		if (D_00349090[2] == 0 && tm->f[9] == 1 && tm->f[8] == 0) {
+			enemy_gp_start(2);
+			D_00349090[2] = 1;
+		}
+		if (D_00349090[3] == 0 && tm->f[9] == 1 && tm->f[8] == 2) {
+			enemy_gp_start(3);
+			D_00349090[3] = 1;
+			bgm_rank_start();
+		}
+	}
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", game_cnt_game);
 
