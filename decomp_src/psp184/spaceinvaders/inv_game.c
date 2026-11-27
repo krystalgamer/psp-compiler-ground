@@ -2344,7 +2344,55 @@ int hit_check_player(float *pos, float r)
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", hit_check_enemy);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", hit_check_ufo);
+void ufo_damage(void *u, BV3 p, int dmg, int net, int flag);
+extern BUFO_D D_005A0CF4;
+typedef struct { u8 p[0xEB9D0]; int n; } GMU3_T;
+#define GMU3_N ((*(GMU3_T *)&gmain).n)
+void netgame_ufo_damage_set3(int no, int dmg, int life) __asm__("netgame_ufo_damage_set");
+int hit_check_ufo(float *pos, int dmg, float r)
+{
+	int i;
+	UFO_T *u;
+	BUFO_D *b;
+
+	if (gmain.f.ff28 != 13) {
+		for (i = 0; i < GMU3_N; i++) {
+			u = &ufo_t[i];
+			if (u->f[1] == 0)
+				continue;
+			if (u->f[2] == 1)
+				continue;
+			if (u->f[4] == 1)
+				continue;
+			if (u->f[13] == 1)
+				continue;
+			if (pos_fast_length_xyz_check(pos[0] - ((float *)u->f)[23], pos[1] - ((float *)u->f)[24], pos[2] - ((float *)u->f)[25], r) != 1)
+				continue;
+			status_font_set(1, 24, 30, 0, 10);
+			ufo_damage(u, *(BV3 *)pos, dmg, 0, 1);
+			netgame_ufo_damage_set3(i, dmg, u->f[9]);
+			return i;
+		}
+	} else {
+		r *= 5.0f;
+		b = &D_005A0CF4;
+		if (b->f0 == 0)
+			return -1;
+		if (b->f4 == 1)
+			return -1;
+		if (b->f8 == 1)
+			return -1;
+		if (b->f30 == 1)
+			return -1;
+		if (pos_fast_length_xyz_check(pos[0] - b->pos[0], pos[1] - b->pos[1], pos[2] - b->pos[2], r) == 1) {
+			status_font_set(1, 24, 30, 0, 10);
+			boss_ufo_damage(b, *(BV3 *)pos, dmg, 0, 1);
+			netgame_ufo_damage_set3(0, dmg, b->dmg);
+			return 0;
+		}
+	}
+	return -1;
+}
 
 typedef struct { int f0, f4, f8; u8 _pc[0x24 - 0xC]; float x, y, z; u8 _p30[0x9C - 0x30]; } LASER_T;
 void inv_laser_end(int no);
