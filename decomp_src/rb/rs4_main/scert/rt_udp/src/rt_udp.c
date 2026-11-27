@@ -3,6 +3,11 @@
 #ifndef NULL
 #define NULL ((void *)0)
 #endif
+void *memcpy(void *, const void *, unsigned int);
+int KM_GetLocalPublicKey();
+int rt_list_buf_clear();
+int rt_list_buf_get_pool_used();
+unsigned int randomMT();
 M2C_UNK *rt_udp_get_version_string(void);
 int NetUseUDP(void);
 int rt_udp_destroy_shared_channel_data(void *arg0);
@@ -33,7 +38,14 @@ void rt_udp_enable_unexpected_port(int arg0) {
     gbEnableUnexpectedPort = arg0;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_udp", rt_udp_get_sequence_id);
+unsigned short rt_udp_get_sequence_id(unsigned char *hdr)
+{
+    unsigned short id;
+
+    ((unsigned char *)&id)[0] = hdr[2];
+    ((unsigned char *)&id)[1] = hdr[3];
+    return id;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_udp", rt_udp_ack_list_flush);
 
@@ -41,9 +53,24 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_udp", rt_udp_b
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_udp", rt_udp_get_first_sub_header);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_udp", GetUDPSecurityMode);
+int GetUDPSecurityMode(void)
+{
+    int mode = 1;
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_udp", randomNonZero);
+    if (KM_GetLocalPublicKey(-1, 0) != 0)
+        mode = 2;
+    return mode;
+}
+
+unsigned int randomNonZero(unsigned int n)
+{
+    unsigned int r;
+
+    do
+        r = randomMT() % n;
+    while (r == 0);
+    return r;
+}
 
 int NetUseUDP(void) {
     rt_udp_resolve_interface();
@@ -238,7 +265,17 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_udp", rt_udp_p
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_udp", rt_udp_process_disconnect);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_udp", rt_udp_process_reset);
+int rt_udp_process_reset(int *conn)
+{
+    if (conn == NULL)
+        return 0xD2F3;
+    if (conn[0] != 5) {
+        conn[0] = 2;
+        rt_list_buf_clear(conn + 5);
+        rt_list_buf_clear(conn + 9);
+    }
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_udp", rt_udp_process_heartbeat);
 
@@ -306,4 +343,11 @@ int rt_udp_set_connection_inactivity_timeout(void *arg0, int arg1) {
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_udp", rt_udp_get_latency_info);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_udp", rt_udp_get_pool_used);
+int rt_udp_get_pool_used(void *udp)
+{
+    int ret = 2;
+
+    if (udp != NULL)
+        ret = rt_list_buf_get_pool_used((char *)udp + 0x14);
+    return ret;
+}
