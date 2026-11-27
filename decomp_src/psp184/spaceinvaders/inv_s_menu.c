@@ -135,7 +135,18 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_menu", inv_classic_
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_menu", inv_classic_option_pause);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_menu", inv_classic_option);
+int inv_classic_option_pause();
+int inv_classic_option_sub();
+int inv_classic_option(void)
+{
+	int r;
+
+	if (option_return == 14)
+		r = inv_classic_option_sub();
+	else if (option_return == 16)
+		r = inv_classic_option_pause();
+	return r;
+}
 
 void inv_classic_menu_free(void) {
 }
