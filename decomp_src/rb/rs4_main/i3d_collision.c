@@ -329,7 +329,7 @@ void I3dcs_IsIntersectSegBoxA()
 		: : : "memory");
 }
 
-void I3dcs_IsIntersectLineBoxA()
+int I3dcs_IsIntersectLineBoxA()
 {
 	__asm__ volatile(
 		".set noreorder\n"
@@ -351,13 +351,37 @@ void I3dcs_IsIntersectLineBoxA()
 		: : : "memory");
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_collision", I3dcs_IsIntersectRayBoxA);
+int I3dcs_IsIntersectRayBoxA(const float *p, const float *d, const float *ext)
+{
+	float ex = ext[0], ey = ext[1], ez = ext[2];
+	float ap[4] __attribute__((aligned(16)));
+	float pd[4] __attribute__((aligned(16)));
+
+	__asm__ volatile(
+		"lv.q C010.q,0(%1)\n"
+		"vabs.q C000.q,C010.q\n"
+		"sv.q C000.q,0(%0)\n"
+		: : "r"(ap), "r"(p) : "memory");
+	__asm__ volatile(
+		"lv.q C010.q,0(%1)\n"
+		"lv.q C020.q,0(%2)\n"
+		"vmul.q C000.q,C010.q,C020.q\n"
+		"sv.q C000.q,0(%0)\n"
+		: : "r"(pd), "r"(p), "r"(d) : "memory");
+	{
+		float a0 = ap[0], a1 = ap[1], a2 = ap[2];
+		float m0 = pd[0], m1 = pd[1], m2 = pd[2];
+		if ((ex < a0 && m0 >= 0.0f) || (ey < a1 && m1 >= 0.0f) || (ez < a2 && m2 >= 0.0f))
+			return 0;
+	}
+	return I3dcs_IsIntersectLineBoxA(p, d, ext);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_collision", I3dcs_IsIntersectCapBoxA);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_collision", I3dcs_IsIntersectRRayBoxA);
 
-void I3dcs_IsIntersectRLineBoxA()
+int I3dcs_IsIntersectRLineBoxA()
 {
 	__asm__ volatile(
 		".set noreorder\n"
