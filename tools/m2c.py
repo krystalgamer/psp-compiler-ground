@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""m2c.py TARGET MODULE UNIT FUNC [m2c args...]: m2c draft of a function.
+"""m2c.py TARGET MODULE [UNIT] FUNC [m2c args...]: m2c draft of a function.
 
 The unit's DWARF declarations (tools/dwarf2c.py) are the context, so m2c
 knows the real types, globals and prototypes.  INCLUDE_ASM files use
@@ -128,8 +128,26 @@ def draft(target, module, unit, func, extra=()):
     return (r.stdout if r.returncode == 0 else None), (r.stderr if r.returncode == 0 else r.stdout + r.stderr)
 
 
+def find_unit(target, module, func):
+    """The unit whose nonmatchings hold FUNC's asm (None if not exactly one)."""
+    base = ROOT / "tmp/asm" / target / module / "nonmatchings"
+    hits = [p.parent.relative_to(base).as_posix() for p in base.rglob(f"{func}.s")]
+    return hits[0] if len(hits) == 1 else None
+
+
 if __name__ == "__main__":
-    out, err = draft(*sys.argv[1:5], sys.argv[5:])
+    a = sys.argv[1:]
+    if len(a) < 3:
+        sys.exit("usage: m2c.py TARGET MODULE [UNIT] FUNC [m2c args...]")
+    # TARGET MODULE FUNC: find the unit
+    if len(a) == 3 or a[3].startswith("-"):
+        unit = find_unit(a[0], a[1], a[2])
+        if unit is None:
+            sys.exit(f"m2c.py: no single unit with {a[2]}.s; give the unit")
+        a = a[:2] + [unit] + a[2:]
+    if not (ROOT / "tmp/asm" / a[0] / a[1] / "nonmatchings" / a[2] / f"{a[3]}.s").exists():
+        sys.exit(f"m2c.py: no asm for {a[3]} in unit {a[2]}")
+    out, err = draft(*a[:4], a[4:])
     sys.stdout.write(out or "")
     sys.stderr.write(err)
     sys.exit(0 if out else 1)
