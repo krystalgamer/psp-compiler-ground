@@ -1,21 +1,248 @@
-#include "common.h"
+/* lang: c++ */
+/* gcc1.6.1_src/libstdc++-v3/config/locale/generic/c_locale.cc (the 1.6.1 tree's libstdc++, as built for psp-gcc 1.6.1.internal),
+   with its initialized .data definitions left out (they stay in the module's asm .data) */
+// Wrapper for underlying C-language localization -*- C++ -*-
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/c__locale", _ZSt14__convert_to_vIlEvPKcRT_RSt12_Ios_IostateRKPii);
+// Copyright (C) 2001, 2002 Free Software Foundation, Inc.
+//
+// This file is part of the GNU ISO C++ Library.  This library is free
+// software; you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the
+// Free Software Foundation; either version 2, or (at your option)
+// any later version.
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/c__locale", _ZSt14__convert_to_vImEvPKcRT_RSt12_Ios_IostateRKPii);
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/c__locale", _ZSt14__convert_to_vIxEvPKcRT_RSt12_Ios_IostateRKPii);
+// You should have received a copy of the GNU General Public License along
+// with this library; see the file COPYING.  If not, write to the Free
+// Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
+// USA.
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/c__locale", _ZSt14__convert_to_vIyEvPKcRT_RSt12_Ios_IostateRKPii);
+// As a special exception, you may use this file as part of a free software
+// library without restriction.  Specifically, if other files instantiate
+// templates or use macros or inline functions from this file, or you compile
+// this file and link it with other files to produce an executable, this
+// file does not by itself cause the resulting executable to be covered by
+// the GNU General Public License.  This exception does not however
+// invalidate any other reasons why the executable file might be covered by
+// the GNU General Public License.
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/c__locale", _ZSt14__convert_to_vIfEvPKcRT_RSt12_Ios_IostateRKPii);
+//
+// ISO C++ 14882: 22.8  Standard locale categories.
+//
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/c__locale", _ZSt14__convert_to_vIdEvPKcRT_RSt12_Ios_IostateRKPii);
+// Written by Benjamin Kosnik <bkoz@redhat.com>
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/c__locale", _ZSt14__convert_to_vIeEvPKcRT_RSt12_Ios_IostateRKPii);
+#include <locale>
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/c__locale", _ZNSt6locale5facet18_S_create_c_localeERPiPKcS1_);
+#ifdef _GLIBCPP_HAVE_IEEEFP_H
+#include <ieeefp.h>
+#endif
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/c__locale", _ZNSt6locale5facet19_S_destroy_c_localeERPi);
+namespace std 
+{
+  // Specializations for all types used in num_get.
+  template<>
+    void
+    __convert_to_v(const char* __s, long& __v, ios_base::iostate& __err, 
+		   const __c_locale&, int __base)
+    {
+      if (!(__err & ios_base::failbit))
+      {
+	char* __sanity;
+	errno = 0;
+	long __l = strtol(__s, &__sanity, __base);
+	if (__sanity != __s && *__sanity == '\0' && errno != ERANGE)
+	  __v = __l;
+	else
+	  __err |= ios_base::failbit;
+      }
+    }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/c__locale", _ZNSt6locale5facet17_S_clone_c_localeERPi);
+  template<>
+    void
+    __convert_to_v(const char* __s, unsigned long& __v, 
+		   ios_base::iostate& __err, const __c_locale&, int __base)
+    {
+      if (!(__err & ios_base::failbit))
+	{
+	  char* __sanity;
+	  errno = 0;
+	  unsigned long __ul = strtoul(__s, &__sanity, __base);
+          if (__sanity != __s && *__sanity == '\0' && errno != ERANGE)
+	    __v = __ul;
+	  else
+	    __err |= ios_base::failbit;
+	}
+    }
+
+#ifdef _GLIBCPP_USE_LONG_LONG
+  template<>
+    void
+    __convert_to_v(const char* __s, long long& __v, ios_base::iostate& __err, 
+		   const __c_locale&, int __base)
+    {
+      if (!(__err & ios_base::failbit))
+	{
+	  char* __sanity;
+	  errno = 0;
+	  long long __ll = strtoll(__s, &__sanity, __base);
+          if (__sanity != __s && *__sanity == '\0' && errno != ERANGE)
+	    __v = __ll;
+	  else
+	    __err |= ios_base::failbit;
+	}
+    }
+
+  template<>
+    void
+    __convert_to_v(const char* __s, unsigned long long& __v, 
+		   ios_base::iostate& __err, const __c_locale&, int __base)
+    {
+      if (!(__err & ios_base::failbit))
+	{      
+	  char* __sanity;
+	  errno = 0;
+	  unsigned long long __ull = strtoull(__s, &__sanity, __base);
+          if (__sanity != __s && *__sanity == '\0' && errno != ERANGE)
+	    __v = __ull;
+	  else
+	    __err |= ios_base::failbit;
+	}  
+    }
+#endif
+
+  template<>
+    void
+    __convert_to_v(const char* __s, float& __v, ios_base::iostate& __err, 
+		   const __c_locale&, int) 	      
+    {
+      if (!(__err & ios_base::failbit))
+	{
+	  // Assumes __s formatted for "C" locale.
+	  char* __old = strdup(setlocale(LC_ALL, NULL));
+	  setlocale(LC_ALL, "C");
+	  char* __sanity;
+	  errno = 0;
+#if defined(_GLIBCPP_USE_C99)
+	  float __f = strtof(__s, &__sanity);
+#else
+	  double __d = strtod(__s, &__sanity);
+	  float __f = static_cast<float>(__d);
+#ifdef _GLIBCPP_HAVE_FINITEF
+	  if (!finitef (__f))
+	    errno = ERANGE;
+#elif defined (_GLIBCPP_HAVE_FINITE)
+	  if (!finite (static_cast<double> (__f)))
+	    errno = ERANGE;
+#elif defined (_GLIBCPP_HAVE_ISINF)
+	  if (isinf (static_cast<double> (__f)))
+	    errno = ERANGE;
+#else
+	  if (fabs(__d) > numeric_limits<float>::max())
+	    errno = ERANGE;
+#endif
+#endif
+          if (__sanity != __s && *__sanity == '\0' && errno != ERANGE)
+	    __v = __f;
+	  else
+	    __err |= ios_base::failbit;
+	  setlocale(LC_ALL, __old);
+	  free(__old);
+	}
+    }
+
+  template<>
+    void
+    __convert_to_v(const char* __s, double& __v, ios_base::iostate& __err, 
+		   const __c_locale&, int) 
+    {
+      if (!(__err & ios_base::failbit))
+	{
+	  // Assumes __s formatted for "C" locale.
+	  char* __old = strdup(setlocale(LC_ALL, NULL));
+	  setlocale(LC_ALL, "C");
+	  char* __sanity;
+	  errno = 0;
+	  double __d = strtod(__s, &__sanity);
+          if (__sanity != __s && *__sanity == '\0' && errno != ERANGE)
+	    __v = __d;
+	  else
+	    __err |= ios_base::failbit;
+	  setlocale(LC_ALL, __old);
+	  free(__old);
+	}
+    }
+
+  template<>
+    void
+    __convert_to_v(const char* __s, long double& __v, 
+		   ios_base::iostate& __err, const __c_locale&, int) 
+    {
+      if (!(__err & ios_base::failbit))
+	{
+	  // Assumes __s formatted for "C" locale.
+	  char* __old = strdup(setlocale(LC_ALL, NULL));
+	  setlocale(LC_ALL, "C");
+#if defined(_GLIBCPP_USE_C99)
+	  char* __sanity;
+	  errno = 0;
+	  long double __ld = strtold(__s, &__sanity);
+          if (__sanity != __s && *__sanity == '\0' && errno != ERANGE)
+	    __v = __ld;
+#else
+	  typedef char_traits<char>::int_type int_type;
+	  long double __ld;
+	  errno = 0;
+	  int __p = sscanf(__s, "%Lf", &__ld);
+	  if (errno == ERANGE)
+	    __p = 0;
+#ifdef _GLIBCPP_HAVE_FINITEL
+	  if ((__p == 1) && !finitel (__ld))
+	    __p = 0;
+#endif
+	  if (__p && static_cast<int_type>(__p) != char_traits<char>::eof())
+	    __v = __ld;
+#endif
+	  else
+	    __err |= ios_base::failbit;
+	  setlocale(LC_ALL, __old);
+	  free(__old);
+	}
+    }
+
+  void
+  locale::facet::_S_create_c_locale(__c_locale& __cloc, const char*, 
+				    __c_locale)
+  { __cloc = NULL; }
+
+  void
+  locale::facet::_S_destroy_c_locale(__c_locale& __cloc)
+  { __cloc = NULL; }
+
+  __c_locale
+  locale::facet::_S_clone_c_locale(__c_locale&)
+  { return __c_locale(); }
+
+  /* locale::_S_categories stays in the module's asm .data; a same-shaped stand-in in a section
+     the link discards keeps its strings in this object's .rodata */
+  const char* __locale_S_categories[6] __attribute__((section(".discard"))) =
+    {
+      "LC_CTYPE", 
+      "LC_NUMERIC",
+      "LC_TIME",   
+      "LC_COLLATE", 
+      "LC_MONETARY",
+      "LC_MESSAGES"
+    };
+}  // namespace std
+/* the asm .data (locale::_S_categories) points at these strings of this object's .rodata */
+__asm__(".globl D_0017A8EC\nD_0017A8EC = $LC4");
+__asm__(".globl D_0017A8F8\nD_0017A8F8 = $LC5");
+__asm__(".globl D_0017A904\nD_0017A904 = $LC6");
+__asm__(".globl D_0017A90C\nD_0017A90C = $LC7");
+__asm__(".globl D_0017A918\nD_0017A918 = $LC8");
+__asm__(".globl D_0017A924\nD_0017A924 = $LC9");

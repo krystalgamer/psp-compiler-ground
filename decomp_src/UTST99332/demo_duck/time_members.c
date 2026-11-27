@@ -1,5 +1,3 @@
-#include "common.h"
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/time_members", _ZNKSt11__timepunctIcE6_M_putEPcjPKcPK2tm);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/time_members", _ZNSt11__timepunctIcE23_M_initialize_timepunctEPi);
+/* lang: c++ */
+/* the gcc-3.3.3 libstdc++ source of the 1.6.1 tree, as built for psp-gcc 1.6.1.internal */
+#include "../gcc1.6.1_src/libstdc++-v3/config/locale/generic/time_members.cc"

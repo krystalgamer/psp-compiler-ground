@@ -36,6 +36,13 @@ rodata 0x176374 gcc-3.3.3/libstdc__-v3/src/locale
 rodata 0x1764FC -
 bss 0x197414 gcc-3.3.3/libstdc__-v3/src/locale
 bss 0x197428 -
+# libstdc++ config/locale/generic and config/io units (the 1.6.1 tree's sources): their .rodata
+rodata 0x177388 monetary_members
+rodata 0x17738C numeric_members
+rodata 0x1773A0 time_members
+rodata 0x1774B8 basic_file
+rodata 0x1775B4 c__locale
+rodata 0x177604 -
 # math_* objects whose static initializer (the header statics) is C++: their .rodata and .bss
 rodata 0x1655F8 main_objs/math_SphericalCoord
 rodata 0x165628 main_objs/math_ZYZ

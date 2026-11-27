@@ -1,5 +1,3 @@
-#include "common.h"
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/collate_members", _ZNKSt7collateIcE10_M_compareEPKcS2_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/collate_members", _ZNKSt7collateIcE12_M_transformEPcPKcj);
+/* lang: c++ */
+/* the gcc-3.3.3 libstdc++ source of the 1.6.1 tree, as built for psp-gcc 1.6.1.internal */
+#include "../gcc1.6.1_src/libstdc++-v3/config/locale/generic/collate_members.cc"

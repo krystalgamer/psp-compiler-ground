@@ -40,6 +40,13 @@ rodata 0x1796A4 gcc-3.3.3/libstdc__-v3/src/locale
 rodata 0x17982C -
 bss 0x19A894 gcc-3.3.3/libstdc__-v3/src/locale
 bss 0x19A8A8 -
+# libstdc++ config/locale/generic and config/io units (the 1.6.1 tree's sources): their .rodata
+rodata 0x17A6B8 monetary_members
+rodata 0x17A6BC numeric_members
+rodata 0x17A6D0 time_members
+rodata 0x17A7E8 basic_file
+rodata 0x17A8E4 c__locale
+rodata 0x17A934 -
 # WaterPatch.cpp's C++ .bss: the header statics (math::HERMITE_BASIS..), mipmap_offset[5], set_disk's seed
 bss 0x18CF9C WaterPatch
 bss 0x18D0F8 -
