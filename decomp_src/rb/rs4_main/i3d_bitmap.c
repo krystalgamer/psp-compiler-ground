@@ -13,15 +13,37 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_bitmap", RemapOnStack);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_bitmap", I3dPicture__SetupFromTim2Sub_PSP);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_bitmap", I3dPicture__SetupFromTim2);
+int I3dPicture__SetupFromTim2Sub_PSP(void *, void *, void *, unsigned char, void *);
+int I3dPicture__SetupFromTim2(void *a, void *b, void *c, unsigned char d)
+{
+	return I3dPicture__SetupFromTim2Sub_PSP(a, b, c, d, 0);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_bitmap", I3dPicture__SetupFromTim2_WithImageConvertBuffer_PSP);
+int I3dPicture__SetupFromTim2Sub_PSP(void *, void *, void *, unsigned char, void *);
+int I3dPicture__SetupFromTim2_WithImageConvertBuffer_PSP(void *a, void *b, void *c, unsigned char d, void *e)
+{
+	return I3dPicture__SetupFromTim2Sub_PSP(a, b, c, d, e);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_bitmap", I3dClut__SetupFromTim2);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_bitmap", I3dPicture__Get_wPixel);
+int I3dPicture__Get_wPixel(char *p, int lv)
+{
+	int h = *(unsigned short *)(p + 0x88) >> lv;
+	int r = 1;
+	if (h != 0)
+		r = h;
+	return r;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_bitmap", I3dPicture__Get_hPixel);
+int I3dPicture__Get_hPixel(char *p, int lv)
+{
+	int h = *(unsigned short *)(p + 0x8A) >> lv;
+	int r = 1;
+	if (h != 0)
+		r = h;
+	return r;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_bitmap", I3dClut__Construct);
 

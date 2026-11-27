@@ -81,7 +81,12 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_sorter", I3dRender__SortTagCmd
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_sorter", I3dRender__SortTagCmdProc_ChangeStateAndSendPacket);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_sorter", I3dRender__SortTagCmdProc_ClearState);
+int I3dRender__SortTagCmdProc_ClearState(char *r, char *t)
+{
+	r += *(int *)(t + 0x10) * 4;
+	*(int *)(r + 0x1EC) = 0;
+	return 0;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_sorter", I3dRender__SortTagCmdProc_ClearStateAndSendPacket);
 

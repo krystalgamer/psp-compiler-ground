@@ -43,7 +43,10 @@ unsigned short I3rRoot__Get_nTex(void *arg0) {
     return M2C_FIELD(M2C_FIELD(arg0, void **, 0x10), unsigned short *, 0x2C);
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_parser_i3r", I3rRoot__GetTexName);
+int I3rRoot__GetTexName(char *r, int i)
+{
+	return (*(int **)(*(char **)(r + 0x10) + 0x18))[i];
+}
 
 #ifndef NULL
 #define NULL ((void *)0)

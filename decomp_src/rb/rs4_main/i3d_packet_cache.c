@@ -76,7 +76,15 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_packet_cache", I3dPacketEntry_
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_packet_cache", I3dPacketEntry__SetTofu);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_packet_cache", I3dPacketEntryParam__Clear);
+void I3dPacketEntryParam__Clear(int *p)
+{
+	p[0] = 0;
+	p[1] = 0;
+	p[2] = 0;
+	p[3] = 0;
+	p[4] = 0;
+	p[5] = 0;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_packet_cache", I3dPacketEntry__Construct);
 

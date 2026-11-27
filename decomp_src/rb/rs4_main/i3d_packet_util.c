@@ -214,7 +214,15 @@ void I3dPkDrawSpline_PSP(void) {
     iI3dGuDrawSpline_PSP_61A38();
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_packet_util", I3dPkPatchDivide_PSP);
+typedef struct { unsigned s:8; unsigned t:7; unsigned pad:9; unsigned cmd:8; } PdCmd;
+unsigned int *I3dPkPatchDivide_PSP(unsigned int *p, unsigned int s, unsigned int t)
+{
+	union { unsigned int w; PdCmd c; } u;
+	u.w = s | 0x36000000;
+	u.c.t = t;
+	*p = u.w;
+	return p + 1;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_packet_util", I3dPkPatchPrim_PSP);
 

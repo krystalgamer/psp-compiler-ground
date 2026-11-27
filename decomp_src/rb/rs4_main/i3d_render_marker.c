@@ -2,7 +2,6 @@
 #include "m2c_macros.h"
 int I3dPkDrawSphereMarkerA(int, int, int, int, float); /* extern */
 int I3dRenderStage__OpenPacketUca_ByUint32(int, M2C_UNK); /* extern */
-M2C_UNK I3dRenderStage__SetCurrentPacketEntry(int, int); /* extern */
 int SendDefaultStatus(int, int);                    /* extern */
 int I3dPkDrawBoxMarkerA(int, int, int, int, int, int); /* extern */
 int I3dPkDrawObbMarkerA(int, int, int, int, int);   /* extern */
@@ -45,7 +44,12 @@ int I3dRenderStage__DrawObbMarkerA(int arg0, int arg1, int arg2, int arg3) {
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_render_marker", I3dRenderStage__SetCurrentPacketEntry);
+int I3dRenderStage__SetCurrentPacketEntry(char *st, char *e)
+{
+	*(void **)(st + 0x828) = e;
+	*(void **)(st + 0x818) = *(void **)(e + 0xC);
+	return 0;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)

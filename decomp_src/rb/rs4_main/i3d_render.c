@@ -79,9 +79,19 @@ int I3dRender__GetTrashOverRun(void *arg0) {
     return (temp_v0 >= 0) ? 0 : -temp_v0;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_render", I3dRender__ReserveTrashQwc);
+int I3dRender__ReserveTrashQwc(char *r, int n)
+{
+	int p = (*(int *)(r + 0xF8) - n * 16) & ~15;
+	*(int *)(r + 0xF8) = p;
+	return p;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_render", I3dRender__ReserveTrashQwcUca);
+int I3dRender__ReserveTrashQwcUca(char *r, int n)
+{
+	int p = *(int *)(r + 0xF4);
+	*(int *)(r + 0xF4) = (p + n * 16 + 15) & ~15;
+	return p;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -180,7 +190,15 @@ int I3dRender__Construct(void *arg0, int arg1, int arg2, int arg3) {
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_render", I3dRender__EndScene_RequestAllocTex);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_render", I3dVertexAnimParam__Clear);
+void I3dVertexAnimParam__Clear(int *p)
+{
+	p[0] = 0;
+	p[1] = 0;
+	p[2] = 0;
+	p[3] = 0;
+	p[4] = 0;
+	p[5] = 0;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_render", I3rMaterialOperationGroup__MakePresetPacket_PSP);
 
