@@ -115,7 +115,44 @@ void classic_game_init(void)
 	demo3flg = 0;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_shima", classic_game_stageinit);
+extern int gcnttmp[];
+extern int gamestart_wait, deadsw, menusw, D_0039AEC4, D_0039AEC8;
+extern int enemy_shottype[];
+extern int shotwait, hiscoreentry, play2flg, demo3flg;
+extern int ufocnt_28EF9C[2];
+void SprAllDispSetSub(int pl);
+/* classic_inv_tamainit2 is called without a prototype (implicit int, defined
+   later as void): the call then sets v0, which keeps the store before it
+   after the ra save as in the original. */
+void classic_game_stageinit(void)
+{
+	gamestart_wait = 2;
+	gcnt_28F36C = 0;
+	gcnttmp[nowplay] = 0;
+	deadsw = 0;
+	menusw = 0;
+	classic_inv_tamainit2();
+	if (nowplay == 0) {
+		D_0039AEC4 = 0;
+		memset((void *)ptexdis1[0]->buf, 0, 0x10000);
+		spr_boxfill((int)ptexdis1[0]->buf, 0, 240, 224, 1, 2);
+	} else {
+		D_0039AEC8 = 0;
+		memset((void *)ptexdis2[0]->buf, 0, 0x10000);
+		spr_boxfill((int)ptexdis2[0]->buf, 0, 240, 224, 1, 2);
+	}
+	memset((void *)ptexdis1[1]->buf, 0, 0x10000);
+	memset((void *)ptexdis2[1]->buf, 0, 0x10000);
+	classic_inv_init_pos_sub(nowplay);
+	enemy_shottype[nowplay] = 0;
+	shotwait = 2;
+	hiscoreentry = -1;
+	play2flg = 0;
+	demo3flg = 0;
+	SprAllDispSetSub(nowplay);
+	ufocnt_28EF9C[0] = 0;
+	ufocnt_28EF9C[1] = 0;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_shima", main_classicinv);
 
