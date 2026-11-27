@@ -19,6 +19,8 @@ M2C_UNK HST_deleteHistoryNode(int);                 /* extern */
 
 
 
+typedef struct HEnt { HstNode *root; struct HEnt *prev; struct HEnt *next; } HEnt;
+int strncmp(const char *a, const char *b, unsigned int n);
 int HST_initHistory(void) {
     int *p;
     int *h;
@@ -1103,7 +1105,70 @@ void *HST_searchTargetNameHistoryNode(void *a, void *b) {
     return searchHistoryNodeInner(4, a, &key);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/history", HST_searchUriHistoryNode);
+HstNode *HST_searchUriHistoryNode(char *url, int n) {
+    HEnt *e;
+    HstNode *h;
+    HstNode *c;
+
+    if (url == NULL) {
+        return NULL;
+    }
+    e = *(HEnt **)history;
+    for (;;) {
+        if (e == NULL) {
+            break;
+        }
+        h = e->root;
+        while (h != NULL) {
+            if (*(char **)h != NULL && strncmp(*(char **)h, url, n) == 0) {
+                return h;
+            }
+            if ((c = h->child) != NULL) {
+                h = c;
+            } else if ((c = h->next) != NULL) {
+                h = c;
+            } else {
+                h = h->parent;
+                while (h != NULL) {
+                    if ((c = h->next) != NULL) {
+                        h = c;
+                        break;
+                    }
+                    h = h->parent;
+                }
+            }
+        }
+        e = e->next;
+    }
+    e = *(HEnt **)history;
+    for (;;) {
+        if (e == NULL) {
+            break;
+        }
+        h = e->root;
+        while (h != NULL) {
+            if (*(char **)h != NULL && strncmp(*(char **)h, url, n) == 0) {
+                return h;
+            }
+            if ((c = h->child) != NULL) {
+                h = c;
+            } else if ((c = h->next) != NULL) {
+                h = c;
+            } else {
+                h = h->parent;
+                while (h != NULL) {
+                    if ((c = h->next) != NULL) {
+                        h = c;
+                        break;
+                    }
+                    h = h->parent;
+                }
+            }
+        }
+        e = e->prev;
+    }
+    return NULL;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
