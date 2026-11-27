@@ -1082,7 +1082,7 @@ public:
         math::vector_xyzw _origin;  /* 0x0 */
         math::vector_xyzw _dir;     /* 0x10 */
         Type _type;                 /* 0x20 */
-        char _p24[0x34 - 0x24];
+        math::vector_xyzw _hit;     /* 0x24 */
         int _triangle;              /* 0x34: index of the hit triangle */
         char _p38[0x3C - 0x38];
         bool _f3C;                  /* 0x3C */
@@ -1106,6 +1106,7 @@ public:
     void build_bv_tree(bool, unsigned int);
     void build_bv_tree(BVH::Node *, bool, unsigned int);
     void add(const Mesh &, unsigned int);
+    void barycentricCoords(const Ray &, float &, float &, float &) const;
     void bvtree_trace(BVH::Node *, Ray &);
     void dumb_trace(Ray &);
     void trace(Ray &);
