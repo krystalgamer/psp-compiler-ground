@@ -201,4 +201,18 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/shop", Sub_Shop_Windo
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/shop", _GetCardPackID);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/shop", _DeckCheck);
+int _DeckCheck(int saveid, int kind)
+{
+	int sd = saveGetCurrentData();
+	int r;
+	int i, j;
+	saveid = cardlistGetCardIDFromSaveID(saveid);
+	r = saveid == *(unsigned short *)(sd + 0x228);
+	for (i = 0; i < 5; i++)
+		for (j = 0; j < 20; j++) {
+			ShopCard *e = (ShopCard *)((i * 0x34 + j) * 4 + sd + 0x2D0);
+			if (saveid == e[1].id && kind == e[1].kind)
+				return 1;
+		}
+	return r;
+}
