@@ -86,7 +86,22 @@ int rsvDummy(void) {
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/lib/rsv", rsvMove);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/lib/rsv", rsvLoop);
+void rsvLoop(void **head, void (*fn)(void *, int, int), int a, int b)
+{
+	void **p;
+	int s;
+	void (*f)(void *, int, int);
+	f = (void (*)(void *, int, int))rsvDummy;
+	if (fn)
+		f = fn;
+	for (p = *head; p; p = *p) {
+		s = ((int *)p)[1];
+		if (s == 0)
+			consPrintf(&D_000FB180, &D_000FB19C, 0x109, "rsvLoop", &D_000FB210);
+		if (s > 0)
+			f(p, a, b);
+	}
+}
 
 int rsvKeyState(int *p, int k)
 {
