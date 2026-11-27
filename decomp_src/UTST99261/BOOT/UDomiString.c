@@ -139,6 +139,7 @@ void ps_freeRecvInfo(void);
 int UTL_guessMIMETypeFromName(char *name);
 void ps_HeadSend(int len1, char *p1, int len2, char *p2, int a, int b, int id);
 void ps_postsend(int len1, char *p1, int len2, char *p2, int a, int hdrlen, char *hdr, int bodylen, char *body, int z, int id);
+char *strcat(char *d, const char *s);
 unsigned short UDomiString_ToLower(unsigned short c) {
     if (c < 0x80) {
         return tolower(c);
@@ -1184,7 +1185,46 @@ int ps_isMoveHistory(int off, int sid, int local) {
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", ps_fragmentJump);
+int ps_fragmentJump(int off) {
+    void *h;
+    char **f;
+    int len;
+    int *buf;
+    char *s;
+    PsIpc m;
+    h = (void *)HST_getHeadHistoryNode();
+    if (off != 0 && h != NULL && (f = (char **)HST_getFragmentIDs(h, off)) != NULL) {
+    ps_rflagclr();
+    len = HST_getCurURIlen((int)h);
+    if (f[5] != NULL) {
+        len += strlen(f[5]);
+    }
+    buf = MEM_malloc(0, len + 5);
+    buf[0] = len;
+    s = (char *)(buf + 1);
+    strcpy(s, HST_getCurURI((int)h));
+    if (f[5] != NULL) {
+        strcat(s, f[5]);
+    }
+    initMPU_RPL_LOAD_PAGE(&m);
+    m.x04 = buf_sessionUI;
+    m.x14 = buf_localUI;
+    m.x18 = len + 5;
+    m.x1C = (int)buf;
+    ps_sndmsg(&m, 1);
+    m.type = 2;
+    m.x04 = HST_getSessionID(h);
+    m.x08 = 0;
+    m.cmd = 0x311;
+    m.x10 = off;
+    m.x14 = 0;
+    m.x18 = 0;
+    m.x1C = 0;
+    ps_sndmsg(&m, 4);
+    return 1;
+    }
+    return 0;
+}
 
 int ps_isGetRequest(void *node) {
     char *uri, *u;
