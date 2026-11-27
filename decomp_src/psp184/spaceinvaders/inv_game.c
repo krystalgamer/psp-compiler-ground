@@ -1877,7 +1877,55 @@ void boss_laser_init(void)
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", boss_laser_start);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", boss_laser_control);
+typedef struct { int active, cnt; float ang, step, max; L2V3 st, ed, amp, pos; } BLZ_T;
+typedef struct { int f0, f4, f8, fc, f10, f14, f18, f1c, f20, f24, f28; float f2c, f30; int f34, f38, f3c, f40; L2V3 pos; int _p50[3]; float f5c, f60, f64, f68; int _p6c[6]; } BLP_T;
+/* both arrays live inside gmain: same base symbol, so the compiler may not disambiguate them */
+#define blz ((BLZ_T *)&gmain.b[0x1336C8])
+#define blp ((BLP_T *)&gmain.b[0x135B48])
+int hit_check_shield(float *pos, float r);
+int hit_check_player(float *pos, float r);
+void boss_laser_control(void)
+{
+	int i, n;
+	BLZ_T *l;
+	BLP_T *p;
+
+	for (i = 0; i < 32; i++) {
+		l = &blz[i];
+		if (l->active != 1)
+			continue;
+		l->ang += l->step;
+		if (l->max < l->ang)
+			l->ang = l->max;
+		l->pos.x = l->st.x + sinf(l->ang / 180.0f * 3.1415927f) * (l->ed.x - l->st.x);
+		l->pos.y = l->st.y + sinf(l->ang / 180.0f * 3.1415927f) * (l->ed.y - l->st.y);
+		l->pos.z = l->st.z + sinf(l->ang / 180.0f * 3.1415927f) * (l->ed.z - l->st.z);
+		l->pos.x += sinf(2.0f * l->ang / 180.0f * 3.1415927f) * l->amp.x;
+		l->pos.y += sinf(2.0f * l->ang / 180.0f * 3.1415927f) * l->amp.y;
+		l->pos.z += sinf(2.0f * l->ang / 180.0f * 3.1415927f) * l->amp.z;
+		if (--l->cnt <= 0) {
+			n = particle_set(gmain.f.ff64[3], 63);
+			if (n >= 0) {
+				p = &blp[n];
+				p->f2c = 255.0f;
+				p->f30 = -16.0f;
+				p->f3c = 64;
+				p->pos = l->pos;
+				p->f34 = 255;
+				p->f38 = 128;
+				p->f60 = 0.4f;
+				p->f64 = 0.2f;
+				p->f68 = 0.2f;
+				p->f5c = 0.4f;
+			}
+			l->cnt = 2;
+		}
+		if (hit_check_shield(&l->pos.x, 15.0f) >= 0 || hit_check_player(&l->pos.x, 10.0f) >= 0)
+			l->active = 0;
+		if (l->ang >= l->max)
+			l->active = 0;
+	}
+}
 
 void item_init(void)
 {
