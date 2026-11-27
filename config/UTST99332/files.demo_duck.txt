@@ -399,3 +399,10 @@ bss 0x18DF58 -
 rodata 0x16CA60 main_objs/scene_Node_2
 rodata 0x16CB10 -
 bss 0x18FBC8 main_objs/scene_Node_2
+# scene_Graph_4, common_StateMachine_VirtualState: C++ static initializers (Shape::traverse / StateMachine::process stay asm); .rodata: float pool, __PRETTY_FUNCTION__, assert strings; .bss
+rodata 0x16B4AC main_objs/scene_Graph_4
+bss 0x18F4A8 main_objs/scene_Graph_4
+rodata 0x160F68 main_objs/common_StateMachine_VirtualState
+rodata 0x161018 -
+bss 0x18D4A8 main_objs/common_StateMachine_VirtualState
+bss 0x18D4AC -

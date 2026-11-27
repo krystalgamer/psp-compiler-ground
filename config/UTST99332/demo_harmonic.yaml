@@ -385,6 +385,8 @@ segments:
       - { start: 0x159838, type: prxpad, order: .rodata }
       - [0x159840, .rodata, crt0]
       - [0x159850, rodata, asm/rodata_1597D0]
+      - [0x15E548, .rodata, main_objs/common_StateMachine_VirtualState]
+      - [0x15E5F8, rodata, asm/rodata_15E578]
       - [0x15E744, .rodata, main_objs/libc_fix_ItoA]
       - [0x15E754, rodata, asm/rodata_15E6D4]
       - [0x1600F4, .rodata, main_objs/psp_VertexArrayEdit]
@@ -415,6 +417,7 @@ segments:
       - [0x166198, rodata, asm/rodata_166118]
       - [0x1661D8, .rodata, main_objs/scene_DefaultShader]
       - [0x166204, rodata, asm/rodata_166184]
+      - [0x168604, .rodata, main_objs/scene_Graph_4]
       - [0x1686E8, .rodata, main_objs/scene_Graph_5]
       - [0x168704, rodata, asm/rodata_168684]
       - [0x169A60, .rodata, main_objs/draw_mesh_enabled]
@@ -549,6 +552,8 @@ segments:
       - { start: 0x189CE4, type: bss, vram: 0x189C40, name: bss_189C40 }
       - { start: 0x189CE4, type: .bss, vram: 0x189E00, name: main_objs/glut_ReshapeFunc }
       - { start: 0x189CE4, type: bss, vram: 0x189E50, name: bss_189E50 }
+      - { start: 0x189CE4, type: .bss, vram: 0x18A030, name: main_objs/common_StateMachine_VirtualState }
+      - { start: 0x189CE4, type: bss, vram: 0x18A034, name: bss_18A034 }
       - { start: 0x189CE4, type: .bss, vram: 0x18A2C0, name: main_objs/libc_fix_ItoA }
       - { start: 0x189CE4, type: bss, vram: 0x18A2C4, name: bss_18A2C4 }
       - { start: 0x189CE4, type: .bss, vram: 0x18A2CC, name: main_objs/psp_VertexArrayEdit }
@@ -564,6 +569,7 @@ segments:
       - { start: 0x189CE4, type: .bss, vram: 0x18BB0C, name: main_objs/scene_HasBVdata }
       - { start: 0x189CE4, type: .bss, vram: 0x18BB90, name: main_objs/scene_DefaultShader }
       - { start: 0x189CE4, type: bss, vram: 0x18BC14, name: bss_18BC14 }
+      - { start: 0x189CE4, type: .bss, vram: 0x18C028, name: main_objs/scene_Graph_4 }
       - { start: 0x189CE4, type: .bss, vram: 0x18C12C, name: main_objs/scene_Graph_5 }
       - { start: 0x189CE4, type: bss, vram: 0x18C230, name: bss_18C230 }
       - { start: 0x189CE4, type: .bss, vram: 0x18C748, name: main_objs/scene_Node_2 }

@@ -394,6 +394,8 @@ segments:
       - [0x15DB30, .rodata, crt0]
       - [0x15DB40, .rodata, WaterPatch]
       - [0x15DB94, rodata, asm/rodata_15DB14]
+      - [0x160FE8, .rodata, main_objs/common_StateMachine_VirtualState]
+      - [0x161098, rodata, asm/rodata_161018]
       - [0x1611E4, .rodata, main_objs/libc_fix_ItoA]
       - [0x1611F4, rodata, asm/rodata_161174]
       - [0x162B94, .rodata, main_objs/psp_VertexArrayEdit]
@@ -424,6 +426,7 @@ segments:
       - [0x1690B8, rodata, asm/rodata_169038]
       - [0x1690F8, .rodata, main_objs/scene_DefaultShader]
       - [0x169124, rodata, asm/rodata_1690A4]
+      - [0x16B52C, .rodata, main_objs/scene_Graph_4]
       - [0x16B610, .rodata, main_objs/scene_Graph_5]
       - [0x16B62C, rodata, asm/rodata_16B5AC]
       - [0x16C988, .rodata, main_objs/draw_mesh_enabled]
@@ -568,6 +571,8 @@ segments:
       - { start: 0x18CFCC, type: bss, vram: 0x18D0F8, name: bss_18D0F8 }
       - { start: 0x18CFCC, type: .bss, vram: 0x18D278, name: main_objs/glut_ReshapeFunc }
       - { start: 0x18CFCC, type: bss, vram: 0x18D2C8, name: bss_18D2C8 }
+      - { start: 0x18CFCC, type: .bss, vram: 0x18D4A8, name: main_objs/common_StateMachine_VirtualState }
+      - { start: 0x18CFCC, type: bss, vram: 0x18D4AC, name: bss_18D4AC }
       - { start: 0x18CFCC, type: .bss, vram: 0x18D740, name: main_objs/libc_fix_ItoA }
       - { start: 0x18CFCC, type: bss, vram: 0x18D744, name: bss_18D744 }
       - { start: 0x18CFCC, type: .bss, vram: 0x18D74C, name: main_objs/psp_VertexArrayEdit }
@@ -583,6 +588,7 @@ segments:
       - { start: 0x18CFCC, type: .bss, vram: 0x18EF8C, name: main_objs/scene_HasBVdata }
       - { start: 0x18CFCC, type: .bss, vram: 0x18F010, name: main_objs/scene_DefaultShader }
       - { start: 0x18CFCC, type: bss, vram: 0x18F094, name: bss_18F094 }
+      - { start: 0x18CFCC, type: .bss, vram: 0x18F4A8, name: main_objs/scene_Graph_4 }
       - { start: 0x18CFCC, type: .bss, vram: 0x18F5AC, name: main_objs/scene_Graph_5 }
       - { start: 0x18CFCC, type: bss, vram: 0x18F6B0, name: bss_18F6B0 }
       - { start: 0x18CFCC, type: .bss, vram: 0x18FBC8, name: main_objs/scene_Node_2 }

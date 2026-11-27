@@ -2,12 +2,13 @@
 /* cflags: -O3 -fno-exceptions */
 #undef __EXCEPTIONS
 #include "cxx/defer_asm.h"
+#define DEMO_STATICS_IOSTREAM
 #include "../main.hpp"
 
-extern "C" const char D_00160FD4[], D_00160FE0[], D_00160FF4[], D_00161014[];
-extern const char VirtualState_pushChild_fn[] __asm__("_ZZN6common12StateMachine12VirtualState9pushChildENS_8safe_ptrIPS1_EEE19__PRETTY_FUNCTION__");
+/* the module's .ctors/.dtors refer to the static constructor/destructor */
+__asm__(".globl _GLOBAL__I__ZN6common12StateMachine12VirtualState3popEv");
+__asm__(".globl _GLOBAL__D__ZN6common12StateMachine12VirtualState3popEv");
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/common_StateMachine_VirtualState", _Z41__static_initialization_and_destruction_0ii_13AC0);
 
 void common::StateMachine::VirtualState::pop()
 {
@@ -18,7 +19,7 @@ void common::StateMachine::VirtualState::pop()
 void common::StateMachine::VirtualState::pushChild(safe_ptr<VirtualState *> s)
 {
     popChild();
-    SGL_ASSERT(_child.invalid(), D_00160FD4, D_00160FE0, D_00160FF4, VirtualState_pushChild_fn, 0x2C, D_00161014);
+    SGL_ASSERT(_child.invalid(), " *** error ", "_child.invalid()", "../lib/common/StateMachine.cpp", __PRETTY_FUNCTION__, 0x2C, " ");
     _child = s;
     s->_machine = this;
     _child->enter();
@@ -93,20 +94,3 @@ void common::StateMachine::setTop(safe_ptr<VirtualState *> s)
     if (s.valid())
         s->enter();
 }
-
-extern "C" {
-void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_13AC0");
-void _GLOBAL__I__ZN6common12StateMachine12VirtualState3popEv(void);
-void _GLOBAL__D__ZN6common12StateMachine12VirtualState3popEv(void);
-}
-
-void _GLOBAL__I__ZN6common12StateMachine12VirtualState3popEv(void)
-{
-    static_init(1, 0xFFFF);
-}
-
-void _GLOBAL__D__ZN6common12StateMachine12VirtualState3popEv(void)
-{
-    static_init(0, 0xFFFF);
-}
-

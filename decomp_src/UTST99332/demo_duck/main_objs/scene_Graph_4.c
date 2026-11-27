@@ -2,21 +2,20 @@
 /* cflags: -O3 -fno-exceptions */
 #undef __EXCEPTIONS
 #include "cxx/defer_asm.h"
+#define DEMO_STATICS_MATH
+#define DEMO_STATICS_IOSTREAM
+#define DEMO_STATICS_SGL
 #include "../main.hpp"
 
-/* the strings stay in the module's .rodata (asm) */
-extern const char D_0016B550[];     /* " *** error " */
-extern const char D_0016B55C[];     /* "_finish_called" */
-extern const char D_0016B56C[];     /* "../lib/scene/Graph.traverse.cpp" */
-extern const char D_0016B58C[];     /* " " */
-extern const char Graph_traverse_name[] __asm__("_ZZN5scene5Graph8traverseENS_13TraversalTypeERN3sgl7FrustumERKN4math6matrixES8_S8_fE19__PRETTY_FUNCTION__");
+/* the module's .ctors/.dtors refer to the static constructor/destructor */
+__asm__(".globl _GLOBAL__I__ZN5scene5Graph8traverseENS_13TraversalTypeERN3sgl7FrustumERKN4math6matrixES8_S8_f");
+__asm__(".globl _GLOBAL__D__ZN5scene5Graph8traverseENS_13TraversalTypeERN3sgl7FrustumERKN4math6matrixES8_S8_f");
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph_4", _Z41__static_initialization_and_destruction_0ii_84160);
 
 void scene::Graph::traverse(TraversalType type, sgl::Frustum &frustum, const math::matrix &m0, const math::matrix &m1,
                             const math::matrix &m2, float f)
 {
-    SCENE_ASSERT(_finish_called, D_0016B550, D_0016B55C, D_0016B56C, Graph_traverse_name, 58, D_0016B58C);
+    SCENE_ASSERT(_finish_called, " *** error ", "_finish_called", "../lib/scene/Graph.traverse.cpp", __PRETTY_FUNCTION__, 58, " ");
     _root->traverse(type, frustum, m0, m1, m2, _light, f);
 }
 
@@ -89,20 +88,4 @@ void scene::Group::traverse_children(TraversalVarStack &tvs)
             continue;
         (*it)->traverse(tvs);
     }
-}
-
-extern "C" {
-void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_84160");
-void _GLOBAL__I__ZN5scene5Graph8traverseENS_13TraversalTypeERN3sgl7FrustumERKN4math6matrixES8_S8_f(void);
-void _GLOBAL__D__ZN5scene5Graph8traverseENS_13TraversalTypeERN3sgl7FrustumERKN4math6matrixES8_S8_f(void);
-}
-
-void _GLOBAL__I__ZN5scene5Graph8traverseENS_13TraversalTypeERN3sgl7FrustumERKN4math6matrixES8_S8_f(void)
-{
-    static_init(1, 0xFFFF);
-}
-
-void _GLOBAL__D__ZN5scene5Graph8traverseENS_13TraversalTypeERN3sgl7FrustumERKN4math6matrixES8_S8_f(void)
-{
-    static_init(0, 0xFFFF);
 }
