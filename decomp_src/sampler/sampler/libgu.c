@@ -1050,7 +1050,6 @@ void sceGuClear(int flags)
 	else
 		filter = 0;
 	if (flags & 0x10) {
-		GuContext *context;
 		int i;
 
 		count = 16;
