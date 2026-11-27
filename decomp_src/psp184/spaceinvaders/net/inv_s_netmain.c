@@ -116,7 +116,7 @@ extern struct SceNetAdhocctlPeerInfo peerinfo[16];
 extern struct SceNetAdhocctlScanInfo scaninfo[32];
 extern struct SceNetAdhocMatchingMember mmember[17];
 
-void draw_net_scan_result_list(int *x_ptr, int *y_ptr);
+void draw_net_scan_result_list(int x, int y);
 void draw_net_hello_list(int *x_ptr, int *y_ptr);
 void draw_net_established_list(int *x_ptr, int *y_ptr);
 static int get_nickname(int buflen, struct SceNetEtherAddr *addr, struct SceNetAdhocctlNickname **n);
@@ -225,7 +225,33 @@ INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_netmain", D_
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_netmain", draw_net_established_list);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_netmain", draw_net_scan_result_list);
+int sceNetAdhocctlGetScanInfo(int *buflen, struct SceNetAdhocctlScanInfo *buf);
+int snprintf(char *buf, unsigned int size, const char *fmt, ...);
+void *memcpy(void *d, const void *s, unsigned int n);
+void sceNetEtherNtostr(const struct SceNetEtherAddr *addr, char *str);
+void inv_font_ascii(char *str, int x, int y, int w, int h, int r, int g, int b, int a);
+void draw_net_scan_result_list(int x, int y)
+{
+	char group_name_str[9];
+	struct SceNetAdhocctlScanInfo *sinfo;
+	char mess_buff[128];
+	int ret, buflen;
+
+	buflen = sizeof(scaninfo);
+	ret = sceNetAdhocctlGetScanInfo(&buflen, scaninfo);
+	if (ret < 0)
+		return;
+	if (buflen != 0) {
+		for (sinfo = scaninfo; sinfo != NULL; sinfo = sinfo->next) {
+			ret = snprintf(mess_buff, sizeof(mess_buff), "ch: %d  BSSID: ", sinfo->channel);
+			sceNetEtherNtostr((struct SceNetEtherAddr *)&sinfo->bssid, mess_buff + ret);
+			memcpy(group_name_str, sinfo->group_name.data, 8);
+			group_name_str[8] = '\0';
+			inv_font_ascii(mess_buff, x, y, 100, 100, 255, 255, 255, 255);
+			y += 0x18;
+		}
+	}
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_netmain", draw_net_member_list);
 
