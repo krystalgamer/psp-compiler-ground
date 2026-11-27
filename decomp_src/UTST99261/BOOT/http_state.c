@@ -1,7 +1,27 @@
 /* cflags: -O1 */
 #include "common.h"
+#include "http_lib.h"
 #include "http_os.h"
 #include "m2c_macros.h"
+typedef struct HttpReqMsg {
+    int f0;                           /* 0x0 */
+    int f4;                           /* 0x4 */
+    int type;                         /* 0x8 */
+    void *arg;                        /* 0xC */
+} HttpReqMsg;
+extern int gReqMbxID;
+int sceHttpGetStatusCode(int req, int *status);
+int sceHttpDeleteRequest(int id);
+int sceKernelSendMbx(int id, void *msg);
+int http_delreqresource(int h);
+typedef struct HtHdr {
+    int f0;
+    int f4;
+    char *name;                       /* 0x8 */
+    char *value;                      /* 0xC */
+} HtHdr;
+void *UTL_peekqueue(void *q, void *prev);
+int strcasecmp(const char *a, const char *b);
 void *srchThreadTbl(int id);
 typedef struct DumyArg {
     void (*func)(void *);
@@ -9,13 +29,112 @@ typedef struct DumyArg {
 } DumyArg;
 
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/http_state", http_state);
+int http_state(int h)
+{
+    int st;
+    HttpObj *o = HTTP_OBJ(h);
+    int r;
+    int ps;
+    int status;
+    HttpReqMsg *m;
+
+    if (h == 0)
+        return -100;
+    OS_thread_mutex_lock(o->mutex);
+    st = o->f1C;
+    ps = o->state;
+    if (o->f24 == 1 && st == 2) {
+        r = sceHttpGetStatusCode(o->req, &status);
+        if (r < 0)
+            goto err;
+        if ((unsigned int)(status - 300) < 100 && (o->rule & 4)) {
+            r = sceHttpDeleteRequest(o->req);
+            if (r != 0)
+                goto fail;
+            o->req = -1;
+            r = http_delreqresource(h);
+            if (r < 0) {
+fail:
+                OS_thread_mutex_unlock(o->mutex2);
+err:
+                if (o->error == 0)
+                    o->error = r;
+                goto unlock;
+            }
+            OS_thread_mutex_unlock(o->mutex2);
+            st = 1;
+            goto done;
+        }
+    } else if (ps == -1) {
+        if (st == 1) {
+            o->f1C = st;
+            o->state = 3;
+            OS_thread_mutex_unlock(o->mutex);
+            m = MEM_malloc(0, sizeof(HttpReqMsg));
+            if (m == NULL) {
+                if (o->error == 0)
+                    o->error = -103;
+                return o->error;
+            }
+            m->type = 1;
+            m->arg = o;
+            r = sceKernelSendMbx(gReqMbxID, m);
+            st = 1;
+            if (r < 0) {
+                if (o->error == 0)
+                    o->error = r;
+                return o->error;
+            }
+            goto done;
+        }
+        if (st == 3) {
+            o->f24 = st;
+unlock:
+            OS_thread_mutex_unlock(o->mutex);
+            return o->error;
+        }
+    }
+done:
+    o->f24 = st;
+    OS_thread_mutex_unlock(o->mutex);
+    return st;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/http_state", htlib_setheaderkey);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/http_state", htlib_getheadervalue);
+char *htlib_getheadervalue(void *q, const char *name, int idx)
+{
+    int n = 0;
+    HtHdr *h;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/http_state", htlib_strnmcat);
+    for (h = UTL_peekqueue(q, NULL); h != NULL; h = UTL_peekqueue(q, h))
+        if (strcasecmp(h->name, name) == 0) {
+            if (n >= idx)
+                return h->value;
+            n++;
+        }
+    return NULL;
+}
+
+char *htlib_strnmcat(char *dst, int n, ...)
+{
+    __builtin_va_list ap;
+    char *d;
+    int i, j, len;
+    char *s;
+
+    __builtin_stdarg_start(ap, n);
+    d = dst;
+    for (i = 0; i < n; i++) {
+        len = __builtin_va_arg(ap, int);
+        s = __builtin_va_arg(ap, char *);
+        if (s != NULL)
+            for (j = 0; j < len && s[j] != 0; j++)
+                *d++ = s[j];
+    }
+    *d = 0;
+    return dst;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/http_state", htlib_getstrheadervalue);
 
@@ -36,7 +155,22 @@ void OS_thread_exit(void *ret)
     sceKernelExitThread(0);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/http_state", OS_thread_join);
+int OS_thread_join(int th, void **retp)
+{
+    OSThread *t = (OSThread *)(th * 2);
+
+    if (sceKernelWaitSema(t->sema, 1, NULL) < 0)
+        return 6;
+    sceKernelTerminateThread(t->f0);
+    if (sceKernelDeleteThread(t->f0) < 0)
+        return 6;
+    sceKernelDeleteSema(t->sema);
+    if (retp != NULL)
+        *retp = t->retval;
+    delThreadTbl(t);
+    MEM_free(0, t);
+    return 0;
+}
 
 int OS_thread_self(void)
 {

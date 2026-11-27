@@ -3,6 +3,13 @@
 
 /* HTTP library (http_*.c); handles are the object address >> 1 */
 
+typedef struct HttpHdr {
+    int f0;
+    struct HttpHdr *next;             /* 0x4 */
+    char *name;                       /* 0x8 */
+    char *value;                      /* 0xC */
+} HttpHdr;
+
 typedef struct HttpObj {
     int error;
     int rule;
@@ -33,7 +40,8 @@ typedef struct HttpObj {
     int tmpl;                         /* 0xD0 */
     int conn;                         /* 0xD4 */
     int req;                          /* 0xD8 */
-    char padDC[8];
+    struct HttpHdr *hdrs;             /* 0xDC */
+    struct HttpHdr *phdrs;            /* 0xE0 */
     void *mfile;                      /* 0xE4 */
     int fE8;
 } HttpObj;

@@ -138,7 +138,33 @@ int aoss_check_str(unsigned char *s, int n)
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/aoss", checkAP);
+int checkAP(int *list)
+{
+    int n;
+    int i;
+    int cnt = 0;
+    int r = 0;
+    unsigned char *e;
+
+    if (list[0] == 0)
+        return 5;
+    n = list[0];
+    if ((unsigned int)n > 64)
+        n = 64;
+    if (n > 0) {
+        for (e = (unsigned char *)list, i = n; i != 0; i--, e += 0x54) {
+            if ((*(int *)(e + 0x54) & 1) && *(int *)(e + 4) == AOSS_Strlen(D_00141138))
+                cnt += AOSS_Memcmp(e + 8, D_00141138, AOSS_Strlen(D_00141138)) == 0;
+        }
+        if (cnt >= 2)
+            r = 4;
+        if (cnt != 0)
+            goto out;
+    }
+    r = 5;
+out:
+    return r;
+}
 
 int AOSS_set_APInfo(AossApInfo *info)
 {
