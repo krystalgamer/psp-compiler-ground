@@ -3,6 +3,11 @@
 #include "nflayout.h"
 #include "lo_frame.h"
 #include "m2c_macros.h"
+BOX *createBox(void *ctx, int type);
+void insLinkBox(BOX *b, BOX *parent, BOX *after);
+void initFrameBorderContent(BOX *b, int type);
+void initBoxProperty(BOX *b);
+int colorValue(char *s);
 int adjustMoveFrameBorderValue(void *, int, int);   /* extern */
 int getFramesetBox();                               /* extern */
 int getRootBox();                                   /* extern */
@@ -38,7 +43,38 @@ void deleteBuffer(void **buf) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_frame", insertBuffer_87F0C);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_frame", splitString);
+int splitString(char *s, char sep, void *out) {
+    int i = 0;
+    int j = 0;
+    char *tmp;
+    char c;
+    tmp = MEM_malloc(0, strlen(s) + 1);
+    if (tmp == NULL) {
+        return -1;
+    }
+    do {
+        for (;;) {
+            if (s[i] == sep) {
+                break;
+            }
+            if (s[i] == 0) {
+                break;
+            }
+            tmp[j] = s[i];
+            i++;
+            j++;
+        }
+        tmp[j] = 0;
+        insertBuffer_87F0C(tmp, j, out);
+        c = s[i++];
+        if (c == 0) {
+            break;
+        }
+        j = 0;
+    } while (1);
+    MEM_free(0, tmp);
+    return 0;
+}
 
 int sumInputSize(s8 type, FRAMESIZES *a) {
     int i;
@@ -106,13 +142,82 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_frame", reinitFrameSize);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_frame", getFrameSizeFromFramesetBox);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_frame", setFrameSizeToFramesetBox);
+void setFrameSizeToFramesetBox(int w, int h, BOX *fs, int idx) {
+    int ncols = FSETD(fs)->ncols;
+    int nrows = FSETD(fs)->nrows;
+    int row;
+    int col;
+    int *rows;
+    int *cols;
+    if (ncols != 0) {
+        row = idx / ncols;
+        col = idx % ncols;
+    } else {
+        row = idx;
+        col = 0;
+    }
+    if (col < 16) {
+        if (row < 16) {
+            rows = FSETD(fs)->rows;
+            cols = FSETD(fs)->cols;
+            if (ncols != 0) {
+                if (nrows != 0) {
+                    cols[col] = w;
+                    rows[row] = h;
+                } else {
+                    cols[col] = w;
+                }
+            } else if (nrows != 0) {
+                rows[row] = h;
+            }
+        }
+    }
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_frame", getMyColFrameBorder);
+int getMyColFrameBorder(BOX *box) {
+    int ret = 0;
+    BOX *fs;
+    BOX *c;
+    int idx;
+    int col;
+    int ncols;
+    fs = getFramesetBox(box->parent);
+    if (fs == NULL) {
+        return 0;
+    }
+    idx = 0;
+    switch (box->content) {
+    case 1:
+        idx = FFRAMED(box)->x24;
+        break;
+    case 2:
+        idx = FSETD(box)->xA8;
+        break;
+    }
+    ncols = FSETD(fs)->ncols;
+    if (ncols == 0) {
+        return 0;
+    }
+    col = idx % ncols;
+    c = fs->child;
+    for (;;) {
+        if (c == NULL) {
+            break;
+        }
+        if (c->content == 1 && FFRAMED(c)->x24 == col) {
+            ret = FFRAMED(c)->x3C;
+        }
+        if (box->content == 2 && c->content == 2 && FSETD(c)->xA8 == col) {
+            ret = FSETD(c)->xAC;
+        }
+        c = c->next;
+    }
+    return ret;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_frame", getMyRowFrameBorder);
 
-void initFrameBorderPosition_hfull(BOX *frame, BOX *border, int *x, int *y, int *w, int *h, int size) {
+void initFrameBorderPosition_hfull(BOX *frame, BOX *border, int *x, int *y, int *w, int *h, int size, int z) {
     border->width = FFRAMED(frame)->x94;
     border->height = size;
     border->x = *x;
@@ -120,7 +225,7 @@ void initFrameBorderPosition_hfull(BOX *frame, BOX *border, int *x, int *y, int 
     *(int *)border->geom = 0;
 }
 
-void initFrameBorderPosition_vfull(BOX *frame, BOX *border, int *x, int *y, int *w, int *h, int size) {
+void initFrameBorderPosition_vfull(BOX *frame, BOX *border, int *x, int *y, int *w, int *h, int size, int z) {
     border->width = size;
     border->height = FFRAMED(frame)->x98;
     border->x = *x - size;
@@ -134,11 +239,76 @@ INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/lo_frame", D_001391DC);
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/lo_frame", D_001391E0);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_frame", createFrameBorderBox_create);
+BOX *createFrameBorderBox_create(BOX *frame, int type, int *x, int *y, int *w, int *h, int z) {
+    BOX *c;
+    BOX *b;
+    int size;
+    c = getLastFrameBox(frame)->prev;
+    for (;;) {
+        if (c == NULL) {
+            return NULL;
+        }
+        if (c->content == 1) {
+            break;
+        }
+        if (c->content == 2) {
+            break;
+        }
+        c = c->prev;
+    }
+    b = createBox(0, 1);
+    if (b == NULL) {
+        return NULL;
+    }
+    insLinkBox(b, frame, c);
+    b->display = 0;
+    b->html = 0;
+    initFrameBorderContent(b, type);
+    initBoxProperty(b);
+    size = FSETD(frame)->borderSize;
+    b->style->unk48 = 1;
+    b->style->unk4A = 1;
+    b->style->unk4C = 1;
+    b->style->unk4E = 1;
+    b->style->unk30 = size;
+    b->style->unk32 = size;
+    b->style->unk34 = size;
+    b->style->unk36 = size;
+    if (FSETD(frame)->borderColor == 0) {
+        b->style->unk38 = colorValue("gray");
+        b->style->unk3C = colorValue("gray");
+        b->style->unk40 = colorValue("gray");
+        b->style->unk44 = colorValue("gray");
+    } else {
+        b->style->unk38 = FSETD(frame)->borderColor;
+        b->style->unk3C = FSETD(frame)->borderColor;
+        b->style->unk40 = FSETD(frame)->borderColor;
+        b->style->unk44 = FSETD(frame)->borderColor;
+    }
+    return b;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_frame", createFrameBorderBox_hfull);
+BOX *createFrameBorderBox_hfull(BOX *frame, int type, int *x, int *y, int *w, int *h, int z) {
+    BOX *b = createFrameBorderBox_create(frame, type, x, y, w, h, z);
+    int size;
+    if (b == NULL) {
+        return NULL;
+    }
+    size = FSETD(frame)->borderSize;
+    initFrameBorderPosition_hfull(frame, b, x, y, w, h, size, z);
+    return b;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_frame", createFrameBorderBox_vfull);
+BOX *createFrameBorderBox_vfull(BOX *frame, int type, int *x, int *y, int *w, int *h, int z) {
+    BOX *b = createFrameBorderBox_create(frame, type, x, y, w, h, z);
+    int size;
+    if (b == NULL) {
+        return NULL;
+    }
+    size = FSETD(frame)->borderSize;
+    initFrameBorderPosition_vfull(frame, b, x, y, w, h, size, z);
+    return b;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_frame", createFrameBorder);
 
@@ -159,7 +329,7 @@ void drawFrameBorder(BOX *box) {
     drawFrameBorderLoop(box);
 }
 
-void updateParentFrameset(BOX *box, void *a, void *b) {
+void updateParentFrameset(BOX *box, int a, int b) {
     BOX *parent = box->parent;
     int v;
     if (parent != NULL && parent->content == 2) {
@@ -204,4 +374,37 @@ void moveFrameBorder(void *arg0, int arg1) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_frame", isLoadedAllChild);
+int isLoadedAllChild(void *root) {
+    void *n;
+    void *c;
+    void *p;
+    n = HST_getChildHistoryNode(root);
+    while (n != NULL) {
+        if (HST_getRequestFlag(n) >= 0) {
+            if (M2C_FIELD(n, void **, 0x6C) == NULL || M2C_FIELD(M2C_FIELD(M2C_FIELD(n, void **, 0x6C), void **, 0x20), int *, 0x40) != 3) {
+                return 0;
+            }
+        }
+        c = HST_getChildHistoryNode(n);
+        if (c != NULL) {
+            n = c;
+        } else {
+            c = HST_getSiblingHistoryNode(n);
+            if (c != NULL) {
+                n = c;
+            } else {
+                for (p = HST_getParentHistoryNode(n); p != NULL && p != root; p = HST_getParentHistoryNode(p)) {
+                    c = HST_getSiblingHistoryNode(p);
+                    if (c != NULL) {
+                        n = c;
+                        break;
+                    }
+                }
+                if (p == root) {
+                    return 1;
+                }
+            }
+        }
+    }
+    return 1;
+}
