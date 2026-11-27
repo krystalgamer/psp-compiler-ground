@@ -1,6 +1,19 @@
 /* cflags: -O2 -frename-registers */
 #include "common.h"
 #include "m2c_macros.h"
+unsigned short AOSS_Htons(unsigned short v);
+typedef struct RC4Ctx {
+    unsigned int x;
+    unsigned int y;                   /* 0x4 */
+    unsigned char *state;             /* 0x8 */
+    unsigned int n;                   /* 0xC */
+} RC4Ctx;
+extern unsigned char TANE[];
+void RC4init(RC4Ctx *ctx, unsigned char *key, unsigned int keylen, unsigned int n);
+void RC4encrypt(RC4Ctx *ctx, unsigned char *out, unsigned char *in, unsigned int n);
+unsigned char arcfour_byte(RC4Ctx *ctx);
+void MakeKey(int seed, unsigned char *out, int len, unsigned char *key, int keylen);
+void Rotate(unsigned char *buf, int len, unsigned char *tmp);
 typedef struct AossData {
     unsigned char *mac;               /* 0x0 */
     int f4;
@@ -91,7 +104,18 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/aoss", checkAP);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/aoss", AOSS_set_APInfo);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/aoss", MakeSendSeqID);
+void MakeSendSeqID(int n, unsigned char *p, unsigned char *mac)
+{
+    int i;
+    short r;
+
+    for (i = 0; i < n; i++) {
+        AOSS_Memcpy(&p[i * 8], mac, 6);
+        r = AOSS_Rand();
+        *(short *)&p[i * 8 + 6] = r;
+        *(short *)&p[i * 8 + 6] = AOSS_Htons(r);
+    }
+}
 
 int AOSS_StatusExclusion(int s)
 {
@@ -166,15 +190,95 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/aoss", SetPacketHeader);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/aoss", SendPacketUDP);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/aoss", EncodeRC4);
+int EncodeRC4(unsigned char *in, unsigned char *out, int len, unsigned char *crcp, unsigned char *iv, unsigned char *key, int keylen)
+{
+    RC4Ctx ctx;
+    short r;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/aoss", DecodeRC4);
+    *crcp = crc(in, len);
+    ctx.state = AOSS_Malloc(len);
+    if (ctx.state == NULL)
+        return -1;
+    r = AOSS_Rand();
+    AOSS_Memcpy(iv, &r, 2);
+    AOSS_Memcpy(TANE, iv, 2);
+    AOSS_Memcpy(TANE + 2, key, keylen);
+    RC4init(&ctx, TANE, keylen + 2, len);
+    RC4encrypt(&ctx, out, in, len);
+    AOSS_Free(ctx.state);
+    return 0;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/aoss", RC4init);
+int DecodeRC4(unsigned char *in, unsigned char *out, int len, unsigned char c, unsigned char *iv, unsigned char *key, int keylen)
+{
+    RC4Ctx ctx;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/aoss", RC4encrypt);
+    ctx.state = AOSS_Malloc(len);
+    if (ctx.state == NULL) {
+        aoss_set_error(2);
+        return -1;
+    }
+    AOSS_Memcpy(TANE, iv, 2);
+    AOSS_Memcpy(TANE + 2, key, keylen);
+    RC4init(&ctx, TANE, keylen + 2, len);
+    RC4encrypt(&ctx, out, in, len);
+    if (crc(out, len) != c) {
+        aoss_set_error(0x12);
+        AOSS_Free(ctx.state);
+        return -1;
+    }
+    AOSS_Free(ctx.state);
+    return 0;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/aoss", arcfour_byte);
+void RC4init(RC4Ctx *ctx, unsigned char *key, unsigned int keylen, unsigned int n)
+{
+    unsigned char *s;
+    unsigned int i, j, k;
+    unsigned char t, u;
+
+    ctx->y = 0;
+    ctx->x = 0;
+    ctx->n = n;
+    s = ctx->state;
+    for (i = 0; i < n; i++)
+        s[i] = i;
+    j = 0;
+    k = 0;
+    for (i = 0; i < n; i++) {
+        t = s[i];
+        j = (j + key[k] + t) % ctx->n;
+        if (++k >= keylen)
+            k = 0;
+        u = s[j];
+        s[j] = t;
+        s[i] = u;
+    }
+}
+
+void RC4encrypt(RC4Ctx *ctx, unsigned char *out, unsigned char *in, unsigned int n)
+{
+    unsigned int i;
+
+    for (i = 0; i < n; i++)
+        out[i] = arcfour_byte(ctx) ^ in[i];
+}
+
+unsigned char arcfour_byte(RC4Ctx *ctx)
+{
+    unsigned char x, y, sx, sy;
+    unsigned char *s = ctx->state;
+
+    x = (ctx->x + 1) % ctx->n;
+    sx = s[x];
+    y = (sx + ctx->y) % ctx->n;
+    sy = s[y];
+    ctx->x = x;
+    ctx->y = y;
+    s[y] = sx;
+    s[x] = sy;
+    return s[(sx + sy) % ctx->n];
+}
 
 unsigned char crc(unsigned char *buf, int len)
 {
@@ -209,9 +313,43 @@ void make_crc_table(int unused, unsigned int *table)
     }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/aoss", CryptSeqNo);
+int CryptSeqNo(unsigned char *buf, int len, unsigned char *key, int keylen)
+{
+    unsigned char *a;
+    unsigned char *b;
+    int i;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/aoss", MakeKey);
+    a = AOSS_Malloc(len / 2);
+    if (a == NULL)
+        return -1;
+    b = AOSS_Malloc(len);
+    if (b == NULL) {
+        AOSS_Free(a);
+        return -1;
+    }
+    for (i = 0; i < 2; i++) {
+        MakeKey(i, a, len, key, keylen);
+        AddKey(a, buf, len);
+        Rotate(buf, len, b);
+    }
+    AOSS_Free(a);
+    AOSS_Free(b);
+    return 0;
+}
+
+void MakeKey(int seed, unsigned char *out, int len, unsigned char *key, int keylen)
+{
+    int i;
+    int k = seed % keylen;
+    int half = len / 2;
+
+    for (i = 0; i < half; i++) {
+        out[i] = i;
+        out[i] ^= key[k];
+        if (++k >= keylen)
+            k = 0;
+    }
+}
 
 void AddKey(unsigned char *key, unsigned char *buf, int len)
 {
@@ -222,7 +360,14 @@ void AddKey(unsigned char *key, unsigned char *buf, int len)
         buf[half + i] ^= key[i];
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/aoss", Rotate);
+void Rotate(unsigned char *buf, int len, unsigned char *tmp)
+{
+    int half = len / 2;
+
+    AOSS_Memcpy(tmp, buf + half, half);
+    AOSS_Memcpy(tmp + half, buf, half);
+    AOSS_Memcpy(buf, tmp, len);
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
