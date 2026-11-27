@@ -109,7 +109,29 @@ void *readCFData(char *path, int *size)
     return buf;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_input", writeCFData);
+int writeCFData(char *path, void *buf, int size, int off)
+{
+    void *fp;
+
+    if (path[0] == 0)
+        return -0x78;
+    if (size == 0)
+        return -0x78;
+    if (off == 0)
+        fp = FIO_fopen(path, "wb");
+    else
+        fp = FIO_fopen(path, "ab");
+    if (fp == NULL)
+        return -0x6E;
+    FIO_fseek(fp, off, 0);
+    if (FIO_fwrite(buf, size, 1, fp) != 1) {
+        FIO_fclose(fp);
+        FIO_remove(path);
+        return -0x8C;
+    }
+    FIO_fclose(fp);
+    return 0;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
