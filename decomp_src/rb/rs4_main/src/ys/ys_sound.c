@@ -41,40 +41,4 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_sound", _ZTIN2Ys5Soun
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_sound", _ZTSN2Ys5SoundE);
 
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_sound", D_00105238);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_sound", _ZZN2Ys4Task15MessageReceiverEP4TaskjPvjE12__FUNCTION__);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_sound", D_0010525C);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_sound", D_00105278);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_sound", D_0010528C);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_sound", D_00105294);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_sound", _ZTVN2Ys14TaskStateSleepE);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_sound", D_001052C0);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_sound", _ZTVN2Ys9TaskStateE);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_sound", D_001052E8);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_sound", _ZTVN2Ys4TaskE);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_sound", D_00105310);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_sound", _ZTIN2Ys4TaskE);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_sound", _ZTIN2Ys9TaskStateE);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_sound", _ZTIN2Ys14TaskStateSleepE);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_sound", _ZTSN2Ys14TaskStateSleepE);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_sound", _ZTSN2Ys9TaskStateE);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_sound", _ZTSN2Ys4TaskE);
-
 } /* extern "C": m2c drafts with mangled names, kept as C linkage */

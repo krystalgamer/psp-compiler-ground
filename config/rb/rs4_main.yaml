@@ -613,6 +613,7 @@ segments:
       - [0x104FF0, .rodata, src/ys/ys_module_object]
       - [0x105050, .rodata, src/ys/ys_screen_panel]
       - [0x1052A0, .rodata, src/ys/ys_sound]
+      - [0x1052F8, .rodata, src/ys/ys_task]
       - [0x105448, .rodata, src/ys/ys_text_menu_view]
       - [0x1055BC, .rodata, src/ys/ys_tile]
       - [0x1055C4, .rodata, src/net/network]
