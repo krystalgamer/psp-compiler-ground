@@ -872,11 +872,15 @@ void DeleteTextures(int, const unsigned int *);
 struct hc_node_t {
     unsigned char type;         /* 0x0: 1 root, 2 leaf */
     hc_node_t *parent;          /* 0x4 */
-    char _p8[0x10 - 0x8];
+    hc_node_t *child[2];        /* 0x8 */
     unsigned long item;         /* 0x10 */
     int weight;                 /* 0x14 */
 };
-struct hc_item_t;
+struct hc_item_t {
+    unsigned long item;         /* 0x0 */
+    unsigned char nbits;        /* 0x4 */
+    unsigned long code;         /* 0x8 */
+};
 class CCmpr {
 public:
     struct PoolEntry {
@@ -898,8 +902,8 @@ public:
     hc_node_t *FindLeastImportantRoot(hc_node_t *);
     int CountRoots();
     int CountLeaves();
-    void AnalyzeItems();
-    void CreateHuffmanTree();
+    bool AnalyzeItems();
+    bool CreateHuffmanTree();
     void EncodeItem(hc_item_t *, hc_node_t *);
     bool HuffmanEncode();
     bool Compress();
