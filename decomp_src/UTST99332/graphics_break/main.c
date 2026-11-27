@@ -167,9 +167,39 @@ INCLUDE_ASM("tmp/asm/UTST99332/graphics_break/nonmatchings/main", mk_pkt);
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_break/nonmatchings/main", cbvsync);
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_break/nonmatchings/main", frame_update);
+static void frame_update(void)
+{
+	float angle;
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_break/nonmatchings/main", draw_debug);
+	angle = ((frame * 2) % 360) * 3.1415927f / 180.0f;
+	pos.rot.x = angle;
+	pos.rot.y = angle;
+	pos.rot.z = angle;
+	frame++;
+	num += step;
+	if (num < 0) {
+		step = 1;
+		num = 0;
+	} else if (num > 19) {
+		num = 19;
+		step = -1;
+	}
+}
+
+extern const char D_00011E04[];
+extern const char D_00011E10[];
+extern const char D_00011E18[];
+static void draw_debug(void)
+{
+	char str[64];
+
+	sprintf(str, D_00011E04, fps);
+	sceGuDebugPrint(8, 8, 0xffffffff, str);
+	sprintf(str, D_00011E10, vcnt);
+	sceGuDebugPrint(8, 16, 0xffffffff, str);
+	sprintf(str, D_00011E18, list_size);
+	sceGuDebugPrint(8, 24, 0xffffffff, str);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_break/nonmatchings/main", draw_frame);
 
