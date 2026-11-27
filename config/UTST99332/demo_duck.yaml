@@ -404,6 +404,8 @@ segments:
       - [0x1685E8, rodata, asm/rodata_168568]
       - [0x168604, .rodata, main_objs/math_basic_net_basic_net]
       - [0x168614, rodata, asm/rodata_168594]
+      - [0x16D67C, .rodata, main_objs/VertexColorEnv]
+      - [0x16D684, rodata, asm/rodata_16D604]
       - [0x171C94, .rodata, main_objs/math_TransformStack]
       - [0x171C9C, rodata, asm/rodata_171C1C]
       - [0x171E34, .rodata, main_objs/math_TransformStackFunc]

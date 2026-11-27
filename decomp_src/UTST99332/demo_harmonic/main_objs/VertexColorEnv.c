@@ -1,5 +1,5 @@
 /* lang: c++ */
-/* cflags: -O3 -fno-exceptions */
+/* cflags: -O3 -fno-exceptions -fno-merge-constants */
 #undef __EXCEPTIONS
 #include "cxx/defer_asm.h"
 #include "../main.hpp"
@@ -7,17 +7,35 @@
 extern "C" void glColor3fv(const GLfloat *);
 extern "C" void glVertex3fv(const GLfloat *);
 
+namespace math {
+extern float PI;
+extern float HALFPI;
+}
+
+/* weak instances stay asm */
+extern template class std::vector<VertexColorEnv::Vertex>;
+
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/VertexColorEnv", _Z41__static_initialization_and_destruction_0ii_9E5F4);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/VertexColorEnv", _ZN14VertexColorEnvC2Ebi);
+VertexColorEnv::VertexColorEnv(bool hemisphere, int n) : _n(n)
+{
+    if (n < 2)
+        n = 2;
+    _vertices.resize(n * n, Vertex(0, 0));
+    float range = hemisphere ? math::HALFPI : math::PI;
+    for (int i = 0; i < _n; i++) {
+        float phi = i * 6.28318530718f / (_n - 1);
+        for (int j = 0; j < _n; j++)
+            _vertices[i + j * _n] = Vertex(range * j / (_n - 1), phi);
+    }
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/VertexColorEnv", _ZN14VertexColorEnvC1Ebi);
 
 void VertexColorEnv::eval(const sh::SphericalRGBFn *fn)
 {
     if (fn)
         for (std::vector<Vertex>::iterator it = _vertices.begin(); it != _vertices.end(); ++it)
-            fn->eval(it->theta, it->phi, it->r, it->g, it->b);
+            fn->eval(it->_theta, it->_phi, it->_col.x, it->_col.y, it->_col.z);
 }
 
 void VertexColorEnv::draw(float scale)
@@ -31,10 +49,10 @@ void VertexColorEnv::draw(float scale)
         Vertex *a = &_vertices[i * _n + _n - 1];
         Vertex *b = &_vertices[i * _n + _n + _n - 1];
         for (int j = 0; j < _n; j++) {
-            glColor3fv(&a->r);
-            glVertex3fv(a->pos);
-            glColor3fv(&b->r);
-            glVertex3fv(b->pos);
+            glColor3fv(&a->_col.x);
+            glVertex3fv(&a->_dir.x);
+            glColor3fv(&b->_col.x);
+            glVertex3fv(&b->_dir.x);
             a--;
             b--;
         }

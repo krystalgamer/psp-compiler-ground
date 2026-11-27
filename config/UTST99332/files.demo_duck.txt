@@ -43,6 +43,9 @@ bss 0x191350 main_objs/sh_Matrix
 bss 0x191428 -
 bss 0x1918E8 main_objs/sh_SquareMap
 bss 0x19196C -
+# VertexColorEnv: the float pools (2 pi) of VertexColorEnv::VertexColorEnv (C2, C1)
+rodata 0x16D5FC main_objs/VertexColorEnv
+rodata 0x16D604 -
 # sys_timer_GetDeltaTime: the double pools (1000000.0) of GetDeltaTime and GetTime
 rodata 0x175E68 main_objs/sys_timer_GetDeltaTime
 rodata 0x175E78 -
