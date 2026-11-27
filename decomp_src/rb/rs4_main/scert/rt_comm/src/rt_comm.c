@@ -18,7 +18,7 @@ void rt_comm_get_local_ip(void);
 void rt_comm_linkaddress_toint(void);
 int rt_comm_release_channel_id(void *);
 int rt_memory_free(void **);
-void *memcpy(void *, const void *, unsigned int);
+void *memcpy(void *, const void *, unsigned long);
 void *memset(void *, int, unsigned int);
 extern char gMetricData[];
 void rt_comm_metric_update();
@@ -108,7 +108,12 @@ void rt_comm_display_state(void) {
     M2C_FIELD(gCommPlatformInterfacePtr, M2C_UNK (**)(), 0x44)();
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_comm/src/rt_comm", rt_comm_get_metrics);
+void rt_comm_get_metrics(void *m)
+{
+    rt_comm_metric_update();
+    memcpy(m, gMetricData, 0x38);
+
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_comm/src/rt_comm", rt_comm_get_interface_data);
 
