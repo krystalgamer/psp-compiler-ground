@@ -736,7 +736,19 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", ziki_init);
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", ziki_control);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", ziki_disp);
+void ziki_disp(void)
+{
+	GMO_T *g;
+
+	if (gmain.f1080 && (&gmain.ziki)->gmo >= 0) {
+		g = &((GMO_T *)gmo)[(&gmain.ziki)->gmo];
+		*(L2V3 *)((int *)g + 8) = (&gmain.ziki)->pos;
+		*(L2V3 *)((int *)g + 11) = (&gmain.ziki)->rot;
+		g->f4 = 1;
+		((int *)g)[3] = gmain.ff64[(&gmain.ziki)->f20 + 7];
+		sprite_set(gmain.ff64[4], 216, 0, 48, 10, 0, 0, 100, 100, 0, 0, 255, 255, 255, 255, 0, 2, 1, 255);
+	}
+}
 
 extern int D_005FB894;
 void ziki_damage(void *zz, float *pos)
