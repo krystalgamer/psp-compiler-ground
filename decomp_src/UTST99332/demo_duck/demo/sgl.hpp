@@ -986,6 +986,7 @@ public:
     void draw() const;
     void draw(int) const;
     int longestAxis() const;
+    bool intersect(float &, const math::vector_xyzw &, const math::vector_xyzw &) const;
     static std::vector<math::vector_xyzw> _points;
     int _type;              /* 0x80 */
     char _p84[0xC4 - 0x84];
@@ -1069,7 +1070,9 @@ public:
     struct Ray {
         enum Type { };
         Ray(math::vector_xyzw, math::vector_xyzw, Type);
-        char _p0[0x34];
+        math::vector_xyzw _origin;  /* 0x0 */
+        math::vector_xyzw _dir;     /* 0x10 */
+        char _p20[0x34 - 0x20];
         int _triangle;              /* 0x34: index of the hit triangle */
         char _p38[0x3D - 0x38];
         bool _any;                  /* 0x3D: stop at the first hit */

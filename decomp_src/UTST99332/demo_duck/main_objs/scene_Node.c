@@ -36,9 +36,18 @@ bool scene::Texture::calcbv(math::TransformStack &, sgl::BV &)
     return true;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Node", _ZN5scene5Graph6calcbvEv);
+void scene::Graph::calcbv()
+{
+    common::handle<Group> g = _root;
+    g->calcbv();
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Node", _ZN5scene5Group6calcbvEv);
+void scene::Group::calcbv()
+{
+    math::TransformStack ts;
+    sgl::BV bv;
+    calcbv(ts, bv);
+}
 
 bool scene::Group::calcbv(math::TransformStack &ts, sgl::BV &bv)
 {

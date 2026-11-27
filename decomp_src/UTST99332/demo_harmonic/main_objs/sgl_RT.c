@@ -54,7 +54,26 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_RT", _ZN
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_RT", _ZN3sgl2RT13build_bv_treeEbj);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_RT", _ZN3sgl2RT12bvtree_traceEPN3BVH4NodeERNS0_3RayE);
+void sgl::RT::bvtree_trace(BVH::Node *n, Ray &r)
+{
+    if (!n)
+        return;
+    if (r._any && r._triangle != -1)
+        return;
+    float t;
+    if (!n->_bv.intersect(t, r._origin, r._dir))
+        return;
+    if (!n->_items.empty())
+        for (std::vector<unsigned int>::iterator it = n->_items.begin(); it != n->_items.end(); ++it)
+            if (_triangles[*it].intersect(r))
+                r._triangle = *it;
+    if (n->_leaf)
+        return;
+    BVH::Node *c0 = n->_child[0];
+    bvtree_trace(c0, r);
+    BVH::Node *c1 = n->_child[1];
+    bvtree_trace(c1, r);
+}
 
 void sgl::RT::dumb_trace(Ray &r)
 {
