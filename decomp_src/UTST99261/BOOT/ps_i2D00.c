@@ -53,6 +53,28 @@ M2C_UNK MEM_free(M2C_UNK, void *);                  /* extern */
 
 M2C_UNK ps_i2314();                                 /* extern */
 
+extern int gpsCntxtTable;
+void *parseNewMultiCtxt(void);
+void *parseNewCtxt(void);
+int parseRegistBuffer();
+int *parseContentStart();
+int *parseContentContinue();
+int *parseContentEnd();
+void *parseSearchSessionID();
+int asciiToUcs2();
+void parseExtStyleSheet();
+int *parseTEXTStart();
+int *parseBINARYStart();
+int parseRegistURI();
+int parseReloadURI();
+int *parseContentContinueJS();
+int *parseJSDocumentEncode();
+int parseMoveFrontURI();
+int parseMoveBackURI();
+int parseReplaceURI();
+void parseSavedContents();
+void parseReleaseResource();
+void *MEM_realloc(void *pool, void *p, unsigned int size);
 static inline int ps_isNotExtSession(int id) {
     if (id > 0x08000000 && id <= 0x10000000) {
         return 0;
@@ -238,4 +260,93 @@ int ps_i2D14(PsIpc *msg) {
     return buf_ps_sts;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/ps_i2D00", parseDomBuild);
+int *parseDomBuild(int *msg) {
+    int *ret;
+    void *ctx;
+    u16 *buf;
+    int n;
+
+    ret = NULL;
+    switch (msg[12]) {
+    case 0:
+        switch (msg[11]) {
+        case 0:
+            if (gpsCntxtTable == 0) {
+                gpsCntxtTable = (int)parseNewMultiCtxt();
+            }
+            ctx = parseNewCtxt();
+            parseRegistBuffer(msg[9], ctx, gpsCntxtTable);
+            ret = parseContentStart(ctx, msg);
+            break;
+        case 1:
+            ret = parseContentContinue(parseSearchSessionID(msg[9], gpsCntxtTable), msg);
+            break;
+        case 2:
+            ret = parseContentEnd(parseSearchSessionID(msg[9], gpsCntxtTable), msg);
+            break;
+        }
+        break;
+    case 1:
+        buf = MEM_malloc(0, msg[6] * 4 + 4);
+        n = asciiToUcs2(buf, msg[7], msg[6]);
+        buf[n] = 0;
+        buf = MEM_realloc(0, buf, n * 2 + 2);
+        parseExtStyleSheet(msg[9], buf);
+        MEM_free(0, buf);
+        ret = MEM_malloc(0, 0x14);
+        ret[1] = 0;
+        ret[2] = 0;
+        ret[3] = 0;
+        ret[4] = 0;
+        ret[0] = 0;
+        break;
+    case 2:
+        if (gpsCntxtTable == 0) {
+            gpsCntxtTable = (int)parseNewMultiCtxt();
+        }
+        ctx = parseNewCtxt();
+        parseRegistBuffer(msg[9], ctx, gpsCntxtTable);
+        ret = parseTEXTStart(ctx, msg);
+        break;
+    case 3:
+        if (gpsCntxtTable == 0) {
+            gpsCntxtTable = (int)parseNewMultiCtxt();
+        }
+        ctx = parseNewCtxt();
+        parseRegistBuffer(msg[9], ctx, gpsCntxtTable);
+        ret = parseBINARYStart(ctx, msg);
+        break;
+    case 4:
+        gpsCntxtTable = parseRegistURI(gpsCntxtTable, msg);
+        break;
+    case 5:
+        gpsCntxtTable = parseReloadURI(gpsCntxtTable, msg);
+        break;
+    case 6:
+        ctx = parseSearchSessionID(msg[9], gpsCntxtTable);
+        if (ctx == NULL) {
+            return NULL;
+        }
+        ret = parseContentContinueJS(ctx, msg);
+        break;
+    case 7:
+        ret = parseJSDocumentEncode(parseSearchSessionID(msg[9], gpsCntxtTable), msg);
+        break;
+    case 8:
+        gpsCntxtTable = parseMoveFrontURI(gpsCntxtTable, msg);
+        break;
+    case 9:
+        gpsCntxtTable = parseMoveBackURI(gpsCntxtTable, msg);
+        break;
+    case 10:
+        gpsCntxtTable = parseReplaceURI(gpsCntxtTable, msg);
+        break;
+    case 11:
+        parseSavedContents(gpsCntxtTable, msg);
+        return ret;
+    case 12:
+        parseReleaseResource(gpsCntxtTable, msg);
+        break;
+    }
+    return ret;
+}
