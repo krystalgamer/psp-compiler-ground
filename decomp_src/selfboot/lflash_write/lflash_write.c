@@ -113,15 +113,7 @@ INCLUDE_ASM("tmp/asm/selfboot/lflash_write/nonmatchings/lflash_write", func_0000
 
 INCLUDE_RODATA("tmp/asm/selfboot/lflash_write/nonmatchings/lflash_write", D_0000521C);
 
-INCLUDE_RODATA("tmp/asm/selfboot/lflash_write/nonmatchings/lflash_write", D_00005230);
-
-INCLUDE_RODATA("tmp/asm/selfboot/lflash_write/nonmatchings/lflash_write", D_00005240);
-
-INCLUDE_RODATA("tmp/asm/selfboot/lflash_write/nonmatchings/lflash_write", D_00005250);
-
-INCLUDE_RODATA("tmp/asm/selfboot/lflash_write/nonmatchings/lflash_write", D_00005268);
-
-INCLUDE_RODATA("tmp/asm/selfboot/lflash_write/nonmatchings/lflash_write", D_00005278);
+INCLUDE_ASM("tmp/asm/selfboot/lflash_write/nonmatchings/lflash_write", func_00000594);
 
 INCLUDE_RODATA("tmp/asm/selfboot/lflash_write/nonmatchings/lflash_write", D_00005294);
 

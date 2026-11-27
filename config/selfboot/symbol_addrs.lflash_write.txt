@@ -22,3 +22,4 @@ putchar = 0x00004F80; // type:func
 puts = 0x00004F88; // type:func
 ShellForKernel_9C3CFF4D = 0x00004F70; // type:func
 LflashFatfmt_B7A424A4 = 0x00004F10; // type:func
+func_00000594 = 0x00000594; // type:func
