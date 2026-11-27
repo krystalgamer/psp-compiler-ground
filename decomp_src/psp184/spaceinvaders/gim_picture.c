@@ -128,7 +128,79 @@ _Bool sceGimPictureLoadFile( SceGimPicture *picture, const void *buf, int size, 
 	return 0 ;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gim_picture", sceGimPictureLoad);
+_Bool sceGimPictureLoad( SceGimPicture *picture, const SceGimChunk *chunk )
+{
+	if ( picture == 0 ) return 0 ;
+	if ( chunk == 0 ) return 0 ;
+
+	sceGimPictureUnload( picture ) ;
+
+	int n_sequences = sceGimPictureCountChunk( chunk, 6 ) ;
+	if ( n_sequences > 0 ) {
+		int size = sizeof( void * ) * n_sequences ;
+		picture->m_sequences = (SceGimSequenceHeader **)sceGimPictureAllocMemory( size ) ;
+		if ( picture->m_sequences == 0 ) {
+			return 0 ;
+		}
+	}
+
+	SceGimChunk *end = SCEGIM_CHUNK_NEXT( chunk ) ;
+	for ( chunk = SCEGIM_CHUNK_CHILD( chunk ) ; chunk < end ; chunk = SCEGIM_CHUNK_NEXT( chunk ) ) {
+		void *data = SCEGIM_CHUNK_DATA( chunk ) ;
+		int size = SCEGIM_CHUNK_DATASIZE( chunk ) ;
+		switch ( SCEGIM_CHUNK_TYPE( chunk ) ) {
+		    case 4 : {
+			if ( picture->m_image != 0 ) break ;
+			SceGimImageHeader *img = (SceGimImageHeader *)sceGimPictureAllocMemory2( size ) ;
+			if ( img == 0 ) {
+				return 0 ;
+			}
+			picture->m_image = img ;
+			memcpy( img, data, size ) ;
+			img->reference = 1 ;
+			int *offsets = (int *)( (char *)img + img->offsets ) ;
+			{ int i ; for ( i = img->level_count * img->frame_count ; i > 0 ; -- i ) {
+				*( offsets ++ ) += (int)img ;
+			} }
+			if ( img->width > 512 || img->height > 512 ) {
+				return 0 ;
+			}
+			break ;
+		    }
+		    case 5 : {
+			if ( picture->m_palette != 0 ) break ;
+			SceGimPaletteHeader *pal = (SceGimPaletteHeader *)sceGimPictureAllocMemory2( size ) ;
+			if ( pal == 0 ) {
+				return 0 ;
+			}
+			picture->m_palette = pal ;
+			memcpy( pal, data, size ) ;
+			pal->reference = 1 ;
+			int *offsets = (int *)( (char *)pal + pal->offsets ) ;
+			{ int i ; for ( i = pal->level_count * pal->frame_count ; i > 0 ; -- i ) {
+				*( offsets ++ ) += (int)pal ;
+			} }
+			if ( pal->width > 256 ) {
+				return 0 ;
+			}
+			break ;
+		    }
+		    case 6 : {
+			SceGimSequenceHeader *seq = (SceGimSequenceHeader *)sceGimPictureAllocMemory( size ) ;
+			if ( seq == 0 ) {
+				return 0 ;
+			}
+			picture->m_sequences[ picture->m_n_sequences ++ ] = seq ;
+			memcpy( seq, data, size ) ;
+			seq->reference = 1 ;
+			break ;
+		    }
+		}
+	}
+	reconfigure_picture( picture ) ;
+	sceKernelDcacheWritebackAll() ;
+	return 1 ;
+}
 
 void sceGimPictureUnload( SceGimPicture *picture )
 {

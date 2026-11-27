@@ -1680,3 +1680,4 @@ enum {
  TM2_FORMAT_SIGNATURE = 0x324d4954,
  BMP_FORMAT_SIGNATURE = 0x4d42
 } ;
+int sceGimPictureCountChunk( const SceGimChunk *chunk, int type ) ;
