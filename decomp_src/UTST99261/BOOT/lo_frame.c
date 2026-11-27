@@ -136,7 +136,37 @@ int getFramenum(BOX *box) {
     return n;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_frame", initFrameSize);
+void initFrameSize(BOX *box, char *cols, char *rows) {
+    int w = FSETD(box)->x94;
+    int h = FSETD(box)->x98;
+    int bs = FSETD(box)->borderSize;
+    int *arr;
+    int n;
+    if (cols != NULL) {
+        arr = FSETD(box)->cols;
+        n = DetFrameSize(cols, w, arr, 16);
+        if (n >= 2) {
+            w -= bs * (n - 1);
+            if (w < 0) {
+                w = 0;
+            }
+        }
+        n = DetFrameSize(cols, w, arr, 16);
+        FSETD(box)->ncols = n;
+    }
+    if (rows != NULL) {
+        arr = FSETD(box)->rows;
+        n = DetFrameSize(rows, h, arr, 16);
+        if (n >= 2) {
+            h -= bs * (n - 1);
+            if (h < 0) {
+                h = 0;
+            }
+        }
+        n = DetFrameSize(rows, h, arr, 16);
+        FSETD(box)->nrows = n;
+    }
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_frame", reinitFrameSize);
 
@@ -215,7 +245,65 @@ int getMyColFrameBorder(BOX *box) {
     return ret;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_frame", getMyRowFrameBorder);
+int getMyRowFrameBorder(BOX *box) {
+    int idx = 0;
+    int ret = 0;
+    BOX *fs;
+    BOX *c;
+    int row;
+    int r;
+    int ncols;
+    fs = getFramesetBox(box->parent);
+    if (fs == NULL) {
+        return 0;
+    }
+    switch (box->content) {
+    case 1:
+        idx = FFRAMED(box)->x24;
+        break;
+    case 2:
+        idx = FSETD(box)->xA8;
+        break;
+    }
+    ncols = FSETD(fs)->ncols;
+    row = idx;
+    if (ncols != 0) {
+        row = idx / ncols;
+    }
+    if (row == 0) {
+        return 0;
+    }
+    c = fs->child;
+    for (;;) {
+        if (c == NULL) {
+            break;
+        }
+        if (c->content == 1) {
+            if (ncols == 0) {
+                r = FFRAMED(c)->x24;
+            } else {
+                r = FFRAMED(c)->x24 / ncols;
+            }
+            if (r == row) {
+                ret = FFRAMED(c)->x3C;
+                break;
+            }
+        }
+        if (box->content == 2 && c->content == 2) {
+            if (ncols == 0) {
+                r = FSETD(c)->xA8;
+            } else {
+                r = FSETD(c)->xA8 / ncols;
+            }
+            if (r == row) {
+                ret = FSETD(c)->xAC;
+                break;
+            }
+        }
+        c = c->next;
+    }
+    return ret;
+}
 
 void initFrameBorderPosition_hfull(BOX *frame, BOX *border, int *x, int *y, int *w, int *h, int size, int z) {
     border->width = FFRAMED(frame)->x94;
@@ -310,7 +398,40 @@ BOX *createFrameBorderBox_vfull(BOX *frame, int type, int *x, int *y, int *w, in
     return b;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_frame", createFrameBorder);
+void createFrameBorder(BOX *box, int type, int *x, int *y, int *w, int *h) {
+    BOX *fs;
+    int idx;
+    int ncols;
+    int nrows;
+    int col;
+    int row;
+    fs = (BOX *)getFramesetBox(box);
+    if (fs == NULL) {
+        return;
+    }
+    idx = FFRAMED(box)->x24;
+    ncols = FSETD(fs)->ncols;
+    nrows = FSETD(fs)->nrows;
+    if (ncols != 0) {
+        col = idx % ncols;
+        row = idx / ncols;
+        if (nrows != 0) {
+            if (row != 0) {
+                if (col == 0) {
+                    FFRAMED(box)->x3C = (int)createFrameBorderBox_hfull(fs, type, x, y, w, h, idx);
+                }
+            } else if (col != 0) {
+                FFRAMED(box)->x3C = (int)createFrameBorderBox_vfull(fs, type, x, y, w, h, idx);
+            }
+        } else if (idx != 0) {
+            FFRAMED(box)->x3C = (int)createFrameBorderBox_vfull(fs, type, x, y, w, h, idx);
+        }
+    } else if (nrows != 0) {
+        if (idx != 0) {
+            FFRAMED(box)->x3C = (int)createFrameBorderBox_hfull(fs, type, x, y, w, h, idx);
+        }
+    }
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_frame", createFrameBorder_frameset);
 
