@@ -103,7 +103,10 @@ int icmpstr(char *a, char *b, int n);
 typedef struct PREFUI { int pad[3]; int enc; } PREFUI;
 extern PREFUI *gPREF_UI;
 typedef struct ENCDOC { int pad[17]; int type; int pad2[6]; int charset; } ENCDOC;
-int CharEncode(int cs);
+int CharEncode();
+typedef struct CEDOC { int pad[4]; char *cs; } CEDOC;
+int cmpstr(char *a, char *b);
+char *strcpy(char *d, const char *s);
 unsigned short UDomiString_ToLower(unsigned short c) {
     if (c < 0x80) {
         return tolower(c);
@@ -1348,7 +1351,38 @@ void *GetMQUEUE(int q, void *buf) {
     return buf;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", CharEncode);
+int CharEncode(CEDOC *d) {
+    int ret;
+    char *s;
+
+    if (d != NULL) {
+        ret = 0;
+        if (d->cs != NULL) {
+            s = (char *)MEM_malloc(0, strlen(d->cs) + 1);
+            if (s == NULL)
+                return 0;
+            strcpy(s, d->cs);
+            if (cmpstr(s, "iso-2022-jp") == 1)
+                ret = 3;
+            else if (cmpstr(s, "euc-jp") == 1)
+                ret = 2;
+            else if (cmpstr(s, "Shift_JIS") == 1)
+                ret = 1;
+            else if (cmpstr(s, "UTF-8") == 1)
+                ret = 4;
+            else if (cmpstr(s, "ISO-8859-1") == 1)
+                ret = 5;
+            else if (cmpstr(s, "us-ascii") == 1)
+                ret = 5;
+            else
+                ret = 0;
+            MEM_free(0, s);
+        }
+    } else {
+        ret = 0;
+    }
+    return ret;
+}
 
 void Encoding(ENCDOC *d, int *flag, int *enc) {
     int cs = d->charset;
