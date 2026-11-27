@@ -126,12 +126,8 @@ void MatrixVectorMultiply(
 void MatrixMatrixMultiply(void) {
 }
 
-INCLUDE_RODATA("tmp/asm/UTST99332/graphics_stainglass/nonmatchings/stainglass", _nx);
-
-INCLUDE_RODATA("tmp/asm/UTST99332/graphics_stainglass/nonmatchings/stainglass", _ny);
-
-#define _nx 48
-#define _ny 48
+const int _nx = 48;
+const int _ny = 48;
 
 #define SCEGU_TEXTURE                      9
 #define SCEGU_SINGLE_CLUT                  0
@@ -364,7 +360,129 @@ static ScePspFVector2 OffsetAt( ScePspFVector2 st, int index )
 	return retval;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_stainglass/nonmatchings/stainglass", StainGlassInit);
+#define SCEGU_PI                           3.1415926535897932384626433832f
+#define SCEGU_RAD(a)                       ((a)*SCEGU_PI/180.0f)
+
+void StainGlassInit(void)
+{
+
+	ScePspFVector2 tmp_v;
+
+
+	_num_vertices=6*_nx*_ny;
+
+	_vertices=(VTypeT16C32V32*)malloc(sizeof(VTypeT16C32V32)*_num_vertices);
+
+	_offsets=(ScePspFVector2*)malloc(sizeof(ScePspFVector2)*_num_vertices);
+
+
+
+	sceGumPushMatrix();
+	sceGumLoadIdentity();
+	ScePspFVector3 t;
+	t.x=0.f;
+	t.y=0.f;
+	t.z=-35.f;
+	sceGumTranslate(&t);
+	sceGumRotateX(SCEGU_RAD(10.f));
+	sceGumRotateY(SCEGU_RAD(30.f));
+	sceGumStoreMatrix(&_transform.fm);
+	sceGumPopMatrix();
+
+
+
+	{
+		VTypeT16C32V32* v = _vertices;
+		ScePspFVector2 *r=_offsets;
+		int i,j,k;
+
+		const float dx = 1.f / (float)_nx;
+		const float dy = 1.f / (float)_ny;
+
+		for ( j=0; j < _ny; ++j )
+		{
+			for ( i=0; i < _nx; ++i )
+			{
+				
+
+				VTypeT16C32V32 tile_v[4]; 
+				ScePspFVector2 rnd[4];	 
+				ScePspFVector2 st[4];	 
+
+				st[0].x = i * dx;
+				st[0].y = j * dy;
+
+				st[1].x = i * dx + dx;
+				st[1].y = j * dy;
+
+				st[2].x = i * dx;    
+				st[2].y = j * dy + dy;
+
+				st[3].x = i * dx + dx;
+				st[3].y = j * dy + dy;
+
+				
+				
+				
+
+				for ( k=0;k!=4;++k )
+				{
+					tile_v[k].vx = _scale * ( st[k].x - 0.5f );
+					tile_v[k].vy = _scale * ( st[k].y - 0.5f );
+					tile_v[k].vz = 0.f;
+
+					
+
+					tile_v[k].c = ColorAt( st[k] );
+				}
+
+				
+
+				rnd[0] = OffsetAt( st[0], i+j*_ny );
+				rnd[1] = OffsetAt( st[1], i+1+j*_ny );
+				rnd[2] = OffsetAt( st[2], i+(j+1)*_ny );
+				rnd[3] = OffsetAt( st[3], i+1+(j+1)*_ny );
+
+				
+
+				for ( k=0;k!=4;++k )
+				{
+					tile_v[k].vx += rnd[k].x;
+					tile_v[k].vy += rnd[k].y;
+				}
+			
+				tmp_v = Rand();
+
+
+				if ( 0 )			 
+
+				{
+					
+
+					*v++ = tile_v[0]; *r++ = rnd[0];
+					*v++ = tile_v[2]; *r++ = rnd[2];
+					*v++ = tile_v[1]; *r++ = rnd[1];
+
+					*v++ = tile_v[2]; *r++ = rnd[2];  
+					*v++ = tile_v[3]; *r++ = rnd[3];  
+					*v++ = tile_v[1]; *r++ = rnd[1];  
+				}
+				else
+				{
+					
+
+					*v++ = tile_v[0]; *r++ = rnd[0];
+					*v++ = tile_v[2]; *r++ = rnd[2];
+					*v++ = tile_v[3]; *r++ = rnd[3];
+
+					*v++ = tile_v[0]; *r++ = rnd[0];  
+					*v++ = tile_v[3]; *r++ = rnd[3];  
+					*v++ = tile_v[1]; *r++ = rnd[1];  
+				}
+			}
+		}
+	}
+}
 
 void StainGlassRelease(void)
 {
