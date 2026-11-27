@@ -1,6 +1,15 @@
 /* cflags: -O1 */
 #include "common.h"
 #include "m2c_macros.h"
+void *newCSSCharsetRule();
+void addCSSCharsetRule(void *r);
+u16 *CSS_SkipBlanksAndComments(u16 *p);
+u16 *CSS_string(u16 *s, u16 **out);
+u16 *CSS_ident(u16 *s, u16 **out);
+void *UCS_strdup(void *s);
+void *newCSSStyleSheet(int type);
+void CSS_mediaList(void *str, u16 *media);
+void CSS_StyleSheetRuleList(void *ss, u16 *text);
 void *newCSSStyleRule();
 u16 *CSS_selectorList(void *r, u16 *p);
 u16 *CSS_SkipRule(u16 *p);
@@ -43,7 +52,23 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_parser", CSS_StyleSheetRule
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_parser", CSS_unknownRule);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_parser", CSS_charsetRule);
+u16 *CSS_charsetRule(void *a0, void *a1, u16 *p) {
+    u16 *str;
+    void *r = newCSSCharsetRule(a0, a1);
+    if (r == NULL) {
+        return p;
+    }
+    p = CSS_string(CSS_SkipBlanksAndComments(p), &str);
+    if (str != NULL) {
+        M2C_FIELD(r, u16 **, 0x24) = str;
+    }
+    p = CSS_SkipBlanksAndComments(p);
+    if (*p == ';') {
+        p++;
+    }
+    addCSSCharsetRule(r);
+    return p;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_parser", CSS_importRule);
 
@@ -79,7 +104,30 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_parser", CSS_attrib);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_parser", CSS_styleDeclaration);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_parser", CSS_ParseStyleSheet);
+void *CSS_ParseStyleSheet(short type, u16 *text, void *a2, void *ss, void *t0, void *t1, void *t2, u16 *media) {
+    void *n;
+    int m;
+    if (ss == NULL) {
+        n = newCSSStyleSheet(type);
+        if (n == NULL) {
+            return NULL;
+        }
+    M2C_FIELD(n, void **, 0x20) = ss;
+    M2C_FIELD(n, void **, 0x24) = a2;
+    m = 0;
+    if (media != NULL) {
+        CSS_mediaList(media, (u16 *)&m);
+    }
+    M2C_FIELD(n, u16 *, 0x28) = *(u16 *)&m;
+    M2C_FIELD(n, void **, 0x2C) = t1;
+    M2C_FIELD(n, void **, 0x30) = t2;
+    M2C_FIELD(n, void **, 0x38) = t0;
+        CSS_StyleSheetRuleList(n, text);
+        return n;
+    }
+    CSS_StyleSheetRuleList(ss, text);
+    return ss;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_parser", CSS_mediaList);
 
