@@ -195,7 +195,27 @@ int Sub_ShopUnLock(void *arg0) {
     return var_a1;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/shop", _FontNumSet);
+void _FontNumSet(int *buf, int n, int pct)
+{
+	int i;
+	int f = 0;
+	int d = 100000;
+	for (i = 0; i < 6; i++) {
+		buf[i] = ' ';
+		if (f || i == 5)
+			buf[i] = '0';
+		if (n >= d) {
+			f = 1;
+			buf[i] = n / d + '0';
+			n -= n / d * d;
+		}
+		d /= 10;
+		buf[i + 1] = 0;
+	}
+	if (pct)
+		buf[i] = '%';
+	buf[i + 1] = 0;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/shop", Sub_Shop_WindowPut);
 
