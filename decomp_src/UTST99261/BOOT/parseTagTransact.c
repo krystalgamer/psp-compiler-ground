@@ -46,16 +46,85 @@ void MEM_free(void *pool, void *p);
 void Node_appendChild(int parent, int child);
 void parseAlertMessage(void *c);
 typedef struct { int size; unsigned int len; DOMChar *str; } TDOMString;
-typedef struct { int x00; int x04; signed char type; char x09; short id; } TTag;
-typedef struct { char x00[0x34]; TTag tag; char x40[0x11C - 0x40]; int cur; } TCtx;
+typedef struct { const DOMChar *name; int x04; signed char type; char x09; short id; } TTag;
+typedef struct { char x00[0x34]; TTag tag; char x40[0x118 - 0x40]; int doc; int cur; char x120[0x164 - 0x120]; int alertCount; } TCtx;
 void Element_getTagName(TDOMString *s, int node);
 int parseDStrEqual(const DOMChar *a, TDOMString *b);
 int parseTagCountMinus(TCtx *c, TTag t);
+void *MEM_malloc(void *pool, unsigned int size);
+void *MEM_realloc(void *pool, void *p, unsigned int size);
+int Node_getParentNode(int node);
+TTag parseDSTagNameCmp(TDOMString *name);
+extern const TDOMString D_00138BF0;
+int parseTagCountPlus(TCtx *c, TTag t);
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parseTagTransact", parseTagTransact);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parseTagTransact", parseTagCommon);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parseTagTransact", parseSearchTdThNode);
+int parseSearchTdThNode(void *ctx) {
+    TCtx *c = ctx;
+    TDOMString name;
+    TDOMString t;
+    TTag *list;
+    int node;
+    int el;
+    int n = 0;
+    int cap = 16;
+    int i;
+
+    node = c->cur;
+    Element_getTagName(&name, node);
+    list = MEM_malloc(0, 0xC0);
+    if (list == NULL) {
+        goto out;
+    }
+    list[0] = parseDSTagNameCmp(&name);
+    for (;;) {
+        if (parseDStrEqual(D_00138BFC, &name) || parseDStrEqual(D_00138C04, &name) || parseDStrEqual(D_00138C08, &name) || parseDStrEqual(D_00138C0C, &name)) {
+            break;
+        }
+        if (parseDStrEqual(D_00138C10, &name)) {
+            break;
+        }
+        n++;
+        if (n >= cap) {
+            cap = cap * 3 / 2;
+            list = MEM_realloc(0, list, cap * sizeof(TTag));
+            if (list == NULL) {
+                goto out;
+            }
+        }
+        node = Node_getParentNode(node);
+        if (node == 0) {
+            break;
+        }
+        Element_getTagName(&name, node);
+        list[n] = parseDSTagNameCmp(&name);
+    }
+    if (parseDStrEqual(D_00138C0C, &name) || parseDStrEqual(D_00138C04, &name)) {
+        c->cur = Node_getParentNode(node);
+        for (i = 0; i <= n; i++) {
+            parseTagCountMinus(c, list[i]);
+        }
+    } else if (parseDStrEqual(D_00138C10, &name)) {
+        t = D_00138BF0;
+        el = Document_createElement(c->doc, (TDStr *)&t);
+        c->alertCount++;
+        if (el != 0) {
+            Node_appendChild(c->cur, el);
+            c->cur = el;
+        }
+        parseAlertMessage(c);
+        c->tag = parseDSTagNameCmp(&t);
+        parseTagCountPlus(c, c->tag);
+        for (i = 0; i <= n - 1; i++) {
+            parseTagCountMinus(c, list[i]);
+        }
+    }
+    MEM_free(0, list);
+out:
+    ;
+}
 
 int parseSearchTrNode(void *ctx) {
     PtrArr2 tags = D_00138C18;
@@ -217,7 +286,53 @@ void parseOmissibleTag(void *arg0) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parseTagTransact", parseEndTagDefault);
+void parseEndTagDefault(TCtx *c) {
+    TDOMString name;
+    const DOMChar *tn;
+    TTag *tags;
+    int node;
+    int n = 0;
+    int cap = 16;
+    int i;
+
+    tn = c->tag.name;
+    node = c->cur;
+    Element_getTagName(&name, node);
+    tags = MEM_malloc(0, 0xC0);
+    if (tags == NULL) {
+        return;
+    }
+    tags[0] = parseDSTagNameCmp(&name);
+    for (;;) {
+        if (parseDStrEqual(D_00138BFC, &name) || parseDStrEqual(D_00138C10, &name) || parseDStrEqual(D_00138C0C, &name)) {
+            break;
+        }
+        if (parseDStrEqual(tn, &name)) {
+            break;
+        }
+        n++;
+        if (n >= cap) {
+            cap = cap * 3 / 2;
+            tags = MEM_realloc(0, tags, cap * sizeof(TTag));
+            if (tags == NULL) {
+                return;
+            }
+        }
+        node = Node_getParentNode(node);
+        if (node == 0) {
+            break;
+        }
+        Element_getTagName(&name, node);
+        tags[n] = parseDSTagNameCmp(&name);
+    }
+    if (parseDStrEqual(tn, &name)) {
+        c->cur = Node_getParentNode(node);
+        for (i = 0; i < n; i++) {
+            parseTagCountMinus(c, tags[i]);
+        }
+    }
+    MEM_free(0, tags);
+}
 
 int parseEndTagTD(void *ctx) {
     PtrArr2 tags = D_00138E00;
