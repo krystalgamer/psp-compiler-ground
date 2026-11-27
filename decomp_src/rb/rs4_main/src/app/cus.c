@@ -191,7 +191,15 @@ void cusGetKeyNum(int arg0, int arg1) {
     get_key_count(arg1);
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/cus", cusGetKeyName);
+int get_key_by_index();
+int get_key_by_index_fast();
+int cusGetKeyName(int name, char *section, int idx, char *buf, int size) {
+    load_cus(cus_inst, name);
+    if (section == NULL) {
+        return get_key_by_index_fast(idx, buf, size);
+    }
+    return get_key_by_index(section, idx, buf, size);
+}
 
 int get_key_index();
 int get_key_index_fast();
