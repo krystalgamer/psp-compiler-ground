@@ -61,6 +61,9 @@ rodata 0x168594 -
 # math_TransformStack: the float pools (Identity()'s 1.0f) of TransformStack::push and identity
 rodata 0x171C14 main_objs/math_TransformStack
 rodata 0x171C1C -
+# FloatImage: the float pools of gaussian1, gaussian2, blur2d (blur2d inlines gaussian2 with its literals)
+rodata 0x176278 main_objs/FloatImage
+rodata 0x176290 -
 # interp_KeyFrameSequence: the float pools of KeyFrameSequence<quaternion>::calc_tangent, evaluate, op_identity
 rodata 0x16787C main_objs/interp_KeyFrameSequence
 rodata 0x16788C -

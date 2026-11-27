@@ -8,10 +8,6 @@
 extern const float D_00173340;      /* 255 */
 extern const float D_00173344;      /* 1 */
 extern const float D_00173348;      /* 255 */
-extern const float D_00173350;      /* 1 */
-extern const float D_00173354;      /* 1 / pi */
-extern const float D_00173358;      /* 1 */
-extern const float D_0017335C;      /* 1 / pi */
 extern const char D_001733A8[];     /* " " */
 extern const char D_001733AC[];     /* " *** error " */
 extern const char D_001733B8[];     /* "_Value.width() == width()" */
@@ -223,17 +219,56 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/FloatImage",
 
 float FloatImage::gaussian1(float x, float sigma)
 {
-    float a = D_00173350 / (2 * sigma * sigma);
-    return expf(-(x * x) * a) * sqrtf(a * D_00173354);
+    float a = 1.0f / (2 * sigma * sigma);
+    return expf(-(x * x) * a) * sqrtf(a * 0.31830987f);
 }
 
 float FloatImage::gaussian2(float x, float sigma)
 {
-    float a = D_00173358 / (2 * sigma * sigma);
-    return expf(-(x * x) * a) * a * D_0017335C;
+    float a = 1.0f / (2 * sigma * sigma);
+    return expf(-(x * x) * a) * a * 0.31830987f;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/FloatImage", _ZN10FloatImage6blur2dEif);
+static inline math::vector_xyzw scaled(const math::vector_xyzw &v, float s)
+{
+    float x_ = v.x;
+    float y_ = v.y;
+    float z_ = v.z;
+    float w_ = v.w;
+    math::vector_xyzw r;
+    r.y = y_ * s;
+    r.z = z_ * s;
+    r.w = w_ * s;
+    r.x = x_ * s;
+    return r;
+}
+
+void FloatImage::blur2d(int r, float sigma)
+{
+    if (r == 0)
+        return;
+    FloatImage tmp = *this;
+    for (int y = 0; y != ny(); y++)
+        for (int x = 0; x != nx(); x++) {
+            ABGR_FLOAT &d = tmp.addr()[x + y * nx()];
+            float sum = 0;
+            d = ABGR_FLOAT(sum);
+            for (int j = -r; j <= r; j++) {
+                int yy = y + j;
+                if (yy >= 0 && yy < ny())
+                    for (int i = -r; i <= r; i++) {
+                        int xx = x + i;
+                        if (xx >= 0 && xx < nx()) {
+                            float w = gaussian2(sqrtf(i * i + j * j), sigma);
+                            sum += w;
+                            d += scaled(addr()[xx + yy * nx()], w);
+                        }
+                    }
+            }
+            d *= 1.0f / sum;
+        }
+    *this = tmp;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/FloatImage", _ZN10FloatImage4blurEif);
 
