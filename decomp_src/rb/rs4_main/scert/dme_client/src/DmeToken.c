@@ -45,7 +45,13 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeToken", Ne
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeToken", NetTokenListRelease);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeToken", NetTokenCountGet);
+int rt_token_get_token_count();
+int NetTokenCountGet(char *c, int a)
+{
+    if (*(int *)(c + 0x4A0) == 0) return 0x21;
+    rt_token_get_token_count(a, *(int *)(c + 0x40C));
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeToken", NetTokenTableSizeGet);
 

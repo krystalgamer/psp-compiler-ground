@@ -14,7 +14,14 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_parse", rt_parse_
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_parse", rt_parse_reg_parser);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_parse", rt_parse_reg_app_parser);
+extern unsigned char gbInitialized_135B94;
+extern void *gpfAppParser;
+int rt_parse_reg_app_parser(void *f)
+{
+    if (gbInitialized_135B94 != 1) return 5;
+    gpfAppParser = f;
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_parse", rt_parse_update_parser);
 

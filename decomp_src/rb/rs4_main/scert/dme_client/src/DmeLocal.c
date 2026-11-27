@@ -538,7 +538,13 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", p2
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", MsgClientSystemMessageCallback);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", NetMutexLock);
+int rt_mutex_lock();
+int NetMutexLock(void)
+{
+    char *g = gDmeGlobals;
+    if (*(int *)(g + 0x24) == 0) return 5;
+    return rt_mutex_lock(g + 0x28, 0);
+}
 
 void NetMutexUnlock(void) {
     rt_mutex_unlock(gDmeGlobals + 0x28, 0);

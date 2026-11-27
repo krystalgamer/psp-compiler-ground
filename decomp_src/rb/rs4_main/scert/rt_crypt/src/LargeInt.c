@@ -53,9 +53,22 @@ loop_1:
     return var_a2;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_crypt/src/LargeInt", IsOne);
+int IsOne(int *a)
+{
+    int i;
+    if (a[0] != 1) return 0;
+    for (i = 1; i < 128; i++)
+        if (a[i] != 0) return 0;
+    return 1;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_crypt/src/LargeInt", IsEqual);
+int IsEqual(unsigned int *a, unsigned int *b)
+{
+    unsigned int i;
+    for (i = 0; i < 128; i++)
+        if (a[i] != b[i]) return 0;
+    return 1;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_crypt/src/LargeInt", lintGetBit);
 

@@ -191,7 +191,16 @@ int rt_udp_listen(void *arg0, int arg1) {
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_udp", rt_udp_accept);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_udp", rt_udp_deny);
+void rt_udp_send_reset();
+int rt_udp_deny(void *u, int *c)
+{
+    if (u == NULL) return 2;
+    if (c == NULL) return 0xD2F3;
+    if (c[0] != 8) return 0xD2F4;
+    c[0] = 5;
+    rt_udp_send_reset(u, c);
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_udp", rt_udp_pre_accept);
 

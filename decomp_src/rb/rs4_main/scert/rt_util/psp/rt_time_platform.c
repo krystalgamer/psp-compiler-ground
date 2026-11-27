@@ -16,7 +16,16 @@ int rt_time_platform_init(void) {
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/psp/rt_time_platform", rt_time_platform_get_time_stamp);
+int sceKernelGetSystemTime();
+int sceKernelSysClock2USec();
+int rt_time_platform_get_time_stamp(unsigned int *ts)
+{
+    int clk[2];
+    if (ts == NULL) return 2;
+    sceKernelGetSystemTime(clk);
+    sceKernelSysClock2USec(clk, ts, ts + 1);
+    return 0;
+}
 
 
 int sceKernelDelayThread(unsigned int delay);

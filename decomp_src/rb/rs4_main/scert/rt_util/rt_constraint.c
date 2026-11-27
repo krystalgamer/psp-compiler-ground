@@ -119,4 +119,10 @@ int rt_constraint_check_RT_4BYTE_FP(float *arg0, void *arg1) {
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_constraint", rt_constraint_check_RT_8BYTE_FP);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_constraint", rt_constraint_check_RT_CSTRING);
+unsigned int rt_strnlen();
+int rt_constraint_check_RT_CSTRING(const char *s, unsigned int *c)
+{
+    unsigned int n = rt_strnlen(s, c[1]);
+    if (n < c[0]) return 0;
+    return n < c[1];
+}

@@ -61,7 +61,13 @@ void rt_socket_cleanup_stack(void) {
     rt_socket_cleanup_stack_platform();
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_socket/src/rt_socket", rt_socket_shutdown);
+int sceNetInetShutdown();
+int rt_socket_get_err_platform();
+int rt_socket_shutdown(int s)
+{
+    if (sceNetInetShutdown(s, 2) != 0) return rt_socket_get_err_platform();
+    return 0;
+}
 
 void rt_socket_close(void) {
     rt_socket_close_platform();

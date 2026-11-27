@@ -38,11 +38,22 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_token", rt_token_
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_token", rt_token_free_owner);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_token", rt_token_get_table_size);
+int rt_token_start();
+void rt_token_get_table_size(int *out, int *t)
+{
+    int *tt = t;
+    if (tt == NULL) rt_token_start(&tt);
+    *out = tt[1];
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_token", rt_token_get_table);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_token", rt_token_get_token_count);
+void rt_token_get_token_count(int *out, int *t)
+{
+    int *tt = t;
+    if (tt == NULL) rt_token_start(&tt);
+    *out = tt[0];
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_token", rt_token_check_ownership);
 
