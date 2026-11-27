@@ -43,6 +43,7 @@ void proc_msg_PL2(LFMSG *m);
 void proc_msg_TM(LFMSG *m);
 typedef struct RadioItem { struct RadioItem *prev; struct RadioItem *next; void *box; } RadioItem;
 void *getBodyBox(void *box);
+typedef struct FBOX { u8 pad0[0x6C]; void *form; u8 pad70[0x38]; struct FBOX *parent; struct FBOX *child; struct FBOX *next; } FBOX;
 RadioEnt *getRadioListByName(void *ctx, void *box) {
     RadioEnt *r = M2C_FIELD(M2C_FIELD(ctx, void **, 0x20), RadioEnt **, 0x80);
 
@@ -302,7 +303,53 @@ void clearAllFormData(void *arg0) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_form", freeCurPageFormList);
+void freeCurPageFormList(FBOX *root)
+{
+    FBOX *n;
+    FBOX *par;
+    FBOX *stop;
+    FBOX *c;
+
+    if (root == NULL)
+        return;
+    n = root;
+    par = root->parent;
+    stop = root->next;
+    if (n->form != NULL)
+        clearAllFormData(n->form);
+    while (n != NULL) {
+        c = n->child;
+        if (c != NULL) {
+            n = c;
+            goto clear;
+        }
+        c = n->next;
+        if (c != NULL) {
+            n = c;
+            if (n == stop)
+                return;
+            goto clear;
+        }
+        n = n->parent;
+        if ((n == par) | (n == root))
+            return;
+        while (n != NULL) {
+            c = n->next;
+            if (c != NULL) {
+                n = c;
+clear:
+                if (n->form != NULL)
+                    clearAllFormData(n->form);
+                goto next;
+            }
+            n = n->parent;
+            if ((n == par) | (n == root))
+                return;
+        }
+        return;
+next:;
+    }
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
