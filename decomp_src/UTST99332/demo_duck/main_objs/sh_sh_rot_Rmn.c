@@ -45,7 +45,20 @@ float sh::sh_rot::R(int i, int j)
     return Rmn[i + 1][j + 1];
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sh_sh_rot_Rmn", _ZN2sh6sh_rot1PEiiiiRNS_9RotMatrixE);
+extern const char D_00173920[], D_00173938[], D_00173950[];
+extern const char P_name[] __asm__("_ZZN2sh6sh_rot1PEiiiiRNS_9RotMatrixEE19__PRETTY_FUNCTION__");
+#define ROT_ABS(b) ((b) < 0 ? -(b) : (b))
+float sh::sh_rot::P(int i, int l, int a, int b, RotMatrix &r)
+{
+    SGL_ASSERT(l >= 1, D_00173888, D_00173950, D_00173894, P_name, 78, D_001738AC);
+    SGL_ASSERT(ROT_ABS(b) <= l, D_00173888, D_00173938, D_00173894, P_name, 79, D_001738AC);
+    if (b == l)
+        return r.at(l - 1, a, l - 1) * R(i, 1) - r.at(l - 1, a, -l + 1) * R(i, -1);
+    if (b == -l)
+        return r.at(l - 1, a, -l + 1) * R(i, 1) + r.at(l - 1, a, l - 1) * R(i, -1);
+    SGL_ASSERT(ROT_ABS(b) < l, D_00173888, D_00173920, D_00173894, P_name, 91, D_001738AC);
+    return R(i, 0) * r.at(l - 1, a, b);
+}
 
 float sh::sh_rot::U(int l, int m, int n, RotMatrix &r)
 {

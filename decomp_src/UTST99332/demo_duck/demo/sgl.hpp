@@ -809,7 +809,7 @@ public:
     RotMatrix &operator=(const Matrix &);
     Vector operator*(const Vector &) const;
     VectorRGB operator*(const VectorRGB &) const;
-    int _f40, _f44, _f48;
+    float _f40, _f44, _f48;     /* the band-1 rotation's Euler angles (TwoBands) */
 };
 namespace sh_rot {
 extern float Rmn[3][3];
