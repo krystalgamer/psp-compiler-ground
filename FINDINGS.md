@@ -753,6 +753,10 @@ libgcc/libsupc++ DWARF names `gcc-3.3.6/` paths.
     conflicting `memcpy` declaration in those files, not a library-wide
     `-fno-builtin`.
   - The title key archive `PIPOSARU2SCEJ_11444key_psp.a` is the 1.3.1 object.
+  - `i3d_parser_i3c` is exported under i3d_collision_psp.a but linked
+    before the i3d_share_psp.a objects, i.e. the copy pulled in from
+    i3d_model_psp.a: taken as 1.9.2 (medium confidence; its C compiles the
+    same with 1.7.1 and 1.9.2).
   - `i3d_collision_psp.a` (i3d_parser_i3c, i3d_collision, i3dcs_sph_cap,
     i3dcs_obb) is the 1.7.1 object: `(x>>4)&0xf` stays `srl`+`andi`, which
     1.9.2 always makes `ext`.
