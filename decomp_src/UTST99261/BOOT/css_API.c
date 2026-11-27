@@ -1,6 +1,7 @@
 /* cflags: -O1 */
 #include "common.h"
 #include "m2c_macros.h"
+extern u16 CSSSTR_ASTERISK[];
 void insCSSNode(void *pos, void *node);
 void pushCSSNode(void *list, void *node);
 void CSS_mediaRuleSingle(void *ss, void *rule, u16 *text);
@@ -33,7 +34,7 @@ void CSS_mediaList(void *str, u16 *media);
 extern u16 D_001F70A8[];
 extern char D_0025BA4C[];
 M2C_UNK MEM_free(M2C_UNK, void *);                  /* extern */
-int CSS_getMediaTypeString(short);                    /* extern */
+u16 *CSS_getMediaTypeString(short);                 /* extern */
 M2C_UNK newCSSRule(M2C_UNK, M2C_UNK, int, int);     /* extern */
 M2C_UNK freeCSSRule(void *);                        /* extern */
 void *MEM_calloc(M2C_UNK, M2C_UNK);                 /* extern */
@@ -54,7 +55,7 @@ int CSS_matchChainMenber(u16 *name, void **e) {
     return found;
 }
 
-int CSS_ISmatchSelector_BCE14(void *sel, void **e) {
+int CSS_ISmatchSelector_BCE14(void *sel, void **e, int unused) {
     int ret = 0;
     int m;
     if (M2C_FIELD(sel, void **, 0x20) == NULL) {
@@ -691,7 +692,92 @@ void CSSMediaRule_setParentRule(void *arg0, int arg1) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_API", CSS_getMediaTypeString);
+u16 *CSS_getMediaTypeString(s16 type) {
+    void *pb;
+    u16 *ret;
+    int sep = 0;
+    pb = CSS_newPoolBuf();
+    if (pb == NULL) {
+        return NULL;
+    }
+    ret = NULL;
+    if (type != 0) {
+        if (type == 0x1FF) {
+            CSS_putSPoolBuf(pb, " all");
+        } else {
+            if (type & 1) {
+                CSS_putSPoolBuf(pb, " screen");
+                sep = 1;
+            }
+            if (type & 0x2) {
+                if (sep) {
+                    CSS_putSPoolBuf(pb, ", tty");
+                } else {
+                    CSS_putSPoolBuf(pb, " tty");
+                    sep = 1;
+                }
+            }
+            if (type & 0x4) {
+                if (sep) {
+                    CSS_putSPoolBuf(pb, ", tv");
+                } else {
+                    CSS_putSPoolBuf(pb, " tv");
+                    sep = 1;
+                }
+            }
+            if (type & 0x8) {
+                if (sep) {
+                    CSS_putSPoolBuf(pb, ", projection");
+                } else {
+                    CSS_putSPoolBuf(pb, " projection");
+                    sep = 1;
+                }
+            }
+            if (type & 0x10) {
+                if (sep) {
+                    CSS_putSPoolBuf(pb, ", handheld");
+                } else {
+                    CSS_putSPoolBuf(pb, " handheld");
+                    sep = 1;
+                }
+            }
+            if (type & 0x20) {
+                if (sep) {
+                    CSS_putSPoolBuf(pb, ", print");
+                } else {
+                    CSS_putSPoolBuf(pb, " print");
+                    sep = 1;
+                }
+            }
+            if (type & 0x40) {
+                if (sep) {
+                    CSS_putSPoolBuf(pb, ", braille");
+                } else {
+                    CSS_putSPoolBuf(pb, " braille");
+                    sep = 1;
+                }
+            }
+            if (type & 0x80) {
+                if (sep) {
+                    CSS_putSPoolBuf(pb, ", embossed");
+                } else {
+                    CSS_putSPoolBuf(pb, " embossed");
+                    sep = 1;
+                }
+            }
+            if (type & 0x100) {
+                if (sep) {
+                    CSS_putSPoolBuf(pb, ", aural");
+                } else {
+                    CSS_putSPoolBuf(pb, " aural");
+                }
+            }
+        }
+        ret = CSS_getPoolBuf(pb);
+    }
+    CSS_freePoolBuf(pb);
+    return ret;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_API", CSS_SkipBlanks);
 
