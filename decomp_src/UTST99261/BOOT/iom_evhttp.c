@@ -29,6 +29,13 @@ char *http_getresponseheader_SetCookie(int h, int i);
 int iom_setCookie(char *url, char *cookie, int flag);
 extern int D_00585204;
 extern int G_sendflag;
+typedef struct { int state; int x4[4]; void *msg; int x18[8]; } HCTXE;
+typedef struct { int x0; int x4; void *msg; } HQE;
+extern HCTXE D_005851C4[];
+void *UTL_peekqueue(void *q, void *e);
+void UTL_relqueue(void *q, void *e);
+void *iom_freeMsg(void *msg);
+int iom_mfree(void *p);
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/iom_evhttp", D_0013F290);
 
 int iom_evHttpCtx(void *msg) {
@@ -55,7 +62,31 @@ int iom_detachHttpCtx(void) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iom_evhttp", iom_addHttpCtx);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iom_evhttp", iom_stopHttpCtx);
+void iom_stopHttpCtx(void *msg) {
+    HQE *e;
+    HQE *n;
+    HCTXE *c;
+    int i;
+
+    for (e = UTL_peekqueue(&D_005851FC, NULL); e != NULL; e = n) {
+        n = UTL_peekqueue(&D_005851FC, e);
+        if (msg == NULL || (M2C_FIELD(msg, int *, 4) == M2C_FIELD(e->msg, int *, 4) && (M2C_FIELD(msg, int *, 0x14) == 0 || (M2C_FIELD(msg, int *, 0x14) == 1 && M2C_FIELD(msg, int *, 8) == M2C_FIELD(e->msg, int *, 8))))) {
+            UTL_relqueue(&D_005851FC, e);
+            iom_sendRequestFailed(e->msg, -0x133);
+            e->msg = iom_freeMsg(e->msg);
+            iom_mfree(e);
+        }
+    }
+    for (i = 0; i < 1; i++) {
+        c = &D_005851C4[i];
+        if (c->state != 0 && c->state != 6) {
+            if (msg == NULL || (M2C_FIELD(msg, int *, 4) == M2C_FIELD(c->msg, int *, 4) && (M2C_FIELD(msg, int *, 0x14) == 0 || (M2C_FIELD(msg, int *, 0x14) == 1 && M2C_FIELD(msg, int *, 8) == M2C_FIELD(c->msg, int *, 8))))) {
+                iom_sendRequestFailed(c->msg, -0x133);
+                c->state = 6;
+            }
+        }
+    }
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
