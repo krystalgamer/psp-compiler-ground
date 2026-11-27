@@ -121,7 +121,7 @@ extern PsLocation *D_0025B5C8;
 typedef struct UrlNote { char *p; char *q; int plen; int qlen; } UrlNote;
 typedef struct UrlHist { int pad[25]; UrlNote *note; } UrlHist;
 typedef struct PsNote { int pad[2]; int len1; char *p1; int len2; char *p2; int len3; char *p3; } PsNote;
-typedef struct SubmitNote { short x0; int method; int x8; int len1; char *p1; int len2; char *p2; int len3; char *p3; int len4; char *p4; } SubmitNote;
+typedef struct SubmitNote { unsigned short x0; int method; int x8; int len1; char *p1; int len2; char *p2; int len3; char *p3; int len4; char *p4; } SubmitNote;
 extern char D_0013574C[];
 void *MEM_calloc(int, unsigned int);
 int HST_getMethodType(void *h);
@@ -132,6 +132,13 @@ extern int jsapi_lock;
 int ps_u0103(PsIpc *msg);
 int ps_l1105(PsIpc *msg);
 int ps_i2104(PsIpc *msg);
+typedef struct PsUri { int len; char *p; } PsUri;
+extern PsUri *SaveTRAGETURI_p __asm__("SaveTRAGETURI");
+extern SubmitNote *RECIEVE_MSG_p __asm__("RECIEVE_MSG");
+void ps_freeRecvInfo(void);
+int UTL_guessMIMETypeFromName(char *name);
+void ps_HeadSend(int len1, char *p1, int len2, char *p2, int a, int b, int id);
+void ps_postsend(int len1, char *p1, int len2, char *p2, int a, int hdrlen, char *hdr, int bodylen, char *body, int z, int id);
 unsigned short UDomiString_ToLower(unsigned short c) {
     if (c < 0x80) {
         return tolower(c);
@@ -654,7 +661,70 @@ int ps_PassWordChk(void) {
 void ps_PassWordSet(void) {
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", ps_submit);
+int ps_submit(PsIpc *msg) {
+    SubmitNote *n;
+    char *ext;
+    PsIpc sig;
+    char *hdr;
+    int hdrlen;
+    char *body;
+    int bodylen;
+
+    buf_sessionUI = msg->x04;
+    buf_localUI = msg->x14;
+    ps_freeRecvInfo();
+    n = (SubmitNote *)msg->x1C;
+    SubmitExtn = -1;
+    ext = MEM_malloc(0, n->len1 + 1);
+    if (ext != NULL) {
+        memcpy(ext, n->p1, n->len1);
+        ext[n->len1] = 0;
+        SubmitExtn = UTL_guessMIMETypeFromName(ext);
+        MEM_free(0, ext);
+    }
+    switch (n->method) {
+    case 0:
+        ps_HeadSend(n->len1, n->p1, n->len2, n->p2, 0, 0, n->x8);
+        break;
+    case 1:
+        bodylen = 0;
+        hdrlen = 0;
+        body = NULL;
+        hdr = NULL;
+        ps_splitPostData(n->p4, n->len4, &hdr, &hdrlen, &body, &bodylen);
+        ps_postsend(n->len1, n->p1, n->len2, n->p2, 0, hdrlen, hdr, bodylen, body, 0, n->x8);
+        if (hdr != NULL)
+            MEM_free(0, hdr);
+        if (body != NULL)
+            MEM_free(0, body);
+        break;
+    default:
+        ps_halt("ps_submit (PS_SUBMIT_NODE_type_ERROR) failed.");
+        MEM_free(0, msg->x1C);
+        return buf_ps_sts;
+    }
+    SaveUnitId = n->x8;
+    PageGetType = 1;
+    Accession = 0;
+    GetPlace = 0;
+    UPDATE_TYPE = n->x0;
+    SaveTRAGETURI_p = MEM_malloc(0, n->len3 + 8);
+    if (SaveTRAGETURI_p == NULL)
+        ps_halt("Parser : (char*)E_malloc(ps_submit) failed");
+    SaveTRAGETURI_p->len = n->len3;
+    if (n->len3 != 0) {
+        SaveTRAGETURI_p->p = (char *)SaveTRAGETURI_p + 8;
+        memcpy(SaveTRAGETURI_p->p, n->p3, n->len3);
+    }
+    if (RECIEVE_MSG_p != NULL)
+        MEM_free(0, RECIEVE_MSG_p);
+    RECIEVE_MSG_p = n;
+    initMPU_SIG_RECV_STARTED(&sig);
+    sig.x14 = buf_localUI;
+    sig.x04 = buf_sessionUI;
+    ps_sndmsg(&sig, 1);
+    return 20;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", ps_postsend);
 
