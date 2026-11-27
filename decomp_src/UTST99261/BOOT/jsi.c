@@ -75,6 +75,12 @@ char *get_cookie(char *uri);
 char *strtok(char *s, const char *d);
 int strncmp(const char *a, const char *b, unsigned int n);
 char *strcat(char *d, const char *s);
+int strlen(const char *s);
+typedef struct { u16 port; DOMStr *proto; DOMStr *host; DOMStr *path; DOMStr *x10; DOMStr *x14; } JSURLINFO;
+typedef struct { char *proto; char *host; int port; char *path; char *x10; char *x14; } JSURL;
+JSURL *URL_new(char *s);
+void URL_free(JSURL *u);
+#define NEWDS(s) ((s) != NULL ? newDOMString_4B5FC((s), strlen(s)) : newDOMString_4B5FC(D_00133A2C, 0))
 DOMStr *newDOMString_4B5FC(const char *utf8, int len) {
     DOMStr *s = MEM_malloc(0, sizeof(DOMStr));
 
@@ -355,7 +361,39 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSI_getLinkURL);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSI_setLinkURL);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSI_getDocumentURL);
+JSURLINFO *JSI_getDocumentURL(void *node) {
+    JSURLINFO *r;
+    void *h;
+    JSURL *u;
+    if (node == NULL) {
+        return NULL;
+    }
+    if (!attached) {
+        JSI_init();
+    }
+    r = MEM_malloc(0, 0x18);
+    if (r == NULL) {
+        return NULL;
+    }
+    memset(r, 0, 0x18);
+    h = HST_searchSessionIDHistoryNode(Node_getSid(node));
+    if (h == NULL || (u = URL_new(HST_getCurURI(h))) == NULL) {
+        MEM_free(0, r);
+        return NULL;
+    }
+    if (u->port == 0) {
+        r->port = 80;
+    } else {
+        r->port = u->port;
+    }
+    r->proto = NEWDS(u->proto);
+    r->host = NEWDS(u->host);
+    r->path = NEWDS(u->path);
+    r->x10 = NEWDS(u->x14);
+    r->x14 = NEWDS(u->x10);
+    URL_free(u);
+    return r;
+}
 
 int JSI_getOptionState(void *node) {
     LayoutBox *box;
