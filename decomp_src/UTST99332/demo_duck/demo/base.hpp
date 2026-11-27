@@ -571,8 +571,12 @@ public:
     Log &operator<<(float);
     void useHexa(bool);
 private:
+    Log(const char *, bool, bool, bool, bool);
+    void put(const char *);
     bool flags[3];
     bool hexa;
+    char _name[256];
+    bool _f104, _f105;
 };
 }
 common_internal::Log &Log(const char * = 0);
