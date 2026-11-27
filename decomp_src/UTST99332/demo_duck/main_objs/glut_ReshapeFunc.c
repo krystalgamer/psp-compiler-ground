@@ -2,7 +2,13 @@
 /* cflags: -O3 -fno-exceptions */
 #undef __EXCEPTIONS
 #include "cxx/defer_asm.h"
+#define DEMO_STATICS_IOSTREAM
+#define GLUT_STATICS
 #include "../main.hpp"
+
+/* the module's .ctors/.dtors refer to the static constructor/destructor */
+__asm__(".globl _GLOBAL__I__ZN4glut11ReshapeFuncEii");
+__asm__(".globl _GLOBAL__D__ZN4glut11ReshapeFuncEii");
 
 extern "C" {
 int sceCtrlSetSamplingMode(int);
@@ -34,7 +40,10 @@ void DisplayFunc();
 void IdleFunc();
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/glut_ReshapeFunc", _Z41__static_initialization_and_destruction_0ii_DC98);
+/* file statics (local symbols): the static constructor is keyed to ReshapeFunc, the first public symbol */
+namespace glut {
+static app::Callbacks *app_ptr;
+}
 
 void glut::ReshapeFunc(int w, int h)
 {
@@ -57,7 +66,14 @@ void glut::IdleFunc()
     }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/glut_ReshapeFunc", _ZN3psp3padEv);
+psp::Pad &psp::pad()
+{
+    static Pad single_pad;
+    return single_pad;
+}
+namespace app {
+static bool init_glut;
+}
 
 int psp::MainThread(unsigned int, void *)
 {
@@ -172,18 +188,3 @@ void app::CheckMemory()
     } while (p);
 }
 
-extern "C" {
-void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_DC98");
-void _GLOBAL__I__ZN4glut11ReshapeFuncEii(void);
-void _GLOBAL__D__ZN4glut11ReshapeFuncEii(void);
-}
-
-void _GLOBAL__I__ZN4glut11ReshapeFuncEii(void)
-{
-    static_init(1, 0xFFFF);
-}
-
-void _GLOBAL__D__ZN4glut11ReshapeFuncEii(void)
-{
-    static_init(0, 0xFFFF);
-}

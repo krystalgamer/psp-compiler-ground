@@ -561,6 +561,8 @@ segments:
       - { start: 0x18CFCC, type: bss, vram: 0x18CF80, name: bss_18CF80 }
       - { start: 0x18CFCC, type: .bss, vram: 0x18CF9C, name: WaterPatch }
       - { start: 0x18CFCC, type: bss, vram: 0x18D0F8, name: bss_18D0F8 }
+      - { start: 0x18CFCC, type: .bss, vram: 0x18D278, name: main_objs/glut_ReshapeFunc }
+      - { start: 0x18CFCC, type: bss, vram: 0x18D2C8, name: bss_18D2C8 }
       - { start: 0x18CFCC, type: .bss, vram: 0x18D740, name: main_objs/libc_fix_ItoA }
       - { start: 0x18CFCC, type: bss, vram: 0x18D744, name: bss_18D744 }
       - { start: 0x18CFCC, type: .bss, vram: 0x18D74C, name: main_objs/psp_VertexArrayEdit }

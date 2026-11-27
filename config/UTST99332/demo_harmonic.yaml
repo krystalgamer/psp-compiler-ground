@@ -542,6 +542,8 @@ segments:
     subsegments:
       - [0x178F00, data, data]
       - { start: 0x189CE4, type: bss, vram: 0x189C40, name: bss_189C40 }
+      - { start: 0x189CE4, type: .bss, vram: 0x189E00, name: main_objs/glut_ReshapeFunc }
+      - { start: 0x189CE4, type: bss, vram: 0x189E50, name: bss_189E50 }
       - { start: 0x189CE4, type: .bss, vram: 0x18A2C0, name: main_objs/libc_fix_ItoA }
       - { start: 0x189CE4, type: bss, vram: 0x18A2C4, name: bss_18A2C4 }
       - { start: 0x189CE4, type: .bss, vram: 0x18A2CC, name: main_objs/psp_VertexArrayEdit }

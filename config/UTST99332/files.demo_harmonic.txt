@@ -371,3 +371,6 @@ bss 0x18C964 main_objs/scene_StaticTransform
 rodata 0x169F90 main_objs/scene_Switch
 rodata 0x169FE0 -
 bss 0x18C9E8 main_objs/scene_Switch
+# glut_ReshapeFunc: .bss of the C++ static initializer, file statics glut::app_ptr/app::init_glut and pad()'s single_pad
+bss 0x189E00 main_objs/glut_ReshapeFunc
+bss 0x189E50 -

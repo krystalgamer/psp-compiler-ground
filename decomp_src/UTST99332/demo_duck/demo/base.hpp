@@ -40,12 +40,17 @@ namespace psp {
 void StartMainThread();
 const char *GetKernelErrName(unsigned int);
 }
+/* app::init_glut, glut::app_ptr are file statics of glut_ReshapeFunc (it defines GLUT_STATICS) */
 namespace app {
 class Callbacks;
+#ifndef GLUT_STATICS
 extern bool init_glut;
+#endif
 }
 namespace glut {
+#ifndef GLUT_STATICS
 extern app::Callbacks *app_ptr;
+#endif
 extern int screen_width;
 extern int screen_height;
 }
