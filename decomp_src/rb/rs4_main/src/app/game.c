@@ -9,9 +9,30 @@ M2C_UNK semaLock(int);                              /* extern */
 extern int GameSema;
 M2C_UNK semaUnlock(int);                         /* extern */
 extern unsigned char GameData;
-M2C_UNK gameOvlProcInst(int, int, int, int, int);   /* extern */
 int resGetCurrentInst();
 typedef struct { char pad[0x9C]; int mode; int pad2; int player; } GameDataSw;
+typedef struct { int module; int f4; int f8; void *task[2]; } GameInst;
+typedef struct { int flags; int f4; int f8; GameInst inst[5]; int f70, f74; unsigned char b78, b79, b7a, b7b; int f7c; int f80; int f84, f88, f8c, f90; int f94; int f98; int mode; int fA0; int player; } GameDataT;
+#define G ((GameDataT *)&GameData)
+extern unsigned char D_000FC690, D_000FC6AC, D_000FCB74;
+void *taskInit(int);
+void ctrlSetVirtualType(int);
+void taskAllFree(void);
+void taskTerm(void *);
+void randLoad(int);
+void randSave(int);
+int taskMove();
+int taskDraw();
+int gameTaskMove(void *t, int a, int b);
+int gameTaskSort();
+int gameTaskDraw(int a, int b, int c);
+void _gameTaskProc(int inst);
+void *taskSwitchCntx(void *);
+int resOvlProcInst(int, int, int, int, int);
+int thrState(int);
+int mainGetThrBack(void);
+int taskProc();
+void gameSwitchPlayer(int a);
 int SaruNet_ResidentData__Is_Server();
 void *rsvNextAlive(void *);                         /* extern */
 M2C_UNK sortPrio(void *, M2C_UNK, M2C_UNK, M2C_UNK, void **); /* extern */
@@ -79,7 +100,25 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/game", gameMain);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/game", gameProc);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/game", gameOvlProcInst);
+int gameOvlProcInst(int inst, int a, int b, int c, int d)
+{
+	GameDataT *g = (GameDataT *)&GameData;
+	int save = g->player;
+	void *old = taskSwitchCntx(0);
+	unsigned int j;
+	void *t;
+	for (j = 0; j < 2; j++) {
+		t = ((GameDataT *)&GameData)->inst[inst].task[j];
+		if (t != NULL) {
+			gameSwitchPlayer(j);
+			taskSwitchCntx(t);
+			resOvlProcInst(inst, a, b, c, d);
+		}
+	}
+	taskSwitchCntx(old);
+	((GameDataT *)&GameData)->player = save;
+	return 1;
+}
 
 void gameOvlProcCurrent(int arg0, int arg1, int arg2, int arg3) {
     gameOvlProcInst(resGetCurrentInst(), arg0, arg1, arg2, arg3);
@@ -169,13 +208,91 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/game", gameTaskInit);
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/game", D_000FCB74);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/game", gameTaskTerm);
+int gameTaskTerm(void)
+{
+	int inst = resGetCurrentInst();
+	int save = G->player;
+	void *old = taskSwitchCntx(0);
+	unsigned int j;
+	void *t;
+	for (j = 0; j < 2; j++) {
+		t = G->inst[inst].task[j];
+		if (t != NULL) {
+			gameSwitchPlayer(j);
+			taskSwitchCntx(t);
+			taskAllFree();
+			taskTerm(t);
+			G->inst[inst].task[j] = NULL;
+		}
+	}
+	switch (G->mode) {
+	case 0:
+	case 1:
+	case 3:
+	case 4:
+		break;
+	case 2:
+		ctrlSetVirtualType(0);
+		break;
+	}
+	taskSwitchCntx(old);
+	G->player = save;
+	return 1;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/game", _gameTaskProc);
+void _gameTaskProc(int inst)
+{
+	unsigned int j;
+	void *t;
+	for (j = 0; j < 2; j++) {
+		t = G->inst[inst].task[j];
+		if (t != NULL) {
+			randLoad(j);
+			gameSwitchPlayer(j);
+			taskSwitchCntx(t);
+			resOvlProcInst(inst, 0, 14, 0, 0);
+			taskMove(gameTaskMove, 0, 0, 0);
+			resOvlProcInst(inst, 0, 15, 0, 0);
+			if (G->b79 == 1)
+				taskDraw(gameTaskSort, gameTaskDraw, 0, 0);
+			resOvlProcInst(inst, 0, 16, 0, 0);
+			randSave(j);
+		}
+	}
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/game", gameTaskProc);
+int gameTaskProc(void)
+{
+	int i, n;
+	randSave(0);
+	randSave(1);
+	switch (D_001116AC) {
+	case 0:
+	case 1:
+	case 3:
+	case 4:
+	default:
+		n = resGetCurrentInst();
+		for (i = 0; i <= n; i++)
+			_gameTaskProc(i);
+		break;
+	case 2:
+		for (i = resGetCurrentInst(); i >= 0; i--)
+			_gameTaskProc(i);
+		break;
+	}
+	return 1;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/game", gameTaskMove);
+int gameTaskMove(void *t, int a, int b)
+{
+	int f = ((GameDataT *)&GameData)->flags;
+	if (*(int *)((char *)t + 0x2C) & f)
+		taskProc(t, 14, a, b);
+	else
+		taskProc(t, 2, a, b);
+	return 0;
+}
 
 int gameTaskSort(void **arg0, void *arg1, int *arg2) {
     int *var_v0;
@@ -211,7 +328,29 @@ int gameTaskDraw(int a, int b, int c)
 	return 0;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/game", gameChgGameMode);
+int gameChgGameMode(int mode)
+{
+	if (thrState(mainGetThrBack()) != 0) return 0;
+	G->f94 = mode;
+	G->f98 = resGetCurrentInst();
+	switch (mode) {
+	default:
+		consPrintf(&D_000FC690, &D_000FC6AC, 0x355, "gameChgGameMode", &D_000FCB74);
+		break;
+	case 0:
+	case 3:
+	case 4:
+		G->f80 = 0;
+		break;
+	case 2:
+		G->f80 = 1;
+		break;
+	case 1:
+		G->f80 = 2;
+		break;
+	}
+	return 1;
+}
 
 void gameInitArg(void)
 {
