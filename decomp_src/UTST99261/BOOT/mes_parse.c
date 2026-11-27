@@ -337,7 +337,29 @@ void *mes_parse_postfix_expression(void *p, void *lx, int flags)
     return e;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_parse", mes_parse_unary_expression);
+void *mes_parse_unary_expression(void *p, void *lx, int flags)
+{
+    int t = mes_lex_peek(lx);
+    void *n;
+
+    if (t == 0x14 || (t == 8 || t == 0x19 || t == 0x47 || t == 0x48 || t == 0x43 || t == 0x44
+        || t == 0x50 || t == 0x4F)) {
+
+        M2C_FIELD(lx, unsigned char *, 0x10) = 0;
+        if (t == 0x43)
+            t = 0xA3;
+        else if (t == 0x44)
+            t = 0xA4;
+        else if (t == 0x47)
+            t = 0xA5;
+        else if (t == 0x48)
+            t = 0xA6;
+        n = mes_parse_node_new(t, 1);
+        mes_parse_node_set1(n, 0, mes_parse_unary_expression(p, lx, flags));
+        return n;
+    }
+    return mes_parse_postfix_expression(p, lx, flags);
+}
 
 void *mes_parse_multiplicative_expression(void *p, void *lx, int flags)
 {
@@ -584,7 +606,42 @@ void *mes_parse_statement_list(void *p, void *lx, int flags)
     return NULL;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_parse", mes_parse_case_clause);
+void *mes_parse_case_clause(void *p, void *lx, int flags)
+{
+    void *list = NULL;
+    int n = 0;
+    int f2;
+    void *c;
+    int t;
+
+    if (mes_parse_check_token(lx, 0x32, flags))
+        return NULL;
+    f2 = flags | 0x20;
+    while (mes_lex_peek(lx) != 0x33) {
+        if (M2C_FIELD(lx, unsigned char *, 0x10) == 5) {
+            M2C_FIELD(lx, unsigned char *, 0x10) = 0;
+            c = mes_parse_node_new(5, 2);
+            mes_parse_node_set1(c, 0, mes_parse_expression(p, lx, f2 & ~0x4000));
+            mes_parse_check_token(lx, 0x54, -1);
+            mes_parse_node_set1(c, 1, mes_parse_statement_list(p, lx, flags | 0xC00));
+        } else if (M2C_FIELD(lx, unsigned char *, 0x10) == 0x11) {
+            M2C_FIELD(lx, unsigned char *, 0x10) = 0;
+            c = mes_parse_node_new(0x11, 1);
+            mes_parse_check_token(lx, 0x54, -1);
+            mes_parse_node_set1(c, 0, mes_parse_statement_list(p, lx, flags | 0xC00));
+        } else
+            break;
+        list = mes_parse_node_cons((int)list, (int)c);
+        n++;
+    }
+    mes_parse_check_token(lx, 0x33, -1);
+    if (n > 0) {
+        c = mes_parse_node_new(0x9A, n);
+        mes_parse_node_set(c, list);
+        return c;
+    }
+    return NULL;
+}
 
 void *mes_parse_variable_declaration(void *p, void *lx, int flags)
 {
