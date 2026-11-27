@@ -421,7 +421,28 @@ void sceGumLookAt(const ScePspFVector3 *eye, const ScePspFVector3 *center,
 	return;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgum", sceGumProject);
+ScePspFVector4 *sceGumProject(ScePspFVector4 *xyzq, const ScePspFVector3 *pos)
+{
+	ScePspFMatrix4 tm;
+	ScePspFVector4 tv;
+	float q;
+
+	if (mat_stack[SCEGU_MATRIX_VIEW].cur!=NULL) {
+		{_sceGumMulMatrix(&tm, mat_stack[SCEGU_MATRIX_PROJECTION].cur, mat_stack[SCEGU_MATRIX_VIEW].cur);}
+	} else {
+		memcpy(&tm, mat_stack[SCEGU_MATRIX_PROJECTION].cur, sizeof(ScePspFMatrix4));
+	}
+	if (mat_stack[SCEGU_MATRIX_WORLD].cur!=NULL) {
+		{_sceGumMulMatrix(&tm, &tm, mat_stack[SCEGU_MATRIX_WORLD].cur);}
+	}
+	_sceGumHomogeneousTransform(&tv, &tm, pos);
+	q = 1.0f / tv.w;
+	xyzq->x = tv.x * q;
+	xyzq->y = tv.y * q;
+	xyzq->z = tv.z * q;
+	xyzq->w = q;
+	return (xyzq);
+}
 
 void sceGumSetCurMatrix(void)
 {
