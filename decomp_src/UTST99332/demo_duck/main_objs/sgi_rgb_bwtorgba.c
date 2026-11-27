@@ -2,8 +2,13 @@
 /* cflags: -O3 -fno-exceptions */
 #undef __EXCEPTIONS
 #include "cxx/defer_asm.h"
+#define DEMO_STATICS_IOSTREAM
 #define DEMO_TEMPLATE_DEFS
 #include "../main.hpp"
+
+/* the module's .ctors/.dtors refer to the static constructor/destructor */
+__asm__(".globl _GLOBAL__I__ZN7sgi_rgb8bwtorgbaEPhS0_i");
+__asm__(".globl _GLOBAL__D__ZN7sgi_rgb8bwtorgbaEPhS0_i");
 
 /* the object's .gnu.linkonce.t sections in the original's order (ImageRec's inline destructor clones are asm) */
 DEMO_LINKONCE_ORDER(
@@ -34,8 +39,6 @@ DEMO_LINKONCE_ORDER(
     DEMO_LINKONCE(_ZN6common4SwapINS_7t_arrayIiE7MembersEEEvRT_S5_)
     DEMO_LINKONCE(_ZN6common4SwapINS_7t_arrayIjE7MembersEEEvRT_S5_)
 );
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgi_rgb_bwtorgba", _Z41__static_initialization_and_destruction_0ii_1086CC);
 
 void sgi_rgb::bwtorgba(unsigned char *b, unsigned char *l, int n)
 {
@@ -97,22 +100,6 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgi_rgb_bwtorgba
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgi_rgb_bwtorgba", _ZN7sgi_rgb4ReadEPKcPiS2_S2_);
 
-extern "C" {
-void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_1086CC");
-void _GLOBAL__I__ZN7sgi_rgb8bwtorgbaEPhS0_i(void);
-void _GLOBAL__D__ZN7sgi_rgb8bwtorgbaEPhS0_i(void);
-}
-
-void _GLOBAL__I__ZN7sgi_rgb8bwtorgbaEPhS0_i(void)
-{
-    static_init(1, 0xFFFF);
-}
-
-void _GLOBAL__D__ZN7sgi_rgb8bwtorgbaEPhS0_i(void)
-{
-    static_init(0, 0xFFFF);
-}
-
 template common::t_array<unsigned int>::t_array();
 
 template common::t_array<unsigned int>::~t_array();
@@ -149,8 +136,6 @@ CONT_INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgi_rgb_bwt
 
 CONT_INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgi_rgb_bwtorgba", _ZN7sgi_rgb8ImageRecD0Ev, _ZN7sgi_rgb8ImageRecD0Ev)
 
-
-
 template void common::t_array<int>::swap(common::t_array<int> &);
 
 template void common::t_array<int>::fill(const int &);
@@ -162,4 +147,3 @@ template void common::t_array<unsigned int>::fill(const unsigned int &);
 template void common::Swap<common::t_array<int>::Members>(common::t_array<int>::Members &, common::t_array<int>::Members &);
 
 template void common::Swap<common::t_array<unsigned int>::Members>(common::t_array<unsigned int>::Members &, common::t_array<unsigned int>::Members &);
-

@@ -2,9 +2,13 @@
 /* cflags: -O3 -fno-exceptions */
 #undef __EXCEPTIONS
 #include "cxx/defer_asm.h"
+#define DEMO_STATICS_IOSTREAM
 #include "../main.hpp"
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/common_GetFileExtension", _Z41__static_initialization_and_destruction_0ii_16844);
+/* the module's .ctors/.dtors refer to the static constructor/destructor; cc1plus keys them to the
+   first public symbol, the deferred-asm wrapper of the (still asm) first function */
+__asm__(".globl _GLOBAL__I__ZN6common16GetFileExtensionESsb\n_GLOBAL__I__ZN6common16GetFileExtensionESsb = _GLOBAL__I__ZN6common16GetFileExtensionESsb__asm");
+__asm__(".globl _GLOBAL__D__ZN6common16GetFileExtensionESsb\n_GLOBAL__D__ZN6common16GetFileExtensionESsb = _GLOBAL__D__ZN6common16GetFileExtensionESsb__asm");
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/common_GetFileExtension", _ZN6common16GetFileExtensionESsb);
 
@@ -20,20 +24,7 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/common_GetFi
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/common_GetFileExtension", _ZN6common12FilePathTestESs);
 
-extern "C" {
-void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_16844");
-void _GLOBAL__I__ZN6common16GetFileExtensionESsb(void);
-void _GLOBAL__D__ZN6common16GetFileExtensionESsb(void);
-}
-
-void _GLOBAL__I__ZN6common16GetFileExtensionESsb(void)
-{
-    static_init(1, 0xFFFF);
-}
-
-void _GLOBAL__D__ZN6common16GetFileExtensionESsb(void)
-{
-    static_init(0, 0xFFFF);
-}
-
+/* the object's weak tail (linkonce copies), still asm */
+#undef INCLUDE_ASM
+#define INCLUDE_ASM INCLUDE_ASM_LINKONCE
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/common_GetFileExtension", _ZStplIcSt11char_traitsIcESaIcEESbIT_T0_T1_ERKS6_S8_);

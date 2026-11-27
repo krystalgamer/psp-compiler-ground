@@ -2,8 +2,13 @@
 /* cflags: -O3 -fno-exceptions */
 #undef __EXCEPTIONS
 #include "cxx/defer_asm.h"
+#define DEMO_STATICS_IOSTREAM
 #define DEMO_LINKONCE_Tga 1
 #include "../main.hpp"
+
+/* the module's .ctors/.dtors refer to the static constructor/destructor */
+__asm__(".globl _GLOBAL__I__ZN8textures17textures_internal3Tga4loadEPKc");
+__asm__(".globl _GLOBAL__D__ZN8textures17textures_internal3Tga4loadEPKc");
 
 /* this object's .gnu.linkonce.t sections in the original's order */
 DEMO_LINKONCE_ORDER(
@@ -40,8 +45,6 @@ public:
     unsigned char *_data;
     unsigned int _size;
 };
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/textures_textures_internal_Tga", _Z41__static_initialization_and_destruction_0ii_107670);
 
 int textures::textures_internal::Tga::load(const char *name)
 {
@@ -113,22 +116,6 @@ void textures::TgaSnapshot(const char *name)
 }
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/textures_textures_internal_Tga", _ZN8textures20TgaAutoNamedSnapshotEPKc);
-
-extern "C" {
-void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_107670");
-void _GLOBAL__I__ZN8textures17textures_internal3Tga4loadEPKc(void);
-void _GLOBAL__D__ZN8textures17textures_internal3Tga4loadEPKc(void);
-}
-
-void _GLOBAL__I__ZN8textures17textures_internal3Tga4loadEPKc(void)
-{
-    static_init(1, 0xFFFF);
-}
-
-void _GLOBAL__D__ZN8textures17textures_internal3Tga4loadEPKc(void)
-{
-    static_init(0, 0xFFFF);
-}
 
 template<class T> void byte_array::read(unsigned int _Offset, T &_Value)
 {

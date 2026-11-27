@@ -2,11 +2,23 @@
 /* cflags: -O3 -fno-exceptions */
 #undef __EXCEPTIONS
 #include "cxx/defer_asm.h"
+#define DEMO_STATICS_MATH
+#define DEMO_STATICS_IOSTREAM
 #define DEMO_TEMPLATE_DEFS
 #include "../main.hpp"
+
+/* the module's .ctors/.dtors refer to the static constructor/destructor, keyed to Group::_magic_number
+   (initialized .data, defined at the top of the original; it stays asm data here, so cc1plus keys them to the
+   constructor) */
+__asm__(".globl _GLOBAL__I__ZN5scene5Group13_magic_numberE\n_GLOBAL__I__ZN5scene5Group13_magic_numberE = _GLOBAL__I__ZN5scene5GroupC2ESsb");
+__asm__(".globl _GLOBAL__D__ZN5scene5Group13_magic_numberE\n_GLOBAL__D__ZN5scene5Group13_magic_numberE = _GLOBAL__D__ZN5scene5GroupC2ESsb");
 SCENE_ALLOC_FIRST_USE
 /* linkonce order: this object's .gnu.linkonce.t sections in Sony's link order */
 SCENE_LINKONCE_ORDER(
+    SCENE_LINKONCE(_ZNK5scene5Group11getTypeNameEv)
+    SCENE_LINKONCE(_ZNK5scene5Group5cloneESs)
+    SCENE_LINKONCE(_ZNK5scene5Group7isGroupEv)
+    SCENE_LINKONCE(_ZNK5scene5Group10isClonableEv)
     SCENE_LINKONCE(_ZNSt4listIN6common6handleIN5scene4NodeEEESaIS4_EEaSERKS6_)
     SCENE_LINKONCE(_ZNSt4listIN6common6handleIN5scene4NodeEEESaIS4_EE5eraseESt14_List_iteratorIS4_RS4_PS4_E)
 );
@@ -20,7 +32,23 @@ extern const char D_0016B7EC[];     /* "../lib/scene/Group.cpp" */
 extern const char D_0016B8BC[];     /* "_children.empty()" */
 extern const char clearChildren_name[] __asm__("_ZZN5scene5Group13clearChildrenEbE19__PRETTY_FUNCTION__");
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Group", _Z41__static_initialization_and_destruction_0ii_85A08);
+/* inline in the class (weak copies emitted with the vtable, in the object's tail) */
+SGL_LINKONCE_BEGIN
+inline const char *scene::Group::getTypeName() const
+{
+    return D_0016B744;
+}
+
+inline bool scene::Group::isGroup() const
+{
+    return true;
+}
+
+inline bool scene::Group::isClonable() const
+{
+    return true;
+}
+SGL_LINKONCE_END
 
 scene::Group::Group(std::string name, bool b) : Node(name, b)
 {
@@ -81,39 +109,11 @@ void scene::Group::traverse(TraversalType type, sgl::Frustum &frustum, const mat
     traverse(tvs);
 }
 
-extern "C" {
-void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_85A08");
-void _GLOBAL__I__ZN5scene5Group13_magic_numberE(void);
-void _GLOBAL__D__ZN5scene5Group13_magic_numberE(void);
-}
-
-void _GLOBAL__I__ZN5scene5Group13_magic_numberE(void)
-{
-    static_init(1, 0xFFFF);
-}
-
-void _GLOBAL__D__ZN5scene5Group13_magic_numberE(void)
-{
-    static_init(0, 0xFFFF);
-}
-
-const char *scene::Group::getTypeName() const
-{
-    return D_0016B744;
-}
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Group", _ZNK5scene5Group5cloneESs);
-
-bool scene::Group::isGroup() const
-{
-    return true;
-}
-
-bool scene::Group::isClonable() const
-{
-    return true;
-}
-
 /* used by clone() (asm) */
 template std::list<common::handle<scene::Node> > &std::list<common::handle<scene::Node> >::operator=(const std::list<common::handle<scene::Node> > &);
 template std::list<common::handle<scene::Node> >::iterator std::list<common::handle<scene::Node> >::erase(std::list<common::handle<scene::Node> >::iterator);
+
+/* the object's weak tail (linkonce copies), still asm */
+#undef INCLUDE_ASM
+#define INCLUDE_ASM INCLUDE_ASM_LINKONCE
+INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Group", _ZNK5scene5Group5cloneESs);

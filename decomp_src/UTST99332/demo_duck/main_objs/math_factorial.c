@@ -2,13 +2,17 @@
 /* cflags: -O3 -fno-exceptions */
 #undef __EXCEPTIONS
 #include "cxx/defer_asm.h"
+#define DEMO_STATICS_MATH
+#define DEMO_STATICS_IOSTREAM
 #include "../main.hpp"
+
+/* the module's .ctors/.dtors refer to the static constructor/destructor */
+__asm__(".globl _GLOBAL__I__ZN4math9factorialEi");
+__asm__(".globl _GLOBAL__D__ZN4math9factorialEi");
 
 /* constants and strings stay in the module's .rodata (asm) */
 extern const float D_00173A88;      /* 1 */
 extern const float D_00173A8C;      /* 4 pi */
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/math_factorial", _Z41__static_initialization_and_destruction_0ii_EEA98);
 
 int math::factorial(int n)
 {
@@ -44,20 +48,3 @@ int math::SH::N(unsigned int l)
 {
     return (l + 1) * (l + 1);
 }
-
-extern "C" {
-void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_EEA98");
-void _GLOBAL__I__ZN4math9factorialEi(void);
-void _GLOBAL__D__ZN4math9factorialEi(void);
-}
-
-void _GLOBAL__I__ZN4math9factorialEi(void)
-{
-    static_init(1, 0xFFFF);
-}
-
-void _GLOBAL__D__ZN4math9factorialEi(void)
-{
-    static_init(0, 0xFFFF);
-}
-

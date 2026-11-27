@@ -2,7 +2,13 @@
 /* cflags: -O3 -fno-exceptions */
 #undef __EXCEPTIONS
 #include "cxx/defer_asm.h"
+#define DEMO_STATICS_MATH
+#define DEMO_STATICS_IOSTREAM
 #include "../main.hpp"
+
+/* the module's .ctors/.dtors refer to the static constructor/destructor */
+__asm__(".globl _GLOBAL__I__ZN4math6matrixC2ERKNS_10quaternionE");
+__asm__(".globl _GLOBAL__D__ZN4math6matrixC2ERKNS_10quaternionE");
 
 /* float constants stay in the module's .rodata (asm) */
 extern const float D_00168B98;      /* 1 */
@@ -30,8 +36,6 @@ extern const char D_00168CC0[];     /* "n != 0.f" */
 extern const char D_00168CCC[];     /* "../lib/maths/matrix.cpp" */
 extern const char D_00168CE4[];     /* "n should never be set to 0" */
 extern const char PF_Perspective[] __asm__("_ZZN4math6matrix11PerspectiveEffffE19__PRETTY_FUNCTION__");
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/math_matrix_matrix", _Z41__static_initialization_and_destruction_0ii_55168);
 
 math::matrix::matrix(const quaternion &q)
 {
@@ -242,19 +246,3 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/math_matrix_matr
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/math_matrix_matrix", _ZNK4math6matrix13fixedCoordSysEv);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/math_matrix_matrix", _ZNK4math6matrix5printESsSs);
-
-extern "C" {
-void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_55168");
-void _GLOBAL__I__ZN4math6matrixC2ERKNS_10quaternionE(void);
-void _GLOBAL__D__ZN4math6matrixC2ERKNS_10quaternionE(void);
-}
-
-void _GLOBAL__I__ZN4math6matrixC2ERKNS_10quaternionE(void)
-{
-    static_init(1, 0xFFFF);
-}
-
-void _GLOBAL__D__ZN4math6matrixC2ERKNS_10quaternionE(void)
-{
-    static_init(0, 0xFFFF);
-}

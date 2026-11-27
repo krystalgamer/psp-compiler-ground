@@ -445,9 +445,29 @@ bss 0x18E534 -
 rodata 0x16B5AC main_objs/scene_Node
 rodata 0x16B6EC -
 bss 0x18F6B0 main_objs/scene_Node
-bss 0x18F7B4 -
 # sgl_Mesh_3: C++ static initializer; .rodata: its float pool and save()'s (asm) strings; .bss: the header statics
 rodata 0x16ED28 main_objs/sgl_Mesh_3
 rodata 0x16EFC8 -
 bss 0x190830 main_objs/sgl_Mesh_3
 bss 0x190934 -
+# C++ static initializers (header statics): their float pools and .bss (the units' other data stays asm)
+bss 0x18D4A0 main_objs/common_GetFileExtension
+bss 0x18D4A4 -
+bss 0x191EF8 main_objs/sgi_rgb_bwtorgba
+bss 0x191EFC -
+bss 0x191EF4 main_objs/textures_textures_internal_Tga
+rodata 0x173A68 main_objs/math_factorial
+rodata 0x173A84 -
+bss 0x19175C main_objs/math_factorial
+bss 0x1917E0 -
+rodata 0x168B7C main_objs/math_matrix_matrix
+rodata 0x168B98 -
+bss 0x18EE88 main_objs/math_matrix_matrix
+bss 0x18EF0C -
+rodata 0x16B728 main_objs/scene_Group
+rodata 0x16B744 -
+bss 0x18F7B4 main_objs/scene_Group
+rodata 0x16B968 main_objs/scene_Material
+rodata 0x16B984 -
+bss 0x18F838 main_objs/scene_Material
+bss 0x18F8BC -
