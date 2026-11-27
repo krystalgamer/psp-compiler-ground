@@ -49,7 +49,12 @@ private:
 class VertexColorEnv {
 public:
     struct Vertex {
-        char _p0[0x28];
+        float theta;                    /* 0x00 */
+        float phi;                      /* 0x04 */
+        float pos[3];                   /* 0x08 */
+        char _p14[4];
+        float r, g, b;                  /* 0x18 */
+        char _p24[4];
     };
     VertexColorEnv(bool, int);
     void eval(const sh::SphericalRGBFn *);

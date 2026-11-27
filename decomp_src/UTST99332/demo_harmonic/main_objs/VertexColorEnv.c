@@ -3,6 +3,9 @@
 #undef __EXCEPTIONS
 #include "cxx/defer_asm.h"
 #include "../main.hpp"
+#include "UTST99332/demo_duck/gl.hpp"
+extern "C" void glColor3fv(const GLfloat *);
+extern "C" void glVertex3fv(const GLfloat *);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/VertexColorEnv", _Z41__static_initialization_and_destruction_0ii_9E5F4);
 
@@ -10,9 +13,36 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/VertexColorE
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/VertexColorEnv", _ZN14VertexColorEnvC1Ebi);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/VertexColorEnv", _ZN14VertexColorEnv4evalEPKN2sh14SphericalRGBFnE);
+void VertexColorEnv::eval(const sh::SphericalRGBFn *fn)
+{
+    if (fn)
+        for (std::vector<Vertex>::iterator it = _vertices.begin(); it != _vertices.end(); ++it)
+            fn->eval(it->theta, it->phi, it->r, it->g, it->b);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/VertexColorEnv", _ZN14VertexColorEnv4drawEf);
+void VertexColorEnv::draw(float scale)
+{
+    glPushMatrix();
+    glScalef(scale, scale, scale);
+    glPushAttrib(0x2000);
+    glDisable(0xB50);
+    for (int i = 0; i < _n - 1; i++) {
+        glBegin(5);
+        Vertex *a = &_vertices[i * _n + _n - 1];
+        Vertex *b = &_vertices[i * _n + _n + _n - 1];
+        for (int j = 0; j < _n; j++) {
+            glColor3fv(&a->r);
+            glVertex3fv(a->pos);
+            glColor3fv(&b->r);
+            glVertex3fv(b->pos);
+            a--;
+            b--;
+        }
+        glEnd();
+    }
+    glPopMatrix();
+    glPopAttrib();
+}
 
 extern "C" {
 void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_9E5F4");
@@ -45,3 +75,4 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/VertexColorE
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/VertexColorEnv", _ZSt24__uninitialized_copy_auxIN9__gnu_cxx17__normal_iteratorIPN14VertexColorEnv6VertexESt6vectorIS3_SaIS3_EEEES8_ET0_T_SA_S9_12__false_type);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/VertexColorEnv", _ZSt26__uninitialized_fill_n_auxIN9__gnu_cxx17__normal_iteratorIPN14VertexColorEnv6VertexESt6vectorIS3_SaIS3_EEEEjS3_ET_S9_T0_RKT1_12__false_type);
+
