@@ -1,5 +1,12 @@
+/* cflags: -Os -fno-strength-reduce */
 #include "common.h"
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/libxu/libxu_ObjectCulling", xuBeginObject);
+void *xuBeginObject(void *pkt, int type, int count, const void *index, const void *p)
+{
+	return pkt;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/libxu/libxu_ObjectCulling", xuEndObject);
+void *xuEndObject(void *pkt)
+{
+	return pkt;
+}

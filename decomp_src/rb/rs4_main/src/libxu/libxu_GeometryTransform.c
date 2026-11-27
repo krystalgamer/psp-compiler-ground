@@ -1,3 +1,4 @@
+/* cflags: -Os -fno-strength-reduce */
 #include "common.h"
 /* declarations recovered from DWARF */
 union _anon1;

@@ -1,3 +1,4 @@
+/* cflags: -Os -fno-strength-reduce */
 #include "common.h"
 /* declarations recovered from DWARF */
 union _anon1;
@@ -62,7 +63,18 @@ static inline int f2i(float rs)
 	return u.i;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/libxu/libxu_PixelOperation", xuColorFunc);
+void *xuColorFunc(void *pkt, int func, unsigned int cref, unsigned int cmsk)
+{
+	xuPtr pCmd;
+	pCmd.vp = pkt;
+	*pCmd.ip = xuSetD0(0xD8000000, func);
+	pCmd.ip++;
+	*pCmd.ip = xuSetD0(0xD9000000, cref);
+	pCmd.ip++;
+	*pCmd.ip = xuSetD0(0xDA000000, cmsk);
+	pCmd.ip++;
+	return pCmd.vp;
+}
 
 void *xuAlphaFunc(void *pkt, int func, int aref, int amsk)
 {
@@ -91,7 +103,23 @@ void *xuDepthMask(void *pkt, int flag)
 	return pCmd.vp;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/libxu/libxu_PixelOperation", xuScissor);
+void *xuScissor(void *pkt, int x, int y, int width, int height)
+{
+	xuPtr pCmd;
+	int s, e;
+	pCmd.vp = pkt;
+	s = x | (y << 10);
+	e = s + (width | (height << 10));
+	*pCmd.ip = xuSetD0(0xD4000000, s);
+	pCmd.ip++;
+	*pCmd.ip = xuSetD0(0xD5000000, e);
+	pCmd.ip++;
+	*pCmd.ip = xuSetD0(0x15000000, s);
+	pCmd.ip++;
+	*pCmd.ip = xuSetD0(0x16000000, e);
+	pCmd.ip++;
+	return pCmd.vp;
+}
 
 void *xuStencilFunc(void *pkt, int func, int sref, int smsk)
 {
@@ -111,7 +139,18 @@ void *xuStencilOp(void *pkt, int sfail, int zfail, int zpass)
 	return pCmd.vp;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/libxu/libxu_PixelOperation", xuBlendFunc);
+void *xuBlendFunc(void *pkt, int equ, int asel, int bsel, int afix, int bfix)
+{
+	xuPtr pCmd;
+	pCmd.vp = pkt;
+	*pCmd.ip = xuSetC1(xuSetC0(0xDF000000, asel | (bsel << 4)), equ);
+	pCmd.ip++;
+	*pCmd.ip = xuSetD0(0xE0000000, afix);
+	pCmd.ip++;
+	*pCmd.ip = xuSetD0(0xE1000000, bfix);
+	pCmd.ip++;
+	return pCmd.vp;
+}
 
 void *xuLogicalOp(void *pkt, int lop)
 {
