@@ -4,13 +4,29 @@
 #include "cxx/defer_asm.h"
 #include "../main.hpp"
 
+extern const char D_0017061C[];     /* "BVTRee max depth=" */
+extern const char D_00170630[];     /* "\n" */
+extern const char D_00170634[];     /* "Model num vertices=" */
+extern const char D_001706B0[];     /* "../lib/sh/RT.cpp" */
+extern const char D_001706C4[];     /* " *** error " */
+extern const char D_001708B8[];     /* "you must call start() before using the raytracer" */
+extern const char D_001708EC[];     /* "_ready" */
+extern const char trace_name[] __asm__("_ZZN3sgl2RT5traceERNS0_3RayEE19__PRETTY_FUNCTION__");
+
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_RT", _Z41__static_initialization_and_destruction_0ii_E75B8);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_RT", _ZN3sgl2RTC2Ev);
+sgl::RT::RT() : _mesh(false), _ready(false)
+{
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_RT", _ZN3sgl2RTC1Ev);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_RT", _ZN3sgl2RT5startEv);
+void sgl::RT::start()
+{
+    build_bv_tree(true, 1);
+    common::Log() << D_0017061C << *(const unsigned int *)((const char *)&_bvh + 0x168) << D_00170630;
+    common::Log() << D_00170634 << (unsigned int)_mesh.getVertices().size() << D_00170630;
+    _ready = true;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_RT", _ZN3sgl2RT3addERKNS_4MeshEj);
 
@@ -40,23 +56,36 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_RT", _ZN
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_RT", _ZN3sgl2RT12bvtree_traceEPN3BVH4NodeERNS0_3RayE);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_RT", _ZN3sgl2RT10dumb_traceERNS0_3RayE);
+void sgl::RT::dumb_trace(Ray &r)
+{
+    int i = 0;
+    for (std::vector<Triangle>::iterator it = _triangles.begin(); it != _triangles.end(); ++it, ++i)
+        if (it->intersect(r)) {
+            r._triangle = i;
+            if (r._any)
+                break;
+        }
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_RT", _ZN3sgl2RT5traceERNS0_3RayE);
+void sgl::RT::trace(Ray &r)
+{
+    SGL_ASSERT(_ready, D_001706C4, D_001708EC, D_001706B0, trace_name, 530, D_001708B8);
+    bvtree_trace(&_bvh._root, r);
+}
 
 const void *sgl::RT::getBVTree() const
 {
-    return &_fBC;
+    return &_bvh;
 }
 
 const void *sgl::RT::getMesh() const
 {
-    return this;
+    return &_mesh;
 }
 
 void *sgl::RT::getMesh()
 {
-    return this;
+    return &_mesh;
 }
 
 void sgl::RT::setTestLight(math::vector_xyzw v)

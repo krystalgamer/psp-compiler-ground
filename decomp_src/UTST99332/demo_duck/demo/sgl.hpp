@@ -598,20 +598,33 @@ class Icosahedron {
 public:
     class Bin {
     public:
+        Bin *searchLeaf(math::vector_xyzw);
+        bool intersect(math::vector_xyzw) const;
         void setBinIndex(unsigned int);
         int getBinIndex() const;
         void setLeafIndex(unsigned int);
+        int getLeafIndex() const;
         /* data */
-        char _p0[0x90];
+        char _p0[0x8C];
+        bool _leaf;                 /* 0x8C */
         int _f90;
         int _f94;
+        Bin *_children[4];          /* 0x98 */
     };
     Icosahedron(unsigned char);
     ~Icosahedron();
     bool getDepth() const;
+    void draw();
+    void draw(unsigned char);
+    void draw_bin(Bin &, unsigned char);
+    Bin *searchLeaf(math::vector_xyzw);
+    void listAllBins(std::vector<Bin *> &);
+    void listAllBinsRec(std::vector<Bin *> &, Bin *);
     /* data */
     bool _f0;
-    char _p1[0x2C - 1];
+    int _f4;
+    std::vector<Bin *> _bins;       /* 0x08 */
+    char _p14[0x2C - 0x14];
 };
 
 namespace sh {
@@ -700,17 +713,40 @@ public:
     float _f34;
 };
 void FindBestAlignedDiagonal(math::vector_xyzw, Box::Vertex &, Box::Vertex &);
-class RT : public Mesh {
+class RT {
 public:
+    struct Ray {
+        enum Type { };
+        Ray(math::vector_xyzw, math::vector_xyzw, Type);
+        char _p0[0x34];
+        int _triangle;              /* 0x34: index of the hit triangle */
+        char _p38[0x3D - 0x38];
+        bool _any;                  /* 0x3D: stop at the first hit */
+    };
+    struct Triangle {
+        Triangle();
+        Triangle(Position, Position, Position);
+        bool intersect(Ray &) const;
+        Position _v[3];
+        float _f30, _f34, _f38;
+        Normal _n;                  /* 0x3C */
+    };
     RT();
     const void *getBVTree() const;
     const void *getMesh() const;
     void *getMesh();
     const math::vector_xyzw &getTestLight() const;
     void setTestLight(math::vector_xyzw);
+    void start();
+    void build_bv_tree(bool, unsigned int);
+    void bvtree_trace(BVH::Node *, Ray &);
+    void dumb_trace(Ray &);
+    void trace(Ray &);
+    Mesh _mesh;
     math::vector_xyzw _testLight;   /* 0xA0 */
-    char _pB0[0xC];
-    char _fBC;                      /* BVH */
+    std::vector<Triangle> _triangles;   /* 0xB0 */
+    BVH _bvh;                       /* 0xBC */
+    bool _ready;                    /* 0x228 */
 };
 }
 

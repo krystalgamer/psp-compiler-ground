@@ -4,13 +4,29 @@
 #include "cxx/defer_asm.h"
 #include "../main.hpp"
 
+extern const char D_00173544[];     /* "BVTRee max depth=" */
+extern const char D_00173558[];     /* "\n" */
+extern const char D_0017355C[];     /* "Model num vertices=" */
+extern const char D_001735D8[];     /* "../lib/sh/RT.cpp" */
+extern const char D_001735EC[];     /* " *** error " */
+extern const char D_001737E0[];     /* "you must call start() before using the raytracer" */
+extern const char D_00173814[];     /* "_ready" */
+extern const char trace_name[] __asm__("_ZZN3sgl2RT5traceERNS0_3RayEE19__PRETTY_FUNCTION__");
+
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_RT", _Z41__static_initialization_and_destruction_0ii_E999C);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_RT", _ZN3sgl2RTC2Ev);
+sgl::RT::RT() : _mesh(false), _ready(false)
+{
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_RT", _ZN3sgl2RTC1Ev);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_RT", _ZN3sgl2RT5startEv);
+void sgl::RT::start()
+{
+    build_bv_tree(true, 1);
+    common::Log() << D_00173544 << *(const unsigned int *)((const char *)&_bvh + 0x168) << D_00173558;
+    common::Log() << D_0017355C << (unsigned int)_mesh.getVertices().size() << D_00173558;
+    _ready = true;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_RT", _ZN3sgl2RT3addERKNS_4MeshEj);
 
@@ -40,23 +56,36 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_RT", _ZN3sgl
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_RT", _ZN3sgl2RT12bvtree_traceEPN3BVH4NodeERNS0_3RayE);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_RT", _ZN3sgl2RT10dumb_traceERNS0_3RayE);
+void sgl::RT::dumb_trace(Ray &r)
+{
+    int i = 0;
+    for (std::vector<Triangle>::iterator it = _triangles.begin(); it != _triangles.end(); ++it, ++i)
+        if (it->intersect(r)) {
+            r._triangle = i;
+            if (r._any)
+                break;
+        }
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_RT", _ZN3sgl2RT5traceERNS0_3RayE);
+void sgl::RT::trace(Ray &r)
+{
+    SGL_ASSERT(_ready, D_001735EC, D_00173814, D_001735D8, trace_name, 530, D_001737E0);
+    bvtree_trace(&_bvh._root, r);
+}
 
 const void *sgl::RT::getBVTree() const
 {
-    return &_fBC;
+    return &_bvh;
 }
 
 const void *sgl::RT::getMesh() const
 {
-    return this;
+    return &_mesh;
 }
 
 void *sgl::RT::getMesh()
 {
-    return this;
+    return &_mesh;
 }
 
 void sgl::RT::setTestLight(math::vector_xyzw v)
