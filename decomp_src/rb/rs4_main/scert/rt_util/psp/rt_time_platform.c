@@ -35,7 +35,28 @@ int rt_time_sleep_usecs_platform(arg0)
     sceKernelDelayThread(arg0);
     return 0;
 }
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/psp/rt_time_platform", rt_time_platform_update_date_time);
+typedef struct { int sec, min, hour, mday, mon, year; } RtTm;
+extern int gCurTimeDate[];
+RtTm *localtime(void *);
+void gmtime(void *);
+int rt_time_get_msecs(void *);
+int rt_time_platform_update_date_time(void)
+{
+    int t[4];
+    RtTm *tm;
+    gmtime(t);
+    tm = localtime(t);
+    gCurTimeDate[6] = tm->year + 1900;
+    gCurTimeDate[5] = tm->mon + 1;
+    gCurTimeDate[4] = tm->mday;
+    gCurTimeDate[3] = tm->hour;
+    gCurTimeDate[2] = tm->min;
+    gCurTimeDate[1] = tm->sec;
+    gCurTimeDate[8] = 0;
+    gCurTimeDate[0] = 0;
+    if (rt_time_get_msecs(&gCurTimeDate[8]) != 0) return 0x640;
+    return 0;
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/psp/rt_time_platform", rcsid_10F07C);
 

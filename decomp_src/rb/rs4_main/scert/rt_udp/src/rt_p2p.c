@@ -188,7 +188,20 @@ int rt_p2p_get_overlay_peer_count(void *arg0, int arg1, int *arg2) {
     return var_a3;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_is_peer_in_overlay);
+int rt_p2p_is_peer_in_overlay(char *p, unsigned char ov, unsigned short peer, int *out)
+{
+    char *tab;
+    if (out == NULL) return 2;
+    *out = 0;
+    if (p == NULL) return 2;
+    if (ov >= *(unsigned int *)(p + 0x1D8)) return 2;
+    tab = *(char **)(p + 0x188);
+    if (tab == NULL) return 3;
+    if (peer >= *(unsigned short *)(p + 0x19C)) return 2;
+    if ((*(int **)(tab + ov * 24))[peer] == 0) return 0;
+    *out = 1;
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_send_overlay);
 

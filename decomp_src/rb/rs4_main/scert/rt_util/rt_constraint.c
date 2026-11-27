@@ -101,9 +101,15 @@ int rt_constraint_check_RT_U4BYTE(unsigned int *arg0, void *arg1) {
     return var_v1;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_constraint", rt_constraint_check_RT_8BYTE);
+int rt_constraint_check_RT_8BYTE(long long *v, long long *r)
+{
+    return *v >= r[0] && *v <= r[1];
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_constraint", rt_constraint_check_RT_U8BYTE);
+int rt_constraint_check_RT_U8BYTE(unsigned long long *v, unsigned long long *r)
+{
+    return *v >= r[0] && *v <= r[1];
+}
 
 int rt_constraint_check_RT_4BYTE_FP(float *arg0, void *arg1) {
     float temp_f1;

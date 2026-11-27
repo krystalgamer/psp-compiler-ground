@@ -4,7 +4,7 @@
 #define NULL ((void *)0)
 #endif
 int rt_time_sleep_usecs_platform();
-void rt_time_elapsed(void);
+int rt_time_elapsed(void *, unsigned int *);
 void rt_time_get_date_time(void);
 void rt_time_get_gmtime(void);
 void rt_time_get_local(void);
@@ -51,8 +51,8 @@ int rt_time_get_time_stamp(void *t) {
     return rt_time_platform_get_time_stamp(t);
 }
 
-void rt_time_elapsed(void) {
-    rt_time_elapsed_msecs();
+int rt_time_elapsed(void *t, unsigned int *out) {
+    return rt_time_elapsed_msecs(t, out);
 }
 
 int rt_time_elapsed_timestamp();
@@ -100,7 +100,20 @@ int rt_time_initialize();
 int rt_time_elapsed_timestamp();
 void rt_time_platform_init();
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_time", rt_time_delay);
+int rt_time_delay(unsigned int ms)
+{
+    int t[4];
+    unsigned int el;
+    int r;
+    el = 0;
+    r = rt_time_start(t);
+    if (r != 0) return r;
+    while (el < ms) {
+        r = rt_time_elapsed(t, &el);
+        if (r != 0) return r;
+    }
+    return 0;
+}
 
 int rt_time_initialize(void)
 {
