@@ -25,6 +25,17 @@ typedef struct RPOS { int x; int y; } RPOS;
 void *rnd_findParentBoxnode(void *bn, int type);
 void GUI_ScrollPane_getScrollPosition(void *pane, int *x, int *y);
 void rnd_gdrawGetViewClientSize(void *pane, int *w, int *h);
+typedef struct RLIST { struct RLIST *next; void *data; void *x8; } RLIST;
+typedef struct RNDGLOBAL { int x0; int x4; int x8; RLIST *xC; } RNDGLOBAL;
+extern RNDGLOBAL rnd_global;
+extern RLIST *D_00584D4C;
+extern RLIST *D_00584D50;
+extern void *ui_global;
+void OS_clock_gettime(int id, RPOS *ts);
+int rnd_gdrawImageReset(void *img, RPOS *t);
+int rnd_resetAnimImageBoxnode(void *bn);
+int rnd_updateAnimTextBoxnode(void *bn);
+void GUI_Component_update(void *c, int x, int y, int w, int h);
 int checkParentBox(M2C_UNK *arg0, int arg1) {
     M2C_UNK *var_a0;
     int var_v0;
@@ -112,7 +123,34 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_anim", rnd_updateUpdateWidg
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_anim", rnd_updateAnimBoxnode);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_anim", rnd_resetAnimBoxnode);
+void rnd_resetAnimBoxnode(void) {
+    RPOS now;
+    RPOS ts;
+    int changed;
+    RLIST *l;
+    RLIST *m;
+
+    changed = 0;
+    OS_clock_gettime(0, &ts);
+    now = ts;
+    for (l = D_00584D50; l != NULL; l = l->next)
+        changed |= rnd_resetAnimMarqueeBoxnode(l->data, &now);
+    for (m = D_00584D4C; m != NULL; m = m->next) {
+        if (rnd_gdrawImageReset(m->data, &now) == 1) {
+            for (l = m->x8; l != NULL && !changed; l = l->next)
+                changed |= rnd_resetAnimImageBoxnode(l->data);
+        }
+    }
+    l = rnd_global.xC;
+    if (l != NULL) {
+        rnd_global.x0 = 1;
+        rnd_global.x8 = now.y;
+        for (; l != NULL && !changed; l = l->next)
+            changed |= rnd_updateAnimTextBoxnode(l->data);
+    }
+    if (changed)
+        GUI_Component_update(M2C_FIELD(ui_global, void **, 0x90), 0, 0, 0, 0);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_anim", rnd_newMarquee);
 
