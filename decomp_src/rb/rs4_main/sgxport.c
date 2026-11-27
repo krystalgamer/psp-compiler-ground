@@ -196,7 +196,28 @@ void FadeProc(void *arg0, float fparg0) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxport", IsLfoActive);
+int IsLfoActive(int arg0) {
+    short *var_a0;
+    short temp_v0;
+    int var_a1;
+    int var_a2;
+
+    var_a0 = arg0 + 0x20;
+    var_a1 = 0;
+loop_1:
+    temp_v0 = *var_a0;
+    var_a1 += 1;
+    var_a0 += 6;
+    var_a2 = 1;
+    if (temp_v0 == 0) {
+        if (var_a1 >= 4) {
+            var_a2 = 0;
+        } else {
+            goto loop_1;
+        }
+    }
+    return var_a2;
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/sgxport", D_0010AE38);
 

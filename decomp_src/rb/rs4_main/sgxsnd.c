@@ -43,7 +43,32 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", SlotFree);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", sgxSndFlush);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", MakeSlotList);
+extern void *D_0011FC8C;
+
+int MakeSlotList(void **arg0) {
+    int var_a1;
+    void **var_a0;
+    void *temp_v1;
+    void *temp_v1_2;
+    void *temp_v1_3;
+    void *var_v0;
+
+    var_a0 = arg0;
+    var_a1 = 0;
+    temp_v1 = (M2C_FIELD(D_0011FC8C, int *, 8) < 0) ? NULL : D_0011FC8C;
+    var_v0 = temp_v1;
+    if (temp_v1 != NULL) {
+        do {
+            *var_a0 = var_v0;
+            var_a1 += 1;
+            var_a0 += 1;
+            temp_v1_3 = M2C_FIELD(var_v0, void **, 4);
+            temp_v1_2 = (M2C_FIELD(temp_v1_3, int *, 8) < 0) ? NULL : temp_v1_3;
+            var_v0 = temp_v1_2;
+        } while (temp_v1_2 != NULL);
+    }
+    return var_a1;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", CheckSync);
 
