@@ -278,7 +278,48 @@ int handle_pHYs(PNGCTX *ctx, u8 *data, int len) {
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/png_chunk", handle_tRNS);
+int handle_tRNS(PNGCTX *ctx, u8 *data, int len) {
+    u8 *p;
+    u8 *pal;
+    int i;
+    int v;
+
+    p = data;
+    switch (ctx->colorType) {
+    case 0:
+        if (len < 2)
+            return -1;
+        ctx->hasTrans = 1;
+        v = (data[0] << 8) | data[1];
+        ctx->trR = v;
+        ctx->trG = v;
+        ctx->trB = v;
+        break;
+    case 2:
+        if (len < 6)
+            return -1;
+        ctx->hasTrans = 1;
+        ctx->trR = (data[0] << 8) | data[1];
+        p += 2;
+        ctx->trG = (p[0] << 8) | p[1];
+        p += 2;
+        ctx->trB = (p[0] << 8) | p[1];
+        break;
+    case 3:
+        if (ctx->palette == NULL)
+            return 0;
+        ctx->hasTrans = 1;
+        if (ctx->npal < len)
+            len = ctx->npal;
+        pal = ctx->palette;
+        for (i = 0; i < len; i++) {
+            *pal = *p++;
+            pal += 4;
+        }
+        break;
+    }
+    return 0;
+}
 
 typedef struct {
     char len[4];
