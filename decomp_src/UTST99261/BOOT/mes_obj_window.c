@@ -2,6 +2,18 @@
 #include "common.h"
 #include "mes_js.h"
 #include "m2c_macros.h"
+typedef struct WinStr {
+    unsigned short *chars;            /* 0x0 */
+    int n;                            /* 0x4 */
+} WinStr;
+typedef struct WinDS {
+    int size;                         /* 0x0 */
+    int dlen;                         /* 0x4 */
+    unsigned short *buf;              /* 0x8 */
+} WinDS;
+void *JSI_getDocumentURL(void *elem);
+void mes_link_common_set_href(MesContext *ctx, void *dom, unsigned short *str, int len);
+void JSI_setWindowName(void *dom, WinDS *ds);
 typedef struct WinPriv {
     void *dom;                        /* 0x0 */
     MesValue f4;                      /* 0x4 */
@@ -392,7 +404,60 @@ MesValue mes_window_get(MesContext *ctx, MesObject *obj, WinPriv *priv, int id)
     return MES_UNDEFINED;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_window", mes_window_put);
+int mes_window_put(MesContext *ctx, MesObject *obj, WinPriv *priv, int id, MesValue v)
+{
+    int sid;
+    char *node;
+    void *dom;
+    void *url;
+    WinStr *str;
+    WinDS ds;
+
+    if (priv != NULL) {
+        switch (id) {
+        case 8:
+            if (MES_IS_OBJECT(v)) {
+                if (priv->f8 == 0) {
+                    priv->f8 = v;
+                } else if ((v & 3) == 3) {
+                    mes_window_check_validate(ctx, (void **)&obj, (void **)&priv, &sid, (void **)&node);
+                    if (priv->dom != NULL && node != NULL && *(void **)(node + 0x6C) != NULL
+                        && (dom = HST_getDomObject(node)) != NULL
+                        && (url = JSI_getDocumentURL(dom)) != NULL)
+                        mes_link_common_put_sub(ctx, dom, 4, v, url, 6);
+                }
+                return 1;
+            }
+            str = mes_obj_common_to_string(ctx, v);
+            mes_link_common_set_href(ctx, priv->dom, str->chars, str->n);
+            ctx->sp++;
+            return 1;
+        case 9:
+            mes_window_check_validate(ctx, (void **)&obj, (void **)&priv, &sid, (void **)&node);
+            dom = HST_getDomObject(node);
+            if (dom == NULL)
+                break;
+            str = mes_obj_common_to_string(ctx, v);
+            ds.size = ds.dlen = str->n;
+            ds.buf = MEM_malloc(0, str->n * 2);
+            if (ds.buf != NULL) {
+                memcpy(ds.buf, str->chars, str->n * 2);
+                JSI_setWindowName(dom, &ds);
+                MEM_free(0, ds.buf);
+            }
+            ctx->sp++;
+            return 1;
+        case 2:
+            priv->f4 = v;
+            return 1;
+        case 0: case 1: case 3: case 4: case 5: case 6: case 7: case 10: case 11:
+        case 12: case 13: case 14: case 15: case 16: case 17: case 18: case 19: case 20: case 21:
+        case 22:
+            break;
+        }
+    }
+    return 0;
+}
 
 void mes_window_mark(void) {
 }
