@@ -341,7 +341,73 @@ static void at3plus_DisplayDecodePosition(SceAtracArg *pPlayArg)
 	sprintf(decode_position, "Decoding Position  %10d/%10d\n", uiSamplePosition, pPlayArg->iEndSample);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/sound_stringsound/nonmatchings/at3plus", reset_position);
+typedef struct {
+	SceUChar8 *pucWritePositionFirstBuf;
+	SceUInt32 uiWritableByteFirstBuf;
+	SceUInt32 uiMinWriteByteFirstBuf;
+	SceUInt32 uiReadPositionFirstBuf;
+	SceUChar8 *pucWritePositionSecondBuf;
+	SceUInt32 uiWritableByteSecondBuf;
+	SceUInt32 uiMinWriteByteSecondBuf;
+	SceUInt32 uiReadPositionSecondBuf;
+} SceAtracBufferInfo;
+int sceAtracGetBufferInfoForReseting(SceInt32 atracID, SceUInt32 uiSample, SceAtracBufferInfo *pBufferInfo);
+int sceAtracResetPlayPosition(SceInt32 atracID, SceUInt32 uiSample, SceUInt32 uiWriteByteFirstBuf, SceUInt32 uiWriteByteSecondBuf);
+
+static void reset_position(SceAtracArg *pPlayArg)
+{
+	SceAtracBufferInfo bufferInfo;
+	SceInt32 status;
+	SceInt32 firstBufRead = 0, secondBufRead = 0;
+
+	status = sceAtracGetBufferInfoForReseting(pPlayArg->atracID, 0, &bufferInfo);
+
+	if (status < 0) {
+		printf("status = 0x%x(in sceAtracGetBufferInfoForResting)\n", status);
+		goto ERROR_OCCURED;
+	}
+
+	if (bufferInfo.uiMinWriteByteFirstBuf != 0) {
+		status = sceIoLseek(pPlayArg->fd, bufferInfo.uiReadPositionFirstBuf, 0);
+		if (status < 0) {
+			printf(D_0001F6C0, status);
+			goto ERROR_OCCURED;
+		}
+		firstBufRead = sceIoRead(pPlayArg->fd, bufferInfo.pucWritePositionFirstBuf, bufferInfo.uiWritableByteFirstBuf);
+		if (firstBufRead < 0) {
+			status = firstBufRead;
+			printf("status = 0x%x(in sceAtracGetBufferInfoForResting)\n", status);
+			goto ERROR_OCCURED;
+		}
+	}
+
+	if (bufferInfo.uiMinWriteByteSecondBuf != 0) {
+		status = sceIoLseek(pPlayArg->fd, bufferInfo.uiReadPositionSecondBuf, 0);
+		if (status < 0) {
+			printf(D_0001F6C0, status);
+			goto ERROR_OCCURED;
+		}
+		secondBufRead = sceIoRead(pPlayArg->fd, bufferInfo.pucWritePositionSecondBuf, bufferInfo.uiWritableByteSecondBuf);
+		if (secondBufRead < 0) {
+			status = secondBufRead;
+			printf("status = 0x%x(in sceAtracGetBufferInfoForResting)\n", status);
+			goto ERROR_OCCURED;
+		}
+	}
+
+	status = sceAtracResetPlayPosition(pPlayArg->atracID, 0, firstBufRead, secondBufRead);
+	if (status < 0) {
+		printf("status = 0x%x (in sceAtracResetPlayPosition)\n", status);
+	}
+
+	status = sceAtracSetLoopNum(pPlayArg->atracID, -1);
+	if (status < 0) {
+		printf(D_0001F738, status);
+	}
+
+ERROR_OCCURED:
+	return;
+}
 
 int sceKernelPollEventFlag(SceUID evid, SceUInt32 bits, SceUInt32 wait, SceUInt32 *outBits);
 static SceUInt32 getPlayMode(SceUID statusflag, SceUInt32 playMode)
