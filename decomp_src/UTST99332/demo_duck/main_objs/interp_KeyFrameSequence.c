@@ -4,24 +4,50 @@
 #include "cxx/defer_asm.h"
 #include "../main.hpp"
 
+extern const float D_00167888;      /* 1.0f: op_identity's w */
+
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/interp_KeyFrameSequence", _Z41__static_initialization_and_destruction_0ii_4D7EC);
 
 void interp::KeyFrameSequence<math::quaternion>::dump(const char *) const {
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/interp_KeyFrameSequence", _ZNK6interp16KeyFrameSequenceIN4math10quaternionEE13calc_gradientES2_S2_f);
+math::quaternion interp::KeyFrameSequence<math::quaternion>::calc_gradient(math::quaternion a, math::quaternion b, float t) const
+{
+    return (a.conj() * b).log() / t;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/interp_KeyFrameSequence", _ZN6interp16KeyFrameSequenceIN4math10quaternionEE12calc_tangentEi);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/interp_KeyFrameSequence", _ZN6interp16KeyFrameSequenceIN4math10quaternionEE8evaluateEf);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/interp_KeyFrameSequence", _ZN6interp16KeyFrameSequenceIN4math10quaternionEE2opES2_S2_);
+math::quaternion interp::KeyFrameSequence<math::quaternion>::op(math::quaternion a, math::quaternion b)
+{
+    return a * b;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/interp_KeyFrameSequence", _ZN6interp16KeyFrameSequenceIN4math10quaternionEE6op_invES2_S2_);
+math::quaternion interp::KeyFrameSequence<math::quaternion>::op_inv(math::quaternion a, math::quaternion b)
+{
+    return b.conj() * a;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/interp_KeyFrameSequence", _ZNK6interp16KeyFrameSequenceIN4math10quaternionEE11op_identityEv);
+math::quaternion interp::KeyFrameSequence<math::quaternion>::op_identity() const
+{
+    return math::quaternion(0, 0, 0, D_00167888);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/interp_KeyFrameSequence", _ZN6interp16KeyFrameSequenceIN4math10quaternionEE9typed_fixEv);
+void interp::KeyFrameSequence<math::quaternion>::typed_fix()
+{
+    std::vector<KeyFrame<math::quaternion> >::iterator prev = _keys.begin();
+    std::vector<KeyFrame<math::quaternion> >::iterator it = prev + 1;
+    if (prev == _keys.end())
+        return;
+    for (; it != _keys.end(); ++prev, ++it) {
+        math::quaternion a = prev->value();
+        math::quaternion b = it->value();
+        math::quaternion::Shortest(a, b);
+        it->setValue(b);
+    }
+}
 
 extern "C" {
 void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_4D7EC");

@@ -186,7 +186,23 @@ namespace keyframe_tangent {
 enum Type { };
 enum Side { };
 }
-template<class T> class KeyFrame;
+template<class T> class KeyFrame {
+public:
+    KeyFrame();
+    KeyFrame(float, T, bool);
+    bool isClosingKey() const;
+    T value() const;
+    void setValue(T);
+    float time() const;
+    void setTime(float);
+    void setTangentType(keyframe_tangent::Type, int);
+    keyframe_tangent::Type getTangentType(keyframe_tangent::Side) const;
+    float _time;
+    T _value;
+    T _tangent[2];
+    int _type[2];
+    bool _closing;
+};
 class VirtualKeyFrameSequence {
 public:
     virtual ~VirtualKeyFrameSequence() {}
