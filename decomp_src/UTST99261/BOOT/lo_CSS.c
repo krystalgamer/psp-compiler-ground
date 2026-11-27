@@ -45,6 +45,32 @@ void OS_thread_mutex_unlock(int m);
 
 void cssFontSize(void *ctx, BOX *box, CSSVALUE *val, int n);
 void cssBackgroundColor(void *ctx, BOX *box, CSSVALUE *val, int n);
+typedef void (*CSSFUNC)(void *ctx, BOX *box, void *val, int n);
+extern CSSFUNC CSSFuncTable[];
+extern unsigned char _DOMstyle;
+void Element_getAttribute(DOMString *s, void *node, void *name);
+void *CSS2_AttributeParse(int a, u16 *s);
+void CSS2_freeCSSAttribute(void *a);
+void *CSSStyleDeclaration_getValue(void *d);
+void *memcpy(void *d, const void *s, unsigned int n);
+typedef struct CSSDECLNODE { s16 type; s16 x2; int x4; int x8; int xC; int x10; int x14; struct CSSDECLNODE *next; s16 prop; } CSSDECLNODE;
+extern const char _ctype_[];
+#define LO_CT(c) ((_ctype_ + 1)[(int)(c)])
+#define LO_TOLOWER(c) ({ int __x = (c); (LO_CT(__x) & 1) ? __x - 'A' + 'a' : __x; })
+typedef struct CSSCHAINV { void *next; u16 *str; } CSSCHAINV;
+typedef struct CSSSELM { u8 x0[0x1C]; u16 flags; u16 x1E; int x20; u16 *tag; CSSCHAINV cls; CSSCHAINV id; CSSCHAINV pseudo; } CSSSELM;
+extern unsigned char _DOMclass, _DOMid;
+extern DOMString _DOMlink;
+void Element_getTagName(DOMString *s, void *node);
+int cssDStrCmp(u16 *s, void *ds);
+int cssDStrContains(u16 *word, void *ds);
+void *Node_getParentNode(void *n);
+void *Node_getPreviousSibling(void *n);
+int Node_getNodeType(void *n);
+typedef struct CSSSLNODE { u8 x0[0xC]; CSSDECLNODE *decl; u8 x10[8]; struct CSSSLNODE *next; u8 x1C[4]; struct CSSSLNODE *prev; } CSSSLNODE;
+typedef struct CSSRULENODE { s16 type; u8 x2[0xA]; CSSSLNODE *sl; u8 x10[8]; struct CSSRULENODE *next; u16 *tag; } CSSRULENODE;
+typedef struct CSSRULELIST { u8 x0[0xC]; CSSRULENODE *first; } CSSRULELIST;
+typedef struct CSSSHEET { s16 type; u8 x2[0xA]; CSSRULELIST *rules; u8 x10[0x10]; struct CSSSHEET *next; } CSSSHEET;
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/lo_CSS", D_00139910);
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/lo_CSS", D_00139914);
@@ -761,7 +787,57 @@ void cssWidth(void *ctx, BOX *box, CSSVALUE *val, int n) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_CSS", matchesNode);
+int matchesNode(CSSSELM *sel, void *node) {
+    DOMString tag;
+    DOMString cls;
+    DOMString id;
+    CSSCHAINV ch;
+    int ret = 1;
+    unsigned int i;
+    Element_getTagName(&tag, node);
+    if (sel->tag[0] != '*' && cssDStrCmp(sel->tag, &tag) != 0) {
+        return 0;
+    }
+    if (sel->flags & 0x10) {
+        Element_getAttribute(&cls, node, &_DOMclass);
+        if (cls.len != 0) {
+            for (i = 0; i < cls.len; i++) {
+                if (LO_CT(cls.str[i]) & 3) {
+                    cls.str[i] = LO_TOLOWER(cls.str[i]);
+                }
+            }
+            ch = sel->cls;
+            if (!cssDStrContains(ch.str, &cls)) {
+                ret = 0;
+            }
+        } else {
+            ret = 0;
+        }
+    }
+    if (sel->flags & 0x20) {
+        Element_getAttribute(&id, node, &_DOMid);
+        if (id.len != 0) {
+            for (i = 0; i < id.len; i++) {
+                if (LO_CT(id.str[i]) & 3) {
+                    id.str[i] = LO_TOLOWER(id.str[i]);
+                }
+            }
+            ch = sel->id;
+            if (cssDStrCmp(ch.str, &id) != 0) {
+                ret = 0;
+            }
+        } else {
+            ret = 0;
+        }
+    }
+    if (sel->flags & 0x40) {
+        ch = sel->pseudo;
+        if (cssDStrCmp(ch.str, &_DOMlink) != 0 || ch.next != NULL) {
+            ret = 0;
+        }
+    }
+    return ret;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -792,9 +868,108 @@ void applyCSSpostAction(void *arg0) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_CSS", applyCSSExtStyleSheetToBox);
+void applyCSSExtStyleSheetToBox(void *node, BOX *box) {
+    CSSSHEET *ss;
+    CSSRULENODE *rule;
+    CSSSLNODE *sl;
+    CSSSLNODE *sel;
+    CSSDECLNODE *d;
+    void *cur;
+    void *p;
+    int match;
+    DOMString tag;
+    ss = M2C_FIELD(M2C_FIELD(getBodyBox(box)->geom, void **, 0x20), CSSSHEET **, 0x70);
+    if (ss == NULL || ss->type != 0) {
+        applyCSSpostAction(box);
+        return;
+    }
+    for (; ss != NULL; ss = ss->next) {
+        if (ss->rules == NULL) {
+            continue;
+        }
+        for (rule = ss->rules->first; rule != NULL; rule = rule->next) {
+            if (rule->type != 8) {
+                continue;
+            }
+            match = 0;
+            Element_getTagName(&tag, node);
+            if (rule->tag[0] == '*') {
+                match = 1;
+            } else if (cssDStrCmp(rule->tag, &tag) == 0) {
+                match = 1;
+            }
+            if (!match) {
+                continue;
+            }
+            for (sl = rule->sl; sl != NULL; sl = sl->next) {
+                match = 1;
+                cur = node;
+                for (sel = sl; match && sel != NULL; sel = sel->prev) {
+                    if (((CSSSELM *)sel)->flags & 1) {
+                        for (p = Node_getParentNode(cur); p != NULL; p = Node_getParentNode(p)) {
+                            if (matchesNode((CSSSELM *)sel, p)) {
+                                break;
+                            }
+                        }
+                        if (p == NULL) {
+                            match = 0;
+                        } else {
+                            cur = p;
+                        }
+                    } else if (((CSSSELM *)sel)->flags & 2) {
+                        p = Node_getParentNode(cur);
+                        if (p == NULL || !matchesNode((CSSSELM *)sel, p)) {
+                            match = 0;
+                        } else {
+                            cur = p;
+                        }
+                    } else if (((CSSSELM *)sel)->flags & 4) {
+                        for (p = Node_getPreviousSibling(cur); p != NULL && Node_getNodeType(p) != 1; p = Node_getPreviousSibling(p)) {
+                        }
+                        if (p == NULL || !matchesNode((CSSSELM *)sel, p)) {
+                            match = 0;
+                        } else {
+                            cur = p;
+                        }
+                    } else {
+                        match = matchesNode((CSSSELM *)sel, cur);
+                    }
+                }
+                if (match) {
+                    for (d = sl->decl; d != NULL; d = d->next) {
+                        if (d->type == 10 && CSSFuncTable[d->prop] != NULL) {
+                            CSSFuncTable[d->prop](node, box, CSSStyleDeclaration_getValue(d), d->x8);
+                        }
+                    }
+                }
+            }
+        }
+    }
+    applyCSSpostAction(box);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_CSS", applyCSSInlinePropertyToBox);
+void applyCSSInlinePropertyToBox(void *node, BOX *box) {
+    DOMString s;
+    u16 *buf;
+    CSSDECLNODE *attr;
+    CSSDECLNODE *d;
+    Element_getAttribute(&s, node, &_DOMstyle);
+    if (s.str == NULL) {
+        return;
+    }
+    buf = MEM_malloc(0, s.len * 2 + 2);
+    memcpy(buf, s.str, s.len * 2);
+    buf[s.len] = 0;
+    attr = CSS2_AttributeParse(0, buf);
+    MEM_free(0, buf);
+    for (d = attr; d != NULL; d = d->next) {
+        if (d->type == 10 && CSSFuncTable[d->prop] != NULL) {
+            CSSFuncTable[d->prop](node, box, CSSStyleDeclaration_getValue(d), d->x8);
+        }
+    }
+    applyCSSpostAction(box);
+    CSS2_freeCSSAttribute(attr);
+}
 
 int iom_attachCookie(void) {
     int r;
