@@ -289,7 +289,7 @@ public:
     unsigned int getTmp() const;
     void setMagic(unsigned int);
     unsigned int getMagic() const;
-    void output_string(std::ostream &);
+    void output_string(std::ostream &, const std::string &, bool);
     static int constructor_counter;
     Members _m;
 };
