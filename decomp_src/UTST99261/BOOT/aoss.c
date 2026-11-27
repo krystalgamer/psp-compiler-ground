@@ -98,6 +98,11 @@ extern unsigned int D_002DC6D4;
 extern int SecurityType;
 int PacketDataSet(int type, unsigned char *out, AossTlv *tlv, short *len, short *x, char *c);
 int SetStaData(unsigned char *p);
+typedef struct { int f0; int len; char ssid[0x28]; char key[4][0x40]; } AossWep;
+typedef struct { int f0; int len; char ssid[0x28]; char key[0x40]; } AossWpa;
+typedef struct { AossWep w0; AossWep w1; AossWpa p0; AossWpa p1; } AossSec;
+extern AossSec D_002DC6F0;
+int aoss_check_str(unsigned char *s, int n);
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/aoss", D_00141118);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/aoss", AOSS_Init_old);
@@ -141,7 +146,58 @@ int aoss_get_error(void)
     return gError;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/aoss", AOSS_seq_data_copy);
+int AOSS_seq_data_copy(unsigned char *p)
+{
+    unsigned char *d = p + 0x117;
+    AossWep *w0 = &D_002DC6F0.w0;
+    AossWep *w1 = &D_002DC6F0.w1;
+    AossWpa *p0 = &D_002DC6F0.p0;
+    AossWpa *p1 = &D_002DC6F0.p1;
+
+    if (d == NULL)
+        return -1;
+    *(unsigned short *)p = gData.f8 & gData.fC;
+    AOSS_Memset(d, 0, 0x154);
+    if (*(unsigned short *)p & 1) {
+        AOSS_Memcpy(d, w0->key[0], w0->len);
+        AOSS_Memcpy(p + 0x11D, w0->key[1], w0->len);
+        AOSS_Memcpy(p + 0x123, w0->key[2], w0->len);
+        AOSS_Memcpy(p + 0x129, w0->key[3], w0->len);
+        if (aoss_check_str((unsigned char *)w0->ssid, AOSS_Strlen(w0->ssid)))
+            goto err;
+        AOSS_Memcpy(p + 0x12F, w0->ssid, AOSS_Strlen(w0->ssid));
+    }
+    if (*(unsigned short *)p & 2) {
+        AOSS_Memcpy(p + 0x150, w1->key[0], w1->len);
+        AOSS_Memcpy(p + 0x15E, w1->key[1], w1->len);
+        AOSS_Memcpy(p + 0x16C, w1->key[2], w1->len);
+        AOSS_Memcpy(p + 0x17A, w1->key[3], w1->len);
+        if (aoss_check_str((unsigned char *)w1->ssid, AOSS_Strlen(w1->ssid)))
+            goto err;
+        AOSS_Memcpy(p + 0x188, w1->ssid, AOSS_Strlen(w1->ssid));
+    }
+    if (*(unsigned short *)p & 4) {
+        if (aoss_check_str((unsigned char *)p0->key, p0->len - 1))
+            goto err;
+        AOSS_Memcpy(p + 0x1A9, p0->key, p0->len);
+        if (aoss_check_str((unsigned char *)p0->ssid, AOSS_Strlen(p0->ssid)))
+            goto err;
+        AOSS_Memcpy(p + 0x1E9, p0->ssid, AOSS_Strlen(p0->ssid));
+    }
+    if (*(unsigned short *)p & 8) {
+        if (aoss_check_str((unsigned char *)p1->key, p1->len - 1))
+            goto err;
+        AOSS_Memcpy(p + 0x20A, p1->key, p1->len);
+        if (aoss_check_str((unsigned char *)p1->ssid, AOSS_Strlen(p1->ssid)))
+            goto err;
+        AOSS_Memcpy(p + 0x24A, p1->ssid, AOSS_Strlen(p1->ssid));
+    }
+    p[0x116] = 0;
+    return 0;
+err:
+    AOSS_Memset(d, 0, 0x154);
+    return -1;
+}
 
 int aoss_check_str(unsigned char *s, int n)
 {
