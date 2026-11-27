@@ -14,7 +14,24 @@ int strncmp(const char *, const char *, unsigned int);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/locale", localeChangeDirect);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/locale", localeChange);
+int localeChangeDirect();
+typedef struct { unsigned char f0, f1, lang, btn; char name[8]; unsigned char flags; } LocInfo;
+typedef struct { unsigned char num, cur, f2, f3; int pad[3]; LocInfo *loc[1]; } RegionInfo;
+#define RGN ((RegionInfo *)pRegionCntx)
+#define NOWLOC ((LocInfo *)pNowLocale)
+int localeChange(int lang, int btn)
+{
+	unsigned int n = RGN->num;
+	unsigned int i;
+	for (i = 0; i < n; i++)
+		if (lang == RGN->loc[i]->lang && btn == RGN->loc[i]->btn) goto found;
+	for (i = 0; i < n; i++)
+		if (lang == RGN->loc[i]->lang) goto found;
+	for (i = 0; i < n; i++)
+		if (btn == RGN->loc[i]->btn) goto found;
+found:
+	return localeChangeDirect(i);
+}
 
 int localeInit(void)
 {
