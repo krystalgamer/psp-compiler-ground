@@ -168,13 +168,131 @@ SceInt32 DvdUmdRetryReadSectorCB(SceUInt32 lba, SceSize lbanum, void *lbabuf)
 	return ret;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/mpeg/io", DvdUmdRetryOpen);
+int sceUmdGetDriveStat(void);
+int sceKernelWaitSemaCB(int semid, int signal, unsigned int *timeout);
+int sceKernelSignalSema(int semid, int signal);
+SceUID sceIoOpen(const char *file, int flags, SceMode mode);
+int sceIoRead(SceUID fd, void *buf, SceSize nbyte);
+static __inline__ int DvdUmdRetryWaitSema(void)
+{
+	return sceKernelWaitSema(gDvdUmdIoSemaphoreId, 1, NULL);
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/mpeg/io", DvdUmdRetryOpenCB);
+static __inline__ int DvdUmdRetrySignalSema(void)
+{
+	return sceKernelSignalSema(gDvdUmdIoSemaphoreId, 1);
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/mpeg/io", DvdUmdRetryRead);
+static __inline__ int DvdUmdRetryWaitSemaCB(void)
+{
+	return sceKernelWaitSemaCB(gDvdUmdIoSemaphoreId, 1, NULL);
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/mpeg/io", DvdUmdRetryReadCB);
+SceInt32 DvdUmdRetryOpen(const char *filepath, int flag, SceMode mode)
+{
+	int ret = 0;
+
+	for (;;) {
+		if (!(sceUmdGetDriveStat() & 0x20)) {
+			ret = sceUmdWaitDriveStat(0x20);
+			if (ret < 0)
+				break;
+		}
+		ret = DvdUmdRetryWaitSema();
+		if (ret < 0)
+			break;
+		ret = sceIoOpen(filepath, flag, mode);
+		DvdUmdRetrySignalSema();
+		if (ret >= 0 || ret == (int)0x8001B002 || ret == (int)0x80010013
+			 || ret == (int)0x8001000C || ret == (int)0x80010016 || ret == (int)0x80010024)
+			break;
+	}
+	return ret;
+}
+
+SceInt32 DvdUmdRetryOpenCB(const char *filepath, int flag, SceMode mode)
+{
+	int ret = 0;
+
+	for (;;) {
+		if (!(sceUmdGetDriveStat() & 0x20)) {
+			ret = sceUmdWaitDriveStatCB(0x20, 0);
+			if (ret < 0)
+				break;
+		}
+		ret = DvdUmdRetryWaitSemaCB();
+		if (ret < 0)
+			break;
+		ret = sceIoOpen(filepath, flag, mode);
+		DvdUmdRetrySignalSema();
+		if (ret >= 0 || ret == (int)0x8001B002 || ret == (int)0x80010013
+			 || ret == (int)0x8001000C || ret == (int)0x80010016 || ret == (int)0x80010024)
+			break;
+	}
+	return ret;
+}
+
+SceInt32 DvdUmdRetryRead(SceUID fd, void *readbuf, SceSize readsize)
+{
+	int ret = 0;
+
+	for (;;) {
+		if (!(sceUmdGetDriveStat() & 0x20)) {
+			ret = sceUmdWaitDriveStat(0x20);
+			if (ret < 0)
+				break;
+		}
+		ret = DvdUmdRetryWaitSema();
+		if (ret < 0)
+			break;
+		ret = sceIoRead(fd, readbuf, readsize);
+		DvdUmdRetrySignalSema();
+		if (ret >= 0 || ret == (int)0x80010009 || ret == (int)0x80010016 || ret == (int)0x80010013
+			 || ret == (int)0x8001B003 || ret == (int)0x8001000E || ret == (int)0x80210002
+			 || ret == (int)0x8001B001 || ret == (int)0x80010024)
+			break;
+		if (ret == (int)0x80210003 || ret == (int)0x80210001 || (sceUmdGetDriveStat() & 1)) {
+			ret = sceUmdWaitDriveStat(2);
+			if (ret < 0)
+				break;
+		}
+		ret = sceUmdWaitDriveStat(0x20);
+		if (ret < 0)
+			break;
+	}
+	return ret;
+}
+
+SceInt32 DvdUmdRetryReadCB(SceUID fd, void *readbuf, SceSize readsize)
+{
+	int ret = 0;
+
+	for (;;) {
+		if (!(sceUmdGetDriveStat() & 0x20)) {
+			ret = sceUmdWaitDriveStatCB(0x20, 0);
+			if (ret < 0)
+				break;
+		}
+		ret = DvdUmdRetryWaitSemaCB();
+		if (ret < 0)
+			break;
+		ret = sceIoReadCB(fd, readbuf, readsize);
+		DvdUmdRetrySignalSema();
+		if (ret >= 0 || ret == (int)0x80010009 || ret == (int)0x80010016 || ret == (int)0x80010013
+			 || ret == (int)0x8001B003 || ret == (int)0x8001000E || ret == (int)0x80210002
+			 || ret == (int)0x8001B001 || ret == (int)0x80010024)
+			break;
+		if (ret == (int)0x80210003 || ret == (int)0x80210001 || (sceUmdGetDriveStat() & 1)) {
+			ret = sceUmdWaitDriveStatCB(2, 0);
+			if (ret < 0)
+				break;
+		}
+		ret = sceUmdWaitDriveStatCB(0x20, 0);
+		if (ret < 0)
+			break;
+	}
+	return ret;
+}
 
 static SceSSize sceIoReadCB(SceUID fd, void *buf, SceSize nbyte)
 {
