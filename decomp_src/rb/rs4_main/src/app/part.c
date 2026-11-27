@@ -115,7 +115,3 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/part", partDraw);
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/part", _partDrawPart2D);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/part", _partDrawPart3D);
-
-void partSetInst(int arg0) {
-    g_nInst = arg0;
-}

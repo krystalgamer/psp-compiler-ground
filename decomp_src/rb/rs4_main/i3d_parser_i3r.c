@@ -77,10 +77,3 @@ int I3rRoot__GetModelBasicTransformA(void *arg0, int arg1) {
     return M2C_FIELD(M2C_FIELD(arg0, void **, 0x10), int *, 0x14) + (arg1 << 6);
 }
 
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
-int strcmp(const char *a, const char *b);
-int I3cRoot__CheckIdString(signed char *arg0) {
-    return (strcmp(arg0, "I3D_I3C") == 0) ? 0 : 3;
-}

@@ -2,6 +2,10 @@
 #include "m2c_macros.h"
 M2C_UNK I3dHierarchy__GetIndexByName(int);          /* extern */
 
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/bin_common", I3dHierarchy__GetIndexByName);
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/bin_common", I3dIsActiveTypeId);
+
 
 void ErrorEntity__Pack(void) {
 }

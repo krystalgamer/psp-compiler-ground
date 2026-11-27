@@ -18,6 +18,11 @@ extern unsigned char D_000FE0C4;
 
 extern unsigned char D_000FE0C4;
 
+extern int g_nInst;
+void partSetInst(int arg0) {
+    g_nInst = arg0;
+}
+
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/particle", _PartCusConvEnv);
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/particle", D_000FDE18);

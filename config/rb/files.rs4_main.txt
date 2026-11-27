@@ -49,7 +49,7 @@
 0x1BDA4 src_app_main     1.9.2           src/app/main.c
 0x1C1E0 src_app_movie    1.9.2           src/app/movie.c
 0x1D110 src_app_part     1.9.2           src/app/part.c
-0x1DA40 src_app_particle 1.9.2           src/app/particle.c
+0x1DA34 src_app_particle 1.9.2           src/app/particle.c
 0x2008C src_app_profile  1.9.2           src/app/profile.c
 0x20480 src_app_rand     1.9.2           src/app/rand.c
 0x20894 src_app_save     1.9.2           src/app/save.c
@@ -98,7 +98,7 @@
 0x40DC4 src_ys_tgs_resident_data 1.9.2           src/ys/tgs_resident_data.cc
 0x40DF4 src_ys_vfs 1.9.2           src/ys/vfs.cc
 0x411D0 src_ys_vfs_internal 1.9.2           src/ys/vfs_internal.cc
-0x419C8 src_ys_vfs_internal_file 1.9.2           src/ys/vfs_internal_file.cc
+0x418F8 src_ys_vfs_internal_file 1.9.2           src/ys/vfs_internal_file.cc
 rodata 0x10473C src/ys/libmm_semaphore
 rodata 0x1047E4 src/ys/libmm_thread
 rodata 0x104898 src/ys/vfs_internal
@@ -193,11 +193,21 @@ rodata 0x104898 src/ys/vfs_internal
 0x6BA18 i3d_section     1.9.2           i3d_section.c
 0x6C5B4 i3d_qt_opr      1.9.2           i3d_qt_opr.c
 0x6CCD8 i3d_parser_i3m  1.9.2           i3d_parser_i3m.c
-0x6D364 bin_common      1.9.2           bin_common.c
+# .lib.ent (export tables per linked archive, in link order) puts partSetInst in particle.o,
+# Vfs::Internal::File::Init.. in vfs_internal_file.o and I3dHierarchy__GetIndexByName/
+# I3dIsActiveTypeId in i3d_model_psp.a, whose first object (STT_FILE order) is bin_common.c
+0x6D1FC bin_common      1.9.2           bin_common.c
 0x70754 i3d_dump_i3c    1.9.2           i3d_dump_i3c.c
 0x70E48 i3d_parser_i3s  1.9.2           i3d_parser_i3s.c
 0x70F20 i3d_parser_i3r  1.9.2           i3d_parser_i3r.c
-0x7122C i3d_parser_i3c  1.7.1           i3d_parser_i3c.c
+# i3d_parser_i3c.c (I3cRoot__*, from I3cRoot__CheckIdString on): exported under i3d_collision_psp.a,
+# but linked before i3d_share_psp.a's i3d_tty.o/i3d_util.o (STT_FILE order), which the render and
+# model archives already need when i3d_share_psp.a is scanned: so this copy came from
+# i3d_model_psp.a (1.9.2); the collision archive's duplicate gives the export its archive name.
+0x71200 i3d_parser_i3c  1.9.2           i3d_parser_i3c.c
+# i3d_share_psp.a: i3d_tty.c (I3dTtyPrintf), i3d_util.c (I3dWritebackDcache); no compiler evidence
+0x71A00 i3d_tty         1.9.2           i3d_tty.c
+0x71A5C i3d_util        1.9.2           i3d_util.c
 0x71A7C i3d_collision   1.7.1           i3d_collision.c
 0x75A98 i3dcs_sph_cap   1.7.1           i3dcs_sph_cap.c
 # i3dcs_obb / I3d*A / I3dGeomInit.. / sgx*: no STT_FILE; split at the name-prefix changes

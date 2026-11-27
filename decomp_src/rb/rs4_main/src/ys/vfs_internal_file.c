@@ -3,6 +3,22 @@
 #include "common.h"
 extern "C" {
 
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/vfs_internal_file", _ZN3Vfs8Internal4File4InitEv);
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/vfs_internal_file", _ZN3Vfs8Internal4FileD2Ev);
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/vfs_internal_file", _ZN3Vfs8Internal4FileD1Ev);
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/vfs_internal_file", _ZN3Vfs8Internal4FileD0Ev);
+
+int _ZN3Vfs8Internal4File4SeekEii(void) {
+    return 0;
+}
+
+int _ZN3Vfs8Internal4File4ReadEPvj(void) {
+    return 0;
+}
+
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/vfs_internal_file", _Z19normalize__filenamePKcPcj);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/vfs_internal_file", _ZN3Vfs8Internal4File15Expand_FileNameEPKcPcj);

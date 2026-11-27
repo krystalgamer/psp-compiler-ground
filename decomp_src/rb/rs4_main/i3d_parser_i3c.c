@@ -1,5 +1,12 @@
 #include "common.h"
 #include "m2c_macros.h"
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int strcmp(const char *a, const char *b);
+int I3cRoot__CheckIdString(signed char *arg0) {
+    return (strcmp(arg0, "I3D_I3C") == 0) ? 0 : 3;
+}
 
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_parser_i3c", UnpackNode_);
@@ -52,15 +59,4 @@ int I3cRoot__SetBothFaceEnable(void *arg0, int arg1) {
     temp_v0 = M2C_FIELD(arg0, unsigned char *, 0x12) == 1;
     M2C_FIELD(arg0, unsigned char *, 0x12) = (unsigned char) ((arg1 & 0xFF) != 0);
     return temp_v0;
-}
-
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_parser_i3c", I3dTtyPrintf);
-
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
-int sceKernelDcacheWritebackAll(void);
-int I3dWritebackDcache(void) {
-    sceKernelDcacheWritebackAll();
-    return 0;
 }

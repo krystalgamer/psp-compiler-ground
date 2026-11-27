@@ -137,12 +137,6 @@ int _ZN3Vfs8Internal17FileSystemMounter17Create_FileSystemEPKcPv(void) {
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/vfs_internal", _ZN3Vfs8Internal4File4InitEv);
-
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/vfs_internal", _ZN3Vfs8Internal4FileD2Ev);
-
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/vfs_internal", _ZN3Vfs8Internal4FileD1Ev);
-
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/vfs_internal", D_00104898);
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/vfs_internal", D_001048AC);
@@ -170,14 +164,3 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/vfs_internal", _ZTSN3Vfs
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/vfs_internal", _ZTSN3Vfs8Internal17FileSystemMounterE);
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/vfs_internal", _ZTSN3Vfs8Internal10FileSystemE);
-
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/vfs_internal", _ZN3Vfs8Internal4FileD0Ev);
-
-int _ZN3Vfs8Internal4File4SeekEii(void) {
-    return 0;
-}
-
-int _ZN3Vfs8Internal4File4ReadEPvj(void) {
-    return 0;
-}
-

@@ -183,7 +183,9 @@ bin_common                                   1.9.2           bin_common.c
 i3d_dump_i3c                                 1.9.2           i3d_dump_i3c.c
 i3d_parser_i3s                               1.9.2           i3d_parser_i3s.c
 i3d_parser_i3r                               1.9.2           i3d_parser_i3r.c
-i3d_parser_i3c                               1.7.1           i3d_parser_i3c.c
+i3d_parser_i3c                               1.9.2           i3d_parser_i3c.c
+i3d_tty                                      1.9.2           i3d_tty.c
+i3d_util                                     1.9.2           i3d_util.c
 i3d_collision                                1.7.1           i3d_collision.c
 i3dcs_sph_cap                                1.7.1           i3dcs_sph_cap.c
 i3dcs_obb                                    1.7.1           i3dcs_obb.c
