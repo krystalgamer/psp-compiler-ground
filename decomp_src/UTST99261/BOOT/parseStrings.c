@@ -447,7 +447,19 @@ int parseStrEqualNoCase(char *a, PChar *b) {
     return 1;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parseStrings", parseDStrEqual);
+int parseDStrEqual(char *a, PDStr *s) {
+    int i;
+
+    if (a == NULL || s == NULL || s->data == NULL) {
+        return 0;
+    }
+    for (i = 0; i < s->len; i++) {
+        if (((char)s->data[i] >= 'A' && (char)s->data[i] <= 'Z') ? a[i] != (char)s->data[i] + 0x20 : a[i] != (char)s->data[i]) {
+            return 0;
+        }
+    }
+    return 1;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parseStrings", parseDStrnEqual);
 
