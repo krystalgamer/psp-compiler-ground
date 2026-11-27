@@ -796,7 +796,8 @@ libgcc/libsupc++ DWARF names `gcc-3.3.6/` paths.
   3.3.4–3.3.6 has shown: a 1.8.4 tree with both (`cc1-184ins` with
   3.3.6's expr.c) compiles every C unit of rs4_main (94 units, about
   1,300 functions: newlib, libgcc, SDK libraries, middleware, game code)
-  exactly like the 1.9.2 tree.
+  exactly like the 1.9.2 tree.  (navi's libpng and libjpeg do show three
+  more functions that need the rest of 3.3.6; see psp-gcc 1.11.0.)
 - **Register ext/ins are on by default** (`-mext` in
   `config/compilers.txt`): 1.9.2's newlib and libgcc use them, and so does
   the SDK's libgim_picture although its Makefile (SDK 6.6.0
