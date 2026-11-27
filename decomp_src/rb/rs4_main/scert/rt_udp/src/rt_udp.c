@@ -308,7 +308,16 @@ int rt_udp_process_reset(int *conn)
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_udp", rt_udp_process_heartbeat);
+int memcmp(const void *, const void *, unsigned int);
+int rt_udp_process_heartbeat(void *a, void *data, int *msg)
+{
+    short z;
+    int r = 0;
+    if (msg == NULL) return 0xD2F3;
+    z = 0;
+    if (memcmp(&z, data, 2) != 0 || *msg != 13) r = (*msg == 13) ? 0xD2F4 : 0xD2F5;
+    return r;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_udp", rt_udp_process_acknowlege);
 

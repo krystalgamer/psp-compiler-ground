@@ -61,6 +61,12 @@ void NetGetMyAddressInfoInternal(void *arg0) {
     M2C_FIELD(arg0, int *, 0x1C) = (int) M2C_FIELD(&gMyAddressInfo, int *, 0x1C);
 }
 
+extern void *gP2PInterfacePtr;
+extern void *gMsgClientInterfacePtr;
+int NetMapRtError();
+typedef int (*DmeIfFn2)(int, int);
+typedef void (*DmeObjBcFn)(void *, int);
+
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", NetGetMyAddressInfo);
 
 int NetGetP2PHandle(void *arg0) {
@@ -374,7 +380,19 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", Ne
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", NetSetIncomingClient);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", NetISetMyClientReceiveBroadcast);
+int NetISetMyClientReceiveBroadcast(char *c, int v)
+{
+    int r;
+    if (c == NULL) return 0x17;
+    if (*(int *)(c + 0x468) == 2) {
+        r = (*(DmeIfFn2 *)((char *)gP2PInterfacePtr + 0x4C))(*(int *)(c + 0x474), v);
+        if (r != 0) return 0x25;
+    } else {
+        r = NetMapRtError((*(DmeIfFn2 *)((char *)gMsgClientInterfacePtr + 0x40))(*(int *)(c + 0x470), v));
+        if (r != 0) return r;
+    }
+    return 0;
+}
 
 extern char gPingInfo[];
 typedef struct { char pad[16]; int used; char pad2[12]; } PingSlot;
@@ -584,7 +602,14 @@ void udp_data_cb(void) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", p2p_broadcast_update_cb);
+void p2p_broadcast_update_cb(unsigned short idx, int on, char *c)
+{
+    char *o;
+    if (*(int *)(c + 0x468) != 2) return;
+    o = gObjectInterfacePtr;
+    if (o != NULL && on != 0) if (*(int *)(o + 0x124) != 0) if (c != NULL)
+        (*(DmeObjBcFn *)(o + 0xE0))(c, idx);
+}
 
 typedef struct { int a; unsigned char b; int c; int d; unsigned char e; short f; int g; void *data; } DmeSysMsg;
 extern void (*gpfSystemMessageCallback)(DmeSysMsg *);
