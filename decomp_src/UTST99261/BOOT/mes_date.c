@@ -2,6 +2,18 @@
 #include "common.h"
 #include "mes_js.h"
 #include "m2c_macros.h"
+extern const double D_0013BDA8;       /* 1000.0 */
+double mes_num(MesValue v);
+typedef struct MesDNum {
+    int f0;
+    int f4;
+    double d;                         /* 0x8 */
+} MesDNum;
+extern const double D_0013BD98;       /* 86400000.0 */
+extern const double D_0013BDA0;       /* 1000.0 */
+double mes_number_fdiv(double a, double b);
+double mes_number_floor(double d);
+MesValue mes_eval_to_integer(MesContext *ctx, MesValue v);
 typedef struct MesTimeval {
     int sec;
     int usec;
@@ -241,7 +253,17 @@ MesValue mes_date_to_locale_date_string(MesContext *ctx)
     return mes_date_string(ctx, d, 1, 0, 1);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_date", mes_date_to_locale_time_string);
+MesValue mes_date_to_locale_time_string(MesContext *ctx)
+{
+    MesDate *d = (MesDate *)ctx->frame->thisobj;
+
+    if (MES_DATE_BAD(d))
+        return mes_eval_type_error(ctx, d);
+    if (!d->valid)
+        return 0x1C;
+    mes_date_set_gmtoff(d, mes_date_local_gmtoff);
+    return mes_date_string(ctx, d, 0, 1, 1);
+}
 
 MesValue mes_date_value_of(MesContext *ctx)
 {
@@ -469,9 +491,73 @@ MesValue mes_date_get_timezone_offset(MesContext *ctx)
     return MES_INT(-mes_date_local_gmtoff / 60);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_date", mes_date_set_time);
+MesValue mes_date_set_time(MesContext *ctx, MesValue t)
+{
+    MesDate *d = (MesDate *)ctx->frame->thisobj;
+    double x;
+    double c;
+    int n;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_date", mes_date_set_hours);
+    if (MES_DATE_BAD(d))
+        return mes_eval_type_error(ctx, d);
+    if (t != 0) {
+        t = mes_eval_to_integer(ctx, t);
+        if (t != 0x14 && t != 0x18) {
+            x = mes_num(t);
+            c = D_0013BD98;
+            n = mes_number_fdiv(x, c);
+            d->year = 1970;
+            d->month = 1;
+            d->mday = n + 1;
+            d->hours = 0;
+            d->minutes = 0;
+            d->seconds = 0;
+            d->ms = x - n * c;
+            mes_date_normalize(d);
+            return t;
+        }
+        d->valid = 0;
+        return t;
+    }
+    if (!d->valid)
+        return 0x1C;
+    return mes_date_to_value(ctx, d);
+}
+
+MesValue mes_date_set_hours(MesContext *ctx, MesValue h, MesValue m, MesValue s, MesValue ms)
+{
+    MesDate *d = (MesDate *)ctx->frame->thisobj;
+    double f;
+    double c;
+    int n;
+
+    if (MES_DATE_BAD(d))
+        return mes_eval_type_error(ctx, d);
+    mes_date_set_gmtoff(d, mes_date_local_gmtoff);
+    if (h != 0)
+        d->hours = mes_eval_to_int32(ctx, h);
+    if (m != 0)
+        d->minutes = mes_eval_to_int32(ctx, m);
+    if (s != 0)
+        d->seconds = mes_eval_to_int32(ctx, s);
+    if (ms != 0) {
+        ms = mes_eval_to_number(ctx, ms);
+        if (ms == 0x10)
+            d->ms = 1;
+        else if ((ms & 3) == 1)
+            d->ms = ms >> 2;
+        else if ((ms & 3) == 2) {
+            f = mes_number_floor(((MesDNum *)(ms & ~3))->d);
+            c = D_0013BDA0;
+            n = mes_number_fdiv(f, c);
+            d->mday += n;
+            d->ms = f - n * c;
+        } else
+            d->valid = 0;
+    }
+    mes_date_normalize(d);
+    return mes_date_to_value(ctx, d);
+}
 
 MesValue mes_date_set_minutes(MesContext *ctx, int mi, int s, int ms)
 {
@@ -488,7 +574,40 @@ MesValue mes_date_set_ms(MesContext *ctx, int ms)
     return mes_date_set_hours(ctx, 0, 0, 0, ms);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_date", mes_date_set_utc_hours);
+MesValue mes_date_set_utc_hours(MesContext *ctx, MesValue h, MesValue m, MesValue s, MesValue ms)
+{
+    MesDate *d = (MesDate *)ctx->frame->thisobj;
+    double f;
+    double c;
+    int n;
+
+    if (MES_DATE_BAD(d))
+        return mes_eval_type_error(ctx, d);
+    mes_date_set_gmtoff(d, 0);
+    if (h != 0)
+        d->hours = mes_eval_to_int32(ctx, h);
+    if (m != 0)
+        d->minutes = mes_eval_to_int32(ctx, m);
+    if (s != 0)
+        d->seconds = mes_eval_to_int32(ctx, s);
+    if (ms != 0) {
+        ms = mes_eval_to_number(ctx, ms);
+        if (ms == 0x10)
+            d->ms = 1;
+        else if ((ms & 3) == 1)
+            d->ms = ms >> 2;
+        else if ((ms & 3) == 2) {
+            f = mes_number_floor(((MesDNum *)(ms & ~3))->d);
+            c = D_0013BDA8;
+            n = mes_number_fdiv(f, c);
+            d->mday += n;
+            d->ms = f - n * c;
+        } else
+            d->valid = 0;
+    }
+    mes_date_normalize(d);
+    return mes_date_to_value(ctx, d);
+}
 
 MesValue mes_date_set_utc_minutes(MesContext *ctx, int mi, int s, int ms)
 {
@@ -505,7 +624,21 @@ MesValue mes_date_set_utc_ms(MesContext *ctx, int ms)
     return mes_date_set_utc_hours(ctx, 0, 0, 0, ms);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_date", mes_date_set_full_year);
+MesValue mes_date_set_full_year(MesContext *ctx, MesValue y, MesValue m, MesValue v)
+{
+    MesDate *d = (MesDate *)ctx->frame->thisobj;
+
+    if (MES_DATE_BAD(d))
+        return mes_eval_type_error(ctx, d);
+    mes_date_set_gmtoff(d, mes_date_local_gmtoff);
+    if (y != 0)
+        d->year = mes_eval_to_int32(ctx, y);
+    if (m != 0)
+        d->month = mes_eval_to_int32(ctx, m) + 1;
+    if (v != 0)
+        d->mday = mes_eval_to_int32(ctx, v);
+    return mes_date_to_value(ctx, d);
+}
 
 MesValue mes_date_set_year(MesContext *ctx, MesValue v)
 {
@@ -535,7 +668,21 @@ MesValue mes_date_set_date(MesContext *ctx, int v)
     return mes_date_set_full_year(ctx, 0, 0, v);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_date", mes_date_set_utc_full_year);
+MesValue mes_date_set_utc_full_year(MesContext *ctx, MesValue y, MesValue m, MesValue v)
+{
+    MesDate *d = (MesDate *)ctx->frame->thisobj;
+
+    if (MES_DATE_BAD(d))
+        return mes_eval_type_error(ctx, d);
+    mes_date_set_gmtoff(d, 0);
+    if (y != 0)
+        d->year = mes_eval_to_int32(ctx, y);
+    if (m != 0)
+        d->month = mes_eval_to_int32(ctx, m) + 1;
+    if (v != 0)
+        d->mday = mes_eval_to_int32(ctx, v);
+    return mes_date_to_value(ctx, d);
+}
 
 MesValue mes_date_set_utc_month(MesContext *ctx, int m, int v)
 {
