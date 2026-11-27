@@ -14,6 +14,7 @@ void glScalef(GLfloat, GLfloat, GLfloat);
 void glDisable(GLenum);
 void glEnable(GLenum);
 void glBlendFunc(GLenum, GLenum);
+void glPolygonMode(GLenum, GLenum);
 void glPushAttrib(unsigned int);
 void glPopAttrib(void);
 void glBegin(GLenum);
