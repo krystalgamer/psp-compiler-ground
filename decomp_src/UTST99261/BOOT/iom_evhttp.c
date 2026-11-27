@@ -411,7 +411,48 @@ void iom_evPostMethod(void) {
     iom_evGetMethod();
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iom_evhttp", iom_evHeadMethod);
+int iom_evHeadMethod(void *msg) {
+    LFILE lf;
+    void *r = M2C_FIELD(msg, void **, 0x20);
+    char *url;
+    int err;
+
+    url = iom_malloc(M2C_FIELD(r, int *, 0x10) + 1);
+    if (url == NULL) {
+        iom_sendRequestFailed(msg, -0x12D);
+    } else {
+        iom_strnmcat(url, 1, M2C_FIELD(r, int *, 0x10), M2C_FIELD(r, char **, 0x14));
+        if (M2C_FIELD(msg, int *, 0x14) == 2) {
+            iom_sendRequestFailed(msg, -0x12C);
+        } else if (strncasecmp(url, D_0013F3AC, 5) == 0 || strncasecmp(url, D_0013F3B4, 6) == 0) {
+            err = iom_addHttpCtx(msg);
+            if (err < 0) {
+                iom_sendRequestFailed(msg, err);
+            } else {
+                msg = NULL;
+            }
+        } else if (strncasecmp(url, D_0013F3BC, 5) == 0) {
+            err = iom_accessLocalfile(url, 0, &lf);
+            if (err < 0) {
+                iom_sendRequestFailed(msg, err);
+            } else {
+                err = iom_sendContent(msg, 200, lf.f, lf.pos);
+                if (err < 0) {
+                    iom_sendRequestFailed(msg, err);
+                    UTL_mfiledelete((int)lf.f);
+                } else {
+                    iom_sendRequestComplete(msg);
+                    UTL_mfiledelete((int)lf.f);
+                }
+            }
+        } else {
+            iom_sendRequestFailed(msg, -0x12E);
+        }
+        iom_mfree(url);
+    }
+    iom_freeMsg(msg);
+    return 0;
+}
 
 int iom_evLoadStop(void *msg) {
     void **p;
