@@ -588,7 +588,15 @@ int i3dSetTex(int arg0, int arg1) {
     return 1;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d", i3dGetPos2D);
+int I3dRenderStage__GetCurrentViewStatus(int);
+int copPersVec();
+int i3dGetPos2D(void *mat, char *out)
+{
+	int vs = I3dRenderStage__GetCurrentViewStatus(pI3dStage);
+	copLetMat(mat, out);
+	copPersVec(vs, out + 0x30, out + 0x30);
+	return 1;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d", i3dDrawMdl);
 

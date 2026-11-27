@@ -203,7 +203,22 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/dev/umd", D_000FAC44);
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/dev/umd", D_000FAC5C);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/umd", hdlTerm);
+extern unsigned char D_000FABEC, D_000FAC08, D_000FAC3C;
+int elmTerm();
+int _memFree();
+int hdlTerm(int *h)
+{
+	if (h == NULL) {
+		consPrintf(&D_000FABEC, &D_000FAC08, 0x42, "hdlTerm", &D_000FAC3C);
+	}
+	consPrintf("%s : 0x%08x\n", "hdlTerm", h);
+	if (h == NULL) {
+		return 0;
+	}
+	elmTerm(*h);
+	_memFree(h, &D_000FAC08, 0x4C);
+	return 1;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/umd", hdlMake);
 

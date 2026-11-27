@@ -62,7 +62,24 @@ void _AniFrameSet(int anm, int frame)
 	bxAnmExec(anm);
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/shop", _ShopCursorInitSet);
+int cardlistGetSaveID(int);
+int _ShopCursorInitSet(void *shop, void *list, int card)
+{
+	int i;
+	int id;
+	int ret = 0;
+	if (card == 0) {
+		return 0;
+	}
+	id = cardlistGetSaveID(card);
+	for (i = 0; i < M2C_FIELD(shop, int *, 0x10); i++) {
+		if (((unsigned short *)list)[i * 2 + 1] == id) {
+			ret = i;
+			break;
+		}
+	}
+	return ret;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/shop", _ShopCursorSet);
 
@@ -82,7 +99,16 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/shop", _ShopDeck2Omak
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/shop", _ShopPutSet);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/shop", _CardListPutDel);
+void *memset(void *, int, unsigned int);
+int _TtrFontPutSet_3F420();
+void _CardListPutDel(int unused, char *p)
+{
+	char buf[0x18];
+	memset(buf, 0, 0x18);
+	_TtrFontPutSet_3F420(p + 0xC3, buf, 0, 0);
+	_TtrFontPutSet_3F420(p + 0xCB, buf, 0, 0);
+	_TtrFontPutSet_3F420(p + 0xD3, buf, 0, 0);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/shop", _CardListPutSet);
 
