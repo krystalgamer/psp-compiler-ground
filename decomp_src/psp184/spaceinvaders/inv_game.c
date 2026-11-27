@@ -126,7 +126,9 @@ INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", D_0007DD18)
 
 INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", D_0007DD20);
 
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", D_0007DD50);
+/* local {x, y} initializer shared (one constant) by game_cnt_stageclear/gameover/dead/netdead */
+typedef struct { int x, y; } POS2_T;
+const POS2_T D_0007DD50 = { 240, 136 };
 
 INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", D_0007DD58);
 
@@ -267,7 +269,63 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", game_cnt_gameo
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", game_cnt_dead);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", game_cnt_netdead);
+extern const POS2_T D_0007DD50;
+extern int game_pause, D_005A06EC, D_003490D0, D_003490D4;
+extern char *D_000828EC;
+void beat_help_off(void);
+int inv_netgame_linkcheck2(int st);
+void inv_font_ascii_posf(char *str, int x, int y, int w, int h, int r, int g, int b, int a, int mode);
+void poly_set(int a0, int a1, int a2, int a3, int a4, int a5, int a6, int a7,
+	int s0, int s1, int s2, int s3, int s4, int s5, int s6, int s7,
+	int s8, int s9, int s10, int s11, int s12, int s13, int s14, int s15, int s16);
+void game_cnt_netdead(void)
+{
+	POS2_T pos = D_0007DD50;
+	int st, r;
+
+	st = gmain.f.f4;
+	game_pause = 0;
+	D_005A06EC = 1;
+	gmain.f.f1058 = 0;
+	gmain.f.f1068 = 0;
+	gmain.f.f1070 = 0;
+	if (st == 0) {
+		if (gmain.f.f8 == 0) {
+			beat_help_off();
+			gmain.f.f10ac = 14;
+			gmain.f.f10b0 = 127;
+			gmain.f.f10b4 = 127;
+		}
+		gmain.f.f8 += 8;
+		if (gmain.f.f8 > 255)
+			gmain.f.f8 = 255;
+		D_003490D4 = gmain.f.f8;
+		D_003490D0 = gmain.f.f8;
+		if (gmain.f.f8 == 255) {
+			gmain.f.f8 = 0;
+			gmain.f.f4++;
+		}
+	} else if (st == 1) {
+		r = inv_netgame_linkcheck2(3);
+		if (r == 1) {
+			gmain.f.f0 = 9;
+			gmain.f.f4 = 0;
+			gmain.f.f8 = 0;
+			gmain.f.f1058 = 0;
+		} else if (r == 2) {
+			gmain.f.f0 = 7;
+			gmain.f.f4 = st;
+			gmain.f.f8 = 0;
+			gmain.f.f1058 = 0;
+		}
+	}
+	if (D_003490D0 > 0)
+		inv_font_ascii_posf(D_000828EC, pos.x, pos.y, 100, 100, 255, 255, 255, D_003490D0, 4);
+	if (D_003490D4 > 0)
+		poly_set(0, 0, 480, 272, 0, 128, 128, 128, 255, 128, 128, 128, 255, 128, 128, 128, 255, 128, 128, 128, 255, 2000, 2, 2, D_003490D4);
+}
+
+
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", game_cnt_ending);
 
