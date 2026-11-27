@@ -712,7 +712,52 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", zako_end_anime
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", zako_disp);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", zako_disp_once);
+typedef struct { int f0, f4, f8, fc, f10, f14, f18, f1c, f20, f24, f28, f2c, f30, f34, f38, f3c; float f40; int _p44[(0x6C - 0x44) / 4]; L2V3 pos; int _p78[2]; float f80; int _p84[(0x9C - 0x84) / 4]; L2V3 rot; } ZDO_T;
+typedef struct { int f0, f4; u8 _p8[0x20 - 8]; L2V3 pos; L2V3 rot; u8 _p38[0x68 - 0x38]; } ZDO_GMO;
+typedef struct { u8 p[0xEB78C]; int cnt[7]; int gmo[7][11][3]; } ZDO_GM;
+#define ZDOG (*(ZDO_GM *)&gmain)
+extern int zako_gmo_w[][11][3] __asm__("D_005A0790");
+extern unsigned char zako_type_color[][4];
+int sprite_set_3d(int tex, int a1, int r, int g, int b, int a, int f64, int f18, float x, float y, float z, float u0, float v0, float u1, float v1, float f48, float f4c, float f50, int f1c);
+void gmo_anime_direct(int no, int a1, float f);
+void zako_disp_once(ENEMY *p)
+{
+	int lod, g;
+	int *row;
+	ZDO_GMO *m;
+	ZDO_T *e = (ZDO_T *)p;
+
+	if (ZDOG.cnt[e->f30] >= 11)
+		return;
+	if (e->f3c == 0)
+		return;
+	if (e->f18 == 5)
+		return;
+	if (e->f4 == 1)
+		return;
+	lod = 2;
+	if (e->f80 < 850.0f)
+		lod = 0;
+	else if (e->f80 < 1150.0f)
+		lod = 1;
+	row = zako_gmo_w[e->f30][ZDOG.cnt[e->f30]];
+	g = row[lod];
+	if (g < 0)
+		return;
+	m = &((ZDO_GMO *)gmo)[g];
+	m->pos = e->pos;
+	m->f4 = 1;
+	m->rot = e->rot;
+	if (e->f28 == 0)
+		m->rot.y += e->f2c;
+	else
+		m->rot.y -= e->f2c;
+	if (lod < 2 && e->f40 != 0.0f)
+		gmo_anime_direct(row[lod], 0, e->f40);
+	sprite_set_3d(gmain.f.ff64[3], 0, zako_type_color[e->f30][0], zako_type_color[e->f30][1], zako_type_color[e->f30][2], zako_type_color[e->f30][3], 4 - e->f0, 2,
+		e->pos.x, e->pos.y, e->pos.z, texpos_inv_effect[64].w, texpos_inv_effect[64].h, texpos_inv_effect[64].u, texpos_inv_effect[64].v, 3.0f, 3.0f, 0, e->fc);
+	ZDOG.cnt[e->f30]++;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", zako_death);
 
