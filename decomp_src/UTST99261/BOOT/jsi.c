@@ -89,6 +89,9 @@ void URL_setQuery(JSURL *u, char *s);
 void URL_setAnchor(JSURL *u, char *s);
 char *URL_toString(JSURL *u);
 extern DOMStr _DOMhref;
+char *URL_toAbsoluteURL(char *base, char *rel);
+char *HST_getBaseURI(void *h);
+void *Node_getOwnerDocument(void *n);
 DOMStr *newDOMString_4B5FC(const char *utf8, int len) {
     DOMStr *s = MEM_malloc(0, sizeof(DOMStr));
 
@@ -365,7 +368,61 @@ int JSI_getImageComplete(void *node) {
     return *(int *)box->data != 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSI_getLinkURL);
+JSURLINFO *JSI_getLinkURL(void *node) {
+    DOMStr href;
+    JSURLINFO *r;
+    char *buf;
+    char *abs;
+    void *h;
+    char *base;
+    JSURL *u;
+
+    abs = NULL;
+    if (node == NULL)
+        return NULL;
+    if (attached == 0)
+        JSI_init();
+    href = Element_getAttribute(node, &_DOMhref);
+    r = MEM_malloc(0, 0x18);
+    if (r == NULL)
+        return NULL;
+    memset(r, 0, 0x18);
+    buf = MEM_malloc(0, href.len * 3 + 1);
+    if (buf == NULL)
+        goto fail;
+    buf[ucs2ToAscii(buf, href.str, href.len)] = 0;
+    h = HST_searchSessionIDHistoryNode(Node_getSid(Node_getOwnerDocument(node)));
+    if (h == NULL)
+        goto fail;
+    base = HST_getBaseURI(h);
+    if (base == NULL)
+        base = HST_getCurURI(h);
+    abs = URL_toAbsoluteURL(base, buf);
+    u = URL_new(abs);
+    if (u == NULL)
+        goto fail;
+    if (u->port == 0)
+        r->port = 80;
+    else
+        r->port = u->port;
+    r->proto = NEWDS(u->proto);
+    r->host = NEWDS(u->host);
+    r->path = NEWDS(u->path);
+    r->x10 = NEWDS(u->x14);
+    r->x14 = NEWDS(u->x10);
+    URL_free(u);
+    MEM_free(0, abs);
+    MEM_free(0, buf);
+    return r;
+fail:
+    if (abs != NULL)
+        MEM_free(0, abs);
+    if (buf != NULL)
+        MEM_free(0, buf);
+    if (r != NULL)
+        MEM_free(0, r);
+    return NULL;
+}
 
 int JSI_setLinkURL(void *node, JSURLINFO *info) {
     JSURL *u;
