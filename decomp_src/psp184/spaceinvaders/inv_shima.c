@@ -156,7 +156,62 @@ void classic_game_stageinit(void)
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_shima", main_classicinv);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_shima", HiScoreSort);
+typedef struct { int f0, f4; int score[5]; char name[5][9]; } HSSAVE;
+extern HSSAVE save_data_hs __asm__("save_data");
+void HiScoreSort(void)
+{
+	int sc[8];
+	int fl[8];
+	char name[6][9];
+	char tmp[9];
+	int i, j, k, t;
+
+	fl[0] = 0;
+	fl[1] = 0;
+	fl[2] = 0;
+	fl[3] = 0;
+	fl[4] = 0;
+	fl[5] = 0;
+	if (nowplay == 0)
+		sc[0] = classicwork_i[0];
+	else
+		sc[0] = classicwork_i[1];
+	fl[0] = 1;
+	__builtin_memset(name[0], 0, 9);
+	for (i = 5; i > 0; i--) {
+		sc[i] = save_data_hs.score[5 - i];
+		__builtin_memcpy(name[i], save_data_hs.name[5 - i], 9);
+	}
+	for (i = 0; i < 5; i++) {
+		for (j = 6; j > i; j--) {
+			if (sc[j] < sc[j - 1]) {
+				t = sc[j];
+				sc[j] = sc[j - 1];
+				sc[j - 1] = t;
+				t = fl[j];
+				fl[j] = fl[j - 1];
+				fl[j - 1] = t;
+				__builtin_memcpy(tmp, name[j], 9);
+				__builtin_memcpy(name[j], name[j - 1], 9);
+				__builtin_memcpy(name[j - 1], tmp, 9);
+			}
+		}
+		for (k = 0; k < 6; k++)
+			;
+	}
+	for (i = 0; i < 6; i++)
+		;
+	for (i = 0; i < 5; i++) {
+		save_data_hs.score[i] = sc[5 - i];
+		__builtin_memcpy(save_data_hs.name[i], name[5 - i], 9);
+	}
+	for (i = 0; i < 5; i++) {
+		if (fl[5 - i]) {
+			hiscoreentry = i;
+			return;
+		}
+	}
+}
 
 void ScoreAddInit(int a, int b, int c, int d)
 {
