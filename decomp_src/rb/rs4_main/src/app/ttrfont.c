@@ -15,7 +15,16 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/ttrfont", D_000FE7E8);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/ttrfont", ttrFontClose);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/ttrfont", textGetLine);
+int textGetLine(int *s, int n)
+{
+	int lines = 1;
+	while (n != 0 && *s != 0 && *s != -1) {
+		lines += (*s == '\n');
+		n--;
+		s++;
+	}
+	return lines;
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/ttrfont", D_000FE808);
 

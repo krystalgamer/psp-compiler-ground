@@ -261,6 +261,16 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/cardlist", D_00102
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/cardlist", cccUcs4ToUtf8);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/cardlist", cccTtrToUcs4);
+char *ttrFontInitEx();
+int textCpy();
+int ttrFontTerm();
+int cccTtrToUcs4(int *dst, int a, int b, int c, int d)
+{
+	char *f = ttrFontInitEx(0, a, b, 0, c, d);
+	int r = (unsigned char)f[0x3C4];
+	textCpy(dst, f + 0x48);
+	ttrFontTerm(f);
+	return r;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/cardlist", cccTtrToUtf8);
