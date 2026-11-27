@@ -787,7 +787,17 @@ int NetSendAppMessage(int a0, int a1)
     return e;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/Dme", NetLANSetUserName);
+extern void *gDmeGlobals;
+void *memcpy(void *, const void *, unsigned long);
+int NetMapRtError();
+int NetLANSetUserName(const char *name, int len)
+{
+    int r = NetMapRtError(NetMutexLock());
+    if (r != 0) return r;
+    if (len > 32) return 0x17;
+    memcpy((char *)gDmeGlobals + 0x90, name, len);
+    return NetMapRtError(NetMutexUnlock());
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/Dme", NetAddressToStringAddress);
 
