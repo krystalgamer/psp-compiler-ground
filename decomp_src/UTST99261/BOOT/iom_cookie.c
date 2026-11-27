@@ -20,6 +20,7 @@ M2C_UNK cookieFile_init();                          /* extern */
 #define NULL ((void *)0)
 #endif
 
+void *memset(void *, int, unsigned int);
 void iom_cookieFile_init(void) {
     cookieFile_init();
 }
@@ -35,7 +36,24 @@ int cookieFile_fstab(CFILE *f) {
     return sum;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iom_cookie", cookieFile_init);
+int cookieFile_init(int check, u8 *buf, int size) {
+    u8 *p;
+
+    if (check) {
+        if (cookieFile.buf == NULL || cookieFile.cap < 0 || cookieFile.len < 0 || cookieFile.pos != 0)
+            return -1;
+        return (cookieFile_fstab(&cookieFile) == cookieFile.sum) - 1;
+    }
+    p = (u8 *)(((unsigned int)buf + 3) & ~3);
+    size = (size - (p - buf)) & ~3;
+    cookieFile.buf = p;
+    cookieFile.cap = size;
+    memset(p, 0xA5, size);
+    cookieFile.len = 0;
+    cookieFile.sum = cookieFile_fstab(&cookieFile);
+    cookieFile.pos = 0;
+    return 0;
+}
 
 CFILE *cookieFile_open(void) {
     cookieFile.pos = 0;
