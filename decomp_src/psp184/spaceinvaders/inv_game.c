@@ -1661,7 +1661,27 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", root_pos_get);
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", root_rot_get);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", root_uprot_get);
+void root_pos_get(L2V3 *out, L2V3 *ofs, float pos, float len);
+void vec_axis_rot(L2V3 *a, L2V3 *b, L2V3 *out, float ang);
+void vec_one(L2V3 *in, L2V3 *out);
+void root_uprot_get(L2V3 *out, float pos, float ang)
+{
+	L2V3 p0, p1, r, d, z0, z1;
+
+	z0.x = 0;
+	z0.y = 0;
+	z0.z = 0;
+	root_pos_get(&p0, &z0, pos, 360.0f);
+	z1.x = 0;
+	z1.y = 0;
+	z1.z = 0;
+	root_pos_get(&p1, &z1, pos + 1.0f, 360.0f);
+	vec_axis_rot(&p1, &p0, &r, ang + 90.0f);
+	d.x = r.x - p0.x;
+	d.y = r.y - p0.y;
+	d.z = r.z - p0.z;
+	vec_one(&d, out);
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", root_offset_get);
 
