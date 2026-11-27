@@ -688,7 +688,50 @@ int mes_eval_encode_uri_component(EvCtx *ctx, int v)
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_eval", mes_eval_escape);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_eval", mes_eval_unescape);
+int mes_eval_unescape(EvCtx *ctx, int v)
+{
+    int s;
+    void *buf;
+    unsigned short *p;
+    unsigned short *end;
+    unsigned short *save;
+    unsigned short c;
+    int n;
+    int h;
+
+    s = mes_eval_to_string(ctx, v);
+    *--ctx->sp = s;
+    p = ((EvStr *)(s & ~3))->str;
+    end = p + ((EvStr *)(s & ~3))->len;
+    buf = mes_util_string_new();
+    while (p < end) {
+        c = *p++;
+        if (c == '%') {
+            save = p;
+            if (p < end && *p == 'u') {
+                p++;
+                n = 4;
+            } else {
+                n = 2;
+            }
+            c = 0;
+            while ((p < end) & (n > 0) && (h = mes_util_hex(*p)) >= 0) {
+                c = c * 16 + h;
+                p++;
+                n--;
+            }
+            if (n > 0) {
+                p = save;
+                c = '%';
+            }
+        }
+        mes_util_string_put(buf, c);
+    }
+    ctx->sp++;
+    s = mes_string_new3(ctx, buf);
+    mes_util_string_free(buf);
+    return s;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
