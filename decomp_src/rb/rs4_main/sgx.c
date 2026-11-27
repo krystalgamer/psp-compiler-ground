@@ -2,7 +2,6 @@
 #include "m2c_macros.h"
 extern unsigned char D_00109C00;
 extern unsigned char D_00109C50;
-M2C_UNK sgxFlush();                                 /* extern */
 M2C_UNK sgxTickProc(float);                           /* extern */
 extern int gSgxMallocFunc;
 extern int gSgxFreeFunc;
@@ -13,15 +12,39 @@ extern int D_0011FBE8;
 extern int D_0011FBF0;
 extern int D_0011FC00;
 
+#include <stdarg.h>
+int vsprintf(char *, const char *, va_list);
+char *sgxNextLine(char *, char *);
+void sgxCbCallMode(int);
+void sgxMutexLock(int);
+void sgxMutexUnlock(int);
+void sgxSndFlush(void);
+void *sgxStackMemAlloc(void *, int, int);
+extern int gWork_11FBE0[];
+typedef void (*SgxFreeFn)(void *);
+typedef void (*SgxPrintFn)(const char *);
+static inline char *SgxListFirst(char *l) { char *n = *(char **)(l + 4); return (*(int *)(n + 8) < 0) ? NULL : n; }
+static inline char *SgxListNext(char *e) { char *n = *(char **)(e + 4); return (*(int *)(n + 8) < 0) ? NULL : n; }
+
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgx", sgxPrintfPref);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgx", sgxPrintf);
+void sgxPrintf(const char *fmt, ...)
+{
+    char buf[1024];
+    va_list ap;
+    va_start(ap, fmt);
+    vsprintf(buf, fmt, ap);
+    ((SgxPrintFn)gSgxPrintFunc)(buf);
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/sgx", D_00109CA8);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgx", sgxMalloc);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgx", sgxFree);
+void sgxFree(void *p)
+{
+    if (p != NULL) ((SgxFreeFn)gSgxFreeFunc)(p);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgx", sgxNextToken);
 
@@ -82,11 +105,27 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgx", sgxIsStrMatch);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgx", sgxIsStrMatchWC);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgx", sgxIsStrIncWC);
+int sgxIsStrIncWC(const char *s)
+{
+    while (*s != 0) {
+        if (*s == '*' || *s == '?') return 1;
+        s++;
+    }
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgx", sgxListArrayInit);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgx", sgxListEnumID);
+int sgxListEnumID(char *l, int *out)
+{
+    char *e;
+    int n = 0;
+    for (e = SgxListFirst(l); e != NULL; e = SgxListNext(e)) {
+        if (out != NULL) out[n] = *(int *)(e + 8);
+        n++;
+    }
+    return n;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgx", sgxAttrSetValueSafe);
 
@@ -111,7 +150,11 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgx", sgxStackMemAlloc);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgx", sgxStackMemAllocStr);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgx", sgxStackMemAlign);
+void *sgxStackMemAlign(int *m, int align)
+{
+    int cur = m[1];
+    return sgxStackMemAlloc(m, 0, ((cur + align - 1) & -align) - cur);
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/sgx", D_00109CE0);
 
@@ -119,7 +162,14 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgx", sgxInit);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgx", sgxTerm);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgx", sgxFlush);
+void sgxFlush(void)
+{
+    sgxCbCallMode(0);
+    sgxMutexLock(gWork_11FBE0[9]);
+    sgxSndFlush();
+    sgxMutexUnlock(gWork_11FBE0[9]);
+    sgxCbCallMode(1);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgx", sgxTickProc);
 
@@ -190,7 +240,12 @@ int sgxGetDebugFlags(void) {
     return gSgxDebugFlags;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgx", sgxSetMainThreadID);
+int sgxSetMainThreadID(int id)
+{
+    int old = gWork_11FBE0[1];
+    gWork_11FBE0[1] = id;
+    return old;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -200,7 +255,13 @@ int sgxGetMainThreadID(void) {
     return D_0011FBE4;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgx", sgxSetSyncMode);
+int sgxSetSyncMode(unsigned int mode)
+{
+    int old = gWork_11FBE0[2];
+    if (mode >= 2) return -1;
+    gWork_11FBE0[2] = mode;
+    return old;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
