@@ -139,7 +139,37 @@ error:
 	return ret;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_matching", matching_restart_to_create_room);
+void matching_stop(void);
+int matching_restart_to_create_room(void)
+{
+	int ret;
+
+	matching_stop();
+
+	_mrinfo.hello_opt.game_type = GAME_TYPE_PARENT;
+	randomize_group_name(&game_group_name);
+	ret = sceNetAdhocMatchingCreate(1, _mrinfo.hello_opt.req_player_num, 1, 1024, 1000000, 2000000, 3, 500000, parent_handler);
+	if (ret < 0) {
+		goto error;
+	}
+	_mrinfo.ctx_id = ret;
+	_mrinfo.hello_opt.cur_player_num = 1;
+
+	ret = sceUtilityGetSystemParamString(1, (char *)&_mrinfo.hello_opt.nickname, sizeof(struct SceNetAdhocctlNickname));
+	if (ret < 0) {
+	}
+
+	ret = sceNetAdhocMatchingStart(_mrinfo.ctx_id, 54, 0x2000, 54, 0x2000, sizeof(struct p2p_hello_opt), &_mrinfo.hello_opt);
+	if (ret < 0) {
+		goto error;
+	}
+
+	return 0;
+
+error:
+	matching_stop();
+	return ret;
+}
 
 extern int minfo_sid;
 extern int minfo_num;
