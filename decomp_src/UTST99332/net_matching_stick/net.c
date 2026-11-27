@@ -410,7 +410,46 @@ static int check_adhocctl_connect_completed(void)
 	return ret;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_matching_stick/nonmatchings/net", check_adhocctl_disconnect_completed);
+static int check_adhocctl_disconnect_completed(void)
+{
+	int adhocctl_state;
+	int ret;
+	struct SceNetEtherAddr members[16];
+
+	ret = sceNetAdhocctlGetState(&adhocctl_state);
+	if (ret < 0)
+		return ret;
+	if (adhocctl_state != 0)
+		return ret;
+	switch (_mrinfo.state) {
+	case MATCHING_ROOM_DISCONNECTING:
+		gu_init();
+		change_state(MATCHING_ROOM_TOP);
+		break;
+	case MATCHING_ROOM_DISCONNECTING_ROOM:
+		if (_mrinfo.hello_opt.game_type == GAME_TYPE_PARENT) {
+			ret = matching_get_established_members(members);
+			if (ret < 0) {
+				printf("matching_get_established_members() failed. ret = 0x%x\n", ret);
+				change_state(MATCHING_ROOM_TOP);
+				break;
+			}
+			ret = sceNetAdhocDialogCreateEnterGameMode(&game_group_name, 2, ret, members, 10000000);
+		} else {
+			ret = sceNetAdhocDialogJoinEnterGameMode(&game_group_name, &minfo[_mrinfo.requesting_minfo_id].addr, 10000000);
+		}
+		if (ret < 0) {
+			printf("sceNetAdhocDialog{Create,Join}EnterGameMode() failed. ret = 0x%x\n", ret);
+			change_state(MATCHING_ROOM_TOP);
+			break;
+		}
+		change_state(MATCHING_ROOM_CONNECTING_GAME);
+		break;
+	default:
+		break;
+	}
+	return ret;
+}
 
 static int check_adhocctl_connected_error(void)
 {
