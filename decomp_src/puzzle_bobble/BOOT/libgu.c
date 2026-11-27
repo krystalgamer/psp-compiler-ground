@@ -77,6 +77,17 @@ int sceKernelClearEventFlag(int evid, unsigned int bits);
 int sceKernelWaitEventFlag(int evid, unsigned int bits, unsigned int wait, unsigned int *outBits, void *timeout);
 void sceGuEnable(int state);
 void sceGuDisable(int state);
+typedef struct {
+	int x;
+	int y;
+	unsigned int color;
+	char c;
+} GuDebugChar;
+
+extern int aw_fontcnt[2];
+extern GuDebugChar aw_fontbuf[2][1024];
+
+
 
 extern void flush_font(void);
 int sceGeUnsetCallback(int cbid);
@@ -189,75 +200,80 @@ int get_exp(int val)
 	return i;
 }
 
-#ifdef NON_MATCHING
-/* Rough (2 instructions short): logic complete (32-bit pixels are written as two
- * halfwords through the uncached +0x40000000 alias); vram_top lives in a stack slot in the
- * original and the per-character FBuf loads are allocated differently. */
-typedef struct {
-	int x, y;
-	unsigned int color;
-	char c;
-} GuDebugChar;
-extern int aw_fontcnt[2];
-extern GuDebugChar aw_fontbuf[2][1024];
-extern const unsigned int fonttex[][2];
+extern const unsigned int fonttex[];
+
 void flush_font(void)
 {
-	int n = aw_fontcnt[aw_frame];
-	GuDebugChar *c = aw_fontbuf[aw_frame];
-	GuDrawBuffer *fb = &FBuf;
-	unsigned int bits = 0, mask = 0;
-	int i, j, x, y, psm, fw, color;
-	unsigned int height;
-	char *vram, *buf;
-	unsigned int p16, p32;
-	const unsigned int *font;
+	unsigned short *fp, *p16, *p32;
+	unsigned int data;
+	unsigned int mask;
+	int code;
+	int off;
+	int u, v;
+	int col;
+	int fx, fy;
+	int fontcnt;
+	GuDebugChar *fontbuf;
+	GuDrawBuffer *fbuf = &FBuf;
 
-	if (n == 0)
+	fontbuf = aw_fontbuf[aw_frame];
+	fontcnt = aw_fontcnt[aw_frame];
+	if (fontcnt == 0) {
 		return;
-	vram = vram_top;
-	height = fb->height;
-	for (; n != 0; n--, c++) {
-		y = c->y;
-		x = c->x;
-		if (y + 7 < height && x + 7 < (unsigned int)fb->width && y >= 0 && x >= 0) {
-			font = fonttex[(int)c->c];
-			color = c->color;
-			psm = fb->pixel_size;
-			buf = fb->frame_buffer;
-			fw = fb->frame_width;
-			for (i = 0; i < 8; i++) {
-				if (i == 0) {
-					bits = font[0];
+	}
+
+	data = 0;
+	mask = 0;
+	while (fontcnt) {
+		fx = fontbuf->x;
+		fy = fontbuf->y;
+		if (((unsigned int)(fy + 7) < (unsigned int)fbuf->height) && ((unsigned int)(fx + 7) < (unsigned int)fbuf->width) && (fy >= 0) && (fx >= 0)) {
+			const unsigned int *glyph;
+			int psm;
+			unsigned int fb;
+			int fw;
+			code = fontbuf->c;
+			col = fontbuf->color;
+			glyph = &fonttex[code * 2];
+			psm = fbuf->pixel_size;
+			fb = (unsigned int)fbuf->frame_buffer;
+			fw = fbuf->frame_width;
+			for (v = 0; v < 8; v++) {
+				if (v == 0) {
+					data = glyph[0];
 					mask = 1;
-				} else if (i == 4) {
-					bits = font[1];
+				} else if (v == 4) {
+					data = glyph[1];
 					mask = 1;
 				}
-				p16 = (unsigned int)vram + (unsigned int)buf + ((y + i) * fw + x) * 2;
-				p32 = (unsigned int)vram + (unsigned int)buf + ((y + i) * fw + x) * 4;
-				for (j = 7; j >= 0; j--) {
+
+				off = fx + (fy + v) * fw;
+				p16 = (unsigned short *)(off * 2 + (unsigned int)vram_top + fb);
+				p32 = (unsigned short *)(off * 4 + (unsigned int)vram_top + fb);
+				for (u = 0; u < 8; u++) {
 					if (psm == 3) {
-						if (bits & mask) {
-							((unsigned short *)(p32 + 0x40000000))[0] = color;
-							((unsigned short *)(p32 + 0x40000000))[1] = color >> 16;
+						fp = (unsigned short *)((unsigned int)p32 + 0x40000000);
+						if (data & mask) {
+							fp[0] = col;
+							fp[1] = col >> 16;
 						}
 					} else {
-						if (bits & mask)
-							*(unsigned short *)(p16 + 0x40000000) = color;
+						fp = (unsigned short *)((unsigned int)p16 + 0x40000000);
+						if (data & mask) {
+							*fp = col;
+						}
 					}
-					mask <<= 1;
-					p32 += 4;
-					p16 += 2;
+					mask = mask << 1;
+					p32 += 2;
+					p16++;
 				}
 			}
 		}
+		fontbuf++;
+		fontcnt--;
 	}
 	aw_fontcnt[aw_frame] = 0;
 }
-#else
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", flush_font);
-#endif
 
 static void reset_static_value(void)
 {
@@ -1562,50 +1578,69 @@ void sceGuMorphWeight(int index, float weight)
 	send_commandf(44 + index, weight);
 }
 
-#ifdef NON_MATCHING
-/* Close: x/p registers swap and (g >> 4) << 4 folds to andi 0xf0 (the original keeps sra/sll). */
-/* GuDebugChar, aw_fontcnt and aw_fontbuf come with the flush_font draft above */
 void sceGuDebugPrint(int x, int y, unsigned int color, const char *str)
 {
-	int cnt = aw_fontcnt[aw_frame];
-	GuDebugChar *buf = aw_fontbuf[aw_frame];
-	GuDebugChar *p = &buf[cnt];
-	int sx = x;
-	int g, b, r, a;
-	char c;
+	int r, g, b, a;
+	int fx, fy;
+	int code;
+	int fontcnt;
+	GuDebugChar *fontbuf;
 
-	if (cnt >= 1024)
+	fontbuf = aw_fontbuf[aw_frame];
+	fontcnt = aw_fontcnt[aw_frame];
+	fontbuf = &fontbuf[fontcnt];
+	if (fontcnt >= 1024)
 		return;
+
+	fx = x;
+	fy = y;
+
+	r = (color >> 0) & 0xff;
 	g = (color >> 8) & 0xff;
 	b = (color >> 16) & 0xff;
-	r = color & 0xff;
-	a = color >> 24;
-	if (FBuf.pixel_size == 0)
-		color = ((b >> 3) << 11) | ((g >> 2) << 5) | (r >> 3);
-	else if (FBuf.pixel_size == 1)
-		color = ((a >> 7) << 15) | ((b >> 3) << 10) | ((g >> 3) << 5) | (r >> 3);
-	else if (FBuf.pixel_size == 2)
-		color = ((a >> 4) << 12) | ((b >> 4) << 8) | ((g >> 4) << 4) | (r >> 4);
-	while ((c = *str) != 0) {
-		if (c == '\n') {
-			x = sx;
-			y += 8;
-		} else {
-			p->x = x;
-			p->y = y;
-			p->color = color;
-			p->c = c - 32;
-			p++;
-			cnt++;
-			x += 8;
-		}
-		str++;
+	a = (color >> 24) & 0xff;
+
+	if (FBuf.pixel_size == 0) {
+		r = r >> 3;
+		g = g >> 2;
+		b = b >> 3;
+		color = (b << 11) | (g << 5) | r;
+	} else if (FBuf.pixel_size == 1) {
+		r = r >> 3;
+		g = g >> 3;
+		b = b >> 3;
+		a = a >> 7;
+		color = (a << 15) | (b << 10) | (g << 5) | r;
+	} else if (FBuf.pixel_size == 2) {
+		r = r >> 4;
+		g = g >> 4;
+		b = b >> 4;
+		a = a >> 4;
+		color = (a << 12) | (b << 8) | (g << 4) | r;
 	}
-	aw_fontcnt[aw_frame] = cnt;
+
+	while (*str) {
+		if (*str == '\n') {
+			fx = x;
+			fy += 8;
+			str++;
+			continue;
+		}
+		code = *str - '!' + 1;
+
+		fontbuf->x = fx;
+		fontbuf->y = fy;
+		fontbuf->color = color;
+		fontbuf->c = code++;
+
+		fx += 8;
+
+		str++;
+		fontcnt++;
+		fontbuf++;
+	}
+	aw_fontcnt[aw_frame] = fontcnt;
 }
-#else
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", sceGuDebugPrint);
-#endif
 
 void sceGuDebugFlush(void)
 {
