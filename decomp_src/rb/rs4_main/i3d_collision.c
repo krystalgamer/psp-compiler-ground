@@ -34,6 +34,10 @@ int IntersectSub_LineTri(void *, void *, void *, void *, void *, unsigned char, 
 int I3cIntersectSub_RadiusPrim(void *, void *, void *, void *, void *, unsigned char, void *, int);
 int I3cIntersect_Main(void *, void *, void *, void *, void *, int);
 
+float I3dcs_GetSqrDistPointLineA(const float *, const float *, const float *, float *);
+float I3dcs_GetSqrDistPointRayA(const float *, const float *, const float *, float *);
+float I3dcs_GetSqrDistPointSegA(const float *, const float *, const float *, float *);
+
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_collision", IntersectSub_LineTri);
 
 int I3cLine_IntersectTriA(void *a, void *b, void *c, void *d, void *e, unsigned char f, void *g) {
@@ -470,7 +474,12 @@ int I3dcs_IsIntersectRayBoxA(const float *p, const float *d, const float *ext)
 	return I3dcs_IsIntersectLineBoxA(p, d, ext);
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_collision", I3dcs_IsIntersectCapBoxA);
+int I3dcs_IsIntersectCapBoxA(const float *a, const float *b, const float *box) {
+    float t[4];
+    int i;
+    for (i = 0; i < 3; i++) t[i] = box[i] + a[3];
+    return ((int (*)(const float *, const float *, const float *))I3dcs_IsIntersectSegBoxA)(a, b, t);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_collision", I3dcs_IsIntersectRRayBoxA);
 
@@ -498,19 +507,46 @@ int I3dcs_IsIntersectRLineBoxA()
 		: : : "memory");
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_collision", I3dcs_IsIntersectSphereSphereA);
+int I3dcs_IsIntersectSphereSphereA(const float *s, const float *t) {
+    float r = s[3] + t[3];
+    return ((float (*)(const float *, const float *))I3dcs_GetSqrDistPointPointA)(s, t) <= r * r;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_collision", I3dcs_IsIntersectSphereLineA);
+int I3dcs_IsIntersectSphereLineA(const float *s, const float *a, const float *b) {
+    float r = s[3];
+    int ret = 1;
+    if (!(I3dcs_GetSqrDistPointLineA(s, a, b, NULL) <= r * r)) ret = 0;
+    return ret;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_collision", I3dcs_IsIntersectSphereRayA);
+int I3dcs_IsIntersectSphereRayA(const float *s, const float *a, const float *b) {
+    float r = s[3];
+    int ret = 1;
+    if (!(I3dcs_GetSqrDistPointRayA(s, a, b, NULL) <= r * r)) ret = 0;
+    return ret;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_collision", I3dcs_IsIntersectSphereSegA);
+int I3dcs_IsIntersectSphereSegA(const float *s, const float *a, const float *b) {
+    float r = s[3];
+    int ret = 1;
+    if (!(I3dcs_GetSqrDistPointSegA(s, a, b, NULL) <= r * r)) ret = 0;
+    return ret;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_collision", I3dcs_IsIntersectSphereRLineA);
+int I3dcs_IsIntersectSphereRLineA(const float *s, const float *a, const float *b) {
+    float r = s[3] + a[3];
+    return I3dcs_GetSqrDistPointLineA(s, a, b, NULL) <= r * r;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_collision", I3dcs_IsIntersectSphereRRayA);
+int I3dcs_IsIntersectSphereRRayA(const float *s, const float *a, const float *b) {
+    float r = s[3] + a[3];
+    return I3dcs_GetSqrDistPointRayA(s, a, b, NULL) <= r * r;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_collision", I3dcs_IsIntersectSphereCapA);
+int I3dcs_IsIntersectSphereCapA(const float *s, const float *a, const float *b) {
+    float r = s[3] + a[3];
+    return I3dcs_GetSqrDistPointSegA(s, a, b, NULL) <= r * r;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -608,7 +644,12 @@ int I3dcs_IsIntersectCapRRayA(void *arg0, int arg1, void *arg2, int arg3) {
     return var_v0;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_collision", I3dcs_IsIntersectCapCapA);
+int I3dcs_IsIntersectCapCapA(const float *a, const float *b, const float *c, const float *d) {
+    float r = a[3] + c[3];
+    int ret = 1;
+    if (!(I3dcs_GetSqrDistSegSegA(a, b, c, d, NULL, NULL) <= r * r)) ret = 0;
+    return ret;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_collision", I3dcs_GetIntersectLineSphereA);
 
