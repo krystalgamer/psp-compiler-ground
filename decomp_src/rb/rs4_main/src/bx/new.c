@@ -1,16 +1,26 @@
 /* lang: c++ */
-/* cflags: -Os */
+/* cflags: -Os -fno-strength-reduce -fno-merge-constants -fno-exceptions */
 #include "common.h"
-extern "C" {
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/new", _Znwj);
+extern "C" void *_memAllocMBL(unsigned int size, const char *file, int line);
+extern "C" void _memFree(void *p, const char *file, int line);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/new", _Znaj);
+void *operator new(unsigned int size)
+{
+	return _memAllocMBL(size, "src/bx/new.cc", 22);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/new", _ZdlPv);
+void *operator new[](unsigned int size)
+{
+	return _memAllocMBL(size, "src/bx/new.cc", 31);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/new", _ZdaPv);
+void operator delete(void *p)
+{
+	_memFree(p, "src/bx/new.cc", 40);
+}
 
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/bx/new", D_00108FF4);
-
-} /* extern "C": m2c drafts with mangled names, kept as C linkage */
+void operator delete[](void *p)
+{
+	_memFree(p, "src/bx/new.cc", 49);
+}
