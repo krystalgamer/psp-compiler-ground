@@ -55,9 +55,189 @@ void sceGmoBoneDelete( SceGmoBone *bone )
  }
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_bone", sceGmoBoneDuplicate);
+SceGmoBone *sceGmoBoneDuplicate( SceGmoBone *bone, int flags )
+{
+	if ( bone == 0 ) return 0 ;
+	if ( !( 0x0001 & flags )
+	  && !( 0x0010 & flags ) ) {
+		bone->m_reference ++ ;
+		return bone ;
+	}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_bone", sceGmoBoneLoad);
+	SceGmoBone *bone2 = sceGmoBoneCreate( 0 ) ;
+	if ( bone2 == 0 ) return 0 ;
+	sceGmoBaseCopy( &( bone2->m_base ), &( bone->m_base ) ) ;
+
+	if ( !sceGmoModelCopyPtr( &( bone2->m_draw_parts ), bone->m_draw_parts,
+			bone->m_n_draw_parts * sizeof( int ) )
+	  || !sceGmoModelCopyPtr( &( bone2->m_morph_weights ), bone->m_morph_weights,
+			bone->m_n_morph_weights * sizeof( float ) )
+	  || !sceGmoModelCopyPtr( &( bone2->m_blend_bones ), bone->m_blend_bones,
+			bone->m_n_blend_bones * sizeof( int ) )
+	  || !sceGmoModelCopyPtr( &( bone2->m_blend_offsets ), bone->m_blend_offsets,
+			bone->m_n_blend_offsets * sizeof( SceGmoMat4 ) ) ) {
+		sceGmoBoneDelete( bone2 ) ;
+		return 0 ;
+	}
+	bone2->m_initial = sceGmoBoneDuplicate( bone->m_initial, 0 ) ;
+	bone2->m_flags = bone->m_flags ;
+
+	bone2->m_n_draw_parts = bone->m_n_draw_parts ;
+	bone2->m_n_morph_weights = bone->m_n_morph_weights ;
+	bone2->m_n_blend_bones = bone->m_n_blend_bones ;
+	bone2->m_n_blend_offsets = bone->m_n_blend_offsets ;
+
+	bone2->m_parent_bone = bone->m_parent_bone ;
+	bone2->m_visibility = bone->m_visibility ;
+
+	bone2->m_anim_flags = bone->m_anim_flags ;
+	memcpy( bone2->m_anim_weights, bone->m_anim_weights, sizeof( bone->m_anim_weights ) ) ;
+
+	bone2->m_pivot = bone->m_pivot ;
+	bone2->m_translate = bone->m_translate ;
+	bone2->m_rotate = bone->m_rotate ;
+	bone2->m_scale = bone->m_scale ;
+
+	bone2->m_local_matrix = bone->m_local_matrix ;
+	bone2->m_stack_matrix = bone->m_stack_matrix ;
+	bone2->m_stack_scale = bone->m_stack_scale ;
+	bone2->m_world_matrix = bone->m_world_matrix ;
+	return bone2 ;
+}
+
+_Bool sceGmoBoneLoad( SceGmoBone *bone, const SceGmoChunk *chunk )
+{
+	if ( bone == 0 ) return 0 ;
+	if ( chunk == 0 ) return 0 ;
+
+	sceGmoBoneUnload( bone ) ;
+
+	int n_parts = sceGmoModelCountChunk( chunk, SCEGMO_DRAW_PART ) ;
+	if ( !sceGmoModelAllocPtr( &( bone->m_draw_parts ), n_parts * sizeof( void * ) ) ) {
+		return 0 ;
+	}
+
+	SceGmoBlendOffsets *blend_offsets = 0 ;
+	_Bool has_draw_part = 0 ;
+
+	SceGmoChunk *end = SCEGMO_CHUNK_NEXT( chunk ) ;
+	for ( chunk = SCEGMO_CHUNK_CHILD( chunk ) ; chunk < end ; chunk = SCEGMO_CHUNK_NEXT( chunk ) ) {
+		void *args = SCEGMO_CHUNK_ARGS( chunk ) ;
+
+		switch ( SCEGMO_CHUNK_TYPE( chunk ) ) {
+		    case SCEGMO_PARENT_BONE : {
+			bone->m_parent_bone = ( (SceGmoParentBone *)args )->bone ;
+			break ;
+		    }
+		    case SCEGMO_VISIBILITY : {
+			bone->m_visibility = ( (SceGmoVisibility *)args )->visibility ;
+			bone->m_flags |= 0x0200 ;
+			break ;
+		    }
+		    case SCEGMO_MORPH_WEIGHTS : {
+			SceGmoMorphWeights *cmd = (SceGmoMorphWeights *)args ;
+			if ( !set_morph_weights( bone, cmd->weights, cmd->n_weights ) ) {
+				return 0 ;
+			}
+			bone->m_flags |= 0x0100 ;
+			break ;
+		    }
+		    case SCEGMO_MORPH_INDEX : {
+			SceGmoMorphIndex *cmd = (SceGmoMorphIndex *)args ;
+			if ( !set_morph_weights( bone, 0, 8 ) ) {
+				return 0 ;
+			}
+			calc_morph_index( bone->m_morph_weights, 8, cmd->index ) ;
+			bone->m_flags |= 0x0100 ;
+			break ;
+		    }
+		    case SCEGMO_BLEND_BONES : {
+			SceGmoBlendBones *cmd = (SceGmoBlendBones *)args ;
+			if ( !set_blend_bones( bone, cmd->bones, cmd->n_bones ) ) {
+				return 0 ;
+			}
+			break ;
+		    }
+		    case SCEGMO_BLEND_OFFSETS : {
+			blend_offsets = (SceGmoBlendOffsets *)args ;
+			break ;
+		    }
+		    case SCEGMO_PIVOT : {
+			sceGmoVec3Load( &( bone->m_pivot ), (SceGmoVec3F *)args ) ;
+			bone->m_flags |= 0x0080 ;
+			break ;
+		    }
+		    case SCEGMO_MULT_MATRIX : {
+			sceGmoMat4Load( &( bone->m_local_matrix ), (SceGmoMat4F *)args ) ;
+			bone->m_flags |= 0x0040 ;
+			break ;
+		    }
+		    case SCEGMO_TRANSLATE : {
+			sceGmoVec3Load( &( bone->m_translate ), (SceGmoVec3F *)args ) ;
+			bone->m_flags |= 0x0001 ;
+			break ;
+		    }
+		    case SCEGMO_ROTATE_ZYX : {
+			SceGmoVec3 rotate ;
+			sceGmoVec3Load( &rotate, (SceGmoVec3F *)args ) ;
+			sceGmoQuatFromRotZYX( &( bone->m_rotate ), &rotate ) ;
+			bone->m_flags |= 0x0002 ;
+			break ;
+		    }
+		    case SCEGMO_ROTATE_YXZ : {
+			SceGmoVec3 rotate ;
+			sceGmoVec3Load( &rotate, (SceGmoVec3F *)args ) ;
+			sceGmoQuatFromRotYXZ( &( bone->m_rotate ), &rotate ) ;
+			bone->m_flags |= 0x0002 ;
+			break ;
+		    }
+		    case SCEGMO_ROTATE_Q : {
+			sceGmoQuatLoad( &( bone->m_rotate ), (SceGmoQuatF *)args ) ;
+			bone->m_flags |= 0x0002 ;
+			break ;
+		    }
+		    case SCEGMO_SCALE : {
+			sceGmoVec3Load( &( bone->m_scale ), (SceGmoVec3F *)args ) ;
+			bone->m_flags |= 0x0004 ;
+			break ;
+		    }
+		    case SCEGMO_SCALE_2 : {
+			sceGmoVec3Load( &( bone->m_scale ), (SceGmoVec3F *)args ) ;
+			bone->m_flags |= 0x0008 ;
+			break ;
+		    }
+		    case SCEGMO_SCALE_3 : {
+			sceGmoVec3Load( &( bone->m_scale ), (SceGmoVec3F *)args ) ;
+			bone->m_flags |= 0x0010 ;
+			break ;
+		    }
+		    case SCEGMO_DRAW_PART : {
+			SceGmoDrawPart *cmd = (SceGmoDrawPart *)args ;
+			bone->m_draw_parts[ bone->m_n_draw_parts ++ ] = cmd->part ;
+			has_draw_part = 1 ;
+			break ;
+		    }
+		}
+	}
+	bone->m_flags |= 0x40000000 ;
+	if ( !( bone->m_flags & 0x0200 ) ) {
+		bone->m_visibility = has_draw_part ? -1 : 0 ;
+	}
+	if ( bone->m_n_blend_bones > 0 ) {
+		if ( !set_blend_offsets( bone, 0, bone->m_n_blend_bones ) ) {
+			return 0 ;
+		}
+		{ int i ; for ( i = 0 ; i < bone->m_n_blend_bones ; i ++ ) {
+			if ( blend_offsets != 0 && i < blend_offsets->n_offsets ) {
+				sceGmoMat4Load( &( bone->m_blend_offsets[ i ] ), &( blend_offsets->offsets[ i ] ) ) ;
+			} else {
+				sceGmoMat4Set( &( bone->m_blend_offsets[ i ] ), 0, 0, 0, 1, 1, 1 ) ;
+			}
+		} }
+	}
+	bone->m_initial = sceGmoBoneDuplicate( bone, 0x0010 ) ;
+	return ( bone->m_initial != 0 ) ;
+}
 
 void sceGmoBoneUnload( SceGmoBone *bone )
 {
@@ -438,4 +618,3 @@ static void calc_bone_matrix( SceGmoBone *bone, SceGmoModel *model )
 	bone->m_flags = flags | IS_BLEND_DIRTY ;
 }
 
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_bone", D_0007ECBC);
