@@ -1,7 +1,19 @@
 /* cflags: -O1 */
 #include "common.h"
+#include "http_lib.h"
 #include "http_os.h"
 #include "m2c_macros.h"
+typedef struct HttpReqMsg {
+    int f0;                           /* 0x0 */
+    int f4;                           /* 0x4 */
+    int type;                         /* 0x8 */
+    void *arg;                        /* 0xC */
+} HttpReqMsg;
+extern int gReqMbxID;
+int sceHttpGetStatusCode(int req, int *status);
+int sceHttpDeleteRequest(int id);
+int sceKernelSendMbx(int id, void *msg);
+int http_delreqresource(int h);
 typedef struct HtHdr {
     int f0;
     int f4;
@@ -17,7 +29,76 @@ typedef struct DumyArg {
 } DumyArg;
 
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/http_state", http_state);
+int http_state(int h)
+{
+    int st;
+    HttpObj *o = HTTP_OBJ(h);
+    int r;
+    int ps;
+    int status;
+    HttpReqMsg *m;
+
+    if (h == 0)
+        return -100;
+    OS_thread_mutex_lock(o->mutex);
+    st = o->f1C;
+    ps = o->state;
+    if (o->f24 == 1 && st == 2) {
+        r = sceHttpGetStatusCode(o->req, &status);
+        if (r < 0)
+            goto err;
+        if ((unsigned int)(status - 300) < 100 && (o->rule & 4)) {
+            r = sceHttpDeleteRequest(o->req);
+            if (r != 0)
+                goto fail;
+            o->req = -1;
+            r = http_delreqresource(h);
+            if (r < 0) {
+fail:
+                OS_thread_mutex_unlock(o->mutex2);
+err:
+                if (o->error == 0)
+                    o->error = r;
+                goto unlock;
+            }
+            OS_thread_mutex_unlock(o->mutex2);
+            st = 1;
+            goto done;
+        }
+    } else if (ps == -1) {
+        if (st == 1) {
+            o->f1C = st;
+            o->state = 3;
+            OS_thread_mutex_unlock(o->mutex);
+            m = MEM_malloc(0, sizeof(HttpReqMsg));
+            if (m == NULL) {
+                if (o->error == 0)
+                    o->error = -103;
+                return o->error;
+            }
+            m->type = 1;
+            m->arg = o;
+            r = sceKernelSendMbx(gReqMbxID, m);
+            st = 1;
+            if (r < 0) {
+                if (o->error == 0)
+                    o->error = r;
+                return o->error;
+            }
+            goto done;
+        }
+        if (st == 3) {
+            o->f24 = st;
+unlock:
+            OS_thread_mutex_unlock(o->mutex);
+            return o->error;
+        }
+    }
+done:
+    o->f24 = st;
+    OS_thread_mutex_unlock(o->mutex);
+    return st;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/http_state", htlib_setheaderkey);
 
