@@ -11,6 +11,9 @@ M2C_UNK MEM_free(M2C_UNK, void *);                  /* extern */
 #define NULL ((void *)0)
 #endif
 
+typedef struct FBX { struct FBX *parent; struct FBX *child; struct FBX *prev; struct FBX *next; char pad[0x2A]; short html; } FBX;
+FBX *getBodyBox(FBX *b);
+void setFocus(FBX *body, FBX *b, int f, int a);
 void *newRegion(int arg0, int arg1, int arg2, int arg3) {
     void *temp_v0;
     void *var_v1;
@@ -162,4 +165,37 @@ int lfm_getHeight(void *arg0) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_floatManager", getNextTerminalFrame);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_floatManager", setFocusBoxnode);
+void setFocusBoxnode(FBX *box, int f) {
+    FBX *body;
+    FBX *n;
+    FBX *c;
+
+    body = getBodyBox(box);
+    setFocus(body, box, f, 1);
+    if (body == box) {
+        return;
+    }
+    if ((box->html == 0x11) | (box->html == 0x4D)) {
+        return;
+    }
+    n = box->child;
+    while ((n != NULL) & (n != box)) {
+        setFocus(body, n, f, 0);
+        c = n->child;
+        if (c == NULL) {
+            c = n->next;
+            if (c == NULL) {
+                n = n->parent;
+                while ((n != NULL) & (n != box) && n->next == NULL) {
+                    n = n->parent;
+                }
+                if ((n != NULL) & (n != box)) {
+                    c = n->next;
+                } else {
+                    c = NULL;
+                }
+            }
+        }
+        n = c;
+    }
+}
