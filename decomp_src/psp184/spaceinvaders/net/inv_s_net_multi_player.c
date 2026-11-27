@@ -118,7 +118,47 @@ static void net_create_listen_socket(void)
 		change_state(19);
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_net_multi_player", net_create_connect_socket);
+SceULong64 sceKernelGetSystemTimeWide(void);
+int sceKernelWaitSemaCB(int semid, int signal, unsigned int *timeout);
+void sceNetEtherNtostr(const struct SceNetEtherAddr *addr, char *str);
+void net_create_connect_socket(void)
+{
+	int i;
+	char etherstr[18];
+
+	if (ptp_sock_id0 > 0) {
+		return;
+	}
+
+	sceKernelWaitSemaCB(minfo_sid, 1, NULL);
+
+	for (i = 0; i < 4; i++) {
+		sceNetEtherNtostr(&minfo[i].addr, etherstr);
+		if (minfo[i].status == 5) {
+			break;
+		}
+	}
+
+	if (i == 4) {
+		change_state(MATCHING_ROOM_START_GAME);
+		goto error;
+	}
+
+	_mrinfo.informing_minfo_id = i;
+	sceNetEtherNtostr(&_mrinfo.local_addr, etherstr);
+
+	ptp_sock_id0 = sceNetAdhocPtpOpen(&_mrinfo.local_addr, 0, &minfo[i].addr, 66, 0x4000, 200000, 200000, 0);
+	if (ptp_sock_id0 < 0) {
+		change_state(MATCHING_ROOM_DISCONNECT);
+	} else {
+		change_state(MATCHING_ROOM_PARENT_INFORM_CONNECT);
+	}
+
+	_mrinfo.ptp_start_time = sceKernelGetSystemTimeWide();
+
+error:
+	sceKernelSignalSema(minfo_sid, 1);
+}
 
 void net_delete_ptp(void) {
     if (ptp_sock_id > 0) {
