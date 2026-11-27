@@ -1,0 +1,16 @@
+# Same units as tony_libs mpeg (boundaries mapped by matching code: tmp/rbpal/port.py).
+0x00000 mpeg             1.5.1.internal  mpeg.c
+0x01038 mpeg_psmf        1.5.1.internal  mpeg_psmf.c
+0x0120C mpeg_stream      1.5.1.internal  mpeg_stream.c
+0x014F8 mpeg_demux       1.5.1.internal  mpeg_demux.c
+0x03A10 mpeg_ringbuf     1.5.1.internal  mpeg_ringbuf.c
+0x04000 mpeg_au          1.5.1.internal  mpeg_au.c
+0x0551C mpeg_au2         1.5.1.internal  mpeg_au2.c
+0x05A5C mpeg_sema        1.5.1.internal  mpeg_sema.c
+0x05BF8 mpeg_video       1.5.1.internal  mpeg_video.c
+0x060E4 mpeg_audio       1.5.1.internal  mpeg_audio.c
+0x06424 mpeg_module      1.5.1.internal  mpeg_module.c
+0x06480 libc_mem         1.5.1.internal  libc_mem.c
+0x066F8 libc_str         1.5.1.internal  libc_str.c
+0x071D0 libc_ctype       1.5.1.internal  libc_ctype.c
+0x0725C libmpeg_util     1.5.1.internal  libmpeg_util.c

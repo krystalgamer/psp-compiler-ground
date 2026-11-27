@@ -1,0 +1,260 @@
+/* cflags: -O2 -frename-registers -fno-merge-constants */
+#include "common.h"
+
+/* --- declarations --- */
+#include "mpeg.h"
+
+extern char *D_00007D80;
+
+static __inline__ int __strtok_find(const char *d, char c)
+{
+	int sc;
+
+	while ((sc = *d++) != '\0') {
+		if (sc == c)
+			return sc;
+	}
+	return 0;
+}
+int __tolower_i(int c) __asm__("func_00007210");
+extern const char D_000079A4[];
+
+extern const StreamTypeInfo D_00007904[];
+/* --- end declarations --- */
+
+INCLUDE_ASM("tmp/asm/rb/pal_mpeg/nonmatchings/mpeg_au", sceMpegGetPcmAu);
+
+INCLUDE_ASM("tmp/asm/rb/pal_mpeg/nonmatchings/mpeg_au", func_000041F0);
+
+unsigned char *func_000044E4(unsigned char *p, int type)
+{
+	unsigned char *ret;
+
+	switch (type) {
+	case 1:
+		ret = p + 0xE;
+		break;
+	case 2:
+		if (p[0xD] & 2)
+			ret = p + 0x12;
+		else
+			ret = NULL;
+		break;
+	case 0x1F40:
+		ret = func_000044E4(p, 2);
+		if (ret == NULL)
+			ret = func_000044E4(p, 1);
+		ret += 6;
+		break;
+	case 3:
+		if (p[0xD] & 1)
+			ret = func_000044E4(p, 0x1F40);
+		else
+			ret = NULL;
+		break;
+	case 4:
+		ret = func_000044E4(p, 0x1F40);
+		if (p[0xD] & 1)
+			ret += 0x40;
+		break;
+	case 5:
+		if (p[0xD] & 2) {
+			ret = func_000044E4(p, 0x1F40);
+			ret -= 2;
+			ret = p + func_00007530(ret);
+		} else {
+			ret = NULL;
+		}
+		break;
+	default:
+		ret = NULL;
+		break;
+	}
+	return ret;
+}
+
+INCLUDE_ASM("tmp/asm/rb/pal_mpeg/nonmatchings/mpeg_au", sceMpegGetAtracAu);
+
+INCLUDE_ASM("tmp/asm/rb/pal_mpeg/nonmatchings/mpeg_au", sceMpegGetAvcAu);
+
+int func_00004BE8(AuNode *node, int addr, int unk4, AuNode *next, int size)
+{
+	node->addr = addr;
+	node->unk4 = unk4;
+	node->next = next;
+	if ((unsigned int)size >= 0x1000) {
+		node->size = 0;
+		return SCE_MPEG_ERROR_INVALID_VALUE;
+	}
+	node->size = size;
+	return 0;
+}
+
+int func_00004C1C(AuNode *node, AuNode *next)
+{
+	node->next = next;
+	return 0;
+}
+
+INCLUDE_ASM("tmp/asm/rb/pal_mpeg/nonmatchings/mpeg_au", func_00004C28);
+
+INCLUDE_ASM("tmp/asm/rb/pal_mpeg/nonmatchings/mpeg_au", func_00005040);
+
+INCLUDE_ASM("tmp/asm/rb/pal_mpeg/nonmatchings/mpeg_au", func_0000514C);
+
+unsigned char *sceMpegMallocAvcEsBuf(SceMpeg *mp)
+{
+	MpegSys *sys = mp->sys;
+	int h = 0;
+	int i;
+
+	if (func_00001104(mp) != 0)
+		return NULL;
+	func_00005AE4(sys->sema);
+	for (i = 0; i < sys->unk67C; i++) {
+		if (sys->flag[i] == 0) {
+			sys->flag[i] = 1;
+			h = i + 1;
+			break;
+		}
+	}
+	func_00005B80(sys->sema);
+	return (unsigned char *)h;
+}
+
+int sceMpegFreeAvcEsBuf(SceMpeg *mp, int h)
+{
+	MpegSys *sys = mp->sys;
+	int ret;
+
+	ret = func_00001104(mp);
+	if (ret != 0)
+		return ret;
+	func_00005AE4(sys->sema);
+	if (h > 0 && h <= sys->unk67C)
+		sys->flag[h - 1] = 0;
+	else
+		ret = SCE_MPEG_ERROR_INVALID_VALUE;
+	func_00005B80(sys->sema);
+	return ret;
+}
+
+int func_000052AC(SceMpeg *mp, int h)
+{
+	MpegSys *sys = mp->sys;
+
+	if (h > 0 && h <= sys->unk67C && sys->flag[h - 1] == 1)
+		return sys->val[h - 1];
+	return h;
+}
+
+int sceMpegQueryAtracEsSize(SceMpeg *mp, int *esSize, int *outSize)
+{
+	int ret;
+
+	ret = func_00001104(mp);
+	if (ret != 0)
+		return ret;
+	*esSize = 0x840;
+	*outSize = 0x2000;
+	return 0;
+}
+
+int sceMpegQueryPcmEsSize(SceMpeg *mp, int *esSize, int *outSize)
+{
+	int ret;
+
+	ret = func_00001104(mp);
+	if (ret != 0)
+		return ret;
+	*esSize = 0x140;
+	*outSize = 0x140;
+	return 0;
+}
+
+int func_00005384(SceMpeg *mp, int *a, int *b)
+{
+	int ret;
+
+	ret = func_00001104(mp);
+	if (ret != 0)
+		return ret;
+	*a = 0x19100;
+	*b = 0x2A300;
+	return 0;
+}
+
+int func_000053DC(unsigned char *p)
+{
+	return (func_00007530(p + 2) & 0x3FF) * 8 + 8;
+}
+
+int func_00005404(unsigned char *p)
+{
+	return p[0] & 0xF;
+}
+
+unsigned int func_00005410(unsigned char *p)
+{
+	return func_00007548(p + 1) >> 23;
+}
+
+void func_00005430(unsigned char *p, int flag)
+{
+	if (!flag)
+		p[1] &= 0x7F;
+	else
+		p[1] |= 0x80;
+}
+
+unsigned int func_00005454(unsigned char *p)
+{
+	return func_00007548(p + 1) & 0x1FFFFF;
+}
+
+int func_0000547C(unsigned char *p)
+{
+	return p[3];
+}
+
+unsigned char *func_00005484(unsigned char *p, unsigned int i)
+{
+	unsigned char *r = NULL;
+
+	if (i < p[3])
+		r = p + 4 + i * 4;
+	return r;
+}
+
+int func_000054A8(unsigned char *p)
+{
+	return p[1];
+}
+
+int func_000054B0(unsigned char *p, int i)
+{
+	if (i < 4)
+		return func_00007530(p + 2 + i * 2);
+	return 0;
+}
+
+unsigned char *func_000054EC(unsigned char *p)
+{
+	return p + 0xE;
+}
+
+AuList *func_000054F4(SceMpeg *mp)
+{
+	MpegSys *sys = mp->sys;
+
+	return &sys->lists[sys->curList];
+}
+
+int func_00005514(void)
+{
+	return 0;
+}
+
+INCLUDE_RODATA("tmp/asm/rb/pal_mpeg/nonmatchings/mpeg_au", D_000079DC);
+
+INCLUDE_RODATA("tmp/asm/rb/pal_mpeg/nonmatchings/mpeg_au", D_00007A5C);

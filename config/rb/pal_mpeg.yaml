@@ -53,7 +53,21 @@ segments:
     start: 0x80
     vram: 0x0
     subsegments:
-      - [0x80, asm, asm/text_0]
+      - [0x80, c, mpeg]
+      - [0x10B8, c, mpeg_psmf]
+      - [0x128C, c, mpeg_stream]
+      - [0x1578, c, mpeg_demux]
+      - [0x3A90, c, mpeg_ringbuf]
+      - [0x4080, c, mpeg_au]
+      - [0x559C, c, mpeg_au2]
+      - [0x5ADC, c, mpeg_sema]
+      - [0x5C78, c, mpeg_video]
+      - [0x6164, c, mpeg_audio]
+      - [0x64A4, c, mpeg_module]
+      - [0x6500, c, libc_mem]
+      - [0x6778, c, libc_str]
+      - [0x7250, c, libc_ctype]
+      - [0x72DC, c, libmpeg_util]
       - { start: 0x7614, type: asm, name: sceStub, linker_section: .sceStub.text }
       - { start: 0x76D4, type: prxpad, order: .text }
       - { start: 0x76E0, type: rodata, name: lib_ent_top, linker_section: .lib.ent.top }
@@ -65,7 +79,12 @@ segments:
       - { start: 0x7774, type: rodata, name: module_info, linker_section: .rodata.sceModuleInfo }
       - { start: 0x77A8, type: rodata, name: resident, linker_section: .rodata.sceResident }
       - { start: 0x7924, type: rodata, name: nid, linker_section: .rodata.sceNid }
-      - [0x7984, rodata, asm/rodata_7904]
+      - [0x7984, .rodata, mpeg]
+      - [0x7A24, .rodata, mpeg_psmf]
+      - [0x7A4C, .rodata, mpeg_demux]
+      - [0x7A5C, .rodata, mpeg_au]
+      - [0x7B14, .rodata, mpeg_audio]
+      - [0x7B20, .rodata, libmpeg_util]
   - [0x7BAC, bin, seg1_align]
   - name: pal_mpeg_seg1
     type: code
