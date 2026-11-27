@@ -133,4 +133,23 @@ void func_0000662C(void *p, int n)
 	}
 }
 
-INCLUDE_ASM("tmp/asm/tony_libs/mpeg/nonmatchings/libc_mem", func_00006654);
+char *strcat(char *dest, const char *src)
+{
+	char *s1 = dest;
+	const char *s2 = src;
+	char *w;
+
+	if (dest == NULL || src == NULL)
+		return NULL;
+
+	if (dest + strlen(dest) != src + strlen(src)) {
+		while (*s1++)
+			;
+		s1--;
+		while ((*s1++ = *s2++) != 0)
+			;
+		w = dest;
+		return w;
+	}
+	return NULL;
+}

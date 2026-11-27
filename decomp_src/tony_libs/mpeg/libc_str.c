@@ -115,7 +115,26 @@ int func_00006930(const char *s)
 	return n;
 }
 
-INCLUDE_ASM("tmp/asm/tony_libs/mpeg/nonmatchings/libc_str", func_00006964);
+char *strncat(char *dest, const char *src, int nn)
+{
+	char *s1 = dest;
+	const char *s2 = src;
+	int n = nn;
+	char *w = NULL;
+
+	if (dest == NULL || src == NULL)
+		return w;
+	while (*s1++)
+		;
+	s1--;
+	while ((*s1++ = *s2++) != 0) {
+		if (--n < 0) {
+			s1[-1] = '\0';
+			break;
+		}
+	}
+	return dest;
+}
 
 int func_000069CC(const char *s1, const char *s2, int n)
 {
@@ -131,7 +150,21 @@ int func_000069CC(const char *s1, const char *s2, int n)
 	return (n < 0) ? 0 : *s1 - *(s2 - 1);
 }
 
-INCLUDE_ASM("tmp/asm/tony_libs/mpeg/nonmatchings/libc_str", func_00006A64);
+int strncasecmp(const char *s1, const char *s2, int nn)
+{
+	int n = nn;
+
+	if (s1 == NULL || s2 == NULL) {
+		if (s1 == s2)
+			return 0;
+		return (s1 == NULL) ? -1 : 1;
+	}
+	while (--n >= 0 && tolower(*s1) == tolower(*s2++)) {
+		if (*s1++ == '\0')
+			return 0;
+	}
+	return (n < 0) ? 0 : tolower(*s1) - tolower(s2[-1]);
+}
 
 char *func_00006B28(char *dst, const char *src, int n)
 {
@@ -150,7 +183,19 @@ char *func_00006B28(char *dst, const char *src, int n)
 	return dst;
 }
 
-INCLUDE_ASM("tmp/asm/tony_libs/mpeg/nonmatchings/libc_str", func_00006BA4);
+char *strpbrk(const char *s1, const char *s2)
+{
+	char *s = (char *)s1;
+	char *k;
+
+	for (; *s != '\0'; s++) {
+		for (k = (char *)s2; *k != '\0'; k++) {
+			if (*k == *s)
+				return s;
+		}
+	}
+	return NULL;
+}
 
 char *func_00006BFC(const char *s, char c)
 {
@@ -184,9 +229,69 @@ int func_00006C44(const char *s, const char *accept)
 	return p - s;
 }
 
-INCLUDE_ASM("tmp/asm/tony_libs/mpeg/nonmatchings/libc_str", func_00006CB0);
+char *strstr(const char *s1, const char *s2)
+{
+	const char *w1, *w2;
 
-INCLUDE_ASM("tmp/asm/tony_libs/mpeg/nonmatchings/libc_str", func_00006D14);
+	if (*s2 == '\0')
+		return (char *)s1;
+	while (*s1 != '\0') {
+		for (w1 = s1, w2 = s2; ; w1++, w2++) {
+			if (*w2 == '\0')
+				return (char *)s1;
+			if (*w1 == '\0')
+				return NULL;
+			if (*w1 != *w2)
+				break;
+		}
+		s1++;
+	}
+	return NULL;
+}
+
+char *strtok_r(char *s1, const char *s2, char **lasts)
+{
+	char *s;
+	char *d;
+	char *p, *t;
+	char *w;
+	int mark;
+	char c;
+
+	s = s1;
+	if (s == NULL) {
+		s = *lasts;
+		if (s == NULL)
+			return NULL;
+	}
+	while ((c = *s++) != '\0') {
+		mark = 0;
+		for (d = (char *)s2; *d != '\0'; d++) {
+			if (c == *d) {
+				mark = 1;
+				break;
+			}
+		}
+		if (!mark)
+			break;
+	}
+	if (c == '\0') {
+		*lasts = NULL;
+		return NULL;
+	}
+	t = s - 1;
+	while ((c = *s++) != '\0') {
+		for (d = (char *)s2; *d != '\0'; d++) {
+			if (c == *d) {
+				s[-1] = '\0';
+				*lasts = s;
+				return t;
+			}
+		}
+	}
+	*lasts = NULL;
+	return t;
+}
 
 INCLUDE_ASM("tmp/asm/tony_libs/mpeg/nonmatchings/libc_str", func_00006DE8);
 
