@@ -19,6 +19,15 @@
             ".text\n")
 #endif
 
+/* Out-of-line (.gnu.linkonce.t) copies of inline members: main.hpp's `#pragma interface` makes
+   every inline function defined under it external.  The unit that held Sony's copy defines
+   SGL_LINKONCE_<name> 1 before main.hpp; the definition (after its class) is then wrapped in
+   SGL_LINKONCE_BEGIN/END: `#pragma implementation`+`#pragma interface` of a dummy name turn the
+   interface off (inline functions defined there are emitted as linkonce copies, unused clones
+   too: the link discards those), a plain `#pragma interface` turns it on again. */
+#define SGL_LINKONCE_BEGIN _Pragma("implementation \"sgl_linkonce\"") _Pragma("interface \"sgl_linkonce\"")
+#define SGL_LINKONCE_END _Pragma("interface")
+
 /* assert macro of the demo's library (common/assert): __PRETTY_FUNCTION__ is an extern label */
 #define SGL_ASSERT(c, err, text, file, fn, line, sep) \
     if (!(c)) { \
@@ -648,12 +657,19 @@ class SquareMap : public SphericalRGBFn {
 public:
     SquareMap(const char *, float);
     virtual void eval(float theta, float phi, float &r, float &g, float &b) const;
-    virtual ~SquareMap() {}
+    virtual ~SquareMap();
     void load(const char *);
     mutable textures::Texture _tex;     /* 0x04 */
     char _p54[4];
     float _exposure;                    /* 0x58 */
 };
+#if SGL_LINKONCE_SquareMap
+SGL_LINKONCE_BEGIN
+#endif
+inline SquareMap::~SquareMap() {}
+#if SGL_LINKONCE_SquareMap
+SGL_LINKONCE_END
+#endif
 class PolarFunction : public SphericalRGBFn {
 public:
     virtual void eval(float theta, float phi, float &r, float &g, float &b) const;

@@ -4,6 +4,7 @@
 #include "cxx/defer_asm.h"
 #define DEMO_STATICS_MATH
 #define DEMO_STATICS_IOSTREAM
+#define SGL_LINKONCE_SquareMap 1
 #include "../main.hpp"
 
 /* the module's .ctors/.dtors refer to the static constructor/destructor */
@@ -42,11 +43,3 @@ void sh::SquareMap::load(const char *name)
             _tex.convert32();
     }
 }
-
-/* weak instances: after _GLOBAL__I/D */
-#undef INCLUDE_ASM
-#define INCLUDE_ASM INCLUDE_ASM_WEAK
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sh_SquareMap", _ZN2sh9SquareMapD1Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sh_SquareMap", _ZN2sh9SquareMapD0Ev);
