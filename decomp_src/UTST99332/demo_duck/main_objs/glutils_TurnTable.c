@@ -2,7 +2,16 @@
 /* cflags: -O3 -fno-exceptions */
 #undef __EXCEPTIONS
 #include "cxx/defer_asm.h"
+#define DEMO_LINKONCE_TurnTable 1
 #include "../main.hpp"
+
+/* the tail's .gnu.linkonce.t sections in the original's order */
+DEMO_LINKONCE_ORDER(
+    DEMO_LINKONCE(_ZN7glutils9TurnTableD0Ev)
+    DEMO_LINKONCE(_ZThn8_N7glutils9TurnTableD0Ev)
+    DEMO_LINKONCE(_ZN7glutils9TurnTableD1Ev)
+    DEMO_LINKONCE(_ZThn8_N7glutils9TurnTableD1Ev)
+);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/glutils_TurnTable", _Z41__static_initialization_and_destruction_0ii_374F0);
 
@@ -30,7 +39,12 @@ bool glutils::TurnTable::isYUp() const
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/glutils_TurnTable", _ZN7glutils9TurnTable8setPivotEN4math11vector_xyzwE);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/glutils_TurnTable", _ZN7glutils9TurnTable8setPivotEfff);
+extern "C" const float D_00166E30;
+
+void glutils::TurnTable::setPivot(float x, float y, float z)
+{
+    _pivot = math::vector_xyzw(x, y, z, D_00166E30);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/glutils_TurnTable", _ZN7glutils9TurnTable8setPivotEf);
 
@@ -63,12 +77,3 @@ void _GLOBAL__D__ZN7glutils9TurnTableC2Ev(void)
 {
     static_init(0, 0xFFFF);
 }
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/glutils_TurnTable", _ZN7glutils9TurnTableD0Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/glutils_TurnTable", _ZThn8_N7glutils9TurnTableD0Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/glutils_TurnTable", _ZN7glutils9TurnTableD1Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/glutils_TurnTable", _ZThn8_N7glutils9TurnTableD1Ev);
-

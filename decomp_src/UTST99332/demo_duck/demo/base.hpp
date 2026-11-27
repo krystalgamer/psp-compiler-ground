@@ -1004,10 +1004,14 @@ public:
 class TurnTable : public PositioningInterface {
 public:
     enum Speed { NUM_SPEEDS = 3 };
+    virtual ~TurnTable();
     void track(bool, bool, bool, int, int);
     void setIsYUp(bool);
     bool isYUp() const;
     void speed(Speed, float);
+    void setPivot(math::vector_xyzw);
+    void setPivot(float, float, float);
+    void setPivot(float);
     math::vector_xyzw getPivot() const;
     math::matrix getPivotFrame() const;
     /* data */
@@ -1016,6 +1020,14 @@ public:
     bool _f1A0;
     float _speed[NUM_SPEEDS];   /* 0x1A4 */
 };
+/* linkonce copies: glutils_TurnTable.o defines DEMO_LINKONCE_TurnTable */
+#if DEMO_LINKONCE_TurnTable
+_Pragma("implementation \"sgl_linkonce\"") _Pragma("interface \"sgl_linkonce\"")
+#endif
+inline TurnTable::~TurnTable() {}
+#if DEMO_LINKONCE_TurnTable
+_Pragma("interface")
+#endif
 }
 
 /* accessors (generated from the asm; members named by offset) */
