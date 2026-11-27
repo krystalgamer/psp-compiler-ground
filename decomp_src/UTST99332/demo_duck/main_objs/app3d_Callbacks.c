@@ -113,16 +113,22 @@ void _GLOBAL__D__ZN5app3d9CallbacksC2Ej(void)
 #undef INCLUDE_ASM
 #define INCLUDE_ASM INCLUDE_ASM_LINKONCE
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/app3d_Callbacks", _ZN5input9ButtonSetIN3psp4PadBEE3setEjb);
+/* instances of this object that only its asm functions use: called from here (a discarded function) so that
+   cc1plus emits them (their order is DEMO_LINKONCE_ORDER's) */
+extern "C" void app3d_Callbacks_instance_refs(common::handle<glutils::TurnTable> &t, common::handle<glutils::PositioningInterface> &p)
+    __attribute__((section(".discard.asm")));
+extern "C" void app3d_Callbacks_instance_refs(common::handle<glutils::TurnTable> &t, common::handle<glutils::PositioningInterface> &p)
+{
+    t.invalidate();
+    common::handle<glutils::TurnTable> a(p);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/app3d_Callbacks", _ZN6common6handleIN7glutils9TurnTableEE10invalidateEv);
+/* out-of-line inline members / instances that stay asm */
+#undef INCLUDE_ASM
+#define INCLUDE_ASM INCLUDE_ASM_LINKONCE
+
+INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/app3d_Callbacks", _ZN5input9ButtonSetIN3psp4PadBEE3setEjb);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/app3d_Callbacks", _ZN6common18shared_object_baseD1Ev);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/app3d_Callbacks", _ZN6common18shared_object_baseD0Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/app3d_Callbacks", _ZN6common6handleIN7glutils9TurnTableEEC1INS1_20PositioningInterfaceEEERKNS0_IT_EE);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/app3d_Callbacks", _ZN6common6handleIN7glutils9TurnTableEED1Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/app3d_Callbacks", _ZN6common6handleIN7glutils9TurnTableEED0Ev);
