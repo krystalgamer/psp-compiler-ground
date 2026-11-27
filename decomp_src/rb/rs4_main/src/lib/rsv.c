@@ -16,7 +16,18 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/lib/rsv", rsvMove);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/lib/rsv", rsvLoop);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/lib/rsv", rsvKeyState);
+int rsvKeyState(int *p, int k)
+{
+	if (k <= 0)
+		return 1;
+	if (!p)
+		return 0;
+	if ((k ^ p[1]) == 0)
+		return 2;
+	if ((k ^ p[1]) == -1)
+		return 3;
+	return 4;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/lib/rsv", semaInit);
 

@@ -10,7 +10,17 @@ extern void *pThrEntry;
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/lib/sort", sortTag);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/lib/sort", sortTagR);
+void sortTagR(unsigned int *p)
+{
+	unsigned int *q = p + 255;
+	unsigned int v = (unsigned int)(p + 254) | 0x80000000;
+	do {
+		*q = v;
+		q--;
+		v -= 4;
+	} while (q != p);
+	*p = 0;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/lib/sort", sortPrio);
 
@@ -168,7 +178,14 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/lib/sort", textCpy);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/lib/sort", textCSpn);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/lib/sort", textLen);
+int textLen(int *p)
+{
+	int n = 0;
+	for (; p; p++, n++)
+		if (*p == 0 || *p == -1)
+			break;
+	return n;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/lib/sort", textSpn);
 

@@ -119,11 +119,20 @@ int resGetEntryLocal(int a)
 	return resGetEntrySect(a, 2);
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", resGetEntryRefer);
+int resGetEntryRefer(int a)
+{
+	return resGetEntrySect(a, 4);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", resGetEntryTable);
+int resGetEntryTable(int a)
+{
+	return resGetEntrySect(a, 5);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", resGetEntryString);
+int resGetEntryString(int a)
+{
+	return resGetEntrySect(a, 6);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", resGetDatSect);
 

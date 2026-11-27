@@ -55,7 +55,16 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/ez", ezTtrWrite2);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/ez", ezInfoWinInit);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/ez", ezInfoWinTerm);
+void taskKill();
+void ezInfoWinTerm(int a, int *p)
+{
+	if (p) {
+		int t = *p;
+		*p = 0;
+		if (t)
+			taskKill(t, 0, 0);
+	}
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/ez", ezWriteCardResultEfc);
 
@@ -117,7 +126,15 @@ void menuGetFlowIDNum(void) {
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/ez", menuNextFlow);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/ez", menuSetNewFlowForce);
+typedef struct { int flow[16]; } MenuFlowHead;
+int menuSetNewFlowForce(int a)
+{
+	int i;
+	for (i = 15; i != 0; i--)
+		((MenuFlowHead *)&l_tMenuCntx)->flow[i] = ((MenuFlowHead *)&l_tMenuCntx)->flow[i - 1];
+	((MenuFlowHead *)&l_tMenuCntx)->flow[0] = a;
+	return a;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/ez", menuGuessLastSelect);
 
@@ -157,11 +174,19 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/ez", D_00103018);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/ez", menuGosubCardBattle);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/ez", menuIsCardBattle);
+typedef struct { char pad[0x348]; int a; char pad2[0x64C - 0x34C]; int b; } MenuCB;
+int menuIsCardBattle(void)
+{
+	return ((MenuCB *)&l_tMenuCntx)->a == -1 && ((MenuCB *)&l_tMenuCntx)->b == -1;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/ez", menuReturnCardBattle);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/ez", menuChkCardBattle);
+typedef struct { char pad[0x348]; int a; char pad2[0x64C - 0x34C]; int b; } MenuCB2;
+int menuChkCardBattle(void)
+{
+	return ((MenuCB2 *)&l_tMenuCntx)->a != -1 && ((MenuCB2 *)&l_tMenuCntx)->b != -1;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/ez", menuGosubSaruColle);
 

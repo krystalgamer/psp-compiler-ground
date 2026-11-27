@@ -61,7 +61,13 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/profile", randDumpSeedAll)
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/profile", randSetSeed);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/profile", randGetSeed);
+extern unsigned long long l_au64RandSeed[];
+unsigned long long randGetSeed(int i)
+{
+	if (i < 5)
+		return l_au64RandSeed[i];
+	return 0;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/profile", randU);
 

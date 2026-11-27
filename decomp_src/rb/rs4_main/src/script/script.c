@@ -1,4 +1,4 @@
-/* cflags: -Os */
+/* cflags: -Os -fno-strength-reduce */
 #include "common.h"
 #include "m2c_macros.h"
 int sceKernelGetGPI();                              /* extern */
@@ -46,7 +46,14 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/script/script", ScriptEntryVar
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/script/script", ScriptSettleVariable);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/script/script", ScriptEnumOperand);
+typedef struct { int a, b, c, d; } ScrOpnd;
+int ScriptEnumOperand(int a, ScrOpnd *p)
+{
+	int n = 0;
+	while (p[n].c)
+		n++;
+	return n;
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/script/script", D_00100278);
 
