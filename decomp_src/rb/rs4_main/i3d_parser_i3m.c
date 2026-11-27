@@ -32,7 +32,14 @@ int I3mRoot__Get_nNode(char *r)
 	return *(unsigned short *)(r + 0x14);
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_parser_i3m", I3mRoot__GetNodeName);
+void *I3mRoot__GetNodeName(char *r, unsigned short i)
+{
+	if (I3mRoot__CheckIdString(r) != 0)
+		return 0;
+	if (i < *(unsigned short *)(r + 0x14))
+		return *(void **)(*(char **)(r + 0x1C) + i * 12);
+	return 0;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_parser_i3m", I3mRoot__GetNodeIndexByName);
 
