@@ -4,13 +4,34 @@
 #include "cxx/defer_asm.h"
 #include "../main.hpp"
 
+namespace glut {
+void ReshapeFunc(int, int);
+void DisplayFunc();
+void IdleFunc();
+}
+
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/glut_ReshapeFunc", _Z41__static_initialization_and_destruction_0ii_135B4);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/glut_ReshapeFunc", _ZN4glut11ReshapeFuncEii);
+void glut::ReshapeFunc(int w, int h)
+{
+    if (app_ptr)
+        app_ptr->reshape(w, h);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/glut_ReshapeFunc", _ZN4glut11DisplayFuncEv);
+void glut::DisplayFunc()
+{
+    if (app_ptr)
+        app_ptr->display();
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/glut_ReshapeFunc", _ZN4glut8IdleFuncEv);
+void glut::IdleFunc()
+{
+    if (app_ptr) {
+        if (app_ptr->exitRequested())
+            exit(0);
+        app_ptr->idle();
+    }
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/glut_ReshapeFunc", _ZN3psp3padEv);
 

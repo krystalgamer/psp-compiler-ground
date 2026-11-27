@@ -679,17 +679,49 @@ void PickMatrix(float, float, float, float, int *);
 void ErrorCheck(const char *, int);
 }
 
+struct hc_node_t {
+    unsigned char type;         /* 0x0: 1 root, 2 leaf */
+    hc_node_t *parent;          /* 0x4 */
+    char _p8[0x10 - 0x8];
+    unsigned long item;         /* 0x10 */
+    int weight;                 /* 0x14 */
+};
+struct hc_item_t;
 class CCmpr {
 public:
+    struct PoolEntry {
+        bool used;              /* 0x0 */
+        hc_node_t node;         /* 0x4 */
+    };
     CCmpr();
     ~CCmpr();
     void SetInputData(const void *, int);
     void *GetOutputData();
     int GetOutputSize();
+    bool CreateItemList();
+    bool InitNodePool();
+    void FreeNodePool();
+    hc_node_t *AllocateNode();
+    void FreeNode(hc_node_t *);
+    hc_node_t *FindLeafByItem(unsigned long);
+    hc_node_t *FindRootByLeaf(hc_node_t *);
+    hc_node_t *FindLeastImportantRoot(hc_node_t *);
+    int CountRoots();
+    int CountLeaves();
+    void AnalyzeItems();
+    void CreateHuffmanTree();
+    void EncodeItem(hc_item_t *, hc_node_t *);
+    bool HuffmanEncode();
+    bool Compress();
+    bool Uncompress();
     int input_size;             /* 0x0 */
     const void *input;          /* 0x4 */
     int output_size;            /* 0x8 */
     void *output;               /* 0xC */
+    int item_count;             /* 0x10 */
+    void *items;                /* 0x14 */
+    int pool_size;              /* 0x18 */
+    PoolEntry *pool;            /* 0x1C */
 };
 
 class BVH {

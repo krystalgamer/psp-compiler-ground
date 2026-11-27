@@ -30,21 +30,81 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/CCmpr", _ZN5CCmp
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/CCmpr", _ZN5CCmpr12InitNodePoolEv);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/CCmpr", _ZN5CCmpr12FreeNodePoolEv);
+void CCmpr::FreeNodePool()
+{
+    if (pool) {
+        free(pool);
+        pool = 0;
+    }
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/CCmpr", _ZN5CCmpr12AllocateNodeEv);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/CCmpr", _ZN5CCmpr8FreeNodeEP9hc_node_t);
+void CCmpr::FreeNode(hc_node_t *n)
+{
+    for (int i = 0; i < pool_size; i++) {
+        if (pool[i].used && &pool[i].node == n) {
+            __builtin_memset(&pool[i].node, 0, sizeof(hc_node_t));
+            pool[i].used = false;
+            if (i == pool_size - 1)
+                pool_size = i;
+            return;
+        }
+    }
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/CCmpr", _ZN5CCmpr14FindLeafByItemEm);
+hc_node_t *CCmpr::FindLeafByItem(unsigned long item)
+{
+    for (int i = 0; i < pool_size; i++) {
+        if (pool[i].used && pool[i].node.type == 2 && pool[i].node.item == item)
+            return &pool[i].node;
+    }
+    return 0;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/CCmpr", _ZN5CCmpr14FindRootByLeafEP9hc_node_t);
+hc_node_t *CCmpr::FindRootByLeaf(hc_node_t *leaf)
+{
+    for (hc_node_t *n = leaf->parent; n; n = n->parent) {
+        if (n->type == 1)
+            return n;
+    }
+    return 0;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/CCmpr", _ZN5CCmpr22FindLeastImportantRootEP9hc_node_t);
+hc_node_t *CCmpr::FindLeastImportantRoot(hc_node_t *exclude)
+{
+    int weight = 0;
+    hc_node_t *root = 0;
+    for (int i = 0; i < pool_size; i++) {
+        if (pool[i].used && pool[i].node.type == 1 && exclude != &pool[i].node) {
+            if (weight == 0 || pool[i].node.weight < weight) {
+                weight = pool[i].node.weight;
+                root = &pool[i].node;
+            }
+        }
+    }
+    return root;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/CCmpr", _ZN5CCmpr10CountRootsEv);
+int CCmpr::CountRoots()
+{
+    int n = 0;
+    for (int i = 0; i < pool_size; i++) {
+        if (pool[i].used && pool[i].node.type == 1)
+            n++;
+    }
+    return n;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/CCmpr", _ZN5CCmpr11CountLeavesEv);
+int CCmpr::CountLeaves()
+{
+    int n = 0;
+    for (int i = 0; i < pool_size; i++) {
+        if (pool[i].used && pool[i].node.type == 2)
+            n++;
+    }
+    return n;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/CCmpr", _ZN5CCmpr12AnalyzeItemsEv);
 
@@ -54,6 +114,14 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/CCmpr", _ZN5CCmp
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/CCmpr", _ZN5CCmpr13HuffmanEncodeEv);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/CCmpr", _ZN5CCmpr8CompressEv);
+bool CCmpr::Compress()
+{
+    if (!CreateItemList())
+        return false;
+    if (!HuffmanEncode())
+        return false;
+    free(items);
+    return true;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/CCmpr", _ZN5CCmpr10UncompressEv);

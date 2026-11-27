@@ -4,6 +4,8 @@
 #include "cxx/defer_asm.h"
 #include "../main.hpp"
 
+extern "C" const float D_00160858, D_0016085C, D_00160860;
+
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/MakeRGBA8888", _Z12MakeRGBA8888ffff);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/MakeRGBA8888", _Z21GenFrameBufferBlurmapjbbbb);
@@ -39,9 +41,19 @@ void DepthBlurSetFocus(float f)
     _focus = f;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/MakeRGBA8888", _Z18DepthBlurIncrFocusv);
+void DepthBlurIncrFocus()
+{
+    _focus += D_00160858;
+    if (_focus > D_0016085C)
+        _focus = D_0016085C;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/MakeRGBA8888", _Z18DepthBlurDecrFocusv);
+void DepthBlurDecrFocus()
+{
+    _focus -= D_00160860;
+    if (_focus < 0)
+        _focus = 0;
+}
 
 float DepthBlurGetFocus()
 {

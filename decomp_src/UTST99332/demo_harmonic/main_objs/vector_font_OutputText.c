@@ -8,6 +8,7 @@
 
 extern const float D_00164858;  /* line height */
 extern const float D_00164860;  /* char width */
+extern const float D_0016485C;
 namespace vector_font {
 class OutputText {
 public:
@@ -19,6 +20,7 @@ public:
     static void NextChar();
     static void End();
     static void PrevLine();
+    static void NextLine();
     static Pos _current;
     static float _margin_x;
     static float _margin_y;
@@ -41,7 +43,11 @@ void vector_font::OutputText::End()
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/vector_font_OutputText", _ZN11vector_font10OutputText8PrevLineEv);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/vector_font_OutputText", _ZN11vector_font10OutputText8NextLineEv);
+void vector_font::OutputText::NextLine()
+{
+    LineStart();
+    _current.y -= D_0016485C;
+}
 
 void vector_font::OutputText::LineStart()
 {
