@@ -435,7 +435,42 @@ void game_bg_end(int no)
 	}
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_title_menu", game_bg_disp);
+float sinf(float x);
+void game_bg_disp(void)
+{
+	int i, x, a;
+	BG_T *bg;
+
+	for (i = 0; i < 4; i++) {
+		bg = &((BG_T *)&D_00349268)[i];
+		if (bg->f4 == 0)
+			continue;
+		x = 320;
+		if (bg->f4 == 1) {
+			bg->f8 += 8;
+			if (bg->f8 > 90)
+				bg->f8 = 90;
+			x += 160.0f - sinf(bg->f8 / 180.0f * 3.1415927f) * 160.0f;
+			bg->fC = sinf(bg->f8 / 180.0f * 3.1415927f) * 128.0f;
+			if (bg->f8 == 90)
+				bg->f4 = 2;
+		} else if (bg->f4 == 3) {
+			bg->fC -= 8;
+			if (bg->fC < 0)
+				bg->fC = 0;
+			if (bg->fC == 0)
+				bg->f4 = 0;
+		}
+		a = bg->fC;
+		if (TMS.f24 != 255)
+			a = a * TMS.f24 / 255;
+		sprite_set(bg->f0, x, 56, 256, 256, 0, 0, 60, 60, 0, 0, 255, 255, 255, 255, 20, 2, 1, a);
+	}
+}
+
+
+/* alignment padding before the doubles (.rodata.cst8 in the original) */
+const int D_0007EBFC = 0;
 
 INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_title_menu", D_0007EC00);
 
