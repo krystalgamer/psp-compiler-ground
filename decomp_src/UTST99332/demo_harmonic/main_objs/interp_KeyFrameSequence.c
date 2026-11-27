@@ -7,6 +7,17 @@
 /* the header static of this object (its static initializer is asm) */
 extern const math::matrix CUMULATIVE_BERNSTIEN_BASIS __asm__("_ZN6interp26CUMULATIVE_BERNSTIEN_BASISE_18B6AC");
 
+/* the base's destructor is inline (KeyFrameSequenceBase.h); KeyFrameSequence<quaternion>'s inline destructor
+   is emitted here (.gnu.linkonce.t, after the object's .text) with the class's vtable */
+template<class T> inline interp::KeyFrameSequenceBase<T>::~KeyFrameSequenceBase()
+{
+}
+_Pragma("implementation \"interp_linkonce\"") _Pragma("interface \"interp_linkonce\"")
+inline interp::KeyFrameSequence<math::quaternion>::~KeyFrameSequence()
+{
+}
+_Pragma("interface")
+
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/interp_KeyFrameSequence", _Z41__static_initialization_and_destruction_0ii_4B370);
 
@@ -93,7 +104,4 @@ void _GLOBAL__D__ZNK6interp16KeyFrameSequenceIN4math10quaternionEE4dumpEPKc(void
     static_init(0, 0xFFFF);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/interp_KeyFrameSequence", _ZN6interp16KeyFrameSequenceIN4math10quaternionEED1Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/interp_KeyFrameSequence", _ZN6interp16KeyFrameSequenceIN4math10quaternionEED0Ev);
 

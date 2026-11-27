@@ -247,7 +247,7 @@ public:
 template<class T> class KeyFrameSequenceBase : public VirtualKeyFrameSequence {
 public:
     KeyFrameSequenceBase() INTERP_NOINLINE;
-    virtual ~KeyFrameSequenceBase() INTERP_NOINLINE;
+    virtual ~KeyFrameSequenceBase();
     virtual bool empty() const INTERP_NOINLINE;
     virtual int size() const INTERP_NOINLINE;
     virtual int sizeLessClosingKey() const INTERP_NOINLINE;
