@@ -33,6 +33,14 @@ extern unsigned char _DOMinput, _DOMtype, _DOMbutton, _DOMcheckbox, _DOMfile, _D
 void Node_getNodeName(DOMString *s, void *node);
 void Element_getAttribute(DOMString *s, void *node, void *name);
 typedef struct FormElem { void *elem; struct FormElem *next; } FormElem;
+typedef struct { int type; int unk4; int unk8; int unkC; int unk10; int unk14; int unk18; int unk1C; } LFMSG;
+typedef struct { int unk0; LFMSG m; } LFBUF;
+typedef struct { u8 unk0[0x80]; int rq; int sq; } LFGLOBAL;
+extern LFGLOBAL lo_global;
+int OS_mq_receive(int q, void *buf, int size, int flag);
+int OS_mq_send(int q, void *buf, int size, int flag);
+void proc_msg_PL2(LFMSG *m);
+void proc_msg_TM(LFMSG *m);
 RadioEnt *getRadioListByName(void *ctx, void *box) {
     RadioEnt *r = M2C_FIELD(M2C_FIELD(ctx, void **, 0x20), RadioEnt **, 0x80);
 
@@ -397,4 +405,24 @@ void freeRadioList(void *arg0) {
     M2C_FIELD(M2C_FIELD(arg0, void **, 0x20), int *, 0x80) = 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_form", layoutWaitMail);
+LFMSG layoutWaitMail(int cmd) {
+    LFBUF buf;
+    LFMSG m;
+    for (;;) {
+        OS_mq_receive(lo_global.rq, &buf, 0x24, 0);
+        m = buf.m;
+        if (m.unkC == cmd) {
+            break;
+        }
+        if (m.unkC == 0x302) {
+            proc_msg_PL2(&m);
+            break;
+        }
+        if (m.type != 9) {
+            OS_mq_send(lo_global.sq, &buf, 0x24, 0);
+        } else {
+            proc_msg_TM(&m);
+        }
+    }
+    return m;
+}
