@@ -20,6 +20,28 @@ extern int On_Save;
 extern int SSLFlg;
 extern int CONTENT_SAVE;
 extern void *gPREF_UI;
+extern int SSL_Next_STS;
+extern int buf_ps_evt;
+extern int mq_ps_su;
+int ps_i2414();
+int ps_i241A();
+int ps_i2412();
+int ps_i2406();
+int ps_i2614();
+int ps_i2609();
+int ps_i2606();
+int ps_i2309();
+int ps_i2314();
+int ps_i231A();
+int ps_i2312();
+int ps_i2308();
+int ps_i2209();
+int ps_i2214();
+int ps_i221A();
+int ps_i2212();
+int ps_i2208();
+int ps_i2D14();
+int ps_i2D06();
 void sendMPL_REQ_DATA_ATTR(PsIpc *msg) {
     PsIpc m;
 
@@ -196,7 +218,106 @@ int ps_u3103(void) {
     return 3;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/ps_u0A00", ps_u3216);
+int ps_u3216(PsIpc *msg) {
+    PsIpc m;
+    PsMqMsg q;
+    int stop;
+
+    stop = 0;
+    if (msg->x10 == 1) {
+        stop = 1;
+        initMPI_SIG_REQUEST_ABORTED(&m);
+        m.x10 = 0;
+        if (On_Save == 1) {
+            ps_sndmsg(&m, 5);
+        } else {
+            ps_sendGetStop(&m);
+        }
+    }
+    while (GetMQUEUE(mq_ps_su, &q)) {
+        buf_ps_evt = q.evt;
+        if (stop == 0) {
+            switch (q.evt) {
+            case 0x24:
+            case 0x25:
+                if (SSL_Next_STS == 0x14) {
+                    buf_ps_sts = ps_i2414(&q.x[1]);
+                } else if (buf_ps_sts == 0x1A) {
+                    buf_ps_sts = ps_i241A(&q.x[1]);
+                } else if (buf_ps_sts == 0x12) {
+                    buf_ps_sts = ps_i2412(&q.x[1]);
+                } else {
+                    buf_ps_sts = ps_i2406(&q.x[1]);
+                }
+                break;
+            case 0x26:
+                if (SSL_Next_STS == 0x14) {
+                    buf_ps_sts = ps_i2614(&q.x[1]);
+                } else if (On_Save == 1) {
+                    buf_ps_sts = ps_i2609(&q.x[1]);
+                } else {
+                    buf_ps_sts = ps_i2606(&q.x[1]);
+                }
+                break;
+            case 0x23:
+                if (On_Save == 1) {
+                    buf_ps_sts = ps_i2309(&q.x[1]);
+                } else if (SSL_Next_STS == 0x14) {
+                    buf_ps_sts = ps_i2314(&q.x[1]);
+                } else if (buf_ps_sts == 0x1A) {
+                    buf_ps_sts = ps_i231A(&q.x[1]);
+                } else if (buf_ps_sts == 0x12) {
+                    buf_ps_sts = ps_i2312(&q.x[1]);
+                } else {
+                    buf_ps_sts = ps_i2308(&q.x[1]);
+                }
+                break;
+            case 0x22:
+                if (On_Save == 1) {
+                    buf_ps_sts = ps_i2209(&q.x[1]);
+                } else if (SSL_Next_STS == 0x14) {
+                    buf_ps_sts = ps_i2214(&q.x[1]);
+                } else if (buf_ps_sts == 0x1A) {
+                    buf_ps_sts = ps_i221A(&q.x[1]);
+                } else if (buf_ps_sts == 0x12) {
+                    buf_ps_sts = ps_i2212(&q.x[1]);
+                } else {
+                    buf_ps_sts = ps_i2208(&q.x[1]);
+                }
+                break;
+            case 0x2D:
+                if (SSL_Next_STS == 0x14) {
+                    buf_ps_sts = ps_i2D14(&q.x[1]);
+                } else {
+                    buf_ps_sts = ps_i2D06(&q.x[1]);
+                }
+                if (buf_ps_sts == 0x13) {
+                    return 0x13;
+                }
+                break;
+            default:
+                if (q.data != NULL) {
+                    MEM_free(0, q.data);
+                }
+                break;
+            }
+        } else {
+            if (q.data != NULL) {
+                MEM_free(0, q.data);
+            }
+        }
+        if (buf_ps_sts == 0x13) {
+            break;
+        }
+    }
+    if (stop == 1) {
+        return 0xA;
+    }
+    if (buf_ps_sts == 0x16) {
+        buf_ps_sts = SSL_Next_STS;
+    }
+    return buf_ps_sts;
+}
 
 int ps_u3517(PsIpc *msg) {
     PsIpc d;
