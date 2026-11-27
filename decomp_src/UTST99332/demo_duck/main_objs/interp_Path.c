@@ -145,6 +145,25 @@ extern const char D_001645E4[];     /* "d > 0" */
 extern const char D_001645EC[];     /* "_key_interval != 0" */
 extern const char PF_find_key_interval_f[] __asm__("_ZZN6interp20KeyFrameSequenceBaseIfE17find_key_intervalEfE19__PRETTY_FUNCTION___164510");
 extern const char PF_find_key_interval_q[] __asm__("_ZZN6interp20KeyFrameSequenceBaseIN4math10quaternionEE17find_key_intervalEfE19__PRETTY_FUNCTION___164CA4");
+extern const char D_001646B8[];     /* "_keys.back().time() > _keys[n-2].time()" */
+extern const char D_001646E0[];     /* "_Time < _keys[_Index+1].time()" */
+extern const char D_00164700[];     /* "_keys[_Index-1].time() < _Time" */
+extern const char PF_setKeyTime_f[] __asm__("_ZZN6interp20KeyFrameSequenceBaseIfE10setKeyTimeEifE19__PRETTY_FUNCTION___164668");
+extern const char PF_setKeyTime_q[] __asm__("_ZZN6interp20KeyFrameSequenceBaseIN4math10quaternionEE10setKeyTimeEifE19__PRETTY_FUNCTION___164A60");
+extern const float D_00163A40;      /* 1.0f: calc_tangent_setup<quaternion> */
+extern const char D_00164924[];     /* "count == 1 || count == 2" */
+extern const char D_00164940[];     /* "dt != 0.f" */
+extern const char D_00164950[];     /* "error in tangent setup" */
+extern const char D_00164968[];     /* "i >= 0 && i < n" */
+extern const char PF_calc_tangent_setup_f[] __asm__("_ZZN6interp20KeyFrameSequenceBaseIfE18calc_tangent_setupEiRfS2_S2_S2_S2_E19__PRETTY_FUNCTION___1648B8");
+extern const char PF_calc_tangent_setup_q[] __asm__("_ZZN6interp20KeyFrameSequenceBaseIN4math10quaternionEE18calc_tangent_setupEiRS2_S4_S4_RfS5_E19__PRETTY_FUNCTION___164C2C");
+extern const char D_001641A8[];     /* "_keys.size() > 0" */
+extern const char D_001641BC[];     /* "_keys.size() > 1" */
+extern const char D_001641D0[];     /* " same key time already exist!\n" */
+extern const char PF_insert_f[] __asm__("_ZZN6interp20KeyFrameSequenceBaseIfE6insertEffE19__PRETTY_FUNCTION___16415C");
+extern const char PF_insert_q[] __asm__("_ZZN6interp20KeyFrameSequenceBaseIN4math10quaternionEE6insertEfS2_E19__PRETTY_FUNCTION___164248");
+extern const char FN_insert_f[] __asm__("_ZZN6interp20KeyFrameSequenceBaseIfE6insertEffE12__FUNCTION___164154");
+extern const char FN_insert_q[] __asm__("_ZZN6interp20KeyFrameSequenceBaseIN4math10quaternionEE6insertEfS2_E12__FUNCTION___164240");
 typedef interp::KeyFrame<float> KFf;
 typedef interp::KeyFrame<math::quaternion> KFq;
 typedef std::vector<KFf> VKf;
@@ -154,6 +173,13 @@ typedef std::vector<KFq> VKq;
 namespace interp {
 template<class T> struct kfs_data;
 template<> struct kfs_data<float> {
+    static float ins_value() { return 0; }
+    static const char *insert() { return PF_insert_f; }
+    static const char *insert_fn() { return FN_insert_f; }
+    static float cts_one() { return 0; }
+    static void cts_zero(float &x, float) { x = 0; }
+    static const char *calc_tangent_setup() { return PF_calc_tangent_setup_f; }
+    static const char *setKeyTime() { return PF_setKeyTime_f; }
     static const char *find_key_interval() { return PF_find_key_interval_f; }
     static float evaluate_setup_one() { return D_00163A34; }
     static const char *evaluate_setup() { return PF_evaluate_setup_f; }
@@ -180,6 +206,12 @@ template<> struct kfs_data<float> {
     static const char *setKeyValue() { return PF_setKeyValue_f; }
 };
 template<> struct kfs_data<math::quaternion> {
+    static const char *insert() { return PF_insert_q; }
+    static const char *insert_fn() { return FN_insert_q; }
+    static float cts_one() { return D_00163A40; }
+    static void cts_zero(math::quaternion &x, float one) { x = math::quaternion(0, 0, 0, one); }
+    static const char *calc_tangent_setup() { return PF_calc_tangent_setup_q; }
+    static const char *setKeyTime() { return PF_setKeyTime_q; }
     static const char *find_key_interval() { return PF_find_key_interval_q; }
     static float evaluate_setup_one() { return D_00163A44; }
     static const char *evaluate_setup() { return PF_evaluate_setup_q; }
@@ -624,7 +656,120 @@ template<class T> bool interp::KeyFrameSequenceBase<T>::evaluate_setup(float t, 
     return true;
 }
 
+template<class T> void interp::KeyFrameSequenceBase<T>::setKeyTime(int _Index, float _Time)
+{
+    INTERP_ASSERT(_Index >= 0 && _Index < (int)_keys.size(), D_00163C94, kfs_data<T>::setKeyTime(), 422);
+    if (_Index > 0)
+        INTERP_ASSERT(_keys[_Index - 1].time() < _Time, D_00164700, kfs_data<T>::setKeyTime(), 426);
+    int n = _keys.size();
+    if (_Index < n - 1 && !(_closed && _Index == n - 2))
+        INTERP_ASSERT(_Time < _keys[_Index + 1].time(), D_001646E0, kfs_data<T>::setKeyTime(), 435);
+    _keys[_Index].setTime(_Time);
+    if (_closed && n >= 2) {
+        INTERP_ASSERT(_keys.back().isClosingKey(), D_00163B84, kfs_data<T>::setKeyTime(), 445);
+        if (_Index == n - 1) {
+            INTERP_ASSERT(_keys.back().time() > _keys[n - 2].time(), D_001646B8, kfs_data<T>::setKeyTime(), 463);
+            _closeDt = _keys.back().time() - _keys[n - 2].time();
+        }
+    }
+    calc_all_tangent();
+    invalidate_cached_key_interval();
+}
+
+template<class T> bool interp::KeyFrameSequenceBase<T>::calc_tangent_setup(int i, T &a, T &b, T &c, float &s0, float &s1)
+{
+    int n = _keys.size();
+    INTERP_ASSERT(i >= 0 && i < n, D_00164968, kfs_data<T>::calc_tangent_setup(), 911);
+    if (n < 2)
+        return false;
+    KeyFrame<T> *k0 = 0, *k1 = 0, *k2 = 0, *k3 = 0;
+    if (i > 0 && i < n - 1) {
+        k0 = &_keys[i - 1];
+        k1 = &_keys[i];
+        k2 = &_keys[i];
+        k3 = &_keys[i + 1];
+    } else if (i == 0) {
+        k0 = &_keys[_closed ? n - 2 : 0];
+        k1 = &_keys[_closed ? n - 1 : 0];
+        k2 = &_keys[0];
+        k3 = &_keys[1];
+    } else if (i == n - 1) {
+        k0 = &_keys[n - 2];
+        k1 = &_keys[i];
+        k2 = &_keys[_closed ? 0 : i];
+        k3 = &_keys[_closed ? 1 : i];
+    } else {
+        common::common_internal::assert_display(D_00163B08, D_0016494C, D_00163AE0, kfs_data<T>::calc_tangent_setup(), 946, D_00164950);
+        common::common_internal::on_error();
+        common::common_internal::clash();
+    }
+    s0 = k1->time() - k0->time();
+    s1 = k3->time() - k2->time();
+    int count = 0;
+    const float one = kfs_data<T>::cts_one();
+    kfs_data<T>::cts_zero(b, one);
+    if (s0 != 0) {
+        b = calc_gradient(k0->value(), k1->value(), s0);
+        count++;
+    }
+    kfs_data<T>::cts_zero(a, one);
+    if (s1 != 0) {
+        a = calc_gradient(k2->value(), k3->value(), s1);
+        count++;
+    }
+    INTERP_ASSERT(count == 1 || count == 2, D_00164924, kfs_data<T>::calc_tangent_setup(), 976);
+    float dt = s0 + s1;
+    INTERP_ASSERT(dt != 0.f, D_00164940, kfs_data<T>::calc_tangent_setup(), 980);
+    float w0 = s0 / dt;
+    float w1 = s1 / dt;
+    c = b * w0 + a * w1;
+    return true;
+}
+
+template<class T> int interp::KeyFrameSequenceBase<T>::insert(float t, T v)
+{
+    int idx = -1;
+    for (unsigned int i = 0; i < _keys.size(); i++) {
+        if (_keys[i].isClosingKey())
+            break;
+        if (t == _keys[i].time()) {
+            common::Log() << kfs_data<T>::insert_fn() << D_001641D0;
+            return i;
+        }
+        if (t < _keys[i].time()) {
+            idx = i;
+            break;
+        }
+    }
+    if (!_keys.empty() && _keys.back().isClosingKey())
+        _keys.back() = KeyFrame<T>(t, kfs_data<T>::ins_value(), false);
+    else
+        _keys.push_back(KeyFrame<T>(t, kfs_data<T>::ins_value(), false));
+    int n = _keys.size();
+    set_key_abs_rel_value(n - 1, v);
+    if (idx != -1) {
+        for (int j = n - 2; j >= idx; j--) {
+            KeyFrame<T> tmp = _keys[j];
+            _keys[j] = _keys[j + 1];
+            _keys[j + 1] = tmp;
+        }
+    }
+    if (_closed)
+        push_closing_key();
+    calc_all_tangent();
+    invalidate_cached_key_interval();
+    if (idx != -1)
+        return idx;
+    if (!_closed) {
+        INTERP_ASSERT(_keys.size() > 0, D_001641A8, kfs_data<T>::insert(), 598);
+        return _keys.size() - 1;
+    }
+    INTERP_ASSERT(_keys.size() > 1, D_001641BC, kfs_data<T>::insert(), 607);
+    return _keys.size() - 2;
+}
+
 /* still asm */
+template<> int interp::KeyFrameSequenceBase<math::quaternion>::insert(float, math::quaternion);
 template<> interp::KeyFrame<math::quaternion>::KeyFrame();
 template<> interp::KeyFrame<math::quaternion>::KeyFrame(float, math::quaternion, bool);
 extern template VKf &VKf::operator=(const VKf &);
@@ -785,7 +930,7 @@ template void interp::KeyFrameSequenceBase<math::quaternion>::calc_all_tangent()
 
 template void interp::KeyFrameSequenceBase<math::quaternion>::update_closing_key();
 
-INST_INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/interp_Path", _ZN6interp20KeyFrameSequenceBaseIfE6insertEff, 47)
+template int interp::KeyFrameSequenceBase<float>::insert(float, float);
 
 template void interp::KeyFrameSequenceBase<float>::on_set_key_value(int);
 
@@ -837,7 +982,7 @@ template float interp::KeyFrameSequenceBase<float>::getLastTime() const;
 
 template float interp::KeyFrameSequenceBase<float>::getKeyTime(int) const;
 
-INST_INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/interp_Path", _ZN6interp20KeyFrameSequenceBaseIfE10setKeyTimeEif, 52)
+template void interp::KeyFrameSequenceBase<float>::setKeyTime(int, float);
 
 template bool interp::KeyFrameSequenceBase<float>::isClosingKey(int) const;
 
@@ -857,7 +1002,7 @@ template interp::keyframe_tangent::Type interp::KeyFrameSequenceBase<float>::get
 
 template int interp::KeyFrameSequenceBase<float>::wrap_key_index(int) const;
 
-INST_INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/interp_Path", _ZN6interp20KeyFrameSequenceBaseIfE18calc_tangent_setupEiRfS2_S2_S2_S2_, 73)
+template bool interp::KeyFrameSequenceBase<float>::calc_tangent_setup(int, float &, float &, float &, float &, float &);
 
 template void interp::KeyFrameSequence<float>::calc_tangent(int);
 
@@ -896,7 +1041,7 @@ template float interp::KeyFrameSequenceBase<math::quaternion>::getLastTime() con
 
 template float interp::KeyFrameSequenceBase<math::quaternion>::getKeyTime(int) const;
 
-INST_INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/interp_Path", _ZN6interp20KeyFrameSequenceBaseIN4math10quaternionEE10setKeyTimeEif, 70)
+template void interp::KeyFrameSequenceBase<math::quaternion>::setKeyTime(int, float);
 
 template bool interp::KeyFrameSequenceBase<math::quaternion>::isClosingKey(int) const;
 
@@ -916,7 +1061,7 @@ template interp::keyframe_tangent::Type interp::KeyFrameSequenceBase<math::quate
 
 template int interp::KeyFrameSequenceBase<math::quaternion>::wrap_key_index(int) const;
 
-INST_INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/interp_Path", _ZN6interp20KeyFrameSequenceBaseIN4math10quaternionEE18calc_tangent_setupEiRS2_S4_S4_RfS5_, 92)
+template bool interp::KeyFrameSequenceBase<math::quaternion>::calc_tangent_setup(int, math::quaternion &, math::quaternion &, math::quaternion &, float &, float &);
 
 INST_INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/interp_Path", _ZN6interp20KeyFrameSequenceBaseIN4math10quaternionEE17find_key_intervalEf, 76)
 
