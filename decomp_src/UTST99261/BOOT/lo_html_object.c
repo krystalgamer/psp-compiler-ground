@@ -48,6 +48,8 @@ int html_PARAM(void) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_html_object", html_FRAME);
 
+INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/lo_html_object", D_0013F13C);
+
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_html_object", html_FRAMESET);
 
 BOX *html_NOFRAMES(void *node, BOX *parent, BOX *prev) {

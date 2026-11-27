@@ -8,7 +8,6 @@ void initLiContent(BOX *box, void *ctx);
 BOX *getParentBlockBox(BOX *box);
 int getContainingBlockWidth(BOX *box);
 void GUI_Graphics_getStringSize(int font, char *s, int n, int *w, int *h);
-extern char D_0013F088[];
 BOX *getBoxByHTML(BOX *box, int html);
 typedef struct UICOLORS { int color[4][7]; int unk70; int unk74; } UICOLORS;
 #define TEXTCOLOR(b) ((b)->style->unk64 = ((UICOLORS *)ui_global)->color[(b)->style->unk6A][(b)->style->fontSize])
@@ -29,15 +28,7 @@ int getTypeAtAttr(void *node);
 void initBoxList(void *l);
 void MEM_free(void *pool, void *p);
 extern unsigned char _DOMtype;
-extern char D_0013F070[];
-extern char D_0013F078[];
-extern char D_0013F080[];
 int strcasecmp(const char *a, const char *b);
-extern char D_0013F05C[];
-extern char D_0013F060[];
-extern char D_0013F064[];
-extern char D_0013F068[];
-extern char D_0013F06C[];
 int strcmp(const char *a, const char *b);
 extern unsigned char _DOMvalue;
 BOX *getListBox(BOX *b);
@@ -99,7 +90,7 @@ void *createLIBox_head(void *node, BOX *li, signed char *str, int type) {
     initImageContent(b, node);
     initBoxProperty(b);
     M2C_FIELD(b->style, s16 *, 0x22) = ((UICOLORS *)ui_global)->unk74;
-    GUI_Graphics_getStringSize(b->style->unk64, D_0013F05C, 1, &w, &h);
+    GUI_Graphics_getStringSize(b->style->unk64, "A", 1, &w, &h);
     switch (type) {
     case 1:
         M2C_FIELD(b->geom, int *, 0) = D_00584CC0;
@@ -127,21 +118,21 @@ int getTypeAtAttr(void *node) {
     s = getDOMAttributeValue(node, &_DOMtype);
     if (s == NULL)
         return 3;
-    if (strcmp(s, D_0013F05C) == 0)
+    if (strcmp(s, "A") == 0)
         t = 12;
-    else if (strcmp(s, D_0013F060) == 0)
+    else if (strcmp(s, "a") == 0)
         t = 13;
-    else if (strcmp(s, D_0013F064) == 0)
+    else if (strcmp(s, "I") == 0)
         t = 14;
-    else if (strcmp(s, D_0013F068) == 0)
+    else if (strcmp(s, "i") == 0)
         t = 15;
-    else if (strcmp(s, D_0013F06C) == 0)
+    else if (strcmp(s, "1") == 0)
         t = 11;
-    else if (strcasecmp(s, D_0013F070) == 0)
+    else if (strcasecmp(s, "CIRCLE") == 0)
         t = 1;
-    else if (strcasecmp(s, D_0013F078) == 0)
+    else if (strcasecmp(s, "SQUARE") == 0)
         t = 2;
-    else if (strcasecmp(s, D_0013F080) == 0)
+    else if (strcasecmp(s, "DISC") == 0)
         t = 0;
     MEM_free(0, s);
     return t;
@@ -156,7 +147,7 @@ BOX *html_DL(void *node, BOX *parent, BOX *prev) {
     }
     box->html = 0x1D;
     initBoxProperty(box);
-    GUI_Graphics_getStringSize(box->style->unk64, D_0013F088, 1, &w, &h);
+    GUI_Graphics_getStringSize(box->style->unk64, "m", 1, &w, &h);
     box->style->unk20 = h;
     box->style->unk24 = h;
     if (getBoxByHTML(parent, 0x1D) != NULL) {
@@ -211,7 +202,7 @@ BOX *html_OL(void *node, BOX *parent, BOX *prev) {
     if (box == NULL)
         return NULL;
     box->style->unk26 = ((UICOLORS *)ui_global)->unk74 * 4;
-    GUI_Graphics_getStringSize(box->style->unk64, D_0013F088, 1, &w, &h);
+    GUI_Graphics_getStringSize(box->style->unk64, "m", 1, &w, &h);
     M2C_FIELD(box->style, s16 *, 0x20) = h;
     M2C_FIELD(box->style, s16 *, 0x24) = h;
     start = 0;
@@ -244,7 +235,7 @@ BOX *html_UL(void *node, BOX *parent, BOX *prev) {
     if (box == NULL)
         return NULL;
     box->style->unk26 = ((UICOLORS *)ui_global)->unk74 * 4;
-    GUI_Graphics_getStringSize(box->style->unk64, D_0013F088, 1, &w, &h);
+    GUI_Graphics_getStringSize(box->style->unk64, "m", 1, &w, &h);
     M2C_FIELD(box->style, s16 *, 0x20) = h;
     M2C_FIELD(box->style, s16 *, 0x24) = h;
     t = 0;
@@ -256,11 +247,11 @@ BOX *html_UL(void *node, BOX *parent, BOX *prev) {
     }
     s = getDOMAttributeValue(node, &_DOMtype);
     if (s != NULL) {
-        if (strcasecmp(s, D_0013F070) == 0)
+        if (strcasecmp(s, "CIRCLE") == 0)
             t = 1;
-        else if (strcasecmp(s, D_0013F078) == 0)
+        else if (strcasecmp(s, "SQUARE") == 0)
             t = 2;
-        else if (strcasecmp(s, D_0013F080) == 0)
+        else if (strcasecmp(s, "DISC") == 0)
             t = 0;
         MEM_free(0, s);
     }

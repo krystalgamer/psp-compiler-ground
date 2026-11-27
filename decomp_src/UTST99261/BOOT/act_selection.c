@@ -30,7 +30,6 @@ int DOMStringcasecmpFast(DOMString *s, void *str);
 void *createBox(void *ctx, int type);
 void linkBox(void *box, void *parent, void *prev);
 void initNoneContent(void *box, void *ctx);
-extern char D_0013F038[];
 int checkAtributeByName(void *node, char *name);
 extern unsigned char _DOMcellpadding;
 extern unsigned char _DOMcellspacing;
@@ -69,7 +68,6 @@ extern unsigned char _DOMlhs;
 extern unsigned char _DOMrhs;
 extern unsigned char _DOMvsides;
 extern unsigned char _DOMbox;
-extern char D_0013F030[];
 int addSelectionTarget(SelList *l, BOX *box, int a, int b) {
     SelTgt *t;
     int s, e;
@@ -459,7 +457,7 @@ void attr_BORDER_table(void *node, BOX *box) {
     box->style->unk34 = 0;
     box->style->unk36 = 0;
     v = getDOMAttributeValue(node, &_DOMborder);
-    if (v != NULL || checkAtributeByName(node, D_0013F030) == 0) {
+    if (v != NULL || checkAtributeByName(node, "BORDER") == 0) {
         if (v != NULL) {
             w = strtol(v, &end, 10);
             if (end == v)
@@ -651,7 +649,7 @@ void attr_HEIGHT_td(void *node, BOX *box) {
 
 void attr_NOWRAP_td(void *node, void *box) {
     if (M2C_FIELD(box, s16 *, 0x38) == 6) {
-        if (checkAtributeByName(node, D_0013F038) == 0) {
+        if (checkAtributeByName(node, "NOWRAP") == 0) {
             M2C_FIELD(M2C_FIELD(box, void **, 0x20), u16 *, 0x18) |= 1;
         } else {
             M2C_FIELD(M2C_FIELD(box, void **, 0x20), u16 *, 0x18) &= ~1;

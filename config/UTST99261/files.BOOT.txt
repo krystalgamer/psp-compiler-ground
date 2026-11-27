@@ -233,3 +233,14 @@ rodata 0x1327B8 wszlib   # length_tab: do_fixed addresses it as length_tab-257, 
 rodata 0x145788 libgcc/libgcc2/__fixunsdfsi
 rodata 0x145798 libgcc/dp-bit/__floatsidf
 rodata 0x1457A0 libgcc/dp-bit/__pack_d
+# act_formdata's neighbours: their first references are strings merged into earlier objects,
+# so the automatic split drops them (their rodata would stay with act_formdata)
+rodata 0x13F030 act_selection
+rodata 0x13F040 lo_html_text_block
+rodata 0x13F05C lo_html_list
+rodata 0x13F0A4 lo_html_form
+rodata 0x13F130 lo_html_object
+rodata 0x13F140 lo_html_meta
+rodata 0x13F14C lo_html_legacy
+rodata 0x13F170 lo_html_notag
+rodata 0x13F17C lo_list  # roman numerals of lo_list's .data tables (roman_lc/roman_uc)

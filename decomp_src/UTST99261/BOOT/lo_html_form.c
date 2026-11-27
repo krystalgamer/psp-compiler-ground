@@ -30,7 +30,6 @@ typedef struct SelOpt { struct SelOpt *next; int pad[4]; int selected; } SelOpt;
 typedef struct SelInfo { int pad[2]; SelOpt *opts; int *sel; } SelInfo;
 void initSelectBoxSize(BOX *box);
 extern unsigned char _DOMalign;
-extern char D_0013F114[];
 int getLegendTextWidth(BOX *box);
 void initLinePosition(BOX *box);
 void moveBoxPosition(BOX *box, int dx, int dy);
@@ -48,6 +47,12 @@ int getTabindex(void *node) {
     }
     return n;
 }
+
+INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/lo_html_form", D_0013F0A4);
+
+INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/lo_html_form", D_0013F0AC);
+
+INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/lo_html_form", D_0013F0B4);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_html_form", createFileRefButton);
 
@@ -73,6 +78,11 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_html_form", getLegendTextWid
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_html_form", html_FORM);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_html_form", html_INPUT);
+
+INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/lo_html_form", D_0013F0D0);
+
+INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/lo_html_form", D_0013F0D8);
+
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_html_form", html_SELECT);
 
@@ -206,7 +216,7 @@ void html_LEGEND_after(void *node, BOX *box) {
     if (a == NULL) {
         moveBoxPosition(box, 8, -h);
     } else {
-        if (strcmp(a, D_0013F114) == 0 && (dx = fs->width - w - 16) > 0)
+        if (strcmp(a, "RIGHT") == 0 && (dx = fs->width - w - 16) > 0)
             moveBoxPosition(box, dx, -h);
         else
             moveBoxPosition(box, 8, -h);

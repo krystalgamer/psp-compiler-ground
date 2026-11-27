@@ -15,6 +15,8 @@ M2C_UNK attr_ALIGN_text_block(int, void *);         /* extern */
 M2C_UNK initBoxProperty(void *);                    /* extern */
 
 
+INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/lo_html_text_block", D_0013F040);
+
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_html_text_block", html_Heading_inner);
 
 BOX *html_ADDRESS(void *node, BOX *parent, BOX *prev) {
