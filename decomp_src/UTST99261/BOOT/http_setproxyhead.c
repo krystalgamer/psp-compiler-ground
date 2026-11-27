@@ -1,6 +1,19 @@
 /* cflags: -O1 */
 #include "common.h"
 #include "m2c_macros.h"
+typedef struct UserAuth {
+    char *user;                       /* 0x0 ua */
+    char *passwd;                     /* 0x4 ua */
+    void *data;                       /* 0x8 ua */
+    int len;                          /* 0xC ua */
+} UserAuth;
+extern UserAuth gUserAuth;
+unsigned int strlen(const char *s);
+char *strcpy(char *d, const char *s);
+int sceHttpDisableAuth(int id);
+int sceHttpSetAuthInfoCB(int id, void *cb);
+int UTL_mfilesize(void *f);
+int UTL_mfileread(void *f, void *buf, int len);
 extern const char htlib_cstrACCEPTCHARSET[];
 extern const char htlib_cstrACCEPTENCODING[];
 extern const char htlib_cstrACCEPTLANGUAGE[];
@@ -190,7 +203,41 @@ int http_proxyauth_passwdcb(void) {
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/http_setproxyhead", http_setproxyheader_Authorization);
+int http_setproxyheader_Authorization(int h, UserAuth *a)
+{
+    char *o = (char *)(h * 2);
+    int r;
+    int n;
+
+    if (a != NULL) {
+        if (a->user == NULL)
+            r = sceHttpDisableAuth(M2C_FIELD(o, int *, 0xD4));
+        else {
+            gUserAuth.user = a->user;
+            gUserAuth.passwd = a->passwd;
+            if (M2C_FIELD(o, void **, 0xE4) != NULL && M2C_FIELD(o, int *, 0xE8) > 0) {
+                n = UTL_mfilesize(M2C_FIELD(o, void **, 0xE4));
+                gUserAuth.data = MEM_malloc(0, n + 1);
+                if (gUserAuth.data == NULL) {
+                    if (M2C_FIELD(o, int *, 0) == 0)
+                        M2C_FIELD(o, int *, 0) = -103;
+                    return M2C_FIELD(o, int *, 0);
+                }
+                gUserAuth.len = UTL_mfileread(M2C_FIELD(o, void **, 0xE4), gUserAuth.data, n);
+            } else {
+                gUserAuth.data = NULL;
+                gUserAuth.len = 0;
+            }
+            r = sceHttpSetAuthInfoCB(M2C_FIELD(o, int *, 0xD8), http_proxyauth_passwdcb);
+        }
+        if (r < 0) {
+            if (M2C_FIELD(o, int *, 0) == 0)
+                M2C_FIELD(o, int *, 0) = r;
+            return M2C_FIELD(o, int *, 0);
+        }
+    }
+    return 0;
+}
 
 int http_setrequestheader_Accept(int h, int v)
 {
