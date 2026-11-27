@@ -676,7 +676,29 @@ u16 *ParseLineHeight(CSSVALUE *v, u16 *p) {
     return r;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_ParseProperties", ParseFontFamily);
+u16 *ParseFontFamily(CSSVALUE *v, u16 *p) {
+    u16 *r;
+    p = CSS_SkipBlanksAndComments(p);
+    if ((r = ParseCSSIdent(v, p, 0x4D)) != NULL) {
+        return r;
+    }
+    if ((r = ParseCSSIdent(v, p, 0x99)) != NULL) {
+        return r;
+    }
+    if ((r = ParseCSSIdent(v, p, 0x93)) != NULL) {
+        return r;
+    }
+    if ((r = ParseCSSIdent(v, p, 0x2D)) != NULL) {
+        return r;
+    }
+    if ((r = ParseCSSIdent(v, p, 0x3B)) != NULL) {
+        return r;
+    }
+    if ((r = ParseCSSIdent(v, p, 0x71)) != NULL) {
+        return r;
+    }
+    return ParseCSSString(v, p);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_ParseProperties", ParseCSSFont);
 
