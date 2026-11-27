@@ -85,9 +85,70 @@ void sceGmoBoneUpdate( SceGmoBone *bone, SceGmoModel *model )
 	calc_bone_matrix( bone, model ) ;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_bone", sceGmoBoneDraw);
+void sceGmoBoneDraw( SceGmoBone *bone, SceGmoModel *model )
+{
+	if ( bone == 0 ) return ;
+	if ( bone->m_visibility == 0 ) return ;
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_bone", sceGmoBoneActivate);
+	{ int i ; for ( i = 0 ; i < bone->m_n_morph_weights ; i ++ ) {
+		sceGuMorphWeight( i, bone->m_morph_weights[ i ] ) ;
+	} }
+
+	if ( bone->m_n_blend_bones > 0 ) {
+		SceGmoBone *initial = bone->m_initial ;
+		{ int i ; for ( i = 0 ; i < bone->m_n_blend_bones ; i ++ ) {
+			int index = bone->m_blend_bones[ i ] ;
+			SceGmoBone *bone2 = sceGmoModelGetBone( model, index ) ;
+			if ( bone2 == 0 ) continue ;
+			const SceGmoMat4 *world = sceGmoBoneGetWorldMatrix( bone2 ) ;
+			SceGmoMat4 *offset = initial->m_blend_offsets + i ;
+			SceGmoMat4 *offset2 = bone->m_blend_offsets + i ;
+			sceGmoMat4Multiply( offset2, world, offset ) ;
+		} }
+	}
+
+	SceGmoSubject *parent = sceGmoBaseGetParent( &( bone->m_base ) ) ;
+	if ( parent != 0 ) model = (SceGmoModel *)parent ;
+
+	{ int i ; for ( i = 0 ; i < bone->m_n_draw_parts ; i ++ ) {
+		if ( ( ( 1 << i ) & bone->m_visibility ) == 0 ) continue ;
+		SceGmoPart *part = sceGmoModelGetPart( model, bone->m_draw_parts[ i ] ) ;
+		sceGmoPartDraw( part, model, bone ) ;
+	} }
+}
+
+void sceGmoBoneActivate( SceGmoBone *bone, SceGmoModel *model, const int *indices, int n_indices )
+{
+	if ( bone == 0 ) return ;
+
+	const SceGmoMat4 *voffs = sceGmoModelGetVertexOffset( model ) ;
+	SceGmoMat4 tmp ;
+
+	int n_bones = bone->m_n_blend_bones ;
+	if ( n_bones == 0 ) {
+		const SceGmoMat4 *m = sceGmoBoneGetWorldMatrix( bone ) ;
+		if ( voffs != 0 ) m = sceGmoMat4Multiply( &tmp, m, voffs ) ;
+		sceGuSetMatrix( 2, m ) ;
+		return ;
+	}
+
+	sceGuSetMatrix( 2, &sceGmoMat4_One ) ;
+	if ( n_indices == 0 ) {
+		if ( n_bones > 8 ) n_bones = 8 ;
+		{ int i ; for ( i = 0 ; i < n_bones ; i ++ ) {
+			const SceGmoMat4 *m = bone->m_blend_offsets + i ;
+			if ( voffs != 0 ) m = sceGmoMat4Multiply( &tmp, m, voffs ) ;
+			sceGuBoneMatrix( i, m ) ;
+		} }
+	} else {
+		if ( n_indices > 8 ) n_indices = 8 ;
+		{ int i ; for ( i = 0 ; i < n_indices ; i ++ ) {
+			const SceGmoMat4 *m = bone->m_blend_offsets + indices[ i ] ;
+			if ( voffs != 0 ) m = sceGmoMat4Multiply( &tmp, m, voffs ) ;
+			sceGuBoneMatrix( i, m ) ;
+		} }
+	}
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_bone", sceGmoBoneControl);
 

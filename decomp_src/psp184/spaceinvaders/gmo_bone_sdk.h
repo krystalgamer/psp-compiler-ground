@@ -2455,7 +2455,7 @@ SceGmoBone *sceGmoBoneDuplicate( SceGmoBone *bone, int flags ) ;
 _Bool sceGmoBoneLoad( SceGmoBone *bone, const SceGmoChunk *chunk ) ;
 void sceGmoBoneUnload( SceGmoBone *bone ) ;
 void sceGmoBoneUpdate( SceGmoBone *bone, SceGmoModel *model ) ;
-void sceGmoBoneDraw( SceGmoBone *bone, SceGmoModel *model, int flags ) ;
+void sceGmoBoneDraw( SceGmoBone *bone, SceGmoModel *model ) ;
 void sceGmoBoneActivate( SceGmoBone *bone, SceGmoModel *model, const int *idxs, int n_idxs ) ;
 void sceGmoBoneControl( SceGmoBone *bone, int type, int idx, const float *val, int cnt, float weight ) ;
 void sceGmoBoneSetParent( SceGmoBone *bone, SceGmoModel *parent ) ;
@@ -2499,7 +2499,7 @@ _Bool sceGmoPartLoad( SceGmoPart *part, const SceGmoChunk *chunk ) ;
 void sceGmoPartUnload( SceGmoPart *part ) ;
 _Bool sceGmoPartLoadCache( SceGmoPart *part, int flags ) ;
 void sceGmoPartUnloadCache( SceGmoPart *part, int flags ) ;
-void sceGmoPartDraw( SceGmoPart *part, SceGmoModel *model, SceGmoBone *bone, int flags ) ;
+void sceGmoPartDraw( SceGmoPart *part, SceGmoModel *model, SceGmoBone *bone ) ;
 void sceGmoPartSetParent( SceGmoPart *part, SceGmoModel *parent ) ;
 SceGmoModel *sceGmoPartGetParent( SceGmoPart *part ) ;
 int sceGmoPartGetMeshCount( SceGmoPart *part ) ;
@@ -2789,7 +2789,7 @@ void sceGmoBaseCopy( SceGmoBase *base, const SceGmoBase *src ) ;
 void sceGmoBaseAttachObserver( SceGmoBase *base, SceGmoObserver *observer ) ;
 void sceGmoBaseDetachObserver( SceGmoBase *base, SceGmoObserver *observer ) ;
 void sceGmoBaseSetParent( SceGmoBase *base, SceGmoSubject *parent ) ;
-SceGmoSubject *sceGmoBaseGetParent( const SceGmoBase *base ) ;
+static __inline__ SceGmoSubject *sceGmoBaseGetParent( const SceGmoBase *base ) { return ( base == 0 ) ? 0 : base->m_parent.m_subject ; }
 static __inline__ SceGmoSubject *_sceGmoObserverGetSubject( const SceGmoObserver *observer )
 {
  return observer->m_subject ;
