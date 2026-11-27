@@ -67,6 +67,12 @@ int NetMapRtError();
 typedef int (*DmeIfFn2)(int, int);
 typedef void (*DmeObjBcFn)(void *, int);
 
+int NetIGetConnectStatus();
+int NetIGetValidClientCount();
+typedef int (*DmeP2pHostFn)(int, unsigned short *);
+typedef struct { char *c; int a, b, cc, d; } DmeDiscMsg;
+typedef void (*DmeDiscCb)(DmeDiscMsg *);
+
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", NetGetMyAddressInfo);
 
 int NetGetP2PHandle(void *arg0) {
@@ -220,7 +226,21 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", Ne
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", NetIGetValidClientCount);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", NetIGetConnectionStatus);
+int NetIGetConnectionStatus(int *st, char *c)
+{
+    int r;
+    if (st == NULL) return 0x17;
+    st[0] = 0;
+    st[1] = 0;
+    st[2] = 0;
+    if (c == NULL) return 0x17;
+    r = NetIGetConnectStatus(st, c);
+    if (r != 0) return r;
+    r = NetIGetValidClientCount(st + 1, c);
+    if (r != 0) return r;
+    st[2] = st[1] + *(int *)(c + 0x45C);
+    return 0;
+}
 
 int NetIGetServerVersion(char *out, char *dme)
 {

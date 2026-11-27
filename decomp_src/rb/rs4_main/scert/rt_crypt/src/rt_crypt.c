@@ -179,4 +179,10 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_crypt/src/rt_crypt", KM_D
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_crypt/src/rt_crypt", KM_RSAAdjust);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_crypt/src/rt_crypt", GetSoftwareKeyPair);
+typedef struct { int w[16]; } RtKey64;
+extern char *gCryptGlobals;
+void GetSoftwareKeyPair(RtKey64 *pub, RtKey64 *priv)
+{
+    *pub = *(RtKey64 *)(gCryptGlobals + 0x184);
+    *priv = *(RtKey64 *)(gCryptGlobals + 0x1C4);
+}
