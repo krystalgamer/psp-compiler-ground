@@ -372,6 +372,21 @@ modules (`tools/nltest.py`, `tools/objcmp.py`).
   - Unresolved: a source detail that rejects the whole-function region, or a
     per-function compiler difference.
 
+- flowars' SDK libraries (libgim's nine objects, libgu, libwave) are the
+  1.6.1.internal objects psp184/spaceinvaders links (same object sizes, same
+  C): its .comment has 13 `1.6.1.internal` strings = crt0, kernel_bridge and
+  these 11. All of libgim and all but three functions each of libgu and
+  libwave match with the 1.6.1 tree (and 1.7.1-orig, 1.8.4); 1.3.1-orig misses only
+  `sceGimPictureActivateTexture` (no branch-likely `bnel` delay-slot fill),
+  1.5.1 misses 24, 1.9.2 about 70. Still asm everywhere this
+  libgu/libwave revision occurs: `sceGuDepthRange`, `sceGuLight`,
+  `sceGuLightSpot` (same diff with every cc1: the original loads the vector
+  words before the `lcmd` bytes and computes DepthRange's first command
+  before the min/max branch) and libwave's three VAG/PCM block fetchers
+  (their 16-byte copies are pointer loops reversed by loop.c, like `wclr`).
+  crtbegin/crtend are gcc 3.3.3 crtstuff.c; `memmove`'s gaps are its own
+  `-falign-loops=64` alignment.
+
 - Release 1.6.1's newlib was also built without constant merging: flowars'
   `dtoa` matches upstream only with `-fno-merge-constants`.
 - Open pattern (flowars `get_mission_grade`, `count_A300`,
