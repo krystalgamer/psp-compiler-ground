@@ -525,7 +525,6 @@ segments:
       - { start: 0x189CE4, type: .bss, vram: 0x18E468, name: main_objs/sh_SquareMap }
       - { start: 0x189CE4, type: bss, vram: 0x18E4EC, name: bss_18E4EC }
       - { start: 0x189CE4, type: .bss, vram: 0x19740C, name: gcc-3.3.3/libstdc__-v3/src/ios }
-      - { start: 0x189CE4, type: bss, vram: 0x197414, name: bss_197414 }
       - { start: 0x189CE4, type: .bss, vram: 0x197414, name: gcc-3.3.3/libstdc__-v3/src/locale }
       - { start: 0x189CE4, type: bss, vram: 0x197428, name: bss_197428 }
       - { start: 0x189CE4, type: .bss, vram: 0x19B454, name: gcc-3.3.3/libstdc__-v3/src/codecvt }

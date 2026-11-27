@@ -13,7 +13,6 @@ rodata blob
 # libgum, libgu (SDK, C): libgum float pools, fonttex .. the 1.0f constant
 rodata 0x1749F8 libgum
 rodata 0x174A28 libgu
-rodata 0x175298 -
 # libsupc++ units built from C++ give their own .rodata: eh_personality's
 # read_encoded_value_with_base jump table and pure's message
 rodata 0x177670 gcc-3.3.3/libstdc__-v3/libsupc__/eh_personality
@@ -29,7 +28,6 @@ rodata 0x177928 -
 rodata 0x176204 gcc-3.3.3/libstdc__-v3/src/ios
 rodata 0x1762DC -
 bss 0x19740C gcc-3.3.3/libstdc__-v3/src/ios
-bss 0x197414 -
 rodata 0x1770D4 gcc-3.3.3/libstdc__-v3/src/localename
 rodata 0x1770E8 -
 rodata 0x176374 gcc-3.3.3/libstdc__-v3/src/locale
