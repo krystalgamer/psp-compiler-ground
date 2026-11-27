@@ -100,6 +100,65 @@ template vector<int> &vector<int>::operator=(const vector<int> &);
 template vector<sh::VectorRGB> &vector<sh::VectorRGB>::operator=(const vector<sh::VectorRGB> &);
 }
 
+/* KdTree<Position> members held by this object (lib/sgl/KdTree.h; this object's copies of the strings) */
+extern const char MD_KD_err[] __asm__("D_00168EB4");         /* " *** error " */
+extern const char MD_KD_sep[] __asm__("D_00168F0C");         /* " " */
+extern const char MD_KD_file[] __asm__("D_00169348");        /* "../lib/sgl/KdTree.h" */
+extern const char MD_KD_i[] __asm__("D_001693D8");           /* "i >=0 && i < _Node->_size" */
+extern const char MD_KD_begin[] __asm__("D_001693F4");       /* "_Node->_begin + i < _reindex.size()" */
+extern const char MD_KD_node[] __asm__("D_0016933C");        /* "node != 0" */
+extern const char MD_KD_node_size[] __asm__("D_0016935C");   /* "node->_size != 0" */
+extern const char MD_KD_children[] __asm__("D_00169478");    /* "_Node->_left != 0 && _Node->_right != 0" */
+extern const char MD_KD_axis[] __asm__("D_001694A0");        /* "_Node->_longest_axis != -1" */
+extern const char MD_KD_Node[] __asm__("D_001694BC");        /* "_Node != 0" */
+extern const char MD_KD_find_name[] __asm__("_ZZN3sgl6KdTreeINS_8PositionEE4findERKS1_RiE19__PRETTY_FUNCTION___1692EC");
+extern const char MD_KD_find_rec_name[] __asm__("_ZZN3sgl6KdTreeINS_8PositionEE8find_recEPNS_10KdTreeNodeERKS1_E19__PRETTY_FUNCTION___169418");
+extern const char MD_KD_getNodeElement_name[] __asm__("_ZZN3sgl6KdTreeINS_8PositionEE14getNodeElementEPNS_10KdTreeNodeEjE19__PRETTY_FUNCTION__");
+#define MD_KD_ASSERT(c, text, fn, line) SGL_ASSERT(c, MD_KD_err, text, MD_KD_file, fn, line, MD_KD_sep)
+namespace sgl {
+/* T's coordinate i (T by value, as in KdTree.h) */
+template<class T> inline float &kd_coord(T &v, int i) { return ((float *)&v)[i]; }
+template<class T> inline float kd_coord_value(T v, int i) { return kd_coord(v, i); }
+
+template<class T> KdTreeNode *KdTree<T>::find(const T &p, int &retval)
+{
+    KdTreeNode *node = find_rec(&_root, p);
+    MD_KD_ASSERT(node != 0, MD_KD_node, MD_KD_find_name, 532);
+    MD_KD_ASSERT(node->_size != 0, MD_KD_node_size, MD_KD_find_name, 533);
+    retval = _partitioned_items[node->_start];
+    return node;
+}
+
+template<class T> unsigned int KdTree<T>::getNodeSize(KdTreeNode *_Node) const
+{
+    return _Node->_size;
+}
+
+template<class T> unsigned int KdTree<T>::getNodeElement(KdTreeNode *_Node, unsigned int i)
+{
+    MD_KD_ASSERT(i >= 0 && i < _Node->_size, MD_KD_i, MD_KD_getNodeElement_name, 181);
+    MD_KD_ASSERT(_Node->_start + i < _partitioned_items.size(), MD_KD_begin, MD_KD_getNodeElement_name, 182);
+    return _partitioned_items[_Node->_start + i];
+}
+
+template<class T> KdTreeNode *KdTree<T>::find_rec(KdTreeNode *_Node, const T &p)
+{
+    MD_KD_ASSERT(_Node != 0, MD_KD_Node, MD_KD_find_rec_name, 491);
+    if (_Node->_leaf)
+        return _Node;
+    MD_KD_ASSERT(_Node->_left != 0 && _Node->_right != 0, MD_KD_children, MD_KD_find_rec_name, 495);
+    MD_KD_ASSERT(_Node->_longest_axis != -1, MD_KD_axis, MD_KD_find_rec_name, 497);
+    if (kd_coord_value(p, _Node->_longest_axis) <= _Node->_split)
+        return find_rec(_Node->_left, p);
+    return find_rec(_Node->_right, p);
+}
+
+template KdTreeNode *KdTree<Position>::find(const Position &, int &);
+template unsigned int KdTree<Position>::getNodeSize(KdTreeNode *) const;
+template unsigned int KdTree<Position>::getNodeElement(KdTreeNode *, unsigned int);
+template KdTreeNode *KdTree<Position>::find_rec(KdTreeNode *, const Position &);
+}
+
 /* from here on INCLUDE_ASM puts the asm in its own .gnu.linkonce.t section (written as
    INCLUDE_ASM so that splat keeps these functions as asm) */
 #undef INCLUDE_ASM
@@ -112,13 +171,5 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_MeshDa
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_MeshData", _ZN5scene8MeshData26unfold_vertices_attributesISt6vectorIN3sgl5ColorESaIS4_EEEEbNS3_14VertexAttrEnumERT_);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_MeshData", _ZN5scene8MeshData26unfold_vertices_attributesISt6vectorIN3sgl6NormalESaIS4_EEEEbNS3_14VertexAttrEnumERT_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_MeshData", _ZN3sgl6KdTreeINS_8PositionEE4findERKS1_Ri);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_MeshData", _ZNK3sgl6KdTreeINS_8PositionEE11getNodeSizeEPNS_10KdTreeNodeE);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_MeshData", _ZN3sgl6KdTreeINS_8PositionEE14getNodeElementEPNS_10KdTreeNodeEj);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_MeshData", _ZN3sgl6KdTreeINS_8PositionEE8find_recEPNS_10KdTreeNodeERKS1_);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_MeshData", _ZNK2sh6Vector5equalERKS0_f);

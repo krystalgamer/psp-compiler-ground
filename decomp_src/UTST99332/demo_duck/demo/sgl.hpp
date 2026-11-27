@@ -383,7 +383,7 @@ public:
     int find(const T &);
     KdTreeNode *find(const T &, int &);
     unsigned int getNodeSize(KdTreeNode *) const;
-    T &getNodeElement(KdTreeNode *, unsigned int);
+    unsigned int getNodeElement(KdTreeNode *, unsigned int);
     void build(KdTreeNode *, unsigned int);
     bool compute_longest_box(KdTreeNode *);
     T &node_element(KdTreeNode *, unsigned int);
