@@ -77,6 +77,17 @@ int sceKernelClearEventFlag(int evid, unsigned int bits);
 int sceKernelWaitEventFlag(int evid, unsigned int bits, unsigned int wait, unsigned int *outBits, void *timeout);
 void sceGuEnable(int state);
 void sceGuDisable(int state);
+typedef struct {
+	int x;
+	int y;
+	unsigned int color;
+	char c;
+} GuDebugChar;
+
+extern int aw_fontcnt[2];
+extern GuDebugChar aw_fontbuf[2][1024];
+
+
 
 extern void flush_font(void);
 int sceGeUnsetCallback(int cbid);
@@ -172,7 +183,80 @@ int get_exp(int val)
 	return i;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/libgu", flush_font);
+extern const unsigned int fonttex[];
+
+void flush_font(void)
+{
+	unsigned short *fp, *p16, *p32;
+	unsigned int data;
+	unsigned int mask;
+	int code;
+	int off;
+	int u, v;
+	int col;
+	int fx, fy;
+	int fontcnt;
+	GuDebugChar *fontbuf;
+	GuDrawBuffer *fbuf = &FBuf;
+
+	fontbuf = aw_fontbuf[aw_frame];
+	fontcnt = aw_fontcnt[aw_frame];
+	if (fontcnt == 0) {
+		return;
+	}
+
+	data = 0;
+	mask = 0;
+	while (fontcnt) {
+		fx = fontbuf->x;
+		fy = fontbuf->y;
+		if (((unsigned int)(fy + 7) < (unsigned int)fbuf->height) && ((unsigned int)(fx + 7) < (unsigned int)fbuf->width) && (fy >= 0) && (fx >= 0)) {
+			const unsigned int *glyph;
+			int psm;
+			unsigned int fb;
+			int fw;
+			code = fontbuf->c;
+			col = fontbuf->color;
+			glyph = &fonttex[code * 2];
+			psm = fbuf->pixel_size;
+			fb = (unsigned int)fbuf->frame_buffer;
+			fw = fbuf->frame_width;
+			for (v = 0; v < 8; v++) {
+				if (v == 0) {
+					data = glyph[0];
+					mask = 1;
+				} else if (v == 4) {
+					data = glyph[1];
+					mask = 1;
+				}
+
+				off = fx + (fy + v) * fw;
+				p16 = (unsigned short *)(off * 2 + (unsigned int)vram_top + fb);
+				p32 = (unsigned short *)(off * 4 + (unsigned int)vram_top + fb);
+				for (u = 0; u < 8; u++) {
+					if (psm == 3) {
+						fp = (unsigned short *)((unsigned int)p32 + 0x40000000);
+						if (data & mask) {
+							fp[0] = col;
+							fp[1] = col >> 16;
+						}
+					} else {
+						fp = (unsigned short *)((unsigned int)p16 + 0x40000000);
+						if (data & mask) {
+							*fp = col;
+						}
+					}
+					mask = mask << 1;
+					p32 += 2;
+					p16++;
+				}
+			}
+		}
+		fontbuf++;
+		fontcnt--;
+	}
+	aw_fontcnt[aw_frame] = 0;
+}
 
 static void reset_static_value(void)
 {
@@ -786,7 +870,69 @@ void sceGuMorphWeight(int index, float weight)
 	send_commandf(44 + index, weight);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/libgu", sceGuDebugPrint);
+void sceGuDebugPrint(int x, int y, unsigned int color, const char *str)
+{
+	int r, g, b, a;
+	int fx, fy;
+	int code;
+	int fontcnt;
+	GuDebugChar *fontbuf;
+
+	fontbuf = aw_fontbuf[aw_frame];
+	fontcnt = aw_fontcnt[aw_frame];
+	fontbuf = &fontbuf[fontcnt];
+	if (fontcnt >= 1024)
+		return;
+
+	fx = x;
+	fy = y;
+
+	r = (color >> 0) & 0xff;
+	g = (color >> 8) & 0xff;
+	b = (color >> 16) & 0xff;
+	a = (color >> 24) & 0xff;
+
+	if (FBuf.pixel_size == 0) {
+		r = r >> 3;
+		g = g >> 2;
+		b = b >> 3;
+		color = (b << 11) | (g << 5) | r;
+	} else if (FBuf.pixel_size == 1) {
+		r = r >> 3;
+		g = g >> 3;
+		b = b >> 3;
+		a = a >> 7;
+		color = (a << 15) | (b << 10) | (g << 5) | r;
+	} else if (FBuf.pixel_size == 2) {
+		r = r >> 4;
+		g = g >> 4;
+		b = b >> 4;
+		a = a >> 4;
+		color = (a << 12) | (b << 8) | (g << 4) | r;
+	}
+
+	while (*str) {
+		if (*str == '\n') {
+			fx = x;
+			fy += 8;
+			str++;
+			continue;
+		}
+		code = *str - '!' + 1;
+
+		fontbuf->x = fx;
+		fontbuf->y = fy;
+		fontbuf->color = color;
+		fontbuf->c = code++;
+
+		fx += 8;
+
+		str++;
+		fontcnt++;
+		fontbuf++;
+	}
+	aw_fontcnt[aw_frame] = fontcnt;
+}
 
 void sceGuDebugFlush(void)
 {
