@@ -45,7 +45,19 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/osk", dumpOskUtilityT
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/osk", utility_update_osk);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/osk", OnPush_OSK);
+extern int osk_param;
+int setOskUtilityParam();
+int sceUtilityOskInitStart();
+void OnPush_OSK(int a) {
+    int temp_v0;
+
+    sample_type_11A910 = 1;
+    setOskUtilityParam(a, &osk_param);
+    temp_v0 = sceUtilityOskInitStart(&osk_param);
+    if (temp_v0 != 0) {
+        consPrintf("sceUtilityOskInitStart failed - %d\n", temp_v0);
+    }
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
