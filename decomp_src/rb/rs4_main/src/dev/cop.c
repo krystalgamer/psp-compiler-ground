@@ -51,7 +51,38 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/cop", copRandS);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/cop", copInitAttr);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/cop", copCosSin);
+extern const float D_000F9C08;
+
+float copCosSin(float *cs, float ang)
+{
+	union { int i; float f; } r;
+	ang *= D_000F9C08;
+	__asm__ volatile(
+		".set noreorder\n"
+		"mtv %1,S000.s\n"
+		"vsin.s S010.s,S000.s\n"
+		"vcos.s S011.s,S000.s\n"
+		"vdot.p S000.s,C010.p,C010.p\n"
+		"vrsq.s S000.s,S000.s\n"
+		"vcmp.s ES,S000.s,S000.s\n"
+		"bvf 0,1f\n"
+		"nop\n"
+		"vzero.s S000.s\n"
+		"1:\n"
+		"vscl.p C010.p,C010.p,S000.s\n"
+		"mfv %0,S010.s\n"
+		"beqz %2,2f\n"
+		"nop\n"
+		"lv.q C000.q,0(%2)\n"
+		"vmov.p C012.p,C002.p\n"
+		"sv.q C010.q,0(%2)\n"
+		"2:\n"
+		".set reorder\n"
+		: "=r"(r.i) : "r"(ang), "r"(cs) : "memory");
+	return r.f;
+}
+
+const float D_000F9C08 = 0.63661975f;
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/cop", copAtan);
 
@@ -313,11 +344,59 @@ void copNomMatY()
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/cop", copRotMat);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/cop", copRotMatX);
+float copCosSin(float *cs, float ang);
+void copRotMatX(float *m, float ang)
+{
+	float cs[4];
+	copCosSin(cs, ang);
+	__asm__ volatile(
+		"vmidt.q M000.q\n"
+		"sv.q C000.q,0(%0)\n"
+		"sv.q C010.q,16(%0)\n"
+		"sv.q C020.q,32(%0)\n"
+		"sv.q C030.q,48(%0)\n"
+		: : "r"(m) : "memory");
+	m[5] = cs[1];
+	m[6] = cs[0];
+	m[9] = -cs[0];
+	m[10] = cs[1];
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/cop", copRotMatY);
+float copCosSin(float *cs, float ang);
+void copRotMatY(float *m, float ang)
+{
+	float cs[4];
+	copCosSin(cs, ang);
+	__asm__ volatile(
+		"vmidt.q M000.q\n"
+		"sv.q C000.q,0(%0)\n"
+		"sv.q C010.q,16(%0)\n"
+		"sv.q C020.q,32(%0)\n"
+		"sv.q C030.q,48(%0)\n"
+		: : "r"(m) : "memory");
+	m[0] = cs[1];
+	m[2] = -cs[0];
+	m[8] = cs[0];
+	m[10] = cs[1];
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/cop", copRotMatZ);
+float copCosSin(float *cs, float ang);
+void copRotMatZ(float *m, float ang)
+{
+	float cs[4];
+	copCosSin(cs, ang);
+	__asm__ volatile(
+		"vmidt.q M000.q\n"
+		"sv.q C000.q,0(%0)\n"
+		"sv.q C010.q,16(%0)\n"
+		"sv.q C020.q,32(%0)\n"
+		"sv.q C030.q,48(%0)\n"
+		: : "r"(m) : "memory");
+	m[0] = cs[1];
+	m[1] = cs[0];
+	m[4] = -cs[0];
+	m[5] = cs[1];
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/cop", copAngMatXYZ);
 

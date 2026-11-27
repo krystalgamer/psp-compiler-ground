@@ -511,11 +511,80 @@ void I3dMatClear()
 		: : : "memory");
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3dcs_obb", I3dVecIsEqual);
+unsigned char I3dVecIsEqual()
+{
+	register int r __asm__("$2");
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3dcs_obb", I3dColIsEqual);
+	__asm__ volatile(
+		"lv.q C000.q,0($4)\n"
+		"lv.q C010.q,0($5)\n"
+		"move $2,$0\n"
+		"vcmp.q EQ,C000.q,C010.q\n"
+		".set noreorder\n"
+		"bvtl 5,1f\n"
+		"li $2,1\n"
+		".set reorder\n"
+		"1:\n"
+		: "=r"(r) : : "memory");
+	return r;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3dcs_obb", I3dMatIsEqual);
+unsigned char I3dColIsEqual()
+{
+	register int r __asm__("$2");
+
+	__asm__ volatile(
+		"lv.q C000.q,0($4)\n"
+		"lv.q C010.q,0($5)\n"
+		"move $2,$0\n"
+		"vcmp.q EQ,C000.q,C010.q\n"
+		".set noreorder\n"
+		"bvtl 5,1f\n"
+		"li $2,1\n"
+		".set reorder\n"
+		"1:\n"
+		: "=r"(r) : : "memory");
+	return r;
+}
+
+unsigned char I3dMatIsEqual()
+{
+	register int r __asm__("$2");
+
+	__asm__ volatile(
+		"li $2,1\n"
+		"lv.q C000.q,0($4)\n"
+		"lv.q C100.q,0($5)\n"
+		"vcmp.q EQ,C000.q,C100.q\n"
+		".set noreorder\n"
+		"bvfl 5,1f\n"
+		"li $2,0\n"
+		".set reorder\n"
+		"lv.q C010.q,16($4)\n"
+		"lv.q C110.q,16($5)\n"
+		"vcmp.q EQ,C010.q,C110.q\n"
+		".set noreorder\n"
+		"bvfl 5,1f\n"
+		"li $2,0\n"
+		".set reorder\n"
+		"lv.q C020.q,32($4)\n"
+		"lv.q C120.q,32($5)\n"
+		"vcmp.q EQ,C020.q,C120.q\n"
+		".set noreorder\n"
+		"bvfl 5,1f\n"
+		"li $2,0\n"
+		".set reorder\n"
+		"lv.q C030.q,48($4)\n"
+		"lv.q C130.q,48($5)\n"
+		"vcmp.q EQ,C030.q,C130.q\n"
+		".set noreorder\n"
+		"bvfl 5,1f\n"
+		"li $2,0\n"
+		".set reorder\n"
+		"1:\n"
+		: "=r"(r) : : "memory");
+	return r;
+}
 
 void I3dVecCopy()
 {
