@@ -7,7 +7,8 @@ typedef struct {
 	int f0, dead, f8, fc, f10, f14, f18, f1c;
 	int dmg, hp, f28, f2c, item, f34, f38, disp;
 	float scale;
-	int f44[(0x6C - 0x44) / 4];
+	int f44[(0x68 - 0x44) / 4];
+	float f68;
 	float x, y, z;
 	u8 _p78[0xD8 - 0x78];
 } ENEMY;
@@ -30,8 +31,8 @@ extern int inv_status;
 #define IST (*(INV_STATUS *)&inv_status)
 typedef struct {
 	u8 _p0[0xCC];
-	int fcc, fd0;
-	u8 _pd4[0x100 - 0xD4];
+	int fcc, fd0, fd4, fd8;
+	u8 _pdc[0x100 - 0xDC];
 	int f100, f104, f108, f10c, f110, f114, f118;
 } SAVE_DATA;
 extern SAVE_DATA save_data;

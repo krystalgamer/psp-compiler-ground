@@ -1203,7 +1203,57 @@ M2C_UNK laser2_end_check(void)
 	return 0;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", laser2_hit_check_enemy);
+void netgame_zako_dead_set(int i, int j, int k);
+int laser2_hit_check_enemy(float x, float w)
+{
+	int i, j, k;
+	int ret = 0, wrap = 0, hit;
+	float r[2];
+	EGROUP *g;
+	ENEMY *e;
+
+	r[0] = x;
+	r[1] = x;
+	if (x < gmain.f.f10bc - w && w < x) {
+		r[0] = x - w;
+		r[1] = x + w;
+	} else {
+		wrap = 1;
+		if (gmain.f.f10bc - w <= r[0]) {
+			r[0] = r[0] - w;
+			r[1] = r[1] + (w - gmain.f.f10bc);
+		} else {
+			r[0] = r[0] - (w - gmain.f.f10bc);
+			r[1] = r[1] + w;
+		}
+	}
+	for (i = 0; i < GMEG_N; i++) {
+		g = &egroup[i];
+		if (g->active == 0)
+			break;
+		for (j = 0; j < 4; j++) {
+			for (k = 0; k < 11; k++) {
+				e = &g->e[j][k];
+				if (e->dead == 1)
+					continue;
+				hit = 1;
+				if (wrap == 0) {
+					if (e->f68 < r[0] || r[1] < e->f68)
+						hit = 0;
+				} else {
+					if (r[1] <= e->f68 && e->f68 <= r[0])
+						hit = 0;
+				}
+				if (hit) {
+					zako_death(e, save_data.fd8 == 0, 0);
+					ret = 1;
+					netgame_zako_dead_set(i, j, k);
+				}
+			}
+		}
+	}
+	return ret;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", laser2_hit_check_ufo);
 
