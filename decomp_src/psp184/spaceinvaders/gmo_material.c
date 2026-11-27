@@ -38,20 +38,22 @@ struct ScePspFRect { /* size 0x10 */
     float w;
     float h;
 };
-struct SceGmoLayer { /* size 0x50 */
+struct SceGmoLayer { /* size 0x60 (gmo_model 1.5.0: material cache) */
     SceGmoLayer *m_initial;
     int m_reference;
     int m_flags;
+    void *m_cache;
     int m_map_type;
     float m_map_factor;
     int m_blend_func[5];
     int m_texture;
-    ScePspFRect m_tex_crop;
     int m_enable_mask;
     int m_enable_bits;
     int m_diffuse;
     int m_specular;
     int m_ambient;
+    int m_unk44[3];
+    ScePspFRect m_tex_crop;
 };
 struct SceGmoMaterial { /* size 0x84 */
     SceGmoBase m_base;
@@ -304,6 +306,15 @@ static vec4 *vec4_col32(vec4 *dst, unsigned int src);
 static unsigned int col32_vec4(const vec4 *src);
 static unsigned int col32_lerp(unsigned int src1, unsigned int src2, float rate);
 static float *float_lerp(float *dst, const float *src1, const float *src2, int dim, float rate);
+void sceGmoLayerUnloadCache( SceGmoLayer *layer ) ;
+_Bool sceGmoLayerLoadCache( SceGmoLayer *layer, SceGmoMaterial *material ) ;
+void sceGmoModelFreeMemory2( void *addr ) ;
+void *sceGmoModelAllocUncachedBuffer( void *ptr_ptr, int size ) ;
+void sceGuStart( int cid, void *list, int size ) ;
+int sceGuFinish( void ) ;
+void sceGuMaterial( int mode, unsigned int color ) ;
+void sceGuSpecular( float power ) ;
+void sceGuBlendFunc( int op, int src, int dst, unsigned int srcfix, unsigned int destfix ) ;
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_material", sceGmoMaterialCreate);
 
@@ -334,9 +345,22 @@ void sceGmoMaterialUnload( SceGmoMaterial *material )
  material->m_n_layers = 0 ;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_material", sceGmoMaterialLoadCache);
+_Bool sceGmoMaterialLoadCache( SceGmoMaterial *material )
+{
+	if ( material == 0 ) return 0 ;
+	{ int i ; for ( i = 0 ; i < material->m_n_layers ; i ++ ) {
+		if ( !sceGmoLayerLoadCache( material->m_layers[ i ], material ) ) return 0 ;
+	} }
+	return 1 ;
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_material", sceGmoMaterialUnloadCache);
+void sceGmoMaterialUnloadCache( SceGmoMaterial *material )
+{
+	if ( material == 0 ) return ;
+	{ int i ; for ( i = 0 ; i < material->m_n_layers ; i ++ ) {
+		sceGmoLayerUnloadCache( material->m_layers[ i ] ) ;
+	} }
+}
 
 void sceGmoMaterialUpdate(SceGmoMaterial *material, SceGmoModel *model) {
     if (material != NULL) {
@@ -344,7 +368,16 @@ void sceGmoMaterialUpdate(SceGmoMaterial *material, SceGmoModel *model) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_material", sceGmoMaterialActivate);
+int sceGmoMaterialActivate( SceGmoMaterial *material, SceGmoModel *model, int index )
+{
+	if ( material == 0 ) return 0 ;
+	if ( index >= material->m_n_layers ) return 0 ;
+
+	SceGmoSubject *parent = material->m_base.m_parent.m_subject ;
+	if ( parent != 0 ) model = (SceGmoModel *)parent ;
+
+	return sceGmoLayerActivate( material->m_layers[ index ], model, material ) ;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_material", sceGmoMaterialControl);
 
@@ -401,21 +434,71 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_material", sceGmoLaye
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_material", sceGmoLayerLoad);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_material", sceGmoLayerUnload);
+void sceGmoLayerUnload( SceGmoLayer *layer )
+{
+	if ( layer == 0 ) return ;
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_material", sceGmoLayerLoadCache);
+	sceGmoLayerUnloadCache( layer ) ;
+	sceGmoLayerDelete( layer->m_initial ) ;
+	layer->m_initial = 0 ;
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_material", sceGmoLayerUnloadCache);
+_Bool sceGmoLayerLoadCache( SceGmoLayer *layer, SceGmoMaterial *material )
+{
+	if ( layer == 0 || material == 0 ) return 0 ;
+	if ( layer->m_cache != 0 ) return 1 ;
+	void *cache = sceGmoModelAllocUncachedBuffer( &( layer->m_cache ), 0x2c ) ;
+	if ( cache == 0 ) return 0 ;
+	sceGuStart( 1, cache, 0x2c ) ;
+	sceGuMaterial( 2, material->m_colors[ layer->m_diffuse ] ) ;
+	sceGuMaterial( 4, material->m_colors[ layer->m_specular ] ) ;
+	sceGuMaterial( 1, material->m_colors[ layer->m_ambient ] ) ;
+	sceGuSpecular( material->m_shininess ) ;
+	int *blend = layer->m_blend_func ;
+	sceGuBlendFunc( blend[ 0 ], blend[ 1 ], blend[ 2 ], blend[ 3 ], blend[ 4 ] ) ;
+	sceGuFinish() ;
+	return 1 ;
+}
+
+void sceGmoLayerUnloadCache( SceGmoLayer *layer )
+{
+	if ( layer == 0 ) return ;
+	sceGmoModelFreeMemory2( layer->m_cache ) ;
+	layer->m_cache = 0 ;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_material", sceGmoLayerActivate);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_material", sceGmoLayerSetMapType);
+void sceGmoLayerSetMapType( SceGmoLayer *layer, int type )
+{
+	if ( layer == 0 ) return ;
+	layer->m_map_type = type ;
+	reconfigure_layer( layer ) ;
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_material", sceGmoLayerGetMapType);
+int sceGmoLayerGetMapType( SceGmoLayer *layer )
+{
+	if ( layer == 0 ) return 0 ;
+	return layer->m_map_type ;
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_material", sceGmoLayerSetTexCrop);
+void sceGmoLayerSetTexCrop( SceGmoLayer *layer, const rect *crop )
+{
+	if ( layer == 0 ) return ;
+	if ( crop == 0 ) {
+		layer->m_flags &= ~1 ;
+	} else {
+		layer->m_flags |= 1 ;
+		layer->m_tex_crop = *crop ;
+	}
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_material", sceGmoLayerGetTexCrop);
+const rect *sceGmoLayerGetTexCrop( SceGmoLayer *layer )
+{
+	if ( layer == 0 ) return 0 ;
+	if ( !( layer->m_flags & 1 ) ) return 0 ;
+	return &( layer->m_tex_crop ) ;
+}
 
 INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_material", D_0007EF5C);
 
