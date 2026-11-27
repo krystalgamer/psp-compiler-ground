@@ -55,10 +55,19 @@ void I3dcsSub_ProjectVectorXYZA()
 		: : : "memory");
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3dcs_obb", I3dcs_IsIntersectLineOBBA);
-
 void I3dVecSubA(float *, const float *, const float *);
 void I3dVecCrossA(float *, const float *, const float *);
+
+int I3dcs_IsIntersectLineOBBA(const float *org, const float *dir, const float *ext, const float *obb)
+{
+	float v[4] __attribute__((aligned(16)));
+	float pd[4] __attribute__((aligned(16)));
+	I3dVecSubA(v, org, obb + 12);
+	I3dVecCrossA(v, dir, v);
+	I3dcsSub_ProjectVectorXYZA(pd, obb, dir);
+	return IntersectSubOBBA(v, pd, ext, obb);
+}
+
 int I3dcs_IsIntersectRayOBBA(const float *org, const float *dir, const float *ext, const float *obb)
 {
 	float cr[4] __attribute__((aligned(16)));
