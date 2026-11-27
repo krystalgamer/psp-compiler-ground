@@ -83,7 +83,22 @@ int _ShopDeckCheck(char *w, ShopCard *c)
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/shop", _ShopDeckCheckSet);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/shop", _ShopDeck2SaveSet);
+extern unsigned char D_00104450;
+typedef struct { int a; unsigned char kind; char p; unsigned short id; } SvCard;
+int _ShopDeck2SaveSet(char *w)
+{
+	int sd = saveGetCurrentData();
+	int i;
+	if (*(int *)(w + 0x7FF4) != 20)
+		return 0;
+	for (i = 0; i < 20; i++) {
+		ShopCard *c = (ShopCard *)(i * 4 + (int)w + 0x5BE0);
+		((ShopCard *)((*(int *)(sd + 0x664) * 0x34 + i) * 4 + sd + 0x2D0))[1].kind = c[1].kind;
+		((SvCard *)((*(int *)(sd + 0x664) * 0x34 + i) * 4 + sd + 0x2D0))->id = cardlistGetCardIDFromSaveID(c[1].id);
+		consPrintf(&D_00104450, i, c[1].id, c[1].kind);
+	}
+	return 1;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/shop", _ShopDeck2OmakaseSet);
 
