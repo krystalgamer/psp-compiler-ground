@@ -85,7 +85,74 @@ static SceInt32 swap_buffer(SceChar8 *buf)
 	return 0;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/mpeg/display", dispbuf_create);
+void *psp_malloc(unsigned int size);
+int sceKernelCreateSema(const char *name, unsigned int attr, int init, int max, void *option);
+SceInt32 dispbuf_create(t_displayBuffer *pDisp, SceInt32 disp_size, SceInt32 disp_num)
+{
+	SceInt32 i, ret;
+	SceChar8 *ge_addr;
+
+	pDisp->buf = NULL;
+	pDisp->pts = NULL;
+
+	pDisp->lock_sema = sceKernelCreateSema("disp_lock_sema", 0, 1, 1, NULL);
+
+	ret = sceDisplaySetMode(0, 480, 272);
+	if (ret < 0) {
+		goto error;
+	}
+
+	pDisp->buf = psp_malloc(disp_num * sizeof(SceChar8 *));
+	if (pDisp->buf == NULL) {
+		ret = -1;
+		goto error;
+	}
+
+	for (i = 0; i < disp_num; i++) {
+		pDisp->buf[i] = NULL;
+	}
+
+	for (i = 0; i < disp_num; i++) {
+		pDisp->buf[i] = psp_malloc(disp_size);
+		if (pDisp->buf[i] == NULL) {
+			ret = -1;
+			goto error;
+		}
+	}
+
+	pDisp->pts = psp_malloc(disp_num * sizeof(SceUInt32));
+	if (pDisp->pts == NULL) {
+		ret = -1;
+		goto error;
+	}
+
+	ge_addr = sceGeEdramGetAddr();
+
+	displayBuf[0] = ge_addr + 0x88000;
+	displayBuf[1] = ge_addr + 0x110000;
+
+	pDisp->size = disp_num;
+
+	goto term;
+
+error:
+	if (pDisp->buf != NULL) {
+		for (i = 0; i < pDisp->size; i++) {
+			if (pDisp->buf[i] != NULL) {
+				psp_free(pDisp->buf[i]);
+			}
+		}
+
+		psp_free(pDisp->buf);
+	}
+
+	if (pDisp->pts != NULL) {
+		psp_free(pDisp->pts);
+	}
+
+term:
+	return ret;
+}
 
 SceInt32 dispbuf_reset(t_displayBuffer *pDisp)
 {
