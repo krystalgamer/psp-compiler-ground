@@ -96,7 +96,106 @@ void inv_matchup_startdemo(void)
 	ASC_SetStringRGBA(2, &D_0007CCD8, 188, 200, 64, 255, 255, 255);
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_match", inv_matchup_handycap);
+int pad_sw(void);
+void inv_matchup_zankidisp(void);
+extern int classic_tex_28FBE4;
+extern INV_W ziki[];
+int sprite_set(int tex, int x, int y, int w, int h, int u, int v, int sw, int sh, int a9, int a10, int r, int g, int b, int a, int pri, int mode, int a17, int alpha);
+void inv_matchup_handycap(void)
+{
+	int r0, g0, b0, r1, g1, b1;
+
+	if (pad_sw() & 0x100010) {
+		if (!(handycap[0] & 0x10)) {
+			se_start(0);
+			if (--handycap[0] < 0)
+				handycap[0] = 0;
+		}
+	} else if (pad_sw() & 0x200040) {
+		if (!(handycap[0] & 0x10)) {
+			se_start(0);
+			if (++handycap[0] >= 3)
+				handycap[0] = 2;
+		}
+	} else if (pad_sw() & 0x100) {
+		if (!(handycap[0] & 0x10)) {
+			se_start(1);
+			handycap[0] |= 0x10;
+		}
+	} else if (pad_sw() & 0x400080) {
+		handycap[0] &= ~0x10;
+	}
+	if (pad_sw() & 0x1000) {
+		if (!(handycap[1] & 0x10)) {
+			se_start(0);
+			if (++handycap[1] >= 3)
+				handycap[1] = 2;
+		}
+	} else if (pad_sw() & 0x4000) {
+		if (!(handycap[1] & 0x10)) {
+			se_start(0);
+			if (--handycap[1] < 0)
+				handycap[1] = 0;
+		}
+	} else if (pad_sw() & 0x200) {
+		if (!(handycap[1] & 0x10)) {
+			se_start(1);
+			handycap[1] |= 0x10;
+		}
+	} else if (pad_sw() & 0x2000) {
+		handycap[1] &= ~0x10;
+	}
+	if (handycap[0] == 0)
+		ziki[0].f8 = 3;
+	else if (handycap[0] == 1)
+		ziki[0].f8 = 5;
+	else if (handycap[0] == 2)
+		ziki[0].f8 = 7;
+	if (handycap[1] == 0)
+		ziki[1].f8 = 3;
+	else if (handycap[1] == 1)
+		ziki[1].f8 = 5;
+	else if (handycap[1] == 2)
+		ziki[1].f8 = 7;
+	if ((handycap[0] & 0x10) && (handycap[1] & 0x10)) {
+		RT = 5;
+		gcnt_28FC04 = 0;
+		return;
+	}
+	if (!(handycap[0] & 0x10)) {
+		r0 = 255;
+		g0 = 255;
+		b0 = 255;
+	} else {
+		r0 = 255;
+		g0 = 0;
+		b0 = 0;
+	}
+	if (!(handycap[1] & 0x10)) {
+		r1 = 255;
+		g1 = 255;
+		b1 = 255;
+	} else {
+		r1 = 255;
+		g1 = 0;
+		b1 = 0;
+	}
+	sprite_set(classic_tex_28FBE4, 72, 72, 8, 128, 240, 0, 100, 100, 0, 0, r0, g0, b0, 255, 0, 2, 1, 255);
+	sprite_set(classic_tex_28FBE4, 400, 72, 8, 128, 248, 0, 100, 100, 0, 0, r1, g1, b1, 255, 0, 2, 1, 255);
+	if (handycap[0] == 0)
+		sprite_set(classic_tex_28FBE4, 72, 160, 8, 8, 136, 160, 100, 100, 0, 0, 40, 255, 255, 255, 50, 2, 1, 255);
+	else if (handycap[0] == 1)
+		sprite_set(classic_tex_28FBE4, 72, 176, 8, 8, 152, 160, 100, 100, 0, 0, 40, 255, 255, 255, 50, 2, 1, 255);
+	else if (handycap[0] == 2)
+		sprite_set(classic_tex_28FBE4, 72, 192, 8, 8, 168, 160, 100, 100, 0, 0, 40, 255, 255, 255, 50, 2, 1, 255);
+	if (handycap[1] == 0)
+		sprite_set(classic_tex_28FBE4, 400, 104, 8, 8, 136, 168, 100, 100, 0, 0, 40, 255, 255, 255, 50, 2, 1, 255);
+	else if (handycap[1] == 1)
+		sprite_set(classic_tex_28FBE4, 400, 88, 8, 8, 152, 168, 100, 100, 0, 0, 40, 255, 255, 255, 50, 2, 1, 255);
+	else if (handycap[1] == 2)
+		sprite_set(classic_tex_28FBE4, 400, 72, 8, 8, 168, 168, 100, 100, 0, 0, 40, 255, 255, 255, 50, 2, 1, 255);
+	inv_matchup_zankidisp();
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_match", inv_matchup_startdemo2);
 
