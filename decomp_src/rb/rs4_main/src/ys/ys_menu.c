@@ -1,88 +1,319 @@
 /* lang: c++ */
-/* cflags: -Os */
+/* cflags: -Os -fno-strength-reduce -fno-merge-constants -fno-exceptions */
+/* #pragma interface: the vtables, typeinfo and implicit destructors stay in the module's asm */
+#pragma interface "rodata"
 #include "common.h"
+
+struct CtrlState {
+	unsigned int hold;
+	unsigned int trg;
+	char _8[8];
+	unsigned int rep;
+};
+
 extern "C" {
+void _memFree(void *p, const char *file, int line);
+CtrlState *ctrlState(int port);
+CtrlState *ctrlStateV(int entry);
+int gameGetEntry(void);
+extern const char D_00104DE8[];
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_menu", _ZN2Ys4MenuC2EPNS_8MenuViewEii);
+struct Task;
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_menu", _ZN2Ys4MenuC1EPNS_8MenuViewEii);
+namespace Ys {
+class Object {
+public:
+	static void operator delete(void *p) { _memFree(p, D_00104DE8, 25); }
+};
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_menu", _ZN2Ys4MenuD2Ev);
+class Task : public Object {
+public:
+	::Task *task_p;
+	void *state_p;
+	virtual ~Task();
+	virtual void Receive_InitMessage(::Task *t, void *p, unsigned int n);
+	virtual void Receive_KillMessage(::Task *t, void *p, unsigned int n);
+	virtual void Receive_FreeMessage(::Task *t, void *p, unsigned int n);
+	virtual void Receive_RunMessage(::Task *t, void *p, unsigned int n);
+	virtual void Receive_DrawMessage(::Task *t, void *p, unsigned int n);
+	virtual void Receive_KillChildMessage(::Task *t, ::Task *c, unsigned int n);
+};
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_menu", _ZN2Ys4MenuD1Ev);
+class MenuView : public Task {
+public:
+	short select;
+	short count;
+	bool active;
+	virtual ~MenuView();
+	virtual void Set_ItemCount(int n);
+	virtual int Set_Select(int n);
+	virtual void Open(int n);
+	virtual void Close();
+};
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_menu", _ZN2Ys4MenuD0Ev);
+class Menu : public Object {
+public:
+	MenuView *view_p;
+	signed char select;
+	signed char prev_select;
+	signed char count;
+	signed char wait;
+	union {
+		unsigned int flags;
+		struct {
+			bool closed : 1;
+			bool cancel : 1;
+			bool repeat : 1;
+			bool loop : 1;
+			bool lock : 1;
+			bool vpad : 1;
+		};
+	};
+	Menu(MenuView *v, int n, int sel);
+	virtual ~Menu();
+	virtual int Open(int sel);
+	virtual void Close();
+	virtual int Reset_ItemCount(int n);
+	virtual int Set_Select(int n);
+	unsigned int &Get_DirectVirtualPadTrigger() const;
+	unsigned int &Get_RepeatVirtualPadTrigger() const;
+	unsigned int &Get_PadTrigger() const;
+	virtual int Run();
+	int Get_Select() const { return select; }
+};
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_menu", _ZN2Ys4Menu4OpenEi);
+class LineMenu : public Menu {
+public:
+	unsigned short next_key;
+	unsigned short prev_key;
+	LineMenu(MenuView *v, unsigned short next, unsigned short prev, int n, int sel);
+	virtual int Run();
+};
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_menu", _ZN2Ys4Menu5CloseEv);
+class TableMenu : public Menu {
+public:
+	signed char cols;
+	signed char rows;
+	signed char col;
+	signed char row;
+	TableMenu(MenuView *v, int c, int n, int sel);
+	int Set_Pos(int n);
+	int Conv_PosToSelect(int x, int y);
+	virtual int Set_Select(int n);
+	virtual int Run();
+};
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_menu", _ZN2Ys4Menu15Reset_ItemCountEi);
+Menu::Menu(MenuView *v, int n, int sel)
+{
+	view_p = v;
+	count = n;
+	flags = 0;
+	Menu::Set_Select(sel);
+	prev_select = -1;
+	closed = 1;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_menu", _ZN2Ys4Menu10Set_SelectEi);
+Menu::~Menu()
+{
+	delete view_p;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_menu", _ZNK2Ys4Menu27Get_DirectVirtualPadTriggerEv);
+int Menu::Open(int sel)
+{
+	if (view_p)
+		view_p->Open(sel);
+	closed = 0;
+	select = sel;
+	wait = 4;
+	return select;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_menu", _ZNK2Ys4Menu27Get_RepeatVirtualPadTriggerEv);
+void Menu::Close()
+{
+	closed = 1;
+	if (view_p)
+		view_p->Close();
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_menu", _ZNK2Ys4Menu14Get_PadTriggerEv);
+int Menu::Reset_ItemCount(int n)
+{
+	if (select >= n)
+		Set_Select(n > 0 ? n - 1 : 0);
+	return count = n;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_menu", _ZN2Ys4Menu3RunEv);
+int Menu::Set_Select(int n)
+{
+	if (view_p)
+		view_p->Set_Select(n);
+	return select = n;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_menu", _ZN2Ys8LineMenuC2EPNS_8MenuViewEttii);
+unsigned int &Menu::Get_DirectVirtualPadTrigger() const
+{
+	return ctrlStateV(gameGetEntry())->trg;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_menu", _ZN2Ys8LineMenuC1EPNS_8MenuViewEttii);
+unsigned int &Menu::Get_RepeatVirtualPadTrigger() const
+{
+	return ctrlStateV(gameGetEntry())->rep;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_menu", _ZN2Ys8LineMenu3RunEv);
+unsigned int &Menu::Get_PadTrigger() const
+{
+	if (!vpad) {
+		if (repeat)
+			return ctrlState(0)->rep;
+		return ctrlState(0)->trg;
+	}
+	if (repeat)
+		return Get_RepeatVirtualPadTrigger();
+	return Get_DirectVirtualPadTrigger();
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_menu", _ZN2Ys9TableMenuC2EPNS_8MenuViewEiii);
+int Menu::Run()
+{
+	prev_select = Get_Select();
+	if (closed)
+		return 1;
+	if (lock)
+		return 0;
+	if (view_p && !view_p->active)
+		return 0;
+	int w = wait - 1;
+	if (w > 0) {
+		wait = w;
+		return 0;
+	}
+	int ret = 0;
+	unsigned int t = !vpad ? ctrlState(0)->trg : Get_DirectVirtualPadTrigger();
+	if ((t & 0x10000) && count > 0) {
+		ret = 1;
+		closed = 1;
+		cancel = 0;
+	} else if (t & 0x20000) {
+		ret = 1;
+		closed = 1;
+		cancel = 1;
+	}
+	return ret;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_menu", _ZN2Ys9TableMenuC1EPNS_8MenuViewEiii);
+LineMenu::LineMenu(MenuView *v, unsigned short next, unsigned short prev, int n, int sel) : Menu(v, n, sel)
+{
+	next_key = next;
+	prev_key = prev;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_menu", _ZN2Ys9TableMenu7Set_PosEi);
+int LineMenu::Run()
+{
+	if (Menu::Run())
+		return 1;
+	if (view_p && !view_p->active)
+		return 0;
+	unsigned int t = Get_PadTrigger();
+	int sel = select;
+	bool lp = loop;
+	int n = count;
+	if (t & prev_key) {
+		if (sel > 0)
+			sel--;
+		else if (lp)
+			sel = n - 1;
+	} else if (t & next_key) {
+		if (sel < n - 1)
+			sel++;
+		else if (lp)
+			sel = 0;
+	}
+	Set_Select(sel);
+	return 0;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_menu", _ZN2Ys9TableMenu16Conv_PosToSelectEii);
+TableMenu::TableMenu(MenuView *v, int c, int n, int sel) : Menu(v, n, sel)
+{
+	cols = c;
+	rows = (n + c - 1) / c;
+	TableMenu::Set_Select(sel);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_menu", _ZN2Ys9TableMenu10Set_SelectEi);
+int TableMenu::Set_Pos(int n)
+{
+	row = n / cols;
+	col = n % cols;
+	return n;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_menu", _ZN2Ys9TableMenu3RunEv);
+int TableMenu::Conv_PosToSelect(int x, int y)
+{
+	return y * cols + x;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_menu", _ZN2Ys8LineMenuD0Ev);
+int TableMenu::Set_Select(int n)
+{
+	return Set_Pos(Menu::Set_Select(n));
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_menu", _ZN2Ys8LineMenuD1Ev);
+int TableMenu::Run()
+{
+	if (Menu::Run())
+		return 1;
+	if (view_p && !view_p->active)
+		return 0;
+	unsigned int &t = Get_PadTrigger();
+	int r = rows;
+	int c = cols;
+	int n = count;
+	bool lp = loop;
+	int last = r > 0 ? n - c * (r - 1) : 0;
+	int y = row;
+	int w = y < r - 1 ? c : last;
+	int x = col;
+	if (t & 0x80) {
+		if (x > 0)
+			x--;
+		else if (lp)
+			x = w - 1;
+	} else if (t & 0x20) {
+		if (x < w - 1)
+			x++;
+		else if (lp)
+			x = 0;
+	} else if (t & 0x10) {
+		if (y > 0)
+			y--;
+		else if (lp)
+			y = x < last ? r - 1 : r - 2;
+	} else if (t & 0x40) {
+		if (Conv_PosToSelect(x, y + 1) < n)
+			y++;
+		else if (lp)
+			y = 0;
+	}
+	Set_Select(Conv_PosToSelect(x, y));
+	return 0;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_menu", _ZN2Ys9TableMenuD1Ev);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_menu", _ZN2Ys9TableMenuD0Ev);
 
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_menu", D_00104DE8);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_menu", _ZTVN2Ys9TableMenuE);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_menu", D_00104E08);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_menu", _ZTVN2Ys8LineMenuE);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_menu", D_00104E30);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_menu", _ZTVN2Ys4MenuE);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_menu", D_00104E58);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_menu", _ZTIN2Ys4MenuE);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_menu", _ZTIN2Ys8LineMenuE);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_menu", _ZTIN2Ys9TableMenuE);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_menu", _ZTSN2Ys9TableMenuE);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_menu", _ZTSN2Ys8LineMenuE);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_menu", _ZTSN2Ys4MenuE);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_menu", _ZTVN2Ys8MenuViewE);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_menu", D_00104ED0);
-
-} /* extern "C": m2c drafts with mangled names, kept as C linkage */
+extern "C" { INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_menu", _ZN2Ys8LineMenuD0Ev); }
+extern "C" { INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_menu", _ZN2Ys8LineMenuD1Ev); }
+extern "C" { INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_menu", _ZN2Ys9TableMenuD1Ev); }
+extern "C" { INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_menu", _ZN2Ys9TableMenuD0Ev); }
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_menu", D_00104DE8); }
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_menu", _ZTVN2Ys9TableMenuE); }
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_menu", D_00104E08); }
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_menu", _ZTVN2Ys8LineMenuE); }
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_menu", D_00104E30); }
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_menu", _ZTVN2Ys4MenuE); }
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_menu", D_00104E58); }
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_menu", _ZTIN2Ys4MenuE); }
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_menu", _ZTIN2Ys8LineMenuE); }
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_menu", _ZTIN2Ys9TableMenuE); }
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_menu", _ZTSN2Ys9TableMenuE); }
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_menu", _ZTSN2Ys8LineMenuE); }
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_menu", _ZTSN2Ys4MenuE); }
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_menu", _ZTVN2Ys8MenuViewE); }
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_menu", D_00104ED0); }
