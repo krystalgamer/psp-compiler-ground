@@ -465,7 +465,65 @@ SceInt32 decode_unRegistStream(t_mpegStreamData *pStreamData, SceMpegStrType str
 	return ret;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/mpeg_stream_change/nonmatchings/decode", decode_audioDecode);
+SceInt32 decode_audioDecode(t_mpegStreamData *pStreamData, t_avSyncControl *pAvSync, SceInt32 audio_init_flag)
+{
+	SceInt32 ret;
+	SceVoid *atracBody;
+	SceChar8 *pSoundBuf;
+	SceUInt32 currentPts;
+	SceInt32 auTimestamp;
+	SceInt32 i;
+	SceInt32 found = 0;
+
+	ret = 1;
+	if (soundbuf_getCapacity(pAvSync->pSound) == 0) {
+		goto term;
+	}
+
+	for (i = 0; i < pStreamData->audioStreamNum; i++) {
+		ret = sceMpegGetAtracAu(pStreamData->pMpeg, pStreamData->pAudioStream[i], &pStreamData->audioAu[i], &atracBody);
+		if (i == pStreamData->currentAudioStream && ret == 0) {
+			found = 1;
+		}
+		if (ret != 0 && ret != (SceInt32)0x80618001) {
+			goto term;
+		}
+	}
+	ret = 0x80618001;
+	if (found != 1) {
+		goto term;
+	}
+
+	soundbuf_getDrawbuf(pAvSync->pSound, &pSoundBuf);
+
+	ret = sceMpegAtracDecode(pStreamData->pMpeg, &pStreamData->audioAu[pStreamData->currentAudioStream], pSoundBuf, audio_init_flag);
+	if (ret != 0) {
+		printf("fatal error : sceMpegAtracDecode() %x\n", ret);
+		goto term;
+	}
+
+	avsync_sound_createNextPts(pAvSync, pStreamData->audioAu[pStreamData->currentAudioStream].pts.ts, &currentPts);
+
+	auTimestamp = avsync_sound_getAuTimestamp(pAvSync);
+
+	if ((SceInt32)(currentPts - pStreamData->startTimestamp) > -auTimestamp) {
+		if (audio_init_flag != 1)
+			audio_init_flag = 0;
+	} else {
+		audio_init_flag = 1;
+	}
+
+	soundbuf_setPts(pAvSync->pSound, pStreamData->audioAu[pStreamData->currentAudioStream].pts.ts);
+
+	if (audio_init_flag == 0) {
+		soundbuf_setBuf(pAvSync->pSound);
+	}
+
+	ret = 0;
+
+term:
+	return ret;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/mpeg_stream_change/nonmatchings/decode", decode_videoDecode);
 
