@@ -1020,13 +1020,6 @@ class Tga;
 #endif
 class Texture {
 public:
-    struct Info {
-        Info() : width(0), height(0), format((Format)0), flags(0) {}
-        int width;                  /* 0x00 */
-        int height;                 /* 0x04 */
-        Format format;              /* 0x08 */
-        unsigned int flags;         /* 0x0C: bit 0 filtering, 1-2 texture function, 3 wrap s, 4 wrap t */
-    };
     struct LoadedInfo {
         LoadedInfo() : width(0), height(0), alpha_flags((AlphaMask)0) {}
         int width;
@@ -1034,8 +1027,13 @@ public:
         AlphaMask alpha_flags;
     };
     struct CopiableMembers {
-        CopiableMembers() : path(TEXTURE_EMPTY_PATH), alpha_flags((AlphaMask)0), loaded(false) {}
-        Info info;                  /* 0x00 */
+        CopiableMembers() : width(0), height(0), format((Format)0), flags(0), path(TEXTURE_EMPTY_PATH),
+            alpha_flags((AlphaMask)0), loaded(false) {}
+        /* separate members, not a nested struct: operator= loads all four before storing them */
+        int width;                  /* 0x00 */
+        int height;                 /* 0x04 */
+        Format format;              /* 0x08 */
+        unsigned int flags;         /* 0x0C: bit 0 filtering, 1-2 texture function, 3 wrap s, 4 wrap t */
         std::string path;           /* 0x10 */
         AlphaMask alpha_flags;      /* 0x14 */
         bool loaded;                /* 0x18 */
@@ -1094,6 +1092,10 @@ public:
     void psp_reorder();
     void makeImportForDirectX(int, int);
     void flipVertical();
+    void resize_channel_nearest(Texture &, Channel);
+    void resize_channel_bicubic(Texture &, Channel, math::bspline::surface &);
+    void resize_nearest(int, int);
+    void resize_bicubic(int, int);
     void resize(int, int, bool);
     void resizePow2(bool, bool, bool);
     bool isPow2();
@@ -1103,7 +1105,9 @@ public:
     void copyChannel(Channel, unsigned char *);
     void copyChannel(Channel, Channel);
     void copy(const Texture &, int, int, int, int, int, int);
+    void saveChannel(Channel, const char *) const;
     bool save(const std::string &) const;
+    bool save(const std::string &, int, int, int, int) const;
     bool saveTga(const std::string &) const;
     bool saveBmp(const std::string &) const;
     void blur(int, float);

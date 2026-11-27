@@ -27,6 +27,24 @@ extern const char D_001764C4[];     /* " " */
 extern const char D_00176504[];     /* "value == GetBitField( reg, start_bit, bit_size )" */
 extern const char SetBitField_name[] __asm__("_ZZN8textures11SetBitFieldERjiiiE19__PRETTY_FUNCTION__");
 extern const char setAlphaFlags_name[] __asm__("_ZZN8textures7Texture13setAlphaFlagsENS_9AlphaMaskEE19__PRETTY_FUNCTION__");
+extern const char D_0017693C[];     /* "\n" */
+extern const char D_00176A88[];     /* "_m._format == ABGR32 || _m._format == BGR24" */
+extern const char psp_reorder_name[] __asm__("_ZZN8textures7Texture11psp_reorderEvE19__PRETTY_FUNCTION__");
+extern const char invertChannel_name[] __asm__("_ZZN8textures7Texture13invertChannelENS_7ChannelEE19__PRETTY_FUNCTION__");
+namespace textures { namespace psp { void SwizzleBitmap(unsigned char *, unsigned char *, Format, int, int); } }
+extern const char D_00176940[];     /* "valid()" */
+extern const char D_00176CC4[];     /* "_Src" */
+extern const char D_00176D18[];     /* "copyChannel " */
+extern const char D_00176D28[];     /* " <- " */
+extern const char D_00176C28[];     /* "setChannel " */
+extern const char D_00176C34[];     /* " <- val=" */
+extern const char setAlphaCount_name[] __asm__("_ZZN8textures7Texture13setAlphaCountEPiS1_S1_hhE19__PRETTY_FUNCTION__");
+extern const char copyChannelP_name[] __asm__("_ZZN8textures7Texture11copyChannelENS_7ChannelEPhE19__PRETTY_FUNCTION__");
+extern const char copyChannelC_name[] __asm__("_ZZN8textures7Texture11copyChannelENS_7ChannelES1_E19__PRETTY_FUNCTION__");
+extern const char setChannel_name[] __asm__("_ZZN8textures7Texture10setChannelENS_7ChannelEhE19__PRETTY_FUNCTION__");
+extern const char D_00176DD4[];     /* "_m._format == _Src._m._format" */
+extern const char copy_name[] __asm__("_ZZN8textures7Texture4copyERKS0_iiiiiiE19__PRETTY_FUNCTION__");
+extern const char resize_nearest_name[] __asm__("_ZZN8textures7Texture14resize_nearestEiiE19__PRETTY_FUNCTION__");
 #define TEX_ASSERT(c, s, fn, line) \
     do if (!(c)) { \
         common::common_internal::assert_display(D_0017645C, s, D_001764A8, fn, line, D_001764C4); \
@@ -50,14 +68,16 @@ inline void SetBitField(unsigned int &reg, int value, int start_bit, int bit_siz
 }
 }
 
-/* Swap<CopiableMembers> stays asm (near-miss: the scheduling of the memberwise copies differs) */
-namespace common {
-extern template void Swap(textures::Texture::CopiableMembers &, textures::Texture::CopiableMembers &);
-}
-
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/textures_Texture", _Z41__static_initialization_and_destruction_0ii_101494);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/textures_Texture", _ZN8textures7TextureaSERKS0_);
+textures::Texture &textures::Texture::operator=(const Texture &t)
+{
+    reset(true);
+    m = t.m;
+    image = t.image;
+    clut = t.clut;
+    return *this;
+}
 
 textures::Texture::Texture()
 {
@@ -75,7 +95,18 @@ textures::Texture::~Texture()
 {
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/textures_Texture", _ZN8textures7Texture5resetEb);
+void textures::Texture::reset(bool all)
+{
+    if (!all) {
+        std::string p = m.path;
+        m = CopiableMembers();
+        m.path = p;
+    } else {
+        m = CopiableMembers();
+    }
+    image.release();
+    clut.release();
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/textures_Texture", _ZN8textures7TextureC2ERKS0_);
 
@@ -83,17 +114,17 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/textures_Texture
 
 int textures::Texture::width() const
 {
-    return m.info.width;
+    return m.width;
 }
 
 int textures::Texture::height() const
 {
-    return m.info.height;
+    return m.height;
 }
 
 textures::Format textures::Texture::format() const
 {
-    return m.info.format;
+    return m.format;
 }
 
 const char *textures::Texture::path() const
@@ -118,12 +149,12 @@ const unsigned char *textures::Texture::clutdata() const
 
 int textures::Texture::getLoadedWidth() const
 {
-    return m.load.width ? m.load.width : m.info.width;
+    return m.load.width ? m.load.width : m.width;
 }
 
 int textures::Texture::getLoadedHeight() const
 {
-    return m.load.height ? m.load.height : m.info.height;
+    return m.load.height ? m.load.height : m.height;
 }
 
 int textures::Texture::getLoadedAlphaflags() const
@@ -141,42 +172,42 @@ void textures::Texture::setAlphaFlags(AlphaMask _Value)
 
 void textures::Texture::setTextureFunc(TextureFunction f)
 {
-    SetBitField(m.info.flags, f, 1, 2);
+    SetBitField(m.flags, f, 1, 2);
 }
 
 textures::TextureFunction textures::Texture::getTextureFunc() const
 {
-    return (TextureFunction)GetBitField(m.info.flags, 1, 2);
+    return (TextureFunction)GetBitField(m.flags, 1, 2);
 }
 
 void textures::Texture::setFiltering(Filtering f)
 {
-    SetBitField(m.info.flags, f, 0, 1);
+    SetBitField(m.flags, f, 0, 1);
 }
 
 textures::Filtering textures::Texture::getFiltering() const
 {
-    return (Filtering)GetBitField(m.info.flags, 0, 1);
+    return (Filtering)GetBitField(m.flags, 0, 1);
 }
 
 void textures::Texture::setWrapS(Wrapping w)
 {
-    SetBitField(m.info.flags, w, 3, 1);
+    SetBitField(m.flags, w, 3, 1);
 }
 
 textures::Wrapping textures::Texture::getWrapS() const
 {
-    return (Wrapping)GetBitField(m.info.flags, 3, 1);
+    return (Wrapping)GetBitField(m.flags, 3, 1);
 }
 
 void textures::Texture::setWrapT(Wrapping w)
 {
-    SetBitField(m.info.flags, w, 4, 1);
+    SetBitField(m.flags, w, 4, 1);
 }
 
 textures::Wrapping textures::Texture::getWrapT() const
 {
-    return (Wrapping)GetBitField(m.info.flags, 4, 1);
+    return (Wrapping)GetBitField(m.flags, 4, 1);
 }
 
 void textures::Texture::linear()
@@ -239,9 +270,9 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/textures_Texture
 void textures::Texture::make(int w, int h, Format f)
 {
     reset(false);
-    m.info.width = w;
-    m.info.height = h;
-    m.info.format = f;
+    m.width = w;
+    m.height = h;
+    m.format = f;
     allocate_for(f);
 }
 
@@ -258,14 +289,14 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/textures_Texture
 
 bool textures::Texture::is32() const
 {
-    return m.info.format == FORMAT_1 || m.info.format == FORMAT_2;
+    return m.format == FORMAT_1 || m.format == FORMAT_2;
 }
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/textures_Texture", _ZN8textures7Texture9convert32Ev);
 
 void textures::Texture::alphaHalfBias()
 {
-    if (m.info.format == FORMAT_1) {
+    if (m.format == FORMAT_1) {
         unsigned char *p = image.addr();
         for (unsigned i = 3; i < image.bytesize(); i += 4)
             p[i] >>= 1;
@@ -278,9 +309,9 @@ void textures::Texture::finish_load()
 {
     if (!isPow2())
         common::Log() << D_00176960;
-    m.load.width = m.info.width;
-    m.load.height = m.info.height;
-    if (m.info.format == FORMAT_1 || m.info.format == FORMAT_2)
+    m.load.width = m.width;
+    m.load.height = m.height;
+    if (m.format == FORMAT_1 || m.format == FORMAT_2)
         setAlphaCount(0, 0, 0, 0, 0xFF);
     m.load.alpha_flags = m.alpha_flags;
     psp_reorder();
@@ -288,7 +319,15 @@ void textures::Texture::finish_load()
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/textures_Texture", _ZN8textures3psp13SwizzleBitmapEPhS1_NS_6FormatEii);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/textures_Texture", _ZN8textures7Texture11psp_reorderEv);
+void textures::Texture::psp_reorder()
+{
+    Texture copy(*this);
+    int unused[4];      /* the original's frame has 16 more bytes after copy */
+    (void)unused;
+    common::Log() << psp_reorder_name << D_001764C4 << m.path << D_0017693C;
+    psp::SwizzleBitmap(image.addr(), copy.image.addr(), m.format, m.width, m.height);
+    m.loaded = true;
+}
 
 void textures::Texture::makeImportForDirectX(int w, int h)
 {
@@ -300,11 +339,50 @@ void textures::Texture::makeImportForDirectX(int w, int h)
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/textures_Texture", _ZN8textures7Texture12flipVerticalEv);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/textures_Texture", _ZN8textures7Texture22resize_channel_nearestERS0_NS_7ChannelE);
+void textures::Texture::resize_channel_nearest(Texture &dst, Channel c)
+{
+    if (m.width == 0 || m.height == 0)
+        return;
+    unsigned char *src = image.addr();
+    unsigned char *d = dst.image.addr();
+    int w = m.width;
+    float fx = (float)(w - 1) / (float)(dst.m.width - 1);
+    float fy = (float)(m.height - 1) / (float)(dst.m.height - 1);
+    for (int y = 0; y < dst.m.height; y++) {
+        int row = (int)(y * fy) * w;
+        for (int x = 0; x < dst.m.width; x++) {
+            int sx = (int)(x * fx);
+            d[c] = (src + (sx + row) * 4)[c];
+            d += 4;
+        }
+    }
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/textures_Texture", _ZN8textures7Texture22resize_channel_bicubicERS0_NS_7ChannelERN4math7bspline7surfaceE);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/textures_Texture", _ZN8textures7Texture14resize_nearestEii);
+void textures::Texture::resize_nearest(int w, int h)
+{
+    if (m.width == 0 || m.height == 0)
+        return;
+    TEX_ASSERT(m.format == FORMAT_1 || m.format == FORMAT_2, D_00176A88, resize_nearest_name, 1295);
+    Texture tmp(w, h, *this);
+    int unused[4];      /* the original's frame has 16 more bytes after tmp */
+    (void)unused;
+    unsigned int *src = (unsigned int *)image.addr();
+    unsigned int *d = (unsigned int *)tmp.image.addr();
+    int sw = m.width;
+    float fx = (float)(sw - 1) / (float)(tmp.m.width - 1);
+    float fy = (float)(m.height - 1) / (float)(tmp.m.height - 1);
+    for (int y = 0; y < tmp.m.height; y++) {
+        int row = (int)(y * fy) * sw;
+        for (int x = 0; x < tmp.m.width; x++) {
+            int sx = (int)(x * fx);
+            *d = src[sx + row];
+            d++;
+        }
+    }
+    swap(tmp);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/textures_Texture", _ZN8textures7Texture14resize_bicubicEii);
 
@@ -331,27 +409,98 @@ int textures::closestPow2(int x, bool up)
 
 void textures::Texture::resizePow2(bool up_x, bool up_y, bool filter)
 {
-    resize(closestPow2(m.info.width, up_x), closestPow2(m.info.height, up_y), filter);
+    resize(closestPow2(m.width, up_x), closestPow2(m.height, up_y), filter);
 }
 
 bool textures::Texture::isPow2()
 {
-    return IsPow2(m.info.width) && IsPow2(m.info.height);
+    return IsPow2(m.width) && IsPow2(m.height);
 }
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/textures_Texture", _ZN8textures10FormatNameENS_6FormatE);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/textures_Texture", _ZN8textures7Texture10setChannelENS_7ChannelEh);
+void textures::Texture::setChannel(Channel c, unsigned char v)
+{
+    TEX_ASSERT(m.format == FORMAT_1 || m.format == FORMAT_2, D_00176A88, setChannel_name, 1482);
+    unsigned char *p = image.addr();
+    p += c;
+    for (unsigned int i = 0; i < (unsigned int)(m.width * m.height); i++) {
+        *p = v;
+        p += 4;
+    }
+    common::Log() << D_00176C28 << (int)c << D_00176C34 << (int)v << D_0017693C;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/textures_Texture", _ZN8textures7Texture13invertChannelENS_7ChannelE);
+void textures::Texture::invertChannel(Channel c)
+{
+    TEX_ASSERT(m.format == FORMAT_1 || m.format == FORMAT_2, D_00176A88, invertChannel_name, 1504);
+    unsigned char *p = image.addr() + c;
+    for (int i = 0; i < m.width * m.height; i++) {
+        *p = ~*p;
+        p += 4;
+    }
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/textures_Texture", _ZN8textures7Texture11copyChannelENS_7ChannelEPh);
+void textures::Texture::copyChannel(Channel c, unsigned char *_Src)
+{
+    TEX_ASSERT(m.format == FORMAT_1 || m.format == FORMAT_2, D_00176A88, copyChannelP_name, 1524);
+    TEX_ASSERT(_Src, D_00176CC4, copyChannelP_name, 1525);
+    unsigned char *dst = image.addr();
+    unsigned char *src = _Src;
+    dst += c;
+    for (int i = 0; i < m.width * m.height; i++) {
+        *dst = *src;
+        src += 4;
+        dst += 4;
+    }
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/textures_Texture", _ZN8textures7Texture11copyChannelENS_7ChannelES1_);
+void textures::Texture::copyChannel(Channel dst_c, Channel src_c)
+{
+    TEX_ASSERT(m.format == FORMAT_1 || m.format == FORMAT_2, D_00176A88, copyChannelC_name, 1544);
+    if (src_c != dst_c) {
+        unsigned char *dst = image.addr();
+        unsigned char *src = image.addr();
+        dst += dst_c;
+        src += src_c;
+        for (unsigned int i = 0; i < (unsigned int)(m.width * m.height); i++) {
+            *dst = *src;
+            src += 4;
+            dst += 4;
+        }
+        common::Log() << D_00176D18 << (int)dst_c << D_00176D28 << (int)src_c << D_0017693C;
+    }
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/textures_Texture", _ZNK8textures7Texture11saveChannelENS_7ChannelEPKc);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/textures_Texture", _ZN8textures7Texture4copyERKS0_iiiiii);
+void textures::Texture::copy(const Texture &_Src, int sx, int sy, int w, int h, int dx, int dy)
+{
+    TEX_ASSERT(m.format == FORMAT_1 || m.format == FORMAT_2, D_00176A88, copy_name, 1598);
+    TEX_ASSERT(m.format == _Src.m.format, D_00176DD4, copy_name, 1600);
+    unsigned int *src = (unsigned int *)const_cast<Texture &>(_Src).image.addr();
+    unsigned int *dst = (unsigned int *)image.addr();
+    for (int i = 0; i < w; i++) {
+        for (int j = 0; j < h; j++) {
+            int x0 = sx + i;
+            int y0 = sy + j;
+            int x1 = dx + i;
+            int y1 = dy + j;
+            if (x0 >= 0)
+                if (x0 < _Src.m.width)
+                    if (y0 >= 0)
+                        if (y0 < _Src.m.height)
+                            if (x1 >= 0)
+                                if (x1 < m.width)
+                                    if (y1 >= 0)
+                                        if (y1 < m.height)
+                                            {
+                                                unsigned int *d = dst + (x1 + y1 * m.width);
+                                                *d = src[x0 + y0 * _Src.m.width];
+                                            }
+        }
+    }
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/textures_Texture", _ZNK8textures7Texture4saveERKSs);
 
@@ -370,7 +519,58 @@ void textures::Texture::blur(int radius, float sigma)
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/textures_Texture", _ZNK8textures7Texture4saveERKSsiiii);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/textures_Texture", _ZN8textures7Texture13setAlphaCountEPiS1_S1_hh);
+int textures::Texture::setAlphaCount(int *n_lo, int *n_hi, int *n_mid, unsigned char lo, unsigned char hi)
+{
+    TEX_ASSERT(valid(), D_00176940, setAlphaCount_name, 1807);
+    int c_lo = 0;
+    int c_hi = 0;
+    int c_mid = 0;
+    unsigned char *p = 0;
+    unsigned int n = 0;
+    if (m.format == FORMAT_1 || m.format == FORMAT_2) {
+        p = image.addr() + 3;
+        n = m.width * m.height;
+    } else if (m.format == FORMAT_4) {
+        p = clut.addr() + 3;
+        n = 256;
+    } else if (m.format == FORMAT_5) {
+        p = clut.addr() + 3;
+        n = 16;
+    }
+    for (unsigned int i = 0; i < n; i++) {
+        if (*p <= lo)
+            c_lo++;
+        else if (*p >= hi)
+            c_hi++;
+        else
+            c_mid++;
+        p += 4;
+    }
+    if (n_lo)
+        *n_lo = c_lo;
+    if (n_hi)
+        *n_hi = c_hi;
+    if (n_mid)
+        *n_mid = c_mid;
+    m.alpha_flags = (AlphaMask)0;
+    if (c_lo)
+        m.alpha_flags = (AlphaMask)8;
+    if (c_hi)
+        m.alpha_flags = (AlphaMask)(m.alpha_flags | 0x10);
+    if (c_mid)
+        m.alpha_flags = (AlphaMask)(m.alpha_flags | 0x20);
+    bool ret;
+    if (c_lo && !c_hi && !c_mid)
+        ret = false;
+    else if (!c_lo && c_hi && !c_mid)
+        ret = false;
+    else {
+        m.alpha_flags = (AlphaMask)(m.alpha_flags | (c_mid ? ALPHA_BLEND : ALPHA_TEST));
+        m.alpha_flags = (AlphaMask)(m.alpha_flags | 1);
+        ret = true;
+    }
+    return ret;
+}
 
 void textures::Texture::allocate(unsigned int n, unsigned int nclut)
 {
@@ -399,10 +599,6 @@ void _GLOBAL__D__ZN8textures7TextureaSERKS0_(void)
 /* out-of-line inline members / instances that stay asm */
 #undef INCLUDE_ASM
 #define INCLUDE_ASM INCLUDE_ASM_LINKONCE
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/textures_Texture", _ZN6common7t_arrayIhEaSERKS1_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/textures_Texture", _ZN6common4SwapIN8textures7Texture15CopiableMembersEEEvRT_S5_);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/textures_Texture", _ZN8textures7Texture7convertINS_4ABGRENS_4ARGBEEEvv);
 
