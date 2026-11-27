@@ -4,6 +4,123 @@
 #include "cxx/defer_asm.h"
 #include "../main.hpp"
 
+/* A template instance kept as asm: explicitly instantiated wrapper (its own code goes to a
+   discarded section), so the instance's .gnu.linkonce.t section is created in pending-template
+   order like cc1plus's own instances; LEN = strlen(NAME) + 2 (the wrapper's mangled name). */
+#if defined(M2CTX) || defined(PERMUTER)
+#define INST_INCLUDE_ASM(FOLDER, NAME, LEN)
+#define INST2_INCLUDE_ASM(FOLDER, NAME, NAME2, LEN)
+#else
+#define INST_INCLUDE_ASM(FOLDER, NAME, LEN) \
+    template<int> void NAME##_i() __attribute__((section(".discard.asmi"))); \
+    template<int> void NAME##_i() \
+    { \
+        __asm__(".end _Z" #LEN #NAME "_iILi0EEvv\n" \
+                ".section .gnu.linkonce.t." #NAME ",\"ax\",@progbits\n" \
+                "    .set noat\n" \
+                "    .set noreorder\n" \
+                "    .include \"" FOLDER "/" #NAME ".s\"\n" \
+                "    .set reorder\n" \
+                "    .set at\n" \
+                ".section .discard.asmi\n" \
+                ".ent _Z" #LEN #NAME "_iILi0EEvv\n"); \
+    } \
+    template void NAME##_i<0>();
+/* ... and one split in two by the disassembler (NAME2 is its tail) */
+#define INST2_INCLUDE_ASM(FOLDER, NAME, NAME2, LEN) \
+    template<int> void NAME##_i() __attribute__((section(".discard.asmi"))); \
+    template<int> void NAME##_i() \
+    { \
+        __asm__(".end _Z" #LEN #NAME "_iILi0EEvv\n" \
+                ".section .gnu.linkonce.t." #NAME ",\"ax\",@progbits\n" \
+                "    .set noat\n" \
+                "    .set noreorder\n" \
+                "    .include \"" FOLDER "/" #NAME ".s\"\n" \
+                "    .include \"" FOLDER "/" #NAME2 ".s\"\n" \
+                "    .set reorder\n" \
+                "    .set at\n" \
+                ".section .discard.asmi\n" \
+                ".ent _Z" #LEN #NAME "_iILi0EEvv\n"); \
+    } \
+    template void NAME##_i<0>();
+#endif
+
+/* interp's assert (common/assert) */
+#define INTERP_ASSERT(c, text, fn, line) \
+    if (!(c)) { \
+        common::common_internal::assert_display(D_00161068, text, D_00161040, fn, line, D_00160FB4); \
+        common::common_internal::on_error(); \
+        common::common_internal::clash(); \
+    }
+extern const char D_00160FB4[];     /* " " */
+extern const char D_00161040[];     /* "../lib/interp/KeyFrameSequenceBase.h" */
+extern const char D_00161068[];     /* " *** error " */
+extern const char D_001611F4[];     /* "_Index >= 0 && _Index < (int) _keys.size()" */
+extern const char PF_setKeyValue_f[] __asm__("_ZZN6interp20KeyFrameSequenceBaseIfE11setKeyValueEifE19__PRETTY_FUNCTION___1611A8");
+extern const char PF_setKeyValue_q[] __asm__("_ZZN6interp20KeyFrameSequenceBaseIN4math10quaternionEE11setKeyValueEiS2_E19__PRETTY_FUNCTION__");
+
+namespace interp {
+template<class T> struct kfs_data;
+template<> struct kfs_data<float> {
+    static const char *setKeyValue() { return PF_setKeyValue_f; }
+};
+template<> struct kfs_data<math::quaternion> {
+    static const char *setKeyValue() { return PF_setKeyValue_q; }
+};
+}
+
+/* the instances this object holds (CityApp's object holds the others) */
+template<class T> void interp::KeyFrameSequenceBase<T>::setKeyValue(int _Index, T v)
+{
+    INTERP_ASSERT(_Index >= 0 && _Index < (int)_keys.size(), D_001611F4, kfs_data<T>::setKeyValue(), 274);
+    _keys[_Index].setValue(v);
+    on_set_key_value(_Index);
+}
+
+template<class T> T interp::KeyFrameSequenceA<T>::op(T a, T b)
+{
+    return a + b;
+}
+
+template<class T> T interp::KeyFrameSequenceA<T>::op_inv(T a, T b)
+{
+    return a - b;
+}
+
+template<class T> T interp::KeyFrameSequenceA<T>::op_identity() const
+{
+    return 0;
+}
+
+/* the object's template instances (.gnu.linkonce.t), explicitly instantiated in the original's order */
+INST_INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/interp_Path", _ZN6interp20KeyFrameSequenceBaseIfEC2Ev, 41)
+
+INST_INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/interp_Path", _ZN6interp20KeyFrameSequenceBaseIN4math10quaternionEEC2Ev, 59)
+
+template void interp::KeyFrameSequenceBase<float>::setKeyValue(int, float);
+
+template void interp::KeyFrameSequenceBase<math::quaternion>::setKeyValue(int, math::quaternion);
+
+INST_INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/interp_Path", _ZNSt6vectorIN6interp8KeyFrameIfEESaIS2_EEaSERKS4_, 52)
+
+INST_INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/interp_Path", _ZNSt6vectorIN6interp8KeyFrameIN4math10quaternionEEESaIS4_EEaSERKS6_, 70)
+
+INST_INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/interp_Path", _ZSt13__destroy_auxIPN6interp8KeyFrameIfEEEvT_S4_12__false_type, 65)
+
+INST_INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/interp_Path", _ZSt24__uninitialized_copy_auxIN9__gnu_cxx17__normal_iteratorIPKN6interp8KeyFrameIfEESt6vectorIS4_SaIS4_EEEEPS4_ET0_T_SD_SC_12__false_type, 140)
+
+INST_INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/interp_Path", _ZSt24__uninitialized_copy_auxIN9__gnu_cxx17__normal_iteratorIPKN6interp8KeyFrameIN4math10quaternionEEESt6vectorIS6_SaIS6_EEEEPS6_ET0_T_SF_SE_12__false_type, 158)
+
+INST_INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/interp_Path", _ZN6interp17KeyFrameSequenceAIfED1Ev, 38)
+
+INST_INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/interp_Path", _ZN6interp17KeyFrameSequenceAIfED0Ev, 38)
+
+template float interp::KeyFrameSequenceA<float>::op(float, float);
+
+template float interp::KeyFrameSequenceA<float>::op_inv(float, float);
+
+template float interp::KeyFrameSequenceA<float>::op_identity() const;
+
 extern const float D_00160F70;      /* 1.0f: deleteLastRecord's identity rotation */
 extern const float D_00160F74;      /* 1.0f: finishRecording's closing dt */
 
@@ -107,31 +224,3 @@ void _GLOBAL__D__ZN6interp4PathC2Ev(void)
 {
     static_init(0, 0xFFFF);
 }
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/interp_Path", _ZN6interp20KeyFrameSequenceBaseIfEC2Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/interp_Path", _ZN6interp20KeyFrameSequenceBaseIN4math10quaternionEEC2Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/interp_Path", _ZN6interp20KeyFrameSequenceBaseIfE11setKeyValueEif);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/interp_Path", _ZN6interp20KeyFrameSequenceBaseIN4math10quaternionEE11setKeyValueEiS2_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/interp_Path", _ZNSt6vectorIN6interp8KeyFrameIfEESaIS2_EEaSERKS4_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/interp_Path", _ZNSt6vectorIN6interp8KeyFrameIN4math10quaternionEEESaIS4_EEaSERKS6_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/interp_Path", _ZSt13__destroy_auxIPN6interp8KeyFrameIfEEEvT_S4_12__false_type);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/interp_Path", _ZSt24__uninitialized_copy_auxIN9__gnu_cxx17__normal_iteratorIPKN6interp8KeyFrameIfEESt6vectorIS4_SaIS4_EEEEPS4_ET0_T_SD_SC_12__false_type);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/interp_Path", _ZSt24__uninitialized_copy_auxIN9__gnu_cxx17__normal_iteratorIPKN6interp8KeyFrameIN4math10quaternionEEESt6vectorIS6_SaIS6_EEEEPS6_ET0_T_SF_SE_12__false_type);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/interp_Path", _ZN6interp17KeyFrameSequenceAIfED1Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/interp_Path", _ZN6interp17KeyFrameSequenceAIfED0Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/interp_Path", _ZN6interp17KeyFrameSequenceAIfE2opEff);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/interp_Path", _ZN6interp17KeyFrameSequenceAIfE6op_invEff);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/interp_Path", _ZNK6interp17KeyFrameSequenceAIfE11op_identityEv);
