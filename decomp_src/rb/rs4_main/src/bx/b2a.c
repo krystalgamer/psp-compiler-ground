@@ -79,13 +79,23 @@ struct B2aFile {
 	B2aHdr *hdr;
 };
 
-struct Object {
-	unsigned short sibling, child;
-	int _4, _8;
+struct ObjState {
+	int _8;
 	float rot;
 	unsigned int col;
 	FVEC pos;
 	FVEC scale;
+};
+
+struct Object {
+	unsigned short sibling, child;
+	int _4;
+	ObjState cur;
+	ObjState prev;
+	char _60[0x40];
+	unsigned char enable;
+	char _a1[0xF];
+	Object();
 	void Clear();
 	void Scale(float, float);
 	void MoveTo(FVEC &v);
@@ -549,18 +559,32 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _ZN3B2A7Manager8getVa
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _ZN3B2A7Manager8getValueERNS_4RGBAERNS_8KeyArrayIS1_EEf);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _ZN3B2A6ObjectC2Ev);
+}
+B2A::Object::Object()
+{
+	cur._8 = 0;
+	Clear();
+	Refresh();
+	enable = 0;
+}
+extern "C" {
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _ZN3B2A6ObjectC1Ev);
 
+}
+extern "C" {
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _ZN3B2A6Object5ClearEv);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _ZN3B2A6Object7RefreshEv);
+}
+void B2A::Object::Refresh()
+{
+	prev = cur;
+}
+extern "C" {
 
 }
 void B2A::Object::MoveTo(FVEC &v)
 {
-	pos = v;
+	cur.pos = v;
 }
 extern "C" {
 
@@ -568,7 +592,7 @@ extern "C" {
 
 void B2A::Object::Scale(float x, float y)
 {
-	scale.Set(x, y, 0.0f, 0.0f);
+	cur.scale.Set(x, y, 0.0f, 0.0f);
 }
 
 extern "C" {
