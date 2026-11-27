@@ -43,7 +43,19 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/dev/file", D_000F9EF4);
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/dev/file", D_000F9F04);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/file", fileTerm);
+extern unsigned char D_000F9E54, D_000F9F04;
+int semaTerm(int);
+int fileTerm(void)
+{
+	int ret, s = -1;
+	consPrintf(&D_000F9E54, "fileTerm");
+	ret = semaTerm(FileSema);
+	if (ret != 1)
+		consPrintf(&D_000F9E68, &D_000F9E84, 0xAC, "fileTerm", "Ret == TRUE");
+	FileSema = s;
+	consPrintf(&D_000F9F04);
+	return 1;
+}
 
 void fileLock(void) {
     if (FileSema > 0) {

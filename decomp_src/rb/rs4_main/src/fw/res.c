@@ -91,7 +91,8 @@ void resSetOvlProcTbl(int arg0) {
     }
 }
 
-void resOvlProcInst(int i, int j, int a, int b, int c, int d)
+void resOvlProcInst(i, j, a, b, c, d)
+int i, j, a, b, c, d;
 {
 	OvlFn *t = ((InstEnt2 *)&InstBuf)[i].tbl;
 	if (t)
@@ -102,7 +103,12 @@ void resOvlProcCurrent(int arg0, int arg1, int arg2, int arg3) {
     resOvlProcInst(CurrentInst, arg0, arg1, arg2, arg3, arg0);
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", resOvlProcAll);
+void resOvlProcAll(int a, int b, int c, int d)
+{
+	int i;
+	for (i = 0; i <= CurrentInst; i++)
+		resOvlProcInst(i, a, b, c, d);
+}
 
 int resReadInstThr(int thr, int inst)
 {

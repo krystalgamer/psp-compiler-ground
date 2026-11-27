@@ -21,7 +21,16 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/lib/rsv", D_000FB1C8);
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/lib/rsv", D_000FB1D0);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/lib/rsv", rsvTerm);
+extern unsigned char D_000FB1C8;
+int _memFree(void *, void *, int);
+int rsvTerm(void *p)
+{
+	if (p == NULL)
+		consPrintf(&D_000FB180, &D_000FB19C, 0x43, "rsvTerm", &D_000FB1C8);
+	consPrintf("%s : 0x%08x\n", "rsvTerm", p);
+	_memFree(p, &D_000FB19C, 0x47);
+	return 1;
+}
 
 void *rsvHeadAlive(void **arg0) {
     void *p = *arg0;

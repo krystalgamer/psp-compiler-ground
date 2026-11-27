@@ -85,7 +85,13 @@ void gameOvlProcCurrent(int arg0, int arg1, int arg2, int arg3) {
     gameOvlProcInst(resGetCurrentInst(), arg0, arg1, arg2, arg3);
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/game", gameOvlProcAll);
+void gameOvlProcAll(int a, int b, int c, int d)
+{
+	int i;
+	int n = resGetCurrentInst();
+	for (i = 0; i <= n; i++)
+		gameOvlProcInst(i, a, b, c, d);
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/game", D_000FC690);
 
