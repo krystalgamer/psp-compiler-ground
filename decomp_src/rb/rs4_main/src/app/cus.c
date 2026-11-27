@@ -135,7 +135,17 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/cus", find_section);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/cus", get_index_value);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/cus", get_index_num);
+extern unsigned char D_000FC3D8;
+char *strtok(char *, const char *);
+int get_index_num(char *str) {
+    int n;
+    if (strtok(str, (char *)&D_000FC3D8) == NULL) {
+        return 0;
+    }
+    for (n = 1; strtok(NULL, (char *)&D_000FC3D8) != NULL; n++) {
+    }
+    return n;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/cus", cusGetString);
 
@@ -183,7 +193,15 @@ void cusGetKeyNum(int arg0, int arg1) {
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/cus", cusGetKeyName);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/cus", cusGetKeyIndex);
+int get_key_index();
+int get_key_index_fast();
+int cusGetKeyIndex(int name, char *section, int key) {
+    load_cus(cus_inst, name);
+    if (section == NULL) {
+        return get_key_index_fast(key);
+    }
+    return get_key_index(section, key);
+}
 
 void *_memAlloc();
 int _fontAlloc(int a, int size)
@@ -194,7 +212,11 @@ int _fontAlloc(int a, int size)
 	return r;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/cus", _fontFree);
+void _fontFree(int heap, int *p) {
+    if (p != (int *)-1) {
+        _memFree(p, &D_000FC3F8, 0x4C);
+    }
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/cus", D_000FC3F8);
 
@@ -298,7 +320,14 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/cus", fontIsMarkFont);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/cus", fontGetCharWidth);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/cus", fontGetCharHeight);
+extern int D_00119780;
+extern const float D_000FC670;
+float fontGetCharHeight(void *arg0) {
+    if (arg0 == NULL) {
+        consPrintf(&D_000FC41C, &D_000FC3F8, 0x145, "fontGetCharHeight", &D_000FC524);
+    }
+    return (float)((D_00119780 + 0x3F) & ~0x3F) * D_000FC670;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/cus", fontGetStrWidth);
 
