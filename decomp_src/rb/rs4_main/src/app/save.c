@@ -36,7 +36,29 @@ unsigned char *p;
 		((SaveData *)p)->sub.opt[i].b1 = l[0xC] & 1;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/save", saveInit);
+extern unsigned char D_000FE490;
+void *_memAllocZero(int, void *, int);
+typedef struct { int num; int size; int f8; char *data; } SaveCntx;
+SaveCntx *saveInit(int n)
+{
+	SaveCntx *c;
+	int i;
+	consPrintf(&D_000FE460, "saveInit");
+	if (n <= 0)
+		consPrintf(&D_000FE474, &D_000FE464, 0x40, "saveInit", &D_000FE490);
+	c = _memAllocZero(16, &D_000FE464, 0x43);
+	if (c == NULL)
+		consPrintf(&D_000FE474, &D_000FE464, 0x44, "saveInit", &D_000FE498);
+	c->num = n;
+	c->f8 = 0;
+	c->size = n * 0x14B0;
+	c->data = _memAllocZero(n * 0x14B0, &D_000FE464, 0x4C);
+	if (c->data == NULL)
+		consPrintf(&D_000FE474, &D_000FE464, 0x4D, "saveInit", &D_000FE4A0);
+	for (i = 0; i < n; i++)
+		saveDataInit(c->data + i * 0x14B0, i);
+	return c;
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/save", D_000FE460);
 
