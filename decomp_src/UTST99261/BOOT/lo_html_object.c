@@ -18,6 +18,27 @@ extern int D_00584D08;
 #ifndef NULL
 #define NULL ((void *)0)
 #endif
+char *getDOMAttributeValue(void *node, void *name);
+void MEM_free(int pool, void *p);
+int html_IMG_inner(void *node, BOX *box);
+extern unsigned char _DOMclassid;
+extern unsigned char _DOMdata;
+extern unsigned char _DOMtype;
+typedef struct { int r[8]; int x20; int num; int x28; char *name; int x30; char *scrolling; int x38[3]; int cols; int x48[16]; int rows; } FRGEOM;
+char *getTagName(void *node);
+int strcmp(const char *a, const char *b);
+void *Node_getParentNode(void *node);
+int getFramenum(BOX *box);
+void getFrameSizeFromFramesetBox(int *x, int *y, int *w, int *h, BOX *fs, int n);
+void initBodyContent(BOX *box, void *node);
+void attr_MARGINWIDTH(void *node, BOX *box);
+void attr_MARGINHEIGHT(void *node, BOX *box);
+void addFocusList(void *ctx, int kind, void *node, short tabindex, void *info);
+void createFrameBorder(BOX *box, void *node, int *w, int *h, int *x, int *y);
+void addBoxList(void *list, BOX *box);
+void *lfm_createPageRegion(BOX *box, int w);
+extern unsigned char _DOMscrolling;
+extern unsigned char _DOMname;
 int isImageMimeType(signed char *arg0) {
     return (unsigned int) (UTL_guessMIMEType(arg0) - 1) < 4U;
 }
@@ -29,7 +50,69 @@ int isImageFileType(signed char *arg0) {
     return (unsigned int) (UTL_guessMIMETypeFromName(arg0) - 1) < 4U;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_html_object", html_OBJECT);
+BOX *html_OBJECT(void *node, BOX *parent, BOX *prev) {
+    BOX *box = NULL;
+    char *classid;
+    char *data;
+    char *type;
+    int img;
+
+    classid = getDOMAttributeValue(node, &_DOMclassid);
+    data = getDOMAttributeValue(node, &_DOMdata);
+    if (data != NULL) {
+        img = 0;
+        type = getDOMAttributeValue(node, &_DOMtype);
+        if (type != NULL) {
+            if (isImageMimeType((signed char *)type) == 1) {
+                img = 1;
+            }
+            MEM_free(0, type);
+        } else {
+            if (isImageFileType((signed char *)data) == 1) {
+                img = 1;
+            }
+        }
+        if (img == 1) {
+            box = createBox(node, 1);
+            if (box == NULL) {
+                if (classid != NULL) {
+                    MEM_free(0, classid);
+                }
+                if (data != NULL) {
+                    MEM_free(0, data);
+                }
+                return NULL;
+            }
+            linkBox(box, parent, prev);
+            box->display = 1;
+            box->html = 0x42;
+            html_IMG_inner(node, box);
+            D_00584D08 = 1;
+        }
+    }
+    if (box == NULL) {
+        box = createBox(node, 1);
+        if (box == NULL) {
+            return NULL;
+        }
+        linkBox(box, parent, prev);
+        box->display = 1;
+        box->html = 0x42;
+        initNoneContent(box, node);
+        initBoxProperty(box);
+        applyCSSExtStyleSheetToBox(node, box);
+        applyCSSInlinePropertyToBox(node, box);
+    }
+    if (classid != NULL) {
+        MEM_free(0, classid);
+    }
+    if (data != NULL) {
+        MEM_free(0, data);
+    }
+    applyCSSExtStyleSheetToBox(node, box);
+    applyCSSInlinePropertyToBox(node, box);
+    return box;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -46,9 +129,85 @@ int html_PARAM(void) {
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_html_object", html_FRAME);
+BOX *html_FRAME(void *node, BOX *parent, BOX *prev) {
+    int x;
+    int y;
+    int w;
+    int h;
+    BOX *body;
+    void *n;
+    char *t;
+    BOX *fs;
+    int num;
+    BOX *box;
 
-INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/lo_html_object", D_0013F13C);
+    body = getBodyBox(parent);
+    if (body == NULL) {
+        return NULL;
+    }
+    for (n = node; n != NULL; n = Node_getParentNode(n)) {
+        t = getTagName(n);
+        if (t != NULL && strcmp(t, "FRAMESET") == 0) {
+            break;
+        }
+    }
+    if (n == NULL) {
+        return NULL;
+    }
+    for (fs = parent; fs != NULL; fs = fs->parent) {
+        if (fs->content == 2) {
+            break;
+        }
+    }
+    if (fs == NULL) {
+        return NULL;
+    }
+    num = getFramenum(fs);
+    if (((FRGEOM *)fs->geom)->cols != 0 && ((FRGEOM *)fs->geom)->rows != 0) {
+        if (num >= ((FRGEOM *)fs->geom)->cols * ((FRGEOM *)fs->geom)->rows) return NULL;
+    } else if (((FRGEOM *)fs->geom)->cols != 0) {
+        if (num >= ((FRGEOM *)fs->geom)->cols) return NULL;
+    } else if (((FRGEOM *)fs->geom)->rows != 0) {
+        if (num >= ((FRGEOM *)fs->geom)->rows) return NULL;
+    } else {
+        return NULL;
+    }
+    getFrameSizeFromFramesetBox(&x, &y, &w, &h, fs, num);
+    box = createBox(node, 1);
+    if (box == NULL) {
+        return NULL;
+    }
+    linkBox(box, fs, prev);
+    box->display = 0;
+    box->html = 0x24;
+    initBodyContent(box, node);
+    initBoxProperty(box);
+    box->style->unk28 = 0;
+    box->style->unk2A = 0;
+    box->style->unk2C = 0;
+    box->style->unk2E = 0;
+    attr_MARGINWIDTH(node, box);
+    attr_MARGINHEIGHT(node, box);
+    ((FRGEOM *)box->geom)->num = num;
+    ((FRGEOM *)box->geom)->scrolling = getDOMAttributeValue(node, &_DOMscrolling);
+    addFocusList(box, 0, box, 0, 0);
+    createFrameBorder(box, node, &w, &h, &x, &y);
+    ((FRGEOM *)box->geom)->r[0] = w;
+    ((FRGEOM *)box->geom)->r[1] = h;
+    ((FRGEOM *)box->geom)->r[2] = x;
+    ((FRGEOM *)box->geom)->r[3] = y;
+    ((FRGEOM *)box->geom)->r[4] = x;
+    ((FRGEOM *)box->geom)->r[5] = y;
+    ((FRGEOM *)box->geom)->r[6] = 0;
+    ((FRGEOM *)box->geom)->r[7] = 0;
+    t = getDOMAttributeValue(node, &_DOMname);
+    ((FRGEOM *)box->geom)->name = t;
+    addBoxList((char *)body->geom + 0x48, box);
+    box->region = lfm_createPageRegion(box, ((FRGEOM *)box->geom)->r[2]);
+    return box;
+}
+
+const char D_0013F13C[4] __attribute__((aligned(4))) = "*";
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_html_object", html_FRAMESET);
 
