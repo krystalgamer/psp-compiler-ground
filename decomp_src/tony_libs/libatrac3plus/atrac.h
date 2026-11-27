@@ -112,7 +112,7 @@ int sceAudiocodecInit(unsigned int *codec, int type);
 int sceAudiocodecCheckNeedMem(unsigned int *codec, int type);
 int sceAudiocodecGetEDRAM(unsigned int *codec, int type);
 int sceAudiocodecReleaseEDRAM(unsigned int *codec);
-int func_00001640(AtracCtx *ctx, int codec);
+void func_00001640(AtracCtx *ctx, int codec);
 unsigned int func_0000114C(unsigned int base, unsigned int pos, unsigned int end, unsigned int size);
 void func_00002288(unsigned char *dst, unsigned char *src, int n);
 void func_00003148(AtracInfo *info, AtracBufInfo *out);

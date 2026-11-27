@@ -432,7 +432,16 @@ unsigned int func_0000114C(unsigned int base, unsigned int pos, unsigned int end
 	return ret;
 }
 
-INCLUDE_ASM("tmp/asm/tony_libs/libatrac3plus/nonmatchings/libatrac3plus", module_start);
+int module_start(void)
+{
+	int i;
+
+	for (i = 0; i < 2; i++)
+		func_00001640(&D_00003930[i], 0x1000);
+	for (i = 2; i < 4; i++)
+		func_00001640(&D_00003930[i], 0x1001);
+	return 0;
+}
 
 int module_stop(void)
 {
@@ -536,7 +545,7 @@ int sceAtracGetInternalErrorInfo(unsigned int id, int *out)
 	return 0;
 }
 
-int func_00001640(AtracCtx *ctx, int codec)
+void func_00001640(AtracCtx *ctx, int codec)
 {
 	int type = 0x1001;
 	int ret;
@@ -556,5 +565,4 @@ int func_00001640(AtracCtx *ctx, int codec)
 			ctx->inUse = 0;
 		}
 	}
-	return ret;
 }
