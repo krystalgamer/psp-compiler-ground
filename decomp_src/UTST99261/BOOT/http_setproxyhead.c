@@ -1,6 +1,8 @@
 /* cflags: -O1 */
 #include "common.h"
 #include "m2c_macros.h"
+int UTL_mfileseek(void *f, int pos);
+int http_auth_passwdcb();
 typedef struct UserAuth {
     char *user;                       /* 0x0 ua */
     char *passwd;                     /* 0x4 ua */
@@ -392,4 +394,39 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/http_setproxyhead", http_setreq
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/http_setproxyhead", http_auth_passwdcb);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/http_setproxyhead", http_setrequestheader_Authorization);
+int http_setrequestheader_Authorization(int h, UserAuth *a)
+{
+    char *o = (char *)(h * 2);
+    int r;
+    int n;
+
+    if (a != NULL) {
+        if (a->user == NULL)
+            r = sceHttpDisableAuth(M2C_FIELD(o, int *, 0xD4));
+        else {
+            gUserAuth.user = a->user;
+            gUserAuth.passwd = a->passwd;
+            if (M2C_FIELD(o, void **, 0xE4) != NULL && M2C_FIELD(o, int *, 0xE8) > 0) {
+                n = UTL_mfilesize(M2C_FIELD(o, void **, 0xE4));
+                gUserAuth.data = MEM_malloc(0, n + 1);
+                if (gUserAuth.data == NULL) {
+                    if (M2C_FIELD(o, int *, 0) == 0)
+                        M2C_FIELD(o, int *, 0) = -103;
+                    return M2C_FIELD(o, int *, 0);
+                }
+                gUserAuth.len = UTL_mfileread(M2C_FIELD(o, void **, 0xE4), gUserAuth.data, n);
+                UTL_mfileseek(M2C_FIELD(o, void **, 0xE4), 0);
+            } else {
+                gUserAuth.data = NULL;
+                gUserAuth.len = 0;
+            }
+            r = sceHttpSetAuthInfoCB(M2C_FIELD(o, int *, 0xD8), http_auth_passwdcb);
+        }
+        if (r < 0) {
+            if (M2C_FIELD(o, int *, 0) == 0)
+                M2C_FIELD(o, int *, 0) = r;
+            return M2C_FIELD(o, int *, 0);
+        }
+    }
+    return 0;
+}
