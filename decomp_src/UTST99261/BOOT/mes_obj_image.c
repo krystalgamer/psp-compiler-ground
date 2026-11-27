@@ -15,7 +15,6 @@ typedef struct MesImagePriv {
     void *fC;
 } MesImagePriv;
 MesObject *mes_image_new(MesContext *ctx, MesImagePriv *priv);
-void *MEM_malloc(M2C_UNK, M2C_UNK);                 /* extern */
 
 
 
