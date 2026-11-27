@@ -54,6 +54,7 @@ extern u8 _DOMusemap[];
 void getBodyAbsolutePos(BOX *box, int *px, int *py);
 FOCUSLIST *getFocusListWithArea(void *frame, void *obj, void *link);
 int getDataAttribute(void *a, int x, int y);
+typedef struct { int sid; u8 u4[0xC]; int x10; BOX *x14; void *x18; void *x1C; int x20; int x24; BOX *x28; } LEHG2;
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_eventHandler", getTargetBox);
 
 void *getEventTargetNode(BOX *box) {
@@ -80,7 +81,125 @@ void *getTargetImageMapArea(void *a0, void *a1, void *a2, int a3, int t0) {
     return area;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_eventHandler", handlePointingMove);
+int handlePointingMove(void *ev) {
+    LEHPT2 *m = M2C_FIELD(ev, LEHPT2 **, 0x1C);
+    LEHG2 *g = (LEHG2 *)gESPRIT_LO_GLOBAL_NDA;
+    void *head;
+    BOX *body;
+    BOX *box;
+    void *n;
+    char *map;
+    void *area;
+    void *hn;
+    int x, y;
+    int w, h;
+    int px, py;
+    int vx, vy;
+    LEHJSEVENT jev;
+    g->x14 = NULL;
+    if (g->x28 != NULL) {
+        deleteBorder(M2C_FIELD(g->x28->geom, void **, 4));
+        g->x28 = NULL;
+    }
+    head = HST_getHeadHistoryNode();
+    if (head == NULL) {
+        return -1;
+    }
+    body = M2C_FIELD(head, BOX **, 0x6C);
+    if (body == NULL || (box = getTargetBox(body, m->x, m->y, m->x4)) == NULL) {
+        return -1;
+    }
+    getEventTargetNode(box);
+    if (!checkBoxValidity(box)) {
+        return -1;
+    }
+    if (box->content == 1) {
+        getBodyAbsolutePos(box, &x, &y);
+        getViewClientSize(box, &w, &h);
+        if (m->x >= x + w || m->y >= y + h) {
+            g->x10 = 1;
+            return 0;
+        }
+    }
+    g->x10 = 0;
+    if (D_00584CEC != 0) {
+        return 0;
+    }
+    if (box->content == 3) {
+        g->x14 = box;
+        return 0;
+    }
+    if (M2C_FIELD(box, s16 *, 0x3E) == 1) {
+        return 0;
+    }
+    n = getEventTargetNode(box);
+    if (Node_getJSObj(n) == NULL) {
+        n = getDOMDocument(n);
+    }
+    if (n != g->x18) {
+        hn = NULL;
+        if (g->sid != 0) {
+            hn = HST_searchSessionIDHistoryNode(g->sid);
+        }
+        if (hn != NULL && g->x18 != NULL) {
+            if (g->x1C != NULL) {
+                initJSEvent(&jev, 0xF, g->x18, g->x20, g->x24);
+                g->x1C = NULL;
+            } else {
+                initJSEvent(&jev, 0xF, g->x18, m->x, m->y);
+            }
+            sendJSBubbleUpEvent(g->x18, &jev);
+        }
+        initJSEvent(&jev, 0x10, n, m->x, m->y);
+        sendJSBubbleUpEvent(n, &jev);
+        g->x18 = n;
+        return 0;
+    } else {
+        if (box->content == 10 && box->html != 0x32) {
+            getBodyAbsolutePos(body, &px, &py);
+            getViewPort(body, &vx, &vy);
+            x = m->x - px + vx;
+            y = m->y - py + vy;
+            map = getDOMAttributeValue(getEventTargetNode(box), _DOMusemap);
+            if (map != NULL && *map == '#') {
+                area = getTargetImageMapArea(body, box, map + 1, x, y);
+                if (area == NULL) {
+                    if (g->x1C != NULL) {
+                        initJSEvent(&jev, 0xF, g->x18, g->x20, g->x24);
+                        sendJSBubbleUpEvent(n, &jev);
+                    }
+                    g->x1C = NULL;
+                } else {
+                    if (g->x1C == NULL) {
+                        initJSEvent(&jev, 0x10, n, m->x, m->y);
+                        sendJSBubbleUpEvent(g->x18, &jev);
+                        g->x1C = area;
+                    } else if (g->x1C == area) {
+                        initJSEvent(&jev, 0xE, n, m->x, m->y);
+                        sendJSBubbleUpEvent(n, &jev);
+                    } else {
+                        initJSEvent(&jev, 0xF, g->x18, g->x20, g->x24);
+                        sendJSBubbleUpEvent(n, &jev);
+                        initJSEvent(&jev, 0x10, n, m->x, m->y);
+                        sendJSBubbleUpEvent(n, &jev);
+                        g->x1C = area;
+                    }
+                    g->x20 = x;
+                    g->x24 = y;
+                }
+                if (map != NULL) {
+                    MEM_free(NULL, map);
+                }
+            }
+        } else {
+            g->x1C = NULL;
+        }
+    }
+    initJSEvent(&jev, 0xE, n, m->x, m->y);
+    sendJSBubbleUpEvent(n, &jev);
+    g->x18 = n;
+    return 0;
+}
 
 int handlePointingDown(void *ev) {
     LEHPT2 *m = M2C_FIELD(ev, LEHPT2 **, 0x1C);
