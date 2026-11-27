@@ -1474,7 +1474,47 @@ void particle_control(void)
 	}
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", particle_disp);
+void mat_local2screen(V3 *v, V3 *o);
+void inv_screffect_start(int x, int y, int z, int w, int h, int u, int v, float sx, float sy, int r, int g, int b, int a);
+void inv_screffect_start2(int x, int y, int w, int h, int u, int v, int r, int g, float sx, float sy, int b, int a);
+void sprite_set_3d_efc_rot(int tex, int a1, float x, float y, float z, int r, int g, int b, int c0, int c1, int c2, float u0, float v0, float u1, float v1, float sx, float sy, float rx, float ry, float rz, int a);
+void particle_disp(void)
+{
+	int i, a;
+	PARTICLE2 *p;
+	V3 v;
+
+	for (i = 0; i < 512; i++) {
+		p = &((PARTICLE2 *)&D_005EAB30)[i];
+		if (p->f0 == 0)
+			continue;
+		if (p->f14 != 0)
+			continue;
+		if (p->f2c <= 0.0f)
+			continue;
+		if (p->f5c <= 0.0f)
+			continue;
+		if (p->f60 <= 0.0f)
+			continue;
+		a = p->f2c;
+		if (a > 255)
+			a = 255;
+		if (p->fc == 0) {
+			if (p->f4 == 0) {
+				if (p->f8 == 0) {
+					mat_local2screen((V3 *)&p->f44, &v);
+					inv_screffect_start(v.x, v.y, v.z, p->f24, p->f28, p->f1c, p->f20, p->f5c, p->f60, p->f34, p->f38, p->f3c, a);
+				} else {
+					inv_screffect_start(p->f44, p->f48, p->f4c, p->f24, p->f28, p->f1c, p->f20, p->f5c, p->f60, p->f34, p->f38, p->f3c, a);
+				}
+			} else {
+				sprite_set_3d_efc_rot(p->f18, 0, p->f44, p->f48, p->f4c, p->f34, p->f38, p->f3c, 255, 100, 2, p->f24, p->f28, p->f1c, p->f20, p->f5c, p->f60, p->f6c, p->f70, p->f74, a);
+			}
+		} else {
+			inv_screffect_start2(p->f44, p->f48, p->f24, p->f28, p->f1c, p->f20, p->f34, p->f38, p->f5c, p->f60, p->f3c, a);
+		}
+	}
+}
 
 M2C_UNK particle_check(int no)
 {
