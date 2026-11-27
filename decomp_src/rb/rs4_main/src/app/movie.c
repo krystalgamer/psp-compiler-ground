@@ -125,7 +125,39 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/movie", movDecodeVideo);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/movie", movDecodeAudio);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/movie", movDraw);
+extern float D_00112150[8], D_00112170[8], D_00112190[4];
+void *i3dGetStage(void);
+void *I3dRenderStage__OpenPacket(void *, float);
+void I3dRenderStage__ClosePacket(void *, void *);
+void *xuTexMode(void *, int, int, int, int);
+void *xuTexImage(void *, int, int, int, int, void *);
+void *xuEnable(void *, int);
+void *xuTexFilter(void *, int, int);
+void *xuTexFunc(void *, int, int);
+void *xuTexWrap(void *, int, int);
+void *xuTexFlush(void *);
+void *I3dPk2dPrim_DrawSpriteFTU(void *, float *, float *, float *, float *, float *);
+int movDraw(void)
+{
+	void *st;
+	void *pk;
+	int r = 0;
+	if (pVideoRender != 0) {
+		st = i3dGetStage();
+		pk = I3dRenderStage__OpenPacket(st, 0.0f);
+		pk = xuTexMode(pk, 3, 0, 0, 0);
+		pk = xuTexImage(pk, 0, 0x200, 0x200, 0x200, pVideoRender);
+		pk = xuEnable(pk, 9);
+		pk = xuTexFilter(pk, 7, 1);
+		pk = xuTexFunc(pk, 0, 0);
+		pk = xuTexWrap(pk, 1, 1);
+		pk = xuTexFlush(pk);
+		pk = I3dPk2dPrim_DrawSpriteFTU(pk, &D_00112150[0], &D_00112150[4], &D_00112170[0], &D_00112170[4], D_00112190);
+		I3dRenderStage__ClosePacket(st, pk);
+		r = 1;
+	}
+	return r;
+}
 
 void movAudio(void)
 {
