@@ -11,8 +11,8 @@ void *Node_getJSObj(void *);
 void *Node_getParentNode(void *);
 void *getMapList(void *, void *);
 void *getAreaList(void *, void *, int, int);
-int actDefaultClickAction(void *frame, void *box, void *a2, int a3, int t0);
-void actLinkJump(void *frame, void *link, int a2);
+int actDefaultClickAction(void *frame, BOX *box, void *node, int x, int y);
+void actLinkJump(void *frame, void *link, char *a2);
 
 
 void *getSelectListFromGadget(void *g);
@@ -64,6 +64,12 @@ int DOMStringcasecmpChar(LEHDS *s, char *str);
 int Node_getNodeType(void *node);
 int sprintf(char *buf, const char *fmt, ...);
 extern u8 _DOMa[], _DOMarea[], _DOMbutton[], _DOMtextarea[], _DOMinput[], _DOMtype[], _DOMcheckbox[], _DOMimage[], _DOMpassword[], _DOMradio[], _DOMreset[], _DOMsubmit[], _DOMtext[], _DOMfile[], _DOMaccesskey[];
+typedef struct { u8 u0[0x20]; void *target; u8 u24[0xC]; } LEHJSEVENT2;
+int Element_hasAttribute(void *node, void *name);
+void *getAncestorLink(void *node);
+void **getFormList(void *body, void *node);
+int getInputType(void *node);
+extern u8 _DOMismap[];
 BOX *getTargetBox(BOX *box, int x, int y, int k) {
     BOX *found = NULL;
     BOX *r;
@@ -990,7 +996,85 @@ int actDefaultClickActionWithFocus(void *frame, FOCUSLIST *f, void *a2) {
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_eventHandler", actDefaultClickAction);
+int actDefaultClickAction(void *frame, BOX *box, void *node, int x, int y) {
+    char buf[16];
+    LEHJSEVENT2 jev;
+    BOX *body;
+    BOX *n;
+    char *map;
+    void *area;
+    void *link;
+    void *form;
+    void **fl;
+    int type;
+    int r;
+    int mx, my;
+    int px, py;
+    int vx, vy;
+    if (box == NULL || node == NULL) {
+        return -1;
+    }
+    if (M2C_FIELD(box, int *, 0x38) == 0x32000D && box->next != NULL) {
+        if (!(box->x + box->width >= x && box->x < x && box->y + box->height >= y && box->y < y)) {
+            n = box->next;
+            if (n->x + n->width >= x && n->x < x && n->y + n->height >= y && n->y < y) {
+                box = n;
+            }
+        }
+    }
+    body = getBodyBox(box);
+    if (box->content == 10 && box->html != 0x32) {
+        map = getDOMAttributeValue(node, _DOMusemap);
+        getBodyAbsolutePos(body, &px, &py);
+        getViewPort(body, &vx, &vy);
+        mx = x - px + vx;
+        my = y - py + vy;
+        if (map != NULL && *map == '#') {
+            area = getTargetImageMapArea(body, box, map + 1, mx, my);
+            if (area != NULL) {
+                actLinkJump(frame, M2C_FIELD(area, void **, 4), NULL);
+            }
+        } else if (Element_hasAttribute(node, _DOMismap) && (link = getAncestorLink(node)) != NULL) {
+            sprintf(buf, "?%d,%d", mx - box->x, my - box->y);
+            actLinkJump(frame, link, buf);
+        } else if ((link = getAncestorLink(node)) != NULL) {
+            actLinkJump(frame, link, NULL);
+        }
+        if (map != NULL) {
+            MEM_free(NULL, map);
+        }
+        return 0;
+    }
+    fl = getFormList(body, node);
+    form = NULL;
+    if (fl != NULL) {
+        form = *fl;
+    }
+    if (form != NULL && (type = getInputType(node)) != 0) {
+        if (D_00584CEC == 0) {
+            r = 0;
+            if (type == 10 || type == 5) {
+                initJSEvent((LEHJSEVENT *)&jev, 0x16, form, x, y);
+                jev.target = node;
+                r = sendJSEvent(Node_getJSObj(form), (LEHJSEVENT *)&jev);
+            } else if (type == 8) {
+                initJSEvent((LEHJSEVENT *)&jev, 0x13, form, x, y);
+                jev.target = node;
+                r = sendJSEvent(Node_getJSObj(form), (LEHJSEVENT *)&jev);
+            }
+            if (r == 1) {
+                return 0;
+            }
+        }
+        actFormInput(frame, Node_getBox(form), box, type);
+        return 0;
+    }
+    link = getAncestorLink(node);
+    if (link != NULL) {
+        actLinkJump(frame, link, NULL);
+    }
+    return 0;
+}
 
 void *getNextNode(void *root, void *node) {
     void *c;
