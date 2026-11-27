@@ -26,6 +26,9 @@ int NetMutexLock();
 int NetMutexUnlock();
 int NetMapRtError();
 
+int rt_comm_linkaddress_toint();
+int NetIPingIP();
+
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/Dme", rcsid_10DE3C);
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/Dme", gszDmeVersionString);
@@ -352,7 +355,18 @@ int NetPing(int a0, int a1, int a2)
     return e;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/Dme", NetPingIP);
+int NetPingIP(void *addr, int cb)
+{
+    int buf[4];
+    int r, e;
+    r = NetMapRtError(NetMutexLock());
+    if (r != 0) return r;
+    rt_comm_linkaddress_toint(buf, addr);
+    e = NetIPingIP(buf, cb);
+    r = NetMapRtError(NetMutexUnlock());
+    if (r != 0) return r;
+    return e;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/Dme", NetPingNetAddress);
 

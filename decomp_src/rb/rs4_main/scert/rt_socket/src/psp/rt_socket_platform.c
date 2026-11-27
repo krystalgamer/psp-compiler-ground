@@ -9,6 +9,10 @@ int rt_socket_recvmsg_platform(void);
 int rt_socket_get_err_platform();                   /* extern */
 int sceNetInetClose();                              /* extern */
 
+int sceNetResolverCreate(int *, void *, int);
+int sceNetResolverStartNtoA(int, const char *, void *, int, int);
+int sceNetResolverDelete(int);
+
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_socket/src/psp/rt_socket_platform", rcsid_10D120);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_socket/src/psp/rt_socket_platform", rt_socket_get_err_platform);
@@ -85,7 +89,17 @@ int rt_socket_find_sockets_with_data_platform(int *socks, int n, int timeout, in
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_socket/src/psp/rt_socket_platform", rt_socket_find_closed_sockets_platform);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_socket/src/psp/rt_socket_platform", rt_socket_get_host_by_name);
+int rt_socket_get_host_by_name(int *out, const char *name)
+{
+    int ip[4];
+    char buf[0x400];
+    int rid;
+    if (sceNetResolverCreate(&rid, buf, 0x400) < 0) return 1;
+    if (sceNetResolverStartNtoA(rid, name, ip, 5000000, 5) < 0) return 1;
+    *out = ip[0];
+    sceNetResolverDelete(rid);
+    return 0;
+}
 
 int sceNetApctlGetInfo(int, void *);
 int sceNetInetInetAddr(const char *);

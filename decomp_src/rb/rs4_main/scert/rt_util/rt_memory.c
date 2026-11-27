@@ -76,7 +76,18 @@ int rt_memory_align_alloc(RtAlignedMem *m, unsigned int size, unsigned short ali
     return ret;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_memory", rt_memory_align_alloc_init_zero);
+int rt_memory_align_alloc_init_zero(RtAlignedMem *m, unsigned int size, unsigned short al)
+{
+    int r;
+    if (m == NULL || size == 0) return 100;
+    ((int *)m)[0] = 0;
+    ((int *)m)[1] = 0;
+    r = rt_memory_align_alloc(m, size, al);
+    if (r != 0) return r;
+    if (((void **)m)[1] == NULL) return 100;
+    memset(((void **)m)[1], 0, size);
+    return 0;
+}
 
 int rt_memory_align_free(void **p)
 {

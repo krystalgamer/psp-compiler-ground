@@ -20,6 +20,9 @@ extern void *gObjectInterfacePtr;
 
 extern char *D_00132A34;
 
+void *NetIGetObject();
+int NetISendObjectFullUpdate();
+
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_object/src/DmeObject", NetISendMyClientUpdate);
 
 int NetMutexLock();
@@ -194,7 +197,16 @@ int NetRegisterRemoteObjectCallback(int a0, int a1, int a2, int a3)
     return e;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_object/src/DmeObject", NetSendObjectFullUpdate);
+int NetSendObjectFullUpdate(int a, int idx)
+{
+    int r, e;
+    r = NetMapRtError(NetMutexLock());
+    if (r != 0) return r;
+    e = NetISendObjectFullUpdate(a, NetIGetObject(idx), 0);
+    r = NetMapRtError(NetMutexUnlock());
+    if (r != 0) return r;
+    return e;
+}
 
 int NetMutexLock();
 int NetMutexUnlock();

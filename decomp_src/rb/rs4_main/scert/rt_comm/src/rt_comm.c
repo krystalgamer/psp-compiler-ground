@@ -42,6 +42,9 @@ int rt_comm_is_connected(char *, int *);
 void rt_comm_metric_add_data();
 int rt_memory_allocate_init_zero();
 
+int rt_time_elapsed_msecs(void *, unsigned int *);
+void rt_comm_metric_update_single(void *, unsigned int);
+
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_comm/src/rt_comm", rcsid_10E72C);
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_comm/src/rt_comm", header_rcsid_10E788);
@@ -396,7 +399,17 @@ void rt_comm_metric_init(void)
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_comm/src/rt_comm", rt_comm_metric_add_data);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_comm/src/rt_comm", rt_comm_metric_update);
+void rt_comm_metric_update(void)
+{
+    unsigned int el;
+    rt_time_elapsed_msecs(gMetricData, &el);
+    if (el < 1001) return;
+    rt_comm_metric_update_single(gMetricData + 8, el);
+    rt_comm_metric_update_single(gMetricData + 0x14, el);
+    rt_comm_metric_update_single(gMetricData + 0x20, el);
+    rt_comm_metric_update_single(gMetricData + 0x2C, el);
+    rt_time_start(gMetricData);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_comm/src/rt_comm", rt_comm_metric_update_single);
 
