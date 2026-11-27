@@ -18,7 +18,21 @@ M2C_UNK sgxPspVoGetVolume();                        /* extern */
 M2C_UNK sgxPspVoGetPitch();                         /* extern */
 
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxpsp", ssePrint);
+void *At3GetSlot(int, const char *);
+int At3Play(int, int, int, int, int, int, int, int, int);
+void sgxPrintf(const char *, ...);
+extern int gDICount;
+extern int gDIStat;
+int sceSasSetEffectVolume(int, int);
+int sceKernelDelayThread(unsigned int);
+int sceKernelWaitThreadEnd(int, void *);
+int sceKernelDeleteThread(int);
+int sceKernelCpuResumeIntr(int);
+#define GW ((char *)gWork_1207F0)
+
+void ssePrint(const char *s) {
+    if (gSgxDebugFlags & 4) sgxPrintf(" %s", s);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxpsp", sgxPspInit);
 
@@ -220,25 +234,42 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxpsp", At3ThMain);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxpsp", At3Play);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxpsp", At3PlayMem);
+int At3PlayMem(int a, int b, int c, int d, int e, int f) {
+    return At3Play(a, 0, b, c, d, 0, e, f, -1);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxpsp", At3PlayFile);
+int At3PlayFile(int a, int b, int c, int d, int e, int f, int g, int h) {
+    return At3Play(a, 1, b, c, d, e, f, g, h);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxpsp", At3GetSlot);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxpsp", At3Stop);
+void At3Stop(int id) {
+    char *p = At3GetSlot(id, "Stop");
+    if (p != NULL) p[0x36] = 1;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxpsp", At3StopAll);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxpsp", At3SetVolume);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxpsp", At3SetPitch);
+void At3SetPitch(int id, int v) {
+    char *p = At3GetSlot(id, "SetPitch");
+    if (p != NULL) *(short *)(p + 0x60A0) = (v <= 0) ? 1 : (v < 0x4000 ? v : 0x4000);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxpsp", At3Pause);
+void At3Pause(int id, int v) {
+    char *p = At3GetSlot(id, "Pause");
+    if (p != NULL) p[0x37] = v;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxpsp", At3GetStatus);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxpsp", At3GetPlaySamples);
+long long At3GetPlaySamples(int id) {
+    char *p = At3GetSlot(id, 0);
+    if (p == NULL) return 0;
+    return *(long long *)(p + 0x60A8);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxpsp", At3Mix);
 
@@ -292,7 +323,9 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxpsp", FreqMain);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxpsp", FreqAdd);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxpsp", FreqRopen);
+int FreqRopen(int a, int b, int c, int d) {
+    return FreqAdd(a, 0, b, c, d, 0, 0);
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
