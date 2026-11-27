@@ -20,7 +20,34 @@ extern int h;
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_nettest", test);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_nettest", net_labo);
+extern char *AutoNetMsgTbl_80A38[];
+void net_init(void);
+int net_lobby(void);
+int net_gamecomm_packinit(void);
+void maingame_loop(int mode);
+int net_errorget(void);
+void sysmsg_string(char *msg, int a, int b);
+int net_term();
+int net_labo(void)
+{
+	int r;
+
+	net_init();
+	r = net_lobby();
+	if (r == 1)
+		return 0;
+	r = net_gamecomm_packinit();
+	if (r == 0) {
+		maingame_loop(1);
+		if (net_errorget() == 2)
+			sysmsg_string(AutoNetMsgTbl_80A38[0], 3, 1);
+	} else if (r == 1) {
+		sysmsg_string(AutoNetMsgTbl_80A38[0], 3, 1);
+	} else if (r == 2) {
+		sysmsg_string(AutoNetMsgTbl_80A38[0], 3, 1);
+	}
+	return net_term();
+}
 
 int hato(int cur, int target, int shift)
 {
