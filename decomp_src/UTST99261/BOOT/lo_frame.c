@@ -3,6 +3,8 @@
 #include "nflayout.h"
 #include "lo_frame.h"
 #include "m2c_macros.h"
+extern const double D_001391D8;
+double modf(double x, double *ip);
 extern char D_001391E0[];
 void insertCalcSize(s8 type, int sum, int total, int flag, FRAMESIZES *buf);
 BOX *createBox(void *ctx, int type);
@@ -116,7 +118,56 @@ int sumInputSize(s8 type, FRAMESIZES *a) {
     return sum;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_frame", insertCalcSize);
+void insertCalcSize(s8 type, int sum, int total, int flag, FRAMESIZES *buf) {
+    int i;
+    double ipart;
+    double frac;
+    switch (type) {
+    case 'd':
+        for (i = 0; i < buf->count; i++) {
+            if (buf->items[i].type == type) {
+                if (flag == 0) {
+                    buf->items[i].x8 = buf->items[i].size;
+                } else {
+                    buf->items[i].x8 = buf->items[i].size * ((double)total / sum) + D_001391D8;
+                }
+            }
+        }
+        break;
+    case 'p':
+        for (i = 0; i < buf->count; i++) {
+            if (buf->items[i].type == type) {
+                if (flag == 0) {
+                    buf->items[i].x8 = (double)(total * buf->items[i].size / 100) + D_001391D8;
+                } else {
+                    buf->items[i].x8 = buf->items[i].size * ((double)total / sum) + D_001391D8;
+                }
+            }
+        }
+        break;
+    case 'a': {
+        int acc = 0;
+        frac = modf((double)total / sum, &ipart);
+        for (i = 0; i < buf->count; i++) {
+            if (buf->items[i].type == type) {
+                buf->items[i].x8 = buf->items[i].size * (frac + ipart) + D_001391D8;
+            }
+        }
+        for (i = 0; i < buf->count; i++) {
+            if (buf->items[i].type == type) {
+                acc += buf->items[i].x8;
+            }
+        }
+        for (i = 0; i < buf->count; i++) {
+            if (buf->items[i].type == type) {
+                buf->items[i].x8 += total - acc;
+                break;
+            }
+        }
+        break;
+    }
+    }
+}
 
 int countSizeType(s8 type, FRAMESIZES *a) {
     int i;
@@ -466,6 +517,8 @@ void initFrameBorderPosition_vfull(BOX *frame, BOX *border, int *x, int *y, int 
     border->y = *y;
     *(int *)border->geom = 1;
 }
+
+
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/lo_frame", D_001391D8);
 
