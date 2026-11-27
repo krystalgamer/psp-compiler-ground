@@ -45,6 +45,12 @@ extern unsigned char mes_number_method;
 double fmod(double a, double b);
 
 
+void mes_util_string_puts(void *s, const char *str);
+void mes_util_string_puti(void *s, int n, int w, int base);
+void *mes_util_string_new(void);
+MesValue mes_string_new3(MesContext *ctx, void *s);
+void mes_util_string_free(void *s);
+extern MesValue D_00585288;
 MesValue mes_number_alloc_int32(MesContext *ctx, int n)
 {
     MesValue v = MES_INT(n);
@@ -303,7 +309,41 @@ MesValue mes_number_to_special(MesValue v)
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/mes_number", D_0013B7C4);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_number", mes_number_to_str);
+MesValue mes_number_to_str(MesContext *ctx, MesValue radix)
+{
+    MesValue v = (MesValue)ctx->frame->thisobj;
+    MesValue r;
+    void *s;
+
+    if (MES_IS_OBJECT(v))
+        v = ((MesValue *)v)[3];
+    r = mes_number_to_special(v);
+    if (r != 0)
+        return r;
+    if ((v & 3) != 1 && (v & 3) != 2)
+        return mes_eval_type_error(ctx, v);
+    if ((v & 3) == 1 && (radix & 3) == 1 && (radix >>= 2) >= 2 && radix < 37) {
+        v >>= 2;
+        s = mes_util_string_new();
+        if (s == NULL)
+            return ctx->f14 = D_00585288;
+        if (v == 0)
+            mes_util_string_put(s, '0');
+        else {
+            if (v < 0) {
+                mes_util_string_put(s, '-');
+                v = -v;
+            }
+            if (radix == 16)
+                mes_util_string_puts(s, "0x");
+            mes_util_string_puti(s, v, 1, radix);
+        }
+        v = mes_string_new3(ctx, s);
+        mes_util_string_free(s);
+        return v;
+    }
+    return mes_number_to_string(ctx, v);
+}
 
 MesValue mes_number_value_of(MesContext *ctx)
 {
