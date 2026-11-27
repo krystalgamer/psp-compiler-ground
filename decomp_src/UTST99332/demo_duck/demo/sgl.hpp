@@ -363,7 +363,11 @@ public:
 /* lib/sgl/KdTree.h (member bodies: sgl_Mesh_4.c, the holder of most instances) */
 struct KdTreeNode {
     KdTreeNode() : _size(0), _start(0), _longest_axis(-1), _split(0), _leaf(true), _f14(0), _left(0), _right(0) {}
-    ~KdTreeNode();
+    ~KdTreeNode()
+    {
+        delete _left;
+        delete _right;
+    }
     unsigned int _size;
     unsigned int _start;
     short _longest_axis;

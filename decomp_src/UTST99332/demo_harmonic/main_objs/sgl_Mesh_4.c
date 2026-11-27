@@ -2,6 +2,7 @@
 /* cflags: -O3 -fno-exceptions */
 #undef __EXCEPTIONS
 #include "cxx/defer_asm.h"
+#define SGL_TEMPLATE_DEFS 1
 #include "../main.hpp"
 
 /* this object's .gnu.linkonce.t sections in the original's order */
@@ -111,6 +112,83 @@ void sgl::Mesh::print(std::string name)
         common::Log() << D_0016C1E8 << (unsigned int)getTriangles().size() << D_0016C1E4;
     if (!getEdges().empty())
         common::Log() << D_0016C1CC << (unsigned int)getEdges().size() << D_0016C1E4;
+}
+
+/* lib/sgl/Mesh.h: Mesh's template members */
+extern const char MESH_H_file[] __asm__("D_0016CBF4");         /* "../lib/sgl/Mesh.h" */
+extern const char MESH_H_index_n[] __asm__("D_0016CC08");      /* "index < (int)n" */
+extern const char MESH_H_index_range[] __asm__("D_0016CC18");  /* "index >=0 && index < (int)n" */
+namespace sgl {
+template<class T> struct MeshTemplateNames {
+    static const char removeUsusedAttributes[], quantizeVertexAttribute[];
+};
+}
+#define MESH_TEMPLATE_NAMES(T, M) \
+    template<> const char sgl::MeshTemplateNames<sgl::T>::removeUsusedAttributes[] __asm__( \
+        "_ZZN3sgl4Mesh22removeUsusedAttributesISt6vectorI" M "SaIS3_EES3_EEvNS_14VertexAttrEnumERT_E19__PRETTY_FUNCTION__"); \
+    template<> const char sgl::MeshTemplateNames<sgl::T>::quantizeVertexAttribute[] __asm__( \
+        "_ZZN3sgl4Mesh23quantizeVertexAttributeISt6vectorI" M "SaIS3_EES3_EEvNS_14VertexAttrEnumERT_jbfE19__PRETTY_FUNCTION__")
+MESH_TEMPLATE_NAMES(Position, "NS_8PositionE");
+MESH_TEMPLATE_NAMES(Normal, "NS_6NormalE");
+MESH_TEMPLATE_NAMES(Color, "NS_5ColorE");
+MESH_TEMPLATE_NAMES(TexCoord, "NS_8TexCoordE");
+#define MESH_H_ASSERT(c, text, fn, line) \
+    SGL_ASSERT(c, D_0016C198, text, MESH_H_file, MeshTemplateNames<T>::fn, line, D_0016C238)
+
+template<class V, class T> void sgl::Mesh::removeUsusedAttributes(VertexAttrEnum attr, V &v)
+{
+    MESH_H_ASSERT(_finish, D_0016C23C, removeUsusedAttributes, 334);
+    unsigned int n = v.size();
+    std::vector<int> map(n, -1);
+    {
+        std::vector<bool> used(n, false);
+        for (std::vector<Vertex>::iterator it = _vertices.begin(); it != _vertices.end(); ++it) {
+            int &index = it->_attr[attr];
+            if (index >= 0) {
+                MESH_H_ASSERT(index < (int)n, MESH_H_index_n, removeUsusedAttributes, 351);
+                used[index] = true;
+            }
+        }
+        unsigned int count = 0;
+        for (unsigned int i = 0; i != n; i++)
+            if (used[i]) {
+                map[i] = count;
+                v[count] = v[i];
+                count++;
+            }
+        v.resize(count);
+        n = v.size();
+    }
+    for (std::vector<Vertex>::iterator it = _vertices.begin(); it != _vertices.end(); ++it) {
+        int &index = it->_attr[attr];
+        if (index >= 0) {
+            index = map[index];
+            MESH_H_ASSERT(index >= 0 && index < (int)n, MESH_H_index_range, removeUsusedAttributes, 387);
+        }
+    }
+}
+
+/* removeUsusedAttributes<vector<Position>, Position>: near-miss (this/attr get each other's registers), asm */
+extern template void sgl::Mesh::removeUsusedAttributes<std::vector<sgl::Position>, sgl::Position>(sgl::VertexAttrEnum,
+                                                                                         std::vector<sgl::Position> &);
+
+template<class V, class T> void sgl::Mesh::quantizeVertexAttribute(VertexAttrEnum attr, V &v, unsigned int dim, bool remove, float eps)
+{
+    MESH_H_ASSERT(_finish, D_0016C23C, quantizeVertexAttribute, 296);
+    KdTree<T> tree(v, dim, eps);
+    unsigned int n = v.size();
+    std::vector<int> map(n, -1);
+    for (unsigned int i = 0; i != n; i++)
+        map[i] = tree.find(v[i]);
+    for (std::vector<Vertex>::iterator it = _vertices.begin(); it != _vertices.end(); ++it) {
+        int &index = it->_attr[attr];
+        if (index >= 0) {
+            MESH_H_ASSERT(index < (int)n, MESH_H_index_n, quantizeVertexAttribute, 319);
+            index = map[index];
+        }
+    }
+    if (remove)
+        removeUsusedAttributes<V, T>(attr, v);
 }
 
 void sgl::Mesh::removeUsusedPositions()
@@ -588,6 +666,7 @@ extern template sgl::KdTree<sgl::Normal>::KdTree(std::vector<sgl::Normal> &, int
 void sgl_Mesh_4_instances(void *p) __attribute__((section(".discard.instances")));
 void sgl_Mesh_4_instances(void *p)
 {
+    new (p) sgl::PrimitiveIndex<int>;
     ((std::vector<sgl::Edge> *)p)->reserve(0);
     ((std::vector<sgl::VarlenListsList::List> *)p)->resize(0);
     ((std::vector<sgl::Edge> *)p)->push_back(*(sgl::Edge *)p);
@@ -615,23 +694,8 @@ void sgl_Mesh_4_instances(void *p)
 #undef INCLUDE_ASM
 #define INCLUDE_ASM INCLUDE_ASM_LINKONCE
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh_4", _ZN3sgl14PrimitiveIndexIiEC1Ev);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh_4", _ZN3sgl4Mesh22removeUsusedAttributesISt6vectorINS_8PositionESaIS3_EES3_EEvNS_14VertexAttrEnumERT_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh_4", _ZN3sgl4Mesh22removeUsusedAttributesISt6vectorINS_6NormalESaIS3_EES3_EEvNS_14VertexAttrEnumERT_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh_4", _ZN3sgl4Mesh22removeUsusedAttributesISt6vectorINS_5ColorESaIS3_EES3_EEvNS_14VertexAttrEnumERT_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh_4", _ZN3sgl4Mesh22removeUsusedAttributesISt6vectorINS_8TexCoordESaIS3_EES3_EEvNS_14VertexAttrEnumERT_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh_4", _ZN3sgl4Mesh23quantizeVertexAttributeISt6vectorINS_8PositionESaIS3_EES3_EEvNS_14VertexAttrEnumERT_jbf);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh_4", _ZN3sgl4Mesh23quantizeVertexAttributeISt6vectorINS_8TexCoordESaIS3_EES3_EEvNS_14VertexAttrEnumERT_jbf);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh_4", _ZN3sgl4Mesh23quantizeVertexAttributeISt6vectorINS_5ColorESaIS3_EES3_EEvNS_14VertexAttrEnumERT_jbf);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh_4", _ZN3sgl4Mesh23quantizeVertexAttributeISt6vectorINS_6NormalESaIS3_EES3_EEvNS_14VertexAttrEnumERT_jbf);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh_4", _ZN3sgl6KdTreeINS_8PositionEEC1ERSt6vectorIS1_SaIS1_EEif);
 
