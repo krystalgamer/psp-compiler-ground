@@ -1,110 +1,175 @@
-/* C++ source (.cc); still m2c drafts compiled as C under the mangled names */
-/* cflags: -Os */
+/* lang: c++ */
+/* cflags: -Os -fno-exceptions */
+/* #pragma interface: no vtables or typeinfo here (they live with their classes' units) */
+#pragma interface "rodata"
 #include "common.h"
-#include "m2c_macros.h"
-M2C_UNK _AniFrameSet(int, int);                     /* extern */
-M2C_UNK consPrintf(M2C_UNK *, M2C_UNK *, M2C_UNK, M2C_UNK *, M2C_UNK *); /* extern */
-extern unsigned char D_0010473C;
-extern unsigned char D_00104758;
-extern unsigned char D_00104774;
-extern unsigned char _ZZN9MetaMagic9SemaphoreC1EPKciijE12__FUNCTION__;
-M2C_UNK sceKernelTerminateDeleteThread(int);        /* extern */
-extern unsigned char D_001047E4;
-extern unsigned char D_00104800;
-extern unsigned char D_00104828;
-extern unsigned char D_00104868;
-extern unsigned char _ZZN9MetaMagic6ThreadD1EvE12__FUNCTION__;
-extern unsigned char D_00104840;
-M2C_UNK sceKernelExitThread(M2C_UNK);               /* extern */
-M2C_UNK sceKernelTerminateThread(int);              /* extern */
-extern unsigned char _ZZN9MetaMagic6Thread4TermEvE12__FUNCTION__;
 
-void *localeGetCntx();                              /* extern */
-extern unsigned char D_00104798;
-M2C_UNK _memFree(void *, M2C_UNK *, M2C_UNK);       /* extern */
-extern unsigned char D_0010477C;
-M2C_UNK sceKernelReferSemaStatus(int);              /* extern */
-M2C_UNK sceKernelReferThreadStatus(int);            /* extern */
-M2C_UNK _ZN3Vfs8Internal6SystemC1Ev(int);           /* extern */
-int _memAllocMBL(M2C_UNK, M2C_UNK *, M2C_UNK);      /* extern */
-extern unsigned char D_00104898;
-M2C_UNK _ZN3Vfs4File5CloseEv();                     /* extern */
-int _ZN3Vfs6System19Create_InternalFileERNS_4FileEPKci(); /* extern */
-M2C_UNK _ZN3Vfs6System7DestroyEv();                 /* extern */
-M2C_UNK _ZN3Vfs6System5MountEPKcPv();               /* extern */
-M2C_UNK _ZN3Vfs6System7UnmountEPKc();               /* extern */
-M2C_UNK _ZN3Vfs4File4SeekEii();                     /* extern */
-M2C_UNK _ZN3Vfs4File4ReadEPvj();                    /* extern */
-extern unsigned char D_001048E0;
-extern unsigned char D_001048C8;
+extern "C" void *_memAllocMBL(unsigned int size, const char *file, int line);
+extern "C" void _memFree(void *p, const char *file, int line);
+extern const char D_00104898[];	/* "src/ys/ys_object.h" */
 
-
-
-int _ZN3Vfs6System6CreateEv(void) {
-    _ZN3Vfs8Internal6SystemC1Ev(_memAllocMBL(0x64, &D_00104898, 0x17));
-    return 0;
+namespace Ys {
+class Object {
+public:
+	static void *operator new(unsigned int size) { return _memAllocMBL(size, D_00104898, 23); }
+	static void operator delete(void *p) { _memFree(p, D_00104898, 25); }
+};
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/vfs", _ZN3Vfs6System7DestroyEv);
-
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/vfs", _ZN3Vfs6System5MountEPKcPv);
-
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/vfs", _ZN3Vfs6System7UnmountEPKc);
-
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/vfs", _ZN3Vfs6System19Create_InternalFileERNS_4FileEPKci);
-
-void _ZN3Vfs4File4InitEv(int *arg0) {
-    *arg0 = 0;
+namespace Vfs {
+class File;
+namespace Internal {
+class File : public Ys::Object {
+public:
+	virtual ~File();
+	virtual int Seek(int offset, int whence);
+	virtual int Read(void *buf, unsigned int size);
+};
+class FileSystem;
+class FileSystemMounter {
+public:
+	virtual ~FileSystemMounter();
+	virtual int Check_Image(void *image);
+	virtual FileSystem *Create_FileSystem(const char *name, void *image);
+};
+class System : public Ys::Object {
+	int _04[24];
+public:
+	static System *_instance_p;
+	static System *Get_Instance() { return _instance_p; }
+	System();
+	virtual ~System();
+	int Mount(FileSystemMounter &mounter, const char *name, void *image);
+	int Unmount(const char *name);
+	int Create_InternalFile(Vfs::File &file, const char *name, int mode);
+};
+}
+namespace Tarte {
+class FileSystemMounter : public Internal::FileSystemMounter {
+public:
+	int Check_Image(void *image);
+	Internal::FileSystem *Create_FileSystem(const char *name, void *image);
+};
 }
 
-void _ZN3Vfs4FileD2Ev(void) {
-    _ZN3Vfs4File5CloseEv();
+class System {
+public:
+	static int Create();
+	static void Destroy();
+	static int Mount(const char *name, void *image);
+	static int Unmount(const char *name);
+	static int Create_InternalFile(File &file, const char *name, int mode);
+};
+
+class File : public Ys::Object {
+	Internal::File *impl;
+	friend class Internal::System;
+public:
+	void Init();
+	~File();
+	File *Open(const char *name, int mode);
+	void Close();
+	int Seek(int offset, int whence);
+	int Read(void *buf, unsigned int size);
+};
+
+int System::Create()
+{
+	new Internal::System;
+	return 0;
 }
 
-void _ZN3Vfs4FileD1Ev(void) {
-    _ZN3Vfs4File5CloseEv();
+void System::Destroy()
+{
+	if (Internal::System::_instance_p)
+		delete Internal::System::_instance_p;
 }
 
-int _ZN3Vfs4File4OpenEPKci(int arg0) {
-    return (_ZN3Vfs6System19Create_InternalFileERNS_4FileEPKci() < 0) ? 0 : arg0;
+int System::Mount(const char *name, void *image)
+{
+	Tarte::FileSystemMounter mounter;
+	return Internal::System::Get_Instance()->Mount(mounter, name, image);
+}
+
+int System::Unmount(const char *name)
+{
+	return Internal::System::Get_Instance()->Unmount(name);
+}
+
+int System::Create_InternalFile(File &file, const char *name, int mode)
+{
+	return Internal::System::Get_Instance()->Create_InternalFile(file, name, mode);
+}
+
+void File::Init()
+{
+	impl = 0;
+}
+
+File::~File()
+{
+	Close();
+}
+
+File *File::Open(const char *name, int mode)
+{
+	return System::Create_InternalFile(*this, name, mode) < 0 ? 0 : this;
 }
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/vfs", _ZN3Vfs4File5CloseEv);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/vfs", _ZN3Vfs4File4SeekEii);
-
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/vfs", _ZN3Vfs4File4ReadEPvj);
-
-void vfsInit(void) {
-    _ZN3Vfs6System6CreateEv();
+int File::Seek(int offset, int whence)
+{
+	int r = -5;
+	if (impl)
+		r = impl->Seek(offset, whence);
+	return r;
 }
 
-void vfsTerm(void) {
-    _ZN3Vfs6System7DestroyEv();
+int File::Read(void *buf, unsigned int size)
+{
+	int r = 0;
+	if (impl)
+		r = impl->Read(buf, size);
+	return r;
+}
 }
 
-void vfsMount(void) {
-    _ZN3Vfs6System5MountEPKcPv();
+extern "C" {
+int vfsInit(void)
+{
+	return Vfs::System::Create();
 }
 
-void vfsUnmount(void) {
-    _ZN3Vfs6System7UnmountEPKc();
+void vfsTerm(void)
+{
+	Vfs::System::Destroy();
+}
+
+int vfsMount(const char *name, void *image)
+{
+	return Vfs::System::Mount(name, image);
+}
+
+int vfsUnmount(const char *name)
+{
+	return Vfs::System::Unmount(name);
 }
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/vfs", vfsOpen);
 
-void vfsClose(int arg0) {
-    if (arg0 != 0) {
-        _ZN3Vfs4FileD1Ev();
-        _memFree(arg0, &D_00104898, 0x19);
-    }
+void vfsClose(Vfs::File *f)
+{
+	delete f;
 }
 
-void vfsSeek(void) {
-    _ZN3Vfs4File4SeekEii();
+int vfsSeek(Vfs::File *f, int offset, int whence)
+{
+	return f->Seek(offset, whence);
 }
 
-void vfsRead(void) {
-    _ZN3Vfs4File4ReadEPvj();
+int vfsRead(Vfs::File *f, void *buf, unsigned int size)
+{
+	return f->Read(buf, size);
 }
-
+}
