@@ -52,24 +52,33 @@ struct _anon3 { /* size 0x20 */
     unsigned int total;
 };
 typedef struct _anon3 SceGimSequenceHeader;
-struct SceGimPicture { /* size 0x54 */
+struct SceGimPicture { /* size 0x8c (gim_picture 1.5.0) */
     int m_reference;
     int m_flags;
+    int m_enable_bits;
+    void *m_unk0C;
     SceGimImageHeader *m_image;
     SceGimImageHeader *m_palette;
-    SceGimSequenceHeader *m_sequence;
     int m_buf_width;
     int m_clut_load;
+    float m_image_crop[4];
     float m_frame_loop[2];
     float m_frame_rate;
     float m_frame;
-    int m_enable_bits;
+    float m_dissolve;
     int m_image_frame;
     int m_image_frame2;
     int m_palette_frame;
     int m_palette_frame2;
-    float m_dissolve;
-    float m_image_crop[4];
+    SceGimSequenceHeader **m_sequences;
+    int m_n_sequences;
+    int m_current_sequence;
+    int m_image_plane;
+    int m_palette_offset[3];
+    int m_blend[1];
+    int m_func[2];
+    int m_filter[2];
+    int m_wrap[2];
 };
 typedef SceGimImageHeader SceGimPaletteHeader;
 typedef unsigned int size_t;
@@ -138,4 +147,48 @@ void sceGimPictureActivate( SceGimPicture *picture )
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gim_activate", sceGimPictureActivateTexture);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gim_activate", sceGimPictureActivateRenderState);
+void sceGuTexLevelMode( int mode, float bias ) ;
+void sceGuTexOffset( float u, float v ) ;
+void sceGuTexScale( float u, float v ) ;
+void sceGuBlendFunc( int op, int src, int dst, unsigned int srcfix, unsigned int destfix ) ;
+void sceGuTexFunc( int tfx, int tcc ) ;
+void sceGuTexFilter( int min, int mag ) ;
+void sceGuTexWrap( int u, int v ) ;
+extern const float D_00083770[4] ;
+extern const int D_00083780[][4] ;
+void sceGimPictureActivateRenderState( SceGimPicture *picture )
+{
+	if ( picture == 0 ) return ;
+
+	int enable = picture->m_enable_bits ;
+	if ( enable == 0 ) return ;
+
+	if ( enable & 0x0002 ) {
+		if ( enable & 0x0001 ) {
+			sceGuTexLevelMode( 1, picture->m_dissolve ) ;
+		} else {
+			sceGuTexLevelMode( 0, 0 ) ;
+		}
+	}
+
+	if ( enable & 0x0004 ) {
+		const float *crop = picture->m_image_crop ;
+		if ( !( picture->m_flags & 0x0020 ) ) crop = D_00083770 ;
+		sceGuTexOffset( crop[ 0 ], crop[ 1 ] ) ;
+		sceGuTexScale( crop[ 2 ], crop[ 3 ] ) ;
+	}
+
+	if ( enable & 0x0100 ) {
+		const int *modes = D_00083780[ picture->m_blend[ 0 ] ] ;
+		sceGuBlendFunc( modes[ 0 ], modes[ 1 ], modes[ 2 ], 0xffffffff, modes[ 3 ] ) ;
+	}
+	if ( enable & 0x0200 ) {
+		sceGuTexFunc( picture->m_func[ 0 ], picture->m_func[ 1 ] ) ;
+	}
+	if ( enable & 0x0400 ) {
+		sceGuTexFilter( picture->m_filter[ 0 ], picture->m_filter[ 1 ] ) ;
+	}
+	if ( enable & 0x0800 ) {
+		sceGuTexWrap( picture->m_wrap[ 0 ], picture->m_wrap[ 1 ] ) ;
+	}
+}
