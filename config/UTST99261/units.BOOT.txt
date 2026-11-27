@@ -253,6 +253,7 @@ xpdebugprint                                 1.5.1           xpdebugprint.c
 necpsp/devpatch                              1.5.1           necpsp/devpatch.c
 aosspsp/aosspsp                              1.5.1           aosspsp/aosspsp.c
 aoss                                         1.5.1           aoss.c
+necap                                        1.5.1           necap.c
 pspnet                                       1.5.1           pspnet.c
 autoex                                       1.5.1           autoex.c
 keywrap                                      1.5.1           keywrap.c

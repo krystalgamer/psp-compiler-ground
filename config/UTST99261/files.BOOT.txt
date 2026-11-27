@@ -196,6 +196,7 @@
 0xE3A68 wsthread        1.5.1           wsthread.c
 0xE46F0 wstimer         1.5.1           wstimer.c
 0xE8750 aoss            1.5.1           aoss.c
+0xEB3DC necap           1.5.1           necap.c
 0xEB714 pspnet          1.5.1           pspnet.c
 0xEC27C autoex          1.5.1           autoex.c
 0xED9CC keywrap         1.5.1           keywrap.c
