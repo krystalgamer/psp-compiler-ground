@@ -42,34 +42,35 @@ int _main(int args, char *argp)
 	exit(rtn);
 }
 
-#ifdef NON_MATCHING
-/* the original swaps the registers holding &sce_newlib_priority and
- * &sce_newlib_attribute */
 int _start(int args, char *argp)
 {
 	SceUID thid;
 	int res;
 
-	if (&sce_newlib_nocreate_thread_in_start != NULL) {
-		_main(args, argp);
-		return 1;
-	}
-	{
+	if (&sce_newlib_nocreate_thread_in_start == NULL) {
 		unsigned int realsize;
 		int priority;
 		unsigned int attribute;
 
-		realsize = (&sce_newlib_stack_kb_size != NULL) ? sce_newlib_stack_kb_size << 10 : 0x40000;
-		priority = (&sce_newlib_priority != NULL) ? sce_newlib_priority : 0x20;
-		attribute = (&sce_newlib_attribute != NULL) ? (sce_newlib_attribute | 0x80000000) : 0x80000000;
+		if (&sce_newlib_stack_kb_size != NULL)
+			realsize = sce_newlib_stack_kb_size << 10;
+		else
+			realsize = 0x40000;
+		if (&sce_newlib_priority != NULL)
+			priority = sce_newlib_priority;
+		else
+			priority = 0x20;
+		if (&sce_newlib_attribute != NULL)
+			attribute = sce_newlib_attribute | 0x80000000;
+		else
+			attribute = 0x80000000;
 		thid = sceKernelCreateThread("user_main", (SceKernelThreadEntry)_main, priority, realsize, attribute, NULL);
 		res = sceKernelStartThread(thid, args, argp);
+		return 0;
 	}
-	return 0;
+	_main(args, argp);
+	return 1;
 }
-#else
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/crt0", _start);
-#endif
 
 INCLUDE_RODATA("tmp/asm/puzzle_bobble/BOOT/nonmatchings/crt0", D_0002DA40);
 
