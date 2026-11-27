@@ -727,7 +727,29 @@ void _GLOBAL__D__ZN8textures7TextureaSERKS0_(void)
 #undef INCLUDE_ASM
 #define INCLUDE_ASM INCLUDE_ASM_LINKONCE
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/textures_Texture", _ZN8textures7Texture7convertINS_4ABGRENS_4ARGBEEEvv);
+namespace textures {
+inline void ConvertPixel(ABGR &d, const ARGB &s)
+{
+    unsigned int c = s.c;
+    d.a = c >> 24;
+    d.r = c >> 16;
+    d.g = c >> 8;
+    d.b = c;
+}
+}
+
+template<class D, class S> void textures::Texture::convert()
+{
+    if (format() == FORMAT_1 || format() == FORMAT_2) {
+        D *dst = (D *)image.addr();
+        S *src = (S *)image.addr();
+        for (int i = 0; i < m.width * m.height; i++) {
+            ConvertPixel(*dst, *src);
+            dst++;
+            src++;
+        }
+    }
+}
 
 /* asm functions use these instances */
 void textures_Texture_uses() __attribute__((section(".discard.instances")));
@@ -736,4 +758,5 @@ void textures_Texture_uses()
     std::vector<unsigned char> v;
     v.reserve(0);
     v.push_back(0);
+    ((textures::Texture *)0)->convert<textures::ABGR, textures::ARGB>();
 }

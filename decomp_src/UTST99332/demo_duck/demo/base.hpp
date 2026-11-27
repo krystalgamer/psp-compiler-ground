@@ -434,6 +434,7 @@ public:
         std::string help;               /* 0x8 */
         int _fC;                        /* 0xC */
     };
+    CmdLine(std::string, std::string, std::string, std::string, std::string);
     static void Token(std::vector<std::string> &, std::string);
     const_iterator find_arg(const char *) const;
     bool inList(const char *) const;
@@ -1032,6 +1033,13 @@ enum TextureFunction { };
 enum Filtering { };
 enum Wrapping { };
 enum Channel { };
+/* pixel formats (textures/Texture.h) */
+struct ARGB {
+    unsigned int c;
+};
+struct ABGR {
+    unsigned char r, g, b, a;
+};
 extern bool override_alpha_on;
 extern unsigned char override_alpha_value;
 namespace textures_internal {
@@ -1206,6 +1214,7 @@ public:
     void allocate(unsigned int, unsigned int);
     int setAlphaCount(int *, int *, int *, unsigned char, unsigned char);
     void allocate_for(Format);
+    template<class D, class S> void convert();
     CopiableMembers m;              /* 0x00 */
     common::t_array<unsigned char> image;   /* 0x28 */
     common::t_array<unsigned char> clut;    /* 0x3C */
@@ -1232,10 +1241,12 @@ public:
             int _f50;           /* 0x50: textures::Texture's own last word (initGl), see textures_Texture.c */
             unsigned int _id;   /* 0x54: GL texture name */
         };
+        Face() : tc_min(0), tc_max(1) {}
         void init(FaceEnum f) { id = f; }
         Texture tex;            /* 0x00 */
         FaceEnum id;            /* 0x58 */
-        char _pad5c[0x8];
+        float tc_min;           /* 0x5C: texture coordinates of the face's edges (half a texel inside) */
+        float tc_max;           /* 0x60 */
     };
     CubeMap();
     void setBasename(const char *);
@@ -1251,7 +1262,7 @@ public:
     void draw_face(FaceEnum);
     void draw_cube();
     static const std::string &GetFaceName(int);
-    static const math::matrix &GetFaceTransform(int);
+    static const float *GetFaceTransform(int);
     void setCubeSize(float);
     void setLinear(bool);
     void setResize(int);
