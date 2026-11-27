@@ -95,6 +95,28 @@ static __inline__ ScePspFVector4 *_sceGumHomogeneousTransform(ScePspFVector4 *v0
 }
 
 
+static __inline__ void _sceGumTranslate(const ScePspFVector3 *v)
+{
+	ScePspFMatrix4 *c = cur_stack;
+	ScePspFVector4 t;
+
+	t.x = c->x.x * v->x + c->y.x * v->y + c->z.x * v->z;
+	t.y = c->x.y * v->x + c->y.y * v->y + c->z.y * v->z;
+	t.z = c->x.z * v->x + c->y.z * v->y + c->z.z * v->z;
+	t.w = c->x.w * v->x + c->y.w * v->y + c->z.w * v->z;
+	c->w.x += t.x;
+	c->w.y += t.y;
+	c->w.z += t.z;
+	c->w.w += t.w;
+}
+
+#define SCEGU_MATRIX_PROJECTION 0
+#define SCEGU_MATRIX_VIEW 1
+#define SCEGU_MATRIX_WORLD 2
+
+float sinf_nb(float) __asm__("sinf");
+float cosf_nb(float) __asm__("cosf");
+
 void sceGumSetMatrixStack(ScePspFMatrix4 *m, int proj, int view, int world, int tex)
 {
  cur_stack = ((void *)0);
@@ -171,15 +193,233 @@ void sceGumLoadIdentity(void)
 	update[cur_matrix] = 1;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgum", sceGumRotateXYZ);
+void sceGumRotateXYZ(const ScePspFVector3 *vec)
+{
+	ScePspFMatrix4	m;
+	float	s[3], c[3];
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgum", sceGumRotateZYX);
+	s[0] = (float)sinf_nb(vec->x);
+	c[0] = (float)cosf_nb(vec->x);
+	s[1] = (float)sinf_nb(vec->y);
+	c[1] = (float)cosf_nb(vec->y);
+	s[2] = (float)sinf_nb(vec->z);
+	c[2] = (float)cosf_nb(vec->z);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgum", sceGumPerspective);
+	m.x.x = c[2] * c[1];
+	m.x.y = (c[2] * s[1] * s[0]) + (s[2] * c[0]);
+	m.x.z = (-1.0f * c[2] * s[1] * c[0]) + (s[2] * s[0]);
+	m.x.w = 0.0f;
+	m.y.x = -1.0f * s[2] * c[1];
+	m.y.y = (-1.0f * s[2] * s[1] * s[0]) + (c[2] * c[0]);
+	m.y.z = (s[2] * s[1] * c[0]) + (c[2] * s[0]);
+	m.y.w = 0.0f;
+	m.z.x = s[1];
+	m.z.y = -1.0f * c[1] * s[0];
+	m.z.z = c[1] * c[0];
+	m.z.w = 0.0f;
+	m.w.x = 0.0f;
+	m.w.y = 0.0f;
+	m.w.z = 0.0f;
+	m.w.w = 1.0f;
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgum", sceGumOrtho);
+	_sceGumMulMatrix(cur_stack, cur_stack, &m);
+	update[cur_matrix] = 1;
+	return;
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgum", sceGumLookAt);
+void sceGumRotateZYX(const ScePspFVector3 *vec)
+{
+	ScePspFMatrix4	m;
+	float	s[3], c[3];
+
+	s[0] = (float)sinf_nb(vec->x);
+	c[0] = (float)cosf_nb(vec->x);
+	s[1] = (float)sinf_nb(vec->y);
+	c[1] = (float)cosf_nb(vec->y);
+	s[2] = (float)sinf_nb(vec->z);
+	c[2] = (float)cosf_nb(vec->z);
+
+	m.x.x = c[1] * c[2];
+	m.x.y = c[1] * s[2];
+	m.x.z = -1.0f * s[1];
+	m.x.w = 0.0f;
+	m.y.x = (-1.0f * c[0] * s[2]) + (s[0] * s[1] * c[2]);
+	m.y.y = (c[0] * c[2]) + (s[0] * s[1] * s[2]);
+	m.y.z = s[0] * c[1];
+	m.y.w = 0.0f;
+	m.z.x = (s[0] * s[2]) + (c[0] * s[1] * c[2]);
+	m.z.y = (-1.0f * s[0] * c[2]) + (c[0] * s[1] * s[2]);
+	m.z.z = c[0] * c[1];
+	m.z.w = 0.0f;
+	m.w.x = 0.0f;
+	m.w.y = 0.0f;
+	m.w.z = 0.0f;
+	m.w.w = 1.0f;
+
+	_sceGumMulMatrix(cur_stack, cur_stack, &m);
+	update[cur_matrix] = 1;
+	return;
+}
+
+void sceGumPerspective(float fovy, float aspect, float r_near, float r_far)
+{
+	ScePspFMatrix4	m;
+	float	f, asp, nf1, nf2;
+
+	f = fovy * 0.5f;
+	f = (float)cosf(f) / (float)sinf(f);
+
+	asp = 1.0f / aspect;
+
+	nf1 = 1.0f / (r_near - r_far);
+	nf2 = r_near + r_far;
+
+	m.x.x = f * asp;
+	m.x.y = 0.0f;
+	m.x.z = 0.0f;
+	m.x.w = 0.0f;
+	m.y.x = 0.0f;
+	m.y.y = f;
+	m.y.z = 0.0f;
+	m.y.w = 0.0f;
+	m.z.x = 0.0f;
+	m.z.y = 0.0f;
+	m.z.z = nf1 * nf2;
+	m.z.w = -1.0f;
+	m.w.x = 0.0f;
+	m.w.y = 0.0f;
+	m.w.z = 2.0f * r_near * r_far * nf1;
+	m.w.w = 0.0f;
+
+	_sceGumMulMatrix(cur_stack, cur_stack, &m);
+	update[cur_matrix] = 1;
+	return;
+}
+
+void sceGumOrtho(float left, float right, float bottom, float top,
+			float r_near, float r_far)
+{
+	ScePspFMatrix4	m;
+	float	rl1, rl2;
+	float	tb1, tb2;
+	float	fn1, fn2;
+
+	rl1 = 1.0f / (right - left);
+	rl2 = right + left;
+	tb1 = 1.0f / (top - bottom);
+	tb2 = top + bottom;
+	fn1 = 1.0f / (r_far - r_near);
+	fn2 = r_far + r_near;
+
+	m.x.x = 2.0f * rl1;
+	m.x.y = 0.0f;
+	m.x.z = 0.0f;
+	m.x.w = 0.0f;
+	m.y.x = 0.0f;
+	m.y.y = 2.0f * tb1;
+	m.y.z = 0.0f;
+	m.y.w = 0.0f;
+	m.z.x = 0.0f;
+	m.z.y = 0.0f;
+	m.z.z = -2.0f * fn1;
+	m.z.w = 0.0f;
+	m.w.x = -1.0f * rl2 * rl1;
+	m.w.y = -1.0f * tb2 * tb1;
+	m.w.z = -1.0f * fn2 * fn1;
+	m.w.w = 1.0f;
+
+	_sceGumMulMatrix(cur_stack, cur_stack, &m);
+	update[cur_matrix] = 1;
+	return;
+}
+
+void sceGumLookAt(const ScePspFVector3 *eye, const ScePspFVector3 *center,
+					const ScePspFVector3 *up)
+{
+	ScePspFMatrix4	m;
+	ScePspFVector3	xvec, yvec, zvec;
+	ScePspFVector3	tmpvec;
+	float			tmpscal;
+
+	zvec.x = eye->x - center->x;
+	zvec.y = eye->y - center->y;
+	zvec.z = eye->z - center->z;
+
+	tmpvec.x = zvec.x * zvec.x;
+	tmpvec.y = zvec.y * zvec.y;
+	tmpvec.z = zvec.z * zvec.z;
+
+	tmpscal = 1.0f / (float)sqrtf(tmpvec.x + tmpvec.y + tmpvec.z);
+
+	if (tmpscal) {
+		zvec.x = zvec.x * tmpscal;
+		zvec.y = zvec.y * tmpscal;
+		zvec.z = zvec.z * tmpscal;
+	}
+
+	yvec.x = up->x;
+	yvec.y = up->y;
+	yvec.z = up->z;
+
+	xvec.x = yvec.y * zvec.z - yvec.z * zvec.y;
+	xvec.y = yvec.z * zvec.x - yvec.x * zvec.z;
+	xvec.z = yvec.x * zvec.y - yvec.y * zvec.x;
+
+	yvec.x = zvec.y * xvec.z - zvec.z * xvec.y;
+	yvec.y = zvec.z * xvec.x - zvec.x * xvec.z;
+	yvec.z = zvec.x * xvec.y - zvec.y * xvec.x;
+
+	tmpvec.x = xvec.x * xvec.x;
+	tmpvec.y = xvec.y * xvec.y;
+	tmpvec.z = xvec.z * xvec.z;
+
+	tmpscal = 1.0f / (float)sqrtf(tmpvec.x + tmpvec.y + tmpvec.z);
+
+	if (tmpscal) {
+		xvec.x = xvec.x * tmpscal;
+		xvec.y = xvec.y * tmpscal;
+		xvec.z = xvec.z * tmpscal;
+	}
+
+	tmpvec.x = yvec.x * yvec.x;
+	tmpvec.y = yvec.y * yvec.y;
+	tmpvec.z = yvec.z * yvec.z;
+
+	tmpscal = 1.0f / (float)sqrtf(tmpvec.x + tmpvec.y + tmpvec.z);
+
+	if (tmpscal) {
+		yvec.x = yvec.x * tmpscal;
+		yvec.y = yvec.y * tmpscal;
+		yvec.z = yvec.z * tmpscal;
+	}
+
+	m.x.x = xvec.x;
+	m.x.y = yvec.x;
+	m.x.z = zvec.x;
+	m.x.w = 0.0f;
+	m.y.x = xvec.y;
+	m.y.y = yvec.y;
+	m.y.z = zvec.y;
+	m.y.w = 0.0f;
+	m.z.x = xvec.z;
+	m.z.y = yvec.z;
+	m.z.z = zvec.z;
+	m.z.w = 0.0f;
+	m.w.x = 0.0f;
+	m.w.y = 0.0f;
+	m.w.z = 0.0f;
+	m.w.w = 1.0f;
+
+	_sceGumMulMatrix(cur_stack, cur_stack, &m);
+
+	tmpvec.x = eye->x * ( -1.0f );
+	tmpvec.y = eye->y * ( -1.0f );
+	tmpvec.z = eye->z * ( -1.0f );
+
+	_sceGumTranslate(&tmpvec);
+	update[cur_matrix] = 1;
+	return;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgum", sceGumProject);
 
@@ -223,7 +463,32 @@ void sceGumLoadContext(SceGumContext *ctx)
 	}
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgum", sceGumRotateX);
+void sceGumRotateX(float angle)
+{
+ ScePspFMatrix4 m;
+ float s, c;
+ s = (float)sinf_nb(angle);
+ c = (float)cosf_nb(angle);
+ m.x.x = 1.0f;
+ m.x.y = 0.0f;
+ m.x.z = 0.0f;
+ m.x.w = 0.0f;
+ m.y.x = 0.0f;
+ m.y.y = c;
+ m.y.z = s;
+ m.y.w = 0.0f;
+ m.z.x = 0.0f;
+ m.z.y = -1.0f * s;
+ m.z.z = c;
+ m.z.w = 0.0f;
+ m.w.x = 0.0f;
+ m.w.y = 0.0f;
+ m.w.z = 0.0f;
+ m.w.w = 1.0f;
+ _sceGumMulMatrix(cur_stack, cur_stack, &m);
+ update[cur_matrix] = 1;
+ return;
+}
 
 void sceGumRotateY(float angle)
 {
