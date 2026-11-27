@@ -43,6 +43,8 @@ M2C_UNK parseHST_deleteHistoryNode(M2C_UNK, M2C_UNK); /* extern */
 #define NULL ((void *)0)
 #endif
 
+typedef struct { PChar s[7]; } PS7;
+extern const PS7 D_00137E48;
 void parseReleaseResource(void) {
     parseDeleteMultiBuffer();
     parseHST_deleteHistoryNode(0, 0);
@@ -445,7 +447,55 @@ char *ps_prepareText(unsigned char *s, int n) {
     return (char *)buf;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", parseTitle);
+void parseTitle(PCtx *c) {
+    PStrBuf *b;
+    PDStr *d;
+    char *u;
+    int n;
+    void *h;
+    char *t;
+
+    if (*c->buf->cur == '>') {
+        if (parseNextChar(c) == 1) {
+            return;
+        }
+    }
+    while (*c->buf->cur == ' ' || *c->buf->cur == '\t' || *c->buf->cur == '\n' || *c->buf->cur == '\r') {
+        if (parseNextChar(c) == 1) {
+            break;
+        }
+    }
+    b = parseCreateBuffer();
+    while (!(c->buf->cur[0] == '<' && c->buf->cur[1] == '/' && CI(c->buf->cur[2], 'T') && CI(c->buf->cur[3], 'I') && CI(c->buf->cur[4], 'T') && CI(c->buf->cur[5], 'L') && CI(c->buf->cur[6], 'E'))) {
+        if (*c->buf->cur == '&') {
+            parseSetBuffer(b, parseCharEntity(c, 0));
+        } else {
+            parseSetBuffer(b, *c->buf->cur);
+        }
+        if (parseNextChar(c) == 1) {
+            parseDeleteBuffer(b);
+            return;
+        }
+    }
+    if (b->len != 0) {
+        parseAdjustBuffer(b);
+    }
+    d = parseMBtoDScopy(b->data, b->len);
+    parseDeleteBuffer(b);
+    u = MEM_malloc(0, d->len * 3 + 1);
+    n = ucs2ToUtf8(u, d->data, d->len);
+    u[n] = 0;
+    h = HST_searchSessionIDHistoryNode(c->x00[4]);
+    t = ps_prepareText(u, n);
+    MEM_free(0, u);
+    if (t != NULL) {
+        HST_setTitle(h, t, strlen(t));
+        MEM_free(0, t);
+    }
+    MEM_free(0, d->data);
+    d->data = NULL;
+    MEM_free(0, d);
+}
 
 int parseWellFormedCommentWC(PCtx *c) {
     int found;
@@ -705,7 +755,70 @@ void parseTextarea(PCtx *c, PChar *str, int len) {
     parseAlertMessage(c);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", parseScript);
+void parseScript(PCtx *c) {
+    PS7 name;
+    PStrBuf *b;
+    int cm;
+
+    cm = 0;
+    if (CF(c, 0x13C) != 0) {
+        if (CF(c, 0x14C) != 2) {
+            parseScriptExternal(c);
+        }
+        MEM_free(0, CF(c, 0x13C));
+        CF(c, 0x13C) = 0;
+    }
+    if (parseWellFormedScriptWC(c) != 2) {
+        CF(c, 0x140) = 0xD;
+        c->x44[2] = 2;
+        return;
+    }
+    if (CF(c, 0x14C) == 2) {
+        name = D_00137E48;
+        parseInvalidTag(c, name.s, 6);
+        CF(c, 0x140) = 10;
+        M2C_FIELD(c, s8 *, 0x12C) = 3;
+        c->x44[2] = 1;
+        return;
+    }
+    if (*c->buf->cur == '>') {
+        if (parseNextChar(c) == 1) {
+            return;
+        }
+    }
+    while (*c->buf->cur == ' ' || *c->buf->cur == '\t' || *c->buf->cur == '\n' || *c->buf->cur == '\r') {
+        if (parseNextChar(c) == 1) {
+            break;
+        }
+    }
+    b = parseCreateBuffer();
+    for (;;) {
+        if (c->buf->cur[0] == '<' && c->buf->cur[1] == '!' && c->buf->cur[2] == '-' && c->buf->cur[3] == '-') {
+            cm = 1;
+        }
+        if (c->buf->cur[0] == '-' && c->buf->cur[1] == '-' && c->buf->cur[2] == '>' && cm > 0) {
+            cm = 0;
+        }
+        if (cm == 0 && c->buf->cur[0] == '<' && CI(c->buf->cur[1], '/') && CI(c->buf->cur[2], 'S') && CI(c->buf->cur[3], 'C') && CI(c->buf->cur[4], 'R') && CI(c->buf->cur[5], 'I') && CI(c->buf->cur[6], 'P') && CI(c->buf->cur[7], 'T') && CI(c->buf->cur[8], '>')) {
+            break;
+        }
+        parseSetBuffer(b, *c->buf->cur);
+        if (parseNextChar(c) == 1) {
+            return;
+        }
+    }
+    if (b->len != 0) {
+        parseAdjustBuffer(b);
+    }
+    if (CF(c, 0x130) != 0) {
+        MEM_free(0, CF(c, 0x130));
+    }
+    CF(c, 0x130) = 0;
+    if (M2C_FIELD(c, s8 *, 0x12C) == 4) {
+        CF(c, 0x130) = parseMBtoDScopy(b->data, b->len);
+    }
+    parseDeleteBuffer(b);
+}
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/parser", D_00137E3C);
 
@@ -758,7 +871,24 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", checkFileStrage);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", parseScriptExternal);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", parseNoScript);
+void parseNoScript(PCtx *c) {
+    if (*c->buf->cur == '>') {
+        if (parseNextChar(c) == 1) {
+            return;
+        }
+    }
+    while (!(c->buf->cur[0] == '<' && c->buf->cur[1] == '/' && CI(c->buf->cur[2], 'N') && CI(c->buf->cur[3], 'O') && CI(c->buf->cur[4], 'S') && CI(c->buf->cur[5], 'C') && CI(c->buf->cur[6], 'R') && CI(c->buf->cur[7], 'I') && CI(c->buf->cur[8], 'P') && CI(c->buf->cur[9], 'T'))) {
+        if (parseNextChar(c) == 1) {
+            return;
+        }
+    }
+    parseSkipChar(c, 10);
+    while (*c->buf->cur == ' ' || *c->buf->cur == '\t' || *c->buf->cur == '\n' || *c->buf->cur == '\r') {
+        if (parseNextChar(c) == 1) {
+            break;
+        }
+    }
+}
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/parser", D_00137E60);
 
@@ -814,7 +944,47 @@ void backToStyleTag(PCtx *c) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", parseStyle);
+void parseStyle(PCtx *c) {
+    PStrBuf *b;
+
+    if (parseWellFormedStyleWC(c) != 2) {
+        c->x44[2] = 2;
+        backToStyleTag(c);
+        return;
+    }
+    if (*c->buf->cur == '>') {
+        if (parseNextChar(c) == 1) {
+            return;
+        }
+    }
+    if (*c->buf->cur == ' ' || *c->buf->cur == '\t' || *c->buf->cur == '\n' || *c->buf->cur == '\r') {
+        do {
+            if (parseNextChar(c) == 1) {
+                break;
+            }
+        } while (*c->buf->cur == ' ' || *c->buf->cur == '\t' || *c->buf->cur == '\n' || *c->buf->cur == '\r');
+    }
+    b = parseCreateBuffer();
+    while (!(c->buf->cur[0] == '<' && c->buf->cur[1] == '/' && CI(c->buf->cur[2], 'S') && CI(c->buf->cur[3], 'T') && CI(c->buf->cur[4], 'Y') && CI(c->buf->cur[5], 'L') && CI(c->buf->cur[6], 'E'))) {
+        if (c->buf->cur[0] == '<' && c->buf->cur[1] == '!' && c->buf->cur[2] == '-' && c->buf->cur[3] == '-') {
+            parseSkipChar(c, 4);
+        }
+        parseSetBuffer(b, *c->buf->cur);
+        if (parseNextChar(c) == 1) {
+            break;
+        }
+        if (c->buf->cur[0] == '-' && c->buf->cur[1] == '-' && c->buf->cur[2] == '>') {
+            parseSkipChar(c, 3);
+        }
+    }
+    if (b->len != 0) {
+        parseAdjustBuffer(b);
+    }
+    if (CF(c, 0x150) == 7) {
+        parseExtStyleSheet(c->x00[4], b->data);
+    }
+    parseDeleteBuffer(b);
+}
 
 void parseStyleAttribute(PCtx *c, PDStr *name, PDStr *val) {
     if (parseDStrEqual(D_00137EB4, name) && val != NULL) {
