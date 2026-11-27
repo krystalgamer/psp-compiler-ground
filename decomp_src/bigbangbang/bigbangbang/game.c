@@ -1,4 +1,3 @@
-/* cflags: -O2 -fno-merge-constants */
 #include "common.h"
 
 /* declarations recovered from DWARF */
@@ -130,7 +129,7 @@ void sceGumScale(const ScePspFVector3 *v);
 void sceGumTranslate(const ScePspFVector3 *v);
 void sceGumDrawArray(int prim, int vtype, int count, const void *indices, const void *vertices);
 void sceGumDrawBezier(int vtype, int ucount, int vcount, const void *indices, const void *vertices);
-int sceKernelDcacheWritebackAll(void);
+void sceKernelDcacheWritebackAll(void);
 float sinf(float x);
 float cosf(float x);
 
@@ -276,7 +275,52 @@ static void DrawBG(void)
 	sceGumDrawArray(4, 0x80011c, 4, NULL, D_0006E580);
 }
 
-INCLUDE_ASM("tmp/asm/bigbangbang/bigbangbang/nonmatchings/game", DrawGround);
+static void DrawGround(void)
+{
+	extern float D_0006E5B0[48];
+	ScePspFVector3 vec;
+	int i;
+
+	sceGuEnable(9);
+	sceGuTexWrap(0, 0);
+	sceGuTexFilter(0, 0);
+	sceGuTexFunc(0, 1);
+	sceGuTexMode(4, 0, 0, 0);
+	sceGuClutMode(1, 0, 0xff, 0);
+	sceGuClutLoad(1, &clut_water);
+	sceGuTexImage(0, 128, 128, 128, &chr_water);
+	for (i = 0; i < 48; i++)
+		D_0006E5B0[i] = gnd[i];
+	D_0006E5B0[16] = ground.pos;
+	D_0006E5B0[19] = ground.pos;
+	D_0006E5B0[28] = ground.pos;
+	D_0006E5B0[31] = ground.pos;
+	sceKernelDcacheWritebackAll();
+	for (i = 0; i < 48; i++) {
+		sceGumPushMatrix();
+		vec.x = gndpos[i * 2];
+		vec.y = -16.0f;
+		vec.z = gndpos[i * 2 + 1];
+		sceGumTranslate(&vec);
+		sceGuTexOffset(ground.tex[0], ground.tex[0]);
+		sceGuColor(0xffffffff);
+		if (ground.point == i)
+			sceGumDrawBezier(0x180, 4, 4, NULL, D_0006E5B0);
+		else
+			sceGumDrawBezier(0x180, 4, 4, NULL, gnd);
+		sceGuTexOffset(1.0f - ground.tex[1], ground.tex[1]);
+		sceGuColor(0x60ffffff);
+		sceGumDrawArray(4, 0x1e3, 4, NULL, gnd_poly);
+		sceGumPopMatrix();
+	}
+	ground.tex[0] += 0.001f;
+	if (ground.tex[0] > 1.0f)
+		ground.tex[0] = 0.0f;
+	ground.tex[1] += 0.002f;
+	if (ground.tex[1] > 1.0f)
+		ground.tex[1] = 0.0f;
+	sceGuDisable(9);
+}
 
 extern Gu2dV16T D_0006E670[30][4];
 static void DrawScore(void)
@@ -446,11 +490,6 @@ static void DrawMission(int a)
 	sceGuDisable(9);
 }
 
-#ifdef NON_MATCHING
-/* Matches instruction for instruction, but its jump table must follow the
-   float constants of the later functions: the original was built without
-   -fno-merge-constants (floats in .rodata.cst4, which this object uses
-   first), which needs DrawGround in C. */
 void DrawGame(void)
 {
 	ScePspFVector3 vec;
@@ -540,9 +579,6 @@ void DrawGame(void)
 		break;
 	}
 }
-#else
-INCLUDE_ASM("tmp/asm/bigbangbang/bigbangbang/nonmatchings/game", DrawGame);
-#endif
 
 static void CheckShoot(void)
 {
@@ -663,4 +699,3 @@ void KeyGame(u_int32 padd, u_int32 cont)
 	}
 }
 
-INCLUDE_RODATA("tmp/asm/bigbangbang/bigbangbang/nonmatchings/game", D_0000B744);
