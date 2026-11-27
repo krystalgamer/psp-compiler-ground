@@ -182,6 +182,8 @@ float area(vector_xyzw a, vector_xyzw b, vector_xyzw c);
 /* spherical harmonics helpers */
 struct SH {
     static int N(unsigned int l);
+    static float P(int l, int m, float x);
+    static float K(int l, int m);
     static float Eval(int l, int m, float theta, float phi);
 };
 }

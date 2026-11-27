@@ -65,5 +65,10 @@ void math::SphericalCoord::reset()
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/math_SphericalCoord", _ZNK4math14SphericalCoord15transformMatrixEv);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/math_SphericalCoord", _ZN4math14SphericalCoord14sync_directionEv);
+void math::SphericalCoord::sync_direction()
+{
+    float theta = _theta;
+    float phi = _phi;
+    _dir = vector_xyzw(sinf(theta) * cosf(phi), sinf(theta) * sinf(phi), cosf(theta), 0);
+}
 
