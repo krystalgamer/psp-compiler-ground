@@ -139,6 +139,8 @@ extern const char gl_Material[] __asm__("D_0016A5F0");
 extern const char gl_yesno_expr[] __asm__("D_0016A5FC");
 extern const char pf_parse_new_group[] __asm__("_ZZN5scene11GraphParser15parse_new_groupERN11FieldParser5FieldERKSsbE19__PRETTY_FUNCTION__");
 extern const char pf_parse_new_unknown[] __asm__("_ZZN5scene11GraphParser17parse_new_unknownERN11FieldParser5FieldERKSsbS5_E19__PRETTY_FUNCTION__");
+extern const char pf_parse_new_shape[] __asm__("_ZZN5scene11GraphParser15parse_new_shapeERN11FieldParser5FieldERKSsbE19__PRETTY_FUNCTION__");
+extern const char pf_parse_new_default_shader[] __asm__("_ZZN5scene11GraphParser24parse_new_default_shaderERN11FieldParser5FieldERKSsbE19__PRETTY_FUNCTION__");
 extern const char pf_parse_new[] __asm__("_ZZN5scene11GraphParser9parse_newERN11FieldParser5FieldEE19__PRETTY_FUNCTION__");
 
 template common::handle<scene::Object>::~handle();
@@ -146,6 +148,7 @@ extern template common::handle<scene::Group> scene::Graph::newNode<scene::Group>
 extern template void std::vector<common::handle<scene::Node> >::_M_insert_aux(std::vector<common::handle<scene::Node> >::iterator,
                                                                               const common::handle<scene::Node> &);
 extern template common::handle<scene::Shape> scene::Graph::newNode<scene::Shape>(std::string, bool);
+extern template common::handle<scene::DefaultShader> scene::Graph::newNode<scene::DefaultShader>(std::string, bool);
 extern template common::handle<scene::Transform> scene::Graph::newNode<scene::Transform>(std::string, bool);
 extern template common::handle<scene::StaticTransform> scene::Graph::newNode<scene::StaticTransform>(std::string, bool);
 extern template common::handle<scene::Material> scene::Graph::newNode<scene::Material>(std::string, bool);
@@ -172,9 +175,27 @@ void GraphParser::parse_new_group(FieldParser::Field &f, const std::string &name
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_GraphParser", _ZN5scene11GraphParser16parse_new_objectERN11FieldParser5FieldERKSsb);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_GraphParser", _ZN5scene11GraphParser15parse_new_shapeERN11FieldParser5FieldERKSsb);
+namespace scene {
+void GraphParser::parse_new_shape(FieldParser::Field &f, const std::string &name, bool mapped)
+{
+    _graph.newNode<Shape>(name.c_str(), mapped);
+    step_assert(gl_lbrace);
+    while (step_field(f))
+        skip(f);
+    SCENE_ASSERT(is_equal(gl_rbrace), scene_graph_h_err, gl_braces_expr, gl_file, pf_parse_new_shape, 285, scene_graph_h_sp);
+}
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_GraphParser", _ZN5scene11GraphParser24parse_new_default_shaderERN11FieldParser5FieldERKSsb);
+namespace scene {
+void GraphParser::parse_new_default_shader(FieldParser::Field &f, const std::string &name, bool mapped)
+{
+    _graph.newNode<DefaultShader>(name.c_str(), mapped);
+    step_assert(gl_lbrace);
+    while (step_field(f))
+        skip(f);
+    SCENE_ASSERT(is_equal(gl_rbrace), scene_graph_h_err, gl_braces_expr, gl_file, pf_parse_new_default_shader, 305, scene_graph_h_sp);
+}
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_GraphParser", _ZN5scene11GraphParser19parse_new_transformERN11FieldParser5FieldERKSsb);
 
