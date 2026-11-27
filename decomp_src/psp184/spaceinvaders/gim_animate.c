@@ -239,4 +239,88 @@ void sceGimPictureControl( SceGimPicture *picture, int param, float value )
 	}
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gim_animate", eval_fcurve_62354);
+typedef struct {
+	unsigned short param ;
+	unsigned short interp ;
+	unsigned int keyframes ;
+} SceGimFunction ;
+
+static void eval_fcurve( SceGimPicture *picture, SceGimSequenceHeader *sequence, int index, float frame )
+{
+	SceGimFunction *function = (SceGimFunction *)( (char *)sequence + sequence->functions ) ;
+	function += index ;
+	short *keyframes = (short *)( (char *)sequence + function->keyframes ) ;
+	float f = 0.0f ;
+	int value1 = 0 ;
+	int value2 = 0 ;
+
+	if ( frame < 0.0f ) frame = 0.0f ;
+	int left = (int)frame ;
+	for ( ; ; ) {
+		int count = *( keyframes ++ ) ;
+		if ( count == 0 ) {
+			value1 = value2 = keyframes[ 0 ] ;
+			break ;
+		}
+		if ( count > 0 ) {
+			if ( count > left ) {
+				f = frame / (float)count ;
+				value1 = keyframes[ 0 ] ;
+				value2 = keyframes[ 2 ] ;
+				break ;
+			}
+			keyframes ++ ;
+		} else {
+			count = -count ;
+			if ( count > left ) {
+				f = frame - (float)left ;
+				value1 = keyframes[ left ] ;
+				if ( ++ left == count ) ++ left ;
+				value2 = keyframes[ left ] ;
+				break ;
+			}
+			keyframes += count ;
+		}
+		left -= count ;
+		frame -= (float)count ;
+	}
+
+	int param = function->param ;
+	int interp = function->interp ;
+	int flags = interp ;
+	interp &= 0x000f ;
+
+	if ( flags & 0x0080 ) {
+		if ( param == 0x0003 || param == 0x000b ) {
+			if ( interp == 1 && value1 != value2 ) {
+				float value = (float)( value2 - value1 ) * f + (float)value1 ;
+				int ival = (int)value ;
+				if ( value < 0.0f ) ival -- ;
+				if ( value2 > value1 ) {
+					value1 = ival ;
+					value2 = ival + 1 ;
+					f = value - (float)value1 ;
+				} else {
+					value1 = ival + 1 ;
+					value2 = ival ;
+					f = (float)value1 - value ;
+				}
+			}
+			picture->m_dissolve = f ;
+			if ( param == 0x0003 ) {
+				picture->m_image_frame = value1 ;
+				picture->m_image_frame2 = value2 ;
+			} else {
+				picture->m_palette_frame = value1 ;
+				picture->m_palette_frame2 = value2 ;
+			}
+			return ;
+		}
+	}
+
+	float value = (float)value1 ;
+	if ( interp == 1 ) {
+		value += (float)( value2 - value1 ) * f ;
+	}
+	sceGimPictureControl( picture, param, value ) ;
+}
