@@ -238,6 +238,7 @@ userinterrupt                                1.9.2.internal  userinterrupt.c
 libwave                                      1.9.2           libwave.c
 libsas                                       1.9.2           libsas.c
 libsha1                                      1.9.2.internal  libsha1.c
+scert/key/PIPOSARU2SCEJ_11444key             1.4.0           scert/key/PIPOSARU2SCEJ_11444key.c
 scert/rt_util/rt_list_buf                    1.6.1           scert/rt_util/rt_list_buf.c
 scert/rt_udp/src/rt_p2p                      1.6.1           scert/rt_udp/src/rt_p2p.c
 scert/rt_udp/src/rt_udp                      1.6.1           scert/rt_udp/src/rt_udp.c

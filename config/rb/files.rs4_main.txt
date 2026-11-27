@@ -235,7 +235,11 @@ rodata 0x104898 src/ys/vfs_internal
 # library by name, so the files without an rcsid get names that sort in place: LargeInt.c (its
 # assert path), md5.c, rt_constraint.c, rt_lan_message.c (guessed).  RC4_asm/md5_asm: hand asm
 # whose 16-byte alignment can't share an object with the unaligned C before it (RC4Init, KM_MD5).
-0x9DFCC scert_rt_list_buf              1.6.1           scert/rt_util/rt_list_buf.c
+# scert_key/PIPOSARU2SCEJ_11444key_psp.a (the title key file, linked before the SCERT libraries;
+# .comment order makes it the 1.3.1 object): KM_GetSoftwareID/KM_GetSoftwareKeyPair
+# (compilers.txt has no 1.3.1 line; 1.4.0 maps to the same cc1-1.3.1-orig -mno-ulsw)
+0x9D810 scert_key                      1.4.0           scert/key/PIPOSARU2SCEJ_11444key.c
+0x9D8A0 scert_rt_list_buf              1.6.1           scert/rt_util/rt_list_buf.c
 0x9E12C scert_rt_p2p                   1.6.1           scert/rt_udp/src/rt_p2p.c
 0xA4820 scert_rt_udp                   1.6.1           scert/rt_udp/src/rt_udp.c
 0xA8FF4 scert_rt_udp_mgr               1.6.1           scert/rt_udp/src/rt_udp_mgr.c
