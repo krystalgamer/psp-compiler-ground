@@ -12,15 +12,22 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/draw_mesh_en
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/draw_mesh_enabled", _ZN5scene19MeshDataInterleavedC1Ev);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/draw_mesh_enabled", _ZN5scene19MeshDataInterleavedC2ERKS0_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/draw_mesh_enabled", _ZN5scene19MeshDataInterleavedC1ERKS0_);
+scene::MeshDataInterleaved::MeshDataInterleaved(const MeshDataInterleaved &o)
+{
+    *this = o;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/draw_mesh_enabled", _ZN5scene19MeshDataInterleavedaSERKS0_);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/draw_mesh_enabled", _ZN5scene19MeshDataInterleaved20getRadianceTransfersEv);
+std::vector<sh::VectorRGB> &scene::MeshDataInterleaved::getRadianceTransfers()
+{
+    return _shared->_radiance;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/draw_mesh_enabled", _ZNK5scene19MeshDataInterleaved20getRadianceTransfersEv);
+const std::vector<sh::VectorRGB> &scene::MeshDataInterleaved::getRadianceTransfers() const
+{
+    return _shared->_radiance;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/draw_mesh_enabled", _ZN5scene19MeshDataInterleaved16convert_preserveERKNS_8MeshDataE);
 

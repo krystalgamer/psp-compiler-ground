@@ -590,8 +590,32 @@ public:
     struct VertexData;
     void draw(const TraversalVarStack &);
     void convert(const MeshData &);
+    MeshDataInterleaved();
+    MeshDataInterleaved(const MeshDataInterleaved &);
+    MeshDataInterleaved &operator=(const MeshDataInterleaved &);
+    std::vector<sh::VectorRGB> &getRadianceTransfers();
+    const std::vector<sh::VectorRGB> &getRadianceTransfers() const;
     common::handle<SharedData> _shared;     /* 0x0 (sizeof(scene::Mesh) is 0x44) */
     common::handle<VertexData> _vertex;     /* 0x8 */
+};
+
+/* (SharedData's dtor: a PrimitiveIndex<short> at 0x48, a deleted pointer at 0x6C) */
+struct MeshDataInterleaved::SharedData : common::shared_object_base {
+    struct Block {
+        Block() : _f0(0), _f4(0), _f8(0), _fC(0) {}
+        int _f0, _f4, _f8, _fC;
+    };
+    SharedData() : _f14(false), _f64(false), _f65(false), _f66(false), _f67(false), _p6C(0) {}
+    std::vector<sh::VectorRGB> _radiance;   /* 0x8 */
+    bool _f14;                              /* 0x14 */
+    Block _b18, _b28, _b38;                 /* 0x18 */
+    sgl::PrimitiveIndex<short> _index;      /* 0x48 */
+    bool _f64, _f65, _f66, _f67;            /* 0x64 */
+    int _f68;
+    void *_p6C;                             /* 0x6C (deleted by the dtor) */
+};
+struct MeshDataInterleaved::VertexData : common::shared_object_base {
+    VertexArray _va;                        /* 0x8 */
 };
 
 class Mesh : public Node, public HasBVdata {
