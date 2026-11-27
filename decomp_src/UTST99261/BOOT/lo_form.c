@@ -28,6 +28,7 @@ void *make_msg_LP20(int a, int b, int c, int d, int e);
 void putLLIST(void *l, void *m);
 void *Node_getLastChild(void *node);
 void *Node_getPreviousSibling(void *node);
+int HST_getSessionID(void *h);
 RadioEnt *getRadioListByName(void *ctx, void *box) {
     RadioEnt *r = M2C_FIELD(M2C_FIELD(ctx, void **, 0x20), RadioEnt **, 0x80);
 
@@ -41,7 +42,41 @@ RadioEnt *getRadioListByName(void *ctx, void *box) {
     return r;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_form", addSaveFormData);
+void addSaveFormData(void *hist, int type, void *data) {
+    SaveForm *f;
+    void *sd;
+
+    f = MEM_malloc(0, sizeof(SaveForm));
+    if (f == NULL)
+        return;
+    f->type = type;
+    switch (type) {
+    case 14:
+    case 15:
+        f->data = *(void **)data;
+        break;
+    case 13:
+    case 18:
+        f->data = data;
+        break;
+    default:
+        MEM_free(0, f);
+        return;
+    }
+    f->next = NULL;
+    sd = (void *)getSessionSaveData(HST_getSessionID(hist));
+    if (sd == NULL) {
+        if ((type == 13 && data != NULL) || type == 18)
+            MEM_free(0, data);
+        MEM_free(0, f);
+        return;
+    }
+    if (M2C_FIELD(sd, SaveForm **, 0x10) == NULL)
+        M2C_FIELD(sd, SaveForm **, 0x10) = f;
+    else
+        M2C_FIELD(sd, SaveForm **, 0x14)->next = f;
+    M2C_FIELD(sd, SaveForm **, 0x14) = f;
+}
 
 void clearSaveFormData(void) {
     void *sd = getSessionSaveData();
