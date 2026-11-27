@@ -227,7 +227,150 @@ INCLUDE_RODATA("tmp/asm/selfboot/lflash_write/nonmatchings/lflash_write", D_0000
 
 INCLUDE_RODATA("tmp/asm/selfboot/lflash_write/nonmatchings/lflash_write", D_000052A8);
 
+#ifdef NON_MATCHING
+/* Same size, diff 33 (1.5.1): logic and block layout complete.  Left: hi(D_00006760) and
+ * hi(D_00006860) swap s7/s8; the two "size" sceIoLseek pairs compare via a2 (orig) instead
+ * of v0; the compare/recurse/open-in error printfs use the saved copy (s0/s4) in the
+ * original where copyprop_hardreg_forward gives v0 here (it inherits the branch block's
+ * value data because each error block has a single, earlier predecessor; in the
+ * original's block chain it does not).  `if (ret < 0) { if (ret != EEXIST) ... }` must stay
+ * nested (the && form is if-converted). */
+int func_0000081C(void)
+{
+	SceIoDirent dir;
+	SceUID fd;
+	SceUID in;
+	SceUID out;
+	int ret;
+	int s1, s2;
+	int len;
+	int i;
+
+	strcpy(D_00006960, D_00006760);
+	strcat(D_00006960, D_00006860);
+	if (D_00006960[strlen(D_00006960) - 1] == '/' && D_00006960[strlen(D_00006960) - 2] != ':')
+		D_00006960[strlen(D_00006960) - 1] = '\0';
+	printf("open name %s\n", D_00006960);
+	fd = sceIoDopen(D_00006960);
+	if (fd < 0)
+		return -1;
+	while (sceIoDread(fd, &dir) > 0) {
+		if (dir.d_stat.st_mode & 0x1000) {
+			if (strcmp(".", dir.d_name) == 0)
+				continue;
+			if (strcmp("..", dir.d_name) == 0)
+				continue;
+			strcat(D_00006860, dir.d_name);
+			strcpy(D_00006960, D_00006B60);
+			strcat(D_00006960, D_00006860);
+			printf("sceIoMkdir %s\n", D_00006960);
+			ret = sceIoMkdir(D_00006960, 0xFFF);
+			if (ret < 0) {
+				if (ret != 0x80010011) {
+					printf(D_00005394, ret);
+					sceIoDclose(fd);
+				}
+			}
+			sceIoDclose(fd);
+			strcat(D_00006860, D_00005378);
+			ret = func_0000081C();
+			if (ret != 0) {
+				printf(D_0000537C, ret);
+				return ret;
+			}
+			strcpy(D_00006960, D_00006760);
+			strcat(D_00006960, D_00006860);
+			if (D_00006960[strlen(D_00006960) - 1] == '/' && D_00006960[strlen(D_00006960) - 2] != ':')
+				D_00006960[strlen(D_00006960) - 1] = '\0';
+			fd = sceIoDopen(D_00006960);
+			if (fd < 0)
+				return -1;
+			while (sceIoDread(fd, &dir) > 0) {
+				if ((dir.d_stat.st_mode & 0x1000) && strcmp(D_00006A60, dir.d_name) == 0)
+					break;
+			}
+		} else if (dir.d_stat.st_mode & 0x2000) {
+			strcpy(D_00006960, D_00006760);
+			strcat(D_00006960, D_00006860);
+			strcat(D_00006960, dir.d_name);
+			printf("Original file %s\n", D_00006960);
+			in = sceIoOpen(D_00006960, 1, 0777);
+			if (in < 0) {
+				printf("sceIoOpen %d [0x%08x]\n", in, in);
+				sceIoDclose(fd);
+				return -1;
+			}
+			strcpy(D_00006960, D_00006B60);
+			strcat(D_00006960, D_00006860);
+			strcat(D_00006960, dir.d_name);
+			printf("Target file [%s]\n", D_00006960);
+			out = sceIoOpen(D_00006960, 0x603, 0777);
+			if (out < 0)
+				goto open_err;
+			printf("copy file to [%s]\n", D_00006960);
+			ret = func_00000350(in, out);
+			if (ret != 0) {
+				printf("cp_file %d\n", ret);
+				s1 = sceIoLseek(in, 0, 2);
+				s2 = sceIoLseek(out, 0, 2);
+				if (s1 != s2)
+					printf(D_000051B4, s1, s2);
+				goto fail;
+			}
+			s1 = sceIoLseek(in, 0, 2);
+			s2 = sceIoLseek(out, 0, 2);
+			if (s1 != s2)
+				printf(D_000051B4, s1, s2);
+			sceIoLseek(in, 0, 0);
+			sceIoLseek(out, 0, 0);
+			sceIoClose(out);
+			out = sceIoOpen(D_00006960, 1, 0777);
+			if (out < 0)
+				goto open_err;
+			printf("compare file [%s]\n", D_00006960);
+			ret = func_000003F0(in, out);
+			if (ret != 0) {
+				printf("compare_file failed: 0x%08x\n", ret);
+				goto fail;
+			}
+			sceIoClose(in);
+			sceIoClose(out);
+		}
+	}
+	D_00006A60[0] = '\0';
+	len = strlen(D_00006860);
+	for (i = len - 2; i > 0; i--) {
+		if (D_00006860[i] == '/') {
+			strcpy(D_00006A60, &D_00006860[i + 1]);
+			D_00006860[i + 1] = '\0';
+			break;
+		}
+	}
+	if (i == 0) {
+		if (len > 0) {
+			strcpy(D_00006A60, D_00006860);
+			D_00006A60[len - 1] = '\0';
+		}
+		D_00006860[0] = '\0';
+	}
+	if (D_00006A60[0] != '\0' && D_00006A60[strlen(D_00006A60) - 1] == '/')
+		D_00006A60[strlen(D_00006A60) - 1] = '\0';
+	sceIoDclose(fd);
+	return 0;
+fail:
+	sceIoDclose(fd);
+	sceIoClose(in);
+	sceIoClose(out);
+	return ret;
+open_err:
+	printf("sceIoOpen %d [0x%08x]\n", out, out);
+	sceIoDclose(fd);
+	sceIoClose(in);
+	return -1;
+}
+#else
 INCLUDE_ASM("tmp/asm/selfboot/lflash_write/nonmatchings/lflash_write", func_0000081C);
+#endif
 
 int func_00000E38(const char *name)
 {
@@ -373,7 +516,97 @@ INCLUDE_RODATA("tmp/asm/selfboot/lflash_write/nonmatchings/lflash_write", D_0000
 
 INCLUDE_RODATA("tmp/asm/selfboot/lflash_write/nonmatchings/lflash_write", D_00005508);
 
+#ifdef NON_MATCHING
+/* diff 120 (1.5.1), logic complete: the finish block must sit inside the early `#`/newline
+ * test (finish: label, reached by goto after the loop) so it is laid out inline; one `ret`
+ * for the EDC/read/read results (global pseudo -> v1, return value -> t1).  Left: the
+ * prologue (the original sets the func_00000000 arguments after the key/line copies, ours
+ * schedules them first and the byte-copy temps get other registers), &iv kept in s8 in
+ * the original (ours keeps &D_00006C60 instead, so the lo_sum is not rematerialised) and
+ * the "flash0:" first word reload register.  "flash0:" is the string shared with .data
+ * (D_00005428): as C this strcpy needs that string to be the same literal. */
+int func_000011A4(char *file)
+{
+	char *argv[16];
+	unsigned char iv[8] = { 0x41, 0xFB, 0xCF, 0xDD, 0xDE, 0x9E, 0x5B, 0x2C };
+	unsigned char key[8] = { 0x86, 0x53, 0x68, 0x4D, 0xA8, 0x9A, 0x56, 0x1F };
+	char path[128];
+	char line[512];
+	struct {
+		int size;
+		char name[508];
+	} hdr;
+	unsigned char buf[512];
+	SceUID fd;
+	SceUID out;
+	int ret;
+	int size;
+	int blocks;
+	int n;
+
+	strcpy(line, "host0:psp_102_selfboot.arc");
+	if (func_00000000(line, argv, 16) > 0 && (argv[0][0] == '#' || argv[0][0] == '\n')) {
+finish:
+		sceIoClose(0);
+		putchar('\n');
+		putchar('\n');
+		puts("finished.");
+		putchar('\n');
+		return 0;
+	}
+	printf("archive file = %s\n", argv[0]);
+	putchar('\n');
+	fd = sceIoOpen(argv[0], 1, 0777);
+	if (fd < 0)
+		return 0;
+	ret = func_00000EDC(func_00000E38(D_000053B0));
+	if (ret != 0) {
+		if (ret != 0x80020326)
+			return -1;
+	}
+	sceIoMkdir("flash0:/kd", 0xFFF);
+	sceIoMkdir("flash0:/vsh", 0xFFF);
+	sceIoMkdir("flash0:/vsh/module", 0xFFF);
+	sceIoMkdir("flash0:/vsh/resource", 0xFFF);
+	sceIoMkdir("flash0:/vsh/etc", 0xFFF);
+	sceIoMkdir("flash0:/font", 0xFFF);
+	sceIoMkdir("flash0:/data", 0xFFF);
+	sceIoMkdir("flash0:/data/cert", 0xFFF);
+	sceIoMkdir("flash0:/dic", 0xFFF);
+	while ((ret = sceIoRead(fd, buf, 0x200)) == 0x200) {
+		putchar('#');
+		func_00003870(buf, key, (unsigned char *)&hdr, iv, 0x40);
+		size = hdr.size;
+		blocks = size / 1024 * 1024;
+		if (size % 1024)
+			blocks += 0x400;
+		strcpy(path, "flash0:");
+		strcat(path, D_00005378);
+		strcat(path, hdr.name);
+		out = sceIoOpen(path, 0x602, 0777);
+		if (out < 0)
+			return -1;
+		while (blocks > 0) {
+			blocks -= 0x400;
+			ret = sceIoRead(fd, D_00007060, 0x400);
+			if (ret != 0x400)
+				return -1;
+			n = 0x400;
+			func_00003870(D_00007060, key, D_00006C60, iv, 0x80);
+			if (size <= 0x400)
+				n = size;
+			size -= 0x400;
+			if (sceIoWrite(out, D_00006C60, n) != n)
+				return -1;
+		}
+		sceIoClose(out);
+	}
+	sceIoClose(fd);
+	goto finish;
+}
+#else
 INCLUDE_ASM("tmp/asm/selfboot/lflash_write/nonmatchings/lflash_write", func_000011A4);
+#endif
 
 INCLUDE_ASM("tmp/asm/selfboot/lflash_write/nonmatchings/lflash_write", func_00001594);
 

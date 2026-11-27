@@ -76,6 +76,7 @@ extern const char D_000052A8[];	/* "sceIoClose 0x%08x\n" */
 extern const char D_00005378[];	/* "/" */
 extern const char D_0000537C[];	/* "recurse_copy_dir %d\n" */
 extern const char D_00005394[];	/* "sceIoMkdir failed 0x%08x\n" */
+extern const char D_000053B0[];	/* "flash0" */
 
 /* .data */
 extern char *D_000056E0[6];	/* "flash0".."flash5" */
@@ -90,5 +91,9 @@ extern char D_00006860[256];	/* current relative path */
 extern char D_00006960[256];	/* path being built */
 extern char D_00006A60[256];	/* directory name to resume after */
 extern char D_00006B60[256];	/* destination directory */
+extern unsigned char D_00006C60[0x400];	/* decrypted block */
+extern unsigned char D_00007060[0x400];	/* encrypted block */
+
+int func_00003870(const unsigned char *in, const unsigned char *key, unsigned char *out, const unsigned char *iv, unsigned int n);
 
 #endif
