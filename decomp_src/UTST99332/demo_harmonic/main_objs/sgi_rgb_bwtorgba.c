@@ -2,17 +2,68 @@
 /* cflags: -O3 -fno-exceptions */
 #undef __EXCEPTIONS
 #include "cxx/defer_asm.h"
+#define basic_parser basic_parser_base_hpp
+#define basic_file_parser basic_file_parser_base_hpp
 #include "../main.hpp"
+#undef basic_parser
+#undef basic_file_parser
+#include "../../demo_duck/demo/parser.hpp"
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgi_rgb_bwtorgba", _Z41__static_initialization_and_destruction_0ii_1062E8);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgi_rgb_bwtorgba", _ZN7sgi_rgb8bwtorgbaEPhS0_i);
+void sgi_rgb::bwtorgba(unsigned char *b, unsigned char *l, int n)
+{
+    while (n--) {
+        l[0] = *b;
+        l[1] = *b;
+        l[2] = *b;
+        l[3] = 0xff;
+        l += 4;
+        b++;
+    }
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgi_rgb_bwtorgba", _ZN7sgi_rgb8latorgbaEPhS0_S0_i);
+void sgi_rgb::latorgba(unsigned char *b, unsigned char *a, unsigned char *l, int n)
+{
+    while (n--) {
+        l[0] = *b;
+        l[1] = *b;
+        l[2] = *b;
+        l[3] = *a;
+        l += 4;
+        b++;
+        a++;
+    }
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgi_rgb_bwtorgba", _ZN7sgi_rgb9rgbtorgbaEPhS0_S0_S0_i);
+void sgi_rgb::rgbtorgba(unsigned char *r, unsigned char *g, unsigned char *b, unsigned char *l, int n)
+{
+    while (n--) {
+        l[0] = r[0];
+        l[1] = g[0];
+        l[2] = b[0];
+        l[3] = 0xff;
+        l += 4;
+        r++;
+        g++;
+        b++;
+    }
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgi_rgb_bwtorgba", _ZN7sgi_rgb10rgbatorgbaEPhS0_S0_S0_S0_i);
+void sgi_rgb::rgbatorgba(unsigned char *r, unsigned char *g, unsigned char *b, unsigned char *a, unsigned char *l, int n)
+{
+    while (n--) {
+        l[0] = r[0];
+        l[1] = g[0];
+        l[2] = b[0];
+        l[3] = a[0];
+        l += 4;
+        r++;
+        g++;
+        b++;
+        a++;
+    }
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgi_rgb_bwtorgba", _ZN7sgi_rgb8ImageRec4openEPKc);
 
@@ -87,3 +138,4 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgi_rgb_bwto
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgi_rgb_bwtorgba", _ZN6common4SwapINS_7t_arrayIiE7MembersEEEvRT_S5_);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgi_rgb_bwtorgba", _ZN6common4SwapINS_7t_arrayIjE7MembersEEEvRT_S5_);
+

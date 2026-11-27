@@ -62,7 +62,34 @@ WaterPatch::~WaterPatch()
 }
 
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/WaterPatch", _ZN10WaterPatch5resetEv);
+void WaterPatch::reset()
+{
+    vertex_formats::T2UB_V3F *v = &_vtx0[0];
+    math::vector_xyzw *pos = &_pos[0];
+    math::vector_xyzw *normal = &_normal[0];
+    unsigned int k = 0;
+    for (unsigned int j = 0; j < _ny; j++)
+        for (unsigned int i = 0; i < _nx; i++) {
+            v->p.x = _size * i - (_nx - 1) * _size * 0.5f;
+            v->p.y = _size * j - (_ny - 1) * _size * 0.5f;
+            v->p.z = 0;
+            *pos = math::vector_xyzw(v->p.x, v->p.y, 0, 1);
+            *normal = math::vector_xyzw(0, 0, 0, 0);
+            math::vector_xyz uv(i / (float)(_nx - 1), j / (float)(_ny - 1), 0);
+            pos++;
+            normal++;
+            v++;
+            k++;
+        }
+    _min = _vtx0.front();
+    _max = _vtx0.back();
+    for (k = 0; k < _nx * _ny; k++) {
+        _h0[k] = 0;
+        _h1[k] = 0;
+    }
+    _h = _h0;
+    _hprev = _h1;
+}
 
 bool WaterPatch::setf(float x, float y, float v)
 {

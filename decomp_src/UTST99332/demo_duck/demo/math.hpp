@@ -41,6 +41,7 @@ struct vector_xy {
     vector_xy(float x_, float y_) : x(x_), y(y_) {}
 };
 struct quaternion;
+enum RotationOrder { };
 struct matrix {
     vector_xyzw r[4];
     matrix() {}
@@ -53,6 +54,30 @@ struct matrix {
     static matrix Rotation(float a, float x, float y, float z);
     static matrix Rotation(float a, const vector_xyzw &v);
     static matrix Rotation(float a, const vector_xyz &v);
+    static matrix RotationX(float a);
+    static matrix RotationY(float a);
+    static matrix RotationZ(float a);
+    static matrix PointNormal(vector_xyzw p, vector_xyzw n);
+    static matrix Perspective(float fovy, float aspect, float n, float f);
+    static matrix Frustum(float l, float r, float b, float t, float n, float f);
+    static matrix ShadowMatrix(vector_xyzw plane, vector_xyzw light);
+    static matrix trackball(float, float, bool, bool, float, float, vector_xyzw &);
+    static matrix EulerRotation(float a, float b, float c, RotationOrder o);
+    static matrix EulerRotation(vector_xyz v, RotationOrder o);
+    matrix inverse3() const;
+    matrix inverseON() const;
+    matrix inverse() const;
+    matrix transpose() const;
+    vector_xyz eulerAngles(RotationOrder o) const;
+    vector_xyz eulerAnglesXYZ() const;
+    vector_xyz eulerAnglesXZY() const;
+    vector_xyz eulerAnglesYXZ() const;
+    vector_xyz eulerAnglesYZX() const;
+    vector_xyz eulerAnglesZXY() const;
+    vector_xyz eulerAnglesZYX() const;
+    bool isCoordSys(float eps) const;
+    matrix fixedCoordSys() const;
+    void print(std::string, std::string) const;
     float determinant3() const;
     matrix(vector_xyzw a, vector_xyzw b, vector_xyzw c, vector_xyzw d)
     {
@@ -91,7 +116,6 @@ public:
 }
 
 namespace math {
-enum RotationOrder { };
 struct quaternion {
     quaternion() : x(0), y(0), z(0), w(1) {}
     quaternion(const matrix &);
@@ -138,6 +162,7 @@ int factorial(int n);
 float wrap(float x, float lo, float range);
 float FastNoise(unsigned int n);
 int double_factorial(int n);
+float area(vector_xyzw a, vector_xyzw b, vector_xyzw c);
 /* spherical harmonics helpers */
 struct SH {
     static int N(unsigned int l);
@@ -272,6 +297,13 @@ namespace sgl {
 /* sgl::RED etc. (an array: the static initializer's store order needs it) */
 struct Color {
     float c[4];
+    Color()
+    {
+        c[0] = 0;
+        c[1] = 0;
+        c[2] = 0;
+        c[3] = 0;
+    }
     Color(float r, float g, float b, float a)
     {
         c[0] = r;
