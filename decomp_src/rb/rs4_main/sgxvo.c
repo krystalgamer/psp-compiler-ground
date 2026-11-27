@@ -79,7 +79,12 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxvo", FindVoGroup);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxvo", sgxVoAllocDevice);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxvo", sgxVoSetTakenCallback);
+void sgxVoSetTakenCallback(int v, void *cb, void *arg)
+{
+    char *e = (char *)D_0011FF64 + v * 48;
+    *(void **)(e + 0x10) = cb;
+    *(void **)(e + 0x14) = arg;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)

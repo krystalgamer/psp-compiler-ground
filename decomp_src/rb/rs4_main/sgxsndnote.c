@@ -50,4 +50,10 @@ int WaveCheckReq(int a, int b)
     return sgxResFindWave(a, b, 0) != NULL;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsndnote", NoteCheckReq);
+int NoteCheckReq(int a, int b)
+{
+    int n;
+    int r = 0;
+    if (sgxResFindRgn(a, b, &n) != NULL && n > 0) r = 1;
+    return r;
+}

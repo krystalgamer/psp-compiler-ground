@@ -98,7 +98,15 @@ int sgxBmgGetFree(int id)
     return *(int *)(p + 0x28) - *(int *)(p + 0x3C);
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxbmg", sgxBmgGetLinearFree);
+int sgxBmgGetLinearFree(int id)
+{
+    char *p = SlotGetAt_7A70C(id, "GetLinearFree");
+    int a, b;
+    if (p == NULL) return 0;
+    b = *(int *)(p + 0x28) - *(int *)(p + 0x3C);
+    a = *(int *)(p + 0x28) - *(int *)(p + 0x34);
+    return b < a ? b : a;
+}
 
 int sgxBmgGetLeft(int id)
 {
