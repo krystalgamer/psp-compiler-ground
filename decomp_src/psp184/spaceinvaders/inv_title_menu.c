@@ -129,7 +129,33 @@ void inv_logo(void)
 	logo = 1;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_title_menu", inv_title_init);
+void title_init(void);
+void select_init(void);
+void title_bg_star_init(void);
+void game_bg_init(void);
+M2C_UNK inv_title_init(void)
+{
+	game_cpu_disp = 0;
+	memset(&TMS, 0, 0xEDC);
+	TMS.f0 = 0;
+	TMS.fc = 1;
+	TMS.f4 = 0;
+	TMS.f8 = 0;
+	TMS.f28 = bmp_file_load16("menu_bg.bmp");
+	TMS.f2c = bmp_file_load("title.bmp");
+	TMS.f30 = bmp_file_load("copyright_jp.bmp");
+	TMS.f34 = bmp_file_load16("m_bg01.bmp");
+	TMS.f38 = bmp_file_load16("m_bg02.bmp");
+	TMS.f3c = bmp_file_load16("m_bg03.bmp");
+	TMS.f40 = bmp_file_load16("m_bg04.bmp");
+	TMS.f20 = 255;
+	TMS.f24 = 255;
+	TMS.f1c = 0;
+	title_init();
+	select_init();
+	title_bg_star_init();
+	game_bg_init();
+}
 
 void title_bg_star_disp(int a);
 void game_bg_disp(void);
