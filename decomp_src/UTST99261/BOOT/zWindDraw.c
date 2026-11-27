@@ -179,6 +179,10 @@ extern int _zWindDrawTexClipOffY;
 void GUI_Choice_select(ZW *w, int idx);
 typedef struct { u8 unk0[0x4C]; char *text; s16 len; s16 scroll; s16 lines; s16 unk56; int bar; } ZTEXTAREA;
 int zWindFontDrawArea(void *font, int x, int y, char *s, short color, int w, int len, int bottom);
+typedef struct { u16 code; u16 base; } KJTBL;
+extern KJTBL kanji_0_table_1F2FD4[];
+extern KJTBL kanji_1_table_1F3020[];
+extern KJTBL kanji_2_table[];
 int zWindDraw(void) {
     int r;
 
@@ -1144,7 +1148,140 @@ int zWindFontDrawZE_K(ZGFONT *f, int x, int y, int c, short color) {
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/zWindDraw", zWindFontDrawZE);
+void zWindFontDrawZE(ZGFONT *f, int x, int y, int c, int color) {
+    u16 buf[256];
+    u16 *d;
+    s8 *p;
+    int idx;
+    int i;
+    int lo;
+    int hi;
+    KJTBL *e;
+    int n;
+    s8 b;
+    ZCHAR *ch;
+    int k;
+    int t;
+
+    color = (short)color;
+    p = NULL;
+    i = 0;
+    idx = -1;
+    lo = c & 0xFF;
+    hi = (c >> 8) & 0xFF;
+    if ((unsigned int)(c - 0x8140) < 0x37F) {
+        if (!(s_windsystemChar.flags & 0x4000))
+            return;
+        switch (c & 0xFF00) {
+        case 0x8100:
+            if ((unsigned int)(lo - 0x40) < 0x3F)
+                i = 0;
+            else if ((unsigned int)(lo - 0x80) < 0x2D)
+                i = 1;
+            else if ((unsigned int)(lo - 0xB8) < 8)
+                i = 2;
+            else if ((unsigned int)(lo - 0xC8) < 7)
+                i = 3;
+            else if ((unsigned int)(lo - 0xDA) < 0xF)
+                i = 4;
+            else if ((unsigned int)(lo - 0xF0) < 8)
+                i = 5;
+            else if (lo == 0xFC)
+                i = 6;
+            else
+                return;
+            break;
+        case 0x8200:
+            if ((unsigned int)(lo - 0x4F) < 0xA)
+                i = 7;
+            else if ((unsigned int)(lo - 0x60) < 0x1A)
+                i = 8;
+            else if ((unsigned int)(lo - 0x81) < 0x1A)
+                i = 9;
+            else if ((unsigned int)(lo - 0x9F) < 0x53)
+                i = 10;
+            else
+                return;
+            break;
+        case 0x8300:
+            if ((unsigned int)(lo - 0x40) < 0x3F)
+                i = 11;
+            else if ((unsigned int)(lo - 0x80) < 0x17)
+                i = 12;
+            else if ((unsigned int)(lo - 0x9F) < 0x18)
+                i = 13;
+            else if ((unsigned int)(lo - 0xBF) < 0x18)
+                i = 14;
+            else
+                return;
+            break;
+        case 0x8400:
+            if ((unsigned int)(lo - 0x40) < 0x21)
+                i = 15;
+            else if ((unsigned int)(lo - 0x70) < 0xF)
+                i = 16;
+            else if ((unsigned int)(lo - 0x80) < 0x12)
+                i = 17;
+            else if ((unsigned int)(lo - 0x9F) < 0x20)
+                i = 18;
+            break;
+        default:
+            p = (s8 *)s_windsystemChar.font[1];
+            goto next;
+        }
+        idx = c - kanji_0_table_1F2FD4[i].code + kanji_0_table_1F2FD4[i].base;
+        p = (s8 *)s_windsystemChar.font[1];
+    }
+next:
+    if ((unsigned int)(c - 0x889F) < 0xFD4) {
+        ch = &s_windsystemChar;
+        if (!(ch->flags & 0x2000))
+            return;
+        if ((unsigned int)(lo - 0x40) >= 0xBD)
+            return;
+        k = hi * 2 - 0x110 - (lo < 0x7F);
+        e = &kanji_1_table_1F3020[k];
+        idx = c - e->code + e->base;
+        p = (s8 *)ch->font[2];
+    }
+    if ((unsigned int)(c - 0x989F) < 0x761) {
+        ch = &s_windsystemChar;
+        if (!(ch->flags & 0x1000))
+            return;
+        if ((unsigned int)(lo - 0x40) >= 0xBD)
+            return;
+        k = hi * 2 - 0x130 - (lo < 0x7F);
+        e = &kanji_2_table[k];
+        idx = c - e->code + e->base;
+        p = (s8 *)ch->font[3];
+    }
+    if ((unsigned int)(c - 0xE040) < 0xA63) {
+        if (!(s_windsystemChar.flags & 0x1000))
+            return;
+        if ((unsigned int)(lo - 0x40) >= 0xBD)
+            return;
+        k = hi * 2 - 0x1C0 + (lo >= 0x7F ? 0x10 : 0xF);
+        e = &kanji_2_table[k];
+        idx = c - e->code + e->base;
+        p = (s8 *)s_windsystemChar.font[3];
+    }
+    if (idx == -1)
+        return;
+    d = buf;
+    p += idx * s_windsystemChar.wbytes;
+    for (n = s_windsystemChar.wbytes; n > 0; n--) {
+        b = *p++;
+        *d++ = (b & 0x80) ? color : 0;
+        *d++ = (b & 0x40) ? color : 0;
+        *d++ = (b & 0x20) ? color : 0;
+        *d++ = (b & 0x10) ? color : 0;
+        *d++ = (b & 0x08) ? color : 0;
+        *d++ = (b & 0x04) ? color : 0;
+        *d++ = (b & 0x02) ? color : 0;
+        *d++ = (b & 0x01) ? color : 0;
+    }
+    zWindDrawImage(x, y, s_windsystemChar.w, s_windsystemChar.bpp, buf, 0);
+}
 
 void zWindFontDrawPassword(ZGFONT *f, int x, int y, char *s, short color, int len) {
     int i;
