@@ -60,6 +60,15 @@ typedef struct { SelTgt *head; SelTgt *tail; } SelList;
 void *MEM_malloc(void *pool, unsigned int size);
 void *lfm_createPageRegion(BOX *box, int w);
 void lfm_resetPageRegion(void *r, int w);
+extern unsigned char _DOMframe;
+extern unsigned char _DOMvoid;
+extern unsigned char _DOMabove;
+extern unsigned char _DOMbelow;
+extern unsigned char _DOMhsides;
+extern unsigned char _DOMlhs;
+extern unsigned char _DOMrhs;
+extern unsigned char _DOMvsides;
+extern unsigned char _DOMbox;
 int addSelectionTarget(SelList *l, BOX *box, int a, int b) {
     SelTgt *t;
     int s, e;
@@ -489,7 +498,33 @@ void attr_COLSPAN(void *node, void *box) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/act_selection", attr_FRAME);
+void attr_FRAME(void *node, BOX *box) {
+    DOMString str;
+    Element_getAttribute(&str, node, &_DOMframe);
+    if (str.len != 0) {
+        if (DOMStringcasecmpFast(&str, &_DOMvoid) == 0) {
+            M2C_FIELD(box->geom, int *, 0) = 0x30;
+        } else if (DOMStringcasecmpFast(&str, &_DOMabove) == 0) {
+            M2C_FIELD(box->geom, int *, 0) = 0x31;
+        } else if (DOMStringcasecmpFast(&str, &_DOMbelow) == 0) {
+            M2C_FIELD(box->geom, int *, 0) = 0x34;
+        } else if (DOMStringcasecmpFast(&str, &_DOMhsides) == 0) {
+            M2C_FIELD(box->geom, int *, 0) = 0x35;
+        } else if (DOMStringcasecmpFast(&str, &_DOMlhs) == 0) {
+            M2C_FIELD(box->geom, int *, 0) = 0x38;
+        } else if (DOMStringcasecmpFast(&str, &_DOMrhs) == 0) {
+            M2C_FIELD(box->geom, int *, 0) = 0x32;
+        } else if (DOMStringcasecmpFast(&str, &_DOMvsides) == 0) {
+            M2C_FIELD(box->geom, int *, 0) = 0x3A;
+        } else if (DOMStringcasecmpFast(&str, &_DOMbox) == 0 || DOMStringcasecmpFast(&str, &_DOMborder) == 0) {
+            M2C_FIELD(box->geom, int *, 0) = 0x3F;
+        } else {
+            M2C_FIELD(box->geom, int *, 0) = 0;
+        }
+    } else {
+        M2C_FIELD(box->geom, int *, 0) = 0;
+    }
+}
 
 void attr_HEIGHT_table(void *node, BOX *box) {
     char *s;
