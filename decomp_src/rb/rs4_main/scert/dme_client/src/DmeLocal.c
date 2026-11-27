@@ -347,9 +347,25 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", Ne
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", NetGetClientPingInfo);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", NetCleanupClientPingInfoArray);
+extern void *gppClientPingInfo[256];
+int DmeFree(void *);
+int NetCleanupClientPingInfoArray(void)
+{
+    int i;
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", NetGetConnInfo);
+    for (i = 0; i < 256; i++)
+        DmeFree(&gppClientPingInfo[i]);
+    return 0;
+}
+
+void *NetGetConnInfo(unsigned int idx)
+{
+    void *p = NULL;
+
+    if (idx < 4)
+        p = ((void **)&gppConnInfo)[idx];
+    return p;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", NetCleanupConnInfo);
 
