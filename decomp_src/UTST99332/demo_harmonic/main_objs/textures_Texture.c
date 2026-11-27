@@ -5,7 +5,18 @@
 /* the "" of Texture::CopiableMembers() stays in the module's .rodata (asm) */
 extern const char D_001734F4[];
 #define TEXTURE_EMPTY_PATH D_001734F4
+#define DEMO_TEMPLATE_DEFS
 #include "../main.hpp"
+
+/* this object's .gnu.linkonce.t sections in the original's order */
+DEMO_LINKONCE_ORDER(
+    DEMO_LINKONCE(_ZN6common7t_arrayIhEaSERKS1_)
+    DEMO_LINKONCE(_ZNK6common7t_arrayIhE4addrEv)
+    DEMO_LINKONCE(_ZN6common4SwapIN8textures7Texture15CopiableMembersEEEvRT_S5_)
+    DEMO_LINKONCE(_ZN8textures7Texture7convertINS_4ABGRENS_4ARGBEEEvv)
+    DEMO_LINKONCE(_ZNSt6vectorIhSaIhEE7reserveEj)
+    DEMO_LINKONCE(_ZNSt6vectorIhSaIhEE13_M_insert_auxEN9__gnu_cxx17__normal_iteratorIPhS1_EERKh)
+);
 
 /* the strings stay in the module's .rodata (asm) */
 extern const char D_001734F4[];     /* "" */
@@ -39,6 +50,11 @@ inline void SetBitField(unsigned int &reg, int value, int start_bit, int bit_siz
 }
 }
 
+/* Swap<CopiableMembers> stays asm (near-miss: the scheduling of the memberwise copies differs) */
+namespace common {
+extern template void Swap(textures::Texture::CopiableMembers &, textures::Texture::CopiableMembers &);
+}
+
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/textures_Texture", _Z41__static_initialization_and_destruction_0ii_FF0B0);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/textures_Texture", _ZN8textures7TextureaSERKS0_);
@@ -46,7 +62,6 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/textures_Tex
 textures::Texture::Texture()
 {
 }
-
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/textures_Texture", _ZN8textures7TextureC2EiiNS_6FormatE);
 
@@ -60,13 +75,11 @@ textures::Texture::~Texture()
 {
 }
 
-
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/textures_Texture", _ZN8textures7Texture5resetEb);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/textures_Texture", _ZN8textures7TextureC2ERKS0_);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/textures_Texture", _ZN8textures7TextureC1ERKS0_);
-
 
 int textures::Texture::width() const
 {
@@ -383,9 +396,11 @@ void _GLOBAL__D__ZN8textures7TextureaSERKS0_(void)
     static_init(0, 0xFFFF);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/textures_Texture", _ZN6common7t_arrayIhEaSERKS1_);
+/* out-of-line inline members / instances that stay asm */
+#undef INCLUDE_ASM
+#define INCLUDE_ASM INCLUDE_ASM_LINKONCE
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/textures_Texture", _ZNK6common7t_arrayIhE4addrEv);
+INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/textures_Texture", _ZN6common7t_arrayIhEaSERKS1_);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/textures_Texture", _ZN6common4SwapIN8textures7Texture15CopiableMembersEEEvRT_S5_);
 
