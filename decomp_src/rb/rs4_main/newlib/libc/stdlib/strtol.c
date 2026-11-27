@@ -1,5 +1,4 @@
-#include "common.h"
-
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/newlib/libc/stdlib/strtol", _strtol_r);
-
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/newlib/libc/stdlib/strtol", strtol);
+/* upstream: newlib-1.12.0/newlib/libc/stdlib/strtol.c (Sony's psp-newlib build: _REENT is __getreent()) */
+/* cflags: -O2 -fno-builtin */
+#define __DYNAMIC_REENT__
+#include "libc/stdlib/strtol.c"

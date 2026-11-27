@@ -1,7 +1,4 @@
-#include "common.h"
-
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/newlib/libc/stdio/sscanf", eofread);
-
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/newlib/libc/stdio/sscanf", sscanf);
-
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/newlib/libc/stdio/sscanf", _sscanf_r);
+/* upstream: newlib-1.12.0/newlib/libc/stdio/sscanf.c (Sony's psp-newlib build: _REENT is __getreent()) */
+/* cflags: -O2 -fno-builtin */
+#define __DYNAMIC_REENT__
+#include "libc/stdio/sscanf.c"

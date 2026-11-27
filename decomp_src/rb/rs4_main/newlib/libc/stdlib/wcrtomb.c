@@ -1,5 +1,4 @@
-#include "common.h"
-
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/newlib/libc/stdlib/wcrtomb", _wcrtomb_r);
-
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/newlib/libc/stdlib/wcrtomb", wcrtomb);
+/* upstream: newlib-1.12.0/newlib/libc/stdlib/wcrtomb.c (Sony's psp-newlib build: _REENT is __getreent()) */
+/* cflags: -O2 -fno-builtin */
+#define __DYNAMIC_REENT__
+#include "libc/stdlib/wcrtomb.c"
