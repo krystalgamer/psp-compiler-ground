@@ -72,7 +72,17 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/script/actor", ActorSetVariabl
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/script/actor", ActorRecvMotion);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/script/actor", ActorScriptRun);
+int SequenceExec(void *, int, unsigned int, float);
+int ActorScriptRun(char *t)
+{
+	int *w = *(int **)(t + 0x34);
+	int r = 0;
+	if (w[3] == 0 && w[4] == 0) {
+		w[0] = SequenceExec(t, w[0], *(unsigned short *)(t + 0x40), 0.0f);
+		r = 1;
+	}
+	return r;
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/script/actor", D_000FED88);
 
