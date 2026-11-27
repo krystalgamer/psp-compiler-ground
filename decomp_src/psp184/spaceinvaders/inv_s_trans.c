@@ -1,7 +1,23 @@
 /* cflags: -O2 */
 #include "common.h"
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_trans", spr8x8_trans);
+void spr8x8_trans(unsigned char *src, unsigned char *dst, int x, int y, int u, int v)
+{
+	unsigned char *s, *d;
+	int i;
+
+	if (x > 256 || y > 256 || x < 0 || y < 0)
+		return;
+	s = src + u + v * 256;
+	d = dst + x + y * 256;
+	for (i = 0; i < 8; i++) {
+		if (y + i > 256)
+			break;
+		memcpy(s, d, 8);
+		s += 256;
+		d += 256;
+	}
+}
 
 void *memset(void *s, int c, unsigned int n);
 
