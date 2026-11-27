@@ -881,8 +881,9 @@ void parseBase(PCtx *c) {
 
 int parseForm(PCtx *c) {
     int r;
-    r = M2C_FIELD(c, u16 *, 0x92) < 2;
-    r &= 1;
+    r = 1;
+    if (M2C_FIELD(c, u16 *, 0x92) >= 2)
+        r = 0;
     if (!r) {
         while (**M2C_FIELD(c, u16 ***, 0x18) != '>') {
             if (parseNextChar(c) == 1) {
