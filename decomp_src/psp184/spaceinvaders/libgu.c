@@ -174,9 +174,67 @@ int get_exp(int val)
 	return i;
 }
 
+INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", fonttex);
+
+INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", initList);
+
+INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", tbpcmd_tbl);
+
+INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", tbwcmd_tbl);
+
+INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", tsizecmd_tbl);
+
+static const GuLightSettings lcmd[4] = {
+	{ 0x18, 0x5F, 0x63, 0x64, 0x65, 0x6F, 0x70, 0x71, 0x8F, 0x90, 0x91, 0x7B, 0x7C, 0x7D, 0x87, 0x8B },
+	{ 0x19, 0x60, 0x66, 0x67, 0x68, 0x72, 0x73, 0x74, 0x92, 0x93, 0x94, 0x7E, 0x7F, 0x80, 0x88, 0x8C },
+	{ 0x1A, 0x61, 0x69, 0x6A, 0x6B, 0x75, 0x76, 0x77, 0x95, 0x96, 0x97, 0x81, 0x82, 0x83, 0x89, 0x8D },
+	{ 0x1B, 0x62, 0x6C, 0x6D, 0x6E, 0x78, 0x79, 0x7A, 0x98, 0x99, 0x9A, 0x84, 0x85, 0x86, 0x8A, 0x8E },
+};
+
+INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", color_material);
+
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", flush_font);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", reset_static_value);
+extern int gu_init_34A318;
+static void reset_static_value(void)
+{
+	GuDrawBuffer init = { 1, 480, 0, 0, 0, 0, 480, 272 };
+	int i;
+
+	gu_init_34A318 = 0;
+	__gu_status = 0;
+	FBuf = init;
+	aw_frame = 0;
+	n_bbox = 0;
+	disp_sw = 0;
+	call_mode = 0;
+	for (i = 0; i < 3; i++) {
+		GuContext *context = &_ctx[i];
+
+		context->scissor_enable = 0;
+		context->scissor_start[0] = 0;
+		context->scissor_start[1] = 0;
+		context->scissor_end[0] = 0;
+		context->scissor_end[1] = 0;
+		context->near_plane = 0;
+		context->far_plane = 1;
+		context->depth_offset = 0;
+		context->sprite_mode[0] = 0;
+		context->sprite_mode[1] = 0;
+		context->sprite_mode[2] = 0;
+		context->sprite_mode[3] = 0;
+		context->clear_color = 0;
+		context->clear_stencil = 0;
+		context->clear_depth = 0xffff;
+		context->texture_mode = 0;
+		context->fragment_2x = 0;
+		context->texture_function = 0;
+		context->texture_proj_map_mode = 0;
+		context->texture_map_mode = 0;
+	}
+	intrParam.signal_func = 0;
+	intrParam.finish_func = 0;
+}
 
 void sceGuSendCommandf(int cmd, float argument)
 {
@@ -203,27 +261,6 @@ void *sceGuGetMemory(int size)
 		sceGeListUpdateStallAddr(queid[0], new_ptr);
 	return orig_ptr;
 }
-
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", fonttex);
-
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", initList);
-
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", tbpcmd_tbl);
-
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", tbwcmd_tbl);
-
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", tsizecmd_tbl);
-
-static const GuLightSettings lcmd[4] = {
-	{ 0x18, 0x5F, 0x63, 0x64, 0x65, 0x6F, 0x70, 0x71, 0x8F, 0x90, 0x91, 0x7B, 0x7C, 0x7D, 0x87, 0x8B },
-	{ 0x19, 0x60, 0x66, 0x67, 0x68, 0x72, 0x73, 0x74, 0x92, 0x93, 0x94, 0x7E, 0x7F, 0x80, 0x88, 0x8C },
-	{ 0x1A, 0x61, 0x69, 0x6A, 0x6B, 0x75, 0x76, 0x77, 0x95, 0x96, 0x97, 0x81, 0x82, 0x83, 0x89, 0x8D },
-	{ 0x1B, 0x62, 0x6C, 0x6D, 0x6E, 0x78, 0x79, 0x7A, 0x98, 0x99, 0x9A, 0x84, 0x85, 0x86, 0x8A, 0x8E },
-};
-
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", color_material);
-
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", D_0007F9D0);
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", sceGuInit);
 
