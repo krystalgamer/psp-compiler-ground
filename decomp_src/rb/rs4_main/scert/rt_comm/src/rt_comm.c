@@ -39,6 +39,9 @@ void *memset(void *, int, unsigned int);
 int rt_comm_echo_shutdown();
 int rt_comm_is_connected(char *, int *);
 
+void rt_comm_metric_add_data();
+int rt_memory_allocate_init_zero();
+
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_comm/src/rt_comm", rcsid_10E72C);
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_comm/src/rt_comm", header_rcsid_10E788);
@@ -107,21 +110,143 @@ void rt_comm_destroy(void *arg0) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_comm/src/rt_comm", rt_comm_send);
+int rt_comm_send(char *ch, void *buf, int len, int *sent)
+{
+    int conn;
+    int r;
+    *sent = 0;
+    if (rt_comm_is_valid_channel(ch) == 0) return 2;
+    if (*(int *)(ch + 0xC) != 0 && *(int *)(ch + 0xC) != 2) return 0xC355;
+    if (*(int *)(ch + 0x20) == 0 && *(int *)(ch + 0xC) == 0) {
+        conn = 0;
+        r = rt_comm_is_connected(ch, &conn);
+        if (r != 0) return r;
+        if (conn == 0) {
+            *sent = 0;
+            return 0;
+        }
+        *(int *)(ch + 0x20) = 1;
+    }
+    r = COMMIF(0x10)(*(int *)(ch + 8), buf, len, sent);
+    if (r != 0) return r;
+    rt_comm_metric_add_data(*sent, 0, 0x28);
+    return 0;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_comm/src/rt_comm", rt_comm_send_to);
+int rt_comm_send_to(char *ch, RtLinkAddr addr, int a, int b, int c, int *sent)
+{
+    int r;
+    if (COMMIF(0x54)(addr) != 0) return 2;
+    *sent = 0;
+    if (b == 0) return 2;
+    if (rt_comm_is_valid_channel(ch) == 0) return 2;
+    if (*(int *)(ch + 0xC) != 1) return 0xC355;
+    r = COMMIF(0x14)(*(int *)(ch + 8), addr, a, b, c, sent);
+    if (r != 0) return r;
+    rt_comm_metric_add_data(*sent, 0, 0x1C);
+    return 0;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_comm/src/rt_comm", rt_comm_vsend);
+int rt_comm_vsend(char *ch, void *iov, int *sent)
+{
+    int conn;
+    int r;
+    *sent = 0;
+    if (rt_comm_is_valid_channel(ch) == 0) return 2;
+    if (*(int *)(ch + 0xC) != 0 && *(int *)(ch + 0xC) != 2) return 0xC355;
+    if (*(int *)(ch + 0x20) == 0 && *(int *)(ch + 0xC) == 0) {
+        conn = 0;
+        r = rt_comm_is_connected(ch, &conn);
+        if (r != 0) return r;
+        if (conn == 0) {
+            *sent = 0;
+            return 0;
+        }
+        *(int *)(ch + 0x20) = 1;
+    }
+    r = COMMIF(0x18)(*(int *)(ch + 8), iov, sent);
+    if (r != 0) return r;
+    rt_comm_metric_add_data(*sent, 0, 0x28);
+    return 0;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_comm/src/rt_comm", rt_comm_vsend_to);
+int rt_comm_vsend_to(char *ch, RtLinkAddr addr, int a, int b, int *sent)
+{
+    int r;
+    if (COMMIF(0x54)(addr) != 0) return 2;
+    *sent = 0;
+    if (b == 0) return 2;
+    if (rt_comm_is_valid_channel(ch) == 0) return 2;
+    if (*(int *)(ch + 0xC) != 1) return 0xC355;
+    r = COMMIF(0x1C)(*(int *)(ch + 8), addr, a, b, sent);
+    if (r != 0) return r;
+    rt_comm_metric_add_data(*sent, 0, 0x1C);
+    return 0;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_comm/src/rt_comm", rt_comm_send_echo);
+int rt_comm_send_echo(char *ch, int *sent, RtLinkAddr addr, int d)
+{
+    int r;
+    if (sent == NULL) return 2;
+    *sent = 0;
+    if (COMMIF(0x54)(addr) != 0) return 2;
+    if (rt_comm_is_valid_channel(ch) == 0) return 2;
+    if (*(int *)(ch + 0xC) != 3) return 0xC355;
+    r = COMMIF(0x20)(*(int *)(ch + 8), sent, addr, d);
+    if (r != 0) return r;
+    rt_comm_metric_add_data(0x1C, 0, 0);
+    return 0;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_comm/src/rt_comm", rt_comm_receive);
+int rt_comm_receive(char *ch, void *buf, int len, int *got)
+{
+    int conn;
+    int r;
+    *got = 0;
+    if (buf == NULL) return 2;
+    if (rt_comm_is_valid_channel(ch) == 0) return 2;
+    if (*(int *)(ch + 0xC) != 0 && *(int *)(ch + 0xC) != 2) return 0xC355;
+    if (*(int *)(ch + 0x20) == 0 && *(int *)(ch + 0xC) == 0) {
+        conn = 0;
+        r = rt_comm_is_connected(ch, &conn);
+        if (r != 0) return r;
+        if (conn == 0) {
+            *got = 0;
+            return 0;
+        }
+        *(int *)(ch + 0x20) = 1;
+    }
+    r = COMMIF(0x24)(*(int *)(ch + 8), buf, len, got);
+    if (r != 0) return r;
+    rt_comm_metric_add_data(0, *got, 0x28);
+    return 0;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_comm/src/rt_comm", rt_comm_receive_from);
+int rt_comm_receive_from(char *ch, int a, int b, void *buf, int len, int *got)
+{
+    int r;
+    if (got == NULL) return 2;
+    *got = 0;
+    if (buf == NULL) return 2;
+    if (rt_comm_is_valid_channel(ch) == 0) return 2;
+    if (*(int *)(ch + 0xC) != 1) return 0xC355;
+    r = COMMIF(0x28)(*(int *)(ch + 8), a, b, buf, len, got);
+    if (r != 0) return r;
+    rt_comm_metric_add_data(0, *got, 0x1C);
+    return 0;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_comm/src/rt_comm", rt_comm_receive_echo);
+int rt_comm_receive_echo(char *ch, int *got, int a, int b)
+{
+    int r;
+    *got = 0;
+    if (rt_comm_is_valid_channel(ch) == 0) return 2;
+    if (*(int *)(ch + 0xC) != 3) return 0xC355;
+    r = COMMIF(0x2C)(*(int *)(ch + 8), got, a, b);
+    if (r != 0) return r;
+    if (*got != 0) rt_comm_metric_add_data(0, 0x1C, 0);
+    return 0;
+}
 
 int rt_comm_get_avail_bytes_to_read(char *ch, int *out)
 {
@@ -220,7 +345,14 @@ int rt_isdigit(int arg0) {
     return (unsigned int) (arg0 - 0x30) < 0xAU;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_comm/src/rt_comm", rt_comm_get_new_channel_id);
+int *rt_comm_get_new_channel_id(void)
+{
+    int *ch = NULL;
+    rt_memory_allocate_init_zero(&ch, 0x24);
+    if (ch == NULL) return NULL;
+    ch[0] = 1;
+    return ch;
+}
 
 int rt_comm_release_channel_id(void *p)
 {
