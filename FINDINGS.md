@@ -738,15 +738,26 @@ libgcc/libsupc++ DWARF names `gcc-3.3.6/` paths.
   `vmzero.q`/`vmidt.q`, `lv.q`/`sv.q` at fixed `$a0`/`$a1` offsets) is
   reproduced exactly by `asm volatile` blocks with no operands, i.e. it
   needs no builtin either.
-- rs4_main's SCERT network middleware (53 objects, split from their
-  `$Header: /projects/rtime/CVS/...` rcsid strings; ~1,050 functions, no
-  DWARF) was not built by 1.9.2: not one of its functions has an `ext`/`ins`
-  (1.9.2 uses them by default, and its newlib/libgcc/SDK objects do), and
-  `reloadMT` keeps its 0x7fffffff/0x80000000 masks in registers, which the
-  1.3.1/1.6.1/1.7.1/1.8.4 cc1s reproduce and 1.9.2 never does (not even with
-  `-mno-ext`).  The module's `.comment` also lists 1.7.1, 1.6.1 and 1.3.1, so
-  it is a prebuilt library from an older psp-gcc; its units use 1.7.1 for
-  now.  No function seen so far tells 1.3.1/1.6.1/1.7.1 apart.
+- rs4_main links prebuilt libraries from older psp-gcc releases.  Its
+  `.comment` strings are in link order (1.9.2, 1.7.1, 1.4.0,
+  1.9.2.internal, 1.3.1, 1.6.1) and its `.lib.ent` names every linked
+  archive in order, which assigns them:
+  - SCERT (the six `librt*PSP.a`, 53 objects named from their
+    `$Header: /projects/rtime/CVS/...` rcsids, ~1,050 functions) is 1.6.1:
+    abs as `negu`+`max` (not 1.3.1/1.5.1), `lwl`/`lwr` copies (not
+    `-mno-ulsw`), no `ext`/`ins` (not 1.9.2; `reloadMT` keeps its masks in
+    registers, which 1.9.2 never does, even with `-mno-ext`).  No SCERT
+    function tells 1.6.1 from 1.7.1; 1.6.1 is the string at its link
+    position.  Its own sources call `memcpy` out of line at every constant
+    size (24–512 bytes) while its SHA1.c inlines a 64-byte one: a
+    conflicting `memcpy` declaration in those files, not a library-wide
+    `-fno-builtin`.
+  - The title key archive `PIPOSARU2SCEJ_11444key_psp.a` is the 1.3.1 object.
+  - `i3d_collision_psp.a` (i3d_parser_i3c, i3d_collision, i3dcs_sph_cap,
+    i3dcs_obb) is the 1.7.1 object: `(x>>4)&0xf` stays `srl`+`andi`, which
+    1.9.2 always makes `ext`.
+  - libpspdemo is the 1.4.0 object; sgx*, bin_common and i3d_scissor are
+    1.9.2 (their archives use `ext`/`ins`).
 - Why the module's VFPU code (2,304 VFPU words in 214 functions; none of
   them in a compile unit with DWARF, and no DWARF unit has a vector type)
   is taken to be inline asm and not output of the 1.8 VFPU builtins:

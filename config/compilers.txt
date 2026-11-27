@@ -16,6 +16,7 @@
 # 1.9.2 (gcc-3.3.6 based) uses the Allegrex 3.1 register ext/ins without
 # being asked: its newlib, libgcc and the SDK's libgim_picture (whose
 # Makefile has no -mext) need -mext.
+1.3.1           1.3.1-orig -mno-ulsw
 1.4.0           1.3.1-orig -mno-ulsw
 1.4.0.internal  1.3.1-orig -mno-ulsw
 1.5.0.internal  1.3.1-orig -mno-ulsw
