@@ -7,7 +7,12 @@ int ServerResponsePacketHandler(void);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeMessage", ClientConnectsPacketHandler);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeMessage", ServerVersionPacketHandler);
+int ServerVersionPacketHandler(char *ctx, int a, int b, const char *ver)
+{
+    if (ctx == NULL) return -1;
+    strncpy(ctx + 0x418, ver, 0x10);
+    return 0x10;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeMessage", RequestServersPacketHandler);
 

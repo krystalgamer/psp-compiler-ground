@@ -13,7 +13,20 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeGameFind",
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeGameFind", NetSetDefaultLANFindParams);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeGameFind", NetLANFindCancel);
+extern int gLANFinder[];
+int NetMutexLock();
+int NetMutexUnlock();
+int NetMapRtError();
+int NetLANFindCancel(void)
+{
+    int r = NetMapRtError(NetMutexLock());
+    if (r != 0) return r;
+    gLANFinder[1] = 0;
+    gLANFinder[2] = 0;
+    gLANFinder[3] = 0;
+    gLANFinder[0] = 0;
+    return NetMapRtError(NetMutexUnlock());
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeGameFind", NetILANFind);
 

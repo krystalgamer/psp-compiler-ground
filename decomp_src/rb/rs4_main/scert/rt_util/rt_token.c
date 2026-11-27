@@ -7,7 +7,15 @@ int rt_token_is_valid(unsigned int arg0);
 void rt_token_shutdown(int *arg0);
 M2C_UNK rt_memory_free(void *);                     /* extern */
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_token", rt_token_start);
+int rt_token_start(int **t)
+{
+    if (*t != NULL) return 0xDAC5;
+    if (rt_memory_allocate_init_zero(t, 0xC) != 0) return 0xDAC4;
+    (*t)[0] = 0;
+    (*t)[1] = 0;
+    (*t)[2] = 0;
+    return 0;
+}
 
 void rt_token_shutdown(int *arg0) {
     int temp_v0;

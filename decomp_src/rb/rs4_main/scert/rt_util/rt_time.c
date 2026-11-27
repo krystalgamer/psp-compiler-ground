@@ -34,7 +34,15 @@ int rt_time_get_msecs(unsigned int *ms)
     return rt_time_timestamp_to_msecs(ts, ms);
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_time", rt_time_get_secs);
+int rt_time_get_secs(unsigned int *s)
+{
+    unsigned int ts[2];
+    int r;
+    if (s == NULL) return 2;
+    r = rt_time_get_base_diff(ts);
+    if (r != 0) return r;
+    return rt_time_timestamp_to_secs(ts, s);
+}
 
 void rt_time_start(void) {
     rt_time_get_time_stamp();

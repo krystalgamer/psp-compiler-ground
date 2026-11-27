@@ -106,7 +106,18 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_crypt/src/rt_crypt", KM_D
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_crypt/src/rt_crypt", KM_DigiVerify);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_crypt/src/rt_crypt", KM_DeleteKeys);
+void DeleteKeyChain();
+void RemoveKeyChain();
+void *GetKeyChain();
+void KM_DeleteKeys(int a, int id)
+{
+    void *km = GetKeyMaster(a);
+    void *kc = GetKeyChain(km, id);
+    if (kc != NULL) {
+        RemoveKeyChain(km, kc);
+        DeleteKeyChain(kc);
+    }
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_crypt/src/rt_crypt", KM_Destroy);
 

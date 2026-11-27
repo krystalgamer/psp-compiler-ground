@@ -512,7 +512,15 @@ int NetGetNatService(M2C_UNK **arg0) {
     return var_v0;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", NetConvertTransportFlags);
+int NetConvertTransportFlags(signed char f, unsigned short *out)
+{
+    if (out == NULL) return 0x17;
+    *out = 0;
+    if (f & 0x10) *out = 0x2000;
+    if (f & 0x40) *out |= 0x4000;
+    if (f < 0) *out |= 0x1000;
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", p2p_connect_cb);
 

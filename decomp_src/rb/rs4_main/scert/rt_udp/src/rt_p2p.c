@@ -300,7 +300,16 @@ static int rt_p2p_handle_error_event(void *p2p, int conn, void *data)
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_get_peer_by_address);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_get_peer_by_connection);
+typedef struct { int a; int conn1; int conn2; int pad[17]; } RtP2PPeer;
+int rt_p2p_get_peer_by_connection(char *p, int conn)
+{
+    unsigned short i;
+    for (i = 0; i < *(unsigned short *)(p + 0x19C); i++) {
+        if (conn == (*(RtP2PPeer **)(p + 0x184))[i].conn1) return i;
+        if (conn == (*(RtP2PPeer **)(p + 0x184))[i].conn2) return i;
+    }
+    return 0xFFFE;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_get_my_peer_status);
 
