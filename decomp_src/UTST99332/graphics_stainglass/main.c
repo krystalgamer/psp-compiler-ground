@@ -1,3 +1,4 @@
+/* data-align: 16 */
 #include "common.h"
 #include <psptypes.h>
 #include <libgu.h>
@@ -369,7 +370,127 @@ static void init_all(void)
 	sceGuDisplay(SCEGU_DISPLAY_ON);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_stainglass/nonmatchings/main", pad_read);
+#ifndef SCE_CTRL_UP /* sample */
+#define SCE_CTRL_UP					(1<<4)
+#endif
+#ifndef SCE_CTRL_DOWN /* sample */
+#define SCE_CTRL_DOWN				(1<<6)
+#endif
+#ifndef SCE_CTRL_LEFT /* sample */
+#define SCE_CTRL_LEFT				(1<<7)
+#endif
+#ifndef SCE_CTRL_RIGHT /* sample */
+#define SCE_CTRL_RIGHT				(1<<5)
+#endif
+#ifndef DROT /* sample */
+#define DROT		4.0f
+#endif
+#ifndef SCE_CTRL_SQUARE /* sample */
+#define SCE_CTRL_SQUARE				(1<<15)
+#endif
+#ifndef SCE_CTRL_TRIANGLE /* sample */
+#define SCE_CTRL_TRIANGLE			(1<<12)
+#endif
+#ifndef SCE_CTRL_L /* sample */
+#define SCE_CTRL_L					(1<<8)
+#endif
+#ifndef SCE_CTRL_L1 /* sample */
+#define SCE_CTRL_L1					SCE_CTRL_L
+#endif
+#ifndef SCE_CTRL_R /* sample */
+#define SCE_CTRL_R					(1<<9)
+#endif
+#ifndef SCE_CTRL_R1 /* sample */
+#define SCE_CTRL_R1					SCE_CTRL_R
+#endif
+#ifndef DPOS /* sample */
+#define DPOS		2.0f
+#endif
+#ifndef SCE_CTRL_CIRCLE /* sample */
+#define SCE_CTRL_CIRCLE				(1<<13)
+#endif
+#ifndef SCE_CTRL_START /* sample */
+#define SCE_CTRL_START				(1<<3)
+#endif
+#ifndef SCE_CTRL_SELECT /* sample */
+#define SCE_CTRL_SELECT				(1<<0)
+#endif
+static int pad_read(void)
+{
+	u_int32        prev=cont;
+	u_int32        padd;
+	SceCtrlData    buf[8];
+	int            ret;
+	extern Positioning*  D_00016C34;
+
+     ret = sceCtrlReadBufferPositive(buf, 8);
+	if ( ret != 0 )
+	{
+		cont = buf[0].Buttons;
+	}
+	else
+	{
+		cont = 0;
+	}
+	padd=cont&(cont^prev);
+
+	if ( cont & SCE_CTRL_UP )
+	{
+		D_00016C34->_rot.x-=DROT;
+		if ( D_00016C34->_rot.x<0.0f )
+			D_00016C34->_rot.x=360.0f+D_00016C34->_rot.x;
+	}
+	if ( cont & SCE_CTRL_DOWN )
+	{
+		D_00016C34->_rot.x+=DROT;
+		if ( D_00016C34->_rot.x>=360.0f )
+			D_00016C34->_rot.x=D_00016C34->_rot.x-360.0f;
+	}
+	if ( cont & SCE_CTRL_LEFT )
+	{
+		D_00016C34->_rot.y-=DROT;
+		if ( D_00016C34->_rot.y<0.0f )
+			D_00016C34->_rot.y=360.0f+D_00016C34->_rot.y;
+	}
+	if ( cont & SCE_CTRL_RIGHT )
+	{
+		D_00016C34->_rot.y+=DROT;
+		if ( D_00016C34->_rot.y>=360.0f )
+			D_00016C34->_rot.y=D_00016C34->_rot.y-360.0f;
+	}
+	
+	if ( cont & SCE_CTRL_SQUARE )
+	{
+		distort -= 0.001f;
+          
+		StainGlassSetDistorsion( distort );
+	}
+
+	if ( cont & SCE_CTRL_TRIANGLE )
+	{
+		distort += 0.001f;
+          
+		StainGlassSetDistorsion( distort );
+	}
+
+	if ( cont & SCE_CTRL_L1 )
+		D_00016C34->_pos.z-=DPOS;
+	if ( cont & SCE_CTRL_R1 )
+		D_00016C34->_pos.z+=DPOS;
+
+	if ( padd & SCE_CTRL_CIRCLE )
+		texflag^=1;
+
+	if ( padd & SCE_CTRL_START )
+	{
+		ResetAllPositioning();
+	}
+
+	if ( padd & SCE_CTRL_SELECT )
+		return 0;
+
+	return 1;
+}
 
 #define SceSize unsigned int
 
@@ -396,7 +517,12 @@ int MainThread( SceSize _ArgNum, void* _ArgData )
 	return 0;
 }
 
-INCLUDE_RODATA("tmp/asm/UTST99332/graphics_stainglass/nonmatchings/main", D_000133D0);
+const ScePspIMatrix4 D_000133D0 __attribute__((aligned(16))) = {
+	{ -4, 0, -3, 1 },
+	{ 2, -2, 3, -1 },
+	{ -3, 1, -4, 0 },
+	{ 3, -1, 2, -2 },
+};
 
 #define SCE_KERNEL_USER_LOWEST_PRIORITY         111
 #define SCE_KERNEL_TH_USE_ScratchSRAM   0x00008000U
