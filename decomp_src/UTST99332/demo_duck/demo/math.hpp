@@ -316,14 +316,13 @@ public:
     virtual T evaluate(float) INTERP_NOINLINE;
     virtual void typed_fix() INTERP_NOINLINE;
 };
-template<class T> class KeyFrameSequenceA;
-template<> class KeyFrameSequenceA<float> : public KeyFrameSequence<float> {
+template<class T> class KeyFrameSequenceA : public KeyFrameSequence<T> {
 public:
     KeyFrameSequenceA() {}
-    virtual ~KeyFrameSequenceA();
-    virtual float op(float, float);
-    virtual float op_inv(float, float);
-    virtual float op_identity() const;
+    virtual ~KeyFrameSequenceA() INTERP_NOINLINE;
+    virtual T op(T, T) INTERP_NOINLINE;
+    virtual T op_inv(T, T) INTERP_NOINLINE;
+    virtual T op_identity() const INTERP_NOINLINE;
 };
 template<> class KeyFrameSequence<math::quaternion> : public KeyFrameSequenceBase<math::quaternion> {
 public:

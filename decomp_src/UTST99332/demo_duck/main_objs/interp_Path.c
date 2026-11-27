@@ -768,6 +768,21 @@ template<class T> int interp::KeyFrameSequenceBase<T>::insert(float t, T v)
     return _keys.size() - 2;
 }
 
+template<class T> T interp::KeyFrameSequenceA<T>::op(T a, T b)
+{
+    return a + b;
+}
+
+template<class T> T interp::KeyFrameSequenceA<T>::op_inv(T a, T b)
+{
+    return a - b;
+}
+
+template<class T> T interp::KeyFrameSequenceA<T>::op_identity() const
+{
+    return 0;
+}
+
 /* still asm */
 template<> int interp::KeyFrameSequenceBase<math::quaternion>::insert(float, math::quaternion);
 template<> interp::KeyFrame<math::quaternion>::KeyFrame();
@@ -1008,11 +1023,11 @@ template void interp::KeyFrameSequence<float>::calc_tangent(int);
 
 template float interp::KeyFrameSequence<float>::calc_gradient(float, float, float) const;
 
-INST_INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/interp_Path", _ZN6interp17KeyFrameSequenceAIfE2opEff, 40)
+template float interp::KeyFrameSequenceA<float>::op(float, float);
 
-INST_INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/interp_Path", _ZN6interp17KeyFrameSequenceAIfE6op_invEff, 44)
+template float interp::KeyFrameSequenceA<float>::op_inv(float, float);
 
-INST_INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/interp_Path", _ZNK6interp17KeyFrameSequenceAIfE11op_identityEv, 50)
+template float interp::KeyFrameSequenceA<float>::op_identity() const;
 
 template void interp::KeyFrameSequenceBase<float>::setDefault(float);
 
