@@ -22,5 +22,12 @@ void _GLOBAL__I__ZNK4math6matrix12eigenVectorsEv(void)
     static_init(1, 0xFFFF);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/math_matrix_eigenVectors", _ZN4math3sqrIdEET_S1_);
+/* the object's instance (eigen::tred2/tqli, still asm, use it) */
+namespace math {
+template<class T> T sqr(T x)
+{
+    return x * x;
+}
+}
+template double math::sqr<double>(double);
 

@@ -10,15 +10,6 @@
 __asm__(".globl _GLOBAL__I__ZN10WaterPatchC2Ejjfiff");
 __asm__(".globl _GLOBAL__D__ZN10WaterPatchC2Ejjfiff");
 
-/* these template instances are still asm below */
-namespace std {
-extern template math::vector_xyzw *__uninitialized_fill_n_aux(math::vector_xyzw *, unsigned int,
-                                                              const math::vector_xyzw &, __false_type);
-extern template vertex_formats::T2UB_V3F *__uninitialized_fill_n_aux(vertex_formats::T2UB_V3F *, unsigned int,
-                                                                     const vertex_formats::T2UB_V3F &, __false_type);
-extern template unsigned short *fill_n(unsigned short *, unsigned int, const unsigned short &);
-}
-
 static unsigned int mipmap_offset[5];
 
 /* the strings stay in the module's .rodata (asm) */
@@ -237,33 +228,3 @@ void WaterPatch::draw(Pass) const
 }
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/WaterPatch", _ZN10WaterPatch6updateEv);
-
-/* The weak template instances: cc1plus puts them in .gnu.linkonce sections,
-   which the linker places after the object's .text (after _GLOBAL__I/D):
-   include their asm into .text's subsection 1 for the same order. */
-#undef INCLUDE_ASM
-#if defined(M2CTX) || defined(PERMUTER)
-#define INCLUDE_ASM(FOLDER, NAME)
-#else
-#define INCLUDE_ASM(FOLDER, NAME) \
-    extern "C" void NAME##__asm(void) __attribute__((section(".discard.asm"))); \
-    extern "C" void NAME##__asm(void) \
-    { \
-        __asm__( \
-            ".end " #NAME "__asm\n" \
-            ".text 1\n" \
-            "    .set noat\n" \
-            "    .set noreorder\n" \
-            "    .include \"" FOLDER "/" #NAME ".s\"\n" \
-            "    .set reorder\n" \
-            "    .set at\n" \
-            ".section .discard.asm\n" \
-            ".ent " #NAME "__asm\n"); \
-    }
-#endif
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/WaterPatch", _ZSt26__uninitialized_fill_n_auxIPN4math11vector_xyzwEjS1_ET_S3_T0_RKT1_12__false_type);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/WaterPatch", _ZSt26__uninitialized_fill_n_auxIPN14vertex_formats8T2UB_V3FEjS1_ET_S3_T0_RKT1_12__false_type);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/WaterPatch", _ZSt6fill_nIPtjtET_S1_T0_RKT1_);
