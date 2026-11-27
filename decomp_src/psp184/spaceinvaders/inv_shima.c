@@ -16,7 +16,8 @@ extern unsigned char sexp;
 #endif
 
 extern int scoredisp[5];
-extern int *ptexdis1[];
+typedef struct { int f0[7]; unsigned char *buf; } TEXINFO;
+extern TEXINFO *ptexdis1[];
 extern int demotype;
 void spr_boxfill(int tex, int x, int y, int w, int h, int col);
 void classic_inv_demo2_moji2(int type);
@@ -24,7 +25,7 @@ void classic_inv_demo2_moji2(int type);
 
 extern int nowplay;
 extern int screen_sw;
-extern int *ptexdis2[];
+extern TEXINFO *ptexdis2[];
 extern int wwx, wwy, wwh, www;
 void classic_inv_shotsub(int a, int b, int c, int d, int e, int f, int g, int h, int i, int j);
 
@@ -99,15 +100,15 @@ void classic_game_init(void)
 	classicwork_i[12] = 0;
 	classic_inv_init();
 	classic_inv_init_pos();
-	memset((void *)ptexdis1[0][7], 0, 0x10000);
-	memset((void *)ptexdis2[0][7], 0, 0x10000);
-	memset((void *)ptexdis1[1][7], 0, 0x10000);
-	memset((void *)ptexdis2[1][7], 0, 0x10000);
-	tex = ptexdis1[0][7];
+	memset(ptexdis1[0]->buf, 0, 0x10000);
+	memset(ptexdis2[0]->buf, 0, 0x10000);
+	memset(ptexdis1[1]->buf, 0, 0x10000);
+	memset(ptexdis2[1]->buf, 0, 0x10000);
+	tex = (int)ptexdis1[0]->buf;
 	enemy_shottype[1] = 0;
 	enemy_shottype[0] = 0;
 	spr_boxfill(tex, 0, 240, 224, 1, 2);
-	spr_boxfill(ptexdis2[0][7], 0, 240, 224, 1, 2);
+	spr_boxfill((int)ptexdis2[0]->buf, 0, 240, 224, 1, 2);
 	SprAllDispSet();
 	hiscoreentry = -1;
 	play2flg = 0;
@@ -133,7 +134,23 @@ void ScoreAddInit(int a, int b, int c, int d)
 	
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_shima", ScoreAddDisp);
+extern char D_0007C05C[];
+int sprintf(char *buf, const char *fmt, ...);
+void ASC_SetString(char *s, int x, int y);
+void ScoreAddDisp(void)
+{
+	char buf[64];
+
+	if (scoredisp[1]) {
+		scoredisp[1]--;
+		sprintf(buf, D_0007C05C, scoredisp[4]);
+		ASC_SetString(buf, scoredisp[2], scoredisp[3]);
+	} else if (scoredisp[0]) {
+		scoredisp[0] = 0;
+		spr_boxfill((int)ptexdis1[1]->buf, 0, scoredisp[3], 224, 8, 0);
+		spr_boxfill((int)ptexdis1[0]->buf, 0, scoredisp[3], 224, 8, 0);
+	}
+}
 
 typedef struct { int f0, f4, f8, fc; u8 pad[0x24 - 0x10]; int f24, f28, f2c, f30; u8 pad2[0x48 - 0x34]; int f48, f4c; } CLSA_T;
 extern CLSA_T classicwork_a __asm__("classicwork");
@@ -257,10 +274,10 @@ void SprMoveTama(int mode, int cnt)
 
 	if (mode == 0) {
 		if (nowplay == 0) {
-			tex = ptexdis1[screen_sw][7];
+			tex = (int)ptexdis1[screen_sw]->buf;
 			pl = 0;
 		} else {
-			tex = ptexdis2[screen_sw][7];
+			tex = (int)ptexdis2[screen_sw]->buf;
 			pl = 1;
 		}
 		if (SprHeadGet()) {
@@ -305,10 +322,10 @@ void SprMove(void)
 	int tex, pl;
 
 	if (nowplay == 0) {
-		tex = ptexdis1[0][7];
+		tex = (int)ptexdis1[0]->buf;
 		pl = 0;
 	} else {
-		tex = ptexdis2[0][7];
+		tex = (int)ptexdis2[0]->buf;
 		pl = 1;
 	}
 	for (s = (SPRM_T *)SprHeadGet(); s; s = s->next) {
@@ -342,11 +359,11 @@ void SprMoveHitWait(int mode)
 	int tex, a, b;
 
 	if (nowplay == 0) {
-		tex = ptexdis1[screen_sw][7];
+		tex = (int)ptexdis1[screen_sw]->buf;
 		a = 2;
 		b = 4;
 	} else {
-		tex = ptexdis2[screen_sw][7];
+		tex = (int)ptexdis2[screen_sw]->buf;
 		a = 3;
 		b = 5;
 	}
@@ -389,9 +406,9 @@ static void SprMoveHitWait2(int x)
 	int tex;
 
 	if (nowplay == 0)
-		tex = ptexdis1[screen_sw][7];
+		tex = (int)ptexdis1[screen_sw]->buf;
 	else
-		tex = ptexdis2[screen_sw][7];
+		tex = (int)ptexdis2[screen_sw]->buf;
 	if (x == 1)
 		spr_boxfill(tex, wwx, wwy, wwh, www, 0);
 }
@@ -659,7 +676,7 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_shima", classic_inv_s
 
 extern int nowplay;
 extern int screen_sw;
-extern int *ptexdis2[];
+extern TEXINFO *ptexdis2[];
 extern int wwx, wwy, wwh, www;
 void classic_inv_shotsub(int a, int b, int c, int d, int e, int f, int g, int h, int i, int j);
 void classic_inv_shot(int a, int b, int d, int e, int f, int g, int h, int i, int j)
@@ -791,10 +808,10 @@ void classic_inv_demo_moji(void)
 		classic_inv_demo_mojisub();
 	else if (demotype == 1)
 		classic_inv_demo_mojisub2();
-	spr_trans(((int *)ptexsrc_28F380)[7], ptexdis1[screen_sw][7], 62, 128, 0, 56, 16, 8);
-	spr_trans(((int *)ptexsrc_28F380)[7], ptexdis1[screen_sw][7], 66, 144, 0, 0, 8, 8);
-	spr_trans(((int *)ptexsrc_28F380)[7], ptexdis1[screen_sw][7], 62, 160, 0, 24, 16, 8);
-	spr_trans(((int *)ptexsrc_28F380)[7], ptexdis1[screen_sw][7], 62, 176, 32, 8, 16, 8);
+	spr_trans(((int *)ptexsrc_28F380)[7], (int)ptexdis1[screen_sw]->buf, 62, 128, 0, 56, 16, 8);
+	spr_trans(((int *)ptexsrc_28F380)[7], (int)ptexdis1[screen_sw]->buf, 66, 144, 0, 0, 8, 8);
+	spr_trans(((int *)ptexsrc_28F380)[7], (int)ptexdis1[screen_sw]->buf, 62, 160, 0, 24, 16, 8);
+	spr_trans(((int *)ptexsrc_28F380)[7], (int)ptexdis1[screen_sw]->buf, 62, 176, 32, 8, 16, 8);
 }
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_shima", classic_inv_demo2_moji2);
@@ -829,7 +846,7 @@ int inv_classic_gcntget(void) {
 
 void classic_inv_screen_clr(int no, int x, int y, int w, int h)
 {
-	spr_boxfill(ptexdis1[no][7], x, y, w, h, 0);
+	spr_boxfill((int)ptexdis1[no]->buf, x, y, w, h, 0);
 }
 
 void classic_inv_screen_allclr(int no)
@@ -867,9 +884,9 @@ void classic_inv_expsys_setsub(int a, int b, int c, int d, int e, int f, int g)
 	for (i = 0; i < 10; i++, p++) {
 		if (p->f0 == 0) {
 			if (nowplay == 0)
-				p->f4 = ptexdis1[0][7];
+				p->f4 = (int)ptexdis1[0]->buf;
 			else
-				p->f4 = ptexdis2[0][7];
+				p->f4 = (int)ptexdis2[0]->buf;
 			p->f8 = g;
 			p->f0 = f;
 			p->fC = a;
