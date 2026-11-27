@@ -401,9 +401,19 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", sgxSndSetVolume);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", sgxSndSetPr2Pan);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", sgxSndSetDry);
+extern const char D_0010A540[];
+void sgxSndSetDry(int id, int v) {
+    char *p = SlotGetAt_7DD48(id, D_0010A540);
+    if (p == NULL) return;
+    sgxAttrSetValueSafe(p + 0x38, 6, ConvVol12(v < -128 ? -128 : (v > 128 ? 128 : v)));
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", sgxSndSetWet);
+extern const char D_0010A548[];
+void sgxSndSetWet(int id, int v) {
+    char *p = SlotGetAt_7DD48(id, D_0010A548);
+    if (p == NULL) return;
+    sgxAttrSetValueSafe(p + 0x38, 7, ConvVol12(v < -128 ? -128 : (v > 128 ? 128 : v)));
+}
 
 extern const char D_0010A550[];
 extern const float D_0010A808;

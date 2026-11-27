@@ -6,7 +6,7 @@ M2C_UNK sceKernelResumeThread();                    /* extern */
 M2C_UNK sceKernelSuspendThread();                   /* extern */
 int sceUmdGetDriveStat();                           /* extern */
 M2C_UNK sceUmdWaitDriveStat(M2C_UNK);               /* extern */
-M2C_UNK sgxPrintfPref(int, M2C_UNK *, M2C_UNK, M2C_UNK *); /* extern */
+int sgxPrintfPref(int, const void *, int, const char *, ...);
 extern unsigned char D_0010B074;
 extern int gSgxDebugFlags;
 extern int gSgxPrefErr;
@@ -34,15 +34,41 @@ void ssePrint(const char *s) {
     if (gSgxDebugFlags & 4) sgxPrintf(" %s", s);
 }
 
+#define CLAMP(x, lo, hi) ((x) < (lo) ? (lo) : ((x) > (hi) ? (hi) : (x)))
+#define SGX_ERR(line, ...) if (gSgxDebugFlags & 1) sgxPrintfPref(gSgxPrefErr, &D_0010B074, line, __VA_ARGS__)
+int sceKernelCpuSuspendIntr(void);
+int sceSasExit(void);
+int sceSasSetEffectParam(int, int);
+int sceIoClose(int);
+void VoCtrlSas(void *, int, int, int);
+void VoCtrlAt3(void *, int, int, int);
+int sgxVoAllocDevice(int, int, int, int, int, int);
+
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxpsp", sgxPspInit);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxpsp", sgxPspWaitReadyTerm);
+extern int gWork_1207F0[];
+void sgxPspWaitReadyTerm(void) {
+    int i;
+    for (i = 0; i < gWork_1207F0[0x450 / 4]; i++) {
+        unsigned char *e = (unsigned char *)(gWork_1207F0[0x44C / 4] + i * 0x60B0);
+        while (e[0x34]) sceKernelDelayThread(10000);
+    }
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxpsp", sgxPspTerm);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxpsp", sgxPspTickProc);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxpsp", sgxDI);
+extern int gWork_1207F0[];
+void sgxDI(void) {
+    int *w = gWork_1207F0;
+    if (w[3] != 0) {
+        sceKernelWaitSema(w[2], 1, NULL);
+        return;
+    }
+    if (gDICount == 0) gDIStat = sceKernelCpuSuspendIntr();
+    gDICount++;
+}
 
 extern int gWork_1207F0[];
 void sgxEI(void) {
@@ -167,7 +193,19 @@ int sgxPspSetMasterDecodeCallback(int cb)
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxpsp", SasInit);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxpsp", SasTerm);
+void SasTerm(void) {
+    int *w = gWork_1207F0;
+    if (w[0x460 / 4] == 0) return;
+    if (w[0x468 / 4] >= 0) {
+        sceKernelDeleteSema(w[0x468 / 4]);
+        w[0x468 / 4] = -1;
+    }
+    sceSasExit();
+    if (w[0x47C / 4] != 0) {
+        sgxFree((int *)w[0x47C / 4]);
+        w[0x47C / 4] = 0;
+    }
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxpsp", SasDecode);
 
@@ -244,7 +282,13 @@ void *At3BufGetTopOfs(void *arg0, int arg1) {
     return arg0 + ((int) (M2C_FIELD(arg0, int *, 0x2090) + arg1) % (int) M2C_FIELD(arg0, int *, 0x2094)) + 0x209C;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxpsp", At3BufInc);
+void At3BufInc(char *b, int n) {
+    *(long long *)(b + 0x60A8) += n;
+    *(int *)(b + 0x2090) = (*(int *)(b + 0x2090) + n * 4) % *(int *)(b + 0x2094);
+    sceKernelWaitSema(*(int *)(b + 0x18), 1, NULL);
+    *(int *)(b + 0x2098) -= n * 4;
+    sceKernelSignalSema(*(int *)(b + 0x18), 1);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxpsp", At3ThMain);
 
@@ -339,7 +383,12 @@ void WaitOneSec(volatile int *flag) {
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxpsp", FileCmdRopen);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxpsp", FileCmdClose);
+void FileCmdClose(void *f, int fd) {
+    int r;
+    if (fd < 0) return;
+    r = sceIoClose(fd);
+    if (r < 0) SGX_ERR(0xAED, "close error (%d, %X)\n", fd, r);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxpsp", FileCmdRead);
 
@@ -384,7 +433,19 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxpsp", VoCtrlSas);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxpsp", VoCtrlAt3);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxpsp", sgxVoCtrl);
+void sgxVoCtrl(int v, int a, int b, int c) {
+    char *e = (char *)gWork_1207F0[0x70 / 4] + v * 48;
+    switch (*(int *)(e + 0x18)) {
+    case 0:
+        break;
+    case 1:
+        VoCtrlSas(e, a, b, c);
+        break;
+    case 2:
+        VoCtrlAt3(e, a, b, c);
+        break;
+    }
+}
 
 int VoiceToDeviceIndex(int v, int *dev, int *idx) {
     int *w = gWork_1207F0;
