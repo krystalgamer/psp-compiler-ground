@@ -242,7 +242,19 @@ void textures::Texture::alphaHalfBias()
     }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/textures_Texture", _ZN8textures7Texture11finish_loadEv);
+extern const char D_00173A38[];     /* "width or height or both are non power of 2\n" */
+
+void textures::Texture::finish_load()
+{
+    if (!isPow2())
+        common::Log() << D_00173A38;
+    m.load.width = m.info.width;
+    m.load.height = m.info.height;
+    if (m.info.format == FORMAT_1 || m.info.format == FORMAT_2)
+        setAlphaCount(0, 0, 0, 0, 0xFF);
+    m.load.alpha_flags = m.alpha_flags;
+    psp_reorder();
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/textures_Texture", _ZN8textures3psp13SwizzleBitmapEPhS1_NS_6FormatEii);
 
