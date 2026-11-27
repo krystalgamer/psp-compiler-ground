@@ -163,7 +163,18 @@ void Menu_SetCancelCallback(void (*callback)(int)) {
     cancel_callback = callback;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/utility_basic/nonmatchings/menu/Menu_Init", Menu_WriteLine);
+void Menu_WriteLine(const char *line, int color)
+{
+	int i;
+
+	for (i = 0; i < 19; i++)
+		output[i] = output[i + 1];
+
+	for (i = 0; line[i]; i++)
+		output[19].str[i] = line[i];
+	output[19].str[i] = 0;
+	output[19].color = color;
+}
 
 void Menu_LockInput(void) {
     lock_count += 1;
