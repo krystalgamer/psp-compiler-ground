@@ -8,7 +8,25 @@
 typedef struct ListNode { struct ListNode *next; } ListNode;
 typedef struct { unsigned char type; char pad[3]; ListNode *head; ListNode *tail; } List;
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/lib/list", listInit);
+void *_memAlloc();
+List *listInit(int type, List *l, int alloc, int Num, int Size)
+{
+	int i;
+	if (l == NULL)
+		l = _memAlloc(0xC, "src/lib/list.c", 0x16);
+	l->type = type;
+	if (alloc) {
+		if (!Num)
+			consPrintf("cassert : %s %d : %s : %s\n", "src/lib/list.c", 0x1B, "listInit", "Num");
+		if (!Size)
+			consPrintf("cassert : %s %d : %s : %s\n", "src/lib/list.c", 0x1C, "listInit", "Size");
+		if (l->type == 0) {
+			for (i = Num; i; i--)
+				;
+		}
+	}
+	return l;
+}
 
 int listTerm(void) {
     return 1;

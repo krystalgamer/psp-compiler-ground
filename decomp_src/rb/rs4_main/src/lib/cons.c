@@ -21,7 +21,9 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/lib/cons", D_000FAACC);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/lib/cons", consTerm);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/lib/cons", consPrintf);
+void consPrintf(const char *fmt, ...)
+{
+}
 
 int consLog(unsigned int arg0) {
     int var_v1;
