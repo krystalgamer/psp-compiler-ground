@@ -616,7 +616,61 @@ INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/mes_eval", D_0013B3F0);
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/mes_eval", D_0013B3F4);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_eval", mes_eval_abs_equal);
+int mes_eval_abs_equal(EvCtx *ctx, int a, int b)
+{
+    int ta = mes_eval_type(a);
+    int tb = mes_eval_type(b);
+    int r;
+
+    if (ta == tb) {
+        switch (ta) {
+        case 0x38:
+        case 0x42:
+            return 1;
+        case 0x39:
+            if (a == 0x1C || b == 0x1C)
+                return 0;
+            return mes_number_equal(a, b, 0);
+        case 0x3E:
+            return mes_string_compare((void *)(a & ~3), (void *)(b & ~3)) == 0;
+        case 0x24:
+        case 0x3A:
+            return a == b;
+        }
+        return 0;
+    }
+    if ((ta == 0x42 && tb == 0x38) || (ta == 0x38 && tb == 0x42))
+        return 1;
+    if ((ta == 0x39 && tb == 0x3E) || tb == 0x24) {
+        b = mes_eval_to_number(ctx, b);
+        *--M2C_FIELD(ctx, int **, 0x18) = b;
+        r = mes_eval_abs_equal(ctx, a, b);
+        M2C_FIELD(ctx, int **, 0x18) += 1;
+        return r;
+    }
+    if ((ta == 0x3E && tb == 0x39) || ta == 0x24) {
+        a = mes_eval_to_number(ctx, a);
+        *--M2C_FIELD(ctx, int **, 0x18) = a;
+        r = mes_eval_abs_equal(ctx, a, b);
+        M2C_FIELD(ctx, int **, 0x18) += 1;
+        return r;
+    }
+    if ((ta == 0x39 || ta == 0x3E) && tb == 0x3A) {
+        b = mes_eval_to_primitive(ctx, b, 0);
+        *--M2C_FIELD(ctx, int **, 0x18) = b;
+        r = mes_eval_abs_equal(ctx, a, b);
+        M2C_FIELD(ctx, int **, 0x18) += 1;
+        return r;
+    }
+    if ((tb == 0x39 || tb == 0x3E) && ta == 0x3A) {
+        a = mes_eval_to_primitive(ctx, a, 0);
+        *--M2C_FIELD(ctx, int **, 0x18) = a;
+        r = mes_eval_abs_equal(ctx, a, b);
+        M2C_FIELD(ctx, int **, 0x18) += 1;
+        return r;
+    }
+    return 0;
+}
 
 int mes_eval_strict_equal(int a, int b)
 {
