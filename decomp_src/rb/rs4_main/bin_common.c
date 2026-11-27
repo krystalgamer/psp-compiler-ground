@@ -31,9 +31,25 @@ void I3rLoopControlEntity__Pack(void) {
 void I3rLoopControlEntity__Unpack(void) {
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/bin_common", I3rArrayKeyFrameVector4Entity__Pack);
+void I3rArrayKeyFrameVector4Entity__Pack(int *p)
+{
+    if (p[8] != 0)
+        p[8] = p[8] - (int)p;
+    if (p[9] != 0)
+        p[9] = p[9] - (int)p;
+    if (p[10] != 0)
+        p[10] = p[10] - (int)p;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/bin_common", I3rArrayKeyFrameVector4Entity__Unpack);
+void I3rArrayKeyFrameVector4Entity__Unpack(int *p)
+{
+    if (p[8] != 0)
+        p[8] = p[8] + (int)p;
+    if (p[9] != 0)
+        p[9] = p[9] + (int)p;
+    if (p[10] != 0)
+        p[10] = p[10] + (int)p;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -49,9 +65,17 @@ int I3rArrayKeyFrameVector4__IsExistLoopControl(void *arg0) {
     return *M2C_FIELD(arg0, int **, 8) != 0;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/bin_common", I3rArrayAnimVector4Entity__Pack);
+void I3rArrayAnimVector4Entity__Pack(int *p)
+{
+    if (*p != 0)
+        *p = *p - (int)p;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/bin_common", I3rArrayAnimVector4Entity__Unpack);
+void I3rArrayAnimVector4Entity__Unpack(int *p)
+{
+    if (*p != 0)
+        *p = *p + (int)p;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -90,9 +114,25 @@ void I3rObbEntity__Pack(void) {
 void I3rObbEntity__Unpack(void) {
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/bin_common", I3rPrimitiveEntity__Pack_PSP);
+void I3rPrimitiveEntity__Pack_PSP(int *p)
+{
+    if (p[2] != 0)
+        p[2] = p[2] - (int)p;
+    if (p[4] != 0)
+        p[4] = p[4] - (int)p;
+    if (p[6] != 0)
+        p[6] = p[6] - (int)p;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/bin_common", I3rPrimitiveEntity__Unpack_PSP);
+void I3rPrimitiveEntity__Unpack_PSP(int *p)
+{
+    if (p[2] != 0)
+        p[2] = p[2] + (int)p;
+    if (p[4] != 0)
+        p[4] = p[4] + (int)p;
+    if (p[6] != 0)
+        p[6] = p[6] + (int)p;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -150,9 +190,17 @@ int I3rPrimitive__IsExistStqs(void *arg0) {
     return M2C_FIELD(M2C_FIELD(arg0, void **, 8), int *, 0x30) != 0;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/bin_common", I3rStripEntity__Pack_PS2);
+void I3rStripEntity__Pack_PS2(int *p)
+{
+    if (*p != 0)
+        *p = *p - (int)p;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/bin_common", I3rStripEntity__Unpack_PS2);
+void I3rStripEntity__Unpack_PS2(int *p)
+{
+    if (*p != 0)
+        *p = *p + (int)p;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -358,13 +406,29 @@ int I3rChannel__GetEndPrimitive_PSP(void *arg0) {
     return M2C_FIELD(temp_a1, int *, 8) + (__builtin_allegrex_ext(M2C_FIELD(temp_a1, int *, 4), 0, 0x18) * 0x10);
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/bin_common", I3rWeightInfoEntity__Pack_PS2);
+void I3rWeightInfoEntity__Pack_PS2(int *p)
+{
+    if (*p != 0)
+        *p = *p - (int)p;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/bin_common", I3rWeightInfoEntity__Unpack_PS2);
+void I3rWeightInfoEntity__Unpack_PS2(int *p)
+{
+    if (*p != 0)
+        *p = *p + (int)p;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/bin_common", I3rClusterEntity__Pack_PS2);
+void I3rClusterEntity__Pack_PS2(int *p)
+{
+    if (*p != 0)
+        *p = *p - (int)p;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/bin_common", I3rClusterEntity__Unpack_PS2);
+void I3rClusterEntity__Unpack_PS2(int *p)
+{
+    if (*p != 0)
+        *p = *p + (int)p;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -637,9 +701,17 @@ int I3rCluster__GetEndWeightInfo_PS2(void *arg0) {
     return M2C_FIELD(temp_v1, int *, 8) + (__builtin_allegrex_ext(M2C_FIELD(temp_v1, int *, 4), 0, 0x18) * 0x10);
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/bin_common", I3rClusterEntity__Pack_PSP);
+void I3rClusterEntity__Pack_PSP(int *p)
+{
+    if (*p != 0)
+        *p = *p - (int)p;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/bin_common", I3rClusterEntity__Unpack_PSP);
+void I3rClusterEntity__Unpack_PSP(int *p)
+{
+    if (*p != 0)
+        *p = *p + (int)p;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -786,9 +858,25 @@ int I3rMaterialOperationGroup__IsExistObb(void *arg0) {
     return M2C_FIELD(M2C_FIELD(arg0, void **, 8), int *, 0x20) != 0;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/bin_common", I3rArrayKeyFrameFloatEntity__Pack);
+void I3rArrayKeyFrameFloatEntity__Pack(int *p)
+{
+    if (p[2] != 0)
+        p[2] = p[2] - (int)p;
+    if (p[3] != 0)
+        p[3] = p[3] - (int)p;
+    if (p[4] != 0)
+        p[4] = p[4] - (int)p;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/bin_common", I3rArrayKeyFrameFloatEntity__Unpack);
+void I3rArrayKeyFrameFloatEntity__Unpack(int *p)
+{
+    if (p[2] != 0)
+        p[2] = p[2] + (int)p;
+    if (p[3] != 0)
+        p[3] = p[3] + (int)p;
+    if (p[4] != 0)
+        p[4] = p[4] + (int)p;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -804,9 +892,17 @@ int I3rArrayKeyFrameFloat__IsExistLoopControl(void *arg0) {
     return *M2C_FIELD(arg0, int **, 8) != 0;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/bin_common", I3rLayerDependPS2Entity__Pack);
+void I3rLayerDependPS2Entity__Pack(int *p)
+{
+    if (*p != 0)
+        *p = *p - (int)p;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/bin_common", I3rLayerDependPS2Entity__Unpack);
+void I3rLayerDependPS2Entity__Unpack(int *p)
+{
+    if (*p != 0)
+        *p = *p + (int)p;
+}
 
 void I3rAdjustColorEntity__Pack(void) {
 }
@@ -930,9 +1026,17 @@ int I3rLayerDependPlatform__IsExistPS2(void *arg0) {
     return *M2C_FIELD(arg0, int **, 8) != 0;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/bin_common", I3rSkinOperationGroupEntity__Pack);
+void I3rSkinOperationGroupEntity__Pack(int *p)
+{
+    if (*p != 0)
+        *p = *p - (int)p;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/bin_common", I3rSkinOperationGroupEntity__Unpack);
+void I3rSkinOperationGroupEntity__Unpack(int *p)
+{
+    if (*p != 0)
+        *p = *p + (int)p;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -1014,9 +1118,21 @@ void I3rDispControlEntity__Pack(void) {
 void I3rDispControlEntity__Unpack(void) {
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/bin_common", I3rLayerEntity__Pack);
+void I3rLayerEntity__Pack(int *p)
+{
+    if (p[5] != 0)
+        p[5] = p[5] - (int)p;
+    if (p[6] != 0)
+        p[6] = p[6] - (int)p;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/bin_common", I3rLayerEntity__Unpack);
+void I3rLayerEntity__Unpack(int *p)
+{
+    if (p[5] != 0)
+        p[5] = p[5] + (int)p;
+    if (p[6] != 0)
+        p[6] = p[6] + (int)p;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -1091,9 +1207,17 @@ int I3rLayer__GetEndStqMap(void *arg0) {
     return M2C_FIELD(temp_v1, int *, 8) + (__builtin_allegrex_ext(M2C_FIELD(temp_v1, int *, 4), 0, 0x18) * 0x10);
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/bin_common", I3rMeshInstanceEntity__Pack);
+void I3rMeshInstanceEntity__Pack(int *p)
+{
+    if (*p != 0)
+        *p = *p - (int)p;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/bin_common", I3rMeshInstanceEntity__Unpack);
+void I3rMeshInstanceEntity__Unpack(int *p)
+{
+    if (*p != 0)
+        *p = *p + (int)p;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -1366,13 +1490,29 @@ int I3rNode__GetEndMeshInstance(void *arg0) {
     return M2C_FIELD(temp_v1, int *, 8) + (__builtin_allegrex_ext(M2C_FIELD(temp_v1, int *, 4), 0, 0x18) * 0x10);
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/bin_common", I3rWorkEntity__Pack_PS2);
+void I3rWorkEntity__Pack_PS2(int *p)
+{
+    if (*p != 0)
+        *p = *p - (int)p;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/bin_common", I3rWorkEntity__Unpack_PS2);
+void I3rWorkEntity__Unpack_PS2(int *p)
+{
+    if (*p != 0)
+        *p = *p + (int)p;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/bin_common", I3rWorkEntity__Pack_PSP);
+void I3rWorkEntity__Pack_PSP(int *p)
+{
+    if (*p != 0)
+        *p = *p - (int)p;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/bin_common", I3rWorkEntity__Unpack_PSP);
+void I3rWorkEntity__Unpack_PSP(int *p)
+{
+    if (*p != 0)
+        *p = *p + (int)p;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/bin_common", I3rModelEntity__Pack);
 
@@ -1672,13 +1812,29 @@ int I3sAnimVector4__IsExistLoopControl(void *arg0) {
     return M2C_FIELD(M2C_FIELD(arg0, void **, 8), int *, 0x10) != 0;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/bin_common", I3sKeyFrameStringEntity__Pack);
+void I3sKeyFrameStringEntity__Pack(int *p)
+{
+    if (p[1] != 0)
+        p[1] = p[1] - (int)p;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/bin_common", I3sKeyFrameStringEntity__Unpack);
+void I3sKeyFrameStringEntity__Unpack(int *p)
+{
+    if (p[1] != 0)
+        p[1] = p[1] + (int)p;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/bin_common", I3sAnimStringEntity__Pack);
+void I3sAnimStringEntity__Pack(int *p)
+{
+    if (*p != 0)
+        *p = *p - (int)p;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/bin_common", I3sAnimStringEntity__Unpack);
+void I3sAnimStringEntity__Unpack(int *p)
+{
+    if (*p != 0)
+        *p = *p + (int)p;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -2775,9 +2931,17 @@ int I3sMesh__GetEndPolygon(void *arg0) {
     return M2C_FIELD(temp_a1, int *, 8) + (__builtin_allegrex_ext(M2C_FIELD(temp_a1, int *, 4), 0, 0x18) * 0x10);
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/bin_common", I3sNodeEntity__Pack);
+void I3sNodeEntity__Pack(int *p)
+{
+    if (*p != 0)
+        *p = *p - (int)p;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/bin_common", I3sNodeEntity__Unpack);
+void I3sNodeEntity__Unpack(int *p)
+{
+    if (*p != 0)
+        *p = *p + (int)p;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
