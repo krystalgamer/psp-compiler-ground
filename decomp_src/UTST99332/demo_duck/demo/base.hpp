@@ -914,19 +914,7 @@ public:
     PoolEntry *pool;            /* 0x1C */
 };
 
-class BVH {
-public:
-    struct Node {
-        ~Node();
-        void draw() const;
-        char _p0[0x16C];
-    };
-    BVH();
-    void draw() const;
-    void print();
-    void print(Node *);
-    Node _root;
-};
+class BVH;   /* in sgl.hpp (its nodes hold an sgl::BV) */
 
 namespace gl_ext {
 extern bool use_extensions;

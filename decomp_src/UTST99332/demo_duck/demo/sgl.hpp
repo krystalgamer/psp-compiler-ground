@@ -1040,6 +1040,29 @@ inline Frustum::~Frustum() {}
 #if SGL_LINKONCE_Frustum
 SGL_LINKONCE_END
 #endif
+}
+class BVH {
+public:
+    struct Node {
+        enum ChildEnum { };
+        Node() : _leaf(true), _depth(0) { _child[0] = 0; _child[1] = 0; }
+        ~Node();
+        void draw() const;
+        sgl::BV _bv;
+        bool _leaf;                     /* 0x14C */
+        Node *_child[2];                /* 0x150 */
+        unsigned int _depth;            /* 0x158 */
+        std::vector<unsigned int> _items;   /* 0x15C */
+    };
+    BVH();
+    void draw() const;
+    void setChild(Node::ChildEnum, Node *, Node *);
+    void print();
+    void print(Node *);
+    Node _root;
+    unsigned int _depth;                /* 0x168: deepest node */
+};
+namespace sgl {
 void FindBestAlignedDiagonal(math::vector_xyzw, Box::Vertex &, Box::Vertex &);
 class RT {
 public:

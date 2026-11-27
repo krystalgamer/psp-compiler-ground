@@ -47,7 +47,7 @@ void common::StateMachine::VirtualState::update_internal()
     }
     if (_next.valid()) {
         pushChild(_next);
-        _next.p = 0;
+        _next = 0;
     }
 }
 
@@ -85,7 +85,22 @@ common::StateMachine::~StateMachine()
     destroy_top();
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/common_StateMachine_VirtualState", _ZN6common12StateMachine7processEv);
+void common::StateMachine::process()
+{
+    if (_top.invalid())
+        return;
+    safe_ptr<VirtualState *> s = _top;
+    while (s->_child.valid())
+        s = s->_child;
+    s->update_internal();
+    s->update();
+    s = s->_machine;
+    while (s.valid()) {
+        s->update_internal();
+        s->draw();
+        s = s->_machine;
+    }
+}
 
 void common::StateMachine::setTop(safe_ptr<VirtualState *> s)
 {
