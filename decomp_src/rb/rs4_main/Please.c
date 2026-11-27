@@ -8,10 +8,13 @@ M2C_UNK *rt_comm_platform_resolve_interface(void);
 M2C_UNK *rt_udp_get_version_string(void);
 int InitObjectUpdateList(void);
 int IsEven(int *arg0);
+int IsNullRSAKey(int *arg0);
+int IsZero(int *arg0);
 int KM_SetUpdateCallback(int arg0);
 int NetClientIndexToClientIndexPacket(int arg0);
 int NetDisableLanMessaging(void);
 int NetGetBuildTimeStamp(signed char *arg0);
+int NetGetLANBroadcastCommSetting(int *arg0);
 int NetGetLocalTime(int *arg0);
 int NetGetMaxDataStreamTypes(int *arg0);
 int NetGetMaxDataStreams(int *arg0);
@@ -22,6 +25,9 @@ int NetGetMsgClientIndex(void *arg0);
 int NetGetMyWorldID(void);
 int NetGetNatService(M2C_UNK **arg0);
 int NetGetP2PHandle(void *arg0);
+int NetGetTime(void *arg0, int *arg1);
+int NetGetUPnPMemoryCeiling(int *arg0);
+int NetGetUdpBindPort(int *arg0);
 int NetIGetClientIpAddress(void *arg0, int arg1, int arg2);
 int NetIGetCurrentUDPSourceBinaryIP(void *arg0);
 int NetIGetMyClientIndex(int *arg0, void *arg1);
@@ -47,6 +53,7 @@ int NetUseCommInet(void);
 int NetUseCommSockets(void);
 int NetUseCrypt(void);
 int NetUseDme(void);
+int NetUsePeerToPeer(void *arg0);
 int NetUseUDP(void);
 int RemoveFromObjectUpdateList(void);
 int RtMsgToDmeConnectionIndex(unsigned int arg0);
@@ -67,7 +74,13 @@ int rt_comm_is_valid_channel();
 int rt_comm_platform_display_state(void);
 int rt_comm_platform_linkaddress_toint(int *arg0, int arg1);
 int rt_comm_platform_update(void);
+int rt_constraint_check_RT_1BYTE(signed char *arg0, void *arg1);
+int rt_constraint_check_RT_2BYTE(short *arg0, void *arg1);
+int rt_constraint_check_RT_4BYTE(int *arg0, void *arg1);
 int rt_constraint_check_RT_4BYTE_FP(float *arg0, void *arg1);
+int rt_constraint_check_RT_U1BYTE(unsigned char *arg0, void *arg1);
+int rt_constraint_check_RT_U2BYTE(unsigned short *arg0, void *arg1);
+int rt_constraint_check_RT_U4BYTE(unsigned int *arg0, void *arg1);
 int rt_isdigit(int arg0);
 int rt_memory_allocate_init_zero(void **arg0, unsigned int arg1);
 int rt_memory_get_aligned_address(unsigned int *arg0, unsigned int arg1, int arg2);
@@ -94,6 +107,7 @@ int rt_strlen(signed char *arg0);
 int rt_time_platform_init(void);
 int rt_time_sleep_usecs_platform();
 int rt_timebase_restart(void);
+int rt_token_is_valid(unsigned int arg0);
 int rt_udp_destroy_shared_channel_data(void *arg0);
 int rt_udp_disable_nat_service_heartbeat(void *arg0);
 int rt_udp_get_aggregation_interval(void *arg0, int *arg1);
@@ -132,6 +146,7 @@ int rt_xmlparse_set_element_end_cb(void);
 int rt_xmlparse_set_element_start_cb(void);
 int rt_xmlparse_set_user_data(void);
 void ClearInterfacePointers(void);
+void Decode(int *arg0, int arg1, unsigned int arg2);
 void InitializePRNG(void);
 void KM_GenerateRSAKeyPair(int arg0, int arg1);
 void LANFindSetLocalServer(int arg0, int arg1);
@@ -140,6 +155,7 @@ void NetFreeClientPointers(void);
 void NetGetMyAddressInfoInternal(void *arg0);
 void NetIGetDataStream(void);
 void NetISendFieldUpdates(void);
+void NetInitializeClients(void);
 void NetMutexUnlock(void);
 void NetRegisterMemoryCallbacks(void);
 void NetResetTime(int arg0);
@@ -195,114 +211,78 @@ void rt_udp_del_conn_from_list(void *arg0, void *arg1);
 void rt_udp_enable_unexpected_port(int arg0);
 void rt_udp_set_peer_id(void *arg0, int arg1);
 void udp_data_cb(void);
-M2C_UNK DmeFree(M2C_UNK *);                         /* extern */
-M2C_UNK rt_time_elapsed_msecs();                    /* extern */
-M2C_UNK rt_udp_resolve_interface();                 /* extern */
-M2C_UNK setNewSeed(M2C_UNK);                        /* extern */
-int rt_parse_register();                            /* extern */
-M2C_UNK RSAGenerateKeyPair(int, int);               /* extern */
-M2C_UNK rt_comm_linkaddress_setnull(int);           /* extern */
-int rt_memory_allocate();                           /* extern */
-M2C_UNK rt_comm_release_channel_id(void *);         /* extern */
-int NetIGetObject();                                /* extern */
-M2C_UNK SendGroupedFieldUpdate(int, M2C_UNK, M2C_UNK); /* extern */
+M2C_UNK rt_socket_get_local_ip_platform();          /* extern */
+int rt_socket_get_err_platform();                   /* extern */
+int sceNetInetClose();                              /* extern */
+int rt_ip_string2ip(int);                           /* extern */
+void *DMEmalloc(M2C_UNK);                           /* extern */
 M2C_UNK rt_crypt_resolve_interface();               /* extern */
-void *NetGetClientInfo(int, int);                   /* extern */
-M2C_UNK rt_comm_linkaddress_toext(void *, void *);  /* extern */
+M2C_UNK rt_time_platform_get_time_string();         /* extern */
+M2C_UNK rt_time_elapsed_secs();                     /* extern */
+M2C_UNK rt_socket_get_dns_servers_platform();       /* extern */
+M2C_UNK rt_time_platform_get_time_stamp();          /* extern */
+M2C_UNK rt_socket_get_available_bytes_to_read_platform(); /* extern */
+M2C_UNK setNewSeed(M2C_UNK);                        /* extern */
+int sceNetInetListen();                             /* extern */
 M2C_UNK rt_comm_shutdown();                         /* extern */
 M2C_UNK rt_memory_free(void *);                     /* extern */
 M2C_UNK rt_upnp_destroy(int);                       /* extern */
-M2C_UNK rt_timebase_get_globaltime(void *);         /* extern */
-M2C_UNK rt_socket_sendmsg_platform();               /* extern */
-int rt_socket_get_err_platform();                   /* extern */
-int sceNetInetListen();                             /* extern */
-M2C_UNK rt_token_destroy_table(int);                /* extern */
 int NetIGetLocalTime();                             /* extern */
-M2C_UNK rt_mutex_unlock(int, M2C_UNK);              /* extern */
-M2C_UNK rt_socket_get_dns_servers_platform();       /* extern */
-M2C_UNK rt_time_platform_get_time_stamp();          /* extern */
-M2C_UNK rt_parse_timeout_frag_msg();                /* extern */
-M2C_UNK rt_socket_find_closed_sockets_platform();   /* extern */
-M2C_UNK rt_socket_initialize_stack_platform();      /* extern */
-int rt_parse_update_parser();                       /* extern */
-M2C_UNK rt_socket_get_available_bytes_to_read_platform(); /* extern */
-M2C_UNK rt_time_get_msecs();                        /* extern */
-M2C_UNK NetGetStreamChannel();                      /* extern */
-M2C_UNK rt_udp_destroy(int);                        /* extern */
-M2C_UNK rt_socket_get_local_ip_platform();          /* extern */
-M2C_UNK rt_time_platform_get_time_string();         /* extern */
-M2C_UNK NetIRegisterMemoryCallbacks();              /* extern */
-M2C_UNK rt_time_elapsed_secs();                     /* extern */
-int rt_ip_string2ip(int);                           /* extern */
 M2C_UNK rt_time_platform_get_date_time();           /* extern */
-M2C_UNK rt_socket_set_non_blocking_platform();      /* extern */
+void *NetIGetObject();                              /* extern */
+M2C_UNK rt_udp_destroy(int);                        /* extern */
+M2C_UNK rt_socket_sendmsg_platform();               /* extern */
+M2C_UNK rt_time_elapsed_msecs();                    /* extern */
 M2C_UNK rt_socket_is_connected_platform();          /* extern */
-M2C_UNK rt_socket_find_sockets_with_data_platform(); /* extern */
-int sceNetInetClose();                              /* extern */
-M2C_UNK DMEmalloc(M2C_UNK);                         /* extern */
+int rt_parse_register();                            /* extern */
+M2C_UNK SendGroupedFieldUpdate(int, M2C_UNK, M2C_UNK); /* extern */
 int rt_parse_reg_parser();                          /* extern */
+void *NetGetClientInfo(int, int);                   /* extern */
+M2C_UNK rt_comm_linkaddress_toext(void *, void *);  /* extern */
+M2C_UNK RSAGenerateKeyPair(int, int);               /* extern */
+M2C_UNK rt_mutex_unlock(int, M2C_UNK);              /* extern */
+M2C_UNK NetGetStreamChannel();                      /* extern */
+M2C_UNK rt_socket_find_sockets_with_data_platform(); /* extern */
+M2C_UNK rt_socket_find_closed_sockets_platform();   /* extern */
+M2C_UNK DmeFree(M2C_UNK *);                         /* extern */
+M2C_UNK rt_socket_set_non_blocking_platform();      /* extern */
+M2C_UNK rt_time_get_msecs();                        /* extern */
+M2C_UNK rt_token_destroy_table(int);                /* extern */
+int rt_parse_update_parser();                       /* extern */
+M2C_UNK rt_p2p_resolve_interface();                 /* extern */
+M2C_UNK rt_parse_timeout_frag_msg();                /* extern */
+M2C_UNK NetIRegisterMemoryCallbacks();              /* extern */
+M2C_UNK rt_timebase_get_globaltime(void *);         /* extern */
+int rt_memory_allocate();                           /* extern */
+M2C_UNK rt_udp_resolve_interface();                 /* extern */
+M2C_UNK rt_comm_release_channel_id(void *);         /* extern */
+M2C_UNK rt_socket_initialize_stack_platform();      /* extern */
 M2C_UNK rt_socket_set_no_delay_tcp_platform();      /* extern */
-extern void *gCommPlatformInterfacePtr;
-extern unsigned char NetClientPointerList;
-extern int x1;
-extern int x2;
-extern int y;
+M2C_UNK rt_comm_linkaddress_setnull(int);           /* extern */
+extern void *NetClientPointerList;
 extern void *gObjectInterfacePtr;
-extern int gpszVersion_11536C;
-extern int gpfFreeCallback;
-extern int gpfMallocCallback;
-extern unsigned char D_00132074;
 extern int gAppUpdateCallback;
+extern int gbEnableUnexpectedPort;
+extern int gpszVersionString;
+extern signed char gBuildTimeStamp_10DEB4;
+extern void *gDmeGlobals;
+extern void *gCommPlatformInterfacePtr;
 extern unsigned char gLANMessage;
-extern int HEARTBEAT_INTERVAL;
-extern int gpHostChangeCallbackData;
-extern int gpfHostChangeCallback;
+extern unsigned char D_00132074;
 extern unsigned char gszRtUdpVersionString;
 extern int gGlobalTimeBase;
-extern unsigned char gppConnInfo;
-extern void *gDmeGlobals;
-extern int gbTimebaseEnabled;
 extern int gLastNetTime;
 extern unsigned char gLastQueryTimeStamp;
 extern unsigned char gQueryRecord;
-extern int gpszVersion_114A2C;
-extern int gbEnableUnexpectedPort;
-extern unsigned char gCommAdhocInterface;
-extern unsigned char rt_comm_adhoc_create;
-extern unsigned char rt_comm_adhoc_destroy;
-extern unsigned char rt_comm_adhoc_get_broadcast_ip;
-extern unsigned char rt_comm_adhoc_get_dns_servers;
-extern unsigned char rt_comm_adhoc_get_local_ip;
-extern unsigned char rt_comm_adhoc_linkaddress_isequal;
-extern unsigned char rt_comm_adhoc_linkaddress_isnull;
-extern unsigned char rt_comm_adhoc_linkaddress_setnull;
-extern unsigned char rt_comm_adhoc_linkaddress_toext;
-extern unsigned char rt_comm_adhoc_linkaddress_toint;
-extern unsigned char rt_comm_adhoc_linkaddress_tostr;
-extern unsigned char rt_comm_adhoc_receive_from;
-extern unsigned char rt_comm_adhoc_send_echo;
-extern unsigned char rt_comm_adhoc_send_to;
-extern unsigned char rt_comm_adhoc_startup;
-extern unsigned char rt_comm_adhoc_vsend_to;
-extern int RT_UDP_INACTIVITY_TIMEOUT;
-extern unsigned char gLatencyMetrics;
-extern int gACodecGSMInterfacePtr;
-extern int gACodecLPC10InterfacePtr;
-extern int gACodecLPCInterfacePtr;
-extern int gCryptInterfacePtr;
-extern int gMsgClientInterfacePtr;
-extern int gP2PInterfacePtr;
-extern int gStreamMediaInterfacePtr;
-extern int gUDPInterfacePtr;
-extern int gVCodecJPEGInterfacePtr;
-extern signed char gBuildTimeStamp_10DEB4;
-extern int gbInitialized_130B2C;
+extern void *gUDPInterfacePtr;
 extern int gMgr;
-extern int gpszVersionString;
-extern int gpfReallocCallback;
+extern unsigned char gppConnInfo;
+extern int gpszVersion_11536C;
+extern int gnLocalServerPort;
+extern int gpNetLocalServerConnection;
 extern int gEchoInfo;
-extern unsigned char gNatService;
 extern unsigned char gMyAddressInfo;
+extern unsigned char gNatService;
 extern unsigned char gCommPlatformInterface;
 extern unsigned char rt_comm_platform_create;
 extern unsigned char rt_comm_platform_destroy;
@@ -327,15 +307,62 @@ extern unsigned char rt_comm_platform_shutdown;
 extern unsigned char rt_comm_platform_startup;
 extern unsigned char rt_comm_platform_vsend;
 extern unsigned char rt_comm_platform_vsend_to;
-extern int gnLocalServerPort;
-extern int gpNetLocalServerConnection;
+extern int x1;
+extern int x2;
+extern int y;
+extern int RT_UDP_INACTIVITY_TIMEOUT;
+extern unsigned char gLatencyMetrics;
+extern unsigned char gCommAdhocInterface;
+extern unsigned char rt_comm_adhoc_create;
+extern unsigned char rt_comm_adhoc_destroy;
+extern unsigned char rt_comm_adhoc_get_broadcast_ip;
+extern unsigned char rt_comm_adhoc_get_dns_servers;
+extern unsigned char rt_comm_adhoc_get_local_ip;
+extern unsigned char rt_comm_adhoc_linkaddress_isequal;
+extern unsigned char rt_comm_adhoc_linkaddress_isnull;
+extern unsigned char rt_comm_adhoc_linkaddress_setnull;
+extern unsigned char rt_comm_adhoc_linkaddress_toext;
+extern unsigned char rt_comm_adhoc_linkaddress_toint;
+extern unsigned char rt_comm_adhoc_linkaddress_tostr;
+extern unsigned char rt_comm_adhoc_receive_from;
+extern unsigned char rt_comm_adhoc_send_echo;
+extern unsigned char rt_comm_adhoc_send_to;
+extern unsigned char rt_comm_adhoc_startup;
+extern unsigned char rt_comm_adhoc_vsend_to;
+extern int gpfFreeCallback;
+extern int gpfMallocCallback;
+extern int gpszVersion_114A2C;
+extern int gbTimebaseEnabled;
+extern int gACodecGSMInterfacePtr;
+extern int gACodecLPC10InterfacePtr;
+extern int gACodecLPCInterfacePtr;
+extern int gCryptInterfacePtr;
+extern int gMsgClientInterfacePtr;
+extern int gP2PInterfacePtr;
+extern int gStreamMediaInterfacePtr;
+extern int gVCodecJPEGInterfacePtr;
+extern int gpfReallocCallback;
+extern int gbInitialized_130B2C;
+extern int HEARTBEAT_INTERVAL;
+extern int gpHostChangeCallbackData;
+extern int gpfHostChangeCallback;
 
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/Please", pool_alloc);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/Please", pool_free);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/Please", NetUsePeerToPeer);
+int NetUsePeerToPeer(void *arg0) {
+    rt_p2p_resolve_interface();
+    NetUseUDP();
+    if (gUDPInterfacePtr != NULL) {
+        M2C_FIELD(gUDPInterfacePtr, int *, 0x84) = (int) M2C_FIELD(arg0, int *, 0);
+        M2C_FIELD(gUDPInterfacePtr, int *, 0x88) = (int) M2C_FIELD(arg0, int *, 4);
+        M2C_FIELD(gUDPInterfacePtr, int *, 0x8C) = (int) M2C_FIELD(arg0, int *, 0xC);
+        M2C_FIELD(gUDPInterfacePtr, int *, 0x90) = (int) M2C_FIELD(arg0, int *, 8);
+    }
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/Please", rt_p2p_resolve_interface);
 
@@ -1560,7 +1587,28 @@ int IsEven(int *arg0) {
     return (*arg0 ^ 1) & 1;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/Please", IsZero);
+int IsZero(int *arg0) {
+    int *var_a0;
+    int temp_v0;
+    int var_a1;
+    int var_a2;
+
+    var_a0 = arg0;
+    var_a1 = 0;
+loop_1:
+    temp_v0 = *var_a0;
+    var_a1 += 1;
+    var_a0 += 1;
+    var_a2 = 0;
+    if (temp_v0 == 0) {
+        if (var_a1 >= 0x80) {
+            var_a2 = 1;
+        } else {
+            goto loop_1;
+        }
+    }
+    return var_a2;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/Please", IsOne);
 
@@ -1733,7 +1781,26 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/Please", md4Transform);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/Please", Encode);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/Please", Decode);
+void Decode(int *arg0, int arg1, unsigned int arg2) {
+    int *var_a3;
+    int temp_a2;
+    int temp_v1;
+    unsigned int var_a4;
+    void *temp_v0;
+
+    var_a4 = 0;
+    if (arg2 != 0) {
+        var_a3 = arg0;
+        do {
+            temp_v0 = arg1 + var_a4;
+            temp_v1 = M2C_FIELD(temp_v0, unsigned char *, 0) | (M2C_FIELD(temp_v0, unsigned char *, 1) << 8) | (M2C_FIELD(temp_v0, unsigned char *, 2) << 0x10);
+            temp_a2 = M2C_FIELD(temp_v0, unsigned char *, 3) << 0x18;
+            var_a4 += 4;
+            *var_a3 = temp_v1 | temp_a2;
+            var_a3 += 1;
+        } while (var_a4 < arg2);
+    }
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/Please", KM_MD5);
 
@@ -1908,7 +1975,15 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/Please", KM_RSAAdjust);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/Please", GetSoftwareKeyPair);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/Please", NetInitializeClients);
+void *memset(void *s, int c, unsigned int n);
+
+void NetInitializeClients(void) {
+    NetClientPointerList = DMEmalloc(0x400);
+    if (gObjectInterfacePtr != NULL) {
+        M2C_FIELD(gObjectInterfacePtr, int *, 0x128) = 0;
+    }
+    memset(NetClientPointerList, 0, 0x400U);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/Please", NetIGetClient);
 
@@ -2390,7 +2465,18 @@ int NetGetLocalTime(int *arg0) {
     return var_v0;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/Please", NetGetTime);
+int NetGetTime(void *arg0, int *arg1) {
+    int var_v0;
+
+    var_v0 = 0x17;
+    if (arg1 != NULL) {
+        if (arg0 != NULL) {
+            *arg1 = NetIGetTime(arg0);
+            var_v0 = 0;
+        }
+    }
+    return var_v0;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/Please", NetGetConnectStatus);
 
@@ -2476,11 +2562,50 @@ int NetSetDefaultNetUsePeerToPeerInParams(void *arg0) {
     return var_v0;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/Please", NetGetUdpBindPort);
+int NetGetUdpBindPort(int *arg0) {
+    int var_v1;
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/Please", NetGetUPnPMemoryCeiling);
+    var_v1 = 0x17;
+    if (arg0 != NULL) {
+        *arg0 = 0;
+        var_v1 = 0x10;
+        if (gUDPInterfacePtr != NULL) {
+            var_v1 = 0;
+            *arg0 = M2C_FIELD(gUDPInterfacePtr, int *, 0x84);
+        }
+    }
+    return var_v1;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/Please", NetGetLANBroadcastCommSetting);
+int NetGetUPnPMemoryCeiling(int *arg0) {
+    int var_v1;
+
+    var_v1 = 0x17;
+    if (arg0 != NULL) {
+        *arg0 = 0;
+        var_v1 = 0x10;
+        if (gUDPInterfacePtr != NULL) {
+            var_v1 = 0;
+            *arg0 = M2C_FIELD(gUDPInterfacePtr, int *, 0x88);
+        }
+    }
+    return var_v1;
+}
+
+int NetGetLANBroadcastCommSetting(int *arg0) {
+    int var_v1;
+
+    var_v1 = 0x17;
+    if (arg0 != NULL) {
+        *arg0 = 0;
+        var_v1 = 0x10;
+        if (gUDPInterfacePtr != NULL) {
+            var_v1 = 0;
+            *arg0 = M2C_FIELD(gUDPInterfacePtr, int *, 0x90);
+        }
+    }
+    return var_v1;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/Please", NetGetGlobalBufferPoolStatus);
 
@@ -3293,17 +3418,95 @@ void rt_comm_get_dns_servers(void) {
     M2C_FIELD(gCommPlatformInterfacePtr, M2C_UNK (**)(), 0x68)();
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/Please", rt_constraint_check_RT_1BYTE);
+int rt_constraint_check_RT_1BYTE(signed char *arg0, void *arg1) {
+    int var_a0;
+    signed char temp_a1;
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/Please", rt_constraint_check_RT_U1BYTE);
+    temp_a1 = *arg0;
+    var_a0 = 0;
+    if (temp_a1 >= M2C_FIELD(arg1, signed char *, 0)) {
+        var_a0 = 1;
+        if (M2C_FIELD(arg1, signed char *, 1) < temp_a1) {
+            var_a0 = 0;
+        }
+    }
+    return var_a0;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/Please", rt_constraint_check_RT_2BYTE);
+int rt_constraint_check_RT_U1BYTE(unsigned char *arg0, void *arg1) {
+    int var_a0;
+    unsigned char temp_a1;
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/Please", rt_constraint_check_RT_U2BYTE);
+    temp_a1 = *arg0;
+    var_a0 = 0;
+    if (temp_a1 >= (unsigned char) M2C_FIELD(arg1, unsigned char *, 0)) {
+        var_a0 = 1;
+        if ((unsigned char) M2C_FIELD(arg1, unsigned char *, 1) < temp_a1) {
+            var_a0 = 0;
+        }
+    }
+    return var_a0;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/Please", rt_constraint_check_RT_4BYTE);
+int rt_constraint_check_RT_2BYTE(short *arg0, void *arg1) {
+    short temp_a1;
+    int var_a0;
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/Please", rt_constraint_check_RT_U4BYTE);
+    temp_a1 = *arg0;
+    var_a0 = 0;
+    if (temp_a1 >= M2C_FIELD(arg1, short *, 0)) {
+        var_a0 = 1;
+        if (M2C_FIELD(arg1, short *, 2) < temp_a1) {
+            var_a0 = 0;
+        }
+    }
+    return var_a0;
+}
+
+int rt_constraint_check_RT_U2BYTE(unsigned short *arg0, void *arg1) {
+    int var_a0;
+    unsigned short temp_a1;
+
+    temp_a1 = *arg0;
+    var_a0 = 0;
+    if (temp_a1 >= (unsigned short) M2C_FIELD(arg1, unsigned short *, 0)) {
+        var_a0 = 1;
+        if ((unsigned short) M2C_FIELD(arg1, unsigned short *, 2) < temp_a1) {
+            var_a0 = 0;
+        }
+    }
+    return var_a0;
+}
+
+int rt_constraint_check_RT_4BYTE(int *arg0, void *arg1) {
+    int temp_a0;
+    int var_v1;
+
+    temp_a0 = *arg0;
+    var_v1 = 0;
+    if (temp_a0 >= M2C_FIELD(arg1, int *, 0)) {
+        var_v1 = 1;
+        if (M2C_FIELD(arg1, int *, 4) < temp_a0) {
+            var_v1 = 0;
+        }
+    }
+    return var_v1;
+}
+
+int rt_constraint_check_RT_U4BYTE(unsigned int *arg0, void *arg1) {
+    int var_v1;
+    unsigned int temp_a0;
+
+    temp_a0 = *arg0;
+    var_v1 = 0;
+    if (temp_a0 >= (unsigned int) M2C_FIELD(arg1, unsigned int *, 0)) {
+        var_v1 = 1;
+        if ((unsigned int) M2C_FIELD(arg1, unsigned int *, 4) < temp_a0) {
+            var_v1 = 0;
+        }
+    }
+    return var_v1;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/Please", rt_constraint_check_RT_8BYTE);
 
@@ -3327,7 +3530,31 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/Please", rt_constraint_check_RT_CS
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/Please", KM_Initialize);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/Please", IsNullRSAKey);
+int IsNullRSAKey(int *arg0) {
+    int *var_a0;
+    int temp_v0;
+    int var_a2;
+    unsigned int var_a1;
+
+    var_a0 = arg0;
+    var_a2 = 1;
+    if (var_a0 != NULL) {
+        var_a1 = 0;
+loop_2:
+        temp_v0 = *var_a0;
+        var_a1 += 1;
+        var_a0 += 1;
+        var_a2 = 0;
+        if (temp_v0 == 0) {
+            if (var_a1 >= 0x10U) {
+                var_a2 = 1;
+            } else {
+                goto loop_2;
+            }
+        }
+    }
+    return var_a2;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/Please", KM_GetLocalPublicKey);
 
@@ -3823,7 +4050,12 @@ void rt_token_shutdown(int *arg0) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/Please", rt_token_is_valid);
+int rt_token_is_valid(unsigned int arg0) {
+    if (arg0 > 0xFFFEU) {
+        return 0;
+    }
+    return 1;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/Please", rt_token_is_mine);
 
