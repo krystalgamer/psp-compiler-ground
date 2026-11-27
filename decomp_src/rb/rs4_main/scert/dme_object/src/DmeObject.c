@@ -436,7 +436,19 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_object/src/DmeObject", N
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_object/src/DmeObject", NetILeave);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_object/src/DmeObject", MyClientJoins);
+void *NetIGetClient();
+void *NetCreateClient();
+void ReserveNetObjectsAndDataStreamsForClient();
+void MyClientJoins(void *o, int idx)
+{
+    int *c = NetIGetClient(o, idx);
+    if (c == NULL) {
+        c = NetCreateClient(o, idx);
+        if (c == NULL) return;
+    }
+    c[1] = *(int *)((char *)gObjectInterfacePtr + 0x100);
+    ReserveNetObjectsAndDataStreamsForClient(c, c[1]);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_object/src/DmeObject", NetClientJoins);
 
