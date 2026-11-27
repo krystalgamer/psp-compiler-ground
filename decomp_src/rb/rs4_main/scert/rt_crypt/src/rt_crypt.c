@@ -18,13 +18,33 @@ int NetUseCrypt(void) {
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_crypt/src/rt_crypt", rt_crypt_resolve_interface);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_crypt/src/rt_crypt", IsNullRCKey);
+int IsNullRCKey(unsigned char *k) {
+    unsigned int i;
+    if (k != NULL) {
+        for (i = 0; i < 64; i++)
+            if (k[i] != 0) return 0;
+    }
+    return 1;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_crypt/src/rt_crypt", NewKeyChain);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_crypt/src/rt_crypt", DeleteKeyChain);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_crypt/src/rt_crypt", AppendKeyChain);
+void AppendKeyChain(char *kc, char *k) {
+    char *t;
+    if (kc == NULL) return;
+    *(char **)(k + 4) = NULL;
+    if (*(char **)(kc + 8) != NULL) {
+        t = *(char **)(kc + 0xC);
+        *(char **)(t + 4) = k;
+        *(char **)k = t;
+    } else {
+        *(char **)(kc + 8) = k;
+        *(char **)k = NULL;
+    }
+    *(char **)(kc + 0xC) = k;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_crypt/src/rt_crypt", GetKeyChain);
 
@@ -56,7 +76,11 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_crypt/src/rt_crypt", KM_S
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_crypt/src/rt_crypt", KM_Create);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_crypt/src/rt_crypt", KM_SetLocalClientID);
+void *GetKeyMaster();
+void KM_SetLocalClientID(int a, int id) {
+    char *km = GetKeyMaster(a);
+    if (km != NULL) *(int *)(km + 0x14) = id;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_crypt/src/rt_crypt", KM_SetPublicKey);
 

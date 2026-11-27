@@ -66,7 +66,13 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_token", rt_token_
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_token", rt_token_destroy_table);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_token", rt_token_add_ownership);
+void rt_token_add_ownership(int idx, int owner, int *t) {
+    if (t == NULL) return;
+    if (t[1] == 0) return;
+    if (t[2] == 0) return;
+    ((short *)t[2])[idx * 2] = owner;
+    t[0]++;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_token", rt_token_remove_ownership);
 

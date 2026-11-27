@@ -11,7 +11,11 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_lan_message", Net
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_lan_message", NetLANSendTextMessage);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_lan_message", NetLANSetDefaultSendRawMessageInParams);
+int NetLANSetDefaultSendRawMessageInParams(int *p) {
+    if (p == NULL) return 10;
+    memset(p, 0, 32);
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_lan_message", NetLANSendRawMessage);
 

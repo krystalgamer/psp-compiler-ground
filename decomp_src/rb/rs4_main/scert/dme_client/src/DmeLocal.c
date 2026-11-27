@@ -72,7 +72,9 @@ int NetUseDme(void) {
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", GetSoftwareID);
+int GetSoftwareID(void) {
+    return *(int *)gDmeGlobals;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", NetIGetMyIntIP);
 
