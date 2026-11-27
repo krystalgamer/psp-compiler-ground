@@ -53,6 +53,13 @@
         common::common_internal::on_error(); \
         common::common_internal::clash(); \
     }
+/* KeyFrameSequence.h's */
+#define INTERP_ASSERT_KFS(c, text, fn, line) \
+    if (!(c)) { \
+        common::common_internal::assert_display(D_00163B08, text, D_00163E20, fn, line, D_00163A54); \
+        common::common_internal::on_error(); \
+        common::common_internal::clash(); \
+    }
 /* ... with a message */
 #define INTERP_ASSERT_MSG(c, text, fn, line, msg) \
     if (!(c)) { \
@@ -119,6 +126,25 @@ extern const char PF_push_closing_key_q[] __asm__("_ZZN6interp20KeyFrameSequence
 extern const char D_00163D64[];     /* "_Index < _keys.size()" */
 extern const char PF_remove_f[] __asm__("_ZZN6interp20KeyFrameSequenceBaseIfE6removeEjE19__PRETTY_FUNCTION___163D18");
 extern const char PF_remove_q[] __asm__("_ZZN6interp20KeyFrameSequenceBaseIN4math10quaternionEE6removeEjE19__PRETTY_FUNCTION___163D7C");
+extern const float D_00163A48;      /* 1.0f: makeConsistantWith<quaternion> */
+extern const char D_00163E1C[];     /* "k2" */
+extern const char D_00163E20[];     /* "../lib/interp/KeyFrameSequence.h" */
+extern const char D_00163E44[];     /* "k1" */
+extern const char PF_kfs_evaluate_f[] __asm__("_ZZN6interp16KeyFrameSequenceIfE8evaluateEfE19__PRETTY_FUNCTION___163DD4");
+/* this object's copy of the header static */
+extern const math::matrix BEZIER_BASIS_18E25C __asm__("_ZN4math12BEZIER_BASISE_18E25C");
+extern const float D_00163A34;      /* 1.0f: evaluate_setup<float> */
+extern const float D_00163A44;      /* 1.0f: evaluate_setup<quaternion> */
+extern const char D_00164438[];     /* "t >= 0.f && t <= 1.f" */
+extern const char D_00164450[];     /* "k > 0" */
+extern const char PF_evaluate_setup_f[] __asm__("_ZZN6interp20KeyFrameSequenceBaseIfE14evaluate_setupEfRfS2_RPNS_8KeyFrameIfEES6_E19__PRETTY_FUNCTION___1643B0");
+extern const char PF_evaluate_setup_q[] __asm__("_ZZN6interp20KeyFrameSequenceBaseIN4math10quaternionEE14evaluate_setupEfRfRS2_RPNS_8KeyFrameIS2_EES9_E19__PRETTY_FUNCTION___164D00");
+extern const char D_00164560[];     /* "you probably forgot to reset _key_interval to 1 after an insert or remove, or setClose..." */
+extern const char D_001645BC[];     /* "_key_interval > 0 && _key_interval < n" */
+extern const char D_001645E4[];     /* "d > 0" */
+extern const char D_001645EC[];     /* "_key_interval != 0" */
+extern const char PF_find_key_interval_f[] __asm__("_ZZN6interp20KeyFrameSequenceBaseIfE17find_key_intervalEfE19__PRETTY_FUNCTION___164510");
+extern const char PF_find_key_interval_q[] __asm__("_ZZN6interp20KeyFrameSequenceBaseIN4math10quaternionEE17find_key_intervalEfE19__PRETTY_FUNCTION___164CA4");
 typedef interp::KeyFrame<float> KFf;
 typedef interp::KeyFrame<math::quaternion> KFq;
 typedef std::vector<KFf> VKf;
@@ -128,6 +154,11 @@ typedef std::vector<KFq> VKq;
 namespace interp {
 template<class T> struct kfs_data;
 template<> struct kfs_data<float> {
+    static const char *find_key_interval() { return PF_find_key_interval_f; }
+    static float evaluate_setup_one() { return D_00163A34; }
+    static const char *evaluate_setup() { return PF_evaluate_setup_f; }
+    static const char *kfs_evaluate() { return PF_kfs_evaluate_f; }
+    static float mcw_value() { return 0; }
     static const char *remove() { return PF_remove_f; }
     static const char *push_closing_key() { return PF_push_closing_key_f; }
     static const char *update_closing_key() { return PF_update_closing_key_f; }
@@ -149,6 +180,10 @@ template<> struct kfs_data<float> {
     static const char *setKeyValue() { return PF_setKeyValue_f; }
 };
 template<> struct kfs_data<math::quaternion> {
+    static const char *find_key_interval() { return PF_find_key_interval_q; }
+    static float evaluate_setup_one() { return D_00163A44; }
+    static const char *evaluate_setup() { return PF_evaluate_setup_q; }
+    static math::quaternion mcw_value() { return math::quaternion(0, 0, 0, D_00163A48); }
     static const char *remove() { return PF_remove_q; }
     static const char *push_closing_key() { return PF_push_closing_key_q; }
     static const char *update_closing_key() { return PF_update_closing_key_q; }
@@ -266,7 +301,7 @@ template<class T> T interp::KeyFrameSequenceBase<T>::getKeyAbsRelValue(int i)
 
 template<class T> void interp::KeyFrameSequenceBase<T>::invalidate_cached_key_interval()
 {
-    _cached = 1;
+    _key_interval = 1;
 }
 
 template<class T> float interp::KeyFrame<T>::time() const
@@ -528,6 +563,67 @@ template<class T> void interp::KeyFrameSequenceBase<T>::remove(unsigned int _Ind
     invalidate_cached_key_interval();
 }
 
+template<class T> void interp::KeyFrameSequenceBase<T>::makeConsistantWith(const VirtualKeyFrameSequence *s)
+{
+    _closed = s->isClosed();
+    _closeDt = s->getCloseDt();
+    invalidate_cached_key_interval();
+    _loop = s->isLoop();
+    _relative = s->isRelative();
+    _keys.clear();
+    int n = s->size();
+    for (int i = 0; i != n; i++) {
+        _keys.push_back(KeyFrame<T>(s->getKeyTime(i), kfs_data<T>::mcw_value(), i == n - 1 && _closed));
+        _keys.back().setTangentType(s->getTangentType(i, (keyframe_tangent::Side)1), 1);
+        _keys.back().setTangentType(s->getTangentType(i, (keyframe_tangent::Side)2), 2);
+    }
+}
+
+template<class T> bool interp::KeyFrameSequenceBase<T>::evaluate_setup(float t, float &u, T &v, KeyFrame<T> *&k1, KeyFrame<T> *&k2)
+{
+    if (_keys.size() < 2) {
+        if (_keys.empty())
+            v = _default;
+        else if (_keys.size() == 1)
+            v = getKeyAbsRelValue(0);
+        return false;
+    }
+    u = t;
+    float t0 = _keys.front().time();
+    float t1 = _keys.back().time();
+    if (!_loop) {
+        if (u < t0)
+            u = t0;
+        else if (t1 < u)
+            u = t1;
+    } else if (u < t0 || t1 < u)
+        u = math::wrap(u, t0, t1 - t0);
+    if (u == t0) {
+        v = getKeyAbsRelValue(0);
+        return false;
+    }
+    if (u == t1) {
+        v = getKeyAbsRelValue(size() - 1);
+        return false;
+    }
+    int k = find_key_interval(u);
+    k2 = &_keys[k];
+    if (u == k2->time()) {
+        v = getKeyAbsRelValue(k);
+        return false;
+    }
+    INTERP_ASSERT(k > 0, D_00164450, kfs_data<T>::evaluate_setup(), 1071);
+    k1 = &_keys[k - 1];
+    if (u == k1->time()) {
+        v = getKeyAbsRelValue(k - 1);
+        return false;
+    }
+    float dt = k2->time() - k1->time();
+    u = (u - k1->time()) / dt;
+    INTERP_ASSERT(u >= 0.f && u <= kfs_data<T>::evaluate_setup_one(), D_00164438, kfs_data<T>::evaluate_setup(), 1086);
+    return true;
+}
+
 /* still asm */
 template<> interp::KeyFrame<math::quaternion>::KeyFrame();
 template<> interp::KeyFrame<math::quaternion>::KeyFrame(float, math::quaternion, bool);
@@ -701,7 +797,7 @@ template float interp::KeyFrameSequenceBase<float>::get_key_abs_rel_value(int);
 
 template math::quaternion interp::KeyFrameSequenceBase<math::quaternion>::get_key_abs_rel_value(int);
 
-INST_INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/interp_Path", _ZN6interp20KeyFrameSequenceBaseIfE14evaluate_setupEfRfS2_RPNS_8KeyFrameIfEES6_, 81)
+template bool interp::KeyFrameSequenceBase<float>::evaluate_setup(float, float &, float &, interp::KeyFrame<float> *&, interp::KeyFrame<float> *&);
 
 template float interp::KeyFrame<float>::time() const;
 
@@ -786,7 +882,7 @@ template<class T> void interp::KeyFrameSequence<T>::typed_fix()
 }
 template void interp::KeyFrameSequence<float>::typed_fix();
 
-INST_INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/interp_Path", _ZN6interp20KeyFrameSequenceBaseIfE18makeConsistantWithEPKNS_23VirtualKeyFrameSequenceE, 89)
+template void interp::KeyFrameSequenceBase<float>::makeConsistantWith(const interp::VirtualKeyFrameSequence *);
 
 template bool interp::KeyFrameSequenceBase<math::quaternion>::empty() const;
 
@@ -824,7 +920,7 @@ INST_INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/interp_Path
 
 INST_INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/interp_Path", _ZN6interp20KeyFrameSequenceBaseIN4math10quaternionEE17find_key_intervalEf, 76)
 
-INST_INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/interp_Path", _ZN6interp20KeyFrameSequenceBaseIN4math10quaternionEE14evaluate_setupEfRfRS2_RPNS_8KeyFrameIS2_EES9_, 102)
+template bool interp::KeyFrameSequenceBase<math::quaternion>::evaluate_setup(float, float &, math::quaternion &, interp::KeyFrame<math::quaternion> *&, interp::KeyFrame<math::quaternion> *&);
 
 template void interp::KeyFrameSequenceBase<math::quaternion>::setDefault(math::quaternion);
 
@@ -834,7 +930,7 @@ template const std::vector<interp::KeyFrame<math::quaternion> > &interp::KeyFram
 
 template interp::KeyFrame<math::quaternion> &interp::KeyFrameSequenceBase<math::quaternion>::operator[](unsigned int);
 
-INST_INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/interp_Path", _ZN6interp20KeyFrameSequenceBaseIN4math10quaternionEE18makeConsistantWithEPKNS_23VirtualKeyFrameSequenceE, 107)
+template void interp::KeyFrameSequenceBase<math::quaternion>::makeConsistantWith(const interp::VirtualKeyFrameSequence *);
 
 template void interp::KeyFrame<float>::setTangentType(interp::keyframe_tangent::Type, int);
 

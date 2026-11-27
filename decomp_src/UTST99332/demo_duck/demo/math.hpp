@@ -303,7 +303,7 @@ public:
     float _closeDt;
     bool _loop;
     bool _relative;
-    int _cached;
+    int _key_interval;
 };
 /* the sequences the demo uses are explicit specializations here: the template vtables must not be emitted */
 template<class T> class KeyFrameSequence : public KeyFrameSequenceBase<T> {
