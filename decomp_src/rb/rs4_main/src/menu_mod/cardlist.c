@@ -12,7 +12,7 @@ extern int l_nCardNum;
 void consPrintf(const char *, ...);
 extern unsigned char D_00102244;
 void *cardlistFindOne();                            /* extern */
-typedef struct { int pad[0x80]; unsigned short id; char rest[0xB60 - 0x202]; } CardEnt;
+typedef struct { int pad[0x80]; unsigned short id; char p1[0x2A]; int iid; char p2[8]; char prog[0xB60 - 0x238]; } CardEnt;
 extern unsigned char D_001021A0;
 
 int *resGetDatLocal();
@@ -147,7 +147,21 @@ void *cardlistGetPtr(int id)
 	return p;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/cardlist", cardlistGetOneByInstructID);
+CardEnt *cardlistGetOneByInstructID(CardEnt *dst, int iid)
+{
+	int n = l_nCardNum;
+	CardEnt *p = (CardEnt *)l_atCardList;
+	for (; n; n--, p++) {
+		if (p->iid == iid) {
+			memset(dst, 0, sizeof(CardEnt));
+			*dst = *p;
+			consPrintf("%s : InstructID(%d) => Prog=%s, CardID=%d\n", "cardlistGetOneByInstructID", iid, p->prog, p->id);
+			return dst;
+		}
+	}
+	consPrintf("%s : InstructID(%d) not found.\n", "cardlistGetOneByInstructID", iid);
+	return NULL;
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/cardlist", D_00102244);
 
