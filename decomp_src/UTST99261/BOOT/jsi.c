@@ -1486,7 +1486,22 @@ int ESP_destroyCore(void) {
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_loadPage);
+int ESP_loadPage(unsigned char *url, int a1, int flag, int mode) {
+    if (esp_context == NULL) {
+        return -1;
+    }
+    if (esp_context->state == 2) {
+        return -1;
+    }
+    if (url == NULL) {
+        url = (unsigned char *)esp_context->config.homeURL;
+    }
+    if (*url == 0) {
+        return -1;
+    }
+    flag = (flag != 0) << 1;
+    return esp_postMsgLoadPage((int)esp_context->msg, (int)url, a1, 0, flag, mode != 1, 0);
+}
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", D_00133BB8);
 
