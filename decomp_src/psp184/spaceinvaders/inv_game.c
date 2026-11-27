@@ -1109,7 +1109,22 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", ufo_disp_once)
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", ufo_damage);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", ufo_all_dead_check);
+int ufo_all_dead_check(void)
+{
+	int i, n = 0;
+
+	if (gmain.ff28 != 13) {
+		for (i = 0; i < gmain.ufo_n; i++)
+			if ((&gmain.ufo[i])->dead == 1)
+				n++;
+		if (n >= gmain.ufo_n)
+			return 1;
+	} else {
+		if ((&gmain.bufo)->f4 == 1)
+			return 1;
+	}
+	return 0;
+}
 
 void ufo_tex_anime(int *u)
 {
