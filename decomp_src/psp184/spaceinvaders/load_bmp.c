@@ -3,7 +3,81 @@
 #define read_short read_short_62EB8
 #include "load_bmp_sdk.h"
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/load_bmp", sceGimPictureLoadBmp);
+_Bool sceGimPictureLoadBmp( SceGimPicture *picture, const void *buf, int size )
+{
+ if ( picture == 0 ) return 0 ;
+ sceGimPictureUnload( picture ) ;
+ BmpHeader header ;
+ read_header( (void *)buf, &header ) ;
+ int clut_size = ( header.bits - 54 ) / 4 ;
+ if ( clut_size > 0 && header.bit_count < 16 ) {
+  int width = ( clut_size <= 16 ) ? 16 : 256 ;
+  sceGimPictureReallocPalette( picture, 3, width, 1, 1, 0 ) ;
+  void *dst = sceGimPictureGetPalettePixels( picture, 0, 0 ) ;
+  if ( dst == 0 ) return 0 ;
+  void *src = (char *)buf + 54 ;
+  copy_8888( dst, src, clut_size, 1, 255 ) ;
+ }
+ void *src = (char *)buf + header.bits ;
+ int width = header.width ;
+ int height = header.height ;
+ switch ( header.bit_count ) {
+     case 4 : {
+  sceGimPictureReallocImage( picture, 4, width, height, 1, 1, 0 ) ;
+  void *dst = sceGimPictureGetImagePixels( picture, 0, 0 ) ;
+  if ( dst == 0 ) return 0 ;
+  if ( header.compress == 0 ) {
+   copy_idx4( dst, src, width, height ) ;
+  } else {
+   copy_rle4( dst, src, width, height ) ;
+  }
+  break ;
+     }
+     case 8 : {
+  sceGimPictureReallocImage( picture, 5, width, height, 1, 1, 0 ) ;
+  void *dst = sceGimPictureGetImagePixels( picture, 0, 0 ) ;
+  if ( dst == 0 ) return 0 ;
+  if ( header.compress == 0 ) {
+   copy_idx8( dst, src, width, height ) ;
+  } else {
+   copy_rle8( dst, src, width, height ) ;
+  }
+  break ;
+     }
+     case 16 : {
+  sceGimPictureReallocImage( picture, 1, width, height, 1, 1, 0 ) ;
+  void *dst = sceGimPictureGetImagePixels( picture, 0, 0 ) ;
+  if ( dst == 0 ) return 0 ;
+  if ( header.compress == 0 ) {
+   copy_5551( dst, src, width, height ) ;
+  } else {
+   picture->m_image->format = 0 ;
+   copy_5650( dst, src, width, height ) ;
+  }
+  break ;
+     }
+     case 24 : {
+  sceGimPictureReallocImage( picture, 3, width, height, 1, 1, 0 ) ;
+  void *dst = sceGimPictureGetImagePixels( picture, 0, 0 ) ;
+  if ( dst == 0 ) return 0 ;
+  copy_8880( dst, src, width, height ) ;
+  break ;
+     }
+     case 32 : {
+  sceGimPictureReallocImage( picture, 3, width, height, 1, 1, 0 ) ;
+  void *dst = sceGimPictureGetImagePixels( picture, 0, 0 ) ;
+  if ( dst == 0 ) return 0 ;
+  copy_8888( dst, src, width, height, 0 ) ;
+  break ;
+     }
+     default : {
+  ;
+  return 0 ;
+     }
+ }
+ sceKernelDcacheWritebackAll();
+ return 1 ;
+}
 
 void *read_header( void *src, BmpHeader *header )
 {
