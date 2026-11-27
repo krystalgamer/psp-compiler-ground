@@ -1,6 +1,27 @@
 /* cflags: -O1 */
 #include "common.h"
 #include "m2c_macros.h"
+typedef struct EvStr {
+    unsigned short *str;
+    int len;                          /* 0x4 */
+} EvStr;
+typedef struct EvNum {
+    int f0;
+    int f4;
+    double d;                         /* 0x8 */
+} EvNum;
+extern void *D_00585354;
+void *mes_gc_alloc(struct EvCtx *ctx, int kind);
+void mes_object_init(void *obj, int cls, void *proto);
+void *mes_util_string_new(void);
+void mes_util_string_free(void *s);
+int mes_string_new3(struct EvCtx *ctx, void *s);
+int mes_error_uri(struct EvCtx *ctx, int v);
+int mes_eval_decode(void *buf, unsigned short *s, int len, const char *reserved);
+int mes_eval_encode(void *buf, unsigned short *s, int len, const char *unescaped);
+double mes_number_floor(double d);
+int mes_number_alloc(struct EvCtx *ctx, double d);
+#define MESB(x) ((x) == 0 ? 8 : 0xC)
 typedef struct EvGc {
     int f0, kind, f8, fC, f10, f14, f18;
     int (*del)(void *ctx, void *obj, unsigned int id);
@@ -32,6 +53,8 @@ typedef struct EvFrame {
 typedef struct EvCtx {
     char pad[0x10];
     EvFrame *frame;
+    int error;                        /* 0x14 */
+    int *sp;                          /* 0x18 */
 } EvCtx;
 extern unsigned int D_005852E4;
 int mes_eval_object_set(int a, int b, int c, int d, int flags);
@@ -51,7 +74,24 @@ extern unsigned char mes_eval_native_table;
 M2C_UNK mes_util_vals_free(int);                    /* extern */
 
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_eval", mes_eval_scope_new);
+void *mes_eval_scope_new(EvCtx *ctx, int a, int b, int c)
+{
+    char *o = mes_gc_alloc(ctx, 5);
+
+    if (o != NULL) {
+        mes_object_init(o, 9, D_00585354);
+        o[0x14] = a;
+        o[0x15] = 0;
+        o[0x16] = 0;
+        *(int *)(o + 0x20) = b;
+        *(int *)(o + 0x1C) = c;
+        *(int *)(o + 0x24) = 0;
+        *(int *)(o + 0x28) = 0;
+        *(int *)(o + 0x2C) = 0;
+        *(int *)(o + 0x18) = 0;
+    }
+    return o;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_eval", mes_eval_scope_bind);
 
@@ -94,11 +134,36 @@ int mes_eval_type(unsigned int v)
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_eval", mes_eval_to_primitive);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_eval", mes_eval_to_boolean);
+int mes_eval_to_boolean(EvCtx *ctx, int v)
+{
+    switch ((unsigned int)v & 3) {
+    case 0:
+        if (v == 0xC || v == 0x14 || v == 0x18)
+            return 0xC;
+        return MESB((unsigned int)v > 0x20);
+    case 1:
+        return MESB((v >> 2) != 0);
+    case 2:
+        return ((EvNum *)(v & ~3))->d == 0 ? 8 : 0xC;
+    case 3:
+        return MESB(((EvStr *)(v & ~3))->len != 0);
+    }
+    return 8;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_eval", mes_eval_to_number);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_eval", mes_eval_to_integer);
+int mes_eval_to_integer(EvCtx *ctx, int v)
+{
+    v = mes_eval_to_number(ctx, v);
+    if (v == 0x1C)
+        return 1;
+    if (v == 1 || v == 0x10 || v == 0x14 || v == 0x18)
+        return v;
+    if ((v & 3) == 2)
+        v = mes_number_alloc(ctx, mes_number_floor(((EvNum *)(v & ~3))->d));
+    return v;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_eval", mes_eval_to_int32);
 
@@ -226,9 +291,37 @@ int mes_eval_hex(void *arg0) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_eval", mes_eval_decode);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_eval", mes_eval_decode_uri);
+int mes_eval_decode_uri(EvCtx *ctx, int v)
+{
+    int s;
+    void *buf;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_eval", mes_eval_decode_uri_component);
+    s = mes_eval_to_string(ctx, v);
+    *--ctx->sp = s;
+    buf = mes_util_string_new();
+    if (mes_eval_decode(buf, ((EvStr *)(s & ~3))->str, ((EvStr *)(s & ~3))->len, ";/?:@&=+$,#"))
+        ctx->error = mes_error_uri(ctx, s);
+    ctx->sp++;
+    s = mes_string_new3(ctx, buf);
+    mes_util_string_free(buf);
+    return s;
+}
+
+int mes_eval_decode_uri_component(EvCtx *ctx, int v)
+{
+    int s;
+    void *buf;
+
+    s = mes_eval_to_string(ctx, v);
+    *--ctx->sp = s;
+    buf = mes_util_string_new();
+    if (mes_eval_decode(buf, ((EvStr *)(s & ~3))->str, ((EvStr *)(s & ~3))->len, NULL))
+        ctx->error = mes_error_uri(ctx, s);
+    ctx->sp++;
+    s = mes_string_new3(ctx, buf);
+    mes_util_string_free(buf);
+    return s;
+}
 
 void mes_eval_url_hex(void *buf, int c)
 {
@@ -239,9 +332,37 @@ void mes_eval_url_hex(void *buf, int c)
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_eval", mes_eval_encode);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_eval", mes_eval_encode_uri);
+int mes_eval_encode_uri(EvCtx *ctx, int v)
+{
+    int s;
+    void *buf;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_eval", mes_eval_encode_uri_component);
+    s = mes_eval_to_string(ctx, v);
+    *--ctx->sp = s;
+    buf = mes_util_string_new();
+    if (mes_eval_encode(buf, ((EvStr *)(s & ~3))->str, ((EvStr *)(s & ~3))->len, ";/?:@&=+$,-_.!~*'()#"))
+        ctx->error = mes_error_uri(ctx, s);
+    ctx->sp++;
+    s = mes_string_new3(ctx, buf);
+    mes_util_string_free(buf);
+    return s;
+}
+
+int mes_eval_encode_uri_component(EvCtx *ctx, int v)
+{
+    int s;
+    void *buf;
+
+    s = mes_eval_to_string(ctx, v);
+    *--ctx->sp = s;
+    buf = mes_util_string_new();
+    if (mes_eval_encode(buf, ((EvStr *)(s & ~3))->str, ((EvStr *)(s & ~3))->len, "-_.!~*'()"))
+        ctx->error = mes_error_uri(ctx, s);
+    ctx->sp++;
+    s = mes_string_new3(ctx, buf);
+    mes_util_string_free(buf);
+    return s;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_eval", mes_eval_escape);
 
