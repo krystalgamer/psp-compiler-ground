@@ -1,4 +1,5 @@
 #include "common.h"
+#define complement_animation complement_animation_5CAE0
 
 /* declarations recovered from DWARF (UTST99332 graphics_model gmo_material) */
 typedef struct SceGmoChunk SceGmoChunk;
@@ -324,6 +325,8 @@ static float *float_lerp(float *dst, const float *src1, const float *src2, int d
 void sceGmoLayerUnloadCache( SceGmoLayer *layer ) ;
 ScePspFRect *sceGmoRectSet( ScePspFRect *r, float x, float y, float w, float h ) ;
 void sceGuCallList( const void *list ) ;
+vec4 *sceGmoVec4FromCol4( vec4 *dst, const int *src ) ;
+void sceGmoMaterialControl( SceGmoMaterial *material, int type, int idx, const float *val, int cnt, float weight ) ;
 int sceGmoCol4IsBlack( const int *col ) ;
 int sceGmoCol4IsHollow( const int *col ) ;
 void sceGmoBaseCopy( SceGmoBase *dst, const SceGmoBase *src ) ;
@@ -464,7 +467,7 @@ void sceGmoMaterialUnloadCache( SceGmoMaterial *material )
 
 void sceGmoMaterialUpdate(SceGmoMaterial *material, SceGmoModel *model) {
     if (material != NULL) {
-        complement_animation_5CAE0();
+        complement_animation( material );
     }
 }
 
@@ -515,7 +518,72 @@ SceGmoLayer *sceGmoMaterialGetLayer( SceGmoMaterial *material, int index )
  return material->m_layers[ index ] ;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_material", complement_animation_5CAE0);
+static void complement_animation( SceGmoMaterial *material )
+{
+	int flags = material->m_anim_flags ;
+	int reset = 0xffff0000 ;
+	int modified = ( flags & 0x0000ffff ) ;
+	int complete = ( flags & 0xffff0000 ) >> 16 ;
+	int incomplete = modified & ~complete ;
+	if ( incomplete ) {
+		float val[ 5 ] ;
+		SceGmoMaterial *initial = material->m_initial ;
+		if ( incomplete & 0x0001 ) {
+			float w = 1.0f - material->m_anim_weights[ 0 ] ;
+			sceGmoVec4FromCol4( (vec4 *)val, &( initial->m_colors[ 1 ] ) ) ;
+			sceGmoMaterialControl( material, 0x82, 0, val, 4, w ) ;
+			if ( w > 0.99f ) reset |= 0x0001 ;
+		}
+		if ( incomplete & 0x0002 ) {
+			float w = 1.0f - material->m_anim_weights[ 1 ] ;
+			sceGmoVec4FromCol4( (vec4 *)val, &( initial->m_colors[ 2 ] ) ) ;
+			val[ 4 ] = initial->m_shininess ;
+			sceGmoMaterialControl( material, 0x83, 0, val, 5, w ) ;
+			if ( w > 0.99f ) reset |= 0x0002 ;
+		}
+		if ( incomplete & 0x0004 ) {
+			float w = 1.0f - material->m_anim_weights[ 2 ] ;
+			sceGmoVec4FromCol4( (vec4 *)val, &( initial->m_colors[ 3 ] ) ) ;
+			sceGmoMaterialControl( material, 0x84, 0, val, 4, w ) ;
+			if ( w > 0.99f ) reset |= 0x0004 ;
+		}
+		if ( incomplete & 0x0008 ) {
+			float w = 1.0f - material->m_anim_weights[ 3 ] ;
+			sceGmoVec4FromCol4( (vec4 *)val, &( initial->m_colors[ 4 ] ) ) ;
+			sceGmoMaterialControl( material, 0x85, 0, val, 4, w ) ;
+			if ( w > 0.99f ) reset |= 0x0008 ;
+		}
+		if ( incomplete & 0x0010 ) {
+			float w = 1.0f - material->m_anim_weights[ 4 ] ;
+			sceGmoVec4FromCol4( (vec4 *)val, &( initial->m_colors[ 5 ] ) ) ;
+			sceGmoMaterialControl( material, 0x86, 0, val + 3, 1, w ) ;
+			if ( w > 0.99f ) reset |= 0x0010 ;
+		}
+		if ( incomplete & 0x0020 ) {
+			material->m_refraction = initial->m_refraction ;
+			reset |= 0x0020 ;
+		}
+		if ( incomplete & 0x0040 ) {
+			material->m_bump = initial->m_bump ;
+			reset |= 0x0040 ;
+		}
+		if ( incomplete & 0xff00 ) {
+			{ int i ; for ( i = 0 ; i < material->m_n_layers ; i ++ ) {
+				if ( incomplete & ( 0x0100 << i ) ) {
+					SceGmoLayer *layer1 = material->m_layers[ i ] ;
+					SceGmoLayer *layer2 = layer1->m_initial ;
+					const rect *crop = sceGmoLayerGetTexCrop( layer2 ) ;
+					sceGmoLayerSetTexCrop( layer1, crop ) ;
+					reset |= 0x0100 << i ;
+				}
+			} }
+		}
+	}
+	material->m_anim_flags &= ~reset ;
+	if ( modified ) {
+		memset( material->m_anim_weights, 0, sizeof( material->m_anim_weights ) ) ;
+	}
+}
 
 static _Bool reconfigure_material( SceGmoMaterial *material )
 {
