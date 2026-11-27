@@ -749,11 +749,20 @@ libgcc/libsupc++ DWARF names `gcc-3.3.6/` paths.
   straight-line VFPU runs; reorg never puts a VFPU instruction into a
   compiler branch's delay slot (those stay `nop` next to VFPU code), and
   the 126 function-final VFPU stores in `jr ra` delay slots are psp-as's
-  reorder swap, which it also does for 1.5.1's inline asm. 154 such
+  reorder swap, which it also does for 1.5.1's inline asm. About 180 such
   functions match byte for byte as `asm volatile` blocks, surrounding
-  compiler code included.  Confidence: medium-high.  A VFPU function with
-  DWARF (vector-typed variables) or one whose VFPU code is interleaved
-  with scheduled C would reopen it.
+  compiler code included.  Some of the round trips are even inside the asm
+  text: i3d_collision's `I3dcs_GetSqrDist*` and `I3dQtSlerp` move every
+  `vdot` result with `mfv $6,S…; mtc1 $6,%0` (a fixed `$6` and a
+  `"$6"` clobber: QtSlerp first copies the pointer that arrived in `$a2`
+  to `$v1`), and `I3dViewStatus__ObbClipTest_SkinMeshA` passes 0.5f
+  to `mtv` as the integer `0x3f000000` (`lui`), while `I3dQtGetSplineCP`
+  passes -1.0f as an `"r"` float (`lwc1` + `mfc1`).  Compiler branches next
+  to the asm (`if (i == 0)` after a `vmmul` block) get the last VFPU
+  instruction in their delay slot from psp-as's reorder, not from reorg.
+  Confidence: medium-high.  A VFPU function with DWARF
+  (vector-typed variables) or one whose VFPU code is interleaved with
+  scheduled C would reopen it.
 - The game's C++ objects keep their float constants with their strings
   and aggregates in one `.rodata` in emission order (ys_fx_fade_cif:
   `"src/ys/ys_object.h"`, two `1.0f`, then the vtable); with this repo's
