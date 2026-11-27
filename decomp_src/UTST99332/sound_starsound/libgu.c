@@ -1336,7 +1336,79 @@ void sceGuBoneMatrix(unsigned int index, const ScePspFMatrix4 *matrix)
 
 INCLUDE_ASM("tmp/asm/UTST99332/sound_starsound/nonmatchings/libgu", sceGuMorphWeight);
 
-INCLUDE_ASM("tmp/asm/UTST99332/sound_starsound/nonmatchings/libgu", sceGuDebugPrint);
+typedef struct {
+	int x;
+	int y;
+	unsigned int color;
+	char c;
+} GuDebugChar;
+
+extern int aw_fontcnt[2];
+extern GuDebugChar aw_fontbuf[2][1024];
+
+void sceGuDebugPrint(int x, int y, unsigned int color, const char *str)
+{
+	int r, g, b, a;
+	int fx, fy;
+	int code;
+	int fontcnt;
+	GuDebugChar *fontbuf;
+
+	fontbuf = aw_fontbuf[aw_frame];
+	fontcnt = aw_fontcnt[aw_frame];
+	fontbuf = &fontbuf[fontcnt];
+	if (fontcnt >= 1024)
+		return;
+
+	fx = x;
+	fy = y;
+
+	r = (color >> 0) & 0xff;
+	g = (color >> 8) & 0xff;
+	b = (color >> 16) & 0xff;
+	a = (color >> 24) & 0xff;
+
+	if (FBuf.pixel_size == 0) {
+		r = r >> 3;
+		g = g >> 2;
+		b = b >> 3;
+		color = (b << 11) | (g << 5) | r;
+	} else if (FBuf.pixel_size == 1) {
+		r = r >> 3;
+		g = g >> 3;
+		b = b >> 3;
+		a = a >> 7;
+		color = (a << 15) | (b << 10) | (g << 5) | r;
+	} else if (FBuf.pixel_size == 2) {
+		r = r >> 4;
+		g = g >> 4;
+		b = b >> 4;
+		a = a >> 4;
+		color = (a << 12) | (b << 8) | (g << 4) | r;
+	}
+
+	while (*str) {
+		if (*str == '\n') {
+			fx = x;
+			fy += 8;
+			str++;
+			continue;
+		}
+		code = *str - '!' + 1;
+
+		fontbuf->x = fx;
+		fontbuf->y = fy;
+		fontbuf->color = color;
+		fontbuf->c = code++;
+
+		fx += 8;
+
+		str++;
+		fontcnt++;
+		fontbuf++;
+	}
+	aw_fontcnt[aw_frame] = fontcnt;
+}
 
 void sceGuDebugFlush(void)
 {
