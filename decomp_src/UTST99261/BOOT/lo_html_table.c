@@ -47,6 +47,20 @@ void attr_HEIGHT_table(void *node, BOX *box);
 void attr_BACKGROUND(void *node, BOX *box);
 void attr_ALIGN_table(void *node, BOX *box);
 int colorValue(char *s);
+typedef struct TDGEOM { u8 pad[0x10]; unsigned short row; unsigned short col; unsigned short colspan; unsigned short rowspan; } TDGEOM;
+void *MEM_calloc(void *pool, unsigned int size);
+void *memcpy(void *, const void *, unsigned int);
+void *getDOMAttributeValue(void *node, void *name);
+extern char _DOMbordercolor[];
+BOX *getTrBox(BOX *box);
+BOX *box_getColBoxAt(BOX *table, unsigned short col);
+void attr_COLSPAN(void *node, BOX *box);
+void attr_ROWSPAN(void *node, BOX *box);
+void attr_WIDTH_td(void *node, BOX *box);
+void attr_HEIGHT_td(void *node, BOX *box);
+void attr_NOWRAP_td(void *node, BOX *box);
+void attr_ALIGN_td(void *node, BOX *box);
+void attr_VALIGN_td(void *node, BOX *box);
 BOX *getTableBoxFromDOM(void *node) {
     BOX *box;
     for (node = Node_getParentNode(node); node != NULL; node = Node_getParentNode(node)) {
@@ -273,7 +287,111 @@ INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/lo_html_table", jt);
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/lo_html_table", jt_after);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_html_table", html_TD_inner);
+BOX *html_TD_inner(void *node, BOX *tr, BOX *last, BOX *box) {
+    BOX *table;
+    TBLGEOM *tg;
+    BOX *row;
+    BOX *col;
+    void *v;
+    int rowspan;
+    int colspan;
+    int c;
+    int i;
+    int j;
+    int need;
+    int *p;
+    int bc;
+    int bw;
+
+    table = getTableBox(box);
+    tg = (TBLGEOM *)table->geom;
+    row = getTrBox(box);
+    if (row == NULL)
+        return NULL;
+    if (M2C_FIELD(table->geom, int *, 0) & 0x20) {
+        box->style->unk30 = 1;
+        box->style->unk32 = 1;
+        box->style->unk34 = 1;
+        box->style->unk36 = 1;
+        box->style->unk48 = 1;
+        box->style->unk4A = 1;
+        box->style->unk4C = 1;
+        box->style->unk4E = 1;
+    }
+    box->style->unk38 = colorValue("#777777");
+    box->style->unk3C = colorValue("#dddddd");
+    box->style->unk40 = colorValue("#dddddd");
+    box->style->unk44 = colorValue("#777777");
+    v = getDOMAttributeValue(M2C_FIELD(table, void **, 0x28), _DOMbordercolor);
+    if (v != NULL) {
+        bc = table->style->unk38;
+        box->style->unk38 = bc;
+        box->style->unk3C = bc;
+        box->style->unk40 = bc;
+        box->style->unk44 = bc;
+        MEM_free(0, v);
+    }
+    bw = M2C_FIELD(table->geom, int *, 4);
+    box->style->unk28 = bw;
+    box->style->unk2A = bw;
+    box->style->unk2C = bw;
+    box->style->unk2E = bw;
+    M2C_FIELD(box->style, int *, 0) = M2C_FIELD(row->style, int *, 0);
+    if (M2C_FIELD(row->geom, int *, 0) != 0)
+        M2C_FIELD(box->style, s8 *, 0x10) = 1;
+    attr_BGCOLOR(node, box);
+    attr_BACKGROUND(node, box);
+    attr_COLSPAN(node, box);
+    attr_ROWSPAN(node, box);
+    attr_WIDTH_td(node, box);
+    if (row->style->flags & 0xC) {
+        box->style->flags &= ~0xC;
+        box->style->flags |= row->style->flags & 0xC;
+        box->style->height = row->style->height;
+    }
+    attr_HEIGHT_td(node, box);
+    box->style->unk74 = 0;
+    attr_NOWRAP_td(node, box);
+    rowspan = ((TDGEOM *)box->geom)->rowspan ? ((TDGEOM *)box->geom)->rowspan : 1;
+    colspan = ((TDGEOM *)box->geom)->colspan ? ((TDGEOM *)box->geom)->colspan : 1;
+    for (c = 0; c < tg->ncols; c++) {
+        if (tg->cells[tg->nrows * tg->ncols + c] == 0)
+            break;
+    }
+    need = c + colspan;
+    if (tg->ncols < need) {
+        p = MEM_calloc(0, tg->cap * (c + colspan) * 4);
+        for (i = 0; i < tg->cap; i++)
+            memcpy(p + i * (c + colspan), tg->cells + i * tg->ncols, tg->ncols * 4);
+        tg->ncols = c + colspan;
+        MEM_free(0, tg->cells);
+        tg->cells = p;
+    }
+    if (tg->nrows + rowspan > tg->cap) {
+        p = MEM_calloc(0, tg->ncols * (tg->nrows + rowspan) * 4);
+        memcpy(p, tg->cells, tg->ncols * tg->cap * 4);
+        tg->cap = tg->nrows + rowspan;
+        MEM_free(0, tg->cells);
+        tg->cells = p;
+    }
+    ((TDGEOM *)box->geom)->row = tg->nrows;
+    ((TDGEOM *)box->geom)->col = c;
+    for (i = 0; i < rowspan; i++)
+        for (j = 0; j < colspan; j++)
+            tg->cells[(tg->nrows + i) * tg->ncols + c + j] = (int)box;
+    attr_ALIGN_td(node, box);
+    attr_VALIGN_td(node, box);
+    applyCSSExtStyleSheetToBox(node, box);
+    applyCSSInlinePropertyToBox(node, box);
+    if (M2C_FIELD(box->style, s8 *, 0x10) == 0) {
+        col = box_getColBoxAt(table, ((TDGEOM *)box->geom)->col);
+        if (col != NULL && M2C_FIELD(col->style, s8 *, 0x10) != 0) {
+            M2C_FIELD(box->style, int *, 0) = M2C_FIELD(col->style, int *, 0);
+            M2C_FIELD(box->style, s8 *, 0x10) = 1;
+        }
+    }
+    return box;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_html_table", html_CAPTION);
 
