@@ -29,6 +29,12 @@ M2C_UNK processArea();                              /* extern */
 typedef struct SelOpt { struct SelOpt *next; int pad[4]; int selected; } SelOpt;
 typedef struct SelInfo { int pad[2]; SelOpt *opts; int *sel; } SelInfo;
 void initSelectBoxSize(BOX *box);
+extern unsigned char _DOMalign;
+extern char D_0013F114[];
+int getLegendTextWidth(BOX *box);
+void initLinePosition(BOX *box);
+void moveBoxPosition(BOX *box, int dx, int dy);
+int strcmp(const char *a, const char *b);
 int getTabindex(void *node) {
     char *s;
     s16 n = 0;
@@ -183,7 +189,32 @@ BOX *html_LEGEND(void *node, BOX *parent, BOX *prev) {
     return box;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_html_form", html_LEGEND_after);
+void html_LEGEND_after(void *node, BOX *box) {
+    BOX *fs;
+    int w;
+    int h;
+    int dx;
+    char *a;
+
+    fs = getBoxByHTML(box, 0x21);
+    if (fs == NULL)
+        return;
+    w = getLegendTextWidth(box);
+    moveBoxPosition(fs, 0, box->height / 2);
+    h = box->height / 2;
+    a = getDOMAttributeValue(M2C_FIELD(box, void **, 0x28), &_DOMalign);
+    if (a == NULL) {
+        moveBoxPosition(box, 8, -h);
+    } else {
+        if (strcmp(a, D_0013F114) == 0 && (dx = fs->width - w - 16) > 0)
+            moveBoxPosition(box, dx, -h);
+        else
+            moveBoxPosition(box, 8, -h);
+        MEM_free(0, a);
+    }
+    M2C_FIELD(box->style, u8 *, 0x10) = 1;
+    initLinePosition(box);
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
