@@ -350,3 +350,5 @@ rodata 0x10EFB0 scert/rt_util/rt_time
 rodata 0x10F07C scert/rt_util/psp/rt_time_platform
 rodata 0x10F164 scert/rt_util/rt_timebase
 rodata 0x10F21C scert/rt_util/rt_token
+bss 0x139F28 gcc-3.3.6/gcc/unwind-dw2-fde
+bss 0x139F38 -

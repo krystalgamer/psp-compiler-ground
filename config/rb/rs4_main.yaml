@@ -800,6 +800,8 @@ segments:
     bss_size: 0x249E4
     subsegments:
       - [0x110FC0, data, data]
-      - { start: 0x116618, type: bss, vram: 0x116580 }
+      - { start: 0x116618, type: bss, vram: 0x116580, name: bss_116580 }
+      - { start: 0x116618, type: .bss, vram: 0x139F28, name: gcc-3.3.6/gcc/unwind-dw2-fde }
+      - { start: 0x116618, type: bss, vram: 0x139F38, name: bss_139F38 }
   - [0x116618, bin, elf_trailer]
   - [0x369B34]
