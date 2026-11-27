@@ -1542,3 +1542,4 @@ enum {
 void sceGmoBoneControl( SceGmoBone *bone, int type, int idx, const float *val, int cnt, float weight ) ;
 void sceGmoMaterialControl( SceGmoMaterial *material, int type, int idx, const float *val, int cnt, float weight ) ;
 void sceGmoMotionAnimate( SceGmoMotion *motion, SceGmoModel *model, float step ) ;
+float fmodf( float x, float y ) ;

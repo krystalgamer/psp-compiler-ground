@@ -288,6 +288,49 @@ float find_root( float f0, float f1, float f2, float f3, float f )
  return ( t3 - t0 ) * x + t0 ;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_motion", extrap_frame);
+static float extrap_frame( float frame, float start, float end, int extrap )
+{
+	frame -= start ;
+	end -= start ;
+
+	if ( frame < 0.0f ) {
+		switch ( 0x0f00 & extrap ) {
+		    case 0x0000 :
+			frame = 0.0f ;
+			break ;
+		    case 0x0100 :
+			frame = fmodf( frame, end ) + end ;
+			break ;
+		    case 0x0200 :
+			end += end ;
+			frame = fmodf( frame, end ) + end ;
+			if ( frame > end - frame ) frame = end - frame ;
+			break ;
+		    case 0x0300 :
+		    case 0x0400 :
+			frame = 0.0f ;
+			break ;
+		}
+	} else if ( frame >= end ) {
+		switch ( 0xf000 & extrap ) {
+		    case 0x0000 :
+			frame = end ;
+			break ;
+		    case 0x1000 :
+			frame = fmodf( frame, end ) ;
+			break ;
+		    case 0x2000 :
+			end += end ;
+			frame = fmodf( frame, end ) ;
+			if ( frame > end - frame ) frame = end - frame ;
+			break ;
+		    case 0x3000 :
+		    case 0x4000 :
+			frame = end ;
+			break ;
+		}
+	}
+	return start + frame ;
+}
 
 INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_motion", D_0007F040);
