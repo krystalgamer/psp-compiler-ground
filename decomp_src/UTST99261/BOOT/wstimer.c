@@ -1,11 +1,14 @@
 /* cflags: -O1 */
 #include "common.h"
 #include "m2c_macros.h"
+int sceKernelWaitSema(int id, int signal, void *timeout);
+int OS_mq_send(int a, int b, int n, int c);
+void OS_thread_exit(int r);
 void *MEM_calloc(int heap, unsigned int size);
 void *OS_thread_mutex_create(void);
 int OS_thread_mutex_init(void *m, int a);
 int OS_thread_create(void *id, int a, void *fn, int b);
-void esp_timerThread(void);
+int esp_timerThread(void);
 typedef struct TimeSpec {
     int sec;
     int nsec;
@@ -79,7 +82,60 @@ int clock_gettime(TimeSpec *ts)
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/wstimer", esp_timerThread);
+int esp_timerThread(void)
+{
+    TimeSpec ts;
+    int elapsed;
+    int ds, dn;
+    char *t;
+    void **p;
+    void **q;
+
+    for (;;) {
+        if (sceKernelWaitSema(sema_id_timer, 1, 0) < 0)
+            break;
+        p = sys_timer;
+        p[3] = (void *)sceKernelSetAlarm(10000, timer_handler, 0);
+        if ((int)sys_timer[3] < 0)
+            break;
+        OS_thread_mutex_lock((int)sys_timer[2]);
+        if (sys_timer[0] == NULL) {
+            if ((int)sys_timer[3] < 0)
+                break;
+            sceKernelCancelAlarm((int)sys_timer[3]);
+            sys_timer[3] = (void *)-1;
+            break;
+        }
+        clock_gettime(&ts);
+        q = sys_timer;
+        ds = ts.sec - (int)q[4];
+        dn = ts.nsec - (int)q[5];
+        elapsed = ds * 1000 + dn / 1000000;
+        q[4] = (void *)ts.sec;
+        q[5] = (void *)ts.nsec;
+        for (t = M2C_FIELD(sys_timer[0], char **, 0x18); t != NULL; t = M2C_FIELD(t, char **, 0x18)) {
+            if (M2C_FIELD(t, unsigned short *, 6) & 1) {
+                M2C_FIELD(t, int *, 0x14) -= elapsed;
+                if (M2C_FIELD(t, int *, 0x14) <= 0) {
+                    if (M2C_FIELD(t, unsigned short *, 4) == 1)
+                        OS_mq_send(M2C_FIELD(t, int *, 8), M2C_FIELD(t, int *, 0xC), 0x24, 0);
+                    else if (!(M2C_FIELD(t, unsigned short *, 6) & 0x100)) {
+                        OS_mq_send(M2C_FIELD(t, int *, 8), M2C_FIELD(t, int *, 0xC), 0x24, 0);
+                        M2C_FIELD(t, unsigned short *, 6) |= 0x100;
+                    }
+                    M2C_FIELD(t, int *, 0x14) = M2C_FIELD(t, int *, 0x10);
+                }
+            }
+        }
+        OS_thread_mutex_unlock((int)sys_timer[2]);
+    }
+    thread_id_timer = -1;
+    sceKernelDeleteSema(sema_id_timer);
+    sema_id_timer = -1;
+    OS_thread_mutex_unlock((int)sys_timer[2]);
+    OS_thread_exit(0);
+    return 0;
+}
 
 int timer_handler(void *arg)
 {
