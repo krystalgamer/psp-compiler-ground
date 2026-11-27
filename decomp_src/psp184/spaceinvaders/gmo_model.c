@@ -128,7 +128,19 @@ void sceGmoModelUnloadCache( SceGmoModel *model )
 	} }
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_model", sceGmoModelAnimate);
+void sceGmoModelAnimate( SceGmoModel *model, float step )
+{
+	if ( model == 0 ) return ;
+
+	change_motion( model, step ) ;
+
+	{ int i ; for ( i = 0 ; i < model->m_n_motions ; i ++ ) {
+		sceGmoMotionAnimate( model->m_motions[ i ], model, step ) ;
+	} }
+	{ int i ; for ( i = 0 ; i < model->m_n_textures ; i ++ ) {
+		sceGmoTextureAnimate( model->m_textures[ i ], model, step ) ;
+	} }
+}
 
 void sceGmoModelUpdate( SceGmoModel *model )
 {
@@ -141,7 +153,26 @@ void sceGmoModelUpdate( SceGmoModel *model )
  } }
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_model", sceGmoModelDraw);
+void sceGmoModelDraw( SceGmoModel *model )
+{
+	if ( model == 0 ) return ;
+
+	sceGumUpdateMatrix() ;
+
+	sceGmoContextBegin() ;
+	sceGmoContextDefaultEnableBits( model->m_enable_mask, model->m_enable_bits ) ;
+	if ( model->m_flags & SCEGMO_MODEL_HAS_TEXCOORD_OFFSET ) {
+		sceGmoContextDefaultTexOffs( &( model->m_texcoord_offset ) ) ;
+	}
+	sceGmoContextSetTexOffs( 0 ) ;
+	{ int i ; for ( i = 0 ; i < model->m_n_bones ; i ++ ) {
+		sceGmoBoneDraw( model->m_bones[ i ], model ) ;
+	} }
+	sceGmoContextEnd() ;
+
+	sceGumMatrixMode( 2 ) ;
+	sceGumSetCurMatrix() ;
+}
 
 void sceGmoModelSetWorldMatrix( SceGmoModel *model, const mat4 *m )
 {

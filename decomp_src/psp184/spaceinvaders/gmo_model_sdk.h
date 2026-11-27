@@ -1546,3 +1546,5 @@ _Bool sceGmoPartLoadCache( SceGmoPart *part ) ;
 void sceGmoPartUnloadCache( SceGmoPart *part ) ;
 _Bool sceGmoMaterialLoadCache( SceGmoMaterial *material ) ;
 void sceGmoMaterialUnloadCache( SceGmoMaterial *material ) ;
+void sceGmoMotionAnimate( SceGmoMotion *motion, SceGmoModel *model, float step ) ;
+void sceGmoTextureAnimate( SceGmoTexture *texture, SceGmoModel *model, float step ) ;
