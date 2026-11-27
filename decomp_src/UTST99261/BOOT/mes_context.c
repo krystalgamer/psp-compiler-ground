@@ -40,6 +40,8 @@ M2C_UNK MEM_free(M2C_UNK, void *);                  /* extern */
 M2C_UNK mes_list_free(int);                         /* extern */
 
 
+int mes_util_digit(int c);
+int mes_string_equal(int a, CtxStr *b);
 void mes_context_global_initialize(void)
 {
     int i;
@@ -64,7 +66,73 @@ void mes_context_hash(int str, unsigned int hash)
     }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_context", mes_context_index);
+int mes_context_index(int v)
+{
+    CtxStr *s;
+    unsigned short *p;
+    int n;
+    unsigned int h;
+    int neg;
+    int num;
+    int d;
+    unsigned short c;
+    HashEnt *e;
+
+    s = (CtxStr *)(v & ~3);
+    h = 0;
+    p = s->chars;
+    n = s->slen;
+    neg = 0;
+    if (n > 0) {
+        if (*p == '-') {
+            neg = 1;
+            n--;
+            p++;
+            h = '-';
+        }
+        if (n > 0) {
+            num = 0;
+            if (*p == '0') {
+                if (n == 1)
+                    return 1;
+                goto bad;
+            }
+        } else
+            goto bad;
+    } else {
+bad:
+        num = -1;
+    }
+    while (n-- > 0) {
+        c = *p++;
+        if (num >= 0) {
+            d = mes_util_digit(c);
+            if (d < 0 || (neg ? (num > 0x3333333 || (num == 0x3333333) & !(d < 3)) : (num > 0x3333333 || (num == 0x3333333) & !(d < 2))))
+                goto ng;
+            num = num * 10 + d;
+            if (0) {
+ng:
+                num = -1;
+            }
+        }
+        h = h * 37 ^ c;
+    }
+    if (num >= 0) {
+        if (neg) {
+            if (num <= 0x20000000)
+                return (-num << 2) | 1;
+        } else {
+            if (num <= 0x1FFFFFFF)
+                return (num << 2) | 1;
+        }
+    }
+    for (e = mes_id_hash[h % 0x71]; e != NULL; e = e->next) {
+        if (e->hash == h && mes_string_equal((int)e->str & ~3, s))
+            return (int)e->str;
+    }
+    mes_context_hash(v, h);
+    return v;
+}
 
 int mes_context_id(void *ctx, UString *s)
 {
