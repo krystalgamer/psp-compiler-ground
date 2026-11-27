@@ -423,7 +423,13 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_comm/src/rt_comm", rt_com
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_comm/src/rt_comm", rt_comm_echo_update);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_comm/src/rt_comm", rt_comm_echo_shutdown);
+int rt_comm_echo_shutdown(void)
+{
+    if ((&gEchoInfo)[0] == 0) return 5;
+    rt_comm_destroy((void *)(&gEchoInfo)[1]);
+    (&gEchoInfo)[0] = 0;
+    return 0;
+}
 
 void rt_comm_get_dns_servers(void) {
     M2C_FIELD(gCommPlatformInterfacePtr, M2C_UNK (**)(), 0x68)();

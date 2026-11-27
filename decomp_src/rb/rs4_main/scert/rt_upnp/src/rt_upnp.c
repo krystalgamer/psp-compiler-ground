@@ -70,7 +70,17 @@ int rt_upnp_delete_port_mapping(void) {
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_upnp/src/rt_upnp", rt_upnp_resolve_external_address);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_upnp/src/rt_upnp", rt_upnp_get_external_address);
+int rt_upnp_get_external_address(int *u, int *addr, int *port)
+{
+    if (u == NULL) return 2;
+    if (u[0x3C / 4] != 0) return 0xD6DA;
+    if (addr == NULL) return 2;
+    if (port == NULL) return 2;
+    addr[0] = u[3];
+    addr[1] = u[4];
+    *port = u[6];
+    return 0;
+}
 
 int rt_upnp_disable_natservice_heartbeat(void *arg0) {
     int var_v1;

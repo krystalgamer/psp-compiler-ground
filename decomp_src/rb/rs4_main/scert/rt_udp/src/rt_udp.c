@@ -350,7 +350,16 @@ int rt_udp_set_connection_inactivity_timeout(void *arg0, int arg1) {
     return var_v0;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_udp", rt_udp_get_latency_info);
+int rt_udp_get_latency_info(int *u, int *out)
+{
+    if (u == NULL) return 0xD2F3;
+    if (u[0] != 13) return 0xD2F3;
+    if (out == NULL) return 2;
+    out[0] = u[0x50 / 4];
+    out[1] = u[0x54 / 4];
+    out[2] = u[0x4C / 4];
+    return 0;
+}
 
 int rt_udp_get_pool_used(void *udp)
 {
