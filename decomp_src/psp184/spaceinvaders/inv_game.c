@@ -1667,7 +1667,31 @@ M2C_UNK particle_check(int no)
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", efc_bom_start);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", efc_bom2_start);
+extern const double D_0007E7F8, D_0007E800, D_0007E808, D_0007E810, D_0007E818;
+double genrand_real2(void);
+double genrand_real3(void);
+void efc_bom2_start(float x, float y, float z)
+{
+	int i, n;
+	PARTICLE *p;
+
+	for (i = 0; i < 8; i++) {
+		n = particle_set(gmain.f.ff64[3], 0x30);
+		if (n < 0)
+			continue;
+		p = &PTC[n];
+		p->f14 = 8;
+		p->f2c = genrand_real2() * D_0007E7F8 + D_0007E7F8;
+		p->f30 = -(genrand_real2() * D_0007E800 + D_0007E800);
+		p->f44 = x;
+		p->f48 = y;
+		p->f4c = z;
+		p->f50 = (genrand_real3() - D_0007E808) * D_0007E810;
+		p->f54 = (genrand_real3() - D_0007E808) * D_0007E810;
+		p->f58 = (genrand_real3() - D_0007E808) * D_0007E810;
+		p->f60 = p->f5c = genrand_real2() * D_0007E808 + D_0007E818;
+	}
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", efc_laser_start);
 
