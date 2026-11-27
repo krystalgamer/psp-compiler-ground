@@ -109,7 +109,23 @@ void *mes_window_dialog_inner(MesContext *ctx, int kind, MesValue msg, void *out
     return r;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_window", mes_window_history_move_inner);
+int mes_window_history_move_inner(MesContext *ctx, int n)
+{
+    IpcMsg msg;
+    void *a, *b;
+    int sid;
+    void *node;
+
+    mes_window_check_validate(ctx, &a, &b, &sid, &node);
+    if (node != NULL && HST_getHistoryWithOffset(-1) != NULL) {
+        SetIpcMember(&msg, 8, sid, 0, 0x805, n, 0, NULL);
+        if (JSSendMail(&msg, D_0013C294) == 0) {
+            *g_JS_PAGECHANGED_ = 1;
+            return 0;
+        }
+    }
+    return -1;
+}
 
 void mes_window_scroll_inner(void *dom, int kind, int x, int y, int sid)
 {

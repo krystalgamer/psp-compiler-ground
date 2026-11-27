@@ -1,6 +1,15 @@
 /* cflags: -O1 */
 #include "common.h"
 #include "http_lib.h"
+int sceHttpGetAllHeader(int req, char **header, int *len);
+void *memcpy(void *d, const void *s, unsigned int n);
+int http_state(int h);
+int UTL_mfilesize(void *f);
+int UTL_mfilepos(void *f);
+int UTL_mfileread(void *f, void *buf, int len);
+int UTL_mfileclean(void *f);
+int OS_thread_mutex_lock(void *m);
+int OS_thread_mutex_unlock(void *m);
 int sceParseHttpStatusLine(const char *line, int len, int *major, int *minor, int *status, const char **reason, int *reasonlen);
 extern const char htlib_cstrAGE[];
 extern const char htlib_cstrALLOW[];
@@ -36,9 +45,68 @@ int http_geterror(int h)
     return err;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/http_geterror", http_getresponseallheader);
+char *http_getresponseallheader(int h)
+{
+    HttpObj *o = HTTP_OBJ(h);
+    char *buf;
+    int r;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/http_geterror", http_getresponsebody);
+    if (h == 0)
+        return NULL;
+    if (o->statusline == NULL) {
+        buf = NULL;
+        buf = MEM_malloc(0, o->statuslen + 1);
+        r = sceHttpGetAllHeader(o->req, &buf, &o->statuslen);
+        if (r < 0) {
+            MEM_free(0, buf);
+            if (o->error == 0)
+                o->error = r;
+            return NULL;
+        }
+        o->statusline = MEM_malloc(0, o->statuslen + 1);
+        if (o->statusline == NULL) {
+            MEM_free(0, buf);
+            if (o->error == 0)
+                o->error = -103;
+            return NULL;
+        }
+        memcpy(o->statusline, buf, o->statuslen);
+        MEM_free(0, buf);
+    }
+    return o->statusline;
+}
+
+int http_getresponsebody(int h, void *buf, int len)
+{
+    int n;
+    void *mf;
+    HttpObj *o = HTTP_OBJ(h);
+
+    if (h == 0)
+        return -100;
+    http_state(h);
+    mf = o->f8;
+    if (buf == NULL) {
+        if (mf == NULL)
+            return o->error;
+        return UTL_mfilesize(o->f8) - UTL_mfilepos(o->f8);
+    }
+    if (mf != NULL) {
+        n = UTL_mfilepos(o->f8) < UTL_mfilesize(o->f8);
+        if (n) {
+            n = UTL_mfileread(o->f8, buf, len);
+            UTL_mfileclean(o->f8);
+            return n;
+        }
+    }
+    OS_thread_mutex_lock(o->mutex);
+    if (o->f1C == 3 && o->error == 0) {
+        OS_thread_mutex_unlock(o->mutex);
+        return -105;
+    }
+    OS_thread_mutex_unlock(o->mutex);
+    return o->error;
+}
 
 int http_getresponseheader_Age(int h)
 {

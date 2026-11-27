@@ -452,7 +452,28 @@ INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/mes_eval", D_0013B3F4);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_eval", mes_eval_abs_equal);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_eval", mes_eval_strict_equal);
+int mes_eval_strict_equal(int a, int b)
+{
+    int t = mes_eval_type(a);
+
+    if (t == mes_eval_type(b)) {
+        switch (t) {
+        case 0x38:
+        case 0x42:
+            return 1;
+        case 0x39:
+            if (a == 0x1C || b == 0x1C)
+                return 0;
+            return mes_number_equal(a, b, 0);
+        case 0x3E:
+            return mes_string_compare((void *)(a & ~3), (void *)(b & ~3)) == 0;
+        case 0x24:
+        case 0x3A:
+            return a == b;
+        }
+    }
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_eval", mes_eval_native);
 
