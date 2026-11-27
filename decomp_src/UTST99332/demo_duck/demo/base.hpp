@@ -749,6 +749,8 @@ private:
 namespace gl {
 void PickMatrix(float, float, float, float, int *);
 void ErrorCheck(const char *, int);
+void GenTextures(int, unsigned int *);
+void DeleteTextures(int, const unsigned int *);
 }
 
 struct hc_node_t {
@@ -1149,6 +1151,7 @@ public:
     void setTextureFunc(TextureFunction);
     TextureFunction getTextureFunc() const;
     void initGl(int);
+    bool setupGl(int, bool);
     void setGlFiltering(int);
     void setGlWrapS(int);
     void setGlWrapT(int);
@@ -1220,12 +1223,14 @@ class CubeMap {
 public:
     enum FaceEnum { };
     struct Face {
-        class Texture : public ::textures::Texture {
+        /* holds the texture as a member (its ctor/dtor call textures::Texture's C1/D1) */
+        class Texture {
         public:
             Texture();
             ~Texture();
-            int _f50;
-            unsigned int name;  /* 0x54: GL texture name */
+            ::textures::Texture t;  /* 0x00 */
+            int _f50;           /* 0x50: textures::Texture's own last word (initGl), see textures_Texture.c */
+            unsigned int _id;   /* 0x54: GL texture name */
         };
         void init(FaceEnum f) { id = f; }
         Texture tex;            /* 0x00 */
@@ -1239,6 +1244,14 @@ public:
     void draw_face_w(FaceEnum);
     void draw_cube_w();
     void init_face(FaceEnum);
+    void init_texture(Face::Texture &);
+    void load_face_texture(FaceEnum);
+    void face_setup_debug(FaceEnum);
+    void face_setup(FaceEnum);
+    void draw_face(FaceEnum);
+    void draw_cube();
+    static const std::string &GetFaceName(int);
+    static const math::matrix &GetFaceTransform(int);
     void setCubeSize(float);
     void setLinear(bool);
     void setResize(int);
