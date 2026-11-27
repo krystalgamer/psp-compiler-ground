@@ -356,6 +356,11 @@ public:
     void read_path(int, int *);
     void feed_strips();
     int count_strips();
+    int get_adjacent_triangle(int, int);
+    void add_index(int *, int, int);
+    int cmp_orientation(int *, int *);
+    void fix_cullface();
+    void convert_to_new_format();
     Mesh &_mesh;
     std::vector<stripper_triangle> _tris;   /* 0x04 */
     unsigned int _size;                     /* 0x10 */
