@@ -2,21 +2,23 @@
 /* cflags: -O3 -fno-exceptions */
 #undef __EXCEPTIONS
 #include "cxx/defer_asm.h"
+#define DEMO_STATICS_IOSTREAM
 #include "../main.hpp"
 
-extern "C" const char D_00161164[], D_00161168[], D_0016116C[];
+/* the module's .ctors/.dtors refer to the static constructor/destructor */
+__asm__(".globl _GLOBAL__I__ZN8libc_fix4ItoAEiPci");
+__asm__(".globl _GLOBAL__D__ZN8libc_fix4ItoAEiPci");
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/libc_fix_ItoA", _Z41__static_initialization_and_destruction_0ii_1517C);
 
 int libc_fix::ItoA(int v, char *buf, int)
 {
-    sprintf(buf, D_00161164, v);
+    sprintf(buf, "%i", v);
     return 0;
 }
 
 int libc_fix::FtoA(float f, char *buf)
 {
-    sprintf(buf, D_00161168, f);
+    sprintf(buf, "%g", f);
     return 0;
 }
 
@@ -27,31 +29,15 @@ float libc_fix::AtoF(const char *s)
 
 void libc_fix::ItoA(char *buf, unsigned int, int v)
 {
-    sprintf(buf, D_00161164, v);
+    sprintf(buf, "%i", v);
 }
 
 void libc_fix::ItoAX(char *buf, unsigned int, int v)
 {
-    sprintf(buf, D_0016116C, v);
+    sprintf(buf, "0x%08X", v);
 }
 
 int libc_fix::AtoI(const char *s)
 {
     return atoi(s);
-}
-
-extern "C" {
-void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_1517C");
-void _GLOBAL__I__ZN8libc_fix4ItoAEiPci(void);
-void _GLOBAL__D__ZN8libc_fix4ItoAEiPci(void);
-}
-
-void _GLOBAL__I__ZN8libc_fix4ItoAEiPci(void)
-{
-    static_init(1, 0xFFFF);
-}
-
-void _GLOBAL__D__ZN8libc_fix4ItoAEiPci(void)
-{
-    static_init(0, 0xFFFF);
 }

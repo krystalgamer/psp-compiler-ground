@@ -154,8 +154,8 @@ bss 0x190FC8 main_objs/sh_DebugMap
 bss 0x191120 -
 bss 0x1918E8 main_objs/sh_SquareMap
 bss 0x19196C -
-# VertexColorEnv: the float pools (2 pi) of VertexColorEnv::VertexColorEnv (C2, C1)
-rodata 0x16D5FC main_objs/VertexColorEnv
+# VertexColorEnv: the header statics' float pool, the float pools (2 pi) of VertexColorEnv::VertexColorEnv (C2, C1)
+rodata 0x16D5E0 main_objs/VertexColorEnv
 rodata 0x16D604 -
 # sys_timer_GetDeltaTime: the double pools (1000000.0) of GetDeltaTime and GetTime
 rodata 0x175E68 main_objs/sys_timer_GetDeltaTime
@@ -335,3 +335,15 @@ rodata 0x1734A0 main_objs/sh_PolarFunction
 rodata 0x1734BC -
 bss 0x19152C main_objs/sh_PolarFunction
 bss 0x1915B0 -
+# libc_fix_ItoA, basic_file_parser_basic_file_parser, sys_timer_GetDeltaTime, VertexColorEnv: .bss of the
+# C++ static initializers (header statics; GetDeltaTime/GetTime's local static timers and guards); ItoA's strings
+rodata 0x161164 main_objs/libc_fix_ItoA
+rodata 0x161174 -
+bss 0x18D740 main_objs/libc_fix_ItoA
+bss 0x18D744 -
+bss 0x191C40 main_objs/basic_file_parser_basic_file_parser
+bss 0x191C44 -
+bss 0x191C78 main_objs/sys_timer_GetDeltaTime
+bss 0x191CE0 -
+bss 0x190200 main_objs/VertexColorEnv
+bss 0x190284 -

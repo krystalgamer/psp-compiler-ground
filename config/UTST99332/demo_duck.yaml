@@ -394,6 +394,8 @@ segments:
       - [0x15DB30, .rodata, crt0]
       - [0x15DB40, .rodata, WaterPatch]
       - [0x15DB94, rodata, asm/rodata_15DB14]
+      - [0x1611E4, .rodata, main_objs/libc_fix_ItoA]
+      - [0x1611F4, rodata, asm/rodata_161174]
       - [0x162B94, .rodata, main_objs/psp_VertexArrayEdit]
       - [0x162C4C, rodata, asm/rodata_162BCC]
       - [0x1637CC, .rodata, main_objs/vector_font_Console]
@@ -421,7 +423,7 @@ segments:
       - [0x16C998, rodata, asm/rodata_16C918]
       - [0x16CFE8, .rodata, main_objs/scene_Texture]
       - [0x16D050, rodata, asm/rodata_16CFD0]
-      - [0x16D67C, .rodata, main_objs/VertexColorEnv]
+      - [0x16D660, .rodata, main_objs/VertexColorEnv]
       - [0x16D684, rodata, asm/rodata_16D604]
       - [0x16FF68, .rodata, main_objs/sgl_Mesh_4]
       - [0x16FF78, rodata, asm/rodata_16FEF8]
@@ -539,6 +541,8 @@ segments:
       - { start: 0x18CFCC, type: bss, vram: 0x18CF80, name: bss_18CF80 }
       - { start: 0x18CFCC, type: .bss, vram: 0x18CF9C, name: WaterPatch }
       - { start: 0x18CFCC, type: bss, vram: 0x18D0F8, name: bss_18D0F8 }
+      - { start: 0x18CFCC, type: .bss, vram: 0x18D740, name: main_objs/libc_fix_ItoA }
+      - { start: 0x18CFCC, type: bss, vram: 0x18D744, name: bss_18D744 }
       - { start: 0x18CFCC, type: .bss, vram: 0x18D74C, name: main_objs/psp_VertexArrayEdit }
       - { start: 0x18CFCC, type: bss, vram: 0x18D7D8, name: bss_18D7D8 }
       - { start: 0x18CFCC, type: .bss, vram: 0x18EB6C, name: main_objs/math_SphericalCoord }
@@ -548,6 +552,8 @@ segments:
       - { start: 0x18CFCC, type: bss, vram: 0x18F6B0, name: bss_18F6B0 }
       - { start: 0x18CFCC, type: .bss, vram: 0x18FEEC, name: main_objs/scene_Texture }
       - { start: 0x18CFCC, type: bss, vram: 0x18FF70, name: bss_18FF70 }
+      - { start: 0x18CFCC, type: .bss, vram: 0x190200, name: main_objs/VertexColorEnv }
+      - { start: 0x18CFCC, type: bss, vram: 0x190284, name: bss_190284 }
       - { start: 0x18CFCC, type: .bss, vram: 0x190E44, name: main_objs/math_TransformStackFunc }
       - { start: 0x18CFCC, type: bss, vram: 0x190EC4, name: bss_190EC4 }
       - { start: 0x18CFCC, type: .bss, vram: 0x190FC8, name: main_objs/sh_DebugMap }
@@ -558,6 +564,10 @@ segments:
       - { start: 0x18CFCC, type: bss, vram: 0x1915B0, name: bss_1915B0 }
       - { start: 0x18CFCC, type: .bss, vram: 0x1918E8, name: main_objs/sh_SquareMap }
       - { start: 0x18CFCC, type: bss, vram: 0x19196C, name: bss_19196C }
+      - { start: 0x18CFCC, type: .bss, vram: 0x191C40, name: main_objs/basic_file_parser_basic_file_parser }
+      - { start: 0x18CFCC, type: bss, vram: 0x191C44, name: bss_191C44 }
+      - { start: 0x18CFCC, type: .bss, vram: 0x191C78, name: main_objs/sys_timer_GetDeltaTime }
+      - { start: 0x18CFCC, type: bss, vram: 0x191CE0, name: bss_191CE0 }
       - { start: 0x18CFCC, type: .bss, vram: 0x19A88C, name: gcc-3.3.3/libstdc__-v3/src/ios }
       - { start: 0x18CFCC, type: .bss, vram: 0x19A894, name: gcc-3.3.3/libstdc__-v3/src/locale }
       - { start: 0x18CFCC, type: bss, vram: 0x19A8A8, name: bss_19A8A8 }

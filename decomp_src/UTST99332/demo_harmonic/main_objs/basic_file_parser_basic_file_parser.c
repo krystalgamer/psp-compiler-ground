@@ -2,11 +2,14 @@
 /* cflags: -O3 -fno-exceptions */
 #undef __EXCEPTIONS
 #include "cxx/defer_asm.h"
+#define DEMO_STATICS_IOSTREAM
 #include "../main.hpp"
 
+/* the module's .ctors/.dtors refer to the static constructor/destructor */
+__asm__(".globl _GLOBAL__I__ZN17basic_file_parserC2ESsjPKc");
+__asm__(".globl _GLOBAL__D__ZN17basic_file_parserC2ESsjPKc");
+
 /* stand-in for common::FileDump's ctor/dtor/load (demo/base.hpp doesn't declare them yet) */
-
-
 
 #define FILEDUMP_SIZE 0x24
 namespace {
@@ -22,8 +25,6 @@ void FileDumpX_dtor(FileDumpX *) __asm__("_ZN6common8FileDumpD1Ev");
 void FileDumpX_text(FileDumpX *) __asm__("_ZN6common8FileDump4textEv");
 void FileDumpX_blocking(FileDumpX *, bool) __asm__("_ZN6common8FileDump8blockingEb");
 int FileDumpX_load(FileDumpX *, const char *) __asm__("_ZN6common8FileDump4loadEPKc");
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/basic_file_parser_basic_file_parser", _Z41__static_initialization_and_destruction_0ii_F7248);
 
 basic_file_parser::basic_file_parser(std::string file, unsigned int size, const char *seps)
     : basic_parser(0, size, seps), _ready(false)
@@ -58,20 +59,3 @@ void basic_file_parser::preprocess()
                 *j = ' ';
     swap(text);
 }
-
-extern "C" {
-void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_F7248");
-void _GLOBAL__I__ZN17basic_file_parserC2ESsjPKc(void);
-void _GLOBAL__D__ZN17basic_file_parserC2ESsjPKc(void);
-}
-
-void _GLOBAL__I__ZN17basic_file_parserC2ESsjPKc(void)
-{
-    static_init(1, 0xFFFF);
-}
-
-void _GLOBAL__D__ZN17basic_file_parserC2ESsjPKc(void)
-{
-    static_init(0, 0xFFFF);
-}
-
