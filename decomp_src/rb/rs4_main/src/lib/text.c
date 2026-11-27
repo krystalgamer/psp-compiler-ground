@@ -233,7 +233,21 @@ int *textCpy(int *d, int *s)
 	return r;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/lib/text", textCSpn);
+int textCSpn(int *s, int *set)
+{
+	int n = 0;
+	while (s && set) {
+		int c = *s++;
+		if (c == 0 || c == -1)
+			s = 0;
+		else {
+			if (textChr(set, c))
+				return n;
+			n++;
+		}
+	}
+	return n;
+}
 
 int textLen(int *p)
 {
@@ -244,9 +258,42 @@ int textLen(int *p)
 	return n;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/lib/text", textSpn);
+int textSpn(int *s, int *set)
+{
+	int n = 0;
+	while (s && set) {
+		int c = *s++;
+		if (c == 0 || c == -1)
+			s = 0;
+		else {
+			if (!textChr(set, c))
+				return n;
+			n++;
+		}
+	}
+	return n;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/lib/text", textStr);
+int *textStr(int *s, int *k)
+{
+	int *r = 0;
+	int *p, *q;
+	while (s && k) {
+		if (*s == 0 || *s == -1)
+			s = 0;
+		else {
+			for (p = s, q = k; q; ) {
+				r = s;
+				if (*q == 0 || *q == -1)
+					return r;
+				if (*q++ != *p++)
+					break;
+			}
+			s++;
+		}
+	}
+	return 0;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/lib/text", textMid);
 
