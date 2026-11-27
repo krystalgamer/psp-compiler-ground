@@ -387,6 +387,8 @@ segments:
       - [0x160D3C, rodata, asm/rodata_160CBC]
       - [0x164818, .rodata, main_objs/gl__name_stack]
       - [0x164820, rodata, asm/rodata_1647A0]
+      - [0x1649DC, .rodata, main_objs/interp_KeyFrameSequence]
+      - [0x1649EC, rodata, asm/rodata_16496C]
       - [0x165678, .rodata, main_objs/math_SphericalCoord]
       - [0x1656A8, .rodata, main_objs/math_ZYZ]
       - [0x1656C8, rodata, asm/rodata_165648]

@@ -4,8 +4,9 @@
 #include "cxx/defer_asm.h"
 #include "../main.hpp"
 
-extern const float D_0016495C;      /* 1.0f: calc_tangent's identity quaternions */
-extern const float D_00164968;      /* 1.0f: op_identity's w */
+/* the header static of this object (its static initializer is asm) */
+extern const math::matrix CUMULATIVE_BERNSTIEN_BASIS __asm__("_ZN6interp26CUMULATIVE_BERNSTIEN_BASISE_18B6AC");
+
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/interp_KeyFrameSequence", _Z41__static_initialization_and_destruction_0ii_4B370);
 
@@ -19,8 +20,7 @@ math::quaternion interp::KeyFrameSequence<math::quaternion>::calc_gradient(math:
 
 void interp::KeyFrameSequence<math::quaternion>::calc_tangent(int i)
 {
-    const float one = D_0016495C;
-    math::quaternion a(0, 0, 0, one), b(0, 0, 0, one), c(0, 0, 0, one);
+    math::quaternion a(0, 0, 0, 1.0f), b(0, 0, 0, 1.0f), c(0, 0, 0, 1.0f);
     float s0, s1;
     if (calc_tangent_setup(i, a, b, c, s0, s1)) {
         KeyFrame<math::quaternion> &k = _keys[i];
@@ -33,7 +33,20 @@ void interp::KeyFrameSequence<math::quaternion>::calc_tangent(int i)
     }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/interp_KeyFrameSequence", _ZN6interp16KeyFrameSequenceIN4math10quaternionEE8evaluateEf);
+math::quaternion interp::KeyFrameSequence<math::quaternion>::evaluate(float t)
+{
+    math::quaternion q(0, 0, 0, 1.0f);
+    float u;
+    KeyFrame<math::quaternion> *k0 = 0, *k1 = 0;
+    if (!evaluate_setup(t, u, q, k0, k1))
+        return q;
+    math::vector_xyzw b = math::vector_xyzw(u * (u * u), u * u, u, 1.0f) * CUMULATIVE_BERNSTIEN_BASIS;
+    math::quaternion w1 = k0->_tangent[1] * (1.0f / 3);
+    math::quaternion w3 = k1->_tangent[0] * (1.0f / 3);
+    math::quaternion w2 = (w1.exp().conj() * k0->value().conj() * k1->value() * w3.exp().conj()).log();
+    math::quaternion base = _relative ? _default : op_identity();
+    return op(base, k0->value() * (w1 * b.x).exp() * (w2 * b.y).exp() * (w3 * b.z).exp());
+}
 
 math::quaternion interp::KeyFrameSequence<math::quaternion>::op(math::quaternion a, math::quaternion b)
 {
@@ -47,7 +60,7 @@ math::quaternion interp::KeyFrameSequence<math::quaternion>::op_inv(math::quater
 
 math::quaternion interp::KeyFrameSequence<math::quaternion>::op_identity() const
 {
-    return math::quaternion(0, 0, 0, D_00164968);
+    return math::quaternion(0, 0, 0, 1.0f);
 }
 
 void interp::KeyFrameSequence<math::quaternion>::typed_fix()

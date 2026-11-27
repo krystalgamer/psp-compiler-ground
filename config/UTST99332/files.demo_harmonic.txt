@@ -51,6 +51,9 @@ rodata 0x165674 -
 # math_TransformStack: the float pools (Identity()'s 1.0f) of TransformStack::push and identity
 rodata 0x16ECEC main_objs/math_TransformStack
 rodata 0x16ECF4 -
+# interp_KeyFrameSequence: the float pools of KeyFrameSequence<quaternion>::calc_tangent, evaluate, op_identity
+rodata 0x16495C main_objs/interp_KeyFrameSequence
+rodata 0x16496C -
 0x135B4 glut_ReshapeFunc         1.6.1.internal  main_objs/glut_ReshapeFunc.cpp
 0x13E64 app3d_Callbacks          1.6.1.internal  main_objs/app3d_Callbacks.cpp
 0x163B4 common_Date              1.6.1.internal  main_objs/common_Date.cpp   # no static init

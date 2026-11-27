@@ -43,6 +43,8 @@ inline float dot(const vector_xyzw &a, const vector_xyzw &b)
 {
     return a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w;
 }
+struct matrix;
+inline vector_xyzw operator*(const vector_xyzw &v, const matrix &m);
 inline vector_xyzw cross(const vector_xyzw &a, const vector_xyzw &b)
 {
     return vector_xyzw(a.y * b.z - a.z * b.y, a.z * b.x - a.x * b.z, a.x * b.y - a.y * b.x, 0);
@@ -109,6 +111,14 @@ struct matrix {
         return IDENTITY;
     }
 };
+}
+
+namespace math {
+/* row vector times matrix */
+inline vector_xyzw operator*(const vector_xyzw &v, const matrix &m)
+{
+    return m.r[0] * v.x + m.r[1] * v.y + m.r[2] * v.z + m.r[3] * v.w;
+}
 }
 
 namespace vertex_formats {
@@ -260,7 +270,7 @@ public:
     virtual T calc_gradient(T, T, float) const = 0;
     virtual void calc_all_tangent();
     virtual int find_key_interval(float);
-    virtual void evaluate_setup(float, float &, T &, KeyFrame<T> *&, KeyFrame<T> *&);
+    virtual bool evaluate_setup(float, float &, T &, KeyFrame<T> *&, KeyFrame<T> *&);
     virtual void push_closing_key();
     virtual void update_closing_key();
     virtual void on_set_key_value(int);
@@ -286,8 +296,8 @@ public:
     std::vector<KeyFrame<T> > _keys;
     bool _closed;
     float _closeDt;
-    bool _relative;
     bool _loop;
+    bool _relative;
     int _cached;
 };
 /* the sequences the demo uses are explicit specializations here: the template vtables must not be emitted */
