@@ -18,6 +18,7 @@ int mes_context_id(int, int);                       /* extern */
 void *mes_parse_node_new(int, int);
 
 
+int mes_lex_peek_lf(void *);
 void *mes_parse_node_new(int type, int n)
 {
     void *node = MEM_malloc(0, 0x10);
@@ -203,7 +204,32 @@ void mes_parse_error_expect(void *arg0, unsigned int arg1, int arg2) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_parse", mes_parse_check_token);
+int mes_parse_check_token(void *lx, unsigned int tok, int flags)
+{
+    int t;
+    int f;
+
+    if (tok == 0x39) {
+        t = mes_lex_peek_lf(lx);
+        if (t == tok) {
+            M2C_FIELD(lx, unsigned char *, 0x10) = 0;
+            return 0;
+        }
+        f = t == 0x65;
+        f |= t == 0x66;
+        if (f) {
+            M2C_FIELD(lx, unsigned char *, 0x10) = 0;
+            return 0;
+        }
+        if ((M2C_FIELD(lx, unsigned char *, 0x11) == 0x65) | (t == 0x33))
+            return 0;
+    } else if (mes_lex_peek(lx) == tok) {
+        M2C_FIELD(lx, unsigned char *, 0x10) = 0;
+        return 0;
+    }
+    mes_parse_error_expect(lx, tok, flags);
+    return 1;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
