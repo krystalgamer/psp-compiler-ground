@@ -222,7 +222,33 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_netmain", draw_
 
 INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_netmain", D_0007B5A8);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_netmain", draw_net_scan);
+extern char D_0007B5A8[];
+void sceNetEtherNtostr(const struct SceNetEtherAddr *addr, char *str);
+int sceNetAdhocctlGetPeerList(int *buflen, struct SceNetAdhocctlPeerInfo *buf);
+int sprintf(char *buf, const char *fmt, ...);
+void debug_text(int x, int y, char *s);
+void draw_net_scan(void)
+{
+	char etherstr[32];
+	struct SceNetAdhocctlPeerInfo *peer;
+	char mess_buff[128];
+	int ret, y, buflen;
+
+	buflen = sizeof(peerinfo);
+	ret = sceNetAdhocctlGetPeerList(&buflen, peerinfo);
+	if (ret < 0)
+		return;
+	y = 0x60;
+	for (peer = peerinfo; peer != NULL; peer = peer->next) {
+		sceNetEtherNtostr(&peer->mac_addr, etherstr);
+		if (peer->nickname.data[0] != 0)
+			sprintf(mess_buff, "#%s", etherstr);
+		else
+			sprintf(mess_buff, D_0007B5A8, etherstr);
+		debug_text(0, y, mess_buff);
+		y += 8;
+	}
+}
 
 int sprintf(char *s, const char *fmt, ...);
 void inv_font_ascii(char *str, int x, int y, int w, int h, int r, int g, int b, int a);
