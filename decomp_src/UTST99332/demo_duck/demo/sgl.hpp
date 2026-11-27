@@ -526,6 +526,8 @@ public:
     int cmp_orientation(int *, int *);
     void fix_cullface();
     void convert_to_new_format();
+    void reverse_strip(int);
+    int scan_back(int);
     Mesh &_mesh;
     std::vector<stripper_triangle> _tris;   /* 0x04 */
     unsigned int _size;                     /* 0x10 */
@@ -1079,9 +1081,11 @@ public:
         Ray(math::vector_xyzw, math::vector_xyzw, Type);
         math::vector_xyzw _origin;  /* 0x0 */
         math::vector_xyzw _dir;     /* 0x10 */
-        char _p20[0x34 - 0x20];
+        Type _type;                 /* 0x20 */
+        char _p24[0x34 - 0x24];
         int _triangle;              /* 0x34: index of the hit triangle */
-        char _p38[0x3D - 0x38];
+        char _p38[0x3C - 0x38];
+        bool _f3C;                  /* 0x3C */
         bool _any;                  /* 0x3D: stop at the first hit */
     };
     struct Triangle {

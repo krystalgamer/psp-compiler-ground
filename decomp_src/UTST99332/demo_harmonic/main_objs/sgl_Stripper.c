@@ -180,7 +180,31 @@ int sgl::Stripper::cmp_orientation(int *a, int *b)
     return a[1] != b[i];
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Stripper", _ZN3sgl8Stripper13reverse_stripEi);
+extern const char D_0016E8E0[], D_0016E904[], D_0016E924[], D_0016E940[];
+ST_PRETTY(rs_name, "13reverse_stripEi");
+void sgl::Stripper::reverse_strip(int end)
+{
+    SGL_ASSERT(end >= 4, D_0016E2CC, D_0016E940, D_0016E2B0, rs_name, 878, D_0016E924);
+    SGL_ASSERT(_prims.strips()[end - 1] == -1, D_0016E2CC, D_0016E904, D_0016E2B0, rs_name, 880, D_0016E8E0);
+    int last = end - 2;
+    int i = last;
+    for (;;) {
+        if (i < 0) {
+            i = 0;
+            break;
+        }
+        if (_prims.strips()[i] == -1) {
+            i++;
+            break;
+        }
+        i--;
+    }
+    for (int j = last; i < j; i++, j--) {
+        _prims.strips()[i] ^= _prims.strips()[j];
+        _prims.strips()[j] ^= _prims.strips()[i];
+        _prims.strips()[i] ^= _prims.strips()[j];
+    }
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Stripper", _ZN3sgl8Stripper9scan_backEi);
 
