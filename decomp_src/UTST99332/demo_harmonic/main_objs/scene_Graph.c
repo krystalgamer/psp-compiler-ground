@@ -2,6 +2,9 @@
 /* cflags: -O3 -fno-exceptions */
 #undef __EXCEPTIONS
 #include "cxx/defer_asm.h"
+#define DEMO_STATICS_MATH
+#define DEMO_STATICS_IOSTREAM
+#define DEMO_STATICS_SGL
 /* stl_tree.h before main.hpp (outside its #pragma interface): its out-of-line inline functions are this object's */
 #include <bits/stl_tree.h>
 extern const char scene_bvdata_warn[] __asm__("D_001662E4");         /* " *** warning " */
@@ -21,6 +24,10 @@ extern const char scene_bvdata_create_name[] __asm__("_ZZN5scene6BVdata6createEN
 #define DEMO_TEMPLATE_DEFS
 #define SCENE_GRAPH_TEMPLATE_DEFS
 #include "../main.hpp"
+
+/* the module's .ctors/.dtors refer to the static constructor/destructor */
+__asm__(".globl _GLOBAL__I__ZN5scene5Graph26disable_reflection_mappingE\n_GLOBAL__I__ZN5scene5Graph26disable_reflection_mappingE = _GLOBAL__I__ZN5scene5GraphC2Ev__asm");
+__asm__(".globl _GLOBAL__D__ZN5scene5Graph26disable_reflection_mappingE\n_GLOBAL__D__ZN5scene5Graph26disable_reflection_mappingE = _GLOBAL__D__ZN5scene5GraphC2Ev__asm");
 SCENE_ALLOC_FIRST_USE
 /* linkonce order: this object's .gnu.linkonce.t sections in Sony's link order */
 SCENE_LINKONCE_ORDER(
@@ -189,8 +196,6 @@ inline const char *scene_pf_getMappedNode(DefaultShader *) { return gmn_DefaultS
 }
 extern const char D_001662A8[];     /* "" */
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Graph", _Z41__static_initialization_and_destruction_0ii_5DF00);
-
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Graph", _ZN5scene5GraphC2Ev);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Graph", _ZN5scene5GraphC1Ev);
@@ -343,22 +348,6 @@ void scene::Graph::finish()
     _finish_called = true;
 }
 
-extern "C" {
-void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_5DF00");
-void _GLOBAL__I__ZN5scene5Graph26disable_reflection_mappingE(void);
-void _GLOBAL__D__ZN5scene5Graph26disable_reflection_mappingE(void);
-}
-
-void _GLOBAL__I__ZN5scene5Graph26disable_reflection_mappingE(void)
-{
-    static_init(1, 0xFFFF);
-}
-
-void _GLOBAL__D__ZN5scene5Graph26disable_reflection_mappingE(void)
-{
-    static_init(0, 0xFFFF);
-}
-
 /* Instances that the (asm) methods above use: called from a function that the link discards
    (.discard.asm), so cc1plus instantiates them implicitly at the end of the unit like Sony's
    object did (explicit instantiations would be compiled before the deferred functions and change
@@ -452,23 +441,16 @@ extern "C" void scene_Graph_uses(scene::Graph *g, scene_graph_uses::TreeO *to, s
 #undef INCLUDE_ASM
 #define INCLUDE_ASM(FOLDER, NAME) INCLUDE_ASM_LINKONCE(FOLDER, NAME)
 
+/* the object's weak tail (linkonce copies), still asm */
+#undef INCLUDE_ASM
+#define INCLUDE_ASM INCLUDE_ASM_LINKONCE
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Graph", _ZN5scene5Group4findINS_4NodeEEEvRN6common14handles_vectorIS2_EEb);
-
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Graph", _ZN5scene5Graph7newNodeINS_6ObjectEEEN6common6handleIT_EESsb);
-
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Graph", _ZN5scene5Graph7newNodeINS_4MeshEEEN6common6handleIT_EESsb);
-
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Graph", _ZN5scene5Graph7newNodeINS_7TextureEEEN6common6handleIT_EESsb);
-
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Graph", _ZN5scene5Graph7newNodeINS_13DefaultShaderEEEN6common6handleIT_EESsb);
-
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Graph", _ZNSt6vectorIN6common6handleIN5scene4NodeEEESaIS4_EE13_M_insert_auxEN9__gnu_cxx17__normal_iteratorIPS4_S6_EERKS4_);
-
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Graph", _ZNK3sgl14PrimitiveIndexIiE22countTrianglesInStripsEv);
-
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Graph", _ZNK4math6matrix5equalERKS0_f);
-
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Graph", _ZN6common6handleIN5scene4NodeEEC1EPS2_);
-
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Graph", _ZN6common6handleIN5scene4NodeEEC1ERKS3_);
-

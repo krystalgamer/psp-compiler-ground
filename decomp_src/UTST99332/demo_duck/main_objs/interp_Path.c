@@ -2,8 +2,17 @@
 /* cflags: -O3 -fno-exceptions */
 #undef __EXCEPTIONS
 #include "cxx/defer_asm.h"
+#define DEMO_STATICS_MATH
+#define DEMO_STATICS_IOSTREAM
+#define DEMO_STATICS_INTERP
 #define INTERP_LINKONCE_VKFS
 #include "../main.hpp"
+
+/* the module's .ctors/.dtors refer to the static constructor/destructor */
+__asm__(".globl _GLOBAL__I__ZN6interp4PathC2Ev\n_GLOBAL__I__ZN6interp4PathC2Ev = _GLOBAL__I__Z21interp_Path_instancesv");
+__asm__(".globl _GLOBAL__D__ZN6interp4PathC2Ev\n_GLOBAL__D__ZN6interp4PathC2Ev = _GLOBAL__D__Z21interp_Path_instancesv");
+/* the KeyFrameSequence<float>::evaluate copy (asm) addresses this object's BEZIER_BASIS by its own label */
+__asm__(".globl _ZN4math12BEZIER_BASISE_18E25C\n_ZN4math12BEZIER_BASISE_18E25C = _ZN4math12BEZIER_BASISE");
 
 /* A template instance kept as asm: explicitly instantiated wrapper (its own code goes to a
    discarded section), so the instance's .gnu.linkonce.t section is created in pending-template
@@ -944,7 +953,6 @@ template<class T> T interp::KeyFrameSequenceA<T>::op_identity() const
     return 0;
 }
 
-
 /* Uses every instance this object holds, from a non-template function in a discarded section: the instances are then
    implicit instantiations, as in the original (an explicit instantiation would change how cc1plus inlines the library
    code they instantiate, e.g. __default_alloc_template<true,0>::allocate) */
@@ -1070,294 +1078,35 @@ INST_INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/interp_Path
 
 INST_INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/interp_Path", _ZN6interp20KeyFrameSequenceBaseIN4math10quaternionEEC2Ev, 59)
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 INST_INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/interp_Path", _ZN6interp16KeyFrameSequenceIfE8evaluateEf, 44)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 INST_INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/interp_Path", _ZSt13__destroy_auxIPN6interp8KeyFrameIfEEEvT_S4_12__false_type, 65)
 
-
-
 INST_INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/interp_Path", _ZN6interp8KeyFrameIN4math10quaternionEEC1Ev, 46)
-
-
-
-
-
-
-
-
-
-
-
 
 #if 0 /* (for splat) */
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/interp_Path", func_0002B4B4);
 #endif
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 INST_INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/interp_Path", _ZN6interp20KeyFrameSequenceBaseIN4math10quaternionEED2Ev, 59)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 INST_INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/interp_Path", _ZN6interp20KeyFrameSequenceBaseIN4math10quaternionEE6insertEfS2_, 67)
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 INST_INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/interp_Path", _ZN6interp8KeyFrameIN4math10quaternionEEC1EfS2_b, 50)
-
-
-
-
-
-
-
-
 
 INST_INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/interp_Path", _ZN6interp20KeyFrameSequenceBaseIfE17find_key_intervalEf, 58)
 
-
-
-
-
-
-
-
-
-
-
 INST_INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/interp_Path", _ZNK6interp16KeyFrameSequenceIfE4dumpEPKc, 43)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 template<class T> void interp::KeyFrameSequence<T>::typed_fix()
 {
 }
 template void interp::KeyFrameSequence<float>::typed_fix();
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 INST_INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/interp_Path", _ZN6interp20KeyFrameSequenceBaseIN4math10quaternionEE17find_key_intervalEf, 76)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 extern const float D_00163A10;      /* 1.0f: deleteLastRecord's identity rotation */
 extern const float D_00163A14;      /* 1.0f: finishRecording's closing dt */
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/interp_Path", _Z41__static_initialization_and_destruction_0ii_27A88);
 
 interp::Path::Path() : _count(0), _recording(false)
 {
@@ -1440,20 +1189,4 @@ math::Frame interp::Path::evaluate(float t)
 int interp::Path::size() const
 {
     return _count;
-}
-
-extern "C" {
-void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_27A88");
-void _GLOBAL__I__ZN6interp4PathC2Ev(void);
-void _GLOBAL__D__ZN6interp4PathC2Ev(void);
-}
-
-void _GLOBAL__I__ZN6interp4PathC2Ev(void)
-{
-    static_init(1, 0xFFFF);
-}
-
-void _GLOBAL__D__ZN6interp4PathC2Ev(void)
-{
-    static_init(0, 0xFFFF);
 }

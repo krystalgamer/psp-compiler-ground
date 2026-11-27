@@ -2,11 +2,17 @@
 /* cflags: -O3 -fno-exceptions */
 #undef __EXCEPTIONS
 #include "cxx/defer_asm.h"
+#define DEMO_STATICS_MATH
+#define DEMO_STATICS_IOSTREAM
+#define DEMO_STATICS_SGL
 #include "../main.hpp"
 
-extern "C" const char D_00166E58[], D_00166E64[], D_00166E6C[], D_00166E74[], D_00166ED0[], D_00166EFC[], D_00166F00[], D_00166F0C[], D_00166EB8[], D_00166F18[], D_00166F28[], D_00166F30[], D_00166EAC[], D_00166E88[];
+/* the module's .ctors/.dtors refer to the static constructor/destructor; cc1plus keys them to the
+   first public symbol, the deferred-asm wrapper of the (still asm) first function */
+__asm__(".globl _GLOBAL__I__ZN5scene5Graph10dot_outputESs\n_GLOBAL__I__ZN5scene5Graph10dot_outputESs = _GLOBAL__I__ZN5scene5Graph10dot_outputESs__asm");
+__asm__(".globl _GLOBAL__D__ZN5scene5Graph10dot_outputESs\n_GLOBAL__D__ZN5scene5Graph10dot_outputESs = _GLOBAL__D__ZN5scene5Graph10dot_outputESs__asm");
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Graph_2", _Z41__static_initialization_and_destruction_0ii_719D0);
+extern "C" const char D_00166E58[], D_00166E64[], D_00166E6C[], D_00166E74[], D_00166ED0[], D_00166EFC[], D_00166F00[], D_00166F0C[], D_00166EB8[], D_00166F18[], D_00166F28[], D_00166F30[], D_00166EAC[], D_00166E88[];
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Graph_2", _ZN5scene5Graph10dot_outputESs);
 
@@ -61,19 +67,3 @@ void scene::Texture::dot_output(std::ostream &o)
 }
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Graph_2", _ZN5scene13DefaultShader10dot_outputERSo);
-
-extern "C" {
-void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_719D0");
-void _GLOBAL__I__ZN5scene5Graph10dot_outputESs(void);
-void _GLOBAL__D__ZN5scene5Graph10dot_outputESs(void);
-}
-
-void _GLOBAL__I__ZN5scene5Graph10dot_outputESs(void)
-{
-    static_init(1, 0xFFFF);
-}
-
-void _GLOBAL__D__ZN5scene5Graph10dot_outputESs(void)
-{
-    static_init(0, 0xFFFF);
-}

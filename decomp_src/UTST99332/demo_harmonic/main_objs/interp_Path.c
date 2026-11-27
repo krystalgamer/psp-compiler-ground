@@ -2,7 +2,16 @@
 /* cflags: -O3 -fno-exceptions */
 #undef __EXCEPTIONS
 #include "cxx/defer_asm.h"
+#define DEMO_STATICS_MATH
+#define DEMO_STATICS_IOSTREAM
+#define DEMO_STATICS_INTERP
 #include "../main.hpp"
+
+/* the module's .ctors/.dtors refer to the static constructor/destructor */
+__asm__(".globl _GLOBAL__I__ZN6interp4PathC2Ev\n_GLOBAL__I__ZN6interp4PathC2Ev = _GLOBAL__I__Z21interp_Path_instancesv");
+__asm__(".globl _GLOBAL__D__ZN6interp4PathC2Ev\n_GLOBAL__D__ZN6interp4PathC2Ev = _GLOBAL__D__Z21interp_Path_instancesv");
+/* the KeyFrameSequence<float>::evaluate copy (asm) addresses this object's BEZIER_BASIS by its own label */
+__asm__(".globl _ZN4math12BEZIER_BASISE_18ADDC\n_ZN4math12BEZIER_BASISE_18ADDC = _ZN4math12BEZIER_BASISE");
 
 /* A template instance kept as asm: explicitly instantiated wrapper (its own code goes to a
    discarded section), so the instance's .gnu.linkonce.t section is created in pending-template
@@ -122,7 +131,6 @@ template<class T> T interp::KeyFrameSequenceA<T>::op_identity() const
     return 0;
 }
 
-
 typedef std::vector<interp::KeyFrame<float> > VKf;
 typedef std::vector<interp::KeyFrame<math::quaternion> > VKq;
 /* uses the instances this object holds from a function in a discarded section (implicit instantiations, as in the original) */
@@ -143,8 +151,6 @@ INST_INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/interp_
 
 INST_INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/interp_Path", _ZN6interp20KeyFrameSequenceBaseIN4math10quaternionEEC2Ev, 59)
 
-
-
  
  
 INST_INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/interp_Path", _ZSt13__destroy_auxIPN6interp8KeyFrameIfEEEvT_S4_12__false_type, 65)
@@ -152,14 +158,8 @@ INST_INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/interp_
  
  
 
-
-
-
-
 extern const float D_00160F70;      /* 1.0f: deleteLastRecord's identity rotation */
 extern const float D_00160F74;      /* 1.0f: finishRecording's closing dt */
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/interp_Path", _Z41__static_initialization_and_destruction_0ii_2D160);
 
 interp::Path::Path() : _count(0), _recording(false)
 {
@@ -242,20 +242,4 @@ math::Frame interp::Path::evaluate(float t)
 int interp::Path::size() const
 {
     return _count;
-}
-
-extern "C" {
-void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_2D160");
-void _GLOBAL__I__ZN6interp4PathC2Ev(void);
-void _GLOBAL__D__ZN6interp4PathC2Ev(void);
-}
-
-void _GLOBAL__I__ZN6interp4PathC2Ev(void)
-{
-    static_init(1, 0xFFFF);
-}
-
-void _GLOBAL__D__ZN6interp4PathC2Ev(void)
-{
-    static_init(0, 0xFFFF);
 }

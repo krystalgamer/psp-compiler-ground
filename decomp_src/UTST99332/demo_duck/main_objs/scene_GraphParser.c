@@ -2,6 +2,9 @@
 /* cflags: -O3 -fno-exceptions */
 #undef __EXCEPTIONS
 #include "cxx/defer_asm.h"
+#define DEMO_STATICS_MATH
+#define DEMO_STATICS_IOSTREAM
+#define DEMO_STATICS_SGL
 #define DEMO_TEMPLATE_DEFS
 #define SCENE_GRAPH_TEMPLATE_DEFS
 #define SGL_TEMPLATE_DEFS 1
@@ -9,6 +12,11 @@
 extern const float D_00169EDC;
 #define SGL_POSITION_ONE D_00169EDC
 #include "../main.hpp"
+
+/* the module's .ctors/.dtors refer to the static constructor/destructor; cc1plus keys them to the
+   first public symbol, the deferred-asm wrapper of the (still asm) first function */
+__asm__(".globl _GLOBAL__I__ZN5scene11GraphParserC2ERNS_5GraphESsj\n_GLOBAL__I__ZN5scene11GraphParserC2ERNS_5GraphESsj = _GLOBAL__I__ZN5scene11GraphParserC2ERNS_5GraphESsj__asm");
+__asm__(".globl _GLOBAL__D__ZN5scene11GraphParserC2ERNS_5GraphESsj\n_GLOBAL__D__ZN5scene11GraphParserC2ERNS_5GraphESsj = _GLOBAL__D__ZN5scene11GraphParserC2ERNS_5GraphESsj__asm");
 SCENE_ALLOC_FIRST_USE
 /* linkonce order: this object's .gnu.linkonce.t sections in Sony's link order */
 SCENE_LINKONCE_ORDER(
@@ -112,9 +120,6 @@ inline const char *scene_pf_getMappedNode(Transform *) { return gmn_Transform_na
 inline const char *scene_pf_getMappedNode(StaticTransform *) { return gmn_StaticTransform_name; }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_GraphParser", _Z41__static_initialization_and_destruction_0ii_75580);
-
-
 /* Graph.load.cpp's asserts */
 extern const char gl_braces_expr[] __asm__("D_00169F98");     /* "is_equal(\"}\")" */
 extern const char gl_file[] __asm__("D_00169FA8");            /* "../lib/scene/Graph.load.cpp" */
@@ -156,7 +161,6 @@ extern template common::handle<scene::Material> scene::Graph::newNode<scene::Mat
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_GraphParser", _ZN5scene11GraphParserC2ERNS_5GraphESsj);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_GraphParser", _ZN5scene11GraphParserC1ERNS_5GraphESsj);
-
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_GraphParser", _ZN5scene11GraphParser17parse_new_textureERN11FieldParser5FieldERKSsb);
 
@@ -250,7 +254,6 @@ void GraphParser::parse_new(FieldParser::Field &f)
 }
 }
 
-
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_GraphParser", _ZN5scene11GraphParser20parse_push_child_cmdEv);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_GraphParser", _ZN5scene11GraphParser24parse_attach_texture_cmdEv);
@@ -262,22 +265,6 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_GraphParse
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_GraphParser", _ZN5scene11GraphParser5parseERN11FieldParser5FieldE);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_GraphParser", _ZN5scene5Graph4loadESsjSs);
-
-extern "C" {
-void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_75580");
-void _GLOBAL__I__ZN5scene11GraphParserC2ERNS_5GraphESsj(void);
-void _GLOBAL__D__ZN5scene11GraphParserC2ERNS_5GraphESsj(void);
-}
-
-void _GLOBAL__I__ZN5scene11GraphParserC2ERNS_5GraphESsj(void)
-{
-    static_init(1, 0xFFFF);
-}
-
-void _GLOBAL__D__ZN5scene11GraphParserC2ERNS_5GraphESsj(void)
-{
-    static_init(0, 0xFFFF);
-}
 
 template<class T> void FieldParser::step_xxxx_vector(std::vector<T> &v, unsigned int n, const Field &f)
 {
@@ -337,22 +324,14 @@ template std::vector<int> &sgl::PrimitiveIndex<int>::strips();
 #undef INCLUDE_ASM
 #define INCLUDE_ASM(FOLDER, NAME) INCLUDE_ASM_LINKONCE(FOLDER, NAME)
 
+/* the object's weak tail (linkonce copies), still asm */
+#undef INCLUDE_ASM
+#define INCLUDE_ASM INCLUDE_ASM_LINKONCE
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_GraphParser", _ZN5scene5Graph7newNodeINS_5GroupEEEN6common6handleIT_EESsb);
-
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_GraphParser", _ZN5scene5Graph7newNodeINS_5ShapeEEEN6common6handleIT_EESsb);
-
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_GraphParser", _ZN5scene5Graph7newNodeINS_9TransformEEEN6common6handleIT_EESsb);
-
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_GraphParser", _ZN5scene5Graph7newNodeINS_15StaticTransformEEEN6common6handleIT_EESsb);
-
-
-
-
-
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_GraphParser", _ZN5scene5Graph7newNodeINS_8MaterialEEEN6common6handleIT_EESsb);
-
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_GraphParser", _ZN5scene5Group4findINS_5ShapeEEEvRN6common14handles_vectorINS_4NodeEEEb);
-
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_GraphParser", _ZN5scene5Group4findINS_4MeshEEEvRN6common14handles_vectorINS_4NodeEEEb);
-
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_GraphParser", _ZN5scene11GraphParser11step_matrixERN4math6matrixE);

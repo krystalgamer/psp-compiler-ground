@@ -2,7 +2,15 @@
 /* cflags: -O3 -fno-exceptions */
 #undef __EXCEPTIONS
 #include "cxx/defer_asm.h"
+#define DEMO_STATICS_MATH
+#define DEMO_STATICS_IOSTREAM
+#define DEMO_STATICS_SGL
 #include "../main.hpp"
+
+/* the module's .ctors/.dtors refer to the static constructor/destructor; cc1plus keys them to the
+   first public symbol, the deferred-asm wrapper of the (still asm) first function */
+__asm__(".globl _GLOBAL__I__ZN3sgl7LineSet4Line6VertexC2Ev\n_GLOBAL__I__ZN3sgl7LineSet4Line6VertexC2Ev = _GLOBAL__I__ZN3sgl7LineSet4Line6VertexC2Ev__asm");
+__asm__(".globl _GLOBAL__D__ZN3sgl7LineSet4Line6VertexC2Ev\n_GLOBAL__D__ZN3sgl7LineSet4Line6VertexC2Ev = _GLOBAL__D__ZN3sgl7LineSet4Line6VertexC2Ev__asm");
 
 extern const float D_0016E00C;      /* 1e-6f */
 extern const float D_0016E010;      /* -11.0f */
@@ -18,8 +26,6 @@ extern const char begin_name[] __asm__("_ZZN3sgl7LineSet5beginENS_8LineModeEE19_
 extern const char color_name[] __asm__("_ZZN3sgl7LineSet5colorENS_5ColorEE19__PRETTY_FUNCTION__");
 extern const char end_name[] __asm__("_ZZN3sgl7LineSet3endEvE19__PRETTY_FUNCTION__");
 #define LS_ASSERT(c, text, fn, line, msg) SGL_ASSERT(c, D_0016E108, text, D_0016E070, fn, line, msg)
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_LineSet_Line_Vertex", _Z41__static_initialization_and_destruction_0ii_A9488);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_LineSet_Line_Vertex", _ZN3sgl7LineSet4Line6VertexC2Ev);
 
@@ -69,23 +75,6 @@ void sgl::LineSet::set_crease(float v)
 {
     _crease = v;
 }
-
-extern "C" {
-void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_A9488");
-void _GLOBAL__I__ZN3sgl7LineSet4Line6VertexC2Ev(void);
-void _GLOBAL__D__ZN3sgl7LineSet4Line6VertexC2Ev(void);
-}
-
-void _GLOBAL__I__ZN3sgl7LineSet4Line6VertexC2Ev(void)
-{
-    static_init(1, 0xFFFF);
-}
-
-void _GLOBAL__D__ZN3sgl7LineSet4Line6VertexC2Ev(void)
-{
-    static_init(0, 0xFFFF);
-}
-
 
 extern "C" void sgl_LineSet_Line_Vertex_instances(std::vector<sgl::LineSet::Line> *v, const sgl::LineSet::Line *l, unsigned int n) __attribute__((section(".discard.asm")));
 extern "C" void sgl_LineSet_Line_Vertex_instances(std::vector<sgl::LineSet::Line> *v, const sgl::LineSet::Line *l, unsigned int n)

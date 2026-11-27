@@ -2,7 +2,14 @@
 /* cflags: -O3 -fno-exceptions */
 #undef __EXCEPTIONS
 #include "cxx/defer_asm.h"
+#define DEMO_STATICS_MATH
+#define DEMO_STATICS_IOSTREAM
+#define DEMO_STATICS_INTERP
 #include "../main.hpp"
+
+/* the module's .ctors/.dtors refer to the static constructor/destructor */
+__asm__(".globl _GLOBAL__I__ZN6interp13VectorRGBAnimC2Ev");
+__asm__(".globl _GLOBAL__D__ZN6interp13VectorRGBAnimC2Ev");
 
 /* constants and strings stay in the module's .rodata (asm) */
 extern const float D_001744B8;      /* 1.0f: finishRecording's closing dt */
@@ -12,8 +19,6 @@ extern const char D_0017455C[];     /* " *** error " */
 extern const char D_00174568[];     /* expression */
 extern const char PF_deleteLastRecord[] __asm__("_ZZN6interp13VectorRGBAnim16deleteLastRecordEvE19__PRETTY_FUNCTION__");
 extern const char D_0017456C[];     /* "finish recording shl anim\n" */
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/interp_VectorRGBAnim", _Z41__static_initialization_and_destruction_0ii_F5D78);
 
 interp::VectorRGBAnim::VectorRGBAnim() : _count(0), _recording(false)
 {
@@ -92,20 +97,3 @@ int interp::VectorRGBAnim::size() const
 {
     return _count;
 }
-
-extern "C" {
-void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_F5D78");
-void _GLOBAL__I__ZN6interp13VectorRGBAnimC2Ev(void);
-void _GLOBAL__D__ZN6interp13VectorRGBAnimC2Ev(void);
-}
-
-void _GLOBAL__I__ZN6interp13VectorRGBAnimC2Ev(void)
-{
-    static_init(1, 0xFFFF);
-}
-
-void _GLOBAL__D__ZN6interp13VectorRGBAnimC2Ev(void)
-{
-    static_init(0, 0xFFFF);
-}
-

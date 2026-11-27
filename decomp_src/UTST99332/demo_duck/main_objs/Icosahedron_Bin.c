@@ -2,8 +2,15 @@
 /* cflags: -O3 -fno-exceptions */
 #undef __EXCEPTIONS
 #include "cxx/defer_asm.h"
+#define DEMO_STATICS_MATH
+#define DEMO_STATICS_IOSTREAM
+#define DEMO_STATICS_SGL
 #include "../main.hpp"
 
+/* the module's .ctors/.dtors refer to the static constructor/destructor; cc1plus keys them to the
+   first public symbol, the deferred-asm wrapper of the (still asm) first function */
+__asm__(".globl _GLOBAL__I__ZN11Icosahedron3BinC2EN4math11vector_xyzwES2_S2_h\n_GLOBAL__I__ZN11Icosahedron3BinC2EN4math11vector_xyzwES2_S2_h = _GLOBAL__I__ZN11Icosahedron3BinC2EN4math11vector_xyzwES2_S2_h__asm");
+__asm__(".globl _GLOBAL__D__ZN11Icosahedron3BinC2EN4math11vector_xyzwES2_S2_h\n_GLOBAL__D__ZN11Icosahedron3BinC2EN4math11vector_xyzwES2_S2_h = _GLOBAL__D__ZN11Icosahedron3BinC2EN4math11vector_xyzwES2_S2_h__asm");
 
 #include "UTST99332/demo_duck/gl.hpp"
 extern const float D_00172794;      /* 1.0f */
@@ -14,8 +21,6 @@ extern const char D_00172974[];     /* "_leaf" */
 extern const char D_00172C10[];
 extern const char listBins_name[] __asm__("_ZZN11Icosahedron8listBinsERSt6vectorIPNS_3BinESaIS2_EEhE19__PRETTY_FUNCTION__");
 extern const char getLeafIndex_name[] __asm__("_ZZNK11Icosahedron3Bin12getLeafIndexEvE19__PRETTY_FUNCTION__");
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/Icosahedron_Bin", _Z41__static_initialization_and_destruction_0ii_DC77C);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/Icosahedron_Bin", _ZN11Icosahedron3BinC2EN4math11vector_xyzwES2_S2_h);
 
@@ -28,7 +33,6 @@ Icosahedron::Bin::~Bin()
     delete _children[2];
     delete _children[3];
 }
-
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/Icosahedron_Bin", _ZN11Icosahedron3Bin11setChildrenEPS0_S1_S1_S1_);
 
@@ -93,7 +97,6 @@ Icosahedron::~Icosahedron()
     for (std::vector<Bin *>::iterator it = _bins.begin(); it != _bins.end(); ++it)
         delete *it;
 }
-
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/Icosahedron_Bin", _ZNK11Icosahedron3Bin9intersectEN4math11vector_xyzwE);
 
@@ -170,22 +173,6 @@ void Icosahedron::listPosHalfSpaceLeafBins(std::vector<Bin *> &out, const math::
     out.resize(0);
     for (std::vector<Bin *>::iterator it = _bins.begin(); it != _bins.end(); ++it)
         listPosHalfSpaceLeafBinsRec(out, *it, n);
-}
-
-extern "C" {
-void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_DC77C");
-void _GLOBAL__I__ZN11Icosahedron3BinC2EN4math11vector_xyzwES2_S2_h(void);
-void _GLOBAL__D__ZN11Icosahedron3BinC2EN4math11vector_xyzwES2_S2_h(void);
-}
-
-void _GLOBAL__I__ZN11Icosahedron3BinC2EN4math11vector_xyzwES2_S2_h(void)
-{
-    static_init(1, 0xFFFF);
-}
-
-void _GLOBAL__D__ZN11Icosahedron3BinC2EN4math11vector_xyzwES2_S2_h(void)
-{
-    static_init(0, 0xFFFF);
 }
 
 /* the original's .gnu.linkonce.t order */

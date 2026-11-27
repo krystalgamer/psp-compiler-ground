@@ -2,9 +2,17 @@
 /* cflags: -O3 -fno-exceptions */
 #undef __EXCEPTIONS
 #include "cxx/defer_asm.h"
+#define DEMO_STATICS_MATH
+#define DEMO_STATICS_IOSTREAM
+#define DEMO_STATICS_INTERP
 #define DEMO_TEMPLATE_DEFS
 #define DEMO_LINKONCE_shared_object_base 1
 #include "../main.hpp"
+
+/* the module's .ctors/.dtors refer to the static constructor/destructor; cc1plus keys them to the
+   first public symbol, the deferred-asm wrapper of the (still asm) first function */
+__asm__(".globl _GLOBAL__I__ZN5app3d9CallbacksC2Ej\n_GLOBAL__I__ZN5app3d9CallbacksC2Ej = _GLOBAL__I__ZN5app3d9CallbacksC2Ej__asm");
+__asm__(".globl _GLOBAL__D__ZN5app3d9CallbacksC2Ej\n_GLOBAL__D__ZN5app3d9CallbacksC2Ej = _GLOBAL__D__ZN5app3d9CallbacksC2Ej__asm");
 
 /* this object's .gnu.linkonce.t sections in the original's order */
 DEMO_LINKONCE_ORDER(
@@ -20,8 +28,6 @@ DEMO_LINKONCE_ORDER(
 
 namespace common {
 }
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/app3d_Callbacks", _Z41__static_initialization_and_destruction_0ii_E548);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/app3d_Callbacks", _ZN5app3d9CallbacksC2Ej);
 
@@ -100,22 +106,6 @@ void app3d::Callbacks::setFrustum(const sgl::Frustum &f)
     frustum() = f;
 }
 
-extern "C" {
-void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_E548");
-void _GLOBAL__I__ZN5app3d9CallbacksC2Ej(void);
-void _GLOBAL__D__ZN5app3d9CallbacksC2Ej(void);
-}
-
-void _GLOBAL__I__ZN5app3d9CallbacksC2Ej(void)
-{
-    static_init(1, 0xFFFF);
-}
-
-void _GLOBAL__D__ZN5app3d9CallbacksC2Ej(void)
-{
-    static_init(0, 0xFFFF);
-}
-
 /* out-of-line inline members / instances that stay asm */
 #undef INCLUDE_ASM
 #define INCLUDE_ASM INCLUDE_ASM_LINKONCE
@@ -135,4 +125,3 @@ extern "C" void app3d_Callbacks_instance_refs(common::handle<glutils::TurnTable>
 #define INCLUDE_ASM INCLUDE_ASM_LINKONCE
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/app3d_Callbacks", _ZN5input9ButtonSetIN3psp4PadBEE3setEjb);
-

@@ -2,6 +2,9 @@
 /* cflags: -O3 -fno-exceptions */
 #undef __EXCEPTIONS
 #include "cxx/defer_asm.h"
+#define DEMO_STATICS_MATH
+#define DEMO_STATICS_IOSTREAM
+#define DEMO_STATICS_SGL
 extern const char scene_mesh_err[] __asm__("D_00168C10");     /* " *** error " */
 extern const char scene_mesh_expr[] __asm__("D_00168C38");    /* "_mesh" */
 extern const char scene_mesh_file[] __asm__("D_00168C40");    /* "../lib/scene/Mesh.h" */
@@ -9,9 +12,17 @@ extern const char scene_mesh_sp[] __asm__("D_00168C54");      /* " " */
 extern const char scene_mesh_getData_name[] __asm__("_ZZN5scene4Mesh7getDataEvE19__PRETTY_FUNCTION___168B84");
 #define DEMO_TEMPLATE_DEFS
 #include "../main.hpp"
+
+/* the module's .ctors/.dtors refer to the static constructor/destructor; cc1plus keys them to the
+   first public symbol, the deferred-asm wrapper of the (still asm) first function */
+__asm__(".globl _GLOBAL__I__ZN5scene4MeshC2ESsb\n_GLOBAL__I__ZN5scene4MeshC2ESsb = _GLOBAL__I__ZN5scene4MeshC2ESsb__asm");
+__asm__(".globl _GLOBAL__D__ZN5scene4MeshC2ESsb\n_GLOBAL__D__ZN5scene4MeshC2ESsb = _GLOBAL__D__ZN5scene4MeshC2ESsb__asm");
 SCENE_ALLOC_FIRST_USE
 /* linkonce order: this object's .gnu.linkonce.t sections in Sony's link order */
 SCENE_LINKONCE_ORDER(
+    SCENE_LINKONCE(_ZNK5scene4Mesh11getTypeNameEv)
+    SCENE_LINKONCE(_ZNK5scene4Mesh5cloneESs)
+    SCENE_LINKONCE(_ZNK5scene4Mesh10isClonableEv)
     SCENE_LINKONCE(_ZN6common6handleIN5scene19MeshDataInterleaved10SharedDataEE10invalidateEv)
     SCENE_LINKONCE(_ZN6common6handleIN5scene19MeshDataInterleaved10VertexDataEE10invalidateEv)
     SCENE_LINKONCE(_ZSt13__destroy_auxIPN3sgl8PositionEEvT_S3_12__false_type)
@@ -28,8 +39,6 @@ extern const char D_00168AFC[];
 /* called, not inlined, by format() in the original */
 void Mesh_destroy_mesh_data(scene::Mesh *) __asm__("_ZN5scene4Mesh17destroy_mesh_dataEv");
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Mesh", _Z41__static_initialization_and_destruction_0ii_85568);
-
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Mesh", _ZN5scene4MeshC2ESsb);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Mesh", _ZN5scene4MeshC1ESsb);
@@ -39,6 +48,19 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Mesh",
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Mesh", _ZN5scene4MeshD1Ev);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Mesh", _ZN5scene4MeshD0Ev);
+
+/* inline in the class (weak copies emitted with the vtable, in the object's tail) */
+SGL_LINKONCE_BEGIN
+inline const char *scene::Mesh::getTypeName() const
+{
+    return D_00168AFC;
+}
+
+inline bool scene::Mesh::isClonable() const
+{
+    return true;
+}
+SGL_LINKONCE_END
 
 void scene::Mesh::destroy_mesh_data()
 {
@@ -72,34 +94,6 @@ void scene::Mesh::format(unsigned int f)
     }
 }
 
-extern "C" {
-void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_85568");
-void _GLOBAL__I__ZN5scene4MeshC2ESsb(void);
-void _GLOBAL__D__ZN5scene4MeshC2ESsb(void);
-}
-
-void _GLOBAL__I__ZN5scene4MeshC2ESsb(void)
-{
-    static_init(1, 0xFFFF);
-}
-
-void _GLOBAL__D__ZN5scene4MeshC2ESsb(void)
-{
-    static_init(0, 0xFFFF);
-}
-
-const char *scene::Mesh::getTypeName() const
-{
-    return D_00168AFC;
-}
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Mesh", _ZNK5scene4Mesh5cloneESs);
-
-bool scene::Mesh::isClonable() const
-{
-    return true;
-}
-
 /* instances used by the (asm) methods above */
 template void common::handle<scene::MeshDataInterleaved::SharedData>::invalidate();
 template void common::handle<scene::MeshDataInterleaved::VertexData>::invalidate();
@@ -114,4 +108,8 @@ template common::handle<scene::MeshDataInterleaved::VertexData>::~handle();
 #undef INCLUDE_ASM
 #define INCLUDE_ASM(FOLDER, NAME) INCLUDE_ASM_LINKONCE(FOLDER, NAME)
 
+/* the object's weak tail (linkonce copies), still asm */
+#undef INCLUDE_ASM
+#define INCLUDE_ASM INCLUDE_ASM_LINKONCE
+INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Mesh", _ZNK5scene4Mesh5cloneESs);
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Mesh", _ZN3sgl17StencilShadowDataC1Ev);

@@ -2,10 +2,17 @@
 /* cflags: -O3 -fno-exceptions */
 #undef __EXCEPTIONS
 #include "cxx/defer_asm.h"
+#define DEMO_STATICS_MATH
+#define DEMO_STATICS_IOSTREAM
+#define DEMO_STATICS_SGL
 extern const float D_0016E22C;
 #define SGL_POSITION_ONE D_0016E22C
 #define SGL_TEMPLATE_DEFS 1
 #include "../main.hpp"
+
+/* the module's .ctors/.dtors refer to the static constructor/destructor */
+__asm__(".globl _GLOBAL__I__ZN3sgl4Mesh10use_purpleE\n_GLOBAL__I__ZN3sgl4Mesh10use_purpleE = _GLOBAL__I__ZN3sgl4Mesh7OffsetsC2Ev");
+__asm__(".globl _GLOBAL__D__ZN3sgl4Mesh10use_purpleE\n_GLOBAL__D__ZN3sgl4Mesh10use_purpleE = _GLOBAL__D__ZN3sgl4Mesh7OffsetsC2Ev");
 
 /* setAt<vector<Position>, Position> stays asm (linkonce, below): its Position() 1.0f is a pool of its own
    (this unit's SGL_POSITION_ONE is another function's) */
@@ -63,8 +70,6 @@ PRETTY(getEdgeTriangleIndex_name, "20getEdgeTriangleIndexEii");
 PRETTY(getEdgeVertexPosition_name, "21getEdgeVertexPositionEiRNS_8PositionES2_");
 #define CHECK_TI(fn, line) MESH_ASSERT(0 <= ti && ti < (int)_triangles.size(), D_0016E3B4, fn, line)
 #define CHECK_EI(fn, line) MESH_ASSERT(0 <= ei && ei < (int)_edges.size(), D_0016E85C, fn, line)
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_Mesh", _Z41__static_initialization_and_destruction_0ii_AB598);
 
 sgl::Mesh::Offsets::Offsets() : position(0), normal(0), color(0), texcoord(0), vertex(0)
 {
@@ -372,22 +377,6 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_Mesh", _ZN3s
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_Mesh", _ZN3sgl4Mesh28sync_positions_with_verticesEv);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_Mesh", _ZN3sgl4Mesh21calcStencilShadowDataERNS_17StencilShadowDataERKNS_8CoreMeshE);
-
-extern "C" {
-void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_AB598");
-void _GLOBAL__I__ZN3sgl4Mesh10use_purpleE(void);
-void _GLOBAL__D__ZN3sgl4Mesh10use_purpleE(void);
-}
-
-void _GLOBAL__I__ZN3sgl4Mesh10use_purpleE(void)
-{
-    static_init(1, 0xFFFF);
-}
-
-void _GLOBAL__D__ZN3sgl4Mesh10use_purpleE(void)
-{
-    static_init(0, 0xFFFF);
-}
 
 /* inline members / instances kept as asm: .gnu.linkonce.t (splat only sees `INCLUDE_ASM(`) */
 #undef INCLUDE_ASM

@@ -2,14 +2,20 @@
 /* cflags: -O3 -fno-exceptions */
 #undef __EXCEPTIONS
 #include "cxx/defer_asm.h"
+#define DEMO_STATICS_MATH
+#define DEMO_STATICS_IOSTREAM
+#define DEMO_STATICS_INTERP
 #define DEMO_TEMPLATE_DEFS
 #define DEMO_LINKONCE_VirtualQuickAnim 1
 #include "../main.hpp"
 
+/* the module's .ctors/.dtors refer to the static constructor/destructor; cc1plus keys them to the
+   first public symbol, the deferred-asm wrapper of the (still asm) first function */
+__asm__(".globl _GLOBAL__I__ZN7glutils20PositioningInterfaceC2Ev\n_GLOBAL__I__ZN7glutils20PositioningInterfaceC2Ev = _GLOBAL__I__ZN7glutils20PositioningInterfaceC2Ev__asm");
+__asm__(".globl _GLOBAL__D__ZN7glutils20PositioningInterfaceC2Ev\n_GLOBAL__D__ZN7glutils20PositioningInterfaceC2Ev = _GLOBAL__D__ZN7glutils20PositioningInterfaceC2Ev__asm");
+
 extern "C" const char D_00165540[]; /* "\n" */
 extern "C" const char D_00165554[]; /* " " */
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/glutils_PositioningInterface", _Z41__static_initialization_and_destruction_0ii_326A0);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/glutils_PositioningInterface", _ZN7glutils20PositioningInterfaceC2Ev);
 
@@ -74,22 +80,6 @@ const math::matrix &glutils::PositioningInterface::getTransform() const
     return _transform;
 }
 
-extern "C" {
-void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_326A0");
-void _GLOBAL__I__ZN7glutils20PositioningInterfaceC2Ev(void);
-void _GLOBAL__D__ZN7glutils20PositioningInterfaceC2Ev(void);
-}
-
-void _GLOBAL__I__ZN7glutils20PositioningInterfaceC2Ev(void)
-{
-    static_init(1, 0xFFFF);
-}
-
-void _GLOBAL__D__ZN7glutils20PositioningInterfaceC2Ev(void)
-{
-    static_init(0, 0xFFFF);
-}
-
 /* the object's linkonce tail (thunks, interp instances) in the original's order */
 DEMO_LINKONCE_ORDER(
     DEMO_LINKONCE(_ZThn8_N7glutils20PositioningInterfaceD1Ev)
@@ -116,12 +106,6 @@ DEMO_LINKONCE_ORDER(
 
 #undef INCLUDE_ASM
 #define INCLUDE_ASM(FOLDER, NAME) INCLUDE_ASM_LINKONCE(FOLDER, NAME)
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/glutils_PositioningInterface", _ZThn8_N7glutils20PositioningInterfaceD1Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/glutils_PositioningInterface", _ZThn8_N7glutils20PositioningInterfaceD0Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/glutils_PositioningInterface", _ZThn8_N7glutils20PositioningInterface3setEN4math5FrameE);
 
 /* not inline: the inline destructors call its D2 (instances of this object) */
 template<class T> interp::KeyFrameSequenceBase<T>::~KeyFrameSequenceBase()
@@ -157,3 +141,10 @@ void glutils_PositioningInterface_instances()
     ((HPf *)0)->HPf::~HasPathInterface();
     ((interp::KeyFrameSequence<float> *)0)->interp::KeyFrameSequence<float>::~KeyFrameSequence();
 }
+
+/* the object's weak tail (linkonce copies), still asm */
+#undef INCLUDE_ASM
+#define INCLUDE_ASM INCLUDE_ASM_LINKONCE
+INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/glutils_PositioningInterface", _ZThn8_N7glutils20PositioningInterfaceD1Ev);
+INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/glutils_PositioningInterface", _ZThn8_N7glutils20PositioningInterfaceD0Ev);
+INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/glutils_PositioningInterface", _ZThn8_N7glutils20PositioningInterface3setEN4math5FrameE);

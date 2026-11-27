@@ -2,8 +2,16 @@
 /* cflags: -O3 -fno-exceptions */
 #undef __EXCEPTIONS
 #include "cxx/defer_asm.h"
+#define DEMO_STATICS_MATH
+#define DEMO_STATICS_IOSTREAM
+#define DEMO_STATICS_SGL
 #define DEMO_TEMPLATE_DEFS
 #include "../main.hpp"
+
+/* the module's .ctors/.dtors refer to the static constructor/destructor; cc1plus keys them to the
+   first public symbol, the deferred-asm wrapper of the (still asm) first function */
+__asm__(".globl _GLOBAL__I__ZN5scene8MeshDataC2Ev\n_GLOBAL__I__ZN5scene8MeshDataC2Ev = _GLOBAL__I__ZN5scene8MeshDataC2Ev__asm");
+__asm__(".globl _GLOBAL__D__ZN5scene8MeshDataC2Ev\n_GLOBAL__D__ZN5scene8MeshDataC2Ev = _GLOBAL__D__ZN5scene8MeshDataC2Ev__asm");
 SCENE_ALLOC_FIRST_USE
 /* linkonce order: this object's .gnu.linkonce.t sections in Sony's link order */
 SCENE_LINKONCE_ORDER(
@@ -33,8 +41,6 @@ SCENE_LINKONCE_ORDER(
     SCENE_LINKONCE(_ZNK2sh6Vector5equalERKS0_f)
 );
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_MeshData", _Z41__static_initialization_and_destruction_0ii_89B80);
-
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_MeshData", _ZN5scene8MeshDataC2Ev);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_MeshData", _ZN5scene8MeshDataC1Ev);
@@ -60,22 +66,6 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_MeshData",
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_MeshData", _ZN5scene8MeshData13copy_texcoordERKSt6vectorIN3sgl8TexCoordESaIS3_EE);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_MeshData", _ZN5scene8MeshData5clearEv);
-
-extern "C" {
-void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_89B80");
-void _GLOBAL__I__ZN5scene8MeshDataC2Ev(void);
-void _GLOBAL__D__ZN5scene8MeshDataC2Ev(void);
-}
-
-void _GLOBAL__I__ZN5scene8MeshDataC2Ev(void)
-{
-    static_init(1, 0xFFFF);
-}
-
-void _GLOBAL__D__ZN5scene8MeshDataC2Ev(void)
-{
-    static_init(0, 0xFFFF);
-}
 
 /* instances used by the (asm) methods above */
 namespace math {
@@ -164,12 +154,11 @@ template KdTreeNode *KdTree<Position>::find_rec(KdTreeNode *, const Position &);
 #undef INCLUDE_ASM
 #define INCLUDE_ASM(FOLDER, NAME) INCLUDE_ASM_LINKONCE(FOLDER, NAME)
 
+/* the object's weak tail (linkonce copies), still asm */
+#undef INCLUDE_ASM
+#define INCLUDE_ASM INCLUDE_ASM_LINKONCE
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_MeshData", _ZN5scene8MeshData26unfold_vertices_attributesISt6vectorIN3sgl8TexCoordESaIS4_EEEEbNS3_14VertexAttrEnumERT_);
-
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_MeshData", _ZN5scene8MeshData26unfold_vertices_attributesISt6vectorIN3sgl8PositionESaIS4_EEEEbNS3_14VertexAttrEnumERT_);
-
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_MeshData", _ZN5scene8MeshData26unfold_vertices_attributesISt6vectorIN3sgl5ColorESaIS4_EEEEbNS3_14VertexAttrEnumERT_);
-
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_MeshData", _ZN5scene8MeshData26unfold_vertices_attributesISt6vectorIN3sgl6NormalESaIS4_EEEEbNS3_14VertexAttrEnumERT_);
-
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_MeshData", _ZNK2sh6Vector5equalERKS0_f);

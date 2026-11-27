@@ -356,7 +356,6 @@ bss 0x18EAA8 main_objs/interp_KeyFrameSequence
 rodata 0x169078 main_objs/scene_DefaultShader
 rodata 0x1690A4 -
 bss 0x18F010 main_objs/scene_DefaultShader
-bss 0x18F094 -
 rodata 0x168FCC main_objs/scene_HasBVdata
 rodata 0x169038 -
 bss 0x18EF8C main_objs/scene_HasBVdata
@@ -379,7 +378,6 @@ rodata 0x16CF08 -
 bss 0x18FE68 main_objs/scene_Switch
 # glut_ReshapeFunc: .bss of the C++ static initializer, file statics glut::app_ptr/app::init_glut and pad()'s single_pad
 bss 0x18D278 main_objs/glut_ReshapeFunc
-bss 0x18D2C8 -
 # basic_parser_basic_parser: C++ static initializer; .rodata: the asserts' strings and __PRETTY_FUNCTION__s; .bss: std::__ioinit
 rodata 0x175AD8 main_objs/basic_parser_basic_parser
 rodata 0x175D44 -
@@ -425,9 +423,7 @@ rodata 0x16DB54 main_objs/BVH
 bss 0x190314 main_objs/BVH
 # glutils_Material, sgl_MeshParams: C++ static initializers; .rodata: the units' float pools and strings (the asm functions' come with their .s); .bss: the header statics
 rodata 0x163980 main_objs/glutils_Material
-rodata 0x1639F4 -
 bss 0x18E198 main_objs/glutils_Material
-bss 0x18E21C -
 rodata 0x171158 main_objs/sgl_MeshParams
 rodata 0x171188 -
 bss 0x190B3C main_objs/sgl_MeshParams
@@ -465,7 +461,6 @@ bss 0x18F7B4 main_objs/scene_Group
 rodata 0x16B968 main_objs/scene_Material
 rodata 0x16B984 -
 bss 0x18F838 main_objs/scene_Material
-bss 0x18F8BC -
 # C++ static initializers (header statics): their float pools and .bss (the units' other data stays asm)
 rodata 0x16D230 main_objs/scene_TraversalVarStack
 rodata 0x16D24C -
@@ -480,7 +475,6 @@ bss 0x19041C main_objs/sgl_Frustum
 rodata 0x16DDF4 main_objs/sgl_Heap
 rodata 0x16DE10 -
 bss 0x1904A0 main_objs/sgl_Heap
-bss 0x190524 -
 rodata 0x172290 main_objs/sh_Env
 rodata 0x1722AC -
 bss 0x191120 main_objs/sh_Env
@@ -492,7 +486,6 @@ bss 0x191864 -
 rodata 0x174310 main_objs/sh_Vector
 rodata 0x17432C -
 bss 0x1919F0 main_objs/sh_Vector
-bss 0x191A74 -
 rodata 0x17381C main_objs/sh_sh_rot_Rmn
 rodata 0x173838 -
 bss 0x1916B4 main_objs/sh_sh_rot_Rmn
@@ -509,3 +502,49 @@ rodata 0x166FF4 main_objs/gl_ext_pglBlendEquationExt
 rodata 0x167010 -
 bss 0x18E7E8 main_objs/gl_ext_pglBlendEquationExt
 bss 0x18E868 -
+# C++ static initializers (header statics): their float pools and .bss (the units' other data stays asm)
+rodata 0x172760 main_objs/Icosahedron_Bin
+rodata 0x17277C -
+bss 0x191228 main_objs/Icosahedron_Bin
+bss 0x19132C -
+rodata 0x169160 main_objs/scene_Graph
+rodata 0x16917C -
+bss 0x18F094 main_objs/scene_Graph
+bss 0x18F198 -
+rodata 0x169EBC main_objs/scene_GraphParser
+rodata 0x169ED8 -
+bss 0x18F2A0 main_objs/scene_GraphParser
+bss 0x18F3A4 -
+rodata 0x169C58 main_objs/scene_Graph_2
+rodata 0x169C74 -
+bss 0x18F19C main_objs/scene_Graph_2
+rodata 0x16BA00 main_objs/scene_Mesh
+rodata 0x16BA1C -
+bss 0x18F8BC main_objs/scene_Mesh
+rodata 0x16BD78 main_objs/scene_MeshData
+rodata 0x16BD94 -
+bss 0x18F9C0 main_objs/scene_MeshData
+bss 0x18FAC4 -
+rodata 0x16DFE8 main_objs/sgl_LineSet_Line_Vertex
+rodata 0x16E004 -
+bss 0x190524 main_objs/sgl_LineSet_Line_Vertex
+rodata 0x16E210 main_objs/sgl_Mesh
+rodata 0x16E22C -
+bss 0x190628 main_objs/sgl_Mesh
+bss 0x19072C -
+rodata 0x15EFB0 main_objs/app3d_Callbacks
+rodata 0x15EFCC -
+bss 0x18D2C8 main_objs/app3d_Callbacks
+bss 0x18D38C -
+rodata 0x1654D8 main_objs/glutils_PositioningInterface
+rodata 0x1654F4 -
+bss 0x18E364 main_objs/glutils_PositioningInterface
+bss 0x18E428 -
+rodata 0x1639F4 main_objs/interp_Path
+rodata 0x163A10 -
+bss 0x18E21C main_objs/interp_Path
+bss 0x18E2E0 -
+rodata 0x17449C main_objs/interp_VectorRGBAnim
+rodata 0x1744B8 -
+bss 0x191A74 main_objs/interp_VectorRGBAnim
+bss 0x191B38 -
