@@ -5,15 +5,6 @@
 #define SGL_LINKONCE_KdTreeNode 1
 #include "../main.hpp"
 
-/* these template instances are still asm below */
-namespace std {
-extern template void vector<math::vector_xyzw>::_M_insert_aux(vector<math::vector_xyzw>::iterator, const math::vector_xyzw &);
-extern template vector<math::vector_xyzw>::iterator vector<math::vector_xyzw>::erase(vector<math::vector_xyzw>::iterator,
-                                                                                    vector<math::vector_xyzw>::iterator);
-extern template void vector<math::vector_xyzw>::_M_fill_insert(vector<math::vector_xyzw>::iterator, vector<math::vector_xyzw>::size_type,
-                                                              const math::vector_xyzw &);
-}
-
 extern const char D_0016A764[];     /* " " */
 extern const char D_0016A768[];     /* " *** error " */
 extern const char D_0016A774[];
@@ -272,22 +263,6 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_BV", _ZN
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_BV", _ZN4math3sqrIfEET_S1_);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_BV", _ZNSt6vectorIN4math11vector_xyzwESaIS1_EE13_M_insert_auxEN9__gnu_cxx17__normal_iteratorIPS1_S3_EERKS1_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_BV", _ZNSt6vectorIN4math11vector_xyzwESaIS1_EE5eraseEN9__gnu_cxx17__normal_iteratorIPS1_S3_EES7_);
-
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_BV", _ZN3sgl6KdTreeIN4math11vector_xyzwEE5buildEPNS_10KdTreeNodeEj);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_BV", _ZNSt6vectorIN4math11vector_xyzwESaIS1_EE14_M_fill_insertEN9__gnu_cxx17__normal_iteratorIPS1_S3_EEjRKS1_);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_BV", _ZSt24__uninitialized_copy_auxIN9__gnu_cxx17__normal_iteratorIPN4math11vector_xyzwESt6vectorIS3_SaIS3_EEEES8_ET0_T_SA_S9_12__false_type);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_BV", _ZSt4fillIN9__gnu_cxx17__normal_iteratorIPN4math11vector_xyzwESt6vectorIS3_SaIS3_EEEES3_EvT_S9_RKT0_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_BV", _ZSt24__uninitialized_copy_auxIPN4math11vector_xyzwES2_ET0_T_S4_S3_12__false_type);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_BV", _ZSt26__uninitialized_fill_n_auxIPN4math11vector_xyzwEjS1_ET_S3_T0_RKT1_12__false_type);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_BV", _ZSt24__uninitialized_copy_auxIN9__gnu_cxx17__normal_iteratorIPN4math11vector_xyzwESt6vectorIS3_SaIS3_EEEES4_ET0_T_SA_S9_12__false_type);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_BV", _ZSt26__uninitialized_fill_n_auxIN9__gnu_cxx17__normal_iteratorIPN4math11vector_xyzwESt6vectorIS3_SaIS3_EEEEjS3_ET_S9_T0_RKT1_12__false_type);
