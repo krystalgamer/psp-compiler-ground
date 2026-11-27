@@ -13,7 +13,7 @@ M2C_UNK attr_MARGINHEIGHT(int, int);                /* extern */
 M2C_UNK attr_MARGINWIDTH(int, int);                 /* extern */
 M2C_UNK attr_TEXT(int, int);                        /* extern */
 M2C_UNK attr_VLINK(int, int);                       /* extern */
-M2C_UNK nodeTreeLoop(int, int);                     /* extern */
+void nodeTreeLoop(void *, int);
 int getTargetBodyBox();                             /* extern */
 
 
@@ -29,6 +29,10 @@ void initBodyContent(void *box, void *node);
 void initBoxProperty(void *box);
 void Node_setBox(void *node, void *box);
 void *lfm_createPageRegion(void *box, int w);
+int Node_getParentNode(int node);
+void *getBodyBox(void *box);
+void *htmlTagBranch(int node, void *parent, void *last);
+void addBoxList(void *list, void *data);
 void *createBodyBox(TBPAGE *pg, int a, int b) {
     void *doc;
     void *box;
@@ -57,7 +61,47 @@ void *createBodyBox(TBPAGE *pg, int a, int b) {
     return box;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_box_tree", nodeProc);
+void nodeProc(int node) {
+    void *parent;
+    void *last;
+    void *body;
+    void *box;
+    void *b;
+    int n;
+
+    if (node == 0)
+        return;
+    if (Node_getBox(node) != 0)
+        return;
+    parent = NULL;
+    for (n = Node_getParentNode(node); n != 0; n = Node_getParentNode(n)) {
+        parent = (void *)Node_getBox(n);
+        if (parent != NULL)
+            break;
+    }
+    if (parent == NULL)
+        return;
+    last = M2C_FIELD(parent, void **, 4);
+    if (last != NULL) {
+        while (M2C_FIELD(last, void **, 0xC) != NULL)
+            last = M2C_FIELD(last, void **, 0xC);
+    }
+    if (M2C_FIELD(parent, short *, 0x38) == 1)
+        body = parent;
+    else
+        body = getBodyBox(parent);
+    if (body != NULL && M2C_FIELD(M2C_FIELD(body, void **, 0x20), int *, 0x88) == 1)
+        return;
+    box = htmlTagBranch(node, parent, last);
+    if (box == NULL)
+        return;
+    if (M2C_FIELD(M2C_FIELD(box, void **, 0x24), s8 *, 0x71) != 0 || M2C_FIELD(M2C_FIELD(box, void **, 0x24), u8 *, 0x72) >= 2)
+        addBoxList((char *)M2C_FIELD(body, void **, 0x20) + 0x9C, box);
+    for (b = M2C_FIELD(box, void **, 0); b != NULL; b = M2C_FIELD(b, void **, 0)) {
+        if (M2C_FIELD(b, short *, 0x38) == 4 || M2C_FIELD(b, short *, 0x38) == 6)
+            M2C_FIELD(b, unsigned short *, 0x40) |= 1;
+    }
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
