@@ -652,11 +652,19 @@ libgcc/libsupc++ DWARF names `gcc-3.3.6/` paths.
   `-Os -fno-strength-reduce`: `ScriptEnumOperand` and `_SortCardListGet`
   recompute `base + i*size` (`sll`/`addu`) in every iteration, which plain
   `-Os` strength-reduces to a pointer; the flag changes none of the ~340
-  other matched game functions.  Whether that is a Makefile flag or a
-  1.9.2 change that disables strength reduction under `-Os` can't be told
-  from this module (it has no other `-Os` code); at `-O2` strength
-  reduction is on as usual (libgim_picture's load_bmp/load_tga/load_tm2
-  lose 12 of 20 matches with `-fno-strength-reduce`).
+  other matched game functions.  At `-O2` strength reduction is on as
+  usual (libgim_picture's load_bmp/load_tga/load_tm2 lose 12 of 20
+  matches with `-fno-strength-reduce`).  We take it to be the game's
+  Makefile flag, not a compiler change: pristine gcc-3.3.6's
+  `toplev.c` sets `flag_strength_reduce` for every `optimize >= 2`,
+  `-Os` included (the `optimize_size` block only touches alignment and
+  block reordering), the psp patch set changes none of this (`toplev.c`
+  option handling is identical in gcc1.8.4_src/gcc1.9.2_src, and
+  mips.c/mips.h never touch `flag_strength_reduce` or
+  `optimize_size`), and no SDK 6.6.0 Makefile uses `-Os` or
+  `-fno-strength-reduce` (they use `-O4`/`-O2`), so nothing points to
+  Sony patching the default.  The tree is left unchanged; the flag is in
+  the units' `cflags`.
 - Everything else that differs is source: SDK 6.6.0 vs the module's SDK
   (struct layouts in libgu and gim_picture, `sceGumMultQuaternion`
   missing), Sony's newer newlib (`_REENT` is `__getreent()`, i.e.
