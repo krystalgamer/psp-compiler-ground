@@ -453,6 +453,13 @@ modules (`tools/nltest.py`, `tools/objcmp.py`).
   Instances in the middle of a unit therefore mark object boundaries that
   the static-initializer split missed (objects without static constructors).
 
+- Divide-by-zero traps can vanish without a flag: in 1.6.1's mips.md the
+  trap pattern (`div_trap_normal`) prints nothing when the scheduler linked it
+  as an anti-dependence to a previous trap. UTST99332 graphics_picture2
+  `draw_objects2` has divisions with and without traps; the source order
+  (width/height locals first, the /bpp division, then the two /dbpp ones)
+  reproduces exactly which traps survive. Not a patch; a source-order effect.
+
 ## psp-gcc 1.7.1 (release build)
 
 htmlviewer is the first module built by release 1.7.1 (plus SDK libraries
