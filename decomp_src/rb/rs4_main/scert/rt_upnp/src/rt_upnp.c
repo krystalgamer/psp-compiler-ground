@@ -23,7 +23,14 @@ int rt_upnp_get_version_string(void) {
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_upnp/src/rt_upnp", rt_upnp_create);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_upnp/src/rt_upnp", rt_upnp_destroy);
+int rt_upnp_destroy(void *u)
+{
+    void *p = NULL;
+    if (u == NULL) return 2;
+    p = u;
+    rt_memory_free(&p);
+    return 0;
+}
 
 int rt_upnp_discover(void) {
     return 4;

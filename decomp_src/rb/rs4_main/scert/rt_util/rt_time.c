@@ -16,7 +16,6 @@ void rt_time_start(void);
 M2C_UNK rt_time_platform_get_time_string();         /* extern */
 M2C_UNK rt_time_platform_get_time_stamp();          /* extern */
 M2C_UNK rt_time_platform_get_date_time();           /* extern */
-M2C_UNK rt_time_elapsed_msecs();                    /* extern */
 
 void rt_time_get_local(void) {
     rt_time_get_msecs();
@@ -56,11 +55,44 @@ void rt_time_elapsed(void) {
     rt_time_elapsed_msecs();
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_time", rt_time_elapsed_secs);
+int rt_time_elapsed_timestamp();
+int rt_time_timestamp_to_secs();
+int rt_time_elapsed_secs(void *start, unsigned int *out)
+{
+    unsigned int ts[2];
+    int r;
+    if (start == NULL) return 2;
+    if (out == NULL) return 2;
+    r = rt_time_elapsed_timestamp(start, ts);
+    if (r != 0) return r;
+    return rt_time_timestamp_to_secs(ts, out);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_time", rt_time_elapsed_msecs);
+int rt_time_elapsed_timestamp();
+int rt_time_timestamp_to_msecs();
+int rt_time_elapsed_msecs(void *start, unsigned int *out)
+{
+    unsigned int ts[2];
+    int r;
+    if (start == NULL) return 2;
+    if (out == NULL) return 2;
+    r = rt_time_elapsed_timestamp(start, ts);
+    if (r != 0) return r;
+    return rt_time_timestamp_to_msecs(ts, out);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_time", rt_time_elapsed_usecs);
+int rt_time_elapsed_timestamp();
+int rt_time_timestamp_to_usecs();
+int rt_time_elapsed_usecs(void *start, unsigned int *out)
+{
+    unsigned int ts[2];
+    int r;
+    if (start == NULL) return 2;
+    if (out == NULL) return 2;
+    r = rt_time_elapsed_timestamp(start, ts);
+    if (r != 0) return r;
+    return rt_time_timestamp_to_usecs(ts, out);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_time", rt_time_delay);
 
@@ -70,11 +102,32 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_time", rt_time_re
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_time", rt_time_calc_diff);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_time", rt_time_timestamp_to_secs);
+int rt_time_timestamp_to_secs(unsigned int *ts, unsigned int *secs)
+{
+    if (ts == NULL) return 2;
+    if (secs == NULL) return 2;
+    *secs = ts[0];
+    *secs += ts[1] / 1000000;
+    return 0;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_time", rt_time_timestamp_to_msecs);
+int rt_time_timestamp_to_msecs(unsigned int *ts, unsigned int *ms)
+{
+    if (ts == NULL) return 2;
+    if (ms == NULL) return 2;
+    if (ts[0] > 0x418935) return 0x641;
+    *ms = ts[0] * 1000 + ts[1] / 1000;
+    return 0;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_time", rt_time_timestamp_to_usecs);
+int rt_time_timestamp_to_usecs(unsigned int *ts, unsigned int *usecs)
+{
+    if (ts == NULL) return 2;
+    if (usecs == NULL) return 2;
+    if (ts[0] >= 0x10C5) return 0x641;
+    *usecs = ts[0] * 1000000 + ts[1];
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_time", rt_time_get_base_diff);
 

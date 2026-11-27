@@ -53,7 +53,12 @@ int NetTokenCountGet(char *c, int a)
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeToken", NetTokenTableSizeGet);
+int NetTokenTableSizeGet(char *c, int a)
+{
+    if (*(int *)(c + 0x4A0) == 0) return 0x21;
+    rt_token_get_table_size(a, *(int *)(c + 0x40C));
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeToken", NetTokenTableGet);
 

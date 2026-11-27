@@ -409,7 +409,18 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_g
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_set_host_invactivity_timeout_session);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_set_host_inactivity_timeout_connection);
+int rt_udp_get_inactivity_timeout();
+int rt_udp_set_connection_inactivity_timeout();
+int rt_p2p_set_host_inactivity_timeout_connection(char *p, int conn)
+{
+    unsigned int t;
+    if (*(int *)(p + 0x1E4) != 0) {
+        rt_udp_get_inactivity_timeout(&t);
+        t >>= 2;
+        rt_udp_set_connection_inactivity_timeout(conn, t);
+    }
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_set_peer_update_bit);
 

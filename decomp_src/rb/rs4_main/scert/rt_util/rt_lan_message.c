@@ -7,7 +7,12 @@ int NetDisableLanMessaging(void);
 int NetLANSetDefaultEnableMessagingInParams(void *arg0);
 extern unsigned char gLANMessage;
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_lan_message", NetLANSetDefaultSendTextMessageInParams);
+int NetLANSetDefaultSendTextMessageInParams(int *p)
+{
+    if (p == NULL) return 10;
+    memset(p, 0, 32);
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_lan_message", NetLANSendTextMessage);
 
