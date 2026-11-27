@@ -61,7 +61,43 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_CSS", innerCSSSetBorderWidth
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_CSS", cssDStrCmp);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_CSS", cssDStrContains);
+int cssDStrContains(u16 *word, void *ds) {
+    int found = 0;
+    int wlen;
+    int n;
+    u16 *buf;
+    u16 *p;
+    u16 *q;
+    wlen = UCS_strlen(word);
+    n = M2C_FIELD(ds, int *, 4);
+    buf = MEM_malloc(0, n * 2 + 2);
+    if (buf == NULL) {
+        return 0;
+    }
+    UCS_strncpy(buf, M2C_FIELD(ds, u16 **, 8), n);
+    buf[n] = 0;
+    p = buf;
+    while (n > 0 && (q = UCS_strstr(p, word)) != NULL) {
+        if (p < q) {
+            n -= q - p;
+            if (q[-1] == ' ') {
+                if (wlen >= n || q[wlen] == ' ') {
+                    found = 1;
+                    break;
+                }
+            }
+        } else {
+            if (wlen >= n || q[wlen] == ' ') {
+                found = 1;
+                break;
+            }
+        }
+        p = q + 1;
+        n--;
+    }
+    MEM_free(0, buf);
+    return found;
+}
 
 void cssBackgroundAttachment(void) {
 }
