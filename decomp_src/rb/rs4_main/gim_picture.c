@@ -2077,9 +2077,17 @@ int sceGimPictureGetPaletteFrame( SceGimPicture *picture )
  if ( picture == 0 ) return 0 ;
  return picture->m_palette_frame ;
 }
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/gim_picture", sceGimPictureSetPaletteFrame2);
+void sceGimPictureSetPaletteFrame2( SceGimPicture *picture, int frame )
+{
+ if ( picture == 0 ) return ;
+ picture->m_palette_frame = frame ;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/gim_picture", sceGimPictureGetPaletteFrame2);
+int sceGimPictureGetPaletteFrame2( SceGimPicture *picture )
+{
+ if ( picture == 0 ) return 0 ;
+ return picture->m_palette_frame ;
+}
 
 void sceGimPictureSetDissolve( SceGimPicture *picture, float dissolve )
 {
@@ -2202,4 +2210,7 @@ const int *sceGimPictureGetWrap( SceGimPicture *picture )
 }
 
 /* in gim_animate.c in SDK 6.6.0 */
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/gim_picture", sceGimPictureAnimate);
+void sceGimPictureAnimate( SceGimPicture *picture, float step )
+{
+ sceGimPictureAnimateEx( picture, step, SCEGIM_ANIMATE_ALL ) ;
+}
