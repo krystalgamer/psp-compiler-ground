@@ -55,6 +55,9 @@ rodata 0x174178 -
 # math_basic_net_basic_net: the float pools of basic_net::basic_net(unsigned, unsigned) (C2, C1)
 rodata 0x168584 main_objs/math_basic_net_basic_net
 rodata 0x168594 -
+# math_TransformStack: the float pools (Identity()'s 1.0f) of TransformStack::push and identity
+rodata 0x171C14 main_objs/math_TransformStack
+rodata 0x171C1C -
 0x0DC98 glut_ReshapeFunc         1.6.1.internal  main_objs/glut_ReshapeFunc.cpp
 0x0E548 app3d_Callbacks          1.6.1.internal  main_objs/app3d_Callbacks.cpp
 0x10CDC common_Date              1.6.1.internal  main_objs/common_Date.cpp   # no static init

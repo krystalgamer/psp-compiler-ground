@@ -392,6 +392,8 @@ segments:
       - [0x1656C8, rodata, asm/rodata_165648]
       - [0x1656E4, .rodata, main_objs/math_basic_net_basic_net]
       - [0x1656F4, rodata, asm/rodata_165674]
+      - [0x16ED6C, .rodata, main_objs/math_TransformStack]
+      - [0x16ED74, rodata, asm/rodata_16ECF4]
       - [0x16EF0C, .rodata, main_objs/math_TransformStackFunc]
       - [0x16EF28, rodata, asm/rodata_16EEA8]
       - [0x16FD9C, .rodata, main_objs/sh_Matrix]

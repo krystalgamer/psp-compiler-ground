@@ -13,6 +13,8 @@ extern const char D_0016ED88[];     /* "! _stack.empty()" */
 extern const char TransformStack_dtor_name[] __asm__("_ZZN4math14TransformStackD1EvE19__PRETTY_FUNCTION__");
 extern const char TransformStack_pop_name[] __asm__("_ZZN4math14TransformStack3popEvE19__PRETTY_FUNCTION__");
 extern const char TransformStack_ctop_name[] __asm__("_ZZNK4math14TransformStack3topEvE19__PRETTY_FUNCTION__");
+extern const char TransformStack_ctopinv_name[] __asm__("_ZZNK4math14TransformStack7top_invEvE19__PRETTY_FUNCTION__");
+extern const char TransformStack_topinv_name[] __asm__("_ZZN4math14TransformStack7top_invEvE19__PRETTY_FUNCTION__");
 extern const char TransformStack_top_name[] __asm__("_ZZN4math14TransformStack3topEvE19__PRETTY_FUNCTION__");
 #define TS_ASSERT(c, s, name, line) \
     if (!(c)) { \
@@ -36,7 +38,10 @@ math::TransformStack::~TransformStack()
 }
 
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_TransformStack", _ZN4math14TransformStack4pushEv);
+void math::TransformStack::push()
+{
+    _stack.push(_stack.empty() ? matrix::Identity() : top());
+}
 
 void math::TransformStack::pop()
 {
@@ -53,7 +58,11 @@ void math::TransformStack::load(const matrix &m)
     _dirty = true;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_TransformStack", _ZN4math14TransformStack8identityEv);
+void math::TransformStack::identity()
+{
+    top() = matrix::Identity();
+    _dirty = true;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_TransformStack", _ZN4math14TransformStack6rotateEffff);
 
@@ -81,9 +90,25 @@ math::matrix &math::TransformStack::top()
     return _stack.top();
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_TransformStack", _ZNK4math14TransformStack7top_invEv);
+const math::matrix &math::TransformStack::top_inv() const
+{
+    TS_ASSERT(! _stack.empty(), D_0016ED88, TransformStack_ctopinv_name, 134);
+    if (_dirty) {
+        _inv = _stack.top().inverse();
+        _dirty = false;
+    }
+    return _inv;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_TransformStack", _ZN4math14TransformStack7top_invEv);
+math::matrix &math::TransformStack::top_inv()
+{
+    TS_ASSERT(! _stack.empty(), D_0016ED88, TransformStack_topinv_name, 147);
+    if (_dirty) {
+        _inv = _stack.top().inverse();
+        _dirty = false;
+    }
+    return _inv;
+}
 
 extern "C" {
 void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_D0C0C");

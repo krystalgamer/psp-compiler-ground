@@ -248,8 +248,8 @@ struct TransformStack {
     const matrix &top_inv() const;
     matrix &top_inv();
     std::stack<matrix> _stack;                          /* 0x4 */
-    matrix _inv;                                        /* 0x2C */
-    bool _dirty;                                        /* 0x6C */
+    mutable matrix _inv;                                /* 0x2C */
+    mutable bool _dirty;                                /* 0x6C */
 };
 /* a non-polymorphic base of sgl::MeshBuilder (typeinfo without bases) */
 class TransformStackFunc {

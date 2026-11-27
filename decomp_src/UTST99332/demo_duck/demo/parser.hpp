@@ -1,7 +1,16 @@
-/* basic_parser, basic_file_parser (../lib/system/basic_parser.cpp, basic_file_parser.cpp,
-   float_basic_parser_get.cpp); needs <stack>, <string> and common::t_array (demo/base.hpp) */
+/* cxx-math3's library classes that need demo/base.hpp: basic_parser, basic_file_parser, FieldParser
+   (../lib/system/), ABGR_FLOAT / FloatImage (../lib/textures/FloatImage.cpp), math::basic_net, sgi_rgb.
+   Needs <stack>, <string>, common::t_array/t_array2d (demo/base.hpp). */
 #ifndef DEMO_DUCK_DEMO_PARSER_HPP
 #define DEMO_DUCK_DEMO_PARSER_HPP
+
+/* units that still rename base.hpp's old stand-ins (#define basic_parser ...) */
+#undef basic_parser
+#undef basic_file_parser
+
+namespace textures {
+class Texture;
+}
 
 namespace libc_fix {
 int AtoI(const char *);
