@@ -289,7 +289,30 @@ void *cardlistGetCardName(int id)
 	return p;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/cardlist", ShuffleRandAlloc);
+float randU(int, float);
+void *_memAlloc(int, void *, int);
+int *ShuffleRandAlloc(int seed, unsigned int n)
+{
+	int *t;
+	int i = 0;
+	t = _memAlloc(n * 4, &D_00101FCC, 0x234);
+	for (i = 0; i < n; i++)
+		t[i] = i;
+	if (seed != -1) {
+		for (i = n - 1; i >= 0; i--) {
+			int k = randU(seed, i + 1);
+			int a;
+			if (t[i] != t[k]) {
+				a = t[i];
+				t[i] = t[k];
+				t[k] = a;
+			}
+		}
+	}
+	for (i = 0; i < n; i++)
+		;
+	return t;
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/cardlist", D_00102340);
 
