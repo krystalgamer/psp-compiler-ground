@@ -223,9 +223,95 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_tex", poly_set);
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_tex", poly_g4_set);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_tex", sprite_set_3d);
+extern int billbord_max;
+typedef struct {
+	int used, f4, tex, fc, f10, nearest, f18, f1c;
+	float x, y, z, f2c, f30, f34;
+	float u1, v1, u0, v0, f48, f4c, f50;
+	int r, g, b, a, f64;
+	u8 rest[0x168 - 0x68];
+} BILL3D;
+int sprite_set_3d(int tex, int a1, float x, float y, float z, float u0, float v0, float u1, float v1, float f48, int r, int g, int b, int a, int f64, int f18, float f4c, float f50, int f1c)
+{
+	int i, ret;
+	BILL3D *p;
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_tex", sprite_set_3d_efc);
+	ret = -1;
+	if (billbord_max < 512) { i = 0; if (f1c != 0) {
+		for (; i < 512; i++) {
+			p = (BILL3D *)&billbord[i];
+			if (p->used == 0)
+				break;
+		}
+		p->x = x;
+		p->y = y;
+		p->z = z;
+		p->u0 = u0 - 1.0f;
+		p->v0 = v0 - 1.0f;
+		p->u1 = u1 + 0.5f;
+		p->v1 = v1 + 0.5f;
+		p->f48 = f48;
+		p->f4c = f4c;
+		p->f50 = f50;
+		billbord_max++;
+		p->used = 1;
+		p->fc = 1;
+		p->f10 = 1;
+		p->tex = tex;
+		p->f64 = f64;
+		p->r = r;
+		p->g = g;
+		p->b = b;
+		p->a = a;
+		p->f18 = f18;
+		p->nearest = 0;
+		p->f1c = f1c;
+		ret = i;
+	}
+	}
+	return ret;
+}
+
+int sprite_set_3d_efc(int tex, int a1, float x, float y, float z, float u0, float v0, float u1, float v1, float f48, int r, int g, int b, int a, int f64, int f18, float f4c, float f50, int f1c)
+{
+	int i, ret;
+	BILL3D *p;
+
+	ret = -1;
+	if (billbord_max < 512) { i = 0; if (f1c != 0) {
+		for (; i < 512; i++) {
+			p = (BILL3D *)&billbord[i];
+			if (p->used == 0)
+				break;
+		}
+		p->x = x;
+		p->y = y;
+		p->z = z;
+		p->u0 = u0 - 1.0f;
+		p->v0 = v0 - 1.0f;
+		p->u1 = u1 + 0.5f;
+		p->v1 = v1 + 0.5f;
+		p->f48 = f48;
+		p->f4c = f4c;
+		p->f50 = f50;
+		billbord_max++;
+		p->used = 1;
+		p->fc = 0;
+		p->f10 = 1;
+		p->tex = tex;
+		p->f64 = f64;
+		p->r = r;
+		p->g = g;
+		p->b = b;
+		p->a = a;
+		p->f18 = f18;
+		p->nearest = 0;
+		p->f1c = f1c;
+		ret = i;
+	}
+	}
+	return ret;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_tex", sprite_set_3d_efc_rot);
 
