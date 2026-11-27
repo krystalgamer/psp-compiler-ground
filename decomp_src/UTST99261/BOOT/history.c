@@ -21,6 +21,9 @@ M2C_UNK HST_deleteHistoryNode(int);                 /* extern */
 
 typedef struct HEnt { HstNode *root; struct HEnt *prev; struct HEnt *next; } HEnt;
 int strncmp(const char *a, const char *b, unsigned int n);
+typedef struct { void *x0; void *x4; } HPAIR;
+typedef struct HCOOK { void *x0; void *x4; void *x8; void *xC; void *x10; int x14; struct HCOOK *next; } HCOOK;
+typedef struct { void *x00; int x04; int x08; void *x0C; void *x10; void *x14; void *x18; void *x1C; void *x20; HPAIR *x24; HPAIR *x28; HCOOK *x2C; } HHDRF;
 int HST_initHistory(void) {
     int *p;
     int *h;
@@ -1579,7 +1582,71 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/history", HST_httpHeaderDisasse
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/history", HST_httpHeaderDuplicate);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/history", HST_httpHeaderFree);
+int HST_httpHeaderFree(int arg) {
+    HHDRF *h = (HHDRF *)arg;
+    HCOOK *c;
+    HCOOK *n;
+
+    if (h->x00 != NULL) {
+        MEM_free(0, h->x00);
+    }
+    if (h->x0C != NULL) {
+        MEM_free(0, h->x0C);
+    }
+    if (h->x10 != NULL) {
+        MEM_free(0, h->x10);
+    }
+    if (h->x14 != NULL) {
+        MEM_free(0, h->x14);
+    }
+    if (h->x18 != NULL) {
+        MEM_free(0, h->x18);
+    }
+    if (h->x1C != NULL) {
+        MEM_free(0, h->x1C);
+    }
+    if (h->x20 != NULL) {
+        MEM_free(0, h->x20);
+    }
+    if (h->x24 != NULL) {
+        if (h->x24->x0 != NULL) {
+            MEM_free(0, h->x24->x0);
+        }
+        if (h->x24->x4 != NULL) {
+            MEM_free(0, h->x24->x4);
+        }
+        MEM_free(0, h->x24);
+    }
+    if (h->x28 != NULL) {
+        if (h->x28->x0 != NULL) {
+            MEM_free(0, h->x28->x0);
+        }
+        if (h->x28->x4 != NULL) {
+            MEM_free(0, h->x28->x4);
+        }
+        MEM_free(0, h->x28);
+    }
+    for (c = h->x2C; c != NULL; c = n) {
+        n = c->next;
+        if (c->x0 != NULL) {
+            MEM_free(0, c->x0);
+        }
+        if (c->x4 != NULL) {
+            MEM_free(0, c->x4);
+        }
+        if (c->x8 != NULL) {
+            MEM_free(0, c->x8);
+        }
+        if (c->xC != NULL) {
+            MEM_free(0, c->xC);
+        }
+        if (c->x10 != NULL) {
+            MEM_free(0, c->x10);
+        }
+        MEM_free(0, c);
+    }
+    MEM_free(0, h);
+}
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/history", D_00134D78);
 
