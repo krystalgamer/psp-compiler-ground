@@ -177,6 +177,8 @@ extern int _zWindDrawTexClipOffY;
 
 
 void GUI_Choice_select(ZW *w, int idx);
+typedef struct { u8 unk0[0x4C]; char *text; s16 len; s16 scroll; s16 lines; s16 unk56; int bar; } ZTEXTAREA;
+int zWindFontDrawArea(void *font, int x, int y, char *s, short color, int w, int len, int bottom);
 int zWindDraw(void) {
     int r;
 
@@ -905,7 +907,65 @@ void zWindWidgetChoiceListDelete(ZW *w) {
     GUI_Component_update(w->parent, x, y, wd + 1, h + 1);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/zWindDraw", zWindWidgetTextAreaDraw);
+void zWindWidgetTextAreaDraw(ZW *w) {
+    s16 x;
+    s16 y;
+    s16 wd;
+    s16 h;
+    int c;
+    int n;
+    int pos;
+    int th;
+
+    x = w->px;
+    y = w->py;
+    wd = w->w;
+    h = w->h;
+    zWindDrawBox(x, y, wd - 1, h - 1, w->bg15);
+    if (s_windsystem_data.focus == w && w->focus15 != 0) {
+        zWindLineBox(x, y, wd - 1, h - 1, w->focus15);
+    } else {
+        zWindLineBox2(x, y, wd - 1, h - 1, 0, 0x7FFF);
+    }
+    zWindLineBox(x + 1, y + 1, wd - 3, h - 3, 0x294A);
+    if (((ZTEXTAREA *)w)->len == 0) {
+        return;
+    }
+    if (((ZTEXTAREA *)w)->bar == -1) {
+        zWindDrawClipSet(x + 2, y + 2, wd - 4, h - 4);
+        c = w->fg15;
+        if (w->flags & 0x40000000) {
+            c = 0x318C;
+        }
+        n = zWindFontDrawArea(w->font, x + 2, y - ((ZTEXTAREA *)w)->scroll * w->font->height + 2, ((ZTEXTAREA *)w)->text, c, wd - 4, ((ZTEXTAREA *)w)->len, y + h - 2);
+        ((ZTEXTAREA *)w)->lines = n - h / w->font->height + 1;
+        zWindDrawClipSet(0, 0, ((ZINIT *)&s_windsystem_init)->width, ((ZINIT *)&s_windsystem_init)->height);
+    } else {
+        zWindDrawClipSet(x + 2, y + 2, wd - _iZwindPartsSize - 4, h - 4);
+        c = w->fg15;
+        if (w->flags & 0x40000000) {
+            c = 0x318C;
+        }
+        n = zWindFontDrawArea(w->font, x + 2, y - ((ZTEXTAREA *)w)->scroll * w->font->height + 2, ((ZTEXTAREA *)w)->text, c, wd - _iZwindPartsSize - 4, ((ZTEXTAREA *)w)->len, y + h - 2);
+        ((ZTEXTAREA *)w)->lines = n - h / w->font->height;
+        zWindDrawClipSet(0, 0, ((ZINIT *)&s_windsystem_init)->width, ((ZINIT *)&s_windsystem_init)->height);
+        zWindDrawBox(x - _iZwindPartsSize + wd - 2, y + _iZwindPartsSize + 2, _iZwindPartsSize, h - _iZwindPartsSize - _iZwindPartsSize - 4, 0x294A);
+        zWindDrawParts(x + wd - _iZwindPartsSize - 2, y + 2, 4, -1);
+        zWindDrawParts(x - _iZwindPartsSize + wd - 2, y - _iZwindPartsSize + h - 2, 5, -1);
+        th = n * w->font->height;
+        if (th < h - 4) {
+            c = h - _iZwindPartsSize * 2 - 4;
+        } else {
+            c = (h - _iZwindPartsSize * 2 - 4) * (h - 4) / th;
+        }
+        pos = (h - _iZwindPartsSize * 2 - c - 4) * ((ZTEXTAREA *)w)->scroll / ((ZTEXTAREA *)w)->lines;
+        zWindDrawBox(x - _iZwindPartsSize + wd - 2, y + _iZwindPartsSize + pos + 2, _iZwindPartsSize, c, 0x4210);
+        zWindLineBox2(x - _iZwindPartsSize + wd - 2, y + _iZwindPartsSize + pos + 2, _iZwindPartsSize, c, 0x7FFF, 0);
+    }
+    if (((ZTEXTAREA *)w)->lines < 0) {
+        ((ZTEXTAREA *)w)->lines = 0;
+    }
+}
 
 void zWindWidgetTextFieldDraw(ZW *w) {
     int x;
