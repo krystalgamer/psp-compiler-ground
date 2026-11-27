@@ -15,7 +15,7 @@ int mes_eval_object_delete(MesContext *ctx, MesValue o, unsigned int id);
 unsigned int mes_eval_to_uint32(MesContext *ctx, MesValue v);
 extern unsigned int mes_ids[];
 extern void *mes_array_table;
-MesValue mes_array_constructor(MesContext *ctx);
+MesValue mes_array_constructor(MesContext *ctx, MesValue v);
 void *mes_native_new(MesContext *ctx, int a, void *fn, int nargs, int flags);
 void mes_native_setup(MesContext *ctx, MesObject *o, void *table, int n);
 typedef struct MesArray {
@@ -49,6 +49,8 @@ int mes_string_compare(void *a, void *b);
 void mes_util_string_put(void *s, unsigned short c);
 void mes_util_string_put_string(void *s, MesValue v);
 MesValue mes_eval_to_object(MesContext *ctx, MesValue v);
+MesValue mes_error_range(MesContext *ctx, MesValue v);
+extern const double D_0013B898;
 MesArray *mes_array_new(MesContext *ctx, unsigned int len)
 {
     MesArray *a = mes_gc_alloc(ctx, 6);
@@ -191,7 +193,46 @@ void mes_array_initialize(void) {
     mes_gc_register(&mes_array_method, 0x18, 0x20, 0x20);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_array", mes_array_constructor);
+MesValue mes_array_constructor(MesContext *ctx, MesValue v)
+{
+    MesArgs *args;
+    MesArray *a;
+    unsigned int n;
+    unsigned int i;
+    unsigned int m;
+    double x;
+
+    args = ctx->frame->args;
+    if (args == NULL || args->argc == 0)
+        return (MesValue)mes_array_new(ctx, 0);
+    if (args->argc == 1 && (v == 0x10 || (v & 3) == 1 || (v & 3) == 2)) {
+        if (v == 0x10)
+            v = 1;
+        if ((v & 3) == 1) {
+            if (v < 0)
+                goto err;
+            n = v >> 2;
+        } else {
+            if (*(double *)((v & ~3) + 8) < 0)
+                goto err;
+            m = *(double *)((v & ~3) + 8);
+            x = (int)m;
+            if ((int)m < 0)
+                x = x + D_0013B898;
+            if (x != *(double *)((v & ~3) + 8)) {
+            err:
+                ctx->f14 = mes_error_range(ctx, v);
+                return 0;
+            }
+            n = *(double *)((v & ~3) + 8);
+        }
+        return (MesValue)mes_array_new(ctx, n);
+    }
+    a = mes_array_new(ctx, 0);
+    for (i = 0; i < args->argc; i++)
+        mes_array_set(ctx, a, args->argv[i]);
+    return (MesValue)a;
+}
 
 MesValue mes_array_join(MesContext *ctx, int sep)
 {
