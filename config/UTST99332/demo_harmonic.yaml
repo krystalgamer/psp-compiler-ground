@@ -403,6 +403,8 @@ segments:
       - [0x169A70, rodata, asm/rodata_1699F0]
       - [0x16A754, .rodata, main_objs/VertexColorEnv]
       - [0x16A75C, rodata, asm/rodata_16A6DC]
+      - [0x16D040, .rodata, main_objs/sgl_Mesh_4]
+      - [0x16D050, rodata, asm/rodata_16CFD0]
       - [0x16DCB4, .rodata, main_objs/sgl_MeshBuilder_extruded_var_extruded_var]
       - [0x16DCB8, rodata, asm/rodata_16DC38]
       - [0x16EC5C, .rodata, main_objs/sgl_Stripper]

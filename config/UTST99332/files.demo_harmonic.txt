@@ -82,6 +82,9 @@ rodata 0x165B24 -
 # interp_KeyFrameSequence: the float pools of KeyFrameSequence<quaternion>::calc_tangent, evaluate, op_identity
 rodata 0x16495C main_objs/interp_KeyFrameSequence
 rodata 0x16496C -
+# sgl_Mesh_4: vector<sgl::Edge>::reserve()'s "vector::reserve"
+rodata 0x16CFC0 main_objs/sgl_Mesh_4
+rodata 0x16CFD0 -
 0x135B4 glut_ReshapeFunc         1.6.1.internal  main_objs/glut_ReshapeFunc.cpp
 0x13E64 app3d_Callbacks          1.6.1.internal  main_objs/app3d_Callbacks.cpp
 0x163B4 common_Date              1.6.1.internal  main_objs/common_Date.cpp   # no static init
