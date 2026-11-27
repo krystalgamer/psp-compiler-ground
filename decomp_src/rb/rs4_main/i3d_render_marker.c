@@ -236,7 +236,13 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_render_marker", I3dRenderStage
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_render_marker", I3dRenderStage__DrawStrip);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_render_marker", I3dSortTag__ConstructAsHead);
+void I3dSortTag__ConstructAsHead(int *t)
+{
+	t[0] = 0;
+	t[1] = 0;
+	t[2] = 0;
+	t[3] = (int)t;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_render_marker", I3dSorter__OpenPacket_ByUint32);
 

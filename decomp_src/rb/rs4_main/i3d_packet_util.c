@@ -312,7 +312,11 @@ int I3dRenderInitMain(void)
 	return 0;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_packet_util", I3dPkDefaultTermTag);
+unsigned int *I3dPkDefaultTermTag(unsigned int *p)
+{
+	*p++ = 0xB000000;
+	return p;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_packet_util", I3dRender__SetTexBuff_PSP);
 

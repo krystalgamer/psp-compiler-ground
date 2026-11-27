@@ -8,7 +8,10 @@ M2C_UNK I3dCacheManager__Construct(void *, void *, M2C_UNK, void *); /* extern *
 extern unsigned char I3dPkDefaultTermTag;
 
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_render", I3dRender__EndScene_PkAllocTex);
+int I3dRender__EndScene_PkAllocTex(void *r, int a)
+{
+	return a;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -31,9 +34,19 @@ int I3dRenderGetStructSize(int arg0) {
     return var_v0;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_render", I3dRender__SetCallBack_PkTermTag);
+int I3dRender__SetCallBack_PkTermTag(char *r, void *f, void *a)
+{
+	*(void **)(r + 0x1B0) = f;
+	*(void **)(r + 0x1B4) = a;
+	return 0;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_render", I3dRender__SetTexInfo);
+int I3dRender__SetTexInfo(char *r, int a, int b)
+{
+	*(int *)(r + 0xFC) = a;
+	*(int *)(r + 0x100) = b;
+	return 0;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)

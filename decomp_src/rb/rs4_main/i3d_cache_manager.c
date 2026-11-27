@@ -38,7 +38,14 @@ void I3dResourceTag__SetMemBlock(void *arg0, int arg1) {
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_cache_manager", I3dResourceTag__PurgeCache);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_cache_manager", I3dResourceTag__Construct);
+int I3dResourceTag__Construct(int *t)
+{
+	t[0] = 0;
+	t[1] = 0;
+	t[2] = 0;
+	t[3] = 0;
+	return 0;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -173,7 +180,13 @@ void I3dCacheManager__SetTotalMemSize(void *arg0, int arg1) {
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_cache_manager", I3dCacheManager__PurgeAllCache);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_cache_manager", I3dCacheManager__ResetProfile);
+int I3dCacheManager__ResetProfile(char *c)
+{
+	*(int *)(c + 0x64) = 0;
+	*(int *)(c + 0x68) = 0;
+	*(int *)(c + 0x6C) = 0;
+	return 0;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_cache_manager", I3dCacheManager__Construct);
 
