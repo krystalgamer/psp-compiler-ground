@@ -69,6 +69,7 @@ extern unsigned char _DOMlhs;
 extern unsigned char _DOMrhs;
 extern unsigned char _DOMvsides;
 extern unsigned char _DOMbox;
+extern char D_0013F030[];
 int addSelectionTarget(SelList *l, BOX *box, int a, int b) {
     SelTgt *t;
     int s, e;
@@ -446,7 +447,66 @@ void attr_ALIGN_trgroup(void *node, BOX *box) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/act_selection", attr_BORDER_table);
+void attr_BORDER_table(void *node, BOX *box) {
+    int w;
+    signed char *v;
+    signed char *end;
+    int frame;
+
+    w = 1;
+    box->style->unk30 = 0;
+    box->style->unk32 = 0;
+    box->style->unk34 = 0;
+    box->style->unk36 = 0;
+    v = getDOMAttributeValue(node, &_DOMborder);
+    if (v != NULL || checkAtributeByName(node, D_0013F030) == 0) {
+        if (v != NULL) {
+            w = strtol(v, &end, 10);
+            if (end == v)
+                w = 1;
+        }
+        if (w < 0)
+            w = 1;
+        frame = M2C_FIELD(box->geom, int *, 0);
+        if (frame & 0x10) {
+            if (frame & 1)
+                box->style->unk30 = w;
+            if (M2C_FIELD(box->geom, int *, 0) & 2)
+                box->style->unk32 = w;
+            if (M2C_FIELD(box->geom, int *, 0) & 4)
+                box->style->unk34 = w;
+            if (M2C_FIELD(box->geom, int *, 0) & 8)
+                box->style->unk36 = w;
+        } else {
+            box->style->unk30 = w;
+            box->style->unk32 = w;
+            box->style->unk34 = w;
+            box->style->unk36 = w;
+        }
+        if (w == 0)
+            M2C_FIELD(box->geom, int *, 0) &= ~0x20;
+        else
+            M2C_FIELD(box->geom, int *, 0) |= 0x20;
+        if (v != NULL)
+            MEM_free(0, v);
+    } else {
+        frame = M2C_FIELD(box->geom, int *, 0);
+        if (frame & 0x10) {
+            if (frame & 1)
+                box->style->unk30 = 1;
+            if (M2C_FIELD(box->geom, int *, 0) & 2)
+                box->style->unk32 = 1;
+            if (M2C_FIELD(box->geom, int *, 0) & 4)
+                box->style->unk34 = 1;
+            if (M2C_FIELD(box->geom, int *, 0) & 8)
+                box->style->unk36 = 1;
+        }
+    }
+    box->style->unk48 = 6;
+    box->style->unk4A = 6;
+    box->style->unk4C = 6;
+    box->style->unk4E = 6;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
