@@ -121,7 +121,26 @@ M2C_UNK *menuChgModule(void) {
     return var_v1;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/menu", menuChgResetModule);
+extern int l_nResetFlowID, l_nResetFlowGameMode, l_nResetFlowLabel;
+int menuIsSaruColle();
+int menuChgResetModule(void)
+{
+	int n = l_nResetFlowID;
+	int i;
+	if (n < 0)
+		return -1;
+	for (i = 15; i != 0; i--)
+		((MenuFlowHd *)&l_tMenuCntx)->flow[i] = ((MenuFlowHd *)&l_tMenuCntx)->flow[i - 1];
+	((MenuFlowHd *)&l_tMenuCntx)->flow[0] = n;
+	gameChgGameMode(l_nResetFlowGameMode);
+	if (menuIsCardBattle()) {
+		M2C_FIELD(&l_tMenuCntx, int *, 0x348) = 2;
+		M2C_FIELD(&l_tMenuCntx, int *, 0x64C) = 1;
+	}
+	if (menuIsSaruColle())
+		M2C_FIELD(&l_tMenuCntx, int *, 0x65C) = 0;
+	return l_nResetFlowLabel;
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/menu", D_00103018);
 
