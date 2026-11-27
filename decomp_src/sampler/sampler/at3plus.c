@@ -66,8 +66,6 @@ RELEASE_ARG:
 	return status;
 }
 
-#ifdef NON_MATCHING
-/* close; loop layout differs */
 SceInt32 play_atrac3plus(SceSize args, ScePVoid argp)
 {
 	ScePlayArg *pPlayArg;
@@ -84,7 +82,7 @@ SceInt32 play_atrac3plus(SceSize args, ScePVoid argp)
 	iVol = 0;
 	uiPlayPosition = 0;
 	uiWritePosition = 0;
-	outputBuf = (SceInt32 *)(((int)aiOutputBuf + 63) & ~63);
+	outputBuf = (SceInt32 *)((int)(aiOutputBuf + 15) & ~63);
 	status = sceAtracGetRemainFrame(pPlayArg->atracId, &iRemainFrame);
 	if (status < 0)
 		printf("sceAtracGetRemainFrame err 0x%x\n", status);
@@ -93,12 +91,14 @@ SceInt32 play_atrac3plus(SceSize args, ScePVoid argp)
 
 	do {
 		switch (iFadeFlag) {
+		case 0:
+			break;
 		case 1:
 			iVol += 0x300;
 			if (iVol >= 0x6000) {
 				iFadeFlag = 0;
-				sceKernelChangeThreadPriority(sceKernelGetThreadId(), 0x3D);
 				iVol = 0x6000;
+				sceKernelChangeThreadPriority(sceKernelGetThreadId(), 0x3D);
 			}
 			break;
 		case 2:
@@ -138,8 +138,10 @@ SceInt32 play_atrac3plus(SceSize args, ScePVoid argp)
 			uiPlayPosition = 0;
 		}
 		if (iRemainFrame <= iReadThreshold) {
-			if (iRemainFrame != -1 && iRemainFrame != -2)
-				at3plus_addData(pPlayArg->atracId, pPlayArg->fd);
+			if (iRemainFrame != -1) {
+				if (iRemainFrame != -2)
+					at3plus_addData(pPlayArg->atracId, pPlayArg->fd);
+			}
 		}
 	} while (!finishflag);
 
@@ -156,9 +158,6 @@ SceInt32 play_atrac3plus(SceSize args, ScePVoid argp)
 	sceKernelExitThread(0);
 	return 0;
 }
-#else
-INCLUDE_ASM("tmp/asm/sampler/sampler/nonmatchings/at3plus", play_atrac3plus);
-#endif
 
 static void release_at3playArgID(ScePlayArg *pPlayArg)
 {
