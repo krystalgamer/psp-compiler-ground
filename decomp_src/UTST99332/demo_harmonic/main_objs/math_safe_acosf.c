@@ -82,7 +82,11 @@ float math::angle::SmartUpdate(float a, float b)
     return a + Relative(a, b);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_safe_acosf", _ZN4math5angle8RelativeEff);
+/* pi, 2 pi: this function's float pool (carved .rodata) */
+float math::angle::Relative(float a, float b)
+{
+    return wrap(b, a - 3.14159265358979323846f, 2 * 3.14159265358979323846f) - a;
+}
 
 float math::wrap(float _Value, float _Start, float _Period)
 {

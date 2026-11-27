@@ -406,6 +406,8 @@ segments:
       - [0x1685E8, rodata, asm/rodata_168568]
       - [0x168604, .rodata, main_objs/math_basic_net_basic_net]
       - [0x168614, rodata, asm/rodata_168594]
+      - [0x168ABC, .rodata, main_objs/math_safe_acosf]
+      - [0x168AC4, rodata, asm/rodata_168A44]
       - [0x16C988, .rodata, main_objs/draw_mesh_enabled]
       - [0x16C998, rodata, asm/rodata_16C918]
       - [0x16D67C, .rodata, main_objs/VertexColorEnv]

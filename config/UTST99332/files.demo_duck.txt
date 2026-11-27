@@ -83,6 +83,9 @@ rodata 0x171C1C -
 # FloatImage: the float pools of gaussian1, gaussian2, blur2d, blur (blur2d/blur inlines gaussian2 with its literals)
 rodata 0x176278 main_objs/FloatImage
 rodata 0x17629C -
+# math_safe_acosf: the float pool (pi, 2 pi) of math::angle::Relative
+rodata 0x168A3C main_objs/math_safe_acosf
+rodata 0x168A44 -
 # interp_KeyFrameSequence: the float pools of KeyFrameSequence<quaternion>::calc_tangent, evaluate, op_identity
 rodata 0x16787C main_objs/interp_KeyFrameSequence
 rodata 0x16788C -
