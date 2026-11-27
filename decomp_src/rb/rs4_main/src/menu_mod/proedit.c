@@ -7,7 +7,36 @@ void bxAnmSetPause(int, int);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/proedit", Sub_ProfileEdit);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/proedit", _AniSet_37FFC);
+typedef struct { int d[10]; } AniTbl;
+extern AniTbl D_0010344C;
+typedef struct { int f0; int mode; int f8[2]; int st[2]; int f18[2]; int anm[1]; } AniW;
+int bxAnmInit(int);
+void _AniInfoSet_38154(int);
+void _AniSet_37FFC(AniW *w, int mode)
+{
+	AniTbl t = D_0010344C;
+	int i;
+	if (mode < 0) {
+		w->f0 = 0;
+		w->mode = 0;
+		for (i = 0; i < 2; i++) {
+			w->st[i] = i * 4 + 4;
+			w->f8[i] = 0;
+			w->f18[i] = 0;
+		}
+		for (i = 0; t.d[i] != -1; i++) {
+			w->anm[i] = bxAnmInit(resGetDatLocal(1, t.d[i]));
+			_AniInfoSet_38154(w->anm[i]);
+		}
+	} else {
+		w->mode = mode;
+		if (mode == 1) {
+			w->f18[1] = 0;
+			for (i = w->st[0]; i < w->st[1]; i++)
+				_AniInfoSet_38154(w->anm[i]);
+		}
+	}
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/proedit", D_001033C0);
 
