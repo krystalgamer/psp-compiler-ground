@@ -68,7 +68,7 @@ struct SceNetEtherAddr { /* size 0x6 */
     SceUChar8 data[6];
 };
 typedef long long unsigned int SceULong64;
-struct matching_room_info { /* size 0x120 */
+struct matching_room_info { /* size 0xd8 */
     enum matching_room_state state;
     struct p2p_hello_opt hello_opt;
     struct p2p_hello_opt *agreed_hello_opt;
@@ -77,7 +77,7 @@ struct matching_room_info { /* size 0x120 */
     int ignore_pad_input;
     struct SceNetEtherAddr local_addr;
     int ctx_id;
-    struct SceNetEtherAddr members[16];
+    struct SceNetEtherAddr members[4];
     struct SceNetEtherAddr parent_addr;
     int informing_minfo_id;
     SceULong64 ptp_start_time;

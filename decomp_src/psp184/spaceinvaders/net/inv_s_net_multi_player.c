@@ -58,7 +58,7 @@ struct p2p_hello_opt { /* size 0x8c */
     int cur_player_num;
     int req_player_num;
 };
-struct matching_room_info { /* size 0x120 */
+struct matching_room_info { /* size 0xd8 */
     enum matching_room_state state;
     struct p2p_hello_opt hello_opt;
     struct p2p_hello_opt *agreed_hello_opt;
@@ -67,7 +67,7 @@ struct matching_room_info { /* size 0x120 */
     int ignore_pad_input;
     struct SceNetEtherAddr local_addr;
     int ctx_id;
-    struct SceNetEtherAddr members[16];
+    struct SceNetEtherAddr members[4];
     struct SceNetEtherAddr parent_addr;
     int informing_minfo_id;
     SceULong64 ptp_start_time;
@@ -131,13 +131,173 @@ void net_delete_ptp(void) {
     ptp_sock_id0 = 0;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_net_multi_player", net_connect_socket);
+int sceKernelWaitSemaCB(int semid, int signal, unsigned int *timeout);
+int sceNetAdhocPtpConnect(int id, unsigned int timeout, int flag);
+int sceNetAdhocPtpFlush(int id, unsigned int timeout, int flag);
+SceULong64 sceKernelGetSystemTimeWide(void);
+void clear_minfo(int id);
+int net_connect_socket(void)
+{
+	int ret, ignore;
+	SceULong64 time;
+
+	ignore = 0;
+	if (_mrinfo.state != MATCHING_ROOM_PARENT_INFORM_CONNECT) {
+		ret = 0;
+		ignore = 1;
+		goto ignore;
+	}
+	time = sceKernelGetSystemTimeWide();
+	if (time - _mrinfo.ptp_start_time > 5000000) {
+		sceKernelWaitSemaCB(minfo_sid, 1, NULL);
+		clear_minfo(_mrinfo.informing_minfo_id);
+		sceKernelSignalSema(minfo_sid, 1);
+		net_delete_ptp();
+		change_state(MATCHING_ROOM_PARENT_START_INFORM);
+		ret = 0;
+		ignore = 1;
+		goto ignore;
+	}
+	ret = sceNetAdhocPtpConnect(ptp_sock_id0, 0, 1);
+	if (ret == (int)0x80410709) {
+		ret = 0;
+		ignore = 1;
+		goto ignore;
+	}
+	if (ret < 0) {
+		goto error;
+	}
+error:
+ignore:
+	if (ignore > 0)
+		return 0;
+	if (ret < 0)
+		change_state(MATCHING_ROOM_DISCONNECT);
+	else
+		change_state(MATCHING_ROOM_PARENT_INFORM_SEND);
+	return ret;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_net_multi_player", net_send_members_ptp);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_net_multi_player", net_flush_members_ptp);
+int sceKernelWaitSemaCB(int semid, int signal, unsigned int *timeout);
+int sceNetAdhocPtpConnect(int id, unsigned int timeout, int flag);
+int sceNetAdhocPtpFlush(int id, unsigned int timeout, int flag);
+SceULong64 sceKernelGetSystemTimeWide(void);
+void clear_minfo(int id);
+int net_flush_members_ptp(void)
+{
+	int ret, ignore;
+	SceULong64 time;
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_net_multi_player", net_recv_members_ptp);
+	ignore = 0;
+	if (_mrinfo.state != MATCHING_ROOM_PARENT_INFORM_FLUSH) {
+		ret = 0;
+		ignore = 1;
+		goto ignore;
+	}
+	time = sceKernelGetSystemTimeWide();
+	if (time - _mrinfo.ptp_start_time > 5000000) {
+		sceKernelWaitSemaCB(minfo_sid, 1, NULL);
+		clear_minfo(_mrinfo.informing_minfo_id);
+		sceKernelSignalSema(minfo_sid, 1);
+		net_delete_ptp();
+		change_state(MATCHING_ROOM_PARENT_START_INFORM);
+		ret = 0;
+		ignore = 1;
+		goto ignore;
+	}
+	ret = sceNetAdhocPtpFlush(ptp_sock_id0, 0, 1);
+	if (ret == (int)0x80410709) {
+		ret = 0;
+		ignore = 1;
+		goto ignore;
+	}
+	if (ret < 0) {
+		goto error;
+	}
+	minfo[_mrinfo.informing_minfo_id].status = 6;
+error:
+ignore:
+	if (ignore > 0)
+		return 0;
+	net_delete_ptp();
+	if (ret < 0)
+		change_state(MATCHING_ROOM_DISCONNECT);
+	else
+		change_state(MATCHING_ROOM_PARENT_START_INFORM);
+	return ret;
+}
+
+int sceKernelWaitSemaCB(int semid, int signal, unsigned int *timeout);
+int sceNetAdhocPtpAccept(int id, struct SceNetEtherAddr *addr, unsigned short *port, unsigned int timeout, int flag);
+int sceNetAdhocPtpRecv(int id, void *buf, int *len, unsigned int timeout, int flag);
+int net_recv_members_ptp(void)
+{
+	struct SceNetEtherAddr parent_addr;
+	int buflen;
+	int num;
+	int i, ret, ignore;
+
+	ignore = 0;
+	sceKernelWaitSemaCB(minfo_sid, 1, NULL);
+	if (_mrinfo.state != MATCHING_ROOM_CHILD_WAIT) {
+		ret = 0;
+		ignore = 1;
+		goto ignore;
+	}
+	if (ptp_sock_id > 0)
+		goto recv_from_parent;
+	ret = sceNetAdhocPtpAccept(ptp_sock_id0, &parent_addr, NULL, 0, 1);
+	if (ret == (int)0x80410709) {
+		ret = 0;
+		ignore = 1;
+		goto ignore;
+	}
+	if (ret < 0)
+		goto error;
+	if (memcmp(&minfo[_mrinfo.requesting_minfo_id].addr, &parent_addr, 6) != 0) {
+		ret = 0;
+		ignore = 1;
+		goto ignore;
+	}
+	ptp_sock_id = ret;
+recv_from_parent:
+	buflen = sizeof(ptp_buf);
+	ret = sceNetAdhocPtpRecv(ptp_sock_id, ptp_buf, &buflen, 0, 1);
+	if (ret == (int)0x80410709) {
+		ret = 0;
+		ignore = 1;
+		goto ignore;
+	}
+	if (ret < 0)
+		goto error;
+	if (buflen < 4) {
+		ret = 0;
+		ignore = 1;
+		goto ignore;
+	}
+	memcpy(&num, ptp_buf, 4);
+	if (num <= 0) {
+		ret = 0;
+		ignore = 1;
+		goto ignore;
+	}
+	ret = num;
+	memset(_mrinfo.members, 0, sizeof(_mrinfo.members));
+	for (i = 0; i < num; i++)
+		memcpy(&_mrinfo.members[i], &ptp_buf[4 + i * 6], 6);
+error:
+ignore:
+	sceKernelSignalSema(minfo_sid, 1);
+	if (ignore > 0)
+		return 0;
+	if (ret < 0)
+		change_state(MATCHING_ROOM_DISCONNECT);
+	else
+		change_state(MATCHING_ROOM_START_GAME);
+	return ret;
+}
 
 int matching_restart_to_create_room(void);
 int net_update_multi_player(void)
