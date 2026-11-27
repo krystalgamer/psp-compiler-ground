@@ -1,7 +1,59 @@
 #include "common.h"
 #include "gim_picture_sdk.h"
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gim_picture", sceGimPictureCreate);
+SceGimPicture *sceGimPictureCreate( const SceGimChunk *chunk )
+{
+	SceGimPicture *picture = (SceGimPicture *)sceGimPictureAllocMemory( sizeof( SceGimPicture ) ) ;
+	if ( picture == 0 ) {
+		return 0 ;
+	}
+	picture->m_reference = 1 ;
+	picture->m_flags = 0 ;
+	picture->m_enable_bits = 0 ;
+	picture->m_unk0C = 0 ;
+	picture->m_image = 0 ;
+	picture->m_palette = 0 ;
+
+	picture->m_buf_width = 0 ;
+	picture->m_clut_load = 0 ;
+	picture->m_image_crop[ 0 ] = 0.0f ;
+	picture->m_image_crop[ 1 ] = 0.0f ;
+	picture->m_image_crop[ 2 ] = 1.0f ;
+	picture->m_image_crop[ 3 ] = 1.0f ;
+
+	picture->m_frame_loop[ 0 ] = -1000000.0f ;
+	picture->m_frame_loop[ 1 ] = 1000000.0f ;
+	picture->m_frame_rate = 12.0f ;
+	picture->m_frame = 0.0f ;
+	picture->m_dissolve = 0.0f ;
+	picture->m_image_frame = 0 ;
+	picture->m_image_frame2 = 0 ;
+	picture->m_palette_frame = 0 ;
+	picture->m_palette_frame2 = 0 ;
+
+	picture->m_sequences = 0 ;
+	picture->m_n_sequences = 0 ;
+	picture->m_current_sequence = -1 ;
+
+	picture->m_image_plane = 0 ;
+	picture->m_palette_offset[ 0 ] = 0 ;
+	picture->m_palette_offset[ 1 ] = 255 ;
+	picture->m_palette_offset[ 2 ] = 0 ;
+
+	picture->m_blend[ 0 ] = 1 ;
+	picture->m_func[ 0 ] = 0 ;
+	picture->m_func[ 1 ] = 1 ;
+	picture->m_filter[ 0 ] = 1 ;
+	picture->m_filter[ 1 ] = 7 ;
+	picture->m_wrap[ 0 ] = 0 ;
+	picture->m_wrap[ 1 ] = 0 ;
+
+	if ( chunk != 0 && !sceGimPictureLoad( picture, chunk ) ) {
+		sceGimPictureDelete( picture ) ;
+		return 0 ;
+	}
+	return picture ;
+}
 
 void sceGimPictureDelete( SceGimPicture *picture )
 {
@@ -18,7 +70,31 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gim_picture", sceGimPictu
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gim_picture", sceGimPictureLoad);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gim_picture", sceGimPictureUnload);
+void sceGimPictureUnload( SceGimPicture *picture )
+{
+	if ( picture == 0 ) return ;
+
+	sceGimPictureUnloadCache( picture ) ;
+
+	SceGimImageHeader *image = picture->m_image ;
+	if ( image != 0 ) {
+		if ( -- image->reference == 0 ) sceGimPictureFreeMemory2( image ) ;
+		picture->m_image = 0 ;
+	}
+	SceGimPaletteHeader *palette = picture->m_palette ;
+	if ( palette != 0 ) {
+		if ( -- palette->reference == 0 ) sceGimPictureFreeMemory2( palette ) ;
+		picture->m_palette = 0 ;
+	}
+
+	{ int i ; for ( i = 0 ; i < picture->m_n_sequences ; i ++ ) {
+		SceGimSequenceHeader *sequence = picture->m_sequences[ i ] ;
+		if ( -- sequence->reference == 0 ) sceGimPictureFreeMemory( sequence ) ;
+	} }
+	sceGimPictureFreeMemory( picture->m_sequences ) ;
+	picture->m_sequences = 0 ;
+	picture->m_n_sequences = 0 ;
+}
 
 void sceGimPictureSetEnableBits( SceGimPicture *picture, int bits, int value )
 {

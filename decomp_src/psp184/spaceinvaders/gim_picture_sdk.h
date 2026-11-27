@@ -1649,7 +1649,7 @@ struct SceGimPicture {
  SceGimPaletteHeader *m_palette ;
  int m_buf_width ;
  int m_clut_load ;
- float __attribute__((aligned(16))) m_image_crop[ 4 ] ;
+ float m_image_crop[ 4 ] ;
  float m_frame_loop[ 2 ] ;
  float m_frame_rate ;
  float m_frame ;
