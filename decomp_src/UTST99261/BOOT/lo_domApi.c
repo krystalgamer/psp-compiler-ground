@@ -35,6 +35,7 @@ void *Node_getAttributes(void *node);
 int NamedNodeMap_getLength(void *map);
 void *NamedNodeMap_item(void *map, int i);
 void *memset(void *p, int c, unsigned int n);
+char *getRawTextFromDomNode(void *n);
 void DomStringToUtf8(DOMString *s, char *buf, int size) {
     unsigned int n = (size - 1) / 3;
     unsigned int len = s->len;
@@ -88,9 +89,105 @@ char *getRawTextFromDomNode(void *node) {
     return r;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_domApi", getRawTextFromDomTree);
+char *getRawTextFromDomTree(void *root) {
+    int total = 0;
+    char *res = NULL;
+    void *n;
+    void *c;
+    char *t;
+    char *nb;
+    int len;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_domApi", getTextFromDomTree);
+    n = Node_getFirstChild(root);
+    while ((n != NULL) & (n != root)) {
+        if (Node_getNodeType(n) == 3 && (t = getRawTextFromDomNode(n)) != NULL) {
+            if (res == NULL) {
+                len = strlen(t);
+                res = t;
+            } else {
+                len = strlen(t);
+                nb = MEM_malloc(0, total + len + 1);
+                if (nb == NULL) {
+                    return res;
+                }
+                strcpy(nb, res);
+                strcpy(nb + total, t);
+                MEM_free(0, res);
+                MEM_free(0, t);
+                res = nb;
+            }
+            total += len;
+        }
+        c = Node_getFirstChild(n);
+        if (c == NULL) {
+            c = Node_getNextSibling(n);
+            if (c == NULL) {
+                for (;;) {
+                    n = Node_getParentNode(n);
+                    if (n == root) {
+                        break;
+                    }
+                    c = Node_getNextSibling(n);
+                    if (c != NULL) {
+                        break;
+                    }
+                }
+                if (n == root) {
+                    break;
+                }
+            }
+        }
+        n = c;
+    }
+    return res;
+}
+
+char *getTextFromDomTree(void *root) {
+    char *raw;
+    char *buf;
+    char *p;
+    int len;
+    int i;
+    int j;
+    int sp = 0;
+    char c;
+
+    raw = getRawTextFromDomTree(root);
+    if (raw == NULL) {
+        return NULL;
+    }
+    len = strlen(raw);
+    buf = MEM_malloc(0, len + 1);
+    if (buf == NULL) {
+        MEM_free(0, raw);
+        return NULL;
+    }
+    p = raw;
+    while (((*p == ' ') | (*p == '\t')) || *p == '\r' || *p == '\n') {
+        p++;
+        len--;
+    }
+    j = 0;
+    for (i = 0; i < len; i++) {
+        c = p[i];
+        if (((c == ' ') | (c == '\t')) || ((c == '\r') | (c == '\n'))) {
+            if (sp == 0) {
+                buf[j++] = ' ';
+                sp = 1;
+            }
+        } else {
+            buf[j++] = c;
+            sp = 0;
+        }
+    }
+    if (j > 0 && buf[j - 1] == ' ') {
+        buf[j - 1] = 0;
+    } else {
+        buf[j] = 0;
+    }
+    MEM_free(0, raw);
+    return buf;
+}
 
 void *getDOMDocument(void *node) {
     if (Node_getNodeType(node) == 9) {
