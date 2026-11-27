@@ -134,21 +134,39 @@ struct data {
 class data_owner {
 public:
     data_owner() : d(0) {}
-    virtual ~data_owner() {}
-    virtual void set_data(data *p) { d = p; }
+    virtual ~data_owner();
+    virtual void set_data(data *p);
     data *d;
 };
+/* linkonce copies: main.o (duck) / CityApp.o (harmonic) defines DEMO_LINKONCE_data_owner */
+#if DEMO_LINKONCE_data_owner
+_Pragma("implementation \"sgl_linkonce\"") _Pragma("interface \"sgl_linkonce\"")
+#endif
+inline data_owner::~data_owner() {}
+inline void data_owner::set_data(data *p) { d = p; }
+#if DEMO_LINKONCE_data_owner
+_Pragma("interface")
+#endif
 }
 
 class shared_object_base : public handle_internal::data_owner {
 public:
     shared_object_base() { d = new handle_internal::data(this); }
-    virtual ~shared_object_base() {
-        d->obj = 0;
-        if (d->count == 0)
-            delete d;
-    }
+    virtual ~shared_object_base();
 };
+/* linkonce copies: app3d_Callbacks.o (duck) / CityApp.o (harmonic) defines DEMO_LINKONCE_shared_object_base */
+#if DEMO_LINKONCE_shared_object_base
+_Pragma("implementation \"sgl_linkonce\"") _Pragma("interface \"sgl_linkonce\"")
+#endif
+inline shared_object_base::~shared_object_base()
+{
+    d->obj = 0;
+    if (d->count == 0)
+        delete d;
+}
+#if DEMO_LINKONCE_shared_object_base
+_Pragma("interface")
+#endif
 
 template<class T> class handle : public handle_internal::data_owner {
 public:

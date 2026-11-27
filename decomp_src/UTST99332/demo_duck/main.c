@@ -6,6 +6,7 @@
 extern const float D_0015E748;
 #define MATH_IDENTITY_ONE D_0015E748
 #define DEMO_TEMPLATE_DEFS
+#define DEMO_LINKONCE_data_owner 1
 #include "main.hpp"
 
 /* this object's .gnu.linkonce.t sections in the original's order */
@@ -327,6 +328,7 @@ extern "C" void main_instance_refs(common::handle<scene::Node> &n, common::handl
     common::handle<scene::Group> c(n);
     common::handle<scene::Texture> d(n);
     common::handle<scene::Switch> e(n);
+    common::handle<scene::Object> f;
 }
 
 /* out-of-line inline members / instances that stay asm */
@@ -364,12 +366,6 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZSt24__uninitializ
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZNSsC1IPcEET_S1_RKSaIcE);
 CONT_INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", func_0000AB74, _ZNSsC1IPcEET_S1_RKSaIcE);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZN6common15handle_internal10data_ownerD1Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZN6common15handle_internal10data_ownerD0Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZN6common15handle_internal10data_owner8set_dataEPNS0_4dataE);
-
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZN6common7CmdLine6OptionD1Ev);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZN6common7CmdLine6OptionC1ESsjPKc);
@@ -380,13 +376,9 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZN6common7CmdLine6
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZN3psp11DisplayList6finishEb);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZN6common6handleIN5scene6ObjectEED1Ev);
-
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZN7TestAppC1EN2sh4Args6CommonE);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZN7TestApp4turnEf);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZN6common6handleIN5scene6ObjectEED0Ev);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZNSt15basic_stringbufIcSt11char_traitsIcESaIcEED0Ev);
 

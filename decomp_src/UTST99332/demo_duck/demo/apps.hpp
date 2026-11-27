@@ -47,6 +47,12 @@ private:
     float _anim_time;           /* 0x1258 */
 };
 
+/* its destructor (implicit or inline: D1/D0 call handle<Transform>'s D1 and inline ~shared_object_base) stays asm */
+class CityApp::Car : public common::shared_object_base {
+public:
+    common::handle<scene::Transform> _transform;    /* 0x8 */
+};
+
 class VertexColorEnv {
 public:
     struct Vertex : math::SphericalCoord {
