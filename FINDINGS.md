@@ -601,9 +601,11 @@ trees), one SDK object (`userinterrupt.c`) by 1.8.3.internal.
   inline asm in psp184 (the SDK's libgu/libgum still use inline asm or
   plain FPU code), and ordinary float code is unaffected (see 1.8.4).
   Without code that uses the builtins, their implementation (mips.md
-  patterns, mips.c expanders, register numbering) cannot be
-  reconstructed, so the trees leave it out; the declarations are there
-  for whoever finds such code.  `tconfig.h` and the rest of mips.h are
+  patterns, mips.c expanders) cannot be reconstructed, so the trees
+  leave it out; the declarations (all three enums, at the original
+  lines: comments stand in for the unknown lines) and the VFPU
+  registers (see "210 hard registers" under 1.9.2) are there for
+  whoever finds such code.  `tconfig.h` and the rest of mips.h are
   1.7.1's.
 - The 1.8.x newlib line tables are ordinary again (address advances, see
   1.6.1), so no `newlib:locfix`.
@@ -688,13 +690,39 @@ libgcc/libsupc++ DWARF names `gcc-3.3.6/` paths.
   libgcc unwinder (unwind-dw2.c from the 1.9.2 tree's gcc-3.3.6) has
   `_Unwind_Context.reg[211]`, a 211-byte (0xD3) `dwarf_reg_size_table`, and
   `__builtin_init_dwarf_reg_size_table` stores a size for each of 210
-  registers (`init_dwarf_reg_size_table` 0x358 bytes); demo_duck/harmonic's
-  1.6.1.internal unwinder has 0xB1 = 177 bytes, i.e. stock mips' 176.  The 34
-  extra registers fit the VFPU register classes 1.8.3's mips.h declares
-  (`VFPU_REGS`, `VFPU_SRAND`, `VFPU_CC`); none is allocated in any code seen,
-  so code generation is unaffected apart from the unwinder's frame tables.
-  The unwind units match with `DWARF_FRAME_REGISTERS 210` and the builtin
-  written out; the tree does not have the registers yet.
+  registers (`init_dwarf_reg_size_table` 0x358 bytes: 210 `sb` of 4 plus
+  the prologue); demo_duck/harmonic's 1.6.1.internal unwinder has 0xB1 =
+  177 bytes, i.e. stock mips' 176.  The stores are 4 at DWARF columns 0-30,
+  64 (for `$31`), 32-209: register *i* goes to column *i* (mips'
+  `DWARF_FRAME_REGNUM`), so the 34 new registers are at the end, 176-209.
+  The sizes say nothing more: `GET_MODE_SIZE (reg_raw_mode[i])` is 4 for
+  any register that holds SImode or SFmode (`choose_hard_reg_mode` tries
+  integer modes first, then floats, then vectors) and for one that holds
+  nothing (the previous register's mode), so 16-byte vector registers that
+  also take SFmode store 4 too.  The count of 34 = 32 + 1 + 1 is fixed by
+  mips.h's line numbers: 1.8's mips.h has 39 more lines than 1.7.1's
+  between `struct mips_args` and `enum mips_builtins`, exactly 34 more
+  `REGISTER_NAMES` lines (one per register) plus 5 more
+  `DEBUG_REGISTER_NAMES` lines (eight names per line); the +14 between
+  `reg_class` and `mips_args` fit `REG_CLASS_NAMES` (+3),
+  `REG_CLASS_CONTENTS` (+3) and `REG_ALLOC_ORDER` (+3, 16 per line) plus
+  5 unknown lines, and the +55 before `reg_class` hold the new
+  `FIXED_REGISTERS`/`CALL_USED_REGISTERS`/`CALL_REALLY_USED_REGISTERS`
+  rows and register macros (24 lines here) plus unknown ones.  With the
+  three new classes `VFPU_REGS`, `VFPU_SRAND`, `VFPU_CC` that gives the
+  layout in the trees (1.8.3, 1.8.4 and 1.9.2, as 1.8.3's mips.h DWARF is
+  line for line 1.9.2's): 176-207 are 32 VFPU vector registers
+  (`VFPU_REGS`, named `C000`...`C730`, the columns of the eight 4x4
+  matrices; SFmode or V4SFmode, a V16SFmode matrix in four), 208 the VFPU
+  random number state (`VFPU_SRAND`, `vrnd`), 209 the VFPU condition code
+  (`VFPU_CC`, `vcc`), both SImode; all fixed and call-used, no debug
+  register number.  The numbering within the 34, the modes and the names
+  are a reconstruction.  Nothing allocates them, and code generation is
+  unchanged: rs4_main (with the unwind units now plain gcc-3.3.6 source),
+  mpegon, mpegstr, UCJS90007 and htmlviewer rebuild identically from
+  clean with the new cc1s, and `tools/gcchdr.py` reports no mips.h
+  difference for rs4_main (1.9.2), mpegon and mpegstr (1.8.3); for
+  UCJS90007 (1.8.4) only the 22 internal lines remain.
 - **1.9.2's newlib is a locfix build** like 1.6.1's (`newlib:locfix`):
   `rand` and `powf` match only that way and all 94 C newlib units of
   rs4_main match with it.
