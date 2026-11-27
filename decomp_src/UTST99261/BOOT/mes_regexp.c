@@ -1,11 +1,29 @@
+/* cflags: -O1 */
 #include "common.h"
 #include "m2c_macros.h"
+M2C_UNK mes_gc_mark(int);                           /* extern */
+M2C_UNK mes_util_vals_mark(int);                    /* extern */
+M2C_UNK MEM_free(M2C_UNK, int);                     /* extern */
+M2C_UNK mes_gc_register(M2C_UNK *, M2C_UNK, M2C_UNK, M2C_UNK); /* extern */
+extern unsigned char mes_cap_method;
+extern unsigned char mes_closure_method;
+extern unsigned char mes_regexp_method;
+extern unsigned char mes_state_method;
+
 M2C_UNK mes_util_vals_free(int);                    /* extern */
 
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_regexp", mes_regexp_new);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_regexp", mes_regexp_mark);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void mes_regexp_mark(void *arg0) {
+    mes_object_mark(arg0);
+    mes_gc_mark(M2C_FIELD(arg0, int *, 0x14));
+    mes_gc_mark(M2C_FIELD(arg0, int *, 0x18));
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_regexp", mes_regexp_get);
 
@@ -15,7 +33,19 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_regexp", mes_regexp_canput)
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_regexp", mes_closure_new);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_regexp", mes_closure_mark);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void mes_closure_mark(void *arg0) {
+    int temp_v1;
+
+    temp_v1 = M2C_FIELD(arg0, int *, 0);
+    if (!(temp_v1 & 1)) {
+        M2C_FIELD(arg0, int *, 0) = (int) (temp_v1 | 1);
+        mes_util_vals_mark(M2C_FIELD(arg0, int *, 8));
+    }
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -29,13 +59,42 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_regexp", mes_cap_new);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_regexp", mes_cap_mark);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_regexp", mes_cap_free);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void mes_cap_free(void *arg0) {
+    if (M2C_FIELD(arg0, int *, 4) > 0) {
+        MEM_free(0, M2C_FIELD(arg0, int *, 8));
+    }
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_regexp", mes_state_new);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_regexp", mes_state_mark);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_regexp", mes_regexp_initialize);
+void mes_state_mark(void *arg0) {
+    int temp_v1;
+
+    temp_v1 = M2C_FIELD(arg0, int *, 0);
+    if (!(temp_v1 & 1)) {
+        M2C_FIELD(arg0, int *, 0) = (int) (temp_v1 | 1);
+        mes_gc_mark(M2C_FIELD(arg0, int *, 8));
+    }
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void mes_regexp_initialize(void) {
+    mes_gc_register(&mes_regexp_method, 0x30, 0x10, 0x10);
+    mes_gc_register(&mes_closure_method, 0xC, 0x10, 0x10);
+    mes_gc_register(&mes_cap_method, 0xC, 0x10, 0x10);
+    mes_gc_register(&mes_state_method, 0xC, 0x10, 0x10);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_regexp", mes_regexp_charset_match);
 

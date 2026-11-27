@@ -1,4 +1,10 @@
+/* cflags: -O1 */
 #include "common.h"
+#include "m2c_macros.h"
+int mes_string_compare();                           /* extern */
+M2C_UNK mes_gc_register(M2C_UNK *, M2C_UNK, M2C_UNK, M2C_UNK); /* extern */
+extern unsigned char mes_string_method;
+
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_string", mes_string_new);
 
@@ -10,13 +16,31 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_string", mes_string_compare
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_string", mes_string_add);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_string", mes_string_equal);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+int mes_string_equal(void *arg0, void *arg1) {
+    int var_s0;
+
+    var_s0 = 0;
+    if ((M2C_FIELD(arg0, int *, 4) == M2C_FIELD(arg1, int *, 4)) && (mes_string_compare() == 0)) {
+        var_s0 = 1;
+    }
+    return var_s0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_string", mes_string_buf_getc);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_string", mes_string_free);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_string", mes_string_initialize);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void mes_string_initialize(void) {
+    mes_gc_register(&mes_string_method, 8, 0x64, 0x64);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_string", mes_string_constructor);
 
