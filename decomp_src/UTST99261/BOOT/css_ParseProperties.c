@@ -31,6 +31,8 @@ void MEM_free(int pool, void *p);
 typedef struct CSSNUMVAL { s16 type; s16 pad; int x4; double d; } CSSNUMVAL;
 extern CSSPROPNAME CSSUnitNames[];
 double atof(const char *s);
+void *MEM_calloc(int pool, int size);
+void freeCSSPrimitiveValue(void *v, int all);
 u16 *ParseUNIT(s16 *out, u16 *p) {
     char buf[256];
     u16 *ret = NULL;
@@ -1517,7 +1519,47 @@ u16 *ParseFontFamily(CSSVALUE *v, u16 *p) {
     return ParseCSSString(v, p);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_ParseProperties", ParseCSSFont);
+u16 *ParseCSSFont(void *decl, u16 *p) {
+    CSSVALUE *v;
+    u16 *r;
+    v = newCSSValue();
+    if (v == NULL) {
+        return CSS_SkipProperty(p);
+    }
+    p = CSS_SkipBlanksAndComments(p);
+    if ((r = ParseCSSIdent(v, p, 0x1B)) == NULL && (r = ParseCSSIdent(v, p, 0x4C)) == NULL &&
+        (r = ParseCSSIdent(v, p, 0x6D)) == NULL && (r = ParseCSSIdent(v, p, 0x6E)) == NULL &&
+        (r = ParseCSSIdent(v, p, 0xA0)) == NULL && (r = ParseCSSIdent(v, p, 0xA7)) == NULL &&
+        (r = ParseCSSIdent(v, p, 0x4D)) == NULL) {
+        while (*p != 0 && *p != ';' && *p != '}' && *p != '!') {
+            if (v == NULL && (v = newCSSValue()) == NULL) {
+                return CSS_SkipProperty(p);
+            }
+            if (*p == '/') {
+                p++;
+                p = CSS_SkipBlanksAndComments(p);
+                r = ParseLineHeight(v, p);
+            } else if (*p == ',') {
+                p++;
+                p = CSS_SkipBlanksAndComments(p);
+                r = ParseFontFamily(v, p);
+            } else if ((r = ParseFontStyle(v, p)) == NULL && (r = ParseFontVariant(v, p)) == NULL &&
+                       (r = ParseFontWeight(v, p)) == NULL && (r = ParseFontSize(v, p)) == NULL) {
+                r = ParseFontFamily(v, p);
+            }
+            if (r == NULL) {
+                freeCSSValue(v);
+                return CSS_SkipProperty(p);
+            }
+            addCSSValue(decl, v);
+            v = NULL;
+            p = CSS_SkipBlanksAndComments(r);
+        }
+        return p;
+    }
+    addCSSValue(decl, v);
+    return r;
+}
 
 u16 *ParseCSSFontFamily(void *decl, u16 *p) {
     CSSVALUE *v;
@@ -2447,7 +2489,80 @@ u16 *ParseCSSTextDecoration(void *decl, u16 *p) {
     return r;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_ParseProperties", ParseCSSTextShadow);
+u16 *ParseCSSTextShadow(void *decl, u16 *p) {
+    CSSVALUE *v;
+    u16 *r;
+    int flags;
+    s16 *pv;
+    v = newCSSValue();
+    if (v == NULL) {
+        return CSS_SkipProperty(p);
+    }
+    p = CSS_SkipBlanksAndComments(p);
+    if ((r = ParseCSSIdent(v, p, 0x79)) != NULL || (r = ParseCSSIdent(v, p, 0x4D)) != NULL) {
+        p = r;
+        addCSSValue(decl, v);
+        return p;
+    }
+    flags = 0;
+    v->type = 8;
+    pv = NULL;
+    while (*p != 0 && *p != ';' && *p != '}' && *p != '!') {
+        if (pv == NULL) {
+            pv = MEM_calloc(0, 0x18);
+            if (pv == NULL) {
+                p = CSS_SkipProperty(p);
+                break;
+            }
+        }
+        if ((flags & 7) != 7 && (r = ParseUNIT(pv, p)) != NULL) {
+            p = r;
+            if (!(flags & 1)) {
+                flags |= 1;
+                v->unk24 = (int)pv;
+            } else if (!(flags & 2)) {
+                flags |= 2;
+                v->ident = (int)pv;
+            } else if (!(flags & 4)) {
+                flags |= 4;
+                *(s16 **)(v + 1) = pv;
+            } else {
+                goto bad;
+            }
+        } else if (!(flags & 8) && (r = ParseCOLOR(pv, p)) != NULL) {
+            p = r;
+            flags |= 8;
+            *(s16 **)&v->unit = pv;
+        } else {
+bad:
+            p = CSS_SkipProperty(p);
+            freeCSSPrimitiveValue(pv, 1);
+            break;
+        }
+        pv = NULL;
+        p = CSS_SkipBlanksAndComments(p);
+        if (*p == ',' || flags == 0xF) {
+            if (*p == ',') {
+                p++;
+                p = CSS_SkipBlanksAndComments(p);
+            }
+            addCSSValue(decl, v);
+            flags = 0;
+            v = newCSSValue();
+            if (v == NULL) {
+                return CSS_SkipProperty(p);
+            }
+        }
+    }
+    if (v != NULL) {
+        if (flags == 0) {
+            freeCSSValue(v);
+        } else {
+            addCSSValue(decl, v);
+        }
+    }
+    return p;
+}
 
 u16 *ParseCSSTextTransform(void *decl, u16 *p) {
     CSSVALUE *v;
