@@ -31,6 +31,15 @@ int sgxListEnumID(M2C_UNK *, M2C_UNK);              /* extern */
 extern unsigned char D_0011FC98;
 
 
+#include <stdarg.h>
+int vsprintf(char *, const char *, va_list);
+void sgxBmgWriteTerm(int);
+int sgxBmgGetFree(int);
+int sgxBmgGetLeft(int);
+int sgxBmgWrite(int, const void *, int);
+void sgxAttrSetValueSafe(void *, int, int);
+void sgxSndPlayName(int, const char *, int);
+
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", SlotGetAt_7DD48);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", SlotGetAtStop);
@@ -256,7 +265,13 @@ void sgxSndPlaySeqStr(int arg0, int arg1, int arg2) {
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", sgxSndPlayName);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", sgxSndPlayNameF);
+void sgxSndPlayNameF(int a, const char *fmt, int c, ...) {
+    char buf[1024];
+    va_list ap;
+    va_start(ap, c);
+    vsprintf(buf, fmt, ap);
+    sgxSndPlayName(a, buf, c);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", SlotStop);
 
@@ -294,7 +309,13 @@ void sgxSndStopFadeName(int id, float fade)
     SlotStopName(id, 0, fade);
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", sgxSndStopNameF);
+void sgxSndStopNameF(const char *fmt, int x, ...) {
+    char buf[1024];
+    va_list ap;
+    va_start(ap, x);
+    vsprintf(buf, fmt, ap);
+    SlotStopName((int)buf, x, 0.0f);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", sgxSndStopFadeNameF);
 
@@ -344,11 +365,27 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", sgxSndSetDry);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", sgxSndSetWet);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", sgxSndSetPitch);
+extern const char D_0010A550[];
+extern const float D_0010A808;
+void sgxSndSetPitch(int id, float f) {
+    char *p = SlotGetAt_7DD48(id, D_0010A550);
+    if (p != NULL) sgxAttrSetValueSafe(p + 0x38, 9, (int)(f * D_0010A808));
+}
+const float D_0010A808 = 4096.0f;
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", sgxSndSetSpeed);
+extern const char D_0010A55C[];
+extern const float D_0010A80C;
+void sgxSndSetSpeed(int id, float f) {
+    char *p = SlotGetAt_7DD48(id, D_0010A55C);
+    if (p != NULL) sgxAttrSetValueSafe(p + 0x38, 10, (int)(f * D_0010A80C));
+}
+const float D_0010A80C = 4096.0f;
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", sgxSndCancelLock);
+extern const char D_0010A568[];
+void sgxSndCancelLock(int id) {
+    unsigned char *p = SlotGetAt_7DD48(id, D_0010A568);
+    if (p != NULL) p[0x11] &= ~1;
+}
 
 void sgxSndSetStrBuf(int a0, int a1, int a2)
 {
@@ -391,7 +428,15 @@ int sgxSndGetName(int id)
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", sgxSndGetPlayInfo);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", sgxSndSetMarkerCallback);
+extern const char D_0010A604[];
+void *sgxSndSetMarkerCallback(int id, void *cb) {
+    char *p = SlotGetAt_7DD48(id, D_0010A604);
+    void *old;
+    if (p == NULL) return NULL;
+    old = *(void **)(p + 0xCC);
+    *(void **)(p + 0xCC) = cb;
+    return old;
+}
 
 int sgxSndGetMarkerCallback(int id)
 {
@@ -446,7 +491,12 @@ void sgxSndDoFade(int a0, int a1)
     SlotDoFade(a0, a1, 0);
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", sgxSndGetFadeLevel);
+extern const char D_0010A6CC[];
+int sgxSndGetFadeLevel(int id) {
+    char *p = SlotGetAt_7DD48(id, D_0010A6CC);
+    if (p == NULL) return 0;
+    return *(short *)(p + 0x26) >> 5;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", sgxSndGetFadePos);
 
@@ -458,15 +508,38 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", sgxSndSetChannelVolume);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", sgxSndGetChannelVolume);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", sgxSndWriteStrData);
+extern const char D_0010A73C[];
+int sgxSndWriteStrData(int id, const void *data, int size) {
+    char *p = SlotGetAt_7DD48(id, D_0010A73C);
+    if (p == NULL) return 0;
+    return sgxBmgWrite(*(short *)(p + 0x1E), data, size);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", sgxSndWriteStrTerm);
+extern const char D_0010A74C[];
+void sgxSndWriteStrTerm(int id) {
+    char *p = SlotGetAt_7DD48(id, D_0010A74C);
+    if (p != NULL) sgxBmgWriteTerm(*(short *)(p + 0x1E));
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", sgxSndGetStrFreeSize);
+extern const char D_0010A75C[];
+int sgxSndGetStrFreeSize(int id) {
+    char *p = SlotGetAt_7DD48(id, D_0010A75C);
+    if (p == NULL) return -1;
+    return sgxBmgGetFree(*(short *)(p + 0x1E));
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", sgxSndGetStrLeftSize);
+extern const char D_0010A76C[];
+int sgxSndGetStrLeftSize(int id) {
+    char *p = SlotGetAt_7DD48(id, D_0010A76C);
+    if (p == NULL) return -1;
+    return sgxBmgGetLeft(*(short *)(p + 0x1E));
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", sgxSndSetSyncMaster);
+extern const char D_0010A77C[];
+void sgxSndSetSyncMaster(int id, int v) {
+    char *p = SlotGetAt_7DD48(id, D_0010A77C);
+    if (p != NULL) *(short *)(p + 0xE6) = v;
+}
 
 int sgxSndGetSyncMaster(int id)
 {
