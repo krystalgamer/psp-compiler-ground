@@ -30,6 +30,15 @@ int rt_comm_get_version_string_ptr(void) {
     return gpszVersion_11536C;
 }
 
+typedef int (*CommFn)();
+#define COMMIF(off) (*(CommFn *)((char *)gCommPlatformInterfacePtr + (off)))
+extern int gnInitCount_1353F4;
+extern char gLookupData[];
+void rt_comm_metric_init();
+void *memset(void *, int, unsigned int);
+int rt_comm_echo_shutdown();
+int rt_comm_is_connected(char *, int *);
+
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_comm/src/rt_comm", rcsid_10E72C);
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_comm/src/rt_comm", header_rcsid_10E788);
@@ -45,9 +54,35 @@ M2C_UNK *rt_comm_get_build_timestamp(void) {
     return "15:12:27 Sep 19 2005";
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_comm/src/rt_comm", rt_comm_startup);
+int rt_comm_startup(void)
+{
+    int r;
+    if (gCommPlatformInterfacePtr == NULL) return 5;
+    if (gnInitCount_1353F4 == 0) {
+        r = COMMIF(0)();
+        if (r != 0) return r;
+        rt_comm_metric_init();
+        memset(gLookupData, 0, 0x224);
+        (&gEchoInfo)[0] = 0;
+        (&gEchoInfo)[1] = 0;
+        (&gEchoInfo)[2] = 0;
+    }
+    gnInitCount_1353F4++;
+    return 0;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_comm/src/rt_comm", rt_comm_shutdown);
+void rt_comm_shutdown(void)
+{
+    if (gnInitCount_1353F4 <= 0) return;
+    rt_comm_echo_shutdown();
+    if (--gnInitCount_1353F4 != 0) return;
+    (*(void (**)(void))((char *)gCommPlatformInterfacePtr + 4))();
+    rt_comm_metric_init();
+    memset(gLookupData, 0, 0x224);
+    (&gEchoInfo)[0] = 0;
+    (&gEchoInfo)[1] = 0;
+    (&gEchoInfo)[2] = 0;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_comm/src/rt_comm", rt_comm_update);
 
@@ -88,7 +123,24 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_comm/src/rt_comm", rt_com
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_comm/src/rt_comm", rt_comm_receive_echo);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_comm/src/rt_comm", rt_comm_get_avail_bytes_to_read);
+int rt_comm_get_avail_bytes_to_read(char *ch, int *out)
+{
+    int conn;
+    int r;
+    *out = 0;
+    if (rt_comm_is_valid_channel(ch) == 0) return 2;
+    if (*(int *)(ch + 0x20) == 0 && *(int *)(ch + 0xC) == 0) {
+        conn = 0;
+        r = rt_comm_is_connected(ch, &conn);
+        if (r != 0) return r;
+        if (conn == 0) {
+            *out = 0;
+            return 0;
+        }
+        *(int *)(ch + 0x20) = 1;
+    }
+    return COMMIF(0x30)(*(int *)(ch + 8), out);
+}
 
 void rt_comm_get_local_ip(void) {
     M2C_FIELD(gCommPlatformInterfacePtr, M2C_UNK (**)(), 0x34)();
@@ -102,7 +154,12 @@ void rt_comm_get_host_by_name(void) {
     M2C_FIELD(gCommPlatformInterfacePtr, M2C_UNK (**)(), 0x3C)();
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_comm/src/rt_comm", rt_comm_get_remote_ip);
+int rt_comm_get_remote_ip(char *ch, int *ip)
+{
+    if (rt_comm_is_valid_channel(ch) == 0) return 2;
+    if (*(int *)(ch + 0xC) != 0 && *(int *)(ch + 0xC) != 2) return 0xC355;
+    return COMMIF(0x40)(*(int *)(ch + 8), ip);
+}
 
 void rt_comm_display_state(void) {
     M2C_FIELD(gCommPlatformInterfacePtr, M2C_UNK (**)(), 0x44)();
@@ -132,7 +189,18 @@ int rt_comm_get_local_port(char *ch, int *out)
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_comm/src/rt_comm", rt_comm_is_connected);
+int rt_comm_is_connected(char *ch, int *out)
+{
+    int r;
+    if (rt_comm_is_valid_channel(ch) == 0) return 2;
+    if (*(int *)(ch + 0xC) != 0) return 0xC355;
+    if (*(int *)(ch + 0x20) == 0) {
+        r = COMMIF(0x48)(*(int *)(ch + 8), ch + 0x20);
+        if (r != 0) return r;
+    }
+    *out = *(int *)(ch + 0x20);
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_comm/src/rt_comm", rt_comm_get_host_by_name_nb);
 
