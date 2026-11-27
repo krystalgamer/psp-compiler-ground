@@ -5,7 +5,23 @@
 #include "adhoc_auth.h"
 /* --- end declarations --- */
 
-INCLUDE_ASM("tmp/asm/tony_libs/pspnet_adhoc_auth/nonmatchings/crypt", func_00001214);
+int func_00001214(void)
+{
+	int ret;
+	int i;
+
+	if (sceMemab_driver_01FD1BA0() < 0)
+		return 0x80410688;
+	for (i = 0; i < 16; i++) {
+		D_00003FD8[i].first = 0;
+		D_00003FD8[i].last = &D_00003FD8[i].first;
+	}
+	ret = sceKernelCreateSema("SceNetAdhocAuth", 0, 1, 1, 0);
+	if (ret < 0)
+		return ret;
+	D_00003FD4 = ret;
+	return 0;
+}
 
 void func_00001290(void)
 {
