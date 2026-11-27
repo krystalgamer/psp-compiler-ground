@@ -2,6 +2,10 @@
 #include "common.h"
 #include "mes_js.h"
 #include "m2c_macros.h"
+MesValue mes_eval_object_get(MesContext *ctx, MesValue o, unsigned int id);
+MesValue mes_eval_object_put(MesContext *ctx, MesValue o, unsigned int id, MesValue v);
+int mes_eval_object_delete(MesContext *ctx, MesValue o, unsigned int id);
+unsigned int mes_eval_to_uint32(MesContext *ctx, MesValue v);
 extern unsigned int mes_ids[];
 extern void *mes_array_table;
 MesValue mes_array_constructor(MesContext *ctx);
@@ -114,13 +118,72 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_array", mes_array_to_locale
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_array", mes_array_concat);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_array", mes_array_pop);
+MesValue mes_array_pop(MesContext *ctx)
+{
+    MesValue t = (MesValue)ctx->frame->thisobj;
+    MesValue v;
+    unsigned int n;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_array", mes_array_push);
+    v = mes_eval_object_get(ctx, t, D_005852E4);
+    n = 0;
+    if (v != 0x20)
+        n = mes_eval_to_uint32(ctx, v);
+    v = 0;
+    if (n != 0) {
+        n--;
+        v = mes_eval_object_get(ctx, t, MES_INT(n));
+        mes_eval_object_delete(ctx, t, MES_INT(n));
+    }
+    *--ctx->sp = v;
+    mes_eval_object_put(ctx, t, D_005852E4, MES_INT(n));
+    ctx->sp++;
+    return v;
+}
+
+MesValue mes_array_push(MesContext *ctx)
+{
+    MesValue t = (MesValue)ctx->frame->thisobj;
+    MesArgs *a;
+    MesValue v;
+    unsigned int n;
+    unsigned int i;
+
+    v = mes_eval_object_get(ctx, t, D_005852E4);
+    n = 0;
+    if (v != 0x20)
+        n = mes_eval_to_uint32(ctx, v);
+    a = ctx->frame->args;
+    if (a != NULL)
+        for (i = 0; i < a->argc; i++, n++)
+            mes_eval_object_put(ctx, t, MES_INT(n), a->argv[i]);
+    v = MES_INT(n);
+    mes_eval_object_put(ctx, t, D_005852E4, v);
+    return v;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_array", mes_array_reverse);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_array", mes_array_shift);
+MesValue mes_array_shift(MesContext *ctx)
+{
+    MesValue t = (MesValue)ctx->frame->thisobj;
+    MesValue v;
+    MesValue first;
+    unsigned int n;
+    unsigned int i;
+
+    v = mes_eval_object_get(ctx, t, D_005852E4);
+    if (v != 0x20 && (n = mes_eval_to_uint32(ctx, v)) != 0) {
+        first = mes_eval_object_get(ctx, t, MES_INT(0));
+        for (i = 1; i < n; i++) {
+            v = mes_eval_object_get(ctx, t, MES_INT(i));
+            mes_eval_object_put(ctx, t, MES_INT(i - 1), v);
+        }
+        n--;
+        mes_eval_object_put(ctx, t, D_005852E4, MES_INT(n));
+        return first;
+    }
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_array", mes_array_slice);
 
