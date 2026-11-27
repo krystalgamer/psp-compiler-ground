@@ -456,6 +456,9 @@ segments:
       - [0x177778, rodata, asm/rodata_1776F8]
       - [0x177998, .rodata, gcc-3.3.3/libstdc__-v3/src/ctype]
       - [0x1779A8, rodata, asm/rodata_177928]
+      - [0x177B68, .rodata, gcc-3.3.3/gcc/unwind-dw2]
+      - [0x177F00, .rodata, gcc-3.3.3/gcc/unwind-dw2-fde]
+      - [0x177F34, rodata, asm/rodata_177EB4]
   - [0x178EC8, bin, seg1_align]
   - name: demo_harmonic_seg1
     type: code
@@ -485,5 +488,8 @@ segments:
       - { start: 0x189CE4, type: .bss, vram: 0x19B454, name: gcc-3.3.3/libstdc__-v3/src/codecvt }
       - { start: 0x189CE4, type: .bss, vram: 0x19B458, name: gcc-3.3.3/libstdc__-v3/src/ctype }
       - { start: 0x189CE4, type: bss, vram: 0x19B45C, name: bss_19B45C }
+      - { start: 0x189CE4, type: .bss, vram: 0x19B460, name: gcc-3.3.3/gcc/unwind-dw2 }
+      - { start: 0x189CE4, type: .bss, vram: 0x19B518, name: gcc-3.3.3/gcc/unwind-dw2-fde }
+      - { start: 0x189CE4, type: bss, vram: 0x19B528, name: bss_19B528 }
   - [0x189CE4, bin, elf_trailer]
   - [0x6F94A8]

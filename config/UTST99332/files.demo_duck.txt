@@ -47,6 +47,13 @@ rodata 0x17A6D0 time_members
 rodata 0x17A7E8 basic_file
 rodata 0x17A8E4 c__locale
 rodata 0x17A934 -
+# libgcc's unwinder (upstream unwind-dw2.c, unwind-dw2-fde.c of the 1.6.1 tree): .rodata (jump tables), .bss
+rodata 0x17AE18 gcc-3.3.3/gcc/unwind-dw2
+rodata 0x17B1B0 gcc-3.3.3/gcc/unwind-dw2-fde
+rodata 0x17B1E4 -
+bss 0x19E8E0 gcc-3.3.3/gcc/unwind-dw2
+bss 0x19E998 gcc-3.3.3/gcc/unwind-dw2-fde
+bss 0x19E9A8 -
 # WaterPatch.cpp's C++ .bss: the header statics (math::HERMITE_BASIS..), mipmap_offset[5], set_disk's seed
 bss 0x18CF9C WaterPatch
 bss 0x18D0F8 -

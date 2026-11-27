@@ -43,6 +43,13 @@ rodata 0x1773A0 time_members
 rodata 0x1774B8 basic_file
 rodata 0x1775B4 c__locale
 rodata 0x177604 -
+# libgcc's unwinder (upstream unwind-dw2.c, unwind-dw2-fde.c of the 1.6.1 tree): .rodata (jump tables), .bss
+rodata 0x177AE8 gcc-3.3.3/gcc/unwind-dw2
+rodata 0x177E80 gcc-3.3.3/gcc/unwind-dw2-fde
+rodata 0x177EB4 -
+bss 0x19B460 gcc-3.3.3/gcc/unwind-dw2
+bss 0x19B518 gcc-3.3.3/gcc/unwind-dw2-fde
+bss 0x19B528 -
 # math_* objects whose static initializer (the header statics) is C++: their .rodata and .bss
 rodata 0x1655F8 main_objs/math_SphericalCoord
 rodata 0x165628 main_objs/math_ZYZ
