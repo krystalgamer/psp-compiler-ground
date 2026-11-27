@@ -21,6 +21,10 @@ M2C_UNK searchStrings();                            /* extern */
 #ifndef NULL
 #define NULL ((void *)0)
 #endif
+typedef struct RPOS { int x; int y; } RPOS;
+void *rnd_findParentBoxnode(void *bn, int type);
+void GUI_ScrollPane_getScrollPosition(void *pane, int *x, int *y);
+void rnd_gdrawGetViewClientSize(void *pane, int *w, int *h);
 int checkParentBox(M2C_UNK *arg0, int arg1) {
     M2C_UNK *var_a0;
     int var_v0;
@@ -114,7 +118,29 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_anim", rnd_newMarquee);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_anim", rnd_updateAnimMarqueeBoxnode);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_anim", rnd_resetAnimMarqueeBoxnode);
+int rnd_resetAnimMarqueeBoxnode(void *bn, RPOS *pos) {
+    RPOS p;
+    void *a;
+    void *par;
+    int sx, sy, w, h;
+
+    p = *pos;
+    a = M2C_FIELD(bn, void **, 0x2C);
+    if (a == NULL)
+        return 0;
+    M2C_FIELD(a, int *, 0x1C) = p.x;
+    M2C_FIELD(a, int *, 0x20) = p.y;
+    M2C_FIELD(a, int *, 4) = M2C_FIELD(a, int *, 8);
+    par = rnd_findParentBoxnode(bn, 1);
+    if (par == NULL)
+        return 0;
+    GUI_ScrollPane_getScrollPosition(M2C_FIELD(par, void **, 0x2C), &sx, &sy);
+    rnd_gdrawGetViewClientSize(M2C_FIELD(par, void **, 0x2C), &w, &h);
+    return sx < M2C_FIELD(bn, int *, 0x10) + M2C_FIELD(bn, int *, 0x18)
+        && M2C_FIELD(bn, int *, 0x10) < sx + w
+        && sy < M2C_FIELD(bn, int *, 0x14) + M2C_FIELD(bn, int *, 0x1C)
+        && M2C_FIELD(bn, int *, 0x14) < sy + h;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
