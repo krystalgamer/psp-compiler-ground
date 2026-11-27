@@ -107,6 +107,15 @@ M2C_UNK mes_util_vals_free(int);                    /* extern */
 
 int mes_util_is_alpha_digit(unsigned short c);
 int mes_util_char_in(unsigned short c, const char *set);
+int mes_string_buf_getc();
+void *mes_line_new(int (*getc)(), void *buf, int n);
+void *mes_lex_new(EvCtx *ctx, void *line);
+void mes_lex_free(void *lex);
+void *mes_parse_program(EvCtx *ctx, void *lex, int mode);
+void mes_parse_node_free(void *node);
+int mes_compile(EvCtx *ctx, void *node);
+void mes_list_free2(int list, int keep);
+int mes_error_syntax(EvCtx *ctx, int a);
 void *mes_eval_scope_new(EvCtx *ctx, int a, int b, int c)
 {
     char *o = mes_gc_alloc(ctx, 5);
@@ -546,7 +555,52 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_eval", mes_eval_byte);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_eval", mes_eval);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_eval", mes_eval_string);
+int mes_eval_string(EvCtx *ctx, int s, int thisobj, int x)
+{
+    unsigned short *b[2];
+    int *sp;
+    void *lex;
+    int list;
+    void *node;
+    int r;
+
+    if ((s & 3) != 3) {
+        return s;
+    }
+    sp = ctx->sp;
+    b[0] = ((EvStr *)(s & ~3))->str;
+    b[1] = b[0] + ((EvStr *)(s & ~3))->len;
+    lex = mes_lex_new(ctx, mes_line_new(mes_string_buf_getc, b, 0));
+    list = M2C_FIELD(ctx, int *, 8);
+    node = mes_parse_program(ctx, lex, 0);
+    if (M2C_FIELD(lex, unsigned short *, 0x12) == 0) {
+        r = mes_compile(ctx, node);
+        mes_parse_node_free(node);
+        mes_list_free2(M2C_FIELD(ctx, int *, 8), list);
+        M2C_FIELD(ctx, int *, 8) = list;
+        ctx->sp = sp;
+        if (ctx->error == 0) {
+            ctx->sp = sp - 1;
+            sp[-1] = r;
+            M2C_FIELD(r, int *, 0x28) = M2C_FIELD(ctx->frame, int *, 0x18);
+            r = mes_eval(ctx, r, 0, thisobj, 1);
+            ctx->sp++;
+        }
+    } else {
+        if (node != NULL) {
+            mes_parse_node_free(node);
+        }
+        mes_list_free2(M2C_FIELD(ctx, int *, 8), list);
+        M2C_FIELD(ctx, int *, 8) = list;
+        ctx->sp = sp;
+        if (ctx->error == 0) {
+            ctx->error = mes_error_syntax(ctx, 0);
+        }
+        r = 0;
+    }
+    mes_lex_free(lex);
+    return r;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
