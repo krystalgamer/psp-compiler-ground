@@ -74,7 +74,38 @@ int inv_classic_hiscoreinit(void)
 	return 0;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_menu", inv_classic_hiscore);
+typedef struct { u8 pad[8]; int score[5]; char name[5][9]; } SD_HISCORE;
+typedef struct { int f0; char name[5][10]; int score[5]; } HISCORE_DISP;
+int pad_sw(void);
+int pad_ret_button(void);
+int pad_cansel_button(void);
+void se_start(int no);
+char *strcpy(char *, const char *);
+void inv_hiscore_disp(HISCORE_DISP *d);
+int inv_classic_hiscore(void)
+{
+	HISCORE_DISP d;
+	SD_HISCORE *s;
+
+	if (pad_sw() & (pad_ret_button() | pad_cansel_button())) {
+		se_start(1);
+		return 1;
+	}
+	s = (SD_HISCORE *)&save_data;
+	d.f0 = 0;
+	d.score[0] = s->score[0];
+	d.score[1] = s->score[1];
+	d.score[2] = s->score[2];
+	d.score[3] = s->score[3];
+	d.score[4] = s->score[4];
+	strcpy(d.name[0], s->name[0]);
+	strcpy(d.name[1], s->name[1]);
+	strcpy(d.name[2], s->name[2]);
+	strcpy(d.name[3], s->name[3]);
+	strcpy(d.name[4], s->name[4]);
+	inv_hiscore_disp(&d);
+	return 0;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
