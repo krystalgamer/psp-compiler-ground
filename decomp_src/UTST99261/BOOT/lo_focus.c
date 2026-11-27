@@ -607,7 +607,65 @@ int isFocusInDisplay(void *frame, FOCUSLIST *l) {
     return r;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_focus", scrollToNextPosition);
+FOCUSLIST *scrollToNextPosition(void *frame, void *a1, FOCUSLIST *l, int dir)
+{
+    int vx, vy, vw, vh;
+    int cw, ch;
+    int dx, dy;
+    FOCUSLIST *n;
+
+    initFocusPositionParameter(frame, &vx, &vy, &vw, &vh);
+    cw = M2C_FIELD(M2C_FIELD(frame, void **, 0x20), int *, 0x10);
+    ch = M2C_FIELD(M2C_FIELD(frame, void **, 0x20), int *, 0x14);
+    switch (dir) {
+    case 1:
+        if (vy <= 0)
+            return l;
+        dx = 0;
+        dy = -(M2C_FIELD(ui_global, int *, 0x74) * 2 + 2);
+        break;
+    case 2:
+        if (vy + vh >= ch)
+            return l;
+        dx = 0;
+        dy = M2C_FIELD(ui_global, int *, 0x74) * 2 + 2;
+        break;
+    case 3:
+        if (vx <= 0)
+            return l;
+        dx = -(M2C_FIELD(ui_global, int *, 0x74) * 2);
+        dy = 0;
+        break;
+    case 4:
+        if (vx + vw >= cw)
+            return l;
+        dx = M2C_FIELD(ui_global, int *, 0x74) * 2;
+        dy = 0;
+        break;
+    default:
+        return l;
+    }
+    drawScroll(frame, dx, dy);
+    switch (dir) {
+    case 1:
+        n = getNext2DFocusUp(frame, a1, l, 0);
+        break;
+    case 2:
+        n = getNext2DFocusDown(frame, a1, l, 0);
+        break;
+    case 3:
+        n = getNext2DFocusLeft(frame, a1, l);
+        break;
+    case 4:
+        n = getNext2DFocusRight(frame, a1, l);
+        break;
+    default:
+        return l;
+    }
+    if (n != NULL)
+        l = n;
+    return l;
+}
 
 FOCUSLIST *act2DMoveFocusUp(void *frame, FOCUSLIST *a1, FOCUSLIST *cur) {
     FOCUSLIST *n;
