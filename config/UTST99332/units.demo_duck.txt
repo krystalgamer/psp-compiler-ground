@@ -10,6 +10,7 @@ main_objs/psp_GetKernelErrName               1.6.1.internal  main_objs/psp_GetKe
 main_objs/common_StateMachine_VirtualState   1.6.1.internal  main_objs/common_StateMachine_VirtualState.cpp
 main_objs/common_NoCrash                     1.6.1.internal  main_objs/common_NoCrash.cpp
 main_objs/libc_fix_ItoA                      1.6.1.internal  main_objs/libc_fix_ItoA.cpp
+main_objs/common_trace_new                   1.6.1.internal  main_objs/common_trace_new.cpp
 main_objs/psp_DisplayList                    1.6.1.internal  main_objs/psp_DisplayList.cpp
 main_objs/psp_VertexArrayEdit                1.6.1.internal  main_objs/psp_VertexArrayEdit.cpp
 main_objs/psp_vram                           1.6.1.internal  main_objs/psp_vram.cpp
@@ -24,7 +25,7 @@ main_objs/interp_Path                        1.6.1.internal  main_objs/interp_Pa
 main_objs/glutils_Picking                    1.6.1.internal  main_objs/glutils_Picking.cpp
 main_objs/glutils_PickingBase                1.6.1.internal  main_objs/glutils_PickingBase.cpp
 main_objs/glutils_PositioningInterface       1.6.1.internal  main_objs/glutils_PositioningInterface.cpp
-main_objs/obj                                1.6.1.internal  main_objs/obj.cpp
+main_objs/glutils_Query                      1.6.1.internal  main_objs/glutils_Query.cpp
 main_objs/glutils_RectanglePicking           1.6.1.internal  main_objs/glutils_RectanglePicking.cpp
 main_objs/glutils_StippleMask                1.6.1.internal  main_objs/glutils_StippleMask.cpp
 main_objs/math_Trackball                     1.6.1.internal  main_objs/math_Trackball.cpp

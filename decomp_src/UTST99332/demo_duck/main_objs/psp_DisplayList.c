@@ -7,24 +7,7 @@
 extern "C" const char D_001611A0[], D_001611AC[], D_001611B0[], D_001611D0[], D_001611F0[], D_00161224[];
 extern const char resize_name[] __asm__("_ZZN3psp11DisplayList6resizeEjE19__PRETTY_FUNCTION__");
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/psp_DisplayList", _Z41__static_initialization_and_destruction_0ii_15328);
-
-extern "C" {
-void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_15328");
-/* _GLOBAL__I_/_D_ (local names) */
-void func_000153A4(void);
-void func_000153C4(void);
-}
-
-void func_000153A4(void)
-{
-    static_init(1, 0xFFFF);
-}
-
-void func_000153C4(void)
-{
-    static_init(0, 0xFFFF);
-}
+bool psp::DisplayList::_wflag;
 
 #define DL_ASSERT(c, text, line) SGL_ASSERT(c, D_001611A0, text, D_001611D0, resize_name, line, D_001611AC)
 void psp::DisplayList::resize(unsigned int n)

@@ -66,7 +66,8 @@ segments:
       - [0x19218, c, main_objs/common_StateMachine_VirtualState]
       - [0x198E0, c, main_objs/common_NoCrash]
       - [0x1A8D4, c, main_objs/libc_fix_ItoA]
-      - [0x1AA80, c, main_objs/psp_DisplayList]
+      - [0x1AA80, c, main_objs/common_trace_new]
+      - [0x1AB3C, c, main_objs/psp_DisplayList]
       - [0x1AD44, c, main_objs/psp_VertexArrayEdit]
       - [0x21F40, c, main_objs/psp_vram]
       - [0x234DC, c, main_objs/MakeRGBA8888]
@@ -80,7 +81,7 @@ segments:
       - [0x2F3B4, c, main_objs/glutils_Picking]
       - [0x30524, c, main_objs/glutils_PickingBase]
       - [0x30768, c, main_objs/glutils_PositioningInterface]
-      - [0x320C0, c, main_objs/obj]
+      - [0x320C0, c, main_objs/glutils_Query]
       - [0x3217C, c, main_objs/glutils_RectanglePicking]
       - [0x3272C, c, main_objs/glutils_StippleMask]
       - [0x32B20, c, main_objs/math_Trackball]
@@ -628,7 +629,8 @@ segments:
       - { start: 0x189CE4, type: .bss, vram: 0x18A030, name: main_objs/common_StateMachine_VirtualState }
       - { start: 0x189CE4, type: bss, vram: 0x18A034, name: bss_18A034 }
       - { start: 0x189CE4, type: .bss, vram: 0x18A2C0, name: main_objs/libc_fix_ItoA }
-      - { start: 0x189CE4, type: bss, vram: 0x18A2C4, name: bss_18A2C4 }
+      - { start: 0x189CE4, type: .bss, vram: 0x18A2C4, name: main_objs/common_trace_new }
+      - { start: 0x189CE4, type: .bss, vram: 0x18A2C8, name: main_objs/psp_DisplayList }
       - { start: 0x189CE4, type: .bss, vram: 0x18A2CC, name: main_objs/psp_VertexArrayEdit }
       - { start: 0x189CE4, type: bss, vram: 0x18A358, name: bss_18A358 }
       - { start: 0x189CE4, type: .bss, vram: 0x18A9F8, name: main_objs/glutils_CheckerTexture }
@@ -638,7 +640,7 @@ segments:
       - { start: 0x189CE4, type: .bss, vram: 0x18AD9C, name: main_objs/interp_Path }
       - { start: 0x189CE4, type: bss, vram: 0x18AE60, name: bss_18AE60 }
       - { start: 0x189CE4, type: .bss, vram: 0x18AEE4, name: main_objs/glutils_PositioningInterface }
-      - { start: 0x189CE4, type: bss, vram: 0x18AFA8, name: bss_18AFA8 }
+      - { start: 0x189CE4, type: .bss, vram: 0x18AFA8, name: main_objs/glutils_Query }
       - { start: 0x189CE4, type: .bss, vram: 0x18AFAC, name: main_objs/glutils_RectanglePicking }
       - { start: 0x189CE4, type: .bss, vram: 0x18B030, name: main_objs/math_Trackball }
       - { start: 0x189CE4, type: bss, vram: 0x18B0B4, name: bss_18B0B4 }

@@ -207,7 +207,8 @@ bss 0x18D7D8 -
 0x13AC0 common_StateMachine_VirtualState 1.6.1.internal  main_objs/common_StateMachine_VirtualState.cpp
 0x14188 common_NoCrash           1.6.1.internal  main_objs/common_NoCrash.cpp
 0x1517C libc_fix_ItoA            1.6.1.internal  main_objs/libc_fix_ItoA.cpp
-0x15328 psp_DisplayList          1.6.1.internal  main_objs/psp_DisplayList.cpp
+0x15328 common_trace_new         1.6.1.internal  main_objs/common_trace_new.cpp   # ../lib/common/trace_new.cpp (static ctor named after the file)
+0x153E4 psp_DisplayList          1.6.1.internal  main_objs/psp_DisplayList.cpp   # no static init
 0x155EC psp_VertexArrayEdit      1.6.1.internal  main_objs/psp_VertexArrayEdit.cpp
 0x1C7E8 psp_vram                 1.6.1.internal  main_objs/psp_vram.cpp
 0x1DD84 MakeRGBA8888             1.6.1.internal  main_objs/MakeRGBA8888.cpp   # no static init
@@ -221,7 +222,7 @@ bss 0x18D7D8 -
 0x312EC glutils_Picking          1.6.1.internal  main_objs/glutils_Picking.cpp
 0x3245C glutils_PickingBase      1.6.1.internal  main_objs/glutils_PickingBase.cpp   # no static init
 0x326A0 glutils_PositioningInterface 1.6.1.internal  main_objs/glutils_PositioningInterface.cpp
-0x344BC obj                      1.6.1.internal  main_objs/obj.cpp
+0x344BC glutils_Query            1.6.1.internal  main_objs/glutils_Query.cpp   # ../lib/glutils/Query.cpp: <iostream> only
 0x34578 glutils_RectanglePicking 1.6.1.internal  main_objs/glutils_RectanglePicking.cpp
 0x34B28 glutils_StippleMask      1.6.1.internal  main_objs/glutils_StippleMask.cpp   # no static init
 0x34F1C math_Trackball           1.6.1.internal  main_objs/math_Trackball.cpp
@@ -336,7 +337,8 @@ bss 0x1915B0 -
 rodata 0x161164 main_objs/libc_fix_ItoA
 rodata 0x161174 -
 bss 0x18D740 main_objs/libc_fix_ItoA
-bss 0x18D744 -
+bss 0x18D744 main_objs/common_trace_new
+bss 0x18D748 main_objs/psp_DisplayList
 bss 0x191C40 main_objs/basic_file_parser_basic_file_parser
 bss 0x191C78 main_objs/sys_timer_GetDeltaTime
 bss 0x190200 main_objs/VertexColorEnv
@@ -539,7 +541,7 @@ bss 0x18D38C -
 rodata 0x1654D8 main_objs/glutils_PositioningInterface
 rodata 0x1654F4 -
 bss 0x18E364 main_objs/glutils_PositioningInterface
-bss 0x18E428 -
+bss 0x18E428 main_objs/glutils_Query
 rodata 0x1639F4 main_objs/interp_Path
 rodata 0x163A10 -
 bss 0x18E21C main_objs/interp_Path
