@@ -29,6 +29,34 @@ static inline char *SeqListNext(char *e) {
     return (*(int *)(n + 8) < 0) ? NULL : n;
 }
 
+void CmdPlaySeq(void *, int *);
+void CmdRel(void *, int *);
+void sgxSeqCommand(int, int *);
+void sgxBmgFree(int);
+void sgxPortFree(int);
+void sgxResUnlock(int);
+extern int gSgxPrefErr;
+extern const char D_0010A814[];
+extern int D_00113BB0[];
+extern int D_00113B7C[];
+void sgxPrintfPref(int, const char *, int, const char *, ...);
+#define SGX_ERR(line, ...) if (gSgxDebugFlags & 1) sgxPrintfPref(gSgxPrefErr, D_0010A814, line, __VA_ARGS__)
+typedef struct SeqNode { struct SeqNode *prev, *next; int id; } SeqNode;
+static inline void SeqNodeUnlink(SeqNode *n) {
+    SeqNode *p = n->prev;
+    if (p != n) {
+        p->next = n->next;
+        n->next->prev = p;
+    }
+}
+static inline void SeqNodeAddTail(SeqNode *l, SeqNode *n) {
+    SeqNode *t = l->prev;
+    n->next = l;
+    t->next = n;
+    n->prev = t;
+    n->next->prev = n;
+}
+
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/sgxseq", D_0010A814);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxseq", SlotGetAt_81530);
@@ -52,7 +80,14 @@ void sgxSeqTerm(void) {
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxseq", sgxSeqAlloc);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxseq", sgxSeqFree);
+void sgxSeqFree(int id) {
+    SeqNode *p = SlotGetAt_81530(id, 0);
+    if (p == NULL) return;
+    sgxSeqCommand(id, D_00113B7C);
+    ((int *)p)[3] = 0;
+    SeqNodeUnlink(p);
+    SeqNodeAddTail((SeqNode *)&D_0011FE74, p);
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -124,7 +159,14 @@ int UnitIsUse(char *u, int id) {
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxseq", UnitFreeByID_81E8C);
+void UnitFreeByID_81E8C(void *sv, int id) {
+    char *s = sv;
+    char *e, *n;
+    for (e = SeqListFirst(s + 0x14); e != NULL; e = n) {
+        n = SeqListNext(e);
+        if (*(int *)(e + 8) == id) UnitFree_81D64(e);
+    }
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxseq", LoopBegProc);
 
@@ -161,7 +203,13 @@ void CmdWait(char *s, int *a) {
     if (*(unsigned int *)(s + 0xC) != n) *(unsigned int *)(s + 0xC) = n;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxseq", sgxSeqCommand);
+typedef void (*SeqCmdFn)(void *, int *);
+void sgxSeqCommand(int id, int *cmd) {
+    int c = cmd[0];
+    void *p = SlotGetAt_81530(id, (int)"Command");
+    if (p == NULL) return;
+    if ((unsigned int)c < 18) ((SeqCmdFn *)D_00113BB0)[c](p, cmd);
+}
 
 int sgxSeqGetStatus(int id) {
     char *p = SlotGetAt_81530(id, 0);
@@ -326,7 +374,20 @@ int SesqMakeSubID(a0, s, id)
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxseq", SesqSubPlay);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxseq", SesqSubStop);
+void SesqSubStop(char *s, char *a, int b, int flag) {
+    int cmd[8];
+    int id = SesqMakeSubID(s, a, b);
+    if (flag) {
+        cmd[0] = 2;
+        cmd[1] = id;
+        cmd[2] = 1;
+    } else {
+        cmd[0] = 4;
+        cmd[1] = id;
+        cmd[2] = 0;
+    }
+    CmdRel(s, cmd);
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
