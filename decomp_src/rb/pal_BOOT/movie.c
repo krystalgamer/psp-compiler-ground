@@ -1,0 +1,400 @@
+#include "common.h"
+#define strFile strFile_279F2C
+
+/* declarations recovered from DWARF */
+typedef struct t_displayBuffer t_displayBuffer;
+struct t_displayBuffer;
+typedef int SceUID;
+typedef char SceChar8;
+typedef unsigned int SceUInt32;
+typedef int SceInt32;
+struct t_displayBuffer { /* size 0x38 */
+    SceUID start_sema;
+    SceUID lock_sema;
+    SceUID display_wait_sema;
+    SceChar8 **buf;
+    SceUInt32 *pts;
+    SceInt32 *write;
+    SceInt32 *read;
+    SceInt32 *count;
+    SceInt32 *size;
+    SceInt32 pixelFormat;
+    SceInt32 *displayMode;
+    SceInt32 *scale;
+    SceInt32 *posx;
+    SceInt32 *posy;
+};
+typedef struct SceCtrlData SceCtrlData;
+struct SceCtrlData;
+struct SceCtrlData { /* size 0x10 */
+    unsigned int TimeStamp;
+    unsigned int Buttons;
+    unsigned char Lx;
+    unsigned char Ly;
+    unsigned char Rsrv[6];
+};
+typedef void SceVoid;
+struct _anon1;
+struct _anon1 { /* size 0x10 */
+    SceUID fd;
+    SceChar8 assignName[10];
+};
+typedef struct _anon1 StrFile;
+typedef struct t_avSyncControl t_avSyncControl;
+struct t_avSyncControl;
+typedef struct t_soundBuffer t_soundBuffer;
+struct t_soundBuffer;
+struct t_soundBuffer { /* size 0x24 */
+    SceUID lock_sema;
+    SceInt32 *terminate_flag;
+    SceChar8 **buf;
+    SceUInt32 *pts;
+    SceInt32 *write;
+    SceInt32 *read;
+    SceInt32 *count;
+    SceInt32 *size;
+    SceUID start_sema;
+};
+typedef struct t_avSync_Video t_avSync_Video;
+struct t_avSync_Video;
+struct t_avSync_Video { /* size 0x14 */
+    SceUInt32 *pts;
+    SceInt32 write;
+    SceInt32 read;
+    SceInt32 count;
+    SceInt32 size;
+};
+struct t_avSyncControl { /* size 0x1c */
+    t_displayBuffer *pDisp;
+    t_soundBuffer *pSound;
+    t_avSync_Video video;
+};
+typedef struct t_ringBuffer t_ringBuffer;
+struct t_ringBuffer;
+typedef struct SceMpegRingbuffer SceMpegRingbuffer;
+struct SceMpegRingbuffer;
+typedef SceInt32 (*SceMpegRBCallback)(SceVoid *, SceInt32, SceVoid *);
+struct SceMpegRingbuffer { /* size 0x2c */
+    SceInt32 m_iBufsize;
+    SceInt32 m_iRpos;
+    SceInt32 m_iWpos;
+    SceInt32 m_iInlen;
+    SceInt32 m_iTypeSize;
+    SceVoid *m_pBuf;
+    SceMpegRBCallback callback;
+    SceVoid *m_CallbackData;
+    SceVoid *pPack;
+    SceInt32 iSemaRB;
+    SceVoid *mp;
+};
+struct t_ringBuffer { /* size 0x10 */
+    SceInt32 data_len;
+    SceUID ringbuf_sema;
+    SceMpegRingbuffer *pRingbuf;
+    SceInt32 *end_flag;
+};
+typedef struct SceMpeg SceMpeg;
+struct SceMpeg;
+struct SceMpeg { /* size 0x4 */
+    SceVoid *sys;
+};
+typedef struct t_mpegStreamData t_mpegStreamData;
+struct t_mpegStreamData;
+typedef struct SceMpegStream SceMpegStream;
+struct SceMpegStream;
+typedef SceUInt32 SceMpegStreamId;
+typedef unsigned char SceUChar8;
+typedef short int SceShort16;
+struct SceMpegStream { /* size 0x40 */
+    SceMpegStreamId qStreamId;
+    SceMpegStreamId qStreamIdMask;
+    SceVoid *m_pRAPICtrlStream;
+    SceUChar8 *m_pRAPI;
+    SceInt32 m_iAuNum;
+    SceInt32 m_iPesPacketForwardSize;
+    SceInt32 m_iPesPacketForwardFlag;
+    SceShort16 m_iPesPacketAULocator;
+    SceShort16 reserved;
+    SceInt32 m_iPesPacketNum;
+    SceInt32 m_iAuSize;
+    SceInt32 m_iBoundarySize;
+    SceInt32 m_iAuSizeOfProceed;
+    SceUInt32 m_iGetAuMode;
+    SceInt32 m_iPayloadHeaderRemainderFlag;
+    SceInt32 m_iPayloadHeaderRemainderSize;
+    SceChar8 m_cPayloadHeaderBuf[4];
+};
+typedef struct SceMpegAu SceMpegAu;
+struct SceMpegAu;
+typedef struct SceMpegTimeStamp SceMpegTimeStamp;
+struct SceMpegTimeStamp;
+struct SceMpegTimeStamp { /* size 0x8 */
+    SceUInt32 MSB_ts;
+    SceUInt32 ts;
+};
+struct SceMpegAu { /* size 0x18 */
+    SceMpegTimeStamp pts;
+    SceMpegTimeStamp dts;
+    SceUChar8 *pEsBuf;
+    SceInt32 iEsSize;
+};
+struct t_mpegStreamData { /* size 0x10 */
+    SceMpegStream *pAvcStream;
+    SceMpegAu *pAvcAu;
+    SceMpegStream *pAtracStream;
+    SceMpegAu *pAtracAu;
+};
+typedef struct ScePsmf ScePsmf;
+struct ScePsmf;
+struct ScePsmf { /* size 0x28 */
+    SceInt32 type;
+    SceInt32 groupingPeriod_id;
+    SceInt32 group_id;
+    SceInt32 psmfStream_id;
+    SceVoid *header;
+    SceVoid *sequenceInfo;
+    SceVoid *currentGroupingPeriod;
+    SceVoid *currentGroup;
+    SceVoid *currentStream;
+    SceVoid *currentEP_map;
+};
+typedef struct ScePsmf_EntryPoint ScePsmf_EntryPoint;
+struct ScePsmf_EntryPoint;
+struct ScePsmf_EntryPoint { /* size 0x8 */
+    SceUInt32 PTS_EP_start;
+    SceUInt32 EP_start_offset;
+};
+struct _anon2;
+struct _anon2 { /* size 0x1c */
+    int thumbpts;
+    int fullptss;
+    int fullpts;
+    int fullptse;
+    void *texture;
+    int posx;
+    int posy;
+};
+typedef struct _anon2 MOVIE_LIST;
+struct _anon3;
+struct _anon3 { /* size 0x14 */
+    int current;
+    int page;
+    int pos;
+    int selected;
+    int saved;
+};
+typedef struct _anon3 MENU_LIST;
+typedef struct t_playInfo t_playInfo;
+struct t_playInfo;
+struct t_playInfo { /* size 0x8 */
+    SceInt32 playMode;
+    SceUInt32 timestamp;
+};
+struct _anon4;
+struct _anon4 { /* size 0x8 */
+    SceInt32 iDecodeMode;
+    SceInt32 iPixelFormat;
+};
+typedef struct _anon4 SceMpegAvcMode;
+struct _anon5;
+struct _anon5 { /* size 0x10 */
+    int start;
+    int size;
+    int tstart;
+    int tsize;
+};
+typedef struct _anon5 PTS_INFO;
+typedef SceUChar8 *SceMpegHandle;
+
+extern MOVIE_LIST movie_list[];
+extern MENU_LIST menu_list;
+extern SceChar8 *dispbuf[1];
+extern t_playInfo playInfo;
+extern StrFile strFile;
+extern SceInt32 streamOffset;
+extern t_displayBuffer displayCtrl;
+extern t_ringBuffer readCtrl;
+extern t_soundBuffer soundCtrl;
+extern SceInt32 fileSize;
+extern t_avSyncControl avSync;
+extern t_mpegStreamData mpegStreamData;
+extern SceMpeg mpeg;
+extern SceMpegRingbuffer ringbuf;
+extern SceMpegStream *pStream[2];
+extern SceMpegAu avcAu;
+extern SceMpegAu atracAu;
+extern SceMpegAvcMode decodeMode;
+extern SceChar8 *thumbBuf;
+extern SceChar8 *pthumbBuf;
+extern int thumbFilesize;
+extern int thumbRest;
+extern SceChar8 *pHeaderT;
+extern SceChar8 *pHeader;
+extern ScePsmf psmf;
+extern ScePsmf psmfT;
+extern PTS_INFO pinfo[14];
+extern SceUID dispThread;
+extern SceUID readThread;
+extern SceUID soundThread;
+extern SceChar8 *pPSPStream;
+extern SceChar8 *pWorkBuf;
+extern SceChar8 *pAudioBuf;
+extern SceMpegHandle avcEsBuf;
+extern SceInt32 audioFlag;
+extern SceInt32 readFlag;
+
+static SceInt32 pad_read(t_displayBuffer *pDisp);
+static int thumb_load(void);
+static SceInt32 ringbufferCallBack(SceVoid *pBuf, SceInt32 iNum, SceVoid *CallbackData);
+static SceInt32 startCheck(t_avSyncControl *pAvSync, t_ringBuffer *pRingCtrl);
+static SceInt32 playMovie(SceMpeg *pMpeg, SceMpegRingbuffer *pRB, t_mpegStreamData *pStreamData, t_ringBuffer *pRingCtrl, t_avSyncControl *pAvSync);
+static SceInt32 readHeader(SceMpeg *pMpeg, StrFile *pStrFile, SceInt32 *pFilesize, SceInt32 *strOffset);
+static int skip_data(ScePsmf *psm, SceUInt32 pts);
+static int init_pinfo(void);
+int MovieInit(void);
+int MovieMain(void);
+int MovieTerm(void);
+int MovieStat(void);
+int MovieStart(void);
+int MovieEnd(void);
+
+
+INCLUDE_ASM("tmp/asm/rb/pal_BOOT/nonmatchings/movie", pad_read);
+
+INCLUDE_ASM("tmp/asm/rb/pal_BOOT/nonmatchings/movie", thumb_load);
+
+void *memcpy(void *d, const void *s, unsigned int n);
+static SceInt32 ringbufferCallBack(SceVoid *pBuf, SceInt32 iNum, SceVoid *CallbackData)
+{
+	SceInt32 iTypeSize;
+	SceInt32 iReadSize;
+	StrFile *pStrFile;
+
+	iTypeSize = 2048;
+	pStrFile = (StrFile *)CallbackData;
+	if (readFlag) {
+		iReadSize = strFileRead(pStrFile, pBuf, iTypeSize * iNum);
+	} else {
+		int size = iTypeSize * iNum;
+
+		if (thumbRest < size) {
+			memcpy(pBuf, pthumbBuf, thumbRest);
+			iReadSize = thumbRest;
+			thumbRest = 0;
+			pthumbBuf = thumbBuf;
+		} else {
+			memcpy(pBuf, pthumbBuf, size);
+			iReadSize = size;
+			thumbRest -= size;
+			pthumbBuf += size;
+		}
+	}
+	return (iReadSize % iTypeSize) ? -1 : iReadSize / iTypeSize;
+}
+
+static SceInt32 startCheck(t_avSyncControl *pAvSync, t_ringBuffer *pRingCtrl)
+{
+	SceInt32 ret;
+
+	if (audioFlag) {
+		if (dispbuf_getCapacity(pAvSync->pDisp) == 0 && soundbuf_getCapacity(pAvSync->pSound) == 0 && read_isFull(pRingCtrl)) {
+			avsync_playStart(pAvSync);
+			ret = 0;
+		} else {
+			ret = -1;
+		}
+	} else {
+		avsync_playStart(pAvSync);
+		ret = 0;
+	}
+	return ret;
+}
+
+INCLUDE_RODATA("tmp/asm/rb/pal_BOOT/nonmatchings/movie", D_00016554);
+
+INCLUDE_RODATA("tmp/asm/rb/pal_BOOT/nonmatchings/movie", D_00016570);
+
+INCLUDE_RODATA("tmp/asm/rb/pal_BOOT/nonmatchings/movie", D_00016590);
+
+INCLUDE_RODATA("tmp/asm/rb/pal_BOOT/nonmatchings/movie", D_000165BC);
+
+INCLUDE_RODATA("tmp/asm/rb/pal_BOOT/nonmatchings/movie", D_000165E4);
+
+INCLUDE_RODATA("tmp/asm/rb/pal_BOOT/nonmatchings/movie", D_00016604);
+
+INCLUDE_ASM("tmp/asm/rb/pal_BOOT/nonmatchings/movie", playMovie);
+
+INCLUDE_ASM("tmp/asm/rb/pal_BOOT/nonmatchings/movie", readHeader);
+
+int printf(const char *fmt, ...);
+static int skip_data(ScePsmf *psm, SceUInt32 pts)
+{
+	SceInt32 ret;
+	SceInt32 ep_id;
+	ScePsmf_EntryPoint ep;
+
+	ret = scePsmfGetEP_idWithTimestamp(psm, pts);
+	if (ret < 0) {
+		printf("fatal error : scePsmfGetEP_idWithTimestamp() 0x%x\n", ret);
+	} else {
+		ep_id = ret;
+		ret = scePsmfGetEPWithId(psm, ep_id, &ep);
+		if (ret != 0)
+			printf("fatal error : scePsmfGetEPWithId() 0x%x\n", ret);
+		else
+			ret = ep.EP_start_offset;
+	}
+	return ret;
+}
+
+INCLUDE_ASM("tmp/asm/rb/pal_BOOT/nonmatchings/movie", init_pinfo);
+
+INCLUDE_ASM("tmp/asm/rb/pal_BOOT/nonmatchings/movie", MovieInit);
+
+int MovieMain(void)
+{
+	int ret;
+
+	ret = playMovie(&mpeg, &ringbuf, &mpegStreamData, &readCtrl, &avSync);
+	if (ret != 0) {
+		if (ret < 0) {
+			playInfo.playMode = 10;
+			menu_list.selected = 0;
+			BgmStart();
+			return 1;
+		}
+			if (playInfo.playMode == 1) {
+				if (sceMpegFlushAllStream(&mpeg) != 0)
+					return -1;
+				playInfo.playMode = 0;
+			} else if (playInfo.playMode == 10) {
+				return 1;
+			}
+	}
+	return 0;
+}
+
+void free(void *p);
+INCLUDE_ASM("tmp/asm/rb/pal_BOOT/nonmatchings/movie", MovieTerm);
+
+INCLUDE_ASM("tmp/asm/rb/pal_BOOT/nonmatchings/movie", MovieStart);
+
+int MovieEnd(void)
+{
+	if (audioFlag)
+		sceKernelWaitThreadEnd(soundThread, NULL);
+	sceKernelWaitThreadEnd(dispThread, NULL);
+	sceKernelWaitThreadEnd(readThread, NULL);
+	avsync_end(&avSync);
+	read_end(&readCtrl);
+	if (audioFlag)
+		soundbuf_end(&soundCtrl);
+	dispbuf_end(&displayCtrl);
+	if (audioFlag && pAudioBuf)
+		free(pAudioBuf);
+	sceMpegFreeAvcEsBuf(&mpeg, avcEsBuf);
+	sceMpegUnRegistStream(&mpeg, pStream[0]);
+	if (audioFlag)
+		sceMpegUnRegistStream(&mpeg, pStream[1]);
+	return 0;
+}
