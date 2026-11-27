@@ -87,9 +87,19 @@ char *sgxBmgGetTail(int id)
     return *(char **)(p + 0x24) + *(int *)(p + 0x38);
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxbmg", sgxBmgGetHeadOfs);
+char *sgxBmgGetHeadOfs(int id, int ofs)
+{
+    char *p = SlotGetAt_7A70C(id, "GetHeadOfs");
+    if (p == NULL) return NULL;
+    return *(char **)(p + 0x24) + (*(int *)(p + 0x34) + ofs) % *(int *)(p + 0x28);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxbmg", sgxBmgGetTailOfs);
+char *sgxBmgGetTailOfs(int id, int ofs)
+{
+    char *p = SlotGetAt_7A70C(id, "GetTailOfs");
+    if (p == NULL) return NULL;
+    return *(char **)(p + 0x24) + (*(int *)(p + 0x38) + ofs) % *(int *)(p + 0x28);
+}
 
 int sgxBmgGetFree(int id)
 {
@@ -135,7 +145,16 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxbmg", sgxBmgIsFinished);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxbmg", sgxBmgSetLowBufCallback);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxbmg", CheckLowBuf);
+typedef void (*BmgLowCb)(int, int);
+void CheckLowBuf(char *b)
+{
+    BmgLowCb cb;
+    sgxDI();
+    cb = *(BmgLowCb *)(b + 0x44);
+    if (cb != NULL && *(int *)(b + 0x3C) <= *(int *)(b + 0x50))
+        cb(*(int *)(b + 0x4C), *(int *)(b + 0x48));
+    sgxEI();
+}
 
 #ifndef NULL
 #define NULL ((void *)0)

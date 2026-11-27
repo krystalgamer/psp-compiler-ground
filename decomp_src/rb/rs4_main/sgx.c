@@ -26,6 +26,13 @@ typedef void (*SgxPrintFn)(const char *);
 static inline char *SgxListFirst(char *l) { char *n = *(char **)(l + 4); return (*(int *)(n + 8) < 0) ? NULL : n; }
 static inline char *SgxListNext(char *e) { char *n = *(char **)(e + 4); return (*(int *)(n + 8) < 0) ? NULL : n; }
 
+void sgxDI();
+void sgxEI();
+void sgxConfReadStr();
+int atoi(const char *);
+void *memset(void *, int, unsigned int);
+char *sgxNextToken(char *, char *, const char *, const char *);
+
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgx", sgxPrintfPref);
 
 void sgxPrintf(const char *fmt, ...)
@@ -48,7 +55,14 @@ void sgxFree(void *p)
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgx", sgxNextToken);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgx", sgxNextLine);
+char *sgxNextLine(char *s, char *buf)
+{
+    do {
+        s = sgxNextToken(s, buf, ";\n", "\r\t ");
+        if (*s == 0) break;
+    } while (buf[0] == 0);
+    return s;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgx", sgxGetLineCount);
 
@@ -146,7 +160,16 @@ int sgxStackMemClose(void *arg0) {
     return M2C_FIELD(arg0, int *, 4) + M2C_FIELD(arg0, int *, 8);
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgx", sgxStackMemAlloc);
+void *sgxStackMemAlloc(void *mv, int outv, int size)
+{
+    int *m = mv;
+    void **out = (void **)outv;
+    if (m[0] != 0 && out != NULL) {
+        *out = (char *)m[0] + m[1];
+        memset(*out, 0, size);
+    }
+    return (void *)(m[1] += size);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgx", sgxStackMemAllocStr);
 

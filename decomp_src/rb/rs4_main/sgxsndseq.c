@@ -6,9 +6,41 @@ int sgxResFindSeq();                                /* extern */
 
 void sgxSeqCommand(int, int *);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsndseq", SeqInit);
+int sgxSeqAlloc();
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsndseq", SeqStrInit);
+int SeqInit(char *s)
+{
+    int cmd[8];
+    int id;
+    id = -1;
+    *(int *)(s + 0x94) = id;
+    id = sgxSeqAlloc(s);
+    if (id < 0) return 0;
+    *(int *)(s + 0x94) = id;
+    cmd[0] = 0;
+    cmd[1] = 0;
+    cmd[2] = *(short *)(s + 0x12);
+    cmd[3] = *(int *)(s + 0x14);
+    cmd[4] = *(int *)(s + 0x18);
+    sgxSeqCommand(id, cmd);
+    return 1;
+}
+
+int SeqStrInit(char *s)
+{
+    int cmd[8];
+    int id;
+    *(int *)(s + 0x94) = -1;
+    id = sgxSeqAlloc(s);
+    if (id < 0) return 0;
+    *(int *)(s + 0x94) = id;
+    cmd[0] = 1;
+    cmd[2] = *(int *)(s + 0x14);
+    cmd[1] = 0;
+    cmd[3] = *(int *)(s + 0x18);
+    sgxSeqCommand(id, cmd);
+    return 1;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)

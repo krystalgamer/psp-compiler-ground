@@ -3,7 +3,6 @@
 M2C_UNK sgxFree(int);                               /* extern */
 extern unsigned char gWork_11FEA4;
 M2C_UNK AttrSetValue(int, short, int);                /* extern */
-M2C_UNK FadeFree(void *);                           /* extern */
 extern int D_0011FECC;
 extern int D_0011FEE4;
 extern int D_0011FEFC;
@@ -25,6 +24,22 @@ static inline char *PortListFirst(char *l) {
 static inline char *PortListNext(char *e) {
     char *n = *(char **)(e + 4);
     return (*(int *)(n + 8) < 0) ? NULL : n;
+}
+
+typedef struct SgxPNode { struct SgxPNode *prev, *next; int id; } SgxPNode;
+static inline void SgxPNodeUnlink(SgxPNode *n) {
+    SgxPNode *p = n->prev;
+    if (p != n) {
+        p->next = n->next;
+        n->next->prev = p;
+    }
+}
+static inline void SgxPNodeAddTail(SgxPNode *l, SgxPNode *n) {
+    SgxPNode *t = l->prev;
+    n->next = l;
+    t->next = n;
+    n->prev = t;
+    n->next->prev = n;
 }
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/sgxport", D_0010AD00);
@@ -85,7 +100,12 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxport", sgxPortFree);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxport", FadeAlloc);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxport", FadeFree);
+void FadeFree(char *f)
+{
+    if (*(int *)(f + 0x10) != 0) AttrSetValue(*(int *)(f + 0x10), *(short *)(f + 0x14), *(short *)(f + 0x16));
+    SgxPNodeUnlink((SgxPNode *)f);
+    SgxPNodeAddTail((SgxPNode *)&D_0011FEE8, (SgxPNode *)f);
+}
 
 void FadeFreeAll(char *l) {
     char *e;
@@ -237,7 +257,15 @@ void CmdFilterTypeID(void *arg0) {
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxport", CmdPause_866D0);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxport", sgxPortCommand);
+extern int D_00113CCC[];
+typedef void (*PortCmdFn)(void *, int *);
+void sgxPortCommand(int id, int *cmd)
+{
+    int c = cmd[0];
+    void *p = SlotGetAt_848F0(id, "Command");
+    if (p == NULL) return;
+    if ((unsigned int)c < 18) ((PortCmdFn *)D_00113CCC)[c](p, cmd);
+}
 
 int sgxPortGetStatus(int id) {
     char *p = SlotGetAt_848F0(id, 0);
