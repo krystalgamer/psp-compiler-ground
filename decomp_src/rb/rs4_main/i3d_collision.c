@@ -10,7 +10,24 @@ int I3dcs_GetIntersectRayCylA(int, int, int, int, M2C_UNK, M2C_UNK); /* extern *
 int I3dcs_GetIntersectSegCylA(int, int, int, int, M2C_UNK, M2C_UNK); /* extern */
 
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_collision", I3cLineParam_CnvAxis);
+void I3cLineParam_CnvAxis()
+{
+	__asm__ volatile(
+		"lv.q C100.q,0($6)\n"
+		"lv.q C200.q,0($5)\n"
+		"lv.q C210.q,16($5)\n"
+		"lv.q C220.q,32($5)\n"
+		"lv.q C230.q,48($5)\n"
+		"lv.q C110.q,16($6)\n"
+		"vtfm3.t C010.t,E200.t,C100.t\n"
+		"vadd.t C000.t,C010.t,C230.t\n"
+		"vmov.s S003.s,S103.s\n"
+		"vtfm3.t C010.t,E200.t,C110.t\n"
+		"vmov.s S013.s,S113.s\n"
+		"sv.q C000.q,0($4)\n"
+		"sv.q C010.q,16($4)\n"
+		: : : "memory");
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_collision", IntersectSub_LineTri);
 
@@ -92,7 +109,17 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_collision", CalcBlendRatio);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_collision", I3cCbService_GetIntersectPointParam);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_collision", I3dcs_GetSqrDistPointPointA);
+void I3dcs_GetSqrDistPointPointA()
+{
+	__asm__ volatile(
+		"lv.q C000.q,0($4)\n"
+		"lv.q C010.q,0($5)\n"
+		"vsub.q C100.q,C000.q,C010.q\n"
+		"vdot.t S110.s,C100.t,C100.t\n"
+		"mfv $6,S110.s\n"
+		"mtc1 $6,$f0\n"
+		: : : "memory");
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_collision", I3dcs_GetSqrDistPointLineA);
 
@@ -116,7 +143,27 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_collision", I3dcs_IsIntersectS
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_collision", I3dcs_IsIntersectSegBoxA);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_collision", I3dcs_IsIntersectLineBoxA);
+void I3dcs_IsIntersectLineBoxA()
+{
+	__asm__ volatile(
+		".set noreorder\n"
+		"lv.q C020.q,0($5)\n"
+		"lv.q C030.q,0($4)\n"
+		"lv.q C010.q,0($6)\n"
+		"vabs.t C100.t,C020.t\n"
+		"vcrsp.t C110.t,C020.t,C030.t\n"
+		"vabs.t C110.t,C110.t\n"
+		"vcrs.t C300.t,C010.t,C100.t\n"
+		"vcrs.t C310.t,C100.t,C010.t\n"
+		"vadd.t C320.t,C300.t,C310.t\n"
+		"vcmp.t GT,C110.t,C320.t\n"
+		"bvfl 4,1f\n"
+		"li $2,1\n"
+		"li $2,0\n"
+		"1:\n"
+		".set reorder\n"
+		: : : "memory");
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_collision", I3dcs_IsIntersectRayBoxA);
 
@@ -124,7 +171,29 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_collision", I3dcs_IsIntersectC
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_collision", I3dcs_IsIntersectRRayBoxA);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_collision", I3dcs_IsIntersectRLineBoxA);
+void I3dcs_IsIntersectRLineBoxA()
+{
+	__asm__ volatile(
+		".set noreorder\n"
+		"lv.q C010.q,0($4)\n"
+		"lv.q C020.q,0($5)\n"
+		"lv.q C030.q,0($6)\n"
+		"vcrsp.t C100.t,C020.t,C010.t\n"
+		"vabs.t C100.t,C100.t\n"
+		"vabs.t C020.t,C020.t\n"
+		"vpfxt w,w,w,w\n"
+		"vadd.q C030.q,C030.q,C010.q\n"
+		"vcrs.t C300.t,C030.t,C020.t\n"
+		"vcrs.t C310.t,C020.t,C030.t\n"
+		"vadd.t C320.t,C300.t,C310.t\n"
+		"vcmp.t GT,C100.t,C320.t\n"
+		"bvfl 4,1f\n"
+		"li $2,1\n"
+		"li $2,0\n"
+		"1:\n"
+		".set reorder\n"
+		: : : "memory");
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_collision", I3dcs_IsIntersectSphereSphereA);
 

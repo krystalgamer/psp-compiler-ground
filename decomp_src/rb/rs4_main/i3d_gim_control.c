@@ -44,4 +44,11 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_gim_control", I3dLightStatus__
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_gim_control", I3dLightStatus__SetSpotLight);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_gim_control", I3dLightStatus__SetAmbientLight);
+void I3dLightStatus__SetAmbientLight()
+{
+	__asm__ volatile(
+		"lv.q C000.q,0($5)\n"
+		"sv.q C000.q,0($4)\n"
+		"move $2,$0\n"
+		: : : "memory");
+}

@@ -60,7 +60,20 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_view_status", I3dViewStatus__O
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_view_status", I3dViewStatus__SphereClipTestA);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_view_status", I3dViewStatus__CreateSortKeyA);
+void I3dViewStatus__CreateSortKeyA()
+{
+	__asm__ volatile(
+		"addiu $4,$4,896\n"
+		"lv.q C100.q,0($5)\n"
+		"lv.q C200.q,0($4)\n"
+		"lv.q C210.q,16($4)\n"
+		"lv.q C220.q,32($4)\n"
+		"lv.q C230.q,48($4)\n"
+		"vdot.q S002.s,R202.q,C100.q\n"
+		"mfv $2,S002.s\n"
+		"mtc1 $2,$f0\n"
+		: : : "memory");
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_view_status", I3dRender__CreateViewStatusA);
 

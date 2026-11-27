@@ -5,9 +5,58 @@ M2C_UNK iI3dGuDrawSpline_PSP_6ADC0();               /* extern */
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_scissor.psp", CalculateVertexSize);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_scissor.psp", ClipCheck);
+void ClipCheck()
+{
+	__asm__ volatile(
+		".set noreorder\n"
+		"lv.q C000.q,0($4)\n"
+		"vabs.s S100.s,S003.s\n"
+		"vpfxt x,x,x,0\n"
+		"vcmp.t GT,C000.t,C100.t\n"
+		"vsync\n"
+		"mfvc $6,$131\n"
+		"andi $2,$6,0x7\n"
+		"vpfxt -x,-x,-x,0\n"
+		"vcmp.t LT,C000.t,C100.t\n"
+		"vsync\n"
+		"mfvc $6,$131\n"
+		"ins $2,$6,0x3,0x3\n"
+		".set reorder\n"
+		: : : "memory");
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_scissor.psp", ScissorInter);
+void ScissorInter()
+{
+	__asm__ volatile(
+		"mfc1 $2,$f12\n"
+		"lv.q C100.q,0($5)\n"
+		"lv.q C110.q,16($5)\n"
+		"lv.q C120.q,32($5)\n"
+		"lv.q C130.q,48($5)\n"
+		"mtv $2,S030.s\n"
+		"vmscl.q M100.q,M100.q,S030.s\n"
+		"lv.q C200.q,0($6)\n"
+		"lv.q C210.q,16($6)\n"
+		"lv.q C220.q,32($6)\n"
+		"lv.q C230.q,48($6)\n"
+		"vocp.s S031.s,S030.s\n"
+		"vmscl.q M200.q,M200.q,S031.s\n"
+		"vadd.q C100.q,C100.q,C200.q\n"
+		"vadd.q C110.q,C110.q,C210.q\n"
+		"vadd.q C120.q,C120.q,C220.q\n"
+		"vadd.q C130.q,C130.q,C230.q\n"
+		"lv.q C200.q,64($5)\n"
+		"lv.q C210.q,64($6)\n"
+		"vscl.q C200.q,C200.q,S030.s\n"
+		"vscl.q C210.q,C210.q,S031.s\n"
+		"vadd.q C200.q,C200.q,C210.q\n"
+		"sv.q C100.q,0($4)\n"
+		"sv.q C110.q,16($4)\n"
+		"sv.q C120.q,32($4)\n"
+		"sv.q C130.q,48($4)\n"
+		"sv.q C200.q,64($4)\n"
+		: : : "memory");
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_scissor.psp", DrawScissorTriangle);
 
@@ -17,7 +66,35 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_scissor.psp", ConvertColor);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_scissor.psp", ConvertToScissorVertex);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_scissor.psp", PreCheck);
+void PreCheck()
+{
+	__asm__ volatile(
+		"ins $6,$0,0x0,0x2\n"
+		"addu $5,$5,$6\n"
+		"lw $7,-12($5)\n"
+		"lw $8,-8($5)\n"
+		"lw $9,-4($5)\n"
+		"mtv $7,S200.s\n"
+		"mtv $8,S201.s\n"
+		"mtv $9,S202.s\n"
+		"vone.s S203.s\n"
+		"vtfm4.q C000.q,E300.q,C200.q\n"
+		"sv.q C200.q,0($4)\n"
+		"sv.q C000.q,64($4)\n"
+		"vabs.s S100.s,S003.s\n"
+		"vpfxt x,x,x,0\n"
+		"vcmp.t GT,C000.t,C100.t\n"
+		"vsync\n"
+		"mfvc $6,$131\n"
+		"andi $2,$6,0x7\n"
+		"vpfxt -x,-x,-x,0\n"
+		"vcmp.t LT,C000.t,C100.t\n"
+		"vsync\n"
+		"mfvc $6,$131\n"
+		"ins $2,$6,0x3,0x3\n"
+		"andi $2,$2,0xff\n"
+		: : : "memory");
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_scissor.psp", DrawScissorTriangles);
 

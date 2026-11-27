@@ -11,9 +11,65 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_packet_util", AddVertexV);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_packet_util", AddVertexVTU);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_packet_util", AddVertexCV);
+void AddVertexCV()
+{
+	__asm__ volatile(
+		"addiu $29,$29,-16\n"
+		"lv.q C010.q,0($6)\n"
+		"vmul.q C000.q,C010.q,C520.q\n"
+		"vadd.q C000.q,C000.q,C530.q\n"
+		"vf2iz.q C000.q,C000.q,0\n"
+		"sv.q C000.q,0($29)\n"
+		"lhu $6,4($29)\n"
+		"lhu $7,8($29)\n"
+		"lhu $3,0($29)\n"
+		"addiu $2,$4,12\n"
+		"lv.q C000.q,0($5)\n"
+		"vsat0.q C000.q,C000.q\n"
+		"vscl.q C000.q,C000.q,S701.s\n"
+		"vf2iz.q C000.q,C000.q,23\n"
+		"vi2uc.q S000.s,C000.q\n"
+		"mfv $5,S000.s\n"
+		"sh $3,4($4)\n"
+		"sw $5,0($4)\n"
+		"sh $6,6($4)\n"
+		"sh $7,8($4)\n"
+		"addiu $29,$29,16\n"
+		: : : "memory");
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_packet_util", AddVertexCVTU);
+void AddVertexCVTU()
+{
+	__asm__ volatile(
+		"addiu $29,$29,-16\n"
+		"lv.q C010.q,0($6)\n"
+		"vmul.q C000.q,C010.q,C520.q\n"
+		"vadd.q C000.q,C000.q,C530.q\n"
+		"vf2iz.q C000.q,C000.q,0\n"
+		"sv.q C000.q,0($29)\n"
+		"lv.q C010.q,0($7)\n"
+		"vf2iz.q C000.q,C010.q,0\n"
+		"mfv $8,S000.s\n"
+		"sh $8,0($4)\n"
+		"mfv $8,S001.s\n"
+		"sh $8,2($4)\n"
+		"lhu $6,4($29)\n"
+		"lhu $7,8($29)\n"
+		"lhu $3,0($29)\n"
+		"addiu $2,$4,16\n"
+		"lv.q C000.q,0($5)\n"
+		"vsat0.q C000.q,C000.q\n"
+		"vscl.q C000.q,C000.q,S701.s\n"
+		"vf2iz.q C000.q,C000.q,23\n"
+		"vi2uc.q S000.s,C000.q\n"
+		"mfv $5,S000.s\n"
+		"sh $3,8($4)\n"
+		"sw $5,4($4)\n"
+		"sh $6,10($4)\n"
+		"sh $7,12($4)\n"
+		"addiu $29,$29,16\n"
+		: : : "memory");
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_packet_util", I3dPk2dPrim_DrawSpriteF);
 
@@ -39,9 +95,19 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_packet_util", I3dPk2dPrim_Draw
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_packet_util", I3dPk2dPrim_DrawPointFTU);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_packet_util", I3dPk2dPrim_SetOffset);
+void I3dPk2dPrim_SetOffset()
+{
+	__asm__ volatile(
+		"lv.q C530.q,0($4)\n"
+		: : : "memory");
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_packet_util", I3dPk2dPrim_SetScale);
+void I3dPk2dPrim_SetScale()
+{
+	__asm__ volatile(
+		"lv.q C520.q,0($4)\n"
+		: : : "memory");
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_packet_util", CreateArray);
 

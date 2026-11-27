@@ -30,15 +30,79 @@ unsigned short I3mNodeAnim__Get_nSection(void *arg0) {
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_section", I3mNodeAnim__GetSectionByTime);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_section", I3dQtMul);
+void I3dQtMul()
+{
+	__asm__ volatile(
+		"lv.q C010.q,0($5)\n"
+		"lv.q C020.q,0($6)\n"
+		"vqmul.q C000.q,C010.q,C020.q\n"
+		"sv.q C000.q,0($4)\n"
+		: : : "memory");
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_section", I3dQtLog);
+void I3dQtLog()
+{
+	__asm__ volatile(
+		".set noreorder\n"
+		"lv.q C010.q,0($5)\n"
+		"vasin.s S021.s,S013.s\n"
+		"vmul.s S021.s,S021.s,S702.s\n"
+		"vsub.s S022.s,S702.s,S021.s\n"
+		"vmul.s S022.s,S022.s,S703.s\n"
+		"vsin.s S023.s,S022.s\n"
+		"vcmp.s LE,S023.s,S720.s\n"
+		"bvtl 0,1f\n"
+		"sv.q C720.q,0($4)\n"
+		"vdiv.s S020.s,S022.s,S023.s\n"
+		"vscl.t C710.t,C010.t,S020.s\n"
+		"sv.q C710.q,0($4)\n"
+		"1:\n"
+		".set reorder\n"
+		: : : "memory");
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_section", I3dQtExp);
+void I3dQtExp()
+{
+	__asm__ volatile(
+		".set noreorder\n"
+		"lv.q C010.q,0($5)\n"
+		"vdot.t S020.s,C010.t,C010.t\n"
+		"vrsq.s S021.s,S020.s\n"
+		"vcmp.s LE,S021.s,S720.s\n"
+		"bvtl 0,1f\n"
+		"sv.q C730.q,0($4)\n"
+		"vmul.s S022.s,S021.s,S703.s\n"
+		"vsin.s S023.s,S022.s\n"
+		"vdiv.s S020.s,S023.s,S021.s\n"
+		"vscl.t C000.t,C010.t,S020.s\n"
+		"vcos.s S003.s,S022.s\n"
+		"sv.q C000.q,0($4)\n"
+		"1:\n"
+		".set reorder\n"
+		: : : "memory");
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_section", I3dQtDotProduct);
+void I3dQtDotProduct()
+{
+	__asm__ volatile(
+		"lv.q C010.q,0($4)\n"
+		"lv.q C020.q,0($5)\n"
+		"vdot.q S003.s,C010.q,C020.q\n"
+		"mfv $6,S003.s\n"
+		"mtc1 $6,$f0\n"
+		: : : "memory");
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_section", I3dQtNormalize);
+void I3dQtNormalize()
+{
+	__asm__ volatile(
+		"lv.q C010.q,0($5)\n"
+		"vdot.q S020.s,C010.q,C010.q\n"
+		"vrsq.s S021.s,S020.s\n"
+		"vscl.q C000.q,C010.q,S021.s\n"
+		"sv.q C000.q,0($4)\n"
+		: : : "memory");
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_section", I3dQtSlerp);
 
