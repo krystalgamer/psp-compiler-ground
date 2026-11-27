@@ -85,7 +85,19 @@ void Unlock(int arg0) {
     gameEnSoftReset();
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/osk", OskStart);
+int UtilityLink();
+int utility_update_osk();
+int OskStart(int *p)
+{
+	consPrintf("OskStart : \n");
+	Lock(p[2] & 1);
+	if (UtilityLink(utility_update_osk)) {
+		OnPush_OSK(p);
+		return 1;
+	}
+	Unlock(p[2] & 1);
+	return 0;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)

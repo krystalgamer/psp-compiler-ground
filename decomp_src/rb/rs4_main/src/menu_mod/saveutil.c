@@ -315,7 +315,16 @@ void FreeData_Sizes(int a)
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/saveutil", SaveStart);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/saveutil", SaveEnd);
+int UtilityUnlink();
+void gameEnSoftReset(void);
+void SaveEnd(int x)
+{
+	int id = x & 0xFFFFFF;
+	UtilityUnlink();
+	Free_SaveData_Normal(id);
+	gameEnSoftReset();
+	consPrintf("SaveEnd : %d (shift:%d)\n", id, x / 0x1000000);
+}
 
 #ifndef NULL
 #define NULL ((void *)0)

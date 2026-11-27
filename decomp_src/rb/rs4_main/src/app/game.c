@@ -342,7 +342,17 @@ void gameCtrlUnlock(void)
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/game", D_000FCC24);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/game", gimInit);
+void *gimAlloc();
+void gimFree();
+void sceGimPictureSetMemoryManager();
+void sceGimPictureSetMemoryManager2();
+void gimInit(void)
+{
+	consPrintf(&D_000FCC24, "gimInit");
+	GimDebug = 0;
+	sceGimPictureSetMemoryManager(gimAlloc, gimFree);
+	sceGimPictureSetMemoryManager2(gimAlloc, gimFree);
+}
 
 #ifndef NULL
 #define NULL ((void *)0)

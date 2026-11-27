@@ -53,7 +53,15 @@ int localeGetRegionCntx(void) {
     return pRegionCntx;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/loading", localeIsUse);
+char *resArg();
+int strncmp(const char *, const char *, unsigned int);
+int localeIsUse(int res)
+{
+	if (*(char *)resArg(res, 2) == 0) {
+		return 1;
+	}
+	return strncmp(resArg(res, 2), (char *)pNowLocale + 4, 4) == 0;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
