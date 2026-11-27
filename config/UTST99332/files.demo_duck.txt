@@ -415,3 +415,7 @@ bss 0x191C4C main_objs/sys_timer_Push
 # vector_font_Console: .bss of the C++ static initializer
 bss 0x18DF58 main_objs/vector_font_Console
 bss 0x18DF5C -
+# vector_font_OutputText: C++ static initializer (_current), PrevLine/NextLine/NextChar with their own float pools; .rodata: all its float pools (the asm functions' come with their .s); .bss: OutputText's statics
+rodata 0x167764 main_objs/vector_font_OutputText
+rodata 0x167790 -
+bss 0x18EA94 main_objs/vector_font_OutputText

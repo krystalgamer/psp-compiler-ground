@@ -402,6 +402,8 @@ segments:
       - [0x1647FC, rodata, asm/rodata_16477C]
       - [0x164818, .rodata, main_objs/gl__name_stack]
       - [0x164820, rodata, asm/rodata_1647A0]
+      - [0x1648C4, .rodata, main_objs/vector_font_OutputText]
+      - [0x1648F0, rodata, asm/rodata_164870]
       - [0x1649C0, .rodata, main_objs/interp_KeyFrameSequence]
       - [0x1649EC, rodata, asm/rodata_16496C]
       - [0x165678, .rodata, main_objs/math_SphericalCoord]
@@ -566,6 +568,7 @@ segments:
       - { start: 0x189CE4, type: bss, vram: 0x18AADC, name: bss_18AADC }
       - { start: 0x189CE4, type: .bss, vram: 0x18AFAC, name: main_objs/glutils_RectanglePicking }
       - { start: 0x189CE4, type: bss, vram: 0x18B030, name: bss_18B030 }
+      - { start: 0x189CE4, type: .bss, vram: 0x18B614, name: main_objs/vector_font_OutputText }
       - { start: 0x189CE4, type: .bss, vram: 0x18B628, name: main_objs/interp_KeyFrameSequence }
       - { start: 0x189CE4, type: .bss, vram: 0x18B6EC, name: main_objs/math_SphericalCoord }
       - { start: 0x189CE4, type: .bss, vram: 0x18B76C, name: main_objs/math_ZYZ }

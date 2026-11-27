@@ -4,16 +4,17 @@
 #include "cxx/defer_asm.h"
 #include "../main.hpp"
 
+/* the module's .ctors/.dtors refer to the static constructor/destructor */
+__asm__(".globl _GLOBAL__I__ZN11vector_font10OutputText8_currentE");
+
 #include "UTST99332/demo_duck/gl.hpp"
 
-extern const float D_00167778;  /* line height */
-extern const float D_00167780;  /* char width */
-extern const float D_0016777C;
 namespace vector_font {
 class OutputText {
 public:
     struct Pos {
-        float x, y;
+        Pos() : x(0), y(0), z(0) {}
+        float x, y, z;
     };
     static void LineStart();
     static void Margin(float, float);
@@ -27,7 +28,9 @@ public:
 };
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/vector_font_OutputText", _Z41__static_initialization_and_destruction_0ii_4C9B0);
+vector_font::OutputText::Pos vector_font::OutputText::_current;
+float vector_font::OutputText::_margin_x;
+float vector_font::OutputText::_margin_y;
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/vector_font_OutputText", _ZN11vector_font9DrawText_ESsfffffj);
 
@@ -41,12 +44,16 @@ void vector_font::OutputText::End()
     glPopMatrix();
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/vector_font_OutputText", _ZN11vector_font10OutputText8PrevLineEv);
+void vector_font::OutputText::PrevLine()
+{
+    _current.x = 0;
+    _current.y += 1.0f;
+}
 
 void vector_font::OutputText::NextLine()
 {
     LineStart();
-    _current.y -= D_0016777C;
+    _current.y -= 1.0f;
 }
 
 void vector_font::OutputText::LineStart()
@@ -56,7 +63,7 @@ void vector_font::OutputText::LineStart()
 
 void vector_font::OutputText::NextChar()
 {
-    _current.x += D_00167780;
+    _current.x += 1.0f;
 }
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/vector_font_OutputText", _ZN11vector_font10OutputText3PutESs);
@@ -72,14 +79,3 @@ void vector_font::OutputText::Margin(float x, float y)
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/vector_font_OutputText", _ZN11vector_font10OutputText7OutlineESs);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/vector_font_OutputText", _ZN11vector_font10OutputText8BracketsESs);
-
-extern "C" {
-void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_4C9B0");
-void _GLOBAL__I__ZN11vector_font10OutputText8_currentE(void);
-}
-
-void _GLOBAL__I__ZN11vector_font10OutputText8_currentE(void)
-{
-    static_init(1, 0xFFFF);
-}
-
