@@ -51,7 +51,26 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/ez", ezTtrWrite);
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/ez", D_00102E5C);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/ez", ezTtrWrite2);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int resGetDatLocal(int, int);                       /* extern */
+int **ttrFontInitEx(int, int, void *, int, int, void *); /* extern */
+extern unsigned char D_00102A88;
+extern unsigned char D_00102AA4;
+extern unsigned char D_00102E5C;
+
+void ezTtrWrite2(void *arg0) {
+    int **temp_v0;
+    int temp_s1;
+
+    temp_s1 = resGetDatLocal(M2C_FIELD(arg0, int *, 0), M2C_FIELD(arg0, int *, 4));
+    temp_v0 = ttrFontInitEx(temp_s1, resGetDatLocal(M2C_FIELD(arg0, int *, 8), M2C_FIELD(arg0, int *, 0xC)), arg0 + 0x10, M2C_FIELD(arg0, int *, 0x54), M2C_FIELD(arg0, int *, 0x58), arg0 + 0x5C);
+    if (temp_v0 == NULL) {
+        consPrintf(&D_00102A88, &D_00102AA4, 0x2A9, "ezTtrWrite2", &D_00102E5C);
+    }
+    ttrFontTerm(temp_v0);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/ez", ezInfoWinInit);
 

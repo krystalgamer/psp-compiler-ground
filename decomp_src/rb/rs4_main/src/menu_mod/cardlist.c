@@ -11,7 +11,6 @@ extern unsigned char D_00102244;
 void *cardlistFindOne();                            /* extern */
 extern unsigned char D_001021A0;
 
-int cardlistCpyTtr2Int32();                         /* extern */
 
 
 int *resGetDatLocal();
@@ -32,7 +31,14 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/cardlist", D_00101
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/cardlist", cardlistCpyTtr2Float32);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/cardlist", cardlistCpyTtr2Int32);
+float cardlistCpyTtr2Float32();
+/* the conversion is an inline-asm cvt.w.s (rounds), not a cast (trunc.w.s) */
+int cardlistCpyTtr2Int32() {
+    float r;
+    float f = cardlistCpyTtr2Float32();
+    __asm__ volatile ("cvt.w.s %0, %1" : "=f"(r) : "f"(f));
+    return *(int *)&r;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/cardlist", cardlistCpyTtr2Bool);
 
@@ -177,7 +183,13 @@ int cardlistGetSaveID(int arg0) {
     return -1;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/cardlist", cardlistGetCardIDFromSaveID);
+int cardlistGetCardIDFromSaveID(unsigned int arg0) {
+    if (arg0 < (unsigned int) l_nCardNum) {
+        return M2C_FIELD(((arg0 * 0xB60) + l_atCardList), unsigned short *, 0x200);
+    }
+    consPrintf(&D_00102244, "cardlistGetCardIDFromSaveID", arg0);
+    return -1;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/cardlist", cardlistGetResultEfcTtrStr);
 
