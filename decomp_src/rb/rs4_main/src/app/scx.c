@@ -18,7 +18,11 @@ void *scxMalloc(int size)
 	return _memAlloc(size, D_000FE5A0, 0x34);
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/scx", scxMfree);
+extern char D_000FE5A0[];
+void scxMfree(void *p)
+{
+	_memFree(p, D_000FE5A0, 0x3D);
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/scx", D_000FE5A0);
 

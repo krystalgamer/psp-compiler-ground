@@ -96,9 +96,19 @@ void *ctrlStateV(int arg0) {
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/ctrl", _ctrlSetTrg);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/ctrl", ctrlSetEnter);
+extern int CtrlEnter;
+int ctrlSetEnter(int key)
+{
+	_ctrlSetTrg(key, &CtrlEnter);
+	return 1;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/ctrl", ctrlSetCancel);
+extern int CtrlCancel;
+int ctrlSetCancel(int key)
+{
+	_ctrlSetTrg(key, &CtrlCancel);
+	return 1;
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/dev/ctrl", D_000F9E30);
 

@@ -97,13 +97,23 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/particle", D_000FE0C4);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/particle", _partInit2DBaseCntx);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/particle", _partFree2DBaseCntx);
+extern unsigned char D_000FE0C4;
+int _partFree2DBaseCntx(void *p)
+{
+	_memFree(p, &D_000FE0C4, 0x1C0);
+	return 1;
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/particle", D_000FE100);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/particle", _partInit3DBaseCntx);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/particle", _partFree3DBaseCntx);
+extern unsigned char D_000FE0C4;
+int _partFree3DBaseCntx(void *p)
+{
+	_memFree(p, &D_000FE0C4, 0x1FD);
+	return 1;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/particle", _partEzEnvelope);
 
@@ -159,7 +169,12 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/particle", partEmitAnimate
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/particle", partInitPart2DCntx);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/particle", partFree2DCntx);
+extern unsigned char D_000FE0C4;
+int partFree2DCntx(void *p)
+{
+	_memFree(p, &D_000FE0C4, 0x402);
+	return 1;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/particle", _partPartCommonAnimate);
 
@@ -169,7 +184,12 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/particle", partDrawPart2D)
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/particle", partInitPart3DCntx);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/particle", partFree3DCntx);
+extern unsigned char D_000FE0C4;
+int partFree3DCntx(void *p)
+{
+	_memFree(p, &D_000FE0C4, 0x533);
+	return 1;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/particle", partPart3DAnimate);
 

@@ -129,11 +129,20 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", resGetDatSect);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", resGetDatLocal);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", resGetDatRefer);
+void *resGetDatRefer(int a, int b)
+{
+	return resGetDatSect(a, 4, b);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", resGetDatTable);
+void *resGetDatTable(int a, int b)
+{
+	return resGetDatSect(a, 5, b);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", resGetDatString);
+void *resGetDatString(int a, int b)
+{
+	return resGetDatSect(a, 6, b);
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", D_000FBF14);
 
@@ -189,9 +198,15 @@ int resGetPtrLocal(int a, int b)
 	return resGetPtrSect(a, 2, b);
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", resGetPtrTable);
+int resGetPtrTable(int a, int b)
+{
+	return resGetPtrSect(a, 5, b);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", resGetPtrString);
+int resGetPtrString(int a, int b)
+{
+	return resGetPtrSect(a, 6, b);
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -330,7 +345,13 @@ int taskSwitchCntx(int arg0) {
     return temp_v0;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", taskRest);
+int taskRest(void)
+{
+	int r = 0;
+	if (pCurrent)
+		r = (*(int **)pCurrent)[7];
+	return r;
+}
 
 int taskHead(void)
 {

@@ -68,7 +68,11 @@ int gameTaskSort(void **arg0, void *arg1, int *arg2) {
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/game", gameTaskDraw);
+int gameTaskDraw(int a, int b, int c)
+{
+	taskProc(a, 3, b, c);
+	return 0;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/game", gameChgGameMode);
 
