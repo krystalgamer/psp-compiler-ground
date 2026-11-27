@@ -243,37 +243,39 @@ void sceGumRotateXYZ(const ScePspFVector3 *v)
 	update[cur_matrix] = 1;
 }
 
-#ifdef NON_MATCHING
-/* diff 4 (statement order found with perm.py): the original loads c.x before s.x and
- * stores m.x.z before m.y.x; the UTST99332 libgum text gives diff 11. */
-void sceGumRotateZYX(const ScePspFVector3 *v)
+void sceGumRotateZYX(const ScePspFVector3 *vec)
 {
-	ScePspFMatrix4 m;
-	ScePspFVector3 s, c;
+	ScePspFMatrix4	m;
+	float	s[3], c[3];
 
-	s.x = sinf(v->x); c.x = cosf(v->x);
-	s.y = sinf(v->y); c.y = cosf(v->y);
-	s.z = sinf(v->z); c.z = cosf(v->z);
+	s[0] = (float)sinf(vec->x);
+	c[0] = (float)cosf(vec->x);
+	s[1] = (float)sinf(vec->y);
+	c[1] = (float)cosf(vec->y);
+	s[2] = (float)sinf(vec->z);
+	c[2] = (float)cosf(vec->z);
 
-	m.x.x = c.y * c.z;
-	m.x.y = c.y * s.z;
+	m.x.x = c[1] * c[2];
+	m.x.y = c[1] * s[2];
+	m.x.z = -1.0f * s[1];
 	m.x.w = 0.0f;
-	m.y.x = s.x * s.y * c.z - c.x * s.z;
-	m.x.z = -s.y;
-	m.y.y = c.x * c.z + s.x * s.y * s.z;
-	m.y.z = s.x * c.y;
+	m.y.x = (-1.0f * c[0] * s[2]) + (s[0] * s[1] * c[2]);
+	m.y.y = (c[0] * c[2]) + (s[0] * s[1] * s[2]);
+	m.y.z = s[0] * c[1];
 	m.y.w = 0.0f;
-	m.z.x = s.x * s.z + c.x * s.y * c.z;
-	m.z.y = c.x * s.y * s.z - s.x * c.z;
-	m.z.z = c.x * c.y;
+	m.z.x = (s[0] * s[2]) + (c[0] * s[1] * c[2]);
+	m.z.y = (-1.0f * s[0] * c[2]) + (c[0] * s[1] * s[2]);
+	m.z.z = c[0] * c[1];
 	m.z.w = 0.0f;
-	m.w.x = 0.0f; m.w.y = 0.0f; m.w.z = 0.0f; m.w.w = 1.0f;
+	m.w.x = 0.0f;
+	m.w.y = 0.0f;
+	m.w.z = 0.0f;
+	m.w.w = 1.0f;
+
 	__mulMatrix(cur_stack, cur_stack, &m);
 	update[cur_matrix] = 1;
+	return;
 }
-#else
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgum", sceGumRotateZYX);
-#endif
 
 void sceGumTranslate(const ScePspFVector3 *v)
 {
