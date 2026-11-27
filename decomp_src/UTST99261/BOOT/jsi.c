@@ -58,6 +58,15 @@ typedef struct { int hdr; JSMSG m; } JSMSGBUF;
 int OS_mq_receive(int q, void *buf, int size, int flag);
 int OS_mq_send(int q, void *buf, int size, int flag);
 int CLIB_time(void *t);
+extern char D_00133BB8[];
+extern char D_00133BC4[];
+void esp_postMsgQuit(void *msg);
+void OS_thread_join(int t, int x);
+void GUI_Toolkit_freeFont(int f);
+void GUI_Toolkit_terminateSystem(void);
+void OS_mq_unlink(char *name);
+void esp_freeConfig(EspConfig *c);
+void OS_timer_destroy(void);
 DOMStr *newDOMString_4B5FC(const char *utf8, int len) {
     DOMStr *s = MEM_malloc(0, sizeof(DOMStr));
 
@@ -1353,7 +1362,37 @@ int ESP_terminateCore(void) {
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_destroyCore);
+int ESP_destroyCore(void) {
+    int i;
+    if (esp_context == NULL) {
+        return -1;
+    }
+    if (esp_context->state == 1) {
+        esp_postMsgQuit(esp_context->msg);
+        esp_context->state = 2;
+    }
+    if (esp_context->state == 2) {
+        OS_thread_join(esp_context->xFC, 0);
+        OS_thread_join(esp_context->x100, 0);
+        for (i = 0; i < 28; i++) {
+            GUI_Toolkit_freeFont(M2C_FIELD(esp_context, int *, 4 + i * 4));
+        }
+        GUI_Toolkit_terminateSystem();
+        OS_mq_close(esp_context->xF4);
+        OS_mq_unlink(D_00133BB8);
+        OS_mq_close((int)esp_context->msg);
+        OS_mq_unlink(D_00133BC4);
+    }
+    gBEINSI_UI = NULL;
+    gPREF_UI = NULL;
+    esp_freeConfig(&esp_context->config);
+    MEM_free(0, esp_context);
+    esp_context = NULL;
+    OS_timer_destroy();
+    FIO_destroy();
+    MEM_destroy(0);
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", ESP_loadPage);
 
