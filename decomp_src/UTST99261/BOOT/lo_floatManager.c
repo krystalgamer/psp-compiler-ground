@@ -80,7 +80,36 @@ void removeRegion(void *arg0, void *arg1) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_floatManager", overlayRegion);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_floatManager", lfm_createPageRegion);
+void *lfm_createPageRegion(void *box, int w) {
+    void *r;
+    void *n;
+    void *st;
+
+    r = MEM_malloc(0, 0x14);
+    if (r == NULL)
+        return NULL;
+    M2C_FIELD(r, void **, 0) = box;
+    st = M2C_FIELD(box, void **, 0x24);
+    M2C_FIELD(r, int *, 4) = w - M2C_FIELD(st, s16 *, 0x26) - M2C_FIELD(st, s16 *, 0x36) - M2C_FIELD(st, s16 *, 0x2E) - M2C_FIELD(st, s16 *, 0x2A) - M2C_FIELD(st, s16 *, 0x32) - M2C_FIELD(st, s16 *, 0x22);
+    M2C_FIELD(r, int *, 8) = 0;
+    M2C_FIELD(r, void **, 0xC) = MEM_malloc(0, 0x18);
+    if (M2C_FIELD(r, void **, 0xC) == NULL) {
+        MEM_free(0, r);
+        return NULL;
+    }
+    n = MEM_malloc(0, 0x18);
+    if (n == NULL) {
+        MEM_free(0, M2C_FIELD(r, void **, 0xC));
+        MEM_free(0, r);
+        return NULL;
+    }
+    M2C_FIELD(M2C_FIELD(r, void **, 0xC), void **, 0x10) = n;
+    M2C_FIELD(M2C_FIELD(r, void **, 0xC), int *, 0x14) = 0;
+    M2C_FIELD(n, void **, 0x10) = n;
+    M2C_FIELD(n, void **, 0x14) = M2C_FIELD(r, void **, 0xC);
+    M2C_FIELD(r, void **, 0x10) = M2C_FIELD(r, void **, 0xC);
+    return r;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
