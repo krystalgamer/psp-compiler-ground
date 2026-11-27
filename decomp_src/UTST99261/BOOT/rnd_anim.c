@@ -43,6 +43,8 @@ int rnd_gdrawImageUpdate(void *img, RPOS *t);
 int rnd_updateAnimImageBoxnode(void *bn);
 void rnd_updateUpdateWidgetList(void);
 void rnd_clearUpdateWidgetList(void);
+typedef struct UWNODE { struct UWNODE *next; void *pane; RRECT *rect; } UWNODE;
+void GUI_ScrollPane_getViewportSize(void *pane, int *w, int *h);
 int checkParentBox(M2C_UNK *arg0, int arg1) {
     M2C_UNK *var_a0;
     int var_v0;
@@ -126,7 +128,53 @@ void rnd_clearUpdateWidgetList(void) {
     head = NULL;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_anim", rnd_updateUpdateWidgetList);
+void rnd_updateUpdateWidgetList(void) {
+    UWNODE *n;
+    int pane;
+    int x0, y0, x1, y1;
+    int sx, sy, vw, vh;
+
+    pane = 0;
+    if (head == NULL)
+        return;
+    n = *(UWNODE **)head;
+    x0 = y0 = x1 = y1 = -1;
+    for (; n != NULL; n = n->next) {
+        pane = (int)n->pane;
+        if (n->rect != NULL) {
+            if (x0 < 0 || n->rect->x < x0)
+                x0 = n->rect->x;
+            if (y0 < 0 || n->rect->y < y0)
+                y0 = n->rect->y;
+            if (x1 < 0 || x1 < n->rect->x + n->rect->w)
+                x1 = n->rect->x + n->rect->w;
+            if (y1 < 0 || y1 < n->rect->y + n->rect->h)
+                y1 = n->rect->y + n->rect->h;
+        } else {
+            if (x0 < 0)
+                x0 = 0;
+            if (y0 < 0)
+                y0 = 0;
+            if (x1 < 0)
+                x1 = 0;
+            if (y1 < 0)
+                y1 = 0;
+        }
+    }
+    if (pane != 0) {
+    GUI_ScrollPane_getScrollPosition((void *)pane, &sx, &sy);
+    GUI_ScrollPane_getViewportSize((void *)pane, &vw, &vh);
+    if (x0 < sx)
+        x0 = sx;
+    if (y0 < sy)
+        y0 = sy;
+    if (x1 > sx + vw)
+        x1 = sx + vw;
+    if (y1 > sy + vh)
+        y1 = sy + vh;
+    GUI_Component_update((void *)pane, x0, y0, x1 - x0, y1 - y0);
+    }
+}
 
 void rnd_updateAnimBoxnode(void) {
     RPOS now;
