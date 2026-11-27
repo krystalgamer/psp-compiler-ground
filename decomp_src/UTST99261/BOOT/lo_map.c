@@ -256,7 +256,27 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_map", htmlTagBranch);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_map", htmlTagBranchAfter);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_map", newDOMString);
+DOMString *newDOMString(unsigned char *s, int len) {
+    DOMString *d = (DOMString *)MEM_malloc(0, 0xC);
+    unsigned short *p;
+    unsigned char *q;
+    int i;
+
+    if (d == NULL)
+        return NULL;
+    M2C_FIELD(d, int *, 0) = len;
+    M2C_FIELD(d, int *, 4) = len;
+    M2C_FIELD(d, int *, 8) = MEM_malloc(0, len * 2);
+    if (M2C_FIELD(d, int *, 8) == 0) {
+        MEM_free(0, d);
+        return NULL;
+    }
+    q = s;
+    p = M2C_FIELD(d, unsigned short **, 8);
+    for (i = 0; i < len; i++)
+        *p++ = *q++;
+    return d;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)

@@ -55,9 +55,64 @@ extern unsigned char _DOMfocuscolor;
 
 
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/act_selection", addSelectionTarget);
+typedef struct SelTgt { struct SelTgt *next; struct SelTgt *prev; BOX *box; } SelTgt;
+typedef struct { SelTgt *head; SelTgt *tail; } SelList;
+void *MEM_malloc(void *pool, unsigned int size);
+int addSelectionTarget(SelList *l, BOX *box, int a, int b) {
+    SelTgt *t;
+    int s, e;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/act_selection", insertSelectionTarget);
+    s = a;
+    e = b;
+    if (a == b)
+        return 0;
+    if (b < a) {
+        s = b;
+        e = a;
+    }
+    t = MEM_malloc(0, 0xC);
+    if (t == NULL)
+        return -0x64;
+    t->next = NULL;
+    t->prev = l->tail;
+    t->box = box;
+    box->geom->y = s;
+    M2C_FIELD(box->geom, int *, 8) = e;
+    if (l->head == NULL)
+        l->head = t;
+    else
+        l->tail->next = t;
+    l->tail = t;
+    return 0;
+}
+
+int insertSelectionTarget(SelList *l, BOX *box, int a, int b) {
+    SelTgt *t;
+    int s, e;
+
+    s = a;
+    e = b;
+    if (a == b)
+        return 0;
+    if (b < a) {
+        s = b;
+        e = a;
+    }
+    t = MEM_malloc(0, 0xC);
+    if (t == NULL)
+        return -0x64;
+    t->next = l->head;
+    t->prev = NULL;
+    t->box = box;
+    box->geom->y = s;
+    M2C_FIELD(box->geom, int *, 8) = e;
+    if (l->tail == NULL)
+        l->tail = t;
+    else
+        l->head->prev = t;
+    l->head = t;
+    return 0;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)

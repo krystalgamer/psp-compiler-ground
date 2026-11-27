@@ -20,6 +20,12 @@ typedef struct SaveForm { int type; void *data; struct SaveForm *next; } SaveFor
 typedef struct RadioEnt { int pad; struct RadioEnt *next; void *box; char *name; } RadioEnt;
 int strcmp(const char *, const char *);
 void *getBoxByHTML(void *box, int html);
+extern int *gESPRIT_LO_GLOBAL_NDA;
+extern char REQUEST_LLIST[];
+void *getFocusTargetContentContext(void *g);
+int checkBoxValidity(void *box);
+void *make_msg_LP20(int a, int b, int c, int d, int e);
+void putLLIST(void *l, void *m);
 RadioEnt *getRadioListByName(void *ctx, void *box) {
     RadioEnt *r = M2C_FIELD(M2C_FIELD(ctx, void **, 0x20), RadioEnt **, 0x80);
 
@@ -181,7 +187,18 @@ block_5:
     return var_a2;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_form", confirmFepInfo);
+int confirmFepInfo(int a, int b, int c, int d, int e) {
+    void *box;
+    void *m;
+
+    if ((box = M2C_FIELD(getFocusTargetContentContext(gESPRIT_LO_GLOBAL_NDA), void **, 0x6C)) == NULL || !checkBoxValidity(box))
+        return -1;
+    m = make_msg_LP20(a, b, c, d, e);
+    if (m == NULL)
+        return -1;
+    putLLIST(REQUEST_LLIST, m);
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_form", actFormInput);
 
