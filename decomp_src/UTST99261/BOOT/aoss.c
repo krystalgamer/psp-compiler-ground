@@ -84,6 +84,10 @@ int sceNetInetBind(int s, void *addr, int len);
 int sceNetInetClose(int s);
 
 
+int AstsSetInitRes(int state, unsigned char *pkt, int *cnt, unsigned char *ctx);
+int AstsSetSecureRes(int state, unsigned char *pkt, int *cnt, unsigned char *ctx);
+int AstsRestartRes(int state, unsigned char *pkt, int *cnt, unsigned char *ctx);
+int DecodePacket(unsigned char *p);
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/aoss", D_00141118);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/aoss", AOSS_Init_old);
@@ -205,7 +209,36 @@ int AOSS_StatusExclusion(int s)
     return r;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/aoss", RecvMessage);
+int RecvMessage(int state, unsigned char *pkt, int *cnt, unsigned char *ctx)
+{
+    unsigned char *p = pkt + 0xC;
+    int ret = state;
+
+    if (AOSS_Ntohs(*(unsigned short *)(pkt + 0xC)) == 0) {
+        (*cnt)++;
+        return ret;
+    }
+    if (p[0xF] != 0x11) {
+        (*cnt)++;
+        return ret;
+    }
+    if (DecodePacket(p) > 0) {
+        (*cnt)++;
+        return ret;
+    }
+    switch (AOSS_Ntohs(*(unsigned short *)(p + 6))) {
+    case 0x1010:
+        ret = AstsSetInitRes(ret, pkt, cnt, ctx);
+        break;
+    case 0x2010:
+        ret = AstsSetSecureRes(ret, pkt, cnt, ctx);
+        break;
+    case 0x3010:
+        ret = AstsRestartRes(ret, pkt, cnt, ctx);
+        break;
+    }
+    return ret;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/aoss", AstsSetInitRes);
 
