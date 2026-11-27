@@ -7,6 +7,11 @@ void *sgxResFindWave();
 void *sgxResFindRgn();
 void sgxPortCommand(int, int *);
 
+int sgxPortAlloc();
+int sgxPortGetStatus(int);
+void sgxDI();
+void sgxEI();
+
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsndnote", WaveInit);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsndnote", NoteInit);
@@ -24,7 +29,25 @@ void NoteTerm(void *arg0) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsndnote", NoteProcPost);
+void NoteProcPost(char *s)
+{
+    int id = *(int *)(s + 0x94);
+    int st, r;
+    if (id < 0) return;
+    sgxDI();
+    st = *(int *)(s + 0xC);
+    r = sgxPortGetStatus(id);
+    st = (st & ~0x160) | (r & 0x160);
+    if (r & 0x40) st |= 2;
+    else st &= ~2;
+    if (r & 4) st &= ~0x42;
+    if (!(r & 2)) {
+        st &= ~2;
+        st |= 0x10;
+    }
+    *(int *)(s + 0xC) = st;
+    sgxEI();
+}
 
 void NotePause(char *s, int x)
 {

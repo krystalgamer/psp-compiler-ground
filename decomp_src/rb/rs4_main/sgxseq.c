@@ -289,7 +289,18 @@ const float D_0010ACF0 = 1.0f;
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxseq", SesqJump);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxseq", SesqLoopBreak);
+void SesqLoopBreak(char *s, int a, int b)
+{
+    short key = **(short **)(s + 0x20);
+    char *e, *c;
+    for (e = SeqListFirst((char *)&D_0011FE68 - 4); e != NULL; e = SeqListNext(e)) {
+        char *q = *(char **)(e + 0x10);
+        if (*(short *)(q + 0xA4) == key && *(int *)(q + 0x14) == a && *(int *)(q + 0x18) == b) {
+            c = SeqListFirst(e + 0x14);
+            if (c != NULL) c[0x56] = 1;
+        }
+    }
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxseq", SesqPlay);
 

@@ -42,6 +42,10 @@ static inline void SgxPNodeAddTail(SgxPNode *l, SgxPNode *n) {
     n->next->prev = n;
 }
 
+int UnitMergeVoiceStatus(void *);
+void sgxPortCommand(int id, int *cmd);
+extern int D_00113CC8[];
+
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/sgxport", D_0010AD00);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxport", SlotGetAt_848F0);
@@ -147,7 +151,14 @@ void UnitFreeAll_85854(p)
     while ((e = PortListFirst(l)) != NULL) UnitFree_85774(e);
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxport", UnitFreeByID_8589C);
+void UnitFreeByID_8589C(void *port, int id, int sh)
+{
+    char *e, *n;
+    for (e = PortListFirst((char *)port + 0x18); e != NULL; e = n) {
+        n = PortListNext(e);
+        if ((*(int *)(e + 8) >> sh) == id) UnitFree_85774(e);
+    }
+}
 
 void UnitFreeAtAfter(void *port, char *u) {
     char *e, *n;

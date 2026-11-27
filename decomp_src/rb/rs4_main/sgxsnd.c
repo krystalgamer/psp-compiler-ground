@@ -51,6 +51,12 @@ void sgxBmgSetLowBufCallback(int, int, int, int, int);
 #define SGX_ERR(line, ...) if (gSgxDebugFlags & 1) sgxPrintfPref(gSgxPrefErr, D_0010A400, line, __VA_ARGS__)
 #define SNDW ((char *)&gWork_11FC84)
 
+extern const char D_0010A5BC[];
+extern const char D_0010A5C8[];
+void SlotUpdateVolume(void *, int);
+void sgxAttrCopyUpdate(void *, void *);
+static inline char *SndListFirst2(char *l) { char *n = *(char **)(l + 4); return (*(int *)(n + 8) < 0) ? NULL : n; }
+
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", SlotGetAt_7DD48);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", SlotGetAtStop);
@@ -480,7 +486,19 @@ int sgxSndGetReg(int id, int idx) {
     return -1;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", sgxSndSetCategory);
+void sgxSndSetCategory(int id, unsigned int cat)
+{
+    char *p = SlotGetAt_7DD48(id, D_0010A5BC);
+    if (p == NULL) return;
+    if (cat >= 16) {
+        SGX_ERR(0x695, D_0010A5C8, cat);
+        return;
+    }
+    if (*(short *)(p + 0x1C) != cat) {
+        *(short *)(p + 0x1C) = cat;
+        SlotUpdateVolume(p, 1);
+    }
+}
 
 int sgxSndGetCategory(int id)
 {

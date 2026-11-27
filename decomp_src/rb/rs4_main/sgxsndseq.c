@@ -55,7 +55,26 @@ void SeqTerm(void *arg0) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsndseq", SeqProcPost);
+int sgxSeqGetStatus(int);
+
+void SeqProcPost(char *s)
+{
+    int id = *(int *)(s + 0x94);
+    int st, r;
+    if (id < 0) return;
+    sgxDI();
+    st = *(int *)(s + 0xC);
+    r = sgxSeqGetStatus(id);
+    st = (st & ~0x142) | (r & 0x142);
+    st |= 0x20;
+    if (r & 4) st &= ~0x42;
+    if (!(r & 2)) {
+        st &= ~2;
+        st |= 0x10;
+    }
+    *(int *)(s + 0xC) = st;
+    sgxEI();
+}
 
 void SeqPause(char *s, int x)
 {
