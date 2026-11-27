@@ -118,6 +118,22 @@ void mes_list_free2(int list, int keep);
 int mes_error_syntax(EvCtx *ctx, int a);
 typedef struct { unsigned int n; int items[1]; } EvArr;
 typedef struct { char pad[0x20]; int obj; EvArr *args; EvArr *locals; EvArr *x2C; } EvScF;
+typedef struct NatFn {
+    char pad[0x18];
+    int (*fn)();
+    unsigned char nargs;
+} NatFn;
+typedef struct NatArgs {
+    unsigned int n;
+    int v[1];
+} NatArgs;
+typedef struct NatFrame {
+    NatFn *func;
+    NatArgs *args;
+} NatFrame;
+typedef struct NatCtx {
+    NatFrame *frame;
+} NatCtx;
 void *mes_eval_scope_new(EvCtx *ctx, int a, int b, int c)
 {
     char *o = mes_gc_alloc(ctx, 5);
