@@ -4,6 +4,15 @@
 #include "cxx/defer_asm.h"
 #include "../main.hpp"
 
+namespace glutils {
+void DrawArrow(const math::vector_xyzw &from, const math::vector_xyzw &to);
+void DrawArrow(const math::vector_xyzw &from, const math::vector_xyzw &to, float, float, float, int, int);
+void DrawVector(const math::vector_xyzw &from, const math::vector_xyzw &v);
+void DrawVector(const math::vector_xyzw &from, const math::vector_xyzw &v, float a, float b, float c, int d, int e);
+void DrawRectangle(float x, float y, float z, float w, float h, bool fill);
+void DrawRectangleC(float x, float y, float z, float w, float h, bool fill);
+}
+
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/glutils__arrow_pstack", _Z41__static_initialization_and_destruction_0ii_3AD98);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/glutils__arrow_pstack", _ZN7glutils15PushPointParamsEv);
@@ -62,9 +71,15 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/glutils__arr
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/glutils__arrow_pstack", _ZN7glutils19DrawCircularArrow2dEv);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/glutils__arrow_pstack", _ZN7glutils10DrawVectorERKN4math11vector_xyzwES3_);
+void glutils::DrawVector(const math::vector_xyzw &from, const math::vector_xyzw &v)
+{
+    DrawArrow(from, from + v);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/glutils__arrow_pstack", _ZN7glutils10DrawVectorERKN4math11vector_xyzwES3_fffii);
+void glutils::DrawVector(const math::vector_xyzw &from, const math::vector_xyzw &v, float a, float b, float c, int d, int e)
+{
+    DrawArrow(from, from + v, a, b, c, d, e);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/glutils__arrow_pstack", _ZN7glutils19DrawMayaGroundPlaneEb);
 
@@ -72,7 +87,12 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/glutils__arr
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/glutils__arrow_pstack", _ZN7glutils13DrawRectangleEfffffb);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/glutils__arrow_pstack", _ZN7glutils14DrawRectangleCEfffffb);
+extern "C" const float D_00164458; /* 0.5f */
+
+void glutils::DrawRectangleC(float x, float y, float z, float w, float h, bool fill)
+{
+    DrawRectangle(x - w * D_00164458, y - h * D_00164458, z, w, h, fill);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/glutils__arrow_pstack", _ZN7glutils12PreTransformERN4math6matrixES1_S1_S1_b);
 

@@ -4,13 +4,22 @@
 #include "cxx/defer_asm.h"
 #include "../main.hpp"
 
+class textures::textures_internal::Bmp {
+public:
+    static int Get4idxPixel(const unsigned char *data, int stride, int x, int y);
+};
+
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/textures_textures_internal_Bmp", _Z41__static_initialization_and_destruction_0ii_FDA58);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/textures_textures_internal_Bmp", _ZN8textures17textures_internal3Bmp4loadEPKc);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/textures_textures_internal_Bmp", _ZNK8textures17textures_internal3Bmp19num_palette_entriesEv);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/textures_textures_internal_Bmp", _ZN8textures17textures_internal3Bmp12Get4idxPixelEPKhiii);
+int textures::textures_internal::Bmp::Get4idxPixel(const unsigned char *data, int stride, int x, int y)
+{
+    unsigned char c = data[stride * y + x / 2];
+    return (x & 1) ? c & 0xF : c >> 4;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/textures_textures_internal_Bmp", _ZN8textures7SaveBmpEPKciiPKhS3_i);
 
