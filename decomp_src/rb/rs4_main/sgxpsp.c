@@ -13,9 +13,9 @@ extern int gSgxPrefErr;
 M2C_UNK FreqAdd(int, M2C_UNK, int, int, M2C_UNK, M2C_UNK, M2C_UNK); /* extern */
 M2C_UNK FreqRemove();                               /* extern */
 M2C_UNK FreqSync(int, M2C_UNK);                     /* extern */
-M2C_UNK sgxPspVoGetEnvelope();                      /* extern */
-M2C_UNK sgxPspVoGetVolume();                        /* extern */
-M2C_UNK sgxPspVoGetPitch();                         /* extern */
+float sgxPspVoGetEnvelope(int);
+float sgxPspVoGetVolume(int, int);
+float sgxPspVoGetPitch(int);
 
 
 void *At3GetSlot(int, const char *);
@@ -467,34 +467,58 @@ void sgxPspGetVoiceCount(void) {
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/sgxpsp", D_0010B5DC);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxpsp", sgxPspVoGetEnvelope);
+int sceSasGetEnvelope(int);
+extern const float D_0010B604;
+float sgxPspVoGetEnvelope(int v)
+{
+    int dev, idx;
+    if (!VoiceToDeviceIndex(v, &dev, &idx)) return 0.0f;
+    if (dev != 1) return 0.0f;
+    return (float)(sceSasGetEnvelope(idx) >> 16) * D_0010B604;
+}
+const float D_0010B604 = 1.0f / 16384.0f;
 
 #ifndef NULL
 #define NULL ((void *)0)
 #endif
 
-void sgxPspGetVoiceEnvelope(void) {
-    sgxPspVoGetEnvelope();
+float sgxPspGetVoiceEnvelope(int v) {
+    return sgxPspVoGetEnvelope(v);
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxpsp", sgxPspVoGetVolume);
+typedef struct { char pad[0x78]; short vol[96][4]; short pitch[96]; } SgxPspVoTab;
+extern const float D_0010B608;
+float sgxPspVoGetVolume(int v, int ch)
+{
+    int dev, idx;
+    if (!VoiceToDeviceIndex(v, &dev, &idx)) return 0.0f;
+    return (float)((SgxPspVoTab *)gWork_1207F0)->vol[dev * 32 + idx][ch] * D_0010B608;
+}
+const float D_0010B608 = 1.0f / 4096.0f;
 
 #ifndef NULL
 #define NULL ((void *)0)
 #endif
 
-void sgxPspGetVoiceVolume(void) {
-    sgxPspVoGetVolume();
+float sgxPspGetVoiceVolume(int v, int ch) {
+    return sgxPspVoGetVolume(v, ch);
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxpsp", sgxPspVoGetPitch);
+extern const float D_0010B60C;
+float sgxPspVoGetPitch(int v)
+{
+    int dev, idx;
+    if (!VoiceToDeviceIndex(v, &dev, &idx)) return 0.0f;
+    return (float)((SgxPspVoTab *)gWork_1207F0)->pitch[dev * 32 + idx] * D_0010B60C;
+}
+const float D_0010B60C = 1.0f / 4096.0f;
 
 #ifndef NULL
 #define NULL ((void *)0)
 #endif
 
-void sgxPspGetVoicePitch(void) {
-    sgxPspVoGetPitch();
+float sgxPspGetVoicePitch(int v) {
+    return sgxPspVoGetPitch(v);
 }
 
 int sgxPspAt3GetLocalID(int id) {
