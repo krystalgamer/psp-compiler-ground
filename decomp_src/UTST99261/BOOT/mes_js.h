@@ -10,6 +10,28 @@ typedef struct MesContext MesContext;
 typedef struct MesObject MesObject;
 typedef struct MesClass MesClass;
 typedef struct MesClassDef MesClassDef;
+typedef struct MesPage MesPage;
+
+/* property: id is a string/atom value, kept sorted in a B-tree of pages */
+typedef struct MesProp {
+    unsigned int id;
+    MesValue value;
+    signed char flags;
+} MesProp;
+
+struct MesPage {
+    int n;
+    MesProp items[4];
+    MesPage *child[5];
+};
+
+struct MesObject {
+    int f0;
+    MesPage *props;
+    MesObject *proto;
+    int fC;
+    signed char cls;
+};
 
 #define MES_INT(i) ((i) * 4 | 1)
 #define MES_NULL 4
@@ -33,6 +55,8 @@ struct MesContext {
     MesFrame *frame;
     int f14;
     MesValue *sp;                     /* value stack, grows down */
+    char pad1C[0x24];
+    MesValue stack[1];                /* 0x40 */
 };
 
 typedef struct JSEventRec {
@@ -46,6 +70,7 @@ MesObject *mes_class_new(MesContext *ctx, MesClass *cls);
 void mes_class_private_set(MesObject *obj, void *priv);
 void *mes_class_private_get(MesObject *obj);
 void mes_gc_mark(MesValue v);
+void *MEM_malloc(int heap, unsigned int size);
 void MEM_free(int heap, void *p);
 MesValue mes_eval_to_string(MesContext *ctx, MesValue v);
 MesValue mes_string_new(MesContext *ctx, const void *str, int len);
