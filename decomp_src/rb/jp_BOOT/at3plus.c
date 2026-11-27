@@ -27,7 +27,42 @@ extern int finishflag;
 static void release_at3playArgID(ScePlayArg *pPlayArg);
 static void at3plus_addData(SceInt32 atracId, SceInt32 fd);
 
-INCLUDE_ASM("tmp/asm/rb/jp_BOOT/nonmatchings/at3plus", init_atrac3plus);
+SceInt32 init_atrac3plus(SceChar8 *filename, SceUChar8 *pucReadBuf, SceInt32 iInputBufferSize, SceInt32 ioutputChannel, ScePlayArg *pPlayArg)
+{
+	SceInt32 status;
+	SceSSize filesize;
+
+	iFadeFlag = 0;
+	finishflag = 0;
+	pPlayArg->atracId = -1;
+	pPlayArg->fd = sceIoOpen(filename, 1, 0);
+	if (pPlayArg->fd < 0) {
+		status = pPlayArg->fd;
+		printf("status = 0x%x (in sceIoOpen)\n", status);
+		goto RELEASE_ARG;
+	}
+	filesize = sceIoRead(pPlayArg->fd, pucReadBuf, iInputBufferSize);
+	if (filesize < 0) {
+		status = filesize;
+		printf("status = 0x%x(in sceIoRead)\n", status);
+		goto RELEASE_ARG;
+	}
+	pPlayArg->atracId = sceAtracSetDataAndGetID(pucReadBuf, filesize);
+	if (pPlayArg->atracId < 0) {
+		status = pPlayArg->atracId;
+		printf("status = 0x%x(in sceAtracSetDataAndGetID)\n", status);
+		goto RELEASE_ARG;
+	}
+	pPlayArg->outputChannel = ioutputChannel;
+	status = sceAtracSetLoopNum(pPlayArg->atracId, -1);
+	if (status < 0)
+		printf("status = 0x%x(in sceAtracLoopNum)\n", status);
+	return 0;
+
+RELEASE_ARG:
+	release_at3playArgID(pPlayArg);
+	return status;
+}
 
 INCLUDE_ASM("tmp/asm/rb/jp_BOOT/nonmatchings/at3plus", play_atrac3plus);
 
