@@ -351,7 +351,97 @@ void net_term(void)
 	_net_term();
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_netmain", net_lobbysub);
+extern int lobby_tex, gp_tex[4], lfont_tex, font_tex_28DDA0, lfont_tex2[25], loop_28DD30, old_state, moji_a, game_cpu_disp;
+int bmp_file_load16(char *name);
+int bmp_file_load(char *name);
+unsigned char *LoadFile(char *name, int *size);
+int bmp_addr_load16(void *addr);
+void bmp_file_unload(int tex);
+void psp_free(void *p);
+void ASC_Init(int a, int tex);
+void ASC_Disp(void *a, int b);
+void ASC_Reset(void);
+void poly_set(int a0, int a1, int a2, int a3, int a4, int a5, int a6, int a7,
+	int s0, int s1, int s2, int s3, int s4, int s5, int s6, int s7,
+	int s8, int s9, int s10, int s11, int s12, int s13, int s14, int s15, int s16);
+void drawpic(void);
+int Lobby_pad_read(void);
+void net_core(void);
+int net_lobbysub(void)
+{
+	int size;
+	int ret;
+	unsigned char *buf, *p;
+	int i, y, cnt;
+
+	lobby_tex = bmp_file_load16("lobby.bmp");
+	gp_tex[0] = bmp_file_load16("gp.bmp");
+	gp_tex[1] = bmp_file_load16("gp1.bmp");
+	gp_tex[2] = bmp_file_load16("gp2.bmp");
+	gp_tex[3] = bmp_file_load16("gp3.bmp");
+	lfont_tex = bmp_file_load16("lfont.bmp");
+	font_tex_28DDA0 = bmp_file_load("tex_asc.bmp");
+	buf = LoadFile("lfont.dat", &size);
+	p = buf + 8;
+	for (i = 0; i < 25; i++) {
+		lfont_tex2[i] = bmp_addr_load16(buf + ((p[0] << 24) + (p[1] << 16) + (p[2] << 8) + p[3]));
+		p += 8;
+	}
+	psp_free(buf);
+	ASC_Init(0, font_tex_28DDA0);
+	game_cpu_disp = 0;
+	loop_28DD30 = 1;
+	net_error = 1;
+	old_state = 0;
+	moji_a = 0;
+	net_num = 0;
+	net_pause = 0;
+	change_state(0);
+	y = 0x120;
+	while (loop_28DD30) {
+		psp_loopstart();
+		drawpic();
+		switch (Lobby_pad_read()) {
+		case 1:
+			ret = 1;
+			loop_28DD30 = 0;
+			break;
+		case 2:
+			ret = 2;
+			loop_28DD30 = 0;
+			break;
+		}
+		ASC_Disp(0, 1);
+		ASC_Reset();
+		poly_set(0, y, 480, 64, 0, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 255, 2, 1, 255);
+		y--;
+		if (y < -16)
+			y = 0x120;
+		sceGuSync(0, 0);
+		net_core();
+		psp_loopend();
+	}
+	loop_28DD30 = 1;
+	cnt = 2;
+	while (loop_28DD30) {
+		cnt--;
+		psp_loopstart();
+		psp_loopend();
+		if (cnt == 0)
+			loop_28DD30 = 0;
+	}
+	game_cpu_disp = 1;
+	for (i = 0; i < 25; i++)
+		bmp_file_unload(lfont_tex2[i]);
+	bmp_file_unload(font_tex_28DDA0);
+	bmp_file_unload(lfont_tex);
+	bmp_file_unload(lobby_tex);
+	bmp_file_unload(gp_tex[0]);
+	bmp_file_unload(gp_tex[1]);
+	bmp_file_unload(gp_tex[2]);
+	bmp_file_unload(gp_tex[3]);
+	return ret;
+}
 
 int net_lobby(void)
 {
