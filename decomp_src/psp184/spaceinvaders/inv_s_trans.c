@@ -42,7 +42,28 @@ void spr_trans(unsigned char *src, unsigned char *dst, int x, int y, int u, int 
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_trans", spr_trans_or);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_trans", spr_trans_pal);
+void spr_trans_pal(unsigned char *src, unsigned char *dst, int x, int y, int u, int v, int w, int h)
+{
+	int i, j;
+	char *s;
+	unsigned char *d;
+	char c;
+
+	if (x > 256 || y > 256 || x < 0 || y < 0)
+		return;
+	s = (char *)src + u + v * 256;
+	d = dst + x + y * 256;
+	for (i = 0; i < h; i++) {
+		for (j = 0; j < w; j++) {
+			if (y + i > 256)
+				return;
+			c = (s + j)[i * 256];
+			if (c != 0)
+				c = 3;
+			(d + j)[i * 256] = c;
+		}
+	}
+}
 
 void spr8x8_boxfill(unsigned char *buf, int x, int y, int col)
 {
