@@ -39,6 +39,18 @@ typedef struct { const DOMChar *p[6]; } PtrArr6;
 extern const PtrArr5 D_00138C78;
 extern const PtrArr3 D_00138CC0;
 extern const PtrArr6 D_00138CDC;
+typedef struct { int x00; unsigned int len; DOMChar *data; } TDStr;
+TDStr *parseMBtoDScopy(DOMChar *s, int n);
+int Document_createElement(int doc, TDStr *name);
+void MEM_free(void *pool, void *p);
+void Node_appendChild(int parent, int child);
+void parseAlertMessage(void *c);
+typedef struct { int size; unsigned int len; DOMChar *str; } TDOMString;
+typedef struct { int x00; int x04; signed char type; char x09; short id; } TTag;
+typedef struct { char x00[0x34]; TTag tag; char x40[0x11C - 0x40]; int cur; } TCtx;
+void Element_getTagName(TDOMString *s, int node);
+int parseDStrEqual(const DOMChar *a, TDOMString *b);
+int parseTagCountMinus(TCtx *c, TTag t);
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parseTagTransact", parseTagTransact);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parseTagTransact", parseTagCommon);
@@ -312,6 +324,82 @@ int parseEndTagFORM(void *ctx) {
     return parseTagCommon(ctx, stop, 1, tags.p, 2);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parseTagTransact", parseEndCloseTag);
+void parseEndCloseTag(TCtx *c) {
+    TDOMString name;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parseTagTransact", parseDefTagElmName);
+    Element_getTagName(&name, c->cur);
+    if (parseDStrEqual(D_00138BFC, &name)) {
+        return;
+    }
+    if (c->tag.type == 1 && c->tag.id != 0x4E) {
+        parseSearchPNode(c, c->tag);
+    }
+    if (parseTagCountMinus(c, c->tag) == 1) {
+        return;
+    }
+    switch (c->tag.id) {
+    case 0x50:
+        parseEndTagTD(c);
+        break;
+    case 0x53:
+        parseEndTagTH(c);
+        break;
+    case 0x56:
+        parseEndTagTR(c);
+        break;
+    case 0x4F:
+        parseEndTagTBODY(c);
+        break;
+    case 0x4E:
+        parseEndTagTABLE(c);
+        break;
+    case 0x3C:
+        parseEndTagOL(c);
+        break;
+    case 0x59:
+        parseEndTagUL(c);
+        break;
+    case 0x18:
+        parseEndTagDIR(c);
+        break;
+    case 0x37:
+        parseEndTagMENU(c);
+        break;
+    case 0x1A:
+        parseEndTagDL(c);
+        break;
+    case 0x46:
+        parseEndTagSELECT(c);
+        break;
+    case 0x1F:
+        parseEndTagFORM(c);
+        break;
+    default:
+        parseEndTagDefault(c);
+        break;
+    }
+}
+
+void parseDefTagElmName(void *c, DOMChar *str, int len) {
+    TDStr *d;
+    int el;
+    unsigned int i;
+
+    d = parseMBtoDScopy(str, len);
+    if (d != NULL && d->len != 0) {
+        for (i = 0; i < d->len; i++) {
+            d->data[i] = ((DOMChar)(d->data[i] - 'a') < 26) ? d->data[i] - 0x20 : d->data[i];
+        }
+    }
+    el = Document_createElement(M2C_FIELD(c, int *, 0x118), d);
+    if (d != NULL) {
+        MEM_free(0, d->data);
+        d->data = NULL;
+        MEM_free(0, d);
+    }
+    if (el != 0) {
+        Node_appendChild(M2C_FIELD(c, int *, 0x11C), el);
+        M2C_FIELD(c, int *, 0x11C) = el;
+    }
+    parseAlertMessage(c);
+}
