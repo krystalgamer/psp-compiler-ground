@@ -88,6 +88,16 @@ int AstsSetInitRes(int state, unsigned char *pkt, int *cnt, unsigned char *ctx);
 int AstsSetSecureRes(int state, unsigned char *pkt, int *cnt, unsigned char *ctx);
 int AstsRestartRes(int state, unsigned char *pkt, int *cnt, unsigned char *ctx);
 int DecodePacket(unsigned char *p);
+extern unsigned char ProductInfo[];
+extern unsigned char SecurityInfo[];
+int GetSecurityData(int a, unsigned char *p, int len, unsigned char *info, unsigned char *prod);
+int aoss_get_bin(unsigned char *p, int n);
+int DecodeRC4(unsigned char *in, unsigned char *out, int len, unsigned char c, unsigned char *iv, unsigned char *key, int keylen);
+typedef struct AossTlv { unsigned char type; unsigned char f1; unsigned short len; unsigned int val; } AossTlv;
+extern unsigned int D_002DC6D4;
+extern int SecurityType;
+int PacketDataSet(int type, unsigned char *out, AossTlv *tlv, short *len, short *x, char *c);
+int SetStaData(unsigned char *p);
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/aoss", D_00141118);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/aoss", AOSS_Init_old);
@@ -242,11 +252,81 @@ int RecvMessage(int state, unsigned char *pkt, int *cnt, unsigned char *ctx)
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/aoss", AstsSetInitRes);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/aoss", AstsSetSecureRes);
+int AstsSetSecureRes(int state, unsigned char *pkt, int *cnt, unsigned char *ctx)
+{
+    unsigned char *hdr;
+    unsigned char *body;
+    int r;
+
+    if (state != 1) {
+        (*cnt)++;
+        return state;
+    }
+    r = CheckRecvSeqID(ctx + 8, pkt + 0x1C);
+    hdr = pkt + 0xC;
+    body = pkt + 0x24;
+    if (r < 0 || AOSS_Ntohs(*(unsigned short *)(body + 2)) == 0) {
+        (*cnt)++;
+        return 1;
+    }
+    if (pkt[0x24] == 7) {
+        if (AOSS_Ntohl(*(int *)(body + 4)) == -2)
+            aoss_set_error(0x14);
+        else if (AOSS_Ntohl(*(int *)(body + 4)) == -3)
+            aoss_set_error(0x15);
+        else
+            aoss_set_error(0x18);
+        return -1;
+    }
+    AOSS_Memset(SecurityInfo, 0, 0x6A0);
+    if (GetSecurityData(0, body, AOSS_Ntohs(*(unsigned short *)(hdr + 0xA)), SecurityInfo, ProductInfo) < 0) {
+        (*cnt)++;
+        return 1;
+    }
+    if (gData.fC & gData.f8) {
+        *cnt = 0;
+        return 2;
+    }
+    return 1;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/aoss", AstsRestartRes);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/aoss", DecodePacket);
+int DecodePacket(unsigned char *p)
+{
+    unsigned char seq[8];
+    unsigned char *body = p + 0x18;
+    int r;
+    int len;
+    unsigned char *buf;
+
+    AOSS_Memcpy(seq, p + 0x10, 8);
+    if (CryptSeqNo(seq, 8, D_00141144, AOSS_Strlen(D_00141144)) == -1) {
+        aoss_set_error(2);
+        return -100;
+    }
+    r = CheckSeqID(AOSS_Ntohs(*(unsigned short *)(p + 6)), seq);
+    if (r != 0)
+        return r;
+    if (AOSS_Ntohs(*(unsigned short *)(p + 6)) == 0x1000)
+        AOSS_Memcpy(gSeqID, seq, 8);
+    if ((AOSS_Ntohs(*(unsigned short *)(p + 0xC)) & 0xF) == 0)
+        return 0;
+    len = AOSS_Ntohs(*(unsigned short *)(p + 0x18));
+    buf = AOSS_Malloc(len);
+    if (buf == NULL) {
+        aoss_set_error(2);
+        return 100;
+    }
+    if (DecodeRC4(p + 0x1C, buf, len, p[0xE], p + 0x1A, gSeqID, 8) < 0) {
+        AOSS_Free(buf);
+        return aoss_get_error() == 2 ? 100 : 200;
+    }
+    AOSS_Memcpy(body, buf, len);
+    *(unsigned short *)(p + 0xA) = AOSS_Htons(len);
+    AOSS_Free(buf);
+    return 0;
+}
 
 int CheckSeqID(unsigned short id, unsigned char *seq)
 {
@@ -284,7 +364,48 @@ INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/aoss", D_00141138);
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/aoss", D_00141144);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/aoss", GetProductInfo);
+int GetProductInfo(unsigned char *buf, unsigned char *info)
+{
+    unsigned char *p;
+    int len;
+    int v;
+
+    AOSS_Memset(info, 0, 0x104);
+    p = buf;
+    for (;;) {
+        len = AOSS_Ntohs(*(unsigned short *)(p + 2));
+        if (len <= 0)
+            return -1;
+        switch (p[0]) {
+        case 0:
+            AOSS_Memcpy(info, p + 6, len);
+            break;
+        case 1:
+            AOSS_Memcpy(info + 0x80, p + 6, len);
+            break;
+        case 2:
+            AOSS_Memcpy(info + 0x100, p + 6, len);
+            break;
+        case 3:
+        case 4:
+            v = AOSS_Ntohs(p[6]);
+            if (v <= 0)
+                return -2;
+            break;
+        case 5:
+            gData.ip = AOSS_Ntohl(aoss_get_bin(p + 6, len));
+            break;
+        case 6:
+            gData.f14 = AOSS_Ntohl(aoss_get_bin(p + 6, len));
+            break;
+        default:
+            return -1;
+        }
+        if (*(unsigned short *)(p + 4) == 0)
+            return 0;
+        p = buf + AOSS_Ntohs(*(unsigned short *)(p + 4));
+    }
+}
 
 int aoss_get_bin(unsigned char *p, int n)
 {
@@ -326,9 +447,78 @@ int SendMessage(int type, int a, int b, int c)
     return -1;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/aoss", AstsSetInitReq);
+int AstsSetInitReq(int a, int b, int c)
+{
+    unsigned char *buf = s_buf;
+    unsigned char *data;
+    char flag = 0;
+    unsigned char seq[8];
+    short len = 0;
+    short x = 0;
+    unsigned char *tlv;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/aoss", AstsSetSecureReq);
+    AOSS_Memset(buf, 0, 0x5DC);
+    tlv = AOSS_Malloc(0x210);
+    if (tlv == NULL) {
+        aoss_set_error(2);
+        return -1;
+    }
+    AOSS_Memset(tlv, 0, 0x210);
+    AOSS_Memcpy(gSeqID, (unsigned char *)b, 8);
+    AOSS_Memcpy(seq, gSeqID, 8);
+    len = SetStaData(tlv + 4);
+    data = buf + 0x18;
+    if (len < 0) {
+        aoss_set_error(3);
+        AOSS_Free(tlv);
+        return -1;
+    }
+    tlv[0] = 0;
+    *(unsigned short *)(tlv + 2) = AOSS_Htons(len);
+    len += 4;
+    PacketDataSet(0, data, (AossTlv *)tlv, &len, &x, &flag);
+    x |= 0x10;
+    if (CryptSeqNo(seq, 8, (unsigned char *)D_00141144, 6) != 0) {
+        aoss_set_error(2);
+        AOSS_Free(tlv);
+        return -1;
+    }
+    SetPacketHeader((short *)buf, 0x1000, len, x, flag, 0x11, seq);
+    len += 0x18;
+    SendPacketUDP(buf, len, 0xFF, c);
+    AOSS_Free(tlv);
+    return 0;
+}
+
+int AstsSetSecureReq(int a, int b, int c)
+{
+    unsigned char *buf = s_buf;
+    unsigned char *data = buf + 0x18;
+    char flag = 0;
+    unsigned char seq[8];
+    short len = 0;
+    short x = 0;
+    AossTlv tlv;
+
+    AOSS_Memset(&tlv, 0, 8);
+    AOSS_Memset(buf, 0, 0x5DC);
+    tlv.type = 2;
+    tlv.f1 = 0;
+    tlv.len = AOSS_Htons(4);
+    tlv.val = D_002DC6D4;
+    tlv.val = AOSS_Htonl(tlv.val);
+    len = 8;
+    PacketDataSet(SecurityType, data, &tlv, &len, &x, &flag);
+    AOSS_Memcpy(seq, (unsigned char *)b + 8, 8);
+    if (CryptSeqNo(seq, 8, (unsigned char *)D_00141144, 6) != 0) {
+        aoss_set_error(2);
+        return -1;
+    }
+    SetPacketHeader((short *)buf, 0x2000, len, x, flag, 0x11, seq);
+    len += 0x18;
+    SendPacketUDP(buf, len, 0, c);
+    return 0;
+}
 
 int AstsRestartReq(int a, int b, int c)
 {
@@ -710,4 +900,43 @@ int AOSS_version(void)
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/aoss", GetWEPData);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/aoss", GetWPAData);
+int GetWPAData(unsigned char *buf, unsigned char *out)
+{
+    unsigned char *p;
+    unsigned int len;
+
+    p = buf + 6;
+    for (;;) {
+        len = AOSS_Ntohs(*(unsigned short *)(p + 2));
+        switch (p[0]) {
+        case 0x30:
+        case 0x40:
+            if (len > 0x40)
+                return -1;
+            break;
+        case 0x35:
+        case 0x45:
+            if (len > 0x21)
+                return -1;
+            break;
+        }
+        switch (p[0]) {
+        case 0x30:
+        case 0x40:
+            AOSS_Memcpy(out + 0x30, p + 6, len);
+            *(int *)(out + 4) = len;
+            break;
+        case 0x35:
+        case 0x45:
+            if (len != 0 && ((unsigned char *)((int)len + (int)p))[5] != 0)
+                return -1;
+            AOSS_Memcpy(out + 8, p + 6, len);
+            break;
+        default:
+            return -1;
+        }
+        if (*(unsigned short *)(p + 4) == 0)
+            return 0;
+        p = buf + AOSS_Ntohs(*(unsigned short *)(p + 4)) + 6;
+    }
+}
