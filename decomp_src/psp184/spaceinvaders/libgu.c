@@ -262,7 +262,26 @@ void *sceGuGetMemory(int size)
 	return orig_ptr;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", sceGuInit);
+void sceGuInit(void)
+{
+	struct {
+		void (*signal_func)(int, void *);
+		void *signal_arg;
+		void (*finish_func)(int, void *);
+		void *finish_arg;
+	} callback;
+
+	callback.signal_func = callback_sig;
+	callback.signal_arg = &intrParam;
+	callback.finish_func = callback_fin;
+	callback.finish_arg = &intrParam;
+	intrCode = sceGeSetCallback(&callback);
+	vram_top = sceGeEdramGetAddr();
+	queid[0] = sceGeListEnQueue((void *)((unsigned int)initList & 0x1fffffff), 0, intrCode, 0);
+	reset_static_value();
+	intrParam.event = sceKernelCreateEventFlag("SceGuSignal", 0x200, 3, 0);
+	sceGeListSync(queid[0], 0);
+}
 
 void sceGuTerm(void);
 void sceGuTerm(void)
@@ -745,7 +764,19 @@ void sceGuSpriteMode(int a0, int a1, int a2, int a3)
 	context->sprite_mode[3] = a3;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", sceGuCopyImage);
+void sceGuCopyImage(int psm, int sx, int sy, int width, int height, int srcw, void *src, int dx, int dy, int destw, void *dest)
+{
+	int is32 = (psm ^ 0x03) ? 0 : 1;
+
+	send_commandi(178, ((unsigned int)src) & 0xffffff);
+	send_commandi(179, ((((unsigned int)src) & 0xff000000) >> 8) | srcw);
+	send_commandi(235, (sy << 10) | sx);
+	send_commandi(180, ((unsigned int)dest) & 0xffffff);
+	send_commandi(181, ((((unsigned int)dest) & 0xff000000) >> 8) | destw);
+	send_commandi(236, (dy << 10) | dx);
+	send_commandi(238, ((height - 1) << 10) | (width - 1));
+	send_commandi(234, is32);
+}
 
 void sceGuClearColor(unsigned int color);
 void sceGuClearColor(unsigned int color)
