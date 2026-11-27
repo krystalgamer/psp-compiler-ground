@@ -578,7 +578,7 @@ rodata 0x16D33C -
 bss 0x1900FC main_objs/scene_VertexArray
 bss 0x190200 -
 rodata 0x1734E0 main_objs/sgl_RT
-rodata 0x1734FC -
+rodata 0x173544 -
 bss 0x1915B0 main_objs/sgl_RT
 bss 0x1916B4 -
 rodata 0x16CCE8 main_objs/scene_Shape

@@ -2,8 +2,6 @@
 /* cflags: -O3 -fno-exceptions */
 #undef __EXCEPTIONS
 #include "cxx/defer_asm.h"
-extern const float D_001705DC;
-#define SGL_POSITION_ONE D_001705DC
 #define DEMO_STATICS_MATH
 #define DEMO_STATICS_IOSTREAM
 #define DEMO_STATICS_SGL
@@ -56,7 +54,7 @@ void sgl::RT::barycentricCoords(const Ray &r, float &u, float &v, float &w) cons
     float B = math::area(b, r._hit, a);
     v = A * _triangles[r._triangle]._f34;
     w = B * _triangles[r._triangle]._f34;
-    u = D_001705DC - w - v;
+    u = 1 - w - v;
 }
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_RT", _ZN3sgl2RT5shadeERNS0_3RayE);

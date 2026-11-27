@@ -531,7 +531,7 @@ segments:
       - [0x1705F8, .rodata, main_objs/sh_PolarFunction]
       - [0x170614, rodata, asm/rodata_170594]
       - [0x170638, .rodata, main_objs/sgl_RT]
-      - [0x170654, rodata, asm/rodata_1705D4]
+      - [0x17069C, rodata, asm/rodata_17061C]
       - [0x170974, .rodata, main_objs/sh_sh_rot_Rmn]
       - [0x170990, rodata, asm/rodata_170910]
       - [0x170BC0, .rodata, main_objs/math_factorial]
