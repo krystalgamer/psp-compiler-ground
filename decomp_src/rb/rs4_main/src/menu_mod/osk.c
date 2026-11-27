@@ -18,18 +18,48 @@ int sceUtilityOskInitStart();
 
 int UtilityLink();
 int utility_update_osk();
+extern unsigned char D_00103130, D_00103158, D_00103168, D_001031E4, D_001031F4, D_001031F8, D_00103228, D_00103258;
+void *_memAlloc(int, void *, int);
+int _memFree();
+typedef struct { char pad[0x28]; unsigned short *text; unsigned int result; char pad2[0x34 - 0x30]; } OskData;
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/osk", setOskUtilityPraram);
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/osk", D_00103130);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/osk", textUcs4toUcs2Alloc);
+unsigned short *textUcs4toUcs2Alloc(int *src, unsigned int n)
+{
+	unsigned short *buf = _memAlloc(n * 2, &D_00103130, 0xD4);
+	unsigned short *d = buf;
+	consPrintf(&D_00103158, "textUcs4toUcs2Alloc", src, buf, n);
+	while (*src != 0 && n > 1) {
+		consPrintf(&D_00103168, "textUcs4toUcs2Alloc", n, *src);
+		*d++ = *src++;
+		n--;
+	}
+	*d = 0;
+	return buf;
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/osk", D_00103158);
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/osk", D_00103168);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/osk", textUcs2toUcs4Free);
+int textUcs2toUcs4Free(unsigned short *src, int *dst, unsigned int n)
+{
+	unsigned short *s = src;
+	consPrintf(&D_00103158, "textUcs2toUcs4Free", src, dst, n);
+	if (dst != NULL) {
+		while (*src != 0 && n > 1) {
+			consPrintf(&D_00103168, "textUcs2toUcs4Free", n, *src);
+			*dst++ = *src++;
+			n--;
+		}
+		*dst = 0;
+	}
+	_memFree(s, &D_00103130, 0xF0);
+	return 0;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/osk", setOskUtilityParam);
 
@@ -49,7 +79,31 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/osk", D_00103228);
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/osk", D_00103258);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/osk", dumpOskUtilityTextResult);
+void dumpOskUtilityTextResult(int n, OskData *d)
+{
+	int i;
+	OskData *e;
+	unsigned short *p;
+	for (i = 0; i < n; i++) {
+		consPrintf(&D_001031E4, i);
+		e = (OskData *)(i * 52 + (int)d);
+		switch (e->result) {
+		case 0:
+			consPrintf(&D_001031F4, &D_00103228);
+			break;
+		case 1:
+			consPrintf(&D_001031F4, &D_001031F8);
+			break;
+		case 2:
+			consPrintf(&D_001031F4, &D_00103258);
+			consPrintf(" [");
+			for (p = e->text; *p; p++)
+				consPrintf("0x%4.4x ", *p);
+			consPrintf("]\n");
+			break;
+		}
+	}
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/osk", utility_update_osk);
 
