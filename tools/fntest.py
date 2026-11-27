@@ -48,6 +48,13 @@ def compile_c(src, cc1, flags, out, incs=(), defs=()):
     return out
 
 
+def defined_funcs(path):
+    """names of the functions a C file defines (non-inline definitions only)"""
+    text = path.read_text(errors="replace")
+    return set(re.findall(r"^(?!static\s+(?:__)?inline)(?:static\s+)?[A-Za-z_][\w \t\*]*?\b(\w+)\s*\([^;{}]*\)\s*\n?\{", text, re.M)) - \
+        {"if", "while", "for", "switch", "return"}
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("target")
@@ -72,6 +79,13 @@ def main():
                     print(f"{c:11} {f:12} compile error")
                     continue
                 res = objcmp.compare(mod, [o], verbose=(a.func or True) if a.v and c == cc1s[0] else False)
+                # a function the C defines but the compiler didn't emit (e.g. an unused static inline)
+                # is not a match
+                if a.func and a.func not in res:
+                    res[a.func] = "not emitted"
+                for fn in defined_funcs(Path(a.file)):
+                    if fn not in res and objcmp.lookup(mod, fn, 0) is not None:
+                        res[fn] = "not emitted"
                 same = [k for k, v in res.items() if v == "same"]
                 bad = {k: v for k, v in res.items() if v != "same"}
                 print(f"{c:11} {f:12} {len(same)}/{len(res)}  " + " ".join(f"{k}:{v.replace(' ', '')}" for k, v in sorted(bad.items())))
