@@ -9,6 +9,11 @@ int sceNetInit(int poolsize, int calloutprio, int calloutstack, int netintrprio,
 int sceNetAdhocInit(void);
 int sceNetAdhocctlInit(int stacksize, int priority, void *adhoc_id);
 extern int adhoc_id;
+int sceNetAdhocctlTerm(void);
+int sceNetAdhocctlDisconnect(void);
+int sceNetAdhocTerm(void);
+int sceNetTerm(void);
+int sceKernelDelayThread(unsigned int us);
 }
 
 #define PSPNET_POOLSIZE 0x80000
@@ -40,16 +45,29 @@ System *System::Init()
 	consPrintf("network : adhocctl initialized.\n");
 	return this;
 }
+
+System::~System()
+{
+	int r;
+	consPrintf("network : adhocctl terminated....\n");
+	while ((r = sceNetAdhocctlTerm()) != 0) {
+		if (r == (int)0x80410B01)
+			sceNetAdhocctlDisconnect();
+		sceKernelDelayThread(100000);
+	}
+	consPrintf("network : adhocctl terminated.\n");
+	consPrintf("network : adhoc terminated....\n");
+	while (sceNetAdhocTerm() != 0)
+		sceKernelDelayThread(100000);
+	consPrintf("network : adhoc terminated.\n");
+	consPrintf("network : pspnet teminated....\n");
+	while (sceNetTerm() != 0)
+		sceKernelDelayThread(100000);
+	consPrintf("network : pspnet terminated.\n");
+}
 }
 
 extern "C" {
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_system", _ZN3Net6SystemD2Ev);
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_system", _ZN3Net6SystemD1Ev);
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_system", D_001071E8);
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_system", D_0010720C);
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_system", D_0010722C);
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_system", D_0010724C);
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_system", D_0010726C);
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_system", D_0010728C);
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_system", D_001072AC);
 }
+
