@@ -1,6 +1,16 @@
 /* cflags: -O1 */
 #include "common.h"
 #include "m2c_macros.h"
+typedef struct BcLabel {
+    struct BcLabel *next;
+    struct BcLabel *target;           /* 0x4 */
+    int pos;                          /* 0x8 */
+    int fC;
+    unsigned short id;                /* 0x10 */
+    unsigned char op;                 /* 0x12 */
+    unsigned char size;               /* 0x13 */
+} BcLabel;
+int mes_byte_code_jump_size(int from, int to);
 typedef struct BcChunk {
     struct BcChunk *next;
     unsigned char data[0x40];
@@ -126,7 +136,31 @@ int mes_byte_code_label_new(void *arg0) {
     return var_v0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_byte_code", mes_byte_code_label_add);
+void mes_byte_code_label_add(ByteCode *bc, int label, unsigned char op)
+{
+    BcLabel *lab;
+    BcLabel **pp;
+    int pos;
+
+    if (bc != NULL) {
+        lab = MEM_malloc(0, sizeof(BcLabel));
+        if (lab != NULL) {
+            lab->target = NULL;
+            pos = bc->size;
+            lab->pos = pos;
+            lab->id = label;
+            lab->op = op;
+            lab->size = 4;
+            pp = (BcLabel **)&bc->f8;
+            while (*pp != NULL && (*pp)->pos < pos)
+                pp = &(*pp)->next;
+            while (*pp != NULL && (*pp)->pos == pos && (*pp)->op == 0)
+                pp = &(*pp)->next;
+            lab->next = *pp;
+            *pp = lab;
+        }
+    }
+}
 
 void mes_byte_code_label_def(ByteCode *bc, int label)
 {
@@ -175,7 +209,45 @@ int mes_byte_code_jump_size(int from, int to)
     return 4;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_byte_code", mes_byte_code_label_fix);
+int mes_byte_code_label_fix(ByteCode *bc)
+{
+    int delta;
+    int again;
+    BcLabel *l;
+    BcLabel *t;
+    int pos;
+    int n;
+
+    if (bc == NULL)
+        return 0;
+    do {
+        delta = 0;
+        again = 0;
+        for (l = (BcLabel *)bc->f8; l != NULL; l = l->next) {
+            pos = l->pos;
+            l->pos = pos - delta;
+            if (l->op != 0) {
+                t = l->target;
+                if (t == NULL) {
+                    for (t = (BcLabel *)bc->f8; t != NULL; t = t->next)
+                        if (t->op == 0 && t->id == l->id)
+                            break;
+                    l->target = t;
+                }
+                if (t->pos <= l->pos)
+                    n = mes_byte_code_jump_size(l->pos, t->pos);
+                else
+                    n = mes_byte_code_jump_size(pos, t->pos);
+                delta += l->size - n;
+                l->size = n;
+                if (n >= 2)
+                    again = 1;
+            }
+        }
+        bc->size -= delta;
+    } while (delta > 0 && again);
+    return bc->size;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -215,4 +287,60 @@ unsigned char mes_byte_code_chunk_get(ByteCode *bc)
     return bc->cur->data[bc->off++];
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_byte_code", mes_byte_code_pack);
+unsigned char *mes_byte_code_pack(ByteCode *bc)
+{
+    unsigned char *code;
+    unsigned char *p;
+    BcLabel *l;
+    int pos;
+    union {
+        unsigned int i;
+        unsigned short s;
+    } w;
+
+    if (bc == NULL)
+        return NULL;
+    code = NULL;
+    if (bc->size > 0) {
+        code = MEM_malloc(0, bc->size);
+        p = code;
+        if (code != NULL) {
+            bc->cur = bc->head;
+            bc->off = 0;
+            pos = 0;
+            for (l = (BcLabel *)bc->f8; l != NULL; l = l->next) {
+                if (l->op != 0) {
+                    while (pos < l->pos) {
+                        *p++ = mes_byte_code_chunk_get(bc);
+                        pos++;
+                    }
+                    if (l->size == 1) {
+                        *p++ = (l->op & 0x1F) | 0x80;
+                        pos += 2;
+                        *p++ = l->target->pos - pos;
+                    } else if (l->size == 2) {
+                        *p++ = (l->op & 0x1F) | 0xA0;
+                        pos += 3;
+                        w.s = l->target->pos - pos;
+                        *p++ = w.i;
+                        *p++ = w.i >> 8;
+                    } else {
+                        *p++ = (l->op & 0x1F) | 0xC0;
+                        pos += 5;
+                        w.i = l->target->pos - pos;
+                        *p++ = w.i;
+                        *p++ = w.i >> 8;
+                        *p++ = w.i >> 16;
+                        *p++ = w.i >> 24;
+                    }
+                }
+            }
+            while (pos < bc->size) {
+                *p++ = mes_byte_code_chunk_get(bc);
+                pos++;
+            }
+        }
+    }
+    mes_byte_code_free(bc);
+    return code;
+}
