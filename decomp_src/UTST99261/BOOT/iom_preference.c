@@ -17,6 +17,11 @@ extern char D_00139FF4[];
 extern char D_0025B5F4[];
 IomTm *CLIB_gmtime(int *t);
 int sprintf(char *buf, const char *fmt, ...);
+void *FIO_opendir(char *path);
+char *FIO_readdir(void *d);
+void FIO_closedir(void *d);
+void FIO_remove(char *path);
+int strcmp(const char *a, const char *b);
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iom_preference", iom_preferenceCache);
 
 #ifndef NULL
@@ -119,8 +124,8 @@ int iom_preferenceDownloadStop(void) {
 #define NULL ((void *)0)
 #endif
 
-void iom_malloc(int arg0) {
-    MEM_malloc(0, arg0);
+void *iom_malloc(int size) {
+    return (void *)MEM_malloc(0, size);
 }
 
 #ifndef NULL
@@ -253,7 +258,34 @@ int iom_diffexpire(int a, int b) {
     return a != -1 && b == -1;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iom_preference", iom_rmdir);
+int iom_rmdir(char *path) {
+    int len;
+    void *d;
+    char *e;
+    char *name;
+    char *s;
+
+    len = strlen(path);
+    d = FIO_opendir(path);
+    if (d == NULL)
+        return -0x12F;
+    while ((e = FIO_readdir(d)) != NULL) {
+        name = e + 0x58;
+        if (strcmp(name, ".") == 0 || strcmp(name, "..") == 0)
+            continue;
+        s = iom_malloc(len + strlen(name) + 2);
+        if (s == NULL)
+            break;
+        sprintf(s, "%s/%s", path, name);
+        FIO_remove(s);
+        iom_mfree((int)s);
+    }
+    FIO_closedir(d);
+    if (e != NULL)
+        return -0x12D;
+    FIO_remove(path);
+    return 0;
+}
 
 char *iom_strnmcat(char *dst, int n, ...) {
     __builtin_va_list ap;
