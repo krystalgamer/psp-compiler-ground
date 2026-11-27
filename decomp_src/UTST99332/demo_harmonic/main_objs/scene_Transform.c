@@ -16,6 +16,14 @@ __asm__(".globl _GLOBAL__I__ZN5scene9Transform11angle_rangeE");
 __asm__(".globl _GLOBAL__D__ZN5scene9Transform11angle_rangeE");
 
 extern const char D_0016A148[];
+extern const char D_0016A2D0[];     /* "" */
+extern const char D_0016A2D4[];     /* "non implemented yet" */
+extern const char Transform_transform_name[]
+    __asm__("_ZZN5scene9Transform9transformENS0_5SpaceERKN4math6matrixEE19__PRETTY_FUNCTION__");
+extern const char D_0016A1B4[];     /* " *** warning " */
+extern const char D_0016A1C4[];     /* "_Mat.isCoordSys( 1.e-3f )" */
+extern const char Transform_setFromMatrix_name[]
+    __asm__("_ZZN5scene9Transform13setFromMatrixEN4math6matrixEE19__PRETTY_FUNCTION__");
 extern const char D_0016A1E0[];     /* "../lib/scene/Transform.cpp" */
 extern const char D_0016A1FC[];     /* " " */
 extern const char D_0016A258[];     /* "_RotationOrder == math::XYZ" */
@@ -50,16 +58,26 @@ const math::matrix &scene::Transform::getMatrix() const
     return _matrix;
 }
 
-/* setFromMatrix (asm) calls setTranslation/setScale before their definitions: cc1plus's
-   inlinable_function_p caches DECL_UNINLINABLE for them, so setIdentity calls them too */
-extern "C" void scene_Transform_calls(scene::Transform *t, math::vector_xyz v) __attribute__((section(".discard.asm")));
-extern "C" void scene_Transform_calls(scene::Transform *t, math::vector_xyz v)
+/* calls setTranslation/setScale before their definitions: cc1plus's inlinable_function_p then caches
+   DECL_UNINLINABLE for them, so setIdentity calls them too */
+void scene::Transform::setFromMatrix(math::matrix _Mat)
 {
-    t->setTranslation(v);
-    t->setScale(v);
+    math::vector_xyz s(math::length(_Mat.r[0]), math::length(_Mat.r[1]), math::length(_Mat.r[2]));
+    _Mat.r[0].x /= s.x; _Mat.r[0].y /= s.x; _Mat.r[0].z /= s.x; _Mat.r[0].w /= s.x;
+    _Mat.r[1].x /= s.y; _Mat.r[1].y /= s.y; _Mat.r[1].z /= s.y; _Mat.r[1].w /= s.y;
+    _Mat.r[2].x /= s.z; _Mat.r[2].y /= s.z; _Mat.r[2].z /= s.z; _Mat.r[2].w /= s.z;
+    if (math::dot(math::cross(_Mat.r[0], _Mat.r[1]), _Mat.r[2]) < 0) {
+        _Mat.r[2].x = -_Mat.r[2].x;
+        _Mat.r[2].y = -_Mat.r[2].y;
+        _Mat.r[2].z = -_Mat.r[2].z;
+        _Mat.r[2].w = -_Mat.r[2].w;
+        s.z = -s.z;
+    }
+    SCENE_WARN(_Mat.isCoordSys(1.e-3f), D_0016A1B4, D_0016A1C4, D_0016A1E0, Transform_setFromMatrix_name, 110, D_0016A1FC);
+    setScale(s);
+    set_rotation(_Mat);
+    setTranslation(math::vector_xyz(_Mat.r[3].x, _Mat.r[3].y, _Mat.r[3].z));
 }
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Transform", _ZN5scene9Transform13setFromMatrixEN4math6matrixE);
 
 math::quaternion scene::Transform::getRotation() const
 {
@@ -150,7 +168,12 @@ void scene::Transform::setScale(math::vector_xyz v)
     _identity = false;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Transform", _ZN5scene9Transform11setRotationEN4math10vector_xyzE);
+void scene::Transform::setRotation(math::vector_xyz v)
+{
+    _euler = math::vector_xyz(set_angle(v.x), set_angle(v.y), set_angle(v.z));
+    _dirty = true;
+    _identity = false;
+}
 
 math::vector_xyz scene::Transform::getTranslation() const
 {
