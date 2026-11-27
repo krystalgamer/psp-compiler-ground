@@ -2815,7 +2815,57 @@ void netgame_ufo_life_get(u8 *q, int k, int pl)
 	}
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", se_play_3d);
+void se_play_3d(int no, float *pos, float dist)
+{
+	V3 p, s;
+	int vol;
+
+	p = *(V3 *)pos;
+	mat_local2screen(&p, &s);
+	if (no == -1)
+		return;
+	if (s.x < 0.0f)
+		return;
+	if (s.x >= 480.0f)
+		return;
+	if (s.y < 0.0f)
+		return;
+	if (s.y >= 272.0f)
+		return;
+	if (s.z <= 0.0f)
+		return;
+	if (dist != 0.0f && dist <= s.z)
+		return;
+	if (gmain.f.f10ac == 12)
+		return;
+	if (gmain.f.f10ac == 22)
+		return;
+	vol = 127;
+	if (dist != 0.0f) {
+		vol = 127.0f - s.z * 127.0f / dist;
+		if (vol < 32)
+			return;
+	}
+	gmain.f.f10b0 = 0;
+	gmain.f.f10b4 = 0;
+	if (dist != 0.0f) {
+		if (s.x < 360.0f)
+			gmain.f.f10b0 = (int)(360.0f - s.x) * vol / 360;
+		if (120.0f < s.x)
+			gmain.f.f10b4 = (int)(s.x - 120.0f) * vol / 360;
+	} else {
+		gmain.f.f10b0 = vol;
+		gmain.f.f10b4 = vol;
+		if (s.x < 240.0f)
+			gmain.f.f10b4 = vol * s.x / 240.0f;
+		if (240.0f < s.x)
+			gmain.f.f10b0 = vol * (240.0f - (s.x - 240.0f)) / 240.0f;
+	}
+	gmain.f.f10ac = no;
+}
+
+/* an unreferenced 0.0f pool word (0x7E564) precedes zako_init_once's rodata */
+__asm__(".pushsection .rodata\n\t.word 0\n.popsection");
 
 INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", D_0007E568);
 
