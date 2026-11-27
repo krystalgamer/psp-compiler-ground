@@ -1,5 +1,6 @@
 /* lang: c++ */
-/* cflags: -Os -fno-strength-reduce -fno-merge-constants -fno-exceptions */
+/* cflags: -Os -fno-merge-constants -fno-exceptions */
+/* strength reduction on: Manager::Draw matches only with it (scene pointer IV); the rest of the object tolerates both */
 #include "common.h"
 extern "C" {
 
@@ -71,6 +72,7 @@ struct B2aHdr {
 	int nScene;
 	int _10, _14;
 	SceneEnt *ent;
+	int nObject;
 };
 
 struct B2aFile {
@@ -108,6 +110,10 @@ struct Manager {
 	float GetFrame();
 	float GetEndFrame();
 	void SetSpeed(float s);
+	void Refresh();
+	void RefreshOne(int i, bool b);
+	void CalcOne(Player *p);
+	int DeletePlayer(Player *p);
 	void DrawOne(int n);
 	void draw(int n, ScePspFMatrix4 *a, ScePspFMatrix4 *b, unsigned int col);
 };
@@ -331,7 +337,14 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _ZN3B2A7Manager12Dele
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _ZN3B2A7Manager10RefreshOneEib);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _ZN3B2A7Manager7RefreshEv);
+}
+void B2A::Manager::Refresh()
+{
+	int n = file->hdr->nObject;
+	for (int i = 0; i < n; i++)
+		RefreshOne(i, false);
+}
+extern "C" {
 
 } /* extern "C" */
 
@@ -472,7 +485,17 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", D_00108FDC);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _ZN3B2A7Manager7CalcOneEPNS_6PlayerE);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _ZN3B2A7Manager4CalcEv);
+}
+void B2A::Manager::Calc()
+{
+	Refresh();
+	for (Player *p = players; p; p = p->next) {
+		Player *pl = (Player *)p->st;
+		if (pl->f15)
+			CalcOne(pl);
+	}
+}
+extern "C" {
 
 }
 void B2A::Manager::DrawOne(int n)
@@ -482,7 +505,17 @@ void B2A::Manager::DrawOne(int n)
 }
 extern "C" {
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _ZN3B2A7Manager4DrawEv);
+}
+void B2A::Manager::Draw()
+{
+	int n = file->hdr->nObject;
+	for (int i = 0; i < n; i++) {
+		Scene &sc = scene[i];
+		if (sc.enable)
+			DrawOne(i);
+	}
+}
+extern "C" {
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _ZN3B2A7Manager4playEif);
 
