@@ -3475,3 +3475,4 @@ enum {
  CHAN_COUNT = SCEGMO_BONE_CHAN_COUNT,
 } ;
 float floorf( float x ) ;
+static void calc_morph_index( float *weights, int n_weights, float index ) ;

@@ -150,7 +150,98 @@ void sceGmoBoneActivate( SceGmoBone *bone, SceGmoModel *model, const int *indice
 	}
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_bone", sceGmoBoneControl);
+extern float D_000836DC[] ;
+void sceGmoBoneControl( SceGmoBone *bone, int type, int idx, const float *val, int cnt, float weight )
+{
+	if ( bone == 0 ) return ;
+
+	float *dst ;
+	int flags ;
+	int channel ;
+	SceGmoQuat rotate ;
+	float weights[ 8 ] ;
+	switch ( type ) {
+	    case SCEGMO_TRANSLATE :
+		dst = (float *)&( bone->m_translate ) ;
+		flags = 0x0001 ;
+		channel = 1 ;
+		break ;
+	    case SCEGMO_ROTATE_Q :
+		dst = (float *)&( bone->m_rotate ) ;
+		flags = 0x0002 ;
+		channel = 2 ;
+		break ;
+	    case SCEGMO_ROTATE_ZYX :
+		dst = (float *)&( bone->m_rotate ) ;
+		flags = 0x0002 ;
+		channel = 2 ;
+		sceGmoQuatFromRotZYX( &rotate, (SceGmoVec3 *)val ) ;
+		val = (float *)&rotate ;
+		break ;
+	    case SCEGMO_ROTATE_YXZ :
+		dst = (float *)&( bone->m_rotate ) ;
+		flags = 0x0002 ;
+		channel = 2 ;
+		sceGmoQuatFromRotYXZ( &rotate, (SceGmoVec3 *)val ) ;
+		val = (float *)&rotate ;
+		break ;
+	    case SCEGMO_SCALE :
+		dst = (float *)&( bone->m_scale ) ;
+		flags = 0x0004 ;
+		channel = 3 ;
+		break ;
+	    case SCEGMO_SCALE_2 :
+		dst = (float *)&( bone->m_scale ) ;
+		flags = 0x0008 ;
+		channel = 3 ;
+		break ;
+	    case SCEGMO_SCALE_3 :
+		dst = (float *)&( bone->m_scale ) ;
+		flags = 0x0010 ;
+		channel = 3 ;
+		break ;
+	    case SCEGMO_MULT_MATRIX :
+		dst = (float *)&( bone->m_local_matrix ) ;
+		flags = 0x0040 ;
+		channel = 0 ;
+		break ;
+	    case SCEGMO_MORPH_WEIGHTS :
+		set_morph_weights( bone, 0, cnt ) ;
+		dst = bone->m_morph_weights ;
+		flags = 0x0100 ;
+		channel = 4 ;
+		break ;
+	    case SCEGMO_MORPH_INDEX :
+		calc_morph_index( weights, 8, *val ) ;
+		set_morph_weights( bone, weights, 8 ) ;
+		val = weights ;
+		cnt = 8 ;
+		dst = bone->m_morph_weights ;
+		flags = 0x0100 ;
+		channel = 4 ;
+		break ;
+
+	    case SCEGMO_VISIBILITY :
+		bone->m_flags |= 0x0200 ;
+		bone->m_anim_flags |= 0x0200 | ( 0x0200 << 16 ) ;
+		bone->m_visibility = (int)( val[ 0 ] + 0.5f ) ;
+		return ;
+	    default :
+		return ;
+	}
+
+	float sum = bone->m_anim_weights[ channel ] + weight ;
+	bone->m_anim_weights[ channel ] = sum ;
+	weight /= sum ;
+	if ( channel != 2 ) {
+		sceGmoFloatLerp( dst, dst, val, cnt, weight ) ;
+	} else {
+		sceGmoQuatSlerp( (SceGmoQuat *)dst, (SceGmoQuat *)dst, (SceGmoQuat *)val, weight ) ;
+	}
+	bone->m_flags |= flags | 0x40000000 ;
+	if ( sum > 0.99f ) flags |= ( flags << 16 ) ;
+	bone->m_anim_flags |= flags ;
+}
 
 void sceGmoBoneSetParent( SceGmoBone *bone, SceGmoModel *parent )
 {
@@ -239,7 +330,72 @@ static void calc_morph_index( float *weights, int n_weights, float index )
 	weights[ index2 + 1 ] = index ;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_bone", complement_animation_5AB88);
+static void complement_animation( SceGmoBone *bone )
+{
+ int flags = bone->m_anim_flags ;
+ int reset = 0xffff0000 ;
+ int modified = ( flags & 0x0000ffff ) ;
+ int complete = ( flags & 0xffff0000 ) >> 16 ;
+ int incomplete = modified & ~complete ;
+ if ( incomplete ) {
+  SceGmoBone *initial = bone->m_initial ;
+  if ( incomplete & 0x0040 ) {
+   float w = 1.0f - bone->m_anim_weights[ 0 ] ;
+   float *val = (float *)&( initial->m_local_matrix ) ;
+   sceGmoBoneControl( bone, SCEGMO_MULT_MATRIX, 0, val, 16, w ) ;
+   if ( w > 0.99f ) reset |= 0x0040 ;
+  }
+  if ( incomplete & 0x0001 ) {
+   float w = 1.0f - bone->m_anim_weights[ 1 ] ;
+   float *val = (float *)&( initial->m_translate ) ;
+   sceGmoBoneControl( bone, SCEGMO_TRANSLATE, 0, val, 3, w ) ;
+   if ( w > 0.99f ) reset |= 0x0001 ;
+  }
+  if ( incomplete & 0x0002 ) {
+   float w = 1.0f - bone->m_anim_weights[ 2 ] ;
+   float *val = (float *)&( initial->m_rotate ) ;
+   sceGmoBoneControl( bone, SCEGMO_ROTATE_Q, 0, val, 4, w ) ;
+   if ( w > 0.99f ) reset |= 0x0002 ;
+  }
+  if ( incomplete & 0x0004 ) {
+   float w = 1.0f - bone->m_anim_weights[ 3 ] ;
+   float *val = (float *)&( initial->m_scale ) ;
+   sceGmoBoneControl( bone, SCEGMO_SCALE, 0, val, 3, w ) ;
+   if ( w > 0.99f ) reset |= 0x0004 ;
+  }
+  if ( incomplete & 0x0008 ) {
+   float w = 1.0f - bone->m_anim_weights[ 3 ] ;
+   float *val = (float *)&( initial->m_scale ) ;
+   sceGmoBoneControl( bone, SCEGMO_SCALE_2, 0, val, 3, w ) ;
+   if ( w > 0.99f ) reset |= 0x0008 ;
+  }
+  if ( incomplete & 0x0010 ) {
+   float w = 1.0f - bone->m_anim_weights[ 3 ] ;
+   float *val = (float *)&( initial->m_scale ) ;
+   sceGmoBoneControl( bone, 0x00e1, 0, val, 3, w ) ;
+   if ( w > 0.99f ) reset |= 0x0010 ;
+  }
+  if ( incomplete & 0x0100 ) {
+   float w = 1.0f - bone->m_anim_weights[ 4 ] ;
+   float *val = initial->m_morph_weights ;
+   int cnt = initial->m_n_morph_weights ;
+   if ( cnt == 0 ) {
+    val = D_000836DC ;
+    cnt = (8) ;
+   }
+   sceGmoBoneControl( bone, SCEGMO_MORPH_WEIGHTS, 0, val, cnt, w ) ;
+   if ( w > 0.99f ) reset |= 0x0100 ;
+  }
+  if ( incomplete & 0x0200 ) {
+   bone->m_visibility = initial->m_visibility ;
+   reset |= 0x0200 ;
+  }
+ }
+ bone->m_anim_flags &= ~reset ;
+ if ( modified ) {
+  memset( bone->m_anim_weights, 0, sizeof( bone->m_anim_weights ) ) ;
+ }
+}
 
 static void calc_bone_matrix( SceGmoBone *bone, SceGmoModel *model )
 {
