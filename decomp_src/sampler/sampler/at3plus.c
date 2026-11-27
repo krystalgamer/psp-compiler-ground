@@ -27,8 +27,6 @@ extern int finishflag;
 static void release_at3playArgID(ScePlayArg *pPlayArg);
 static void at3plus_addData(SceInt32 atracId, SceInt32 fd);
 
-#ifdef NON_MATCHING
-/* argument setup order and register choice differ */
 SceInt32 init_atrac3plus(SceChar8 *filename, SceUChar8 *pucReadBuf, SceInt32 iInputBufferSize, SceInt32 ioutputChannel, ScePlayArg *pPlayArg)
 {
 	SceInt32 status;
@@ -37,36 +35,36 @@ SceInt32 init_atrac3plus(SceChar8 *filename, SceUChar8 *pucReadBuf, SceInt32 iIn
 	iFadeFlag = 0;
 	finishflag = 0;
 	pPlayArg->atracId = -1;
-open:
+OPEN:
 	pPlayArg->fd = sceIoOpen(filename, SCE_O_RDONLY, 0);
 	if (pPlayArg->fd < 0) {
-		printf("status = 0x%x (in sceIoOpen)\n", pPlayArg->fd);
-		goto open;
+		status = pPlayArg->fd;
+		printf("status = 0x%x (in sceIoOpen)\n", status);
+		goto OPEN;
 	}
-read:
+READ:
 	filesize = sceIoRead(pPlayArg->fd, pucReadBuf, iInputBufferSize);
 	if (filesize < 0) {
-		printf("status = 0x%x(in sceIoRead)\n", filesize);
-		goto read;
+		status = filesize;
+		printf("status = 0x%x(in sceIoRead)\n", status);
+		goto READ;
 	}
-	status = sceAtracSetDataAndGetID(pucReadBuf, filesize);
-	pPlayArg->atracId = status;
-	if (status < 0) {
+	pPlayArg->atracId = sceAtracSetDataAndGetID(pucReadBuf, filesize);
+	if (pPlayArg->atracId < 0) {
+		status = pPlayArg->atracId;
 		printf("status = 0x%x(in sceAtracSetDataAndGetID)\n", status);
-		release_at3playArgID(pPlayArg);
-		return status;
+		goto RELEASE_ARG;
 	}
 	pPlayArg->outputChannel = ioutputChannel;
 	status = sceAtracSetLoopNum(pPlayArg->atracId, -1);
-	if (status < 0) {
+	if (status < 0)
 		printf("status = 0x%x(in sceAtracLoopNum)\n", status);
-		return 0;
-	}
 	return 0;
+
+RELEASE_ARG:
+	release_at3playArgID(pPlayArg);
+	return status;
 }
-#else
-INCLUDE_ASM("tmp/asm/sampler/sampler/nonmatchings/at3plus", init_atrac3plus);
-#endif
 
 #ifdef NON_MATCHING
 /* close; loop layout differs */
