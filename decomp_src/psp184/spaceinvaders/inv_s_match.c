@@ -259,7 +259,62 @@ static void matchup_inv_ufodispjudge(void)
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_match", matchup_inv_ufodisp);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_match", matchup_inv_uforeverse);
+typedef struct { int f0, f4, f8, fc; u8 pad[0x28 - 0x10]; int f28, f2c; u8 pad2[0x68 - 0x30]; int f68, f6c; } UFRS_T;
+typedef struct { UFRS_T *spr; int f4, f8, y; int f10[4]; } UFRI_T;
+void matchup_inv_uforeverse(int mode)
+{
+	int y, st, end, step, i, cnt;
+	UFRI_T *p;
+
+	st = 0;
+	end = 60;
+	step = 1;
+	if (mode == 3)
+		;
+	else if (mode == 4) {
+		st = 60;
+		end = 0;
+		step = -1;
+	}
+	cnt = 0;
+	y = st;
+	do {
+		if (step == 1) {
+			if (y >= end)
+				return;
+		} else if (step == -1) {
+			if (end >= y)
+				return;
+		}
+		for (i = 0; i < 48; i++) {
+			p = &((UFRI_T *)invt)[i];
+			if (p->spr) {
+				if (p->y == y) {
+					if (mode == 3) {
+						if (p->f4 == 1) {
+							cnt++;
+							p->spr->fc |= 8;
+							p->f4 = 2;
+							p->spr->f68 = p->spr->f28;
+							p->spr->f6c = p->spr->f2c;
+						}
+					} else if (mode == 4) {
+						if (p->f4 == 2) {
+							cnt++;
+							p->spr->fc |= 8;
+							p->f4 = 1;
+							p->spr->f68 = p->spr->f28;
+							p->spr->f6c = p->spr->f2c;
+						}
+					}
+					if (cnt >= 8)
+						break;
+				}
+			}
+		}
+		y += step;
+	} while (cnt < 8);
+}
 
 INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_match", D_0007CD58);
 
