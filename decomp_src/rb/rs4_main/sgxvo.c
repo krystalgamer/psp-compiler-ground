@@ -9,7 +9,22 @@ extern int D_0011FF68;
 typedef struct { int pad; struct { int a, b, lo, hi; } dev[8]; char pad2[0x84 - 0x84]; } VoWorkA;
 typedef struct { char pad[0x84]; struct { int a, b, lo, hi; } cat[3][16]; } VoWorkB;
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxvo", sgxVoInit);
+void *sgxMalloc(int, int);
+void *memset(void *s, int c, unsigned int n);
+typedef struct { int init; int slots; int num; } VoWorkS;
+#define WW ((VoWorkS *)&gWork_11FF60)
+int sgxVoInit(int n)
+{
+    int i;
+    memset(WW, 0, 0x88C);
+    WW->num = n;
+    WW->slots = (int)sgxMalloc(n * 48, 1);
+    if (WW->slots == 0) return 0;
+    for (i = 0; i < WW->num; i++) *(int *)(WW->slots + i * 48) = i;
+    WW->init = 1;
+    return 1;
+}
+#undef WW
 
 #ifndef NULL
 #define NULL ((void *)0)

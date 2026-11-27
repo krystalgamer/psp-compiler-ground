@@ -161,7 +161,20 @@ void SuspendThread(int arg0, int arg1) {
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxpsp", sgxPspSuspendThreadAll);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxpsp", sgxPspEnumThreadID);
+int sgxPspEnumThreadID(int *out)
+{
+    int n = 0;
+    int i;
+    for (i = 0; i < gWork_1207F0[0x60 / 4]; i++) {
+        if (out != NULL) out[n] = *(int *)(GW + 0x1C + i * 0x28);
+        n++;
+    }
+    for (i = 0; i < gWork_1207F0[0x450 / 4]; i++) {
+        if (out != NULL) out[n] = *(int *)(gWork_1207F0[0x44C / 4] + i * 0x60B0 + 0x10);
+        n++;
+    }
+    return n;
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/sgxpsp", D_0010B074);
 
