@@ -1626,7 +1626,39 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", status_target_
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", status_disp);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", status_net_score_disp);
+extern TEXPOS texpos_inv_beat[];
+typedef struct { u8 pad[0x68]; int c68, c6c, c70; u8 pad2[0x7E - 0x74]; short a7e; } SNSCOL_T;
+#define SNC (*(SNSCOL_T *)&D_005FB44C)
+typedef struct { u8 p[8]; int score; int st; u8 q[0x3A0 - 0x10]; } NETSC_T;
+#define NETSC ((NETSC_T *)&D_004B500C)
+int inv_scrdisp_start(int x, int y, int w, int h, int u, int v, float rot, float sx, float sy, int a, int b, int c, int d);
+void status_score_disp(int x, int y, int a, int b, int c, int d, int val);
+int inv_netgame_member_max(void);
+void status_net_score_disp(void)
+{
+	int i, x, y, r, g, b, a;
+	SNSCOL_T *c = (SNSCOL_T *)&D_005FB44C;
+
+	x = 0x1E8 - (texpos_inv_beat[97].w + texpos_inv_beat[86].w * 10);
+	for (i = 0, y = 2; i < inv_netgame_member_max(); y += 8, i++) {
+		NETSC_T *n = &NETSC[i];
+		b = c->c6c;
+		r = c->c70;
+		g = c->c68;
+		a = 255;
+		if (gmain.f.f20 == i)
+			a = c->a7e;
+		else if (n->st == 3) {
+			b = 0;
+			r = 0;
+		}
+		inv_scrdisp_start(x, y, texpos_inv_beat[97 + i].w, texpos_inv_beat[97 + i].h, texpos_inv_beat[97 + i].u, texpos_inv_beat[97 + i].v, 0.0f, 100.0f, 100.0f, g, b, r, a);
+		status_score_disp(x + texpos_inv_beat[97].w, y, g, b, r, a, n->score);
+	}
+}
+
+
+
 
 extern TEXPOS texpos_inv_beat[];
 int num_digit_get(int v, int n);
