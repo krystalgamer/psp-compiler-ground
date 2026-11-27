@@ -136,6 +136,7 @@ segments:
       - [0xB2B3C, c, main_objs/sgl_Mesh_2]
       - [0xB480C, c, main_objs/sgl_Mesh_3]
       - [0xB6310, c, main_objs/sgl_Mesh_4]
+      - [0xC3768, c, main_objs/sgl_Vertex_operator_lt]
       - [0xC3C28, c, main_objs/sgl_MeshBuilder_extruded_var_extruded_var]
       - [0xCE17C, c, main_objs/sgl_MeshParams]
       - [0xCF37C, c, main_objs/sgl_Stripper]

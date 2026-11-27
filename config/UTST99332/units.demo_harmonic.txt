@@ -78,6 +78,7 @@ main_objs/sgl_Mesh                           1.6.1.internal  main_objs/sgl_Mesh.
 main_objs/sgl_Mesh_2                         1.6.1.internal  main_objs/sgl_Mesh_2.cpp
 main_objs/sgl_Mesh_3                         1.6.1.internal  main_objs/sgl_Mesh_3.cpp
 main_objs/sgl_Mesh_4                         1.6.1.internal  main_objs/sgl_Mesh_4.cpp
+main_objs/sgl_Vertex_operator_lt             1.6.1.internal  main_objs/sgl_Vertex_operator_lt.cpp
 main_objs/sgl_MeshBuilder_extruded_var_extruded_var 1.6.1.internal  main_objs/sgl_MeshBuilder_extruded_var_extruded_var.cpp
 main_objs/sgl_MeshParams                     1.6.1.internal  main_objs/sgl_MeshParams.cpp
 main_objs/sgl_Stripper                       1.6.1.internal  main_objs/sgl_Stripper.cpp

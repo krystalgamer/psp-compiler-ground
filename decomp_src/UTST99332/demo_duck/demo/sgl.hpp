@@ -360,6 +360,40 @@ public:
     std::vector<List> _lists;   /* 0x04 */
     std::vector<int> _data;     /* 0x10 */
 };
+/* lib/sgl/KdTree.h (member bodies: sgl_Mesh_4.c, the holder of most instances) */
+struct KdTreeNode {
+    KdTreeNode() : _size(0), _start(0), _longest_axis(-1), _split(0), _leaf(true), _f14(0), _left(0), _right(0) {}
+    ~KdTreeNode();
+    unsigned int _size;
+    unsigned int _start;
+    short _longest_axis;
+    float _split;
+    bool _leaf;
+    int _f14;
+    KdTreeNode *_left;
+    KdTreeNode *_right;
+};
+template<class T> class KdTree {
+public:
+    KdTree(std::vector<T> &, int, float);
+    int find(const T &);
+    KdTreeNode *find(const T &, int &);
+    unsigned int getNodeSize(KdTreeNode *) const;
+    T &getNodeElement(KdTreeNode *, unsigned int);
+    void build(KdTreeNode *, unsigned int);
+    bool compute_longest_box(KdTreeNode *);
+    T &node_element(KdTreeNode *, unsigned int);
+    void merge_node_elements(KdTreeNode *);
+    KdTreeNode *find_rec(KdTreeNode *, const T &);
+    int _dim;
+    float _threshold;
+    unsigned int _max_depth;
+    int _num_nodes;
+    int _num_leaves;
+    std::vector<T> &_items;                     /* 0x14 */
+    std::vector<unsigned int> _partitioned_items; /* 0x18 */
+    KdTreeNode _root;                           /* 0x24 */
+};
 math::vector_xyzw ProjectOnPlane(const math::vector_xyzw &, const math::vector_xyzw &, const math::vector_xyzw &);
 struct StencilShadowData;
 class Mesh : public CoreMesh {

@@ -11,6 +11,13 @@ extern const float D_0016E22C;
    (this unit's SGL_POSITION_ONE is another function's) */
 extern template void sgl::Mesh::setAt<std::vector<sgl::Position>, sgl::Position>(unsigned int, std::vector<sgl::Position> &,
                                                                                  sgl::Position);
+/* vector<Edge>/vector<Triangle>::_M_fill_insert (and the helpers they inline) are sgl_Mesh_4's instances:
+   this object must not emit them (the link keeps the first .gnu.linkonce copy) */
+namespace std {
+extern template void vector<sgl::Edge>::_M_fill_insert(vector<sgl::Edge>::iterator, vector<sgl::Edge>::size_type, const sgl::Edge &);
+extern template void vector<sgl::Triangle>::_M_fill_insert(vector<sgl::Triangle>::iterator, vector<sgl::Triangle>::size_type,
+                                                           const sgl::Triangle &);
+}
 
 extern const char D_0016E24C[];     /* " = " */
 extern const char D_0016E250[];     /* "position at " */

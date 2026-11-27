@@ -166,6 +166,7 @@ rodata 0x16788C -
 0xB2ABC sgl_Mesh_2               1.6.1.internal  main_objs/sgl_Mesh_2.cpp
 0xB478C sgl_Mesh_3               1.6.1.internal  main_objs/sgl_Mesh_3.cpp
 0xB6290 sgl_Mesh_4               1.6.1.internal  main_objs/sgl_Mesh_4.cpp
+0xC36E8 sgl_Vertex_operator_lt   1.6.1.internal  main_objs/sgl_Vertex_operator_lt.cpp
 0xC3BA8 sgl_MeshBuilder_extruded_var_extruded_var 1.6.1.internal  main_objs/sgl_MeshBuilder_extruded_var_extruded_var.cpp
 0xCE0FC sgl_MeshParams           1.6.1.internal  main_objs/sgl_MeshParams.cpp
 0xCF2FC sgl_Stripper             1.6.1.internal  main_objs/sgl_Stripper.cpp

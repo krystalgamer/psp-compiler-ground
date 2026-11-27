@@ -4,6 +4,76 @@
 #include "cxx/defer_asm.h"
 #include "../main.hpp"
 
+/* this object's .gnu.linkonce.t sections in the original's order */
+DEMO_LINKONCE_ORDER(
+    DEMO_LINKONCE(_ZN3sgl14PrimitiveIndexIiEC1Ev)
+    DEMO_LINKONCE(_ZN3sgl4Mesh22removeUsusedAttributesISt6vectorINS_8PositionESaIS3_EES3_EEvNS_14VertexAttrEnumERT_)
+    DEMO_LINKONCE(_ZN3sgl4Mesh22removeUsusedAttributesISt6vectorINS_6NormalESaIS3_EES3_EEvNS_14VertexAttrEnumERT_)
+    DEMO_LINKONCE(_ZN3sgl4Mesh22removeUsusedAttributesISt6vectorINS_5ColorESaIS3_EES3_EEvNS_14VertexAttrEnumERT_)
+    DEMO_LINKONCE(_ZN3sgl4Mesh22removeUsusedAttributesISt6vectorINS_8TexCoordESaIS3_EES3_EEvNS_14VertexAttrEnumERT_)
+    DEMO_LINKONCE(_ZN3sgl4Mesh23quantizeVertexAttributeISt6vectorINS_8PositionESaIS3_EES3_EEvNS_14VertexAttrEnumERT_jbf)
+    DEMO_LINKONCE(_ZN3sgl4Mesh23quantizeVertexAttributeISt6vectorINS_8TexCoordESaIS3_EES3_EEvNS_14VertexAttrEnumERT_jbf)
+    DEMO_LINKONCE(_ZN3sgl4Mesh23quantizeVertexAttributeISt6vectorINS_5ColorESaIS3_EES3_EEvNS_14VertexAttrEnumERT_jbf)
+    DEMO_LINKONCE(_ZN3sgl4Mesh23quantizeVertexAttributeISt6vectorINS_6NormalESaIS3_EES3_EEvNS_14VertexAttrEnumERT_jbf)
+    DEMO_LINKONCE(_ZNSt6vectorIN3sgl4EdgeESaIS1_EE7reserveEj)
+    DEMO_LINKONCE(_ZNSt6vectorIN3sgl15VarlenListsList4ListESaIS2_EE5eraseEN9__gnu_cxx17__normal_iteratorIPS2_S4_EES8_)
+    DEMO_LINKONCE(_ZN3sgl6KdTreeINS_8PositionEEC1ERSt6vectorIS1_SaIS1_EEif)
+    DEMO_LINKONCE(_ZN3sgl6KdTreeINS_8PositionEE4findERKS1_)
+    DEMO_LINKONCE(_ZN3sgl6KdTreeINS_8TexCoordEEC1ERSt6vectorIS1_SaIS1_EEif)
+    DEMO_LINKONCE(_ZN3sgl6KdTreeINS_8TexCoordEE4findERKS1_)
+    DEMO_LINKONCE(_ZN3sgl6KdTreeINS_5ColorEEC1ERSt6vectorIS1_SaIS1_EEif)
+    DEMO_LINKONCE(_ZN3sgl6KdTreeINS_5ColorEE4findERKS1_)
+    DEMO_LINKONCE(_ZN3sgl6KdTreeINS_6NormalEEC1ERSt6vectorIS1_SaIS1_EEif)
+    DEMO_LINKONCE(_ZN3sgl6KdTreeINS_6NormalEE4findERKS1_)
+    DEMO_LINKONCE(_ZNSt6vectorIN3sgl4EdgeESaIS1_EE13_M_insert_auxEN9__gnu_cxx17__normal_iteratorIPS1_S3_EERKS1_)
+    DEMO_LINKONCE(_ZNSt6vectorIiSaIiEE13_M_insert_auxEN9__gnu_cxx17__normal_iteratorIPiS1_EERKi)
+    DEMO_LINKONCE(_ZN3sgl6KdTreeINS_8PositionEE5buildEPNS_10KdTreeNodeEj)
+    DEMO_LINKONCE(_ZN3sgl6KdTreeINS_8TexCoordEE5buildEPNS_10KdTreeNodeEj)
+    DEMO_LINKONCE(_ZN3sgl6KdTreeINS_8TexCoordEE4findERKS1_Ri)
+    DEMO_LINKONCE(_ZN3sgl6KdTreeINS_5ColorEE5buildEPNS_10KdTreeNodeEj)
+    DEMO_LINKONCE(_ZN3sgl6KdTreeINS_5ColorEE4findERKS1_Ri)
+    DEMO_LINKONCE(_ZN3sgl6KdTreeINS_6NormalEE5buildEPNS_10KdTreeNodeEj)
+    DEMO_LINKONCE(_ZN3sgl6KdTreeINS_6NormalEE4findERKS1_Ri)
+    DEMO_LINKONCE(_ZNSt8_Rb_treeIN3sgl6VertexESt4pairIKS1_jESt10_Select1stIS4_ESt4lessIS1_ESaIS4_EE8_M_eraseEPSt13_Rb_tree_nodeIS4_E)
+    DEMO_LINKONCE(_ZNSt8_Rb_treeIN3sgl6VertexESt4pairIKS1_jESt10_Select1stIS4_ESt4lessIS1_ESaIS4_EE11lower_boundERS3_)
+    DEMO_LINKONCE(_ZNSt8_Rb_treeIN3sgl6VertexESt4pairIKS1_jESt10_Select1stIS4_ESt4lessIS1_ESaIS4_EE13insert_uniqueESt17_Rb_tree_iteratorIS4_RS4_PS4_ERKS4_)
+    DEMO_LINKONCE(_ZNSt6vectorIN3sgl15VarlenListsList4ListESaIS2_EE14_M_fill_insertEN9__gnu_cxx17__normal_iteratorIPS2_S4_EEjRKS2_)
+    DEMO_LINKONCE(_ZN3sgl6KdTreeINS_8PositionEE19compute_longest_boxEPNS_10KdTreeNodeE)
+    DEMO_LINKONCE(_ZN3sgl6KdTreeINS_8PositionEE12node_elementEPNS_10KdTreeNodeEj)
+    DEMO_LINKONCE(_ZN3sgl6KdTreeINS_8PositionEE19merge_node_elementsEPNS_10KdTreeNodeE)
+    DEMO_LINKONCE(_ZN3sgl6KdTreeINS_8TexCoordEE19compute_longest_boxEPNS_10KdTreeNodeE)
+    DEMO_LINKONCE(_ZN3sgl6KdTreeINS_8TexCoordEE12node_elementEPNS_10KdTreeNodeEj)
+    DEMO_LINKONCE(_ZN3sgl6KdTreeINS_8TexCoordEE19merge_node_elementsEPNS_10KdTreeNodeE)
+    DEMO_LINKONCE(_ZN3sgl6KdTreeINS_8TexCoordEE8find_recEPNS_10KdTreeNodeERKS1_)
+    DEMO_LINKONCE(_ZN3sgl6KdTreeINS_5ColorEE19compute_longest_boxEPNS_10KdTreeNodeE)
+    DEMO_LINKONCE(_ZN3sgl6KdTreeINS_5ColorEE12node_elementEPNS_10KdTreeNodeEj)
+    DEMO_LINKONCE(_ZN3sgl6KdTreeINS_5ColorEE19merge_node_elementsEPNS_10KdTreeNodeE)
+    DEMO_LINKONCE(_ZN3sgl6KdTreeINS_5ColorEE8find_recEPNS_10KdTreeNodeERKS1_)
+    DEMO_LINKONCE(_ZN3sgl6KdTreeINS_6NormalEE19compute_longest_boxEPNS_10KdTreeNodeE)
+    DEMO_LINKONCE(_ZN3sgl6KdTreeINS_6NormalEE12node_elementEPNS_10KdTreeNodeEj)
+    DEMO_LINKONCE(_ZN3sgl6KdTreeINS_6NormalEE19merge_node_elementsEPNS_10KdTreeNodeE)
+    DEMO_LINKONCE(_ZN3sgl6KdTreeINS_6NormalEE8find_recEPNS_10KdTreeNodeERKS1_)
+    DEMO_LINKONCE(_ZNSt8_Rb_treeIN3sgl6VertexESt4pairIKS1_jESt10_Select1stIS4_ESt4lessIS1_ESaIS4_EE9_M_insertEPSt18_Rb_tree_node_baseSC_RKS4_)
+    DEMO_LINKONCE(_ZNSt8_Rb_treeIN3sgl6VertexESt4pairIKS1_jESt10_Select1stIS4_ESt4lessIS1_ESaIS4_EE13insert_uniqueERKS4_)
+    DEMO_LINKONCE(_ZNSt6vectorIN3sgl8TriangleESaIS1_EE14_M_fill_insertEN9__gnu_cxx17__normal_iteratorIPS1_S3_EEjRKS1_)
+    DEMO_LINKONCE(_ZNSt6vectorIN3sgl4EdgeESaIS1_EE14_M_fill_insertEN9__gnu_cxx17__normal_iteratorIPS1_S3_EEjRKS1_)
+    DEMO_LINKONCE(_ZSt24__uninitialized_copy_auxIPN3sgl4EdgeES2_ET0_T_S4_S3_12__false_type)
+    DEMO_LINKONCE(_ZSt24__uninitialized_copy_auxIN9__gnu_cxx17__normal_iteratorIPN3sgl4EdgeESt6vectorIS3_SaIS3_EEEES8_ET0_T_SA_S9_12__false_type)
+    DEMO_LINKONCE(_ZSt4fillIN9__gnu_cxx17__normal_iteratorIPN3sgl15VarlenListsList4ListESt6vectorIS4_SaIS4_EEEES4_EvT_SA_RKT0_)
+    DEMO_LINKONCE(_ZSt4fillIN9__gnu_cxx17__normal_iteratorIPN3sgl8TriangleESt6vectorIS3_SaIS3_EEEES3_EvT_S9_RKT0_)
+    DEMO_LINKONCE(_ZSt4fillIN9__gnu_cxx17__normal_iteratorIPN3sgl4EdgeESt6vectorIS3_SaIS3_EEEES3_EvT_S9_RKT0_)
+    DEMO_LINKONCE(_ZSt24__uninitialized_copy_auxIPN3sgl15VarlenListsList4ListES3_ET0_T_S5_S4_12__false_type)
+    DEMO_LINKONCE(_ZSt26__uninitialized_fill_n_auxIPN3sgl15VarlenListsList4ListEjS2_ET_S4_T0_RKT1_12__false_type)
+    DEMO_LINKONCE(_ZSt24__uninitialized_copy_auxIN9__gnu_cxx17__normal_iteratorIPN3sgl15VarlenListsList4ListESt6vectorIS4_SaIS4_EEEES5_ET0_T_SB_SA_12__false_type)
+    DEMO_LINKONCE(_ZSt24__uninitialized_copy_auxIN9__gnu_cxx17__normal_iteratorIPN3sgl15VarlenListsList4ListESt6vectorIS4_SaIS4_EEEES9_ET0_T_SB_SA_12__false_type)
+    DEMO_LINKONCE(_ZSt26__uninitialized_fill_n_auxIN9__gnu_cxx17__normal_iteratorIPN3sgl15VarlenListsList4ListESt6vectorIS4_SaIS4_EEEEjS4_ET_SA_T0_RKT1_12__false_type)
+    DEMO_LINKONCE(_ZSt26__uninitialized_fill_n_auxIPN3sgl8TriangleEjS1_ET_S3_T0_RKT1_12__false_type)
+    DEMO_LINKONCE(_ZSt26__uninitialized_fill_n_auxIN9__gnu_cxx17__normal_iteratorIPN3sgl8TriangleESt6vectorIS3_SaIS3_EEEEjS3_ET_S9_T0_RKT1_12__false_type)
+    DEMO_LINKONCE(_ZSt26__uninitialized_fill_n_auxIPN3sgl4EdgeEjS1_ET_S3_T0_RKT1_12__false_type)
+    DEMO_LINKONCE(_ZSt24__uninitialized_copy_auxIN9__gnu_cxx17__normal_iteratorIPN3sgl4EdgeESt6vectorIS3_SaIS3_EEEES4_ET0_T_SA_S9_12__false_type)
+    DEMO_LINKONCE(_ZSt26__uninitialized_fill_n_auxIN9__gnu_cxx17__normal_iteratorIPN3sgl4EdgeESt6vectorIS3_SaIS3_EEEEjS3_ET_S9_T0_RKT1_12__false_type)
+);
+
 /* these template instances are still asm below */
 namespace std {
 extern template void vector<sgl::Edge>::reserve(vector<sgl::Edge>::size_type);
@@ -19,13 +89,6 @@ extern const char D_0016C198[];     /* " *** error " */
 extern const char D_0016C238[];     /* " " */
 extern const char D_0016C398[];     /* "../lib/sgl/VarlenListsList.h" */
 extern const char D_0016C414[];     /* "_List < _n" */
-extern const char D_0016DA68[];     /* "_lists.size() == 0" */
-extern const char D_0016DA7C[];     /* "_data.size() == 0" */
-extern const char D_0016DB18[];
-extern const char VLL_reset_name[] __asm__("_ZZN3sgl15VarlenListsList5resetEvE19__PRETTY_FUNCTION___16DA44");
-extern const char VLL_clear_name[] __asm__("_ZZN3sgl15VarlenListsList5clearEjE19__PRETTY_FUNCTION___16DAB4");
-extern const char VLL_freeze_name[] __asm__("_ZZN3sgl15VarlenListsList6freezeEvE19__PRETTY_FUNCTION___16DA90");
-extern const char VLL_add_name[] __asm__("_ZZN3sgl15VarlenListsList3addEjiE19__PRETTY_FUNCTION___16DAE4");
 extern const char D_0016C1B0[];     /* "../lib/sgl/Mesh.finish.cpp" */
 extern const char D_0016C1E4[];     /* "\n" */
 extern const char D_0016C54C[];
@@ -45,11 +108,6 @@ extern const char D_0016C7F4[];
 extern const char searchCommonPosPair_name[] __asm__("_ZZN3sgl4Mesh19searchCommonPosPairEiiRiS1_E19__PRETTY_FUNCTION__");
 #define FINISH_ASSERT(c, text, fn, line) SGL_ASSERT(c, D_0016C198, text, D_0016C1B0, fn, line, D_0016C238)
 #define VLL_ASSERT(c, text, fn, line) SGL_ASSERT(c, D_0016C198, text, D_0016C398, fn, line, D_0016C238)
-inline void sgl::VarlenListsList::clear(unsigned int _List)
-{
-    VLL_ASSERT(_List < _n, D_0016C414, VLL_clear_name, 85);
-    _lists[_List]._cur = 0;
-}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh_4", _Z41__static_initialization_and_destruction_0ii_B3EAC);
 
@@ -294,6 +352,271 @@ void _GLOBAL__D__ZN3sgl4Mesh6finishERKNS_10MeshParamsE(void)
     static_init(0, 0xFFFF);
 }
 
+/* lib/sgl/KdTree.h; its strings and float constants stay in the module's .rodata */
+extern const char KD_err[] __asm__("D_0016C198");          /* " *** error " */
+extern const char KD_warn[] __asm__("D_0016D2C8");         /* " *** warning " */
+extern const char KD_sep[] __asm__("D_0016C238");          /* " " */
+extern const char KD_file[] __asm__("D_0016D06C");         /* "../lib/sgl/KdTree.h" */
+extern const char KD_dim[] __asm__("D_0016D0A8");          /* "_dim == 2 || _dim == 3 || _dim == 4" */
+extern const char KD_dim_msg[] __asm__("D_0016D080");      /* "supported values for k are 2, 3 or 4" */
+extern const char KD_partitioned[] __asm__("D_0016D038");  /* "_partitioned_items[i] == _partitioned_items[retval]" */
+extern const char KD_depth[] __asm__("D_0016D2D8");        /* "_Depth != 80" */
+extern const char KD_depth_msg[] __asm__("D_0016D2E8");    /* "stack overflow might occur, might beed bigger threshold" */
+extern const char KD_axis_range[] __asm__("D_0016D250");   /* "_Node->_longest_axis >= 0 && _Node->_longest_axis < _dim" */
+extern const char KD_rl[] __asm__("D_0016D28C");           /* "r == 1 || l == 1" */
+extern const char KD_no_children[] __asm__("D_0016D2A0");  /* "_Node->_left == 0 && _Node->_right == 0" */
+extern const char KD_node[] __asm__("D_0016D370");         /* "node != 0" */
+extern const char KD_node_size[] __asm__("D_0016D37C");    /* "node->_size != 0" */
+extern const char KD_Node[] __asm__("D_0016D724");         /* "_Node != 0" */
+extern const char KD_children[] __asm__("D_0016D6E0");     /* "_Node->_left != 0 && _Node->_right != 0" */
+extern const char KD_axis[] __asm__("D_0016D708");         /* "_Node->_longest_axis != -1" */
+extern const char KD_size[] __asm__("D_0016D5CC");         /* "_Node->_size != 0" */
+extern const char KD_equal[] __asm__("D_0016D634");        /* "node_element(_Node,i).equal( node_element(_Node,0), _threshold * 100.f )" */
+namespace sgl {
+template<class T> struct KdTreeNames {
+    static const char ctor[], build[], find[], find_rec[], compute_longest_box[], merge_node_elements[];
+    static const float hundred;
+};
+}
+#define KDTREE_NAMES(T, M, HUNDRED, FIND, FIND_REC) \
+    template<> const char sgl::KdTreeNames<sgl::T>::ctor[] __asm__("_ZZN3sgl6KdTreeI" M "EC1ERSt6vectorIS1_SaIS1_EEifE19__PRETTY_FUNCTION__"); \
+    template<> const char sgl::KdTreeNames<sgl::T>::build[] __asm__("_ZZN3sgl6KdTreeI" M "E5buildEPNS_10KdTreeNodeEjE19__PRETTY_FUNCTION__"); \
+    template<> const char sgl::KdTreeNames<sgl::T>::find[] __asm__("_ZZN3sgl6KdTreeI" M "E4findERKS1_RiE19__PRETTY_FUNCTION__" FIND); \
+    template<> const char sgl::KdTreeNames<sgl::T>::find_rec[] __asm__("_ZZN3sgl6KdTreeI" M "E8find_recEPNS_10KdTreeNodeERKS1_E19__PRETTY_FUNCTION__" FIND_REC); \
+    template<> const char sgl::KdTreeNames<sgl::T>::compute_longest_box[] __asm__("_ZZN3sgl6KdTreeI" M "E19compute_longest_boxEPNS_10KdTreeNodeEE19__PRETTY_FUNCTION__"); \
+    template<> const char sgl::KdTreeNames<sgl::T>::merge_node_elements[] __asm__("_ZZN3sgl6KdTreeI" M "E19merge_node_elementsEPNS_10KdTreeNodeEE19__PRETTY_FUNCTION__"); \
+    template<> const float sgl::KdTreeNames<sgl::T>::hundred __asm__(HUNDRED)
+/* (KdTree<Position>::find(const Position &, int &) and find_rec are scene_MeshData's instances: this
+   object's copies of their names are the suffixed labels) */
+KDTREE_NAMES(Position, "NS_8PositionE", "D_0016C0EC", "_16D320", "_16D680");
+KDTREE_NAMES(TexCoord, "NS_8TexCoordE", "D_0016C0F0", "", "");
+KDTREE_NAMES(Color, "NS_5ColorE", "D_0016C0F4", "", "");
+KDTREE_NAMES(Normal, "NS_6NormalE", "D_0016C0F8", "", "");
+#define KD_ASSERT(c, text, fn, line) SGL_ASSERT(c, KD_err, text, KD_file, KdTreeNames<T>::fn, line, KD_sep)
+#define KD_ASSERT_MSG(c, text, msg, fn, line) SGL_ASSERT(c, KD_err, text, KD_file, KdTreeNames<T>::fn, line, msg)
+#define KD_WARN(c, text, msg, fn, line) \
+    if (!(c)) { \
+        common::common_internal::assert_display(KD_warn, text, KD_file, KdTreeNames<T>::fn, line, msg); \
+        common::common_internal::on_warning(); \
+    }
+namespace sgl {
+/* T's coordinates and T::equal (Color has no operator[]) */
+template<class T> inline float &kd_coord(T &v, int i) { return ((float *)&v)[i]; }
+template<class T> inline float kd_coord_value(T v, int i) { return kd_coord(v, i); }
+inline bool kd_equal(const math::vector_xyzw &a, const math::vector_xyzw &b, float eps)
+{
+    return fabsf(a.x - b.x) < eps && fabsf(a.y - b.y) < eps && fabsf(a.z - b.z) < eps && fabsf(a.w - b.w) < eps;
+}
+inline bool kd_equal(const TexCoord &a, const TexCoord &b, float eps)
+{
+    return fabsf(a.x - b.x) < eps && fabsf(a.y - b.y) < eps;
+}
+inline bool kd_equal(const Color &a, const Color &b, float eps)
+{
+    return fabsf(a.c[0] - b.c[0]) < eps && fabsf(a.c[1] - b.c[1]) < eps && fabsf(a.c[2] - b.c[2]) < eps &&
+           fabsf(a.c[3] - b.c[3]) < eps;
+}
+inline bool kd_same(const math::vector_xyzw &a, const math::vector_xyzw &b)
+{
+    return a.x == b.x && a.y == b.y && a.z == b.z && a.w == b.w;
+}
+inline bool kd_same(const TexCoord &a, const TexCoord &b)
+{
+    return a.x == b.x && a.y == b.y;
+}
+inline bool kd_same(const Color &a, const Color &b)
+{
+    return a.c[0] == b.c[0] && a.c[1] == b.c[1] && a.c[2] == b.c[2] && a.c[3] == b.c[3];
+}
+
+template<class T> KdTree<T>::KdTree(std::vector<T> &items, int dim, float threshold)
+    : _dim(dim), _threshold(threshold), _max_depth(0), _num_nodes(1), _num_leaves(0), _items(items)
+{
+    KD_ASSERT_MSG(_dim == 2 || _dim == 3 || _dim == 4, KD_dim, KD_dim_msg, ctor, 110);
+    if (items.empty())
+        return;
+    _partitioned_items.resize(items.size());
+    for (unsigned int i = 0; i < items.size(); i++)
+        _partitioned_items[i] = i;
+    _root._size = items.size();
+    _root._start = 0;
+    build(&_root, 0);
+    _num_leaves = _num_nodes - _num_leaves;
+    for (unsigned int i = 0; i < items.size(); i++) {
+        int retval = find(items[i]);
+        KD_ASSERT(kd_same(_items[i], _items[retval]), KD_partitioned, ctor, 164);
+    }
+}
+
+template<class T> int KdTree<T>::find(const T &p)
+{
+    int retval;
+    find(p, retval);
+    return retval;
+}
+
+template<class T> void KdTree<T>::build(KdTreeNode *_Node, unsigned int _Depth)
+{
+    KD_WARN(_Depth != 80, KD_depth, KD_depth_msg, build, 229);
+    if (!compute_longest_box(_Node))
+        return;
+    KD_ASSERT(_Node->_longest_axis >= 0 && _Node->_longest_axis < _dim, KD_axis_range, build, 240);
+    if (_max_depth < _Depth)
+        _max_depth = _Depth;
+    int l = 0;
+    int r = _Node->_size - 1;
+    for (;;) {
+        while (kd_coord(node_element(_Node, l), _Node->_longest_axis) <= _Node->_split)
+            if (++l >= (int)_Node->_size)
+                break;
+        while (kd_coord(node_element(_Node, r), _Node->_longest_axis) > _Node->_split)
+            if (--r < 0)
+                break;
+        if (!(l < r))
+            break;
+        unsigned int t = _partitioned_items[_Node->_start + l];
+        _partitioned_items[_Node->_start + l] = _partitioned_items[_Node->_start + r];
+        _partitioned_items[_Node->_start + r] = t;
+    }
+    if (r >= 0 && l < (int)_Node->_size) {
+        r = _Node->_size - l;
+        if (r == 0 || l == 0) {
+            KD_ASSERT(r == 1 || l == 1, KD_rl, build, 334);
+        } else {
+            _num_nodes += 2;
+            _num_leaves++;
+            _Node->_leaf = false;
+            KD_ASSERT(_Node->_left == 0 && _Node->_right == 0, KD_no_children, build, 344);
+            _Node->_left = new KdTreeNode;
+            _Node->_right = new KdTreeNode;
+            _Node->_left->_start = _Node->_start;
+            _Node->_left->_size = l;
+            _Node->_right->_start = _Node->_start + l;
+            _Node->_right->_size = r;
+            build(_Node->_right, _Depth + 1);
+            build(_Node->_left, _Depth + 1);
+        }
+    } else
+        merge_node_elements(_Node);
+}
+
+template<class T> KdTreeNode *KdTree<T>::find(const T &p, int &retval)
+{
+    KdTreeNode *node = find_rec(&_root, p);
+    KD_ASSERT(node != 0, KD_node, find, 532);
+    KD_ASSERT(node->_size != 0, KD_node_size, find, 533);
+    retval = _partitioned_items[node->_start];
+    return node;
+}
+
+template<class T> bool KdTree<T>::compute_longest_box(KdTreeNode *_Node)
+{
+    KD_ASSERT(_Node->_size != 0, KD_size, compute_longest_box, 367);
+    _Node->_longest_axis = -1;
+    if (_Node->_size == 1)
+        return false;
+    float min[_dim], max[_dim], len[_dim];
+    for (int i = 0; i < _dim; i++)
+        max[i] = min[i] = kd_coord(node_element(_Node, 0), i);
+    for (unsigned int j = 1; j < _Node->_size; j++)
+        for (int i = 0; i < _dim; i++) {
+            float v = kd_coord(node_element(_Node, j), i);
+            if (v < min[i])
+                min[i] = v;
+            if (max[i] < v)
+                max[i] = v;
+        }
+    for (int i = 0; i < _dim; i++)
+        len[i] = fabsf(max[i] - min[i]);
+    bool zero = true;
+    for (int i = 0; i < _dim; i++)
+        if (len[i] != 0) {
+            zero = false;
+            break;
+        }
+    if (zero)
+        return false;
+    bool small = true;
+    for (int i = 0; i < _dim; i++)
+        if (_threshold < len[i]) {
+            small = false;
+            break;
+        }
+    if (small) {
+        merge_node_elements(_Node);
+        return false;
+    }
+    _Node->_longest_axis = 0;
+    for (int i = 1; i < _dim; i++)
+        if (len[i] > len[_Node->_longest_axis])
+            _Node->_longest_axis = i;
+    _Node->_split = 0;
+    int axis = _Node->_longest_axis;
+    for (unsigned int j = 0; j < _Node->_size; j++)
+        _Node->_split += kd_coord(node_element(_Node, j), axis);
+    _Node->_split /= _Node->_size;
+    return true;
+}
+
+template<class T> T &KdTree<T>::node_element(KdTreeNode *_Node, unsigned int i)
+{
+    return _items[_partitioned_items[_Node->_start + i]];
+}
+
+template<class T> void KdTree<T>::merge_node_elements(KdTreeNode *_Node)
+{
+    for (unsigned int i = 1; i < _Node->_size; i++) {
+        KD_WARN(kd_equal(node_element(_Node, i), node_element(_Node, 0), _threshold * KdTreeNames<T>::hundred), KD_equal,
+                KD_sep, merge_node_elements, 219);
+        node_element(_Node, i) = node_element(_Node, 0);
+    }
+}
+
+template<class T> KdTreeNode *KdTree<T>::find_rec(KdTreeNode *_Node, const T &p)
+{
+    KD_ASSERT(_Node != 0, KD_Node, find_rec, 491);
+    if (_Node->_leaf)
+        return _Node;
+    KD_ASSERT(_Node->_left != 0 && _Node->_right != 0, KD_children, find_rec, 495);
+    KD_ASSERT(_Node->_longest_axis != -1, KD_axis, find_rec, 497);
+    if (kd_coord_value(p, _Node->_longest_axis) <= _Node->_split)
+        return find_rec(_Node->_left, p);
+    return find_rec(_Node->_right, p);
+}
+}
+
+/* KdTree<T>::KdTree / build: near-misses (some stores are scheduled in another order), asm */
+extern template void sgl::KdTree<sgl::Position>::build(sgl::KdTreeNode *, unsigned int);
+extern template void sgl::KdTree<sgl::TexCoord>::build(sgl::KdTreeNode *, unsigned int);
+extern template void sgl::KdTree<sgl::Color>::build(sgl::KdTreeNode *, unsigned int);
+extern template void sgl::KdTree<sgl::Normal>::build(sgl::KdTreeNode *, unsigned int);
+extern template sgl::KdTree<sgl::Position>::KdTree(std::vector<sgl::Position> &, int, float);
+extern template sgl::KdTree<sgl::TexCoord>::KdTree(std::vector<sgl::TexCoord> &, int, float);
+extern template sgl::KdTree<sgl::Color>::KdTree(std::vector<sgl::Color> &, int, float);
+extern template sgl::KdTree<sgl::Normal>::KdTree(std::vector<sgl::Normal> &, int, float);
+
+/* this object's instances (not linked: they are emitted by the uses here) */
+void sgl_Mesh_4_instances(void *p) __attribute__((section(".discard.instances")));
+void sgl_Mesh_4_instances(void *p)
+{
+    ((sgl::KdTree<sgl::Position> *)p)->find(*(const sgl::Position *)p);
+    ((sgl::KdTree<sgl::Position> *)p)->compute_longest_box((sgl::KdTreeNode *)p);
+    ((sgl::KdTree<sgl::Position> *)p)->merge_node_elements((sgl::KdTreeNode *)p);
+    ((sgl::KdTree<sgl::TexCoord> *)p)->find(*(const sgl::TexCoord *)p);
+    ((sgl::KdTree<sgl::TexCoord> *)p)->compute_longest_box((sgl::KdTreeNode *)p);
+    ((sgl::KdTree<sgl::TexCoord> *)p)->merge_node_elements((sgl::KdTreeNode *)p);
+    ((sgl::KdTree<sgl::Color> *)p)->find(*(const sgl::Color *)p);
+    ((sgl::KdTree<sgl::Color> *)p)->compute_longest_box((sgl::KdTreeNode *)p);
+    ((sgl::KdTree<sgl::Color> *)p)->merge_node_elements((sgl::KdTreeNode *)p);
+    ((sgl::KdTree<sgl::Normal> *)p)->find(*(const sgl::Normal *)p);
+    ((sgl::KdTree<sgl::Normal> *)p)->compute_longest_box((sgl::KdTreeNode *)p);
+    ((sgl::KdTree<sgl::Normal> *)p)->merge_node_elements((sgl::KdTreeNode *)p);
+}
+
+/* the template instances / out-of-line inline members that stay asm */
+#undef INCLUDE_ASM
+#define INCLUDE_ASM INCLUDE_ASM_LINKONCE
+
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh_4", _ZN3sgl14PrimitiveIndexIiEC1Ev);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh_4", _ZN3sgl4Mesh22removeUsusedAttributesISt6vectorINS_8PositionESaIS3_EES3_EEvNS_14VertexAttrEnumERT_);
@@ -318,19 +641,11 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh_4",
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh_4", _ZN3sgl6KdTreeINS_8PositionEEC1ERSt6vectorIS1_SaIS1_EEif);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh_4", _ZN3sgl6KdTreeINS_8PositionEE4findERKS1_);
-
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh_4", _ZN3sgl6KdTreeINS_8TexCoordEEC1ERSt6vectorIS1_SaIS1_EEif);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh_4", _ZN3sgl6KdTreeINS_8TexCoordEE4findERKS1_);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh_4", _ZN3sgl6KdTreeINS_5ColorEEC1ERSt6vectorIS1_SaIS1_EEif);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh_4", _ZN3sgl6KdTreeINS_5ColorEE4findERKS1_);
-
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh_4", _ZN3sgl6KdTreeINS_6NormalEEC1ERSt6vectorIS1_SaIS1_EEif);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh_4", _ZN3sgl6KdTreeINS_6NormalEE4findERKS1_);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh_4", _ZNSt6vectorIN3sgl4EdgeESaIS1_EE13_M_insert_auxEN9__gnu_cxx17__normal_iteratorIPS1_S3_EERKS1_);
 
@@ -340,15 +655,9 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh_4",
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh_4", _ZN3sgl6KdTreeINS_8TexCoordEE5buildEPNS_10KdTreeNodeEj);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh_4", _ZN3sgl6KdTreeINS_8TexCoordEE4findERKS1_Ri);
-
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh_4", _ZN3sgl6KdTreeINS_5ColorEE5buildEPNS_10KdTreeNodeEj);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh_4", _ZN3sgl6KdTreeINS_5ColorEE4findERKS1_Ri);
-
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh_4", _ZN3sgl6KdTreeINS_6NormalEE5buildEPNS_10KdTreeNodeEj);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh_4", _ZN3sgl6KdTreeINS_6NormalEE4findERKS1_Ri);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh_4", _ZNSt8_Rb_treeIN3sgl6VertexESt4pairIKS1_jESt10_Select1stIS4_ESt4lessIS1_ESaIS4_EE8_M_eraseEPSt13_Rb_tree_nodeIS4_E);
 
@@ -357,36 +666,6 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh_4",
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh_4", _ZNSt8_Rb_treeIN3sgl6VertexESt4pairIKS1_jESt10_Select1stIS4_ESt4lessIS1_ESaIS4_EE13insert_uniqueESt17_Rb_tree_iteratorIS4_RS4_PS4_ERKS4_);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh_4", _ZNSt6vectorIN3sgl15VarlenListsList4ListESaIS2_EE14_M_fill_insertEN9__gnu_cxx17__normal_iteratorIPS2_S4_EEjRKS2_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh_4", _ZN3sgl6KdTreeINS_8PositionEE19compute_longest_boxEPNS_10KdTreeNodeE);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh_4", _ZN3sgl6KdTreeINS_8PositionEE12node_elementEPNS_10KdTreeNodeEj);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh_4", _ZN3sgl6KdTreeINS_8PositionEE19merge_node_elementsEPNS_10KdTreeNodeE);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh_4", _ZN3sgl6KdTreeINS_8TexCoordEE19compute_longest_boxEPNS_10KdTreeNodeE);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh_4", _ZN3sgl6KdTreeINS_8TexCoordEE12node_elementEPNS_10KdTreeNodeEj);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh_4", _ZN3sgl6KdTreeINS_8TexCoordEE19merge_node_elementsEPNS_10KdTreeNodeE);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh_4", _ZN3sgl6KdTreeINS_8TexCoordEE8find_recEPNS_10KdTreeNodeERKS1_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh_4", _ZN3sgl6KdTreeINS_5ColorEE19compute_longest_boxEPNS_10KdTreeNodeE);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh_4", _ZN3sgl6KdTreeINS_5ColorEE12node_elementEPNS_10KdTreeNodeEj);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh_4", _ZN3sgl6KdTreeINS_5ColorEE19merge_node_elementsEPNS_10KdTreeNodeE);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh_4", _ZN3sgl6KdTreeINS_5ColorEE8find_recEPNS_10KdTreeNodeERKS1_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh_4", _ZN3sgl6KdTreeINS_6NormalEE19compute_longest_boxEPNS_10KdTreeNodeE);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh_4", _ZN3sgl6KdTreeINS_6NormalEE12node_elementEPNS_10KdTreeNodeEj);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh_4", _ZN3sgl6KdTreeINS_6NormalEE19merge_node_elementsEPNS_10KdTreeNodeE);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh_4", _ZN3sgl6KdTreeINS_6NormalEE8find_recEPNS_10KdTreeNodeERKS1_);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh_4", _ZNSt8_Rb_treeIN3sgl6VertexESt4pairIKS1_jESt10_Select1stIS4_ESt4lessIS1_ESaIS4_EE9_M_insertEPSt18_Rb_tree_node_baseSC_RKS4_);
 
@@ -425,61 +704,3 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh_4",
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh_4", _ZSt24__uninitialized_copy_auxIN9__gnu_cxx17__normal_iteratorIPN3sgl4EdgeESt6vectorIS3_SaIS3_EEEES4_ET0_T_SA_S9_12__false_type);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh_4", _ZSt26__uninitialized_fill_n_auxIN9__gnu_cxx17__normal_iteratorIPN3sgl4EdgeESt6vectorIS3_SaIS3_EEEEjS3_ET_S9_T0_RKT1_12__false_type);
-
-bool sgl::Vertex::operator<(const Vertex &o) const
-{
-    if (_attr[POS] < o._attr[POS])
-        return true;
-    if (o._attr[POS] < _attr[POS])
-        return false;
-    if (_attr[NOR] < o._attr[NOR])
-        return true;
-    if (o._attr[NOR] < _attr[NOR])
-        return false;
-    if (_attr[COL] < o._attr[COL])
-        return true;
-    if (o._attr[COL] < _attr[COL])
-        return false;
-    if (_attr[TEX] < o._attr[TEX])
-        return true;
-    if (o._attr[TEX] < _attr[TEX])
-        return false;
-    return false;
-}
-
-void sgl::VarlenListsList::reset()
-{
-    _n = 0;
-    _lists.clear();
-    _data.clear();
-    VLL_ASSERT(_lists.size() == 0, D_0016DA68, VLL_reset_name, 97);
-    VLL_ASSERT(_data.size() == 0, D_0016DA7C, VLL_reset_name, 98);
-}
-
-void sgl::VarlenListsList::freeze()
-{
-    if (_n == 0)
-        return;
-    _lists[0]._head = 0;
-    unsigned int total = _lists[0]._size;
-    for (unsigned int i = 1; i != _n; i++) {
-        _lists[i]._head = _lists[i - 1]._head + _lists[i - 1]._size;
-        total += _lists[i]._size;
-    }
-    for (unsigned int i = 0; i != _n; i++)
-        clear(i);
-    if (total == 0) {
-        _data.clear();
-        VLL_ASSERT(_data.size() == 0, D_0016DA7C, VLL_freeze_name, 135);
-    } else
-        _data.resize(total);
-}
-
-void sgl::VarlenListsList::add(unsigned int _List, int v)
-{
-    VLL_ASSERT(_List < _n, D_0016C414, VLL_add_name, 147);
-    List &l = _lists[_List];
-    VLL_ASSERT(l._head + l._cur >= 0 && l._head + l._cur < l._head + l._size, D_0016DB18, VLL_add_name, 153);
-    _data[l._head + l._cur] = v;
-    l._cur++;
-}
