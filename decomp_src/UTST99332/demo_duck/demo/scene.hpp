@@ -564,6 +564,26 @@ public:
     void draw(const TraversalVarStack &);
 };
 
+/* ../lib/scene/VertexArray.cpp (main_objs/scene_VertexArray) */
+class VertexArray {
+public:
+    VertexArray();
+    void use(Pass);
+    struct Channel {
+        Channel() : _fC(0) {}
+        std::vector<math::vector_xyzw> _v;
+        int _fC;
+    };
+    bool _f0;
+    Channel _c4;                            /* 0x4 */
+    Channel _c14;                           /* 0x14 */
+    Channel _c24;                           /* 0x24 */
+    bool _f34;
+    std::vector<vertex_formats::T2F_C4UB_N3F_V3F> _v38;     /* 0x38 */
+    std::vector<vertex_formats::T2F_C4UB_N3F_V3F> _v44;     /* 0x44 */
+    std::vector<vertex_formats::T2F_C4UB_N3F_V3F> *_v_ptr;  /* 0x50 */
+};
+
 class MeshDataInterleaved {
 public:
     struct SharedData;

@@ -4,6 +4,9 @@
 #include "cxx/defer_asm.h"
 #define DEMO_TEMPLATE_DEFS
 #include "../main.hpp"
+
+extern "C" const char D_0016A4B4[], D_0016A4C0[], D_0016A4C4[], D_0016A4D8[];
+extern const char VertexArray_use_name[] __asm__("_ZZN5scene11VertexArray3useENS_4PassEE19__PRETTY_FUNCTION__");
 SCENE_ALLOC_FIRST_USE
 /* linkonce order: this object's .gnu.linkonce.t sections in Sony's link order */
 SCENE_LINKONCE_ORDER(
@@ -23,6 +26,7 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Vertex
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_VertexArray", _ZN5scene11VertexArrayC1Ev);
 
+
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_VertexArray", _ZN5scene11VertexArray11extractFromERKNS_8MeshDataE);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_VertexArray", _ZN5scene11VertexArray11extractFromERKNS_8MeshDataESt6vectorIsSaIsEE);
@@ -33,7 +37,11 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Vertex
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_VertexArray", _ZN5scene11VertexArray19calcDefaultShlAlphaERKN3sgl20TransferVectorVectorE);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_VertexArray", _ZN5scene11VertexArray3useENS_4PassE);
+void scene::VertexArray::use(Pass p)
+{
+    _v_ptr = p == 0 ? &_v38 : &_v44;
+    SGL_ASSERT(!_v_ptr->empty(), D_0016A4B4, D_0016A4C4, D_0016A4D8, VertexArray_use_name, 0x153, D_0016A4C0);
+}
 
 extern "C" {
 void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_9C520");

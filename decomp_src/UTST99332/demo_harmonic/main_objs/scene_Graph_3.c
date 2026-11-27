@@ -19,6 +19,8 @@ SCENE_LINKONCE_ORDER(
 
 extern const char D_001680F8[];
 extern const char D_0016812C[];
+extern const char D_001683C4[];
+extern const char D_00168580[];
 extern const char D_00168380[];
 extern const char D_00168400[];
 extern const char D_00168414[];
@@ -57,13 +59,42 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Graph_
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Graph_3", _ZN5scene9Transform4saveERSo);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Graph_3", _ZN5scene10SaveVectorIN3sgl8PositionEEEvRSoRKSt6vectorIT_SaIS5_EEjPKc);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Graph_3", _ZN5scene10SaveVectorIN3sgl6NormalEEEvRSoRKSt6vectorIT_SaIS5_EEjPKc);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Graph_3", _ZN5scene10SaveVectorIN3sgl8TexCoordEEEvRSoRKSt6vectorIT_SaIS5_EEjPKc);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_Graph_3", _ZN5scene10SaveVectorIN3sgl5ColorEEEvRSoRKSt6vectorIT_SaIS5_EEjPKc);
+/* used by Mesh::save (asm): explicit instances, in the original's order */
+namespace scene {
+template<class T> static void SaveVector(std::ostream &, const std::vector<T> &, unsigned int, const char *);
+}
+/* referencing the instances from a (discarded) function deferred before them gets them emitted
+   in their place, before the static constructor wrappers below */
+extern "C" void scene_Graph_3_SaveVector_refs(void) __attribute__((section(".discard.asm")));
+extern "C" void scene_Graph_3_SaveVector_refs(void)
+{
+    void (*p)(std::ostream &, const std::vector<sgl::Position> &, unsigned int, const char *) = &scene::SaveVector<sgl::Position>;
+    void (*n)(std::ostream &, const std::vector<sgl::Normal> &, unsigned int, const char *) = &scene::SaveVector<sgl::Normal>;
+    void (*t)(std::ostream &, const std::vector<sgl::TexCoord> &, unsigned int, const char *) = &scene::SaveVector<sgl::TexCoord>;
+    void (*c)(std::ostream &, const std::vector<sgl::Color> &, unsigned int, const char *) = &scene::SaveVector<sgl::Color>;
+    __asm__ volatile("" : : "r"(p), "r"(n), "r"(t), "r"(c));
+}
+namespace scene {
+template<class T> static void SaveVector(std::ostream &os, const std::vector<T> &v, unsigned int n, const char *name)
+{
+    os << D_001683C4 << v.size() * n << D_001680F8 << name << D_00168580;
+    int k = 0;
+    for (typename std::vector<T>::const_iterator it = v.begin(); it != v.end(); ++it) {
+        const float *f = (const float *)&*it;
+        for (unsigned int i = 0; i != n; i++)
+            os << f[i] << D_001680F8;
+        if (++k == 20) {
+            os << D_00168380;
+            k = 0;
+        }
+    }
+    os << D_0016812C;
+}
+template void SaveVector<sgl::Position>(std::ostream &, const std::vector<sgl::Position> &, unsigned int, const char *);
+template void SaveVector<sgl::Normal>(std::ostream &, const std::vector<sgl::Normal> &, unsigned int, const char *);
+template void SaveVector<sgl::TexCoord>(std::ostream &, const std::vector<sgl::TexCoord> &, unsigned int, const char *);
+template void SaveVector<sgl::Color>(std::ostream &, const std::vector<sgl::Color> &, unsigned int, const char *);
+}
 
 extern "C" {
 void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_7D97C");
