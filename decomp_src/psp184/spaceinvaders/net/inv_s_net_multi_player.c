@@ -178,7 +178,62 @@ ignore:
 	return ret;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_net_multi_player", net_send_members_ptp);
+int sceKernelWaitSemaCB(int semid, int signal, unsigned int *timeout);
+int sceNetAdhocPtpSend(int id, void *data, int *len, unsigned int timeout, int flag);
+SceULong64 sceKernelGetSystemTimeWide(void);
+int net_send_members_ptp(void)
+{
+	int buflen;
+	int num;
+	int i, ret, ignore;
+
+	ignore = 0;
+	ret = 0;
+	buflen = 0;
+	sceKernelWaitSemaCB(minfo_sid, 1, NULL);
+	if (_mrinfo.state != MATCHING_ROOM_PARENT_INFORM_SEND) {
+		ignore = 1;
+		goto ignore;
+	}
+	memset(_mrinfo.members, 0, sizeof(_mrinfo.members));
+	memcpy(&ptp_buf[4], &_mrinfo.local_addr, 6);
+	memcpy(&_mrinfo.members[0], &_mrinfo.local_addr, 6);
+	num = 1;
+	for (i = 0; i < 4; i++) {
+		if (minfo[i].status != 5 && minfo[i].status != 6)
+			continue;
+		memcpy(&ptp_buf[4 + num * 6], &minfo[i].addr, 6);
+		memcpy(&_mrinfo.members[num], &minfo[i].addr, 6);
+		num++;
+	}
+	if (num <= 0) {
+		ret = 0;
+		ignore = 1;
+		goto ignore;
+	}
+	memcpy(ptp_buf, &num, 4);
+	buflen = num * 6 + 4;
+	ret = sceNetAdhocPtpSend(ptp_sock_id0, ptp_buf, &buflen, 0, 1);
+	if (ret == (int)0x80410709) {
+		ret = 0;
+		ignore = 1;
+		goto ignore;
+	}
+	if (ret < 0) {
+		goto error;
+	}
+	_mrinfo.ptp_start_time = sceKernelGetSystemTimeWide();
+error:
+ignore:
+	sceKernelSignalSema(minfo_sid, 1);
+	if (ignore > 0)
+		return 0;
+	if (ret < 0)
+		change_state(MATCHING_ROOM_DISCONNECT);
+	else
+		change_state(MATCHING_ROOM_PARENT_INFORM_FLUSH);
+	return ret;
+}
 
 int sceKernelWaitSemaCB(int semid, int signal, unsigned int *timeout);
 int sceNetAdhocPtpConnect(int id, unsigned int timeout, int flag);
