@@ -114,7 +114,11 @@ long long sgxVoGetPlaySamples(int v)
     return *(long long *)((char *)D_0011FF64 + v * 48 + 0x20);
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxvo", sgxVoGetPlayUnitSamples);
+long long sgxVoGetPlayUnitSamples(int v)
+{
+	char *e = (char *)(v * 48 + D_0011FF64);
+	return *(long long *)(e + 0x20) - *(long long *)(e + 0x28);
+}
 
 #ifndef NULL
 #define NULL ((void *)0)

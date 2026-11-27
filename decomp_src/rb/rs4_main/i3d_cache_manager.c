@@ -38,7 +38,12 @@ void I3dMemBlock__InsertList(MBk *b, int i, MBk *h)
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_cache_manager", I3dMemBlock__MoveList);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_cache_manager", I3dMemBlock__ChangeAttributeToCache);
+int I3dMemBlock__ChangeAttributeToCache(char *b, void *t)
+{
+	*(void **)(b + 0x40) = t;
+	*(unsigned int *)(b + 0x30) = (*(unsigned int *)(b + 0x30) & ~1) | 0x10;
+	return I3dResourceTag__SetMemBlock(t, b);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_cache_manager", I3dMemBlock__ChangeAttributeToGarbage);
 

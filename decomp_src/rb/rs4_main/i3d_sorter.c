@@ -1,6 +1,5 @@
 #include "common.h"
 #include "m2c_macros.h"
-M2C_UNK I3dSortStrictStable();                      /* extern */
 
 
 #ifndef NULL
@@ -64,7 +63,15 @@ void I3dSortByOT(void) {
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_sorter", I3dSorter__Sort);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_sorter", I3dSortStrictStable);
+void BubbleSort();
+void RadixSort();
+void I3dSortStrictStable(void *a, void *b, void *c, unsigned int n)
+{
+	if (n < 32)
+		BubbleSort(a, b, c);
+	else
+		RadixSort(a, b, c);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_sorter", I3dSorter__Construct);
 
