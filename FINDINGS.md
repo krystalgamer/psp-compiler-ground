@@ -425,6 +425,15 @@ modules (`tools/nltest.py`, `tools/objcmp.py`).
   1.6.1.internal's `eh_alloc` locks with `*mutex = sceKernelCpuSuspendIntr()`
   (the 1.6.1/1.7.1 `gcc/gthr-psp.h`), 1.3.1's had semaphore mutexes; C++
   units now get 1.6.1's (`include/cxx/bits/gthr-default.h`).
+- C++ inlining decisions are source order, not compiler changes: cc1plus
+  (tree-inline.c) marks a callee `DECL_UNINLINABLE` the first time a call
+  to it is found uninlinable, e.g. when a function compiled before the
+  callee's definition calls it; from then on it is inlined nowhere in the
+  unit, later callers included.  So the original `Transform::setIdentity`
+  calls `setTranslation`/`setScale` out of line (an earlier caller exists),
+  and a public caller in a discarded section reproduces it.  Likewise
+  `StateMachine::process` calls `update_internal` because that function is
+  a few statements over the inline limit.
 - UTST99332's demo C++ (demo_duck's `main.cpp`, demo_harmonic's
   `CityApp.cpp` ranges: ~117 objects each, the same library objects) is
   `-O3 -fno-exceptions` with RTTI: every object's
