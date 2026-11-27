@@ -1,6 +1,8 @@
 /* cflags: -Os */
 #include "common.h"
 #include "m2c_macros.h"
+M2C_UNK _memFree(void *, M2C_UNK *, M2C_UNK);       /* extern */
+
 float cusGetFloat(int, M2C_UNK, M2C_UNK *, float);      /* extern */
 extern float D_000FE260;
 
@@ -127,7 +129,29 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/particle", D_000FE190);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/particle", partInitEmitCntx);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/particle", partFreeEmitCntx);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+int partFreeEmitCntx(void *arg0) {
+    int **temp_v1;
+    int temp_a1;
+
+    temp_v1 = M2C_FIELD(arg0, int ***, 0x80);
+    if (temp_v1 != NULL) {
+        temp_a1 = **temp_v1;
+        switch (temp_a1) {                          /* irregular */
+        case 0:
+            _partFree2DBaseCntx(temp_v1);
+            break;
+        case 1:
+            _partFree3DBaseCntx(temp_v1);
+            break;
+        }
+    }
+    _memFree(arg0, &D_000FE0C4, 0x34A);
+    return 1;
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/particle", D_000FE210);
 
