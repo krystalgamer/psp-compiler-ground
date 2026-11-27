@@ -44,9 +44,13 @@ extern const char htlib_cstrREFERER[];
 extern const char htlib_cstrTRANSFERENCODING[];
 extern const char htlib_cstrUSERAGENT[];
 int http_setproxyheader(int h, const char *name, int v);
-int http_setrequestheader(int h, const char *name, int v);
+int http_setrequestheader(int h, const char *name, const char *value);
 
 
+typedef struct HHdr { int f0; struct HHdr *next; char *name; char *value; } HHdr;
+typedef struct { int error; char pad4[0xD4]; int req; HHdr *hdrs; HHdr *phdrs; } HHObj;
+int strcmp(const char *a, const char *b);
+int sceHttpDeleteHeader(int id, const char *name);
 int http_setproxyheader_Accept(int h, int v)
 {
     return http_setproxyheader(h, htlib_cstrACCEPT, v);
@@ -390,7 +394,86 @@ int http_setrequestheader_UserAgent(int h, int v)
     return http_setrequestheader(h, htlib_cstrUSERAGENT, v);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/http_setproxyhead", http_setrequestheader);
+int http_setrequestheader(int h, const char *name, const char *value)
+{
+    HHObj *o;
+    HHdr *n;
+    HHdr *p;
+    HHdr *next;
+    int r;
+    int req;
+
+    o = (HHObj *)(h * 2);
+    if (h == 0)
+        return -100;
+    if (name != NULL) {
+        if (value != NULL) {
+            n = MEM_malloc(0, 16);
+            if (n == NULL) {
+                if (o->error == 0)
+                    o->error = -0x67;
+                return o->error;
+            }
+            n->name = MEM_malloc(0, strlen(name) + 1);
+            if (n->name == NULL) {
+                if (o->error == 0)
+                    o->error = -0x67;
+                return o->error;
+            }
+            strcpy(n->name, name);
+            n->value = MEM_malloc(0, strlen(value) + 1);
+            if (n->value == NULL) {
+                if (o->error == 0)
+                    o->error = -0x67;
+                return o->error;
+            }
+            strcpy(n->value, value);
+            if (o->hdrs == NULL) {
+                n->f0 = (int)n;
+                o->hdrs = n;
+            } else {
+                for (p = o->hdrs; p->next != NULL; p = p->next)
+                    ;
+                p->next = n;
+                n->f0 = (int)p;
+            }
+            n->next = NULL;
+            return 0;
+        }
+        for (n = o->hdrs; n != NULL; n = next) {
+            next = n->next;
+            if (strcmp(n->name, name) == 0) {
+                n->f0 = (int)next;
+                if (n == o->hdrs)
+                    o->hdrs = next;
+                MEM_free(0, n->name);
+                MEM_free(0, n->value);
+                MEM_free(0, n);
+            }
+        }
+        if (o->req >= 0) {
+            r = sceHttpDeleteHeader(o->req, name);
+            if (r < 0) {
+                if (o->error == 0)
+                    o->error = r;
+                return o->error;
+            }
+        }
+        return 0;
+    }
+    n = o->hdrs;
+    if (n != NULL) {
+        do {
+            next = n->next;
+            MEM_free(0, n->name);
+            MEM_free(0, n->value);
+            MEM_free(0, n);
+            n = next;
+        } while (n != NULL);
+    }
+    o->hdrs = NULL;
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/http_setproxyhead", http_auth_passwdcb);
 
