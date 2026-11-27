@@ -1,6 +1,16 @@
 /* cflags: -O1 */
 #include "common.h"
 #include "m2c_macros.h"
+typedef struct EvSc {
+    char pad[0x14];
+    unsigned char type;               /* 0x14 */
+    unsigned char flag;               /* 0x15 */
+    char pad16[2];
+    struct EvSc *next;                /* 0x18 */
+    int value;                        /* 0x1C */
+    int obj;                          /* 0x20 */
+} EvSc;
+int mes_eval_scope_put(struct EvCtx *ctx, EvSc *s, unsigned int id, int v);
 extern void *mes_classes[];
 extern unsigned int mes_ids[];
 int mes_number_to_special(int v);
@@ -378,13 +388,44 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_eval", mes_eval_get_base);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_eval", mes_eval_set_var);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_eval", mes_eval_def_var);
+void mes_eval_def_var(EvCtx *ctx, EvSc *s, unsigned int id)
+{
+    if (mes_eval_get_var(ctx, s, id) != 0x20)
+        return;
+    for (; s != NULL; s = s->next) {
+        if (*(unsigned short *)&s->type == 1 && (*(EvGc **)s->obj)->kind == 3) {
+            mes_eval_scope_put(ctx, s, id, 0);
+            return;
+        }
+    }
+    mes_eval_object_set((int)ctx, *(int *)((char *)ctx + 0xC), id, 0, 2);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_eval", mes_eval_delete_var);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_eval", mes_eval_object_get);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_eval", mes_eval_object_canput);
+int mes_eval_object_canput(EvCtx *ctx, EvObj *o, unsigned int id)
+{
+    int (*f)(EvCtx *, EvObj *, unsigned int);
+    EvProp *p;
+
+    if (o == NULL)
+        return 0;
+    do {
+        f = (void *)((EvGc *)o->gc)->f18;
+        if (f != NULL) {
+            if (!f(ctx, o, id))
+                return 0;
+        } else {
+            p = mes_object_search(o, id);
+            if (p != NULL && (p->flags & 1))
+                return 0;
+        }
+        o = (EvObj *)o->f8;
+    } while (o != NULL);
+    return 1;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_eval", mes_eval_object_delete);
 
