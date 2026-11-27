@@ -549,47 +549,43 @@ static void func_0001EB5C(char *buf)
 	}
 }
 
-#ifdef NON_MATCHING
-/* VAG ADPCM block decoder, diff 46 (statement order from perm.py): same instructions,
- * callee-saved registers differ (original: s0 flag, s1 -16 mask, s2 h1, s3 h2). */
-static int func_0001ED14(short *dst, unsigned char *src, int *h1, int *h2)
+static int func_0001ED14(short *dst, unsigned char *vag, int *hist1, int *hist2)
 {
-	int p, shift, filter, flag, c0, c1, s1, s2, n, k, d, v, w;
+	short *out;
+	int predict, shift, flags;
+	int s1, s2, f0, f1, i, k;
+	int d0, d1;
 
-	s1 = *h1;
-	p = src[0];
-	shift = p & 0xF;
-	filter = p >> 4;
-	s2 = *h2;
-	c0 = D_00030954[0][filter];
-	c1 = D_00030954[1][filter];
-	flag = src[1];
-	n = 14;
 	k = 2;
-	if (flag == 7)
-		return 7;
-	while (--n >= 0) {
-		d = (signed char)src[k++];
-		v = (((d << 28) >> (shift + 10)) + s1 * c0 + s2 * c1) >> 6;
-		if (v > 32767) v = 32767;
-		if (v < -32768) v = -32768;
-		s2 = s1;
-		s1 = v;
-		w = (((d & ~0xF) << (14 - shift)) + s1 * c0 + s2 * c1) >> 6;
-		if (w > 32767) w = 32767;
-		if (w < -32768) w = -32768;
-		*dst++ = v;
-		*dst++ = w;
-		s2 = s1;
-		s1 = w;
+	flags = vag[0];
+	predict = flags >> 4;
+	shift = flags & 0xF;
+	flags = vag[1];
+	s1 = *hist1;
+	s2 = *hist2;
+	f0 = D_00030954[0][predict];
+	f1 = D_00030954[1][predict];
+	if (flags == 7)
+		return flags;
+	out = dst;
+	for (i = 0; i < 14; i++) {
+		signed char b = vag[k++];
+
+		d0 = (((b << 28) >> (shift + 10)) + (s1 * f0 + s2 * f1)) >> 6;
+		if (d0 > 32767) d0 = 32767;
+		if (d0 < -32768) d0 = -32768;
+		d1 = (((b & ~0xF) << (14 - shift)) + (d0 * f0 + s1 * f1)) >> 6;
+		if (d1 > 32767) d1 = 32767;
+		if (d1 < -32768) d1 = -32768;
+		*out++ = d0;
+		*out++ = d1;
+		s2 = d0;
+		s1 = d1;
 	}
-	*h1 = s1;
-	*h2 = s2;
-	return flag;
+	*hist1 = s1;
+	*hist2 = s2;
+	return flags;
 }
-#else
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libwave", func_0001ED14);
-#endif
 
 #ifdef NON_MATCHING
 /* Three instructions long: one-shot (0), loop (1, restart at unk10, loop point marked
