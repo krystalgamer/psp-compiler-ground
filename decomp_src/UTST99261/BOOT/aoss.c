@@ -235,7 +235,17 @@ int CheckSeqID(unsigned short id, unsigned char *seq)
     return r;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/aoss", CheckRecvSeqID);
+int CheckRecvSeqID(unsigned char *a, unsigned char *b)
+{
+    int ret = 0;
+
+    CryptSeqNo(b, 8, D_00141144, AOSS_Strlen(D_00141144));
+    if (AOSS_Memcmp(a, b, 6) != 0)
+        ret = -1;
+    else if (AOSS_Ntohs(*(unsigned short *)(a + 6)) + 1 != AOSS_Ntohs(*(unsigned short *)(b + 6)))
+        ret = -2;
+    return ret;
+}
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/aoss", D_00141138);
 
