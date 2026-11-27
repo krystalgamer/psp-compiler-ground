@@ -52,7 +52,18 @@ float sh::sh_rot::U(int l, int m, int n, RotMatrix &r)
     return P(0, l, m, n, r);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sh_sh_rot_Rmn", _ZN2sh6sh_rot1VEiiiRNS_9RotMatrixE);
+extern const float D_00173838;
+float sh::sh_rot::V(int l, int m, int n, RotMatrix &r)
+{
+    if (m == 0)
+        return P(1, l, 1, n, r) + P(-1, l, -1, n, r);
+    if (m > 0) {
+        float d = m == 1 ? D_00173838 : 0;
+        return P(1, l, m - 1, n, r) * math::safe_sqrtf(d + D_00173838) - P(-1, l, -m + 1, n, r) * (D_00173838 - d);
+    }
+    float d = m == -1 ? D_00173838 : 0;
+    return P(1, l, m + 1, n, r) * (d + D_00173838) + P(-1, l, -m - 1, n, r) * math::safe_sqrtf(D_00173838 - d);
+}
 
 float sh::sh_rot::W(int l, int m, int n, RotMatrix &r)
 {
