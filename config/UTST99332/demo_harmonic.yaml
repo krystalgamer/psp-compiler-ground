@@ -494,6 +494,8 @@ segments:
       - [0x16B15C, rodata, asm/rodata_16B0DC]
       - [0x16B368, .rodata, main_objs/sgl_Mesh]
       - [0x16B384, rodata, asm/rodata_16B304]
+      - [0x16BCC4, .rodata, main_objs/sgl_Mesh_2]
+      - [0x16BCE0, rodata, asm/rodata_16BC60]
       - [0x16BE80, .rodata, main_objs/sgl_Mesh_3]
       - [0x16BE9C, rodata, asm/rodata_16BE1C]
       - [0x16D040, .rodata, main_objs/sgl_Mesh_4]
@@ -644,6 +646,8 @@ segments:
       - { start: 0x189CE4, type: bss, vram: 0x189F14, name: bss_189F14 }
       - { start: 0x189CE4, type: .bss, vram: 0x18A028, name: main_objs/common_GetFileExtension }
       - { start: 0x189CE4, type: bss, vram: 0x18A02C, name: bss_18A02C }
+      - { start: 0x189CE4, type: .bss, vram: 0x18A02C, name: main_objs/psp_GetKernelErrName }
+      - { start: 0x189CE4, type: bss, vram: 0x18A030, name: bss_18A030 }
       - { start: 0x189CE4, type: .bss, vram: 0x18A030, name: main_objs/common_StateMachine_VirtualState }
       - { start: 0x189CE4, type: bss, vram: 0x18A034, name: bss_18A034 }
       - { start: 0x189CE4, type: .bss, vram: 0x18A2C0, name: main_objs/libc_fix_ItoA }
@@ -719,6 +723,8 @@ segments:
       - { start: 0x189CE4, type: .bss, vram: 0x18D0A4, name: main_objs/sgl_LineSet_Line_Vertex }
       - { start: 0x189CE4, type: .bss, vram: 0x18D1A8, name: main_objs/sgl_Mesh }
       - { start: 0x189CE4, type: bss, vram: 0x18D2AC, name: bss_18D2AC }
+      - { start: 0x189CE4, type: .bss, vram: 0x18D2AC, name: main_objs/sgl_Mesh_2 }
+      - { start: 0x189CE4, type: bss, vram: 0x18D3B0, name: bss_18D3B0 }
       - { start: 0x189CE4, type: .bss, vram: 0x18D3B0, name: main_objs/sgl_Mesh_3 }
       - { start: 0x189CE4, type: bss, vram: 0x18D4B4, name: bss_18D4B4 }
       - { start: 0x189CE4, type: .bss, vram: 0x18D6BC, name: main_objs/sgl_MeshParams }

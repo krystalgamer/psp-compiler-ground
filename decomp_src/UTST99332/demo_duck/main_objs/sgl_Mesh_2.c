@@ -2,15 +2,21 @@
 /* cflags: -O3 -fno-exceptions */
 #undef __EXCEPTIONS
 #include "cxx/defer_asm.h"
+#define DEMO_STATICS_MATH
+#define DEMO_STATICS_IOSTREAM
+#define DEMO_STATICS_SGL
 #include "../main.hpp"
+
+/* the module's .ctors/.dtors refer to the static constructor/destructor; cc1plus keys them to the
+   first public symbol, the deferred-asm wrapper of the (still asm) first function */
+__asm__(".globl _GLOBAL__I__ZNK3sgl4Mesh4drawEj\n_GLOBAL__I__ZNK3sgl4Mesh4drawEj = _GLOBAL__I__ZNK3sgl4Mesh4drawEj__asm");
+__asm__(".globl _GLOBAL__D__ZNK3sgl4Mesh4drawEj\n_GLOBAL__D__ZNK3sgl4Mesh4drawEj = _GLOBAL__D__ZNK3sgl4Mesh4drawEj__asm");
 
 #include "UTST99332/demo_duck/gl.hpp"
 extern "C" {
 void glColor4f(float, float, float, float);
 void glTexCoord2f(float, float);
 }
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_Mesh_2", _Z41__static_initialization_and_destruction_0ii_B2ABC);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_Mesh_2", _ZNK3sgl4Mesh4drawEj);
 
@@ -38,20 +44,3 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_Mesh_2", _ZN
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_Mesh_2", _ZN3sgl17StencilShadowData6updateEN4math11vector_xyzwERKNS1_6matrixEf);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_Mesh_2", _ZN3sgl17StencilShadowData4drawEj);
-
-extern "C" {
-void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_B2ABC");
-void _GLOBAL__I__ZNK3sgl4Mesh4drawEj(void);
-void _GLOBAL__D__ZNK3sgl4Mesh4drawEj(void);
-}
-
-void _GLOBAL__I__ZNK3sgl4Mesh4drawEj(void)
-{
-    static_init(1, 0xFFFF);
-}
-
-void _GLOBAL__D__ZNK3sgl4Mesh4drawEj(void)
-{
-    static_init(0, 0xFFFF);
-}
-

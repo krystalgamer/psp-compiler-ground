@@ -589,3 +589,10 @@ rodata 0x16AF78 main_objs/scene_Graph_3
 rodata 0x16AF94 -
 bss 0x18F3A4 main_objs/scene_Graph_3
 bss 0x18F4A8 -
+# static initializers (header statics): float pools and .bss (s22, 3)
+rodata 0x16EB6C main_objs/sgl_Mesh_2
+rodata 0x16EB88 -
+bss 0x19072C main_objs/sgl_Mesh_2
+bss 0x190830 -
+bss 0x18D4A4 main_objs/psp_GetKernelErrName
+bss 0x18D4A8 -

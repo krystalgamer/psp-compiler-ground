@@ -2,7 +2,12 @@
 /* cflags: -O3 -fno-exceptions */
 #undef __EXCEPTIONS
 #include "cxx/defer_asm.h"
+#define DEMO_STATICS_IOSTREAM
 #include "../main.hpp"
+
+/* the module's .ctors/.dtors refer to the static constructor/destructor */
+__asm__(".globl _GLOBAL__I__ZN3psp16GetKernelErrNameEj");
+__asm__(".globl _GLOBAL__D__ZN3psp16GetKernelErrNameEj");
 
 extern "C" long long sceIoLseek(int fd, long long offset, int whence);
 extern "C" int sceIoClose(int fd);
@@ -25,8 +30,6 @@ extern const char File_seek_fn[] __asm__("_ZZN6common4File4seekElNS0_3PosEE19__P
 extern const int File_seek_POS_TAB[] __asm__("_ZZN6common4File4seekElNS0_3PosEE7POS_TAB");
 extern "C" const char D_0015C8CC[], D_0015C8E0[], D_0015C8F8[], D_0015C910[], D_0015C934[], D_0015C958[], D_0015C97C[], D_0015C9A0[], D_0015C9C4[], D_0015C9EC[], D_0015CA1C[], D_0015CA4C[], D_0015CA70[], D_0015CA94[], D_0015CAAC[], D_0015CACC[], D_0015CAF0[], D_0015CB14[], D_0015CB38[], D_0015CB5C[], D_0015CB84[], D_0015CBA8[], D_0015CBC4[], D_0015CBE8[], D_0015CC08[], D_0015CC2C[], D_0015CC48[], D_0015CC6C[], D_0015CC90[], D_0015CCAC[], D_0015CCC8[], D_0015CCE4[], D_0015CD04[], D_0015CD28[], D_0015CD4C[], D_0015CD6C[], D_0015CD90[], D_0015CDB0[], D_0015CDD4[], D_0015CDF8[], D_0015CE18[], D_0015CE38[], D_0015CE5C[], D_0015CE7C[], D_0015CE9C[], D_0015CEC0[], D_0015CEE4[], D_0015CF08[], D_0015CF30[], D_0015CF58[], D_0015CF80[], D_0015CFA8[], D_0015CFD0[], D_0015CFF4[], D_0015D010[], D_0015D030[], D_0015D050[], D_0015D068[], D_0015D084[], D_0015D0A0[], D_0015D0C4[], D_0015D0E8[], D_0015D108[], D_0015D12C[], D_0015D14C[], D_0015D16C[], D_0015D18C[], D_0015D1B4[], D_0015D1D4[], D_0015D1F8[], D_0015D21C[], D_0015D23C[], D_0015D260[], D_0015D280[], D_0015D2A4[], D_0015D2C4[], D_0015D2E8[], D_0015D308[], D_0015D334[], D_0015D360[], D_0015D37C[], D_0015D39C[], D_0015D3BC[], D_0015D3E0[], D_0015D404[], D_0015D424[], D_0015D444[], D_0015D464[], D_0015D484[], D_0015D4A4[], D_0015D4C4[], D_0015D4E4[], D_0015D504[], D_0015D524[], D_0015D544[], D_0015D564[], D_0015D584[], D_0015D5A4[], D_0015D5C0[], D_0015D5DC[], D_0015D5FC[], D_0015D61C[], D_0015D638[], D_0015D658[], D_0015D678[], D_0015D698[], D_0015D6B8[], D_0015D6DC[], D_0015D700[], D_0015D71C[], D_0015D738[], D_0015D754[], D_0015D770[], D_0015D78C[], D_0015D7A8[], D_0015D7C4[], D_0015D7E0[], D_0015D800[], D_0015D824[], D_0015D848[], D_0015D86C[], D_0015D888[], D_0015D8A8[], D_0015D8C8[], D_0015D8E8[], D_0015D908[], D_0015D928[], D_0015D948[], D_0015D968[], D_0015D984[], D_0015D9A0[], D_0015D9C8[], D_0015D9EC[], D_0015DA10[], D_0015DA38[], D_0015DA60[], D_0015DA88[], D_0015DAAC[], D_0015DAD0[], D_0015DAF4[], D_0015DB18[], D_0015DB3C[], D_0015DB64[], D_0015DB90[], D_0015DBBC[], D_0015DBEC[], D_0015DC18[], D_0015DC40[], D_0015DC68[], D_0015DC88[], D_0015DCAC[], D_0015DCD0[], D_0015DCF8[], D_0015DD1C[], D_0015DD3C[], D_0015DD5C[], D_0015DD7C[], D_0015DDA0[], D_0015DDC0[], D_0015DDE8[], D_0015DE10[], D_0015DE38[], D_0015DE60[], D_0015DE8C[], D_0015DEB4[], D_0015DED8[], D_0015DEF0[], D_0015DF08[], D_0015DF20[], D_0015DF38[], D_0015DF50[], D_0015DF68[], D_0015DF84[], D_0015DFA4[], D_0015DFC4[], D_0015DFE0[], D_0015DFFC[], D_0015E014[], D_0015E02C[], D_0015E04C[], D_0015E064[], D_0015E078[], D_0015E090[], D_0015E0B4[], D_0015E0D8[];
 #define FILE_ERROR(fn, msg) std::cout << fn << D_0015E120 << msg << D_0015E148; std::cout.flush()
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/psp_GetKernelErrName", _Z41__static_initialization_and_destruction_0ii_17488);
 
 const char *psp::GetKernelErrName(unsigned int code)
 {
@@ -406,7 +409,6 @@ common::File::File()
     handle = new Handle;
 }
 
-
 common::File::~File()
 {
     if (is_open())
@@ -547,20 +549,3 @@ bool common::File::seek(long off, Pos p)
     }
     return false;
 }
-
-extern "C" {
-void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_17488");
-void _GLOBAL__I__ZN3psp16GetKernelErrNameEj(void);
-void _GLOBAL__D__ZN3psp16GetKernelErrNameEj(void);
-}
-
-void _GLOBAL__I__ZN3psp16GetKernelErrNameEj(void)
-{
-    static_init(1, 0xFFFF);
-}
-
-void _GLOBAL__D__ZN3psp16GetKernelErrNameEj(void)
-{
-    static_init(0, 0xFFFF);
-}
-
