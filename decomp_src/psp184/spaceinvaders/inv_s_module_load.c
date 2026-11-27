@@ -23,7 +23,25 @@ int LoadModule(char *path, int mpid)
 	return mid;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_module_load", LoadRequiredModules);
+int LoadRequiredModules (void){
+	int ret;
+	unsigned int counter;
+
+	ret = 0;
+	memset (s_loaded_modules_id, 0, sizeof(s_loaded_modules_id));
+
+	for (counter = 0; counter < 10; counter++){
+		ret = LoadModule(s_modules_path[counter].path,
+			s_modules_path[counter].mpid);
+		if (ret < 0){
+			goto error;
+		}
+		s_loaded_modules_id[counter] = ret;
+	}
+	return 0;
+error:
+	return ret;
+}
 
 extern const MODPATH s_modules_path[10];
 extern int s_loaded_modules_id[10];
