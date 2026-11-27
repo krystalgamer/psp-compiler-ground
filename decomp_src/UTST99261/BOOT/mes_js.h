@@ -25,8 +25,14 @@ struct MesPage {
     MesPage *child[5];
 };
 
-struct MesObject {
+/* per-kind GC method table */
+typedef struct MesGcMethod {
     int f0;
+    int kind;
+} MesGcMethod;
+
+struct MesObject {
+    MesGcMethod *gc;
     MesPage *props;
     MesObject *proto;
     int fC;
