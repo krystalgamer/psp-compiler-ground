@@ -30,7 +30,22 @@ int salbumCalcKinds(int *p)
 	return n;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/salbum", salbumCalcKindsContainLostCard);
+typedef struct { unsigned int num : 7, isnew : 1, rest : 24; } SalbumEnt0;
+int salbumCalcKindsContainLostCard(SalbumEnt0 *p)
+{
+	int n = 0;
+	int i, j, k;
+	for (i = 0xFF; i >= 0; i--) {
+		for (j = 0; j < 3; j++) {
+			k = i * 2;
+			k += i;
+			k += j;
+			if (p[k].num > 0)
+				n++;
+		}
+	}
+	return n;
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/salbum", D_00103854);
 
