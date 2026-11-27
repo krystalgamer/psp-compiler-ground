@@ -108,7 +108,22 @@ void *iom_domainCache(char *name) {
     return NULL;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iom_cache", iom_newCacheId);
+static inline unsigned char iom_isCacheId(int id) {
+    return iom.cache.ids[id >> 3] & (1 << (id & 7));
+}
+int iom_newCacheId(void) {
+    int i;
+
+    for (i = 0; i < 1000; i += 8) {
+        if (iom.cache.ids[i >> 3] != 0xFF)
+            break;
+    }
+    for (; i < 1000; i++) {
+        if (!iom_isCacheId(i))
+            return i;
+    }
+    return i;
+}
 
 void iom_setCacheId(int id) {
     iom.cache.ids[id >> 3] |= 1 << (id & 7);
