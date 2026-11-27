@@ -182,11 +182,41 @@ void UDomiString_Move(DOMChar *d, const DOMChar *s, unsigned int len) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", inverseDCT);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", sortImage);
+const char GIF87[6] = "GIF87a";
+const char GIF89[6] = "GIF89a";
+const unsigned char JPEG[3] = { 0xFF, 0xD8, 0xFF };
+const unsigned char PNG[8] = { 0x89, 'P', 'N', 'G', 0x0D, 0x0A, 0x1A, 0x0A };
+int memcmp(const void *a, const void *b, unsigned int n);
 
-INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", JPEG);
+int sortImage(unsigned char *p, int len) {
+    int ret = -1;
 
-INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", PNG);
+    if (p != NULL & len > 0) {
+        switch (*p) {
+        case 0x47:
+            if (len >= 6) {
+                if (memcmp(p, GIF87, 6) == 0)
+                    ret = 1;
+                else if (memcmp(p, GIF89, 6) == 0)
+                    ret = 1;
+            }
+            break;
+        case 0xFF:
+            if (len >= 3) {
+                if (memcmp(p, JPEG, 3) == 0)
+                    ret = 2;
+            }
+            break;
+        case 0x89:
+            if (len >= 8) {
+                if (memcmp(p, PNG, 8) == 0)
+                    ret = 4;
+            }
+            break;
+        }
+    }
+    return ret;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", esp_psThread);
 
