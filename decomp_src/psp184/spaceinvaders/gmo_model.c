@@ -1,7 +1,11 @@
 #include "common.h"
 #include "gmo_model_sdk.h"
 
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_model", D_0007EC44);
+static const unsigned char __psp_libinfo__[24] __attribute__((used)) = {
+	0x5C, 0x79, 0x72, 0x3D, 0x60, 0x63, 0x60, 0x30, 0x7E, 0x7B, 0x74, 0x79,
+	0x7F, 0x81, 0x71, 0x7F, 0x81, 0x76, 0x77, 0x7E, 0x45, 0x49, 0x46, 0x44,
+} ;
+
 SceGmoModel *sceGmoModelCreate( SceGmoChunk *chunk )
 {
 	SceGmoModel *model = (SceGmoModel *)sceGmoModelAllocMemory( sizeof( SceGmoModel ) ) ;
@@ -51,7 +55,80 @@ void sceGmoModelDelete( SceGmoModel *model )
  }
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_model", sceGmoModelDuplicate);
+SceGmoModel *sceGmoModelDuplicate( SceGmoModel *model, int flags )
+{
+ if ( model == 0 ) return 0 ;
+
+ if ( flags & 0x0002 ) {
+  flags &= ~0x0002 ;
+  if ( sceGmoModelHasAnimation( model ) ) flags |= 0x0001 ;
+ }
+ if ( flags == 0 ) {
+  model->m_reference ++ ;
+  return model ;
+ }
+
+ SceGmoModel *model2 = sceGmoModelCreate( 0 ) ;
+ if ( model2 == 0 ) return 0 ;
+ sceGmoBaseCopy( &( model2->m_base ), &( model->m_base ) ) ;
+ if ( !sceGmoModelAllocPtr( &( model2->m_bones ), model->m_n_bones * sizeof( void * ) )
+   || !sceGmoModelAllocPtr( &( model2->m_parts ), model->m_n_parts * sizeof( void * ) )
+   || !sceGmoModelAllocPtr( &( model2->m_materials ), model->m_n_materials * sizeof( void * ) )
+   || !sceGmoModelAllocPtr( &( model2->m_textures ), model->m_n_textures * sizeof( void * ) )
+   || !sceGmoModelAllocPtr( &( model2->m_motions ), model->m_n_motions * sizeof( void * ) ) ) {
+  ;
+  sceGmoModelDelete( model2 ) ;
+  return 0 ;
+ }
+ flags &= ~0x0001 ;
+ flags |= 0x0002 ;
+ _Bool error = 0 ;
+ { int i ; for ( i = 0 ; i < model->m_n_bones ; i ++ ) {
+  SceGmoBone *src = model->m_bones[ i ] ;
+  SceGmoBone *dst = sceGmoBoneDuplicate( src, flags ) ;
+  if ( dst == 0 && src != 0 ) error = 1 ;
+  model2->m_bones[ model2->m_n_bones ++ ] = dst ;
+ } }
+ { int i ; for ( i = 0 ; i < model->m_n_parts ; i ++ ) {
+  SceGmoPart *src = model->m_parts[ i ] ;
+  SceGmoPart *dst = sceGmoPartDuplicate( src, flags ) ;
+  if ( dst == 0 && src != 0 ) error = 1 ;
+  model2->m_parts[ model2->m_n_parts ++ ] = dst ;
+ } }
+ { int i ; for ( i = 0 ; i < model->m_n_materials ; i ++ ) {
+  SceGmoMaterial *src = model->m_materials[ i ] ;
+  SceGmoMaterial *dst = sceGmoMaterialDuplicate( src, flags ) ;
+  if ( dst == 0 && src != 0 ) error = 1 ;
+  model2->m_materials[ model2->m_n_materials ++ ] = dst ;
+ } }
+ { int i ; for ( i = 0 ; i < model->m_n_textures ; i ++ ) {
+  SceGmoTexture *src = model->m_textures[ i ] ;
+  SceGmoTexture *dst = sceGmoTextureDuplicate( src, flags ) ;
+  if ( dst == 0 && src != 0 ) error = 1 ;
+  model2->m_textures[ model2->m_n_textures ++ ] = dst ;
+ } }
+ { int i ; for ( i = 0 ; i < model->m_n_motions ; i ++ ) {
+  SceGmoMotion *src = model->m_motions[ i ] ;
+  SceGmoMotion *dst = sceGmoMotionDuplicate( src, flags ) ;
+  if ( dst == 0 && src != 0 ) error = 1 ;
+  model2->m_motions[ model2->m_n_motions ++ ] = dst ;
+ } }
+ if ( error ) {
+  sceGmoModelDelete( model2 ) ;
+  return 0 ;
+ }
+ model2->m_flags = model->m_flags ;
+ model2->m_current_motion = model->m_current_motion ;
+ model2->m_change_motion = model->m_change_motion ;
+ model2->m_enable_bits = model->m_enable_bits ;
+ model2->m_enable_mask = model->m_enable_mask ;
+ model2->m_world_matrix = model->m_world_matrix ;
+ model2->m_bounding_box[ 0 ] = model->m_bounding_box[ 0 ] ;
+ model2->m_bounding_box[ 1 ] = model->m_bounding_box[ 1 ] ;
+ model2->m_vertex_offset = model->m_vertex_offset ;
+ model2->m_texcoord_offset = model->m_texcoord_offset ;
+ return model2 ;
+}
 
 _Bool sceGmoModelLoadFile( SceGmoModel *model, const void *buf, int size, int index )
 {
@@ -67,7 +144,86 @@ _Bool sceGmoModelLoadFile( SceGmoModel *model, const void *buf, int size, int in
  return sceGmoModelLoad( model, chunk ) ;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_model", sceGmoModelLoad);
+_Bool sceGmoModelLoad( SceGmoModel *model, SceGmoChunk *chunk )
+{
+ if ( model == 0 ) return 0 ;
+ if ( chunk == 0 ) return 0 ;
+
+ sceGmoModelUnload( model ) ;
+
+ int n_bones = sceGmoModelCountChunk( chunk, SCEGMO_BONE ) ;
+ int n_parts = sceGmoModelCountChunk( chunk, SCEGMO_PART ) ;
+ int n_materials = sceGmoModelCountChunk( chunk, SCEGMO_MATERIAL ) ;
+ int n_textures = sceGmoModelCountChunk( chunk, SCEGMO_TEXTURE ) ;
+ int n_motions = sceGmoModelCountChunk( chunk, SCEGMO_MOTION ) ;
+ if ( !sceGmoModelAllocPtr( &( model->m_bones ), n_bones * sizeof( void * ) )
+   || !sceGmoModelAllocPtr( &( model->m_parts ), n_parts * sizeof( void * ) )
+   || !sceGmoModelAllocPtr( &( model->m_materials ), n_materials * sizeof( void * ) )
+   || !sceGmoModelAllocPtr( &( model->m_textures ), n_textures * sizeof( void * ) )
+   || !sceGmoModelAllocPtr( &( model->m_motions ), n_motions * sizeof( void * ) ) ) {
+  ;
+  return 0 ;
+ }
+
+ SceGmoChunk *end = SCEGMO_CHUNK_NEXT( chunk ) ;
+ for ( chunk = SCEGMO_CHUNK_CHILD( chunk ) ; chunk < end ; chunk = SCEGMO_CHUNK_NEXT( chunk ) ) {
+  switch ( SCEGMO_CHUNK_TYPE( chunk ) ) {
+      case SCEGMO_BONE : {
+   SceGmoBone *bone = sceGmoBoneCreate( chunk ) ;
+   if ( bone == 0 ) return 0 ;
+   model->m_bones[ model->m_n_bones ++ ] = bone ;
+   break ;
+      }
+      case SCEGMO_PART : {
+   SceGmoPart *part = sceGmoPartCreate( chunk ) ;
+   if ( part == 0 ) return 0 ;
+   model->m_parts[ model->m_n_parts ++ ] = part ;
+   break ;
+      }
+      case SCEGMO_MATERIAL : {
+   SceGmoMaterial *material = sceGmoMaterialCreate( chunk ) ;
+   if ( material == 0 ) return 0 ;
+   model->m_materials[ model->m_n_materials ++ ] = material ;
+   break ;
+      }
+      case SCEGMO_TEXTURE : {
+   SceGmoTexture *texture = sceGmoTextureCreate( chunk ) ;
+   if ( texture == 0 ) return 0 ;
+   model->m_textures[ model->m_n_textures ++ ] = texture ;
+   break ;
+      }
+      case SCEGMO_MOTION : {
+   SceGmoMotion *motion = sceGmoMotionCreate( chunk ) ;
+   if ( motion == 0 ) return 0 ;
+   model->m_motions[ model->m_n_motions ++ ] = motion ;
+   break ;
+      }
+      case SCEGMO_BOUNDING_BOX : {
+   SceGmoBoundingBox *cmd = (SceGmoBoundingBox *)SCEGMO_CHUNK_ARGS( chunk ) ;
+   model->m_flags |= SCEGMO_MODEL_HAS_BOUNDING_BOX ;
+   sceGmoVec3Load( &( model->m_bounding_box[ 0 ] ), &( cmd->lower ) ) ;
+   sceGmoVec3Load( &( model->m_bounding_box[ 1 ] ), &( cmd->upper ) ) ;
+   break ;
+      }
+      case SCEGMO_VERTEX_OFFSET : {
+   SceGmoVertexOffset *cmd = (SceGmoVertexOffset *)SCEGMO_CHUNK_ARGS( chunk ) ;
+   switch ( cmd->format ) {
+       case ( 3 << 7 ) :
+    model->m_flags |= SCEGMO_MODEL_HAS_VERTEX_OFFSET ;
+    sceGmoMat4Set( &( model->m_vertex_offset ), cmd->offset[ 0 ], cmd->offset[ 1 ], cmd->offset[ 2 ], cmd->offset[ 3 ], cmd->offset[ 4 ], cmd->offset[ 5 ] ) ;
+    break ;
+       case ( 3 << 0 ) :
+    model->m_flags |= SCEGMO_MODEL_HAS_TEXCOORD_OFFSET ;
+    sceGmoRectSet( &( model->m_texcoord_offset ), cmd->offset[ 0 ], cmd->offset[ 1 ], cmd->offset[ 2 ], cmd->offset[ 3 ] ) ;
+    break ;
+   }
+   break ;
+      }
+  }
+ }
+ sceKernelDcacheWritebackAll();
+ return 1 ;
+}
 
 void sceGmoModelUnload( SceGmoModel *model )
 {

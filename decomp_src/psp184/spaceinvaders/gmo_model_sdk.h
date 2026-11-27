@@ -1548,3 +1548,5 @@ _Bool sceGmoMaterialLoadCache( SceGmoMaterial *material ) ;
 void sceGmoMaterialUnloadCache( SceGmoMaterial *material ) ;
 void sceGmoMotionAnimate( SceGmoMotion *motion, SceGmoModel *model, float step ) ;
 void sceGmoTextureAnimate( SceGmoTexture *texture, SceGmoModel *model, float step ) ;
+ScePspFVector4 *sceGmoVec3Load( ScePspFVector4 *dst, const void *src ) ;
+_Bool sceGmoModelHasAnimation( SceGmoModel *model ) ;

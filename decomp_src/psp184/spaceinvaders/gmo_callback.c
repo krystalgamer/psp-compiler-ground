@@ -153,4 +153,3 @@ static void free_from_cluster( int type, void *addr )
 	g_free_memory[ type ]( addr ) ;
 }
 
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_callback", __psp_libinfo___7EC2C);
