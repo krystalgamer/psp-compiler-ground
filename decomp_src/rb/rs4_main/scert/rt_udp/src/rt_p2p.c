@@ -32,6 +32,10 @@ int NetUsePeerToPeer(void *arg0) {
     return 0;
 }
 
+void *memcpy(void *, const void *, unsigned int);
+typedef struct { unsigned char a, b, idx, c; int v; } RtP2pOvl;
+typedef void (*RtP2pBcCb)(int, int, int);
+
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_resolve_interface);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_create);
@@ -325,7 +329,14 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_p
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_process_connect_complete);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_process_broadcast_update);
+int rt_p2p_process_broadcast_update(char *p, unsigned short idx, void *msg)
+{
+    struct { unsigned char a, b, c, d; } m;
+    memcpy(&m, msg, 4);
+    *(int *)(*(char **)(p + 0x184) + idx * 80 + 0x14) = m.c;
+    (*(RtP2pBcCb *)(p + 0x204))(idx, m.c, *(int *)(p + 0x218));
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_process_connection_detached);
 

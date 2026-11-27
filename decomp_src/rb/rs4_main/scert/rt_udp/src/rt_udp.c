@@ -213,7 +213,7 @@ int rt_udp_accept(void *u, int *c)
     return 0;
 }
 
-void rt_udp_send_reset();
+int rt_udp_send_reset();
 int rt_udp_deny(void *u, int *c)
 {
     if (u == NULL) return 2;
@@ -318,7 +318,16 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_udp", rt_udp_p
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_udp", rt_udp_find_connection);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_udp", rt_udp_send_reset);
+int rt_comm_send_to();
+typedef struct { unsigned short h, a, b; } RtUdpRst;
+int rt_udp_send_reset(int *ch, char *conn)
+{
+    int x = 0;
+    RtUdpRst p = {0, 0, 0};
+    p.h = (*(unsigned short *)(conn + 0x5E) & 0x3FF) | 0x1000;
+    rt_comm_send_to(*ch, conn + 8, *(int *)(conn + 0x10), &p, 6, &x);
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_udp", rt_udp_send_ack);
 

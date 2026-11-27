@@ -586,7 +586,23 @@ void udp_data_cb(void) {
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", p2p_broadcast_update_cb);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", MsgClientSystemMessageCallback);
+typedef struct { int a; unsigned char b; int c; int d; unsigned char e; short f; int g; void *data; } DmeSysMsg;
+extern void (*gpfSystemMessageCallback)(DmeSysMsg *);
+extern void *gpSystemMessageCallbackData;
+void MsgClientSystemMessageCallback(int a, unsigned char b, int c, int d, int e, int f, int g)
+{
+    DmeSysMsg m;
+    if (gpfSystemMessageCallback == NULL) return;
+    m.a = a;
+    m.b = b;
+    m.c = c;
+    m.d = d;
+    m.e = e;
+    m.f = f;
+    m.g = g;
+    m.data = gpSystemMessageCallbackData;
+    gpfSystemMessageCallback(&m);
+}
 
 int rt_mutex_lock();
 int NetMutexLock(void)
