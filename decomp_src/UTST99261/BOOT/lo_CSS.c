@@ -43,6 +43,8 @@ void OS_thread_mutex_unlock(int m);
 
 
 
+void cssFontSize(void *ctx, BOX *box, CSSVALUE *val, int n);
+void cssBackgroundColor(void *ctx, BOX *box, CSSVALUE *val, int n);
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/lo_CSS", D_00139910);
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/lo_CSS", D_00139914);
@@ -55,7 +57,40 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_CSS", innerCSSCallFunc);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_CSS", innerCSSSetBorder);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_CSS", innerCSSSetBorderStyle);
+void innerCSSSetBorderStyle(int ident, s16 *width, s16 *style, s16 inherit) {
+    switch (ident) {
+    case 0xA3:
+        *style = 1;
+        break;
+    case 0x35:
+        *style = 2;
+        break;
+    case 0x43:
+        *style = 3;
+        break;
+    case 0x8C:
+        *style = 4;
+        break;
+    case 0x50:
+        *style = 5;
+        break;
+    case 0x80:
+        *style = 6;
+        break;
+    case 0x34:
+        *style = 7;
+        break;
+    case 0x2E:
+        *style = 8;
+        break;
+    case 0x79:
+        *style = 0;
+        break;
+    case 0x4D:
+        *style = inherit;
+        break;
+    }
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_CSS", innerCSSSetBorderWidth);
 
@@ -99,7 +134,7 @@ int cssDStrContains(u16 *word, void *ds) {
     return found;
 }
 
-void cssBackgroundAttachment(void) {
+void cssBackgroundAttachment() {
 }
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_CSS", cssBackgroundColor);
@@ -146,7 +181,38 @@ void cssBackgroundRepeat(void *ctx, BOX *box, CSSVALUE *val, int n) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_CSS", cssBackground);
+void cssBackground(void *ctx, BOX *box, CSSVALUE *val, int n) {
+    CSSVALUE *v = val;
+    for (; v != NULL; v = v->next) {
+        switch (v->unit) {
+        case 0x19:
+        case 0x1A:
+            cssBackgroundColor(ctx, box, v, n);
+            break;
+        case 0x15:
+            switch (v->ident) {
+            case 0x41:
+            case 0x94:
+                cssBackgroundAttachment(ctx, box, v, n);
+                break;
+            case 0x4D:
+                cssBackgroundColor(ctx, box, v, n);
+                cssBackgroundRepeat(ctx, box, v, n);
+                break;
+            case 0x78:
+            case 0x88:
+            case 0x89:
+            case 0x8A:
+                cssBackgroundRepeat(ctx, box, v, n);
+                break;
+            }
+            break;
+        case 0x14:
+            cssBackgroundImage(ctx, box, v, n);
+            break;
+        }
+    }
+}
 
 void cssBorderBottomStyle(void *ctx, BOX *box, CSSVALUE *val, int n) {
     BOX *parent = box->parent;
@@ -355,7 +421,31 @@ void cssBorder(void *ctx, BOX *box, CSSVALUE *val, int n) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_CSS", cssColor);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_CSS", cssFont);
+void cssFont(void *ctx, BOX *box, CSSVALUE *val, int n) {
+    CSSVALUE *v = val;
+    box->style->unk6A = 0;
+    box->style->fontSize = 2;
+    for (; v != NULL; v = v->next) {
+        if (v->unit == 0x15) {
+            switch ((unsigned int)v->ident) {
+            case 0x53:
+            case 0x7D:
+                box->style->unk6A |= 2;
+                continue;
+            case 5:
+            case 6:
+            case 7:
+            case 8:
+            case 0x16:
+            case 0x17:
+                box->style->unk6A |= 1;
+                continue;
+            }
+        }
+        cssFontSize(ctx, box, v, n);
+    }
+    box->style->unk64 = ui_global->color[box->style->unk6A][box->style->fontSize];
+}
 
 int transFontSize(int h) {
     int i;
