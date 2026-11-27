@@ -97,7 +97,7 @@ extern unsigned char Ring;
 extern int AudioInit;
 int sceMpegRingbufferAvailableSize(void *);
 int sceMpegRingbufferPut(void *, int, int);
-void movDecodeVideo(void);
+int movDecodeVideo(void);
 void movDecodeAudio(void);
 int movProc(void)
 {
