@@ -160,7 +160,32 @@ LobbyTerminalInfo *LobbyTerminalList::Find_Info(const SceNetEtherAddr &mac)
 }
 
 extern "C" {
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_terminal_list", _ZN3Net17LobbyTerminalList10Alloc_InfoEv);
+LobbyTerminalInfo *LobbyTerminalList::Alloc_Info()
+{
+	if (16 - count <= 0)
+		return 0;
+	LobbyTerminalInfo *r = 0;
+	for (int i = 0; i < 16; i++) {
+		LobbyTerminalInfo *info = Get_Info(i);
+		if (!info->used) {
+			info->next = 0;
+			r = info;
+			info->used = 1;
+			int c = count;
+			count = c + 1;
+			LobbyTerminalInfo *p = valid;
+			if (p) {
+				while (p->next)
+					p = p->next;
+				p->next = info;
+			} else {
+				valid = info;
+			}
+			break;
+		}
+	}
+	return r;
+}
 }
 
 void LobbyTerminalList::Free_Info(LobbyTerminalInfo &info)
