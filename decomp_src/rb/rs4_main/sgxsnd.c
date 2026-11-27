@@ -5,6 +5,16 @@ extern unsigned char gWork_11FC84;
 M2C_UNK SlotPlay(M2C_UNK, int, int, M2C_UNK, int, M2C_UNK); /* extern */
 extern unsigned char D_0010A4D4;
 extern unsigned char D_0010A4E4;
+void *SlotGetAt_7DD48(int, const char *);
+extern const char D_0010A5E4[];
+extern const char D_0010A5F0[];
+extern const char D_0010A618[];
+extern const char D_0010A644[];
+extern const char D_0010A65C[];
+extern const char D_0010A68C[];
+extern const char D_0010A6A8[];
+extern const char D_0010A78C[];
+extern const char D_0010A79C[];
 void SlotStop(int, int, const void *, float);
 void SlotStopRes(int, int, float);
 void SlotStopName(int, int, float);
@@ -349,7 +359,13 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", sgxSndSetStrBufCB);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", sgxSndSetStrLowBufCB);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", sgxSndGetStatus);
+int sgxSndGetStatus(int id)
+{
+    void *s = SlotGetAt_7DD48(id, NULL);
+    if (s == NULL)
+        return 0;
+    return M2C_FIELD(s, int *, 0xC);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", sgxSndSetReg);
 
@@ -357,29 +373,71 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", sgxSndGetReg);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", sgxSndSetCategory);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", sgxSndGetCategory);
+int sgxSndGetCategory(int id)
+{
+    void *s = SlotGetAt_7DD48(id, D_0010A5E4);
+    if (s == NULL)
+        return 0;
+    return M2C_FIELD(s, short *, 0x1C);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", sgxSndGetName);
+int sgxSndGetName(int id)
+{
+    void *s = SlotGetAt_7DD48(id, D_0010A5F0);
+    if (s == NULL)
+        return 0;
+    return M2C_FIELD(s, int *, 0x90);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", sgxSndGetPlayInfo);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", sgxSndSetMarkerCallback);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", sgxSndGetMarkerCallback);
+int sgxSndGetMarkerCallback(int id)
+{
+    void *s = SlotGetAt_7DD48(id, D_0010A618);
+    if (s == NULL)
+        return 0;
+    return M2C_FIELD(s, int *, 0xCC);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", sgxSndDoMarkerCallback);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", sgxSndSetMidiMsgMarkerRange);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", sgxSndGetMidiMsgMarkerRangeLo);
+int sgxSndGetMidiMsgMarkerRangeLo(int id)
+{
+    void *s = SlotGetAt_7DD48(id, D_0010A644);
+    if (s == NULL)
+        return -1;
+    return M2C_FIELD(s, unsigned char *, 0xE0);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", sgxSndGetMidiMsgMarkerRangeHi);
+int sgxSndGetMidiMsgMarkerRangeHi(int id)
+{
+    void *s = SlotGetAt_7DD48(id, D_0010A65C);
+    if (s == NULL)
+        return -1;
+    return M2C_FIELD(s, unsigned char *, 0xE1);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", sgxSndSetMidiCtrlMarkerRange);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", sgxSndGetMidiCtrlMarkerRangeLo);
+int sgxSndGetMidiCtrlMarkerRangeLo(int id)
+{
+    void *s = SlotGetAt_7DD48(id, D_0010A68C);
+    if (s == NULL)
+        return -1;
+    return M2C_FIELD(s, signed char *, 0xE2);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", sgxSndGetMidiCtrlMarkerRangeHi);
+int sgxSndGetMidiCtrlMarkerRangeHi(int id)
+{
+    void *s = SlotGetAt_7DD48(id, D_0010A6A8);
+    if (s == NULL)
+        return -1;
+    return M2C_FIELD(s, signed char *, 0xE3);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", SlotDoFade);
 
@@ -410,9 +468,21 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", sgxSndGetStrLeftSize);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", sgxSndSetSyncMaster);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", sgxSndGetSyncMaster);
+int sgxSndGetSyncMaster(int id)
+{
+    void *s = SlotGetAt_7DD48(id, D_0010A78C);
+    if (s == NULL)
+        return -1;
+    return M2C_FIELD(s, short *, 0xE6);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", sgxSndGetSyncSignalCount);
+int sgxSndGetSyncSignalCount(int id)
+{
+    void *s = SlotGetAt_7DD48(id, D_0010A79C);
+    if (s == NULL)
+        return 0;
+    return M2C_FIELD(s, int *, 0xE8);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", sgxSndCheckMarkerLoop);
 
