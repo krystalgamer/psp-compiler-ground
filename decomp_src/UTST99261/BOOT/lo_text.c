@@ -208,7 +208,27 @@ typedef struct {
 
 
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_text", divOverText);
+int divOverText(char **out, JBOX *box, char *s, int len, int a1, int a2, int a3) {
+    int n;
+    int rest;
+    char *p;
+    if (s == NULL) {
+        return 0;
+    }
+    n = getStringsVisibleLength(box->doc->font, s, len, a1, a2, a3);
+    if (n == 0) {
+        return len;
+    }
+    if (n == len) {
+        return 0;
+    }
+    rest = len - n;
+    p = MEM_malloc(0, rest + 1);
+    memcpy(p, s + n, rest);
+    p[rest] = 0;
+    *out = p;
+    return rest;
+}
 
 int divOverText_pre(char **out, JBOX *box, char *s, int len) {
     int i;
