@@ -86,7 +86,27 @@ MesValue mes_number_alloc_uint32(MesContext *ctx, unsigned int n)
     return (MesValue)o | 2;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_number", mes_number_alloc);
+MesValue mes_number_alloc(MesContext *ctx, double d)
+{
+    MesValue v;
+    MesNum *o;
+
+    if (isnan(d))
+        return 0x1C;
+    if (isinf(d)) {
+        if (d < 0)
+            return 0x18;
+        return 0x14;
+    }
+    v = MES_INT((int)d);
+    if ((v >> 2) == d)
+        return v;
+    o = mes_gc_alloc(ctx, 2);
+    if (o == NULL)
+        return 0;
+    o->d = d;
+    return (MesValue)o | 2;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -213,9 +233,59 @@ MesValue mes_number_mod(MesContext *ctx, MesValue a, MesValue b)
     return mes_number_alloc(ctx, mes_number_fmod(mes_num(a), mes_num(b)));
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_number", mes_number_equal);
+int mes_number_equal(MesValue a, MesValue b, int strict)
+{
+    int r;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_number", mes_number_less);
+    if (a == b)
+        return 1;
+    if (a == 0x10) {
+        if (strict)
+            return 0;
+        return b == 1;
+    }
+    if (b == 0x10) {
+        if (strict)
+            return 0;
+        return a == 1;
+    }
+    if ((a == 0x14) | (a == 0x18) || (b == 0x14) | (b == 0x18))
+        return 0;
+    strict = a & 3;
+    if (strict == 1 && (b & 3) == strict)
+        return ((b ^ a) >> 2) == 0;
+    r = 0;
+    if (mes_num(a) == mes_num(b))
+        r = 1;
+    return r;
+}
+
+int mes_number_less(MesValue a, MesValue b, int strict)
+{
+    int r;
+
+    if (a == b)
+        return 0;
+    if ((a == 0x10) & (b == 1))
+        return strict != 0;
+    if ((a == 1) & (b == 0x10))
+        return 0;
+    if (a == 0x14)
+        return 0;
+    if (b == 0x14)
+        return 1;
+    if (b == 0x18)
+        return 0;
+    if (a == 0x18)
+        return 1;
+    strict = a & 3;
+    if (strict == 1 && (b & 3) == strict)
+        return (a >> 2) < (b >> 2);
+    r = 0;
+    if (mes_num(a) < mes_num(b))
+        r = 1;
+    return r;
+}
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/mes_number", D_0013B760);
 
