@@ -688,30 +688,25 @@ libgcc/libsupc++ DWARF names `gcc-3.3.6/` paths.
   only with it; `ctrlTrgProc`'s block layout), the middleware (i3d*, sgx*,
   bin_common, libwave, libsas) `-O2`, the SDK libraries as their Makefiles
   say (`-O4`, gim_picture `-O2 -std=gnu9x`).  None of these depends on the
-  cc1: 1.6.1 and 1.8.4 give the same code.  The game code is plain
-  `-Os`; the `-fno-strength-reduce` once in its units' `cflags` was a
-  stand-in for unrecovered source.  Over all 531 matched functions of the
-  units that had it, the flag changes only 7 (`ScriptEnumOperand`,
+  cc1: 1.6.1 and 1.8.4 give the same code.  The game code is
+  `-Os -fno-strength-reduce` (a game Makefile flag, not a compiler change).
+  Evidence: two original loops that run exactly once survive
+  (`ctrlFlushCtrlDataAll`: `addiu s0,1; beqz s0`; `saveDataInit`: `blez`).
+  With strength reduction on, gcc 3.3 deletes a loop whose iteration count
+  is 1 (`unroll_loop`, called from `strength_reduce`, n_iterations == 1);
+  `for (i = 0; i < 1; i++) r |= f(i);` keeps exactly the original's loop
+  only with `-fno-strength-reduce`.  Seven more functions (`ScriptEnumOperand`,
   `_SortCardListGet`, `_CardListDel`, `_ShopCursorInitSet`,
-  `databaseAssortNameRefresh`, `salbumCalcKinds`, `ctrlFlushCtrlDataAll`;
-  no function needs strength reduction on), and those 7 are m2c-style
-  drafts (flat index arithmetic, `int` globals for struct pointers).  The
-  game code has no DWARF, so their types were guesses.  With source shapes
-  that keep loop.c from reducing the address giv, plain `-Os` reproduces them:
-  `databaseAssortNameRefresh` as a loop over a typed global struct array
-  (`AssortDB *l_patAssortDB`, reloaded after each call) matches exactly;
-  `ScriptEnumOperand` matches when the element address goes through a
-  user variable updated in place (`q = n * 16; q += (int)p;`), and an
-  inline accessor that does `p += n; return p;` gets the same loop (one
-  `addu` operand order off); `_SortCardListGet` written with the counter
-  incremented on each mismatch path (`biv_count` 2, so the reduced giv's
-  extra adds cost more than it saves) has the original's instructions
-  with two registers swapped.  In loop.c a giv whose destination is a
-  user variable that is set more than once is not replaceable, and its
-  benefit loses the copy cost; each extra biv increment costs one more
-  add.  Either one makes the giv "not worth while" at these loop sizes.
+  `databaseAssortNameRefresh`, `salbumCalcKinds`) recompute `base + i*size`
+  each iteration; with the flag their natural loops match, while plain
+  `-Os` needs contrived shapes (an address in a user variable updated in
+  place, a dead copy in an accessor, duplicated counter increments, gotos),
+  which were tried and do match, but two `goto` loops plus five odd
+  accessors are a less likely source than one flag.  Over the 531 matched
+  functions of these units no function needs strength reduction on.
   Pristine gcc-3.3.6's `toplev.c` sets `flag_strength_reduce` for every
-  `optimize >= 2`, `-Os` included, and the psp patches don't touch it.
+  `optimize >= 2`, `-Os` included, and the psp patches don't touch it, so
+  the flag is the game's own.
 - Everything else that differs is source: SDK 6.6.0 vs the module's SDK
   (struct layouts in libgu and gim_picture, `sceGumMultQuaternion`
   missing), Sony's newer newlib (`_REENT` is `__getreent()`, i.e.
@@ -745,8 +740,8 @@ libgcc/libsupc++ DWARF names `gcc-3.3.6/` paths.
   and aggregates in one `.rodata` in emission order (ys_fx_fade_cif:
   `"src/ys/ys_object.h"`, two `1.0f`, then the vtable); with this repo's
   link order that needs `-fno-merge-constants` per unit, as for 1.8.4's
-  mixed units.  All the C++ is `-Os -fno-exceptions` like the C game code
-  (`-fno-strength-reduce` in their cflags is pending removal, see above).
+  mixed units.  All the C++ is `-Os -fno-strength-reduce -fno-exceptions`
+  like the C game code.
 - Rechecked with much more C (libgu at `-O3`, the game's libxu, 208
   functions of the stripped SCERT network library at `-O2`): all 179 C
   units of rs4_main still compile to the same assembly with `cc1-184ins`
@@ -773,7 +768,7 @@ libgcc/libsupc++ DWARF names `gcc-3.3.6/` paths.
   a call (`addu a2,v0` before the `%lo` of the format) only matches with
   that prototype.  The m2c guesses (fixed arity, int) don't match.  This
   is source, not compiler.  libxu is built with the game's
-  `-Os`.
+  `-Os -fno-strength-reduce`.
 
 ## Solved: libgu two-command register tie (stale `REG_FREQ`)
 
