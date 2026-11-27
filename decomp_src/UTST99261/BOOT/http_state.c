@@ -2,6 +2,14 @@
 #include "common.h"
 #include "http_os.h"
 #include "m2c_macros.h"
+typedef struct HtHdr {
+    int f0;
+    int f4;
+    char *name;                       /* 0x8 */
+    char *value;                      /* 0xC */
+} HtHdr;
+void *UTL_peekqueue(void *q, void *prev);
+int strcasecmp(const char *a, const char *b);
 void *srchThreadTbl(int id);
 typedef struct DumyArg {
     void (*func)(void *);
@@ -13,9 +21,39 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/http_state", http_state);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/http_state", htlib_setheaderkey);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/http_state", htlib_getheadervalue);
+char *htlib_getheadervalue(void *q, const char *name, int idx)
+{
+    int n = 0;
+    HtHdr *h;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/http_state", htlib_strnmcat);
+    for (h = UTL_peekqueue(q, NULL); h != NULL; h = UTL_peekqueue(q, h))
+        if (strcasecmp(h->name, name) == 0) {
+            if (n >= idx)
+                return h->value;
+            n++;
+        }
+    return NULL;
+}
+
+char *htlib_strnmcat(char *dst, int n, ...)
+{
+    __builtin_va_list ap;
+    char *d;
+    int i, j, len;
+    char *s;
+
+    __builtin_stdarg_start(ap, n);
+    d = dst;
+    for (i = 0; i < n; i++) {
+        len = __builtin_va_arg(ap, int);
+        s = __builtin_va_arg(ap, char *);
+        if (s != NULL)
+            for (j = 0; j < len && s[j] != 0; j++)
+                *d++ = s[j];
+    }
+    *d = 0;
+    return dst;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/http_state", htlib_getstrheadervalue);
 
@@ -36,7 +74,22 @@ void OS_thread_exit(void *ret)
     sceKernelExitThread(0);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/http_state", OS_thread_join);
+int OS_thread_join(int th, void **retp)
+{
+    OSThread *t = (OSThread *)(th * 2);
+
+    if (sceKernelWaitSema(t->sema, 1, NULL) < 0)
+        return 6;
+    sceKernelTerminateThread(t->f0);
+    if (sceKernelDeleteThread(t->f0) < 0)
+        return 6;
+    sceKernelDeleteSema(t->sema);
+    if (retp != NULL)
+        *retp = t->retval;
+    delThreadTbl(t);
+    MEM_free(0, t);
+    return 0;
+}
 
 int OS_thread_self(void)
 {
