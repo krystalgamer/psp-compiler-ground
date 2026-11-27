@@ -1,6 +1,21 @@
 /* cflags: -O1 */
 #include "common.h"
 #include "m2c_macros.h"
+typedef struct GcCtxNode {
+    struct GcCtxNode *next;           /* 0x0 */
+    int f4;                           /* 0x4 */
+    void *list;                       /* 0x8 */
+    int fC;                           /* 0xC */
+    int f10;                          /* 0x10 */
+    int f14;                          /* 0x14 */
+    int *sp;                          /* 0x18 */
+    int size;                         /* 0x1C */
+    int stack[1];                     /* 0x20 */
+} GcCtxNode;
+extern GcCtxNode *mes_context_head;
+void mes_context_mark(void);
+void mes_context_gc(void);
+void mes_list_mark(void *l);
 typedef struct GcMethod {
     int f0;
     int kind;
@@ -80,7 +95,58 @@ void mes_gc_register(GcMethod *m, int objsize, int perpage, int threshold)
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_gc", mes_gc_mark);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_gc", mes_gc_gc);
+void mes_gc_gc(void)
+{
+    GcCtxNode *c;
+    int *p;
+    int i;
+    GcTable *t;
+    GcPage *pg;
+    int *o;
+    int j;
+    void (*fr)(void *);
+    int h;
+
+    mes_context_mark();
+    for (c = mes_context_head; c != NULL; c = c->next) {
+        mes_list_mark(c->list);
+        mes_gc_mark(c->fC);
+        mes_gc_mark(c->f10);
+        mes_gc_mark(c->f14);
+        for (p = c->sp; p < &c->stack[c->size]; p++)
+            mes_gc_mark(*p);
+    }
+    mes_context_gc();
+    for (i = 0; i < 13; i++) {
+        t = &mes_gc_table[i];
+        if (t->method != NULL) {
+            t->nalloc = 0;
+            t->nfree = 0;
+            t->freelist = NULL;
+            fr = t->method->free;
+            for (pg = t->pages; pg != NULL; pg = pg->next) {
+                o = (int *)(pg + 1);
+                for (j = 0; j < t->perpage; j++) {
+                    h = *o;
+                    if (h & 1) {
+                        *o = h & ~3;
+                        t->nalloc++;
+                    } else {
+                        t->nfree++;
+                        if (!(h & 2)) {
+                            if (fr != NULL)
+                                fr(o);
+                        }
+                        *o = (int)t->freelist | 2;
+                        t->freelist = o;
+                    }
+                    o = (int *)((char *)o + t->objsize);
+                }
+            }
+            t->threshold = t->nalloc * 2;
+        }
+    }
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_gc", mes_gc_alloc);
 
