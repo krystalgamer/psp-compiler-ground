@@ -329,9 +329,126 @@ void sceGimPictureSetPalettePixels( SceGimPicture *picture, int level, int frame
 	offsets[ n_levels * frame + level ] = pixels ;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gim_picture", sceGimPictureReallocImage);
+extern const signed char D_00083760[] ;
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gim_picture", sceGimPictureReallocPalette);
+extern const signed char D_00083768[] ;
+_Bool sceGimPictureReallocImage( SceGimPicture *picture, int format, int w, int h, int level, int frame, void *pixels )
+{
+	if ( picture == 0 ) return 0 ;
+	if ( w <= 0 || h <= 0 ) return 0 ;
+	if ( w > 512 || h > 512 ) return 0 ;
+	if ( level <= 0 || level > 8 ) return 0 ;
+	if ( frame <= 0 ) return 0 ;
+
+	int size1 = sizeof( SceGimImageHeader ) + level * frame * 4 ;
+	size1 = ( size1 + 15 ) & ~15 ;
+
+	int bpp = D_00083760[ 7 & format ] ;
+	int level_sizes[ 8 ] ;
+	int size2 = 0 ;
+	int w2 = w ;
+	int h2 = h ;
+	{ int i ; for ( i = 0 ; i < level ; i ++ ) {
+		int level_size = ( ( ( bpp * w2 + 7 ) / 8 + 15 ) & ~15 ) * h2 ;
+		level_sizes[ i ] = level_size ;
+		size2 += level_size ;
+		w2 = ( w2 + 1 ) / 2 ;
+		h2 = ( h2 + 1 ) / 2 ;
+	} }
+	size2 *= frame ;
+	if ( pixels != 0 ) size2 = 0 ;
+
+	sceGimPictureFreeMemory2( picture->m_image ) ;
+	picture->m_image = (SceGimImageHeader *)sceGimPictureAllocMemory2( size1 + size2 ) ;
+	if ( picture->m_image == 0 ) {
+		return 0 ;
+	}
+
+	SceGimImageHeader *img = picture->m_image ;
+	img->header_size = sizeof( SceGimImageHeader ) ;
+	img->reference = 1 ;
+	img->format = format ;
+	img->order = 0 ;
+	img->width = w ;
+	img->height = h ;
+	img->bpp = bpp ;
+	img->pitch_align = 16 ;
+	img->height_align = 1 ;
+	img->dim_count = 2 ;
+	img->reserved = 0 ;
+	img->reserved2 = 0 ;
+	img->offsets = sizeof( SceGimImageHeader ) ;
+	img->images = size1 ;
+	img->total = size1 + size2 ;
+	img->plane_mask = 0 ;
+	img->level_type = 1 ;
+	img->level_count = level ;
+	img->frame_type = 3 ;
+	img->frame_count = frame ;
+
+	char *offset = ( pixels != 0 ) ? (char *)pixels : (char *)img + size1 ;
+	int *offsets = (int *)( img + 1 ) ;
+	int count = level * frame ;
+	{ int j ; for ( j = 0 ; j < count ; j ++ ) {
+		*( offsets ++ ) = (int)offset ;
+		offset += level_sizes[ j % level ] ;
+	} }
+	reconfigure_picture( picture ) ;
+	return 1 ;
+}
+
+_Bool sceGimPictureReallocPalette( SceGimPicture *picture, int format, int w, int level, int frame, void *pixels )
+{
+	if ( picture == 0 ) return 0 ;
+	if ( w <= 0 || w > 256 ) return 0 ;
+	if ( level <= 0 || level > 8 ) return 0 ;
+	if ( frame <= 0 ) return 0 ;
+
+	int size1 = sizeof( SceGimPaletteHeader ) + level * frame * 4 ;
+	size1 = ( size1 + 15 ) / 16 * 16 ;
+
+	int bpp = D_00083768[ 7 & format ] ;
+	int level_size = ( ( bpp * w + 7 ) / 8 + 15 ) & ~15 ;
+	int size2 = ( pixels != 0 ) ? 0 : level_size * frame ;
+
+	sceGimPictureFreeMemory2( picture->m_palette ) ;
+	picture->m_palette = (SceGimPaletteHeader *)sceGimPictureAllocMemory2( size1 + size2 ) ;
+	if ( picture->m_palette == 0 ) {
+		return 0 ;
+	}
+
+	SceGimPaletteHeader *pal = picture->m_palette ;
+	pal->header_size = sizeof( SceGimPaletteHeader ) ;
+	pal->reference = 1 ;
+	pal->format = format ;
+	pal->order = 0 ;
+	pal->width = w ;
+	pal->height = 1 ;
+	pal->bpp = bpp ;
+	pal->pitch_align = 16 ;
+	pal->height_align = 1 ;
+	pal->dim_count = 2 ;
+	pal->reserved = 0 ;
+	pal->reserved2 = 0 ;
+	pal->offsets = sizeof( SceGimPaletteHeader ) ;
+	pal->images = size1 ;
+	pal->total = size1 + size2 ;
+	pal->plane_mask = 0 ;
+	pal->level_type = 2 ;
+	pal->level_count = level ;
+	pal->frame_type = 3 ;
+	pal->frame_count = frame ;
+
+	char *offset = ( pixels != 0 ) ? (char *)pixels : (char *)pal + size1 ;
+	int *offsets = (int *)( pal + 1 ) ;
+	int count = level * frame ;
+	{ int i ; for ( i = 0 ; i < count ; i ++ ) {
+		*( offsets ++ ) = (int)offset ;
+		offset += level_size ;
+	} }
+	reconfigure_picture( picture ) ;
+	return 1 ;
+}
 
 _Bool sceGimPictureHasAnimation( SceGimPicture *picture )
 {
