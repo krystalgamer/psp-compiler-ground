@@ -125,7 +125,44 @@ void title_main_control(void)
 	}
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_title_menu", title_main_start);
+void title_start(void);
+int title_start_check(void);
+void select_start(void);
+int select_start_check(void);
+void select_set(int no);
+void title_main_start(void)
+{
+	switch (TMS.f4) {
+	case 0:
+		TMS.f20 -= 16;
+		if (TMS.f20 < 0)
+			TMS.f20 = 0;
+		if (TMS.f20 == 0)
+			TMS.f4++;
+		break;
+	case 1:
+		title_start();
+		TMS.f4++;
+	case 2:
+		if (title_start_check())
+			TMS.f4 = 10;
+		break;
+	case 10:
+		select_start();
+		TMS.f4++;
+	case 11:
+		if (select_start_check())
+			TMS.f4 = 200;
+		break;
+	default:
+		TMS.f4 = 0;
+		TMS.f8 = 0;
+		TMS.f14 = 0;
+		TMS.f0 = 1;
+		select_set(0);
+		break;
+	}
+}
 
 int pad_rp(void);
 int pad_sw(void);
