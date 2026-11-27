@@ -139,7 +139,67 @@ int clear_minfo(int id)
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_matching_handler", child_handler);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_matching_handler", parent_handler);
+void sceNetEtherNtostr(const struct SceNetEtherAddr *addr, char *str);
+int matching_parent_select(struct SceNetEtherAddr *addr);
+int sceNetAdhocMatchingCancelTarget(int id, const struct SceNetEtherAddr *mac);
+int sceNetAdhocMatchingSetHelloOpt(int id, int optlen, const void *opt);
+void parent_handler(int id, int ev, struct SceNetEtherAddr *peer, int optlen, void *opt)
+{
+	int ret, i;
+	char etherstr[18];
+
+	sceNetEtherNtostr(peer, etherstr);
+
+	if (_mrinfo.state >= MATCHING_ROOM_PARENT_START_INFORM && _mrinfo.state <= MATCHING_ROOM_PARENT_INFORM_FLUSH) {
+		goto bad;
+	}
+
+	sceKernelWaitSemaCB(minfo_sid, 1, NULL);
+
+	i = get_minfo_id(peer);
+	if (i < 0) {
+		goto bad;
+	}
+
+	switch (ev) {
+	case 2:
+		if (_mrinfo.state != MATCHING_ROOM_PARENT_WAIT) {
+			sceNetAdhocMatchingCancelTarget(_mrinfo.ctx_id, &minfo[i].addr);
+			break;
+		}
+		memcpy(&minfo[i].addr, peer, sizeof(struct SceNetEtherAddr));
+		matching_parent_select(peer);
+		minfo[i].status = 3;
+		break;
+	case 3:
+	case 5:
+		if (minfo[i].status == 3) {
+			clear_minfo(i);
+			break;
+		}
+		/* fallthrough */
+	case 8:
+	case 10:
+		if (minfo[i].status == 6) {
+			break;
+		}
+		if (minfo[i].status == 5) {
+			_mrinfo.hello_opt.cur_player_num--;
+			sceNetAdhocMatchingSetHelloOpt(_mrinfo.ctx_id, sizeof(struct p2p_hello_opt), &_mrinfo.hello_opt);
+		}
+		clear_minfo(i);
+		break;
+	case 7:
+		_mrinfo.agreed_hello_opt = &_mrinfo.hello_opt;
+		minfo[i].status = 5;
+		_mrinfo.hello_opt.cur_player_num++;
+		sceNetAdhocMatchingSetHelloOpt(_mrinfo.ctx_id, sizeof(struct p2p_hello_opt), &_mrinfo.hello_opt);
+		break;
+	}
+
+bad:
+	sceKernelSignalSema(minfo_sid, 1);
+}
 
 INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_matching_handler", D_0007B014);
 
