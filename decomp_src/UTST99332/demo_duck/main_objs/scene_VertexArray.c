@@ -2,8 +2,16 @@
 /* cflags: -O3 -fno-exceptions */
 #undef __EXCEPTIONS
 #include "cxx/defer_asm.h"
+#define DEMO_STATICS_MATH
+#define DEMO_STATICS_IOSTREAM
+#define DEMO_STATICS_SGL
 #define DEMO_TEMPLATE_DEFS
 #include "../main.hpp"
+
+/* the module's .ctors/.dtors refer to the static constructor/destructor; cc1plus keys them to the
+   first public symbol, the deferred-asm wrapper of the (still asm) first function */
+__asm__(".globl _GLOBAL__I__ZN5scene11VertexArrayC2Ev\n_GLOBAL__I__ZN5scene11VertexArrayC2Ev = _GLOBAL__I__ZN5scene11VertexArrayC2Ev__asm");
+__asm__(".globl _GLOBAL__D__ZN5scene11VertexArrayC2Ev\n_GLOBAL__D__ZN5scene11VertexArrayC2Ev = _GLOBAL__D__ZN5scene11VertexArrayC2Ev__asm");
 
 extern "C" const char D_0016D3DC[], D_0016D3E8[], D_0016D3EC[], D_0016D400[];
 extern const char VertexArray_use_name[] __asm__("_ZZN5scene11VertexArray3useENS_4PassEE19__PRETTY_FUNCTION__");
@@ -20,12 +28,9 @@ SCENE_LINKONCE_ORDER(
     SCENE_LINKONCE(_ZSt26__uninitialized_fill_n_auxIN9__gnu_cxx17__normal_iteratorIPN14vertex_formats16T2F_C4UB_N3F_V3FESt6vectorIS3_SaIS3_EEEEjS3_ET_S9_T0_RKT1_12__false_type)
 );
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_VertexArray", _Z41__static_initialization_and_destruction_0ii_9E944);
-
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_VertexArray", _ZN5scene11VertexArrayC2Ev);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_VertexArray", _ZN5scene11VertexArrayC1Ev);
-
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_VertexArray", _ZN5scene11VertexArray11extractFromERKNS_8MeshDataE);
 
@@ -41,22 +46,6 @@ void scene::VertexArray::use(Pass p)
 {
     _v_ptr = p == 0 ? &_v38 : &_v44;
     SGL_ASSERT(!_v_ptr->empty(), D_0016D3DC, D_0016D3EC, D_0016D400, VertexArray_use_name, 0x153, D_0016D3E8);
-}
-
-extern "C" {
-void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_9E944");
-void _GLOBAL__I__ZN5scene11VertexArrayC2Ev(void);
-void _GLOBAL__D__ZN5scene11VertexArrayC2Ev(void);
-}
-
-void _GLOBAL__I__ZN5scene11VertexArrayC2Ev(void)
-{
-    static_init(1, 0xFFFF);
-}
-
-void _GLOBAL__D__ZN5scene11VertexArrayC2Ev(void)
-{
-    static_init(0, 0xFFFF);
 }
 
 /* the vector's instances that the (asm) methods above use */

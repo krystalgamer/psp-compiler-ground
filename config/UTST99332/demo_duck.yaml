@@ -454,6 +454,8 @@ segments:
       - [0x169CF4, rodata, asm/rodata_169C74]
       - [0x169F3C, .rodata, main_objs/scene_GraphParser]
       - [0x169F58, rodata, asm/rodata_169ED8]
+      - [0x16AFF8, .rodata, main_objs/scene_Graph_3]
+      - [0x16B014, rodata, asm/rodata_16AF94]
       - [0x16B52C, .rodata, main_objs/scene_Graph_4]
       - [0x16B610, .rodata, main_objs/scene_Graph_5]
       - [0x16B62C, .rodata, main_objs/scene_Node]
@@ -474,6 +476,8 @@ segments:
       - [0x16CC88, rodata, asm/rodata_16CC08]
       - [0x16CCE8, .rodata, main_objs/scene_Setup]
       - [0x16CD0C, rodata, asm/rodata_16CC8C]
+      - [0x16CD68, .rodata, main_objs/scene_Shape]
+      - [0x16CD84, rodata, asm/rodata_16CD04]
       - [0x16CE78, .rodata, main_objs/scene_StaticTransform]
       - [0x16CED4, rodata, asm/rodata_16CE54]
       - [0x16CF38, .rodata, main_objs/scene_Switch]
@@ -484,6 +488,8 @@ segments:
       - [0x16D0F0, rodata, asm/rodata_16D070]
       - [0x16D2B0, .rodata, main_objs/scene_TraversalVarStack]
       - [0x16D2CC, rodata, asm/rodata_16D24C]
+      - [0x16D3A0, .rodata, main_objs/scene_VertexArray]
+      - [0x16D3BC, rodata, asm/rodata_16D33C]
       - [0x16D660, .rodata, main_objs/VertexColorEnv]
       - [0x16D684, rodata, asm/rodata_16D604]
       - [0x16DBD4, .rodata, main_objs/BVH]
@@ -529,6 +535,8 @@ segments:
       - [0x172D74, rodata, asm/rodata_172CF4]
       - [0x173520, .rodata, main_objs/sh_PolarFunction]
       - [0x17353C, rodata, asm/rodata_1734BC]
+      - [0x173560, .rodata, main_objs/sgl_RT]
+      - [0x17357C, rodata, asm/rodata_1734FC]
       - [0x17389C, .rodata, main_objs/sh_sh_rot_Rmn]
       - [0x1738B8, rodata, asm/rodata_173838]
       - [0x173AE8, .rodata, main_objs/math_factorial]
@@ -695,6 +703,8 @@ segments:
       - { start: 0x18CFCC, type: .bss, vram: 0x18F19C, name: main_objs/scene_Graph_2 }
       - { start: 0x18CFCC, type: .bss, vram: 0x18F2A0, name: main_objs/scene_GraphParser }
       - { start: 0x18CFCC, type: bss, vram: 0x18F3A4, name: bss_18F3A4 }
+      - { start: 0x18CFCC, type: .bss, vram: 0x18F3A4, name: main_objs/scene_Graph_3 }
+      - { start: 0x18CFCC, type: bss, vram: 0x18F4A8, name: bss_18F4A8 }
       - { start: 0x18CFCC, type: .bss, vram: 0x18F4A8, name: main_objs/scene_Graph_4 }
       - { start: 0x18CFCC, type: .bss, vram: 0x18F5AC, name: main_objs/scene_Graph_5 }
       - { start: 0x18CFCC, type: .bss, vram: 0x18F6B0, name: main_objs/scene_Node }
@@ -707,6 +717,8 @@ segments:
       - { start: 0x18CFCC, type: .bss, vram: 0x18FC58, name: main_objs/scene_Object }
       - { start: 0x18CFCC, type: .bss, vram: 0x18FCDC, name: main_objs/scene_Setup }
       - { start: 0x18CFCC, type: bss, vram: 0x18FD60, name: bss_18FD60 }
+      - { start: 0x18CFCC, type: .bss, vram: 0x18FD60, name: main_objs/scene_Shape }
+      - { start: 0x18CFCC, type: bss, vram: 0x18FDE4, name: bss_18FDE4 }
       - { start: 0x18CFCC, type: .bss, vram: 0x18FDE4, name: main_objs/scene_StaticTransform }
       - { start: 0x18CFCC, type: .bss, vram: 0x18FE68, name: main_objs/scene_Switch }
       - { start: 0x18CFCC, type: .bss, vram: 0x18FEEC, name: main_objs/scene_Texture }
@@ -715,6 +727,8 @@ segments:
       - { start: 0x18CFCC, type: bss, vram: 0x190078, name: bss_190078 }
       - { start: 0x18CFCC, type: .bss, vram: 0x190078, name: main_objs/scene_TraversalVarStack }
       - { start: 0x18CFCC, type: bss, vram: 0x1900FC, name: bss_1900FC }
+      - { start: 0x18CFCC, type: .bss, vram: 0x1900FC, name: main_objs/scene_VertexArray }
+      - { start: 0x18CFCC, type: bss, vram: 0x190200, name: bss_190200 }
       - { start: 0x18CFCC, type: .bss, vram: 0x190200, name: main_objs/VertexColorEnv }
       - { start: 0x18CFCC, type: bss, vram: 0x190284, name: bss_190284 }
       - { start: 0x18CFCC, type: .bss, vram: 0x190314, name: main_objs/BVH }
@@ -741,6 +755,8 @@ segments:
       - { start: 0x18CFCC, type: bss, vram: 0x191428, name: bss_191428 }
       - { start: 0x18CFCC, type: .bss, vram: 0x19152C, name: main_objs/sh_PolarFunction }
       - { start: 0x18CFCC, type: bss, vram: 0x1915B0, name: bss_1915B0 }
+      - { start: 0x18CFCC, type: .bss, vram: 0x1915B0, name: main_objs/sgl_RT }
+      - { start: 0x18CFCC, type: bss, vram: 0x1916B4, name: bss_1916B4 }
       - { start: 0x18CFCC, type: .bss, vram: 0x1916B4, name: main_objs/sh_sh_rot_Rmn }
       - { start: 0x18CFCC, type: bss, vram: 0x191738, name: bss_191738 }
       - { start: 0x18CFCC, type: .bss, vram: 0x19175C, name: main_objs/math_factorial }

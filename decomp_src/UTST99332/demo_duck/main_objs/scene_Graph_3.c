@@ -2,10 +2,18 @@
 /* cflags: -O3 -fno-exceptions */
 #undef __EXCEPTIONS
 #include "cxx/defer_asm.h"
+#define DEMO_STATICS_MATH
+#define DEMO_STATICS_IOSTREAM
+#define DEMO_STATICS_SGL
 #define DEMO_TEMPLATE_DEFS
 #define SCENE_GRAPH_TEMPLATE_DEFS
 #define SGL_TEMPLATE_DEFS 1
 #include "../main.hpp"
+
+/* the module's .ctors/.dtors refer to the static constructor/destructor; cc1plus keys them to the
+   first public symbol, the deferred-asm wrapper of the (still asm) first function */
+__asm__(".globl _GLOBAL__I__ZN5scene5Graph4saveEPKc\n_GLOBAL__I__ZN5scene5Graph4saveEPKc = _GLOBAL__I__ZN5scene5Graph4saveEPKc__asm");
+__asm__(".globl _GLOBAL__D__ZN5scene5Graph4saveEPKc\n_GLOBAL__D__ZN5scene5Graph4saveEPKc = _GLOBAL__D__ZN5scene5Graph4saveEPKc__asm");
 /* linkonce order: this object's .gnu.linkonce.t sections in Sony's link order */
 SCENE_LINKONCE_ORDER(
     SCENE_LINKONCE(_ZN5scene5Graph10getSublistINS_4MeshEEEvRN6common12handles_listIT_EE)
@@ -27,8 +35,6 @@ extern const char D_0016B350[], D_0016B364[], D_0016AFF4[], D_0016B368[], D_0016
 extern const char D_0016B2A8[];
 extern const char D_0016B328[];
 extern const char D_0016B33C[];
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph_3", _Z41__static_initialization_and_destruction_0ii_7FDA0);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph_3", _ZN5scene5Graph4saveEPKc);
 
@@ -127,22 +133,6 @@ template void SaveVector<sgl::Position>(std::ostream &, const std::vector<sgl::P
 template void SaveVector<sgl::Normal>(std::ostream &, const std::vector<sgl::Normal> &, unsigned int, const char *);
 template void SaveVector<sgl::TexCoord>(std::ostream &, const std::vector<sgl::TexCoord> &, unsigned int, const char *);
 template void SaveVector<sgl::Color>(std::ostream &, const std::vector<sgl::Color> &, unsigned int, const char *);
-}
-
-extern "C" {
-void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_7FDA0");
-void _GLOBAL__I__ZN5scene5Graph4saveEPKc(void);
-void _GLOBAL__D__ZN5scene5Graph4saveEPKc(void);
-}
-
-void _GLOBAL__I__ZN5scene5Graph4saveEPKc(void)
-{
-    static_init(1, 0xFFFF);
-}
-
-void _GLOBAL__D__ZN5scene5Graph4saveEPKc(void)
-{
-    static_init(0, 0xFFFF);
 }
 
 /* instances that the (asm) methods above use, referenced from a discarded function (see scene_Graph.c) */

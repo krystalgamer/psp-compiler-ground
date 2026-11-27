@@ -2,7 +2,14 @@
 /* cflags: -O3 -fno-exceptions */
 #undef __EXCEPTIONS
 #include "cxx/defer_asm.h"
+#define DEMO_STATICS_MATH
+#define DEMO_STATICS_IOSTREAM
+#define DEMO_STATICS_SGL
 #include "../main.hpp"
+
+/* the module's .ctors/.dtors refer to the static constructor/destructor */
+__asm__(".globl _GLOBAL__I__ZN3sgl2RTC2Ev");
+__asm__(".globl _GLOBAL__D__ZN3sgl2RTC2Ev");
 
 extern const char D_0017061C[];     /* "BVTRee max depth=" */
 extern const char D_00170630[];     /* "\n" */
@@ -13,12 +20,9 @@ extern const char D_001708B8[];     /* "you must call start() before using the r
 extern const char D_001708EC[];     /* "_ready" */
 extern const char trace_name[] __asm__("_ZZN3sgl2RT5traceERNS0_3RayEE19__PRETTY_FUNCTION__");
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_RT", _Z41__static_initialization_and_destruction_0ii_E75B8);
-
 sgl::RT::RT() : _mesh(false), _ready(false)
 {
 }
-
 
 void sgl::RT::start()
 {
@@ -115,22 +119,6 @@ void sgl::RT::setTestLight(math::vector_xyzw v)
 const math::vector_xyzw &sgl::RT::getTestLight() const
 {
     return _testLight;
-}
-
-extern "C" {
-void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_E75B8");
-void _GLOBAL__I__ZN3sgl2RTC2Ev(void);
-void _GLOBAL__D__ZN3sgl2RTC2Ev(void);
-}
-
-void _GLOBAL__I__ZN3sgl2RTC2Ev(void)
-{
-    static_init(1, 0xFFFF);
-}
-
-void _GLOBAL__D__ZN3sgl2RTC2Ev(void)
-{
-    static_init(0, 0xFFFF);
 }
 
 /* template instances used by the asm above (add, render, build_bv_tree): referenced from a discarded

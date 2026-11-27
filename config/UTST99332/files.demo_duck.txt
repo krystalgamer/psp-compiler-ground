@@ -572,3 +572,20 @@ rodata 0x166D28 main_objs/glutils_TrackballInterface
 rodata 0x166D44 -
 bss 0x18E534 main_objs/glutils_TrackballInterface
 bss 0x18E5F8 -
+# static initializers (header statics): float pools and .bss (s22, 2)
+rodata 0x16D320 main_objs/scene_VertexArray
+rodata 0x16D33C -
+bss 0x1900FC main_objs/scene_VertexArray
+bss 0x190200 -
+rodata 0x1734E0 main_objs/sgl_RT
+rodata 0x1734FC -
+bss 0x1915B0 main_objs/sgl_RT
+bss 0x1916B4 -
+rodata 0x16CCE8 main_objs/scene_Shape
+rodata 0x16CD04 -
+bss 0x18FD60 main_objs/scene_Shape
+bss 0x18FDE4 -
+rodata 0x16AF78 main_objs/scene_Graph_3
+rodata 0x16AF94 -
+bss 0x18F3A4 main_objs/scene_Graph_3
+bss 0x18F4A8 -

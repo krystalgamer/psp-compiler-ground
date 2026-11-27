@@ -2,6 +2,8 @@
 /* cflags: -O3 -fno-exceptions */
 #undef __EXCEPTIONS
 #include "cxx/defer_asm.h"
+#define DEMO_STATICS_MATH
+#define DEMO_STATICS_IOSTREAM
 /* BVdata::create's strings in this object */
 extern const char scene_bvdata_warn[] __asm__("D_0016CD38");         /* " *** warning " */
 extern const char scene_bvdata_notvalid[] __asm__("D_0016CD48");     /* "! valid()" */
@@ -10,14 +12,19 @@ extern const char scene_bvdata_created[] __asm__("D_0016CD6C");      /* "boundin
 extern const char scene_bvdata_create_name[] __asm__("_ZZN5scene6BVdata6createEN3sgl2BV4TypeEE19__PRETTY_FUNCTION___16CD0C");
 #define DEMO_TEMPLATE_DEFS
 #include "../main.hpp"
+
+/* the module's .ctors/.dtors refer to the static constructor/destructor; cc1plus keys them to the
+   first public symbol, the deferred-asm wrapper of the (still asm) first function */
+__asm__(".globl _GLOBAL__I__ZN5scene5ShapeC2ESsb\n_GLOBAL__I__ZN5scene5ShapeC2ESsb = _GLOBAL__I__ZN5scene5ShapeC2ESsb__asm");
+__asm__(".globl _GLOBAL__D__ZN5scene5ShapeC2ESsb\n_GLOBAL__D__ZN5scene5ShapeC2ESsb = _GLOBAL__D__ZN5scene5ShapeC2ESsb__asm");
 /* linkonce order: this object's .gnu.linkonce.t sections in Sony's link order */
 SCENE_LINKONCE_ORDER(
+    SCENE_LINKONCE(_ZNK5scene5Shape11getTypeNameEv)
+    SCENE_LINKONCE(_ZNK5scene5Shape5cloneESs)
     SCENE_LINKONCE(_ZN6common6handleIN5scene5SetupEEaSERKS3_)
 );
 
 extern const char D_0016CD04[];
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Shape", _Z41__static_initialization_and_destruction_0ii_92780);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Shape", _ZN5scene5ShapeC2ESsb);
 
@@ -103,25 +110,15 @@ void scene::Shape::flatten(math::TransformStack &ts)
     Group::flatten(ts);
 }
 
-extern "C" {
-void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_92780");
-void _GLOBAL__I__ZN5scene5ShapeC2ESsb(void);
-void _GLOBAL__D__ZN5scene5ShapeC2ESsb(void);
-}
-
-void _GLOBAL__I__ZN5scene5ShapeC2ESsb(void)
-{
-    static_init(1, 0xFFFF);
-}
-
-void _GLOBAL__D__ZN5scene5ShapeC2ESsb(void)
-{
-    static_init(0, 0xFFFF);
-}
-
-const char *scene::Shape::getTypeName() const
+/* inline in the class (weak copies emitted with the vtable, in the object's tail) */
+SGL_LINKONCE_BEGIN
+inline const char *scene::Shape::getTypeName() const
 {
     return D_0016CD04;
 }
+SGL_LINKONCE_END
 
+/* inline in the class too (weak copies in the tail), still asm */
+#undef INCLUDE_ASM
+#define INCLUDE_ASM INCLUDE_ASM_LINKONCE
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Shape", _ZNK5scene5Shape5cloneESs);
