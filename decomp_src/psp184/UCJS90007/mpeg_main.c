@@ -746,7 +746,76 @@ static SceInt32 setPlayerEndCondition(t_conditionCtrl *pCtrl)
 	return 0;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/mpeg_main", playMovie);
+static SceInt32 playMovie(SceMpeg *pMpeg, SceMpegRingbuffer *pRB, t_mpegStreamData *pStreamData, t_ringBuffer *pRingCtrl, t_avSyncControl *pAvSync, t_conditionCtrl *pCtrl)
+{
+	SceInt32 audio_init_flag;
+	SceInt32 ret;
+	SceInt32 startFlag;
+
+	audio_init_flag = 1;
+	startFlag = -1;
+
+	while (read_isFull(pRingCtrl) != 1) {
+		ret = checkPlayerErrCondition(pCtrl);
+		if (ret != 0)
+			goto error;
+		control_waitDecode(pCtrl);
+		sceKernelDelayThreadCB(1000);
+	}
+
+	while (1) {
+		if (startFlag != 0) {
+			startFlag = startCheck(pAvSync, pRingCtrl, pCtrl);
+		} else {
+			if (playInfo.playMode == 0xA) {
+				ret = sceMpegAvcDecodeFlush(pMpeg);
+				if (ret < 0)
+					goto error;
+				setPlayerEndCondition(pCtrl);
+				return 1;
+			}
+		}
+
+		if (read_isEnd(pRingCtrl) == 1 && sceMpegRingbufferAvailableSize(pRB) == 0x3C0)
+			break;
+
+		ret = checkPlayerErrCondition(pCtrl);
+		if (ret != 0)
+			goto error;
+
+		if (audioFlag == 1) {
+			ret = decode_audioDecode(pMpeg, pStreamData, pAvSync, audio_init_flag);
+			if (ret >= 0) {
+				audio_init_flag = 0;
+			} else if (ret == (SceInt32)0x80618001) {
+			} else {
+				goto error;
+			}
+		}
+
+		ret = decode_videoDecode(pMpeg, pStreamData, pAvSync);
+		if (ret == (SceInt32)0x80618001) {
+		} else if (ret < 0) {
+			goto error;
+		}
+
+		control_waitDecode(pCtrl);
+		sceKernelCheckCallback();
+	}
+
+	control_setCondition(pCtrl, 8);
+
+	do {
+		ret = decode_videoDecodeEnd(pMpeg, pAvSync);
+		if (ret < 0)
+			goto error;
+		control_waitDecode(pCtrl);
+	} while (ret != 0);
+
+error:
+	setPlayerEndCondition(pCtrl);
+	return ret;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/UCJS90007/nonmatchings/mpeg_main", readHeader);
 
