@@ -2,6 +2,15 @@
 #include "common.h"
 #include "mes_js.h"
 #include "m2c_macros.h"
+typedef struct StrChunk {
+    struct StrChunk *next;
+    unsigned short data[100];         /* 0x4 */
+} StrChunk;
+typedef struct StrUBuf {
+    StrChunk *head;
+    char pad4[0x10];
+    int len;                          /* 0x14 */
+} StrUBuf;
 MesValue mes_number_alloc_int32(MesContext *ctx, int n);
 MesValue mes_number_alloc_uint32(MesContext *ctx, unsigned int n);
 unsigned int mes_eval_to_uint32(MesContext *ctx, MesValue v);
@@ -66,7 +75,40 @@ MesValue mes_string_new(MesContext *ctx, const void *str, int len)
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_string", mes_string_new2);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_string", mes_string_new3);
+MesValue mes_string_new3(MesContext *ctx, void *b)
+{
+    StrUBuf *buf = b;
+    MesStr *s;
+    int n, k;
+    UCSChar *p;
+    StrChunk *c;
+
+    if (buf == NULL)
+        return 0;
+    if (buf->len == 0 && mes_empty != 0)
+        return mes_empty;
+    s = mes_gc_alloc(ctx, 1);
+    if (s == NULL)
+        return 0;
+    n = buf->len;
+    s->len = n;
+    if (n > 0) {
+        p = MEM_malloc(0, n * 2);
+        s->str = p;
+        if (p == NULL)
+            return 0;
+        for (c = buf->head; n > 0; c = c->next) {
+            k = n;
+            if (k > 100)
+                k = 100;
+            mes_memory_copy(c->data, p, k * 2);
+            p += k;
+            n -= k;
+        }
+    } else
+        s->str = NULL;
+    return (MesValue)s | 3;
+}
 
 int mes_string_compare(MesStr *a, MesStr *b)
 {
@@ -267,7 +309,43 @@ MesValue mes_string_slice(MesContext *ctx, MesValue a, MesValue b)
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_string", mes_string_split);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_string", mes_string_substring);
+MesValue mes_string_substring(MesContext *ctx, MesValue a, MesValue b)
+{
+    MesValue s = mes_eval_to_string(ctx, (MesValue)ctx->frame->thisobj);
+    int len;
+    UCSChar *str;
+    int start, end, n;
+
+    *--ctx->sp = s;
+    len = ((MesStr *)(s & ~3))->len;
+    str = ((MesStr *)(s & ~3))->str;
+    start = len;
+    if (a != 0x14) {
+        n = mes_eval_to_int32(ctx, a);
+        if (n < 0)
+            start = 0;
+        else
+            start = len < n ? len : n;
+    }
+    end = len;
+    if (b != 0) {
+        if (b != 0x14) {
+            n = mes_eval_to_int32(ctx, b);
+            if (n < 0)
+                end = 0;
+            else
+                end = len < n ? len : n;
+        }
+    }
+    if (start < end)
+        s = mes_string_new(ctx, str + start, end - start);
+    else if (end < start)
+        s = mes_string_new(ctx, str + end, start - end);
+    else
+        s = mes_empty;
+    ctx->sp++;
+    return s;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_string", mes_string_substr);
 
