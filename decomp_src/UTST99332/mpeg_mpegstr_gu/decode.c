@@ -166,7 +166,37 @@ term:
 	return ret;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/mpeg_mpegstr_gu/nonmatchings/decode", decode_videoDecode);
+SceInt32 sceMpegAvcDecodeYCbCr(SceMpeg *pMpeg, SceMpegAu *pAu, SceChar8 **pBuf, SceInt32 *iNum);
+SceInt32 decode_videoDecode(SceMpeg *pMpeg, t_mpegStreamData *pStreamData, t_avSyncControl *pAvSync)
+{
+	SceChar8 *pVideoBuf;
+	SceUInt32 pts;
+	SceInt32 rgbNum;
+	SceInt32 ret;
+	SceInt32 avcAttr;
+
+	ret = 1;
+	if (dispbuf_getCapacity(pAvSync->pDisp) == 0)
+		goto END;
+	ret = sceMpegGetAvcAu(pMpeg, pStreamData->pAvcStream, pStreamData->pAvcAu, &avcAttr);
+	if (ret != 0)
+		goto END;
+	dispbuf_getDrawbuf(pAvSync->pDisp, &pVideoBuf);
+	dispbuf[0] = pVideoBuf;
+	ret = sceMpegAvcDecodeYCbCr(pMpeg, pStreamData->pAvcAu, dispbuf, &rgbNum);
+	if (ret != 0) {
+		printf("fatal error : sceMpegAvcDecodeYCbCr() 0x%x\n", ret);
+		goto END;
+	}
+	avsync_video_setPts(pAvSync, pStreamData->pAvcAu->pts.ts);
+	if (rgbNum == 1) {
+		avsync_video_getPts(pAvSync, &pts);
+		dispbuf_setPts(pAvSync->pDisp, pts);
+		dispbuf_dataSet(pAvSync->pDisp);
+	}
+END:
+	return ret;
+}
 
 SceInt32 decode_videoDecodeEnd(SceMpeg *pMpeg, t_avSyncControl *pAvSync)
 {
