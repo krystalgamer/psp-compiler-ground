@@ -143,6 +143,7 @@ typedef struct { /* size 0x2C */
 extern SLOGLOBAL lo_global;
 unsigned int strlen(const char *s);
 
+int ucs2ToUtf8();
 void *make_layoutMsg_template(int arg0, int arg1, int arg2) {
     void *temp_v0;
     void *var_v0;
@@ -451,7 +452,106 @@ void make_msg_LP16(void *arg0) {
     M2C_FIELD(temp_v0, int *, 0x40) = (int) M2C_FIELD(arg0, int *, 0x1C);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_sndmsg", make_msg_LP17);
+void *make_msg_LP17(LOBODY *msg, int mode) {
+    int v;
+    int type;
+    unsigned short *ptr2;
+    int *d;
+    void *m;
+    int *p;
+    void *pv;
+    int n;
+    unsigned short *str;
+    int n2;
+    char *ub;
+    char *buf2;
+    int len;
+    int len2;
+    int size;
+    int *out;
+    char *q;
+
+    d = (int *)msg->unk1C;
+    ptr2 = NULL;
+    n2 = 0;
+    buf2 = NULL;
+    len2 = 0;
+    m = make_layoutMsg_template(2, msg->unk4, 0x38);
+    M2C_FIELD(m, int *, 0x34) = msg->unk10;
+    switch (mode) {
+    case 1:
+        p = MEM_malloc(0, 4);
+        *p = 5;
+        M2C_FIELD(m, int *, 0x3C) = 4;
+        M2C_FIELD(m, int **, 0x40) = p;
+        return m;
+    case 2:
+        pv = MEM_malloc(0, 0x24);
+        M2C_FIELD(m, int *, 0x28) = 0;
+        M2C_FIELD(m, int *, 0x34) = 0;
+        M2C_FIELD(m, int *, 0x38) = 0;
+        M2C_FIELD(m, int *, 0x3C) = 0x24;
+        memset(pv, 0, 0x24);
+        v = 4;
+        memcpy(pv, &v, 4);
+        M2C_FIELD(m, void **, 0x40) = pv;
+        return m;
+    default:
+        type = *d++;
+        n = *d;
+        str = (unsigned short *)(d + 1);
+        if (type == 2) {
+            d = (int *)((char *)str + (unsigned int)(n * 2 + 3) / 4 * 4);
+            n2 = *d++;
+            ptr2 = (unsigned short *)d;
+        }
+        ub = MEM_malloc(0, n * 3 + 1);
+        if (ub == NULL) {
+            MEM_free(0, m);
+            return NULL;
+        }
+        len = ucs2ToUtf8(ub, str, n);
+        ub[len] = 0;
+        if (n2 > 0) {
+            buf2 = MEM_malloc(0, n2 * 3 + 1);
+            if (buf2 == NULL) {
+                MEM_free(0, m);
+                MEM_free(0, ub);
+                return NULL;
+            }
+            len2 = ucs2ToUtf8(buf2, ptr2, n2);
+            buf2[len2] = 0;
+        }
+        size = (len + 3) / 4 * 4 + 0xC;
+        if (n2 > 0) {
+            size += len2;
+        }
+        out = MEM_malloc(0, size);
+        if (out == NULL) {
+            MEM_free(0, m);
+            MEM_free(0, ub);
+            if (buf2 != NULL) {
+                MEM_free(0, buf2);
+            }
+            return NULL;
+        }
+        out[0] = type;
+        out[1] = len;
+        q = (char *)(out + 2);
+        memcpy(q, ub, len);
+        q += (len + 3) / 4 * 4;
+        *(int *)q = len2;
+        if (n2 > 0) {
+            q += 4;
+            memcpy(q, buf2, len2);
+            MEM_free(0, buf2);
+        }
+        MEM_free(0, ub);
+        M2C_FIELD(m, int *, 0x3C) = size;
+        M2C_FIELD(m, int **, 0x40) = out;
+        return m;
+    }
+}
 
 void *make_msg_LP18(void *msg) {
     void *m;
