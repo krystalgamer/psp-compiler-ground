@@ -76,6 +76,11 @@ extern u16 CSSSTR_embossed[];
 extern u16 CSSSTR_aural[];
 extern u16 CSSSTR_page[];
 int UCS_strcasecmp(u16 *a, u16 *b);
+typedef struct CSSSEL { int x0; int x4; int x8; int xC; int x10; struct CSSSEL *next; int x18; s16 x1C; s16 flags; struct CSSSEL *prev; } CSSSEL;
+void *newCSSSelector(void);
+void freeCSSSelector(void *arg0);
+void addCSSSelector(s16 *list, s16 *sel);
+u16 *CSS_simpleSelector(void *sel, u16 *p);
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_parser", CSS_StyleSheetRuleList);
 
 u16 *CSS_unknownRule(void *a0, void *a1, u16 *p) {
@@ -250,7 +255,49 @@ u16 *CSS_styleRule(void *a0, void *a1, u16 *p) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_parser", CSS_selectorList);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_parser", CSS_selector);
+u16 *CSS_selector(s16 *list, u16 *p) {
+    CSSSEL *s;
+    CSSSEL *prev;
+    u16 c;
+    s = newCSSSelector();
+    if (s == NULL) {
+        return p;
+    }
+    while (p = CSS_simpleSelector(s, p), p = CSS_SkipBlanksAndComments(p), (c = *p) != 0 &&
+           ((c == '.' || c == ':') || (c == '*' || c == '[') || c == '#' || ((unsigned int)(c - 'A') < 26 || (unsigned int)(c - 'a') < 26) || (c == '_' || c == '-') || (c == '+' || c == '>'))) {
+        prev = s;
+        s = newCSSSelector();
+        if (s == NULL) {
+            s = prev;
+            break;
+        }
+        s->prev = prev;
+        prev->next = s;
+        if (c == '+') {
+            prev->x1C |= 4;
+            p++;
+            p = CSS_SkipBlanksAndComments(p);
+        } else if (c == '>') {
+            prev->x1C |= 2;
+            p++;
+            p = CSS_SkipBlanksAndComments(p);
+        } else {
+            prev->x1C |= 1;
+        }
+    }
+    if (c == ',' || c == '{') {
+        if (s->prev != NULL) {
+            s->prev->next = NULL;
+        }
+        addCSSSelector(list, (s16 *)s);
+        return p;
+    }
+    freeCSSSelector(s);
+    while (*p != 0 && *p != ',' && *p != '{') {
+        p++;
+    }
+    return p;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_parser", CSS_simpleSelector);
 
@@ -610,13 +657,14 @@ int CSSRule_getParentRule(short *arg0) {
 #define NULL ((void *)0)
 #endif
 
-void newCSSSelector(void) {
+void *newCSSSelector(void) {
     void *temp_v0;
 
     temp_v0 = newCSSNode(9, 0x48);
     if (temp_v0 != NULL) {
         M2C_FIELD(temp_v0, short *, 0x1C) = 0;
     }
+    return temp_v0;
 }
 
 #ifndef NULL
