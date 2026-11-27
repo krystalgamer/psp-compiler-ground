@@ -118,9 +118,15 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d", i3dMakeMdlEx);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d", i3dFreeMdl);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d", i3dImgGetWidth);
+int i3dImgGetWidth(int *img)
+{
+	return I3dPicture__Get_wPixel(((img[4] + 15) & ~15) + 16, 0);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d", i3dImgGetHeight);
+int i3dImgGetHeight(int *img)
+{
+	return I3dPicture__Get_hPixel(((img[4] + 15) & ~15) + 16, 0);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d", _i3dMotTimeAdj);
 
@@ -692,13 +698,29 @@ int i3dCameraTerm(void) {
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d", i3dCameraProc);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d", i3dCameraGetParam);
+extern unsigned char i3dTask_View;
+void i3dCameraGetParam(int a, int b)
+{
+	taskSendProc(a, &i3dTask_View, 0x10, b, 0);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d", i3dCameraSetParam);
+extern unsigned char i3dTask_View;
+void i3dCameraSetParam(int a, int b)
+{
+	taskSendProc(a, &i3dTask_View, 0x11, b, 0);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d", i3dCameraGetMatrix);
+extern unsigned char i3dTask_View;
+void i3dCameraGetMatrix(int a, int b)
+{
+	taskSendProc(a, &i3dTask_View, 0x12, b, 0);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d", i3dCameraSetMatrix);
+extern unsigned char i3dTask_View;
+void i3dCameraSetMatrix(int a, int b)
+{
+	taskSendProc(a, &i3dTask_View, 0x13, b, 0);
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d", D_000FD96C);
 

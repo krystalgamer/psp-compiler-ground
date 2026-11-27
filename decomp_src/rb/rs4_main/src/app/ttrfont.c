@@ -67,7 +67,10 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/ttrfont", ttrFontUpdate);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/ttrfont", ttrFontDraw);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/ttrfont", ttrFontClear);
+void ttrFontClear(int a, int b)
+{
+	ttrFontInitEx(a, 0, 0, b, 0, 0);
+}
 
 #ifndef NULL
 #define NULL ((void *)0)

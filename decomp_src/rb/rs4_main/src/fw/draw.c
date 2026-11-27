@@ -86,7 +86,9 @@ int drawSetTexture(void *arg0) {
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/draw", drawPrintf);
+void drawPrintf(int a, ...)
+{
+}
 
 void drawPrint(void) {
 }

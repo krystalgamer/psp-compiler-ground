@@ -81,7 +81,13 @@ void *_memAllocZero(unsigned int arg0) {
     return temp_v0;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/lib/mem", _memAllocMBL);
+void *_memAllocMBL(int a, int b, int c)
+{
+	unsigned char *p = _memAlloc(a, b, c);
+	if (p)
+		p[-0x2F] = 1;
+	return p;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)

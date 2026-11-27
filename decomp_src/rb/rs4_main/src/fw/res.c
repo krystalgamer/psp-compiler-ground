@@ -361,7 +361,12 @@ int taskHead(void)
 	return r;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", taskHeadAlive);
+int taskHeadAlive(void)
+{
+	if (pCurrent)
+		return rsvHeadAlive(*(int *)pCurrent);
+	return 0;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)

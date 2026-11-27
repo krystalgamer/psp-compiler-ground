@@ -6,15 +6,27 @@ M2C_UNK consPrintf(M2C_UNK *, M2C_UNK *);           /* extern */
 extern unsigned char DefView;
 
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/task", taskProc_Move);
+int taskProc_Move(int a, int b, int c)
+{
+	taskProc(a, 2, b, c);
+	return 0;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/task", taskProc_Free);
+int taskProc_Free(int a, int b, int c)
+{
+	taskProc(a, 1, b, c);
+	return 0;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/task", taskMove);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/task", taskProc_Sort);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/task", taskProc_Draw);
+int taskProc_Draw(int a, int b, int c)
+{
+	taskProc(a, 3, b, c);
+	return 0;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/task", taskDraw);
 
