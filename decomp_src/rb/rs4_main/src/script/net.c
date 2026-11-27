@@ -6,7 +6,27 @@ M2C_UNK ctrlSetVirtualType(M2C_UNK);                /* extern */
 M2C_UNK ctrlSuspend(M2C_UNK);                       /* extern */
 extern unsigned char D_000FF4B4;
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/script/net", Script_NetStartCB);
+extern unsigned char D_000FF4CC, D_000FF4E8, D_000FF4FC;
+void ctrlFlushVirtualDataAll(void);
+int taskProc();
+void Script_NetStartCB(int a, char *w)
+{
+	void *t, *p;
+	consPrintf(&D_000FF4B4, "Script_NetStartCB", a, w);
+	*(int *)(w + 0x40) = 1;
+	*(int *)(w + 0x44) = 1;
+	ctrlSuspend(0);
+	ctrlFlushVirtualDataAll();
+	ctrlSetVirtualType(3);
+	t = *(void **)(w + 0x10);
+	if (t != 0) {
+		p = *(void **)(w + 0x48);
+		if (!p)
+			consPrintf(&D_000FF4CC, &D_000FF4E8, 0x33, "Script_NetStartCB", &D_000FF4FC);
+		taskProc(t, p, 0, 0);
+	}
+	return;
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/script/net", D_000FF4B4);
 
