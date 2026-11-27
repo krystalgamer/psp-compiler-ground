@@ -10,6 +10,8 @@ M2C_UNK RequestEnd();                               /* extern */
 extern int LAYOUT_STOP;
 
 
+#include "parse_ps.h"
+extern int mq_js;
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/ps_l1C00", RequestEnd);
 
 #ifndef NULL
@@ -79,5 +81,77 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/ps_l1C00", ps_l1C14);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/ps_l1C00", ps_l1C18);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/ps_l1C00", ps_l1F12);
+int ps_l1F12(PsIpc *msg) {
+    PsIpc m;
+    PsMqMsg mm;
+    int attr[4];
+    int *node;
+    int *n;
+    int i;
+    int flag;
+
+    flag = 0;
+    node = HST_searchSessionIDHistoryNode(msg->x04);
+    if (node == NULL) {
+        ps_halt("ps_i2406(session ERR) failed");
+    }
+    initMPI_SIG_REQUEST_ABORTED(&m);
+    m.x10 = 1;
+    for (i = 1; i < 7; i++) {
+        HST_searchRequestFlagHistoryNode(i);
+        while ((n = HST_searchRequestFlagHistoryNode(i)) != NULL) {
+            m.x14 = 0;
+            m.x04 = HST_getSessionID(n);
+            if (m.x04 == 0) {
+                ps_halt("HST_getSessionID failed");
+            }
+            flag = 1;
+            ps_sndmsg(&m, 5);
+            n[0x3C / 4] = 8;
+        }
+        while ((n = ps_ExternalSearchRequestFlag(i, 1)) != NULL) {
+            m.x14 = 1;
+            m.x04 = HST_getSessionID(n);
+            if (m.x04 == 0) {
+                ps_halt("HST_getSessionID failed");
+            }
+            flag = 1;
+            ps_sndmsg(&m, 5);
+            n[0x3C / 4] = 8;
+        }
+        while ((n = ps_ExternalSearchRequestFlag(i, 2)) != NULL) {
+            m.x14 = 2;
+            m.x04 = HST_getSessionID(n);
+            if (m.x04 == 0) {
+                ps_halt("HST_getSessionID failed");
+            }
+            flag = 1;
+            ps_sndmsg(&m, 5);
+            n[0x3C / 4] = 8;
+        }
+    }
+    node[0x3C / 4] = 8;
+    initMPL_REQ_ABORT_PAGE(&m);
+    m.x04 = msg->x04;
+    ps_sndmsg(&m, 4);
+    for (;;) {
+        OS_mq_getattr(mq_js, attr);
+        attr[0] |= 0x4000;
+        OS_mq_setattr(mq_js, attr, 0);
+        if (OS_mq_receive(mq_js, &mm, 0x24, 0) < 0) {
+            break;
+        }
+        attr[0] &= ~0x4000;
+        OS_mq_setattr(mq_js, attr, 0);
+        if (mm.data != NULL) {
+            MEM_free(0, mm.data);
+        }
+    }
+    attr[0] &= ~0x4000;
+    OS_mq_setattr(mq_js, attr, 0);
+    if (flag == 1) {
+        return 0xC;
+    }
+    return 0xB;
+}
 
