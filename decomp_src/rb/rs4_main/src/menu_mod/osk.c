@@ -1,6 +1,9 @@
 /* cflags: -Os -fno-strength-reduce */
 #include "common.h"
 #include "m2c_macros.h"
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 void consPrintf(const char *, ...);
 M2C_UNK getOskUtilityTextResult();                  /* extern */
 extern void *l_ptCntx;
@@ -8,8 +11,13 @@ extern int sample_type_11A910;
 
 M2C_UNK gameCtrlLock();                             /* extern */
 M2C_UNK gameDisSoftReset();                         /* extern */
-M2C_UNK gameCtrlUnlock();                           /* extern */
+M2C_UNK gameCtrlUnlock();
+extern int osk_param;
+int setOskUtilityParam();
+int sceUtilityOskInitStart();
 
+int UtilityLink();
+int utility_update_osk();
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/osk", setOskUtilityPraram);
 
@@ -45,9 +53,6 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/osk", dumpOskUtilityT
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/osk", utility_update_osk);
 
-extern int osk_param;
-int setOskUtilityParam();
-int sceUtilityOskInitStart();
 void OnPush_OSK(int a) {
     int temp_v0;
 
@@ -59,10 +64,6 @@ void OnPush_OSK(int a) {
     }
 }
 
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
-
 void Lock(int arg0) {
     int *temp_v0;
 
@@ -71,10 +72,6 @@ void Lock(int arg0) {
     temp_v0 = gameGetCntx();
     M2C_FIELD(temp_v0, int *, 4) = (int) (M2C_FIELD(temp_v0, int *, 4) | (arg0 != 0));
 }
-
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
 
 void Unlock(int arg0) {
     int *temp_v0;
@@ -85,8 +82,6 @@ void Unlock(int arg0) {
     gameEnSoftReset();
 }
 
-int UtilityLink();
-int utility_update_osk();
 int OskStart(int *p)
 {
 	consPrintf("OskStart : \n");
@@ -98,10 +93,6 @@ int OskStart(int *p)
 	Unlock(p[2] & 1);
 	return 0;
 }
-
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
 
 void OskEnd(void) {
     int temp_s0;
@@ -115,26 +106,6 @@ void OskEnd(void) {
     }
 }
 
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
-
 int OskState(void) {
     return sample_type_11A910 == 1;
 }
-
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/osk", Sub_ProfileEdit);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/osk", D_001033C0);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/osk", D_001033DC);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/osk", D_001033F4);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/osk", D_00103404);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/osk", D_00103408);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/osk", D_00103420);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/osk", D_00103438);

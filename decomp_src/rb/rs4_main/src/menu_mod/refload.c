@@ -5,14 +5,9 @@ void consPrintf(const char *, ...);
 extern unsigned char D_00103564;
 extern unsigned char D_0010357C;
 
-
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/refload", D_00103564);
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/refload", D_0010357C);
-
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
 
 int refloadSetRef2CardFunc(int arg0) {
     if (arg0 >= 5) {

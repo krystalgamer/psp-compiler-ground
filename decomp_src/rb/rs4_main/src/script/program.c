@@ -1,17 +1,15 @@
 /* cflags: -Os -fno-strength-reduce */
 #include "common.h"
 #include "m2c_macros.h"
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 void consPrintf(const char *, ...);
 extern unsigned char D_000FF7F4;
 extern unsigned char D_000FF81C;
 extern unsigned char D_000FF838;
 
-
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/script/program", D_000FF7F4);
-
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
 
 int ProgramGetNum(void *arg0) {
     if (arg0 == NULL) {

@@ -8,18 +8,13 @@ extern int l_nAssortNum;
 M2C_UNK _memFree(int, M2C_UNK *, M2C_UNK);          /* extern */
 extern unsigned char D_001025E8;
 extern int l_patAssortDB;
-
+void *memset(void *s, int c, unsigned int n);
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/database", D_001025CC);
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/database", D_001025E8);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/database", databaseFameRefresh);
-
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
-void *memset(void *s, int c, unsigned int n);
 
 int databaseAssortNameRefresh(void) {
     int temp_s0;
@@ -62,10 +57,6 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/database", D_00102
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/database", D_00102748);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/database", databaseRefresh);
-
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
 
 int databaseTerm(void) {
     if (l_patAssortDB != 0) {

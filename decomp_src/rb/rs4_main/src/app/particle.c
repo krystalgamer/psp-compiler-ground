@@ -1,13 +1,22 @@
 /* cflags: -Os -fno-strength-reduce */
 #include "common.h"
 #include "m2c_macros.h"
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 M2C_UNK _memFree(void *, M2C_UNK *, M2C_UNK);       /* extern */
 
 float cusGetFloat(int, M2C_UNK, M2C_UNK *, float);      /* extern */
 extern float D_000FE260;
 
-M2C_UNK copLetMat(int, int);                        /* extern */
+M2C_UNK copLetMat(int, int);
+extern unsigned char D_000FE0C4;
 
+extern unsigned char D_000FE0C4;
+
+extern unsigned char D_000FE0C4;
+
+extern unsigned char D_000FE0C4;
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/particle", _PartCusConvEnv);
 
@@ -34,10 +43,6 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/particle", D_000FDE5C);
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/particle", D_000FDE64);
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/particle", D_000FDE6C);
-
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
 
 int _PartCusConvPart_c(void *arg0, int arg1) {
     float temp_f0;
@@ -99,7 +104,6 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/particle", D_000FE0C4);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/particle", _partInit2DBaseCntx);
 
-extern unsigned char D_000FE0C4;
 int _partFree2DBaseCntx(void *p)
 {
 	_memFree(p, &D_000FE0C4, 0x1C0);
@@ -110,7 +114,6 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/particle", D_000FE100);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/particle", _partInit3DBaseCntx);
 
-extern unsigned char D_000FE0C4;
 int _partFree3DBaseCntx(void *p)
 {
 	_memFree(p, &D_000FE0C4, 0x1FD);
@@ -134,10 +137,6 @@ int partFreeEnvCntx(void *p)
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/particle", D_000FE190);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/particle", partInitEmitCntx);
-
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
 
 int partFreeEmitCntx(void *arg0) {
     int **temp_v1;
@@ -199,7 +198,6 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/particle", partEmitAnimate
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/particle", partInitPart2DCntx);
 
-extern unsigned char D_000FE0C4;
 int partFree2DCntx(void *p)
 {
 	_memFree(p, &D_000FE0C4, 0x402);
@@ -214,7 +212,6 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/particle", partDrawPart2D)
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/particle", partInitPart3DCntx);
 
-extern unsigned char D_000FE0C4;
 int partFree3DCntx(void *p)
 {
 	_memFree(p, &D_000FE0C4, 0x533);
@@ -225,213 +222,122 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/particle", partPart3DAnima
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/particle", partDrawPart3D);
 
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
 float partEmitGetOps(void *arg0) {
     return M2C_FIELD(arg0, float *, 0x74);
 }
 
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
 float partEmitGetSpd(void *arg0) {
     return M2C_FIELD(arg0, float *, 0x78);
 }
 
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
 float partEmitGetTime(void *arg0) {
     return M2C_FIELD(arg0, float *, 0x70);
 }
 
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
 int partEmitGetAfct(void *arg0) {
     return M2C_FIELD(M2C_FIELD(arg0, void **, 0x7C), int *, 0x18);
 }
 
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
 void partEmitSetOps(void *arg0, float fparg0) {
     M2C_FIELD(arg0, float *, 0x74) = fparg0;
 }
 
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
 void partEmitSetSpd(void *arg0, float fparg0) {
     M2C_FIELD(arg0, float *, 0x78) = fparg0;
 }
-
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
 
 void partEmitSetMaster(int arg0, int arg1) {
     copLetMat(arg1, arg0);
 }
 
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
 float partPart2DGetAge(void *arg0) {
     return M2C_FIELD(arg0, float *, 0x20);
 }
 
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
 float partPart2DGetWidth(void *arg0) {
     return M2C_FIELD(arg0, float *, 0x40);
 }
 
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
 float partPart2DGetHeight(void *arg0) {
     return M2C_FIELD(arg0, float *, 0x44);
 }
 
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
 float partPart2DGetRot(void *arg0) {
     return M2C_FIELD(arg0, float *, 0x74);
 }
 
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
 float partPart2DGetRotSpd(void *arg0) {
     return M2C_FIELD(arg0, float *, 0x78);
 }
 
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
 float partPart2DGetScale(void *arg0) {
     return M2C_FIELD(arg0, float *, 0x48);
 }
 
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
 float partPart2DGetTime(void *arg0) {
     return M2C_FIELD(arg0, float *, 0x24);
 }
 
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
 float partPart3DGetAge(void *arg0) {
     return M2C_FIELD(arg0, float *, 0x20);
 }
 
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
 float partPart3DGetWidth(void *arg0) {
     return M2C_FIELD(arg0, float *, 0x40);
 }
 
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
 float partPart3DGetHeight(void *arg0) {
     return M2C_FIELD(arg0, float *, 0x44);
 }
 
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
 float partPart3DGetScale(void *arg0) {
     return M2C_FIELD(arg0, float *, 0x48);
 }
 
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
 float partPart3DGetTime(void *arg0) {
     return M2C_FIELD(arg0, float *, 0x24);
 }
 
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
 void partPart2DSetRot(void *arg0, float fparg0) {
     M2C_FIELD(arg0, float *, 0x74) = fparg0;
 }
 
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
 void partPart2DSetRotSpd(void *arg0, float fparg0) {
     M2C_FIELD(arg0, float *, 0x78) = fparg0;
 }
 
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
 void partPart2DSetScale(void *arg0, float fparg0) {
     M2C_FIELD(arg0, float *, 0x48) = fparg0;
 }
 
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
 void partPart3DSetScale(void *arg0, float fparg0) {
     M2C_FIELD(arg0, float *, 0x48) = fparg0;
 }
 
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
 int partPart2DGetPtPos(int arg0) {
     return arg0;
 }
 
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
 int partPart2DGetPtTexCut(int arg0) {
     return arg0 + 0x60;
 }
 
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
 int partPart2DGetPtCol(int arg0) {
     return arg0 + 0x50;
 }
 
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
 int partPart3DGetPtPos(int arg0) {
     return arg0;
 }
 
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
 int partPart3DGetPtTexCut(int arg0) {
     return arg0 + 0x60;
 }
 
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
 int partPart3DGetPtCol(int arg0) {
     return arg0 + 0x50;
 }
 
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
 int partPart3DGetPtMat(int arg0) {
     return arg0 + 0xA0;
 }

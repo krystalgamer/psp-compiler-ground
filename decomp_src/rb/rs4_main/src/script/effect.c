@@ -1,17 +1,15 @@
 /* cflags: -Os -fno-strength-reduce */
 #include "common.h"
 #include "m2c_macros.h"
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 void consPrintf(const char *, ...);
 extern unsigned char D_000FF2BC;
 extern unsigned char D_000FF2E0;
 extern unsigned char D_000FF2FC;
 
-
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/script/effect", D_000FF2BC);
-
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
 
 int EffectGetNum(void *arg0) {
     if (arg0 == NULL) {

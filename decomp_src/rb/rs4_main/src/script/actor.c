@@ -1,17 +1,15 @@
 /* cflags: -Os -fno-strength-reduce */
 #include "common.h"
 #include "m2c_macros.h"
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 void consPrintf(const char *, ...);
 extern unsigned char D_000FEA94;
 extern unsigned char D_000FEAB4;
 extern unsigned char D_000FEAD0;
 
-
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/script/actor", D_000FEA94);
-
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
 
 int ActorGetNum(void *arg0) {
     if (arg0 == NULL) {

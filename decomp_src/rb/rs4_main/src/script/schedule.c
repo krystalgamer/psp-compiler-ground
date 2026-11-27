@@ -1,17 +1,15 @@
 /* cflags: -Os -fno-strength-reduce */
 #include "common.h"
 #include "m2c_macros.h"
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 void consPrintf(const char *, ...);
 extern unsigned char D_000FF8F0;
 extern unsigned char D_000FF918;
 extern unsigned char D_000FF934;
 
-
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/script/schedule", D_000FF8F0);
-
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
 
 int ScheduleGetNum(void *arg0) {
     if (arg0 == NULL) {

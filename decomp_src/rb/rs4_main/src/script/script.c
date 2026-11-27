@@ -5,6 +5,7 @@ int sceKernelGetGPI();                              /* extern */
 int taskMake(void *, M2C_UNK *, M2C_UNK, M2C_UNK);  /* extern */
 extern unsigned char ProgFrameIn;
 
+typedef struct { int a, b, c, d; } ScrOpnd;
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/script/script", D_001000E0);
 
@@ -46,7 +47,6 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/script/script", ScriptEntryVar
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/script/script", ScriptSettleVariable);
 
-typedef struct { int a, b, c, d; } ScrOpnd;
 int ScriptEnumOperand(int a, ScrOpnd *p)
 {
 	int n = 0;
@@ -144,10 +144,6 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/script/script", ScriptCompile)
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/script/script", ScriptCompileInit);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/script/script", ScriptCompileTerm);
-
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
 
 void _ScriptManual(void *arg0) {
     M2C_FIELD(arg0, int *, 0x40) = 2;

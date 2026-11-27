@@ -1,11 +1,14 @@
 /* cflags: -Os -fno-strength-reduce */
 #include "common.h"
 #include "m2c_macros.h"
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 M2C_UNK _memFree(int **, M2C_UNK *, M2C_UNK);       /* extern */
 extern unsigned char D_000FE838;
 
-extern int (*l_pfnUtil)();
-
+int fontImgDat();
+int i3dDrawImg();
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/ttrfont", D_000FE7C4);
 
@@ -57,10 +60,6 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/ttrfont", D_000FE898);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/ttrfont", ttrFontInitEx);
 
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
-
 int ttrFontTerm(int **arg0) {
     int *temp_v0;
 
@@ -74,8 +73,6 @@ int ttrFontTerm(int **arg0) {
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/ttrfont", ttrFontUpdate);
 
-int fontImgDat();
-int i3dDrawImg();
 int ttrFontDraw(int *p)
 {
 	i3dDrawImg(fontImgDat(p[0]), (char *)p + 0x350, (char *)p + 0x390);
@@ -87,58 +84,4 @@ void ttrFontClear(int a, int b)
 	ttrFontInitEx(a, 0, 0, b, 0, 0);
 }
 
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
-
-int UtilityLink(int arg0) {
-    int var_v1;
-
-    var_v1 = 0;
-    if (l_pfnUtil == 0) {
-        l_pfnUtil = arg0;
-        var_v1 = 1;
-    }
-    return var_v1;
-}
-
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
-
-void UtilityUnlink(void) {
-    l_pfnUtil = 0;
-}
-
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
-extern int (*l_pfnUtil)();
-
-int UtilityUpdate(void) {
-    int var_v0;
-
-    var_v0 = -1;
-    if (l_pfnUtil != NULL) {
-        var_v0 = l_pfnUtil();
-    }
-    return var_v0;
-}
-
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
-
-int UtilityState(void) {
-    return l_pfnUtil != 0;
-}
-
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/ttrfont", D_000FE900);
-
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/ttrfont", _ProgFrameIn_InitGame);
-
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/ttrfont", _ProgFrameIn_InitTgs);
-
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/ttrfont", _ProgName_InitGame);
-
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/ttrfont", _ProgName_InitTgs);

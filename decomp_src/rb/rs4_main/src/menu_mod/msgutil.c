@@ -6,15 +6,19 @@ extern unsigned char msgdialog_param;
 extern int sample_type_11A6BC;
 
 void consPrintf(const char *, ...);
-M2C_UNK gameCtrlUnlock();                           /* extern */
+M2C_UNK gameCtrlUnlock();void *memset(void *s, int c, unsigned int n);
 
+void gameDisSoftReset(void);
+void gameCtrlLock();
+void gameEnSoftReset(void);
+int UtilityLink();
+int utility_update_msgdialog();
+void OnPush_MsgDialogNumber(int arg0);
+
+void drawPrintf(const char *, ...);
+int sceUtilityMsgDialogGetStatus();
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/msgutil", utility_update_msgdialog);
-
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
-void *memset(void *s, int c, unsigned int n);
 
 void OnPush_MsgDialogNumber(int arg0) {
     sample_type_11A6BC = 4;
@@ -31,12 +35,6 @@ void OnPush_MsgDialogNumber(int arg0) {
     sceUtilityMsgDialogInitStart(&msgdialog_param);
 }
 
-void gameDisSoftReset(void);
-void gameCtrlLock();
-void gameEnSoftReset(void);
-int UtilityLink();
-int utility_update_msgdialog();
-void OnPush_MsgDialogNumber(int arg0);
 int MsgStart(int x)
 {
 	consPrintf("MsgStart : 0x%x\n", x);
@@ -50,10 +48,6 @@ int MsgStart(int x)
 	return 0;
 }
 
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
-
 void MsgEnd(void) {
     UtilityUnlink();
     gameCtrlUnlock();
@@ -61,8 +55,6 @@ void MsgEnd(void) {
     consPrintf("MsgEnd\n");
 }
 
-void drawPrintf(const char *, ...);
-int sceUtilityMsgDialogGetStatus();
 int MsgState(void) {
     drawPrintf("%s : state=%d, type=%d\n", "MsgState", sceUtilityMsgDialogGetStatus(), sample_type_11A6BC);
     return sample_type_11A6BC == 4;

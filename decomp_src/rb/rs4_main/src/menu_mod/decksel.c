@@ -1,5 +1,9 @@
 /* cflags: -Os -fno-strength-reduce */
 #include "common.h"
+void bxAnmSetFrame(int, float);
+void bxAnmSetSpeed(int, float);
+void bxAnmSetLoop(int, int);
+void bxAnmSetPause(int, int);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/decksel", Sub_DeckSel);
 
@@ -65,10 +69,6 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/decksel", D_00102A
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/decksel", D_00102A70);
 
-void bxAnmSetFrame(int, float);
-void bxAnmSetSpeed(int, float);
-void bxAnmSetLoop(int, int);
-void bxAnmSetPause(int, int);
 void _AniInfoSet_342B8(int anm)
 {
 	bxAnmSetFrame(anm, 0.0f);

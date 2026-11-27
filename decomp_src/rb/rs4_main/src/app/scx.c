@@ -11,14 +11,27 @@ M2C_UNK sgxSndStopAll(M2C_UNK);                     /* extern */
 M2C_UNK sgxTerm();                                  /* extern */
 extern unsigned char D_000FE5F4;
 
+extern char D_000FE5A0[];
 
 extern char D_000FE5A0[];
+
+extern unsigned char D_000FE65C, D_000FE69C;
+int sgxSndSetVolume();
+
+extern unsigned char D_000FE65C, D_000FE6A8;
+int sgxSndStop();
+
+extern unsigned char D_000FE65C, D_000FE6B0;
+int sgxSndPause();
+
+extern unsigned char D_000FE65C, D_000FE6BC;
+int sgxSndGetStatus();
+
 void *scxMalloc(int size)
 {
 	return _memAlloc(size, D_000FE5A0, 0x34);
 }
 
-extern char D_000FE5A0[];
 void scxMfree(void *p)
 {
 	_memFree(p, D_000FE5A0, 0x3D);
@@ -35,10 +48,6 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/scx", D_000FE5F8);
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/scx", D_000FE604);
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/scx", D_000FE620);
-
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
 
 int scxTerm(void) {
     consPrintf(&D_000FE5F4, "scxTerm");
@@ -74,10 +83,6 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/scx", scxUpdate);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/scx", scxAsm);
 
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
-
 int scxRelease(void *arg0) {
     if (sceKernelGetGPI() & 1) {
         consPrintf(&D_000FE5F4, &D_000FE640);
@@ -88,8 +93,6 @@ int scxRelease(void *arg0) {
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/scx", scxPlay);
 
-extern unsigned char D_000FE65C, D_000FE69C;
-int sgxSndSetVolume();
 int scxVolume(int id, int vol, int arg)
 {
 	if (id >= 0) {
@@ -100,8 +103,6 @@ int scxVolume(int id, int vol, int arg)
 	return 1;
 }
 
-extern unsigned char D_000FE65C, D_000FE6A8;
-int sgxSndStop();
 int scxStop(int id, int arg)
 {
 	if (id >= 0) {
@@ -112,8 +113,6 @@ int scxStop(int id, int arg)
 	return 1;
 }
 
-extern unsigned char D_000FE65C, D_000FE6B0;
-int sgxSndPause();
 int scxPause(int id, int arg)
 {
 	if (id >= 0) {
@@ -124,8 +123,6 @@ int scxPause(int id, int arg)
 	return 1;
 }
 
-extern unsigned char D_000FE65C, D_000FE6BC;
-int sgxSndGetStatus();
 int scxState(int id)
 {
 	if (id >= 0)
@@ -134,30 +131,6 @@ int scxState(int id)
 	return 0;
 }
 
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
-
 void scxStopAll(void) {
     sgxSndStopAll(0);
 }
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/scx", D_000FE6D4);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/scx", D_000FE6F0);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/scx", D_000FE6F8);
-
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/scx", ttrGetIndexNum);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/scx", D_000FE718);
-
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/scx", ttrGetMaxNumber);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/scx", D_000FE730);
-
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/scx", ttrGetStringByNumber);
-
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/scx", ttrGetStringByIndex);
-
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/scx", ttrGetString);

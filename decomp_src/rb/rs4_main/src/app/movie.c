@@ -2,10 +2,75 @@
 #include "common.h"
 #include "m2c_macros.h"
 void consPrintf(const char *, ...);
-M2C_UNK partCusConvExt(int, unsigned short);                   /* extern */
-int sceKernelGetGPI();                              /* extern */
-extern unsigned char D_000FDD64;
+int sceMpegInit();                                  /* extern */
+int semaInit(M2C_UNK *);                            /* extern */
+M2C_UNK thrEntry(M2C_UNK *, M2C_UNK *, M2C_UNK, M2C_UNK); /* extern */
+M2C_UNK thrMake(M2C_UNK *, M2C_UNK, M2C_UNK *);     /* extern */
+extern unsigned char D_000FDBFC;
+extern unsigned char D_000FDC10;
+extern unsigned char D_000FDC20;
+extern unsigned char D_000FDC3C;
+extern unsigned char D_000FDC44;
+extern int MovSema;
+extern unsigned char ThrMovie;
+extern unsigned char movAudio;
+int sceMpegFinish();                                /* extern */
+int semaTerm(int);                                  /* extern */
+M2C_UNK semaLock(int);                              /* extern */
+M2C_UNK semaUnlock(int);
 
+int movInit(void) {
+    int temp_v0;
+
+    if (sceMpegInit() != 0) {
+        consPrintf(&D_000FDC20, &D_000FDC10, 0x5F, "movInit", &D_000FDBFC);
+    }
+    temp_v0 = semaInit(&D_000FDC3C);
+    MovSema = temp_v0;
+    if (temp_v0 <= 0) {
+        consPrintf(&D_000FDC20, &D_000FDC10, 0x63, "movInit", &D_000FDC44);
+    }
+    thrMake(&ThrMovie, 0x12, &D_000FDC3C);
+    thrEntry(&ThrMovie, &movAudio, 0, 0);
+    return 1;
+}
+
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/movie", D_000FDBFC);
+
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/movie", D_000FDC10);
+
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/movie", D_000FDC20);
+
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/movie", D_000FDC3C);
+
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/movie", D_000FDC44);
+
+int movTerm(void) {
+    if (semaTerm(MovSema) != 1) {
+        consPrintf(&D_000FDC20, &D_000FDC10, 0x73, "movTerm", "Ret == TRUE");
+    }
+    MovSema = -1;
+    if (sceMpegFinish() != 0) {
+        consPrintf(&D_000FDC20, &D_000FDC10, 0x79, "movTerm", &D_000FDBFC);
+    }
+    return 1;
+}
+
+void movLock(void) {
+    if (MovSema > 0) {
+        semaLock(MovSema);
+    }
+}
+
+void movUnlock(void) {
+    if (MovSema > 0) {
+        semaUnlock(MovSema);
+    }
+}
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/movie", movPrepare);
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/movie", movCleanup);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/movie", movPutCB);
 
@@ -18,116 +83,3 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/movie", movDecodeAudio);
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/movie", movDraw);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/movie", movAudio);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/movie", D_000FDD64);
-
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
-
-void partAsm(void *arg0, int arg1) {
-    if (sceKernelGetGPI() & 1) {
-        consPrintf(&D_000FDD64, "partAsm");
-    }
-    partCusConvExt(arg1, M2C_FIELD(arg0, unsigned short *, 0x1A));
-}
-
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
-
-int partRelease(void) {
-    if (sceKernelGetGPI() & 1) {
-        consPrintf(&D_000FDD64, "partRelease");
-    }
-    return 1;
-}
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/movie", D_000FDD7C);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/movie", D_000FDD8C);
-
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/movie", partInit);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/movie", D_000FDDB4);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/movie", D_000FDDBC);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/movie", D_000FDDC4);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/movie", D_000FDDCC);
-
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
-extern unsigned char D_000FDD7C;
-extern unsigned char D_000FDD8C;
-extern unsigned char D_000FDDB4;
-
-int partSetDrawMat(void *arg0, int arg1) {
-    if (arg0 == NULL) {
-        consPrintf(&D_000FDD8C, &D_000FDD7C, 0x5D, "partSetDrawMat", &D_000FDDB4);
-    }
-    if (arg1 == 0) {
-        consPrintf(&D_000FDD8C, &D_000FDD7C, 0x5E, "partSetDrawMat", "pMat");
-    }
-    M2C_FIELD(arg0, int *, 0x18) = arg1;
-    return 1;
-}
-
-M2C_UNK _memFree(void **, M2C_UNK *, M2C_UNK);      /* extern */
-M2C_UNK elmTerm(void *);                            /* extern */
-M2C_UNK partFreeEnvCntx(int);                       /* extern */
-
-int partTerm(void **arg0) {
-    int var_s0;
-    int var_s0_2;
-    void **temp_v1;
-    void **temp_v1_2;
-    void **var_s1;
-    void **var_s1_2;
-    void *temp_v0;
-    void *temp_v0_2;
-
-    partFreeEmitCntx(M2C_FIELD(arg0, void **, 8));
-    partFreeEnvCntx(M2C_FIELD(arg0, int *, 4));
-    temp_v1 = M2C_FIELD(arg0, void ***, 0xC);
-    if (temp_v1 != NULL) {
-        var_s0 = M2C_FIELD(M2C_FIELD(arg0, void **, 0x14), int *, 4);
-        var_s1 = temp_v1;
-        if (var_s0 != 0) {
-            do {
-                temp_v0 = *var_s1;
-                var_s0 -= 1;
-                var_s1 += 1;
-                if (temp_v0 != NULL) {
-                    partFree2DCntx(temp_v0);
-                }
-            } while (var_s0 != 0);
-        }
-        _memFree(M2C_FIELD(arg0, void ***, 0xC), &D_000FDD7C, 0x75);
-    }
-    temp_v1_2 = M2C_FIELD(arg0, void ***, 0x10);
-    if (temp_v1_2 != NULL) {
-        var_s0_2 = M2C_FIELD(M2C_FIELD(arg0, void **, 0x14), int *, 4);
-        var_s1_2 = temp_v1_2;
-        if (var_s0_2 != 0) {
-            do {
-                temp_v0_2 = *var_s1_2;
-                var_s0_2 -= 1;
-                var_s1_2 += 1;
-                if (temp_v0_2 != NULL) {
-                    partFree3DCntx(temp_v0_2);
-                }
-            } while (var_s0_2 != 0);
-        }
-        _memFree(M2C_FIELD(arg0, void ***, 0x10), &D_000FDD7C, 0x7E);
-    }
-    elmTerm(M2C_FIELD(arg0, void **, 0x14));
-    _memFree(arg0, &D_000FDD7C, 0x83);
-    return 1;
-}
-
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/movie", partAnimate);
-
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/movie", partDraw);

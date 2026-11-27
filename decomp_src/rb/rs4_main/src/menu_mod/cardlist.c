@@ -1,6 +1,9 @@
 /* cflags: -Os -fno-strength-reduce */
 #include "common.h"
 #include "m2c_macros.h"
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 M2C_UNK _memFree(int, M2C_UNK *, M2C_UNK);          /* extern */
 extern unsigned char D_00101FCC;
 extern int l_atCardList;
@@ -11,10 +14,16 @@ extern unsigned char D_00102244;
 void *cardlistFindOne();                            /* extern */
 extern unsigned char D_001021A0;
 
-
-
 int *resGetDatLocal();
 int ttrGetStringByIndex();
+
+extern const float D_00102594;
+int sscanf(const char *, const char *, ...);
+
+float cardlistCpyTtr2Float32();
+
+int cardlistCpyTtr2Ascii();
+
 int cardlistGetCardID(int id)
 {
 	int a, b;
@@ -29,8 +38,6 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/cardlist", cardlistCp
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/cardlist", D_00101F4C);
 
-extern const float D_00102594;
-int sscanf(const char *, const char *, ...);
 float cardlistCpyTtr2Float32(a, b)
 	int a, b;
 {
@@ -42,7 +49,6 @@ float cardlistCpyTtr2Float32(a, b)
 	return f;
 }
 
-float cardlistCpyTtr2Float32();
 /* the conversion is an inline-asm cvt.w.s (rounds), not a cast (trunc.w.s) */
 int cardlistCpyTtr2Int32() {
     float r;
@@ -51,7 +57,6 @@ int cardlistCpyTtr2Int32() {
     return *(int *)&r;
 }
 
-int cardlistCpyTtr2Ascii();
 int cardlistCpyTtr2Bool(int a, int b)
 {
 	char buf[0x40];
@@ -59,10 +64,6 @@ int cardlistCpyTtr2Bool(int a, int b)
 	cardlistCpyTtr2Ascii(buf, a, b);
 	return buf[0] == 'o';
 }
-
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
 
 int cardlistCpyTtr2Enum(void) {
     return cardlistCpyTtr2Int32() - 1;
@@ -90,10 +91,6 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/cardlist", D_00102
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/cardlist", cardlistRefresh);
 
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
-
 int cardlistTerm(void) {
     l_nCardIDMax = 0;
     l_nCardNum = 0;
@@ -102,17 +99,9 @@ int cardlistTerm(void) {
     return 1;
 }
 
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
-
 int cardlistGetMaxCardID(void) {
     return l_nCardIDMax;
 }
-
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
 
 int cardlistGetCardNum(void) {
     return l_nCardNum;
@@ -140,10 +129,6 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/cardlist", D_00102
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/cardlist", cardlistGetOneBySaveID);
 
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
-
 int cardlistGetPtrBySaveID(unsigned int arg0) {
     if (arg0 < (unsigned int) l_nCardNum) {
         return l_atCardList + (arg0 * 0xB60);
@@ -151,10 +136,6 @@ int cardlistGetPtrBySaveID(unsigned int arg0) {
     consPrintf(&D_00102244, "cardlistGetPtrBySaveID", arg0);
     return 0;
 }
-
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
 
 int cardlistSetInstructID(int arg0, int arg1) {
     int var_v1;
@@ -171,10 +152,6 @@ int cardlistSetInstructID(int arg0, int arg1) {
     return var_v1;
 }
 
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
-
 int cardlistGetInstructID(int arg0) {
     void *temp_v0;
 
@@ -185,10 +162,6 @@ int cardlistGetInstructID(int arg0) {
     consPrintf(&D_001021A0, "cardlistGetInstructID", arg0);
     return -1;
 }
-
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
 
 int cardlistGetSaveID(int arg0) {
     void *temp_v0;
@@ -212,10 +185,6 @@ int cardlistGetCardIDFromSaveID(unsigned int arg0) {
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/cardlist", cardlistGetResultEfcTtrStr);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/cardlist", cardlistGetRarityTtrStr);
-
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
 
 int cardlistGetCardNameBySaveID(unsigned int arg0) {
     if (arg0 < (unsigned int) l_nCardNum) {
@@ -258,19 +227,3 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/cardlist", D_00102
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/cardlist", D_001025A8);
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/cardlist", D_001025AC);
-
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/cardlist", cccUcs4ToUtf8);
-
-char *ttrFontInitEx();
-int textCpy();
-int ttrFontTerm();
-int cccTtrToUcs4(int *dst, int a, int b, int c, int d)
-{
-	char *f = ttrFontInitEx(0, a, b, 0, c, d);
-	int r = (unsigned char)f[0x3C4];
-	textCpy(dst, f + 0x48);
-	ttrFontTerm(f);
-	return r;
-}
-
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/cardlist", cccTtrToUtf8);

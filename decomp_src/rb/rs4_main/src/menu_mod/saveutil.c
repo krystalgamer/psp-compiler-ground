@@ -17,13 +17,32 @@ M2C_UNK FreeData_GameBuf();                         /* extern */
 void SetData_InitBase();
 M2C_UNK SetData_Normal(int, void *);                /* extern */
 M2C_UNK sceUtilitySavedataInitStart(void *);        /* extern */
-M2C_UNK FreeData_Normal(int, int);                  /* extern */
+M2C_UNK FreeData_Normal(int, int);char *strcpy(char *d, const char *s);
 
+extern unsigned char D_00103954;
+void *_memAllocZero();
 
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
-char *strcpy(char *d, const char *s);
+extern int l_atSaveRes[];
+typedef struct { void *buf; int bufSize; int size; int unk; } SaveFDIcon0;
+typedef struct { char pad[0x584]; SaveFDIcon0 d; } SavePIcon0;
+typedef struct { void *data; int size; } SaveDatIcon0;
+SaveDatIcon0 *resGetDatLocal();
+
+typedef struct { void *buf; int bufSize; int size; int unk; } SaveFDPic1;
+typedef struct { char pad[0x5A4]; SaveFDPic1 d; } SavePPic1;
+
+typedef struct { void *buf; int bufSize; int size; int unk; } SaveFDIcon1;
+typedef struct { char pad[0x594]; SaveFDIcon1 d; } SavePIcon1;
+
+typedef struct { void *buf; int bufSize; int size; int unk; } SaveFDSnd0;
+typedef struct { char pad[0x5B4]; SaveFDSnd0 d; } SavePSnd0;
+
+int UtilGetMessageLang();
+int UtilGetAssign();
+void *memset(void *s, int c, unsigned int n);
+
+int UtilityUnlink();
+void gameEnSoftReset(void);
 
 void SetData_Paramsfo_String(int arg0) {
     signed char *temp_s2;
@@ -41,8 +60,6 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/saveutil", SetData_Ga
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/saveutil", FreeData_GameData);
 
-extern unsigned char D_00103954;
-void *_memAllocZero();
 void SetData_GameBuf(char *p)
 {
 	*(void **)(p + 0x74) = _memAllocZero(0x80000, &D_00103954, 0xA6);
@@ -63,11 +80,6 @@ void SetData_Pic1Buf(void) {
 void SetData_Snd0Buf(void) {
 }
 
-extern int l_atSaveRes[];
-typedef struct { void *buf; int bufSize; int size; int unk; } SaveFDIcon0;
-typedef struct { char pad[0x584]; SaveFDIcon0 d; } SavePIcon0;
-typedef struct { void *data; int size; } SaveDatIcon0;
-SaveDatIcon0 *resGetDatLocal();
 void SetData_Icon0(SavePIcon0 *p)
 {
 	SaveDatIcon0 *r;
@@ -77,8 +89,6 @@ void SetData_Icon0(SavePIcon0 *p)
 	p->d.size = r->size;
 }
 
-typedef struct { void *buf; int bufSize; int size; int unk; } SaveFDPic1;
-typedef struct { char pad[0x5A4]; SaveFDPic1 d; } SavePPic1;
 void SetData_Pic1(SavePPic1 *p)
 {
 	SaveDatIcon0 *r;
@@ -88,8 +98,6 @@ void SetData_Pic1(SavePPic1 *p)
 	p->d.size = r->size;
 }
 
-typedef struct { void *buf; int bufSize; int size; int unk; } SaveFDIcon1;
-typedef struct { char pad[0x594]; SaveFDIcon1 d; } SavePIcon1;
 void SetData_Icon1(SavePIcon1 *p)
 {
 	SaveDatIcon0 *r;
@@ -101,8 +109,6 @@ void SetData_Icon1(SavePIcon1 *p)
 	p->d.size = r->size;
 }
 
-typedef struct { void *buf; int bufSize; int size; int unk; } SaveFDSnd0;
-typedef struct { char pad[0x5B4]; SaveFDSnd0 d; } SavePSnd0;
 void SetData_Snd0(SavePSnd0 *p)
 {
 	SaveDatIcon0 *r;
@@ -112,17 +118,9 @@ void SetData_Snd0(SavePSnd0 *p)
 	p->d.size = r->size;
 }
 
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
-
 M2C_UNK *Get_Savedata(void) {
     return &savedata_param;
 }
-
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
 
 void SetUtilityType(unsigned int arg0) {
     if (arg0 < 3U) {
@@ -130,17 +128,9 @@ void SetUtilityType(unsigned int arg0) {
     }
 }
 
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
-
 void UtilityNone(void) {
     SetUtilityType(2);
 }
-
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
 
 int Savedata_Update(void) {
     unsigned int temp_v0;
@@ -164,8 +154,6 @@ int Savedata_Update(void) {
     return 0;
 }
 
-int UtilGetMessageLang();
-int UtilGetAssign();
 void SetData_InitBase(int *p, int a)
 {
 	p[0] = a;
@@ -176,10 +164,6 @@ void SetData_InitBase(int *p, int a)
 	p[5] = 0x16;
 	p[6] = 0x14;
 }
-
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
 
 void Copy_SecureFileId(int arg0) {
     int var_a1;
@@ -255,10 +239,6 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/saveutil", ShowResult
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/saveutil", SetData_Load);
 
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
-
 void FreeData_Load(void) {
     FreeData_GameBuf();
 }
@@ -272,11 +252,6 @@ void FreeData_Save(int a, int b)
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/saveutil", SetData_Delete);
 
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
-void *memset(void *s, int c, unsigned int n);
-
 void CB_SaveData_Normal(int arg0) {
     void *temp_s0;
 
@@ -287,10 +262,6 @@ void CB_SaveData_Normal(int arg0) {
     SetData_Normal(arg0, temp_s0);
     sceUtilitySavedataInitStart(temp_s0);
 }
-
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
 
 void Free_SaveData_Normal(int arg0) {
     FreeData_Normal(arg0, Get_Savedata());
@@ -315,8 +286,6 @@ void FreeData_Sizes(int a)
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/saveutil", SaveStart);
 
-int UtilityUnlink();
-void gameEnSoftReset(void);
 void SaveEnd(int x)
 {
 	int id = x & 0xFFFFFF;
@@ -326,33 +295,17 @@ void SaveEnd(int x)
 	consPrintf("SaveEnd : %d (shift:%d)\n", id, x / 0x1000000);
 }
 
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
-
 int SaveState(void) {
     return g_utilityType == 0;
 }
-
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
 
 int SaveGetResult(void) {
     return D_0011B078;
 }
 
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
-
 int SaveGetAbortedStatus(void) {
     return D_0011B628;
 }
-
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
 
 int SaveGetSHIFTResult(void) {
     return D_0011B054;
@@ -364,7 +317,7 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/saveutil", D_00104
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/saveutil", D_0010418C);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/saveutil", Sub_Shop);
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/saveutil", D_001041A0);
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/saveutil", D_001041AC);
 
@@ -489,41 +442,3 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/saveutil", D_00104
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/saveutil", D_00104728);
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/saveutil", D_0010472C);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

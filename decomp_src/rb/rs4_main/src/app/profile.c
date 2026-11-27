@@ -6,8 +6,6 @@ void consPrintf(const char *, ...);
 int resGetDatLocal(M2C_UNK, M2C_UNK);               /* extern */
 extern unsigned char D_000FE318;
 extern unsigned char D_000FE334;
-extern int l_uTick;
-
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/profile", profileDefaultNameSet);
 
@@ -16,10 +14,6 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/profile", D_000FE318);
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/profile", D_000FE334);
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/profile", D_000FE348);
-
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
 
 void profileDefaultParamSet(void *arg0) {
     M2C_FIELD(arg0, short *, 0x206) = 0x3E8;
@@ -52,69 +46,3 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/profile", profileGetPerOfW
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/profile", profileGetPerOfSuccess);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/profile", profileGetPerOfJanken);
-
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/profile", randInit);
-
-extern unsigned long long l_au64RandSeed[];
-void randDumpSeed(int i)
-{
-	if (i < 5)
-		consPrintf("%s : Tick=%08x Ch=%d %0qx\n", __FUNCTION__, l_uTick, i, l_au64RandSeed[i]);
-}
-
-void randDumpSeedAll(void)
-{
-	int i;
-	for (i = 0; i < 5; i++) {
-		randDumpSeed(i);
-	}
-}
-
-void randSetSeed(int i, unsigned long long seed)
-{
-	if (i < 5) {
-		l_au64RandSeed[i] = seed;
-	}
-	randDumpSeed(i);
-}
-
-extern unsigned long long l_au64RandSeed[];
-unsigned long long randGetSeed(int i)
-{
-	if (i < 5)
-		return l_au64RandSeed[i];
-	return 0;
-}
-
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/profile", randU);
-
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/profile", randS);
-
-extern unsigned long long l_aau64SavedRandSeed[][5];
-void randSave(int slot)
-{
-	int i;
-	for (i = 0; i < 5; i++) {
-		l_aau64SavedRandSeed[slot][i] = l_au64RandSeed[i];
-	}
-	l_uTick++;
-}
-
-extern unsigned long long l_aau64SavedRandSeed[][5];
-void randLoad(int slot)
-{
-	int i;
-	for (i = 0; i < 5; i++) {
-		l_au64RandSeed[i] = l_aau64SavedRandSeed[slot][i];
-	}
-}
-
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
-
-int randGetTick(void) {
-    return l_uTick;
-}
-
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/profile", randSetSeedByMacAddr);

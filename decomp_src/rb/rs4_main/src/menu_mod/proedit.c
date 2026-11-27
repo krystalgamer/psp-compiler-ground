@@ -1,7 +1,27 @@
 /* cflags: -Os -fno-strength-reduce */
 #include "common.h"
+void bxAnmSetFrame(int, float);
+void bxAnmSetSpeed(int, float);
+void bxAnmSetLoop(int, int);
+void bxAnmSetPause(int, int);
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/proedit", Sub_ProfileEdit);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/proedit", _AniSet_37FFC);
+
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/proedit", D_001033C0);
+
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/proedit", D_001033DC);
+
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/proedit", D_001033F4);
+
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/proedit", D_00103404);
+
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/proedit", D_00103408);
+
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/proedit", D_00103420);
+
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/proedit", D_00103438);
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/proedit", D_0010344C);
 
@@ -35,10 +55,6 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/proedit", D_001035
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/proedit", D_0010354C);
 
-void bxAnmSetFrame(int, float);
-void bxAnmSetSpeed(int, float);
-void bxAnmSetLoop(int, int);
-void bxAnmSetPause(int, int);
 void _AniInfoSet_38154(int anm)
 {
 	bxAnmSetFrame(anm, 0.0f);

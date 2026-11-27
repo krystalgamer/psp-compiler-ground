@@ -1,16 +1,18 @@
 /* cflags: -Os -fno-strength-reduce */
 #include "common.h"
 #include "m2c_macros.h"
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 void consPrintf(const char *, ...);
 extern unsigned char D_00103854;
 extern unsigned char D_00103870;
 extern unsigned char D_001038A4;
 extern unsigned char D_001038B0;
 M2C_UNK salbumCalcCardNumBySaveID(int, int, unsigned char, int); /* extern */
-M2C_UNK salbumClearNewFlagBySaveID(int, int, unsigned char);   /* extern */
+M2C_UNK salbumClearNewFlagBySaveID(int, int, unsigned char);
 
-M2C_UNK taskDefaultMsg();                           /* extern */
-
+                           /* extern */
 
 int salbumCalcKinds(int *p)
 {
@@ -30,10 +32,6 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/salbum", salbumCalcKi
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/salbum", D_00103854);
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/salbum", D_00103870);
-
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
 
 int salbumGetCardDupBySaveID(int arg0, unsigned int arg1, int arg2, int *arg3, int *arg4) {
     int *temp_v1;
@@ -66,10 +64,6 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/salbum", D_001038A
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/salbum", D_001038B0);
 
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
-
 void salbumGetCardDup(int arg0, void *arg1, int arg2, int arg3) {
     if (arg1 == NULL) {
         consPrintf(&D_00103854, &D_00103870, 0x4E, "salbumGetCardDup", &D_001038B0);
@@ -78,10 +72,6 @@ void salbumGetCardDup(int arg0, void *arg1, int arg2, int arg3) {
 }
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/salbum", salbumCalcCardNumBySaveID);
-
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
 
 void salbumCalcCardNum(int arg0, void *arg1, int arg2) {
     if (arg1 == NULL) {
@@ -92,20 +82,12 @@ void salbumCalcCardNum(int arg0, void *arg1, int arg2) {
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/salbum", salbumClearNewFlagBySaveID);
 
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
-
 void salbumClearNewFlag(int arg0, void *arg1) {
     if (arg1 == NULL) {
         consPrintf(&D_00103854, &D_00103870, 0xA6, "salbumClearNewFlag", &D_001038B0);
     }
     salbumClearNewFlagBySaveID(arg0, cardlistGetSaveID((int) M2C_FIELD(arg1, unsigned short *, 2)), M2C_FIELD(arg1, unsigned char *, 0));
 }
-
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
 
 int salbumTouchCardBySaveID(int arg0, unsigned int arg1, int arg2) {
     int *temp_v1;
@@ -127,10 +109,6 @@ int salbumTouchCardBySaveID(int arg0, unsigned int arg1, int arg2) {
     return var_a1;
 }
 
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
-
 void salbumTouchCard(int arg0, void *arg1) {
     if (arg1 == NULL) {
         consPrintf(&D_00103854, &D_00103870, 0xC7, "salbumTouchCard", &D_001038B0);
@@ -139,11 +117,3 @@ void salbumTouchCard(int arg0, void *arg1) {
 }
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/salbum", salbumGetAll);
-
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
-
-void menuSaveTask(void) {
-    taskDefaultMsg();
-}
