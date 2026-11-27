@@ -116,6 +116,8 @@ int ps_i2406(PsIpc *msg);
 int ps_i2608(PsIpc *msg);
 int ps_i2906(PsIpc *msg);
 int ps_i2D06(PsIpc *msg);
+PsLocation *ps_GetLocation(int id);
+extern PsLocation *D_0025B5C8;
 unsigned short UDomiString_ToLower(unsigned short c) {
     if (c < 0x80) {
         return tolower(c);
@@ -811,7 +813,46 @@ int ps_SendIOMChk(int n, char *s) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", ps_Terminate);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", ps_SetLocation);
+PsLocation *ps_SetLocation(int id, int b, int c, int len, char *url) {
+    PsLocation *p;
+
+    D_0025B5C8 = ps_GetLocation(id);
+    if (D_0025B5C8 != NULL) {
+        D_0025B5C8->id = id;
+        D_0025B5C8->x04 = b;
+        D_0025B5C8->x08 = c;
+        D_0025B5C8->x0C++;
+        MEM_free(0, D_0025B5C8->buf);
+        D_0025B5C8->buf = MEM_malloc(0, len + 1);
+        memset(D_0025B5C8->buf, 0, len + 1);
+        memcpy(D_0025B5C8->buf, url, len);
+        return D_0025B5C8;
+    }
+    D_0025B5C8 = PS_LOCATION_HEAD;
+    if (PS_LOCATION_HEAD == NULL) {
+        D_0025B5C8 = PS_LOCATION_HEAD = MEM_malloc(0, sizeof(PsLocation));
+        D_0025B5C8->prev = NULL;
+    } else {
+        for (;;) {
+            if (D_0025B5C8->next == NULL)
+                break;
+            D_0025B5C8 = D_0025B5C8->next;
+        }
+        D_0025B5C8->next = MEM_malloc(0, sizeof(PsLocation));
+        p = D_0025B5C8;
+        D_0025B5C8 = p->next;
+        D_0025B5C8->prev = p;
+    }
+    D_0025B5C8->id = id;
+    D_0025B5C8->x04 = b;
+    D_0025B5C8->x08 = c;
+    D_0025B5C8->x0C = 0;
+    D_0025B5C8->next = NULL;
+    D_0025B5C8->buf = MEM_malloc(0, len + 1);
+    memset(D_0025B5C8->buf, 0, len + 1);
+    memcpy(D_0025B5C8->buf, url, len);
+    return D_0025B5C8;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", ps_GetLocation);
 
