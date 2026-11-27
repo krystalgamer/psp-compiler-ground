@@ -1137,7 +1137,35 @@ void *newCSSValue(void) {
     return newCSSNode(0xB, 0x38);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_StyleDeclaration", freeCSSValue);
+void freeCSSValue(void *v) {
+    short t;
+    if (v != NULL && M2C_FIELD(v, short *, 0) == 0xB) {
+        t = M2C_FIELD(v, short *, 0x1C);
+        if (t == 2) {
+            freeCSSPrimitiveValue((char *)v + 0x20, 0);
+        } else if (t == 3) {
+            MEM_free(0, M2C_FIELD(v, void **, 0x20));
+        } else if (t == 4) {
+            freeCSSPrimitiveValue(M2C_FIELD(v, void **, 0x20), 1);
+            freeCSSPrimitiveValue(M2C_FIELD(v, void **, 0x24), 1);
+        } else if (t == 5) {
+            freeCSSPrimitiveValue(M2C_FIELD(v, void **, 0x20), 1);
+            freeCSSPrimitiveValue(M2C_FIELD(v, void **, 0x24), 1);
+        } else if (t == 6) {
+            if (M2C_FIELD(v, void **, 0x20) != NULL)
+                MEM_free(0, M2C_FIELD(v, void **, 0x20));
+        } else if (t == 7) {
+            if (M2C_FIELD(v, void **, 0x20) != NULL)
+                MEM_free(0, M2C_FIELD(v, void **, 0x20));
+        } else if (t == 8) {
+            freeCSSPrimitiveValue(M2C_FIELD(v, void **, 0x20), 1);
+            freeCSSPrimitiveValue(M2C_FIELD(v, void **, 0x24), 1);
+            freeCSSPrimitiveValue(M2C_FIELD(v, void **, 0x28), 1);
+            freeCSSPrimitiveValue(M2C_FIELD(v, void **, 0x2C), 1);
+        }
+        freeCSSNode(v);
+    }
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_StyleDeclaration", duplicateCSSValue);
 
@@ -1157,7 +1185,33 @@ s16 *newCSSPrimitiveValue(int type) {
     return v;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_StyleDeclaration", freeCSSPrimitiveValue);
+void freeCSSPrimitiveValue(void *v, int all) {
+    short t;
+    if (v == NULL)
+        return;
+    t = M2C_FIELD(v, short *, 0);
+    if (t == 0x13 || t == 0x14 || t == 0x16 || t == 0x1A) {
+        MEM_free(0, M2C_FIELD(v, void **, 8));
+    } else if (t == 0x19) {
+        freeCSSPrimitiveValue(M2C_FIELD(v, void **, 8), 1);
+        freeCSSPrimitiveValue(M2C_FIELD(v, void **, 0xC), 1);
+        freeCSSPrimitiveValue(M2C_FIELD(v, void **, 0x10), 1);
+    } else if (t == 0x17) {
+        if (M2C_FIELD(v, void **, 8) != NULL)
+            MEM_free(0, M2C_FIELD(v, void **, 8));
+        if (M2C_FIELD(v, void **, 0xC) != NULL)
+            MEM_free(0, M2C_FIELD(v, void **, 0xC));
+        if (M2C_FIELD(v, void **, 0x10) != NULL)
+            MEM_free(0, M2C_FIELD(v, void **, 0x10));
+    } else if (t == 0x18) {
+        freeCSSPrimitiveValue(M2C_FIELD(v, void **, 8), 1);
+        freeCSSPrimitiveValue(M2C_FIELD(v, void **, 0xC), 1);
+        freeCSSPrimitiveValue(M2C_FIELD(v, void **, 0x10), 1);
+        freeCSSPrimitiveValue(M2C_FIELD(v, void **, 0x14), 1);
+    }
+    if (all)
+        MEM_free(0, v);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_StyleDeclaration", duplicateCSSPrimitiveValue);
 
