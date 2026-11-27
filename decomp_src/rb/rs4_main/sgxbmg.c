@@ -18,6 +18,11 @@ extern int gSgxPrefWarn;
 int sgxPrintfPref(int, const void *, int, const char *, ...);
 typedef struct { char pad[0x24]; char *slots; int num; } BmgWorkS;
 
+void sgxBmgFree(int);
+void sgxFree(void *);
+void *memset(void *, int, unsigned int);
+extern unsigned char D_0011FC10;
+
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/sgxbmg", D_00109F94);
 
 #define WW ((BmgWorkS *)&gWork_11FC0C)
@@ -66,7 +71,21 @@ int sgxBmgLock(int id)
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxbmg", sgxBmgFree);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxbmg", sgxBmgAlignBuf);
+void sgxBmgAlignBuf(int id, int al, int sz)
+{
+    char *p = SlotGetAt_7A70C(id, "AlignBuf");
+    int base, top, len;
+    if (p == NULL) return;
+    base = *(int *)(p + 0x1C);
+    top = base;
+    if (al > 0) top = (base + al - 1) / al * al;
+    len = *(int *)(p + 0x20) - (top - base);
+    if (sz > 0) len = len / sz * sz;
+    *(int *)(p + 0x24) = top;
+    *(int *)(p + 0x28) = len;
+    *(int *)(p + 0x2C) = al;
+    *(int *)(p + 0x30) = sz;
+}
 
 void *sgxBmgGetBuf(int id)
 {

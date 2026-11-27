@@ -76,7 +76,20 @@ void *SlotGetAt_7DD48(int id, const char *name)
 }
 #undef WW
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", SlotGetAtStop);
+#define WW ((SndWorkS *)&gWork_11FC84)
+void *SlotGetAtStop(int id, const char *name)
+{
+    if (id >= 0 && id <= WW->num - 1) {
+        char *p = WW->slots + id * 0xFC;
+        if ((*(int *)(p + 0xC) & 1) && !(p[0x87] & 2)) return p;
+    }
+    if (name != NULL && (gSgxDebugFlags & 2)) {
+        sgxPrintfPref(gSgxPrefWarn, D_0010A400, 0x63, D_0010A40C, name, id);
+        return NULL;
+    }
+    return NULL;
+}
+#undef WW
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", D_0010A400);
 

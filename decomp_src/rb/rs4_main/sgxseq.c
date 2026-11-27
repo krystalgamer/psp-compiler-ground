@@ -61,6 +61,13 @@ extern int gSgxDebugFlags;
 extern int gSgxPrefWarn;
 typedef struct { char pad[0x24]; char *slots; int num; } SeqWorkS;
 
+int sgxBmgIsFinished(int);
+int MidiCore();
+int SesqCore();
+int sgxBmgLock(int);
+void *UnitAlloc();
+extern const char D_0010A918[];
+
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/sgxseq", D_0010A814);
 
 #define WW ((SeqWorkS *)&gWork_11FE60)
@@ -192,7 +199,22 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxseq", LoopEndProc);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxseq", CmdPlaySeq);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxseq", CmdPlaySeqStr);
+void CmdPlaySeqStr(char *s, int *cmd)
+{
+    int id = cmd[1];
+    int c2 = cmd[2];
+    int c3 = cmd[3];
+    short bmg = *(short *)(*(char **)(s + 0x10) + 0x1E);
+    char *u;
+    UnitFreeByID_81E8C(s, id);
+    if (!sgxBmgLock(bmg)) return;
+    u = UnitAlloc(s, id, 1, c2, c3);
+    if (u != NULL) {
+        *(short *)(u + 0x1C) = bmg;
+        return;
+    }
+    if (bmg >= 0) sgxBmgFree(bmg);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxseq", CmdRel);
 
@@ -305,7 +327,24 @@ void SesqWait(char *s, int x) {
 }
 const float D_0010ACF0 = 1.0f;
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxseq", SesqJump);
+int SesqJump(char *u, int n, int v)
+{
+    if (n == -1) {
+        u[0x51] = 1;
+        return 1;
+    }
+    if (n == -2) {
+        *(int *)(u + 0x44) = v;
+        *(int *)(u + 0x48) = 0;
+        return 1;
+    }
+    if (n < 0 || n > *(int *)(u + 0x40) - 1) {
+        SGX_ERR(0x447, D_0010A918, n);
+        return 1;
+    }
+    *(int *)(u + 0x44) = *(int *)(u + 0x3C) + n;
+    return 0;
+}
 
 void SesqLoopBreak(char *s, int a, int b)
 {
@@ -437,7 +476,17 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxseq", SesqCore);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxseq", UnitSesqProc);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxseq", UnitSesqStrProc);
+void UnitSesqStrProc(void *a, char *u, int dec)
+{
+    while (u[0x51] == 0 && *(int *)(u + 0x48) <= 0 && sgxBmgGetLeft(*(short *)(u + 0x1C)) > 0) {
+        if (!SesqCore(a, u, 0)) return;
+    }
+    if (sgxBmgIsFinished(*(short *)(u + 0x1C))) {
+        u[0x51] = 1;
+        return;
+    }
+    if (*(int *)(u + 0x48) > 0) *(int *)(u + 0x48) -= dec;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxseq", MidiCMNoteOnOff);
 
@@ -483,7 +532,17 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxseq", MidiCore);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxseq", UnitMidiProc);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxseq", UnitMidiStrProc);
+void UnitMidiStrProc(void *a, char *u, int dec)
+{
+    while (u[0x51] == 0 && *(int *)(u + 0x48) <= 0 && sgxBmgGetLeft(*(short *)(u + 0x1C)) > 0) {
+        if (!MidiCore(a, u, 0)) return;
+    }
+    if (sgxBmgIsFinished(*(short *)(u + 0x1C))) {
+        u[0x51] = 1;
+        return;
+    }
+    if (*(int *)(u + 0x48) > 0) *(int *)(u + 0x48) -= dec;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxseq", SlotUnitProc_84650);
 
