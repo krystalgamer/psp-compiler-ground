@@ -45,6 +45,14 @@ extern int _DOMname;
 extern int _DOMhref;
 int AnchorSetInternal(int a, int b, int c, int d);
 int LinkSetInternal(int a, int b, int c, int d);
+extern int _DOMclass;
+extern int _DOMid;
+extern int mes_select_properties;
+extern int mes_select_methods;
+int mes_option_new(int ctx, int *priv);
+int mes_class_property_get(int ctx, int obj, const char *name);
+void mes_array_set(int ctx, int arr, int v);
+void mes_obj_common_addNewReferenceByNameOrId(int ctx, int parent, int obj, int arr, JDStr *name, void *props, void *methods, int f);
 int JSObjGetCharsLength(const UCSChar *s)
 {
     int n = 0;
@@ -143,7 +151,40 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/js_for_parser", js_setChildOfDo
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/js_for_parser", js_setChildOfForm);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/js_for_parser", js_setChildOfSelect);
+int js_setChildOfSelect(ctx, parent, elem)
+    int ctx;
+    int parent;
+    int elem;
+{
+    JDStr name;
+    JDStr cls;
+    JDStr id;
+    int *priv;
+    int opt;
+    int arr;
+
+    opt = 0;
+    priv = MEM_malloc(0, 8);
+    if (priv != NULL) {
+        priv[0] = elem;
+        priv[1] = parent;
+        opt = mes_option_new(ctx, priv);
+        if (opt != 0) {
+            *--M2C_FIELD(ctx, int **, 0x18) = opt;
+            arr = mes_class_property_get(ctx, parent, "options");
+            mes_array_set(ctx, arr, opt);
+            Element_getAttribute(&name, elem, &_DOMname);
+            mes_obj_common_addNewReferenceByNameOrId(ctx, parent, opt, arr, &name, &mes_select_properties, &mes_select_methods, 1);
+            Element_getAttribute(&cls, elem, &_DOMclass);
+            mes_obj_common_addNewReferenceByNameOrId(ctx, parent, opt, arr, &cls, &mes_select_properties, &mes_select_methods, 1);
+            Element_getAttribute(&id, elem, &_DOMid);
+            mes_obj_common_addNewReferenceByNameOrId(ctx, parent, opt, arr, &id, &mes_select_properties, &mes_select_methods, 1);
+            M2C_FIELD(ctx, int **, 0x18)++;
+        } else
+            MEM_free(0, priv);
+    }
+    return opt;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/js_for_parser", WindowSetInternal);
 
