@@ -572,7 +572,33 @@ int func_00008544(int a0, int a1, int a2, int a3, int a4, int a5, int a6, int a7
 	return i;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/sound_playsmf/nonmatchings/libsndp", func_00008628);
+int func_00008628(int a0, unsigned int voice, int a2, int a3, int a4, int a5, int a6, int a7, int a8)
+{
+	SsVoiceParam param;
+	unsigned int voices;
+	int ret;
+
+	if (voice >= g_maxvoice)
+		return 0x80540011;
+	ret = func_0000872C(a0, a2, a3, a4, a5, a6, a7, a8, &param);
+	if (ret != 0)
+		return ret;
+	if (param.group != 0) {
+		voices = voice_getVoiceByGroup(param.group, param.prio);
+		if (voices != 0) {
+			for (voice = 0; voice < g_maxvoice; voice++) {
+				if ((voices >> voice) & 1) {
+					sceSsVoiceSetSustainHold(voice, 0);
+					voice_noteOff(voice);
+				}
+			}
+		}
+	}
+	ret = voice_noteOn(voice, &param);
+	if (ret < 0)
+		return ret;
+	return voice;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/sound_playsmf/nonmatchings/libsndp", func_0000872C);
 
