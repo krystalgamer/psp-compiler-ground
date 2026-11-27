@@ -1,7 +1,7 @@
 /* cflags: -O2 */
 #include "common.h"
 #include "m2c_macros.h"
-M2C_UNK ASC_SetStringRGBA(M2C_UNK, M2C_UNK *, M2C_UNK, M2C_UNK, M2C_UNK, M2C_UNK, M2C_UNK, M2C_UNK); /* extern */
+void ASC_SetStringRGBA(M2C_UNK, M2C_UNK *, M2C_UNK, M2C_UNK, M2C_UNK, M2C_UNK, M2C_UNK, M2C_UNK); /* extern */
 int pad_cansel_button();                            /* extern */
 int pad_ret_button();                               /* extern */
 void se_start(int);
@@ -324,7 +324,73 @@ void inv_matchup_menu_option(void)
 	poly_set(0, 0, 480, 272, 0, 16, 16, 16, 160, 16, 16, 16, 160, 16, 16, 16, 160, 16, 16, 16, 160, 10, 2, 1, 255);
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_match", inv_matchup_menu_handy);
+typedef struct { u8 _p[0x78]; int lv1, lv2; } MH_SAVE;
+extern MH_SAVE mh_save __asm__("save_data");
+extern const float D_0007CE34, D_0007CE38, D_0007CE3C, D_0007CE40;
+void inv_matchup_menu_handy(void)
+{
+	int i, x, a;
+
+	if ((pad_sw() & pad_ret_button()) || (pad_sw() & pad_cansel_button())) {
+		se_start(1);
+		RT = 12;
+	} else if (pad_sw() & 0x100010) {
+		se_start(0);
+		matchup_menu_choice--;
+		if (matchup_menu_choice < 0)
+			matchup_menu_choice = 1;
+	} else if (pad_sw() & 0x200040) {
+		se_start(0);
+		matchup_menu_choice++;
+		if (matchup_menu_choice >= 2)
+			matchup_menu_choice = 0;
+	} else if (pad_sw() & 0x400080) {
+		se_start(0);
+		if (matchup_menu_choice == 0) {
+			mh_save.lv1--;
+			if (mh_save.lv1 <= 0)
+				mh_save.lv1 = 1;
+		} else if (matchup_menu_choice == 1) {
+			mh_save.lv2--;
+			if (mh_save.lv2 <= 0)
+				mh_save.lv2 = 1;
+		}
+	} else if (pad_sw() & 0x800020) {
+		se_start(0);
+		if (matchup_menu_choice == 0) {
+			mh_save.lv1++;
+			if (mh_save.lv1 >= 9)
+				mh_save.lv1 = 8;
+		} else if (matchup_menu_choice == 1) {
+			mh_save.lv2++;
+			if (mh_save.lv2 >= 9)
+				mh_save.lv2 = 8;
+		}
+	}
+	if (mh_save.lv1) {
+		for (i = 0; i < mh_save.lv1; i++)
+			ASC_SetStringRGBA(1, "*", 208 + i * 8, 104, 255, 255, 255, 255);
+	}
+	if (mh_save.lv2) {
+		for (i = 0; i < mh_save.lv2; i++)
+			ASC_SetStringRGBA(1, "*", 208 + i * 8, 112, 255, 255, 255, 255);
+	}
+	ASC_SetStringRGBA(1, &D_0007CD18, (480 - ASC_StringRen(&D_0007CD18)) / 2, 40, 255, 255, 255, 255);
+	a = sinf(gcnt_28FC04 % 45 * 4 / D_0007CE34 * D_0007CE38) * D_0007CE3C + D_0007CE40;
+	switch (matchup_menu_choice) {
+	case 0:
+		ASC_SetStringRGBA(1, "1P", 184, 104, 64, 255, 255, a);
+		break;
+	case 1:
+		ASC_SetStringRGBA(1, "2P", 184, 112, 64, 255, 255, a);
+		break;
+	}
+	ASC_SetStringRGBA(1, "LEVEL", 96, 104, 255, 255, 255, 255);
+	ASC_SetStringRGBA(1, "1P", 184, 104, 255, 255, 255, 255);
+	ASC_SetStringRGBA(1, "2P", 184, 112, 255, 255, 255, 255);
+	ASC_SetStringRGBA(1, &D_0007CD20, 96, 128, 255, 255, 255, 255);
+	poly_set(0, 0, 480, 272, 0, 16, 16, 16, 160, 16, 16, 16, 160, 16, 16, 16, 160, 16, 16, 16, 160, 10, 2, 1, 255);
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_match", BoxAtari_ek4m);
 
