@@ -434,7 +434,155 @@ void init_all(void) {
     InitWall();
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_depthblur/nonmatchings/main", pad_read);
+void DepthBlurSetFocus(float _Focus);
+#ifndef SCE_CTRL_UP /* sample */
+#define SCE_CTRL_UP					(1<<4)
+#endif
+#ifndef SCE_CTRL_DOWN /* sample */
+#define SCE_CTRL_DOWN				(1<<6)
+#endif
+#ifndef SCE_CTRL_LEFT /* sample */
+#define SCE_CTRL_LEFT				(1<<7)
+#endif
+#ifndef SCE_CTRL_RIGHT /* sample */
+#define SCE_CTRL_RIGHT				(1<<5)
+#endif
+#ifndef DROT /* sample */
+#define DROT		4.0f
+#endif
+#ifndef SCE_CTRL_CROSS /* sample */
+#define SCE_CTRL_CROSS				(1<<14)
+#endif
+#ifndef NUM_MODES /* sample */
+#define NUM_MODES 5
+#endif
+#ifndef SCE_CTRL_SQUARE /* sample */
+#define SCE_CTRL_SQUARE				(1<<15)
+#endif
+#ifndef SCE_CTRL_TRIANGLE /* sample */
+#define SCE_CTRL_TRIANGLE			(1<<12)
+#endif
+#ifndef SCE_CTRL_L /* sample */
+#define SCE_CTRL_L					(1<<8)
+#endif
+#ifndef SCE_CTRL_L1 /* sample */
+#define SCE_CTRL_L1					SCE_CTRL_L
+#endif
+#ifndef SCE_CTRL_R /* sample */
+#define SCE_CTRL_R					(1<<9)
+#endif
+#ifndef SCE_CTRL_R1 /* sample */
+#define SCE_CTRL_R1					SCE_CTRL_R
+#endif
+#ifndef DPOS /* sample */
+#define DPOS		2.0f
+#endif
+#ifndef SCE_CTRL_CIRCLE /* sample */
+#define SCE_CTRL_CIRCLE				(1<<13)
+#endif
+#ifndef SCE_CTRL_SELECT /* sample */
+#define SCE_CTRL_SELECT				(1<<0)
+#endif
+#ifndef SCE_CTRL_START /* sample */
+#define SCE_CTRL_START				(1<<3)
+#endif
+static int pad_read(void)
+{
+	u_int32        prev=cont;
+	u_int32        padd;
+	SceCtrlData    buf[8];
+	int            ret;
+	extern Positioning*  D_0001912C;
+
+     ret = sceCtrlReadBufferPositive(buf, 8);
+	if ( ret != 0 )
+	{
+		cont = buf[0].Buttons;
+	}
+	else
+	{
+		cont = 0;
+	}
+	padd=cont&(cont^prev);
+
+	if ( cont & SCE_CTRL_UP )
+	{
+		D_0001912C->_rot.x-=DROT;
+		if ( D_0001912C->_rot.x<0.0f )
+			D_0001912C->_rot.x=360.0f+D_0001912C->_rot.x;
+	}
+	if ( cont & SCE_CTRL_DOWN )
+	{
+		D_0001912C->_rot.x+=DROT;
+		if ( D_0001912C->_rot.x>=360.0f )
+			D_0001912C->_rot.x=D_0001912C->_rot.x-360.0f;
+	}
+	if ( cont & SCE_CTRL_LEFT )
+	{
+		D_0001912C->_rot.y-=DROT;
+		if ( D_0001912C->_rot.y<0.0f )
+			D_0001912C->_rot.y=360.0f+D_0001912C->_rot.y;
+	}
+	if ( cont & SCE_CTRL_RIGHT )
+	{
+		D_0001912C->_rot.y+=DROT;
+		if ( D_0001912C->_rot.y>=360.0f )
+			D_0001912C->_rot.y=D_0001912C->_rot.y-360.0f;
+	}
+	
+	if ( cont & SCE_CTRL_CROSS )
+	{
+		if( !( prev & SCE_CTRL_CROSS ) ) 
+		{
+			
+			mode++;
+			if(mode >= NUM_MODES)
+			{
+				mode=0;
+			}
+		}
+	}
+	
+	if ( cont & SCE_CTRL_SQUARE )
+	{
+		focus -= 0.01f;
+		if( focus < 0 )
+			focus = 0;
+          
+		DepthBlurSetFocus( focus );
+	}
+
+	if ( cont & SCE_CTRL_TRIANGLE )
+	{
+		focus += 0.01f;
+		if( focus > 1 )
+			focus = 1;
+		
+		DepthBlurSetFocus( focus );
+	}
+	
+
+	if ( cont & SCE_CTRL_L1 )
+		D_0001912C->_pos.z-=DPOS;
+	if ( cont & SCE_CTRL_R1 )
+		D_0001912C->_pos.z+=DPOS;
+
+	if ( padd & SCE_CTRL_CIRCLE )
+		texflag^=1;
+
+	if( padd & SCE_CTRL_SELECT )
+		return 0;
+
+	if( padd & SCE_CTRL_START )
+	{
+		if( !( prev & SCE_CTRL_START ) ) 
+		{
+			depthspread=!depthspread;
+		}
+	}
+
+	return 1;
+}
 
 int MainThread(unsigned int _ArgNum, void *_ArgData) {
     menuInit();
