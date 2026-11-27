@@ -1681,3 +1681,4 @@ enum {
  BMP_FORMAT_SIGNATURE = 0x4d42
 } ;
 int sceGimPictureCountChunk( const SceGimChunk *chunk, int type ) ;
+static void reconfigure_picture( SceGimPicture *picture ) ;
