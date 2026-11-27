@@ -478,6 +478,8 @@ segments:
       - [0x16CF88, rodata, asm/rodata_16CF08]
       - [0x16CFE8, .rodata, main_objs/scene_Texture]
       - [0x16D050, rodata, asm/rodata_16CFD0]
+      - [0x16D0A8, .rodata, main_objs/scene_Transform]
+      - [0x16D0F0, rodata, asm/rodata_16D070]
       - [0x16D2B0, .rodata, main_objs/scene_TraversalVarStack]
       - [0x16D2CC, rodata, asm/rodata_16D24C]
       - [0x16D660, .rodata, main_objs/VertexColorEnv]
@@ -699,6 +701,8 @@ segments:
       - { start: 0x18CFCC, type: .bss, vram: 0x18FE68, name: main_objs/scene_Switch }
       - { start: 0x18CFCC, type: .bss, vram: 0x18FEEC, name: main_objs/scene_Texture }
       - { start: 0x18CFCC, type: bss, vram: 0x18FF70, name: bss_18FF70 }
+      - { start: 0x18CFCC, type: .bss, vram: 0x18FF70, name: main_objs/scene_Transform }
+      - { start: 0x18CFCC, type: bss, vram: 0x190078, name: bss_190078 }
       - { start: 0x18CFCC, type: .bss, vram: 0x190078, name: main_objs/scene_TraversalVarStack }
       - { start: 0x18CFCC, type: bss, vram: 0x1900FC, name: bss_1900FC }
       - { start: 0x18CFCC, type: .bss, vram: 0x190200, name: main_objs/VertexColorEnv }

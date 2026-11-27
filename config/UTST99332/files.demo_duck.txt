@@ -550,3 +550,8 @@ rodata 0x17449C main_objs/interp_VectorRGBAnim
 rodata 0x1744B8 -
 bss 0x191A74 main_objs/interp_VectorRGBAnim
 bss 0x191B38 -
+# scene_Transform: float pools (static init, rotateX/Y/Z 1.0f literals, ...) and .bss (header statics, angle_range, tmp_*_transform)
+rodata 0x16D028 main_objs/scene_Transform
+rodata 0x16D070 -
+bss 0x18FF70 main_objs/scene_Transform
+bss 0x190078 -

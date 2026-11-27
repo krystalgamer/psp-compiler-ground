@@ -2,7 +2,18 @@
 /* cflags: -O3 -fno-exceptions */
 #undef __EXCEPTIONS
 #include "cxx/defer_asm.h"
+#define DEMO_STATICS_MATH
+#define DEMO_STATICS_IOSTREAM
 #include "../main.hpp"
+/* linkonce order: this object's .gnu.linkonce.t sections in Sony's link order */
+SCENE_LINKONCE_ORDER(
+    SCENE_LINKONCE(_ZNK5scene9Transform11getTypeNameEv)
+    SCENE_LINKONCE(_ZNK5scene9Transform5cloneESs)
+);
+
+/* the module's .ctors/.dtors refer to the static constructor/destructor */
+__asm__(".globl _GLOBAL__I__ZN5scene9Transform11angle_rangeE");
+__asm__(".globl _GLOBAL__D__ZN5scene9Transform11angle_rangeE");
 
 extern const char D_0016D070[];
 extern const char D_0016D108[];     /* "../lib/scene/Transform.cpp" */
@@ -11,11 +22,10 @@ extern const char D_0016D180[];     /* "_RotationOrder == math::XYZ" */
 extern const char D_0016D19C[];     /* " *** error " */
 extern const char Transform_setEulerRotation_name[]
     __asm__("_ZZN5scene9Transform16setEulerRotationERKN4math10vector_xyzENS1_13RotationOrderEE19__PRETTY_FUNCTION__");
-extern const float D_0016D054, D_0016D058, D_0016D05C;     /* 1.0f */
-extern const float D_0016D064;      /* 2 pi */
-extern const float D_0016D06C;      /* 1.0f */
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Transform", _Z41__static_initialization_and_destruction_0ii_95D10);
+float scene::Transform::angle_range;
+math::matrix scene::Transform::tmp_viewer_transform = math::matrix::Identity();
+math::matrix scene::Transform::tmp_parent_transform = math::matrix::Identity();
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Transform", _ZN5scene9TransformC2ESsb);
 
@@ -38,6 +48,15 @@ const math::matrix &scene::Transform::getMatrix() const
     if (_dirty)
         const_cast<Transform *>(this)->flushCache();
     return _matrix;
+}
+
+/* setFromMatrix (asm) calls setTranslation/setScale before their definitions: cc1plus's
+   inlinable_function_p caches DECL_UNINLINABLE for them, so setIdentity calls them too */
+extern "C" void scene_Transform_calls(scene::Transform *t, math::vector_xyz v) __attribute__((section(".discard.asm")));
+extern "C" void scene_Transform_calls(scene::Transform *t, math::vector_xyz v)
+{
+    t->setTranslation(v);
+    t->setScale(v);
 }
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Transform", _ZN5scene9Transform13setFromMatrixEN4math6matrixE);
@@ -93,18 +112,27 @@ void scene::Transform::rotate(Space s, float a, float b, float c, math::Rotation
     transform(s, math_matrix_EulerRotation(a, b, c, o));
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Transform", _ZN5scene9Transform7rotateXENS0_5SpaceEf);
+void scene::Transform::rotateX(Space s, float a)
+{
+    transform(s, math::matrix::Rotation(a, 1.0f, 0, 0));
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Transform", _ZN5scene9Transform7rotateYENS0_5SpaceEf);
+void scene::Transform::rotateY(Space s, float a)
+{
+    transform(s, math::matrix::Rotation(a, 0, 1.0f, 0));
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Transform", _ZN5scene9Transform7rotateZENS0_5SpaceEf);
+void scene::Transform::rotateZ(Space s, float a)
+{
+    transform(s, math::matrix::Rotation(a, 0, 0, 1.0f));
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Transform", _ZN5scene9Transform9transformENS0_5SpaceERKN4math6matrixE);
 
 float scene::Transform::set_angle(float a)
 {
     if (use_angle_range)
-        return math::wrap(a, angle_range, D_0016D064);
+        return math::wrap(a, angle_range, 6.2831855f);
     return a;
 }
 
@@ -134,7 +162,21 @@ math::vector_xyz scene::Transform::getScale() const
     return _scale;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Transform", _ZN5scene9Transform11setIdentityEv);
+void scene::Transform::setIdentity()
+{
+    setTranslation(math::vector_xyz(0, 0, 0));
+    setRotation(math::vector_xyz(0, 0, 0));
+    setScale(math::vector_xyz(1, 1, 1));
+    _identity = true;
+}
+
+/* inline in the class (weak copies emitted with the vtable, in the object's tail) */
+SGL_LINKONCE_BEGIN
+inline const char *scene::Transform::getTypeName() const
+{
+    return D_0016D070;
+}
+SGL_LINKONCE_END
 
 void scene::Transform::flatten(math::TransformStack &ts)
 {
@@ -144,26 +186,7 @@ void scene::Transform::flatten(math::TransformStack &ts)
     math_TransformStack_pop(ts);
 }
 
-extern "C" {
-void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_95D10");
-void _GLOBAL__I__ZN5scene9Transform11angle_rangeE(void);
-void _GLOBAL__D__ZN5scene9Transform11angle_rangeE(void);
-}
-
-void _GLOBAL__I__ZN5scene9Transform11angle_rangeE(void)
-{
-    static_init(1, 0xFFFF);
-}
-
-void _GLOBAL__D__ZN5scene9Transform11angle_rangeE(void)
-{
-    static_init(0, 0xFFFF);
-}
-
-const char *scene::Transform::getTypeName() const
-{
-    return D_0016D070;
-}
-
+/* inline in the class too (weak copies in the tail), still asm */
+#undef INCLUDE_ASM
+#define INCLUDE_ASM INCLUDE_ASM_LINKONCE
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Transform", _ZNK5scene9Transform5cloneESs);
-
