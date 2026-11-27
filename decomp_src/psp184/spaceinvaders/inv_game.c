@@ -296,7 +296,46 @@ void inv_polydisp_clear_off(void)
 	inv_star_dispset(1);
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", inv_polydisp_clear2);
+extern int D_005A0790[4][11][3];
+extern int D_005E6F38[16];
+extern int D_005A09B0[2];
+extern int D_005A0CF0;
+extern int D_005A06FC;
+typedef struct { u8 p[0xEB78C]; int a[4]; u8 q[0xEB9B8 - 0xEB79C]; int b; } GMPC_T;
+#define GMPC (*(GMPC_T *)&gmain)
+void inv_polydisp_clear2(void)
+{
+	int i, j, k, m, n;
+
+	if (game_model_load == 0)
+		return;
+	if (gmain.f.f1080 == 1 && D_005A06FC >= 0)
+		((GMO_T *)gmo)[D_005A06FC].f4 = 0;
+	if (gmain.f.f1084 == 1) {
+		for (m = 0; m < 16; m++)
+			if (D_005E6F38[m] >= 0)
+				((GMO_T *)gmo)[D_005E6F38[m]].f4 = 0;
+	}
+	if (gmain.f.f1088 == 1) {
+		for (i = 0; i < 4; i++) {
+			GMPC.a[i] = 0;
+			for (j = 0; j < 11; j++) {
+				int *z = D_005A0790[i][j];
+				for (k = 0; k < 3; k++)
+					if (z[k] >= 0)
+						((GMO_T *)gmo)[z[k]].f4 = 0;
+			}
+		}
+		GMPC.b = 0;
+		for (n = 0; n < 2; n++)
+			if (D_005A09B0[n] >= 0)
+				((GMO_T *)gmo)[D_005A09B0[n]].f4 = 0;
+		if (gmain.f.ff28 == 13 && D_005A0CF0 >= 0)
+			((GMO_T *)gmo)[D_005A0CF0].f4 = 0;
+	}
+	inv_laser_all_init();
+	inv_ring_all_init();
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", bg_init);
 
