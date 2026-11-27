@@ -398,6 +398,8 @@ segments:
       - [0x162778, rodata, asm/rodata_1626F8]
       - [0x163D10, .rodata, main_objs/glutils_RectanglePicking]
       - [0x163D98, rodata, asm/rodata_163D18]
+      - [0x163F50, .rodata, main_objs/glutils_TurnTable]
+      - [0x163F9C, rodata, asm/rodata_163F1C]
       - [0x164794, .rodata, main_objs/glutils__arrow_pstack]
       - [0x1647FC, rodata, asm/rodata_16477C]
       - [0x164818, .rodata, main_objs/gl__name_stack]
@@ -568,6 +570,8 @@ segments:
       - { start: 0x189CE4, type: bss, vram: 0x18AADC, name: bss_18AADC }
       - { start: 0x189CE4, type: .bss, vram: 0x18AFAC, name: main_objs/glutils_RectanglePicking }
       - { start: 0x189CE4, type: bss, vram: 0x18B030, name: bss_18B030 }
+      - { start: 0x189CE4, type: .bss, vram: 0x18B178, name: main_objs/glutils_TurnTable }
+      - { start: 0x189CE4, type: bss, vram: 0x18B23C, name: bss_18B23C }
       - { start: 0x189CE4, type: .bss, vram: 0x18B614, name: main_objs/vector_font_OutputText }
       - { start: 0x189CE4, type: .bss, vram: 0x18B628, name: main_objs/interp_KeyFrameSequence }
       - { start: 0x189CE4, type: .bss, vram: 0x18B6EC, name: main_objs/math_SphericalCoord }

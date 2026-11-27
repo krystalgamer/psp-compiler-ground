@@ -419,3 +419,8 @@ bss 0x18DF5C -
 rodata 0x167764 main_objs/vector_font_OutputText
 rodata 0x167790 -
 bss 0x18EA94 main_objs/vector_font_OutputText
+# glutils_TurnTable: C++ static initializer, setPivot(float) (1.0f literal); .rodata: the float pools up to track()'s (the asm functions' come with their .s); .bss: the header statics
+rodata 0x166DF0 main_objs/glutils_TurnTable
+rodata 0x166E3C -
+bss 0x18E5F8 main_objs/glutils_TurnTable
+bss 0x18E6BC -
