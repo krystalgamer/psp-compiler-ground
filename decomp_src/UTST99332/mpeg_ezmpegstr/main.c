@@ -393,4 +393,111 @@ static SceInt32 startCheck(t_avSyncControl *pAvSync, SceMpegRingbuffer *pRB, Sce
 	return ret;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/mpeg_ezmpegstr/nonmatchings/main", playMovie);
+SceInt32 decode_audioDecode(SceMpeg *pMpeg, t_mpegStreamData *pStreamData, t_avSyncControl *pAvSync, SceInt32 audio_init_flag);
+SceInt32 decode_videoDecode(SceMpeg *pMpeg, t_mpegStreamData *pStreamData, t_avSyncControl *pAvSync);
+SceInt32 decode_videoDecodeEnd(SceMpeg *pMpeg, t_avSyncControl *pAvSync);
+SceInt32 dispbuf_display(SceVoid *pAv);
+int dispbuf_getCurrentCount(t_displayBuffer *pDisp);
+int soundbuf_setStartFlag(t_soundBuffer *pSound);
+static SceInt32 playMovie(SceMpeg *pMpeg, SceMpegRingbuffer *pRB, t_mpegStreamData *pStreamData, t_avSyncControl *pAvSync, SceInt32 filesize)
+{
+	SceInt32 vBlankCount;
+	SceInt32 demuxsize;
+	SceInt32 readsize;
+	SceInt32 audio_init_flag;
+	SceInt32 ret;
+	SceInt32 startFlag;
+	SceInt32 currentMode;
+
+	audio_init_flag = 1;
+	startFlag = 1;
+	currentMode = 0;
+	ret = 0;
+	demuxsize = 0;
+
+	while (1) {
+		vBlankCount = sceDisplayGetVcount();
+		if (startFlag != 0) {
+			startFlag = startCheck(pAvSync, pRB, filesize, demuxsize);
+		} else {
+			if (audioFlag == 1)
+				soundbuf_setStartFlag(pAvSync->pSound);
+			ret = pad_read();
+			if (ret != 0) {
+				sceMpegAvcDecodeFlush(pMpeg);
+				if (audioFlag == 1)
+					soundbuf_setDemuxEnd(pAvSync->pSound);
+				goto term;
+			}
+		}
+
+		switch (currentMode) {
+		case 0:
+			if (demuxsize == filesize && sceMpegRingbufferAvailableSize(pRB) == 0x12C0) {
+				if (audioFlag == 1)
+					soundbuf_setDemuxEnd(pAvSync->pSound);
+				currentMode = 1;
+				break;
+			}
+			while (1) {
+				if (demuxsize < filesize) {
+					readsize = readPspStream(pRB);
+					if (readsize >= 0)
+						demuxsize += readsize * 2048;
+				}
+				if (audioFlag == 1) {
+					ret = decode_audioDecode(pMpeg, pStreamData, pAvSync, audio_init_flag);
+					if (ret >= 0) {
+						audio_init_flag = 0;
+					} else if (ret != (SceInt32)0x80618001) {
+						printf("fatal error : decode_audioDecode() 0x%x\n", ret);
+						goto error;
+					}
+				}
+				ret = decode_videoDecode(pMpeg, pStreamData, pAvSync);
+				if (ret >= 0)
+					break;
+				if (ret != (SceInt32)0x80618001) {
+					printf("fatal error : sceMpegGetAvcAu () 0x%x\n", ret);
+					goto error;
+				}
+			}
+			break;
+		case 1:
+			ret = decode_videoDecodeEnd(pMpeg, pAvSync);
+			if (ret < 0) {
+				printf("fatal error : decode_videoDecodeEnd() 0x%x\n", ret);
+				goto error;
+			}
+			if (ret == 0)
+				currentMode = 2;
+			break;
+		case 2:
+			if (dispbuf_getCurrentCount(pAvSync->pDisp) == 0)
+				goto term;
+			break;
+		}
+
+		if (startFlag == 0) {
+			while (sceDisplayGetVcount() < vBlankCount + 1) {
+				if (demuxsize < filesize) {
+					readsize = readPspStream(pRB);
+					if (readsize > 0)
+						demuxsize += readsize * 2048;
+				} else {
+					sceDisplayWaitVblankStart();
+				}
+			}
+			dispbuf_display(pAvSync);
+		}
+		sceKernelCheckCallback();
+	}
+
+error:
+	if (audioFlag == 1)
+		soundbuf_setDemuxEnd(pAvSync->pSound);
+term:
+	printf("frame count = %d\n", frameCount);
+	printf("frame loss = %d\n", frameLoss);
+	return ret;
+}
