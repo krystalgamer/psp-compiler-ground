@@ -1290,19 +1290,13 @@ void sceGuPatchFrontFace(int arg0)
 	send_commandi(56, arg0);
 }
 
-#ifdef NON_MATCHING
-/* Close: the a0/a1 argument setup is scheduled in the opposite order. */
 void sceGuShadeModel(int mode)
 {
-	int m = 0;
-
-	if (mode == 1)
-		m = 1;
-	send_commandi(80, m);
+	if (mode != 1)
+		send_commandi(80, 0);
+	else
+		send_commandi(80, 1);
 }
-#else
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", sceGuShadeModel);
-#endif
 
 void sceGuLight(int light, int type, int components, const ScePspFVector3 *position)
 {
