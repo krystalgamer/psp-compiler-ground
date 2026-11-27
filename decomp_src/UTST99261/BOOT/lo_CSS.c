@@ -71,6 +71,10 @@ typedef struct CSSSLNODE { u8 x0[0xC]; CSSDECLNODE *decl; u8 x10[8]; struct CSSS
 typedef struct CSSRULENODE { s16 type; u8 x2[0xA]; CSSSLNODE *sl; u8 x10[8]; struct CSSRULENODE *next; u16 *tag; } CSSRULENODE;
 typedef struct CSSRULELIST { u8 x0[0xC]; CSSRULENODE *first; } CSSRULELIST;
 typedef struct CSSSHEET { s16 type; u8 x2[0xA]; CSSRULELIST *rules; u8 x10[0x10]; struct CSSSHEET *next; } CSSSHEET;
+typedef struct CSSSIDEFUNCS { CSSFUNC top; CSSFUNC bottom; CSSFUNC left; CSSFUNC right; } CSSSIDEFUNCS;
+extern CSSSIDEFUNCS allSidesFuncTable[];
+typedef struct CSSBORDERFUNCS { CSSFUNC color; CSSFUNC width; CSSFUNC style; } CSSBORDERFUNCS;
+extern CSSBORDERFUNCS BorderFuncTable[];
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/lo_CSS", D_00139910);
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/lo_CSS", D_00139914);
@@ -79,9 +83,91 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_CSS", innerCSSSetShortIntPar
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_CSS", innerCSSSetIntParam);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_CSS", innerCSSCallFunc);
+void innerCSSCallFunc(void *ctx, BOX *box, CSSVALUE *val, int n, int kind) {
+    CSSVALUE *v = val;
+    switch (n) {
+    case 1:
+        allSidesFuncTable[kind].top(ctx, box, v, n);
+        allSidesFuncTable[kind].bottom(ctx, box, v, n);
+        allSidesFuncTable[kind].right(ctx, box, v, n);
+        allSidesFuncTable[kind].left(ctx, box, v, n);
+        break;
+    case 2:
+        allSidesFuncTable[kind].top(ctx, box, v, n);
+        allSidesFuncTable[kind].bottom(ctx, box, v, n);
+        v = v->next;
+        allSidesFuncTable[kind].right(ctx, box, v, n);
+        allSidesFuncTable[kind].left(ctx, box, v, n);
+        break;
+    case 3:
+        allSidesFuncTable[kind].top(ctx, box, v, n);
+        v = v->next;
+        allSidesFuncTable[kind].right(ctx, box, v, n);
+        allSidesFuncTable[kind].left(ctx, box, v, n);
+        v = v->next;
+        allSidesFuncTable[kind].bottom(ctx, box, v, n);
+        break;
+    case 4:
+        allSidesFuncTable[kind].top(ctx, box, v, n);
+        v = v->next;
+        allSidesFuncTable[kind].right(ctx, box, v, n);
+        v = v->next;
+        allSidesFuncTable[kind].bottom(ctx, box, v, n);
+        v = v->next;
+        allSidesFuncTable[kind].left(ctx, box, v, n);
+        break;
+    }
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_CSS", innerCSSSetBorder);
+void innerCSSSetBorder(void *ctx, BOX *box, CSSVALUE *val, int n, int side) {
+    CSSVALUE *v = val;
+    for (; v != NULL; v = v->next) {
+        switch (v->unit) {
+        case 1:
+        case 3:
+        case 4:
+        case 5:
+        case 6:
+        case 7:
+        case 8:
+        case 9:
+        case 10:
+            BorderFuncTable[side].width(ctx, box, v, n);
+            break;
+        case 0x19:
+        case 0x1A:
+            BorderFuncTable[side].color(ctx, box, v, n);
+            break;
+        case 0x15:
+            switch (v->ident) {
+            case 0x2E:
+            case 0x34:
+            case 0x35:
+            case 0x43:
+            case 0x50:
+            case 0x80:
+            case 0x8C:
+            case 0xA3:
+                BorderFuncTable[side].style(ctx, box, v, n);
+                break;
+            case 0x6C:
+            case 0xB7:
+            case 0xB8:
+                BorderFuncTable[side].width(ctx, box, v, n);
+                break;
+            case 0xBA:
+                BorderFuncTable[side].color(ctx, box, v, n);
+                break;
+            case 0x4D:
+                BorderFuncTable[side].width(ctx, box, v, n);
+                BorderFuncTable[side].style(ctx, box, v, n);
+                BorderFuncTable[side].color(ctx, box, v, n);
+                break;
+            }
+            break;
+        }
+    }
+}
 
 void innerCSSSetBorderStyle(int ident, s16 *width, s16 *style, s16 inherit) {
     switch (ident) {
