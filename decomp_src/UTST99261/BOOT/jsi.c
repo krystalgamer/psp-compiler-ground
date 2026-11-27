@@ -44,6 +44,11 @@ M2C_UNK esp_setDialogReply();                       /* extern */
 
 
 void *HST_getHttpHeader(void *h);
+typedef struct JSOPT { struct JSOPT *next; int u4[4]; int selected; } JSOPT;
+int GUI_Choice_select(void *w, int idx);
+void GUI_List_select(void *w, int idx);
+void GUI_List_deselect(void *w, int idx);
+unsigned int Util_HTMLSelectElement_getLength(void *node);
 DOMStr *newDOMString_4B5FC(const char *utf8, int len) {
     DOMStr *s = MEM_malloc(0, sizeof(DOMStr));
 
@@ -390,7 +395,36 @@ int JSI_getSelectedIndex(void *node) {
     return GUI_Choice_getSelectedItem(box->widget);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSI_setSelectedIndex);
+int JSI_setSelectedIndex(void *node, int idx) {
+    LayoutBox *box;
+    JSOPT *o;
+    unsigned int i;
+    if (node == NULL || (box = Node_getBox(node)) == NULL) {
+        return 0;
+    }
+    if (box->type != 18 || box->widget == NULL) {
+        return 0;
+    }
+    OS_thread_mutex_lock(M2C_FIELD(gESPRIT_LO_GLOBAL_NDA, void **, 0x3C));
+    i = 0;
+    for (o = M2C_FIELD(box->data, JSOPT **, 8); o != NULL; o = o->next) {
+        o->selected = i == idx;
+        i++;
+    }
+    OS_thread_mutex_unlock(M2C_FIELD(gESPRIT_LO_GLOBAL_NDA, void **, 0x3C));
+    if (M2C_FIELD(box->data, int *, 4) >= 2) {
+        for (i = 0; i < Util_HTMLSelectElement_getLength(node); i++) {
+            if (i == idx) {
+                GUI_List_select(box->widget, idx);
+            } else {
+                GUI_List_deselect(box->widget, i);
+            }
+        }
+    } else if (GUI_Choice_select(box->widget, idx) < 0) {
+        return 0;
+    }
+    return 1;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSI_getTextValue);
 
