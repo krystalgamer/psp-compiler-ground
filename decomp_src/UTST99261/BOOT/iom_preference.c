@@ -7,6 +7,7 @@ M2C_UNK MEM_free(M2C_UNK, int);                     /* extern */
 extern void *esp_context;
 
 
+double CLIB_difftime(int a, int b);
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iom_preference", iom_preferenceCache);
 
 #ifndef NULL
@@ -214,7 +215,24 @@ INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/iom_preference", D_00139FF4)
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iom_preference", iom_time2str);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iom_preference", iom_diffexpire);
+int iom_diffexpire(int a, int b) {
+    if (a == 0 || b == 0) {
+        if (a == 0 && b != 0)
+            return -1;
+        return a != 0 && b == 0;
+    }
+    if (a != -1 && b != -1) {
+        if (CLIB_difftime(a, b) < 0.0)
+            return -1;
+        else if (CLIB_difftime(a, b) > 0.0)
+            return 1;
+        else
+            return 0;
+    }
+    if (a == -1 && b != -1)
+        return -1;
+    return a != -1 && b == -1;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iom_preference", iom_rmdir);
 
