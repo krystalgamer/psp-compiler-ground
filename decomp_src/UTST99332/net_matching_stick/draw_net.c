@@ -250,7 +250,39 @@ void draw_net_established_list(int *x_ptr, int *y_ptr)
 	*y_ptr = y;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/net_matching_stick/nonmatchings/draw_net", get_nickname);
+static int get_nickname(int buflen, struct SceNetEtherAddr *addr, struct SceNetAdhocctlNickname **n)
+{
+	struct SceNetAdhocctlPeerInfo *peer;
+	int ret = 0;
+
+	if(buflen == 0)
+		goto finish;
+
+	if(memcmp(&_mrinfo.local_addr, addr,
+	    sizeof(struct SceNetEtherAddr)) == 0){
+		if(_mrinfo.hello_opt.nickname.data[0] != '\0'){
+			*n = &_mrinfo.hello_opt.nickname;
+			ret = 1;
+		}
+		goto finish;
+	}
+
+	for (peer = &peerinfo[0]; peer != NULL; peer = peer->next) {
+		if(memcmp(&peer->mac_addr, addr, sizeof(struct SceNetEtherAddr))
+		    != 0)
+			continue;
+
+		if(peer->nickname.data[0] == '\0')
+			goto finish;
+
+		*n = &peer->nickname;
+		ret = 1;
+		break;
+	}
+
+finish:
+	return ret;
+}
 
 INCLUDE_RODATA("tmp/asm/UTST99332/net_matching_stick/nonmatchings/draw_net", D_00018A1C);
 
