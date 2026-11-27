@@ -21,6 +21,11 @@ int textCmp(int *, int *);
 int textLen(int *);
 void ScriptCompileError(char *msg, ScrTok *t, int code);
 int ScriptWordSearchUCS4(int t, int *s);
+extern unsigned char D_001001E8, D_001001F0, D_00100218, D_00100220, D_0010022C;
+void *_memAlloc(int, void *, int);
+int textPrintf(int *);
+int ScriptSearchName(char *s, unsigned int type, int *name);
+typedef struct ScrVar { struct ScrVar *next; int addr; int type; ScrTok *tok; } ScrVar;
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/script/script", D_001000E0);
 
@@ -165,7 +170,36 @@ int ScriptSearchName(char *s, unsigned int type, int *name)
 	return ret;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/script/script", ScriptEntryName);
+typedef struct { ScrNameEnt *head, *tail; } ScrNL;
+int ScriptEntryName(char *s, unsigned int type, ScrTok *tok, int val)
+{
+	ScrNameEnt *e;
+	ScrNameEnt **l;
+	if (s == NULL)
+		consPrintf(&D_001000F4, &D_001000E0, 0x376, "ScriptEntryName", &D_001001E8);
+	if (type < 15) {
+		if (ScriptSearchName(s, type, tok->str) >= 0) {
+			ScriptCompileError((char *)&D_001001F0, tok, 0x37C);
+			return 0;
+		}
+		e = _memAlloc(12, &D_001000E0, 0x382);
+		if (e == NULL)
+			consPrintf(&D_001000F4, &D_001000E0, 0x383, "ScriptEntryName", &D_00100218);
+		e->next = NULL;
+		e->str = (int **)tok;
+		e->val = val;
+		if (sceKernelGetGPI() & 1)
+			consPrintf(&D_00100220, "ScriptEntryName", val);
+		if (sceKernelGetGPI() & 1)
+			textPrintf(tok->str);
+		if (*(ScrNameEnt **)(s + type * 8 + 0x98) == NULL) *(ScrNameEnt **)(s + type * 8 + 0x98) = e;
+		if (*(ScrNameEnt **)(s + type * 8 + 0x9C) != NULL) (*(ScrNameEnt **)(s + type * 8 + 0x9C))->next = e;
+		*(ScrNameEnt **)(s + type * 8 + 0x9C) = e;
+		return 1;
+	}
+	consPrintf(&D_001000F4, &D_001000E0, 0x395, "ScriptEntryName", &D_0010022C);
+	return 1;
+}
 
 typedef struct ScrName { struct ScrName *next; } ScrName;
 void *memset(void *, int, unsigned int);
@@ -197,7 +231,39 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/script/script", D_00100220)
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/script/script", D_0010022C);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/script/script", ScriptEntryVariable);
+int ScriptEntryVariable(char *s, int type, ScrTok *tok)
+{
+	ScrVar *v;
+	if (s == NULL)
+		consPrintf(&D_001000F4, &D_001000E0, 0x3B7, "ScriptEntryVariable", &D_001001E8);
+	if (*(int *)(s + 0x24) == 1) return 1;
+	{
+		v = _memAlloc(16, &D_001000E0, 0x3BC);
+		if (v != NULL) {
+			switch (type) {
+			case 3:
+				v->addr = *(int *)(s + 0x38) - 8;
+				break;
+			case 0:
+			case 1:
+			case 2:
+			case 4:
+				v->addr = *(int *)(s + 0x2C) - 16;
+				break;
+			}
+			v->next = NULL;
+			v->type = type;
+			v->tok = tok;
+			if (*(ScrVar **)(s + 0x110) == NULL) *(ScrVar **)(s + 0x110) = v;
+			if (*(ScrVar **)(s + 0x114) != NULL) (*(ScrVar **)(s + 0x114))->next = v;
+			*(ScrVar **)(s + 0x114) = v;
+			return 1;
+		} else {
+			ScriptCompileError("Error !! : Few memory", tok, 0x3DD);
+			return 0;
+		}
+	}
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/script/script", ScriptSettleVariable);
 
