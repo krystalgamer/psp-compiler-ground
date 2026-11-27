@@ -384,7 +384,45 @@ void zWindDrawClipPop(void) {
     _zWindDrawTexClipY2 = _zWindDrawTexClipYT + _zWindDrawTexClipHeightT;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/zWindDraw", zWindDrawBox);
+void zWindDrawBox(int x, int y, int w, int h, short color) {
+    u16 *p;
+    int x2;
+    int y2;
+    int i;
+    int skip;
+
+    x -= _zWindDrawTexClipOffX;
+    y -= _zWindDrawTexClipOffY;
+    if (x > _zWindDrawTexClipX2 || x + w < _zWindDrawTexClipX || y > _zWindDrawTexClipY2 || y + h < _zWindDrawTexClipY) {
+        return;
+    }
+    if (x < _zWindDrawTexClipX) {
+        w -= _zWindDrawTexClipX - x;
+        x = _zWindDrawTexClipX;
+    }
+    if (x + w > _zWindDrawTexClipX2) {
+        w = _zWindDrawTexClipX2 - x;
+    }
+    if (y < _zWindDrawTexClipY) {
+        h -= _zWindDrawTexClipY - y;
+        y = _zWindDrawTexClipY;
+    }
+    if (y + h > _zWindDrawTexClipY2) {
+        h = _zWindDrawTexClipY2 - y;
+    }
+    x2 = x + w;
+    y2 = y + h;
+    p = (u16 *)_zWindDrawTexdata;
+    p += x + y * _zWindDrawTexWidth;
+    color |= 0x8000;
+    skip = _zWindDrawTexWidth - w;
+    for (; y < y2; y++) {
+        for (i = x; i < x2; i++) {
+            *p++ = color;
+        }
+        p += skip;
+    }
+}
 
 void zWindDrawBoxP(int x1, int y1, int x2, int y2, s16 color) {
     int t;
