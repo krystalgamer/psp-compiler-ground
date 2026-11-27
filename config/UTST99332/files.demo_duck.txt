@@ -61,7 +61,7 @@ rodata 0x17B2F0 -
 # newlib locale.c and vfprintf.c (ported from demo_mars): their .rodata
 rodata 0x17B474 newlib/libc/locale/locale
 rodata 0x17B908 newlib/libc/stdio/vfprintf
-rodata 0x17BAE8 -
+rodata 0x17BAE8 newlib/libc/stdio/vfscanf
 # newlib/libgcc units built from upstream sources (tools/libsrc.py): their .rodata
 rodata 0x1781C0 newlib/libm/math/sf_atan
 rodata 0x17825C newlib/libm/math/sf_cos

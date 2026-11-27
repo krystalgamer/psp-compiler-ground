@@ -1,11 +1,7 @@
-#include "common.h"
+/* upstream: newlib-1.12.0/newlib/libc/stdio/vfscanf.c (unmodified; built with WANT_PRINTF_LONG_LONG like vfprintf.c) */
+/* cflags: -O2 -fno-builtin */
+#define WANT_PRINTF_LONG_LONG
+#include "libc/stdio/vfscanf.c"
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/newlib/libc/stdio/vfscanf", vfscanf);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/newlib/libc/stdio/vfscanf", __svfscanf);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/newlib/libc/stdio/vfscanf", _vfscanf_r);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/newlib/libc/stdio/vfscanf", __svfscanf_r);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/newlib/libc/stdio/vfscanf", __sccl);
+/* labels the rest of the module's asm uses */
+__asm__(".globl D_0017BBB0\nD_0017BBB0 = 0x0017BBB0");

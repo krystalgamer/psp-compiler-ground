@@ -514,7 +514,7 @@ segments:
       - [0x17B848, .rodata, newlib/libc/stdlib/strtod]
       - [0x17B940, .rodata, newlib/libc/time/tzset_r]
       - [0x17B988, .rodata, newlib/libc/stdio/vfprintf]
-      - [0x17BB68, rodata, asm/rodata_17BAE8]
+      - [0x17BB68, .rodata, newlib/libc/stdio/vfscanf]
       - [0x17BFB0, .rodata, newlib/libc/stdlib/wctomb_r]
       - [0x17BFD0, .rodata, newlib/libc/stdlib/dtoa]
       - [0x17C050, .rodata, newlib/libc/stdlib/mbrtowc]
