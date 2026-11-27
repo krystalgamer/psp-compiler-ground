@@ -602,3 +602,6 @@ rodata 0x1689E8 -
 # math_matrix_eigenVectors: the header statics (.bss)
 bss 0x18ED6C main_objs/math_matrix_eigenVectors
 bss 0x18EDEC -
+# psp_vram: psp::vram (.bss)
+bss 0x18D7D8 main_objs/psp_vram
+bss 0x18D85C -

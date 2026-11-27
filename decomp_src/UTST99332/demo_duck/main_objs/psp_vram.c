@@ -4,17 +4,37 @@
 #include "cxx/defer_asm.h"
 #include "../main.hpp"
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/psp_vram", _Z41__static_initialization_and_destruction_0ii_1C7E8);
+/* the module's .ctors/.dtors refer to the static constructor/destructor */
+__asm__(".globl _GLOBAL__I__ZN3psp4vramE");
+__asm__(".globl _GLOBAL__D__ZN3psp4vramE");
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/psp_vram", _ZN3psp4VramC2Ev);
+extern "C" const char D_00162C08[], D_00162C48[], D_00162FF0[], D_00163000[], D_00163040[], D_00163064[];
+extern "C" void sceGuDrawBufferList(int psm, void *fbp, int fbw);
+extern const char Vram_copyImageBegin_name[] __asm__("_ZZN3psp4Vram14copyImageBeginEbE19__PRETTY_FUNCTION__");
+extern const char Vram_copyImageEnd_name[] __asm__("_ZZN3psp4Vram12copyImageEndEvE19__PRETTY_FUNCTION__");
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/psp_vram", _ZN3psp4VramC1Ev);
+psp::Vram psp::vram;
+
+psp::Vram::Vram() : f0(-1), f4(false), f8(0), fC(0), f10(0), f14(0), src_pf((PixelFormat)-1), dst_pf((PixelFormat)-1), f80(true), _copy_mode(false)
+{
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/psp_vram", _ZN3psp4Vram4initENS_11PixelFormatE);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/psp_vram", _ZNK3psp4Vram3logEv);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/psp_vram", _ZN3psp4Vram14copyImageBeginEb);
+void psp::Vram::copyImageBegin(bool b)
+{
+    SCENE_ASSERT(!_copy_mode, D_00162C08, D_00162FF0, D_00162C48, Vram_copyImageBegin_name, 155, D_00163000);
+    _copy_mode = true;
+    f80 = b;
+    sceGuOffset(0, 0);
+    sceGuDisable(1);
+    sceGuDepthMask(1);
+    sceGuEnable(9);
+    sceGuTexFunc(0, 0);
+    sceGuColor(0xFFFFFFFF);
+}
 
 void psp::Vram::copyImageSrcPf(PixelFormat pf)
 {
@@ -27,23 +47,18 @@ void psp::Vram::copyImageDstPf(PixelFormat pf)
     dst_pf = pf;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/psp_vram", _ZN3psp4Vram12copyImageEndEv);
+void psp::Vram::copyImageEnd()
+{
+    SCENE_ASSERT(_copy_mode, D_00162C08, D_00163064, D_00162C48, Vram_copyImageEnd_name, 189, D_00163040);
+    _copy_mode = false;
+    sceGuOffset(2048 - 480 / 2, 2048 - 272 / 2);
+    sceGuEnable(1);
+    sceGuDepthMask(0);
+    sceGuViewport(2048, 2048, 480, 272);
+    sceGuDrawBufferList(f0, vram.drawBuffer(), 512);
+    sceGuScissor(0, 0, 480, 272);
+    src_pf = (PixelFormat)-1;
+    dst_pf = (PixelFormat)-1;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/psp_vram", _ZN3psp4Vram9copyImageEiiiiPvS1_);
-
-extern "C" {
-void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_1C7E8");
-void _GLOBAL__I__ZN3psp4vramE(void);
-void _GLOBAL__D__ZN3psp4vramE(void);
-}
-
-void _GLOBAL__I__ZN3psp4vramE(void)
-{
-    static_init(1, 0xFFFF);
-}
-
-void _GLOBAL__D__ZN3psp4vramE(void)
-{
-    static_init(0, 0xFFFF);
-}
-

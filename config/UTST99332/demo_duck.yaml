@@ -676,6 +676,8 @@ segments:
       - { start: 0x18CFCC, type: .bss, vram: 0x18D748, name: main_objs/psp_DisplayList }
       - { start: 0x18CFCC, type: .bss, vram: 0x18D74C, name: main_objs/psp_VertexArrayEdit }
       - { start: 0x18CFCC, type: bss, vram: 0x18D7D8, name: bss_18D7D8 }
+      - { start: 0x18CFCC, type: .bss, vram: 0x18D7D8, name: main_objs/psp_vram }
+      - { start: 0x18CFCC, type: bss, vram: 0x18D85C, name: bss_18D85C }
       - { start: 0x18CFCC, type: .bss, vram: 0x18DE78, name: main_objs/glutils_CheckerTexture }
       - { start: 0x18CFCC, type: .bss, vram: 0x18DF58, name: main_objs/vector_font_Console }
       - { start: 0x18CFCC, type: bss, vram: 0x18DF5C, name: bss_18DF5C }

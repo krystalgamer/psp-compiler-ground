@@ -154,7 +154,7 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/WaterPatch", _ZN10WaterPat
 
 void WaterPatch::prepareRefraction() const
 {
-    unsigned int base = psp::vram.f68;
+    unsigned int base = psp::vram.b5C.fC;   /* 0x68 */
     mipmap_offset[0] = base;
     mipmap_offset[1] = base + 0x20000;
     mipmap_offset[2] = mipmap_offset[1] + 0x8000;

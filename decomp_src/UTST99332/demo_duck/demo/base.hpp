@@ -14,24 +14,36 @@ void sceGumTranslate(const ScePspFVector3 *v);
 
 namespace psp {
 enum PixelFormat { };
+/* a 7-word buffer descriptor (zeroed by Vram()) */
+struct VramBuffer {
+    VramBuffer() : p0(0), p1(0), f8(0), fC(0), f10(0), f14(0), f18(0) {}
+    void *p0, *p1;
+    int f8, fC, f10, f14, f18;
+};
 class Vram {
 public:
+    Vram();
     void copyImageBegin(bool);
     void copyImageSrcPf(PixelFormat);
     void copyImageDstPf(PixelFormat);
     void copyImageEnd();
     void copyImage(int, int, int, int, void *, void *);
-    void *displayBuffer() const { return f14 ? f40 : f44; }
+    void *displayBuffer() const { return f14 ? b40.p0 : b40.p1; }
+    void *drawBuffer() const { return f14 ? b5C.p0 : b5C.p1; }
     int f0;
-    char _pad4[0x14 - 4];
+    bool f4;                /* 0x4 */
+    int f8, fC, f10;        /* 0x8 */
     int f14;                /* 0x14 */
-    char _pad18[0x28];
-    void *f40, *f44;        /* 0x40 */
-    char _pad48[0x20];
-    unsigned int f68;       /* 0x68 */
-    char _pad6c[0xC];
+    char _pad18[0x10];
+    std::string s28;        /* 0x28 */
+    char _pad2c[0x10];
+    std::string s3C;        /* 0x3C */
+    VramBuffer b40;         /* 0x40 */
+    VramBuffer b5C;         /* 0x5C */
     PixelFormat src_pf;     /* 0x78 */
     PixelFormat dst_pf;     /* 0x7C */
+    bool f80;               /* 0x80 */
+    bool _copy_mode;        /* 0x81 */
 };
 extern Vram vram;
 }
