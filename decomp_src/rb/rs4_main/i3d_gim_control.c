@@ -6,7 +6,17 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_gim_control", I3dGimPictureAct
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_gim_control", I3rRoot__MakePresetPacket);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_gim_control", I3rRoot__ClearPresetPacket);
+int **I3rModel__GetWork_PSP();
+int I3rRoot__ClearPresetPacket(char *r)
+{
+	int *w = *I3rModel__GetWork_PSP(r + 0x10);
+	unsigned int n = w[1];
+	int *p = (int *)w[0];
+	unsigned int i;
+	for (i = 0; i < n; i++)
+		*p++ = 0;
+	return 0;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_gim_control", I3rRoot__AssignTex);
 
