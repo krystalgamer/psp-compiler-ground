@@ -1149,7 +1149,8 @@ public:
     void resize(unsigned int);
     void set_name(const char *);
     void finish(bool);
-    char _p0[8];
+    char *_buf_mem;             /* 0x0 */
+    char *_buf;                 /* 0x4 */
     unsigned int _capacity;     /* 0x8 */
     unsigned int _size;         /* 0xC */
     char _p10[4];

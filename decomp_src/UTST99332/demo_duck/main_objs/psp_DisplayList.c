@@ -4,6 +4,9 @@
 #include "cxx/defer_asm.h"
 #include "../main.hpp"
 
+extern "C" const char D_001611A0[], D_001611AC[], D_001611B0[], D_001611D0[], D_001611F0[], D_00161224[];
+extern const char resize_name[] __asm__("_ZZN3psp11DisplayList6resizeEjE19__PRETTY_FUNCTION__");
+
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/psp_DisplayList", _Z41__static_initialization_and_destruction_0ii_15328);
 
 extern "C" {
@@ -23,6 +26,34 @@ void func_000153C4(void)
     static_init(0, 0xFFFF);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/psp_DisplayList", _ZN3psp11DisplayList6resizeEj);
+#define DL_ASSERT(c, text, line) SGL_ASSERT(c, D_001611A0, text, D_001611D0, resize_name, line, D_001611AC)
+void psp::DisplayList::resize(unsigned int n)
+{
+    DL_ASSERT(!_wflag, D_00161224, 23);
+    if (_capacity == n)
+        return;
+    if (_buf_mem) {
+        delete[] _buf_mem;
+        _buf_mem = 0;
+    }
+    _size = 0;
+    _capacity = n;
+    _buf = 0;
+    if (n) {
+        _buf_mem = new char[n + 64];
+        _buf = _buf_mem;
+        while ((unsigned int)_buf % 64 != 0)
+            _buf++;
+        DL_ASSERT((unsigned int)_buf - (unsigned int)_buf_mem < 64, D_001611F0, 46);
+        DL_ASSERT((unsigned int)_buf % 64 == 0, D_001611B0, 47);
+    }
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/psp_DisplayList", _ZN3psp11DisplayList8set_nameEPKc);
+void psp::DisplayList::set_name(const char *n)
+{
+    unsigned int len = strlen(n);
+    unsigned int i;
+    for (i = 0; i < 31 && i < len; i++)
+        _name[i] = n[i];
+    _name[i] = 0;
+}
