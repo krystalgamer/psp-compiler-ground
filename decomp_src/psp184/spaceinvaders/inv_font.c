@@ -54,7 +54,49 @@ int inv_font_pri_get(void) {
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_font", inv_font_ascii);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_font", inv_font_ascii_w);
+void inv_font_ascii_w(unsigned char *str, int x, int y, int w, int sx, int sy, int r, int g, int b, int a)
+{
+	int cx, cy, cw;
+	unsigned short col;
+	unsigned char c;
+	unsigned int n;
+	unsigned char *s;
+
+	if (a <= 0)
+		return;
+	if (sx <= 0)
+		return;
+	if (sy <= 0)
+		return;
+	cx = x;
+	cy = y;
+	col = ((a >> 4) << 12) | (((b * a / 255) << 4) & 0xF00) | ((g * a / 255) & 0xF0) | ((u8)(r * a / 255) >> 4);
+	s = str;
+	for (;;) {
+		if (font_max >= 512)
+			return;
+		c = *s;
+		n = (u8)(c - 0x20);
+		if (c == 0)
+			return;
+		if (c == '\n') {
+			cx = x;
+			cy += sy * 24 / 100;
+			continue;
+		}
+		if (n >= 0x70)
+			continue;
+		if (c == ' ') {
+			cx += w * sx / 100;
+			s++;
+			continue;
+		}
+		s++;
+		inv_font_set(&((FONT_T *)&inv_font)[font_max], n, cx + (w * sx / 100 - (font_w[n] - 2) * sx / 100) / 2, cy, sx, sy, col);
+		cx += w * sx / 100;
+		font_max++;
+	}
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_font", inv_font_ascii_no);
 
