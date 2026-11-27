@@ -80,7 +80,8 @@ struct B2aFile {
 };
 
 struct Object {
-	int _0, _4, _8;
+	unsigned short sibling, child;
+	int _4, _8;
 	float rot;
 	unsigned int col;
 	FVEC pos;
@@ -88,6 +89,7 @@ struct Object {
 	void Clear();
 	void Scale(float, float);
 	void MoveTo(FVEC &v);
+	void Refresh();
 };
 
 struct Manager {
@@ -335,7 +337,23 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _ZN3B2A7Manager12Crea
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _ZN3B2A7Manager12DeletePlayerEPNS_6PlayerE);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _ZN3B2A7Manager10RefreshOneEib);
+}
+void B2A::Manager::RefreshOne(int i, bool clear)
+{
+	for (;;) {
+		Object &o = *(Object *)&scene[i];
+		if (clear)
+			o.Clear();
+		else
+			o.Refresh();
+		if (o.child)
+			RefreshOne(o.child, clear);
+		if (!o.sibling)
+			break;
+		i = o.sibling;
+	}
+}
+extern "C" {
 
 }
 void B2A::Manager::Refresh()
