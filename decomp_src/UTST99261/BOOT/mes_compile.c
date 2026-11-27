@@ -535,7 +535,68 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_compile", mes_compile_funct
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_compile", mes_compile_statement);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_compile", mes_compile_body);
+int mes_compile_body(void *ctx, void *node, int id, void *a, void *v)
+{
+    Vals *args = a;
+    Vals *vars = v;
+    CompState c;
+    int *sp = M2C_FIELD(ctx, int **, 0x18);
+    void *f;
+    unsigned int i;
+    char *p;
+    int t;
+
+    c.ctx = ctx;
+    c.f4 = id;
+    c.f8 = (int)args;
+    c.fC = (int)vars;
+    c.list = mes_list_tail_new();
+    c.code = mes_byte_code_new();
+    c.f18 = 0;
+    c.f1C = 0;
+    c.f20 = 0;
+    c.f24 = 1;
+    mes_compile_function_declaration(&c, node);
+    mes_byte_code_op(c.code, 1);
+    mes_compile_statement(&c, node);
+    if (mes_byte_code_reachable(c.code))
+        mes_byte_code_op(c.code, 7);
+    f = mes_gc_alloc(ctx, 3);
+    if (f != NULL) {
+        *--M2C_FIELD(ctx, int **, 0x18) = (int)f;
+        mes_object_init(f, 5, D_00585344);
+        M2C_FIELD(f, int *, 0x14) = id;
+        M2C_FIELD(f, int *, 0x18) = mes_byte_code_label_fix(c.code);
+        M2C_FIELD(f, int *, 0x1C) = mes_byte_code_pack(c.code);
+        M2C_FIELD(f, int *, 0x20) = mes_list_tail_to_vals(c.list);
+        if (vars != NULL) {
+            for (i = 0; i < vars->n; i++) {
+                p = mes_object_prop(f, vars->v[i]);
+                p[8] = 0x20;
+                t = ~i;
+                *(short *)(p + 0xA) = t;
+                mes_object_set(f, (t << 2) | 1, vars->v[i], 0);
+            }
+            M2C_FIELD(f, unsigned short *, 0x26) = vars->n;
+        } else {
+            M2C_FIELD(f, unsigned short *, 0x26) = 0;
+        }
+        if (args != NULL) {
+            for (i = 0; i < args->n; i++) {
+                p = mes_object_prop(f, args->v[i]);
+                p[8] = 0x20;
+                *(short *)(p + 0xA) = i;
+                mes_object_set(f, (i << 2) | 1, args->v[i], 0);
+            }
+            M2C_FIELD(f, unsigned short *, 0x24) = args->n;
+        } else {
+            M2C_FIELD(f, unsigned short *, 0x24) = 0;
+        }
+        M2C_FIELD(f, int *, 0x28) = 0;
+    }
+    M2C_FIELD(ctx, int **, 0x18) = sp;
+    return (int)f;
+}
 
 void *mes_compile(void *ctx, void *node)
 {
