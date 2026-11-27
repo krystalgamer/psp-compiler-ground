@@ -686,7 +686,41 @@ int mes_eval_encode_uri_component(EvCtx *ctx, int v)
     return s;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_eval", mes_eval_escape);
+int mes_eval_escape(EvCtx *ctx, int v)
+{
+    int s;
+    void *buf;
+    unsigned short *p;
+    unsigned short *end;
+    unsigned short c;
+
+    s = mes_eval_to_string(ctx, v);
+    *--ctx->sp = s;
+    p = ((EvStr *)(s & ~3))->str;
+    end = p + ((EvStr *)(s & ~3))->len;
+    buf = mes_util_string_new();
+    while (p < end) {
+        c = *p++;
+        if (((unsigned int)(c - 'A') < 26) | ((unsigned int)(c - 'a') < 26) || (unsigned int)(c - '0') < 10 || mes_util_char_in(c, "@*_+-./")) {
+            mes_util_string_put(buf, c);
+        } else if (c < 0x100) {
+            mes_util_string_put(buf, '%');
+            mes_util_string_put(buf, mes_util_hex_char((c >> 4) & 0xF));
+            mes_util_string_put(buf, mes_util_hex_char(c & 0xF));
+        } else {
+            mes_util_string_put(buf, '%');
+            mes_util_string_put(buf, 'u');
+            mes_util_string_put(buf, mes_util_hex_char(c >> 12));
+            mes_util_string_put(buf, mes_util_hex_char((c >> 8) & 0xF));
+            mes_util_string_put(buf, mes_util_hex_char((c >> 4) & 0xF));
+            mes_util_string_put(buf, mes_util_hex_char(c & 0xF));
+        }
+    }
+    ctx->sp++;
+    s = mes_string_new3(ctx, buf);
+    mes_util_string_free(buf);
+    return s;
+}
 
 int mes_eval_unescape(EvCtx *ctx, int v)
 {
