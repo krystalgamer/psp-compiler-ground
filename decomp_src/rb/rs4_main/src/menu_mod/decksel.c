@@ -77,7 +77,24 @@ void _AniInfoSet_342B8(int anm)
 	bxAnmSetPause(anm, 0);
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/decksel", _WinAniExe);
+typedef struct { int f0; int cur; int f8[5]; int base[5]; int mode[5]; int done[5]; int anm[3]; } DsWin;
+int bxAnmExec(int);
+void _WinAniExe(DsWin *w, int unused, int frame)
+{
+	int b = w->base[w->cur];
+	if (w->done[w->cur] == 0) {
+		if (bxAnmExec(w->anm[b]) != 0)
+			w->done[w->cur] = 1;
+	} else if (w->mode[w->cur] != 1) {
+		b += w->f8[w->cur] + 1;
+		bxAnmExec(w->anm[b]);
+		if (w->cur == 0 && w->done[0] != 0)
+			bxAnmExec(w->anm[1]);
+	}
+	bxAnmSetFrame(w->anm[2], frame);
+	bxAnmSetSpeed(w->anm[2], 0.0f);
+	bxAnmExec(w->anm[2]);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/decksel", _FontPutSet_343E8);
 
