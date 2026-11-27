@@ -127,7 +127,17 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_eval", mes_eval_scope_get);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_eval", mes_eval_scope_put);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_eval", mes_eval_scope_canput);
+int mes_eval_scope_canput(EvCtx *ctx, EvScope *scope, unsigned int id)
+{
+    EvObj *o;
+
+    if (id == D_005852E4)
+        return 0;
+    o = scope->obj;
+    if (o->gc->kind == 3 && id == o->f14)
+        return 0;
+    return 1;
+}
 
 int mes_eval_type(unsigned int v)
 {
@@ -427,7 +437,21 @@ int mes_eval_object_canput(EvCtx *ctx, EvObj *o, unsigned int id)
     return 1;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_eval", mes_eval_object_delete);
+int mes_eval_object_delete(EvCtx *ctx, void *obj, unsigned int id)
+{
+    EvProp *p;
+
+    if (obj == NULL)
+        return 8;
+    if ((*(EvGc **)obj)->del != NULL)
+        return (*(EvGc **)obj)->del(ctx, obj, id);
+    p = mes_object_search(obj, id);
+    if (p != NULL && !(p->flags & 4)) {
+        mes_object_delete(obj, id);
+        return 12;
+    }
+    return 8;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_eval", mes_eval_object_set);
 
