@@ -442,6 +442,8 @@ segments:
       - [0x177724, rodata, asm/rodata_1776A4]
       - [0x17775C, .rodata, gcc-3.3.3/libstdc__-v3/libsupc__/pure]
       - [0x177778, rodata, asm/rodata_1776F8]
+      - [0x177998, .rodata, gcc-3.3.3/libstdc__-v3/src/ctype]
+      - [0x1779A8, rodata, asm/rodata_177928]
   - [0x178EC8, bin, seg1_align]
   - name: demo_harmonic_seg1
     type: code
@@ -464,5 +466,8 @@ segments:
       - { start: 0x189CE4, type: bss, vram: 0x18DFA8, name: bss_18DFA8 }
       - { start: 0x189CE4, type: .bss, vram: 0x18E468, name: main_objs/sh_SquareMap }
       - { start: 0x189CE4, type: bss, vram: 0x18E4EC, name: bss_18E4EC }
+      - { start: 0x189CE4, type: .bss, vram: 0x19B454, name: gcc-3.3.3/libstdc__-v3/src/codecvt }
+      - { start: 0x189CE4, type: .bss, vram: 0x19B458, name: gcc-3.3.3/libstdc__-v3/src/ctype }
+      - { start: 0x189CE4, type: bss, vram: 0x19B45C, name: bss_19B45C }
   - [0x189CE4, bin, elf_trailer]
   - [0x6F94A8]

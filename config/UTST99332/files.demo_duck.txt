@@ -22,6 +22,12 @@ rodata 0x17A9A0 gcc-3.3.3/libstdc__-v3/libsupc__/eh_personality
 rodata 0x17A9D4 -
 rodata 0x17AA0C gcc-3.3.3/libstdc__-v3/libsupc__/pure
 rodata 0x17AA28 -
+# libstdc++ src units built from the 1.6.1 tree's sources: their .bss (locale::id) and ctype's .rodata
+bss 0x19E8D4 gcc-3.3.3/libstdc__-v3/src/codecvt
+bss 0x19E8D8 gcc-3.3.3/libstdc__-v3/src/ctype
+bss 0x19E8DC -
+rodata 0x17AC48 gcc-3.3.3/libstdc__-v3/src/ctype
+rodata 0x17AC58 -
 rodata 0x15DAC0 WaterPatch
 rodata 0x15DB14 -
 # WaterPatch.cpp's C++ .bss: the header statics (math::HERMITE_BASIS..), mipmap_offset[5], set_disk's seed

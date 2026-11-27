@@ -20,6 +20,12 @@ rodata 0x177670 gcc-3.3.3/libstdc__-v3/libsupc__/eh_personality
 rodata 0x1776A4 -
 rodata 0x1776DC gcc-3.3.3/libstdc__-v3/libsupc__/pure
 rodata 0x1776F8 -
+# libstdc++ src units built from the 1.6.1 tree's sources: their .bss (locale::id) and ctype's .rodata
+bss 0x19B454 gcc-3.3.3/libstdc__-v3/src/codecvt
+bss 0x19B458 gcc-3.3.3/libstdc__-v3/src/ctype
+bss 0x19B45C -
+rodata 0x177918 gcc-3.3.3/libstdc__-v3/src/ctype
+rodata 0x177928 -
 # math_* objects whose static initializer (the header statics) is C++: their .rodata and .bss
 rodata 0x1655F8 main_objs/math_SphericalCoord
 rodata 0x165628 main_objs/math_ZYZ

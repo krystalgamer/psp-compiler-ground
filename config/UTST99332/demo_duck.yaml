@@ -452,6 +452,8 @@ segments:
       - [0x17AA54, rodata, asm/rodata_17A9D4]
       - [0x17AA8C, .rodata, gcc-3.3.3/libstdc__-v3/libsupc__/pure]
       - [0x17AAA8, rodata, asm/rodata_17AA28]
+      - [0x17ACC8, .rodata, gcc-3.3.3/libstdc__-v3/src/ctype]
+      - [0x17ACD8, rodata, asm/rodata_17AC58]
   - [0x17C1F8, bin, seg1_align]
   - name: demo_duck_seg1
     type: code
@@ -476,5 +478,8 @@ segments:
       - { start: 0x18CFCC, type: bss, vram: 0x191428, name: bss_191428 }
       - { start: 0x18CFCC, type: .bss, vram: 0x1918E8, name: main_objs/sh_SquareMap }
       - { start: 0x18CFCC, type: bss, vram: 0x19196C, name: bss_19196C }
+      - { start: 0x18CFCC, type: .bss, vram: 0x19E8D4, name: gcc-3.3.3/libstdc__-v3/src/codecvt }
+      - { start: 0x18CFCC, type: .bss, vram: 0x19E8D8, name: gcc-3.3.3/libstdc__-v3/src/ctype }
+      - { start: 0x18CFCC, type: bss, vram: 0x19E8DC, name: bss_19E8DC }
   - [0x18CFCC, bin, elf_trailer]
   - [0x70AD04]
