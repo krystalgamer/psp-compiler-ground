@@ -1,7 +1,7 @@
 /* cflags: -O2 */
 #include "common.h"
 #include "m2c_macros.h"
-M2C_UNK inv_logo();                                 /* extern */
+void inv_logo(void);
 M2C_UNK inv_title_init();                           /* extern */
 M2C_UNK inv_title_memcheck();                       /* extern */
 M2C_UNK inv_title_roop();                           /* extern */
@@ -54,7 +54,80 @@ int inv_title_main(void) {
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_title_menu", inv_title_memcheck);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_title_menu", inv_logo);
+extern int logo;
+extern char *logo_filename[];
+void psp_loopstart(void);
+void psp_loopend(void);
+int pad_sw(void);
+int pad_ret_button(void);
+int pad_cansel_button(void);
+int bmp_file_unload(int no);
+void inv_logo(void)
+{
+	int alpha[2], tex[2];
+	int no = 0, cnt = 0;
+	int mode = 0, loop = 1;
+	int i, j;
+
+	if (logo == 1)
+		return;
+	for (j = 0; j < 2; j++) {
+		alpha[j] = 0;
+		tex[j] = -1;
+	}
+	do {
+		psp_loopstart();
+		if (mode == 0) {
+			tex[no] = bmp_file_load(logo_filename[no]);
+			alpha[no] = 0;
+			mode = 1;
+		} else if (mode == 1) {
+			alpha[no] += 8;
+			if (alpha[no] > 255)
+				alpha[no] = 255;
+			if (alpha[no] == 255) {
+				if (no > 0)
+					alpha[no - 1] = 0;
+				mode = 2;
+				cnt = 0;
+			}
+		} else if (mode == 2) {
+			if (pad_sw() & (pad_ret_button() | pad_cansel_button()))
+				cnt = 300;
+			cnt++;
+			if (cnt >= 300) {
+				mode = 0;
+				no++;
+				if (no >= 2) {
+					no--;
+					mode = 10;
+				}
+			}
+		} else if (mode == 10) {
+			alpha[no] -= 8;
+			if (alpha[no] < 0)
+				alpha[no] = 0;
+			if (alpha[no] == 0)
+				mode = 11;
+		} else {
+			loop = 0;
+		}
+		for (i = 0; i < 2; i++) {
+			if (tex[i] >= 0)
+				sprite_set(tex[i], 0, 0, 480, 272, 0, 0, 100, 100, 0, 0, 255, 255, 255, 255, i, 2, 1, alpha[i]);
+		}
+		psp_loopend();
+	} while (loop);
+	psp_loopstart();
+	psp_loopend();
+	psp_loopstart();
+	psp_loopend();
+	for (i = 0; i < 2; i++) {
+		if (tex[i] >= 0)
+			bmp_file_unload(tex[i]);
+	}
+	logo = 1;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_title_menu", inv_title_init);
 
