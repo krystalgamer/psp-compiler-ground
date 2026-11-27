@@ -119,4 +119,17 @@ void spr_boxfill(unsigned char *buf, int x, int y, int w, int h, int col)
 	}
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_trans", spr_boxmask);
+void spr_boxmask(char *src, unsigned char *dst, int x, int y, int w, int h, int dw, int dh)
+{
+	int i, j;
+	unsigned char *d = dst + x + y * dw;
+
+	for (j = 0; j < h; j++) {
+		for (i = 0; i < w; i++) {
+			if (y + j >= 0 && x + i >= 0 && y + j < dh && x + i < dw) {
+				if ((src + i)[j * w])
+					(d + i)[j * dw] = 0;
+			}
+		}
+	}
+}
