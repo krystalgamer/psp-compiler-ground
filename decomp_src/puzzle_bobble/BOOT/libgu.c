@@ -828,13 +828,8 @@ void sceGuDrawArray(int prim, int vtype, int count, const void *indices, const v
 	send_commandi_stall(4, (prim << 16) | count);
 }
 
-#ifdef NON_MATCHING
-/* Close: prim/n/vertices get different callee-saved registers. */
 void sceGuDrawArrayN(int prim, int vtype, int count, int n, const void *indices, const void *vertices)
 {
-	int i;
-	int cmd;
-
 	if (vtype)
 		send_commandi(18, vtype);
 	if (indices) {
@@ -845,14 +840,15 @@ void sceGuDrawArrayN(int prim, int vtype, int count, int n, const void *indices,
 		send_commandi(16, (((unsigned int)vertices) >> 8) & 0xf0000);
 		send_commandi(1, ((unsigned int)vertices) & 0xffffff);
 	}
-	cmd = (prim << 16) | count;
-	for (i = 0; i < n - 1; i++)
-		send_commandi(4, cmd);
-	send_commandi_stall(4, cmd);
+	prim = (prim << 16) | count;
+	{
+		int i;
+
+		for (i = 0; i < n - 1; i++)
+			send_commandi(4, prim);
+	}
+	send_commandi_stall(4, prim);
 }
-#else
-INCLUDE_ASM("tmp/asm/puzzle_bobble/BOOT/nonmatchings/libgu", sceGuDrawArrayN);
-#endif
 
 void sceGuDrawBezier(int vtype, int ucount, int vcount, const void *indices, const void *vertices)
 {
