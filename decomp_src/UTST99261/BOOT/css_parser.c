@@ -8,7 +8,7 @@ u16 *CSS_string(u16 *s, u16 **out);
 u16 *CSS_ident(u16 *s, u16 **out);
 void *UCS_strdup(void *s);
 void *newCSSStyleSheet(int type);
-u16 *CSS_mediaList(u16 *p, u16 *m);
+u16 *CSS_mediaList(u16 *p, int *m);
 void CSS_StyleSheetRuleList(void *ss, u16 *text);
 void *newCSSStyleRule();
 u16 *CSS_selectorList(void *r, u16 *p);
@@ -65,6 +65,17 @@ void *newCSSMediaRule(void *a0, void *a1);
 void addCSSMediaRule(void *r);
 void freeCSSMediaRule(void *r);
 u16 *CSS_mediaRuleList(void *a0, void *r, u16 *p);
+extern u16 CSSSTR_screen[];
+extern u16 CSSSTR_tty[];
+extern u16 CSSSTR_tv[];
+extern u16 CSSSTR_projection[];
+extern u16 CSSSTR_handheld[];
+extern u16 CSSSTR_print[];
+extern u16 CSSSTR_braille[];
+extern u16 CSSSTR_embossed[];
+extern u16 CSSSTR_aural[];
+extern u16 CSSSTR_page[];
+int UCS_strcasecmp(u16 *a, u16 *b);
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_parser", CSS_StyleSheetRuleList);
 
 u16 *CSS_unknownRule(void *a0, void *a1, u16 *p) {
@@ -146,7 +157,7 @@ u16 *CSS_importRule(void *a0, void *a1, u16 *p) {
     }
     p = CSS_SkipBlanksAndComments(p);
     if (*p != ';') {
-        p = CSS_mediaList(p, (u16 *)&m);
+        p = CSS_mediaList(p, &m);
         M2C_FIELD(r, u16 *, 0x28) = *(u16 *)&m;
     }
     p = CSS_SkipBlanksAndComments(p);
@@ -159,7 +170,7 @@ u16 *CSS_importRule(void *a0, void *a1, u16 *p) {
 
 u16 *CSS_mediaRule(void *a0, void *a1, u16 *p) {
     CSSNODE *r;
-    u16 m;
+    int m;
     r = newCSSMediaRule(a0, a1);
     if (r == NULL) {
         return p;
@@ -191,7 +202,35 @@ u16 *CSS_mediaRule(void *a0, void *a1, u16 *p) {
     return p;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_parser", CSS_mediaRuleList);
+u16 *CSS_mediaRuleList(void *a0, void *a1, u16 *p) {
+    u16 c;
+    int n;
+    p = CSS_SkipBlanksAndComments(p);
+    while ((c = *p) != 0) {
+        if (c == '.' || c == ':' || c == '*' || c == '[' || c == '#' || ((unsigned int)(c - 'A') < 26 || (unsigned int)(c - 'a') < 26) || (c == '_' || c == '-')) {
+            goto sel;
+        }
+        if (c != '@') {
+            return p;
+        }
+        goto at;
+sel:
+        if (c != '@') {
+            p = CSS_styleRule(a0, a1, p);
+            goto next;
+        }
+at:
+        n = UCS_strlen(CSSSTR_page);
+        if (UCS_strncasecmp(p, CSSSTR_page, n) == 0 && (p[n] == ' ' || p[n] == '\t' || (p[n] == '\r' || p[n] == '\n') || p[n] == 0xC || p[n] == 0xFEFF)) {
+        p = CSS_pageRule(a0, a1, p + n);
+        } else {
+            p = CSS_unknownRule(a0, a1, p);
+        }
+next:
+        p = CSS_SkipBlanksAndComments(p);
+    }
+    return p;
+}
 
 u16 *CSS_pageRule(void *a0, void *a1, u16 *p) {
     return CSS_SkipRule(p);
@@ -299,7 +338,7 @@ void *CSS_ParseStyleSheet(short type, u16 *text, void *a2, void *ss, void *t0, v
     M2C_FIELD(n, void **, 0x24) = a2;
     m = 0;
     if (media != NULL) {
-        CSS_mediaList(media, (u16 *)&m);
+        CSS_mediaList(media, &m);
     }
     M2C_FIELD(n, u16 *, 0x28) = *(u16 *)&m;
     M2C_FIELD(n, void **, 0x2C) = t1;
@@ -312,7 +351,47 @@ void *CSS_ParseStyleSheet(short type, u16 *text, void *a2, void *ss, void *t0, v
     return ss;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_parser", CSS_mediaList);
+u16 *CSS_mediaList(u16 *p, int *m) {
+    u16 *name;
+    u16 *q;
+    *m = 0;
+    for (;;) {
+        p = CSS_SkipBlanksAndComments(p);
+        q = CSS_ident(p, &name);
+        if (name == NULL) {
+            break;
+        }
+        if (UCS_strcasecmp(name, CSSSTR_screen) == 0) {
+            *m |= 1;
+        } else if (UCS_strcasecmp(name, CSSSTR_tty) == 0) {
+            *m |= 2;
+        } else if (UCS_strcasecmp(name, CSSSTR_tv) == 0) {
+            *m |= 4;
+        } else if (UCS_strcasecmp(name, CSSSTR_projection) == 0) {
+            *m |= 8;
+        } else if (UCS_strcasecmp(name, CSSSTR_handheld) == 0) {
+            *m |= 0x10;
+        } else if (UCS_strcasecmp(name, CSSSTR_print) == 0) {
+            *m |= 0x20;
+        } else if (UCS_strcasecmp(name, CSSSTR_braille) == 0) {
+            *m |= 0x40;
+        } else if (UCS_strcasecmp(name, CSSSTR_embossed) == 0) {
+            *m |= 0x80;
+        } else if (UCS_strcasecmp(name, CSSSTR_aural) == 0) {
+            *m |= 0x100;
+        }
+        MEM_free(0, (int)name);
+        p = CSS_SkipBlanksAndComments(q);
+        if (*p != ',') {
+            break;
+        }
+        p++;
+    }
+    if (*m == 0) {
+        *m = 0x1FF;
+    }
+    return p;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_parser", CSS_StyleSheetRuleSingle);
 
