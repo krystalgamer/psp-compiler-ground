@@ -40,6 +40,20 @@ void *memset(void *d, int c, unsigned int n);
 unsigned char *SetElementData(unsigned char *p, int type, void *data, int len);
 
 int _keywrap_encrypt(unsigned char *out, unsigned char *in, int len, unsigned char *key, int keylen);
+extern unsigned char *lpElementData;
+extern unsigned char ElementData[];
+extern unsigned char btAdapterMAC[];
+extern int bDualCfg;
+extern AEMac _gAPMac;
+int memcmp(const void *a, const void *b, unsigned int n);
+int sprintf(char *buf, const char *fmt, ...);
+int puts(const char *s);
+int GetAdapterMac(AEMac *out);
+typedef struct AEKey {
+    AEMac a;
+    AEMac b;
+    char key[4];
+} AEKey;
 int SendFrameViaInterface(int s, void *to, void *info, void *buf, int len)
 {
     int r = sceNetInetSendto(s, buf, len, 0, to, 16);
@@ -179,7 +193,25 @@ int GetCommandElement(unsigned char *frame, int cmd, unsigned char *out, unsigne
     return len;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/autoex", SetSearchRes);
+int SetSearchRes(unsigned char *frame)
+{
+    unsigned short v;
+    unsigned char *p;
+
+    v = AE_NTOHS(1);
+    {
+    char ver[7] = { 6, 0, 1, 2, 3, 4, 5 };
+    p = lpElementData;
+    p = SetElementData(p, 1, &v, 2);
+    p = SetElementData(p, 2, &v, 2);
+    if (bDualCfg)
+        p = SetElementData(p, 5, &v, 2);
+    p = SetElementData(p, 3, ver, 7);
+    if (bDualCfg)
+        p = SetElementData(p, 4, btAdapterMAC, 6);
+    }
+    return SetFrameData(frame, 2, ElementData, p - lpElementData + 8, 0);
+}
 
 int GetAdapterMac(AEMac *out)
 {
@@ -191,11 +223,37 @@ int GetAdapterMac(AEMac *out)
     return 1;
 }
 
-INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/autoex", D_0014168C);
 
-INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/autoex", D_00141694);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/autoex", GetMacEncKey);
+
+int GetMacEncKey(AEKey *out)
+{
+    AEMac ap;
+    AEMac sta;
+    char sSta[32];
+    char sAp[32];
+
+    memcpy(out->key, "WARP", 4);
+    ap = _gAPMac;
+    if (_gAPMac.b[0] & 1)
+        puts("ApBSSID is XR-BSSID");
+    ap.b[0] &= ~2;
+    GetAdapterMac(&sta);
+    *(AEMac *)btAdapterMAC = sta;
+    if (memcmp(&ap, &sta, 6) > 0) {
+        out->b = sta;
+        out->a = ap;
+    } else {
+        out->b = ap;
+        out->a = sta;
+    }
+    if (bDebug) {
+        sprintf(sSta, "%02X:%02X:%02X:%02X:%02X:%02X", sta.b[0], sta.b[1], sta.b[2], sta.b[3], sta.b[4], sta.b[5]);
+        sprintf(sAp, "%02X:%02X:%02X:%02X:%02X:%02X", ap.b[0], ap.b[1], ap.b[2], ap.b[3], ap.b[4], ap.b[5]);
+        printf("AUTOCFG:Start AP:%s STA:%s\n", sAp, sSta);
+    }
+    return 1;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/autoex", GetWLanSetElement);
 
