@@ -63,7 +63,30 @@ void _AniInfoSet_38154(int anm)
 	bxAnmSetPause(anm, 0);
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/proedit", _FontPutSet_381A4);
+typedef struct { struct { int dat; void *str; } e[8]; } FontTbl;
+extern FontTbl D_001034C8;
+int saveGetCurrentData(void);
+void _FontPutSet_381A4(int unused, int sel)
+{
+	FontTbl t = D_001034C8;
+	int sd = saveGetCurrentData();
+	int i;
+	if (sel != -1) {
+		if (sel == 0) {
+			_TtrFontPutSet_382C4(0x8C, sd + 0xA8, 0);
+		} else if (sel == 1) {
+			_TtrFontPutSet_382C4(0x8D, sd + 0x128, 0);
+		} else if (sel == 2) {
+			_TtrFontPutSet_382C4(0x8E, sd + 0x1A8, 0);
+		}
+	} else {
+		for (i = 0; t.e[i].dat != -1; i++)
+			_TtrFontPutSet_382C4(t.e[i].dat, 0, t.e[i].str);
+		_TtrFontPutSet_382C4(0x8C, sd + 0xA8, 0);
+		_TtrFontPutSet_382C4(0x8D, sd + 0x128, 0);
+		_TtrFontPutSet_382C4(0x8E, sd + 0x1A8, 0);
+	}
+}
 
 extern unsigned char D_001033C0, D_001033DC, D_00103508, D_00103518, D_00103528;
 int resGetDatLocal(int, int);
