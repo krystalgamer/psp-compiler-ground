@@ -1,5 +1,10 @@
+/* cflags: -O1 */
 #include "common.h"
 #include "m2c_macros.h"
+extern int gFIOMAN;
+extern int pFioman;
+M2C_UNK MEM_free(M2C_UNK, void *);                  /* extern */
+
 
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/wsfileio", UTF8toEUC);
@@ -8,7 +13,14 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/wsfileio", FIO_init);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/wsfileio", FIO_destroy);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/wsfileio", FIO_attach);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+int FIO_attach(void) {
+    pFioman = gFIOMAN;
+    return (gFIOMAN != 0) - 1;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/wsfileio", FIO_fopen);
 
@@ -61,6 +73,18 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/wsfileio", FIO_rename);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/wsfileio", fio_delfilelist);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/wsfileio", fio_freeList);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void fio_freeList(void *arg0) {
+    void *temp_a1;
+
+    temp_a1 = M2C_FIELD(arg0, void **, 4);
+    if (temp_a1 != NULL) {
+        MEM_free(0, temp_a1);
+    }
+    MEM_free(0, arg0);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/wsfileio", fio_getfd);

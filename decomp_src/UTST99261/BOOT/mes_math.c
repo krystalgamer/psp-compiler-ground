@@ -1,3 +1,4 @@
+/* cflags: -O1 */
 #include "common.h"
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_math", mes_math_abs);

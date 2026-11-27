@@ -1,3 +1,4 @@
+/* cflags: -O2 */
 #include "common.h"
 #include "m2c_macros.h"
 M2C_UNK sceUtilityDeleteNetParam(M2C_UNK);          /* extern */

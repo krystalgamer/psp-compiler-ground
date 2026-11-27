@@ -1,5 +1,8 @@
+/* cflags: -O1 */
 #include "common.h"
 #include "m2c_macros.h"
+extern unsigned char mes_number_method;
+
 M2C_UNK fmod();                                     /* extern */
 
 
@@ -9,7 +12,23 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_number", mes_number_alloc_u
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_number", mes_number_alloc);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_number", mes_is_number);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int mes_is_number(int arg0) {
+    int var_a0;
+    unsigned int temp_v0;
+
+    temp_v0 = arg0 & 3;
+    var_a0 = (unsigned int) (arg0 - 0x10) < 0xDU;
+    if (temp_v0 != 0) {
+        var_a0 = 0;
+        if (temp_v0 < 3U) {
+            var_a0 = 1;
+        }
+    }
+    return var_a0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_number", mes_num);
 
@@ -87,7 +106,13 @@ INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/mes_number", D_0013B7B4);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_number", mes_number_from_string);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_number", mes_number_initialize);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void mes_number_initialize(void) {
+    mes_gc_register(&mes_number_method, 0x10, 0x64, 0x64);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_number", mes_number_constructor);
 
