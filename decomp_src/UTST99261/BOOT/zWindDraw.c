@@ -581,7 +581,75 @@ void zWindDrawImage(int x, int y, int w, int h, u16 *src, int mode) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/zWindDraw", zWindDrawImageScl);
+void zWindDrawImageScl(int x, int y, int sw, int sh, int dw, int dh, u16 *src, int mode) {
+    u16 *p;
+    int cw = dw;
+    int ch = dh;
+    int ox = 0;
+    int oy = 0;
+    int i;
+    int j;
+    int skip;
+    s16 c;
+
+    x -= _zWindDrawTexClipOffX;
+    y -= _zWindDrawTexClipOffY;
+    if (x > _zWindDrawTexClipX2 || x + dw < _zWindDrawTexClipX || y > _zWindDrawTexClipY2 || y + dh < _zWindDrawTexClipY) {
+        return;
+    }
+    if (x < _zWindDrawTexClipX) {
+        ox = _zWindDrawTexClipX - x;
+        if (ox < 0) {
+            return;
+        }
+        if (dw < ox) {
+            return;
+        }
+        cw = dw - ox;
+        x = _zWindDrawTexClipX;
+    }
+    if (x + cw > _zWindDrawTexClipX2) {
+        cw = _zWindDrawTexClipX2 - x;
+    }
+    if (y < _zWindDrawTexClipY) {
+        oy = _zWindDrawTexClipY - y;
+        if (oy < 0) {
+            return;
+        }
+        if (dh < oy) {
+            return;
+        }
+        ch -= oy;
+        y = _zWindDrawTexClipY;
+    }
+    if (y + ch > _zWindDrawTexClipY2) {
+        ch = _zWindDrawTexClipY2 - y;
+    }
+    ox = ox * sw / dw;
+    oy = oy * sh / dh;
+    p = (u16 *)_zWindDrawTexdata;
+    p += x + y * _zWindDrawTexWidth;
+    skip = _zWindDrawTexWidth - cw;
+    if (mode == 1) {
+        for (j = 0; j < ch; j++) {
+            for (i = 0; i < cw; i++) {
+                *p++ = src[i * sw / dw + ox + (j * sh / dh + oy) * sw];
+            }
+            p += skip;
+        }
+    } else {
+        for (j = 0; j < ch; j++) {
+            for (i = 0; i < cw; i++) {
+                c = src[i * sw / dw + ox + (j * sh / dh + oy) * sw];
+                if (c != 0) {
+                    *p = c;
+                }
+                p++;
+            }
+            p += skip;
+        }
+    }
+}
 
 void zWindDrawParts(int x, int y, int n, short color) {
     u16 buf[0x100];
