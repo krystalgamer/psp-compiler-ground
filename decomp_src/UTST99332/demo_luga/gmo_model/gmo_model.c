@@ -436,7 +436,21 @@ const mat4 *sceGmoModelGetWorldMatrix( SceGmoModel *model )
  return &( model->m_world_matrix ) ;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/gmo_model/gmo_model", sceGmoModelSetCurrentMotion);
+/* the release inlines sceGmoModelGetMotion here, so its body was visible before this point */
+static inline SceGmoMotion *model_get_motion_inline( SceGmoModel *model, int index )
+{
+ if ( model == 0 ) return 0 ;
+ index = (0x0fff&(index)) ;
+ if ( index >= model->m_n_motions ) return 0 ;
+ return model->m_motions[ index ] ;
+}
+void sceGmoModelSetCurrentMotion( SceGmoModel *model, int index, float delay )
+{
+ if ( model == 0 ) return ;
+ model->m_current_motion = index ;
+ model->m_change_motion = delay ;
+ sceGmoMotionSetFrame( model_get_motion_inline( model, index ), 0.0f ) ;
+}
 
 int sceGmoModelGetCurrentMotion( SceGmoModel *model )
 {
