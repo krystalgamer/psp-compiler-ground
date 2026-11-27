@@ -46,6 +46,8 @@ int handlePointingMove(void *ev);
 int handlePointingDown(void *ev);
 int handlePointingUp(void *ev);
 int handlePointingCheck(void *ev);
+void deleteBorder(void *b);
+void moveFrameBorder(BOX *box, int d);
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_eventHandler", getTargetBox);
 
 void *getEventTargetNode(BOX *box) {
@@ -206,7 +208,71 @@ int handleDragEnd(void) {
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_eventHandler", handlePointingUp);
+int handlePointingUp(void *ev) {
+    LEHPT *m = M2C_FIELD(ev, LEHPT **, 0x1C);
+    LEHG *g = (LEHG *)gESPRIT_LO_GLOBAL_NDA;
+    BOX *box;
+    BOX *body;
+    void *n;
+    int doDefault;
+    LEHJSEVENT jev;
+    if (g->x10 == 1) {
+        g->x10 = 0;
+        return 0;
+    }
+    if (g->x28 != NULL) {
+        if (checkBoxValidity(g->x28)) {
+            deleteBorder(M2C_FIELD(g->x28->geom, void **, 4));
+            if (*(int *)g->x28->geom == 0) {
+                moveFrameBorder(g->x28, m->y - g->x30);
+            } else {
+                moveFrameBorder(g->x28, m->x - g->x2C);
+            }
+        }
+        g->x28 = NULL;
+        g->x14 = NULL;
+        return 0;
+    }
+    box = g->x14;
+    if (box == NULL || !checkBoxValidity(box)) {
+        return -1;
+    }
+    if (D_00584CEC == 0) {
+        body = M2C_FIELD(HST_getHeadHistoryNode(), BOX **, 0x6C);
+        if (body == NULL || (box = getTargetBox(body, m->x, m->y, m->x4)) == NULL) {
+            g->x18 = NULL;
+            return -1;
+        }
+        if (M2C_FIELD(getBodyBox(box)->geom, int *, 0x38) == g->sid && M2C_FIELD(box, s16 *, 0x3E) == 0 && box->content != 3) {
+            doDefault = 1;
+            n = getEventTargetNode(box);
+            if (box->content != 18) {
+                if (Node_getJSObj(n) == NULL) {
+                    n = Node_getOwnerDocument(n);
+                }
+                initJSEvent(&jev, 0x11, n, m->x, m->y);
+                sendJSBubbleUpEvent(n, &jev);
+            } else {
+                n = g->x18;
+                initJSEvent(&jev, 0x11, n, m->x, m->y);
+                sendJSBubbleUpEvent(n, &jev);
+                actDefaultClickAction(ev, box, n, m->x, m->y);
+                if (!doDefault) {
+                    g->x18 = NULL;
+                    return 0;
+                }
+            }
+        }
+    }
+    if (g->x14->content == 0x10) {
+        if (g->x14 == getTargetBox(M2C_FIELD(HST_getHeadHistoryNode(), BOX **, 0x6C), m->x, m->y, m->x4)) {
+            handlePointingCheck(ev);
+        }
+        return 0;
+    }
+    g->x14 = NULL;
+    return 0;
+}
 
 int handleEnter(void *ev) {
     void *g = gESPRIT_LO_GLOBAL_NDA;
