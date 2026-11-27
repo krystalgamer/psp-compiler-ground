@@ -1,0 +1,5 @@
+# Stripped module: two objects (.comment has two 1.5.1.internal entries).
+# lflash_write's own code (module_bootstart and the flash copy/compare helpers), then a DES
+# library object (PERM_OP/HPERM_OP key schedule, SPtrans tables, unrolled 16-round cores).
+0x00000 lflash_write    1.5.1.internal  lflash_write.c
+0x01728 des             1.5.1.internal  des.c

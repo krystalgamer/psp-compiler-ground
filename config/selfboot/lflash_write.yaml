@@ -1,0 +1,79 @@
+name: lflash_write (selfboot)
+sha1: 47e5d6e594955e32b6d3e36ac4828d122297e09d
+options:
+  basename: lflash_write
+  target_path: tmp/baserom/selfboot/lflash_write.prx
+  elf_path: tmp/build/selfboot/lflash_write.elf
+  base_path: ../..
+  platform: psp
+  compiler: GCC
+
+  asm_path: tmp/asm/selfboot/lflash_write
+  src_path: decomp_src/selfboot/lflash_write
+  build_path: tmp/build/selfboot
+  ld_script_path: tmp/build/selfboot/lflash_write.ld
+  cache_path: tmp/build/selfboot/.splat_cache.lflash_write
+  symbol_addrs_path:
+    - config/selfboot/symbol_addrs.lflash_write.txt
+    - tmp/build/selfboot/prx_syms.lflash_write.txt
+  reloc_addrs_path: [tmp/build/selfboot/reloc_addrs.lflash_write.txt]
+  asset_path: tmp/assets/selfboot/lflash_write
+  extensions_path: tools/splat_ext
+  undefined_funcs_auto_path: tmp/build/selfboot/undefined_funcs_auto.lflash_write.txt
+  undefined_syms_auto_path: tmp/build/selfboot/undefined_syms_auto.lflash_write.txt
+
+  find_file_boundaries: false
+  section_order: [".text", ".data", ".rodata", ".bss"]
+  migrate_rodata_to_functions: true
+  use_legacy_include_asm: false
+  generate_asm_macros_files: false
+  asm_function_macro: glabel
+  asm_jtbl_label_macro: jlabel
+  asm_data_macro: dlabel
+  asm_end_label: endlabel
+  string_encoding: ASCII
+  data_string_encoding: ASCII
+  rodata_string_guesser_level: 2
+  data_string_guesser_level: 2
+  gp_value: 0x9070
+  add_set_gp_64: false
+  named_regs_for_c_funcs: false
+  ld_bss_is_noload: true
+  emit_subalign: false
+  ld_align_segment_vram_end: false
+  ld_align_section_vram_end: false
+  disasm_unknown: true
+  global_vram_start: 0x0
+  global_vram_end: 0x7470
+
+segments:
+  - [0x0, bin, elf_header]
+  - name: lflash_write
+    type: code
+    start: 0x80
+    vram: 0x0
+    subsegments:
+      - [0x80, c, lflash_write]
+      - [0x17A8, c, des]
+      - { start: 0x4F98, type: asm, name: sceStub, linker_section: .sceStub.text }
+      - { start: 0x5040, type: rodata, name: lib_ent_top, linker_section: .lib.ent.top }
+      - { start: 0x5044, type: rodata, name: lib_ent, linker_section: .lib.ent }
+      - { start: 0x5054, type: rodata, name: lib_ent_btm, linker_section: .lib.ent.btm }
+      - { start: 0x5058, type: rodata, name: lib_stub_top, linker_section: .lib.stub.top }
+      - { start: 0x505C, type: rodata, name: lib_stub, linker_section: .lib.stub }
+      - { start: 0x50C0, type: rodata, name: lib_stub_btm, linker_section: .lib.stub.btm }
+      - { start: 0x50C4, type: rodata, name: module_info, linker_section: .rodata.sceModuleInfo }
+      - { start: 0x50F8, type: rodata, name: resident, linker_section: .rodata.sceResident }
+      - { start: 0x5178, type: rodata, name: nid, linker_section: .rodata.sceNid }
+      - [0x51CC, .rodata, lflash_write]
+  - [0x575C, bin, seg1_align]
+  - name: lflash_write_seg1
+    type: code
+    start: 0x5760
+    vram: 0x56E0
+    bss_size: 0xD08
+    subsegments:
+      - [0x5760, data, data]
+      - { start: 0x67D8, type: bss, vram: 0x6760 }
+  - [0x67D8, bin, elf_trailer]
+  - [0x809C]
