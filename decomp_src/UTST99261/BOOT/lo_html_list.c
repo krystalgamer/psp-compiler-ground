@@ -45,6 +45,14 @@ void initImageContent(BOX *b, void *node);
 void initTextBoxSize(BOX *b);
 void initImageBoxSize(BOX *b, int w, int h);
 typedef struct LIENT { struct LIENT *next; int x4; BOX *box; } LIENT;
+void attr_HSPACE(void *node, BOX *box);
+void attr_VSPACE(void *node, BOX *box);
+void attr_ALIGN_image(void *node, BOX *box);
+BOX *getBodyBox(BOX *box);
+char *strchr(const char *s, int c);
+void setBoxSize(BOX *box, int w, int h);
+extern unsigned char _DOMwidth;
+extern unsigned char _DOMheight;
 int getLINumber(BOX *box, BOX *li) {
     int n;
     LIENT *e;
@@ -336,7 +344,42 @@ BOX *html_LI(void *node, BOX *parent, BOX *prev) {
     return li;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_html_list", html_APPLET_inner);
+void html_APPLET_inner(void *node, BOX *parent, BOX *prev, BOX *box) {
+    BOX *body;
+    char *s;
+    int w;
+    int h;
+
+    initBoxProperty(box);
+    attr_HSPACE(node, box);
+    attr_VSPACE(node, box);
+    attr_ALIGN_image(node, box);
+    if (M2C_FIELD(box->style, s8 *, 0x71)) {
+        box->display = 2;
+    }
+    body = getBodyBox(box);
+    h = 100;
+    w = 100;
+    s = getDOMAttributeValue(node, &_DOMwidth);
+    if (s != NULL) {
+        w = atoi(s);
+        w = w < 1 ? 1 : w;
+        if (strchr(s, '%')) {
+            w = w * M2C_FIELD(body->geom, int *, 8) / 100;
+        }
+        MEM_free(0, s);
+    }
+    s = getDOMAttributeValue(node, &_DOMheight);
+    if (s != NULL) {
+        h = atoi(s);
+        h = h < 1 ? 1 : h;
+        if (strchr(s, '%')) {
+            h = h * M2C_FIELD(body->geom, int *, 0xC) / 100;
+        }
+        MEM_free(0, s);
+    }
+    setBoxSize(box, w, h);
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
