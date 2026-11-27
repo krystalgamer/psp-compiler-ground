@@ -305,7 +305,20 @@ end:
 	return ret;
 }
 
-INCLUDE_ASM("tmp/asm/tony_libs/pspnet_adhocctl/nonmatchings/main", func_00002408);
+int func_00002408(struct gm_info *info)
+{
+	int ret;
+	struct gm_request *gm = &D_00006F8C;
+
+	ret = 0;
+	if (D_000068A4.state != 3) {
+		ret = ERR_NOT_ENTER_GAMEMODE;
+	} else {
+		info->num = gm->num;
+		memcpy(info->macs, gm->macs, gm->num * sizeof(struct SceNetEtherAddr));
+	}
+	return ret;
+}
 
 int func_0000247C(sceNetAdhocctlHandler handler, void *arg)
 {
