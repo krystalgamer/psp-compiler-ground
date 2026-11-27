@@ -72,7 +72,43 @@ void ezTtrWrite2(void *arg0) {
     ttrFontTerm(temp_v0);
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/ez", ezInfoWinInit);
+typedef struct {
+	int f0;
+	int f4;
+	unsigned lo:4;
+	unsigned prio:4;
+	int pri:8;
+	unsigned b16:1;
+	unsigned b17:1;
+	unsigned b18:1;
+	unsigned b19:1;
+	unsigned ent:1;
+	unsigned rest:11;
+	int fC, f10, f14, f18;
+} AnmPrm;
+int taskMake(int, void (*)(), void *, int);
+int gameGetEntry(void);
+void ezAnmTask();
+void ezTtrWrite(int, int, unsigned char *, int);
+void ezInfoWinInit(int parent, int *pt, unsigned char *name, int x, int pri)
+{
+	AnmPrm q;
+	AnmPrm p;
+	int t = pt != NULL ? *pt : 0;
+	if (t != 0)
+		taskKill(t, 0, 0);
+	ezTtrWrite(1, 0x56, name, x);
+	memset(&p, 0, sizeof(p));
+	p.prio = 1;
+	p.f4 = 0x5A;
+	p.pri = pri;
+	p.b16 = 1;
+	p.ent = gameGetEntry();
+	q = p;
+	t = taskMake(parent, ezAnmTask, &q, 0);
+	if (pt != NULL)
+		*pt = t;
+}
 
 void ezInfoWinTerm(int a, int *p)
 {
