@@ -118,6 +118,13 @@ int ps_i2906(PsIpc *msg);
 int ps_i2D06(PsIpc *msg);
 PsLocation *ps_GetLocation(int id);
 extern PsLocation *D_0025B5C8;
+typedef struct UrlNote { char *p; char *q; int plen; int qlen; } UrlNote;
+typedef struct UrlHist { int pad[25]; UrlNote *note; } UrlHist;
+typedef struct PsNote { int pad[2]; int len1; char *p1; int len2; char *p2; int len3; char *p3; } PsNote;
+typedef struct SubmitNote { short x0; int method; int x8; int len1; char *p1; int len2; char *p2; int len3; char *p3; int len4; char *p4; } SubmitNote;
+extern char D_0013574C[];
+void *MEM_calloc(int, unsigned int);
+int HST_getMethodType(void *h);
 unsigned short UDomiString_ToLower(unsigned short c) {
     if (c < 0x80) {
         return tolower(c);
@@ -648,7 +655,74 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", ps_postsend_histo
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", ps_splitPostData);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", ps_UrlsrchNoteToSubmitNote);
+SubmitNote *ps_UrlsrchNoteToSubmitNote(UrlHist *h, PsNote *n) {
+    SubmitNote *s;
+    char *p;
+    int plen, qlen, total;
+    char *pp, *qp;
+    int m;
+
+    if (h == NULL || n == NULL)
+        return NULL;
+    qlen = 0;
+    plen = 0;
+    total = 0;
+    qp = NULL;
+    pp = NULL;
+    if (h->note != NULL) {
+        plen = h->note->plen;
+        qlen = h->note->qlen;
+        pp = h->note->p;
+        qp = h->note->q;
+        if (plen > 0 && qlen > 0)
+            total = plen + qlen + 4;
+        else
+            total = plen + qlen;
+    }
+    s = MEM_calloc(0, n->len1 + n->len2 + n->len3 + total + 0x30);
+    if (s == NULL)
+        return NULL;
+    p = (char *)(s + 1);
+    s->x0 = 0;
+    s->method = 0;
+    m = HST_getMethodType(h);
+    if (m == 1)
+        s->method = m;
+    if (n->len1 > 0) {
+        s->len1 = n->len1;
+        s->p1 = p;
+        memcpy(p, n->p1, n->len1);
+        p += n->len1 + 1;
+    }
+    if (n->len2 > 0) {
+        s->len2 = n->len2;
+        s->p2 = p;
+        memcpy(p, n->p2, n->len2);
+        p += n->len2 + 1;
+    }
+    if (n->len3 > 0) {
+        s->len3 = n->len3;
+        s->p3 = p;
+        memcpy(p, n->p3, n->len3);
+        p += n->len3 + 1;
+    }
+    if (total > 0) {
+        s->len4 = total;
+        s->p4 = p;
+        if (plen > 0) {
+            memcpy(p, pp, plen);
+            p += plen;
+        }
+        if (qlen > 0) {
+            if (plen > 0) {
+                memcpy(p, D_0013574C, 4);
+                p += 4;
+            }
+            memcpy(p, qp, qlen);
+        }
+    }
+    return s;
+}
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", D_00135744);
 
