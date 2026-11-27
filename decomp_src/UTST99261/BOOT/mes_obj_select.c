@@ -1,16 +1,62 @@
 /* cflags: -O1 */
 #include "common.h"
+#include "mes_js.h"
+extern MesClassDef mes_select_def;
+extern MesClass *mes_select_class;
+int Util_HTMLSelectElement_getLength(void *sel);
+int JSI_getSelectedIndex(void *sel);
+void JSI_setSelectedIndex(void *sel, int idx);
+typedef struct MesSelectPriv {
+    void *elem;
+} MesSelectPriv;
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_select", mes_select_handle_event);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_select", mes_select_get);
+MesValue mes_select_get(MesContext *ctx, MesObject *obj, MesSelectPriv *priv, int id)
+{
+    switch (id) {
+    case 8:
+        return MES_INT(Util_HTMLSelectElement_getLength(priv->elem));
+    case 10:
+        return MES_INT(JSI_getSelectedIndex(priv->elem));
+    case 1:
+    case 2:
+    case 3:
+        return mes_input_get(ctx, obj, priv, id, 19);
+    case 0:
+    default:
+        return MES_UNDEFINED;
+    }
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_select", mes_select_put);
+int mes_select_put(MesContext *ctx, MesObject *obj, MesSelectPriv *priv, int id, MesValue v)
+{
+    int ret;
+
+    switch (id) {
+    case 8:
+    case 9:
+        ret = 1;
+        break;
+    case 10:
+        if ((v & 3) == 1)
+            JSI_setSelectedIndex(priv->elem, v >> 2);
+        ret = 1;
+        break;
+    default:
+        ret = mes_input_put(ctx, obj, priv, id, 19, v);
+        break;
+    }
+    return ret;
+}
 
 void mes_select_mark(void) {
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_select", mes_select_class_init);
+void mes_select_class_init(MesContext *ctx)
+{
+    mes_select_class = mes_class_init(ctx, &mes_select_def);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_select", mes_select_new);
 

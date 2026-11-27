@@ -16,9 +16,16 @@ typedef struct MesClassDef MesClassDef;
 #define MES_UNDEFINED 0x20
 
 /* per-call state: this object at 0x1C */
+typedef struct MesArgs {
+    int argc;
+    MesValue argv[1];
+} MesArgs;
+
 typedef struct MesFrame {
     char pad[0x1C];
     MesObject *thisobj;
+    int f20;
+    MesArgs *args;
 } MesFrame;
 
 struct MesContext {
@@ -51,6 +58,13 @@ void *JSI_getLinkURL(void *elem);
 void JSI_freeURLRec(void *url);
 MesValue mes_link_common_get_sub(MesContext *ctx, void *elem, int id, void *url, int type);
 int mes_link_common_put_sub(MesContext *ctx, void *elem, int id, MesValue v, void *url, int type);
+
+typedef struct IpcMsg {
+    int w[8];
+} IpcMsg;
+
+void SetIpcMember(IpcMsg *msg, int a, int sid, int b, int cmd, int c, int d, void *node);
+void JSSendMail(IpcMsg *msg, const char *name);
 
 /* DOM API (DOMAPI.c) */
 extern DOMString _DOMname;

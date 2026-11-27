@@ -4,11 +4,6 @@
 extern MesClassDef mes_form_def;
 extern MesClass *mes_form_class;
 extern char D_0013F788[];
-typedef struct IpcMsg {
-    int w[8];
-} IpcMsg;
-void SetIpcMember(IpcMsg *msg, int a, int sid, int b, int cmd, int c, int d, void *node);
-void JSSendMail(IpcMsg *msg, const char *name);
 typedef struct MesFormPriv {
     void *form;
 } MesFormPriv;
