@@ -87,7 +87,18 @@ end:
     return r;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/SDomiElement", SDomiElement_CheckNewAttr);
+int SDomiElement_CheckNewAttr(SDomiElement *e, SDomiAttr *a) {
+    int r = 3;
+
+    if (a->i.n.nodeType == 2) {
+        if (SDomiNode_OnSameDocument(&e->t.i.n, &a->i.n)) {
+            if ((a->ownerElement == NULL) | (a->ownerElement == e)) r = 0; else r = 10;
+        } else {
+            r = 4;
+        }
+    }
+    return r;
+}
 
 int cmDomiElementNamedNodeSet_getNamedItem(SDomiNamedNodeSet *s, const SDomiString *name, SDomiAttr **out) {
     return SDomiElement_getAttributeNode((SDomiElement *)s->owner, name, out);
@@ -141,7 +152,36 @@ SDomiNamedNodeSet *cmDomiElement_get_attributes(SDomiElement *e) {
     return &e->attrSet;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/SDomiElement", cmDomiElement_cloneNode);
+int cmDomiElement_cloneNode(SDomiElement *e, int deep, SDomiNode **out) {
+    SDomiElement *c;
+    SDomiAttr *ac;
+    SDomiNode *an;
+    unsigned int i;
+    int r;
+
+    *out = NULL;
+    r = e->t.i.n.ownerDocument->i.n.vt->createElement(e->t.i.n.ownerDocument, &e->t.i.n.nodeName, &c);
+    if (r == 0) {
+        i = 0;
+        do {
+            an = e->attrSet.vt->item(&e->attrSet, i);
+            if (an == NULL) {
+                if (!deep || SDomiInternalNode_CloneChildren(&e->t.i.n, &c->t.i.n)) {
+                    *out = &c->t.i.n;
+                } else {
+                    r = -1;
+                }
+                break;
+            }
+            r = an->vt->cloneNode(an, 1, &ac);
+            if (r != 0)
+                break;
+            r = c->attrSet.vt->setNamedItem(&c->attrSet, ac, &ac);
+            i++;
+        } while (r == 0);
+    }
+    return r;
+}
 
 int cmDomiElement_GetAttrNode(SDomiElement *e, const SDomiString *name, SDomiNode **out) {
     *out = SDomiNodeArray_Find(&e->attrs, name);
@@ -209,7 +249,19 @@ int SDomiElement_getAttribute(SDomiElement *e, const SDomiString *name, const SD
     return r;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/SDomiElement", SDomiElement_setAttribute);
+int SDomiElement_setAttribute(SDomiElement *e, const SDomiString *name, const SDomiString *value) {
+    SDomiAttr *a;
+    int r;
+
+    if (!ELEMVT(e)->GetAttrNode(e, name, &a)) {
+        r = -1;
+    } else if (a != NULL) {
+        r = a->i.n.vt->set_nodeValue(a, value);
+    } else {
+        r = NewAttribute(e, name, value, 1, &a);
+    }
+    return r;
+}
 
 int SDomiElement_removeAttribute(SDomiElement *e, const SDomiString *name) {
     SDomiAttr *a;
@@ -251,7 +303,26 @@ int SDomiElement_setAttributeNode(SDomiElement *e, SDomiAttr *a, SDomiAttr **out
     return r;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/SDomiElement", SDomiElement_removeAttributeNode);
+int SDomiElement_removeAttributeNode(SDomiElement *e, SDomiAttr *a, SDomiAttr **out) {
+    SDomiAttr *b;
+    int r;
+
+    *out = NULL;
+    r = 8;
+    if (a->ownerElement == e) {
+        if (!ELEMVT(a->ownerElement)->RemoveAttrNode(e, &a->i.n.nodeName.d->s, &b)) {
+            r = -1;
+        } else {
+            r = 8;
+            if (b != NULL) {
+                SDomiElement_ReleaseAttr(b);
+                *out = b;
+                r = 0;
+            }
+        }
+    }
+    return r;
+}
 
 int SDomiElement_hasAttribute(SDomiElement *e, const SDomiString *name, int *out) {
     SDomiAttr *a;
