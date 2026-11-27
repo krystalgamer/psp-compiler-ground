@@ -143,7 +143,24 @@ void sgxBmgWriteTerm(int id)
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxbmg", sgxBmgIsFinished);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxbmg", sgxBmgSetLowBufCallback);
+void CheckLowBuf(char *b);
+void sgxBmgSetLowBufCallback(int id, void *cb, int arg, int lvl, int arg2)
+{
+    char *p = SlotGetAt_7A70C(id, "SetLowBufCallback");
+    if (p == NULL) return;
+    {
+        int n = *(int *)(p + 0x28);
+        n = lvl < n ? lvl : n;
+        lvl = n < 0 ? 0 : n;
+    }
+    sgxDI();
+    *(void **)(p + 0x44) = cb;
+    *(int *)(p + 0x4C) = arg;
+    *(int *)(p + 0x48) = arg2;
+    *(int *)(p + 0x50) = lvl;
+    sgxEI();
+    CheckLowBuf(p);
+}
 
 typedef void (*BmgLowCb)(int, int);
 void CheckLowBuf(char *b)

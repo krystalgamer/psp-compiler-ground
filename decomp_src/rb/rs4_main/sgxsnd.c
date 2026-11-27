@@ -701,7 +701,20 @@ int sgxSndGetSyncSignalCount(int id)
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", sgxSndCheckMarkerLoop);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", sgxSndSetMasterVolume);
+typedef struct { char pad[0x2C]; int mv0, mv1; } SndWorkMV;
+void sgxSndSetMasterVolume(int a, int b)
+{
+    int va, vb;
+    a = a < -128 ? -128 : (a > 128 ? 128 : a);
+    b = b < -128 ? -128 : (b > 128 ? 128 : b);
+    va = ConvVol12(a);
+    vb = ConvVol12(b);
+    if (((SndWorkMV *)SNDW)->mv0 != va || ((SndWorkMV *)SNDW)->mv1 != vb) {
+        ((SndWorkMV *)SNDW)->mv0 = va;
+        ((SndWorkMV *)SNDW)->mv1 = vb;
+        sgxSndUpdateSlotVolumeAll(0);
+    }
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxsnd", sgxSndUpdateSlotVolumeAll);
 
