@@ -462,6 +462,29 @@ inline bool common::CmdLine::inList(const char *list) const
 }
 SGL_LINKONCE_END
 
+extern "C" const char D_00159808[]; /* "" */
+
+SGL_LINKONCE_BEGIN
+inline common::CmdLine::CmdLine(std::string a1, std::string a2, std::string a3, std::string a4, std::string a5)
+{
+    if (a1 == D_00159808)
+        return;
+    _args.push_back(a1);
+    if (a2 == D_00159808)
+        return;
+    _args.push_back(a2);
+    if (a3 == D_00159808)
+        return;
+    _args.push_back(a3);
+    if (a4 == D_00159808)
+        return;
+    _args.push_back(a4);
+    if (a5 == D_00159808)
+        return;
+    _args.push_back(a5);
+}
+SGL_LINKONCE_END
+
 /* expanded before the instances below: the first inliner of the allocator (dead code: no string constant) */
 template<int> void CityApp_alloc_first() __attribute__((section(".discard.alloc")));
 template<int> void CityApp_alloc_first()
@@ -1599,8 +1622,6 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN7glutils1
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZNK7glutils17AnimableTrackball3getEv);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN6common7CmdLine5TokenERSt6vectorISsSaISsEESs);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN6common7CmdLineC1ESsSsSsSsSs);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN7CityApp3CarD1Ev);
 
