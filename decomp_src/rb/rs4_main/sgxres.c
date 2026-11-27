@@ -199,7 +199,14 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxres", sgxResWaveTimeToPos);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxres", sgxResWavePosToTime);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxres", ResResetTuningInfo);
+void ResResetTuningInfo(int *p)
+{
+    p[0] = 0;
+    p[1] = 0;
+    p[2] = 0;
+    p[3] = 0;
+    p[4] = 0;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxres", ResAttachTuningInfo);
 

@@ -3,7 +3,6 @@
 M2C_UNK sgxFree(int);                               /* extern */
 extern unsigned char gWork_11FEA4;
 M2C_UNK UnitFreeAll_85854();                        /* extern */
-M2C_UNK ResetMidiChData(int);                       /* extern */
 M2C_UNK AttrSetValue(int, short, int);                /* extern */
 M2C_UNK FadeFree(void *);                           /* extern */
 extern int D_0011FECC;
@@ -19,7 +18,16 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/sgxport", D_0010AD00);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxport", SlotGetAt_848F0);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxport", ResetMidiChData);
+void ResetMidiChData(int arg0)
+{
+    unsigned char *p = (unsigned char *)arg0;
+    p[0] = 0;
+    p[1] = 0;
+    p[2] = 0x80;
+    p[3] = 0x80;
+    p[4] = 0x40;
+    p[5] = 0x40;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxport", sgxPortInit);
 

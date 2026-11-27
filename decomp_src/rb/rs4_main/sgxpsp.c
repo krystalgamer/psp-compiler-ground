@@ -127,7 +127,13 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxpsp", PcmSendTerm);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxpsp", PcmSendMain);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxpsp", sgxPspSetMasterDecodeCallback);
+extern int gWork_1207F0[];
+int sgxPspSetMasterDecodeCallback(int cb)
+{
+    int old = gWork_1207F0[0x6C / 4];
+    gWork_1207F0[0x6C / 4] = cb;
+    return old;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxpsp", SasInit);
 
@@ -236,7 +242,13 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxpsp", At3GetPlaySamples);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxpsp", At3Mix);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxpsp", sgxPspSetAt3DecodeCallback);
+extern int gWork_1207F0[];
+int sgxPspSetAt3DecodeCallback(int cb)
+{
+    int old = gWork_1207F0[0x45C / 4];
+    gWork_1207F0[0x45C / 4] = cb;
+    return old;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxpsp", FreqInit);
 
@@ -300,7 +312,14 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxpsp", FreqSync);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxpsp", sgxVoAlloc);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxpsp", sgxVoFree);
+extern char *D_00120860;
+typedef struct { char pad[4]; unsigned char used:1; } SgxVo;
+void sgxVoFree(int i)
+{
+    SgxVo *v = (SgxVo *)D_00120860;
+    v = (SgxVo *)((char *)v + i * 48);
+    v->used = 0;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxpsp", VoVolume);
 

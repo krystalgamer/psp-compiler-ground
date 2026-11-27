@@ -7,7 +7,6 @@ M2C_UNK sgxBmgGetLeft(short);                         /* extern */
 M2C_UNK UnitFreeAll_81DFC();                        /* extern */
 M2C_UNK sgxPortCommand(short, int);                   /* extern */
 extern void *D_0011FE68;
-int SesqMakeSubID();                                /* extern */
 int UnitIsUse(int, int);                            /* extern */
 extern int D_0011FE88;
 extern int D_0011FEA0;
@@ -48,9 +47,15 @@ unsigned char GetData(void *arg0) {
     return *M2C_FIELD(arg0, unsigned char **, 0x44);
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxseq", GetDataOfs);
+unsigned char GetDataOfs(void *t, int ofs)
+{
+    return *(M2C_FIELD(t, unsigned char **, 0x44) + ofs);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxseq", IncData);
+unsigned char IncData(void *t)
+{
+    return *M2C_FIELD(t, unsigned char **, 0x44)++;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -101,7 +106,11 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxseq", CmdRel);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxseq", CmdRelAll_822E0);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxseq", CmdStop);
+void UnitFreeByID_81E8C(void *, int);
+void CmdStop(void *t, void *cmd)
+{
+    UnitFreeByID_81E8C(t, M2C_FIELD(cmd, int *, 4));
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -232,7 +241,13 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxseq", SesqBendW);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxseq", PortIsUsedGlobal);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxseq", SesqMakeSubID);
+int SesqMakeSubID(a0, s, id)
+    void *a0;
+    void *s;
+    int id;
+{
+    return id | ((M2C_FIELD(s, unsigned char *, 0xB) + 1) << 24);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/sgxseq", SesqSubPlay);
 
