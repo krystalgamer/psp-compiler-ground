@@ -1,10 +1,11 @@
 #include "common.h"
 #include "m2c_macros.h"
+float fabsf(float);
 extern float g_I3cIntersectEpsilon;
 extern signed char g_bI3cStrictScale;
-float I3dcs_GetSqrDistLineSegA(int, int, void *, int, M2C_UNK, M2C_UNK); /* extern */
-float I3dcs_GetSqrDistRaySegA(int, int, void *, int, M2C_UNK, M2C_UNK); /* extern */
-float I3dcs_GetSqrDistSegSegA(int, int, void *, int, M2C_UNK, M2C_UNK); /* extern */
+float I3dcs_GetSqrDistLineSegA(const float *, const float *, const float *, const float *, float *, float *);
+float I3dcs_GetSqrDistRaySegA(const float *, const float *, const float *, const float *, float *, float *);
+float I3dcs_GetSqrDistSegSegA(const float *, const float *, const float *, const float *, float *, float *);
 int I3dcs_GetIntersectLineCylA(int, int, int, int, M2C_UNK, M2C_UNK); /* extern */
 int I3dcs_GetIntersectRayCylA(int, int, int, int, M2C_UNK, M2C_UNK); /* extern */
 int I3dcs_GetIntersectSegCylA(int, int, int, int, M2C_UNK, M2C_UNK); /* extern */
@@ -127,11 +128,169 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_collision", I3dcs_GetSqrDistPo
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_collision", I3dcs_GetSqrDistPointSegA);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_collision", I3dcs_GetSqrDistLineLineA);
+extern const float D_00109B2C;
+extern const float D_00109B30;
+float I3dcs_GetSqrDistLineLineA(const float *p0, const float *d0, const float *p1, const float *d1, float *ps, float *pt)
+{
+	float a00, a01, a11, b0, b1, c, det, s, t, d;
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_collision", I3dcs_GetSqrDistLineRayA);
+	__asm__ volatile(
+		"lv.q C000.q,0(%0)\n"
+		"lv.q C010.q,0(%2)\n"
+		"lv.q C020.q,0(%1)\n"
+		"lv.q C030.q,0(%3)\n"
+		"vsub.q C100.q,C010.q,C000.q\n"
+		"vdot.t S110.s,C020.t,C020.t\n"
+		"vdot.t S111.s,C020.t,C030.t\n"
+		"vdot.t S112.s,C030.t,C030.t\n"
+		"vdot.t S120.s,C100.t,C020.t\n"
+		"vdot.t S121.s,C100.t,C030.t\n"
+		"vdot.t S122.s,C100.t,C100.t\n"
+		: : "r"(p0), "r"(d0), "r"(p1), "r"(d1) : "memory");
+	__asm__ volatile("mfv $6,S110.s\nmtc1 $6,%0\n" : "=f"(a00) : : "$6");
+	__asm__ volatile("mfv $6,S111.s\nmtc1 $6,%0\n" : "=f"(a01) : : "$6");
+	__asm__ volatile("mfv $6,S112.s\nmtc1 $6,%0\n" : "=f"(a11) : : "$6");
+	__asm__ volatile("mfv $6,S120.s\nmtc1 $6,%0\n" : "=f"(b0) : : "$6");
+	__asm__ volatile("mfv $6,S121.s\nmtc1 $6,%0\n" : "=f"(b1) : : "$6");
+	__asm__ volatile("mfv $6,S122.s\nmtc1 $6,%0\n" : "=f"(c) : : "$6");
+	t = 0.0f;
+	det = fabsf(a00 * a11 - a01 * a01);
+	if (det >= D_00109B2C) {
+		float inv = D_00109B30 / det;
+		s = (a11 * b0 - a01 * b1) * inv;
+		t = (a01 * b0 - a00 * b1) * inv;
+		d = s * (a00 * s - a01 * t - (b0 + b0)) + t * (a11 * t - a01 * s + (b1 + b1)) + c;
+	} else {
+		s = b0 / a00;
+		d = c - b0 * s;
+	}
+	d = fabsf(d);
+	if (ps)
+		*ps = s;
+	if (pt)
+		*pt = t;
+	return d;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_collision", I3dcs_GetSqrDistLineSegA);
+const float D_00109B2C = 1e-4f;
+
+const float D_00109B30 = 1.0f;
+
+extern const float D_00109B34;
+extern const float D_00109B38;
+float I3dcs_GetSqrDistLineRayA(const float *p0, const float *d0, const float *p1, const float *d1, float *ps, float *pt)
+{
+	float a00, a01, a11, b0, b1, c, det, s, t, d;
+
+	__asm__ volatile(
+		"lv.q C000.q,0(%0)\n"
+		"lv.q C010.q,0(%2)\n"
+		"lv.q C020.q,0(%1)\n"
+		"lv.q C030.q,0(%3)\n"
+		"vsub.q C100.q,C010.q,C000.q\n"
+		"vdot.t S110.s,C020.t,C020.t\n"
+		"vdot.t S111.s,C020.t,C030.t\n"
+		"vdot.t S112.s,C030.t,C030.t\n"
+		"vdot.t S120.s,C100.t,C020.t\n"
+		"vdot.t S121.s,C100.t,C030.t\n"
+		"vdot.t S122.s,C100.t,C100.t\n"
+		: : "r"(p0), "r"(d0), "r"(p1), "r"(d1) : "memory");
+	__asm__ volatile("mfv $6,S110.s\nmtc1 $6,%0\n" : "=f"(a00) : : "$6");
+	__asm__ volatile("mfv $6,S111.s\nmtc1 $6,%0\n" : "=f"(a01) : : "$6");
+	__asm__ volatile("mfv $6,S112.s\nmtc1 $6,%0\n" : "=f"(a11) : : "$6");
+	__asm__ volatile("mfv $6,S120.s\nmtc1 $6,%0\n" : "=f"(b0) : : "$6");
+	__asm__ volatile("mfv $6,S121.s\nmtc1 $6,%0\n" : "=f"(b1) : : "$6");
+	__asm__ volatile("mfv $6,S122.s\nmtc1 $6,%0\n" : "=f"(c) : : "$6");
+	det = fabsf(a00 * a11 - a01 * a01);
+	if (det >= D_00109B34) {
+		t = a01 * b0 - a00 * b1;
+		if (t >= 0.0f) {
+			float inv = D_00109B38 / det;
+			s = (a11 * b0 - a01 * b1) * inv;
+			t *= inv;
+			d = s * (a00 * s - a01 * t - (b0 + b0)) + t * (a11 * t - a01 * s + (b1 + b1)) + c;
+		} else {
+			t = 0.0f;
+			s = b0 / a00;
+			d = c - b0 * s;
+		}
+	} else {
+		t = 0.0f;
+		s = b0 / a00;
+		d = c - b0 * s;
+	}
+	d = fabsf(d);
+	if (ps)
+		*ps = s;
+	if (pt)
+		*pt = t;
+	return d;
+}
+
+const float D_00109B34 = 1e-4f;
+
+const float D_00109B38 = 1.0f;
+
+extern const float D_00109B3C;
+extern const float D_00109B40;
+float I3dcs_GetSqrDistLineSegA(const float *p0, const float *d0, const float *p1, const float *d1, float *ps, float *pt)
+{
+	float a00, a01, a11, b0, b1, c, det, s, t, d;
+
+	__asm__ volatile(
+		"lv.q C000.q,0(%0)\n"
+		"lv.q C010.q,0(%2)\n"
+		"lv.q C020.q,0(%1)\n"
+		"lv.q C030.q,0(%3)\n"
+		"vsub.q C100.q,C010.q,C000.q\n"
+		"vdot.t S110.s,C020.t,C020.t\n"
+		"vdot.t S111.s,C020.t,C030.t\n"
+		"vdot.t S112.s,C030.t,C030.t\n"
+		"vdot.t S120.s,C100.t,C020.t\n"
+		"vdot.t S121.s,C100.t,C030.t\n"
+		"vdot.t S122.s,C100.t,C100.t\n"
+		: : "r"(p0), "r"(d0), "r"(p1), "r"(d1) : "memory");
+	__asm__ volatile("mfv $6,S110.s\nmtc1 $6,%0\n" : "=f"(a00) : : "$6");
+	__asm__ volatile("mfv $6,S111.s\nmtc1 $6,%0\n" : "=f"(a01) : : "$6");
+	__asm__ volatile("mfv $6,S112.s\nmtc1 $6,%0\n" : "=f"(a11) : : "$6");
+	__asm__ volatile("mfv $6,S120.s\nmtc1 $6,%0\n" : "=f"(b0) : : "$6");
+	__asm__ volatile("mfv $6,S121.s\nmtc1 $6,%0\n" : "=f"(b1) : : "$6");
+	__asm__ volatile("mfv $6,S122.s\nmtc1 $6,%0\n" : "=f"(c) : : "$6");
+	det = fabsf(a00 * a11 - a01 * a01);
+	if (det >= D_00109B3C) {
+		t = a01 * b0 - a00 * b1;
+		if (t >= 0.0f) {
+			if (t <= det) {
+				float inv = D_00109B40 / det;
+				s = (a11 * b0 - a01 * b1) * inv;
+				t *= inv;
+				d = s * (a00 * s - a01 * t - (b0 + b0)) + t * (a11 * t - a01 * s + (b1 + b1)) + c;
+			} else {
+				float tmp = a01 + b0;
+				t = D_00109B40;
+				s = tmp / a00;
+				d = a11 - tmp * s + (b1 + b1) + c;
+			}
+		} else {
+			t = 0.0f;
+			s = b0 / a00;
+			d = c - b0 * s;
+		}
+	} else {
+		t = 0.0f;
+		s = b0 / a00;
+		d = c - b0 * s;
+	}
+	if (ps)
+		*ps = s;
+	if (pt)
+		*pt = t;
+	return fabsf(d);
+}
+
+const float D_00109B3C = 1e-4f;
+
+const float D_00109B40 = 1.0f;
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_collision", I3dcs_GetSqrDistRayRayA);
 
