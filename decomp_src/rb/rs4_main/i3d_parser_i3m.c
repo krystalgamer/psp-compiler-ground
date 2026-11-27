@@ -25,7 +25,12 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_parser_i3m", I3mRoot__Unpack);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_parser_i3m", I3mRoot__Pack);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_parser_i3m", I3mRoot__Get_nNode);
+int I3mRoot__Get_nNode(char *r)
+{
+	if (I3mRoot__CheckIdString(r) != 0)
+		return -1;
+	return *(unsigned short *)(r + 0x14);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_parser_i3m", I3mRoot__GetNodeName);
 

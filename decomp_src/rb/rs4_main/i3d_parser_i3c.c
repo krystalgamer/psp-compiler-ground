@@ -24,7 +24,12 @@ unsigned short I3cRoot__Get_nNode(void *arg0) {
     return M2C_FIELD(arg0, unsigned short *, 0x14);
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_parser_i3c", I3cRoot__GetNodeName);
+void *I3cRoot__GetNodeName(char *r, unsigned short i)
+{
+	if (i < *(unsigned short *)(r + 0x14))
+		return *(void **)(*(char **)(r + 0x18) + i * 12);
+	return 0;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -44,7 +49,12 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_parser_i3c", I3cRoot__GetNodeI
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_parser_i3c", I3cRoot__GetGroupIndexByName);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_parser_i3c", I3cRoot__GetNodeEnable);
+unsigned short I3cRoot__GetNodeEnable(char *r, unsigned short i)
+{
+	if (i < *(unsigned short *)(r + 0x14))
+		return *(unsigned short *)(*(char **)(r + 0x18) + i * 12 + 6);
+	return 0xFFFF;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_parser_i3c", I3cRoot__SetNodeEnable);
 

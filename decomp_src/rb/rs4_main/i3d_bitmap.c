@@ -75,7 +75,15 @@ void I3dClut__FlushCache(void) {
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_bitmap", I3dLzc);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_bitmap", I3dFogStatusParam__ClearA);
+void I3dVecClearA();
+void I3dFogStatusParam__ClearA(int *f)
+{
+	I3dVecClearA(f);
+	f[6] = 0;
+	f[7] = 0;
+	f[4] = 0;
+	f[5] = 0;
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/i3d_bitmap", D_001090AC);
 

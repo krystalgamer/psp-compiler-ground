@@ -287,7 +287,14 @@ void I3dScaleTransF4__Clear(int arg0) {
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_cache_manager", I3dScaleTransF4__ImportMatrix);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_cache_manager", I3dPicture__Construct);
+int I3dPicture__Construct(int *p)
+{
+	memset(p, 0, 0xA0);
+	I3dResourceTag__Construct(p);
+	p[4] = 0;
+	p[5] = 0;
+	return 0;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)

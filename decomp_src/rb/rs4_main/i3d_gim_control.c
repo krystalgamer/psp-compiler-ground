@@ -74,7 +74,17 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_gim_control", I3rLayer__SetRep
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_gim_control", I3rLayer__SetRotate);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_gim_control", I3dLightStatusParam__ClearA);
+void I3dVecClearA();
+void I3dLightStatusParam__ClearA(int *f)
+{
+	I3dVecClearA(f);
+	f[4] = 0;
+	f[5] = 0;
+	f[6] = 0;
+	f[7] = 0;
+	f[8] = 0;
+	f[9] = 0;
+}
 
 typedef struct { float dir[4]; float col[4]; } I3dDirLight;
 typedef struct { char pad[0x10]; unsigned int nDir; I3dDirLight *pDir; char p2[0x10]; void *render; } I3dLightStatus;

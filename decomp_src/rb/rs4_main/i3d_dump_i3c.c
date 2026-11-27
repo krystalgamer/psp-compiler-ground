@@ -2,7 +2,12 @@
 #include "m2c_macros.h"
 
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_dump_i3c", PrintIndent);
+int putchar(int);
+void PrintIndent(int n)
+{
+	while (n-- > 0)
+		putchar('\t');
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_dump_i3c", PrintVector);
 
