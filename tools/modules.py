@@ -41,6 +41,13 @@ NAMED = {
         "gh_DEMOMOD": ("psp_random_batch.zip", "greatest_hits_module/DEMOMOD.PRX.dec"),
         "rs4_main": ("psp_random_batch.zip", "retail_sampler_four_module/main.prx.dec"),
     },
+    # a game's modules (navi.zip): known libraries built by psp-gcc 1.11.0 /
+    # 1.12.1.internal / 1.13.0.internal (gcc 3.3.6) and 4.0.x; print_msg has symbols
+    "navi": {m: ("navi.zip", f) for m, f in [
+        ("print_msg", "print_msg.prx.dec"), ("libpng", "libpng.prx.dec"), ("libz", "libz.prx.dec"),
+        ("libjpeg", "libjpeg.prx.dec"), ("libblowfish", "libblowfish.prx.dec"), ("librsa", "librsa.prx.dec"),
+        ("libpep", "libpep.prx.dec"), ("libsmojgb", "libsmojgb.prx.dec"), ("BOOT", "BOOT.BIN.dec"),
+        ("libpsmfplayer", "libpsmfplayer.prx.wos"), ("psmf", "psmf.prx.wos")]},
     # pre-release firmware 1.02 selfboot: two builds of a loadexec test
     # program (1.5.1.internal, with DWARF) and lflash_write (no symbols)
     "selfboot": {
