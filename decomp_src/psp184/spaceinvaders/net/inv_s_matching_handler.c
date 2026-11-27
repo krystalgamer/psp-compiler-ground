@@ -137,7 +137,87 @@ int clear_minfo(int id)
 	return 0;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_matching_handler", child_handler);
+void change_state(enum matching_room_state state);
+void child_handler(int id, int ev, struct SceNetEtherAddr *peer, int optlen, void *opt)
+{
+	char etherstr[18];
+	int i;
+
+	if (ev == 1 && optlen == sizeof(struct p2p_hello_opt)) {
+		if (((struct p2p_hello_opt *)opt)->game_type != GAME_TYPE_PARENT) {
+			return;
+		}
+	}
+
+	sceNetEtherNtostr(peer, etherstr);
+
+	sceKernelWaitSemaCB(minfo_sid, 1, NULL);
+	i = get_minfo_id(peer);
+	if (i < 0) {
+		goto bad;
+	}
+
+	switch (ev) {
+	case 1:
+		if (minfo[i].status == 5) {
+			break;
+		}
+		minfo[i].status = 2;
+		memcpy(&minfo[i].addr, peer, sizeof(struct SceNetEtherAddr));
+		if (optlen == sizeof(struct p2p_hello_opt)) {
+			memcpy(&minfo[i].hello_opt, opt, sizeof(struct p2p_hello_opt));
+		}
+		break;
+	case 4:
+		if (_mrinfo.state == MATCHING_ROOM_REQUESTING && i == _mrinfo.requesting_minfo_id) {
+			clear_minfo(i);
+			change_state(MATCHING_ROOM_DENIED);
+		}
+		break;
+	case 6:
+		if (optlen == sizeof(struct SceNetAdhocctlGroupName)) {
+			game_group_name = *(struct SceNetAdhocctlGroupName *)opt;
+		}
+		break;
+	case 7:
+		memcpy(&_mrinfo.parent_addr, peer, sizeof(struct SceNetEtherAddr));
+		_mrinfo.agreed_hello_opt = &minfo[i].hello_opt;
+		minfo[i].status = 5;
+		change_state(MATCHING_ROOM_CHILD_ENTER_ROOM);
+		break;
+	case 10:
+		if ((_mrinfo.state == MATCHING_ROOM_CHILD_ENTER_ROOM || _mrinfo.state == MATCHING_ROOM_CHILD_WAIT)
+		    && i == _mrinfo.requesting_minfo_id) {
+			clear_minfo(i);
+			change_state(MATCHING_ROOM_CANCELED);
+			break;
+		}
+		if (minfo[i].status == 5) {
+			break;
+		}
+		/* fallthrough */
+	case 8:
+		if (i != _mrinfo.requesting_minfo_id) {
+			break;
+		}
+		clear_minfo(i);
+		switch ((int)_mrinfo.state) {
+		case MATCHING_ROOM_REQUESTING:
+			change_state(MATCHING_ROOM_DENIED);
+			break;
+		case MATCHING_ROOM_CHILD_ENTER_ROOM:
+		case MATCHING_ROOM_CHILD_WAIT:
+			change_state(MATCHING_ROOM_CANCELED);
+			break;
+		default:
+			break;
+		}
+		break;
+	}
+
+bad:
+	sceKernelSignalSema(minfo_sid, 1);
+}
 
 void sceNetEtherNtostr(const struct SceNetEtherAddr *addr, char *str);
 int matching_parent_select(struct SceNetEtherAddr *addr);
