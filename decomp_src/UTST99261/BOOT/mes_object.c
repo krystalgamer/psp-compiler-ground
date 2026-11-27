@@ -2,6 +2,25 @@
 #include "common.h"
 #include "mes_js.h"
 #include "m2c_macros.h"
+extern unsigned int mes_ids[];
+extern void *mes_object_object_table;
+MesValue mes_object_object(MesContext *ctx);
+unsigned int mes_context_id2(void *ctx, const char *name);
+void *mes_native_new(MesContext *ctx, int a, void *fn, int nargs, int flags);
+void mes_native_setup(MesContext *ctx, MesObject *o, void *table, int n);
+MesContext *mes_context_new(void);
+void mes_function_class_setup(MesContext *ctx, MesObject *proto);
+void mes_eval_global_setup(MesContext *ctx);
+void mes_object_object_setup(MesContext *ctx);
+void mes_function_setup(MesContext *ctx);
+void mes_array_setup(MesContext *ctx);
+void mes_string_setup(MesContext *ctx);
+void mes_boolean_setup(MesContext *ctx);
+void mes_number_setup(MesContext *ctx);
+void mes_math_setup(MesContext *ctx);
+void mes_date_setup(MesContext *ctx);
+void mes_regexp_setup(MesContext *ctx);
+void mes_error_setup(MesContext *ctx);
 extern int mes_stack_bottom;
 extern int mes_stack_limit;
 extern int mes_stack_max;
@@ -178,7 +197,19 @@ void mes_object_delete(void *arg0) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_object", mes_object_prop_next);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_object", mes_object_setup);
+void mes_object_setup(MesContext *ctx, MesObject *obj, const char *name, MesValue value, int flags, int fA)
+{
+    unsigned int id;
+    MesProp *p;
+
+    *--ctx->sp = value;
+    id = mes_context_id2(ctx, name);
+    ctx->sp++;
+    p = mes_object_prop(obj, id);
+    p->value = value;
+    p->flags = flags;
+    p->fA = fA;
+}
 
 void mes_object_mark_page(MesPage *pg)
 {
@@ -287,12 +318,22 @@ MesValue mes_object_property_is_enumerable(MesContext *ctx, MesValue v)
     return ret;
 }
 
-void mes_object_class_setup(MesContext *ctx)
+MesObject *mes_object_class_setup(MesContext *ctx)
 {
-    D_00585354 = mes_object_new(ctx, 9, 0);
+    return D_00585354 = mes_object_new(ctx, 9, 0);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_object", mes_object_object_setup);
+void mes_object_object_setup(MesContext *ctx)
+{
+    MesObject *proto = D_00585354;
+    MesObject *ctor;
+
+    ctor = mes_native_new(ctx, mes_ids[9], mes_object_object, 1, 1);
+    mes_object_set(ctx->global, mes_ids[9], (MesValue)ctor, 7);
+    mes_object_set(ctor, mes_ids[59], (MesValue)proto, 7);
+    mes_object_set(proto, mes_ids[40], (MesValue)ctor, 2);
+    mes_native_setup(ctx, proto, &mes_object_object_table, 6);
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -331,7 +372,36 @@ void mes_free(void) {
     mes_gc_free();
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_object", mes_setup);
+MesContext *mes_setup(void)
+{
+    MesContext *ctx;
+    MesObject *g;
+    MesObject *proto;
+
+    ctx = mes_context_new();
+    g = mes_classes[17];
+
+    if (g == NULL) {
+        proto = mes_object_class_setup(ctx);
+        mes_function_class_setup(ctx, proto);
+        g = mes_object_new(ctx, 17, proto);
+        ctx->global = g;
+        mes_eval_global_setup(ctx);
+        mes_object_object_setup(ctx);
+        mes_function_setup(ctx);
+        mes_array_setup(ctx);
+        mes_string_setup(ctx);
+        mes_boolean_setup(ctx);
+        mes_number_setup(ctx);
+        mes_math_setup(ctx);
+        mes_date_setup(ctx);
+        mes_regexp_setup(ctx);
+        mes_error_setup(ctx);
+        mes_classes[17] = g;
+    }
+    ctx->global = mes_object_new(ctx, 17, g);
+    return ctx;
+}
 
 void mes_stack_init(int limit)
 {

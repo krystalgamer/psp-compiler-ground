@@ -17,6 +17,7 @@ typedef struct MesProp {
     unsigned int id;
     MesValue value;
     signed char flags;
+    short fA;
 } MesProp;
 
 struct MesPage {
