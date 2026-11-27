@@ -224,7 +224,20 @@ INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_netmain", D_
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_netmain", draw_net_scan);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_netmain", draw_canceled);
+int sprintf(char *s, const char *fmt, ...);
+void inv_font_ascii(char *str, int x, int y, int w, int h, int r, int g, int b, int a);
+int inv_font_ascii_check_w(char *s, int size);
+void draw_canceled(void)
+{
+	char buf[128];
+	int w;
+
+	sprintf(buf, "Request is Canceled by peer");
+	inv_font_ascii(buf, 0x45, 0x6A, 0x64, 0x64, 0xFF, 0xFF, 0xFF, 0xFF);
+	w = inv_font_ascii_check_w("x: Close", 0x50);
+	sprintf(buf, "x: Close");
+	inv_font_ascii(buf, (480 - w) / 2, 0xF8, 0x50, 0x50, 0xFF, 0xFF, 0xFF, 0xFF);
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_netmain", drawpic);
 
