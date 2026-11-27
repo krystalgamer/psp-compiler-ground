@@ -92,22 +92,22 @@ public:
 
 class Error : public CancelPanel {
 public:
-	void Init(Ys::Task *parent);
+	CancelPanel *Init(Ys::Task *parent);
 };
 
 class Error_ConfirmRetry : public YesNo_Panel {
 public:
-	void Init(int se, Ys::Task *parent);
+	YesNo_Panel *Init(int se, Ys::Task *parent);
 };
 
 class Error_WLanOff : public CancelPanel {
 public:
-	void Init(Ys::Task *parent);
+	CancelPanel *Init(Ys::Task *parent);
 };
 
 class Error_WLanOff_Startup : public CancelPanel {
 public:
-	void Init(Ys::Task *parent);
+	CancelPanel *Init(Ys::Task *parent);
 };
 
 #define CANCEL_PANEL(C) \
@@ -192,24 +192,24 @@ Panel *Connecting::Init(Ys::Task *parent)
 	return p;
 }
 
-void Error::Init(Ys::Task *parent)
+CancelPanel *Error::Init(Ys::Task *parent)
 {
-	CancelPanel::Init(*Panel::Create_TextContext("MENU_TEXT_27", 0, 0), parent);
+	return CancelPanel::Init(*Panel::Create_TextContext("MENU_TEXT_27", 0, 0), parent);
 }
 
-void Error_ConfirmRetry::Init(int se, Ys::Task *parent)
+YesNo_Panel *Error_ConfirmRetry::Init(int se, Ys::Task *parent)
 {
-	YesNo_Panel::Init(*Panel::Create_TextContext("MENU_TEXT_26", 0, 0), se, parent);
+	return YesNo_Panel::Init(*Panel::Create_TextContext("MENU_TEXT_26", 0, 0), se, parent);
 }
 
-void Error_WLanOff::Init(Ys::Task *parent)
+CancelPanel *Error_WLanOff::Init(Ys::Task *parent)
 {
-	CancelPanel::Init(*Panel::Create_TextContext("MENU_TEXT_28", 0, 0), parent);
+	return CancelPanel::Init(*Panel::Create_TextContext("MENU_TEXT_28", 0, 0), parent);
 }
 
-void Error_WLanOff_Startup::Init(Ys::Task *parent)
+CancelPanel *Error_WLanOff_Startup::Init(Ys::Task *parent)
 {
-	CancelPanel::Init(*Panel::Create_TextContext("MENU_TEXT_30", 0, 0), parent);
+	return CancelPanel::Init(*Panel::Create_TextContext("MENU_TEXT_30", 0, 0), parent);
 }
 
 Reject_Match *Reject_Match::Init(Ys::Task *parent)

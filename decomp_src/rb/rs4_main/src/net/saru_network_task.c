@@ -1,78 +1,405 @@
 /* lang: c++ */
-/* cflags: -Os */
+/* cflags: -Os -fno-strength-reduce -fno-merge-constants -fno-exceptions */
+/* #pragma interface: the vtables, typeinfo and implicit destructors stay in the module's asm */
+#pragma interface "rodata"
 #include "common.h"
+
 extern "C" {
+void *_memAllocMBL(unsigned int size, const char *file, int line);
+void _memFree(void *p, const char *file, int line);
+void *memset(void *, int, unsigned long);
+void consPrintf(const char *fmt, ...);
+extern const char D_00108560[];
+extern const char D_00108574[];
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_task", _ZN7SaruNet11NetworkTask13To_DelayErrorEv);
+struct Task {
+	char _0[0x24];
+	signed char f24;
+	char _25[7];
+	int f2C;
+};
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_task", _ZN7SaruNet11NetworkTask4InitEiii);
+namespace Ys {
+class Object {
+public:
+	static void *operator new(unsigned int size) { return _memAllocMBL(size, D_00108560, 23); }
+	static void operator delete(void *p) { _memFree(p, D_00108560, 25); }
+};
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_task", _ZN7SaruNet11NetworkTaskD2Ev);
+class TaskState : public Object {
+public:
+	virtual ~TaskState();
+	virtual void Kill(class Task &t, ::Task *p, void *q, unsigned int n);
+	virtual void Free(class Task &t, ::Task *p, void *q, unsigned int n);
+	virtual void Run(class Task &t, ::Task *p, void *q, unsigned int n);
+	virtual void Draw(class Task &t, ::Task *p, void *q, unsigned int n);
+	virtual void KillChild(class Task &t, ::Task *p, ::Task *c, unsigned int n);
+	virtual int Unknown(class Task &t, ::Task *p, int m, void *q, unsigned int n);
+};
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_task", _ZN7SaruNet11NetworkTaskD1Ev);
+class Task : public Object {
+public:
+	::Task *task_p;
+	TaskState *state_p;
+	static TaskState *_default_state_p;
+	virtual ~Task();
+	virtual void Receive_InitMessage(::Task *t, void *p, unsigned int n);
+	virtual void Receive_KillMessage(::Task *t, void *p, unsigned int n);
+	virtual void Receive_FreeMessage(::Task *t, void *p, unsigned int n);
+	virtual void Receive_RunMessage(::Task *t, void *p, unsigned int n);
+	virtual void Receive_DrawMessage(::Task *t, void *p, unsigned int n);
+	virtual void Receive_KillChildMessage(::Task *t, ::Task *c, unsigned int n);
+	Task *Init(void *p, unsigned int n, Task *parent);
+};
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_task", _ZN7SaruNet11NetworkTaskD0Ev);
+class Anim2D {
+public:
+	char _4[0x4C];
+	Anim2D();
+	virtual ~Anim2D();
+} __attribute__((aligned(16)));
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_task", _ZN7SaruNet11NetworkTask13Activate_GameEv);
+class ScreenPanel : public Task {
+public:
+	Anim2D anim;
+	char _60[8];
+	ScreenPanel() {}
+	virtual ~ScreenPanel();
+	virtual void Receive_RunMessage(::Task *t, void *p, unsigned int n);
+	virtual void Receive_DrawMessage(::Task *t, void *p, unsigned int n);
+	virtual void Open();
+	virtual void Close();
+	virtual void Run_Common();
+};
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_task", _ZN7SaruNet11NetworkTask10Start_GameEv);
+class Cancel_ScreenPanel : public ScreenPanel {
+public:
+	short wait;
+	unsigned short no_close;
+	virtual void Open();
+	virtual void Receive_RunMessage(::Task *t, void *p, unsigned int n);
+};
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_task", _ZN7SaruNet11NetworkTask4QuitEv);
+class ScreenPanelDaemon {
+public:
+	static ScreenPanelDaemon *_instance_p;
+	void Remove_Panel();
+};
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_task", _ZN7SaruNet11NetworkTask9ErrorQuitEv);
+namespace Net {
+struct EtherAddress {
+	unsigned char data[6];
+};
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_task", _ZN7SaruNet11NetworkTask11Quit_ModuleEv);
+class Game {
+public:
+	char _4[0x28];
+	short f2C;
+	short f2E;
+	bool f30_0 : 1;
+	bool started : 1;
+	unsigned int _f30 : 30;
+	virtual ~Game();
+};
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_task", _ZN7SaruNet11NetworkTask11Check_ErrorEv);
+class Lobby;
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_task", _ZN7SaruNet11NetworkTask15Run_StartupWaitEP4TaskPvj);
+class Network : public Ys::Object {
+public:
+	unsigned int _4[2];
+	bool _c0 : 1;
+	bool connected : 1;
+	bool _c2 : 1;
+	bool _c3 : 1;
+	bool lost : 1;
+	bool _c5 : 1;
+	bool _c6 : 1;
+	bool _c7 : 1;
+	bool wlan_off : 1;
+	unsigned int _c9 : 23;
+	int error;
+	char _14[0xC];
+	EtherAddress addr;
+	static Network *_instance_p;
+	Network() { memset(&addr, 0, sizeof(addr)); }
+	virtual ~Network();
+	virtual void Update();
+	virtual int Activate(Game &g);
+	virtual int Activate(Lobby &l);
+	virtual void Inactivate();
+};
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_task", _ZN7SaruNet11NetworkTask13Run_SetupWaitEP4TaskPvj);
+class ObjectDaemon {
+public:
+	int _0;
+	short count;
+	static ObjectDaemon *_instance_p;
+};
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_task", _ZN7SaruNet11NetworkTask18Receive_RunMessageEP4TaskPvj);
+namespace SaruNet {
+class Network : public Net::Network {
+public:
+	Network *Init(int a);
+};
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_task", _ZN7SaruNet11NetworkTask12Run_QuitWaitEP4TaskPvj);
+namespace ScreenPanel {
+class Panel : public Ys::ScreenPanel {
+public:
+};
+class CancelPanel : public Ys::Cancel_ScreenPanel {
+public:
+};
+class Connecting : public Panel {
+public:
+	Panel *Init(Ys::Task *parent);
+};
+class Error : public CancelPanel {
+public:
+	CancelPanel *Init(Ys::Task *parent);
+};
+class Error_WLanOff : public CancelPanel {
+public:
+	CancelPanel *Init(Ys::Task *parent);
+};
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_task", _ZN7SaruNet11NetworkTask14Run_DelayErrorEP4TaskPvj);
+namespace NetworkTaskState {
+class StartupWait : public Ys::TaskState {
+public:
+	virtual void Run(Ys::Task &t, ::Task *p, void *q, unsigned int n);
+};
+class SetupWait : public Ys::TaskState {
+public:
+	virtual void Run(Ys::Task &t, ::Task *p, void *q, unsigned int n);
+};
+class QuitWait : public Ys::TaskState {
+public:
+	virtual void Run(Ys::Task &t, ::Task *p, void *q, unsigned int n);
+};
+class Delay_Error : public Ys::TaskState {
+public:
+	virtual void Run(Ys::Task &t, ::Task *p, void *q, unsigned int n);
+};
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_task", _ZN7SaruNet16NetworkTaskState11StartupWait3RunERN2Ys4TaskEP4TaskPvj);
+class NetworkTask : public Ys::Task {
+public:
+	Net::Game *game_p;
+	Ys::TaskState *startup_state_p;
+	Ys::TaskState *setup_state_p;
+	Ys::TaskState *quit_state_p;
+	Ys::TaskState *delay_error_state_p;
+	signed char startup_wait;
+	signed char delay_wait;
+	signed char min_object;
+	union {
+		unsigned int flags;
+		struct {
+			bool quit : 1;
+			bool error : 1;
+			bool delay_error : 1;
+		};
+	};
+	static NetworkTask *_instance_p;
+	void To_DelayError();
+	NetworkTask *Init(int a, int b, int pri);
+	virtual ~NetworkTask();
+	virtual void Receive_RunMessage(::Task *t, void *p, unsigned int n);
+	virtual void Start_Game();
+	virtual void Quit();
+	virtual void ErrorQuit();
+	virtual int Activate_Game();
+	virtual void Quit_Module();
+	virtual void Run_StartupWait(::Task *t, void *p, unsigned int n);
+	virtual void Run_SetupWait(::Task *t, void *p, unsigned int n);
+	virtual void Run_QuitWait(::Task *t, void *p, unsigned int n);
+	virtual void Run_DelayError(::Task *t, void *p, unsigned int n);
+	bool Check_Error();
+};
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_task", _ZN7SaruNet16NetworkTaskState9SetupWait3RunERN2Ys4TaskEP4TaskPvj);
+void NetworkTask::To_DelayError()
+{
+	if (Net::Network::_instance_p->wlan_off)
+		(new ScreenPanel::Error_WLanOff)->Init(0)->Open();
+	else
+		(new ScreenPanel::Error)->Init(0)->Open();
+	delay_error = 1;
+	delay_wait = 6;
+	state_p = delay_error_state_p;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_task", _ZN7SaruNet16NetworkTaskState8QuitWait3RunERN2Ys4TaskEP4TaskPvj);
+NetworkTask *NetworkTask::Init(int a, int b, int pri)
+{
+	Task::Init(0, 0, 0);
+	task_p->f24 = pri;
+	_instance_p = this;
+	task_p->f2C = 0x40;
+	min_object = b;
+	flags = 0;
+	startup_state_p = new NetworkTaskState::StartupWait;
+	setup_state_p = new NetworkTaskState::SetupWait;
+	quit_state_p = new NetworkTaskState::QuitWait;
+	delay_error_state_p = new NetworkTaskState::Delay_Error;
+	(new SaruNet::Network)->Init(a);
+	startup_wait = 20;
+	delay_error = 0;
+	state_p = startup_state_p;
+	game_p = 0;
+	(new ScreenPanel::Connecting)->Init(0)->Open();
+	return this;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_task", _ZN7SaruNet16NetworkTaskState11Delay_Error3RunERN2Ys4TaskEP4TaskPvj);
+NetworkTask::~NetworkTask()
+{
+	Net::Network *n = Net::Network::_instance_p;
+	n->Inactivate();
+	delete game_p;
+	game_p = 0;
+	delete delay_error_state_p;
+	delete quit_state_p;
+	delete setup_state_p;
+	delete startup_state_p;
+	delete n;
+	_instance_p = 0;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_task", _ZN7SaruNet16NetworkTaskState11StartupWaitD0Ev);
+int NetworkTask::Activate_Game()
+{
+	int r = 0;
+	if (game_p)
+		r = Net::Network::_instance_p->Activate(*game_p);
+	return r;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_task", _ZN7SaruNet16NetworkTaskState11StartupWaitD1Ev);
+void NetworkTask::Start_Game()
+{
+	if (game_p)
+		game_p->started = 1;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_task", _ZN7SaruNet16NetworkTaskState9SetupWaitD0Ev);
+void NetworkTask::Quit()
+{
+	quit = 1;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_task", _ZN7SaruNet16NetworkTaskState9SetupWaitD1Ev);
+void NetworkTask::ErrorQuit()
+{
+	quit = 1;
+	error = 1;
+	state_p = quit_state_p;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_task", _ZN7SaruNet16NetworkTaskState8QuitWaitD0Ev);
+void NetworkTask::Quit_Module()
+{
+	quit = 1;
+	error = 0;
+	state_p = quit_state_p;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_task", _ZN7SaruNet16NetworkTaskState8QuitWaitD1Ev);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_task", _ZN7SaruNet16NetworkTaskState11Delay_ErrorD0Ev);
+extern "C" { INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_task", _ZN7SaruNet11NetworkTask11Check_ErrorEv); }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_task", _ZN7SaruNet16NetworkTaskState11Delay_ErrorD1Ev);
+namespace SaruNet {
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_task", _ZN7SaruNet11ScreenPanel10ConnectingD1Ev);
+void NetworkTask::Run_StartupWait(::Task *t, void *p, unsigned int n)
+{
+	int w = startup_wait - 1;
+	if (w > 0) {
+		startup_wait = w;
+		return;
+	}
+	delay_error = 0;
+	if (!Activate_Game()) {
+		To_DelayError();
+		return;
+	}
+	state_p = setup_state_p;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_task", _ZN7SaruNet11ScreenPanel10ConnectingD0Ev);
+void NetworkTask::Run_SetupWait(::Task *t, void *p, unsigned int n)
+{
+	Net::Network::_instance_p->Update();
+	if (Check_Error()) {
+		To_DelayError();
+		return;
+	}
+	if (Net::ObjectDaemon::_instance_p->count < min_object)
+		return;
+	Ys::ScreenPanelDaemon::_instance_p->Remove_Panel();
+	Start_Game();
+	state_p = _default_state_p;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_task", _ZN7SaruNet11ScreenPanel5ErrorD1Ev);
+void NetworkTask::Receive_RunMessage(::Task *t, void *p, unsigned int n)
+{
+	Net::Network::_instance_p->Update();
+	if (quit) {
+		Quit_Module();
+		return;
+	}
+	if (Check_Error()) {
+		To_DelayError();
+	} else if (Net::ObjectDaemon::_instance_p->count < min_object) {
+		consPrintf(D_00108574);
+		To_DelayError();
+	}
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_task", _ZN7SaruNet11ScreenPanel5ErrorD0Ev);
+void NetworkTask::Run_QuitWait(::Task *t, void *p, unsigned int n)
+{
+	Net::Network::_instance_p->Update();
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_task", _ZN7SaruNet11ScreenPanel13Error_WLanOffD1Ev);
+void NetworkTask::Run_DelayError(::Task *t, void *p, unsigned int n)
+{
+	int w = delay_wait - 1;
+	if (w > 0) {
+		delay_wait = w;
+		return;
+	}
+	ErrorQuit();
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_task", _ZN7SaruNet11ScreenPanel13Error_WLanOffD0Ev);
+void NetworkTaskState::StartupWait::Run(Ys::Task &t, ::Task *p, void *q, unsigned int n)
+{
+	((NetworkTask &)t).Run_StartupWait(p, q, n);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_task", _ZN7SaruNet11ScreenPanel5PanelD0Ev);
+void NetworkTaskState::SetupWait::Run(Ys::Task &t, ::Task *p, void *q, unsigned int n)
+{
+	((NetworkTask &)t).Run_SetupWait(p, q, n);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_task", _ZN7SaruNet11ScreenPanel5PanelD1Ev);
+void NetworkTaskState::QuitWait::Run(Ys::Task &t, ::Task *p, void *q, unsigned int n)
+{
+	((NetworkTask &)t).Run_QuitWait(p, q, n);
+}
 
-} /* extern "C": m2c drafts with mangled names, kept as C linkage */
+void NetworkTaskState::Delay_Error::Run(Ys::Task &t, ::Task *p, void *q, unsigned int n)
+{
+	((NetworkTask &)t).Run_DelayError(p, q, n);
+}
+
+}
+
+
+extern "C" { INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_task", _ZN7SaruNet16NetworkTaskState11StartupWaitD0Ev); }
+extern "C" { INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_task", _ZN7SaruNet16NetworkTaskState11StartupWaitD1Ev); }
+extern "C" { INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_task", _ZN7SaruNet16NetworkTaskState9SetupWaitD0Ev); }
+extern "C" { INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_task", _ZN7SaruNet16NetworkTaskState9SetupWaitD1Ev); }
+extern "C" { INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_task", _ZN7SaruNet16NetworkTaskState8QuitWaitD0Ev); }
+extern "C" { INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_task", _ZN7SaruNet16NetworkTaskState8QuitWaitD1Ev); }
+extern "C" { INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_task", _ZN7SaruNet16NetworkTaskState11Delay_ErrorD0Ev); }
+extern "C" { INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_task", _ZN7SaruNet16NetworkTaskState11Delay_ErrorD1Ev); }
+extern "C" { INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_task", _ZN7SaruNet11ScreenPanel10ConnectingD1Ev); }
+extern "C" { INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_task", _ZN7SaruNet11ScreenPanel10ConnectingD0Ev); }
+extern "C" { INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_task", _ZN7SaruNet11ScreenPanel5ErrorD1Ev); }
+extern "C" { INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_task", _ZN7SaruNet11ScreenPanel5ErrorD0Ev); }
+extern "C" { INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_task", _ZN7SaruNet11ScreenPanel13Error_WLanOffD1Ev); }
+extern "C" { INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_task", _ZN7SaruNet11ScreenPanel13Error_WLanOffD0Ev); }
+extern "C" { INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_task", _ZN7SaruNet11ScreenPanel5PanelD0Ev); }
+extern "C" { INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_task", _ZN7SaruNet11ScreenPanel5PanelD1Ev); }
