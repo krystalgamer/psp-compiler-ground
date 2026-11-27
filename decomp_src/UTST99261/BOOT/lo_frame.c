@@ -8,7 +8,7 @@ void insLinkBox(BOX *b, BOX *parent, BOX *after);
 void initFrameBorderContent(BOX *b, int type);
 void initBoxProperty(BOX *b);
 int colorValue(char *s);
-int adjustMoveFrameBorderValue(void *, int, int);   /* extern */
+int adjustMoveFrameBorderValue(BOX *, BOX *, int);
 int getFramesetBox();                               /* extern */
 int getRootBox();                                   /* extern */
 M2C_UNK moveFrameBorderByHorizontal(void *, int, int); /* extern */
@@ -197,7 +197,61 @@ void initFrameSize(BOX *box, char *cols, char *rows) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_frame", reinitFrameSize);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_frame", getFrameSizeFromFramesetBox);
+void getFrameSizeFromFramesetBox(int *w, int *h, int *x, int *y, BOX *fs, int idx) {
+    int ncols = FSETD(fs)->ncols;
+    int nrows = FSETD(fs)->nrows;
+    int row;
+    int col;
+    int *rows;
+    int *cols;
+    int fw;
+    int fh;
+    int i;
+    if (ncols != 0) {
+        row = idx / ncols;
+        col = idx % ncols;
+    } else {
+        row = idx;
+        col = 0;
+    }
+    if (col < 16) {
+        if (row < 16) {
+            rows = FSETD(fs)->rows;
+            cols = FSETD(fs)->cols;
+            fw = FSETD(fs)->x94;
+            fh = FSETD(fs)->x98;
+            *x = FSETD(fs)->x8C;
+            *y = FSETD(fs)->x90;
+            if (ncols != 0) {
+                if (nrows != 0) {
+                    *w = cols[col];
+                    *h = rows[row];
+                    for (i = 0; i < col; i++) {
+                        *x += cols[i] + FSETD(fs)->borderSize;
+                    }
+                    for (i = 0; i < row; i++) {
+                        *y += rows[i] + FSETD(fs)->borderSize;
+                    }
+                } else {
+                    *w = cols[col];
+                    *h = fh;
+                    for (i = 0; i < col; i++) {
+                        *x += cols[i] + FSETD(fs)->borderSize;
+                    }
+                }
+            } else if (nrows != 0) {
+                *w = fw;
+                *h = rows[row];
+                for (i = 0; i < row; i++) {
+                    *y += rows[i] + FSETD(fs)->borderSize;
+                }
+            } else {
+                *w = 0;
+                *h = 0;
+            }
+        }
+    }
+}
 
 void setFrameSizeToFramesetBox(int w, int h, BOX *fs, int idx) {
     int ncols = FSETD(fs)->ncols;
@@ -527,7 +581,62 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_frame", moveFrameBorderByVer
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_frame", moveFrameBorderByHorizontal);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_frame", adjustMoveFrameBorderValue);
+int adjustMoveFrameBorderValue(BOX *b, BOX *fs, int d) {
+    int dir = *(int *)b->geom;
+    BOX *prev;
+    BOX *next;
+    BOX *c;
+    int lim;
+    for (c = fs->child, prev = NULL; c != b; c = c->next) {
+        if (c->content == 3 && *(int *)c->geom == dir) {
+            prev = c;
+        }
+    }
+    for (c = b->next, next = NULL; c != NULL; c = c->next) {
+        if (c->content == 3 && *(int *)c->geom == dir) {
+            next = c;
+            break;
+        }
+    }
+    if (d < 0 && dir == 1) {
+        if (prev != NULL) {
+            lim = b->x - prev->x - prev->width;
+        } else {
+            lim = b->x - FSETD(fs)->x8C;
+        }
+        if (lim < -d) {
+            d = -lim;
+        }
+    } else if (d >= 0 && dir == 1) {
+        if (next != NULL) {
+            lim = next->x - b->x - b->width;
+        } else {
+            lim = FSETD(fs)->x8C + FSETD(fs)->x94 - b->x - b->width;
+        }
+        if (lim < d) {
+            d = lim;
+        }
+    } else if (d < 0 && dir == 0) {
+        if (prev != NULL) {
+            lim = b->y - prev->y - prev->height;
+        } else {
+            lim = b->y - FSETD(fs)->x90;
+        }
+        if (lim < -d) {
+            d = -lim;
+        }
+    } else {
+        if (next != NULL) {
+            lim = next->y - b->y - b->height;
+        } else {
+            lim = FSETD(fs)->x90 + FSETD(fs)->x98 - b->y - b->height;
+        }
+        if (lim < d) {
+            d = lim;
+        }
+    }
+    return d;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)

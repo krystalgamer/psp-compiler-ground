@@ -34,7 +34,8 @@ typedef struct FRAMESETDATA {
     int nrows;                  /* 0x44 */
     int cols[16];               /* 0x48 */
     int ncols;                  /* 0x88 */
-    u8 unk8C[0x8];
+    int x8C;
+    int x90;
     int x94;
     int x98;
     int x9C;
