@@ -10,6 +10,7 @@ extern const float D_0015B668;
 #define DEMO_LINKONCE_data_owner 1
 #define DEMO_LINKONCE_shared_object_base 1
 #define DEMO_LINKONCE_CityApp 1
+#define DEMO_LINKONCE_CmdLine 1
 #include "main.hpp"
 #include <sstream>
 
@@ -444,6 +445,30 @@ inline bool common::CmdLine::inList(const char *list) const
         if (std::find(_args.begin(), _args.end(), it->c_str()) != _args.end())
             return true;
     return false;
+}
+SGL_LINKONCE_END
+
+/* expanded before the instances below: the first inliner of the allocator (dead code: no string constant) */
+template<int> void CityApp_alloc_first() __attribute__((section(".discard.alloc")));
+template<int> void CityApp_alloc_first()
+{
+    int never = 0;
+    if (never)
+        std::__default_alloc_template<true, 0>::deallocate(std::__default_alloc_template<true, 0>::allocate(8), 8);
+}
+template void CityApp_alloc_first<0>();
+/* expanded before defArg (which calls them) and before ~Option (which _M_insert_aux inlines) */
+template void std::vector<common::CmdLine::Option>::push_back(const common::CmdLine::Option &);
+template void std::vector<common::CmdLine::Option>::_M_insert_aux(std::vector<common::CmdLine::Option>::iterator,
+                                                                  const common::CmdLine::Option &);
+
+SGL_LINKONCE_BEGIN
+inline void common::CmdLine::defArg(std::string names, unsigned int n, const char *help)
+{
+    std::vector<std::string> toks;
+    Token(toks, names);
+    for (std::vector<std::string>::iterator it = toks.begin(); it != toks.end(); ++it)
+        _options.push_back(Option(*it, n, help));
 }
 SGL_LINKONCE_END
 
@@ -1449,6 +1474,9 @@ void CityApp_interp_instances()
     ((interp::KeyFrameSequenceBase<math::quaternion> *)0)->interp::KeyFrameSequenceBase<math::quaternion>::~KeyFrameSequenceBase();
 }
 
+/* asm (near-miss: cc1plus's frame is 16 bytes smaller) */
+typedef std::vector<common::CmdLine::Option>::iterator OptionIt;
+extern template OptionIt std::__uninitialized_copy_aux<OptionIt, OptionIt>(OptionIt, OptionIt, OptionIt, __false_type);
 /* asm: the basic_string<char *> range constructor's .s also holds _S_construct<char *> */
 extern template std::string::basic_string(char *, char *, const std::allocator<char> &);
 extern template char *std::string::_S_construct(char *, char *, const std::allocator<char> &, std::forward_iterator_tag);
@@ -1492,6 +1520,7 @@ extern "C" void CityApp_instance_refs(common::handle<scene::Node> &n, common::ha
     common::handle<scene::Texture> h(n);
     common::handle<scene::Transform> i(n);
     common::handle<scene::Object> j;
+    ((scene::Graph::NodeMultiMap *)0)->find(*(const std::string *)0);
     std::ostringstream os;
     os.str();
     /* the first function that inlines streambuf::_M_out_cur_move is the only one (cc1plus 3.3): the original
@@ -1504,13 +1533,9 @@ extern "C" void CityApp_instance_refs(common::handle<scene::Node> &n, common::ha
 #undef INCLUDE_ASM
 #define INCLUDE_ASM INCLUDE_ASM_LINKONCE
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZNSt6vectorIN6common7CmdLine6OptionESaIS2_EE9push_backERKS2_);
-
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN5scene5Graph7newNodeINS_9TransformEEEN6common6handleIT_EESsb);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN5scene5Graph13getMappedNodeINS_7TextureEEEN6common6handleIT_EERKSs);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZNSt6vectorIN6common7CmdLine6OptionESaIS2_EE13_M_insert_auxEN9__gnu_cxx17__normal_iteratorIPS2_S4_EERKS2_);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZNSt6vectorIN6common6handleIN7CityApp3CarEEESaIS4_EE13_M_insert_auxEN9__gnu_cxx17__normal_iteratorIPS4_S6_EERKS4_);
 
@@ -1518,8 +1543,6 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN5scene5Gr
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZNSsC1IPcEET_S1_RKSaIcE);
 CONT_INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", func_00008404, _ZNSsC1IPcEET_S1_RKSaIcE);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZNSt8_Rb_treeIKSsSt4pairIS0_N6common6handleIN5scene4NodeEEEESt10_Select1stIS7_ENS2_7LessStrESaIS7_EE4findERS0_);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZSt24__uninitialized_copy_auxIN9__gnu_cxx17__normal_iteratorIPN6common7CmdLine6OptionESt6vectorIS4_SaIS4_EEEES9_ET0_T_SB_SA_12__false_type);
 
@@ -1538,15 +1561,9 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN7glutils1
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZNK7glutils17AnimableTrackball3getEv);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN6common7CmdLine6OptionD1Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN6common7CmdLine6OptionC1ESsjPKc);
-
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN6common7CmdLine5TokenERSt6vectorISsSaISsEESs);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN6common7CmdLineC1ESsSsSsSsSs);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN6common7CmdLine6defArgESsjPKc);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN7CityApp3CarD1Ev);
 
