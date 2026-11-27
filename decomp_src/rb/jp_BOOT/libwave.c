@@ -275,9 +275,71 @@ int sceWavePlayEx(unsigned int ch, unsigned int left, unsigned int right)
 
 INCLUDE_RODATA("tmp/asm/rb/jp_BOOT/nonmatchings/libwave", D_00017584);
 
-INCLUDE_ASM("tmp/asm/rb/jp_BOOT/nonmatchings/libwave", sceWaveStart);
+static int func_000096C0(unsigned int args, void *argp);
 
-INCLUDE_ASM("tmp/asm/rb/jp_BOOT/nonmatchings/libwave", sceWaveEnd);
+static __inline__ int wave_start_thread(int prio)
+{
+	D_002A6464 = 0;
+	D_002A77A8.thid = sceKernelCreateThread("SceWaveMain", func_000096C0, prio, 0x1000, 0, NULL);
+	if (D_002A77A8.thid < 0)
+		return 0x80440003;
+	D_002A77A8.prio = prio;
+	if (sceKernelStartThread(D_002A77A8.thid, sizeof(SceWaveMain), &D_002A77A8) != 0)
+		return 0x80440003;
+	sceKernelDelayThread(10000);
+	D_002A6460 = 3;
+	return 0;
+}
+
+int sceWaveStart(int prio)
+{
+	if (D_002A6460 != 1)
+		return 0x80440003;
+	if ((unsigned int)(prio - 8) >= 0x70)
+		return 0x80440012;
+	return wave_start_thread(prio);
+}
+
+static __inline__ int wave_stop(unsigned int ch)
+{
+	int ret = 0x80440005;
+
+	if (ch < 8) {
+		if (D_002A72E8[ch].stat != 0) {
+			D_002A72E8[ch].flags |= 0x120000;
+			D_002A7548[ch].stat = 0;
+			D_002A7548[ch].pos = 0;
+			D_002A7548[ch].unk30 = 0;
+			D_002A7548[ch].unk34 = 0;
+			D_002A7548[ch].unk28 = 0;
+			D_002A7548[ch].unk2C = 0;
+		} else {
+			D_002A72E8[ch].pos = 0;
+			D_002A72E8[ch].unk30 = 0;
+			D_002A72E8[ch].unk34 = 0;
+			D_002A72E8[ch].unk28 = 0;
+			D_002A72E8[ch].unk2C = 0;
+		}
+		ret = 0;
+	}
+	return ret;
+}
+
+int sceWaveEnd(void)
+{
+	int i;
+
+	if (D_002A6460 != 3)
+		return 0x80440004;
+	for (i = 0; i < 8; i++)
+		wave_stop(i);
+	D_002A6464 = 1;
+	sceKernelWaitThreadEnd(D_002A77A8.thid, NULL);
+	sceKernelDeleteThread(D_002A77A8.thid);
+	D_002A6464 = 0;
+	D_002A6460 = 1;
+	return 0;
+}
 
 int sceWaveExit(void)
 {
@@ -387,7 +449,13 @@ int sceWaveReplay(unsigned int ch)
 	return 0;
 }
 
-INCLUDE_ASM("tmp/asm/rb/jp_BOOT/nonmatchings/libwave", sceWaveAllStop);
+void sceWaveAllStop(void)
+{
+	int i;
+
+	for (i = 0; i < 8; i++)
+		wave_stop(i);
+}
 
 int sceWaveAudioSetSample(unsigned int ch, int samplecount)
 {
@@ -418,7 +486,14 @@ int sceWaveAudioSetFormat(unsigned int ch, int format)
 	return sceAudioChangeChannelConfig(D_002A77BC[ch], format);
 }
 
-INCLUDE_ASM("tmp/asm/rb/jp_BOOT/nonmatchings/libwave", sceWaveAudioGetRestSample);
+int sceAudioGetChannelRestLen(int channel);
+
+int sceWaveAudioGetRestSample(unsigned int ch)
+{
+	if (ch >= 4)
+		return 0x80440010;
+	return sceAudioGetChannelRestLen(D_002A77BC[ch]);
+}
 
 int sceWaveAudioWrite(unsigned int ch, unsigned int left, unsigned int right, void *buf)
 {
