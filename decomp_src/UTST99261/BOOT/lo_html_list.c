@@ -44,7 +44,26 @@ void initTextContent(BOX *b, void *node, signed char *s);
 void initImageContent(BOX *b, void *node);
 void initTextBoxSize(BOX *b);
 void initImageBoxSize(BOX *b, int w, int h);
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_html_list", getLINumber);
+typedef struct LIENT { struct LIENT *next; int x4; BOX *box; } LIENT;
+int getLINumber(BOX *box, BOX *li) {
+    int n;
+    LIENT *e;
+
+    n = 1;
+    if (box->html == 0x43) {
+        n = 0;
+        for (e = M2C_FIELD(box->geom, LIENT **, 8); e != NULL && e->box != li; e = e->next)
+            n = M2C_FIELD(e->box->geom, int *, 0);
+        if (n == 0) {
+            if (M2C_FIELD(box->geom, int *, 0) != 0)
+                n = M2C_FIELD(box->geom, int *, 0);
+            else
+                n++;
+        } else
+            n++;
+    }
+    return n;
+}
 
 BOX *createLIBox_li(void *node, BOX *parent, BOX *prev) {
     BOX *box = createBox(node, 1);
