@@ -1,5 +1,6 @@
 #include "common.h"
 #include "m2c_macros.h"
+
 extern int D_00109480;
 M2C_UNK I3dRender__ProcessSortTagCmd(void *);       /* extern */
 M2C_UNK I3dWritebackDcache();                       /* extern */
@@ -77,7 +78,12 @@ int I3dRender__OpenTrash(void) {
     return (I3dRender__OpenTrashUca() + 0x7F) & 0x3FFFFF80;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_render", I3dRender__CloseTrash);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+void I3dRender__CloseTrash(void *arg0, int arg1) {
+    I3dRender__CloseTrashUca(arg0, ((arg1 + 0x7F) & 0x3FFFFF80) | 0x40000000);
+}
 
 #ifndef NULL
 #define NULL ((void *)0)

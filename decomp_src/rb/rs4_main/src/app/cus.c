@@ -18,7 +18,6 @@ M2C_UNK semaUnlock(int);                            /* extern */
 
 int resGetPtrLocal();                               /* extern */
 int resGetSizeLocal(int, int);                      /* extern */
-M2C_UNK seek_top();                                 /* extern */
 extern int cus_buf;
 extern int cus_size;
 M2C_UNK find_section(int);                          /* extern */
@@ -49,7 +48,12 @@ int iskanji2(int arg0) {
     return ((unsigned int) ((temp_a0 - 0x40) & 0xFF) < 0xBDU) & (temp_a0 != 0x7F);
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/cus", seek_top);
+extern int end_ptr;
+extern int src_ptr;
+void seek_top(void) {
+    end_ptr = cus_buf + cus_size;
+    src_ptr = cus_buf;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -69,7 +73,21 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/cus", is_section);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/cus", is_key);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/cus", extract_key);
+char *extract_key(unsigned char *src, char *dst, int max) {
+    char *d = dst;
+    int n = 0;
+    unsigned char c = *src;
+    while (c != 0) {
+        src++;
+        n++;
+        if ((char)c == '=') break;
+        *d++ = c;
+        if (n >= max) break;
+        c = *src;
+    }
+    *d = 0;
+    return dst;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/cus", get_cus_value);
 
@@ -262,7 +280,17 @@ int fontSetPos(void *arg0, void *arg1) {
     return 1;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/cus", fontOfsPos);
+int copAddVec();
+int fontOfsPos(int *arg0, int arg1) {
+    if (arg0 == NULL) {
+        consPrintf(&D_000FC41C, &D_000FC3F8, 0x110, "fontOfsPos", &D_000FC524);
+    }
+    if (*arg0 != 0) {
+        consPrintf(&D_000FC41C, &D_000FC3F8, 0x111, "fontOfsPos", &D_000FC544);
+    }
+    copAddVec((char *)arg0 + 0x10, arg1, (char *)arg0 + 0x10);
+    return 1;
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/cus", D_000FC544);
 
@@ -300,7 +328,16 @@ int fontImgTerm(int *arg0) {
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/cus", fontImgPut);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/cus", fontImgStr);
+int fontImgPut();
+int fontImgStr(int f, int *str, int n) {
+    int c;
+    while (n != 0 && (c = *str) != 0) {
+        fontImgPut(f, c);
+        n--;
+        str++;
+    }
+    return 1;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -358,7 +395,16 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/cus", D_000FC62C);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/cus", fontStrPut);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/cus", fontStrStr);
+int fontStrPut();
+int fontStrStr(int f, int *str, int n) {
+    int c;
+    while (n != 0 && (c = *str) != 0) {
+        fontStrPut(f, c);
+        n--;
+        str++;
+    }
+    return 1;
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/cus", D_000FC668);
 

@@ -137,7 +137,22 @@ void i3dMotTimeAdj(int a, int b, int c)
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d", i3dMotUpdate);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d", i3dMotSetMotion);
+extern const float D_000FD4F4;
+int i3dMotSetMotion(void *arg0, int arg1) {
+    if (arg0 == NULL) {
+        consPrintf(&D_000FCC8C, &D_000FCCA8, 0x474, "i3dMotSetMotion", &D_000FCFE4);
+    }
+    if (arg1 < -1) {
+        consPrintf(&D_000FCC8C, &D_000FCCA8, 0x475, "i3dMotSetMotion", "Motion >= -1");
+    }
+    if (arg1 >= M2C_FIELD(arg0, int *, 0x34)) {
+        consPrintf(&D_000FCC8C, &D_000FCCA8, 0x476, "i3dMotSetMotion", "Motion < pCntx->MotNum");
+    }
+    M2C_FIELD(arg0, int *, 0x50) = arg1;
+    M2C_FIELD(arg0, int *, 0x54) = 0;
+    M2C_FIELD(arg0, float *, 0x5C) = D_000FD4F4;
+    return 1;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -177,7 +192,14 @@ float i3dMotGetTime(void *arg0) {
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d", i3dMotGetMaxTime);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d", i3dMotSetSpeed);
+extern const float D_000FD4F8;
+int i3dMotSetSpeed(void *arg0, float fparg0) {
+    if (arg0 == NULL) {
+        consPrintf(&D_000FCC8C, &D_000FCCA8, 0x4B1, "i3dMotSetSpeed", &D_000FCFE4);
+    }
+    M2C_FIELD(arg0, float *, 0x58) = fparg0 / D_000FD4F8;
+    return 1;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -282,7 +304,19 @@ int i3dMotGetPause(void *arg0) {
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d", i3dMotAnimate);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d", i3dMakeAttach);
+void *i3dMakeAttach(void) {
+    void *temp_v0;
+
+    temp_v0 = _memAlloc(0x10, &D_000FCCA8, 0x547);
+    if (temp_v0 == NULL) {
+        consPrintf(&D_000FCC8C, &D_000FCCA8, 0x548, "i3dMakeAttach", &D_000FCFE4);
+    }
+    M2C_FIELD(temp_v0, int *, 0) = 0;
+    M2C_FIELD(temp_v0, int *, 4) = 0;
+    M2C_FIELD(temp_v0, int *, 8) = -1;
+    M2C_FIELD(temp_v0, int *, 0xC) = -1;
+    return temp_v0;
+}
 
 int i3dFreeAttach(int p)
 {
@@ -298,7 +332,24 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d", D_000FD254);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d", i3dAttach);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d", i3dDetach);
+int copLetMat();
+int i3dAttachProc();
+int i3dDetach(int arg0, void *arg1) {
+    int var_v1;
+
+    if (arg1 == NULL) {
+        consPrintf(&D_000FCC8C, &D_000FCCA8, 0x5CA, "i3dDetach", &D_000FCFE4);
+    }
+    var_v1 = 0;
+    if (M2C_FIELD(arg1, int *, 0) != 0) {
+        i3dAttachProc(arg0, arg1);
+        copLetMat(arg0 + 0xD0, arg0 + 0x90);
+        M2C_FIELD(arg1, int *, 0) = 0;
+        var_v1 = 1;
+        M2C_FIELD(arg1, int *, 4) = 0;
+    }
+    return var_v1;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d", i3dAttachProc);
 
@@ -483,7 +534,17 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d", D_000FD508);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d", i3dCollisionCheck);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d", i3dBeginScene);
+int I3dRender__BeginScene(int);
+int i3dMakeStage(int, int, float);
+int i3dSetTex();
+extern unsigned char D_000FD358;
+void i3dBeginScene(void) {
+    if (I3dRender__BeginScene(pI3dRender) != 0) {
+        consPrintf(&D_000FCC8C, &D_000FCCA8, 0x774, &D_000FD358, &D_000FCDB0);
+    }
+    i3dMakeStage(3, 0, 0);
+    i3dSetTex(0, 0);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d", i3dEndScene);
 
