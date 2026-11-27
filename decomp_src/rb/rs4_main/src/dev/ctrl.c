@@ -43,6 +43,8 @@ extern int CtrlCancel;
 int sceCtrlSetSamplingCycle(int cycle);
 int sceCtrlSetSamplingMode(int mode);
 void *memset(void *s, int c, unsigned int n);
+typedef struct { char pad[8]; signed char x, y; char pad2[6]; } CtrlVEnt;
+typedef struct { char hdr[16]; CtrlVEnt ent[128]; } CtrlRing;
 
 int ctrlInit(void) {
     M2C_UNK *temp_s0;
@@ -140,7 +142,17 @@ int ctrlSetVirtualType(int arg0) {
     return temp_s1;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/ctrl", ctrlFlushCtrlData);
+typedef struct { char pad[0x90]; CtrlVEnt v; } CtrlInfoEnt;
+int ctrlFlushCtrlData(int n)
+{
+	CtrlInfoEnt *c = &((CtrlInfoEnt *)&CtrlInfo)[n];
+	CtrlVEnt *v;
+	memset(c, 0, sizeof(CtrlInfoEnt));
+	v = &c->v;
+	v->x = -128;
+	v->y = -128;
+	return 1;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -158,8 +170,6 @@ loop:
 	return r;
 }
 
-typedef struct { char pad[8]; signed char x, y; char pad2[6]; } CtrlVEnt;
-typedef struct { char hdr[16]; CtrlVEnt ent[128]; } CtrlRing;
 int ctrlFlushVirtualData(unsigned int n)
 {
 	CtrlRing *r;
