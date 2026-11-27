@@ -51,8 +51,8 @@
 0x3C710 src_menu_mod_shop 1.9.2           src/menu_mod/shop.c
 0x40748 src_ys_libmm_semaphore 1.9.2           src/ys/libmm_semaphore.cc
 0x40910 src_ys_libmm_thread 1.9.2           src/ys/libmm_thread.cc
-# Tgs::ResidentData, Vfs::System (+ the vfs* C wrappers) and Vfs::Internal: no file
-# name in the module (no asserts); names guessed from the namespaces.
+# Tgs::ResidentData, Vfs::System (+ the vfs* C wrappers) and Vfs::Internal: no local
+# symbols; their STT_FILE names (tgs_resident_data.cc, vfs.cc, vfs_internal.cc) in link order.
 0x40DC4 src_ys_tgs_resident_data 1.9.2           src/ys/tgs_resident_data.cc
 0x40DF4 src_ys_vfs 1.9.2           src/ys/vfs.cc
 0x411D0 src_ys_vfs_internal 1.9.2           src/ys/vfs_internal.cc
@@ -60,12 +60,78 @@
 rodata 0x10473C src/ys/libmm_semaphore
 rodata 0x1047E4 src/ys/libmm_thread
 rodata 0x104898 src/ys/vfs_internal
-0x41FD4 src_ys_vfs_tartefs 1.9.2           src/ys/vfs_tartefs.cc
+# ys/net/bx objects without local symbols: placed by class (the STT_FILE link order and the
+# file names in _memAlloc/new calls: ys_card_anim, ys_task, network_lobby_message_queue, ...)
+0x41F08 src_ys_vfs_tartefs 1.9.2           src/ys/vfs_tartefs.cc
+0x42808 src_ys_ys_anim  1.9.2           src/ys/ys_anim.cc
+0x42A8C src_ys_ys_anim_task 1.9.2           src/ys/ys_anim_task.cc
+0x42E24 src_ys_ys_card_anim 1.9.2           src/ys/ys_card_anim.cc
+0x43234 src_ys_ys_cop   1.9.2           src/ys/ys_cop.cc
+0x4331C src_ys_ys_fx_fade 1.9.2           src/ys/ys_fx_fade.cc
+0x43558 src_ys_ys_fx_fade_cif 1.9.2           src/ys/ys_fx_fade_cif.cc
+0x43758 src_ys_ys_fx_fade_task 1.9.2           src/ys/ys_fx_fade_task.cc
+0x438D8 src_ys_ys_fx_fade_task_cif 1.9.2           src/ys/ys_fx_fade_task_cif.cc
+0x43D98 src_ys_ys_global_object_cif 1.9.2           src/ys/ys_global_object_cif.cc
+0x43F10 src_ys_ys_image 1.9.2           src/ys/ys_image.cc
+0x44104 src_ys_ys_info_panel 1.9.2           src/ys/ys_info_panel.cc
+0x441C0 src_ys_ys_menu  1.9.2           src/ys/ys_menu.cc
+0x44BE0 src_ys_ys_menu_view 1.9.2           src/ys/ys_menu_view.cc
+0x44D38 src_ys_ys_module_object 1.9.2           src/ys/ys_module_object.cc
+0x44E18 src_ys_ys_screen_panel 1.9.2           src/ys/ys_screen_panel.cc
+0x45D1C src_ys_ys_sound 1.9.2           src/ys/ys_sound.cc
+0x462B4 src_ys_ys_task  1.9.2           src/ys/ys_task.cc
+0x468F0 src_ys_ys_text_menu_view 1.9.2           src/ys/ys_text_menu_view.cc
+0x46F4C src_ys_ys_tile  1.9.2           src/ys/ys_tile.cc
 0x470BC src_net_network 1.9.2           src/net/network.cc
-0x4B958 src_net_network_lobby 1.9.2           src/net/network_lobby.cc
+0x47C64 src_net_network_data_transfer 1.9.2           src/net/network_data_transfer.cc
+0x47E90 src_net_network_data_transfer_cif 1.9.2           src/net/network_data_transfer_cif.cc
+0x47EAC src_net_network_data_transfer_client 1.9.2           src/net/network_data_transfer_client.cc
+0x48E78 src_net_network_data_transfer_server 1.9.2           src/net/network_data_transfer_server.cc
+0x4A77C src_net_network_game 1.9.2           src/net/network_game.cc
+0x4B2E8 src_net_network_lobby 1.9.2           src/net/network_lobby.cc
+0x4BBD8 src_net_network_lobby_builder 1.9.2           src/net/network_lobby_builder.cc
 0x4BD60 src_net_network_lobby_event 1.9.2           src/net/network_lobby_event.cc
-0x54B18 src_net_saru_network_resident_data 1.9.2           src/net/saru_network_resident_data.cc
-0x57CA8 src_bx_b2a      1.9.2           src/bx/b2a.cc
+0x4C3E0 src_net_network_lobby_message 1.9.2           src/net/network_lobby_message.cc
+0x4D434 src_net_network_lobby_message_queue 1.9.2           src/net/network_lobby_message_queue.cc
+0x4E458 src_net_network_lobby_state 1.9.2           src/net/network_lobby_state.cc
+0x4E578 src_net_network_lobby_terminal_list 1.9.2           src/net/network_lobby_terminal_list.cc
+0x4EC0C src_net_network_object 1.9.2           src/net/network_object.cc
+0x4F1F4 src_net_network_object_daemon 1.9.2           src/net/network_object_daemon.cc
+0x4F468 src_net_network_param 1.9.2           src/net/network_param.cc
+0x4F6C4 src_net_network_system 1.9.2           src/net/network_system.cc
+0x4F988 src_net_saru_card_battle_network_game 1.9.2           src/net/saru_card_battle_network_game.cc
+0x4FC1C src_net_saru_card_battle_network_host 1.9.2           src/net/saru_card_battle_network_host.cc
+0x4FD04 src_net_saru_card_battle_network_player 1.9.2           src/net/saru_card_battle_network_player.cc
+0x500C8 src_net_saru_card_battle_network_task 1.9.2           src/net/saru_card_battle_network_task.cc
+0x50488 src_net_saru_card_battle_network_task_cif 1.9.2           src/net/saru_card_battle_network_task_cif.cc
+0x505C8 src_net_saru_netlib_controller 1.9.2           src/net/saru_netlib_controller.cc
+0x50D5C src_net_saru_netlib_controller_set 1.9.2           src/net/saru_netlib_controller_set.cc
+0x51148 src_net_saru_netlib_controller_set_task 1.9.2           src/net/saru_netlib_controller_set_task.cc
+0x5131C src_net_saru_netlib_host 1.9.2           src/net/saru_netlib_host.cc
+0x51624 src_net_saru_network 1.9.2           src/net/saru_network.cc
+0x51720 src_net_saru_network_cif 1.9.2           src/net/saru_network_cif.cc
+0x51750 src_net_saru_network_game 1.9.2           src/net/saru_network_game.cc
+0x51DEC src_net_saru_network_lobby 1.9.2           src/net/saru_network_lobby.cc
+0x52018 src_net_saru_network_lobby_builder 1.9.2           src/net/saru_network_lobby_builder.cc
+0x52480 src_net_saru_network_lobby_menu 1.9.2           src/net/saru_network_lobby_menu.cc
+0x5297C src_net_saru_network_lobby_menu_view 1.9.2           src/net/saru_network_lobby_menu_view.cc
+0x53594 src_net_saru_network_lobby_message 1.9.2           src/net/saru_network_lobby_message.cc
+0x540C4 src_net_saru_network_lobby_message_queue 1.9.2           src/net/saru_network_lobby_message_queue.cc
+0x548A0 src_net_saru_network_lobby_option 1.9.2           src/net/saru_network_lobby_option.cc
+0x548E4 src_net_saru_network_object 1.9.2           src/net/saru_network_object.cc
+0x54988 src_net_saru_network_param 1.9.2           src/net/saru_network_param.cc
+0x54A14 src_net_saru_network_resident_data 1.9.2           src/net/saru_network_resident_data.cc
+0x54BB8 src_net_saru_network_screen_panel 1.9.2           src/net/saru_network_screen_panel.cc
+0x55268 src_net_saru_network_task 1.9.2           src/net/saru_network_task.cc
+0x55F78 src_net_saru_petit_network_card_battle_player 1.9.2           src/net/saru_petit_network_card_battle_player.cc
+0x562D8 src_net_saru_petit_network_controller_set 1.9.2           src/net/saru_petit_network_controller_set.cc
+0x5640C src_net_saru_petit_network_game 1.9.2           src/net/saru_petit_network_game.cc
+0x56808 src_net_saru_petit_network_host 1.9.2           src/net/saru_petit_network_host.cc
+0x568F0 src_net_saru_petit_network_task 1.9.2           src/net/saru_petit_network_task.cc
+0x56CE4 src_net_saru_petit_network_task_cif 1.9.2           src/net/saru_petit_network_task_cif.cc
+0x56E68 src_bx_anm      1.9.2           src/bx/anm.cc
+0x5784C src_bx_b2a      1.9.2           src/bx/b2a.cc
+0x5A674 src_bx_new      1.9.2           src/bx/new.cc
 0x5A704 src_bx_tm2parts 1.9.2           src/bx/tm2parts.cc
 0x5A94C i3d_cache_manager 1.9.2           i3d_cache_manager.c
 0x5BC74 i3d_bitmap      1.9.2           i3d_bitmap.c

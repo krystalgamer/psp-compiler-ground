@@ -3,6 +3,46 @@
 #include "common.h"
 extern "C" {
 
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _Z11GpPrim_Initv);
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _Z15GpPrim_SetStartv);
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _Z16GpPrim_DrawStartv);
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _Z13GpPrim_SetTexP12tagGpTEXDESC);
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _Z13GpPrim_SetColi);
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _Z12GpPrim_SetWHii);
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _Z16GpPrim_SetCenterff);
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _Z16GpPrim_SetMatrixP14ScePspFMatrix4);
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _Z17GpPrim_GetDrawTexv);
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _Z17GpPrim_GetDrawColv);
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _Z20GpPrim_GetDrawCenterPfS_);
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _Z16GpPrim_GetDrawWHPiS_);
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _Z20GpPrim_GetDrawMatrixP14ScePspFMatrix4);
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _Z14GpPrim_SetNextv);
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _Z15GpPrim_DrawNextv);
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _Z13GpPrim_GetMaxv);
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _ZN3B2A9CreateB2AEPNS_7B2aFileE);
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _ZN3B2A5StartEPNS_7ManagerE);
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _ZN3B2A4CalcEPNS_7ManagerE);
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _ZN3B2A4DrawEPNS_7ManagerE);
+
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _ZN3B2A13DeleteManagerEPNS_7ManagerE);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _ZN3B2A12DeletePlayerEPNS_6PlayerE);
@@ -149,15 +189,5 @@ void _ZN15SAMPLE_ANM_DATAC1Ev(void) {
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _GLOBAL__I__Z11GpPrim_Initv);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _GLOBAL__D__Z11GpPrim_Initv);
-
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _Znwj);
-
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _Znaj);
-
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _ZdlPv);
-
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _ZdaPv);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", D_00108FF4);
 
 } /* extern "C": m2c drafts with mangled names, kept as C linkage */
