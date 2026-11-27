@@ -4,17 +4,38 @@
 #include "cxx/defer_asm.h"
 #include "../main.hpp"
 
+#include "UTST99332/demo_duck/gl.hpp"
+extern const float D_0016AC6C;      /* 1.0f */
+extern const float D_0016AC74;      /* 1.0f */
+extern const float D_0016AC78;      /* 1.0f */
+extern const char D_0016ACA4[];     /* "_Value.w() == 1.f" */
+extern const char D_0016ACB8[];     /* "../lib/sgl/Box.cpp" */
+extern const char D_0016ACCC[];     /* " " */
+extern const char D_0016ACD0[];     /* " *** error " */
+extern const char first_name[] __asm__("_ZZN3sgl3Box5firstEN4math11vector_xyzwEE19__PRETTY_FUNCTION__");
+#define BOX_ASSERT(c, text, fn, line) SGL_ASSERT(c, D_0016ACD0, text, D_0016ACB8, fn, line, D_0016ACCC)
+
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Box", _Z41__static_initialization_and_destruction_0ii_A2C44);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Box", _ZN3sgl3BoxC2Ev);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Box", _ZN3sgl3BoxC1Ev);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Box", _ZN3sgl3BoxC2EN4math11vector_xyzwES2_);
+sgl::Box::Box(math::vector_xyzw a, math::vector_xyzw b)
+{
+    first(a);
+    add(b);
+    finish();
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Box", _ZN3sgl3BoxC1EN4math11vector_xyzwES2_);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Box", _ZN3sgl3Box5firstEN4math11vector_xyzwE);
+void sgl::Box::first(math::vector_xyzw p)
+{
+    BOX_ASSERT(p.w == D_0016AC6C, D_0016ACA4, first_name, 46);
+    _c[0] = p;
+    _c[7] = p;
+    finish();
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Box", _ZN3sgl3Box3addEN4math11vector_xyzwE);
 
@@ -22,7 +43,16 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Box", _Z
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Box", _ZNK3sgl3Box6volumeEv);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Box", _ZNK3sgl3Box4drawEi);
+void sgl::Box::draw(int c) const
+{
+    if (c == 0)
+        glColor3f(D_0016AC78, 0, 0);
+    else if (c == 1)
+        glColor3f(0, D_0016AC78, 0);
+    else
+        glColor3f(0, 0, D_0016AC78);
+    draw();
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Box", _ZNK3sgl3Box4drawEv);
 
@@ -41,3 +71,4 @@ void _GLOBAL__D__ZN3sgl3BoxC2Ev(void)
 {
     static_init(0, 0xFFFF);
 }
+

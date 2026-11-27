@@ -6,9 +6,10 @@
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_Frustum", _Z41__static_initialization_and_destruction_0ii_A5C1C);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_Frustum", _ZN3sgl7FrustumC2Ev);
+sgl::Frustum::Frustum()
+{
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_Frustum", _ZN3sgl7FrustumC1Ev);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_Frustum", _ZN3sgl7FrustumC2Effffffff);
 
@@ -103,7 +104,25 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_Frustum", _Z
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_Frustum", _ZN3sgl7Frustum10intersect1ERNS_2BVENS0_9PlaneEnumE);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_Frustum", _ZN3sgl23FindBestAlignedDiagonalEN4math11vector_xyzwERNS_3Box6VertexES4_);
+void sgl::FindBestAlignedDiagonal(math::vector_xyzw n, Box::Vertex &a, Box::Vertex &b)
+{
+    int va = 0;
+    int vb = 0;
+    if (n.x > 0)
+        vb = 4;
+    else
+        va = 4;
+    if (n.y > 0)
+        vb |= 2;
+    else
+        va |= 2;
+    if (n.z > 0)
+        vb |= 1;
+    else
+        va |= 1;
+    a = Box::Vertex(va);
+    b = Box::Vertex(vb);
+}
 
 extern "C" {
 void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_A5C1C");
@@ -120,6 +139,7 @@ void _GLOBAL__D__ZN3sgl7FrustumC2Ev(void)
 {
     static_init(0, 0xFFFF);
 }
+
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_Frustum", _ZN3sgl7FrustumD0Ev);
 

@@ -4,13 +4,32 @@
 #include "cxx/defer_asm.h"
 #include "../main.hpp"
 
+extern const float D_0016B0E4;      /* 1e-6f */
+extern const float D_0016B0E8;      /* -11.0f */
+extern const float D_0016B0F8;      /* 30.0f */
+extern const float D_0016B0FC;      /* degrees -> radians */
+extern const char D_0016B148[];     /* "../lib/sgl/LineSet.cpp" */
+extern const char D_0016B1E0[];     /* " *** error " */
+extern const char D_0016B1EC[];     /* "! ready()" */
+extern const char D_0016B1F8[];     /* "forgot a call to LineSet::end()" */
+extern const char D_0016B240[];     /* "ready()" */
+extern const char D_0016B248[];     /* "forgot a call to LineSet::begin()" */
+extern const char begin_name[] __asm__("_ZZN3sgl7LineSet5beginENS_8LineModeEE19__PRETTY_FUNCTION__");
+extern const char color_name[] __asm__("_ZZN3sgl7LineSet5colorENS_5ColorEE19__PRETTY_FUNCTION__");
+extern const char end_name[] __asm__("_ZZN3sgl7LineSet3endEvE19__PRETTY_FUNCTION__");
+#define LS_ASSERT(c, text, fn, line, msg) SGL_ASSERT(c, D_0016B1E0, text, D_0016B148, fn, line, msg)
+
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_LineSet_Line_Vertex", _Z41__static_initialization_and_destruction_0ii_A70A4);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_LineSet_Line_Vertex", _ZN3sgl7LineSet4Line6VertexC2Ev);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_LineSet_Line_Vertex", _ZN3sgl7LineSet4Line6VertexC1Ev);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_LineSet_Line_Vertex", _ZNK3sgl7LineSet4Line11zero_lengthEv);
+bool sgl::LineSet::Line::zero_length() const
+{
+    math::vector_xyzw d = a.p - b.p;
+    return sqrtf(math::dot(d, d)) < D_0016B0E4;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_LineSet_Line_Vertex", _ZN3sgl7LineSet21invert_normal_vectorsEv);
 
@@ -20,9 +39,17 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_LineSet_
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_LineSet_Line_Vertex", _ZN3sgl7LineSetC1Ev);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_LineSet_Line_Vertex", _ZN3sgl7LineSet5beginENS_8LineModeE);
+void sgl::LineSet::begin(LineMode m)
+{
+    LS_ASSERT(!ready(), D_0016B1EC, begin_name, 138, D_0016B1F8);
+    _state = m;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_LineSet_Line_Vertex", _ZN3sgl7LineSet5colorENS_5ColorE);
+void sgl::LineSet::color(Color c)
+{
+    LS_ASSERT(ready(), D_0016B240, color_name, 145, D_0016B248);
+    _color = c;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_LineSet_Line_Vertex", _ZN3sgl7LineSet6vertexENS_8PositionE);
 

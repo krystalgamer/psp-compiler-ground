@@ -143,9 +143,24 @@ template<class T> class PrimitiveIndex {
 public:
     PrimitiveIndex();
     void clear();
-    std::vector<T> a;
-    std::vector<T> b;
-    int n;
+    void swap(PrimitiveIndex &);
+    void offset(unsigned int);
+    void flatten();
+    void unfold(std::vector<T> &);
+    template<class U> PrimitiveIndex &operator=(const PrimitiveIndex<U> &);
+    std::vector<T> &strips();
+    const std::vector<T> &strips() const;
+    std::vector<T> &tri();
+    const std::vector<T> &tri() const;
+    int countVertices() const;
+    int countVerticesInStrips() const;
+    int countTriangles() const;
+    int countTrianglesInStrips() const;
+    void range(int &, int &) const;
+    bool check() const;
+    std::vector<T> _strips;     /* 0x00 */
+    std::vector<T> _tri;        /* 0x0C */
+    int n;                      /* 0x18 */
 };
 
 class CoreMesh {
@@ -317,17 +332,36 @@ public:
 
 class LineSet {
 public:
+    struct Line {
+        struct Vertex {
+            Vertex();
+            Position p;
+            Normal n;               /* 0x10 */
+            Normal m;               /* 0x20 */
+        };
+        bool zero_length() const;
+        Vertex a;
+        Vertex b;                   /* 0x30 */
+        math::vector_xyzw c;        /* 0x60 */
+    };
     LineSet();
     void begin(LineMode);
     void color(Color);
+    void vertex(Position);
     void end();
     bool ready() const;
     void set_negate_normals(bool);
     void set_crease(float);
-    char _p0[0x75];
+    void invert_normal_vectors();
+    void calc_normal_vectors(float);
+    int _f0;
+    Color _color;           /* 0x04 */
+    Line::Vertex _v0;       /* 0x14 */
+    Line::Vertex _v1;       /* 0x44 */
+    bool _f74;
     bool _negate_normals;   /* 0x75 */
     float _crease;          /* 0x78 */
-    char _p7C[0xC];
+    std::vector<Line> _lines;   /* 0x7C */
     int _state;             /* 0x88 */
 };
 
@@ -601,6 +635,7 @@ public:
 namespace sgl {
 class Box {
 public:
+    enum Vertex { };
     Box();
     Box(math::vector_xyzw, math::vector_xyzw);
     void first(math::vector_xyzw);
@@ -609,7 +644,7 @@ public:
     float volume() const;
     void draw(int) const;
     void draw() const;
-    char _p0[0x80];
+    math::vector_xyzw _c[8];    /* corners: _c[0] min, _c[7] max */
 };
 class BV : public Box {
 public:
@@ -630,8 +665,10 @@ public:
     char _pE5[0x14C - 0xE5];
 };
 class BV;
-class Frustum {
+class Frustum : public common::shared_object_base {
 public:
+    Frustum();
+    virtual ~Frustum();
     bool intersect(BV &);
     void enable();
     void disable();
@@ -648,7 +685,6 @@ public:
     float getBottom() const;
     float getTop() const;
     /* data */
-    char _p0[0x8];
     bool _f8;
     char _p9[0x3];
     float _fC;
@@ -663,6 +699,7 @@ public:
     float _f30;
     float _f34;
 };
+void FindBestAlignedDiagonal(math::vector_xyzw, Box::Vertex &, Box::Vertex &);
 class RT : public Mesh {
 public:
     RT();
