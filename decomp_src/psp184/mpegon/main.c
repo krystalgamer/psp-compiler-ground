@@ -930,7 +930,84 @@ static SceInt32 setPlayerEndCondition(t_conditionCtrl *pCtrl)
 	return 0;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/mpegon/nonmatchings/main", playMovie);
+static SceInt32 playMovie(SceMpeg *pMpeg, SceMpegRingbuffer *pRB, t_mpegStreamData *pStreamData, t_ringBuffer *pRingCtrl, t_avSyncControl *pAvSync, t_conditionCtrl *pCtrl)
+{
+	SceInt32 audio_init_flag;
+	SceInt32 ret;
+	SceInt32 startFlag;
+
+	audio_init_flag = 1;
+	startFlag = -1;
+
+	while (read_isFull(pRingCtrl) != 1) {
+		ret = checkPlayerErrCondition(pCtrl);
+		if (ret != 0) {
+			printf("fatal error : checkPlayerErrCondition()\n");
+			goto error;
+		}
+		control_waitDecode(pCtrl);
+		sceKernelDelayThreadCB(1000);
+	}
+
+	while (1) {
+		if (startFlag != 0) {
+			startFlag = startCheck(pAvSync, pRingCtrl, pCtrl);
+		} else {
+			ret = pad_read(pAvSync->pDisp);
+			if (ret != 0) {
+				sceMpegAvcDecodeFlush(pMpeg);
+				goto error;
+			}
+		}
+
+		if (read_isEnd(pRingCtrl) == 1 && sceMpegRingbufferAvailableSize(pRB) == 0x3C0)
+			break;
+
+		ret = checkPlayerErrCondition(pCtrl);
+		if (ret != 0) {
+			printf("fatal error : checkPlayerErrCondition()\n");
+			goto error;
+		}
+
+		if (audioFlag == 1) {
+			ret = decode_audioDecode(pMpeg, pStreamData, pAvSync, audio_init_flag);
+			if (ret >= 0) {
+				audio_init_flag = 0;
+			} else if (ret == (SceInt32)0x80618001) {
+			} else {
+				printf("fatal error : decode_audioDecode() 0x%x\n", ret);
+				goto error;
+			}
+		}
+
+		ret = decode_videoDecode(pMpeg, pStreamData, pAvSync);
+		if (ret == (SceInt32)0x80618001) {
+		} else if (ret < 0) {
+			goto video_error;
+		}
+
+		control_waitDecode(pCtrl);
+		sceKernelCheckCallback();
+	}
+
+	control_setCondition(pCtrl, 8);
+
+	do {
+		ret = decode_videoDecodeEnd(pMpeg, pAvSync);
+		if (ret < 0) {
+			printf("fatal error : decode_videoDecodeEnd() 0x%x\n", ret);
+			goto error;
+		}
+		control_waitDecode(pCtrl);
+	} while (ret != 0);
+
+	goto error;
+video_error:
+	printf("fatal error : sceMpegGetAvcAu () 0x%x\n", ret);
+error:
+	setPlayerEndCondition(pCtrl);
+	return ret;
+}
 
 long long strFileLseek(StrFile *file, long long offset, SceInt32 whence);
 SceInt32 strFileReadCB(StrFile *file, void *buff, SceSize size);
