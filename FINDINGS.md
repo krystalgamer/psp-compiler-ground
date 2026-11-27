@@ -710,15 +710,46 @@ libgcc/libsupc++ DWARF names `gcc-3.3.6/` paths.
   mixed units.  All the C++ is `-Os -fno-strength-reduce -fno-exceptions`
   like the C game code.
 
-## Open: libgu two-command register tie (all versions)
+## Solved: libgu two-command register tie (stale `REG_FREQ`)
 
 `sceGuTexScale`, `sceGuTexOffset`, `sceGuMorphWeight` and `sceGuLightColor`
-(~55 copies each across UTST99332, UTST99261, sampler, bigbangbang, ...) send
-two GE command words; the original gives the first value the other register
-of the pair (v0/v1 or a1/a2) than every cc1 here does. The allocator ranks
-the short-lived constant ahead of the float-bits value. Unchanged on every
-cc1 (1.3.1-orig .. 1.9.2) and ~40 flags; only `-fno-strict-aliasing` or
-`-fno-schedule-insns` flip it, and both break most other libgu functions.
-~60 source forms (types, unions, macros, nested inline helpers, pointer
-forms, K&R) tried without effect. Candidate for a Sony patch in register
-allocation priority or sched1, or per-object flags in Sony's libgu build.
+(the 1.6.1.internal libgu linked into 58 modules) send two GE command words.
+The original gives the first value the other register of a pair (v0/v1 or
+a1/a2) than our cc1s did with the obvious source. The real 1.3.1 and 1.7.1
+binaries agree with our 1.6.1 on all of libgu, so this is a source shape
+and not a compiler patch. It can't be per-object flags either: libgu.c is
+one object (one `STT_FILE`).
+
+How it works: local-alloc (`block_alloc`) orders quantities by
+`QTY_CMP_PRI = floor_log2(n_refs) * freq / (death - birth)`, with
+qty-number order breaking ties. `update_equiv_regs` moves the constant
+`(cmd << 24)` right before its `or`, so it always lives for one insn and
+gets priority 20000. In TexScale the mfc1 -> srl -> or chain is tied into
+one qty: 6 refs, freq 12000, life 14, priority 17142. The constant
+therefore takes `$2` first. gcc 3.3's `allocate_reg_life_data` resets
+`REG_N_REFS` but never `REG_FREQ` (GCC 3.4 resets it). As a result,
+`REG_FREQ` keeps adding up over every life analysis, including references
+that combine later deletes. When a user variable is modified in place
+before combine folds it, the chain gets extra freq. In TexScale freq goes
+12000 -> 16000 and priority 17142 -> 22857. In MorphWeight the chain is
+mfc1 -> srl only: freq 8000 -> 12000 and priority 13333 -> exactly 20000,
+a tie that goes to the older qty. The chain then takes `$2`. The matching helper is:
+
+    static __inline__ void send_commandf(int cmd, float argument)
+    {
+    	unsigned int v = *(unsigned int *)&argument;
+
+    	v >>= 8;
+    	v &= 0xffffff;
+    	send_commandi(cmd, v);
+    }
+
+`v >>= 8; send_commandi(cmd, v)` alone fixes TexScale/TexOffset but not
+MorphWeight. Forms that put the expression straight into `send_commandi`,
+use a local union, or store directly change Specular, LightAtt, Viewport
+or SetMatrix. All other libgu functions are unchanged. LightColor masks
+`color &= 0xffffff` on entry. In its two-command cases it reads the second
+command byte into a local first (`int cmd = lcmd[light].diffuse;`), which
+adds the same kind of extra freq. Since `REG_FREQ` depends on references
+before combine, register ties in other modules that resist every form may
+have the same cause. The puzzle_bobble parameter tie above is one example.
