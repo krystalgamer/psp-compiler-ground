@@ -6,7 +6,7 @@ extern unsigned char D_00101FCC;
 extern int l_atCardList;
 extern int l_nCardIDMax;
 extern int l_nCardNum;
-M2C_UNK consPrintf(M2C_UNK *, M2C_UNK *, unsigned int);      /* extern */
+int consPrintf();
 extern unsigned char D_00102244;
 void *cardlistFindOne();                            /* extern */
 extern unsigned char D_001021A0;
@@ -100,7 +100,15 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/cardlist", D_00102
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/cardlist", cardlistGetOne);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/cardlist", cardlistGetPtr);
+void *cardlistGetPtr(int id)
+{
+	void *p = cardlistFindOne(id);
+	if (!p) {
+		consPrintf(&D_001021A0, "cardlistGetPtr", id);
+		return 0;
+	}
+	return p;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/cardlist", cardlistGetOneByInstructID);
 
@@ -187,7 +195,15 @@ int cardlistGetCardNameBySaveID(unsigned int arg0) {
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/cardlist", cardlistGetCardName);
+void *cardlistGetCardName(int id)
+{
+	void *p = cardlistFindOne(id);
+	if (!p) {
+		consPrintf(&D_001021A0, "cardlistGetCardName", id);
+		return 0;
+	}
+	return p;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/cardlist", ShuffleRandAlloc);
 

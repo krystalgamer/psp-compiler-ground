@@ -5,7 +5,7 @@ M2C_UNK sceUtilityMsgDialogInitStart(M2C_UNK *);    /* extern */
 extern unsigned char msgdialog_param;
 extern int sample_type_11A6BC;
 
-M2C_UNK consPrintf(M2C_UNK *);                      /* extern */
+int consPrintf();
 M2C_UNK gameCtrlUnlock();                           /* extern */
 
 

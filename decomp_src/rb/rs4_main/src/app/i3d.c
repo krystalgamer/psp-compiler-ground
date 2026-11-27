@@ -1,7 +1,7 @@
 /* cflags: -Os -fno-strength-reduce */
 #include "common.h"
 #include "m2c_macros.h"
-M2C_UNK consPrintf(M2C_UNK *, M2C_UNK *, M2C_UNK, M2C_UNK *, M2C_UNK *); /* extern */
+int consPrintf();
 extern unsigned char D_000FCC8C;
 extern unsigned char D_000FCCA8;
 extern unsigned char D_000FCFE4;
@@ -802,7 +802,21 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d", D_000FDA40);
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d", D_000FDA48);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d", initTermSys);
+extern unsigned char D_000FDA40, D_000FDA48;
+void fileTerm(void);
+void thrTerm(void);
+void consTerm(void);
+void memTerm(void);
+int initTermSys(void)
+{
+	consPrintf(&D_000FDA40, "initTermSys");
+	fileTerm();
+	thrTerm();
+	consTerm();
+	memTerm();
+	consPrintf(&D_000FDA48);
+	return 1;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d", initInitApp);
 

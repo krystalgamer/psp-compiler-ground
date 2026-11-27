@@ -87,7 +87,16 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/cus", get_key_index);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/cus", get_key_index_fast);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/cus", to_int);
+char *strstr(const char *, const char *);
+long strtol(const char *, char **, int);
+int atoi(const char *);
+int to_int(char *s)
+{
+	char *e;
+	if (strstr(s, "0x"))
+		return strtol(s, &e, 16);
+	return atoi(s);
+}
 
 double atof(const char *);
 float to_float(const char *s)
