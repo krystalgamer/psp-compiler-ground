@@ -60,6 +60,17 @@ BYTE_ARRAY_NAMES(char, "c")
 BYTE_ARRAY_NAMES(short, "s")
 BYTE_ARRAY_NAMES(float, "f")
 extern const char D_0015F2BC[];
+/* __PRETTY_FUNCTION__ of the set<T> instances */
+template<class T> struct SetNames {
+    static const char pretty_function[];
+};
+template<> const char SetNames<unsigned char>::pretty_function[] __asm__("_ZZN3psp15VertexArrayEdit3setIhEEvNS0_5ValueIT_EEE19__PRETTY_FUNCTION__");
+template<> const char SetNames<unsigned short>::pretty_function[] __asm__("_ZZN3psp15VertexArrayEdit3setItEEvNS0_5ValueIT_EEE19__PRETTY_FUNCTION__");
+template<> const char SetNames<char>::pretty_function[] __asm__("_ZZN3psp15VertexArrayEdit3setIcEEvNS0_5ValueIT_EEE19__PRETTY_FUNCTION__");
+template<> const char SetNames<short>::pretty_function[] __asm__("_ZZN3psp15VertexArrayEdit3setIsEEvNS0_5ValueIT_EEE19__PRETTY_FUNCTION__");
+template<> const char SetNames<float>::pretty_function[] __asm__("_ZZN3psp15VertexArrayEdit3setIfEEvNS0_5ValueIT_EEE19__PRETTY_FUNCTION__");
+template<> const char SetNames<unsigned int>::pretty_function[] __asm__("_ZZN3psp15VertexArrayEdit3setIjEEvNS0_5ValueIT_EEE19__PRETTY_FUNCTION__");
+extern const char D_0015F7E4[];
 namespace psp {
 class byte_array {
 public:
@@ -124,7 +135,6 @@ bool VertexArrayEdit::smart_color_map;
 unsigned char VertexArrayEdit::current_color[4];
 float VertexArrayEdit::current_normal[3];
 float VertexArrayEdit::current_texcoord[2];
-
 
 std::string psp::GetPixelFormatBitMaskName(PixelFormatBitMask _Mask)
 {
@@ -346,7 +356,6 @@ VertexArrayEdit::Descriptor::Descriptor(unsigned int _Format) : _format(0)
     setFormat(_Format);
 }
 
-
 bool VertexArrayEdit::Descriptor::setFormat(unsigned int _Format)
 {
     VA_ASSERT(IsValidMask(_Format), D_0015EA08, VA_CPP, PF_setFormat, 473, D_0015EA04);
@@ -455,12 +464,10 @@ VertexArrayEdit::VertexArrayEdit(unsigned int _Format) : _desc(_Format), _n(0), 
 {
 }
 
-
 VertexArrayEdit::~VertexArrayEdit()
 {
     VA_ASSERT(_va == 0, D_0015EEE8, VA_CPP, PF_dtor, 685, D_0015EEF4);
 }
-
 
 void VertexArrayEdit::begin(VertexArray &_Value, unsigned int _Mask)
 {
@@ -545,6 +552,19 @@ unsigned char VertexArrayEdit::map_to_255(unsigned char _Value, unsigned int _Bi
     if (smart_color_map)
         return (unsigned int)(_Value * 255.0f / ((1 << _Bits) - 1));
     return _Value << (8 - _Bits);
+}
+
+/* the asm import_bit uses set<unsigned char>, <unsigned short>, <char>, <short>, <float>, <unsigned int> first, in this
+   order: the instances (and their float pools) are emitted in the order of their first use */
+extern "C" void psp_VertexArrayEdit_set_order() __attribute__((section(".discard.instances")));
+extern "C" void psp_VertexArrayEdit_set_order()
+{
+    ((VertexArrayEdit *)0)->set(VertexArrayEdit::Value<unsigned char>(VertexArrayEdit::WA, 0, 0));
+    ((VertexArrayEdit *)0)->set(VertexArrayEdit::Value<unsigned short>(VertexArrayEdit::WA, 0, 0));
+    ((VertexArrayEdit *)0)->set(VertexArrayEdit::Value<char>(VertexArrayEdit::WA, 0, 0));
+    ((VertexArrayEdit *)0)->set(VertexArrayEdit::Value<short>(VertexArrayEdit::WA, 0, 0));
+    ((VertexArrayEdit *)0)->set(VertexArrayEdit::Value<float>(VertexArrayEdit::WA, 0, 0));
+    ((VertexArrayEdit *)0)->set(VertexArrayEdit::Value<unsigned int>(VertexArrayEdit::WA, 0, 0));
 }
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/psp_VertexArrayEdit", _ZN3psp15VertexArrayEdit10import_bitENS0_7BitEnumEjRKS0_);
@@ -641,7 +661,6 @@ void VertexArray::DEBUG_printFormat()
     d.printFormat();
 }
 
-
 /* this object's .gnu.linkonce.t sections in the original's order */
 DEMO_LINKONCE_ORDER(
     DEMO_LINKONCE(_ZN3psp7ClampedIfEEKT_S1_S1_S1_)
@@ -718,17 +737,27 @@ template<class T> const T psp::Clamped(T x, T lo, T hi)
     return x;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/psp_VertexArrayEdit", _ZN3psp15VertexArrayEdit3setIhEEvNS0_5ValueIT_EE);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/psp_VertexArrayEdit", _ZN3psp15VertexArrayEdit3setItEEvNS0_5ValueIT_EE);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/psp_VertexArrayEdit", _ZN3psp15VertexArrayEdit3setIcEEvNS0_5ValueIT_EE);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/psp_VertexArrayEdit", _ZN3psp15VertexArrayEdit3setIsEEvNS0_5ValueIT_EE);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/psp_VertexArrayEdit", _ZN3psp15VertexArrayEdit3setIfEEvNS0_5ValueIT_EE);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/psp_VertexArrayEdit", _ZN3psp15VertexArrayEdit3setIjEEvNS0_5ValueIT_EE);
+template<class Type> void VertexArrayEdit::set(Value<Type> _Val)
+{
+    VA_ASSERT(_Val._index < _va->_num_vertices, D_0015F7E4, VA_H, SetNames<Type>::pretty_function, 424, D_0015EA04);
+    const Bit &bit = _desc.getBit(_Val._bit);
+    if (bit._type == NONE)
+        return;
+    unsigned int offset = _desc._bytesize * _Val._index + bit._offset;
+    byte_array data(&_va->_data[0], _va->_data.size());
+    if (bit._type == UBYTE)
+        data.write(offset, convert<unsigned char>(_Val._value));
+    else if (bit._type >= USHORT && bit._type <= USHORT_4444)
+        data.write(offset, convert<unsigned short>(_Val._value));
+    else if (bit._type == UINT_8888)
+        data.write(offset, convert<unsigned int>(_Val._value));
+    else if (bit._type == BYTE)
+        data.write(offset, convert<char>(_Val._value));
+    else if (bit._type == SHORT)
+        data.write(offset, convert<short>(_Val._value));
+    else if (bit._type == FLOAT)
+        data.write(offset, convert<float>(_Val._value));
+}
 
 template<class OutputType, class InputType> OutputType psp::convert(const InputType &)
 {
