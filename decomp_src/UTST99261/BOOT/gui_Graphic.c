@@ -47,6 +47,7 @@ extern int _zWindDrawTexClipOffX;
 extern int _zWindDrawTexClipOffY;
 
 
+typedef struct { u16 width; u16 height; int unk4; int anim; int unkC; int unk10; } GIMGHDR;
 GUIGRAPHICS *GUI_Graphics_createGraphics(GUIWIDGET *w) {
     GUIGRAPHICS *g;
 
@@ -277,7 +278,53 @@ int GUI_Graphics_setClip(GUIGRAPHICS *g, int x, int y, int w, int h) {
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Graphic", GUI_Graphics_getImageProperty);
+int GUI_Graphics_getImageProperty(void *data, int size, int *w, int *h, int *anim)
+{
+    int ret;
+    GIMGHDR hdr;
+    int ctx;
+
+    switch (IMG_sortImage(data, size)) {
+    case 1:
+        *w = 0x20;
+        *h = 0x20;
+        *anim = 0;
+        if (IMG_gifCreateContext(&ctx) != 1) {
+            puts("[X1]GUI_Graphics_getImageProperty->GUIIMAGE_ANIMGIF");
+            ret = 0;
+            break;
+        }
+        if (IMG_gifInputData(ctx, data, size) != 1) {
+            puts("[X2]GUI_Graphics_getImageProperty->GUIIMAGE_ANIMGIF");
+            IMG_gifDestroyContext(ctx);
+            ret = 0;
+            break;
+        }
+        if (IMG_gifReadHeader(ctx, &hdr) != 1) {
+            puts("[X3]GUI_Graphics_getImageProperty->GUIIMAGE_ANIMGIF");
+            IMG_gifDestroyContext(ctx);
+            ret = 0;
+            break;
+        }
+        IMG_gifDestroyContext(ctx);
+        *w = hdr.width;
+        *h = hdr.height;
+        *anim = hdr.anim;
+        ret = hdr.anim == 1;
+        ret = 2 - ret;
+        break;
+    case 2:
+        ret = 4;
+        break;
+    case 4:
+        ret = 3;
+        break;
+    default:
+        ret = 0;
+        break;
+    }
+    return ret;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Graphic", GUI_Graphics_getImage);
 
