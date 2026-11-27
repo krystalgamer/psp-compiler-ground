@@ -154,7 +154,41 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_shima", SprMoveTamaSu
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_shima", SprMoveTama);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_shima", SprMove);
+typedef struct SPRM_T { int f0, f4, f8, fc, f10, f14, f18, f1c, f20, f24, f28, f2c, f30, f34, f38, f3c, f40, f44, f48, f4c, f50, f54, f58, f5c; u8 pad[0x94 - 0x60]; struct SPRM_T *next; } SPRM_T;
+int classic_inv_enemy_chk(int pl);
+void SprMove(void)
+{
+	SPRM_T *s;
+	int tex, pl;
+
+	if (nowplay == 0) {
+		tex = ptexdis1[0][7];
+		pl = 0;
+	} else {
+		tex = ptexdis2[0][7];
+		pl = 1;
+	}
+	for (s = (SPRM_T *)SprHeadGet(); s; s = s->next) {
+		if (s->fc) {
+			if (s->f28 != s->f30 || s->f2c != s->f34) {
+				if (s->f14 == pl) {
+					spr_boxfill(tex, s->f30 + s->f50, s->f34 + s->f54, s->f58, s->f5c, 0);
+					spr_boxfill(tex, s->f28 + s->f50, s->f2c + s->f54, s->f58, s->f5c, 0);
+					if (nowplay == 0) {
+						if (rt != 1 && classic_inv_enemy_chk(0) == 1 && (s->f10 == 4 || s->f10 == 5))
+							spr_trans(((int *)ptexsrc_28F380)[7], tex, s->f30 + s->f50, s->f34 + s->f54, s->f48 + s->f50, s->f4c + s->f54, s->f58, s->f5c);
+					} else if (nowplay == 1) {
+						if (rt != 1 && classic_inv_enemy_chk(1) == 1 && (s->f10 == 4 || s->f10 == 5))
+							spr_trans(((int *)ptexsrc_28F380)[7], tex, s->f30 + s->f50, s->f34 + s->f54, s->f48 + s->f50, s->f4c + s->f54, s->f58, s->f5c);
+					}
+					spr_trans(((int *)ptexsrc_28F380)[7], tex, s->f28 + s->f50, s->f2c + s->f54, s->f48 + s->f50, s->f4c + s->f54, s->f58, s->f5c);
+					s->f30 = s->f28;
+					s->f34 = s->f2c;
+				}
+			}
+		}
+	}
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_shima", SprMoveHitWait);
 
