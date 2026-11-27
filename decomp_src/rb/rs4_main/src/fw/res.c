@@ -471,7 +471,24 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", D_000FC0C8);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", taskKill);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", taskKillReflexive);
+M2C_UNK taskKill(void *, int, int);                 /* extern */
+
+void taskKillReflexive(void *arg0, int arg1, int arg2) {
+    void *temp_s0;
+    void *var_v1;
+
+    var_v1 = M2C_FIELD(arg0, void **, 0x1C);
+    if (var_v1 != NULL) {
+        do {
+            temp_s0 = M2C_FIELD(var_v1, void **, 0x14);
+            if (M2C_FIELD(var_v1, int *, 4) > 0) {
+                taskKillReflexive(var_v1, arg1, arg2);
+            }
+            var_v1 = temp_s0;
+        } while (temp_s0 != NULL);
+    }
+    taskKill(arg0, arg1, arg2);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", taskKillChild);
 

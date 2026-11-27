@@ -26,7 +26,29 @@ void taskMove(void *a, void *b, int c, int d)
 		rsvMove(*pCurrent, a ? a : (void *)taskProc_Move, b ? b : (void *)taskProc_Free, c, d);
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/task", taskProc_Sort);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+M2C_UNK sortPrio(void **, M2C_UNK, M2C_UNK, M2C_UNK, void ***); /* extern */
+
+int taskProc_Sort(void ***arg0, void **arg1) {
+    void **temp_v0;
+    void **temp_v0_2;
+    void **var_a1;
+
+    var_a1 = arg1;
+    if (var_a1 != NULL) {
+        do {
+            temp_v0_2 = *arg0;
+            *arg0 = var_a1;
+            M2C_FIELD(var_a1, void ***, 0x20) = temp_v0_2;
+            temp_v0 = rsvNextAlive(var_a1);
+            var_a1 = temp_v0;
+        } while (temp_v0 != NULL);
+    }
+    sortPrio(*arg0, 0x24, 0x20, 0x20, arg0);
+    return 0;
+}
 
 int taskProc_Draw(int a, int b, int c)
 {
