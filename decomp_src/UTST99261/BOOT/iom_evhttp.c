@@ -43,6 +43,18 @@ extern char D_0013F38C[];
 extern int D_00585108;
 int sprintf(char *, const char *, ...);
 typedef struct { int len0; char *s0; int len1; char *s1; int len2; char *s2; } HCBD;
+typedef struct { void *f; int pos; int size; int xC; int x10; int x14; int x18[2]; } LFILE;
+extern char D_0013F3AC[];
+extern char D_0013F3B4[];
+extern char D_0013F3BC[];
+int strncasecmp(const char *a, const char *b, unsigned int n);
+char *iom_strnmcat(char *dst, int n, ...);
+int iom_accessLocalfile(char *url, int a, LFILE *lf);
+int iom_sendContent(void *msg, int a1, void *mf, int len);
+int iom_sendRequestComplete(void *msg);
+int iom_translateMsg(void *msg);
+int iom_sendReceiveStatus(void *a, int b, int c, int d);
+int iom_saveFilesave(void *a, int b, void *ctx, LFILE *src, int half);
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/iom_evhttp", D_0013F290);
 
 int iom_evHttpCtx(void *msg) {
@@ -327,7 +339,69 @@ INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/iom_evhttp", D_0013F3B4);
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/iom_evhttp", D_0013F3BC);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iom_evhttp", iom_evGetMethod);
+int iom_evGetMethod(msg)
+    void *msg;
+{
+    LFILE lf;
+    void *r = M2C_FIELD(msg, void **, 0x20);
+    char *url;
+    int err;
+
+    url = iom_malloc(M2C_FIELD(r, int *, 0x10) + 1);
+    if (url == NULL) {
+        iom_sendRequestFailed(msg, -0x12D);
+    } else {
+        iom_strnmcat(url, 1, M2C_FIELD(r, int *, 0x10), M2C_FIELD(r, char **, 0x14));
+        if (M2C_FIELD(msg, int *, 0x14) == 2) {
+            iom_sendRequestFailed(msg, -0x12C);
+        } else if (strncasecmp(url, D_0013F3AC, 5) == 0 || strncasecmp(url, D_0013F3B4, 6) == 0) {
+            err = iom_addHttpCtx(msg);
+            if (err < 0) {
+                iom_sendRequestFailed(msg, err);
+            } else {
+                msg = NULL;
+            }
+        } else if (strncasecmp(url, D_0013F3BC, 5) == 0) {
+            err = iom_accessLocalfile(url, 1, &lf);
+            if (err < 0) {
+                iom_sendRequestFailed(msg, err);
+            } else if (iom_translateMsg(msg) == 0xF) {
+                err = iom_saveFilesave(msg, 200, M2C_FIELD(msg, char **, 0x20) + 0x28, &lf, 0);
+                if (err >= 0) {
+                    iom_sendRequestComplete(msg);
+                } else {
+                    iom_sendRequestFailed(msg, err);
+                }
+                UTL_mfiledelete((int)lf.f);
+            } else if (iom_translateMsg(msg) == 0x10 || iom_translateMsg(msg) == 0x11) {
+                iom_sendRequestFailed(msg, -0x12C);
+            } else {
+                iom_sendReceiveStatus(msg, 200, 0, lf.size);
+                if (lf.x14 != 0 && M2C_FIELD(msg, int *, 4) == 2 && (iom_translateMsg(msg) == 3 || iom_translateMsg(msg) == 4))
+                    M2C_FIELD(msg, int *, 0xC) = 0;
+                if (M2C_FIELD(msg, int *, 0xC) == 1) {
+                    err = iom_sendContent(msg, 200, lf.f, lf.pos);
+                    if (err >= 0)
+                        err = iom_sendContent(msg, 200, lf.f, lf.size);
+                } else {
+                    err = iom_sendContent(msg, 200, lf.f, lf.pos + lf.size);
+                }
+                if (err < 0) {
+                    iom_sendRequestFailed(msg, err);
+                } else {
+                    iom_sendReceiveStatus(msg, 200, lf.size, lf.size);
+                    iom_sendRequestComplete(msg);
+                }
+                UTL_mfiledelete((int)lf.f);
+            }
+        } else {
+            iom_sendRequestFailed(msg, -0x12E);
+        }
+        iom_mfree(url);
+    }
+    iom_freeMsg(msg);
+    return 0;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
