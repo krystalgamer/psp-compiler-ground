@@ -46,8 +46,8 @@ M2C_UNK esp_setDialogReply();                       /* extern */
 void *HST_getHttpHeader(void *h);
 typedef struct JSOPT { struct JSOPT *next; int u4[4]; int selected; } JSOPT;
 int GUI_Choice_select(void *w, int idx);
-void GUI_List_select(void *w, int idx);
-void GUI_List_deselect(void *w, int idx);
+int GUI_List_select(void *w, int idx);
+int GUI_List_deselect(void *w, int idx);
 unsigned int Util_HTMLSelectElement_getLength(void *node);
 typedef struct JSRAD { void *prev; struct JSRAD *next; void *x8; char *name; } JSRAD;
 void GUI_RadioButton_setState(void *w, int state);
