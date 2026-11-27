@@ -88,6 +88,11 @@ extern unsigned char mes_state_method;
 M2C_UNK mes_util_vals_free(int);                    /* extern */
 
 
+int mes_regexp_execute(void *ctx, void *re, int s, int flag);
+int mes_eval_object_get(void *ctx, int obj, unsigned int id);
+int mes_eval_to_string(void *ctx, int v);
+RxState *mes_regexp_pattern_exec(void *ctx, RxObj *re, int s, int i);
+extern const double D_0013BFE0;
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_regexp", mes_regexp_new);
 
 #ifndef NULL
@@ -306,9 +311,66 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_regexp", mes_regexp_constru
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_regexp", mes_regexp_execute);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_regexp", mes_regexp_exec);
+int mes_regexp_exec(void *ctx, int v) {
+    void *re;
+    int *args;
+    int s;
+    int r;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_regexp", mes_regexp_test);
+    re = M2C_FIELD(M2C_FIELD(ctx, void **, 0x10), void **, 0x1C);
+    args = M2C_FIELD(M2C_FIELD(ctx, void **, 0x10), int **, 0x24);
+    if (args == NULL || *args == 0) {
+        s = mes_eval_object_get(ctx, mes_eval_object_get(ctx, M2C_FIELD(ctx, int *, 0xC), mes_ids[0x30 / 4]), mes_ids[0xC4 / 4]);
+        if (s != 0x20)
+            v = s;
+    }
+    v = mes_eval_to_string(ctx, v);
+    *--M2C_FIELD(ctx, int **, 0x18) = v;
+    r = mes_regexp_execute(ctx, re, v, 1);
+    if (r == 0)
+        r = 4;
+    M2C_FIELD(ctx, int **, 0x18)++;
+    return r;
+}
+
+int mes_regexp_test(void *ctx, int v) {
+    RxObj *re;
+    int *args;
+    int s;
+    int len;
+    int i;
+    RxState *st;
+
+    re = M2C_FIELD(M2C_FIELD(ctx, void **, 0x10), RxObj **, 0x1C);
+    args = M2C_FIELD(M2C_FIELD(ctx, void **, 0x10), int **, 0x24);
+    if (args == NULL || *args == 0) {
+        s = mes_eval_object_get(ctx, mes_eval_object_get(ctx, M2C_FIELD(ctx, int *, 0xC), mes_ids[0x30 / 4]), mes_ids[0xC4 / 4]);
+        if (s != 0x20)
+            v = s;
+    }
+    v = mes_eval_to_string(ctx, v);
+    *--M2C_FIELD(ctx, int **, 0x18) = v;
+    len = ((RxStr *)(v & ~3))->len;
+    i = 0;
+    if (re->global) {
+        if (re->lastIndex > D_0013BFE0)
+            i = 0x7FFFFFFF;
+        else
+            i = re->lastIndex;
+    }
+    for (; i >= 0 && i <= len; i++) {
+        st = mes_regexp_pattern_exec(ctx, re, v, i);
+        if (st != NULL) {
+            if (re->global)
+                re->lastIndex = st->f4;
+            M2C_FIELD(ctx, int **, 0x18)++;
+            return 12;
+        }
+    }
+    re->lastIndex = 0;
+    M2C_FIELD(ctx, int **, 0x18)++;
+    return 8;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_regexp", mes_regexp_to_string);
 
