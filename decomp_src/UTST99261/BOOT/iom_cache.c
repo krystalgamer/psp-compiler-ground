@@ -17,6 +17,8 @@ extern unsigned char D_00585138;
 #ifndef NULL
 #define NULL ((void *)0)
 #endif
+int CLIB_time(int *t);
+int iom_diffexpire(int, int);
 int iom_loadCache(void) {
     return 0;
 }
@@ -28,7 +30,19 @@ int iom_saveCache(void) {
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iom_cache", iom_updateCache);
+void iom_updateCache(void) {
+    void *e;
+    void *next;
+
+    for (e = UTL_peekqueue((void *)iom.pad2, NULL); e != NULL; e = next) {
+        next = UTL_peekqueue((void *)iom.pad2, e);
+        e = M2C_FIELD(e, void **, 8);
+        if ((unsigned int)(M2C_FIELD(e, int *, 0x14) + 1) >= 2 && iom_diffexpire(M2C_FIELD(e, int *, 0x14), CLIB_time(NULL)) < 0) {
+            M2C_FIELD(e, int *, 0x14) = 0;
+            iom.x28 = 1;
+        }
+    }
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iom_cache", iom_addCache);
 

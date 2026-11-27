@@ -27,6 +27,8 @@ char *strcpy(char *, const char *);
 unsigned int strlen(const char *);
 char *http_getresponseheader_SetCookie(int h, int i);
 int iom_setCookie(char *url, char *cookie, int flag);
+extern int D_00585204;
+extern int G_sendflag;
 int iom_evHttpCtx(void *msg) {
     void *d = M2C_FIELD(msg, void **, 0x20);
     return D_0013F290[*(int *)d](msg, d);
@@ -198,4 +200,31 @@ ok:
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iom_evhttp", iom_evLoadStop2);
+int iom_evLoadStop2(void *msg) {
+    void *h = M2C_FIELD(M2C_FIELD(msg, void **, 0x20), void **, 0);
+    void *ctx;
+    int flag;
+    int st;
+    int t;
+
+    iom_freeMsg(msg);
+    ctx = h;
+    D_00585204 = 0;
+    G_sendflag = 0;
+    iom_stopHttpCtx(ctx);
+    flag = G_sendflag;
+    G_sendflag = 0;
+    st = M2C_FIELD(ctx, int *, 4);
+    if (st == 2) {
+        M2C_FIELD(ctx, int *, 4) = 5;
+        iom_stopHttpCtx(ctx);
+        M2C_FIELD(ctx, int *, 4) = st;
+    }
+    t = flag | G_sendflag;
+    G_sendflag = 0;
+    if (t == 0)
+        iom_sendRequestFailed(ctx, -0x133);
+    G_sendflag = 0;
+    iom_freeMsg(ctx);
+    return 0;
+}

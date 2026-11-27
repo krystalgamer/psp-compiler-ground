@@ -19,6 +19,10 @@ extern unsigned char D_00585144;
 
 
 int iom_addCache(int, int, int *);
+signed char *getListNumCharAtAU(int n);
+signed char *getListNumCharAtAL(int n);
+signed char *getListNumCharAtIU(int n);
+signed char *getListNumCharAtIL(int n);
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_list", getListNumCharAtIU);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_list", getListNumCharAtIL);
@@ -50,7 +54,23 @@ signed char *getListNumCharAtL(int arg0) {
     return temp_v0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_list", getListNumChar);
+signed char *getListNumChar(int n, int type) {
+    switch (type) {
+    case 0xC:
+        return getListNumCharAtAU(n);
+    case 0xD:
+        return getListNumCharAtAL(n);
+    case 0xE:
+        if ((unsigned int)(n + 0xF9F) < 0x1F3F)
+            return getListNumCharAtIU(n);
+        break;
+    case 0xF:
+        if ((unsigned int)(n + 0xF9F) < 0x1F3F)
+            return getListNumCharAtIL(n);
+        break;
+    }
+    return getListNumCharAtL(n);
+}
 
 #ifndef NULL
 #define NULL ((void *)0)

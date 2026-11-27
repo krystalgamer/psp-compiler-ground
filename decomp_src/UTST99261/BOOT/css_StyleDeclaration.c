@@ -1040,7 +1040,24 @@ int CSSUnknownRule_getCssText(void *arg0) {
     return var_v0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_StyleDeclaration", CSSUnknownRule_setCssText);
+int CSSUnknownRule_setCssText(void *r, char *text) {
+    int ret = -1;
+    void *ss;
+    s16 *n;
+
+    if (r != NULL && M2C_FIELD(r, void **, 0x1C) != NULL && M2C_FIELD(M2C_FIELD(r, void **, 0x1C), short *, 0x36) == 0
+        && (ss = newCSSNode(0, 0x3C)) != NULL) {
+        CSS_StyleSheetRuleSingle(ss, text);
+        n = M2C_FIELD(ss, s16 **, 0xC);
+        if (n != NULL && *n == 1) {
+            popCSSNode(n);
+            addCSSNode(M2C_FIELD(r, void **, 0x1C), n);
+            ret = 0;
+        }
+        freeCSSStyleSheet(ss);
+    }
+    return ret;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
