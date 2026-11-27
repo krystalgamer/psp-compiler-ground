@@ -52,7 +52,28 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/lib/sort", D_000FB474);
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/lib/sort", D_000FB484);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/lib/sort", textTerm);
+M2C_UNK _memFree(void *, M2C_UNK *, M2C_UNK);       /* extern */
+extern unsigned char D_000FB408;
+extern unsigned char D_000FB428;
+extern unsigned char D_000FB444;
+
+int textTerm(void *arg0) {
+    void *temp_v0;
+
+    if (arg0 == NULL) {
+        consPrintf(&D_000FB428, &D_000FB408, 0xEB, "textTerm", &D_000FB444);
+    }
+    if (M2C_FIELD(arg0, void **, 0x10) == NULL) {
+        consPrintf(&D_000FB428, &D_000FB408, 0xEC, "textTerm", "pCntx->pCopy");
+    }
+    temp_v0 = M2C_FIELD(arg0, void **, 0x14);
+    if (temp_v0 != NULL) {
+        _memFree(temp_v0, &D_000FB408, 0xEF);
+    }
+    _memFree(M2C_FIELD(arg0, void **, 0x10), &D_000FB408, 0xF0);
+    _memFree(arg0, &D_000FB408, 0xF1);
+    return 1;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/lib/sort", textGetSJIS);
 
@@ -166,7 +187,41 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/lib/sort", D_000FB5E8);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/lib/sort", textToUCS4);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/lib/sort", textASCIItoUCS4);
+int *_memAlloc(int, M2C_UNK *, M2C_UNK);            /* extern */
+int textToUCS4(M2C_UNK, unsigned char);                        /* extern */
+extern unsigned char D_000FB4FC;
+
+int *textASCIItoUCS4(signed char *arg0) {
+    int *temp_v0_2;
+    int *var_s0;
+    int *var_v0;
+    signed char *var_s3;
+    unsigned int temp_v0;
+    unsigned int var_s1;
+
+    var_v0 = NULL;
+    var_s3 = arg0;
+    if (arg0 != NULL) {
+        temp_v0 = strlen(arg0);
+        var_s1 = temp_v0;
+        temp_v0_2 = _memAlloc((temp_v0 * 4) + 4, &D_000FB408, 0x351);
+        var_s0 = temp_v0_2;
+        if (temp_v0_2 == NULL) {
+            consPrintf(&D_000FB428, &D_000FB408, 0x354, "textASCIItoUCS4", &D_000FB4FC);
+        }
+        if (var_s1 != 0) {
+            do {
+                var_s1 -= 1;
+                *var_s0 = textToUCS4(0, (unsigned char) *var_s3);
+                var_s3 += 1;
+                var_s0 += 1;
+            } while (var_s1 != 0);
+        }
+        *var_s0 = -1;
+        var_v0 = temp_v0_2;
+    }
+    return var_v0;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/lib/sort", textUCS4toASCII);
 
