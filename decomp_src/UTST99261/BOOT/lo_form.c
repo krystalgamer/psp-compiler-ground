@@ -366,7 +366,48 @@ void actResetForm(int form, M2C_UNK x) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_form", actSaveForm);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_form", actRestoreForm);
+int actRestoreForm(void *body, void *box) {
+    void *sd;
+    SaveForm *f;
+    char *s;
+    sd = getSessionSaveData(HST_getSessionID(M2C_FIELD(M2C_FIELD(body, void **, 0x20), void **, 0x20)));
+    if (sd == NULL) {
+        return 0;
+    }
+    if (M2C_FIELD(sd, SaveForm **, 0x10) == NULL) {
+        return 0;
+    }
+    f = M2C_FIELD(M2C_FIELD(body, void **, 0x20), SaveForm **, 0x84);
+    if (f == NULL) {
+        f = M2C_FIELD(sd, SaveForm **, 0x10);
+    } else {
+        f = f->next;
+    }
+    if (f == NULL) {
+        return 0;
+    }
+    if (f->type != M2C_FIELD(box, s16 *, 0x38)) {
+        return 0;
+    }
+    switch (f->type) {
+    case 14:
+    case 15:
+        M2C_FIELD(M2C_FIELD(box, void **, 0x20), void **, 8) = f->data;
+        break;
+    case 13:
+        if (f->data != NULL) {
+            s = MEM_malloc(0, strlen(f->data) + 1);
+            strcpy(s, f->data);
+            M2C_FIELD(M2C_FIELD(box, void **, 0x20), char **, 0x14) = s;
+        }
+        break;
+    case 18:
+        M2C_FIELD(M2C_FIELD(box, void **, 0x20), void **, 0xC) = f->data;
+        break;
+    }
+    M2C_FIELD(M2C_FIELD(body, void **, 0x20), SaveForm **, 0x84) = f;
+    return 1;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
