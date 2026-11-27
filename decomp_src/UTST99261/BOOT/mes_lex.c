@@ -1,12 +1,23 @@
 /* cflags: -O1 */
 #include "common.h"
 #include "m2c_macros.h"
+extern const double D_0013A430;       /* 16.0 */
+extern const double D_0013A438;       /* 8.0 */
+extern const double D_0013A440;       /* 10.0 */
+extern const double D_0013A448;       /* 0.5 */
+int mes_util_digit(int c);
+double mes_util_expt(double x, int n);
+double floor(double x);
+int mes_util_is_white_space(int c);
+int mes_util_is_alpha_digit(int c);
+int mes_util_string_eq2(void *s, const unsigned char *t);
 int mes_util_hex(int c);
 int mes_util_octal(int c);
 typedef struct MesReserved {
     struct MesReserved *next;
     unsigned int hash;                /* 0x4 */
-    short len;                        /* 0x8 */
+    unsigned short len;               /* 0x8 */
+    unsigned short tok;               /* 0xA */
     const unsigned char *name;        /* 0xC */
 } MesReserved;
 extern MesReserved *mes_lex_reserved_hash[31];
@@ -29,6 +40,7 @@ typedef struct MesLex {
     unsigned char prev;               /* 0x11 */
     short f12;
     MesStrBuf *str;                   /* 0x14 */
+    double num;                       /* 0x18 */
 } MesLex;
 int mes_line_match(MesLine *l, const char *s);
 void mes_util_string_put(MesStrBuf *s, int c);
@@ -168,9 +180,126 @@ int mes_lex_multi_line_comment(MesLine *l)
     return r;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_lex", mes_lex_id);
+int mes_lex_id(MesLex *lx)
+{
+    MesLine *l = lx->line;
+    unsigned int h;
+    int esc;
+    unsigned int c;
+    int len;
+    MesReserved *r;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_lex", mes_lex_number);
+    lx->str->len = 0;
+    h = 0;
+    esc = 0;
+    while (!l->eof && (c = mes_line_peek(l)) != '\n' && !mes_util_is_white_space(c)
+           && (mes_util_is_alpha_digit(c) || c == '_' || c == '\\' || c == '$' || c >= 0x80)) {
+        mes_line_skip(l);
+        if (c == '\\') {
+            esc = 1;
+            c = mes_lex_escape(l);
+        }
+        mes_util_string_put(lx->str, c);
+        h = (h * 37) ^ c;
+    }
+    len = lx->str->len;
+    if (len == 0)
+        return 0;
+    if (!esc) {
+        for (r = mes_lex_reserved_hash[h % 31]; r != NULL; r = r->next)
+            if (r->hash == h && r->len == len && mes_util_string_eq2(lx->str, r->name))
+                return r->tok;
+    }
+    return 0x67;
+}
+
+int mes_lex_number(MesLex *lx, int frac)
+{
+    MesLine *l = lx->line;
+    int d;
+    unsigned int exp;
+    unsigned int nfrac;
+    int neg;
+
+    lx->num = 0;
+    if (!frac) {
+        if (mes_line_peek(l) == '0') {
+            mes_line_skip(l);
+            if (mes_line_peek(l) == 'x' || l->quote == 'X') {
+                while (mes_line_skip(l), (d = mes_util_hex(mes_line_peek(l))) >= 0)
+                    lx->num = D_0013A430 * lx->num + d;
+                return 0x68;
+            }
+            d = mes_util_octal(mes_line_peek(l));
+            if (d >= 0) {
+                for (;;) {
+                    lx->num = D_0013A438 * lx->num + d;
+                    mes_line_skip(l);
+                    d = mes_util_octal(mes_line_peek(l));
+                    if (d < 0)
+                        return 0x68;
+                }
+            }
+        }
+        while ((d = mes_util_digit(mes_line_peek(l))) >= 0) {
+            lx->num = D_0013A440 * lx->num + d;
+            mes_line_skip(l);
+        }
+    }
+    if (mes_line_peek(l) == '.') {
+        mes_line_skip(l);
+        frac = 1;
+    }
+    exp = 0;
+    nfrac = 0;
+    neg = 0;
+    if (frac) {
+        while ((d = mes_util_digit(mes_line_peek(l))) >= 0) {
+            nfrac++;
+            lx->num = D_0013A440 * lx->num + d;
+            mes_line_skip(l);
+        }
+        lx->num = floor(lx->num + D_0013A448);
+    }
+    if (mes_line_peek(l) == 'e' || l->quote == 'E') {
+        mes_line_skip(l);
+        if (mes_line_peek(l) == '+')
+            mes_line_skip(l);
+        else if (l->quote == '-') {
+            neg = 1;
+            mes_line_skip(l);
+        }
+        while ((d = mes_util_digit(mes_line_peek(l))) >= 0) {
+            exp = exp * 10 + d;
+            mes_line_skip(l);
+        }
+    }
+    if (nfrac != 0) {
+        if (exp != 0) {
+            if (neg)
+                exp += nfrac;
+            else if (exp >= nfrac)
+                exp -= nfrac;
+            else {
+                exp = nfrac - exp;
+                neg = 1;
+            }
+        } else {
+            exp = nfrac;
+            neg = 1;
+        }
+    }
+    if (exp != 0) {
+        if (neg)
+            lx->num = lx->num / mes_util_expt(D_0013A440, exp);
+        else if (exp > 500)
+            lx->num = mes_util_expt(D_0013A440, exp) * lx->num;
+        else
+            while (exp-- > 0)
+                lx->num = D_0013A440 * lx->num;
+    }
+    return 0x68;
+}
 
 int mes_lex_string(MesLex *lx)
 {
