@@ -1,6 +1,7 @@
 /* cflags: -O1 */
 #include "common.h"
 #include "m2c_macros.h"
+extern const double D_0013A450;
 void mes_memory_copy(const void *src, void *dst, int n);
 typedef unsigned short UCSChar;
 
@@ -293,7 +294,19 @@ int mes_util_string_eq2(UString *s, const char *str)
     return *str == 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_util", mes_util_expt);
+double mes_util_expt(double x, int n)
+{
+    double r;
+
+    if (n == 0)
+        return D_0013A450;
+    if (n < 0)
+        return mes_util_expt(D_0013A450 / x, -n);
+    r = mes_util_expt(x * x, n / 2);
+    if (n / 2 * 2 == n - 1)
+        r = r * x;
+    return r;
+}
 
 int mes_util_is_white_space(UCSChar c)
 {
@@ -461,9 +474,67 @@ int mes_util_char_in(UCSChar c, const char *s)
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_util", mes_util_to_upper);
+UCSChar mes_util_to_upper(UCSChar c)
+{
+    if (c >= 'a' && c <= 'z')
+        c = c - 0x20;
+    else if ((c >= 0xE0 && c <= 0xF6) || (c >= 0xF8 && c <= 0xFE))
+        c = c - 0x20;
+    else if (c == 0xFF)
+        c = 0x178;
+    else if (c == 0x131)
+        c = 0x49;
+    else if (((c >= 0x100 && c <= 0x137) || (c >= 0x14A && c <= 0x177)) && c % 2 == 1)
+        c = c - 1;
+    else if (((c >= 0x139 && c <= 0x148) || (c >= 0x179 && c <= 0x17E)) && c % 2 == 0)
+        c = c - 1;
+    else if (c == 0x17F)
+        c = 0x53;
+    else if (c >= 0x200 && c <= 0x217 && c % 2 == 1)
+        c = c - 1;
+    else if (c >= 0x430 && c <= 0x44F)
+        c = c - 0x20;
+    else if ((c >= 0x451 && c <= 0x45C) || (c >= 0x45E && c <= 0x45F))
+        c = c - 0x50;
+    else if (c >= 0x460 && c <= 0x47F && c % 2 == 1)
+        c = c - 1;
+    else if (c >= 0x561 && c <= 0x586)
+        c = c - 0x30;
+    else if (c >= 0xFF41 && c <= 0xFF5A)
+        c = c - 0x20;
+    return c;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_util", mes_util_to_lower);
+UCSChar mes_util_to_lower(UCSChar c)
+{
+    if (c >= 'A' && c <= 'Z')
+        c = c + 0x20;
+    else if ((c >= 0xC0 && c <= 0xD6) || (c >= 0xD8 && c <= 0xDE))
+        c = c + 0x20;
+    else if (c == 0x130)
+        c = 0x69;
+    else if (((c >= 0x100 && c <= 0x137) || (c >= 0x14A && c <= 0x177)) && c % 2 == 0)
+        c = c + 1;
+    else if (c == 0x178)
+        return 0xFF;
+    else if (((c >= 0x139 && c <= 0x148) || (c >= 0x179 && c <= 0x17E)) && c % 2 == 1)
+        c = c + 1;
+    else if (c >= 0x200 && c <= 0x217 && c % 2 == 0)
+        c = c + 1;
+    else if ((c >= 0x401 && c <= 0x40C) || (c >= 0x40E && c <= 0x40F))
+        c = c + 0x50;
+    else if (c >= 0x410 && c <= 0x42F)
+        c = c + 0x20;
+    else if (c >= 0x460 && c <= 0x47F && c % 2 == 0)
+        c = c + 1;
+    else if (c >= 0x531 && c <= 0x556)
+        c = c + 0x30;
+    else if (c >= 0x10A0 && c <= 0x10C5)
+        c = c + 0x30;
+    else if (c >= 0xFF21 && c <= 0xFF3A)
+        c = c + 0x20;
+    return c;
+}
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/mes_util", D_0013A450);
 
