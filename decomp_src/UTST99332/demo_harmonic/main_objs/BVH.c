@@ -2,9 +2,14 @@
 /* cflags: -O3 -fno-exceptions */
 #undef __EXCEPTIONS
 #include "cxx/defer_asm.h"
+#define DEMO_STATICS_MATH
+#define DEMO_STATICS_IOSTREAM
 #include "../main.hpp"
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/BVH", _Z41__static_initialization_and_destruction_0ii_A25FC);
+/* the module's .ctors/.dtors refer to the static constructor/destructor */
+/* (BVH() is still asm: its deferred-asm wrapper is the first public symbol cc1plus sees) */
+__asm__(".globl _GLOBAL__I__ZN3BVHC2Ev\n_GLOBAL__I__ZN3BVHC2Ev = _GLOBAL__I__ZN3BVHC2Ev__asm");
+__asm__(".globl _GLOBAL__D__ZN3BVHC2Ev\n_GLOBAL__D__ZN3BVHC2Ev = _GLOBAL__D__ZN3BVHC2Ev__asm");
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/BVH", _ZN3BVHC2Ev);
 
@@ -23,20 +28,7 @@ void BVH::print()
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/BVH", _ZN3BVH5printEPNS_4NodeE);
 
-extern "C" {
-void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_A25FC");
-void _GLOBAL__I__ZN3BVHC2Ev(void);
-void _GLOBAL__D__ZN3BVHC2Ev(void);
-}
-
-void _GLOBAL__I__ZN3BVHC2Ev(void)
-{
-    static_init(1, 0xFFFF);
-}
-
-void _GLOBAL__D__ZN3BVHC2Ev(void)
-{
-    static_init(0, 0xFFFF);
-}
-
+/* BVH::Node's inline destructor (weak copy in the tail), still asm */
+#undef INCLUDE_ASM
+#define INCLUDE_ASM INCLUDE_ASM_LINKONCE
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/BVH", _ZN3BVH4NodeD1Ev);

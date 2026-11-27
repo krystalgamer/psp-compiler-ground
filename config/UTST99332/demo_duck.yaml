@@ -449,6 +449,8 @@ segments:
       - [0x16D050, rodata, asm/rodata_16CFD0]
       - [0x16D660, .rodata, main_objs/VertexColorEnv]
       - [0x16D684, rodata, asm/rodata_16D604]
+      - [0x16DBD4, .rodata, main_objs/BVH]
+      - [0x16DBF0, rodata, asm/rodata_16DB70]
       - [0x16FF68, .rodata, main_objs/sgl_Mesh_4]
       - [0x16FF78, rodata, asm/rodata_16FEF8]
       - [0x170B10, .rodata, main_objs/sgl_MeshBuilder_extruded_var_extruded_var]
@@ -612,6 +614,8 @@ segments:
       - { start: 0x18CFCC, type: bss, vram: 0x18FF70, name: bss_18FF70 }
       - { start: 0x18CFCC, type: .bss, vram: 0x190200, name: main_objs/VertexColorEnv }
       - { start: 0x18CFCC, type: bss, vram: 0x190284, name: bss_190284 }
+      - { start: 0x18CFCC, type: .bss, vram: 0x190314, name: main_objs/BVH }
+      - { start: 0x18CFCC, type: bss, vram: 0x190398, name: bss_190398 }
       - { start: 0x18CFCC, type: .bss, vram: 0x190D44, name: main_objs/sgl_TransformSet_Transform }
       - { start: 0x18CFCC, type: .bss, vram: 0x190DC4, name: main_objs/math_TransformStack }
       - { start: 0x18CFCC, type: .bss, vram: 0x190E44, name: main_objs/math_TransformStackFunc }

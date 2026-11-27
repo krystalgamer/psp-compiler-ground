@@ -411,3 +411,8 @@ bss 0x18B178 main_objs/glutils_TurnTable
 bss 0x18B23C -
 # math_TransformStack: .bss of the C++ static initializer (header statics)
 bss 0x18D944 main_objs/math_TransformStack
+# BVH: C++ static initializer (header statics); .rodata: its float pool; .bss
+rodata 0x16AC2C main_objs/BVH
+rodata 0x16AC48 -
+bss 0x18CE94 main_objs/BVH
+bss 0x18CF18 -
