@@ -342,7 +342,77 @@ int sprite_screencopy_pri_get(void) {
     return D_0035AE84;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_tex", sprite_syncsort);
+extern int bill_pri_co[], spr_pri_co[];
+extern int sprite_disp_max;
+typedef struct { int used; u8 pad[0x64 - 4]; int pri; u8 rest[0x168 - 0x68]; } BILL_S;
+typedef struct { int used; u8 pad[0x6C - 4]; int pri; u8 rest[0xD0 - 0x70]; } SPR_S;
+static inline void bill_sort(int n)
+{
+	int i, j, k, p;
+
+	if (n <= 0)
+		return;
+	for (i = 1; i < n; i++) {
+		k = bill_co[i];
+		p = bill_pri_co[i];
+		for (j = i - 1; j >= 0 && bill_pri_co[j] >= p; j--) {
+			bill_co[j + 1] = bill_co[j];
+			bill_pri_co[j + 1] = bill_pri_co[j];
+		}
+		bill_co[j + 1] = k;
+		bill_pri_co[j + 1] = p;
+	}
+}
+static inline void spr_sort(int n)
+{
+	int i, j, k, p;
+
+	if (n <= 0)
+		return;
+	for (i = 1; i < n; i++) {
+		k = spr_co[i];
+		p = spr_pri_co[i];
+		for (j = i - 1; j >= 0 && spr_pri_co[j] >= p; j--) {
+			spr_co[j + 1] = spr_co[j];
+			spr_pri_co[j + 1] = spr_pri_co[j];
+		}
+		spr_co[j + 1] = k;
+		spr_pri_co[j + 1] = p;
+	}
+}
+void sprite_syncsort(void)
+{
+	int i, j, n, k, p;
+	BILL_S *b;
+	SPR_S *s;
+
+	sprite_disp_max = 0;
+	billbord_disp_max = 0;
+	n = 0;
+	for (i = 0; i < 512; i++) {
+		b = &((BILL_S *)billbord)[i];
+		if (n >= billbord_max)
+			break;
+		if (b->used == 1) {
+			bill_co[n] = i;
+			bill_pri_co[n] = b->pri;
+			n++;
+		}
+	}
+	bill_sort(n);
+	n = 0;
+	for (i = 0; i < 345; i++) {
+		s = &((SPR_S *)sprite)[i];
+		if (n >= sprite_max)
+			break;
+		if (s->used == 1) {
+			spr_co[n] = i;
+			spr_pri_co[n] = s->pri;
+			n++;
+		}
+	}
+	spr_sort(n);
+}
 
 INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_tex", D_0007A91C);
 
