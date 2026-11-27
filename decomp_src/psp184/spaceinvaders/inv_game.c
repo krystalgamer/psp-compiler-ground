@@ -168,11 +168,16 @@ INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", D_0007DF00)
 
 INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", D_0007DF0C);
 
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", D_0007DF18);
+/* cam_init's vector initializers (local aggregates in the original; a same-file const
+   global reproduces both the code and the .rodata position). D_0007DF3C is an unused
+   initializer whose constant was still emitted. */
+typedef struct { float x, y, z; } V3;
+const V3 D_0007DF18 = { 0.0f, 0.0f, -2800.0f };
 
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", D_0007DF24);
+const V3 D_0007DF24 = { -90.0f, 0.0f, 0.0f };
 
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", D_0007DF30);
+const V3 D_0007DF30 = { 0.0f, 700.0f, 0.0f };
+const V3 D_0007DF3C = { 0.0f, 1.0f, 0.0f };
 
 INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", D_0007DF48);
 
@@ -1066,11 +1071,6 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", efc_ufohit_sta
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", efc_shot_del);
 
-/* cam_init: the code matches, but its three vector initializers are this
-   unit's first .rodata aggregates (D_0007DF18/24/30, ahead of the strings
-   and floats), which C can only emit there once the unit is all C. */
-#ifdef NON_MATCHING
-typedef struct { float x, y, z; } V3;
 typedef struct {
 	int f0, f4, f8, fc, f10, f14;
 	V3 eye, f24, f30;
@@ -1084,11 +1084,11 @@ void cam_init(void)
 {
 	CAM.f0 = 0;
 	{
-		V3 v = { 0.0f, 0.0f, -2800.0f };
+		V3 v = D_0007DF18;
 		CAM.eye = v;
 	}
 	{
-		V3 v = { -90.0f, 0.0f, 0.0f };
+		V3 v = D_0007DF24;
 		CAM.f30 = v;
 	}
 	CAM.f50 = camera_mode[0];
@@ -1097,7 +1097,7 @@ void cam_init(void)
 	CAM.f5c = camera_mode[3];
 	CAM.f3c = 1;
 	{
-		V3 v = { 0.0f, 700.0f, 0.0f };
+		V3 v = D_0007DF30;
 		CAM.f40 = v;
 	}
 	CAM.f24.x = 0;
@@ -1108,9 +1108,6 @@ void cam_init(void)
 	CAM.f4c = stage_format[gmain.f.ff28].f4;
 	CAM.f14 = 0;
 }
-#else
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", cam_init);
-#endif
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", cam_control);
 
