@@ -64,7 +64,25 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sh_PRT", _ZN2sh3
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sh_PRT", _ZN2sh3PRT20interreflection_passERNS0_10VertexDataEi);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sh_PRT", _ZN2sh3PRT11sum_bouncesERNS0_10VertexDataE);
+static inline void zero(sh::Vector &v)
+{
+    v.v[0] = 0;
+    v.v[1] = 0;
+    v.v[2] = 0;
+    v.v[3] = 0;
+}
+void sh::PRT::sum_bounces(VertexData &vd)
+{
+    int i = 0;
+    for (std::vector<PerVertexData>::iterator it = vd._pvd.begin(); it != vd._pvd.end(); ++it, ++i) {
+        VectorRGB &c = vd._v[i]._sh;
+        zero(c.r);
+        zero(c.g);
+        zero(c.b);
+        for (int k = 0; k != 3; k++)
+            vd._v[i]._sh += it->_sh[k];
+    }
+}
 
 const char *sh::PRT::DrawFlagName(DrawFlag f)
 {
@@ -114,13 +132,32 @@ void sh::PRT::saveVertexSHAsCubeMap(const char *name, unsigned int _Index, unsig
 {
     SGL_ASSERT(_Index > 0 && _Index < _vdata._v.size(), D_00172EF0, D_001730A4, D_00172ED8, saveVertexSHAsCubeMap_name, 1244, D_00172EEC);
     std::cout << D_001730D4 << _Index << D_001730F4;
-    FunctionEvaluator f(_pvd[_Index]._sh[0]);
-    const float e = D_00172CE8; f.saveCubeMap(name, 0, size, 0, e);
+    FunctionEvaluator f(_vdata._pvd[_Index]._sh[0]);
+    f.saveCubeMap(name, 0, size, 0, 1.0f);
 }
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sh_PRT", _ZN2sh3PRT18make_adj_tri_listsEv);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sh_PRT", _ZN2sh3PRT21draw_averaged_normalsEv);
+static inline sgl::Position to_position(const math::vector_xyzw &v)
+{
+    return sgl::Position(v.x, v.y, v.z, 1);
+}
+void sh::PRT::draw_averaged_normals()
+{
+    int i = 0;
+    glPushAttrib(GL_ENABLE_BIT);
+    glDisable(GL_LIGHTING);
+    glColor3f(0, 1, 0);
+    glBegin(GL_LINES);
+    for (std::vector<PerVertexData>::iterator it = _vdata._pvd.begin(); it != _vdata._pvd.end(); ++it, ++i) {
+        sgl::Position p = _rt.getMesh()->getVertexPosition(i);
+        sgl::Position q = to_position(p + *(const math::vector_xyzw *)&it->_f90 * 0.2f);
+        glVertex3fv(&p.x);
+        glVertex3fv(&q.x);
+    }
+    glEnd();
+    glPopAttrib();
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sh_PRT", _ZN2sh3PRT22draw_triangles_normalsEv);
 
@@ -144,7 +181,7 @@ void sh::PRT::load()
         common::Log() << D_00173254;
         return;
     }
-    VertexData d;
+    VerticesVector d;
     if (!d.load(prt_filename(_name)))
         return;
     if (d._v.size() != _rt.getMesh()->getVertices().size()) {

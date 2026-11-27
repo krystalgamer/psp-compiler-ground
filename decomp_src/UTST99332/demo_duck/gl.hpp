@@ -21,14 +21,17 @@ void glEnd(void);
 void glColor3f(GLfloat, GLfloat, GLfloat);
 void glNormal3f(GLfloat, GLfloat, GLfloat);
 void glVertex3f(GLfloat, GLfloat, GLfloat);
+void glVertex3fv(const GLfloat *);
 void glTranslatef(GLfloat, GLfloat, GLfloat);
 void glClearColor(GLfloat, GLfloat, GLfloat, GLfloat);
 void glGenTextures(int, unsigned int *);
 void glDeleteTextures(int, const unsigned int *);
 int glGetError(void);
 }
+#define GL_LINES 0x0001
 #define GL_LINE_LOOP 0x0002
 #define GL_QUADS 0x0007
 #define GL_LIGHTING 0x0B50
+#define GL_ENABLE_BIT 0x00002000
 
 #endif

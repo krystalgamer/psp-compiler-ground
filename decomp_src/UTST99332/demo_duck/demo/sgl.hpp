@@ -765,6 +765,13 @@ public:
     VectorRGB(const Vector &r_, const Vector &g_, const Vector &b_) : r(r_), g(g_), b(b_) {}
     VectorRGB operator+(const VectorRGB &o) const { return VectorRGB(r + o.r, g + o.g, b + o.b); }
     VectorRGB operator-(const VectorRGB &o) const { return VectorRGB(r - o.r, g - o.g, b - o.b); }
+    VectorRGB &operator+=(const VectorRGB &o)
+    {
+        r += o.r;
+        g += o.g;
+        b += o.b;
+        return *this;
+    }
     void print(const char *) const;
     void eval(float, float, float &, float &, float &) const;
     void save(const char *);
@@ -1083,6 +1090,7 @@ public:
         int _fA4[10];                   /* 0xA4 */
     };
     struct VertexData : VerticesVector {
+        std::vector<PerVertexData> _pvd;    /* 0x2C */
     };
     void import_model();
     static const char *DrawFlagName(DrawFlag);
@@ -1094,6 +1102,7 @@ public:
     void process();
     void process(VertexData &);
     void save_if_doesnt_exit();
+    void sum_bounces(VertexData &);
     void save();
     void load();
     void saveVertexSHAsCubeMap(const char *, unsigned int, unsigned int);
@@ -1102,7 +1111,6 @@ public:
     SphereSampling _sampling;           /* 0x2FC */
     bool _processed;                    /* 0x334 */
     VertexData _vdata;                  /* 0x338 */
-    std::vector<PerVertexData> _pvd;    /* 0x364 */
     char _p370[0x3C8 - 0x370];
     std::string _name;                  /* 0x3C8 */
 };
