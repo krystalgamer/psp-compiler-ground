@@ -2,7 +2,54 @@
 #include "m2c_macros.h"
 
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_qt_opr", I3dQtSlerpNoInv);
+extern const float D_001096D4;
+extern const float D_001096D8;
+void I3dQtSlerpNoInv(float *out, const float *p, const float *q, float t)
+{
+	float c;
+
+	__asm__ volatile(
+		"lv.q C010.q,0(%1)\n"
+		"lv.q C020.q,0(%2)\n"
+		"vdot.q S003.s,C010.q,C020.q\n"
+		"mfv $6,S003.s\n"
+		"mtc1 $6,%0\n"
+		"mtv %3,S030.s\n"
+		"vocp.s S031.s,S030.s\n"
+		: "=f"(c) : "r"(p), "r"(q), "r"(t) : "$6", "memory");
+	if (c < D_001096D4 || D_001096D8 < c) {
+		__asm__ volatile(
+			"vscl.q C100.q,C010.q,S030.s\n"
+			"vscl.q C110.q,C020.q,S031.s\n"
+			: : : "memory");
+	} else {
+		__asm__ volatile(
+			"vasin.s S032.s,S003.s\n"
+			"vmul.s S032.s,S032.s,S702.s\n"
+			"vsub.s S100.s,S702.s,S032.s\n"
+			"vmul.s S101.s,S100.s,S030.s\n"
+			"vmul.s S102.s,S100.s,S031.s\n"
+			"vscl.t C110.t,C100.t,S703.s\n"
+			"vsin.t C120.t,C110.t\n"
+			"vrcp.s S130.s,S120.s\n"
+			"vscl.q C100.q,C010.q,S121.s\n"
+			"vscl.q C110.q,C020.q,S122.s\n"
+			"vscl.q C100.q,C100.q,S130.s\n"
+			"vscl.q C110.q,C110.q,S130.s\n"
+			: : : "memory");
+	}
+	__asm__ volatile(
+		"vadd.q C010.q,C100.q,C110.q\n"
+		"vdot.q S032.s,C010.q,C010.q\n"
+		"vrsq.s S033.s,S032.s\n"
+		"vscl.q C000.q,C010.q,S033.s\n"
+		"sv.q C000.q,0(%0)\n"
+		: : "r"(out) : "memory");
+}
+
+const float D_001096D4 = -0.9f;
+
+const float D_001096D8 = 0.9f;
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_qt_opr", I3dQtSquad);
 
