@@ -8,20 +8,53 @@ extern int sce_newlib_stack_kb_size;
 M2C_UNK mainMain(int, M2C_UNK *);                   /* extern */
 M2C_UNK sceKernelExitThread(M2C_UNK);               /* extern */
 extern int g_argc;
-extern unsigned char g_argv;
+extern char *g_argv[16];
 M2C_UNK gameMain();                                 /* extern */
 M2C_UNK initInitApp();                              /* extern */
 M2C_UNK initTermApp();                              /* extern */
 extern unsigned char ThrMain;
 extern unsigned char ThrBack;
+void consPrintf(const char *, ...);
+int strcmp(const char *, const char *);
+int atoi(const char *);
+int *gameGetCntx();
+extern unsigned char D_000FDB38, D_000FDB44, D_000FDB50, D_000FDB54;
+int sceKernelGetThreadId(void);
+int sceKernelReferThreadStatus(int, void *);
+int sceKernelCreateThread(const char *, void *, int, int, int, void *);
+int sceKernelStartThread(int, int, void *);
+int mainBoot(void);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/main", empty_start);
+int empty_start(int len, char *args)
+{
+	int info[0x6C / 4];
+	int i;
+	consPrintf("\n\n\n\n\n\n\n\n\n\n\n-- %s %08x\n\n", "empty_start", 0x2070110);
+	mainSpritArgs(len, args);
+	consPrintf(&D_000FDB38, g_argc);
+	for (i = 0; i < g_argc; i++)
+		consPrintf(&D_000FDB44, i, g_argv[i]);
+	consPrintf(&D_000FDB50);
+	info[0] = 0x6C;
+	sceKernelReferThreadStatus(sceKernelGetThreadId(), info);
+	sceKernelStartThread(sceKernelCreateThread((char *)&D_000FDB54, mainBoot, info[0x40 / 4], info[0x34 / 4], 0, 0), 0, 0);
+	return 0;
+}
 
 int empty_stop(void) {
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/main", mainSpritArgs);
+void mainSpritArgs(int len, char *p)
+{
+	char *end = p + len;
+	g_argc = 0;
+	g_argv[0] = 0;
+	while (g_argc < 16 && p < end) {
+		g_argv[g_argc++] = p;
+		while (*p++) ;
+	}
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/main", D_000FDB38);
 
@@ -31,10 +64,22 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/main", D_000FDB50);
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/main", D_000FDB54);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/main", mainOption);
+void mainOption(int argc, char **argv)
+{
+	int i;
+	int *c;
+	for (i = 0; i < argc; i++) {
+		if (strcmp(argv[i], "-n") == 0) {
+			i++;
+			c = gameGetCntx();
+			c[0x74 / 4] = atoi(argv[i]);
+			consPrintf("nid = %d\n", gameGetCntx()[0x74 / 4]);
+		}
+	}
+}
 
 int mainBoot(void) {
-    mainMain(g_argc, &g_argv);
+    mainMain(g_argc, g_argv);
     sceKernelExitThread(0);
     return 0;
 }
