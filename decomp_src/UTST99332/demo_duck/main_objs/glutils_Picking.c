@@ -4,31 +4,117 @@
 #include "cxx/defer_asm.h"
 #include "../main.hpp"
 
+extern "C" {
+void glPopMatrix(void);
+void glMatrixMode(unsigned int);
+void glFlush(void);
+int glRenderMode(unsigned int);
+float fabsf(float);
+}
+
+/* weak instances stay asm */
+extern template class std::vector<unsigned int>;
+
+extern "C" const float D_001653F4;
+
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/glutils_Picking", _Z41__static_initialization_and_destruction_0ii_312EC);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/glutils_Picking", _ZN7glutils7PickingC2ERKS0_);
+glutils::Picking::Picking(const Picking &o)
+{
+    *this = o;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/glutils_Picking", _ZN7glutils7PickingC1ERKS0_);
+glutils::Picking glutils::Picking::operator=(const Picking &o)
+{
+    _size = o._size;
+    if (_buffer) {
+        delete[] _buffer;
+        _buffer = 0;
+    }
+    if (_size)
+        _buffer = new unsigned int[_size];
+    _hits = o._hits;
+    return *this;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/glutils_Picking", _ZN7glutils7PickingaSERKS0_);
+glutils::Picking::Picking(int n) : _size(n)
+{
+    if (n > 0) {
+        _buffer = new unsigned int[n];
+    } else {
+        _size = 0;
+        _buffer = 0;
+    }
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/glutils_Picking", _ZN7glutils7PickingC2Ei);
+glutils::Picking::~Picking()
+{
+    if (_buffer)
+        delete[] _buffer;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/glutils_Picking", _ZN7glutils7PickingC1Ei);
+unsigned int glutils::Picking::processHits(int hits, bool nearest)
+{
+    _hits.resize(0);
+    unsigned int near_name = ~0u;
+    unsigned int far_name = ~0u;
+    unsigned int zmin = 0;
+    unsigned int zmax = 0;
+    bool found = false;
+    unsigned int *p = _buffer;
+    for (int i = 0; i < hits; i++) {
+        unsigned int n = *p++;
+        if (n) {
+            unsigned int z1 = *p++;
+            unsigned int z2 = *p++;
+            if (!found) {
+                near_name = far_name = *p;
+                found = true;
+                zmin = z1;
+                zmax = z2;
+            }
+            if (z1 < zmin) {
+                zmin = z1;
+                near_name = *p;
+            }
+            if (zmax < z2) {
+                far_name = *p;
+                zmax = z2;
+            }
+        }
+        for (unsigned int j = 0; j < n; j++, p++) {
+            unsigned int name = *p;
+            _hits.push_back(name);
+        }
+    }
+    unsigned int sel = nearest ? near_name : far_name;
+    if (!_hits.empty() && _hits[0] != sel) {
+        for (unsigned int k = 1; k < _hits.size(); k++) {
+            if (_hits[k] == sel) {
+                std::swap(_hits[0], _hits[k]);
+                break;
+            }
+        }
+    }
+    return sel;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/glutils_Picking", _ZN7glutils7PickingD2Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/glutils_Picking", _ZN7glutils7PickingD1Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/glutils_Picking", _ZN7glutils7PickingD0Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/glutils_Picking", _ZN7glutils7Picking11processHitsEib);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/glutils_Picking", _ZN7glutils7Picking5beginEffff);
+void glutils::Picking::begin(float x0, float y0, float x1, float y1)
+{
+    begin_internal((x0 + x1) * D_001653F4, (y0 + y1) * D_001653F4, fabsf(x0 - x1), fabsf(y0 - y1));
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/glutils_Picking", _ZN7glutils7Picking14begin_internalEffff);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/glutils_Picking", _ZN7glutils7Picking3endEv);
+void glutils::Picking::end()
+{
+    glFlush();
+    processHits(glRenderMode(0x1C00), true);
+    glMatrixMode(0x1701);
+    glPopMatrix();
+    glMatrixMode(0x1700);
+    glPopMatrix();
+}
 
 extern "C" {
 void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_312EC");

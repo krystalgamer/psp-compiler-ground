@@ -3,16 +3,46 @@
 #undef __EXCEPTIONS
 #include "cxx/defer_asm.h"
 #include "../main.hpp"
+#include <deque>
+
+/* weak instances stay asm */
+extern template class std::deque<unsigned int>;
+extern template class std::_Deque_base<unsigned int, std::allocator<unsigned int> >;
 
 
 /* the GL emulation's state (only the members used so far) */
 struct HouseKeepingState {
-    char _pad0[0x54];
+    std::deque<unsigned int> free_textures;     /* 0x00 */
+    unsigned int last_texture;  /* 0x28 */
+    char _pad2c[0x34 - 0x2C];
+    int wrap_s;                 /* 0x34 */
+    int wrap_t;                 /* 0x38 */
+    int min_filter;             /* 0x3C */
+    int mag_filter;             /* 0x40 */
+    int viewport_x;             /* 0x44 (+2048) */
+    int viewport_y;             /* 0x48 (+2048) */
+    int viewport_w;             /* 0x4C */
+    int viewport_h;             /* 0x50 */
     unsigned int array_format;  /* 0x54 */
     const void *array_pointer;  /* 0x58 */
     int array_stride;           /* 0x5C */
 };
 extern HouseKeepingState hk;
+bool GL2SCEGU(unsigned int, int *);
+extern "C" {
+void sceGuFrontFace(int);
+void sceGumMatrixMode(int);
+void sceGumMultMatrix(const ScePspFMatrix4 *);
+void sceGumTranslate(const ScePspFVector3 *);
+void sceGumStoreMatrix(ScePspFMatrix4 *);
+void sceGumOrtho(float, float, float, float, float, float);
+void glRotatef(float, float, float, float);
+}
+extern "C" const char D_00160A00[], D_00160A20[], D_00160B58[], D_00160B6C[], D_00160BB4[], D_00160BF0[];
+extern const char glClearDepth_fn[] __asm__("_ZZ12glClearDepthE19__PRETTY_FUNCTION__");
+extern const char glDepthRange_fn[] __asm__("_ZZ12glDepthRangeE19__PRETTY_FUNCTION__");
+extern const char glLoadMatrixd_fn[] __asm__("_ZZ13glLoadMatrixdE19__PRETTY_FUNCTION__");
+#define GL_ASSERT(c, fn, line, msg) SGL_ASSERT(c, D_00160A00, D_00160B6C, D_00160A20, fn, line, msg)
 extern unsigned int D_0018A99C;     /* glBindTexture's current texture */
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/HouseKeeping_AttribStack", _Z41__static_initialization_and_destruction_0ii_24D88);
@@ -24,7 +54,10 @@ extern "C" void glClearIndex(void) {
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/HouseKeeping_AttribStack", glClearColor);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/HouseKeeping_AttribStack", glClear);
+extern "C" void glClear(unsigned int mask)
+{
+    sceGuClear(((mask & 0x4000) ? 1 : 0) | ((mask & 0x100) ? 4 : 0) | ((mask & 0x400) ? 2 : 0));
+}
 
 extern "C" void glIndexMask(void) {
 }
@@ -42,7 +75,12 @@ extern "C" void glLogicOp(void) {
 extern "C" void glCullFace(void) {
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/HouseKeeping_AttribStack", glFrontFace);
+extern "C" void glFrontFace(unsigned int mode)
+{
+    int v;
+    if (GL2SCEGU(mode, &v))
+        sceGuFrontFace(v);
+}
 
 extern "C" void glPointSize(void) {
 }
@@ -107,9 +145,34 @@ extern "C" void glGetBooleanv(void) {
 extern "C" void glGetDoublev(void) {
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/HouseKeeping_AttribStack", glGetFloatv);
+extern "C" void glGetFloatv(unsigned int pname, float *params)
+{
+    ScePspFMatrix4 m;
+    switch (pname) {
+    case 0xBA6:
+        sceGumStoreMatrix(&m);
+        for (int i = 0; i < 16; i++)
+            params[i] = ((float *)&m)[i];
+        break;
+    case 0xBA7:
+        sceGumMatrixMode(0);
+        sceGumStoreMatrix(&m);
+        for (int i = 0; i < 16; i++)
+            params[i] = ((float *)&m)[i];
+        sceGumMatrixMode(2);
+        break;
+    }
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/HouseKeeping_AttribStack", glGetIntegerv);
+extern "C" void glGetIntegerv(unsigned int pname, int *params)
+{
+    if (pname == 0xBA2) {
+        params[0] = hk.viewport_x - 2048;
+        params[1] = hk.viewport_y - 2048;
+        params[2] = hk.viewport_w;
+        params[3] = hk.viewport_h;
+    }
+}
 
 extern "C" void glPushAttrib(void) {
 }
@@ -147,7 +210,10 @@ extern "C" void glFlush(void) {
 extern "C" void glHint(void) {
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/HouseKeeping_AttribStack", glClearDepth);
+extern "C" void glClearDepth(double)
+{
+    GL_ASSERT(false, glClearDepth_fn, 0x46D, D_00160B58);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/HouseKeeping_AttribStack", glDepthFunc);
 
@@ -156,7 +222,10 @@ extern "C" void glDepthMask(unsigned char flag)
     sceGuDepthMask(flag);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/HouseKeeping_AttribStack", glDepthRange);
+extern "C" void glDepthRange(double, double)
+{
+    GL_ASSERT(false, glDepthRange_fn, 0x497, D_00160BB4);
+}
 
 extern "C" void glClearAccum(void) {
 }
@@ -164,13 +233,36 @@ extern "C" void glClearAccum(void) {
 extern "C" void glAccum(void) {
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/HouseKeeping_AttribStack", glMatrixMode);
+extern "C" void glMatrixMode(unsigned int mode)
+{
+    switch (mode) {
+    case 0x1701:
+        sceGumMatrixMode(0);
+        break;
+    case 0x1700:
+        sceGumMatrixMode(2);
+        break;
+    case 0x1702:
+        sceGumMatrixMode(3);
+        break;
+    }
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/HouseKeeping_AttribStack", glOrtho);
+extern "C" void glOrtho(double l, double r, double b, double t, double n, double f)
+{
+    sceGumOrtho(l, r, t, b, n, f);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/HouseKeeping_AttribStack", glFrustum);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/HouseKeeping_AttribStack", glViewport);
+extern "C" void glViewport(int x, int y, int w, int h)
+{
+    hk.viewport_x = x + 2048;
+    hk.viewport_y = y + 2048;
+    hk.viewport_w = w;
+    hk.viewport_h = h;
+    sceGuViewport(hk.viewport_x, hk.viewport_y, w, h);
+}
 
 extern "C" void glPushMatrix(void)
 {
@@ -190,7 +282,10 @@ extern "C" void glLoadIdentity(void)
     sceGumLoadIdentity_();
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/HouseKeeping_AttribStack", glLoadMatrixd);
+extern "C" void glLoadMatrixd(const double *)
+{
+    GL_ASSERT(false, glLoadMatrixd_fn, 0x4F1, D_00160BF0);
+}
 
 extern "C" void glLoadMatrixf(void)
 {
@@ -198,7 +293,13 @@ extern "C" void glLoadMatrixf(void)
     sceGumLoadMatrix_();
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/HouseKeeping_AttribStack", glMultMatrixd);
+extern "C" void glMultMatrixd(const double *m)
+{
+    float f[16];
+    for (int i = 0; i != 16; i++)
+        f[i] = m[i];
+    sceGumMultMatrix((const ScePspFMatrix4 *)f);
+}
 
 extern "C" void glMultMatrixf(void)
 {
@@ -206,11 +307,18 @@ extern "C" void glMultMatrixf(void)
     sceGumMultMatrix_();
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/HouseKeeping_AttribStack", glRotated);
+extern "C" void glRotated(double a, double x, double y, double z)
+{
+    glRotatef(a, x, y, z);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/HouseKeeping_AttribStack", glRotatef);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/HouseKeeping_AttribStack", glScaled);
+extern "C" void glScaled(double x, double y, double z)
+{
+    ScePspFVector3 v = { x, y, z };
+    sceGumScale(&v);
+}
 
 extern "C" void glScalef(float x, float y, float z)
 {
@@ -218,7 +326,11 @@ extern "C" void glScalef(float x, float y, float z)
     sceGumScale(&v);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/HouseKeeping_AttribStack", glTranslated);
+extern "C" void glTranslated(double x, double y, double z)
+{
+    ScePspFVector3 v = { x, y, z };
+    sceGumTranslate(&v);
+}
 
 extern "C" void glTranslatef(float x, float y, float z)
 {
@@ -826,7 +938,14 @@ extern "C" void glGetTexGeniv(void) {
 extern "C" void glTexEnvf(void) {
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/HouseKeeping_AttribStack", glTexEnvi);
+extern "C" void glTexEnvi(unsigned int, unsigned int pname, int param)
+{
+    if (pname == 0x2200) {
+        int v;
+        if (GL2SCEGU(param, &v))
+            sceGuTexFunc(v, 1);
+    }
+}
 
 extern "C" void glTexEnvfv(void) {
 }
@@ -843,7 +962,27 @@ extern "C" void glGetTexEnviv(void) {
 extern "C" void glTexParameterf(void) {
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/HouseKeeping_AttribStack", glTexParameteri);
+extern "C" void glTexParameteri(unsigned int, unsigned int pname, int param)
+{
+    switch (pname) {
+    case 0x2802:
+        hk.wrap_s = param == 0x2900;
+        sceGuTexWrap(hk.wrap_s, hk.wrap_t);
+        break;
+    case 0x2803:
+        hk.wrap_t = param == 0x2900;
+        sceGuTexWrap(hk.wrap_s, hk.wrap_t);
+        break;
+    case 0x2800:
+        hk.mag_filter = param == 0x2601;
+        sceGuTexFilter(hk.min_filter, hk.mag_filter);
+        break;
+    case 0x2801:
+        hk.min_filter = param == 0x2601;
+        sceGuTexFilter(hk.min_filter, hk.mag_filter);
+        break;
+    }
+}
 
 extern "C" void glTexParameterfv(void) {
 }

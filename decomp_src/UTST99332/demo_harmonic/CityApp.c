@@ -2,11 +2,21 @@
 /* cflags: -O3 -fno-exceptions */
 #undef __EXCEPTIONS
 #include "cxx/defer_asm.h"
+/* Identity()'s 1.0f stays in the module's .rodata (asm) */
+extern const float D_0015B668;
+#define MATH_IDENTITY_ONE D_0015B668
 #include "main.hpp"
+#include "../demo_duck/gl.hpp"
+
+/* handle<> instances this object has as asm */
+namespace common {
+extern template class handle<glutils::PositioningInterface>;
+}
 
 /* the strings stay in the module's .rodata (asm) */
 extern const char D_00159984[];     /* "load test env\n" */
 extern const char D_00159994[];     /* "apply env change\n" */
+extern const float D_0015B664;      /* 20 */
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _Z41__static_initialization_and_destruction_0ii_3E8);
 
@@ -38,7 +48,13 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN7CityApp1
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN7CityApp9auto_idleEv);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN7CityApp17light_source_idleEv);
+void CityApp::light_source_idle()
+{
+    _light_trackball.mode((math::Trackball::Mode)1);
+    float dx = (psp::pad().down(3) - psp::pad().down(2)) * D_0015B664;
+    float dy = (psp::pad().down(0) - psp::pad().down(1)) * D_0015B664;
+    apps_ext::Trackball_track(&_light_trackball, dx, dy, false, true, getCamera()->getTransform());
+}
 
 float CityApp::get_anim_time() const
 {
@@ -47,7 +63,16 @@ float CityApp::get_anim_time() const
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZNK7CityApp19get_light_transformEv);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN7CityApp16draw_scene_graphEv);
+void CityApp::draw_scene_graph()
+{
+    glPushAttrib(0x2000);
+    glDisable(GL_LIGHTING);
+    math::matrix light = get_light_transform();
+    math::matrix id = math::matrix::Identity();
+    math::matrix cam = getCamera()->getTransformInverse();
+    _graph.traverse((scene::TraversalType)0, frustum(), light, id, cam, _f1230);
+    glPopAttrib();
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN7CityApp22real_demo_lightcontrolEv);
 
@@ -86,7 +111,32 @@ void CityApp::zrange_idle()
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _Z9znearfuncf);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN7CityApp20cycle_depth_settingsEv);
+/* cycle_depth_settings()'s statics stay in the module's data */
+extern int cycle_depth_settings_current __asm__("_ZZN7CityApp20cycle_depth_settingsEvE15current_setting");
+extern CityApp::DepthSetting cycle_depth_settings_SETTINGS[] __asm__("_ZZN7CityApp20cycle_depth_settingsEvE8SETTINGS");
+extern char cycle_depth_settings_SETTINGS_guard __asm__("_ZGVZN7CityApp20cycle_depth_settingsEvE8SETTINGS");
+
+void CityApp::cycle_depth_settings()
+{
+#define current_setting cycle_depth_settings_current
+#define SETTINGS cycle_depth_settings_SETTINGS
+    if (!cycle_depth_settings_SETTINGS_guard) {
+        cycle_depth_settings_SETTINGS_guard = 1;
+        SETTINGS[0].focus = 0;
+        SETTINGS[0].range = 15;
+    }
+    if (current_setting == -1) {
+        current_setting = 0;
+    } else {
+        current_setting++;
+        if (current_setting >= 1)
+            current_setting = 0;
+    }
+    DepthBlurSetRange(SETTINGS[current_setting].range);
+    DepthBlurSetFocus(SETTINGS[current_setting].focus);
+#undef current_setting
+#undef SETTINGS
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN7CityApp4drawEv);
 

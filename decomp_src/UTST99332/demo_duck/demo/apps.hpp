@@ -3,6 +3,12 @@
 #define DEMO_DUCK_DEMO_APPS_HPP
 
 extern "C" void menuInit(void);
+
+/* stand-ins until the owners' headers declare them (asm-labelled) */
+namespace apps_ext {
+void Trackball_track(math::Trackball *, float, float, bool, bool, math::matrix)
+    __asm__("_ZN4math9Trackball5trackEffbbNS_6matrixE");
+}
 void run_city();
 void run_ahiru();
 
@@ -12,6 +18,7 @@ public:
     enum ControledObject { };
     CityApp();
     void init_lights();
+    void camera_idle();
     void envChange();
     float get_anim_time() const;
     void all_modes_idle();
@@ -25,10 +32,20 @@ public:
         float focus;
         int range;
     };
+    void light_source_idle();
+    math::matrix get_light_transform() const;
+    void draw_scene_graph();
 private:
-    char _pad[0x11EC - 0xEE8];
+    char _pad[0xF14 - 0xEE8];
+    scene::Graph _graph;                /* 0xF14 */
+    char _pad100c[0x10C4 - 0xF14 - sizeof(scene::Graph)];
+    math::Trackball _light_trackball;   /* 0x10C4 */
+    math::Trackball _light_trackball2;  /* 0x1158 */
+    char _pad11ec[0x11EC - 0x10C4 - 2 * sizeof(math::Trackball)];
     ControledObject _control;   /* 0x11EC */
-    char _pad11f0[0x1244 - 0x11F0];
+    char _pad11f0[0x1230 - 0x11F0];
+    float _f1230;               /* 0x1230 */
+    char _pad1234[0x1244 - 0x1234];
     sh::TestEnvSet _env;        /* 0x1244 */
     char _pad1254[0x1258 - 0x1254];
     float _anim_time;           /* 0x1258 */
@@ -62,7 +79,7 @@ public:
     virtual void init();
     virtual ~TestApp();
     virtual void draw();
-    void local_water_shl();
+    sh::VectorRGB local_water_shl();
     void draw_all();
     void draw_sink_background();
     void draw_objects(bool);
@@ -75,8 +92,6 @@ public:
     void dealWithMenu();
     void turn(float);
 private:
-    /* app3d::Callbacks' view frustum (0x34; sgl::Frustum is declared after base.hpp) */
-    sgl::Frustum &frustum() { return *(sgl::Frustum *)((char *)this + 0x34); }
     char _pad[0xF08 - 0xEE8];
     scene::Graph _graph;                                /* 0xF08 */
     common::handle<scene::Group> _kitchen;              /* 0x1000 */
@@ -94,10 +109,16 @@ private:
     VertexColorEnv _vce;                                /* 0x14E4 */
     char _pad14f4[0x1538 - 0x14F4];
     float _f1538;                                       /* 0x1538 */
-    char _pad153c[0x1550 - 0x153C];
+    bool _f153C;                                        /* 0x153C */
+    bool _f153D;                                        /* 0x153D: sh projection envmap */
+    char _pad153e[0x1550 - 0x153E];
     WaterPatch _water;                                  /* 0x1550 */
     bool _f1638;                                        /* 0x1638 */
     sh::TestEnvSet _env;                                /* 0x163C */
+    char _pad164c[0x167C - 0x164C];
+    sh::VectorRGB _f167C;                               /* 0x167C */
+    sh::VectorRGB _f16AC;                               /* 0x16AC */
+    std::string _f16DC;                                 /* 0x16DC */
 };
 
 #endif

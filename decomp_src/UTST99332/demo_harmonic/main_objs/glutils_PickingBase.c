@@ -4,13 +4,19 @@
 #include "cxx/defer_asm.h"
 #include "../main.hpp"
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/glutils_PickingBase", _ZN7glutils11PickingBaseC2Ev);
+/* weak instances stay asm */
+extern template class std::vector<unsigned int>;
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/glutils_PickingBase", _ZN7glutils11PickingBaseC1Ev);
-
-const void *glutils::PickingBase::getHits() const
+glutils::PickingBase::PickingBase()
 {
-    return &_f4;
+    _hits.reserve(80);
+    _hits.resize(0);
+}
+
+const std::vector<unsigned int> &glutils::PickingBase::getHits() const
+{
+    return _hits;
 }
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/glutils_PickingBase", _ZNSt6vectorIjSaIjEE7reserveEj);
+

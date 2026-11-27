@@ -157,7 +157,7 @@ public:
     T *get() const { return d ? dynamic_cast<T *>(d->obj) : 0; }
     T *operator->() const { return dynamic_cast<T *>(d->obj); }
     T &operator*() const { return *dynamic_cast<T *>(d->obj); }
-    bool valid() const { return d && d->obj; }
+    bool valid() const { return d && get(); }
 };
 
 #ifdef DEMO_TEMPLATE_DEFS
@@ -583,7 +583,9 @@ private:
 };
 class PositioningInterface : public common::shared_object_base {
 public:
-    void set_callback();
+    virtual void set_callback();
+    virtual void track();
+    virtual void reset();
     const math::matrix &getTransform() const;
     const math::matrix &get_transform() const;
     const math::matrix &getTransformInverse() const;
@@ -622,6 +624,9 @@ public:
 };
 }
 
+namespace sgl {
+class Frustum;
+}
 namespace app3d {
 class Callbacks : public app::Callbacks {
 public:
@@ -639,6 +644,9 @@ public:
     common::handle<glutils::PositioningInterface> getCamera();
     const common::handle<glutils::PositioningInterface> &getCamera() const;
     void replaceCamera(common::handle<glutils::PositioningInterface>);
+protected:
+    /* the view frustum (0x34; sgl::Frustum is declared after base.hpp) */
+    sgl::Frustum &frustum() { return *(sgl::Frustum *)((char *)this + 0x34); }
 private:
     char _pad5[0xC - 5];
     common::handle<glutils::PositioningInterface> _camera;  /* 0xC */
@@ -741,10 +749,24 @@ bool CheckTextures();
 namespace glutils {
 class PickingBase {
 public:
-    const void *getHits() const;
-    /* data */
-    char _p0[0x4];
-    char _f4;
+    PickingBase();
+    virtual ~PickingBase() {}
+    const std::vector<unsigned int> &getHits() const;
+    std::vector<unsigned int> _hits;    /* 0x4 */
+};
+class Picking : public PickingBase {
+public:
+    static float THRESHOLD;
+    Picking(int);
+    Picking(const Picking &);
+    Picking operator=(const Picking &);
+    virtual ~Picking();
+    unsigned int processHits(int, bool);
+    void begin(float, float, float, float);
+    void begin_internal(float, float, float, float);
+    void end();
+    int _size;                          /* 0x10 */
+    unsigned int *_buffer;              /* 0x14 */
 };
 class StippleMask {
 public:
@@ -759,15 +781,15 @@ public:
     void checker(unsigned char);
     unsigned char _mask[ROWS][ROW_BYTES];
 };
-class TurnTable {
+class TurnTable : public PositioningInterface {
 public:
     enum Speed { NUM_SPEEDS = 3 };
+    void track(bool, bool, bool, int, int);
     void setIsYUp(bool);
     bool isYUp() const;
     void speed(Speed, float);
     math::vector_xyzw getPivot() const;
     /* data */
-    char _p0[0x150];
     math::vector_xyzw _pivot;   /* 0x150 */
     char _p160[0x1A0 - 0x160];
     bool _f1A0;

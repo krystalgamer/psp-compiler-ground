@@ -1,5 +1,5 @@
 /* lang: c++ */
-/* cflags: -O3 -fno-exceptions */
+/* cflags: -O3 -fno-exceptions -fno-merge-constants */
 #undef __EXCEPTIONS
 #include "cxx/defer_asm.h"
 #include "../main.hpp"
@@ -7,11 +7,40 @@
 #include <deque>
 #include "UTST99332/demo_duck/gl.hpp"
 
+extern "C" {
+void glInitNames(void);
+void glLoadMatrixf(const float *);
+void glMatrixMode(unsigned int);
+void glPushName(unsigned int);
+void glLoadName(unsigned int);
+void glPopName(void);
+}
+
+/* weak instances stay asm */
+extern template class std::deque<unsigned int>;
+extern template class std::_Deque_base<unsigned int, std::allocator<unsigned int> >;
+extern template class std::deque<math::matrix>;
+extern template class std::_Deque_base<math::matrix, std::allocator<math::matrix> >;
+
+extern "C" const char D_00167728[], D_001676F0[], D_00167708[], D_00167724[];
+extern const char gl_PopName_fn[] __asm__("_ZZN2gl7PopNameEvE19__PRETTY_FUNCTION__");
+extern const char gl_GetNameStackTop_fn[] __asm__("_ZZN2gl15GetNameStackTopEvE19__PRETTY_FUNCTION__");
+
 namespace gl {
 enum MatrixModeEnum { };
 extern std::deque<unsigned int> _name_stack;
 extern MatrixModeEnum _matrix_mode;
 extern std::deque<math::matrix> _matrix_stacks[];
+void InitNames();
+void sync();
+void PushMatrix();
+void PopMatrix();
+void MatrixMode(MatrixModeEnum);
+void LoadIdentity();
+void PushName(unsigned int);
+void LoadName(unsigned int);
+void PopName();
+unsigned int GetNameStackTop();
 void GenTextures(int, unsigned int *);
 void DeleteTextures(int, const unsigned int *);
 bool IsNameStackEmpty();
@@ -47,15 +76,39 @@ bool gl::CheckTextures()
     return true;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/gl__name_stack", _ZN2gl9InitNamesEv);
+void gl::InitNames()
+{
+    while (!_name_stack.empty())
+        _name_stack.pop_back();
+    glInitNames();
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/gl__name_stack", _ZN2gl8PushNameEj);
+void gl::PushName(unsigned int name)
+{
+    _name_stack.push_back(name);
+    glPushName(name);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/gl__name_stack", _ZN2gl8LoadNameEj);
+void gl::LoadName(unsigned int name)
+{
+    if (!_name_stack.empty()) {
+        _name_stack.back() = name;
+        glLoadName(name);
+    }
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/gl__name_stack", _ZN2gl7PopNameEv);
+void gl::PopName()
+{
+    SGL_ASSERT(!_name_stack.empty(), D_00167728, D_001676F0, D_00167708, gl_PopName_fn, 0xA2, D_00167724);
+    _name_stack.pop_back();
+    glPopName();
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/gl__name_stack", _ZN2gl15GetNameStackTopEv);
+unsigned int gl::GetNameStackTop()
+{
+    SGL_ASSERT(!_name_stack.empty(), D_00167728, D_001676F0, D_00167708, gl_GetNameStackTop_fn, 0xAB, D_00167724);
+    return _name_stack.back();
+}
 
 bool gl::IsNameStackEmpty()
 {
@@ -67,17 +120,44 @@ std::deque<math::matrix> &gl::mstack()
     return _matrix_stacks[_matrix_mode];
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/gl__name_stack", _ZN2gl4syncEv);
+void gl::sync()
+{
+    glLoadMatrixf(&mstack().back().r[0].x);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/gl__name_stack", _ZN2gl10PushMatrixEv);
+void gl::PushMatrix()
+{
+    std::deque<math::matrix> &st = mstack();
+    st.push_back(st.empty() ? math::matrix::Identity() : st.back());
+    sync();
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/gl__name_stack", _ZN2gl9PopMatrixEv);
+void gl::PopMatrix()
+{
+    mstack().pop_back();
+    sync();
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/gl__name_stack", _ZN2gl11MultMatrixfEPKf);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/gl__name_stack", _ZN2gl10MatrixModeENS_14MatrixModeEnumE);
+void gl::MatrixMode(MatrixModeEnum m)
+{
+    _matrix_mode = m;
+    switch (m) {
+    case 0:
+        glMatrixMode(0x1701);
+        break;
+    case 1:
+        glMatrixMode(0x1700);
+        break;
+    }
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/gl__name_stack", _ZN2gl12LoadIdentityEv);
+void gl::LoadIdentity()
+{
+    mstack().back() = math::matrix::Identity();
+    sync();
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/gl__name_stack", _ZN2gl7RotatefEffff);
 
