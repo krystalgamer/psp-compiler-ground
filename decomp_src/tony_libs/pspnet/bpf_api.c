@@ -68,7 +68,29 @@ int sceNetBpfRead(int fd, void *buf, int len)
 	return ret;
 }
 
-INCLUDE_ASM("tmp/asm/tony_libs/pspnet/nonmatchings/bpf_api", sceNetBpfWrite);
+int sceNetBpfWrite(int fd, void *buf, int len)
+{
+	struct thread_info *ti;
+	struct uio uio;
+	struct iovec iov;
+	int error, ret;
+
+	ti = _sce_pspnet_thread_enter();
+	if (ti == NULL)
+		return -1;
+	uio.uio_iovcnt = 1;
+	uio.uio_iov = &iov;
+	uio.uio_rw = 1;
+	uio.uio_offset = 0;
+	iov.iov_base = buf;
+	uio.uio_resid = len;
+	iov.iov_len = len;
+	error = func_00003940(fd, &uio);
+	ret = len - uio.uio_resid;
+	if (_sce_pspnet_thread_leave(ti, error) < 0)
+		return -1;
+	return ret;
+}
 
 int sceNetBpfIoctl(int fd, unsigned int cmd, void *data)
 {
