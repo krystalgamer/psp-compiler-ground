@@ -325,6 +325,9 @@ public:
     void calc_initial_edges();
     static void calcStencilShadowData(StencilShadowData &, const CoreMesh &);
     void draw(unsigned int) const;
+    void draw_triangles(float) const;
+    void draw_vertex(unsigned int, unsigned int, unsigned int, unsigned int, unsigned int, unsigned int, float, bool) const;
+    static bool use_purple;
     Offsets _offsets;                   /* 0x5C */
     bool _locked;                       /* 0x74 */
     std::vector<Triangle> _triangles;   /* 0x78 */

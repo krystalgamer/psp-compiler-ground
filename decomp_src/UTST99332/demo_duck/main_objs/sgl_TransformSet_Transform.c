@@ -5,6 +5,8 @@
 #include "../main.hpp"
 
 namespace std {
+extern template void vector<sgl::TransformSet::Transform>::_M_insert_aux(vector<sgl::TransformSet::Transform>::iterator,
+                                                                        const sgl::TransformSet::Transform &);
 extern template vector<sgl::TransformSet::Transform>::iterator
 vector<sgl::TransformSet::Transform>::erase(iterator, iterator);
 }
@@ -14,15 +16,19 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_TransformSet
 sgl::TransformSet::Transform::Transform() {
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_TransformSet_Transform", _ZN3sgl12TransformSet9TransformC2EN4math6matrixE);
+sgl::TransformSet::Transform::Transform(math::matrix mm) : m(mm)
+{
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_TransformSet_Transform", _ZN3sgl12TransformSet9TransformC1EN4math6matrixE);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_TransformSet_Transform", _ZN3sgl12TransformSetC2Ev);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_TransformSet_Transform", _ZN3sgl12TransformSetC1Ev);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_TransformSet_Transform", _ZN3sgl12TransformSet3addEN4math6matrixE);
+void sgl::TransformSet::add(math::matrix m)
+{
+    _transforms.push_back(Transform(m));
+}
 
 void sgl::TransformSet::clear()
 {

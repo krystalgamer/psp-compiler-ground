@@ -12,6 +12,15 @@ extern const char D_0016F004[];
 extern const char D_0016F07C[];
 extern const char D_0016F0F4[];
 extern const char D_0016F16C[];
+extern const char D_0016F1A8[];     /* "" */
+extern const char D_0016F1AC[];     /* "\n" */
+extern const char D_0016F1B0[];     /* "num (prims) triangles  " */
+extern const char D_0016F1C8[];     /* "num (prims) triangles in strips  " */
+extern const char D_0016F1EC[];     /* "num vertices  " */
+extern const char D_0016F1FC[];     /* "num texcoords " */
+extern const char D_0016F20C[];     /* "num colors    " */
+extern const char D_0016F21C[];     /* "num normals   " */
+extern const char D_0016F22C[];     /* "num positions " */
 #define TYPES_ASSERT(c, text, fn, line) SGL_ASSERT(c, D_0016EF28, text, D_0016EF60, fn, line, D_0016EF5C)
 extern const char getVertexAttributeIndex_name[] __asm__("_ZZNK3sgl8CoreMesh23getVertexAttributeIndexEiNS_14VertexAttrEnumEE19__PRETTY_FUNCTION__");
 extern const char setVertexAttributeIndex_name[] __asm__("_ZZN3sgl8CoreMesh23setVertexAttributeIndexEiNS_14VertexAttrEnumEiE19__PRETTY_FUNCTION__");
@@ -178,7 +187,23 @@ sgl::TexCoord sgl::CoreMesh::getVertexTexCoord(int vi) const
     return _texcoords[v._attr[TEX]];
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Edge", _ZNK3sgl8CoreMesh5printESs);
+void sgl::CoreMesh::print(std::string name) const
+{
+    if (name != D_0016F1A8)
+        common::Log() << name;
+    if (!_positions.empty())
+        common::Log() << D_0016F22C << (unsigned int)_positions.size() << D_0016F1AC;
+    if (!_normals.empty())
+        common::Log() << D_0016F21C << (unsigned int)_normals.size() << D_0016F1AC;
+    if (!_colors.empty())
+        common::Log() << D_0016F20C << (unsigned int)_colors.size() << D_0016F1AC;
+    if (!_texcoords.empty())
+        common::Log() << D_0016F1FC << (unsigned int)_texcoords.size() << D_0016F1AC;
+    if (!_vertices.empty())
+        common::Log() << D_0016F1EC << (unsigned int)_vertices.size() << D_0016F1AC;
+    common::Log() << D_0016F1B0 << (unsigned int)_prims.countTriangles() << D_0016F1AC;
+    common::Log() << D_0016F1C8 << (unsigned int)_prims.countTrianglesInStrips() << D_0016F1AC;
+}
 
 extern "C" {
 void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_D5280");
