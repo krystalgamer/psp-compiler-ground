@@ -30,8 +30,11 @@ def build_ok(target, module):
 
 
 def unit_test(target, module, path):
+    # the unit's own flags (a `cflags: ...` comment), as the build uses them
+    cf = re.search(r"cflags: (-O[0-9s](?: -(?:[fm][\w-]+|std)(?:=[\w.:]+)?)*)", path.read_text())
     r = subprocess.run([sys.executable, str(ROOT / "tools/fntest.py"), target, module, str(path),
-                        "--cc1", compiler.compiler(target, module, unit_of(target, module, path))],
+                        "--cc1", compiler.compiler(target, module, unit_of(target, module, path)),
+                        "--flags=" + (cf.group(1) if cf else "-O2")],
                        capture_output=True, text=True, cwd=ROOT).stdout.strip().splitlines()
     m = re.search(r"\s(\d+)/(\d+)(\s|$)", r[-1]) if r else None
     return m and m.group(1) == m.group(2)
