@@ -8,18 +8,33 @@ M2C_UNK resReadRefer(int, int, int);                /* extern */
 extern unsigned char D_000FB9F8;
 extern unsigned char D_000FBA08;
 void *resGetDatSect(int, int, int);                 /* extern */
-int resGetEntrySect(int, int);                      /* extern */
 extern unsigned char D_000FBD40;
 extern unsigned char D_000FBF14;
 extern unsigned char D_000FBF20;
 extern unsigned char D_000FBF2C;
-void **resGetDatLocal();                            /* extern */
 
 extern int pResTerm;
 extern int pCurrent;
 
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", _resReadInst);
+M2C_UNK resReadInst(int);                           /* extern */
+M2C_UNK thrChange(void *);                          /* extern */
+
+void _resReadInst(void *arg0) {
+    int temp_s0;
+    int var_s1;
+
+    var_s1 = 10;
+    do {
+        thrChange(arg0);
+        var_s1 -= 1;
+    } while (var_s1 != 0);
+    temp_s0 = M2C_FIELD(arg0, int *, 0x40);
+    if (M2C_FIELD(arg0, int *, 0xC) != 1) {
+        consPrintf(&D_000FBA08, &D_000FB9F8, 0xFE, "_resReadInst", "pThr->Arg == resReadInst_Args");
+    }
+    resReadInst(temp_s0);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", resReadInst);
 
@@ -112,7 +127,23 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", D_000FBE58);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", resReleaseRefer);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", resGetEntrySect);
+extern unsigned char InstBuf;
+
+int resGetEntrySect(int arg0, int arg1) {
+    if (arg0 < 0) {
+        consPrintf(&D_000FBA08, &D_000FB9F8, 0x360, "resGetEntrySect", "Inst >= Inst_System");
+    }
+    if (CurrentInst < arg0) {
+        consPrintf(&D_000FBA08, &D_000FB9F8, 0x361, "resGetEntrySect", "Inst <= CurrentInst");
+    }
+    if (arg1 < 0) {
+        consPrintf(&D_000FBA08, &D_000FB9F8, 0x362, "resGetEntrySect", "Sect >= Sect_Instruct");
+    }
+    if (arg1 >= 7) {
+        consPrintf(&D_000FBA08, &D_000FB9F8, 0x363, "resGetEntrySect", "Sect < Sect_Num");
+    }
+    return M2C_FIELD(M2C_FIELD(M2C_FIELD((char *)&InstBuf + (arg0 << 5), char **, 0), char **, 4) + arg1 * 8, int *, 4);
+}
 
 int resGetEntryLocal(int a)
 {
@@ -136,7 +167,11 @@ int resGetEntryString(int a)
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", resGetDatSect);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", resGetDatLocal);
+void **resGetDatLocal(a, b)
+    int a, b;
+{
+    return resGetDatSect(a, 2, b);
+}
 
 void *resGetDatRefer(int a, int b)
 {
@@ -200,7 +235,25 @@ void resGetSizeString(int arg0, int arg1) {
     resGetSizeSect(arg0, 6, arg1);
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", resGetPtrSect);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+int resGetPtrSect(int arg0, int arg1, int arg2) {
+    if (arg0 < 0) {
+        consPrintf(&D_000FBA08, &D_000FB9F8, 0x407, "resGetPtrSect", &D_000FBD40);
+    }
+    if (arg1 < 0) {
+        consPrintf(&D_000FBA08, &D_000FB9F8, 0x408, "resGetPtrSect", &D_000FBF14);
+    }
+    if (arg2 < 0) {
+        consPrintf(&D_000FBA08, &D_000FB9F8, 0x409, "resGetPtrSect", &D_000FBF20);
+    }
+    if (arg2 >= resGetEntrySect(arg0, arg1)) {
+        consPrintf(&D_000FBA08, &D_000FB9F8, 0x40A, "resGetPtrSect", &D_000FBF2C);
+    }
+    return *(int *)resGetDatSect(arg0, arg1, arg2);
+}
 
 int resGetPtrLocal(int a, int b)
 {
@@ -305,7 +358,20 @@ int resGetWordNum(void *arg0) {
     return *M2C_FIELD(arg0, int **, 0x10);
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", resGetWordPtr);
+int resGetWordPtr(void *arg0, int arg1) {
+    int *temp_s1;
+    int *p;
+
+    temp_s1 = M2C_FIELD(arg0, int **, 0x10);
+    if (arg1 < 0) {
+        consPrintf(&D_000FBA08, &D_000FB9F8, 0x4C1, "resGetWordPtr", "Index >= 0");
+    }
+    if (arg1 >= *temp_s1) {
+        consPrintf(&D_000FBA08, &D_000FB9F8, 0x4C2, "resGetWordPtr", "Index < *pnWord");
+    }
+    p = temp_s1 + 1;
+    return p[arg1];
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", resAsmRes);
 
