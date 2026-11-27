@@ -1,18 +1,18 @@
-/* cflags: -O2 */
+/* cflags: -O1 */
 #include "common.h"
 #include "m2c_macros.h"
+typedef struct HttpObj {
+    int error;
+    int rule;
+} HttpObj;
 
 
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
-int http_setrule(int arg0, int arg1) {
-    int var_v0;
+int http_setrule(int h, int rule)
+{
+    HttpObj *o = (HttpObj *)(h * 2);
 
-    var_v0 = -0x64;
-    if (arg0 != 0) {
-        M2C_FIELD((arg0 * 2), int *, 4) = arg1;
-        var_v0 = 0;
-    }
-    return var_v0;
+    if (h == 0)
+        return -100;
+    o->rule = rule;
+    return 0;
 }
