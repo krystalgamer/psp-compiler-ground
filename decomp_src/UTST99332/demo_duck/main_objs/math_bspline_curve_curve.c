@@ -2,6 +2,7 @@
 /* cflags: -O3 -fno-exceptions */
 #undef __EXCEPTIONS
 #include "cxx/defer_asm.h"
+#define DEMO_TEMPLATE_DEFS
 #include "../main.hpp"
 
 /* the strings stay in the module's .rodata (asm) */
@@ -69,5 +70,6 @@ void _GLOBAL__I__ZN4math7bspline5curveC2Ev(void)
     static_init(1, 0xFFFF);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/math_bspline_curve_curve", _ZN6common9t_array2dIN4math11vector_xyzwEEC1Ejj);
+/* the object's own instance (math_bspline_surface's ctor uses it; basic_net holds the rest of t_array2d<vector_xyzw>) */
+template common::t_array2d<math::vector_xyzw>::t_array2d(unsigned int, unsigned int);
 
