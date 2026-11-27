@@ -71,7 +71,23 @@ void fileUnlock(void) {
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/file", filePref);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/file", filePath);
+extern unsigned char D_000F9F64;
+extern int FileHost;
+signed char *umdPref(int);
+signed char *msPref(int);
+signed char *filePath(int path)
+{
+	switch (FileHost) {
+	case 0:
+		return filePref(path);
+	case 1:
+		return umdPref(path);
+	case 2:
+		return msPref(path);
+	}
+	consPrintf(&D_000F9E68, &D_000F9E84, 0xE9, "filePath", &D_000F9F64);
+	return NULL;
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/dev/file", D_000F9F64);
 
