@@ -53,7 +53,7 @@ char *getDOMAttributeValue(void *node, void *name);
 extern u8 _DOMusemap[];
 void getBodyAbsolutePos(BOX *box, int *px, int *py);
 FOCUSLIST *getFocusListWithArea(void *frame, void *obj, void *link);
-int getDataAttribute(void *a, int x, int y);
+void getDataAttribute(BOX *box, int x, int y);
 typedef struct { int sid; u8 u4[0xC]; int x10; BOX *x14; void *x18; void *x1C; int x20; int x24; BOX *x28; } LEHG2;
 typedef struct LEHLINK { struct LEHLINK *next; int x4; BOX *box; } LEHLINK;
 typedef struct { int size; unsigned int len; void *str; } LEHDS;
