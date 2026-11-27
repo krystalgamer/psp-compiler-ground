@@ -32,6 +32,9 @@ int FormSetInternal();
 M2C_UNK js_setChildOfSelect();                      /* extern */
 
 
+void *WindowSetInternal(int a, int b, void *hist);
+int DocumentSetInternal(int a, int b, void *dom, int c);
+void *HST_getDomObject(void *hist);
 int JSObjGetCharsLength(const UCSChar *s)
 {
     int n = 0;
@@ -387,7 +390,24 @@ void *OptionSet(int a, int b, int c)
     return JSObjectSetInternal(OptionSetInternal, a, b, c);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/js_for_parser", DocumentSet);
+void *DocumentSet(int *win, void *hist, int c) {
+    int *d;
+    int *w;
+    int a, b;
+
+    OS_thread_mutex_lock(jsapi_lock);
+    if (win != NULL)
+        w = WindowSetInternal(win[0], win[1], hist);
+    else
+        w = WindowSetInternal(0, 0, hist);
+    d = MEM_malloc(0, 0x10);
+    d[0] = w[0];
+    d[1] = DocumentSetInternal(w[0], w[1], HST_getDomObject(hist), c);
+    JSPtrListAdd(w);
+    JSPtrListAdd(d);
+    OS_thread_mutex_unlock(jsapi_lock);
+    return d;
+}
 
 UCSChar *UCS_strcpy(UCSChar *d, const UCSChar *s)
 {
