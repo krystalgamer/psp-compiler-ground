@@ -69,6 +69,12 @@ void esp_freeConfig(EspConfig *c);
 void OS_timer_destroy(void);
 int OS_thread_create(int *tid, int attr, void (*fn)(), char **argv);
 void esp_jsThread();
+extern char D_00133A2C[];
+void *HST_searchDocumentHistoryNode(void *doc);
+char *get_cookie(char *uri);
+char *strtok(char *s, const char *d);
+int strncmp(const char *a, const char *b, unsigned int n);
+char *strcat(char *d, const char *s);
 DOMStr *newDOMString_4B5FC(const char *utf8, int len) {
     DOMStr *s = MEM_malloc(0, sizeof(DOMStr));
 
@@ -200,7 +206,37 @@ int JSI_setCheckboxState(void *node, int state) {
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", D_00133A2C);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jsi", JSI_getDocumentCookie);
+DOMStr *JSI_getDocumentCookie(void *doc) {
+    void *h;
+    char *cookie;
+    char *out;
+    char *tok;
+    DOMStr *r = NULL;
+    h = HST_searchDocumentHistoryNode(doc);
+    if (h == NULL) {
+        return r;
+    }
+    cookie = get_cookie(HST_getCurURI(h));
+    if (cookie == NULL) {
+        return newDOMString_4B5FC(D_00133A2C, 0);
+    }
+    out = MEM_malloc(0, strlen(cookie) + 1);
+    strcpy(cookie, cookie);
+    out[0] = 0;
+    for (tok = strtok(cookie, " "); tok != NULL; tok = strtok(NULL, " ")) {
+        if (strncmp(tok, "Cookie:", 7) == 0 || tok[0] == '$') {
+            continue;
+        }
+        if (out[0] != 0) {
+            strcat(out, " ");
+        }
+        strcat(out, tok);
+    }
+    r = newDOMString_4B5FC(out, strlen(out));
+    MEM_free(0, cookie);
+    MEM_free(0, out);
+    return r;
+}
 
 int JSI_setDocumentCookie(void *doc, DOMStr *s) {
     void *h;
