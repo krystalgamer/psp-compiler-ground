@@ -239,7 +239,56 @@ void SprMove(void)
 	}
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_shima", SprMoveHitWait);
+typedef struct SPRH_T { int f0, f4, f8, fc, f10, f14, f18, f1c, f20, f24, f28, f2c, f30, f34, f38, f3c, f40, f44, f48, f4c, f50, f54, f58, f5c; u8 pad[0x94 - 0x60]; struct SPRH_T *next; } SPRH_T;
+typedef struct { u8 pad[0x24]; int f24, f28, f2c, f30; } CLWORK_T;
+extern CLWORK_T classicwork;
+void SprMoveHitWait(int mode)
+{
+	SPRH_T *s;
+	int tex, a, b;
+
+	if (nowplay == 0) {
+		tex = ptexdis1[screen_sw][7];
+		a = 2;
+		b = 4;
+	} else {
+		tex = ptexdis2[screen_sw][7];
+		a = 3;
+		b = 5;
+	}
+	for (s = (SPRH_T *)SprHeadGet(); s; s = s->next) {
+		if (s->fc) {
+			if (s->f14 == b) {
+				s->f48 = 0x30;
+				s->f4c = 0x20;
+				s->f5c = 8;
+				s->f58 = 16;
+				if (mode >= 2) {
+					spr_boxfill(tex, s->f28, s->f2c, 16, 8, 0);
+					spr_boxfill(tex, s->f30, s->f34, 16, 8, 0);
+					spr_trans(((int *)ptexsrc_28F380)[7], tex, s->f28, s->f2c, 0x30, 0x20, 16, 8);
+					if (s->f10 == 6) {
+						if (nowplay == 0)
+							ScoreAddInit(s->f30, s->f34, classicwork.f24, 30);
+						else
+							ScoreAddInit(s->f30, s->f34, classicwork.f28, 30);
+					}
+				} else if (mode == 1) {
+					s->f14 = a;
+					if (s->f40 == 16) {
+						spr_boxfill(tex, s->f28, s->f2c, 16, 8, 0);
+						spr_boxfill(tex, s->f30, s->f34, 16, 8, 0);
+						continue;
+					}
+					spr_boxfill(tex, s->f28 - 2, s->f2c, 16, 8, 0);
+					spr_boxfill(tex, s->f30 - 2, s->f34, 16, 8, 0);
+					s->f30 = s->f28;
+					s->f34 = s->f2c;
+				}
+			}
+		}
+	}
+}
 
 static void SprMoveHitWait2(int x)
 {
