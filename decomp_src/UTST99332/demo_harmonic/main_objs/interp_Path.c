@@ -95,6 +95,18 @@ template<class T> void interp::KeyFrameSequenceBase<T>::setKeyValue(int _Index, 
     on_set_key_value(_Index);
 }
 
+template<class T> inline interp::KeyFrameSequenceBase<T>::~KeyFrameSequenceBase()
+{
+}
+
+template<class T> inline interp::KeyFrameSequence<T>::~KeyFrameSequence()
+{
+}
+
+template<class T> inline interp::KeyFrameSequenceA<T>::~KeyFrameSequenceA()
+{
+}
+
 template<class T> T interp::KeyFrameSequenceA<T>::op(T a, T b)
 {
     return a + b;
@@ -139,9 +151,7 @@ INST_INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/interp_
 
  
  
-INST_INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/interp_Path", _ZN6interp17KeyFrameSequenceAIfED1Ev, 38)
 
-INST_INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/interp_Path", _ZN6interp17KeyFrameSequenceAIfED0Ev, 38)
 
 
 
