@@ -4,6 +4,15 @@
 #include "cxx/defer_asm.h"
 #include "../main.hpp"
 
+#include "UTST99332/demo_duck/gl.hpp"
+extern const float D_0016FDB4;      /* 1.0f */
+extern const char D_0016FE28[];     /* "num sphere samples=" */
+extern const char D_0017006C[];     /* "DRAW_SH" */
+extern const char D_00170074[];     /* "FULL_HEMISPHERE_VTX" */
+extern const char D_00170088[];     /* "DRAW_METRICS" */
+extern const char D_00170098[];     /* "UNKNOWN" */
+extern const char D_001700A0[];     /* "DRAW_NORMAL" */
+
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sh_PRT", _Z41__static_initialization_and_destruction_0ii_E08F0);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sh_PRT", _ZN2sh3PRTC2ENS_4Args4ToolE);
@@ -17,7 +26,14 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sh_PRT", _ZN
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sh_PRT", _ZN2sh3PRT17init_shadow_planeEv);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sh_PRT", _ZN2sh3PRT7processEv);
+void sh::PRT::process()
+{
+    _processed = true;
+    std::cout << D_0016FE28 << _sampling._samples.size() << std::endl;
+    if (!_vdata._v.empty())
+        process(_vdata);
+    save_if_doesnt_exit();
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sh_PRT", _ZN2sh3PRT7processERNS0_10VertexDataE);
 
@@ -29,11 +45,36 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sh_PRT", _ZN
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sh_PRT", _ZN2sh3PRT11sum_bouncesERNS0_10VertexDataE);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sh_PRT", _ZN2sh3PRT12DrawFlagNameENS0_8DrawFlagE);
+const char *sh::PRT::DrawFlagName(DrawFlag f)
+{
+    switch (f) {
+    case DRAW_NORMAL:
+        return D_001700A0;
+    case DRAW_SH:
+        return D_0017006C;
+    case FULL_HEMISPHERE_VTX:
+        return D_00170074;
+    case DRAW_METRICS:
+        return D_00170088;
+    }
+    return D_00170098;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sh_PRT", _ZN2sh3PRT12draw_samplesEiRKNS_9VectorRGBE);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sh_PRT", _ZN2sh3PRT4drawEiNS0_8DrawFlagERKN4math6matrixEi);
+void sh::PRT::draw(int flags, DrawFlag f, const math::matrix &m, int k)
+{
+    if (f == DRAW_NORMAL)
+        _rt.getMesh()->draw(flags);
+    else {
+        draw_with_sh(f, m, k);
+        _rt.getMesh()->draw(flags & 0xA);
+    }
+    if (flags & 8) {
+        draw_averaged_normals();
+        draw_triangles_normals();
+    }
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sh_PRT", _ZN2sh3PRT12draw_with_shENS0_8DrawFlagERKN4math6matrixEi);
 

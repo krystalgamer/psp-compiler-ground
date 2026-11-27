@@ -322,6 +322,7 @@ public:
     void explodeTriangleVertices();
     void calc_initial_edges();
     static void calcStencilShadowData(StencilShadowData &, const CoreMesh &);
+    void draw(unsigned int) const;
     Offsets _offsets;                   /* 0x5C */
     bool _locked;                       /* 0x74 */
     std::vector<Triangle> _triangles;   /* 0x78 */
@@ -617,10 +618,6 @@ public:
     virtual ~PolarFunction() {}
     virtual float eval(float theta, float phi) const = 0;
 };
-class PRT {
-public:
-    void import_model();
-};
 }
 
 /* accessors (generated from the asm; members named by offset) */
@@ -784,8 +781,8 @@ public:
     };
     RT();
     const void *getBVTree() const;
-    const void *getMesh() const;
-    void *getMesh();
+    const Mesh *getMesh() const;
+    Mesh *getMesh();
     const math::vector_xyzw &getTestLight() const;
     void setTestLight(math::vector_xyzw);
     void start();
@@ -798,6 +795,38 @@ public:
     std::vector<Triangle> _triangles;   /* 0xB0 */
     BVH _bvh;                       /* 0xBC */
     bool _ready;                    /* 0x228 */
+};
+}
+
+namespace sh {
+class PRT {
+public:
+    enum DrawFlag { DRAW_NORMAL, DRAW_SH, FULL_HEMISPHERE_VTX, DRAW_METRICS };
+    struct PerVertexData {
+        PerVertexData();
+        VectorRGB _sh[3];
+        Vector _f90;                    /* 0x90 */
+        bool _fA0, _fA1, _fA2;
+        int _fA4[10];                   /* 0xA4 */
+    };
+    struct VertexData {
+        std::vector<PerVertexData> _v;
+    };
+    void import_model();
+    static const char *DrawFlagName(DrawFlag);
+    void draw_samples(int, const VectorRGB &);
+    void draw(int, DrawFlag, const math::matrix &, int);
+    void draw_with_sh(DrawFlag, const math::matrix &, int);
+    void draw_averaged_normals();
+    void draw_triangles_normals();
+    void process();
+    void process(VertexData &);
+    void save_if_doesnt_exit();
+    sgl::RT _rt;
+    char _p22C[0x2FC - 0x22C];
+    SphereSampling _sampling;           /* 0x2FC */
+    bool _processed;                    /* 0x334 */
+    VertexData _vdata;                  /* 0x338 */
 };
 }
 

@@ -78,12 +78,12 @@ const void *sgl::RT::getBVTree() const
     return &_bvh;
 }
 
-const void *sgl::RT::getMesh() const
+const sgl::Mesh *sgl::RT::getMesh() const
 {
     return &_mesh;
 }
 
-void *sgl::RT::getMesh()
+sgl::Mesh *sgl::RT::getMesh()
 {
     return &_mesh;
 }
