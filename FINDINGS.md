@@ -1075,10 +1075,10 @@ the exact matches and lists the module code that nothing covers
     builtins) needs allocatable VFPU registers, so this is presumably part
     of Sony's VFPU work.  The navi libraries contain no VFPU instruction.
   - 1.9.2 is unchanged.  No module built by 1.8.3, 1.8.4 or 1.9.2 tells
-    the two thresholds apart: rs4_main's 302 C units and UCJS90007's,
-    mpegon's and mpegstr's units compile to the same assembly with
-    `cc1-1.9.2` and `cc1-1.11.0`, apart from the version strings in
-    `-g` units.  Their loops are too small for the threshold to matter.
+    the two thresholds apart: rs4_main's 302 C units (and its 85 C++
+    units with `cc1plus-1.11.0`) and UCJS90007's, mpegon's and mpegstr's
+    units compile to the same assembly with `cc1-1.9.2` and `cc1-1.11.0`,
+    apart from the version strings in `-g` units.  Their loops are too small for the threshold to matter.
     So the change could be as old as 1.8.3, but there is no evidence for
     it before 1.11.0.
   - Confidence: high that the threshold is 32 or 33 registers higher (23
