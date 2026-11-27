@@ -16,6 +16,8 @@ int rt_memory_free(void **);
 int rt_circ_buf_get_used(RtCircBuf *, unsigned int *);
 int rt_circ_buf_normalize(RtCircBuf *, unsigned char *);
 int rt_circ_buf_get_avail(RtCircBuf *, unsigned int *);
+int rt_circ_buf_get_used_nowrap(RtCircBuf *, unsigned int *);
+int rt_circ_buf_get_avail_nowrap(RtCircBuf *, unsigned int *);
 int rt_circ_buf_normalize_with_buf(RtCircBuf *, unsigned char *, int);
 void *memcpy(void *, const void *, unsigned int);
 
@@ -174,7 +176,26 @@ out:
     return ret;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_circ_buf", rt_circ_buf_get_start_avail_ptr);
+int rt_circ_buf_get_start_avail_ptr(RtCircBuf *cb, unsigned char **out)
+{
+    unsigned int avail = 0;
+    int ret = 2;
+
+    if (cb == NULL)
+        goto out;
+    if (out == NULL)
+        goto out;
+    ret = rt_circ_buf_get_avail(cb, &avail);
+    if (ret != 0)
+        goto out;
+    ret = 200;
+    if (avail == 0)
+        goto out;
+    *out = cb->buf + cb->tail;
+    ret = 0;
+out:
+    return ret;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_circ_buf", rt_circ_buf_is_wrapped);
 

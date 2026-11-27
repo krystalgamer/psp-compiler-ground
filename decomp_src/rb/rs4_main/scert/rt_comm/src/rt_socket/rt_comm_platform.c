@@ -3,6 +3,8 @@
 #ifndef NULL
 #define NULL ((void *)0)
 #endif
+typedef struct { unsigned int ip; unsigned int port; } RtLinkAddr;
+typedef struct { char mac[6]; } RtAdhocAddr;
 M2C_UNK *rt_comm_platform_resolve_interface(void);
 int NetUseCommInet(void);
 int NetUseCommSockets(void);
@@ -17,15 +19,15 @@ extern unsigned char gCommPlatformInterface;
 extern unsigned char rt_comm_platform_create;
 extern unsigned char rt_comm_platform_destroy;
 extern unsigned char rt_comm_platform_get_avail_bytes_to_read;
-extern unsigned char rt_comm_platform_get_broadcast_ip;
+int rt_comm_platform_get_broadcast_ip(int *);
 extern unsigned char rt_comm_platform_get_host_by_name;
 extern unsigned char rt_comm_platform_get_local_ip;
 extern unsigned char rt_comm_platform_get_remote_ip;
-extern unsigned char rt_comm_platform_is_connected;
-extern unsigned char rt_comm_platform_linkaddress_isequal;
-extern unsigned char rt_comm_platform_linkaddress_isnull;
-extern unsigned char rt_comm_platform_linkaddress_setnull;
-extern unsigned char rt_comm_platform_linkaddress_toext;
+int rt_comm_platform_is_connected(int, int *);
+int rt_comm_platform_linkaddress_isequal(RtLinkAddr, RtLinkAddr);
+int rt_comm_platform_linkaddress_isnull(RtLinkAddr);
+void rt_comm_platform_linkaddress_setnull(RtLinkAddr *);
+int rt_comm_platform_linkaddress_toext(char *, RtLinkAddr);
 extern unsigned char rt_comm_platform_linkaddress_tostr;
 extern unsigned char rt_comm_platform_receive;
 extern unsigned char rt_comm_platform_receive_echo;
@@ -82,15 +84,29 @@ M2C_UNK *rt_comm_platform_resolve_interface(void) {
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_comm/src/rt_socket/rt_comm_platform", rt_comm_platform_get_listen_socket);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_comm/src/rt_socket/rt_comm_platform", rt_comm_platform_linkaddress_setnull);
+void rt_comm_platform_linkaddress_setnull(RtLinkAddr *a)
+{
+    a->ip = 0;
+    a->port = 0;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_comm/src/rt_socket/rt_comm_platform", rt_comm_platform_linkaddress_isnull);
+int rt_comm_platform_linkaddress_isnull(RtLinkAddr a)
+{
+    return a.ip == 0;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_comm/src/rt_socket/rt_comm_platform", rt_comm_platform_linkaddress_isequal);
+int rt_comm_platform_linkaddress_isequal(RtLinkAddr a, RtLinkAddr b)
+{
+    return a.ip == b.ip;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_comm/src/rt_socket/rt_comm_platform", rt_comm_platform_linkaddress_tostr);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_comm/src/rt_socket/rt_comm_platform", rt_comm_platform_linkaddress_toext);
+int rt_comm_platform_linkaddress_toext(char *out, RtLinkAddr a)
+{
+    rt_ip_ip2string(out, a.ip);
+    return 0;
+}
 
 int rt_comm_platform_linkaddress_toint(int *arg0, int arg1) {
     *arg0 = rt_ip_string2ip(arg1);
@@ -129,7 +145,14 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_comm/src/rt_socket/rt_com
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_comm/src/rt_socket/rt_comm_platform", rt_comm_platform_get_local_ip);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_comm/src/rt_socket/rt_comm_platform", rt_comm_platform_get_broadcast_ip);
+extern int gbInitialized_1313FC;
+int rt_comm_platform_get_broadcast_ip(int *ip)
+{
+    if (gbInitialized_1313FC != 1)
+        return 5;
+    *ip = -1;
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_comm/src/rt_socket/rt_comm_platform", rt_comm_platform_get_host_by_name);
 
@@ -139,7 +162,13 @@ int rt_comm_platform_display_state(void) {
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_comm/src/rt_socket/rt_comm_platform", rt_comm_platform_is_connected);
+int rt_comm_platform_is_connected(int s, int *out)
+{
+    if (out == NULL)
+        return 2;
+    *out = 0;
+    return rt_socket_is_connected(s, out);
+}
 
 void rt_comm_platform_get_dns_servers(void) {
     rt_socket_get_dns_servers();

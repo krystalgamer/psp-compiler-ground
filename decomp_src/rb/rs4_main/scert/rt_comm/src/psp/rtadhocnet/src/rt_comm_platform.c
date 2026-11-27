@@ -3,6 +3,8 @@
 #ifndef NULL
 #define NULL ((void *)0)
 #endif
+typedef struct { unsigned int ip; unsigned int port; } RtLinkAddr;
+typedef struct { char mac[6]; } RtAdhocAddr;
 M2C_UNK *rt_comm_adhoc_resolve_interface(void);
 int NetUseCommAdhoc(void);
 int rt_comm_adhoc_display_state(void);
@@ -19,18 +21,18 @@ void rt_comm_adhoc_shutdown(void);
 extern void *gCommPlatformInterfacePtr;
 extern unsigned char gCommAdhocInterface;
 extern unsigned char rt_comm_adhoc_create;
-extern unsigned char rt_comm_adhoc_destroy;
+void rt_comm_adhoc_destroy(int);
 extern unsigned char rt_comm_adhoc_get_broadcast_ip;
 extern unsigned char rt_comm_adhoc_get_dns_servers;
 extern unsigned char rt_comm_adhoc_get_local_ip;
 extern unsigned char rt_comm_adhoc_linkaddress_isequal;
 extern unsigned char rt_comm_adhoc_linkaddress_isnull;
-extern unsigned char rt_comm_adhoc_linkaddress_setnull;
+void rt_comm_adhoc_linkaddress_setnull(RtLinkAddr *);
 extern unsigned char rt_comm_adhoc_linkaddress_toext;
-extern unsigned char rt_comm_adhoc_linkaddress_toint;
+int rt_comm_adhoc_linkaddress_toint(RtAdhocAddr *, RtAdhocAddr *);
 extern unsigned char rt_comm_adhoc_linkaddress_tostr;
 extern unsigned char rt_comm_adhoc_receive_from;
-extern unsigned char rt_comm_adhoc_send_echo;
+int rt_comm_adhoc_send_echo();
 extern unsigned char rt_comm_adhoc_send_to;
 extern unsigned char rt_comm_adhoc_startup;
 extern unsigned char rt_comm_adhoc_vsend_to;
@@ -73,7 +75,11 @@ M2C_UNK *rt_comm_adhoc_resolve_interface(void) {
     return &gCommAdhocInterface;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_comm/src/psp/rtadhocnet/src/rt_comm_platform", rt_comm_adhoc_linkaddress_setnull);
+void rt_comm_adhoc_linkaddress_setnull(RtLinkAddr *a)
+{
+    a->ip = 0;
+    a->port = 0;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_comm/src/psp/rtadhocnet/src/rt_comm_platform", rt_comm_adhoc_linkaddress_isnull);
 
@@ -83,7 +89,11 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_comm/src/psp/rtadhocnet/s
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_comm/src/psp/rtadhocnet/src/rt_comm_platform", rt_comm_adhoc_linkaddress_toext);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_comm/src/psp/rtadhocnet/src/rt_comm_platform", rt_comm_adhoc_linkaddress_toint);
+int rt_comm_adhoc_linkaddress_toint(RtAdhocAddr *out, RtAdhocAddr *a)
+{
+    *out = *a;
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_comm/src/psp/rtadhocnet/src/rt_comm_platform", rt_comm_adhoc_startup);
 
@@ -93,7 +103,13 @@ void rt_comm_adhoc_shutdown(void) {
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_comm/src/psp/rtadhocnet/src/rt_comm_platform", rt_comm_adhoc_create);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_comm/src/psp/rtadhocnet/src/rt_comm_platform", rt_comm_adhoc_destroy);
+void rt_comm_adhoc_destroy(int id)
+{
+    if (gbInitialized_130B2C != 0) {
+        if (id > 0)
+            sceNetAdhocPdpDelete(id, 0);
+    }
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_comm/src/psp/rtadhocnet/src/rt_comm_platform", rt_comm_adhoc_send_to);
 
@@ -131,7 +147,10 @@ int rt_comm_adhoc_get_remote_ip(void) {
     return 4;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_comm/src/psp/rtadhocnet/src/rt_comm_platform", rt_comm_adhoc_send_echo);
+int rt_comm_adhoc_send_echo(RtLinkAddr a)
+{
+    return 4;
+}
 
 int rt_comm_adhoc_receive_echo(void) {
     return 4;
