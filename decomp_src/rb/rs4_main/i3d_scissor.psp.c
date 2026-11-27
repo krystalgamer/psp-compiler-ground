@@ -1,6 +1,10 @@
 #include "common.h"
 #include "m2c_macros.h"
 M2C_UNK iI3dGuDrawSpline_PSP_6ADC0();               /* extern */
+typedef union {
+    unsigned int w;
+    struct { unsigned int b0:8, b1:8, b2:8, cmd:8; } f8;
+} I3dGeCmd;
 
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_scissor.psp", CalculateVertexSize);
@@ -108,45 +112,142 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_scissor.psp", I3dGuMaterial_PS
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_scissor.psp", I3dGuColor_PSP);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_scissor.psp", I3dGuClutMode_PSP);
+unsigned int *I3dGuClutMode_PSP(unsigned int *p, int cpsm, int shift, int mask, int a3)
+{
+    unsigned int v = 0xC5000000 | cpsm;
+    v = __builtin_allegrex_ins(v, shift, 2, 5);
+    v = __builtin_allegrex_ins(v, mask, 8, 8);
+    v = __builtin_allegrex_ins(v, a3, 16, 5);
+    *p = v;
+    return p + 1;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_scissor.psp", I3dGuClutLoad_PSP);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_scissor.psp", I3dGuAlphaFunc_PSP);
+unsigned int *I3dGuAlphaFunc_PSP(unsigned int *p, int func, int value, int mask)
+{
+    unsigned int v = 0xDB000000 | func;
+    v = __builtin_allegrex_ins(v, value, 8, 8);
+    v = __builtin_allegrex_ins(v, mask, 16, 8);
+    *p = v;
+    return p + 1;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_scissor.psp", I3dGuAmbient_PSP);
+unsigned int *I3dGuAmbient_PSP(unsigned int *p, unsigned int color)
+{
+    unsigned int v = 0x5C000000;
+    v = __builtin_allegrex_ins(v, color, 0, 24);
+    color >>= 24;
+    p[0] = v;
+    p[1] = 0x5D000000 | color;
+    return p + 2;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_scissor.psp", I3dGuEnableLighting_PSP);
+unsigned int *I3dGuEnableLighting_PSP(unsigned int *p, int flag)
+{
+    *p = 0x17000000 | flag;
+    return p + 1;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_scissor.psp", I3dGuEnableFog_PSP);
+unsigned int *I3dGuEnableFog_PSP(unsigned int *p, int flag)
+{
+    *p = 0x1F000000 | flag;
+    return p + 1;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_scissor.psp", I3dGuEnableDither_PSP);
+unsigned int *I3dGuEnableDither_PSP(unsigned int *p, int flag)
+{
+    *p = 0x20000000 | flag;
+    return p + 1;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_scissor.psp", I3dGuEnableBlend_PSP);
+unsigned int *I3dGuEnableBlend_PSP(unsigned int *p, int flag)
+{
+    *p = 0x21000000 | flag;
+    return p + 1;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_scissor.psp", I3dGuEnableAlphaTest_PSP);
+unsigned int *I3dGuEnableAlphaTest_PSP(unsigned int *p, int flag)
+{
+    *p = 0x22000000 | flag;
+    return p + 1;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_scissor.psp", I3dGuEnableDepthTest_PSP);
+unsigned int *I3dGuEnableDepthTest_PSP(unsigned int *p, int flag)
+{
+    *p = 0x23000000 | flag;
+    return p + 1;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_scissor.psp", I3dGuEnableStencilTest_PSP);
+unsigned int *I3dGuEnableStencilTest_PSP(unsigned int *p, int flag)
+{
+    *p = 0x24000000 | flag;
+    return p + 1;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_scissor.psp", I3dGuEnableLight_PSP);
+unsigned int *I3dGuEnableLight_PSP(unsigned int *p, int light, int flag)
+{
+    *p = ((light + 0x18) << 24) | flag;
+    return p + 1;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_scissor.psp", I3dGuEnableScissor_PSP);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_scissor.psp", I3dGuEnableTexture_PSP);
+unsigned int *I3dGuEnableTexture_PSP(unsigned int *p, int flag)
+{
+    *p = 0x1E000000 | flag;
+    return p + 1;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_scissor.psp", I3dGuTexFlush_PSP);
+unsigned int *I3dGuTexFlush_PSP(unsigned int *p)
+{
+    *p = 0xCB000000;
+    return p + 1;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_scissor.psp", I3dGuTexMode_PSP);
+unsigned int *I3dGuTexMode_PSP(unsigned int *p, int tpsm, int maxmips, int a2, int swizzle)
+{
+    unsigned int v = 0xC2000000 | swizzle;
+    v = __builtin_allegrex_ins(v, a2, 8, 1);
+    v = __builtin_allegrex_ins(v, maxmips, 16, 3);
+    p[0] = v;
+    p[1] = 0xC3000000 | tpsm;
+    p[2] = 0xCB000000;
+    return p + 3;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_scissor.psp", I3dGuTexFilter_PSP);
+unsigned int *I3dGuTexFilter_PSP(unsigned int *p, int x, int y)
+{
+    unsigned int v = 0xC6000000 | x;
+    v = __builtin_allegrex_ins(v, y, 8, 1);
+    *p = v;
+    return p + 1;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_scissor.psp", I3dGuTexFunc_PSP);
+unsigned int *I3dGuTexFunc_PSP(unsigned int *p, int x, int y, int z)
+{
+    unsigned int v = 0xC9000000 | x;
+    v = __builtin_allegrex_ins(v, y, 8, 1);
+    v = __builtin_allegrex_ins(v, z, 16, 1);
+    *p = v;
+    return p + 1;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_scissor.psp", I3dGuTexWrap_PSP);
+unsigned int *I3dGuTexWrap_PSP(unsigned int *p, int x, int y)
+{
+    unsigned int v = 0xC7000000 | x;
+    v = __builtin_allegrex_ins(v, y, 8, 1);
+    *p = v;
+    return p + 1;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_scissor.psp", I3dGuTexEnvColor_PSP);
+unsigned int *I3dGuTexEnvColor_PSP(unsigned int *p, unsigned int color)
+{
+    unsigned int v = 0xCA000000;
+    v = __builtin_allegrex_ins(v, color, 0, 24);
+    *p = v;
+    return p + 1;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_scissor.psp", I3dGuTexImage_PSP);
 
@@ -154,13 +255,27 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_scissor.psp", I3dGuTexMapMode_
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_scissor.psp", I3dGuTexProjMapMode_PSP);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_scissor.psp", I3dGuTexOffset_PSP);
+unsigned int *I3dGuTexOffset_PSP(unsigned int *p, float u, float v)
+{
+    p[0] = 0x4A000000 | (*(unsigned int *)&u >> 8);
+    p[1] = 0x4B000000 | (*(unsigned int *)&v >> 8);
+    return p + 2;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_scissor.psp", I3dGuTexScale_PSP);
+unsigned int *I3dGuTexScale_PSP(unsigned int *p, float u, float v)
+{
+    p[0] = 0x48000000 | (*(unsigned int *)&u >> 8);
+    p[1] = 0x49000000 | (*(unsigned int *)&v >> 8);
+    return p + 2;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_scissor.psp", I3dGuSetMatrix_PSP);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_scissor.psp", I3dGuSetBoneMatrixIndex_PSP);
+unsigned int *I3dGuSetBoneMatrixIndex_PSP(unsigned int *p, int index)
+{
+    *p = 0x2A000000 | (index * 12);
+    return p + 1;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -206,7 +321,13 @@ void *I3dGuBoneMatrix_PSP(void *arg0, int arg1, void *arg2) {
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_scissor.psp", I3dGuDrawArray_PSP);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_scissor.psp", I3dGuPatchDivide_PSP);
+unsigned int *I3dGuPatchDivide_PSP(unsigned int *p, int x, int y)
+{
+    unsigned int v = 0x36000000 | x;
+    v = __builtin_allegrex_ins(v, y, 8, 7);
+    *p = v;
+    return p + 1;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_scissor.psp", I3dGuPatchPrim_PSP);
 
@@ -220,7 +341,11 @@ void I3dGuDrawSpline_PSP(void) {
     iI3dGuDrawSpline_PSP_6ADC0();
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_scissor.psp", I3dGuLightMode_PSP);
+unsigned int *I3dGuLightMode_PSP(unsigned int *p, int flag)
+{
+    *p = 0x5E000000 | flag;
+    return p + 1;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_scissor.psp", I3dGuLight_PSP);
 
@@ -240,19 +365,38 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_scissor.psp", I3dGuScissor_PSP
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_scissor.psp", I3dGuBlendFunc_PSP);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_scissor.psp", I3dGuSpecular_PSP);
+unsigned int *I3dGuSpecular_PSP(unsigned int *p, float power)
+{
+    *p = 0x5B000000 | (*(unsigned int *)&power >> 8);
+    return p + 1;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_scissor.psp", I3dGuFog_PSP);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_scissor.psp", I3dGuRet_PSP);
+unsigned int *I3dGuRet_PSP(unsigned int *p)
+{
+    *p = 0x0B000000;
+    return p + 1;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_scissor.psp", I3dGuCall_PSP);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_scissor.psp", I3dGuJump_PSP);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_scissor.psp", I3dGuEnd_PSP);
+unsigned int *I3dGuEnd_PSP(unsigned int *p)
+{
+    *p = 0x0C000000;
+    return p + 1;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_scissor.psp", I3dGuSignal_PSP);
+unsigned int *I3dGuSignal_PSP(unsigned int *p, int behavior, int signal)
+{
+    unsigned int v = 0x0E000000 | (signal & 0xFFFF);
+    v = __builtin_allegrex_ins(v, behavior, 16, 8);
+    p[0] = v;
+    p[1] = 0x0C000000;
+    return p + 2;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_scissor.psp", I3dGuBeginObject_PSP);
 
@@ -260,8 +404,23 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_scissor.psp", I3dGuEndObject_P
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_scissor.psp", I3dGuGetMemory_PSP);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_scissor.psp", I3dGuPixelMask_PSP);
+unsigned int *I3dGuPixelMask_PSP(unsigned int *p, unsigned int mask)
+{
+    unsigned int v = 0xE8000000;
+    v = __builtin_allegrex_ins(v, mask, 0, 24);
+    mask >>= 24;
+    p[0] = v;
+    p[1] = 0xE9000000 | mask;
+    return p + 2;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_scissor.psp", I3dGuStencilOp_PSP);
+unsigned int *I3dGuStencilOp_PSP(unsigned int *p, int x, int y, int z)
+{
+    unsigned int v = 0xDD000000 | x;
+    v = __builtin_allegrex_ins(v, y, 8, 3);
+    v = __builtin_allegrex_ins(v, z, 16, 3);
+    *p = v;
+    return p + 1;
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/i3d_scissor.psp", D_0010966C);
