@@ -119,7 +119,46 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parseHistory", parseRegistURI);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parseHistory", parseReplaceURI);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parseHistory", parseReloadURI);
+int parseReloadURI(int arg0, void *src)
+{
+    HstNode *n;
+    HstNode *c;
+
+    parseHST_deleteHistoryNode(0, 0);
+    arg0 = parseDeleteMultiBuffer(arg0);
+    n = (HstNode *)HST_getHeadHistoryNode();
+    flushRequestFlag(n);
+    n->x44 = M2C_FIELD(src, int *, 0x28);
+    if (n->child == NULL)
+        return arg0;
+    while (n != NULL) {
+        c = n->child;
+        if (c != NULL) {
+            n = c;
+            goto got;
+        }
+        c = n->next;
+        if (c != NULL) {
+            n = c;
+            goto got;
+        }
+        n = n->parent;
+        while (n != NULL) {
+            c = n->next;
+            if (c != NULL) {
+                n = c;
+got:
+                if (n->flag >= 0)
+                    n->x44 = M2C_FIELD(src, int *, 0x28);
+                goto next;
+            }
+            n = n->parent;
+        }
+        return arg0;
+next:;
+    }
+    return arg0;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
