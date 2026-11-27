@@ -326,7 +326,467 @@ SceInt32 unloadModule(SceUID *mid)
 	return 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/mpeg_stream_change/nonmatchings/main", main);
+long long strFileLseek(StrFile *file, long long offset, SceInt32 whence);
+SceInt32 control_create(t_conditionCtrl *pCtrl);
+SceInt32 control_delete(t_conditionCtrl *pCtrl);
+SceInt32 control_reset(t_conditionCtrl *pCtrl);
+SceInt32 dispbuf_create(t_displayBuffer *pDisp, SceInt32 a, SceInt32 b, t_conditionCtrl *pCtrl);
+SceInt32 dispbuf_delete(t_displayBuffer *pDisp);
+SceInt32 dispbuf_reset(t_displayBuffer *pDisp);
+SceInt32 soundbuf_create(t_soundBuffer *pSound, SceInt32 a, SceInt32 b, t_conditionCtrl *pCtrl);
+SceInt32 soundbuf_delete(t_soundBuffer *pSound);
+SceInt32 soundbuf_reset(t_soundBuffer *pSound);
+SceInt32 read_create(t_ringBuffer *pRing, SceMpegRingbuffer *pRB, t_conditionCtrl *pCtrl);
+SceInt32 read_delete(t_ringBuffer *pRing);
+SceInt32 read_reset(t_ringBuffer *pRing, SceInt32 fileSize);
+SceInt32 avsync_create(t_avSyncControl *pAvSync, t_displayBuffer *pDisp, t_soundBuffer *pSound, SceInt32 n);
+SceInt32 avsync_delete(t_avSyncControl *pAvSync);
+SceInt32 avsync_reset(t_avSyncControl *pAvSync);
+SceInt32 dispbuf_func(SceSize size, SceVoid *argp);
+SceInt32 soundbuf_func(SceSize size, SceVoid *argp);
+SceInt32 read_func(SceSize size, SceVoid *argp);
+SceInt32 strFileAssign(StrFile *file, SceChar8 *name);
+SceInt32 strFileUnassign(StrFile *file);
+SceInt32 strFileOpen(StrFile *file, SceChar8 *name, SceInt32 mode);
+SceInt32 strFileClose(StrFile *file);
+SceInt32 sceMpegInit(void);
+SceInt32 sceMpegFinish(void);
+SceInt32 sceMpegRingbufferQueryMemSize(SceInt32 iPackNum);
+SceInt32 sceMpegQueryMemSize(SceInt32 iReserved);
+SceInt32 sceMpegRingbufferConstruct(SceMpegRingbuffer *pRingbuffer, SceInt32 iPackNum, SceVoid *pBuf, SceInt32 iSize, SceMpegRBCallback Callback, SceVoid *CallbackData);
+SceInt32 sceMpegRingbufferDestruct(SceMpegRingbuffer *pRingbuffer);
+SceInt32 sceMpegCreate(SceMpeg *pMpeg, SceVoid *pData, SceInt32 iSize, SceMpegRingbuffer *pRingbuffer, SceInt32 iFrameWidth, SceInt32 iReserved1, SceVoid *pReserved2);
+SceInt32 sceMpegDelete(SceMpeg *pMpeg);
+SceInt32 sceMpegFlushAllStream(SceMpeg *pMpeg);
+int sceKernelDeleteCallback(int cbid);
+int sceKernelTerminateDeleteThread(int thid);
+void menuInit(void);
+void menuTerm(int a, int b);
+int puts(const char *s);
+SceInt32 scePsmfSetPsmf(ScePsmf *pPsmf, SceVoid *pBuf);
+char *strstr(const char *s, const char *t);
+SceInt32 playInfo_delete(t_playInfo *pPlayInfo, SceInt32 audioFlag);
+SceInt32 playInfo_getAudioStreamNum(t_playInfo *pPlayInfo);
+SceInt32 playInfo_getOffset(t_playInfo *pPlayInfo);
+SceInt32 playInfo_getPlayerMode(t_playInfo *pPlayInfo);
+SceInt32 playInfo_getAudioOutSize(t_playInfo *pPlayInfo);
+SceInt32 playInfo_getStartTimestamp(t_playInfo *pPlayInfo, SceUInt32 *pTimestamp);
+SceInt32 avsync_video_getLatestPts(t_avSyncControl *pAvSync, SceUInt32 *pPts);
+extern const char D_00011154[], D_00011174[], D_000111A8[], D_000111B4[], D_000111D0[], D_000111D8[], D_000111EC[];
+extern const char D_00011200[], D_00011228[], D_00011250[], D_0001125C[], D_0001127C[], D_000112A4[], D_000112C4[], D_000112E4[];
+SceInt32 main(SceInt32 argc, SceChar8 **argv)
+{
+	SceMpeg mpeg;
+	SceMpegRingbuffer ringbuf;
+
+	ScePsmf videoPsmf;
+	ScePsmf audioPsmf;
+
+	SceChar8 *filename = "disc0:/PSP_GAME/USRDIR/DATA/movie/psmf/demo02.pmf";
+	SceChar8 *pHeader = NULL;
+
+	StrFile strFile;
+
+	SceInt32 bufferSize, workSize, fileSize;
+	SceInt32 audioOutSize = 0;
+	SceInt32 streamOffset;
+	SceInt32 ret;
+
+	t_displayBuffer *pDisp = NULL;
+	t_ringBuffer *pRing = NULL;
+	t_soundBuffer *pSound = NULL;
+	t_avSyncControl *pAvSync = NULL;
+	t_conditionCtrl *pCtrl = NULL;
+	t_playInfo *pPlayInfo = NULL;
+
+	SceChar8 *pPSPStream = NULL;
+	SceChar8 *pWorkBuf = NULL;
+
+	SceUID exit_cb;
+
+	SceUID videoMid = 0;
+	SceUID audioMid = 0;
+	SceUID baseMid = 0;
+	SceUID mpegMid = 0;
+	SceUID psmfMid = 0;
+
+	SceKernelLMOption kMode;
+	SceKernelLMOption uMode;
+
+	menuInit();
+
+	kMode.size = sizeof(kMode);
+	kMode.mpidtext = 1;
+	kMode.mpiddata = 1;
+	kMode.position = 0;
+	kMode.access = 1;
+
+	uMode.size = sizeof(uMode);
+	uMode.mpidtext = 2;
+	uMode.mpiddata = 2;
+	uMode.position = 0;
+	uMode.access = 1;
+
+	if (loadModule(&videoMid, "disc0:/PSP_GAME/USRDIR/MODULE/videocodec.prx", &kMode) != 0) {
+		printf("fatal error : load Module videocodec.prx\n");
+		goto term4;
+	}
+
+	if (loadModule(&audioMid, "disc0:/PSP_GAME/USRDIR/MODULE/audiocodec.prx", &kMode) != 0) {
+		printf("fatal error : load Module audiocodec.prx\n");
+		goto term4;
+	}
+
+	if (loadModule(&baseMid, "disc0:/PSP_GAME/USRDIR/MODULE/mpegbase.prx", &kMode) != 0) {
+		printf("fatal error : load Module mpegbase.prx\n");
+		goto term4;
+	}
+
+	if (loadModule(&mpegMid, "disc0:/PSP_GAME/USRDIR/MODULE/mpeg.prx", &uMode) != 0) {
+		printf("fatal error : load Module mpeg.prx\n");
+		goto term4;
+	}
+
+	if (loadModule(&psmfMid, "disc0:/PSP_GAME/USRDIR/MODULE/psmf.prx", &uMode) != 0) {
+		puts(D_000112E4);
+		goto term4;
+	}
+
+	audioFlag = 1;
+
+	while (argc >= 2) {
+		argv++;
+		argc--;
+
+		if (strcmp("-noaudio", argv[0]) == 0) {
+			audioFlag = 0;
+		}
+		else if (strstr(argv[0], ".pmf") != NULL || strstr(argv[0], ".PMF") != NULL) {
+			filename = argv[0];
+		}
+	}
+
+	ret = sceMpegInit();
+	if (ret != 0) {
+		printf("fatal error : sceMpegInit() 0x%x\n", ret);
+		goto term3;
+	}
+
+	bufferSize = sceMpegRingbufferQueryMemSize(32 * 150);
+	if (bufferSize < 0) {
+		printf("fatal error : sceMpegRingbufferQueryMemSize 0x%x\n", bufferSize);
+		goto term3;
+	}
+
+	workSize = sceMpegQueryMemSize(0);
+	if (workSize < 0) {
+		printf("fatal error : sceMpegQueryMemSize 0x%x\n", workSize);
+		goto term3;
+	}
+
+	pPSPStream = (SceChar8 *)malloc(sizeof(SceChar8) * bufferSize);
+	if (pPSPStream == NULL) {
+		printf("fatal error : malloc pPSPStream\n");
+		goto term3;
+	}
+
+	pWorkBuf = (SceChar8 *)malloc(sizeof(SceChar8) * workSize);
+	if (pWorkBuf == NULL) {
+		printf(D_000112C4);
+		goto term3;
+	}
+
+	ret = sceMpegRingbufferConstruct(&ringbuf, 32 * 150, pPSPStream, bufferSize, ringbufferCallBack, (SceVoid *)&strFile);
+	if (ret != 0) {
+		printf("fatal error : sceMpegRingbufferConstruct() 0x%x\n", ret);
+		goto term3;
+	}
+
+	ret = sceMpegCreate(&mpeg, pWorkBuf, workSize, &ringbuf, 512, 0, NULL);
+	if (ret != 0) {
+		printf("fatal error : sceMpegCreate() 0x%x\n", ret);
+		goto term3;
+	}
+
+	if (strFileAssign(&strFile, filename) < 0) {
+		printf("fatal error : strFileAssign()\n");
+		goto term3;
+	}
+
+	if (strFileOpen(&strFile, filename, 1) < 0) {
+		printf("fatal error : strFileOpen()\n");
+		goto term3;
+	}
+
+	if (readHeader(&mpeg, &strFile, &pHeader, &fileSize, &streamOffset) != 0) {
+		printf("fatal error : readHeader\n");
+		goto term3;
+	}
+
+	if ((ret = scePsmfSetPsmf(&videoPsmf, pHeader)) != 0) {
+		puts(D_000112A4);
+		goto term3;
+	}
+
+	audioPsmf = videoPsmf;
+
+	pPlayInfo = (t_playInfo *)malloc(sizeof(t_playInfo));
+	if (pPlayInfo == NULL) {
+		goto term2;
+	}
+
+	if ((ret = playInfo_create(pPlayInfo, &mpeg, &videoPsmf, &audioPsmf, fileSize, audioFlag)) != 0) {
+		printf(D_0001127C, ret);
+		goto term2;
+	}
+
+	if (playInfo_getAudioStreamNum(pPlayInfo) == 0) {
+		audioFlag = 0;
+	}
+
+	pCtrl = (t_conditionCtrl *)malloc(sizeof(t_conditionCtrl));
+	if (pCtrl == NULL) goto term2;
+	control_create(pCtrl);
+
+	pDisp = (t_displayBuffer *)malloc(sizeof(t_displayBuffer));
+	if (pDisp == NULL) goto term2;
+
+	if (dispbuf_create(pDisp, 512 * 272 * 4, 4, pCtrl) < 0) {
+		printf("fatal error : displayCreate()\n");
+		goto term2;
+	}
+
+	if (audioFlag == 1) {
+		audioOutSize = playInfo_getAudioOutSize(pPlayInfo);
+
+		pSound = (t_soundBuffer *)malloc(sizeof(t_soundBuffer));
+		if (pSound == NULL) goto term2;
+
+		if (soundbuf_create(pSound, audioOutSize, 4, pCtrl) < 0) {
+			puts(D_0001125C);
+			goto term2;
+		}
+	}
+
+	pRing = (t_ringBuffer *)malloc(sizeof(t_ringBuffer));
+	if (pRing == NULL) goto term2;
+
+	if (read_create(pRing, &ringbuf, pCtrl) < 0) {
+		printf("fatal error read_create()\n");
+		goto term2;
+	}
+
+	pAvSync = (t_avSyncControl *)malloc(sizeof(t_avSyncControl));
+	if (pAvSync == NULL) goto term2;
+
+	if (avsync_create(pAvSync, pDisp, pSound, 4 + 2) < 0) {
+		printf("fatal error avsync_create()\n");
+		goto term2;
+	}
+
+	sceCtrlSetSamplingMode(0);
+
+	sceKernelChangeThreadPriority(sceKernelGetThreadId(), 23);
+
+	dispThread = sceKernelCreateThread("displayThread", dispbuf_func, 22, 2048, 0, NULL);
+
+	readThread = sceKernelCreateThread("readThread", read_func, 24, 2048, 0, NULL);
+
+	if (audioFlag) {
+		soundThread = sceKernelCreateThread(D_00011250, soundbuf_func, 21, 2048, 0, NULL);
+	}
+
+	exit_cb = sceKernelCreateCallback("ExitGame", exit_func, pCtrl);
+	if (exit_cb <= 0) {
+		printf("fatal error: sceKernelCreateCallback() 0x%x\n", exit_cb);
+		goto term1;
+	}
+
+	sceKernelRegisterExitCallback(exit_cb);
+
+	for (;;) {
+		extern SceInt32 D_00012A28; /* static SceInt32 count */
+		SceInt32 offset;
+		SceUInt32 currentTimestamp;
+
+		if (D_00012A28 == 0) {
+			if ((ret = playInfo_getStartTimestamp(pPlayInfo, &currentTimestamp)) != 0) {
+				printf("fatal error : playInfo_getStartTimestamp() 0x%x\n", ret);
+				goto term1;
+			}
+		}
+
+		printf("********** PlayMovie (%d) **********\n", D_00012A28++);
+
+		if ((ret = playInfo_reset(pPlayInfo, currentTimestamp)) != 0) {
+			printf("fatal error : playInfo_init() 0x%x\n", ret);
+			goto term1;
+		}
+
+		offset = playInfo_getOffset(pPlayInfo);
+
+		if (strFileLseek(&strFile, streamOffset + offset, 0) < 0) {
+			puts(D_00011154);
+			goto term1;
+		}
+
+		if (audioFlag) soundbuf_reset(pSound);
+		dispbuf_reset(pDisp);
+		read_reset(pRing, fileSize - offset);
+		avsync_reset(pAvSync);
+		control_reset(pCtrl);
+
+		if (audioFlag) {
+			sceKernelStartThread(soundThread, sizeof(pAvSync), &pAvSync);
+		}
+		sceKernelStartThread(dispThread, sizeof(pAvSync), &pAvSync);
+		sceKernelStartThread(readThread, sizeof(pRing), &pRing);
+
+		if ((ret = playMovie(&ringbuf, pPlayInfo, pRing, pAvSync, pCtrl)) == 0) {
+			if (audioFlag) {
+				sceKernelWaitThreadEnd(soundThread, NULL);
+			}
+			sceKernelWaitThreadEnd(dispThread, NULL);
+			sceKernelWaitThreadEnd(readThread, NULL);
+
+			if ((ret = playInfo_changeVideoStream(pPlayInfo)) != 0) {
+				printf(D_00011174, ret);
+				goto term1;
+			}
+
+			playInfo_getStartTimestamp(pPlayInfo, &currentTimestamp);
+
+		} else if (ret < 0) {
+			puts(D_000111B4);
+			goto term1;
+
+		} else if (playInfo_getPlayerMode(pPlayInfo) == 1) {
+			puts(D_000111D0);
+
+			if (audioFlag) {
+				sceKernelWaitThreadEnd(soundThread, NULL);
+			}
+			sceKernelWaitThreadEnd(dispThread, NULL);
+			sceKernelWaitThreadEnd(readThread, NULL);
+
+			if (sceMpegFlushAllStream(&mpeg) != 0) {
+				puts(D_00011200);
+				goto term1;
+			}
+
+			playInfo_getStartTimestamp(pPlayInfo, &currentTimestamp);
+
+		} else if (playInfo_getPlayerMode(pPlayInfo) == 0xff) {
+			puts(D_000111D8);
+
+			goto term1;
+
+		} else if (playInfo_getPlayerMode(pPlayInfo) == 2) {
+			puts(D_000111EC);
+
+			if (audioFlag) {
+				sceKernelWaitThreadEnd(soundThread, NULL);
+			}
+			sceKernelWaitThreadEnd(dispThread, NULL);
+			sceKernelWaitThreadEnd(readThread, NULL);
+
+			if ((ret = playInfo_changeVideoStream(pPlayInfo)) != 0) {
+				printf(D_00011174, ret);
+				goto term1;
+			}
+
+			if ((ret = sceMpegFlushAllStream(&mpeg)) != 0) {
+				puts(D_00011200);
+
+				goto term1;
+			}
+
+			if ((ret = avsync_video_getLatestPts(pAvSync, &currentTimestamp)) != 0) {
+				puts(D_00011228);
+
+				goto term1;
+			}
+		}
+	}
+
+term1:
+	if (audioFlag) {
+		sceKernelWaitThreadEnd(soundThread, NULL);
+	}
+	sceKernelWaitThreadEnd(dispThread, NULL);
+	sceKernelWaitThreadEnd(readThread, NULL);
+
+	if (audioFlag) {
+		sceKernelTerminateDeleteThread(soundThread);
+	}
+	sceKernelTerminateDeleteThread(dispThread);
+	sceKernelTerminateDeleteThread(readThread);
+
+	sceKernelDeleteCallback(exit_cb);
+
+term2:
+	if (pRing != NULL) {
+		read_delete(pRing);
+		free(pRing);
+		pRing = NULL;
+	}
+
+	if (pAvSync != NULL) {
+		avsync_delete(pAvSync);
+		free(pAvSync);
+		pAvSync = NULL;
+	}
+
+	if (pSound != NULL) {
+		soundbuf_delete(pSound);
+		free(pSound);
+		pSound = NULL;
+	}
+
+	if (pDisp != NULL) {
+		dispbuf_delete(pDisp);
+		free(pDisp);
+		pSound = NULL;
+	}
+
+	if (pCtrl != NULL) {
+		control_delete(pCtrl);
+		free(pCtrl);
+		pCtrl = NULL;
+	}
+
+	if (pPlayInfo != NULL) {
+		playInfo_delete(pPlayInfo, audioFlag);
+		free(pPlayInfo);
+		pPlayInfo = NULL;
+	}
+
+term3:
+	strFileClose(&strFile);
+	strFileUnassign(&strFile);
+
+	sceMpegDelete(&mpeg);
+	sceMpegRingbufferDestruct(&ringbuf);
+	sceMpegFinish();
+
+	if (pWorkBuf != NULL) free(pWorkBuf);
+	if (pPSPStream != NULL) free(pPSPStream);
+
+	if (pHeader != NULL) free(pHeader);
+
+term4:
+	unloadModule(&psmfMid);
+	unloadModule(&mpegMid);
+	unloadModule(&baseMid);
+	unloadModule(&audioMid);
+	unloadModule(&videoMid);
+
+	puts(D_000111A8);
+
+	menuTerm(2, 5);
+
+	return 1;
+}
 
 static SceInt32 startCheck(t_avSyncControl *pAvSync, t_ringBuffer *pRingCtrl, t_conditionCtrl *pCtrl)
 {
