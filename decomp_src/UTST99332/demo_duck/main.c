@@ -6,6 +6,7 @@
 extern const float D_0015E748;
 #define MATH_IDENTITY_ONE D_0015E748
 #define DEMO_TEMPLATE_DEFS
+#define SCENE_GRAPH_TEMPLATE_DEFS
 #define DEMO_LINKONCE_data_owner 1
 #define DEMO_LINKONCE_CmdLine 1
 #include "main.hpp"
@@ -88,6 +89,20 @@ DEMO_LINKONCE_ORDER(
 );
 #include "gl.hpp"
 #include <sstream>
+
+/* Graph.h's asserts (getMappedNode<T>, newNode<T>) */
+extern const char scene_graph_h_err[] __asm__("D_0015DD0C");        /* " *** error " */
+extern const char scene_graph_h_name_expr[] __asm__("D_0015E5EC");  /* "_Name != \"\"" */
+extern const char scene_graph_h_file[] __asm__("D_0015E5F8");       /* "../lib/scene/Graph.h" */
+extern const char scene_graph_h_sp[] __asm__("D_0015DCF0");         /* " " */
+extern const char scene_graph_h_empty[] __asm__("D_0015DCF4");      /* "" */
+extern const char scene_graph_h_us[] __asm__("D_0015E588");         /* "_" */
+extern const char gmn_Texture_name[] __asm__("_ZZN5scene5Graph13getMappedNodeINS_7TextureEEEN6common6handleIT_EERKSsE19__PRETTY_FUNCTION___15E58C");
+extern const char gmn_Switch_name[] __asm__("_ZZN5scene5Graph13getMappedNodeINS_6SwitchEEEN6common6handleIT_EERKSsE19__PRETTY_FUNCTION___15E610");
+namespace scene {
+inline const char *scene_pf_getMappedNode(Texture *) { return gmn_Texture_name; }
+inline const char *scene_pf_getMappedNode(Switch *) { return gmn_Switch_name; }
+}
 
 /* handle<> instances this object has as asm */
 namespace common {
@@ -353,6 +368,8 @@ SGL_LINKONCE_END
 /* asm (near-miss: cc1plus's frame is 16 bytes smaller) */
 typedef std::vector<common::CmdLine::Option>::iterator OptionIt;
 extern template OptionIt std::__uninitialized_copy_aux<OptionIt, OptionIt>(OptionIt, OptionIt, OptionIt, __false_type);
+/* asm (near-miss: one branch delay slot filled differently near the end) */
+extern template common::handle<scene::Switch> scene::Graph::newNode<scene::Switch>(std::string, bool);
 /* asm: the basic_string<char *> range constructor's .s also holds _S_construct<char *> */
 extern template std::string::basic_string(char *, char *, const std::allocator<char> &);
 extern template char *std::string::_S_construct(char *, char *, const std::allocator<char> &, std::forward_iterator_tag);
@@ -391,6 +408,8 @@ extern "C" void main_instance_refs(common::handle<scene::Node> &n, common::handl
     common::handle<scene::Object> f;
     ((scene::Graph::NodeMap *)0)->find(*(const std::string *)0);
     ((scene::Graph::NodeMultiMap *)0)->find(*(const std::string *)0);
+    ((scene::Graph *)0)->getMappedNode<scene::Texture>(*(const std::string *)0);
+    ((scene::Graph *)0)->getMappedNode<scene::Switch>(*(const std::string *)0);
     std::ostringstream os;
     os.str();
     /* the first function that inlines streambuf::_M_out_cur_move is the only one (cc1plus 3.3): the original
@@ -408,12 +427,6 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZN7TestAppD1Ev);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZN5scene5Group6searchIS0_EEN6common6handleIT_EERKSsb);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZN5scene5Graph7newNodeINS_6SwitchEEEN6common6handleIT_EESsb);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZN5scene5Graph13getMappedNodeINS_7TextureEEEN6common6handleIT_EERKSs);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZN5scene5Graph13getMappedNodeINS_6SwitchEEEN6common6handleIT_EERKSs);
-
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZNSsC1IPcEET_S1_RKSaIcE);
 CONT_INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", func_0000AB74, _ZNSsC1IPcEET_S1_RKSaIcE);
 
@@ -424,3 +437,5 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZN7TestAppC1EN2sh4
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZN7TestApp4turnEf);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZSt24__uninitialized_copy_auxIN9__gnu_cxx17__normal_iteratorIPN6common7CmdLine6OptionESt6vectorIS4_SaIS4_EEEES9_ET0_T_SB_SA_12__false_type);
+
+INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZN5scene5Graph7newNodeINS_6SwitchEEEN6common6handleIT_EESsb);

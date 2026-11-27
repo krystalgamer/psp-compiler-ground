@@ -6,6 +6,7 @@
 extern const float D_0015B668;
 #define MATH_IDENTITY_ONE D_0015B668
 #define DEMO_TEMPLATE_DEFS
+#define SCENE_GRAPH_TEMPLATE_DEFS
 #define INTERP_LINKONCE_VKFS
 #define DEMO_LINKONCE_data_owner 1
 #define DEMO_LINKONCE_shared_object_base 1
@@ -266,6 +267,20 @@ DEMO_LINKONCE_ORDER(
 
 /* handle<> instances this object has as asm */
 namespace common {
+}
+
+/* Graph.h's asserts (getMappedNode<T>, newNode<T>) */
+extern const char scene_graph_h_err[] __asm__("D_00159954");        /* " *** error " */
+extern const char scene_graph_h_name_expr[] __asm__("D_0015A0D0");  /* "_Name != \"\"" */
+extern const char scene_graph_h_file[] __asm__("D_0015A0DC");       /* "../lib/scene/Graph.h" */
+extern const char scene_graph_h_sp[] __asm__("D_00159884");         /* " " */
+extern const char scene_graph_h_empty[] __asm__("D_00159808");      /* "" */
+extern const char scene_graph_h_us[] __asm__("D_0015A06C");         /* "_" */
+extern const char gmn_Texture_name[] __asm__("_ZZN5scene5Graph13getMappedNodeINS_7TextureEEEN6common6handleIT_EERKSsE19__PRETTY_FUNCTION___15A070");
+extern const char gmn_Transform_name[] __asm__("_ZZN5scene5Graph13getMappedNodeINS_9TransformEEEN6common6handleIT_EERKSsE19__PRETTY_FUNCTION___15A0F4");
+namespace scene {
+inline const char *scene_pf_getMappedNode(Texture *) { return gmn_Texture_name; }
+inline const char *scene_pf_getMappedNode(Transform *) { return gmn_Transform_name; }
 }
 
 /* the strings stay in the module's .rodata (asm) */
@@ -1500,6 +1515,10 @@ void CityApp_interp_instances()
 /* asm (near-miss: cc1plus's frame is 16 bytes smaller) */
 typedef std::vector<common::CmdLine::Option>::iterator OptionIt;
 extern template OptionIt std::__uninitialized_copy_aux<OptionIt, OptionIt>(OptionIt, OptionIt, OptionIt, __false_type);
+/* asm (near-miss: one branch delay slot filled differently near the end) */
+extern template common::handle<scene::Transform> scene::Graph::newNode<scene::Transform>(std::string, bool);
+/* asm: the start of Graph's map<const string, handle<Node> >::find is in the basic_string<char *> constructor's .s */
+extern template scene::Graph::NodeMap::_Rep_type::iterator scene::Graph::NodeMap::_Rep_type::find(const std::string &);
 /* asm: the basic_string<char *> range constructor's .s also holds _S_construct<char *> */
 extern template std::string::basic_string(char *, char *, const std::allocator<char> &);
 extern template char *std::string::_S_construct(char *, char *, const std::allocator<char> &, std::forward_iterator_tag);
@@ -1547,6 +1566,8 @@ extern "C" void CityApp_instance_refs(common::handle<scene::Node> &n, common::ha
     /* called by the asm vector<handle<Car> >::_M_insert_aux (near-miss: two registers swapped) */
     typedef std::vector<common::handle<CityApp::Car> >::iterator CarIt;
     std::__uninitialized_copy_aux(CarIt(), CarIt(), CarIt(), __false_type());
+    ((scene::Graph *)0)->getMappedNode<scene::Texture>(*(const std::string *)0);
+    ((scene::Graph *)0)->getMappedNode<scene::Transform>(*(const std::string *)0);
     std::ostringstream os;
     os.str();
     /* the first function that inlines streambuf::_M_out_cur_move is the only one (cc1plus 3.3): the original
@@ -1559,13 +1580,7 @@ extern "C" void CityApp_instance_refs(common::handle<scene::Node> &n, common::ha
 #undef INCLUDE_ASM
 #define INCLUDE_ASM INCLUDE_ASM_LINKONCE
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN5scene5Graph7newNodeINS_9TransformEEEN6common6handleIT_EESsb);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN5scene5Graph13getMappedNodeINS_7TextureEEEN6common6handleIT_EERKSs);
-
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZNSt6vectorIN6common6handleIN7CityApp3CarEEESaIS4_EE13_M_insert_auxEN9__gnu_cxx17__normal_iteratorIPS4_S6_EERKS4_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN5scene5Graph13getMappedNodeINS_9TransformEEEN6common6handleIT_EERKSs);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZNSsC1IPcEET_S1_RKSaIcE);
 CONT_INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", func_00008404, _ZNSsC1IPcEET_S1_RKSaIcE);
@@ -1607,3 +1622,4 @@ CONT_INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", func_00
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN6interp8KeyFrameIN4math10quaternionEEC1EfS2_b);
 
+INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/CityApp", _ZN5scene5Graph7newNodeINS_9TransformEEEN6common6handleIT_EESsb);
