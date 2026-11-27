@@ -43,6 +43,18 @@ int ps_u0103(PsIpc *msg) {
     return 4;
 }
 
+INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/ps_u0000", D_00137410);
+
+INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/ps_u0000", D_00137430);
+
+INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/ps_u0000", D_00137458);
+
+INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/ps_u0000", D_00137488);
+
+INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/ps_u0000", D_001374B4);
+
+INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/ps_u0000", D_001374E4);
+
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/ps_u0000", ps_u0203);
 
 int ps_u0206(PsIpc *msg) {

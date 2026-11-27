@@ -281,4 +281,3 @@ int ps_l1717(PsIpc *msg) {
     return 0x17;
 }
 
-INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/ps_l1100", D_00135C58);

@@ -99,4 +99,3 @@ int ps_l1A08(PsIpc *msg) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/ps_l1900", ps_l1B12);
 
-INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/ps_l1900", D_00135C74);

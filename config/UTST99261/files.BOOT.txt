@@ -78,6 +78,15 @@
 0x69F18 ps_l1900        1.5.1           ps_l1900.c
 0x6A620 ps_l1C00        1.5.1           ps_l1C00.c
 0x6C210 ps_l3800        1.5.1           ps_l3800.c
+0x6C320 ps_l3900        1.5.1           ps_l3900.c
+0x6C600 ps_i2000        1.5.1           ps_i2000.c
+0x6C660 ps_i2100        1.5.1           ps_i2100.c
+0x6C6CC ps_i2200        1.5.1           ps_i2200.c
+0x6D4DC ps_i2300        1.5.1           ps_i2300.c
+0x6E39C ps_i2400        1.5.1           ps_i2400.c
+0x6F914 ps_i2600        1.5.1           ps_i2600.c
+0x6FFAC ps_i2900        1.5.1           ps_i2900.c
+0x70194 ps_i2D00        1.5.1           ps_i2D00.c
 0x70B44 parseIO         1.5.1           parseIO.c
 0x717E8 parseHistory    1.5.1           parseHistory.c
 0x726D4 parser          1.5.1           parser.c
@@ -247,3 +256,31 @@ rodata 0x13F17C lo_list  # roman numerals of lo_list's .data tables (roman_lc/ro
 rodata 0x13F290 iom_evhttp
 rodata 0x13F3C4 iom_evstartup
 rodata 0x140220 http_setuser
+# ps_romd.c: data-only object between ps_comm.c and ps_ramd.c: tbl_psfunc, the parser's
+# state x event function table (0x1B00 bytes); the ps_* units reference rows inside it
+dataunit ps_romd 1.5.1 ps_romd.c
+rodata 0x135910 ps_romd
+rodata 0x135A50 ps_romd  # (the automatic split starts units at their first row reference)
+rodata 0x135C58 ps_romd
+rodata 0x135C74 ps_romd
+rodata 0x135C80 ps_romd
+rodata 0x135CF0 ps_romd
+rodata 0x135CF4 ps_romd
+rodata 0x135D94 ps_romd
+rodata 0x135F98 ps_romd
+rodata 0x135F9C ps_romd
+rodata 0x135FA0 ps_romd
+rodata 0x135FA8 ps_romd
+rodata 0x135FB4 ps_romd
+rodata 0x135FC4 ps_romd
+rodata 0x137410 ps_u0000
+rodata 0x137568 ps_u0A00
+rodata 0x137674 ps_l1900
+rodata 0x13773C ps_l1C00
+rodata 0x1378D0 ps_l3900
+rodata 0x13794C ps_i2200
+rodata 0x1379EC ps_i2300
+rodata 0x137B18 ps_i2400
+rodata 0x137CA4 ps_i2600
+rodata 0x137CE8 ps_i2900
+rodata 0x137D10 ps_i2D00

@@ -1860,4 +1860,3 @@ void ps_saveCacheMode(int m) {
     }
 }
 
-INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", tbl_psfunc);

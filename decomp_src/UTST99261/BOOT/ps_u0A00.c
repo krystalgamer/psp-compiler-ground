@@ -4,7 +4,6 @@
 #include "m2c_macros.h"
 extern int buf_sessionUI;
 extern int buf_localUI;
-extern char D_00137580[];
 extern int buf_ps_sts;
 
 
@@ -56,7 +55,7 @@ int ps_u0C03(PsIpc *msg) {
         len = HST_getTitlelen(node);
         buf = MEM_malloc(0, len + 4);
         if (buf == NULL) {
-            ps_halt(D_00137580);
+            ps_halt("(char*)E_malloc(ps_u0C03) failed");
         }
         memset(buf, 0, len + 4);
         buf[0] = len;
@@ -120,4 +119,3 @@ int ps_l1001(void) {
     return 2;
 }
 
-INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/ps_u0A00", D_00135A50);
