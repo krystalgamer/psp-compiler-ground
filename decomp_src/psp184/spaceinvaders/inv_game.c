@@ -2296,7 +2296,43 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", inv_spr_set);
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", inv_spr_set_col);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", root_pos_get);
+typedef struct { float x, y, z; L2V3 rot; } ROUTE_R;
+typedef struct { u8 p[0x10C0]; ROUTE_R r[1]; } GMRR_T;
+#define GMRR (*(GMRR_T *)&gmain)
+void root_pos_get(L2V3 *out, L2V3 *ofs, float pos, float len)
+{
+	int a, b;
+	float f, s;
+	L2V3 p0, p1, d;
+
+	a = pos;
+	f = pos - (float)a;
+	b = a + 1;
+	while (a <= 0)
+		a = (float)a + (gmain.f.f10bc - 0.0f);
+	while ((float)a >= gmain.f.f10bc)
+		a = (float)a - (gmain.f.f10bc - 0.0f);
+	while (b <= 0)
+		b = (float)b + (gmain.f.f10bc - 0.0f);
+	while ((float)b >= gmain.f.f10bc)
+		b = (float)b - (gmain.f.f10bc - 0.0f);
+	p0.x = GMRR.r[a].x;
+	p0.y = GMRR.r[a].y;
+	p0.z = GMRR.r[a].z;
+	p1.x = GMRR.r[b].x;
+	p1.y = GMRR.r[b].y;
+	p1.z = GMRR.r[b].z;
+	d.x = p0.x + (p1.x - p0.x) * f;
+	d.y = p0.y + (p1.y - p0.y) * f;
+	d.z = p0.z + (p1.z - p0.z) * f;
+	s = len / 500.0f;
+	out->x = d.x * s;
+	out->y = d.y * s;
+	out->z = d.z * s;
+	out->x += ofs->x;
+	out->y += ofs->y;
+	out->z += ofs->z;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", root_rot_get);
 
