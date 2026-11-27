@@ -244,7 +244,86 @@ static void draw_debug(void)
 
 INCLUDE_ASM("tmp/asm/UTST99332/graphics_break/nonmatchings/main", draw_frame);
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_break/nonmatchings/main", init_all);
+static void init_all(void)
+{
+	ScePspFVector3 vec;
+
+	sceGuInit();
+	sceGuStart(0, disp_list, 0x100000);
+
+	sceGuDrawBuffer(3, (void *)0, 512);
+	sceGuDispBuffer(480, 272, (void *)0x88000, 512);
+
+	sceGuDepthBuffer((void *)0x110000, 512);
+
+	sceGuOffset(2048 - 240, 2048 - 136);
+	sceGuViewport(2048, 2048, 480, 272);
+	sceGuDepthRange(50000, 10000);
+
+	sceGuDisable(4);
+	sceGuEnable(8);
+
+	sceGuScissor(0, 0, 480, 272);
+	sceGuEnable(2);
+
+	sceGuDepthFunc(7);
+	sceGuEnable(1);
+
+	sceGuFrontFace(0);
+
+	sceGuDisable(9);
+	sceGuShadeModel(1);
+
+	vec.x = 1.0f;
+	vec.y = 1.0f;
+	vec.z = 1.0f;
+
+	sceGuLightColor(0, 2, 0xffc0c0c0);
+	sceGuLightColor(0, 4, 0xffffffff);
+	sceGuLight(0, 0, 6, &vec);
+	sceGuEnable(11);
+	sceGuEnable(10);
+
+	sceGuSpecular(20.0f);
+
+	sceGuAmbient(0x404040);
+	sceGuColor(0xa0a0a0);
+
+	sceGuTexMode(1, 1, 0, 0);
+	sceGuTexFilter(5, 1);
+	sceGuTexFunc(0, 0);
+	sceGuTexWrap(0, 0);
+
+	sceGumSetMatrixStack(matrix_stack, 4, 4, 8, 0);
+	sceGumMatrixMode(0);
+	sceGumLoadIdentity();
+	sceGumPerspective(45.0f * 3.1415927f / 180.0f, 480.0f / 272.0f, 1.0f, 100.0f);
+
+	sceGumMatrixMode(2);
+	sceGumUpdateMatrix();
+
+	sceGuClearColor(0x402020);
+	sceGuClearDepth(0);
+	sceGuClearStencil(0);
+
+	sceGuFinish();
+	sceGuSync(0, 0);
+
+	edram_addr = sceGeEdramGetAddr();
+	mk_pkt();
+
+	sceDisplaySetVblankCallback(0, cbvsync, 0);
+	sceDisplayWaitVblankStart();
+
+	pos.rot.x = 0.0f;
+	pos.rot.y = 0.0f;
+	pos.rot.z = 0.0f;
+	pos.trans.x = 0.0f;
+	pos.trans.y = 0.0f;
+	pos.trans.z = -10.0f;
+
+	sceGuDisplay(1);
+}
 
 int pad_read(void) {
     SceCtrlData buf;
