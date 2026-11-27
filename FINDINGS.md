@@ -31,6 +31,10 @@ modules (`tools/nltest.py`, `tools/objcmp.py`).
   mips_args`, `enum mips_builtins`, ...) with every enumerator and
   declaration line.  `tools/gcchdr.py MODULE.prx --tree V` diffs them
   against a tree.
+- Some modules have no symbols or DWARF but link known open-source
+  libraries, e.g. navi's zlib, libpng, libjpeg and OpenSSL.  For those,
+  `tools/srccmp.py` compiles the upstream sources and finds each function
+  in the module's code.
 
 ## psp-gcc 1.5.1
 
@@ -994,7 +998,7 @@ libpng (libpng 1.2.12), libjpeg (IJG jpeg 6b), libblowfish and librsa
 (OpenSSL 0.9.6c's blowfish and RSA, from their strings).  They have no
 symbols and no DWARF.  Their sources were fetched into `tmp/navi/src`,
 compiled with each cc1 and compared function by function by
-`tmp/navi/cmp.py`. It finds each compiled function by exact search of the
+`tools/srccmp.py`. It finds each compiled function by exact search of the
 relocation-masked words, names exports by NID, places the rest between
 the exact matches and lists the module code that nothing covers
 (`--gaps`).
@@ -1025,8 +1029,8 @@ the exact matches and lists the module code that nothing covers
   | libjpeg | 330/330 | 315 | 314 | 304 |
   | blowfish | 8/8 | 8 | – | – |
 
-  - libgcc built from the tree (`-O2 -mext`; dp-bit, fp-bit, libgcc2)
-    matches all of libpng's 23 functions, libjpeg's 11 and librsa's 16.
+  - libgcc from the tree (its libgcc2.c, dp-bit.c and fp-bit.c members,
+    preprocessed as `tools/libgcccpp.sh` does, `-O2 -mext`) matches all of libpng's 23 functions, libjpeg's 11 and librsa's 16.
     crtbegin/crtend are the tree's crtstuff.c.  So only the libraries'
     own glue code is not covered: libjpeg's memory manager and source,
     and librsa's Sony `RAND_poll`.
