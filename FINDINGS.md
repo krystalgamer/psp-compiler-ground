@@ -434,6 +434,16 @@ modules (`tools/nltest.py`, `tools/objcmp.py`).
   identical code but puts setFiltering over the limit, so `linear`/
   `nearest` match (adding >= 6 empty statements does the same). The copy
   constructor calling `operator=` is presumably the same effect.
+  Template instances: none of the demo's instances appears twice in the
+  module, and for all 48 instances that our C++ units emit, the object that
+  holds the original copy comes before every other object emitting it: the
+  link kept the first `.gnu.linkonce.t` copy, as GNU ld does. Instances sit
+  at the end of their object (after `_GLOBAL__D_`), where ld puts linkonce
+  sections, so 1.6.1's C++ used linkonce sections like FSF 3.3 (no
+  `-fno-implicit-templates`/repository); `tools/split.py` links each C++
+  object's own instances (by original address range) after its `.text`.
+  Instances in the middle of a unit therefore mark object boundaries that
+  the static-initializer split missed (objects without static constructors).
 
 ## psp-gcc 1.7.1 (release build)
 
