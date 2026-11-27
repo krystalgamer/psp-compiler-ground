@@ -92,6 +92,9 @@ rodata 0x16788C -
 # sgl_Mesh_4: vector<sgl::Edge>::reserve()'s "vector::reserve"
 rodata 0x16FEE8 main_objs/sgl_Mesh_4
 rodata 0x16FEF8 -
+# psp_VertexArrayEdit: the float pools of the psp::convert<> specializations
+rodata 0x162B14 main_objs/psp_VertexArrayEdit
+rodata 0x162B74 -
 0x0DC98 glut_ReshapeFunc         1.6.1.internal  main_objs/glut_ReshapeFunc.cpp
 0x0E548 app3d_Callbacks          1.6.1.internal  main_objs/app3d_Callbacks.cpp
 0x10CDC common_Date              1.6.1.internal  main_objs/common_Date.cpp   # no static init

@@ -574,6 +574,7 @@ int AtoI(const char *);
 
 namespace psp {
 template<class T, class F> T convert(const F &);
+template<class T> const T Clamped(T, T, T);
 }
 
 namespace vector_font {
@@ -876,18 +877,97 @@ public:
 }
 
 /* accessors (generated from the asm; members named by offset) */
+/* lib/gl_psp/VertexArray.h (psp_VertexArrayEdit) */
 namespace psp {
+typedef unsigned int u_int;
+enum PixelFormatBitMask { };
+std::string GetPixelFormatBitMaskName(PixelFormatBitMask);
+std::string GetPixelFormatBitMaskNameFill(PixelFormatBitMask, bool);
+u_int ConvertMaskInternal2Gu(unsigned int);
+inline bool IsValidMask(unsigned int _Mask) { return (_Mask & 0xE000) != 0; }
+class VertexArray {
+public:
+    void set_mask(unsigned int);
+    void format(unsigned int);
+    void import(VertexArray &);
+    void DEBUG_printFormat();
+    void clear();                       /* inline: defined after its callers in psp_VertexArrayEdit.c */
+    /* data */
+    std::vector<unsigned char> _data;   /* 0x00 */
+    unsigned int _num_vertices;         /* 0x0C */
+    unsigned int _vram_addr;            /* 0x10 */
+    unsigned int _mask;                 /* 0x14 */
+    u_int _gu_mask;                     /* 0x18 */
+};
 class VertexArrayEdit {
 public:
+    enum BitEnum { WA, WB, WC, WD, S, T, C, NX, NY, NZ, PX, PY, PZ, MAX_BITS, PAD1, PAD2, INVALID_BIT };
+    enum BitType { NONE, UBYTE, USHORT, USHORT_5650, USHORT_5551, USHORT_4444, UINT_8888, BYTE, SHORT, FLOAT };
+    enum BitGroupEnum { WEIGHT, TEXCOORD, COLOR, NORMAL, POSITION };
+    enum { INFO_SIZE = 52 };
+    struct Bit {
+        Bit() : _enum(INVALID_BIT), _type(NONE), _size(0), _offset(-1) {}
+        BitEnum _enum;
+        BitType _type;
+        unsigned int _size;
+        int _offset;
+    };
+    template<class T> struct Value {
+        Value(BitEnum bit, T value, unsigned int index) : _bit(bit), _value(value), _index(index) {}
+        BitEnum _bit;
+        T _value;
+        unsigned int _index;
+    };
     class Descriptor {
     public:
+        Descriptor(unsigned int);
+        void on_format_change();
+        void set_bit_type(BitGroupEnum, BitType);
+        const Bit &getBit(BitEnum) const;
+        bool setFormat(unsigned int);
         int getFormat() const;
         int getBytesize() const;
+        void printFormat() const;
         /* data */
-        int _f0;
-        char _p4[0xD0];
-        int _fD4;
+        unsigned int _format;           /* 0x00 */
+        Bit _bits[MAX_BITS];            /* 0x04 */
+        unsigned int _bytesize;         /* 0xD4 */
+        BitEnum _info[INFO_SIZE];       /* 0xD8 */
     };
+    static unsigned int Sizeof(BitType);
+    VertexArrayEdit(unsigned int);
+    ~VertexArrayEdit();
+    void begin(VertexArray &, unsigned int);
+    void begin(VertexArray &);
+    void end();
+    void format(unsigned int);
+    void clear();
+    void resize(unsigned int);
+    void import(const VertexArrayEdit &);
+    static unsigned char map_to_255(unsigned char, unsigned int);
+    void import_bit(BitEnum, unsigned int, const VertexArrayEdit &);
+    void position(float, float, float);
+    void normal(float, float, float);
+    void texcoord(float, float);
+    void color(float, float, float, float);
+    void color4ub(unsigned char, unsigned char, unsigned char, unsigned char);
+    void set_index(unsigned int);
+    void vertex(float, float, float);
+    void DEBUG_print_bit(BitEnum, unsigned int);
+    void DEBUG_printVertex(unsigned int);
+    void DEBUG_print(std::string);
+    void DEBUG_printFormat() const;
+    void save(const std::string &);
+    template<class T> void set(Value<T>);
+    void check_size();                  /* inline: defined in psp_VertexArrayEdit.c */
+    static bool smart_color_map;
+    static unsigned char current_color[4];
+    static float current_normal[3];
+    static float current_texcoord[2];
+    /* data */
+    Descriptor _desc;                   /* 0x000 */
+    unsigned int _n;                    /* 0x1A8 */
+    VertexArray *_va;                   /* 0x1AC */
 };
 }
 

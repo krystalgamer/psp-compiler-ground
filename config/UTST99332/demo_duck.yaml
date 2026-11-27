@@ -394,6 +394,8 @@ segments:
       - [0x15DB30, rodata, asm/rodata_15DAB0]
       - [0x15DB40, .rodata, WaterPatch]
       - [0x15DB94, rodata, asm/rodata_15DB14]
+      - [0x162B94, .rodata, main_objs/psp_VertexArrayEdit]
+      - [0x162BF4, rodata, asm/rodata_162B74]
       - [0x1637CC, .rodata, main_objs/vector_font_Console]
       - [0x1637DC, rodata, asm/rodata_16375C]
       - [0x1654D8, .rodata, main_objs/glutils_PickingBase]
