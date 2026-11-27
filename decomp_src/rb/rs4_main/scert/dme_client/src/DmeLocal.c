@@ -376,7 +376,15 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", Ne
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", NetISetMyClientReceiveBroadcast);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", FindFreePingSlot);
+extern char gPingInfo[];
+typedef struct { char pad[16]; int used; char pad2[12]; } PingSlot;
+int FindFreePingSlot(void)
+{
+    int i;
+    for (i = 0; i < 127; i++)
+        if (((PingSlot *)gPingInfo)[i].used == 0) return i;
+    return 127;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", NetIPing);
 
@@ -384,7 +392,14 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", Ne
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", NetUpdateAll);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", NetITick);
+int NetUpdateAll();
+int NetProcessEchoRequests();
+int NetITick(void)
+{
+    int r = NetUpdateAll(0);
+    if (r != 0) return r;
+    return NetProcessEchoRequests(0);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", NetIUpdate);
 
