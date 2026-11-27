@@ -360,7 +360,37 @@ void title_bg_star_init(void)
 	}
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_title_menu", title_bg_star_disp);
+typedef struct { u8 pad[0xD4]; float speed; int on; STAR_T star[128]; } TM_STAR;
+#define TMST (*(TM_STAR *)&title_main)
+void sprite_set(int tex, int x, int y, int w, int h, int u, int v, int sw, int sh, int a9, int a10, int r, int g, int b, int a, int pri, int mode, int a17, int alpha);
+void title_bg_star_disp(int tex)
+{
+	int i;
+	STAR_T *s;
+
+	if (TMST.on) {
+		for (i = 0; i < 128; i++) {
+			s = &TMST.star[i];
+			s->x += s->dx * TMST.speed;
+			s->f4++;
+			s->y += s->dy * TMST.speed;
+			if (s->f4 < 60)
+				s->f8 = s->f4 * 255 / 60;
+			if (s->f4 > 120)
+				s->f8 = 255 - (s->f4 * 255 - 30600) / 60;
+			if (TMST.speed != 1.0f)
+				s->f8 = s->f8 * TMST.speed;
+			if (s->f8 < 0)
+				s->f8 = 0;
+			else if (s->f8 > 255)
+				s->f8 = 255;
+			if (s->f0 >= 0)
+				sprite_set(tex, s->x, s->y, 8, 8, s->f0 * 8, 0, 100, 100, 0, 0, 255, 255, 255, 255, 10, 2, 1, s->f8);
+			if (s->f4 > 180 || s->x < -8.0f || s->x > 480.0f || s->y < -8.0f || s->y > 272.0f)
+				title_bg_star_start(s);
+		}
+	}
+}
 
 void game_bg_init(void)
 {
