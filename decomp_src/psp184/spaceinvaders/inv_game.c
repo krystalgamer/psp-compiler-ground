@@ -925,7 +925,84 @@ void zako_damage(ENEMY *e, int dmg, int a, int b)
 	}
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", zako_mov_count);
+int bgm_rank(void);
+int bgm_rank_max(void);
+extern int D_005FB734;
+typedef struct { int f0, f4, f8, fc; float f10; int f14, f18, f1c, f20, f24, f28, f2c, f30, f34, f38, disp; float f40, f44, f48, f4c, f50, f54, f58, f5c, f60; } ZMC_T;
+void zako_mov_count(ZNA_T *p, int vis)
+{
+	ZMC_T *e = (ZMC_T *)p;
+	float sp, a, t, b;
+	float w[2];
+
+	sp = e->f4c;
+	if (bgm_rank() == 7)
+		sp = 1.0f;
+	else if (bgm_rank() + 1 >= 6) {
+		if (1.2f < sp)
+			sp = 1.2f;
+	} else if (bgm_rank() + 1 >= 4) {
+		if (1.5f < sp)
+			sp = 1.5f;
+	}
+	if ((135.0f <= e->f44 && e->f44 < 180.0f) || (315.0f <= e->f44 && e->f44 < 360.0f)) {
+		e->f48 -= 0.03f;
+		if (e->f48 < sp * 0.5f)
+			e->f48 = sp * 0.5f;
+	} else if ((45.0f <= e->f44 && e->f44 < 90.0f) || (225.0f <= e->f44 && e->f44 < 270.0f)) {
+		e->f48 += 0.03f;
+		if (sp + sp < e->f48)
+			e->f48 = sp + sp;
+	}
+	e->f44 += e->f48;
+	while (e->f44 < 0.0f)
+		e->f44 += 360.0f;
+	while (359.0f < e->f44)
+		e->f44 -= 360.0f;
+	if (vis != 1)
+		return;
+	t = (bgm_rank_max() + 5.0f - bgm_rank()) / (bgm_rank_max() + 5.0f);
+	w[1] = e->f58 * t;
+	if (e->f60 != w[1]) {
+		if (w[1] < e->f60) {
+			e->f60 -= 1.0f;
+			if (e->f60 < w[1])
+				e->f60 = w[1];
+		} else {
+			e->f60 += 1.0f;
+			if (w[1] < e->f60)
+				e->f60 = w[1];
+		}
+	}
+	b = e->f8 / 255.0f;
+	if (b < 0.0f)
+		b = 0.0f;
+	else if (0.9f < b)
+		b = 0.9f;
+	if (bgm_rank() == 7) {
+		if (D_005FB734 == 0 || D_005FB734 == 2) {
+			e->f40 += 0.05f;
+			if (0.9f < e->f40)
+				e->f40 = 0.9f;
+		} else if (b < e->f40) {
+			e->f40 -= 0.01f;
+			if (e->f40 < b)
+				e->f40 = b;
+		} else if (e->f40 < b) {
+			e->f40 += 0.01f;
+			if (b < e->f40)
+				e->f40 = b;
+		}
+	} else if (b < e->f40) {
+		e->f40 -= 0.05f;
+		if (e->f40 < b)
+			e->f40 = b;
+	} else if (e->f40 < b) {
+		e->f40 += 0.05f;
+		if (b < e->f40)
+			e->f40 = b;
+	}
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", ufo_init);
 
