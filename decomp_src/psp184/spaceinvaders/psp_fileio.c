@@ -285,7 +285,39 @@ int UMDCallBackFunc(int count, int stat, void *common)
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_fileio", file_bind_addr);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_fileio", file_bind_size);
+int file_bind_size(u8 *bind, char *name)
+{
+	char buf[256];
+	int n, i, j, size;
+	u8 *p;
+	u8 c;
+
+	size = 0;
+	p = bind;
+	if (bind == NULL)
+		return size;
+	n = addr_to_int(bind);
+	p += 4;
+	if (n <= 0)
+		return size;
+	for (i = 0; i < n; i++) {
+		memset(buf, 0, 256);
+		j = 0;
+		for (;;) {
+			c = *p;
+			if (c == 0)
+				break;
+			buf[j++] = c;
+			p++;
+		}
+		p += 5;
+		size = addr_to_int(p);
+		p += 4;
+		if (strcmp(name, buf) == 0)
+			return size;
+	}
+	return 0;
+}
 
 INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_fileio", D_0007A660);
 
