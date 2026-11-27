@@ -1,13 +1,42 @@
 /* lang: c++ */
-/* cflags: -Os */
+/* cflags: -Os -fno-strength-reduce */
+#pragma interface "rodata"
 #include "common.h"
-extern "C" {
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_object", _ZN7SaruNet11ObjectClass14Register_FieldEv);
+enum NetOwnershipStatus { NetOwnership_2 = 2 };
+enum NetObjectLifespan { NetLifespan_4 = 4 };
+struct NetTypeBroadcastSchedule;
 
-void _ZN7SaruNet11ObjectClass14Register_FieldER24NetTypeBroadcastSchedule(void) {
+namespace Net {
+class ObjectClass;
+class Object {
+public:
+	void Init(ObjectClass &cls, NetOwnershipStatus o, NetObjectLifespan l, unsigned int a, int b, int c,
+		  bool d, void *e, const unsigned char *f);
+};
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_object", _ZN7SaruNet6Object4InitERN3Net11ObjectClassEbPvPKh);
+namespace SaruNet {
+class ObjectClass {
+public:
+	void Register_Field();
+	void Register_Field(NetTypeBroadcastSchedule &s);
+};
 
-} /* extern "C": m2c drafts with mangled names, kept as C linkage */
+class Object : public Net::Object {
+public:
+	Object &Init(Net::ObjectClass &cls, bool d, void *e, const unsigned char *f);
+};
+
+extern "C" {
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_object", _ZN7SaruNet11ObjectClass14Register_FieldEv);
+}
+
+void ObjectClass::Register_Field(NetTypeBroadcastSchedule &s)
+{
+}
+
+extern "C" {
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_object", _ZN7SaruNet6Object4InitERN3Net11ObjectClassEbPvPKh);
+}
+}

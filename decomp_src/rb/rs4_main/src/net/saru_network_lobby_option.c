@@ -1,8 +1,21 @@
 /* lang: c++ */
-/* cflags: -Os */
+/* cflags: -Os -fno-strength-reduce */
+#pragma interface "rodata"
 #include "common.h"
-extern "C" {
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_lobby_option", _ZN7SaruNet11LobbyOption5Hello8Set_NameEPKj);
+extern "C" void *memcpy(void *, const void *, unsigned int);
 
-} /* extern "C": m2c drafts with mangled names, kept as C linkage */
+namespace SaruNet {
+namespace LobbyOption {
+struct Hello {
+	int head;
+	unsigned int name[32];
+	void *Set_Name(const unsigned int *s);
+};
+
+void *Hello::Set_Name(const unsigned int *s)
+{
+	return memcpy(name, s, sizeof(name));
+}
+}
+}

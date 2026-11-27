@@ -1,10 +1,23 @@
 /* lang: c++ */
-/* cflags: -Os */
+/* cflags: -Os -fno-strength-reduce */
+#pragma interface "rodata"
 #include "common.h"
-extern "C" {
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_cif", SaruNet_Network__Get_Instance_p);
+namespace Net {
+class Network {
+public:
+	static Network *_instance_p;
+	virtual ~Network();
+	virtual void Update();
+};
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_cif", SaruNet_Network__Update);
+extern "C" Net::Network *SaruNet_Network__Get_Instance_p(void)
+{
+	return Net::Network::_instance_p;
+}
 
-} /* extern "C": m2c drafts with mangled names, kept as C linkage */
+extern "C" void SaruNet_Network__Update(Net::Network *n)
+{
+	n->Update();
+}
