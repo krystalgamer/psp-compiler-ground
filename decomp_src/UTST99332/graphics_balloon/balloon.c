@@ -60,7 +60,41 @@ void init_balloon(void)
 	}
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_balloon/nonmatchings/balloon", draw_balloon);
+void DrawSphere(ScePspFVector3 *array,float r);
+void DrawPole(ScePspFVector3 *array,float r);
+#define SCEGU_TEXTURE                      9
+
+void draw_balloon(void)
+{
+	ScePspFVector3	vec;
+
+	sceGuDisable(SCEGU_TEXTURE);
+
+	sceGumPushMatrix();
+	sceGumTranslate(&balloon.pos);
+
+	sceGumPushMatrix();
+	vec.x=1.2f, vec.y=1.4f, vec.z=1.2f;
+	sceGumScale(&vec);
+
+	sceGuSpecular(10.0f);
+	sceGuColor(0xff2020e0);
+	DrawSphere(sphere,1.0f);
+	sceGumPopMatrix();
+
+	sceGumPushMatrix();
+	vec.x=0.0f, vec.y=-2.0f, vec.z=0.0f;
+	sceGumTranslate(&vec);
+	vec.x=0.05f, vec.y=0.25f, vec.z=0.05f;
+	sceGumScale(&vec);
+
+	sceGuSpecular(50.0f);
+	sceGuColor(0xffffffff);
+	DrawPole(pole,1.0f);
+	sceGumPopMatrix();
+
+	sceGumPopMatrix();
+}
 
 float spline(float t, float pos0, float pos1, float pos2) {
     float temp_f13;
