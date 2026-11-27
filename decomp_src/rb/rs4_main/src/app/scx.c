@@ -39,7 +39,31 @@ void scxMfree(void *p)
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/scx", D_000FE5A0);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/scx", scxInit);
+extern unsigned char D_000FE5F8, D_000FE604, D_000FE620;
+int sprintf(char *, const char *, ...);
+int sgxInit(char *);
+int scxInit(void)
+{
+	char buf[256];
+	int r;
+	consPrintf("%s {\n", "scxInit");
+	sgxSetMallocFunc(scxMalloc);
+	sgxSetFreeFunc(scxMfree);
+	sgxSetPrintFunc(consPrintf);
+	sprintf(buf, "sgx-snd-nslot=%d\nsgx-seq-nslot=%d\nsgx-seq-nunit=%d\n", 48, 48, 48);
+	consPrintf(&D_000FE5F4, buf);
+	r = sgxInit(buf);
+	if (r != 1)
+		consPrintf(&D_000FE604, D_000FE5A0, 0x5D, "scxInit", &D_000FE5F8);
+	sgxSetDebugFlags(7);
+	sgxSndSetMasterVolume(0, 0);
+	sgxSndSetMasterVolume(0x80, 0x80);
+	sgxEffSetType(0, 4);
+	sgxEffSetDepth(0, 15, 15);
+	sgxEffSetParam(0, 0, 0);
+	consPrintf(&D_000FE620);
+	return r;
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/scx", D_000FE5F4);
 
@@ -79,9 +103,46 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/scx", D_000FE6B0);
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/scx", D_000FE6BC);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/scx", scxUpdate);
+extern unsigned int D_00119D80;
+extern const float D_000FE6C8, D_000FE6CC;
+unsigned int sceKernelGetSystemTimeLow(void);
+void sgxProc(float);
+void scxUpdate(void)
+{
+	unsigned int now = sceKernelGetSystemTimeLow();
+	float dt = (float)(now - D_00119D80) / D_000FE6C8 / D_000FE6C8;
+	if (D_00119D80 == 0) dt = D_000FE6CC;
+	sgxProc(dt);
+	D_00119D80 = now;
+}
+const float D_000FE6C8 = 1000.0f;
+const float D_000FE6CC = 0.01668335125f;
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/scx", scxAsm);
+extern unsigned char D_000FE62C, D_000FE634;
+extern char *TypeTbl[3];
+char *resArg();
+int strcmp(const char *, const char *);
+int sgxResOpen(int, int);
+void *scxAsm(int *res, int *s)
+{
+	int id;
+	int type;
+	char *ext;
+	if (sceKernelGetGPI() & 1)
+		consPrintf(&D_000FE5F4, &D_000FE62C);
+	id = sgxResOpen(res[0], 0);
+	if (id < 0)
+		consPrintf(&D_000FE604, D_000FE5A0, 0x9D, &D_000FE62C, &D_000FE634);
+	res[4] = (int)s;
+	ext = resArg(res, 3);
+	type = 0;
+	if (strcmp(ext, TypeTbl[0]) == 0) type = 0;
+	if (strcmp(ext, TypeTbl[1]) == 0) type = 1;
+	if (strcmp(ext, TypeTbl[2]) == 0) type = 2;
+	s[0] = id;
+	s[1] = type;
+	return (void *)(((int)(s + 2) + 15) & ~15);
+}
 
 int scxRelease(void *arg0) {
     if (sceKernelGetGPI() & 1) {
