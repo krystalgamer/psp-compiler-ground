@@ -431,7 +431,44 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libwave", func_0006C3C8);
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libwave", func_0006C4E4);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libwave", func_0006C6BC);
+extern const signed char D_0007FB28[2][5];
+static int func_0006C6BC(short *dst, unsigned char *vag, int *hist1, int *hist2)
+{
+	short *out;
+	int predict, shift, flags;
+	int s1, s2, f0, f1, i, k;
+	int d0, d1;
+
+	k = 2;
+	flags = vag[0];
+	predict = flags >> 4;
+	shift = flags & 0xF;
+	flags = vag[1];
+	s1 = *hist1;
+	s2 = *hist2;
+	f0 = D_0007FB28[0][predict];
+	f1 = D_0007FB28[1][predict];
+	if (flags == 7)
+		return flags;
+	out = dst;
+	for (i = 0; i < 14; i++) {
+		signed char b = vag[k++];
+
+		d0 = (((b << 28) >> (shift + 10)) + (s1 * f0 + s2 * f1)) >> 6;
+		if (d0 > 32767) d0 = 32767;
+		if (d0 < -32768) d0 = -32768;
+		*out++ = d0;
+		d1 = (((b & ~0xF) << (14 - shift)) + (d0 * f0 + s1 * f1)) >> 6;
+		if (d1 > 32767) d1 = 32767;
+		if (d1 < -32768) d1 = -32768;
+		*out++ = d1;
+		s2 = d0;
+		s1 = d1;
+	}
+	*hist1 = s1;
+	*hist2 = s2;
+	return flags;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libwave", func_0006C800);
 
