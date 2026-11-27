@@ -1,10 +1,78 @@
 #include "common.h"
 
-INCLUDE_ASM("tmp/asm/rb/pal_BOOT/nonmatchings/kernel_bridge", _read);
+typedef int SceUID;
+typedef unsigned int SceSize;
+typedef long long SceOff;
 
-INCLUDE_ASM("tmp/asm/rb/pal_BOOT/nonmatchings/kernel_bridge", _write);
+int sceKernelStdin(void);
+int sceKernelStdout(void);
+int sceKernelStderr(void);
+int sceIoRead(SceUID fd, void *data, SceSize size);
+int sceIoWrite(SceUID fd, const void *data, SceSize size);
+SceUID sceIoOpen(const char *file, int flags, int mode);
+int sceIoClose(SceUID fd);
+SceOff sceIoLseek(SceUID fd, SceOff offset, int whence);
+int sceKernelExitThread(int status);
+int sceKernelSelfStopUnloadModule(int exitcode, SceSize argsize, void *argp);
+SceUID sceKernelAllocPartitionMemory(SceUID partitionid, const char *name, int type, SceSize size, void *addr);
+int sceKernelFreePartitionMemory(SceUID blockid);
+void *sceKernelGetBlockHeadAddr(SceUID blockid);
+int sceKernelLibcClock(void);
+int sceKernelLibcTime(int *t);
+int sceKernelLibcGettimeofday(void *tp, void *tzp);
 
-INCLUDE_ASM("tmp/asm/rb/pal_BOOT/nonmatchings/kernel_bridge", _sys_open);
+extern int sce_newlib_nocreate_thread_in_start __attribute__((weak));
+extern int sce_newlib_heap_kb_size __attribute__((weak));
+
+struct stat_ {
+	short st_dev;
+	unsigned short st_ino;
+	unsigned int st_mode;
+};
+
+extern SceUID mbid;
+extern unsigned int minheap;
+extern unsigned int maxheap;
+extern unsigned int currentheap;
+
+void free_heap(void);
+
+static __inline__ int conv_fd(int fd)
+{
+	switch (fd) {
+	case 0:
+		return sceKernelStdin();
+	case 1:
+		return sceKernelStdout();
+	case 2:
+		return sceKernelStderr();
+	}
+	return fd;
+}
+
+int _read(int fd, void *buf, unsigned int nbytes)
+{
+	fd = conv_fd(fd);
+	if (fd < 0)
+		return -9;
+	return sceIoRead(fd, buf, nbytes);
+}
+
+int _write(int fd, const void *buf, unsigned int nbytes)
+{
+	fd = conv_fd(fd);
+	if (fd < 0)
+		return -9;
+	return sceIoWrite(fd, buf, nbytes);
+}
+
+int _sys_open(name, flags, mode)
+	const char *name;
+	int flags;
+	int mode;
+{
+	return sceIoOpen(name, flags, mode);
+}
 
 int _open(const char *path, int flags, ...)
 {
@@ -31,13 +99,48 @@ int _open(const char *path, int flags, ...)
 	return _sys_open(path, sflags);
 }
 
-INCLUDE_ASM("tmp/asm/rb/pal_BOOT/nonmatchings/kernel_bridge", _close);
+int _close(int fd)
+{
+	fd = conv_fd(fd);
+	if (fd < 0)
+		return -9;
+	return sceIoClose(fd);
+}
 
-INCLUDE_ASM("tmp/asm/rb/pal_BOOT/nonmatchings/kernel_bridge", _sys_lseek);
+int _sys_lseek(int fd, int offset, int whence)
+{
+	return sceIoLseek(conv_fd(fd), offset, whence);
+}
 
-INCLUDE_ASM("tmp/asm/rb/pal_BOOT/nonmatchings/kernel_bridge", _lseek);
+int _lseek(int fd, int offset, int whence)
+{
+	int pspwhence;
 
-INCLUDE_ASM("tmp/asm/rb/pal_BOOT/nonmatchings/kernel_bridge", _fstat);
+	fd = conv_fd(fd);
+	if (fd < 0)
+		return -9;
+	switch (whence) {
+	case 0:
+		pspwhence = 0;
+		break;
+	case 1:
+		pspwhence = 1;
+		break;
+	case 2:
+		pspwhence = 2;
+		break;
+	default:
+		pspwhence = whence;
+		break;
+	}
+	return _sys_lseek(fd, offset, pspwhence);
+}
+
+int _fstat(int fd, struct stat_ *st)
+{
+	st->st_mode = 0x2000;
+	return 0;
+}
 
 int isatty(int fd)
 {
@@ -45,6 +148,7 @@ int isatty(int fd)
 }
 
 INCLUDE_ASM("tmp/asm/rb/pal_BOOT/nonmatchings/kernel_bridge", _exit);
+
 
 int _getpid(void)
 {
