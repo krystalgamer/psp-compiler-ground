@@ -88,6 +88,13 @@ extern u16 CSSSTR_font_face[];
 #define CSS_ATRULE(s) ((n = UCS_strlen(s)) != 0 && UCS_strncasecmp(p, s, n) == 0 && (p[n] == ' ' || p[n] == '\t' || (p[n] == '\r' || p[n] == '\n') || p[n] == 0xC || p[n] == 0xFEFF))
 u16 *CSS_Skip_S_CDO_CDC(u16 *p);
 #define CSS_ISSPACE_AT(q) ((q) == ' ' || (q) == '\t' || ((q) == '\r' || (q) == '\n') || (q) == 0xC || (q) == 0xFEFF)
+extern const char _ctype_[];
+void *newCSSChain(void);
+void addCSSChain(M2C_UNK *arg0, M2C_UNK *arg1);
+u16 *CSS_attrib(u16 *p, u16 **out);
+extern u16 CSSSTR_ASTERISK[];
+#define CSS_CT(c) ((_ctype_ + 1)[(int)(c)])
+#define CSS_TOLOWER(c) ({ int __x = (c); (CSS_CT(__x) & 1) ? __x - 'A' + 'a' : __x; })
 void CSS_StyleSheetRuleList(void *ss, u16 *p) {
     u16 c;
     u16 t;
@@ -352,7 +359,112 @@ u16 *CSS_selector(s16 *list, u16 *p) {
     return p;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_parser", CSS_simpleSelector);
+u16 *CSS_simpleSelector(void *sel, u16 *p) {
+    u16 *name = NULL;
+    u16 *v;
+    u16 *q;
+    u16 c;
+    void **ch;
+    p = CSS_ident(CSS_SkipBlanksAndComments(p), &name);
+    if (name == NULL) {
+        M2C_FIELD(sel, u16 **, 0x24) = UCS_strdup(CSSSTR_ASTERISK);
+        if (*p == '*') {
+            p++;
+        }
+    } else {
+        M2C_FIELD(sel, u16 **, 0x24) = name;
+    }
+    p = CSS_SkipBlanksAndComments(p);
+    while ((c = *p) != 0) {
+        v = NULL;
+        if (c == '#') {
+            p++;
+            p = CSS_ident(p, &v);
+            if (v == NULL) {
+                continue;
+            }
+            for (q = v; *q != 0; q++) {
+                if (CSS_CT(*q) & 3) {
+                    *q = CSS_TOLOWER(*q);
+                }
+            }
+            M2C_FIELD(sel, u16 *, 0x1C) |= 0x20;
+            if (M2C_FIELD(sel, void **, 0x34) != NULL) {
+                ch = newCSSChain();
+                if (ch == NULL) {
+                    MEM_free(0, (int)v);
+                    continue;
+                }
+                ch[1] = v;
+                addCSSChain((M2C_UNK *)((char *)sel + 0x30), (M2C_UNK *)ch);
+            } else {
+                M2C_FIELD(sel, void **, 0x34) = v;
+            }
+        } else if (c == '.') {
+            p++;
+            p = CSS_ident(p, &v);
+            if (v == NULL) {
+                continue;
+            }
+            for (q = v; *q != 0; q++) {
+                if (CSS_CT(*q) & 3) {
+                    *q = CSS_TOLOWER(*q);
+                }
+            }
+            M2C_FIELD(sel, u16 *, 0x1C) |= 0x10;
+            if (M2C_FIELD(sel, void **, 0x2C) != NULL) {
+                ch = newCSSChain();
+                if (ch == NULL) {
+                    MEM_free(0, (int)v);
+                    continue;
+                }
+                ch[1] = v;
+                addCSSChain((M2C_UNK *)((char *)sel + 0x28), (M2C_UNK *)ch);
+            } else {
+                M2C_FIELD(sel, void **, 0x2C) = v;
+            }
+        } else if (c == ':') {
+            p++;
+            p = CSS_pseudo(p, &v);
+            if (v == NULL) {
+                continue;
+            }
+            M2C_FIELD(sel, u16 *, 0x1C) |= 0x40;
+            if (M2C_FIELD(sel, void **, 0x3C) != NULL) {
+                ch = newCSSChain();
+                if (ch == NULL) {
+                    MEM_free(0, (int)v);
+                    continue;
+                }
+                ch[1] = v;
+                addCSSChain((M2C_UNK *)((char *)sel + 0x38), (M2C_UNK *)ch);
+            } else {
+                M2C_FIELD(sel, void **, 0x3C) = v;
+            }
+        } else if (c == '[') {
+            p++;
+            p = CSS_attrib(p, &v);
+            if (v == NULL) {
+                continue;
+            }
+            M2C_FIELD(sel, u16 *, 0x1C) |= 0x80;
+            if (M2C_FIELD(sel, void **, 0x44) != NULL) {
+                ch = newCSSChain();
+                if (ch == NULL) {
+                    MEM_free(0, (int)v);
+                    continue;
+                }
+                ch[1] = v;
+                addCSSChain((M2C_UNK *)((char *)sel + 0x40), (M2C_UNK *)ch);
+            } else {
+                M2C_FIELD(sel, void **, 0x44) = v;
+            }
+        } else {
+            break;
+        }
+    }
+    return p;
+}
 
 u16 *CSS_pseudo(u16 *p, u16 **out) {
     u16 *name = NULL;
@@ -868,8 +980,8 @@ void addCSSSelector(s16 *list, s16 *sel) {
 #define NULL ((void *)0)
 #endif
 
-void newCSSChain(void) {
-    MEM_calloc(0, 8);
+void *newCSSChain(void) {
+    return (void *)MEM_calloc(0, 8);
 }
 
 #ifndef NULL
