@@ -29,7 +29,18 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/cardlist", cardlistCp
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/cardlist", D_00101F4C);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/cardlist", cardlistCpyTtr2Float32);
+extern const float D_00102594;
+int sscanf(const char *, const char *, ...);
+float cardlistCpyTtr2Float32(a, b)
+	int a, b;
+{
+	char buf[0x40];
+	float f = D_00102594;
+	memset(buf, 0, 0x40);
+	cardlistCpyTtr2Ascii(buf, a, b);
+	sscanf(buf, "%f", &f);
+	return f;
+}
 
 float cardlistCpyTtr2Float32();
 /* the conversion is an inline-asm cvt.w.s (rounds), not a cast (trunc.w.s) */

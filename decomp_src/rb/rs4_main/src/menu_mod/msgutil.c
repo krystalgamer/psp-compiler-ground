@@ -31,7 +31,24 @@ void OnPush_MsgDialogNumber(int arg0) {
     sceUtilityMsgDialogInitStart(&msgdialog_param);
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/msgutil", MsgStart);
+void gameDisSoftReset(void);
+void gameCtrlLock();
+void gameEnSoftReset(void);
+int UtilityLink();
+int utility_update_msgdialog();
+void OnPush_MsgDialogNumber(int arg0);
+int MsgStart(int x)
+{
+	consPrintf("MsgStart : 0x%x\n", x);
+	gameDisSoftReset();
+	gameCtrlLock();
+	if (UtilityLink(utility_update_msgdialog)) {
+		OnPush_MsgDialogNumber(x);
+		return 1;
+	}
+	gameEnSoftReset();
+	return 0;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)

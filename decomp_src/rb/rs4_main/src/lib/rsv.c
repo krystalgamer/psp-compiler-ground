@@ -47,7 +47,16 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/lib/rsv", semaLock);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/lib/rsv", semaUnlock);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/lib/rsv", sortInit);
+extern unsigned char D_000FB374, D_000FB390, D_000FB3A0;
+unsigned int sprGetSize(void);
+int sortInit(void)
+{
+	consPrintf(&D_000FB370, "sortInit");
+	if (sprGetSize() < 0x400) {
+		consPrintf(&D_000FB374, &D_000FB390, 0x28, "sortInit", &D_000FB3A0);
+	}
+	return 1;
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/lib/rsv", D_000FB370);
 
