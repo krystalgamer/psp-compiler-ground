@@ -656,7 +656,89 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", zako_init);
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", zako_init_once);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", zako_control_once);
+typedef struct { int f0, f4, f8, fc, f10, f14, f18, f1c, f20, f24, f28, f2c, f30, f34, f38, disp; float f40; int _p44[(0x68 - 0x44) / 4]; float f68; L2V3 pos; L2V3 scr; } ZCO_T;
+typedef struct { int f0, f4, f8, fc, f10, f14, f18, f1c, f20, f24, f28; float f2c, f30; int f34, f38, f3c, f40; L2V3 pos; int _p50[3]; float f5c, f60; int _p64[8]; } ZCO_P;
+typedef struct { u8 p[0xEB79C]; int r[2]; int wrap; } ZCO_GM;
+typedef struct { int f0, f4; u8 _p[0x2564 - 8]; } ZCO_G;
+extern ZCO_G zco_g[] __asm__("D_005A0D80");
+extern ZCO_P zco_p[] __asm__("D_005EAB30");
+int particle_set(int tex, int no);
+void mat_local2screen(V3 *v, V3 *o);
+#define ZCOG (*(ZCO_GM *)&gmain)
+extern int D_004B5F58;
+extern unsigned char zako_type_color[][4];
+void zako_normal_anime(ZCO_T *e, int vis);
+void zako_in_anime(ZCO_T *e, int vis);
+void zako_start_anime(ZCO_T *e, int vis);
+void zako_end_anime(ZCO_T *e, int vis);
+void zako_attack_anime(ZCO_T *e, int vis);
+void zako_control_once(ENEMY *p)
+{
+	ZCO_T *e = (ZCO_T *)p;
+	int vis, n;
+	float r;
+	ZCO_P *q;
+
+	if (e->f4 == 1)
+		return;
+	vis = 1;
+	if (zco_g[e->f38].f4 == 0) {
+		vis = 0;
+		e->disp = 0;
+	} else if (ZCOG.wrap == 0) {
+		if (e->f68 < ZCOG.r[0] || ZCOG.r[1] < e->f68) {
+			vis = 0;
+			e->disp = 0;
+		}
+	} else {
+		if (ZCOG.r[1] <= e->f68 && e->f68 <= ZCOG.r[0]) {
+			e->disp = 0;
+			vis = 0;
+		}
+	}
+	if (e->f18 == 0)
+		zako_normal_anime(e, vis);
+	else if (e->f18 == 1)
+		zako_in_anime(e, vis);
+	else if (e->f18 == 2)
+		zako_start_anime(e, vis);
+	else if (e->f18 == 3)
+		zako_end_anime(e, vis);
+	else if (e->f18 == 4)
+		zako_attack_anime(e, vis);
+	if (e->f24 != 1 && e->f20 >= e->f24 - 1) {
+		e->f2c++;
+		if (e->f2c > 45)
+			e->f2c = 45;
+	}
+	if (vis == 0)
+		return;
+	mat_local2screen((V3 *)&e->pos, (V3 *)&e->scr);
+	e->disp = 1;
+	if (e->scr.z <= 0.0f)
+		e->disp = 0;
+	else if (e->scr.x < 0.0f || 480.0f < e->scr.x || e->scr.y < 0.0f || 272.0f < e->scr.y) {
+		r = (int)(10000.0f / e->scr.z);
+		if (e->scr.x + r < 0.0f || 480.0f < e->scr.x - r || e->scr.y + r < 0.0f || 272.0f < e->scr.y - r)
+			e->disp = 0;
+	}
+	if (e->disp == 0)
+		return;
+	if (e->f8 <= 0)
+		return;
+	n = particle_set(D_004B5F58, 0x40);
+	if (n < 0)
+		return;
+	q = &zco_p[n];
+	q->f8 = 1;
+	q->pos = e->scr;
+	q->f2c = e->f8;
+	q->f30 = -32.0f;
+	q->f60 = q->f5c = 0.5f;
+	q->f34 = zako_type_color[e->f30][0];
+	q->f38 = zako_type_color[e->f30][1];
+	q->f3c = zako_type_color[e->f30][2];
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", zako_normal_anime);
 
