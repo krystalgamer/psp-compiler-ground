@@ -48,6 +48,11 @@ int handlePointingUp(void *ev);
 int handlePointingCheck(void *ev);
 void deleteBorder(void *b);
 void moveFrameBorder(BOX *box, int d);
+typedef struct { int u0; int x4; int x; int y; s16 kind; } LEHPT2;
+char *getDOMAttributeValue(void *node, void *name);
+extern u8 _DOMusemap[];
+void getBodyAbsolutePos(BOX *box, int *px, int *py);
+FOCUSLIST *getFocusListWithArea(void *frame, void *obj, void *link);
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_eventHandler", getTargetBox);
 
 void *getEventTargetNode(BOX *box) {
@@ -76,7 +81,106 @@ void *getTargetImageMapArea(void *a0, void *a1, void *a2, int a3, int t0) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_eventHandler", handlePointingMove);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_eventHandler", handlePointingDown);
+int handlePointingDown(void *ev) {
+    LEHPT2 *m = M2C_FIELD(ev, LEHPT2 **, 0x1C);
+    LEHG *g = (LEHG *)gESPRIT_LO_GLOBAL_NDA;
+    FOCUSLIST *fl = NULL;
+    void *head;
+    BOX *body;
+    BOX *box;
+    void *n;
+    char *map;
+    void *area;
+    void *hn;
+    void *tn;
+    int px, py;
+    int vx, vy;
+    int x, y;
+    int w, h;
+    LEHJSEVENT jev;
+    g->x14 = NULL;
+    if (g->x28 != NULL) {
+        deleteBorder(M2C_FIELD(g->x28->geom, void **, 4));
+        g->x28 = NULL;
+    }
+    if (m->kind != 1) {
+        return -1;
+    }
+    head = HST_getHeadHistoryNode();
+    if (head == NULL) {
+        return -1;
+    }
+    body = M2C_FIELD(head, BOX **, 0x6C);
+    if (body == NULL || (box = getTargetBox(body, m->x, m->y, m->x4)) == NULL) {
+        return -1;
+    }
+    tn = getEventTargetNode(box);
+    if (box->content == 10 && box->html != 0x32) {
+        map = getDOMAttributeValue(tn, _DOMusemap);
+        getBodyAbsolutePos(body, &px, &py);
+        getViewPort(body, &vx, &vy);
+        x = m->x - px + vx;
+        y = m->y - py + vy;
+        if (map != NULL && *map == '#') {
+            area = getTargetImageMapArea(body, box, map + 1, x, y);
+            if (area != NULL) {
+                fl = getFocusListWithArea(body, box, area);
+            }
+        }
+        if (map != NULL) {
+            MEM_free(NULL, map);
+        }
+    }
+    if (!checkBoxValidity(box)) {
+        return -1;
+    }
+    if (box->content == 1) {
+        getBodyAbsolutePos(box, &x, &y);
+        getViewClientSize(box, &w, &h);
+        if (m->x >= x + w || m->y >= y + h) {
+            g->x10 = 1;
+            return 0;
+        }
+    }
+    g->x10 = 0;
+    if (D_00584CEC != 0) {
+        g->x14 = box;
+        return 0;
+    }
+    if (box->content == 3) {
+        g->x14 = box;
+        return 0;
+    }
+    if (M2C_FIELD(box, s16 *, 0x3E) == 1) {
+        return 0;
+    }
+    n = getEventTargetNode(box);
+    if (Node_getJSObj(n) == NULL) {
+        n = getDOMDocument(n);
+    }
+    if (n != g->x18) {
+        hn = NULL;
+        if (g->sid != 0) {
+            hn = HST_searchSessionIDHistoryNode(g->sid);
+        }
+        if (hn != NULL && g->x18 != NULL) {
+            initJSEvent(&jev, 0xF, g->x18, m->x, m->y);
+            sendJSBubbleUpEvent(g->x18, &jev);
+        }
+        initJSEvent(&jev, 0x10, n, m->x, m->y);
+        sendJSBubbleUpEvent(n, &jev);
+    }
+    initJSEvent(&jev, 0xD, n, m->x, m->y);
+    sendJSBubbleUpEvent(n, &jev);
+    g->x18 = n;
+    if (fl != NULL) {
+        actSetFocusByFocusList(body, fl, 1);
+    } else {
+        actSetFocusByBox(getBodyBox(box), box, 1);
+    }
+    g->x14 = box;
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_eventHandler", handlePointingCheck);
 
