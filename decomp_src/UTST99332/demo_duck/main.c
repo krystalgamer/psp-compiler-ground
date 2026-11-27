@@ -429,6 +429,10 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", _ZNSt15basic_string
 
 /* func_0000AB74 is the rest of basic_string::_S_construct<char *> (splat put its first 0x18 bytes at the end of
    the basic_string<char *> constructor's .s): it continues that constructor's section */
+#if defined(M2CTX) || defined(PERMUTER)
+#define STRING_CTOR_INCLUDE_ASM(FOLDER, NAME)
+#else
 #define STRING_CTOR_INCLUDE_ASM(FOLDER, NAME) \
     DEFER_ASM_IN(".section .gnu.linkonce.t._ZNSsC1IPcEET_S1_RKSaIcE,\"ax\",@progbits", FOLDER, NAME)
+#endif
 STRING_CTOR_INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main", func_0000AB74);
