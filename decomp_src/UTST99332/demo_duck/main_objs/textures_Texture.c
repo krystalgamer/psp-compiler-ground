@@ -2,6 +2,9 @@
 /* cflags: -O3 -fno-exceptions */
 #undef __EXCEPTIONS
 #include "cxx/defer_asm.h"
+/* the "" of Texture::CopiableMembers() stays in the module's .rodata (asm) */
+extern const char D_0017641C[];
+#define TEXTURE_EMPTY_PATH D_0017641C
 #include "../main.hpp"
 
 /* the strings stay in the module's .rodata (asm) */
@@ -40,9 +43,10 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/textures_Texture
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/textures_Texture", _ZN8textures7TextureaSERKS0_);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/textures_Texture", _ZN8textures7TextureC2Ev);
+textures::Texture::Texture()
+{
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/textures_Texture", _ZN8textures7TextureC1Ev);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/textures_Texture", _ZN8textures7TextureC2EiiNS_6FormatE);
 
@@ -62,6 +66,7 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/textures_Texture
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/textures_Texture", _ZN8textures7TextureC2ERKS0_);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/textures_Texture", _ZN8textures7TextureC1ERKS0_);
+
 
 int textures::Texture::width() const
 {

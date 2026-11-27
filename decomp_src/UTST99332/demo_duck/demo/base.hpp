@@ -894,6 +894,10 @@ class Bmp;
 class Tga;
 }
 
+/* units that keep the module's "" (asm .rodata) define this to an extern label */
+#ifndef TEXTURE_EMPTY_PATH
+#define TEXTURE_EMPTY_PATH ""
+#endif
 class Texture {
 public:
     struct Info {
@@ -904,13 +908,13 @@ public:
         unsigned int flags;         /* 0x0C: bit 0 filtering, 1-2 texture function, 3 wrap s, 4 wrap t */
     };
     struct LoadedInfo {
-        LoadedInfo() : width(0), height(0), alpha_flags(0) {}
+        LoadedInfo() : width(0), height(0), alpha_flags((AlphaMask)0) {}
         int width;
         int height;
-        int alpha_flags;
+        AlphaMask alpha_flags;
     };
     struct CopiableMembers {
-        CopiableMembers() : path(""), alpha_flags((AlphaMask)0), loaded(false) {}
+        CopiableMembers() : path(TEXTURE_EMPTY_PATH), alpha_flags((AlphaMask)0), loaded(false) {}
         Info info;                  /* 0x00 */
         std::string path;           /* 0x10 */
         AlphaMask alpha_flags;      /* 0x14 */
