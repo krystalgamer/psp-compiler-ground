@@ -144,7 +144,12 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/math_matrix_matr
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/math_matrix_matrix", _ZN4math6matrix9trackballEffbbffRNS_11vector_xyzwE);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/math_matrix_matrix", _ZNK4math6matrix12determinant3Ev);
+float math::matrix::determinant3() const
+{
+    const float *a = &r[0].x, *b = &r[1].x, *c = &r[2].x;
+    return a[0] * b[1] * c[2] + b[0] * c[1] * a[2] + c[0] * a[1] * b[2]
+         - c[0] * b[1] * a[2] - b[0] * a[1] * c[2] - a[0] * c[1] * b[2];
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/math_matrix_matrix", _ZNK4math6matrix8inverse3Ev);
 
