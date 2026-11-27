@@ -258,7 +258,72 @@ void psp_begin_scene(void)
 	sceGuEnable(4);
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_dev", psp_end_scene);
+extern int D_005FB7BC, debug_print, game_cpu_disp, game_time, inv_bg_disp_time;
+extern int inv_laser_disp_max, inv_laser_disp_time, inv_ring_disp_max, inv_ring_disp_time;
+extern int inv_particle_disp_max, inv_particle_disp_time, inv_screfc_disp_max, inv_screfc_disp_time;
+extern int inv_scrdisp_disp_max, inv_scrdisp_disp_time, gmo_file_max, gmo_disp_max, gmo_disp_time;
+extern int tex_file_max, sprite_disp_max, sprite_disp_time, billbord_disp_max, billbord_disp_time;
+extern int g_cpu_load, g_gpu_load;
+extern unsigned int malloc_max_size;
+extern int sce_newlib_heap_kb_size, myHeap_size, myHeap_freesize;
+extern char D_0007A70C[], D_0007A718[], D_0007A724[], D_0007A730[], D_0007A73C[], D_0007A748[], D_0007A754[];
+extern char D_0007A760[], D_0007A768[], D_0007A774[], D_0007A77C[], D_0007A788[], D_0007A794[], D_0007A7A0[];
+extern char D_0007A7AC[], D_0007A7B8[];
+int sprintf(char *buf, const char *fmt, ...);
+void debug_text();
+void debug_poly_col();
+void psp_debug_disp(void);
+void psp_end_scene(void)
+{
+	char buf[64];
+
+	if (D_005FB7BC == 0) {
+		debug_print = 0;
+		game_cpu_disp = 0;
+	}
+	if (game_cpu_disp) {
+		sprintf(buf, D_0007A794, g_cpu_load);
+		debug_text(10, 230, buf);
+		debug_poly_col(82, 231, g_cpu_load, 7, 0x8F00);
+		sprintf(buf, D_0007A7A0, g_gpu_load);
+		debug_text(10, 240, buf);
+		debug_poly_col(82, 241, g_gpu_load, 7, 0x800F);
+		sprintf(buf, D_0007A7AC, malloc_max_size >> 10, sce_newlib_heap_kb_size - (malloc_max_size >> 10));
+		debug_text(10, 250, buf);
+		sprintf(buf, D_0007A7B8, myHeap_size / 1024, myHeap_freesize / 1024);
+		debug_text(10, 260, buf);
+	}
+	if (game_cpu_disp == 2) {
+		sprintf(buf, D_0007A70C, game_time);
+		debug_text(390, 150, buf);
+		debug_poly_col(380, 158, 100, 2, 0x8F82);
+		sprintf(buf, D_0007A718, inv_bg_disp_time);
+		debug_text(390, 160, buf);
+		sprintf(buf, D_0007A724, inv_laser_disp_max, inv_laser_disp_time);
+		debug_text(390, 170, buf);
+		sprintf(buf, D_0007A730, inv_ring_disp_max, inv_ring_disp_time);
+		debug_text(390, 180, buf);
+		sprintf(buf, D_0007A73C, inv_particle_disp_max, inv_particle_disp_time);
+		debug_text(390, 190, buf);
+		sprintf(buf, D_0007A748, inv_screfc_disp_max, inv_screfc_disp_time);
+		debug_text(390, 200, buf);
+		sprintf(buf, D_0007A754, inv_scrdisp_disp_max, inv_scrdisp_disp_time);
+		debug_text(390, 210, buf);
+		debug_poly_col(380, 218, 100, 2, 0x8F82);
+		sprintf(buf, D_0007A760, gmo_file_max);
+		debug_text(390, 220, buf);
+		sprintf(buf, D_0007A768, gmo_disp_max, gmo_disp_time);
+		debug_text(390, 230, buf);
+		debug_poly_col(380, 238, 100, 2, 0x8F82);
+		sprintf(buf, D_0007A774, tex_file_max);
+		debug_text(390, 240, buf);
+		sprintf(buf, D_0007A77C, sprite_disp_max, sprite_disp_time);
+		debug_text(390, 250, buf);
+		sprintf(buf, D_0007A788, billbord_disp_max, billbord_disp_time);
+		debug_text(390, 260, buf);
+	}
+	psp_debug_disp();
+}
 
 extern void *dbp;
 extern int g_cpu_load, g_frame, g_gpu_load, g_vbl_count, g_vbl_step;
