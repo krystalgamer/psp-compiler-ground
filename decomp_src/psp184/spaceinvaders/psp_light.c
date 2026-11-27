@@ -10,7 +10,7 @@ const COL4_T D_0007A844 = { { 0xFF00FFFF, 0xFF0000FF, 0xFF00FF00, 0xFFFFFF00 } }
 
 const LV3_T D_0007A854 = { -5.0f, 10.0f, 5.0f };
 
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_light", D_0007A860);
+const LV3_T D_0007A860 = { 10.0f, 10.0f, 1.0f };
 
 typedef struct {
 	signed char on; signed char f1; signed char type; unsigned char f3;
@@ -122,7 +122,42 @@ void light_cnt(void)
 	}
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_light", light_debug_disp);
+extern struct { float f0, f4, f8, fc, f10, rx, ry, rz; } camera;
+void sceGumPushMatrix(void);
+void sceGumPopMatrix(void);
+void sceGumTranslate(const LV3_T *v);
+void sceGumScale(const LV3_T *v);
+void sceGumRotateX(float angle);
+void sceGumRotateY(float angle);
+void sceGumRotateZ(float angle);
+void sceGumDrawArray(int prim, int vtype, int count, const void *indices, const void *vertices);
+void light_debug_disp(void)
+{
+	LSUB2 *s;
+	int i;
+
+	if (light.on == 0 || light.f1 == 0)
+		return;
+	sceGuDisable(10);
+	for (i = 0; i < 4; i++) {
+		s = &light.sub[i];
+		if (s->on == 1) {
+			LV3_T sc;
+
+			sceGuDisable(9);
+			sceGumPushMatrix();
+			sceGumTranslate(&s->pos);
+			sceGumRotateZ(-camera.rz * 3.1415927f / 180.0f);
+			sceGumRotateY(-camera.ry * 3.1415927f / 180.0f);
+			sceGumRotateX(-camera.rx * 3.1415927f / 180.0f);
+			sc = D_0007A860;
+			sceGumScale(&sc);
+			sceGumDrawArray(6, 0x1FC, 2, 0, &s->c48);
+			sceGumPopMatrix();
+		}
+	}
+	sceGuEnable(10);
+}
 
 int light_timer_start(int t)
 {
