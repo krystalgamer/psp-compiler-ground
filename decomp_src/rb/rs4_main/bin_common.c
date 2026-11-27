@@ -782,7 +782,25 @@ int I3rAnimVector4__IsExistArrayKeyFrame(void *arg0) {
     return *M2C_FIELD(arg0, int **, 8) != 0;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/bin_common", I3rMaterialOperationGroupEntity__Pack);
+typedef struct { int a; int arr; int c; unsigned char pad[2]; unsigned char n; } I3rMogEnt;
+void I3rMaterialOperationGroupEntity__Pack(I3rMogEnt *m)
+{
+    unsigned int i, n;
+
+    n = m->n;
+    for (i = 0; i < n; i++)
+    {
+        int *q = (int *)m->arr + i;
+        if (*q != 0)
+            *q = *q - (int)m;
+    }
+    if (m->a != 0)
+        m->a = m->a - (int)m;
+    if (m->arr != 0)
+        m->arr = m->arr - (int)m;
+    if (m->c != 0)
+        m->c = m->c - (int)m;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/bin_common", I3rMaterialOperationGroupEntity__Unpack);
 
@@ -1377,9 +1395,9 @@ int I3rMaterial__GetEndLayer(void *arg0) {
     return M2C_FIELD(temp_a1, int *, 8) + (__builtin_allegrex_ext(M2C_FIELD(temp_a1, int *, 4), 0, 0x18) * 0x10);
 }
 
+typedef struct { int arr; unsigned short n; } I3rMeshEnt;
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/bin_common", I3rMeshEntity__Pack);
 
-typedef struct { int arr; unsigned short n; } I3rMeshEnt;
 void I3rMeshEntity__Unpack(I3rMeshEnt *m)
 {
     unsigned int i, n;
