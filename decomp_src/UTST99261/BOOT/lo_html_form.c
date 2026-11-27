@@ -132,7 +132,39 @@ BOX *html_OPTION_sub(void *node, BOX *parent, BOX *prev) {
     return box;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_html_form", getLegendTextWidth);
+int getLegendTextWidth(BOX *box) {
+    int minx = 0xFFFF;
+    int maxx = 0;
+    BOX *b = box->child;
+    BOX *c;
+
+    for (;;) {
+        if (b == NULL) {
+            break;
+        }
+        if (b->content == 9) {
+            minx = minx < b->x ? minx : b->x;
+            maxx = maxx < b->x + b->width ? b->x + b->width : maxx;
+        }
+        c = b->child;
+        if (c == NULL) {
+            do {
+                if (b->next != NULL) {
+                    b = b->next;
+                    goto next;
+                }
+                c = b->parent;
+                b = c;
+            } while (c != box);
+            goto done;
+        } else {
+            b = c;
+        }
+next:;
+    }
+done:
+    return maxx - minx;
+}
 
 BOX *html_FORM(void *node, BOX *parent, BOX *prev) {
     int w;
