@@ -238,7 +238,47 @@ void classic_inv_tamainit2(void)
 	etama[5].fC = -1;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_shima", classic_inv_tamafree);
+typedef struct { u8 pad[0x30]; int x, y; u8 pad2[0x50 - 0x38]; int ox, oy, w, h; } SPRBOX_T;
+void classic_inv_tamafree(int tex)
+{
+	int i;
+	SPRBOX_T *p;
+
+	if (ztama[0].f10) {
+		p = ztama[0].f10;
+		spr_boxfill(tex, p->x + p->ox, p->y + p->oy, p->w, p->h, 0);
+		SprFree(ztama[0].f10);
+		ztama[0].f0 = 0;
+		ztama[0].f10 = 0;
+	}
+	if (ztama[1].f10) {
+		p = ztama[1].f10;
+		spr_boxfill(tex, p->x + p->ox, p->y + p->oy, p->w, p->h, 0);
+		SprFree(ztama[1].f10);
+		ztama[1].f10 = 0;
+		ztama[1].f0 = 0;
+	}
+	for (i = 0; i < 3; i++) {
+		if (etama[i].f10) {
+			p = etama[i].f10;
+			spr_boxfill(tex, p->x + p->ox, p->y + p->oy, p->w, p->h, 0);
+			SprFree(etama[i].f10);
+			etama[i].f10 = 0;
+			etama[i].f0 = 0;
+			etama[i].fC = -1;
+		}
+	}
+	for (i = 0; i < 3; i++) {
+		if (etama[i + 3].f10) {
+			p = etama[i + 3].f10;
+			spr_boxfill(tex, p->x + p->ox, p->y + p->oy, p->w, p->h, 0);
+			SprFree(etama[i + 3].f10);
+			etama[i + 3].f10 = 0;
+			etama[i + 3].f0 = 0;
+			etama[i + 3].fC = -1;
+		}
+	}
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_shima", classic_inv_init);
 
