@@ -55,14 +55,13 @@ void _GLOBAL__D__ZN3sys5timer4PushEv(void)
 #undef INCLUDE_ASM
 #define INCLUDE_ASM INCLUDE_ASM_LINKONCE
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sys_timer_Push", _ZNSt11_Deque_baseIfSaIfEED2Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sys_timer_Push", _ZNSt11_Deque_baseIfSaIfEE17_M_initialize_mapEj);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sys_timer_Push", _ZNSt11_Deque_baseIfSaIfEE16_M_destroy_nodesEPPfS3_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sys_timer_Push", _ZNSt5dequeIfSaIfEE15_M_pop_back_auxEv);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sys_timer_Push", _ZNSt11_Deque_baseIfSaIfEE15_M_create_nodesEPPfS3_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sys_timer_Push", _ZSt6__copyISt15_Deque_iteratorIfRKfPS1_ES0_IfRfPfEET0_T_S9_S8_St26random_access_iterator_tag);
+/* deque instances of this object that only its asm functions use: called from here (a discarded function) so that
+   cc1plus emits them (their order is DEMO_LINKONCE_ORDER's) */
+extern "C" void sys_timer_Push_instance_refs(std::deque<float> &d, std::deque<float> &e) __attribute__((section(".discard.asm")));
+extern "C" void sys_timer_Push_instance_refs(std::deque<float> &d, std::deque<float> &e)
+{
+    std::deque<float> t(e);
+    d.push_back(e.back());
+    d.pop_back();
+    d = e;
+}

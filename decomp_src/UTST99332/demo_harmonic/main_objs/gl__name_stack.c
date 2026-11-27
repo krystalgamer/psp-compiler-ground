@@ -229,12 +229,13 @@ void _GLOBAL__D__ZN2gl11_name_stackE(void)
 #undef INCLUDE_ASM
 #define INCLUDE_ASM INCLUDE_ASM_LINKONCE
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/gl__name_stack", _ZNSt11_Deque_baseIN4math6matrixESaIS1_EED2Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/gl__name_stack", _ZNSt11_Deque_baseIN4math6matrixESaIS1_EE17_M_initialize_mapEj);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/gl__name_stack", _ZNSt11_Deque_baseIN4math6matrixESaIS1_EE16_M_destroy_nodesEPPS1_S5_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/gl__name_stack", _ZNSt11_Deque_baseIN4math6matrixESaIS1_EE15_M_create_nodesEPPS1_S5_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/gl__name_stack", _ZSt24__uninitialized_copy_auxISt15_Deque_iteratorIN4math6matrixERKS2_PS3_ES0_IS2_RS2_PS2_EET0_T_SB_SA_12__false_type);
+/* deque instances of this object that only its asm functions use: called from here (a discarded function) so that
+   cc1plus emits them (their order is DEMO_LINKONCE_ORDER's) */
+extern "C" void gl__name_stack_instance_refs(std::deque<math::matrix> &d, std::deque<math::matrix> &e) __attribute__((section(".discard.asm")));
+extern "C" void gl__name_stack_instance_refs(std::deque<math::matrix> &d, std::deque<math::matrix> &e)
+{
+    std::deque<math::matrix> t(e);
+    d.push_back(e.back());
+    d.pop_back();
+    d = e;
+}
