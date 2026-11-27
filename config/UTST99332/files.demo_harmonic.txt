@@ -30,9 +30,10 @@ bss 0x18DA44 -
 # draw_mesh_enabled: vector<short>::reserve()'s "vector::reserve" (after PrimitiveIndex's strings)
 rodata 0x1699E0 main_objs/draw_mesh_enabled
 rodata 0x1699F0 -
-# sgl_MeshBuilder_extruded_var_extruded_var: the float pool (Position()'s 1.0f) of t_array<Position>::allocate
-rodata 0x16DC34 main_objs/sgl_MeshBuilder_extruded_var_extruded_var
-rodata 0x16DC38 -
+# sgl_MeshBuilder_extruded_var_extruded_var: the float pools up to grid()'s (t_array<Position>() stays asm, its pool
+# and allocate()'s stay data: SGL_POSITION_ONE)
+rodata 0x16DB68 main_objs/sgl_MeshBuilder_extruded_var_extruded_var
+rodata 0x16DC30 -
 # sgl_Stripper: vector<int>::reserve()'s "vector::reserve" (after Stripper's strings)
 rodata 0x16EBDC main_objs/sgl_Stripper
 rodata 0x16EBEC -

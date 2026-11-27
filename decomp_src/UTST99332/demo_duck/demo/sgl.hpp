@@ -581,22 +581,31 @@ public:
 
 class MeshBuilder : public math::TransformStackFunc /* @0x4 */, public MeshParams /* @0x74 */ {
 public:
+    /* noinline: the original calls these where cc1plus-1.6.1 would inline them (the three resets, begin(),
+       vertexAt(int, float, float, float)); cause unknown */
     struct begin_var {
-        begin_var(InputMode, BeginMode);
+        begin_var(InputMode, BeginMode) __attribute__((noinline));
         void reset();
         int _write_primitive;       /* BeginMode */
         int _input_mode;            /* InputMode */
         int _f8, _fC, _f10;
-        struct Indices {
-            Indices() : a(-1), b(-1), c(-1), d(-1), e(-1), f(-1) {}
-            int a, b, c, d, e, f;
+        struct Indices : Triangle {
+            Indices()
+            {
+                v[0] = -1;
+                v[1] = -1;
+                v[2] = -1;
+                e[0] = -1;
+                e[1] = -1;
+                e[2] = -1;
+            }
         } _indices;                 /* 0x14 */
         Attr<Color> _color;         /* 0x2C */
         Attr<Normal> _normal;       /* 0x40 */
         Attr<TexCoord> _texcoord;   /* 0x54 */
     };
     struct extruded_var {
-        extruded_var();
+        extruded_var() __attribute__((noinline));
         void reset();
         LineSet _lineset;
         TransformSet _tset;         /* 0x8C */
@@ -605,15 +614,16 @@ public:
         float _end_angle;           /* 0xA8 */
     };
     struct spline_var {
-        spline_var();
+        spline_var() __attribute__((noinline));
         void reset();
         common::t_array2d<Position> _ctrl;
-        int _count;                 /* 0x28 */
+        unsigned int _count;                /* 0x28 */
         unsigned int _tessU, _tessV;
         bool _closeU, _closeV, _flipS, _flipT;
         bool _texcoord;             /* 0x38 */
         bool _normals;              /* 0x39 */
     };
+    MeshBuilder(Mesh &, bool);
     virtual ~MeshBuilder();
     void grey(float);
     void begin(InputMode, BeginMode);
@@ -625,16 +635,19 @@ public:
     void color(float, float, float, float);
     void color(float, float);
     void color(float);
+    void color_i(unsigned int);
     void colorG(Color);
     void colorG(float, float, float, float);
     void colorG(float, float);
     void colorG(float);
+    void colorGi(unsigned int);
     void texcoord(TexCoord);
     void texcoord(float, float);
     void vertex(Position);
     void vertex(float, float, float);
     void vertex(int);
     void triangle(int, int, int);
+    void quad_t(int, int, int, int, bool);
     Normal transform_normal(const Normal &) const;
     Position transform_position(const Position &) const;
     Color transform_color(const Color &) const;
@@ -651,6 +664,7 @@ public:
     void transformListClose(bool);
     void end_revolution();
     void end_sweep();
+    void end_spline();
     void revolve(const extruded_var &);
     void sweep(const extruded_var &);
     void splineControlPoint(float, float, float);
@@ -665,7 +679,7 @@ public:
     void colorAt(int, Color);
     void texcoordAt(int, float, float);
     void texcoordAt(int, TexCoord);
-    void positionAt(int, float, float, float);
+    void positionAt(int, float, float, float) __attribute__((noinline));
     void positionAt(int, Position);
     void vertexAt(int, int);
     void vertexAt(int, Position);
