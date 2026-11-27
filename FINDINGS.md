@@ -688,23 +688,30 @@ libgcc/libsupc++ DWARF names `gcc-3.3.6/` paths.
   only with it; `ctrlTrgProc`'s block layout), the middleware (i3d*, sgx*,
   bin_common, libwave, libsas) `-O2`, the SDK libraries as their Makefiles
   say (`-O4`, gim_picture `-O2 -std=gnu9x`).  None of these depends on the
-  cc1: 1.6.1 and 1.8.4 give the same code.  The game code is in fact
-  `-Os -fno-strength-reduce`: `ScriptEnumOperand` and `_SortCardListGet`
-  recompute `base + i*size` (`sll`/`addu`) in every iteration, which plain
-  `-Os` strength-reduces to a pointer; the flag changes none of the ~340
-  other matched game functions.  At `-O2` strength reduction is on as
-  usual (libgim_picture's load_bmp/load_tga/load_tm2 lose 12 of 20
-  matches with `-fno-strength-reduce`).  We take it to be the game's
-  Makefile flag, not a compiler change: pristine gcc-3.3.6's
-  `toplev.c` sets `flag_strength_reduce` for every `optimize >= 2`,
-  `-Os` included (the `optimize_size` block only touches alignment and
-  block reordering), the psp patch set changes none of this (`toplev.c`
-  option handling is identical in gcc1.8.4_src/gcc1.9.2_src, and
-  mips.c/mips.h never touch `flag_strength_reduce` or
-  `optimize_size`), and no SDK 6.6.0 Makefile uses `-Os` or
-  `-fno-strength-reduce` (they use `-O4`/`-O2`), so nothing points to
-  Sony patching the default.  The tree is left unchanged; the flag is in
-  the units' `cflags`.
+  cc1: 1.6.1 and 1.8.4 give the same code.  The game code is plain
+  `-Os`; the `-fno-strength-reduce` once in its units' `cflags` was a
+  stand-in for unrecovered source.  Over all 531 matched functions of the
+  units that had it, the flag changes only 7 (`ScriptEnumOperand`,
+  `_SortCardListGet`, `_CardListDel`, `_ShopCursorInitSet`,
+  `databaseAssortNameRefresh`, `salbumCalcKinds`, `ctrlFlushCtrlDataAll`;
+  no function needs strength reduction on), and those 7 are m2c-style
+  drafts (flat index arithmetic, `int` globals for struct pointers).  The
+  game code has no DWARF, so their types were guesses.  With source shapes
+  that keep loop.c from reducing the address giv, plain `-Os` reproduces them:
+  `databaseAssortNameRefresh` as a loop over a typed global struct array
+  (`AssortDB *l_patAssortDB`, reloaded after each call) matches exactly;
+  `ScriptEnumOperand` matches when the element address goes through a
+  user variable updated in place (`q = n * 16; q += (int)p;`), and an
+  inline accessor that does `p += n; return p;` gets the same loop (one
+  `addu` operand order off); `_SortCardListGet` written with the counter
+  incremented on each mismatch path (`biv_count` 2, so the reduced giv's
+  extra adds cost more than it saves) has the original's instructions
+  with two registers swapped.  In loop.c a giv whose destination is a
+  user variable that is set more than once is not replaceable, and its
+  benefit loses the copy cost; each extra biv increment costs one more
+  add.  Either one makes the giv "not worth while" at these loop sizes.
+  Pristine gcc-3.3.6's `toplev.c` sets `flag_strength_reduce` for every
+  `optimize >= 2`, `-Os` included, and the psp patches don't touch it.
 - Everything else that differs is source: SDK 6.6.0 vs the module's SDK
   (struct layouts in libgu and gim_picture, `sceGumMultQuaternion`
   missing), Sony's newer newlib (`_REENT` is `__getreent()`, i.e.
