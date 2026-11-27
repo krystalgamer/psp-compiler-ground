@@ -149,7 +149,34 @@ int smf_stop(unsigned int id)
 	return 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/sound_playsmf/nonmatchings/smf", smf_setPlayVelocity);
+int smf_setPlayVelocity(unsigned int id, unsigned int vel)
+{
+	unsigned int ch;
+	unsigned int v;
+	unsigned int mask;
+	unsigned char e, x;
+	if (id > 128)
+		return 0x80540007;
+	if (g_smf[id] == NULL)
+		return 0x80540007;
+	if (vel >= 128)
+		return 0x8054000a;
+	g_smf[id]->vel = vel;
+	for (ch = 0; ch < 16; ch++) {
+		mask = sceSsGetVoice(ch, g_smf[id]->ch[ch].id);
+		if (mask != 0) {
+		for (v = 0; v < 32; v++) {
+			if ((mask >> v) & 1) {
+				e = _sceSsGetExpVel(v);
+				x = e * g_smf[id]->vel / 127;
+				x = x * g_smf[id]->ch[ch].vol / 127;
+				sceSsVoiceSetVelocity(v, x * g_smf[id]->ch[ch].exp / 127);
+			}
+		}
+		}
+	}
+	return 0;
+}
 
 int smf_getPlayVelocity(unsigned int id)
 {
@@ -160,7 +187,34 @@ int smf_getPlayVelocity(unsigned int id)
 	return g_smf[id]->vel;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/sound_playsmf/nonmatchings/smf", smf_setPlaySendVelocity);
+int smf_setPlaySendVelocity(unsigned int id, unsigned int vel)
+{
+	unsigned int ch;
+	unsigned int v;
+	unsigned int mask;
+	unsigned char e, x;
+	if (id > 128)
+		return 0x80540007;
+	if (g_smf[id] == NULL)
+		return 0x80540007;
+	if (vel >= 128)
+		return 0x8054000a;
+	g_smf[id]->sendVel = vel;
+	for (ch = 0; ch < 16; ch++) {
+		mask = sceSsGetVoice(ch, g_smf[id]->ch[ch].id);
+		if (mask != 0) {
+		for (v = 0; v < 32; v++) {
+			if ((mask >> v) & 1) {
+				e = _sceSsGetExpVel(v);
+				x = e * g_smf[id]->sendVel / 127;
+				x = x * g_smf[id]->ch[ch].vol / 127;
+				sceSsVoiceSetSendVelocity(v, x * g_smf[id]->ch[ch].exp / 127);
+			}
+		}
+		}
+	}
+	return 0;
+}
 
 int smf_setPlayPanpot(unsigned int id, unsigned int pan)
 {
