@@ -520,7 +520,55 @@ void set_packet_scr(int no)
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_tex", set_packet_3d);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_tex", sprite_screencopy_disp);
+typedef struct { unsigned short u, v, x, y, z; } SBV_T;
+typedef struct { int on, z, mode, x, y, w, h, u, v, sx, sy, f2c, r, g, b, a; SBV_T vtx[2]; } SBLUR2_T;
+extern SBLUR2_T screen_blur;
+extern int dbp;
+void sceGuColor(unsigned int color);
+int sprite_screencopy_disp(void)
+{
+	SBLUR2_T *sb = &screen_blur;
+	u8 *vram;
+
+	if (sb->on == 0)
+		return 0;
+	if (sb->a <= 0)
+		return 0;
+	vram = (u8 *)sceGeEdramGetAddr();
+	vram += dbp;
+	sceGuEnable(9);
+	sceGuTexFunc(0, 1);
+	sceGuTexMapMode(0, 0, 0);
+	sceGuTexWrap(0, 0);
+	sceGuTexFilter(1, 1);
+	sceGuTexMode(0, 0, 0, 0);
+	sceGuTexImage(0, 512, 512, 512, vram);
+	sceGuColor(((u8)sb->a << 24) | ((u8)sb->b << 16) | ((u8)sb->g << 8) | (u8)sb->r);
+	if (sb->mode == 2)
+		sceGuBlendFunc(0, 10, 10, ((u8)sb->a << 24) | ((u8)sb->a << 16) | ((u8)sb->a << 8) | (u8)sb->a, -1);
+	else if (sb->mode == 3)
+		sceGuBlendFunc(4, 0, 0, 0, 0);
+	else if (sb->mode == 4)
+		sceGuBlendFunc(2, 10, 10, ((u8)sb->a << 24) | ((u8)sb->a << 16) | ((u8)sb->a << 8) | (u8)sb->a, -1);
+	else
+		sceGuBlendFunc(0, 2, 3, 0, 0);
+	sceGuEnable(4);
+	sceGuAlphaFunc(7, 0, 0xFF);
+	sceGuEnable(0);
+	sb->vtx[0].u = sb->u;
+	sb->vtx[0].v = sb->v;
+	sb->vtx[0].x = sb->x;
+	sb->vtx[0].y = sb->y;
+	sb->vtx[0].z = sb->z;
+	sb->vtx[1].u = sb->u + sb->w;
+	sb->vtx[1].v = sb->v + sb->h;
+	sb->vtx[1].x = sb->x + sb->w * sb->sx / 100;
+	sb->vtx[1].y = sb->y + sb->h * sb->sy / 100;
+	sb->vtx[1].z = sb->z;
+	sceKernelDcacheWritebackInvalidateRange(sb->vtx, 0x14);
+	sceGumDrawArray(6, 0x800102, 2, 0, sb->vtx);
+	return 1;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
