@@ -1,6 +1,21 @@
 /* cflags: -O1 */
 #include "common.h"
 #include "m2c_macros.h"
+typedef struct EvGc {
+    int f0, kind, f8, fC, f10, f14, f18;
+    int (*del)(void *ctx, void *obj, unsigned int id);
+} EvGc;
+typedef struct EvProp {
+    unsigned int id;
+    int value;
+    unsigned char flags;
+} EvProp;
+int mes_eval_to_string(struct EvCtx *ctx, int v);
+int mes_number_from_string(struct EvCtx *ctx, int s, int a, int b);
+void mes_util_string_put(void *buf, unsigned short c);
+char mes_util_hex_char(unsigned int v);
+EvProp *mes_object_search(void *obj, unsigned int id);
+void mes_object_delete(void *obj, unsigned int id);
 typedef struct EvObj {
     struct { int f0; int kind; } *gc;
     int f4, f8, fC, f10;
@@ -46,7 +61,36 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_eval", mes_eval_scope_put);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_eval", mes_eval_scope_canput);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_eval", mes_eval_type);
+int mes_eval_type(unsigned int v)
+{
+    int ret;
+
+    switch (v & 3) {
+    case 1:
+    case 2:
+        ret = 0x39;
+        break;
+    case 3:
+        ret = 0x3E;
+        break;
+    case 0:
+        ret = 0x42;
+        if (v == 0)
+            break;
+        ret = 0x38;
+        if (v == 4)
+            break;
+        ret = 0x24;
+        if (v == 0xC || v == 8)
+            break;
+        ret = (v >= 0x10 && v <= 0x1C) ? 0x39 : 0x3A;
+        break;
+    default:
+        ret = 0x42;
+        break;
+    }
+    return ret;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_eval", mes_eval_to_primitive);
 
@@ -137,7 +181,16 @@ int mes_eval_eval(EvCtx *ctx, int s)
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_eval", mes_eval_parse_int);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_eval", mes_eval_parse_float);
+int mes_eval_parse_float(EvCtx *ctx, int v)
+{
+    int s = mes_eval_to_string(ctx, v);
+    int r;
+
+    *--M2C_FIELD(ctx, int **, 0x18) = s;
+    r = mes_number_from_string(ctx, s, 1, 0);
+    M2C_FIELD(ctx, int **, 0x18)++;
+    return r;
+}
 
 int mes_eval_is_nan(EvCtx *ctx, int v)
 {
@@ -177,7 +230,12 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_eval", mes_eval_decode_uri)
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_eval", mes_eval_decode_uri_component);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_eval", mes_eval_url_hex);
+void mes_eval_url_hex(void *buf, int c)
+{
+    mes_util_string_put(buf, '%');
+    mes_util_string_put(buf, mes_util_hex_char((c >> 4) & 0xF));
+    mes_util_string_put(buf, mes_util_hex_char(c & 0xF));
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_eval", mes_eval_encode);
 
