@@ -130,9 +130,36 @@ void post_fly(void)
 	}
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/fly", init_fly);
+void init_fly(void)
+{
+	geObjectSetProc(2, proc_fly);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/fly", proc_fly);
+	md->obj[6] = (geOBJECT){ 1, 2, 255, 0.0f, { 8.0f, 16.0f, -100.0f }, { 0.0f, 0.0f, 0.0f }, { 1.0f, 1.0f, 1.0f } };
+	md->obj[7] = (geOBJECT){ 1, 2, 255, 0.0f, { -8.0f, 16.0f, -300.0f }, { 0.0f, 0.0f, 0.0f }, { 1.0f, 1.0f, 1.0f } };
+	md->obj[8] = (geOBJECT){ 1, 2, 255, 0.0f, { 12.0f, 12.0f, -240.0f }, { 0.0f, 0.0f, 0.0f }, { 1.0f, 1.0f, 1.0f } };
+	md->obj[9] = (geOBJECT){ 1, 2, 255, 0.0f, { -12.0f, 12.0f, -180.0f }, { 0.0f, 0.0f, 0.0f }, { 1.0f, 1.0f, 1.0f } };
+	md->obj[10] = (geOBJECT){ 1, 2, 255, 0.0f, { -2.0f, 22.0f, -90.0f }, { 0.0f, 0.0f, 0.0f }, { 1.0f, 1.0f, 1.0f } };
+	md->obj[11] = (geOBJECT){ 1, 2, 255, 0.0f, { 2.0f, 22.0f, -130.0f }, { 0.0f, 0.0f, 0.0f }, { 1.0f, 1.0f, 1.0f } };
+}
+
+int proc_fly(void *p)
+{
+	geOBJECT *obj = (geOBJECT *)p;
+	ScePspFVector3 scale;
+
+	geTexSend(0);
+	geColor(0xFF, 0xFF, 0xFF, obj->motion);
+	geDrawArray(&fly_inf);
+
+	gePush();
+	scale = (ScePspFVector3){ 2.0f, 2.0f, 2.0f };
+	geColor(0xFF, 0xFF, 0xFF, 0x40);
+	sceGumScale(&scale);
+	geDrawArray(&fly_inf);
+	gePop();
+
+	return 0;
+}
 
 void draw_fly(void)
 {
@@ -143,16 +170,9 @@ void draw_fly(void)
 	}
 }
 
-INCLUDE_RODATA("tmp/asm/UTST99332/demo_luga/nonmatchings/fly", D_00021150);
 
-INCLUDE_RODATA("tmp/asm/UTST99332/demo_luga/nonmatchings/fly", D_00021200);
 
-INCLUDE_RODATA("tmp/asm/UTST99332/demo_luga/nonmatchings/fly", D_000212B0);
 
-INCLUDE_RODATA("tmp/asm/UTST99332/demo_luga/nonmatchings/fly", D_00021360);
 
-INCLUDE_RODATA("tmp/asm/UTST99332/demo_luga/nonmatchings/fly", D_00021410);
 
-INCLUDE_RODATA("tmp/asm/UTST99332/demo_luga/nonmatchings/fly", D_000214C0);
 
-INCLUDE_RODATA("tmp/asm/UTST99332/demo_luga/nonmatchings/fly", D_00021570);
