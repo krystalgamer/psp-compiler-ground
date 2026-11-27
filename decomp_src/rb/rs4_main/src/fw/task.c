@@ -2,7 +2,7 @@
 #include "common.h"
 #include "m2c_macros.h"
 
-int consPrintf();
+void consPrintf(const char *, ...);
 extern unsigned char DefView;
 
 

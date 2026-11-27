@@ -9,7 +9,7 @@ extern int CurrentInst;
 
 extern int Env;
 extern unsigned char InstBuf;
-int consPrintf();
+void consPrintf(const char *, ...);
 extern void *pReadInst;
 
 

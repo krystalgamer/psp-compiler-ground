@@ -5,7 +5,7 @@ int sceKernelGetGPI();                              /* extern */
 M2C_UNK sgxResClose(int);                           /* extern */
 extern unsigned char D_000FE640;
 
-int consPrintf();
+void consPrintf(const char *, ...);
 M2C_UNK sgxResCloseAll();                           /* extern */
 M2C_UNK sgxSndStopAll(M2C_UNK);                     /* extern */
 M2C_UNK sgxTerm();                                  /* extern */

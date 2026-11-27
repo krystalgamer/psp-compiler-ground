@@ -2,7 +2,7 @@
 #include "common.h"
 #include "m2c_macros.h"
 unsigned int cccTtrToUcs4(void *, int, M2C_UNK *, M2C_UNK, M2C_UNK); /* extern */
-int consPrintf();
+void consPrintf(const char *, ...);
 int resGetDatLocal(M2C_UNK, M2C_UNK);               /* extern */
 extern unsigned char D_000FE318;
 extern unsigned char D_000FE334;

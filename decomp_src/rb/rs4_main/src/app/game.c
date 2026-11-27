@@ -22,7 +22,7 @@ extern int D_001116D8;
 extern int D_001116DC;
 extern int D_001116E0;
 extern int D_001116E4;
-int consPrintf();
+void consPrintf(const char *, ...);
 extern unsigned char D_000FCBE4;
 extern unsigned char D_000FCBEC;
 extern signed char D_00111688;

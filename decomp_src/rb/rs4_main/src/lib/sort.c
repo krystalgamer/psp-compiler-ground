@@ -2,7 +2,7 @@
 #include "common.h"
 #include "m2c_macros.h"
 
-int consPrintf();
+void consPrintf(const char *, ...);
 M2C_UNK thrDelete(void *);                          /* extern */
 extern unsigned char D_000FB638;
 extern void *pThrEntry;

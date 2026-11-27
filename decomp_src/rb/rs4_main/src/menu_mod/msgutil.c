@@ -5,7 +5,7 @@ M2C_UNK sceUtilityMsgDialogInitStart(M2C_UNK *);    /* extern */
 extern unsigned char msgdialog_param;
 extern int sample_type_11A6BC;
 
-int consPrintf();
+void consPrintf(const char *, ...);
 M2C_UNK gameCtrlUnlock();                           /* extern */
 
 
@@ -44,4 +44,9 @@ void MsgEnd(void) {
     consPrintf("MsgEnd\n");
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/msgutil", MsgState);
+void drawPrintf(const char *, ...);
+int sceUtilityMsgDialogGetStatus();
+int MsgState(void) {
+    drawPrintf("%s : state=%d, type=%d\n", "MsgState", sceUtilityMsgDialogGetStatus(), sample_type_11A6BC);
+    return sample_type_11A6BC == 4;
+}

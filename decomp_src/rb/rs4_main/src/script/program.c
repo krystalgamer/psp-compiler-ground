@@ -1,7 +1,7 @@
 /* cflags: -Os -fno-strength-reduce */
 #include "common.h"
 #include "m2c_macros.h"
-int consPrintf();
+void consPrintf(const char *, ...);
 extern unsigned char D_000FF7F4;
 extern unsigned char D_000FF81C;
 extern unsigned char D_000FF838;

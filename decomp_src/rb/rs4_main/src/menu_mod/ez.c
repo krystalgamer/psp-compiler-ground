@@ -7,7 +7,7 @@ extern int D_0011A46C;
 extern unsigned char l_tMenuCntx;
 M2C_UNK cusGetKeyIndex(M2C_UNK, M2C_UNK, int);      /* extern */
 extern unsigned char l_szEdition;
-int consPrintf();
+void consPrintf(const char *, ...);
 int gameChgGameMode(int);                           /* extern */
 M2C_UNK *gameChgModule(M2C_UNK, int);               /* extern */
 int menuGetGameMode(M2C_UNK);                       /* extern */
@@ -211,7 +211,16 @@ int menuIsCardBattle(void)
 	return ((MenuCB *)&l_tMenuCntx)->a == -1 && ((MenuCB *)&l_tMenuCntx)->b == -1;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/ez", menuReturnCardBattle);
+extern int D_0011A464;
+
+M2C_UNK *menuReturnCardBattle(void) {
+    M2C_UNK *temp_v0;
+
+    consPrintf(&D_00102EDC, "menuReturnCardBattle");
+    temp_v0 = gameChgModule(2, D_0011A464);
+    consPrintf(&D_00103018, temp_v0);
+    return temp_v0;
+}
 
 typedef struct { char pad[0x348]; int a; char pad2[0x64C - 0x34C]; int b; } MenuCB2;
 int menuChkCardBattle(void)
@@ -229,7 +238,15 @@ int menuIsSaruColle(void) {
     return ~D_0011A46C == 0;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/ez", menuReturnSaruColle);
+int *menuReturnSaruColle(void) {
+    int *temp_v0;
+
+    consPrintf(&D_00102EDC, "menuReturnSaruColle");
+    D_0011A46C = 0;
+    temp_v0 = menuChgModule();
+    consPrintf(&D_00103018, temp_v0);
+    return temp_v0;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)

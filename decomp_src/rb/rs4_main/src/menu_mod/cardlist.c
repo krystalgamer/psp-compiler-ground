@@ -6,7 +6,7 @@ extern unsigned char D_00101FCC;
 extern int l_atCardList;
 extern int l_nCardIDMax;
 extern int l_nCardNum;
-int consPrintf();
+void consPrintf(const char *, ...);
 extern unsigned char D_00102244;
 void *cardlistFindOne();                            /* extern */
 extern unsigned char D_001021A0;

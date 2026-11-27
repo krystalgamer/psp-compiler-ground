@@ -1,7 +1,7 @@
 /* cflags: -Os -fno-strength-reduce */
 #include "common.h"
 #include "m2c_macros.h"
-int consPrintf();
+void consPrintf(const char *, ...);
 M2C_UNK partCusConvExt(int, unsigned short);                   /* extern */
 int sceKernelGetGPI();                              /* extern */
 extern unsigned char D_000FDD64;
