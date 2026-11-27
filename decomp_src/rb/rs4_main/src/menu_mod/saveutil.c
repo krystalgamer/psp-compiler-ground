@@ -440,7 +440,24 @@ void FreeData_Sizes(int a)
 	FreeData_Save(a, 1);
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/saveutil", SaveStart);
+typedef struct { int d[0x514 / 4]; } SaveRes;
+void gameDisSoftReset(void);
+int UtilityLink();
+int Savedata_Update();
+void SaveStart(int mode, SaveRes *res)
+{
+	int m = mode & 0xFFFFFF;
+	consPrintf("SaveStart : %d (shift:%d)\n", m, mode / 0x1000000);
+	gameDisSoftReset();
+	UtilityLink(Savedata_Update);
+	if (res != NULL)
+		*(SaveRes *)l_atSaveRes = *res;
+	else
+		memset(l_atSaveRes, 0, 0x514);
+	l_tSHIFT.f4 = 0;
+	l_tSHIFT.f0 = mode;
+	CB_SaveData_Normal(m);
+}
 
 void SaveEnd(int x)
 {
