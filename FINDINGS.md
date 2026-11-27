@@ -684,6 +684,26 @@ libgcc/libsupc++ DWARF names `gcc-3.3.6/` paths.
   src/gim_picture) passes no `-mext`: gim_metrics, load_bmp, load_tga and
   load_tm2 match only with it.  The libgu/libgum/libfpu Makefiles pass
   `-mext` themselves.
+- **210 hard registers (`FIRST_PSEUDO_REGISTER` 210, not 176).**  rs4_main's
+  libgcc unwinder (unwind-dw2.c from the 1.9.2 tree's gcc-3.3.6) has
+  `_Unwind_Context.reg[211]`, a 211-byte (0xD3) `dwarf_reg_size_table`, and
+  `__builtin_init_dwarf_reg_size_table` stores a size for each of 210
+  registers (`init_dwarf_reg_size_table` 0x358 bytes); demo_duck/harmonic's
+  1.6.1.internal unwinder has 0xB1 = 177 bytes, i.e. stock mips' 176.  The 34
+  extra registers fit the VFPU register classes 1.8.3's mips.h declares
+  (`VFPU_REGS`, `VFPU_SRAND`, `VFPU_CC`); none is allocated in any code seen,
+  so code generation is unaffected apart from the unwinder's frame tables.
+  The unwind units match with `DWARF_FRAME_REGISTERS 210` and the builtin
+  written out; the tree does not have the registers yet.
+- **1.9.2's newlib is a locfix build** like 1.6.1's (`newlib:locfix`):
+  `rand` and `powf` match only that way and all 94 C newlib units of
+  rs4_main match with it.
+- Per-object flags in rs4_main's game build: `network_lobby_message_queue.cc`
+  is built with strength reduction on (its loops walk pointers with a
+  count-down register: 22/34 functions match with it, 10/34 without), while
+  the other game objects need or tolerate `-fno-strength-reduce`; newlib's
+  `dtoa` needs `-fno-merge-constants` (its doubles sit between its strings
+  and its jump table).
 - **An AND that clears one contiguous bit field is `ins rt,$0,pos,size`**,
   the input tied to the output (`andsi3` keeps such a constant;
   `*andsi3_allegrex_ins`).  When combine rebuilds the AND

@@ -28,7 +28,7 @@
 1.8.3           1.8.3   as:-mulsw
 1.8.3.internal  1.8.3   as:-mulsw
 1.8.4.internal  1.8.4   mixed:-fno-merge-constants as:-mulsw
-1.9.2           1.9.2   -mext as:-mulsw
+1.9.2           1.9.2   -mext newlib:locfix as:-mulsw
 1.9.2.internal  1.9.2   -mext as:-mulsw
 # Per-module additions (the game's own build, not the compiler's):
 # spaceinvaders' release 1.6.1 objects link their .rodata/.rodata.cst4/.rodata.cst8 in

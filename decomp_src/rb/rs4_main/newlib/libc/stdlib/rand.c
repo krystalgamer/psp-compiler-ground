@@ -1,5 +1,4 @@
 /* upstream: newlib-1.12.0/newlib/libc/stdlib/rand.c (Sony's psp-newlib build: _REENT is __getreent()) */
 /* cflags: -O2 -fno-builtin */
-/* locfix */
 #define __DYNAMIC_REENT__
 #include "libc/stdlib/rand.c"
