@@ -33,7 +33,7 @@ struct MesObject {
     signed char cls;
 };
 
-#define MES_INT(i) ((i) * 4 | 1)
+#define MES_INT(i) (((i) << 2) | 1)
 #define MES_NULL 4
 #define MES_UNDEFINED 0x20
 

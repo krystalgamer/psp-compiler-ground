@@ -25,7 +25,7 @@ MesValue mes_history_get(MesContext *ctx, MesObject *obj, void *elem, int id)
     MesValue ret = MES_UNDEFINED;
 
     if (id == 2)
-        ret = MES_INT(HST_getHistoryLength());
+        ret = HST_getHistoryLength() * 4 | 1;
     return ret;
 }
 
