@@ -19,6 +19,99 @@ struct GpPrim {
 	int pad[2];
 };
 
+
+namespace B2A {
+struct AnimState {
+	float frame;
+	float speed;
+	int loop;
+	short scene;
+	short _pad;
+	int pause;
+};
+
+struct FVEC {
+	float x, y, z, w;
+	void Set(float a, float b, float c, float d)
+	{
+		x = a;
+		y = b;
+		z = c;
+		w = d;
+	}
+};
+
+struct Player {
+	int _0;
+	Player *next;
+	AnimState *st;
+	short scene;
+	short _e;
+	int _10;
+	unsigned char f14, f15;
+	Player(int);
+	~Player();
+	void Set(int);
+};
+
+struct Scene {
+	char _0[0xA0];
+	unsigned char enable;
+	char _a1[0xF];
+};
+
+struct SceneEnt {
+	char _0[0x30];
+	int end;
+};
+
+struct B2aHdr {
+	int _0, _4, _8;
+	int nScene;
+	int _10, _14;
+	SceneEnt *ent;
+};
+
+struct B2aFile {
+	B2aHdr *hdr;
+};
+
+struct Object {
+	int _0, _4, _8;
+	float rot;
+	unsigned int col;
+	FVEC pos;
+	FVEC scale;
+	void Clear();
+	void Scale(float, float);
+};
+
+struct Manager {
+	B2aFile *file;
+	Scene *scene;
+	char _8[0x4C];
+	Player *players;
+	void Calc();
+	void Draw();
+	Player *CreatePlayer(int);
+	void EnableScene(int);
+	void DisableScene(int);
+	void play(int, float);
+	int GetLoop();
+	int GetPause();
+	float GetSpeed();
+	void SetLoop(int);
+	void SetPause(int);
+	void SetFrame(float);
+	float GetFrame();
+	float GetEndFrame();
+};
+
+void DeletePlayer(Player *);
+}
+
+extern "C" const float D_00108F30;
+
 extern "C" {
 extern GpPrim sample_anm_list[128];
 extern int GpPrim_cnt;
@@ -163,9 +256,27 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _ZN3B2A9CreateB2AEPNS
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _ZN3B2A5StartEPNS_7ManagerE);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _ZN3B2A4CalcEPNS_7ManagerE);
+} /* extern "C" */
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _ZN3B2A4DrawEPNS_7ManagerE);
+namespace B2A {
+void Calc(Manager *m)
+{
+	m->Calc();
+}
+}
+
+extern "C" {
+
+} /* extern "C" */
+
+namespace B2A {
+void Draw(Manager *m)
+{
+	m->Draw();
+}
+}
+
+extern "C" {
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _ZN3B2A13DeleteManagerEPNS_7ManagerE);
 
@@ -189,9 +300,25 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _ZN3B2A7ManagerD2Ev);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _ZN3B2A7ManagerD1Ev);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _ZN3B2A7Manager11EnableSceneEi);
+} /* extern "C" */
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _ZN3B2A7Manager12DisableSceneEi);
+void B2A::Manager::EnableScene(int i)
+{
+	Scene *s = &scene[i];
+	s->enable = 1;
+}
+
+extern "C" {
+
+} /* extern "C" */
+
+void B2A::Manager::DisableScene(int i)
+{
+	Scene *s = &scene[i];
+	s->enable = 0;
+}
+
+extern "C" {
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _ZN3B2A7Manager12CreatePlayerEi);
 
@@ -201,23 +328,94 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _ZN3B2A7Manager10Refr
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _ZN3B2A7Manager7RefreshEv);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _ZN3B2A7Manager8SetFrameEf);
+} /* extern "C" */
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _ZN3B2A7Manager8GetFrameEv);
+void B2A::Manager::SetFrame(float f)
+{
+	Player *p;
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _ZN3B2A7Manager7SetLoopEi);
+	for (p = players; p; p = p->next)
+		p->st->frame = f;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _ZN3B2A7Manager7GetLoopEv);
+extern "C" {
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _ZN3B2A7Manager8SetPauseEi);
+} /* extern "C" */
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _ZN3B2A7Manager8GetPauseEv);
+float B2A::Manager::GetFrame()
+{
+	float f = 0.0f;
+	Player *p;
+
+	for (p = players; p; p = p->next)
+		f = p->st->frame;
+	return f;
+}
+
+extern "C" {
+
+} /* extern "C" */
+
+void B2A::Manager::SetLoop(int v)
+{
+	Player *p;
+
+	for (p = players; p; p = p->next)
+		p->st->loop = v;
+}
+
+extern "C" {
+
+} /* extern "C" */
+
+int B2A::Manager::GetLoop()
+{
+	return players->st->loop;
+}
+
+extern "C" {
+
+} /* extern "C" */
+
+void B2A::Manager::SetPause(int v)
+{
+	Player *p;
+
+	for (p = players; p; p = p->next)
+		p->st->pause = v;
+}
+
+extern "C" {
+
+} /* extern "C" */
+
+int B2A::Manager::GetPause()
+{
+	return players->st->pause;
+}
+
+extern "C" {
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _ZN3B2A7Manager8SetSpeedEf);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _ZN3B2A7Manager8GetSpeedEv);
+} /* extern "C" */
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _ZN3B2A7Manager11GetEndFrameEv);
+float B2A::Manager::GetSpeed()
+{
+	return players->st->speed;
+}
+
+extern "C" {
+
+} /* extern "C" */
+
+float B2A::Manager::GetEndFrame()
+{
+	SceneEnt *e = &file->hdr->ent[players->st->scene];
+	return e->end - 2;
+}
+
+extern "C" {
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _ZN3B2A7Manager11SetEndFrameEf);
 
@@ -293,15 +491,34 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _ZN3B2A6Object7Refres
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _ZN3B2A6Object6MoveToER4FVEC);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _ZN3B2A6Object5ScaleEff);
+} /* extern "C" */
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _ZN3B2A6PlayerC2Ei);
+void B2A::Object::Scale(float x, float y)
+{
+	scale.Set(x, y, 0.0f, 0.0f);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _ZN3B2A6PlayerC1Ei);
+extern "C" {
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _ZN3B2A6PlayerD2Ev);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _ZN3B2A6PlayerD1Ev);
+} /* extern "C" */
+
+B2A::Player::Player(int i)
+{
+	Set(i);
+}
+
+extern "C" {
+
+
+} /* extern "C" */
+
+B2A::Player::~Player()
+{
+	DeletePlayer(this);
+}
+
+extern "C" {
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _ZN3B2A6Player3SetEi);
 
