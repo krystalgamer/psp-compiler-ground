@@ -21,6 +21,9 @@ extern const char D_0016B020[];
 extern const char D_0016B054[];
 extern const char D_0016B2EC[];
 extern const char D_0016B4A8[];
+extern const char D_0016B3F4[], D_0016B40C[], D_0016B41C[];
+extern const char D_0016B350[], D_0016B364[], D_0016AFF4[], D_0016B368[], D_0016B37C[], D_0016B39C[], D_0016B094[],
+    D_0016B098[], D_0016B3B4[], D_0016B3D4[];
 extern const char D_0016B2A8[];
 extern const char D_0016B328[];
 extern const char D_0016B33C[];
@@ -48,16 +51,46 @@ void scene::Setup::save(std::ostream &) {
 void scene::Shape::save(std::ostream &) {
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph_3", _ZN5scene15StaticTransform4saveERSo);
+void scene::StaticTransform::save(std::ostream &os)
+{
+    os << D_0016B328;
+    const math::vector_xyzw *r = _matrix.r;
+    for (int i = 0; i < 4; i++) {
+        os << D_0016B2A8;
+        for (int j = 0; j < 4; j++)
+            os << r[i][j] << D_0016B020;
+    }
+    os << D_0016B054;
+}
 
 void scene::Switch::save(std::ostream &os)
 {
     os << D_0016B33C << _selected << std::endl;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph_3", _ZN5scene7Texture4saveERSo);
+void scene::Texture::save(std::ostream &os)
+{
+    os << D_0016B350 << common::GetFileLessPath(_path.c_str()) << D_0016B364;
+    if (_hint != D_0016AFF4)
+        os << D_0016B368 << _hint << D_0016B364;
+    if (_override_alpha) {
+        os << D_0016B39C << (_override_alpha ? D_0016B094 : D_0016B098) << D_0016B054;
+        os << D_0016B3B4 << (int)_alpha << D_0016B054;
+    } else {
+        os << D_0016B37C;
+        os << D_0016B3D4;
+    }
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Graph_3", _ZN5scene9Transform4saveERSo);
+void scene::Transform::save(std::ostream &os)
+{
+    os << D_0016B3F4 << getTranslation().x << D_0016B020 << getTranslation().y << D_0016B020 << getTranslation().z
+       << D_0016B020 << std::endl;
+    os << D_0016B40C << getScale().x << D_0016B020 << getScale().y << D_0016B020 << getScale().z << D_0016B020
+       << std::endl;
+    math::vector_xyz e = getEulerAngles(math::RotationOrder(0));
+    os << D_0016B41C << e.x << D_0016B020 << e.y << D_0016B020 << e.z << D_0016B020 << std::endl;
+}
 
 /* used by Mesh::save (asm): explicit instances, in the original's order */
 namespace scene {

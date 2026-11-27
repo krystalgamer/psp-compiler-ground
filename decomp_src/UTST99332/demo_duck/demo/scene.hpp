@@ -716,6 +716,7 @@ public:
 namespace common {
 std::string GetPathLessFilename(std::string);
 std::string GetBasename(std::string);
+std::string GetFileLessPath(std::string);
 }
 namespace scene {
 class GraphParser : public FieldParser {
