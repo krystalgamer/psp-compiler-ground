@@ -738,6 +738,15 @@ libgcc/libsupc++ DWARF names `gcc-3.3.6/` paths.
   `vmzero.q`/`vmidt.q`, `lv.q`/`sv.q` at fixed `$a0`/`$a1` offsets) is
   reproduced exactly by `asm volatile` blocks with no operands, i.e. it
   needs no builtin either.
+- rs4_main's SCERT network middleware (53 objects, split from their
+  `$Header: /projects/rtime/CVS/...` rcsid strings; ~1,050 functions, no
+  DWARF) was not built by 1.9.2: not one of its functions has an `ext`/`ins`
+  (1.9.2 uses them by default, and its newlib/libgcc/SDK objects do), and
+  `reloadMT` keeps its 0x7fffffff/0x80000000 masks in registers, which the
+  1.3.1/1.6.1/1.7.1/1.8.4 cc1s reproduce and 1.9.2 never does (not even with
+  `-mno-ext`).  The module's `.comment` also lists 1.7.1, 1.6.1 and 1.3.1, so
+  it is a prebuilt library from an older psp-gcc; its units use 1.7.1 for
+  now.  No function seen so far tells 1.3.1/1.6.1/1.7.1 apart.
 - Why the module's VFPU code (2,304 VFPU words in 214 functions; none of
   them in a compile unit with DWARF, and no DWARF unit has a vector type)
   is taken to be inline asm and not output of the 1.8 VFPU builtins:
