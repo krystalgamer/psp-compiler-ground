@@ -7,6 +7,10 @@ typedef union {
 } I3dGeCmd;
 
 
+extern int g_I3dGuEmuWork[];
+unsigned int *I3dGuDepthRange_PSP(unsigned int *, int, int);
+#define INS __builtin_allegrex_ins
+
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_scissor.psp", CalculateVertexSize);
 
 void ClipCheck()
@@ -253,7 +257,15 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_scissor.psp", I3dGuTexImage_PS
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_scissor.psp", I3dGuTexMapMode_PSP);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_scissor.psp", I3dGuTexProjMapMode_PSP);
+unsigned int *I3dGuTexProjMapMode_PSP(unsigned int *p, int mode)
+{
+    unsigned int v;
+    g_I3dGuEmuWork[0x28 / 4] = mode;
+    v = g_I3dGuEmuWork[0x24 / 4] | 0xC0000000;
+    v = INS(v, mode, 8, 2);
+    *p = v;
+    return p + 1;
+}
 
 unsigned int *I3dGuTexOffset_PSP(unsigned int *p, float u, float v)
 {
@@ -355,7 +367,11 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_scissor.psp", I3dGuLightColor_
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_scissor.psp", I3dGuDepthRange_PSP);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_scissor.psp", I3dGuDepthOffset_PSP);
+unsigned int *I3dGuDepthOffset_PSP(unsigned int *p, int off)
+{
+    g_I3dGuEmuWork[0x14 / 4] = off;
+    return I3dGuDepthRange_PSP(p, g_I3dGuEmuWork[0x18 / 4], g_I3dGuEmuWork[0x1C / 4]);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_scissor.psp", I3dGuOffset_PSP);
 
