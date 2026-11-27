@@ -107,7 +107,41 @@ static inline int FileToUID(int fd)
 	}
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/kernel_bridge", _open);
+SceUID sceIoOpen(const char *file, int flags, int mode);
+static int _sys_open (const char *path, int flags)
+{
+	return sceIoOpen(path, flags, 0644);
+}
+int _open (const char *path, int flags, ...)
+{
+	int result;
+	int newflags = 0;
+
+	switch((unsigned int) flags & 0x00000003) {
+		case 0:	newflags = 0x0001;	break;
+		case 1:	newflags = 0x0002;	break;
+		case 2:	newflags = 0x0003;	break;
+		default:		break;
+	}
+	if (flags & 0x0008) {
+		newflags |= 0x0100;
+	}
+	if (flags & 0x0200) {
+		newflags |= 0x0200;
+	}
+	if (flags & 0x0400) {
+		newflags |= 0x0400;
+	}
+	if (flags & 0x0800) {
+		newflags |= 0x0800;
+	}
+	if (flags & 0x4000) {
+		newflags |= 0x0004;
+	}
+
+	result = _sys_open(path, newflags);
+	return result;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/kernel_bridge", _lseek);
 
