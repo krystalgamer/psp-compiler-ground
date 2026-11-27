@@ -45,7 +45,7 @@ void scrollToCurrentFocusPosition(void *frame, FOCUSLIST *l);
 void *getFocusTargetContentContext(void *g);
 void *make_msg_LP22(void *a, void *b);
 void putLLIST(void *list, void *msg);
-int actSetFocusByFocusList(void *frame, FOCUSLIST *l, int draw);
+void actSetFocusByFocusList(void *frame, FOCUSLIST *l, int draw);
 void drawScroll(void *frame, int dx, int dy);
 extern int REQUEST_LLIST;
 

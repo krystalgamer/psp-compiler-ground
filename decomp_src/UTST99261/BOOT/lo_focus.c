@@ -48,6 +48,16 @@ extern const double D_00139118;
 extern const double D_00139120;
 extern const double D_00139128;
 extern const double D_00139130;
+typedef struct FJSEVENT { int v[12]; } FJSEVENT;
+void *getDOMDocument(void *node);
+int Node_getSid(void *node);
+void *HST_searchSessionIDHistoryNode(int sid);
+int Node_getJSObj(void *node);
+BOX *Node_getBox(void *node);
+int getTextStrings(BOX *box, char *buf, int len);
+void initJSEvent(FJSEVENT *ev, int type, void *node, int a, int b);
+int sendJSEvent(int obj, FJSEVENT *ev);
+int strcmp(const char *a, const char *b);
 void freeAllList(void *arg0) {
     void *temp_a1;
     void *temp_a1_2;
@@ -349,7 +359,145 @@ int emitFocusInfo(void *a, void *b) {
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_focus", actSetFocusByFocusList);
+void actSetFocusByFocusList(void *frame, FOCUSLIST *l, int draw) {
+    FJSEVENT ev;
+    int *nda;
+    int sid;
+    FOCUSLIST *c;
+    void *hn;
+    FOCUSLIST *old;
+    FOCUSLIST *cur;
+    BOX *box;
+    void *node;
+    void *from;
+    void *to;
+    BOX *fb;
+    int len;
+    char *buf;
+
+    hn = NULL;
+    nda = gESPRIT_LO_GLOBAL_NDA;
+    sid = Node_getSid(getDOMDocument(M2C_FIELD(frame, void **, 0x28)));
+    cur = l;
+    if (l == NULL) {
+        node = M2C_FIELD(frame, void **, 0x28);
+        box = frame;
+    } else {
+        box = cur->obj;
+        node = M2C_FIELD(box, void **, 0x28);
+    }
+    if (*nda != 0) {
+        hn = HST_searchSessionIDHistoryNode(*nda);
+    }
+    if (draw == 1) {
+        if (sid != *nda) {
+            if (hn == NULL || M2C_FIELD(hn, void **, 0x6C) == NULL || !checkBoxValidity(M2C_FIELD(hn, void **, 0x6C))) {
+                old = NULL;
+            } else {
+                old = FFRAME(M2C_FIELD(hn, void **, 0x6C))->cur;
+            }
+        } else {
+            old = FFRAME(frame)->cur;
+        }
+        *nda = sid;
+    } else {
+        if (hn == NULL || M2C_FIELD(hn, void **, 0x6C) == NULL || !checkBoxValidity(M2C_FIELD(hn, void **, 0x6C))) {
+            return;
+        }
+        frame = M2C_FIELD(hn, void **, 0x6C);
+        c = FFRAME(frame)->cur;
+        if (c == NULL) {
+            return;
+        }
+        if (c != l) {
+            return;
+        }
+        old = l;
+        cur = NULL;
+    }
+    if (old != cur) {
+        if (old != NULL) {
+            setFocusFocusItem(frame, old, 0);
+            if (old->obj != frame) {
+                drawFocusItem(old);
+            }
+        }
+        FFRAME(frame)->cur = cur;
+        if (cur != NULL && M2C_FIELD(cur->obj, s16 *, 0x3E) == 0) {
+            setFocusFocusItem(frame, cur, (void *)1);
+            if (cur->obj != frame) {
+                drawFocusItem(cur);
+            }
+            emitFocusInfo((void *)sid, cur);
+        } else {
+            setFocusBoxnode(frame, (void *)1);
+        }
+    } else if (cur != NULL && cur->obj != NULL && M2C_FIELD(cur->obj, int *, 0x2C) == 0) {
+        setFocusBoxnode(frame, (void *)1);
+    }
+    from = NULL;
+    to = NULL;
+    if (draw == 1) {
+        if (old != NULL) {
+            from = M2C_FIELD(old->obj, void **, 0x28);
+            if (Node_getJSObj(from) == 0) {
+                from = getDOMDocument(from);
+            }
+        }
+        to = node;
+        if (Node_getJSObj(node) == 0) {
+            to = getDOMDocument(node);
+        }
+    } else {
+        from = node;
+        if (Node_getJSObj(node) == 0) {
+            from = getDOMDocument(node);
+        }
+    }
+    if (from != to) {
+        if (from != NULL) {
+            fb = Node_getBox(from);
+            if (fb->content == 0xD) {
+                len = getTextStrings(fb, NULL, 0);
+                buf = MEM_malloc(0, len + 1);
+                if (buf != NULL) {
+                    getTextStrings(fb, buf, len);
+                    if (M2C_FIELD(fb->geom, char **, 0x18) == NULL) {
+                        if (len > 0) {
+                            initJSEvent(&ev, 3, from, 0, 0);
+                            sendJSEvent(Node_getJSObj(from), &ev);
+                        }
+                    } else {
+                        if (strcmp(M2C_FIELD(fb->geom, char **, 0x18), buf) != 0) {
+                            initJSEvent(&ev, 3, from, 0, 0);
+                            sendJSEvent(Node_getJSObj(from), &ev);
+                        }
+                        MEM_free(0, M2C_FIELD(fb->geom, char **, 0x18));
+                        M2C_FIELD(fb->geom, char **, 0x18) = NULL;
+                    }
+                    MEM_free(0, buf);
+                }
+            }
+            initJSEvent(&ev, 2, from, 0, 0);
+            sendJSEvent(Node_getJSObj(from), &ev);
+        }
+        if (to != NULL) {
+            initJSEvent(&ev, 8, to, 0, 0);
+            sendJSEvent(Node_getJSObj(to), &ev);
+        }
+    }
+    if (draw == 1 && box->content == 0xD) {
+        len = getTextStrings(box, NULL, 0);
+        if (M2C_FIELD(box->geom, char **, 0x18) != NULL) {
+            MEM_free(0, M2C_FIELD(box->geom, char **, 0x18));
+        }
+        buf = MEM_malloc(0, len + 1);
+        if (buf != NULL) {
+            getTextStrings(box, buf, len);
+            M2C_FIELD(box->geom, char **, 0x18) = buf;
+        }
+    }
+}
 
 FOCUSLIST *getNextFocusUp(void *frame, FOCUSLIST *def, FOCUSLIST *cur) {
     if (cur != NULL) {
