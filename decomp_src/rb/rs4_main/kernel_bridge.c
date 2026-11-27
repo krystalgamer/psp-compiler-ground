@@ -168,8 +168,14 @@ int _gettimeofday(struct timeval *p, struct timezone *z) {
     return sceKernelLibcGettimeofday();
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/kernel_bridge", _times);
+clock_t _times(struct tms *buf)
+{
+	return -1;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/kernel_bridge", sigfillset);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/kernel_bridge", sigprocmask);
+int sigprocmask(int how, const sigset_t *set, sigset_t *oldset)
+{
+	return -1;
+}
