@@ -45,6 +45,38 @@ extern const char setChannel_name[] __asm__("_ZZN8textures7Texture10setChannelEN
 extern const char D_00173EAC[];     /* "_m._format == _Src._m._format" */
 extern const char copy_name[] __asm__("_ZZN8textures7Texture4copyERKS0_iiiiiiE19__PRETTY_FUNCTION__");
 extern const char resize_nearest_name[] __asm__("_ZZN8textures7Texture14resize_nearestEiiE19__PRETTY_FUNCTION__");
+extern const char D_001738B4[];     /* ".tga" */
+extern const char D_001738BC[];     /* ".bmp" */
+extern const char D_00173F08[];     /* "bitsize != 0" */
+extern const char saveChannel_name[] __asm__("_ZZNK8textures7Texture11saveChannelENS_7ChannelEPKcE19__PRETTY_FUNCTION__");
+extern const char saveTga_name[] __asm__("_ZZNK8textures7Texture7saveTgaERKSsE19__PRETTY_FUNCTION__");
+extern const char saveBmp_name[] __asm__("_ZZNK8textures7Texture7saveBmpERKSsE19__PRETTY_FUNCTION__");
+namespace common { std::string GetFileExtension(std::string, bool); }
+extern const char D_00173C2C[];     /* "(" */
+extern const char D_00173C30[];     /* "," */
+extern const char D_00173C34[];     /* ")->(" */
+extern const char D_00173C3C[];     /* ")\n" */
+extern const char D_00173C40[];     /* " bicubic\n" */
+extern const char D_00173C4C[];     /* " nearest\n" */
+extern const char resize_name[] __asm__("_ZZN8textures7Texture6resizeEiibE19__PRETTY_FUNCTION__");
+extern const char resize_func[] __asm__("_ZZN8textures7Texture6resizeEiibE12__FUNCTION__");
+extern const char D_00173784[];     /* "-------------------------[texture info]-------------------------" */
+extern const char D_001737C8[];     /* "path " */
+extern const char D_001737D0[];     /* "x" */
+extern const char D_001737D4[];     /* "image add:" */
+extern const char D_001737E0[];     /* " clut add:" */
+extern const char D_001737EC[];     /* "filtering: " */
+extern const char D_001737F8[];     /* "NEAREST" */
+extern const char D_00173800[];     /* "LINEAR" */
+extern const char D_00173808[];     /* "alpha flags:" */
+extern const char D_00173818[];     /* " alpha ON " */
+extern const char D_00173824[];     /* " alpha OFF" */
+extern const char D_00173830[];     /* "ALPHA_BLEND " */
+extern const char D_00173840[];     /* "ALPHA_TEST " */
+extern const char D_0017384C[];     /* "HAS_0x00 " */
+extern const char D_00173858[];     /* "HAS_0xFF " */
+extern const char D_00173864[];     /* "HAS_0x7E " */
+extern const char D_00173870[];     /* "----------------------------------------------------------------" */
 #define TEX_ASSERT(c, s, fn, line) \
     do if (!(c)) { \
         common::common_internal::assert_display(D_00173534, s, D_00173580, fn, line, D_0017359C); \
@@ -276,7 +308,26 @@ void textures::Texture::make(int w, int h, Format f)
     allocate_for(f);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/textures_Texture", _ZN8textures7Texture5printERSo);
+void textures::Texture::print(std::ostream &o)
+{
+    unsigned char *img = image.addr();
+    unsigned char *cl = clut.addr();
+    o << D_00173784 << std::endl
+      << D_001737C8 << m.path << D_0017359C << m.width << D_001737D0 << m.height << D_0017359C
+      << FormatName(m.format) << std::endl
+      << D_001737D4 << (void *)img << D_001737E0 << (void *)cl << std::endl
+      << D_001737EC << (getFiltering() == 1 ? D_001737F8 : D_00173800) << std::endl
+      << D_00173808 << (m.alpha_flags & 1 ? D_00173818 : D_00173824);
+    if (m.alpha_flags & 1) {
+        o << (m.alpha_flags & ALPHA_BLEND ? D_00173830 : D_001734F4)
+          << (m.alpha_flags & ALPHA_TEST ? D_00173840 : D_001734F4)
+          << (m.alpha_flags & 8 ? D_0017384C : D_001734F4)
+          << (m.alpha_flags & 0x10 ? D_00173858 : D_001734F4)
+          << (m.alpha_flags & 0x20 ? D_00173864 : D_001734F4);
+    }
+    o << std::endl;
+    o << D_00173870 << std::endl;
+}
 
 void textures::Texture::swap(Texture &t)
 {
@@ -386,7 +437,23 @@ void textures::Texture::resize_nearest(int w, int h)
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/textures_Texture", _ZN8textures7Texture14resize_bicubicEii);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/textures_Texture", _ZN8textures7Texture6resizeEiib);
+bool textures::Texture::resize(int w, int h, bool bicubic)
+{
+    if (m.width == 0 || m.height == 0)
+        return false;
+    if (w == m.width && h == m.height)
+        return false;
+    TEX_ASSERT(m.format == FORMAT_1 || m.format == FORMAT_2, D_00173B60, resize_name, 1386);
+    common::Log() << resize_func << D_00173C2C << m.width << D_00173C30 << m.height << D_00173C34 << w << D_00173C30 << h << D_00173C3C;
+    if (bicubic) {
+        common::Log() << D_00173C40;
+        resize_bicubic(w, h);
+    } else {
+        common::Log() << D_00173C4C;
+        resize_nearest(w, h);
+    }
+    return true;
+}
 
 int textures::closestPow2(int x, bool up)
 {
@@ -472,7 +539,18 @@ void textures::Texture::copyChannel(Channel dst_c, Channel src_c)
     }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/textures_Texture", _ZNK8textures7Texture11saveChannelENS_7ChannelEPKc);
+int textures::Texture::saveChannel(Channel c, const char *filename) const
+{
+    TEX_ASSERT(m.format == FORMAT_1 || m.format == FORMAT_2, D_00173B60, saveChannel_name, 1578);
+    Texture tmp(*this);
+    int unused[4];      /* the original's frame has 16 more bytes after tmp */
+    (void)unused;
+    tmp.copyChannel((Channel)0, c);
+    tmp.copyChannel((Channel)1, c);
+    tmp.copyChannel((Channel)2, c);
+    tmp.copyChannel((Channel)3, c);
+    return tmp.save(filename);
+}
 
 void textures::Texture::copy(const Texture &_Src, int sx, int sy, int w, int h, int dx, int dy)
 {
@@ -502,11 +580,60 @@ void textures::Texture::copy(const Texture &_Src, int sx, int sy, int w, int h, 
     }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/textures_Texture", _ZNK8textures7Texture4saveERKSs);
+int textures::Texture::save(const std::string &path) const
+{
+    std::string ext = common::GetFileExtension(path.c_str(), true);
+    if (ext == D_001738B4)
+        return saveTga(path);
+    if (ext == D_001738BC)
+        return saveBmp(path);
+    return -1;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/textures_Texture", _ZNK8textures7Texture7saveTgaERKSs);
+int textures::Texture::saveTga(const std::string &path) const
+{
+    TEX_ASSERT(valid(), D_00173A18, saveTga_name, 1648);
+    Texture tmp(*this);
+    int unused[4];      /* the original's frame has 16 more bytes after tmp */
+    (void)unused;
+    if (!(tmp.m.format == FORMAT_1 || tmp.m.format == FORMAT_2 || tmp.m.format == FORMAT_3))
+        tmp.convert32();
+    int bitsize = 0;
+    if (tmp.m.format == FORMAT_1)
+        bitsize = 32;
+    else if (tmp.m.format == FORMAT_2)
+        bitsize = 24;
+    else if (tmp.m.format == FORMAT_3)
+        bitsize = 16;
+    TEX_ASSERT(bitsize != 0, D_00173F08, saveTga_name, 1667);
+    SaveTga(path.c_str(), tmp.width(), tmp.height(), tmp.imagedata(), bitsize);
+    return 0;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/textures_Texture", _ZNK8textures7Texture7saveBmpERKSs);
+int textures::Texture::saveBmp(const std::string &path) const
+{
+    TEX_ASSERT(valid(), D_00173A18, saveBmp_name, 1682);
+    Texture tmp(*this);
+    int unused[4];      /* the original's frame has 16 more bytes after tmp */
+    (void)unused;
+    if (!(tmp.m.format == FORMAT_1 || tmp.m.format == FORMAT_2 || tmp.m.format == FORMAT_3 ||
+          tmp.m.format == FORMAT_4 || tmp.m.format == FORMAT_5))
+        tmp.convert32();
+    int bitsize = 0;
+    if (tmp.m.format == FORMAT_1)
+        bitsize = 24;
+    else if (tmp.m.format == FORMAT_2)
+        bitsize = 24;
+    else if (tmp.m.format == FORMAT_3)
+        bitsize = 16;
+    else if (tmp.m.format == FORMAT_4)
+        bitsize = 8;
+    else if (tmp.m.format == FORMAT_5)
+        bitsize = 4;
+    TEX_ASSERT(bitsize != 0, D_00173F08, saveBmp_name, 1703);
+    SaveBmp(path.c_str(), tmp.width(), tmp.height(), tmp.imagedata(), tmp.clutdata(), bitsize);
+    return 0;
+}
 
 void textures::Texture::blur(int radius, float sigma)
 {

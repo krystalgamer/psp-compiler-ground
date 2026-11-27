@@ -426,12 +426,32 @@ namespace common {
 class CmdLine {
 public:
     typedef std::vector<std::string>::const_iterator const_iterator;
+    /* an option defined by defArg (names split by Token) */
+    struct Option {
+        Option(std::string name, unsigned int n, const char *help);
+        std::string name;               /* 0x0 */
+        unsigned int n;                 /* 0x4 */
+        std::string help;               /* 0x8 */
+        int _fC;                        /* 0xC */
+    };
     static void Token(std::vector<std::string> &, std::string);
     const_iterator find_arg(const char *) const;
     bool inList(const char *) const;
+    void defArg(std::string, unsigned int, const char *);
     const_iterator end() const { return _args.end(); }
     std::vector<std::string> _args;     /* 0x0 */
+    std::vector<Option> _options;       /* 0xC */
 };
+/* linkonce copies: main.o (duck) / CityApp.o (harmonic) define DEMO_LINKONCE_CmdLine */
+#if DEMO_LINKONCE_CmdLine
+_Pragma("implementation \"sgl_linkonce\"") _Pragma("interface \"sgl_linkonce\"")
+#endif
+inline CmdLine::Option::Option(std::string name_, unsigned int n_, const char *help_) : name(name_), n(n_), help(help_), _fC(0)
+{
+}
+#if DEMO_LINKONCE_CmdLine
+_Pragma("interface")
+#endif
 
 template<class T> class safe_ptr {
 public:
@@ -1096,7 +1116,7 @@ public:
     void resize_channel_bicubic(Texture &, Channel, math::bspline::surface &);
     void resize_nearest(int, int);
     void resize_bicubic(int, int);
-    void resize(int, int, bool);
+    bool resize(int, int, bool);
     void resizePow2(bool, bool, bool);
     bool isPow2();
     static bool IsPow2(int x) { return ((x | 0x80000000) & (x - 1)) == 0; }
@@ -1105,11 +1125,11 @@ public:
     void copyChannel(Channel, unsigned char *);
     void copyChannel(Channel, Channel);
     void copy(const Texture &, int, int, int, int, int, int);
-    void saveChannel(Channel, const char *) const;
-    bool save(const std::string &) const;
-    bool save(const std::string &, int, int, int, int) const;
-    bool saveTga(const std::string &) const;
-    bool saveBmp(const std::string &) const;
+    int saveChannel(Channel, const char *) const;
+    int save(const std::string &) const;
+    int save(const std::string &, int, int, int, int) const;
+    int saveTga(const std::string &) const;
+    int saveBmp(const std::string &) const;
     void blur(int, float);
     void allocate(unsigned int, unsigned int);
     int setAlphaCount(int *, int *, int *, unsigned char, unsigned char);
@@ -1119,6 +1139,7 @@ public:
     common::t_array<unsigned char> clut;    /* 0x3C */
 };
 const char *FormatName(Format);
+void SaveBmp(const char *, int, int, const unsigned char *, const unsigned char *, int);
 void SaveTga(const char *, int, int, const unsigned char *, int);
 void SaveGlBuffer(const char *, int);
 void TgaSnapshot(const char *);
