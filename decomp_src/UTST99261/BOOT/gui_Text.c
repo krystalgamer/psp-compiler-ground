@@ -47,7 +47,36 @@ int GUI_TextField_setText(GUIWIDGET *w, char *s) {
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Text", GUI_TextField_getText);
+char *GUI_TextField_getText(GUIWIDGET *w) {
+    int len;
+    char *buf;
+    GUIWIDGET *t;
+
+    if (w == NULL) {
+        puts("[X1]GUI_TextField_getText");
+        return NULL;
+    }
+    t = w;
+    if (w->type != 1) {
+        puts("[X2]GUI_TextField_getText");
+        return NULL;
+    }
+    if ((t->flags & 0xF) != 10) {
+        puts("[X3]GUI_TextField_getText");
+        return NULL;
+    }
+    len = *(short *)((char *)t + 0x50);
+    buf = ESP_guiMemAlloc(len + 1);
+    if (buf == NULL) {
+        puts("[X5]GUI_TextField_getText");
+        return NULL;
+    }
+    if (len != 0) {
+        memcpy(buf, t->unk4C, len);
+    }
+    buf[len] = 0;
+    return buf;
+}
 
 int GUI_TextField_select(GUIWIDGET *w, int start, int end) {
     if (w == NULL) {
