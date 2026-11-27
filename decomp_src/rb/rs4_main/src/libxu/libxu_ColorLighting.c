@@ -84,7 +84,25 @@ void *xuColorMaterial(void *pkt, int type)
 	return pCmd.vp;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/libxu/libxu_ColorLighting", xuMaterial);
+void *xuMaterial(void *pkt, int type, unsigned int col)
+{
+	xuPtr pCmd;
+	pCmd.vp = pkt;
+	if (type & 1) {
+		pCmd.ip[0] = xuSetD0(0x55000000, col);
+		pCmd.ip[1] = xuSetC0(0x58000000, col >> 24);
+		pCmd.ip += 2;
+	}
+	if (type & 2) {
+		*pCmd.ip = xuSetD0(0x56000000, col);
+	pCmd.ip++;
+	}
+	if (type & 4) {
+		*pCmd.ip = xuSetD0(0x57000000, col);
+	pCmd.ip++;
+	}
+	return pCmd.vp;
+}
 
 void *xuSpecular(void *pkt, float power)
 {

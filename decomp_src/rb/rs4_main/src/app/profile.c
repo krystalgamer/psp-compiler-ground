@@ -92,7 +92,14 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/profile", randS);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/profile", randSave);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/profile", randLoad);
+extern unsigned long long l_aau64SavedRandSeed[][5];
+void randLoad(int slot)
+{
+	int i;
+	for (i = 0; i < 5; i++) {
+		l_au64RandSeed[i] = l_aau64SavedRandSeed[slot][i];
+	}
+}
 
 #ifndef NULL
 #define NULL ((void *)0)

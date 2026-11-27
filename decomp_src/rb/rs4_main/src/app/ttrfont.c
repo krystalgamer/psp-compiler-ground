@@ -65,7 +65,13 @@ int ttrFontTerm(int **arg0) {
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/ttrfont", ttrFontUpdate);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/ttrfont", ttrFontDraw);
+int fontImgDat();
+int i3dDrawImg();
+int ttrFontDraw(int *p)
+{
+	i3dDrawImg(fontImgDat(p[0]), (char *)p + 0x350, (char *)p + 0x390);
+	return 1;
+}
 
 void ttrFontClear(int a, int b)
 {

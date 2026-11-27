@@ -40,7 +40,14 @@ int cardlistCpyTtr2Int32() {
     return *(int *)&r;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/cardlist", cardlistCpyTtr2Bool);
+int cardlistCpyTtr2Ascii();
+int cardlistCpyTtr2Bool(int a, int b)
+{
+	char buf[0x40];
+	memset(buf, 0, 0x40);
+	cardlistCpyTtr2Ascii(buf, a, b);
+	return buf[0] == 'o';
+}
 
 #ifndef NULL
 #define NULL ((void *)0)

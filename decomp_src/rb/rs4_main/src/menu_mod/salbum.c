@@ -12,7 +12,18 @@ M2C_UNK salbumClearNewFlagBySaveID(int, int, unsigned char);   /* extern */
 M2C_UNK taskDefaultMsg();                           /* extern */
 
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/salbum", salbumCalcKinds);
+int salbumCalcKinds(int *p)
+{
+	int n = 0;
+	int i, j;
+	for (i = 0xFF; i >= 0; i--) {
+		for (j = 0; j < 3; j++) {
+			n += (unsigned int)((p[i * 3 + j] & 0x7F) - 1) < 0x7E;
+		}
+	}
+	p[0x300] = n;
+	return n;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/salbum", salbumCalcKindsContainLostCard);
 
