@@ -158,7 +158,27 @@ loop:
 	return r;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/ctrl", ctrlFlushVirtualData);
+typedef struct { char pad[8]; signed char x, y; char pad2[6]; } CtrlVEnt;
+typedef struct { char hdr[16]; CtrlVEnt ent[128]; } CtrlRing;
+int ctrlFlushVirtualData(unsigned int n)
+{
+	CtrlRing *r;
+	CtrlVEnt *e;
+	unsigned int i;
+	char *q;
+	ctrlLock();
+	r = &((CtrlRing *)&CtrlRingBuf)[n];
+	memset(r, 0, sizeof(CtrlRing));
+	for (i = 0; i < 128; i++) {
+		q = (char *)(i * sizeof(CtrlVEnt));
+		q += (int)r;
+		e = ((CtrlRing *)q)->ent;
+		e->x = -128;
+		e->y = -128;
+	}
+	ctrlUnlock();
+	return 1;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
