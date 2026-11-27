@@ -124,6 +124,7 @@ typedef struct NatFrame { char pad[0x20]; NatFn *func; NatArgs *args; } NatFrame
 typedef struct NatCtx { char pad[0x10]; NatFrame *frame; } NatCtx;
 extern unsigned int D_005852C0;
 EvArr *mes_util_vals(int n, int a);
+int mes_util_is_white_space(unsigned short c);
 void *mes_eval_scope_new(EvCtx *ctx, int a, int b, int c)
 {
     char *o = mes_gc_alloc(ctx, 5);
@@ -814,7 +815,69 @@ int mes_eval_eval(EvCtx *ctx, int s)
     return mes_eval_string(ctx, s, ctx->frame->thisobj, 0);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_eval", mes_eval_parse_int);
+int mes_eval_parse_int(EvCtx *ctx, int v, int radix)
+{
+    int sign;
+    int nodig;
+    unsigned short *p;
+    unsigned short *end;
+    int r;
+    double n;
+    unsigned int c;
+    int d;
+
+    if (v == 0)
+        return 0x1C;
+    v = mes_eval_to_string(ctx, v);
+    nodig = 1;
+    *--M2C_FIELD(ctx, int **, 0x18) = v;
+    p = *(unsigned short **)(v & ~3);
+    end = p + ((int *)(v & ~3))[1];
+    while (p < end && mes_util_is_white_space(*p))
+        p++;
+    sign = 1;
+    if (p < end && *p == '-') {
+        sign = -1;
+        p++;
+    }
+    while (p < end && (*p == '+' || *p == '-'))
+        p++;
+    r = mes_eval_to_int32(ctx, radix);
+    if (r != 0 && (r < 2 || r > 36)) {
+        M2C_FIELD(ctx, int **, 0x18)++;
+        return 0x1C;
+    }
+    if ((r == 0 || r == 16) && p + 1 < end && p[0] == '0' && (p[1] == 'x' || p[1] == 'X')) {
+        p += 2;
+        r = 16;
+    }
+    if ((r == 0 || r == 8) && p + 1 < end && p[0] == '0' && (p[1] >= '0' && p[1] <= '7')) {
+        p++;
+        r = 8;
+    }
+    if (r == 0)
+        r = 10;
+    n = 0;
+    while (p < end) {
+        c = *p++;
+        if (c >= '0' && (int)c < r + '0')
+            d = c - '0';
+        else if (c >= 'a' && (int)c < r + 'a' - 10)
+            d = c - 'a' + 10;
+        else if (c >= 'A' && (int)c < r + 'A' - 10)
+            d = c - 'A' + 10;
+        else
+            break;
+        n = n * r + d;
+        nodig = 0;
+    }
+    M2C_FIELD(ctx, int **, 0x18)++;
+    if (nodig)
+        return 0x1C;
+    if (sign < 0 && n == 0)
+        return 0x10;
+    return mes_number_alloc(ctx, n * sign);
+}
 
 int mes_eval_parse_float(EvCtx *ctx, int v)
 {
