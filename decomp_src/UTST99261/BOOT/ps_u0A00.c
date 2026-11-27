@@ -12,6 +12,14 @@ extern int Security;
 extern int buf_Message_Show_FLG;
 extern int before_ps_sts;
 extern int buf_Message_cnt;
+typedef struct PsAuthInfo { char *path; char *user; char *pass; } PsAuthInfo;
+PsAuthInfo *HST_searchAuthorizationDB(char *url);
+int strlen(const char *s);
+void *memcpy(void *d, const void *s, unsigned int n);
+extern int On_Save;
+extern int SSLFlg;
+extern int CONTENT_SAVE;
+extern void *gPREF_UI;
 void sendMPL_REQ_DATA_ATTR(PsIpc *msg) {
     PsIpc m;
 
@@ -46,7 +54,91 @@ int ps_u0A06(PsIpc *msg) {
     return buf_ps_sts;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/ps_u0A00", ps_u0B03);
+int ps_u0B03(PsIpc *msg) {
+    PsIpc m;
+    int x;
+    int plen;
+    int ulen;
+    int alen;
+    int *r;
+    char *url;
+    int n;
+    PsAuthInfo *a;
+    int size;
+    int *buf;
+    char *p;
+    char *user;
+    char *pass;
+
+    ulen = 0;
+    plen = 0;
+    On_Save = 1;
+    SSLFlg = 0;
+    CONTENT_SAVE = 0;
+    alen = 0;
+    if (gPREF_UI != NULL) {
+        M2C_FIELD(gPREF_UI, int *, 0x68) = 0;
+    }
+    r = (int *)msg->x1C;
+    url = (char *)r[1];
+    n = strlen(url);
+    x = r[2];
+    a = HST_searchAuthorizationDB(url);
+    if (a != NULL) {
+        ulen = strlen(a->user);
+        plen = strlen(a->pass);
+        if (ulen + plen > 0) {
+            alen = ulen + plen + 0x16;
+        }
+    }
+    size = n + alen + 0x1A;
+    buf = MEM_malloc(0, size);
+    buf[0] = 0;
+    buf[1] = 0;
+    buf[2] = 0;
+    buf[3] = 0;
+    buf[4] = 0;
+    buf[5] = 0;
+    p = (char *)&buf[6];
+    buf[0] = r[0];
+    buf[1] = n;
+    buf[2] = (int)p;
+    memcpy(p, url, n);
+    p[n] = 0;
+    p += n + 1;
+    buf[3] = 0;
+    buf[4] = 0;
+    if (alen > 0) {
+        buf[3] = alen;
+        buf[4] = (int)p;
+        user = a->user;
+        pass = a->pass;
+        memcpy(p, "Authorization: Basic ", strlen("Authorization: Basic "));
+        p += strlen("Authorization: Basic ");
+        if (ulen > 0 && user != NULL) {
+            memcpy(p, user, ulen);
+            p += ulen;
+        }
+        *p++ = ':';
+        if (plen > 0 && pass != NULL) {
+            memcpy(p, pass, plen);
+            p += plen;
+        }
+        *p = 0;
+    }
+    buf[5] = x;
+    m.type = 2;
+    m.x04 = 0;
+    m.x08 = 0;
+    m.cmd = 6;
+    m.x10 = 0;
+    m.x14 = 0;
+    m.x18 = size;
+    m.x1C = (int)buf;
+    ps_sndmsg(&m, 5);
+    MEM_free(0, msg->x1C);
+    return 9;
+}
 
 int ps_u0C03(PsIpc *msg) {
     PsIpc m;
