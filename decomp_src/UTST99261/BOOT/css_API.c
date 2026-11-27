@@ -779,7 +779,12 @@ u16 *CSS_getMediaTypeString(s16 type) {
     return ret;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_API", CSS_SkipBlanks);
+u16 *CSS_SkipBlanks(u16 *p) {
+    while (*p != 0 && (*p == ' ' || *p == '\t' || (*p == '\r' || *p == '\n') || *p == 0xC || *p == 0xFEFF)) {
+        p++;
+    }
+    return p;
+}
 
 u16 *CSS_SkipWord(u16 *p) {
     while (CSS_ISALNUM(*p) || *p == '-' || *p == '%') {
@@ -1000,7 +1005,16 @@ u16 *CSS_nstring(u16 *s, u16 **out) {
     return p;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_API", CToc);
+char *CToc(u16 *s) {
+    int i = 0;
+    while (*s != 0 && i < 0x1FF) {
+        D_0025BA4C[i] = *s;
+        s++;
+        i++;
+    }
+    D_0025BA4C[i] = 0;
+    return D_0025BA4C;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)

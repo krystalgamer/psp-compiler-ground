@@ -222,7 +222,20 @@ int getLinePosition(BOX *box) {
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_box_position", getLineWidth);
+int getLineWidth(LINE *l) {
+    int w = 0;
+    LINEENT *f;
+    LINEENT *e;
+    int x;
+    if (l->first == NULL) {
+        return 0;
+    }
+    f = l->first;
+    e = l->last;
+    x = f->box->x;
+    w = e->box->x + e->box->width - x;
+    return w;
+}
 
 int getLineHeight(LINE *line) {
     LINEENT *e;
