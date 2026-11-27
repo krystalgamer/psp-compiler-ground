@@ -78,32 +78,33 @@ SceInt32 avsync_video_getPts(t_avSyncControl *pAvSync, SceUInt32 *pPts)
 	return ret;
 }
 
-#ifdef NON_MATCHING
-/* as in UTST99261: the original falls through into the dispbuf check */
 SceInt32 avsync_Compare(t_avSyncControl *pAvSync)
 {
 	SceInt32 ret;
 	SceInt32 ptsDiff;
-	SceUInt32 soundPts;
-	SceUInt32 videoPts;
+	SceUInt32 soundPts, videoPts;
 
-	if (!audioFlag)
+	if (audioFlag == 0)
 		return 1;
+
 	if (soundbuf_getCurrentCount(pAvSync->pSound) == 0 || dispbuf_getCurrentCount(pAvSync->pDisp) == 0) {
 		ret = 1;
+		goto term;
+	}
+
+	soundbuf_getPts(pAvSync->pSound, &soundPts);
+	dispbuf_getPts(pAvSync->pDisp, &videoPts);
+
+	ptsDiff = soundPts - videoPts;
+
+	if (ptsDiff >= -(3004 * 2) && ptsDiff <= 3004 * 2) {
+		ret = 1;
 	} else {
-		soundbuf_getPts(pAvSync->pSound, &soundPts);
-		dispbuf_getPts(pAvSync->pDisp, &videoPts);
-		ptsDiff = soundPts - videoPts;
-		if (ptsDiff >= -6008 && ptsDiff <= 6008)
-			ret = 1;
-		else if (ptsDiff > 6008)
+		if (ptsDiff > 3004 * 2)
 			ret = 2;
 		else
 			ret = 3;
 	}
+term:
 	return ret;
 }
-#else
-INCLUDE_ASM("tmp/asm/sampler/sampler/nonmatchings/avsync", avsync_Compare);
-#endif
