@@ -126,7 +126,30 @@ sothread_detach2(struct thread_info *ti, struct socket *so)
 	}
 }
 
-INCLUDE_ASM("tmp/asm/tony_libs/pspnet_inet/nonmatchings/uipc_syscalls", sceNetInetSocket);
+__attribute__((noinline)) int
+sceNetInetSocket(int domain, int type, int protocol)
+{
+	struct thread_info *ti;
+	struct socket *so;
+	int s, fd, error;
+
+	ti = _sce_pspnet_thread_enter();
+	if (ti == NULL)
+		return -1;
+	s = _sce_pspnet_spllock();
+	error = EMFILE;
+	if ((fd = sofdalloc()) < 0)
+		goto out;
+	error = socreate(domain, &so, type, protocol);
+	if (error)
+		goto out;
+	so->so_fd = fd;
+out:
+	_sce_pspnet_splunlock(s);
+	if (_sce_pspnet_thread_leave(ti, error) < 0)
+		return -1;
+	return so->so_fd;
+}
 
 INCLUDE_ASM("tmp/asm/tony_libs/pspnet_inet/nonmatchings/uipc_syscalls", sceNetInetAccept);
 
