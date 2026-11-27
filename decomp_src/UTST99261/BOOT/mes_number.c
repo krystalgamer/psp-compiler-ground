@@ -51,6 +51,10 @@ void *mes_util_string_new(void);
 MesValue mes_string_new3(MesContext *ctx, void *s);
 void mes_util_string_free(void *s);
 extern MesValue D_00585288;
+extern const double D_0013B780;
+extern const double D_0013B788;
+extern const double D_0013B790;
+double mes_util_expt(double b, int e);
 MesValue mes_number_alloc_int32(MesContext *ctx, int n)
 {
     MesValue v = MES_INT(n);
@@ -426,9 +430,47 @@ MesValue mes_number_value_of(MesContext *ctx)
     return v;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_number", mes_number_to_fixed_sub);
+void mes_number_to_fixed_sub(MesSBuf *s, double d, int n, int dot)
+{
+    if (d >= D_0013B780 || n > 0)
+        mes_number_to_fixed_sub(s, d / D_0013B780, n - 1, 1);
+    mes_util_string_put(s, (int)fmod(d, D_0013B780) + '0');
+    if (n == 0 && dot)
+        mes_util_string_put(s, '.');
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_number", mes_number_to_fixed);
+MesValue mes_number_to_fixed(MesContext *ctx, MesValue digits)
+{
+    MesValue v = (MesValue)ctx->frame->thisobj;
+    MesValue r;
+    double d;
+    void *s;
+
+    if (MES_IS_OBJECT(v))
+        v = ((MesValue *)v)[3];
+    r = mes_number_to_special(v);
+    if (r != 0)
+        return r;
+    if ((v & 3) != 1 && (v & 3) != 2)
+        return mes_eval_type_error(ctx, v);
+    d = mes_num(v);
+    digits = mes_eval_to_int32(ctx, digits);
+    if ((unsigned int)digits > 20) {
+        ctx->f14 = mes_error_range(ctx, v);
+        return 0;
+    }
+    s = mes_util_string_new();
+    if (s == NULL)
+        return ctx->f14 = D_00585288;
+    if (d < 0) {
+        d = -d;
+        mes_util_string_put(s, '-');
+    }
+    mes_number_to_fixed_sub(s, floor(d * mes_util_expt(D_0013B788, digits) + D_0013B790), digits, 0);
+    v = mes_string_new3(ctx, s);
+    mes_util_string_free(s);
+    return v;
+}
 
 void mes_number_to_exponential_sub(MesSBuf *s)
 {
