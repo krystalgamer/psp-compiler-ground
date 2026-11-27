@@ -1,126 +1,103 @@
-/* C++ source (.cc); still m2c drafts compiled as C under the mangled names */
+/* lang: c++ */
 /* cflags: -Os */
+/* #pragma interface: the vtable and typeinfo stay in the module's asm .rodata */
+#pragma interface "rodata"
 #include "common.h"
-#include "m2c_macros.h"
-M2C_UNK _AniFrameSet(int, int);                     /* extern */
-M2C_UNK consPrintf(M2C_UNK *, M2C_UNK *, M2C_UNK, M2C_UNK *, M2C_UNK *); /* extern */
-extern unsigned char D_0010473C;
-extern unsigned char D_00104758;
-extern unsigned char D_00104774;
-extern unsigned char _ZZN9MetaMagic9SemaphoreC1EPKciijE12__FUNCTION__;
-M2C_UNK sceKernelTerminateDeleteThread(int);        /* extern */
-extern unsigned char D_001047E4;
-extern unsigned char D_00104800;
-extern unsigned char D_00104828;
-extern unsigned char D_00104868;
-extern unsigned char _ZZN9MetaMagic6ThreadD1EvE12__FUNCTION__;
-extern unsigned char D_00104840;
-M2C_UNK sceKernelExitThread(M2C_UNK);               /* extern */
-M2C_UNK sceKernelTerminateThread(int);              /* extern */
-extern unsigned char _ZZN9MetaMagic6Thread4TermEvE12__FUNCTION__;
 
-void *localeGetCntx();                              /* extern */
-extern unsigned char D_00104798;
-M2C_UNK _memFree(void *, M2C_UNK *, M2C_UNK);       /* extern */
-extern unsigned char D_0010477C;
-M2C_UNK sceKernelReferSemaStatus(int);              /* extern */
-M2C_UNK sceKernelReferThreadStatus(int);            /* extern */
-M2C_UNK _ZN3Vfs8Internal6SystemC1Ev(int);           /* extern */
-int _memAllocMBL(M2C_UNK, M2C_UNK *, M2C_UNK);      /* extern */
-extern unsigned char D_00104898;
-M2C_UNK _ZN3Vfs4File5CloseEv();                     /* extern */
-int _ZN3Vfs6System19Create_InternalFileERNS_4FileEPKci(); /* extern */
-M2C_UNK _ZN3Vfs6System7DestroyEv();                 /* extern */
-M2C_UNK _ZN3Vfs6System5MountEPKcPv();               /* extern */
-M2C_UNK _ZN3Vfs6System7UnmountEPKc();               /* extern */
-M2C_UNK _ZN3Vfs4File4SeekEii();                     /* extern */
-M2C_UNK _ZN3Vfs4File4ReadEPvj();                    /* extern */
-extern unsigned char D_001048E0;
-extern unsigned char D_001048C8;
+struct SceKernelThreadInfo { int size; char _[0x68]; };
+extern "C" int sceKernelCreateThread(const char *name, int (*entry)(unsigned int, void *), int prio, int stack, unsigned int attr, void *opt);
+extern "C" int sceKernelGetThreadId(void);
+extern "C" int sceKernelExitDeleteThread(int status);
+extern "C" int sceKernelTerminateDeleteThread(int id);
+extern "C" int sceKernelChangeThreadPriority(int id, int prio);
+extern "C" int sceKernelReferThreadStatus(int id, SceKernelThreadInfo *info);
+extern "C" void consPrintf(const char *fmt, ...);
+extern "C" void _memFree(void *p, const char *file, int line);
 
+extern const char D_001047E4[], D_00104800[], D_00104818[], D_00104828[], D_00104840[];
+extern const char ThreadC1_FUNCTION[] __asm__("_ZZN9MetaMagic6ThreadC1EPKciijE12__FUNCTION__");
+extern const char ThreadD1_FUNCTION[] __asm__("_ZZN9MetaMagic6ThreadD1EvE12__FUNCTION__");
 
-
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/libmm_thread", _ZN9MetaMagic6ThreadC2EPKciij);
-
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/libmm_thread", _ZN9MetaMagic6ThreadC1EPKciij);
-
-void _ZN9MetaMagic6ThreadD2Ev(void *arg0) {
-    int temp_v0;
-    int temp_v0_2;
-
-    M2C_FIELD(arg0, M2C_UNK **, 0) = &D_00104868;
-    temp_v0 = sceKernelGetThreadId();
-    if (temp_v0 < 0) {
-        consPrintf(&D_001047E4, &D_00104800, 0x44, &_ZZN9MetaMagic6ThreadD1EvE12__FUNCTION__, &D_00104828);
-    }
-    temp_v0_2 = M2C_FIELD(arg0, int *, 4);
-    if (temp_v0_2 == temp_v0) {
-        sceKernelExitDeleteThread(0);
-        return;
-    }
-    sceKernelTerminateDeleteThread(temp_v0_2);
+namespace Ys {
+class Object {
+public:
+	static void operator delete(void *p) { _memFree(p, D_00104840, 25); }
+};
 }
 
-void _ZN9MetaMagic6ThreadD1Ev(void *arg0) {
-    int temp_v0;
-    int temp_v0_2;
+namespace MetaMagic {
+class Thread : public Ys::Object {
+	int id;
+	int priority;
+public:
+	Thread(const char *name, int stack, int prio, unsigned int attr);
+	virtual ~Thread();
+	virtual int Run(int argSize, const void *argp);
+	int Set_Priority(int prio);
+	void Get_Status(SceKernelThreadInfo &info) const;
+	int Start(int argSize, const void *argp);
+	void Term();
+	static int _EntryPoint(unsigned int argSize, void *argp);
+};
 
-    M2C_FIELD(arg0, M2C_UNK **, 0) = &D_00104868;
-    temp_v0 = sceKernelGetThreadId();
-    if (temp_v0 < 0) {
-        consPrintf(&D_001047E4, &D_00104800, 0x44, &_ZZN9MetaMagic6ThreadD1EvE12__FUNCTION__, &D_00104828);
-    }
-    temp_v0_2 = M2C_FIELD(arg0, int *, 4);
-    if (temp_v0_2 == temp_v0) {
-        sceKernelExitDeleteThread(0);
-        return;
-    }
-    sceKernelTerminateDeleteThread(temp_v0_2);
+Thread::Thread(const char *name, int stack, int prio, unsigned int attr)
+{
+	id = sceKernelCreateThread(name, _EntryPoint, prio, stack, attr, 0);
+	if (!(id >= 0))
+		consPrintf(D_001047E4, D_00104800, 47, ThreadC1_FUNCTION, D_00104818);
+	priority = prio;
+}
+
+Thread::~Thread()
+{
+	int current_thread_id = sceKernelGetThreadId();
+	if (!(current_thread_id >= 0))
+		consPrintf(D_001047E4, D_00104800, 68, ThreadD1_FUNCTION, D_00104828);
+	if (id == current_thread_id)
+		sceKernelExitDeleteThread(0);
+	else
+		sceKernelTerminateDeleteThread(id);
 }
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/libmm_thread", _ZZN9MetaMagic6ThreadC1EPKciijE12__FUNCTION__);
-
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/libmm_thread", D_001047E4);
-
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/libmm_thread", D_00104800);
-
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/libmm_thread", D_00104818);
-
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/libmm_thread", _ZZN9MetaMagic6ThreadD1EvE12__FUNCTION__);
-
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/libmm_thread", D_00104828);
+/* ys_object.h's __FILE__ (Ys::Object::operator delete); the split keeps it in the D0 dtor's asm */
+__asm__(".section .rodata\n\t.align 2\nD_00104840:\n\t.asciz \"src/ys/ys_object.h\"\n\t.align 2\n\t.previous");
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/libmm_thread", _ZN9MetaMagic6ThreadD0Ev);
-
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/libmm_thread", _ZN9MetaMagic6Thread12Set_PriorityEi);
-
-void _ZNK9MetaMagic6Thread10Get_StatusER19SceKernelThreadInfo(void *arg0, int *arg1) {
-    *arg1 = 0x6C;
-    sceKernelReferThreadStatus(M2C_FIELD(arg0, int *, 4));
+int Thread::Set_Priority(int prio)
+{
+	int r = sceKernelChangeThreadPriority(id, prio);
+	switch (r) {
+	case 0:
+	case (int)0x800201A2:
+		priority = prio;
+	}
+	return r;
 }
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/libmm_thread", _ZNK9MetaMagic6Thread10Get_StatusER19SceKernelThreadInfo);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/libmm_thread", _ZN9MetaMagic6Thread5StartEiPKv);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/libmm_thread", _ZN9MetaMagic6Thread4TermEv);
 
-int _ZN9MetaMagic6Thread3RunEiPKv(void) {
-    return 0;
+int Thread::Run(int argSize, const void *argp)
+{
+	return 0;
 }
 
-void _ZN9MetaMagic6Thread11_EntryPointEjPv(int arg0, int arg1) {
-    void **temp_v1;
-    void *temp_a0;
-
-    temp_a0 = arg1 + arg0;
-    temp_v1 = M2C_FIELD(temp_a0, void ***, -4);
-    M2C_FIELD(*temp_v1, M2C_UNK (**)(void **, int, int), 8)(temp_v1, M2C_FIELD(temp_a0, int *, -8), arg1);
+int Thread::_EntryPoint(unsigned int argSize, void *argp)
+{
+	struct Arg { int size; Thread *self; } *a = (Arg *)((char *)argp + argSize) - 1;
+	return a->self->Run(a->size, argp);
+}
 }
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/libmm_thread", _ZTVN9MetaMagic6ThreadE);
-
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/libmm_thread", D_00104868);
-
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/libmm_thread", _ZTIN9MetaMagic6ThreadE);
-
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/libmm_thread", _ZTSN9MetaMagic6ThreadE);
-
