@@ -121,7 +121,7 @@ int sgl::Mesh::internal_vertex_index(int i) const
     return i;
 }
 
-sgl::Mesh::Mesh(bool b) : _locked(b), _f9C(0)
+sgl::Mesh::Mesh(bool b) : _locked(b), _finish(0)
 {
 }
 

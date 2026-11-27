@@ -92,6 +92,7 @@ struct TexCoord : math::vector_xyzw {
 };
 struct Triangle {
     int operator[](int i) const { return v[i & 3]; }
+    int &operator[](int i) { return v[i & 3]; }
     int edge(int i) const { return e[i & 3]; }
     int v[3];
     int e[3];
@@ -115,7 +116,7 @@ struct Vertex {
     bool operator<(const Vertex &) const;
 };
 struct Edge {
-    Edge(int, int, int, int);
+    Edge(int = -1, int = -1, int = -1, int = -1);
     int numAdjacentTriangles() const;
     void order();
     int vertex(int i) const { return v[i & 1]; }
@@ -212,6 +213,15 @@ public:
         unsigned int _cur;
     };
     void reset();
+    void setSize(unsigned int n)
+    {
+        _n = n;
+        if (n)
+            _lists.resize(n);
+        else
+            reset();
+    }
+    void incrSize(unsigned int _List, unsigned int n);
     void freeze();
     void clear(unsigned int _List);
     void add(unsigned int _List, int);
@@ -291,13 +301,18 @@ public:
     void discardTexCoords();
     void reverseTrianglesVertices();
     void reverseVerticesNormals();
+    void makePositionsAdjacentTrianglesLists(VarlenListsList &);
+    int findTriangleEdge(int, int, int) const;
+    bool cmpEdges(int, int, unsigned int);
+    void explodeTriangleVertices();
+    void calc_initial_edges();
     static void calcStencilShadowData(StencilShadowData &, const CoreMesh &);
     Offsets _offsets;                   /* 0x5C */
     bool _locked;                       /* 0x74 */
     std::vector<Triangle> _triangles;   /* 0x78 */
     std::vector<Edge> _edges;           /* 0x84 */
     std::vector<Normal> _tnormals;      /* 0x90 */
-    bool _f9C;
+    bool _finish;                       /* 0x9C */
 };
 
 class LineSet {

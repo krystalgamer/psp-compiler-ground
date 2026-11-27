@@ -6,6 +6,12 @@
 
 /* these template instances are still asm below */
 namespace std {
+extern template void vector<sgl::Edge>::reserve(vector<sgl::Edge>::size_type);
+extern template void vector<sgl::Edge>::_M_insert_aux(vector<sgl::Edge>::iterator, const sgl::Edge &);
+extern template void vector<sgl::Edge>::_M_fill_insert(vector<sgl::Edge>::iterator, vector<sgl::Edge>::size_type, const sgl::Edge &);
+extern template void vector<sgl::VarlenListsList::List>::_M_fill_insert(vector<sgl::VarlenListsList::List>::iterator,
+                                                                        vector<sgl::VarlenListsList::List>::size_type,
+                                                                        const sgl::VarlenListsList::List &);
 extern template vector<sgl::VarlenListsList::List>::iterator
 vector<sgl::VarlenListsList::List>::erase(vector<sgl::VarlenListsList::List>::iterator, vector<sgl::VarlenListsList::List>::iterator);
 }
@@ -20,6 +26,17 @@ extern const char VLL_reset_name[] __asm__("_ZZN3sgl15VarlenListsList5resetEvE19
 extern const char VLL_clear_name[] __asm__("_ZZN3sgl15VarlenListsList5clearEjE19__PRETTY_FUNCTION___16DAB4");
 extern const char VLL_freeze_name[] __asm__("_ZZN3sgl15VarlenListsList6freezeEvE19__PRETTY_FUNCTION___16DA90");
 extern const char VLL_add_name[] __asm__("_ZZN3sgl15VarlenListsList3addEjiE19__PRETTY_FUNCTION___16DAE4");
+extern const char D_0016C1B0[];     /* "../lib/sgl/Mesh.finish.cpp" */
+extern const char D_0016C1E4[];     /* "\n" */
+extern const char D_0016C54C[];
+extern const char D_0016C574[];
+extern const char D_0016C5A8[];     /* "didn't find edge p" */
+extern const char D_0016C5BC[];     /* " p" */
+extern const char D_0016C5C0[];     /* " in triangle " */
+extern const char findTriangleEdge_name[] __asm__("_ZZNK3sgl4Mesh16findTriangleEdgeEiiiE19__PRETTY_FUNCTION__");
+extern const char D_0016C23C[];     /* "_finish" */
+extern const char explodeTriangleVertices_name[] __asm__("_ZZN3sgl4Mesh23explodeTriangleVerticesEvE19__PRETTY_FUNCTION__");
+#define FINISH_ASSERT(c, text, fn, line) SGL_ASSERT(c, D_0016C198, text, D_0016C1B0, fn, line, D_0016C238)
 #define VLL_ASSERT(c, text, fn, line) SGL_ASSERT(c, D_0016C198, text, D_0016C398, fn, line, D_0016C238)
 inline void sgl::VarlenListsList::clear(unsigned int _List)
 {
@@ -113,9 +130,42 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh_4",
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh_4", _ZN3sgl4Mesh19removeFlatTrianglesEf);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh_4", _ZN3sgl4Mesh35makePositionsAdjacentTrianglesListsERNS_15VarlenListsListE);
+extern const char VLL_incrSize_name[] __asm__("_ZZN3sgl15VarlenListsList8incrSizeEjjE19__PRETTY_FUNCTION___16C4D4");
+inline void sgl::VarlenListsList::incrSize(unsigned int _List, unsigned int n)
+{
+    VLL_ASSERT(_List < _n, D_0016C414, VLL_incrSize_name, 76);
+    _lists[_List]._size += n;
+}
+void sgl::Mesh::makePositionsAdjacentTrianglesLists(VarlenListsList &l)
+{
+    l.reset();
+    l.setSize(getPositions().size());
+    for (std::vector<Triangle>::const_iterator it = getTriangles().begin(); it != getTriangles().end(); ++it)
+        for (int i = 0; i != 3; i++)
+            l.incrSize(getVertexAttributeIndex((*it)[i], POS), 1);
+    l.freeze();
+    int t = 0;
+    for (std::vector<Triangle>::const_iterator it = getTriangles().begin(); it != getTriangles().end(); ++it, ++t)
+        for (int i = 0; i != 3; i++)
+            l.add(getVertexAttributeIndex((*it)[i], POS), t);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh_4", _ZNK3sgl4Mesh16findTriangleEdgeEiii);
+int sgl::Mesh::findTriangleEdge(int ti, int p0, int p1) const
+{
+    FINISH_ASSERT(ti >= 0 && ti < (int)_triangles.size(), D_0016C54C, findTriangleEdge_name, 761);
+    const Triangle &t = _triangles[ti];
+    for (int i = 0; i != 3; i++) {
+        int edge_index = t.edge(i);
+        FINISH_ASSERT(edge_index >= 0 && edge_index < (int)_edges.size(), D_0016C574, findTriangleEdge_name, 769);
+        const Edge &e = _edges[edge_index];
+        int a = getVertexAttributeIndex(e.vertex(0), POS);
+        int b = getVertexAttributeIndex(e.vertex(1), POS);
+        if ((a == p0 && b == p1) || (a == p1 && b == p0))
+            return edge_index;
+    }
+    common::Log() << D_0016C5A8 << p0 << D_0016C5BC << p1 << D_0016C5C0 << ti << D_0016C1E4;
+    return -1;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh_4", _ZN3sgl4Mesh17check_connectionsEv);
 
@@ -123,9 +173,49 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh_4",
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh_4", _ZN3sgl4Mesh19searchCommonPosPairEiiRiS1_);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh_4", _ZN3sgl4Mesh8cmpEdgesEiij);
+/* the local arrays' initializers stay in the module's .rodata */
+struct CmpEdgesMasks {
+    unsigned int m[4];
+};
+struct CmpEdgesAttrs {
+    sgl::VertexAttrEnum a[4];
+};
+extern const CmpEdgesMasks D_0016C830;  /* {1, 2, 4, 8} */
+extern const CmpEdgesAttrs D_0016C840;  /* {POS, NOR, COL, TEX} */
+bool sgl::Mesh::cmpEdges(int e1, int e2, unsigned int mask)
+{
+    CmpEdgesMasks masks = D_0016C830;
+    CmpEdgesAttrs attrs = D_0016C840;
+    for (int i = 0; i != 4; i++) {
+        if (!(mask & masks.m[i]))
+            continue;
+        int a0 = getEdgeVertexAttributeIndex(e1, 0, attrs.a[i]);
+        int a1 = getEdgeVertexAttributeIndex(e1, 1, attrs.a[i]);
+        int b0 = getEdgeVertexAttributeIndex(e2, 0, attrs.a[i]);
+        int b1 = getEdgeVertexAttributeIndex(e2, 1, attrs.a[i]);
+        if (!((a0 == b0 && a1 == b1) || (a0 == b1 && a1 == b0)))
+            return false;
+    }
+    return true;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh_4", _ZN3sgl4Mesh18calc_initial_edgesEv);
+void sgl::Mesh::calc_initial_edges()
+{
+    _edges.resize(0);
+    _edges.reserve(_triangles.size() * 3);
+    int ti = 0;
+    int e = 0;
+    for (std::vector<Triangle>::iterator it = _triangles.begin(); it != _triangles.end(); ++it, ++ti, e += 3) {
+        int a, b, c;
+        getTriangleVertexIndex(ti, a, b, c);
+        _edges.push_back(Edge(ti, -1, a, b));
+        it->e[0] = e;
+        _edges.push_back(Edge(ti, -1, b, c));
+        it->e[1] = e + 1;
+        _edges.push_back(Edge(ti, -1, c, a));
+        it->e[2] = e + 2;
+    }
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_Mesh_4", _ZN3sgl4Mesh9calcEdgesEj);
 
