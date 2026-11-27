@@ -12,6 +12,7 @@ extern int l_nCardNum;
 void consPrintf(const char *, ...);
 extern unsigned char D_00102244;
 void *cardlistFindOne();                            /* extern */
+typedef struct { int pad[0x80]; unsigned short id; char rest[0xB60 - 0x202]; } CardEnt;
 extern unsigned char D_001021A0;
 
 int *resGetDatLocal();
@@ -107,11 +108,34 @@ int cardlistGetCardNum(void) {
     return l_nCardNum;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/cardlist", cardlistFindOne);
+extern unsigned char D_00101FB0;
+void *cardlistFindOne(uCardID)
+unsigned int uCardID;
+{
+	int n = l_nCardNum;
+	CardEnt *p = (CardEnt *)l_atCardList;
+	if (!(uCardID <= l_nCardIDMax))
+		consPrintf(&D_00101FB0, &D_00101FCC, 0x15C, "cardlistFindOne", "uCardID <= l_nCardIDMax");
+	for (; n; n--, p++)
+		if (p->id == uCardID)
+			return p;
+	return NULL;
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/cardlist", D_001021A0);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/cardlist", cardlistGetOne);
+void *memset(void *, int, unsigned int);
+CardEnt *cardlistGetOne(CardEnt *dst, int id)
+{
+	CardEnt *src = cardlistFindOne(id);
+	if (src) {
+		memset(dst, 0, sizeof(CardEnt));
+		*dst = *src;
+		return dst;
+	}
+	consPrintf(&D_001021A0, "cardlistGetOne", id);
+	return NULL;
+}
 
 void *cardlistGetPtr(int id)
 {
@@ -127,7 +151,17 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/cardlist", cardlistGe
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/cardlist", D_00102244);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/cardlist", cardlistGetOneBySaveID);
+CardEnt *cardlistGetOneBySaveID(CardEnt *dst, unsigned int i)
+{
+	if (i < (unsigned int)l_nCardNum) {
+		CardEnt *src = &((CardEnt *)l_atCardList)[i];
+		memset(dst, 0, sizeof(CardEnt));
+		*dst = *src;
+		return dst;
+	}
+	consPrintf(&D_00102244, "cardlistGetOneBySaveID", i);
+	return NULL;
+}
 
 int cardlistGetPtrBySaveID(unsigned int arg0) {
     if (arg0 < (unsigned int) l_nCardNum) {
