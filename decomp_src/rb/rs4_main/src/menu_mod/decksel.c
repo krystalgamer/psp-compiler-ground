@@ -96,7 +96,24 @@ void _WinAniExe(DsWin *w, int unused, int frame)
 	bxAnmExec(w->anm[2]);
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/decksel", _FontPutSet_343E8);
+typedef struct { struct { int dat; void *str; } e[13]; } FontTbl2;
+extern FontTbl2 D_001029C4;
+int saveGetCurrentData(void);
+int _TtrFontPutSet_3450C();
+void _FontPutSet_343E8(int unused, int sel)
+{
+	FontTbl2 t = D_001029C4;
+	int sd = saveGetCurrentData();
+	int i;
+	if (sel != -1) {
+		_TtrFontPutSet_3450C(sel + 0x80, sd + sel * 0xD0 + 0x254, 0);
+	} else {
+		for (i = 0; i < 5; i++)
+			_TtrFontPutSet_3450C(i + 0x80, sd + i * 0xD0 + 0x254, 0);
+		for (i = 0; t.e[i].dat != -1; i++)
+			_TtrFontPutSet_3450C(t.e[i].dat, 0, t.e[i].str);
+	}
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/decksel", _TtrFontPutSet_3450C);
 
