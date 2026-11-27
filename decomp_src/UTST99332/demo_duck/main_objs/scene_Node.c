@@ -2,9 +2,14 @@
 /* cflags: -O3 -fno-exceptions */
 #undef __EXCEPTIONS
 #include "cxx/defer_asm.h"
+#define DEMO_STATICS_MATH
+#define DEMO_STATICS_IOSTREAM
+#define DEMO_STATICS_SGL
 #include "../main.hpp"
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Node", _Z41__static_initialization_and_destruction_0ii_84E7C);
+/* the module's .ctors/.dtors refer to the static constructor/destructor */
+__asm__(".globl _GLOBAL__I__ZN5scene4Node6calcbvERN4math14TransformStackERN3sgl2BVE");
+__asm__(".globl _GLOBAL__D__ZN5scene4Node6calcbvERN4math14TransformStackERN3sgl2BVE");
 
 bool scene::Node::calcbv(math::TransformStack &, sgl::BV &)
 {
@@ -78,19 +83,3 @@ bool scene::StaticTransform::calcbv(math::TransformStack &ts, sgl::BV &bv)
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Node", _ZN5scene4Mesh6calcbvERN4math14TransformStackERN3sgl2BVE);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_Node", _ZN5scene6Switch6calcbvERN4math14TransformStackERN3sgl2BVE);
-
-extern "C" {
-void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_84E7C");
-void _GLOBAL__I__ZN5scene4Node6calcbvERN4math14TransformStackERN3sgl2BVE(void);
-void _GLOBAL__D__ZN5scene4Node6calcbvERN4math14TransformStackERN3sgl2BVE(void);
-}
-
-void _GLOBAL__I__ZN5scene4Node6calcbvERN4math14TransformStackERN3sgl2BVE(void)
-{
-    static_init(1, 0xFFFF);
-}
-
-void _GLOBAL__D__ZN5scene4Node6calcbvERN4math14TransformStackERN3sgl2BVE(void)
-{
-    static_init(0, 0xFFFF);
-}

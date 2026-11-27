@@ -327,9 +327,7 @@ bss 0x18FEEC main_objs/scene_Texture
 bss 0x18FF70 -
 # scene_Graph_5, sh_PolarFunction: the header statics' float pools; .bss: the header statics
 rodata 0x16B590 main_objs/scene_Graph_5
-rodata 0x16B5AC -
 bss 0x18F5AC main_objs/scene_Graph_5
-bss 0x18F6B0 -
 rodata 0x1734A0 main_objs/sh_PolarFunction
 rodata 0x1734BC -
 bss 0x19152C main_objs/sh_PolarFunction
@@ -443,3 +441,8 @@ rodata 0x166C74 main_objs/math_Trackball
 rodata 0x166CB4 -
 bss 0x18E4B0 main_objs/math_Trackball
 bss 0x18E534 -
+# scene_Node: C++ static initializer; .rodata: its float pool and Mesh::calcbv's (asm) strings; .bss: the header statics
+rodata 0x16B5AC main_objs/scene_Node
+rodata 0x16B6EC -
+bss 0x18F6B0 main_objs/scene_Node
+bss 0x18F7B4 -
