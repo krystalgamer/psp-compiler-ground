@@ -388,15 +388,44 @@ void sceGuTerm(void)
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/libgu", D_001448B0);
 
-INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/libgu", D_001448F0);
+extern const float D_001449D0;
 
-INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/libgu", D_00144904);
+void sceGuStart(int type, void *list, int size)
+{
+	GuContext *context = &_ctx[type];
+	GuDrawBuffer *fb = &FBuf;
+	unsigned int *local_list = (unsigned int *)(((unsigned int)list) | 0x40000000);
 
-INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/libgu", D_0014495C);
+	context->parent_context = __aw_list_mode;
+	pList = context;
+	context->current = local_list;
+	context->start = local_list;
+	__aw_list_mode = type;
+	if (!type) {
+		intrParam.index = 0;
+		queid[0] = sceGeListEnQueue(local_list, local_list, intrCode, 0);
+	}
+	if (!gu_init) {
+		GuDitherInit dither_matrix = D_001448B0;
+		float one;
 
-INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/libgu", D_001449B4);
+		sceGuSetDither(dither_matrix.m);
+		sceGuPatchDivide(16, 16);
+		sceGuColorMaterial(7);
+		one = D_001449D0;
+		sceGuSpecular(one);
+		sceGuTexScale(one, one);
+		gu_init = 1;
+	}
+	if (!__aw_list_mode) {
+		int width = fb->frame_width;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/libgu", sceGuStart);
+		if (width) {
+			send_commandi(156, *(unsigned int *)&fb->frame_buffer & 0xffffff);
+			send_commandi(157, ((*(unsigned int *)&fb->frame_buffer & 0xff000000) >> 8) | width);
+		}
+	}
+}
 
 void sceGuSetDither(const int *matrix)
 {
@@ -498,7 +527,21 @@ int sceGuCheckList(void)
 	return (int)pList->current - (int)pList->start;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/libgu", sceGuSync);
+int sceGuSync(int mode, int what)
+{
+	switch (mode) {
+	case 0:
+		return sceGeDrawSync(what);
+	case 1:
+	case 2:
+	default:
+		return 0;
+	case 3:
+		return sceGeListSync(queid[0], what);
+	case 4:
+		return sceGeListSync(queid[1], what);
+	}
+}
 
 void sceGuSignalSync(int signal)
 {
@@ -516,9 +559,166 @@ void sceGuSignalSync(int signal)
 	}
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/libgu", sceGuEnable);
+void sceGuEnable(int state)
+{
+	switch (state) {
+	case 0:
+		send_commandi(34, 1);
+		break;
+	case 1:
+		send_commandi(35, 1);
+		break;
+	case 2:
+		_ctx[__aw_list_mode].scissor_enable = 1;
+		send_commandi(212, (_ctx[__aw_list_mode].scissor_start[1] << 10) | _ctx[__aw_list_mode].scissor_start[0]);
+		send_commandi(213, (_ctx[__aw_list_mode].scissor_end[1] << 10) | _ctx[__aw_list_mode].scissor_end[0]);
+		break;
+	case 3:
+		send_commandi(36, 1);
+		break;
+	case 4:
+		send_commandi(33, 1);
+		break;
+	case 5:
+		send_commandi(29, 1);
+		break;
+	case 6:
+		send_commandi(32, 1);
+		break;
+	case 7:
+		send_commandi(31, 1);
+		break;
+	case 8:
+		send_commandi(28, 1);
+		break;
+	case 9:
+		send_commandi(30, 1);
+		break;
+	case 10:
+		send_commandi(23, 1);
+		break;
+	case 11:
+		send_commandi(24, 1);
+		break;
+	case 12:
+		send_commandi(25, 1);
+		break;
+	case 13:
+		send_commandi(26, 1);
+		break;
+	case 14:
+		send_commandi(27, 1);
+		break;
+	case 15:
+		send_commandi(37, 1);
+		break;
+	case 16:
+		send_commandi(38, 1);
+		break;
+	case 17:
+		send_commandi(39, 1);
+		break;
+	case 18:
+		send_commandi(40, 1);
+		break;
+	case 19:
+		send_commandi(81, 1);
+		break;
+	case 20:
+		send_commandi(56, 1);
+		break;
+	case 21:
+		_ctx[__aw_list_mode].fragment_2x = 0x10000;
+		send_commandi(201, 0x10000 | _ctx[__aw_list_mode].texture_function);
+		break;
+	}
+	if (state < 22)
+		__gu_status |= (1 << state);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/libgu", sceGuDisable);
+void sceGuDisable(int state)
+{
+	GuDrawBuffer *fb = &FBuf;
+
+	switch (state) {
+	case 0:
+		send_commandi(34, 0);
+		break;
+	case 1:
+		send_commandi(35, 0);
+		break;
+	case 2:
+		{
+			int h = fb->height - 1;
+			int w = fb->width - 1;
+
+			_ctx[__aw_list_mode].scissor_enable = 0;
+			send_commandi(212, 0);
+			send_commandi(213, (h << 10) | w);
+		}
+		break;
+	case 3:
+		send_commandi(36, 0);
+		break;
+	case 4:
+		send_commandi(33, 0);
+		break;
+	case 5:
+		send_commandi(29, 0);
+		break;
+	case 6:
+		send_commandi(32, 0);
+		break;
+	case 7:
+		send_commandi(31, 0);
+		break;
+	case 8:
+		send_commandi(28, 0);
+		break;
+	case 9:
+		send_commandi(30, 0);
+		break;
+	case 10:
+		send_commandi(23, 0);
+		break;
+	case 11:
+		send_commandi(24, 0);
+		break;
+	case 12:
+		send_commandi(25, 0);
+		break;
+	case 13:
+		send_commandi(26, 0);
+		break;
+	case 14:
+		send_commandi(27, 0);
+		break;
+	case 15:
+		send_commandi(37, 0);
+		break;
+	case 16:
+		send_commandi(38, 0);
+		break;
+	case 17:
+		send_commandi(39, 0);
+		break;
+	case 18:
+		send_commandi(40, 0);
+		break;
+	case 19:
+		send_commandi(81, 0);
+		break;
+	case 20:
+		send_commandi(56, 0);
+		break;
+	case 21:
+		_ctx[__aw_list_mode].fragment_2x = 0;
+		send_commandi(201, _ctx[__aw_list_mode].texture_function);
+		break;
+	}
+	if (state < 22)
+		__gu_status &= ~(1 << state);
+}
 
 int sceGuGetStatus(int state)
 {
@@ -1022,7 +1222,32 @@ void sceGuLightSpot(int light, const ScePspFVector3 *direction, float exponent, 
 	send_commandf(lcmd[light].zdir, direction->z);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/libgu", sceGuLightColor);
+void sceGuLightColor(int light, int component, unsigned int color)
+{
+	color &= 0xffffff;
+	switch (component) {
+	case 1:
+		send_commandi(lcmd[light].ambient, color);
+		break;
+	case 2:
+		send_commandi(lcmd[light].diffuse, color);
+		break;
+	case 3:
+		send_commandi(lcmd[light].ambient, color);
+		send_commandi(lcmd[light].diffuse, color);
+		break;
+	case 4:
+		send_commandi(lcmd[light].specular, color);
+		break;
+	case 6:
+		send_commandi(lcmd[light].diffuse, color);
+		send_commandi(lcmd[light].specular, color);
+		break;
+	}
+}
+
+/* 1.0f of sceGuStart, after the jump tables of sceGuSync..sceGuLightColor */
+__asm__(".pushsection .rodata\n\t.globl D_001449D0\nD_001449D0:\n\t.float 1\n.popsection");
 
 void sceGuTexMode(int tpsm, int maxmips, int a2, int swizzle)
 {
