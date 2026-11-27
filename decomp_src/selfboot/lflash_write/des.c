@@ -1,4 +1,4 @@
-/* cflags: -O2 -fno-merge-constants */
+/* cflags: -O2 */
 #include "common.h"
 
 /* --- declarations --- */
@@ -445,33 +445,200 @@ int func_0000428C(const unsigned char *in, const unsigned char *k1, const unsign
 	return 0;
 }
 
-INCLUDE_ASM("tmp/asm/selfboot/lflash_write/nonmatchings/des", func_000043C4);
+int func_000043C4(const unsigned char *src, const unsigned char *key, unsigned char *dst, const unsigned char *iv, unsigned int count)
+{
+	unsigned char block[16];
+	unsigned char ks[128];
+	unsigned char prev[2][8];
+	unsigned int i, j;
 
-INCLUDE_ASM("tmp/asm/selfboot/lflash_write/nonmatchings/des", func_00004538);
+	func_0000349C(key, ks);
+	func_000035B4(src, ks, block);
+	for (i = 0; i < 8; i++)
+		prev[0][i] = src[i];
+	for (i = 0; i < 8; i++)
+		dst[i] = block[i] ^ iv[i];
+	for (j = 1; j < count; j++) {
+		func_000035B4(src + j * 8, ks, block);
+		for (i = 0; i < 8; i++)
+			prev[j & 1][i] = src[j * 8 + i];
+		for (i = 0; i < 8; i++)
+			dst[j * 8 + i] = block[i] ^ prev[(j + 1) & 1][i];
+	}
+	return 0;
+}
 
-INCLUDE_ASM("tmp/asm/selfboot/lflash_write/nonmatchings/des", func_000046FC);
+int func_00004538(const unsigned char *src, const unsigned char *key1, const unsigned char *key2, const unsigned char *key3, unsigned char *dst, const unsigned char *iv, unsigned int count)
+{
+	unsigned char block[16];
+	unsigned char ks1[128];
+	unsigned char ks2[128];
+	unsigned char ks3[128];
+	unsigned char prev[2][8];
+	unsigned int i, j;
 
-INCLUDE_ASM("tmp/asm/selfboot/lflash_write/nonmatchings/des", func_0000489C);
+	if (count != 0) {
+		func_0000349C(key1, ks1);
+		func_0000349C(key2, ks2);
+		func_0000349C(key3, ks3);
+		func_00003A74(src, ks1, ks2, ks3, block);
+		for (i = 0; i < 8; i++)
+			prev[0][i] = src[i];
+		for (i = 0; i < 8; i++)
+			dst[i] = block[i] ^ iv[i];
+		for (j = 1; j < count; j++) {
+			func_00003A74(src + j * 8, ks1, ks2, ks3, block);
+			for (i = 0; i < 8; i++)
+				prev[j & 1][i] = src[j * 8 + i];
+			for (i = 0; i < 8; i++)
+				dst[j * 8 + i] = block[i] ^ prev[(j + 1) & 1][i];
+		}
+	}
+	return 0;
+}
+
+int func_000046FC(const unsigned char *src, const unsigned char *key1, const unsigned char *key2, unsigned char *dst, const unsigned char *iv, unsigned int count)
+{
+	unsigned char block[16];
+	unsigned char ks1[128];
+	unsigned char ks2[128];
+	unsigned char prev[2][8];
+	unsigned int i, j;
+
+	if (count != 0) {
+		func_0000349C(key1, ks1);
+		func_0000349C(key2, ks2);
+		func_00003B84(src, ks1, ks2, block);
+		for (i = 0; i < 8; i++)
+			prev[0][i] = src[i];
+		for (i = 0; i < 8; i++)
+			dst[i] = block[i] ^ iv[i];
+		for (j = 1; j < count; j++) {
+			func_00003B84(src + j * 8, ks1, ks2, block);
+			for (i = 0; i < 8; i++)
+				prev[j & 1][i] = src[j * 8 + i];
+			for (i = 0; i < 8; i++)
+				dst[j * 8 + i] = block[i] ^ prev[(j + 1) & 1][i];
+		}
+	}
+	return 0;
+}
+
+int func_0000489C(DesCbc *ctx, const unsigned char *src, unsigned char *dst, unsigned int count)
+{
+	unsigned char block[16];
+	unsigned int i, j;
+	int k;
+
+	for (i = 0; i < 8; i++)
+		block[i] = src[i] ^ ctx->iv[i];
+	func_00003500(block, ctx->ks, dst);
+	for (j = 1; j < count; j++) {
+		for (i = 0; i < 8; i++)
+			block[i] = src[j * 8 + i] ^ dst[j * 8 - 8 + i];
+		func_00003500(block, ctx->ks, dst + j * 8);
+	}
+	{
+		unsigned char *iv = ctx->iv;
+		unsigned char *p = dst + count * 8 - 8;
+		for (k = 0; k < 8; k++)
+			iv[k] = p[k];
+	}
+	return 0;
+}
 
 void func_000049C8(DesCbc *ctx, unsigned char *buf, unsigned int n)
 {
 	func_0000489C(ctx, buf, buf, n);
 }
 
-INCLUDE_ASM("tmp/asm/selfboot/lflash_write/nonmatchings/des", func_000049E8);
-
-INCLUDE_ASM("tmp/asm/selfboot/lflash_write/nonmatchings/des", func_00004B88);
-
-INCLUDE_ASM("tmp/asm/selfboot/lflash_write/nonmatchings/des", func_00004BA8);
-
-void func_00004D00(void *a, void *k1, void *b)
+int func_000049E8(DesCbc *ctx, const unsigned char *src, unsigned char *dst, unsigned int count)
 {
-	func_00004BA8(a, k1, k1, b);
+	unsigned char block[16];
+	unsigned char prev[2][8];
+	unsigned int i, j;
+
+	func_000035B4(src, ctx->ks, block);
+	for (i = 0; i < 8; i++)
+		prev[0][i] = src[i];
+	for (i = 0; i < 8; i++)
+		dst[i] = block[i] ^ ctx->iv[i];
+	for (j = 1; j < count; j++) {
+		func_000035B4(src + j * 8, ctx->ks, block);
+		for (i = 0; i < 8; i++)
+			prev[j & 1][i] = src[j * 8 + i];
+		for (i = 0; i < 8; i++)
+			dst[j * 8 + i] = block[i] ^ prev[(j + 1) & 1][i];
+	}
+	for (i = 0; i < 8; i++)
+		ctx->iv[i] = prev[(j + 1) & 1][i];
+	return 0;
 }
 
-INCLUDE_ASM("tmp/asm/selfboot/lflash_write/nonmatchings/des", func_00004D20);
+void func_00004B88(DesCbc *ctx, unsigned char *buf, unsigned int n)
+{
+	func_000049E8(ctx, buf, buf, n);
+}
 
-INCLUDE_ASM("tmp/asm/selfboot/lflash_write/nonmatchings/des", func_00004EF0);
+int func_00004BA8(Des3Cbc *ctx, const unsigned char *src, unsigned char *dst, unsigned int count)
+{
+	unsigned char block[16];
+	unsigned int i, j;
+	int k;
+
+	if (count != 0) {
+		for (i = 0; i < 8; i++)
+			block[i] = src[i] ^ ctx->iv[i];
+		func_0000397C(block, ctx->ks1, ctx->ks2, ctx->ks3, dst);
+		for (j = 1; j < count; j++) {
+			for (i = 0; i < 8; i++)
+				block[i] = src[j * 8 + i] ^ dst[j * 8 - 8 + i];
+			func_0000397C(block, ctx->ks1, ctx->ks2, ctx->ks3, dst + j * 8);
+		}
+		{
+			unsigned char *iv = ctx->iv;
+			unsigned char *p = dst + count * 8 - 8;
+			for (k = 0; k < 8; k++)
+				iv[k] = p[k];
+		}
+	}
+	return 0;
+}
+
+void func_00004D00(Des3Cbc *ctx, unsigned char *buf, unsigned int n)
+{
+	func_00004BA8(ctx, buf, buf, n);
+}
+
+int func_00004D20(Des3Cbc *ctx, const unsigned char *src, unsigned char *dst, unsigned int count)
+{
+	unsigned char block[16];
+	unsigned char prev[2][8];
+	unsigned int i, j;
+
+	if (count != 0) {
+		func_00003A74(src, ctx->ks1, ctx->ks2, ctx->ks3, block);
+		for (i = 0; i < 8; i++)
+			prev[0][i] = src[i];
+		for (i = 0; i < 8; i++)
+			dst[i] = block[i] ^ ctx->iv[i];
+		for (j = 1; j < count; j++) {
+			func_00003A74(src + j * 8, ctx->ks1, ctx->ks2, ctx->ks3, block);
+			for (i = 0; i < 8; i++)
+				prev[j & 1][i] = src[j * 8 + i];
+			for (i = 0; i < 8; i++)
+				dst[j * 8 + i] = block[i] ^ prev[(j + 1) & 1][i];
+		}
+		for (i = 0; i < 8; i++)
+			ctx->iv[i] = prev[(j + 1) & 1][i];
+	}
+	return 0;
+}
+
+void func_00004EF0(Des3Cbc *ctx, unsigned char *buf, unsigned int n)
+{
+	func_00004D20(ctx, buf, buf, n);
+}
 
 void LflashFatfmt_B7A424A4(void) {
 }
