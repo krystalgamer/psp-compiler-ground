@@ -61,7 +61,19 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_RT", _ZNK3sg
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_RT", _ZN3sgl2RT13build_bv_treeEPN3BVH4NodeEbj);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_RT", _ZN3sgl2RT13build_bv_treeEbj);
+extern const char D_00173608[], D_001737A8[];
+extern const char bbt_name[] __asm__("_ZZN3sgl2RT13build_bv_treeEbjE19__PRETTY_FUNCTION__");
+void sgl::RT::build_bv_tree(bool b, unsigned int n)
+{
+    SGL_ASSERT(n != 0, D_001735EC, D_001737A8, D_001735D8, bbt_name, 467, D_00173608);
+    if (_triangles.empty())
+        return;
+    std::vector<unsigned int> &v = _bvh._root._items;
+    v.resize(0);
+    for (unsigned int i = 0; i != _triangles.size(); i++)
+        v.push_back(i);
+    build_bv_tree(&_bvh._root, b, n);
+}
 
 void sgl::RT::bvtree_trace(BVH::Node *n, Ray &r)
 {
