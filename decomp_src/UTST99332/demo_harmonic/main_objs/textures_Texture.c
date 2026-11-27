@@ -202,7 +202,19 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/textures_Tex
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/textures_Texture", _ZN8textures7Texture13make_from_tgaERKNS_17textures_internal3TgaE);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/textures_Texture", _ZN8textures7Texture14make_from_argbEiPKh);
+void textures::Texture::make_from_argb(int n, const unsigned char *src)
+{
+    allocate_for(FORMAT_1);
+    unsigned char *dst = image.addr();
+    for (int i = 0; i < n; i++) {
+        dst[0] = src[2];
+        dst[1] = src[1];
+        dst[2] = src[0];
+        dst[3] = override_alpha_on ? override_alpha_value : src[3];
+        src += 4;
+        dst += 4;
+    }
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/textures_Texture", _ZN8textures7Texture9makeDummyEii);
 
