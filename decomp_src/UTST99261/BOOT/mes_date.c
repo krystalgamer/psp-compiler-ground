@@ -2,6 +2,13 @@
 #include "common.h"
 #include "mes_js.h"
 #include "m2c_macros.h"
+extern unsigned int mes_ids[];
+extern MesObject *D_00585354;
+extern void *mes_date_table;
+extern void *mes_date_table1;
+MesValue mes_date_constructor(MesContext *ctx);
+void *mes_native_new(MesContext *ctx, int a, void *fn, int nargs, int flags);
+void mes_native_setup(MesContext *ctx, MesObject *o, void *table, int n);
 typedef struct MesDate {
     struct MesObject obj;
     unsigned char valid;              /* 0x14 */
@@ -489,7 +496,22 @@ MesValue mes_date_to_utc_string(MesContext *ctx)
     return mes_date_string(ctx, d, 1, 1, 0);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_date", mes_date_setup);
+void mes_date_setup(MesContext *ctx)
+{
+    MesObject *proto;
+    MesObject *ctor;
+
+    proto = (MesObject *)mes_date_new(ctx);
+    if (proto != NULL)
+        proto->proto = D_00585354;
+    D_00585338 = proto;
+    ctor = mes_native_new(ctx, mes_ids[2], mes_date_constructor, 7, 1);
+    mes_object_set(ctx->global, mes_ids[2], (MesValue)ctor, 7);
+    mes_object_set(ctor, mes_ids[59], (MesValue)proto, 7);
+    mes_object_set(proto, mes_ids[40], (MesValue)ctor, 2);
+    mes_native_setup(ctx, ctor, &mes_date_table1, 2);
+    mes_native_setup(ctx, proto, &mes_date_table, 44);
+}
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/mes_date", D_0013BB38);
 

@@ -2,6 +2,11 @@
 #include "common.h"
 #include "mes_js.h"
 #include "m2c_macros.h"
+extern unsigned int mes_ids[];
+extern void *mes_array_table;
+MesValue mes_array_constructor(MesContext *ctx);
+void *mes_native_new(MesContext *ctx, int a, void *fn, int nargs, int flags);
+void mes_native_setup(MesContext *ctx, MesObject *o, void *table, int n);
 typedef struct MesArray {
     struct MesObject obj;
     unsigned int length;              /* 0x14 */
@@ -127,7 +132,20 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_array", mes_array_splice);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_array", mes_array_unshift);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_array", mes_array_setup);
+void mes_array_setup(MesContext *ctx)
+{
+    MesObject *proto;
+    MesObject *ctor;
+
+    proto = &mes_array_new(ctx, 0)->obj;
+    proto->proto = mes_classes[9];
+    mes_classes[0] = proto;
+    ctor = mes_native_new(NULL, mes_ids[0], mes_array_constructor, 1, 1);
+    mes_object_set(ctx->global, mes_ids[0], (MesValue)ctor, 7);
+    mes_object_set(ctor, mes_ids[59], (MesValue)proto, 7);
+    mes_object_set(proto, mes_ids[40], (MesValue)ctor, 2);
+    mes_native_setup(ctx, proto, &mes_array_table, 12);
+}
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/mes_array", D_0013B890);
 
