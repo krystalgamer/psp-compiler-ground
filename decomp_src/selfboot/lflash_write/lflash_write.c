@@ -159,7 +159,68 @@ int func_000003F0(SceUID fd1, SceUID fd2)
 
 INCLUDE_RODATA("tmp/asm/selfboot/lflash_write/nonmatchings/lflash_write", D_0000521C);
 
-INCLUDE_ASM("tmp/asm/selfboot/lflash_write/nonmatchings/lflash_write", func_00000594);
+int func_00000594(const char *list)
+{
+	char line[256];
+	char dst[256];
+	char *argv[16];
+	SceUID fd;
+	SceUID in;
+	SceUID out;
+	int argc;
+	int i;
+	int ret;
+	char *name;
+
+	fd = sceIoOpen(list, 1, 0777);
+	if (fd < 0) {
+		printf(D_0000521C, fd);
+		return 0;
+	}
+	while (func_0000009C(line, 256, fd) != NULL) {
+		argc = func_00000000(line, argv, 16);
+		if (argc > 0 && argv[0][0] == '#')
+			continue;
+		if (argc < 2) {
+			for (i = 0; i < argc; i++)
+				printf(D_000052A4, argv[i]);
+			puts(D_00005294);
+			continue;
+		}
+		printf("src %s dst %s\n", argv[0], argv[1]);
+		in = sceIoOpen(argv[0], 1, 0777);
+		if (in < 0)
+			return 0;
+		ret = func_000001A8(argv[1]);
+		name = func_000002FC(argv[0]);
+		printf("filename %s\n", name);
+		if (ret == 0 && argv[1][strlen(argv[1]) - 1] == '/') {
+			strcpy(dst, argv[1]);
+			strcpy(dst + strlen(argv[1]), name);
+		} else if (ret == -1) {
+			strncpy(dst, argv[1], strlen(argv[1]) - 1);
+			line[strlen(argv[1])] = '/';
+			strcpy(dst + strlen(argv[0]) + 1, name);
+		} else {
+			strcpy(dst, argv[1]);
+		}
+		printf("destination file %s\n", dst);
+		out = sceIoOpen(dst, 0x602, 0777);
+		if (out < 0) {
+			printf("sceIoOpen failed: 0x%08x\n", out);
+			sceIoClose(in);
+			return 0;
+		}
+		if (func_00000350(in, out) != 0)
+			puts("file copy error");
+		sceIoClose(in);
+		sceIoClose(out);
+	}
+	ret = sceIoClose(fd);
+	if (fd != ret)
+		printf(D_000052A8, ret);
+	return 0;
+}
 
 INCLUDE_RODATA("tmp/asm/selfboot/lflash_write/nonmatchings/lflash_write", D_00005294);
 

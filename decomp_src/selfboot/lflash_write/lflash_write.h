@@ -53,6 +53,10 @@ int sceIoAssign(const char *dev1, const char *dev2, const char *dev3, int mode, 
 int sceIoUnassign(const char *dev);
 int ShellForKernel_9C3CFF4D(const char *name, const char *help, int (*func)(char *));
 char *func_0000009C(char *buf, int size, SceUID fd);
+int func_000001A8(const char *path);
+char *func_000002FC(char *path);
+int func_00000350(SceUID in, SceUID out);
+int func_000003F0(SceUID fd1, SceUID fd2);
 int func_00000000(char *str, char **argv, int max);
 int func_000011A4(char *file);
 int func_00001594(char *cmd);
@@ -61,6 +65,10 @@ int LflashFatfmt_B7A424A4(int argc, char **argv);
 /* .rodata strings shared by functions that are still asm */
 extern const char D_00005160[];	/* "sceIoRead 0x%08x\n" */
 extern const char D_000051B4[];	/* "size1 0x%08x != 0x%08x size2\n" */
+extern const char D_0000521C[];	/* "sceIoOpen 0x%08x\n" */
+extern const char D_00005294[];	/* "argument error" */
+extern const char D_000052A4[];	/* "%s " */
+extern const char D_000052A8[];	/* "sceIoClose 0x%08x\n" */
 
 /* .data */
 extern char *D_000056E0[6];	/* "flash0".."flash5" */
