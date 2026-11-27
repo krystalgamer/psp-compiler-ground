@@ -1,9 +1,15 @@
 /* lang: c++ */
-/* cflags: -O3 -fno-exceptions -fno-merge-constants */
+/* cflags: -O3 -fno-exceptions */
 #undef __EXCEPTIONS
 #include "cxx/defer_asm.h"
+#define DEMO_STATICS_IOSTREAM
 #define DEMO_TEMPLATE_DEFS
 #include "../main.hpp"
+
+/* the module's .ctors/.dtors refer to the static constructor/destructor */
+__asm__(".globl _GLOBAL__I__ZN11vector_font7ConsoleC2Ejj");
+__asm__(".globl _GLOBAL__D__ZN11vector_font7ConsoleC2Ejj");
+#include "../gl.hpp"
 
 /* this object's .gnu.linkonce.t sections in the original's order */
 DEMO_LINKONCE_ORDER(
@@ -16,8 +22,6 @@ DEMO_LINKONCE_ORDER(
     DEMO_LINKONCE(_ZSt24__uninitialized_copy_auxIN9__gnu_cxx17__normal_iteratorIPN11vector_font7Console4LineESt6vectorIS4_SaIS4_EEEES9_ET0_T_SB_SA_12__false_type)
     DEMO_LINKONCE(_ZSt26__uninitialized_fill_n_auxIN9__gnu_cxx17__normal_iteratorIPN11vector_font7Console4LineESt6vectorIS4_SaIS4_EEEEjS4_ET_SA_T0_RKT1_12__false_type)
 );
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/vector_font_Console", _Z41__static_initialization_and_destruction_0ii_237B0);
 
 vector_font::Console::Console(unsigned int w, unsigned int h)
     : vx(0.5f), vy(0.5f), sx(1), sy(1), r(1), g(1), b(1), enabled(true)
@@ -126,7 +130,47 @@ void vector_font::Console::put(char c)
     }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/vector_font_Console", _ZNK11vector_font7Console4drawEv);
+extern "C" {
+void glGetIntegerv(unsigned int, int *);
+void glViewport(int, int, int, int);
+void glMatrixMode(unsigned int);
+void glLoadIdentity(void);
+void gluOrtho2D(double, double, double, double);
+}
+namespace vector_font {
+void DrawText_(std::string, float, float, float, float, float, unsigned int);
+}
+void vector_font::Console::draw() const
+{
+    if (!enabled)
+        return;
+    int vp[4];
+    glGetIntegerv(0xBA2, vp);
+    glViewport(vp[0], vp[1] + (int)(vp[3] * (1 - vy)), (int)(vp[2] * vx), (int)(vp[3] * vy));
+    glMatrixMode(0x1701);
+    glPushMatrix();
+    glLoadIdentity();
+    gluOrtho2D(0, 1, 0, 1);
+    glMatrixMode(0x1700);
+    glPushMatrix();
+    glLoadIdentity();
+    glPushMatrix();
+    glDisable(GL_LIGHTING);
+    math::vector_xyz p(-sx * 0.5f, 1 - sy * 0.5f, 0);
+    glColor3f(r, g, b);
+    for (std::vector<Line>::const_iterator l = _lines.begin(); l != _lines.end(); ++l) {
+        SGL_ASSERT(l->_text.size() == _num_columns, " *** error ", "l->_text.size() == _num_columns", "../lib/glutils/Console.cpp", __PRETTY_FUNCTION__, 0xF3, " ");
+        if (l->_pos)
+            DrawText_(l->_text, p.x, p.y, p.z, sx, sy, l->_pos);
+        p.y -= sy;
+    }
+    glPopMatrix();
+    glPopMatrix();
+    glMatrixMode(0x1701);
+    glPopMatrix();
+    glMatrixMode(0x1700);
+    glViewport(vp[0], vp[1], vp[2], vp[3]);
+}
 
 void vector_font::Console::setViewport(float x, float y)
 {
@@ -139,20 +183,4 @@ void vector_font::Console::setColor(float r_, float g_, float b_)
     r = r_;
     g = g_;
     b = b_;
-}
-
-extern "C" {
-void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_237B0");
-void _GLOBAL__I__ZN11vector_font7ConsoleC2Ejj(void);
-void _GLOBAL__D__ZN11vector_font7ConsoleC2Ejj(void);
-}
-
-void _GLOBAL__I__ZN11vector_font7ConsoleC2Ejj(void)
-{
-    static_init(1, 0xFFFF);
-}
-
-void _GLOBAL__D__ZN11vector_font7ConsoleC2Ejj(void)
-{
-    static_init(0, 0xFFFF);
 }

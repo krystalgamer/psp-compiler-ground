@@ -162,9 +162,9 @@ rodata 0x175E78 -
 # gl__name_stack: the float pools of gl::PushMatrix and gl::LoadIdentity (Identity()'s 1.0f)
 rodata 0x1676B8 main_objs/gl__name_stack
 rodata 0x1676C0 -
-# vector_font_Console: the float pools of Console::Console (C2, C1)
+# vector_font_Console: the float pools of Console::Console (C2, C1), draw()'s pool, strings and __PRETTY_FUNCTION__
 rodata 0x16374C main_objs/vector_font_Console
-rodata 0x16375C -
+rodata 0x1637E0 -
 # glutils__arrow_pstack: the jump tables of SetParam(FloatParams) and SetParam(IntParams)
 rodata 0x167634 main_objs/glutils__arrow_pstack
 rodata 0x16769C -
@@ -392,7 +392,6 @@ bss 0x191C44 main_objs/basic_parser_basic_parser
 # glutils_CheckerTexture: C++ static initializer (header statics, _checker_texture); .rodata: its float pool; .bss: the header statics and CheckerTexture's static members
 rodata 0x163730 main_objs/glutils_CheckerTexture
 bss 0x18DE78 main_objs/glutils_CheckerTexture
-bss 0x18DF58 -
 # scene_Node_2: C++ static initializer (header statics, Node::NULL_COLOR/DEFAULT_COLOR); .rodata: strings, incrParentCount's __PRETTY_FUNCTION__, float pool; .bss
 rodata 0x16CA60 main_objs/scene_Node_2
 rodata 0x16CB10 -
@@ -413,3 +412,6 @@ bss 0x190DC4 -
 rodata 0x175E4C main_objs/sys_timer_Push
 rodata 0x175E64 -
 bss 0x191C4C main_objs/sys_timer_Push
+# vector_font_Console: .bss of the C++ static initializer
+bss 0x18DF58 main_objs/vector_font_Console
+bss 0x18DF5C -
