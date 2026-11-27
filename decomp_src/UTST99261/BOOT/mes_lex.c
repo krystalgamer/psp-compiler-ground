@@ -10,7 +10,7 @@ double mes_util_expt(double x, int n);
 double floor(double x);
 int mes_util_is_white_space(int c);
 int mes_util_is_alpha_digit(int c);
-int mes_util_string_eq2(void *s, const unsigned char *t);
+int mes_util_string_eq2(void *s, const char *t);
 int mes_util_hex(int c);
 int mes_util_octal(int c);
 typedef struct MesReserved {
@@ -18,7 +18,7 @@ typedef struct MesReserved {
     unsigned int hash;                /* 0x4 */
     unsigned short len;               /* 0x8 */
     unsigned short tok;               /* 0xA */
-    const unsigned char *name;        /* 0xC */
+    const char *name;                 /* 0xC */
 } MesReserved;
 extern MesReserved *mes_lex_reserved_hash[31];
 extern MesReserved mes_lex_reserved[];
@@ -373,7 +373,31 @@ unsigned char mes_lex_peek(MesLex *lx)
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_lex", mes_lex_peek_lf);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_lex", mes_lex_initialize);
+void mes_lex_initialize(void)
+{
+    int i;
+    MesReserved *r;
+    const char *p;
+    unsigned int h;
+    int len;
+    char c;
+
+    for (i = 0; i < 31; i++)
+        mes_lex_reserved_hash[i] = NULL;
+    for (r = mes_lex_reserved; (p = r->name) != NULL; r++) {
+        h = 0;
+        len = 0;
+        while (*p != 0) {
+            h = (h * 37) ^ (unsigned short)*p++;
+            len++;
+        }
+        r->hash = h;
+        r->len = len;
+        h %= 31;
+        r->next = mes_lex_reserved_hash[h];
+        mes_lex_reserved_hash[h] = r;
+    }
+}
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/mes_lex", D_0013A430);
 
