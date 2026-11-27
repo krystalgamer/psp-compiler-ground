@@ -53,6 +53,19 @@ int mes_option_new(int ctx, int *priv);
 int mes_class_property_get(int ctx, int obj, const char *name);
 void mes_array_set(int ctx, int arr, int v);
 void mes_obj_common_addNewReferenceByNameOrId(int ctx, int parent, int obj, int arr, JDStr *name, void *props, void *methods, int f);
+extern int mes_form_properties;
+extern int mes_form_methods;
+int mes_button_new(int ctx, int *priv);
+int mes_checkbox_new(int ctx, int *priv);
+int mes_fileupload_new(int ctx, int *priv);
+int mes_hidden_new(int ctx, int *priv);
+int mes_password_new(int ctx, int *priv);
+int mes_radio_new(int ctx, int *priv);
+int mes_reset_new(int ctx, int *priv);
+int mes_select_new(int ctx, int *priv);
+int mes_submit_new(int ctx, int *priv);
+int mes_text_new(int ctx, int *priv);
+int mes_textarea_new(int ctx, int *priv);
 int JSObjGetCharsLength(const UCSChar *s)
 {
     int n = 0;
@@ -149,7 +162,72 @@ void *js_setChildOfWindow(void *ctx, int parent, int a, int type)
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/js_for_parser", js_setChildOfDocument);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/js_for_parser", js_setChildOfForm);
+int js_setChildOfForm(int ctx, int parent, int elem, int handler, int type)
+{
+    JDStr name;
+    JDStr cls;
+    JDStr id;
+    int *priv;
+    int obj;
+    int arr;
+
+    obj = 0;
+    priv = MEM_malloc(0, 8);
+    if (priv != NULL) {
+        priv[0] = elem;
+        priv[1] = parent;
+        switch (type) {
+        case 12:
+            obj = mes_button_new(ctx, priv);
+            break;
+        case 13:
+            obj = mes_checkbox_new(ctx, priv);
+            break;
+        case 14:
+            obj = mes_fileupload_new(ctx, priv);
+            break;
+        case 15:
+            obj = mes_hidden_new(ctx, priv);
+            break;
+        case 16:
+            obj = mes_password_new(ctx, priv);
+            break;
+        case 17:
+            obj = mes_radio_new(ctx, priv);
+            break;
+        case 18:
+            obj = mes_reset_new(ctx, priv);
+            break;
+        case 19:
+            obj = mes_select_new(ctx, priv);
+            break;
+        case 20:
+            obj = mes_submit_new(ctx, priv);
+            break;
+        case 21:
+            obj = mes_text_new(ctx, priv);
+            break;
+        case 22:
+            obj = mes_textarea_new(ctx, priv);
+            break;
+        }
+        if (obj != 0) {
+            *--M2C_FIELD(ctx, int **, 0x18) = obj;
+            arr = mes_class_property_get(ctx, parent, "elements");
+            mes_array_set(ctx, arr, obj);
+            Element_getAttribute(&name, elem, &_DOMname);
+            mes_obj_common_addNewReferenceByNameOrId(ctx, parent, obj, arr, &name, &mes_form_properties, &mes_form_methods, 1);
+            Element_getAttribute(&cls, elem, &_DOMclass);
+            mes_obj_common_addNewReferenceByNameOrId(ctx, parent, obj, arr, &cls, &mes_form_properties, &mes_form_methods, 1);
+            Element_getAttribute(&id, elem, &_DOMid);
+            mes_obj_common_addNewReferenceByNameOrId(ctx, parent, obj, arr, &id, &mes_form_properties, &mes_form_methods, 1);
+            JSObjSetEventHandler(ctx, obj, handler);
+            M2C_FIELD(ctx, int **, 0x18)++;
+        } else
+            MEM_free(0, priv);
+    }
+    return obj;
+}
 
 int js_setChildOfSelect(ctx, parent, elem)
     int ctx;
