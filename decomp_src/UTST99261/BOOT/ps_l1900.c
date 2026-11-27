@@ -10,6 +10,18 @@ extern int buf_ps_sts;
 
 
 
+extern int Accession;
+extern int DOCUMENT_WRITE;
+extern int psCacheMode;
+extern int buf_ps_evt;
+extern int mq_js;
+int ps_i2406(PsIpc *msg);
+int ps_i2608(PsIpc *msg);
+int ps_i2308(PsIpc *msg);
+int ps_i2208(PsIpc *msg);
+int ps_i2906(PsIpc *msg);
+int ps_i2D06(PsIpc *msg);
+void *memcpy(void *d, const void *s, unsigned int n);
 void sendMPU_RPL_DATA_ATTR(PsIpc *msg) {
     PsIpc m;
 
@@ -97,5 +109,177 @@ int ps_l1A08(PsIpc *msg) {
     return 12;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/ps_l1900", ps_l1B12);
+int ps_l1B12(PsIpc *msg) {
+    PsDomBuild b;
+    PsIpc m;
+    PsMqMsg mm;
+    PsIpc m2;
+    int *node;
+    int *t;
+    PsDomResult *r;
+    PsDomResult *d;
+    int ret;
+    int flag;
+    void *u;
+    int mode;
+    int *n;
+
+    ret = 0;
+    flag = 0;
+    node = HST_searchSessionIDHistoryNode(msg->x04);
+    if (node == NULL) {
+        ps_halt("ps_l1B12(session ERR) failed");
+    }
+    t = (int *)msg->x1C;
+    b.x[0] = node[1];
+    b.x[1] = node[0];
+    b.x[2] = node[5];
+    b.x[3] = node[4];
+    b.x[4] = node[7];
+    b.x[5] = node[6];
+    b.x[6] = 0;
+    b.x[7] = 0;
+    b.x[9] = msg->x04;
+    b.x[11] = 1;
+    b.x[12] = 0;
+    b.x[13] = Accession;
+    if (DOCUMENT_WRITE == 1) {
+        b.x[12] = 6;
+        b.x[14] = DOCUMENT_WRITE;
+        DOCUMENT_WRITE = 0;
+    } else {
+        b.x[14] = 0;
+    }
+    r = parseDomBuild(&b);
+    if (t[2] != 0) {
+        MEM_free(0, (void *)t[2]);
+    }
+    MEM_free(0, t);
+    initMPL_REQ_LOAD_PAGE(&m);
+    m.x04 = msg->x04;
+    ps_sndmsg(&m, 4);
+    switch (r->type) {
+    case 0:
+        break;
+    case 1:
+        d = MEM_malloc(0, r->len * 2 + 0xC);
+        if (d == NULL) {
+            ps_halt("(char*)E_malloc(ps_l1B12) failed");
+        }
+        d->len = r->len;
+        d->data = (char *)d + 0xC;
+        memcpy(d->data, r->data, r->len * 2);
+        d->type = node[0x68 / 4];
+        MEM_free(0, r->data);
+        m2.type = 2;
+        m2.x04 = msg->x04;
+        m2.x08 = 1;
+        m2.cmd = 0x30B;
+        m2.x10 = 0;
+        m2.x14 = 0;
+        m2.x18 = r->len * 2 + 0xC;
+        m2.x1C = (int)d;
+        ps_sndmsg(&m2, 4);
+        ret = 0x12;
+        break;
+    case 2:
+        u = HST_getJSURI(node, HST_getJSURIlen(node));
+        if (u == NULL) {
+            ps_halt("ExternalHistory = NULL\n");
+        }
+        mode = 2;
+        if (node[0x30 / 4] != 1) {
+            mode = psCacheMode;
+        }
+        ps_getsend(u, mode, 3, r);
+        if (r != NULL) {
+            MEM_free(0, r);
+        }
+        return 0x1A;
+    case 3:
+        u = HST_getCSSURI(node, HST_getCSSURIlen(node));
+        if (u == NULL) {
+            ps_halt("ExternalHistory = NULL\n");
+        }
+        mode = 2;
+        if (node[0x30 / 4] != 1) {
+            mode = psCacheMode;
+        }
+        ps_getsend(u, mode, 1, NULL);
+        if (r != NULL) {
+            MEM_free(0, r);
+        }
+        return 0x1A;
+    default:
+        ps_halt("ps_i2406(parseDomBuild) failed.");
+        break;
+    }
+    while ((n = HST_searchRequestFlagHistoryNode(0)) != NULL) {
+        if (ps_isGetRequest(n) == 0) {
+            HST_setRequestFlag(n, 5);
+            ps_errStringParseDomBuild(n, "<html><body></body></html>");
+        } else {
+            mode = 2;
+            if (n[0x30 / 4] != 1) {
+                mode = psCacheMode;
+            }
+            ps_getsend(n, mode, 0, NULL);
+        }
+    }
+    if (r->type == 1) {
+        if (r != NULL) {
+            MEM_free(0, r);
+        }
+        return ret;
+    }
+    if (r != NULL) {
+        MEM_free(0, r);
+    }
+    buf_ps_sts = 200;
+    ret = 200;
+    while (GetMQUEUE(mq_js, &mm)) {
+        buf_ps_evt = mm.evt;
+        switch (mm.evt) {
+        case 0x24:
+        case 0x25:
+            ret = ps_i2406((PsIpc *)&mm.x[1]);
+            break;
+        case 0x26:
+            ret = ps_i2608((PsIpc *)&mm.x[1]);
+            break;
+        case 0x23:
+            ret = ps_i2308((PsIpc *)&mm.x[1]);
+            if (ret == 7)
+                flag = 1;
+            break;
+        case 0x22:
+            ret = ps_i2208((PsIpc *)&mm.x[1]);
+            flag = 1;
+            break;
+        case 0x29:
+            ret = ps_i2906((PsIpc *)&mm.x[1]);
+            break;
+        case 0x2D:
+            ret = ps_i2D06((PsIpc *)&mm.x[1]);
+            break;
+        default:
+            if (mm.data != NULL)
+                MEM_free(0, mm.data);
+            break;
+        }
+        if (ret == 0x12) {
+            buf_ps_sts = ret;
+            return 0x12;
+        }
+        if (ret == 0x1A) {
+            buf_ps_sts = ret;
+            return 0x1A;
+        }
+    }
+    if (flag == 1)
+        buf_ps_sts = 7;
+    else
+        buf_ps_sts = 8;
+    return buf_ps_sts;
+}
 
