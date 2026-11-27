@@ -609,7 +609,45 @@ out:
 	return _sce_pspnet_thread_leave(ti, error);
 }
 
-INCLUDE_ASM("tmp/asm/tony_libs/pspnet_inet/nonmatchings/uipc_syscalls", sceNetInet_lib_B3FF98EB);
+int
+sceNetInet_lib_B3FF98EB(int *uname, u_int namelen, void *old, size_t *uoldlenp, void *new, size_t newlen)
+{
+	struct thread_info *ti;
+	int error;
+	size_t oldlen = 0;
+	int (*fn)(int *, u_int, void *, size_t *, void *, size_t);
+	int name[CTL_MAXNAME];
+	size_t *oldlenp;
+
+	ti = _sce_pspnet_thread_enter();
+	if (ti == NULL)
+		return -1;
+	if (namelen > CTL_MAXNAME || namelen < 2) {
+		error = EINVAL;
+		goto out;
+	}
+	bcopy(uname, name, namelen * sizeof(int));
+	switch (name[0]) {
+	case CTL_NET:
+		fn = net_sysctl;
+		break;
+	default:
+		error = EOPNOTSUPP;
+		goto out;
+	}
+	oldlenp = uoldlenp;
+	if (oldlenp) {
+		bcopy(oldlenp, &oldlen, sizeof(oldlen));
+		oldlenp = &oldlen;
+	}
+	error = (*fn)(name + 1, namelen - 1, old, oldlenp, new, newlen);
+	if (error)
+		goto out;
+	if (uoldlenp)
+		bcopy(&oldlen, uoldlenp, sizeof(oldlen));
+out:
+	return _sce_pspnet_thread_leave(ti, error);
+}
 
 
 __attribute__((noinline)) int
