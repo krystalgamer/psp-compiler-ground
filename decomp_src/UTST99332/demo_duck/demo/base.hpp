@@ -1030,7 +1030,34 @@ enum Channel { };
 extern bool override_alpha_on;
 extern unsigned char override_alpha_value;
 namespace textures_internal {
-class Bmp;
+/* lib/textures/Bmp.h */
+class Bmp : public common::FileDump {
+public:
+    Bmp() : common::FileDump(0) {}
+    virtual ~Bmp();
+    virtual int load(const char *);
+    int num_palette_entries() const;
+    static int Get4idxPixel(const unsigned char *, int, int, int);
+    int _width;                         /* 0x24 */
+    int _height;                        /* 0x28 */
+    unsigned short _bpp;                /* 0x2C */
+    char _p2e[0x38 - 0x2E];
+    const unsigned char *_palette;      /* 0x38 */
+    const unsigned char *_pixels;       /* 0x3C */
+    int _data_offset;                   /* 0x40 */
+};
+/* linkonce copies: textures_textures_internal_Bmp.o defines DEMO_LINKONCE_Bmp */
+#if DEMO_LINKONCE_Bmp
+_Pragma("implementation \"sgl_linkonce\"") _Pragma("interface \"sgl_linkonce\"")
+#endif
+inline Bmp::~Bmp()
+{
+    _width = 0;
+    _height = 0;
+}
+#if DEMO_LINKONCE_Bmp
+_Pragma("interface")
+#endif
 class Tga;
 }
 
