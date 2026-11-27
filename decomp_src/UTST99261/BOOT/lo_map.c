@@ -10,7 +10,8 @@ int MEM_malloc(M2C_UNK, M2C_UNK);                   /* extern */
 M2C_UNK MEM_free(M2C_UNK, void *);                  /* extern */
 
 
-void *createAreaInfo(s8 type, void *map, void *node);
+struct MAPAREA;
+void *createAreaInfo(s8 type, struct MAPAREA *ar, void *node);
 void addFocusList(void *ctx, int kind, void *node, short tabindex, void *info);
 void *appendFocusList(void *ctx, int kind, void *node, void *last, void *info);
 typedef struct { char *name; void (*func)(void *node, void *box); } TagAfter;
@@ -19,7 +20,7 @@ extern int D_001F5E20;
 int DOMStringcasecmpCharFast(DOMString *s, char *name);
 void *Node_getBox(void *node);
 typedef struct { double x; double y; double angle; int pad[2]; } MAPPT;
-typedef struct { MAPPT *pts; int n; u8 u8_[0x28]; int center; } MAPPOLY;
+typedef struct { MAPPT *pts; int n; int u8_; int uC; double maxx; double maxy; double minx; double miny; int center; } MAPPOLY;
 double atan2(double y, double x);
 typedef struct MAPAREA { s16 type; s16 u2; void *x4; void *x8; struct MAPAREA *next; MAPPOLY poly; } MAPAREA;
 void parseCoords(int type, char *coords, MAPPOLY *p);
@@ -31,6 +32,9 @@ extern int D_00584D08;
 extern char D_00139428[], D_00139430[], D_0013950C[];
 void Element_getTagName(DOMString *s, void *elem);
 int DOMStringcasecmpChar(DOMString *s, char *str);
+typedef struct { s8 kind; int x; int y; int w; int h; MAPAREA *area; } MAPINFO;
+typedef struct { int x; int y; double r; } MAPCIRCLE;
+extern const double D_00139300;
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_map", parseCoords);
 
 #ifndef NULL
@@ -326,7 +330,56 @@ void adaptAreaList(void *a0, void *map, void *a2) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_map", createAreaInfo);
+void *createAreaInfo(s8 type, MAPAREA *ar, void *node) {
+    MAPINFO *inf;
+    int x, y, w, h;
+    int r;
+    double d;
+    inf = (MAPINFO *)MEM_malloc(0, 0x18);
+    if (inf == NULL) {
+        return NULL;
+    }
+    if (ar->type == 2) {
+        int *rc = (int *)&ar->poly;
+        x = rc[0];
+        y = rc[1];
+        w = rc[2] - x;
+        h = rc[3] - y;
+    } else if (ar->type == 3) {
+        MAPCIRCLE *c = (MAPCIRCLE *)&ar->poly;
+        if (c->r <= D_00139300) {
+            if (M2C_FIELD(node, int *, 0x18) < M2C_FIELD(node, int *, 0x1C)) {
+                d = M2C_FIELD(node, int *, 0x18);
+            } else {
+                d = M2C_FIELD(node, int *, 0x1C);
+            }
+            r = c->r * d;
+        } else {
+            r = c->r;
+        }
+        x = c->x - r;
+        y = c->y - r;
+        w = h = r * 2;
+    } else if (ar->type == 4) {
+        MAPPOLY *p = &ar->poly;
+        x = p->minx;
+        y = p->miny;
+        w = p->maxx - p->minx;
+        h = p->maxy - p->miny;
+    } else {
+        x = M2C_FIELD(node, int *, 0x10);
+        y = M2C_FIELD(node, int *, 0x14);
+        w = M2C_FIELD(node, int *, 0x18);
+        h = M2C_FIELD(node, int *, 0x1C);
+    }
+    inf->kind = type;
+    inf->x = x;
+    inf->y = y;
+    inf->w = w;
+    inf->h = h;
+    inf->area = ar;
+    return inf;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_map", initBoxProperty);
 
