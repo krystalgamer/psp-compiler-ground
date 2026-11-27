@@ -297,7 +297,19 @@ float i3dMotGetTime(void *arg0) {
     return M2C_FIELD(arg0, float *, 0x54);
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d", i3dMotGetMaxTime);
+float I3mRoot__GetMaxTime(void *);
+float i3dMotGetMaxTime(char *o)
+{
+	int i;
+	void *m;
+	if (o == NULL)
+		consPrintf(&D_000FCC8C, &D_000FCCA8, 0x49F, "i3dMotGetMaxTime", &D_000FCFE4);
+	i = *(int *)(o + 0x50);
+	m = i >= 0 ? (*(void ***)(o + 0x38))[i] : NULL;
+	if (m)
+		return I3mRoot__GetMaxTime(m);
+	return 0.0f;
+}
 
 int i3dMotSetSpeed(void *arg0, float fparg0) {
     if (arg0 == NULL) {
