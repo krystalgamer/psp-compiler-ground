@@ -2,6 +2,7 @@
 /* cflags: -O3 -fno-exceptions */
 #undef __EXCEPTIONS
 #include "cxx/defer_asm.h"
+#define DEMO_TEMPLATE_DEFS
 #include "../main.hpp"
 
 /* constants and strings stay in the module's .rodata (asm) */
@@ -326,16 +327,3 @@ void _GLOBAL__D__ZN10FloatImageC2Ev(void)
     static_init(0, 0xFFFF);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/FloatImage", _ZN6common9t_array2dI10ABGR_FLOATEC2Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/FloatImage", _ZN6common9t_array2dI10ABGR_FLOATEC2Ejj);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/FloatImage", _ZN6common9t_array2dI10ABGR_FLOATEaSERKS2_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/FloatImage", _ZNK6common7t_arrayI10ABGR_FLOATE4sizeEv);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/FloatImage", _ZN6common7t_arrayI10ABGR_FLOATEC2Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/FloatImage", _ZN6common7t_arrayI10ABGR_FLOATEC2Ej);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/FloatImage", _ZN6common7t_arrayI10ABGR_FLOATEaSERKS2_);
