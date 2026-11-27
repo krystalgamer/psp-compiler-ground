@@ -2,13 +2,25 @@
 /* cflags: -O3 -fno-exceptions */
 #undef __EXCEPTIONS
 #include "cxx/defer_asm.h"
+#define DEMO_TEMPLATE_DEFS
 #include "../main.hpp"
+
+/* this object's .gnu.linkonce.t sections in the original's order */
+DEMO_LINKONCE_ORDER(
+    DEMO_LINKONCE(_ZN12HouseKeeping11AttribStackC1Ev)
+    DEMO_LINKONCE(_ZNSt5dequeIjSaIjEE8pop_backEv)
+    DEMO_LINKONCE(_ZNSt11_Deque_baseIjSaIjEED2Ev)
+    DEMO_LINKONCE(_ZNSt11_Deque_baseIjSaIjEE17_M_initialize_mapEj)
+    DEMO_LINKONCE(_ZNSt11_Deque_baseIjSaIjEE16_M_destroy_nodesEPPjS3_)
+    DEMO_LINKONCE(_ZNSt5dequeIjSaIjEE16_M_push_back_auxERKj)
+    DEMO_LINKONCE(_ZNSt5dequeIjSaIjEE16_M_pop_front_auxEv)
+    DEMO_LINKONCE(_ZNSt5dequeIjSaIjEE15_M_pop_back_auxEv)
+    DEMO_LINKONCE(_ZNSt11_Deque_baseIjSaIjEE15_M_create_nodesEPPjS3_)
+    DEMO_LINKONCE(_ZNSt5dequeIjSaIjEE17_M_reallocate_mapEjb)
+    DEMO_LINKONCE(_ZSt6__copyISt15_Deque_iteratorIjRKjPS1_ES0_IjRjPjEET0_T_S9_S8_St26random_access_iterator_tag)
+    DEMO_LINKONCE(_ZN12HouseKeeping11AttribStack3getERNS_10EnableMaskEj)
+);
 #include <deque>
-
-/* weak instances stay asm */
-extern template class std::deque<unsigned int>;
-extern template class std::_Deque_base<unsigned int, std::allocator<unsigned int> >;
-
 
 /* the GL emulation's state (only the members used so far) */
 struct HouseKeepingState {
@@ -1462,26 +1474,25 @@ void _GLOBAL__D__ZN12HouseKeeping11AttribStack5tableE(void)
     static_init(0, 0xFFFF);
 }
 
+/* deque<unsigned> instances of this object that only its asm functions use: called from here (a discarded
+   function) so that cc1plus emits them (their order is DEMO_LINKONCE_ORDER's) */
+extern "C" void HouseKeeping_instance_refs(std::deque<unsigned int> &d, std::deque<unsigned int> &e)
+    __attribute__((section(".discard.asm")));
+extern "C" void HouseKeeping_instance_refs(std::deque<unsigned int> &d, std::deque<unsigned int> &e)
+{
+    std::deque<unsigned int> t(e);
+    d.push_back(0);
+    d.pop_back();
+    d.pop_front();
+    d = e;
+}
+
+/* out-of-line inline members / instances that stay asm */
+#undef INCLUDE_ASM
+#define INCLUDE_ASM INCLUDE_ASM_LINKONCE
+
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/HouseKeeping_AttribStack", _ZN12HouseKeeping11AttribStackC1Ev);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/HouseKeeping_AttribStack", _ZNSt5dequeIjSaIjEE8pop_backEv);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/HouseKeeping_AttribStack", _ZNSt11_Deque_baseIjSaIjEED2Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/HouseKeeping_AttribStack", _ZNSt11_Deque_baseIjSaIjEE17_M_initialize_mapEj);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/HouseKeeping_AttribStack", _ZNSt11_Deque_baseIjSaIjEE16_M_destroy_nodesEPPjS3_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/HouseKeeping_AttribStack", _ZNSt5dequeIjSaIjEE16_M_push_back_auxERKj);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/HouseKeeping_AttribStack", _ZNSt5dequeIjSaIjEE16_M_pop_front_auxEv);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/HouseKeeping_AttribStack", _ZNSt5dequeIjSaIjEE15_M_pop_back_auxEv);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/HouseKeeping_AttribStack", _ZNSt11_Deque_baseIjSaIjEE15_M_create_nodesEPPjS3_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/HouseKeeping_AttribStack", _ZNSt5dequeIjSaIjEE17_M_reallocate_mapEjb);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/HouseKeeping_AttribStack", _ZSt6__copyISt15_Deque_iteratorIjRKjPS1_ES0_IjRjPjEET0_T_S9_S8_St26random_access_iterator_tag);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/HouseKeeping_AttribStack", _ZN12HouseKeeping11AttribStack3getERNS_10EnableMaskEj);
