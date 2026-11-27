@@ -39,6 +39,12 @@ void *mes_history_new(void *ctx, int a);
 void *mes_location_new(void *ctx, int a);
 void *mes_screen_new(void *ctx, int a);
 void mes_class_property_set(void *ctx, int parent, char *name, void *o);
+typedef struct { int size; unsigned int len; unsigned short *str; } JDStr;
+void Element_getAttribute(JDStr *s, int node, void *name);
+extern int _DOMname;
+extern int _DOMhref;
+int AnchorSetInternal(int a, int b, int c, int d);
+int LinkSetInternal(int a, int b, int c, int d);
 int JSObjGetCharsLength(const UCSChar *s)
 {
     int n = 0;
@@ -143,7 +149,30 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/js_for_parser", WindowSetIntern
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/js_for_parser", DocumentSetInternal);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/js_for_parser", ASetInternal);
+int ASetInternal(int ctx, int b, int node, int d)
+{
+    JDStr name;
+    JDStr href;
+    int a;
+    int r;
+
+    Element_getAttribute(&name, node, &_DOMname);
+    Element_getAttribute(&href, node, &_DOMhref);
+    a = 0;
+    if (name.str != NULL) {
+        a = AnchorSetInternal(ctx, b, node, d);
+        *--M2C_FIELD(ctx, int **, 0x18) = a;
+    }
+    if (href.str != NULL) {
+        r = LinkSetInternal(ctx, b, node, d);
+        if (a != 0)
+            M2C_FIELD(ctx, int **, 0x18)++;
+        return r;
+    }
+    if (a != 0)
+        M2C_FIELD(ctx, int **, 0x18)++;
+    return 0;
+}
 
 void *NavigatorSetInternal(void *arg0, int arg1)
 {

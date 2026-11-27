@@ -594,7 +594,36 @@ void *mes_parse_assignment_expression(void *p, void *lx, int flags)
     return e;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_parse", mes_parse_expression);
+void *mes_parse_expression(void *p, void *lx, int flags)
+{
+    int list;
+    int n;
+    void *e;
+
+    list = 0;
+    n = 0;
+    if (mes_stack_check(p)) {
+        if (M2C_FIELD(lx, unsigned short *, 0x12) == 0)
+            mes_parse_error_expect(lx, 0, -1);
+        mes_lex_peek(lx);
+        M2C_FIELD(lx, unsigned char *, 0x10) = 0;
+        return NULL;
+    }
+    for (;;) {
+        e = mes_parse_assignment_expression(p, lx, flags);
+        if (mes_lex_peek(lx) != 0x3A)
+            break;
+        M2C_FIELD(lx, unsigned char *, 0x10) = 0;
+        list = (int)mes_parse_node_cons(list, (int)e);
+        n++;
+    }
+    if (n <= 0)
+        return e;
+    list = (int)mes_parse_node_cons(list, (int)e);
+    e = mes_parse_node_new(0x3A, n + 1);
+    mes_parse_node_set(e, (void *)list);
+    return e;
+}
 
 void *mes_parse_condition(void *p, void *lx, int flags)
 {
