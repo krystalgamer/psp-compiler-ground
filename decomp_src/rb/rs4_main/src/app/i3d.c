@@ -690,7 +690,16 @@ void i3dEndScene(void) {
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d", i3dMakeStage);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/i3d", i3dMakeView);
+extern int pI3dViewNear, pI3dViewFar;
+int I3dRender__CreateViewStatusA(int, int, int);
+void I3dRenderStage__SetCurrentViewStatus(int, int);
+void i3dMakeView(int n, int f, int a)
+{
+	int r = pI3dRender;
+	pI3dViewNear = I3dRender__CreateViewStatusA(r, n, a);
+	pI3dViewFar = I3dRender__CreateViewStatusA(pI3dRender, f, a);
+	I3dRenderStage__SetCurrentViewStatus(pI3dStage, pI3dViewNear);
+}
 
 int i3dGetRender(void) {
     return pI3dRender;
