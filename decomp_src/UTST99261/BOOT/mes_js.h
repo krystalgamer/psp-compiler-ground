@@ -77,6 +77,8 @@ typedef struct JSEventRec {
 
 extern JSEventRec *g_JS_EVENT_REC_;
 
+extern MesObject *mes_classes[];
+MesObject *mes_object_new(MesContext *ctx, int cls, MesObject *proto);
 MesClass *mes_class_init(MesContext *ctx, MesClassDef *def);
 MesObject *mes_class_new(MesContext *ctx, MesClass *cls);
 void mes_class_private_set(MesObject *obj, void *priv);

@@ -2,6 +2,13 @@
 #include "common.h"
 #include "mes_js.h"
 #include "m2c_macros.h"
+extern unsigned int mes_ids[];
+extern void *mes_string_table;
+MesValue mes_string_constructor(MesContext *ctx);
+MesValue mes_string_from_char_code(MesContext *ctx);
+void *mes_native_new(MesContext *ctx, int a, void *fn, int nargs, int flags);
+void mes_native_setup(MesContext *ctx, MesObject *o, void *table, int n);
+void mes_object_set(MesObject *obj, unsigned int id, MesValue value, int flags);
 typedef unsigned short UCSChar;
 typedef struct MesStr {
     UCSChar *str;
@@ -151,7 +158,22 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_string", mes_string_to_lowe
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_string", mes_string_to_upper_case);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_string", mes_string_setup);
+void mes_string_setup(MesContext *ctx)
+{
+    MesObject *proto;
+    MesObject *ctor;
+
+    proto = mes_object_new(ctx, 13, mes_classes[9]);
+    mes_classes[13] = proto;
+    proto->fC = mes_empty;
+    mes_object_set(proto, mes_ids[51], MES_INT(0), 7);
+    ctor = mes_native_new(ctx, mes_ids[13], mes_string_constructor, 1, 1);
+    mes_object_set(ctx->global, mes_ids[13], (MesValue)ctor, 7);
+    mes_object_set(ctor, mes_ids[44], (MesValue)mes_native_new(ctx, mes_ids[44], mes_string_from_char_code, 1, 0), 0);
+    mes_object_set(ctor, mes_ids[59], (MesValue)proto, 7);
+    mes_object_set(proto, mes_ids[40], (MesValue)ctor, 2);
+    mes_native_setup(ctx, proto, &mes_string_table, 19);
+}
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/mes_string", D_0013A7C0);
 

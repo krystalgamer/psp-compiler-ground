@@ -1,6 +1,12 @@
 /* cflags: -O1 */
 #include "common.h"
 #include "mes_js.h"
+extern unsigned int mes_ids[];
+extern void *mes_math_table;
+extern const double D_0013B9D8, D_0013B9E0, D_0013B9E8, D_0013B9F0;
+extern const double D_0013B9F8, D_0013BA00, D_0013BA08, D_0013BA10;
+void mes_native_setup(MesContext *ctx, MesObject *o, void *table, int n);
+void mes_object_set(MesObject *obj, unsigned int id, MesValue value, int flags);
 double ceil(double x);
 double acos(double x);
 double asin(double x);
@@ -211,7 +217,23 @@ MesValue mes_math_tan(MesContext *ctx, MesValue v)
     return mes_number_alloc(ctx, tan(mes_num(n)));
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_math", mes_math_setup);
+void mes_math_setup(MesContext *ctx)
+{
+    MesObject *m;
+
+    m = mes_object_new(ctx, 7, mes_classes[9]);
+    mes_classes[7] = m;
+    mes_object_set(ctx->global, mes_ids[7], (MesValue)m, 7);
+    mes_object_set(m, mes_ids[18], mes_number_alloc(ctx, D_0013B9D8), 7);
+    mes_object_set(m, mes_ids[20], mes_number_alloc(ctx, D_0013B9E0), 7);
+    mes_object_set(m, mes_ids[21], mes_number_alloc(ctx, D_0013B9E8), 7);
+    mes_object_set(m, mes_ids[23], mes_number_alloc(ctx, D_0013B9F0), 7);
+    mes_object_set(m, mes_ids[22], mes_number_alloc(ctx, D_0013B9F8), 7);
+    mes_object_set(m, mes_ids[29], mes_number_alloc(ctx, D_0013BA00), 7);
+    mes_object_set(m, mes_ids[32], mes_number_alloc(ctx, D_0013BA08), 7);
+    mes_object_set(m, mes_ids[33], mes_number_alloc(ctx, D_0013BA10), 7);
+    mes_native_setup(ctx, m, &mes_math_table, 18);
+}
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/mes_math", D_0013B928);
 
