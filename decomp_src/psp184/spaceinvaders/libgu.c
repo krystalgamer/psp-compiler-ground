@@ -325,9 +325,56 @@ void sceGuSetDither(const int *matrix)
 	send_commandi(229, dither[3]);
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", sceGuFinish);
+static __inline__ void send_commandi_stall(int cmd, int argument)
+{
+	send_commandi(cmd, argument);
+	if (!n_bbox && !__aw_list_mode)
+		sceGeListUpdateStallAddr(queid[0], pList->current);
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", sceGuFinishId);
+int sceGuFinish(void)
+{
+	GuContext *context;
+	int size;
+
+	if (__aw_list_mode == 0 || __aw_list_mode == 2) {
+		send_commandi(15, 0);
+		send_commandi_stall(12, 0);
+	} else if (call_mode == 1) {
+		send_commandi(14, 0x120000);
+		send_commandi(12, 0);
+		send_commandi_stall(0, 0);
+	} else {
+		send_commandi(11, 0);
+	}
+	context = pList;
+	size = (unsigned int)context->current - (unsigned int)context->start;
+	__aw_list_mode = context->parent_context;
+	pList = &_ctx[__aw_list_mode];
+	return size;
+}
+
+int sceGuFinishId(unsigned int id)
+{
+	GuContext *context;
+	int size;
+
+	if (__aw_list_mode == 0 || __aw_list_mode == 2) {
+		send_commandi(15, id & 0xffff);
+		send_commandi_stall(12, 0);
+	} else if (call_mode == 1) {
+		send_commandi(14, 0x120000);
+		send_commandi(12, 0);
+		send_commandi_stall(0, 0);
+	} else {
+		send_commandi(11, 0);
+	}
+	context = pList;
+	size = (unsigned int)context->current - (unsigned int)context->start;
+	__aw_list_mode = context->parent_context;
+	pList = &_ctx[__aw_list_mode];
+	return size;
+}
 
 void sceGuCallMode(int mode);
 void sceGuCallMode(int mode)
@@ -359,7 +406,19 @@ void sceGuContinue(void)
 	sceGeContinue();
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", sceGuCallList);
+void sceGuCallList(const void *list)
+{
+	unsigned int list_addr = (unsigned int)list;
+
+	if (call_mode == 1) {
+		send_commandi(14, (list_addr >> 16) | 0x110000);
+		send_commandi(12, list_addr & 0xffff);
+		send_commandi_stall(0, 0);
+	} else {
+		send_commandi(16, (list_addr >> 8) & 0xf0000);
+		send_commandi_stall(10, list_addr & 0xffffff);
+	}
+}
 
 void sceGuSendList(int mode, const void *list, void *context);
 void sceGuSendList(int mode, const void *list, void *context)
