@@ -100,6 +100,10 @@ int HST_getHistoryWithOffset(int off);
 unsigned int HST_getCurURIlen(int h);
 char *HST_getCurURI(int h);
 int icmpstr(char *a, char *b, int n);
+typedef struct PREFUI { int pad[3]; int enc; } PREFUI;
+extern PREFUI *gPREF_UI;
+typedef struct ENCDOC { int pad[17]; int type; int pad2[6]; int charset; } ENCDOC;
+int CharEncode(int cs);
 unsigned short UDomiString_ToLower(unsigned short c) {
     if (c < 0x80) {
         return tolower(c);
@@ -1346,7 +1350,34 @@ void *GetMQUEUE(int q, void *buf) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", CharEncode);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", Encoding);
+void Encoding(ENCDOC *d, int *flag, int *enc) {
+    int cs = d->charset;
+
+    if (gPREF_UI != NULL) {
+        if (gPREF_UI->enc != 0) {
+            *enc = gPREF_UI->enc;
+        } else if (Accession == 1 && RELOAD_FLG == 0) {
+            if (d->type == 0)
+                *enc = 5;
+            else if (d->type == 1)
+                *enc = 3;
+            else if (d->type == 2)
+                *enc = 1;
+            else if (d->type == 3)
+                *enc = 2;
+            else if (d->type == 5)
+                *enc = 4;
+            else
+                *enc = 0;
+        } else {
+            if (d->type == 100) {
+                if (flag != NULL)
+                    *flag = 1;
+            }
+            *enc = CharEncode(cs);
+        }
+    }
+}
 
 void ps_saveCacheMode(int m) {
     switch (m) {
