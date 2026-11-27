@@ -1,9 +1,7 @@
 /* cflags: -O1 */
 #include "common.h"
-typedef struct HttpObj {
-    int error;
-    int rule;
-} HttpObj;
+#include "http_lib.h"
+int sceParseHttpStatusLine(const char *line, int len, int *major, int *minor, int *status, const char **reason, int *reasonlen);
 extern const char htlib_cstrAGE[];
 extern const char htlib_cstrALLOW[];
 extern const char htlib_cstrCACHECONTROL[];
@@ -144,4 +142,28 @@ int http_getresponseheader_WWWAuthenticate(int h)
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/http_geterror", http_getresponseheader);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/http_geterror", http_getresponsestatus);
+int http_getresponsestatus(int h, int *version)
+{
+    HttpObj *o = (HttpObj *)(h * 2);
+    int major, minor, status;
+    const char *reason;
+    int reasonlen;
+    int r;
+
+    if (h == 0)
+        return -100;
+    if (o->statusline != NULL) {
+        r = sceParseHttpStatusLine(o->statusline, o->statuslen, &major, &minor, &status, &reason, &reasonlen);
+        if (r < 0) {
+            if (o->error == 0)
+                o->error = r;
+            return o->error;
+        }
+        if (version != NULL)
+            *version = major * 10 + minor;
+        return status;
+    }
+    if (o->error == 0)
+        o->error = -104;
+    return o->error;
+}

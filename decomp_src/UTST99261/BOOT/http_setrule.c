@@ -1,10 +1,7 @@
 /* cflags: -O1 */
 #include "common.h"
+#include "http_lib.h"
 #include "m2c_macros.h"
-typedef struct HttpObj {
-    int error;
-    int rule;
-} HttpObj;
 
 
 int http_setrule(int h, int rule)
