@@ -64,7 +64,23 @@ typedef struct {
 int getBits(void *bs, int n);
 
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jpg_pdecode", current_dct);
+int decodeHuffmanBlock_AC_first();
+int current_dct(JPCTX *ctx, int c, int mx, int my, int bx, int by) {
+    int *coef = ctx->coef[c];
+    u8 h = ctx->ci[c].h;
+    u8 v = ctx->ci[c].v;
+    int hv;
+
+    if (mx >= ctx->mcuw || my >= ctx->mcuh || by >= v || bx >= h)
+        return 0;
+    hv = h * v;
+    mx *= hv;
+    my *= ctx->mcuw * hv;
+    coef += my + mx;
+    by *= h;
+    coef += by + bx;
+    return *coef;
+}
 
 int decodeHuffmanCode_307A4(JDCTX *ctx, int cls, int comp) {
     JHTAB *t;
@@ -244,7 +260,42 @@ int decodeMCU_multi(JPCTX *ctx) {
 
 int decodeHuffmanBlock_AC_subsequent();
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jpg_pdecode", decodeMCU_single);
+int decodeMCU_single(JPCTX *ctx, int x, int y) {
+    int (*fn)();
+    int c;
+    int ret;
+    u8 h;
+    u8 v;
+    int mx, my, bx, by;
+
+    if (ctx->ss == 0) {
+        if (ctx->unkD9 == 0)
+            fn = decodeHuffmanBlock_DC_first;
+        else
+            fn = decodeHuffmanBlock_DC_subsequent;
+    } else {
+        if (ctx->unkD9 == 0)
+            fn = decodeHuffmanBlock_AC_first;
+        else
+            fn = decodeHuffmanBlock_AC_subsequent;
+    }
+    if (ctx->ci[0].unk0 != 0)
+        c = M2C_FIELD(ctx, u8 *, 0x100) - 1;
+    else
+        c = M2C_FIELD(ctx, u8 *, 0x100);
+    v = ctx->ci[c].v;
+    h = ctx->ci[c].h;
+    my = y / v;
+    mx = x / h;
+    by = y % v;
+    bx = x % h;
+    ctx->block = (s16 *)current_dct(ctx, c, mx, my, bx, by);
+    if (ctx->block == NULL)
+        return -1;
+    if (fn(ctx, c, 0) == -1)
+        return -1;
+    return 1;
+}
 
 void inverseDCT(JPCTX *ctx, int c);
 

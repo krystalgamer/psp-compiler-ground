@@ -180,7 +180,29 @@ void divideBoxList(LIST *list, LIST *out, void *data) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/layoutMain", initUrlList);
+void initUrlList(LIST *list) {
+    LISTNODE *n;
+    LISTNODE *next;
+
+    n = list->head;
+    if (n != NULL) {
+        next = n->next;
+        goto check;
+        for (;;) {
+            MEM_free(NULL, n);
+            if (next == NULL)
+                break;
+            n = next;
+            next = n->next;
+check:
+            if (n->data != NULL)
+                MEM_free(NULL, n->data);
+        }
+    }
+    list->head = NULL;
+    list->tail = NULL;
+    list->count = 0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/layoutMain", searchUrlList);
 
