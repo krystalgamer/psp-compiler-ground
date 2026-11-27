@@ -241,7 +241,13 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/textures_Tex
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/textures_Texture", _ZN8textures7Texture11psp_reorderEv);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/textures_Texture", _ZN8textures7Texture20makeImportForDirectXEii);
+void textures::Texture::makeImportForDirectX(int w, int h)
+{
+    m.load.width = w;
+    m.load.height = h;
+    setAlphaCount(0, 0, 0, 0, 0xFF);
+    m.load.alpha_flags = m.alpha_flags;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/textures_Texture", _ZN8textures7Texture12flipVerticalEv);
 
@@ -255,7 +261,18 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/textures_Tex
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/textures_Texture", _ZN8textures7Texture6resizeEiib);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/textures_Texture", _ZN8textures11closestPow2Eib);
+int textures::closestPow2(int x, bool up)
+{
+    float f = x;
+    int e = *(int *)&f >> 23;
+    int lo = 1 << (e - 127);
+    int hi = 1 << (e - 126);
+    if (x == lo)
+        return lo;
+    if (x == hi)
+        return hi;
+    return up ? hi : lo;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/textures_Texture", _ZN8textures7Texture10resizePow2Ebbb);
 
@@ -290,7 +307,11 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/textures_Tex
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/textures_Texture", _ZN8textures7Texture13setAlphaCountEPiS1_S1_hh);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/textures_Texture", _ZN8textures7Texture8allocateEjj);
+void textures::Texture::allocate(unsigned int n, unsigned int nclut)
+{
+    image.resize(n);
+    clut.resize(nclut);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/textures_Texture", _ZN8textures7Texture12allocate_forENS_6FormatE);
 

@@ -594,9 +594,11 @@ public:
     static void check_init();
     static textures::Texture *get();
     static unsigned int name();
+    static void reset();
 private:
     static textures::Texture _checker_texture;
     static unsigned int _name;
+    static bool _init;
 };
 class PositioningInterface : public common::shared_object_base {
 public:
@@ -661,11 +663,12 @@ public:
     common::handle<glutils::PositioningInterface> getCamera();
     const common::handle<glutils::PositioningInterface> &getCamera() const;
     void replaceCamera(common::handle<glutils::PositioningInterface>);
+    void setCameraFilename(const char *);
 protected:
     /* the view frustum (0x34; sgl::Frustum is declared after base.hpp) */
     sgl::Frustum &frustum() { return *(sgl::Frustum *)((char *)this + 0x34); }
 private:
-    char _pad5[0xC - 5];
+    std::string _camera_filename;                           /* 0x8 */
     common::handle<glutils::PositioningInterface> _camera;  /* 0xC */
     char _pad14[0xEE1 - 0x14];
     bool grid;          /* 0xEE1 */
@@ -969,6 +972,7 @@ public:
     bool saveBmp(const std::string &) const;
     void blur(int, float);
     void allocate(unsigned int, unsigned int);
+    int setAlphaCount(int *, int *, int *, unsigned char, unsigned char);
     void allocate_for(Format);
     CopiableMembers m;              /* 0x00 */
     common::t_array<unsigned char> image;   /* 0x28 */

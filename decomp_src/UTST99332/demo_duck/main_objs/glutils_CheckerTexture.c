@@ -4,6 +4,10 @@
 #include "cxx/defer_asm.h"
 #include "../main.hpp"
 
+namespace gl {
+void DeleteTextures(int, const unsigned int *);
+}
+
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/glutils_CheckerTexture", _Z41__static_initialization_and_destruction_0ii_23318);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/glutils_CheckerTexture", _ZN7glutils14CheckerTexture10check_initEv);
@@ -20,7 +24,17 @@ unsigned int glutils::CheckerTexture::name()
     return _name;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/glutils_CheckerTexture", _ZN7glutils14CheckerTexture5resetEv);
+void glutils::CheckerTexture::reset()
+{
+    if (_init) {
+        if (_name) {
+            gl::DeleteTextures(1, &_name);
+            _name = 0;
+        }
+        _checker_texture.reset(true);
+        _init = false;
+    }
+}
 
 extern "C" {
 void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_23318");

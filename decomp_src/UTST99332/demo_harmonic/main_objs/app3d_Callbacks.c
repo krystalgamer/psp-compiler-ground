@@ -26,7 +26,10 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/app3d_Callba
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/app3d_Callbacks", _ZN5app3d9Callbacks4initEv);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/app3d_Callbacks", _ZN5app3d9Callbacks17setCameraFilenameEPKc);
+void app3d::Callbacks::setCameraFilename(const char *name)
+{
+    _camera_filename = name;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/app3d_Callbacks", _ZN5app3d9Callbacks10loadCameraEv);
 
