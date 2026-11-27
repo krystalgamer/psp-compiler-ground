@@ -19,7 +19,7 @@ int rt_circ_buf_get_avail(RtCircBuf *, unsigned int *);
 int rt_circ_buf_get_used_nowrap(RtCircBuf *, unsigned int *);
 int rt_circ_buf_get_avail_nowrap(RtCircBuf *, unsigned int *);
 int rt_circ_buf_normalize_with_buf(RtCircBuf *, unsigned char *, int);
-void *memcpy(void *, const void *, unsigned int);
+void *memcpy(void *, const void *, unsigned long);
 
 int rt_circ_buf_create(RtCircBuf *cb, unsigned int size, int flags)
 {
@@ -88,7 +88,14 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_circ_buf", rt_cir
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_circ_buf", rt_circ_buf_copy);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_circ_buf", rt_circ_buf_normalize);
+int rt_circ_buf_normalize(RtCircBuf *cb, unsigned char *buf)
+{
+    if (cb == NULL)
+        return 2;
+    if (buf != NULL && cb->flags == 0)
+        return 201;
+    return rt_circ_buf_normalize_with_buf(cb, buf, cb->flags);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_circ_buf", rt_circ_buf_normalize_with_buf);
 

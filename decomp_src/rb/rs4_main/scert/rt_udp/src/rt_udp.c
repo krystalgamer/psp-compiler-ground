@@ -3,7 +3,7 @@
 #ifndef NULL
 #define NULL ((void *)0)
 #endif
-void *memcpy(void *, const void *, unsigned int);
+void *memcpy(void *, const void *, unsigned long);
 int KM_GetLocalPublicKey();
 int rt_list_buf_clear();
 int rt_list_buf_get_pool_used();
