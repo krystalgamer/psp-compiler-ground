@@ -2,6 +2,18 @@
 #include "common.h"
 #include "mes_js.h"
 #include "m2c_macros.h"
+extern const double D_0013B780;       /* 10.0 */
+void mes_util_string_put(void *s, unsigned short c);
+MesValue mes_number_to_special(MesValue v);
+MesValue mes_number_to_string(MesContext *ctx, MesValue v);
+int mes_eval_to_int32(MesContext *ctx, MesValue v);
+MesValue mes_error_range(MesContext *ctx, MesValue v);
+typedef struct MesSBuf {
+    char pad[0x14];
+    int len;                          /* 0x14 */
+} MesSBuf;
+double mes_number_fmod(double a, double b);
+int mes_util_string_get(MesSBuf *s, int i);
 extern MesObject *D_00585350;
 int isnan(double d);
 int isinf(double d);
@@ -30,7 +42,7 @@ int mes_is_number(MesValue v);
 double mes_num(MesValue v);
 extern unsigned char mes_number_method;
 
-M2C_UNK fmod();                                     /* extern */
+double fmod(double a, double b);
 
 
 MesValue mes_number_alloc_int32(MesContext *ctx, int n)
@@ -113,8 +125,8 @@ double mes_number_fdiv(double a, double b)
 #define NULL ((void *)0)
 #endif
 
-void mes_number_fmod(void) {
-    fmod();
+double mes_number_fmod(double a, double b) {
+    return fmod(a, b);
 }
 
 MesValue mes_number_add(MesContext *ctx, MesValue a, MesValue b)
@@ -138,7 +150,26 @@ MesValue mes_number_add(MesContext *ctx, MesValue a, MesValue b)
     return r;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_number", mes_number_sub);
+MesValue mes_number_sub(MesContext *ctx, MesValue a, MesValue b)
+{
+    MesValue r;
+
+    if (a == 0x1C || b == 0x1C)
+        r = 0x1C;
+    else if (a == 0x14)
+        r = b == a ? 0x1C : 0x14;
+    else if (a == 0x18)
+        r = b == a ? 0x1C : 0x18;
+    else if (b == 0x14)
+        r = 0x18;
+    else if (b == 0x18)
+        r = 0x14;
+    else if (a == 0x10 && b == 1)
+        r = 0x10;
+    else
+        r = mes_number_alloc(ctx, mes_num(a) - mes_num(b));
+    return r;
+}
 
 MesValue mes_number_minus(MesContext *ctx, MesValue v)
 {
@@ -163,7 +194,18 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_number", mes_number_mul);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_number", mes_number_div);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_number", mes_number_mod);
+MesValue mes_number_mod(MesContext *ctx, MesValue a, MesValue b)
+{
+    if (a == 0x1C || b == 0x1C)
+        return 0x1C;
+    if (a == 0x14 || a == 0x18 || b == 1 || b == 0x10)
+        return 0x1C;
+    if (b == 0x14 || b == 0x18)
+        return a;
+    if (a == 1 || a == 0x10)
+        return a;
+    return mes_number_alloc(ctx, mes_number_fmod(mes_num(a), mes_num(b)));
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_number", mes_number_equal);
 
@@ -278,13 +320,42 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_number", mes_number_to_fixe
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_number", mes_number_to_fixed);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_number", mes_number_to_exponential_sub);
+void mes_number_to_exponential_sub(MesSBuf *s)
+{
+    while (s->len > 0 && mes_util_string_get(s, s->len - 1) == '0')
+        s->len--;
+    if (s->len > 0 && mes_util_string_get(s, s->len - 1) == '.')
+        s->len--;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_number", mes_number_to_exponential);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_number", mes_number_to_precision_sub);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_number", mes_number_to_precision);
+MesValue mes_number_to_precision(MesContext *ctx, MesValue p)
+{
+    MesValue t = (MesValue)ctx->frame->thisobj;
+    MesValue s;
+    double d;
+    int n;
+
+    if (MES_IS_OBJECT(t))
+        t = ((MesObject *)t)->fC;
+    s = mes_number_to_special(t);
+    if (s != 0)
+        return s;
+    if ((unsigned int)((t & 3) - 1) >= 2)
+        return mes_eval_type_error(ctx, t);
+    if (p == 0)
+        return mes_number_to_string(ctx, t);
+    d = mes_num(t);
+    n = mes_eval_to_int32(ctx, p);
+    if ((unsigned int)(n - 1) >= 21) {
+        ctx->f14 = mes_error_range(ctx, t);
+        return 0;
+    }
+    return mes_number_to_precision_sub(ctx, d, n);
+}
 
 MesValue mes_number_to_string(MesContext *ctx, MesValue v)
 {
