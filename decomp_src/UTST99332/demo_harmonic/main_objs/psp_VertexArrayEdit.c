@@ -28,6 +28,7 @@ extern const char PF_format[] __asm__("_ZZN3psp15VertexArrayEdit6formatEjE19__PR
 extern const char D_0015E87C[], D_0015E888[], D_0015E890[], D_0015E8A0[], D_0015E8B0[], D_0015E8C0[], D_0015E8CC[], D_0015E8DC[], D_0015E8EC[], D_0015E8FC[], D_0015E90C[], D_0015E91C[], D_0015E928[], D_0015E934[], D_0015E940[], D_0015E94C[], D_0015E958[], D_0015E964[], D_0015E974[], D_0015E984[], D_0015E994[];
 extern const char D_0015EE48[], D_0015F314[], D_0015F320[], D_0015F324[], D_0015F360[], D_0015F5D8[];
 extern const char PF_VA_DEBUG_printFormat[] __asm__("_ZZN3psp11VertexArray17DEBUG_printFormatEvE19__PRETTY_FUNCTION__");
+extern const char D_0015EE54[], D_0015F310[];
 extern const char D_0015F0D4[], D_0015F0F8[], D_0015F108[];
 extern const char PF_import[] __asm__("_ZZN3psp15VertexArrayEdit6importERKS0_E19__PRETTY_FUNCTION__");
 extern const char PF_ConvertMaskInternal2Gu[] __asm__("_ZZN3psp22ConvertMaskInternal2GuEjE19__PRETTY_FUNCTION__");
@@ -44,6 +45,39 @@ extern const char PF_on_format_change[] __asm__("_ZZN3psp15VertexArrayEdit10Desc
 #define VA_H D_0015F2A0
 
 using namespace psp;
+
+/* VertexArray.h: a view of the vertex data */
+template<class T> struct ByteArrayNames {
+    static const char read[], write[];
+};
+#define BYTE_ARRAY_NAMES(T, M) \
+    template<> const char ByteArrayNames<T>::read[] __asm__("_ZZN3psp10byte_array4readI" M "EEvjRT_E19__PRETTY_FUNCTION__"); \
+    template<> const char ByteArrayNames<T>::write[] __asm__("_ZZN3psp10byte_array5writeI" M "EEvjT_E19__PRETTY_FUNCTION__");
+BYTE_ARRAY_NAMES(unsigned char, "h")
+BYTE_ARRAY_NAMES(unsigned short, "t")
+BYTE_ARRAY_NAMES(unsigned int, "j")
+BYTE_ARRAY_NAMES(char, "c")
+BYTE_ARRAY_NAMES(short, "s")
+BYTE_ARRAY_NAMES(float, "f")
+extern const char D_0015F2BC[];
+namespace psp {
+class byte_array {
+public:
+    byte_array(unsigned char *_Data, unsigned int _Size) : _data(_Data), _size(_Size) {}
+    template<class T> void read(unsigned int _Offset, T &_Value) const
+    {
+        VA_ASSERT(_size == 0 || _Offset + sizeof(T) <= _size, D_0015F2BC, VA_H, ByteArrayNames<T>::read, 107, D_0015EA04);
+        __builtin_memcpy(&_Value, _data + _Offset, sizeof(T));
+    }
+    template<class T> void write(unsigned int _Offset, T _Value)
+    {
+        VA_ASSERT(_size == 0 || _Offset + sizeof(T) <= _size, D_0015F2BC, VA_H, ByteArrayNames<T>::write, 100, D_0015EA04);
+        __builtin_memcpy(_data + _Offset, &_Value, sizeof(T));
+    }
+    unsigned char *_data;
+    unsigned int _size;
+};
+}
 
 /* VertexArray.h */
 inline void VertexArrayEdit::check_size()

@@ -90,7 +90,7 @@ rodata 0x16CFC0 main_objs/sgl_Mesh_4
 rodata 0x16CFD0 -
 # psp_VertexArrayEdit: the float pools of the psp::convert<> specializations
 rodata 0x160074 main_objs/psp_VertexArrayEdit
-rodata 0x1600D4 -
+rodata 0x1600E8 -
 bss 0x18A2CC main_objs/psp_VertexArrayEdit
 bss 0x18A358 -
 0x135B4 glut_ReshapeFunc         1.6.1.internal  main_objs/glut_ReshapeFunc.cpp

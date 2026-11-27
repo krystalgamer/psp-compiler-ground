@@ -385,7 +385,7 @@ segments:
       - { start: 0x159838, type: prxpad, order: .rodata }
       - [0x159840, rodata, asm/rodata_1597C0]
       - [0x1600F4, .rodata, main_objs/psp_VertexArrayEdit]
-      - [0x160154, rodata, asm/rodata_1600D4]
+      - [0x160168, rodata, asm/rodata_1600E8]
       - [0x160D2C, .rodata, main_objs/vector_font_Console]
       - [0x160D3C, rodata, asm/rodata_160CBC]
       - [0x162768, .rodata, main_objs/glutils_PickingBase]
