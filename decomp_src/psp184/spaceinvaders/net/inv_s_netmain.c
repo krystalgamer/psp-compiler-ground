@@ -307,7 +307,20 @@ void draw_canceled(void)
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_netmain", drawpic);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_netmain", net_init);
+extern unsigned char netdata[];
+void *memset(void *s, int c, unsigned int n);
+void net_init(void)
+{
+	memset(netdata, 0, 0xfc0);
+	memset(&_mrinfo.hello_opt, 0, sizeof(_mrinfo.hello_opt));
+	_mrinfo.hello_opt.req_player_num = 4;
+	change_state(-1);
+	memset(net_gid, 0, 18);
+	net_num = 0;
+	net_pause = 0;
+	net_error = 1;
+	net_timeerror = 1;
+}
 
 extern int net_error;
 extern int net_gid[];
