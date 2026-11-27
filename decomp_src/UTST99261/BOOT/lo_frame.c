@@ -11,8 +11,8 @@ int colorValue(char *s);
 int adjustMoveFrameBorderValue(BOX *, BOX *, int);
 int getFramesetBox();                               /* extern */
 int getRootBox();                                   /* extern */
-M2C_UNK moveFrameBorderByHorizontal(void *, int, int); /* extern */
-M2C_UNK moveFrameBorderByVertical(void *, int, int); /* extern */
+void moveFrameBorderByHorizontal(BOX *, BOX *, int);
+void moveFrameBorderByVertical(BOX *, BOX *, int);
 
 
 
@@ -577,9 +577,109 @@ void updateParentFrameset(BOX *box, int a, int b) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_frame", moveFrameBorderByVertical);
+void moveFrameBorderByVertical(BOX *b, BOX *fs, int d) {
+    BOX *c;
+    int w;
+    int h;
+    b->x += d;
+    for (c = fs->child; c != NULL; c = c->next) {
+        if (c->content == 1) {
+            if (FFRAMED(c)->fx == b->x - d + b->width || FFRAMED(c)->fx + FFRAMED(c)->fw == b->x - d) {
+                if (FFRAMED(c)->fy >= b->y && ((FFRAMED(c)->fy == 0 && b->y + b->height >= FFRAMED(c)->fh) || FFRAMED(c)->fy + FFRAMED(c)->fh <= b->y + b->height + 1)) {
+                    if (FFRAMED(c)->fx == b->x - d + b->width) {
+                        FFRAMED(c)->fx += d;
+                        FFRAMED(c)->fw -= d;
+                    } else {
+                        FFRAMED(c)->fw += d;
+                    }
+                    if (FFRAMED(c)->fx < 0) {
+                        FFRAMED(c)->fx = 0;
+                    }
+                    if (FFRAMED(c)->fw < 0) {
+                        FFRAMED(c)->fw = 0;
+                    }
+                    w = FFRAMED(c)->fw;
+                    h = FFRAMED(c)->fh;
+                    updateParentFrameset(c, w, h);
+                    relayoutByFrameBorderMove(c);
+                }
+            }
+        } else {
+            if (FSETD(c)->x8C == b->x - d + b->width || FSETD(c)->x8C + FSETD(c)->x94 == b->x - d) {
+                if (FSETD(c)->x90 >= b->y && FSETD(c)->x90 + FSETD(c)->x98 <= b->y + b->height) {
+                    if (FSETD(c)->x8C == b->x - d + b->width) {
+                        FSETD(c)->x8C += d;
+                        FSETD(c)->x94 -= d;
+                    } else {
+                        FSETD(c)->x94 += d;
+                    }
+                    if (FSETD(c)->x8C < 0) {
+                        FSETD(c)->x8C = 0;
+                    }
+                    if (FSETD(c)->x94 < 0) {
+                        FSETD(c)->x94 = 0;
+                    }
+                    w = FSETD(c)->x94;
+                    h = FSETD(c)->x98;
+                    updateParentFrameset(c, w, h);
+                    relayoutFramesetByFrameBorderMove(c);
+                }
+            }
+        }
+    }
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_frame", moveFrameBorderByHorizontal);
+void moveFrameBorderByHorizontal(BOX *b, BOX *fs, int d) {
+    BOX *c;
+    int w;
+    int h;
+    b->y += d;
+    for (c = fs->child; c != NULL; c = c->next) {
+        if (c->content == 1) {
+            if (FFRAMED(c)->fy == b->y - d + b->height || FFRAMED(c)->fy + FFRAMED(c)->fh == b->y - d) {
+                if (FFRAMED(c)->fx >= b->x && ((FFRAMED(c)->fx == 0 && b->x + b->width >= FFRAMED(c)->fw) || FFRAMED(c)->fx + FFRAMED(c)->fw <= b->x + b->width + 1)) {
+                    if (FFRAMED(c)->fy == b->y - d + b->height) {
+                        FFRAMED(c)->fy += d;
+                        FFRAMED(c)->fh -= d;
+                    } else {
+                        FFRAMED(c)->fh += d;
+                    }
+                    if (FFRAMED(c)->fy < 0) {
+                        FFRAMED(c)->fy = 0;
+                    }
+                    if (FFRAMED(c)->fh < 0) {
+                        FFRAMED(c)->fh = 0;
+                    }
+                    w = FFRAMED(c)->fw;
+                    h = FFRAMED(c)->fh;
+                    updateParentFrameset(c, w, h);
+                    relayoutByFrameBorderMove(c);
+                }
+            }
+        } else {
+            if (FSETD(c)->x90 == b->y - d + b->height || FSETD(c)->x90 + FSETD(c)->x98 == b->y - d) {
+                if (FSETD(c)->x8C >= b->x && FSETD(c)->x8C + FSETD(c)->x94 <= b->x + b->width) {
+                    if (FSETD(c)->x90 == b->y - d + b->height) {
+                        FSETD(c)->x90 += d;
+                        FSETD(c)->x98 -= d;
+                    } else {
+                        FSETD(c)->x98 += d;
+                    }
+                    if (FSETD(c)->x90 < 0) {
+                        FSETD(c)->x90 = 0;
+                    }
+                    if (FSETD(c)->x98 < 0) {
+                        FSETD(c)->x98 = 0;
+                    }
+                    w = FSETD(c)->x94;
+                    h = FSETD(c)->x98;
+                    updateParentFrameset(c, w, h);
+                    relayoutFramesetByFrameBorderMove(c);
+                }
+            }
+        }
+    }
+}
 
 int adjustMoveFrameBorderValue(BOX *b, BOX *fs, int d) {
     int dir = *(int *)b->geom;

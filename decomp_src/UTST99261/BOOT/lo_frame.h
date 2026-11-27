@@ -15,7 +15,11 @@ typedef struct FRAMESIZES {
 } FRAMESIZES;
 
 typedef struct FRAMEDATA {
-    u8 unk0[0x24];
+    int fx;                     /* 0x0 */
+    int fy;                     /* 0x4 */
+    int fw;                     /* 0x8 */
+    int fh;                     /* 0xC */
+    u8 unk10[0x14];
     int x24;
     u8 unk28[0x14];
     int x3C;
