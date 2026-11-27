@@ -121,7 +121,7 @@ void draw_net_hello_list(int *x_ptr, int *y_ptr);
 void draw_net_established_list(int *x_ptr, int *y_ptr);
 static int get_nickname(int buflen, struct SceNetEtherAddr *addr, struct SceNetAdhocctlNickname **n);
 void draw_net_member_list(int *x_ptr, int *y_ptr);
-void draw_net_neighbors(int *x_ptr, int *y_ptr);
+void draw_net_neighbors(int x, int y);
 
 extern int net_error;
 extern int net_gid[];
@@ -218,7 +218,34 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_netmain", draw_
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_netmain", draw_net_hello_list);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_netmain", draw_net_neighbors);
+extern char D_0007B5A8[];
+void sceNetEtherNtostr(const struct SceNetEtherAddr *addr, char *str);
+int sceNetAdhocctlGetPeerList(int *buflen, struct SceNetAdhocctlPeerInfo *buf);
+int sprintf(char *buf, const char *fmt, ...);
+void inv_font_ascii(char *str, int x, int y, int w, int h, int r, int g, int b, int a);
+void draw_net_neighbors(int x, int y)
+{
+	char etherstr[32];
+	struct SceNetAdhocctlPeerInfo *peer;
+	char mess_buff[128];
+	int ret, buflen;
+
+	buflen = sizeof(peerinfo);
+	ret = sceNetAdhocctlGetPeerList(&buflen, peerinfo);
+	if (ret < 0)
+		return;
+	if (buflen == 0)
+		return;
+	for (peer = peerinfo; peer != NULL; peer = peer->next) {
+		sceNetEtherNtostr(&peer->mac_addr, etherstr);
+		if (peer->nickname.data[0] != 0)
+			sprintf(mess_buff, "# \"%s\" (%s)", peer->nickname.data, etherstr);
+		else
+			sprintf(mess_buff, D_0007B5A8, etherstr);
+		inv_font_ascii(mess_buff, x, y, 100, 100, 255, 255, 255, 255);
+		y += 0x18;
+	}
+}
 
 INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_netmain", D_0007B5A8);
 
