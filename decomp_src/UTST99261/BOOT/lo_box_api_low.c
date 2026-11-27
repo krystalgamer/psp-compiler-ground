@@ -15,6 +15,12 @@ void drawDelete(BOX *box);
 
 void *memset(void *, int, unsigned int);
 void Node_setBox(void *node, BOX *box);
+void initMapList(BOX *b);
+void initBoxProperty(BOX *b);
+void actClearForm(void *f);
+void initImageList(void *l);
+void lfm_resetPageRegion(void *r, int w);
+void freeDrawObject(BOX *b);
 int checkTableHierarchy(BOX *box, BOX **table) {
     while (box != NULL) {
         if (box->content == 6) {
@@ -189,7 +195,46 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_box_api_low", freeBoxPre);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_box_api_low", freeBox);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_box_api_low", reinitBodyBox);
+void reinitBodyBox(BOX *box, int clear) {
+    char *g = (char *)box->geom;
+
+    box->child = NULL;
+    box->width = 0;
+    box->height = 0;
+    M2C_FIELD(g, int *, 0x10) = M2C_FIELD(g, int *, 0x8);
+    M2C_FIELD(g, int *, 0x14) = M2C_FIELD(g, int *, 0xC);
+    M2C_FIELD(g, int *, 0x18) = 0;
+    M2C_FIELD(g, int *, 0x1C) = 0;
+    M2C_FIELD(g, int *, 0x68) = 0;
+    M2C_FIELD(g, int *, 0x6C) = 0;
+    M2C_FIELD(g, int *, 0x70) = 0;
+    M2C_FIELD(g, int *, 0x74) = 0;
+    M2C_FIELD(g, int *, 0x78) = 0;
+    M2C_FIELD(g, int *, 0x80) = 0;
+    M2C_FIELD(g, int *, 0x84) = 0;
+    M2C_FIELD(g, int *, 0xB4) = 0;
+    if (M2C_FIELD(g, void **, 0x28) != NULL) {
+        MEM_free(0, M2C_FIELD(g, void **, 0x28));
+        M2C_FIELD(g, void **, 0x28) = NULL;
+    }
+    initMapList(box);
+    initBoxProperty(box);
+    box->style->unk28 = 0;
+    box->style->unk2A = 0;
+    box->style->unk2C = 0;
+    box->style->unk2E = 0;
+    if (clear)
+        actClearForm(M2C_FIELD(box->geom, void **, 0x38));
+    initBoxList((LIST *)(g + 0x48));
+    initBoxList((LIST *)(g + 0x9C));
+    initImageList(g + 0x54);
+    if (box->region != NULL)
+        lfm_resetPageRegion(box->region, M2C_FIELD(g, int *, 0x8));
+    if (M2C_FIELD(box, void **, 0x2C) != NULL) {
+        freeDrawObject(box);
+        M2C_FIELD(box, void **, 0x2C) = NULL;
+    }
+}
 
 void freeDrawObject(BOX *box) {
     int *sd;
