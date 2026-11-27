@@ -931,7 +931,100 @@ void ps_MailBoxClean(void) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", ps_ParseDomBuildCall);
+int ps_ParseDomBuildCall(PsIpc *msg) {
+    PsDomBuild b;
+    PsIpc m;
+    PsIpc m2;
+    int *node;
+    PsDomResult *r;
+    int ret;
+    PsDomResult *d;
+    void *u;
+    int mode;
+
+    ret = 0;
+    node = HST_searchSessionIDHistoryNode(msg->x04);
+    if (node == NULL) {
+        if (msg->x18 != 0) {
+            MEM_free(0, (void *)msg->x1C);
+        }
+        return ret;
+    }
+    b.x[0] = node[1];
+    b.x[1] = node[0];
+    b.x[2] = node[5];
+    b.x[3] = node[4];
+    b.x[4] = node[7];
+    b.x[5] = node[6];
+    b.x[6] = 0;
+    b.x[7] = 0;
+    b.x[9] = msg->x04;
+    b.x[10] = 0;
+    Encoding(node, 0, &b.x[10]);
+    b.x[11] = 1;
+    b.x[12] = 0;
+    b.x[13] = Accession;
+    r = parseDomBuild(&b);
+    initMPL_REQ_LOAD_PAGE(&m);
+    m.x04 = msg->x04;
+    ps_sndmsg(&m, 4);
+    switch (r->type) {
+    case 0:
+        break;
+    case 1:
+        d = MEM_malloc(0, r->len * 2 + 0xC);
+        if (d == NULL) {
+            ps_halt("(char*)E_malloc(ps_i2406) failed");
+        }
+        d->len = r->len;
+        d->data = (char *)d + 0xC;
+        memcpy(d->data, r->data, r->len * 2);
+        d->type = node[0x68 / 4];
+        MEM_free(0, r->data);
+        m2.type = 2;
+        m2.x04 = msg->x04;
+        m2.x08 = 1;
+        m2.cmd = 0x30B;
+        m2.x10 = 0;
+        m2.x14 = 0;
+        m2.x18 = r->len * 2 + 0xC;
+        m2.x1C = (int)d;
+        ps_sndmsg(&m2, 4);
+        ret = 0x12;
+        break;
+    case 2:
+        u = HST_getJSURI(node, HST_getJSURIlen(node));
+        if (u == NULL) {
+            ps_halt("ExternalHistory = NULL\n");
+        }
+        mode = 2;
+        if (node[0x30 / 4] != 1) {
+            mode = psCacheMode;
+        }
+        ps_getsend(u, mode, 3, r);
+        ret = 0x1A;
+        break;
+    case 3:
+        u = HST_getCSSURI(node, HST_getCSSURIlen(node));
+        if (u == NULL) {
+            ps_halt("ExternalHistory = NULL\n");
+        }
+        mode = 2;
+        if (node[0x30 / 4] != 1) {
+            mode = psCacheMode;
+        }
+        ps_getsend(u, mode, 1, NULL);
+        ret = 0x1A;
+        break;
+    default:
+        ps_halt("ps_i2406(parseDomBuild) failed.");
+        break;
+    }
+    if (r != NULL) {
+        MEM_free(0, r);
+    }
+    return ret;
+}
 
 void ps_FrontParseDomBuild(void) {
     PsDomBuild b;
