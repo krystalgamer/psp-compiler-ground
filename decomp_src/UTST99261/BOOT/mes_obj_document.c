@@ -2,6 +2,13 @@
 #include "common.h"
 #include "mes_js.h"
 #include "m2c_macros.h"
+typedef struct MesStrD {
+    DOMChar *str;
+    int len;
+} MesStrD;
+void *Util_HTMLDocument_getBody(void *doc);
+void Element_setAttribute(void *elem, DOMString *name, DOMString *value);
+void *memcpy(void *d, const void *s, unsigned int n);
 typedef struct DocNames {
     const char *n[4];
 } DocNames;
