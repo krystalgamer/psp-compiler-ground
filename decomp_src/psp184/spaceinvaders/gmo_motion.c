@@ -1,4 +1,5 @@
 #include "common.h"
+#define eval_fcurve eval_fcurve_5E514
 #include "gmo_motion_sdk.h"
 
 SceGmoMotion *sceGmoMotionCreate( SceGmoChunk *chunk )
@@ -90,7 +91,52 @@ void sceGmoMotionUnload( SceGmoMotion *motion )
  motion->m_fcurves = 0 ;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_motion", sceGmoMotionAnimate);
+void sceGmoMotionAnimate( SceGmoMotion *motion, SceGmoModel *model, float step )
+{
+	if ( motion == 0 ) return ;
+
+	float weight = motion->m_weight ;
+	if ( weight == 0.0f ) return ;
+
+	float frame0 = motion->m_frame ;
+	float frame1 = frame0 + motion->m_frame_rate * step ;
+	float start = motion->m_frame_loop[ 0 ] ;
+	float end = motion->m_frame_loop[ 1 ] ;
+	if ( frame1 >= end && frame0 < end ) {
+		frame1 = ( motion->m_flags & NOREPEAT ) ? end : start ;
+	} else if ( frame1 < start && frame0 >= start ) {
+		frame1 = ( motion->m_flags & NOREPEAT ) ? start : end ;
+	}
+	motion->m_frame = frame1 ;
+
+	SceGmoSubject *parent = sceGmoBaseGetParent( &( motion->m_base ) ) ;
+	if ( parent != 0 ) model = (SceGmoModel *)parent ;
+
+	float tmp[ 16 ] ;
+	{ int i ; for ( i = 0 ; i < motion->m_n_anims ; i ++ ) {
+		SceGmoAnimate *anim = (SceGmoAnimate *)SCEGMO_CHUNK_ARGS( motion->m_anims[ i ] ) ;
+
+		int idx = anim->fcurve & 0x0fff ;
+		if ( idx >= motion->m_n_fcurves ) continue ;
+		SceGmoChunk *fcurve = motion->m_fcurves[ idx ] ;
+
+		int n_dims = eval_fcurve( fcurve, frame1, tmp ) ;
+
+		int block = anim->block ;
+		switch ( ( block >> 16 ) & 0x7fff ) {
+		    case 4 : {
+			SceGmoBone *bone = sceGmoModelGetBone( model, block ) ;
+			sceGmoBoneControl( bone, anim->cmd, anim->index, tmp, n_dims, weight ) ;
+			break ;
+		    }
+		    case 8 : {
+			SceGmoMaterial *material = sceGmoModelGetMaterial( model, block ) ;
+			sceGmoMaterialControl( material, anim->cmd, anim->index, tmp, n_dims, weight ) ;
+			break ;
+		    }
+		}
+	} }
+}
 
 void sceGmoMotionSetParent( SceGmoMotion *motion, SceGmoModel *parent )
 {

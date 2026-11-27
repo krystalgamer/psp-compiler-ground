@@ -1539,3 +1539,6 @@ static quat *quat_slerp( quat *dst, const quat *src1, const quat *src2, float ra
 enum {
  NOREPEAT = 0x0001,
 } ;
+void sceGmoBoneControl( SceGmoBone *bone, int type, int idx, const float *val, int cnt, float weight ) ;
+void sceGmoMaterialControl( SceGmoMaterial *material, int type, int idx, const float *val, int cnt, float weight ) ;
+void sceGmoMotionAnimate( SceGmoMotion *motion, SceGmoModel *model, float step ) ;
