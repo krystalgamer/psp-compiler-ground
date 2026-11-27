@@ -3355,12 +3355,9 @@ void netgame_ufo_pos_get(u8 *q, int k)
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", netgame_ufo_life_set);
 
 void ufo_damage(void *u, BV3 p, int dmg, int net, int flag);
-/* OPEN: with u = &gmain.ufo[i] every cc1 (1.3.1..1.9.2) lets cse2 derive the
-   ufo base from the split gmain+0xE8000 register of gmain.ufo_n (addiu s1,a2,14804);
-   the original materialises gmain+0xEB9D4 with its own lui/addiu.  Only an
-   unrelated symbol reproduces that, so the array is addressed through its
-   split label here. */
-extern UFO_T ufo_lab[] __asm__("D_005A09BC");
+/* The ufo loop is the THEN arm (ff28 != 13): cse2's path then still knows the
+   gmain base register, so &gmain.ufo[i] is not rewritten relative to the split
+   gmain+0xE8000 register of gmain.ufo_n (the else-arm form gets addiu s1,a2,14804). */
 void netgame_ufo_life_get(u8 *q, int k, int pl)
 {
 	int i, *v;
@@ -3371,20 +3368,20 @@ void netgame_ufo_life_get(u8 *q, int k, int pl)
 		return;
 	if (gmain.f0 == 4)
 		return;
-	if (gmain.ff28 == 13) {
+	if (gmain.ff28 != 13) {
+		for (i = 0; i < gmain.ufo_n; i++) {
+			UFO_T *u;
+			int x = ((int *)(q + k * 0x18 + 0x14))[i];
+			u = &gmain.ufo[i];
+			if (x > u->life)
+				ufo_damage(u, *(BV3 *)u->pos, ((int *)(q + k * 0x18 + 0x14))[i] - u->life, 1, 0);
+		}
+	} else {
 		BUFO_D *b = &gmain.bufo;
 
 		v = (int *)(k * 0x18 + (int)q + 0x14);
 		if (b->dmg < *v)
 			boss_ufo_damage(b, *(BV3 *)b->pos, *v - b->dmg, 1, 0);
-	} else {
-		for (i = 0; i < gmain.ufo_n; i++) {
-			UFO_T *u;
-			int x = ((int *)(q + k * 0x18 + 0x14))[i];
-			u = &ufo_lab[i];
-			if (x > u->life)
-				ufo_damage(u, *(BV3 *)u->pos, ((int *)(q + k * 0x18 + 0x14))[i] - u->life, 1, 0);
-		}
 	}
 }
 
