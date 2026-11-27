@@ -301,7 +301,103 @@ term:
 	return ret;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/mpeg_mpegstr_gu/nonmatchings/display", dispbuf_create);
+void *sceGeEdramGetAddr(void);
+SceInt32 sceMpegAvcQueryYCbCrSize(SceMpeg *pMpeg, SceInt32 mode, SceInt32 width, SceInt32 height, SceInt32 *size);
+SceInt32 sceMpegAvcInitYCbCr(SceMpeg *pMpeg, SceInt32 mode, SceInt32 width, SceInt32 height, SceVoid *pBuf);
+SceInt32 dispbuf_create(t_displayBuffer *pDisp, SceMpeg *pMpeg, SceInt32 disp_num, SceInt32 pixelFormat, t_conditionCtrl *pCtrl)
+{
+	SceInt32 ret;
+	SceInt32 i;
+	SceChar8 *geAddr;
+	SceInt32 yuvSize;
+
+	pDisp->buf = NULL;
+	pDisp->pts = NULL;
+
+	pDisp->pMpeg = pMpeg;
+
+	pDisp->lock_sema = sceKernelCreateSema("lock_sema", 0, 1, 1, NULL);
+
+	pDisp->delayFlag = sceKernelCreateEventFlag("display_delay_flag", 0x200, 0, 0);
+
+	pDisp->buf = malloc(disp_num * sizeof(SceChar8 *));
+	if (pDisp->buf == NULL) {
+		ret = -1;
+		goto error;
+	}
+
+	for (i = 0; i < disp_num; i++) {
+		pDisp->buf[i] = NULL;
+	}
+
+	ret = sceMpegAvcQueryYCbCrSize(pDisp->pMpeg, 1, 480, 272, &yuvSize);
+	if (ret != 0) {
+		printf("fatal error : sceMpegAvcQueryYCbCr() 0x%x\n", ret);
+		goto error;
+	}
+
+	for (i = 0; i < disp_num; i++) {
+		pDisp->buf[i] = memalign(16, yuvSize);
+		if (pDisp->buf[i] == NULL) {
+			ret = -1;
+			goto error;
+		}
+	}
+
+	for (i = 0; i < disp_num; i++) {
+		ret = sceMpegAvcInitYCbCr(pDisp->pMpeg, 1, 480, 272, pDisp->buf[i]);
+		if (ret != 0) {
+			printf("fatal error : sceMpegAvcInitYCbCr() 0x%x\n", ret);
+			goto error;
+		}
+	}
+
+	pDisp->pts = malloc(disp_num * sizeof(SceUInt32));
+	if (pDisp->pts == NULL) {
+		ret = -1;
+		goto error;
+	}
+
+	geAddr = sceGeEdramGetAddr();
+
+	pDisp->pixelFormat = pixelFormat;
+	if (init_all(pDisp) != 0) {
+		printf("fatal error : init_all()\n");
+		ret = -1;
+		goto error;
+	}
+
+	if (pDisp->pixelFormat == 3)
+		geAddr += 0x154000;
+	else
+		geAddr += 0xCC000;
+	pDisp->workBuf = geAddr;
+	pDisp->size = disp_num;
+	pDisp->pCtrl = pCtrl;
+
+	goto term;
+
+error:
+	if (pDisp->buf != NULL) {
+		for (i = 0; i < pDisp->size; i++) {
+			if (pDisp->buf[i] != NULL) {
+				free(pDisp->buf[i]);
+				pDisp->buf[i] = NULL;
+			}
+		}
+
+		free(pDisp->buf);
+		pDisp->buf = NULL;
+	}
+
+	if (pDisp->pts != NULL) {
+		free(pDisp->pts);
+		pDisp->pts = NULL;
+	}
+
+term:
+	return ret;
+}
 
 SceInt32 dispbuf_reset(t_displayBuffer *pDisp)
 {
