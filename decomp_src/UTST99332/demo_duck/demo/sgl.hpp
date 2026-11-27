@@ -704,6 +704,10 @@ public:
     void splineCloseV(bool);
     void splineFlipS(bool);
     void splineFlipT(bool);
+    void sphere(float, int, int, float, float);
+    void cylinder(float, float, int, int);
+    void cone(float, float, int, int);
+    void arrow(float, float, float, float);
     int _fAC;
     Mesh &_mesh;                /* 0xB0 */
     bool _fB4;

@@ -482,7 +482,32 @@ void sgl::MeshBuilder::splineEnableNormals(bool b)
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_MeshBuilder_extruded_var_extruded_var", _ZN3sgl11MeshBuilder10end_splineEv);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_MeshBuilder_extruded_var_extruded_var", _ZN3sgl11MeshBuilder5arrowEffff);
+void sgl::MeshBuilder::arrow(float len, float head, float r, float hr)
+{
+    begin(BeginMode(2));
+    revolutionSlices(12);
+    revolutionStartAngle(0);
+    revolutionEndAngle(6.28318548f);
+    extrusionBegin(LineMode(1));
+    vertex(0, 0, len);
+    float z = len - head;
+    vertex(hr, 0, z);
+    vertex(r, 0, z);
+    vertex(r, 0, 0);
+    vertex(0, 0, 0);
+    extrusionEnd();
+    pushTransform();
+    translate(0, 0, 4);
+    extrusionBegin(LineMode(1));
+    vertex(0, 0, len);
+    vertex(hr, 0, z);
+    vertex(r, 0, z);
+    vertex(r, 0, 0);
+    vertex(0, 0, 0);
+    extrusionEnd();
+    popTransform();
+    end();
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_MeshBuilder_extruded_var_extruded_var", _ZN3sgl11MeshBuilder10cubeDirectEb);
 
@@ -552,11 +577,77 @@ void sgl::MeshBuilder::vertexAt(int i, int p, int n, int c, int t)
     _mesh.vertexAt(i, p, n, c, t);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_MeshBuilder_extruded_var_extruded_var", _ZN3sgl11MeshBuilder6sphereEfiiff);
+int math_max_i(int, int) __asm__("_ZN4math4max_IiEET_S1_S1_");
+void sgl::MeshBuilder::sphere(float r, int slices, int stacks, float start, float stop)
+{
+    begin(BeginMode(2));
+    if (_colorG.valid)
+        color(_colorG.value);
+    stacks = math_max_i(1, stacks);
+    slices = math_max_i(1, slices);
+    extrusionBegin(LineMode(1));
+    extrusionReverseNormals(false);
+    revolutionStartAngle(start);
+    revolutionEndAngle(stop);
+    revolutionSlices(slices);
+    extrusionCreaseAngle(180);
+    float a = 1.57079637f;
+    float step = 180 * 0.0174532924f / stacks;
+    for (int i = 0; i < stacks + 1; i++) {
+        vertex(r * cosf(a), 0, r * sinf(a));
+        a -= step;
+    }
+    extrusionEnd();
+    end();
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_MeshBuilder_extruded_var_extruded_var", _ZN3sgl11MeshBuilder8cylinderEffii);
+void sgl::MeshBuilder::cylinder(float r, float h, int slices, int stacks)
+{
+    begin(BeginMode(2));
+    if (_colorG.valid)
+        color(_colorG.value);
+    stacks = math_max_i(1, stacks);
+    slices = math_max_i(1, slices);
+    extrusionBegin(LineMode(1));
+    extrusionReverseNormals(false);
+    revolutionStartAngle(0);
+    revolutionEndAngle(6.28318548f);
+    revolutionSlices(slices);
+    extrusionCreaseAngle(60);
+    float step = h / stacks;
+    float d = 0;
+    vertex(d, d, h * 0.5f);
+    for (int i = 0; i < stacks + 1; i++) {
+        vertex(r, 0, h * 0.5f + d);
+        d -= step;
+    }
+    vertex(0, 0, -h * 0.5f);
+    extrusionEnd();
+    end();
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_MeshBuilder_extruded_var_extruded_var", _ZN3sgl11MeshBuilder4coneEffii);
+void sgl::MeshBuilder::cone(float r, float h, int slices, int stacks)
+{
+    begin(BeginMode(2));
+    if (_colorG.valid)
+        color(_colorG.value);
+    stacks = math_max_i(1, stacks);
+    slices = math_max_i(1, slices);
+    extrusionBegin(LineMode(1));
+    extrusionReverseNormals(true);
+    revolutionStartAngle(0);
+    revolutionEndAngle(6.28318548f);
+    revolutionSlices(slices);
+    extrusionCreaseAngle(60);
+    float d = 0;
+    vertex(d, d, -h * 0.5f);
+    for (int i = 0; i < stacks + 1; i++) {
+        float t = (float)i / stacks;
+        vertex((1 - t) * r, 0, -h * 0.5f + t * h);
+    }
+    extrusionEnd();
+    end();
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_MeshBuilder_extruded_var_extruded_var", _ZN3sgl11MeshBuilder3boxEfffb);
 
