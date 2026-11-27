@@ -2,32 +2,65 @@
 #include "common.h"
 #include "m2c_macros.h"
 void consPrintf(const char *, ...);
+int sceUmdActivate(M2C_UNK, int);                   /* extern */
+extern unsigned char D_000FA7FC;
+extern unsigned char D_000FA818;
+extern unsigned char D_000FA870;
+extern int UmdName_Alias;
+extern int UmdStandby;
+void consPrintf(const char *, ...);
 extern unsigned char D_000FA7FC;
 extern unsigned char D_000FA818;
 extern int D_00119150;
 extern int UmdName_Alias;
 extern signed char UmdVirtual;
-extern int LogIdx;
-extern int pLogBuf;
 
 extern int UmdReady;
 extern int UmdState;
+int sprintf(char *buf, const char *fmt, ...);
+void *memset(void *s, int c, unsigned int n);
 
+typedef struct { int mode, attr; long long size; char t[48]; unsigned int priv[6]; } UmdStat;
+int sceIoGetstat(const char *, UmdStat *);
+char *umdPref();
 
-typedef struct { int Ofs; int Num; short Elm[1]; } ElmCntx;
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/umd", umdInit);
 
-typedef struct ListNode { struct ListNode *next; } ListNode;
-typedef struct { unsigned char type; char pad[3]; ListNode *head; ListNode *tail; } List;
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/dev/umd", D_000FA7E8);
+
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/dev/umd", D_000FA7F0);
+
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/dev/umd", D_000FA7FC);
+
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/dev/umd", D_000FA818);
+
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/dev/umd", D_000FA828);
+
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/dev/umd", D_000FA848);
+
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/dev/umd", D_000FA85C);
+
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/dev/umd", D_000FA864);
+
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/dev/umd", D_000FA870);
+
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/dev/umd", D_000FA88C);
+
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/dev/umd", D_000FA898);
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/umd", umdTerm);
+
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/dev/umd", D_000FA8A4);
+
+void umdActive(void) {
+    if ((UmdStandby == 1) && (sceUmdActivate(1, UmdName_Alias) != 0)) {
+        consPrintf(&D_000FA7FC, &D_000FA818, 0x8C, "umdActive", &D_000FA870);
+    }
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/umd", umdProc);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/umd", umdPref);
-
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
-int sprintf(char *buf, const char *fmt, ...);
-void *memset(void *s, int c, unsigned int n);
 
 signed char *umdParamToVirtual(int arg0, int arg1) {
     if (arg1 == 0) {
@@ -41,9 +74,6 @@ signed char *umdParamToVirtual(int arg0, int arg1) {
     return &UmdVirtual;
 }
 
-typedef struct { int mode, attr; long long size; char t[48]; unsigned int priv[6]; } UmdStat;
-int sceIoGetstat(const char *, UmdStat *);
-char *umdPref();
 int umdNameToVirtual(char *name)
 {
 	UmdStat st;
@@ -51,10 +81,6 @@ int umdNameToVirtual(char *name)
 		return 0;
 	return (int)umdParamToVirtual(st.priv[0], (int)st.size);
 }
-
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
 
 int umdReady(void) {
     int temp_v0;
@@ -65,242 +91,3 @@ int umdReady(void) {
 }
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/umd", umdDump);
-
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/umd", calcNumBcd);
-
-extern int DecTbl[];
-int calcBcdNum(int *arg0) {
-    int sum = 0;
-    int n = *arg0;
-    unsigned char *p = (unsigned char *)(arg0 + 1);
-    if (!(n > 0)) {
-        consPrintf("cassert : %s %d : %s : %s\n", "src/lib/calc.c", 0x49, "calcBcdNum", "Place > 0");
-    }
-    for (; n != 0; n--) {
-        sum += *p++ * DecTbl[n];
-    }
-    return sum;
-}
-
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/umd", consInit);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/dev/umd", D_000FAA78);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/dev/umd", D_000FAA94);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/dev/umd", D_000FAAA4);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/dev/umd", D_000FAAAC);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/dev/umd", D_000FAAC4);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/dev/umd", D_000FAACC);
-
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/umd", consTerm);
-
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/umd", consPrintf);
-
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
-
-int consLog(unsigned int arg0) {
-    int var_v1;
-
-    var_v1 = 0;
-    if ((pLogBuf != 0) & (arg0 < 0x10U)) {
-        var_v1 = pLogBuf + (((LogIdx + arg0) & 0xF) << 6);
-    }
-    return var_v1;
-}
-
-int dencEncode(int a, int b, int c)
-{
-	return c;
-}
-
-int dencDecode(int a, int b, int c)
-{
-	return c;
-}
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/dev/umd", D_000FAB04);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/dev/umd", D_000FAB20);
-
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/umd", elmInit);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/dev/umd", D_000FAB54);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/dev/umd", D_000FAB5C);
-
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/umd", elmTerm);
-
-extern unsigned char D_000FAB04, D_000FAB20, D_000FAB54;
-short elmCall(void *arg0) {
-    short var_a0;
-    short *e;
-    int temp_s0;
-
-    if (arg0 == NULL) {
-        consPrintf(&D_000FAB04, &D_000FAB20, 0x45, "elmCall", &D_000FAB54);
-    }
-    temp_s0 = M2C_FIELD(arg0, int *, 0);
-    if (temp_s0 < 0) {
-        consPrintf(&D_000FAB04, &D_000FAB20, 0x49, "elmCall", "Ofs >= 0");
-    }
-    var_a0 = -1;
-    if (temp_s0 < M2C_FIELD(arg0, int *, 4)) {
-        M2C_FIELD(arg0, int *, 0) = (int) (temp_s0 + 1);
-        e = ((ElmCntx *)arg0)->Elm;
-        var_a0 = e[temp_s0];
-    }
-    return var_a0;
-}
-
-extern unsigned char D_000FAB04, D_000FAB20, D_000FAB54;
-int elmFree(void *arg0, short arg1) {
-    int temp_s0;
-    int var_v0;
-    short *e;
-
-    if (arg0 == NULL) {
-        consPrintf(&D_000FAB04, &D_000FAB20, 0x61, "elmFree", &D_000FAB54);
-    }
-    if (arg1 < 0) {
-        consPrintf(&D_000FAB04, &D_000FAB20, 0x62, "elmFree", "Elm >= 0");
-    }
-    if (arg1 >= M2C_FIELD(arg0, int *, 4)) {
-        consPrintf(&D_000FAB04, &D_000FAB20, 0x63, "elmFree", "Elm < pCntx->Num");
-    }
-    temp_s0 = M2C_FIELD(arg0, int *, 0);
-    if (temp_s0 <= 0) {
-        consPrintf(&D_000FAB04, &D_000FAB20, 0x67, "elmFree", "Ofs > 0");
-    }
-    if (M2C_FIELD(arg0, int *, 4) < temp_s0) {
-        consPrintf(&D_000FAB04, &D_000FAB20, 0x68, "elmFree", "Ofs <= pCntx->Num");
-    }
-    var_v0 = 0;
-    if (temp_s0 != 0) {
-        temp_s0--;
-        M2C_FIELD(arg0, int *, 0) = temp_s0;
-        e = ((ElmCntx *)arg0)->Elm;
-        e[temp_s0] = arg1;
-        var_v0 = 1;
-    }
-    return var_v0;
-}
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/dev/umd", D_000FABEC);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/dev/umd", D_000FAC08);
-
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/umd", hdlInit);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/dev/umd", D_000FAC3C);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/dev/umd", D_000FAC44);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/dev/umd", D_000FAC5C);
-
-extern unsigned char D_000FABEC, D_000FAC08, D_000FAC3C;
-int elmTerm();
-int _memFree();
-int hdlTerm(int *h)
-{
-	if (h == NULL) {
-		consPrintf(&D_000FABEC, &D_000FAC08, 0x42, "hdlTerm", &D_000FAC3C);
-	}
-	consPrintf("%s : 0x%08x\n", "hdlTerm", h);
-	if (h == NULL) {
-		return 0;
-	}
-	elmTerm(*h);
-	_memFree(h, &D_000FAC08, 0x4C);
-	return 1;
-}
-
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/umd", hdlMake);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/dev/umd", D_000FAC88);
-
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/umd", hdlFree);
-
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/umd", hdlPtr);
-
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/umd", listInit);
-
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
-int listTerm(void) {
-    return 1;
-}
-
-int listAddHead(List *l, ListNode *n)
-{
-	ListNode *h;
-	switch (l->type) {
-	case 0:
-		h = l->head;
-		l->head = n;
-		n->next = h;
-		break;
-	case 1:
-		h = l->head;
-		l->head = n;
-		h->next = n;
-		n->next = NULL;
-		break;
-	case 2:
-		break;
-	}
-	return 0;
-}
-
-int listAddTail(List *l, ListNode *n)
-{
-	ListNode *t;
-	switch (l->type) {
-	case 0:
-		t = l->tail;
-		l->tail = n;
-		t->next = n;
-		n->next = NULL;
-		break;
-	case 1:
-		t = l->tail;
-		l->tail = n;
-		n->next = t;
-		break;
-	case 2:
-		break;
-	}
-	return 0;
-}
-
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/umd", memInit);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/dev/umd", D_000FACEC);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/dev/umd", D_000FACF4);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/dev/umd", D_000FACF8);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/dev/umd", D_000FAD14);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/dev/umd", D_000FAD24);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/dev/umd", D_000FAD30);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/dev/umd", D_000FAD3C);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/dev/umd", D_000FAD44);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/dev/umd", D_000FAD4C);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/dev/umd", D_000FAD64);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/dev/umd", D_000FAD7C);
-
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/umd", memTerm);

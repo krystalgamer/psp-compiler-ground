@@ -1,6 +1,22 @@
 /* cflags: -Os -fno-strength-reduce */
 #include "common.h"
 #include "m2c_macros.h"
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+void resOvlProcInst();
+extern int CurrentInst;
+extern unsigned char InstBuf;
+void consPrintf(const char *, ...);
+extern void *pReadInst;
+
+typedef struct { int *p; int pad[7]; } InstEnt;
+
+typedef void (*OvlFn)(int, int, int);
+typedef struct { int a, b; OvlFn *tbl; int pad[5]; } InstEnt2;
+
+int thrEntry();
+void _resReadInst();
 
 extern int CurrentInst;
 void consPrintf(const char *, ...);
@@ -14,11 +30,77 @@ extern unsigned char D_000FBF20;
 extern unsigned char D_000FBF2C;
 
 extern int pResTerm;
-extern int pCurrent;
-
 
 M2C_UNK resReadInst(int);                           /* extern */
-M2C_UNK thrChange(void *);                          /* extern */
+M2C_UNK thrChange(void *);
+extern unsigned char InstBuf;
+
+extern unsigned char D_000FBF80;
+
+int strcmp(const char *, const char *);
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", resInit);
+
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", D_000FB9F8);
+
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", D_000FBA08);
+
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", D_000FBA24);
+
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", D_000FBA2C);
+
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", D_000FBA38);
+
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", D_000FBA40);
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", resTerm);
+
+void *resGetInst(int arg0) {
+    return (arg0 << 5) + &InstBuf;
+}
+
+int resGetChildEntry(int i)
+{
+	int *c;
+	if (CurrentInst >= i) {
+		c = (int *)((InstEnt *)&InstBuf)[i].p[1];
+		if (c)
+			return c[1];
+	}
+	return 0;
+}
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", resChkData);
+
+void resSetOvlProcTbl(int arg0) {
+    consPrintf("%s : %p\n", "resSetOvlProcTbl", arg0);
+    if (pReadInst != NULL) {
+        M2C_FIELD(pReadInst, int *, 8) = arg0;
+        pReadInst = NULL;
+    }
+}
+
+void resOvlProcInst(int i, int j, int a, int b, int c, int d)
+{
+	OvlFn *t = ((InstEnt2 *)&InstBuf)[i].tbl;
+	if (t)
+		t[j](a, b, c);
+}
+
+void resOvlProcCurrent(int arg0, int arg1, int arg2, int arg3) {
+    resOvlProcInst(CurrentInst, arg0, arg1, arg2, arg3, arg0);
+}
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", resOvlProcAll);
+
+int resReadInstThr(int thr, int inst)
+{
+	int arg[4];
+	arg[0] = inst;
+	return thrEntry(thr, _resReadInst, arg, 1);
+}
+
+                          /* extern */
 
 void _resReadInst(void *arg0) {
     int temp_s0;
@@ -62,10 +144,6 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", D_000FBBCC);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", resReleaseInst);
 
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
-
 int resGetCurrentInst(void) {
     return CurrentInst;
 }
@@ -96,10 +174,6 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", D_000FBD5C);
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", D_000FBD68);
 
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
-
 void _resReadRefer(void *arg0) {
     int temp_s1;
 
@@ -126,8 +200,6 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", D_000FBE40);
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", D_000FBE58);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", resReleaseRefer);
-
-extern unsigned char InstBuf;
 
 int resGetEntrySect(int arg0, int arg1) {
     if (arg0 < 0) {
@@ -194,10 +266,6 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", D_000FBF20);
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", D_000FBF2C);
 
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
-
 int resGetSizeSect(int arg0, int arg1, int arg2) {
     if (arg0 < 0) {
         consPrintf(&D_000FBA08, &D_000FB9F8, 0x3DF, "resGetSizeSect", &D_000FBD40);
@@ -214,30 +282,17 @@ int resGetSizeSect(int arg0, int arg1, int arg2) {
     return M2C_FIELD(resGetDatSect(arg0, arg1, arg2), int *, 4);
 }
 
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
 void resGetSizeLocal(int arg0, int arg1) {
     resGetSizeSect(arg0, 2, arg1);
 }
 
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
 void resGetSizeTable(int arg0, int arg1) {
     resGetSizeSect(arg0, 5, arg1);
 }
 
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
 void resGetSizeString(int arg0, int arg1) {
     resGetSizeSect(arg0, 6, arg1);
 }
-
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
 
 int resGetPtrSect(int arg0, int arg1, int arg2) {
     if (arg0 < 0) {
@@ -270,10 +325,6 @@ int resGetPtrString(int a, int b)
 	return resGetPtrSect(a, 6, b);
 }
 
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
-
 int resGetExtSect(int arg0, int arg1, int arg2) {
     if (arg0 < 0) {
         consPrintf(&D_000FBA08, &D_000FB9F8, 0x42F, "resGetExtSect", &D_000FBD40);
@@ -290,28 +341,18 @@ int resGetExtSect(int arg0, int arg1, int arg2) {
     return M2C_FIELD(resGetDatSect(arg0, arg1, arg2), int *, 0x10);
 }
 
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
 void resGetExtLocal(int arg0, int arg1) {
     resGetExtSect(arg0, 2, arg1);
 }
 
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
 void resGetExtTable(int arg0, int arg1) {
     resGetExtSect(arg0, 5, arg1);
 }
 
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
 void resGetExtString(int arg0, int arg1) {
     resGetExtSect(arg0, 6, arg1);
 }
 
-extern unsigned char D_000FBF80;
 void *resArg(int *r, unsigned int i)
 {
 	if (r && i < (unsigned int)r[3])
@@ -319,7 +360,6 @@ void *resArg(int *r, unsigned int i)
 	return &D_000FBF80;
 }
 
-int strcmp(const char *, const char *);
 int resCmpExt(int *r, char *s)
 {
 	char *p = resArg(r, 1);
@@ -328,17 +368,9 @@ int resCmpExt(int *r, char *s)
 	return strcmp(p, s);
 }
 
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
-
 int resGetTerm(void) {
     return pResTerm;
 }
-
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
 
 void resSetTerm(int arg0) {
     pResTerm = arg0;
@@ -351,9 +383,6 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", resAsmWord);
 void resReleaseWord(void) {
 }
 
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
 int resGetWordNum(void *arg0) {
     return *M2C_FIELD(arg0, int **, 0x10);
 }
@@ -377,18 +406,11 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", resAsmRes);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", resReleaseRes);
 
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
 int resInstGetEntrySect(void *arg0, int arg1) {
     return M2C_FIELD(((arg1 * 8) + M2C_FIELD(arg0, int *, 4)), int *, 4);
 }
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", resInstGetDatSect);
-
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
 
 int resGetDatPackModel(void) {
     void *temp_s0;
@@ -401,165 +423,4 @@ int resGetDatPackModel(void) {
         consPrintf(&D_000FBA08, &D_000FB9F8, 0x544, "resGetDatPackModel", "pTbl[Sect_Table].Dat[0].Size == 1");
     }
     return M2C_FIELD(temp_s0, int *, 0x10) + (*M2C_FIELD(M2C_FIELD(temp_s0, void **, 0x28), int **, 0) << 5);
-}
-
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", taskInit);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", D_000FC050);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", D_000FC058);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", D_000FC068);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", D_000FC070);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", D_000FC08C);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", D_000FC098);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", D_000FC0A8);
-
-extern unsigned char D_000FC050, D_000FC058, D_000FC0A8;
-int rsvTerm();
-int _memFree();
-int taskTerm(int *task)
-{
-	consPrintf(&D_000FC050, "taskTerm");
-	rsvTerm(task[0]);
-	_memFree(task[1], &D_000FC058, 0x43);
-	task[0] = 0;
-	task[1] = 0;
-	_memFree(task, &D_000FC058, 0x47);
-	pCurrent = pCurrent == (int)task ? 0 : pCurrent;
-	consPrintf(&D_000FC0A8);
-	return 1;
-}
-
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
-
-int taskSwitchCntx(int arg0) {
-    int temp_v0;
-
-    temp_v0 = pCurrent;
-    pCurrent = arg0;
-    return temp_v0;
-}
-
-int taskRest(void)
-{
-	int r = 0;
-	if (pCurrent)
-		r = (*(int **)pCurrent)[7];
-	return r;
-}
-
-int taskHead(void)
-{
-	int r = 0;
-	if (pCurrent)
-		r = **(int **)pCurrent;
-	return r;
-}
-
-int taskHeadAlive(void)
-{
-	if (pCurrent)
-		return rsvHeadAlive(*(int *)pCurrent);
-	return 0;
-}
-
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
-void taskProc(arg0)
-    void *arg0;
-{
-    M2C_FIELD(arg0, M2C_UNK (**)(), 8)();
-}
-
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", taskMake);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", D_000FC0C4);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", D_000FC0C8);
-
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", taskKill);
-
-M2C_UNK taskKill(void *, int, int);                 /* extern */
-
-void taskKillReflexive(void *arg0, int arg1, int arg2) {
-    void *temp_s0;
-    void *var_v1;
-
-    var_v1 = M2C_FIELD(arg0, void **, 0x1C);
-    if (var_v1 != NULL) {
-        do {
-            temp_s0 = M2C_FIELD(var_v1, void **, 0x14);
-            if (M2C_FIELD(var_v1, int *, 4) > 0) {
-                taskKillReflexive(var_v1, arg1, arg2);
-            }
-            var_v1 = temp_s0;
-        } while (temp_s0 != NULL);
-    }
-    taskKill(arg0, arg1, arg2);
-}
-
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", taskKillChild);
-
-int taskKill();
-int taskDefaultMsg(int task, unsigned int msg, int p1, int p2)
-{
-	switch (msg) {
-	case 0:
-		return task;
-	case 4:
-		return task;
-	case 5:
-		return taskKill(task, p1, p2);
-	}
-	return 0;
-}
-
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", taskAllFree);
-
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", taskSendProc);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", D_000FC1C0);
-
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", taskSendTag);
-
-int taskSendParent(int *t, int a, int b, int c)
-{
-	return taskSendTag(t, 0xA, t[4], -1, a, b, c);
-}
-
-int taskSendElder(int *t, int a, int b, int c)
-{
-	return taskSendTag(t, 0xB, t[5], 0x14, a, b, c);
-}
-
-int taskSendYoung(int *t, int a, int b, int c)
-{
-	return taskSendTag(t, 0xC, t[6], 0x18, a, b, c);
-}
-
-int taskSendChild(int *t, int a, int b, int c)
-{
-	return taskSendTag(t, 0xD, t[7], 0x14, a, b, c);
-}
-
-void taskProc();
-void taskSendReflexive(void *task, int a, int b, int c)
-{
-	void *t;
-	void *next;
-	for (t = M2C_FIELD(task, void **, 0x1C); t != NULL; t = next) {
-		next = M2C_FIELD(t, void **, 0x14);
-		if (M2C_FIELD(t, int *, 4) > 0) {
-			taskSendReflexive(t, a, b, c);
-		}
-	}
-	taskProc(task, a, b, c);
 }

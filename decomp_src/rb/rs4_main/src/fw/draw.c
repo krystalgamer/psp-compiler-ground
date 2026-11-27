@@ -4,21 +4,46 @@
 M2C_UNK sceKernelCpuResumeIntr(int);                /* extern */
 int sceKernelCpuSuspendIntr();                      /* extern */
 extern unsigned int DrawPC;
-void resOvlProcInst();
-extern int CurrentInst;
 
 extern int Env;
-extern unsigned char InstBuf;
-void consPrintf(const char *, ...);
-extern void *pReadInst;
+void *sceGuSwapBuffers(void);
 
+extern int VSyncCt;
+unsigned int sceKernelGetSystemTimeLow(void);
+void sceGuTexMode(int tpsm, int maxmips, int a2, int swizzle);
+void sceGuTexImage(int mipmap, int width, int height, int tbw, const void *tbp);
+void sceGuTexFilter(int min, int mag);
+void sceGuTexFunc(int tfx, int tcc);
+void sceGuTexWrap(int u, int v);
+void sceGuTexMapMode(int mode, unsigned int a1, unsigned int a2);
+void sceGuClutMode(unsigned int cpsm, unsigned int shift, unsigned int mask, unsigned int a3);
+void sceGuClutLoad(int num_blocks, const void *cbp);
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/draw", drawInit);
+
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/fw/draw", D_000FB840);
+
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/fw/draw", D_000FB850);
+
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/fw/draw", D_000FB86C);
+
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/fw/draw", D_000FB87C);
+
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/fw/draw", D_000FB88C);
+
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/fw/draw", D_000FB8AC);
+
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/fw/draw", D_000FB8CC);
+
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/fw/draw", D_000FB8D8);
+
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/fw/draw", D_000FB8E4);
+
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/fw/draw", D_000FB8F4);
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/draw", drawTerm);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/draw", drawStart);
-
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
-void *sceGuSwapBuffers(void);
 
 int drawSwap(void) {
     int temp_s0;
@@ -29,15 +54,10 @@ int drawSwap(void) {
     return temp_s0;
 }
 
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
-
 M2C_UNK *drawGetEnv(void) {
     return &Env;
 }
 
-extern int VSyncCt;
 void drawDispCallback(int a, int b)
 {
 	int s;
@@ -47,11 +67,6 @@ void drawDispCallback(int a, int b)
 		sceKernelCpuResumeIntr(s);
 	}
 }
-
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
-unsigned int sceKernelGetSystemTimeLow(void);
 
 void drawGuCallback(int arg0) {
     int temp_s0;
@@ -65,17 +80,6 @@ void drawGuCallback(int arg0) {
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/draw", drawXchg);
 
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
-void sceGuTexMode(int tpsm, int maxmips, int a2, int swizzle);
-void sceGuTexImage(int mipmap, int width, int height, int tbw, const void *tbp);
-void sceGuTexFilter(int min, int mag);
-void sceGuTexFunc(int tfx, int tcc);
-void sceGuTexWrap(int u, int v);
-void sceGuTexMapMode(int mode, unsigned int a1, unsigned int a2);
-void sceGuClutMode(unsigned int cpsm, unsigned int shift, unsigned int mask, unsigned int a3);
-void sceGuClutLoad(int num_blocks, const void *cbp);
 int drawSetTexture(void *arg0) {
     unsigned short temp_a1;
     void **temp_s2;
@@ -111,87 +115,3 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/fw/draw", D_000FB93C);
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/fw/draw", D_000FB940);
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/fw/draw", D_000FB944);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/fw/draw", D_000FB948);
-
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/draw", ptxInit);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/fw/draw", D_000FB9E4);
-
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/draw", resInit);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/fw/draw", D_000FB9F8);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/fw/draw", D_000FBA08);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/fw/draw", D_000FBA24);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/fw/draw", D_000FBA2C);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/fw/draw", D_000FBA38);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/fw/draw", D_000FBA40);
-
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/draw", resTerm);
-
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
-
-void *resGetInst(int arg0) {
-    return (arg0 << 5) + &InstBuf;
-}
-
-typedef struct { int *p; int pad[7]; } InstEnt;
-int resGetChildEntry(int i)
-{
-	int *c;
-	if (CurrentInst >= i) {
-		c = (int *)((InstEnt *)&InstBuf)[i].p[1];
-		if (c)
-			return c[1];
-	}
-	return 0;
-}
-
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/draw", resChkData);
-
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
-
-void resSetOvlProcTbl(int arg0) {
-    consPrintf("%s : %p\n", "resSetOvlProcTbl", arg0);
-    if (pReadInst != NULL) {
-        M2C_FIELD(pReadInst, int *, 8) = arg0;
-        pReadInst = NULL;
-    }
-}
-
-typedef void (*OvlFn)(int, int, int);
-typedef struct { int a, b; OvlFn *tbl; int pad[5]; } InstEnt2;
-void resOvlProcInst(int i, int j, int a, int b, int c, int d)
-{
-	OvlFn *t = ((InstEnt2 *)&InstBuf)[i].tbl;
-	if (t)
-		t[j](a, b, c);
-}
-
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
-
-void resOvlProcCurrent(int arg0, int arg1, int arg2, int arg3) {
-    resOvlProcInst(CurrentInst, arg0, arg1, arg2, arg3, arg0);
-}
-
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/draw", resOvlProcAll);
-
-int thrEntry();
-void _resReadInst();
-int resReadInstThr(int thr, int inst)
-{
-	int arg[4];
-	arg[0] = inst;
-	return thrEntry(thr, _resReadInst, arg, 1);
-}

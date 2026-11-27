@@ -4974,27 +4974,27 @@ void sceGuMorphWeight(int n, float f)
 }
 
 #if !defined(M2CTX) && !defined(PERMUTER)
-/* sceGupClear (near miss: its inlined sceGupPutClearFast/Slow evaluate the
+/* sceGupClear (asm copied to libgu_asm/: a split only writes INCLUDE_ASM functions; near miss: its inlined sceGupPutClearFast/Slow evaluate the
    state fields in the opposite order) stays asm; deferred, it came after
    sceGupDrawSprite, so it and the static functions output after it go to
    .text subsection 1, behind the C. */
 __asm__(".pushsection .text\n.subsection 1\n.set noat\n.set noreorder\n"
-        ".include \"tmp/asm/rb/rs4_main/nonmatchings/libgu/sceGupClear.s\"\n"
-        ".include \"tmp/asm/rb/rs4_main/nonmatchings/libgu/sceGupDepthRange.s\"\n"
-        ".include \"tmp/asm/rb/rs4_main/nonmatchings/libgu/sceGupDepthOffset.s\"\n"
-        ".include \"tmp/asm/rb/rs4_main/nonmatchings/libgu/sceGupPatchPrim.s\"\n"
-        ".include \"tmp/asm/rb/rs4_main/nonmatchings/libgu/sceGupModelColor.s\"\n"
-        ".include \"tmp/asm/rb/rs4_main/nonmatchings/libgu/sceGupMaterial.s\"\n"
-        ".include \"tmp/asm/rb/rs4_main/nonmatchings/libgu/sceGupFrontFace.s\"\n"
-        ".include \"tmp/asm/rb/rs4_main/nonmatchings/libgu/sceGupLight.s\"\n"
-        ".include \"tmp/asm/rb/rs4_main/nonmatchings/libgu/sceGupLightColor.s\"\n"
-        ".include \"tmp/asm/rb/rs4_main/nonmatchings/libgu/sceGupTexMode.s\"\n"
-        ".include \"tmp/asm/rb/rs4_main/nonmatchings/libgu/sceGupScissor.s\"\n"
-        ".include \"tmp/asm/rb/rs4_main/nonmatchings/libgu/sceGupShadeModel.s\"\n"
-        ".include \"tmp/asm/rb/rs4_main/nonmatchings/libgu/_sceGuCallbackSignal.s\"\n"
-        ".include \"tmp/asm/rb/rs4_main/nonmatchings/libgu/_sceGuCallbackFinish.s\"\n"
-        ".include \"tmp/asm/rb/rs4_main/nonmatchings/libgu/_sceGuResetGlobalVariables.s\"\n"
-        ".include \"tmp/asm/rb/rs4_main/nonmatchings/libgu/_sceGuUpdateStallAddr.s\"\n"
+        ".include \"decomp_src/rb/rs4_main/libgu_asm/sceGupClear.s\"\n"
+        ".include \"decomp_src/rb/rs4_main/libgu_asm/sceGupDepthRange.s\"\n"
+        ".include \"decomp_src/rb/rs4_main/libgu_asm/sceGupDepthOffset.s\"\n"
+        ".include \"decomp_src/rb/rs4_main/libgu_asm/sceGupPatchPrim.s\"\n"
+        ".include \"decomp_src/rb/rs4_main/libgu_asm/sceGupModelColor.s\"\n"
+        ".include \"decomp_src/rb/rs4_main/libgu_asm/sceGupMaterial.s\"\n"
+        ".include \"decomp_src/rb/rs4_main/libgu_asm/sceGupFrontFace.s\"\n"
+        ".include \"decomp_src/rb/rs4_main/libgu_asm/sceGupLight.s\"\n"
+        ".include \"decomp_src/rb/rs4_main/libgu_asm/sceGupLightColor.s\"\n"
+        ".include \"decomp_src/rb/rs4_main/libgu_asm/sceGupTexMode.s\"\n"
+        ".include \"decomp_src/rb/rs4_main/libgu_asm/sceGupScissor.s\"\n"
+        ".include \"decomp_src/rb/rs4_main/libgu_asm/sceGupShadeModel.s\"\n"
+        ".include \"decomp_src/rb/rs4_main/libgu_asm/_sceGuCallbackSignal.s\"\n"
+        ".include \"decomp_src/rb/rs4_main/libgu_asm/_sceGuCallbackFinish.s\"\n"
+        ".include \"decomp_src/rb/rs4_main/libgu_asm/_sceGuResetGlobalVariables.s\"\n"
+        ".include \"decomp_src/rb/rs4_main/libgu_asm/_sceGuUpdateStallAddr.s\"\n"
         ".set reorder\n.set at\n.subsection 0\n.popsection\n");
 /* sceGupLightColor's jump table, after the C ones */
 __asm__(".pushsection .rodata\n.subsection 1\n.align 2\ndlabel D_0010BC60\n"

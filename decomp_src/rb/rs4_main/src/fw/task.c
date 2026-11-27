@@ -1,10 +1,174 @@
 /* cflags: -Os -fno-strength-reduce */
 #include "common.h"
 #include "m2c_macros.h"
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+void consPrintf(const char *, ...);
+extern int pCurrent;
+
+extern unsigned char D_000FC050, D_000FC058, D_000FC0A8;
+int rsvTerm();
+int _memFree();
+
+M2C_UNK taskKill(void *, int, int);
+int taskKill();
+
+void taskProc();
 
 void consPrintf(const char *, ...);
-extern unsigned char DefView;
 
+void rsvMove();
+M2C_UNK sortPrio(void **, M2C_UNK, M2C_UNK, M2C_UNK, void ***);
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/task", taskInit);
+
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/fw/task", D_000FC050);
+
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/fw/task", D_000FC058);
+
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/fw/task", D_000FC068);
+
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/fw/task", D_000FC070);
+
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/fw/task", D_000FC08C);
+
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/fw/task", D_000FC098);
+
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/fw/task", D_000FC0A8);
+
+int taskTerm(int *task)
+{
+	consPrintf(&D_000FC050, "taskTerm");
+	rsvTerm(task[0]);
+	_memFree(task[1], &D_000FC058, 0x43);
+	task[0] = 0;
+	task[1] = 0;
+	_memFree(task, &D_000FC058, 0x47);
+	pCurrent = pCurrent == (int)task ? 0 : pCurrent;
+	consPrintf(&D_000FC0A8);
+	return 1;
+}
+
+int taskSwitchCntx(int arg0) {
+    int temp_v0;
+
+    temp_v0 = pCurrent;
+    pCurrent = arg0;
+    return temp_v0;
+}
+
+int taskRest(void)
+{
+	int r = 0;
+	if (pCurrent)
+		r = (*(int **)pCurrent)[7];
+	return r;
+}
+
+int taskHead(void)
+{
+	int r = 0;
+	if (pCurrent)
+		r = **(int **)pCurrent;
+	return r;
+}
+
+int taskHeadAlive(void)
+{
+	if (pCurrent)
+		return rsvHeadAlive(*(int *)pCurrent);
+	return 0;
+}
+
+void taskProc(arg0)
+    void *arg0;
+{
+    M2C_FIELD(arg0, M2C_UNK (**)(), 8)();
+}
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/task", taskMake);
+
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/fw/task", D_000FC0C4);
+
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/fw/task", D_000FC0C8);
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/task", taskKill);
+
+                 /* extern */
+
+void taskKillReflexive(void *arg0, int arg1, int arg2) {
+    void *temp_s0;
+    void *var_v1;
+
+    var_v1 = M2C_FIELD(arg0, void **, 0x1C);
+    if (var_v1 != NULL) {
+        do {
+            temp_s0 = M2C_FIELD(var_v1, void **, 0x14);
+            if (M2C_FIELD(var_v1, int *, 4) > 0) {
+                taskKillReflexive(var_v1, arg1, arg2);
+            }
+            var_v1 = temp_s0;
+        } while (temp_s0 != NULL);
+    }
+    taskKill(arg0, arg1, arg2);
+}
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/task", taskKillChild);
+
+int taskDefaultMsg(int task, unsigned int msg, int p1, int p2)
+{
+	switch (msg) {
+	case 0:
+		return task;
+	case 4:
+		return task;
+	case 5:
+		return taskKill(task, p1, p2);
+	}
+	return 0;
+}
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/task", taskAllFree);
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/task", taskSendProc);
+
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/fw/task", D_000FC1C0);
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/task", taskSendTag);
+
+int taskSendParent(int *t, int a, int b, int c)
+{
+	return taskSendTag(t, 0xA, t[4], -1, a, b, c);
+}
+
+int taskSendElder(int *t, int a, int b, int c)
+{
+	return taskSendTag(t, 0xB, t[5], 0x14, a, b, c);
+}
+
+int taskSendYoung(int *t, int a, int b, int c)
+{
+	return taskSendTag(t, 0xC, t[6], 0x18, a, b, c);
+}
+
+int taskSendChild(int *t, int a, int b, int c)
+{
+	return taskSendTag(t, 0xD, t[7], 0x14, a, b, c);
+}
+
+void taskSendReflexive(void *task, int a, int b, int c)
+{
+	void *t;
+	void *next;
+	for (t = M2C_FIELD(task, void **, 0x1C); t != NULL; t = next) {
+		next = M2C_FIELD(t, void **, 0x14);
+		if (M2C_FIELD(t, int *, 4) > 0) {
+			taskSendReflexive(t, a, b, c);
+		}
+	}
+	taskProc(task, a, b, c);
+}
 
 int taskProc_Move(int a, int b, int c)
 {
@@ -18,18 +182,13 @@ int taskProc_Free(int a, int b, int c)
 	return 0;
 }
 
-extern int *pCurrent;
-void rsvMove();
 void taskMove(void *a, void *b, int c, int d)
 {
 	if (pCurrent)
-		rsvMove(*pCurrent, a ? a : (void *)taskProc_Move, b ? b : (void *)taskProc_Free, c, d);
+		rsvMove(*(int *)pCurrent, a ? a : (void *)taskProc_Move, b ? b : (void *)taskProc_Free, c, d);
 }
 
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
-M2C_UNK sortPrio(void **, M2C_UNK, M2C_UNK, M2C_UNK, void ***); /* extern */
+ /* extern */
 
 int taskProc_Sort(void ***arg0, void **arg1) {
     void **temp_v0;
@@ -65,98 +224,3 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/fw/task", D_000FC1E4);
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/fw/task", D_000FC1F0);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/task", taskGetRefer);
-
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/task", viewInit);
-
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
-
-int viewTerm(void) {
-    consPrintf("%s\n", "viewTerm");
-    return 1;
-}
-
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
-
-M2C_UNK *viewGetDefault(void) {
-    return &DefView;
-}
-
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/task", viewMount);
-
-typedef struct View { struct View *next, *prev; } View;
-extern View *pMount, *pChain;
-void viewRemove(View *v)
-{
-	View *n = v->next, *p = v->prev;
-	if (pMount == v)
-		pMount = n;
-	if (pChain == v)
-		pChain = p;
-	if (n)
-		n->prev = p;
-	if (p)
-		p->next = n;
-}
-
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/task", viewProc);
-
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/task", persMount);
-
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
-void persRemove(void *arg0) {
-    void **temp_a1;
-    void *temp_a2;
-    void *temp_v1;
-
-    temp_v1 = M2C_FIELD(arg0, void **, 8);
-    temp_a2 = M2C_FIELD(arg0, void **, 0);
-    temp_a1 = M2C_FIELD(arg0, void ***, 4);
-    if (M2C_FIELD(temp_v1, void **, 0x40) == arg0) {
-        M2C_FIELD(temp_v1, void **, 0x40) = temp_a2;
-    }
-    if (M2C_FIELD(temp_v1, void ***, 0x44) == arg0) {
-        M2C_FIELD(temp_v1, void ***, 0x44) = temp_a1;
-    }
-    if (temp_a2 != NULL) {
-        M2C_FIELD(temp_a2, void ***, 4) = temp_a1;
-    }
-    if (temp_a1 != NULL) {
-        *temp_a1 = temp_a2;
-    }
-}
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/fw/task", D_000FC250);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/fw/task", D_000FC254);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/fw/task", D_000FC258);
-
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/task", persSetup);
-
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/task", GimSetI3dPicture);
-
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/task", GpSetGIM);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/fw/task", D_000FC2EC);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/fw/task", D_000FC308);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/fw/task", D_000FC314);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/fw/task", D_000FC31C);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/fw/task", D_000FC328);
-
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/task", GpSetGimTexture);
-
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/task", GpDrawSpriteMtx);
-
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/task", GtCalcPoint);
-
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/task", avtGetDat);
