@@ -1087,9 +1087,33 @@ class FunctionEvaluator : public SphericalRGBFn {
 public:
     FunctionEvaluator(const VectorRGB &f) : _f(&f) {}
     virtual void eval(float theta, float phi, float &r, float &g, float &b) const;
-    virtual ~FunctionEvaluator() {}
+    virtual ~FunctionEvaluator();
     const VectorRGB *_f;
 };
+#if SGL_LINKONCE_FunctionEvaluator
+SGL_LINKONCE_BEGIN
+#endif
+inline void FunctionEvaluator::eval(float theta, float phi, float &r, float &g, float &b) const
+{
+    _f->eval(theta, phi, r, g, b);
+}
+inline FunctionEvaluator::~FunctionEvaluator() {}
+#if SGL_LINKONCE_FunctionEvaluator
+SGL_LINKONCE_END
+#endif
+/* sh::Env's sky model (its eval is still asm, an inline member held by sh_Env) */
+class CIEClearSky : public SphericalRGBFn {
+public:
+    virtual void eval(float theta, float phi, float &r, float &g, float &b) const;
+    virtual ~CIEClearSky();
+};
+#if SGL_LINKONCE_FunctionEvaluator
+SGL_LINKONCE_BEGIN
+#endif
+inline CIEClearSky::~CIEClearSky() {}
+#if SGL_LINKONCE_FunctionEvaluator
+SGL_LINKONCE_END
+#endif
 class PRT {
 public:
     enum DrawFlag { DRAW_NORMAL, DRAW_SH, FULL_HEMISPHERE_VTX, DRAW_METRICS };

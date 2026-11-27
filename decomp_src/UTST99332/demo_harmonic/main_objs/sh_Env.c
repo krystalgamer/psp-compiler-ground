@@ -2,6 +2,7 @@
 /* cflags: -O3 -fno-exceptions */
 #undef __EXCEPTIONS
 #include "cxx/defer_asm.h"
+#define SGL_LINKONCE_FunctionEvaluator 1
 #include "../main.hpp"
 
 extern "C" const char D_0016F3C4[], D_0016F3C8[], D_0016F3CC[], D_0016F3D4[], D_0016F3E8[], D_0016F3EC[];
@@ -69,15 +70,9 @@ void _GLOBAL__D__ZN2sh3EnvC2ENS_4Args3EnvE(void)
     static_init(0, 0xFFFF);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sh_Env", _ZNK2sh17FunctionEvaluator4evalEffRfS1_S1_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sh_Env", _ZN2sh17FunctionEvaluatorD1Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sh_Env", _ZN2sh17FunctionEvaluatorD0Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sh_Env", _ZN2sh11CIEClearSkyD1Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sh_Env", _ZN2sh11CIEClearSkyD0Ev);
+/* inline members: .gnu.linkonce.t, after FunctionEvaluator's and CIEClearSky's dtors (splat only sees `INCLUDE_ASM(`) */
+#undef INCLUDE_ASM
+#define INCLUDE_ASM INCLUDE_ASM_LINKONCE
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sh_Env", _ZNK2sh11CIEClearSky4evalEffRfS1_S1_);
 
