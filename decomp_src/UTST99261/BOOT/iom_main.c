@@ -26,6 +26,10 @@ void *MEM_malloc(M2C_UNK, M2C_UNK);                 /* extern */
 M2C_UNK iom_mfree(int);                             /* extern */
 
 
+typedef struct IomErr { int code; char *msg; } IomErr;
+void iom_end(void);
+void iom_finalizeEnvironment(void);
+int OS_mq_open(char *name, int flags);
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/iom_main", D_00139D0C);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iom_main", iom_initializeEnvironment);
@@ -99,7 +103,41 @@ INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/iom_main", D_00139D5C);
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/iom_main", D_00139D68);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iom_main", iom_halt);
+void iom_halt(void) {
+    IOMMSG m;
+    int prio;
+    int q;
+    IOMMSG *f;
+    IOMBODY *b;
+    IomErr *e;
+
+    if (fatalErrMsg != NULL) {
+        f = fatalErrMsg;
+        b = &f->b;
+        b->x4 = 5;
+        b->code = 0xFFFF;
+        e = b->data;
+        if (e != NULL) {
+            e->code = -1;
+            e->msg = "AllocationError(IOM)";
+        }
+        q = OS_mq_open("/tmp/mq_ui", 1);
+        OS_mq_send(q, fatalErrMsg, 0x24, 0);
+        OS_mq_close(q);
+        fatalErrMsg = NULL;
+    }
+    for (;;) {
+        OS_mq_receive(iom.mq, &m, 0x24, &prio);
+        if (m.b.x4 == 2 && m.b.code == 1) {
+            iom_end();
+            iom_finalizeEnvironment();
+            OS_thread_exit(NULL);
+        } else if (m.b.data != NULL) {
+            MEM_free(0, m.b.data);
+            m.b.data = NULL;
+        }
+    }
+}
 
 void iom_end(void) {
     IOMMSG *m;
