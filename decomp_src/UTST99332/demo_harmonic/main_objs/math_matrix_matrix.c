@@ -2,6 +2,9 @@
 /* cflags: -O3 -fno-exceptions */
 #undef __EXCEPTIONS
 #include "cxx/defer_asm.h"
+/* Identity()'s 1.0f stays in the module's .rodata (asm) */
+extern const float D_00165CCC;
+#define MATH_IDENTITY_ONE D_00165CCC
 #define DEMO_STATICS_MATH
 #define DEMO_STATICS_IOSTREAM
 #include "../main.hpp"
@@ -146,12 +149,25 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_matrix_
 
 float math::matrix::determinant3() const
 {
-    const float *a = &r[0].x, *b = &r[1].x, *c = &r[2].x;
-    return a[0] * b[1] * c[2] + b[0] * c[1] * a[2] + c[0] * a[1] * b[2]
-         - c[0] * b[1] * a[2] - b[0] * a[1] * c[2] - a[0] * c[1] * b[2];
+    return (*this)[0][0] * (*this)[1][1] * (*this)[2][2] + (*this)[1][0] * (*this)[2][1] * (*this)[0][2] + (*this)[2][0] * (*this)[0][1] * (*this)[1][2]
+         - (*this)[2][0] * (*this)[1][1] * (*this)[0][2] - (*this)[1][0] * (*this)[0][1] * (*this)[2][2] - (*this)[0][0] * (*this)[2][1] * (*this)[1][2];
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_matrix_matrix", _ZNK4math6matrix8inverse3Ev);
+math::matrix math::matrix::inverse3() const
+{
+    float zero = 0;
+    float det = determinant3();
+    if (det == zero)
+        return Identity();
+    det = D_00165CCC / det;
+    return matrix(vector_xyzw(((*this)[1][1] * (*this)[2][2] - (*this)[2][1] * (*this)[1][2]) * det, -((*this)[0][1] * (*this)[2][2] - (*this)[2][1] * (*this)[0][2]) * det,
+                              ((*this)[0][1] * (*this)[1][2] - (*this)[1][1] * (*this)[0][2]) * det, 0),
+                  vector_xyzw(-((*this)[1][0] * (*this)[2][2] - (*this)[2][0] * (*this)[1][2]) * det, ((*this)[0][0] * (*this)[2][2] - (*this)[2][0] * (*this)[0][2]) * det,
+                              -((*this)[0][0] * (*this)[1][2] - (*this)[1][0] * (*this)[0][2]) * det, 0),
+                  vector_xyzw(((*this)[1][0] * (*this)[2][1] - (*this)[2][0] * (*this)[1][1]) * det, -((*this)[0][0] * (*this)[2][1] - (*this)[2][0] * (*this)[0][1]) * det,
+                              ((*this)[0][0] * (*this)[1][1] - (*this)[1][0] * (*this)[0][1]) * det, 0),
+                  vector_xyzw(0, 0, 0, D_00165CCC));
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_matrix_matrix", _ZNK4math6matrix9inverseONEv);
 

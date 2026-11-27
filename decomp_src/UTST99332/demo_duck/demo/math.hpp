@@ -64,6 +64,9 @@ enum RotationOrder { };
 struct matrix {
     vector_xyzw r[4];
     matrix() {}
+    /* element access m[row][col] (row pointer) */
+    float *operator[](int i) { return &r[i].x; }
+    const float *operator[](int i) const { return &r[i].x; }
     matrix(const quaternion &q);
     static matrix Translation(float x, float y, float z);
     static matrix Translation(const vector_xyz &v);
