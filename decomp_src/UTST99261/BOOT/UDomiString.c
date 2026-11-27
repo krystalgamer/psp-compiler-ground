@@ -91,6 +91,10 @@ int *MEM_malloc(M2C_UNK, M2C_UNK);                  /* extern */
 
 
 
+typedef struct PSNAME { unsigned int len; char *name; } PSNAME;
+extern char D_001354B8[];
+int strncmp(const char *a, const char *b, unsigned int n);
+void *memcpy(void *d, const void *s, unsigned int n);
 unsigned short UDomiString_ToLower(unsigned short c) {
     if (c < 0x80) {
         return tolower(c);
@@ -422,7 +426,29 @@ void ps_save(PsIpc *msg, int sid) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", ps_Security);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", ps_SaveName);
+void ps_SaveName(int len, char *path, PSNAME *n) {
+    int i;
+    int found = 0;
+
+    n->len = 0;
+    for (i = len; i > 0; i--) {
+        if (strncmp(&path[i], "/", 1) == 0) {
+            n->len = len - i - 1;
+            found = 1;
+            break;
+        }
+    }
+    if (found == 1 && n->len != 0) {
+        n->name = (char *)MEM_malloc(0, n->len + 1);
+        memset(n->name, 0, n->len + 1);
+        if (n == NULL)
+            ps_halt(D_001354B8);
+        memcpy(n->name, path + i + 1, n->len);
+    } else {
+        n->len = 0;
+        n->name = NULL;
+    }
+}
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", D_001354B8);
 
