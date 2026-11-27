@@ -1,0 +1,366 @@
+#include "common.h"
+#include "rb/rs4_main/scert/scert.h"
+
+int NetUsePeerToPeer(void *arg0) {
+    rt_p2p_resolve_interface();
+    NetUseUDP();
+    if (gUDPInterfacePtr != NULL) {
+        M2C_FIELD(gUDPInterfacePtr, int *, 0x84) = (int) M2C_FIELD(arg0, int *, 0);
+        M2C_FIELD(gUDPInterfacePtr, int *, 0x88) = (int) M2C_FIELD(arg0, int *, 4);
+        M2C_FIELD(gUDPInterfacePtr, int *, 0x8C) = (int) M2C_FIELD(arg0, int *, 0xC);
+        M2C_FIELD(gUDPInterfacePtr, int *, 0x90) = (int) M2C_FIELD(arg0, int *, 8);
+    }
+    return 0;
+}
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_resolve_interface);
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_create);
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_destroy);
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_get_current_address_type);
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_get_peer_address);
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_get_my_address);
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_get_my_peer_index);
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_get_host_index);
+
+int rt_p2p_get_virtual_port(void *arg0, unsigned short *arg1) {
+    int var_v1;
+
+    var_v1 = 2;
+    if (arg1 != NULL) {
+        *arg1 = 0;
+        if (arg0 != NULL) {
+            var_v1 = 0;
+            *arg1 = M2C_FIELD(arg0, unsigned short *, 0x1CC);
+        }
+    }
+    return var_v1;
+}
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_get_buffer_stats);
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_get_peer_buffer_stats);
+
+int rt_p2p_set_send_aggregation(int *arg0) {
+    int var_v0;
+
+    var_v0 = 2;
+    if (arg0 != NULL) {
+        var_v0 = rt_udp_set_aggregation_interval(*arg0);
+    }
+    return var_v0;
+}
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_host);
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_incoming_peer);
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_connect);
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_disconnect);
+
+int rt_p2p_tick(int arg0) {
+    return (arg0 != 0) ? 0 : 2;
+}
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_update);
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_send);
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_send_list);
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_receive_broadcasts);
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_send_to);
+
+int rt_p2p_get_max_peers(void *arg0, int *arg1) {
+    int var_v1;
+
+    var_v1 = 2;
+    if (arg1 != NULL) {
+        *arg1 = 0;
+        if (arg0 != NULL) {
+            var_v1 = 0;
+            *arg1 = (int) M2C_FIELD(arg0, unsigned short *, 0x19C);
+        }
+    }
+    return var_v1;
+}
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_set_max_peers);
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_set_overlay_type);
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_join_overlay);
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_quit_overlay);
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_quit_all_overlays);
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_ignore_peer_in_overlay);
+
+int rt_p2p_get_overlay_peer_count(void *arg0, int arg1, int *arg2) {
+    int temp_v1;
+    int var_a3;
+    unsigned int temp_a1;
+
+    temp_a1 = arg1 & 0xFF;
+    var_a3 = 2;
+    if (arg2 != NULL) {
+        *arg2 = 0;
+        if ((arg0 != NULL) && (temp_a1 < (unsigned int) M2C_FIELD(arg0, unsigned int *, 0x1D8))) {
+            temp_v1 = M2C_FIELD(arg0, int *, 0x188);
+            var_a3 = 3;
+            if (temp_v1 != 0) {
+                var_a3 = 0;
+                *arg2 = M2C_FIELD(((temp_a1 * 0x18) + temp_v1), int *, 0x10);
+            }
+        }
+    }
+    return var_a3;
+}
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_is_peer_in_overlay);
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_send_overlay);
+
+int rt_p2p_pack_type(int arg0, int arg1) {
+    return (arg1 & 0x7FF) | ((arg0 & 0x1F) << 0xB);
+}
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_unpack_type);
+
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", grid1);
+
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", grid2);
+
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", grid3);
+
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", grid4);
+
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", grid5);
+
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", grid6);
+
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", grid7);
+
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", grid8);
+
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", grid9);
+
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", grid10);
+
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", grid11);
+
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", grid12);
+
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", grid13);
+
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", grid14);
+
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", grid15);
+
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", grid16);
+
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", grid17);
+
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", grid18);
+
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", grid19);
+
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", grid20);
+
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", grid21);
+
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", grid22);
+
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", grid23);
+
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", grid24);
+
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", grid25);
+
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", grid26);
+
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", grid27);
+
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", grid28);
+
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", grid29);
+
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", grid30);
+
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", grid31);
+
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", grid32);
+
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rcsid_10C87C);
+
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", headerfile_rcsid_10C8DC);
+
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", header_rcsid_10C93C);
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_udp_event_cb);
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_udp_data_cb);
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_send_peer_info);
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_handle_connect_event);
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_handle_connected_event);
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_handle_timeout_event);
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_handle_closed_event);
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_handle_reset_event);
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_handle_error_event);
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_get_peer_by_address);
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_get_peer_by_connection);
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_get_my_peer_status);
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_find_free_peer_index);
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_fill_new_peer_struct);
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_process_internal_message);
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_process_new_peer);
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_process_coordinate_data);
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_process_connect_complete);
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_process_broadcast_update);
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_process_connection_detached);
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_process_broadcast_disconnect);
+
+int rt_p2p_process_local_broadcast_test(void *arg0, int arg1) {
+    void *temp_a0;
+
+    temp_a0 = ((arg1 & 0xFFFF) * 0x50) + M2C_FIELD(arg0, int *, 0x184);
+    if (M2C_FIELD(temp_a0, int *, 0x18) != 1) {
+        M2C_FIELD(temp_a0, int *, 0x18) = 1;
+    }
+    return 0;
+}
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_process_overlay_type);
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_process_join_overlay);
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_process_join_response);
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_process_quit_overlay);
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_process_ignore_update);
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_process_grid_data);
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_complete_connection);
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_send_local_broadcast_tests);
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_isend);
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_isend_list);
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_send_my_broadcast_flag);
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_generic_disconnect);
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_determine_new_host);
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_send_connection_detached_to_host);
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_send_broadcast_disconnect);
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_notify_peers_disconnect_forwarding);
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_notify_peers_disconnect);
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_save_backlog_connection);
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_find_backlog_connection);
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_timeout_backlog_connection);
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_generate_grid_fill_empties);
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_generate_grid_add_peer);
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_generate_grid);
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_get_peer_grid_edges);
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_update_grid);
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_send_token_msg);
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_send_token_list_msg);
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_process_token_data);
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_token_event_notify);
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_timebase_query);
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_process_timebase_data);
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_process_game_session_key);
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_get_latency_info);
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_set_host_invactivity_timeout_session);
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_set_host_inactivity_timeout_connection);
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_set_peer_update_bit);
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_send_new_peer_info);
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_send_peer_updates);
+
+void *memset(void *s, int c, unsigned int n);
+void rt_p2p_reset_peer_info(void *arg0, void *arg1) {
+    if (arg1 != NULL) {
+        M2C_FIELD(arg1, int *, 0) = 0;
+        M2C_FIELD(arg1, int *, 4) = 0;
+        M2C_FIELD(arg1, int *, 8) = 0;
+        M2C_FIELD(arg1, int *, 0xC) = 0;
+        M2C_FIELD(arg1, int *, 0x10) = 0;
+        M2C_FIELD(arg1, int *, 0x14) = 0;
+        M2C_FIELD(arg1, int *, 0x18) = 0;
+        M2C_FIELD(arg1, int *, 0x1C) = 0;
+        M2C_FIELD(arg1, int *, 0x20) = 0;
+        M2C_FIELD(arg1, short *, 0x24) = 0;
+        rt_comm_linkaddress_setnull(arg1 + 0x28);
+        M2C_FIELD(arg1, short *, 0x34) = 0;
+        M2C_FIELD(arg1, short *, 0x36) = 0;
+        M2C_FIELD(arg1, short *, 0x38) = 0;
+        M2C_FIELD(arg1, short *, 0x3A) = 0;
+        M2C_FIELD(arg1, short *, 0x3C) = 0;
+        M2C_FIELD(arg1, short *, 0x3E) = 0;
+        M2C_FIELD(arg1, short *, 0x40) = 0;
+        M2C_FIELD(arg1, short *, 0x42) = 0;
+        M2C_FIELD(arg1, short *, 0x44) = 0;
+        M2C_FIELD(arg1, int *, 0x30) = 0;
+        M2C_FIELD(arg1, int *, 0x48) = 0;
+        memset(M2C_FIELD(arg1, void **, 0x4C), 0, (((unsigned int) (M2C_FIELD(arg0, unsigned short *, 0x19C) + 0x1F) >> 5) * 4) + 4);
+    }
+}
+
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_p2p", rt_p2p_process_peer_host_query);
