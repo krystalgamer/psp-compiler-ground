@@ -49,7 +49,10 @@ module's data. With `-O3` cc1plus outputs every function at the end of the
 file, so a C++ unit that still has asm includes `cxx/defer_asm.h`, whose
 `INCLUDE_ASM` defers the asm the same way. A unit's data can be given to it
 with `rodata ADDR UNIT` / `bss ADDR UNIT` lines (and `rodata|bss ADDR -` to
-end the range) in `config/TARGET/files.MODULE.txt`; the rest stays asm. `tools/dwarf2cpp.py TARGET MODULE UNIT [--probe FILE]` gives
+end the range) in `config/TARGET/files.MODULE.txt`; the rest stays asm. A `/* srcname: PATH */` comment makes cc1 see
+its input as PATH (the original's file name, `tools/cc1name.py`): an object
+with no public symbol names its static constructor after it, plus six
+letters from `-frandom-seed` (the original's random value, set in `cflags`). `tools/dwarf2cpp.py TARGET MODULE UNIT [--probe FILE]` gives
 C++ declarations from a C++ compile unit's DWARF (checking every member
 offset with cc1plus), or a class skeleton from the symbol table (vtable
 order, bases from typeinfo) for objects without DWARF.
