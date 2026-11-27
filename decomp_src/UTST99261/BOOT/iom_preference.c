@@ -8,6 +8,15 @@ extern void *esp_context;
 
 
 double CLIB_difftime(int a, int b);
+typedef struct IomTm { int sec; int min; int hour; int mday; int mon; int year; int wday; } IomTm;
+typedef struct IomMonths { char *m[12]; } IomMonths;
+typedef struct IomWdays { char *d[7]; } IomWdays;
+extern const IomMonths D_00139FA8;
+extern const IomWdays D_00139FD8;
+extern char D_00139FF4[];
+extern char D_0025B5F4[];
+IomTm *CLIB_gmtime(int *t);
+int sprintf(char *buf, const char *fmt, ...);
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iom_preference", iom_preferenceCache);
 
 #ifndef NULL
@@ -213,7 +222,17 @@ INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/iom_preference", D_00139FD8)
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/iom_preference", D_00139FF4);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iom_preference", iom_time2str);
+char *iom_time2str(int t) {
+    IomMonths mon = D_00139FA8;
+    IomWdays wd = D_00139FD8;
+    IomTm *tm;
+
+    if (t == 0 || t == -1)
+        return D_00139FF4;
+    tm = CLIB_gmtime(&t);
+    sprintf(D_0025B5F4, "%s, %02d %s %04d %02d:%02d:%02d GMT", wd.d[tm->wday], tm->mday, mon.m[tm->mon], tm->year + 1900, tm->hour, tm->min, tm->sec);
+    return D_0025B5F4;
+}
 
 int iom_diffexpire(int a, int b) {
     if (a == 0 || b == 0) {
