@@ -94,7 +94,113 @@ typedef struct { int f0; int f4; u8 pad[0x60]; } GMO_T;
 typedef struct { u8 p0[0x10]; int f10; int f14; int f18; int f1C; u8 p1[0xD8 - 0x20]; } EUNIT_T;
 typedef struct { int alive; u8 pad[0x40]; EUNIT_T u[4][11]; } ENEMY_T;
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", maingame_all_init);
+void *memset(void *s, int c, unsigned int n);
+void inv_gamestart_set(int mode);
+void inv_netgame_init(void);
+void inv_nowloading_starge_set(int no);
+void inv_nowloading_reset(void);
+void inv_nowloading_disp2(void);
+void dispeffect_all_init(void);
+int file_load_async(char *name, int mode);
+int file_load_check(int no);
+int file_load_addr(int no);
+void file_load_end(int no);
+void psp_loopstart(void);
+void psp_loopend(void);
+int sceGuSync(int mode, int what);
+int error_code_daialogget(void);
+int inv_netgame_loop(void);
+void *file_bind_addr(int bind, char *name);
+int bmp_addr_load_normal(void *buf);
+int bmp_addr_load16(void *buf);
+void psp_free(void *p);
+void inv_screffect_tex_set(int tex, int mode);
+void inv_scrdisp_tex_set(int tex, int mode);
+extern char *tex_filename[];
+void maingame_all_init(int net)
+{
+	int i, j, st, fd, bind, mode;
+	void *p;
+
+	memset(&gmain, 0, sizeof(gmain));
+	for (j = 0; j < 45; j++)
+		gmain.f.ff64[j] = -1;
+	gmain.f.f1463c8 = -1;
+	gmain.f.f1060 = 200;
+	gmain.f.f0 = 0;
+	gmain.f.f1c = net;
+	gmain.f.f14 = 0;
+	gmain.f.f18 = 1;
+	gmain.f.ff38 = 0;
+	if (net == 1) {
+		gmain.f.f1060 = 1;
+		inv_gamestart_set(1);
+		inv_netgame_init();
+	}
+	gmain.f.fc = 1;
+	mode = gmain.f.f1c != 1;
+	inv_nowloading_starge_set(0);
+	fd = -1;
+	inv_nowloading_reset();
+	st = 0;
+	bind = 0;
+	while (gmain.f.fc) {
+		switch (st) {
+		case 0:
+			fd = file_load_async("bind_bmp.dat", mode);
+			st = 1;
+			break;
+		case 1:
+			if (file_load_check(fd) == 1) {
+				bind = file_load_addr(fd);
+				st = 2;
+			}
+			break;
+		case 2:
+			gmain.f.fc = 0;
+			break;
+		}
+		psp_loopstart();
+		inv_nowloading_disp2();
+		if (gmain.f.f1c == 1) {
+			sceGuSync(0, 0);
+			if (error_code_daialogget() && gmain.f.fc == 0)
+				gmain.f.fc = 1;
+			if (inv_netgame_loop() == 1) {
+				if (fd != -1)
+					file_load_end(fd);
+				gmain.f.f1064 = 1;
+				gmain.f.fc = 0;
+				psp_loopend();
+				break;
+			}
+		}
+		psp_loopend();
+	}
+	if (gmain.f.f1c == 1) {
+		if (gmain.f.f1064 == gmain.f.f1c)
+			return;
+	} else {
+		psp_loopstart();
+		psp_loopend();
+		psp_loopstart();
+		psp_loopend();
+	}
+	gmain.f.fc = 1;
+	for (i = 0; i < 45; i++) {
+		p = file_bind_addr(bind, tex_filename[i]);
+		if (p) {
+			if (i == 5)
+				gmain.f.ff64[5] = bmp_addr_load_normal(p);
+			else
+				gmain.f.ff64[i] = bmp_addr_load16(p);
+		}
+	}
+	psp_free((void *)bind);
+	dispeffect_all_init();
+	inv_screffect_tex_set(gmain.f.ff64[3], 2);
+	inv_scrdisp_tex_set(gmain.f.ff64[1], 2);
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", maingame_init);
 
