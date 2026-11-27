@@ -30,7 +30,7 @@ int sendJSEvent(void *obj, LEHJSEVENT *ev);
 void *getDOMDocument(void *node);
 void actSetFocusByBox(void *frame, void *box, int arg);
 int scrollToFocusPosition();
-void *getBox_fromAccessKey(void *body, u16 key);
+void *getBox_fromAccessKey(void *body, int key);
 extern int D_00584CEC;
 int isFocusInDisplay(void *frame, FOCUSLIST *l);
 typedef struct { int sid; u8 u4[0xC]; int x10; BOX *x14; void *x18; u8 u1C[0xC]; BOX *x28; int x2C; int x30; int x34; int x38; } LEHG;
@@ -56,6 +56,14 @@ FOCUSLIST *getFocusListWithArea(void *frame, void *obj, void *link);
 int getDataAttribute(void *a, int x, int y);
 typedef struct { int sid; u8 u4[0xC]; int x10; BOX *x14; void *x18; void *x1C; int x20; int x24; BOX *x28; } LEHG2;
 typedef struct LEHLINK { struct LEHLINK *next; int x4; BOX *box; } LEHLINK;
+typedef struct { int size; unsigned int len; void *str; } LEHDS;
+void Node_getNodeName(LEHDS *s, void *node);
+void Element_getAttribute(LEHDS *s, void *elem, void *name);
+int DOMStringcasecmpFast(LEHDS *s, void *str);
+int DOMStringcasecmpChar(LEHDS *s, char *str);
+int Node_getNodeType(void *node);
+int sprintf(char *buf, const char *fmt, ...);
+extern u8 _DOMa[], _DOMarea[], _DOMbutton[], _DOMtextarea[], _DOMinput[], _DOMtype[], _DOMcheckbox[], _DOMimage[], _DOMpassword[], _DOMradio[], _DOMreset[], _DOMsubmit[], _DOMtext[], _DOMfile[], _DOMaccesskey[];
 BOX *getTargetBox(BOX *box, int x, int y, int k) {
     BOX *found = NULL;
     BOX *r;
@@ -1009,9 +1017,49 @@ void *getNextNode(void *root, void *node) {
     return node;
 }
 
-INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/lo_eventHandler", D_00139084);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_eventHandler", getBox_fromAccessKey);
+void *getBox_fromAccessKey(void *frame, int key) {
+    void *node = M2C_FIELD(frame, void **, 0x28);
+    char buf[16];
+    LEHDS name;
+    LEHDS attr;
+    u8 r[6] = { '0', '9', 'A', 'Z', 0, 0 };
+    int i;
+    for (i = 0; r[i * 2] != 0; i++) {
+        if (key >= r[i * 2] && key <= r[i * 2 + 1]) {
+            break;
+        }
+    }
+    if (r[i * 2] == 0) {
+        return NULL;
+    }
+    sprintf(buf, "%c", key);
+    for (; node != NULL; node = getNextNode(M2C_FIELD(frame, void **, 0x28), node)) {
+        if (Node_getNodeType(node) == 1) {
+        Node_getNodeName(&name, node);
+        if (DOMStringcasecmpFast(&name, _DOMa) == 0 || DOMStringcasecmpFast(&name, _DOMarea) == 0 || DOMStringcasecmpFast(&name, _DOMbutton) == 0 || DOMStringcasecmpFast(&name, _DOMtextarea) == 0) {
+            Element_getAttribute(&attr, node, _DOMaccesskey);
+            if (DOMStringcasecmpChar(&attr, buf) == 0) {
+                return Node_getBox(node);
+            }
+        } else if (DOMStringcasecmpFast(&name, _DOMinput) == 0) {
+            Element_getAttribute(&attr, node, _DOMtype);
+            if (DOMStringcasecmpFast(&attr, _DOMbutton) == 0 || DOMStringcasecmpFast(&attr, _DOMcheckbox) == 0 || DOMStringcasecmpFast(&attr, _DOMimage) == 0 || DOMStringcasecmpFast(&attr, _DOMpassword) == 0 || DOMStringcasecmpFast(&attr, _DOMradio) == 0 || DOMStringcasecmpFast(&attr, _DOMreset) == 0 || DOMStringcasecmpFast(&attr, _DOMsubmit) == 0 || DOMStringcasecmpFast(&attr, _DOMtext) == 0) {
+                Element_getAttribute(&attr, node, _DOMaccesskey);
+                if (DOMStringcasecmpChar(&attr, buf) == 0) {
+                    return Node_getBox(node);
+                }
+            } else if (DOMStringcasecmpFast(&attr, _DOMfile) == 0) {
+                Element_getAttribute(&attr, node, _DOMaccesskey);
+                if (DOMStringcasecmpChar(&attr, buf) == 0) {
+                    return M2C_FIELD(Node_getBox(node), void **, 0xC);
+                }
+            }
+        }
+        }
+    }
+    return NULL;
+}
 
 int handleAccessKey(void *frame) {
     void *data = M2C_FIELD(frame, void **, 0x1C);
