@@ -1,5 +1,6 @@
 /* lang: c++ */
-/* cflags: -Os -fno-strength-reduce -fno-merge-constants -fno-exceptions */
+/* cflags: -Os -fno-merge-constants -fno-exceptions */
+/* strength reduction on: Init's clear loop matches only with it (pointer IV + down-counter) */
 /* #pragma interface: the vtable and typeinfo stay in the module's asm .rodata */
 #pragma interface "rodata"
 #include "common.h"
@@ -52,7 +53,19 @@ ObjectDaemon::~ObjectDaemon()
 
 }
 extern "C" {
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_object_daemon", _ZN3Net12ObjectDaemon4InitEi);
+namespace Net {
+ObjectDaemon *ObjectDaemon::Init(int n)
+{
+	count = 0;
+	max = n;
+	_instance_p = this;
+	Net::Object **p = Ys::New_Array<Net::Object *>(n);
+	objs = p;
+	for (int i = 0; i < n; i++)
+		p[i] = 0;
+	return this;
+}
+}
 }
 namespace Net {
 
