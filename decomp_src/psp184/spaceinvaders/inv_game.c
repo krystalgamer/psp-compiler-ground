@@ -2053,7 +2053,34 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", netgame_ufo_po
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", netgame_ufo_life_set);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", netgame_ufo_life_get);
+void ufo_damage(void *u, BV3 p, int dmg, int net, int flag);
+extern BUFO_D D_005A0CF4;
+typedef struct { u8 p[0xEB9D0]; int n; } GMU_T;
+#define GMU_N ((*(GMU_T *)&gmain).n)
+void netgame_ufo_life_get(u8 *q, int k, int pl)
+{
+	int i, *v;
+
+	if (gmain.f.f20 == pl)
+		return;
+	if (pl >= 4)
+		return;
+	if (gmain.f.f0 == 4)
+		return;
+	if (gmain.f.ff28 == 13) {
+		v = (int *)(k * 0x18 + (int)q + 0x14);
+		if (D_005A0CF4.dmg < *v)
+			boss_ufo_damage(&D_005A0CF4, *(BV3 *)((u8 *)&D_005A0CF4 + 0x64), *v - D_005A0CF4.dmg, 1, 0);
+	} else {
+		for (i = 0; i < GMU_N; i++) {
+			UFO_T *u;
+			int x = ((int *)(q + k * 0x18 + 0x14))[i];
+			u = &ufo_t[i];
+			if (x > u->f[9])
+				ufo_damage(u, *(BV3 *)&u->f[0x5C / 4], ((int *)(q + k * 0x18 + 0x14))[i] - u->f[9], 1, 0);
+		}
+	}
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", se_play_3d);
 
