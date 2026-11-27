@@ -361,7 +361,15 @@ int rt_udp_destroy_shared_channel_data(void *arg0) {
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_udp", rt_udp_uber_resolve_cb);
+typedef struct { int ip; int port; } RtUberAddr;
+typedef void (*RtUberCb)(void *, int, RtUberAddr *, int, int);
+void rt_udp_uber_resolve_cb(int a, int b, int c, RtUberAddr *addr, int e, char *ctx)
+{
+    RtUberAddr l = *addr;
+    if (ctx == NULL) return;
+    *(int *)(ctx + 0x84) = 0;
+    (*(RtUberCb *)(ctx + 0xB0))(ctx, b, &l, e, *(int *)(ctx + 0xB4));
+}
 
 int rt_udp_set_inactivity_timeout(int arg0) {
     int var_v0;
