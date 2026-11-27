@@ -3,6 +3,10 @@
 #include "m2c_macros.h"
  /* extern */
 void consPrintf(const char *, ...);
+unsigned long long copGetSeed(void);
+void copSetSeed(unsigned long long);
+float copRand(float);
+float copRandS(float);
 extern int l_uTick;
 
 extern unsigned long long l_au64RandSeed[];
@@ -13,7 +17,17 @@ extern unsigned long long l_aau64SavedRandSeed[][5];
 
 extern unsigned long long l_aau64SavedRandSeed[][5];
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/rand", randInit);
+void randInit(void)
+{
+	int i;
+	for (i = 0; i < 5; i++) {
+		copRand(0.0f);
+		l_au64RandSeed[i] = copGetSeed();
+		l_aau64SavedRandSeed[0][i] = l_au64RandSeed[i];
+		l_aau64SavedRandSeed[1][i] = l_au64RandSeed[i];
+	}
+	l_uTick = 0;
+}
 
 void randDumpSeed(int i)
 {
@@ -44,9 +58,31 @@ unsigned long long randGetSeed(int i)
 	return 0;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/rand", randU);
+float randU(int i, float r)
+{
+	if (i < 5) {
+		unsigned long long save = copGetSeed();
+		copSetSeed(l_au64RandSeed[i]);
+		r = copRand(r);
+		l_au64RandSeed[i] = copGetSeed();
+		copSetSeed(save);
+		return r;
+	}
+	return 0.0f;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/rand", randS);
+float randS(int i, float r)
+{
+	if (i < 5) {
+		unsigned long long save = copGetSeed();
+		copSetSeed(l_au64RandSeed[i]);
+		r = copRandS(r);
+		l_au64RandSeed[i] = copGetSeed();
+		copSetSeed(save);
+		return r;
+	}
+	return 0.0f;
+}
 
 void randSave(int slot)
 {
@@ -69,4 +105,16 @@ int randGetTick(void) {
     return l_uTick;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/rand", randSetSeedByMacAddr);
+int sceWlanGetEtherAddr(unsigned char *);
+void randSetSeedByMacAddr(int i)
+{
+	unsigned char mac[8];
+	unsigned long long seed = -1;
+	int ret = sceWlanGetEtherAddr(mac);
+	if (ret < 0) {
+		consPrintf("%s : sceWlanGetEtherAddr error\n", __FUNCTION__);
+		seed = ret;
+	} else
+		__builtin_memcpy(&seed, mac, 8);
+	randSetSeed(i, seed);
+}
