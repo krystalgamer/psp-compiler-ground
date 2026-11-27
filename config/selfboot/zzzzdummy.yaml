@@ -55,7 +55,7 @@ segments:
     subsegments:
       - { start: 0x80, type: asm, name: init, linker_section: .init }
       - { start: 0xA4, type: prxpad, order: .text }
-      - [0xC0, asm, asm/text_40]
+      - [0xC0, c, crtbegin]
       - [0x1A8, c, crt0]
       - [0x470, c, loadexec]
       - [0x5D0, c, kernel_bridge]

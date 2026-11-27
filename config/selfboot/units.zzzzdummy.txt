@@ -1,4 +1,5 @@
 # unit                                     compiler        source
+crtbegin                                     1.5.1.internal  crtbegin.c
 crt0                                         1.5.1.internal  crt0.c
 loadexec                                     1.5.1.internal  loadexec.c
 kernel_bridge                                1.5.1.internal  kernel_bridge.c

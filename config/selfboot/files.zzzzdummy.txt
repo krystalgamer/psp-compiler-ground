@@ -1,5 +1,7 @@
 # Objects without DWARF: start address (vram), unit, compiler, source.
 # STT_FILE symbols: crt0.c loadexec.c kernel_bridge.c, then libgcc (no STT_FILE for libgcc2).
+# gcc 3.3.3 crtstuff.c (CRT_BEGIN): crtbegin.o .text
+0x00040 crtbegin        1.5.1.internal  crtbegin.c
 0x00550 kernel_bridge   1.5.1.internal  kernel_bridge.c
 # libgcc: libgcc2 _udivdi3.o/_umoddi3.o and the dp-bit objects, one per function
 0x082CC __udivdi3        1.5.1.internal  libgcc/libgcc2/__udivdi3.c
