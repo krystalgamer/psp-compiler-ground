@@ -417,7 +417,7 @@ segments:
       - [0x175EE8, .rodata, main_objs/sys_timer_GetDeltaTime]
       - [0x175EF8, rodata, asm/rodata_175E78]
       - [0x1762F8, .rodata, main_objs/FloatImage]
-      - [0x176310, rodata, asm/rodata_176290]
+      - [0x17631C, rodata, asm/rodata_17629C]
       - [0x17AA20, .rodata, gcc-3.3.3/libstdc__-v3/libsupc__/eh_personality]
       - [0x17AA54, rodata, asm/rodata_17A9D4]
       - [0x17AA8C, .rodata, gcc-3.3.3/libstdc__-v3/libsupc__/pure]

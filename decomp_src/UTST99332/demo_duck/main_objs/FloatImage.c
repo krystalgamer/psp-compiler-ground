@@ -270,7 +270,45 @@ void FloatImage::blur2d(int r, float sigma)
     *this = tmp;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/FloatImage", _ZN10FloatImage4blurEif);
+void FloatImage::blur(int r, float sigma)
+{
+    if (r == 0)
+        return;
+    FloatImage tmp = *this;
+    for (int y = 0; y != ny(); y++)
+        for (int x = 0; x != nx(); x++) {
+            ABGR_FLOAT &d = tmp.addr()[x + y * nx()];
+            float sum = 0;
+            d = ABGR_FLOAT(sum);
+            for (int i = -r; i <= r; i++) {
+                int xx = x + i;
+                if (xx >= 0 && xx < nx()) {
+                    float w = gaussian1(sqrtf(i * i), sigma);
+                    sum += w;
+                    d += scaled(addr()[xx + y * nx()], w);
+                }
+            }
+            d *= 1.0f / sum;
+        }
+    FloatImage tmp2 = tmp;
+    for (int x = 0; x != nx(); x++)
+        for (int y = 0; y != ny(); y++) {
+            ABGR_FLOAT &d = tmp2.addr()[x + y * nx()];
+            float sum = 0;
+            d = ABGR_FLOAT(sum);
+            for (int j = -r; j <= r; j++) {
+                int yy = y + j;
+                if (yy >= 0 && yy < ny()) {
+                    float w = gaussian1(sqrtf(j * j), sigma);
+                    sum += w;
+                    d += scaled(tmp2.addr()[x + yy * nx()], w);
+                }
+            }
+            d *= 1.0f / sum;
+        }
+    tmp2 *= 1.9f;
+    *this = tmp2;
+}
 
 extern "C" {
 void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_FED6C");
