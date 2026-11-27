@@ -24,6 +24,17 @@ typedef struct COLLIST { void *x0; void *x4; BOX *box; } COLLIST;
 void initColContent(BOX *box, void *node, int type);
 void attr_SPAN(void *node, BOX *box);
 void attr_WIDTH_col(void *node, BOX *box);
+typedef struct TBLGEOM { u8 pad[0x14]; unsigned short cap; unsigned short nrows; unsigned short ncols; u8 pad2[0xA]; int *cells; } TBLGEOM;
+BOX *getTrGroupBoxFromDOM(void *node);
+void initTrContent(BOX *box, void *node);
+void attr_BGCOLOR(void *node, BOX *box);
+void attr_ALIGN_tr(void *node, BOX *box);
+void attr_VALIGN_tr(void *node, BOX *box);
+void attr_HEIGHT_tr(void *node, BOX *box);
+void delLinkBox(BOX *box);
+void freeBox(BOX *box, int all);
+void *MEM_realloc(void *pool, void *p, unsigned int size);
+void *memset(void *, int, unsigned int);
 BOX *getTableBoxFromDOM(void *node) {
     BOX *box;
     for (node = Node_getParentNode(node); node != NULL; node = Node_getParentNode(node)) {
@@ -311,7 +322,69 @@ BOX *html_TH(void *node) {
     return box;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_html_table", html_TR);
+BOX *html_TR(void *node) {
+    BOX *group;
+    BOX *last;
+    BOX *c;
+    BOX *box;
+    BOX *table;
+    TBLGEOM *tg;
+    BOXSTYLE *st;
+
+    group = getTrGroupBoxFromDOM(node);
+    if (group == NULL) {
+        return NULL;
+    }
+    last = NULL;
+    for (c = group->child; c != NULL; c = c->next) {
+        last = c;
+    }
+    table = getTableBox(group);
+    if (table == NULL) {
+        return NULL;
+    }
+    tg = (TBLGEOM *)table->geom;
+    box = createBox(node, 1);
+    if (box == NULL) {
+        return NULL;
+    }
+    linkBoxNoTableCheck(box, group, last);
+    box->display = 0;
+    box->html = 0x5D;
+    initTrContent(box, node);
+    initBoxProperty(box);
+    attr_BGCOLOR(node, box);
+    attr_ALIGN_tr(node, box);
+    attr_VALIGN_tr(node, box);
+    attr_HEIGHT_tr(node, box);
+    tg->nrows++;
+    M2C_FIELD(box->geom, short *, 4) = tg->nrows;
+    if (tg->cap < tg->nrows + 1) {
+        tg->cap = tg->nrows + 1;
+        if (tg->cells == NULL)
+            tg->cells = MEM_malloc(0, 4);
+        else
+            tg->cells = MEM_realloc(0, tg->cells, tg->ncols * tg->cap * 4);
+        if (tg->cells == NULL) {
+            delLinkBox(box);
+            freeBox(box, 0);
+            return NULL;
+        }
+        memset(tg->cells + (tg->cap - 1) * tg->ncols, 0, tg->ncols * 4);
+    }
+    addBoxList((LIST *)((char *)table->geom + 0x30), box);
+    applyCSSExtStyleSheetToBox(node, box);
+    applyCSSInlinePropertyToBox(node, box);
+    st = box->style;
+    if (M2C_FIELD(st, s8 *, 0x10) != 0) {
+        M2C_FIELD(box->geom, int *, 0) = 1;
+    } else if (group->content == 0 && M2C_FIELD(group->style, s8 *, 0x10) != 0) {
+        M2C_FIELD(st, int *, 0) = M2C_FIELD(group->style, int *, 0);
+        M2C_FIELD(box->geom, int *, 0) = 1;
+    }
+    M2C_FIELD(box->style, s8 *, 0x10) = 0;
+    return box;
+}
 
 BOX *html_COL(void *node) {
     BOX *group;
