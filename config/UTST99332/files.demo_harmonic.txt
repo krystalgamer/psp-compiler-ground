@@ -61,6 +61,9 @@ rodata 0x16A6DC -
 # sys_timer_GetDeltaTime: the double pools (1000000.0) of GetDeltaTime and GetTime
 rodata 0x172F40 main_objs/sys_timer_GetDeltaTime
 rodata 0x172F50 -
+# glutils__arrow_pstack: the jump tables of SetParam(FloatParams) and SetParam(IntParams)
+rodata 0x164714 main_objs/glutils__arrow_pstack
+rodata 0x16477C -
 # glutils_PickingBase: vector<unsigned>::reserve()'s "vector::reserve" (after PickingBase's typeinfo name)
 rodata 0x1626E8 main_objs/glutils_PickingBase
 rodata 0x1626F8 -

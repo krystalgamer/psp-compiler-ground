@@ -68,6 +68,9 @@ rodata 0x1676C0 -
 # vector_font_Console: the float pools of Console::Console (C2, C1)
 rodata 0x16374C main_objs/vector_font_Console
 rodata 0x16375C -
+# glutils__arrow_pstack: the jump tables of SetParam(FloatParams) and SetParam(IntParams)
+rodata 0x167634 main_objs/glutils__arrow_pstack
+rodata 0x16769C -
 # glutils_PickingBase: vector<unsigned>::reserve()'s "vector::reserve" (after PickingBase's typeinfo name)
 rodata 0x165458 main_objs/glutils_PickingBase
 rodata 0x165468 -

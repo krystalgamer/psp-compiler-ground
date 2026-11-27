@@ -390,6 +390,8 @@ segments:
       - [0x160D3C, rodata, asm/rodata_160CBC]
       - [0x162768, .rodata, main_objs/glutils_PickingBase]
       - [0x162778, rodata, asm/rodata_1626F8]
+      - [0x164794, .rodata, main_objs/glutils__arrow_pstack]
+      - [0x1647FC, rodata, asm/rodata_16477C]
       - [0x164818, .rodata, main_objs/gl__name_stack]
       - [0x164820, rodata, asm/rodata_1647A0]
       - [0x1649DC, .rodata, main_objs/interp_KeyFrameSequence]

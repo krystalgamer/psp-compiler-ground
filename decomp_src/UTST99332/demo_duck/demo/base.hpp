@@ -653,10 +653,7 @@ struct Arrow;
 struct UnitFrame;
 struct CircularArrow;
 }
-template<class T> class ParamsStack {
-public:
-    void pop();
-};
+template<class T> class ParamsStack;
 extern ParamsStack<Params::Point> _point_pstack;
 extern ParamsStack<Params::Arrow> _arrow_pstack;
 extern ParamsStack<Params::UnitFrame> _unit_frame_pstack;
