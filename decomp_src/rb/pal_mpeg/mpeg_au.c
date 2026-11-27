@@ -100,7 +100,19 @@ INCLUDE_ASM("tmp/asm/rb/pal_mpeg/nonmatchings/mpeg_au", func_00004C28);
 
 INCLUDE_ASM("tmp/asm/rb/pal_mpeg/nonmatchings/mpeg_au", func_00005040);
 
-INCLUDE_ASM("tmp/asm/rb/pal_mpeg/nonmatchings/mpeg_au", func_0000514C);
+void func_0000514C(AuNode *node)
+{
+	int i = 0;
+	AuNode *p = node;
+
+	do {
+		i++;
+		sceKernelDcacheWritebackInvalidateRange((void *)p->addr, p->size & 0xFFF);
+		if (p->next == NULL)
+			break;
+		p = p->next;
+	} while (i < 100);
+}
 
 unsigned char *sceMpegMallocAvcEsBuf(SceMpeg *mp)
 {

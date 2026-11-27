@@ -65,6 +65,28 @@ void *func_0000120C(unsigned int id, MpegSys *sys, int kind)
 	return (void *)-1;
 }
 
-INCLUDE_ASM("tmp/asm/rb/pal_mpeg/nonmatchings/mpeg_stream", func_000013B0);
+int func_000013B0(AuList2 *l, int start, int count, SceMpegAuInfo *dst, int *out)
+{
+	AuNode2 *node;
+	int i;
+	int n;
+
+	*out = 0;
+	if (l->head == (AuNode2 *)-1)
+		return SCE_MPEG_ERROR_INVALID_VALUE;
+	if (start >= l->num)
+		return 0;
+	node = l->head;
+	for (i = 0; i < start; i++)
+		node = node->next;
+	n = l->num - start;
+	n = (count < n) ? count : n;
+	for (i = 0; i < n; i++) {
+		__builtin_memcpy(&dst[i], &node->info, sizeof(SceMpegAuInfo));
+		node = node->next;
+	}
+	*out = n;
+	return 0;
+}
 
 INCLUDE_ASM("tmp/asm/rb/pal_mpeg/nonmatchings/mpeg_stream", func_00001478);

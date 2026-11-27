@@ -99,7 +99,7 @@ int sceKernelSignalSema(int id, int n);
 int sceKernelWaitSema(int id, int n, unsigned int *timeout);
 int sceKernelPollSema(int id, int n);
 int sceKernelReferSemaStatus(int id, SceKernelSemaInfo *info);
-int sceKernelDcacheWritebackInvalidateRange(const void *p, unsigned int size);
+void sceKernelDcacheWritebackInvalidateRange(const void *p, unsigned int size);
 
 int sceVideocodecGetEDRAM(void *ctx, int type);
 int sceVideocodecReleaseEDRAM(void *ctx);
