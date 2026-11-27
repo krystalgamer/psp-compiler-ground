@@ -18,7 +18,30 @@ void OnPush_MsgDialogNumber(int arg0);
 void drawPrintf(const char *, ...);
 int sceUtilityMsgDialogGetStatus();
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/msgutil", utility_update_msgdialog);
+int sceUtilityMsgDialogUpdate(int);
+int sceUtilityMsgDialogShutdownStart(void);
+int utility_update_msgdialog(void)
+{
+	int ret = 0;
+	switch (sceUtilityMsgDialogGetStatus()) {
+	case 2:
+		ret = sceUtilityMsgDialogUpdate(((int *)gameGetCntx())[0x80 / 4] + 1);
+		break;
+	case 3:
+		ret = sceUtilityMsgDialogShutdownStart();
+		break;
+	case 4:
+		consPrintf("SCE_UTILITY_COMMON_STATUS_SHUTDOWN\n");
+		break;
+	case 0:
+		consPrintf("SCE_UTILITY_COMMON_STATUS_NONE\n");
+		sample_type_11A6BC = 0;
+		break;
+	case 1:
+		break;
+	}
+	return ret;
+}
 
 void OnPush_MsgDialogNumber(int arg0) {
     sample_type_11A6BC = 4;
