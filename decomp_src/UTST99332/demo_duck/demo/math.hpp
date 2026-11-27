@@ -340,7 +340,7 @@ public:
     Path();
     void startRecording();
     void addRecord(math::Frame);
-    void deleteLastRecord();
+    std::pair<bool, math::Frame> deleteLastRecord();
     void finishRecording();
     bool isRecording() const;
     void load(std::string);

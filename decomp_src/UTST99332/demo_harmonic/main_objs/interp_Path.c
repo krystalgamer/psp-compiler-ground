@@ -4,6 +4,7 @@
 #include "cxx/defer_asm.h"
 #include "../main.hpp"
 
+extern const float D_00160F70;      /* 1.0f: deleteLastRecord's identity rotation */
 extern const float D_00160F74;      /* 1.0f: finishRecording's closing dt */
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/interp_Path", _Z41__static_initialization_and_destruction_0ii_2D160);
@@ -26,9 +27,30 @@ interp::Path::Path() : _count(0), _recording(false)
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/interp_Path", _ZN6interp4Path14startRecordingEv);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/interp_Path", _ZN6interp4Path9addRecordEN4math5FrameE);
+void interp::Path::addRecord(math::Frame f)
+{
+    if (!_recording)
+        return;
+    _x.setKeyValue(_x.insert(_count), f.pos.x);
+    _y.setKeyValue(_y.insert(_count), f.pos.y);
+    _z.setKeyValue(_z.insert(_count), f.pos.z);
+    _rot.setKeyValue(_rot.insert(_count), f.rot);
+    _count++;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/interp_Path", _ZN6interp4Path16deleteLastRecordEv);
+std::pair<bool, math::Frame> interp::Path::deleteLastRecord()
+{
+    if (_count == 0)
+        return std::make_pair(false, math::Frame(math::vector_xyz(0, 0, 0), math::quaternion(0, 0, 0, D_00160F70)));
+    _x.remove(_count - 1);
+    _y.remove(_count - 1);
+    _z.remove(_count - 1);
+    _rot.remove(_count - 1);
+    _count--;
+    if (_count == 0)
+        return std::make_pair(false, math::Frame(math::vector_xyz(0, 0, 0), math::quaternion(0, 0, 0, D_00160F70)));
+    return std::make_pair(true, evaluate(_count - 1));
+}
 
 void interp::Path::finishRecording()
 {

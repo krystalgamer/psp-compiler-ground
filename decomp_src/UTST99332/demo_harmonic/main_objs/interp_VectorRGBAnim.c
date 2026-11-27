@@ -6,6 +6,11 @@
 
 /* constants and strings stay in the module's .rodata (asm) */
 extern const float D_00171590;      /* 1.0f: finishRecording's closing dt */
+extern const char D_00171608[];     /* file */
+extern const char D_00171624[];     /* message */
+extern const char D_00171634[];     /* " *** error " */
+extern const char D_00171640[];     /* expression */
+extern const char PF_deleteLastRecord[] __asm__("_ZZN6interp13VectorRGBAnim16deleteLastRecordEvE19__PRETTY_FUNCTION__");
 extern const char D_00171644[];     /* "finish recording shl anim\n" */
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/interp_VectorRGBAnim", _Z41__static_initialization_and_destruction_0ii_F3994);
@@ -33,9 +38,25 @@ void interp::VectorRGBAnim::addRecord(sh::VectorRGB v)
         insertRecord(v, _count);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/interp_VectorRGBAnim", _ZN6interp13VectorRGBAnim16deleteLastRecordEv);
+std::pair<bool, sh::VectorRGB> interp::VectorRGBAnim::deleteLastRecord()
+{
+    common::common_internal::assert_display(D_00171634, D_00171640, D_00171608, PF_deleteLastRecord, 53, D_00171624);
+    common::common_internal::on_error();
+    common::common_internal::clash();
+    return std::make_pair(false, sh::VectorRGB());
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/interp_VectorRGBAnim", _ZN6interp13VectorRGBAnim12insertRecordEN2sh9VectorRGBEf);
+void interp::VectorRGBAnim::insertRecord(sh::VectorRGB v, float t)
+{
+    if (!_recording)
+        return;
+    for (int i = 0; i != 4; i++) {
+        _seq[0][i].setKeyValue(_seq[0][i].insert(t), v.r[i]);
+        _seq[1][i].setKeyValue(_seq[1][i].insert(t), v.g[i]);
+        _seq[2][i].setKeyValue(_seq[2][i].insert(t), v.b[i]);
+    }
+    _count++;
+}
 
 void interp::VectorRGBAnim::finishRecording()
 {

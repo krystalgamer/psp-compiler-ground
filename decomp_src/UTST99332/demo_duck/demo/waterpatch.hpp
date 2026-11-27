@@ -48,7 +48,7 @@ public:
     VectorRGBAnim();
     void startRecording();
     void addRecord(sh::VectorRGB);
-    sh::VectorRGB deleteLastRecord();
+    std::pair<bool, sh::VectorRGB> deleteLastRecord();
     void insertRecord(sh::VectorRGB, float);
     void finishRecording();
     bool isRecording() const;
