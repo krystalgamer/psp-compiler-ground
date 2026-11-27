@@ -253,7 +253,14 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/Dme", NetGetH
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/Dme", NetGetClientBufferStatus);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/Dme", NetSetDefaultAppMessageParams);
+int NetSetDefaultAppMessageParams(int *p)
+{
+    if (p == NULL) return 0x17;
+    memset(p, 0, 0x40);
+    p[0xC / 4] = 0x100;
+    p[0x34 / 4] = 0x100;
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/Dme", NetSendAppMessage);
 

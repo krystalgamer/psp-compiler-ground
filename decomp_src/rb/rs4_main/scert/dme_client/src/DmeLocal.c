@@ -9,7 +9,7 @@ int rt_time_get_local();
 char *strncpy(char *, const char *, unsigned int);
 int rt_comm_linkaddress_toint();
 extern char gNetUpdateErrors[];
-void *memcpy(void *, const void *, unsigned int);
+void *memcpy(void *, const void *, unsigned long);
 int NetClientIndexToClientIndexPacket(int arg0);
 int NetGetMsgClientIndex(void *arg0);
 int NetGetMyWorldID(void);
@@ -313,7 +313,12 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", Ne
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", NetIHostPeerToPeer);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", NetISetNATServiceAddr);
+int NetISetNATServiceAddr(void *a)
+{
+    if (a == NULL) return 0x17;
+    memcpy(&gNatService, a, 0x18);
+    return 0;
+}
 
 int NetISetDefaultResolveAddrParams(void *arg0) {
     int var_v0;
@@ -366,7 +371,12 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", Ne
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", NetIUpdate);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", NetIGetNetUpdateErrors);
+int NetIGetNetUpdateErrors(void *a)
+{
+    if (a == NULL) return 10;
+    memcpy(a, gNetUpdateErrors, 0x28);
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/DmeLocal", NetIDisconnect);
 
