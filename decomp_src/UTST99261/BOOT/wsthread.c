@@ -2,6 +2,14 @@
 #include "common.h"
 #include "http_os.h"
 #include "m2c_macros.h"
+typedef struct MbxAttr {
+    int f0;
+    int f4;
+} MbxAttr;
+typedef struct MbxStatus {
+    int w[8];
+} MbxStatus;
+int CreateMbxMan(void);
 typedef struct ThreadEnt {
     int id;
     int f4, f8, fC, f10;
@@ -126,7 +134,35 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/wsthread", OS_mq_getattr);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/wsthread", OS_mq_setattr);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/wsthread", CreateMbx);
+int CreateMbx(MbxAttr *a)
+{
+    Mbx *m;
+    int sema;
+
+    if (msg_man.mutex == NULL) {
+        if (CreateMbxMan() < 0)
+            return -1;
+    }
+    m = MEM_malloc(0, 0x20);
+    if (m == NULL) {
+        DeleteMbxMan();
+        return -1;
+    }
+    sema = sceKernelCreateSema("pspBrowser-mailbox", 0, 0, 0x400, 0);
+    if (sema < 0) {
+        MEM_free(0, m);
+        DeleteMbxMan();
+        return -1;
+    }
+    m->sema = sema;
+    m->f4 = a->f0;
+    m->f8 = a->f4;
+    m->count = 0;
+    m->head = NULL;
+    m->tail = NULL;
+    msg_man.count++;
+    return (unsigned int)m >> 1;
+}
 
 int DeleteMbx(int id)
 {
@@ -144,7 +180,23 @@ int DeleteMbx(int id)
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/wsthread", ReceiveMbx);
+int ReceiveMbx(MbxMsg **out, int id)
+{
+    Mbx *m;
+
+    if (msg_man.count == 0)
+        return -1;
+    m = (Mbx *)(id * 2);
+    if (sceKernelWaitSema(m->sema, 1, 0) < 0)
+        return -1;
+    OS_thread_mutex_lock(msg_man.mutex);
+    *out = m->head;
+    m->head = m->head->next;
+    if (--m->count < 2)
+        m->tail = m->head;
+    OS_thread_mutex_unlock(msg_man.mutex);
+    return 0;
+}
 
 int PollMbx(MbxMsg **out, int id)
 {
@@ -165,9 +217,53 @@ int PollMbx(MbxMsg **out, int id)
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/wsthread", SendMbx);
+int SendMbx(int id, MbxMsg *msg)
+{
+    Mbx *m;
+    MbxMsg *p, *prev;
+    MsgMan *mm;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/wsthread", ReferMbxStatus);
+    if (msg_man.count == 0)
+        return -1;
+    m = (Mbx *)(id * 2);
+    OS_thread_mutex_lock(msg_man.mutex);
+    if (m->head == NULL)
+        m->head = msg;
+    else
+        m->tail->next = msg;
+    m->tail = msg;
+    m->count++;
+    mm = &msg_man;
+    OS_thread_mutex_unlock(mm->mutex);
+    if (sceKernelSignalSema(m->sema, 1) >= 0)
+        return 0;
+    OS_thread_mutex_lock(mm->mutex);
+    if (--m->count > 0) {
+        prev = m->head;
+        for (p = m->head; p->next != NULL; p = p->next)
+            prev = p;
+        prev->next = NULL;
+        m->tail = prev;
+    } else {
+        m->head = NULL;
+        m->tail = NULL;
+    }
+    OS_thread_mutex_unlock(msg_man.mutex);
+    return -1;
+}
+
+int ReferMbxStatus(int id, MbxStatus *out)
+{
+    MbxStatus *m;
+
+    if (msg_man.count == 0)
+        return -1;
+    m = (MbxStatus *)(id * 2);
+    OS_thread_mutex_lock(msg_man.mutex);
+    *out = *m;
+    OS_thread_mutex_unlock(msg_man.mutex);
+    return 0;
+}
 
 int CreateMbxMan(void)
 {
