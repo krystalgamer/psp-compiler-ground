@@ -1064,7 +1064,10 @@ void sceGuTexSlope(float slope)
 	send_commandf(208, slope);
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/libgu", sceGuClutMode);
+void sceGuClutMode(int cpsm, int shift, int mask, int a3)
+{
+	send_commandi(197, ((a3 << 0x10) | (mask << 8) | (shift * 4) | cpsm));
+}
 
 void sceGuClutLoad(int num_blocks, const void *cbp);
 void sceGuClutLoad(int num_blocks, const void *cbp)
