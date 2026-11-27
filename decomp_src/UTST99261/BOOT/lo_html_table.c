@@ -35,6 +35,18 @@ void delLinkBox(BOX *box);
 void freeBox(BOX *box, int all);
 void *MEM_realloc(void *pool, void *p, unsigned int size);
 void *memset(void *, int, unsigned int);
+BOX *createBlockBox(void *node);
+void initTableContent(BOX *box, void *node);
+void attr_FRAME(void *node, BOX *box);
+void attr_BORDER_table(void *node, BOX *box);
+void attr_BORDERCOLOR(void *node, BOX *box);
+void attr_CELLPADDING(void *node, BOX *box);
+void attr_CELLSPACING(void *node, BOX *box);
+void attr_WIDTH_table(void *node, BOX *box);
+void attr_HEIGHT_table(void *node, BOX *box);
+void attr_BACKGROUND(void *node, BOX *box);
+void attr_ALIGN_table(void *node, BOX *box);
+int colorValue(char *s);
 BOX *getTableBoxFromDOM(void *node) {
     BOX *box;
     for (node = Node_getParentNode(node); node != NULL; node = Node_getParentNode(node)) {
@@ -265,7 +277,53 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_html_table", html_TD_inner);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_html_table", html_CAPTION);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_html_table", html_TABLE);
+BOX *html_TABLE(void *node) {
+    BOX *outer;
+    BOX *box;
+
+    outer = createBlockBox(node);
+    if (outer == NULL) {
+        return NULL;
+    }
+    outer->html = 0x68;
+    initBoxProperty(outer);
+    outer->style->unk30 = 0;
+    outer->style->unk32 = 0;
+    outer->style->unk34 = 0;
+    outer->style->unk36 = 0;
+    outer->style->fontSize = 2;
+    outer->style->unk6A = 0;
+    outer->style->unk64 = ui_global->color[outer->style->unk6A][outer->style->fontSize];
+    box = createBox(node, 1);
+    if (box == NULL) {
+        delLinkBox(outer);
+        freeBox(outer, 0);
+        return NULL;
+    }
+    linkBox(box, outer, NULL);
+    box->display = 0;
+    box->html = 0x55;
+    initTableContent(box, node);
+    initBoxProperty(box);
+    initBoxList((LIST *)((char *)box->geom + 0x30));
+    attr_FRAME(node, box);
+    attr_BORDER_table(node, box);
+    box->style->unk38 = colorValue("#bbbbbb");
+    box->style->unk3C = colorValue("#999999");
+    box->style->unk40 = colorValue("#999999");
+    box->style->unk44 = colorValue("#bbbbbb");
+    attr_BORDERCOLOR(node, box);
+    attr_CELLPADDING(node, box);
+    attr_CELLSPACING(node, box);
+    attr_WIDTH_table(node, box);
+    attr_HEIGHT_table(node, box);
+    attr_BGCOLOR(node, box);
+    attr_BACKGROUND(node, box);
+    attr_ALIGN_table(node, box);
+    applyCSSExtStyleSheetToBox(node, box);
+    applyCSSInlinePropertyToBox(node, box);
+    return box;
+}
 
 BOX *html_TD(void *node) {
     BOX *tr;
