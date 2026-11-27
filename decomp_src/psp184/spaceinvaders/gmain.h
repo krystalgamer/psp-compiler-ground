@@ -163,8 +163,8 @@ typedef struct GMAIN {
 	int ff3c[5];		/* bg textures */
 	int ff50[5];		/* bg models */
 	int ff64[45];		/* textures (tex_filename[]) */
-	int f1018, f101c[(0x104C - 0x101C) / 4];
-	int f104c, f1050, f1054, f1058, f105c, f1060, f1064, f1068, f106c, f1070, f1074, f1078, f107c;
+	int gmo_id[16];		/* 0x1018 models (gmo_file_load) */
+	int f1058, f105c, f1060, f1064, f1068, f106c, f1070, f1074, f1078, f107c;
 	int f1080, f1084, f1088, f108c, f1090, f1094, f1098, f109c, f10a0, f10a4, f10a8;
 	int f10ac, f10b0, f10b4;	/* se no / volume l / volume r */
 	float f10b8;

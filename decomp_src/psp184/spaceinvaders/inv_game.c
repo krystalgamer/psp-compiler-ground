@@ -3163,9 +3163,47 @@ M2C_UNK inv_netgame_member_max(void)
 	return n;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", inv_netgame_linkcheck);
+int inv_netgame_linkcheck(int st)
+{
+	int i, n, max;
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", inv_netgame_linkcheck2);
+	n = 0;
+	i = 0;
+	(&gmain.netpl[gmain.f20])->st = st;
+	max = inv_netgame_member_max();
+	for (;;) {
+		if (i >= max)
+			break;
+		n += gmain.netpl[i].st == st;
+		i++;
+	}
+	if (n < inv_netgame_member_max())
+		return 0;
+	return 1;
+}
+
+int inv_netgame_linkcheck2(int st)
+{
+	int i, a, b, max;
+
+	b = 0;
+	a = 0;
+	i = 0;
+	(&gmain.netpl[gmain.f20])->st = st;
+	max = inv_netgame_member_max();
+	for (;;) {
+		if (i >= max)
+			break;
+		if (gmain.netpl[i].st == 2)
+			b++;
+		else if (gmain.netpl[i].st == 3)
+			a++;
+		i++;
+	}
+	if (b + a >= inv_netgame_member_max())
+		return !b ? 1 : 2;
+	return 0;
+}
 
 void netgame_zako_damage_set(int a, int b, int c, int dmg)
 {
