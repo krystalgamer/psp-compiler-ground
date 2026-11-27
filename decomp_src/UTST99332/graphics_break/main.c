@@ -242,7 +242,54 @@ static void draw_debug(void)
 	sceGuDebugPrint(8, 24, 0xffffffff, str);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_break/nonmatchings/main", draw_frame);
+extern const double D_00011E60;
+static void draw_frame(void)
+{
+	ScePspFVector3 vec;
+	ScePspFVector3 scale;
+	float w;
+	int i, j, k;
+
+	sceGuStart(0, disp_list, 0x100000);
+
+	sceGuClear(7);
+
+	sceGumPushMatrix();
+	sceGumLoadIdentity();
+
+	sceGumTranslate(&pos.trans);
+	sceGumRotateXYZ(&pos.rot);
+
+	scale.x = 0.25f;
+	scale.y = 0.25f;
+	scale.z = 0.25f;
+
+	w = -((num - 1) * 0.5f) * D_00011E60;
+
+	for (k = 0; k < num; k++) {
+		for (j = 0; j < num; j++) {
+			for (i = 0; i < num; i++) {
+				sceGumPushMatrix();
+				vec.x = w + i * 0.5f;
+				vec.y = w + j * 0.5f;
+				vec.z = w + k * 0.5f;
+				sceGumTranslate(&vec);
+				sceGumScale(&scale);
+				DrawSphere();
+				sceGumPopMatrix();
+			}
+		}
+	}
+
+	sceGumPopMatrix();
+
+	draw_debug();
+
+	list_size = sceGuFinish();
+	sceGuSync(0, 0);
+
+	sceGuDebugFlush();
+}
 
 static void init_all(void)
 {
