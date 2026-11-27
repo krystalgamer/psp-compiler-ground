@@ -8,6 +8,10 @@ extern int buf_ps_sts;
 
 
 
+extern int Security;
+extern int buf_Message_Show_FLG;
+extern int before_ps_sts;
+extern int buf_Message_cnt;
 void sendMPL_REQ_DATA_ATTR(PsIpc *msg) {
     PsIpc m;
 
@@ -102,7 +106,43 @@ int ps_u3103(void) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/ps_u0A00", ps_u3216);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/ps_u0A00", ps_u3517);
+int ps_u3517(PsIpc *msg) {
+    PsIpc d;
+    int *p;
+    char *s;
+    int sec;
+
+    ps_saveCacheMode(1);
+    ps_JSMailBoxfree();
+    ps_FreeLocation();
+    p = (int *)msg->x1C;
+    s = MEM_malloc(0, p[3] + 1);
+    memset(s, 0, p[3] + 1);
+    memcpy(s, (void *)p[4], p[3]);
+    sec = icmpstr(s, "https://", 8);
+    MEM_free(0, s);
+    if (((sec == 1 && Security == 0) || (sec == 0 && Security == 1)) && buf_Message_Show_FLG == 0) {
+        if (Security == 0) {
+            if (initMPU_REQ_SHOW_DIALOG(&d, 6) == 0) {
+                ps_halt("initMPU_REQ_SHOW_DIALOG failed");
+            }
+            d.x14 = 0x80000002;
+        } else {
+            if (initMPU_REQ_SHOW_DIALOG(&d, 7) == 0) {
+                ps_halt("initMPU_REQ_SHOW_DIALOG failed");
+            }
+            d.x14 = 0x80000003;
+        }
+        d.x04 = msg->x04;
+        ps_sndmsg(&d, 1);
+        ps_save(msg, 0);
+        buf_Message_Show_FLG = 1;
+        before_ps_sts = buf_ps_sts;
+        buf_Message_cnt++;
+        return 0x13;
+    }
+    return ps_submit(msg);
+}
 
 int ps_l1001(void) {
     PsIpc m;
