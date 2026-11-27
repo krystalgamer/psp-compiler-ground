@@ -58,6 +58,8 @@ extern unsigned char _DOMfocuscolor;
 typedef struct SelTgt { struct SelTgt *next; struct SelTgt *prev; BOX *box; } SelTgt;
 typedef struct { SelTgt *head; SelTgt *tail; } SelList;
 void *MEM_malloc(void *pool, unsigned int size);
+void *lfm_createPageRegion(BOX *box, int w);
+void lfm_resetPageRegion(void *r, int w);
 int addSelectionTarget(SelList *l, BOX *box, int a, int b) {
     SelTgt *t;
     int s, e;
@@ -676,7 +678,28 @@ void attr_FOCUSCOLOR(void *arg0, void *arg1) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/act_selection", html_BODY);
+int html_BODY(void *node, int parent) {
+    BOX *box;
+
+    box = getBodyBox(parent);
+    if (box == NULL)
+        return 0;
+    attr_MARGINWIDTH(node, box);
+    attr_MARGINHEIGHT(node, box);
+    attr_BGCOLOR(node, box);
+    attr_BACKGROUND(node, box);
+    attr_TEXT(node, box);
+    attr_LINK(node, box);
+    attr_VLINK(node, box);
+    M2C_FIELD(box->style, u8 *, 0x10) = 1;
+    applyCSSExtStyleSheetToBox(node, box);
+    applyCSSInlinePropertyToBox(node, box);
+    if (box->region == NULL)
+        box->region = lfm_createPageRegion(box, M2C_FIELD(box->geom, int *, 8));
+    else
+        lfm_resetPageRegion(box->region, M2C_FIELD(box->geom, int *, 8));
+    return 0;
+}
 
 void *html_HEAD(void *node, void *parent, void *prev) {
     void *box = createBox(node, 1);
