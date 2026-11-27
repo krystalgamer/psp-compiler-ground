@@ -239,7 +239,27 @@ INCLUDE_RODATA("tmp/asm/UTST99332/graphics_depthblur/nonmatchings/main", D_00015
 
 INCLUDE_RODATA("tmp/asm/UTST99332/graphics_depthblur/nonmatchings/main", D_00015404);
 
-INCLUDE_ASM("tmp/asm/UTST99332/graphics_depthblur/nonmatchings/main", ResetAllPositioning);
+void DepthBlurSetFocus(float _Focus);
+void ResetAllPositioning()
+{
+	_camera_inverse_transform._pos.x=  0.0f;
+	_camera_inverse_transform._pos.y=-12.0f;
+	_camera_inverse_transform._pos.z=-44.0f;
+	_camera_inverse_transform._rot.x= 16.0f;
+	_camera_inverse_transform._rot.y=310.0f;
+	_camera_inverse_transform._rot.z=  0.0f;
+
+	_dragon_transform._pos.x=0.0f;
+	_dragon_transform._pos.y=0.0f;
+	_dragon_transform._pos.z=0.0f;
+	_dragon_transform._rot.x=0.0f;
+	_dragon_transform._rot.y=10.0f;
+	_dragon_transform._rot.z=0.0f;
+
+	focus = 0.0f;
+
+	DepthBlurSetFocus( focus );
+}
 
 /* Warning: Gap in callee-saved word stack region.
  * Saved: [0x0, 0x4, 0x10, 0x14], gap at: 0x8. */
