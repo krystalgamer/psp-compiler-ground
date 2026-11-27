@@ -625,7 +625,58 @@ void ufo_tex_anime(int *u)
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", boss_ufo_init);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", boss_ufo_control);
+extern int bufo_w[] __asm__("D_005A0CF4");
+void bufo_in_anime(u8 *u);
+void bufo_r_move_anime(void *u);
+void bufo_l_move_anime(void *u);
+void bufo_b_move_anime(void *u);
+void bufo_f_move_anime(void *u);
+void bufo_enemy_start(void *u);
+void bufo_dead_anime(void *u);
+void bufo_move(void *u);
+void boss_ufo_tex_anime(int *u);
+void boss_ufo_control(void)
+{
+	int *u;
+
+	if (gmain.f.f1088 == 0)
+		return;
+	if (gmain.f.ff28 != 13)
+		return;
+	u = bufo_w;
+	if (u[1] == 1)
+		return;
+	if (u[6] > 0)
+		u[6]--;
+	if (u[12] == 2)
+		bufo_in_anime((u8 *)u);
+	else if (u[12] == 5) {
+		bufo_r_move_anime(u);
+		bufo_enemy_start(u);
+	} else if (u[12] == 6) {
+		bufo_l_move_anime(u);
+		bufo_enemy_start(u);
+	} else if (u[12] == 8) {
+		bufo_b_move_anime(u);
+		bufo_enemy_start(u);
+	} else if (u[12] == 7) {
+		bufo_f_move_anime(u);
+		bufo_enemy_start(u);
+	} else if (u[12] == 1)
+		bufo_dead_anime(u);
+	bufo_move(u);
+	boss_ufo_tex_anime(u);
+	if (game_count % 5 == 0)
+		netgame_ufo_pos_set(0, ((float *)u)[18]);
+	else if (game_count % 5 == 1)
+		netgame_ufo_life_set(0, u[8], 0);
+	else if (game_count % 5 == 2)
+		netgame_ufo_life_set(0, u[8], 1);
+	else if (game_count % 5 == 3)
+		netgame_ufo_life_set(0, u[8], 2);
+	else if (game_count % 5 == 4)
+		netgame_ufo_life_set(0, u[8], 3);
+}
 
 void bufo_in_anime(u8 *u)
 {
