@@ -317,7 +317,14 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/textures_Tex
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/textures_Texture", _ZNK8textures7Texture7saveBmpERKSs);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/textures_Texture", _ZN8textures7Texture4blurEif);
+void textures::Texture::blur(int radius, float sigma)
+{
+    if (radius) {
+        FloatImage f(*this);
+        f.blur(radius, sigma);
+        f.copy(*this);
+    }
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/textures_Texture", _ZNK8textures7Texture4saveERKSsiiii);
 
