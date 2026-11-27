@@ -233,7 +233,14 @@ bool textures::Texture::is32() const
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/textures_Texture", _ZN8textures7Texture9convert32Ev);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/textures_Texture", _ZN8textures7Texture13alphaHalfBiasEv);
+void textures::Texture::alphaHalfBias()
+{
+    if (m.info.format == FORMAT_1) {
+        unsigned char *p = image.addr();
+        for (unsigned i = 3; i < image.bytesize(); i += 4)
+            p[i] >>= 1;
+    }
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/textures_Texture", _ZN8textures7Texture11finish_loadEv);
 
