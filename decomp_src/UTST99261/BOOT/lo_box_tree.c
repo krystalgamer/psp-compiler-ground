@@ -17,13 +17,45 @@ M2C_UNK nodeTreeLoop(int, int);                     /* extern */
 int getTargetBodyBox();                             /* extern */
 
 
-typedef struct TBPAGE { char *url; int len; int pad[15]; int x44; int pad2[9]; void *body; } TBPAGE;
+typedef struct TBPAGE { char *url; int len; int pad[15]; int x44; int pad2[8]; void *doc; void *body; } TBPAGE;
 void *createBodyBox(TBPAGE *pg, int a, int b);
 int HST_getSessionID(TBPAGE *pg);
 int *getSessionSaveData(int id);
 void *MEM_malloc(int, unsigned int);
 void *memcpy(void *, const void *, unsigned int);
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_box_tree", createBodyBox);
+void *createBox(void *node, int type);
+void linkBox(void *box, int a, int b);
+void initBodyContent(void *box, void *node);
+void initBoxProperty(void *box);
+void Node_setBox(void *node, void *box);
+void *lfm_createPageRegion(void *box, int w);
+void *createBodyBox(TBPAGE *pg, int a, int b) {
+    void *doc;
+    void *box;
+
+    doc = pg->doc;
+    if (doc == NULL || Util_HTMLDocument_getBody((int)doc) == 0)
+        return NULL;
+    box = createBox(doc, 1);
+    if (box == NULL)
+        return NULL;
+    linkBox(box, a, b);
+    initBodyContent(box, doc);
+    initBoxProperty(box);
+    M2C_FIELD(box, s16 *, 0x3C) = 0;
+    M2C_FIELD(box, s16 *, 0x3A) = 0xF;
+    M2C_FIELD(box, int *, 0x18) = M2C_FIELD(M2C_FIELD(box, void **, 0x20), int *, 8);
+    M2C_FIELD(M2C_FIELD(box, void **, 0x24), s16 *, 0x28) = 0;
+    M2C_FIELD(M2C_FIELD(box, void **, 0x24), s16 *, 0x2A) = 0;
+    M2C_FIELD(M2C_FIELD(box, void **, 0x24), s16 *, 0x2C) = 0;
+    M2C_FIELD(M2C_FIELD(box, void **, 0x24), s16 *, 0x2E) = 0;
+    Node_setBox(doc, box);
+    pg->body = box;
+    M2C_FIELD(M2C_FIELD(box, void **, 0x20), int *, 0x64) = pg->x44;
+    if (M2C_FIELD(box, void **, 0x30) == NULL)
+        M2C_FIELD(box, void **, 0x30) = lfm_createPageRegion(box, M2C_FIELD(M2C_FIELD(box, void **, 0x20), int *, 8));
+    return box;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_box_tree", nodeProc);
 
