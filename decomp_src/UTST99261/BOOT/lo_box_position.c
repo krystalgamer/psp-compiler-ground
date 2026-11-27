@@ -10,6 +10,8 @@ void moveBoxPositionChild(BOX *box, int dx, int dy);
 #ifndef NULL
 #define NULL ((void *)0)
 #endif
+int getLineHeight(LINE *line);
+void lfm_addFloat(void *fm, void *blk, int h, int w, int bh, int side, int *dx, int *dy);
 int getPrevLineHeight(void *arg0) {
     return M2C_FIELD(M2C_FIELD(arg0, void **, 4), int *, 0x34);
 }
@@ -128,7 +130,24 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_box_position", calcInlineBox
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_box_position", calcBlockBoxPosition);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_box_position", calcFloatBoxPosition);
+void calcFloatBoxPosition(void *ctx, BOX *box) {
+    int x, y;
+    int dx, dy;
+    int h;
+    int w, bh, side;
+
+    getBaseBlockPosition(ctx, &x, &y);
+    h = getPrevLineHeight(ctx);
+    h += getLineHeight(M2C_FIELD(ctx, void **, 0xC));
+    w = box->width;
+    bh = box->height;
+    side = M2C_FIELD(box->style, s8 *, 0x71) == 1 ? 1 : 3;
+    dy = 0;
+    dx = 0;
+    lfm_addFloat(M2C_FIELD(ctx, void **, 0x10), M2C_FIELD(ctx, void **, 4), h, w, bh, side, &dx, &dy);
+    box->x = x + dx;
+    box->y = y + dy;
+}
 
 BOX *getCurrentLineBox(BOX *box) {
     s16 c;

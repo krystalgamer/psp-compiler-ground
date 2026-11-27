@@ -31,6 +31,9 @@ extern unsigned char _DOMsize;
 
 
 
+void *Node_getAttributes(void *node);
+int NamedNodeMap_getLength(void *map);
+void *NamedNodeMap_item(void *map, int i);
 void DomStringToUtf8(DOMString *s, char *buf, int size) {
     unsigned int n = (size - 1) / 3;
     unsigned int len = s->len;
@@ -40,7 +43,28 @@ void DomStringToUtf8(DOMString *s, char *buf, int size) {
     buf[ucs2ToUtf8(buf, s->str, len)] = 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_domApi", checkAtributeByName);
+int checkAtributeByName(void *node, char *name) {
+    DOMString s;
+    char buf[0x100];
+    void *map;
+    void *a;
+    int n, i;
+
+    map = Node_getAttributes(node);
+    if (map == NULL)
+        return -1;
+    n = NamedNodeMap_getLength(map);
+    for (i = 0; i < n; i++) {
+        a = NamedNodeMap_item(map, i);
+        if (a == NULL)
+            break;
+        Node_getNodeName(&s, a);
+        DomStringToUtf8(&s, buf, 0x100);
+        if (strcmp(name, buf) == 0)
+            return 0;
+    }
+    return -1;
+}
 
 char *getTagName(void *node) {
     DOMString s;

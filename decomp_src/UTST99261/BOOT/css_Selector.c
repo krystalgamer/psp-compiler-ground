@@ -4,11 +4,39 @@
 
 
 
+void *CSS_newPoolBuf(void);
+void CSS_putsPoolBuf(void *pb, void *s);
+void *CSS_getPoolBuf(void *pb);
+void CSS_freePoolBuf(void *pb);
+void *_getSelectorText(void *sel);
+void *CSSStyleDeclaration_getCssText(void *decl);
+void MEM_free(int pool, void *p);
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_Selector", _getOneSelectorText);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_Selector", _getSelectorText);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_Selector", CSSSelector_getCssText);
+void *CSSSelector_getCssText(void *sel) {
+    void *pb;
+    void *s;
+    void *r;
+
+    if (sel == NULL || M2C_FIELD(sel, short *, 0) != 9)
+        return NULL;
+    pb = CSS_newPoolBuf();
+    r = NULL;
+    if (pb != NULL) {
+        s = _getSelectorText(sel);
+        CSS_putsPoolBuf(pb, s);
+        MEM_free(0, s);
+        s = CSSStyleDeclaration_getCssText(M2C_FIELD(sel, void **, 0xC));
+        CSS_putsPoolBuf(pb, s);
+        MEM_free(0, s);
+        sel = CSS_getPoolBuf(pb);
+        CSS_freePoolBuf(pb);
+        r = sel;
+    }
+    return r;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
