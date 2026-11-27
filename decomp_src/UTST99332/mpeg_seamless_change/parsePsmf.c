@@ -218,7 +218,36 @@ term:
 	return ret;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/mpeg_seamless_change/nonmatchings/parsePsmf", sInfo_getNextEPTimestamp);
+extern const char D_00011D64[];
+SceInt32 sInfo_getNextEPTimestamp(t_streamInfo *pStreamInfo, SceUInt32 timestamp, SceUInt32 *pEPTimestamp)
+{
+	SceInt32 ret;
+	ScePsmfEntryPoint ep;
+	ScePsmf *pPsmf;
+	SceInt32 id;
+
+	pPsmf = pStreamInfo->pVideoPsmf;
+
+	id = scePsmfGetEPidWithTimestamp(pPsmf, timestamp);
+	if (id < 0) {
+		printf(D_00011D64, id);
+		ret = id;
+		goto term;
+	}
+
+	ret = scePsmfGetEPWithId(pPsmf, id + 1, &ep);
+	if (ret != 0) {
+		printf(D_00011D34, ret);
+		goto term;
+	}
+
+	*pEPTimestamp = ep.pts;
+
+	ret = 0;
+
+term:
+	return ret;
+}
 
 int sInfo_getStartTimestamp(t_streamInfo *pStreamInfo, unsigned int *pTimestamp) {
     return scePsmfGetPresentationStartTime(pStreamInfo->pVideoPsmf);
