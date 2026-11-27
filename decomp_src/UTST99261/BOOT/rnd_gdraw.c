@@ -150,6 +150,8 @@ void rnd_gdrawGetViewClientSize();
 int GUI_ScrollPane_getScrollPosition();
 
 
+int GUI_Graphics_getImageProperty();
+int GUI_Graphics_createAnimationGIF();
 int color2rgb(int *rgb, int c) {
     rgb[0] = ((unsigned int)c >> 16) & 0xFF;
     rgb[1] = (c & 0xFF00) >> 8;
@@ -709,7 +711,70 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_gdraw", rnd_gdrawGetStrings
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_gdraw", D_00133564);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/rnd_gdraw", rnd_gdrawImageDecode);
+RGIMAGE *rnd_gdrawImageDecode(void *data, int size, int a2, int a3, int *maxpix) {
+    RTIME delay;
+    int w;
+    int h;
+    int bpp;
+    int fx;
+    int fy;
+    int fw;
+    int fh;
+    int fd;
+    int anim;
+    RGIMAGE *r;
+    int type;
+    int pm;
+    int loop;
+    int n;
+
+    anim = 0;
+    r = NULL;
+    delay.sec = 0;
+    delay.nsec = 0;
+    loop = 0;
+    type = GUI_Graphics_getImageProperty(data, size, &w, &h, &bpp);
+    if (maxpix != NULL) {
+        if (*maxpix < w * h * bpp)
+            goto out;
+        *maxpix = w * h * bpp;
+    }
+    switch (type) {
+    case 1:
+    case 3:
+    case 4:
+    case 6:
+        pm = GUI_Graphics_getImage(data, size, type);
+        if (pm == 0)
+            goto out;
+        break;
+    case 2:
+        anim = GUI_Graphics_createAnimationGIF(data, size);
+        if (anim == 0)
+            goto out;
+        pm = GUI_Graphics_getAnimationGIFNextFrame(anim, 0);
+        GUI_Graphics_getAnimationGIFFrameProperty(anim, &fx, &fy, &fw, &fh, &fd);
+        if (fd < 0)
+            loop = 1;
+        delay.sec = fd / 100;
+        delay.nsec = (fd % 100) * 10000000;
+        break;
+    default:
+        goto out;
+    }
+    r = MEM_malloc(0, 0x20);
+    if (r == NULL)
+        goto out;
+    r->type = type;
+    r->pixmap = pm;
+    r->anim = anim;
+    r->unkC = delay.sec;
+    r->unk10 = delay.nsec;
+    OS_clock_gettime(0, &r->x);
+    r->unk1C = loop;
+out:
+    return r;
+}
 
 RGIMAGE *rnd_gdrawImageDecodeByGifFile(char *name) {
     int fp;
