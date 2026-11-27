@@ -18,6 +18,7 @@ void calcBlockButtonBoxSize(void *ctx, BOX *box);
 void calcTdBoxSize(void *ctx, BOX *box);
 void getTextlineExtents(int font, int cols, int *w, int *h);
 void GUI_Component_setFont(void *c, int font);
+void getButtonExtents(int font, char *s, int len, int *w, int *h);
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_box_size", calcInLineBoxSize);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_box_size", calcBlockBoxSize);
@@ -100,7 +101,27 @@ void initImageBoxSize(BOX *box, int width, int height) {
     setBoxSize(box, w, h);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_box_size", initButtonBoxSize);
+void initButtonBoxSize(BOX *box) {
+    int size = getPreferredFontSize(box);
+    int w, h;
+    char *s;
+
+    box->style->unk64 = ui_global->color[box->style->unk6A][size];
+    s = M2C_FIELD(box->geom, char **, 8);
+    if (s != NULL) {
+        getButtonExtents(box->style->unk64, s, strlen(s), &w, &h);
+    } else {
+        w = ui_global->unk74 * 2;
+        h = ui_global->unk74 * 2;
+    }
+    if ((box->style->flags & 3) == 1)
+        w = box->style->width;
+    if (((box->style->flags & 0xC) >> 2) == 1)
+        h = box->style->height;
+    if (M2C_FIELD(box, void **, 0x2C) != NULL)
+        GUI_Component_setFont(M2C_FIELD(box, void **, 0x2C), box->style->unk64);
+    setBoxSize(box, w, h);
+}
 
 void initCheckBoxSize(BOX *box) {
     int w = ui_global->unk74 * 2;
@@ -143,7 +164,24 @@ void initTextFieldBoxSize(BOX *box, int cols) {
     setBoxSize(box, w, h);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_box_size", initTextAreaBoxSize);
+void initTextAreaBoxSize(BOX *box, int cols, int rows) {
+    int size = getPreferredFontSize(box);
+    int w, h;
+
+    box->style->unk64 = ui_global->color[box->style->unk6A][size];
+    if (cols <= 0)
+        cols = 10;
+    if (rows <= 0)
+        rows = 2;
+    getTextboxExtents(box->style->unk64, rows, cols, &w, &h);
+    if ((box->style->flags & 3) == 1)
+        w = box->style->width;
+    if (((box->style->flags & 0xC) >> 2) == 1)
+        h = box->style->height;
+    if (M2C_FIELD(box, void **, 0x2C) != NULL)
+        GUI_Component_setFont(M2C_FIELD(box, void **, 0x2C), box->style->unk64);
+    setBoxSize(box, w, h);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_box_size", initSelectBoxSize);
 
