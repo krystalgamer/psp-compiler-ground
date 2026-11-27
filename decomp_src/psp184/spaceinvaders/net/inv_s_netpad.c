@@ -208,4 +208,59 @@ static void pad_down(void)
 	}
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_netpad", Lobby_pad_read);
+int pad_sw(void);
+int _net_term(void);
+int Lobby_pad_read(void)
+{
+	switch (_mrinfo.state) {
+	case 0:
+	case 1:
+	case 2:
+	case 3:
+	case 4:
+	case 5:
+	case 6:
+		break;
+	case 7:
+		return 2;
+	case 8:
+	case 9:
+	case 10:
+	case 11:
+	case 12:
+	case 13:
+	case 14:
+	case 15:
+	case 16:
+	case 17:
+	case 18:
+	case 19:
+	case 20:
+	case 21:
+	case 22:
+	case 23:
+	case 24:
+	case 25:
+	case 26:
+		break;
+	}
+	if (pad_sw() & 0x2000)
+		pad_circle();
+	if (pad_sw() & 0x1000)
+		pad_triangle();
+	if (pad_sw() & 0x4000) {
+		if (_mrinfo.state == 0) {
+			_net_term();
+			return 1;
+		}
+		pad_cross();
+	}
+	if (pad_sw() & 0x8000)
+		pad_square();
+	if (pad_sw() & 0x100010)
+		pad_up();
+	pad_sw();
+	if (pad_sw() & 0x200040)
+		pad_down();
+	return 0;
+}
