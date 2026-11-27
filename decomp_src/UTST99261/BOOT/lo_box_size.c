@@ -19,6 +19,9 @@ void calcTdBoxSize(void *ctx, BOX *box);
 void getTextlineExtents(int font, int cols, int *w, int *h);
 void GUI_Component_setFont(void *c, int font);
 void getButtonExtents(int font, char *s, int len, int *w, int *h);
+typedef struct SELOPT { struct SELOPT *next; int x4; char *text; } SELOPT;
+void getPulldownExtents(int font, char *s, int n, int *w, int *h);
+void getListExtents(int font, char *s, int n, int *w, int *h);
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_box_size", calcInLineBoxSize);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_box_size", calcBlockBoxSize);
@@ -183,7 +186,31 @@ void initTextAreaBoxSize(BOX *box, int cols, int rows) {
     setBoxSize(box, w, h);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_box_size", initSelectBoxSize);
+void initSelectBoxSize(BOX *box) {
+    int size;
+    int w = 0;
+    int h = 0;
+    int ew, eh;
+    SELOPT *o;
+
+    size = getPreferredFontSize(box);
+    box->style->unk64 = ui_global->color[box->style->unk6A][size];
+    for (o = M2C_FIELD(box->geom, SELOPT **, 8); o != NULL && o->text != NULL; o = o->next) {
+        if (M2C_FIELD(box->geom, int *, 4) == 1 && M2C_FIELD(box->geom, int *, 0) != 1)
+            getPulldownExtents(box->style->unk64, o->text, 1, &ew, &eh);
+        else
+            getListExtents(box->style->unk64, o->text, M2C_FIELD(box->geom, int *, 4), &ew, &eh);
+        w = w > ew ? w : ew;
+        h = h > eh ? h : eh;
+    }
+    if ((box->style->flags & 3) == 1)
+        w = box->style->width;
+    if (((box->style->flags & 0xC) >> 2) == 1)
+        h = box->style->height;
+    if (M2C_FIELD(box, void **, 0x2C) != NULL)
+        GUI_Component_setFont(M2C_FIELD(box, void **, 0x2C), box->style->unk64);
+    setBoxSize(box, w, h);
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
