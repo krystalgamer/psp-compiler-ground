@@ -1,3 +1,4 @@
+/* cflags: -O2 -std=gnu9x -fmerge-constants */
 #include "common.h"
 
 /* declarations recovered from DWARF */
