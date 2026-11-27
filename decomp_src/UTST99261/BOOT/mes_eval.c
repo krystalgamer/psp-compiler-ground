@@ -1,5 +1,38 @@
+/* cflags: -O1 */
 #include "common.h"
 #include "m2c_macros.h"
+typedef struct EvObj {
+    struct { int f0; int kind; } *gc;
+    int f4, f8, fC, f10;
+    int f14;
+} EvObj;
+typedef struct EvScope {
+    char pad[0x20];
+    EvObj *obj;
+} EvScope;
+typedef struct EvFrame {
+    char pad[0x1C];
+    int thisobj;
+} EvFrame;
+typedef struct EvCtx {
+    char pad[0x10];
+    EvFrame *frame;
+} EvCtx;
+extern unsigned int D_005852E4;
+int mes_eval_object_set(int a, int b, int c, int d, int flags);
+int mes_eval_string(EvCtx *ctx, int s, int thisobj, int x);
+int mes_eval_to_number(EvCtx *ctx, int v);
+int mes_error_type();                               /* extern */
+int mes_util_hex(unsigned short);                              /* extern */
+M2C_UNK mes_gc_mark(int);                           /* extern */
+M2C_UNK mes_util_vals_mark(int);                    /* extern */
+M2C_UNK mes_gc_register(M2C_UNK *, M2C_UNK, M2C_UNK, M2C_UNK); /* extern */
+extern unsigned char mes_eval_method;
+M2C_UNK mes_native_setup(void *, int, M2C_UNK *, M2C_UNK); /* extern */
+M2C_UNK mes_object_set(int, int, M2C_UNK, M2C_UNK); /* extern */
+extern int D_00585320;
+extern unsigned char mes_eval_native_table;
+
 M2C_UNK mes_util_vals_free(int);                    /* extern */
 
 
@@ -51,7 +84,10 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_eval", mes_eval_object_dele
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_eval", mes_eval_object_set);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_eval", mes_eval_object_put);
+int mes_eval_object_put(int a, int b, int c, int d)
+{
+    return mes_eval_object_set(a, b, c, d, 8);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_eval", mes_eval_object_put2);
 
@@ -79,19 +115,61 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_eval", mes_eval);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_eval", mes_eval_string);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_eval", mes_eval_type_error);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_eval", mes_eval_eval);
+int mes_eval_type_error(void *arg0, int arg1) {
+    void *temp_v1;
+
+    temp_v1 = M2C_FIELD(arg0, void **, 0x18);
+    M2C_FIELD(arg0, void **, 0x18) = (void *) (temp_v1 - 4);
+    M2C_FIELD(temp_v1, int *, -4) = arg1;
+    M2C_FIELD(arg0, int *, 0x14) = mes_error_type();
+    M2C_FIELD(arg0, void **, 0x18) = (void *) (M2C_FIELD(arg0, void **, 0x18) + 4);
+    return 0;
+}
+
+int mes_eval_eval(EvCtx *ctx, int s)
+{
+    return mes_eval_string(ctx, s, ctx->frame->thisobj, 0);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_eval", mes_eval_parse_int);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_eval", mes_eval_parse_float);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_eval", mes_eval_is_nan);
+int mes_eval_is_nan(EvCtx *ctx, int v)
+{
+    return mes_eval_to_number(ctx, v) == 0x1C ? 12 : 8;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_eval", mes_eval_is_finite);
+int mes_eval_is_finite(EvCtx *ctx, int v)
+{
+    int n = mes_eval_to_number(ctx, v);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_eval", mes_eval_hex);
+    if (n == 0x10 || (n & 3) == 1 || (n & 3) == 2)
+        return 12;
+    return 8;
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+int mes_eval_hex(void *arg0) {
+    int temp_s1;
+    int temp_v0;
+    int var_a0;
+
+    temp_s1 = mes_util_hex(M2C_FIELD(arg0, unsigned short *, 0));
+    temp_v0 = mes_util_hex(M2C_FIELD(arg0, unsigned short *, 2));
+    var_a0 = -1;
+    if ((temp_v0 | temp_s1) >= 0) {
+        var_a0 = (temp_s1 * 0x10) + temp_v0;
+    }
+    return var_a0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_eval", mes_eval_decode);
 
@@ -111,7 +189,19 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_eval", mes_eval_escape);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_eval", mes_eval_unescape);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_eval", mes_eval_mark);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void mes_eval_mark(void *arg0) {
+    mes_object_mark(arg0);
+    mes_gc_mark(M2C_FIELD(arg0, int *, 0x18));
+    mes_gc_mark(M2C_FIELD(arg0, int *, 0x1C));
+    mes_gc_mark(M2C_FIELD(arg0, int *, 0x20));
+    mes_util_vals_mark(M2C_FIELD(arg0, int *, 0x24));
+    mes_util_vals_mark(M2C_FIELD(arg0, int *, 0x28));
+    mes_util_vals_mark(M2C_FIELD(arg0, int *, 0x2C));
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -124,9 +214,22 @@ void mes_eval_free(void *arg0) {
     mes_object_free(arg0);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_eval", mes_eval_initialize);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_eval", mes_eval_global_setup);
+void mes_eval_initialize(void) {
+    mes_gc_register(&mes_eval_method, 0x30, 0x64, 0x64);
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void mes_eval_global_setup(void *arg0) {
+    mes_object_set(M2C_FIELD(arg0, int *, 0xC), D_00585320, 0, 6);
+    mes_native_setup(arg0, M2C_FIELD(arg0, int *, 0xC), &mes_eval_native_table, 0xB);
+}
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/mes_eval", D_0013B6CC);
 
