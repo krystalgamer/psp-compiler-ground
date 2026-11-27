@@ -33,27 +33,27 @@ struct FVEC {
 };
 
 namespace B2A {
-struct AnimState {
+
+
+
+struct Player {
 	float frame;
 	float speed;
 	int loop;
 	short scene;
-	short _pad;
-	int pause;
-};
-
-
-struct Player {
-	int _0;
-	Player *next;
-	AnimState *st;
-	short scene;
 	short _e;
-	int _10;
-	unsigned char f14, f15;
+	int pause;
+	unsigned char f14, active;
 	Player(int);
 	~Player();
 	void Set(int);
+};
+
+struct PlayerNode {
+	PlayerNode *prev;
+	PlayerNode *next;
+	Player *player;
+	PlayerNode() : prev(0), next(0) {}
 };
 
 struct Scene {
@@ -105,8 +105,11 @@ struct Object {
 struct Manager {
 	B2aFile *file;
 	Scene *scene;
-	char _8[0x4C];
-	Player *players;
+	char _8[0x48];
+	struct List {
+		PlayerNode *head;
+		PlayerNode *tail;
+	} list;
 	void Calc();
 	void Draw();
 	Player *CreatePlayer(int);
@@ -131,6 +134,18 @@ struct Manager {
 };
 
 void DeletePlayer(Player *);
+
+struct ManagerNode {
+	ManagerNode *prev;
+	ManagerNode *next;
+	Manager *manager;
+};
+struct ManagerList {
+	ManagerNode *head;
+	ManagerNode *tail;
+	int count;
+};
+extern ManagerList managerList;
 }
 
 extern "C" const float D_00108F30;
@@ -303,7 +318,15 @@ extern "C" {
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _ZN3B2A13DeleteManagerEPNS_7ManagerE);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _ZN3B2A12DeletePlayerEPNS_6PlayerE);
+}
+void B2A::DeletePlayer(Player *p)
+{
+	for (ManagerNode *n = managerList.tail; n; n = n->next) {
+		if (n->manager->DeletePlayer(p))
+			return;
+	}
+}
+extern "C" {
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _ZN3B2A7B2aFileC2EP7InstDatiiPP16TBxAnmInitAssign);
 
@@ -343,9 +366,13 @@ void B2A::Manager::DisableScene(int i)
 
 extern "C" {
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _ZN3B2A7Manager12CreatePlayerEi);
+}
+extern "C" { INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _ZN3B2A7Manager12CreatePlayerEi); }
+extern "C" {
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _ZN3B2A7Manager12DeletePlayerEPNS_6PlayerE);
+}
+extern "C" { INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _ZN3B2A7Manager12DeletePlayerEPNS_6PlayerE); }
+extern "C" {
 
 }
 void B2A::Manager::RefreshOne(int i, bool clear)
@@ -378,10 +405,10 @@ extern "C" {
 
 void B2A::Manager::SetFrame(float f)
 {
-	Player *p;
+	PlayerNode *p;
 
-	for (p = players; p; p = p->next)
-		p->st->frame = f;
+	for (p = list.tail; p; p = p->next)
+		p->player->frame = f;
 }
 
 extern "C" {
@@ -391,10 +418,10 @@ extern "C" {
 float B2A::Manager::GetFrame()
 {
 	float f = 0.0f;
-	Player *p;
+	PlayerNode *p;
 
-	for (p = players; p; p = p->next)
-		f = p->st->frame;
+	for (p = list.tail; p; p = p->next)
+		f = p->player->frame;
 	return f;
 }
 
@@ -404,10 +431,10 @@ extern "C" {
 
 void B2A::Manager::SetLoop(int v)
 {
-	Player *p;
+	PlayerNode *p;
 
-	for (p = players; p; p = p->next)
-		p->st->loop = v;
+	for (p = list.tail; p; p = p->next)
+		p->player->loop = v;
 }
 
 extern "C" {
@@ -416,7 +443,7 @@ extern "C" {
 
 int B2A::Manager::GetLoop()
 {
-	return players->st->loop;
+	return list.tail->player->loop;
 }
 
 extern "C" {
@@ -425,10 +452,10 @@ extern "C" {
 
 void B2A::Manager::SetPause(int v)
 {
-	Player *p;
+	PlayerNode *p;
 
-	for (p = players; p; p = p->next)
-		p->st->pause = v;
+	for (p = list.tail; p; p = p->next)
+		p->player->pause = v;
 }
 
 extern "C" {
@@ -437,7 +464,7 @@ extern "C" {
 
 int B2A::Manager::GetPause()
 {
-	return players->st->pause;
+	return list.tail->player->pause;
 }
 
 extern "C" {
@@ -445,8 +472,8 @@ extern "C" {
 }
 void B2A::Manager::SetSpeed(float sp)
 {
-	for (Player *p = players; p; p = p->next)
-		p->st->speed = sp;
+	for (PlayerNode *p = list.tail; p; p = p->next)
+		p->player->speed = sp;
 }
 extern "C" {
 
@@ -454,7 +481,7 @@ extern "C" {
 
 float B2A::Manager::GetSpeed()
 {
-	return players->st->speed;
+	return list.tail->player->speed;
 }
 
 extern "C" {
@@ -463,7 +490,7 @@ extern "C" {
 
 float B2A::Manager::GetEndFrame()
 {
-	SceneEnt *e = &file->hdr->ent[players->st->scene];
+	SceneEnt *e = &file->hdr->ent[list.tail->player->scene];
 	return e->end - 2;
 }
 
@@ -517,9 +544,9 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _ZN3B2A7Manager7CalcO
 void B2A::Manager::Calc()
 {
 	Refresh();
-	for (Player *p = players; p; p = p->next) {
-		Player *pl = (Player *)p->st;
-		if (pl->f15)
+	for (PlayerNode *p = list.tail; p; p = p->next) {
+		Player *pl = p->player;
+		if (pl->active)
 			CalcOne(pl);
 	}
 }
@@ -617,7 +644,9 @@ B2A::Player::~Player()
 
 extern "C" {
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _ZN3B2A6Player3SetEi);
+}
+extern "C" { INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _ZN3B2A6Player3SetEi); }
+extern "C" {
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/bx/b2a", _Z41__static_initialization_and_destruction_0ii_5A4F0);
 
