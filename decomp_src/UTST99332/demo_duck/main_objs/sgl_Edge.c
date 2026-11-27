@@ -2,33 +2,31 @@
 /* cflags: -O3 -fno-exceptions */
 #undef __EXCEPTIONS
 #include "cxx/defer_asm.h"
+#define DEMO_STATICS_MATH
+#define DEMO_STATICS_IOSTREAM
+#define DEMO_STATICS_SGL
 #include "../main.hpp"
 
-extern const char D_00171E50[];     /* " *** error " */
-extern const char D_00171E5C[];     /* "0 <= vi && vi < (int)_vertices.size()" */
-extern const char D_00171E84[];     /* " " */
-extern const char D_00171E88[];     /* "../lib/sgl/types.cpp" */
-extern const char D_00171F2C[];
-extern const char D_00171FA4[];
-extern const char D_0017201C[];
-extern const char D_00172094[];
-extern const char D_001720D0[];     /* "" */
-extern const char D_001720D4[];     /* "\n" */
-extern const char D_001720D8[];     /* "num (prims) triangles  " */
-extern const char D_001720F0[];     /* "num (prims) triangles in strips  " */
-extern const char D_00172114[];     /* "num vertices  " */
-extern const char D_00172124[];     /* "num texcoords " */
-extern const char D_00172134[];     /* "num colors    " */
-extern const char D_00172144[];     /* "num normals   " */
-extern const char D_00172154[];     /* "num positions " */
-#define TYPES_ASSERT(c, text, fn, line) SGL_ASSERT(c, D_00171E50, text, D_00171E88, fn, line, D_00171E84)
-extern const char getVertexAttributeIndex_name[] __asm__("_ZZNK3sgl8CoreMesh23getVertexAttributeIndexEiNS_14VertexAttrEnumEE19__PRETTY_FUNCTION__");
-extern const char setVertexAttributeIndex_name[] __asm__("_ZZN3sgl8CoreMesh23setVertexAttributeIndexEiNS_14VertexAttrEnumEiE19__PRETTY_FUNCTION__");
-extern const char getVertexPosition_name[] __asm__("_ZZNK3sgl8CoreMesh17getVertexPositionEiE19__PRETTY_FUNCTION__");
-extern const char getVertexNormal_name[] __asm__("_ZZNK3sgl8CoreMesh15getVertexNormalEiE19__PRETTY_FUNCTION__");
-extern const char getVertexColor_name[] __asm__("_ZZNK3sgl8CoreMesh14getVertexColorEiE19__PRETTY_FUNCTION__");
-extern const char getVertexTexCoord_name[] __asm__("_ZZNK3sgl8CoreMesh17getVertexTexCoordEiE19__PRETTY_FUNCTION__");
-#define CHECK_VI(fn, line) TYPES_ASSERT(0 <= vi && vi < (int)_vertices.size(), D_00171E5C, fn, line)
+/* the module's .ctors/.dtors refer to the static constructor/destructor */
+__asm__(".globl _GLOBAL__I__ZN3sgl4EdgeC2Eiiii");
+__asm__(".globl _GLOBAL__D__ZN3sgl4EdgeC2Eiiii");
+
+#define TYPES_ASSERT(c, text, fn, line) SGL_ASSERT(c, " *** error ", text, "../lib/sgl/types.cpp", fn, line, " ")
+#define CHECK_VI(fn, line) TYPES_ASSERT(0 <= vi && vi < (int)_vertices.size(), "0 <= vi && vi < (int)_vertices.size()", fn, line)
+/* PrimitiveIndex<int>::countTrianglesInStrips (print calls it): this object's linkonce copy is discarded
+   (scene_Graph's is kept), its __PRETTY_FUNCTION__ and assert strings stay in this object's .rodata */
+template<class T> size_t sgl::PrimitiveIndex<T>::countTrianglesInStrips() const
+{
+    size_t c = 0;
+    int k = 0;
+    for (int i = 0; i < n; i++) {
+        int num = _strips[k];
+        SGL_ASSERT(num >= 3, " *** error ", "num >= 3", "../lib/sgl/PrimitiveIndex.h", __PRETTY_FUNCTION__, 0xE7, " ");
+        k += num + 1;
+        c += num - 2;
+    }
+    return c;
+}
 namespace common {
 template<class T> void Swap(T &a, T &b)
 {
@@ -37,8 +35,6 @@ template<class T> void Swap(T &a, T &b)
     b = t;
 }
 }
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/sgl_Edge", _Z41__static_initialization_and_destruction_0ii_D7664);
 
 sgl::Edge::Edge(int a, int b, int c, int d)
 {
@@ -65,12 +61,9 @@ sgl::CoreMesh::CoreMesh()
 {
 }
 
-
 sgl::CoreMesh::~CoreMesh()
 {
 }
-
-
 
 const std::vector<sgl::Position> &sgl::CoreMesh::getPositions() const
 {
@@ -137,15 +130,15 @@ void sgl::CoreMesh::clear()
     *this = CoreMesh();
 }
 
-int sgl::CoreMesh::getVertexAttributeIndex(int vi, VertexAttrEnum a) const
+const int sgl::CoreMesh::getVertexAttributeIndex(int vi, VertexAttrEnum a) const
 {
-    CHECK_VI(getVertexAttributeIndex_name, 123);
+    CHECK_VI(__PRETTY_FUNCTION__, 123);
     return _vertices[vi]._attr[a];
 }
 
 void sgl::CoreMesh::setVertexAttributeIndex(int vi, VertexAttrEnum a, int i)
 {
-    CHECK_VI(setVertexAttributeIndex_name, 130);
+    CHECK_VI(__PRETTY_FUNCTION__, 130);
     _vertices[vi]._attr[a] = i;
 }
 
@@ -154,76 +147,58 @@ int sgl::CoreMesh::getVertexPositionIndex(int i) const
     return getVertexAttributeIndex(i, VertexAttrEnum(0));
 }
 
-sgl::Position sgl::CoreMesh::getVertexPosition(int vi) const
+const sgl::Position sgl::CoreMesh::getVertexPosition(int vi) const
 {
-    CHECK_VI(getVertexPosition_name, 142);
+    CHECK_VI(__PRETTY_FUNCTION__, 142);
     const Vertex &v = _vertices[vi];
-    TYPES_ASSERT(0 <= v._attr[POS] && v._attr[POS] < (int)_positions.size(), D_00171F2C, getVertexPosition_name, 146);
+    TYPES_ASSERT(0 <= v._attr[POS] && v._attr[POS] < (int)_positions.size(), "0 <= v._attr[POS] && v._attr[POS] < (int)_positions.size()", __PRETTY_FUNCTION__, 146);
     return _positions[v._attr[POS]];
 }
 
-sgl::Normal sgl::CoreMesh::getVertexNormal(int vi) const
+const sgl::Normal sgl::CoreMesh::getVertexNormal(int vi) const
 {
-    CHECK_VI(getVertexNormal_name, 153);
+    CHECK_VI(__PRETTY_FUNCTION__, 153);
     const Vertex &v = _vertices[vi];
     if (v._attr[NOR] < 0)
         return Normal();
-    TYPES_ASSERT(0 <= v._attr[NOR] && v._attr[NOR] < (int)_normals.size(), D_00171FA4, getVertexNormal_name, 159);
+    TYPES_ASSERT(0 <= v._attr[NOR] && v._attr[NOR] < (int)_normals.size(), "0 <= v._attr[NOR] && v._attr[NOR] < (int)_normals.size()", __PRETTY_FUNCTION__, 159);
     return _normals[v._attr[NOR]];
 }
 
-sgl::Color sgl::CoreMesh::getVertexColor(int vi) const
+const sgl::Color sgl::CoreMesh::getVertexColor(int vi) const
 {
-    CHECK_VI(getVertexColor_name, 166);
+    CHECK_VI(__PRETTY_FUNCTION__, 166);
     const Vertex &v = _vertices[vi];
     if (v._attr[COL] < 0)
         return Color(0, 0, 0, 0);
-    TYPES_ASSERT(0 <= v._attr[COL] && v._attr[COL] < (int)_colors.size(), D_0017201C, getVertexColor_name, 172);
+    TYPES_ASSERT(0 <= v._attr[COL] && v._attr[COL] < (int)_colors.size(), "0 <= v._attr[COL] && v._attr[COL] < (int)_colors.size()", __PRETTY_FUNCTION__, 172);
     return _colors[v._attr[COL]];
 }
 
-sgl::TexCoord sgl::CoreMesh::getVertexTexCoord(int vi) const
+const sgl::TexCoord sgl::CoreMesh::getVertexTexCoord(int vi) const
 {
-    CHECK_VI(getVertexTexCoord_name, 179);
+    CHECK_VI(__PRETTY_FUNCTION__, 179);
     const Vertex &v = _vertices[vi];
     if (v._attr[TEX] < 0)
         return TexCoord();
-    TYPES_ASSERT(0 <= v._attr[TEX] && v._attr[TEX] < (int)_texcoords.size(), D_00172094, getVertexTexCoord_name, 185);
+    TYPES_ASSERT(0 <= v._attr[TEX] && v._attr[TEX] < (int)_texcoords.size(), "0 <= v._attr[TEX] && v._attr[TEX] < (int)_texcoords.size()", __PRETTY_FUNCTION__, 185);
     return _texcoords[v._attr[TEX]];
 }
 
 void sgl::CoreMesh::print(std::string name) const
 {
-    if (name != D_001720D0)
+    if (name != "")
         common::Log() << name;
     if (!_positions.empty())
-        common::Log() << D_00172154 << (unsigned int)_positions.size() << D_001720D4;
+        common::Log() << "num positions " << (unsigned int)_positions.size() << "\n";
     if (!_normals.empty())
-        common::Log() << D_00172144 << (unsigned int)_normals.size() << D_001720D4;
+        common::Log() << "num normals   " << (unsigned int)_normals.size() << "\n";
     if (!_colors.empty())
-        common::Log() << D_00172134 << (unsigned int)_colors.size() << D_001720D4;
+        common::Log() << "num colors    " << (unsigned int)_colors.size() << "\n";
     if (!_texcoords.empty())
-        common::Log() << D_00172124 << (unsigned int)_texcoords.size() << D_001720D4;
+        common::Log() << "num texcoords " << (unsigned int)_texcoords.size() << "\n";
     if (!_vertices.empty())
-        common::Log() << D_00172114 << (unsigned int)_vertices.size() << D_001720D4;
-    common::Log() << D_001720D8 << (unsigned int)_prims.countTriangles() << D_001720D4;
-    common::Log() << D_001720F0 << (unsigned int)_prims.countTrianglesInStrips() << D_001720D4;
+        common::Log() << "num vertices  " << (unsigned int)_vertices.size() << "\n";
+    common::Log() << "num (prims) triangles  " << (unsigned int)_prims.countTriangles() << "\n";
+    common::Log() << "num (prims) triangles in strips  " << (unsigned int)_prims.countTrianglesInStrips() << "\n";
 }
-
-extern "C" {
-void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_D7664");
-void _GLOBAL__I__ZN3sgl4EdgeC2Eiiii(void);
-void _GLOBAL__D__ZN3sgl4EdgeC2Eiiii(void);
-}
-
-void _GLOBAL__I__ZN3sgl4EdgeC2Eiiii(void)
-{
-    static_init(1, 0xFFFF);
-}
-
-void _GLOBAL__D__ZN3sgl4EdgeC2Eiiii(void)
-{
-    static_init(0, 0xFFFF);
-}
-
-

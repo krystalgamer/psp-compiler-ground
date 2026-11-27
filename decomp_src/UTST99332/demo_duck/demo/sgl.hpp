@@ -164,7 +164,7 @@ public:
     int countVertices() const;
     int countVerticesInStrips() const;
     int countTriangles() const;
-    int countTrianglesInStrips() const;
+    size_t countTrianglesInStrips() const;
     void range(int &, int &) const;
     void check() const;
     std::vector<T> _strips;     /* 0x00 */
@@ -296,13 +296,13 @@ public:
     std::vector<Vertex> &getVertices();
     PrimitiveIndex<int> &getPrims();
     void clear();
-    int getVertexAttributeIndex(int, VertexAttrEnum) const;
+    const int getVertexAttributeIndex(int, VertexAttrEnum) const;
     void setVertexAttributeIndex(int, VertexAttrEnum, int);
     int getVertexPositionIndex(int) const;
-    Position getVertexPosition(int) const;
-    Normal getVertexNormal(int) const;
-    Color getVertexColor(int) const;
-    TexCoord getVertexTexCoord(int) const;
+    const Position getVertexPosition(int) const;
+    const Normal getVertexNormal(int) const;
+    const Color getVertexColor(int) const;
+    const TexCoord getVertexTexCoord(int) const;
     void print(std::string) const;
     std::vector<Position> _positions;   /* 0x04 */
     std::vector<Normal> _normals;       /* 0x10 */

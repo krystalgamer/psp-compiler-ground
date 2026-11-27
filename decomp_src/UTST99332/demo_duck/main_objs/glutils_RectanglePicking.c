@@ -2,13 +2,17 @@
 /* cflags: -O3 -fno-exceptions */
 #undef __EXCEPTIONS
 #include "cxx/defer_asm.h"
+#define DEMO_STATICS_MATH
+#define DEMO_STATICS_IOSTREAM
 #define DEMO_LINKONCE_RectanglePicking 1
 #include "../main.hpp"
 
+/* the module's .ctors/.dtors refer to the static constructor/destructor */
+__asm__(".globl _GLOBAL__I__ZN7glutils16RectanglePickingC2Ev");
+__asm__(".globl _GLOBAL__D__ZN7glutils16RectanglePickingC2Ev");
+
 /* weak instances stay asm */
 extern template class std::vector<unsigned int>;
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/glutils_RectanglePicking", _Z41__static_initialization_and_destruction_0ii_34578);
 
 glutils::RectanglePicking::RectanglePicking() : _f30(false), _f31(true)
 {
@@ -39,32 +43,14 @@ void glutils::RectanglePicking::push_back(unsigned int name)
     _hits.push_back(name);
 }
 
-extern "C" const char D_00166BF4[], D_00166C00[], D_00166C0C[], D_00166C30[];
-extern const char RectanglePicking_activate_name[] __asm__("_ZZN7glutils16RectanglePicking8activateEvE19__PRETTY_FUNCTION__");
 
 void glutils::RectanglePicking::activate()
 {
-    SGL_ASSERT(_f31, D_00166BF4, D_00166C00, D_00166C0C, RectanglePicking_activate_name, 53, D_00166C30);
+    SGL_ASSERT(_f31, " *** error ", "_visible", "../lib/glutils/RectanglePicking.cpp", __PRETTY_FUNCTION__, 53, " ");
     _f30 = true;
 }
 
 void glutils::RectanglePicking::resize(unsigned int n)
 {
     _hits.resize(n);
-}
-
-extern "C" {
-void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_34578");
-void _GLOBAL__I__ZN7glutils16RectanglePickingC2Ev(void);
-void _GLOBAL__D__ZN7glutils16RectanglePickingC2Ev(void);
-}
-
-void _GLOBAL__I__ZN7glutils16RectanglePickingC2Ev(void)
-{
-    static_init(1, 0xFFFF);
-}
-
-void _GLOBAL__D__ZN7glutils16RectanglePickingC2Ev(void)
-{
-    static_init(0, 0xFFFF);
 }

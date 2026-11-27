@@ -375,7 +375,7 @@ template<class T> int PrimitiveIndex<T>::countTriangles() const
 }
 }
 /* asm: near-miss (tmp/cxx/drafts/scene4/NOTES.md) */
-extern template int sgl::PrimitiveIndex<int>::countTrianglesInStrips() const;
+extern template size_t sgl::PrimitiveIndex<int>::countTrianglesInStrips() const;
 template int sgl::PrimitiveIndex<int>::countTriangles() const;
 /* asm: near-miss (Graph.h newNode<T>, scene.hpp: one delay slot filled from the other path) */
 extern template common::handle<scene::Mesh> scene::Graph::newNode<scene::Mesh>(std::string, bool);

@@ -2,10 +2,14 @@
 /* cflags: -O3 -fno-exceptions */
 #undef __EXCEPTIONS
 #include "cxx/defer_asm.h"
+#define DEMO_STATICS_MATH
+#define DEMO_STATICS_IOSTREAM
+#define DEMO_STATICS_INTERP
 #include "../main.hpp"
 
-/* the header static of this object (its static initializer is asm) */
-extern const math::matrix CUMULATIVE_BERNSTIEN_BASIS __asm__("_ZN6interp26CUMULATIVE_BERNSTIEN_BASISE_18EB2C");
+/* the module's .ctors/.dtors refer to the static constructor/destructor */
+__asm__(".globl _GLOBAL__I__ZNK6interp16KeyFrameSequenceIN4math10quaternionEE4dumpEPKc");
+__asm__(".globl _GLOBAL__D__ZNK6interp16KeyFrameSequenceIN4math10quaternionEE4dumpEPKc");
 
 /* the base's destructor is inline (KeyFrameSequenceBase.h); KeyFrameSequence<quaternion>'s inline destructor
    is emitted here (.gnu.linkonce.t, after the object's .text) with the class's vtable */
@@ -17,8 +21,6 @@ inline interp::KeyFrameSequence<math::quaternion>::~KeyFrameSequence()
 {
 }
 _Pragma("interface")
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/interp_KeyFrameSequence", _Z41__static_initialization_and_destruction_0ii_4D7EC);
 
 void interp::KeyFrameSequence<math::quaternion>::dump(const char *) const {
 }
@@ -86,21 +88,3 @@ void interp::KeyFrameSequence<math::quaternion>::typed_fix()
         it->setValue(b);
     }
 }
-
-extern "C" {
-void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_4D7EC");
-void _GLOBAL__I__ZNK6interp16KeyFrameSequenceIN4math10quaternionEE4dumpEPKc(void);
-void _GLOBAL__D__ZNK6interp16KeyFrameSequenceIN4math10quaternionEE4dumpEPKc(void);
-}
-
-void _GLOBAL__I__ZNK6interp16KeyFrameSequenceIN4math10quaternionEE4dumpEPKc(void)
-{
-    static_init(1, 0xFFFF);
-}
-
-void _GLOBAL__D__ZNK6interp16KeyFrameSequenceIN4math10quaternionEE4dumpEPKc(void)
-{
-    static_init(0, 0xFFFF);
-}
-
-

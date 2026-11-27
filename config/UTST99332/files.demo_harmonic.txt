@@ -176,8 +176,8 @@ rodata 0x165B24 -
 # math_quaternion_quaternion: the float pools (quaternion()'s 1.0f) of quaternion operator*, -=, *=
 rodata 0x165EC4 main_objs/math_quaternion_quaternion
 rodata 0x165ED0 -
-# interp_KeyFrameSequence: the float pools of KeyFrameSequence<quaternion>::calc_tangent, evaluate, op_identity
-rodata 0x16495C main_objs/interp_KeyFrameSequence
+# interp_KeyFrameSequence: the header statics' float pool, the float pools of KeyFrameSequence<quaternion>::calc_tangent, evaluate, op_identity
+rodata 0x164940 main_objs/interp_KeyFrameSequence
 rodata 0x16496C -
 # sgl_Mesh_4: vector<sgl::Edge>::reserve()'s "vector::reserve"
 rodata 0x16CFC0 main_objs/sgl_Mesh_4
@@ -333,3 +333,32 @@ bss 0x18E7F8 main_objs/sys_timer_GetDeltaTime
 bss 0x18E860 -
 bss 0x18CD80 main_objs/VertexColorEnv
 bss 0x18CE04 -
+# common_FileDump, float_basic_parser_get, glutils_RectanglePicking, interp_KeyFrameSequence, scene_DefaultShader,
+# scene_HasBVdata, sgl_Edge: C++ static initializers; .rodata (float pools, strings, __PRETTY_FUNCTION__s; sgl_Edge's
+# ends with the discarded PrimitiveIndex<int>::countTrianglesInStrips copy's) and .bss (header statics, HasBVdata::enabled)
+rodata 0x172900 main_objs/common_FileDump
+rodata 0x172AB0 -
+bss 0x18E7BC main_objs/common_FileDump
+bss 0x18E7C0 -
+rodata 0x172E78 main_objs/float_basic_parser_get
+rodata 0x172F24 -
+bss 0x18E7C8 main_objs/float_basic_parser_get
+bss 0x18E7CC -
+rodata 0x163C90 main_objs/glutils_RectanglePicking
+rodata 0x163D18 -
+bss 0x18AFAC main_objs/glutils_RectanglePicking
+bss 0x18B030 -
+bss 0x18B628 main_objs/interp_KeyFrameSequence
+bss 0x18B6EC -
+rodata 0x166158 main_objs/scene_DefaultShader
+rodata 0x166184 -
+bss 0x18BB90 main_objs/scene_DefaultShader
+bss 0x18BC14 -
+rodata 0x1660AC main_objs/scene_HasBVdata
+rodata 0x166118 -
+bss 0x18BB0C main_objs/scene_HasBVdata
+bss 0x18BB90 -
+rodata 0x16EEB8 main_objs/sgl_Edge
+rodata 0x16F2B4 -
+bss 0x18DA44 main_objs/sgl_Edge
+bss 0x18DB48 -

@@ -90,11 +90,24 @@ public:
 
 /* Strings of the asserts in the inline functions below: each object has its
    own copies, so a unit that inlines one declares these names with its asm
-   labels (extern const char x[] __asm__("D_...");) before including main.hpp. */
+   labels (extern const char x[] __asm__("D_...");) before including main.hpp.  A unit whose .rodata
+   is carved defines SCENE_BVDATA_LITERALS instead (the original's literals and __PRETTY_FUNCTION__). */
+#ifdef SCENE_BVDATA_LITERALS
+#define scene_bvdata_err " *** error "
+#define scene_bvdata_valid "valid()"
+#define scene_bvdata_file "../lib/scene/BVdata.h"
+#define scene_bvdata_sp " "
+#define scene_bvdata_get_name __PRETTY_FUNCTION__
+#define scene_bvdata_warn " *** warning "
+#define scene_bvdata_notvalid "! valid()"
+#define scene_bvdata_create_name __PRETTY_FUNCTION__
+#define scene_bvdata_created "bounding box already created"
+#else
 extern const char scene_bvdata_err[], scene_bvdata_valid[], scene_bvdata_file[], scene_bvdata_sp[];
 extern const char scene_bvdata_get_name[];
 /* BVdata::create: " *** warning ", "! valid()", __PRETTY_FUNCTION__, "bounding box already created" */
 extern const char scene_bvdata_warn[], scene_bvdata_notvalid[], scene_bvdata_create_name[], scene_bvdata_created[];
+#endif
 extern const char scene_mesh_err[], scene_mesh_expr[], scene_mesh_file[], scene_mesh_sp[];
 extern const char scene_mesh_getData_name[];
 

@@ -2,10 +2,20 @@
 /* cflags: -O3 -fno-exceptions */
 #undef __EXCEPTIONS
 #include "cxx/defer_asm.h"
+#define DEMO_STATICS_MATH
+#define DEMO_STATICS_IOSTREAM
 #define DEMO_TEMPLATE_DEFS
 #include "../main.hpp"
+
+/* the module's .ctors/.dtors refer to the static constructor/destructor */
+__asm__(".globl _GLOBAL__I__ZN5scene13DefaultShaderC2ESsb");
+__asm__(".globl _GLOBAL__D__ZN5scene13DefaultShaderC2ESsb");
 /* linkonce order: this object's .gnu.linkonce.t sections in Sony's link order */
 SCENE_LINKONCE_ORDER(
+    SCENE_LINKONCE(_ZNK5scene4Node7isGroupEv)
+    SCENE_LINKONCE(_ZNK5scene4Node10isClonableEv)
+    SCENE_LINKONCE(_ZNK5scene13DefaultShader11getTypeNameEv)
+    SCENE_LINKONCE(_ZNK5scene13DefaultShader5cloneESs)
     SCENE_LINKONCE(_ZN6common6handleIN5scene8MaterialEE10invalidateEv)
     SCENE_LINKONCE(_ZN6common6handleIN5scene13DefaultShaderEE10invalidateEv)
     SCENE_LINKONCE(_ZN6common6handleIN5scene8MaterialEEaSERKS3_)
@@ -17,9 +27,36 @@ SCENE_LINKONCE_ORDER(
     SCENE_LINKONCE(_ZN6common6handleIN5scene13DefaultShaderEED0Ev)
 );
 
-extern const char D_00166174[];
+/* inline in the class (weak copies emitted with the vtable, in the object's tail) */
+SGL_LINKONCE_BEGIN
+inline bool scene::Node::isGroup() const
+{
+    return false;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/scene_DefaultShader", _Z41__static_initialization_and_destruction_0ii_5CF38);
+inline bool scene::Node::isClonable() const
+{
+    return false;
+}
+
+inline const char *scene::DefaultShader::getTypeName() const
+{
+    return "DefaultShader";
+}
+
+inline common::handle<scene::Node> scene::DefaultShader::clone(std::string suffix) const
+{
+    std::string name = getBasename();
+    name += suffix;
+    common::handle<DefaultShader> h(new DefaultShader(name.c_str(), false));
+    *h = *this;
+    h->setName(name.c_str());
+    h->_m._mapped = false;
+    while (h->getParentCount())
+        h->decrParentCount();
+    return h;
+}
+SGL_LINKONCE_END
 
 scene::DefaultShader::DefaultShader(std::string name, bool b) : Setup(name, b)
 {
@@ -86,46 +123,3 @@ void scene::DefaultShader::flatten(math::TransformStack &) {
 void scene::DefaultShader::save(std::ostream &) {
 }
 
-extern "C" {
-void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_5CF38");
-void _GLOBAL__I__ZN5scene13DefaultShaderC2ESsb(void);
-void _GLOBAL__D__ZN5scene13DefaultShaderC2ESsb(void);
-}
-
-void _GLOBAL__I__ZN5scene13DefaultShaderC2ESsb(void)
-{
-    static_init(1, 0xFFFF);
-}
-
-void _GLOBAL__D__ZN5scene13DefaultShaderC2ESsb(void)
-{
-    static_init(0, 0xFFFF);
-}
-
-bool scene::Node::isGroup() const
-{
-    return false;
-}
-
-bool scene::Node::isClonable() const
-{
-    return false;
-}
-
-const char *scene::DefaultShader::getTypeName() const
-{
-    return D_00166174;
-}
-
-common::handle<scene::Node> scene::DefaultShader::clone(std::string suffix) const
-{
-    std::string name = getBasename();
-    name += suffix;
-    common::handle<DefaultShader> h(new DefaultShader(name.c_str(), false));
-    *h = *this;
-    h->setName(name.c_str());
-    h->_m._mapped = false;
-    while (h->getParentCount())
-        h->decrParentCount();
-    return h;
-}

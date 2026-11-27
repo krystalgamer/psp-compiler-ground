@@ -2,14 +2,16 @@
 /* cflags: -O3 -fno-exceptions */
 #undef __EXCEPTIONS
 #include "cxx/defer_asm.h"
-extern const char scene_bvdata_err[] __asm__("D_00169008");      /* " *** error " */
-extern const char scene_bvdata_valid[] __asm__("D_00169014");    /* "valid()" */
-extern const char scene_bvdata_file[] __asm__("D_0016901C");     /* "../lib/scene/BVdata.h" */
-extern const char scene_bvdata_sp[] __asm__("D_00169034");       /* " " */
-extern const char scene_bvdata_get_name[] __asm__("_ZZN5scene6BVdata3getEvE19__PRETTY_FUNCTION___168FE8");
+#define SCENE_BVDATA_LITERALS
+#define DEMO_STATICS_MATH
+#define DEMO_STATICS_IOSTREAM
 #include "../main.hpp"
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/scene_HasBVdata", _Z41__static_initialization_and_destruction_0ii_5F064);
+/* the module's .ctors/.dtors refer to the static constructor/destructor */
+__asm__(".globl _GLOBAL__I__ZN5scene9HasBVdata7enabledE");
+__asm__(".globl _GLOBAL__D__ZN5scene9HasBVdata7enabledE");
+
+bool scene::HasBVdata::enabled;
 
 bool scene::HasBVdata::frustumTest(sgl::Frustum &f)
 {
@@ -18,20 +20,3 @@ bool scene::HasBVdata::frustumTest(sgl::Frustum &f)
         r = sgl_Frustum_intersect(&f, _bvdata.get());
     return r;
 }
-
-extern "C" {
-void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_5F064");
-void _GLOBAL__I__ZN5scene9HasBVdata7enabledE(void);
-void _GLOBAL__D__ZN5scene9HasBVdata7enabledE(void);
-}
-
-void _GLOBAL__I__ZN5scene9HasBVdata7enabledE(void)
-{
-    static_init(1, 0xFFFF);
-}
-
-void _GLOBAL__D__ZN5scene9HasBVdata7enabledE(void)
-{
-    static_init(0, 0xFFFF);
-}
-
