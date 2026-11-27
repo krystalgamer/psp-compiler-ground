@@ -264,7 +264,65 @@ void inv_matchup_menu_pause(void)
 	poly_set(0, 0, 480, 272, 0, 16, 16, 16, 160, 16, 16, 16, 160, 16, 16, 16, 160, 16, 16, 16, 160, 10, 2, 1, 255);
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_match", inv_matchup_menu_option);
+extern const float D_0007CE24, D_0007CE28, D_0007CE2C, D_0007CE30;
+void ms_save(void);
+void ms_load(void);
+void inv_matchup_menu_option(void)
+{
+	int a, w;
+
+	if (pad_sw() & pad_ret_button()) {
+		se_start(1);
+		switch (matchup_menu_choice) {
+		case 0:
+			ms_save();
+			matchup_menu_choice = 0;
+			break;
+		case 1:
+			ms_load();
+			matchup_menu_choice = 0;
+			break;
+		case 2:
+			RT = 9;
+			matchup_menu_choice = 0;
+			break;
+		}
+	} else if (pad_sw() & 0x100010) {
+		se_start(0);
+		matchup_menu_choice--;
+		if (matchup_menu_choice < 0)
+			matchup_menu_choice = 2;
+	} else if (pad_sw() & 0x200040) {
+		se_start(0);
+		matchup_menu_choice++;
+		if (matchup_menu_choice >= 3)
+			matchup_menu_choice = 0;
+	}
+	a = sinf(gcnt_28FC04 % 45 * 4 / D_0007CE24 * D_0007CE28) * D_0007CE2C + D_0007CE30;
+	switch (matchup_menu_choice) {
+	case 0:
+		w = ASC_StringRen("SAVE");
+		ASC_SetStringRGBA(1, "SAVE", (480 - w) / 2, 104, 64, 255, 255, a);
+		break;
+	case 1:
+		w = ASC_StringRen("LOAD");
+		ASC_SetStringRGBA(1, "LOAD", (480 - w) / 2, 128, 64, 255, 255, a);
+		break;
+	case 2:
+		w = ASC_StringRen(&D_0007CD20);
+		ASC_SetStringRGBA(1, &D_0007CD20, (480 - w) / 2, 152, 64, 255, 255, a);
+		break;
+	}
+	w = ASC_StringRen(&D_0007CD18);
+	ASC_SetStringRGBA(1, &D_0007CD18, (480 - w) / 2, 40, 255, 255, 255, 255);
+	w = ASC_StringRen("SAVE");
+	ASC_SetStringRGBA(1, "SAVE", (480 - w) / 2, 104, 255, 255, 255, 255);
+	w = ASC_StringRen("LOAD");
+	ASC_SetStringRGBA(1, "LOAD", (480 - w) / 2, 128, 255, 255, 255, 255);
+	w = ASC_StringRen(&D_0007CD20);
+	ASC_SetStringRGBA(1, &D_0007CD20, (480 - w) / 2, 152, 255, 255, 255, 255);
+	poly_set(0, 0, 480, 272, 0, 16, 16, 16, 160, 16, 16, 16, 160, 16, 16, 16, 160, 16, 16, 16, 160, 10, 2, 1, 255);
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_match", inv_matchup_menu_handy);
 
