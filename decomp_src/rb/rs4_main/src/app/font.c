@@ -32,6 +32,21 @@ extern const float D_000FC670;
 int fontImgPut();
 
 int fontStrPut();
+extern const float D_000FC668;
+extern const float D_000FC66C;
+extern int MarkFontID;
+typedef struct { int w[12]; int advance; int pad[3]; } FontCharInfo;
+int sceFontGetCharInfo(int, unsigned int, FontCharInfo *);
+int fontIsMarkFont(int c);
+void *_memAllocZero(int, void *, int);
+extern const float D_000FC674;
+typedef struct { int pixelFormat; int xPos64; int yPos64; } FontGlyphHead;
+typedef struct { float x, y, z, w; } FontVec;
+typedef struct FontCache { struct FontCache *next; int code; int pad[2]; char buf[0x200]; } FontCache;
+typedef struct FontChar { struct FontChar *next; FontCache *cache; int pad[2]; FontVec pos; char pad2[0x50 - 0x20]; } FontChar;
+typedef struct { int busy; int pad1[3]; FontVec pos; char pad2[0x54 - 0x20]; FontGlyphHead img; char pad3[0x68 - 0x60]; void *buf; FontCache *cacheHead, *cacheTail; FontChar *charHead, *charTail; } FontStr;
+extern const float D_000FC678;
+int sceFontGetCharGlyphImage(int, unsigned int, void *);
 
 int _fontAlloc(int a, int size)
 {
@@ -162,7 +177,21 @@ int fontIsMarkFont(int c)
 	return r;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/font", fontGetCharWidth);
+float fontGetCharWidth(void *f, int c)
+{
+	FontCharInfo info;
+	int id;
+	if (f == NULL)
+		consPrintf(&D_000FC41C, &D_000FC3F8, 0x12E, "fontGetCharWidth", &D_000FC524);
+	if (c != '\n') {
+	if (fontIsMarkFont(c)) id = MarkFontID;
+	else id = FontID;
+	if (sceFontGetCharInfo(id, (unsigned short)c, &info) != 0)
+		consPrintf(&D_000FC41C, &D_000FC3F8, 0x134, "fontGetCharWidth", &D_000FC438);
+	return (float)info.advance * D_000FC668;
+	}
+	return D_000FC66C;
+}
 
 float fontGetCharHeight(void *arg0) {
     if (arg0 == NULL) {
@@ -171,7 +200,23 @@ float fontGetCharHeight(void *arg0) {
     return (float)((D_00119780 + 0x3F) & ~0x3F) * D_000FC670;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/font", fontGetStrWidth);
+float fontGetStrWidth(void *f, int *s, int n)
+{
+	float max = 0.0f;
+	float w = 0.0f;
+	float cw;
+	int c;
+	for (; n && (c = *s) != 0; n--, s++) {
+		cw = fontGetCharWidth(f, c);
+		if (cw >= 0.0f) {
+			w += cw;
+			max = max < w ? w : max;
+		} else {
+			w = 0.0f;
+		}
+	}
+	return max;
+}
 
 float fontGetStrHeight(void *f, int *s, int n)
 {
@@ -210,7 +255,31 @@ int fontImgTerm(int *arg0) {
     return 1;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/font", fontImgPut);
+int fontImgPut(FontStr *p, int c)
+{
+	FontCharInfo info;
+	int h;
+	if (p == NULL)
+		consPrintf(&D_000FC41C, &D_000FC3F8, 0x1F1, "fontImgPut", &D_000FC524);
+	if (p->busy != 0)
+		consPrintf(&D_000FC41C, &D_000FC3F8, 0x1F2, "fontImgPut", &D_000FC544);
+	h = D_00119780;
+	h += 0x3F;
+	h &= ~0x3F;
+	if (c != '\n') {
+		if (sceFontGetCharInfo(fontIsMarkFont(c) ? MarkFontID : FontID, (unsigned short)c, &info) != 0)
+			consPrintf(&D_000FC41C, &D_000FC3F8, 0x1FC, "fontImgPut", &D_000FC438);
+		p->img.xPos64 = ((int)p->pos.x + info.w[2]) << 6;
+		p->img.yPos64 = (((int)p->pos.y - info.w[3]) << 6) + h;
+		if (sceFontGetCharGlyphImage(fontIsMarkFont(c) ? MarkFontID : FontID, (unsigned short)c, &p->img) != 0)
+			consPrintf(&D_000FC41C, &D_000FC3F8, 0x202, "fontImgPut", &D_000FC438);
+		p->pos.x += (float)info.advance * D_000FC674;
+	} else {
+		p->pos.x = 0;
+		p->pos.y += (float)h * D_000FC674;
+	}
+	return 1;
+}
 
 int fontImgStr(int f, int *str, int n) {
     int c;
@@ -232,7 +301,22 @@ int fontImgDat(void *arg0) {
     return M2C_FIELD(arg0, int *, 0x50);
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/font", fontStrInit);
+void *fontStrInit(void)
+{
+	short *p = _memAllocZero(0x80, &D_000FC3F8, 0x231);
+	if (p == NULL)
+		consPrintf(&D_000FC41C, &D_000FC3F8, 0x232, "fontStrInit", &D_000FC524);
+	*(int *)p = 1;
+	*(int *)(p + 0x2A) = 0;
+	p[0x33] = 0;
+	*(int *)(p + 0x34) = 0;
+	*(int *)(p + 8) = 0;
+	*(int *)(p + 10) = 0;
+	p[0x30] = 32;
+	p[0x31] = 32;
+	p[0x32] = 16;
+	return p;
+}
 
 int fontStrTerm(M2C_UNK *arg0) {
     M2C_UNK *temp_s0;
@@ -268,7 +352,58 @@ int fontStrTerm(M2C_UNK *arg0) {
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/app/font", D_000FC62C);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/font", fontStrPut);
+int fontStrPut(FontStr *p, int c)
+{
+	FontCharInfo info;
+	FontCache *cache;
+	FontChar *ch;
+	int h;
+	if (p == NULL)
+		consPrintf(&D_000FC41C, &D_000FC3F8, 0x26E, "fontStrPut", &D_000FC524);
+	if (p->busy != 1)
+		consPrintf(&D_000FC41C, &D_000FC3F8, 0x26F, "fontStrPut", &D_000FC62C);
+	h = D_00119780;
+	h += 0x3F;
+	h &= ~0x3F;
+	if (c != '\n') {
+		for (cache = p->cacheHead; cache != NULL; cache = cache->next)
+			if (cache->code == c) break;
+		if (cache != NULL) {
+			if (sceFontGetCharInfo(FontID, (unsigned short)cache->code, &info) != 0)
+				consPrintf(&D_000FC41C, &D_000FC3F8, 0x282, "fontStrPut", &D_000FC438);
+		} else {
+			cache = _memAllocZero(0x210, &D_000FC3F8, 0x285);
+			if (cache == NULL)
+				consPrintf(&D_000FC41C, &D_000FC3F8, 0x286, "fontStrPut", "pCache");
+			if (p->cacheHead == NULL) p->cacheHead = cache;
+			if (p->cacheTail != NULL) p->cacheTail->next = cache;
+			p->cacheTail = cache;
+			cache->next = NULL;
+			cache->code = c;
+			if (sceFontGetCharInfo(FontID, (unsigned short)c, &info) != 0)
+				consPrintf(&D_000FC41C, &D_000FC3F8, 0x293, "fontStrPut", &D_000FC438);
+			p->img.xPos64 = info.w[2] << 6;
+			p->img.yPos64 = h - (info.w[3] << 6);
+			p->buf = cache->buf;
+			if (sceFontGetCharGlyphImage(FontID, (unsigned short)c, &p->img) != 0)
+				consPrintf(&D_000FC41C, &D_000FC3F8, 0x29A, "fontStrPut", &D_000FC438);
+		}
+		ch = _memAllocZero(0x50, &D_000FC3F8, 0x29F);
+		if (ch == NULL)
+			consPrintf(&D_000FC41C, &D_000FC3F8, 0x2A0, "fontStrPut", "pChar");
+		if (p->charHead == NULL) p->charHead = ch;
+		if (p->charTail != NULL) p->charTail->next = ch;
+		p->charTail = ch;
+		ch->next = NULL;
+		ch->cache = cache;
+		ch->pos = p->pos;
+		p->pos.x += (float)info.advance * D_000FC678;
+	} else {
+		p->pos.x = 0;
+		p->pos.y += (float)h * D_000FC678;
+	}
+	return 1;
+}
 
 int fontStrStr(int f, int *str, int n) {
     int c;
