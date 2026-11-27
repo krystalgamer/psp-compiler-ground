@@ -41,6 +41,13 @@ NAMED = {
         "gh_DEMOMOD": ("psp_random_batch.zip", "greatest_hits_module/DEMOMOD.PRX.dec"),
         "rs4_main": ("psp_random_batch.zip", "retail_sampler_four_module/main.prx.dec"),
     },
+    # pre-release firmware 1.02 selfboot: two builds of a loadexec test
+    # program (1.5.1.internal, with DWARF) and lflash_write (no symbols)
+    "selfboot": {
+        "loadexec_test": ("pre_release_fws.zip", "102_selfboot/kd/loadexec_test.prx"),
+        "zzzzdummy": ("pre_release_fws.zip", "102_selfboot/kd/zzzzdummy.dat"),
+        "lflash_write": ("pre_release_fws.zip", "102_selfboot/lflash_write.prx"),
+    },
 }
 
 
