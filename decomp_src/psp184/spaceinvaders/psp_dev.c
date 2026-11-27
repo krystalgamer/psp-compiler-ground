@@ -150,9 +150,10 @@ void psp_init2(void) {
     g_packet = 0;
 }
 
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_dev", D_0007A6C0);
+typedef struct { int m[16]; } DITHER_T;
+const DITHER_T D_0007A6C0 = { { -4, 0, -3, 1, 2, -2, 3, -1, -3, 1, -4, 0, 3, -1, 2, -2 } };
 
-INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_dev", D_0007A700);
+const FVEC3 D_0007A700 = { 0.0f, 0.0f, 50.0f };
 
 INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_dev", D_0007A70C);
 
@@ -186,7 +187,76 @@ INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_dev", D_0007A7AC);
 
 INCLUDE_RODATA("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_dev", D_0007A7B8);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_dev", psp_begin_scene);
+typedef struct { int mode; float fovy; FVEC3 pos; FVEC3 rot; FVEC3 hist[8]; float far; FVEC3 center; FVEC3 up; int f9C; } CAMERA_D;
+extern CAMERA_D camera;
+void sceGuViewport(int cx, int cy, int width, int height);
+void sceGuDepthRange(int near, int far);
+void sceGuScissor(int x, int y, int w, int h);
+void sceGuEnable(int state);
+void sceGuDisable(int state);
+void sceGuClearColor(unsigned int color);
+void sceGuClearDepth(unsigned int depth);
+void sceGuClearStencil(unsigned int stencil);
+void sceGuClear(int flags);
+void sceGumMatrixMode(int mode);
+void sceGumLoadIdentity(void);
+void sceGumLookAt(FVEC3 *eye, FVEC3 *center, FVEC3 *up);
+void sceGumPerspective(float fovy, float aspect, float near, float far);
+void sceGuFog(float near, float far, unsigned int color);
+void sceGuAlphaFunc(int a0, int a1, int a2);
+void sceGuDepthFunc(int function);
+void sceGuFrontFace(int order);
+void sceGuPatchDivide(unsigned int ulevel, unsigned int vlevel);
+void sceGuSetDither(const DITHER_T *matrix);
+void sceGuShadeModel(int mode);
+void sceGuBlendFunc(int op, int src, int dest, unsigned int srcfix, unsigned int destfix);
+void psp_begin_scene(void)
+{
+	DITHER_T dith = D_0007A6C0;
+	FVEC3 eye, center;
+
+	sceGuViewport(2048, 2048, 480, 272);
+	sceGuDepthRange(0xE000, 0x1000);
+	sceGuScissor(0, 0, 480, 272);
+	sceGuEnable(2);
+	sceGuClearColor(0xFF000000);
+	sceGuClearDepth(0);
+	sceGuClearStencil(0);
+	sceGuClear(7);
+	sceGumMatrixMode(1);
+	sceGumLoadIdentity();
+	if (camera.mode == 0) {
+		eye = D_0007A700;
+		center.x = 0;
+		center.y = 0;
+		center.z = 0;
+		sceGumLookAt(&eye, &center, &camera.up);
+	} else {
+		sceGumLookAt(&camera.pos, &camera.center, &camera.up);
+	}
+	sceGumMatrixMode(0);
+	sceGumLoadIdentity();
+	sceGumPerspective(camera.fovy, 480.0f / 272.0f, 10.0f, 1000000.0f);
+	sceGumMatrixMode(2);
+	sceGuFog(2000.0f, 20000.0f, 0xFF000000);
+	sceGuEnable(7);
+	sceGuAlphaFunc(7, 0, 255);
+	sceGuEnable(0);
+	sceGuDepthFunc(7);
+	sceGuEnable(1);
+	sceGuFrontFace(1);
+	sceGuEnable(5);
+	sceGuEnable(20);
+	sceGuEnable(16);
+	sceGuPatchDivide(4, 4);
+	sceGuDisable(9);
+	sceGuSetDither(&dith);
+	sceGuEnable(6);
+	sceGuEnable(8);
+	sceGuShadeModel(1);
+	sceGuBlendFunc(0, 2, 3, 0, 0);
+	sceGuEnable(4);
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_dev", psp_end_scene);
 
