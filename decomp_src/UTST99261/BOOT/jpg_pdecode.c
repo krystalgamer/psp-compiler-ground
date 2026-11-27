@@ -157,7 +157,57 @@ int decodeHuffmanBlock_DC_subsequent(JPCTX *ctx) {
     return 1;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jpg_pdecode", decodeHuffmanBlock_AC_first);
+int decodeHuffmanBlock_AC_first(JPCTX *ctx, int c, int tbl) {
+    s16 *blk = ctx->block;
+    int ss = ctx->ss;
+    int se = ctx->se;
+    int al = ctx->al;
+    int rs;
+    int k;
+    int pos;
+    int r;
+    int s;
+    int v;
+
+    if (ctx->eobrun != 0) {
+        ctx->eobrun--;
+        return 1;
+    }
+    for (k = ss; k <= se; k++) {
+        rs = decodeHuffmanCode_307A4((JDCTX *)ctx, 1, tbl);
+        if (rs == 0)
+            goto ok;
+        if (rs < 0)
+            goto err;
+        r = rs >> 4;
+        s = rs & 0xF;
+        v = 0;
+        if (s != 0) {
+            v = getBits(ctx->bs, s);
+            if (v < 0)
+                goto err;
+            if (((v >> (s - 1)) & 1) == 0)
+                v = v - (1 << s) + 1;
+            v <<= al;
+        } else if (r != 15) {
+            v = getBits(ctx->bs, r);
+            if (v < 0)
+                goto err;
+            r = (1 << r) + v;
+            ctx->eobrun = r - 1;
+            goto ok;
+        }
+        pos = r + k;
+        if (pos >= 64)
+            goto err;
+        blk[natural_order[pos]] = v;
+        k = pos;
+    }
+ok:
+    return 1;
+err:
+    return -1;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/jpg_pdecode", decodeHuffmanBlock_AC_subsequent);
 
