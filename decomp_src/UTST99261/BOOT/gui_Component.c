@@ -214,7 +214,73 @@ int GUI_Component_setVisible(GUIWIDGET *w, int visible) {
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/gui_Component", GUI_Component_update);
+int GUI_Component_update(GUIWIDGET *w, int x, int y, int width, int height) {
+    GUIWIDGET *c;
+    int sx, sy;
+    int dx, dy;
+    if (w == NULL) {
+        puts("[X1]GUI_Component_update");
+        return -1;
+    }
+    if (w->type != 1) {
+        puts("[X2]GUI_Component_update");
+        return -1;
+    }
+    s_windsystem_data.flags |= 4;
+    c = w;
+    if ((x | y | width | height) == 0) {
+        x = c->x;
+        y = c->y;
+        width = c->w;
+        height = c->h;
+        if ((c->flags & 0xF) == 0xC) {
+            GUI_ScrollPane_getScrollPosition(w, &sx, &sy);
+            x += sx;
+            y += sy;
+        }
+    }
+    if (!(c->flags & 0x800000)) {
+        c->dirty[0] = x;
+        c->dirty[1] = y;
+        c->dirty[2] = width;
+        c->dirty[3] = height;
+    } else {
+        dx = c->dirty[0];
+        dy = c->dirty[1];
+        if (x < dx) {
+            c->dirty[0] = x;
+            c->dirty[2] += dx - x;
+        }
+        if (y < dy) {
+            c->dirty[1] = y;
+            c->dirty[3] += dy - y;
+        }
+        if (c->dirty[0] + c->dirty[2] < x + width)
+            c->dirty[2] = x + width - c->dirty[0];
+        if (c->dirty[1] + c->dirty[3] < y + height)
+            c->dirty[3] = y + height - c->dirty[1];
+    }
+    if ((c->flags & 0xF) == 0xC) {
+        GUI_ScrollPane_getScrollPosition(w, &x, &y);
+        GUI_ScrollPane_getViewportSize(c, &width, &height);
+        if (c->dirty[0] + c->dirty[2] > x + width)
+            c->dirty[2] -= c->dirty[0] + c->dirty[2] - (x + width);
+        if (c->dirty[1] + c->dirty[3] > y + height)
+            c->dirty[3] -= c->dirty[1] + c->dirty[3] - (y + height);
+        if (c->dirty[0] < x) {
+            c->dirty[2] -= x - c->dirty[0];
+            c->dirty[0] = x;
+        }
+        if (c->dirty[1] < y) {
+            c->dirty[3] -= y - c->dirty[1];
+            c->dirty[1] = y;
+        }
+    }
+    c->flags |= 0x800000;
+    zWindDraw();
+    s_windsystem_data.flags &= ~4;
+    return -1;
+}
 
 int GUI_Component_setFocusColor(GUIWIDGET *w, int *color) {
     if (w == NULL) {
