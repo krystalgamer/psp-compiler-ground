@@ -39,6 +39,7 @@ typedef struct __attribute__((packed)) AEFrame {
 void *memset(void *d, int c, unsigned int n);
 unsigned char *SetElementData(unsigned char *p, int type, void *data, int len);
 
+int _keywrap_encrypt(unsigned char *out, unsigned char *in, int len, unsigned char *key, int keylen);
 int SendFrameViaInterface(int s, void *to, void *info, void *buf, int len)
 {
     int r = sceNetInetSendto(s, buf, len, 0, to, 16);
@@ -72,7 +73,27 @@ int SendFrame(int s, int unused, unsigned char *buf, int len)
     return SendBroadcast(s, buf, len);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/autoex", GetFrameData);
+unsigned char *GetFrameData(unsigned char *p, int *type, int *len)
+{
+    unsigned char *end;
+    unsigned char *q;
+    unsigned int sum = 0;
+    unsigned int n;
+
+    n = AE_NTOHS(((AEHdr *)p)->len);
+    *type = AE_NTOHS(((AEHdr *)p)->type);
+    *len = n;
+    end = p + n + 6;
+    for (q = p; q < end; q++)
+        sum += *q;
+    if ((unsigned short)sum != AE_NTOHS(*(unsigned short *)end)) {
+        printf("AUTOCFG:Error Frame SUM %04X -> %04X\n", (unsigned short)sum, AE_NTOHS(*(unsigned short *)end));
+        return 0;
+    }
+    if (bDebug)
+        printf("AUTOCFG:Recv Frame ID=%04X Size=%d\n", *type, *len);
+    return p + 6;
+}
 
 void *GetElementData(unsigned char **pp, unsigned char *end, int *type, int *len)
 {
@@ -96,7 +117,35 @@ void *GetFirstElement(AEFrame *f, int *type, int *len)
     return GetElementData(&p, p + AE_NTOHS(f->len), type, len);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/autoex", SetFrameData);
+int SetFrameData(unsigned char *f, int type, unsigned char *elem, int len, unsigned char *key)
+{
+    unsigned char *end;
+    unsigned char *q;
+    unsigned char *d;
+    unsigned int sum = 0;
+
+    ((AEFrame *)elem)->f2 = 0;
+    ((AEFrame *)elem)->f4 = 0;
+    ((AEFrame *)elem)->len = AE_NTOHS((unsigned short)(len - 8));
+    if (key != 0) {
+        d = f + 6;
+        _keywrap_encrypt(d, elem, len, key, 16);
+        len += 8;
+    } else {
+        d = f + 6;
+        memcpy(d, elem, len);
+    }
+    f[4] = 0;
+    f[5] = 0;
+    ((AEHdr *)f)->type = AE_NTOHS((unsigned short)type);
+    ((AEHdr *)f)->len = AE_NTOHS((unsigned short)len);
+    end = d + len;
+    for (q = f; q < end; q++)
+        sum += *q;
+    *(unsigned short *)end = AE_NTOHS((unsigned short)sum);
+    end += 2;
+    return end - f;
+}
 
 unsigned char *SetElementData(unsigned char *p, int type, void *data, int len)
 {
