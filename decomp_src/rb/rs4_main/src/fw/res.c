@@ -249,7 +249,13 @@ void resGetExtString(int arg0, int arg1) {
     resGetExtSect(arg0, 6, arg1);
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", resArg);
+extern unsigned char D_000FBF80;
+void *resArg(int *r, unsigned int i)
+{
+	if (r && i < (unsigned int)r[3])
+		return ((void **)r[2])[i];
+	return &D_000FBF80;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", resCmpExt);
 
@@ -397,12 +403,24 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", D_000FC1C0);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", taskSendTag);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", taskSendParent);
+int taskSendParent(int *t, int a, int b, int c)
+{
+	return taskSendTag(t, 0xA, t[4], -1, a, b, c);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", taskSendElder);
+int taskSendElder(int *t, int a, int b, int c)
+{
+	return taskSendTag(t, 0xB, t[5], 0x14, a, b, c);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", taskSendYoung);
+int taskSendYoung(int *t, int a, int b, int c)
+{
+	return taskSendTag(t, 0xC, t[6], 0x18, a, b, c);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", taskSendChild);
+int taskSendChild(int *t, int a, int b, int c)
+{
+	return taskSendTag(t, 0xD, t[7], 0x14, a, b, c);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/res", taskSendReflexive);

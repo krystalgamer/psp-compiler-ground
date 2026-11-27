@@ -178,7 +178,10 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/ctrl", fileReady);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/ctrl", fileRead);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/ctrl", fileReadPath);
+int fileReadPath(int a, int b)
+{
+	return fileRead(filePath(a), b);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/ctrl", fileWrite);
 
