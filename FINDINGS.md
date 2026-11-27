@@ -729,8 +729,8 @@ libgcc/libsupc++ DWARF names `gcc-3.3.6/` paths.
   and aggregates in one `.rodata` in emission order (ys_fx_fade_cif:
   `"src/ys/ys_object.h"`, two `1.0f`, then the vtable); with this repo's
   link order that needs `-fno-merge-constants` per unit, as for 1.8.4's
-  mixed units.  All the C++ is `-Os -fno-strength-reduce -fno-exceptions`
-  like the C game code.
+  mixed units.  All the C++ is `-Os -fno-exceptions` like the C game code
+  (`-fno-strength-reduce` in their cflags is pending removal, see above).
 - Rechecked with much more C (libgu at `-O3`, the game's libxu, 208
   functions of the stripped SCERT network library at `-O2`): all 179 C
   units of rs4_main still compile to the same assembly with `cc1-184ins`
@@ -757,7 +757,7 @@ libgcc/libsupc++ DWARF names `gcc-3.3.6/` paths.
   a call (`addu a2,v0` before the `%lo` of the format) only matches with
   that prototype.  The m2c guesses (fixed arity, int) don't match.  This
   is source, not compiler.  libxu is built with the game's
-  `-Os -fno-strength-reduce`.
+  `-Os`.
 
 ## Solved: libgu two-command register tie (stale `REG_FREQ`)
 
