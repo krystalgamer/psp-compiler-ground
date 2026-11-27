@@ -14,9 +14,30 @@ void consPrintf(const char *, ...);
 extern unsigned char D_000FE464;
 extern unsigned char D_000FE474;
 
-M2C_UNK saveDataInit(int, M2C_UNK);
+M2C_UNK saveDataInit();
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/save", saveDataInit);
+typedef struct { unsigned char b0 : 1, b1 : 1, rest : 6; } SaveOpt;
+typedef struct { char pad[6]; SaveOpt opt[1]; } SaveSub;
+typedef struct { char pad[0x20]; SaveSub sub; } SaveData;
+unsigned char *localeGetCntx(void);
+M2C_UNK saveDataInit(p)
+unsigned char *p;
+{
+	unsigned char *l;
+	int i;
+	memset(p, 0, 0x14B0);
+	l = localeGetCntx();
+	p[0x1C] = l[2];
+	p[0x1D] = l[3];
+	p[0x14] = l[0];
+	p[0x15] = l[1];
+	i = 0;
+loop:
+	((SaveData *)p)->sub.opt[i].b1 = l[0xC] & 1;
+	i++;
+	if (i < 1)
+		goto loop;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/save", saveInit);
 

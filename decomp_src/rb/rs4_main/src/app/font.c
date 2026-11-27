@@ -176,7 +176,24 @@ float fontGetCharHeight(void *arg0) {
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/font", fontGetStrWidth);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/font", fontGetStrHeight);
+float fontGetStrHeight(void *f, int *s, int n)
+{
+	float ch = fontGetCharHeight(f);
+	float h = 0.0f;
+	int line = 0;
+	int c;
+	while (n && (c = *s) != 0) {
+		n--;
+		if (c == '\n') {
+			h += ch;
+			line = 0;
+		} else
+			line = 1;
+		s++;
+	}
+	h += line == 1 ? ch : 0.0f;
+	return h;
+}
 
 void fontImgInit(int a)
 {

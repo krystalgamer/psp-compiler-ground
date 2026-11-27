@@ -27,7 +27,25 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/script/script", ScriptWordSect
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/script/script", ScriptChkSpace);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/script/script", ScriptSearchName);
+typedef struct ScrNameEnt { struct ScrNameEnt *next; int **str; int val; } ScrNameEnt;
+int ScriptSearchName(char *s, unsigned int type, int *name)
+{
+	int ret = -1;
+	ScrNameEnt *e;
+	int idx;
+	if (type < 15) {
+		e = *(ScrNameEnt **)(s + type * 8 + 0x98);
+		idx = type == 13;
+		while (e) {
+			if (textCmp(*e->str + idx, name) == 0) {
+				ret = e->val;
+				break;
+			}
+			e = e->next;
+		}
+	}
+	return ret;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/script/script", ScriptEntryName);
 

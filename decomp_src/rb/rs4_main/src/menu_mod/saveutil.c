@@ -181,7 +181,15 @@ void Copy_SecureFileId(int arg0) {
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/saveutil", MakeMode);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/saveutil", GetTypeName);
+typedef struct { const char *name[23]; } SaveTypeNames;
+extern const SaveTypeNames D_00103B98;
+extern const char D_00103BF4[];
+int snprintf(char *, unsigned int, const char *, ...);
+void GetTypeName(int type, char *buf, unsigned int n)
+{
+	SaveTypeNames t = D_00103B98;
+	snprintf(buf, n, D_00103BF4, t.name[type]);
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/saveutil", _secure_file_id);
 
