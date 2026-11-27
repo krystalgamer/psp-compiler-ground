@@ -46,6 +46,13 @@ signed char *getListNumChar(int n, int type);
 void *createLIBox_head(void *node, BOX *li, signed char *str, int type);
 void delLinkBox(BOX *b);
 void freeBox(BOX *b, int f);
+extern int D_00584CBC;
+extern int D_00584CC0;
+extern int D_00584CC4;
+void initTextContent(BOX *b, void *node, signed char *s);
+void initImageContent(BOX *b, void *node);
+void initTextBoxSize(BOX *b);
+void initImageBoxSize(BOX *b, int w, int h);
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_html_list", getLINumber);
 
 BOX *createLIBox_li(void *node, BOX *parent, BOX *prev) {
@@ -66,7 +73,51 @@ BOX *createLIBox_li(void *node, BOX *parent, BOX *prev) {
     return box;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_html_list", createLIBox_head);
+void *createLIBox_head(void *node, BOX *li, signed char *str, int type) {
+    BOX *b;
+    int w, h;
+    int img;
+
+    b = createBox(NULL, 1);
+    if (b == NULL)
+        return NULL;
+    linkBox(b, li, NULL);
+    b->display = 1;
+    b->html = 0x66;
+    if (str != NULL) {
+        initTextContent(b, node, str);
+        initBoxProperty(b);
+        M2C_FIELD(b->style, s16 *, 0x22) = ((UICOLORS *)ui_global)->unk74;
+        M2C_FIELD(b->style, s16 *, 0x30) = 0;
+        M2C_FIELD(b->style, s16 *, 0x34) = 0;
+        M2C_FIELD(b->style, s16 *, 0x32) = 0;
+        M2C_FIELD(b->style, s16 *, 0x36) = 0;
+        M2C_FIELD(b->geom, u8 *, 0x10) = M2C_FIELD(b->style, u8 *, 0x68);
+        initTextBoxSize(b);
+        return b;
+    }
+    initImageContent(b, node);
+    initBoxProperty(b);
+    M2C_FIELD(b->style, s16 *, 0x22) = ((UICOLORS *)ui_global)->unk74;
+    GUI_Graphics_getStringSize(b->style->unk64, D_0013F05C, 1, &w, &h);
+    switch (type) {
+    case 1:
+        M2C_FIELD(b->geom, int *, 0) = D_00584CC0;
+        break;
+    case 2:
+        M2C_FIELD(b->geom, int *, 0) = D_00584CC4;
+        break;
+    case 0:
+        M2C_FIELD(b->geom, int *, 0) = D_00584CBC;
+        break;
+    default:
+        M2C_FIELD(b->geom, int *, 0) = D_00584CBC;
+        break;
+    }
+    initImageBoxSize(b, h, h);
+    M2C_FIELD(b->geom, int *, 0x14) = 1;
+    return b;
+}
 
 int getTypeAtAttr(void *node) {
     int t;
