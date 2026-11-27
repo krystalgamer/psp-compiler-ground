@@ -2454,7 +2454,7 @@ void sceGmoBoneDelete( SceGmoBone *bone ) ;
 SceGmoBone *sceGmoBoneDuplicate( SceGmoBone *bone, int flags ) ;
 _Bool sceGmoBoneLoad( SceGmoBone *bone, const SceGmoChunk *chunk ) ;
 void sceGmoBoneUnload( SceGmoBone *bone ) ;
-void sceGmoBoneUpdate( SceGmoBone *bone, SceGmoModel *model, int flags ) ;
+void sceGmoBoneUpdate( SceGmoBone *bone, SceGmoModel *model ) ;
 void sceGmoBoneDraw( SceGmoBone *bone, SceGmoModel *model, int flags ) ;
 void sceGmoBoneActivate( SceGmoBone *bone, SceGmoModel *model, const int *idxs, int n_idxs ) ;
 void sceGmoBoneControl( SceGmoBone *bone, int type, int idx, const float *val, int cnt, float weight ) ;
@@ -2989,11 +2989,8 @@ struct SceGmoBone {
  int m_n_blend_offsets ;
  int m_parent_bone ;
  int m_visibility ;
- float m_morph_index ;
- SceGmoCol4 m_color ;
- int m_z_sort_mode ;
  int m_anim_flags ;
- float m_anim_weights[ SCEGMO_BONE_CHAN_COUNT ] ;
+ float m_anim_weights[ 5 ] ;
  SceGmoVec3 m_pivot ;
  SceGmoVec3 m_translate ;
  SceGmoQuat m_rotate ;
@@ -3001,6 +2998,7 @@ struct SceGmoBone {
  SceGmoMat4 m_local_matrix ;
  SceGmoMat4 m_stack_matrix ;
  SceGmoVec3 m_stack_scale ;
+ SceGmoMat4 m_world_matrix ;
 } ;
 static __inline__ int _sceGmoBoneGetFlags( SceGmoBone *bone )
 {
@@ -3029,10 +3027,6 @@ static __inline__ int _sceGmoBoneGetMorphWeightsCount( SceGmoBone *bone )
 static __inline__ const float *_sceGmoBoneGetMorphWeights( SceGmoBone *bone )
 {
  return bone->m_morph_weights ;
-}
-static __inline__ float _sceGmoBoneGetMorphIndex( SceGmoBone *bone )
-{
- return bone->m_morph_index ;
 }
 static __inline__ int _sceGmoBoneGetBlendBonesCount( SceGmoBone *bone )
 {
@@ -3078,14 +3072,6 @@ static __inline__ const SceGmoMat4 *_sceGmoBoneGetWorldMatrix( SceGmoBone *bone 
   sceGmoMat4Scale( m, m, &( bone->m_stack_scale ) ) ;
  }
  return m ;
-}
-static __inline__ SceGmoCol4 _sceGmoBoneGetColor( SceGmoBone *bone )
-{
- return bone->m_color ;
-}
-static __inline__ int _sceGmoBoneGetZSortMode( SceGmoBone *bone )
-{
- return bone->m_z_sort_mode ;
 }
 struct SceGmoPart {
  SceGmoBase m_base ;
@@ -3488,3 +3474,4 @@ enum {
  CHAN_MORPH = SCEGMO_BONE_CHAN_MORPH,
  CHAN_COUNT = SCEGMO_BONE_CHAN_COUNT,
 } ;
+float floorf( float x ) ;
