@@ -103,7 +103,7 @@ rodata 0x17AE00 -
 rodata 0x17B4BC newlib/libc/stdio/puts
 rodata 0x17B4C0 newlib/libc/time/strftime
 rodata 0x17B7C8 newlib/libc/stdlib/strtod
-rodata 0x17B8C0 -
+rodata 0x17B8C0 newlib/libc/time/tzset_r
 rodata 0x17BF30 newlib/libc/stdlib/wctomb_r
 rodata 0x17BF50 newlib/libc/stdlib/dtoa
 rodata 0x17BFD0 newlib/libc/stdlib/mbrtowc

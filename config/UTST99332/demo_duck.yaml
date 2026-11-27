@@ -512,7 +512,7 @@ segments:
       - [0x17B53C, .rodata, newlib/libc/stdio/puts]
       - [0x17B540, .rodata, newlib/libc/time/strftime]
       - [0x17B848, .rodata, newlib/libc/stdlib/strtod]
-      - [0x17B940, rodata, asm/rodata_17B8C0]
+      - [0x17B940, .rodata, newlib/libc/time/tzset_r]
       - [0x17B988, .rodata, newlib/libc/stdio/vfprintf]
       - [0x17BB68, rodata, asm/rodata_17BAE8]
       - [0x17BFB0, .rodata, newlib/libc/stdlib/wctomb_r]
