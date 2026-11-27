@@ -4,6 +4,12 @@
 void consPrintf(const char *, ...);
 extern unsigned char D_00103564;
 extern unsigned char D_0010357C;
+typedef struct { int type; int local; int ref; int fC; int f10; } RefEnt;
+typedef struct { unsigned char kind; unsigned char sub; unsigned short no; } RefCard;
+extern void (*l_apfnRef2Card[])(RefCard *, int);
+extern unsigned char D_001035D0, D_0010369C;
+int taskMake();
+int refloadReleaseTask();
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/refload", D_00103564);
 
@@ -16,7 +22,43 @@ int refloadSetRef2CardFunc(int arg0) {
     return 1;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/refload", refloadGetLocal);
+extern unsigned char D_001035EC, D_0010362C;
+int refloadReadTask();
+int refloadGetLocal(int inst, int ref, RefEnt *tbl, int n)
+{
+	int i, t;
+	RefCard card;
+	if (ref < 0 || n < 1) return -4;
+	t = ref & 0x83000000;
+	if (t == 0x2000000 || t == 0x3000000) return -4;
+	if (t == 0x1000000) return ref - t;
+	for (i = 0; i < n; i++) {
+		if (ref == tbl[i].ref) {
+			if (tbl[i].f10) tbl[i].f10 = 0;
+			return tbl[i].local;
+		}
+	}
+	for (i = 0; i < n; i++) {
+		if (tbl[i].fC == ref) return -1;
+	}
+	for (i = 0; i < n; i++) {
+		if (tbl[i].ref == -1 && tbl[i].fC == -1 && tbl[i].f10 == 0) {
+			void (*fn)(RefCard *, int) = l_apfnRef2Card[tbl[i].type];
+			if (fn) {
+				fn(&card, ref);
+				consPrintf(&D_001035EC, "refloadGetLocal", inst, tbl, card.no, card.kind);
+			}
+			tbl[i].fC = ref;
+			if (taskMake(inst, refloadReadTask, &tbl[i], 0) == 0) {
+				consPrintf(&D_001035D0, "refloadGetLocal");
+				return -4;
+			}
+			return -1;
+		}
+	}
+	consPrintf(&D_0010362C, "refloadGetLocal", tbl, ref);
+	return -2;
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/refload", D_001035D0);
 
@@ -24,9 +66,52 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/refload", D_001035
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/refload", D_0010362C);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/refload", refloadKeepLocal);
+int refloadKeepLocal(int inst, int ref, RefEnt *tbl, int n)
+{
+	int i, t;
+	if (ref < 0 || n < 1) return -4;
+	t = ref & 0x83000000;
+	if (t == 0x2000000 || t == 0x3000000) return -4;
+	if (t == 0x1000000) return ref - t;
+	for (i = 0; i < n; i++) {
+		if (ref == tbl[i].ref) {
+			if (tbl[i].f10) tbl[i].f10 = 0;
+			return tbl[i].local;
+		}
+	}
+	consPrintf("%s : Not found\n", "refloadKeepLocal");
+	return -3;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/refload", refloadReleaseRefer);
+int refloadReleaseRefer(int inst, int ref, RefEnt *tbl, int n)
+{
+	int i, t;
+	RefEnt *e;
+	RefCard card;
+	if (ref < 0 || n < 1) return 0;
+	t = ref & 0x83000000;
+	if (t == 0x2000000 || t == 0x3000000) return 0;
+	if (t == 0x1000000) return 0;
+	for (i = 0; i < n; i++) {
+		if (ref == tbl[i].ref) {
+			if (tbl[i].f10 != 0) return 1;
+			if (l_apfnRef2Card[tbl[i].type]) {
+				l_apfnRef2Card[tbl[i].type](&card, ref);
+				consPrintf(&D_0010369C, "refloadReleaseRefer", inst, tbl, card.no, card.kind);
+			}
+			if (taskMake(inst, refloadReleaseTask, &tbl[i], 0) == 0) {
+				consPrintf(&D_001035D0, "refloadReleaseRefer");
+				return -4;
+			}
+			return 1;
+		}
+		if (tbl[i].fC >= 0) {
+			tbl[i].f10 = 1;
+			return -1;
+		}
+	}
+	return -3;
+}
 
 void refloadReleaseAll(int a, int b, int c)
 {
@@ -35,7 +120,34 @@ void refloadReleaseAll(int a, int b, int c)
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/refload", D_0010369C);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/refload", refloadReleaseAll2);
+int refloadReleaseAll2(int inst, int arg, RefEnt *tbl, int n)
+{
+	int i;
+	int rel = 0;
+	int busy = 0;
+	RefCard card;
+	if (n <= 0) return 0;
+	for (i = 0; i < n; i++) {
+		if (tbl[i].ref >= 0) {
+			if (l_apfnRef2Card[tbl[i].type]) {
+				l_apfnRef2Card[tbl[i].type](&card, tbl[i].ref);
+				consPrintf(&D_0010369C, "refloadReleaseAll2", inst, tbl, card.no, card.kind);
+			}
+			if (taskMake(inst, refloadReleaseTask, &tbl[i], arg) == 0)
+				consPrintf(&D_001035D0, "refloadReleaseAll2");
+			else
+				rel++;
+		}
+		if (tbl[i].fC >= 0) {
+			tbl[i].f10 = 1;
+			busy++;
+		}
+	}
+	if (busy)
+		consPrintf("%s :: Warning :: %d Loadings are not completed yet.\n", "refloadReleaseAll2", busy);
+	consPrintf("%s : %d resources release\n", "refloadReleaseAll2", rel);
+	return rel;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/menu_mod/refload", refloadReadTask);
 
