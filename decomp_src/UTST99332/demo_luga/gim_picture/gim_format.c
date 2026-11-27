@@ -51,4 +51,12 @@ int sceGimPictureGetChunkCount(void *buf, int size) {
     return var_v1;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_luga/nonmatchings/gim_picture/gim_format", sceGimPictureGetChunk);
+SceGimChunk *sceGimPictureFindChunk(SceGimChunk *chunk, int type, int index);
+
+SceGimChunk *sceGimPictureGetChunk( const void *buf, int size, int index )
+{
+	if ( buf == 0 ) return 0 ;
+	SceGimHeader *header = (SceGimHeader *)buf ;
+	SceGimChunk *chunk = (SceGimChunk *)( header + 1 ) ;
+	return sceGimPictureFindChunk( chunk, 3, index ) ;
+}
