@@ -275,4 +275,67 @@ int mem_free(MEMHEAP *h, void *ptr) {
     return ret;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/wsmem", deallocate);
+int deallocate(MEMHEAP *h, void *p)
+{
+    MEMBLOCK *b;
+    MEMBLOCK *prev;
+    MEMBLOCK *next;
+    MEMBLOCK *f;
+    MEMBLOCK *n;
+
+    if (p == NULL)
+        return -1;
+    if ((void *)h >= p)
+        return -1;
+    if ((char *)p >= h->end)
+        return -1;
+    b = (MEMBLOCK *)p - 1;
+    if (b < h->first)
+        return -1;
+    if ((char *)b >= h->end)
+        return -1;
+    prev = b->prev;
+    next = b->next;
+    if (b->size == 0)
+        return -1;
+    if (prev != NULL) {
+        if (prev < h->first)
+            return -1;
+        if ((char *)prev >= h->end)
+            return -1;
+    }
+    if (next != NULL && !(next >= h->first && (char *)next < h->end))
+        return -1;
+    h->total = h->total - b->size + 0x10;
+    h->inuse -= b->size;
+    h->avail += b->size;
+    if (prev != NULL)
+        prev->next = next;
+    if (next != NULL)
+        next->prev = prev;
+    else
+        h->used = prev;
+    f = h->freelist;
+    while (b < f)
+        f = f->next;
+    if ((char *)f + f->size == (char *)b) {
+        f->size += b->size;
+        b = f;
+    } else {
+        b->next = f;
+        b->prev = f->prev;
+        f->prev = b;
+        if (b->prev != NULL)
+            b->prev->next = b;
+    }
+    n = (MEMBLOCK *)((char *)b + b->size);
+    if (n == b->prev) {
+        b->size += n->size;
+        b->prev = n->prev;
+        if (b->prev != NULL)
+            b->prev->next = b;
+    }
+    if (b->prev == NULL)
+        h->freelist = b;
+    return 0;
+}
