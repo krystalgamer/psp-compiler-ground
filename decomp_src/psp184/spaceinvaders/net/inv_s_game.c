@@ -181,7 +181,22 @@ int get_game_data(void *data)
 	return (char *)ptr - (char *)data;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/net/inv_s_game", update_game_data);
+int memcmp(const void *a, const void *b, unsigned int n);
+int update_game_data(struct SceNetEtherAddr *addr, void *data)
+{
+	int i;
+
+	for (i = 1; i < 4; i++) {
+		if (scope[i].state == 1 && memcmp(&scope[i].addr, addr, 6) != 0)
+			continue;
+		if (memcmp(addr, &_info.server, 6) == 0) {
+		}
+		if (_info.server_flag > 0)
+			_info.client_ready = 1;
+		break;
+	}
+	return 0;
+}
 
 int check_peer_existence(void)
 {
