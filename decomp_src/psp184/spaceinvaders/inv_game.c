@@ -1269,9 +1269,83 @@ INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", bufo_enemy_sta
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", bufo_move);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", bufo_r_move_anime);
+typedef struct { u8 pad[0x6C]; L2V3 pos; } ZIKI_P;
+typedef struct { int f0, f4, f8, fc, f10, f14, f18, f1c, f20, f24, f28, f2c, f30, f34, f38, f3c, f40, f44; float f48, f4c, f50, f54, f58, f5c, f60; L2V3 pos; } BUFO_MV;
+unsigned long genrand_int32(void);
+void boss_laser_start(L2V3 *st, L2V3 *ed, float step);
+void bufo_r_move_anime(void *up)
+{
+	BUFO_MV *u = up;
+	float s;
+	int n;
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", bufo_l_move_anime);
+	if (u->f34 == 0) {
+		u->f28 = 0;
+		u->f2c = genrand_int32() % 5 * 60 + 300;
+		u->f38 = 4;
+		u->f34++;
+	} else if (u->f34 == 1) {
+		u->f28++;
+		if (u->f28 >= u->f2c)
+			u->f34 = 2;
+	} else {
+		if ((genrand_int32() & 1) == 0) {
+			if (u->f5c <= 3000.0f)
+				u->f30 = 8;
+			else
+				u->f30 = 7;
+		}
+		u->f34 = 0;
+		u->f28 = 0;
+	}
+	if (gmain.timer.f[0x44 / 4] < 5 && u->f0 == 1) {
+		n = IST.fc;
+		if (n >= 2) {
+			s = 0.5f;
+			s = n * s;
+			if (s > 3.0f)
+				s = 3.0f;
+			{ ZIKI_P *z = (ZIKI_P *)&gmain.ziki; boss_laser_start(&u->pos, &z->pos, s); }
+		}
+	}
+}
+
+void bufo_l_move_anime(void *up)
+{
+	BUFO_MV *u = up;
+	float s;
+	int n;
+
+	if (u->f34 == 0) {
+		u->f28 = 0;
+		u->f2c = genrand_int32() % 5 * 60 + 300;
+		u->f38 = 3;
+		u->f34++;
+	} else if (u->f34 == 1) {
+		u->f28++;
+		if (u->f28 >= u->f2c)
+			u->f34 = 2;
+	} else {
+		if ((genrand_int32() & 1) == 0) {
+			if (u->f5c <= 3000.0f)
+				u->f30 = 8;
+			else
+				u->f30 = 7;
+		}
+		u->f34 = 0;
+		u->f28 = 0;
+	}
+	if (gmain.timer.f[0x44 / 4] < 5 && u->f0 == 1) {
+		n = IST.fc;
+		if (n >= 2) {
+			s = 0.5f;
+			s = n * s;
+			if (s > 3.0f)
+				s = 3.0f;
+			{ ZIKI_P *z = (ZIKI_P *)&gmain.ziki; boss_laser_start(&u->pos, &z->pos, s); }
+		}
+	}
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", bufo_b_move_anime);
 
