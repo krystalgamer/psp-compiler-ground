@@ -95,9 +95,22 @@ void sceGmoPartUnload( SceGmoPart *part )
  part->m_n_arrays = 0 ;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_part", sceGmoPartLoadCache);
+_Bool sceGmoPartLoadCache( SceGmoPart *part )
+{
+	if ( part == 0 ) return 0 ;
+	{ int i ; for ( i = 0 ; i < part->m_n_meshes ; i ++ ) {
+		if ( !sceGmoMeshLoadCache( part->m_meshes[ i ], part ) ) return 0 ;
+	} }
+	return 1 ;
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_part", sceGmoPartUnloadCache);
+void sceGmoPartUnloadCache( SceGmoPart *part )
+{
+	if ( part == 0 ) return ;
+	{ int i ; for ( i = 0 ; i < part->m_n_meshes ; i ++ ) {
+		sceGmoMeshUnloadCache( part->m_meshes[ i ] ) ;
+	} }
+}
 
 void sceGmoPartDraw( SceGmoPart *part, SceGmoModel *model, SceGmoBone *bone )
 {
@@ -149,7 +162,26 @@ SceGmoChunk *sceGmoPartGetArrays( SceGmoPart *part, int index )
  return part->m_arrays[ index ] ;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_part", sceGmoMeshCreate);
+SceGmoMesh *sceGmoMeshCreate( SceGmoChunk *chunk )
+{
+	SceGmoMesh *mesh = (SceGmoMesh *)sceGmoModelAllocMemory( sizeof( SceGmoMesh ) ) ;
+	if ( mesh == 0 ) {
+		return 0 ;
+	}
+	mesh->m_chunk = 0 ;
+	mesh->m_reference = 1 ;
+	mesh->m_flags = 0 ;
+	mesh->m_cache = 0 ;
+	mesh->m_material = -1 ;
+	mesh->m_blend_subset = 0 ;
+	mesh->m_n_blend_subset = 0 ;
+
+	if ( chunk != 0 && !sceGmoMeshLoad( mesh, chunk ) ) {
+		sceGmoMeshDelete( mesh ) ;
+		return 0 ;
+	}
+	return mesh ;
+}
 
 void sceGmoMeshDelete( SceGmoMesh *mesh )
 {
@@ -169,11 +201,34 @@ SceGmoMesh *sceGmoMeshDuplicate( SceGmoMesh *mesh, int flags )
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_part", sceGmoMeshLoad);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_part", sceGmoMeshUnload);
+void sceGmoMeshUnload( SceGmoMesh *mesh )
+{
+	if ( mesh == 0 ) return ;
+	sceGmoMeshUnloadCache( mesh ) ;
+	mesh->m_chunk = 0 ;
+	mesh->m_blend_subset = 0 ;
+	mesh->m_n_blend_subset = 0 ;
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_part", sceGmoMeshLoadCache);
+_Bool sceGmoMeshLoadCache( SceGmoMesh *mesh, SceGmoPart *part )
+{
+	if ( mesh == 0 || part == 0 ) return 0 ;
+	if ( mesh->m_cache != 0 ) return 1 ;
+	int size = get_packet_size( mesh ) ;
+	void *cache = sceGmoModelAllocUncachedBuffer( &( mesh->m_cache ), size ) ;
+	if ( cache == 0 ) return 0 ;
+	sceGuStart( 1, cache, size ) ;
+	draw_mesh( mesh, part ) ;
+	sceGuFinish() ;
+	return 1 ;
+}
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_part", sceGmoMeshUnloadCache);
+void sceGmoMeshUnloadCache( SceGmoMesh *mesh )
+{
+	if ( mesh == 0 ) return ;
+	sceGmoModelFreeMemory2( mesh->m_cache ) ;
+	mesh->m_cache = 0 ;
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gmo_part", sceGmoMeshDraw);
 
