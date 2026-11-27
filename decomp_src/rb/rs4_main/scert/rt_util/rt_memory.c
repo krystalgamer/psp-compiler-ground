@@ -3,20 +3,27 @@
 #ifndef NULL
 #define NULL ((void *)0)
 #endif
+typedef struct { void *base; void *aligned; } RtAlignedMem;
+void *malloc(unsigned int);
+void *realloc(void *, unsigned int);
+void free(void *);
 int rt_memory_allocate_init_zero(void **arg0, unsigned int arg1);
 int rt_memory_get_aligned_address(unsigned int *arg0, unsigned int arg1, int arg2);
+int rt_memory_free(void **);
+int rt_memory_align_alloc(RtAlignedMem *, unsigned int, unsigned short);
+void *memset(void *s, int c, unsigned int n);
 int rt_memory_register_another_callback(int arg0);
 int rt_memory_register_callbacks(int arg0, int arg1);
-int rt_memory_allocate();                           /* extern */
-extern int gpfFreeCallback;
-extern int gpfMallocCallback;
-extern int gpfReallocCallback;
+int rt_memory_allocate();
+extern void *gpfFreeCallback;
+extern void *gpfMallocCallback;
+extern void *gpfReallocCallback;
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_memory", rt_memory_allocate);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_memory", rt_memory_reallocate);
 
-void *memset(void *s, int c, unsigned int n);
+
 int rt_memory_allocate_init_zero(void **arg0, unsigned int arg1) {
     int temp_v0;
     int var_v1;
@@ -39,9 +46,35 @@ int rt_memory_allocate_init_zero(void **arg0, unsigned int arg1) {
     return var_v1;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_memory", rt_memory_free);
+int rt_memory_free(void **p)
+{
+    if (*p != NULL) {
+        if (gpfFreeCallback == NULL)
+            free(*p);
+        else
+            ((void (*)(void *))gpfFreeCallback)(*p);
+        *p = NULL;
+    }
+    return 0;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_memory", rt_memory_align_alloc);
+int rt_memory_align_alloc(RtAlignedMem *m, unsigned int size, unsigned short align)
+{
+    int ret = 100;
+
+    if (((m == NULL) | (size == 0)) == 0) {
+        m->base = NULL;
+        m->aligned = NULL;
+        if (align >= 2) {
+            size = size + align - 1;
+            size += align - size % align;
+        }
+        ret = rt_memory_allocate(&m->base, size);
+        if (ret == 0)
+            ret = rt_memory_get_aligned_address((unsigned int *)&m->aligned, (unsigned int)m->base, align);
+    }
+    return ret;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_memory", rt_memory_align_alloc_init_zero);
 
