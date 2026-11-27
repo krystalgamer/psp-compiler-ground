@@ -1,6 +1,26 @@
 /* cflags: -O1 */
 #include "common.h"
 #include "m2c_macros.h"
+typedef struct CompState {
+    void *ctx;                        /* 0x0 cs */
+    int f4;                           /* 0x4 cs */
+    int f8;                           /* 0x8 cs */
+    int fC;                           /* 0xC cs */
+    int list;                         /* 0x10 cs */
+    int code;                         /* 0x14 cs */
+    int f18;                          /* 0x18 cs */
+    int f1C;                          /* 0x1C cs */
+    int f20;                          /* 0x20 cs */
+    int f24;                          /* 0x24 cs */
+} CompState;
+int mes_byte_code_new(void);
+void mes_compile_function_declaration(CompState *c, void *node);
+void mes_compile_statement(CompState *c, void *node);
+void *mes_gc_alloc(void *ctx, int kind);
+void mes_object_init(void *obj, int cls, void *proto);
+extern void *D_00585344;
+int mes_byte_code_label_fix(int code);
+int mes_byte_code_pack(int code);
 typedef struct CNest {
     struct CNest *next;
     signed char type;
@@ -239,6 +259,37 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_compile", mes_compile_state
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_compile", mes_compile_body);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_compile", mes_compile);
+void *mes_compile(void *ctx, void *node)
+{
+    CompState c;
+    int *sp = M2C_FIELD(ctx, int **, 0x18);
+    void *f;
+
+    c.ctx = ctx;
+    c.f4 = 0;
+    c.f8 = 0;
+    c.fC = 0;
+    c.list = mes_list_tail_new();
+    c.code = mes_byte_code_new();
+    c.f18 = 0;
+    c.f1C = 0;
+    c.f20 = 0;
+    c.f24 = 0;
+    mes_compile_function_declaration(&c, node);
+    mes_byte_code_op(c.code, 1);
+    mes_compile_statement(&c, node);
+    f = mes_gc_alloc(ctx, 3);
+    if (f != NULL) {
+        *--M2C_FIELD(ctx, int **, 0x18) = (int)f;
+        mes_object_init(f, 5, D_00585344);
+        M2C_FIELD(f, int *, 0x14) = 0;
+        M2C_FIELD(f, int *, 0x18) = mes_byte_code_label_fix(c.code);
+        M2C_FIELD(f, int *, 0x1C) = mes_byte_code_pack(c.code);
+        M2C_FIELD(f, int *, 0x20) = mes_list_tail_to_vals(c.list);
+        M2C_FIELD(f, int *, 0x28) = 0;
+    }
+    M2C_FIELD(ctx, int **, 0x18) = sp;
+    return f;
+}
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/mes_compile", D_0013B36C);
