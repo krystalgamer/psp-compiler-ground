@@ -141,7 +141,34 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_collision", I3dcs_GetSqrDistSe
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_collision", I3dcs_IsIntersectSphereBoxA);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_collision", I3dcs_IsIntersectSegBoxA);
+void I3dcs_IsIntersectSegBoxA()
+{
+	__asm__ volatile(
+		".set noreorder\n"
+		"lv.q C020.q,0($5)\n"
+		"lv.q C010.q,0($4)\n"
+		"lv.q C030.q,0($6)\n"
+		"vpfxt 1/2,1/2,1/2,1/2\n"
+		"vmul.t C100.t,C020.t,C000.t\n"
+		"vadd.t C110.t,C010.t,C100.t\n"
+		"vabs.t C120.t,C100.t\n"
+		"vabs.t C130.t,C110.t\n"
+		"vadd.t C200.t,C030.t,C120.t\n"
+		"vcmp.t GT,C130.t,C200.t\n"
+		"bvt 4,1f\n"
+		"li $2,0\n"
+		"vcrsp.t C210.t,C100.t,C110.t\n"
+		"vabs.t C210.t,C210.t\n"
+		"vcrs.t C300.t,C030.t,C120.t\n"
+		"vcrs.t C310.t,C120.t,C030.t\n"
+		"vadd.t C320.t,C300.t,C310.t\n"
+		"vcmp.t GT,C210.t,C320.t\n"
+		"bvfl 4,1f\n"
+		"li $2,1\n"
+		"1:\n"
+		".set reorder\n"
+		: : : "memory");
+}
 
 void I3dcs_IsIntersectLineBoxA()
 {

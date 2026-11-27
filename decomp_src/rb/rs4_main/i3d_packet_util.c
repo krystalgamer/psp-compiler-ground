@@ -7,9 +7,47 @@ M2C_UNK iI3dGuDrawSpline_PSP_61A38();               /* extern */
 M2C_UNK I3dGuSetMatrix_PSP();                       /* extern */
 
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_packet_util", AddVertexV);
+short *AddVertexV(short *p, float *v)
+{
+	short t[8] __attribute__((aligned(16)));
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_packet_util", AddVertexVTU);
+	__asm__ volatile(
+		"lv.q C010.q,0(%1)\n"
+		"vmul.q C000.q,C010.q,C520.q\n"
+		"vadd.q C000.q,C000.q,C530.q\n"
+		"vf2iz.q C000.q,C000.q,0\n"
+		"sv.q C000.q,0(%0)\n"
+		: : "r"(t), "r"(v) : "memory");
+	p[0] = t[0];
+	p[1] = t[2];
+	p[2] = t[4];
+	return p + 3;
+}
+
+short *AddVertexVTU(short *p, float *v, float *uv)
+{
+	short t[8] __attribute__((aligned(16)));
+
+	__asm__ volatile(
+		"lv.q C010.q,0(%1)\n"
+		"vmul.q C000.q,C010.q,C520.q\n"
+		"vadd.q C000.q,C000.q,C530.q\n"
+		"vf2iz.q C000.q,C000.q,0\n"
+		"sv.q C000.q,0(%0)\n"
+		: : "r"(t), "r"(v) : "memory");
+	__asm__ volatile(
+		"lv.q C010.q,0(%1)\n"
+		"vf2iz.q C000.q,C010.q,0\n"
+		"mfv $8,S000.s\n"
+		"sh $8,0(%0)\n"
+		"mfv $8,S001.s\n"
+		"sh $8,2(%0)\n"
+		: : "r"(p), "r"(uv) : "$8", "memory");
+	p[2] = t[0];
+	p[3] = t[2];
+	p[4] = t[4];
+	return p + 5;
+}
 
 void AddVertexCV()
 {
@@ -121,7 +159,17 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_packet_util", I3dPk3dPrim__Dra
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_packet_util", I3dPkDrawSphere);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_packet_util", I3dPk3dSprite__SetTransformMatrix);
+extern int LastW;
+M2C_UNK I3dPk3dSprite__SetTransformMatrix(int p, int m)
+{
+	__asm__ volatile(
+		"lv.q C600.q,0(%0)\n"
+		"lv.q C610.q,16(%0)\n"
+		"lv.q C620.q,32(%0)\n"
+		: : "r"(m) : "memory");
+	LastW = 0;
+	return p;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_packet_util", I3dPk3dSprite__SetStParam);
 
@@ -194,7 +242,19 @@ int I3dRender__SetSoftwareScissor_PSP(void *arg0, int arg1) {
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_packet_util", I3dRenderInitMain);
+void I3dGeomInit(void);
+int I3dRenderInitMain(void)
+{
+	I3dGeomInit();
+	__asm__ volatile(
+		"vone.q C520.q\n"
+		"vzero.q C530.q\n"
+		"vzero.q C600.q\n"
+		"vzero.q C610.q\n"
+		"vzero.q C620.q\n"
+		: : : "memory");
+	return 0;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_packet_util", I3dPkDefaultTermTag);
 
