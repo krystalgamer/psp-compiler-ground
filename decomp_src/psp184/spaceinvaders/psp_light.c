@@ -48,4 +48,29 @@ void light_timer_start_no(int arg0, int arg1) {
     M2C_FIELD(temp_a0, int *, 0x34) = 0;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/psp_light", light_timer_ctl);
+typedef struct { signed char on; unsigned char pad[0x23]; unsigned int col[3]; int active; int cnt; int time; unsigned int base[3]; unsigned char rest[0x80 - 0x48]; } LSUB;
+void light_timer_ctl(int no)
+{
+	LSUB *l = &((LSUB *)&D_003538BC)[no];
+	int i, n, t;
+	unsigned int c;
+
+	if (l->active != 0) {
+		if (l->cnt == 0) {
+			l->base[0] = l->col[0];
+			l->base[1] = l->col[1];
+			l->base[2] = l->col[2];
+		}
+		t = l->time;
+		n = t - l->cnt;
+		for (i = 0; i < 3; i++) {
+			c = l->base[i];
+			l->col[i] = ((int)(n * (c >> 24)) / t << 24) | (((int)(n * ((c >> 16) & 0xFF)) / t & 0xFF) << 16) | (((int)(n * ((c >> 8) & 0xFF)) / t & 0xFF) << 8) | ((int)(n * (c & 0xFF)) / t & 0xFF);
+		}
+		l->cnt++;
+		if (l->cnt >= t) {
+			l->active = 0;
+			l->on = 0;
+		}
+	}
+}
