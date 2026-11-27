@@ -744,3 +744,4 @@ readFlag = 0x002A782C; // size:0x4
 aucReadBuf0 = 0x002A7830; // size:0x100002
 errno = 0x003A7834; // size:0x4
 end = 0x003A7838;
+opadd = 0x00279F1C;

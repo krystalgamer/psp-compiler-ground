@@ -259,7 +259,75 @@ int MovieStart(void);
 int MovieEnd(void);
 
 
-INCLUDE_ASM("tmp/asm/rb/jp_BOOT/nonmatchings/movie", pad_read);
+static SceInt32 pad_read(t_displayBuffer *pDisp)
+{
+	SceCtrlData buf;
+	SceUInt32 padd;
+	SceUInt32 pres;
+	extern SceUInt32 opadd;
+	int ret;
+
+	ret = 0;
+	sceCtrlReadBufferPositive(&buf, 1);
+	padd = buf.Buttons;
+	pres = padd & (padd ^ opadd);
+	if (menu_list.selected == 0) {
+		if (pres & 0x2000) {
+			playInfo.playMode = 10;
+			menu_list.selected = 1;
+			ret = 1;
+			BgmEnd();
+		}
+		if (pres & 0x10) {
+			menu_list.current -= 3;
+			if (menu_list.current < menu_list.page * 6) {
+				menu_list.current += 3;
+			} else {
+				playInfo.playMode = 10;
+				ret = 1;
+			}
+		} else if (pres & 0x40) {
+			menu_list.current += 3;
+			if (menu_list.current >= menu_list.page * 6 + 6) {
+				menu_list.current -= 3;
+			} else if (menu_list.current >= 14) {
+				menu_list.current -= 3;
+			} else {
+				playInfo.playMode = 10;
+				ret = 1;
+			}
+		} else if (pres & 0x20) {
+			menu_list.current++;
+			if (menu_list.current >= 14) {
+				menu_list.current = 13;
+			} else {
+				if (menu_list.current % 6 == 0)
+					menu_list.page++;
+				playInfo.playMode = 10;
+				ret = 1;
+			}
+		} else if (pres & 0x80) {
+			menu_list.current--;
+			if (menu_list.current < 0) {
+				menu_list.current = 0;
+			} else {
+				if (menu_list.current % 6 == 5)
+					menu_list.page--;
+				playInfo.playMode = 10;
+				ret = 1;
+			}
+		}
+	} else {
+		if (pres & 0x4000) {
+			playInfo.playMode = 10;
+			menu_list.selected = 0;
+			ret = 1;
+			BgmStart();
+		}
+	}
+	opadd = padd;
+	return ret;
+}
 
 INCLUDE_ASM("tmp/asm/rb/jp_BOOT/nonmatchings/movie", thumb_load);
 
@@ -347,7 +415,51 @@ static int skip_data(ScePsmf *psm, SceUInt32 pts)
 	return ret;
 }
 
-INCLUDE_ASM("tmp/asm/rb/jp_BOOT/nonmatchings/movie", init_pinfo);
+static int init_pinfo(void)
+{
+	int frame[2];
+	int tframe[2];
+	int ret;
+	int i;
+
+	ret = scePsmfCreate(&psmf, pHeader);
+	if (ret != 0) {
+		printf("fatal error : psmf create\n");
+		return -1;
+	}
+	ret = scePsmfCreate(&psmfT, pHeaderT);
+	if (ret != 0) {
+		printf("fatal error : psmf create(thumb)\n");
+		return -1;
+	}
+	for (i = 1; i < 13; i++) {
+		frame[0] = skip_data(&psmf, movie_list[i].fullpts);
+		if (frame[0] < 0)
+			printf("fatal error: skip_data\n");
+		frame[1] = skip_data(&psmf, movie_list[i + 1].fullpts);
+		if (frame[1] < 0)
+			printf("fatal error: skip_data\n");
+		pinfo[i].start = frame[0];
+		pinfo[i].size = frame[1] - frame[0] - 2048;
+		tframe[0] = skip_data(&psmfT, movie_list[i].thumbpts);
+		if (tframe[0] < 0)
+			printf("fatal error: skip_dataT\n");
+		tframe[1] = skip_data(&psmfT, movie_list[i + 1].thumbpts);
+		if (tframe[1] < 0)
+			printf("fatal error: skip_dataT\n");
+		pinfo[i].tstart = tframe[0];
+		pinfo[i].tsize = tframe[1] - tframe[0];
+	}
+	pinfo[i].start = skip_data(&psmf, movie_list[i].fullpts);
+	pinfo[i].size = fileSize - frame[1];
+	pinfo[i].tstart = skip_data(&psmfT, movie_list[i].thumbpts);
+	pinfo[i].tsize = thumbFilesize - tframe[1];
+	pinfo[0].start = skip_data(&psmf, movie_list[0].fullptss);
+	pinfo[0].size = fileSize - pinfo[0].start;
+	pinfo[0].tstart = pinfo[1].tstart;
+	pinfo[0].tsize = thumbFilesize - pinfo[1].tstart;
+	return 0;
+}
 
 INCLUDE_ASM("tmp/asm/rb/jp_BOOT/nonmatchings/movie", MovieInit);
 
