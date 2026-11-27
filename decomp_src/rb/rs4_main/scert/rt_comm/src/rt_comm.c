@@ -372,7 +372,27 @@ int rt_comm_is_valid_channel(arg0)
     }
     return var_v1;
 }
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_comm/src/rt_comm", rt_comm_metric_init);
+typedef struct { int a, b; } RtTimeS;
+extern RtTimeS gLastMetricPrintTime;
+int rt_time_start();
+void rt_comm_metric_init(void)
+{
+    int *m = (int *)gMetricData;
+    m[2] = 0;
+    m[3] = 0;
+    m[4] = 0;
+    m[5] = 0;
+    m[6] = 0;
+    m[7] = 0;
+    m[8] = 0;
+    m[9] = 0;
+    m[10] = 0;
+    m[11] = 0;
+    m[12] = 0;
+    m[13] = 0;
+    rt_time_start(m);
+    gLastMetricPrintTime = *(RtTimeS *)m;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_comm/src/rt_comm", rt_comm_metric_add_data);
 
