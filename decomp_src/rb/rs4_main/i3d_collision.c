@@ -179,7 +179,26 @@ void I3dcs_GetSqrDistPointPointA()
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_collision", I3dcs_GetSqrDistPointLineA);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_collision", I3dcs_GetSqrDistPointRayA);
+float I3dVecDotA();
+void I3dVecScaleA(float *, const float *, float);
+float I3dcs_GetSqrDistPointRayA(const float *p, const float *o, const float *d, float *pt)
+{
+	float v[4] __attribute__((aligned(16)));
+	float w[4] __attribute__((aligned(16)));
+	float t;
+	I3dVecSubA(v, p, o);
+	t = I3dVecDotA(v, d);
+	if (t <= 0.0f) {
+		t = 0.0f;
+	} else {
+		t /= I3dVecDotA(d, d);
+		I3dVecScaleA(w, d, t);
+		I3dVecSubA(v, v, w);
+	}
+	if (pt)
+		*pt = t;
+	return I3dVecDotA(v, v);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_collision", I3dcs_GetSqrDistPointSegA);
 
