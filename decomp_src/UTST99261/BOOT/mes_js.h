@@ -100,7 +100,7 @@ typedef struct IpcMsg {
 } IpcMsg;
 
 void SetIpcMember(IpcMsg *msg, int a, int sid, int b, int cmd, int c, int d, void *node);
-void JSSendMail(IpcMsg *msg, const char *name);
+int JSSendMail(IpcMsg *msg, const char *name);
 
 /* DOM API (DOMAPI.c) */
 extern DOMString _DOMname;
