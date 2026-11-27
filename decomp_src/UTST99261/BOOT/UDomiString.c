@@ -109,6 +109,7 @@ int cmpstr(char *a, char *b);
 char *strcpy(char *d, const char *s);
 typedef struct SIGEXT { char *a; char *b; char *c; int d; } SIGEXT;
 typedef struct MPUSIG { int type; int x4; int x8; int xC; int x10; int x14; int size; SIGEXT *data; } MPUSIG;
+typedef struct CTYPE { char name[20]; int len; int type; } CTYPE;
 unsigned short UDomiString_ToLower(unsigned short c) {
     if (c < 0x80) {
         return tolower(c);
@@ -534,7 +535,38 @@ INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", D_001354F0);
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", D_0013557C);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", ChkContentType);
+extern char D_0013557C[];
+typedef struct CTYPETBL { CTYPE t[5]; } CTYPETBL;
+/* D_001354F0 = the initializer of ChkContentType's local table: {"text/html",9,0}, {"text/plain",10,2},
+   {"image/jpeg",10,3}, {"image/gif",9,3}, {"image/png",9,3}; it has to stay before "Content-Type:", which
+   ps_splitPostData (asm) shares */
+extern const CTYPETBL D_001354F0;
+int ChkContentType(char *p, int len) {
+    CTYPETBL tbl = D_001354F0;
+    int i;
+    int n;
+
+    n = len;
+    for (;;) {
+        if (n < 13) {
+            p = "text/html";
+            break;
+        }
+        if (icmpstr(p, D_0013557C, 13) == 1) {
+            p += 13;
+            while (*p == ' ')
+                p++;
+            break;
+        }
+        p++;
+        n--;
+    }
+    for (i = 0; i < 5; i++) {
+        if (icmpstr(p, tbl.t[i].name, tbl.t[i].len) == 1)
+            return tbl.t[i].type;
+    }
+    return 4;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", ps_searchRequestFlagHistoryNode);
 
