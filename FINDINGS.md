@@ -502,6 +502,110 @@ modules (`tools/nltest.py`, `tools/objcmp.py`).
   (width/height locals first, the /bpp division, then the two /dbpp ones)
   reproduces exactly which traps survive. Not a patch; a source-order effect.
 
+### SDK 1.50 library sources
+
+The first test of 1.6.1.internal on real sources. SDK 1.50 (`inputs/psp_sdk150.zip`)
+ships its runtime libraries next to the sources and Makefiles they were built from.
+Every archive says `3.3.3+allegrex-2.2.2-psp-1.6.1.internal` (`.comment`, and
+`DW_AT_producer "GNU C ... -g"`). They were built from 2005-02-18 to 2005-04-05 in
+`/home/munekis/psp-svn/relkit/trunk/sys/trunk/devkit/src/LIB`.
+
+- **Method.** `tools/libtest.py` with each Makefile's flags and defines.
+  New options: `--pspgcc 0x010601` preprocesses the way the driver does (cc1
+  itself, the driver's predefines, SDK and release headers as `-isystem`).
+  `--member libgum_vfpu.o=libgum.c:USE_VFPU=1` covers the `_vfpu`
+  variants. For example:
+  `tools/libtest.py SDK/lib/libvfpu.a SDK/src/vfpu --cc1 1.6.1 --pspgcc 0x010601
+  --inc SDK/include --flags "-O4 -G0 -g -std=gnu9x"`.
+  A scratch script also assembled the `.s` units (cpp, then psp-as) and compared
+  more of each object: the whole `.text` with gaps, `.data`/`.rodata*`/`.bss`,
+  `.pdr`, `.debug_frame`, the symbol tables and the DWARF DIE tree (tags and names).
+- **Result: the 1.6.1 tree builds every function.**
+
+  | library | flags | C functions | asm |
+  |---|---|---|---|
+  | libgum, libgum_vfpu | `-O4 -G0 -g -std=gnu9x` | 28/28, 28/28 | |
+  | libgim_picture | `-O2 -std=gnu9x`, SCEGIM_* | 94/94 | |
+  | libgmo_model, libgmo_model_vfpu | `-O2 -std=gnu9x`, SCEGMO_* | 234/238 (238 with the older source), 238/238 | |
+  | libvfpu | `-O4 -G0 -g -std=gnu9x` | 267/267 | |
+  | libfpu | `-O4 -G0 -g -std=iso9899:1999` | 45/45 | 2/2 |
+  | crt0_prx, crt0_elf, kernel_bridge | `-O4 -G0 -g -std=gnu9x` | 2/2, 2/2, 22/22 | |
+  | libmd5, libsha1, libmt19937 | `-O4 -G0 -g -std=iso9899:1999` | 4/4, 3/3, 1/1 | 1/1, 2/2, 1/1 |
+  | libadler, libbase64 | | | 1/1, 2/2 |
+  | libccc | `-O4 -G0 -g -std=iso9899:1999` | 27/27 | |
+  | libdeflt | `-O4 -G0 -g -std=iso9899:1999` | 10/10 | 1/1 |
+
+  That is 1009 of 1009 C functions and 10 of 10 asm functions. All the extra
+  comparisons give the same bytes except in three places:
+  - `__psp_libinfo__`, which is not in the shipped sources (below).
+  - crt0_elf's post-link sections (`.psp_lib_mark_` removed, plus psplibgen's
+    `.lib.ent`/`.rodata.sceResident`).
+  - DWARF declaration lines: the shipped sources and headers are a later revision
+    than the one built. For example, psptypes.h's typedefs are 5 lines lower.
+
+  The DIE trees are otherwise identical. So the 1.3.1 release's newlib and gcc
+  headers have the same contents that 1.6.1.internal had installed. The `-g`
+  objects match with our psp-as filling delay slots across source lines. The
+  newlib-only `locfix` assembler behaviour does not apply to the SDK libraries.
+- **The only mismatches are a source revision (a).** libgmo_model.a (2005-03-01)
+  differs from libgmo_model_vfpu.a (2005-03-15) in `sceGmoMaterialLoad` and
+  `sceGmoModelGetMetrics`/`GetMemoryClusterSize`/`GetMemoryClusterSize2`: it
+  uses `sltiu` where the source has `slti`. The shipped source has 7 `(int)sizeof(...)`
+  casts in those functions. Removing them gives libgmo_model.a 238/238. With
+  them, libgmo_model_vfpu.a is 238/238.
+- **Assembler (b): the 1.6.1.internal psp-as (binutils `allegrex-2.2.2`).**
+  - **Newer VFPU syntax.** `vcmmul.X D,A,B` is the 1.3.1 psp-as's
+    `vmmul.X D,B,A`, `vctfmN`/`vchtfm4` are `vtfmN`/`vhtfm4`, and a `W`
+    destination-prefix field (plain write) is an empty field. Sources pick these
+    forms with `#if __psp_gcc__ > 0x010501` (libvfpu, libgum_vfpu, gmo_math_vfpu).
+    `libtest.py` rewrites them before assembling (`vfpu_compat`), and every
+    instruction matches.
+  - **`ulw` expands to `lwl`/`lwr` by default.** deflate.s's `ulw` (libdeflt's
+    Makefile has no `-mulsw`) reproduces `sceDeflateDecompress` only with
+    `psp-as -mulsw`. This confirms `as:-mulsw` for 1.6.1.internal from an
+    assembler-only source. libsha1's Makefile passes `-mulsw` explicitly; the
+    driver hands it to as only when it is given.
+- **Compiler (c): none.** 1.7.1-orig, 1.8.3 and 1.8.4 give exactly the same
+  results as 1.6.1, so this code does not separate 1.6.1 from later compilers.
+  The other cc1s miss only known changes:
+  - 1.3.1-orig misses libdeflt's `sceGzipDecompress`, `sceGzipGetInfo` and
+    `sceZlibDecompress` (the `-mno-ulsw` default: unaligned header copies). With
+    `-mulsw` it misses only `sceGimPictureActivateTexture` (the `bnel` delay-slot
+    fill, as in flowars).
+  - 1.5.1 misses 23 gim_picture, 23 gmo_model, 4 ccc, `_open`,
+    `sceVfpuColorToRGB565` and 7 deflt functions (condmove and `-mno-ulsw`).
+  - 1.9.2 misses about 70.
+
+  No tree patch is proposed: there is no difference to explain.
+- **`__psp_libinfo__`**: a 24-byte obfuscated library record, local. It is the
+  first object in the C units' `.rodata` (`.data` in libgum: not const). It comes from a generated
+  `version.h` in the source directory, which the SDK doesn't ship (DWARF file
+  table; line 28 in fpu.c's, 42 in libgum.c's). Cut out of the comparison, the
+  data sections are byte-identical.
+- **Sony's build setup (driver and specs).**
+  - `bin/psp-gcc` is a selector script. It runs `$PREFIX/gcc-$PSP_GCC_VERSION/bin/CMD`
+    or else the last `/usr/local/psp/gcc-1.x.y` directory.
+  - 1.6.1.internal was installed as `/usr/local/psp/gcc-1.6.1.internal`, with
+    newlib headers in `psp/include` and gcc's in
+    `lib/gcc-lib/psp/3.3.3+allegrex-2.2.2-psp-1.6.1.internal/include`.
+  - The SDK lives in `/usr/local/psp/devkit` (`SCE_PSP_SDK_HOME`). The driver
+    adds `-isystem /usr/local/psp/devkit/include` (`-nodevkitinc` drops it),
+    `-G 0 -march=allegrex -mtune=allegrex`, and as `-G0 -EL -g0 -mabi=eabi`. The
+    Makefiles add `-I../../include` (DWARF directory `../../include`).
+  - The SDK's `lib/pspspecs` replaces `cpp_unique_options`. It uses
+    `%{!std=*:%p}%{std=gnu*:%p}`, so the `-std=iso9899:1999` libraries don't get
+    `MIPSEL`/`R3000` (only the reserved forms, `__psp_gcc__` and `__SCE__`).
+    Its `*lib:` links `kernel_bridge.o -lc -lkernel` into everything.
+  - `-O4` is `-O3`.
+  - The SDK libraries keep constant merging (`.rodata.cst4`), unlike
+    1.6.1.internal's newlib and libgcc.
+  - Our cc1-1.6.1 still identifies itself as `allegrex-2.2.1-psp-1.3.1`
+    (version.c). That affects only `.comment` and `.debug_str`. psp.h's driver
+    predefine still says `__psp_gcc__=0x010301`, but cc1 doesn't use it.
+- SDK 1.50 also has 1.6.1.internal libgu, libwave, libsas, libsndp and libkernel
+  (2005-04-05, no sources). They are full objects with symbols and relocations,
+  for the still-asm libgu/libwave functions above.
+
 ## psp-gcc 1.7.1 (release build)
 
 htmlviewer is the first module built by release 1.7.1 (plus SDK libraries

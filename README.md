@@ -8,8 +8,9 @@ original machine code.
 - `inputs/` – the original modules (`151_and_161.zip`, `psp_161_to_184.zip`,
   plus `bigbangbang.prx`, `flowars.prx`, `171_184_htmlviewer.prx`, `umdt.zip`,
   `psp_random_batch.zip` (target `rb`), `tony_libs.zip`, 13 stripped
-  1.5.1.internal firmware modules, and `psp_devkit.zip`/`psp_sdk_660.7z`,
-  SDKs with library sources); **not committed**
+  1.5.1.internal firmware modules, and `psp_devkit.zip`/`psp_sdk150.zip`/
+  `psp_sdk_660.7z`, SDKs with library sources: `tools/libtest.py` compares
+  them with the shipped libraries); **not committed**
 - `config/` – splat configs, one per module
 - `decomp_src/` – decompiled C, per module
 - `gcc1.5.1_src/`, `gcc1.6.1_src/` – GCC 3.3.3 trees for psp-gcc 1.5.1 and
