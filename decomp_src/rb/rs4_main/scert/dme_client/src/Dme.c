@@ -105,7 +105,18 @@ int NetSetSendAggregationInterval(int a0, int a1, int a2)
     return e;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/Dme", NetGetBandwidthInfo);
+int NetIGetBandwidthInfo();
+int NetGetBandwidthInfo(void *a0)
+{
+    int r, e;
+    if (a0 == NULL) return 0x17;
+    r = NetMapRtError(NetMutexLock());
+    if (r != 0) return r;
+    e = NetIGetBandwidthInfo(a0);
+    r = NetMapRtError(NetMutexUnlock());
+    if (r != 0) return r;
+    return e;
+}
 
 int NetMutexLock();
 int NetMutexUnlock();
@@ -175,7 +186,19 @@ int NetAssignLocalServer(int a0, int a1)
     return e;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/Dme", NetConnect);
+int NetIConnect();
+extern int gbTimebaseEnabled;
+int NetConnect(char *a0, int a1)
+{
+    int r, e;
+    r = NetMapRtError(NetMutexLock());
+    if (r != 0) return r;
+    e = NetIConnect(a0, a1);
+    if (*(int *)(a0 + 0x158) != 0 && e != 0) gbTimebaseEnabled = 0;
+    r = NetMapRtError(NetMutexUnlock());
+    if (r != 0) return r;
+    return e;
+}
 
 void *memset(void *s, int c, unsigned int n);
 int NetSetDefaultJoinParams(void *arg0) {
@@ -191,7 +214,18 @@ int NetSetDefaultJoinParams(void *arg0) {
     return var_v1;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/Dme", NetHostPeerToPeer);
+int NetIHostPeerToPeer();
+int NetHostPeerToPeer(char *a0, int a1)
+{
+    int r, e;
+    r = NetMapRtError(NetMutexLock());
+    if (r != 0) return r;
+    e = NetIHostPeerToPeer(a0, a1);
+    if (*(int *)(a0 + 0xB4) != 0 && e != 0) gbTimebaseEnabled = 0;
+    r = NetMapRtError(NetMutexUnlock());
+    if (r != 0) return r;
+    return e;
+}
 
 int NetMutexLock();
 int NetMutexUnlock();
@@ -587,7 +621,17 @@ int NetSetDefaultAppMessageParams(int *p)
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/Dme", NetSendAppMessage);
+int NetISendMessage();
+int NetSendAppMessage(int a0, int a1)
+{
+    int r, e;
+    r = NetMapRtError(NetMutexLock());
+    if (r != 0) return r;
+    e = NetISendMessage(a0, a1, 2);
+    r = NetMapRtError(NetMutexUnlock());
+    if (r != 0) return r;
+    return e;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_client/src/Dme", NetLANSetUserName);
 
