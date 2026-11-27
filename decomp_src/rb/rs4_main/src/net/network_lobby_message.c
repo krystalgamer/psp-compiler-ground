@@ -1,199 +1,348 @@
 /* lang: c++ */
-/* cflags: -Os */
+/* cflags: -Os -fno-strength-reduce -fno-merge-constants -fno-exceptions */
+/* #pragma interface: the vtables, typeinfo and implicit destructors stay in the module's asm */
+#pragma interface "rodata"
 #include "common.h"
-extern "C" {
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZN3Net12LobbyMessageC2Ei);
+extern "C" void *_memAllocMBL(unsigned int size, const char *file, int line);
+extern "C" void _memFree(void *p, const char *file, int line);
+extern "C" void *memset(void *, int, unsigned long);
+extern "C" void *memcpy(void *, const void *, unsigned long);
+extern "C" const char D_00106870[];
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZN3Net12LobbyMessageC1Ei);
-
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZN3Net12LobbyMessageC2ERKS0_);
-
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZN3Net12LobbyMessageC1ERKS0_);
-
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZN3Net12LobbyMessageD2Ev);
-
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZN3Net12LobbyMessageD1Ev);
-
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZN3Net12LobbyMessageD0Ev);
-
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZNK3Net12LobbyMessage12Create_ArrayEi);
-
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZN3Net12LobbyMessage14Set_OptionDataEiPKv);
-
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZN3Net12LobbyMessage4CopyERKS0_);
-
-void _ZN3Net12LobbyMessage3RunERNS_5LobbyE(void) {
+namespace Ys {
+class Object {
+public:
+	static void *operator new(unsigned int size) { return _memAllocMBL(size, D_00106870, 23); }
+	static void operator delete(void *p) { _memFree(p, D_00106870, 25); }
+	static void *operator new[](unsigned int size) { return _memAllocMBL(size, D_00106870, 32); }
+	static void operator delete[](void *p) { if (p) _memFree(p, D_00106870, 34); }
+};
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZNK3Net17LobbyHelloMessage12Create_ArrayEi);
+namespace Net {
+struct EtherAddress {
+	unsigned char data[6];
+};
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZN3Net17LobbyHelloMessage3RunERNS_5LobbyE);
+class Lobby {
+public:
+	virtual void v00(); virtual void v04(); virtual void v08(); virtual void v0C(); virtual void v10();
+	virtual void v14(); virtual void v18(); virtual void v1C(); virtual void v20(); virtual void v24();
+	virtual void Hello(int id, EtherAddress &a, int n, void *p);
+	virtual void Request(int id, EtherAddress &a, int n, void *p);
+	virtual void Leave(int id, EtherAddress &a);
+	virtual void Deny(int id, EtherAddress &a);
+	virtual void Cancel(int id, EtherAddress &a);
+	virtual void Accept(int id, EtherAddress &a, int n, void *p);
+	virtual void Establish(int id, EtherAddress &a);
+	virtual void Timeout(int id, EtherAddress &a);
+	virtual void Error(int id, EtherAddress &a);
+	virtual void Bye(int id, EtherAddress &a);
+};
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZNK3Net19LobbyRequestMessage12Create_ArrayEi);
+class LobbyMessage : public Ys::Object {
+public:
+	int id;
+	short capacity;
+	short size;
+	char *data;
+	EtherAddress addr;
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZN3Net19LobbyRequestMessage3RunERNS_5LobbyE);
+	LobbyMessage(int n = 0);
+	LobbyMessage(const LobbyMessage &m);
+	virtual ~LobbyMessage();
+	virtual LobbyMessage *Create_Array(int n) const;
+	virtual void Run(Lobby &l);
+	bool Set_OptionData(int n, const void *p);
+	LobbyMessage &Copy(const LobbyMessage &m);
+	int Get_Id() const { return id; }
+	int Get_Size() const { return size; }
+	void *Get_Data() const { return data; }
+	EtherAddress &Get_Address() { return addr; }
+};
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZNK3Net17LobbyLeaveMessage12Create_ArrayEi);
+LobbyMessage::LobbyMessage(int n)
+{
+	memset(&addr, 0, sizeof(addr));
+	capacity = n;
+	data = n > 0 ? (char *)operator new[](n) : 0;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZN3Net17LobbyLeaveMessage3RunERNS_5LobbyE);
+LobbyMessage::LobbyMessage(const LobbyMessage &m)
+{
+	memset(&addr, 0, sizeof(addr));
+	data = 0;
+	Copy(m);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZNK3Net16LobbyDenyMessage12Create_ArrayEi);
+LobbyMessage::~LobbyMessage()
+{
+	operator delete[](data);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZN3Net16LobbyDenyMessage3RunERNS_5LobbyE);
+LobbyMessage *LobbyMessage::Create_Array(int n) const
+{
+	return new LobbyMessage[n];
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZNK3Net18LobbyCancelMessage12Create_ArrayEi);
+extern "C" {
+INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZN3Net12LobbyMessage14Set_OptionDataEiPKv);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZN3Net18LobbyCancelMessage3RunERNS_5LobbyE);
+LobbyMessage &LobbyMessage::Copy(const LobbyMessage &m)
+{
+	operator delete[](data);
+	capacity = m.capacity;
+	int n = capacity;
+	data = n > 0 ? (char *)operator new[](n) : 0;
+	if (n > 0)
+		memcpy(data, m.data, n);
+	id = m.id;
+	size = m.Get_Size();
+	addr = m.addr;
+	return *this;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZNK3Net18LobbyAcceptMessage12Create_ArrayEi);
+void LobbyMessage::Run(Lobby &l)
+{
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZN3Net18LobbyAcceptMessage3RunERNS_5LobbyE);
+class LobbyHelloMessage : public LobbyMessage {
+public:
+	LobbyHelloMessage(int n = 0) : LobbyMessage(n) {}
+	virtual LobbyMessage *Create_Array(int n) const;
+	virtual void Run(Lobby &l);
+};
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZNK3Net21LobbyEstablishMessage12Create_ArrayEi);
+LobbyMessage *LobbyHelloMessage::Create_Array(int n) const
+{
+	return new LobbyHelloMessage[n];
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZN3Net21LobbyEstablishMessage3RunERNS_5LobbyE);
+void LobbyHelloMessage::Run(Lobby &l)
+{
+	l.Hello(Get_Id(), Get_Address(), Get_Size(), Get_Data());
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZNK3Net19LobbyTimeoutMessage12Create_ArrayEi);
+class LobbyRequestMessage : public LobbyMessage {
+public:
+	LobbyRequestMessage(int n = 0) : LobbyMessage(n) {}
+	virtual LobbyMessage *Create_Array(int n) const;
+	virtual void Run(Lobby &l);
+};
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZN3Net19LobbyTimeoutMessage3RunERNS_5LobbyE);
+LobbyMessage *LobbyRequestMessage::Create_Array(int n) const
+{
+	return new LobbyRequestMessage[n];
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZNK3Net17LobbyErrorMessage12Create_ArrayEi);
+void LobbyRequestMessage::Run(Lobby &l)
+{
+	l.Request(Get_Id(), Get_Address(), Get_Size(), Get_Data());
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZN3Net17LobbyErrorMessage3RunERNS_5LobbyE);
+class LobbyLeaveMessage : public LobbyMessage {
+public:
+	LobbyLeaveMessage(int n = 0) : LobbyMessage(n) {}
+	virtual LobbyMessage *Create_Array(int n) const;
+	virtual void Run(Lobby &l);
+};
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZNK3Net15LobbyByeMessage12Create_ArrayEi);
+LobbyMessage *LobbyLeaveMessage::Create_Array(int n) const
+{
+	return new LobbyLeaveMessage[n];
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZN3Net15LobbyByeMessage3RunERNS_5LobbyE);
+void LobbyLeaveMessage::Run(Lobby &l)
+{
+	l.Leave(Get_Id(), Get_Address());
+}
 
+class LobbyDenyMessage : public LobbyMessage {
+public:
+	LobbyDenyMessage(int n = 0) : LobbyMessage(n) {}
+	virtual LobbyMessage *Create_Array(int n) const;
+	virtual void Run(Lobby &l);
+};
+
+LobbyMessage *LobbyDenyMessage::Create_Array(int n) const
+{
+	return new LobbyDenyMessage[n];
+}
+
+void LobbyDenyMessage::Run(Lobby &l)
+{
+	l.Deny(Get_Id(), Get_Address());
+}
+
+class LobbyCancelMessage : public LobbyMessage {
+public:
+	LobbyCancelMessage(int n = 0) : LobbyMessage(n) {}
+	virtual LobbyMessage *Create_Array(int n) const;
+	virtual void Run(Lobby &l);
+};
+
+LobbyMessage *LobbyCancelMessage::Create_Array(int n) const
+{
+	return new LobbyCancelMessage[n];
+}
+
+void LobbyCancelMessage::Run(Lobby &l)
+{
+	l.Cancel(Get_Id(), Get_Address());
+}
+
+class LobbyAcceptMessage : public LobbyMessage {
+public:
+	LobbyAcceptMessage(int n = 0) : LobbyMessage(n) {}
+	virtual LobbyMessage *Create_Array(int n) const;
+	virtual void Run(Lobby &l);
+};
+
+LobbyMessage *LobbyAcceptMessage::Create_Array(int n) const
+{
+	return new LobbyAcceptMessage[n];
+}
+
+void LobbyAcceptMessage::Run(Lobby &l)
+{
+	l.Accept(Get_Id(), Get_Address(), Get_Size(), Get_Data());
+}
+
+class LobbyEstablishMessage : public LobbyMessage {
+public:
+	LobbyEstablishMessage(int n = 0) : LobbyMessage(n) {}
+	virtual LobbyMessage *Create_Array(int n) const;
+	virtual void Run(Lobby &l);
+};
+
+LobbyMessage *LobbyEstablishMessage::Create_Array(int n) const
+{
+	return new LobbyEstablishMessage[n];
+}
+
+void LobbyEstablishMessage::Run(Lobby &l)
+{
+	l.Establish(Get_Id(), Get_Address());
+}
+
+class LobbyTimeoutMessage : public LobbyMessage {
+public:
+	LobbyTimeoutMessage(int n = 0) : LobbyMessage(n) {}
+	virtual LobbyMessage *Create_Array(int n) const;
+	virtual void Run(Lobby &l);
+};
+
+LobbyMessage *LobbyTimeoutMessage::Create_Array(int n) const
+{
+	return new LobbyTimeoutMessage[n];
+}
+
+void LobbyTimeoutMessage::Run(Lobby &l)
+{
+	l.Timeout(Get_Id(), Get_Address());
+}
+
+class LobbyErrorMessage : public LobbyMessage {
+public:
+	LobbyErrorMessage(int n = 0) : LobbyMessage(n) {}
+	virtual LobbyMessage *Create_Array(int n) const;
+	virtual void Run(Lobby &l);
+};
+
+LobbyMessage *LobbyErrorMessage::Create_Array(int n) const
+{
+	return new LobbyErrorMessage[n];
+}
+
+void LobbyErrorMessage::Run(Lobby &l)
+{
+	l.Error(Get_Id(), Get_Address());
+}
+
+class LobbyByeMessage : public LobbyMessage {
+public:
+	LobbyByeMessage(int n = 0) : LobbyMessage(n) {}
+	virtual LobbyMessage *Create_Array(int n) const;
+	virtual void Run(Lobby &l);
+};
+
+LobbyMessage *LobbyByeMessage::Create_Array(int n) const
+{
+	return new LobbyByeMessage[n];
+}
+
+void LobbyByeMessage::Run(Lobby &l)
+{
+	l.Bye(Get_Id(), Get_Address());
+}
+}
+
+extern "C" {
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZN3Net17LobbyHelloMessageD1Ev);
-
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZN3Net17LobbyHelloMessageD0Ev);
-
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZN3Net19LobbyRequestMessageD1Ev);
-
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZN3Net19LobbyRequestMessageD0Ev);
-
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZN3Net17LobbyLeaveMessageD1Ev);
-
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZN3Net17LobbyLeaveMessageD0Ev);
-
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZN3Net16LobbyDenyMessageD1Ev);
-
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZN3Net16LobbyDenyMessageD0Ev);
-
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZN3Net18LobbyCancelMessageD1Ev);
-
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZN3Net18LobbyCancelMessageD0Ev);
-
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZN3Net18LobbyAcceptMessageD1Ev);
-
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZN3Net18LobbyAcceptMessageD0Ev);
-
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZN3Net21LobbyEstablishMessageD1Ev);
-
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZN3Net21LobbyEstablishMessageD0Ev);
-
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZN3Net19LobbyTimeoutMessageD1Ev);
-
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZN3Net19LobbyTimeoutMessageD0Ev);
-
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZN3Net17LobbyErrorMessageD1Ev);
-
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZN3Net17LobbyErrorMessageD0Ev);
-
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZN3Net15LobbyByeMessageD1Ev);
-
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZN3Net15LobbyByeMessageD0Ev);
-
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", D_00106870);
-
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZTVN3Net15LobbyByeMessageE);
-
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", D_00106890);
-
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZTVN3Net17LobbyErrorMessageE);
-
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", D_001068A8);
-
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZTVN3Net19LobbyTimeoutMessageE);
-
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", D_001068C0);
-
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZTVN3Net21LobbyEstablishMessageE);
-
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", D_001068D8);
-
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZTVN3Net18LobbyAcceptMessageE);
-
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", D_001068F0);
-
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZTVN3Net18LobbyCancelMessageE);
-
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", D_00106908);
-
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZTVN3Net16LobbyDenyMessageE);
-
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", D_00106920);
-
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZTVN3Net17LobbyLeaveMessageE);
-
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", D_00106938);
-
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZTVN3Net19LobbyRequestMessageE);
-
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", D_00106950);
-
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZTVN3Net17LobbyHelloMessageE);
-
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", D_00106968);
-
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZTVN3Net12LobbyMessageE);
-
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", D_00106980);
-
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZTIN3Net12LobbyMessageE);
-
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZTIN3Net17LobbyHelloMessageE);
-
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZTIN3Net19LobbyRequestMessageE);
-
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZTIN3Net17LobbyLeaveMessageE);
-
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZTIN3Net16LobbyDenyMessageE);
-
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZTIN3Net18LobbyCancelMessageE);
-
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZTIN3Net18LobbyAcceptMessageE);
-
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZTIN3Net21LobbyEstablishMessageE);
-
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZTIN3Net19LobbyTimeoutMessageE);
-
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZTIN3Net17LobbyErrorMessageE);
-
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZTIN3Net15LobbyByeMessageE);
-
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZTSN3Net15LobbyByeMessageE);
-
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZTSN3Net17LobbyErrorMessageE);
-
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZTSN3Net19LobbyTimeoutMessageE);
-
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZTSN3Net21LobbyEstablishMessageE);
-
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZTSN3Net18LobbyAcceptMessageE);
-
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZTSN3Net18LobbyCancelMessageE);
-
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZTSN3Net16LobbyDenyMessageE);
-
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZTSN3Net17LobbyLeaveMessageE);
-
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZTSN3Net19LobbyRequestMessageE);
-
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZTSN3Net17LobbyHelloMessageE);
-
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_message", _ZTSN3Net12LobbyMessageE);
-
-} /* extern "C": m2c drafts with mangled names, kept as C linkage */
+}
