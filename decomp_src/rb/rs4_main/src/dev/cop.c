@@ -934,9 +934,13 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/cop", copInterQuat);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/cop", copInterQuatAng);
 
-void copTargetPos()
+int copTargetPos(void *m, void *p, void *q, void *out)
 {
+	register unsigned int a __asm__("$2");
+	register unsigned int b __asm__("$3");
+	register unsigned int c __asm__("$4");
 	__asm__ volatile(
+		".set noreorder\n"
 		"lv.q C000.q,0($4)\n"
 		"lv.q C010.q,16($4)\n"
 		"lv.q C020.q,32($4)\n"
@@ -946,10 +950,8 @@ void copTargetPos()
 		"vdot.t S130.s,C120.t,C120.t\n"
 		"vrsq.s S131.s,S130.s\n"
 		"vcmp.s ES,S131.s,S131.s\n"
-		".set noreorder\n"
 		"bvf 0,1f\n"
 		"nop\n"
-		".set reorder\n"
 		"vzero.s S131.s\n"
 		"1:\n"
 		"vscl.t C120.t,C120.t,S131.s\n"
@@ -958,29 +960,20 @@ void copTargetPos()
 		"vdot.t S202.s,C020.t,C120.t\n"
 		"vsqrt.s S203.s,S130.s\n"
 		"vcmp.s EN,S203.s,S203.s\n"
-		".set noreorder\n"
 		"bvf 0,2f\n"
 		"nop\n"
-		".set reorder\n"
 		"vzero.s S203.s\n"
 		"2:\n"
-		".set noreorder\n"
 		"beqz $7,3f\n"
 		"nop\n"
-		".set reorder\n"
 		"sv.q C200.q,0($7)\n"
 		"3:\n"
 		"mfv $2,S200.s\n"
 		"mfv $3,S201.s\n"
 		"mfv $4,S202.s\n"
-		"srl $3,$3,0x1e\n"
-		"andi $3,$3,0x2\n"
-		"srl $2,$2,0x1f\n"
-		"srl $4,$4,0x1d\n"
-		"or $2,$2,$3\n"
-		"andi $4,$4,0x4\n"
-		"or $2,$2,$4\n"
-		: : : "memory");
+		".set reorder\n"
+		: "=r"(a), "=r"(b), "=r"(c) : : "memory");
+	return (a >> 31) | ((b >> 30) & 2) | ((c >> 29) & 4);
 }
 
 void copLinePos()
