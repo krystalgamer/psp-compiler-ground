@@ -97,6 +97,13 @@ class Pad : public input::ButtonSet<PadB> {
 Pad &pad();
 }
 
+/* A unit whose tail (template instances, out-of-line inline functions: .gnu.linkonce.t sections, linked
+   in the object's section order) mixes C++ and asm creates those sections up front in the original's
+   order: DEMO_LINKONCE_ORDER(DEMO_LINKONCE(name) ...); (cc1plus emits implicit instances after every
+   deferred function, the INCLUDE_ASM_LINKONCE asm in definition order, explicit instantiations first). */
+#define DEMO_LINKONCE(n) "\t.section .gnu.linkonce.t." #n ",\"ax\",@progbits\n"
+#define DEMO_LINKONCE_ORDER(s) __asm__(s "\t.text\n")
+
 /* Template members defined out of class (handle<>, t_array<>, t_array2d<>):
    the compiler never auto-inlines them (weak instances don't bind locally), so
    callers only need the declarations.  Their definitions are compiled only with

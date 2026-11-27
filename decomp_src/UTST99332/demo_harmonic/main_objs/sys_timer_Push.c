@@ -2,7 +2,20 @@
 /* cflags: -O3 -fno-exceptions */
 #undef __EXCEPTIONS
 #include "cxx/defer_asm.h"
+#define DEMO_TEMPLATE_DEFS
 #include "../main.hpp"
+
+/* this object's .gnu.linkonce.t sections in the original's order */
+DEMO_LINKONCE_ORDER(
+    DEMO_LINKONCE(_ZNSt11_Deque_baseIfSaIfEED2Ev)
+    DEMO_LINKONCE(_ZNSt11_Deque_baseIfSaIfEE17_M_initialize_mapEj)
+    DEMO_LINKONCE(_ZNSt11_Deque_baseIfSaIfEE16_M_destroy_nodesEPPfS3_)
+    DEMO_LINKONCE(_ZNSt5dequeIfSaIfEE16_M_push_back_auxERKf)
+    DEMO_LINKONCE(_ZNSt5dequeIfSaIfEE15_M_pop_back_auxEv)
+    DEMO_LINKONCE(_ZNSt11_Deque_baseIfSaIfEE15_M_create_nodesEPPfS3_)
+    DEMO_LINKONCE(_ZNSt5dequeIfSaIfEE17_M_reallocate_mapEjb)
+    DEMO_LINKONCE(_ZSt6__copyISt15_Deque_iteratorIfRKfPS1_ES0_IfRfPfEET0_T_S9_S8_St26random_access_iterator_tag)
+);
 #include <deque>
 
 namespace sys {
@@ -12,10 +25,6 @@ float GetTime();
 void Push();
 }
 }
-
-/* weak instances stay asm */
-extern template class std::deque<float>;
-extern template class std::_Deque_base<float, std::allocator<float> >;
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sys_timer_Push", _Z41__static_initialization_and_destruction_0ii_FA3B4);
 
@@ -42,18 +51,18 @@ void _GLOBAL__D__ZN3sys5timer4PushEv(void)
     static_init(0, 0xFFFF);
 }
 
+/* out-of-line inline members / instances that stay asm */
+#undef INCLUDE_ASM
+#define INCLUDE_ASM INCLUDE_ASM_LINKONCE
+
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sys_timer_Push", _ZNSt11_Deque_baseIfSaIfEED2Ev);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sys_timer_Push", _ZNSt11_Deque_baseIfSaIfEE17_M_initialize_mapEj);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sys_timer_Push", _ZNSt11_Deque_baseIfSaIfEE16_M_destroy_nodesEPPfS3_);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sys_timer_Push", _ZNSt5dequeIfSaIfEE16_M_push_back_auxERKf);
-
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sys_timer_Push", _ZNSt5dequeIfSaIfEE15_M_pop_back_auxEv);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sys_timer_Push", _ZNSt11_Deque_baseIfSaIfEE15_M_create_nodesEPPfS3_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sys_timer_Push", _ZNSt5dequeIfSaIfEE17_M_reallocate_mapEjb);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sys_timer_Push", _ZSt6__copyISt15_Deque_iteratorIfRKfPS1_ES0_IfRfPfEET0_T_S9_S8_St26random_access_iterator_tag);

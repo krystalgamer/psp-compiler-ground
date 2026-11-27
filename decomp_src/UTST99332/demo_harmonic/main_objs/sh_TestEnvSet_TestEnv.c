@@ -2,7 +2,27 @@
 /* cflags: -O3 -fno-exceptions -fno-merge-constants */
 #undef __EXCEPTIONS
 #include "cxx/defer_asm.h"
+#define DEMO_TEMPLATE_DEFS
 #include "../main.hpp"
+
+/* this object's .gnu.linkonce.t sections in the original's order */
+DEMO_LINKONCE_ORDER(
+    DEMO_LINKONCE(_ZN6common5setAtISt6vectorINS_6handleIN2sh10TestEnvSet7TestEnvEEESaIS6_EEPS5_EEvjRT_T0_)
+    DEMO_LINKONCE(_ZN6common6handleIN2sh10TestEnvSet7TestEnvEE10invalidateEv)
+    DEMO_LINKONCE(_ZN6common6handleIN2sh10TestEnvSet7TestEnvEEaSERKS4_)
+    DEMO_LINKONCE(_ZNSt6vectorIN6common6handleIN2sh10TestEnvSet7TestEnvEEESaIS5_EE5eraseEN9__gnu_cxx17__normal_iteratorIPS5_S7_EESB_)
+    DEMO_LINKONCE(_ZNSt6vectorIN6common6handleIN2sh10TestEnvSet7TestEnvEEESaIS5_EE14_M_fill_insertEN9__gnu_cxx17__normal_iteratorIPS5_S7_EEjRKS5_)
+    DEMO_LINKONCE(_ZSt4fillIN9__gnu_cxx17__normal_iteratorIPN6common6handleIN2sh10TestEnvSet7TestEnvEEESt6vectorIS7_SaIS7_EEEES7_EvT_SD_RKT0_)
+    DEMO_LINKONCE(_ZSt24__uninitialized_copy_auxIPN6common6handleIN2sh10TestEnvSet7TestEnvEEES6_ET0_T_S8_S7_12__false_type)
+    DEMO_LINKONCE(_ZSt26__uninitialized_fill_n_auxIPN6common6handleIN2sh10TestEnvSet7TestEnvEEEjS5_ET_S7_T0_RKT1_12__false_type)
+    DEMO_LINKONCE(_ZSt24__uninitialized_copy_auxIN9__gnu_cxx17__normal_iteratorIPN6common6handleIN2sh10TestEnvSet7TestEnvEEESt6vectorIS7_SaIS7_EEEES8_ET0_T_SE_SD_12__false_type)
+    DEMO_LINKONCE(_ZSt24__uninitialized_copy_auxIN9__gnu_cxx17__normal_iteratorIPN6common6handleIN2sh10TestEnvSet7TestEnvEEESt6vectorIS7_SaIS7_EEEESC_ET0_T_SE_SD_12__false_type)
+    DEMO_LINKONCE(_ZSt26__uninitialized_fill_n_auxIN9__gnu_cxx17__normal_iteratorIPN6common6handleIN2sh10TestEnvSet7TestEnvEEESt6vectorIS7_SaIS7_EEEEjS7_ET_SD_T0_RKT1_12__false_type)
+    DEMO_LINKONCE(_ZN2sh10TestEnvSet7TestEnvD1Ev)
+    DEMO_LINKONCE(_ZN2sh10TestEnvSet7TestEnvD0Ev)
+    DEMO_LINKONCE(_ZN6common6handleIN2sh10TestEnvSet7TestEnvEED1Ev)
+    DEMO_LINKONCE(_ZN6common6handleIN2sh10TestEnvSet7TestEnvEED0Ev)
+);
 
 namespace {
 extern "C" const char D_00171250[], D_00171268[], D_00171280[], D_00171298[], D_001712A4[], D_001712AC[], D_001712B4[];
@@ -10,11 +30,16 @@ extern "C" const char D_001712D8[], D_001712E4[], D_00171300[], D_0017131C[], D_
 }
 extern const char load_name[] __asm__("_ZZN2sh10TestEnvSet4loadEvE19__PRETTY_FUNCTION__");
 extern const char draw_name[] __asm__("_ZZN2sh10TestEnvSet4drawEbE19__PRETTY_FUNCTION__");
-/* weak instances stay asm */
-extern template class common::handle<sh::TestEnvSet::TestEnv>;
-extern template class std::vector<common::handle<sh::TestEnvSet::TestEnv> >;
 
 #define TES_ASSERT(c, text, fn, line) SGL_ASSERT(c, D_001712D8, text, D_00171300, fn, line, D_0017131C)
+
+/* setAt<> stays asm (near-miss: register allocation); the vector members it calls are this object's */
+typedef std::vector<common::handle<sh::TestEnvSet::TestEnv> > TestEnvHandles;
+namespace common {
+extern template void setAt(unsigned int, TestEnvHandles &, sh::TestEnvSet::TestEnv *);
+}
+extern "C" void TestEnvHandles_resize(TestEnvHandles &v, unsigned int n) __attribute__((section(".discard.asm")));
+extern "C" void TestEnvHandles_resize(TestEnvHandles &v, unsigned int n) { v.resize(n); }
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sh_TestEnvSet_TestEnv", _Z41__static_initialization_and_destruction_0ii_F0748);
 
@@ -97,32 +122,12 @@ void _GLOBAL__D__ZN2sh10TestEnvSet7TestEnvC2ENS0_7EnvEnumENS_4Args3EnvE(void)
     static_init(0, 0xFFFF);
 }
 
+/* out-of-line inline members / instances that stay asm */
+#undef INCLUDE_ASM
+#define INCLUDE_ASM INCLUDE_ASM_LINKONCE
+
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sh_TestEnvSet_TestEnv", _ZN6common5setAtISt6vectorINS_6handleIN2sh10TestEnvSet7TestEnvEEESaIS6_EEPS5_EEvjRT_T0_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sh_TestEnvSet_TestEnv", _ZN6common6handleIN2sh10TestEnvSet7TestEnvEE10invalidateEv);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sh_TestEnvSet_TestEnv", _ZN6common6handleIN2sh10TestEnvSet7TestEnvEEaSERKS4_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sh_TestEnvSet_TestEnv", _ZNSt6vectorIN6common6handleIN2sh10TestEnvSet7TestEnvEEESaIS5_EE5eraseEN9__gnu_cxx17__normal_iteratorIPS5_S7_EESB_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sh_TestEnvSet_TestEnv", _ZNSt6vectorIN6common6handleIN2sh10TestEnvSet7TestEnvEEESaIS5_EE14_M_fill_insertEN9__gnu_cxx17__normal_iteratorIPS5_S7_EEjRKS5_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sh_TestEnvSet_TestEnv", _ZSt4fillIN9__gnu_cxx17__normal_iteratorIPN6common6handleIN2sh10TestEnvSet7TestEnvEEESt6vectorIS7_SaIS7_EEEES7_EvT_SD_RKT0_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sh_TestEnvSet_TestEnv", _ZSt24__uninitialized_copy_auxIPN6common6handleIN2sh10TestEnvSet7TestEnvEEES6_ET0_T_S8_S7_12__false_type);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sh_TestEnvSet_TestEnv", _ZSt26__uninitialized_fill_n_auxIPN6common6handleIN2sh10TestEnvSet7TestEnvEEEjS5_ET_S7_T0_RKT1_12__false_type);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sh_TestEnvSet_TestEnv", _ZSt24__uninitialized_copy_auxIN9__gnu_cxx17__normal_iteratorIPN6common6handleIN2sh10TestEnvSet7TestEnvEEESt6vectorIS7_SaIS7_EEEES8_ET0_T_SE_SD_12__false_type);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sh_TestEnvSet_TestEnv", _ZSt24__uninitialized_copy_auxIN9__gnu_cxx17__normal_iteratorIPN6common6handleIN2sh10TestEnvSet7TestEnvEEESt6vectorIS7_SaIS7_EEEESC_ET0_T_SE_SD_12__false_type);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sh_TestEnvSet_TestEnv", _ZSt26__uninitialized_fill_n_auxIN9__gnu_cxx17__normal_iteratorIPN6common6handleIN2sh10TestEnvSet7TestEnvEEESt6vectorIS7_SaIS7_EEEEjS7_ET_SD_T0_RKT1_12__false_type);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sh_TestEnvSet_TestEnv", _ZN2sh10TestEnvSet7TestEnvD1Ev);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sh_TestEnvSet_TestEnv", _ZN2sh10TestEnvSet7TestEnvD0Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sh_TestEnvSet_TestEnv", _ZN6common6handleIN2sh10TestEnvSet7TestEnvEED1Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sh_TestEnvSet_TestEnv", _ZN6common6handleIN2sh10TestEnvSet7TestEnvEED0Ev);

@@ -2,10 +2,16 @@
 /* cflags: -O3 -fno-exceptions */
 #undef __EXCEPTIONS
 #include "cxx/defer_asm.h"
+#define DEMO_TEMPLATE_DEFS
 #include "../main.hpp"
 
+/* this object's .gnu.linkonce.t sections in the original's order */
+DEMO_LINKONCE_ORDER(
+    DEMO_LINKONCE(_ZN5input9ButtonSetIN3psp4PadBEE3setEjb)
+    DEMO_LINKONCE(_ZN6common6handleIN7glutils20PositioningInterfaceEEaSERKS3_)
+);
+
 namespace common {
-extern template class handle<glutils::PositioningInterface>;
 }
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/app3d_Callbacks", _Z41__static_initialization_and_destruction_0ii_13E64);
@@ -97,6 +103,8 @@ void _GLOBAL__D__ZN5app3d9CallbacksC2Ej(void)
     static_init(0, 0xFFFF);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/app3d_Callbacks", _ZN5input9ButtonSetIN3psp4PadBEE3setEjb);
+/* out-of-line inline members / instances that stay asm */
+#undef INCLUDE_ASM
+#define INCLUDE_ASM INCLUDE_ASM_LINKONCE
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/app3d_Callbacks", _ZN6common6handleIN7glutils20PositioningInterfaceEEaSERKS3_);
+INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/app3d_Callbacks", _ZN5input9ButtonSetIN3psp4PadBEE3setEjb);

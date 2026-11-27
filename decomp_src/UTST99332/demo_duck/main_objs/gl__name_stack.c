@@ -2,7 +2,20 @@
 /* cflags: -O3 -fno-exceptions -fno-merge-constants */
 #undef __EXCEPTIONS
 #include "cxx/defer_asm.h"
+#define DEMO_TEMPLATE_DEFS
 #include "../main.hpp"
+
+/* this object's .gnu.linkonce.t sections in the original's order */
+DEMO_LINKONCE_ORDER(
+    DEMO_LINKONCE(_ZNSt11_Deque_baseIN4math6matrixESaIS1_EED2Ev)
+    DEMO_LINKONCE(_ZNSt11_Deque_baseIN4math6matrixESaIS1_EE17_M_initialize_mapEj)
+    DEMO_LINKONCE(_ZNSt11_Deque_baseIN4math6matrixESaIS1_EE16_M_destroy_nodesEPPS1_S5_)
+    DEMO_LINKONCE(_ZNSt5dequeIN4math6matrixESaIS1_EE16_M_push_back_auxERKS1_)
+    DEMO_LINKONCE(_ZNSt5dequeIN4math6matrixESaIS1_EE15_M_pop_back_auxEv)
+    DEMO_LINKONCE(_ZNSt11_Deque_baseIN4math6matrixESaIS1_EE15_M_create_nodesEPPS1_S5_)
+    DEMO_LINKONCE(_ZSt24__uninitialized_copy_auxISt15_Deque_iteratorIN4math6matrixERKS2_PS3_ES0_IS2_RS2_PS2_EET0_T_SB_SA_12__false_type)
+    DEMO_LINKONCE(_ZNSt5dequeIN4math6matrixESaIS1_EE17_M_reallocate_mapEjb)
+);
 
 #include <deque>
 #include "UTST99332/demo_duck/gl.hpp"
@@ -15,12 +28,6 @@ void glPushName(unsigned int);
 void glLoadName(unsigned int);
 void glPopName(void);
 }
-
-/* weak instances stay asm */
-extern template class std::deque<unsigned int>;
-extern template class std::_Deque_base<unsigned int, std::allocator<unsigned int> >;
-extern template class std::deque<math::matrix>;
-extern template class std::_Deque_base<math::matrix, std::allocator<math::matrix> >;
 
 extern "C" const char D_00167728[], D_001676F0[], D_00167708[], D_00167724[];
 extern const char gl_PopName_fn[] __asm__("_ZZN2gl7PopNameEvE19__PRETTY_FUNCTION__");
@@ -218,18 +225,16 @@ void _GLOBAL__D__ZN2gl11_name_stackE(void)
     static_init(0, 0xFFFF);
 }
 
+/* out-of-line inline members / instances that stay asm */
+#undef INCLUDE_ASM
+#define INCLUDE_ASM INCLUDE_ASM_LINKONCE
+
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/gl__name_stack", _ZNSt11_Deque_baseIN4math6matrixESaIS1_EED2Ev);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/gl__name_stack", _ZNSt11_Deque_baseIN4math6matrixESaIS1_EE17_M_initialize_mapEj);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/gl__name_stack", _ZNSt11_Deque_baseIN4math6matrixESaIS1_EE16_M_destroy_nodesEPPS1_S5_);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/gl__name_stack", _ZNSt5dequeIN4math6matrixESaIS1_EE16_M_push_back_auxERKS1_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/gl__name_stack", _ZNSt5dequeIN4math6matrixESaIS1_EE15_M_pop_back_auxEv);
-
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/gl__name_stack", _ZNSt11_Deque_baseIN4math6matrixESaIS1_EE15_M_create_nodesEPPS1_S5_);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/gl__name_stack", _ZSt24__uninitialized_copy_auxISt15_Deque_iteratorIN4math6matrixERKS2_PS3_ES0_IS2_RS2_PS2_EET0_T_SB_SA_12__false_type);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/gl__name_stack", _ZNSt5dequeIN4math6matrixESaIS1_EE17_M_reallocate_mapEjb);

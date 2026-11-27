@@ -2,6 +2,7 @@
 /* cflags: -O3 -fno-exceptions */
 #undef __EXCEPTIONS
 #include "cxx/defer_asm.h"
+#define DEMO_TEMPLATE_DEFS
 #include "../main.hpp"
 
 namespace gl {
@@ -52,4 +53,5 @@ void _GLOBAL__D__ZN7glutils14CheckerTexture16_checker_textureE(void)
     static_init(0, 0xFFFF);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/glutils_CheckerTexture", _ZN6common7t_arrayIhE4addrEv);
+/* only check_init (asm) calls it: an explicit instantiation emits it */
+template unsigned char *common::t_array<unsigned char>::addr();

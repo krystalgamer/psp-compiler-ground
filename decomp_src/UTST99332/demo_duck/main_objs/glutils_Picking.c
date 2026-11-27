@@ -12,10 +12,21 @@ int glRenderMode(unsigned int);
 float fabsf(float);
 }
 
-/* weak instances stay asm */
-extern template class std::vector<unsigned int>;
-
 extern "C" const float D_001653F4;
+
+/* the object's linkonce sections in the original's order (cc1plus emits the vector instances after
+   the asm of PickingBase's inline dtors, which only its vtable references) */
+DEMO_LINKONCE_ORDER(
+    DEMO_LINKONCE(_ZNSt6vectorIjSaIjEEaSERKS1_)
+    DEMO_LINKONCE(_ZNSt6vectorIjSaIjEE13_M_insert_auxEN9__gnu_cxx17__normal_iteratorIPjS1_EERKj)
+    DEMO_LINKONCE(_ZNSt6vectorIjSaIjEE5eraseEN9__gnu_cxx17__normal_iteratorIPjS1_EES5_)
+    DEMO_LINKONCE(_ZNSt6vectorIjSaIjEE14_M_fill_insertEN9__gnu_cxx17__normal_iteratorIPjS1_EEjRKj)
+    DEMO_LINKONCE(_ZSt4fillIN9__gnu_cxx17__normal_iteratorIPjSt6vectorIjSaIjEEEEjEvT_S7_RKT0_)
+    DEMO_LINKONCE(_ZSt6fill_nIPjjjET_S1_T0_RKT1_)
+    DEMO_LINKONCE(_ZSt6fill_nIN9__gnu_cxx17__normal_iteratorIPjSt6vectorIjSaIjEEEEjjET_S7_T0_RKT1_)
+    DEMO_LINKONCE(_ZN7glutils11PickingBaseD1Ev)
+    DEMO_LINKONCE(_ZN7glutils11PickingBaseD0Ev)
+);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/glutils_Picking", _Z41__static_initialization_and_destruction_0ii_312EC);
 
@@ -132,21 +143,10 @@ void _GLOBAL__D__ZN7glutils7Picking9THRESHOLDE(void)
     static_init(0, 0xFFFF);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/glutils_Picking", _ZNSt6vectorIjSaIjEEaSERKS1_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/glutils_Picking", _ZNSt6vectorIjSaIjEE13_M_insert_auxEN9__gnu_cxx17__normal_iteratorIPjS1_EERKj);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/glutils_Picking", _ZNSt6vectorIjSaIjEE5eraseEN9__gnu_cxx17__normal_iteratorIPjS1_EES5_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/glutils_Picking", _ZNSt6vectorIjSaIjEE14_M_fill_insertEN9__gnu_cxx17__normal_iteratorIPjS1_EEjRKj);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/glutils_Picking", _ZSt4fillIN9__gnu_cxx17__normal_iteratorIPjSt6vectorIjSaIjEEEEjEvT_S7_RKT0_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/glutils_Picking", _ZSt6fill_nIPjjjET_S1_T0_RKT1_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/glutils_Picking", _ZSt6fill_nIN9__gnu_cxx17__normal_iteratorIPjSt6vectorIjSaIjEEEEjjET_S7_T0_RKT1_);
+/* PickingBase's inline virtual dtor: only its vtable (asm data) refers to it */
+#undef INCLUDE_ASM
+#define INCLUDE_ASM INCLUDE_ASM_LINKONCE
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/glutils_Picking", _ZN7glutils11PickingBaseD1Ev);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/glutils_Picking", _ZN7glutils11PickingBaseD0Ev);
-
