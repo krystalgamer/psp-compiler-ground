@@ -40,6 +40,7 @@ int DOMStringcasecmpFast(const DOMString *a, const DOMString *b);
 Node *Util_Node_TraceNode(Node *n, Node *root);
 void DOMAPI_DeleteDOMImplementation(SDomiImplementation *impl);
 
+int utf8ToUcs2(DOMChar *ucs2, const char *utf8, int len);
 void DOMAPI_Initialize(void) {
     if (++gDOMAPIUse == 1) {
         SDomiDocManager_Initialize(&gDomiDocManager);
@@ -283,7 +284,20 @@ void DOMStringfree(DOMString *s) {
     }
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/DOMAPI", UTF8toDOMString);
+DOMString UTF8toDOMString(const char *s) {
+    DOMString r;
+    int len;
+
+    if (s == NULL) {
+        return _DOMnull;
+    }
+    len = strlen(s);
+    if (len == 0 || (r.str = MEM_malloc(0, len * 2 + 2)) == NULL) {
+        return _DOMnull;
+    }
+    r.size = r.len = utf8ToUcs2(r.str, s, len);
+    return r;
+}
 
 DOMString ASCIItoDOMString(const char *s) {
     DOMString r;
