@@ -46,7 +46,11 @@ static __inline__ void send_commandi(int cmd, int argument)
 
 static __inline__ void send_commandf(int cmd, float argument)
 {
-	*(pList->current++) = (cmd << 24) | (*((unsigned int *)&argument) >> 8);
+	unsigned int v = *(unsigned int *)&argument;
+
+	v >>= 8;
+	v &= 0xffffff;
+	send_commandi(cmd, v);
 }
 
 static __inline__ unsigned int float_bits(float f)
@@ -1277,9 +1281,36 @@ void sceGuLightAtt(int light, float atten0, float atten1, float atten2)
 
 INCLUDE_ASM("tmp/asm/UTST99332/sound_starsound/nonmatchings/libgu", sceGuLightSpot);
 
-INCLUDE_RODATA("tmp/asm/UTST99332/sound_starsound/nonmatchings/libgu", D_000119B4);
 
-INCLUDE_ASM("tmp/asm/UTST99332/sound_starsound/nonmatchings/libgu", sceGuLightColor);
+void sceGuLightColor(int light, int component, unsigned int color)
+{
+	color &= 0xffffff;
+	switch (component) {
+	case 1:
+		send_commandi(lcmd[light].ambient, color);
+		break;
+	case 2:
+		send_commandi(lcmd[light].diffuse, color);
+		break;
+	case 3: {
+		int cmd = lcmd[light].diffuse;
+
+		send_commandi(lcmd[light].ambient, color);
+		send_commandi(cmd, color);
+		break;
+	}
+	case 4:
+		send_commandi(lcmd[light].specular, color);
+		break;
+	case 6: {
+		int cmd = lcmd[light].specular;
+
+		send_commandi(lcmd[light].diffuse, color);
+		send_commandi(cmd, color);
+		break;
+	}
+	}
+}
 
 void sceGuTexMode(int tpsm, int maxmips, int a2, int swizzle)
 {
@@ -1359,9 +1390,17 @@ void sceGuTexImage(int mipmap, int width, int height, int tbw, const void *tbp)
 	sceGuTexFlush();
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/sound_starsound/nonmatchings/libgu", sceGuTexScale);
+void sceGuTexScale(float u, float v)
+{
+	send_commandf(72, u);
+	send_commandf(73, v);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/sound_starsound/nonmatchings/libgu", sceGuTexOffset);
+void sceGuTexOffset(float u, float v)
+{
+	send_commandf(74, u);
+	send_commandf(75, v);
+}
 
 void sceGuTexFlush(void)
 {
@@ -1484,7 +1523,11 @@ void sceGuBoneMatrix(unsigned int index, const ScePspFMatrix4 *matrix)
 	send_commandi(43, float_bits(matrix->w.z) >> 8);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/sound_starsound/nonmatchings/libgu", sceGuMorphWeight);
+void sceGuMorphWeight(int index, float weight)
+{
+	send_commandi(255, 0);
+	send_commandf(44 + index, weight);
+}
 
 void sceGuDebugPrint(int x, int y, unsigned int color, const char *str)
 {
