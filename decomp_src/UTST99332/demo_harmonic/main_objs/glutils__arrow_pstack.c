@@ -460,22 +460,8 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/glutils__arr
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/glutils__arrow_pstack", _ZN7glutils6Params13CircularArrowC1Ev);
 
-/* deque<T>::back/push_back: the static initializer calls them (its size keeps them from being inlined there) */
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/glutils__arrow_pstack", _ZNSt5dequeIN7glutils6Params5PointESaIS2_EE4backEv);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/glutils__arrow_pstack", _ZNSt5dequeIN7glutils6Params5PointESaIS2_EE9push_backERKS2_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/glutils__arrow_pstack", _ZNSt5dequeIN7glutils6Params5ArrowESaIS2_EE4backEv);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/glutils__arrow_pstack", _ZNSt5dequeIN7glutils6Params5ArrowESaIS2_EE9push_backERKS2_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/glutils__arrow_pstack", _ZNSt5dequeIN7glutils6Params9UnitFrameESaIS2_EE4backEv);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/glutils__arrow_pstack", _ZNSt5dequeIN7glutils6Params9UnitFrameESaIS2_EE9push_backERKS2_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/glutils__arrow_pstack", _ZNSt5dequeIN7glutils6Params13CircularArrowESaIS2_EE4backEv);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/glutils__arrow_pstack", _ZNSt5dequeIN7glutils6Params13CircularArrowESaIS2_EE9push_backERKS2_);
+/* deque<T>::back/push_back: the static initializer (asm) calls them (its size keeps them from being
+   inlined there) */
 
 /* the other deque instances that only the (asm) static initializer uses: referenced from here (a discarded function)
    so that cc1plus emits them (their order is DEMO_LINKONCE_ORDER's) */
@@ -497,4 +483,18 @@ extern "C" void glutils__arrow_pstack_instance_refs(std::deque<glutils::Params::
     a.push_back(a.back());
     u.push_back(u.back());
     c.push_back(c.back());
+    /* pointers to deque<T>::back/push_back (static, in a discarded section: no .rodata constants) make
+       cc1plus emit their out-of-line copies; taken here, after their callers were compiled */
+    static std::deque<glutils::Params::Point>::reference (std::deque<glutils::Params::Point>::*back_Point)() __attribute__((section(".discard.data"))) = &std::deque<glutils::Params::Point>::back;
+    static void (std::deque<glutils::Params::Point>::*push_back_Point)(const glutils::Params::Point &) __attribute__((section(".discard.data"))) = &std::deque<glutils::Params::Point>::push_back;
+    __asm__ volatile("" : : "m"(back_Point), "m"(push_back_Point));
+    static std::deque<glutils::Params::Arrow>::reference (std::deque<glutils::Params::Arrow>::*back_Arrow)() __attribute__((section(".discard.data"))) = &std::deque<glutils::Params::Arrow>::back;
+    static void (std::deque<glutils::Params::Arrow>::*push_back_Arrow)(const glutils::Params::Arrow &) __attribute__((section(".discard.data"))) = &std::deque<glutils::Params::Arrow>::push_back;
+    __asm__ volatile("" : : "m"(back_Arrow), "m"(push_back_Arrow));
+    static std::deque<glutils::Params::UnitFrame>::reference (std::deque<glutils::Params::UnitFrame>::*back_UnitFrame)() __attribute__((section(".discard.data"))) = &std::deque<glutils::Params::UnitFrame>::back;
+    static void (std::deque<glutils::Params::UnitFrame>::*push_back_UnitFrame)(const glutils::Params::UnitFrame &) __attribute__((section(".discard.data"))) = &std::deque<glutils::Params::UnitFrame>::push_back;
+    __asm__ volatile("" : : "m"(back_UnitFrame), "m"(push_back_UnitFrame));
+    static std::deque<glutils::Params::CircularArrow>::reference (std::deque<glutils::Params::CircularArrow>::*back_CircularArrow)() __attribute__((section(".discard.data"))) = &std::deque<glutils::Params::CircularArrow>::back;
+    static void (std::deque<glutils::Params::CircularArrow>::*push_back_CircularArrow)(const glutils::Params::CircularArrow &) __attribute__((section(".discard.data"))) = &std::deque<glutils::Params::CircularArrow>::push_back;
+    __asm__ volatile("" : : "m"(back_CircularArrow), "m"(push_back_CircularArrow));
 }
