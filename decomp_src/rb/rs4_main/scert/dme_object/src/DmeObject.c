@@ -14,7 +14,6 @@ int NetSetSessionMasterClientIndex(void *arg0, int arg1);
 int RemoveFromObjectUpdateList(void);
 void NetIGetDataStream(void);
 void NetISendFieldUpdates(void);
-void *NetIGetObject();                              /* extern */
 M2C_UNK SendGroupedFieldUpdate(int, M2C_UNK, M2C_UNK); /* extern */
 M2C_UNK NetGetStreamChannel();                      /* extern */
 extern void *gObjectInterfacePtr;
@@ -23,13 +22,36 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_object/src/DmeObject", N
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_object/src/DmeObject", NetRegisterObjectStart);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_object/src/DmeObject", NetSetDefaultNetUseObjectsInParams);
+int NetSetDefaultNetUseObjectsInParams(int *p)
+{
+    int ret = 0x17;
+
+    if (p != NULL) {
+        p[0] = 0x10;
+        p[1] = 0x40;
+        p[2] = 0x1000;
+        p[3] = 0x10;
+        p[4] = 0x800;
+        ret = 0;
+    }
+    return ret;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_object/src/DmeObject", NetUseObjects);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_object/src/DmeObject", NetObjectField);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_object/src/DmeObject", NetSetDefaultRegisterObjectFilterParams);
+int NetSetDefaultRegisterObjectFilterParams(int *p)
+{
+    int ret = 0x17;
+
+    if (p != NULL) {
+        p[0] = 0;
+        p[1] = 0;
+        ret = 0;
+    }
+    return ret;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_object/src/DmeObject", NetRegisterObjectFilter);
 
@@ -170,7 +192,16 @@ loop_5:
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_object/src/DmeObject", NetIGetObject);
+extern void **D_00132A78;
+void *NetIGetObject(idx)
+    unsigned int idx;
+{
+    void *p = NULL;
+
+    if (idx < M2C_FIELD(gObjectInterfacePtr, unsigned int *, 0x100))
+        p = D_00132A78[idx];
+    return p;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/dme_object/src/DmeObject", NetGetMyPersistantObjectCount);
 
