@@ -41,7 +41,18 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/script/program", D_000FF850
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/script/program", D_000FF878);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/script/program", ProgramGetTask);
+extern unsigned char D_000FF850, D_000FF878;
+int ProgramGetTask(void *s, int idx)
+{
+	if (s != NULL && M2C_FIELD(s, int **, 0x148) != NULL) {
+		if (idx >= 0 && idx < M2C_FIELD(s, int *, 0x94))
+			return M2C_FIELD(s, int **, 0x148)[idx];
+		consPrintf(&D_000FF878, "ProgramGetTask", idx);
+		return 0;
+	}
+	consPrintf(&D_000FF850, "ProgramGetTask", idx);
+	return 0;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/script/program", ProgramTask);
 
