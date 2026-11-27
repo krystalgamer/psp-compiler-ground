@@ -77,6 +77,12 @@ def main():
         if src.is_relative_to(base) and src.suffix == ".c":
             unit = src.relative_to(base).with_suffix("").as_posix()
             units = compiler.table(ROOT / "config" / a.target / f"units.{a.module}.txt")
+            if unit not in units:
+                # a variant copy next to the unit (e.g. vt.py's _vt0_NAME.c, NAME_vt.c)
+                d, n = unit.rpartition("/")[::2]
+                n = re.sub(r"^_\w*?_(?=[^_])", "", n)
+                n = re.sub(r"(?:_vt\w*|\.v\d+)$", "", n)
+                unit = (d + "/" if d else "") + n
             if unit in units:
                 own = compiler.compiler(a.target, a.module, unit)
                 cc1s = [own] + [c for c in cc1s if c != own]
