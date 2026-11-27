@@ -36,6 +36,13 @@ void *UTL_peekqueue(void *q, void *e);
 void UTL_relqueue(void *q, void *e);
 void *iom_freeMsg(void *msg);
 int iom_mfree(void *p);
+typedef struct { int mq; u8 pad[0xBC]; HCTXE ctx[1]; int xF8; int xFC; int x100; } IOMX_T;
+void *iom_newMsg(void *);
+void UTL_enqueue(void *q, void *e);
+extern char D_0013F38C[];
+extern int D_00585108;
+int sprintf(char *, const char *, ...);
+typedef struct { int len0; char *s0; int len1; char *s1; int len2; char *s2; } HCBD;
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/iom_evhttp", D_0013F290);
 
 int iom_evHttpCtx(void *msg) {
@@ -60,7 +67,54 @@ int iom_detachHttpCtx(void) {
     return (((int) ~http_detach() >> 0x1F) & 0x12C) - 0x12C;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iom_evhttp", iom_addHttpCtx);
+int iom_addHttpCtx(void *msg) {
+    HQE *e;
+    HCTXE *c;
+    int i;
+    void *m;
+    HQE *q;
+    int t;
+
+    t = M2C_FIELD(msg, int *, 4);
+    if (t == 2 || t == 4) {
+        for (e = UTL_peekqueue(&D_005851FC, NULL); e != NULL; e = UTL_peekqueue(&D_005851FC, e)) {
+            if (M2C_FIELD(msg, int *, 4) == M2C_FIELD(e->msg, int *, 4) && M2C_FIELD(msg, int *, 8) == M2C_FIELD(e->msg, int *, 8))
+                return -0x12E;
+        }
+        for (i = 0; i < 1; i++) {
+            c = &D_005851C4[i];
+            if (c->state != 0 && c->state != 6) {
+                if (M2C_FIELD(msg, int *, 4) == M2C_FIELD(c->msg, int *, 4) && M2C_FIELD(msg, int *, 8) == M2C_FIELD(c->msg, int *, 8))
+                    return -0x12E;
+            }
+        }
+    }
+    for (i = 0; i < 1; i++) {
+        if (((IOMX_T *)&iom)->ctx[i].state == 0) {
+            if (((IOMX_T *)&iom)->x100 != 0)
+                return -0x133;
+            m = iom_newMsg(NULL);
+            if (m == NULL)
+                return -0x12D;
+            ((IOMX_T *)&iom)->ctx[i].state = 1;
+            ((IOMX_T *)&iom)->ctx[i].msg = msg;
+            ((IOMX_T *)&iom)->ctx[i].x18[7] = 0;
+            M2C_FIELD(m, int *, 0x10) = 0x12;
+            M2C_FIELD(m, void **, 0x20) = &D_005851C4[i];
+            iom_sendMsg((int)m, iom);
+            break;
+        }
+    }
+    if (i < 1)
+        goto end;
+    m = iom_malloc(0xC);
+    if (m == NULL)
+        return -0x12D;
+    ((HQE *)m)->msg = msg;
+    UTL_enqueue(&D_005851FC, m);
+end:
+    return 0;
+}
 
 void iom_stopHttpCtx(void *msg) {
     HQE *e;
@@ -194,7 +248,60 @@ int iom_httpToLocalError(int e) {
     return r;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iom_evhttp", iom_httpCallback);
+void iom_httpCallback(void *h, int type, ...) {
+    __builtin_va_list ap;
+    int code;
+    char *a;
+    char *b;
+    char *c;
+    char *d;
+    int n;
+    HCBD *p;
+    void *m;
+
+    __builtin_va_start(ap, type);
+    if (type == 1) {
+        code = __builtin_va_arg(ap, int);
+        a = __builtin_va_arg(ap, char *);
+        b = __builtin_va_arg(ap, char *);
+        c = __builtin_va_arg(ap, char *);
+        d = __builtin_va_arg(ap, char *);
+        if (a == NULL)
+            a = D_0013F38C;
+        if (b == NULL)
+            b = D_0013F38C;
+        if (c == NULL)
+            c = D_0013F38C;
+        if (d == NULL)
+            d = D_0013F38C;
+        n = strlen(a);
+        n += strlen(b);
+        n += strlen(c);
+        n += strlen(d);
+        n += 0x1E;
+        p = (HCBD *)iom_malloc(n);
+        if (p != NULL) {
+            m = iom_newMsg(M2C_FIELD(h, void **, 0x14));
+            if (m != NULL) {
+            M2C_FIELD(m, int *, 0x10) = 0x29;
+            M2C_FIELD(m, int *, 0x14) = (unsigned)code >> 31;
+            M2C_FIELD(m, int *, 0x1C) = 0x18;
+            M2C_FIELD(m, void **, 0x20) = p;
+            p->len0 = strlen(a);
+            p->s0 = (char *)(p + 1);
+            strcpy(p->s0, a);
+            p->len1 = strlen(b);
+            p->s1 = p->s0 + p->len0 + 1;
+            strcpy(p->s1, b);
+            p->len2 = strlen(c) + strlen(d) + 3;
+            p->s2 = p->s1 + p->len1 + 1;
+            sprintf(p->s2, "%s - %s", c, d);
+            iom_sendMsg((int)m, D_00585108);
+            } else
+                iom_mfree(p);
+        }
+    }
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/iom_evhttp", iom_location);
 
