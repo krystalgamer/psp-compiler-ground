@@ -18,6 +18,7 @@ extern unsigned char D_00585138;
 extern unsigned char D_00585144;
 
 
+int iom_addCache(int, int, int *);
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_list", getListNumCharAtIU);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_list", getListNumCharAtIL);
@@ -81,7 +82,19 @@ int iom_detachCache(void) {
     return r;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_list", iom_setCache);
+int iom_setCache(int url, int *data) {
+    int ret;
+
+    if (url == 0 || data == NULL || *data == 0)
+        return 0;
+    if (iom_preferenceCache() == 0)
+        return 0;
+    iom_updateCache();
+    ret = iom_addCache(url, -1, data);
+    if (D_0058512C != 0)
+        iom_saveCache();
+    return ret;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_list", iom_getCache);
 

@@ -98,7 +98,20 @@ int CSSStyleDeclaration_getLength(void *arg0) {
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/css_StyleDeclaration", CSSStyleDeclaration_item);
+void *CSSStyleDeclaration_item(void *decl, int index) {
+    void *p;
+    int i;
+
+    if (decl == NULL || M2C_FIELD(decl, void **, 4) == NULL || M2C_FIELD(M2C_FIELD(decl, void **, 4), s16 *, 0) != 9
+        || index >= M2C_FIELD(M2C_FIELD(decl, void **, 4), int *, 8))
+        return NULL;
+    p = M2C_FIELD(M2C_FIELD(decl, void **, 4), void **, 0xC);
+    for (i = 0; p != NULL & i < index; i++)
+        p = M2C_FIELD(p, void **, 0x18);
+    if (i == index)
+        return CSSPropertyNames[i * 2];
+    return NULL;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)

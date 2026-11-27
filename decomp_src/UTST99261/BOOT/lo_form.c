@@ -14,6 +14,8 @@ M2C_UNK resetFormData(int, M2C_UNK);                /* extern */
 M2C_UNK clearSaveFormData();                        /* extern */
 
 
+typedef struct FormEnt { void *form; int pad; struct FormEnt *next; } FormEnt;
+void *MEM_malloc(int, int);
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_form", getRadioListByName);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_form", addSaveFormData);
@@ -37,7 +39,25 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_form", getPreviousForm);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_form", getInputType);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_form", addFormList);
+void addFormList(void *ctx, void *form) {
+    FormEnt *e;
+    FormEnt *p;
+
+    if (ctx == NULL || form == NULL)
+        return;
+    e = MEM_malloc(0, 0xC);
+    e->form = form;
+    e->pad = 0;
+    e->next = NULL;
+    if (M2C_FIELD(M2C_FIELD(ctx, void **, 0x20), FormEnt **, 0x7C) == NULL) {
+        M2C_FIELD(M2C_FIELD(ctx, void **, 0x20), FormEnt **, 0x7C) = e;
+    } else {
+        p = M2C_FIELD(M2C_FIELD(ctx, void **, 0x20), FormEnt **, 0x7C);
+        while (p->next != NULL)
+            p = p->next;
+        p->next = e;
+    }
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_form", addFormElementList);
 

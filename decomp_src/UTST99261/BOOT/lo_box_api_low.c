@@ -13,6 +13,8 @@ void getViewPort(BOX *box, int *x, int *y);
 void drawDelete(BOX *box);
 
 
+void *memset(void *, int, unsigned int);
+void Node_setBox(void *node, BOX *box);
 int checkTableHierarchy(BOX *box, BOX **table) {
     while (box != NULL) {
         if (box->content == 6) {
@@ -27,7 +29,20 @@ int checkTableHierarchy(BOX *box, BOX **table) {
     return 1;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_box_api_low", createBox);
+BOX *createBox(void *ctx, int type) {
+    unsigned int size = type != 0 ? 0xBC : 0x44;
+    BOX *box = MEM_malloc(0, size);
+
+    if (box == NULL)
+        return NULL;
+    memset(box, 0, size);
+    M2C_FIELD(box, void **, 0x28) = ctx;
+    if (type != 0)
+        box->style = (BOXSTYLE *)((char *)box + 0x44);
+    if (ctx != NULL)
+        Node_setBox(ctx, box);
+    return box;
+}
 
 BOX *createBlockBox(void *ctx, BOX *parent, BOX *prev) {
     BOX *box = createBox(ctx, 1);

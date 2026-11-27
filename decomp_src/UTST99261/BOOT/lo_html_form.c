@@ -26,6 +26,9 @@ int getSessionSaveData(int);                        /* extern */
 M2C_UNK processArea();                              /* extern */
 
 
+typedef struct SelOpt { struct SelOpt *next; int pad[4]; int selected; } SelOpt;
+typedef struct SelInfo { int pad[2]; SelOpt *opts; int *sel; } SelInfo;
+void initSelectBoxSize(BOX *box);
 int getTabindex(void *node) {
     char *s;
     s16 n = 0;
@@ -67,7 +70,25 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_html_form", html_INPUT);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_html_form", html_SELECT);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_html_form", html_SELECT_after);
+void html_SELECT_after(void *node, BOX *box) {
+    SelInfo *si = (SelInfo *)box->geom;
+    int *sel;
+    SelOpt *o;
+    int i, k;
+
+    if (si->sel != NULL) {
+        sel = si->sel;
+        i = 0;
+        k = 0;
+        for (o = si->opts; o != NULL && i < sel[0]; o = o->next, k++) {
+            if (sel[i + 1] == k) {
+                o->selected = 1;
+                i++;
+            }
+        }
+    }
+    initSelectBoxSize(box);
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
