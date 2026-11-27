@@ -165,6 +165,17 @@ modules (`tools/nltest.py`, `tools/objcmp.py`).
   builds differ in kernel_bridge: zzzzdummy's is older, without the
   `if (fd < 0) return -9;` checks in `_read`/`_write`/`_close`/`_lseek`.
 
+- selfboot lflash_write's DES/3DES library is Sony's own (not libdes, d3des
+  or Karn's): the same code is in the PS2 BB Navigator, whose decompiled C
+  (open-bn `src/cfd/cfd.c`) matches the DES block cores and key schedule
+  with the 1.5.1 tree at plain `-O2`.
+- rb pal_BOOT's `display` (a release 1.5.1 unit, the same source as jp_BOOT's
+  1.5.1.internal one) needs `-fno-merge-constants`: its `0.125f` sits in
+  `.rodata` before later strings.  1.5.1.internal's object-order link
+  (`objorder`) doesn't reproduce it for the release unit (tested: pal_BOOT
+  mismatches with it), so the release build put that constant in `.rodata`
+  itself — the unit's own flag, like the other per-object flags.
+
 ## psp-gcc 1.6.1
 
 - **32-bit `HOST_WIDE_INT`** (psp-gcc 1.7.1, `psp: use a 32-bit
