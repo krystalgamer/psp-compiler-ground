@@ -109,7 +109,53 @@ int func_00000350(SceUID in, SceUID out)
 
 INCLUDE_RODATA("tmp/asm/selfboot/lflash_write/nonmatchings/lflash_write", D_000051B4);
 
-INCLUDE_ASM("tmp/asm/selfboot/lflash_write/nonmatchings/lflash_write", func_000003F0);
+int func_000003F0(SceUID fd1, SceUID fd2)
+{
+	char buf1[512];
+	char buf2[512];
+	unsigned int size1;
+	unsigned int size2;
+	int n;
+	int m;
+	int got;
+	int j;
+
+	size1 = sceIoLseek(fd1, 0, 2);
+	size2 = sceIoLseek(fd2, 0, 2);
+	if (size1 != size2) {
+		printf(D_000051B4, size1, size2);
+		if (size2 < size1)
+			puts("shrink case");
+	}
+	sceIoLseek(fd1, 0, 0);
+	sceIoLseek(fd2, 0, 0);
+	do {
+		n = sceIoRead(fd1, buf1, sizeof(buf1));
+		if (n <= 0)
+			break;
+		got = 0;
+		while (got < n) {
+			m = sceIoRead(fd2, buf2 + got, n - got);
+			got += m;
+			if (m == 0) {
+				puts("iCompare = 0");
+				return 0;
+			}
+			if (m < 0) {
+				printf(D_00005160, m);
+				return -2;
+			}
+		}
+		for (j = 0; j < m; j++) {
+			if (buf1[j] != buf2[j]) {
+				printf("compare error: j=%d\n", j);
+				return -3;
+			}
+		}
+	} while (n > 0);
+	puts("compare_file done");
+	return 0;
+}
 
 INCLUDE_RODATA("tmp/asm/selfboot/lflash_write/nonmatchings/lflash_write", D_0000521C);
 

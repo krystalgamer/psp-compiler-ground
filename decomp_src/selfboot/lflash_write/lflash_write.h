@@ -58,6 +58,10 @@ int func_000011A4(char *file);
 int func_00001594(char *cmd);
 int LflashFatfmt_B7A424A4(int argc, char **argv);
 
+/* .rodata strings shared by functions that are still asm */
+extern const char D_00005160[];	/* "sceIoRead 0x%08x\n" */
+extern const char D_000051B4[];	/* "size1 0x%08x != 0x%08x size2\n" */
+
 /* .data */
 extern char *D_000056E0[6];	/* "flash0".."flash5" */
 extern char *D_000056F8[6];	/* "lflash0:0,0".. */
