@@ -57,7 +57,101 @@ int HST_freeAuthorizationDB(void) {
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/authorization", HST_addAuthorizationDB);
+int HST_addAuthorizationDB(AuthInfo *a) {
+    int len;
+    int n;
+    char *path;
+    char *user;
+    char *pass;
+    AuthEntry *e;
+    AuthEntry *ne;
+    AuthEntry *p;
+
+    len = urlpathlen(a->path);
+    path = stringdup(a->path, len);
+    if (path == NULL) {
+        return -1;
+    }
+    if (a->user == NULL) {
+        user = NULL;
+    } else {
+        user = stringdup(a->user, strlen(a->user));
+        if (user == NULL) {
+            MEM_free(0, path);
+            return -1;
+        }
+    }
+    if (a->pass == NULL) {
+        pass = NULL;
+    } else {
+        pass = stringdup(a->pass, strlen(a->pass));
+        if (pass == NULL) {
+            MEM_free(0, path);
+            MEM_free(0, user);
+            return -1;
+        }
+    }
+    for (e = *(AuthEntry **)authdb; e != NULL; e = e->next) {
+        n = strlen(e->info->path);
+        if (n > len) {
+            continue;
+        }
+        if (n != len) {
+            break;
+        }
+        if (strncasecmp(e->info->path, path, len) == 0) {
+            MEM_free(0, e->info->user);
+            MEM_free(0, e->info->pass);
+            e->info->user = user;
+            e->info->pass = pass;
+            MEM_free(0, path);
+            return 0;
+        }
+    }
+    ne = MEM_malloc(0, 0xC);
+    if (ne == NULL) {
+        MEM_free(0, path);
+        MEM_free(0, user);
+        MEM_free(0, pass);
+        return -1;
+    }
+    ne->next = NULL;
+    M2C_FIELD(ne, AuthEntry **, 4) = NULL;
+    ne->info = MEM_malloc(0, 0xC);
+    if (ne->info == NULL) {
+        MEM_free(0, path);
+        MEM_free(0, user);
+        MEM_free(0, pass);
+        MEM_free(0, ne);
+        return -1;
+    }
+    ne->info->path = path;
+    ne->info->user = user;
+    ne->info->pass = pass;
+    if (e == NULL) {
+        e = *(AuthEntry **)authdb;
+        if (e == NULL) {
+            *(AuthEntry **)authdb = ne;
+        } else {
+            while (e->next != NULL) {
+                e = e->next;
+            }
+            M2C_FIELD(ne, AuthEntry **, 4) = e;
+            e->next = ne;
+        }
+    } else {
+        p = M2C_FIELD(e, AuthEntry **, 4);
+        if (p != NULL) {
+            p->next = ne;
+        } else {
+            *(AuthEntry **)authdb = ne;
+        }
+        M2C_FIELD(ne, AuthEntry **, 4) = p;
+        ne->next = e;
+        M2C_FIELD(e, AuthEntry **, 4) = ne;
+    }
+    return 0;
+}
 
 AuthInfo *HST_searchAuthorizationDB(char *url) {
     int len;
