@@ -1,5 +1,3 @@
-#include "common.h"
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/newlib/libc/stdlib/mbrtowc", _mbrtowc_r);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/newlib/libc/stdlib/mbrtowc", mbrtowc);
+/* upstream: newlib-1.12.0/newlib/libc/stdlib/mbrtowc.c (unmodified) */
+/* cflags: -O2 -fno-builtin */
+#include "libc/stdlib/mbrtowc.c"

@@ -1,3 +1,3 @@
-#include "common.h"
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/newlib/libm/math/ef_asin", __ieee754_asinf);
+/* upstream: newlib-1.12.0/newlib/libm/math/ef_asin.c (unmodified) */
+/* cflags: -O2 -fno-builtin */
+#include "libm/math/ef_asin.c"

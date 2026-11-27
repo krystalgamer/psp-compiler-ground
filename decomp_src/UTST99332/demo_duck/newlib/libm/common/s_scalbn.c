@@ -1,3 +1,4 @@
-#include "common.h"
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/newlib/libm/common/s_scalbn", scalbn);
+/* upstream: newlib-1.12.0/newlib/libm/common/s_scalbn.c (unmodified) */
+/* cflags: -O2 -fno-builtin */
+/* data-align: 8 */
+#include "libm/common/s_scalbn.c"

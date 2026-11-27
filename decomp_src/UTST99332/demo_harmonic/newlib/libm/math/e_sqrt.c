@@ -1,3 +1,4 @@
-#include "common.h"
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/newlib/libm/math/e_sqrt", __ieee754_sqrt);
+/* upstream: newlib-1.12.0/newlib/libm/math/e_sqrt.c (unmodified) */
+/* cflags: -O2 -fno-builtin */
+/* data-align: 8 */
+#include "libm/math/e_sqrt.c"

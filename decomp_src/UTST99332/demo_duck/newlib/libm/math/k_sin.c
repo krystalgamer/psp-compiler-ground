@@ -1,3 +1,4 @@
-#include "common.h"
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/newlib/libm/math/k_sin", __kernel_sin);
+/* upstream: newlib-1.12.0/newlib/libm/math/k_sin.c (unmodified) */
+/* cflags: -O2 -fno-builtin */
+/* data-align: 8 */
+#include "libm/math/k_sin.c"

@@ -1,3 +1,3 @@
-#include "common.h"
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/newlib/libm/common/sf_scalbn", scalbnf);
+/* upstream: newlib-1.12.0/newlib/libm/common/sf_scalbn.c (unmodified) */
+/* cflags: -O2 -fno-builtin */
+#include "libm/common/sf_scalbn.c"

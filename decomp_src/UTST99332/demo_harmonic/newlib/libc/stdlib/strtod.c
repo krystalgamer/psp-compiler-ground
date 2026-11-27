@@ -1,7 +1,4 @@
-#include "common.h"
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/newlib/libc/stdlib/strtod", _strtod_r);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/newlib/libc/stdlib/strtod", strtod);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/newlib/libc/stdlib/strtod", strtof);
+/* upstream: newlib-1.12.0/newlib/libc/stdlib/strtod.c (unmodified) */
+/* cflags: -O2 -fno-builtin */
+/* data-align: 8 */
+#include "libc/stdlib/strtod.c"

@@ -1,3 +1,3 @@
-#include "common.h"
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/newlib/libm/math/ef_atan2", __ieee754_atan2f);
+/* upstream: newlib-1.12.0/newlib/libm/math/ef_atan2.c (unmodified) */
+/* cflags: -O2 -fno-builtin */
+#include "libm/math/ef_atan2.c"
