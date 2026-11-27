@@ -49,6 +49,8 @@ M2C_UNK mes_gc_register(M2C_UNK *, M2C_UNK, M2C_UNK, M2C_UNK); /* extern */
 extern unsigned char mes_string_method;
 
 
+int mes_util_streq(const UCSChar *a, const UCSChar *b, int n);
+MesValue mes_eval_to_number(MesContext *ctx, MesValue v);
 MesValue mes_string_new(MesContext *ctx, const void *str, int len)
 {
     MesStr *s;
@@ -282,9 +284,88 @@ MesValue mes_string_char_code_at(MesContext *ctx, MesValue pos)
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_string", mes_string_concat);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_string", mes_string_index_of);
+MesValue mes_string_index_of(MesContext *ctx, MesValue search)
+{
+    MesArgs *args = ctx->frame->args;
+    MesValue s;
+    MesValue p;
+    int slen;
+    UCSChar *sstr;
+    int plen;
+    UCSChar *pstr;
+    int pos;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_string", mes_string_last_index_of);
+    s = mes_eval_to_string(ctx, (MesValue)ctx->frame->thisobj);
+    slen = ((MesStr *)(s & ~3))->len;
+    sstr = ((MesStr *)(s & ~3))->str;
+    *--ctx->sp = s;
+    p = mes_eval_to_string(ctx, search);
+    plen = ((MesStr *)(p & ~3))->len;
+    pstr = ((MesStr *)(p & ~3))->str;
+    *--ctx->sp = p;
+    if (args == NULL || (unsigned int)args->argc < 2)
+        pos = 0;
+    else {
+        pos = mes_eval_to_int32(ctx, args->argv[1]);
+        if (pos >= 0) {
+            if (pos > slen)
+                pos = slen;
+        } else
+            pos = 0;
+    }
+    ctx->sp += 2;
+    for (; pos + plen <= slen; pos++)
+        if (mes_util_streq(sstr + pos, pstr, plen))
+            break;
+    if (pos + plen <= slen)
+        return mes_number_alloc_int32(ctx, pos);
+    return mes_number_alloc_int32(ctx, -1);
+}
+
+MesValue mes_string_last_index_of(MesContext *ctx, MesValue search)
+{
+    MesArgs *args = ctx->frame->args;
+    MesValue s;
+    MesValue p;
+    MesValue n;
+    int slen;
+    UCSChar *sstr;
+    int plen;
+    UCSChar *pstr;
+    int pos;
+
+    s = mes_eval_to_string(ctx, (MesValue)ctx->frame->thisobj);
+    slen = ((MesStr *)(s & ~3))->len;
+    sstr = ((MesStr *)(s & ~3))->str;
+    *--ctx->sp = s;
+    p = mes_eval_to_string(ctx, search);
+    plen = ((MesStr *)(p & ~3))->len;
+    pstr = ((MesStr *)(p & ~3))->str;
+    *--ctx->sp = p;
+    if (args != NULL && (unsigned int)args->argc >= 2) {
+        n = mes_eval_to_number(ctx, args->argv[1]);
+        if (n == 0x1C || n == 0x14)
+            pos = slen - plen;
+        else if (n == 0x10 || n == 0x18)
+            pos = 0;
+        else if ((n & 3) == 1)
+            pos = n >> 2;
+        else if ((n & 3) == 2)
+            pos = mes_eval_to_int32(ctx, n);
+        else
+            pos = slen - plen;
+        if (pos < 0)
+            pos = 0;
+        else if (pos > slen - plen)
+            pos = slen - plen;
+    } else
+        pos = slen - plen;
+    ctx->sp += 2;
+    for (; pos >= 0; pos--)
+        if (mes_util_streq(sstr + pos, pstr, plen))
+            break;
+    return mes_number_alloc_int32(ctx, pos);
+}
 
 MesValue mes_string_locale_compare(MesContext *ctx, MesValue that)
 {
