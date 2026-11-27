@@ -1331,7 +1331,89 @@ int zWindExcEventRadiobox(ZW *w, int type, ZEVENT *ev) {
 }
 
 int zWindExcEventList(ZW *w, int type, ZEVENT *ev, int x, int y);
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/zWindDraw", zWindExcEventList);
+int zWindExcEventList(ZW *w, int type, ZEVENT *ev, int x, int y) {
+    int left;
+    int top;
+    int right;
+    int bottom;
+    int h;
+    int i;
+    int lim;
+
+    switch (type) {
+    case 7:
+        if (ev->key != 0x80) {
+            break;
+        }
+        if (!(D_00584BCC & 0x20000000)) {
+            s_windsystem_data.mode = 1;
+            s_windsystem_data.target = w;
+        }
+        return 0;
+    case 3:
+        if (!(D_00584BCC & 0x20000000))
+            goto fail;
+        left = w->px;
+        top = w->py;
+        right = left + w->w;
+        bottom = top + w->h;
+        if (x < left) {
+            return -1;
+        }
+        if (right < x) {
+            return -1;
+        }
+        if (y < top) {
+            return -1;
+        }
+        if (bottom < y) {
+            return -1;
+        }
+        h = w->font->height;
+        if (right - 16 < x) {
+            if (y < top + 16) {
+                M2C_FIELD(w, s16 *, 0x5C) += h;
+                if (M2C_FIELD(w, s16 *, 0x5C) > 0) {
+                    M2C_FIELD(w, s16 *, 0x5C) = 0;
+                }
+                zWindDraw();
+            }
+            if (bottom - 16 < y) {
+                y = w->h - 4;
+                M2C_FIELD(w, s16 *, 0x5C) -= h;
+                if (M2C_FIELD(w, s16 *, 0x5C) < y - h * M2C_FIELD(w, s16 *, 0x5A)) {
+                    M2C_FIELD(w, s16 *, 0x5C) = y - h * M2C_FIELD(w, s16 *, 0x5A);
+                    lim = M2C_FIELD(w, s16 *, 0x5C);
+                    if (lim > 0) {
+                        M2C_FIELD(w, s16 *, 0x5C) = 0;
+                    }
+                }
+                zWindDraw();
+            }
+            break;
+        }
+        i = (y - M2C_FIELD(w, s16 *, 0x5C) - top - 2) / h;
+        if (i < 0) {
+            return -1;
+        }
+        if (i >= M2C_FIELD(w, s16 *, 0x5A)) {
+            return -1;
+        }
+        M2C_FIELD(w, s16 *, 0x58) = i;
+        if (M2C_FIELD(w, int *, 0x4C) == 1) {
+            if (GUI_List_isIndexSelected(w, i) == 1) {
+                GUI_List_deselect(w, i);
+            } else {
+                GUI_List_select(w, i);
+            }
+        }
+        s_windsystem_data.flags |= 0x10;
+        zWindDraw();
+        return 0;
+    }
+fail:
+    return -1;
+}
 
 int zWindExcEventChoice(void *w, int type, ZEVENT *ev) {
     switch (type) {
