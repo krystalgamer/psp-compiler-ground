@@ -363,7 +363,28 @@ MesValue mes_object_object(MesContext *ctx, MesValue v)
     return mes_eval_to_object(ctx, v);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_object", mes_object_to_string);
+MesValue mes_object_to_string(MesContext *ctx)
+{
+    ObjStr *s;
+    ObjStr *name;
+    unsigned short *p;
+
+    s = mes_gc_alloc(ctx, 1);
+    if (s != NULL) {
+        name = (ObjStr *)(mes_ids[(unsigned char)ctx->frame->thisobj->cls] & ~3);
+        s->slen = name->slen + 9;
+        p = MEM_malloc(0, s->slen * 2);
+        s->chars = p;
+        if (p != NULL) {
+            p = mes_util_strcp(p, "[object ");
+            mes_memory_copy(name->chars, p, name->slen * 2);
+            p += name->slen;
+            mes_util_strcp(p, "]");
+            return (MesValue)s | 3;
+        }
+    }
+    return 0;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
