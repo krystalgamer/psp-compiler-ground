@@ -119,7 +119,20 @@ void inv_matchup_continue_main(void)
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_match", inv_matchup_continue_cont);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_match", inv_matchup_zankidisp);
+extern INV_W ziki[];
+extern int classic_tex_28FBE4;
+int sprite_set(int tex, int x, int y, int w, int h, int u, int v, int sw, int sh, int a9, int a10, int r, int g, int b, int a, int pri, int mode, int a17, int alpha);
+void inv_matchup_zankidisp(void)
+{
+	int y, i;
+
+	for (y = 8, i = 0; i < ziki[0].f8 - 1; i++, y += 16)
+		sprite_set(classic_tex_28FBE4, 0, y, 8, 16, 0x88, 8, 100, 100, 0, 0, 40, 255, 255, 255, 10, 2, 2, 255);
+	sprite_set(classic_tex_28FBE4, 0, 0, 8, 8, ziki[0].f8 * 8 + 0x70, 0xA0, 100, 100, 0, 0, 255, 255, 255, 255, 10, 2, 2, 255);
+	for (y = 0xF8, i = 0; i < ziki[1].f8 - 1; i++, y -= 16)
+		sprite_set(classic_tex_28FBE4, 0x1D8, y, 8, 16, 0x90, 8, 100, 100, 0, 0, 40, 255, 255, 255, 10, 2, 2, 255);
+	sprite_set(classic_tex_28FBE4, 0x1D8, 0x108, 8, 8, ziki[1].f8 * 8 + 0x70, 0xA8, 100, 100, 0, 0, 255, 255, 255, 255, 10, 2, 2, 255);
+}
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_s_match", inv_matchup_continue);
 
