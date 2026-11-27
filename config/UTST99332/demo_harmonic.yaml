@@ -389,6 +389,7 @@ segments:
       - [0x15E754, rodata, asm/rodata_15E6D4]
       - [0x1600F4, .rodata, main_objs/psp_VertexArrayEdit]
       - [0x1601AC, rodata, asm/rodata_16012C]
+      - [0x160D10, .rodata, main_objs/glutils_CheckerTexture]
       - [0x160D2C, .rodata, main_objs/vector_font_Console]
       - [0x160D3C, rodata, asm/rodata_160CBC]
       - [0x162768, .rodata, main_objs/glutils_PickingBase]
@@ -458,6 +459,8 @@ segments:
       - [0x1712D0, rodata, asm/rodata_171250]
       - [0x172980, .rodata, main_objs/common_FileDump]
       - [0x172B30, rodata, asm/rodata_172AB0]
+      - [0x172C30, .rodata, main_objs/basic_parser_basic_parser]
+      - [0x172E9C, rodata, asm/rodata_172E1C]
       - [0x172EF8, .rodata, main_objs/float_basic_parser_get]
       - [0x172FA4, rodata, asm/rodata_172F24]
       - [0x172FC0, .rodata, main_objs/sys_timer_GetDeltaTime]
@@ -548,6 +551,8 @@ segments:
       - { start: 0x189CE4, type: bss, vram: 0x18A2C4, name: bss_18A2C4 }
       - { start: 0x189CE4, type: .bss, vram: 0x18A2CC, name: main_objs/psp_VertexArrayEdit }
       - { start: 0x189CE4, type: bss, vram: 0x18A358, name: bss_18A358 }
+      - { start: 0x189CE4, type: .bss, vram: 0x18A9F8, name: main_objs/glutils_CheckerTexture }
+      - { start: 0x189CE4, type: bss, vram: 0x18AAD8, name: bss_18AAD8 }
       - { start: 0x189CE4, type: .bss, vram: 0x18AFAC, name: main_objs/glutils_RectanglePicking }
       - { start: 0x189CE4, type: bss, vram: 0x18B030, name: bss_18B030 }
       - { start: 0x189CE4, type: .bss, vram: 0x18B628, name: main_objs/interp_KeyFrameSequence }
@@ -580,7 +585,7 @@ segments:
       - { start: 0x189CE4, type: bss, vram: 0x18E4EC, name: bss_18E4EC }
       - { start: 0x189CE4, type: .bss, vram: 0x18E7BC, name: main_objs/common_FileDump }
       - { start: 0x189CE4, type: .bss, vram: 0x18E7C0, name: main_objs/basic_file_parser_basic_file_parser }
-      - { start: 0x189CE4, type: bss, vram: 0x18E7C4, name: bss_18E7C4 }
+      - { start: 0x189CE4, type: .bss, vram: 0x18E7C4, name: main_objs/basic_parser_basic_parser }
       - { start: 0x189CE4, type: .bss, vram: 0x18E7C8, name: main_objs/float_basic_parser_get }
       - { start: 0x189CE4, type: bss, vram: 0x18E7CC, name: bss_18E7CC }
       - { start: 0x189CE4, type: .bss, vram: 0x18E7F8, name: main_objs/sys_timer_GetDeltaTime }

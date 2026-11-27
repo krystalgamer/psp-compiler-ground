@@ -327,7 +327,6 @@ rodata 0x15E6D4 -
 bss 0x18A2C0 main_objs/libc_fix_ItoA
 bss 0x18A2C4 -
 bss 0x18E7C0 main_objs/basic_file_parser_basic_file_parser
-bss 0x18E7C4 -
 bss 0x18E7F8 main_objs/sys_timer_GetDeltaTime
 bss 0x18E860 -
 bss 0x18CD80 main_objs/VertexColorEnv
@@ -374,3 +373,11 @@ bss 0x18C9E8 main_objs/scene_Switch
 # glut_ReshapeFunc: .bss of the C++ static initializer, file statics glut::app_ptr/app::init_glut and pad()'s single_pad
 bss 0x189E00 main_objs/glut_ReshapeFunc
 bss 0x189E50 -
+# basic_parser_basic_parser: C++ static initializer; .rodata: the asserts' strings and __PRETTY_FUNCTION__s; .bss: std::__ioinit
+rodata 0x172BB0 main_objs/basic_parser_basic_parser
+rodata 0x172E1C -
+bss 0x18E7C4 main_objs/basic_parser_basic_parser
+# glutils_CheckerTexture: C++ static initializer (header statics, _checker_texture); .rodata: its float pool; .bss: the header statics and CheckerTexture's static members
+rodata 0x160C90 main_objs/glutils_CheckerTexture
+bss 0x18A9F8 main_objs/glutils_CheckerTexture
+bss 0x18AAD8 -
