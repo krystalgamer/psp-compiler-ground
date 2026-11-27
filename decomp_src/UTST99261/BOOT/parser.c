@@ -869,7 +869,67 @@ void parseScriptAttribute(PCtx *c, PDStr *name, PDStr *val) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", checkFileStrage);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/parser", parseScriptExternal);
+void parseScriptExternal(PCtx *c) {
+    char *u;
+    void *h;
+    int base;
+    char *abs;
+    void *n;
+    void *n2;
+    int cur;
+    int cur2;
+
+    if (CF(c, 0x13C) == 0) {
+        return;
+    }
+    u = MEM_malloc(0, strlen((char *)CF(c, 0x13C)) + 1);
+    if (u == NULL) {
+        return;
+    }
+    strcpy(u, (char *)CF(c, 0x13C));
+    h = HST_searchSessionIDHistoryNode(c->x00[4]);
+    if (h != NULL) {
+        base = HST_getBaseURI(h);
+        if (base == 0) {
+            base = HST_getCurURI(h);
+        }
+        if (!(u[0] == 'h' && u[1] == 't' && u[2] == 't' && u[3] == 'p' && u[4] == ':')) {
+            abs = (char *)URL_toAbsoluteURL(base, u);
+            MEM_free(0, u);
+            u = MEM_malloc(0, strlen(abs) + 1);
+            memcpy(u, abs, strlen(abs) + 1);
+            u[strlen(abs)] = 0;
+            MEM_free(0, abs);
+        }
+    }
+    base = HST_getBaseURI(h);
+    if (base == 0) {
+        base = HST_getCurURI(h);
+        if (base == 0) {
+            return;
+        }
+    }
+    if (checkFileStrage(base, u) == 0) {
+        return;
+    }
+    n = (void *)HST_createHistoryNode();
+    HST_setCurURI(n, u, strlen(u));
+    cur = HST_getCurURI(h);
+    HST_setRefURI(n, cur, HST_getCurURIlen(h));
+    HST_setJSURI(h, n);
+    if (c->x00[5] != 1) {
+        n2 = (void *)HST_createHistoryNode();
+        HST_setCurURI(n2, u, strlen(u));
+        cur2 = HST_getCurURI(h);
+        HST_setRefURI(n2, cur2, HST_getCurURIlen(h));
+        HST_setRequestFlag(n2, -2);
+        HST_addChildHistoryNode(h, n2);
+    }
+    if (M2C_FIELD(c, s8 *, 0x12C) == 4) {
+        M2C_FIELD(c, s8 *, 0x12C) = 0xB;
+    }
+    MEM_free(0, u);
+}
 
 void parseNoScript(PCtx *c) {
     if (*c->buf->cur == '>') {
