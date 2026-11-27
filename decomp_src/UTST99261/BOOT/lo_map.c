@@ -24,6 +24,13 @@ double atan2(double y, double x);
 typedef struct MAPAREA { s16 type; s16 u2; void *x4; void *x8; struct MAPAREA *next; MAPPOLY poly; } MAPAREA;
 void parseCoords(int type, char *coords, MAPPOLY *p);
 int strcasecmp(const char *a, const char *b);
+typedef struct { char *name; int (*func)(void *node, void *box, void *a2); } TagBranch;
+extern TagBranch jt[];
+extern int D_001F5E1C;
+extern int D_00584D08;
+extern char D_00139428[], D_00139430[], D_0013950C[];
+void Element_getTagName(DOMString *s, void *elem);
+int DOMStringcasecmpChar(DOMString *s, char *str);
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_map", parseCoords);
 
 #ifndef NULL
@@ -323,7 +330,39 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_map", createAreaInfo);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_map", initBoxProperty);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_map", htmlTagBranch);
+int htmlTagBranch(void *node, void *box, void *a2) {
+    DOMString s;
+    int idx = D_001F5E1C;
+    int lo;
+    int hi;
+    int mid;
+    int c;
+    Element_getTagName(&s, node);
+    if (s.len != 0) {
+        lo = 0;
+        hi = D_001F5E1C - 1;
+        do {
+            mid = lo + (hi - lo) / 2;
+            c = DOMStringcasecmpChar(&s, jt[mid].name);
+            if (c == 0) {
+                idx = mid;
+                break;
+            }
+            if (c > 0) {
+                lo = mid + 1;
+            } else {
+                hi = mid - 1;
+            }
+        } while (lo <= hi);
+    }
+    if (M2C_FIELD(box, s16 *, 0x3A) == 0x25 && strcmp(jt[idx].name, D_00139428) != 0 && strcmp(jt[idx].name, D_00139430) != 0) {
+        return 0;
+    }
+    if (D_00584D08 != 0 && strcmp(jt[idx].name, D_0013950C) != 0) {
+        return 0;
+    }
+    return jt[idx].func(node, box, a2);
+}
 
 void htmlTagBranchAfter(void *node) {
     DOMString s;
