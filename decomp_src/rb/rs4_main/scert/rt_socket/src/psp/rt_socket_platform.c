@@ -51,7 +51,20 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_socket/src/psp/rt_socket_
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_socket/src/psp/rt_socket_platform", rt_socket_check_readability_platform);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_socket/src/psp/rt_socket_platform", rt_socket_find_sockets_with_data_platform);
+int rt_socket_check_readability_platform();
+int rt_socket_find_sockets_with_data_platform(int *socks, int n, int timeout, int *count)
+{
+    int c;
+    int r;
+    if (socks == NULL || count == NULL) return 2;
+    r = rt_socket_check_readability_platform(socks, n, timeout, &c);
+    if (r != 0) {
+        *count = 0;
+        return r;
+    }
+    *count = c;
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_socket/src/psp/rt_socket_platform", rt_socket_find_closed_sockets_platform);
 

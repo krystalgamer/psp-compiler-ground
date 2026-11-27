@@ -87,7 +87,17 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_udp", rt_udp_c
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_udp", rt_udp_destroy);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_udp/src/rt_udp", rt_udp_set_buffer_size);
+int rt_list_buf_resize_buffer();
+int rt_udp_set_buffer_size(void *u, int *c, int which, int size)
+{
+    if (u == NULL) return 0xD2F2;
+    if (c == NULL) return 0xD2F3;
+    if (c[0] == 0) return 0xD2F3;
+    if (size == 0) return 2;
+    if (which == 0) return rt_list_buf_resize_buffer(c + 5, size);
+    if (which == 1) return rt_list_buf_resize_buffer(c + 9, size);
+    return 2;
+}
 
 
 int rt_udp_set_aggregation_interval(arg0, arg1)

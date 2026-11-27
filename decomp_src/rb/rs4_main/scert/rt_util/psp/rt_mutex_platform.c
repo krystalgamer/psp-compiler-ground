@@ -12,7 +12,17 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/psp/rt_mutex_plat
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/psp/rt_mutex_platform", header_rcsid_10ED10);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/psp/rt_mutex_platform", rt_mutex_platform_create);
+int sceKernelCreateSema();
+int rt_mutex_platform_create(int *m)
+{
+    int s;
+    if (m == NULL) return 2;
+    m[4] = 0;
+    s = sceKernelCreateSema("rt_mutex_platform_create_sema", 0, 1, 1, 0);
+    if (s < 0) return 900;
+    m[3] = s;
+    return 0;
+}
 
 int sceKernelDeleteSema(int semid);
 int rt_mutex_platform_destroy(void *arg0) {

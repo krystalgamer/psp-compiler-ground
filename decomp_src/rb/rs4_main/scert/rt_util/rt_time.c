@@ -8,11 +8,11 @@ void rt_time_elapsed(void);
 void rt_time_get_date_time(void);
 void rt_time_get_gmtime(void);
 void rt_time_get_local(void);
-void rt_time_get_time_stamp(void);
+int rt_time_get_time_stamp();
 void rt_time_get_time_string(void);
 void rt_time_platform_get_gmtime(void);
 void rt_time_sleep_usecs(void);
-void rt_time_start(void);
+int rt_time_start();
 M2C_UNK rt_time_platform_get_time_string();         /* extern */
 M2C_UNK rt_time_platform_get_time_stamp();          /* extern */
 M2C_UNK rt_time_platform_get_date_time();           /* extern */
@@ -43,12 +43,12 @@ int rt_time_get_secs(unsigned int *s)
     return rt_time_timestamp_to_secs(ts, s);
 }
 
-void rt_time_start(void) {
-    rt_time_get_time_stamp();
+int rt_time_start(void *t) {
+    return rt_time_get_time_stamp(t);
 }
 
-void rt_time_get_time_stamp(void) {
-    rt_time_platform_get_time_stamp();
+int rt_time_get_time_stamp(void *t) {
+    return rt_time_platform_get_time_stamp(t);
 }
 
 void rt_time_elapsed(void) {
@@ -94,11 +94,34 @@ int rt_time_elapsed_usecs(void *start, unsigned int *out)
     return rt_time_timestamp_to_usecs(ts, out);
 }
 
+extern unsigned char gbBaseTimeInitialized;
+extern int gBaseTimeStamp[];
+int rt_time_initialize();
+int rt_time_elapsed_timestamp();
+void rt_time_platform_init();
+
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_time", rt_time_delay);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_time", rt_time_initialize);
+int rt_time_initialize(void)
+{
+    int r;
+    if (gbBaseTimeInitialized == 1) return 0x640;
+    rt_time_platform_init();
+    r = rt_time_get_time_stamp(gBaseTimeStamp);
+    if (r != 0) return r;
+    gbBaseTimeInitialized = 1;
+    return 0;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_time", rt_time_reinitialize);
+int rt_time_reinitialize(void)
+{
+    int r;
+    if (gbBaseTimeInitialized == 0) return 1;
+    r = rt_time_get_time_stamp(gBaseTimeStamp);
+    if (r != 0) return r;
+    gbBaseTimeInitialized = 1;
+    return 0;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_time", rt_time_calc_diff);
 
@@ -129,7 +152,16 @@ int rt_time_timestamp_to_usecs(unsigned int *ts, unsigned int *usecs)
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_time", rt_time_get_base_diff);
+int rt_time_get_base_diff(unsigned int *out)
+{
+    int r;
+    if (out == NULL) return 2;
+    if (gbBaseTimeInitialized == 0) {
+        r = rt_time_initialize();
+        if (r != 0) return r;
+    }
+    return rt_time_elapsed_timestamp(gBaseTimeStamp, out);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/scert/rt_util/rt_time", rt_time_elapsed_timestamp);
 
