@@ -1,100 +1,298 @@
 /* lang: c++ */
-/* cflags: -Os */
+/* cflags: -Os -fno-merge-constants -fno-exceptions */
+/* strength reduction on in this object: LocalController::Init/Reset match only with it */
+/* #pragma interface: the vtables, typeinfo and implicit destructors stay in the module's asm */
+#pragma interface "rodata"
 #include "common.h"
+
+struct NetTypeBroadcastSchedule {
+	int f0;
+	int f4;
+	float f8;
+	unsigned char fC;
+};
+
 extern "C" {
+void _memFree(void *p, const char *file, int line);
+void *_memAllocMBL(unsigned int size, const char *file, int line);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_netlib_controller", _ZNK10SaruNetLib17_Class_Controller11Get_ClassIDEv);
+namespace Ys {
+class Object {
+public:
+	static void *operator new(unsigned int size) { return _memAllocMBL(size, "src/ys/ys_object.h", 23); }
+	static void operator delete(void *p) { _memFree(p, "src/ys/ys_object.h", 25); }
+};
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_netlib_controller", _ZN10SaruNetLib17_Class_Controller11Set_ClassIDEi);
+namespace Net {
+class ObjectClass {
+public:
+	virtual int Get_ClassID() const;
+	virtual int Set_ClassID(int id);
+	virtual int Get_Size() const;
+	virtual const char *Get_Name() const;
+	virtual void *Get_RemoteCreateCallback_p() const;
+	virtual void Register_Field();
+};
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_netlib_controller", _ZNK10SaruNetLib16Class_Controller8Get_SizeEv);
+class Object : public Ys::Object {
+public:
+	int class_id;
+	int object_index;
+	int _c;
+	bool owner;
+	void *net_object_p;
+	Object *Init(ObjectClass &cls, int object_index);
+	virtual ~Object();
+	virtual void Callback_Update(int a, int idx, int c);
+	virtual void Callback_Remove(int a, int idx);
+};
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_netlib_controller", _ZNK10SaruNetLib16Class_Controller8Get_NameEv);
+namespace SaruNet {
+class ObjectClass : public Net::ObjectClass {
+public:
+	virtual void Register_Field(NetTypeBroadcastSchedule &s);
+};
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_netlib_controller", _ZNK10SaruNetLib16Class_Controller26Get_RemoteCreateCallback_pEv);
+class Object : public Net::Object {
+public:
+	Object *Init(Net::ObjectClass &cls, bool owner, void *p, const unsigned char *name);
+};
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_netlib_controller", _ZN10SaruNetLib16Class_Controller14Register_FieldER24NetTypeBroadcastSchedule);
+class Game {
+public:
+	char _0[0xC];
+	int fC;
+	static Game *_instance_p;
+};
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_netlib_controller", _ZN10SaruNetLib10ControllerD2Ev);
+namespace SaruNetLib {
+struct ControllerEntry {
+	int f4;
+	signed char f8;
+	signed char f9;
+	short fA;
+};
+struct ControllerData {
+	short f0;
+	short f2;
+	ControllerEntry entry[5];
+};
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_netlib_controller", _ZN10SaruNetLib10ControllerD1Ev);
+class Controller;
+class LocalController;
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_netlib_controller", _ZN10SaruNetLib10ControllerD0Ev);
+class ControllerSet {
+public:
+	char _0[0x24];
+	LocalController *local_p;
+	static ControllerSet *_instance_p;
+	static ControllerSet *Get_Instance_p() { return _instance_p; }
+	void Add_Controller(Controller &c);
+	void Remove_Controller(Controller &c);
+};
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_netlib_controller", _ZN10SaruNetLib10Controller10InitCommonEi);
+class _Class_Controller : public SaruNet::ObjectClass {
+public:
+	static int _class_id;
+	virtual int Get_ClassID() const;
+	virtual int Set_ClassID(int id);
+};
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_netlib_controller", _ZN10SaruNetLib10Controller4InitEv);
+class Class_Controller : public _Class_Controller {
+public:
+	virtual int Get_Size() const;
+	virtual const char *Get_Name() const;
+	virtual void *Get_RemoteCreateCallback_p() const;
+	virtual void Register_Field(NetTypeBroadcastSchedule &s);
+};
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_netlib_controller", _ZN10SaruNetLib10Controller4InitEii);
+class Controller : public SaruNet::Object {
+public:
+	signed char id;
+	virtual ~Controller();
+	void InitCommon(int id_);
+	Controller *Init();
+	Controller *Init(int cls, int idx);
+	static void gCallback_RemoteCreate(int cls, int idx);
+};
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_netlib_controller", _ZN10SaruNetLib10Controller22gCallback_RemoteCreateEii);
+struct ControllerBuffer {
+	signed char count;
+	ControllerEntry entry[5];
+};
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_netlib_controller", _ZN10SaruNetLib15LocalControllerD2Ev);
+class LocalController : public Controller {
+public:
+	ControllerBuffer buffer[2];
+	signed char active;
+	signed char send;
+	short seq;
+	virtual ~LocalController();
+	LocalController *Init();
+	void Reset();
+	int Update_ActiveBuffer();
+	int Update_SendBuffer();
+	void Update();
+};
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_netlib_controller", _ZN10SaruNetLib15LocalControllerD1Ev);
+class RemoteController : public Controller {
+public:
+	virtual ~RemoteController();
+	RemoteController *Init(int cls, int idx);
+};
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_netlib_controller", _ZN10SaruNetLib15LocalControllerD0Ev);
+int _Class_Controller::Get_ClassID() const
+{
+	return _class_id;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_netlib_controller", _ZN10SaruNetLib15LocalController4InitEv);
+int _Class_Controller::Set_ClassID(int id)
+{
+	return _class_id = id;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_netlib_controller", _ZN10SaruNetLib15LocalController5ResetEv);
+int Class_Controller::Get_Size() const
+{
+	return sizeof(ControllerData);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_netlib_controller", _ZN10SaruNetLib15LocalController19Update_ActiveBufferEv);
+const char *Class_Controller::Get_Name() const
+{
+	return "controller";
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_netlib_controller", _ZN10SaruNetLib15LocalController17Update_SendBufferEv);
+void *Class_Controller::Get_RemoteCreateCallback_p() const
+{
+	return (void *)Controller::gCallback_RemoteCreate;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_netlib_controller", _ZN10SaruNetLib15LocalController6UpdateEv);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_netlib_controller", _ZN10SaruNetLib16RemoteControllerD2Ev);
+extern "C" { INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_netlib_controller", _ZN10SaruNetLib16Class_Controller14Register_FieldER24NetTypeBroadcastSchedule); }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_netlib_controller", _ZN10SaruNetLib16RemoteControllerD1Ev);
+namespace SaruNetLib {
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_netlib_controller", _ZN10SaruNetLib16RemoteControllerD0Ev);
+Controller::~Controller()
+{
+	ControllerSet *s = ControllerSet::Get_Instance_p();
+	if (s)
+		s->Remove_Controller(*this);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_netlib_controller", _ZN10SaruNetLib16RemoteController4InitEii);
+void Controller::InitCommon(int id_)
+{
+	id = id_;
+	if (ControllerSet::_instance_p)
+		ControllerSet::_instance_p->Add_Controller(*this);
+}
 
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_netlib_controller", D_00107704);
+Controller *Controller::Init()
+{
+	static const ControllerData init_param = {
+		-1, -1,
+		{ { 0, -0x80, -0x80, 0 }, { 0, -0x80, -0x80, 0 }, { 0, -0x80, -0x80, 0 }, { 0, -0x80, -0x80, 0 }, { 0, -0x80, -0x80, 0 } }
+	};
+	Class_Controller cls;
+	SaruNet::Object::Init(cls, true, (void *)&init_param, (const unsigned char *)"controller");
+	InitCommon(SaruNet::Game::_instance_p->fC);
+	return this;
+}
 
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_netlib_controller", D_00107710);
+Controller *Controller::Init(int cls_id, int idx)
+{
+	Class_Controller cls;
+	Net::Object::Init(cls, idx);
+	InitCommon(cls_id);
+	return this;
+}
 
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_netlib_controller", _ZZN10SaruNetLib10Controller4InitEvE10init_param);
+void Controller::gCallback_RemoteCreate(int cls, int idx)
+{
+	(new RemoteController)->Init(cls, idx);
+}
 
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_netlib_controller", _ZTVN10SaruNetLib16RemoteControllerE);
+LocalController::~LocalController()
+{
+	ControllerSet *s = ControllerSet::Get_Instance_p();
+	if (s)
+		s->local_p = 0;
+}
 
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_netlib_controller", D_00107758);
+LocalController *LocalController::Init()
+{
+	Controller::Init();
+	for (int i = 0; i < 2; i++)
+		buffer[i].count = 0;
+	seq = -1;
+	active = 0;
+	send = 0;
+	return this;
+}
 
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_netlib_controller", _ZTVN10SaruNetLib15LocalControllerE);
+void LocalController::Reset()
+{
+	ControllerData *d = (ControllerData *)((int *)net_object_p)[7];
+	d->f2 = -1;
+	d->f0 = -1;
+	for (int i = 0; i < 5; i++) {
+		d->entry[i].f4 = 0;
+		d->entry[i].f9 = -0x80;
+		d->entry[i].f8 = -0x80;
+		d->entry[i].fA = 0;
+	}
+	for (int i = 0; i < 2; i++)
+		buffer[i].count = 0;
+	seq = -1;
+	send = 0;
+	active = 0;
+}
 
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_netlib_controller", D_00107770);
+}
 
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_netlib_controller", _ZTVN10SaruNetLib10ControllerE);
+extern "C" { INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_netlib_controller", _ZN10SaruNetLib15LocalController19Update_ActiveBufferEv); }
+extern "C" { INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_netlib_controller", _ZN10SaruNetLib15LocalController17Update_SendBufferEv); }
 
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_netlib_controller", D_00107788);
+namespace SaruNetLib {
 
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_netlib_controller", _ZTVN10SaruNetLib16Class_ControllerE);
+void LocalController::Update()
+{
+	Update_ActiveBuffer();
+	Update_SendBuffer();
+}
 
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_netlib_controller", D_001077A0);
+RemoteController::~RemoteController()
+{
+}
 
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_netlib_controller", _ZTVN10SaruNetLib17_Class_ControllerE);
+RemoteController *RemoteController::Init(int cls, int idx)
+{
+	Controller::Init(cls, idx);
+	return this;
+}
 
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_netlib_controller", _ZTIN10SaruNetLib17_Class_ControllerE);
+}
 
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_netlib_controller", _ZTIN10SaruNetLib16Class_ControllerE);
 
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_netlib_controller", _ZTIN10SaruNetLib10ControllerE);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_netlib_controller", _ZTIN10SaruNetLib15LocalControllerE);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_netlib_controller", _ZTIN10SaruNetLib16RemoteControllerE);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_netlib_controller", _ZTSN10SaruNetLib16RemoteControllerE);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_netlib_controller", _ZTSN10SaruNetLib15LocalControllerE);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_netlib_controller", _ZTSN10SaruNetLib10ControllerE);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_netlib_controller", _ZTSN10SaruNetLib16Class_ControllerE);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_netlib_controller", _ZTSN10SaruNetLib17_Class_ControllerE);
-
-} /* extern "C": m2c drafts with mangled names, kept as C linkage */
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_netlib_controller", _ZTVN10SaruNetLib16RemoteControllerE); }
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_netlib_controller", D_00107758); }
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_netlib_controller", _ZTVN10SaruNetLib15LocalControllerE); }
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_netlib_controller", D_00107770); }
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_netlib_controller", _ZTVN10SaruNetLib10ControllerE); }
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_netlib_controller", D_00107788); }
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_netlib_controller", _ZTVN10SaruNetLib16Class_ControllerE); }
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_netlib_controller", D_001077A0); }
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_netlib_controller", _ZTVN10SaruNetLib17_Class_ControllerE); }
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_netlib_controller", _ZTIN10SaruNetLib17_Class_ControllerE); }
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_netlib_controller", _ZTIN10SaruNetLib16Class_ControllerE); }
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_netlib_controller", _ZTIN10SaruNetLib10ControllerE); }
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_netlib_controller", _ZTIN10SaruNetLib15LocalControllerE); }
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_netlib_controller", _ZTIN10SaruNetLib16RemoteControllerE); }
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_netlib_controller", _ZTSN10SaruNetLib16RemoteControllerE); }
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_netlib_controller", _ZTSN10SaruNetLib15LocalControllerE); }
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_netlib_controller", _ZTSN10SaruNetLib10ControllerE); }
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_netlib_controller", _ZTSN10SaruNetLib16Class_ControllerE); }
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_netlib_controller", _ZTSN10SaruNetLib17_Class_ControllerE); }
