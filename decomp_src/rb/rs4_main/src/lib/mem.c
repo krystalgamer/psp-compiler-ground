@@ -46,6 +46,9 @@ int memGetAlignSize(void) {
     return 0x40;
 }
 
+extern unsigned char D_000FB180, D_000FB19C, D_000FB210;
+void *rsvNextAlive();
+
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/lib/mem", _memLog);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/lib/mem", _memAlloc);
@@ -182,14 +185,50 @@ INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/lib/mem", D_000FB1D0);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/lib/mem", rsvTerm);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/lib/mem", rsvHeadAlive);
+void *rsvHeadAlive(void **arg0) {
+    void *p = *arg0;
+    int s;
+    if (p == NULL) return NULL;
+    s = M2C_FIELD(p, int *, 4);
+    if (s == 0) {
+        consPrintf(&D_000FB180, &D_000FB19C, 0x56, "rsvHeadAlive", &D_000FB210);
+    }
+    if (s > 0) return p;
+    return rsvNextAlive(p);
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/lib/mem", D_000FB210);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/lib/mem", rsvNextAlive);
+void *rsvNextAlive(void **p) {
+    int s;
+    if (p != NULL) {
+        while ((p = *p) != NULL) {
+            s = ((int *)p)[1];
+            if (s == 0) {
+                consPrintf(&D_000FB180, &D_000FB19C, 0x67, "rsvNextAlive", &D_000FB210);
+            }
+            if (s > 0) break;
+        }
+    }
+    return p;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/lib/mem", rsvCall);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/lib/mem", rsvKill);
+int rsvKill(void *arg0) {
+    int temp_s0;
+    int var_v0;
+
+    temp_s0 = M2C_FIELD(arg0, int *, 4);
+    if (temp_s0 == 0) {
+        consPrintf(&D_000FB180, &D_000FB19C, 0xA1, "rsvKill", &D_000FB210);
+    }
+    var_v0 = 0;
+    if (temp_s0 > 0) {
+        M2C_FIELD(arg0, int *, 4) = (int) ~temp_s0;
+        var_v0 = 1;
+    }
+    return var_v0;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/lib/mem", rsvFree);
