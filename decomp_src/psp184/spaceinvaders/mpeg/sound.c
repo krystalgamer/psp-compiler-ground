@@ -78,7 +78,88 @@ SceInt32 soundbuf_setDemuxEnd(t_soundBuffer *pSound);
 SceInt32 soundbuf_setStartFlag(t_soundBuffer *pSound);
 SceInt32 soundbuf_output(t_soundBuffer *pSound);
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/mpeg/sound", soundbuf_create);
+void *psp_malloc(unsigned int size);
+void psp_free(void *p);
+SceInt32 soundbuf_create(t_soundBuffer *pSound, SceInt32 buf_size, SceInt32 buf_num)
+{
+	SceInt32 i, ret;
+
+	pSound->buf = NULL;
+	pSound->pts = NULL;
+
+	ret = 0;
+
+	if (sceWaveAudioSetSample(0, 2048) != 0) {
+		ret = -1;
+		goto error;
+	}
+
+	pSound->lock_sema = sceKernelCreateSema("sound_lock_sema", 0, 1, 1, NULL);
+
+	pSound->status_flag = sceKernelCreateEventFlag("sound_status_eventflag", 0, 0, 0);
+
+	pSound->buf = psp_malloc(buf_num * sizeof(SceChar8 *));
+	if (pSound->buf == NULL) {
+		ret = -1;
+		goto error;
+	}
+
+	for (i = 0; i < buf_num; i++) {
+		pSound->buf[i] = NULL;
+	}
+
+	for (i = 0; i < buf_num; i++) {
+		pSound->buf[i] = psp_malloc(buf_size);
+		if (pSound->buf[i] == NULL) {
+			ret = -1;
+			goto error;
+		}
+	}
+
+	pSound->pts = psp_malloc(buf_num * sizeof(SceUInt32));
+	if (pSound->pts == NULL) {
+		ret = -1;
+		goto error;
+	}
+
+	for (i = 0; i < 2; i++) {
+		output_buf[i] = psp_malloc(buf_size);
+		if (output_buf[i] == NULL) {
+			goto error;
+		}
+	}
+
+	pSound->buf_size = buf_size;
+	pSound->size = buf_num;
+
+	soundIntervalSize = 4179;
+
+	goto term;
+
+error:
+	if (pSound->buf != NULL) {
+		for (i = 0; i < pSound->size; i++) {
+			if (pSound->buf[i] != NULL) {
+				psp_free(pSound->buf[i]);
+			}
+		}
+
+		psp_free(pSound->buf);
+	}
+
+	if (pSound->pts != NULL) {
+		psp_free(pSound->pts);
+	}
+
+	for (i = 0; i < 2; i++) {
+		if (output_buf[i] != NULL) {
+			psp_free(output_buf[i]);
+		}
+	}
+
+term:
+	return ret;
+}
 
 SceInt32 soundbuf_reset(t_soundBuffer *pSound)
 {
