@@ -23,7 +23,10 @@ void copTerm(void) {
     consPrintf(&D_000F9BF0, "copTerm");
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/cop", copSetSeed);
+void copSetSeed(unsigned long long s)
+{
+	*(unsigned long long *)&Seed = s;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -34,7 +37,10 @@ void copSetSeedHL(int arg0, int arg1) {
     M2C_FIELD(&Seed, int *, 4) = arg1;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/cop", copGetSeed);
+unsigned long long copGetSeed(void)
+{
+	return *(unsigned long long *)&Seed;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -49,7 +55,23 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/cop", copRand);
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/cop", copRandS);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/dev/cop", copInitAttr);
+extern const float D_000F9C04;
+typedef struct { float f[8]; int i; unsigned int b : 12; unsigned int r : 20; } CopAttr;
+void copInitAttr(CopAttr *a)
+{
+	a->f[0] = D_000F9C04;
+	a->f[1] = D_000F9C04;
+	a->f[2] = D_000F9C04;
+	a->f[3] = D_000F9C04;
+	a->f[4] = D_000F9C04;
+	a->f[5] = D_000F9C04;
+	a->f[6] = D_000F9C04;
+	a->f[7] = D_000F9C04;
+	a->i = 0;
+	a->b = 0;
+}
+
+const float D_000F9C04 = 1.0f;
 
 extern const float D_000F9C08;
 
