@@ -1,14 +1,21 @@
 /* cflags: -O1 */
 #include "common.h"
+#include "dom_domi.h"
 #include "lo_box.h"
 #include "m2c_macros.h"
 #include "lo_focus.h"
+extern unsigned char _DOMname;
+int Element_hasAttribute(void *node, void *name);
+void Element_getAttribute(DOMString *s, void *node, void *name);
+int DOMStringlen(DOMString *s);
+char *DOMStringtoUTF8(DOMString *s);
+int strcasecmp(const char *a, const char *b);
 BOX *lo_getActiveFrameBodybox(void *ctx);
 void *MEM_malloc(int pool, unsigned int size);
 void *lo_getFocusNavi(void *node);
 FOCUSLIST *getNext2DFocusLeft(void *frame, void *a1, FOCUSLIST *l);
 FOCUSLIST *getNext2DFocusRight(void *frame, void *a1, FOCUSLIST *l);
-FOCUSLIST *getNextNaviFocus(void *frame, void *a1, FOCUSLIST *l, void *navi);
+FOCUSLIST *getNextNaviFocus(void *frame, FOCUSLIST *l, FOCUSLIST *cur, char *name);
 void scrollToCurrent2DFocusPosition(void *frame, FOCUSLIST *l);
 FOCUSLIST *scrollToNextPosition(void *frame, void *a1, FOCUSLIST *l, int dir);
 FOCUSLIST *getNext2DFocusDown(void *frame, void *a1, FOCUSLIST *l, void *obj);
@@ -81,7 +88,7 @@ FOCUSLIST *appendFocusList(void *frame, s8 type, void *obj, FOCUSLIST *after, FO
     }
     f->type = type;
     f->obj = obj;
-    *(s16 *)&f->x10 = 0;
+    f->tabindex = 0;
     f->area = area;
     navi = NULL;
     if (obj != NULL) {
@@ -383,7 +390,43 @@ FOCUSLIST *findFocusInView(void *frame, void *a1, FOCUSLIST *def, void *box) {
     return l;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_focus", getNextNaviFocus);
+FOCUSLIST *getNextNaviFocus(void *frame, FOCUSLIST *l, FOCUSLIST *cur, char *name) {
+    DOMString s;
+    int vx, vy, vw, vh;
+    int x, y, w, h;
+    char *str;
+    int r;
+    if (cur == NULL) {
+        return NULL;
+    }
+    if (name == NULL) {
+        return NULL;
+    }
+    getViewPort(frame, &vx, &vy);
+    getViewClientSize(frame, &vw, &vh);
+    for (; l != NULL; l = l->next) {
+        if (l == cur) {
+            continue;
+        }
+        getRealFocusMaxBounds(l, &x, &y, &w, &h);
+        if (vx < x + w && vy < y + h && x < vx + vw && y < vy + vh &&
+            Element_hasAttribute(M2C_FIELD(l->obj, void **, 0x28), &_DOMname)) {
+            Element_getAttribute(&s, M2C_FIELD(l->obj, void **, 0x28), &_DOMname);
+            if (DOMStringlen(&s) > 0) {
+                str = DOMStringtoUTF8(&s);
+                if (str == NULL) {
+                    return NULL;
+                }
+                r = strcasecmp(str, name);
+                MEM_free(0, str);
+                if (r == 0) {
+                    return l;
+                }
+            }
+        }
+    }
+    return cur;
+}
 
 void initFocusPositionParameter(void *frame, int *x, int *y, int *w, int *h) {
     getViewPort(frame, x, y);
@@ -512,7 +555,7 @@ int isFocusInDisplay(void *frame, FOCUSLIST *l) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_focus", scrollToNextPosition);
 
-FOCUSLIST *act2DMoveFocusUp(void *frame, void *a1, FOCUSLIST *cur) {
+FOCUSLIST *act2DMoveFocusUp(void *frame, FOCUSLIST *a1, FOCUSLIST *cur) {
     FOCUSLIST *n;
     void *navi;
     if (frame == NULL) {
@@ -551,7 +594,7 @@ end:
     return n;
 }
 
-FOCUSLIST *act2DMoveFocusDown(void *frame, void *a1, FOCUSLIST *cur) {
+FOCUSLIST *act2DMoveFocusDown(void *frame, FOCUSLIST *a1, FOCUSLIST *cur) {
     FOCUSLIST *n;
     void *navi;
     if (frame == NULL) {
@@ -590,7 +633,7 @@ end:
     return n;
 }
 
-FOCUSLIST *act2DMoveFocusLeft(void *frame, void *a1, FOCUSLIST *cur) {
+FOCUSLIST *act2DMoveFocusLeft(void *frame, FOCUSLIST *a1, FOCUSLIST *cur) {
     FOCUSLIST *n;
     void *navi;
     if (frame == NULL) {
@@ -629,7 +672,7 @@ end:
     return n;
 }
 
-FOCUSLIST *act2DMoveFocusRight(void *frame, void *a1, FOCUSLIST *cur) {
+FOCUSLIST *act2DMoveFocusRight(void *frame, FOCUSLIST *a1, FOCUSLIST *cur) {
     FOCUSLIST *n;
     void *navi;
     if (frame == NULL) {
