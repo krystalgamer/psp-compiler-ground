@@ -221,9 +221,61 @@ math::vector_xyz math::matrix::eulerAnglesXYZ() const
     return v;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_matrix_matrix", _ZNK4math6matrix14eulerAnglesXZYEv);
+math::vector_xyz math::matrix::eulerAnglesXZY() const
+{
+    vector_xyz v;
+    float x, z;
+    if (r[1].x < D_00165CEC) {
+        if (r[1].x > D_00165CF0) {
+            x = safe_atan2f(r[1].z, r[1].y);
+            z = safe_asinf(-r[1].x);
+            v.y = safe_atan2f(r[2].x, r[0].x);
+            v.x = x;
+            v.z = z;
+        } else {
+            x = safe_atan2f(r[0].z, r[2].z);
+            z = D_00165CF4;
+            v.x = x;
+            v.z = z;
+            v.y = 0;
+        }
+    } else {
+        x = safe_atan2f(-r[0].z, r[2].z);
+        z = D_00165CF8;
+        v.x = x;
+        v.z = z;
+        v.y = 0;
+    }
+    return v;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_matrix_matrix", _ZNK4math6matrix14eulerAnglesYXZEv);
+math::vector_xyz math::matrix::eulerAnglesYXZ() const
+{
+    vector_xyz v;
+    float y, x;
+    if (r[2].y < D_00165CFC) {
+        if (r[2].y > D_00165D00) {
+            y = safe_atan2f(r[2].x, r[2].z);
+            x = safe_asinf(-r[2].y);
+            v.z = safe_atan2f(r[0].y, r[1].y);
+            v.x = x;
+            v.y = y;
+        } else {
+            y = safe_atan2f(r[1].x, r[0].x);
+            x = D_00165D04;
+            v.y = y;
+            v.x = x;
+            v.z = 0;
+        }
+    } else {
+        y = safe_atan2f(-r[1].x, r[0].x);
+        x = D_00165D08;
+        v.y = y;
+        v.x = x;
+        v.z = 0;
+    }
+    return v;
+}
 
 math::vector_xyz math::matrix::eulerAnglesYZX() const
 {
@@ -273,7 +325,31 @@ math::vector_xyz math::matrix::eulerAnglesZXY() const
     return v;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_matrix_matrix", _ZNK4math6matrix14eulerAnglesZYXEv);
+math::vector_xyz math::matrix::eulerAnglesZYX() const
+{
+    vector_xyz v;
+    float z, y;
+    if (r[0].z < D_00165D2C) {
+        if (r[0].z > D_00165D30) {
+            z = safe_atan2f(r[0].y, r[0].x);
+            y = safe_asinf(-r[0].z);
+            v.x = safe_atan2f(r[1].z, r[2].z);
+        } else {
+            z = -safe_atan2f(r[1].x, r[2].x);
+            y = D_00165D34;
+            v.x = 0;
+        }
+        v.y = y;
+        v.z = z;
+    } else {
+        z = safe_atan2f(-r[1].x, -r[2].x);
+        y = D_00165D38;
+        v.z = z;
+        v.y = y;
+        v.x = 0;
+    }
+    return v;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/math_matrix_matrix", _ZNK4math6matrix10isCoordSysEf);
 
