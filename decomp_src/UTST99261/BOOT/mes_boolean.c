@@ -1,9 +1,71 @@
+/* cflags: -O1 */
 #include "common.h"
+#include "mes_js.h"
+extern MesObject *mes_classes[];
+extern unsigned int mes_ids[];
+extern void *mes_boolean_table;
+MesValue mes_boolean_constructor(MesContext *ctx, MesValue v);
+void *mes_native_new(MesContext *ctx, int a, void *fn, int nargs, int flags);
+void mes_native_setup(MesContext *ctx, MesObject *o, void *table, int n);
+void mes_object_set(MesObject *obj, unsigned int id, MesValue value, int flags);
+typedef struct MesValueObj {
+    struct MesObject obj;
+} MesValueObj;
+extern MesObject *D_00585334;
+extern MesValue D_0058531C;           /* "true" */
+extern MesValue D_005852C4;           /* "false" */
+MesValue mes_eval_to_boolean(MesContext *ctx, MesValue v);
+MesValue mes_eval_type_error(MesContext *ctx);
+MesObject *mes_object_new(MesContext *ctx, int cls, MesObject *proto);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_boolean", mes_boolean_constructor);
+MesValue mes_boolean_constructor(MesContext *ctx, MesValue v)
+{
+    MesValue b = mes_eval_to_boolean(ctx, v);
+    MesObject *o;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_boolean", mes_boolean_to_string);
+    if (ctx->frame->construct) {
+        o = mes_object_new(ctx, 1, D_00585334);
+        o->fC = b;
+        return (MesValue)o;
+    }
+    return b;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_boolean", mes_boolean_value_of);
+MesValue mes_boolean_to_string(MesContext *ctx)
+{
+    MesValue v = (MesValue)ctx->frame->thisobj;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_boolean", mes_boolean_setup);
+    if (MES_IS_OBJECT(v))
+        v = ((MesObject *)v)->fC;
+    if (v == MES_TRUE)
+        return D_0058531C;
+    if (v == MES_FALSE)
+        return D_005852C4;
+    return mes_eval_type_error(ctx);
+}
+
+MesValue mes_boolean_value_of(MesContext *ctx)
+{
+    MesValue v = (MesValue)ctx->frame->thisobj;
+
+    if (MES_IS_OBJECT(v))
+        v = ((MesObject *)v)->fC;
+    if (v != MES_TRUE && v != MES_FALSE)
+        return mes_eval_type_error(ctx);
+    return v;
+}
+
+void mes_boolean_setup(MesContext *ctx)
+{
+    MesObject *proto;
+    MesObject *ctor;
+
+    proto = mes_object_new(ctx, 1, mes_classes[9]);
+    mes_classes[1] = proto;
+    proto->fC = 8;
+    ctor = mes_native_new(ctx, mes_ids[1], mes_boolean_constructor, 1, 1);
+    mes_object_set(ctx->global, mes_ids[1], (MesValue)ctor, 7);
+    mes_object_set(ctor, mes_ids[59], (MesValue)proto, 7);
+    mes_object_set(proto, mes_ids[40], (MesValue)ctor, 2);
+    mes_native_setup(ctx, proto, &mes_boolean_table, 2);
+}

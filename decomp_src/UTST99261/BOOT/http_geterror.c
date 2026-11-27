@@ -1,51 +1,169 @@
+/* cflags: -O1 */
 #include "common.h"
+#include "http_lib.h"
+int sceParseHttpStatusLine(const char *line, int len, int *major, int *minor, int *status, const char **reason, int *reasonlen);
+extern const char htlib_cstrAGE[];
+extern const char htlib_cstrALLOW[];
+extern const char htlib_cstrCACHECONTROL[];
+extern const char htlib_cstrCONNECTION[];
+extern const char htlib_cstrCONTENTENCODING[];
+extern const char htlib_cstrCONTENTLANGUAGE[];
+extern const char htlib_cstrCONTENTLENGTH[];
+extern const char htlib_cstrCONTENTLOCATION[];
+extern const char htlib_cstrCONTENTTYPE[];
+extern const char htlib_cstrETAG[];
+extern const char htlib_cstrEXPIRES[];
+extern const char htlib_cstrLASTMODIFIED[];
+extern const char htlib_cstrLOCATION[];
+extern const char htlib_cstrPRAGMA[];
+extern const char htlib_cstrPROXYAUTHENTICATE[];
+extern const char htlib_cstrRETRYAFTER[];
+extern const char htlib_cstrSERVER[];
+extern const char htlib_cstrSETCOOKIE[];
+extern const char htlib_cstrTRANSFERENCODING[];
+extern const char htlib_cstrWWWAUTHENTICATE[];
+int http_getresponseheader(int h, const char *name, int v);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/http_geterror", http_geterror);
+int http_geterror(int h)
+{
+    HttpObj *o = (HttpObj *)(h * 2);
+    int err;
+
+    if (h == 0)
+        return -100;
+    err = o->error;
+    o->error = 0;
+    return err;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/http_geterror", http_getresponseallheader);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/http_geterror", http_getresponsebody);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/http_geterror", http_getresponseheader_Age);
+int http_getresponseheader_Age(int h)
+{
+    return http_getresponseheader(h, htlib_cstrAGE, 0);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/http_geterror", http_getresponseheader_Allow);
+int http_getresponseheader_Allow(int h)
+{
+    return http_getresponseheader(h, htlib_cstrALLOW, 0);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/http_geterror", http_getresponseheader_CacheControl);
+int http_getresponseheader_CacheControl(int h)
+{
+    return http_getresponseheader(h, htlib_cstrCACHECONTROL, 0);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/http_geterror", http_getresponseheader_Connection);
+int http_getresponseheader_Connection(int h)
+{
+    return http_getresponseheader(h, htlib_cstrCONNECTION, 0);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/http_geterror", http_getresponseheader_ContentEncoding);
+int http_getresponseheader_ContentEncoding(int h)
+{
+    return http_getresponseheader(h, htlib_cstrCONTENTENCODING, 0);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/http_geterror", http_getresponseheader_ContentLanguage);
+int http_getresponseheader_ContentLanguage(int h)
+{
+    return http_getresponseheader(h, htlib_cstrCONTENTLANGUAGE, 0);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/http_geterror", http_getresponseheader_ContentLength);
+int http_getresponseheader_ContentLength(int h)
+{
+    return http_getresponseheader(h, htlib_cstrCONTENTLENGTH, 0);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/http_geterror", http_getresponseheader_ContentLocation);
+int http_getresponseheader_ContentLocation(int h)
+{
+    return http_getresponseheader(h, htlib_cstrCONTENTLOCATION, 0);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/http_geterror", http_getresponseheader_ContentType);
+int http_getresponseheader_ContentType(int h)
+{
+    return http_getresponseheader(h, htlib_cstrCONTENTTYPE, 0);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/http_geterror", http_getresponseheader_ETag);
+int http_getresponseheader_ETag(int h)
+{
+    return http_getresponseheader(h, htlib_cstrETAG, 0);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/http_geterror", http_getresponseheader_Expires);
+int http_getresponseheader_Expires(int h)
+{
+    return http_getresponseheader(h, htlib_cstrEXPIRES, 0);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/http_geterror", http_getresponseheader_LastModified);
+int http_getresponseheader_LastModified(int h)
+{
+    return http_getresponseheader(h, htlib_cstrLASTMODIFIED, 0);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/http_geterror", http_getresponseheader_Location);
+int http_getresponseheader_Location(int h)
+{
+    return http_getresponseheader(h, htlib_cstrLOCATION, 0);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/http_geterror", http_getresponseheader_Pragma);
+int http_getresponseheader_Pragma(int h)
+{
+    return http_getresponseheader(h, htlib_cstrPRAGMA, 0);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/http_geterror", http_getresponseheader_ProxyAuthenticate);
+int http_getresponseheader_ProxyAuthenticate(int h)
+{
+    return http_getresponseheader(h, htlib_cstrPROXYAUTHENTICATE, 0);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/http_geterror", http_getresponseheader_RetryAfter);
+int http_getresponseheader_RetryAfter(int h)
+{
+    return http_getresponseheader(h, htlib_cstrRETRYAFTER, 0);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/http_geterror", http_getresponseheader_Server);
+int http_getresponseheader_Server(int h)
+{
+    return http_getresponseheader(h, htlib_cstrSERVER, 0);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/http_geterror", http_getresponseheader_SetCookie);
+int http_getresponseheader_SetCookie(int h, int v)
+{
+    return http_getresponseheader(h, htlib_cstrSETCOOKIE, v);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/http_geterror", http_getresponseheader_TransferEncoding);
+int http_getresponseheader_TransferEncoding(int h)
+{
+    return http_getresponseheader(h, htlib_cstrTRANSFERENCODING, 0);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/http_geterror", http_getresponseheader_WWWAuthenticate);
+int http_getresponseheader_WWWAuthenticate(int h)
+{
+    return http_getresponseheader(h, htlib_cstrWWWAUTHENTICATE, 0);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/http_geterror", http_getresponseheader);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/http_geterror", http_getresponsestatus);
+int http_getresponsestatus(int h, int *version)
+{
+    HttpObj *o = (HttpObj *)(h * 2);
+    int major, minor, status;
+    const char *reason;
+    int reasonlen;
+    int r;
+
+    if (h == 0)
+        return -100;
+    if (o->statusline != NULL) {
+        r = sceParseHttpStatusLine(o->statusline, o->statuslen, &major, &minor, &status, &reason, &reasonlen);
+        if (r < 0) {
+            if (o->error == 0)
+                o->error = r;
+            return o->error;
+        }
+        if (version != NULL)
+            *version = major * 10 + minor;
+        return status;
+    }
+    if (o->error == 0)
+        o->error = -104;
+    return o->error;
+}

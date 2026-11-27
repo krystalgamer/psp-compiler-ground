@@ -1,5 +1,20 @@
+/* cflags: -O1 */
 #include "common.h"
+#include "mes_js.h"
 #include "m2c_macros.h"
+extern MesClassDef mes_window_def;
+extern MesClass *mes_window_class;
+extern char D_0013C294[];
+int mes_window_history_move_inner(MesContext *ctx, int n);
+void js_delTimerID(int id, int kind, int b);
+MesValue mes_window_set_interval_inner(MesContext *ctx, MesValue *argv, int argc, int kind);
+void *mes_window_dialog_inner(MesContext *ctx, int kind, MesValue msg, void *out, int d);
+int mes_window_check_validate(MesContext *ctx, void **a, void **b, int *sid, void **node);
+void *HST_getDomObject(void *node);
+typedef struct DialogResult {
+    char pad[0x10];
+    int ok;
+} DialogResult;
 
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_window", mes_window_check_validate);
@@ -14,15 +29,57 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_window", mes_window_scr
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_window", mes_window_set_interval_inner);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_window", mes_window_alert);
+MesValue mes_window_alert(MesContext *ctx, MesValue msg)
+{
+    int tmp[4];
+    void *r = mes_window_dialog_inner(ctx, 0, msg, tmp, 0);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_window", mes_window_blur);
+    if (r != NULL)
+        MEM_free(0, r);
+    return 0;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_window", mes_window_clear_interval);
+MesValue mes_window_blur(MesContext *ctx)
+{
+    IpcMsg msg;
+    void *a, *b;
+    int sid;
+    void *node;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_window", mes_window_clear_timeout);
+    mes_window_check_validate(ctx, &a, &b, &sid, &node);
+    if (node != NULL) {
+        SetIpcMember(&msg, 8, sid, 0, 0x808, 1, 0, HST_getDomObject(node));
+        JSSendMail(&msg, D_0013C294);
+    }
+    return 0;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_window", mes_window_confirm);
+MesValue mes_window_clear_interval(MesContext *ctx, MesValue v)
+{
+    if ((v & 3) == 1)
+        js_delTimerID(v >> 2, 1, 1);
+    return 0;
+}
+
+MesValue mes_window_clear_timeout(MesContext *ctx, MesValue v)
+{
+    if ((v & 3) == 1)
+        js_delTimerID(v >> 2, 2, 1);
+    return 0;
+}
+
+MesValue mes_window_confirm(MesContext *ctx, MesValue msg)
+{
+    int tmp[4];
+    DialogResult *r = mes_window_dialog_inner(ctx, 1, msg, tmp, 0);
+    MesValue ret;
+
+    if (r == NULL)
+        return 8;
+    ret = r->ok == 0 ? 12 : 8;
+    MEM_free(0, r);
+    return ret;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -31,13 +88,41 @@ int mes_window_find(void) {
     return 8;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_window", mes_window_focus);
+MesValue mes_window_focus(MesContext *ctx)
+{
+    IpcMsg msg;
+    void *a, *b;
+    int sid;
+    void *node;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_window", mes_window_back);
+    mes_window_check_validate(ctx, &a, &b, &sid, &node);
+    if (node != NULL) {
+        SetIpcMember(&msg, 8, sid, 0, 0x808, 0, 0, HST_getDomObject(node));
+        JSSendMail(&msg, D_0013C294);
+    }
+    return 0;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_window", mes_window_forward);
+MesValue mes_window_back(MesContext *ctx)
+{
+    mes_window_history_move_inner(ctx, -1);
+    return 0;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_window", mes_window_handle_event);
+MesValue mes_window_forward(MesContext *ctx)
+{
+    mes_window_history_move_inner(ctx, 1);
+    return 0;
+}
+
+int mes_window_handle_event(MesContext *ctx, MesObject *obj)
+{
+    short type = g_JS_EVENT_REC_->type;
+
+    if (type == 2 || type == 7 || type == 8 || type == 12 || type == 18 || type == 20 || type == 23)
+        return mes_event_handle_event(ctx, obj, type);
+    return 12;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_window", mes_window_home);
 
@@ -45,11 +130,38 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_window", mes_window_scr
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_window", mes_window_scroll_to);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_window", mes_window_set_interval);
+MesValue mes_window_set_interval(MesContext *ctx)
+{
+    MesArgs *args = ctx->frame->args;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_window", mes_window_set_timeout);
+    if (args == NULL)
+        return 0;
+    return mes_window_set_interval_inner(ctx, args->argv, args->argc, 1);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_window", mes_window_stop);
+MesValue mes_window_set_timeout(MesContext *ctx)
+{
+    MesArgs *args = ctx->frame->args;
+
+    if (args == NULL)
+        return 0;
+    return mes_window_set_interval_inner(ctx, args->argv, args->argc, 2);
+}
+
+MesValue mes_window_stop(MesContext *ctx)
+{
+    IpcMsg msg;
+    void *a, *b;
+    int sid;
+    char *node;
+
+    mes_window_check_validate(ctx, &a, &b, &sid, (void **)&node);
+    if (node == NULL || *(void **)(node + 0x6C) == NULL)
+        return 0;
+    SetIpcMember(&msg, 8, sid, 0, 0x806, 0, 0, 0);
+    JSSendMail(&msg, D_0013C294);
+    return 0;
+}
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_window", D_0013C28C);
 
@@ -66,14 +178,15 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_window", mes_window_put
 void mes_window_mark(void) {
 }
 
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
-void mes_window_free(void) {
-    MEM_free(0);
+void mes_window_free(MesContext *ctx, void *p)
+{
+    MEM_free(0, p);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_window", mes_window_class_init);
+void mes_window_class_init(MesContext *ctx)
+{
+    mes_window_class = mes_class_init(ctx, &mes_window_def);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_window", mes_window_new);
 

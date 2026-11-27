@@ -1,8 +1,52 @@
+/* cflags: -O1 */
 #include "common.h"
+#include "mes_js.h"
+#include "m2c_macros.h"
+extern MesClassDef mes_image_def;
+extern struct {
+    MesClass *cls;
+    int arg;
+} mes_image_class_global;
+extern int D_0025BC9C;
+typedef struct MesImagePriv {
+    int v;
+    int f4;
+    void *f8;
+    void *fC;
+} MesImagePriv;
+MesObject *mes_image_new(MesContext *ctx, MesImagePriv *priv);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_image", mes_image_handle_event);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_image", mes_image_constructor);
+
+int mes_image_handle_event(MesContext *ctx, MesObject *obj)
+{
+    short type = g_JS_EVENT_REC_->type;
+
+    if (type == 1 || type == 2 || type == 4 || type == 7 || type == 8 || type == 12 || type == 13 || type == 14 || type == 15
+        || type == 16 || type == 17)
+        return mes_event_handle_event(ctx, obj, type);
+    return 12;
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+int mes_image_constructor(int arg0) {
+    int var_v0;
+    void *temp_v0;
+
+    temp_v0 = MEM_malloc(0, 0x10);
+    var_v0 = 0x20;
+    if (temp_v0 != NULL) {
+        M2C_FIELD(temp_v0, int *, 0) = 4;
+        M2C_FIELD(temp_v0, int *, 4) = 0;
+        M2C_FIELD(temp_v0, int *, 8) = 0;
+        M2C_FIELD(temp_v0, int *, 0xC) = 0;
+        var_v0 = mes_image_new(arg0, temp_v0);
+    }
+    return var_v0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_image", mes_image_get);
 
@@ -11,11 +55,34 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_image", mes_image_put);
 void mes_image_mark(void) {
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_image", mes_image_free);
+void mes_image_free(MesContext *ctx, MesImagePriv *priv)
+{
+    if (priv != NULL) {
+        if (priv->f8 != NULL)
+            MEM_free(0, priv->f8);
+        if (priv->fC != NULL)
+            MEM_free(0, priv->fC);
+        MEM_free(0, priv);
+    }
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_image", mes_image_class_init);
+int mes_image_class_init(MesContext *ctx, int arg)
+{
+    mes_image_class_global.cls = mes_class_init(ctx, &mes_image_def);
+    mes_image_class_global.arg = arg;
+    return 0;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_image", mes_image_new);
+MesObject *mes_image_new(MesContext *ctx, MesImagePriv *priv)
+{
+    MesObject *obj;
+
+    if (priv->v == MES_NULL)
+        priv->v = D_0025BC9C;
+    obj = mes_class_new(ctx, mes_image_class_global.cls);
+    mes_class_private_set(obj, priv);
+    return obj;
+}
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_image", D_0013F938);
 

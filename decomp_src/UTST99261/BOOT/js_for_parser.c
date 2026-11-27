@@ -1,9 +1,47 @@
+/* cflags: -O1 */
 #include "common.h"
 #include "m2c_macros.h"
+int js_setChildOfDocument(int a, int b, int c, int d, int type);
+int js_setChildOfForm(int a, int b, int c, int d, int type);
+int js_setChildOfWindow(int a, int b, int c, int type);
+int JSObjSetEventHandler(int a, int b, int c);
+typedef unsigned short UCSChar;
+int mes_event_new();                                /* extern */
+M2C_UNK mes_object_setup(void *, int, M2C_UNK *, int, M2C_UNK, M2C_UNK); /* extern */
+M2C_UNK JSPtrListAdd(void *);                       /* extern */
+void *MEM_malloc(M2C_UNK, M2C_UNK);                 /* extern */
+M2C_UNK OS_thread_mutex_lock(int);                  /* extern */
+M2C_UNK OS_thread_mutex_unlock(int);                /* extern */
+extern int jsapi_lock;
+int SelectSetInternal();
+int TextSetInternal();
+int TextAreaSetInternal();
+int HiddenSetInternal();
+int PasswordSetInternal();
+int FileUploadSetInternal();
+int ButtonSetInternal();
+int SubmitSetInternal();
+int ResetSetInternal();
+int CheckboxSetInternal();
+int RadioSetInternal();
+int ImageSetInternal();
+int EventHandlerSetInternal();
+int ASetInternal();
+int FormSetInternal();
+
 M2C_UNK js_setChildOfSelect();                      /* extern */
 
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/js_for_parser", JSObjGetCharsLength);
+int JSObjGetCharsLength(const UCSChar *s)
+{
+    int n = 0;
+
+    while (*s != 0) {
+        s++;
+        n++;
+    }
+    return n;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/js_for_parser", JSObjSetEventHandler);
 
@@ -69,47 +107,132 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/js_for_parser", DocumentSetInte
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/js_for_parser", ASetInternal);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/js_for_parser", NavigatorSetInternal);
+void *NavigatorSetInternal(void *arg0, int arg1)
+{
+    void *nav = mes_navigator_new(arg0);
+    void *sp;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/js_for_parser", EventSetInternal);
+    mes_class_property_setup(arg0, arg1, "navigator", nav, 7);
+    sp = M2C_FIELD(arg0, void **, 0x18);
+    M2C_FIELD(arg0, void **, 0x18) = (void *) ((char *)sp - 4);
+    M2C_FIELD(sp, void **, -4) = nav;
+    mes_object_setup(arg0, M2C_FIELD(arg0, int *, 0xC), "navigator", nav, 7, 0);
+    M2C_FIELD(arg0, void **, 0x18) = (void *) ((char *)M2C_FIELD(arg0, void **, 0x18) + 4);
+    return nav;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/js_for_parser", HistoryObjSetInternal);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/js_for_parser", LocationSetInternal);
+int EventSetInternal(void *arg0) {
+    int temp_s1;
+    void *temp_v1;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/js_for_parser", ScreenSetInternal);
+    temp_s1 = mes_event_new();
+    temp_v1 = M2C_FIELD(arg0, void **, 0x18);
+    M2C_FIELD(arg0, void **, 0x18) = (void *) (temp_v1 - 4);
+    M2C_FIELD(temp_v1, int *, -4) = temp_s1;
+    mes_object_setup(arg0, M2C_FIELD(arg0, int *, 0xC), "event", temp_s1, 7, 0);
+    M2C_FIELD(arg0, void **, 0x18) = (void *) (M2C_FIELD(arg0, void **, 0x18) + 4);
+    return temp_s1;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/js_for_parser", EventHandlerSetInternal);
+int HistoryObjSetInternal(int a, int b)
+{
+    return js_setChildOfWindow(a, b, 0, 5);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/js_for_parser", AnchorSetInternal);
+int LocationSetInternal(int a, int b, int c)
+{
+    return js_setChildOfWindow(a, b, c, 6);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/js_for_parser", FormSetInternal);
+int ScreenSetInternal(int a, int b)
+{
+    return js_setChildOfWindow(a, b, 0, 7);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/js_for_parser", ImageSetInternal);
+int EventHandlerSetInternal(int a, int b, int c, int d)
+{
+    JSObjSetEventHandler(a, b, d);
+    return 0;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/js_for_parser", LinkSetInternal);
+int AnchorSetInternal(int a, int b, int c, int d)
+{
+    return js_setChildOfDocument(a, b, c, d, 8);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/js_for_parser", ButtonSetInternal);
+int FormSetInternal(int a, int b, int c, int d)
+{
+    return js_setChildOfDocument(a, b, c, d, 9);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/js_for_parser", CheckboxSetInternal);
+int ImageSetInternal(int a, int b, int c, int d)
+{
+    return js_setChildOfDocument(a, b, c, d, 10);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/js_for_parser", FileUploadSetInternal);
+int LinkSetInternal(int a, int b, int c, int d)
+{
+    return js_setChildOfDocument(a, b, c, d, 11);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/js_for_parser", HiddenSetInternal);
+int ButtonSetInternal(int a, int b, int c, int d)
+{
+    return js_setChildOfForm(a, b, c, d, 12);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/js_for_parser", PasswordSetInternal);
+int CheckboxSetInternal(int a, int b, int c, int d)
+{
+    return js_setChildOfForm(a, b, c, d, 13);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/js_for_parser", RadioSetInternal);
+int FileUploadSetInternal(int a, int b, int c, int d)
+{
+    return js_setChildOfForm(a, b, c, d, 14);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/js_for_parser", ResetSetInternal);
+int HiddenSetInternal(int a, int b, int c, int d)
+{
+    return js_setChildOfForm(a, b, c, d, 15);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/js_for_parser", SelectSetInternal);
+int PasswordSetInternal(int a, int b, int c, int d)
+{
+    return js_setChildOfForm(a, b, c, d, 16);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/js_for_parser", SubmitSetInternal);
+int RadioSetInternal(int a, int b, int c, int d)
+{
+    return js_setChildOfForm(a, b, c, d, 17);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/js_for_parser", TextSetInternal);
+int ResetSetInternal(int a, int b, int c, int d)
+{
+    return js_setChildOfForm(a, b, c, d, 18);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/js_for_parser", TextAreaSetInternal);
+int SelectSetInternal(int a, int b, int c, int d)
+{
+    return js_setChildOfForm(a, b, c, d, 19);
+}
+
+int SubmitSetInternal(int a, int b, int c, int d)
+{
+    return js_setChildOfForm(a, b, c, d, 20);
+}
+
+int TextSetInternal(int a, int b, int c, int d)
+{
+    return js_setChildOfForm(a, b, c, d, 21);
+}
+
+int TextAreaSetInternal(int a, int b, int c, int d)
+{
+    return js_setChildOfForm(a, b, c, d, 22);
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -119,60 +242,293 @@ void OptionSetInternal(void) {
     js_setChildOfSelect();
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/js_for_parser", JSObjectSetInternal);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/js_for_parser", SelectSet);
+void *JSObjectSetInternal(int (*arg0)(int, int, int, int), void *arg1, int arg2, int arg3) {
+    int temp_v0_2;
+    void *temp_v0;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/js_for_parser", TextSet);
+    OS_thread_mutex_lock(jsapi_lock);
+    temp_v0 = MEM_malloc(0, 0x10);
+    if (temp_v0 != NULL) {
+        temp_v0_2 = arg0(M2C_FIELD(arg1, int *, 0), M2C_FIELD(arg1, int *, 4), arg2, arg3);
+        M2C_FIELD(temp_v0, int *, 0) = (int) M2C_FIELD(arg1, int *, 0);
+        M2C_FIELD(temp_v0, int *, 4) = temp_v0_2;
+        JSPtrListAdd(temp_v0);
+    }
+    OS_thread_mutex_unlock(jsapi_lock);
+    return temp_v0;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/js_for_parser", TextAreaSet);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/js_for_parser", HiddenSet);
+void SelectSet(int arg0, int arg1, int arg2) {
+    JSObjectSetInternal(&SelectSetInternal, arg0, arg1, arg2);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/js_for_parser", PasswordSet);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/js_for_parser", FileUploadSet);
+void TextSet(int arg0, int arg1, int arg2) {
+    JSObjectSetInternal(&TextSetInternal, arg0, arg1, arg2);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/js_for_parser", ButtonSet);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/js_for_parser", SubmitSet);
+void TextAreaSet(int arg0, int arg1, int arg2) {
+    JSObjectSetInternal(&TextAreaSetInternal, arg0, arg1, arg2);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/js_for_parser", ResetSet);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/js_for_parser", CheckboxSet);
+void HiddenSet(int arg0, int arg1, int arg2) {
+    JSObjectSetInternal(&HiddenSetInternal, arg0, arg1, arg2);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/js_for_parser", RadioSet);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/js_for_parser", ImageSet);
+void PasswordSet(int arg0, int arg1, int arg2) {
+    JSObjectSetInternal(&PasswordSetInternal, arg0, arg1, arg2);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/js_for_parser", EventHandlerSet);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/js_for_parser", ASet);
+void FileUploadSet(int arg0, int arg1, int arg2) {
+    JSObjectSetInternal(&FileUploadSetInternal, arg0, arg1, arg2);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/js_for_parser", FormSet);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/js_for_parser", OptionSet);
+void ButtonSet(int arg0, int arg1, int arg2) {
+    JSObjectSetInternal(&ButtonSetInternal, arg0, arg1, arg2);
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void SubmitSet(int arg0, int arg1, int arg2) {
+    JSObjectSetInternal(&SubmitSetInternal, arg0, arg1, arg2);
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void ResetSet(int arg0, int arg1, int arg2) {
+    JSObjectSetInternal(&ResetSetInternal, arg0, arg1, arg2);
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void CheckboxSet(int arg0, int arg1, int arg2) {
+    JSObjectSetInternal(&CheckboxSetInternal, arg0, arg1, arg2);
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void RadioSet(int arg0, int arg1, int arg2) {
+    JSObjectSetInternal(&RadioSetInternal, arg0, arg1, arg2);
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void ImageSet(int arg0, int arg1, int arg2) {
+    JSObjectSetInternal(&ImageSetInternal, arg0, arg1, arg2);
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void EventHandlerSet(int arg0, int arg1) {
+    JSObjectSetInternal(&EventHandlerSetInternal, arg0, 0, arg1);
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void ASet(int arg0, int arg1, int arg2) {
+    JSObjectSetInternal(&ASetInternal, arg0, arg1, arg2);
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void FormSet(int arg0, int arg1, int arg2) {
+    JSObjectSetInternal(&FormSetInternal, arg0, arg1, arg2);
+}
+
+void *OptionSet(int a, int b, int c)
+{
+    return JSObjectSetInternal(OptionSetInternal, a, b, c);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/js_for_parser", DocumentSet);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/js_for_parser", UCS_strcpy);
+UCSChar *UCS_strcpy(UCSChar *d, const UCSChar *s)
+{
+    UCSChar *r = d;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/js_for_parser", UCS_strncpy);
+    while ((*d++ = *s++) != 0)
+        ;
+    return r;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/js_for_parser", UCS_strcmp);
+UCSChar *UCS_strncpy(UCSChar *d, const UCSChar *s, int n)
+{
+    UCSChar *r = d;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/js_for_parser", UCS_strncmp);
+    while (--n != -1 && (*d++ = *s++) != 0)
+        ;
+    return r;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/js_for_parser", UCS_strcasecmp);
+short UCS_strcmp(const UCSChar *a, const UCSChar *b)
+{
+    short r;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/js_for_parser", UCS_strncasecmp);
+    do {
+        r = *a - *b++;
+        if (r != 0)
+            break;
+    } while (*a++ != 0);
+    return r;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/js_for_parser", UCS_strdup);
+short UCS_strncmp(const UCSChar *a, const UCSChar *b, int n)
+{
+    short r = 0;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/js_for_parser", UCS_strndup);
+    while (n != 0) {
+        r = *a - *b++;
+        if (r != 0)
+            break;
+        if (*a++ == 0)
+            break;
+        n--;
+    }
+    return r;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/js_for_parser", UCS_strstr);
+int UCS_strcasecmp(const UCSChar *a, const UCSChar *b)
+{
+    UCSChar c1, c2;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/js_for_parser", UCS_strlen);
+    do {
+        c1 = *a++;
+        c2 = *b++;
+        if (c1 == 0 || c2 == 0)
+            break;
+        if (c1 == c2)
+            continue;
+        if (c1 >= 'A' && c1 <= 'Z')
+            c1 += 'a' - 'A';
+        if (c2 >= 'A' && c2 <= 'Z')
+            c2 += 'a' - 'A';
+    } while (c1 == c2);
+    return c1 - c2;
+}
+
+int UCS_strncasecmp(const UCSChar *a, const UCSChar *b, int n)
+{
+    UCSChar c1, c2;
+
+    c2 = 0;
+    c1 = 0;
+
+    while (n != 0) {
+        c1 = *a++;
+        c2 = *b++;
+        if (c1 == 0 || c2 == 0)
+            break;
+        if (c1 != c2) {
+            if (c1 >= 'A' && c1 <= 'Z')
+                c1 += 'a' - 'A';
+            if (c2 >= 'A' && c2 <= 'Z')
+                c2 += 'a' - 'A';
+            if (c1 != c2)
+                break;
+        }
+        n--;
+    }
+    return c1 - c2;
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+int UCS_strdup(int arg0) {
+    int temp_v0;
+    int var_v1;
+
+    temp_v0 = MEM_malloc(0, (UCS_strlen() * 2) + 2);
+    var_v1 = 0;
+    if (temp_v0 != 0) {
+        var_v1 = UCS_strcpy(temp_v0, arg0);
+    }
+    return var_v1;
+}
+
+UCSChar *UCS_strndup(const UCSChar *s, int n)
+{
+    UCSChar *p = MEM_malloc(0, n * 2 + 2);
+
+    if (p == NULL)
+        return NULL;
+    UCS_strncpy(p, s, n);
+    p[n] = 0;
+    return p;
+}
+
+UCSChar *UCS_strstr(UCSChar *hay, const UCSChar *needle)
+{
+    int nl = UCS_strlen(needle);
+    int hl;
+
+    if (nl == 0)
+        return hay;
+    hl = UCS_strlen(hay);
+    while (hl >= nl) {
+        hl--;
+        if (UCS_strncmp(hay, needle, nl) == 0)
+            return hay;
+        hay++;
+    }
+    return NULL;
+}
+
+int UCS_strlen(const UCSChar *s)
+{
+    const UCSChar *p = s;
+
+    while (*p != 0)
+        p++;
+    return p - s;
+}
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/js_for_parser", gDomiAttrVt);

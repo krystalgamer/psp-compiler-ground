@@ -1,14 +1,39 @@
+/* cflags: -O1 */
 #include "common.h"
+#include "mes_js.h"
+extern MesClassDef mes_password_def;
+extern MesClass *mes_password_class;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_password", mes_password_handle_event);
+int mes_password_handle_event(MesContext *ctx, MesObject *obj)
+{
+    short type = g_JS_EVENT_REC_->type;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_password", mes_password_get);
+    if (type == 2 || type == 3 || type == 4 || type == 8 || type == 13 || type == 14 || type == 15 || type == 16 || type == 17 || type == 21)
+        return mes_event_handle_event(ctx, obj, type);
+    return 12;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_password", mes_password_put);
+MesValue mes_password_get(MesContext *ctx, MesObject *obj, void *elem, int id)
+{
+    return mes_input_get(ctx, obj, elem, id, 16);
+}
+
+int mes_password_put(MesContext *ctx, MesObject *obj, void *elem, int id, MesValue v)
+{
+    return mes_input_put(ctx, obj, elem, id, 16, v);
+}
 
 void mes_password_mark(void) {
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_password", mes_password_class_init);
+void mes_password_class_init(MesContext *ctx)
+{
+    mes_password_class = mes_class_init(ctx, &mes_password_def);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_password", mes_password_new);
+MesObject *mes_password_new(MesContext *ctx, void *elem)
+{
+    MesObject *obj = mes_class_new(ctx, mes_password_class);
+    mes_class_private_set(obj, elem);
+    return obj;
+}

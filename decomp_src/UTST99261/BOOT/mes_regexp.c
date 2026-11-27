@@ -1,11 +1,41 @@
+/* cflags: -O1 */
 #include "common.h"
 #include "m2c_macros.h"
+extern unsigned int mes_ids[];
+extern void *mes_classes[];
+extern unsigned int D_005852B8;
+extern int mes_empty;
+extern unsigned int mes_regexp_dollar[];
+extern void *mes_regexp_table;
+int mes_regexp_constructor();
+void *mes_object_new(void *ctx, int cls, void *proto);
+void *mes_native_new(void *ctx, int a, void *fn, int nargs, int flags);
+void mes_native_setup(void *ctx, void *o, void *table, int n);
+void mes_object_set(void *obj, unsigned int id, int value, int flags);
+unsigned int mes_context_id2(void *ctx, const char *name);
+M2C_UNK mes_gc_mark(int);                           /* extern */
+M2C_UNK mes_util_vals_mark(int);                    /* extern */
+M2C_UNK MEM_free(M2C_UNK, int);                     /* extern */
+M2C_UNK mes_gc_register(M2C_UNK *, M2C_UNK, M2C_UNK, M2C_UNK); /* extern */
+extern unsigned char mes_cap_method;
+extern unsigned char mes_closure_method;
+extern unsigned char mes_regexp_method;
+extern unsigned char mes_state_method;
+
 M2C_UNK mes_util_vals_free(int);                    /* extern */
 
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_regexp", mes_regexp_new);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_regexp", mes_regexp_mark);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void mes_regexp_mark(void *arg0) {
+    mes_object_mark(arg0);
+    mes_gc_mark(M2C_FIELD(arg0, int *, 0x14));
+    mes_gc_mark(M2C_FIELD(arg0, int *, 0x18));
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_regexp", mes_regexp_get);
 
@@ -15,7 +45,19 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_regexp", mes_regexp_canput)
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_regexp", mes_closure_new);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_regexp", mes_closure_mark);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void mes_closure_mark(void *arg0) {
+    int temp_v1;
+
+    temp_v1 = M2C_FIELD(arg0, int *, 0);
+    if (!(temp_v1 & 1)) {
+        M2C_FIELD(arg0, int *, 0) = (int) (temp_v1 | 1);
+        mes_util_vals_mark(M2C_FIELD(arg0, int *, 8));
+    }
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -29,13 +71,42 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_regexp", mes_cap_new);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_regexp", mes_cap_mark);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_regexp", mes_cap_free);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void mes_cap_free(void *arg0) {
+    if (M2C_FIELD(arg0, int *, 4) > 0) {
+        MEM_free(0, M2C_FIELD(arg0, int *, 8));
+    }
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_regexp", mes_state_new);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_regexp", mes_state_mark);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_regexp", mes_regexp_initialize);
+void mes_state_mark(void *arg0) {
+    int temp_v1;
+
+    temp_v1 = M2C_FIELD(arg0, int *, 0);
+    if (!(temp_v1 & 1)) {
+        M2C_FIELD(arg0, int *, 0) = (int) (temp_v1 | 1);
+        mes_gc_mark(M2C_FIELD(arg0, int *, 8));
+    }
+}
+
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void mes_regexp_initialize(void) {
+    mes_gc_register(&mes_regexp_method, 0x30, 0x10, 0x10);
+    mes_gc_register(&mes_closure_method, 0xC, 0x10, 0x10);
+    mes_gc_register(&mes_cap_method, 0xC, 0x10, 0x10);
+    mes_gc_register(&mes_state_method, 0xC, 0x10, 0x10);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_regexp", mes_regexp_charset_match);
 
@@ -71,7 +142,30 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_regexp", mes_regexp_test);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_regexp", mes_regexp_to_string);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_regexp", mes_regexp_setup);
+void mes_regexp_setup(void *ctx)
+{
+    void *proto;
+    void *ctor;
+    char buf[3];
+    int i;
+    unsigned int id;
+
+    proto = mes_object_new(ctx, 9, mes_classes[9]);
+    mes_classes[12] = proto;
+    ctor = mes_native_new(ctx, mes_ids[12], mes_regexp_constructor, 2, 1);
+    mes_object_set(*(void **)((char *)ctx + 0xC), mes_ids[12], (int)ctor, 7);
+    mes_object_set(ctor, mes_ids[59], (int)proto, 7);
+    buf[0] = '$';
+    buf[2] = 0;
+    for (i = 1; i < 10; i++) {
+        buf[1] = '0' + i;
+        id = mes_context_id2(ctx, buf);
+        mes_regexp_dollar[i - 1] = id;
+        mes_object_set(ctor, id, mes_empty, 0);
+    }
+    mes_object_set(proto, D_005852B8, (int)ctor, 2);
+    mes_native_setup(ctx, proto, &mes_regexp_table, 3);
+}
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/mes_regexp", D_0013BFB8);
 

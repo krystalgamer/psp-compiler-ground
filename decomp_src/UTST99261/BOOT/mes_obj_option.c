@@ -1,5 +1,9 @@
+/* cflags: -O1 */
 #include "common.h"
+#include "mes_js.h"
 #include "m2c_macros.h"
+extern MesClassDef mes_option_def;
+extern MesClass *mes_option_class;
 
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_option", mes_option_get);
@@ -9,16 +13,22 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_option", mes_option_put
 void mes_option_mark(void) {
 }
 
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
-void mes_option_free(void) {
-    MEM_free(0);
+void mes_option_free(MesContext *ctx, void *p)
+{
+    MEM_free(0, p);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_option", mes_option_class_init);
+void mes_option_class_init(MesContext *ctx)
+{
+    mes_option_class = mes_class_init(ctx, &mes_option_def);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_option", mes_option_new);
+MesObject *mes_option_new(MesContext *ctx, void *elem)
+{
+    MesObject *obj = mes_class_new(ctx, mes_option_class);
+    mes_class_private_set(obj, elem);
+    return obj;
+}
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_option", D_0013FB44);
 

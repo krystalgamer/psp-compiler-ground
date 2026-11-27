@@ -1,24 +1,162 @@
+/* cflags: -O1 */
 #include "common.h"
+#include "mes_js.h"
+extern unsigned int mes_ids[];
+extern void *mes_math_table;
+extern const double D_0013B9D8, D_0013B9E0, D_0013B9E8, D_0013B9F0;
+extern const double D_0013B9F8, D_0013BA00, D_0013BA08, D_0013BA10;
+void mes_native_setup(MesContext *ctx, MesObject *o, void *table, int n);
+void mes_object_set(MesObject *obj, unsigned int id, MesValue value, int flags);
+double ceil(double x);
+double acos(double x);
+double asin(double x);
+extern const double D_0013B928, D_0013B930, D_0013B938, D_0013B940;
+extern const double D_0013B998;
+MesValue mes_eval_to_number(MesContext *ctx, MesValue v);
+double mes_num(MesValue v);
+MesValue mes_number_alloc(MesContext *ctx, double d);
+double sin(double x);
+double cos(double x);
+double tan(double x);
+double exp(double x);
+double sqrt(double x);
+double log(double x);
+double atan(double x);
+double floor(double x);
+int rand(void);
+void srand(unsigned int seed);
+int CLIB_time(void *t);
+extern int D_0025BA10;
+extern const double D_0013B948;
+extern const double D_0013B950;
+extern const double D_0013B9C0;
+extern const double D_0013B9A0;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_math", mes_math_abs);
+MesValue mes_math_abs(MesContext *ctx, MesValue v)
+{
+    MesValue n = mes_eval_to_number(ctx, v);
+    double d;
+
+    if (n == 0x1C)
+        return 0x1C;
+    if (n == 0x10)
+        return 1;
+    if (n == 0x14 || n == 0x18)
+        return 0x14;
+    d = mes_num(n);
+    if (!(d >= 0))
+        d = -d;
+    return mes_number_alloc(ctx, d);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_math", mes_math_acos);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_math", mes_math_asin);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_math", mes_math_atan);
+MesValue mes_math_atan(MesContext *ctx, MesValue v)
+{
+    MesValue n = mes_eval_to_number(ctx, v);
+    MesValue ret;
+
+    if (n == 0x1C)
+        ret = 0x1C;
+    else if (n == 1 || n == 0x10)
+        ret = n;
+    else if (n == 0x14)
+        ret = mes_number_alloc(ctx, D_0013B948);
+    else if (n == 0x18)
+        ret = mes_number_alloc(ctx, D_0013B950);
+    else
+        ret = mes_number_alloc(ctx, atan(mes_num(n)));
+    return ret;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_math", mes_math_atan2);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_math", mes_math_ceil);
+MesValue mes_math_ceil(MesContext *ctx, MesValue v)
+{
+    MesValue n = mes_eval_to_number(ctx, v);
+    MesValue ret;
+    double d;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_math", mes_math_cos);
+    if (n == 0x1C || n == 0x14 || n == 0x18 || n == 1 || n == 0x10)
+        return n;
+    d = mes_num(n);
+    if (d < 0 && d > D_0013B998)
+        ret = 0x10;
+    else
+        ret = mes_number_alloc(ctx, ceil(d));
+    return ret;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_math", mes_math_exp);
+MesValue mes_math_cos(MesContext *ctx, MesValue v)
+{
+    MesValue n = mes_eval_to_number(ctx, v);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_math", mes_math_floor);
+    if (n == 0x1C || n == 0x14 || n == 0x18)
+        return 0x1C;
+    if (n == 1 || n == 0x10)
+        return 5;
+    return mes_number_alloc(ctx, cos(mes_num(n)));
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_math", mes_math_log);
+MesValue mes_math_exp(MesContext *ctx, MesValue v)
+{
+    MesValue n = mes_eval_to_number(ctx, v);
+    MesValue ret;
+
+    if (n == 0x1C)
+        ret = 0x1C;
+    else if (n == 1 || n == 0x10)
+        ret = 5;
+    else if (n == 0x14)
+        ret = 0x14;
+    else if (n == 0x18)
+        ret = 1;
+    else
+        ret = mes_number_alloc(ctx, exp(mes_num(n)));
+    return ret;
+}
+
+MesValue mes_math_floor(MesContext *ctx, MesValue v)
+{
+    MesValue n = mes_eval_to_number(ctx, v);
+    MesValue ret;
+    double d;
+
+    if (n == 0x1C || n == 0x14 || n == 0x18 || n == 1 || n == 0x10)
+        return n;
+    d = mes_num(n);
+    if (d > 0 && d < D_0013B9A0)
+        ret = 1;
+    else
+        ret = mes_number_alloc(ctx, floor(d));
+    return ret;
+}
+
+MesValue mes_math_log(MesContext *ctx, MesValue v)
+{
+    MesValue n = mes_eval_to_number(ctx, v);
+    MesValue ret;
+    double d;
+
+    if (n == 0x1C || n == 0x18)
+        ret = 0x1C;
+    else if (n == 1 || n == 0x10)
+        ret = 0x18;
+    else if (n == 5)
+        ret = 1;
+    else if (n == 0x14)
+        ret = 0x14;
+    else {
+        d = mes_num(n);
+        if (d < 0)
+            ret = 0x1C;
+        else
+            ret = mes_number_alloc(ctx, log(d));
+    }
+    return ret;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_math", mes_math_max);
 
@@ -26,17 +164,76 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_math", mes_math_min);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_math", mes_math_pow);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_math", mes_math_random);
+MesValue mes_math_random(MesContext *ctx)
+{
+    if (!D_0025BA10) {
+        srand(CLIB_time(0));
+        D_0025BA10 = 1;
+    }
+    return mes_number_alloc(ctx, rand() * D_0013B9C0);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_math", mes_math_round);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_math", mes_math_sin);
+MesValue mes_math_sin(MesContext *ctx, MesValue v)
+{
+    MesValue n = mes_eval_to_number(ctx, v);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_math", mes_math_sqrt);
+    if (n == 0x1C || n == 0x14 || n == 0x18)
+        return 0x1C;
+    if (n == 1 || n == 0x10)
+        return n;
+    return mes_number_alloc(ctx, sin(mes_num(n)));
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_math", mes_math_tan);
+MesValue mes_math_sqrt(MesContext *ctx, MesValue v)
+{
+    MesValue n = mes_eval_to_number(ctx, v);
+    MesValue ret;
+    double d;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_math", mes_math_setup);
+    if (n == 0x1C || n == 1 || n == 0x10 || n == 0x14)
+        ret = n;
+    else if (n == 0x18)
+        ret = 0x1C;
+    else {
+        d = mes_num(n);
+        if (d < 0)
+            ret = 0x1C;
+        else
+            ret = mes_number_alloc(ctx, sqrt(d));
+    }
+    return ret;
+}
+
+MesValue mes_math_tan(MesContext *ctx, MesValue v)
+{
+    MesValue n = mes_eval_to_number(ctx, v);
+
+    if (n == 0x1C || n == 0x14 || n == 0x18)
+        return 0x1C;
+    if (n == 1 || n == 0x10)
+        return n;
+    return mes_number_alloc(ctx, tan(mes_num(n)));
+}
+
+void mes_math_setup(MesContext *ctx)
+{
+    MesObject *m;
+
+    m = mes_object_new(ctx, 7, mes_classes[9]);
+    mes_classes[7] = m;
+    mes_object_set(ctx->global, mes_ids[7], (MesValue)m, 7);
+    mes_object_set(m, mes_ids[18], mes_number_alloc(ctx, D_0013B9D8), 7);
+    mes_object_set(m, mes_ids[20], mes_number_alloc(ctx, D_0013B9E0), 7);
+    mes_object_set(m, mes_ids[21], mes_number_alloc(ctx, D_0013B9E8), 7);
+    mes_object_set(m, mes_ids[23], mes_number_alloc(ctx, D_0013B9F0), 7);
+    mes_object_set(m, mes_ids[22], mes_number_alloc(ctx, D_0013B9F8), 7);
+    mes_object_set(m, mes_ids[29], mes_number_alloc(ctx, D_0013BA00), 7);
+    mes_object_set(m, mes_ids[32], mes_number_alloc(ctx, D_0013BA08), 7);
+    mes_object_set(m, mes_ids[33], mes_number_alloc(ctx, D_0013BA10), 7);
+    mes_native_setup(ctx, m, &mes_math_table, 18);
+}
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/mes_math", D_0013B928);
 

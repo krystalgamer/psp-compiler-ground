@@ -1,16 +1,203 @@
+/* cflags: -O1 */
 #include "common.h"
+#include "mes_js.h"
+#include "m2c_macros.h"
+typedef struct LocMsg {
+    int kind;
+    int flag;
+    int len;
+    DOMChar str[2];
+} LocMsg;
+typedef struct MesStrL {
+    DOMChar *str;
+    int len;
+} MesStrL;
+extern int *g_JS_PAGECHANGED_;
+extern int *g_JS_MSG_SID_;
+extern char D_0013FA0C[];
+DOMString *makeHref(void *url);
+void *memcpy(void *d, const void *s, unsigned int n);
+void *JSI_getDocumentURL(void *elem);
+typedef struct FragIDs {
+    int f0, f4, f8, fC, f10;
+    char *frag;                       /* 0x14 */
+} FragIDs;
+typedef struct URLRec {
+    int f0, f4, f8, fC;
+    DOMString *frag;                  /* 0x10 */
+} URLRec;
+FragIDs *HST_getFragmentIDs(void *node, int x);
+unsigned int strlen(const char *s);
+DOMString *JSI_newDOMString(const char *s, int len);
+void JSI_freeDOMString(DOMString *s);
+extern MesClassDef mes_location_def;
+extern MesClass *mes_location_class;
+void *HST_searchSessionIDHistoryNode(int sid);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_location", mes_location_check_value);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_location", mes_location_to_string);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_location", mes_location_reload);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_location", mes_location_replace);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_location", mes_location_get);
+void mes_location_check_value(MesContext *ctx, MesObject *obj, void **elem, int *sid, void **node)
+{
+    void *e;
+    int s;
+    void *n;
+    MesObject *o;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_location", mes_location_put);
+    o = obj;
+    if (obj == NULL)
+        o = ctx->frame->thisobj;
+    e = mes_class_private_get(o);
+    s = Node_getSid(e);
+    n = HST_searchSessionIDHistoryNode(s);
+    *elem = e;
+    *sid = s;
+    *node = n;
+}
+
+MesValue mes_location_to_string(MesContext *ctx)
+{
+    void *elem;
+    int sid;
+    char *node;
+
+    mes_location_check_value(ctx, ctx->frame->thisobj, &elem, &sid, (void **)&node);
+    if (elem != NULL && node != NULL && *(void **)(node + 0x6C) != NULL)
+        return mes_location_get(ctx, ctx->frame->thisobj, elem, 4);
+    return MES_UNDEFINED;
+}
+
+int mes_location_reload(MesContext *ctx, MesValue v)
+{
+    IpcMsg msg;
+    void *elem;
+    int sid;
+    char *node;
+    void *url;
+    DOMString *href;
+    LocMsg *p;
+    int size;
+    DOMChar *d;
+
+    mes_location_check_value(ctx, NULL, &elem, &sid, (void **)&node);
+    if (elem != NULL && node != NULL && *(void **)(node + 0x6C) != NULL
+        && (url = JSI_getDocumentURL(elem)) != NULL) {
+        href = makeHref(url);
+        if (href != NULL) {
+            size = href->len * 2 + 12;
+            p = MEM_malloc(0, size);
+            if (p != NULL) {
+                p->kind = 1;
+                p->flag = v == MES_TRUE;
+                p->len = href->len;
+                d = p->str;
+                memcpy(d, href->str, href->len * 2);
+                JSI_freeURLRec(url);
+                JSI_freeDOMString(href);
+                SetIpcMember(&msg, 8, sid, 0, 0x805, 0, size, p);
+                msg.w[5] = *g_JS_MSG_SID_;
+                if (JSSendMail(&msg, D_0013FA0C) == 0) {
+                    *g_JS_PAGECHANGED_ = 1;
+                    return 0;
+                }
+                MEM_free(0, p);
+            }
+            JSI_freeDOMString(href);
+        }
+        JSI_freeURLRec(url);
+    }
+    return 0;
+}
+
+int mes_location_replace(MesContext *ctx, MesValue v)
+{
+    IpcMsg msg;
+    void *elem;
+    int sid;
+    char *node;
+    MesStrL *s;
+    LocMsg *p;
+    int size;
+    DOMChar *d;
+
+    if ((v & 3) == 3) {
+        mes_location_check_value(ctx, NULL, &elem, &sid, (void **)&node);
+        if (elem != NULL && node != NULL && *(void **)(node + 0x6C) != NULL) {
+            s = (MesStrL *)(v & ~3);
+            size = s->len * 2 + 12;
+            p = MEM_malloc(0, size);
+            if (p != NULL) {
+                p->kind = 2;
+                p->flag = 0;
+                p->len = s->len;
+                d = p->str;
+                memcpy(d, s->str, s->len * 2);
+                SetIpcMember(&msg, 8, sid, 0, 0x805, 0, size, p);
+                if (JSSendMail(&msg, D_0013FA0C) == 0)
+                    *g_JS_PAGECHANGED_ = 1;
+            }
+        }
+    }
+    return 0;
+}
+
+MesValue mes_location_get(MesContext *ctx, MesObject *obj, void *elem, int id)
+{
+    int sid;
+    char *node;
+    URLRec *url;
+    FragIDs *f;
+    DOMString *s;
+    DOMString ds;
+    MesValue r;
+
+    mes_location_check_value(ctx, obj, &elem, &sid, (void **)&node);
+    if (elem != NULL && node != NULL && *(void **)(node + 0x6C) != NULL && (unsigned int)(id - 1) < 8) {
+        url = JSI_getDocumentURL(elem);
+        if (url != NULL) {
+            f = HST_getFragmentIDs(node, 0);
+            ds.len = f->frag != NULL ? strlen(f->frag) : 0;
+            if (ds.len != 0) {
+                s = JSI_newDOMString(f->frag, ds.len);
+                if (s != NULL) {
+                    if (url->frag != NULL)
+                        JSI_freeDOMString(url->frag);
+                    url->frag = s;
+                } else {
+                    JSI_freeURLRec(url);
+                    return MES_UNDEFINED;
+                }
+            }
+            r = mes_link_common_get_sub(ctx, elem, id, url, 6);
+            JSI_freeURLRec(url);
+            return r;
+        }
+    }
+    return MES_UNDEFINED;
+}
+
+int mes_location_put(MesContext *ctx, MesObject *obj, void *elem, int id, MesValue v)
+{
+    int sid;
+    char *node;
+    void *url;
+    int r;
+
+    mes_location_check_value(ctx, obj, &elem, &sid, (void **)&node);
+    if (elem != NULL && node != NULL && *(void **)(node + 0x6C) != NULL && (unsigned int)(id - 1) < 8) {
+        url = JSI_getDocumentURL(elem);
+        if (url != NULL) {
+            r = mes_link_common_put_sub(ctx, elem, id, v, url, 6);
+            JSI_freeURLRec(url);
+            return r;
+        }
+    }
+    return 0;
+}
 
 void mes_location_mark(void) {
 }
@@ -18,9 +205,19 @@ void mes_location_mark(void) {
 void mes_location_free(void) {
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_location", mes_location_class_init);
+void mes_location_class_init(MesContext *ctx)
+{
+    mes_location_class = mes_class_init(ctx, &mes_location_def);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_location", mes_location_new);
+MesObject *mes_location_new(MesContext *ctx, void *elem)
+{
+    MesObject *obj = mes_class_new(ctx, mes_location_class);
+
+    if (obj != NULL)
+        mes_class_private_set(obj, elem);
+    return obj;
+}
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/mes_obj_location", D_0013FA0C);
 

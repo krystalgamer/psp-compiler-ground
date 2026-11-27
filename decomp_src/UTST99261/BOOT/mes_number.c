@@ -1,21 +1,97 @@
+/* cflags: -O1 */
 #include "common.h"
+#include "mes_js.h"
 #include "m2c_macros.h"
+extern unsigned int mes_ids[];
+extern void *mes_number_table;
+MesValue mes_number_constructor(MesContext *ctx);
+MesValue mes_number_alloc(MesContext *ctx, double d);
+MesValue mes_number_from_string(MesContext *ctx, MesValue s, int a, int b);
+MesValue mes_string_new2(MesContext *ctx, const char *s, int len);
+void *mes_native_new(MesContext *ctx, int a, void *fn, int nargs, int flags);
+void mes_native_setup(MesContext *ctx, MesObject *o, void *table, int n);
+void mes_object_set(MesObject *obj, unsigned int id, MesValue value, int flags);
+typedef struct MesNum {
+    void *gc;
+    int f4;
+    double d;
+} MesNum;
+extern MesValue D_0058532C, D_00585264, D_00585328, D_00585284;
+extern const double D_0013B760;
+double floor(double x);
+void *mes_gc_alloc(MesContext *ctx, int kind);
+MesValue mes_number_to_precision_sub(MesContext *ctx, double d, int prec);
+MesValue mes_eval_type_error(MesContext *ctx, MesValue v);
+int mes_is_number(MesValue v);
+double mes_num(MesValue v);
+extern unsigned char mes_number_method;
+
 M2C_UNK fmod();                                     /* extern */
 
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_number", mes_number_alloc_int32);
+MesValue mes_number_alloc_int32(MesContext *ctx, int n)
+{
+    MesValue v = MES_INT(n);
+    MesNum *o;
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_number", mes_number_alloc_uint32);
+    if ((v >> 2) == n)
+        return v;
+    o = mes_gc_alloc(ctx, 2);
+    if (o == NULL)
+        return 0;
+    o->d = n;
+    return (MesValue)o | 2;
+}
+
+MesValue mes_number_alloc_uint32(MesContext *ctx, unsigned int n)
+{
+    MesValue v;
+    MesNum *o;
+    double d;
+
+    if ((int)n >= 0) {
+        v = MES_INT(n);
+        if ((v >> 2) == n)
+            return v;
+    }
+    o = mes_gc_alloc(ctx, 2);
+    if (o == NULL)
+        return 0;
+    d = (int)n;
+    if ((int)n < 0)
+        d += D_0013B760;
+    o->d = d;
+    return (MesValue)o | 2;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_number", mes_number_alloc);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_number", mes_is_number);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+int mes_is_number(int arg0) {
+    int var_a0;
+    unsigned int temp_v0;
+
+    temp_v0 = arg0 & 3;
+    var_a0 = (unsigned int) (arg0 - 0x10) < 0xDU;
+    if (temp_v0 != 0) {
+        var_a0 = 0;
+        if (temp_v0 < 3U) {
+            var_a0 = 1;
+        }
+    }
+    return var_a0;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_number", mes_num);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_number", mes_number_floor);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_number", mes_number_fdiv);
+double mes_number_fdiv(double a, double b)
+{
+    return floor(a / b);
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -87,17 +163,47 @@ INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/mes_number", D_0013B7B4);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_number", mes_number_from_string);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_number", mes_number_initialize);
+#ifndef NULL
+#define NULL ((void *)0)
+#endif
+
+void mes_number_initialize(void) {
+    mes_gc_register(&mes_number_method, 0x10, 0x64, 0x64);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_number", mes_number_constructor);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_number", mes_number_to_special);
+MesValue mes_number_to_special(MesValue v)
+{
+    MesValue ret;
+
+    if (v == 0x10)
+        ret = D_0058532C;
+    else if (v == 0x14)
+        ret = D_00585264;
+    else if (v == 0x18)
+        ret = D_00585328;
+    else if (v == 0x1C)
+        ret = D_00585284;
+    else
+        ret = 0;
+    return ret;
+}
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/mes_number", D_0013B7C4);
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_number", mes_number_to_str);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_number", mes_number_value_of);
+MesValue mes_number_value_of(MesContext *ctx)
+{
+    MesValue v = (MesValue)ctx->frame->thisobj;
+
+    if (MES_IS_OBJECT(v))
+        v = ((MesObject *)v)->fC;
+    if (!mes_is_number(v))
+        return mes_eval_type_error(ctx, v);
+    return v;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_number", mes_number_to_fixed_sub);
 
@@ -111,7 +217,14 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_number", mes_number_to_prec
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_number", mes_number_to_precision);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_number", mes_number_to_string);
+MesValue mes_number_to_string(MesContext *ctx, MesValue v)
+{
+    MesValue s = mes_number_to_special(v);
+
+    if (s != 0)
+        return s;
+    return mes_number_to_precision_sub(ctx, mes_num(v), 0);
+}
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/mes_number", D_0013B7D0);
 
@@ -125,6 +238,36 @@ INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/mes_number", D_0013B7FC);
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/mes_number", D_0013B80C);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_number", mes_number_setup);
+void mes_number_setup(MesContext *ctx)
+{
+    MesObject *proto;
+    MesObject *ctor;
+    MesValue v;
+    union {
+        long long l;
+        double d;
+    } min;
+
+    proto = mes_object_new(ctx, 8, mes_classes[9]);
+    mes_classes[8] = proto;
+    proto->fC = 1;
+    ctor = mes_native_new(ctx, mes_ids[8], mes_number_constructor, 1, 1);
+    mes_object_set(ctx->global, mes_ids[8], (MesValue)ctor, 7);
+    v = mes_string_new2(ctx, "1.7976931348623157E+308", 0);
+    *--ctx->sp = v;
+    v = mes_number_from_string(ctx, v, 0, 0);
+    ctx->sp++;
+    mes_object_set(ctor, mes_ids[24], v, 7);
+    min.l = 1;                        /* Number.MIN_VALUE */
+    mes_object_set(ctor, mes_ids[25], mes_number_alloc(ctx, min.d), 7);
+    mes_object_set(ctx->global, mes_ids[27], 0x1C, 6);
+    mes_object_set(ctor, mes_ids[27], 0x1C, 7);
+    mes_object_set(ctor, mes_ids[26], 0x18, 7);
+    mes_object_set(ctx->global, mes_ids[19], 0x14, 6);
+    mes_object_set(ctor, mes_ids[30], 0x14, 7);
+    mes_object_set(ctor, mes_ids[59], (MesValue)proto, 7);
+    mes_object_set(proto, mes_ids[40], (MesValue)ctor, 2);
+    mes_native_setup(ctx, proto, &mes_number_table, 6);
+}
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/mes_number", D_0013B830);
