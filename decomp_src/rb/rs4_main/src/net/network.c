@@ -392,10 +392,15 @@ void Network::Update()
 
 extern "C" {
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/network", _ZN3Net7Network20AdhocctlEventHandlerEiiPv);
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/network", _ZN3Net7Network29AdhocctlEventHandlerInterfaceEiiPv);
 }
 
 namespace Net {
+
+void Network::AdhocctlEventHandlerInterface(int ev, int err, void *arg)
+{
+	Network *n = _instance_p;
+	n->AdhocctlEventHandler(ev, err, arg);
+}
 
 }
 

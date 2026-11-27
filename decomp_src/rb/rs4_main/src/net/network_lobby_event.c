@@ -119,8 +119,12 @@ public:
 
 extern "C" {
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_event", _ZN3Net5Lobby25AdhocMatchingEventHandlerEiiP15SceNetEtherAddriPv);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_lobby_event", _ZN3Net5Lobby34AdhocMatchingEventHandlerInterfaceEiiP15SceNetEtherAddriPv);
+void Lobby::AdhocMatchingEventHandlerInterface(int id, int event, SceNetEtherAddr *mac, int optlen, void *opt)
+{
+	Lobby *l = _instance_p;
+	l->AdhocMatchingEventHandler(id, event, mac, optlen, opt);
 }
 
 
