@@ -266,7 +266,213 @@ void mpeg_end(void)
 	unloadModule(&videoMid);
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/mpeg/mpeg_main", mpeg_main);
+long long strFileLseek(StrFile *file, long long offset, SceInt32 whence);
+void *psp_malloc(unsigned int size);
+void psp_free(void *p);
+char *strcpy(char *d, const char *s);
+char *strcat(char *d, const char *s);
+void *memset(void *s, int c, unsigned int n);
+SceInt32 strFileOpenCB(StrFile *file, const SceChar8 *filename, SceInt32 flags);
+int soundbuf_func(SceSize size, void *argp);
+SceInt32 mpeg_main(SceChar8 *name, SceInt32 mode)
+{
+	SceMpegRingbuffer ringbuf;
+	SceMpegStream *pStream[2];
+	SceMpegAu avcAu;
+	SceMpegAu atracAu;
+	StrFile strFile;
+	SceMpeg mpeg;
+	SceInt32 fileSize, streamOffset;
+	SceInt32 audioEsSize, audioOutSize;
+	t_avSyncControl *pAvSync = NULL;
+	SceChar8 *pAudioBuf;
+	SceChar8 *filename = "host0:demo01.pmf";
+	SceInt32 bufferSize, workSize, ret;
+	t_displayBuffer *pDisp = NULL;
+	t_soundBuffer *pSound = NULL;
+	t_mpegStreamData *pStreamData;
+	SceMpegHandle avcEsBuf = NULL;
+	SceChar8 *pPSPStream = NULL;
+	SceChar8 *pWorkBuf = NULL;
+
+	audioFlag = 1;
+	pStream[0] = NULL;
+	pStream[1] = NULL;
+	pAudioBuf = NULL;
+	if (mode == 0)
+		strcpy(filename, "host0:data/");
+	else
+		strcpy(filename, "disc0:/PSP_GAME/USRDIR/");
+	strcat(filename, name);
+
+	bufferSize = sceMpegRingbufferQueryMemSize(0x12C0);
+	if (bufferSize < 0)
+		goto term3;
+	workSize = sceMpegQueryMemSize(0);
+	if (workSize < 0)
+		goto term3;
+	pPSPStream = (SceChar8 *)psp_malloc(bufferSize);
+	if (pPSPStream == NULL)
+		goto term3;
+	pWorkBuf = (SceChar8 *)psp_malloc(workSize);
+	if (pWorkBuf == NULL)
+		goto term3;
+	ret = sceMpegRingbufferConstruct(&ringbuf, 0x12C0, pPSPStream, bufferSize, ringbufferCallBack, (SceVoid *)&strFile);
+	if (ret != 0)
+		goto term3;
+	ret = sceMpegCreate(&mpeg, pWorkBuf, workSize, &ringbuf, 512, 0, NULL);
+	if (ret != 0)
+		goto term3;
+	if (strFileAssign(&strFile, filename) < 0)
+		goto term3;
+	if (strFileOpenCB(&strFile, filename, 1) < 0)
+		goto term3;
+	if (readHeader(&mpeg, &strFile, &fileSize, &streamOffset) != 0)
+		goto term3;
+	pStream[0] = sceMpegRegistStream(&mpeg, 0, 0);
+	if (pStream[0] == NULL)
+		goto term3;
+	if (audioFlag == 1) {
+		pStream[1] = sceMpegRegistStream(&mpeg, 1, 0);
+		if (pStream[1] == NULL)
+			goto term3;
+	}
+	avcEsBuf = sceMpegMallocAvcEsBuf(&mpeg);
+	if (avcEsBuf == NULL)
+		goto term3;
+	if ((ret = sceMpegInitAu(&mpeg, avcEsBuf, &avcAu) != 0))
+		goto term3;
+	if (audioFlag == 1) {
+		ret = sceMpegQueryAtracEsSize(&mpeg, &audioEsSize, &audioOutSize);
+		if (ret != 0)
+			goto term3;
+		pAudioBuf = (SceChar8 *)psp_malloc(audioEsSize);
+		if (pAudioBuf == NULL)
+			goto term3;
+		ret = sceMpegInitAu(&mpeg, pAudioBuf, &atracAu);
+		if (ret != 0)
+			goto term3;
+	}
+
+	pStreamData = (t_mpegStreamData *)psp_malloc(sizeof(t_mpegStreamData));
+	if (pStreamData == NULL)
+		goto term2;
+	memset(pStreamData, 0, sizeof(t_mpegStreamData));
+	decode_setStreamData(pStreamData, pStream[0], &avcAu, pStream[1], &atracAu);
+
+	pDisp = (t_displayBuffer *)psp_malloc(sizeof(t_displayBuffer));
+	if (pDisp == NULL)
+		goto term2;
+	memset(pDisp, 0, sizeof(t_displayBuffer));
+	if (dispbuf_create(pDisp, 0x88000, 4) < 0)
+		goto term2;
+
+	if (audioFlag == 1) {
+		pSound = (t_soundBuffer *)psp_malloc(sizeof(t_soundBuffer));
+		if (pSound == NULL)
+			goto term2;
+		memset(pSound, 0, sizeof(t_soundBuffer));
+		if (soundbuf_create(pSound, audioOutSize, 5) < 0)
+			goto term2;
+	}
+
+	pAvSync = (t_avSyncControl *)psp_malloc(sizeof(t_avSyncControl));
+	if (pAvSync == NULL)
+		goto term2;
+	if (avsync_create(pAvSync, pDisp, pSound, 6) < 0)
+		goto term2;
+
+	sceKernelChangeThreadPriority(sceKernelGetThreadId(), 0x3F);
+
+	if (audioFlag == 1)
+		soundThread = sceKernelCreateThread("soundThread", soundbuf_func, 0x3D, 0x800, 0, NULL);
+
+	playInfo.playMode = 0;
+
+	while (1) {
+		if (strFileLseek(&strFile, streamOffset, 0) < 0)
+			goto term1;
+
+		dispbuf_reset(pDisp);
+		if (audioFlag == 1)
+			soundbuf_reset(pSound);
+		avsync_reset(pAvSync);
+
+		if (audioFlag == 1)
+			sceKernelStartThread(soundThread, 4, &pAvSync);
+
+		ret = playMovie(&mpeg, &ringbuf, pStreamData, pAvSync, fileSize);
+		if (ret == 0) {
+			if (audioFlag == 1) {
+				sceKernelWaitThreadEnd(soundThread, NULL);
+				break;
+			}
+			continue;
+		}
+
+		if (ret < 0)
+			goto term1;
+
+		if (playInfo.playMode == 1) {
+			if (audioFlag == 1)
+				sceKernelWaitThreadEnd(soundThread, NULL);
+			if (sceMpegFlushAllStream(&mpeg) != 0)
+				goto term1;
+			playInfo.playMode = 0;
+		} else if (playInfo.playMode == 10) {
+			break;
+		}
+	}
+
+term1:
+	if (audioFlag == 1) {
+		sceKernelWaitThreadEnd(soundThread, NULL);
+		sceKernelTerminateDeleteThread(soundThread);
+	}
+
+term2:
+	if (pAvSync != NULL) {
+		avsync_delete(pAvSync);
+		psp_free(pAvSync);
+		pAvSync = NULL;
+	}
+	if (pSound != NULL) {
+		soundbuf_delete(pSound);
+		psp_free(pSound);
+		pSound = NULL;
+	}
+	if (pDisp != NULL) {
+		dispbuf_delete(pDisp);
+		psp_free(pDisp);
+		pDisp = NULL;
+	}
+	if (pStreamData != NULL)
+		psp_free(pStreamData);
+
+term3:
+	if (audioFlag == 1) {
+		if (pAudioBuf != NULL)
+			psp_free(pAudioBuf);
+	}
+	if (avcEsBuf != NULL)
+		sceMpegFreeAvcEsBuf(&mpeg, avcEsBuf);
+	if (pStream[0] != NULL)
+		sceMpegUnRegistStream(&mpeg, pStream[0]);
+	if (audioFlag == 1) {
+		if (pStream[1] != NULL)
+			sceMpegUnRegistStream(&mpeg, pStream[1]);
+	}
+	strFileClose(&strFile);
+	strFileUnassign(&strFile);
+	sceMpegDelete(&mpeg);
+	sceMpegRingbufferDestruct(&ringbuf);
+	sceMpegFinish();
+	if (pWorkBuf != NULL)
+		psp_free(pWorkBuf);
+	if (pPSPStream != NULL)
+		psp_free(pPSPStream);
+	return 1;
+}
 
 long long strFileLseek(StrFile *file, long long offset, SceInt32 whence);
 static SceInt32 readHeader(SceMpeg *pMpeg, StrFile *pStrFile, SceInt32 *pFilesize, SceInt32 *strOffset)
