@@ -42,6 +42,58 @@ int initTermSys(void)
 	return 1;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/init", initInitApp);
+int initInitApp(void)
+{
+	consPrintf(&D_000FDA40, "initInitApp");
+	coreInit();
+	powerInit();
+	homeInit();
+	msInit();
+	umdInit("package.rdp");
+	modInit();
+	copInit();
+	sprInit();
+	ctrlInit();
+	sortInit();
+	drawInit();
+	viewInit(480, 272);
+	resInit(0xC00000, "src/system/system.res");
+	bxInit();
+	gimInit();
+	i3dInit();
+	scxInit();
+	movInit();
+	randInit();
+	ScriptInit();
+	localeInit();
+	ysGlobalObject__Create();
+	consPrintf(&D_000FDA48);
+	return 1;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/init", initTermApp);
+int initTermApp(void)
+{
+	consPrintf(&D_000FDA40, "initTermApp");
+	ysGlobalObject__Destroy();
+	ScriptTerm();
+	movTerm();
+	scxTerm();
+	i3dTerm();
+	gimTerm();
+	bxTerm();
+	resTerm();
+	viewTerm();
+	drawTerm();
+	sortTerm();
+	ctrlTerm();
+	sprTerm();
+	copTerm();
+	modTerm();
+	umdTerm();
+	msTerm();
+	homeTerm();
+	powerTerm();
+	coreTerm();
+	consPrintf(&D_000FDA48);
+	return 1;
+}
