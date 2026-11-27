@@ -1,4 +1,4 @@
-/* cflags: -Os */
+/* cflags: -Os -fno-strength-reduce */
 #include "common.h"
 #include "m2c_macros.h"
 int sceKernelGetGPI();                              /* extern */
@@ -53,15 +53,13 @@ typedef struct ScrName { struct ScrName *next; } ScrName;
 int _memFree();
 void *memset(void *, int, unsigned int);
 extern unsigned char D_001000E0;
+typedef struct { ScrName *head; int x4; } ScrNameList;
 int ScriptCleanupName(char *s)
 {
 	unsigned int i;
 	ScrName *e, *n;
-	char *q;
 	for (i = 0; i < 15; i++) {
-		q = (char *)(i * 8);
-		q += (int)s;
-		e = *(ScrName **)(q + 0x98);
+		e = ((ScrNameList *)(s + 0x98))[i].head;
 		while (e) {
 			n = e->next;
 			_memFree(e, &D_001000E0, 0x3A5);
@@ -89,8 +87,7 @@ INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/script/script", ScriptSettleVa
 int ScriptEnumOperand(int a, ScrOpnd *p)
 {
 	int n = 0;
-	char *q;
-	while (q = (char *)(n * sizeof(ScrOpnd)), q += (int)p, ((ScrOpnd *)q)->c)
+	while (p[n].c)
 		n++;
 	return n;
 }

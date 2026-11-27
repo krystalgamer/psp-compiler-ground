@@ -1,4 +1,4 @@
-/* cflags: -Os */
+/* cflags: -Os -fno-strength-reduce */
 #include "common.h"
 #include "m2c_macros.h"
 #ifndef NULL
@@ -16,14 +16,12 @@ int salbumClearNewFlagBySaveID();
 
 int salbumCalcKinds(int *p)
 {
+	int (*k)[3] = (int (*)[3])p;
 	int n = 0;
-	int i, j, k;
+	int i, j;
 	for (i = 0xFF; i >= 0; i--) {
 		for (j = 0; j < 3; j++) {
-			k = i * 2;
-			k += i;
-			k += j;
-			n += (unsigned int)((p[k] & 0x7F) - 1) < 0x7E;
+			n += (unsigned int)((k[i][j] & 0x7F) - 1) < 0x7E;
 		}
 	}
 	p[0x300] = n;
@@ -33,14 +31,12 @@ int salbumCalcKinds(int *p)
 typedef struct { unsigned int num : 7, isnew : 1, rest : 24; } SalbumEnt0;
 int salbumCalcKindsContainLostCard(SalbumEnt0 *p)
 {
+	SalbumEnt0 (*k)[3] = (SalbumEnt0 (*)[3])p;
 	int n = 0;
-	int i, j, k;
+	int i, j;
 	for (i = 0xFF; i >= 0; i--) {
 		for (j = 0; j < 3; j++) {
-			k = i * 2;
-			k += i;
-			k += j;
-			if (p[k].num > 0)
+			if (k[i][j].num > 0)
 				n++;
 		}
 	}

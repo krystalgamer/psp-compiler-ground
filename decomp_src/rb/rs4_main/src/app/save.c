@@ -1,4 +1,4 @@
-/* cflags: -Os */
+/* cflags: -Os -fno-strength-reduce */
 #include "common.h"
 #include "m2c_macros.h"
 M2C_UNK _memFree(void *, M2C_UNK *, M2C_UNK);       /* extern */
@@ -16,8 +16,9 @@ extern unsigned char D_000FE474;
 
 M2C_UNK saveDataInit();
 
+enum { SaveData_Account_Num = 1 };
 typedef struct { unsigned char b0 : 1, b1 : 1, rest : 6; } SaveOpt;
-typedef struct { char pad[6]; SaveOpt opt[1]; } SaveSub;
+typedef struct { char pad[6]; SaveOpt opt[SaveData_Account_Num]; } SaveSub;
 typedef struct { char pad[0x20]; SaveSub sub; } SaveData;
 unsigned char *localeGetCntx(void);
 M2C_UNK saveDataInit(p)
@@ -31,12 +32,8 @@ unsigned char *p;
 	p[0x1D] = l[3];
 	p[0x14] = l[0];
 	p[0x15] = l[1];
-	i = 0;
-loop:
-	((SaveData *)p)->sub.opt[i].b1 = l[0xC] & 1;
-	i++;
-	if (i < 1)
-		goto loop;
+	for (i = 0; i < SaveData_Account_Num; i++)
+		((SaveData *)p)->sub.opt[i].b1 = l[0xC] & 1;
 }
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/app/save", saveInit);

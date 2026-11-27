@@ -1,4 +1,4 @@
-/* cflags: -Os */
+/* cflags: -Os -fno-strength-reduce */
 #include "common.h"
 #include "m2c_macros.h"
 int sceFontClose(int);                              /* extern */
@@ -150,14 +150,11 @@ int fontIsMarkFont(int c)
 {
 	int r, i, n;
 	short *t;
-	char *q;
 	r = 0;
 	t = *(short **)pMarkTextDat;
 	n = (unsigned int)((int *)pMarkTextDat)[1] >> 1;
 	for (i = 1; i < n; i++) {
-		q = (char *)(i * sizeof(short));
-		q += (int)t;
-		if (*(short *)q == c)
+		if (t[i] == c)
 			r = 1;
 	}
 	if (r)

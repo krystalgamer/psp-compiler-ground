@@ -1,4 +1,4 @@
-/* cflags: -Os */
+/* cflags: -Os -fno-strength-reduce */
 #include "common.h"
 void consPrintf(const char *, ...);
 extern unsigned char D_000FB2C8, D_000FB2D4, D_000FB2F0, D_000FB300;

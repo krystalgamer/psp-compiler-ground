@@ -1,5 +1,5 @@
 /* lang: c++ */
-/* cflags: -Os -fno-merge-constants -fno-exceptions */
+/* cflags: -Os -fno-strength-reduce -fno-merge-constants -fno-exceptions */
 #pragma interface "rodata"
 #include "common.h"
 

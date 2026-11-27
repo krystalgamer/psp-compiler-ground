@@ -1,4 +1,4 @@
-/* cflags: -Os */
+/* cflags: -Os -fno-strength-reduce */
 #include "common.h"
 void bxAnmSetFrame(int, float);
 void bxAnmSetSpeed(int, float);

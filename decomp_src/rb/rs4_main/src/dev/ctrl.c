@@ -1,4 +1,4 @@
-/* cflags: -Os */
+/* cflags: -Os -fno-strength-reduce */
 #include "common.h"
 #include "m2c_macros.h"
 int semaInit(M2C_UNK *);                            /* extern */
@@ -43,6 +43,7 @@ extern int CtrlCancel;
 int sceCtrlSetSamplingCycle(int cycle);
 int sceCtrlSetSamplingMode(int mode);
 void *memset(void *s, int c, unsigned int n);
+enum { CTRL_PORT_NUM = 1 };
 typedef struct { char pad[8]; signed char x, y; char pad2[6]; } CtrlVEnt;
 typedef struct { char hdr[16]; CtrlVEnt ent[128]; } CtrlRing;
 
@@ -161,12 +162,9 @@ int ctrlFlushCtrlData(int n)
 int ctrlFlushCtrlDataAll(void)
 {
 	int r = 0;
-	unsigned int i = 0;
-loop:
-	r |= ctrlFlushCtrlData(i);
-	i++;
-	if (i < 1)
-		goto loop;
+	unsigned int i;
+	for (i = 0; i < CTRL_PORT_NUM; i++)
+		r |= ctrlFlushCtrlData(i);
 	return r;
 }
 

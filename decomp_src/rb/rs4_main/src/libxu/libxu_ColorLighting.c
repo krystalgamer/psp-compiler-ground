@@ -1,4 +1,4 @@
-/* cflags: -Os */
+/* cflags: -Os -fno-strength-reduce */
 #include "common.h"
 
 /* libxu helpers (xu.h): inline asm ins, as the line table shows two lines each */
