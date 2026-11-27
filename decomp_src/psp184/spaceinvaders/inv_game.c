@@ -30,6 +30,8 @@ void screen_capture(int buf, int mode);
 
 #include "gmain.h"
 #include "inv_game.h"
+double genrand_real2(void);
+double genrand_real3(void);
 extern int netdata;
 M2C_UNK bmp_file_unload(int);
 void gmo_file_unload(int no);
@@ -2039,7 +2041,6 @@ void boss_laser_init(void)
 
 /* the laser and particle arrays live inside gmain: same base symbol, so the compiler may not disambiguate them */
 extern const double D_0007E788, D_0007E790;
-double genrand_real3(void);
 void boss_laser_start(L2V3 *st, L2V3 *ed, float step)
 {
 	int i;
@@ -2121,8 +2122,6 @@ void item_init(void)
 }
 
 extern const double D_0007E798, D_0007E7A0, D_0007E7A8;
-double genrand_real2(void);
-double genrand_real3(void);
 void item_start(int type, float x, float y, float z)
 {
 	int i;
@@ -2295,8 +2294,6 @@ M2C_UNK particle_check(int no)
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", efc_bom_start);
 
 extern const double D_0007E7F8, D_0007E800, D_0007E808, D_0007E810, D_0007E818;
-double genrand_real2(void);
-double genrand_real3(void);
 void efc_bom2_start(float x, float y, float z)
 {
 	int i, n;
@@ -2432,7 +2429,6 @@ void df_quake_start(int a, int t)
 }
 
 extern const double D_0007E898;
-double genrand_real3(void);
 M2C_UNK df_quake_control(void)
 {
 	int n;
