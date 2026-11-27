@@ -107,6 +107,8 @@ int CharEncode();
 typedef struct CEDOC { int pad[4]; char *cs; } CEDOC;
 int cmpstr(char *a, char *b);
 char *strcpy(char *d, const char *s);
+typedef struct SIGEXT { char *a; char *b; char *c; int d; } SIGEXT;
+typedef struct MPUSIG { int type; int x4; int x8; int xC; int x10; int x14; int size; SIGEXT *data; } MPUSIG;
 unsigned short UDomiString_ToLower(unsigned short c) {
     if (c < 0x80) {
         return tolower(c);
@@ -1311,7 +1313,46 @@ int initMPU_REQ_SHOW_DIALOG(void *arg0, int arg1) {
     return var_v0;
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/UDomiString", initMPU_SIG_EXTDATA_SELECTED);
+void initMPU_SIG_EXTDATA_SELECTED(MPUSIG *sig, char *a, int alen, char *b, int blen, char *c, int clen, int d) {
+    int size;
+    SIGEXT *e;
+    char *p;
+
+    size = alen + blen + clen + 3 + sizeof(SIGEXT);
+    e = (SIGEXT *)MEM_malloc(0, size);
+    e->a = NULL;
+    e->b = NULL;
+    e->c = NULL;
+    e->d = 0;
+    p = (char *)(e + 1);
+    e->a = p;
+    if (a != NULL) {
+        memcpy(p, a, alen);
+        p += alen;
+    }
+    *p++ = 0;
+    e->b = p;
+    if (b != NULL) {
+        memcpy(p, b, blen);
+        p += blen;
+    }
+    *p++ = 0;
+    e->c = p;
+    if (c != NULL) {
+        memcpy(p, c, clen);
+        p += clen;
+    }
+    *p = 0;
+    e->d = d;
+    sig->type = 2;
+    sig->x4 = 0;
+    sig->x8 = 0;
+    sig->xC = 10;
+    sig->x10 = 0;
+    sig->x14 = 0;
+    sig->size = size;
+    sig->data = e;
+}
 
 void sendStart(PsIpc *a, PsIpc *b, int *data) {
     initMPU_RPL_LOAD_PAGE(a);
