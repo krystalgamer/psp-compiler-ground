@@ -1,84 +1,168 @@
 /* lang: c++ */
-/* cflags: -Os */
+/* cflags: -Os -fno-strength-reduce -fno-merge-constants -fno-exceptions */
+/* #pragma interface: the vtables, typeinfo and implicit destructors stay in the module's asm */
+#pragma interface "rodata"
 #include "common.h"
+
 extern "C" {
+void _memFree(void *p, const char *file, int line);
+void *_memAllocMBL(unsigned int size, const char *file, int line);
+extern const char D_00107DD8[];
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_lobby_builder", _ZN7SaruNet12LobbyBuilderC2Ev);
+namespace Ys {
+class Object {
+public:
+	static void *operator new(unsigned int size) { return _memAllocMBL(size, D_00107DD8, 23); }
+	static void operator delete(void *p) { _memFree(p, D_00107DD8, 25); }
+	static void *operator new[](unsigned int size) { return _memAllocMBL(size, D_00107DD8, 32); }
+	static void operator delete[](void *p) { _memFree(p, D_00107DD8, 37); }
+};
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_lobby_builder", _ZN7SaruNet12LobbyBuilderC1Ev);
+namespace Net {
+class LobbyMessageQueueCreateParam : public Ys::Object {
+public:
+	void *message[10];
+	int _2c[4];
+	virtual ~LobbyMessageQueueCreateParam();
+};
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_lobby_builder", _ZN7SaruNet12LobbyBuilder5ResetEv);
+class LobbyDoubleMessageQueue : public Ys::Object {
+public:
+	char _4[0x10];
+	LobbyDoubleMessageQueue(LobbyMessageQueueCreateParam &p);
+	virtual ~LobbyDoubleMessageQueue();
+};
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_lobby_builder", _ZN7SaruNet12LobbyBuilder25Create_DoubleMessageQueueEv);
+class LobbyTerminalInfo : public Ys::Object {
+public:
+	char _4[0x18];
+	virtual ~LobbyTerminalInfo();
+};
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_lobby_builder", _ZN7SaruNet12LobbyBuilder19Create_TerminalListEv);
+class LobbyTerminalListBuilder {
+public:
+	virtual ~LobbyTerminalListBuilder();
+	virtual LobbyTerminalInfo *Create_InfoTable(int n) = 0;
+	virtual int Get_InfoOffsetSize() const = 0;
+};
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_lobby_builder", _ZN7SaruNet12LobbyBuilderD1Ev);
+template <class T> class T_LobbyTerminalListBuilder : public LobbyTerminalListBuilder {
+public:
+	virtual LobbyTerminalInfo *Create_InfoTable(int n);
+	virtual int Get_InfoOffsetSize() const;
+};
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_lobby_builder", _ZN7SaruNet12LobbyBuilderD0Ev);
+class LobbyTerminalList : public Ys::Object {
+public:
+	char _4[0xC];
+	virtual ~LobbyTerminalList();
+	LobbyTerminalList &Init(LobbyTerminalListBuilder &b);
+};
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_lobby_builder", _ZN7SaruNet23LobbyDoubleMessageQueueD1Ev);
+class LobbyBuilder : public Ys::Object {
+public:
+	int _4[7];
+	int event_handler_thread_priority;
+	LobbyBuilder() { Reset(); }
+	virtual ~LobbyBuilder();
+	virtual void Reset();
+	virtual LobbyDoubleMessageQueue *Create_DoubleMessageQueue();
+	virtual LobbyTerminalList *Create_TerminalList();
+};
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_lobby_builder", _ZN7SaruNet23LobbyDoubleMessageQueueD0Ev);
+namespace SaruNet {
+class LobbyTerminalInfo : public Net::LobbyTerminalInfo {
+};
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_lobby_builder", _ZN7SaruNet17LobbyTerminalListD1Ev);
+class LobbyMessageQueueCreateParam : public Net::LobbyMessageQueueCreateParam {
+public:
+	LobbyMessageQueueCreateParam();
+	virtual ~LobbyMessageQueueCreateParam();
+};
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_lobby_builder", _ZN7SaruNet17LobbyTerminalListD0Ev);
+class LobbyDoubleMessageQueue : public Net::LobbyDoubleMessageQueue {
+public:
+	LobbyDoubleMessageQueue(Net::LobbyMessageQueueCreateParam &p) : Net::LobbyDoubleMessageQueue(p) {}
+};
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_lobby_builder", _ZN3Net26T_LobbyTerminalListBuilderIN7SaruNet17LobbyTerminalInfoEED0Ev);
+class LobbyTerminalList : public Net::LobbyTerminalList {
+};
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_lobby_builder", _ZN3Net26T_LobbyTerminalListBuilderIN7SaruNet17LobbyTerminalInfoEED1Ev);
+class LobbyBuilder : public Net::LobbyBuilder {
+public:
+	LobbyBuilder();
+	virtual void Reset();
+	virtual Net::LobbyDoubleMessageQueue *Create_DoubleMessageQueue();
+	virtual Net::LobbyTerminalList *Create_TerminalList();
+};
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_lobby_builder", _ZN3Net26T_LobbyTerminalListBuilderIN7SaruNet17LobbyTerminalInfoEE16Create_InfoTableEi);
+extern template class Net::T_LobbyTerminalListBuilder<SaruNet::LobbyTerminalInfo>;
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_lobby_builder", _ZNK3Net26T_LobbyTerminalListBuilderIN7SaruNet17LobbyTerminalInfoEE18Get_InfoOffsetSizeEv);
+namespace SaruNet {
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_lobby_builder", _ZN7SaruNet17LobbyTerminalInfoD1Ev);
+LobbyBuilder::LobbyBuilder()
+{
+	event_handler_thread_priority = 0x15;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_lobby_builder", _ZN7SaruNet17LobbyTerminalInfoD0Ev);
+void LobbyBuilder::Reset()
+{
+	Net::LobbyBuilder::Reset();
+	event_handler_thread_priority = 0x15;
+}
 
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_lobby_builder", D_00107DD8);
+Net::LobbyDoubleMessageQueue *LobbyBuilder::Create_DoubleMessageQueue()
+{
+	LobbyMessageQueueCreateParam param;
+	return new LobbyDoubleMessageQueue(param);
+}
 
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_lobby_builder", _ZTVN3Net26T_LobbyTerminalListBuilderIN7SaruNet17LobbyTerminalInfoEEE);
+Net::LobbyTerminalList *LobbyBuilder::Create_TerminalList()
+{
+	Net::T_LobbyTerminalListBuilder<LobbyTerminalInfo> builder;
+	LobbyTerminalList *l = new LobbyTerminalList;
+	l->Init(builder);
+	return l;
+}
 
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_lobby_builder", D_00107DF8);
+}
 
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_lobby_builder", _ZTVN7SaruNet12LobbyBuilderE);
 
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_lobby_builder", D_00107E10);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_lobby_builder", _ZTVN7SaruNet17LobbyTerminalListE);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_lobby_builder", D_00107E30);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_lobby_builder", _ZTVN7SaruNet23LobbyDoubleMessageQueueE);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_lobby_builder", D_00107E40);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_lobby_builder", _ZTIN7SaruNet12LobbyBuilderE);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_lobby_builder", _ZTIN7SaruNet23LobbyDoubleMessageQueueE);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_lobby_builder", _ZTIN7SaruNet17LobbyTerminalListE);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_lobby_builder", _ZTIN3Net26T_LobbyTerminalListBuilderIN7SaruNet17LobbyTerminalInfoEEE);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_lobby_builder", _ZTSN3Net26T_LobbyTerminalListBuilderIN7SaruNet17LobbyTerminalInfoEEE);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_lobby_builder", _ZTSN7SaruNet17LobbyTerminalListE);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_lobby_builder", _ZTSN7SaruNet23LobbyDoubleMessageQueueE);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_lobby_builder", _ZTSN7SaruNet12LobbyBuilderE);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_lobby_builder", _ZTVN7SaruNet17LobbyTerminalInfoE);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_lobby_builder", D_00107F28);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_lobby_builder", _ZTIN7SaruNet17LobbyTerminalInfoE);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_lobby_builder", _ZTSN7SaruNet17LobbyTerminalInfoE);
-
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_lobby_builder", _ZTVN7SaruNet15LobbyPlayerMenuE);
-
-} /* extern "C": m2c drafts with mangled names, kept as C linkage */
+extern "C" { INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_lobby_builder", _ZN7SaruNet12LobbyBuilderD1Ev); }
+extern "C" { INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_lobby_builder", _ZN7SaruNet12LobbyBuilderD0Ev); }
+extern "C" { INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_lobby_builder", _ZN7SaruNet23LobbyDoubleMessageQueueD1Ev); }
+extern "C" { INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_lobby_builder", _ZN7SaruNet23LobbyDoubleMessageQueueD0Ev); }
+extern "C" { INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_lobby_builder", _ZN7SaruNet17LobbyTerminalListD1Ev); }
+extern "C" { INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_lobby_builder", _ZN7SaruNet17LobbyTerminalListD0Ev); }
+extern "C" { INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_lobby_builder", _ZN3Net26T_LobbyTerminalListBuilderIN7SaruNet17LobbyTerminalInfoEED0Ev); }
+extern "C" { INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_lobby_builder", _ZN3Net26T_LobbyTerminalListBuilderIN7SaruNet17LobbyTerminalInfoEED1Ev); }
+extern "C" { INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_lobby_builder", _ZN3Net26T_LobbyTerminalListBuilderIN7SaruNet17LobbyTerminalInfoEE16Create_InfoTableEi); }
+extern "C" { INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_lobby_builder", _ZNK3Net26T_LobbyTerminalListBuilderIN7SaruNet17LobbyTerminalInfoEE18Get_InfoOffsetSizeEv); }
+extern "C" { INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_lobby_builder", _ZN7SaruNet17LobbyTerminalInfoD1Ev); }
+extern "C" { INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_lobby_builder", _ZN7SaruNet17LobbyTerminalInfoD0Ev); }
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_lobby_builder", D_00107DD8); }
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_lobby_builder", _ZTVN3Net26T_LobbyTerminalListBuilderIN7SaruNet17LobbyTerminalInfoEEE); }
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_lobby_builder", D_00107DF8); }
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_lobby_builder", _ZTVN7SaruNet12LobbyBuilderE); }
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_lobby_builder", D_00107E10); }
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_lobby_builder", _ZTVN7SaruNet17LobbyTerminalListE); }
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_lobby_builder", D_00107E30); }
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_lobby_builder", _ZTVN7SaruNet23LobbyDoubleMessageQueueE); }
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_lobby_builder", D_00107E40); }
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_lobby_builder", _ZTIN7SaruNet12LobbyBuilderE); }
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_lobby_builder", _ZTIN7SaruNet23LobbyDoubleMessageQueueE); }
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_lobby_builder", _ZTIN7SaruNet17LobbyTerminalListE); }
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_lobby_builder", _ZTIN3Net26T_LobbyTerminalListBuilderIN7SaruNet17LobbyTerminalInfoEEE); }
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_lobby_builder", _ZTSN3Net26T_LobbyTerminalListBuilderIN7SaruNet17LobbyTerminalInfoEEE); }
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_lobby_builder", _ZTSN7SaruNet17LobbyTerminalListE); }
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_lobby_builder", _ZTSN7SaruNet23LobbyDoubleMessageQueueE); }
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_lobby_builder", _ZTSN7SaruNet12LobbyBuilderE); }
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_lobby_builder", _ZTVN7SaruNet17LobbyTerminalInfoE); }
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_lobby_builder", D_00107F28); }
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_lobby_builder", _ZTIN7SaruNet17LobbyTerminalInfoE); }
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_lobby_builder", _ZTSN7SaruNet17LobbyTerminalInfoE); }
+extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/saru_network_lobby_builder", _ZTVN7SaruNet15LobbyPlayerMenuE); }
