@@ -12,6 +12,7 @@ extern int d_pri;
 void *memset(void *s, int c, unsigned int n);
 extern unsigned char inv_screfc, p_3307FC, inv_scrdisp, p2;
 extern int e_co, d_co;
+typedef struct { int on; int x[4]; int y[4]; float u0, u1, v0, v1; unsigned short col; } SCREFC;
 void inv_screffect_all_init(void)
 {
 	memset(&inv_screfc, 0, 0x7000);
@@ -80,7 +81,6 @@ int inv_scrdisp_pri_get(void) {
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_scr_effect", inv_screffect_start);
 
-typedef struct { int on; int x[4]; int y[4]; float u0, u1, v0, v1; unsigned short col; } SCREFC;
 int inv_screffect_start2(int x, int y, int w, int h, int u, int v, int r, int g, float sx, float sy, int b, int a)
 {
 	SCREFC *p;
