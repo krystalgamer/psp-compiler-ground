@@ -256,12 +256,19 @@ void sgl_BV_instances(void *p)
     ((sgl::KdTree<math::vector_xyzw> *)p)->merge_node_elements((sgl::KdTreeNode *)p);
 }
 
+/* the object's math::sqr<float> instance (KdTree<vector_xyzw>::build, still asm, uses it) */
+namespace math {
+template<class T> T sqr(T x)
+{
+    return x * x;
+}
+}
+template float math::sqr<float>(float);
+
 /* the instances / inline members that stay asm (.gnu.linkonce.t) */
 #undef INCLUDE_ASM
 #define INCLUDE_ASM INCLUDE_ASM_LINKONCE
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_BV", _ZN3sgl6KdTreeIN4math11vector_xyzwEEC1ERSt6vectorIS2_SaIS2_EEif);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_BV", _ZN4math3sqrIfEET_S1_);
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_harmonic/nonmatchings/main_objs/sgl_BV", _ZN3sgl6KdTreeIN4math11vector_xyzwEE5buildEPNS_10KdTreeNodeEj);
 
