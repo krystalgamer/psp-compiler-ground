@@ -2,6 +2,7 @@
 /* cflags: -O3 -fno-exceptions */
 #undef __EXCEPTIONS
 #include "cxx/defer_asm.h"
+#define DEMO_TEMPLATE_DEFS
 #include "../main.hpp"
 
 /* the strings stay in the module's .rodata (asm) */
@@ -222,28 +223,3 @@ void _GLOBAL__D__ZN12basic_parserC2EPKcjS1_(void)
     static_init(0, 0xFFFF);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/basic_parser_basic_parser", _ZN6common7t_arrayIcEC1Ej);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/basic_parser_basic_parser", _ZN6common7t_arrayIcED1Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/basic_parser_basic_parser", _ZNK6common7t_arrayIcE5emptyEv);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/basic_parser_basic_parser", _ZNK6common7t_arrayIcE8bytesizeEv);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/basic_parser_basic_parser", _ZN6common7t_arrayIcE4addrEv);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/basic_parser_basic_parser", _ZNK6common7t_arrayIcE4addrEv);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/basic_parser_basic_parser", _ZN6common7t_arrayIcE8allocateEj);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/basic_parser_basic_parser", _ZN6common7t_arrayIcE7releaseEv);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/basic_parser_basic_parser", _ZN6common7t_arrayIcED0Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/basic_parser_basic_parser", _ZN6common7t_arrayIcE4swapERS1_);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/basic_parser_basic_parser", _ZN6common7t_arrayIcE6resizeEj);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/basic_parser_basic_parser", _ZN6common7t_arrayIcE4fillERKc);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/basic_parser_basic_parser", _ZN6common4SwapINS_7t_arrayIcE7MembersEEEvRT_S5_);
