@@ -309,6 +309,8 @@ public:
     unsigned int getMagic() const;
     void output_string(std::ostream &, const std::string &, bool);
     static int constructor_counter;
+    static std::string NULL_COLOR;
+    static std::string DEFAULT_COLOR;
     Members _m;
 };
 

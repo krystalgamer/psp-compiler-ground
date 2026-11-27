@@ -395,3 +395,7 @@ bss 0x191C44 main_objs/basic_parser_basic_parser
 rodata 0x163730 main_objs/glutils_CheckerTexture
 bss 0x18DE78 main_objs/glutils_CheckerTexture
 bss 0x18DF58 -
+# scene_Node_2: C++ static initializer (header statics, Node::NULL_COLOR/DEFAULT_COLOR); .rodata: strings, incrParentCount's __PRETTY_FUNCTION__, float pool; .bss
+rodata 0x16CA60 main_objs/scene_Node_2
+rodata 0x16CB10 -
+bss 0x18FBC8 main_objs/scene_Node_2
