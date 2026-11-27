@@ -143,7 +143,20 @@ math::matrix math::matrix::Frustum(float l, float r, float b, float t, float n, 
                   vector_xyzw(0, 0, -(f + n) / (f - n), f * D_00168BCC * n / (f - n)), vector_xyzw(0, 0, D_00168BD0, 0));
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/math_matrix_matrix", _ZN4math6matrix12ShadowMatrixENS_11vector_xyzwES1_);
+extern const float D_00168BD4;
+extern const char D_00168D5C[], D_00168D60[];
+extern const char PF_ShadowMatrix[] __asm__("_ZZN4math6matrix12ShadowMatrixENS_11vector_xyzwES1_E19__PRETTY_FUNCTION__");
+math::matrix math::matrix::ShadowMatrix(vector_xyzw plane, vector_xyzw light)
+{
+    if (!(light.w == D_00168BD4)) {
+        common::common_internal::assert_display(D_00168CB4, D_00168D60, D_00168CCC, PF_ShadowMatrix, 225, D_00168D5C);
+        common::common_internal::on_error();
+        common::common_internal::clash();
+    }
+    float d = dot(plane, light);
+    return matrix(vector_xyzw(d, 0, 0, 0) - light * plane.x, vector_xyzw(0, d, 0, 0) - light * plane.y,
+                  vector_xyzw(0, 0, d, 0) - light * plane.z, vector_xyzw(0, 0, 0, d) - light * plane.w);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/math_matrix_matrix", _ZN4math6matrix9trackballEffbbffRNS_11vector_xyzwE);
 
@@ -264,6 +277,23 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/math_matrix_matr
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/math_matrix_matrix", _ZNK4math6matrix10isCoordSysEf);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/math_matrix_matrix", _ZNK4math6matrix13fixedCoordSysEv);
+extern const float D_00168C60;
+static inline math::vector_xyzw fcs_normalize(const math::vector_xyzw &v)
+{
+    float l = math::length(v);
+    return v * (l == 0 ? 0 : D_00168C60 / l);
+}
+math::matrix math::matrix::fixedCoordSys() const
+{
+    matrix m;
+    m.r[0] = fcs_normalize(r[0]);
+    vector_xyzw &z = m.r[2];
+    z = fcs_normalize(cross(m.r[0], r[1]));
+    vector_xyzw &y = m.r[1];
+    y = cross(m.r[2], m.r[0]);
+    vector_xyzw &w = m.r[3];
+    w = r[3];
+    return m;
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/math_matrix_matrix", _ZNK4math6matrix5printESsSs);
