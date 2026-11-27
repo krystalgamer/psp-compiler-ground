@@ -1532,9 +1532,7 @@ void sceGimPictureInitDevice( void *device, int flags ) ;
 void sceGimPictureTermDevice( void ) ;
 static __inline__ int sceGimPicturePow2( int num )
 {
- union { float f ; int i ; } u ;
- u.f = (float)num - 0.5f ;
- return 1 << ( ( u.i >> 23 ) - 126 ) ;
+ return 1 << ( 32 - __builtin_allegrex_clz( num - 1 ) ) ;
 }
 static __inline__ int sceGimPictureCLZ( int num )
 {

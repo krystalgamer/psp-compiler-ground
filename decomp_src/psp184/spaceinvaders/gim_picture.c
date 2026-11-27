@@ -523,5 +523,51 @@ const int *sceGimPictureGetWrap( SceGimPicture *picture )
  return picture->m_wrap ;
 }
 
-INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/gim_picture", reconfigure_picture);
+static void reconfigure_picture( SceGimPicture *picture )
+{
+	picture->m_flags = 0 ;
+
+	SceGimImageHeader *image = picture->m_image ;
+	if ( image != 0 ) {
+		if ( image->level_count > 1 ) picture->m_flags |= 0x0001 ;
+		if ( image->frame_count > 1 ) picture->m_flags |= 0x0002 ;
+		int w = image->width ;
+		int h = image->height ;
+		int w2 = sceGimPicturePow2( w ) ;
+		int h2 = sceGimPicturePow2( h ) ;
+		if ( w != w2 || h != h2 ) {
+			picture->m_flags |= ( 0x0040 | 0x0020 ) ;
+			picture->m_image_crop[ 0 ] = 0.0f ;
+			picture->m_image_crop[ 1 ] = 0.0f ;
+			picture->m_image_crop[ 2 ] = (float)image->width / w2 ;
+			picture->m_image_crop[ 3 ] = (float)image->height / h2 ;
+		}
+		int align = image->pitch_align * 8 / image->bpp - 1 ;
+		picture->m_buf_width = ( w + align ) & ~align ;
+	}
+
+	SceGimPaletteHeader *palette = picture->m_palette ;
+	if ( palette != 0 ) {
+		if ( palette->level_count > 1 ) picture->m_flags |= 0x0004 ;
+		if ( palette->frame_count > 1 ) picture->m_flags |= 0x0008 ;
+		int count = ( palette->width / 16 ) * palette->level_count ;
+		if ( palette->format == 3 ) count *= 2 ;
+		if ( count > 32 ) count = 32 ;
+		picture->m_clut_load = count ;
+	}
+
+	if ( picture->m_flags & ( 0x0002 | 0x0008 ) ) {
+		picture->m_flags |= 0x0010 ;
+	} else {
+		{ int i ; for ( i = 0 ; i < picture->m_n_sequences ; i ++ ) {
+			SceGimSequenceHeader *sequence = picture->m_sequences[ i ] ;
+			if ( sequence->n_functions > 0 ) {
+				picture->m_flags |= 0x0010 ;
+				break ;
+			}
+		} }
+	}
+
+	sceGimPictureSetImagePlane( picture, picture->m_image_plane ) ;
+}
 
