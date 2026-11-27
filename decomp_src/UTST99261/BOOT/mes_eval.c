@@ -13,7 +13,7 @@ typedef struct EvSc {
     int value;                        /* 0x1C */
     int obj;                          /* 0x20 */
 } EvSc;
-int mes_eval_scope_put(struct EvCtx *ctx, EvSc *s, unsigned int id, int v);
+void mes_eval_scope_put();
 extern void *mes_classes[];
 extern unsigned int mes_ids[];
 int mes_number_to_special(int v);
@@ -116,6 +116,8 @@ void mes_parse_node_free(void *node);
 int mes_compile(EvCtx *ctx, void *node);
 void mes_list_free2(int list, int keep);
 int mes_error_syntax(EvCtx *ctx, int a);
+typedef struct { unsigned int n; int items[1]; } EvArr;
+typedef struct { char pad[0x20]; int obj; EvArr *args; EvArr *locals; EvArr *x2C; } EvScF;
 void *mes_eval_scope_new(EvCtx *ctx, int a, int b, int c)
 {
     char *o = mes_gc_alloc(ctx, 5);
@@ -139,7 +141,50 @@ INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_eval", mes_eval_scope_bind)
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_eval", mes_eval_scope_get);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_eval", mes_eval_scope_put);
+void mes_eval_scope_put(EvCtx *ctx, EvScF *s, unsigned int id, int v)
+{
+    EvProp *p;
+    EvArr *a;
+    int i;
+
+    if ((id & 3) == 1) {
+        i = (int)id >> 2;
+        if (i >= 0) {
+            a = s->args;
+            if (a == NULL) {
+                a = s->locals;
+            } else if (i >= a->n) {
+                i -= a->n;
+                a = s->locals;
+            }
+            if (a != NULL && i < a->n) {
+                a->items[i] = v;
+                return;
+            }
+        }
+    }
+    p = mes_object_search((void *)s->obj, id);
+    if (p != NULL && (*(unsigned char *)((char *)p + 8) & 0x20)) {
+        i = *(short *)((char *)p + 0xA);
+        if (i >= 0) {
+            a = s->args;
+            if (a == NULL) {
+                a = s->locals;
+            } else if (i >= a->n) {
+                i -= a->n;
+                a = s->locals;
+            }
+        } else {
+            a = s->x2C;
+            i = ~i;
+        }
+        if (a != NULL && i < a->n) {
+            a->items[i] = v;
+            return;
+        }
+    }
+    mes_object_set(s, id, v, 8);
+}
 
 int mes_eval_scope_canput(EvCtx *ctx, EvScope *scope, unsigned int id)
 {
