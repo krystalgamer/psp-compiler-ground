@@ -4,11 +4,6 @@
 
 extern "C" void menuInit(void);
 
-/* stand-ins until the owners' headers declare them (asm-labelled) */
-namespace apps_ext {
-void Trackball_track(math::Trackball *, float, float, bool, bool, math::matrix)
-    __asm__("_ZN4math9Trackball5trackEffbbNS_6matrixE");
-}
 void run_city();
 void run_ahiru();
 

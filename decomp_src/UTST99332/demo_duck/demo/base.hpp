@@ -384,6 +384,17 @@ template<class T> const T &t_array2d<T>::at(int x, int y) const
 namespace common {
 template<class T> class safe_ptr {
 public:
+    safe_ptr(T q = 0) : p(q) {}
+    T operator->() const { return p; }
+    void destroy()
+    {
+        if (p) {
+            delete p;
+            p = 0;
+        }
+    }
+    bool valid() const { return p != 0; }
+    bool invalid() const { return p == 0; }
     T p;
 };
 class StateMachine {
@@ -392,24 +403,29 @@ public:
     public:
         VirtualState(const char *);
         virtual ~VirtualState();
+        virtual void update() = 0;
+        virtual void draw() = 0;
+        virtual void enter() = 0;
+        virtual void exit() = 0;
         void pop();
         void pushChild(safe_ptr<VirtualState *>);
         void popChild();
         void change(safe_ptr<VirtualState *>);
         void update_internal();
         const char *getName();
-        char _p4[0xC - 4];
-        StateMachine *_machine;         /* 0xC */
-        char _p10[0x14 - 0x10];
-        std::string _name;              /* 0x14 */
+        safe_ptr<VirtualState *> _child;    /* 0x4 */
+        safe_ptr<VirtualState *> _next;     /* 0x8 */
+        VirtualState *_machine;             /* 0xC: parent */
+        bool _pop;                          /* 0x10 */
+        std::string _name;                  /* 0x14 */
     };
     StateMachine(safe_ptr<VirtualState *>);
     virtual ~StateMachine();
     void destroy_top();
     void process();
     void setTop(safe_ptr<VirtualState *>);
-    char _p4[8 - 4];
-    safe_ptr<VirtualState *> _next;     /* 0x8 */
+    safe_ptr<VirtualState *> _top;      /* 0x4 */
+    VirtualState *_f8;                  /* 0x8 */
     char _pc[0x10 - 0xC];
     bool _pop;                          /* 0x10 */
 };
@@ -516,8 +532,9 @@ void DepthBlurToggleSpread();
 
 namespace libc_fix {
 float AtoF(const char *);
-void FtoA(float, char *);
+int FtoA(float, char *);
 void ItoA(char *, unsigned int, int);
+int ItoA(int, char *, int);
 void ItoAX(char *, unsigned int, int);
 int AtoI(const char *);
 }
@@ -662,17 +679,6 @@ void PickMatrix(float, float, float, float, int *);
 void ErrorCheck(const char *, int);
 }
 
-class basic_parser {
-public:
-    void watch_tp(unsigned int);
-    void expect_eof(bool);
-    void clear_c_str();
-    char _pad0[0x30];
-    common::t_array<char> _c_str;   /* 0x30 */
-    bool _c_str_cleared;            /* 0x44 */
-    bool _expect_eof;               /* 0x45 */
-};
-
 class CCmpr {
 public:
     CCmpr();
@@ -708,14 +714,6 @@ void VAIOBugCheck();
 }
 
 /* accessors (generated from the asm; members named by offset) */
-class basic_file_parser {
-public:
-    bool ready() const;
-    /* data */
-    char _p0[0x50];
-    bool _f50;
-};
-
 /* accessors (generated from the asm; members named by offset) */
 namespace common {
 class FileDump {
@@ -767,6 +765,17 @@ public:
     void end();
     int _size;                          /* 0x10 */
     unsigned int *_buffer;              /* 0x14 */
+};
+class RectanglePicking : public PickingBase {
+public:
+    RectanglePicking();
+    virtual ~RectanglePicking() {}
+    void activate();
+    void push_back(unsigned int);
+    void resize(unsigned int);
+    char _p10[0x30 - 0x10];
+    bool _f30;                          /* 0x30 */
+    bool _f31;                          /* 0x31 */
 };
 class StippleMask {
 public:
@@ -974,5 +983,9 @@ public:
     bool textures;              /* 0x268 */
     bool wireframe;             /* 0x269 */
 };
+
+/* cxx-math3's parser/image classes (basic_parser, basic_file_parser, FieldParser, FloatImage, ...) */
+#include <stack>
+#include "parser.hpp"
 
 #endif

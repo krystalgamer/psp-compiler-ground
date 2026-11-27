@@ -4,20 +4,36 @@
 #include "cxx/defer_asm.h"
 #include "../main.hpp"
 
+extern "C" const char D_00161164[], D_00161168[], D_0016116C[];
+
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/libc_fix_ItoA", _Z41__static_initialization_and_destruction_0ii_1517C);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/libc_fix_ItoA", _ZN8libc_fix4ItoAEiPci);
+int libc_fix::ItoA(int v, char *buf, int)
+{
+    sprintf(buf, D_00161164, v);
+    return 0;
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/libc_fix_ItoA", _ZN8libc_fix4FtoAEfPc);
+int libc_fix::FtoA(float f, char *buf)
+{
+    sprintf(buf, D_00161168, f);
+    return 0;
+}
 
 float libc_fix::AtoF(const char *s)
 {
     return atof(s);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/libc_fix_ItoA", _ZN8libc_fix4ItoAEPcji);
+void libc_fix::ItoA(char *buf, unsigned int, int v)
+{
+    sprintf(buf, D_00161164, v);
+}
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/libc_fix_ItoA", _ZN8libc_fix5ItoAXEPcji);
+void libc_fix::ItoAX(char *buf, unsigned int, int v)
+{
+    sprintf(buf, D_0016116C, v);
+}
 
 int libc_fix::AtoI(const char *s)
 {

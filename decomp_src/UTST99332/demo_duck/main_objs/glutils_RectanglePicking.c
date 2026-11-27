@@ -4,11 +4,14 @@
 #include "cxx/defer_asm.h"
 #include "../main.hpp"
 
+/* weak instances stay asm */
+extern template class std::vector<unsigned int>;
+
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/glutils_RectanglePicking", _Z41__static_initialization_and_destruction_0ii_34578);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/glutils_RectanglePicking", _ZN7glutils16RectanglePickingC2Ev);
-
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/glutils_RectanglePicking", _ZN7glutils16RectanglePickingC1Ev);
+glutils::RectanglePicking::RectanglePicking() : _f30(false), _f31(true)
+{
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/glutils_RectanglePicking", _ZN7glutils16RectanglePicking8setStartEN4math9vector_xyE);
 
@@ -18,11 +21,17 @@ INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/glutils_Rectangl
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/glutils_RectanglePicking", _ZNK7glutils16RectanglePicking10getCurrentEv);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/glutils_RectanglePicking", _ZN7glutils16RectanglePicking9push_backEj);
+void glutils::RectanglePicking::push_back(unsigned int name)
+{
+    _hits.push_back(name);
+}
 
 INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/glutils_RectanglePicking", _ZN7glutils16RectanglePicking8activateEv);
 
-INCLUDE_ASM("tmp/asm/UTST99332/demo_duck/nonmatchings/main_objs/glutils_RectanglePicking", _ZN7glutils16RectanglePicking6resizeEj);
+void glutils::RectanglePicking::resize(unsigned int n)
+{
+    _hits.resize(n);
+}
 
 extern "C" {
 void static_init(int, int) __asm__("_Z41__static_initialization_and_destruction_0ii_34578");

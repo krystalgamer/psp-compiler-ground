@@ -53,7 +53,7 @@ void CityApp::light_source_idle()
     _light_trackball.mode((math::Trackball::Mode)1);
     float dx = (psp::pad().down(3) - psp::pad().down(2)) * D_0015B664;
     float dy = (psp::pad().down(0) - psp::pad().down(1)) * D_0015B664;
-    apps_ext::Trackball_track(&_light_trackball, dx, dy, false, true, getCamera()->getTransform());
+    _light_trackball.track(dx, dy, false, true, getCamera()->getTransform());
 }
 
 float CityApp::get_anim_time() const
