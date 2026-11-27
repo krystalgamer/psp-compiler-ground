@@ -1,5 +1,6 @@
 /* lang: c++ */
 /* cflags: -Os -fno-strength-reduce -fno-merge-constants -fno-exceptions */
+/* data-align: 8 */
 /* #pragma interface: the vtable, typeinfo and implicit destructors stay in the module's asm */
 #pragma interface "rodata"
 #include "common.h"
@@ -37,6 +38,7 @@ int InfoPanel::Receive_RunMessage(::Task *t, void *p, unsigned int n)
 
 extern "C" {
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_info_panel", _ZN2Ys9InfoPanelD1Ev);
+INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_info_panel", _ZTVN2Ys9InfoPanelE);
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_info_panel", D_00104D98);
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_info_panel", _ZN2Ys9InfoPanelD0Ev);
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_info_panel", _ZTIN2Ys9InfoPanelE);

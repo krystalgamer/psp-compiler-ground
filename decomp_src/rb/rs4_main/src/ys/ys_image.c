@@ -1,16 +1,81 @@
 /* lang: c++ */
-/* cflags: -Os */
+/* cflags: -Os -fno-strength-reduce -fno-merge-constants -fno-exceptions */
+/* #pragma interface: the vtables, typeinfo and implicit destructors stay in the module's asm */
+#pragma interface "rodata"
 #include "common.h"
+
+struct InstDat {
+	char _0[0x10];
+	unsigned int pic;
+};
+struct I3dPicture;
+
 extern "C" {
+InstDat *resGetDatLocal(int a, int b);
+int I3dPicture__Get_wPixel(I3dPicture *p, int lv);
+int I3dPicture__Get_hPixel(I3dPicture *p, int lv);
+void i3dDrawImg(InstDat *d, void *a, void *b, void *c);
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_image", _ZN2Ys5ImageC2Ev);
+namespace Ys {
+namespace Cop {
+class Vector4 {
+public:
+	float x, y, z, w;
+	Vector4() {}
+};
+class Matrix4x4 {
+public:
+	Vector4 r[4];
+	Matrix4x4() { Set_Unit(); }
+	void Set_Unit();
+};
+class DrawAttribute {
+public:
+	float sx, sy;
+	float f[10];
+	void Reset();
+};
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_image", _ZN2Ys5ImageC1Ev);
+class Image {
+public:
+	InstDat *dat;
+	short w;
+	short h;
+	int _8[2];
+	Cop::Matrix4x4 mtx;
+	Cop::Vector4 pos;
+	Cop::DrawAttribute attr;
+	Image();
+	void Set_Image(int id, int group);
+	void Draw();
+};
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_image", _ZN2Ys5Image9Set_ImageEii);
+Image::Image()
+{
+	attr.Reset();
+	pos.x = 240.0f;
+	pos.y = 136.0f;
+	dat = 0;
+	w = 0;
+	h = 0;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_image", _ZN2Ys5Image4DrawEv);
+void Image::Set_Image(int id, int group)
+{
+	dat = resGetDatLocal(group, id);
+	I3dPicture *pic = (I3dPicture *)(((dat->pic + 15) & ~15) + 16);
+	w = I3dPicture__Get_wPixel(pic, 0);
+	h = I3dPicture__Get_hPixel(pic, 0);
+}
 
-INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_image", _ZTVN2Ys9InfoPanelE);
+}
 
-} /* extern "C": m2c drafts with mangled names, kept as C linkage */
+extern "C" { INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/ys/ys_image", _ZN2Ys5Image4DrawEv); }
+
+namespace Ys {
+
+}
+
+
