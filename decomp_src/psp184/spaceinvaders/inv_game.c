@@ -1,6 +1,10 @@
 /* cflags: -O2 */
 #include "common.h"
 #include "m2c_macros.h"
+void ufo_control_once(int *u);
+void ufo_tex_anime(int *u);
+void status_font_set(int i, int a, int b, int c, int pri);
+void inv_score_add(int n);
 extern int D_005FB738;
 extern int D_005E860C;
 extern signed char D_0035393C;
@@ -899,6 +903,8 @@ void zako_disp_once(ENEMY *p)
 }
 
 INCLUDE_ASM("tmp/asm/psp184/spaceinvaders/nonmatchings/inv_game", zako_death);
+
+void zako_death(ENEMY *e, int a, int b);
 
 void efc_bom2_start(float x, float y, float z);
 void se_play_3d(int no, float *pos, float dist);
