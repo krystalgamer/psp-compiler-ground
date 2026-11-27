@@ -4,6 +4,15 @@
 #include "nflayout.h"
 #include "lo_css.h"
 #include "m2c_macros.h"
+typedef struct {
+    char *start;
+    char *end;
+} STRWORD;
+STRWORD UTL_strword(char *s, char *delim, char *stop);
+extern char D_00139BEC[];
+char *lo_fullUrl(BOX *box, char *s);
+void requestImageData(BOX *box, char *url, int x);
+int strncasecmp(const char *a, const char *b, unsigned int n);
 void OS_thread_mutex_destroy(int m);
 int iom_preferenceCookie(void);
 void iom_updateCookie(void);
@@ -59,7 +68,27 @@ void cssBackgroundAttachment(void) {
 
 INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_CSS", cssBackgroundColor);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_CSS", cssBackgroundImage);
+void cssBackgroundImage(void *ctx, BOX *box, CSSVALUE *val, int n) {
+    int len = 0;
+    char *s;
+    char *url;
+    int i;
+    if (val->unit == 0x14 && box->display == 0) {
+        while (((u16 *)val->ident)[len] != 0) {
+            len++;
+        }
+        s = MEM_malloc(0, len + 1);
+        for (i = 0; i < len; i++) {
+            s[i] = ((u16 *)val->ident)[i];
+        }
+        s[len] = 0;
+        url = lo_fullUrl(box, s);
+        if (url != NULL) {
+            requestImageData(box, url, M2C_FIELD(getBodyBox(box)->geom, int *, 0x38));
+            MEM_free(0, url);
+        }
+    }
+}
 
 void cssBackgroundRepeat(void *ctx, BOX *box, CSSVALUE *val, int n) {
     switch (val->ident) {
@@ -848,7 +877,21 @@ INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/lo_CSS", D_00139BE4);
 
 INCLUDE_RODATA("tmp/asm/UTST99261/BOOT/nonmatchings/lo_CSS", D_00139BEC);
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/lo_CSS", set_cookie);
+int set_cookie(void *x, char *hdr) {
+    STRWORD w;
+    w = UTL_strword(hdr, D_00139BEC, " \t:");
+    if (w.end - w.start == 10 && strncasecmp(w.start, "Set-Cookie", 10) == 0) {
+        hdr = w.end;
+        while (*hdr == ' ' || *hdr == '\t' || *hdr == ':') {
+            hdr++;
+        }
+    }
+    iomCookie = gCOOKIE_IDX_GLOBAL;
+    if (iomCookie == NULL) {
+        return -1;
+    }
+    return iom_setCookie(x, hdr, 0) < 0 ? -1 : 1;
+}
 
 char *get_cookie(void *url) {
     char *c;
