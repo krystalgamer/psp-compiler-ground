@@ -215,7 +215,21 @@ int taskProc_Draw(int a, int b, int c)
 	return 0;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/task", taskDraw);
+void taskDraw(void (*sort)(char **, void *, int, int), void (*draw)(char *, int, int), int a, int b)
+{
+	char *list;
+	char *t;
+	void (*d)(char *, int, int);
+	if (sort == NULL)
+		sort = (void (*)(char **, void *, int, int))taskProc_Sort;
+	d = draw;
+	if (d == NULL)
+		d = (void (*)(char *, int, int))taskProc_Draw;
+	list = NULL;
+	sort(&list, taskHeadAlive(), a, b);
+	for (t = list; t; t = *(char **)(t + 0x20))
+		d(t, a, b);
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/fw/task", taskSetRefer);
 
