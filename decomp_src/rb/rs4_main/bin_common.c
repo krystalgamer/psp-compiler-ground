@@ -1375,7 +1375,21 @@ int I3rMaterial__GetEndLayer(void *arg0) {
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/bin_common", I3rMeshEntity__Pack);
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/bin_common", I3rMeshEntity__Unpack);
+typedef struct { int arr; unsigned short n; } I3rMeshEnt;
+void I3rMeshEntity__Unpack(I3rMeshEnt *m)
+{
+    unsigned int i, n;
+
+    if (m->arr != 0)
+        m->arr = m->arr + (int)m;
+    n = m->n;
+    for (i = 0; i < n; i++)
+    {
+        int *q = (int *)m->arr + i;
+        if (*q != 0)
+            *q = *q + (int)m;
+    }
+}
 
 #ifndef NULL
 #define NULL ((void *)0)
@@ -1944,7 +1958,23 @@ void I3sGsParamEntity__Pack(void) {
 void I3sGsParamEntity__Unpack(void) {
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/bin_common", I3sCornerEntity__Pack);
+typedef struct { int p; int arr; unsigned int n; } I3sArrEnt;
+void I3sCornerEntity__Pack(I3sArrEnt *m)
+{
+    unsigned int i, n;
+
+    n = m->n;
+    for (i = 0; i < n; i++)
+    {
+        int *q = (int *)m->arr + i;
+        if (*q != 0)
+            *q = *q - (int)m;
+    }
+    if (m->p != 0)
+        m->p = m->p - (int)m;
+    if (m->arr != 0)
+        m->arr = m->arr - (int)m;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/bin_common", I3sCornerEntity__Unpack);
 
@@ -2896,7 +2926,23 @@ int I3sMaterial__GetEndLayer(void *arg0) {
     return M2C_FIELD(temp_a1, int *, 8) + (__builtin_allegrex_ext(M2C_FIELD(temp_a1, int *, 4), 0, 0x18) * 0x10);
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/bin_common", I3sMeshEntity__Pack);
+typedef struct { int p; int arr; unsigned int n; } I3sArrEnt2;
+void I3sMeshEntity__Pack(I3sArrEnt2 *m)
+{
+    unsigned int i, n;
+
+    n = m->n;
+    for (i = 0; i < n; i++)
+    {
+        int *q = (int *)m->arr + i;
+        if (*q != 0)
+            *q = *q - (int)m;
+    }
+    if (m->p != 0)
+        m->p = m->p - (int)m;
+    if (m->arr != 0)
+        m->arr = m->arr - (int)m;
+}
 
 INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/bin_common", I3sMeshEntity__Unpack);
 
@@ -3353,7 +3399,17 @@ int I3sModel__IsExistVertexAnimLoopControl(void *arg0) {
     return M2C_FIELD(M2C_FIELD(arg0, void **, 8), int *, 0x40) != 0;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/bin_common", I3rAnimVector4_SectionParam_Linear__Solve);
+void I3rAnimVector4_SectionParam_Linear__Solve(float *k, float t, float *out)
+{
+    float x = k[0] * t + k[4];
+    float y = k[1] * t + k[5];
+    float z = k[2] * t + k[6];
+    float w = k[3] * t + k[7];
+    out[0] = x;
+    out[1] = y;
+    out[2] = z;
+    out[3] = w;
+}
 
 INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/bin_common", D_00109700);
 
