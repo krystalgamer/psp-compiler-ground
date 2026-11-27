@@ -41,7 +41,17 @@ void *I3mRoot__GetNodeName(char *r, unsigned short i)
 	return 0;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_parser_i3m", I3mRoot__GetNodeIndexByName);
+int strcmp(const char *, const char *);
+int I3mRoot__GetNodeIndexByName(char *r, char *name)
+{
+	int n = *(unsigned short *)(r + 0x14);
+	int i;
+	for (i = 0; i < n; i++) {
+		if (strcmp(name, *(char **)(*(char **)(r + 0x1C) + i * 12)) == 0)
+			return i;
+	}
+	return -1;
+}
 
 #ifndef NULL
 #define NULL ((void *)0)

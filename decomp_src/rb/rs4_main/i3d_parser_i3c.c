@@ -45,9 +45,29 @@ void *I3cRoot__GetGroupName(char *r, unsigned short i)
 	return 0;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_parser_i3c", I3cRoot__GetNodeIndexByName);
+int strcmp(const char *, const char *);
+int I3cRoot__GetNodeIndexByName(char *r, char *name)
+{
+	int n = *(unsigned short *)(r + 0x14);
+	int i;
+	for (i = 0; i < n; i++) {
+		if (strcmp(name, *(char **)(*(char **)(r + 0x18) + i * 12)) == 0)
+			return i;
+	}
+	return -1;
+}
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_parser_i3c", I3cRoot__GetGroupIndexByName);
+int strcmp(const char *, const char *);
+int I3cRoot__GetGroupIndexByName(char *r, char *name)
+{
+	int n = *(unsigned short *)(r + 0x16);
+	int i;
+	for (i = 0; i < n; i++) {
+		if (strcmp(name, (*(char ***)(r + 0x1C))[i]) == 0)
+			return i;
+	}
+	return -1;
+}
 
 unsigned short I3cRoot__GetNodeEnable(char *r, unsigned short i)
 {

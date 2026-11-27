@@ -1,7 +1,6 @@
 #include "common.h"
 #include "m2c_macros.h"
 M2C_UNK I3dResourceTag__PurgeCache();               /* extern */
-M2C_UNK I3dCacheManager__CreateNewMemBlockAsGarbage(int, int, int); /* extern */
 M2C_UNK I3dVecClear(int);                           /* extern */
 M2C_UNK I3dPicture__FlushCache(void *);             /* extern */
 M2C_UNK sceGimPictureDelete(int);                   /* extern */
@@ -100,7 +99,17 @@ int I3dResourceTag__Destruct(void) {
     return 0;
 }
 
-INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/i3d_cache_manager", I3dCacheManager__CreateNewMemBlockAsGarbage);
+int I3dCacheManager__CreateNewMemBlockAsGarbage(int *cm, int size, void *head)
+{
+	char *b;
+	cm[24]--;
+	b = (char *)((int *)cm[23])[cm[24]];
+	I3dMemBlock__Construct(b);
+	*(int *)(b + 0x38) = size;
+	I3dMemBlock__InsertList(b, 0, head);
+	I3dMemBlock__InsertList(b, 1, (void *)cm[8]);
+	return (int)b;
+}
 
 int I3dCacheManager__RemoveMemBlock(int *cm, void *b)
 {
