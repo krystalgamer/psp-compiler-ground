@@ -173,11 +173,12 @@ def main():
             have = "\n".join(head)
             sdkl = [l for l in sdkl if l not in have]
 
-        def render():
+        def render(use=None):
+            use = bodies if use is None else use
             out = head + (["", "/* SDK functions (tools/sdk_protos.h) */"] + sdkl if sdkl else []) + [""]
             for line in old:
                 m = re.match(r'INCLUDE_ASM\("[^"]+", (\w+)\);', line)
-                out.append(bodies[m.group(1)].strip("\n") if m and m.group(1) in bodies else line)
+                out.append(use[m.group(1)].strip("\n") if m and m.group(1) in use else line)
             return "\n".join(out).rstrip("\n") + "\n"
         ok = False
         path.write_text(render())
@@ -192,6 +193,16 @@ def main():
                 if bad not in bodies:
                     break
                 del bodies[bad]
+        if not ok and len(bodies) > 1:
+            # one bad draft spoils the batch: add them one at a time, keeping each that builds
+            keep = {}
+            for fn, b in list(bodies.items()):
+                path.write_text(render({**keep, fn: b}))
+                if unit_test(target, module, path) and build_ok(target, module):
+                    keep[fn] = b
+            bodies = keep
+            path.write_text(render())
+            ok = bool(bodies) and build_ok(target, module)
         if ok:
             total += len(bodies)
             print(f"{u}: wrote {len(bodies)}/{len(funcs)}", flush=True)
