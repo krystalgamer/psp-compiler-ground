@@ -137,7 +137,7 @@ public:
 	int Join_Game(Network &net, Param::GameStartup &p);
 	virtual int Startup();
 	virtual int Shutdown();
-	virtual void Register_NetStructure(Network &net);
+	virtual int Register_NetStructure(Network &net);
 	virtual int FindServerCallback(const NetLANFindCallbackDataArgs &a, NetAddress &out);
 };
 
@@ -261,7 +261,15 @@ int Game::Startup()
 }
 
 extern "C" { INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_game", _ZN3Net4Game8ShutdownEv); }
-extern "C" { INCLUDE_ASM("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_game", _ZN3Net4Game21Register_NetStructureERNS_7NetworkE); }
+
+namespace Net {
+
+int Game::Register_NetStructure(Network &net)
+{
+	return 0;
+}
+
+}
 
 
 extern "C" { INCLUDE_RODATA("tmp/asm/rb/rs4_main/nonmatchings/src/net/network_game", _ZTVN3Net4GameE); }
