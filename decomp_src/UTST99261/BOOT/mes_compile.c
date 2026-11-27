@@ -75,7 +75,31 @@ Vals *mes_compile_vars(int arg0) {
     return (Vals *)mes_list_tail_to_vals(temp_v0);
 }
 
-INCLUDE_ASM("tmp/asm/UTST99261/BOOT/nonmatchings/mes_compile", mes_compile_args);
+Vals *mes_compile_args(Node *n) {
+    Vals *v;
+    int i;
+    int *d;
+    Node *c;
+    if (n != NULL) {
+        if (n->type == 0x98 && n->count != 0) {
+            v = mes_util_vals(n->count, 0);
+            if (v != NULL) {
+                d = v->v;
+                for (i = 0; i < n->count; i++) {
+                    c = ((Node **)n->f8)[i];
+                    if (c != NULL && c->type == 0x67) {
+                        *d = (int)c->f8;
+                    } else {
+                        *d = 0;
+                    }
+                    d++;
+                }
+            }
+            return v;
+        }
+    }
+    return NULL;
+}
 
 int mes_compile_find_vars(Vals *vals, int id)
 {
